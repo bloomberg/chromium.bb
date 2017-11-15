@@ -354,6 +354,173 @@ class LazyProfileInfos {
   const base::Closure report_error_to_uma_cb_;
 };
 
+// static
+LazyProfileInfos* LazyProfileInfos::Get() {
+  static LazyProfileInfos* profile_infos = new LazyProfileInfos();
+  return profile_infos;
+}
+
+std::vector<LazyProfileInfos::ProfileInfo>
+LazyProfileInfos::GetSupportedProfileInfosForCodecMode(
+    VaapiWrapper::CodecMode mode) {
+  return supported_profiles_[mode];
+}
+
+bool LazyProfileInfos::IsProfileSupported(VaapiWrapper::CodecMode mode,
+                                          VAProfile va_profile) {
+  for (const auto& profile : supported_profiles_[mode]) {
+    if (profile.va_profile == va_profile)
+      return true;
+  }
+  return false;
+}
+
+LazyProfileInfos::LazyProfileInfos()
+    : va_lock_(VADisplayState::Get()->va_lock()),
+      va_display_(nullptr),
+      report_error_to_uma_cb_(base::Bind(&base::DoNothing)) {
+  static_assert(arraysize(supported_profiles_) == VaapiWrapper::kCodecModeMax,
+                "The array size of supported profile is incorrect.");
+
+  static bool result = VADisplayState::PostSandboxInitialization();
+  if (!result)
+    return;
+  {
+    base::AutoLock auto_lock(*va_lock_);
+    if (!VADisplayState::Get()->Initialize())
+      return;
+  }
+
+  va_display_ = VADisplayState::Get()->va_display();
+  DCHECK(va_display_) << "VADisplayState hasn't been properly Initialize()d";
+
+  for (size_t i = 0; i < VaapiWrapper::kCodecModeMax; ++i) {
+    supported_profiles_[i] = GetSupportedProfileInfosForCodecModeInternal(
+        static_cast<VaapiWrapper::CodecMode>(i));
+  }
+}
+
+LazyProfileInfos::~LazyProfileInfos() {
+  VAStatus va_res = VA_STATUS_SUCCESS;
+  VADisplayState::Get()->Deinitialize(&va_res);
+  VA_LOG_ON_ERROR(va_res, "vaTerminate failed");
+  va_display_ = nullptr;
+}
+
+bool LazyProfileInfos::GetSupportedVAProfiles(
+    std::vector<VAProfile>* profiles) {
+  base::AutoLock auto_lock(*va_lock_);
+  // Query the driver for supported profiles.
+  const int max_profiles = vaMaxNumProfiles(va_display_);
+  std::vector<VAProfile> supported_profiles(
+      base::checked_cast<size_t>(max_profiles));
+
+  int num_supported_profiles;
+  VAStatus va_res = vaQueryConfigProfiles(va_display_, &supported_profiles[0],
+                                          &num_supported_profiles);
+  VA_SUCCESS_OR_RETURN(va_res, "vaQueryConfigProfiles failed", false);
+  if (num_supported_profiles < 0 || num_supported_profiles > max_profiles) {
+    LOG(ERROR) << "vaQueryConfigProfiles returned: " << num_supported_profiles;
+    return false;
+  }
+
+  supported_profiles.resize(base::checked_cast<size_t>(num_supported_profiles));
+  *profiles = supported_profiles;
+  return true;
+}
+
+bool LazyProfileInfos::IsEntrypointSupported_Locked(VAProfile va_profile,
+                                                    VAEntrypoint entrypoint) {
+  va_lock_->AssertAcquired();
+  // Query the driver for supported entrypoints.
+  int max_entrypoints = vaMaxNumEntrypoints(va_display_);
+  std::vector<VAEntrypoint> supported_entrypoints(
+      base::checked_cast<size_t>(max_entrypoints));
+
+  int num_supported_entrypoints;
+  VAStatus va_res = vaQueryConfigEntrypoints(va_display_, va_profile,
+                                             &supported_entrypoints[0],
+                                             &num_supported_entrypoints);
+  VA_SUCCESS_OR_RETURN(va_res, "vaQueryConfigEntrypoints failed", false);
+  if (num_supported_entrypoints < 0 ||
+      num_supported_entrypoints > max_entrypoints) {
+    LOG(ERROR) << "vaQueryConfigEntrypoints returned: "
+               << num_supported_entrypoints;
+    return false;
+  }
+
+  return base::ContainsValue(supported_entrypoints, entrypoint);
+}
+
+bool LazyProfileInfos::AreAttribsSupported_Locked(
+    VAProfile va_profile,
+    VAEntrypoint entrypoint,
+    const std::vector<VAConfigAttrib>& required_attribs) {
+  va_lock_->AssertAcquired();
+  // Query the driver for required attributes.
+  std::vector<VAConfigAttrib> attribs = required_attribs;
+  for (size_t i = 0; i < required_attribs.size(); ++i)
+    attribs[i].value = 0;
+
+  VAStatus va_res = vaGetConfigAttributes(va_display_, va_profile, entrypoint,
+                                          &attribs[0], attribs.size());
+  VA_SUCCESS_OR_RETURN(va_res, "vaGetConfigAttributes failed", false);
+
+  for (size_t i = 0; i < required_attribs.size(); ++i) {
+    if (attribs[i].type != required_attribs[i].type ||
+        (attribs[i].value & required_attribs[i].value) !=
+            required_attribs[i].value) {
+      DVLOG(1) << "Unsupported value " << required_attribs[i].value
+               << " for attribute type " << required_attribs[i].type;
+      return false;
+    }
+  }
+  return true;
+}
+
+bool LazyProfileInfos::GetMaxResolution_Locked(
+    VAProfile va_profile,
+    VAEntrypoint entrypoint,
+    std::vector<VAConfigAttrib>& required_attribs,
+    gfx::Size* resolution) {
+  va_lock_->AssertAcquired();
+  VAConfigID va_config_id;
+  VAStatus va_res =
+      vaCreateConfig(va_display_, va_profile, entrypoint, &required_attribs[0],
+                     required_attribs.size(), &va_config_id);
+  VA_SUCCESS_OR_RETURN(va_res, "vaCreateConfig failed", false);
+
+  // Calls vaQuerySurfaceAttributes twice. The first time is to get the number
+  // of attributes to prepare the space and the second time is to get all
+  // attributes.
+  unsigned int num_attribs;
+  va_res = vaQuerySurfaceAttributes(va_display_, va_config_id, nullptr,
+                                    &num_attribs);
+  VA_SUCCESS_OR_RETURN(va_res, "vaQuerySurfaceAttributes failed", false);
+  if (!num_attribs)
+    return false;
+
+  std::vector<VASurfaceAttrib> attrib_list(
+      base::checked_cast<size_t>(num_attribs));
+
+  va_res = vaQuerySurfaceAttributes(va_display_, va_config_id, &attrib_list[0],
+                                    &num_attribs);
+  VA_SUCCESS_OR_RETURN(va_res, "vaQuerySurfaceAttributes failed", false);
+
+  resolution->SetSize(0, 0);
+  for (const auto& attrib : attrib_list) {
+    if (attrib.type == VASurfaceAttribMaxWidth)
+      resolution->set_width(attrib.value.value.i);
+    else if (attrib.type == VASurfaceAttribMaxHeight)
+      resolution->set_height(attrib.value.value.i);
+  }
+  if (resolution->IsEmpty()) {
+    LOG(ERROR) << "Wrong codec resolution: " << resolution->ToString();
+    return false;
+  }
+  return true;
+}
+
 }  // namespace
 
 VaapiWrapper::VaapiWrapper()
@@ -540,120 +707,6 @@ bool VaapiWrapper::VaInitialize(const base::Closure& report_error_to_uma_cb) {
 
   va_display_ = VADisplayState::Get()->va_display();
   DCHECK(va_display_) << "VADisplayState hasn't been properly Initialize()d";
-  return true;
-}
-
-bool LazyProfileInfos::GetSupportedVAProfiles(
-    std::vector<VAProfile>* profiles) {
-  base::AutoLock auto_lock(*va_lock_);
-  // Query the driver for supported profiles.
-  const int max_profiles = vaMaxNumProfiles(va_display_);
-  std::vector<VAProfile> supported_profiles(
-      base::checked_cast<size_t>(max_profiles));
-
-  int num_supported_profiles;
-  VAStatus va_res = vaQueryConfigProfiles(va_display_, &supported_profiles[0],
-                                          &num_supported_profiles);
-  VA_SUCCESS_OR_RETURN(va_res, "vaQueryConfigProfiles failed", false);
-  if (num_supported_profiles < 0 || num_supported_profiles > max_profiles) {
-    LOG(ERROR) << "vaQueryConfigProfiles returned: " << num_supported_profiles;
-    return false;
-  }
-
-  supported_profiles.resize(base::checked_cast<size_t>(num_supported_profiles));
-  *profiles = supported_profiles;
-  return true;
-}
-
-bool LazyProfileInfos::IsEntrypointSupported_Locked(VAProfile va_profile,
-                                                    VAEntrypoint entrypoint) {
-  va_lock_->AssertAcquired();
-  // Query the driver for supported entrypoints.
-  int max_entrypoints = vaMaxNumEntrypoints(va_display_);
-  std::vector<VAEntrypoint> supported_entrypoints(
-      base::checked_cast<size_t>(max_entrypoints));
-
-  int num_supported_entrypoints;
-  VAStatus va_res = vaQueryConfigEntrypoints(va_display_, va_profile,
-                                             &supported_entrypoints[0],
-                                             &num_supported_entrypoints);
-  VA_SUCCESS_OR_RETURN(va_res, "vaQueryConfigEntrypoints failed", false);
-  if (num_supported_entrypoints < 0 ||
-      num_supported_entrypoints > max_entrypoints) {
-    LOG(ERROR) << "vaQueryConfigEntrypoints returned: "
-               << num_supported_entrypoints;
-    return false;
-  }
-
-  return base::ContainsValue(supported_entrypoints, entrypoint);
-}
-
-bool LazyProfileInfos::AreAttribsSupported_Locked(
-    VAProfile va_profile,
-    VAEntrypoint entrypoint,
-    const std::vector<VAConfigAttrib>& required_attribs) {
-  va_lock_->AssertAcquired();
-  // Query the driver for required attributes.
-  std::vector<VAConfigAttrib> attribs = required_attribs;
-  for (size_t i = 0; i < required_attribs.size(); ++i)
-    attribs[i].value = 0;
-
-  VAStatus va_res = vaGetConfigAttributes(va_display_, va_profile, entrypoint,
-                                          &attribs[0], attribs.size());
-  VA_SUCCESS_OR_RETURN(va_res, "vaGetConfigAttributes failed", false);
-
-  for (size_t i = 0; i < required_attribs.size(); ++i) {
-    if (attribs[i].type != required_attribs[i].type ||
-        (attribs[i].value & required_attribs[i].value) !=
-            required_attribs[i].value) {
-      DVLOG(1) << "Unsupported value " << required_attribs[i].value
-               << " for attribute type " << required_attribs[i].type;
-      return false;
-    }
-  }
-  return true;
-}
-
-bool LazyProfileInfos::GetMaxResolution_Locked(
-    VAProfile va_profile,
-    VAEntrypoint entrypoint,
-    std::vector<VAConfigAttrib>& required_attribs,
-    gfx::Size* resolution) {
-  va_lock_->AssertAcquired();
-  VAConfigID va_config_id;
-  VAStatus va_res =
-      vaCreateConfig(va_display_, va_profile, entrypoint, &required_attribs[0],
-                     required_attribs.size(), &va_config_id);
-  VA_SUCCESS_OR_RETURN(va_res, "vaCreateConfig failed", false);
-
-  // Calls vaQuerySurfaceAttributes twice. The first time is to get the number
-  // of attributes to prepare the space and the second time is to get all
-  // attributes.
-  unsigned int num_attribs;
-  va_res = vaQuerySurfaceAttributes(va_display_, va_config_id, nullptr,
-                                    &num_attribs);
-  VA_SUCCESS_OR_RETURN(va_res, "vaQuerySurfaceAttributes failed", false);
-  if (!num_attribs)
-    return false;
-
-  std::vector<VASurfaceAttrib> attrib_list(
-      base::checked_cast<size_t>(num_attribs));
-
-  va_res = vaQuerySurfaceAttributes(va_display_, va_config_id, &attrib_list[0],
-                                    &num_attribs);
-  VA_SUCCESS_OR_RETURN(va_res, "vaQuerySurfaceAttributes failed", false);
-
-  resolution->SetSize(0, 0);
-  for (const auto& attrib : attrib_list) {
-    if (attrib.type == VASurfaceAttribMaxWidth)
-      resolution->set_width(attrib.value.value.i);
-    else if (attrib.type == VASurfaceAttribMaxHeight)
-      resolution->set_height(attrib.value.value.i);
-  }
-  if (resolution->IsEmpty()) {
-    LOG(ERROR) << "Wrong codec resolution: " << resolution->ToString();
-    return false;
-  }
   return true;
 }
 
@@ -1253,59 +1306,6 @@ void VaapiWrapper::DeinitializeVpp() {
 // static
 void VaapiWrapper::PreSandboxInitialization() {
   VADisplayState::PreSandboxInitialization();
-}
-
-// static
-LazyProfileInfos* LazyProfileInfos::Get() {
-  static LazyProfileInfos* profile_infos = new LazyProfileInfos();
-  return profile_infos;
-}
-
-LazyProfileInfos::LazyProfileInfos()
-    : va_lock_(VADisplayState::Get()->va_lock()),
-      va_display_(nullptr),
-      report_error_to_uma_cb_(base::Bind(&base::DoNothing)) {
-  static_assert(arraysize(supported_profiles_) == VaapiWrapper::kCodecModeMax,
-                "The array size of supported profile is incorrect.");
-
-  static bool result = VADisplayState::PostSandboxInitialization();
-  if (!result)
-    return;
-  {
-    base::AutoLock auto_lock(*va_lock_);
-    if (!VADisplayState::Get()->Initialize())
-      return;
-  }
-
-  va_display_ = VADisplayState::Get()->va_display();
-  DCHECK(va_display_) << "VADisplayState hasn't been properly Initialize()d";
-
-  for (size_t i = 0; i < VaapiWrapper::kCodecModeMax; ++i) {
-    supported_profiles_[i] = GetSupportedProfileInfosForCodecModeInternal(
-        static_cast<VaapiWrapper::CodecMode>(i));
-  }
-}
-
-LazyProfileInfos::~LazyProfileInfos() {
-  VAStatus va_res = VA_STATUS_SUCCESS;
-  VADisplayState::Get()->Deinitialize(&va_res);
-  VA_LOG_ON_ERROR(va_res, "vaTerminate failed");
-  va_display_ = nullptr;
-}
-
-std::vector<LazyProfileInfos::ProfileInfo>
-LazyProfileInfos::GetSupportedProfileInfosForCodecMode(
-    VaapiWrapper::CodecMode mode) {
-  return supported_profiles_[mode];
-}
-
-bool LazyProfileInfos::IsProfileSupported(VaapiWrapper::CodecMode mode,
-                                          VAProfile va_profile) {
-  for (const auto& profile : supported_profiles_[mode]) {
-    if (profile.va_profile == va_profile)
-      return true;
-  }
-  return false;
 }
 
 }  // namespace media
