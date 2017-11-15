@@ -6,22 +6,18 @@
 #define BASE_MESSAGE_LOOP_MESSAGE_PUMP_ANDROID_H_
 
 #include <jni.h>
+#include <memory>
 
 #include "base/android/scoped_java_ref.h"
 #include "base/base_export.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/message_loop/message_pump.h"
+#include "base/time/time.h"
 
 namespace base {
 
-namespace android {
-class JavaMessageHandlerFactory;
-}
-
 class RunLoop;
-class TimeTicks;
-class WaitableEvent;
 
 // This class implements a MessagePump needed for TYPE_UI MessageLoops on
 // OS_ANDROID platform.
@@ -30,15 +26,17 @@ class BASE_EXPORT MessagePumpForUI : public MessagePump {
   MessagePumpForUI();
   ~MessagePumpForUI() override;
 
+  void DoIdleWork(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  void DoRunLoopOnce(JNIEnv* env,
+                     const base::android::JavaParamRef<jobject>& obj,
+                     jboolean delayed);
+
   void Run(Delegate* delegate) override;
   void Quit() override;
   void ScheduleWork() override;
   void ScheduleDelayedWork(const TimeTicks& delayed_work_time) override;
 
   virtual void Start(Delegate* delegate);
-  void StartForUnitTest(Delegate* delegate,
-                        base::android::JavaMessageHandlerFactory* factory,
-                        WaitableEvent* test_done_event);
 
   // We call Abort when there is a pending JNI exception, meaning that the
   // current thread will crash when we return to Java.
@@ -48,12 +46,12 @@ class BASE_EXPORT MessagePumpForUI : public MessagePump {
   bool ShouldAbort() const { return should_abort_; }
 
  private:
-  JNIEnv* StartInternal();
-
-  RunLoop* run_loop_ = nullptr;
+  std::unique_ptr<RunLoop> run_loop_;
   base::android::ScopedJavaGlobalRef<jobject> system_message_handler_obj_;
   bool should_abort_ = false;
   bool quit_ = false;
+  Delegate* delegate_ = nullptr;
+  base::TimeTicks delayed_scheduled_time_;
 
   DISALLOW_COPY_AND_ASSIGN(MessagePumpForUI);
 };

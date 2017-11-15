@@ -166,7 +166,6 @@ jumbo_component("base") {
     "android/java_exception_reporter.h",
     "android/java_handler_thread.cc",
     "android/java_handler_thread.h",
-    "android/java_message_handler_factory.h",
     "android/java_runtime.cc",
     "android/java_runtime.h",
     "android/jni_android.cc",
@@ -2868,8 +2867,7 @@ if (is_android) {
     ]
     java_files = [
       "test/android/java/src/org/chromium/base/ContentUriTestUtils.java",
-      "test/android/java/src/org/chromium/base/JavaHandlerThreadTest.java",
-      "test/android/java/src/org/chromium/base/TestSystemMessageHandler.java",
+      "test/android/java/src/org/chromium/base/JavaHandlerThreadHelpers.java",
     ]
   }
 }

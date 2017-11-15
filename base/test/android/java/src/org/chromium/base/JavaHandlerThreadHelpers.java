@@ -7,10 +7,13 @@ package org.chromium.base;
 import android.os.Handler;
 
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.CalledByNativeUnchecked;
 import org.chromium.base.annotations.JNINamespace;
 
-@JNINamespace("base")
-class JavaHandlerThreadTest {
+@JNINamespace("base::android")
+class JavaHandlerThreadHelpers {
+    private static class TestException extends Exception {}
+
     private static boolean sTaskExecuted;
     // This is executed as part of base_unittests. This tests that JavaHandlerThread can be used
     // by itself without attaching to its native peer.
@@ -44,5 +47,16 @@ class JavaHandlerThreadTest {
         }
 
         return thread;
+    }
+
+    @CalledByNativeUnchecked
+    private static void throwException() throws TestException {
+        throw new TestException();
+    }
+
+    @CalledByNative
+    private static boolean isExceptionTestException(Throwable exception) {
+        if (exception == null) return false;
+        return exception instanceof TestException;
     }
 }
