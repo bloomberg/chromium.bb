@@ -91,7 +91,7 @@ optimize_for_size = is_android || is_ios
 
 # Determine whether to enable or disable frame pointers, based on the platform
 # and build arguments.
-if (is_mac || is_ios) {
+if (is_mac || is_ios || is_linux) {
   enable_frame_pointers = true
 } else if (is_win) {
   # 64-bit Windows ABI doesn't support frame pointers.
