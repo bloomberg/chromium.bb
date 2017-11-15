@@ -545,23 +545,32 @@ def is_broken_repo_dir(repo_dir):
   return not path.exists(os.path.join(repo_dir, '.git', 'config'))
 
 
-def _maybe_break_locks(checkout_path):
+def _maybe_break_locks(checkout_path, tries=3):
   """This removes all .lock files from this repo's .git directory.
 
   In particular, this will cleanup index.lock files, as well as ref lock
   files.
   """
-  git_dir = os.path.join(checkout_path, '.git')
-  for dirpath, _, filenames in os.walk(git_dir):
-    for filename in filenames:
-      if filename.endswith('.lock'):
-        to_break = os.path.join(dirpath, filename)
-        print 'breaking lock: %s' % to_break
-        try:
-          os.remove(to_break)
-        except OSError as ex:
-          print 'FAILED to break lock: %s: %s' % (to_break, ex)
-          raise
+  def attempt():
+    git_dir = os.path.join(checkout_path, '.git')
+    for dirpath, _, filenames in os.walk(git_dir):
+      for filename in filenames:
+        if filename.endswith('.lock'):
+          to_break = os.path.join(dirpath, filename)
+          print 'breaking lock: %s' % to_break
+          try:
+            os.remove(to_break)
+          except OSError as ex:
+            print 'FAILED to break lock: %s: %s' % (to_break, ex)
+            raise
+
+  for _ in xrange(tries):
+    try:
+      attempt()
+      return
+    except Exception:
+      pass
+
 
 
 def git_checkouts(solutions, revisions, shallow, refs, git_cache_dir,
@@ -577,7 +586,8 @@ def git_checkouts(solutions, revisions, shallow, refs, git_cache_dir,
         raise Exception('%s exists after cache unlock' % filename)
   first_solution = True
   for sln in solutions:
-    _git_checkout(sln, build_dir, revisions, shallow, refs, git_cache_dir,
+    sln_dir = path.join(build_dir, sln['name'])
+    _git_checkout(sln, sln_dir, revisions, shallow, refs, git_cache_dir,
                   cleanup_dir)
     if first_solution:
       git_ref = git('log', '--format=%H', '--max-count=1',
@@ -587,7 +597,7 @@ def git_checkouts(solutions, revisions, shallow, refs, git_cache_dir,
   return git_ref
 
 
-def _git_checkout(sln, build_dir, revisions, shallow, refs, git_cache_dir,
+def _git_checkout(sln, sln_dir, revisions, shallow, refs, git_cache_dir,
                   cleanup_dir):
   name = sln['name']
   url = sln['url']
@@ -595,7 +605,6 @@ def _git_checkout(sln, build_dir, revisions, shallow, refs, git_cache_dir,
     # Experiments show there's little to be gained from
     # a shallow clone of src.
     shallow = False
-  sln_dir = path.join(build_dir, name)
   s = ['--shallow'] if shallow else []
   populate_cmd = (['cache', 'populate', '--ignore_locks', '-v',
                    '--cache-dir', git_cache_dir] + s + [url])
@@ -604,20 +613,17 @@ def _git_checkout(sln, build_dir, revisions, shallow, refs, git_cache_dir,
 
   # Just in case we're hitting a different git server than the one from
   # which the target revision was polled, we retry some.
-  done = False
 
   # One minute (5 tries with exp. backoff). We retry at least once regardless
   # of deadline in case initial fetch takes longer than the deadline but does
   # not contain the required revision.
   deadline = time.time() + 60
   tries = 0
-  while not done:
+  while True:
     git(*populate_cmd)
     mirror_dir = git(
         'cache', 'exists', '--quiet',
         '--cache-dir', git_cache_dir, url).strip()
-    clone_cmd = (
-        'clone', '--no-checkout', '--local', '--shared', mirror_dir, sln_dir)
 
     try:
       # If repo deletion was aborted midway, it may have left .git in broken
@@ -628,7 +634,8 @@ def _git_checkout(sln, build_dir, revisions, shallow, refs, git_cache_dir,
 
       # Use "tries=1", since we retry manually in this loop.
       if not path.isdir(sln_dir):
-        git(*clone_cmd)
+        git('clone', '--no-checkout', '--local', '--shared', mirror_dir,
+            sln_dir)
       else:
         git('remote', 'set-url', 'origin', mirror_dir, cwd=sln_dir)
         git('fetch', 'origin', cwd=sln_dir)
@@ -640,16 +647,11 @@ def _git_checkout(sln, build_dir, revisions, shallow, refs, git_cache_dir,
       # This can make git commands that rely on locks fail.
       # Try a few times in case Windows has trouble again (and again).
       if sys.platform.startswith('win'):
-        tries = 3
-        while tries:
-          try:
-            _maybe_break_locks(sln_dir)
-            break
-          except Exception:
-            tries -= 1
+        _maybe_break_locks(sln_dir, tries=3)
 
       force_solution_revision(name, url, revisions, sln_dir)
-      done = True
+      git('clean', '-dff', cwd=sln_dir)
+      return
     except SubprocessFailed as e:
       # Exited abnormally, theres probably something wrong.
       print 'Something failed: %s.' % str(e)
@@ -667,8 +669,6 @@ def _git_checkout(sln, build_dir, revisions, shallow, refs, git_cache_dir,
       print 'waiting %s seconds and trying again...' % sleep_secs
       time.sleep(sleep_secs)
       remove(sln_dir, cleanup_dir)
-
-  git('clean', '-dff', cwd=sln_dir)
 
 
 def _download(url):
