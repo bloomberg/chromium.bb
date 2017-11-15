@@ -34,6 +34,8 @@ class ASH_EXPORT OverviewWindowDragController {
                     const gfx::Point& location_in_screen);
   void Drag(const gfx::Point& location_in_screen);
   void CompleteDrag(const gfx::Point& location_in_screen);
+  void ActivateDraggedWindow();
+  void ResetGesture();
 
   // Resets |window_selector_| to nullptr. It's needed since we defer the
   // deletion of OverviewWindowDragController in WindowSelector destructor and

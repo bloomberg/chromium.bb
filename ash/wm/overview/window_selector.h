@@ -111,6 +111,8 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   void Drag(WindowSelectorItem* item, const gfx::Point& location_in_screen);
   void CompleteDrag(WindowSelectorItem* item,
                     const gfx::Point& location_in_screen);
+  void ActivateDraggedWindow();
+  void ResetDraggedWindowGesture();
 
   // Positions all of the windows in the overview.
   void PositionWindows(bool animate);
@@ -132,6 +134,10 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
 
   SplitViewOverviewOverlay* split_view_overview_overlay() {
     return split_view_overview_overlay_.get();
+  }
+
+  OverviewWindowDragController* window_drag_controller() {
+    return window_drag_controller_.get();
   }
 
   // display::DisplayObserver:

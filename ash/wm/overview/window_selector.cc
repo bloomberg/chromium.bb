@@ -524,6 +524,16 @@ void WindowSelector::CompleteDrag(WindowSelectorItem* item,
   window_drag_controller_->CompleteDrag(location_in_screen);
 }
 
+void WindowSelector::ActivateDraggedWindow() {
+  DCHECK(window_drag_controller_.get());
+  window_drag_controller_->ActivateDraggedWindow();
+}
+
+void WindowSelector::ResetDraggedWindowGesture() {
+  DCHECK(window_drag_controller_.get());
+  window_drag_controller_->ResetGesture();
+}
+
 void WindowSelector::PositionWindows(bool animate) {
   for (std::unique_ptr<WindowGrid>& grid : grid_list_)
     grid->PositionWindows(animate);

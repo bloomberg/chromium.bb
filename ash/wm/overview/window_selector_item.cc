@@ -13,6 +13,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wm/overview/cleanup_animation_observer.h"
 #include "ash/wm/overview/overview_animation_type.h"
+#include "ash/wm/overview/overview_window_drag_controller.h"
 #include "ash/wm/overview/rounded_rect_view.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
 #include "ash/wm/overview/scoped_transform_overview_window.h"
@@ -185,8 +186,15 @@ class ShieldButton : public views::Button {
         case ui::ET_GESTURE_SCROLL_UPDATE:
           listener()->HandleDragEvent(location);
           break;
-        case ui::ET_GESTURE_END:
+        case ui::ET_SCROLL_FLING_START:
+        case ui::ET_GESTURE_SCROLL_END:
           listener()->HandleReleaseEvent(location);
+          break;
+        case ui::ET_GESTURE_TAP:
+          listener()->ActivateDraggedWindow();
+          break;
+        case ui::ET_GESTURE_END:
+          listener()->ResetDraggedWindowGesture();
           break;
         default:
           break;
@@ -674,6 +682,16 @@ void WindowSelectorItem::HandleReleaseEvent(
 
 void WindowSelectorItem::HandleDragEvent(const gfx::Point& location_in_screen) {
   window_selector_->Drag(this, location_in_screen);
+}
+
+void WindowSelectorItem::ActivateDraggedWindow() {
+  DCHECK_EQ(this, window_selector_->window_drag_controller()->item());
+  window_selector_->ActivateDraggedWindow();
+}
+
+void WindowSelectorItem::ResetDraggedWindowGesture() {
+  DCHECK_EQ(this, window_selector_->window_drag_controller()->item());
+  window_selector_->ResetDraggedWindowGesture();
 }
 
 gfx::Rect WindowSelectorItem::GetTargetBoundsInScreen() const {

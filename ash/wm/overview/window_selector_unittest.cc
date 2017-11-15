@@ -2668,4 +2668,31 @@ TEST_F(SplitViewWindowSelectorTest, DragDividerToExitTest) {
   EXPECT_EQ(window2.get(), wm::GetActiveWindow());
 }
 
+TEST_F(SplitViewWindowSelectorTest, WindowSelectorItemLongPressed) {
+  std::unique_ptr<aura::Window> window1 = CreateTestWindow();
+  std::unique_ptr<aura::Window> window2 = CreateTestWindow();
+
+  ToggleOverview();
+  ASSERT_TRUE(window_selector_controller()->IsSelecting());
+
+  WindowSelectorItem* selector_item = GetWindowItemForWindow(0, window1.get());
+  gfx::Point start_location(selector_item->target_bounds().CenterPoint());
+  const gfx::Rect original_bounds(selector_item->target_bounds());
+
+  // Verify that when a window selector item receives a resetting gesture, we
+  // stay in overview mode and the bounds of the item are the same as they were
+  // before the press sequence started.
+  window_selector()->InitiateDrag(selector_item, start_location);
+  window_selector()->ResetDraggedWindowGesture();
+  EXPECT_TRUE(window_selector_controller()->IsSelecting());
+  EXPECT_EQ(original_bounds, selector_item->target_bounds());
+
+  // Verify that when a window selector item is tapped, we exit overview mode,
+  // and the current active window is the item.
+  window_selector()->InitiateDrag(selector_item, start_location);
+  window_selector()->ActivateDraggedWindow();
+  EXPECT_FALSE(window_selector_controller()->IsSelecting());
+  EXPECT_EQ(window1.get(), wm::GetActiveWindow());
+}
+
 }  // namespace ash
