@@ -29,7 +29,6 @@ import org.chromium.base.metrics.CachedMetrics.TimesHistogramSample;
 import org.chromium.chrome.browser.AppHooks;
 
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Utility class for external authentication tools.
@@ -41,9 +40,8 @@ public class ExternalAuthUtils {
     public static final int FLAG_SHOULD_BE_SYSTEM = 1 << 1;
     private static final String TAG = "ExternalAuthUtils";
 
-    // Use an AtomicReference since getInstance() can be called from multiple threads.
-    private static AtomicReference<ExternalAuthUtils> sInstance =
-            new AtomicReference<ExternalAuthUtils>();
+    private static final ExternalAuthUtils sInstance = AppHooks.get().createExternalAuthUtils();
+
     private final SparseHistogramSample mConnectionResultHistogramSample =
             new SparseHistogramSample("GooglePlayServices.ConnectionResult");
     private final TimesHistogramSample mRegistrationTimeHistogramSample = new TimesHistogramSample(
@@ -53,10 +51,7 @@ public class ExternalAuthUtils {
      * Returns the singleton instance of ExternalAuthUtils, creating it if needed.
      */
     public static ExternalAuthUtils getInstance() {
-        if (sInstance.get() == null) {
-            sInstance.compareAndSet(null, AppHooks.get().createExternalAuthUtils());
-        }
-        return sInstance.get();
+        return sInstance;
     }
 
     /**
@@ -217,7 +212,7 @@ public class ExternalAuthUtils {
      * @return true if and only if Google Play Services can be used
      */
     public static boolean canUseGooglePlayServices() {
-        return getInstance().canUseGooglePlayServices(new UserRecoverableErrorHandler.Silent());
+        return sInstance.canUseGooglePlayServices(new UserRecoverableErrorHandler.Silent());
     }
 
     /**
@@ -248,7 +243,7 @@ public class ExternalAuthUtils {
      * @return true if and only if first-party Google Play Services can be used
      */
     public static boolean canUseFirstPartyGooglePlayServices() {
-        return getInstance().canUseFirstPartyGooglePlayServices(
+        return sInstance.canUseFirstPartyGooglePlayServices(
                 new UserRecoverableErrorHandler.Silent());
     }
 
