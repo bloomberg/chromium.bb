@@ -106,12 +106,10 @@ void PaymentAppInfoFetcher::FetchPaymentAppManifestCallback(
     }
   }
 
-  if (manifest.name.is_null() ||
-      !base::UTF16ToUTF8(manifest.name.string().c_str(),
-                         manifest.name.string().length(),
-                         &(fetched_payment_app_info_->name))) {
-    PostPaymentAppInfoFetchResultToIOThread();
-    return;
+  if (!manifest.name.is_null()) {
+    base::UTF16ToUTF8(manifest.name.string().c_str(),
+                      manifest.name.string().length(),
+                      &(fetched_payment_app_info_->name));
   }
 
   // TODO(gogerald): Choose appropriate icon size dynamically on different
