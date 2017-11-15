@@ -13,6 +13,7 @@ const char kCrosDisksServiceError[] = "org.chromium.CrosDisks.Error";
 
 // Methods.
 const char kEnumerateAutoMountableDevices[] = "EnumerateAutoMountableDevices";
+const char kEnumerateDevices[] = "EnumerateDevices";
 const char kEnumerateMountEntries[] = "EnumerateMountEntries";
 const char kFormat[] = "Format";
 const char kGetDeviceProperties[] = "GetDeviceProperties";
