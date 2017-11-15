@@ -6,7 +6,6 @@
 
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_macros.h"
-#include "build/build_config.h"
 #include "chrome/browser/media/media_engagement_service.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -66,13 +65,14 @@ MediaEngagementContentsObserver::MediaEngagementContentsObserver(
     MediaEngagementService* service)
     : WebContentsObserver(web_contents),
       service_(service),
-      playback_timer_(new base::Timer(true, false)) {}
+      playback_timer_(new base::Timer(true, false)),
+      task_runner_(nullptr) {}
 
 MediaEngagementContentsObserver::~MediaEngagementContentsObserver() = default;
 
 void MediaEngagementContentsObserver::WebContentsDestroyed() {
   // Commit a visit if we have not had a playback.
-  MaybeCommitPendingData();
+  MaybeCommitPendingData(kVisitEnd);
 
   playback_timer_->Stop();
   RecordUkmMetrics();
@@ -108,25 +108,52 @@ void MediaEngagementContentsObserver::RecordUkmMetrics() {
       .Record(ukm_recorder);
 }
 
-void MediaEngagementContentsObserver::MaybeCommitPendingData() {
-  if (!pending_data_to_commit_.has_value())
+void MediaEngagementContentsObserver::MaybeCommitPendingData(
+    CommitTrigger trigger) {
+  // The audible players should only be recorded when the visit ends.
+  int audible_players_count = 0;
+  int significant_players_count = 0;
+  if (trigger == kVisitEnd) {
+    audible_players_count = audible_players_.size();
+    for (const auto& row : audible_players_)
+      significant_players_count += row.second.first;
+  }
+
+  if (!pending_data_to_commit_.has_value() && !audible_players_count)
     return;
 
   // If the current origin is not a valid URL then we should just silently reset
   // any pending data.
   if (!committed_origin_.GetURL().is_valid()) {
     pending_data_to_commit_.reset();
+    audible_players_.clear();
     return;
   }
 
   MediaEngagementScore score =
       service_->CreateEngagementScore(committed_origin_.GetURL());
-  score.IncrementVisits();
+
+  if (pending_data_to_commit_.has_value())
+    score.IncrementVisits();
+
   if (pending_data_to_commit_.value_or(false))
     score.IncrementMediaPlaybacks();
+
+  if (audible_players_count > 0)
+    score.IncrementAudiblePlaybacks(audible_players_count);
+
+  if (significant_players_count > 0)
+    score.IncrementSignificantPlaybacks(significant_players_count);
+
   score.Commit();
 
   pending_data_to_commit_.reset();
+
+  // Reset the audible players set.
+  if (audible_players_count) {
+    DCHECK_EQ(kVisitEnd, trigger);
+    audible_players_.clear();
+  }
 }
 
 void MediaEngagementContentsObserver::DidFinishNavigation(
@@ -146,7 +173,7 @@ void MediaEngagementContentsObserver::DidFinishNavigation(
 
   // Commit a visit if we have not had a playback before the new origin is
   // updated.
-  MaybeCommitPendingData();
+  MaybeCommitPendingData(kVisitEnd);
 
   RecordUkmMetrics();
 
@@ -186,7 +213,7 @@ void MediaEngagementContentsObserver::MediaStartedPlaying(
   state.has_video = media_player_info.has_video;
 
   MaybeInsertRemoveSignificantPlayer(media_player_id);
-  UpdateTimer();
+  UpdatePlayerTimer(media_player_id);
   RecordEngagementScoreToHistogramAtPlayback(media_player_id);
 }
 
@@ -214,7 +241,7 @@ void MediaEngagementContentsObserver::MediaMutedStatusChanged(
     bool muted) {
   GetPlayerState(id).muted = muted;
   MaybeInsertRemoveSignificantPlayer(id);
-  UpdateTimer();
+  UpdatePlayerTimer(id);
   RecordEngagementScoreToHistogramAtPlayback(id);
 }
 
@@ -224,7 +251,7 @@ void MediaEngagementContentsObserver::MediaResized(const gfx::Size& size,
       (size.width() >= kSignificantSize.width() &&
        size.height() >= kSignificantSize.height());
   MaybeInsertRemoveSignificantPlayer(id);
-  UpdateTimer();
+  UpdatePlayerTimer(id);
 }
 
 void MediaEngagementContentsObserver::MediaStoppedPlaying(
@@ -233,11 +260,11 @@ void MediaEngagementContentsObserver::MediaStoppedPlaying(
     WebContentsObserver::MediaStoppedReason reason) {
   GetPlayerState(media_player_id).playing = false;
   MaybeInsertRemoveSignificantPlayer(media_player_id);
-  UpdateTimer();
+  UpdatePlayerTimer(media_player_id);
 }
 
 void MediaEngagementContentsObserver::DidUpdateAudioMutingState(bool muted) {
-  UpdateTimer();
+  UpdatePageTimer();
 }
 
 std::vector<MediaEngagementContentsObserver::InsignificantPlaybackReason>
@@ -278,17 +305,27 @@ bool MediaEngagementContentsObserver::IsPlayerStateComplete(
           state.significant_size.has_value());
 }
 
-void MediaEngagementContentsObserver::OnSignificantMediaPlaybackTime() {
+void MediaEngagementContentsObserver::OnSignificantMediaPlaybackTimeForPlayer(
+    const MediaPlayerId& id) {
+  // Clear the timer.
+  auto audible_row = audible_players_.find(id);
+  audible_row->second.second = nullptr;
+
+  // Check that the tab is not muted.
+  if (web_contents()->IsAudioMuted() || !web_contents()->WasRecentlyAudible())
+    return;
+
+  // Record significant audible playback.
+  audible_row->second.first = true;
+}
+
+void MediaEngagementContentsObserver::OnSignificantMediaPlaybackTimeForPage() {
   DCHECK(!significant_playback_recorded_);
 
   // Do not record significant playback if the tab did not make
   // a sound in the last two seconds.
-#if defined(OS_ANDROID)
-// Skipping WasRecentlyAudible check on Android (not available).
-#else
   if (!web_contents()->WasRecentlyAudible())
     return;
-#endif
 
   significant_playback_recorded_ = true;
 
@@ -296,7 +333,7 @@ void MediaEngagementContentsObserver::OnSignificantMediaPlaybackTime() {
   // to commit.
   DCHECK(pending_data_to_commit_.has_value());
   pending_data_to_commit_ = true;
-  MaybeCommitPendingData();
+  MaybeCommitPendingData(kSignificantMediaPlayback);
 }
 
 void MediaEngagementContentsObserver::RecordInsignificantReasons(
@@ -349,6 +386,15 @@ void MediaEngagementContentsObserver::MaybeInsertRemoveSignificantPlayer(
   if (!IsPlayerStateComplete(state))
     return;
 
+  // If the player has an audio track, is un-muted and is playing then we should
+  // add it to the audible players map.
+  if (state.muted == false && state.playing == true &&
+      state.has_audio == true &&
+      audible_players_.find(id) == audible_players_.end()) {
+    audible_players_[id] =
+        std::make_pair(false, base::WrapUnique<base::Timer>(nullptr));
+  }
+
   bool is_currently_significant =
       significant_players_.find(id) != significant_players_.end();
   std::vector<MediaEngagementContentsObserver::InsignificantPlaybackReason>
@@ -383,6 +429,39 @@ void MediaEngagementContentsObserver::MaybeInsertRemoveSignificantPlayer(
   }
 }
 
+void MediaEngagementContentsObserver::UpdatePlayerTimer(
+    const MediaPlayerId& id) {
+  UpdatePageTimer();
+
+  // The player should be considered audible.
+  auto audible_row = audible_players_.find(id);
+  if (audible_row == audible_players_.end())
+    return;
+
+  // If we meet all the reqirements for being significant then start a timer.
+  if (significant_players_.find(id) != significant_players_.end()) {
+    if (audible_row->second.second)
+      return;
+
+    std::unique_ptr<base::Timer> new_timer =
+        base::MakeUnique<base::Timer>(true, false);
+    if (task_runner_)
+      new_timer->SetTaskRunner(task_runner_);
+
+    new_timer->Start(
+        FROM_HERE,
+        MediaEngagementContentsObserver::kSignificantMediaPlaybackTime,
+        base::Bind(&MediaEngagementContentsObserver::
+                       OnSignificantMediaPlaybackTimeForPlayer,
+                   base::Unretained(this), id));
+
+    audible_row->second.second = std::move(new_timer);
+  } else if (audible_row->second.second) {
+    // We no longer meet the requirements so we should get rid of the timer.
+    audible_row->second.second = nullptr;
+  }
+}
+
 bool MediaEngagementContentsObserver::AreConditionsMet() const {
   if (significant_players_.empty())
     return false;
@@ -390,7 +469,7 @@ bool MediaEngagementContentsObserver::AreConditionsMet() const {
   return !web_contents()->IsAudioMuted();
 }
 
-void MediaEngagementContentsObserver::UpdateTimer() {
+void MediaEngagementContentsObserver::UpdatePageTimer() {
   if (significant_playback_recorded_)
     return;
 
@@ -398,12 +477,15 @@ void MediaEngagementContentsObserver::UpdateTimer() {
     if (playback_timer_->IsRunning())
       return;
 
+    if (task_runner_)
+      playback_timer_->SetTaskRunner(task_runner_);
+
     playback_timer_->Start(
         FROM_HERE,
         MediaEngagementContentsObserver::kSignificantMediaPlaybackTime,
-        base::Bind(
-            &MediaEngagementContentsObserver::OnSignificantMediaPlaybackTime,
-            base::Unretained(this)));
+        base::Bind(&MediaEngagementContentsObserver::
+                       OnSignificantMediaPlaybackTimeForPage,
+                   base::Unretained(this)));
   } else {
     if (!playback_timer_->IsRunning())
       return;
@@ -411,9 +493,9 @@ void MediaEngagementContentsObserver::UpdateTimer() {
   }
 }
 
-void MediaEngagementContentsObserver::SetTimerForTest(
-    std::unique_ptr<base::Timer> timer) {
-  playback_timer_ = std::move(timer);
+void MediaEngagementContentsObserver::SetTaskRunnerForTest(
+    scoped_refptr<base::SequencedTaskRunner> task_runner) {
+  task_runner_ = std::move(task_runner);
 }
 
 void MediaEngagementContentsObserver::ReadyToCommitNavigation(
