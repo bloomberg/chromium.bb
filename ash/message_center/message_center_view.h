@@ -143,6 +143,7 @@ class ASH_EXPORT MessageCenterView
   void EnableCloseAllIfAppropriate();
   void SetNotificationViewForTest(message_center::MessageView* view);
   void UpdateNotification(const std::string& notification_id);
+  void NotifyAnimationState(bool animating);
 
   // There are three patterns for animation.
   // - Only MessageCenterView height changes.

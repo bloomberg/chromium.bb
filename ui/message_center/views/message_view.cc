@@ -120,6 +120,14 @@ bool MessageView::IsExpanded() const {
   return false;
 }
 
+void MessageView::OnContainerAnimationStarted() {
+  // Not implemented by default.
+}
+
+void MessageView::OnContainerAnimationEnded() {
+  // Not implemented by default.
+}
+
 void MessageView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ui::AX_ROLE_BUTTON;
   node_data->AddStringAttribute(

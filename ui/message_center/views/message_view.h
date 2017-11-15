@@ -54,6 +54,13 @@ class MESSAGE_CENTER_EXPORT MessageView
   virtual void SetExpanded(bool expanded);
   virtual bool IsExpanded() const;
 
+  // Invoked when the container view of MessageView (e.g. MessageCenterView in
+  // ash) is starting the animation that possibly hides some part of
+  // the MessageView.
+  // During the animation, MessageView should comply with the Z order in views.
+  virtual void OnContainerAnimationStarted();
+  virtual void OnContainerAnimationEnded();
+
   void OnCloseButtonPressed();
   void OnSettingsButtonPressed();
 
