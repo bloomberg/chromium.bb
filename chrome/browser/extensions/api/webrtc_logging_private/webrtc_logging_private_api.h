@@ -285,6 +285,27 @@ class WebrtcLoggingPrivateStopWebRtcEventLoggingFunction
   bool RunAsync() override;
 };
 
+class WebrtcLoggingPrivateGetLogsDirectoryFunction
+    : public WebrtcLoggingPrivateFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("webrtcLoggingPrivate.getLogsDirectory",
+                             WEBRTCLOGGINGPRIVATE_GETLOGSDIRECTORY)
+  WebrtcLoggingPrivateGetLogsDirectoryFunction() {}
+
+ private:
+  ~WebrtcLoggingPrivateGetLogsDirectoryFunction() override {}
+
+  // ExtensionFunction overrides.
+  bool RunAsync() override;
+
+#if BUILDFLAG(ENABLE_WEBRTC)
+  // Must be called on UI thread.
+  void FireErrorCallback(const std::string& error_message);
+  void FireCallback(const std::string& filesystem_id,
+                    const std::string& base_name);
+#endif
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_WEBRTC_LOGGING_PRIVATE_WEBRTC_LOGGING_PRIVATE_API_H_

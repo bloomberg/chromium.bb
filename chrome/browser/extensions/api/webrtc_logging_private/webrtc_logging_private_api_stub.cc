@@ -98,4 +98,10 @@ bool WebrtcLoggingPrivateStopWebRtcEventLoggingFunction::RunAsync() {
   return false;
 }
 
+bool WebrtcLoggingPrivateGetLogsDirectoryFunction::RunAsync() {
+  SetError(kErrorNotSupported);
+  SendResponse(false);
+  return false;
+}
+
 }  // namespace extensions
