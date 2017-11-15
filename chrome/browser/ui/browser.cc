@@ -399,9 +399,9 @@ Browser::Browser(const CreateParams& params)
 
   // TODO(jeremy): Move to initializer list once flag is removed.
   if (IsFastTabUnloadEnabled())
-    fast_unload_controller_.reset(new chrome::FastUnloadController(this));
+    fast_unload_controller_.reset(new FastUnloadController(this));
   else
-    unload_controller_.reset(new chrome::UnloadController(this));
+    unload_controller_.reset(new UnloadController(this));
 
   tab_strip_model_->AddObserver(this);
 
