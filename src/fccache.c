@@ -221,15 +221,16 @@ FcDirCacheBasenameMD5 (const FcChar8 *dir, FcChar8 cache_base[CACHEBASE_LEN])
 static FcChar8 *
 FcDirCacheBasenameUUID (const FcChar8 *dir, FcChar8 cache_base[CACHEBASE_LEN], FcConfig *config)
 {
-    uuid_t uuid;
+    void *u;
     FcChar8 *alias;
 
     if (!FcHashTableFind (config->alias_table, dir, (void **)&alias))
 	alias = FcStrdup (dir);
-    if (FcHashTableFind (config->uuid_table, alias, (void **)&uuid))
+    if (FcHashTableFind (config->uuid_table, alias, &u))
     {
-	uuid_unparse (uuid, (char *) cache_base);
+	uuid_unparse (u, (char *) cache_base);
 	strcat ((char *) cache_base, "-" FC_ARCHITECTURE FC_CACHE_SUFFIX);
+	FcHashUuidFree (u);
 	FcStrFree (alias);
 	return cache_base;
     }
