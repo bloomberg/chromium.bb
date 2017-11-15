@@ -123,12 +123,12 @@ class Supplement : public GarbageCollectedMixin,
     supplementable.ProvideSupplement(key, supplement);
   }
 
-  static Supplement<T>* From(Supplementable<T>& supplementable,
+  static Supplement<T>* From(const Supplementable<T>& supplementable,
                              const char* key) {
     return supplementable.RequireSupplement(key);
   }
 
-  static Supplement<T>* From(Supplementable<T>* supplementable,
+  static Supplement<T>* From(const Supplementable<T>* supplementable,
                              const char* key) {
     return supplementable ? supplementable->RequireSupplement(key) : 0;
   }
@@ -160,7 +160,7 @@ class Supplementable : public GarbageCollectedMixin {
     this->supplements_.erase(key);
   }
 
-  Supplement<T>* RequireSupplement(const char* key) {
+  Supplement<T>* RequireSupplement(const char* key) const {
 #if DCHECK_IS_ON()
     DCHECK_EQ(attached_thread_id_, CurrentThread());
 #endif
