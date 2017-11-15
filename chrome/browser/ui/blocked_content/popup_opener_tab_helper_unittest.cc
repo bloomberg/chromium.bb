@@ -25,9 +25,13 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/rappor/public/rappor_parameters.h"
 #include "components/rappor/test_rappor_service.h"
+#include "components/ukm/content/source_url_recorder.h"
+#include "components/ukm/test_ukm_recorder.h"
+#include "components/ukm/ukm_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_utils.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -549,7 +553,11 @@ TEST_F(BlockTabUnderTest, DisableFeature_LogsDidTabUnder) {
   histogram_tester()->ExpectTotalCount(kTabUnderAction, 3);
 }
 
-TEST_F(BlockTabUnderTest, LogsRappor) {
+TEST_F(BlockTabUnderTest, LogsRapporAndUkm) {
+  using UkmEntry = ukm::builders::AbusiveExperienceHeuristic;
+
+  ukm::InitializeSourceUrlRecorderForWebContents(web_contents());
+  ukm::TestAutoSetUkmRecorder test_ukm_recorder;
   rappor::TestRapporServiceImpl test_rappor_service;
   TestingBrowserProcess::GetGlobal()->SetRapporServiceImpl(
       &test_rappor_service);
@@ -557,6 +565,7 @@ TEST_F(BlockTabUnderTest, LogsRappor) {
   const GURL first_url("https://first.test/");
   EXPECT_TRUE(NavigateAndCommitWithoutGesture(first_url));
   SimulatePopup();
+  raw_clock()->Advance(base::TimeDelta::FromMilliseconds(15));
   const GURL blocked_url("https://example.test/");
   EXPECT_FALSE(NavigateAndCommitWithoutGesture(blocked_url));
 
@@ -566,6 +575,22 @@ TEST_F(BlockTabUnderTest, LogsRappor) {
       "Tab.TabUnder.Opener", &sample, &type));
   EXPECT_EQ(first_url.host(), sample);
   EXPECT_EQ(rappor::UMA_RAPPOR_TYPE, type);
+
+  const ukm::UkmSource* opener_source =
+      test_ukm_recorder.GetSourceForUrl(first_url);
+  ASSERT_TRUE(opener_source);
+  EXPECT_EQ(first_url, opener_source->url());
+  EXPECT_GE(test_ukm_recorder.entries_count(), 1ul);
+  test_ukm_recorder.ExpectMetric(*opener_source, UkmEntry::kEntryName,
+                                 UkmEntry::kDidTabUnderName, true);
+
+  const GURL final_url("https://final.test/");
+  content::NavigationSimulator::NavigateAndCommitFromDocument(final_url,
+                                                              main_rfh());
+  const ukm::UkmSource* final_source =
+      test_ukm_recorder.GetSourceForUrl(final_url);
+  ASSERT_TRUE(final_source);
+  EXPECT_FALSE(test_ukm_recorder.HasEntry(*final_source, UkmEntry::kEntryName));
 }
 
 TEST_F(BlockTabUnderTest, LogsToConsole) {

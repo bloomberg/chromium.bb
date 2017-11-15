@@ -18,6 +18,18 @@ be describing additional metrics about the same event.
 
 <ukm-configuration>
 
+<event name="AbusiveExperienceHeuristic">
+  <summary>
+    Various metrics recording experiences which are commonly used for abusive
+    purposes.
+  </summary>
+  <metric name="DidTabUnder">
+    <summary>
+      True if the page attempted a tab-under navigation.
+    </summary>
+  </metric>
+</event>
+
 <event name="Autofill.CardUploadDecision">
   <owner>sebsg@chromium.org</owner>
   <metric name="UploadDecision">
