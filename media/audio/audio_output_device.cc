@@ -88,6 +88,13 @@ AudioOutputDevice::AudioOutputDevice(
 
 void AudioOutputDevice::Initialize(const AudioParameters& params,
                                    RenderCallback* callback) {
+  task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&AudioOutputDevice::InitializeOnIOThread, this,
+                                params, callback));
+}
+
+void AudioOutputDevice::InitializeOnIOThread(const AudioParameters& params,
+                                             RenderCallback* callback) {
   DCHECK(!callback_) << "Calling Initialize() twice?";
   DCHECK(params.IsValid());
   audio_parameters_ = params;
@@ -114,10 +121,8 @@ void AudioOutputDevice::RequestDeviceAuthorization() {
 }
 
 void AudioOutputDevice::Start() {
-  DCHECK(callback_) << "Initialize hasn't been called";
-  task_runner()->PostTask(FROM_HERE,
-      base::Bind(&AudioOutputDevice::CreateStreamOnIOThread, this,
-                 audio_parameters_));
+  task_runner()->PostTask(
+      FROM_HERE, base::Bind(&AudioOutputDevice::CreateStreamOnIOThread, this));
 }
 
 void AudioOutputDevice::Stop() {
@@ -196,8 +201,9 @@ void AudioOutputDevice::RequestDeviceAuthorizationOnIOThread() {
   }
 }
 
-void AudioOutputDevice::CreateStreamOnIOThread(const AudioParameters& params) {
+void AudioOutputDevice::CreateStreamOnIOThread() {
   DCHECK(task_runner()->BelongsToCurrentThread());
+  DCHECK(callback_) << "Initialize hasn't been called";
   switch (state_) {
     case IPC_CLOSED:
       if (callback_)
@@ -208,7 +214,7 @@ void AudioOutputDevice::CreateStreamOnIOThread(const AudioParameters& params) {
       if (did_receive_auth_.IsSignaled() && device_id_.empty() &&
           security_origin_.unique()) {
         state_ = CREATING_STREAM;
-        ipc_->CreateStream(this, params);
+        ipc_->CreateStream(this, audio_parameters_);
       } else {
         RequestDeviceAuthorizationOnIOThread();
         start_on_authorized_ = true;
@@ -221,7 +227,7 @@ void AudioOutputDevice::CreateStreamOnIOThread(const AudioParameters& params) {
 
     case AUTHORIZED:
       state_ = CREATING_STREAM;
-      ipc_->CreateStream(this, params);
+      ipc_->CreateStream(this, audio_parameters_);
       start_on_authorized_ = false;
       break;
 
@@ -371,7 +377,7 @@ void AudioOutputDevice::OnDeviceAuthorized(
       did_receive_auth_.Signal();
     }
     if (start_on_authorized_)
-      CreateStreamOnIOThread(audio_parameters_);
+      CreateStreamOnIOThread();
   } else {
     // Closing IPC forces a Signal(), so no clients are locked waiting
     // indefinitely after this method returns.
