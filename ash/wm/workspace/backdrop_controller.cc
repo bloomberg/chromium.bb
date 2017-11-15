@@ -151,10 +151,6 @@ void BackdropController::OnAppListVisibilityChanged(bool shown,
   if (container_->GetRootWindow() != root_window)
     return;
 
-  // Hide or update backdrop only for fullscreen app list.
-  if (!app_list::features::IsFullscreenAppListEnabled())
-    return;
-
   if (shown)
     AddForceHidden();
   else

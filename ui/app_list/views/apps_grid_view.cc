@@ -826,7 +826,7 @@ gfx::Size AppsGridView::CalculatePreferredSize() const {
         gfx::Size(kAppsGridPreferredWidth, kAppsGridPreferredHeight);
     // Add padding to both side of the apps grid to keep it horizontally
     // centered since we place page switcher on the right side.
-    size.Enlarge(kAppsGridLeftRightPaddingFullscreen * 2, 0);
+    size.Enlarge(kAppsGridLeftRightPadding * 2, 0);
     return size;
   }
 
@@ -866,7 +866,7 @@ void AppsGridView::Layout() {
   if (is_fullscreen_app_list_enabled_) {
     if (fadeout_layer_delegate_)
       fadeout_layer_delegate_->layer()->SetBounds(layer()->bounds());
-    rect.Inset(0, kSearchBoxFullscreenBottomPadding, 0, 0);
+    rect.Inset(0, kSearchBoxBottomPadding, 0, 0);
   }
 
   gfx::Rect indicator_rect(rect);
@@ -1702,9 +1702,7 @@ bool AppsGridView::CalculateFolderDropTarget(const gfx::Point& point,
   // Items can only be dropped into non-folders (which have no children) or
   // folders that have fewer than the max allowed items.
   // The OEM folder does not allow drag/drop of other items into it.
-  if (target_item->ChildItemCount() >= (is_fullscreen_app_list_enabled_
-                                            ? kMaxFolderItemsFullscreen
-                                            : kMaxFolderItems) ||
+  if (target_item->ChildItemCount() >= kMaxFolderItems ||
       IsOEMFolderItem(target_item)) {
     return false;
   }
@@ -2673,20 +2671,19 @@ int AppsGridView::GetHeightOnTopOfAllAppsTiles(int page) const {
 
   if (page == 0) {
     DCHECK(suggestions_container_ && all_apps_indicator_);
-    return kSearchBoxFullscreenBottomPadding +
+    return kSearchBoxBottomPadding +
            suggestions_container_->GetPreferredSize().height() +
            kSuggestionsAllAppsIndicatorPadding +
            all_apps_indicator_->GetPreferredSize().height() +
            kAllAppsIndicatorBottomPadding - kTileVerticalPadding;
   }
-  return kSearchBoxFullscreenBottomPadding - kTileVerticalPadding;
+  return kSearchBoxBottomPadding - kTileVerticalPadding;
 }
 
 gfx::Rect AppsGridView::GetExpectedTileBounds(const Index& index) const {
   gfx::Rect bounds(GetContentsBounds());
   if (is_fullscreen_app_list_enabled_) {
-    bounds.Offset(kAppsGridLeftRightPaddingFullscreen - kTileHorizontalPadding,
-                  0);
+    bounds.Offset(kAppsGridLeftRightPadding - kTileHorizontalPadding, 0);
   }
   bounds.Inset(0, GetHeightOnTopOfAllAppsTiles(index.page), 0, 0);
   int row = index.slot / cols_;

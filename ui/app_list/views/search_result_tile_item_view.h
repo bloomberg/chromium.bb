@@ -34,7 +34,6 @@ class APP_LIST_EXPORT SearchResultTileItemView
                            AppListViewDelegate* view_delegate,
                            PaginationModel* pagination_model,
                            bool is_suggested_app,
-                           bool is_fullscreen_app_list_enabled,
                            bool is_play_store_search_enabled);
   ~SearchResultTileItemView() override;
 
@@ -91,8 +90,6 @@ class APP_LIST_EXPORT SearchResultTileItemView
   PaginationModel* const pagination_model_;  // Owned by AppsGridView.
 
   std::unique_ptr<views::MenuRunner> context_menu_runner_;
-
-  const bool is_fullscreen_app_list_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchResultTileItemView);
 };

@@ -97,9 +97,6 @@ class APP_LIST_EXPORT SearchResultListView : public gfx::AnimationDelegate,
   views::View* auto_launch_indicator_;
   std::unique_ptr<gfx::LinearAnimation> auto_launch_animation_;
 
-  // True if the fullscreen app list feature is enabled.
-  const bool is_fullscreen_app_list_enabled_;
-
   DISALLOW_COPY_AND_ASSIGN(SearchResultListView);
 };
 

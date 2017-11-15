@@ -167,7 +167,7 @@ class SearchResultPageViewTest
   DISALLOW_COPY_AND_ASSIGN(SearchResultPageViewTest);
 };
 
-// Instantiate the Boolean which is used to toggle the Fullscreen app list in
+// Instantiate the Boolean which is used to toggle answer cards in
 // the parameterized tests.
 INSTANTIATE_TEST_CASE_P(
     ,
