@@ -153,10 +153,13 @@ const CGFloat kResizeFactor = 4;
 - (void)setupCard:(SwipeView*)card withIndex:(NSInteger)index;
 // Build a |kResizeFactor| sized greyscaled version of |image|.
 - (UIImage*)smallGreyImage:(UIImage*)image;
+
+@property(nonatomic, strong) NSLayoutConstraint* backgroundTopConstraint;
 @end
 
 @implementation CardSideSwipeView
 
+@synthesize backgroundTopConstraint = _backgroundTopConstraint_;
 @synthesize delegate = delegate_;
 @synthesize toolbarInteractionHandler = toolbarInteractionHandler_;
 @synthesize topMargin = topMargin_;
@@ -174,11 +177,13 @@ const CGFloat kResizeFactor = 4;
     [self addSubview:background];
 
     [background setTranslatesAutoresizingMaskIntoConstraints:NO];
+    self.backgroundTopConstraint =
+        [[background topAnchor] constraintEqualToAnchor:self.topAnchor
+                                               constant:-StatusBarHeight()];
     [NSLayoutConstraint activateConstraints:@[
       [[background rightAnchor] constraintEqualToAnchor:self.rightAnchor],
       [[background leftAnchor] constraintEqualToAnchor:self.leftAnchor],
-      [[background topAnchor] constraintEqualToAnchor:self.topAnchor
-                                             constant:-StatusBarHeight()],
+      self.backgroundTopConstraint,
       [[background bottomAnchor] constraintEqualToAnchor:self.bottomAnchor]
     ]];
 
@@ -196,6 +201,11 @@ const CGFloat kResizeFactor = 4;
     AddSameConstraints(leftCard_, self);
   }
   return self;
+}
+
+- (void)updateConstraints {
+  [super updateConstraints];
+  self.backgroundTopConstraint.constant = -StatusBarHeight();
 }
 
 - (CGRect)cardFrame {
