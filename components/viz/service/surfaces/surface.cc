@@ -35,8 +35,8 @@ Surface::~Surface() {
   ClearCopyRequests();
   surface_manager_->SurfaceDiscarded(this);
 
-  UnrefFrameResourcesAndRunDrawCallback(std::move(pending_frame_data_));
-  UnrefFrameResourcesAndRunDrawCallback(std::move(active_frame_data_));
+  UnrefFrameResourcesAndRunCallbacks(std::move(pending_frame_data_));
+  UnrefFrameResourcesAndRunCallbacks(std::move(active_frame_data_));
 
   deadline_.Cancel();
 }
@@ -109,6 +109,10 @@ bool Surface::QueueFrame(
       frame.device_scale_factor() != surface_info_.device_scale_factor()) {
     TRACE_EVENT_INSTANT0("cc", "Surface invariants violation",
                          TRACE_EVENT_SCOPE_THREAD);
+    if (presented_callback) {
+      std::move(presented_callback)
+          .Run(base::TimeTicks(), base::TimeDelta(), 0);
+    }
     return false;
   }
 
@@ -117,9 +121,10 @@ bool Surface::QueueFrame(
         TransferableResource::ReturnResources(frame.resource_list);
     surface_client_->ReturnResources(resources);
     std::move(callback).Run();
-    if (presented_callback)
+    if (presented_callback) {
       std::move(presented_callback)
           .Run(base::TimeTicks(), base::TimeDelta(), 0);
+    }
     return true;
   }
 
@@ -155,7 +160,7 @@ bool Surface::QueueFrame(
   }
 
   // Returns resources for the previous pending frame.
-  UnrefFrameResourcesAndRunDrawCallback(std::move(previous_pending_frame_data));
+  UnrefFrameResourcesAndRunCallbacks(std::move(previous_pending_frame_data));
 
   return true;
 }
@@ -256,7 +261,7 @@ void Surface::ActivateFrame(FrameData frame_data) {
   for (auto& copy_request : old_copy_requests)
     RequestCopyOfOutput(std::move(copy_request));
 
-  UnrefFrameResourcesAndRunDrawCallback(std::move(previous_frame_data));
+  UnrefFrameResourcesAndRunCallbacks(std::move(previous_frame_data));
 
   if (!seen_first_frame_activation_) {
     seen_first_frame_activation_ = true;
@@ -386,7 +391,7 @@ void Surface::OnDeadline() {
   ActivatePendingFrameForDeadline();
 }
 
-void Surface::UnrefFrameResourcesAndRunDrawCallback(
+void Surface::UnrefFrameResourcesAndRunCallbacks(
     base::Optional<FrameData> frame_data) {
   if (!frame_data || !surface_client_)
     return;
@@ -398,8 +403,13 @@ void Surface::UnrefFrameResourcesAndRunDrawCallback(
     resource.sync_token.Clear();
   surface_client_->UnrefResources(resources);
 
-  if (!frame_data->draw_callback.is_null())
+  if (frame_data->draw_callback)
     std::move(frame_data->draw_callback).Run();
+
+  if (frame_data->presented_callback) {
+    std::move(frame_data->presented_callback)
+        .Run(base::TimeTicks(), base::TimeDelta(), 0);
+  }
 }
 
 void Surface::ClearCopyRequests() {

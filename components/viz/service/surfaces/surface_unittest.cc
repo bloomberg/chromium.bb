@@ -13,6 +13,7 @@
 #include "components/viz/test/begin_frame_args_test.h"
 #include "components/viz/test/compositor_frame_helpers.h"
 #include "components/viz/test/fake_external_begin_frame_source.h"
+#include "components/viz/test/mock_compositor_frame_sink_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -22,6 +23,57 @@ namespace {
 constexpr FrameSinkId kArbitraryFrameSinkId(1, 1);
 constexpr bool kIsRoot = true;
 constexpr bool kNeedsSyncPoints = true;
+
+TEST(SurfaceTest, PresentationCallback) {
+  const gfx::Size kSurfaceSize(300, 300);
+  const LocalSurfaceId local_surface_id(6, base::UnguessableToken::Create());
+  const SurfaceId surface_id(kArbitraryFrameSinkId, local_surface_id);
+
+  FrameSinkManagerImpl frame_sink_manager;
+  MockCompositorFrameSinkClient client;
+  auto support = CompositorFrameSinkSupport::Create(
+      &client, &frame_sink_manager, kArbitraryFrameSinkId, kIsRoot,
+      kNeedsSyncPoints);
+  {
+    CompositorFrame frame = test::MakeCompositorFrame(kSurfaceSize);
+    frame.metadata.presentation_token = 1;
+    EXPECT_CALL(client, DidReceiveCompositorFrameAck(testing::_)).Times(1);
+    support->SubmitCompositorFrame(local_surface_id, std::move(frame));
+  }
+
+  {
+    // Replaces previous frame. The previous frame with token 1 will be
+    // discarded.
+    CompositorFrame frame = test::MakeCompositorFrame(kSurfaceSize);
+    frame.metadata.presentation_token = 2;
+    EXPECT_CALL(client, DidDiscardCompositorFrame(1)).Times(1);
+    EXPECT_CALL(client, DidReceiveCompositorFrameAck(testing::_)).Times(1);
+    support->SubmitCompositorFrame(local_surface_id, std::move(frame));
+  }
+
+  {
+    // Submits a frame with token 3 and different size. This frame with token 3
+    // will be discarded immediately.
+    CompositorFrame frame = test::MakeCompositorFrame(gfx::Size(400, 400));
+    frame.metadata.presentation_token = 3;
+    EXPECT_CALL(client, DidDiscardCompositorFrame(3)).Times(1);
+    support->SubmitCompositorFrame(local_surface_id, std::move(frame));
+  }
+
+  {
+    // Submits a frame with token 4 and different scale factor, this frame with
+    // token 4 will be discarded immediately.
+    CompositorFrame frame = test::MakeCompositorFrame(kSurfaceSize);
+    frame.metadata.device_scale_factor = 2;
+    frame.metadata.presentation_token = 4;
+    EXPECT_CALL(client, DidDiscardCompositorFrame(4)).Times(1);
+    support->SubmitCompositorFrame(local_surface_id, std::move(frame));
+  }
+
+  // The frame with token 2 will be discarded when the surface is destroyed.
+  EXPECT_CALL(client, DidDiscardCompositorFrame(2)).Times(1);
+  support->EvictCurrentSurface();
+}
 
 TEST(SurfaceTest, SurfaceLifetime) {
   FrameSinkManagerImpl frame_sink_manager(
