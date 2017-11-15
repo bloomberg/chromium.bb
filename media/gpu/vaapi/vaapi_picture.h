@@ -17,6 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
 #include "media/gpu/gpu_video_decode_accelerator_helpers.h"
+#include "media/gpu/media_gpu_export.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
@@ -26,7 +27,7 @@ class VASurface;
 class VaapiWrapper;
 
 // Picture is native pixmap abstraction (X11/Ozone).
-class VaapiPicture {
+class MEDIA_GPU_EXPORT VaapiPicture {
  public:
   // Create a VaapiPicture of |size| to be associated with |picture_buffer_id|.
   // If provided, bind it to |texture_id|, as well as to |client_texture_id|
