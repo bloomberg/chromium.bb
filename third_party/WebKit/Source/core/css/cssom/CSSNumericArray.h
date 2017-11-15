@@ -21,14 +21,10 @@ class CORE_EXPORT CSSNumericArray final : public ScriptWrappable {
   }
   static CSSNumericArray* FromNumberishes(
       const HeapVector<CSSNumberish>& values) {
-    CSSNumericValueVector result;
-    for (const CSSNumberish& value : values) {
-      result.push_back(CSSNumericValue::FromNumberish(value));
-    }
-    return new CSSNumericArray(result);
+    return new CSSNumericArray(CSSNumberishesToNumericValues(values));
   }
 
-  void Trace(Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) {
     visitor->Trace(values_);
     ScriptWrappable::Trace(visitor);
   }

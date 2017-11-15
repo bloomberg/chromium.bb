@@ -27,6 +27,22 @@ class CORE_EXPORT CSSMathVariadic : public CSSMathValue {
   CSSMathVariadic(CSSNumericArray* values, const CSSNumericValueType& type)
       : CSSMathValue(type), values_(values) {}
 
+  template <class BinaryTypeOperation>
+  static CSSNumericValueType TypeCheck(const CSSNumericValueVector& values,
+                                       BinaryTypeOperation op,
+                                       bool& error) {
+    error = false;
+
+    CSSNumericValueType final_type = values.front()->Type();
+    for (size_t i = 1; i < values.size(); i++) {
+      final_type = op(final_type, values[i]->Type(), error);
+      if (error)
+        return final_type;
+    }
+
+    return final_type;
+  }
+
  private:
   Member<CSSNumericArray> values_;
 };

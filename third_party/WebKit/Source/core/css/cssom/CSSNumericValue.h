@@ -64,10 +64,14 @@ class CORE_EXPORT CSSNumericValue : public CSSStyleValue {
 
   CSSNumericValue(const CSSNumericValueType& type) : type_(type) {}
 
+ private:
   CSSNumericValueType type_;
 };
 
 using CSSNumericValueVector = HeapVector<Member<CSSNumericValue>>;
+
+CSSNumericValueVector CSSNumberishesToNumericValues(
+    const HeapVector<CSSNumberish>&);
 
 }  // namespace blink
 
