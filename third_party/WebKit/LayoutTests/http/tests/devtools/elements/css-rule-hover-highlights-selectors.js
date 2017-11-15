@@ -1,32 +1,47 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/elements-test.js"></script>
-<style>
-.border {
-    border: 1px solid black;
-}
-</style>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function requestAnimationFramePromise()
-{
-    return new Promise(fulfill => requestAnimationFrame(fulfill));
-}
+(async function() {
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
+      <style>
+      .border {
+          border: 1px solid black;
+      }
+      </style>
+      <div class="border">1st</div>
+      <div id="inspected" class="border">2nd</div>
+      <div class="border">3rd</div>
+      <template id="dom-template">
+          <style>
+          .bck {
+              border: 1px solid black;
+          }
+          </style>
+          <div class="bck">1st</div>
+          <div class="bck">2nd</div>
+          <div class="bck">3rd</div>
+          <div class="bck">4th</div>
+          <div class="bck" id="fifth">5th</div>
+      </template>
+    `);
+  await TestRunner.evaluateInPagePromise(`
+      function requestAnimationFramePromise()
+      {
+          return new Promise(fulfill => requestAnimationFrame(fulfill));
+      }
 
-function buildShadowDOM()
-{
-    var host = document.querySelector("body");
-    var root = host.createShadowRoot();
-    var template = document.querySelector("#dom-template");
-    var clone = document.importNode(template.content, true);
-    root.appendChild(clone);
-    var second = root.querySelector("#fifth");
-    second.id = "inspected-shadow";
-    runTest();
-}
+      var host = document.querySelector("body");
+      var root = host.createShadowRoot();
+      var template = document.querySelector("#dom-template");
+      var clone = document.importNode(template.content, true);
+      root.appendChild(clone);
+      var second = root.querySelector("#fifth");
+      second.id = "inspected-shadow";
+  `);
 
-function test() {
   TestRunner.runTestSuite([
     function setupProxyOverlay(next) {
       TestRunner.evaluateFunctionInOverlay(drawHighlightProxy, next);
@@ -98,30 +113,4 @@ function test() {
   function resetHighlightCount(next) {
     TestRunner.evaluateFunctionInOverlay(reportHighlights, next);
   }
-}
-
-</script>
-</head>
-
-<body onload="buildShadowDOM()">
-<p>
-Tests that long-hovering over StylesSidebar matched rule selector highlights
-matching nodes in the page.
-</p>
-<div class="border">1st</div>
-<div id="inspected" class="border">2nd</div>
-<div class="border">3rd</div>
-<template id="dom-template">
-    <style>
-    .bck {
-        border: 1px solid black;
-    }
-    </style>
-    <div class="bck">1st</div>
-    <div class="bck">2nd</div>
-    <div class="bck">3rd</div>
-    <div class="bck">4th</div>
-    <div class="bck" id="fifth">5th</div>
-</template>
-</body>
-</html>
+})();

@@ -1,22 +1,31 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/elements-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function setAttribute(namespace, name, value)
-{
-    var node = document.getElementById("node");
-    node.setAttributeNS(namespace, name, value);
-}
+(async function() {
+  TestRunner.addResult(
+      `Tests that elements panel updates dom tree structure upon changing the attribute with namespace.\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
+      <svg>
+          <a id="node" xlink:href="http://localhost">link</a>
+      </svg>
+    `);
+  await TestRunner.evaluateInPagePromise(`
+      function setAttribute(namespace, name, value)
+      {
+          var node = document.getElementById("node");
+          node.setAttributeNS(namespace, name, value);
+      }
 
-function removeAttribute(name)
-{
-    var node = document.getElementById("node");
-    node.removeAttribute(name);
-}
+      function removeAttribute(name)
+      {
+          var node = document.getElementById("node");
+          node.removeAttribute(name);
+      }
+  `);
 
-function test() {
   var targetNode;
 
   TestRunner.runTestSuite([
@@ -52,14 +61,4 @@ function test() {
       TestRunner.evaluateInPage('removeAttribute(\'xlink:href\')');
     },
   ]);
-}
-
-</script>
-</head>
-<body onload="runTest()">
-<p>Tests that elements panel updates dom tree structure upon changing the attribute with namespace.</p>
-<svg>
-    <a id="node" xlink:href="http://localhost">link</a>
-</svg>
-</body>
-</html>
+})();

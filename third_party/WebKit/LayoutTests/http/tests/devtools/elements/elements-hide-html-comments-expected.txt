@@ -1,12 +1,13 @@
 Verifies show/hide HTML comments setting.
+
 HTML comments shown:
   <!-- comment 1 -->
 - <html>
     + <head>…</head>
       <!-- comment 2 -->
-    - <body onload="runTest()">
+    - <body>
         - <p>
-              "\nVerifies show/hide HTML comments setting.\n"
+              "\n      Verifies show/hide HTML comments setting.\n      "
               <span id="inspect"></span>
               <!-- comment 3 -->
           </p>
@@ -16,7 +17,7 @@ HTML comments shown:
 HTML comments hidden:
 - <html>
     + <head>…</head>
-    - <body onload="runTest()">
+    - <body>
         + <p>…</p>
       </body>
   </html>

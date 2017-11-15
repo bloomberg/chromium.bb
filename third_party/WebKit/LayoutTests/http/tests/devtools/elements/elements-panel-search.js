@@ -1,24 +1,54 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<html id="documentElement">
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script>
-function initializeShadowDOM()
-{
-    var shadow = document.querySelector('#shadow-host').createShadowRoot();
-    var template = document.querySelector('#shadow-dom-template');
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-    // Avoid matching this function
-    shadow.appendChild(template.content.cloneNode(true));
+(async function() {
+  TestRunner.addResult(`Tests that elements panel search is returning proper results.\n`);
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
+      <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+      <html id="documentElement">
+      <head><base href=${TestRunner.url()}></head>
+      <body>
+      <div>FooBar</div>
+      <input value="InputVal">
+      <div attr="foo"></div>
+      <div id="terminator"></div>
+      <div class="divclass"><span>Found by selector</span></div>
+      <span class="foo koo"></span>
+      <span class="CASELESS"></span>
+      <span data-camel="insenstive"></span>
+      <div id="shadow-host">
+          <div id="shadow-host-content"></div>
+      </div>
+      <template id="shadow-dom-template">
+        <div id="shadow-dom-outer">
+            <content></content>
+        </div>
 
-    var uaShadow = internals.createUserAgentShadowRoot(
-        document.querySelector('#ua-shadow-host'));
-    var uaShadowContent = document.createElement('div');
-    uaShadowContent.id = 'ua-shadow-' + 'content';
-    uaShadow.appendChild(uaShadowContent);
-}
+      </template>
+      <textarea></textarea>
+      <div id="ua-shadow-host"></div>
+      </body>
+      </html>
+    `);
+  await TestRunner.evaluateInPagePromise(`
+      function initializeShadowDOM()
+      {
+          var shadow = document.querySelector('#shadow-host').createShadowRoot();
+          var template = document.querySelector('#shadow-dom-template');
 
-function test() {
+          // Avoid matching this function
+          shadow.appendChild(template.content.cloneNode(true));
+
+          var uaShadow = internals.createUserAgentShadowRoot(
+              document.querySelector('#ua-shadow-host'));
+          var uaShadowContent = document.createElement('div');
+          uaShadowContent.id = 'ua-shadow-' + 'content';
+          uaShadow.appendChild(uaShadowContent);
+      }
+  `);
+
   var omitInnerHTML;
 
   async function searchCallback(next, resultCount) {
@@ -259,34 +289,4 @@ function test() {
           .then(searchCallback.bind(this, next));
     },
   ]);
-}
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests that elements panel search is returning proper results.
-</p>
-
-<div>FooBar</div>
-<input value="InputVal">
-<div attr="foo"></div>
-<div id="terminator"></div>
-<div class="divclass"><span>Found by selector</span></div>
-<span class="foo koo"></span>
-<span class="CASELESS"></span>
-<span data-camel="insenstive"></span>
-<div id="shadow-host">
-    <div id="shadow-host-content"></div>
-</div>
-<template id="shadow-dom-template">
-  <div id="shadow-dom-outer">
-      <content></content>
-  </div>
-</div>
-</template>
-<textarea></textarea>
-<div id="ua-shadow-host"></div>
-
-</body>
-</html>
+})();
