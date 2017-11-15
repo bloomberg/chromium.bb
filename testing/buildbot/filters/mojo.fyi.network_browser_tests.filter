@@ -40,17 +40,12 @@
 -ContentFaviconDriverTest.ReloadBypassingCache
 -ContentScriptApiTests/ContentScriptApiTest.CannotScriptTheNewTabPage/0
 -ContentScriptApiTests/ContentScriptApiTest.CannotScriptTheNewTabPage/1
--ContentScriptApiTests/ContentScriptApiTest.ContentScriptBlockingScriptsDontRunTwice/0
--ContentScriptApiTests/ContentScriptApiTest.ContentScriptBlockingScriptsDontRunTwice/1
 -ContentScriptApiTests/ContentScriptApiTest.ContentScriptDuplicateScriptInjection/0
 -ContentScriptApiTests/ContentScriptApiTest.ContentScriptDuplicateScriptInjection/1
--ContentScriptApiTests/ContentScriptApiTest.ContentScriptExtensionAPIs/0
 -ContentScriptApiTests/ContentScriptApiTest.ContentScriptExtensionAPIs/1
 -ContentVerifierTest.DotSlashPaths
 -ContentVerifierTest.FailOnDone
 -ContentVerifierTest.FailOnRead
--CookiePolicyBrowserTest.AllowFirstPartyCookies
--CookiePolicyBrowserTest.AllowFirstPartyCookiesRedirect
 -CredentialManagerBrowserTest.CreatePublicKeyCredentialAlgorithmNotSupported
 -CredentialManagerBrowserTest.CreatePublicKeyCredentialNotImplemented
 -CredentialManagerBrowserTest.MojoConnectionRecreatedAfterNavigation
@@ -240,7 +235,6 @@
 -ProcessManagementTest.ProcessOverflow
 -ProcessManagerBrowserTest.ExtensionProcessReuse
 -ProcessManagerBrowserTest.NestedURLNavigationsToExtensionAllowed
--ProcessMemoryMetricsEmitterTest.FetchAndEmitMetricsWithExtensions
 -ProcessMemoryMetricsEmitterTest.FetchAndEmitMetricsWithExtensionsAndHostReuse
 -ProfileWindowBrowserTest.GuestClearsCookies
 -ProxySettingsApiTest.ProxyEventsInvalidProxy
@@ -475,10 +469,8 @@
 -CommonNameMismatchBrowserTest.CheckWWWSubdomainMismatchInverse
 -CommonNameMismatchBrowserTest.ShouldShowWWWSubdomainMismatchInterstitial
 -ContentSettingsTest.AllowCookiesForASessionUsingExceptions
--ContentSettingsTest.AllowCookiesUsingExceptions
 -ContentSettingsTest.BasicCookies
 -ContentSettingsTest.BasicCookiesHttps
--ContentSettingsTest.BlockCookiesUsingExceptions
 -ContentSettingsTest.RedirectCrossOrigin
 -ContentSettingsTest.RedirectLoopCookies
 -ContinueWhereILeftOffTest.CookiesClearedOnBrowserClose
@@ -541,7 +533,6 @@
 -ErrorPageTest.IFrameDNSError_JavaScript
 -ErrorPageTest.SniffSmallHttpErrorResponseAsDownload
 -ErrorPageTest.StaleCacheStatus
--FastUnloadTest.UnloadHidden
 -LoadImageBrowserTest.LoadImage
 -LoadTimingBrowserTest.Basic
 -LoadTimingBrowserTest.EverythingAtOnce
@@ -686,9 +677,6 @@
 # crbug.com/778860 SecurityStyleExplanations::info_explanations is empty.
 -BrowserTestNonsecureURLRequest.DidChangeVisibleSecurityStateObserverObsoleteTLSSettings
 
-# crbug.com/779153 DCHECK(browser->IsActive()) fails at GetAppMenuButton().
--IncognitoWindowTrackerBrowserTest.ShowPromo
-
 # crbug.com/779160 BrowserView::GetBrowserViewForBrowser(browser())->tabstrip()->new_tab_button()->new_tab_promo() is nullptr.
 -NewTabTrackerBrowserTest.TestShowPromo
 
@@ -788,11 +776,9 @@
 -ExtensionWebRequestApiTest.DeclarativeSendMessage
 -ExtensionWebRequestApiTest.ExtensionRequests
 -ExtensionWebRequestApiTest.HostedAppRequest
--ExtensionWebRequestApiTest.IncognitoSplitModeReload
 -ExtensionWebRequestApiTest.MinimumAccessInitiator
 -ExtensionWebRequestApiTest.PostData1
 -ExtensionWebRequestApiTest.PostData2
--ExtensionWebRequestApiTest.WebRequestApi
 -ExtensionWebRequestApiTest.WebRequestBlocking
 -ExtensionWebRequestApiTest.WebRequestClientsGoogleComProtection
 -ExtensionWebRequestApiTest.WebRequestComplex
@@ -805,13 +791,10 @@
 -ExtensionWebRequestApiTest.WebRequestDiceHeaderProtection
 -ExtensionWebRequestApiTest.WebRequestNewTab
 -ExtensionWebRequestApiTest.WebRequestSimple
--ExtensionWebRequestApiTest.WebRequestTestOSDD
 -ExtensionWebRequestApiTest.WebRequestTypes
 -ExtensionWebRequestApiTest.WebRequestUnloadImmediately
 -ExtensionWebRequestApiTest.WebRequestURLFetcherInterception
 -ExtensionWebRequestApiTest.WebRequestWithWithheldPermissions
--ExtensionWebRequestApiTest.WebSocketRequest
--ExtensionApiTestWithManagementPolicy.WebRequestProtectedByPolicy
 -NativeBindingsApiTest.WebRequest
 -WebViewTests/WebViewTest.Shim_TestDeclarativeWebRequestAPI/0
 -WebViewTests/WebViewTest.Shim_TestDeclarativeWebRequestAPI/1
@@ -821,12 +804,8 @@
 -WebViewTests/WebViewTest.Shim_TestDeclarativeWebRequestAPISendMessageSecondWebView/1
 -WebViewTests/WebViewTest.Shim_TestWebRequestAPI/0
 -WebViewTests/WebViewTest.Shim_TestWebRequestAPI/1
--WebViewTests/WebViewTest.Shim_TestWebRequestAPIAddListener/0
--WebViewTests/WebViewTest.Shim_TestWebRequestAPIAddListener/1
 -WebViewTests/WebViewTest.Shim_TestWebRequestAPIErrorOccurred/0
 -WebViewTests/WebViewTest.Shim_TestWebRequestAPIErrorOccurred/1
--WebViewTests/WebViewTest.Shim_TestWebRequestAPIExistence/0
--WebViewTests/WebViewTest.Shim_TestWebRequestAPIExistence/1
 -WebViewTests/WebViewTest.Shim_TestWebRequestAPIGoogleProperty/0
 -WebViewTests/WebViewTest.Shim_TestWebRequestAPIGoogleProperty/1
 -WebViewTests/WebViewTest.Shim_TestWebRequestAPIOnlyForInstance/0
@@ -835,8 +814,6 @@
 -WebViewTests/WebViewTest.Shim_TestWebRequestAPIWithHeaders/1
 -WebViewTests/WebViewTest.Shim_TestWebRequestListenerSurvivesReparenting/0
 -WebViewTests/WebViewTest.Shim_TestWebRequestListenerSurvivesReparenting/1
--WebViewTests/WebViewTest.Shim_WebViewWebRequestRegistryHasNoCache/0
--WebViewTests/WebViewTest.Shim_WebViewWebRequestRegistryHasNoCache/1
 
 # http://crbug.com/705114
 # Remove streams concept from code and replace with data pipe passing.
