@@ -35,7 +35,8 @@ Polymer({
   properties: {
     /** Strings provided by host */
     takePhotoLabel: String,
-    switchModeLabel: String,
+    switchModeToCameraLabel: String,
+    switchModeToVideoLabel: String,
 
     /** True if video mode is enabled. */
     videoModeEnabled: {
@@ -272,6 +273,15 @@ Polymer({
     /** Convert image sequence to animated PNG. */
     return CrPngBehavior.convertImageSequenceToPng(
         forwardBackwardImageSequence);
+  },
+
+  /**
+   * Returns the label to use for switch mode button.
+   * @return {string}
+   * @private
+   */
+  getSwitchModeLabel_: function(videomode, cameraLabel, videoLabel) {
+    return videomode ? cameraLabel : videoLabel;
   },
 });
 
