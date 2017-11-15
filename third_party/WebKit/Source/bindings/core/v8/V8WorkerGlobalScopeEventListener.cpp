@@ -39,7 +39,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/probe/CoreProbes.h"
-#include "core/workers/WorkerGlobalScope.h"
+#include "core/workers/WorkerOrWorkletGlobalScope.h"
 #include "platform/bindings/V8DOMWrapper.h"
 
 namespace blink {
@@ -53,7 +53,8 @@ void V8WorkerGlobalScopeEventListener::HandleEvent(ScriptState* script_state,
                                                    Event* event) {
   v8::Local<v8::Context> context = script_state->GetContext();
   WorkerOrWorkletScriptController* script =
-      ToWorkerGlobalScope(ToExecutionContext(context))->ScriptController();
+      ToWorkerOrWorkletGlobalScope(ToExecutionContext(context))
+          ->ScriptController();
   if (!script)
     return;
 
