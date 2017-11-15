@@ -20,6 +20,7 @@ media_subcomponent_deps = [
 
   # TODO(crbug.com/583067): These files should not be in //media/base.
   "//media/base/android",
+  "//media/capabilities",
   "//media/cdm",
   "//media/device_monitors",
   "//media/filters",

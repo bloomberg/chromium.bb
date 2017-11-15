@@ -13,8 +13,8 @@
 #include "components/leveldb_proto/testing/fake_db.h"
 #include "media/base/test_data_util.h"
 #include "media/base/video_codecs.h"
-#include "media/mojo/services/video_decode_stats.pb.h"
-#include "media/mojo/services/video_decode_stats_db_impl.h"
+#include "media/capabilities/video_decode_stats.pb.h"
+#include "media/capabilities/video_decode_stats_db_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
@@ -94,7 +94,8 @@ TEST_F(VideoDecodeStatsDBImplTest, ReadExpectingNothing) {
   EXPECT_CALL(*this, OnInitialize(true));
   fake_db_->InitCallback(true);
 
-  VideoDescKey key(VP9PROFILE_PROFILE3, gfx::Size(1024, 768), 60);
+  VideoDescKey key = VideoDescKey::MakeBucketedKey(VP9PROFILE_PROFILE3,
+                                                   gfx::Size(1024, 768), 60);
 
   // Database is empty. Expect null entry.
   EXPECT_CALL(*this, MockGetDecodeStatsCb(true, nullptr));
@@ -109,7 +110,8 @@ TEST_F(VideoDecodeStatsDBImplTest, WriteReadAndDestroy) {
   EXPECT_CALL(*this, OnInitialize(true));
   fake_db_->InitCallback(true);
 
-  VideoDescKey key(VP9PROFILE_PROFILE3, gfx::Size(1024, 768), 60);
+  VideoDescKey key = VideoDescKey::MakeBucketedKey(VP9PROFILE_PROFILE3,
+                                                   gfx::Size(1024, 768), 60);
   VideoDecodeStatsDB::DecodeStatsEntry entry(1000, 2, 10);
 
   EXPECT_CALL(*this, MockAppendDecodeStatsCb(true));
@@ -169,7 +171,8 @@ TEST_F(VideoDecodeStatsDBImplTest, FailedWrite) {
   EXPECT_CALL(*this, OnInitialize(true));
   fake_db_->InitCallback(true);
 
-  VideoDescKey key(VP9PROFILE_PROFILE3, gfx::Size(1024, 768), 60);
+  VideoDescKey key = VideoDescKey::MakeBucketedKey(VP9PROFILE_PROFILE3,
+                                                   gfx::Size(1024, 768), 60);
   VideoDecodeStatsDB::DecodeStatsEntry entry(1000, 2, 10);
 
   // Expect the callback to indicate success = false when the write fails.

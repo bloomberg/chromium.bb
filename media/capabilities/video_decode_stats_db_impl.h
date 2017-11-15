@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_MOJO_SERVICES_VIDEO_DECODE_STATS_DB_IMPL_H_
-#define MEDIA_MOJO_SERVICES_VIDEO_DECODE_STATS_DB_IMPL_H_
+#ifndef MEDIA_CAPABILITIES_VIDEO_DECODE_STATS_DB_IMPL_H_
+#define MEDIA_CAPABILITIES_VIDEO_DECODE_STATS_DB_IMPL_H_
 
 #include <memory>
 
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "components/leveldb_proto/proto_database.h"
+#include "media/base/media_export.h"
 #include "media/base/video_codecs.h"
-#include "media/mojo/services/media_mojo_export.h"
-#include "media/mojo/services/video_decode_stats_db.h"
+#include "media/capabilities/video_decode_stats_db.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace base {
@@ -24,7 +24,7 @@ namespace media {
 class DecodeStatsProto;
 
 // Factory interface to create a DB instance.
-class MEDIA_MOJO_EXPORT VideoDecodeStatsDBImplFactory
+class MEDIA_EXPORT VideoDecodeStatsDBImplFactory
     : public VideoDecodeStatsDBFactory {
  public:
   explicit VideoDecodeStatsDBImplFactory(base::FilePath db_dir);
@@ -40,7 +40,7 @@ class MEDIA_MOJO_EXPORT VideoDecodeStatsDBImplFactory
 // LevelDB implementation of VideoDecodeStatsDB. This class is not
 // thread safe. All API calls should happen on the same sequence used for
 // construction. API callbacks will also occur on this sequence.
-class MEDIA_MOJO_EXPORT VideoDecodeStatsDBImpl : public VideoDecodeStatsDB {
+class MEDIA_EXPORT VideoDecodeStatsDBImpl : public VideoDecodeStatsDB {
  public:
   // Constructs the database. NOTE: must call Initialize() before using.
   // |db| injects the level_db database instance for storing capabilities info.
@@ -124,4 +124,4 @@ class MEDIA_MOJO_EXPORT VideoDecodeStatsDBImpl : public VideoDecodeStatsDB {
 
 }  // namespace media
 
-#endif  // MEDIA_MOJO_SERVICES_VIDEO_DECODE_STATS_DB_IMPL_H_
+#endif  // MEDIA_CAPABILITIES_VIDEO_DECODE_STATS_DB_IMPL_H_

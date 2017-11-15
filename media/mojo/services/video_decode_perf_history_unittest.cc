@@ -10,8 +10,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/test/scoped_task_environment.h"
+#include "media/capabilities/video_decode_stats_db.h"
 #include "media/mojo/services/video_decode_perf_history.h"
-#include "media/mojo/services/video_decode_stats_db.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

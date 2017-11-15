@@ -90,7 +90,9 @@ void VideoDecodePerfHistory::GetPerfInfo(VideoCodecProfile profile,
     return;
   }
 
-  VideoDecodeStatsDB::VideoDescKey video_key(profile, natural_size, frame_rate);
+  VideoDecodeStatsDB::VideoDescKey video_key =
+      VideoDecodeStatsDB::VideoDescKey::MakeBucketedKey(profile, natural_size,
+                                                        frame_rate);
 
   db_->GetDecodeStats(
       video_key, base::BindOnce(&VideoDecodePerfHistory::OnGotStatsForRequest,
@@ -182,7 +184,9 @@ void VideoDecodePerfHistory::SavePerfRecord(
     return;
   }
 
-  VideoDecodeStatsDB::VideoDescKey video_key(profile, natural_size, frame_rate);
+  VideoDecodeStatsDB::VideoDescKey video_key =
+      VideoDecodeStatsDB::VideoDescKey::MakeBucketedKey(profile, natural_size,
+                                                        frame_rate);
   VideoDecodeStatsDB::DecodeStatsEntry new_stats(
       frames_decoded, frames_dropped, frames_decoded_power_efficient);
 

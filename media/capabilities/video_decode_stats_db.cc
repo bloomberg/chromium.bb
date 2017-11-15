@@ -2,9 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/mojo/services/video_decode_stats_db.h"
+#include "media/capabilities/video_decode_stats_db.h"
+
+#include "media/capabilities/bucket_utility.h"
 
 namespace media {
+
+// static
+VideoDecodeStatsDB::VideoDescKey
+VideoDecodeStatsDB::VideoDescKey::MakeBucketedKey(
+    VideoCodecProfile codec_profile,
+    const gfx::Size& size,
+    int frame_rate) {
+  // Bucket size and framerate to prevent an explosion of one-off values in the
+  // database and add basic guards against fingerprinting.
+  return VideoDescKey(codec_profile, GetSizeBucket(size),
+                      GetFpsBucket(frame_rate));
+}
 
 VideoDecodeStatsDB::VideoDescKey::VideoDescKey(VideoCodecProfile codec_profile,
                                                const gfx::Size& size,
