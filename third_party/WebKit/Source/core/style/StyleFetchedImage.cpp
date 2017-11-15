@@ -128,8 +128,7 @@ scoped_refptr<Image> StyleFetchedImage::GetImage(
     const ImageResourceObserver&,
     const Document&,
     const ComputedStyle& style,
-    const IntSize& container_size,
-    const LayoutSize* logical_size) const {
+    const IntSize& container_size) const {
   Image* image = image_->GetImage();
   if (!image->IsSVGImage())
     return image;

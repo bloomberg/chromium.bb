@@ -23,13 +23,13 @@ namespace blink {
 
 namespace {
 
-IntSize GetSpecifiedSize(const LayoutSize* size, float zoom) {
+FloatSize GetSpecifiedSize(const IntSize& size, float zoom) {
   float un_zoom_factor = 1 / zoom;
-  auto un_zoom_fn = [un_zoom_factor](float a) -> int {
-    return round(a * un_zoom_factor);
+  auto un_zoom_fn = [un_zoom_factor](float a) -> float {
+    return a * un_zoom_factor;
   };
-  return IntSize(un_zoom_fn(size->Width().ToFloat()),
-                 un_zoom_fn(size->Height().ToFloat()));
+  return FloatSize(un_zoom_fn(static_cast<float>(size.Width())),
+                   un_zoom_fn(static_cast<float>(size.Height())));
 }
 
 }  // namespace
@@ -71,16 +71,14 @@ CSSPaintDefinition::~CSSPaintDefinition() {}
 scoped_refptr<Image> CSSPaintDefinition::Paint(
     const ImageResourceObserver& client,
     const IntSize& container_size,
-    const CSSStyleValueVector* paint_arguments,
-    const LayoutSize* logical_size) {
+    const CSSStyleValueVector* paint_arguments) {
   DCHECK(paint_arguments);
-  DCHECK(logical_size);
 
   // TODO: Break dependency on LayoutObject. Passing the Node should work.
   const LayoutObject& layout_object = static_cast<const LayoutObject&>(client);
 
   float zoom = layout_object.StyleRef().EffectiveZoom();
-  const IntSize specified_size = GetSpecifiedSize(logical_size, zoom);
+  const FloatSize specified_size = GetSpecifiedSize(container_size, zoom);
 
   ScriptState::Scope scope(script_state_.get());
 
@@ -134,7 +132,7 @@ scoped_refptr<Image> CSSPaintDefinition::Paint(
   }
 
   return PaintGeneratedImage::Create(
-      rendering_context->GetImageBuffer()->GetRecord(), specified_size);
+      rendering_context->GetImageBuffer()->GetRecord(), container_size);
 }
 
 void CSSPaintDefinition::MaybeCreatePaintInstance() {

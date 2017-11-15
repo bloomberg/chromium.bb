@@ -147,9 +147,9 @@ std::unique_ptr<Shape> ShapeOutsideInfo::CreateShapeForImage(
           ? ToLayoutImage(layout_box_).ReplacedContentRect()
           : LayoutRect(LayoutPoint(), image_size);
 
-  scoped_refptr<Image> image = style_image->GetImage(
-      layout_box_, layout_box_.GetDocument(), layout_box_.StyleRef(),
-      FlooredIntSize(image_size), nullptr);
+  scoped_refptr<Image> image =
+      style_image->GetImage(layout_box_, layout_box_.GetDocument(),
+                            layout_box_.StyleRef(), FlooredIntSize(image_size));
 
   return Shape::CreateRasterShape(image.get(), shape_image_threshold,
                                   image_rect, margin_rect, writing_mode,

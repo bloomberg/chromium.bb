@@ -6,7 +6,7 @@
 #define PaintSize_h
 
 #include "platform/bindings/ScriptWrappable.h"
-#include "platform/geometry/IntSize.h"
+#include "platform/geometry/FloatSize.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -16,16 +16,16 @@ class PaintSize : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static PaintSize* Create(IntSize size) { return new PaintSize(size); }
+  static PaintSize* Create(FloatSize size) { return new PaintSize(size); }
   virtual ~PaintSize() {}
 
-  int width() const { return size_.Width(); }
-  int height() const { return size_.Height(); }
+  float width() const { return size_.Width(); }
+  float height() const { return size_.Height(); }
 
  private:
-  explicit PaintSize(IntSize size) : size_(size) {}
+  explicit PaintSize(FloatSize size) : size_(size) {}
 
-  IntSize size_;
+  FloatSize size_;
 };
 
 }  // namespace blink

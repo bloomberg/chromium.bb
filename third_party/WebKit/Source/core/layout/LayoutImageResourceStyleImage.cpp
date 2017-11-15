@@ -64,10 +64,8 @@ scoped_refptr<Image> LayoutImageResourceStyleImage::GetImage(
   // don't assert but gracefully exit.
   if (style_image_->IsPendingImage())
     return nullptr;
-  LayoutSize logical_size(size);
   return style_image_->GetImage(*layout_object_, layout_object_->GetDocument(),
-                                layout_object_->StyleRef(), size,
-                                &logical_size);
+                                layout_object_->StyleRef(), size);
 }
 
 LayoutSize LayoutImageResourceStyleImage::ImageSize(float multiplier) const {
