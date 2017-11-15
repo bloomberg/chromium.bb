@@ -283,7 +283,6 @@ public abstract class AppHooks {
      *
      * @param intent The {@link Intent} to fire to start the service.
      */
-    @SuppressWarnings("Unused")
     public void startForegroundService(Intent intent) {
         // TODO(crbug.com/758280): Remove this whole method once the downstream override is gone and
         // all overrides have been ported over.

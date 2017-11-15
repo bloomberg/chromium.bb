@@ -54,14 +54,6 @@ def ColorJavacOutput(output):
   return '\n'.join(map(ApplyColor, output.split('\n')))
 
 
-ERRORPRONE_OPTIONS = [
-  # These crash on lots of targets.
-  '-Xep:ParameterPackage:OFF',
-  '-Xep:OverridesGuiceInjectableMethod:OFF',
-  '-Xep:OverridesJavaxInjectableMethod:OFF',
-]
-
-
 def _FilterJavaFiles(paths, filters):
   return [f for f in paths
           if not filters or build_utils.MatchesGlob(f, filters)]
@@ -434,10 +426,9 @@ def main(argv):
 
   if options.use_errorprone_path:
     javac_path = options.use_errorprone_path
-    javac_cmd = [javac_path] + ERRORPRONE_OPTIONS
   else:
     javac_path = distutils.spawn.find_executable('javac')
-    javac_cmd = [javac_path]
+  javac_cmd = [javac_path]
 
   javac_cmd.extend((
       '-g',
