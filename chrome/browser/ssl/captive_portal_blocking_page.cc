@@ -79,6 +79,8 @@ CaptivePortalBlockingPage::CaptivePortalBlockingPage(
           request_url,
           base::MakeUnique<ChromeControllerClient>(
               web_contents,
+              ssl_info,
+              request_url,
               CreateMetricsHelper(web_contents, request_url))),
       login_url_(login_url),
       ssl_info_(ssl_info),

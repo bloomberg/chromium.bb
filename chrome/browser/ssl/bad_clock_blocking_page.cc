@@ -74,6 +74,8 @@ BadClockBlockingPage::BadClockBlockingPage(
           request_url,
           base::MakeUnique<ChromeControllerClient>(
               web_contents,
+              ssl_info,
+              request_url,
               CreateMetricsHelper(web_contents, request_url))),
       callback_(callback),
       ssl_info_(ssl_info),

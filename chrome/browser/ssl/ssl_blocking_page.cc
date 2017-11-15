@@ -182,6 +182,8 @@ SSLBlockingPage::SSLBlockingPage(
           web_contents,
           request_url,
           base::MakeUnique<ChromeControllerClient>(web_contents,
+                                                   ssl_info,
+                                                   request_url,
                                                    std::move(metrics_helper))),
       callback_(callback),
       ssl_info_(ssl_info),
