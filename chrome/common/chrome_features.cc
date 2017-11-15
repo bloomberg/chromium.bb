@@ -209,24 +209,10 @@ const base::Feature kExperimentalKeyboardLockUI{
     "ExperimentalKeyboardLockUI", base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if BUILDFLAG(ENABLE_VR)
-// Controls whether browsing in VR headsets is enabled.
-const base::Feature kVrBrowsing {
-  "VrBrowsing",
-#if defined(OS_ANDROID)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
+// Enables features related to VR browsing that are under development.
+const base::Feature kExperimentalVRFeatures{"ExperimentalVRFeatures",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
-};
-
-// Controls features related to VR browsing that are under development.
-const base::Feature kVrBrowsingExperimentalFeatures{
-    "VrBrowsingExperimentalFeatures", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Controls experimental rendering features for VR browsing.
-const base::Feature kVrBrowsingExperimentalRendering{
-    "VrBrowsingExperimentalRendering", base::FEATURE_DISABLED_BY_DEFAULT};
-#endif  // BUILDFLAG(ENABLE_VR)
 
 #if defined(OS_WIN)
 // Enables using GDI to print text as simply text.
@@ -537,6 +523,20 @@ const base::Feature kUseGoogleLocalNtp{"UseGoogleLocalNtp",
 const base::Feature kVoiceSearchOnLocalNtp{"VoiceSearchOnLocalNtp",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
+
+// Enables VR UI.
+const base::Feature kVrShell {
+  "VrShell",
+#if defined(OS_ANDROID)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
+
+// Turns on experimental rendering features for VR browsing.
+const base::Feature kVrShellExperimentalRendering{
+    "VrShellExperimentalRendering", base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if defined(OS_CHROMEOS)
 // Enables or disables the opt-in IME menu in the language settings page.

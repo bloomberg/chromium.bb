@@ -108,11 +108,8 @@ extern const base::Feature kExpectCTReporting;
 extern const base::Feature kExperimentalAppBanners;
 extern const base::Feature kExperimentalKeyboardLockUI;
 
-// TODO(crbug.com/731802): Use #if BUILDFLAG(ENABLE_VR_BROWSING) instead.
 #if BUILDFLAG(ENABLE_VR)
-extern const base::Feature kVrBrowsing;
-extern const base::Feature kVrBrowsingExperimentalFeatures;
-extern const base::Feature kVrBrowsingExperimentalRendering;
+extern const base::Feature kExperimentalVRFeatures;
 #endif
 
 #if defined(OS_MACOSX)
@@ -277,6 +274,9 @@ extern const base::Feature kUseGoogleLocalNtp;
 #if !defined(OS_ANDROID)
 extern const base::Feature kVoiceSearchOnLocalNtp;
 #endif
+
+extern const base::Feature kVrShell;
+extern const base::Feature kVrShellExperimentalRendering;
 
 #if defined(OS_CHROMEOS)
 extern const base::Feature kOptInImeMenu;

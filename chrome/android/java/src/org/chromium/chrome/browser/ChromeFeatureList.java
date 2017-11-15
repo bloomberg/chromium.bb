@@ -225,16 +225,16 @@ public abstract class ChromeFeatureList {
     public static final String TAB_REPARENTING = "TabReparenting";
     public static final String TRUSTED_WEB_ACTIVITY = "TrustedWebActivity";
     public static final String VIDEO_PERSISTENCE = "VideoPersistence";
-    public static final String VR_BROWSING = "VrBrowsing";
     public static final String VR_BROWSING_FEEDBACK = "VrBrowsingFeedback";
-    public static final String VR_BROWSING_IN_CUSTOM_TAB = "VrBrowsingInCustomTab";
-    public static final String VR_LAUNCH_INTENT = "VrLaunchIntents";
+    public static final String VR_CUSTOM_TAB_BROWSING = "VrCustomTabBrowsing";
+    public static final String VR_LAUNCH_INTENT = "VrLaunchIntent";
+    public static final String VR_SHELL = "VrShell";
     public static final String WEB_PAYMENTS = "WebPayments";
     public static final String WEB_PAYMENTS_METHOD_SECTION_ORDER_V2 =
             "WebPaymentsMethodSectionOrderV2";
     public static final String WEB_PAYMENTS_MODIFIERS = "WebPaymentsModifiers";
     public static final String WEB_PAYMENTS_SINGLE_APP_UI_SKIP = "WebPaymentsSingleAppUiSkip";
-    public static final String WEBVR_AUTOPRESENT_FROM_INTENT = "WebVrAutopresentFromIntent";
+    public static final String WEBVR_AUTOPRESENT = "WebVrAutopresent";
     public static final String WEBVR_CARDBOARD_SUPPORT = "WebVRCardboardSupport";
 
     private static native boolean nativeIsInitialized();
