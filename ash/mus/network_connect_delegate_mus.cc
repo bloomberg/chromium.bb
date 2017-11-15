@@ -9,7 +9,6 @@
 #include "base/logging.h"
 
 namespace ash {
-namespace mus {
 
 NetworkConnectDelegateMus::NetworkConnectDelegateMus() {}
 
@@ -52,5 +51,4 @@ void NetworkConnectDelegateMus::ShowMobileActivationError(
   LOG(ERROR) << "Mobile Activation Error For: " << network_id;
 }
 
-}  // namespace mus
 }  // namespace ash

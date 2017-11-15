@@ -22,7 +22,6 @@ enum class WindowType;
 }
 
 namespace ash {
-namespace mus {
 
 class WindowManager;
 
@@ -33,7 +32,6 @@ aura::Window* CreateAndParentTopLevelWindow(
     ui::mojom::WindowType window_type,
     std::map<std::string, std::vector<uint8_t>>* properties);
 
-}  // namespace mus
 }  // namespace ash
 
 #endif  // ASH_MUS_TOP_LEVEL_WINDOW_FACTORY_H_

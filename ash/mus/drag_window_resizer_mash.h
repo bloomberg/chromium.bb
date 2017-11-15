@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_MUS_DRAG_WINDOW_RESIZER_H_
-#define ASH_MUS_DRAG_WINDOW_RESIZER_H_
+#ifndef ASH_MUS_DRAG_WINDOW_RESIZER_MASH_H_
+#define ASH_MUS_DRAG_WINDOW_RESIZER_MASH_H_
 
 #include <memory>
 
@@ -11,15 +11,14 @@
 #include "base/macros.h"
 
 namespace ash {
-namespace mus {
 
 // DragWindowResizer is a decorator of WindowResizer and adds the ability to
 // drag windows across displays.
-class DragWindowResizer : public WindowResizer {
+class DragWindowResizerMash : public WindowResizer {
  public:
-  DragWindowResizer(std::unique_ptr<WindowResizer> next_window_resizer,
-                    wm::WindowState* window_state);
-  ~DragWindowResizer() override;
+  DragWindowResizerMash(std::unique_ptr<WindowResizer> next_window_resizer,
+                        wm::WindowState* window_state);
+  ~DragWindowResizerMash() override;
 
   // WindowResizer:
   void Drag(const gfx::Point& location, int event_flags) override;
@@ -29,10 +28,9 @@ class DragWindowResizer : public WindowResizer {
  private:
   std::unique_ptr<WindowResizer> next_window_resizer_;
 
-  DISALLOW_COPY_AND_ASSIGN(DragWindowResizer);
+  DISALLOW_COPY_AND_ASSIGN(DragWindowResizerMash);
 };
 
-}  // namespace mus
 }  // namespace ash
 
-#endif  // ASH_MUS_DRAG_WINDOW_RESIZER_H_
+#endif  // ASH_MUS_DRAG_WINDOW_RESIZER_MASH_H_

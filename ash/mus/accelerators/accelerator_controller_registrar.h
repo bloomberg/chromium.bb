@@ -18,11 +18,8 @@
 
 namespace ash {
 
-class AcceleratorRouter;
-
-namespace mus {
-
 class AcceleratorControllerRegistrarTestApi;
+class AcceleratorRouter;
 class WindowManager;
 
 // Responsible for registering accelerators created by AcceleratorController
@@ -117,7 +114,6 @@ class AcceleratorControllerRegistrar : public AcceleratorHandler,
   DISALLOW_COPY_AND_ASSIGN(AcceleratorControllerRegistrar);
 };
 
-}  // namespace mus
 }  // namespace ash
 
 #endif  // ASH_MUS_ACCELERATORS_ACCELERATOR_CONTROLLER_REGISTRAR_H_

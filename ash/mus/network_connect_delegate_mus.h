@@ -9,7 +9,6 @@
 #include "chromeos/network/network_connect.h"
 
 namespace ash {
-namespace mus {
 
 // Routes requests to show network config UI over the mojom::SystemTrayClient
 // interface.
@@ -33,7 +32,6 @@ class NetworkConnectDelegateMus : public chromeos::NetworkConnect::Delegate {
   DISALLOW_COPY_AND_ASSIGN(NetworkConnectDelegateMus);
 };
 
-}  // namespace mus
 }  // namespace ash
 
 #endif  // ASH_MUS_NETWORK_CONNECT_DELEGATE_MUS_H_

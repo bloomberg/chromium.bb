@@ -40,9 +40,6 @@ class AuraInit;
 
 namespace ash {
 class AshTestHelper;
-
-namespace mus {
-
 class NetworkConnectDelegateMus;
 class WindowManager;
 
@@ -108,7 +105,6 @@ class WindowManagerService : public service_manager::Service {
   DISALLOW_COPY_AND_ASSIGN(WindowManagerService);
 };
 
-}  // namespace mus
 }  // namespace ash
 
 #endif  // ASH_MUS_WINDOW_MANAGER_SERVICE_H_

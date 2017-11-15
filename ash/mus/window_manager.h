@@ -44,13 +44,11 @@ class WMState;
 }
 
 namespace ash {
+class AcceleratorHandler;
 class AshTestHelper;
-enum class Config;
 class WaylandServerController;
 
-namespace mus {
-
-class AcceleratorHandler;
+enum class Config;
 
 // WindowManager serves as the WindowManagerDelegate and
 // WindowTreeClientDelegate for mash. WindowManager takes ownership of
@@ -212,7 +210,6 @@ class WindowManager : public aura::WindowManagerDelegate,
   DISALLOW_COPY_AND_ASSIGN(WindowManager);
 };
 
-}  // namespace mus
 }  // namespace ash
 
 #endif  // ASH_MUS_WINDOW_MANAGER_H_

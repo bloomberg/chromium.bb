@@ -15,7 +15,6 @@
 // window_manager_unittest.cc is only run in Config::MASH.
 
 namespace ash {
-namespace mus {
 
 using WindowManagerCommonTest = AshTestBase;
 
@@ -45,5 +44,4 @@ TEST_F(WindowManagerCommonTest, Focus) {
                                          aura::WindowTreeChangeType::FOCUS));
 }
 
-}  // namespace mus
 }  // namespace ash

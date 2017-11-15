@@ -22,9 +22,6 @@ class AcceleratorControllerDelegateClassic;
 class DisplaySynchronizer;
 class PointerWatcherAdapterClassic;
 class RootWindowController;
-
-namespace mus {
-
 class WindowManager;
 
 // ShellPort implementation for mus (and parts of mash). See ash/README.md.
@@ -101,7 +98,6 @@ class ShellPortMus : public ShellPort {
   DISALLOW_COPY_AND_ASSIGN(ShellPortMus);
 };
 
-}  // namespace mus
 }  // namespace ash
 
 #endif  // ASH_MUS_SHELL_PORT_MUS_H_

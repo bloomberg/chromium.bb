@@ -35,7 +35,6 @@
 #include "ui/views/mus/aura_init.h"
 
 namespace ash {
-namespace mus {
 
 WindowManagerService::WindowManagerService(
     bool show_primary_host_on_connect,
@@ -159,5 +158,4 @@ void WindowManagerService::OnBindInterface(
   registry_.BindInterface(interface_name, std::move(interface_pipe));
 }
 
-}  // namespace mus
 }  // namespace ash

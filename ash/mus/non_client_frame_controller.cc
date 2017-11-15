@@ -40,10 +40,9 @@
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
-DECLARE_UI_CLASS_PROPERTY_TYPE(ash::mus::NonClientFrameController*);
+DECLARE_UI_CLASS_PROPERTY_TYPE(ash::NonClientFrameController*);
 
 namespace ash {
-namespace mus {
 namespace {
 
 DEFINE_UI_CLASS_PROPERTY_KEY(NonClientFrameController*,
@@ -451,5 +450,4 @@ void NonClientFrameController::OnTransientChildWindowRemoved(
     renderer->Detach();
 }
 
-}  // namespace mus
 }  // namespace ash

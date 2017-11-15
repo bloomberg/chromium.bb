@@ -21,7 +21,6 @@
 #include "ui/base/accelerators/accelerator_history.h"
 
 namespace ash {
-namespace mus {
 namespace {
 
 // Callback from registering the accelerators.
@@ -221,5 +220,4 @@ bool AcceleratorControllerRegistrar::HandleWindowCycleAccelerator(
   return false;
 }
 
-}  // namespace mus
 }  // namespace ash

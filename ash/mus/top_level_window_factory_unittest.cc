@@ -32,7 +32,7 @@ int64_t GetDisplayId(aura::Window* window) {
   return display::Screen::GetScreen()->GetDisplayNearestWindow(window).id();
 }
 
-aura::Window* CreateFullscreenTestWindow(mus::WindowManager* window_manager,
+aura::Window* CreateFullscreenTestWindow(WindowManager* window_manager,
                                          int64_t display_id) {
   std::map<std::string, std::vector<uint8_t>> properties;
   properties[ui::mojom::WindowManager::kShowState_Property] =
@@ -43,7 +43,7 @@ aura::Window* CreateFullscreenTestWindow(mus::WindowManager* window_manager,
     properties[ui::mojom::WindowManager::kDisplayId_InitProperty] =
         mojo::ConvertTo<std::vector<uint8_t>>(display_id);
   }
-  aura::Window* window = mus::CreateAndParentTopLevelWindow(
+  aura::Window* window = CreateAndParentTopLevelWindow(
       window_manager, ui::mojom::WindowType::WINDOW, &properties);
   window->Show();
   return window;
@@ -66,7 +66,7 @@ TEST_F(TopLevelWindowFactoryWmTest, IsWindowShownInCorrectDisplay) {
   UpdateDisplay("400x400,400x400");
   EXPECT_NE(GetPrimaryDisplay().id(), GetSecondaryDisplay().id());
 
-  mus::WindowManager* window_manager =
+  WindowManager* window_manager =
       ash_test_helper()->window_manager_service()->window_manager();
 
   std::unique_ptr<aura::Window> window_primary_display(
@@ -84,7 +84,7 @@ using TopLevelWindowFactoryAshTest = AshTestBase;
 
 TEST_F(TopLevelWindowFactoryAshTest, TopLevelNotShownOnCreate) {
   std::map<std::string, std::vector<uint8_t>> properties;
-  std::unique_ptr<aura::Window> window(mus::CreateAndParentTopLevelWindow(
+  std::unique_ptr<aura::Window> window(CreateAndParentTopLevelWindow(
       ash_test_helper()->window_manager_service()->window_manager(),
       ui::mojom::WindowType::WINDOW, &properties));
   ASSERT_TRUE(window);
@@ -102,7 +102,7 @@ TEST_F(TopLevelWindowFactoryAshTest, CreateTopLevelWindow) {
               ui::mojom::kResizeBehaviorCanResize |
               ui::mojom::kResizeBehaviorCanMaximize |
               ui::mojom::kResizeBehaviorCanMinimize));
-  mus::WindowManager* window_manager =
+  WindowManager* window_manager =
       ash_test_helper()->window_manager_service()->window_manager();
   // |window| is owned by its parent.
   aura::Window* window = CreateAndParentTopLevelWindow(

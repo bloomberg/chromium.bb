@@ -9,7 +9,6 @@
 #include "base/macros.h"
 
 namespace ash {
-namespace mus {
 
 class ImmersiveHandlerFactoryMus : public ImmersiveHandlerFactory {
  public:
@@ -26,7 +25,6 @@ class ImmersiveHandlerFactoryMus : public ImmersiveHandlerFactory {
   DISALLOW_COPY_AND_ASSIGN(ImmersiveHandlerFactoryMus);
 };
 
-}  // namespace mus
 }  // namespace ash
 
 #endif  // ASH_MUS_BRIDGE_IMMERSIVE_HANDLER_FACTORY_MUS_H_

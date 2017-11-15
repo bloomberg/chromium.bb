@@ -48,13 +48,13 @@ void CreateClassicShell() {
   ash::Shell::CreateInstance(shell_init_params);
 }
 
-std::unique_ptr<ash::mus::WindowManager> CreateMusShell() {
+std::unique_ptr<ash::WindowManager> CreateMusShell() {
   service_manager::Connector* connector =
       content::ServiceManagerConnection::GetForProcess()->GetConnector();
   const bool show_primary_host_on_connect = true;
-  std::unique_ptr<ash::mus::WindowManager> window_manager =
-      base::MakeUnique<ash::mus::WindowManager>(connector, ash::Config::MUS,
-                                                show_primary_host_on_connect);
+  std::unique_ptr<ash::WindowManager> window_manager =
+      base::MakeUnique<ash::WindowManager>(connector, ash::Config::MUS,
+                                           show_primary_host_on_connect);
   // The WindowManager normally deletes the Shell when it loses its connection
   // to mus. Disable that by installing an empty callback. Chrome installs
   // its own callback to detect when the connection to mus is lost and that is

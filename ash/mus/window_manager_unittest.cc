@@ -38,7 +38,6 @@
 #include "ui/wm/core/wm_state.h"
 
 namespace ash {
-namespace mus {
 
 class WindowTreeClientDelegate : public aura::WindowTreeClientDelegate {
  public:
@@ -165,5 +164,4 @@ TEST_F(WindowManagerTest, CanConsumeSystemKeysFromContentBrowser) {
   EXPECT_EQ(true, window->GetProperty(kCanConsumeSystemKeysKey));
 }
 
-}  // namespace mus
 }  // namespace ash

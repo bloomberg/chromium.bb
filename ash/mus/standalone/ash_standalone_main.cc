@@ -38,7 +38,7 @@ class ShellInit : public shell::ShellDelegateImpl, public ShellObserver {
       : input_device_client_(std::make_unique<ui::InputDeviceClient>()) {}
   ~ShellInit() override = default;
 
-  void set_window_manager_service(mus::WindowManagerService* service) {
+  void set_window_manager_service(WindowManagerService* service) {
     window_manager_service_ = service;
   }
 
@@ -84,7 +84,7 @@ class ShellInit : public shell::ShellDelegateImpl, public ShellObserver {
   std::unique_ptr<shell::ExampleSessionControllerClient>
       example_session_controller_client_;
   std::unique_ptr<ui::InputDeviceClient> input_device_client_;
-  mus::WindowManagerService* window_manager_service_ = nullptr;
+  WindowManagerService* window_manager_service_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ShellInit);
 };
@@ -98,10 +98,10 @@ MojoResult ServiceMain(MojoHandle service_request_handle) {
   std::unique_ptr<ash::ShellInit> shell_init_ptr =
       std::make_unique<ash::ShellInit>();
   ash::ShellInit* shell_init = shell_init_ptr.get();
-  ash::mus::WindowManagerService* window_manager_service =
-      new ash::mus::WindowManagerService(show_primary_host_on_connect,
-                                         ash::Config::MUS,
-                                         std::move(shell_init_ptr));
+  ash::WindowManagerService* window_manager_service =
+      new ash::WindowManagerService(show_primary_host_on_connect,
+                                    ash::Config::MUS,
+                                    std::move(shell_init_ptr));
   shell_init->set_window_manager_service(window_manager_service);
   service_manager::ServiceRunner runner(window_manager_service);
   return runner.Run(service_request_handle);

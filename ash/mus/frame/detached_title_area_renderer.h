@@ -20,8 +20,6 @@ class Window;
 
 namespace ash {
 
-namespace mus {
-
 class WindowManager;
 
 // DetachedTitleAreaRenderer contains a HeaderView in a widget. It's intended to
@@ -90,7 +88,6 @@ class DetachedTitleAreaRendererForClient : public views::WidgetDelegate {
   DISALLOW_COPY_AND_ASSIGN(DetachedTitleAreaRendererForClient);
 };
 
-}  // namespace mus
 }  // namespace ash
 
 #endif  // ASH_MUS_FRAME_DETACHED_TITLE_AREA_RENDERER_H_
