@@ -18,7 +18,7 @@ TypeConverter<device::mojom::VRPosePtr, vr::TrackedDevicePose_t>::Convert(
     const vr::TrackedDevicePose_t& hmd_pose) {
   device::mojom::VRPosePtr pose = device::mojom::VRPose::New();
   pose->orientation = std::vector<float>({0.0f, 0.0f, 0.0f, 1.0f});
-  pose->position = std::vector<float>({0.0f, 0.0f, 0.0f, 1.0f});
+  pose->position = std::vector<float>({0.0f, 0.0f, 0.0f});
 
   if (hmd_pose.bPoseIsValid && hmd_pose.bDeviceIsConnected) {
     const float(&m)[3][4] = hmd_pose.mDeviceToAbsoluteTracking.m;

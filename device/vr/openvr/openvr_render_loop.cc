@@ -70,6 +70,10 @@ void OpenVRRenderLoop::SubmitFrameWithTextureHandle(
       return;
     }
     vr_compositor_->PostPresentHandoff();
+
+    // Tell WebVR that we are done with the texture.
+    submit_client_->OnSubmitFrameTransferred();
+    submit_client_->OnSubmitFrameRendered();
   }
 #endif
 }
@@ -88,6 +92,7 @@ void OpenVRRenderLoop::UpdateLayerBounds(int16_t frame_id,
 };
 
 void OpenVRRenderLoop::RequestPresent(
+    mojom::VRSubmitFrameClientPtrInfo submit_client_info,
     mojom::VRPresentationProviderRequest request,
     base::Callback<void(bool)> callback) {
 #if defined(OS_WIN)
@@ -96,6 +101,7 @@ void OpenVRRenderLoop::RequestPresent(
     return;
   }
 #endif
+  submit_client_.Bind(std::move(submit_client_info));
 
   binding_.Close();
   binding_.Bind(std::move(request));

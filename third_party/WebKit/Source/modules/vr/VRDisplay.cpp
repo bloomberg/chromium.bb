@@ -4,6 +4,7 @@
 
 #include "modules/vr/VRDisplay.h"
 
+#include "build/build_config.h"
 #include "core/css/CSSPropertyValueSet.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/FrameRequestCallbackCollection.h"
@@ -30,7 +31,9 @@
 #include "modules/vr/VRPose.h"
 #include "modules/vr/VRStageParameters.h"
 #include "modules/webgl/WebGLRenderingContextBase.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 #include "platform/Histogram.h"
+#include "platform/graphics/GpuMemoryBufferImageCopy.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/wtf/AutoReset.h"
 #include "platform/wtf/Time.h"
@@ -506,17 +509,9 @@ ScriptPromise VRDisplay::exitPresent(ScriptState* script_state) {
 void VRDisplay::BeginPresent() {
   Document* doc = this->GetDocument();
   if (capabilities_->hasExternalDisplay()) {
-    ForceExitPresent();
-    DOMException* exception = DOMException::Create(
-        kInvalidStateError,
-        "VR Presentation not implemented for this VRDisplay.");
-    while (!pending_present_resolvers_.IsEmpty()) {
-      ScriptPromiseResolver* resolver = pending_present_resolvers_.TakeFirst();
-      resolver->Reject(exception);
-    }
-    ReportPresentationResult(
-        PresentationResult::kPresentationNotSupportedByDisplay);
-    return;
+    // Presenting with external displays has to make a copy of the image
+    // since the canvas may still be visible at the same time.
+    present_image_needs_copy_ = true;
   } else {
     if (layer_.source().IsHTMLCanvasElement()) {
       // TODO(klausw,crbug.com/698923): suppress compositor updates
@@ -708,49 +703,73 @@ void VRDisplay::submitFrame() {
     }
   }
 
-  // The AcceleratedStaticBitmapImage must be kept alive until the
-  // mailbox is used via createAndConsumeTextureCHROMIUM, the mailbox
-  // itself does not keep it alive. We must keep a reference to the
-  // image until the mailbox was consumed.
-  StaticBitmapImage* static_image =
-      static_cast<StaticBitmapImage*>(image_ref.get());
-  TRACE_EVENT_BEGIN0("gpu", "VRDisplay::EnsureMailbox");
-  static_image->EnsureMailbox(kVerifiedSyncToken);
-  TRACE_EVENT_END0("gpu", "VRDisplay::EnsureMailbox");
+  if (present_image_needs_copy_) {
+#if defined(OS_WIN)
+    TRACE_EVENT0("gpu", "VRDisplay::CopyImage");
+    if (!frame_copier_) {
+      frame_copier_ = std::make_unique<GpuMemoryBufferImageCopy>(context_gl_);
+    }
+    auto gpu_memory_buffer = frame_copier_->CopyImage(image_ref.get());
+    DrawingBuffer::Client* client =
+        static_cast<DrawingBuffer::Client*>(rendering_context_.Get());
+    client->DrawingBufferClientRestoreTexture2DBinding();
+    client->DrawingBufferClientRestoreFramebufferBinding();
+    client->DrawingBufferClientRestoreRenderbufferBinding();
 
-  // Save a reference to the image to keep it alive until next frame,
-  // where we'll wait for the transfer to finish before overwriting
-  // it.
-  previous_image_ = std::move(image_ref);
+    // We decompose the cloned handle, and use it to create a mojo::ScopedHandle
+    // which will own cleanup of the handle, and will be passed over IPC.
+    gfx::GpuMemoryBufferHandle gpu_handle =
+        CloneHandleForIPC(gpu_memory_buffer->GetHandle());
+    vr_presentation_provider_->SubmitFrameWithTextureHandle(
+        vr_frame_id_, mojo::WrapPlatformFile(gpu_handle.handle.GetHandle()));
+#else
+    NOTIMPLEMENTED();
+#endif
+  } else {
+    // The AcceleratedStaticBitmapImage must be kept alive until the
+    // mailbox is used via createAndConsumeTextureCHROMIUM, the mailbox
+    // itself does not keep it alive. We must keep a reference to the
+    // image until the mailbox was consumed.
+    StaticBitmapImage* static_image =
+        static_cast<StaticBitmapImage*>(image_ref.get());
+    TRACE_EVENT_BEGIN0("gpu", "VRDisplay::EnsureMailbox");
+    static_image->EnsureMailbox(kVerifiedSyncToken);
+    TRACE_EVENT_END0("gpu", "VRDisplay::EnsureMailbox");
 
-  // Create mailbox and sync token for transfer.
-  TRACE_EVENT_BEGIN0("gpu", "VRDisplay::GetMailbox");
-  auto mailbox = static_image->GetMailbox();
-  TRACE_EVENT_END0("gpu", "VRDisplay::GetMailbox");
-  auto sync_token = static_image->GetSyncToken();
+    // Save a reference to the image to keep it alive until next frame,
+    // where we'll wait for the transfer to finish before overwriting
+    // it.
+    previous_image_ = std::move(image_ref);
 
-  // Wait for the previous render to finish, to avoid losing frames in the
-  // Android Surface / GLConsumer pair. TODO(klausw): make this tunable?
-  // Other devices may have different preferences. Do this step as late
-  // as possible before SubmitFrame to ensure we can do as much work as
-  // possible in parallel with the previous frame's rendering.
-  {
-    TRACE_EVENT0("gpu", "waitForPreviousRenderToFinish");
-    while (pending_previous_frame_render_) {
-      if (!submit_frame_client_binding_.WaitForIncomingMethodCall()) {
-        DLOG(ERROR) << "Failed to receive SubmitFrame response";
-        break;
+    // Wait for the previous render to finish, to avoid losing frames in the
+    // Android Surface / GLConsumer pair. TODO(klausw): make this tunable?
+    // Other devices may have different preferences. Do this step as late
+    // as possible before SubmitFrame to ensure we can do as much work as
+    // possible in parallel with the previous frame's rendering.
+    {
+      TRACE_EVENT0("gpu", "waitForPreviousRenderToFinish");
+      while (pending_previous_frame_render_) {
+        if (!submit_frame_client_binding_.WaitForIncomingMethodCall()) {
+          DLOG(ERROR) << "Failed to receive SubmitFrame response";
+          break;
+        }
       }
     }
+
+    pending_previous_frame_render_ = true;
+    pending_submit_frame_ = true;
+
+    // Create mailbox and sync token for transfer.
+    TRACE_EVENT_BEGIN0("gpu", "VRDisplay::GetMailbox");
+    auto mailbox = static_image->GetMailbox();
+    TRACE_EVENT_END0("gpu", "VRDisplay::GetMailbox");
+    auto sync_token = static_image->GetSyncToken();
+
+    TRACE_EVENT_BEGIN0("gpu", "VRDisplay::SubmitFrame");
+    vr_presentation_provider_->SubmitFrame(
+        vr_frame_id_, gpu::MailboxHolder(mailbox, sync_token, GL_TEXTURE_2D));
+    TRACE_EVENT_END0("gpu", "VRDisplay::SubmitFrame");
   }
-
-  pending_previous_frame_render_ = true;
-  pending_submit_frame_ = true;
-
-  TRACE_EVENT_BEGIN0("gpu", "VRDisplay::SubmitFrame");
-  vr_presentation_provider_->SubmitFrame(
-      vr_frame_id_, gpu::MailboxHolder(mailbox, sync_token, GL_TEXTURE_2D));
-  TRACE_EVENT_END0("gpu", "VRDisplay::SubmitFrame");
 
   did_submit_this_frame_ = true;
   // Reset our frame id, since anything we'd want to do (resizing/etc) can
@@ -780,6 +799,8 @@ Document* VRDisplay::GetDocument() {
 }
 
 void VRDisplay::OnPresentChange() {
+  frame_copier_ = nullptr;
+
   DVLOG(1) << __FUNCTION__ << ": is_presenting_=" << is_presenting_;
   if (is_presenting_ && !is_valid_device_for_presenting_) {
     DVLOG(1) << __FUNCTION__ << ": device not valid, not sending event";

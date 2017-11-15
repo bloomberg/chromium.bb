@@ -30,7 +30,7 @@ bool D3D11TextureHelper::CopyTextureToBackBuffer(bool flipY) {
     return false;
 
   HRESULT hr = render_state_.keyed_mutex_->AcquireSync(1, kAcquireWaitMS);
-  DCHECK(SUCCEEDED(hr) && hr == WAIT_TIMEOUT && hr == WAIT_ABANDONED);
+  DCHECK(SUCCEEDED(hr) && hr != WAIT_TIMEOUT && hr != WAIT_ABANDONED);
   if (FAILED(hr) || hr == WAIT_TIMEOUT || hr == WAIT_ABANDONED) {
     // We failed to acquire the lock.  We'll drop this frame, but subsequent
     // frames won't be affected.

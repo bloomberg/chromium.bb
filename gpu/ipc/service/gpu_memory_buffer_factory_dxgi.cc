@@ -78,7 +78,11 @@ gfx::GpuMemoryBufferHandle GpuMemoryBufferFactoryDXGI::CreateGpuMemoryBuffer(
           nullptr, &texture_handle)))
     return handle;
 
-  handle.handle = base::SharedMemoryHandle(texture_handle, 0,
+  size_t buffer_size;
+  if (!BufferSizeForBufferFormatChecked(size, format, &buffer_size))
+    return handle;
+
+  handle.handle = base::SharedMemoryHandle(texture_handle, buffer_size,
                                            base::UnguessableToken::Create());
   handle.type = gfx::DXGI_SHARED_HANDLE;
   handle.id = id;
