@@ -56,7 +56,7 @@ const char* HistogramNameFromSessionType(SessionEventName name) {
   static constexpr char kWebVr[] = "VRSessionTime.WebVR";
   static constexpr char kBrowser[] = "VRSessionTime.Browser";
   static constexpr char kFullscreen[] = "VRSessionTime.Fullscreen";
-  static constexpr char kVrSessionVideo[] = "VRSessionVideTime";
+  static constexpr char kVrSessionVideo[] = "VRSessionVideoTime";
   static constexpr char kWebVrVideo[] = "VRSessionVideoTime.WebVR";
   static constexpr char kBrowserVideo[] = "VRSessionVideoTime.Browser";
   static constexpr char kFullscreenVideo[] = "VRSessionVideoTime.Fullscreen";
