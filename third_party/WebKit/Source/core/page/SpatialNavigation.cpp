@@ -315,10 +315,19 @@ Node* ScrollableEnclosingBoxOrParentFrameForNodeInDirection(WebFocusType type,
       parent = ToDocument(parent)->GetFrame()->DeprecatedLocalOwner();
     else
       parent = parent->ParentOrShadowHostNode();
-  } while (parent && !CanScrollInDirection(parent, type) &&
-           !parent->IsDocumentNode());
+  } while (parent && !IsNavigableContainer(parent, type));
 
   return parent;
+}
+
+bool IsNavigableContainer(const Node* node, WebFocusType type) {
+  if (!node)
+    return false;
+
+  return node->IsDocumentNode() ||
+         (node->IsFrameOwnerElement() &&
+          ToHTMLFrameOwnerElement(node)->ContentFrame()) ||
+         CanScrollInDirection(node, type);
 }
 
 bool CanScrollInDirection(const Node* container, WebFocusType type) {

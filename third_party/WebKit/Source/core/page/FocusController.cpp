@@ -1360,15 +1360,13 @@ void FocusController::FindFocusCandidateInContainer(
 
   for (; element;
        element =
-           (element->IsFrameOwnerElement() ||
-            CanScrollInDirection(element, type))
+           (IsNavigableContainer(element, type))
                ? ElementTraversal::NextSkippingChildren(*element, &container)
                : ElementTraversal::Next(*element, &container)) {
     if (element == focused_element)
       continue;
 
-    if (!element->IsKeyboardFocusable() && !element->IsFrameOwnerElement() &&
-        !CanScrollInDirection(element, type))
+    if (!element->IsKeyboardFocusable() && !IsNavigableContainer(element, type))
       continue;
 
     FocusCandidate candidate = FocusCandidate(element, type);
@@ -1406,40 +1404,37 @@ bool FocusController::AdvanceFocusDirectionallyInContainer(
     return ScrollInDirection(container, type);
   }
 
-  HTMLFrameOwnerElement* frame_element = FrameOwnerElement(focus_candidate);
-  // If we have an iframe without the src attribute, it will not have a
-  // contentFrame().  We DCHECK here to make sure that
-  // updateFocusCandidateIfNeeded() will never consider such an iframe as a
-  // candidate.
-  DCHECK(!frame_element || frame_element->ContentFrame());
-  if (frame_element && frame_element->ContentFrame()->IsLocalFrame()) {
-    if (focus_candidate.is_offscreen_after_scrolling) {
-      ScrollInDirection(&focus_candidate.visible_node->GetDocument(), type);
+  if (IsNavigableContainer(focus_candidate.visible_node, type)) {
+    HTMLFrameOwnerElement* frame_element = FrameOwnerElement(focus_candidate);
+    if (frame_element && frame_element->ContentFrame()->IsLocalFrame()) {
+      if (focus_candidate.is_offscreen_after_scrolling) {
+        ScrollInDirection(&focus_candidate.visible_node->GetDocument(), type);
+        return true;
+      }
+      // Navigate into a new frame.
+      LayoutRect rect;
+      Element* focused_element =
+          ToLocalFrame(FocusedOrMainFrame())->GetDocument()->FocusedElement();
+      if (focused_element && !HasOffscreenRect(focused_element)) {
+        rect = NodeRectInAbsoluteCoordinates(focused_element,
+                                             true /* ignore border */);
+      }
+      ToLocalFrame(frame_element->ContentFrame())
+          ->GetDocument()
+          ->UpdateStyleAndLayoutIgnorePendingStylesheets();
+      if (!AdvanceFocusDirectionallyInContainer(
+              ToLocalFrame(frame_element->ContentFrame())->GetDocument(), rect,
+              type)) {
+        // The new frame had nothing interesting, need to find another
+        // candidate.
+        return AdvanceFocusDirectionallyInContainer(
+            container,
+            NodeRectInAbsoluteCoordinates(focus_candidate.visible_node, true),
+            type);
+      }
       return true;
     }
-    // Navigate into a new frame.
-    LayoutRect rect;
-    Element* focused_element =
-        ToLocalFrame(FocusedOrMainFrame())->GetDocument()->FocusedElement();
-    if (focused_element && !HasOffscreenRect(focused_element))
-      rect = NodeRectInAbsoluteCoordinates(focused_element,
-                                           true /* ignore border */);
-    ToLocalFrame(frame_element->ContentFrame())
-        ->GetDocument()
-        ->UpdateStyleAndLayoutIgnorePendingStylesheets();
-    if (!AdvanceFocusDirectionallyInContainer(
-            ToLocalFrame(frame_element->ContentFrame())->GetDocument(), rect,
-            type)) {
-      // The new frame had nothing interesting, need to find another candidate.
-      return AdvanceFocusDirectionallyInContainer(
-          container,
-          NodeRectInAbsoluteCoordinates(focus_candidate.visible_node, true),
-          type);
-    }
-    return true;
-  }
 
-  if (CanScrollInDirection(focus_candidate.visible_node, type)) {
     if (focus_candidate.is_offscreen_after_scrolling) {
       ScrollInDirection(focus_candidate.visible_node, type);
       return true;
@@ -1453,6 +1448,7 @@ bool FocusController::AdvanceFocusDirectionallyInContainer(
     return AdvanceFocusDirectionallyInContainer(focus_candidate.visible_node,
                                                 starting_rect, type);
   }
+
   if (focus_candidate.is_offscreen_after_scrolling) {
     Node* container = focus_candidate.enclosing_scrollable_box;
     ScrollInDirection(container, type);
