@@ -94,6 +94,7 @@
     "build14-b1--device5": {
       "benchmarks": [
         "blink_perf.layout",
+        "dromaeo",
         "dromaeo.domcoreattr",
         "oortonline_tbmv2",
         "smoothness.maps",
@@ -274,6 +275,7 @@
     "build74-b1--device5": {
       "benchmarks": [
         "blink_perf.layout",
+        "dromaeo",
         "dromaeo.domcoreattr",
         "oortonline_tbmv2",
         "smoothness.maps",
@@ -452,6 +454,7 @@
     },
     "build165-b1--device5": {
       "benchmarks": [
+        "dromaeo",
         "dromaeo.domcoreattr",
         "oortonline_tbmv2",
         "smoothness.gpu_rasterization.tough_filters_cases",
@@ -634,6 +637,7 @@
     "build16-b1--device5": {
       "benchmarks": [
         "blink_perf.layout",
+        "dromaeo",
         "dromaeo.domcoreattr",
         "oortonline_tbmv2",
         "smoothness.maps",
@@ -812,6 +816,7 @@
     },
     "build113-b1--device5": {
       "benchmarks": [
+        "dromaeo",
         "dromaeo.domcoreattr",
         "oortonline_tbmv2",
         "smoothness.gpu_rasterization.tough_filters_cases",
@@ -946,6 +951,7 @@
     "build10-b1--device5": {
       "benchmarks": [
         "blink_perf.layout",
+        "dromaeo",
         "dromaeo.domcoreattr",
         "oortonline_tbmv2",
         "smoothness.maps",
@@ -1129,6 +1135,7 @@
     "build18-b1--device1": {
       "benchmarks": [
         "battor.trivial_pages",
+        "dromaeo",
         "dromaeo.domcoreattr",
         "media.desktop",
         "memory.long_running_idle_gmail_tbmv2",
@@ -1352,6 +1359,7 @@
     "build248-m4--device5": {
       "benchmarks": [
         "blink_perf.layout",
+        "dromaeo",
         "dromaeo.domcoreattr",
         "oortonline_tbmv2",
         "smoothness.maps",
@@ -1485,6 +1493,7 @@
       "benchmarks": [
         "battor.trivial_pages",
         "blink_perf.layout",
+        "dromaeo",
         "dromaeo.domcoreattr",
         "memory.long_running_idle_gmail_background_tbmv2",
         "rasterize_and_record_micro.top_25",
@@ -1602,6 +1611,7 @@
       "benchmarks": [
         "battor.trivial_pages",
         "blink_perf.layout",
+        "dromaeo",
         "dromaeo.domcoreattr",
         "memory.long_running_idle_gmail_background_tbmv2",
         "rasterize_and_record_micro.top_25",
@@ -1719,6 +1729,7 @@
       "benchmarks": [
         "battor.trivial_pages",
         "blink_perf.layout",
+        "dromaeo",
         "dromaeo.domcoreattr",
         "memory.long_running_idle_gmail_background_tbmv2",
         "rasterize_and_record_micro.top_25",
@@ -1834,6 +1845,7 @@
       "benchmarks": [
         "battor.trivial_pages",
         "blink_perf.layout",
+        "dromaeo",
         "dromaeo.domcoreattr",
         "memory.long_running_idle_gmail_background_tbmv2",
         "rasterize_and_record_micro.top_25",
@@ -1951,6 +1963,7 @@
       "benchmarks": [
         "battor.trivial_pages",
         "blink_perf.layout",
+        "dromaeo",
         "dromaeo.domcoreattr",
         "memory.long_running_idle_gmail_background_tbmv2",
         "rasterize_and_record_micro.top_25",
@@ -2067,6 +2080,7 @@
       "benchmarks": [
         "battor.trivial_pages",
         "blink_perf.layout",
+        "dromaeo",
         "dromaeo.domcoreattr",
         "memory.long_running_idle_gmail_background_tbmv2",
         "rasterize_and_record_micro.top_25",
@@ -2211,6 +2225,7 @@
       "benchmarks": [
         "battor.trivial_pages",
         "blink_perf.layout",
+        "dromaeo",
         "dromaeo.domcoreattr",
         "memory.long_running_idle_gmail_background_tbmv2",
         "rasterize_and_record_micro.top_25",
@@ -2419,6 +2434,7 @@
     "build47-b4": {
       "benchmarks": [
         "blink_perf.css",
+        "dromaeo",
         "dromaeo.domcoreattr",
         "media.desktop",
         "scheduler.tough_scheduling_cases",
@@ -2491,6 +2507,7 @@
       "benchmarks": [
         "battor.trivial_pages",
         "blink_perf.layout",
+        "dromaeo",
         "dromaeo.domcoreattr",
         "memory.long_running_idle_gmail_background_tbmv2",
         "rasterize_and_record_micro.top_25",
@@ -2719,6 +2736,7 @@
     "build220-b4": {
       "benchmarks": [
         "blink_perf.css",
+        "dromaeo",
         "dromaeo.domcoreattr",
         "media.desktop",
         "scheduler.tough_scheduling_cases",
@@ -2792,6 +2810,7 @@
       "benchmarks": [
         "battor.trivial_pages",
         "blink_perf.layout",
+        "dromaeo",
         "dromaeo.domcoreattr",
         "memory.long_running_idle_gmail_background_tbmv2",
         "rasterize_and_record_micro.top_25",
@@ -2906,6 +2925,7 @@
       "benchmarks": [
         "battor.trivial_pages",
         "blink_perf.layout",
+        "dromaeo",
         "dromaeo.domcoreattr",
         "memory.long_running_idle_gmail_background_tbmv2",
         "rasterize_and_record_micro.top_25",
@@ -3023,6 +3043,7 @@
       "benchmarks": [
         "battor.trivial_pages",
         "blink_perf.layout",
+        "dromaeo",
         "dromaeo.domcoreattr",
         "memory.long_running_idle_gmail_background_tbmv2",
         "rasterize_and_record_micro.top_25",
@@ -3139,6 +3160,7 @@
       "benchmarks": [
         "battor.trivial_pages",
         "blink_perf.layout",
+        "dromaeo",
         "dromaeo.domcoreattr",
         "memory.long_running_idle_gmail_background_tbmv2",
         "rasterize_and_record_micro.top_25",
@@ -3255,6 +3277,7 @@
       "benchmarks": [
         "battor.trivial_pages",
         "blink_perf.layout",
+        "dromaeo",
         "dromaeo.domcoreattr",
         "memory.long_running_idle_gmail_background_tbmv2",
         "rasterize_and_record_micro.top_25",
@@ -3370,6 +3393,7 @@
       "benchmarks": [
         "battor.trivial_pages",
         "blink_perf.layout",
+        "dromaeo",
         "dromaeo.domcoreattr",
         "memory.long_running_idle_gmail_background_tbmv2",
         "rasterize_and_record_micro.top_25",
@@ -3487,6 +3511,7 @@
       "benchmarks": [
         "battor.trivial_pages",
         "blink_perf.layout",
+        "dromaeo",
         "dromaeo.domcoreattr",
         "memory.long_running_idle_gmail_background_tbmv2",
         "rasterize_and_record_micro.top_25",
@@ -3568,6 +3593,7 @@
     "blink_perf.parser",
     "blink_perf.shadow_dom",
     "blink_perf.svg",
+    "dromaeo",
     "dromaeo.domcoreattr",
     "dromaeo.domcoremodify",
     "dromaeo.domcorequery",

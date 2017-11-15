@@ -17,6 +17,7 @@ blink_perf.parser,"jbroman@chromium.org, yukishiino@chromium.org, haraken@chromi
 blink_perf.shadow_dom,hayato@chromium.org,
 blink_perf.svg,"kouhei@chromium.org, fs@opera.com",
 cc_perftests,enne@chromium.org,
+dromaeo,"jbroman@chromium.org, yukishiino@chromium.org, haraken@chromium.org",
 dromaeo.domcoreattr,"jbroman@chromium.org, yukishiino@chromium.org, haraken@chromium.org",
 dromaeo.domcoremodify,"jbroman@chromium.org, yukishiino@chromium.org, haraken@chromium.org",
 dromaeo.domcorequery,"jbroman@chromium.org, yukishiino@chromium.org, haraken@chromium.org",
