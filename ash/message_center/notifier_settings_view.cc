@@ -103,7 +103,9 @@ constexpr gfx::Insets kTopLabelPadding(16, 18, 15, 0);
 const int kQuietModeViewSpacing = 18;
 
 constexpr gfx::Insets kHeaderViewPadding(4, 0, 4, 0);
-constexpr gfx::Insets kQuietModeViewPadding(16, 18, 15, 14);
+constexpr gfx::Insets kQuietModeViewPadding(0, 18, 0, 0);
+constexpr gfx::Insets kQuietModeLabelPadding(16, 0, 15, 0);
+constexpr gfx::Insets kQuietModeTogglePadding(0, 14, 0, 14);
 constexpr SkColor kTopLabelColor = SkColorSetRGB(0x42, 0x85, 0xF4);
 constexpr SkColor kLabelColor = SkColorSetARGB(0xDE, 0x0, 0x0, 0x0);
 const int kLabelFontSize = 13;
@@ -435,6 +437,7 @@ NotifierSettingsView::NotifierSettingsView()
   quiet_mode_view->SetLayoutManager(quiet_mode_layout);
 
   quiet_mode_icon_ = new views::ImageView();
+  quiet_mode_icon_->SetBorder(views::CreateEmptyBorder(kQuietModeLabelPadding));
   quiet_mode_view->AddChildView(quiet_mode_icon_);
 
   views::Label* quiet_mode_label = new views::Label(l10n_util::GetStringUTF16(
@@ -446,12 +449,16 @@ NotifierSettingsView::NotifierSettingsView()
           kLabelFontSize, gfx::Font::Weight::NORMAL));
   quiet_mode_label->SetAutoColorReadabilityEnabled(false);
   quiet_mode_label->SetEnabledColor(kLabelColor);
+  quiet_mode_label->SetBorder(views::CreateEmptyBorder(kQuietModeLabelPadding));
   quiet_mode_view->AddChildView(quiet_mode_label);
   quiet_mode_layout->SetFlexForView(quiet_mode_label, 1);
 
   quiet_mode_toggle_ = new views::ToggleButton(this);
   quiet_mode_toggle_->SetAccessibleName(l10n_util::GetStringUTF16(
       IDS_ASH_MESSAGE_CENTER_QUIET_MODE_BUTTON_TOOLTIP));
+  quiet_mode_toggle_->SetBorder(
+      views::CreateEmptyBorder(kQuietModeTogglePadding));
+  quiet_mode_toggle_->EnableCanvasFlippingForRTLUI(true);
   SetQuietModeState(MessageCenter::Get()->IsQuietMode());
   quiet_mode_view->AddChildView(quiet_mode_toggle_);
   header_view_->AddChildView(quiet_mode_view);
