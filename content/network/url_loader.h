@@ -43,8 +43,7 @@ class CONTENT_EXPORT URLLoader : public mojom::URLLoader,
             bool report_raw_headers,
             mojom::URLLoaderClientPtr url_loader_client,
             const net::NetworkTrafficAnnotationTag& traffic_annotation,
-            uint32_t process_id,
-            uint32_t routing_id);
+            uint32_t process_id);
   ~URLLoader() override;
 
   // Called when the associated NetworkContext is going away.
@@ -95,8 +94,9 @@ class CONTENT_EXPORT URLLoader : public mojom::URLLoader,
   NetworkContext* context_;
   int32_t options_;
   ResourceType resource_type_;
+  bool is_load_timing_enabled_;
   uint32_t process_id_;
-  uint32_t routing_id_;
+  uint32_t render_frame_id_;
   bool connected_;
   std::unique_ptr<net::URLRequest> url_request_;
   mojo::Binding<mojom::URLLoader> binding_;

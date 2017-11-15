@@ -40,9 +40,6 @@
 -ContentFaviconDriverTest.ReloadBypassingCache
 -ContentScriptApiTests/ContentScriptApiTest.CannotScriptTheNewTabPage/0
 -ContentScriptApiTests/ContentScriptApiTest.CannotScriptTheNewTabPage/1
--ContentScriptApiTests/ContentScriptApiTest.ContentScriptDuplicateScriptInjection/0
--ContentScriptApiTests/ContentScriptApiTest.ContentScriptDuplicateScriptInjection/1
--ContentScriptApiTests/ContentScriptApiTest.ContentScriptExtensionAPIs/1
 -ContentVerifierTest.DotSlashPaths
 -ContentVerifierTest.FailOnDone
 -ContentVerifierTest.FailOnRead
@@ -77,6 +74,7 @@
 -DicePrepareMigrationBrowserTest.Signout
 -DisabledSignInIsolationBrowserTest.SyntheticTrial
 # DnsProbeBrowserTests that are flaky.
+-DnsProbeBrowserTest.CorrectionsLoadStopped
 -DnsProbeBrowserTest.CorrectionsLoadStoppedSlowProbe
 -DomainReliabilityBrowserTest.Upload
 -DoNotTrackTest.Redirect
@@ -201,7 +199,6 @@
 -ProcessManagementTest.ProcessOverflow
 -ProcessManagerBrowserTest.ExtensionProcessReuse
 -ProcessManagerBrowserTest.NestedURLNavigationsToExtensionAllowed
--ProcessMemoryMetricsEmitterTest.FetchAndEmitMetricsWithExtensionsAndHostReuse
 -ProfileWindowBrowserTest.GuestClearsCookies
 -ProxySettingsApiTest.ProxyEventsInvalidProxy
 -RegisterProtocolHandlerBrowserTest.CustomHandler
@@ -298,14 +295,10 @@
 -SSLUIMITMSoftwareEnabledTest.WrongCertError_NoMITMSoftwareInterstitial
 -SSLUITest.BadCertFollowedByGoodCert
 -SSLUITestCommittedInterstitials.ErrorPage
--SSLUITestCommittedInterstitials.ErrorPage
--SSLUITest.DisplayedContentWithCertErrorsClearedOnNavigation
--SSLUITestIgnoreLocalhostCertErrors.TestNoInterstitialOnLocalhost
 -SSLUITest.TestBadHTTPSDownload
 -SSLUITest.TestHTTPSOCSPOk
 -SSLUITest.TestHTTPSOCSPRevoked
--SSLUITest.TestUnsafeContentsWithUserException
--SSLUITest.TestUnsafeImageWithUserException
+-SSLUITestIgnoreLocalhostCertErrors.TestNoInterstitialOnLocalhost
 -SSLUITestCommitted.ErrorPage/0
 -SSLUITestCommitted.ProceedLinkOverridable/0
 -SSLUITestTransientAndCommitted.InterstitialNotAffectedByHideShow/1
@@ -317,10 +310,6 @@
 -SSLUITestTransientAndCommitted.TestHTTPSExpiredCertGoBackUsingCommand/1
 -SSLUITestTransientAndCommitted.TestHTTPSOCSPRevoked/1
 -SSLUITestTransientAndCommitted.TestHTTPSOCSPRevoked/0
--SSLUIWorkerFetchTest.TestUnsafeContentsInWorkerWithUserException/0
--SSLUIWorkerFetchTest.TestUnsafeContentsInWorkerWithUserException/1
--SSLUIWorkerFetchTest.TestUnsafeContentsInWorkerWithUserException/2
--SSLUIWorkerFetchTest.TestUnsafeContentsInWorkerWithUserException/3
 -SubresourceFilterBrowserTest.FailedProvisionalLoadInMainframe
 -SuperfishSSLUITest.NoSuperfishRecorded
 -SuperfishSSLUITest.SuperfishInterstitial
@@ -590,7 +579,6 @@
 -RestartTest.SessionCookies
 -RestartTest.SessionStorage
 -SSLUITest.MarkBlobAsNonSecure
--SSLUITest.TestWSSInvalidCertAndGoForward
 -SSLUITestHSTS.TestInterstitialOptionsNonOverridable
 
 # crbug.com/778793
@@ -624,9 +612,6 @@
 
 # crbug.com/778860 SecurityStyleExplanations::info_explanations is empty.
 -BrowserTestNonsecureURLRequest.DidChangeVisibleSecurityStateObserverObsoleteTLSSettings
-
-# crbug.com/779160 BrowserView::GetBrowserViewForBrowser(browser())->tabstrip()->new_tab_button()->new_tab_promo() is nullptr.
--NewTabTrackerBrowserTest.TestShowPromo
 
 # crbug.com/779210 NOTREACHED() reached at SaveFileManager::OnSaveURL().
 -SavePageBrowserTest.SavePageBrowserTest_NonMHTML

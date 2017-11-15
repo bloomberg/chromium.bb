@@ -165,7 +165,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
           webui_factory_ptr_.get(),
           GetContentClient()->browser()->CreateURLLoaderThrottles(
               web_contents_getter_),
-          frame_tree_node_id_, 0 /* request_id? */, mojom::kURLLoadOptionNone,
+          0 /* routing_id */, 0 /* request_id? */, mojom::kURLLoadOptionNone,
           *resource_request_, this, kNavigationUrlLoaderTrafficAnnotation);
       return;
     }
@@ -526,11 +526,12 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
       allow_download_(request_info->common_params.allow_download),
       weak_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  int frame_tree_node_id = request_info->frame_tree_node_id;
 
   TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP1(
       "navigation", "Navigation timeToResponseStarted", this,
       request_info->common_params.navigation_start, "FrameTreeNode id",
-      request_info->frame_tree_node_id);
+      frame_tree_node_id);
 
   // TODO(scottmg): Port over stuff from RDHI::BeginNavigationRequest() here.
   auto new_request = std::make_unique<ResourceRequest>();
@@ -539,6 +540,7 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
   new_request->url = request_info->common_params.url;
   new_request->site_for_cookies = request_info->site_for_cookies;
   new_request->priority = net::HIGHEST;
+  new_request->render_frame_id = frame_tree_node_id;
 
   // The code below to set fields like request_initiator, referrer, etc has
   // been copied from ResourceDispatcherHostImpl. We did not refactor the
@@ -567,13 +569,12 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
   new_request->request_body = request_info->common_params.post_data.get();
   new_request->report_raw_headers = request_info->report_raw_headers;
   new_request->allow_download = allow_download_;
+  new_request->enable_load_timing = true;
 
   new_request->fetch_request_mode = network::mojom::FetchRequestMode::kNavigate;
   new_request->fetch_credentials_mode =
       network::mojom::FetchCredentialsMode::kInclude;
   new_request->fetch_redirect_mode = FetchRedirectMode::MANUAL_MODE;
-
-  int frame_tree_node_id = request_info->frame_tree_node_id;
 
   // Check if a web UI scheme wants to handle this request.
   FrameTreeNode* frame_tree_node =
