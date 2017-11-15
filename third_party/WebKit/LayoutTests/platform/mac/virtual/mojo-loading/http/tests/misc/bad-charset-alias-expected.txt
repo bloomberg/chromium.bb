@@ -1,5 +1,0 @@
-Test that iso-8859-1 aliases that aren't known to Firefox and IE aren't supported (we should fall back to parent frame charset).
-
-FAIL: foobar 8859_1 ISO8859_1 8859-1 ISO_2022,locale=ja,version=0 utf 8 utf_8 8859 1 8859*1 8859:1 88591 ISO_88591 ISO-88591 ISO-88-59-1 latin-1
-
-
