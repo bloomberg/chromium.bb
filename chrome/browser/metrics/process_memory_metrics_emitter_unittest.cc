@@ -110,7 +110,8 @@ void PopulateBrowserMetrics(GlobalMemoryDumpPtr& global_dump,
 #endif
   OSMemDumpPtr os_dump =
       GetFakeOSMemDump(metrics_mb["Resident"] * 1024,
-                       metrics_mb["PrivateMemoryFootprint"] * 1024, 0);
+                       metrics_mb["PrivateMemoryFootprint"] * 1024,
+                       metrics_mb["SharedMemoryFootprint"] * 1024);
   pmd->os_dump = std::move(os_dump);
   global_dump->process_dumps.push_back(std::move(pmd));
 }
@@ -123,7 +124,8 @@ base::flat_map<const char*, int64_t> GetExpectedBrowserMetrics() {
 #if !defined(OS_WIN)
             {"Malloc", 20},
 #endif
-            {"PrivateMemoryFootprint", 30}, {"Uptime", 42},
+            {"PrivateMemoryFootprint", 30}, {"SharedMemoryFootprint", 35},
+            {"Uptime", 42},
       },
       base::KEEP_FIRST_OF_DUPES);
 }
@@ -144,7 +146,8 @@ void PopulateRendererMetrics(GlobalMemoryDumpPtr& global_dump,
   pmd->chrome_dump->v8_total_kb = metrics_mb["V8"] * 1024;
   OSMemDumpPtr os_dump =
       GetFakeOSMemDump(metrics_mb["Resident"] * 1024,
-                       metrics_mb["PrivateMemoryFootprint"] * 1024, 0);
+                       metrics_mb["PrivateMemoryFootprint"] * 1024,
+                       metrics_mb["SharedMemoryFootprint"] * 1024);
   pmd->os_dump = std::move(os_dump);
   pmd->pid = pid;
   global_dump->process_dumps.push_back(std::move(pmd));
@@ -158,8 +161,9 @@ base::flat_map<const char*, int64_t> GetExpectedRendererMetrics() {
 #if !defined(OS_WIN)
             {"Malloc", 120},
 #endif
-            {"PrivateMemoryFootprint", 130}, {"PartitionAlloc", 140},
-            {"BlinkGC", 150}, {"V8", 160}, {"NumberOfExtensions", 0}, {
+            {"PrivateMemoryFootprint", 130}, {"SharedMemoryFootprint", 135},
+            {"PartitionAlloc", 140}, {"BlinkGC", 150}, {"V8", 160},
+            {"NumberOfExtensions", 0}, {
           "Uptime", 42
         }
       },
@@ -185,7 +189,8 @@ void PopulateGpuMetrics(GlobalMemoryDumpPtr& global_dump,
       metrics_mb["CommandBuffer"] * 1024;
   OSMemDumpPtr os_dump =
       GetFakeOSMemDump(metrics_mb["Resident"] * 1024,
-                       metrics_mb["PrivateMemoryFootprint"] * 1024, 0);
+                       metrics_mb["PrivateMemoryFootprint"] * 1024,
+                       metrics_mb["SharedMemoryFootprint"] * 1024);
   pmd->os_dump = std::move(os_dump);
   global_dump->process_dumps.push_back(std::move(pmd));
 }
@@ -198,8 +203,8 @@ base::flat_map<const char*, int64_t> GetExpectedGpuMetrics() {
 #if !defined(OS_WIN)
             {"Malloc", 220},
 #endif
-            {"PrivateMemoryFootprint", 230}, {"CommandBuffer", 240},
-            {"Uptime", 42},
+            {"PrivateMemoryFootprint", 230}, {"SharedMemoryFootprint", 235},
+            {"CommandBuffer", 240}, {"Uptime", 42},
       },
       base::KEEP_FIRST_OF_DUPES);
 }
