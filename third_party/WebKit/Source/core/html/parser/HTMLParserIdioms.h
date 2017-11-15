@@ -53,7 +53,7 @@ String SerializeForNumberType(double);
 Decimal ParseToDecimalForNumberType(
     const String&,
     const Decimal& fallback_value = Decimal::Nan());
-double ParseToDoubleForNumberType(
+CORE_EXPORT double ParseToDoubleForNumberType(
     const String&,
     double fallback_value = std::numeric_limits<double>::quiet_NaN());
 

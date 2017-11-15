@@ -10,6 +10,7 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMException.h"
+#include "core/html/parser/HTMLParserIdioms.h"
 #include "modules/media_capabilities/MediaCapabilitiesInfo.h"
 #include "modules/media_capabilities/MediaConfiguration.h"
 #include "modules/media_capabilities/MediaDecodingConfiguration.h"
@@ -31,6 +32,31 @@ constexpr const char* kApplicationMimeTypePrefix = "application/";
 constexpr const char* kAudioMimeTypePrefix = "audio/";
 constexpr const char* kVideoMimeTypePrefix = "video/";
 constexpr const char* kCodecsMimeTypeParam = "codecs";
+
+// Computes the effective framerate value based on the framerate field passed to
+// the VideoConfiguration. It will return the parsed string as a double or
+// compute the value in case of it is of the form "a/b".
+// If the value is not valid, it will return NaN.
+double ComputeFrameRate(const String& fps_str) {
+  double result = ParseToDoubleForNumberType(fps_str);
+  if (std::isfinite(result))
+    return result > 0 ? result : std::numeric_limits<double>::quiet_NaN();
+
+  size_t slash_position = fps_str.find('/');
+  if (slash_position == kNotFound)
+    return std::numeric_limits<double>::quiet_NaN();
+
+  double numerator =
+      ParseToDoubleForNumberType(fps_str.Substring(0, slash_position));
+  double denominator = ParseToDoubleForNumberType(fps_str.Substring(
+      slash_position + 1, fps_str.length() - slash_position - 1));
+  if (std::isfinite(numerator) && std::isfinite(denominator) && numerator > 0 &&
+      denominator > 0) {
+    return numerator / denominator;
+  }
+
+  return std::numeric_limits<double>::quiet_NaN();
+}
 
 bool IsValidMimeType(const String& content_type, const String& prefix) {
   ParsedContentType parsed_content_type(content_type,
@@ -66,10 +92,8 @@ bool IsValidVideoConfiguration(const VideoConfiguration& configuration) {
     return false;
 
   DCHECK(configuration.hasFramerate());
-  if (!std::isfinite(configuration.framerate()) ||
-      configuration.framerate() <= 0) {
+  if (std::isnan(ComputeFrameRate(configuration.framerate())))
     return false;
-  }
 
   return true;
 }
@@ -135,7 +159,9 @@ WebVideoConfiguration ToWebVideoConfiguration(
   web_configuration.bitrate = configuration.bitrate();
 
   DCHECK(configuration.hasFramerate());
-  web_configuration.framerate = configuration.framerate();
+  double computed_framerate = ComputeFrameRate(configuration.framerate());
+  DCHECK(!std::isnan(computed_framerate));
+  web_configuration.framerate = computed_framerate;
 
   return web_configuration;
 }
