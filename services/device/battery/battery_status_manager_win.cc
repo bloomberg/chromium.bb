@@ -130,7 +130,7 @@ class BatteryStatusObserver {
 
   bool CreateMessageWindow() {
     // TODO(timvolodine): consider reusing the message window of PowerMonitor.
-    window_ = base::MakeUnique<base::win::MessageWindow>();
+    window_ = std::make_unique<base::win::MessageWindow>();
     if (!window_->CreateNamed(base::Bind(&BatteryStatusObserver::HandleMessage,
                                          base::Unretained(this)),
                               base::string16(kWindowClassName))) {
@@ -152,7 +152,7 @@ class BatteryStatusObserver {
 class BatteryStatusManagerWin : public BatteryStatusManager {
  public:
   explicit BatteryStatusManagerWin(const BatteryCallback& callback)
-      : battery_observer_(base::MakeUnique<BatteryStatusObserver>(callback)) {}
+      : battery_observer_(std::make_unique<BatteryStatusObserver>(callback)) {}
   ~BatteryStatusManagerWin() override { battery_observer_->Stop(); }
 
  public:
@@ -201,7 +201,7 @@ mojom::BatteryStatus ComputeWebBatteryStatus(
 // static
 std::unique_ptr<BatteryStatusManager> BatteryStatusManager::Create(
     const BatteryStatusService::BatteryUpdateCallback& callback) {
-  return base::MakeUnique<BatteryStatusManagerWin>(callback);
+  return std::make_unique<BatteryStatusManagerWin>(callback);
 }
 
 }  // namespace device

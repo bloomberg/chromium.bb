@@ -57,7 +57,7 @@ bool GetReadingValueForProperty(REFPROPERTYKEY key,
 
 // Ambient light sensor reader initialization parameters.
 std::unique_ptr<ReaderInitParams> CreateAmbientLightReaderInitParams() {
-  auto params = base::MakeUnique<ReaderInitParams>();
+  auto params = std::make_unique<ReaderInitParams>();
   params->sensor_type_id = SENSOR_TYPE_AMBIENT_LIGHT;
   params->reader_func = [](ISensorDataReport* report, SensorReading* reading) {
     double lux = 0.0;
@@ -73,7 +73,7 @@ std::unique_ptr<ReaderInitParams> CreateAmbientLightReaderInitParams() {
 
 // Accelerometer sensor reader initialization parameters.
 std::unique_ptr<ReaderInitParams> CreateAccelerometerReaderInitParams() {
-  auto params = base::MakeUnique<ReaderInitParams>();
+  auto params = std::make_unique<ReaderInitParams>();
   params->sensor_type_id = SENSOR_TYPE_ACCELEROMETER_3D;
   params->reader_func = [](ISensorDataReport* report, SensorReading* reading) {
     double x = 0.0;
@@ -101,7 +101,7 @@ std::unique_ptr<ReaderInitParams> CreateAccelerometerReaderInitParams() {
 
 // Gyroscope sensor reader initialization parameters.
 std::unique_ptr<ReaderInitParams> CreateGyroscopeReaderInitParams() {
-  auto params = base::MakeUnique<ReaderInitParams>();
+  auto params = std::make_unique<ReaderInitParams>();
   params->sensor_type_id = SENSOR_TYPE_GYROMETER_3D;
   params->reader_func = [](ISensorDataReport* report, SensorReading* reading) {
     double x = 0.0;
@@ -132,7 +132,7 @@ std::unique_ptr<ReaderInitParams> CreateGyroscopeReaderInitParams() {
 
 // Magnetometer sensor reader initialization parameters.
 std::unique_ptr<ReaderInitParams> CreateMagnetometerReaderInitParams() {
-  auto params = base::MakeUnique<ReaderInitParams>();
+  auto params = std::make_unique<ReaderInitParams>();
   params->sensor_type_id = SENSOR_TYPE_COMPASS_3D;
   params->reader_func = [](ISensorDataReport* report, SensorReading* reading) {
     double x = 0.0;
@@ -165,7 +165,7 @@ std::unique_ptr<ReaderInitParams> CreateMagnetometerReaderInitParams() {
 // AbsoluteOrientationEulerAngles sensor reader initialization parameters.
 std::unique_ptr<ReaderInitParams>
 CreateAbsoluteOrientationEulerAnglesReaderInitParams() {
-  auto params = base::MakeUnique<ReaderInitParams>();
+  auto params = std::make_unique<ReaderInitParams>();
   params->sensor_type_id = SENSOR_TYPE_INCLINOMETER_3D;
   params->reader_func = [](ISensorDataReport* report, SensorReading* reading) {
     double x = 0.0;
@@ -191,7 +191,7 @@ CreateAbsoluteOrientationEulerAnglesReaderInitParams() {
 // AbsoluteOrientationQuaternion sensor reader initialization parameters.
 std::unique_ptr<ReaderInitParams>
 CreateAbsoluteOrientationQuaternionReaderInitParams() {
-  auto params = base::MakeUnique<ReaderInitParams>();
+  auto params = std::make_unique<ReaderInitParams>();
   params->sensor_type_id = SENSOR_TYPE_AGGREGATED_DEVICE_ORIENTATION;
   params->reader_func = [](ISensorDataReport* report, SensorReading* reading) {
     base::win::ScopedPropVariant quat_variant;

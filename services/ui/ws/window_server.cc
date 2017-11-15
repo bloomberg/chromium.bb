@@ -67,7 +67,7 @@ WindowServer::WindowServer(WindowServerDelegate* delegate)
       in_destructor_(false),
       next_wm_change_id_(0),
       window_manager_window_tree_factory_set_(this, &user_id_tracker_),
-      host_frame_sink_manager_(base::MakeUnique<viz::HostFrameSinkManager>()),
+      host_frame_sink_manager_(std::make_unique<viz::HostFrameSinkManager>()),
       video_detector_(host_frame_sink_manager_.get()),
       display_creation_config_(DisplayCreationConfig::UNKNOWN) {
   user_id_tracker_.AddObserver(this);
@@ -149,7 +149,7 @@ WindowTree* WindowServer::EmbedAtWindow(
           WindowServerDelegate::BindingType::EMBED, this, tree,
           &window_tree_request, &client);
   if (!binding) {
-    binding = base::MakeUnique<ws::DefaultWindowTreeBinding>(
+    binding = std::make_unique<ws::DefaultWindowTreeBinding>(
         tree, this, std::move(window_tree_request), std::move(client));
   }
 
@@ -183,7 +183,7 @@ WindowTree* WindowServer::CreateTreeForWindowManager(
           WindowServerDelegate::BindingType::WINDOW_MANAGER, this,
           window_tree.get(), &window_tree_request, &window_tree_client);
   if (!window_tree_binding) {
-    window_tree_binding = base::MakeUnique<DefaultWindowTreeBinding>(
+    window_tree_binding = std::make_unique<DefaultWindowTreeBinding>(
         window_tree.get(), this, std::move(window_tree_request),
         std::move(window_tree_client));
   }
@@ -975,7 +975,7 @@ void WindowServer::OnActiveUserIdChanged(const UserId& previously_active_id,
 }
 
 void WindowServer::OnUserIdAdded(const UserId& id) {
-  activity_monitor_map_[id] = base::MakeUnique<UserActivityMonitor>(nullptr);
+  activity_monitor_map_[id] = std::make_unique<UserActivityMonitor>(nullptr);
 }
 
 void WindowServer::OnUserIdRemoved(const UserId& id) {

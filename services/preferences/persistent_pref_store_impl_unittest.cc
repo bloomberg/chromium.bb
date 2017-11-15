@@ -73,7 +73,7 @@ class PersistentPrefStoreImplTest : public testing::Test {
   void CreateImpl(scoped_refptr<PersistentPrefStore> backing_pref_store) {
     base::RunLoop run_loop;
     bool initialized = backing_pref_store->IsInitializationComplete();
-    impl_ = base::MakeUnique<PersistentPrefStoreImpl>(
+    impl_ = std::make_unique<PersistentPrefStoreImpl>(
         std::move(backing_pref_store), run_loop.QuitClosure());
     if (!initialized)
       run_loop.Run();
@@ -164,8 +164,8 @@ TEST_F(PersistentPrefStoreImplTest, UnregisteredPrefNotObservedByOtherClient) {
   auto other_pref_store = CreateConnection(std::move(observed_prefs));
   EXPECT_TRUE(other_pref_store->IsInitializationComplete());
 
-  pref_store()->SetValue(kOtherKey, base::MakeUnique<base::Value>(123), 0);
-  pref_store()->SetValue(kKey, base::MakeUnique<base::Value>("value"), 0);
+  pref_store()->SetValue(kOtherKey, std::make_unique<base::Value>(123), 0);
+  pref_store()->SetValue(kKey, std::make_unique<base::Value>("value"), 0);
 
   ExpectPrefChange(other_pref_store.get(), kKey);
   EXPECT_FALSE(other_pref_store->GetValue(kOtherKey, nullptr));

@@ -20,7 +20,7 @@ CreatePrefService(PrefStore* managed_prefs,
                   PrefStore* recommended_prefs,
                   PrefRegistry* pref_registry,
                   std::vector<const char*> overlay_pref_names) {
-  auto service = base::MakeUnique<PrefStoreManagerImpl>(
+  auto service = std::make_unique<PrefStoreManagerImpl>(
       managed_prefs, supervised_user_prefs, extension_prefs, command_line_prefs,
       user_prefs, incognito_user_prefs_underlay, recommended_prefs,
       pref_registry, std::move(overlay_pref_names));

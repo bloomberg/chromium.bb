@@ -12,7 +12,7 @@ namespace shape_detection {
 class FaceDetectionImplWinTest : public testing::Test {
  protected:
   void SetUp() override {
-    scoped_com_initializer_ = base::MakeUnique<base::win::ScopedCOMInitializer>(
+    scoped_com_initializer_ = std::make_unique<base::win::ScopedCOMInitializer>(
         base::win::ScopedCOMInitializer::kMTA);
     ASSERT_TRUE(scoped_com_initializer_->Succeeded());
   }

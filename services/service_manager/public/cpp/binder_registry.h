@@ -37,7 +37,7 @@ class BinderRegistryWithArgs {
       const scoped_refptr<base::SequencedTaskRunner>& task_runner = nullptr) {
     SetInterfaceBinder(
         Interface::Name_,
-        base::MakeUnique<CallbackBinder<Interface, BinderArgs...>>(
+        std::make_unique<CallbackBinder<Interface, BinderArgs...>>(
             callback, task_runner));
   }
   void AddInterface(
@@ -46,7 +46,7 @@ class BinderRegistryWithArgs {
           callback,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner = nullptr) {
     SetInterfaceBinder(interface_name,
-                       base::MakeUnique<GenericCallbackBinder<BinderArgs...>>(
+                       std::make_unique<GenericCallbackBinder<BinderArgs...>>(
                            callback, task_runner));
   }
   void AddInterface(
@@ -54,7 +54,7 @@ class BinderRegistryWithArgs {
       const Binder& callback,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner = nullptr) {
     SetInterfaceBinder(interface_name,
-                       base::MakeUnique<GenericCallbackBinder<BinderArgs...>>(
+                       std::make_unique<GenericCallbackBinder<BinderArgs...>>(
                            callback, task_runner));
   }
 

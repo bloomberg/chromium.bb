@@ -43,7 +43,7 @@ void PlatformSensorProviderMac::CreateSensorInternal(
       break;
     }
     case mojom::SensorType::RELATIVE_ORIENTATION_EULER_ANGLES: {
-      auto fusion_algorithm = base::MakeUnique<
+      auto fusion_algorithm = std::make_unique<
           RelativeOrientationEulerAnglesFusionAlgorithmUsingAccelerometer>();
       // If this PlatformSensorFusion object is successfully initialized,
       // |callback| will be run with a reference to this object.
@@ -53,7 +53,7 @@ void PlatformSensorProviderMac::CreateSensorInternal(
     }
     case mojom::SensorType::RELATIVE_ORIENTATION_QUATERNION: {
       auto orientation_quaternion_fusion_algorithm_using_euler_angles =
-          base::MakeUnique<
+          std::make_unique<
               OrientationQuaternionFusionAlgorithmUsingEulerAngles>(
               false /* absolute */);
       // If this PlatformSensorFusion object is successfully initialized,

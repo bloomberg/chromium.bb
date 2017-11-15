@@ -44,7 +44,7 @@ class MetricsMojoService : public service_manager::Service {
 }  // namespace
 
 std::unique_ptr<service_manager::Service> CreateMetricsService() {
-  return base::MakeUnique<MetricsMojoService>();
+  return std::make_unique<MetricsMojoService>();
 }
 
 }  // namespace metrics

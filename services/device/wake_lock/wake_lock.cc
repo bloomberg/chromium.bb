@@ -20,7 +20,7 @@ WakeLock::WakeLock(mojom::WakeLockRequest request,
     : num_lock_requests_(0),
       type_(type),
       reason_(reason),
-      description_(base::MakeUnique<std::string>(description)),
+      description_(std::make_unique<std::string>(description)),
 #if defined(OS_ANDROID)
       context_id_(context_id),
       native_view_getter_(native_view_getter),
@@ -37,7 +37,7 @@ WakeLock::~WakeLock() {}
 void WakeLock::AddClient(mojom::WakeLockRequest request) {
   DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   binding_set_.AddBinding(this, std::move(request),
-                          base::MakeUnique<bool>(false));
+                          std::make_unique<bool>(false));
 }
 
 void WakeLock::RequestWakeLock() {
@@ -112,7 +112,7 @@ void WakeLock::UpdateWakeLock() {
 void WakeLock::CreateWakeLock() {
   DCHECK(!wake_lock_);
 
-  wake_lock_ = base::MakeUnique<PowerSaveBlocker>(
+  wake_lock_ = std::make_unique<PowerSaveBlocker>(
       type_, reason_, *description_, main_task_runner_, file_task_runner_);
 
   if (type_ != mojom::WakeLockType::kPreventDisplaySleep)
@@ -139,7 +139,7 @@ void WakeLock::RemoveWakeLock() {
 void WakeLock::SwapWakeLock() {
   DCHECK(wake_lock_);
 
-  auto new_wake_lock = base::MakeUnique<PowerSaveBlocker>(
+  auto new_wake_lock = std::make_unique<PowerSaveBlocker>(
       type_, reason_, *description_, main_task_runner_, file_task_runner_);
 
   // Do a swap to ensure that there isn't a brief period where the old

@@ -56,10 +56,10 @@ void DeviceFactoryProviderImpl::LazyInitializeDeviceFactory() {
           // TODO(jcliang): Create a GpuMemoryBufferManager from GpuService
           // here.
           nullptr);
-  auto video_capture_system = base::MakeUnique<media::VideoCaptureSystemImpl>(
+  auto video_capture_system = std::make_unique<media::VideoCaptureSystemImpl>(
       std::move(media_device_factory));
 
-  device_factory_ = base::MakeUnique<DeviceFactoryMediaToMojoAdapter>(
+  device_factory_ = std::make_unique<DeviceFactoryMediaToMojoAdapter>(
       service_ref_->Clone(), std::move(video_capture_system),
       base::Bind(CreateJpegDecoder));
 }

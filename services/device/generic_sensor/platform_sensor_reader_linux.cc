@@ -135,7 +135,7 @@ std::unique_ptr<SensorReader> SensorReader::Create(
   base::AssertBlockingAllowed();
   // TODO(maksims): implement triggered reading. At the moment,
   // only polling read is supported.
-  return base::MakeUnique<PollingSensorReader>(sensor_device, sensor,
+  return std::make_unique<PollingSensorReader>(sensor_device, sensor,
                                                std::move(task_runner));
 }
 

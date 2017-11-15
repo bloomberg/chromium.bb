@@ -31,7 +31,7 @@ std::unique_ptr<base::DictionaryValue> FilterPrefsImpl(
   if (!prefs)
     return nullptr;
 
-  auto filtered_value = base::MakeUnique<base::DictionaryValue>();
+  auto filtered_value = std::make_unique<base::DictionaryValue>();
   std::string full_path = prefix;
   for (auto& pref : *prefs) {
     full_path.resize(prefix.size());
@@ -74,7 +74,7 @@ void SetValue(base::DictionaryValue* dictionary_value,
     if (!dictionary_value->GetDictionaryWithoutPathExpansion(
             path_components[i], &dictionary_value)) {
       dictionary_value = dictionary_value->SetDictionaryWithoutPathExpansion(
-          path_components[i], base::MakeUnique<base::DictionaryValue>());
+          path_components[i], std::make_unique<base::DictionaryValue>());
     }
   }
   const auto& key = path_components.back();

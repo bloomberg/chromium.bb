@@ -59,7 +59,7 @@ WindowServerServiceTestBase::~WindowServerServiceTestBase() {}
 
 std::unique_ptr<service_manager::Service>
 WindowServerServiceTestBase::CreateService() {
-  return base::MakeUnique<WindowServerServiceTestClient>(this);
+  return std::make_unique<WindowServerServiceTestClient>(this);
 }
 
 }  // namespace ui

@@ -92,7 +92,7 @@ TestConnectorFactory::~TestConnectorFactory() = default;
 std::unique_ptr<Connector> TestConnectorFactory::CreateConnector() {
   mojom::ConnectorPtr proxy;
   impl_->Clone(mojo::MakeRequest(&proxy));
-  return base::MakeUnique<Connector>(std::move(proxy));
+  return std::make_unique<Connector>(std::move(proxy));
 }
 
 }  // namespace service_manager

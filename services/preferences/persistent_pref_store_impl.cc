@@ -185,7 +185,7 @@ PersistentPrefStoreImpl::CreateConnection(ObservedPrefs observed_prefs) {
   mojom::PrefStoreObserverRequest observer_request =
       mojo::MakeRequest(&observer);
   auto values = FilterPrefs(backing_pref_store_->GetValues(), observed_prefs);
-  auto connection = base::MakeUnique<Connection>(
+  auto connection = std::make_unique<Connection>(
       this, mojo::MakeRequest(&pref_store_ptr), std::move(observer),
       std::move(observed_prefs));
   auto* connection_ptr = connection.get();
@@ -242,7 +242,7 @@ void PersistentPrefStoreImpl::SetValues(
       std::unique_ptr<base::DictionaryValue> pending_dictionary;
       if (!backing_pref_store_->GetMutableValue(update->key, &mutable_value) ||
           !mutable_value->GetAsDictionary(&dictionary_value)) {
-        pending_dictionary = base::MakeUnique<base::DictionaryValue>();
+        pending_dictionary = std::make_unique<base::DictionaryValue>();
         dictionary_value = pending_dictionary.get();
       }
       std::set<std::vector<std::string>> updated_paths;

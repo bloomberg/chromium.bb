@@ -65,7 +65,7 @@ PrefStoreImpl::~PrefStoreImpl() {
 }
 
 void PrefStoreImpl::OnPrefValueChanged(const std::string& key) {
-  auto dictionary = base::MakeUnique<base::DictionaryValue>();
+  auto dictionary = std::make_unique<base::DictionaryValue>();
   const base::Value* value = nullptr;
   if (backing_pref_store_->GetValue(key, &value)) {
     for (const auto& observer : observers_)
@@ -96,7 +96,7 @@ mojom::PrefStoreConnectionPtr PrefStoreImpl::AddObserver(
       std::move(request),
       FilterPrefs(backing_pref_store_->GetValues(), observed_prefs),
       backing_pref_store_->IsInitializationComplete());
-  observers_.push_back(base::MakeUnique<Observer>(std::move(observer_ptr),
+  observers_.push_back(std::make_unique<Observer>(std::move(observer_ptr),
                                                   std::move(observed_prefs)));
   return result;
 }

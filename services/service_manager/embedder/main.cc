@@ -383,7 +383,7 @@ int Main(const MainParams& params) {
   // Each "main" needs to flush this pool right before it goes into its main
   // event loop to get rid of the cruft.
   std::unique_ptr<base::mac::ScopedNSAutoreleasePool> autorelease_pool =
-      base::MakeUnique<base::mac::ScopedNSAutoreleasePool>();
+      std::make_unique<base::mac::ScopedNSAutoreleasePool>();
   init_params.autorelease_pool = autorelease_pool.get();
   InitializeMac();
 #endif

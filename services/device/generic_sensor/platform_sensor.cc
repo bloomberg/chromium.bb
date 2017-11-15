@@ -106,7 +106,7 @@ bool PlatformSensor::GetLatestReading(SensorReading* result) {
     const auto* buffer = static_cast<const device::SensorReadingSharedBuffer*>(
         shared_buffer_mapping_.get());
     shared_buffer_reader_ =
-        base::MakeUnique<SensorReadingSharedBufferReader>(buffer);
+        std::make_unique<SensorReadingSharedBufferReader>(buffer);
   }
 
   return shared_buffer_reader_->GetReading(result);

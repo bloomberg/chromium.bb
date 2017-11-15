@@ -28,7 +28,7 @@ Connector::~Connector() = default;
 std::unique_ptr<Connector> Connector::Create(mojom::ConnectorRequest* request) {
   mojom::ConnectorPtr proxy;
   *request = mojo::MakeRequest(&proxy);
-  return base::MakeUnique<Connector>(proxy.PassInterface());
+  return std::make_unique<Connector>(proxy.PassInterface());
 }
 
 void Connector::StartService(const Identity& identity) {
@@ -92,7 +92,7 @@ std::unique_ptr<Connector> Connector::Clone() {
 
   mojom::ConnectorPtr connector;
   connector_->Clone(mojo::MakeRequest(&connector));
-  return base::MakeUnique<Connector>(connector.PassInterface());
+  return std::make_unique<Connector>(connector.PassInterface());
 }
 
 void Connector::FilterInterfaces(const std::string& spec,

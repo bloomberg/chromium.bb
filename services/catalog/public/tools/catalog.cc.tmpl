@@ -20,7 +20,7 @@ std::unique_ptr<base::Value> GenerateValue(T generator) { return generator(); }
 {%- macro generate_value(source) -%}
 {%-   if source|is_dict -%}
 GenerateValue([]() {
-  auto dict = base::MakeUnique<base::DictionaryValue>();
+  auto dict = std::make_unique<base::DictionaryValue>();
 {%-     for key, value in source.iteritems() %}
   dict->Set("{{key}}", {{generate_value(value)|indent(2)}});
 {%-     endfor %}
@@ -28,18 +28,18 @@ GenerateValue([]() {
 })
 {%-   elif source|is_list -%}
 GenerateValue([]() {
-  auto list = base::MakeUnique<base::ListValue>();
+  auto list = std::make_unique<base::ListValue>();
 {%-     for value in source %}
   list->Append({{generate_value(value)|indent(2)}});
 {%-     endfor %}
   return list;
 })
 {%-   elif source|is_number -%}
-base::MakeUnique<base::Value>({{source}})
+std::make_unique<base::Value>({{source}})
 {%-   elif source|is_bool -%}
-base::MakeUnique<base::Value>({{source|lower}})
+std::make_unique<base::Value>({{source|lower}})
 {%-   elif source|is_string or source|is_unicode -%}
-base::MakeUnique<base::Value>("{{source|make_ascii}}")
+std::make_unique<base::Value>("{{source|make_ascii}}")
 {%-   else %}
 {{raise("Unknown value type: %s" % source, source)}}
 {%-   endif %}

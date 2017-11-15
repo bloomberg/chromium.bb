@@ -67,7 +67,7 @@ class GpuHostTest : public testing::Test {
  public:
   GpuHostTest() : io_thread_("IOThread") {
     CHECK(io_thread_.Start());
-    gpu_service_ = base::MakeUnique<TestGpuService>(io_thread_.task_runner());
+    gpu_service_ = std::make_unique<TestGpuService>(io_thread_.task_runner());
   }
   ~GpuHostTest() override {}
 
@@ -104,7 +104,7 @@ void GpuHostTest::DestroyHost() {
 
 void GpuHostTest::SetUp() {
   testing::Test::SetUp();
-  gpu_host_ = base::MakeUnique<DefaultGpuHost>(&gpu_host_delegate_, nullptr);
+  gpu_host_ = std::make_unique<DefaultGpuHost>(&gpu_host_delegate_, nullptr);
   gpu_service_->Bind(mojo::MakeRequest(&gpu_service_ptr_));
   gpu_host_->gpu_service_ = std::move(gpu_service_ptr_);
 }

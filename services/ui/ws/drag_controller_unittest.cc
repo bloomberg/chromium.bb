@@ -148,7 +148,7 @@ class DragControllerTest : public testing::Test,
   std::unique_ptr<DragTestWindow> BuildWindow() {
     WindowId id(1, ++window_id_);
     std::unique_ptr<DragTestWindow> p =
-        base::MakeUnique<DragTestWindow>(this, window_delegate_.get(), id);
+        std::make_unique<DragTestWindow>(this, window_delegate_.get(), id);
     server_window_by_id_[id] = p->window();
     connection_by_window_[p->window()] = p.get();
     return p;
@@ -159,7 +159,7 @@ class DragControllerTest : public testing::Test,
       uint32_t drag_operations) {
     window->PerformOnDragDropStart(
         std::unordered_map<std::string, std::vector<uint8_t>>());
-    drag_operation_ = base::MakeUnique<DragController>(
+    drag_operation_ = std::make_unique<DragController>(
         this, this, window->window(), window, MouseEvent::kMousePointerId,
         std::unordered_map<std::string, std::vector<uint8_t>>(),
         drag_operations);
@@ -216,10 +216,10 @@ class DragControllerTest : public testing::Test,
   void SetUp() override {
     testing::Test::SetUp();
 
-    window_delegate_ = base::MakeUnique<TestServerWindowDelegate>(
+    window_delegate_ = std::make_unique<TestServerWindowDelegate>(
         ws_test_helper_.window_server()->GetHostFrameSinkManager());
     root_window_ =
-        base::MakeUnique<ServerWindow>(window_delegate_.get(), WindowId(1, 2));
+        std::make_unique<ServerWindow>(window_delegate_.get(), WindowId(1, 2));
     window_delegate_->set_root_window(root_window_.get());
     root_window_->SetVisible(true);
   }

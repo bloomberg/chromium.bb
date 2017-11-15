@@ -283,7 +283,7 @@ we could modify our `MyService` implementation as follows:
 namespace {
 
 void BindDatabase(my_service::mojom::DatabaseRequest request) {
-  mojo::MakeStrongBinding(base::MakeUnique<my_service::DatabaseImpl>(),
+  mojo::MakeStrongBinding(std::make_unique<my_service::DatabaseImpl>(),
                           std::move(request));
 }
 

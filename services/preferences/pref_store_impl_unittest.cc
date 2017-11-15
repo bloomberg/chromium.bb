@@ -111,7 +111,7 @@ class PrefStoreImplTest : public testing::Test {
   void CreateImpl(
       scoped_refptr<PrefStore> backing_pref_store,
       std::vector<std::string> observed_prefs = std::vector<std::string>()) {
-    impl_ = base::MakeUnique<PrefStoreImpl>(std::move(backing_pref_store));
+    impl_ = std::make_unique<PrefStoreImpl>(std::move(backing_pref_store));
 
     if (observed_prefs.empty())
       observed_prefs.insert(observed_prefs.end(), {kKey, kOtherKey});
@@ -133,7 +133,7 @@ class PrefStoreImplTest : public testing::Test {
 
 TEST_F(PrefStoreImplTest, InitializationSuccess) {
   auto backing_pref_store = base::MakeRefCounted<MockPrefStore>();
-  backing_pref_store->SetValue(kKey, base::MakeUnique<base::Value>("value"), 0);
+  backing_pref_store->SetValue(kKey, std::make_unique<base::Value>("value"), 0);
   CreateImpl(backing_pref_store);
   EXPECT_FALSE(pref_store()->IsInitializationComplete());
 
@@ -144,7 +144,7 @@ TEST_F(PrefStoreImplTest, InitializationSuccess) {
 
 TEST_F(PrefStoreImplTest, InitializationFailure) {
   auto backing_pref_store = base::MakeRefCounted<MockPrefStore>();
-  backing_pref_store->SetValue(kKey, base::MakeUnique<base::Value>("value"), 0);
+  backing_pref_store->SetValue(kKey, std::make_unique<base::Value>("value"), 0);
   CreateImpl(backing_pref_store);
   EXPECT_FALSE(pref_store()->IsInitializationComplete());
 
@@ -217,9 +217,9 @@ TEST_F(PrefStoreImplTest, WriteToUnregisteredPrefNotObservedByClient) {
   CreateImpl(backing_pref_store, {kKey});
   ASSERT_TRUE(pref_store()->IsInitializationComplete());
 
-  backing_pref_store->SetValue(kOtherKey, base::MakeUnique<base::Value>(123),
+  backing_pref_store->SetValue(kOtherKey, std::make_unique<base::Value>(123),
                                0);
-  backing_pref_store->SetValue(kKey, base::MakeUnique<base::Value>("value"), 0);
+  backing_pref_store->SetValue(kKey, std::make_unique<base::Value>("value"), 0);
 
   ExpectPrefChange(pref_store(), kKey);
   EXPECT_FALSE(pref_store()->GetValue(kOtherKey, nullptr));

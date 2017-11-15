@@ -100,7 +100,7 @@ void PlatformSensorProviderAndroid::CreateAbsoluteOrientationEulerAnglesSensor(
           static_cast<jint>(
               mojom::SensorType::ABSOLUTE_ORIENTATION_QUATERNION)))) {
     auto sensor_fusion_algorithm =
-        base::MakeUnique<OrientationEulerAnglesFusionAlgorithmUsingQuaternion>(
+        std::make_unique<OrientationEulerAnglesFusionAlgorithmUsingQuaternion>(
             true /* absolute */);
 
     // If this PlatformSensorFusion object is successfully initialized,
@@ -108,7 +108,7 @@ void PlatformSensorProviderAndroid::CreateAbsoluteOrientationEulerAnglesSensor(
     PlatformSensorFusion::Create(std::move(mapping), this,
                                  std::move(sensor_fusion_algorithm), callback);
   } else {
-    auto sensor_fusion_algorithm = base::MakeUnique<
+    auto sensor_fusion_algorithm = std::make_unique<
         AbsoluteOrientationEulerAnglesFusionAlgorithmUsingAccelerometerAndMagnetometer>();
 
     // If this PlatformSensorFusion object is successfully initialized,
@@ -139,7 +139,7 @@ void PlatformSensorProviderAndroid::CreateAbsoluteOrientationQuaternionSensor(
     callback.Run(concrete_sensor);
   } else {
     auto sensor_fusion_algorithm =
-        base::MakeUnique<OrientationQuaternionFusionAlgorithmUsingEulerAngles>(
+        std::make_unique<OrientationQuaternionFusionAlgorithmUsingEulerAngles>(
             true /* absolute */);
 
     // If this PlatformSensorFusion object is successfully initialized,
@@ -160,7 +160,7 @@ void PlatformSensorProviderAndroid::CreateRelativeOrientationEulerAnglesSensor(
           static_cast<jint>(
               mojom::SensorType::RELATIVE_ORIENTATION_QUATERNION)))) {
     auto sensor_fusion_algorithm =
-        base::MakeUnique<OrientationEulerAnglesFusionAlgorithmUsingQuaternion>(
+        std::make_unique<OrientationEulerAnglesFusionAlgorithmUsingQuaternion>(
             false /* absolute */);
 
     // If this PlatformSensorFusion object is successfully initialized,

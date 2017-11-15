@@ -17,7 +17,7 @@ ProxyResolverService::~ProxyResolverService() = default;
 
 std::unique_ptr<service_manager::Service>
 ProxyResolverService::CreateService() {
-  return base::MakeUnique<ProxyResolverService>();
+  return std::make_unique<ProxyResolverService>();
 }
 
 void ProxyResolverService::OnStart() {

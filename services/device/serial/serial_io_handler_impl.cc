@@ -16,7 +16,7 @@ namespace device {
 void SerialIoHandlerImpl::Create(
     mojom::SerialIoHandlerRequest request,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
-  mojo::MakeStrongBinding(base::MakeUnique<SerialIoHandlerImpl>(ui_task_runner),
+  mojo::MakeStrongBinding(std::make_unique<SerialIoHandlerImpl>(ui_task_runner),
                           std::move(request));
 }
 
@@ -34,7 +34,7 @@ void SerialIoHandlerImpl::Open(const std::string& port,
 
 void SerialIoHandlerImpl::Read(uint32_t bytes, ReadCallback callback) {
   auto buffer = base::MakeRefCounted<net::IOBuffer>(static_cast<size_t>(bytes));
-  io_handler_->Read(base::MakeUnique<ReceiveBuffer>(
+  io_handler_->Read(std::make_unique<ReceiveBuffer>(
       buffer, bytes,
       base::BindOnce(
           [](ReadCallback callback, scoped_refptr<net::IOBuffer> buffer,
@@ -49,7 +49,7 @@ void SerialIoHandlerImpl::Read(uint32_t bytes, ReadCallback callback) {
 
 void SerialIoHandlerImpl::Write(const std::vector<uint8_t>& data,
                                 WriteCallback callback) {
-  io_handler_->Write(base::MakeUnique<SendBuffer>(
+  io_handler_->Write(std::make_unique<SendBuffer>(
       data, base::BindOnce(
                 [](WriteCallback callback, int bytes_sent,
                    mojom::SerialSendError error) {

@@ -121,7 +121,7 @@ ThreadedImageCursors::ThreadedImageCursors(
   // the ImageCursors object on the UI Service's thread if we are using Ozone,
   // so that it uses the right (thread-local) CursorFactoryOzone instance.
   std::unique_ptr<ui::ImageCursors> image_cursors =
-      base::MakeUnique<ui::ImageCursors>();
+      std::make_unique<ui::ImageCursors>();
   image_cursors->Initialize();
   image_cursors_weak_ptr_ = image_cursors->GetWeakPtr();
   resource_task_runner_->PostTask(

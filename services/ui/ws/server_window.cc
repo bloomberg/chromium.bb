@@ -241,7 +241,7 @@ void ServerWindow::SetClientArea(
 }
 
 void ServerWindow::SetHitTestMask(const gfx::Rect& mask) {
-  hit_test_mask_ = base::MakeUnique<gfx::Rect>(mask);
+  hit_test_mask_ = std::make_unique<gfx::Rect>(mask);
 }
 
 void ServerWindow::ClearHitTestMask() {
@@ -314,7 +314,7 @@ void ServerWindow::SetModalType(ModalType modal_type) {
 
 void ServerWindow::SetChildModalParent(ServerWindow* modal_parent) {
   if (modal_parent) {
-    child_modal_parent_tracker_ = base::MakeUnique<ServerWindowTracker>();
+    child_modal_parent_tracker_ = std::make_unique<ServerWindowTracker>();
     child_modal_parent_tracker_->Add(modal_parent);
   } else {
     child_modal_parent_tracker_.reset();

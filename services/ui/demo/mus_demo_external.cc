@@ -41,7 +41,7 @@ MusDemoExternal::~MusDemoExternal() {}
 
 std::unique_ptr<aura::WindowTreeClient>
 MusDemoExternal::CreateWindowTreeClient() {
-  return base::MakeUnique<aura::WindowTreeClient>(context()->connector(), this);
+  return std::make_unique<aura::WindowTreeClient>(context()->connector(), this);
 }
 
 void MusDemoExternal::OnStartImpl() {
@@ -78,7 +78,7 @@ void MusDemoExternal::OpenNewWindow() {
   // TODO(tonikitoo,msisov): Extend the WindowTreeClient API to allow creation
   // of various window tree host. Currently is only works once, and is
   // incorrect when kNumberOfWindows > 1.
-  AppendWindowTreeData(base::MakeUnique<WindowTreeDataExternal>(
+  AppendWindowTreeData(std::make_unique<WindowTreeDataExternal>(
       window_tree_client(),
       GetSquareSizeForWindow(initialized_windows_count_)));
 }

@@ -85,7 +85,7 @@ void HidManagerImpl::CreateConnection(ConnectCallback callback,
   }
 
   mojom::HidConnectionPtr client;
-  mojo::MakeStrongBinding(base::MakeUnique<HidConnectionImpl>(connection),
+  mojo::MakeStrongBinding(std::make_unique<HidConnectionImpl>(connection),
                           mojo::MakeRequest(&client));
   std::move(callback).Run(std::move(client));
 }

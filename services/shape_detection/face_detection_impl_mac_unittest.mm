@@ -53,7 +53,7 @@ class FaceDetectionImplMacTest : public TestWithParam<bool> {
 };
 
 TEST_F(FaceDetectionImplMacTest, CreateAndDestroy) {
-  impl_ = base::MakeUnique<FaceDetectionImplMac>(
+  impl_ = std::make_unique<FaceDetectionImplMac>(
       shape_detection::mojom::FaceDetectorOptions::New());
 }
 
@@ -66,7 +66,7 @@ TEST_P(FaceDetectionImplMacTest, ScanOneFace) {
 
   auto options = shape_detection::mojom::FaceDetectorOptions::New();
   options->fast_mode = GetParam();
-  impl_ = base::MakeUnique<FaceDetectionImplMac>(std::move(options));
+  impl_ = std::make_unique<FaceDetectionImplMac>(std::move(options));
 
   // Load image data from test directory.
   base::FilePath image_path;

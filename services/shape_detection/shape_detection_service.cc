@@ -18,7 +18,7 @@
 namespace shape_detection {
 
 std::unique_ptr<service_manager::Service> ShapeDetectionService::Create() {
-  return base::MakeUnique<ShapeDetectionService>();
+  return std::make_unique<ShapeDetectionService>();
 }
 
 ShapeDetectionService::ShapeDetectionService() = default;
@@ -60,7 +60,7 @@ service_manager::InterfaceProvider* ShapeDetectionService::GetJavaInterfaces() {
         base::android::AttachCurrentThread(),
         mojo::MakeRequest(&provider).PassMessagePipe().release().value());
     java_interface_provider_ =
-        base::MakeUnique<service_manager::InterfaceProvider>();
+        std::make_unique<service_manager::InterfaceProvider>();
     java_interface_provider_->Bind(std::move(provider));
   }
   return java_interface_provider_.get();

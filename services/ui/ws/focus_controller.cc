@@ -176,7 +176,7 @@ bool FocusController::SetFocusedWindowImpl(
     track_window = active_window_;
   if (track_window) {
     drawn_tracker_ =
-        base::MakeUnique<ServerWindowDrawnTracker>(track_window, this);
+        std::make_unique<ServerWindowDrawnTracker>(track_window, this);
   } else {
     drawn_tracker_.reset();
   }

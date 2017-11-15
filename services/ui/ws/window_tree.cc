@@ -192,7 +192,7 @@ void WindowTree::ConfigureWindowManager(
   automatically_create_display_roots_ = automatically_create_display_roots;
   window_manager_internal_ = binding_->GetWindowManager();
   window_manager_internal_->OnConnect();
-  window_manager_state_ = base::MakeUnique<WindowManagerState>(this);
+  window_manager_state_ = std::make_unique<WindowManagerState>(this);
 }
 
 const ServerWindow* WindowTree::GetWindow(const WindowId& id) const {
@@ -714,7 +714,7 @@ void WindowTree::DispatchInputEvent(ServerWindow* target,
                                     DispatchEventCallback callback) {
   if (event_ack_id_) {
     // This is currently waiting for an event ack. Add it to the queue.
-    event_queue_.push(base::MakeUnique<TargetedEvent>(
+    event_queue_.push(std::make_unique<TargetedEvent>(
         target, event, event_location, std::move(callback)));
     // TODO(sad): If the |event_queue_| grows too large, then this should notify
     // Display, so that it can stop sending events.
@@ -725,7 +725,7 @@ void WindowTree::DispatchInputEvent(ServerWindow* target,
   // and dispatch the latest event from the queue instead that still has a live
   // target.
   if (!event_queue_.empty()) {
-    event_queue_.push(base::MakeUnique<TargetedEvent>(
+    event_queue_.push(std::make_unique<TargetedEvent>(
         target, event, event_location, std::move(callback)));
     return;
   }
@@ -2726,7 +2726,7 @@ void WindowTree::OnDragMoved(const gfx::Point& location) {
     drag_move_state_->queued_cursor_location = location;
   } else {
     WindowManagerState* wms = display_root->window_manager_state();
-    drag_move_state_ = base::MakeUnique<DragMoveState>();
+    drag_move_state_ = std::make_unique<DragMoveState>();
     wms->window_tree()->window_manager_internal_->WmMoveDragImage(
         location, base::Bind(&WindowTree::OnWmMoveDragImageAck,
                              drag_weak_factory_.GetWeakPtr()));

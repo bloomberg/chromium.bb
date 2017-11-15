@@ -14,11 +14,11 @@ namespace display {
 
 // static
 std::unique_ptr<ScreenManager> ScreenManager::Create() {
-  return base::MakeUnique<ScreenManagerOzoneExternal>();
+  return std::make_unique<ScreenManagerOzoneExternal>();
 }
 
 ScreenManagerOzoneExternal::ScreenManagerOzoneExternal()
-    : screen_(base::MakeUnique<display::ScreenBase>()) {}
+    : screen_(std::make_unique<display::ScreenBase>()) {}
 
 ScreenManagerOzoneExternal::~ScreenManagerOzoneExternal() {}
 

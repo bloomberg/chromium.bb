@@ -173,7 +173,7 @@ class Catalog::ServiceImpl : public service_manager::Service {
 Catalog::Catalog(std::unique_ptr<base::Value> static_manifest,
                  ManifestProvider* service_manifest_provider)
     : service_context_(new service_manager::ServiceContext(
-          base::MakeUnique<ServiceImpl>(this),
+          std::make_unique<ServiceImpl>(this),
           mojo::MakeRequest(&service_))),
       service_manifest_provider_(service_manifest_provider),
       weak_factory_(this) {
@@ -218,7 +218,7 @@ Instance* Catalog::GetInstanceForUserId(const std::string& user_id) {
 
   auto result = instances_.insert(std::make_pair(
       user_id,
-      base::MakeUnique<Instance>(&system_cache_, service_manifest_provider_)));
+      std::make_unique<Instance>(&system_cache_, service_manifest_provider_)));
   return result.first->second.get();
 }
 
@@ -254,7 +254,7 @@ void Catalog::BindDirectoryRequestOnBackgroundThread(
   base::FilePath resources_path;
   base::PathService::Get(base::DIR_MODULE, &resources_path);
   mojo::MakeStrongBinding(
-      base::MakeUnique<filesystem::DirectoryImpl>(
+      std::make_unique<filesystem::DirectoryImpl>(
           resources_path, scoped_refptr<filesystem::SharedTempDir>(),
           thread_state->lock_table()),
       std::move(request));

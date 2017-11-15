@@ -45,7 +45,7 @@ void ServiceTest::InitTestName(const std::string& test_name) {
 }
 
 std::unique_ptr<Service> ServiceTest::CreateService() {
-  return base::MakeUnique<ServiceTestClient>(this);
+  return std::make_unique<ServiceTestClient>(this);
 }
 
 void ServiceTest::OnStartCalled(Connector* connector,
@@ -59,7 +59,7 @@ void ServiceTest::OnStartCalled(Connector* connector,
 
 void ServiceTest::SetUp() {
   background_service_manager_ =
-      base::MakeUnique<service_manager::BackgroundServiceManager>(nullptr,
+      std::make_unique<service_manager::BackgroundServiceManager>(nullptr,
                                                                   nullptr);
 
   // Create the service manager connection. We don't proceed until we get our
@@ -68,7 +68,7 @@ void ServiceTest::SetUp() {
   initialize_called_ = run_loop.QuitClosure();
 
   mojom::ServicePtr service;
-  context_ = base::MakeUnique<ServiceContext>(CreateService(),
+  context_ = std::make_unique<ServiceContext>(CreateService(),
                                               mojo::MakeRequest(&service));
   background_service_manager_->RegisterService(
       Identity(test_name_, mojom::kRootUserID), std::move(service), nullptr);

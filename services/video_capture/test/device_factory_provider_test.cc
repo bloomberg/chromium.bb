@@ -35,7 +35,7 @@ void DeviceFactoryProviderTest::SetUp() {
                              &service_manager);
   service_manager::mojom::ServiceManagerListenerPtr listener;
   base::RunLoop loop;
-  service_state_observer_ = base::MakeUnique<ServiceManagerListenerImpl>(
+  service_state_observer_ = std::make_unique<ServiceManagerListenerImpl>(
       mojo::MakeRequest(&listener), &loop);
   service_manager->AddListener(std::move(listener));
   loop.Run();

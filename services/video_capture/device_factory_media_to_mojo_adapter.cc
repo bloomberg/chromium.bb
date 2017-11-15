@@ -146,10 +146,10 @@ void DeviceFactoryMediaToMojoAdapter::CreateAndAddNewDevice(
 
   // Add entry to active_devices to keep track of it
   ActiveDeviceEntry device_entry;
-  device_entry.device = base::MakeUnique<DeviceMediaToMojoAdapter>(
+  device_entry.device = std::make_unique<DeviceMediaToMojoAdapter>(
       service_ref_->Clone(), std::move(media_device),
       jpeg_decoder_factory_callback_);
-  device_entry.binding = base::MakeUnique<mojo::Binding<mojom::Device>>(
+  device_entry.binding = std::make_unique<mojo::Binding<mojom::Device>>(
       device_entry.device.get(), std::move(device_request));
   device_entry.binding->set_connection_error_handler(base::Bind(
       &DeviceFactoryMediaToMojoAdapter::OnClientConnectionErrorOrClose,

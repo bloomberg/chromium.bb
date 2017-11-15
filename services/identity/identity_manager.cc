@@ -150,7 +150,7 @@ void IdentityManager::GetAccessToken(const std::string& account_id,
                                      const std::string& consumer_id,
                                      GetAccessTokenCallback callback) {
   std::unique_ptr<AccessTokenRequest> access_token_request =
-      base::MakeUnique<AccessTokenRequest>(account_id, scopes, consumer_id,
+      std::make_unique<AccessTokenRequest>(account_id, scopes, consumer_id,
                                            std::move(callback), token_service_,
                                            this);
 

@@ -181,7 +181,7 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
       return;
 
     ASSERT_TRUE(wait_state_.get() == nullptr);
-    wait_state_ = base::MakeUnique<WaitState>();
+    wait_state_ = std::make_unique<WaitState>();
     wait_state_->change_count = count;
     wait_state_->run_loop.Run();
     wait_state_.reset();
@@ -193,14 +193,14 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
   void WaitForOnEmbed() {
     if (tree_)
       return;
-    embed_run_loop_ = base::MakeUnique<base::RunLoop>();
+    embed_run_loop_ = std::make_unique<base::RunLoop>();
     embed_run_loop_->Run();
     embed_run_loop_.reset();
   }
 
   bool WaitForChangeCompleted(uint32_t id) {
     waiting_change_id_ = id;
-    change_completed_run_loop_ = base::MakeUnique<base::RunLoop>();
+    change_completed_run_loop_ = std::make_unique<base::RunLoop>();
     change_completed_run_loop_->Run();
     return on_change_completed_result_;
   }
@@ -468,7 +468,7 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
   void GetWindowManager(mojo::AssociatedInterfaceRequest<mojom::WindowManager>
                             internal) override {
     window_manager_binding_ =
-        base::MakeUnique<mojo::AssociatedBinding<mojom::WindowManager>>(
+        std::make_unique<mojo::AssociatedBinding<mojom::WindowManager>>(
             this, std::move(internal));
     tree_->GetWindowManagerClient(MakeRequest(&window_manager_client_));
   }
@@ -587,7 +587,7 @@ class WindowTreeClientFactory {
   std::unique_ptr<TestWindowTreeClient> WaitForInstance() {
     if (!client_impl_.get()) {
       DCHECK(!run_loop_);
-      run_loop_ = base::MakeUnique<base::RunLoop>();
+      run_loop_ = std::make_unique<base::RunLoop>();
       run_loop_->Run();
       run_loop_.reset();
     }
@@ -596,7 +596,7 @@ class WindowTreeClientFactory {
 
   void BindWindowTreeClientRequest(
       mojom::WindowTreeClientRequest request) {
-    client_impl_ = base::MakeUnique<TestWindowTreeClient>();
+    client_impl_ = std::make_unique<TestWindowTreeClient>();
     client_impl_->Bind(std::move(request));
     if (run_loop_.get())
       run_loop_->Quit();
@@ -714,7 +714,7 @@ class WindowTreeClientTest : public WindowServerServiceTestBase {
   }
 
   void SetUp() override {
-    client_factory_ = base::MakeUnique<WindowTreeClientFactory>();
+    client_factory_ = std::make_unique<WindowTreeClientFactory>();
     registry_.AddInterface(
         base::Bind(&WindowTreeClientFactory::BindWindowTreeClientRequest,
                    base::Unretained(client_factory_.get())));
@@ -725,7 +725,7 @@ class WindowTreeClientTest : public WindowServerServiceTestBase {
     connector()->BindInterface(ui::mojom::kServiceName, &factory);
 
     mojom::WindowTreeClientPtr tree_client_ptr;
-    wt_client1_ = base::MakeUnique<TestWindowTreeClient>();
+    wt_client1_ = std::make_unique<TestWindowTreeClient>();
     wt_client1_->Bind(MakeRequest(&tree_client_ptr));
 
     factory->CreateWindowTreeHost(MakeRequest(&host_),

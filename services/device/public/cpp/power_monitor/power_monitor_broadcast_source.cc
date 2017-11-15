@@ -17,7 +17,7 @@ namespace device {
 PowerMonitorBroadcastSource::PowerMonitorBroadcastSource(
     service_manager::Connector* connector,
     scoped_refptr<base::SequencedTaskRunner> task_runner)
-    : PowerMonitorBroadcastSource(base::MakeUnique<Client>(),
+    : PowerMonitorBroadcastSource(std::make_unique<Client>(),
                                   connector,
                                   task_runner) {}
 

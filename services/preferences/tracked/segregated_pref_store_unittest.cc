@@ -115,10 +115,10 @@ TEST_P(SegregatedPrefStoreTest, StoreValues) {
 
   // Properly stores new values.
   segregated_store_->SetValue(kSelectedPref,
-                              base::MakeUnique<base::Value>(kValue1),
+                              std::make_unique<base::Value>(kValue1),
                               WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   segregated_store_->SetValue(kUnselectedPref,
-                              base::MakeUnique<base::Value>(kValue2),
+                              std::make_unique<base::Value>(kValue2),
                               WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
 
   ASSERT_TRUE(selected_store_->GetValue(kSelectedPref, NULL));
@@ -147,10 +147,10 @@ TEST_P(SegregatedPrefStoreTest, StoreValues) {
 
 TEST_F(SegregatedPrefStoreTest, ReadValues) {
   selected_store_->SetValue(kSelectedPref,
-                            base::MakeUnique<base::Value>(kValue1),
+                            std::make_unique<base::Value>(kValue1),
                             WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   default_store_->SetValue(kUnselectedPref,
-                           base::MakeUnique<base::Value>(kValue2),
+                           std::make_unique<base::Value>(kValue2),
                            WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
 
   // Works properly with values that are already there.
@@ -175,11 +175,11 @@ TEST_F(SegregatedPrefStoreTest, Observer) {
   EXPECT_TRUE(observer_.initialization_success);
   EXPECT_TRUE(observer_.changed_keys.empty());
   segregated_store_->SetValue(kSelectedPref,
-                              base::MakeUnique<base::Value>(kValue1),
+                              std::make_unique<base::Value>(kValue1),
                               WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   observer_.VerifyAndResetChangedKey(kSelectedPref);
   segregated_store_->SetValue(kUnselectedPref,
-                              base::MakeUnique<base::Value>(kValue2),
+                              std::make_unique<base::Value>(kValue2),
                               WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   observer_.VerifyAndResetChangedKey(kUnselectedPref);
 }
@@ -297,12 +297,12 @@ TEST_F(SegregatedPrefStoreTest, GetValues) {
   // To check merge behavior, create selected and default stores so each has a
   // key the other doesn't have and they have one key in common.
   selected_store_->SetValue(kSelectedPref,
-                            base::MakeUnique<base::Value>(kValue1),
+                            std::make_unique<base::Value>(kValue1),
                             WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   default_store_->SetValue(kUnselectedPref,
-                           base::MakeUnique<base::Value>(kValue2),
+                           std::make_unique<base::Value>(kValue2),
                            WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
-  selected_store_->SetValue(kSharedPref, base::MakeUnique<base::Value>(kValue1),
+  selected_store_->SetValue(kSharedPref, std::make_unique<base::Value>(kValue1),
                             WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
 
   auto values = segregated_store_->GetValues();

@@ -588,7 +588,7 @@ void WindowManagerState::ScheduleInputEventTimeout(WindowTree* tree,
                                                    const Event& event,
                                                    EventDispatchPhase phase) {
   std::unique_ptr<InFlightEventDispatchDetails> details =
-      base::MakeUnique<InFlightEventDispatchDetails>(this, tree, display_id,
+      std::make_unique<InFlightEventDispatchDetails>(this, tree, display_id,
                                                      event, phase);
 
   // TODO(sad): Adjust this delay, possibly make this dynamic.

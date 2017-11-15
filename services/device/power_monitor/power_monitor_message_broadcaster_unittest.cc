@@ -68,7 +68,7 @@ TEST_F(PowerMonitorMessageBroadcasterTest, PowerMessageBroadcast) {
 
   std::unique_ptr<PowerMonitorBroadcastSource> broadcast_source(
       new PowerMonitorBroadcastSource(
-          base::MakeUnique<MockClient>(run_loop.QuitClosure()), connector(),
+          std::make_unique<MockClient>(run_loop.QuitClosure()), connector(),
           base::SequencedTaskRunnerHandle::Get()));
   run_loop.Run();
 

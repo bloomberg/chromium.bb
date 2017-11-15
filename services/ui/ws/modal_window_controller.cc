@@ -184,7 +184,7 @@ void ModalWindowController::SetBlockingContainers(
 
   for (const BlockingContainers& containers : all_blocking_containers) {
     all_blocking_containers_.push_back(
-        base::MakeUnique<TrackedBlockingContainers>(
+        std::make_unique<TrackedBlockingContainers>(
             this, containers.system_modal_container, containers.min_container));
   }
 }
@@ -196,7 +196,7 @@ void ModalWindowController::AddSystemModalWindow(ServerWindow* window) {
 
   system_modal_windows_.push_back(window);
   window_drawn_trackers_.insert(make_pair(
-      window, base::MakeUnique<ServerWindowDrawnTracker>(window, this)));
+      window, std::make_unique<ServerWindowDrawnTracker>(window, this)));
   window->AddObserver(this);
 }
 

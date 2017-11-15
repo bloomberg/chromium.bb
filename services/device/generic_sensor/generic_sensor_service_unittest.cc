@@ -204,7 +204,7 @@ class GenericSensorServiceTest : public DeviceServiceTestBase {
 
 // Requests the SensorProvider to create a sensor.
 TEST_F(GenericSensorServiceTest, GetSensorTest) {
-  auto client = base::MakeUnique<TestSensorClient>(SensorType::PROXIMITY);
+  auto client = std::make_unique<TestSensorClient>(SensorType::PROXIMITY);
   base::RunLoop run_loop;
   sensor_provider_->GetSensor(
       SensorType::PROXIMITY,
@@ -215,7 +215,7 @@ TEST_F(GenericSensorServiceTest, GetSensorTest) {
 
 // Tests GetDefaultConfiguration.
 TEST_F(GenericSensorServiceTest, GetDefaultConfigurationTest) {
-  auto client = base::MakeUnique<TestSensorClient>(SensorType::ACCELEROMETER);
+  auto client = std::make_unique<TestSensorClient>(SensorType::ACCELEROMETER);
   {
     base::RunLoop run_loop;
     sensor_provider_->GetSensor(
@@ -237,7 +237,7 @@ TEST_F(GenericSensorServiceTest, GetDefaultConfigurationTest) {
 // Tests adding a valid configuration. Client should be notified by
 // SensorClient::SensorReadingChanged().
 TEST_F(GenericSensorServiceTest, ValidAddConfigurationTest) {
-  auto client = base::MakeUnique<TestSensorClient>(SensorType::AMBIENT_LIGHT);
+  auto client = std::make_unique<TestSensorClient>(SensorType::AMBIENT_LIGHT);
   {
     base::RunLoop run_loop;
     sensor_provider_->GetSensor(
@@ -268,7 +268,7 @@ TEST_F(GenericSensorServiceTest, ValidAddConfigurationTest) {
 // the mocked SensorImpl, while we add one with 60.0.
 TEST_F(GenericSensorServiceTest, InvalidAddConfigurationTest) {
   auto client =
-      base::MakeUnique<TestSensorClient>(SensorType::LINEAR_ACCELERATION);
+      std::make_unique<TestSensorClient>(SensorType::LINEAR_ACCELERATION);
   {
     base::RunLoop run_loop;
     sensor_provider_->GetSensor(
@@ -295,8 +295,8 @@ TEST_F(GenericSensorServiceTest, InvalidAddConfigurationTest) {
 // Tests adding more than one clients. Sensor should send notification to all
 // its clients.
 TEST_F(GenericSensorServiceTest, MultipleClientsTest) {
-  auto client_1 = base::MakeUnique<TestSensorClient>(SensorType::AMBIENT_LIGHT);
-  auto client_2 = base::MakeUnique<TestSensorClient>(SensorType::AMBIENT_LIGHT);
+  auto client_1 = std::make_unique<TestSensorClient>(SensorType::AMBIENT_LIGHT);
+  auto client_2 = std::make_unique<TestSensorClient>(SensorType::AMBIENT_LIGHT);
   {
     base::RunLoop run_loop;
     auto barrier_closure = base::BarrierClosure(2, run_loop.QuitClosure());
@@ -338,8 +338,8 @@ TEST_F(GenericSensorServiceTest, MultipleClientsTest) {
 // Tests adding more than one clients. If mojo connection is broken on one
 // client, other clients should not be affected.
 TEST_F(GenericSensorServiceTest, ClientMojoConnectionBrokenTest) {
-  auto client_1 = base::MakeUnique<TestSensorClient>(SensorType::AMBIENT_LIGHT);
-  auto client_2 = base::MakeUnique<TestSensorClient>(SensorType::AMBIENT_LIGHT);
+  auto client_1 = std::make_unique<TestSensorClient>(SensorType::AMBIENT_LIGHT);
+  auto client_2 = std::make_unique<TestSensorClient>(SensorType::AMBIENT_LIGHT);
   {
     base::RunLoop run_loop;
     auto barrier_closure = base::BarrierClosure(2, run_loop.QuitClosure());
@@ -380,7 +380,7 @@ TEST_F(GenericSensorServiceTest, ClientMojoConnectionBrokenTest) {
 
 // Test add and remove configuration operations.
 TEST_F(GenericSensorServiceTest, AddAndRemoveConfigurationTest) {
-  auto client = base::MakeUnique<TestSensorClient>(SensorType::AMBIENT_LIGHT);
+  auto client = std::make_unique<TestSensorClient>(SensorType::AMBIENT_LIGHT);
   {
     base::RunLoop run_loop;
     sensor_provider_->GetSensor(
@@ -441,7 +441,7 @@ TEST_F(GenericSensorServiceTest, AddAndRemoveConfigurationTest) {
 // early quit of main thread (when there is an unexpected notification by
 // SensorReadingChanged()).
 TEST_F(GenericSensorServiceTest, SuspendTest) {
-  auto client = base::MakeUnique<TestSensorClient>(SensorType::AMBIENT_LIGHT);
+  auto client = std::make_unique<TestSensorClient>(SensorType::AMBIENT_LIGHT);
   {
     base::RunLoop run_loop;
     sensor_provider_->GetSensor(
@@ -478,7 +478,7 @@ TEST_F(GenericSensorServiceTest, SuspendTest) {
 // Test suspend and resume. After resuming, client can add configuration and
 // be notified by SensorReadingChanged() as usual.
 TEST_F(GenericSensorServiceTest, SuspendThenResumeTest) {
-  auto client = base::MakeUnique<TestSensorClient>(SensorType::AMBIENT_LIGHT);
+  auto client = std::make_unique<TestSensorClient>(SensorType::AMBIENT_LIGHT);
   {
     base::RunLoop run_loop;
     sensor_provider_->GetSensor(
@@ -527,8 +527,8 @@ TEST_F(GenericSensorServiceTest, SuspendThenResumeTest) {
 // Test suspend when there are more than one client. The suspended client won't
 // receive SensorReadingChanged() notification.
 TEST_F(GenericSensorServiceTest, MultipleClientsSuspendAndResumeTest) {
-  auto client_1 = base::MakeUnique<TestSensorClient>(SensorType::AMBIENT_LIGHT);
-  auto client_2 = base::MakeUnique<TestSensorClient>(SensorType::AMBIENT_LIGHT);
+  auto client_1 = std::make_unique<TestSensorClient>(SensorType::AMBIENT_LIGHT);
+  auto client_2 = std::make_unique<TestSensorClient>(SensorType::AMBIENT_LIGHT);
   {
     base::RunLoop run_loop;
     auto barrier_closure = base::BarrierClosure(2, run_loop.QuitClosure());

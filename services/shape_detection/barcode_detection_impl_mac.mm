@@ -20,7 +20,7 @@ void BarcodeDetectionImpl::Create(
     shape_detection::mojom::BarcodeDetectionRequest request) {
   // Barcode detection needs at least MAC OS X 10.10.
   if (@available(macOS 10.10, *)) {
-    mojo::MakeStrongBinding(base::MakeUnique<BarcodeDetectionImplMac>(),
+    mojo::MakeStrongBinding(std::make_unique<BarcodeDetectionImplMac>(),
                             std::move(request));
   }
 }

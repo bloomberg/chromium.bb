@@ -60,9 +60,9 @@ class TestThreadedImageCursorsFactory : public ThreadedImageCursorsFactory {
   std::unique_ptr<ThreadedImageCursors> CreateCursors() override {
     if (!resource_runner_) {
       resource_runner_ = base::ThreadTaskRunnerHandle::Get();
-      image_cursors_set_ = base::MakeUnique<ui::ImageCursorsSet>();
+      image_cursors_set_ = std::make_unique<ui::ImageCursorsSet>();
     }
-    return base::MakeUnique<ws::ThreadedImageCursors>(
+    return std::make_unique<ws::ThreadedImageCursors>(
         resource_runner_, image_cursors_set_->GetWeakPtr());
   }
 
@@ -134,7 +134,7 @@ void TestScreenManager::Init(display::ScreenManagerDelegate* delegate) {
   // Reset everything.
   display_ids_.clear();
   display::Screen::SetScreenInstance(nullptr);
-  screen_ = base::MakeUnique<display::ScreenBase>();
+  screen_ = std::make_unique<display::ScreenBase>();
   display::Screen::SetScreenInstance(screen_.get());
 }
 
@@ -154,7 +154,7 @@ std::unique_ptr<PlatformDisplay>
 TestPlatformDisplayFactory::CreatePlatformDisplay(
     ServerWindow* root_window,
     const display::ViewportMetrics& metrics) {
-  return base::MakeUnique<TestPlatformDisplay>(metrics, cursor_storage_);
+  return std::make_unique<TestPlatformDisplay>(metrics, cursor_storage_);
 }
 
 // WindowTreeTestApi  ---------------------------------------------------------
@@ -499,7 +499,7 @@ TestWindowTreeBinding::~TestWindowTreeBinding() {}
 
 mojom::WindowManager* TestWindowTreeBinding::GetWindowManager() {
   if (!window_manager_.get())
-    window_manager_ = base::MakeUnique<TestWindowManager>();
+    window_manager_ = std::make_unique<TestWindowManager>();
   return window_manager_.get();
 }
 void TestWindowTreeBinding::SetIncomingMethodCallProcessingPaused(bool paused) {
@@ -508,7 +508,7 @@ void TestWindowTreeBinding::SetIncomingMethodCallProcessingPaused(bool paused) {
 
 mojom::WindowTreeClient* TestWindowTreeBinding::CreateClientForShutdown() {
   DCHECK(!client_after_reset_);
-  client_after_reset_ = base::MakeUnique<TestWindowTreeClient>();
+  client_after_reset_ = std::make_unique<TestWindowTreeClient>();
   return client_after_reset_.get();
 }
 
@@ -516,7 +516,7 @@ mojom::WindowTreeClient* TestWindowTreeBinding::CreateClientForShutdown() {
 
 TestWindowServerDelegate::TestWindowServerDelegate()
     : threaded_image_cursors_factory_(
-          base::MakeUnique<TestThreadedImageCursorsFactory>()) {}
+          std::make_unique<TestThreadedImageCursorsFactory>()) {}
 TestWindowServerDelegate::~TestWindowServerDelegate() {}
 
 TestWindowTreeBinding* TestWindowServerDelegate::Embed(WindowTree* tree,
@@ -547,7 +547,7 @@ TestWindowServerDelegate::CreateWindowTreeBinding(
     mojom::WindowTreeRequest* tree_request,
     mojom::WindowTreeClientPtr* client) {
   std::unique_ptr<TestWindowTreeBinding> binding =
-      base::MakeUnique<TestWindowTreeBinding>(tree);
+      std::make_unique<TestWindowTreeBinding>(tree);
   bindings_.push_back(binding.get());
   return std::move(binding);
 }
@@ -578,10 +578,10 @@ WindowServerTestHelper::WindowServerTestHelper()
     : cursor_(ui::CursorType::kNull), platform_display_factory_(&cursor_) {
   // Some tests create their own message loop, for example to add a task runner.
   if (!base::MessageLoop::current())
-    message_loop_ = base::MakeUnique<base::MessageLoop>();
+    message_loop_ = std::make_unique<base::MessageLoop>();
   PlatformDisplay::set_factory_for_testing(&platform_display_factory_);
-  window_server_ = base::MakeUnique<WindowServer>(&window_server_delegate_);
-  std::unique_ptr<GpuHost> gpu_host = base::MakeUnique<TestGpuHost>();
+  window_server_ = std::make_unique<WindowServer>(&window_server_delegate_);
+  std::unique_ptr<GpuHost> gpu_host = std::make_unique<TestGpuHost>();
   window_server_->SetGpuHost(std::move(gpu_host));
   window_server_delegate_.set_window_server(window_server_.get());
 }

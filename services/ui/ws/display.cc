@@ -266,7 +266,7 @@ void Display::CreateRootWindow(const gfx::Size& size) {
       mojom::EventTargetingPolicy::DESCENDANTS_ONLY);
   root_->SetBounds(gfx::Rect(size), allocator_.GenerateId());
   root_->SetVisible(true);
-  focus_controller_ = base::MakeUnique<FocusController>(root_.get());
+  focus_controller_ = std::make_unique<FocusController>(root_.get());
   focus_controller_->AddObserver(this);
 }
 

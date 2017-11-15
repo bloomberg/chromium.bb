@@ -18,7 +18,7 @@ namespace ui {
 
 InputDeviceServer::InputDeviceServer() {
 #if defined(OS_CHROMEOS)
-  touch_device_server_ = base::MakeUnique<TouchDeviceServer>();
+  touch_device_server_ = std::make_unique<TouchDeviceServer>();
 #endif
 }
 

@@ -14,7 +14,7 @@ namespace {
 
 void CreateAndBindOnBlockableRunner(
     mojom::SerialDeviceEnumeratorRequest request) {
-  mojo::MakeStrongBinding(base::MakeUnique<SerialDeviceEnumeratorImpl>(),
+  mojo::MakeStrongBinding(std::make_unique<SerialDeviceEnumeratorImpl>(),
                           std::move(request));
 }
 

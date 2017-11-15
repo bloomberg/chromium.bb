@@ -20,7 +20,7 @@ class LinearAccelerationFusionAlgorithmUsingAccelerometerTest
  public:
   LinearAccelerationFusionAlgorithmUsingAccelerometerTest() {
     auto fusion_algorithm =
-        base::MakeUnique<LinearAccelerationFusionAlgorithmUsingAccelerometer>();
+        std::make_unique<LinearAccelerationFusionAlgorithmUsingAccelerometer>();
     fusion_algorithm_ = fusion_algorithm.get();
     fake_fusion_sensor_ = base::MakeRefCounted<FakePlatformSensorFusion>(
         std::move(fusion_algorithm));

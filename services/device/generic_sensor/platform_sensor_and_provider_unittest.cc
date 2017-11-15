@@ -19,7 +19,7 @@ namespace device {
 class PlatformSensorProviderTest : public DeviceServiceTestBase {
  public:
   PlatformSensorProviderTest() {
-    provider_ = base::MakeUnique<FakePlatformSensorProvider>();
+    provider_ = std::make_unique<FakePlatformSensorProvider>();
     PlatformSensorProvider::SetProviderForTesting(provider_.get());
   }
 
@@ -81,7 +81,7 @@ TEST_F(PlatformSensorProviderTest, SharedBufferCleared) {
       mojom::SensorType::AMBIENT_LIGHT,
       base::Bind([](scoped_refptr<PlatformSensor> sensor) {
         auto client =
-            base::MakeUnique<NiceMock<MockPlatformSensorClient>>(sensor);
+            std::make_unique<NiceMock<MockPlatformSensorClient>>(sensor);
         auto config = PlatformSensorConfiguration(10);
 
         EXPECT_TRUE(sensor->StartListening(client.get(), config));

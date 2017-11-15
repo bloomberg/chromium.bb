@@ -9,7 +9,7 @@
 namespace user_id {
 
 std::unique_ptr<service_manager::Service> CreateUserIdService() {
-  return base::MakeUnique<UserIdService>();
+  return std::make_unique<UserIdService>();
 }
 
 UserIdService::UserIdService() {

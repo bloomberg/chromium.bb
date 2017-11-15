@@ -328,7 +328,7 @@ std::unique_ptr<base::SharedMemory> Gpu::AllocateSharedMemory(size_t size) {
     return nullptr;
   DCHECK_EQ(shared_memory_size, size);
 
-  return base::MakeUnique<base::SharedMemory>(platform_handle, readonly);
+  return std::make_unique<base::SharedMemory>(platform_handle, readonly);
 }
 
 }  // namespace ui

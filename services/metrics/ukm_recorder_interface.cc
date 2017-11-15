@@ -25,7 +25,7 @@ void UkmRecorderInterface::Create(
     ukm::mojom::UkmRecorderInterfaceRequest request) {
   static base::AtomicSequenceNumber seq;
   mojo::MakeStrongBinding(
-      base::MakeUnique<UkmRecorderInterface>(ukm_recorder, seq.GetNext() + 1),
+      std::make_unique<UkmRecorderInterface>(ukm_recorder, seq.GetNext() + 1),
       std::move(request));
 }
 

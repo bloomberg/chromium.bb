@@ -24,7 +24,7 @@ MusDemoInternal::~MusDemoInternal() {}
 
 std::unique_ptr<aura::WindowTreeClient>
 MusDemoInternal::CreateWindowTreeClient() {
-  return base::MakeUnique<aura::WindowTreeClient>(context()->connector(), this,
+  return std::make_unique<aura::WindowTreeClient>(context()->connector(), this,
                                                   this);
 }
 
@@ -80,7 +80,7 @@ void MusDemoInternal::OnWmWillCreateDisplay(const display::Display& display) {
 void MusDemoInternal::OnWmNewDisplay(
     std::unique_ptr<aura::WindowTreeHostMus> window_tree_host,
     const display::Display& display) {
-  AppendWindowTreeData(base::MakeUnique<WindowTreeData>(kSquareSize));
+  AppendWindowTreeData(std::make_unique<WindowTreeData>(kSquareSize));
   InitWindowTreeData(std::move(window_tree_host));
 }
 

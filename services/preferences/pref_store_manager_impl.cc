@@ -68,20 +68,20 @@ PrefStoreManagerImpl::PrefStoreManagerImpl(
     PrefStore* recommended_prefs,
     PrefRegistry* pref_registry,
     std::vector<const char*> overlay_pref_names)
-    : shared_pref_registry_(base::MakeUnique<SharedPrefRegistry>(
+    : shared_pref_registry_(std::make_unique<SharedPrefRegistry>(
           base::WrapRefCounted(pref_registry))),
       weak_factory_(this) {
   // This store is done in-process so it's already "registered":
   registry_.AddInterface<prefs::mojom::PrefStoreConnector>(
       base::Bind(&PrefStoreManagerImpl::BindPrefStoreConnectorRequest,
                  base::Unretained(this)));
-  persistent_pref_store_ = base::MakeUnique<PersistentPrefStoreImpl>(
+  persistent_pref_store_ = std::make_unique<PersistentPrefStoreImpl>(
       base::WrapRefCounted(user_prefs),
       base::BindOnce(&PrefStoreManagerImpl::OnPersistentPrefStoreReady,
                      base::Unretained(this)));
   if (incognito_user_prefs_underlay) {
     incognito_persistent_pref_store_underlay_ =
-        base::MakeUnique<PersistentPrefStoreImpl>(
+        std::make_unique<PersistentPrefStoreImpl>(
             base::WrapRefCounted(incognito_user_prefs_underlay),
             base::BindOnce(
                 &PrefStoreManagerImpl::OnIncognitoPersistentPrefStoreReady,
@@ -109,7 +109,7 @@ void PrefStoreManagerImpl::BindPrefStoreConnectorRequest(
     prefs::mojom::PrefStoreConnectorRequest request,
     const service_manager::BindSourceInfo& source_info) {
   connector_bindings_.AddBinding(
-      base::MakeUnique<ConnectorConnection>(this, source_info),
+      std::make_unique<ConnectorConnection>(this, source_info),
       std::move(request));
 }
 
@@ -144,7 +144,7 @@ void PrefStoreManagerImpl::RegisterPrefStore(PrefValueStore::PrefStoreType type,
     return;
 
   read_only_pref_stores_.emplace(
-      type, base::MakeUnique<PrefStoreImpl>(base::WrapRefCounted(pref_store)));
+      type, std::make_unique<PrefStoreImpl>(base::WrapRefCounted(pref_store)));
 }
 
 void PrefStoreManagerImpl::ShutDown() {
