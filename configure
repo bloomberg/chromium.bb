@@ -524,7 +524,7 @@ post_process_cmdline() {
       soft_enable ext_intra_mod
       soft_enable palette_delta_encoding
       soft_enable frame_size
-	  soft_enable segment_globalmv
+      soft_enable segment_globalmv
     fi
 
     # Enable low-bitdepth pixel pipeline by default
