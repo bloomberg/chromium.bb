@@ -1,25 +1,14 @@
 Tests DOMNode.cssPath()
 
-
-ид
-  
-класс
-   
-   
   html
     head
-      head > meta
-      #script-id
-      head > script:nth-child(3)
-      #test-script
+      head > base
     body
-      body > p
+      body > article:nth-child(1)
       body > article:nth-child(2)
-      body > article:nth-child(3)
       body > input[type="number"]
       #ids
         #ids > div:nth-child(1)
-        #ids > div:nth-child(2)
         #inner-id
         #__proto__
         #\23 \22 ridiculous\22 \2e id
@@ -31,7 +20,7 @@ Tests DOMNode.cssPath()
         #\37
         #ид
         #input-id
-        #ids > input[type="text"]:nth-child(14)
+        #ids > input[type="text"]:nth-child(13)
         #ids > p
       #classes
         #classes > div.foo.bar

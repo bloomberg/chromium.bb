@@ -1,8 +1,8 @@
-CONSOLE WARNING: Styling master document from stylesheets defined in HTML Imports is deprecated, and is planned to be removed in M65, around March 2018. Please refer to https://goo.gl/EGXzpw for possible migration paths.
 This test verifies that imported document is rendered within the import link.
 
 - <html>
     - <head>
+          <base href="http://127.0.0.1:8000/devtools/elements/">
         - <link rel="import" href="../resources/imported-document.html">
             - #document
                 - <html>
@@ -31,13 +31,8 @@ This test verifies that imported document is rendered within the import link.
                       </body>
                   </html>
           </link>
-          <script src="../../inspector/inspector-test.js"></script>
-          <script src="../../inspector/elements-test.js"></script>
-        - <script>
-              \nfunction test() {\n  // Warm up highlighter module.\n  runtime.loadModulePromise('source_frame').then(function() {\n    ElementsTestRunner.expandElementsTree(callback);\n  });\n\n  function callback() {\n    ElementsTestRunner.dumpElementsTree();\n    TestRunner.completeTest();\n  }\n}\n
-          </script>
       </head>
-    - <body onload="runTest()">
+    - <body>
           <p>This test verifies that imported document is rendered within the import link.</p>
       </body>
   </html>
