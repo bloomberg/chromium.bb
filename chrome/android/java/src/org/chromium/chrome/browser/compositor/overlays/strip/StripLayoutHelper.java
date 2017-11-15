@@ -919,11 +919,7 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
 
         // 4. Handle tab-specific content animations.
         for (int i = 0; i < mStripTabs.length; i++) {
-            StripLayoutTab tab = mStripTabs[i];
-            if (tab.isAnimating()) {
-                update = true;
-                finished &= tab.onUpdateAnimation(time, jumpToEnd);
-            }
+            if (jumpToEnd) mStripTabs[i].finishAnimation();
         }
 
         // 5. Update tab spinners.
@@ -1094,7 +1090,7 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
     private StripLayoutTab createStripTab(int id) {
         // TODO: Cache these
         StripLayoutTab tab = new StripLayoutTab(
-                mContext, id, this, mTabLoadTrackerHost, mRenderHost, mIncognito);
+                mContext, id, this, mTabLoadTrackerHost, mRenderHost, mUpdateHost, mIncognito);
         tab.setHeight(mHeight);
         pushStackerPropertiesToTab(tab);
         return tab;
@@ -1189,15 +1185,7 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
         // 6. Figure out where to put the new tab button.
         updateNewTabButtonState();
 
-        // 7. Check if we have any animations and request an update if so.
-        for (int i = 0; i < mStripTabs.length; i++) {
-            if (mStripTabs[i].isAnimating()) {
-                mUpdateHost.requestUpdate();
-                break;
-            }
-        }
-
-        // 8. Invalidate the accessibility provider in case the visible virtual views have changed.
+        // 7. Invalidate the accessibility provider in case the visible virtual views have changed.
         mRenderHost.invalidateAccessibilityProvider();
     }
 
