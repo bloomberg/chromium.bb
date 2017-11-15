@@ -87,6 +87,17 @@ TEST(StartupTabProviderTest, GetStandardOnboardingTabsForState_Negative) {
             standard_params);
     EXPECT_TRUE(output.empty());
   }
+  {
+    // Do not show the welcome page if force-sign-in policy is enabled.
+    StandardOnboardingTabsParams standard_params;
+    standard_params.is_first_run = true;
+    standard_params.is_signin_allowed = true;
+    standard_params.is_force_signin_enabled = true;
+    StartupTabs output =
+        StartupTabProviderImpl::GetStandardOnboardingTabsForState(
+            standard_params);
+    EXPECT_TRUE(output.empty());
+  }
 }
 
 #if defined(OS_WIN)

@@ -65,6 +65,7 @@ class StartupTabProviderImpl : public StartupTabProvider {
     bool is_signed_in = false;
     bool is_signin_in_progress = false;
     bool is_supervised_user = false;
+    bool is_force_signin_enabled = false;
   };
 
   struct Win10OnboardingTabsParams {
@@ -81,7 +82,9 @@ class StartupTabProviderImpl : public StartupTabProvider {
   // testing.
 
   // Returns true if showing the standard welcome page is permissable.
-  static bool CanShowWelcome(bool is_signin_allowed, bool is_supervised_user);
+  static bool CanShowWelcome(bool is_signin_allowed,
+                             bool is_supervised_user,
+                             bool is_force_signin_enabled);
 
   // Returns true if the standard welcome page should be shown in a tab. This
   // should only be used following a positive result from CanShowWelcome.
