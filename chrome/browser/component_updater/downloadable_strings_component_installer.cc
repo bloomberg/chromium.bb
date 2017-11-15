@@ -93,7 +93,7 @@ static constexpr DeletionPolicy kDeletionPolicy =
 
 // Finch experiment configuration
 const base::Feature kDownloadableStringsExperimentFeature = {
-    "DownloadableStringsExperiment", base::FEATURE_DISABLED_BY_DEFAULT,
+    "DownloadableStrings", base::FEATURE_DISABLED_BY_DEFAULT,
 };
 
 // Name of the binary test file.
