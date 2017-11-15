@@ -500,7 +500,9 @@ html[dir=rtl] #attribution,
 }
 
 #one-google {
-  position: fixed;
+  position: absolute;
+  right: 0;
+  top: 0;
   transition: opacity 130ms;
   z-index: 1;
 }
