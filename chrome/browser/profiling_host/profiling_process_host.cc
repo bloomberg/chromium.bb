@@ -25,6 +25,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tracing/crash_service_uploader.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_switches.h"
@@ -632,6 +633,12 @@ bool ProfilingProcessHost::ShouldProfileProcessType(int process_type) {
 
 bool ProfilingProcessHost::ShouldProfileNewRenderer(
     content::RenderProcessHost* renderer) const {
+  // Never profile incognito processes.
+  if (Profile::FromBrowserContext(renderer->GetBrowserContext())
+          ->GetProfileType() == Profile::INCOGNITO_PROFILE) {
+    return false;
+  }
+
   if (mode() == Mode::kAll) {
     return true;
   } else if (mode() == Mode::kRendererSampling && !profiled_renderer_) {
