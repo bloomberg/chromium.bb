@@ -34,9 +34,8 @@ class MediaPermission;
 
 class MEDIA_BLINK_EXPORT KeySystemConfigSelector {
  public:
-  KeySystemConfigSelector(
-      const KeySystems* key_systems,
-      MediaPermission* media_permission);
+  KeySystemConfigSelector(const KeySystems* key_systems,
+                          MediaPermission* media_permission);
 
   ~KeySystemConfigSelector();
 

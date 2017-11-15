@@ -6959,9 +6959,12 @@ void RenderFrameImpl::UpdateNavigationState(DocumentState* document_state,
 
 media::MediaPermission* RenderFrameImpl::GetMediaPermission() {
   if (!media_permission_dispatcher_) {
-    media_permission_dispatcher_.reset(new MediaPermissionDispatcher(base::Bind(
-        &RenderFrameImpl::GetInterface<blink::mojom::PermissionService>,
-        base::Unretained(this))));
+    media_permission_dispatcher_.reset(new MediaPermissionDispatcher(
+        base::Bind(
+            &RenderFrameImpl::GetInterface<blink::mojom::PermissionService>,
+            base::Unretained(this)),
+        base::Bind(&RenderFrameImpl::IsEncryptedMediaEnabled,
+                   base::Unretained(this))));
   }
   return media_permission_dispatcher_.get();
 }
@@ -7044,6 +7047,10 @@ void RenderFrameImpl::RegisterMojoInterfaces() {
 template <typename Interface>
 void RenderFrameImpl::GetInterface(mojo::InterfaceRequest<Interface> request) {
   GetRemoteInterfaces()->GetInterface(std::move(request));
+}
+
+bool RenderFrameImpl::IsEncryptedMediaEnabled() const {
+  return GetRendererPreferences().enable_encrypted_media;
 }
 
 void RenderFrameImpl::OnHostZoomClientRequest(

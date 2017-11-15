@@ -67,7 +67,7 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(PrefsTabHelper);
 namespace {
 
 // The list of prefs we want to observe.
-const char* const kPrefsToObserve[] = {
+const char* const kWebPrefsToObserve[] = {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   prefs::kAnimationPolicy,
 #endif
@@ -89,13 +89,12 @@ const char* const kPrefsToObserve[] = {
   prefs::kWebKitMinimumFontSize,
   prefs::kWebKitMinimumLogicalFontSize,
   prefs::kWebKitPluginsEnabled,
-  prefs::kWebKitEncryptedMediaEnabled,
   prefs::kWebkitTabsToLinks,
   prefs::kWebKitTextAreasAreResizable,
   prefs::kWebKitWebSecurityEnabled,
 };
 
-const int kPrefsToObserveLength = arraysize(kPrefsToObserve);
+const int kWebPrefsToObserveLength = arraysize(kWebPrefsToObserve);
 
 #if !defined(OS_ANDROID)
 // Registers a preference under the path |pref_name| for each script used for
@@ -331,6 +330,7 @@ class PrefWatcher : public KeyedService {
     pref_change_registrar_.Add(prefs::kAcceptLanguages, renderer_callback);
     pref_change_registrar_.Add(prefs::kEnableDoNotTrack, renderer_callback);
     pref_change_registrar_.Add(prefs::kEnableReferrers, renderer_callback);
+    pref_change_registrar_.Add(prefs::kEnableEncryptedMedia, renderer_callback);
 
 #if BUILDFLAG(ENABLE_WEBRTC)
     pref_change_registrar_.Add(prefs::kWebRTCMultipleRoutesEnabled,
@@ -348,8 +348,8 @@ class PrefWatcher : public KeyedService {
 
     PrefChangeRegistrar::NamedChangeCallback webkit_callback = base::Bind(
         &PrefWatcher::OnWebPrefChanged, base::Unretained(this));
-    for (int i = 0; i < kPrefsToObserveLength; ++i) {
-      const char* pref_name = kPrefsToObserve[i];
+    for (int i = 0; i < kWebPrefsToObserveLength; ++i) {
+      const char* pref_name = kWebPrefsToObserve[i];
       pref_change_registrar_.Add(pref_name, webkit_callback);
     }
   }
@@ -488,8 +488,6 @@ void PrefsTabHelper::RegisterProfilePrefs(
                                 pref_defaults.loads_images_automatically);
   registry->RegisterBooleanPref(prefs::kWebKitPluginsEnabled,
                                 pref_defaults.plugins_enabled);
-  registry->RegisterBooleanPref(prefs::kWebKitEncryptedMediaEnabled,
-                                pref_defaults.encrypted_media_enabled);
   registry->RegisterBooleanPref(prefs::kWebKitDomPasteEnabled,
                                 pref_defaults.dom_paste_enabled);
   registry->RegisterBooleanPref(prefs::kWebKitTextAreasAreResizable,
@@ -499,6 +497,7 @@ void PrefsTabHelper::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kWebKitAllowRunningInsecureContent,
                                 false);
   registry->RegisterBooleanPref(prefs::kEnableReferrers, true);
+  registry->RegisterBooleanPref(prefs::kEnableEncryptedMedia, true);
 #if defined(OS_ANDROID)
   registry->RegisterDoublePref(prefs::kWebKitFontScaleFactor, 1.0);
   registry->RegisterBooleanPref(prefs::kWebKitForceEnableZoom,

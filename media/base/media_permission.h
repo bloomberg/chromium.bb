@@ -42,6 +42,11 @@ class MEDIA_EXPORT MediaPermission {
       const GURL& security_origin,
       const PermissionStatusCB& permission_status_cb) = 0;
 
+  // Whether to allow the use of Encrypted Media Extensions (EME), except for
+  // the use of Clear Key key systems, which is always allowed as required by
+  // the spec.
+  virtual bool IsEncryptedMediaEnabled() = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(MediaPermission);
 };

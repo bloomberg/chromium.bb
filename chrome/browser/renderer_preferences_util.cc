@@ -90,6 +90,8 @@ void UpdateFromSystemSettings(content::RendererPreferences* prefs,
   prefs->enable_referrers = pref_service->GetBoolean(prefs::kEnableReferrers);
   prefs->enable_do_not_track =
       pref_service->GetBoolean(prefs::kEnableDoNotTrack);
+  prefs->enable_encrypted_media =
+      pref_service->GetBoolean(prefs::kEnableEncryptedMedia);
 #if BUILDFLAG(ENABLE_WEBRTC)
   prefs->webrtc_ip_handling_policy = std::string();
   // Handling the backward compatibility of previous boolean verions of policy

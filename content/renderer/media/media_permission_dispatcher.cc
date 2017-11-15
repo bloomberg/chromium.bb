@@ -43,12 +43,15 @@ blink::mojom::PermissionDescriptorPtr MediaPermissionTypeToPermissionDescriptor(
 namespace content {
 
 MediaPermissionDispatcher::MediaPermissionDispatcher(
-    const ConnectToServiceCB& connect_to_service_cb)
+    const ConnectToServiceCB& connect_to_service_cb,
+    const IsEncryptedMediaEnabledCB& is_encrypted_media_enabled_cb)
     : connect_to_service_cb_(connect_to_service_cb),
+      is_encrypted_media_enabled_cb_(is_encrypted_media_enabled_cb),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       next_request_id_(0),
       weak_factory_(this) {
   DCHECK(!connect_to_service_cb_.is_null());
+  DCHECK(!is_encrypted_media_enabled_cb_.is_null());
   weak_ptr_ = weak_factory_.GetWeakPtr();
 }
 
@@ -114,6 +117,10 @@ void MediaPermissionDispatcher::RequestPermission(
       blink::WebUserGestureIndicator::IsProcessingUserGesture(),
       base::BindOnce(&MediaPermissionDispatcher::OnPermissionStatus, weak_ptr_,
                      request_id));
+}
+
+bool MediaPermissionDispatcher::IsEncryptedMediaEnabled() {
+  return is_encrypted_media_enabled_cb_.Run();
 }
 
 uint32_t MediaPermissionDispatcher::RegisterCallback(

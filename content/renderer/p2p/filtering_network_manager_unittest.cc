@@ -100,6 +100,8 @@ class MockMediaPermission : public media::MediaPermission {
     }
   }
 
+  bool IsEncryptedMediaEnabled() override { return true; }
+
   void SetMicPermission(bool granted) {
     if (mic_callback_.is_null())
       return;

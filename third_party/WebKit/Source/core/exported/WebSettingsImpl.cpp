@@ -276,10 +276,6 @@ void WebSettingsImpl::SetPluginsEnabled(bool enabled) {
   dev_tools_emulator_->SetPluginsEnabled(enabled);
 }
 
-void WebSettingsImpl::SetEncryptedMediaEnabled(bool enabled) {
-  settings_->SetEncryptedMediaEnabled(enabled);
-}
-
 void WebSettingsImpl::SetAvailablePointerTypes(int pointers) {
   dev_tools_emulator_->SetAvailablePointerTypes(pointers);
 }

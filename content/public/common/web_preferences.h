@@ -112,7 +112,6 @@ struct CONTENT_EXPORT WebPreferences {
   bool loads_images_automatically;
   bool images_enabled;
   bool plugins_enabled;
-  bool encrypted_media_enabled;
   bool dom_paste_enabled;
   bool shrinks_standalone_images_to_fit;
   bool text_areas_are_resizable;

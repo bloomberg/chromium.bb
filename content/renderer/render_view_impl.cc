@@ -769,7 +769,6 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->SetLoadsImagesAutomatically(prefs.loads_images_automatically);
   settings->SetImagesEnabled(prefs.images_enabled);
   settings->SetPluginsEnabled(prefs.plugins_enabled);
-  settings->SetEncryptedMediaEnabled(prefs.encrypted_media_enabled);
   settings->SetDOMPasteAllowed(prefs.dom_paste_enabled);
   settings->SetTextAreasAreResizable(prefs.text_areas_are_resizable);
   settings->SetAllowScriptsToCloseWindows(prefs.allow_scripts_to_close_windows);

@@ -45,6 +45,8 @@ const char kSupportedVideoCodecs[] = "vp8,vp8";
 
 const char kDefaultSecurityOrigin[] = "https://example.com/";
 
+const char kClearKey[] = "org.w3.clearkey";
+
 // The IDL for MediaKeySystemConfiguration specifies some defaults, so
 // create a config object that mimics what would be created if an empty
 // dictionary was passed in.
@@ -83,7 +85,8 @@ class FakeKeySystems : public KeySystems {
   }
 
   bool IsSupportedKeySystem(const std::string& key_system) const override {
-    if (key_system == kSupported)
+    // Based on EME spec, Clear Key key system is always supported.
+    if (key_system == kSupported || key_system == kClearKey)
       return true;
     return false;
   }
@@ -193,6 +196,7 @@ class FakeKeySystems : public KeySystems {
 
 class FakeMediaPermission : public MediaPermission {
  public:
+  // MediaPermission implementation.
   void HasPermission(Type type,
                      const GURL& security_origin,
                      const PermissionStatusCB& permission_status_cb) override {
@@ -207,8 +211,11 @@ class FakeMediaPermission : public MediaPermission {
     permission_status_cb.Run(is_granted);
   }
 
+  bool IsEncryptedMediaEnabled() override { return is_encrypted_media_enabled; }
+
   int requests = 0;
   bool is_granted = false;
+  bool is_encrypted_media_enabled = true;
 };
 
 }  // namespace
@@ -374,6 +381,32 @@ TEST_F(KeySystemConfigSelectorTest, KeySystem_NonAscii) {
 
 TEST_F(KeySystemConfigSelectorTest, KeySystem_Unsupported) {
   key_system_ = kUnsupported;
+  configs_.push_back(UsableConfiguration());
+  ASSERT_TRUE(SelectConfigReturnsError());
+}
+
+TEST_F(KeySystemConfigSelectorTest, KeySystem_ClearKey) {
+  key_system_ = kClearKey;
+  configs_.push_back(UsableConfiguration());
+  ASSERT_TRUE(SelectConfigReturnsConfig());
+}
+
+// --- Disable EncryptedMedia ---
+
+TEST_F(KeySystemConfigSelectorTest, EncryptedMediaDisabled_ClearKey) {
+  media_permission_->is_encrypted_media_enabled = false;
+
+  // Clear Key key system is always supported.
+  key_system_ = kClearKey;
+  configs_.push_back(UsableConfiguration());
+  ASSERT_TRUE(SelectConfigReturnsConfig());
+}
+
+TEST_F(KeySystemConfigSelectorTest, EncryptedMediaDisabled_Supported) {
+  media_permission_->is_encrypted_media_enabled = false;
+
+  // Other key systems are not supported.
+  key_system_ = kSupported;
   configs_.push_back(UsableConfiguration());
   ASSERT_TRUE(SelectConfigReturnsError());
 }

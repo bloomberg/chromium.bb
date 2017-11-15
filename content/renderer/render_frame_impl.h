@@ -1232,6 +1232,11 @@ class CONTENT_EXPORT RenderFrameImpl
   void GetInterface(const std::string& interface_name,
                     mojo::ScopedMessagePipeHandle interface_pipe) override;
 
+  // Whether to allow the use of Encrypted Media Extensions (EME), except for
+  // the use of Clear Key key systems, which is always allowed as required by
+  // the spec.
+  bool IsEncryptedMediaEnabled() const;
+
   // Send |callback| our AndroidOverlay routing token when it arrives.  We may
   // call |callback| before returning.
   void RequestOverlayRoutingToken(media::RoutingTokenCallback callback);
