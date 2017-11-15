@@ -45,11 +45,6 @@ namespace {
 using StartArcInstanceResult =
     chromeos::SessionManagerClient::StartArcInstanceResult;
 
-// This is called when StopArcInstance D-Bus method completes. Since we have the
-// ArcInstanceStopped() callback and are notified if StartArcInstance fails, we
-// don't need to do anything when StopArcInstance completes.
-void DoNothingInstanceStopped(bool) {}
-
 chromeos::SessionManagerClient* GetSessionManagerClient() {
   // If the DBusThreadManager or the SessionManagerClient aren't available,
   // there isn't much we can do. This should only happen when running tests.
@@ -730,8 +725,10 @@ void ArcSessionImpl::StopArcInstance() {
   // ArcInstanceStopped().
   chromeos::SessionManagerClient* session_manager_client =
       chromeos::DBusThreadManager::Get()->GetSessionManagerClient();
+  // Since we have the ArcInstanceStopped() callback, we don't need to do
+  // anything when StopArcInstance completes.
   session_manager_client->StopArcInstance(
-      base::Bind(&DoNothingInstanceStopped));
+      chromeos::EmptyVoidDBusMethodCallback());
 }
 
 void ArcSessionImpl::ArcInstanceStopped(
