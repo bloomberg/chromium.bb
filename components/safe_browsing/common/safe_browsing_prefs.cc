@@ -13,11 +13,6 @@
 
 namespace {
 
-// Switch value which force the ScoutGroupSelected pref to true.
-const char kForceScoutGroupValueTrue[] = "true";
-// Switch value which force the ScoutGroupSelected pref to false.
-const char kForceScoutGroupValueFalse[] = "false";
-
 // Name of the Scout Transition UMA metric.
 const char kScoutTransitionMetricName[] = "SafeBrowsing.Pref.Scout.Transition";
 
@@ -163,8 +158,6 @@ const char kSafeBrowsingUnhandledSyncPasswordReuses[] =
 
 namespace safe_browsing {
 
-const char kSwitchForceScoutGroup[] = "force-scout-group";
-
 const base::Feature kCanShowScoutOptIn{"CanShowScoutOptIn",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -211,26 +204,6 @@ const char* GetExtendedReportingPrefName(const PrefService& prefs) {
 }
 
 void InitializeSafeBrowsingPrefs(PrefService* prefs) {
-  // First handle forcing kSafeBrowsingScoutGroupSelected pref via cmd-line.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          kSwitchForceScoutGroup)) {
-    std::string switch_value =
-        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            kSwitchForceScoutGroup);
-    if (switch_value == kForceScoutGroupValueTrue) {
-      prefs->SetBoolean(prefs::kSafeBrowsingScoutGroupSelected, true);
-      UMA_HISTOGRAM_ENUMERATION(kScoutTransitionMetricName,
-                                FORCE_SCOUT_FLAG_TRUE, MAX_REASONS);
-    } else if (switch_value == kForceScoutGroupValueFalse) {
-      prefs->SetBoolean(prefs::kSafeBrowsingScoutGroupSelected, false);
-      UMA_HISTOGRAM_ENUMERATION(kScoutTransitionMetricName,
-                                FORCE_SCOUT_FLAG_FALSE, MAX_REASONS);
-    }
-
-    // If the switch is used, don't process the experiment state.
-    return;
-  }
-
   // Handle the three possible experiment states.
   if (base::FeatureList::IsEnabled(kOnlyShowScoutOptIn)) {
     // OnlyShowScoutOptIn immediately turns on ScoutGroupSelected pref.
