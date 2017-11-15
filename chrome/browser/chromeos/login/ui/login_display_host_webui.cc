@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "ash/accessibility/focus_ring_controller.h"
+#include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
@@ -45,6 +46,7 @@
 #include "chrome/browser/chromeos/login/signin/token_handle_util.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/ui/input_events_blocker.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host_views.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_display.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -189,9 +191,22 @@ bool ShouldShowSigninScreen(chromeos::OobeScreen first_screen) {
 // (if locale was updated).
 void ShowLoginWizardFinish(
     chromeos::OobeScreen first_screen,
-    const chromeos::StartupCustomizationDocument* startup_manifest,
-    chromeos::LoginDisplayHost* display_host) {
+    const chromeos::StartupCustomizationDocument* startup_manifest) {
   TRACE_EVENT0("chromeos", "ShowLoginWizard::ShowLoginWizardFinish");
+
+  // TODO(crbug.com/781402): Move LoginDisplayHost creation out of
+  // LoginDisplayHostWebUI, it is not specific to a particular implementation.
+
+  // Create the LoginDisplayHost. Use the views-based implementation only for
+  // the sign-in screen.
+  chromeos::LoginDisplayHost* display_host = nullptr;
+  if (ash::switches::IsUsingViewsLogin() &&
+      ShouldShowSigninScreen(first_screen)) {
+    display_host = new chromeos::LoginDisplayHostViews();
+  } else {
+    gfx::Rect screen_bounds(chromeos::CalculateScreenBounds(gfx::Size()));
+    display_host = new chromeos::LoginDisplayHostWebUI(screen_bounds);
+  }
 
   // Restore system timezone.
   std::string timezone;
@@ -222,15 +237,11 @@ void ShowLoginWizardFinish(
 struct ShowLoginWizardSwitchLanguageCallbackData {
   explicit ShowLoginWizardSwitchLanguageCallbackData(
       chromeos::OobeScreen first_screen,
-      const chromeos::StartupCustomizationDocument* startup_manifest,
-      chromeos::LoginDisplayHost* display_host)
-      : first_screen(first_screen),
-        startup_manifest(startup_manifest),
-        display_host(display_host) {}
+      const chromeos::StartupCustomizationDocument* startup_manifest)
+      : first_screen(first_screen), startup_manifest(startup_manifest) {}
 
   const chromeos::OobeScreen first_screen;
   const chromeos::StartupCustomizationDocument* const startup_manifest;
-  chromeos::LoginDisplayHost* const display_host;
 
   // lock UI while resource bundle is being reloaded.
   chromeos::InputEventsBlocker events_blocker;
@@ -243,8 +254,7 @@ void OnLanguageSwitchedCallback(
     LOG(WARNING) << "Locale could not be found for '" << result.requested_locale
                  << "'";
 
-  ShowLoginWizardFinish(self->first_screen, self->startup_manifest,
-                        self->display_host);
+  ShowLoginWizardFinish(self->first_screen, self->startup_manifest);
 }
 
 // Triggers ShowLoginWizardFinish directly if no locale switch is required
@@ -253,8 +263,7 @@ void TriggerShowLoginWizardFinish(
     std::string switch_locale,
     std::unique_ptr<ShowLoginWizardSwitchLanguageCallbackData> data) {
   if (switch_locale.empty()) {
-    ShowLoginWizardFinish(data->first_screen, data->startup_manifest,
-                          data->display_host);
+    ShowLoginWizardFinish(data->first_screen, data->startup_manifest);
   } else {
     chromeos::locale_util::SwitchLanguageCallback callback(
         base::Bind(&OnLanguageSwitchedCallback, base::Passed(std::move(data))));
@@ -1359,10 +1368,6 @@ void ShowLoginWizard(OobeScreen first_screen) {
           ? session_manager::SessionState::LOGIN_PRIMARY
           : session_manager::SessionState::OOBE);
 
-  // Manages its own lifetime. See ShutdownDisplayHost().
-  LoginDisplayHostWebUI* display_host =
-      new LoginDisplayHostWebUI(screen_bounds);
-
   bool show_app_launch_splash_screen =
       (first_screen == OobeScreen::SCREEN_APP_LAUNCH_SPLASH);
   if (show_app_launch_splash_screen) {
@@ -1370,6 +1375,8 @@ void ShowLoginWizard(OobeScreen first_screen) {
         KioskAppManager::Get()->GetAutoLaunchApp();
     const bool diagnostic_mode = false;
     const bool auto_launch = true;
+    // Manages its own lifetime. See ShutdownDisplayHost().
+    auto* display_host = new LoginDisplayHostWebUI(screen_bounds);
     display_host->StartAppLaunch(auto_launch_app_id, diagnostic_mode,
                                  auto_launch);
     return;
@@ -1382,6 +1389,8 @@ void ShowLoginWizard(OobeScreen first_screen) {
           ->GetPrescribedEnrollmentConfig();
   if (enrollment_config.should_enroll() &&
       first_screen == OobeScreen::SCREEN_UNKNOWN) {
+    // Manages its own lifetime. See ShutdownDisplayHost().
+    auto* display_host = new LoginDisplayHostWebUI(screen_bounds);
     // Shows networks screen instead of enrollment screen to resume the
     // interrupted auto start enrollment flow because enrollment screen does
     // not handle flaky network. See http://crbug.com/332572
@@ -1412,7 +1421,7 @@ void ShowLoginWizard(OobeScreen first_screen) {
 
     std::unique_ptr<ShowLoginWizardSwitchLanguageCallbackData> data =
         base::MakeUnique<ShowLoginWizardSwitchLanguageCallbackData>(
-            first_screen, nullptr, display_host);
+            first_screen, nullptr);
     TriggerShowLoginWizardFinish(switch_locale, std::move(data));
     return;
   }
@@ -1436,8 +1445,8 @@ void ShowLoginWizard(OobeScreen first_screen) {
                                                                   layout);
 
   std::unique_ptr<ShowLoginWizardSwitchLanguageCallbackData> data(
-      new ShowLoginWizardSwitchLanguageCallbackData(
-          first_screen, startup_manifest, display_host));
+      new ShowLoginWizardSwitchLanguageCallbackData(first_screen,
+                                                    startup_manifest));
 
   if (!current_locale.empty() || locale.empty()) {
     TriggerShowLoginWizardFinish(std::string(), std::move(data));

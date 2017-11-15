@@ -133,6 +133,10 @@ const char kForceClamshellPowerButton[] = "force-clamshell-power-button";
 // Whether this device has an internal stylus.
 const char kHasInternalStylus[] = "has-internal-stylus";
 
+// If true, the views login screen will be shown. This will become the default
+// in the future.
+const char kShowViewsLogin[] = "show-views-login";
+
 // If true, the webui lock screen wil be shown. This is deprecated and will be
 // removed in the future.
 const char kShowWebUiLock[] = "show-webui-lock";
@@ -152,6 +156,10 @@ const char kUseIMEService[] = "use-ime-service";
 bool IsNightLightEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       kAshEnableNightLight);
+}
+
+bool IsUsingViewsLogin() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(kShowViewsLogin);
 }
 
 bool IsUsingWebUiLock() {
