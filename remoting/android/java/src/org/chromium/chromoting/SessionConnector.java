@@ -95,8 +95,6 @@ public class SessionConnector implements ConnectionListener, HostListManager.Cal
                     return;
                 }
                 break;
-            default:
-                break;
         }
 
          // Pass the state/error back to the caller.

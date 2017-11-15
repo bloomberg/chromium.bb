@@ -33,7 +33,6 @@ import android.view.ViewGroup;
  *
  * @hide
  */
-@SuppressWarnings("RestrictTo")
 @RestrictTo(GROUP_ID)
 public class BottomNavigationPresenter implements MenuPresenter {
     private MenuBuilder mMenu;

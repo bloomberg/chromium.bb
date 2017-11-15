@@ -30,7 +30,6 @@ import android.view.SubMenu;
  *
  * @hide
  */
-@SuppressWarnings("RestrictTo")
 @RestrictTo(GROUP_ID)
 public final class BottomNavigationMenu extends MenuBuilder {
     public static final int MAX_ITEM_COUNT = 5;
