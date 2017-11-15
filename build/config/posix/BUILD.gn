@@ -58,7 +58,35 @@ config("runtime_library") {
     }
 
     # Make sure we don't link against libc++ or libstdc++.
-    ldflags += [ "-nostdlib++" ]
+    if (is_clang) {
+      ldflags += [ "-nostdlib++" ]
+    } else {
+      ldflags += [ "-nodefaultlibs" ]
+
+      # Unfortunately, there's no way to disable linking against just
+      # libc++ (besides using clang instead of clang++); -nodefaultlibs
+      # removes all of the default libraries, so add back the ones that we
+      # need.
+      libs += [
+        "c",
+        "m",
+      ]
+
+      if (!is_mac && !is_fuchsia && !is_android) {
+        libs += [
+          "gcc_s",
+          "rt",
+        ]
+      }
+
+      if (is_mac && using_sanitizer) {
+        lib_dirs += [ "//third_party/llvm-build/Release+Asserts/lib/clang/$clang_version/lib/darwin" ]
+
+        if (is_asan) {
+          libs += [ "clang_rt.asan_osx_dynamic" ]
+        }
+      }
+    }
   }
 
   if (!is_mac && !is_ios && sysroot != "") {

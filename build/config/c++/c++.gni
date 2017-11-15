@@ -12,7 +12,7 @@ declare_args() {
   # is not supported.
   use_custom_libcxx =
       is_msan || is_fuchsia ||
-      (is_linux && is_clang &&
+      (is_linux &&
        (!is_chromeos || default_toolchain != "//build/toolchain/cros:target"))
 
   # Use libc++ instead of stdlibc++ when using the host_cpu toolchain, even if
