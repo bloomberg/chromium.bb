@@ -22,16 +22,6 @@
       showcase::kUseCaseKey : @"Content Suggestions UI",
     },
     @{
-      showcase::kClassForDisplayKey : @"MenuViewController",
-      showcase::kClassForInstantiationKey : @"SCToolsCoordinator",
-      showcase::kUseCaseKey : @"Tools menu",
-    },
-    @{
-      showcase::kClassForDisplayKey : @"NTPViewController",
-      showcase::kClassForInstantiationKey : @"SCNTPCoordinator",
-      showcase::kUseCaseKey : @"NTP",
-    },
-    @{
       showcase::kClassForDisplayKey : @"PaymentRequestEditViewController",
       showcase::kClassForInstantiationKey : @"SCPaymentsEditorCoordinator",
       showcase::kUseCaseKey : @"Generic payment request editor",
@@ -47,34 +37,9 @@
       showcase::kUseCaseKey : @"Payment request selector view",
     },
     @{
-      showcase::kClassForDisplayKey : @"RootContainerViewController",
-      showcase::kClassForInstantiationKey : @"SCRootCoordinator",
-      showcase::kUseCaseKey : @"Root container",
-    },
-    @{
       showcase::kClassForDisplayKey : @"SettingsViewController",
       showcase::kClassForInstantiationKey : @"SCSettingsCoordinator",
       showcase::kUseCaseKey : @"Main settings screen",
-    },
-    @{
-      showcase::kClassForDisplayKey : @"TabGridViewController",
-      showcase::kClassForInstantiationKey : @"SCTabGridCoordinator",
-      showcase::kUseCaseKey : @"Tab grid",
-    },
-    @{
-      showcase::kClassForDisplayKey : @"TopToolbarTabViewController",
-      showcase::kClassForInstantiationKey : @"SCTopToolbarTabCoordinator",
-      showcase::kUseCaseKey : @"Top toolbar tab",
-    },
-    @{
-      showcase::kClassForDisplayKey : @"BottomToolbarTabViewController",
-      showcase::kClassForInstantiationKey : @"SCBottomToolbarTabCoordinator",
-      showcase::kUseCaseKey : @"Bottom toolbar tab",
-    },
-    @{
-      showcase::kClassForDisplayKey : @"ToolbarViewController",
-      showcase::kClassForInstantiationKey : @"SCToolbarCoordinator",
-      showcase::kUseCaseKey : @"Toolbar",
     },
     @{
       showcase::kClassForDisplayKey : @"UITableViewCell",
