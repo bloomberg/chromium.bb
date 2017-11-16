@@ -49,7 +49,7 @@ bool BookmarkTabHelper::ShouldShowBookmarkBar() const {
   if (web_contents()->ShowingInterstitialPage())
     return false;
 
-  if (chrome::SadTab::ShouldShow(web_contents()->GetCrashedStatus()))
+  if (SadTab::ShouldShow(web_contents()->GetCrashedStatus()))
     return false;
 
   if (!browser_defaults::bookmarks_enabled)
@@ -85,8 +85,9 @@ BookmarkTabHelper::BookmarkTabHelper(content::WebContents* web_contents)
 
 void BookmarkTabHelper::UpdateStarredStateForCurrentURL() {
   const bool old_state = is_starred_;
-  is_starred_ = (bookmark_model_ &&
-      bookmark_model_->IsBookmarked(chrome::GetURLToBookmark(web_contents())));
+  is_starred_ =
+      (bookmark_model_ &&
+       bookmark_model_->IsBookmarked(chrome::GetURLToBookmark(web_contents())));
 
   if (is_starred_ != old_state && delegate_)
     delegate_->URLStarredChanged(web_contents(), is_starred_);

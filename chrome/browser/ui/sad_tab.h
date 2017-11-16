@@ -14,8 +14,6 @@ namespace content {
 class WebContents;
 }
 
-namespace chrome {
-
 // Cross-platform interface to show the Sad tab UI.
 class SadTab {
  public:
@@ -63,7 +61,5 @@ class SadTab {
 
   DISALLOW_COPY_AND_ASSIGN(SadTab);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_SAD_TAB_H_

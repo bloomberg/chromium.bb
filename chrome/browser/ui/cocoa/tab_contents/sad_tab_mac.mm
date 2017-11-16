@@ -8,9 +8,9 @@
 
 namespace {
 
-class SadTabCocoa : public chrome::SadTab {
+class SadTabCocoa : public SadTab {
  public:
-  SadTabCocoa(content::WebContents* web_contents, chrome::SadTabKind kind)
+  SadTabCocoa(content::WebContents* web_contents, SadTabKind kind)
       : SadTab(web_contents, kind) {
     NSView* web_contents_view = web_contents->GetNativeView();
     sad_tab_view_ =
@@ -28,7 +28,6 @@ class SadTabCocoa : public chrome::SadTab {
 
 }  // namespace
 
-chrome::SadTab* chrome::SadTab::Create(content::WebContents* web_contents,
-                                       SadTabKind kind) {
+SadTab* SadTab::Create(content::WebContents* web_contents, SadTabKind kind) {
   return new SadTabCocoa(web_contents, kind);
 }

@@ -29,12 +29,12 @@ class LabelButton;
 //  "sad tab" in the browser window when a renderer is destroyed unnaturally.
 //
 ///////////////////////////////////////////////////////////////////////////////
-class SadTabView : public chrome::SadTab,
+class SadTabView : public SadTab,
                    public views::View,
                    public views::LinkListener,
                    public views::ButtonListener {
  public:
-  SadTabView(content::WebContents* web_contents, chrome::SadTabKind kind);
+  SadTabView(content::WebContents* web_contents, SadTabKind kind);
   ~SadTabView() override;
 
   // Overridden from views::View:
