@@ -23,7 +23,7 @@
       /* Adds an event with the given name to the AutomationEventQueue. */
       function raiseEvent(str) {
         if (window.domAutomationController) {
-          window.domAutomationController.send(4444, str);
+          window.domAutomationController.send(str);
         }
       }
 
