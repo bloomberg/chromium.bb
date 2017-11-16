@@ -6,11 +6,13 @@
 
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/render_process_host.h"
@@ -129,10 +131,12 @@ class BookmarkAppHelperTest : public DialogBrowserTest {
   // DialogBrowserTest:
   void ShowDialog(const std::string& name) override {
     ASSERT_TRUE(embedded_test_server()->Start());
-    AddTabAtIndex(
-        1,
-        GURL(embedded_test_server()->GetURL("/favicon/page_with_favicon.html")),
-        ui::PAGE_TRANSITION_LINK);
+
+    const std::string path = (name == "CreateWindowedPWA")
+                                 ? "/banners/manifest_test_page.html"
+                                 : "/favicon/page_with_favicon.html";
+    AddTabAtIndex(1, GURL(embedded_test_server()->GetURL(path)),
+                  ui::PAGE_TRANSITION_LINK);
 
     scoped_refptr<WebAppReadyMsgWatcher> filter =
         new WebAppReadyMsgWatcher(browser());
@@ -145,7 +149,17 @@ class BookmarkAppHelperTest : public DialogBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(BookmarkAppHelperTest);
 };
 
-IN_PROC_BROWSER_TEST_F(BookmarkAppHelperTest, InvokeDialog_create) {
+// Launches an installation confirmation dialog for a bookmark app.
+IN_PROC_BROWSER_TEST_F(BookmarkAppHelperTest, InvokeDialog_CreateBookmarkApp) {
+  RunDialog();
+}
+
+// Launches an installation confirmation dialog for a PWA.
+IN_PROC_BROWSER_TEST_F(BookmarkAppHelperTest, InvokeDialog_CreateWindowedPWA) {
+  // The PWA dialog will be launched because manifest_test_page.html passes
+  // the PWA check, but the kDesktopPWAWindowing flag must also be enabled.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kDesktopPWAWindowing);
   RunDialog();
 }
 
