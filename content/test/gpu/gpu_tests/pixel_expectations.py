@@ -33,6 +33,10 @@ class PixelExpectations(GpuTestExpectations):
         ['mac', 'android', 'chromeos'])
     self.Skip('Pixel_WebGLGreenTriangle_AA_Alpha_SwiftShader',
         ['mac', 'android', 'chromeos'])
+    # Tests running in no GPU process mode are skipped on platforms where GPU
+    # process is required.
+    self.Skip('Pixel_Canvas2DRedBox_NoGpuProcess', ['android', 'chromeos'])
+    self.Skip('Pixel_CSS3DBlueBox_NoGpuProcess', ['android', 'chromeos'])
 
     self.Fail('Pixel_ScissorTestWithPreserveDrawingBuffer',
         ['android'], bug=521588)
@@ -82,11 +86,3 @@ class PixelExpectations(GpuTestExpectations):
         ['highsierra', ('intel', 0xa2e)], bug=774809)
     self.Fail('Pixel_WebGLGreenTriangle_NonChromiumImage_NoAA_NoAlpha',
         ['highsierra', ('intel', 0xa2e)], bug=774809)
-
-    # New tests. Remove entries after completing first run on bots.
-    self.Fail('Pixel_Canvas2DRedBox_NoGpuProcess', bug=783069)
-    self.Fail('Pixel_CSS3DBlueBox_NoGpuProcess', bug=783069)
-    self.Fail('Pixel_Canvas2DRedBox_SwiftShader', ['win', 'linux'], bug=783069)
-    self.Fail('Pixel_CSS3DBlueBox_SwiftShader', ['win', 'linux'], bug=783069)
-    self.Fail('Pixel_WebGLGreenTriangle_AA_Alpha_SwiftShader',
-        ['win', 'linux'], bug=783069)

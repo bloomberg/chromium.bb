@@ -57,6 +57,13 @@ class GpuIntegrationTest(
   def RestartBrowserIfNecessaryWithArgs(cls, browser_args):
     if not browser_args:
       browser_args = []
+    elif '--disable-gpu' in browser_args:
+      # Some platforms require GPU process, so browser fails to launch with
+      # --disable-gpu mode, therefore, even test expectations fail to evaluate.
+      browser_args = list(browser_args)
+      os_name = cls.browser.platform.GetOSName()
+      if os_name == 'android' or os_name == 'chromeos':
+        browser_args.remove('--disable-gpu')
     if set(browser_args) != cls._last_launched_browser_args:
       logging.info('Restarting browser with arguments: ' + str(browser_args))
       cls.StopBrowser()
