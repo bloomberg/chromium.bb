@@ -19,7 +19,6 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/simple_thread.h"
 #include "base/threading/thread.h"
-#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_WIN)
@@ -588,31 +587,24 @@ class TaskSchedulerSingleThreadTaskRunnerManagerStartTest
 
 }  // namespace
 
-// TODO(crbug.com/784051): Reenable when no longer flaky.
-#if defined(OS_IOS) && !TARGET_IPHONE_SIMULATOR
-#define MAYBE_PostTaskBeforeStart FLAKY_PostTaskBeforeStart
-#else
-#define MAYBE_PostTaskBeforeStart PostTaskBeforeStart
-#endif
 // Verify that a task posted before Start() doesn't run until Start() is called.
 TEST_F(TaskSchedulerSingleThreadTaskRunnerManagerStartTest,
-       MAYBE_PostTaskBeforeStart) {
+       PostTaskBeforeStart) {
   AtomicFlag manager_started;
-  WaitableEvent task_running(WaitableEvent::ResetPolicy::MANUAL,
-                             WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent task_finished(WaitableEvent::ResetPolicy::MANUAL,
+                              WaitableEvent::InitialState::NOT_SIGNALED);
   single_thread_task_runner_manager_
       ->CreateSingleThreadTaskRunnerWithTraits(
           "A", TaskTraits(), SingleThreadTaskRunnerThreadMode::DEDICATED)
       ->PostTask(
           FROM_HERE,
           BindOnce(
-              [](WaitableEvent* task_running, AtomicFlag* manager_started) {
-                task_running->Signal();
-
+              [](WaitableEvent* task_finished, AtomicFlag* manager_started) {
                 // The task should not run before Start().
                 EXPECT_TRUE(manager_started->IsSet());
+                task_finished->Signal();
               },
-              Unretained(&task_running), Unretained(&manager_started)));
+              Unretained(&task_finished), Unretained(&manager_started)));
 
   // Wait a little bit to make sure that the task doesn't run before start.
   // Note: This test won't catch a case where the task runs between setting
@@ -622,8 +614,8 @@ TEST_F(TaskSchedulerSingleThreadTaskRunnerManagerStartTest,
   manager_started.Set();
   single_thread_task_runner_manager_->Start();
 
-  // This should not hang if the task runs after Start().
-  task_running.Wait();
+  // Wait for the task to complete to keep |manager_started| alive.
+  task_finished.Wait();
 }
 
 }  // namespace internal
