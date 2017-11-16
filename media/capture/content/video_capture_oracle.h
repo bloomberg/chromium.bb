@@ -86,6 +86,11 @@ class CAPTURE_EXPORT VideoCaptureOracle {
                        bool capture_was_successful,
                        base::TimeTicks* frame_timestamp);
 
+  // Notify that all in-flight captures have been canceled.  This has the same
+  // effect as calling CompleteCapture() with a non-success status for all
+  // outstanding frames.
+  void CancelAllCaptures();
+
   // Record the resource utilization feedback for a frame that was processed by
   // the consumer.  This allows the oracle to reduce/increase future data volume
   // if the consumer is overloaded/under-utilized.  |resource_utilization| is a

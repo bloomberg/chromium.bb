@@ -7,9 +7,10 @@
 
 #include <memory>
 
+#include "ui/gfx/geometry/size.h"
+
 namespace gfx {
 class Rect;
-class Size;
 }  // namespace gfx
 
 namespace viz {
@@ -23,7 +24,7 @@ class CopyOutputRequest;
 class CapturableFrameSink {
  public:
   // Interface for a client that observes certain frame events and calls
-  // RequestCopyOfNextFrame() at the appropriate times.
+  // RequestCopyOfSurface() at the appropriate times.
   class Client {
    public:
     virtual ~Client() = default;
@@ -47,6 +48,9 @@ class CapturableFrameSink {
   // appropriate.
   virtual void AttachCaptureClient(Client* client) = 0;
   virtual void DetachCaptureClient(Client* client) = 0;
+
+  // Returns the current surface size.
+  virtual gfx::Size GetSurfaceSize() = 0;
 
   // Issues a request for a copy of the next composited frame.
   virtual void RequestCopyOfSurface(

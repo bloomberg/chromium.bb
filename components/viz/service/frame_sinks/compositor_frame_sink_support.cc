@@ -389,6 +389,18 @@ void CompositorFrameSinkSupport::DetachCaptureClient(
     capture_clients_.erase(it);
 }
 
+gfx::Size CompositorFrameSinkSupport::GetSurfaceSize() {
+  if (current_surface_id_.is_valid()) {
+    Surface* current_surface =
+        surface_manager_->GetSurfaceForId(current_surface_id_);
+    if (current_surface->HasActiveFrame())
+      return current_surface->GetActiveFrame().size_in_pixels();
+    else if (current_surface->HasPendingFrame())
+      return current_surface->GetPendingFrame().size_in_pixels();
+  }
+  return gfx::Size();
+}
+
 void CompositorFrameSinkSupport::RequestCopyOfSurface(
     std::unique_ptr<CopyOutputRequest> copy_request) {
   if (!current_surface_id_.is_valid())
