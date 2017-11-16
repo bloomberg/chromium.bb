@@ -18,17 +18,34 @@
 @protocol ChromeBroadcastObserver<NSObject>
 @optional
 
+#pragma mark - Tab strip UI
+
 // Observer method for object that care about the current visibility of the tab
 // strip.
 - (void)broadcastTabStripVisible:(BOOL)visible;
+
+#pragma mark - Scrolling events
 
 // Observer method for objects that care about the current vertical (y-axis)
 // scroll offset of the tab content area.
 - (void)broadcastContentScrollOffset:(CGFloat)offset;
 
+// Observer method for objects that care about whether the main content area is
+// scrolling.
+- (void)broadcastScrollViewIsScrolling:(BOOL)scrolling;
+
+// Observer method for objects that care abotu whether the main content area is
+// being dragged.  Note that if a drag ends with residual velocity, it's
+// possible for |dragging| to be NO while |scrolling| is still YES.
+- (void)broadcastScrollViewIsDragging:(BOOL)dragging;
+
+#pragma mark - NTP UI
+
 // Observer method for objects that care about the current panel selected on the
 // NTP.
 - (void)broadcastSelectedNTPPanel:(ntp_home::PanelIdentifier)panelIdentifier;
+
+#pragma mark - Omnibox UI
 
 // Observer method for objects that care about the current omnibox frame.  The
 // given frame is in the window's coordinate system.
