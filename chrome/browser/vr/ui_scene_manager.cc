@@ -951,6 +951,7 @@ void UiSceneManager::CreateExitPrompt() {
   element = std::move(backplane);
   element->set_name(kExitPromptBackplane);
   element->set_draw_phase(kPhaseForeground);
+  element->SetVisible(false);
   element->SetSize(kPromptBackplaneSize, kPromptBackplaneSize);
   element->SetTranslate(0.0, kContentVerticalOffset + kExitPromptVerticalOffset,
                         kTextureOffset - kContentDistance);

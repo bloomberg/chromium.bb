@@ -37,6 +37,7 @@ ExitPromptTexture::~ExitPromptTexture() = default;
 
 void ExitPromptTexture::Draw(SkCanvas* sk_canvas,
                              const gfx::Size& texture_size) {
+  DCHECK(content_message_id_ != -1);
   size_.set_width(texture_size.width());
   size_.set_height(texture_size.height());
 
