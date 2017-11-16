@@ -2022,7 +2022,7 @@ bool ChromeContentBrowserClient::AllowGetCookie(
 bool ChromeContentBrowserClient::AllowSetCookie(
     const GURL& url,
     const GURL& first_party,
-    const std::string& cookie_line,
+    const net::CanonicalCookie& cookie,
     content::ResourceContext* context,
     int render_process_id,
     int render_frame_id,
@@ -2038,7 +2038,7 @@ bool ChromeContentBrowserClient::AllowSetCookie(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&TabSpecificContentSettings::CookieChanged, wc_getter, url,
-                     first_party, cookie_line, options, !allow));
+                     first_party, cookie, options, !allow));
   return allow;
 }
 

@@ -325,18 +325,14 @@ bool AwContentBrowserClient::AllowGetCookie(const GURL& url,
 
 bool AwContentBrowserClient::AllowSetCookie(const GURL& url,
                                             const GURL& first_party,
-                                            const std::string& cookie_line,
+                                            const net::CanonicalCookie& cookie,
                                             content::ResourceContext* context,
                                             int render_process_id,
                                             int render_frame_id,
                                             const net::CookieOptions& options) {
-  return AwCookieAccessPolicy::GetInstance()->AllowSetCookie(url,
-                                                             first_party,
-                                                             cookie_line,
-                                                             context,
-                                                             render_process_id,
-                                                             render_frame_id,
-                                                             options);
+  return AwCookieAccessPolicy::GetInstance()->AllowSetCookie(
+      url, first_party, cookie, context, render_process_id, render_frame_id,
+      options);
 }
 
 void AwContentBrowserClient::AllowWorkerFileSystem(

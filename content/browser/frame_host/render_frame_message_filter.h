@@ -127,7 +127,7 @@ class CONTENT_EXPORT RenderFrameMessageFilter
   void SetCookie(int32_t render_frame_id,
                  const GURL& url,
                  const GURL& site_for_cookies,
-                 const std::string& cookie,
+                 const std::string& cookie_line,
                  SetCookieCallback callback) override;
   void GetCookies(int render_frame_id,
                   const GURL& url,

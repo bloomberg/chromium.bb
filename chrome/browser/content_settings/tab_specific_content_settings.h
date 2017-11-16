@@ -115,7 +115,7 @@ class TabSpecificContentSettings
       const base::Callback<content::WebContents*(void)>& wc_getter,
       const GURL& url,
       const GURL& first_party_url,
-      const std::string& cookie_line,
+      const net::CanonicalCookie& cookie,
       const net::CookieOptions& options,
       bool blocked_by_policy);
 
@@ -315,7 +315,7 @@ class TabSpecificContentSettings
                      bool blocked_by_policy);
   void OnCookieChanged(const GURL& url,
                        const GURL& first_party_url,
-                       const std::string& cookie_line,
+                       const net::CanonicalCookie& cookie,
                        const net::CookieOptions& options,
                        bool blocked_by_policy);
   void OnFileSystemAccessed(const GURL& url,

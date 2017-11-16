@@ -412,7 +412,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // This is called on the IO thread.
   virtual bool AllowSetCookie(const GURL& url,
                               const GURL& first_party,
-                              const std::string& cookie_line,
+                              const net::CanonicalCookie& cookie,
                               ResourceContext* context,
                               int render_process_id,
                               int render_frame_id,

@@ -154,13 +154,13 @@ void TabSpecificContentSettings::CookieChanged(
     const base::Callback<WebContents*(void)>& wc_getter,
     const GURL& url,
     const GURL& frame_url,
-    const std::string& cookie_line,
+    const net::CanonicalCookie& cookie,
     const net::CookieOptions& options,
     bool blocked_by_policy) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   TabSpecificContentSettings* settings = GetForWCGetter(wc_getter);
   if (settings)
-    settings->OnCookieChanged(url, frame_url, cookie_line, options,
+    settings->OnCookieChanged(url, frame_url, cookie, options,
                               blocked_by_policy);
 }
 
@@ -409,16 +409,16 @@ void TabSpecificContentSettings::OnCookiesRead(
 void TabSpecificContentSettings::OnCookieChanged(
     const GURL& url,
     const GURL& frame_url,
-    const std::string& cookie_line,
+    const net::CanonicalCookie& cookie,
     const net::CookieOptions& options,
     bool blocked_by_policy) {
   if (blocked_by_policy) {
-    blocked_local_shared_objects_.cookies()->AddChangedCookie(
-        frame_url, url, cookie_line, options);
+    blocked_local_shared_objects_.cookies()->AddChangedCookie(frame_url, url,
+                                                              cookie);
     OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES);
   } else {
-    allowed_local_shared_objects_.cookies()->AddChangedCookie(
-        frame_url, url, cookie_line, options);
+    allowed_local_shared_objects_.cookies()->AddChangedCookie(frame_url, url,
+                                                              cookie);
     OnContentAllowed(CONTENT_SETTINGS_TYPE_COOKIES);
   }
 

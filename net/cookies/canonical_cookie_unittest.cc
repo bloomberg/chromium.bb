@@ -165,6 +165,27 @@ TEST(CanonicalCookieTest, CreateInvalidSameSite) {
   EXPECT_EQ(nullptr, cookie.get());
 }
 
+TEST(CanonicalCookieTest, CreateInvalidHttpOnly) {
+  GURL url("http://www.example.com/test/foo.html");
+  base::Time now = base::Time::Now();
+  CookieOptions options;
+
+  options.set_exclude_httponly();
+  std::unique_ptr<CanonicalCookie> cookie =
+      CanonicalCookie::Create(url, "A=2; HttpOnly", now, options);
+  EXPECT_EQ(nullptr, cookie.get());
+}
+
+TEST(CanonicalCookieTest, CreateWithInvalidDomain) {
+  GURL url("http://www.example.com/test/foo.html");
+  base::Time now = base::Time::Now();
+  CookieOptions options;
+
+  std::unique_ptr<CanonicalCookie> cookie =
+      CanonicalCookie::Create(url, "A=2; Domain=wrongdomain.com", now, options);
+  EXPECT_EQ(nullptr, cookie.get());
+}
+
 TEST(CanonicalCookieTest, EmptyExpiry) {
   GURL url("http://www7.ipdl.inpit.go.jp/Tokujitu/tjkta.ipdl?N0000=108");
   base::Time creation_time = base::Time::Now();

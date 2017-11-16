@@ -468,6 +468,15 @@ bool ChromeNetworkDelegate::OnCanSetCookie(const net::URLRequest& request,
   if (!cookie_settings_.get())
     return true;
 
+  // TODO: Push CanonicalCookie further up the network stack.
+  net::CookieOptions cookie_options;
+  cookie_options.set_include_httponly();
+  std::unique_ptr<net::CanonicalCookie> canonical_cookie =
+      net::CanonicalCookie::Create(request.url(), cookie_line,
+                                   base::Time::Now(), cookie_options);
+  if (!canonical_cookie)
+    return false;
+
   bool allow = cookie_settings_->IsCookieAccessAllowed(
       request.url(), request.site_for_cookies());
 
@@ -477,7 +486,7 @@ bool ChromeNetworkDelegate::OnCanSetCookie(const net::URLRequest& request,
         BrowserThread::UI, FROM_HERE,
         base::BindOnce(&TabSpecificContentSettings::CookieChanged,
                        info->GetWebContentsGetterForRequest(), request.url(),
-                       request.site_for_cookies(), cookie_line, *options,
+                       request.site_for_cookies(), *canonical_cookie, *options,
                        !allow));
   }
 

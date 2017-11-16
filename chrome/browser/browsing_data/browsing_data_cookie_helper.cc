@@ -101,12 +101,8 @@ void CannedBrowsingDataCookieHelper::AddReadCookies(
 void CannedBrowsingDataCookieHelper::AddChangedCookie(
     const GURL& frame_url,
     const GURL& url,
-    const std::string& cookie_line,
-    const net::CookieOptions& options) {
-  std::unique_ptr<net::CanonicalCookie> cookie(net::CanonicalCookie::Create(
-      url, cookie_line, base::Time::Now(), options));
-  if (cookie.get())
-    AddCookie(frame_url, *cookie);
+    const net::CanonicalCookie& cookie) {
+  AddCookie(frame_url, cookie);
 }
 
 void CannedBrowsingDataCookieHelper::Reset() {
