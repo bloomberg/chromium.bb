@@ -3,8 +3,8 @@
 <title>Worklet: addModule() on a detached iframe</title>
 <body>
 </body>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
 <script>
 
 function with_iframe(url) {
@@ -17,8 +17,8 @@ function with_iframe(url) {
     });
 }
 
-// This test should be in chromium/ because the spec does not define behavior in
-// the case where addModule() is called from a detached frame.
+// This test should not be upstreamed to WPT because the spec does not define
+// behavior in the case where addModule() is called from a detached frame.
 promise_test(t => {
   const kFrameUrl = 'resources/blank.html';
   const kScriptUrl = 'resources/empty-worklet-script.js';
