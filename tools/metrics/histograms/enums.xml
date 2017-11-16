@@ -24804,6 +24804,7 @@ from previous Chrome versions.
   <int value="-461292699" label="ContentSuggestionsCategoryOrder:enabled"/>
   <int value="-460313418" label="ProgressBarThrottle:enabled"/>
   <int value="-460081932" label="CustomFeedbackUi:disabled"/>
+  <int value="-457174225" label="Av1Decoder:enabled"/>
   <int value="-455203267" label="use_new_features_summary"/>
   <int value="-449465495" label="disable-browser-task-scheduler"/>
   <int value="-435914745" label="ClipboardContentSetting:disabled"/>
@@ -25141,6 +25142,7 @@ from previous Chrome versions.
   <int value="550387510" label="NTPAssetDownloadSuggestions:disabled"/>
   <int value="558873715" label="SiteDetails:disabled"/>
   <int value="562979188" label="DesktopIOSPromotion:enabled"/>
+  <int value="564522013" label="Av1Decoder:disabled"/>
   <int value="567368307" label="enable-experimental-canvas-features"/>
   <int value="575394365" label="AndroidPaymentApps:disabled"/>
   <int value="576878329" label="enable-background-blur"/>

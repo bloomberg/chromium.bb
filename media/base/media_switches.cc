@@ -215,6 +215,10 @@ const base::Feature kUseAndroidOverlay{"UseAndroidOverlay",
 const base::Feature kUseAndroidOverlayAggressively{
     "UseAndroidOverlayAggressively", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables playback of AV1 video files.
+const base::Feature kAv1Decoder{"Av1Decoder",
+                                base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Let video track be unselected when video is playing in the background.
 const base::Feature kBackgroundVideoTrackOptimization{
     "BackgroundVideoTrackOptimization", base::FEATURE_ENABLED_BY_DEFAULT};

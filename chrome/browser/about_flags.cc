@@ -108,6 +108,7 @@
 #include "printing/features/features.h"
 #include "services/device/public/cpp/device_features.h"
 #include "services/service_manager/sandbox/switches.h"
+#include "third_party/libaom/av1_features.h"
 #include "ui/app_list/app_list_features.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
@@ -3577,6 +3578,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableMultiMirroringDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(switches::kEnableMultiMirroring)},
 #endif  // defined(OS_CHROMEOS)
+
+#if BUILDFLAG(ENABLE_AV1_DECODER)
+    {"enable-av1-decoder", flag_descriptions::kAv1DecoderName,
+     flag_descriptions::kAv1DecoderDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(media::kAv1Decoder)},
+#endif  // ENABLE_AV1_DECODER
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
