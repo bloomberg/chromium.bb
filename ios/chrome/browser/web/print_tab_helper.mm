@@ -36,22 +36,26 @@ PrintTabHelper::~PrintTabHelper() = default;
 
 PrintTabHelper::PrintTabHelper(web::WebState* web_state,
                                id<WebStatePrinter> printer)
-    : web::WebStateObserver(web_state), printer_(printer) {
+    : printer_(printer) {
   DCHECK(printer);
+  web_state->AddObserver(this);
   web_state->AddScriptCommandCallback(
-      base::Bind(&PrintTabHelper::OnPrintCommand, base::Unretained(this)),
+      base::Bind(&PrintTabHelper::OnPrintCommand, base::Unretained(this),
+                 base::Unretained(web_state)),
       kPrintCommandPrefix);
 }
 
 void PrintTabHelper::WebStateDestroyed(web::WebState* web_state) {
   // Stops handling print requests from the web page.
   web_state->RemoveScriptCommandCallback(kPrintCommandPrefix);
+  web_state->RemoveObserver(this);
 }
 
-bool PrintTabHelper::OnPrintCommand(const base::DictionaryValue&,
-                                    const GURL&,
-                                    bool) {
-  DCHECK(web_state());
-  [printer_ printWebState:web_state()];
+bool PrintTabHelper::OnPrintCommand(web::WebState* web_state,
+                                    const base::DictionaryValue& command,
+                                    const GURL& page_url,
+                                    bool user_initiated) {
+  DCHECK(web_state);
+  [printer_ printWebState:web_state];
   return true;
 }
