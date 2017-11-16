@@ -13,6 +13,10 @@ IntSize::operator gfx::Size() const {
   return gfx::Size(Width(), Height());
 }
 
+std::ostream& operator<<(std::ostream& ostream, const IntSize& size) {
+  return ostream << size.ToString();
+}
+
 String IntSize::ToString() const {
   return String::Format("%dx%d", Width(), Height());
 }

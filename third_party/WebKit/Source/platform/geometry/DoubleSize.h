@@ -100,6 +100,8 @@ inline FloatSize ToFloatSize(const DoubleSize& p) {
   return FloatSize(p.Width(), p.Height());
 }
 
+PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const DoubleSize&);
+
 // Redeclared here to avoid ODR issues.
 // See platform/testing/GeometryPrinters.h.
 void PrintTo(const DoubleSize&, std::ostream*);

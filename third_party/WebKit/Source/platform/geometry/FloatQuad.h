@@ -174,6 +174,8 @@ inline bool operator!=(const FloatQuad& a, const FloatQuad& b) {
          a.P4() != b.P4();
 }
 
+PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const FloatQuad&);
+
 // Redeclared here to avoid ODR issues.
 // See platform/testing/GeometryPrinters.h.
 void PrintTo(const FloatQuad&, std::ostream*);

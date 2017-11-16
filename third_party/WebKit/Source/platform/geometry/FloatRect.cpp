@@ -236,6 +236,10 @@ FloatRect MapRect(const FloatRect& r,
                    r.Width() * width_scale, r.Height() * height_scale);
 }
 
+std::ostream& operator<<(std::ostream& ostream, const FloatRect& rect) {
+  return ostream << rect.ToString();
+}
+
 String FloatRect::ToString() const {
   return String::Format("%s %s", Location().ToString().Ascii().data(),
                         Size().ToString().Ascii().data());

@@ -8,6 +8,10 @@
 
 namespace blink {
 
+std::ostream& operator<<(std::ostream& ostream, const IntPoint& point) {
+  return ostream << point.ToString();
+}
+
 String IntPoint::ToString() const {
   return String::Format("%d,%d", X(), Y());
 }

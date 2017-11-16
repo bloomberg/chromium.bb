@@ -374,6 +374,15 @@ void FloatRoundedRect::AdjustRadii() {
   radii_.Scale(width_ratio < height_ratio ? width_ratio : height_ratio);
 }
 
+std::ostream& operator<<(std::ostream& ostream, const FloatRoundedRect& rect) {
+  return ostream << rect.ToString();
+}
+
+std::ostream& operator<<(std::ostream& ostream,
+                         const FloatRoundedRect::Radii& radii) {
+  return ostream << radii.ToString();
+}
+
 String FloatRoundedRect::Radii::ToString() const {
   return "tl:" + TopLeft().ToString() + "; tr:" + TopRight().ToString() +
          "; bl:" + BottomLeft().ToString() + "; br:" + BottomRight().ToString();

@@ -189,6 +189,8 @@ inline IntPoint FlooredIntPoint(const FloatSize& p) {
                   clampTo<int>(floorf(p.Height())));
 }
 
+PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const FloatSize&);
+
 // Redeclared here to avoid ODR issues.
 // See platform/testing/GeometryPrinters.h.
 void PrintTo(const FloatSize&, std::ostream*);

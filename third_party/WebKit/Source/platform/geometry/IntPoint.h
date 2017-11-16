@@ -152,6 +152,8 @@ inline int IntPoint::DistanceSquaredToPoint(const IntPoint& point) const {
   return ((*this) - point).DiagonalLengthSquared();
 }
 
+PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const IntPoint&);
+
 // Redeclared here to avoid ODR issues.
 // See platform/testing/GeometryPrinters.h.
 void PrintTo(const IntPoint&, std::ostream*);

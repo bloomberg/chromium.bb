@@ -114,6 +114,10 @@ FloatPoint::operator SkPoint() const {
   return SkPoint::Make(x_, y_);
 }
 
+std::ostream& operator<<(std::ostream& ostream, const FloatPoint& point) {
+  return ostream << point.ToString();
+}
+
 String FloatPoint::ToString() const {
   return String::Format("%lg,%lg", X(), Y());
 }

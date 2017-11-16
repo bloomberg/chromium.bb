@@ -17,6 +17,10 @@ LayoutPoint LayoutPoint::ShrunkTo(const LayoutPoint& other) const {
   return LayoutPoint(std::min(x_, other.x_), std::min(y_, other.y_));
 }
 
+std::ostream& operator<<(std::ostream& ostream, const LayoutPoint& point) {
+  return ostream << point.ToString();
+}
+
 String LayoutPoint::ToString() const {
   return String::Format("%s,%s", X().ToString().Ascii().data(),
                         Y().ToString().Ascii().data());

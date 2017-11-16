@@ -31,6 +31,10 @@ void FloatBox::ExpandTo(const FloatPoint3D& low, const FloatPoint3D& high) {
   depth_ = max_z - min_z;
 }
 
+std::ostream& operator<<(std::ostream& ostream, const FloatBox& box) {
+  return ostream << box.ToString();
+}
+
 String FloatBox::ToString() const {
   return String::Format("%lg,%lg,%lg %lgx%lgx%lg", X(), Y(), Z(), Width(),
                         Height(), Depth());
