@@ -1,6 +1,5 @@
 Tests name() and path() methods of NetworkRequest.
 
-Bug 101064
 Dumping request name and path for url: http://www.example.com/foo/bar/baz?key=value
     name = baz?key=value
     path = www.example.com/foo/bar

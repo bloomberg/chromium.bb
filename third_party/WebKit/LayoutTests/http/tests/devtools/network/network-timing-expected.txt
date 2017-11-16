@@ -1,4 +1,3 @@
-CONSOLE MESSAGE: line 23: Done.
 Tests network panel timing.
 
 http://127.0.0.1:8000/devtools/network/resources/resource.php?type=js&wait=100&send=200&jsdelay=300&jscontent=resourceLoaded()

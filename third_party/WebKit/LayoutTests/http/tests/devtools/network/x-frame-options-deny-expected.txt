@@ -1,6 +1,0 @@
-CONSOLE ERROR: Refused to display 'http://127.0.0.1:8000/security/XFrameOptions/resources/x-frame-options-deny.cgi' in a frame because it set 'X-Frame-Options' to 'deny'.
-Tests that responseReceived is called on NetworkDispatcher for resource requests denied due to X-Frame-Options header.
-
-
-TODO(mkwst): This started failing when we moved XFO to the browser.
-

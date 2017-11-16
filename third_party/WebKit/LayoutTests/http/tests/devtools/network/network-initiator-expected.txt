@@ -1,8 +1,5 @@
-CONSOLE MESSAGE: line 14: Done.
-CONSOLE MESSAGE: line 20: Done.
 Tests resources initiator for images initiated by IMG tag, static CSS, CSS class added from JavaScript and XHR.
 
-Bug 65105  
 http://127.0.0.1:8000/devtools/network/resources/initiator.css: parser
     http://127.0.0.1:8000/devtools/network/resources/network-initiator-frame.html 2
 http://127.0.0.1:8000/devtools/network/resources/resource.php?type=image&random=1&size=100: parser

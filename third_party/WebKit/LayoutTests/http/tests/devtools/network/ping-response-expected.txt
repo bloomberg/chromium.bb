@@ -1,4 +1,3 @@
-CONSOLE MESSAGE: line 9: Beacon sent: true
 Test that ping request response is recorded.
 
 URL: http://127.0.0.1:8000/devtools/network/resources/empty.html
@@ -8,4 +7,5 @@ Method: POST
 Status: 200 OK
 Has raw request headers: true
 Has raw response headers: true
+ping-response.js:13 Beacon sent: true
 
