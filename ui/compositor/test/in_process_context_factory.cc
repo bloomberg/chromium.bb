@@ -254,7 +254,7 @@ void InProcessContextFactory::CreateLayerTreeFrameSink(
         base::TimeDelta::FromMicroseconds(base::Time::kMicrosecondsPerSecond /
                                           refresh_rate_));
     begin_frame_source = std::make_unique<viz::DelayBasedBeginFrameSource>(
-        std::move(time_source));
+        std::move(time_source), viz::BeginFrameSource::kNotRestartableId);
   }
   auto scheduler = std::make_unique<viz::DisplayScheduler>(
       begin_frame_source.get(), compositor->task_runner().get(),

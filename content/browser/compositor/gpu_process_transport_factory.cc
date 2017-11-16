@@ -576,7 +576,8 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       synthetic_begin_frame_source =
           std::make_unique<viz::DelayBasedBeginFrameSource>(
               std::make_unique<viz::DelayBasedTimeSource>(
-                  compositor->task_runner().get()));
+                  compositor->task_runner().get()),
+              viz::BeginFrameSource::kNotRestartableId);
       begin_frame_source = synthetic_begin_frame_source.get();
     }
   } else {

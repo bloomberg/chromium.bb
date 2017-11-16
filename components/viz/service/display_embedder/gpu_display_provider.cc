@@ -58,9 +58,11 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
     gpu::SurfaceHandle surface_handle,
     const RendererSettings& renderer_settings,
     std::unique_ptr<BeginFrameSource>* begin_frame_source) {
+  // TODO(kylechar): Get process restart id from host process.
   auto synthetic_begin_frame_source =
       base::MakeUnique<DelayBasedBeginFrameSource>(
-          base::MakeUnique<DelayBasedTimeSource>(task_runner_.get()));
+          base::MakeUnique<DelayBasedTimeSource>(task_runner_.get()),
+          BeginFrameSource::kNotRestartableId);
 
   scoped_refptr<InProcessContextProvider> context_provider =
       new InProcessContextProvider(gpu_service_, surface_handle,
