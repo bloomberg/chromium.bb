@@ -14,6 +14,7 @@ import android.view.SurfaceHolder;
 import android.view.Window;
 import android.view.WindowManager;
 
+import org.chromium.base.Log;
 import org.chromium.gfx.mojom.Rect;
 import org.chromium.media.mojom.AndroidOverlayConfig;
 
@@ -92,11 +93,7 @@ class DialogOverlayCore {
      */
     public void release() {
         // If we've not released the dialog yet, then do so.
-        if (mDialog != null) {
-            if (mDialog.isShowing()) mDialog.dismiss();
-            mDialog = null;
-            mDialogCallbacks = null;
-        }
+        dismissDialogQuietly();
 
         mLayoutParams.token = null;
 
@@ -163,7 +160,7 @@ class DialogOverlayCore {
             // Notify the client.
             mHost.onOverlayDestroyed();
             mHost = null;
-            if (mDialog.isShowing()) mDialog.dismiss();
+            dismissDialogQuietly();
             return;
         }
 
@@ -241,5 +238,22 @@ class DialogOverlayCore {
      */
     Dialog getDialog() {
         return mDialog;
+    }
+
+    // Dismiss |mDialog| if needed, and clear it and the callbacks.  This hides any exception, since
+    // there's a race during app shutdown between this running on the overlay-ui thread, and losing
+    // the window token on the browser UI thread.
+    // See crbug.com/784224 .
+    private void dismissDialogQuietly() {
+        if (mDialog != null && mDialog.isShowing()) {
+            try {
+                mDialog.dismiss();
+            } catch (Exception e) {
+                Log.w(TAG, "Failed to dismiss overlay dialog.  \"WindowLeaked\" is ignorable.");
+            }
+        }
+
+        mDialog = null;
+        mDialogCallbacks = null;
     }
 }
