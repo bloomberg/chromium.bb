@@ -212,13 +212,13 @@ TEST(ICCProfile, ExhaustCache) {
   EXPECT_FALSE(original_color_space_0.GetICCProfile(&recovered_1));
   EXPECT_NE(original, recovered_1);
 
-  // Create an identical ICCProfile to the original. It should equal the
-  // original, because the comparison is based on data.
+  // Create an identical ICCProfile to the original. It will not be equal to
+  // the original, because they will have different ids.
   ICCProfile identical_1 = ICCProfileForTestingNoAnalyticTrFn();
-  EXPECT_EQ(original, identical_1);
+  EXPECT_NE(original, identical_1);
 
-  // The identical ICCProfile's GetColorSpace will not match, because the
-  // original points to the now-uncached version.
+  // The two ICCProfiles (with the same data) will produce color spaces that
+  // have different profile ids (and so are unequal).
   ColorSpace identical_1_color_space = identical_1.GetColorSpace();
   EXPECT_NE(identical_1_color_space, original_color_space_0);
 
@@ -246,12 +246,11 @@ TEST(ICCProfile, ExhaustCache) {
     color_space.GetICCProfile(&icc_profile);
   }
 
-  // Now the original ICCProfile can re-insert itself into the cache, with its
-  // original id.
+  // The original ICCProfile remains out of the cache.
   ColorSpace original_color_space_3 = original.GetColorSpace();
   ICCProfile recovered_3;
-  EXPECT_TRUE(original_color_space_3.GetICCProfile(&recovered_3));
-  EXPECT_EQ(original, recovered_3);
+  EXPECT_FALSE(original_color_space_3.GetICCProfile(&recovered_3));
+  EXPECT_NE(original, recovered_3);
 }
 
 }  // namespace gfx

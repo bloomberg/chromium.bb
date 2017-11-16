@@ -403,7 +403,6 @@ component("color_space") {
     "color_space_win.h",
     "icc_profile.cc",
     "icc_profile.h",
-    "icc_profile_mac.mm",
     "skia_color_space_util.cc",
     "skia_color_space_util.h",
   ]

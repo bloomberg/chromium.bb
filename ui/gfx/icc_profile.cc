@@ -18,19 +18,21 @@
 
 namespace gfx {
 
-const uint64_t ICCProfile::test_id_adobe_rgb_ = 1;
-const uint64_t ICCProfile::test_id_color_spin_ = 2;
-const uint64_t ICCProfile::test_id_generic_rgb_ = 3;
-const uint64_t ICCProfile::test_id_srgb_ = 4;
-
 namespace {
 
-const uint64_t kEmptyProfileId = 5;
-
-// Start from-ICC-data IDs at the end of the hard-coded test id list above.
-uint64_t g_next_unused_id = 10;
-
-using ProfileCacheBase = base::MRUCache<uint64_t, ICCProfile>;
+// An MRU cache mapping ColorSpace objects to the ICCProfile that created them.
+// This cache serves two purposes.
+// Purpose 1: LUT-based color transforms.
+//   For color profiles that cannot be represented analytically, this can be
+//   used to look up ICCProfile that created a ColorSpace, so that its
+//   SkColorSpace can be used to generate a LUT for a ColorTransform.
+// Purpose 2: Specify color profiles to IOSurfaces on Mac.
+//   On Mac, IOSurfaces specify their output color space by raw ICC profile
+//   data. If the IOSurface ICC profile does not exactly match the output
+//   monitor's ICC profile, there is a substantial power cost. This structure
+//   allows us to retrieve the exact ICC profile data that produced a given
+//   ColorSpace.
+using ProfileCacheBase = base::MRUCache<ColorSpace, ICCProfile>;
 class ProfileCache : public ProfileCacheBase {
  public:
   static const size_t kMaxCachedICCProfiles = 16;
@@ -38,6 +40,9 @@ class ProfileCache : public ProfileCacheBase {
 };
 base::LazyInstance<ProfileCache>::DestructorAtExit g_cache =
     LAZY_INSTANCE_INITIALIZER;
+
+// The next id to assign to a color profile.
+uint64_t g_next_unused_id = 1;
 
 // Lock that must be held to access |g_cache| and |g_next_unused_id|.
 base::LazyInstance<base::Lock>::DestructorAtExit g_lock =
@@ -127,8 +132,10 @@ ICCProfile::~ICCProfile() = default;
 bool ICCProfile::operator==(const ICCProfile& other) const {
   if (!internals_ && !other.internals_)
     return true;
-  if (internals_ && other.internals_)
-    return internals_->data_ == other.internals_->data_;
+  if (internals_ && other.internals_) {
+    return internals_->data_ == other.internals_->data_ &&
+           internals_->id_ == other.internals_->id_;
+  }
   return false;
 }
 
@@ -154,47 +161,29 @@ ICCProfile ICCProfile::FromDataWithId(const void* data_as_void,
 
   base::AutoLock lock(g_lock.Get());
 
-  if (new_profile_id) {
-    // If this has specified an id, see if we have an entry for it (and ensure
-    // that that entry have the same data).
-    auto found = g_cache.Get().Get(new_profile_id);
-    if (found != g_cache.Get().end()) {
-      const ICCProfile& cached_profile = found->second;
-      DCHECK(new_profile_data == cached_profile.internals_->data_);
-      return cached_profile;
-    }
-  }
-
   // See if there is already an entry with the same data. If so, return that
-  // entry (even if that means ignoring the profile id that we were provided).
+  // entry.
   for (const auto& iter : g_cache.Get()) {
     const ICCProfile& iter_profile = iter.second;
     if (new_profile_data == iter_profile.internals_->data_)
       return iter_profile;
   }
 
-  // Create a new id for this data if one was not specified. Always ensure that
-  // the emptry profile have the same id.
-  if (!new_profile_id) {
-    if (size == 0)
-      new_profile_id = kEmptyProfileId;
-    else
-      new_profile_id = g_next_unused_id++;
-  }
-
-  // Create a new profile for this data.
-  ICCProfile new_profile;
-  new_profile.internals_ = base::MakeRefCounted<Internals>(
+  scoped_refptr<Internals> internals = base::MakeRefCounted<Internals>(
       std::move(new_profile_data), new_profile_id);
-  g_cache.Get().Put(new_profile_id, new_profile);
+
+  ICCProfile new_profile;
+  new_profile.internals_ = internals;
+
+  g_cache.Get().Put(new_profile.GetColorSpace(), new_profile);
+  if (internals->is_parametric_)
+    g_cache.Get().Put(new_profile.GetParametricColorSpace(), new_profile);
   return new_profile;
 }
 
 ColorSpace ICCProfile::GetColorSpace() const {
   if (!internals_)
     return ColorSpace();
-
-  TouchCacheEntry();
 
   if (!internals_->is_valid_)
     return ColorSpace();
@@ -203,10 +192,11 @@ ColorSpace ICCProfile::GetColorSpace() const {
   if (internals_->is_parametric_) {
     color_space = GetParametricColorSpace();
   } else {
-    color_space = ColorSpace::CreateCustom(internals_->to_XYZD50_,
-                                           ColorSpace::TransferID::ICC_BASED);
+    // TODO(ccameron): Compute a reasonable approximation instead of always
+    // falling back to sRGB.
+    color_space = ColorSpace::CreateCustom(
+        internals_->to_XYZD50_, ColorSpace::TransferID::IEC61966_2_1);
     color_space.icc_profile_id_ = internals_->id_;
-    color_space.icc_profile_sk_color_space_ = internals_->sk_color_space_;
   }
   return color_space;
 }
@@ -214,8 +204,6 @@ ColorSpace ICCProfile::GetColorSpace() const {
 ColorSpace ICCProfile::GetParametricColorSpace() const {
   if (!internals_)
     return ColorSpace();
-
-  TouchCacheEntry();
 
   if (!internals_->is_valid_)
     return ColorSpace();
@@ -230,45 +218,58 @@ ColorSpace ICCProfile::GetParametricColorSpace() const {
   return color_space;
 }
 
-// static
-bool ICCProfile::FromId(uint64_t id,
-                        ICCProfile* icc_profile) {
-  base::AutoLock lock(g_lock.Get());
-
-  auto found = g_cache.Get().Get(id);
-  if (found != g_cache.Get().end()) {
-    *icc_profile = found->second;
-    return true;
+// TODO(ccameron): Change this to ICCProfile::FromColorSpace.
+bool ColorSpace::GetICCProfile(ICCProfile* icc_profile) const {
+  if (!IsValid()) {
+    DLOG(ERROR) << "Cannot fetch ICCProfile for invalid space.";
+    return false;
   }
-  *icc_profile = ICCProfile();
-  return false;
-}
-
-void ICCProfile::TouchCacheEntry() const {
-  if (!internals_)
-    return;
-  base::AutoLock lock(g_lock.Get());
-
-  // Query for an existing cache entry.
-  auto found = g_cache.Get().Get(internals_->id_);
-  if (found != g_cache.Get().end())
-    return;
-
-  // Check if there are any cache entries with the same data, and refuse to add
-  // a duplicate entry with the same data but a different id.
-  // TODO(ccameron): This is a bit odd, but this preserves existing behavior.
-  for (const auto& iter : g_cache.Get()) {
-    const ICCProfile& iter_profile = iter.second;
-    if (internals_->data_ == iter_profile.internals_->data_)
-      return;
+  if (matrix_ != MatrixID::RGB) {
+    DLOG(ERROR) << "Not creating non-RGB ICCProfile";
+    return false;
+  }
+  if (range_ != RangeID::FULL) {
+    DLOG(ERROR) << "Not creating non-full-range ICCProfile";
+    return false;
   }
 
-  // Insert a new cache entry if none existed.
-  g_cache.Get().Put(internals_->id_, *this);
+  // Check for an entry in the cache for this color space.
+  {
+    base::AutoLock lock(g_lock.Get());
+    auto found = g_cache.Get().Get(*this);
+    if (found != g_cache.Get().end()) {
+      *icc_profile = found->second;
+      return true;
+    }
+    // If this was an ICC based profile and we don't have the original profile,
+    // fall through to using the inaccurate approximation.
+    if (icc_profile_id_) {
+      DLOG(ERROR) << "Failed to find id-based ColorSpace in ICCProfile cache";
+      return false;
+    }
+  }
+
+  // Otherwise, construct an ICC profile based on the best approximated
+  // primaries and matrix.
+  SkMatrix44 to_XYZD50_matrix;
+  GetPrimaryMatrix(&to_XYZD50_matrix);
+  SkColorSpaceTransferFn fn;
+  if (!GetTransferFunction(&fn)) {
+    DLOG(ERROR) << "Failed to get ColorSpace transfer function for ICCProfile.";
+    return false;
+  }
+  sk_sp<SkData> data = SkICC::WriteToICC(fn, to_XYZD50_matrix);
+  if (!data) {
+    DLOG(ERROR) << "Failed to create SkICC.";
+    return false;
+  }
+  *icc_profile = ICCProfile::FromDataWithId(data->data(), data->size(), 0);
+  DCHECK(icc_profile->IsValid());
+  return true;
 }
 
 ICCProfile::Internals::Internals(std::vector<char> data, uint64_t id)
-    : id_(id), data_(std::move(data)) {
+    : data_(std::move(data)), id_(id) {
   // Early out for empty entries.
   if (data_.empty())
     return;
@@ -298,6 +299,20 @@ ICCProfile::Internals::Internals(std::vector<char> data, uint64_t id)
       is_valid_ = false;
       is_parametric_ = false;
       break;
+  }
+
+  if (id_) {
+    // If |id_| has been set here, then it was specified via sending an
+    // ICCProfile over IPC. Ensure that the computation of |is_valid_| and
+    // |is_parametric_| match the analysis done in the sending process.
+    DCHECK(is_valid_ && !is_parametric_);
+  } else {
+    // If this profile is not parametric, assign it an id so that we can look it
+    // up from a ColorSpace. This path should only be hit in the browser
+    // process.
+    if (is_valid_ && !is_parametric_) {
+      id_ = g_next_unused_id++;
+    }
   }
 }
 
