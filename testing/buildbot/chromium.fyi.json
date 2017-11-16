@@ -1028,6 +1028,11 @@
       }
     ]
   },
+  "ChromeOS amd64 Chromium Goma Canary": {
+    "additional_compile_targets": [
+      "chromiumos_preflight"
+    ]
+  },
   "Chromium Linux Goma Canary": {
     "additional_compile_targets": [
       "all"
