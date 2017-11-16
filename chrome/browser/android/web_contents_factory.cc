@@ -5,6 +5,7 @@
 #include "base/android/jni_android.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/WebContentsFactory_jni.h"
@@ -15,10 +16,11 @@ using base::android::ScopedJavaLocalRef;
 static ScopedJavaLocalRef<jobject> CreateWebContents(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jobject>& j_profile,
     jboolean incognito,
     jboolean initially_hidden,
     jboolean initialize_renderer) {
-  Profile* profile = g_browser_process->profile_manager()->GetLastUsedProfile();
+  Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
   if (incognito)
     profile = profile->GetOffTheRecordProfile();
 
