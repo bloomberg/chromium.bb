@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 93 tests; 50 PASS, 43 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 121 tests; 57 PASS, 64 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Element.animate() creates an Animation object
 PASS Element.animate() creates an Animation object in the relevant realm of the target element
 PASS Element.animate() creates an Animation object with a KeyframeEffect
@@ -21,11 +21,40 @@ FAIL Element.animate() accepts a one property one value property-indexed keyfram
 FAIL Element.animate() accepts a one property one non-array value property-indexed keyframes specification anim.effect.getKeyframes is not a function
 FAIL Element.animate() accepts a one property two value property-indexed keyframes specification where the first value is invalid anim.effect.getKeyframes is not a function
 FAIL Element.animate() accepts a one property two value property-indexed keyframes specification where the second value is invalid anim.effect.getKeyframes is not a function
+FAIL Element.animate() accepts a property-indexed keyframe with a single offset anim.effect.getKeyframes is not a function
+FAIL Element.animate() accepts a property-indexed keyframe with an array of offsets Failed to execute 'animate' on 'Element': Non numeric offset provided
+FAIL Element.animate() accepts a property-indexed keyframe with an array of offsets that is too short Failed to execute 'animate' on 'Element': Non numeric offset provided
+FAIL Element.animate() accepts a property-indexed keyframe with an array of offsets that is too long Failed to execute 'animate' on 'Element': Non numeric offset provided
+FAIL Element.animate() accepts a property-indexed keyframe with an empty array of offsets anim.effect.getKeyframes is not a function
+FAIL Element.animate() accepts a property-indexed keyframe with an array of offsets with an embedded null value Failed to execute 'animate' on 'Element': Non numeric offset provided
+FAIL Element.animate() accepts a property-indexed keyframe with an array of offsets with a trailing null value Failed to execute 'animate' on 'Element': Non numeric offset provided
+FAIL Element.animate() accepts a property-indexed keyframe with an array of offsets with leading and trailing null values Failed to execute 'animate' on 'Element': Non numeric offset provided
+FAIL Element.animate() accepts a property-indexed keyframe with an array of offsets with adjacent null values Failed to execute 'animate' on 'Element': Non numeric offset provided
+FAIL Element.animate() accepts a property-indexed keyframe with an array of offsets with all null values (and too many at that) Failed to execute 'animate' on 'Element': Non numeric offset provided
+FAIL Element.animate() accepts a property-indexed keyframe with a single null offset anim.effect.getKeyframes is not a function
+FAIL Element.animate() accepts a property-indexed keyframe with an array of offsets that is not strictly ascending in the unused part of the array Failed to execute 'animate' on 'Element': Non numeric offset provided
+FAIL Element.animate() accepts a property-indexed keyframe without any specified easing anim.effect.getKeyframes is not a function
+FAIL Element.animate() accepts a property-indexed keyframe with a single easing anim.effect.getKeyframes is not a function
+FAIL Element.animate() accepts a property-indexed keyframe with an array of easings Failed to execute 'animate' on 'Element': Easing may not be set to a list of values
+FAIL Element.animate() accepts a property-indexed keyframe with an array of easings that is too short Failed to execute 'animate' on 'Element': Easing may not be set to a list of values
+FAIL Element.animate() accepts a property-indexed keyframe with a single-element array of easings anim.effect.getKeyframes is not a function
+FAIL Element.animate() accepts a property-indexed keyframe with an empty array of easings Failed to execute 'animate' on 'Element': Easing may not be the empty string
+FAIL Element.animate() accepts a property-indexed keyframe with an array of easings that is too long Failed to execute 'animate' on 'Element': Easing may not be set to a list of values
+FAIL Element.animate() accepts a property-indexed keyframe with a single composite operation anim.effect.getKeyframes is not a function
+FAIL Element.animate() accepts a property-indexed keyframe with a composite array anim.effect.getKeyframes is not a function
+FAIL Element.animate() accepts a property-indexed keyframe with a composite array that is too short anim.effect.getKeyframes is not a function
+FAIL Element.animate() accepts a property-indexed keyframe with a composite array that is too long anim.effect.getKeyframes is not a function
+FAIL Element.animate() accepts a property-indexed keyframe with a single-element composite array anim.effect.getKeyframes is not a function
 FAIL Element.animate() accepts a one property one keyframe sequence anim.effect.getKeyframes is not a function
 FAIL Element.animate() accepts a one property two keyframe sequence anim.effect.getKeyframes is not a function
 FAIL Element.animate() accepts a two property two keyframe sequence anim.effect.getKeyframes is not a function
 FAIL Element.animate() accepts a one shorthand property two keyframe sequence anim.effect.getKeyframes is not a function
 FAIL Element.animate() accepts a two property (a shorthand and one of its component longhands) two keyframe sequence anim.effect.getKeyframes is not a function
+FAIL Element.animate() accepts a two property keyframe sequence where one property is missing from the first keyframe anim.effect.getKeyframes is not a function
+FAIL Element.animate() accepts a two property keyframe sequence where one property is missing from the last keyframe anim.effect.getKeyframes is not a function
+FAIL Element.animate() accepts a one property two keyframe sequence that needs to stringify its values anim.effect.getKeyframes is not a function
+FAIL Element.animate() accepts a keyframe sequence with a CSS variable reference anim.effect.getKeyframes is not a function
+FAIL Element.animate() accepts a keyframe sequence with a CSS variable reference in a shorthand property anim.effect.getKeyframes is not a function
 FAIL Element.animate() accepts a keyframe sequence with duplicate values for a given interior offset anim.effect.getKeyframes is not a function
 FAIL Element.animate() accepts a keyframe sequence with duplicate values for offsets 0 and 1 anim.effect.getKeyframes is not a function
 FAIL Element.animate() accepts a two property four keyframe sequence anim.effect.getKeyframes is not a function
@@ -38,21 +67,24 @@ FAIL Element.animate() accepts a two property keyframe sequence with some omitte
 FAIL Element.animate() accepts a one property keyframe sequence with all omitted offsets anim.effect.getKeyframes is not a function
 FAIL Element.animate() accepts a keyframe sequence with different easing values, but the same easing value for a given offset anim.effect.getKeyframes is not a function
 FAIL Element.animate() accepts a keyframe sequence with different composite values, but the same composite value for a given offset anim.effect.getKeyframes is not a function
-FAIL Element.animate() accepts a one property two keyframe sequence that needs to stringify its values anim.effect.getKeyframes is not a function
-FAIL Element.animate() accepts a keyframe sequence with a CSS variable reference anim.effect.getKeyframes is not a function
-FAIL Element.animate() accepts a keyframe sequence with a CSS variable reference in a shorthand property anim.effect.getKeyframes is not a function
-FAIL Element.animate() accepts a keyframe sequence where shorthand precedes longhand anim.effect.getKeyframes is not a function
-FAIL Element.animate() accepts a keyframe sequence where longhand precedes shorthand anim.effect.getKeyframes is not a function
-FAIL Element.animate() accepts a keyframe sequence where lesser shorthand precedes greater shorthand anim.effect.getKeyframes is not a function
-FAIL Element.animate() accepts a keyframe sequence where greater shorthand precedes lesser shorthand anim.effect.getKeyframes is not a function
-FAIL Element.animate() accepts a two property keyframe sequence where one property is missing from the first keyframe anim.effect.getKeyframes is not a function
-FAIL Element.animate() accepts a two property keyframe sequence where one property is missing from the last keyframe anim.effect.getKeyframes is not a function
-FAIL Element.animate() accepts a keyframe sequence with repeated values at offset 1 with different easings anim.effect.getKeyframes is not a function
 PASS Element.animate() does not accept keyframes with an out-of-bounded positive offset
 PASS Element.animate() does not accept keyframes with an out-of-bounded negative offset
+PASS Element.animate() does not accept property-indexed keyframes not loosely sorted by offset
+PASS Element.animate() does not accept property-indexed keyframes not loosely sorted by offset even though not all offsets are specified
+PASS Element.animate() does not accept property-indexed keyframes with offsets out of range
 PASS Element.animate() does not accept keyframes not loosely sorted by offset
 PASS Element.animate() does not accept property-indexed keyframes with an invalid easing value
+PASS Element.animate() does not accept property-indexed keyframes with an invalid easing value as one of the array values
+PASS Element.animate() does not accept property-indexed keyframe with an invalid easing in the unused part of the array of easings
+PASS Element.animate() does not accept empty property-indexed keyframe with an invalid easing
+PASS Element.animate() does not accept empty property-indexed keyframe with an invalid easings array
 PASS Element.animate() does not accept a keyframe sequence with an invalid easing value
+FAIL Element.animate() does not accept property-indexed keyframes with an invalid composite value assert_throws: function "function () {
+      div.animate(subtest.input, 2000);
+    }" did not throw
+FAIL Element.animate() does not accept property-indexed keyframes with an invalid composite value as one of the array values assert_throws: function "function () {
+      div.animate(subtest.input, 2000);
+    }" did not throw
 FAIL Element.animate() does not accept keyframes with an invalid composite value assert_throws: function "function () {
       div.animate(subtest.input, 2000);
     }" did not throw

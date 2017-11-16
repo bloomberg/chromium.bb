@@ -1,0 +1,49 @@
+This is a testharness.js-based test.
+PASS AnimationEffectReadOnly interface: existence and properties of interface object
+PASS AnimationEffectReadOnly interface object length
+PASS AnimationEffectReadOnly interface object name
+PASS AnimationEffectReadOnly interface: existence and properties of interface prototype object
+PASS AnimationEffectReadOnly interface: existence and properties of interface prototype object's "constructor" property
+PASS AnimationEffectReadOnly interface: attribute timing
+PASS AnimationEffectReadOnly interface: operation getComputedTiming()
+PASS KeyframeEffectReadOnly interface: existence and properties of interface object
+FAIL KeyframeEffectReadOnly interface object length assert_equals: wrong value for KeyframeEffectReadOnly.length expected 1 but got 2
+PASS KeyframeEffectReadOnly interface object name
+PASS KeyframeEffectReadOnly interface: existence and properties of interface prototype object
+PASS KeyframeEffectReadOnly interface: existence and properties of interface prototype object's "constructor" property
+FAIL KeyframeEffectReadOnly interface: attribute target assert_true: The prototype object must have a property "target" expected true got false
+FAIL KeyframeEffectReadOnly interface: attribute iterationComposite assert_true: The prototype object must have a property "iterationComposite" expected true got false
+FAIL KeyframeEffectReadOnly interface: attribute composite assert_true: The prototype object must have a property "composite" expected true got false
+FAIL KeyframeEffectReadOnly interface: operation getKeyframes() assert_own_property: interface prototype object missing non-static operation expected property "getKeyframes" missing
+PASS KeyframeEffectReadOnly must be primary interface of new KeyframeEffectReadOnly(null, null)
+PASS Stringification of new KeyframeEffectReadOnly(null, null)
+FAIL KeyframeEffectReadOnly interface: new KeyframeEffectReadOnly(null, null) must inherit property "target" with the proper type assert_inherits: property "target" not found in prototype chain
+FAIL KeyframeEffectReadOnly interface: new KeyframeEffectReadOnly(null, null) must inherit property "iterationComposite" with the proper type assert_inherits: property "iterationComposite" not found in prototype chain
+FAIL KeyframeEffectReadOnly interface: new KeyframeEffectReadOnly(null, null) must inherit property "composite" with the proper type assert_inherits: property "composite" not found in prototype chain
+FAIL KeyframeEffectReadOnly interface: new KeyframeEffectReadOnly(null, null) must inherit property "getKeyframes()" with the proper type assert_inherits: property "getKeyframes" not found in prototype chain
+PASS AnimationEffectReadOnly interface: new KeyframeEffectReadOnly(null, null) must inherit property "timing" with the proper type
+PASS AnimationEffectReadOnly interface: new KeyframeEffectReadOnly(null, null) must inherit property "getComputedTiming()" with the proper type
+PASS KeyframeEffect interface: existence and properties of interface object
+FAIL KeyframeEffect interface object length assert_equals: wrong value for KeyframeEffect.length expected 1 but got 2
+PASS KeyframeEffect interface object name
+PASS KeyframeEffect interface: existence and properties of interface prototype object
+PASS KeyframeEffect interface: existence and properties of interface prototype object's "constructor" property
+FAIL KeyframeEffect interface: attribute target assert_true: The prototype object must have a property "target" expected true got false
+FAIL KeyframeEffect interface: attribute iterationComposite assert_true: The prototype object must have a property "iterationComposite" expected true got false
+FAIL KeyframeEffect interface: attribute composite assert_true: The prototype object must have a property "composite" expected true got false
+FAIL KeyframeEffect interface: operation setKeyframes(object) assert_own_property: interface prototype object missing non-static operation expected property "setKeyframes" missing
+PASS KeyframeEffect must be primary interface of new KeyframeEffect(null, null)
+PASS Stringification of new KeyframeEffect(null, null)
+FAIL KeyframeEffect interface: new KeyframeEffect(null, null) must inherit property "target" with the proper type assert_inherits: property "target" not found in prototype chain
+FAIL KeyframeEffect interface: new KeyframeEffect(null, null) must inherit property "iterationComposite" with the proper type assert_inherits: property "iterationComposite" not found in prototype chain
+FAIL KeyframeEffect interface: new KeyframeEffect(null, null) must inherit property "composite" with the proper type assert_inherits: property "composite" not found in prototype chain
+FAIL KeyframeEffect interface: new KeyframeEffect(null, null) must inherit property "setKeyframes(object)" with the proper type assert_inherits: property "setKeyframes" not found in prototype chain
+FAIL KeyframeEffect interface: calling setKeyframes(object) on new KeyframeEffect(null, null) with too few arguments must throw TypeError assert_inherits: property "setKeyframes" not found in prototype chain
+FAIL KeyframeEffectReadOnly interface: new KeyframeEffect(null, null) must inherit property "target" with the proper type assert_inherits: property "target" not found in prototype chain
+FAIL KeyframeEffectReadOnly interface: new KeyframeEffect(null, null) must inherit property "iterationComposite" with the proper type assert_inherits: property "iterationComposite" not found in prototype chain
+FAIL KeyframeEffectReadOnly interface: new KeyframeEffect(null, null) must inherit property "composite" with the proper type assert_inherits: property "composite" not found in prototype chain
+FAIL KeyframeEffectReadOnly interface: new KeyframeEffect(null, null) must inherit property "getKeyframes()" with the proper type assert_inherits: property "getKeyframes" not found in prototype chain
+PASS AnimationEffectReadOnly interface: new KeyframeEffect(null, null) must inherit property "timing" with the proper type
+PASS AnimationEffectReadOnly interface: new KeyframeEffect(null, null) must inherit property "getComputedTiming()" with the proper type
+Harness: the test ran to completion.
+

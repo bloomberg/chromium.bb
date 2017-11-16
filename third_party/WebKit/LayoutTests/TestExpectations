@@ -1966,7 +1966,6 @@ crbug.com/763830 virtual/mojo-loading/http/tests/security/cors-rfc1918/ [ Skip ]
 # imported if the test passed or if the results for testharness tests
 # were matched on pass/fail but not exact error messages.
 crbug.com/626703 external/wpt/resource-timing/resource_TAO_space.htm [ Pass Failure ]
-crbug.com/626703 [ Mac ] external/wpt/web-animations/interfaces/AnimationTimeline/document-timeline.html [ Failure ]
 
 crbug.com/698077 http/tests/devtools/sources/debugger/debug-inlined-scripts.js [ NeedsManualRebaseline ]
 crbug.com/667560 virtual/mojo-loading/http/tests/devtools/sources/debugger/debug-inlined-scripts.js [ NeedsManualRebaseline ]
@@ -2092,6 +2091,16 @@ crbug.com/751952 virtual/mojo-loading/http/tests/devtools/unit/datagrid-editable
 crbug.com/751952 virtual/origin-trials-runtimeflags-disabled/http/tests/origin_trials/webexposed/budget-api-origin-trial-interfaces.html [ Pass Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-page/body-margin-1i.html [ Failure ]
+crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-page/body-margin-1j.html [ Failure ]
+crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-page/body-margin-1k.html [ Failure ]
+crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-page/body-margin-1l.html [ Failure ]
+crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-page/body-margin-2i.html [ Failure ]
+crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-page/body-margin-2j.html [ Failure ]
+crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-page/body-margin-2k.html [ Failure ]
+crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-page/body-margin-2l.html [ Failure ]
+crbug.com/626703 external/wpt/webaudio/the-audio-api/the-analysernode-interface/test-analyser-minimum.html [ Timeout ]
+crbug.com/626703 external/wpt/webaudio/the-audio-api/the-analysernode-interface/test-analyser-output.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-grid/alignment/grid-gutters-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-grid/alignment/grid-gutters-002.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-grid/alignment/grid-gutters-003.html [ Failure ]
@@ -2102,8 +2111,8 @@ crbug.com/626703 external/wpt/css/css-grid/alignment/grid-gutters-007.html [ Fai
 crbug.com/626703 external/wpt/css/css-grid/alignment/grid-gutters-008.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-grid/alignment/grid-gutters-009.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-grid/alignment/grid-gutters-010.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-writing-modes-3/table-cell-001.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-writing-modes-3/table-cell-002.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-writing-modes/table-cell-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-writing-modes/table-cell-002.html [ Failure ]
 crbug.com/626703 [ Linux Win ] external/wpt/encoding/legacy-mb-japanese/iso-2022-jp/iso2022jp-encode-form-csiso2022jp.html [ Timeout ]
 crbug.com/626703 [ Linux Mac10.10 Mac10.11 Mac10.12 Retina Win ] external/wpt/css/css-fonts/font-synthesis-01.html [ Failure ]
 crbug.com/626703 [ Linux Mac10.10 Mac10.11 Mac10.12 Retina Win ] external/wpt/css/css-fonts/font-synthesis-02.html [ Failure ]

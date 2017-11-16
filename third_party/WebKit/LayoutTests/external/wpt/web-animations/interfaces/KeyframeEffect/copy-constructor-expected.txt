@@ -1,4 +1,8 @@
 This is a testharness.js-based test.
-FAIL Test mutable copy from a KeyframeEffectReadOnly source Failed to construct 'KeyframeEffect': 2 arguments required, but only 1 present.
+FAIL Copied KeyframeEffectReadOnly has the same target Failed to construct 'KeyframeEffectReadOnly': 2 arguments required, but only 1 present.
+FAIL Copied KeyframeEffectReadOnly has the same keyframes Failed to construct 'KeyframeEffectReadOnly': 2 arguments required, but only 1 present.
+FAIL Copied KeyframeEffectReadOnly has the same KeyframeEffectOptions Failed to construct 'KeyframeEffectReadOnly': 2 arguments required, but only 1 present.
+FAIL Copied KeyframeEffectReadOnly has the same timing content Failed to construct 'KeyframeEffectReadOnly': 2 arguments required, but only 1 present.
+FAIL KeyframeEffect constructed from a KeyframeEffectReadOnly is mutable Failed to construct 'KeyframeEffect': 2 arguments required, but only 1 present.
 Harness: the test ran to completion.
 
