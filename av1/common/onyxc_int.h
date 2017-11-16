@@ -90,6 +90,10 @@ extern "C" {
 
 #define NUM_PING_PONG_BUFFERS 2
 
+// TODO(jingning): Turning this on to set up transform coefficient
+// processing timer.
+#define TXCOEFF_TIMER 0
+
 typedef enum {
   SINGLE_REFERENCE = 0,
   COMPOUND_REFERENCE = 1,
@@ -568,6 +572,12 @@ typedef struct AV1Common {
 #endif
 #if CONFIG_MFMV
   TPL_MV_REF *tpl_mvs;
+#endif
+
+#if TXCOEFF_TIMER
+  int64_t cum_txcoeff_timer;
+  int64_t txcoeff_timer;
+  int txb_count;
 #endif
 } AV1_COMMON;
 

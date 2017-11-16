@@ -23,6 +23,7 @@
 #include "aom_dsp/bitreader.h"
 #include "aom_dsp/bitreader_buffer.h"
 #include "aom_mem/aom_mem.h"
+#include "aom_ports/aom_timer.h"
 #include "aom_ports/mem.h"
 #include "aom_ports/mem_ops.h"
 #include "aom_scale/aom_scale.h"
@@ -196,6 +197,10 @@ static void predict_and_reconstruct_intra_block(
 
   if (!mbmi->skip) {
     struct macroblockd_plane *const pd = &xd->plane[plane];
+#if TXCOEFF_TIMER
+    struct aom_usec_timer timer;
+    aom_usec_timer_start(&timer);
+#endif
 #if CONFIG_LV_MAP
     int16_t max_scan_line = 0;
     int eob;
@@ -213,6 +218,13 @@ static void predict_and_reconstruct_intra_block(
         av1_decode_block_tokens(cm, xd, plane, scan_order, col, row, tx_size,
                                 tx_type, &max_scan_line, r, mbmi->segment_id);
 #endif  // CONFIG_LV_MAP
+
+#if TXCOEFF_TIMER
+    aom_usec_timer_mark(&timer);
+    const int64_t elapsed_time = aom_usec_timer_elapsed(&timer);
+    cm->txcoeff_timer += elapsed_time;
+    ++cm->txb_count;
+#endif
     if (eob) {
       uint8_t *dst =
           &pd->dst.buf[(row * pd->dst.stride + col) << tx_size_wide_log2[0]];
@@ -247,6 +259,10 @@ static void decode_reconstruct_tx(AV1_COMMON *cm, MACROBLOCKD *const xd,
 
   if (tx_size == plane_tx_size) {
     PLANE_TYPE plane_type = get_plane_type(plane);
+#if TXCOEFF_TIMER
+    struct aom_usec_timer timer;
+    aom_usec_timer_start(&timer);
+#endif
 #if CONFIG_LV_MAP
     int16_t max_scan_line = 0;
     int eob;
@@ -264,6 +280,14 @@ static void decode_reconstruct_tx(AV1_COMMON *cm, MACROBLOCKD *const xd,
         cm, xd, plane, sc, blk_col, blk_row, plane_tx_size, tx_type,
         &max_scan_line, r, mbmi->segment_id);
 #endif  // CONFIG_LV_MAP
+
+#if TXCOEFF_TIMER
+    aom_usec_timer_mark(&timer);
+    const int64_t elapsed_time = aom_usec_timer_elapsed(&timer);
+    cm->txcoeff_timer += elapsed_time;
+    ++cm->txb_count;
+#endif
+
     inverse_transform_block(xd, plane, tx_type, plane_tx_size,
                             &pd->dst.buf[(blk_row * pd->dst.stride + blk_col)
                                          << tx_size_wide_log2[0]],
