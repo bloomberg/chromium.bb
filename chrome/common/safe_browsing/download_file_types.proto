@@ -60,11 +60,15 @@ message DownloadFileType {
   repeated PlatformSettings platform_settings = 5;
 };
 
-// Next id: 5
+// Next id: 6
 message DownloadFileTypeConfig {
   // All required
   optional uint32 version_id = 1;
   optional float sampled_ping_probability = 2;
   repeated DownloadFileType file_types = 3;
   optional DownloadFileType default_file_type = 4;
+
+  // Limits on repeated fields in the ClientDownloadRequest (i.e. the
+  // download ping). Limits are per-ping.
+  optional uint64 max_archived_binaries_to_report = 5;
 }

@@ -485,6 +485,20 @@ void CheckClientDownloadRequest::StartExtractZipFeatures() {
   analyzer_->Start();
 }
 
+// static
+void CheckClientDownloadRequest::CopyArchivedBinaries(
+    const ArchivedBinaries& src_binaries,
+    ArchivedBinaries* dest_binaries) {
+  // Limit the number of entries so we don't clog the backend.
+  // We can expand this limit by pushing a new download_file_types update.
+  int limit = FileTypePolicies::GetInstance()->GetMaxArchivedBinariesToReport();
+
+  dest_binaries->Clear();
+  for (int i = 0; i < limit && i < src_binaries.size(); i++) {
+    *dest_binaries->Add() = src_binaries[i];
+  }
+}
+
 void CheckClientDownloadRequest::OnZipAnalysisFinished(
     const ArchiveAnalyzerResults& results) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -502,7 +516,7 @@ void CheckClientDownloadRequest::OnZipAnalysisFinished(
   archive_is_valid_ =
       (results.success ? ArchiveValid::VALID : ArchiveValid::INVALID);
   archived_executable_ = results.has_executable;
-  archived_binary_.CopyFrom(results.archived_binary);
+  CopyArchivedBinaries(results.archived_binary, &archived_binary_);
   DVLOG(1) << "Zip analysis finished for " << item_->GetFullPath().value()
            << ", has_executable=" << results.has_executable
            << ", has_archive=" << results.has_archive
@@ -658,7 +672,6 @@ void CheckClientDownloadRequest::CheckUrlAgainstWhitelist() {
   }
 
   const GURL& url = url_chain_.back();
-  // TODO(vakh): This may acquire a lock on the SB DB on the IO thread.
   if (url.is_valid() && database_manager_->MatchDownloadWhitelistUrl(url)) {
     DVLOG(2) << url << " is on the download whitelist.";
     RecordCountOfWhitelistedDownload(URL_WHITELIST);

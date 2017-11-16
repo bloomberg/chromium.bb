@@ -8,8 +8,9 @@
 ##
 ## Top level settings
 ##
-version_id: 14
+version_id: 15
 sampled_ping_probability: 0.01
+max_archived_binaries_to_report: 10
 default_file_type {
   uma_value: 18
   ping_setting: SAMPLED_PING
