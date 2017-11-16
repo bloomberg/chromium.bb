@@ -76,6 +76,8 @@ class StageTestCase(cros_test_lib.MockOutputTestCase,
     self._current_board = None
     self._boards = None
     self._run = None
+    self._model = None
+
 
   def _Prepare(self, bot_id=None, extra_config=None, cmd_args=None,
                extra_cmd_args=None, build_id=DEFAULT_BUILD_ID,
