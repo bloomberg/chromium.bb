@@ -1602,7 +1602,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=histograms"
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "loading.desktop",
@@ -5706,7 +5706,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=histograms"
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "loading.desktop",
