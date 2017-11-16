@@ -41,9 +41,9 @@ class PLATFORM_EXPORT GeometryMapperClipCache {
   // clip of |this| in the space of |ancestors|, if there is one cached.
   // Otherwise returns null.
   const FloatClipRect* GetCachedClip(const ClipAndTransform& ancestors);
+
   // Stores the "clip visual rect" of |this in the space of |ancestors|,
   // into a local cache.
-
   void SetCachedClip(const ClipAndTransform&, const FloatClipRect&);
 
   static void ClearCache();
