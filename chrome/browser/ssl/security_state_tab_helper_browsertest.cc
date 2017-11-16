@@ -2290,11 +2290,9 @@ class URLRequestObsoleteTLSJob : public net::URLRequestMockHTTPJob {
 // URLRequestObsoleteTLSJob jobs.
 class URLRequestNonsecureInterceptor : public net::URLRequestInterceptor {
  public:
-  URLRequestNonsecureInterceptor(
-      const base::FilePath& base_path,
-      scoped_refptr<net::X509Certificate> cert)
-      : base_path_(base_path),
-        cert_(std::move(cert)) {}
+  URLRequestNonsecureInterceptor(const base::FilePath& base_path,
+                                 scoped_refptr<net::X509Certificate> cert)
+      : base_path_(base_path), cert_(std::move(cert)) {}
 
   ~URLRequestNonsecureInterceptor() override {}
 
