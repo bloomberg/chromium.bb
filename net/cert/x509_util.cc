@@ -393,6 +393,12 @@ bssl::UniquePtr<CRYPTO_BUFFER> CreateCryptoBuffer(
                         data.size(), GetBufferPool()));
 }
 
+base::StringPiece CryptoBufferAsStringPiece(const CRYPTO_BUFFER* buffer) {
+  return base::StringPiece(
+      reinterpret_cast<const char*>(CRYPTO_BUFFER_data(buffer)),
+      CRYPTO_BUFFER_len(buffer));
+}
+
 scoped_refptr<X509Certificate> CreateX509CertificateFromBuffers(
     STACK_OF(CRYPTO_BUFFER) * buffers) {
   if (sk_CRYPTO_BUFFER_num(buffers) == 0) {

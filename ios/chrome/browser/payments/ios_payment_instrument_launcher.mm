@@ -24,6 +24,7 @@
 #include "net/base/mac/url_conversions.mm"
 #include "net/base/url_util.h"
 #include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -218,23 +219,18 @@ IOSPaymentInstrumentLauncher::SerializeCertificateChain(
     return cert_chain_list;
 
   scoped_refptr<net::X509Certificate> cert = item->GetSSL().certificate;
-  std::vector<std::vector<const char>> cert_chain;
-  net::X509Certificate::OSCertHandles cert_handles =
-      cert->GetIntermediateCertificates();
-  if (cert_handles.empty() || cert_handles[0] != cert->os_cert_handle())
-    cert_handles.insert(cert_handles.begin(), cert->os_cert_handle());
+  std::vector<base::StringPiece> cert_chain;
 
-  cert_chain.reserve(cert_handles.size());
-  for (auto* handle : cert_handles) {
-    std::string cert_bytes;
-    net::X509Certificate::GetDEREncoded(handle, &cert_bytes);
-    cert_chain.push_back(
-        std::vector<const char>(cert_bytes.begin(), cert_bytes.end()));
-  }
+  cert_chain.reserve(1 + cert->GetIntermediateCertificates().size());
+  cert_chain.push_back(
+      net::x509_util::CryptoBufferAsStringPiece(cert->os_cert_handle()));
+  for (auto* handle : cert->GetIntermediateCertificates())
+    cert_chain.push_back(net::x509_util::CryptoBufferAsStringPiece(handle));
 
   std::unique_ptr<base::ListValue> byte_array;
-  for (std::vector<const char> cert_string : cert_chain) {
+  for (const auto& cert_string : cert_chain) {
     base::ListValue byte_array;
+    byte_array.GetList().reserve(cert_string.size());
     for (const char byte : cert_string)
       byte_array.GetList().emplace_back(byte);
 
