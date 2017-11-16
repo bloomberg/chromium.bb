@@ -92,6 +92,10 @@ void UmaHistogramMemoryKB(const std::string& name, int sample) {
   UmaHistogramCustomCounts(name, sample, 1000, 500000, 50);
 }
 
+void UmaHistogramMemoryMB(const std::string& name, int sample) {
+  UmaHistogramCustomCounts(name, sample, 1, 1000, 50);
+}
+
 void UmaHistogramMemoryLargeMB(const std::string& name, int sample) {
   UmaHistogramCustomCounts(name, sample, 1, 64000, 100);
 }

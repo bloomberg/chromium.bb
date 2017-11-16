@@ -105,6 +105,8 @@ BASE_EXPORT void UmaHistogramLongTimes(const std::string& name,
 // For recording memory related histograms.
 // Used to measure common KB-granularity memory stats. Range is up to 500M.
 BASE_EXPORT void UmaHistogramMemoryKB(const std::string& name, int sample);
+// Used to measure common MB-granularity memory stats. Range is up to ~1G.
+BASE_EXPORT void UmaHistogramMemoryMB(const std::string& name, int sample);
 // Used to measure common MB-granularity memory stats. Range is up to ~64G.
 BASE_EXPORT void UmaHistogramMemoryLargeMB(const std::string& name, int sample);
 
