@@ -38,7 +38,7 @@ void ShowNotification(const base::DictionaryValue* message,
   notification = system_notifier::CreateSystemNotification(
       message_center::NOTIFICATION_TYPE_SIMPLE,
       kNotificationId + std::to_string(message_id),
-      base::ASCIIToUTF16(message_number), base::ASCIIToUTF16(message_text),
+      base::ASCIIToUTF16(message_number), base::UTF8ToUTF16(message_text),
       gfx::Image(gfx::CreateVectorIcon(kSystemMenuSmsIcon, kMenuIconSize,
                                        kMenuIconColor)),
       base::string16(), GURL(),
