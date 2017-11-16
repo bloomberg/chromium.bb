@@ -44,6 +44,10 @@ class GLES2Interface;
 }
 }
 
+namespace viz {
+class GLHelper;
+}
+
 namespace blink {
 
 class WebGraphicsContext3DProvider {
@@ -53,8 +57,12 @@ class WebGraphicsContext3DProvider {
   virtual gpu::gles2::GLES2Interface* ContextGL() = 0;
   virtual bool BindToCurrentThread() = 0;
   virtual GrContext* GetGrContext() = 0;
+  virtual void InvalidateGrContext(uint32_t state) = 0;
   virtual const gpu::Capabilities& GetCapabilities() const = 0;
   virtual const gpu::GpuFeatureInfo& GetGpuFeatureInfo() const = 0;
+  // Creates a viz::GLHelper after first call and returns that instance. This
+  // method cannot return null.
+  virtual viz::GLHelper* GetGLHelper() = 0;
 
   // Returns true if the context is driven by software emulation of GL. In
   // this scenario, the compositor would not be using GPU.
