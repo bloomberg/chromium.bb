@@ -16,6 +16,11 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/views/view.h"
 
+namespace gfx {
+class Rect;
+class Size;
+}  // namespace gfx
+
 namespace content {
 class StoragePartition;
 }
@@ -25,6 +30,11 @@ class URLRequestContextGetter;
 }
 
 namespace chromeos {
+
+// Returns bounds of the screen to use for login wizard.
+// The rect is centered within the default monitor and sized accordingly if
+// |size| is not empty. Otherwise the whole monitor is occupied.
+gfx::Rect CalculateScreenBounds(const gfx::Size& size);
 
 // Returns the size of user image required for proper display under current DPI.
 int GetCurrentUserImageSize();
@@ -36,6 +46,10 @@ namespace login {
 // Maximum size of user image, in which it should be saved to be properly
 // displayed under all possible DPI values.
 const int kMaxUserImageSize = 512;
+
+// Returns true if lock/login should scroll user pods into view itself when
+// virtual keyboard is shown and disable vk overscroll.
+bool LoginScrollIntoViewEnabled();
 
 // A helper class for easily mocking out Network*Handler calls for tests.
 class NetworkStateHelper {

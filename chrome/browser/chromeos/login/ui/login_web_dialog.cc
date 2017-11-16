@@ -13,8 +13,6 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
-#include "ui/display/display.h"
-#include "ui/display/screen.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/widget/widget.h"
@@ -43,10 +41,6 @@ ui::Accelerator GetCloseAccelerator() {
   return ui::Accelerator(ui::VKEY_BROWSER_BACK, ui::EF_SHIFT_DOWN);
 }
 
-const gfx::Rect& GetDisplayBounds() {
-  return display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
-}
-
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -64,9 +58,9 @@ LoginWebDialog::LoginWebDialog(content::BrowserContext* browser_context,
       delegate_(delegate),
       title_(title),
       url_(url) {
-  const gfx::Rect& bounds = GetDisplayBounds();
-  width_ = kDefaultWidthRatio * bounds.width();
-  height_ = kDefaultHeightRatio * bounds.height();
+  gfx::Rect screen_bounds(CalculateScreenBounds(gfx::Size()));
+  width_ = static_cast<int>(kDefaultWidthRatio * screen_bounds.width());
+  height_ = static_cast<int>(kDefaultHeightRatio * screen_bounds.height());
 }
 
 LoginWebDialog::~LoginWebDialog() {}
@@ -116,9 +110,9 @@ void LoginWebDialog::GetDialogSize(gfx::Size* size) const {
 }
 
 void LoginWebDialog::GetMinimumDialogSize(gfx::Size* size) const {
-  const gfx::Rect& bounds = GetDisplayBounds();
-  size->SetSize(kMinimumWidthRatio * bounds.width(),
-                kMinimumHeightRatio * bounds.height());
+  gfx::Rect screen_bounds(CalculateScreenBounds(gfx::Size()));
+  size->SetSize(kMinimumWidthRatio * screen_bounds.width(),
+                kMinimumHeightRatio * screen_bounds.height());
 }
 
 std::string LoginWebDialog::GetDialogArgs() const {

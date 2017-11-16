@@ -91,6 +91,16 @@ content::StoragePartition* GetPartition(content::WebContents* embedder,
 
 }  // namespace
 
+gfx::Rect CalculateScreenBounds(const gfx::Size& size) {
+  gfx::Rect bounds = display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
+  if (!size.IsEmpty()) {
+    int horizontal_diff = bounds.width() - size.width();
+    int vertical_diff = bounds.height() - size.height();
+    bounds.Inset(horizontal_diff / 2, vertical_diff / 2);
+  }
+  return bounds;
+}
+
 int GetCurrentUserImageSize() {
   // The biggest size that the profile picture is displayed at is currently
   // 220px, used for the big preview on OOBE and Change Picture options page.
