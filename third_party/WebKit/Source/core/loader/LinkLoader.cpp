@@ -139,7 +139,11 @@ void LinkLoader::NotifyFinished() {
     client_->LinkLoaded();
 }
 
+// https://html.spec.whatwg.org/#link-type-modulepreload
 void LinkLoader::NotifyModuleLoadFinished(ModuleScript* module) {
+  // Step 11. "If result is null, fire an event named error at the link element,
+  // and return." [spec text]
+  // Step 12. "Fire an event named load at the link element." [spec text]
   if (!module || module->IsErrored())
     client_->LinkLoadingErrored();
   else
@@ -389,26 +393,50 @@ static Resource* PreloadIfNeeded(const LinkRelAttribute& rel_attribute,
                                          link_fetch_params);
 }
 
+// https://html.spec.whatwg.org/#link-type-modulepreload
 static void ModulePreloadIfNeeded(const LinkRelAttribute& rel_attribute,
                                   const KURL& href,
                                   Document& document,
+                                  const String& as,
                                   const String& media,
                                   const String& nonce,
                                   CrossOriginAttributeValue cross_origin,
                                   ViewportDescription* viewport_description,
                                   ReferrerPolicy referrer_policy,
-                                  SingleModuleClient* client) {
+                                  LinkLoader* link_loader) {
   if (!document.Loader() || !rel_attribute.IsModulePreload())
     return;
 
   // TODO(ksakamoto): add UseCounter
 
+  // Step 1. "If the href attribute's value is the empty string, then return."
+  // [spec text]
   if (href.IsEmpty()) {
     document.AddConsoleMessage(
         ConsoleMessage::Create(kOtherMessageSource, kWarningMessageLevel,
                                "<link rel=modulepreload> has no `href` value"));
     return;
   }
+
+  // Step 2. "Let destination be the current state of the as attribute (a
+  // destination), or "script" if it is in no state." [spec text]
+  // Step 3. "If destination is not script-like, then queue a task on the
+  // networking task source to fire an event named error at the link element,
+  // and return." [spec text]
+  // Currently we only support as="script".
+  if (!as.IsEmpty() && as != "script") {
+    document.AddConsoleMessage(ConsoleMessage::Create(
+        kOtherMessageSource, kWarningMessageLevel,
+        String("<link rel=modulepreload> has an invalid `as` value " + as)));
+    if (link_loader)
+      link_loader->DispatchLinkLoadingErroredAsync();
+    return;
+  }
+
+  // Step 4. "Parse the URL given by the href attribute, relative to the
+  // element's node document. If that fails, then return. Otherwise, let url be
+  // the resulting URL record." [spec text]
+  // |href| is already resolved in caller side.
   if (!href.IsValid()) {
     document.AddConsoleMessage(ConsoleMessage::Create(
         kOtherMessageSource, kWarningMessageLevel,
@@ -417,13 +445,13 @@ static void ModulePreloadIfNeeded(const LinkRelAttribute& rel_attribute,
     return;
   }
 
-  // Preload only if media matches
+  // Preload only if media matches.
+  // https://html.spec.whatwg.org/#processing-the-media-attribute
   if (!MediaMatches(document, media, viewport_description))
     return;
 
-  // https://github.com/whatwg/html/pull/2383
-  // 5. Let settings object be the link element's node document's relevant
-  //    settings object.
+  // Step 5. "Let settings object be the link element's node document's relevant
+  // settings object." [spec text]
   // |document| is the node document here, and its context document is the
   // relevant settings object.
   Document* context_document = document.ContextDocument();
@@ -434,15 +462,34 @@ static void ModulePreloadIfNeeded(const LinkRelAttribute& rel_attribute,
   if (!modulator)
     return;
 
+  // Step 6. "Let credentials mode be the module script credentials mode for the
+  // crossorigin attribute." [spec text]
   network::mojom::FetchCredentialsMode credentials_mode =
       ScriptLoader::ModuleScriptCredentialsMode(cross_origin);
 
+  // Step 7. "Let cryptographic nonce be the value of the nonce attribute, if it
+  // is specified, or the empty string otherwise." [spec text]
+  // |nonce| parameter is the value of the nonce attribute.
+
+  // Step 8. "Let integrity metadata be the value of the integrity attribute, if
+  // it is specified, or the empty string otherwise." [spec text]
+  // TODO(ksakamoto): Support integrity attribute.
+
+  // Step 9. "Let options be a script fetch options whose cryptographic nonce is
+  // cryptographic nonce, integrity metadata is integrity metadata, parser
+  // metadata is "not-parser-inserted", and credentials mode is credentials
+  // mode." [spec text]
   ModuleScriptFetchRequest request(
       href, referrer_policy,
       ScriptFetchOptions(nonce, IntegrityMetadataSet(), String(),
-                         kParserInserted, credentials_mode));
+                         kNotParserInserted, credentials_mode));
+
+  // Step 10. "Fetch a single module script given url, settings object,
+  // destination, options, settings object, "client", and with the top-level
+  // module fetch flag set. Wait until algorithm asynchronously completes with
+  // result." [spec text]
   modulator->FetchSingle(request, ModuleGraphLevel::kDependentModuleFetch,
-                         client);
+                         link_loader);
 
   Settings* settings = document.GetSettings();
   if (settings && settings->GetLogPreload()) {
@@ -450,6 +497,9 @@ static void ModulePreloadIfNeeded(const LinkRelAttribute& rel_attribute,
         kOtherMessageSource, kVerboseMessageLevel,
         "Module preload triggered for " + href.Host() + href.GetPath()));
   }
+
+  // Asynchronously continue processing after
+  // LinkLoader::NotifyModuleLoadFinished() is called.
 }
 
 static Resource* PrefetchIfNeeded(Document& document,
@@ -528,9 +578,10 @@ void LinkLoader::LoadLinksFromHeader(
                       kReferrerPolicyDefault);
       PrefetchIfNeeded(*document, url, rel_attribute, cross_origin,
                        kReferrerPolicyDefault);
-      ModulePreloadIfNeeded(rel_attribute, url, *document, header.Media(),
-                            header.Nonce(), cross_origin, viewport_description,
-                            kReferrerPolicyDefault, nullptr);
+      ModulePreloadIfNeeded(rel_attribute, url, *document, header.As(),
+                            header.Media(), header.Nonce(), cross_origin,
+                            viewport_description, kReferrerPolicyDefault,
+                            nullptr);
     }
     if (rel_attribute.IsServiceWorker()) {
       UseCounter::Count(&frame, WebFeature::kLinkHeaderServiceWorker);
@@ -573,7 +624,7 @@ bool LinkLoader::LoadLink(
   if (resource)
     finish_observer_ = new FinishObserver(this, resource);
 
-  ModulePreloadIfNeeded(rel_attribute, href, document, media, nonce,
+  ModulePreloadIfNeeded(rel_attribute, href, document, as, media, nonce,
                         cross_origin, nullptr, referrer_policy, this);
 
   if (const unsigned prerender_rel_types =
@@ -592,6 +643,12 @@ bool LinkLoader::LoadLink(
     prerender_.Clear();
   }
   return true;
+}
+
+void LinkLoader::DispatchLinkLoadingErroredAsync() {
+  client_->GetLoadingTaskRunner()->PostTask(
+      BLINK_FROM_HERE, WTF::Bind(&LinkLoaderClient::LinkLoadingErrored,
+                                 WrapPersistent(client_.Get())));
 }
 
 void LinkLoader::Abort() {
