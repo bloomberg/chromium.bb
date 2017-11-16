@@ -1029,6 +1029,9 @@
     ]
   },
   "Chromium Linux Goma Canary": {
+    "additional_compile_targets": [
+      "all"
+    ],
     "gtest_tests": [
       {
         "swarming": {
@@ -1045,6 +1048,9 @@
     ]
   },
   "Chromium Linux Goma Canary (clobber)": {
+    "additional_compile_targets": [
+      "all"
+    ],
     "gtest_tests": [
       {
         "swarming": {
@@ -1061,6 +1067,9 @@
     ]
   },
   "Chromium Linux Goma Canary LocalOutputCache": {
+    "additional_compile_targets": [
+      "all"
+    ],
     "gtest_tests": [
       {
         "swarming": {
@@ -2227,6 +2236,9 @@
     ]
   },
   "Chromium Mac 10.9 Goma Canary": {
+    "additional_compile_targets": [
+      "all"
+    ],
     "gtest_tests": [
       {
         "swarming": {
@@ -2243,6 +2255,9 @@
     ]
   },
   "Chromium Mac 10.9 Goma Canary (clobber)": {
+    "additional_compile_targets": [
+      "all"
+    ],
     "gtest_tests": [
       {
         "swarming": {
@@ -2259,6 +2274,9 @@
     ]
   },
   "Chromium Mac 10.9 Goma Canary (dbg)": {
+    "additional_compile_targets": [
+      "all"
+    ],
     "gtest_tests": [
       {
         "swarming": {
@@ -2275,6 +2293,9 @@
     ]
   },
   "Chromium Mac 10.9 Goma Canary (dbg)(clobber)": {
+    "additional_compile_targets": [
+      "all"
+    ],
     "gtest_tests": [
       {
         "swarming": {
@@ -2291,6 +2312,9 @@
     ]
   },
   "Chromium Mac 10.9 Goma Canary LocalOutputCache": {
+    "additional_compile_targets": [
+      "all"
+    ],
     "gtest_tests": [
       {
         "swarming": {
@@ -2849,6 +2873,9 @@
     ]
   },
   "CrWin7Goma": {
+    "additional_compile_targets": [
+      "all"
+    ],
     "gtest_tests": [
       {
         "swarming": {
@@ -2865,6 +2892,9 @@
     ]
   },
   "CrWin7Goma(clbr)": {
+    "additional_compile_targets": [
+      "all"
+    ],
     "gtest_tests": [
       {
         "swarming": {
@@ -2881,6 +2911,9 @@
     ]
   },
   "CrWin7Goma(dbg)": {
+    "additional_compile_targets": [
+      "all"
+    ],
     "gtest_tests": [
       {
         "swarming": {
@@ -2897,6 +2930,9 @@
     ]
   },
   "CrWin7Goma(dll)": {
+    "additional_compile_targets": [
+      "all"
+    ],
     "gtest_tests": [
       {
         "swarming": {
@@ -3692,6 +3728,9 @@
     ]
   },
   "CrWinClangGoma": {
+    "additional_compile_targets": [
+      "all"
+    ],
     "gtest_tests": [
       {
         "swarming": {
@@ -3708,6 +3747,9 @@
     ]
   },
   "CrWinClexeGoma": {
+    "additional_compile_targets": [
+      "all"
+    ],
     "gtest_tests": [
       {
         "swarming": {
@@ -3724,6 +3766,9 @@
     ]
   },
   "CrWinGoma": {
+    "additional_compile_targets": [
+      "all"
+    ],
     "gtest_tests": [
       {
         "swarming": {
@@ -3740,6 +3785,9 @@
     ]
   },
   "CrWinGoma(dll)": {
+    "additional_compile_targets": [
+      "all"
+    ],
     "gtest_tests": [
       {
         "swarming": {
@@ -3756,6 +3804,9 @@
     ]
   },
   "CrWinGoma(loc)": {
+    "additional_compile_targets": [
+      "all"
+    ],
     "gtest_tests": [
       {
         "swarming": {
