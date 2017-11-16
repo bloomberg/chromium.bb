@@ -7,6 +7,7 @@
 #include "build/build_config.h"
 #include "content/browser/webrtc/webrtc_content_browsertest_base.h"
 #include "content/public/common/content_switches.h"
+#include "content/shell/common/shell_switches.h"
 #include "media/base/media_switches.h"
 #include "media/base/test_data_util.h"
 #include "media/mojo/features.h"
@@ -70,6 +71,9 @@ class WebRtcCaptureFromElementBrowserTest
     // Allow experimental canvas features.
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableExperimentalCanvasFeatures);
+    // Allow window.internals for simulating context loss.
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kExposeInternalsForTesting);
   }
 
  private:
@@ -78,7 +82,7 @@ class WebRtcCaptureFromElementBrowserTest
 
 IN_PROC_BROWSER_TEST_F(WebRtcCaptureFromElementBrowserTest,
                        VerifyCanvas2DCaptureColor) {
-  MakeTypicalCall("testCanvas2DCaptureColors();",
+  MakeTypicalCall("testCanvas2DCaptureColors(true);",
                   kCanvasCaptureColorTestHtmlFile);
 }
 
@@ -88,7 +92,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcCaptureFromElementBrowserTest,
   // TODO(crbug.com/706009): Make this test pass on mac.  Behavior is not buggy
   // (verified manually) on mac, but for some reason this test fails on the mac
   // bot.
-  MakeTypicalCall("testCanvasWebGLCaptureColors();",
+  MakeTypicalCall("testCanvasWebGLCaptureColors(true);",
                   kCanvasCaptureColorTestHtmlFile);
 #endif
 }
@@ -141,6 +145,31 @@ IN_PROC_BROWSER_TEST_P(WebRtcCaptureFromElementBrowserTest,
                          GetParam().has_audio,
                          GetParam().use_audio_tag),
       kVideoAudioHtmlFile);
+}
+
+// Enable these tests once https://crbug.com/785558 is fixed.
+#if defined(OS_ANDROID)
+#define MAYBE_CaptureFromCanvas2DHandlesContextLoss \
+  DISABLED_CaptureFromCanvas2DHandlesContextLoss
+#define MAYBE_CaptureFromOpaqueCanvas2DHandlesContextLoss \
+  DISABLED_CaptureFromOpaqueCanvas2DHandlesContextLoss
+#else
+#define MAYBE_CaptureFromCanvas2DHandlesContextLoss \
+  CaptureFromCanvas2DHandlesContextLoss
+#define MAYBE_CaptureFromOpaqueCanvas2DHandlesContextLoss \
+  CaptureFromOpaqueCanvas2DHandlesContextLoss
+#endif
+
+IN_PROC_BROWSER_TEST_F(WebRtcCaptureFromElementBrowserTest,
+                       MAYBE_CaptureFromCanvas2DHandlesContextLoss) {
+  MakeTypicalCall("testCanvas2DContextLoss(true);",
+                  kCanvasCaptureColorTestHtmlFile);
+}
+
+IN_PROC_BROWSER_TEST_F(WebRtcCaptureFromElementBrowserTest,
+                       MAYBE_CaptureFromOpaqueCanvas2DHandlesContextLoss) {
+  MakeTypicalCall("testCanvas2DContextLoss(false);",
+                  kCanvasCaptureColorTestHtmlFile);
 }
 
 INSTANTIATE_TEST_CASE_P(,
