@@ -168,7 +168,15 @@ class TestBaselineSet(object):
                 '>')
 
     def test_prefixes(self):
+        """Returns a sorted list of test prefixes."""
         return sorted(self._test_prefix_map)
+
+    def all_tests(self):
+        """Returns a sorted list of all tests without duplicates."""
+        tests = set()
+        for test_prefix in self._test_prefix_map:
+            tests.update(self._port.tests([test_prefix]))
+        return sorted(tests)
 
     def build_port_pairs(self, test_prefix):
         # Return a copy in case the caller modifies the returned list.
@@ -418,14 +426,17 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
         return sorted(self._tool.git().absolute_path(path) for path in unstaged_changes if re.match(baseline_re, path))
 
     def _remove_all_pass_testharness_baselines(self, test_baseline_set):
-        """Removes all of the all-PASS baselines for the given builders and tests.
+        """Removes all of the generic all-PASS baselines for the given tests.
 
-        In general, for testharness.js tests, the absence of a baseline
-        indicates that the test is expected to pass. When rebaselining,
-        new all-PASS baselines may be downloaded, but they should not be kept.
+        For testharness.js tests, the absence of a baseline indicates that the
+        test is expected to pass. When rebaselining, new all-PASS baselines may
+        be downloaded to platform directories. After optimization, some of them
+        may be pushed to the root layout test directory and become generic
+        baselines, which can be safely removed. Non-generic all-PASS baselines
+        need to be preserved; otherwise the fallback may be wrong.
         """
         filesystem = self._tool.filesystem
-        baseline_paths = self._possible_baseline_paths(test_baseline_set)
+        baseline_paths = self._generic_baseline_paths(test_baseline_set)
         for path in baseline_paths:
             if not (filesystem.exists(path) and filesystem.splitext(path)[1] == '.txt'):
                 continue
@@ -434,23 +445,19 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
                 _log.info('Removing all-PASS testharness baseline: %s', path)
                 filesystem.remove(path)
 
-    def _possible_baseline_paths(self, test_baseline_set):
-        """Returns file paths for all baselines for the given tests and builders.
+    def _generic_baseline_paths(self, test_baseline_set):
+        """Returns absolute paths for generic baselines for the given tests.
 
-        Args:
-            test_baseline_set: A TestBaselineSet instance.
-
-        Returns:
-            A list of absolute paths where baselines could possibly exist.
+        Even when a test does not have a generic baseline, the path where it
+        would be is still included in the return value.
         """
         filesystem = self._tool.filesystem
-        baseline_paths = set()
-        for test, build, _ in test_baseline_set:
+        baseline_paths = []
+        for test in test_baseline_set.all_tests():
             filenames = [self._file_name_for_expected_result(test, suffix) for suffix in BASELINE_SUFFIX_LIST]
-            port_baseline_dir = self.baseline_directory(build.builder_name)
-            baseline_paths.update({filesystem.join(port_baseline_dir, filename) for filename in filenames})
-            baseline_paths.update({filesystem.join(self._layout_tests_dir(), filename) for filename in filenames})
-        return sorted(baseline_paths)
+            baseline_paths += [filesystem.join(self._layout_tests_dir(), filename) for filename in filenames]
+        baseline_paths.sort()
+        return baseline_paths
 
     def _layout_tests_dir(self):
         return self._tool.port_factory.get().layout_tests_dir()

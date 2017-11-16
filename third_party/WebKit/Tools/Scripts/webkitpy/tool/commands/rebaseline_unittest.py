@@ -113,26 +113,20 @@ class TestAbstractParallelRebaselineCommand(BaseTestCase):
             ['MOCK Win10', 'MOCK Win7 (dbg)(1)', 'MOCK Win7 (dbg)(2)', 'MOCK Win7'])
         self.assertEqual(builders_to_fetch, {'MOCK Win7', 'MOCK Win10'})
 
-    def test_possible_baseline_paths(self):
+    def test_generic_baseline_paths(self):
         test_baseline_set = TestBaselineSet(self.tool)
         test_baseline_set.add('passes/text.html', Build('MOCK Win7'))
         test_baseline_set.add('passes/text.html', Build('MOCK Win10'))
 
         # pylint: disable=protected-access
-        baseline_paths = self.command._possible_baseline_paths(test_baseline_set)
+        baseline_paths = self.command._generic_baseline_paths(test_baseline_set)
         self.assertEqual(baseline_paths, [
             '/test.checkout/LayoutTests/passes/text-expected.png',
             '/test.checkout/LayoutTests/passes/text-expected.txt',
             '/test.checkout/LayoutTests/passes/text-expected.wav',
-            '/test.checkout/LayoutTests/platform/test-win-win10/passes/text-expected.png',
-            '/test.checkout/LayoutTests/platform/test-win-win10/passes/text-expected.txt',
-            '/test.checkout/LayoutTests/platform/test-win-win10/passes/text-expected.wav',
-            '/test.checkout/LayoutTests/platform/test-win-win7/passes/text-expected.png',
-            '/test.checkout/LayoutTests/platform/test-win-win7/passes/text-expected.txt',
-            '/test.checkout/LayoutTests/platform/test-win-win7/passes/text-expected.wav',
         ])
 
-    def test_remove_all_pass_testharness_baselines(self):
+    def test_remove_all_pass_testharness_generic_baselines(self):
         self.tool.filesystem.write_text_file(
             '/test.checkout/LayoutTests/passes/text-expected.txt',
             ('This is a testharness.js-based test.\n'
@@ -140,10 +134,21 @@ class TestAbstractParallelRebaselineCommand(BaseTestCase):
              'Harness: the test ran to completion.\n'))
         test_baseline_set = TestBaselineSet(self.tool)
         test_baseline_set.add('passes/text.html', Build('MOCK Win7'))
-        test_baseline_set.add('passes/text.html', Build('MOCK Win10'))
         self.command._remove_all_pass_testharness_baselines(test_baseline_set)
         self.assertFalse(self.tool.filesystem.exists(
             '/test.checkout/LayoutTests/passes/text-expected.txt'))
+
+    def test_keep_all_pass_testharness_platform_baselines(self):
+        self.tool.filesystem.write_text_file(
+            '/test.checkout/LayoutTests/platform/test-win-win7/passes/text-expected.txt',
+            ('This is a testharness.js-based test.\n'
+             'PASS: foo\n'
+             'Harness: the test ran to completion.\n'))
+        test_baseline_set = TestBaselineSet(self.tool)
+        test_baseline_set.add('passes/text.html', Build('MOCK Win7'))
+        self.command._remove_all_pass_testharness_baselines(test_baseline_set)
+        self.assertTrue(self.tool.filesystem.exists(
+            '/test.checkout/LayoutTests/platform/test-win-win7/passes/text-expected.txt'))
 
 
 class TestRebaseline(BaseTestCase):
@@ -953,6 +958,8 @@ class TestBaselineSetTest(unittest.TestCase):
                 ('a/z.html', Build(builder_name='MOCK Trusty'), 'test-linux-trusty'),
                 ('a/z.html', Build(builder_name='MOCK Win10'), 'test-win-win10'),
             ])
+        self.assertEqual(
+            test_baseline_set.all_tests(), ['a/x.html', 'a/y.html', 'a/z.html'])
 
     def test_str_empty(self):
         test_baseline_set = TestBaselineSet(host=self.host)
