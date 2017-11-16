@@ -145,8 +145,9 @@ static void init_rsc(const YV12_BUFFER_CONFIG *src, const AV1_COMMON *cm,
 
   const YV12_BUFFER_CONFIG *dgd = cm->frame_to_show;
   const int is_uv = plane != AOM_PLANE_Y;
+  const int ss_y = is_uv && cm->subsampling_y;
   rsc->plane_width = src->crop_widths[is_uv];
-  rsc->plane_height = src->crop_heights[is_uv];
+  rsc->plane_height = ALIGN_POWER_OF_TWO(src->crop_heights[is_uv], 3 - ss_y);
   rsc->src_buffer = src->buffers[plane];
   rsc->src_stride = src->strides[is_uv];
   rsc->dgd_buffer = dgd->buffers[plane];

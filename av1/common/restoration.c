@@ -68,6 +68,19 @@ static void tile_width_and_height(const AV1_COMMON *cm, int is_uv, int sb_w,
 }
 #endif  // CONFIG_MAX_TILE
 
+// Similar to av1_get_tile_rect(), except that we extend the bottommost tile in
+// each frame to a multiple of 8 luma pixels.
+// This is done to help simplify the implementation of striped-loop-restoration,
+// by avoiding nasty edge cases which would otherwise appear when the (cropped)
+// frame height is 57 or 63 (mod 64).
+static AV1PixelRect get_ext_tile_rect(const TileInfo *tile_info,
+                                      const AV1_COMMON *cm, int is_uv) {
+  int ss_y = is_uv && cm->subsampling_y;
+  AV1PixelRect tile_rect = av1_get_tile_rect(tile_info, cm, is_uv);
+  tile_rect.bottom = ALIGN_POWER_OF_TWO(tile_rect.bottom, 3 - ss_y);
+  return tile_rect;
+}
+
 // Count horizontal or vertical units per tile (use a width or height for
 // tile_size, respectively). We basically want to divide the tile size by the
 // size of a restoration unit. Rather than rounding up unconditionally as you
@@ -84,7 +97,7 @@ void av1_alloc_restoration_struct(AV1_COMMON *cm, RestorationInfo *rsi,
 #if CONFIG_MAX_TILE
   // We need to allocate enough space for restoration units to cover the
   // largest tile. Without CONFIG_MAX_TILE, this is always the tile at the
-  // top-left and we can use av1_get_tile_rect. With CONFIG_MAX_TILE, we have
+  // top-left and we can use get_ext_tile_rect(). With CONFIG_MAX_TILE, we have
   // to do the computation ourselves, iterating over the tiles and keeping
   // track of the largest width and height, then upscaling.
   int max_sb_w = 0;
@@ -105,7 +118,7 @@ void av1_alloc_restoration_struct(AV1_COMMON *cm, RestorationInfo *rsi,
   TileInfo tile_info;
   av1_tile_init(&tile_info, cm, 0, 0);
 
-  const AV1PixelRect tile_rect = av1_get_tile_rect(&tile_info, cm, is_uv);
+  const AV1PixelRect tile_rect = get_ext_tile_rect(&tile_info, cm, is_uv);
   assert(tile_rect.left == 0 && tile_rect.top == 0);
 
   const int max_tile_w = tile_rect.right;
@@ -1619,7 +1632,9 @@ void av1_loop_restoration_filter_frame(YV12_BUFFER_CONFIG *frame,
   if (!dst) {
     dst = &dst_;
     memset(dst, 0, sizeof(YV12_BUFFER_CONFIG));
-    if (aom_realloc_frame_buffer(dst, frame->y_crop_width, frame->y_crop_height,
+    const int frame_width = frame->crop_widths[0];
+    const int frame_height = ALIGN_POWER_OF_TWO(frame->crop_heights[0], 3);
+    if (aom_realloc_frame_buffer(dst, frame_width, frame_height,
                                  cm->subsampling_x, cm->subsampling_y,
 #if CONFIG_HIGHBITDEPTH
                                  cm->use_highbitdepth,
@@ -1651,8 +1666,10 @@ void av1_loop_restoration_filter_frame(YV12_BUFFER_CONFIG *frame,
     }
 
     const int is_uv = plane > 0;
+    const int ss_y = is_uv && cm->subsampling_y;
     const int plane_width = frame->crop_widths[is_uv];
-    const int plane_height = frame->crop_heights[is_uv];
+    const int plane_height =
+        ALIGN_POWER_OF_TWO(frame->crop_heights[is_uv], 3 - ss_y);
 
     extend_frame(frame->buffers[plane], plane_width, plane_height,
                  frame->strides[is_uv], RESTORATION_BORDER, RESTORATION_BORDER,
@@ -1713,7 +1730,7 @@ static void foreach_rest_unit_in_tile(const AV1PixelRect *tile_rect,
 #if CONFIG_STRIPED_LOOP_RESTORATION
     // Offset the tile upwards to align with the restoration processing stripe
     const int voffset = RESTORATION_TILE_OFFSET >> ss_y;
-    limits.v_start = tile_rect->left + AOMMAX(0, limits.v_start - voffset);
+    limits.v_start = AOMMAX(tile_rect->top, limits.v_start - voffset);
     if (limits.v_end < tile_rect->bottom) limits.v_end -= voffset;
 #else
     (void)ss_y;
@@ -1755,7 +1772,7 @@ void av1_foreach_rest_unit_in_frame(const struct AV1Common *cm, int plane,
     for (int tile_col = 0; tile_col < cm->tile_cols; ++tile_col) {
       av1_tile_set_col(&tile_info, cm, tile_col);
 
-      AV1PixelRect tile_rect = av1_get_tile_rect(&tile_info, cm, is_uv);
+      const AV1PixelRect tile_rect = get_ext_tile_rect(&tile_info, cm, is_uv);
 
       if (on_tile) on_tile(tile_row, tile_col, priv);
 
@@ -1824,7 +1841,7 @@ int av1_loop_restoration_corners_in_sb(const struct AV1Common *cm, int plane,
   TileInfo tile_info;
   av1_tile_init(&tile_info, cm, tile_row, tile_col);
 
-  const AV1PixelRect tile_rect = av1_get_tile_rect(&tile_info, cm, is_uv);
+  const AV1PixelRect tile_rect = get_ext_tile_rect(&tile_info, cm, is_uv);
   const int tile_w = tile_rect.right - tile_rect.left;
   const int tile_h = tile_rect.bottom - tile_rect.top;
 
@@ -2018,8 +2035,7 @@ static void save_tile_row_boundary_lines(const YV12_BUFFER_CONFIG *frame,
 
   // Get the tile rectangle, with height rounded up to the next multiple of 8
   // luma pixels (only relevant for the bottom tile of the frame)
-  AV1PixelRect tile_rect = av1_get_tile_rect(tile_info, cm, plane > 0);
-  tile_rect.bottom = ALIGN_POWER_OF_TWO(tile_rect.bottom, 3 - ss_y);
+  const AV1PixelRect tile_rect = get_ext_tile_rect(tile_info, cm, is_uv);
 
   RestorationStripeBoundaries *boundaries = &cm->rst_info[plane].boundaries;
 
