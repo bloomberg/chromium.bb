@@ -3,9 +3,7 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
-      LayoutSVGResourceLinearGradient {linearGradient} [id="Gradient"] [gradientUnits=userSpaceOnUse] [start=(0,0)] [end=(800,0)]
-        LayoutSVGGradientStop {stop} [offset=0.00] [color=#FFFFFF]
-        LayoutSVGGradientStop {stop} [offset=1.00] [color=#000000]
+      LayoutSVGResourceLinearGradient {linearGradient} [id="Gradient"] [gradientUnits=userSpaceOnUse] [stops=( #FFFFFF@0.00 #000000@1.00 )] [start=(0,0)] [end=(800,0)]
     LayoutSVGResourceMasker {mask} [id="Mask1"] [maskUnits=userSpaceOnUse] [maskContentUnits=userSpaceOnUse]
       LayoutSVGRect {rect} at (0,0) size 800x100 [fill={[type=LINEAR-GRADIENT] [id="Gradient"]}] [x=0.00] [y=0.00] [width=800.00] [height=100.00]
     LayoutSVGResourceMasker {mask} [id="Mask2"] [maskUnits=userSpaceOnUse] [maskContentUnits=userSpaceOnUse]

@@ -3,12 +3,8 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
-      LayoutSVGResourceRadialGradient {radialGradient} [id="gradient0"] [gradientUnits=objectBoundingBox] [center=(0.50,0.50)] [focal=(0.50,0.50)] [radius=0.50] [focalRadius=0.00]
-        LayoutSVGGradientStop {stop} [offset=0.00] [color=#0000FF]
-        LayoutSVGGradientStop {stop} [offset=1.00] [color=#FF0000]
-      LayoutSVGResourceRadialGradient {radialGradient} [id="gradient1"] [gradientUnits=objectBoundingBox] [center=(0.50,0.50)] [focal=(0.50,0.50)] [radius=0.50] [focalRadius=0.00]
-        LayoutSVGGradientStop {stop} [offset=0.00] [color=#0000FF]
-        LayoutSVGGradientStop {stop} [offset=1.00] [color=#FF0000]
+      LayoutSVGResourceRadialGradient {radialGradient} [id="gradient0"] [gradientUnits=objectBoundingBox] [stops=( #0000FF@0.00 #FF0000@1.00 )] [center=(0.50,0.50)] [focal=(0.50,0.50)] [radius=0.50] [focalRadius=0.00]
+      LayoutSVGResourceRadialGradient {radialGradient} [id="gradient1"] [gradientUnits=objectBoundingBox] [stops=( #0000FF@0.00 #FF0000@1.00 )] [center=(0.50,0.50)] [focal=(0.50,0.50)] [radius=0.50] [focalRadius=0.00]
       LayoutSVGResourceRadialGradient {radialGradient} [id="gradient2"] [gradientUnits=objectBoundingBox] [center=(0.50,0.50)] [focal=(0.50,0.50)] [radius=0.50] [focalRadius=0.00]
       LayoutSVGResourceRadialGradient {radialGradient} [id="gradient4"] [gradientUnits=objectBoundingBox] [center=(0.50,0.50)] [focal=(0.50,0.50)] [radius=0.50] [focalRadius=0.00]
       LayoutSVGResourceRadialGradient {radialGradient} [id="gradient3"] [gradientUnits=objectBoundingBox] [center=(0.50,0.50)] [focal=(0.50,0.50)] [radius=0.50] [focalRadius=0.00]

@@ -41,13 +41,17 @@ class SVGStopElement final : public SVGElement {
 
   virtual void Trace(blink::Visitor*);
 
+ protected:
+  void DidRecalcStyle() override;
+
  private:
   explicit SVGStopElement(Document&);
 
   void SvgAttributeChanged(const QualifiedName&) override;
 
-  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
-  bool LayoutObjectIsNeeded(const ComputedStyle&) override;
+  // Stop elements don't have associated layout objects
+  // (they use NonLayoutObjectComputedStyle instead).
+  bool LayoutObjectIsNeeded(const ComputedStyle&) override { return false; }
 
   Member<SVGAnimatedNumber> offset_;
 };

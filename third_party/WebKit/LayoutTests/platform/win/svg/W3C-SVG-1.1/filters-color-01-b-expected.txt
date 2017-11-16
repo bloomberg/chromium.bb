@@ -5,11 +5,7 @@ layer at (0,0) size 800x600
     LayoutSVGContainer {g} at (8.58,5.58) size 462.84x291.31
       LayoutSVGViewportContainer {svg} at (1,1) size 798x502.25
         LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
-          LayoutSVGResourceLinearGradient {linearGradient} [id="MyGradient"] [gradientUnits=userSpaceOnUse] [start=(20,0)] [end=(760,0)]
-            LayoutSVGGradientStop {stop} [offset=0.00] [color=#DD00DD]
-            LayoutSVGGradientStop {stop} [offset=0.33] [color=#22CC22]
-            LayoutSVGGradientStop {stop} [offset=0.67] [color=#400000]
-            LayoutSVGGradientStop {stop} [offset=1.00] [color=#A0A0FF]
+          LayoutSVGResourceLinearGradient {linearGradient} [id="MyGradient"] [gradientUnits=userSpaceOnUse] [stops=( #DD00DD@0.00 #22CC22@0.33 #400000@0.67 #A0A0FF@1.00 )] [start=(20,0)] [end=(760,0)]
           LayoutSVGResourceFilter {filter} [id="Matrix"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
             [feColorMatrix type="MATRIX" values="0.33 0.33 0.33 0.00 0.00 0.33 0.33 0.33 0.00 0.00 0.33 0.33 0.33 0.00 0.00 0.33 0.33 0.33 0.00 0.00"]
               [SourceGraphic]

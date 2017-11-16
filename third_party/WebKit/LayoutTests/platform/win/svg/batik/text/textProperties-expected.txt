@@ -128,9 +128,7 @@ layer at (0,0) size 450x500
           LayoutSVGText {text} at (-41,-27) size 82x34 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (-41,-27) size 82x34
               chunk 1 (middle anchor) text run 1 at (-41.00,0.00) startOffset 0 endOffset 6 width 82.00: "sample"
-        LayoutSVGResourceLinearGradient {linearGradient} [id="gradient"] [gradientUnits=userSpaceOnUse] [start=(-50,-25)] [end=(50,25)]
-          LayoutSVGGradientStop {stop} [offset=0.00] [color=#0000FF]
-          LayoutSVGGradientStop {stop} [offset=1.00] [color=#008000]
+        LayoutSVGResourceLinearGradient {linearGradient} [id="gradient"] [gradientUnits=userSpaceOnUse] [stops=( #0000FF@0.00 #008000@1.00 )] [start=(-50,-25)] [end=(50,25)]
       LayoutSVGContainer {g} at (-50,-25) size 100x50 [transform={m=((1.00,0.00)(0.00,1.00)) t=(350.00,370.00)}]
         LayoutSVGRect {rect} at (-50,-25) size 100x50 [fill={[type=LINEAR-GRADIENT] [id="gradient"]}] [x=-50.00] [y=-25.00] [width=100.00] [height=50.00]
           [clipPath="textClip"] LayoutSVGResourceClipper {clipPath} at (-41,-27) size 82x34

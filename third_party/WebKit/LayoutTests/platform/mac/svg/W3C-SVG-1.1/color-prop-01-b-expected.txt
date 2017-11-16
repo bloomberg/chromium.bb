@@ -4,10 +4,7 @@ layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
     LayoutSVGContainer {g} at (60,20) size 360x275
       LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
-        LayoutSVGResourceLinearGradient {linearGradient} [id="grad"] [gradientUnits=objectBoundingBox] [start=(0,0)] [end=(1,0)]
-          LayoutSVGGradientStop {stop} [offset=0.05] [color=#6600FF]
-          LayoutSVGGradientStop {stop} [offset=0.50] [color=#FF0000]
-          LayoutSVGGradientStop {stop} [offset=0.95] [color=#FFFF66]
+        LayoutSVGResourceLinearGradient {linearGradient} [id="grad"] [gradientUnits=objectBoundingBox] [stops=( #6600FF@0.05 #FF0000@0.50 #FFFF66@0.95 )] [start=(0,0)] [end=(1,0)]
       LayoutSVGContainer {g} at (70,20) size 340x120
         LayoutSVGContainer {g} at (70,20) size 340x120
           LayoutSVGEllipse {circle} at (70,20) size 120x120 [fill={[type=SOLID] [color=#FF0000]}] [cx=130.00] [cy=80.00] [r=60.00]

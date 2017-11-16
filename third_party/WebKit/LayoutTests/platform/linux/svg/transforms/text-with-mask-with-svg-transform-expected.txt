@@ -10,9 +10,7 @@ layer at (0,0) size 800x600
       LayoutSVGRect {rect} at (10,30) size 100x260 [fill={[type=SOLID] [color=#FF0000]}] [x=10.00] [y=30.00] [width=100.00] [height=260.00]
       LayoutSVGResourceMasker {mask} [id="mask1"] [maskUnits=userSpaceOnUse] [maskContentUnits=userSpaceOnUse]
         LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
-          LayoutSVGResourceLinearGradient {linearGradient} [id="Grad1"] [gradientUnits=userSpaceOnUse] [start=(60,50)] [end=(60,120)]
-            LayoutSVGGradientStop {stop} [offset=0.00] [color=#FFFFFF]
-            LayoutSVGGradientStop {stop} [offset=1.00] [color=#FFFFFF80]
+          LayoutSVGResourceLinearGradient {linearGradient} [id="Grad1"] [gradientUnits=userSpaceOnUse] [stops=( #FFFFFF@0.00 #FFFFFF80@1.00 )] [start=(60,50)] [end=(60,120)]
         LayoutSVGRect {rect} at (60,50) size 100x60 [fill={[type=LINEAR-GRADIENT] [id="Grad1"]}] [x=60.00] [y=50.00] [width=100.00] [height=60.00]
       LayoutSVGRect {rect} at (60,50) size 100x60 [fill={[type=SOLID] [color=#00FF00]}] [x=60.00] [y=50.00] [width=100.00] [height=60.00]
         [masker="mask1"] LayoutSVGResourceMasker {mask} at (60,50) size 100x60

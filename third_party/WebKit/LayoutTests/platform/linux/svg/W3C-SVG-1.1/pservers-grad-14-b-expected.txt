@@ -3,30 +3,14 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
-      LayoutSVGResourceLinearGradient {linearGradient} [id="lgSpreadPad"] [gradientUnits=userSpaceOnUse] [start=(50,0)] [end=(100,0)]
-        LayoutSVGGradientStop {stop} [offset=0.00] [color=#FF0000]
-        LayoutSVGGradientStop {stop} [offset=1.00] [color=#FFD700]
-      LayoutSVGResourceLinearGradient {linearGradient} [id="lgSpreadReflect"] [gradientUnits=userSpaceOnUse] [spreadMethod=REFLECT] [start=(50,0)] [end=(100,0)]
-        LayoutSVGGradientStop {stop} [offset=0.00] [color=#FF0000]
-        LayoutSVGGradientStop {stop} [offset=1.00] [color=#FFD700]
-      LayoutSVGResourceLinearGradient {linearGradient} [id="lgSpreadRepeat"] [gradientUnits=userSpaceOnUse] [spreadMethod=REPEAT] [start=(50,0)] [end=(100,0)]
-        LayoutSVGGradientStop {stop} [offset=0.00] [color=#FF0000]
-        LayoutSVGGradientStop {stop} [offset=1.00] [color=#FFD700]
-      LayoutSVGResourceLinearGradient {linearGradient} [id="lgSpreadDefault"] [gradientUnits=userSpaceOnUse] [start=(50,0)] [end=(100,0)]
-        LayoutSVGGradientStop {stop} [offset=0.00] [color=#FF0000]
-        LayoutSVGGradientStop {stop} [offset=1.00] [color=#FFD700]
-      LayoutSVGResourceRadialGradient {radialGradient} [id="rgSpreadPad"] [gradientUnits=objectBoundingBox] [center=(0.50,0.50)] [focal=(0.50,0.50)] [radius=0.20] [focalRadius=0.00]
-        LayoutSVGGradientStop {stop} [offset=0.00] [color=#FF0000]
-        LayoutSVGGradientStop {stop} [offset=1.00] [color=#FFD700]
-      LayoutSVGResourceRadialGradient {radialGradient} [id="rgSpreadReflect"] [gradientUnits=objectBoundingBox] [spreadMethod=REFLECT] [center=(0.50,0.50)] [focal=(0.50,0.50)] [radius=0.20] [focalRadius=0.00]
-        LayoutSVGGradientStop {stop} [offset=0.00] [color=#FF0000]
-        LayoutSVGGradientStop {stop} [offset=1.00] [color=#FFD700]
-      LayoutSVGResourceRadialGradient {radialGradient} [id="rgSpreadRepeat"] [gradientUnits=objectBoundingBox] [spreadMethod=REPEAT] [center=(0.50,0.50)] [focal=(0.50,0.50)] [radius=0.20] [focalRadius=0.00]
-        LayoutSVGGradientStop {stop} [offset=0.00] [color=#FF0000]
-        LayoutSVGGradientStop {stop} [offset=1.00] [color=#FFD700]
-      LayoutSVGResourceRadialGradient {radialGradient} [id="rgSpreadDefault"] [gradientUnits=objectBoundingBox] [center=(0.50,0.50)] [focal=(0.50,0.50)] [radius=0.20] [focalRadius=0.00]
-        LayoutSVGGradientStop {stop} [offset=0.00] [color=#FF0000]
-        LayoutSVGGradientStop {stop} [offset=1.00] [color=#FFD700]
+      LayoutSVGResourceLinearGradient {linearGradient} [id="lgSpreadPad"] [gradientUnits=userSpaceOnUse] [stops=( #FF0000@0.00 #FFD700@1.00 )] [start=(50,0)] [end=(100,0)]
+      LayoutSVGResourceLinearGradient {linearGradient} [id="lgSpreadReflect"] [gradientUnits=userSpaceOnUse] [spreadMethod=REFLECT] [stops=( #FF0000@0.00 #FFD700@1.00 )] [start=(50,0)] [end=(100,0)]
+      LayoutSVGResourceLinearGradient {linearGradient} [id="lgSpreadRepeat"] [gradientUnits=userSpaceOnUse] [spreadMethod=REPEAT] [stops=( #FF0000@0.00 #FFD700@1.00 )] [start=(50,0)] [end=(100,0)]
+      LayoutSVGResourceLinearGradient {linearGradient} [id="lgSpreadDefault"] [gradientUnits=userSpaceOnUse] [stops=( #FF0000@0.00 #FFD700@1.00 )] [start=(50,0)] [end=(100,0)]
+      LayoutSVGResourceRadialGradient {radialGradient} [id="rgSpreadPad"] [gradientUnits=objectBoundingBox] [stops=( #FF0000@0.00 #FFD700@1.00 )] [center=(0.50,0.50)] [focal=(0.50,0.50)] [radius=0.20] [focalRadius=0.00]
+      LayoutSVGResourceRadialGradient {radialGradient} [id="rgSpreadReflect"] [gradientUnits=objectBoundingBox] [spreadMethod=REFLECT] [stops=( #FF0000@0.00 #FFD700@1.00 )] [center=(0.50,0.50)] [focal=(0.50,0.50)] [radius=0.20] [focalRadius=0.00]
+      LayoutSVGResourceRadialGradient {radialGradient} [id="rgSpreadRepeat"] [gradientUnits=objectBoundingBox] [spreadMethod=REPEAT] [stops=( #FF0000@0.00 #FFD700@1.00 )] [center=(0.50,0.50)] [focal=(0.50,0.50)] [radius=0.20] [focalRadius=0.00]
+      LayoutSVGResourceRadialGradient {radialGradient} [id="rgSpreadDefault"] [gradientUnits=objectBoundingBox] [stops=( #FF0000@0.00 #FFD700@1.00 )] [center=(0.50,0.50)] [focal=(0.50,0.50)] [radius=0.20] [focalRadius=0.00]
     LayoutSVGText {text} at (113.09,12.59) size 253.80x22.19 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (113.09,12.59) size 253.80x22.19
         chunk 1 (middle anchor) text run 1 at (113.10,30.00) startOffset 0 endOffset 30 width 253.80: "Gradient 'spreadMethod' values"

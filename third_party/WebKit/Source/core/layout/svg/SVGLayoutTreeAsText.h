@@ -31,7 +31,6 @@
 namespace blink {
 
 class LayoutObject;
-class LayoutSVGGradientStop;
 class LayoutSVGImage;
 class LayoutSVGInline;
 class LayoutSVGInlineText;
@@ -42,9 +41,6 @@ class LayoutSVGText;
 // functions used by the main LayoutTreeAsText code
 void Write(TextStream&, const LayoutSVGShape&, int indent);
 void Write(TextStream&, const LayoutSVGRoot&, int indent);
-void WriteSVGGradientStop(TextStream&,
-                          const LayoutSVGGradientStop&,
-                          int indent);
 void WriteSVGResourceContainer(TextStream&, const LayoutObject&, int indent);
 void WriteSVGContainer(TextStream&, const LayoutObject&, int indent);
 void WriteSVGImage(TextStream&, const LayoutSVGImage&, int indent);

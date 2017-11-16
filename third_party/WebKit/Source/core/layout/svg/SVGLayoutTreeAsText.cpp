@@ -31,7 +31,6 @@
 #include "core/layout/LayoutTreeAsText.h"
 #include "core/layout/api/LineLayoutSVGInlineText.h"
 #include "core/layout/line/InlineTextBox.h"
-#include "core/layout/svg/LayoutSVGGradientStop.h"
 #include "core/layout/svg/LayoutSVGImage.h"
 #include "core/layout/svg/LayoutSVGInline.h"
 #include "core/layout/svg/LayoutSVGResourceClipper.h"
@@ -65,7 +64,6 @@
 #include "core/svg/SVGPolyElement.h"
 #include "core/svg/SVGRadialGradientElement.h"
 #include "core/svg/SVGRectElement.h"
-#include "core/svg/SVGStopElement.h"
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"
 #include "platform/graphics/DashArray.h"
 #include "platform/graphics/GraphicsTypes.h"
@@ -532,16 +530,21 @@ static void WriteChildren(TextStream& ts,
 
 static inline void WriteCommonGradientProperties(
     TextStream& ts,
-    SVGSpreadMethodType spread_method,
-    const AffineTransform& gradient_transform,
-    SVGUnitTypes::SVGUnitType gradient_units) {
-  WriteNameValuePair(ts, "gradientUnits", gradient_units);
+    const GradientAttributes& attrs) {
+  WriteNameValuePair(ts, "gradientUnits", attrs.GradientUnits());
 
-  if (spread_method != kSVGSpreadMethodPad)
-    ts << " [spreadMethod=" << spread_method << "]";
+  if (attrs.SpreadMethod() != kSVGSpreadMethodPad)
+    ts << " [spreadMethod=" << attrs.SpreadMethod() << "]";
 
-  if (!gradient_transform.IsIdentity())
-    ts << " [gradientTransform=" << gradient_transform << "]";
+  if (!attrs.GradientTransform().IsIdentity())
+    ts << " [gradientTransform=" << attrs.GradientTransform() << "]";
+
+  if (attrs.HasStops()) {
+    ts << " [stops=( ";
+    for (const auto& stop : attrs.Stops())
+      ts << stop.color << "@" << stop.stop << " ";
+    ts << ")]";
+  }
 }
 
 void WriteSVGResourceContainer(TextStream& ts,
@@ -620,9 +623,7 @@ void WriteSVGResourceContainer(TextStream& ts,
     LinearGradientAttributes attributes;
     ToSVGLinearGradientElement(gradient->GetElement())
         ->CollectGradientAttributes(attributes);
-    WriteCommonGradientProperties(ts, attributes.SpreadMethod(),
-                                  attributes.GradientTransform(),
-                                  attributes.GradientUnits());
+    WriteCommonGradientProperties(ts, attributes);
 
     ts << " [start=" << gradient->StartPoint(attributes)
        << "] [end=" << gradient->EndPoint(attributes) << "]\n";
@@ -637,9 +638,7 @@ void WriteSVGResourceContainer(TextStream& ts,
     RadialGradientAttributes attributes;
     ToSVGRadialGradientElement(gradient->GetElement())
         ->CollectGradientAttributes(attributes);
-    WriteCommonGradientProperties(ts, attributes.SpreadMethod(),
-                                  attributes.GradientTransform(),
-                                  attributes.GradientUnits());
+    WriteCommonGradientProperties(ts, attributes);
 
     FloatPoint focal_point = gradient->FocalPoint(attributes);
     FloatPoint center_point = gradient->CenterPoint(attributes);
@@ -711,19 +710,6 @@ void Write(TextStream& ts, const LayoutSVGShape& shape, int indent) {
   WriteStandardPrefix(ts, shape, indent);
   ts << shape << "\n";
   WriteResources(ts, shape, indent);
-}
-
-void WriteSVGGradientStop(TextStream& ts,
-                          const LayoutSVGGradientStop& stop,
-                          int indent) {
-  WriteStandardPrefix(ts, stop, indent);
-
-  SVGStopElement* stop_element = ToSVGStopElement(stop.GetNode());
-  DCHECK(stop_element);
-  DCHECK(stop.Style());
-
-  ts << " [offset=" << stop_element->offset()->CurrentValue()->Value()
-     << "] [color=" << stop_element->StopColorIncludingOpacity() << "]\n";
 }
 
 void WriteResources(TextStream& ts, const LayoutObject& object, int indent) {

@@ -5,8 +5,7 @@ layer at (0,0) size 800x600
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGResourceClipper {clipPath} [id="clip1"] [clipPathUnits=userSpaceOnUse]
         LayoutSVGEllipse {circle} at (20,30) size 20x20 [fill={[type=SOLID] [color=#000000]}] [cx=30.00] [cy=40.00] [r=10.00]
-      LayoutSVGResourceLinearGradient {linearGradient} [id="grad"] [gradientUnits=objectBoundingBox] [start=(0,0)] [end=(1,0)]
-        LayoutSVGGradientStop {stop} [offset=0.00] [color=#008000]
+      LayoutSVGResourceLinearGradient {linearGradient} [id="grad"] [gradientUnits=objectBoundingBox] [stops=( #008000@0.00 )] [start=(0,0)] [end=(1,0)]
     LayoutSVGResourceFilter {filter} [id="blurxy"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
       [feGaussianBlur stdDeviation="5.00, 1.00"]
         [SourceGraphic]

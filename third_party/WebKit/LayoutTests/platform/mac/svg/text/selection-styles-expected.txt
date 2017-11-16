@@ -5,12 +5,8 @@ layer at (0,0) size 800x504
     LayoutBlockFlow {body} at (0,0) size 800x504
       LayoutSVGRoot {svg} at (0,0) size 800x500
         LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
-          LayoutSVGResourceLinearGradient {linearGradient} [id="grad1"] [gradientUnits=objectBoundingBox] [gradientTransform={m=((0.71,0.71)(-0.71,0.71)) t=(0.00,0.00)}] [start=(0,0)] [end=(1,0)]
-            LayoutSVGGradientStop {stop} [offset=0.00] [color=#000000]
-            LayoutSVGGradientStop {stop} [offset=1.00] [color=#FFFFFF]
-          LayoutSVGResourceLinearGradient {linearGradient} [id="grad2"] [gradientUnits=objectBoundingBox] [gradientTransform={m=((0.71,0.71)(-0.71,0.71)) t=(0.00,0.00)}] [start=(0,0)] [end=(1,0)]
-            LayoutSVGGradientStop {stop} [offset=0.00] [color=#FF0000]
-            LayoutSVGGradientStop {stop} [offset=1.00] [color=#008000]
+          LayoutSVGResourceLinearGradient {linearGradient} [id="grad1"] [gradientUnits=objectBoundingBox] [gradientTransform={m=((0.71,0.71)(-0.71,0.71)) t=(0.00,0.00)}] [stops=( #000000@0.00 #FFFFFF@1.00 )] [start=(0,0)] [end=(1,0)]
+          LayoutSVGResourceLinearGradient {linearGradient} [id="grad2"] [gradientUnits=objectBoundingBox] [gradientTransform={m=((0.71,0.71)(-0.71,0.71)) t=(0.00,0.00)}] [stops=( #FF0000@0.00 #008000@1.00 )] [start=(0,0)] [end=(1,0)]
         LayoutSVGContainer {g} at (0,12) size 578.20x383 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,0.00)}]
           LayoutSVGText {text} at (0,12) size 359.94x23 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,12) size 359.94x23

@@ -45,8 +45,7 @@ LayoutSVGModelObject::LayoutSVGModelObject(SVGElement* node)
 
 bool LayoutSVGModelObject::IsChildAllowed(LayoutObject* child,
                                           const ComputedStyle&) const {
-  return child->IsSVG() && !(child->IsSVGInline() || child->IsSVGInlineText() ||
-                             child->IsSVGGradientStop());
+  return child->IsSVG() && !(child->IsSVGInline() || child->IsSVGInlineText());
 }
 
 void LayoutSVGModelObject::MapLocalToAncestor(

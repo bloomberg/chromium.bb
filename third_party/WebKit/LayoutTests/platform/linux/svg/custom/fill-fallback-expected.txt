@@ -3,8 +3,7 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
     LayoutSVGRect {rect} at (0,0) size 100x100 [fill={[type=SOLID] [color=#008000]}] [x=0.00] [y=0.00] [width=100.00] [height=100.00]
-    LayoutSVGResourceLinearGradient {linearGradient} [id="grad"] [gradientUnits=objectBoundingBox] [start=(0,0)] [end=(1,0)]
-      LayoutSVGGradientStop {stop} [offset=0.00] [color=#008000]
+    LayoutSVGResourceLinearGradient {linearGradient} [id="grad"] [gradientUnits=objectBoundingBox] [stops=( #008000@0.00 )] [start=(0,0)] [end=(1,0)]
     LayoutSVGRect {rect} at (150,0) size 100x100 [fill={[type=LINEAR-GRADIENT] [id="grad"]}] [x=150.00] [y=0.00] [width=100.00] [height=100.00]
     LayoutSVGText {text} at (0,135) size 310x19 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (0,135) size 310x19
