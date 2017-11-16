@@ -48,7 +48,8 @@ class ChromeLGTMCommitter(object):
     # Strip any chrome branch from the lkgm version.
     self._lkgm = manifest_version.VersionInfo(lkgm).VersionString()
     self._dryrun = dryrun
-    self._user_email = user_email
+    self._git_committer_args = ['-c', 'user.email=%s' % user_email,
+                                '-c', 'user.name=%s' % user_email]
     self._commit_msg = ''
     self._old_lkgm = None
 
@@ -90,10 +91,8 @@ class ChromeLGTMCommitter(object):
       file_path = os.path.join(checkout_dir, constants.PATH_TO_CHROME_LKGM)
       osutils.WriteFile(file_path, self._lkgm)
       git.AddPath(file_path)
-      git.RunGit(checkout_dir,
-                 ['-c', 'user.email=%s' % self._user_email,
-                  '-c', 'user.name=%s' % self._user_email,
-                  'commit', '-m', self._commit_msg],
+      commit_args = ['commit', '-m', self._commit_msg]
+      git.RunGit(checkout_dir, self._git_committer_args + commit_args,
                  print_cmd=True, redirect_stderr=True, capture_output=False)
     except cros_build_lib.RunCommandError as e:
       raise LKGMNotCommitted(
@@ -108,10 +107,10 @@ class ChromeLGTMCommitter(object):
       # not part of the shallow checkout, -f to skip editing the CL message,
       # --send-mail to mark the CL as ready, and --tbrs to +1 the CL.
       upload_args = ['cl', 'upload', '-v', '-m', self._commit_msg,
-                     '--bypass-hooks', '-f', '--email=%s' % self._user_email]
+                     '--bypass-hooks', '-f']
       if not self._dryrun:
         upload_args += ['--send-mail', '--tbrs=chrome-os-gardeners@google.com']
-      git.RunGit(self._checkout_dir, upload_args,
+      git.RunGit(self._checkout_dir, self._git_committer_args + upload_args,
                  print_cmd=True, redirect_stderr=True, capture_output=False)
     except cros_build_lib.RunCommandError as e:
       # Log the change for debugging.
