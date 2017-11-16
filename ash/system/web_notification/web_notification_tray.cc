@@ -291,6 +291,13 @@ WebNotificationTray::WebNotificationTray(Shelf* shelf,
       new WebNotificationImage(bell_image, animation_container_.get(), this));
   tray_container()->AddChildView(bell_icon_.get());
 
+  gfx::ImageSkia quiet_mode_image =
+      CreateVectorIcon(kNotificationCenterDoNotDisturbOnIcon,
+                       kTrayItemInnerIconSize, kShelfIconColor);
+  quiet_mode_icon_.reset(new WebNotificationImage(
+      quiet_mode_image, animation_container_.get(), this));
+  tray_container()->AddChildView(quiet_mode_icon_.get());
+
   counter_.reset(new WebNotificationLabel(animation_container_.get(), this));
   tray_container()->AddChildView(counter_.get());
 
@@ -547,7 +554,10 @@ void WebNotificationTray::UpdateTrayContent() {
 
   // Show or hide the bell icon.
   size_t visible_notification_count = message_center->NotificationCount();
-  bell_icon_->SetVisible(visible_notification_count == 0);
+  bell_icon_->SetVisible(visible_notification_count == 0 &&
+                         !message_center->IsQuietMode());
+  quiet_mode_icon_->SetVisible(visible_notification_count == 0 &&
+                               message_center->IsQuietMode());
 
   // Show or hide the counter.
   size_t hidden_icon_count =
