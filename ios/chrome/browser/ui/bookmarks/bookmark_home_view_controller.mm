@@ -141,10 +141,10 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
     // It is important to initialize the promo controller with the browser state
     // passed in, as it could be incognito.
-    _bookmarkPromoController =
-        [[BookmarkPromoController alloc] initWithBrowserState:browserState
-                                                     delegate:self
-                                                   dispatcher:self.dispatcher];
+    _bookmarkPromoController = [[BookmarkPromoController alloc]
+        initWithBrowserState:browserState
+                    delegate:self
+                   presenter:self /* id<SigninPresenter> */];
   }
   return self;
 }
