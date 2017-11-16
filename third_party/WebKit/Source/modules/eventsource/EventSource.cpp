@@ -139,6 +139,8 @@ void EventSource::Connect() {
   request.SetCacheMode(blink::mojom::FetchCacheMode::kNoStore);
   request.SetExternalRequestStateFromRequestorAddressSpace(
       execution_context.GetSecurityContext().AddressSpace());
+  request.SetCORSPreflightPolicy(
+      network::mojom::CORSPreflightPolicy::kPreventPreflight);
   if (parser_ && !parser_->LastEventId().IsEmpty()) {
     // HTTP headers are Latin-1 byte strings, but the Last-Event-ID header is
     // encoded as UTF-8.
@@ -154,7 +156,6 @@ void EventSource::Connect() {
   SecurityOrigin* origin = execution_context.GetSecurityOrigin();
 
   ThreadableLoaderOptions options;
-  options.preflight_policy = kPreventPreflight;
 
   ResourceLoaderOptions resource_loader_options;
   resource_loader_options.data_buffering_policy = kDoNotBufferData;

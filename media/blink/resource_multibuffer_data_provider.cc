@@ -111,7 +111,7 @@ void ResourceMultiBufferDataProvider::Start() {
     options.expose_all_response_headers = true;
     // The author header set is empty, no preflight should go ahead.
     options.preflight_policy =
-        blink::WebAssociatedURLLoaderOptions::kPreventPreflight;
+        network::mojom::CORSPreflightPolicy::kPreventPreflight;
 
     request.SetFetchRequestMode(network::mojom::FetchRequestMode::kCORS);
     if (url_data_->cors_mode() != UrlData::CORS_USE_CREDENTIALS) {

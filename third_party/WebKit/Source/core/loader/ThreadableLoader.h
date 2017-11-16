@@ -45,19 +45,12 @@ class ResourceRequest;
 class ExecutionContext;
 class ThreadableLoaderClient;
 
-enum PreflightPolicy { kConsiderPreflight, kPreventPreflight };
-
 struct ThreadableLoaderOptions {
   DISALLOW_NEW();
-  ThreadableLoaderOptions()
-      : preflight_policy(kConsiderPreflight),
-        timeout_milliseconds(0) {}
+  ThreadableLoaderOptions() : timeout_milliseconds(0) {}
 
   // When adding members, CrossThreadThreadableLoaderOptionsData should
   // be updated.
-
-  // If AccessControl is used, how to determine if a preflight is needed.
-  PreflightPolicy preflight_policy;
 
   unsigned long timeout_milliseconds;
 };
@@ -67,17 +60,14 @@ struct CrossThreadThreadableLoaderOptionsData {
   STACK_ALLOCATED();
   explicit CrossThreadThreadableLoaderOptionsData(
       const ThreadableLoaderOptions& options)
-      : preflight_policy(options.preflight_policy),
-        timeout_milliseconds(options.timeout_milliseconds) {}
+      : timeout_milliseconds(options.timeout_milliseconds) {}
 
   operator ThreadableLoaderOptions() const {
     ThreadableLoaderOptions options;
-    options.preflight_policy = preflight_policy;
     options.timeout_milliseconds = timeout_milliseconds;
     return options;
   }
 
-  PreflightPolicy preflight_policy;
   unsigned long timeout_milliseconds;
 };
 

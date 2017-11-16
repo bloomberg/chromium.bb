@@ -4,6 +4,12 @@
 
 module network.mojom;
 
+// A policy to decide if CORS-preflight fetch should be performed.
+enum CORSPreflightPolicy {
+  kConsiderPreflight,
+  kPreventPreflight,
+};
+
 // Error conditions of the CORS check.
 enum CORSError {
   // Access control

@@ -620,6 +620,8 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
       ConvertWebKitPriorityToNetPriority(request.GetPriority());
   resource_request->appcache_host_id = request.AppCacheHostID();
   resource_request->should_reset_appcache = request.ShouldResetAppCache();
+  resource_request->is_external_request = request.IsExternalRequest();
+  resource_request->cors_preflight_policy = request.GetCORSPreflightPolicy();
   resource_request->service_worker_mode =
       GetServiceWorkerModeForWebURLRequest(request);
   resource_request->fetch_request_mode = request.GetFetchRequestMode();
