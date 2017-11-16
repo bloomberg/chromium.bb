@@ -15,11 +15,11 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/captive_portal/captive_portal_tab_helper.h"
-#include "chrome/browser/interstitials/chrome_controller_client.h"
 #include "chrome/browser/interstitials/chrome_metrics_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/cert_report_helper.h"
 #include "chrome/browser/ssl/ssl_cert_reporter.h"
+#include "chrome/browser/ssl/ssl_error_controller_client.h"
 #include "components/captive_portal/captive_portal_detector.h"
 #include "components/captive_portal/captive_portal_metrics.h"
 #include "components/certificate_reporting/error_reporter.h"
@@ -77,7 +77,7 @@ CaptivePortalBlockingPage::CaptivePortalBlockingPage(
     : SecurityInterstitialPage(
           web_contents,
           request_url,
-          base::MakeUnique<ChromeControllerClient>(
+          base::MakeUnique<SSLErrorControllerClient>(
               web_contents,
               ssl_info,
               request_url,

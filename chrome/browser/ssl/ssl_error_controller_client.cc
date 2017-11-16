@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/interstitials/chrome_controller_client.h"
+#include "chrome/browser/ssl/ssl_error_controller_client.h"
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -123,7 +123,7 @@ bool AreCommittedInterstitialsEnabled() {
 
 }  // namespace
 
-ChromeControllerClient::ChromeControllerClient(
+SSLErrorControllerClient::SSLErrorControllerClient(
     content::WebContents* web_contents,
     const net::SSLInfo& ssl_info,
     const GURL& request_url,
@@ -138,9 +138,9 @@ ChromeControllerClient::ChromeControllerClient(
       ssl_info_(ssl_info),
       request_url_(request_url) {}
 
-ChromeControllerClient::~ChromeControllerClient() {}
+SSLErrorControllerClient::~SSLErrorControllerClient() {}
 
-void ChromeControllerClient::GoBack() {
+void SSLErrorControllerClient::GoBack() {
   if (!AreCommittedInterstitialsEnabled()) {
     SecurityInterstitialControllerClient::GoBack();
     return;
@@ -149,7 +149,7 @@ void ChromeControllerClient::GoBack() {
   SecurityInterstitialControllerClient::GoBackAfterNavigationCommitted();
 }
 
-void ChromeControllerClient::Proceed() {
+void SSLErrorControllerClient::Proceed() {
   if (!AreCommittedInterstitialsEnabled()) {
     SecurityInterstitialControllerClient::Proceed();
     return;
@@ -164,7 +164,7 @@ void ChromeControllerClient::Proceed() {
   Reload();
 }
 
-bool ChromeControllerClient::CanLaunchDateAndTimeSettings() {
+bool SSLErrorControllerClient::CanLaunchDateAndTimeSettings() {
 #if defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_MACOSX) || \
     defined(OS_WIN)
   return true;
@@ -173,7 +173,7 @@ bool ChromeControllerClient::CanLaunchDateAndTimeSettings() {
 #endif
 }
 
-void ChromeControllerClient::LaunchDateAndTimeSettings() {
+void SSLErrorControllerClient::LaunchDateAndTimeSettings() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
 #if defined(OS_CHROMEOS)

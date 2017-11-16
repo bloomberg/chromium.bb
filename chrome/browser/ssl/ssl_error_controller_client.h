@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_INTERSTITIALS_CHROME_CONTROLLER_CLIENT_H_
-#define CHROME_BROWSER_INTERSTITIALS_CHROME_CONTROLLER_CLIENT_H_
+#ifndef CHROME_BROWSER_SSL_SSL_ERROR_CONTROLLER_CLIENT_H_
+#define CHROME_BROWSER_SSL_SSL_ERROR_CONTROLLER_CLIENT_H_
 
 #include "base/macros.h"
 #include "components/security_interstitials/content/security_interstitial_controller_client.h"
@@ -13,16 +13,16 @@ namespace content {
 class WebContents;
 }
 
-// Provides embedder-specific logic for the security error page controller.
-class ChromeControllerClient
+// Provides embedder-specific logic for the SSL error page controller.
+class SSLErrorControllerClient
     : public security_interstitials::SecurityInterstitialControllerClient {
  public:
-  ChromeControllerClient(
+  SSLErrorControllerClient(
       content::WebContents* web_contents,
       const net::SSLInfo& ssl_info,
       const GURL& request_url,
       std::unique_ptr<security_interstitials::MetricsHelper> metrics_helper);
-  ~ChromeControllerClient() override;
+  ~SSLErrorControllerClient() override;
 
   // security_interstitials::ControllerClient overrides
   void GoBack() override;
@@ -34,7 +34,7 @@ class ChromeControllerClient
   const net::SSLInfo ssl_info_;
   const GURL request_url_;
 
-  DISALLOW_COPY_AND_ASSIGN(ChromeControllerClient);
+  DISALLOW_COPY_AND_ASSIGN(SSLErrorControllerClient);
 };
 
-#endif  // CHROME_BROWSER_INTERSTITIALS_CHROME_CONTROLLER_CLIENT_H_
+#endif  // CHROME_BROWSER_SSL_SSL_ERROR_CONTROLLER_CLIENT_H_

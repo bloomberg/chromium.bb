@@ -5,7 +5,6 @@
 #include <list>
 
 #include "base/run_loop.h"
-#include "chrome/browser/interstitials/chrome_controller_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
@@ -17,6 +16,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/browser/threat_details.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
+#include "components/security_interstitials/content/security_interstitial_controller_client.h"
 #include "components/security_interstitials/core/safe_browsing_quiet_error_ui.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/interstitial_page.h"
