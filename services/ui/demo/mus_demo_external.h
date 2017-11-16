@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "services/ui/demo/mus_demo.h"
-#include "services/ui/public/interfaces/window_tree_host.mojom.h"
+#include "services/ui/public/interfaces/window_tree_host_factory.mojom.h"
 
 namespace ui {
 namespace demo {

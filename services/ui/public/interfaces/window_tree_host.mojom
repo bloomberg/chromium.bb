@@ -4,7 +4,6 @@
 
 module ui.mojom;
 
-import "services/ui/public/interfaces/window_tree.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
 // WindowTreeHost encapsulates a unique underlying platform window, with a tree
@@ -15,11 +14,4 @@ interface WindowTreeHost {
 
   // Sets a title string to be displayed on the platform window.
   SetTitle(string title);
-};
-
-interface WindowTreeHostFactory {
-  // Creates a new WindowTreeHost. |tree_client| is queried for the
-  // WindowManager.
-  CreateWindowTreeHost(WindowTreeHost& window_tree_host,
-                       WindowTreeClient tree_client);
 };

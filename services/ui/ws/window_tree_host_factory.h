@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/ui/public/interfaces/window_tree_host.mojom.h"
+#include "services/ui/public/interfaces/window_tree_host_factory.mojom.h"
 #include "services/ui/ws/user_id.h"
 
 namespace ui {
