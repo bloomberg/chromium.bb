@@ -147,6 +147,7 @@ void KeywordExtensionsDelegateImpl::Observe(
 
     case extensions::NOTIFICATION_EXTENSION_OMNIBOX_DEFAULT_SUGGESTION_CHANGED
         : {
+      DCHECK(model);
       // It's possible to change the default suggestion while not in an editing
       // session.
       base::string16 keyword, remaining_input;
@@ -170,6 +171,7 @@ void KeywordExtensionsDelegateImpl::Observe(
       if (suggestions.request_id != current_input_id_)
         return;  // This is an old result. Just ignore.
 
+      DCHECK(model);
       // ExtractKeywordFromInput() can fail if e.g. this code is triggered by
       // direct calls from the development console, outside the normal flow of
       // user input.
@@ -177,6 +179,7 @@ void KeywordExtensionsDelegateImpl::Observe(
       if (!KeywordProvider::ExtractKeywordFromInput(input, model, &keyword,
                                                     &remaining_input))
         return;
+
       const TemplateURL* template_url =
           model->GetTemplateURLForKeyword(keyword);
 

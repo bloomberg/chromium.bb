@@ -77,6 +77,7 @@ class KeywordProvider : public AutocompleteProvider {
   // Returns the matching substituting keyword for |input|, or NULL if there
   // is no keyword for the specified input.  If the matching keyword was found,
   // updates |input|'s text and cursor position.
+  // |model| must be non-null.
   static const TemplateURL* GetSubstitutingTemplateURLForInput(
       TemplateURLService* model,
       AutocompleteInput* input);
@@ -110,6 +111,7 @@ class KeywordProvider : public AutocompleteProvider {
   // characters).
   // In general use this instead of SplitKeywordFromInput.
   // Leading whitespace in |*remaining_input| will be trimmed.
+  // |template_url_service| must be non-null.
   static bool ExtractKeywordFromInput(
       const AutocompleteInput& input,
       const TemplateURLService* template_url_service,
@@ -155,6 +157,7 @@ class KeywordProvider : public AutocompleteProvider {
   // However, if a |template_url_service| is provided and the function finds a
   // registered keyword at any point before finishing those transformations,
   // it'll return that keyword.
+  // |template_url_service| must be non-null.
   static base::string16 CleanUserInputKeyword(
       const TemplateURLService* template_url_service,
       const base::string16& keyword);

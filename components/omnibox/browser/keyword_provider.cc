@@ -132,11 +132,11 @@ const TemplateURL* KeywordProvider::GetSubstitutingTemplateURLForInput(
   if (!input->allow_exact_keyword_match())
     return nullptr;
 
+  DCHECK(model);
   base::string16 keyword, remaining_input;
   if (!ExtractKeywordFromInput(*input, model, &keyword, &remaining_input))
     return nullptr;
 
-  DCHECK(model);
   const TemplateURL* template_url = model->GetTemplateURLForKeyword(keyword);
   if (template_url &&
       template_url->SupportsReplacement(model->search_terms_data())) {
@@ -218,7 +218,7 @@ void KeywordProvider::DeleteMatch(const AutocompleteMatch& match) {
   base::EraseIf(matches_, pred);
 
   base::string16 keyword, remaining_input;
-  if (!KeywordProvider::ExtractKeywordFromInput(
+  if (!ExtractKeywordFromInput(
           keyword_input_, GetTemplateURLService(), &keyword, &remaining_input))
     return;
   const TemplateURL* const template_url =
@@ -253,6 +253,8 @@ void KeywordProvider::Start(const AutocompleteInput& input,
   if (input.from_omnibox_focus())
     return;
 
+  GetTemplateURLService();
+  DCHECK(model_);
   // Split user input into a keyword and some query input.
   //
   // We want to suggest keywords even when users have started typing URLs, on
@@ -267,7 +269,8 @@ void KeywordProvider::Start(const AutocompleteInput& input,
   // typed, if the user uses them enough and isn't obviously typing something
   // else.  In this case we'd consider all input here to be query input.
   base::string16 keyword, remaining_input;
-  if (!ExtractKeywordFromInput(input, model_, &keyword, &remaining_input))
+  if (!ExtractKeywordFromInput(input, model_, &keyword,
+                               &remaining_input))
     return;
 
   keyword_input_ = input;
@@ -279,10 +282,10 @@ void KeywordProvider::Start(const AutocompleteInput& input,
   // relevances and we can just recreate the results synchronously anyway, we
   // don't bother.
   TemplateURLService::TURLsAndMeaningfulLengths matches;
-  GetTemplateURLService()->AddMatchingKeywords(
+  model_->AddMatchingKeywords(
       keyword, !remaining_input.empty(), &matches);
   if (!OmniboxFieldTrial::KeywordRequiresPrefixMatch()) {
-    GetTemplateURLService()->AddMatchingDomainKeywords(
+    model_->AddMatchingDomainKeywords(
         keyword, !remaining_input.empty(), &matches);
   }
 
@@ -302,7 +305,7 @@ void KeywordProvider::Start(const AutocompleteInput& input,
 
     // Prune any substituting keywords if there is no substitution.
     if (template_url->SupportsReplacement(
-            GetTemplateURLService()->search_terms_data()) &&
+            model_->search_terms_data()) &&
         remaining_input.empty() &&
         !input.allow_exact_keyword_match()) {
       i = matches.erase(i);
@@ -391,6 +394,7 @@ bool KeywordProvider::ExtractKeywordFromInput(
   if ((input.type() == metrics::OmniboxInputType::INVALID))
     return false;
 
+  DCHECK(template_url_service);
   *keyword = CleanUserInputKeyword(
       template_url_service,
       SplitKeywordFromInput(input.text(), true, remaining_input));
@@ -533,11 +537,11 @@ TemplateURLService* KeywordProvider::GetTemplateURLService() const {
 base::string16 KeywordProvider::CleanUserInputKeyword(
     const TemplateURLService* template_url_service,
     const base::string16& keyword) {
+  DCHECK(template_url_service);
   base::string16 result(base::i18n::ToLower(keyword));
   base::TrimWhitespace(result, base::TRIM_ALL, &result);
   // If this keyword is found with no additional cleaning of input, return it.
-  if ((template_url_service != nullptr) &&
-      (template_url_service->GetTemplateURLForKeyword(result) != nullptr))
+  if (template_url_service->GetTemplateURLForKeyword(result) != nullptr)
     return result;
 
   // If keyword is not found, try removing a "http" or "https" scheme if any.
@@ -551,22 +555,19 @@ base::string16 KeywordProvider::CleanUserInputKeyword(
                        base::ASCIIToUTF16(url::kHttpsScheme)))) {
     // Remove the scheme and the trailing ':'.
     result.erase(0, scheme_component.end() + 1);
-    if ((template_url_service != nullptr) &&
-        (template_url_service->GetTemplateURLForKeyword(result) != nullptr))
+    if (template_url_service->GetTemplateURLForKeyword(result) != nullptr)
       return result;
     // Many schemes usually have "//" after them, so strip it too.
     const base::string16 after_scheme(base::ASCIIToUTF16("//"));
     if (result.compare(0, after_scheme.length(), after_scheme) == 0)
       result.erase(0, after_scheme.length());
-    if ((template_url_service != nullptr) &&
-        (template_url_service->GetTemplateURLForKeyword(result) != nullptr))
+    if (template_url_service->GetTemplateURLForKeyword(result) != nullptr)
       return result;
   }
 
   // Remove leading "www.", if any, and again try to find a matching keyword.
   result = url_formatter::StripWWW(result);
-  if ((template_url_service != nullptr) &&
-      (template_url_service->GetTemplateURLForKeyword(result) != nullptr))
+  if (template_url_service->GetTemplateURLForKeyword(result) != nullptr)
     return result;
 
   // Remove trailing "/", if any.
