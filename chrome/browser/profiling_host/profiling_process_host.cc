@@ -195,6 +195,10 @@ void ProfilingProcessHost::Register() {
   Add(this);
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CREATED,
                  content::NotificationService::AllBrowserContextsAndSources());
+  registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
+                 content::NotificationService::AllBrowserContextsAndSources());
+  registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
+                 content::NotificationService::AllBrowserContextsAndSources());
   is_registered_ = true;
 }
 
@@ -238,13 +242,12 @@ void ProfilingProcessHost::Observe(
 
   // NOTIFICATION_RENDERER_PROCESS_CLOSED corresponds to death of an underlying
   // RenderProcess. NOTIFICATION_RENDERER_PROCESS_TERMINATED corresponds to when
-  // the RenderProcessHost's lifetime is ending. The two are related, but it is
-  // possible that a RenderProcessHost is reused if something happens that
-  // forces it to create a new RenderProcess. Since profiling a child process
-  // is scoped by the lifetime of the child process,
-  // NOTIFICATION_RENDERER_PROCESS_CLOSED is the appropriate event.
+  // the RenderProcessHost's lifetime is ending. Ideally, we'd only listen to
+  // the former, but if the RenderProcessHost is destroyed before the
+  // RenderProcess, then the former is never sent.
   if (host == profiled_renderer_ &&
-      type == content::NOTIFICATION_RENDERER_PROCESS_CLOSED) {
+      (type == content::NOTIFICATION_RENDERER_PROCESS_TERMINATED ||
+       type == content::NOTIFICATION_RENDERER_PROCESS_CLOSED)) {
     // |profiled_renderer_| is only ever set in kRendererSampling mode. This
     // code is a deadstore otherwise so it's safe but having a DCHECK makes the
     // intent clear.
