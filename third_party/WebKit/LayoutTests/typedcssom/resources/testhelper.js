@@ -43,3 +43,14 @@ const gValidUnits = [
   'turn', 's', 'ms', 'Hz', 'kHz',
   'dpi', 'dpcm', 'dppx', 'fr',
 ];
+
+// Hacky way of creating a CSSVariableReferenceValue
+// since it doesn't expose a constructor.
+function createReferenceValue(variable, fallback) {
+  const varExpr = fallback ?
+    'var(' + variable + ', ' + fallback + ')' :
+    'var(' + variable + ')';
+
+  const unparsedValue = newDivWithStyle('color:' + varExpr).attributeStyleMap.get('color');
+  return unparsedValue[0];
+}

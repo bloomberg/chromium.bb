@@ -1,0 +1,28 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>CSSUnparsedValue tests</title>
+<link rel="help" href="https://drafts.css-houdini.org/css-typed-om-1/#unparsedvalue-objects">
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../resources/testhelper.js"></script>
+<script>
+'use strict';
+
+const gValidTestArgs = [
+  { args: [], desc: 'no arguments' },
+  { args: [''], desc: 'an empty string' },
+  { args: [createReferenceValue('--foo', null)], desc: 'a CSSVariableReferenceValue' },
+  {
+    args: ['foo', 'bar', createReferenceValue('--A', null), 'baz', createReferenceValue('--B', null)],
+    desc: 'mix of strings and CSSVariableReferenceValues'
+  },
+];
+
+for (const {args, desc} of gValidTestArgs) {
+  test(() => {
+    const result = new CSSUnparsedValue(...args);
+    assert_array_equals(result, args);
+  }, 'CSSUnparsedValue can be constructed from ' + desc);
+}
+
+</script>
