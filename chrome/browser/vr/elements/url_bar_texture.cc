@@ -218,8 +218,7 @@ void UrlBarTexture::Draw(SkCanvas* canvas, const gfx::Size& texture_size) {
   float left_edge = kBackButtonWidth + kSeparatorWidth + kFieldSpacing;
 
   // Site security state icon.
-  if ((state_.security_level != security_state::NONE || state_.offline_page) &&
-      state_.vector_icon != nullptr && state_.should_display_url) {
+  if (state_.should_display_url && state_.vector_icon != nullptr) {
     gfx::RectF icon_region(left_edge, kHeight / 2 - kSecurityIconSize / 2,
                            kSecurityIconSize, kSecurityIconSize);
     VectorIcon::DrawVectorIcon(
