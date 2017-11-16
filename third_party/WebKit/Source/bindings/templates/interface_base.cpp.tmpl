@@ -29,7 +29,7 @@ namespace blink {
     {{dom_template}},
     {{v8_class}}::Trace,
     {{v8_class}}::TraceWrappers,
-    {{prepare_prototype_and_interface_object_func or 'nullptr'}},
+    {{install_conditional_features_func or 'nullptr'}},
     "{{interface_name}}",
     {{parent_wrapper_type_info}},
     WrapperTypeInfo::kWrapperTypeObjectPrototype,
@@ -933,61 +933,90 @@ void {{v8_class_or_partial}}::install{{feature.name}}(ScriptState* scriptState) 
 {% block to_impl_with_type_check %}{% endblock %}
 {% block native_value_traits %}{% endblock %}
 {##############################################################################}
-{% block prepare_prototype_and_interface_object %}
-{% from 'attributes.cpp.tmpl' import install_conditionally_enabled_attributes_on_prototype_or_interface with context %}
-{% from 'methods.cpp.tmpl' import install_conditionally_enabled_methods with context %}
-{% if prepare_prototype_and_interface_object_func %}
-void {{v8_class_or_partial}}::preparePrototypeAndInterfaceObject(v8::Local<v8::Context> context, const DOMWrapperWorld& world, v8::Local<v8::Object> prototypeObject, v8::Local<v8::Function> interfaceObject, v8::Local<v8::FunctionTemplate> interfaceTemplate) {
+{% block install_conditional_features %}
+{% from 'attributes.cpp.tmpl' import install_conditional_attributes with context %}
+{% from 'methods.cpp.tmpl' import install_conditional_methods with context %}
+{% if install_conditional_features_func %}
+void {{v8_class_or_partial}}::InstallConditionalFeatures(
+    v8::Local<v8::Context> context,
+    const DOMWrapperWorld& world,
+    v8::Local<v8::Object> instanceObject,
+    v8::Local<v8::Object> prototypeObject,
+    v8::Local<v8::Function> interfaceObject,
+    v8::Local<v8::FunctionTemplate> interfaceTemplate) {
+  CHECK(!interfaceTemplate.IsEmpty());
+  DCHECK((!prototypeObject.IsEmpty() && !interfaceObject.IsEmpty()) ||
+         !instanceObject.IsEmpty());
   {% if is_partial %}
-  {{v8_class}}::preparePrototypeAndInterfaceObject(context, world, prototypeObject, interfaceObject, interfaceTemplate);
+  {{v8_class}}::InstallConditionalFeatures(
+      context, world, instanceObject, prototypeObject, interfaceObject, interfaceTemplate);
   {% endif %}
 
   v8::Isolate* isolate = context->GetIsolate();
-  {% if conditionally_enabled_attributes.on_prototype_or_interface or conditionally_enabled_methods %}
+
+  {% if unscopables %}
+  if (!prototypeObject.IsEmpty()) {
+    v8::Local<v8::Name> unscopablesSymbol(v8::Symbol::GetUnscopables(isolate));
+    v8::Local<v8::Object> unscopables;
+    bool has_unscopables;
+    if (prototypeObject->HasOwnProperty(context, unscopablesSymbol).To(&has_unscopables) && has_unscopables) {
+      unscopables = prototypeObject->Get(context, unscopablesSymbol).ToLocalChecked().As<v8::Object>();
+    } else {
+      unscopables = v8::Object::New(isolate);
+    }
+    {% for name, runtime_enabled_feature_name in unscopables %}
+    {% filter runtime_enabled(runtime_enabled_feature_name) %}
+    unscopables->CreateDataProperty(
+        context, V8AtomicString(isolate, "{{name}}"), v8::True(isolate))
+        .FromJust();
+    {% endfilter %}
+    {% endfor %}
+    prototypeObject->CreateDataProperty(context, unscopablesSymbol, unscopables).FromJust();
+  }
+  {% endif %}{# unscopables #}
+
+  {% if conditional_attributes or conditional_methods %}
   v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
   ExecutionContext* executionContext = ToExecutionContext(context);
   DCHECK(executionContext);
-  {% if has_conditionally_enabled_secure_attributes or has_conditionally_enabled_secure_methods %}
+  {% if has_conditional_secure_attributes or has_conditional_secure_methods %}
   bool isSecureContext = (executionContext && executionContext->IsSecureContext());
   {% endif %}
+
+  {% set attributes_on_instance = conditional_attributes | selectattr('on_instance') | list  %}
+  {% if attributes_on_instance %}
+  if (!instanceObject.IsEmpty()) {
+    {{install_conditional_attributes('isSecureContext', attributes_on_instance) | indent(2)}}
+  }
   {% endif %}
 
-  {% if unscopables %}
-  v8::Local<v8::Name> unscopablesSymbol(v8::Symbol::GetUnscopables(isolate));
-  v8::Local<v8::Object> unscopables;
-  if (V8CallBoolean(prototypeObject->HasOwnProperty(context, unscopablesSymbol)))
-    unscopables = prototypeObject->Get(context, unscopablesSymbol).ToLocalChecked().As<v8::Object>();
-  else
-    unscopables = v8::Object::New(isolate);
-  {% for name, runtime_enabled_feature_name in unscopables %}
-  {% filter runtime_enabled(runtime_enabled_feature_name) %}
-  unscopables->CreateDataProperty(context, V8AtomicString(isolate, "{{name}}"), v8::True(isolate)).FromJust();
-  {% endfilter %}
-  {% endfor %}
-  prototypeObject->CreateDataProperty(context, unscopablesSymbol, unscopables).FromJust();
-  {% endif %}{# unscopables #}
-
-  {{install_conditionally_enabled_attributes_on_prototype_or_interface('isSecureContext') | indent(2)}}
-  {{install_conditionally_enabled_methods('isSecureContext') | indent(2)}}
+  {% set attributes_on_prototype = conditional_attributes | selectattr('on_prototype') | list  %}
+  {% set attributes_on_interface = conditional_attributes | selectattr('on_interface') | list  %}
+  if (!prototypeObject.IsEmpty() || !interfaceObject.IsEmpty()) {
+    {{install_conditional_attributes('isSecureContext', attributes_on_prototype + attributes_on_interface) | indent(4)}}
+    {{install_conditional_methods('isSecureContext') | indent(4)}}
+  }
+  {% endif %}{# conditional_attributes or conditional_methods #}
 }
 {% endif %}
 
-{% endblock %}{# prepare_prototype_and_interface_object #}
+{% endblock %}{# install_conditional_features #}
 {##############################################################################}
 {% block install_conditional_features_on_global %}
-{% from 'attributes.cpp.tmpl' import install_conditionally_enabled_constructors with context %}
+{% from 'attributes.cpp.tmpl' import install_conditional_interface_objects_on_global with context %}
 {% if has_install_conditional_features_on_global_func %}
-void {{v8_class_or_partial}}::InstallConditionalFeaturesOnGlobal(v8::Local<v8::Context> context, const DOMWrapperWorld& world) {
+void {{v8_class_or_partial}}::InstallConditionalFeaturesOnGlobal(
+    v8::Local<v8::Context> context, const DOMWrapperWorld& world) {
   v8::Isolate* isolate = context->GetIsolate();
   v8::Local<v8::Object> prototype_object;
-  v8::Local<v8::Object> instance = context->Global();
+  v8::Local<v8::Object> global_object = context->Global();
   ExecutionContext* execution_context = ToExecutionContext(context);
   DCHECK(execution_context);
-  {% if has_conditionally_enabled_secure_attributes %}
+  {% if conditional_interface_objects | selectattr('secure_context_test') | list %}
   bool is_secure_context = (execution_context && execution_context->IsSecureContext());
   {% endif %}
 
-  {{install_conditionally_enabled_constructors('is_secure_context') | indent(2)}}
+  {{install_conditional_interface_objects_on_global('is_secure_context') | indent(2)}}
 }
 {% endif %}
 

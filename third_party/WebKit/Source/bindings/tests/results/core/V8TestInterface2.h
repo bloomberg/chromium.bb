@@ -42,13 +42,20 @@ class V8TestInterface2 {
     visitor->TraceWrappersFromGeneratedCode(scriptWrappable->ToImpl<TestInterface2>());
   }
   static const int internalFieldCount = kV8DefaultWrapperInternalFieldCount;
-  CORE_EXPORT static void preparePrototypeAndInterfaceObject(v8::Local<v8::Context>, const DOMWrapperWorld&, v8::Local<v8::Object> prototypeObject, v8::Local<v8::Function> interfaceObject, v8::Local<v8::FunctionTemplate> interfaceTemplate) {}
+
+  CORE_EXPORT static void InstallConditionalFeatures(
+      v8::Local<v8::Context>,
+      const DOMWrapperWorld&,
+      v8::Local<v8::Object> instanceObject,
+      v8::Local<v8::Object> prototypeObject,
+      v8::Local<v8::Function> interfaceObject,
+      v8::Local<v8::FunctionTemplate> interfaceTemplate) {}
 
   CORE_EXPORT static void UpdateWrapperTypeInfo(
       InstallTemplateFunction,
       InstallRuntimeEnabledFeaturesFunction,
       InstallRuntimeEnabledFeaturesOnTemplateFunction,
-      PreparePrototypeAndInterfaceObjectFunction);
+      InstallConditionalFeaturesFunction);
   CORE_EXPORT static void installV8TestInterface2Template(v8::Isolate*, const DOMWrapperWorld&, v8::Local<v8::FunctionTemplate> interfaceTemplate);
 
   // Callback functions

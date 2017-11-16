@@ -145,8 +145,8 @@ void LocalWindowProxy::Initialize() {
   }
 
   SetupWindowPrototypeChain();
-  V8ContextSnapshot::InstallRuntimeEnabledFeatures(context,
-                                                   GetFrame()->GetDocument());
+  V8ContextSnapshot::InstallConditionalFeatures(context,
+                                                GetFrame()->GetDocument());
 
   SecurityOrigin* origin = nullptr;
   if (world_->IsMainWorld()) {

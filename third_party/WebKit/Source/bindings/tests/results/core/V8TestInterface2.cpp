@@ -834,7 +834,7 @@ void V8TestInterface2::UpdateWrapperTypeInfo(
     InstallTemplateFunction install_template_function,
     InstallRuntimeEnabledFeaturesFunction install_runtime_enabled_features_function,
     InstallRuntimeEnabledFeaturesOnTemplateFunction install_runtime_enabled_features_on_template_function,
-    PreparePrototypeAndInterfaceObjectFunction prepare_prototype_and_interface_object_function) {
+    InstallConditionalFeaturesFunction install_conditional_features_function) {
   V8TestInterface2::installV8TestInterface2TemplateFunction =
       install_template_function;
 
@@ -842,9 +842,9 @@ void V8TestInterface2::UpdateWrapperTypeInfo(
   V8TestInterface2::install_runtime_enabled_features_on_template_function_ =
       install_runtime_enabled_features_on_template_function;
 
-  if (prepare_prototype_and_interface_object_function) {
-    V8TestInterface2::wrapperTypeInfo.prepare_prototype_and_interface_object_function =
-        prepare_prototype_and_interface_object_function;
+  if (install_conditional_features_function) {
+    V8TestInterface2::wrapperTypeInfo.install_conditional_features_function =
+        install_conditional_features_function;
   }
 }
 

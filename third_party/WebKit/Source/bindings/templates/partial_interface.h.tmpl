@@ -29,8 +29,14 @@ class {{v8_class_or_partial}} {
   static void {{attribute.name}}AttributeSetterCustom(v8::Local<v8::Value>, const v8::PropertyCallbackInfo<void>&);
   {% endif %}
   {% endfor %}
-  {% if prepare_prototype_and_interface_object_func %}
-  static void preparePrototypeAndInterfaceObject(v8::Local<v8::Context>, const DOMWrapperWorld&, v8::Local<v8::Object>, v8::Local<v8::Function>, v8::Local<v8::FunctionTemplate>);
+  {% if install_conditional_features_func %}
+  static void InstallConditionalFeatures(
+      v8::Local<v8::Context>,
+      const DOMWrapperWorld&,
+      v8::Local<v8::Object> instance,
+      v8::Local<v8::Object> prototype,
+      v8::Local<v8::Function> interface,
+      v8::Local<v8::FunctionTemplate> interface_template);
   {% endif %}
   {% if has_install_conditional_features_on_global_func %}
   static void InstallConditionalFeaturesOnGlobal(v8::Local<v8::Context>, const DOMWrapperWorld&);
