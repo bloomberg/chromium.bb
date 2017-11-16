@@ -90,4 +90,18 @@ TEST(SegmentedStringTest, Prepend) {
   EXPECT_EQ(s2.ToString(), String("123456"));
 }
 
+TEST(SegmentedStringTest, AdvanceSubstringConsumesCharacters) {
+  SegmentedString s1("1");
+  s1.Append(SegmentedString("2"));
+  s1.Append(SegmentedString("3"));
+
+  EXPECT_EQ(s1.NumberOfCharactersConsumed(), 0);
+  s1.Advance();
+  EXPECT_EQ(s1.NumberOfCharactersConsumed(), 1);
+  s1.Advance();
+  EXPECT_EQ(s1.NumberOfCharactersConsumed(), 2);
+  s1.Advance();
+  EXPECT_EQ(s1.NumberOfCharactersConsumed(), 3);
+}
+
 }  // namespace blink
