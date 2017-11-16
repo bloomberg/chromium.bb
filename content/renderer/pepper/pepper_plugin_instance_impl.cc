@@ -364,6 +364,25 @@ class PluginInstanceLockTarget : public MouseLockDispatcher::LockTarget {
   PepperPluginInstanceImpl* plugin_;
 };
 
+void PrintPDFOutput(PP_Resource print_output,
+                    printing::PdfMetafileSkia* metafile) {
+#if BUILDFLAG(ENABLE_PRINTING)
+  DCHECK(metafile);
+
+  ppapi::thunk::EnterResourceNoLock<PPB_Buffer_API> enter(print_output, true);
+  if (enter.failed())
+    return;
+
+  BufferAutoMapper mapper(enter.object());
+  if (!mapper.data() || !mapper.size()) {
+    NOTREACHED();
+    return;
+  }
+
+  metafile->InitFromData(mapper.data(), mapper.size());
+#endif  // BUILDFLAG(ENABLE_PRINTING)
+}
+
 }  // namespace
 
 // static
@@ -1891,6 +1910,7 @@ int PepperPluginInstanceImpl::PrintBegin(const WebPrintParams& print_params) {
   current_print_settings_ = print_settings;
   metafile_ = nullptr;
   ranges_.clear();
+  ranges_.reserve(num_pages);
   return num_pages;
 }
 
@@ -1941,19 +1961,17 @@ void PepperPluginInstanceImpl::PrintPageHelper(
 void PepperPluginInstanceImpl::PrintEnd() {
   // Keep a reference on the stack. See NOTE above.
   scoped_refptr<PepperPluginInstanceImpl> ref(this);
-  if (!ranges_.empty())
-    PrintPageHelper(&(ranges_.front()), ranges_.size(), metafile_);
-  metafile_ = nullptr;
-  ranges_.clear();
-
   DCHECK(plugin_print_interface_);
-  if (plugin_print_interface_)
-    plugin_print_interface_->End(pp_instance());
+
+  if (!ranges_.empty()) {
+    PrintPageHelper(&(ranges_.front()), ranges_.size(), metafile_);
+    ranges_.clear();
+    metafile_ = nullptr;
+  }
+
+  plugin_print_interface_->End(pp_instance());
 
   memset(&current_print_settings_, 0, sizeof(current_print_settings_));
-#if defined(OS_MACOSX)
-  last_printed_page_ = NULL;
-#endif  // defined(OS_MACOSX)
 }
 
 bool PepperPluginInstanceImpl::GetPrintPresetOptionsFromDocument(
@@ -2096,33 +2114,9 @@ bool PepperPluginInstanceImpl::IsViewAccelerated() {
   WebLocalFrame* frame = document.GetFrame();
   if (!frame)
     return false;
+
   WebView* view = frame->View();
-  if (!view)
-    return false;
-
-  return view->IsAcceleratedCompositingActive();
-}
-
-bool PepperPluginInstanceImpl::PrintPDFOutput(
-    PP_Resource print_output,
-    printing::PdfMetafileSkia* metafile) {
-#if BUILDFLAG(ENABLE_PRINTING)
-  ppapi::thunk::EnterResourceNoLock<PPB_Buffer_API> enter(print_output, true);
-  if (enter.failed())
-    return false;
-
-  BufferAutoMapper mapper(enter.object());
-  if (!mapper.data() || !mapper.size()) {
-    NOTREACHED();
-    return false;
-  }
-
-  if (metafile)
-    return metafile->InitFromData(mapper.data(), mapper.size());
-
-  NOTREACHED();
-#endif  // ENABLE_PRINTING
-  return false;
+  return view && view->IsAcceleratedCompositingActive();
 }
 
 void PepperPluginInstanceImpl::UpdateLayer(bool force_creation) {
