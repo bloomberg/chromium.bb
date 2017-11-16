@@ -7,6 +7,8 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <iterator>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/json/json_reader.h"
@@ -72,6 +74,18 @@ gaia::ListedAccount AccountForId(const std::string& account_id) {
   gaia::ListedAccount account;
   account.id = account_id;
   return account;
+}
+
+// Returns a copy of |accounts| without the unverified accounts.
+std::vector<gaia::ListedAccount> FilterUnverifiedAccounts(
+    const std::vector<gaia::ListedAccount>& accounts) {
+  // Ignore unverified accounts.
+  std::vector<gaia::ListedAccount> verified_gaia_accounts;
+  std::copy_if(
+      accounts.begin(), accounts.end(),
+      std::back_inserter(verified_gaia_accounts),
+      [](const gaia::ListedAccount& account) { return account.verified; });
+  return verified_gaia_accounts;
 }
 
 }  // namespace
@@ -377,9 +391,6 @@ void AccountReconcilor::StartReconcile() {
   for (auto& observer : observer_list_)
     observer.OnStartReconcile();
 
-  // Reset state for validating gaia cookie.
-  gaia_accounts_.clear();
-
   // Reset state for validating oauth2 tokens.
   primary_account_.clear();
   chrome_accounts_.clear();
@@ -395,17 +406,13 @@ void AccountReconcilor::StartReconcile() {
   error_during_last_reconcile_ = false;
   reconcile_is_noop_ = true;
 
-  // ListAccounts() also gets signed out accounts but this class doesn't use
-  // them.
-  std::vector<gaia::ListedAccount> signed_out_accounts;
-
   // Rely on the GCMS to manage calls to and responses from ListAccounts.
-  if (cookie_manager_service_->ListAccounts(&gaia_accounts_,
-                                            &signed_out_accounts,
+  std::vector<gaia::ListedAccount> accounts;
+  std::vector<gaia::ListedAccount> signed_out_accounts;
+  if (cookie_manager_service_->ListAccounts(&accounts, &signed_out_accounts,
                                             kSource)) {
     OnGaiaAccountsInCookieUpdated(
-        gaia_accounts_,
-        signed_out_accounts,
+        accounts, signed_out_accounts,
         GoogleServiceAuthError(GoogleServiceAuthError::NONE));
   }
 }
@@ -419,8 +426,18 @@ void AccountReconcilor::OnGaiaAccountsInCookieUpdated(
           << "Reconcilor's state is " << is_reconcile_started_ << ", "
           << "Error was " << error.ToString();
   if (error.state() == GoogleServiceAuthError::NONE) {
-    gaia_accounts_ = accounts;
-    is_reconcile_started_ ? FinishReconcile() : StartReconcile();
+    if (!is_reconcile_started_) {
+      StartReconcile();
+      return;
+    }
+
+    std::vector<gaia::ListedAccount> verified_gaia_accounts =
+        FilterUnverifiedAccounts(accounts);
+    VLOG_IF(1, verified_gaia_accounts.size() < accounts.size())
+        << "Ignoring " << accounts.size() - verified_gaia_accounts.size()
+        << " unverified account(s).";
+
+    FinishReconcile(std::move(verified_gaia_accounts));
   } else {
     if (is_reconcile_started_)
       error_during_last_reconcile_ = true;
@@ -496,7 +513,8 @@ void AccountReconcilor::OnReceivedManageAccountsResponse(
 //     2. The primary account
 //     3. The last known first Gaia account
 //     4. The first account in the token service
-std::string AccountReconcilor::GetFirstGaiaAccountForReconcile() const {
+std::string AccountReconcilor::GetFirstGaiaAccountForReconcile(
+    const std::vector<gaia::ListedAccount>& gaia_accounts) const {
   if (!signin::IsDicePrepareMigrationEnabled()) {
     // Mirror only uses the primary account, and it is never empty.
     DCHECK(!primary_account_.empty());
@@ -512,7 +530,7 @@ std::string AccountReconcilor::GetFirstGaiaAccountForReconcile() const {
       !primary_account_.empty() &&
       base::ContainsValue(chrome_accounts_, primary_account_);
 
-  if (gaia_accounts_.empty()) {
+  if (gaia_accounts.empty()) {
     if (valid_primary_account)
       return primary_account_;
 
@@ -525,9 +543,9 @@ std::string AccountReconcilor::GetFirstGaiaAccountForReconcile() const {
     return chrome_accounts_[0];
   }
 
-  const std::string& first_gaia_account = gaia_accounts_[0].id;
+  const std::string& first_gaia_account = gaia_accounts[0].id;
   bool first_gaia_account_is_valid =
-      gaia_accounts_[0].valid &&
+      gaia_accounts[0].valid &&
       base::ContainsValue(chrome_accounts_, first_gaia_account);
 
   if (!first_gaia_account_is_valid &&
@@ -560,41 +578,41 @@ std::string AccountReconcilor::GetFirstGaiaAccountForReconcile() const {
   return std::string();
 }
 
-void AccountReconcilor::FinishReconcile() {
+void AccountReconcilor::FinishReconcile(
+    std::vector<gaia::ListedAccount>&& gaia_accounts) {
   VLOG(1) << "AccountReconcilor::FinishReconcile";
   DCHECK(add_to_cookie_.empty());
-  std::string first_account = GetFirstGaiaAccountForReconcile();
+  std::string first_account = GetFirstGaiaAccountForReconcile(gaia_accounts);
   // |first_account| must be in |chrome_accounts_|.
   DCHECK(first_account.empty() ||
          (std::find(chrome_accounts_.begin(), chrome_accounts_.end(),
                     first_account) != chrome_accounts_.end()));
-  size_t number_gaia_accounts = gaia_accounts_.size();
+  size_t number_gaia_accounts = gaia_accounts.size();
   bool first_account_mismatch =
-      (number_gaia_accounts > 0) && (first_account != gaia_accounts_[0].id);
+      (number_gaia_accounts > 0) && (first_account != gaia_accounts[0].id);
 
   // If there are any accounts in the gaia cookie but not in chrome, then
   // those accounts need to be removed from the cookie.  This means we need
   // to blow the cookie away.
   int removed_from_cookie = 0;
   for (size_t i = 0; i < number_gaia_accounts; ++i) {
-    if (gaia_accounts_[i].valid &&
+    if (gaia_accounts[i].valid &&
         chrome_accounts_.end() == std::find(chrome_accounts_.begin(),
                                             chrome_accounts_.end(),
-                                            gaia_accounts_[i].id)) {
+                                            gaia_accounts[i].id)) {
       ++removed_from_cookie;
     }
   }
 
   bool rebuild_cookie = first_account_mismatch || (removed_from_cookie > 0);
-  std::vector<gaia::ListedAccount> original_gaia_accounts =
-      gaia_accounts_;
+  std::vector<gaia::ListedAccount> original_gaia_accounts = gaia_accounts;
   if (rebuild_cookie) {
     VLOG(1) << "AccountReconcilor::FinishReconcile: rebuild cookie";
     // Really messed up state.  Blow away the gaia cookie completely and
     // rebuild it, making sure the primary account as specified by the
     // SigninManager is the first session in the gaia cookie.
     PerformLogoutAllAccountsAction();
-    gaia_accounts_.clear();
+    gaia_accounts.clear();
   }
 
   if (first_account.empty()) {
@@ -619,8 +637,8 @@ void AccountReconcilor::FinishReconcile() {
   std::vector<std::string> add_to_cookie_copy = add_to_cookie_;
   int added_to_cookie = 0;
   for (size_t i = 0; i < add_to_cookie_copy.size(); ++i) {
-    if (gaia_accounts_.end() !=
-        std::find_if(gaia_accounts_.begin(), gaia_accounts_.end(),
+    if (gaia_accounts.end() !=
+        std::find_if(gaia_accounts.begin(), gaia_accounts.end(),
                      AccountEqualToFunc(AccountForId(add_to_cookie_copy[i])))) {
       cookie_manager_service_->SignalComplete(
           add_to_cookie_copy[i],

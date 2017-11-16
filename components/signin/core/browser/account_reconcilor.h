@@ -122,6 +122,8 @@ class AccountReconcilor : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, DiceReconcileWhithoutSignin);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, DiceReconcileNoop);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, DiceLastKnownFirstAccount);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, UnverifiedAccountNoop);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, UnverifiedAccountMerge);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, DiceMigrationAfterNoop);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
                            DiceNoMigrationAfterReconcile);
@@ -189,7 +191,8 @@ class AccountReconcilor : public KeyedService,
 
   // Used during periodic reconciliation.
   void StartReconcile();
-  void FinishReconcile();
+  // |gaia_accounts| are the accounts in the Gaia cookie.
+  void FinishReconcile(std::vector<gaia::ListedAccount>&& gaia_accounts);
   void AbortReconcile();
   void CalculateIfReconcileIsDone();
   void ScheduleStartReconcileIfChromeAccountsChanged();
@@ -206,7 +209,9 @@ class AccountReconcilor : public KeyedService,
   // Returns the first account to add in the Gaia cookie.
   // If this returns an empty string, the user must be logged out of all
   // accounts.
-  std::string GetFirstGaiaAccountForReconcile() const;
+  // |gaia_accounts| are the current accounts in the Gaia cookie.
+  std::string GetFirstGaiaAccountForReconcile(
+      const std::vector<gaia::ListedAccount>& gaia_accounts) const;
 
   // Overriden from content_settings::Observer.
   void OnContentSettingChanged(
@@ -277,13 +282,6 @@ class AccountReconcilor : public KeyedService,
   // Used for Dice migration: migration can happen if the accounts are
   // consistent, which is indicated by reconcile being a no-op.
   bool reconcile_is_noop_;
-
-  // Used during reconcile action.
-  // These members are used to validate the gaia cookie.  |gaia_accounts_|
-  // holds the state of google accounts in the gaia cookie.  Each element is
-  // holds the email address, gaia id and validity as returned from GAIA.  The
-  // accounts in the vector are ordered the in same way as the gaia cookie.
-  std::vector<gaia::ListedAccount> gaia_accounts_;
 
   // Used during reconcile action.
   // These members are used to validate the tokens in OAuth2TokenService.

@@ -829,6 +829,60 @@ TEST_F(AccountReconcilorTest, DiceLastKnownFirstAccount) {
   }
 }
 
+// Checks that the reconcilor does not log out unverified accounts.
+TEST_F(AccountReconcilorTest, UnverifiedAccountNoop) {
+  // Enable Dice.
+  signin::ScopedAccountConsistencyDice scoped_dice;
+
+  // Add a unverified account to the Gaia cookie.
+  cookie_manager_service()->SetListAccountsResponseOneAccountWithParams(
+      "user@gmail.com", "12345", true /* is_email_valid */,
+      false /* signed_out */, false /* verified */);
+
+  // Check that nothing happens.
+  EXPECT_CALL(*GetMockReconcilor(), PerformMergeAction(testing::_)).Times(0);
+  EXPECT_CALL(*GetMockReconcilor(), PerformLogoutAllAccountsAction()).Times(0);
+
+  AccountReconcilor* reconcilor = GetMockReconcilor();
+  reconcilor->StartReconcile();
+  ASSERT_TRUE(reconcilor->is_reconcile_started_);
+  base::RunLoop().RunUntilIdle();
+  ASSERT_FALSE(reconcilor->is_reconcile_started_);
+  ASSERT_EQ(signin_metrics::ACCOUNT_RECONCILOR_OK, reconcilor->GetState());
+}
+
+// Checks that the reconcilor does not log out unverified accounts when adding
+// a new account to the Gaia cookie.
+TEST_F(AccountReconcilorTest, UnverifiedAccountMerge) {
+  // Enable Dice.
+  signin::ScopedAccountConsistencyDice scoped_dice;
+
+  // Add a unverified account to the Gaia cookie.
+  cookie_manager_service()->SetListAccountsResponseOneAccountWithParams(
+      "user@gmail.com", "12345", true /* is_email_valid */,
+      false /* signed_out */, false /* verified */);
+
+  // Add a token to Chrome.
+  const std::string chrome_account_id =
+      PickAccountIdForAccount("67890", "other@gmail.com");
+  token_service()->UpdateCredentials(chrome_account_id, "refresh_token");
+
+  // Check that the Chrome account is merged and the unverified account is not
+  // logged out.
+  EXPECT_CALL(*GetMockReconcilor(), PerformMergeAction(chrome_account_id))
+      .Times(1);
+  EXPECT_CALL(*GetMockReconcilor(), PerformLogoutAllAccountsAction()).Times(0);
+
+  AccountReconcilor* reconcilor = GetMockReconcilor();
+  reconcilor->StartReconcile();
+  ASSERT_TRUE(reconcilor->is_reconcile_started_);
+  base::RunLoop().RunUntilIdle();
+  SimulateAddAccountToCookieCompleted(reconcilor, chrome_account_id,
+                                      GoogleServiceAuthError::AuthErrorNone());
+  ASSERT_FALSE(reconcilor->is_reconcile_started_);
+  ASSERT_EQ(signin_metrics::ACCOUNT_RECONCILOR_OK, reconcilor->GetState());
+}
+
 // Tests that the Dice migration happens after a no-op reconcile.
 TEST_F(AccountReconcilorTest, DiceMigrationAfterNoop) {
   // Enable Dice migration.
@@ -926,8 +980,9 @@ TEST_F(AccountReconcilorTest, TokensNotLoaded) {
 TEST_F(AccountReconcilorTest, GetAccountsFromCookieSuccess) {
   const std::string account_id =
       ConnectProfileToAccount("12345", "user@gmail.com");
-  cookie_manager_service()->SetListAccountsResponseOneAccountWithExpiry(
-      "user@gmail.com", "12345", true);
+  cookie_manager_service()->SetListAccountsResponseOneAccountWithParams(
+      "user@gmail.com", "12345", false /* is_email_valid */,
+      false /* signed_out */, true /* verified */);
   EXPECT_CALL(*GetMockReconcilor(), PerformMergeAction(account_id));
 
   AccountReconcilor* reconcilor =
@@ -1471,8 +1526,9 @@ TEST_F(AccountReconcilorTest, StartReconcileWithSessionInfoExpiredDefault) {
 TEST_F(AccountReconcilorTest, AddAccountToCookieCompletedWithBogusAccount) {
   const std::string account_id =
       ConnectProfileToAccount("12345", "user@gmail.com");
-  cookie_manager_service()->SetListAccountsResponseOneAccountWithExpiry(
-      "user@gmail.com", "12345", true);
+  cookie_manager_service()->SetListAccountsResponseOneAccountWithParams(
+      "user@gmail.com", "12345", false /* is_email_valid */,
+      false /* signed_out */, true /* verified */);
 
   EXPECT_CALL(*GetMockReconcilor(), PerformMergeAction(account_id));
 
@@ -1509,8 +1565,9 @@ TEST_F(AccountReconcilorTest, NoLoopWithBadPrimary) {
   EXPECT_CALL(*GetMockReconcilor(), PerformMergeAction(account_id2));
 
   // The primary account is in auth error, so it is not in the cookie.
-  cookie_manager_service()->SetListAccountsResponseOneAccountWithExpiry(
-      "other@gmail.com", "67890", true);
+  cookie_manager_service()->SetListAccountsResponseOneAccountWithParams(
+      "other@gmail.com", "67890", false /* is_email_valid */,
+      false /* signed_out */, true /* verified */);
 
   AccountReconcilor* reconcilor =
       AccountReconcilorFactory::GetForProfile(profile());
