@@ -164,11 +164,7 @@ void ChromeWebContentsViewDelegateViews::SetInitialFocus() {
   }
 }
 
-namespace chrome {
-
 content::WebContentsViewDelegate* CreateWebContentsViewDelegate(
     content::WebContents* web_contents) {
   return new ChromeWebContentsViewDelegateViews(web_contents);
 }
-
-}  // namespace chrome

@@ -105,12 +105,10 @@ ChromeWebContentsViewDelegateMac::GetActiveRenderWidgetHostView() {
 }
 
 #if !BUILDFLAG(MAC_VIEWS_BROWSER)
-namespace chrome {
 
 content::WebContentsViewDelegate* CreateWebContentsViewDelegate(
     content::WebContents* web_contents) {
   return new ChromeWebContentsViewDelegateMac(web_contents);
 }
 
-}  // namespace chrome
 #endif  // MAC_VIEWS_BROWSER

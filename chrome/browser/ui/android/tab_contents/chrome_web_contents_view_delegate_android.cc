@@ -37,11 +37,7 @@ void ChromeWebContentsViewDelegateAndroid::ShowContextMenu(
     helper->ShowContextMenu(render_frame_host, params);
 }
 
-namespace chrome {
-
 content::WebContentsViewDelegate* CreateWebContentsViewDelegate(
     content::WebContents* web_contents) {
   return new ChromeWebContentsViewDelegateAndroid(web_contents);
 }
-
-}  // namespace chrome
