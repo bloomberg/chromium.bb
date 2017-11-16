@@ -84,6 +84,7 @@ class FeatureSwitch {
   void SetOverrideValue(OverrideValue value);
   OverrideValue GetOverrideValue() const;
 
+  bool HasValue() const;
   bool IsEnabled() const;
 
  private:
