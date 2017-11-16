@@ -17,7 +17,6 @@
 #include "extensions/common/manifest.h"
 #include "extensions/renderer/extension_frame_helper.h"
 #include "extensions/renderer/script_context.h"
-#include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 namespace extensions {
 
@@ -67,33 +66,15 @@ void RuntimeCustomBindings::GetExtensionViews(
   if (extension_id.empty())
     return;
 
-  std::vector<content::RenderFrame*> frames =
-      ExtensionFrameHelper::GetExtensionFrames(extension_id, browser_window_id,
-                                               tab_id, view_type);
   v8::Local<v8::Context> v8_context = args.GetIsolate()->GetCurrentContext();
-  v8::Local<v8::Array> v8_views = v8::Array::New(args.GetIsolate());
-  int v8_index = 0;
-  for (content::RenderFrame* frame : frames) {
-    // We filter out iframes here. GetExtensionViews should only return the
-    // main views, not any subframes. (Returning subframes can cause broken
-    // behavior by treating an app window's iframe as its main frame, and maybe
-    // other nastiness).
-    blink::WebLocalFrame* web_frame = frame->GetWebFrame();
-    if (web_frame->Top() != web_frame)
-      continue;
-
-    if (!blink::WebFrame::ScriptCanAccess(web_frame))
-      continue;
-
-    v8::Local<v8::Context> context = web_frame->MainWorldScriptContext();
-    if (!context.IsEmpty()) {
-      v8::Local<v8::Value> window = context->Global();
-      CHECK(!window.IsEmpty());
-      v8::Maybe<bool> maybe =
-          v8_views->CreateDataProperty(v8_context, v8_index++, window);
-      CHECK(maybe.IsJust() && maybe.FromJust());
-    }
-  }
+  // We ignore iframes here. (Returning subframes can cause broken behavior by
+  // treating an app window's iframe as its main frame, and maybe other
+  // nastiness).
+  // TODO(devlin): Why wouldn't we just account for that? It seems like there
+  // can be reasons to want to access just a frame - especially with isolated
+  // extension frames in web pages.
+  v8::Local<v8::Array> v8_views = ExtensionFrameHelper::GetV8MainFrames(
+      v8_context, extension_id, browser_window_id, tab_id, view_type);
 
   args.GetReturnValue().Set(v8_views);
 }
