@@ -37,7 +37,8 @@ from util import md5_check
 
 
 # Types that should never be used as a dependency of another build config.
-_ROOT_TYPES = ('android_apk', 'deps_dex', 'java_binary', 'resource_rewriter')
+_ROOT_TYPES = ('android_apk', 'deps_dex', 'java_binary', 'junit_binary',
+               'resource_rewriter')
 # Types that should not allow code deps to pass through.
 _RESOURCE_TYPES = ('android_assets', 'android_resources')
 
@@ -349,16 +350,16 @@ def main(argv):
 
   required_options_map = {
       'java_binary': ['build_config', 'jar_path'],
+      'junit_binary': ['build_config', 'jar_path'],
       'java_library': ['build_config', 'jar_path'],
       'java_prebuilt': ['build_config', 'jar_path'],
       'android_assets': ['build_config'],
       'android_resources': ['build_config', 'resources_zip'],
-      'android_apk': ['build_config', 'jar_path', 'dex_path', 'resources_zip'],
+      'android_apk': ['build_config', 'jar_path', 'dex_path'],
       'deps_dex': ['build_config', 'dex_path'],
       'dist_jar': ['build_config'],
       'resource_rewriter': ['build_config'],
       'group': ['build_config'],
-      'junit_binary': ['build_config'],
   }
   required_options = required_options_map.get(options.type)
   if not required_options:
@@ -426,7 +427,8 @@ def main(argv):
   if options.android_manifest:
     deps_info['android_manifest'] = options.android_manifest
 
-  if options.type in ('java_binary', 'java_library', 'android_apk'):
+  if options.type in (
+      'java_binary', 'junit_binary', 'java_library', 'android_apk'):
     if options.java_sources_file:
       deps_info['java_sources_file'] = options.java_sources_file
     if options.bundled_srcjars:
@@ -459,7 +461,8 @@ def main(argv):
       all_java_sources.append(options.java_sources_file)
     config['jni']['all_source'] = all_java_sources
 
-  if (options.type in ('java_binary', 'java_library', 'dist_jar')):
+  if options.type in (
+      'java_binary', 'junit_binary', 'java_library', 'dist_jar'):
     deps_info['requires_android'] = options.requires_android
     deps_info['supports_android'] = options.supports_android
 
@@ -477,7 +480,8 @@ def main(argv):
         raise Exception('Not all deps support the Android platform: '
             + str(deps_not_support_android))
 
-  if options.type in ('java_binary', 'java_library', 'android_apk'):
+  if options.type in (
+      'java_binary', 'junit_binary', 'java_library', 'android_apk'):
     deps_info['jar_path'] = options.jar_path
     if options.type == 'android_apk' or options.supports_android:
       deps_info['dex_path'] = options.dex_path
@@ -490,7 +494,7 @@ def main(argv):
           options.non_native_packed_relocations)
 
   requires_javac_classpath = options.type in (
-      'java_binary', 'java_library', 'android_apk', 'dist_jar')
+      'java_binary', 'junit_binary', 'java_library', 'android_apk', 'dist_jar')
   requires_full_classpath = (
       options.type == 'java_prebuilt' or requires_javac_classpath)
 
@@ -498,20 +502,19 @@ def main(argv):
     # Classpath values filled in below (after applying tested_apk_config).
     config['javac'] = {}
 
-  if options.type in ('java_binary', 'java_library'):
-    # Only resources might have srcjars (normal srcjar targets are listed in
-    # srcjar_deps). A resource's srcjar contains the R.java file for those
-    # resources, and (like Android's default build system) we allow a library to
-    # refer to the resources in any of its dependents.
+  if options.type == 'java_library':
+    # android_resources targets use this srcjars field to expose R.java files.
+    # Since there is no java_library associated with an android_resources(),
+    # Each java_library recompiles the R.java files.
+    # junit_binary and android_apk create their own R.java srcjars, so should
+    # not pull them in from deps here.
     config['javac']['srcjars'] = [
         c['srcjar'] for c in all_resources_deps if 'srcjar' in c]
 
     # Used to strip out R.class for android_prebuilt()s.
-    if options.type == 'java_library':
-      config['javac']['resource_packages'] = [
-          c['package_name'] for c in all_resources_deps if 'package_name' in c]
-
-  if options.type == 'android_apk':
+    config['javac']['resource_packages'] = [
+        c['package_name'] for c in all_resources_deps if 'package_name' in c]
+  elif options.type in ('android_apk', 'java_binary', 'junit_binary'):
     # Apks will get their resources srcjar explicitly passed to the java step
     config['javac']['srcjars'] = []
     # Gradle may need to generate resources for some apks.
@@ -580,14 +583,16 @@ def main(argv):
     config['resources'] = {}
     config['resources']['dependency_zips'] = [
         c['resources_zip'] for c in all_resources_deps]
-    config['resources']['extra_package_names'] = []
-    config['resources']['extra_r_text_files'] = []
+    extra_package_names = []
+    extra_r_text_files = []
+    if options.type != 'android_resources':
+      extra_package_names = [
+          c['package_name'] for c in all_resources_deps if 'package_name' in c]
+      extra_r_text_files = [
+          c['r_text'] for c in all_resources_deps if 'r_text' in c]
 
-  if options.type == 'android_apk' or options.type == 'resource_rewriter':
-    config['resources']['extra_package_names'] = [
-        c['package_name'] for c in all_resources_deps if 'package_name' in c]
-    config['resources']['extra_r_text_files'] = [
-        c['r_text'] for c in all_resources_deps if 'r_text' in c]
+    config['resources']['extra_package_names'] = extra_package_names
+    config['resources']['extra_r_text_files'] = extra_r_text_files
 
   if options.type in ['android_apk', 'deps_dex']:
     deps_dex_files = [c['dex_path'] for c in all_library_deps]
