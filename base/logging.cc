@@ -651,10 +651,8 @@ LogMessage::~LogMessage() {
       // "com.apple.console" is used.
       const class ASLClient {
        public:
-        explicit ASLClient(const std::string& main_bundle_id)
-            : client_(
-                  asl_open(nullptr, main_bundle_id.c_str(), ASL_OPT_NO_DELAY)) {
-        }
+        explicit ASLClient(const std::string& facility)
+            : client_(asl_open(nullptr, facility.c_str(), ASL_OPT_NO_DELAY)) {}
         ~ASLClient() { asl_close(client_); }
 
         aslclient get() const { return client_; }
