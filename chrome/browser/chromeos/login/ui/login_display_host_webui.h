@@ -59,7 +59,7 @@ class LoginDisplayHostWebUI : public LoginDisplayHost,
                               public views::WidgetRemovalsObserver,
                               public chrome::MultiUserWindowManager::Observer {
  public:
-  LoginDisplayHostWebUI();
+  explicit LoginDisplayHostWebUI(const gfx::Rect& wallpaper_bounds);
   ~LoginDisplayHostWebUI() override;
 
   // LoginDisplayHost implementation:
