@@ -7,13 +7,12 @@
 #include <memory>
 
 #include "base/logging.h"
-#include "base/mac/scoped_nsobject.h"
-#include "base/memory/ptr_util.h"
+#import "ios/chrome/browser/voice/text_to_speech_parser.h"
+#import "ios/chrome/browser/voice/voice_search_url_rewriter.h"
 #include "ios/web/public/navigation_manager.h"
 #include "ios/web/public/web_state/web_state.h"
 #include "ios/web/public/web_state/web_state_observer.h"
-#import "ios/chrome/browser/voice/text_to_speech_parser.h"
-#import "ios/chrome/browser/voice/voice_search_url_rewriter.h"
+#import "ios/web/public/web_state/web_state_observer_bridge.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -22,72 +21,21 @@
 
 #pragma mark - TextToSpeechListener Private Interface
 
-class TextToSpeechWebStateObserver;
-
-@interface TextToSpeechListener ()
+@interface TextToSpeechListener ()<CRWWebStateObserver>
 
 // The TextToSpeechListenerDelegate passed on initialization.
 @property(weak, nonatomic, readonly) id<TextToSpeechListenerDelegate> delegate;
 
 @end
 
-#pragma mark - TextToSpeechWebStateObserver
-
-class TextToSpeechWebStateObserver : public web::WebStateObserver {
- public:
-  TextToSpeechWebStateObserver(web::WebState* web_state,
-                               TextToSpeechListener* listener);
-  ~TextToSpeechWebStateObserver() override;
-
-  // web::WebStateObserver implementation:
-  void PageLoaded(
-      web::WebState* web_state,
-      web::PageLoadCompletionStatus load_completion_status) override;
-  void WebStateDestroyed(web::WebState* web_state) override;
-
- private:
-  TextToSpeechListener* listener_;
-};
-
-TextToSpeechWebStateObserver::TextToSpeechWebStateObserver(
-    web::WebState* web_state,
-    TextToSpeechListener* listener)
-    : web::WebStateObserver(web_state), listener_(listener) {
-  DCHECK(web_state);
-  DCHECK(listener);
-  // Rewrite the next loaded URL to have the voice search flags.
-  web_state->GetNavigationManager()->AddTransientURLRewriter(
-      &VoiceSearchURLRewriter);
-}
-
-TextToSpeechWebStateObserver::~TextToSpeechWebStateObserver() {}
-
-void TextToSpeechWebStateObserver::PageLoaded(
-    web::WebState* web_state,
-    web::PageLoadCompletionStatus load_completion_status) {
-  const GURL& url = web_state->GetLastCommittedURL();
-  BOOL shouldParse = [listener_.delegate shouldTextToSpeechListener:listener_
-                                                   parseDataFromURL:url];
-  if (shouldParse) {
-    __weak TextToSpeechListener* weakListener = listener_;
-    ExtractVoiceSearchAudioDataFromWebState(web_state, ^(NSData* audioData) {
-      [[weakListener delegate] textToSpeechListener:weakListener
-                                   didReceiveResult:audioData];
-    });
-  } else {
-    [listener_.delegate textToSpeechListener:listener_ didReceiveResult:nil];
-  }
-}
-
-void TextToSpeechWebStateObserver::WebStateDestroyed(web::WebState* web_state) {
-  [listener_.delegate textToSpeechListenerWebStateWasDestroyed:listener_];
-}
-
 #pragma mark - TextToSpeechListener
+
 @implementation TextToSpeechListener {
-  // The TextToSpeechWebStateObserver that listens for Text-To-Speech data.
-  std::unique_ptr<TextToSpeechWebStateObserver> _webStateObserver;
+  // The WebStateObserverBridge that listens for WebState events.
+  std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
 }
+
+@synthesize webState = _webState;
 @synthesize delegate = _delegate;
 
 - (instancetype)initWithWebState:(web::WebState*)webState
@@ -95,17 +43,49 @@ void TextToSpeechWebStateObserver::WebStateDestroyed(web::WebState* web_state) {
   if ((self = [super init])) {
     DCHECK(webState);
     DCHECK(delegate);
-    _webStateObserver =
-        base::MakeUnique<TextToSpeechWebStateObserver>(webState, self);
+    _webState = webState;
     _delegate = delegate;
+
+    _webStateObserver = std::make_unique<web::WebStateObserverBridge>(self);
+    _webState->AddObserver(_webStateObserver.get());
+    _webState->GetNavigationManager()->AddTransientURLRewriter(
+        &VoiceSearchURLRewriter);
   }
   return self;
 }
 
-#pragma mark Accessors
+- (void)dealloc {
+  if (_webState) {
+    _webState->RemoveObserver(_webStateObserver.get());
+    _webStateObserver.reset();
+    _webState = nullptr;
+  }
+}
 
-- (web::WebState*)webState {
-  return _webStateObserver->web_state();
+#pragma mark - CRWWebStateObserver
+
+- (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
+  DCHECK_EQ(_webState, webState);
+  const GURL& URL = webState->GetLastCommittedURL();
+  if ([_delegate shouldTextToSpeechListener:self parseDataFromURL:URL]) {
+    __weak TextToSpeechListener* weakSelf = self;
+    ExtractVoiceSearchAudioDataFromWebState(webState, ^(NSData* audioData) {
+      [weakSelf.delegate textToSpeechListener:weakSelf
+                             didReceiveResult:audioData];
+    });
+  } else {
+    [self.delegate textToSpeechListener:self didReceiveResult:nil];
+  }
+}
+
+- (void)webStateDestroyed:(web::WebState*)webState {
+  DCHECK_EQ(_webState, webState);
+  if (_webState) {
+    _webState->RemoveObserver(_webStateObserver.get());
+    _webStateObserver.reset();
+    _webState = nullptr;
+  }
+  [self.delegate textToSpeechListenerWebStateWasDestroyed:self];
 }
 
 @end
