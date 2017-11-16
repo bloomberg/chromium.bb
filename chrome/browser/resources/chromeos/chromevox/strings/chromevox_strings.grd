@@ -979,7 +979,7 @@
       <message desc="Spoken in PowerKey if there are no jumps to display." name="IDS_CHROMEVOX_POWERKEY_NO_JUMPS">
         No jumps.
       </message>
-      <message desc="Describes the list position of a list item." name="IDS_CHROMEVOX_LIST_POSITION">
+      <message desc="Describes the list position of a list item in spoken feedback." name="IDS_CHROMEVOX_LIST_POSITION">
         <ph name="index">$1</ph> of <ph name="total">$2</ph>
       </message>
       <message desc="Describes the list position of a list item in braille." name="IDS_CHROMEVOX_LIST_POSITION_BRL">
