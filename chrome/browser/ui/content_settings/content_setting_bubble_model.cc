@@ -1518,22 +1518,22 @@ void ContentSettingDownloadsBubbleModel::SetRadioGroup() {
 
   RadioGroup radio_group;
   radio_group.url = url;
-  switch (download_request_limiter->GetDownloadStatus(web_contents())) {
-    case DownloadRequestLimiter::ALLOW_ALL_DOWNLOADS:
+  switch (download_request_limiter->GetDownloadUiStatus(web_contents())) {
+    case DownloadRequestLimiter::DOWNLOAD_UI_ALLOWED:
       radio_group.radio_items.push_back(
           l10n_util::GetStringUTF16(IDS_ALLOWED_DOWNLOAD_NO_ACTION));
       radio_group.radio_items.push_back(
           l10n_util::GetStringFUTF16(IDS_ALLOWED_DOWNLOAD_BLOCK, display_host));
       radio_group.default_item = kAllowButtonIndex;
       break;
-    case DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED:
+    case DownloadRequestLimiter::DOWNLOAD_UI_BLOCKED:
       radio_group.radio_items.push_back(l10n_util::GetStringFUTF16(
           IDS_BLOCKED_DOWNLOAD_UNBLOCK, display_host));
       radio_group.radio_items.push_back(
           l10n_util::GetStringUTF16(IDS_BLOCKED_DOWNLOAD_NO_ACTION));
       radio_group.default_item = 1;
       break;
-    default:
+    case DownloadRequestLimiter::DOWNLOAD_UI_DEFAULT:
       NOTREACHED();
       return;
   }
@@ -1565,14 +1565,14 @@ void ContentSettingDownloadsBubbleModel::SetTitle() {
       g_browser_process->download_request_limiter();
   DCHECK(download_request_limiter);
 
-  switch (download_request_limiter->GetDownloadStatus(web_contents())) {
-    case DownloadRequestLimiter::ALLOW_ALL_DOWNLOADS:
+  switch (download_request_limiter->GetDownloadUiStatus(web_contents())) {
+    case DownloadRequestLimiter::DOWNLOAD_UI_ALLOWED:
       set_title(l10n_util::GetStringUTF16(IDS_ALLOWED_DOWNLOAD_TITLE));
       return;
-    case DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED:
+    case DownloadRequestLimiter::DOWNLOAD_UI_BLOCKED:
       set_title(l10n_util::GetStringUTF16(IDS_BLOCKED_DOWNLOAD_TITLE));
       return;
-    default:
+    case DownloadRequestLimiter::DOWNLOAD_UI_DEFAULT:
       // No title otherwise.
       return;
   }

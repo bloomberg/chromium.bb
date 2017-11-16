@@ -547,20 +547,20 @@ void ContentSettingDownloadsImageModel::UpdateFromWebContents(
   if (!download_request_limiter)
     return;
 
-  switch (download_request_limiter->GetDownloadStatus(web_contents)) {
-    case DownloadRequestLimiter::ALLOW_ALL_DOWNLOADS:
+  switch (download_request_limiter->GetDownloadUiStatus(web_contents)) {
+    case DownloadRequestLimiter::DOWNLOAD_UI_ALLOWED:
       set_visible(true);
       set_icon(kFileDownloadIcon, gfx::kNoneIcon);
       set_explanatory_string_id(0);
       set_tooltip(l10n_util::GetStringUTF16(IDS_ALLOWED_DOWNLOAD_TITLE));
       return;
-    case DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED:
+    case DownloadRequestLimiter::DOWNLOAD_UI_BLOCKED:
       set_visible(true);
       set_icon(kFileDownloadIcon, kBlockedBadgeIcon);
       set_explanatory_string_id(IDS_BLOCKED_DOWNLOADS_EXPLANATION);
       set_tooltip(l10n_util::GetStringUTF16(IDS_BLOCKED_DOWNLOAD_TITLE));
       return;
-    default:
+    case DownloadRequestLimiter::DOWNLOAD_UI_DEFAULT:
       // No need to show icon otherwise.
       return;
   }
