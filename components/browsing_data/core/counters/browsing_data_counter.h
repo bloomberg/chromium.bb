@@ -142,6 +142,9 @@ class BrowsingDataCounter {
   // Calculates the beginning of the counting period as |period_| before now.
   base::Time GetPeriodStart();
 
+  // Calculates the ending of the counting period.
+  base::Time GetPeriodEnd();
+
   // Returns if this counter belongs to a preference on the default, basic or
   // advanced CBD tab.
   ClearBrowsingDataTab GetTab() const;

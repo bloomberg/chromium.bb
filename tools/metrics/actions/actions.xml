@@ -3383,6 +3383,14 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="ClearBrowsingData_OlderThan30Days">
+  <owner>dullweber@chromium.org</owner>
+  <owner>msramek@chromium.org</owner>
+  <description>
+    Browsing data has been cleared for older than 30 days timeperiod.
+  </description>
+</action>
+
 <action name="ClearBrowsingData_Passwords">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -3449,6 +3457,12 @@ should be able to be added at any place in this file.
   <owner>dullweber@chromium.org</owner>
   <owner>msramek@chromium.org</owner>
   <description>Time period in CBD was changed.</description>
+</action>
+
+<action name="ClearBrowsingData_TimePeriodChanged_OlderThan30Days">
+  <owner>dullweber@chromium.org</owner>
+  <owner>msramek@chromium.org</owner>
+  <description>Time period in CBD was changed to OlderThan30Days.</description>
 </action>
 
 <action name="ClearSelection">

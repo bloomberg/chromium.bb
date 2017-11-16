@@ -113,6 +113,10 @@ IOSChromeBrowsingDataRemover* IOSChromeBrowsingDataRemover::CreateForPeriod(
     case browsing_data::TimePeriod::ALL_TIME:
       base::RecordAction(UserMetricsAction("ClearBrowsingData_Everything"));
       break;
+    case browsing_data::TimePeriod::OLDER_THAN_30_DAYS:
+      base::RecordAction(
+          UserMetricsAction("ClearBrowsingData_OlderThan30Days"));
+      break;
   }
   return new IOSChromeBrowsingDataRemover(
       browser_state, browsing_data::CalculateBeginDeleteTime(period),

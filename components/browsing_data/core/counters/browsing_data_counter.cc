@@ -58,6 +58,12 @@ base::Time BrowsingDataCounter::GetPeriodStart() {
   return CalculateBeginDeleteTime(static_cast<TimePeriod>(*period_));
 }
 
+base::Time BrowsingDataCounter::GetPeriodEnd() {
+  if (period_.GetPrefName().empty())
+    return base::Time::Max();
+  return CalculateEndDeleteTime(static_cast<TimePeriod>(*period_));
+}
+
 void BrowsingDataCounter::Restart() {
   DCHECK(initialized_);
   if (state_ == State::IDLE) {

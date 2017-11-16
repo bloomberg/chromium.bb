@@ -1241,6 +1241,9 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kWebRtcUseEchoCanceller3)},
 #endif  // ENABLE_WEBRTC
 #if defined(OS_ANDROID)
+    {"clear-old-browsing-data", flag_descriptions::kClearOldBrowsingDataName,
+     flag_descriptions::kClearOldBrowsingDataDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(features::kClearOldBrowsingData)},
     {"enable-osk-overscroll", flag_descriptions::kEnableOskOverscrollName,
      flag_descriptions::kEnableOskOverscrollDescription, kOsAndroid,
      SINGLE_VALUE_TYPE(switches::kEnableOSKOverscroll)},

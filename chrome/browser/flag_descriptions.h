@@ -1046,6 +1046,9 @@ extern const char kChromeHomeDescription[];
 extern const char kChromeMemexName[];
 extern const char kChromeMemexDescription[];
 
+extern const char kClearOldBrowsingDataName[];
+extern const char kClearOldBrowsingDataDescription[];
+
 extern const char kContentSuggestionsCategoryOrderName[];
 extern const char kContentSuggestionsCategoryOrderDescription[];
 

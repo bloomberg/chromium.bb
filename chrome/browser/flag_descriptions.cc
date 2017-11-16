@@ -1698,6 +1698,11 @@ const char kChromeMemexDescription[] =
     "Enables Chrome Memex homepage on Android. Restricted to opted-in "
     "Googlers.";
 
+const char kClearOldBrowsingDataName[] = "Clear older browsing data";
+const char kClearOldBrowsingDataDescription[] =
+    "Enables clearing of browsing data which is older than a given time "
+    "period.";
+
 const char kContentSuggestionsCategoryOrderName[] =
     "Default content suggestions category order (e.g. on NTP)";
 const char kContentSuggestionsCategoryOrderDescription[] =
