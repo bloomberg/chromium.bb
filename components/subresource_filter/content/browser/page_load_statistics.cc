@@ -32,8 +32,6 @@ void PageLoadStatistics::OnDocumentLoadStatistics(
       statistics.evaluation_total_cpu_duration;
 }
 
-// Do not log popup metrics here, since popups are usually not blocked during
-// the load of the page, but during interaction.
 void PageLoadStatistics::OnDidFinishLoad() {
   if (activation_state_.activation_level != ActivationLevel::DISABLED) {
     UMA_HISTOGRAM_COUNTS_1000(

@@ -22,8 +22,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "components/subresource_filter/content/browser/content_subresource_filter_driver_factory.h"
-#include "components/subresource_filter/content/browser/content_subresource_filter_throttle_manager.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
@@ -146,23 +144,13 @@ bool PopupBlockerTabHelper::MaybeBlockPopup(
   }
 
   if (user_gesture) {
-    auto* driver_factory = subresource_filter::
-        ContentSubresourceFilterDriverFactory::FromWebContents(web_contents);
     auto* safe_browsing_blocker =
         popup_blocker->safe_browsing_triggered_popup_blocker_.get();
-
-    // TODO(crbug.com/761385): The subresource_filter popup blocker is
-    // deprecated. Remove the subresource_filter code here once the
-    // safe_browsing popup blocker is operational.
-    bool allowed_subresource_filter =
-        !driver_factory ||
-        !driver_factory->ShouldDisallowNewWindow(open_url_params);
-    bool allowed_safe_browsing =
-        !safe_browsing_blocker ||
-        !safe_browsing_blocker->ShouldApplyStrongPopupBlocker(open_url_params);
-    if (allowed_subresource_filter && allowed_safe_browsing)
+    if (!safe_browsing_blocker ||
+        !safe_browsing_blocker->ShouldApplyStrongPopupBlocker(
+            open_url_params)) {
       return false;
-    ChromeSubresourceFilterClient::LogAction(kActionPopupBlocked);
+    }
   }
 
   popup_blocker->AddBlockedPopup(params, window_features);

@@ -30,10 +30,6 @@
 
 namespace subresource_filter {
 
-bool ContentSubresourceFilterThrottleManager::Delegate::AllowRulesetRules() {
-  return true;
-}
-
 ContentSubresourceFilterThrottleManager::
     ContentSubresourceFilterThrottleManager(
         Delegate* delegate,
@@ -90,18 +86,6 @@ void ContentSubresourceFilterThrottleManager::ReadyToCommitNavigation(
   // A filter with DISABLED activation indicates a corrupted ruleset.
   ActivationLevel level = filter->activation_state().activation_level;
   if (level == ActivationLevel::DISABLED)
-    return;
-
-  // If the ruleset rules are disabled then we should never reach this point.
-  // Main frames: should never get notified about page activation.
-  // Sub frames: should never be constructed if its associated page has ruleset
-  // rules disabled.
-  //
-  // However, navigation code is known to be quite fragile to these assumptions
-  // so it is not clear that a subframe's WillStartRequest (e.g. throttle
-  // insertion) will always occur before it's associated main frame's
-  // WillProcessResponse. Be defensive for that case.
-  if (!delegate_->AllowRulesetRules())
     return;
 
   TRACE_EVENT1(
@@ -211,10 +195,6 @@ void ContentSubresourceFilterThrottleManager::OnPageActivationComputed(
   if (activation_state.activation_level == ActivationLevel::DISABLED)
     return;
 
-  // Do not notify page activation if ruleset rules are disabled. This ensures
-  // we don't initialize/verify the ruleset.
-  if (!delegate_->AllowRulesetRules())
-    return;
   auto it = ongoing_activation_throttles_.find(navigation_handle);
   if (it != ongoing_activation_throttles_.end()) {
     it->second->NotifyPageActivationWithRuleset(EnsureRulesetHandle(),
@@ -251,8 +231,6 @@ ContentSubresourceFilterThrottleManager::
         content::NavigationHandle* navigation_handle) {
   if (navigation_handle->IsInMainFrame())
     return nullptr;
-  if (!delegate_->AllowRulesetRules())
-    return nullptr;
   AsyncDocumentSubresourceFilter* parent_filter =
       GetParentFrameFilter(navigation_handle);
   return parent_filter ? base::MakeUnique<SubframeNavigationFilteringThrottle>(
@@ -270,10 +248,7 @@ ContentSubresourceFilterThrottleManager::
         navigation_handle);
   }
 
-  // Subframes: create only for frames with activated parents, and if we're
-  // abiding by ruleset rules for this page load.
-  if (!delegate_->AllowRulesetRules())
-    return nullptr;
+  // Subframes: create only for frames with activated parents.
   AsyncDocumentSubresourceFilter* parent_filter =
       GetParentFrameFilter(navigation_handle);
   if (!parent_filter)
@@ -320,7 +295,6 @@ void ContentSubresourceFilterThrottleManager::MaybeCallFirstDisallowedLoad() {
 
 VerifiedRuleset::Handle*
 ContentSubresourceFilterThrottleManager::EnsureRulesetHandle() {
-  DCHECK(delegate_->AllowRulesetRules());
   if (!ruleset_handle_)
     ruleset_handle_ = base::MakeUnique<VerifiedRuleset::Handle>(dealer_handle_);
   return ruleset_handle_.get();

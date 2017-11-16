@@ -811,18 +811,6 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
   observer.Wait();
 }
 
-IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
-                       DisableRuleset_SubresourceAllowed) {
-  Configuration config = Configuration::MakePresetForLiveRunOnPhishingSites();
-  config.activation_options.should_disable_ruleset_rules = true;
-  ResetConfiguration(std::move(config));
-
-  GURL url(GetTestUrl("subresource_filter/frame_with_included_script.html"));
-  ConfigureAsPhishingURL(url);
-  ui_test_utils::NavigateToURL(browser(), url);
-  EXPECT_TRUE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
-}
-
 // Tests checking how histograms are recorded. ---------------------------------
 
 namespace {

@@ -126,45 +126,15 @@ void ContentSubresourceFilterDriverFactory::NotifyPageActivationComputed(
                                      state);
 }
 
-// Blocking popups here should trigger the standard popup blocking UI, so don't
-// force the subresource filter specific UI.
-bool ContentSubresourceFilterDriverFactory::ShouldDisallowNewWindow(
-    const content::OpenURLParams* open_url_params) {
-  if (activation_options().activation_level != ActivationLevel::ENABLED ||
-      !activation_options().should_strengthen_popup_blocker) {
-    return false;
-  }
-
-  // Block new windows from navigations whose triggering JS Event has an
-  // isTrusted bit set to false. This bit is set to true if the event is
-  // generated via a user action. See docs:
-  // https://developer.mozilla.org/en-US/docs/Web/API/Event/isTrusted
-  bool should_block = true;
-  if (open_url_params) {
-    should_block = open_url_params->triggering_event_info ==
-                   blink::WebTriggeringEventInfo::kFromUntrustedEvent;
-  }
-  if (should_block) {
-    web_contents()->GetMainFrame()->AddMessageToConsole(
-        content::CONSOLE_MESSAGE_LEVEL_ERROR, kDisallowNewWindowMessage);
-  }
-  return should_block;
-}
-
 void ContentSubresourceFilterDriverFactory::OnFirstSubresourceLoadDisallowed() {
   if (activation_options().should_suppress_notifications)
     return;
   // This shouldn't happen normally, but in the rare case that an IPC from a
   // previous page arrives late we should guard against it.
-  if (activation_options().should_disable_ruleset_rules ||
-      activation_options().activation_level != ActivationLevel::ENABLED) {
+  if (activation_options().activation_level != ActivationLevel::ENABLED) {
     return;
   }
   client_->ShowNotification();
-}
-
-bool ContentSubresourceFilterDriverFactory::AllowRulesetRules() {
-  return !activation_options().should_disable_ruleset_rules;
 }
 
 void ContentSubresourceFilterDriverFactory::DidStartNavigation(
@@ -209,15 +179,9 @@ void ContentSubresourceFilterDriverFactory::SetOnCommitWarningMessages() {
   DCHECK_EQ(ActivationLevel::ENABLED, activation_options().activation_level);
   // If the matched configuration *would have* triggered resource blocking,
   // log a warning.
-  if (!activation_options().should_disable_ruleset_rules &&
-      !activation_options().should_suppress_notifications) {
+  if (!activation_options().should_suppress_notifications) {
     on_commit_warning_messages_.push_back(kActivationWarningConsoleMessage);
   }
-
-  // If the matched configuration *would have* triggered new tab/window
-  // blocking, log a warning.
-  if (activation_options().should_strengthen_popup_blocker)
-    on_commit_warning_messages_.push_back(kDisallowNewWindowWarningMessage);
 }
 
 }  // namespace subresource_filter

@@ -429,40 +429,6 @@ TEST(SubresourceFilterFeaturesTest, WhitelistSiteOnReload) {
   }
 }
 
-TEST(SubresourceFilterFeaturesTest, StrengthenPopupBlocker) {
-  const struct {
-    bool feature_enabled;
-    const char* strengthen_popup_blocker_param;
-    bool expected_strengthen_popup_blocker_value;
-  } kTestCases[] = {{false, "", false},
-                    {false, "true", false},
-                    {false, "false", false},
-                    {false, "invalid value", false},
-                    {true, "", false},
-                    {true, "false", false},
-                    {true, "invalid value", false},
-                    {true, "True", true},
-                    {true, "TRUE", true},
-                    {true, "true", true}};
-  for (const auto& test_case : kTestCases) {
-    SCOPED_TRACE(::testing::Message("Enabled = ") << test_case.feature_enabled);
-    SCOPED_TRACE(::testing::Message("StrengthenPopupBlockerParam = \"")
-                 << test_case.strengthen_popup_blocker_param << "\"");
-
-    ScopedExperimentalStateToggle scoped_experimental_state(
-        test_case.feature_enabled ? base::FeatureList::OVERRIDE_ENABLE_FEATURE
-                                  : base::FeatureList::OVERRIDE_USE_DEFAULT,
-        {{kStrengthenPopupBlockerParameterName,
-          test_case.strengthen_popup_blocker_param}});
-
-    Configuration actual_configuration;
-    ExpectAndRetrieveExactlyOneEnabledConfig(&actual_configuration);
-    EXPECT_EQ(test_case.expected_strengthen_popup_blocker_value,
-              actual_configuration.activation_options
-                  .should_strengthen_popup_blocker);
-  }
-}
-
 TEST(SubresourceFilterFeaturesTest, RulesetFlavor) {
   const struct {
     bool feature_enabled;
@@ -602,8 +568,6 @@ TEST(SubresourceFilterFeaturesTest, PresetForLiveRunOnBetterAdsSites) {
   EXPECT_EQ(0.0, config.activation_options.performance_measurement_rate);
   EXPECT_FALSE(config.activation_options.should_suppress_notifications);
   EXPECT_FALSE(config.activation_options.should_whitelist_site_on_reload);
-  EXPECT_FALSE(config.activation_options.should_strengthen_popup_blocker);
-  EXPECT_FALSE(config.activation_options.should_disable_ruleset_rules);
 }
 
 TEST(SubresourceFilterFeaturesTest, ConfigurationPriorities) {
