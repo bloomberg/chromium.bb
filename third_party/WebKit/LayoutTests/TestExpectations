@@ -3188,6 +3188,11 @@ crbug.com/737959 virtual/mojo-loading/http/tests/misc/object-image-load-outlives
 
 crbug.com/737959 http/tests/misc/video-poster-image-load-outlives-gc-without-crashing.html [ Failure Pass Crash ]
 
+# Awaiting rebaseline after skia roll.
+crbug.com/785931 virtual/gpu-rasterization/images/imagemap-focus-ring-outline-color-not-inherited-from-map.html [ NeedsManualRebaseline ]
+crbug.com/785931 virtual/gpu/fast/canvas/canvas-composite-video-shadow.html [ NeedsManualRebaseline ]
+crbug.com/785931 virtual/gpu/fast/canvas/canvas-composite-video.html [ NeedsManualRebaseline ]
+
 # These tests are failing on Mac-10.12 when using an Intel GPU.
 crbug.com/736177 [ Mac10.12 ] css2.1/t1202-counter-04-b.html [ Failure Pass ]
 crbug.com/736177 [ Mac10.12 ] css2.1/t1202-counters-04-b.html [ Failure Pass ]
@@ -3820,8 +3825,9 @@ crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-blending-pattern-over-pa
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-blending-shadow.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-blending-text.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-blending-transforms.html [ Skip ]
-crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-composite-video-shadow.html [ Skip ]
-crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-composite-video.html [ Skip ]
+#These are currently skipped on all OSes due to crbug.com/785931
+#crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-composite-video-shadow.html [ Skip ]
+#crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-composite-video.html [ Skip ]
 #This is currently skipped on all OSes due to crbug.com/775957
 #crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-scale-drawImage-shadow.html [ Skip ]
