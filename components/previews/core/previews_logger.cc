@@ -51,6 +51,10 @@ std::string GetReasonDescription(PreviewsEligibilityReason reason) {
       return "Page reloads do not show previews for this preview type";
     case PreviewsEligibilityReason::HOST_BLACKLISTED_BY_SERVER:
       return "Host blacklisted by server rules";
+    case PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER:
+      return "Host not whitelisted by server rules";
+    case PreviewsEligibilityReason::ALLOWED_WITHOUT_OPTIMIZATION_HINTS:
+      return "Allowed (but without server rule check)";
   }
   NOTREACHED();
   return "";

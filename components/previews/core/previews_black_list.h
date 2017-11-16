@@ -55,6 +55,12 @@ enum class PreviewsEligibilityReason {
   // The host is explicitly blacklisted by the server, so the user was not shown
   // a preview.
   HOST_BLACKLISTED_BY_SERVER = 9,
+  // The host is not whitelisted by the server for a preview decision that uses
+  // server optimization hints.
+  HOST_NOT_WHITELISTED_BY_SERVER = 10,
+  // The preview is allowed but without an expected check of server optimization
+  // hints because they are not enabled (features::kOptimizationHints).
+  ALLOWED_WITHOUT_OPTIMIZATION_HINTS = 11,
   LAST = 9,
 };
 

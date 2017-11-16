@@ -675,7 +675,9 @@ TEST_F(PreviewsIODataTest, NoScriptAllowedByFeature) {
       std::vector<std::string>()));
   histogram_tester.ExpectUniqueSample(
       "Previews.EligibilityReason.NoScript",
-      static_cast<int>(PreviewsEligibilityReason::ALLOWED), 1);
+      static_cast<int>(
+          PreviewsEligibilityReason::ALLOWED_WITHOUT_OPTIMIZATION_HINTS),
+      1);
 }
 
 TEST_F(PreviewsIODataTest, NoScriptAllowedByFeatureWithWhitelist) {
@@ -695,6 +697,12 @@ TEST_F(PreviewsIODataTest, NoScriptAllowedByFeatureWithWhitelist) {
       previews::params::GetECTThresholdForPreview(
           previews::PreviewsType::NOSCRIPT),
       std::vector<std::string>()));
+
+  histogram_tester.ExpectUniqueSample(
+      "Previews.EligibilityReason.NoScript",
+      static_cast<int>(
+          PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER),
+      1);
 
   // Now verify preview for whitelisted url.
   EXPECT_TRUE(io_data()->ShouldAllowPreviewAtECT(
