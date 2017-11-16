@@ -546,6 +546,9 @@ public class LayoutManagerTest implements MockTabModelDelegate {
         final float deltaX = MathUtils.flipSignIf(layoutWidth / 2.f, scrollLeft);
 
         eventHandler.swipeStarted(direction, layoutWidth, 0);
+        // Call swipeUpdated twice since the handler computes direction in that method.
+        // TODO(mdjones): Update implementation of EdgeSwipeHandler to work this way by default.
+        eventHandler.swipeUpdated(deltaX, 0.f, deltaX, 0.f, deltaX, 0.f);
         eventHandler.swipeUpdated(deltaX, 0.f, deltaX, 0.f, deltaX, 0.f);
         eventHandler.swipeFinished();
 
