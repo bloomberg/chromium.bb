@@ -28,9 +28,7 @@ class CC_PAINT_EXPORT ScopedImageFlags {
   const PaintFlags* flags() const {
     if (decode_failed_)
       return nullptr;
-    if (modified_flags_)
-      return &*modified_flags_;
-    return original_flags_;
+    return &*modified_flags_;
   }
 
  private:
@@ -49,17 +47,16 @@ class CC_PAINT_EXPORT ScopedImageFlags {
 
    private:
     ImageProvider* source_provider_;
-    std::vector<ScopedDecodedDrawImage> decoded_images_;
+    base::StackVector<ScopedDecodedDrawImage, 1> decoded_images_;
 
     DISALLOW_COPY_AND_ASSIGN(DecodeStashingImageProvider);
   };
 
-  void DecodeImageShader(const SkMatrix& ctm);
-  void DecodeRecordShader(const SkMatrix& ctm);
+  void DecodeImageShader(const PaintFlags* original, const SkMatrix& ctm);
+  void DecodeRecordShader(const PaintFlags* original, const SkMatrix& ctm);
   void DecodeFailed();
 
   bool decode_failed_ = false;
-  const PaintFlags* original_flags_;
   base::Optional<PaintFlags> modified_flags_;
   base::Optional<DecodeStashingImageProvider> decode_stashing_image_provider_;
 
