@@ -418,9 +418,6 @@ crbug.com/704961 [ Mac ] virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inl
 crbug.com/704961 [ Mac ] virtual/layout_ng/external/wpt/css/CSS2/normal-flow/width-inherit-001.xht [ Failure ]
 crbug.com/704961 [ Mac ] virtual/layout_ng/external/wpt/css/CSS2/positioning/abspos-027.xht [ Failure ]
 
-### virtual/layout_ng Mac textarea.
-crbug.com/763494 [ Mac ] virtual/layout_ng/fast/block/float/editable-text-overlapping-float.html [ Crash Failure ]
-
 ### virtual/layout_ng Mac 1px glyph difference.
 crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/basic/015.html [ Failure ]
 crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/float/026.html [ Failure ]
@@ -458,7 +455,6 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/floats-130
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/floats-131.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/floats-137.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/floats-143.xht [ Failure ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/margin-collapse-157.xht [ Failure ]
 
 # Regressions while changing zero-block-size float behaviour.
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/001.html [ Failure ]
@@ -563,23 +559,6 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/positioning
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/positioning-float-002.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/relpos-calcs-004.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/relpos-calcs-005.xht [ Failure ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/top-019.xht [ Crash Failure ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/top-020.xht [ Crash Failure ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/top-031.xht [ Crash Failure ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/top-032.xht [ Crash Failure ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/top-043.xht [ Crash Failure ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/top-044.xht [ Crash Failure ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/top-055.xht [ Crash Failure ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/top-056.xht [ Crash Failure ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/top-067.xht [ Crash Failure ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/top-068.xht [ Crash Failure ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/top-079.xht [ Crash Failure ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/top-080.xht [ Crash Failure ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/top-091.xht [ Crash Failure ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/top-092.xht [ Crash Failure ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/top-103.xht [ Crash Failure ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/top-104.xht [ Crash Failure ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/top-113.xht [ Crash Failure ]
 
 ### virtual/layout_ng/fast/block/basic
 crbug.com/635619 virtual/layout_ng/fast/block/basic/011.html [ Failure ]
@@ -653,7 +632,6 @@ crbug.com/635619 virtual/layout_ng/fast/block/float/trailing-float-with-columns.
 crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/float/width-update-after-clear.html [ Failure ]
 
 ### virtual/layout_ng/fast/block/margin-collapse
-crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/057.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/103.html [ Failure ]
 
 ### virtual/layout_ng/fast/block/margin-collapse/block-inside-inline
