@@ -82,15 +82,9 @@ class SharedWorkerConnectListener final
     // No nested workers (for now) - connect() should only be called from
     // document context.
     DCHECK(worker_->GetExecutionContext()->IsDocument());
-    Document* document = ToDocument(worker_->GetExecutionContext());
-    bool is_secure_context = worker_->GetExecutionContext()->IsSecureContext();
-    if (creation_context_type != ToCreationContextType(is_secure_context)) {
-      WebFeature feature =
-          is_secure_context
-              ? WebFeature::kNonSecureSharedWorkerAccessedFromSecureContext
-              : WebFeature::kSecureSharedWorkerAccessedFromNonSecureContext;
-      UseCounter::Count(document, feature);
-    }
+    DCHECK_EQ(creation_context_type,
+              ToCreationContextType(
+                  worker_->GetExecutionContext()->IsSecureContext()));
   }
 
   void ScriptLoadFailed() override {

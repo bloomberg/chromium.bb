@@ -127,6 +127,13 @@ void SharedWorkerServiceImpl::ConnectToWorker(
 
   SharedWorkerHost* host = FindAvailableSharedWorkerHost(*instance);
   if (host) {
+    // Non-secure contexts cannot connect to secure workers, and secure contexts
+    // cannot connect to non-secure workers:
+    if (host->instance()->creation_context_type() != creation_context_type) {
+      client->OnScriptLoadFailed();
+      return;
+    }
+
     // The process may be shutting down, in which case we will try to create a
     // new shared worker instead.
     if (!IsShuttingDown(RenderProcessHost::FromID(host->process_id()))) {
