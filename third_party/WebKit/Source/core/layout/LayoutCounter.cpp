@@ -24,6 +24,7 @@
 #include <memory>
 #include "core/dom/Element.h"
 #include "core/dom/ElementTraversal.h"
+#include "core/dom/NodeComputedStyle.h"
 #include "core/dom/PseudoElement.h"
 #include "core/html/HTMLOListElement.h"
 #include "core/html/ListItemOrdinal.h"
@@ -60,9 +61,10 @@ static CounterMaps& GetCounterMaps() {
 Element* AncestorStyleContainmentObject(const Element& element) {
   for (Element* ancestor = FlatTreeTraversal::ParentElement(element); ancestor;
        ancestor = FlatTreeTraversal::ParentElement(*ancestor)) {
-    if (ancestor->GetLayoutObject() &&
-        ancestor->GetLayoutObject()->Style()->ContainsStyle())
-      return ancestor;
+    if (const ComputedStyle* style = ancestor->GetComputedStyle()) {
+      if (style->ContainsStyle())
+        return ancestor;
+    }
   }
   return nullptr;
 }
