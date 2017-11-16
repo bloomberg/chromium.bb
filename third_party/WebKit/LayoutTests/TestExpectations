@@ -4112,3 +4112,7 @@ crbug.com/785187 [ Linux ] virtual/mojo-loading/http/tests/devtools/elements/ele
 crbug.com/785187 [ Mac ] http/tests/devtools/elements/elements-panel-rewrite-href.js [ Failure Pass ]
 crbug.com/785662 [ Debug ] http/tests/devtools/sources/debugger-ui/reveal-not-skipped.js [ Failure Pass ]
 crbug.com/785662 [ Debug ] virtual/mojo-loading/http/tests/devtools/sources/debugger-ui/reveal-not-skipped.js [ Failure Pass ]
+
+# Sheriff failures 2017-11-16
+crbug.com/785980 [ Win10 ] virtual/mojo-loading/http/tests/devtools/network/network-xhr-same-url-as-main-resource.js [ Failure Pass ]
+crbug.com/785980 [ Win10 ] http/tests/devtools/network/network-xhr-same-url-as-main-resource.js [ Failure Pass ]
