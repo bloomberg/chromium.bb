@@ -7,17 +7,31 @@
 body {
   font-family: 'DejaVu Sans', Arial, sans-serif;
   font-size: 75%;
+  user-select: none;
 }
 
 button {
   background: rgb(53, 106, 222);
   border-radius: 5px;
-  box-shadow: 2px silver;
   color: white;
   font-size: 65%;
   font-weight: bold;
   margin: 5px 0;
   padding: 5px;
+  text-align: center;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.copy-to-clipboard-button {
+  background: rgb(53, 106, 222);
+  border-radius: 2px;
+  color: white;
+  float: right;
+  font-size: 60%;
+  font-weight: bold;
+  margin: 2px;
+  padding: 2px;
   text-align: center;
   text-decoration: none;
   text-transform: uppercase;
@@ -200,6 +214,10 @@ td.log-url .url-tooltip::after {
 @media(min-device-width: 1024px) {
   body {
     font-size: 100%;
+  }
+
+  .copy-to-clipboard-button {
+    font-size: 80%;
   }
 
   .log-time {
