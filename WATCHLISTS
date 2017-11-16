@@ -727,6 +727,10 @@
     'content_shell': {
       'filepath': 'content/shell/',
     },
+    'content_view_core': {
+      'filepath': 'content/public/android/java/src/org/chromium/content/browser/ContentViewCore.java|'
+                  'content/browser/android/content_view_core.*',
+    },
     'content_websockets': {
       'filepath': 'content/browser/websockets/',
     },
@@ -1958,6 +1962,7 @@
     'content_shell': ['jochen+watch@chromium.org',
                       'mlamouri+watch-content@chromium.org',
                       'peter@chromium.org'],
+    'content_view_core': ['jinsukkim+watch@chromium.org'],
     'content_websockets': ['tyoshino+watch@chromium.org'],
     'content_worker': ['blink-worker-reviews@chromium.org',
                        'kinuko+watch@chromium.org'],
