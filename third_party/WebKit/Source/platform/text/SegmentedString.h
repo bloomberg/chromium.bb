@@ -120,10 +120,9 @@ class PLATFORM_EXPORT SegmentedSubstring {
     return string_.Substring(offset, length);
   }
 
-  ALWAYS_INLINE void DecrementLength() { --length_; }
-
   ALWAYS_INLINE int length() const { return length_; }
 
+ private:
   union {
     const LChar* string8_ptr;
     const UChar* string16_ptr;
