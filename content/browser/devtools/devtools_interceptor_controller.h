@@ -18,6 +18,7 @@ namespace content {
 
 class BrowserContext;
 class FrameTreeNode;
+class InterceptionHandle;
 
 struct GlobalRequestID;
 
@@ -25,6 +26,8 @@ class DevToolsInterceptorController : public base::SupportsUserData::Data {
  public:
   using GetResponseBodyForInterceptionCallback =
       DevToolsURLRequestInterceptor::GetResponseBodyForInterceptionCallback;
+  using RequestInterceptedCallback =
+      DevToolsURLRequestInterceptor::RequestInterceptedCallback;
   using ContinueInterceptedRequestCallback =
       DevToolsURLRequestInterceptor::ContinueInterceptedRequestCallback;
   using Modifications = DevToolsURLRequestInterceptor::Modifications;
@@ -38,12 +41,10 @@ class DevToolsInterceptorController : public base::SupportsUserData::Data {
       std::unique_ptr<Modifications> modifications,
       std::unique_ptr<ContinueInterceptedRequestCallback> callback);
 
-  void StartInterceptingRequests(
+  std::unique_ptr<InterceptionHandle> StartInterceptingRequests(
       const FrameTreeNode* target_frame,
-      base::WeakPtr<protocol::NetworkHandler> network_handler,
-      std::vector<Pattern> intercepted_patterns);
-
-  void StopInterceptingRequests(const FrameTreeNode* target_frame);
+      std::vector<Pattern> intercepted_patterns,
+      RequestInterceptedCallback callback);
 
   bool ShouldCancelNavigation(const GlobalRequestID& global_request_id);
 
@@ -67,15 +68,29 @@ class DevToolsInterceptorController : public base::SupportsUserData::Data {
 
   base::WeakPtr<DevToolsURLRequestInterceptor> interceptor_;
   std::unique_ptr<DevToolsTargetRegistry> target_registry_;
-  base::flat_map<base::UnguessableToken,
-                 DevToolsTargetRegistry::RegistrationHandle>
-      target_handles_;
-
   base::flat_map<std::string, GlobalRequestID> navigation_requests_;
   base::flat_set<GlobalRequestID> canceled_navigation_requests_;
   base::WeakPtrFactory<DevToolsInterceptorController> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsInterceptorController);
+};
+
+class InterceptionHandle {
+ public:
+  ~InterceptionHandle();
+  void UpdatePatterns(std::vector<DevToolsURLRequestInterceptor::Pattern>);
+
+ private:
+  friend class DevToolsInterceptorController;
+  InterceptionHandle(DevToolsTargetRegistry::RegistrationHandle registration,
+                     base::WeakPtr<DevToolsURLRequestInterceptor> interceptor,
+                     DevToolsURLRequestInterceptor::FilterEntry* entry);
+
+  DevToolsTargetRegistry::RegistrationHandle registration_;
+  base::WeakPtr<DevToolsURLRequestInterceptor> interceptor_;
+  DevToolsURLRequestInterceptor::FilterEntry* entry_;
+
+  DISALLOW_COPY_AND_ASSIGN(InterceptionHandle);
 };
 
 }  // namespace content

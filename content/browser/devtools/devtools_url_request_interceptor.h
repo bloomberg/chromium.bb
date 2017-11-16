@@ -18,9 +18,6 @@
 #include "net/url_request/url_request_interceptor.h"
 
 namespace content {
-namespace protocol {
-class NetworkHandler;
-}  // namespace
 
 class BrowserContext;
 class DevToolsInterceptorController;
@@ -37,8 +34,8 @@ struct InterceptedRequestInfo {
   base::UnguessableToken frame_id;
   ResourceType resource_type;
   bool is_navigation;
-  protocol::Maybe<protocol::Object> headers_object;
-  protocol::Maybe<int> http_status_code;
+  protocol::Maybe<protocol::Object> redirect_headers;
+  protocol::Maybe<int> redirect_status_code;
   protocol::Maybe<protocol::String> redirect_url;
   protocol::Maybe<protocol::Network::AuthChallenge> auth_challenge;
   int response_error_code;
@@ -52,6 +49,9 @@ struct InterceptedRequestInfo {
 // This class is constructed on the UI thread but only accessed on IO thread.
 class DevToolsURLRequestInterceptor : public net::URLRequestInterceptor {
  public:
+  using RequestInterceptedCallback =
+      base::Callback<void(std::unique_ptr<InterceptedRequestInfo>)>;
+
   static bool IsNavigationRequest(ResourceType resource_type);
 
   explicit DevToolsURLRequestInterceptor(BrowserContext* browser_context);
@@ -116,14 +116,23 @@ class DevToolsURLRequestInterceptor : public net::URLRequestInterceptor {
     InterceptionStage interception_stage;
   };
 
-  struct InterceptedPage {
-    InterceptedPage(base::WeakPtr<protocol::NetworkHandler> network_handler,
-                    std::vector<Pattern> intercepted_patterns);
-    ~InterceptedPage();
+  struct FilterEntry {
+    FilterEntry(const base::UnguessableToken& target_id,
+                std::vector<Pattern> patterns,
+                RequestInterceptedCallback callback);
+    FilterEntry(FilterEntry&&);
+    ~FilterEntry();
 
-    const base::WeakPtr<protocol::NetworkHandler> network_handler;
-    const std::vector<Pattern> intercepted_patterns;
+    const base::UnguessableToken target_id;
+    std::vector<Pattern> patterns;
+    const DevToolsURLRequestInterceptor::RequestInterceptedCallback callback;
+
+    DISALLOW_COPY_AND_ASSIGN(FilterEntry);
   };
+
+  void AddFilterEntry(std::unique_ptr<FilterEntry> entry);
+  void RemoveFilterEntry(const FilterEntry* entry);
+  void UpdatePatterns(FilterEntry* entry, std::vector<Pattern> patterns);
 
   // net::URLRequestInterceptor implementation:
   net::URLRequestJob* MaybeInterceptRequest(
@@ -160,23 +169,21 @@ class DevToolsURLRequestInterceptor : public net::URLRequestInterceptor {
           modifications,
       std::unique_ptr<ContinueInterceptedRequestCallback> callback);
 
-  void StartInterceptingRequests(
-      const base::UnguessableToken& target_id,
-      std::unique_ptr<InterceptedPage> interceptedPage);
-
-  void StopInterceptingRequests(const base::UnguessableToken& target_id);
-
  private:
   net::URLRequestJob* InnerMaybeInterceptRequest(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate);
+
+  FilterEntry* FilterEntryForRequest(const base::UnguessableToken target_id,
+                                     const GURL& url,
+                                     ResourceType resource_type,
+                                     InterceptionStage* stage);
 
   const DevToolsTargetRegistry::TargetInfo* TargetInfoForRequestInfo(
       const ResourceRequestInfo* request_info) const;
 
   std::string GetIdForRequest(const net::URLRequest* request,
                               bool* is_redirect);
-
   // Returns a WeakPtr to the DevToolsURLInterceptorRequestJob corresponding
   // to |interception_id|.
   DevToolsURLInterceptorRequestJob* GetJob(
@@ -185,8 +192,9 @@ class DevToolsURLRequestInterceptor : public net::URLRequestInterceptor {
   std::unique_ptr<DevToolsTargetRegistry::Resolver> target_resolver_;
   base::WeakPtr<DevToolsInterceptorController> controller_;
 
-  base::flat_map<base::UnguessableToken, std::unique_ptr<InterceptedPage>>
-      target_id_to_intercepted_page_;
+  base::flat_map<base::UnguessableToken,
+                 std::vector<std::unique_ptr<FilterEntry>>>
+      target_id_to_entries_;
 
   base::flat_map<std::string, DevToolsURLInterceptorRequestJob*>
       interception_id_to_job_map_;
@@ -202,6 +210,7 @@ class DevToolsURLRequestInterceptor : public net::URLRequestInterceptor {
   size_t next_id_;
 
   base::WeakPtrFactory<DevToolsURLRequestInterceptor> weak_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(DevToolsURLRequestInterceptor);
 };
 
