@@ -73,6 +73,7 @@ bundle_data("http_server_bundle_data") {
     "data/http_server_files/chromium_logo_page.html",
     "data/http_server_files/destination.html",
     "data/http_server_files/fullscreen.html",
+    "data/http_server_files/generic.pkpass",
     "data/http_server_files/history.html",
     "data/http_server_files/history.js",
     "data/http_server_files/history_go.html",
