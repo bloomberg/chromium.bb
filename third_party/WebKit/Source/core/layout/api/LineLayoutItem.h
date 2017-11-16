@@ -215,8 +215,11 @@ class LineLayoutItem {
 
   bool SelfNeedsLayout() const { return layout_object_->SelfNeedsLayout(); }
 
-  // TODO(dgrogan/eae): Why does layoutObject need to know if its ancestor
-  // line box is dirty at all?
+  // |SetAncestorLineBoxDirty()| invalidates |layout_object|, should be
+  // |LayoutInline|, with |kLineBoxesChanged|.
+  // Note: |AncestorLineBoxDirty| flag itself is used for preventing
+  // invalidation on |layout_object_| more than once and used only in
+  // |LineBoxList::DirtyLinesFromChangedChild()|.
   void SetAncestorLineBoxDirty() const {
     layout_object_->SetAncestorLineBoxDirty();
   }
