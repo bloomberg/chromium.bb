@@ -26,9 +26,9 @@ struct HostMessageContext;
 }  // namespace host
 }  // namespace ppapi
 
-namespace chrome {
-
 class OutputProtectionProxy;
+
+namespace chrome {
 
 class PepperOutputProtectionMessageFilter
     : public ppapi::host::ResourceMessageFilter {

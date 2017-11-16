@@ -14,8 +14,6 @@
 #include "chrome/browser/chromeos/display/output_protection_delegate.h"
 #endif
 
-namespace chrome {
-
 // A class to query output protection status and/or enable output protection.
 //
 // On Chrome OS, operations on the physical displays are delegated to
@@ -59,7 +57,5 @@ class OutputProtectionProxy {
 
   base::WeakPtrFactory<OutputProtectionProxy> weak_ptr_factory_;
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_MEDIA_OUTPUT_PROTECTION_PROXY_H_

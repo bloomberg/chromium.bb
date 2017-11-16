@@ -80,10 +80,10 @@ void OutputProtectionImpl::OnEnableProtectionResult(
 }
 
 // Helper function to lazily create the |proxy_| and return it.
-chrome::OutputProtectionProxy* OutputProtectionImpl::GetProxy() {
+OutputProtectionProxy* OutputProtectionImpl::GetProxy() {
   if (!proxy_) {
-    proxy_ = std::make_unique<chrome::OutputProtectionProxy>(render_process_id_,
-                                                             render_frame_id_);
+    proxy_ = std::make_unique<OutputProtectionProxy>(render_process_id_,
+                                                     render_frame_id_);
   }
 
   return proxy_.get();

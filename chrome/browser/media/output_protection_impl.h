@@ -8,9 +8,7 @@
 #include "content/public/browser/frame_service_base.h"
 #include "media/mojo/interfaces/output_protection.mojom.h"
 
-namespace chrome {
 class OutputProtectionProxy;
-}
 
 namespace content {
 class RenderFrameHost;
@@ -48,14 +46,14 @@ class OutputProtectionImpl final
                                 bool success);
 
   // Helper function to lazily create the |proxy_| and return it.
-  chrome::OutputProtectionProxy* GetProxy();
+  OutputProtectionProxy* GetProxy();
 
   // TODO(crbug.com/770958): Remove these IDs after OutputProtection PPAPI is
   // deprecated.
   const int render_process_id_;
   const int render_frame_id_;
 
-  std::unique_ptr<chrome::OutputProtectionProxy> proxy_;
+  std::unique_ptr<OutputProtectionProxy> proxy_;
 
   base::WeakPtrFactory<OutputProtectionImpl> weak_factory_;
 };
