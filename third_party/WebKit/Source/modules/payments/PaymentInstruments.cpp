@@ -56,14 +56,8 @@ bool rejectError(ScriptPromiseResolver* resolver,
       // fetching payment handler's name and/or icon from its web app manifest.
       // The origin or name will be used to label this payment handler in
       // UI in this case, so only show warnning message instead of reject the
-      // promise.
-      ExecutionContext* context =
-          ExecutionContext::From(resolver->GetScriptState());
-      context->AddConsoleMessage(ConsoleMessage::Create(
-          kJSMessageSource, kWarningMessageLevel,
-          "Unable to fetch payment handler's name and/or icon from its web app "
-          "manifest. User may not recognize this payment handler in UI, "
-          "because it will be labeled only by its origin."));
+      // promise. The warning message was printed by
+      // payment_app_info_fetcher.cc.
       return false;
   }
   NOTREACHED();
