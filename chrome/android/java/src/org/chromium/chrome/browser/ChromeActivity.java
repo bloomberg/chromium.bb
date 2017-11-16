@@ -275,9 +275,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     // See enableHardwareAcceleration()
     private boolean mSetWindowHWA;
 
-    // Skips capturing screenshot for testing purpose.
-    private boolean mScreenshotCaptureSkippedForTesting;
-
     /** Whether or not a PolicyChangeListener was added. */
     private boolean mDidAddPolicyChangeListener;
 
@@ -1258,11 +1255,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             return true;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    @VisibleForTesting
-    public void setScreenshotCaptureSkippedForTesting(boolean value) {
-        mScreenshotCaptureSkippedForTesting = value;
     }
 
     /**
