@@ -273,10 +273,13 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
   }
 #endif
 
-  html_source->AddBoolean(
-      "showImportExportPasswords",
-      base::FeatureList::IsEnabled(
-          password_manager::features::kPasswordImportExport));
+  html_source->AddBoolean("showExportPasswords",
+                          base::FeatureList::IsEnabled(
+                              password_manager::features::kPasswordExport));
+
+  html_source->AddBoolean("showImportPasswords",
+                          base::FeatureList::IsEnabled(
+                              password_manager::features::kPasswordImport));
 
   AddSettingsPageUIHandler(
       base::WrapUnique(AboutHandler::Create(html_source, profile)));

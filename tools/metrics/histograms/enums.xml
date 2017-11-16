@@ -24254,6 +24254,7 @@ from previous Chrome versions.
   <int value="-2036149591" label="FaviconsFromWebManifest:disabled"/>
   <int value="-2035126988" label="enabled-new-style-notification"/>
   <int value="-2033225430" label="NTPMostLikelyFaviconsFromServer:disabled"/>
+  <int value="-2030217301" label="password-export:disabled"/>
   <int value="-2029912304" label="StaleWhileRevalidate2:enabled"/>
   <int value="-2028232016" label="spurious-power-button-lid-angle-change"/>
   <int value="-2025367104" label="enable-material-design-ntp"/>
@@ -24623,6 +24624,7 @@ from previous Chrome versions.
   <int value="-1052415111" label="malware-interstitial-v2"/>
   <int value="-1052219252" label="disable-captive-portal-bypass-proxy"/>
   <int value="-1048901516" label="ChromeMemex:enabled"/>
+  <int value="-1046627610" label="password-import:enabled"/>
   <int value="-1045900007" label="NoCreditCardAbort:disabled"/>
   <int value="-1045882995" label="UseNewDoodleApi:enabled"/>
   <int value="-1041650038" label="enable-forced-migration-to-tabbed-mode"/>
@@ -25272,6 +25274,7 @@ from previous Chrome versions.
   <int value="838887742" label="manual-enhanced-bookmarks"/>
   <int value="841276069" label="ChromeHomeDoodle:disabled"/>
   <int value="841343322" label="disable-new-korean-ime"/>
+  <int value="841779535" label="password-export:enabled"/>
   <int value="842432903" label="CaptureThumbnailOnNavigatingAway:enabled"/>
   <int value="843896452" label="UserActivationV2:enabled"/>
   <int value="846951416" label="CopylessPaste:enabled"/>
@@ -25521,6 +25524,7 @@ from previous Chrome versions.
   <int value="1480998407" label="enable-multi-mirroring"/>
   <int value="1481562816" label="disable-password-link"/>
   <int value="1486171015" label="disable-fill-on-account-select"/>
+  <int value="1488700164" label="password-import:disabled"/>
   <int value="1489915799" label="disable-permissions-blacklist"/>
   <int value="1490043732" label="enable-fill-on-account-select"/>
   <int value="1490255042" label="enable-overlay-scrollbar"/>

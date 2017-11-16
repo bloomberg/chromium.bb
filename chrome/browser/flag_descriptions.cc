@@ -1073,9 +1073,13 @@ const char kPasswordGenerationDescription[] =
     "Allow the user to have Chrome generate passwords when it detects account "
     "creation pages.";
 
-const char kPasswordImportExportName[] = "Password import and export";
-const char kPasswordImportExportDescription[] =
-    "Import and Export functionality in password settings.";
+const char kPasswordExportName[] = "Password export";
+const char kPasswordExportDescription[] =
+    "Export functionality in password settings.";
+
+const char kPasswordImportName[] = "Password import";
+const char kPasswordImportDescription[] =
+    "Import functionality in password settings.";
 
 const char kPasswordSelectionName[] =
     "Password selection and eye icon in prompt";
