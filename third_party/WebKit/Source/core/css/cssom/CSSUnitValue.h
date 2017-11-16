@@ -39,6 +39,7 @@ class CORE_EXPORT CSSUnitValue final : public CSSNumericValue {
   // From CSSNumericValue.
   CSSUnitValue* to(CSSPrimitiveValue::UnitType) const final;
   bool IsUnitValue() const final { return true; }
+  bool Equals(const CSSNumericValue&) const final;
 
   // From CSSStyleValue.
   StyleValueType GetType() const final;

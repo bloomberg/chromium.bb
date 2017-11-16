@@ -300,4 +300,12 @@ double CSSUnitValue::ConvertAngle(CSSPrimitiveValue::UnitType unit) const {
   }
 }
 
+bool CSSUnitValue::Equals(const CSSNumericValue& other) const {
+  if (!other.IsUnitValue())
+    return false;
+
+  const CSSUnitValue& other_unit_value = ToCSSUnitValue(other);
+  return value_ == other_unit_value.value_ && unit_ == other_unit_value.unit_;
+}
+
 }  // namespace blink

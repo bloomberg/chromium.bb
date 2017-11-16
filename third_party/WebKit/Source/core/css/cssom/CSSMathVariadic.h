@@ -27,6 +27,19 @@ class CORE_EXPORT CSSMathVariadic : public CSSMathValue {
     CSSMathValue::Trace(visitor);
   }
 
+  bool Equals(const CSSNumericValue& other) const final {
+    if (GetType() != other.GetType())
+      return false;
+
+    // We can safely cast here as we know 'other' has the same type as us.
+    const auto& other_variadic = static_cast<const CSSMathVariadic&>(other);
+    return std::equal(
+        NumericValues().begin(), NumericValues().end(),
+        other_variadic.NumericValues().begin(),
+        other_variadic.NumericValues().end(),
+        [](const auto& a, const auto& b) { return a->Equals(*b); });
+  }
+
  protected:
   CSSMathVariadic(CSSNumericArray* values, const CSSNumericValueType& type)
       : CSSMathValue(type), values_(values) {}
