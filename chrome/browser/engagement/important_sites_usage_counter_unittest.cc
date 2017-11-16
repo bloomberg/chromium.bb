@@ -69,7 +69,6 @@ class ImportantSitesUsageCounterTest : public testing::Test {
   }
 
   void FetchCompleted(std::vector<ImportantDomainInfo> domain_info) {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     domain_info_ = domain_info;
     run_loop_->Quit();
   }
