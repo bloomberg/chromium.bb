@@ -53,16 +53,9 @@ constexpr ExperimentStorage::Study kCurrentStudy = ExperimentStorage::kStudyOne;
 constexpr int kStudyTwoGroup = 0;
 
 // Test switches.
-constexpr char kExperimentEnableForTesting[] = "experiment-enable-for-testing";
 constexpr char kExperimentEnterpriseBypass[] = "experiment-enterprise-bypass";
 constexpr char kExperimentParticipation[] = "experiment-participation";
 constexpr char kExperimentRetryDelay[] = "experiment-retry-delay";
-
-// Returns true if the experiment is enabled for testing.
-bool IsExperimentEnabledForTesting() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      kExperimentEnableForTesting);
-}
 
 // Returns true if the install originated from the MSI or if the machine is
 // joined to a domain. This check can be bypassed via
@@ -236,11 +229,8 @@ bool ShouldRunUserExperiment(const InstallerState& installer_state) {
 
   // Bail out if this install is not selected into the fraction participating in
   // the current study.
-  // NOTE: No clients will participate while this feature is under development.
-  if (!IsExperimentEnabledForTesting() ||
-      !IsSelectedForStudy(lock.get(), kCurrentStudy)) {
+  if (!IsSelectedForStudy(lock.get(), kCurrentStudy))
     return false;
-  }
 
   // Skip the experiment if a user on the machine has already reached a terminal
   // state.
