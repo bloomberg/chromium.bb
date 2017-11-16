@@ -1414,14 +1414,9 @@ bool BrowserProcessImpl::IsRunningInBackground() const {
          KeepAliveRegistry::GetInstance()->IsKeepingAlive();
 }
 
-// Switches to add when auto-restarting Chrome.
-const char* const kSwitchesToAddOnAutorestart[] = {
-  switches::kNoStartupWindow
-};
-
 void BrowserProcessImpl::RestartBackgroundInstance() {
   base::CommandLine* old_cl = base::CommandLine::ForCurrentProcess();
-  auto new_cl = base::MakeUnique<base::CommandLine>(old_cl->GetProgram());
+  auto new_cl = std::make_unique<base::CommandLine>(old_cl->GetProgram());
 
   base::CommandLine::SwitchMap switches = old_cl->GetSwitches();
   switches::RemoveSwitchesForAutostart(&switches);
@@ -1429,17 +1424,22 @@ void BrowserProcessImpl::RestartBackgroundInstance() {
   // Append the rest of the switches (along with their values, if any)
   // to the new command line
   for (const auto& it : switches) {
-    base::CommandLine::StringType switch_value = it.second;
-    if (switch_value.length() > 0)
-      new_cl->AppendSwitchNative(it.first, it.second);
+    const auto& switch_name = it.first;
+    const auto& switch_value = it.second;
+    if (switch_value.empty())
+      new_cl->AppendSwitch(switch_name);
     else
-      new_cl->AppendSwitch(it.first);
+      new_cl->AppendSwitchNative(switch_name, switch_value);
   }
 
+  // Switches to add when auto-restarting Chrome.
+  static constexpr const char* kSwitchesToAddOnAutorestart[] = {
+      switches::kNoStartupWindow};
+
   // Ensure that our desired switches are set on the new process.
-  for (size_t i = 0; i < arraysize(kSwitchesToAddOnAutorestart); ++i) {
-    if (!new_cl->HasSwitch(kSwitchesToAddOnAutorestart[i]))
-      new_cl->AppendSwitch(kSwitchesToAddOnAutorestart[i]);
+  for (const char* switch_to_add : kSwitchesToAddOnAutorestart) {
+    if (!new_cl->HasSwitch(switch_to_add))
+      new_cl->AppendSwitch(switch_to_add);
   }
 
 #if defined(OS_WIN)
@@ -1449,7 +1449,6 @@ void BrowserProcessImpl::RestartBackgroundInstance() {
   DLOG(WARNING) << "Shutting down current instance of the browser.";
   chrome::AttemptExit();
 
-  // Transfer ownership to Upgrade.
   upgrade_util::SetNewCommandLine(new_cl.release());
 }
 
