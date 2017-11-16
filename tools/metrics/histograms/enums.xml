@@ -16962,6 +16962,7 @@ Called by update_net_error_codes.py.-->
   <int value="2229" label="DocumentPageShowFired"/>
   <int value="2230" label="ReplaceCharsetInXHR"/>
   <int value="2231" label="RespondToSameOriginRequestWithCrossOriginResponse"/>
+  <int value="2232" label="LinkRelModulePreload"/>
 </enum>
 
 <enum name="FeedbackSource">
