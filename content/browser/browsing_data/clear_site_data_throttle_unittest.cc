@@ -13,6 +13,7 @@
 #include "base/test/scoped_command_line.h"
 #include "base/test/scoped_task_environment.h"
 #include "content/public/browser/resource_request_info.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/load_flags.h"
@@ -172,7 +173,9 @@ TEST_F(ClearSiteDataThrottleTest, ParseHeaderAndExecuteClearingTask) {
     bool cookies;
     bool storage;
     bool cache;
-  } test_cases[] = {
+  };
+
+  std::vector<TestCase> standard_test_cases = {
       // One data type.
       {"\"cookies\"", true, false, false},
       {"\"storage\"", false, true, false},
@@ -195,6 +198,11 @@ TEST_F(ClearSiteDataThrottleTest, ParseHeaderAndExecuteClearingTask) {
       {"\"cache\", \"cookies\", \"storage\"", true, true, false},
       {"\"cookies\", \"storage\", \"cache\"", true, true, false},
 
+      // The wildcard datatype is not yet shipped.
+      {"\"*\", \"storage\"", false, true, false},
+      {"\"cookies\", \"*\", \"storage\"", true, true, false},
+      {"\"*\", \"cookies\", \"*\"", true, false, false},
+
       // Different formatting.
       {"\"cookies\"", true, false, false},
 
@@ -209,45 +217,65 @@ TEST_F(ClearSiteDataThrottleTest, ParseHeaderAndExecuteClearingTask) {
       {"\"storage\", \"foo\"", false, true, false},
   };
 
-  for (const TestCase& test_case : test_cases) {
-    SCOPED_TRACE(test_case.header);
+  std::vector<TestCase> experimental_test_cases = {
+      // Wildcard.
+      // TODO(crbug.com/762417): The "cache" parameter is temporarily disabled.
+      {"\"*\"", true, true, false},
+      {"\"*\", \"storage\"", true, true, false},
+      {"\"cache\", \"*\", \"storage\"", true, true, false},
+      {"\"*\", \"cookies\", \"*\"", true, true, false},
+  };
 
-    // Test that ParseHeader works correctly.
-    bool actual_cookies;
-    bool actual_storage;
-    bool actual_cache;
+  const std::vector<TestCase>* test_case_sets[] = {&standard_test_cases,
+                                                   &experimental_test_cases};
 
-    GURL url("https://example.com");
-    ConsoleMessagesDelegate console_delegate;
+  for (const std::vector<TestCase>* test_cases : test_case_sets) {
+    base::test::ScopedCommandLine scoped_command_line;
+    if (test_cases == &experimental_test_cases) {
+      scoped_command_line.GetProcessCommandLine()->AppendSwitch(
+          switches::kEnableExperimentalWebPlatformFeatures);
+    }
 
-    EXPECT_TRUE(ClearSiteDataThrottle::ParseHeaderForTesting(
-        test_case.header, &actual_cookies, &actual_storage, &actual_cache,
-        &console_delegate, url));
+    for (const TestCase& test_case : *test_cases) {
+      SCOPED_TRACE(test_case.header);
 
-    EXPECT_EQ(test_case.cookies, actual_cookies);
-    EXPECT_EQ(test_case.storage, actual_storage);
-    EXPECT_EQ(test_case.cache, actual_cache);
+      // Test that ParseHeader works correctly.
+      bool actual_cookies;
+      bool actual_storage;
+      bool actual_cache;
 
-    // Test that a call with the above parameters actually reaches
-    // ExecuteClearingTask().
-    net::TestURLRequestContext context;
-    std::unique_ptr<net::URLRequest> request(context.CreateRequest(
-        url, net::DEFAULT_PRIORITY, nullptr, TRAFFIC_ANNOTATION_FOR_TESTS));
-    TestThrottle throttle(request.get(),
-                          std::make_unique<ConsoleMessagesDelegate>());
-    MockResourceThrottleDelegate delegate;
-    throttle.set_delegate_for_testing(&delegate);
-    throttle.SetResponseHeaders(std::string(kClearSiteDataHeaderPrefix) +
-                                test_case.header);
+      GURL url("https://example.com");
+      ConsoleMessagesDelegate console_delegate;
 
-    EXPECT_CALL(throttle,
-                ClearSiteData(url::Origin::Create(url), test_case.cookies,
-                              test_case.storage, test_case.cache));
-    bool defer;
-    throttle.WillProcessResponse(&defer);
-    EXPECT_TRUE(defer);
+      EXPECT_TRUE(ClearSiteDataThrottle::ParseHeaderForTesting(
+          test_case.header, &actual_cookies, &actual_storage, &actual_cache,
+          &console_delegate, url));
 
-    testing::Mock::VerifyAndClearExpectations(&throttle);
+      EXPECT_EQ(test_case.cookies, actual_cookies);
+      EXPECT_EQ(test_case.storage, actual_storage);
+      EXPECT_EQ(test_case.cache, actual_cache);
+
+      // Test that a call with the above parameters actually reaches
+      // ExecuteClearingTask().
+      net::TestURLRequestContext context;
+      std::unique_ptr<net::URLRequest> request(context.CreateRequest(
+          url, net::DEFAULT_PRIORITY, nullptr, TRAFFIC_ANNOTATION_FOR_TESTS));
+      TestThrottle throttle(request.get(),
+                            std::make_unique<ConsoleMessagesDelegate>());
+      MockResourceThrottleDelegate delegate;
+      throttle.set_delegate_for_testing(&delegate);
+      throttle.SetResponseHeaders(std::string(kClearSiteDataHeaderPrefix) +
+                                  test_case.header);
+
+      EXPECT_CALL(throttle,
+                  ClearSiteData(url::Origin::Create(url), test_case.cookies,
+                                test_case.storage, test_case.cache));
+      bool defer;
+      throttle.WillProcessResponse(&defer);
+      EXPECT_TRUE(defer);
+
+      testing::Mock::VerifyAndClearExpectations(&throttle);
+    }
   }
 }
 
@@ -265,8 +293,9 @@ TEST_F(ClearSiteDataThrottleTest, InvalidHeader) {
                     {"\"cache\"",
                      "The \"cache\" datatype is temporarily not supported.\n"
                      "No recognized types specified.\n"},
-                    {"[ \"list\" ]",
-                     "Unrecognized type: [ \"list\" ].\n"
+                    // The wildcard datatype is not yet shipped.
+                    {"[ \"*\" ]",
+                     "Unrecognized type: [ \"*\" ].\n"
                      "No recognized types specified.\n"},
                     {"[ \"list\" ]",
                      "Unrecognized type: [ \"list\" ].\n"
