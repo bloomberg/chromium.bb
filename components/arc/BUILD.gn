@@ -162,6 +162,7 @@ mojom("arc_bindings") {
     "common/arc_bridge.mojom",
     "common/audio.mojom",
     "common/auth.mojom",
+    "common/backup_settings.mojom",
     "common/bitmap.mojom",
     "common/bluetooth.mojom",
     "common/boot_phase_monitor.mojom",
