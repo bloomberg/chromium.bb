@@ -107,57 +107,6 @@ DefaultState::DefaultState(mojom::WindowStateType initial_state_type)
 
 DefaultState::~DefaultState() {}
 
-void DefaultState::HandleBoundsEvents(WindowState* window_state,
-                                      const WMEvent* event) {
-  switch (event->type()) {
-    case WM_EVENT_SET_BOUNDS: {
-      const SetBoundsEvent* set_bounds_event =
-          static_cast<const SetBoundsEvent*>(event);
-      SetBounds(window_state, set_bounds_event);
-    } break;
-    case WM_EVENT_CENTER:
-      CenterWindow(window_state);
-      break;
-    default:
-      NOTREACHED() << "Unknown event:" << event->type();
-      break;
-  }
-}
-
-void DefaultState::HandleTransitionEvents(WindowState* window_state,
-                                          const WMEvent* event) {
-  mojom::WindowStateType current_state_type = window_state->GetStateType();
-  mojom::WindowStateType next_state_type = GetStateForTransitionEvent(event);
-  if (event->IsPinEvent()) {
-    // If there already is a pinned window, it is not allowed to set it
-    // to this window.
-    // TODO(hidehiko): If a system modal window is openening, the pinning
-    // probably should fail.
-    if (Shell::Get()->screen_pinning_controller()->IsPinned()) {
-      LOG(ERROR) << "An PIN event will be failed since another window is "
-                 << "already in pinned mode.";
-      next_state_type = current_state_type;
-    }
-  }
-
-  if (next_state_type == current_state_type && window_state->IsSnapped()) {
-    aura::Window* window = window_state->window();
-    gfx::Rect snapped_bounds =
-        event->type() == WM_EVENT_SNAP_LEFT
-            ? GetDefaultLeftSnappedWindowBoundsInParent(window)
-            : GetDefaultRightSnappedWindowBoundsInParent(window);
-    window_state->SetBoundsDirectAnimated(snapped_bounds);
-    return;
-  }
-
-  if (event->type() == WM_EVENT_SNAP_LEFT ||
-      event->type() == WM_EVENT_SNAP_RIGHT) {
-    window_state->set_bounds_changed_by_user(true);
-  }
-
-  EnterToNextState(window_state, next_state_type);
-}
-
 void DefaultState::AttachState(WindowState* window_state,
                                WindowState::State* state_in_previous_mode) {
   DCHECK_EQ(stored_window_state_, window_state);
@@ -190,6 +139,97 @@ void DefaultState::DetachState(WindowState* window_state) {
   // display.
   stored_display_state_ = display::Screen::GetScreen()->GetDisplayNearestWindow(
       window_state->window());
+}
+
+void DefaultState::HandleWorkspaceEvents(WindowState* window_state,
+                                         const WMEvent* event) {
+  switch (event->type()) {
+    case WM_EVENT_ADDED_TO_WORKSPACE: {
+      // When a window is dragged and dropped onto a different
+      // root window, the bounds will be updated after they are added
+      // to the root window.
+      // If a window is opened as maximized or fullscreen, its bounds may be
+      // empty, so update the bounds now before checking empty.
+      if (window_state->is_dragged() ||
+          window_state->allow_set_bounds_direct() ||
+          SetMaximizedOrFullscreenBounds(window_state)) {
+        return;
+      }
+
+      aura::Window* window = window_state->window();
+      gfx::Rect bounds = window->bounds();
+
+      // Don't adjust window bounds if the bounds are empty as this
+      // happens when a new views::Widget is created.
+      if (bounds.IsEmpty())
+        return;
+
+      // Only windows of type WINDOW_TYPE_NORMAL or WINDOW_TYPE_PANEL need to be
+      // adjusted to have minimum visibility, because they are positioned by the
+      // user and user should always be able to interact with them. Other
+      // windows are positioned programmatically.
+      if (!window_state->IsUserPositionable())
+        return;
+
+      // Use entire display instead of workarea. The logic ensures 30%
+      // visibility which should be enough to see where the window gets
+      // moved.
+      gfx::Rect display_area = ScreenUtil::GetDisplayBoundsInParent(window);
+      int min_width = bounds.width() * wm::kMinimumPercentOnScreenArea;
+      int min_height = bounds.height() * wm::kMinimumPercentOnScreenArea;
+      wm::AdjustBoundsToEnsureWindowVisibility(display_area, min_width,
+                                               min_height, &bounds);
+      window_state->AdjustSnappedBounds(&bounds);
+      if (window->bounds() != bounds)
+        window_state->SetBoundsConstrained(bounds);
+      return;
+    }
+    case WM_EVENT_DISPLAY_BOUNDS_CHANGED: {
+      if (window_state->is_dragged() ||
+          window_state->allow_set_bounds_direct() ||
+          SetMaximizedOrFullscreenBounds(window_state)) {
+        return;
+      }
+      gfx::Rect work_area_in_parent =
+          ScreenUtil::GetDisplayWorkAreaBoundsInParent(window_state->window());
+      gfx::Rect bounds = window_state->window()->GetTargetBounds();
+      // When display bounds has changed, make sure the entire window is fully
+      // visible.
+      bounds.AdjustToFit(work_area_in_parent);
+      window_state->AdjustSnappedBounds(&bounds);
+      if (window_state->window()->GetTargetBounds() != bounds)
+        window_state->SetBoundsDirectAnimated(bounds);
+      return;
+    }
+    case WM_EVENT_WORKAREA_BOUNDS_CHANGED: {
+      // Don't resize the maximized window when the desktop is covered
+      // by fullscreen window. crbug.com/504299.
+      bool in_fullscreen =
+          RootWindowController::ForWindow(window_state->window())
+              ->GetWorkspaceWindowState() == WORKSPACE_WINDOW_STATE_FULL_SCREEN;
+      if (in_fullscreen && window_state->IsMaximized())
+        return;
+
+      if (window_state->is_dragged() ||
+          window_state->allow_set_bounds_direct() ||
+          SetMaximizedOrFullscreenBounds(window_state)) {
+        return;
+      }
+      gfx::Rect work_area_in_parent =
+          ScreenUtil::GetDisplayWorkAreaBoundsInParent(window_state->window());
+      gfx::Rect bounds = window_state->window()->GetTargetBounds();
+      if (!::wm::GetTransientParent(window_state->window())) {
+        wm::AdjustBoundsToEnsureMinimumWindowVisibility(work_area_in_parent,
+                                                        &bounds);
+      }
+      window_state->AdjustSnappedBounds(&bounds);
+      if (window_state->window()->GetTargetBounds() != bounds)
+        window_state->SetBoundsDirectAnimated(bounds);
+      return;
+    }
+    default:
+      NOTREACHED() << "Unknown event:" << event->type();
+  }
 }
 
 void DefaultState::HandleCompoundEvents(WindowState* window_state,
@@ -290,95 +330,55 @@ void DefaultState::HandleCompoundEvents(WindowState* window_state,
   }
 }
 
-void DefaultState::HandleWorkspaceEvents(WindowState* window_state,
-                                         const WMEvent* event) {
+void DefaultState::HandleBoundsEvents(WindowState* window_state,
+                                      const WMEvent* event) {
   switch (event->type()) {
-    case WM_EVENT_ADDED_TO_WORKSPACE: {
-      // When a window is dragged and dropped onto a different
-      // root window, the bounds will be updated after they are added
-      // to the root window.
-      // If a window is opened as maximized or fullscreen, its bounds may be
-      // empty, so update the bounds now before checking empty.
-      if (window_state->is_dragged() ||
-          window_state->allow_set_bounds_direct() ||
-          SetMaximizedOrFullscreenBounds(window_state)) {
-        return;
-      }
-
-      aura::Window* window = window_state->window();
-      gfx::Rect bounds = window->bounds();
-
-      // Don't adjust window bounds if the bounds are empty as this
-      // happens when a new views::Widget is created.
-      if (bounds.IsEmpty())
-        return;
-
-      // Only windows of type WINDOW_TYPE_NORMAL or WINDOW_TYPE_PANEL need to be
-      // adjusted to have minimum visibility, because they are positioned by the
-      // user and user should always be able to interact with them. Other
-      // windows are positioned programmatically.
-      if (!window_state->IsUserPositionable())
-        return;
-
-      // Use entire display instead of workarea. The logic ensures 30%
-      // visibility which should be enough to see where the window gets
-      // moved.
-      gfx::Rect display_area = ScreenUtil::GetDisplayBoundsInParent(window);
-      int min_width = bounds.width() * wm::kMinimumPercentOnScreenArea;
-      int min_height = bounds.height() * wm::kMinimumPercentOnScreenArea;
-      wm::AdjustBoundsToEnsureWindowVisibility(display_area, min_width,
-                                               min_height, &bounds);
-      window_state->AdjustSnappedBounds(&bounds);
-      if (window->bounds() != bounds)
-        window_state->SetBoundsConstrained(bounds);
-      return;
-    }
-    case WM_EVENT_DISPLAY_BOUNDS_CHANGED: {
-      if (window_state->is_dragged() ||
-          window_state->allow_set_bounds_direct() ||
-          SetMaximizedOrFullscreenBounds(window_state)) {
-        return;
-      }
-      gfx::Rect work_area_in_parent =
-          ScreenUtil::GetDisplayWorkAreaBoundsInParent(window_state->window());
-      gfx::Rect bounds = window_state->window()->GetTargetBounds();
-      // When display bounds has changed, make sure the entire window is fully
-      // visible.
-      bounds.AdjustToFit(work_area_in_parent);
-      window_state->AdjustSnappedBounds(&bounds);
-      if (window_state->window()->GetTargetBounds() != bounds)
-        window_state->SetBoundsDirectAnimated(bounds);
-      return;
-    }
-    case WM_EVENT_WORKAREA_BOUNDS_CHANGED: {
-      // Don't resize the maximized window when the desktop is covered
-      // by fullscreen window. crbug.com/504299.
-      bool in_fullscreen =
-          RootWindowController::ForWindow(window_state->window())
-              ->GetWorkspaceWindowState() == WORKSPACE_WINDOW_STATE_FULL_SCREEN;
-      if (in_fullscreen && window_state->IsMaximized())
-        return;
-
-      if (window_state->is_dragged() ||
-          window_state->allow_set_bounds_direct() ||
-          SetMaximizedOrFullscreenBounds(window_state)) {
-        return;
-      }
-      gfx::Rect work_area_in_parent =
-          ScreenUtil::GetDisplayWorkAreaBoundsInParent(window_state->window());
-      gfx::Rect bounds = window_state->window()->GetTargetBounds();
-      if (!::wm::GetTransientParent(window_state->window())) {
-        wm::AdjustBoundsToEnsureMinimumWindowVisibility(work_area_in_parent,
-                                                        &bounds);
-      }
-      window_state->AdjustSnappedBounds(&bounds);
-      if (window_state->window()->GetTargetBounds() != bounds)
-        window_state->SetBoundsDirectAnimated(bounds);
-      return;
-    }
+    case WM_EVENT_SET_BOUNDS: {
+      const SetBoundsEvent* set_bounds_event =
+          static_cast<const SetBoundsEvent*>(event);
+      SetBounds(window_state, set_bounds_event);
+    } break;
+    case WM_EVENT_CENTER:
+      CenterWindow(window_state);
+      break;
     default:
       NOTREACHED() << "Unknown event:" << event->type();
+      break;
   }
+}
+
+void DefaultState::HandleTransitionEvents(WindowState* window_state,
+                                          const WMEvent* event) {
+  mojom::WindowStateType current_state_type = window_state->GetStateType();
+  mojom::WindowStateType next_state_type = GetStateForTransitionEvent(event);
+  if (event->IsPinEvent()) {
+    // If there already is a pinned window, it is not allowed to set it
+    // to this window.
+    // TODO(hidehiko): If a system modal window is openening, the pinning
+    // probably should fail.
+    if (Shell::Get()->screen_pinning_controller()->IsPinned()) {
+      LOG(ERROR) << "An PIN event will be failed since another window is "
+                 << "already in pinned mode.";
+      next_state_type = current_state_type;
+    }
+  }
+
+  if (next_state_type == current_state_type && window_state->IsSnapped()) {
+    aura::Window* window = window_state->window();
+    gfx::Rect snapped_bounds =
+        event->type() == WM_EVENT_SNAP_LEFT
+            ? GetDefaultLeftSnappedWindowBoundsInParent(window)
+            : GetDefaultRightSnappedWindowBoundsInParent(window);
+    window_state->SetBoundsDirectAnimated(snapped_bounds);
+    return;
+  }
+
+  if (event->type() == WM_EVENT_SNAP_LEFT ||
+      event->type() == WM_EVENT_SNAP_RIGHT) {
+    window_state->set_bounds_changed_by_user(true);
+  }
+
+  EnterToNextState(window_state, next_state_type);
 }
 
 // static
@@ -414,6 +414,31 @@ void DefaultState::SetBounds(WindowState* window_state,
   } else if (!SetMaximizedOrFullscreenBounds(window_state)) {
     window_state->SetBoundsConstrained(event->requested_bounds());
   }
+}
+
+// static
+void DefaultState::CenterWindow(WindowState* window_state) {
+  if (!window_state->IsNormalOrSnapped())
+    return;
+  aura::Window* window = window_state->window();
+  if (window_state->IsSnapped()) {
+    gfx::Rect center_in_screen = display::Screen::GetScreen()
+                                     ->GetDisplayNearestWindow(window)
+                                     .work_area();
+    gfx::Size size = window_state->HasRestoreBounds()
+                         ? window_state->GetRestoreBoundsInScreen().size()
+                         : window->bounds().size();
+    center_in_screen.ClampToCenteredSize(size);
+    window_state->SetRestoreBoundsInScreen(center_in_screen);
+    window_state->Restore();
+  } else {
+    gfx::Rect center_in_parent =
+        ScreenUtil::GetDisplayWorkAreaBoundsInParent(window);
+    center_in_parent.ClampToCenteredSize(window->bounds().size());
+    window_state->SetBoundsDirectAnimated(center_in_parent);
+  }
+  // Centering window is treated as if a user moved and resized the window.
+  window_state->set_bounds_changed_by_user(true);
 }
 
 void DefaultState::EnterToNextState(WindowState* window_state,
@@ -594,31 +619,6 @@ void DefaultState::UpdateBoundsFromState(
       window_state->SetBoundsDirectAnimated(bounds_in_parent);
     }
   }
-}
-
-// static
-void DefaultState::CenterWindow(WindowState* window_state) {
-  if (!window_state->IsNormalOrSnapped())
-    return;
-  aura::Window* window = window_state->window();
-  if (window_state->IsSnapped()) {
-    gfx::Rect center_in_screen = display::Screen::GetScreen()
-                                     ->GetDisplayNearestWindow(window)
-                                     .work_area();
-    gfx::Size size = window_state->HasRestoreBounds()
-                         ? window_state->GetRestoreBoundsInScreen().size()
-                         : window->bounds().size();
-    center_in_screen.ClampToCenteredSize(size);
-    window_state->SetRestoreBoundsInScreen(center_in_screen);
-    window_state->Restore();
-  } else {
-    gfx::Rect center_in_parent =
-        ScreenUtil::GetDisplayWorkAreaBoundsInParent(window);
-    center_in_parent.ClampToCenteredSize(window->bounds().size());
-    window_state->SetBoundsDirectAnimated(center_in_parent);
-  }
-  // Centering window is treated as if a user moved and resized the window.
-  window_state->set_bounds_changed_by_user(true);
 }
 
 }  // namespace wm
