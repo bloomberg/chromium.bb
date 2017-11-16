@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/web/load_timing_tab_helper.h"
 
-#include "base/memory/ptr_util.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #import "ios/web/public/web_state/web_state.h"
 
@@ -14,16 +14,20 @@ const char LoadTimingTabHelper::kOmnibarToPageLoadedMetric[] =
     "IOS.PageLoadTiming.OmnibarToPageLoaded";
 
 LoadTimingTabHelper::LoadTimingTabHelper(web::WebState* web_state)
-    : web::WebStateObserver(web_state) {}
+    : web_state_(web_state) {
+  web_state_->AddObserver(this);
+}
 
-LoadTimingTabHelper::~LoadTimingTabHelper() = default;
+LoadTimingTabHelper::~LoadTimingTabHelper() {
+  DCHECK(!web_state_);
+}
 
 void LoadTimingTabHelper::DidInitiatePageLoad() {
   load_start_time_ = base::TimeTicks::Now();
 }
 
 void LoadTimingTabHelper::DidPromotePrerenderTab() {
-  if (web_state()->IsLoading()) {
+  if (web_state_->IsLoading()) {
     DidInitiatePageLoad();
   } else {
     ReportLoadTime(base::TimeDelta());
@@ -34,11 +38,18 @@ void LoadTimingTabHelper::DidPromotePrerenderTab() {
 void LoadTimingTabHelper::PageLoaded(
     web::WebState* web_state,
     web::PageLoadCompletionStatus load_completion_status) {
+  DCHECK_EQ(web_state_, web_state);
   if (!load_start_time_.is_null() &&
       load_completion_status == web::PageLoadCompletionStatus::SUCCESS) {
     ReportLoadTime(base::TimeTicks::Now() - load_start_time_);
   }
   ResetTimer();
+}
+
+void LoadTimingTabHelper::WebStateDestroyed(web::WebState* web_state) {
+  DCHECK_EQ(web_state_, web_state);
+  web_state_->RemoveObserver(this);
+  web_state_ = nullptr;
 }
 
 void LoadTimingTabHelper::ReportLoadTime(const base::TimeDelta& elapsed) {

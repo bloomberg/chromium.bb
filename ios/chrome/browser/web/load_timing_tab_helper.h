@@ -36,12 +36,17 @@ class LoadTimingTabHelper : public web::WebStateUserData<LoadTimingTabHelper>,
   void PageLoaded(
       web::WebState* web_state,
       web::PageLoadCompletionStatus load_completion_status) override;
+  void WebStateDestroyed(web::WebState* web_state) override;
 
   static const char kOmnibarToPageLoadedMetric[];
 
  private:
   void ReportLoadTime(const base::TimeDelta& elapsed);
   void ResetTimer();
+
+  // The WebState this instance is observing. Will be null after
+  // WebStateDestroyed has been called.
+  web::WebState* web_state_ = nullptr;
 
   base::TimeTicks load_start_time_;
 
