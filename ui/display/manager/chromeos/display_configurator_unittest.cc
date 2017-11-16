@@ -930,53 +930,6 @@ TEST_F(DisplayConfiguratorTest, UpdateCachedOutputsEvenAfterFailure) {
   EXPECT_EQ(outputs_[1]->current_mode(), cached[1]->current_mode());
 }
 
-TEST_F(DisplayConfiguratorTest, PanelFitting) {
-  // Configure the internal display to support only the big mode and the
-  // external display to support only the small mode.
-  outputs_[0] = FakeDisplaySnapshot::Builder()
-                    .SetId(kDisplayIds[0])
-                    .SetNativeMode(big_mode_.Clone())
-                    .SetCurrentMode(big_mode_.Clone())
-                    .SetType(DISPLAY_CONNECTION_TYPE_INTERNAL)
-                    .SetIsAspectPerservingScaling(true)
-                    .Build();
-
-  outputs_[1] = FakeDisplaySnapshot::Builder()
-                    .SetId(kDisplayIds[1])
-                    .SetNativeMode(small_mode_.Clone())
-                    .SetCurrentMode(small_mode_.Clone())
-                    .SetType(DISPLAY_CONNECTION_TYPE_HDMI)
-                    .SetIsAspectPerservingScaling(true)
-                    .Build();
-
-  // The small mode should be added to the internal output when requesting
-  // mirrored mode.
-  UpdateOutputs(2, false);
-  state_controller_.set_state(MULTIPLE_DISPLAY_STATE_DUAL_MIRROR);
-  Init(true /* is_panel_fitting_enabled */);
-  configurator_.ForceInitialConfigure();
-  EXPECT_EQ(MULTIPLE_DISPLAY_STATE_DUAL_MIRROR, configurator_.display_state());
-  EXPECT_EQ(
-      JoinActions(
-          kInit,
-          GetCrtcAction(*outputs_[0], &small_mode_, gfx::Point(0, 0)).c_str(),
-          GetCrtcAction(*outputs_[1], &small_mode_, gfx::Point(0, 0)).c_str(),
-          nullptr),
-      log_->GetActionsAndClear());
-
-  // Both outputs should be using the small mode.
-  ASSERT_EQ(1, observer_.num_changes());
-  ASSERT_EQ(static_cast<size_t>(2), observer_.latest_outputs().size());
-  EXPECT_EQ(small_mode_.size(),
-            observer_.latest_outputs()[0]->current_mode()->size());
-  EXPECT_EQ(small_mode_.size(),
-            observer_.latest_outputs()[1]->current_mode()->size());
-
-  // Also test that there are 2 modes (instead of the initial one) in the
-  // snapshot that was passed to the observer (http://crbug.com/289159).
-  DisplaySnapshot* state = observer_.latest_outputs()[0];
-  ASSERT_EQ(2UL, state->modes().size());
-}
 
 TEST_F(DisplayConfiguratorTest, ContentProtection) {
   Init(false);
@@ -1816,6 +1769,174 @@ TEST_F(DisplayConfiguratorTest, SuspendResumeWithMultipleDisplays) {
             configurator_.current_power_state());
   EXPECT_EQ(MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED,
             configurator_.display_state());
+}
+
+class DisplayConfiguratorMultiMirroringTest : public DisplayConfiguratorTest {
+ public:
+  DisplayConfiguratorMultiMirroringTest() = default;
+  ~DisplayConfiguratorMultiMirroringTest() override = default;
+
+  void SetUp() override {
+    configurator_.set_is_multi_mirroring_enabled_for_test(true);
+    DisplayConfiguratorTest::SetUp();
+  }
+
+  // Test that setting mirror mode with current outputs, all displays are set to
+  // expected mirror mode.
+  void TestHardwareMirrorModeExist(
+      std::unique_ptr<DisplayMode> expected_mirror_mode) {
+    UpdateOutputs(3, true);
+    log_->GetActionsAndClear();
+    observer_.Reset();
+    configurator_.SetDisplayMode(MULTIPLE_DISPLAY_STATE_DUAL_MIRROR);
+    EXPECT_EQ(
+        JoinActions(GetCrtcAction(*outputs_[0], expected_mirror_mode.get(),
+                                  gfx::Point(0, 0))
+                        .c_str(),
+                    GetCrtcAction(*outputs_[1], expected_mirror_mode.get(),
+                                  gfx::Point(0, 0))
+                        .c_str(),
+                    GetCrtcAction(*outputs_[2], expected_mirror_mode.get(),
+                                  gfx::Point(0, 0))
+                        .c_str(),
+                    nullptr),
+        log_->GetActionsAndClear());
+    EXPECT_FALSE(mirroring_controller_.SoftwareMirroringEnabled());
+    EXPECT_EQ(1, observer_.num_changes());
+  }
+
+  // Test that setting mirror mode with current outputs, no matching mirror mode
+  // is found.
+  void TestHardwareMirrorModeNotExist() {
+    UpdateOutputs(3, true);
+    log_->GetActionsAndClear();
+    observer_.Reset();
+    configurator_.SetDisplayMode(MULTIPLE_DISPLAY_STATE_DUAL_MIRROR);
+    EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
+    EXPECT_TRUE(mirroring_controller_.SoftwareMirroringEnabled());
+    EXPECT_EQ(1, observer_.num_changes());
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DisplayConfiguratorMultiMirroringTest);
+};
+
+TEST_F(DisplayConfiguratorMultiMirroringTest,
+       FindMirrorModeWithInternalDisplay) {
+  // Initialize with one internal display and two external displays.
+  outputs_[0] = FakeDisplaySnapshot::Builder()
+                    .SetId(kDisplayIds[0])
+                    .SetType(DISPLAY_CONNECTION_TYPE_INTERNAL)
+                    .SetNativeMode(MakeDisplayMode(1920, 1600, false, 60.0))
+                    .AddMode(MakeDisplayMode(1920, 1600, false, 60.0))
+                    .AddMode(MakeDisplayMode(1920, 1200, false, 60.0))
+                    .AddMode(MakeDisplayMode(1920, 1080, true, 60.0))
+                    .AddMode(MakeDisplayMode(1440, 900, true, 60.0))
+                    .Build();
+  outputs_[1] =
+      FakeDisplaySnapshot::Builder()
+          .SetId(kDisplayIds[1])
+          .SetType(DISPLAY_CONNECTION_TYPE_HDMI)
+          .SetNativeMode(MakeDisplayMode(1920, 1200, true, 60.0))
+          .AddMode(MakeDisplayMode(1920, 1200, true, 60.0))  // same AR
+          .AddMode(MakeDisplayMode(1920, 1080, true, 60.0))
+          .AddMode(MakeDisplayMode(1680, 1050, false, 60.0))  // same AR
+          .AddMode(MakeDisplayMode(1440, 900, true, 60.0))    // same AR
+          .AddMode(MakeDisplayMode(500, 500, false, 60.0))
+          .Build();
+  outputs_[2] =
+      FakeDisplaySnapshot::Builder()
+          .SetId(kDisplayIds[2])
+          .SetType(DISPLAY_CONNECTION_TYPE_HDMI)
+          .SetNativeMode(MakeDisplayMode(1920, 1200, false, 60.0))
+          .AddMode(MakeDisplayMode(1920, 1200, false, 60.0))  // same AR
+          .AddMode(MakeDisplayMode(1920, 1080, true, 60.0))
+          .AddMode(MakeDisplayMode(1680, 1050, false, 60.0))  // same AR
+          .AddMode(MakeDisplayMode(1440, 900, true, 60.0))    // same AR
+          .Build();
+
+  // Find an exactly matching mirror mode while preserving aspect.
+  TestHardwareMirrorModeExist(MakeDisplayMode(1440, 900, true, 60.0));
+
+  // Find an exactly matching mirror mode while not preserving aspect.
+  outputs_[2] =
+      FakeDisplaySnapshot::Builder()
+          .SetId(kDisplayIds[2])
+          .SetType(DISPLAY_CONNECTION_TYPE_HDMI)
+          .SetNativeMode(MakeDisplayMode(1920, 1200, false, 60.0))
+          .AddMode(MakeDisplayMode(1920, 1200, false, 60.0))  // same AR
+          .AddMode(MakeDisplayMode(1920, 1080, true, 60.0))
+          .Build();
+  TestHardwareMirrorModeExist(MakeDisplayMode(1920, 1080, true, 60.0));
+
+  // Cannot find a matching mirror mode, so enable software mirroring.
+  outputs_[2] =
+      FakeDisplaySnapshot::Builder()
+          .SetId(kDisplayIds[2])
+          .SetType(DISPLAY_CONNECTION_TYPE_HDMI)
+          .SetNativeMode(MakeDisplayMode(1920, 1200, false, 60.0))
+          .AddMode(MakeDisplayMode(1920, 1200, false, 60.0))  // same AR
+          .AddMode(MakeDisplayMode(500, 500, true, 60.0))
+          .Build();
+  TestHardwareMirrorModeNotExist();
+}
+
+TEST_F(DisplayConfiguratorMultiMirroringTest,
+       FindMirrorModeWithoutInternalDisplay) {
+  // Initialize with 3 external displays.
+  outputs_[0] =
+      FakeDisplaySnapshot::Builder()
+          .SetId(kDisplayIds[1])
+          .SetType(DISPLAY_CONNECTION_TYPE_HDMI)
+          .SetNativeMode(MakeDisplayMode(1920, 1200, true, 60.0))
+          .AddMode(MakeDisplayMode(1920, 1200, true, 60.0))  // same AR
+          .AddMode(MakeDisplayMode(1920, 1080, false, 60.0))
+          .AddMode(MakeDisplayMode(1680, 1050, true, 60.0))  // same AR
+          .Build();
+  outputs_[1] =
+      FakeDisplaySnapshot::Builder()
+          .SetId(kDisplayIds[2])
+          .SetType(DISPLAY_CONNECTION_TYPE_HDMI)
+          .SetNativeMode(MakeDisplayMode(1920, 1200, false, 60.0))
+          .AddMode(MakeDisplayMode(1920, 1200, false, 60.0))  // same AR
+          .AddMode(MakeDisplayMode(1920, 1080, false, 60.0))
+          .AddMode(MakeDisplayMode(1680, 1050, true, 60.0))  // same AR
+          .Build();
+  outputs_[2] =
+      FakeDisplaySnapshot::Builder()
+          .SetId(kDisplayIds[2])
+          .SetType(DISPLAY_CONNECTION_TYPE_HDMI)
+          .SetNativeMode(MakeDisplayMode(1920, 1200, false, 60.0))
+          .AddMode(MakeDisplayMode(1920, 1200, false, 60.0))  // same AR
+          .AddMode(MakeDisplayMode(1920, 1080, false, 60.0))
+          .AddMode(MakeDisplayMode(1680, 1050, true, 60.0))  // same AR
+          .Build();
+
+  // Find an exactly matching mirror mode while preserving aspect.
+  TestHardwareMirrorModeExist(MakeDisplayMode(1680, 1050, true, 60.0));
+
+  // Find an exactly matching mirror mode while not preserving aspect.
+  outputs_[2] =
+      FakeDisplaySnapshot::Builder()
+          .SetId(kDisplayIds[0])
+          .SetType(DISPLAY_CONNECTION_TYPE_HDMI)
+          .SetNativeMode(MakeDisplayMode(1920, 1600, false, 60.0))
+          .AddMode(MakeDisplayMode(1920, 1600, false, 60.0))  // same AR
+          .AddMode(MakeDisplayMode(1920, 1200, false, 60.0))
+          .AddMode(MakeDisplayMode(1920, 1080, false, 60.0))
+          .Build();
+  TestHardwareMirrorModeExist(MakeDisplayMode(1920, 1080, false, 60.0));
+
+  // Cannot find a matching mirror mode, so enable software mirroring.
+  outputs_[2] =
+      FakeDisplaySnapshot::Builder()
+          .SetId(kDisplayIds[0])
+          .SetType(DISPLAY_CONNECTION_TYPE_HDMI)
+          .SetNativeMode(MakeDisplayMode(1920, 1600, false, 60.0))
+          .AddMode(MakeDisplayMode(1920, 1600, false, 60.0))  // same AR
+          .AddMode(MakeDisplayMode(1920, 1200, false, 60.0))
+          .Build();
+  TestHardwareMirrorModeNotExist();
 }
 
 }  // namespace test
