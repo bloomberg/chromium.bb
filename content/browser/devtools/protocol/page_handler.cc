@@ -682,6 +682,7 @@ Response PageHandler::BringToFront() {
   WebContentsImpl* wc = GetWebContents();
   if (wc) {
     wc->Activate();
+    wc->Focus();
     return Response::OK();
   }
   return Response::InternalError();
