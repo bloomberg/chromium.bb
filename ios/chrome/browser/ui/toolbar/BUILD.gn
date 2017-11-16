@@ -5,6 +5,8 @@
 source_set("toolbar") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "legacy_toolbar_coordinator.h",
+    "legacy_toolbar_coordinator.mm",
     "new_tab_button.h",
     "new_tab_button.mm",
     "omnibox_focuser.h",
@@ -13,8 +15,6 @@ source_set("toolbar") {
     "toolbar_controller+protected.h",
     "toolbar_controller.h",
     "toolbar_controller.mm",
-    "toolbar_coordinator.h",
-    "toolbar_coordinator.mm",
     "toolbar_model_delegate_ios.h",
     "toolbar_model_delegate_ios.mm",
     "toolbar_model_impl_ios.h",
