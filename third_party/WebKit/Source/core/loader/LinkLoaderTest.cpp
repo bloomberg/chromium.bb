@@ -356,7 +356,7 @@ class ModulePreloadTestModulator final : public DummyModulator {
 
     EXPECT_EQ(KURL(NullURL(), params_->href), request.Url());
     EXPECT_EQ(params_->nonce, request.Options().Nonce());
-    EXPECT_EQ(kParserInserted, request.Options().ParserState());
+    EXPECT_EQ(kNotParserInserted, request.Options().ParserState());
     EXPECT_EQ(params_->expected_credentials_mode,
               request.Options().CredentialsMode());
     EXPECT_EQ(AtomicString(), request.GetReferrer());
