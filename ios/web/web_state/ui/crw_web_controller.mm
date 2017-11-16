@@ -1405,33 +1405,35 @@ registerLoadRequestForURL:(const GURL&)requestURL
   }
 
   // Add or update pending url.
-  bool isRendererInitiated = true;
-  web::NavigationItem* pendingItem =
-      self.navigationManagerImpl->GetPendingItem();
-  if (pendingItem) {
+  if (self.navigationManagerImpl->GetPendingItem()) {
     // Update the existing pending entry.
     // Typically on PAGE_TRANSITION_CLIENT_REDIRECT.
     self.navigationManagerImpl->UpdatePendingItemUrl(requestURL);
-    isRendererInitiated = static_cast<web::NavigationItemImpl*>(pendingItem)
-                              ->NavigationInitiationType() ==
-                          web::NavigationInitiationType::RENDERER_INITIATED;
   } else {
-    // A new session history entry needs to be created.
     self.navigationManagerImpl->AddPendingItem(
         requestURL, referrer, transition,
         web::NavigationInitiationType::RENDERER_INITIATED,
         web::NavigationManager::UserAgentOverrideOption::INHERIT);
   }
+
+  web::NavigationItem* item = self.navigationManagerImpl->GetPendingItem();
+  bool isRendererInitiated =
+      item ? (static_cast<web::NavigationItemImpl*>(item)
+                  ->NavigationInitiationType() ==
+              web::NavigationInitiationType::RENDERER_INITIATED)
+           : true;
   std::unique_ptr<web::NavigationContextImpl> context =
       web::NavigationContextImpl::CreateNavigationContext(
           _webStateImpl, requestURL, transition, isRendererInitiated);
 
-  web::NavigationItem* item = self.navigationManagerImpl->GetPendingItem();
-  // TODO(crbug.com/676129): AddPendingItem does not always create a pending
-  // item. Remove this workaround once the bug is fixed.
+  // TODO(crbug.com/676129): LegacyNavigationManagerImpl::AddPendingItem does
+  // not create a pending item in case of reload. Remove this workaround once
+  // the bug is fixed or WKBasedNavigationManager is fully adopted.
   if (!item) {
+    DCHECK(!web::GetWebClient()->IsSlimNavigationManagerEnabled());
     item = self.navigationManagerImpl->GetLastCommittedItem();
   }
+
   context->SetNavigationItemUniqueID(item->GetUniqueID());
   context->SetIsPost([self isCurrentNavigationItemPOST]);
   context->SetIsSameDocument(sameDocumentNavigation);
