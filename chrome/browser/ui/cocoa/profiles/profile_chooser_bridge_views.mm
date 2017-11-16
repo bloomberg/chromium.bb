@@ -49,9 +49,12 @@ std::unique_ptr<ProfileChooserViewBridge> ShowProfileChooserViews(
   anchor_rect.Inset(kBubbleInsets);
   gfx::NativeView anchor_window =
       platform_util::GetViewForWindow(browser->window()->GetNativeWindow());
+  // Select the first other profile if the menu is opened by the keyboard
+  // shortcut.
+  bool is_source_keyboard = [[NSApp currentEvent] type] == NSKeyDown;
   ProfileChooserView::ShowBubble(
       bubble_view_mode, signin::ManageAccountsParams(), access_point, nullptr,
-      anchor_window, anchor_rect, browser, false);
+      anchor_window, anchor_rect, browser, is_source_keyboard);
   ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::ICON_AVATAR_BUBBLE);
   std::unique_ptr<ProfileChooserViewBridge> bridge(new ProfileChooserViewBridge(
       avatar_base_controller, ProfileChooserView::GetCurrentBubbleWidget()));
