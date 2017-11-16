@@ -66,7 +66,8 @@ class SoftwareBrowserCompositorOutputSurfaceTest : public testing::Test {
  public:
   SoftwareBrowserCompositorOutputSurfaceTest()
       : begin_frame_source_(std::make_unique<viz::DelayBasedTimeSource>(
-            message_loop_.task_runner().get())) {}
+                                message_loop_.task_runner().get()),
+                            viz::BeginFrameSource::kNotRestartableId) {}
   ~SoftwareBrowserCompositorOutputSurfaceTest() override = default;
 
   void SetUp() override;

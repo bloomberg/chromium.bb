@@ -272,9 +272,10 @@ class SchedulerTest : public testing::Test {
     fake_external_begin_frame_source_.reset(
         new viz::FakeExternalBeginFrameSource(1.0, false));
     fake_external_begin_frame_source_->SetClient(client_.get());
-    synthetic_frame_source_.reset(new viz::DelayBasedBeginFrameSource(
+    synthetic_frame_source_ = std::make_unique<viz::DelayBasedBeginFrameSource>(
         std::make_unique<viz::FakeDelayBasedTimeSource>(now_src_.get(),
-                                                        task_runner_.get())));
+                                                        task_runner_.get()),
+        viz::BeginFrameSource::kNotRestartableId);
     switch (bfs_type) {
       case EXTERNAL_BFS:
         frame_source = fake_external_begin_frame_source_.get();

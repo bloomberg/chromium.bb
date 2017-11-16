@@ -14,7 +14,8 @@ CompositorExternalBeginFrameSource::CompositorExternalBeginFrameSource(
     CompositorForwardingMessageFilter* filter,
     IPC::SyncMessageFilter* sync_message_filter,
     int routing_id)
-    : external_begin_frame_source_(this),
+    : BeginFrameSource(kNotRestartableId),
+      external_begin_frame_source_(this),
       begin_frame_source_filter_(filter),
       message_sender_(sync_message_filter),
       routing_id_(routing_id) {

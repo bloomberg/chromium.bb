@@ -27,7 +27,8 @@ using base::android::ScopedJavaLocalRef;
 class WindowAndroid::WindowBeginFrameSource : public viz::BeginFrameSource {
  public:
   explicit WindowBeginFrameSource(WindowAndroid* window)
-      : window_(window),
+      : BeginFrameSource(kNotRestartableId),
+        window_(window),
         observers_(
             base::ObserverList<viz::BeginFrameObserver>::NOTIFY_EXISTING_ONLY),
         observer_count_(0),

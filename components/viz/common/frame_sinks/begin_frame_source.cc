@@ -22,7 +22,16 @@ namespace viz {
 namespace {
 // kDoubleTickDivisor prevents the SyntheticBFS from sending BeginFrames too
 // often to an observer.
-static const double kDoubleTickDivisor = 2.0;
+constexpr double kDoubleTickDivisor = 2.0;
+
+base::AtomicSequenceNumber g_next_source_id;
+
+// Generates a source_id with upper 32 bits from |restart_id| and lower 32 bits
+// from an atomic sequence.
+uint64_t GenerateSourceId(uint32_t restart_id) {
+  return static_cast<uint64_t>(restart_id) << 32 | g_next_source_id.GetNext();
+}
+
 }  // namespace
 
 // BeginFrameObserverBase -------------------------------------------------
@@ -59,13 +68,12 @@ void BeginFrameObserverBase::AsValueInto(
 }
 
 // BeginFrameSource -------------------------------------------------------
-namespace {
-static base::AtomicSequenceNumber g_next_source_id;
-}  // namespace
 
-// TODO(kylechar): Use the higher 32 bits of |source_id_| for process restart
-// id.
-BeginFrameSource::BeginFrameSource() : source_id_(g_next_source_id.GetNext()) {}
+// static
+constexpr uint32_t BeginFrameSource::kNotRestartableId;
+
+BeginFrameSource::BeginFrameSource(uint32_t restart_id)
+    : source_id_(GenerateSourceId(restart_id)) {}
 
 BeginFrameSource::~BeginFrameSource() = default;
 
@@ -76,17 +84,24 @@ void BeginFrameSource::AsValueInto(
 }
 
 // StubBeginFrameSource ---------------------------------------------------
+StubBeginFrameSource::StubBeginFrameSource()
+    : BeginFrameSource(kNotRestartableId) {}
+
 bool StubBeginFrameSource::IsThrottled() const {
   return true;
 }
 
 // SyntheticBeginFrameSource ----------------------------------------------
+SyntheticBeginFrameSource::SyntheticBeginFrameSource(uint32_t restart_id)
+    : BeginFrameSource(restart_id) {}
+
 SyntheticBeginFrameSource::~SyntheticBeginFrameSource() = default;
 
 // BackToBackBeginFrameSource ---------------------------------------------
 BackToBackBeginFrameSource::BackToBackBeginFrameSource(
     std::unique_ptr<DelayBasedTimeSource> time_source)
-    : time_source_(std::move(time_source)),
+    : SyntheticBeginFrameSource(kNotRestartableId),
+      time_source_(std::move(time_source)),
       next_sequence_number_(BeginFrameArgs::kStartingFrameNumber),
       weak_factory_(this) {
   time_source_->SetClient(this);
@@ -146,8 +161,10 @@ void BackToBackBeginFrameSource::OnTimerTick() {
 
 // DelayBasedBeginFrameSource ---------------------------------------------
 DelayBasedBeginFrameSource::DelayBasedBeginFrameSource(
-    std::unique_ptr<DelayBasedTimeSource> time_source)
-    : time_source_(std::move(time_source)),
+    std::unique_ptr<DelayBasedTimeSource> time_source,
+    uint32_t restart_id)
+    : SyntheticBeginFrameSource(restart_id),
+      time_source_(std::move(time_source)),
       next_sequence_number_(BeginFrameArgs::kStartingFrameNumber) {
   time_source_->SetClient(this);
 }
@@ -250,7 +267,7 @@ void DelayBasedBeginFrameSource::OnTimerTick() {
 // ExternalBeginFrameSource -----------------------------------------------
 ExternalBeginFrameSource::ExternalBeginFrameSource(
     ExternalBeginFrameSourceClient* client)
-    : client_(client) {
+    : BeginFrameSource(kNotRestartableId), client_(client) {
   DCHECK(client_);
 }
 
