@@ -116,6 +116,7 @@ class ASH_EXPORT WebNotificationTray
   FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayTest, PopupAndSystemTray);
   FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayTest, PopupAndAutoHideShelf);
   FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayTest, VisibleSmallIcon);
+  FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayTest, QuietModeIcon);
   FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayTest, CloseOnActivation);
 
   void UpdateTrayContent();
@@ -152,7 +153,8 @@ class ASH_EXPORT WebNotificationTray
   std::unique_ptr<message_center::UiController> message_center_ui_controller_;
   std::unique_ptr<WebNotificationBubbleWrapper> message_center_bubble_;
   std::unique_ptr<message_center::MessagePopupCollection> popup_collection_;
-  std::unique_ptr<WebNotificationImage> bell_icon_;
+  std::unique_ptr<views::View> bell_icon_;
+  std::unique_ptr<views::View> quiet_mode_icon_;
   std::unique_ptr<WebNotificationLabel> counter_;
 
   scoped_refptr<gfx::AnimationContainer> animation_container_ =
