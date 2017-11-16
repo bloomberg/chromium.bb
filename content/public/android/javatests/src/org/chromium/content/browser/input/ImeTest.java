@@ -17,6 +17,7 @@ import android.text.Spanned;
 import android.text.style.BackgroundColorSpan;
 import android.text.style.UnderlineSpan;
 import android.view.KeyEvent;
+import android.view.ViewConfiguration;
 import android.view.inputmethod.BaseInputConnection;
 import android.view.inputmethod.EditorInfo;
 
@@ -181,6 +182,9 @@ public class ImeTest {
         mRule.waitAndVerifyUpdateSelection(2, 3, 3, 2, 3);
 
         // Unexpected selection change occurs, e.g., the user clicks on an area.
+        // There was already one click during test setup; we have to wait out the double-tap
+        // timeout or the test will be flaky.
+        Thread.sleep(ViewConfiguration.getDoubleTapTimeout());
         DOMUtils.clickNode(mRule.getContentViewCore(), "textarea2");
         mRule.waitAndVerifyUpdateSelection(3, 5, 5, 2, 3);
         // Keyboard app finishes composition. We emulate this in TestInputMethodManagerWrapper.
