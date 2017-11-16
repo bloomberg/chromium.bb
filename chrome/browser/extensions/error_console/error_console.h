@@ -9,6 +9,8 @@
 #include <stdint.h>
 
 #include <memory>
+#include <set>
+#include <string>
 
 #include "base/macros.h"
 #include "base/observer_list.h"
