@@ -1842,49 +1842,6 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   crash_observer2.Wait();
 }
 
-// Ensure that renderer-side debug URLs don't take effect on crashed renderers,
-// even when going back/forward.
-// See https://crbug.com/477606.
-
-// This test is flaky on Android. crbug.com/585327
-#if defined(OS_ANDROID)
-#define MAYBE_IgnoreForwardToRendererDebugURLsWhenCrashed \
-    DISABLED_IgnoreForwardToRendererDebugURLsWhenCrashed
-#else
-#define MAYBE_IgnoreForwardToRendererDebugURLsWhenCrashed \
-    IgnoreForwardToRendererDebugURLsWhenCrashed
-#endif
-IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
-                       MAYBE_IgnoreForwardToRendererDebugURLsWhenCrashed) {
-  // Visit a WebUI page with bindings.
-  GURL webui_url = GURL(std::string(kChromeUIScheme) + "://" +
-                        std::string(kChromeUIGpuHost));
-  NavigateToURL(shell(), webui_url);
-  EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
-      shell()->web_contents()->GetMainFrame()->GetProcess()->GetID()));
-
-  // Visit a debug URL that manages to commit, then go back.
-  NavigateToURL(shell(), GURL(kChromeUIDumpURL));
-  TestNavigationObserver back_nav_load_observer(shell()->web_contents());
-  shell()->web_contents()->GetController().GoBack();
-  back_nav_load_observer.Wait();
-
-  // Crash the renderer of the WebUI page.
-  RenderProcessHostWatcher crash_observer(
-      shell()->web_contents(),
-      RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-  EXPECT_TRUE(
-      NavigateToURLAndExpectNoCommit(shell(), GURL(kChromeUICrashURL)));
-  crash_observer.Wait();
-
-  // Going forward with no live renderer should have no effect, and should not
-  // crash.
-  EXPECT_TRUE(shell()->web_contents()->GetController().CanGoForward());
-  shell()->web_contents()->GetController().GoForward();
-  EXPECT_FALSE(shell()->web_contents()->GetController().GetPendingEntry());
-  EXPECT_TRUE(shell()->web_contents()->GetController().CanGoForward());
-}
-
 // Ensure that pending_and_current_web_ui_ is cleared when a URL commits.
 // Otherwise it might get picked up by InitRenderView when granting bindings
 // to other RenderViewHosts.  See http://crbug.com/330811.

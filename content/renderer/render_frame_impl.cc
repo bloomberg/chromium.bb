@@ -854,45 +854,28 @@ NOINLINE void BadCastCrashIntentionally() {
 NOINLINE void MaybeTriggerAsanError(const GURL& url) {
   // NOTE(rogerm): We intentionally perform an invalid heap access here in
   //     order to trigger an Address Sanitizer (ASAN) error report.
-  const char kCrashDomain[] = "crash";
-  const char kHeapOverflow[] = "/heap-overflow";
-  const char kHeapUnderflow[] = "/heap-underflow";
-  const char kUseAfterFree[] = "/use-after-free";
-#if defined(SYZYASAN)
-  const char kCorruptHeapBlock[] = "/corrupt-heap-block";
-  const char kCorruptHeap[] = "/corrupt-heap";
-  const char kDcheck[] = "/dcheck";
-#endif
-
-  if (!url.DomainIs(kCrashDomain))
-    return;
-
-  if (!url.has_path())
-    return;
-
-  std::string crash_type(url.path());
-  if (crash_type == kHeapOverflow) {
+  if (url == kChromeUICrashHeapOverflowURL) {
     LOG(ERROR) << "Intentionally causing ASAN heap overflow"
                << " because user navigated to " << url.spec();
     base::debug::AsanHeapOverflow();
-  } else if (crash_type == kHeapUnderflow) {
+  } else if (url == kChromeUICrashHeapUnderflowURL) {
     LOG(ERROR) << "Intentionally causing ASAN heap underflow"
                << " because user navigated to " << url.spec();
     base::debug::AsanHeapUnderflow();
-  } else if (crash_type == kUseAfterFree) {
+  } else if (url == kChromeUICrashUseAfterFreeURL) {
     LOG(ERROR) << "Intentionally causing ASAN heap use-after-free"
                << " because user navigated to " << url.spec();
     base::debug::AsanHeapUseAfterFree();
 #if defined(SYZYASAN)
-  } else if (crash_type == kCorruptHeapBlock) {
+  } else if (url == kChromeUICrashCorruptHeapBlockURL) {
     LOG(ERROR) << "Intentionally causing ASAN corrupt heap block"
                << " because user navigated to " << url.spec();
     base::debug::AsanCorruptHeapBlock();
-  } else if (crash_type == kCorruptHeap) {
+  } else if (url == kChromeUICrashCorruptHeapURL) {
     LOG(ERROR) << "Intentionally causing ASAN corrupt heap"
                << " because user navigated to " << url.spec();
     base::debug::AsanCorruptHeap();
-  } else if (crash_type == kDcheck) {
+  } else if (url == kChromeUICrashDcheckURL) {
     LOG(ERROR) << "Intentionally DCHECKING because user navigated to "
                << url.spec();
 
@@ -902,9 +885,14 @@ NOINLINE void MaybeTriggerAsanError(const GURL& url) {
 }
 #endif  // ADDRESS_SANITIZER || SYZYASAN
 
-void MaybeHandleDebugURL(const GURL& url) {
+// Returns true if the URL is a debug URL, false otherwise. These URLs do not
+// commit, though they are intentionally left in the address bar above the
+// effect they cause (e.g., a sad tab).
+bool MaybeHandleDebugURL(const GURL& url) {
   if (!url.SchemeIs(kChromeUIScheme))
-    return;
+    return false;
+  bool is_debug_url =
+      IsRendererDebugURL(url) && !url.SchemeIs(url::kJavaScriptScheme);
   if (url == kChromeUIBadCastCrashURL) {
     LOG(ERROR) << "Intentionally crashing (with bad cast)"
                << " because user navigated to " << url.spec();
@@ -947,6 +935,7 @@ void MaybeHandleDebugURL(const GURL& url) {
 #if defined(ADDRESS_SANITIZER) || defined(SYZYASAN)
   MaybeTriggerAsanError(url);
 #endif  // ADDRESS_SANITIZER || SYZYASAN
+  return is_debug_url;
 }
 
 struct RenderFrameImpl::PendingFileChooser {
@@ -6262,6 +6251,18 @@ void RenderFrameImpl::NavigateInternal(
     base::Optional<URLLoaderFactoryBundle> subresource_loader_factories) {
   bool browser_side_navigation = IsBrowserSideNavigationEnabled();
 
+  // First, check if this is a Debug URL. If so, handle it and stop the
+  // navigation right away.
+  base::WeakPtr<RenderFrameImpl> weak_this = weak_factory_.GetWeakPtr();
+  if (MaybeHandleDebugURL(common_params.url)) {
+    // The browser expects the frame to be loading the requested URL. Inform it
+    // that the load stopped if needed, while leaving the debug URL visible in
+    // the address bar.
+    if (weak_this && frame_ && !frame_->IsLoading())
+      Send(new FrameHostMsg_DidStopLoading(routing_id_));
+    return;
+  }
+
   // PlzNavigate
   // Clear pending navigations which weren't sent to the browser because we
   // did not get a didStartProvisionalLoad() notification for them.
@@ -6508,16 +6509,14 @@ void RenderFrameImpl::NavigateInternal(
                   item_for_history_navigation, history_load_type,
                   is_client_redirect);
     } else {
-      // The load of the URL can result in this frame being removed. Use a
-      // WeakPtr as an easy way to detect whether this has occured. If so, this
-      // method should return immediately and not touch any part of the object,
-      // otherwise it will result in a use-after-free bug.
-      base::WeakPtr<RenderFrameImpl> weak_this = weak_factory_.GetWeakPtr();
-
       // Load the request.
       frame_->Load(request, load_type, item_for_history_navigation,
                    history_load_type, is_client_redirect);
 
+      // The load of the URL can result in this frame being removed. Use a
+      // WeakPtr as an easy way to detect whether this has occured. If so, this
+      // method should return immediately and not touch any part of the object,
+      // otherwise it will result in a use-after-free bug.
       if (!weak_this)
         return;
     }
@@ -6655,8 +6654,6 @@ void RenderFrameImpl::PrepareRenderViewForNavigation(
     const GURL& url,
     const RequestNavigationParams& request_params) {
   DCHECK(render_view_->webview());
-
-  MaybeHandleDebugURL(url);
 
   if (is_main_frame_) {
     for (auto& observer : render_view_->observers_)

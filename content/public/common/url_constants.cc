@@ -58,6 +58,17 @@ const char kChromeUIPpapiFlashHangURL[] = "chrome://ppapiflashhang/";
 #if defined(OS_ANDROID)
 const char kChromeUIGpuJavaCrashURL[] = "chrome://gpu-java-crash/";
 #endif
+#if defined(ADDRESS_SANITIZER) || defined(SYZYASAN)
+const char kChromeUICrashHeapOverflowURL[] = "chrome://crash/heap-overflow";
+const char kChromeUICrashHeapUnderflowURL[] = "chrome://crash/heap-underflow";
+const char kChromeUICrashUseAfterFreeURL[] = "chrome://crash/use-after-free";
+#endif
+#if defined(SYZYASAN)
+const char kChromeUICrashCorruptHeapBlockURL[] =
+    "chrome://crash/corrupt-heap-block";
+const char kChromeUICrashCorruptHeapURL[] = "chrome://crash/corrupt-heap";
+const char kChromeUICrashDcheckURL[] = "chrome://crash/dcheck";
+#endif
 
 // This error URL is loaded in normal web renderer processes, so it should not
 // have a chrome:// scheme that might let it be confused with a WebUI page.

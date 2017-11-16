@@ -825,12 +825,21 @@ bool NavigationSimulator::SimulateBrowserInitiatedStart() {
              !IsURLHandledByNetworkStack(handle_->GetURL()));
       same_document_ = handle_->IsSameDocument();
       return true;
+    } else if (IsRendererDebugURL(navigation_url_)) {
+      // There is no DidStartNavigation for renderer-debug URLs and the
+      // NavigationHandle has already been passed to the main frame for commit.
+      // Register it now.
+      handle_ = web_contents_->GetMainFrame()->navigation_handle();
+
+      // A navigation to a renderer-debug URL cannot commit. Simulate the
+      // renderer process aborting it.
+      web_contents_->GetMainFrame()->OnMessageReceived(
+          FrameHostMsg_DidStopLoading(
+              web_contents_->GetMainFrame()->GetRoutingID()));
+      state_ = FAILED;
+      return false;
     }
     return false;
-  } else if (IsRendererDebugURL(navigation_url_)) {
-    // There will be no DidStartNavigation for renderer-debug URLs. Register the
-    // NavigationHandle now.
-    handle_ = request->navigation_handle();
   }
 
   DCHECK_EQ(handle_, request->navigation_handle());

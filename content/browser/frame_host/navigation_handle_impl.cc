@@ -35,6 +35,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/resource_request_body.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/common/url_utils.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/redirect_info.h"
 #include "url/gurl.h"

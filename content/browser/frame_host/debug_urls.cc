@@ -217,21 +217,4 @@ bool HandleDebugURL(const GURL& url, ui::PageTransition transition) {
   return false;
 }
 
-bool IsRendererDebugURL(const GURL& url) {
-  if (!url.is_valid())
-    return false;
-
-  if (url.SchemeIs(url::kJavaScriptScheme))
-    return true;
-
-  return url == kChromeUICheckCrashURL ||
-         url == kChromeUIBadCastCrashURL ||
-         url == kChromeUICrashURL ||
-         url == kChromeUIDumpURL ||
-         url == kChromeUIKillURL ||
-         url == kChromeUIHangURL ||
-         url == kChromeUIShorthangURL ||
-         url == kChromeUIMemoryExhaustURL;
-}
-
 }  // namespace content

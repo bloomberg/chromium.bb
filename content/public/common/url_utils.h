@@ -22,7 +22,13 @@ CONTENT_EXPORT bool IsSavableURL(const GURL& url);
 // Helper function to determine if the navigation to |url| should make a request
 // to the network stack. A request should not be sent for JavaScript URLs or
 // about:blank. In these cases, no request needs to be sent.
-bool CONTENT_EXPORT IsURLHandledByNetworkStack(const GURL& url);
+CONTENT_EXPORT bool IsURLHandledByNetworkStack(const GURL& url);
+
+// Returns whether the given url is either a debugging url handled in the
+// renderer process, such as one that crashes or hangs the renderer, or a
+// javascript: URL that operates on the current page in the renderer.  Such URLs
+// do not represent actual navigations and can be loaded in any SiteInstance.
+CONTENT_EXPORT bool IsRendererDebugURL(const GURL& url);
 
 // Helper function to determine if a request for |url| refers to a network
 // resource (as opposed to a local browser resource like files or blobs). Used
