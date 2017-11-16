@@ -448,8 +448,12 @@ static INLINE int get_nz_map_ctx(const uint8_t *const levels,
                                  const TX_TYPE tx_type) {
 #endif
 #if CONFIG_LV_MAP_MULTI
-  if (is_eob)
-    return scan[scan_idx] == 0 ? SIG_COEF_CONTEXTS - 2 : SIG_COEF_CONTEXTS - 1;
+  if (is_eob) {
+    if (scan_idx == 0) return SIG_COEF_CONTEXTS - 4;
+    if (scan_idx <= (height << bwl) / 8) return SIG_COEF_CONTEXTS - 3;
+    if (scan_idx <= (height << bwl) / 4) return SIG_COEF_CONTEXTS - 2;
+    return SIG_COEF_CONTEXTS - 1;
+  }
 #endif
   const int coeff_idx = scan[scan_idx];
   const int row = coeff_idx >> bwl;
