@@ -60,6 +60,15 @@ ZUC_TEST(timespec_test, timespec_to_nsec)
 	ZUC_ASSERT_EQ(timespec_to_nsec(&a), (NSEC_PER_SEC * 4ULL) + 4);
 }
 
+ZUC_TEST(timespec_test, timespec_to_usec)
+{
+	struct timespec a;
+
+	a.tv_sec = 4;
+	a.tv_nsec = 4000;
+	ZUC_ASSERT_EQ(timespec_to_usec(&a), (4000000ULL) + 4);
+}
+
 ZUC_TEST(timespec_test, timespec_to_msec)
 {
 	struct timespec a;
@@ -163,6 +172,69 @@ ZUC_TEST(timespec_test, timespec_sub_to_msec)
 	b.tv_sec = 2;
 	b.tv_nsec = 1000000L;
 	ZUC_ASSERT_EQ((998 * 1000) + 1, timespec_sub_to_msec(&a, &b));
+}
+
+ZUC_TEST(timespec_test, timespec_from_nsec)
+{
+	struct timespec a;
+
+	timespec_from_nsec(&a, 0);
+	ZUC_ASSERT_EQ(0, a.tv_sec);
+	ZUC_ASSERT_EQ(0, a.tv_nsec);
+
+	timespec_from_nsec(&a, NSEC_PER_SEC - 1);
+	ZUC_ASSERT_EQ(0, a.tv_sec);
+	ZUC_ASSERT_EQ(NSEC_PER_SEC - 1, a.tv_nsec);
+
+	timespec_from_nsec(&a, NSEC_PER_SEC);
+	ZUC_ASSERT_EQ(1, a.tv_sec);
+	ZUC_ASSERT_EQ(0, a.tv_nsec);
+
+	timespec_from_nsec(&a, (5L * NSEC_PER_SEC) + 1);
+	ZUC_ASSERT_EQ(5, a.tv_sec);
+	ZUC_ASSERT_EQ(1, a.tv_nsec);
+}
+
+ZUC_TEST(timespec_test, timespec_from_usec)
+{
+	struct timespec a;
+
+	timespec_from_usec(&a, 0);
+	ZUC_ASSERT_EQ(0, a.tv_sec);
+	ZUC_ASSERT_EQ(0, a.tv_nsec);
+
+	timespec_from_usec(&a, 999999);
+	ZUC_ASSERT_EQ(0, a.tv_sec);
+	ZUC_ASSERT_EQ(999999 * 1000, a.tv_nsec);
+
+	timespec_from_usec(&a, 1000000);
+	ZUC_ASSERT_EQ(1, a.tv_sec);
+	ZUC_ASSERT_EQ(0, a.tv_nsec);
+
+	timespec_from_usec(&a, 5000001);
+	ZUC_ASSERT_EQ(5, a.tv_sec);
+	ZUC_ASSERT_EQ(1000, a.tv_nsec);
+}
+
+ZUC_TEST(timespec_test, timespec_from_msec)
+{
+	struct timespec a;
+
+	timespec_from_msec(&a, 0);
+	ZUC_ASSERT_EQ(0, a.tv_sec);
+	ZUC_ASSERT_EQ(0, a.tv_nsec);
+
+	timespec_from_msec(&a, 999);
+	ZUC_ASSERT_EQ(0, a.tv_sec);
+	ZUC_ASSERT_EQ(999 * 1000000, a.tv_nsec);
+
+	timespec_from_msec(&a, 1000);
+	ZUC_ASSERT_EQ(1, a.tv_sec);
+	ZUC_ASSERT_EQ(0, a.tv_nsec);
+
+	timespec_from_msec(&a, 5001);
+	ZUC_ASSERT_EQ(5, a.tv_sec);
+	ZUC_ASSERT_EQ(1000000, a.tv_nsec);
 }
 
 ZUC_TEST(timespec_test, timespec_is_zero)

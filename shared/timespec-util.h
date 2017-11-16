@@ -134,6 +134,53 @@ timespec_sub_to_msec(const struct timespec *a, const struct timespec *b)
 	return timespec_sub_to_nsec(a, b) / 1000000;
 }
 
+/* Convert timespec to microseconds
+ *
+ * \param a timespec
+ * \return microseconds
+ *
+ * Rounding to integer microseconds happens always down (floor()).
+ */
+static inline int64_t
+timespec_to_usec(const struct timespec *a)
+{
+	return (int64_t)a->tv_sec * 1000000 + a->tv_nsec / 1000;
+}
+
+/* Convert nanoseconds to timespec
+ *
+ * \param a timespec
+ * \param b nanoseconds
+ */
+static inline void
+timespec_from_nsec(struct timespec *a, int64_t b)
+{
+	a->tv_sec = b / NSEC_PER_SEC;
+	a->tv_nsec = b % NSEC_PER_SEC;
+}
+
+/* Convert microseconds to timespec
+ *
+ * \param a timespec
+ * \param b microseconds
+ */
+static inline void
+timespec_from_usec(struct timespec *a, int64_t b)
+{
+	timespec_from_nsec(a, b * 1000);
+}
+
+/* Convert milliseconds to timespec
+ *
+ * \param a timespec
+ * \param b milliseconds
+ */
+static inline void
+timespec_from_msec(struct timespec *a, int64_t b)
+{
+	timespec_from_nsec(a, b * 1000000);
+}
+
 /* Check if a timespec is zero
  *
  * \param a timespec
