@@ -411,7 +411,7 @@ TEST_F(WindowSizerAshTest, PlaceNewWindows) {
   // existing windows.
   Browser::CreateParams native_params(profile.get(), true);
   std::unique_ptr<Browser> browser(
-      chrome::CreateBrowserWithTestWindowForParams(&native_params));
+      CreateBrowserWithTestWindowForParams(&native_params));
 
   // Creating a popup handler here to make sure it does not interfere with the
   // existing windows.
@@ -477,7 +477,7 @@ TEST_F(WindowSizerAshTest, PlaceNewBrowserWindowOnEmptyDesktop) {
   std::unique_ptr<TestingProfile> profile(new TestingProfile());
   Browser::CreateParams native_params(profile.get(), true);
   std::unique_ptr<Browser> browser(
-      chrome::CreateBrowserWithTestWindowForParams(&native_params));
+      CreateBrowserWithTestWindowForParams(&native_params));
 
   // A common screen size for Chrome OS devices where this behavior is
   // desirable.
@@ -765,7 +765,7 @@ TEST_F(WindowSizerAshTest, DefaultStateBecomesMaximized) {
   std::unique_ptr<TestingProfile> profile(new TestingProfile());
   Browser::CreateParams native_params(profile.get(), true);
   std::unique_ptr<Browser> browser(
-      chrome::CreateBrowserWithTestWindowForParams(&native_params));
+      CreateBrowserWithTestWindowForParams(&native_params));
 
   gfx::Rect display_bounds =
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds();

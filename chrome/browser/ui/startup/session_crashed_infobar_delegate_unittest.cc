@@ -59,7 +59,7 @@ TEST_F(SessionCrashedInfoBarDelegateUnitTest, DetachingTabWithCrashedInfoBar) {
   // Create a browser which we can close during the test.
   Browser::CreateParams params(browser()->profile(), true);
   std::unique_ptr<Browser> first_browser(
-      chrome::CreateBrowserWithTestWindowForParams(&params));
+      CreateBrowserWithTestWindowForParams(&params));
   AddTab(first_browser.get(), GURL(chrome::kChromeUINewTabURL));
 
   // Attach the crashed infobar to it.
@@ -77,7 +77,7 @@ TEST_F(SessionCrashedInfoBarDelegateUnitTest, DetachingTabWithCrashedInfoBar) {
 
   // Open another browser.
   std::unique_ptr<Browser> opened_browser(
-      chrome::CreateBrowserWithTestWindowForParams(&params));
+      CreateBrowserWithTestWindowForParams(&params));
 
   // Move the tab which is destroying the crash info bar to the new browser.
   tab_strip->DetachWebContentsAt(0);
