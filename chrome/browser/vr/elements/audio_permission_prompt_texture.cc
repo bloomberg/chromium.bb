@@ -21,23 +21,21 @@ namespace vr {
 
 namespace {
 
-constexpr float kWidth = 0.552f;
-constexpr float kHeight = 0.2f;
-constexpr float kButtonWidth = 0.162f;
-constexpr float kButtonHeight = 0.066f;
-constexpr float kPromptTextButtonSeperatorHeight = 0.04f;
-constexpr float kButtonsSeperatorWidth = 0.01f;
-constexpr float kButtonRadiusFactor = 0.006f;
-constexpr float kFontSizePromptText = 0.027f;
+constexpr float kWidth = 0.63f;
+constexpr float kHeight = 0.218f;
+constexpr float kButtonHeight = 0.064f;
+constexpr float kCornerRadius = 0.006f;
+constexpr float kPadding = 0.028;
+constexpr float kIconSize = 0.042;
+constexpr float kFontSizePromptText = 0.028f;
+constexpr float kTextTopMargin = 0.007f;
+constexpr float kTextLeftMargin = 0.010f;
+constexpr float kVerticalGap = 0.056f;
+constexpr float kButtonsDistance = 0.014f;
 constexpr float kFontSizePromptButtonText = 0.024f;
+constexpr float kButtonRadius = 0.0035f;
 
-constexpr float kScaleFactor = 60.0f;
-constexpr float kCornerRadius = 0.06f * kScaleFactor;
-constexpr float kTextBorder = 0.16 * kScaleFactor;
-constexpr float kIconBorder = 0.32 * kScaleFactor;
-constexpr float kIconWidth = 0.96 * kScaleFactor;
-constexpr float kTextHorizontalBorder = 0.32 * kScaleFactor;
-constexpr float kIconSize = 0.48 * kScaleFactor;
+constexpr float kButtonWidth = 0.162f;
 
 }  // namespace
 
@@ -50,6 +48,7 @@ void AudioPermissionPromptTexture::Draw(SkCanvas* sk_canvas,
   size_.set_width(texture_size.width());
   size_.set_height(texture_size.height());
 
+  // background
   cc::SkiaPaintCanvas paint_canvas(sk_canvas);
   gfx::Canvas gfx_canvas(&paint_canvas, 1.0f);
   gfx::Canvas* canvas = &gfx_canvas;
@@ -57,12 +56,13 @@ void AudioPermissionPromptTexture::Draw(SkCanvas* sk_canvas,
   SkPaint back_paint;
   back_paint.setColor(color_scheme().audio_permission_prompt_background);
   sk_canvas->drawRoundRect(SkRect::MakeWH(size_.width(), size_.height()),
-                           kCornerRadius, kCornerRadius, back_paint);
+                           ToPixels(kCornerRadius), ToPixels(kCornerRadius),
+                           back_paint);
 
   // Icon
-  gfx::PointF icon_location(kIconBorder, kIconBorder);
+  gfx::PointF icon_location(ToPixels(kPadding), ToPixels(kPadding));
   VectorIcon::DrawVectorIcon(
-      canvas, vector_icons::kMicrophoneIcon, kIconSize, icon_location,
+      canvas, vector_icons::kMicrophoneIcon, ToPixels(kIconSize), icon_location,
       color_scheme().audio_permission_prompt_icon_foreground);
 
   // Prompt description.
@@ -75,9 +75,10 @@ void AudioPermissionPromptTexture::Draw(SkCanvas* sk_canvas,
       text, fonts, color_scheme().element_foreground, &prompt_text_size,
       kTextAlignmentNone, kWrappingBehaviorWrap);
   canvas->Save();
-  canvas->Translate(gfx::Vector2d(
-      IsRTL() ? kTextBorder : kTextBorder + kIconBorder + kIconWidth,
-      kTextHorizontalBorder));
+  canvas->Translate(
+      gfx::Vector2d(ToPixels(IsRTL() ? kPadding + kTextLeftMargin
+                                     : kTextLeftMargin + kIconSize + kPadding),
+                    ToPixels(kPadding + kTextTopMargin)));
   for (auto& render_text : lines)
     render_text->Draw(canvas);
   canvas->Restore();
@@ -85,7 +86,7 @@ void AudioPermissionPromptTexture::Draw(SkCanvas* sk_canvas,
   // Buttons
   SkPaint paint;
   gfx::Rect button_text_size(ToPixels(kButtonWidth), 0);
-  float radius = size_.width() * kButtonRadiusFactor;
+  float radius = ToPixels(kButtonRadius);
   GetFontList(ToPixels(kFontSizePromptButtonText), text, &fonts);
 
   // Secondary button area.
@@ -96,9 +97,9 @@ void AudioPermissionPromptTexture::Draw(SkCanvas* sk_canvas,
       color_scheme().audio_permission_prompt_secondary_button_forground,
       &button_text_size, kTextAlignmentCenter, kWrappingBehaviorWrap);
   secondary_button_rect_.SetRect(
-      ToPixels(kWidth / 2 - kButtonsSeperatorWidth - kButtonWidth),
-      prompt_text_size.height() + ToPixels(kPromptTextButtonSeperatorHeight),
-      ToPixels(kButtonWidth), ToPixels(kButtonHeight));
+      ToPixels(kWidth - kPadding - kButtonsDistance - 2 * kButtonWidth),
+      ToPixels(kPadding + kIconSize + kVerticalGap), ToPixels(kButtonWidth),
+      ToPixels(kButtonHeight));
   paint.setColor(GetSecondaryButtonColor());
   canvas->Save();
   canvas->Translate(
@@ -119,10 +120,9 @@ void AudioPermissionPromptTexture::Draw(SkCanvas* sk_canvas,
   lines = PrepareDrawStringRect(
       text, fonts, color_scheme().audio_permission_prompt_background,
       &button_text_size, kTextAlignmentCenter, kWrappingBehaviorWrap);
-  primary_button_rect_.SetRect(
-      ToPixels(kWidth / 2 + kButtonsSeperatorWidth),
-      prompt_text_size.height() + ToPixels(kPromptTextButtonSeperatorHeight),
-      ToPixels(kButtonWidth), ToPixels(kButtonHeight));
+  primary_button_rect_.SetRect(ToPixels(kWidth - kPadding - kButtonWidth),
+                               ToPixels(kPadding + kIconSize + kVerticalGap),
+                               ToPixels(kButtonWidth), ToPixels(kButtonHeight));
   paint.setColor(GetPrimaryButtonColor());
   canvas->Save();
   canvas->Translate(
