@@ -44,6 +44,7 @@ void UiElementRenderer::Init() {
   laser_renderer_ = base::MakeUnique<Laser::Renderer>();
   controller_renderer_ = base::MakeUnique<Controller::Renderer>();
   gradient_grid_renderer_ = base::MakeUnique<Grid::Renderer>();
+  shadow_renderer_ = base::MakeUnique<Shadow::Renderer>();
 }
 
 void UiElementRenderer::DrawTexturedQuad(
@@ -121,6 +122,19 @@ void UiElementRenderer::DrawReticle(
 void UiElementRenderer::DrawWebVr(int texture_data_handle) {
   FlushIfNecessary(webvr_renderer_.get());
   webvr_renderer_->Draw(texture_data_handle);
+}
+
+void UiElementRenderer::DrawShadow(const gfx::Transform& model_view_proj_matrix,
+                                   const gfx::SizeF& element_size,
+                                   float x_padding,
+                                   float y_padding,
+                                   float y_offset,
+                                   SkColor color,
+                                   float opacity,
+                                   float corner_radius) {
+  FlushIfNecessary(shadow_renderer_.get());
+  shadow_renderer_->Draw(model_view_proj_matrix, element_size, x_padding,
+                         y_padding, y_offset, color, opacity, corner_radius);
 }
 
 void UiElementRenderer::Flush() {

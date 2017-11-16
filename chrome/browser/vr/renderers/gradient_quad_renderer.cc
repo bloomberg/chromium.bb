@@ -24,7 +24,7 @@ static constexpr size_t kDataStride = 6 * sizeof(float);
 static constexpr size_t kInnerRectOffset = 6 * sizeof(GLushort);
 
 // clang-format off
-static constexpr char const* kGradientQuadVertexShader = SHADER(
+static constexpr char const* kVertexShader = SHADER(
   precision mediump float;
   uniform mat4 u_ModelViewProjMatrix;
   uniform vec2 u_CornerOffset;
@@ -46,7 +46,7 @@ static constexpr char const* kGradientQuadVertexShader = SHADER(
   }
 );
 
-static constexpr char const* kGradientQuadFragmentShader = SHADER(
+static constexpr char const* kFragmentShader = SHADER(
   precision highp float;
   varying vec2 v_CornerPosition;
   varying vec2 v_Position;
@@ -76,7 +76,7 @@ static constexpr char const* kGradientQuadFragmentShader = SHADER(
 }  // namespace
 
 GradientQuadRenderer::GradientQuadRenderer()
-    : BaseRenderer(kGradientQuadVertexShader, kGradientQuadFragmentShader) {
+    : BaseRenderer(kVertexShader, kFragmentShader) {
   model_view_proj_matrix_handle_ =
       glGetUniformLocation(program_handle_, "u_ModelViewProjMatrix");
   corner_offset_handle_ =
