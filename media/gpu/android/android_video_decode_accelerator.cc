@@ -249,7 +249,11 @@ AndroidVideoDecodeAccelerator::AndroidVideoDecodeAccelerator(
       deferred_initialization_pending_(false),
       codec_needs_reset_(false),
       defer_surface_creation_(false),
-      surface_chooser_helper_(std::move(surface_chooser)),
+      surface_chooser_helper_(
+          std::move(surface_chooser),
+          base::CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kForceVideoOverlays),
+          base::FeatureList::IsEnabled(media::kUseAndroidOverlayAggressively)),
       device_info_(device_info),
       force_defer_surface_creation_for_testing_(false),
       overlay_factory_cb_(overlay_factory_cb),
@@ -353,17 +357,6 @@ bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
   }
 
   codec_allocator_->StartThread(this);
-
-  // If we're supposed to use overlays all the time, then they should always
-  // be marked as required.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kForceVideoOverlays)) {
-    surface_chooser_helper_.SetIsOverlayRequired(true);
-  }
-
-  // If we're trying for fullscreen-div cases, then we should promote more.
-  surface_chooser_helper_.SetPromoteAggressively(
-      base::FeatureList::IsEnabled(media::kUseAndroidOverlayAggressively));
 
   // For encrypted media, start by initializing the CDM.  Otherwise, start with
   // the surface.

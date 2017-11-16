@@ -43,8 +43,9 @@ class MEDIA_GPU_EXPORT VideoFrameFactory {
 
   // Initializes the factory and runs |init_cb| on the current thread when it's
   // complete. If initialization fails, the returned surface texture will be
-  // null.
-  virtual void Initialize(InitCb init_cb) = 0;
+  // null.  |wants_promotion_hint| tells us whether to mark VideoFrames for
+  // compositor overlay promotion hints or not.
+  virtual void Initialize(bool wants_promotion_hint, InitCb init_cb) = 0;
 
   // Notify us about the current surface bundle that subsequent video frames
   // should use.

@@ -6,13 +6,16 @@
 
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/histogram_macros.h"
 #include "media/base/android/media_codec_bridge_impl.h"
 #include "media/base/android/media_codec_util.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/decoder_buffer.h"
+#include "media/base/media_switches.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_decoder_config.h"
 #include "media/gpu/android/android_video_surface_chooser.h"
@@ -106,7 +109,11 @@ MediaCodecVideoDecoder::MediaCodecVideoDecoder(
     : output_cb_(output_cb),
       codec_allocator_(codec_allocator),
       request_overlay_info_cb_(std::move(request_overlay_info_cb)),
-      surface_chooser_(std::move(surface_chooser)),
+      surface_chooser_helper_(
+          std::move(surface_chooser),
+          base::CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kForceVideoOverlays),
+          base::FeatureList::IsEnabled(media::kUseAndroidOverlayAggressively)),
       video_frame_factory_(std::move(video_frame_factory)),
       overlay_factory_cb_(std::move(overlay_factory_cb)),
       device_info_(device_info),
@@ -116,7 +123,7 @@ MediaCodecVideoDecoder::MediaCodecVideoDecoder(
       weak_factory_(this),
       codec_allocator_weak_factory_(this) {
   DVLOG(2) << __func__;
-  surface_chooser_->SetClientCallbacks(
+  surface_chooser_helper_.chooser()->SetClientCallbacks(
       base::Bind(&MediaCodecVideoDecoder::OnSurfaceChosen,
                  weak_factory_.GetWeakPtr()),
       base::Bind(&MediaCodecVideoDecoder::OnSurfaceChosen,
@@ -184,7 +191,14 @@ void MediaCodecVideoDecoder::StartLazyInit() {
   DVLOG(2) << __func__;
   lazy_init_pending_ = false;
   codec_allocator_->StartThread(this);
+  // Only ask for promotion hints if we can actually switch surfaces, since we
+  // wouldn't be able to do anything with them.  Also, if threaded texture
+  // mailboxes are enabled, then we turn off overlays anyway.
+  const bool want_promotion_hints =
+      device_info_->IsSetOutputSurfaceSupported() &&
+      !enable_threaded_texture_mailboxes_;
   video_frame_factory_->Initialize(
+      want_promotion_hints,
       base::Bind(&MediaCodecVideoDecoder::OnVideoFrameFactoryInitialized,
                  weak_factory_.GetWeakPtr()));
 }
@@ -222,17 +236,12 @@ void MediaCodecVideoDecoder::OnOverlayInfoChanged(
   if (InTerminalState())
     return;
 
-  // TODO(watk): Handle frame_hidden like AVDA. Maybe even if in a terminal
-  // state.
-  // TODO(watk): Incorporate the other chooser_state_ signals.
-
   bool overlay_changed = !overlay_info_.RefersToSameOverlayAs(overlay_info);
   overlay_info_ = overlay_info;
-  chooser_state_.is_fullscreen = overlay_info_.is_fullscreen;
-  surface_chooser_->UpdateState(
+  surface_chooser_helper_.SetIsFullscreen(overlay_info_.is_fullscreen);
+  surface_chooser_helper_.UpdateChooserState(
       overlay_changed ? base::make_optional(CreateOverlayFactoryCb())
-                      : base::nullopt,
-      chooser_state_);
+                      : base::nullopt);
 }
 
 void MediaCodecVideoDecoder::OnSurfaceChosen(
@@ -266,7 +275,8 @@ void MediaCodecVideoDecoder::OnSurfaceDestroyed(AndroidOverlay* overlay) {
   // a single overlay so this must be the one we're using. In this case it's
   // the responsibility of our consumer to destroy us for surface transitions.
   // TODO(liberato): This might not be true for L1 / L3, since our caller has
-  // no idea that this has happened.  We should unback the frames here.
+  // no idea that this has happened.  We should unback the frames here.  This
+  // might work now that we have CodecImageGroup -- verify this.
   if (!device_info_->IsSetOutputSurfaceSupported()) {
     EnterTerminalState(State::kSurfaceDestroyed);
     return;
@@ -297,6 +307,7 @@ void MediaCodecVideoDecoder::TransitionToTargetSurface() {
   }
 
   video_frame_factory_->SetSurfaceBundle(target_surface_bundle_);
+  CacheFrameInformation();
 }
 
 void MediaCodecVideoDecoder::CreateCodec() {
@@ -340,6 +351,9 @@ void MediaCodecVideoDecoder::OnCodecConfigured(
   // |surface_chooser_| doesn't change the target surface.
   if (SurfaceTransitionPending())
     TransitionToTargetSurface();
+
+  // Cache the frame information that goes with this codec.
+  CacheFrameInformation();
 
   StartTimer();
 }
@@ -542,6 +556,13 @@ bool MediaCodecVideoDecoder::DequeueOutput() {
   if (drain_type_)
     return true;
 
+  // Record the frame type that we're sending and some information about why.
+  UMA_HISTOGRAM_ENUMERATION(
+      "Media.AVDA.FrameInformation", cached_frame_information_,
+      static_cast<int>(
+          SurfaceChooserHelper::FrameInformation::FRAME_INFORMATION_MAX) +
+          1);  // PRESUBMIT_IGNORE_UMA_MAX
+
   video_frame_factory_->CreateVideoFrame(
       std::move(output_buffer), presentation_time,
       decoder_config_.natural_size(), CreatePromotionHintCB(),
@@ -710,7 +731,7 @@ int MediaCodecVideoDecoder::GetMaxDecodeRequests() const {
 }
 
 PromotionHintAggregator::NotifyPromotionHintCB
-MediaCodecVideoDecoder::CreatePromotionHintCB() const {
+MediaCodecVideoDecoder::CreatePromotionHintCB() {
   // Right now, we don't request promotion hints.  This is only used by SOP.
   // While we could simplify it a bit, this is the general form that we'll use
   // when handling promotion hints.
@@ -720,7 +741,8 @@ MediaCodecVideoDecoder::CreatePromotionHintCB() const {
   // move an overlay around even after MCVD has been torn down.  For example
   // inline L1 content will fall into this case.
   return BindToCurrentLoop(base::BindRepeating(
-      [](AVDASurfaceBundle::ScheduleLayoutCB layout_cb,
+      [](base::WeakPtr<MediaCodecVideoDecoder> mcvd,
+         AVDASurfaceBundle::ScheduleLayoutCB layout_cb,
          PromotionHintAggregator::Hint hint) {
         // If we're promotable, and we have a surface bundle, then also
         // position the overlay.  We could do this even if the overlay is
@@ -728,10 +750,28 @@ MediaCodecVideoDecoder::CreatePromotionHintCB() const {
         if (hint.is_promotable)
           layout_cb.Run(hint.screen_rect);
 
-        // If we want to send |hint| to MCVD, then we should do it via wp.  MCVD
-        // might have been destroyed already, which is okay.
+        // Notify MCVD about the promotion hint, so that it can decide if it
+        // wants to switch to / from an overlay.
+        if (mcvd)
+          mcvd->NotifyPromotionHint(hint);
       },
+      weak_factory_.GetWeakPtr(),
       codec_->SurfaceBundle()->GetScheduleLayoutCB()));
+}
+
+bool MediaCodecVideoDecoder::IsUsingOverlay() const {
+  return codec_ && codec_->SurfaceBundle() && codec_->SurfaceBundle()->overlay;
+}
+
+void MediaCodecVideoDecoder::NotifyPromotionHint(
+    PromotionHintAggregator::Hint hint) {
+  surface_chooser_helper_.NotifyPromotionHintAndUpdateChooser(hint,
+                                                              IsUsingOverlay());
+}
+
+void MediaCodecVideoDecoder::CacheFrameInformation() {
+  cached_frame_information_ =
+      surface_chooser_helper_.ComputeFrameInformation(IsUsingOverlay());
 }
 
 }  // namespace media

@@ -28,11 +28,19 @@ class SurfaceChooserHelperTest : public testing::Test {
   ~SurfaceChooserHelperTest() override {}
 
   void SetUp() override {
+    // Create a default helper.
+    ReplaceHelper(false, false);
+  }
+
+  void TearDown() override {}
+
+  void ReplaceHelper(bool is_overlay_required, bool promote_aggressively) {
     // Advance the clock so that time 0 isn't recent.
     std::unique_ptr<base::SimpleTestTickClock> tick_clock =
         base::MakeUnique<base::SimpleTestTickClock>();
     tick_clock_ = tick_clock.get();
     tick_clock_->Advance(TimeDelta::FromSeconds(10000));
+
     std::unique_ptr<MockAndroidVideoSurfaceChooser> chooser =
         base::MakeUnique<MockAndroidVideoSurfaceChooser>();
     chooser_ = chooser.get();
@@ -40,11 +48,9 @@ class SurfaceChooserHelperTest : public testing::Test {
         base::MakeUnique<MockPromotionHintAggregator>();
     aggregator_ = aggregator.get();
     helper_ = base::MakeUnique<SurfaceChooserHelper>(
-        /* &tick_clock_,*/ std::move(chooser), std::move(aggregator),
-        std::move(tick_clock));
+        std::move(chooser), is_overlay_required, promote_aggressively,
+        std::move(aggregator), std::move(tick_clock));
   }
-
-  void TearDown() override {}
 
   // Convenience function.
   void UpdateChooserState() {
@@ -76,13 +82,13 @@ TEST_F(SurfaceChooserHelperTest, SetIsFullscreen) {
 }
 
 TEST_F(SurfaceChooserHelperTest, SetIsOverlayRequired) {
-  helper_->SetIsOverlayRequired(true);
-  UpdateChooserState();
-  ASSERT_TRUE(chooser_->current_state_.is_required);
-
-  helper_->SetIsOverlayRequired(false);
+  // The default helper was created without |is_required|, so verify that.
   UpdateChooserState();
   ASSERT_FALSE(chooser_->current_state_.is_required);
+
+  ReplaceHelper(true, false);
+  UpdateChooserState();
+  ASSERT_TRUE(chooser_->current_state_.is_required);
 }
 
 TEST_F(SurfaceChooserHelperTest, SetInsecureSurface) {
@@ -108,20 +114,37 @@ TEST_F(SurfaceChooserHelperTest, SetRequiredSecureSurface) {
   ASSERT_TRUE(chooser_->current_state_.is_secure);
   ASSERT_TRUE(chooser_->current_state_.is_required);
 
-  // Also verify that clearing "is_required" doesn't change our required state.
-  helper_->SetIsOverlayRequired(false);
+  // Also check that removing kRequired puts |is_required| back, since that has
+  // special processing for "always required".
+  helper_->SetSecureSurfaceMode(
+      SurfaceChooserHelper::SecureSurfaceMode::kInsecure);
   UpdateChooserState();
+  ASSERT_FALSE(chooser_->current_state_.is_required);
+}
+
+TEST_F(SurfaceChooserHelperTest, StillRequiredAfterClearingSecure) {
+  // Verify that setting then clearing kRequired doesn't make |is_required|
+  // false if overlays were required during construction.
+  ReplaceHelper(true, false);
+  helper_->SetSecureSurfaceMode(
+      SurfaceChooserHelper::SecureSurfaceMode::kRequired);
+  UpdateChooserState();
+  ASSERT_TRUE(chooser_->current_state_.is_required);
+
+  helper_->SetSecureSurfaceMode(
+      SurfaceChooserHelper::SecureSurfaceMode::kInsecure);
+  UpdateChooserState();
+  // Should still be true.
   ASSERT_TRUE(chooser_->current_state_.is_required);
 }
 
 TEST_F(SurfaceChooserHelperTest, SetPromoteAggressively) {
-  helper_->SetPromoteAggressively(true);
-  UpdateChooserState();
-  ASSERT_TRUE(chooser_->current_state_.promote_aggressively);
-
-  helper_->SetPromoteAggressively(false);
   UpdateChooserState();
   ASSERT_FALSE(chooser_->current_state_.promote_aggressively);
+
+  ReplaceHelper(false, true);
+  UpdateChooserState();
+  ASSERT_TRUE(chooser_->current_state_.promote_aggressively);
 }
 
 TEST_F(SurfaceChooserHelperTest, PromotionHintsForwardsHint) {

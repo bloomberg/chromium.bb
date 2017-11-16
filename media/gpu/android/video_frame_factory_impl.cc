@@ -46,7 +46,8 @@ VideoFrameFactoryImpl::~VideoFrameFactoryImpl() {
     gpu_task_runner_->DeleteSoon(FROM_HERE, gpu_video_frame_factory_.release());
 }
 
-void VideoFrameFactoryImpl::Initialize(InitCb init_cb) {
+void VideoFrameFactoryImpl::Initialize(bool wants_promotion_hint,
+                                       InitCb init_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!gpu_video_frame_factory_);
   gpu_video_frame_factory_ = base::MakeUnique<GpuVideoFrameFactory>();
@@ -54,7 +55,7 @@ void VideoFrameFactoryImpl::Initialize(InitCb init_cb) {
       gpu_task_runner_.get(), FROM_HERE,
       base::Bind(&GpuVideoFrameFactory::Initialize,
                  base::Unretained(gpu_video_frame_factory_.get()),
-                 get_stub_cb_),
+                 wants_promotion_hint, get_stub_cb_),
       std::move(init_cb));
 }
 
@@ -124,8 +125,10 @@ GpuVideoFrameFactory::~GpuVideoFrameFactory() {
 }
 
 scoped_refptr<SurfaceTextureGLOwner> GpuVideoFrameFactory::Initialize(
+    bool wants_promotion_hint,
     VideoFrameFactoryImpl::GetStubCb get_stub_cb) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  wants_promotion_hint_ = wants_promotion_hint;
   stub_ = get_stub_cb.Run();
   if (!MakeContextCurrent(stub_))
     return nullptr;
@@ -250,8 +253,17 @@ void GpuVideoFrameFactory::CreateVideoFrameInternal(
   if (stub_->GetGpuPreferences().enable_threaded_texture_mailboxes)
     frame->metadata()->SetBoolean(VideoFrameMetadata::COPY_REQUIRED, true);
 
+  // We unconditionally mark the picture as overlayable, even if
+  // |!surface_texture|, if we want to get hints.  It's required, else we won't
+  // get hints.
+  const bool allow_overlay = !surface_texture || wants_promotion_hint_;
+
   frame->metadata()->SetBoolean(VideoFrameMetadata::ALLOW_OVERLAY,
-                                !surface_texture);
+                                allow_overlay);
+  frame->metadata()->SetBoolean(VideoFrameMetadata::WANTS_PROMOTION_HINT,
+                                wants_promotion_hint_);
+  frame->metadata()->SetBoolean(VideoFrameMetadata::SURFACE_TEXTURE,
+                                !!surface_texture);
 
   *video_frame_out = std::move(frame);
   *texture_ref_out = std::move(texture_ref);

@@ -25,8 +25,13 @@ class MEDIA_GPU_EXPORT SurfaceChooserHelper {
  public:
   // |promotion_hint_aggregator| and |tick_clock| are for tests.  Normally, we
   // create the correct default implementations ourself.
+  // |is_overlay_required| tells us to require overlays(!).
+  // |promote_aggressively| causes us to use overlays whenever they're power-
+  // efficient, which lets us catch fullscreen-div cases.
   SurfaceChooserHelper(
       std::unique_ptr<AndroidVideoSurfaceChooser> surface_chooser,
+      bool is_overlay_required,
+      bool promote_aggressively,
       std::unique_ptr<PromotionHintAggregator> promotion_hint_aggregator =
           nullptr,
       std::unique_ptr<base::TickClock> tick_clock = nullptr);
@@ -62,16 +67,9 @@ class MEDIA_GPU_EXPORT SurfaceChooserHelper {
   // The setters do not update the chooser state, since pre-M requires us to be
   // careful about the first update, since we can't change it later.
 
-  // Notify us if an overlay must be used.  Does not update the chooser state.
-  void SetIsOverlayRequired(bool required);
-
   // Notify us about the desired surface security.  Does not update the chooser
   // state.
   void SetSecureSurfaceMode(SecureSurfaceMode mode);
-
-  // Notify us if we should try to promote to overlay aggressively for
-  // power savings.  Does not update the chooser state.
-  void SetPromoteAggressively(bool promote_aggressively);
 
   // Notify us about the fullscreen state.  Does not update the chooser state.
   void SetIsFullscreen(bool is_fullscreen);
@@ -93,14 +91,14 @@ class MEDIA_GPU_EXPORT SurfaceChooserHelper {
   FrameInformation ComputeFrameInformation(bool is_using_overlay);
 
  private:
+  AndroidVideoSurfaceChooser::State surface_chooser_state_;
+  std::unique_ptr<AndroidVideoSurfaceChooser> surface_chooser_;
+
   // Are overlays required by command-line options?
   bool is_overlay_required_ = false;
 
   // Do we require an overlay due to the surface mode?
   bool requires_secure_video_surface_ = false;
-
-  AndroidVideoSurfaceChooser::State surface_chooser_state_;
-  std::unique_ptr<AndroidVideoSurfaceChooser> surface_chooser_;
 
   std::unique_ptr<PromotionHintAggregator> promotion_hint_aggregator_;
 
