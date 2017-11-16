@@ -916,7 +916,9 @@ void decode_xq(const int *xqd, int *xq) {
 }
 
 const int32_t x_by_xplus1[256] = {
-  0,   128, 171, 192, 205, 213, 219, 224, 228, 230, 233, 235, 236, 238, 239,
+  // Special case: Map 0 -> 1 (corresponding to a value of 1/256)
+  // instead of 0. See comments in av1_selfguided_restoration_internal() for why
+  1,   128, 171, 192, 205, 213, 219, 224, 228, 230, 233, 235, 236, 238, 239,
   240, 241, 242, 243, 243, 244, 244, 245, 245, 246, 246, 247, 247, 247, 247,
   248, 248, 248, 248, 249, 249, 249, 249, 249, 250, 250, 250, 250, 250, 250,
   250, 251, 251, 251, 251, 251, 251, 251, 251, 251, 251, 252, 252, 252, 252,
@@ -998,6 +1000,9 @@ static void av1_selfguided_restoration_internal(int32_t *dgd, int width,
 
       // Each term in calculating p = a * n - b * b is < 2^16 * n^2 < 2^28,
       // and p itself satisfies p < 2^14 * n^2 < 2^26.
+      // This bound on p is due to:
+      // https://en.wikipedia.org/wiki/Popoviciu's_inequality_on_variances
+      //
       // Note: Sometimes, in high bit depth, we can end up with a*n < b*b.
       // This is an artefact of rounding, and can only happen if all pixels
       // are (almost) identical, so in this case we saturate to p=0.
@@ -1014,12 +1019,36 @@ static void av1_selfguided_restoration_internal(int32_t *dgd, int width,
       // (this holds even after accounting for the rounding in s)
       const uint32_t z = ROUND_POWER_OF_TWO(p * s, SGRPROJ_MTABLE_BITS);
 
-      A[k] = x_by_xplus1[AOMMIN(z, 255)];  // < 2^8
+      // Note: We have to be quite careful about the value of A[k].
+      // This is used as a blend factor between individual pixel values and the
+      // local mean. So it logically has a range of [0, 256], including both
+      // endpoints.
+      //
+      // This is a pain for hardware, as we'd like something which can be stored
+      // in exactly 8 bits.
+      // Further, in the calculation of B[k] below, if z == 0 and r == 2,
+      // then A[k] "should be" 0. But then we can end up setting B[k] to a value
+      // slightly above 2^(8 + bit depth), due to rounding in the value of
+      // one_by_x[25-1].
+      //
+      // Thus we saturate so that, when z == 0, A[k] is set to 1 instead of 0.
+      // This fixes the above issues (256 - A[k] fits in a uint8, and we can't
+      // overflow), without significantly affecting the final result: z == 0
+      // implies that the image is essentially "flat", so the local mean and
+      // individual pixel values are very similar.
+      //
+      // Note that saturating on the other side, ie. requring A[k] <= 255,
+      // would be a bad idea, as that corresponds to the case where the image
+      // is very variable, when we want to preserve the local pixel value as
+      // much as possible.
+      A[k] = x_by_xplus1[AOMMIN(z, 255)];  // in range [1, 256]
 
-      // SGRPROJ_SGR - A[k] < 2^8, B[k] < 2^(bit_depth) * n,
+      // SGRPROJ_SGR - A[k] < 2^8 (from above), B[k] < 2^(bit_depth) * n,
       // one_by_x[n - 1] = round(2^12 / n)
       // => the product here is < 2^(20 + bit_depth) <= 2^32,
       // and B[k] is set to a value < 2^(8 + bit depth)
+      // This holds even with the rounding in one_by_x and in the overall
+      // result, as long as SGRPROJ_SGR - A[k] is strictly less than 2^8.
       B[k] = (int32_t)ROUND_POWER_OF_TWO((uint32_t)(SGRPROJ_SGR - A[k]) *
                                              (uint32_t)B[k] *
                                              (uint32_t)one_by_x[n - 1],
