@@ -10,8 +10,6 @@
 #include "content/public/browser/web_contents.h"
 #include "ui/display/types/display_constants.h"
 
-namespace chrome {
-
 OutputProtectionProxy::OutputProtectionProxy(int render_process_id,
                                              int render_frame_id)
     : render_process_id_(render_process_id),
@@ -84,5 +82,3 @@ void OutputProtectionProxy::ProcessQueryStatusResult(
 
   callback.Run(success, new_link_mask, protection_mask);
 }
-
-}  // namespace chrome
