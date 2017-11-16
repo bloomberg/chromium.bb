@@ -153,7 +153,6 @@
 #include "content/browser/screen_orientation/screen_orientation_delegate_android.h"
 #include "media/base/android/media_drm_bridge_client.h"
 #include "ui/android/screen_android.h"
-#include "ui/android/view_android.h"
 #include "ui/display/screen.h"
 #include "ui/gl/gl_surface.h"
 #endif
@@ -685,10 +684,6 @@ void BrowserMainLoop::EarlyInitialization() {
       RenderProcessHost::SetMaxRendererProcessCount(process_limit);
     }
   }
-
-#if defined(OS_ANDROID)
-  ui::ViewAndroid::SetIsUseZoomForDSFEnabled(IsUseZoomForDSFEnabled());
-#endif
 
   if (parts_)
     parts_->PostEarlyInitialization();

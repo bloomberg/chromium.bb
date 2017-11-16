@@ -91,14 +91,13 @@ class UI_ANDROID_EXPORT ViewAndroid {
     MATCH_PARENT
   };
 
-  static void SetIsUseZoomForDSFEnabled(bool enabled);
-
   ViewAndroid(ViewClient* view_client, LayoutType layout_type);
 
   ViewAndroid();
   virtual ~ViewAndroid();
 
   void UpdateFrameInfo(const FrameInfo& frame_info);
+  // content_offset is in CSS scale.
   float content_offset() const { return frame_info_.content_offset; }
   float page_scale() const { return frame_info_.page_scale; }
   gfx::SizeF viewport_size() const { return frame_info_.viewport_size; }
@@ -169,8 +168,6 @@ class UI_ANDROID_EXPORT ViewAndroid {
   ViewAndroid* parent_;
 
  private:
-  static bool is_use_zoom_for_dsf_enabled_;
-
   FRIEND_TEST_ALL_PREFIXES(ViewAndroidBoundsTest, MatchesViewInFront);
   FRIEND_TEST_ALL_PREFIXES(ViewAndroidBoundsTest, MatchesViewArea);
   FRIEND_TEST_ALL_PREFIXES(ViewAndroidBoundsTest, MatchesViewAfterMove);

@@ -30,8 +30,6 @@ using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
 using blink::WebCursorInfo;
 
-bool ViewAndroid::is_use_zoom_for_dsf_enabled_ = false;
-
 ViewAndroid::ScopedAnchorView::ScopedAnchorView(
     JNIEnv* env,
     const JavaRef<jobject>& jview,
@@ -201,24 +199,24 @@ ViewAndroid::ScopedAnchorView ViewAndroid::AcquireAnchorView() {
       env, Java_ViewAndroidDelegate_acquireView(env, delegate), delegate);
 }
 
-void ViewAndroid::SetIsUseZoomForDSFEnabled(bool enabled) {
-  is_use_zoom_for_dsf_enabled_ = enabled;
-}
-
 void ViewAndroid::SetAnchorRect(const JavaRef<jobject>& anchor,
-                                const gfx::RectF& bounds) {
+                                const gfx::RectF& bounds_dip) {
   ScopedJavaLocalRef<jobject> delegate(GetViewAndroidDelegate());
   if (delegate.is_null())
     return;
 
-  float scale = is_use_zoom_for_dsf_enabled_ ? 1 : GetDipScale();
-  int left_margin = std::round(bounds.x() * scale);
-  int top_margin = std::round((content_offset() + bounds.y()) * scale);
-  const gfx::RectF scaled_bounds = gfx::ScaleRect(bounds, scale);
+  float dip_scale = GetDipScale();
+  int left_margin = std::round(bounds_dip.x() * dip_scale);
+  // Note that content_offset() is in CSS scale and bounds_dip is in DIP scale
+  // (i.e., CSS pixels * page scale factor), but the height of browser control
+  // is not affected by page scale factor. Thus, content_offset() in CSS scale
+  // is also in DIP scale.
+  int top_margin = std::round((content_offset() + bounds_dip.y()) * dip_scale);
+  const gfx::RectF bounds_px = gfx::ScaleRect(bounds_dip, dip_scale);
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_ViewAndroidDelegate_setViewPosition(
-      env, delegate, anchor, scaled_bounds.x(), scaled_bounds.y(),
-      scaled_bounds.width(), scaled_bounds.height(), left_margin, top_margin);
+      env, delegate, anchor, bounds_px.x(), bounds_px.y(), bounds_px.width(),
+      bounds_px.height(), left_margin, top_margin);
 }
 
 ScopedJavaLocalRef<jobject> ViewAndroid::GetContainerView() {

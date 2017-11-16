@@ -32,6 +32,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
 #include "content/browser/web_contents/web_contents_android.h"
 #include "content/browser/web_contents/web_contents_view_android.h"
+#include "content/common/content_switches_internal.h"
 #include "content/common/frame_messages.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
@@ -434,7 +435,12 @@ void ContentViewCore::ShowSelectPopupMenu(RenderFrameHost* frame,
   const ScopedJavaLocalRef<jobject> popup_view = select_popup_.view();
   if (popup_view.is_null())
     return;
-  view->SetAnchorRect(popup_view, gfx::RectF(bounds));
+  // |bounds| is in physical pixels if --use-zoom-for-dsf is enabled. Otherwise,
+  // it is in DIP pixels.
+  gfx::RectF bounds_dip = gfx::RectF(bounds);
+  if (IsUseZoomForDSFEnabled())
+    bounds_dip.Scale(1 / dpi_scale_);
+  view->SetAnchorRect(popup_view, bounds_dip);
   Java_ContentViewCore_showSelectPopup(
       env, j_obj, popup_view, reinterpret_cast<intptr_t>(frame), items_array,
       enabled_array, multiple, selected_array, right_aligned);
