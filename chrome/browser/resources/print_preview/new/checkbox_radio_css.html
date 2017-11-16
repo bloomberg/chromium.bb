@@ -79,10 +79,18 @@
       :-webkit-any(.checkbox, .radio) label {
         /* Don't expand horizontally: <http://crbug.com/112091>. */
         align-items: center;
-        display: inline-flex;
+        display: flex;
+        user-select: none;
+      }
+
+      .radio label {
+        padding-bottom: 5px;
+        padding-top: 10px;
+      }
+
+      .checkbox label {
         padding-bottom: 7px;
         padding-top: 7px;
-        user-select: none;
       }
 
       :-webkit-any(.checkbox, .radio) label input {

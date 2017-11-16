@@ -5,6 +5,11 @@
     <style>
       .input-settings-section {
         --error-text-color: rgb(140, 20, 20);
+
+        --invalid-input-style: {
+          background: rgb(255, 240, 240);
+          color: var(--error-text-color);
+        }
       }
 
       :host .input-settings-section span {
@@ -15,9 +20,9 @@
         }
       }
 
-      input:invalid {
-        background: rgb(255, 240, 240);
-        color: var(--error-text-color);
+      input:invalid,
+      :host .input-settings-section input.invalid {
+        @apply --invalid-input-style;
       }
 
       span.hint {
