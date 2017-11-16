@@ -215,8 +215,6 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
 
   // Queue of available InputBuffers (picture_buffer_ids).
   base::queue<linked_ptr<InputBuffer>> input_buffers_;
-  // Number of !IsFlush() InputBuffers in |input_buffers_| for tracing.
-  size_t num_input_buffers_;
   // Signalled when input buffers are queued onto |input_buffers_| queue.
   base::ConditionVariable input_ready_;
 
