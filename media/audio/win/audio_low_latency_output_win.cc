@@ -525,8 +525,10 @@ bool WASAPIAudioOutputStream::RenderAudioFromSource(UINT64 device_frequency) {
       delay = base::TimeDelta::FromMicroseconds(
           delay_frames * base::Time::kMicrosecondsPerSecond /
           format_.Format.nSamplesPerSec);
-
-      delay_timestamp = base::TimeTicks::FromQPCValue(qpc_position);
+      // Note: the obtained |qpc_position| value is in 100ns intervals and from
+      // the same time origin as QPC. We can simply convert it into us dividing
+      // by 10.0 since 10x100ns = 1us.
+      delay_timestamp += base::TimeDelta::FromMicroseconds(qpc_position * 0.1);
     } else {
       // Use a delay of zero.
       delay_timestamp = base::TimeTicks::Now();
