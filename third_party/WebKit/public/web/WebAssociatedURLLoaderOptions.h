@@ -31,18 +31,16 @@
 #ifndef WebAssociatedURLLoaderOptions_h
 #define WebAssociatedURLLoaderOptions_h
 
+#include "services/network/public/interfaces/cors.mojom-shared.h"
+
 namespace blink {
 
 struct WebAssociatedURLLoaderOptions {
-  enum PreflightPolicy {
-    kConsiderPreflight,
-    kPreventPreflight
-  };
-
   WebAssociatedURLLoaderOptions()
       : untrusted_http(false),
         expose_all_response_headers(false),
-        preflight_policy(kConsiderPreflight) {}
+        preflight_policy(
+            network::mojom::CORSPreflightPolicy::kConsiderPreflight) {}
 
   // Whether to validate the method and headers as if this was an
   // XMLHttpRequest.
@@ -52,7 +50,7 @@ struct WebAssociatedURLLoaderOptions {
   // response headers to the client.
   bool expose_all_response_headers;
 
-  PreflightPolicy preflight_policy;
+  network::mojom::CORSPreflightPolicy preflight_policy;
 };
 
 }  // namespace blink

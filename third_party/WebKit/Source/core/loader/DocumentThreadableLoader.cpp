@@ -239,11 +239,12 @@ void DocumentThreadableLoader::StartBlinkCORS(const ResourceRequest& request) {
       WebCORS::IsCORSEnabledRequestMode(request.GetFetchRequestMode());
 
   // kPreventPreflight can be used only when the CORS is enabled.
-  DCHECK(options_.preflight_policy == kConsiderPreflight || cors_enabled);
+  DCHECK(request.CORSPreflightPolicy() ==
+             network::mojom::CORSPreflightPolicy::kConsiderPreflight ||
+         cors_enabled);
 
-  if (cors_enabled) {
+  if (cors_enabled)
     cors_redirect_limit_ = kMaxCORSRedirects;
-  }
 
   request_context_ = request.GetRequestContext();
   fetch_request_mode_ = request.GetFetchRequestMode();
@@ -473,13 +474,15 @@ void DocumentThreadableLoader::MakeCrossOriginAccessRequestBlinkCORS(
 
   if (request.GetFetchRequestMode() !=
       network::mojom::FetchRequestMode::kCORSWithForcedPreflight) {
-    if (options_.preflight_policy == kPreventPreflight) {
+    if (request.CORSPreflightPolicy() ==
+        network::mojom::CORSPreflightPolicy::kPreventPreflight) {
       PrepareCrossOriginRequest(cross_origin_request);
       LoadRequest(cross_origin_request, cross_origin_options);
       return;
     }
 
-    DCHECK_EQ(options_.preflight_policy, kConsiderPreflight);
+    DCHECK_EQ(request.CORSPreflightPolicy(),
+              network::mojom::CORSPreflightPolicy::kConsiderPreflight);
 
     // We use ContainsOnlyCORSSafelistedOrForbiddenHeaders() here since
     // |request| may have been modified in the process of loading (not from
@@ -1166,13 +1169,14 @@ void DocumentThreadableLoader::LoadRequestAsync(
 
   ResourceFetcher* fetcher = loading_context_->GetResourceFetcher();
   if (request.GetRequestContext() == WebURLRequest::kRequestContextVideo ||
-      request.GetRequestContext() == WebURLRequest::kRequestContextAudio)
+      request.GetRequestContext() == WebURLRequest::kRequestContextAudio) {
     SetResource(RawResource::FetchMedia(new_params, fetcher));
-  else if (request.GetRequestContext() ==
-           WebURLRequest::kRequestContextManifest)
+  } else if (request.GetRequestContext() ==
+             WebURLRequest::kRequestContextManifest) {
     SetResource(RawResource::FetchManifest(new_params, fetcher));
-  else
+  } else {
     SetResource(RawResource::Fetch(new_params, fetcher));
+  }
 
   if (!GetResource()) {
     probe::documentThreadableLoaderFailedToStartLoadingForClient(

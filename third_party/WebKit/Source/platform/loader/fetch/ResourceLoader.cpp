@@ -227,6 +227,9 @@ bool ResourceLoader::WillFollowRedirect(
     return false;
   }
 
+  // TODO(toyoshim): Move following object copy logic to
+  // ResourceRequest::CreateRedirectRequest() in order to centralize object
+  // clone-ish code.
   const ResourceRequest& last_request = resource_->LastResourceRequest();
   ResourceRequest new_request(new_url);
   new_request.SetSiteForCookies(new_site_for_cookies);
@@ -252,6 +255,7 @@ bool ResourceLoader::WillFollowRedirect(
     new_request.SetHTTPBody(last_request.HttpBody());
   new_request.SetCheckForBrowserSideNavigation(
       last_request.CheckForBrowserSideNavigation());
+  new_request.SetCORSPreflightPolicy(last_request.CORSPreflightPolicy());
 
   Resource::Type resource_type = resource_->GetType();
 

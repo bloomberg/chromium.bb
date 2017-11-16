@@ -75,6 +75,8 @@ ResourceRequest::ResourceRequest(const KURL& url)
       check_for_browser_side_navigation_(true),
       ui_start_time_(0),
       is_external_request_(false),
+      cors_preflight_policy_(
+          network::mojom::CORSPreflightPolicy::kConsiderPreflight),
       loading_ipc_type_(RuntimeEnabledFeatures::LoadingWithMojoEnabled()
                             ? WebURLRequest::LoadingIPCType::kMojo
                             : WebURLRequest::LoadingIPCType::kChromeIPC),
@@ -118,6 +120,7 @@ ResourceRequest::ResourceRequest(CrossThreadResourceRequestData* data)
   check_for_browser_side_navigation_ = data->check_for_browser_side_navigation_;
   ui_start_time_ = data->ui_start_time_;
   is_external_request_ = data->is_external_request_;
+  cors_preflight_policy_ = data->cors_preflight_policy_;
   loading_ipc_type_ = data->loading_ipc_type_;
   input_perf_metric_report_policy_ = data->input_perf_metric_report_policy_;
   redirect_status_ = data->redirect_status_;
@@ -167,6 +170,7 @@ std::unique_ptr<CrossThreadResourceRequestData> ResourceRequest::CopyData()
   data->check_for_browser_side_navigation_ = check_for_browser_side_navigation_;
   data->ui_start_time_ = ui_start_time_;
   data->is_external_request_ = is_external_request_;
+  data->cors_preflight_policy_ = cors_preflight_policy_;
   data->loading_ipc_type_ = loading_ipc_type_;
   data->input_perf_metric_report_policy_ = input_perf_metric_report_policy_;
   data->redirect_status_ = redirect_status_;

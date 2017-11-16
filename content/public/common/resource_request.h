@@ -89,6 +89,16 @@ struct CONTENT_EXPORT ResourceRequest {
   // True if corresponding AppCache group should be resetted.
   bool should_reset_appcache = false;
 
+  // https://wicg.github.io/cors-rfc1918/#external-request
+  // TODO(toyoshim): The browser should know better than renderers do.
+  // This is used to plumb Blink decided information for legacy code path, but
+  // eventually we should remove this.
+  bool is_external_request = false;
+
+  // A policy to decide if CORS-preflight fetch should be performed.
+  network::mojom::CORSPreflightPolicy cors_preflight_policy =
+      network::mojom::CORSPreflightPolicy::kConsiderPreflight;
+
   // Indicates which frame (or worker context) the request is being loaded into,
   // or kInvalidServiceWorkerProviderId.
   int service_worker_provider_id = kInvalidServiceWorkerProviderId;

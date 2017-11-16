@@ -36,6 +36,7 @@
 #include "WebHTTPBody.h"
 #include "WebReferrerPolicy.h"
 #include "WebSecurityOrigin.h"
+#include "services/network/public/interfaces/cors.mojom-shared.h"
 #include "services/network/public/interfaces/fetch_api.mojom-shared.h"
 
 namespace blink {
@@ -343,6 +344,9 @@ class WebURLRequest {
 
   // https://wicg.github.io/cors-rfc1918/#external-request
   BLINK_PLATFORM_EXPORT bool IsExternalRequest() const;
+
+  BLINK_PLATFORM_EXPORT network::mojom::CORSPreflightPolicy
+  GetCORSPreflightPolicy() const;
 
   BLINK_PLATFORM_EXPORT LoadingIPCType GetLoadingIPCType() const;
 

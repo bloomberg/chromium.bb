@@ -5,6 +5,9 @@ include_rules = [
     "+mojo/public",
     "+public/platform",
     "+public/web",
+    # Enforce to use mojom-shared.h in WebKit/public so that it can compile
+    # inside and outside Blink.
+    "+services/network/public/interfaces/cors.mojom-shared.h",
     "+services/service_manager/public/cpp/interface_provider.h",
 
     # Allowed only inside INSIDE_BLINK
