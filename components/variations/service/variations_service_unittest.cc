@@ -72,9 +72,7 @@ class TestVariationsServiceClient : public VariationsServiceClient {
   network_time::NetworkTimeTracker* GetNetworkTimeTracker() override {
     return nullptr;
   }
-  version_info::Channel GetChannel() override {
-    return version_info::Channel::UNKNOWN;
-  }
+  version_info::Channel GetChannel() override { return channel_; }
   bool OverridesRestrictParameter(std::string* parameter) override {
     if (restrict_parameter_.empty())
       return false;
@@ -86,8 +84,11 @@ class TestVariationsServiceClient : public VariationsServiceClient {
     restrict_parameter_ = value;
   }
 
+  void set_channel(version_info::Channel channel) { channel_ = channel; }
+
  private:
   std::string restrict_parameter_;
+  version_info::Channel channel_ = version_info::Channel::UNKNOWN;
 
   DISALLOW_COPY_AND_ASSIGN(TestVariationsServiceClient);
 };
@@ -342,15 +343,34 @@ TEST_F(VariationsServiceTest, GetVariationsServerURL) {
   EXPECT_EQ("override", value);
 }
 
-TEST_F(VariationsServiceTest, VariationsURLHasOSNameParam) {
-  TestVariationsService service(
+TEST_F(VariationsServiceTest, VariationsURLHasParams) {
+  std::unique_ptr<TestVariationsServiceClient> client =
+      base::MakeUnique<TestVariationsServiceClient>();
+  TestVariationsServiceClient* raw_client = client.get();
+  VariationsService service(
+      std::move(client),
       base::MakeUnique<web_resource::TestRequestAllowedNotifier>(&prefs_),
-      &prefs_, GetMetricsStateManager());
-  const GURL url = service.GetVariationsServerURL(&prefs_, std::string());
+      &prefs_, GetMetricsStateManager(), UIStringOverrider());
+  raw_client->set_channel(version_info::Channel::UNKNOWN);
+  GURL url = service.GetVariationsServerURL(&prefs_, std::string());
 
   std::string value;
   EXPECT_TRUE(net::GetValueForKeyInQuery(url, "osname", &value));
   EXPECT_FALSE(value.empty());
+
+  std::string milestone;
+  EXPECT_TRUE(net::GetValueForKeyInQuery(url, "milestone", &milestone));
+  EXPECT_FALSE(milestone.empty());
+
+  // Channel param should not be present for UNKNOWN channel.
+  std::string channel;
+  EXPECT_FALSE(net::GetValueForKeyInQuery(url, "channel", &channel));
+  EXPECT_TRUE(channel.empty());
+
+  raw_client->set_channel(version_info::Channel::STABLE);
+  url = service.GetVariationsServerURL(&prefs_, std::string());
+  EXPECT_TRUE(net::GetValueForKeyInQuery(url, "channel", &channel));
+  EXPECT_FALSE(channel.empty());
 }
 
 TEST_F(VariationsServiceTest, RequestsInitiallyNotAllowed) {

@@ -16,6 +16,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
 #include "base/task_runner_util.h"
@@ -38,6 +39,7 @@
 #include "components/variations/variations_seed_simulator.h"
 #include "components/variations/variations_switches.h"
 #include "components/variations/variations_url_constants.h"
+#include "components/version_info/version_info.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_change_notifier.h"
@@ -344,6 +346,21 @@ GURL VariationsService::GetVariationsServerURL(
   server_url = net::AppendOrReplaceQueryParameter(server_url, "osname",
                                                   GetPlatformString());
 
+  // Add channel to the request URL.
+  version_info::Channel channel = client_->GetChannel();
+  if (channel != version_info::Channel::UNKNOWN) {
+    server_url = net::AppendOrReplaceQueryParameter(
+        server_url, "channel", version_info::GetChannelString(channel));
+  }
+
+  // Add milestone to the request URL.
+  std::string version = version_info::GetVersionNumber();
+  std::vector<std::string> version_parts = base::SplitString(
+      version, ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  if (version_parts.size() > 0) {
+    server_url = net::AppendOrReplaceQueryParameter(server_url, "milestone",
+                                                    version_parts[0]);
+  }
   DCHECK(server_url.is_valid());
   return server_url;
 }

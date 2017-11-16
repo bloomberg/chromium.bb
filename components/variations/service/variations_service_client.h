@@ -33,7 +33,7 @@ class VariationsServiceClient {
 
   // Returns a callback that when run returns the base::Version to use for
   // variations seed simulation. VariationsService guarantees that the callback
-  // will be run on a background threadt that permits blocking.
+  // will be run on a background thread that permits blocking.
   virtual base::Callback<base::Version(void)>
   GetVersionForSimulationCallback() = 0;
 

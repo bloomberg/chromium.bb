@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.init;
 
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -86,7 +87,7 @@ public class AsyncInitTaskRunnerTest {
         verify(mLoader).ensureInitialized();
         verify(mLoader).asyncPrefetchLibrariesToMemory();
         verify(mRunner).onSuccess();
-        verify(mVariationsSeedFetcher, never()).fetchSeed("");
+        verify(mVariationsSeedFetcher, never()).fetchSeed(anyString(), anyString(), anyString());
     }
 
     @Test
@@ -100,7 +101,7 @@ public class AsyncInitTaskRunnerTest {
         Robolectric.flushForegroundThreadScheduler();
         assertTrue(mLatch.await(0, TimeUnit.SECONDS));
         verify(mRunner).onFailure();
-        verify(mVariationsSeedFetcher, never()).fetchSeed("");
+        verify(mVariationsSeedFetcher, never()).fetchSeed(anyString(), anyString(), anyString());
     }
 
     @Test
@@ -113,7 +114,7 @@ public class AsyncInitTaskRunnerTest {
         verify(mLoader).ensureInitialized();
         verify(mLoader).asyncPrefetchLibrariesToMemory();
         verify(mRunner).onSuccess();
-        verify(mVariationsSeedFetcher).fetchSeed("");
+        verify(mVariationsSeedFetcher).fetchSeed(anyString(), anyString(), anyString());
     }
 
     // TODO(aberent) Test for allocateChildConnection. Needs refactoring of ChildProcessLauncher to
