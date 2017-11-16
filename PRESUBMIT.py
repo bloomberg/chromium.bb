@@ -444,6 +444,10 @@ _IPC_ENUM_TRAITS_DEPRECATED = (
     'You are using IPC_ENUM_TRAITS() in your code. It has been deprecated.\n'
     'See http://www.chromium.org/Home/chromium-security/education/security-tips-for-ipc')
 
+_JAVA_MULTIPLE_DEFINITION_EXCLUDED_PATHS = [
+    r".*[\\\/]BuildHooksAndroidImpl\.java",
+    r".*[\\\/]LicenseContentProvider\.java",
+]
 
 # These paths contain test data and other known invalid JSON files.
 _KNOWN_INVALID_JSON_FILE_PATTERNS = [
@@ -892,7 +896,7 @@ def _CheckUnwantedDependencies(input_api, output_api):
       warning_subjects.add("imports")
 
   for path, rule_type, rule_description in deps_checker.CheckAddedJavaImports(
-      added_java_imports):
+      added_java_imports, _JAVA_MULTIPLE_DEFINITION_EXCLUDED_PATHS):
     path = input_api.os_path.relpath(path, input_api.PresubmitLocalPath())
     description_with_path = '%s\n    %s' % (path, rule_description)
     if rule_type == Rule.DISALLOW:
