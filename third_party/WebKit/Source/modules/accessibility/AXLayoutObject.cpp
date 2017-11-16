@@ -504,7 +504,7 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
   if (decision == kIgnoreObject)
     return true;
 
-  if (layout_object_->IsAnonymousBlock())
+  if (layout_object_->IsAnonymousBlock() && !IsEditable())
     return true;
 
   // If this element is within a parent that cannot have children, it should not
