@@ -71,6 +71,16 @@ PROXY_NEEDED_TOOLS = ('ip',)
 IMAGE_NEEDED_TOOLS = ('losetup', 'lvchange', 'lvcreate', 'lvs', 'mke2fs',
                       'pvscan', 'thin_check', 'vgchange', 'vgcreate', 'vgs')
 
+# As space is used inside the chroot, the empty space in chroot.img is
+# allocated.  Deleting files inside the chroot doesn't automatically return the
+# used space to the OS.  Over time, this tends to make the sparse chroot.img
+# less sparse even if the chroot contents don't currently need much space.  We
+# can recover most of this unused space with fstrim, but that takes too much
+# time to run it every time. Instead, check the used space against the image
+# size after mounting the chroot and only call fstrim if it looks like we could
+# recover at least this many GiB.
+MAX_UNUSED_IMAGE_GBS = 20
+
 
 def GetArchStageTarballs(version):
   """Returns the URL for a given arch/version"""
@@ -1024,6 +1034,27 @@ snapshots will be unavailable).''' % ', '.join(missing_image_tools))
           if not CreateChrootSnapshot(options.snapshot_create, chroot_vg,
                                       chroot_lv):
             cros_build_lib.Die('Unable to create snapshot.')
+
+  img_path = _ImageFileForChroot(options.chroot)
+  if (options.use_image and os.path.exists(options.chroot) and
+      os.path.exists(img_path)):
+    img_stat = os.stat(img_path)
+    img_used_bytes = img_stat.st_blocks * 512
+
+    mount_stat = os.statvfs(options.chroot)
+    mount_used_bytes = mount_stat.f_frsize * (mount_stat.f_blocks -
+                                              mount_stat.f_bfree)
+
+    extra_gbs = (img_used_bytes - mount_used_bytes) / 2**30
+    if extra_gbs > MAX_UNUSED_IMAGE_GBS:
+      logging.notice('%s is using %s GiB more than needed.  Running '
+                     'fstrim.', img_path, extra_gbs)
+      cmd = ['fstrim', options.chroot]
+      try:
+        cros_build_lib.RunCommand(cmd, print_cmd=False)
+      except cros_build_lib.RunCommandError as e:
+        logging.warning('Running fstrim failed. Consider running fstrim on '
+                        'your chroot manually.\nError: %s', e)
 
   # Enter a new set of namespaces.  Everything after here cannot directly affect
   # the hosts's mounts or alter LVM volumes.
