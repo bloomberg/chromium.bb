@@ -23,11 +23,10 @@ int HeadlessPermissionManager::RequestPermission(
     bool user_gesture,
     const base::Callback<void(blink::mojom::PermissionStatus)>& callback) {
   // In headless mode we just pretent the user "closes" any permission prompt,
-  // without accepting or denying. Push Notifications are the exception to this,
+  // without accepting or denying. Notifications are the exception to this,
   // which are explicitly disabled in Incognito mode.
   if (browser_context_->IsOffTheRecord() &&
-      (permission == content::PermissionType::PUSH_MESSAGING ||
-       permission == content::PermissionType::NOTIFICATIONS)) {
+      permission == content::PermissionType::NOTIFICATIONS) {
     callback.Run(blink::mojom::PermissionStatus::DENIED);
     return kNoPendingOperation;
   }

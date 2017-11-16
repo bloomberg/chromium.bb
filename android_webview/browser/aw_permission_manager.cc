@@ -321,7 +321,6 @@ int AwPermissionManager::RequestPermissions(
       case PermissionType::AUDIO_CAPTURE:
       case PermissionType::VIDEO_CAPTURE:
       case PermissionType::NOTIFICATIONS:
-      case PermissionType::PUSH_MESSAGING:
       case PermissionType::DURABLE_STORAGE:
       case PermissionType::BACKGROUND_SYNC:
       case PermissionType::SENSORS:
@@ -459,7 +458,6 @@ void AwPermissionManager::CancelPermissionRequest(int request_id) {
           delegate->CancelMIDISysexPermissionRequests(requesting_origin);
         break;
       case PermissionType::NOTIFICATIONS:
-      case PermissionType::PUSH_MESSAGING:
       case PermissionType::DURABLE_STORAGE:
       case PermissionType::AUDIO_CAPTURE:
       case PermissionType::VIDEO_CAPTURE:

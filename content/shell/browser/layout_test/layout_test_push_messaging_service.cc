@@ -121,10 +121,11 @@ void LayoutTestPushMessagingService::GetSubscriptionInfo(
 blink::WebPushPermissionStatus
 LayoutTestPushMessagingService::GetPermissionStatus(const GURL& origin,
                                                     bool user_visible) {
-  return ToWebPushPermissionStatus(LayoutTestContentBrowserClient::Get()
-      ->browser_context()
-      ->GetPermissionManager()
-      ->GetPermissionStatus(PermissionType::PUSH_MESSAGING, origin, origin));
+  return ToWebPushPermissionStatus(
+      LayoutTestContentBrowserClient::Get()
+          ->browser_context()
+          ->GetPermissionManager()
+          ->GetPermissionStatus(PermissionType::NOTIFICATIONS, origin, origin));
 }
 
 bool LayoutTestPushMessagingService::SupportNonVisibleMessages() {

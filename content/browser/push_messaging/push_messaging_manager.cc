@@ -541,12 +541,12 @@ void PushMessagingManager::Core::RegisterOnUI(
             return;
           }
 
-          // Request push messaging permission (which will fail, since
+          // Request notifications permission (which will fail, since
           // notifications aren't supported in incognito), so the website can't
           // detect whether incognito is active.
           GURL requesting_origin = data.requesting_origin;
           browser_context->GetPermissionManager()->RequestPermission(
-              PermissionType::PUSH_MESSAGING, render_frame_host,
+              PermissionType::NOTIFICATIONS, render_frame_host,
               requesting_origin, data.user_gesture,
               base::Bind(
                   &PushMessagingManager::Core::DidRequestPermissionInIncognito,

@@ -10,7 +10,6 @@ import "url/mojo/origin.mojom";
 enum PermissionName {
   GEOLOCATION,
   NOTIFICATIONS,
-  PUSH_NOTIFICATIONS,
   MIDI,
   PROTECTED_MEDIA_IDENTIFIER,
   DURABLE_STORAGE,

@@ -41,7 +41,6 @@ PermissionRequest::IconId PermissionRequestImpl::GetIconId() const {
     case CONTENT_SETTINGS_TYPE_GEOLOCATION:
       return IDR_ANDROID_INFOBAR_GEOLOCATION;
     case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
-    case CONTENT_SETTINGS_TYPE_PUSH_MESSAGING:
       return IDR_ANDROID_INFOBAR_NOTIFICATIONS;
     case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
       return IDR_ANDROID_INFOBAR_MIDI;
@@ -62,7 +61,6 @@ PermissionRequest::IconId PermissionRequestImpl::GetIconId() const {
     case CONTENT_SETTINGS_TYPE_GEOLOCATION:
       return vector_icons::kLocationOnIcon;
     case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
-    case CONTENT_SETTINGS_TYPE_PUSH_MESSAGING:
       return vector_icons::kNotificationsIcon;
 #if defined(OS_CHROMEOS)
     // TODO(xhwang): fix this icon, see crrev.com/863263007
@@ -94,7 +92,6 @@ base::string16 PermissionRequestImpl::GetMessageText() const {
       message_id = IDS_GEOLOCATION_INFOBAR_QUESTION;
       break;
     case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
-    case CONTENT_SETTINGS_TYPE_PUSH_MESSAGING:
       message_id = IDS_NOTIFICATION_PERMISSIONS;
       break;
     case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
@@ -130,7 +127,6 @@ base::string16 PermissionRequestImpl::GetMessageTextFragment() const {
       message_id = IDS_GEOLOCATION_INFOBAR_PERMISSION_FRAGMENT;
       break;
     case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
-    case CONTENT_SETTINGS_TYPE_PUSH_MESSAGING:
       message_id = IDS_NOTIFICATION_PERMISSIONS_FRAGMENT;
       break;
     case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:

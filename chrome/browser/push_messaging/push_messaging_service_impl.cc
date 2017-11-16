@@ -493,7 +493,7 @@ void PushMessagingServiceImpl::SubscribeFromDocument(
 
   // Push does not allow permission requests from iframes.
   PermissionManager::Get(profile_)->RequestPermission(
-      CONTENT_SETTINGS_TYPE_PUSH_MESSAGING, web_contents->GetMainFrame(),
+      CONTENT_SETTINGS_TYPE_NOTIFICATIONS, web_contents->GetMainFrame(),
       requesting_origin, user_gesture,
       base::Bind(&PushMessagingServiceImpl::DoSubscribe,
                  weak_factory_.GetWeakPtr(), app_identifier, options,
@@ -542,7 +542,7 @@ blink::WebPushPermissionStatus PushMessagingServiceImpl::GetPermissionStatus(
   // |origin| when checking whether permission to use the API has been granted.
   return ToPushPermission(
       PermissionManager::Get(profile_)
-          ->GetPermissionStatus(CONTENT_SETTINGS_TYPE_PUSH_MESSAGING, origin,
+          ->GetPermissionStatus(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, origin,
                                 origin)
           .content_setting);
 }

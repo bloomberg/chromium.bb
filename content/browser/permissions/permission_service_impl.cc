@@ -35,8 +35,6 @@ PermissionType PermissionDescriptorToPermissionType(
       return PermissionType::GEOLOCATION;
     case PermissionName::NOTIFICATIONS:
       return PermissionType::NOTIFICATIONS;
-    case PermissionName::PUSH_NOTIFICATIONS:
-      return PermissionType::PUSH_MESSAGING;
     case PermissionName::MIDI: {
       if (descriptor->extension && descriptor->extension->is_midi() &&
           descriptor->extension->get_midi()->sysex) {
@@ -82,7 +80,6 @@ blink::FeaturePolicyFeature PermissionTypeToFeaturePolicyFeature(
       return blink::FeaturePolicyFeature::kMicrophone;
     case PermissionType::VIDEO_CAPTURE:
       return blink::FeaturePolicyFeature::kCamera;
-    case PermissionType::PUSH_MESSAGING:
     case PermissionType::NOTIFICATIONS:
     case PermissionType::DURABLE_STORAGE:
     case PermissionType::BACKGROUND_SYNC:

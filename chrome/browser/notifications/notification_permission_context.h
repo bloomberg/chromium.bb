@@ -14,7 +14,7 @@ class Profile;
 
 class NotificationPermissionContext : public PermissionContextBase {
  public:
-  NotificationPermissionContext(Profile* profile, ContentSettingsType);
+  explicit NotificationPermissionContext(Profile* profile);
   ~NotificationPermissionContext() override;
 
   // PermissionContextBase implementation.
@@ -29,7 +29,7 @@ class NotificationPermissionContext : public PermissionContextBase {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(NotificationPermissionContextTest,
-                           PushTopLevelOriginOnly);
+                           WebNotificationsTopLevelOriginOnly);
   friend class NotificationPermissionContextTest;
 
   // PermissionContextBase implementation.
