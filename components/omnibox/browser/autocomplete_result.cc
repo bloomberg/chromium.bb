@@ -48,14 +48,14 @@ AutocompleteResult::~AutocompleteResult() {}
 
 void AutocompleteResult::CopyOldMatches(
     const AutocompleteInput& input,
-    const AutocompleteResult& old_matches,
+    AutocompleteResult* old_matches,
     TemplateURLService* template_url_service) {
-  if (old_matches.empty())
+  if (old_matches->empty())
     return;
 
   if (empty()) {
     // If we've got no matches we can copy everything from the last result.
-    CopyFrom(old_matches);
+    Swap(old_matches);
     for (ACMatches::iterator i(begin()); i != end(); ++i)
       i->from_previous = true;
     return;
@@ -85,7 +85,7 @@ void AutocompleteResult::CopyOldMatches(
   // visually unappealing, and could occur on each keystroke.
   ProviderToMatches matches_per_provider, old_matches_per_provider;
   BuildProviderToMatches(&matches_per_provider);
-  old_matches.BuildProviderToMatches(&old_matches_per_provider);
+  old_matches->BuildProviderToMatches(&old_matches_per_provider);
   for (ProviderToMatches::const_iterator i(old_matches_per_provider.begin());
        i != old_matches_per_provider.end(); ++i) {
     MergeMatchesByProvider(input.current_page_classification(),
@@ -299,6 +299,20 @@ void AutocompleteResult::Swap(AutocompleteResult* other) {
   alternate_nav_url_.Swap(&(other->alternate_nav_url_));
 }
 
+void AutocompleteResult::CopyFrom(const AutocompleteResult& rhs) {
+  if (this == &rhs)
+    return;
+
+  matches_ = rhs.matches_;
+  // Careful!  You can't just copy iterators from another container, you have to
+  // reconstruct them.
+  default_match_ = (rhs.default_match_ == rhs.end())
+                       ? end()
+                       : (begin() + (rhs.default_match_ - rhs.begin()));
+
+  alternate_nav_url_ = rhs.alternate_nav_url_;
+}
+
 #ifndef NDEBUG
 void AutocompleteResult::Validate() const {
   for (const_iterator i(begin()); i != end(); ++i)
@@ -431,19 +445,6 @@ void AutocompleteResult::MaybeCullTailSuggestions(ACMatches* matches) {
       }
     }
   }
-}
-
-void AutocompleteResult::CopyFrom(const AutocompleteResult& rhs) {
-  if (this == &rhs)
-    return;
-
-  matches_ = rhs.matches_;
-  // Careful!  You can't just copy iterators from another container, you have to
-  // reconstruct them.
-  default_match_ = (rhs.default_match_ == rhs.end()) ?
-      end() : (begin() + (rhs.default_match_ - rhs.begin()));
-
-  alternate_nav_url_ = rhs.alternate_nav_url_;
 }
 
 void AutocompleteResult::BuildProviderToMatches(

@@ -217,8 +217,8 @@ void AutocompleteResultTest::RunCopyOldMatchesTest(
   AutocompleteResult current_result;
   current_result.AppendMatches(input, current_matches);
   current_result.SortAndCull(input, template_url_service_.get());
-  current_result.CopyOldMatches(
-      input, last_result, template_url_service_.get());
+  current_result.CopyOldMatches(input, &last_result,
+                                template_url_service_.get());
 
   AssertResultMatches(current_result, expected, expected_size);
 }

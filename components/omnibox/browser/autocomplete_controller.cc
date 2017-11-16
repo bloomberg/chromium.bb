@@ -505,7 +505,7 @@ void AutocompleteController::UpdateResult(
   if (!done_) {
     // This conditional needs to match the conditional in Start that invokes
     // StartExpireTimer.
-    result_.CopyOldMatches(input_, last_result, template_url_service_);
+    result_.CopyOldMatches(input_, &last_result, template_url_service_);
   }
 
   UpdateKeywordDescriptions(&result_);

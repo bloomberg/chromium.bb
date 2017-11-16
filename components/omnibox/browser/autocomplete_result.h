@@ -34,9 +34,10 @@ class AutocompleteResult {
   ~AutocompleteResult();
 
   // Copies matches from |old_matches| to provide a consistant result set. See
-  // comments in code for specifics.
+  // comments in code for specifics. Will clear |old_matches| if this result is
+  // empty().
   void CopyOldMatches(const AutocompleteInput& input,
-                      const AutocompleteResult& old_matches,
+                      AutocompleteResult* old_matches,
                       TemplateURLService* template_url_service);
 
   // Adds a new set of matches to the result set.  Does not re-sort.  Calls
@@ -88,6 +89,9 @@ class AutocompleteResult {
 
   void Swap(AutocompleteResult* other);
 
+  // operator=() by another name.
+  void CopyFrom(const AutocompleteResult& rhs);
+
 #ifndef NDEBUG
   // Does a data integrity check on this result.
   void Validate() const;
@@ -133,9 +137,6 @@ class AutocompleteResult {
   // match), remove the tail suggestions.  If the only default matches are tail
   // suggestions, remove the non-tail suggestions.
   static void MaybeCullTailSuggestions(ACMatches* matches);
-
-  // operator=() by another name.
-  void CopyFrom(const AutocompleteResult& rhs);
 
   // Populates |provider_to_matches| from |matches_|.
   void BuildProviderToMatches(ProviderToMatches* provider_to_matches) const;
