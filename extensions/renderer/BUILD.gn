@@ -391,6 +391,7 @@ source_set("unit_tests") {
     "gc_callback_unittest.cc",
     "gin_port_unittest.cc",
     "json_schema_unittest.cc",
+    "messaging_util_unittest.cc",
     "messaging_utils_unittest.cc",
     "module_system_test.cc",
     "module_system_test.h",

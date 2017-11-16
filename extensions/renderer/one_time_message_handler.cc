@@ -362,10 +362,11 @@ void OneTimeMessageHandler::OnOneTimeMessageResponse(
   v8::Local<v8::Value> value;
   CHECK(arguments->GetNext(&value));
 
+  std::string error;
   std::unique_ptr<Message> message =
-      messaging_util::MessageFromV8(context, value);
+      messaging_util::MessageFromV8(context, value, &error);
   if (!message) {
-    arguments->ThrowTypeError("Illegal argument to Port.postMessage");
+    arguments->ThrowTypeError(error);
     return;
   }
   IPCMessageSender* ipc_sender = bindings_system_->GetIPCMessageSender();
