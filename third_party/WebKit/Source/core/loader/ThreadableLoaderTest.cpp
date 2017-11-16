@@ -28,6 +28,7 @@
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/Functional.h"
 #include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/Platform.h"
 #include "public/platform/TaskType.h"
 #include "public/platform/WebURLLoadTiming.h"
@@ -650,9 +651,13 @@ TEST_P(ThreadableLoaderTest, DidFailInStart) {
   CreateLoader();
   CallCheckpoint(1);
 
+  String error_message = String::Format(
+      "Failed to load '%s': Cross origin requests are not allowed by request "
+      "mode.",
+      ErrorURL().GetString().Utf8().data());
   EXPECT_CALL(*Client(), DidFail(ResourceError::CancelledDueToAccessCheckError(
                              ErrorURL(), ResourceRequestBlockedReason::kOther,
-                             "Cross origin requests are not supported.")));
+                             error_message)));
   EXPECT_CALL(GetCheckpoint(), Call(2));
 
   StartLoader(ErrorURL(), network::mojom::FetchRequestMode::kSameOrigin);

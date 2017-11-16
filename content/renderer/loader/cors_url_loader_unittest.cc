@@ -149,6 +149,25 @@ TEST_F(CORSURLLoaderTest, SameOriginRequest) {
   EXPECT_EQ(net::OK, client().status().error_code);
 }
 
+TEST_F(CORSURLLoaderTest, CrossOriginRequestFetchRequestModeSameOrigin) {
+  const GURL origin("http://example.com");
+  const GURL url("http://other.com/foo.png");
+  CreateLoaderAndStart(origin, url,
+                       network::mojom::FetchRequestMode::kSameOrigin);
+
+  RunUntilComplete();
+
+  // This call never hits the network URLLoader (i.e. the TestURLLoaderFactory)
+  // because it is fails right away.
+  EXPECT_FALSE(IsNetworkLoaderStarted());
+  EXPECT_FALSE(client().has_received_redirect());
+  EXPECT_FALSE(client().has_received_response());
+  EXPECT_EQ(net::ERR_FAILED, client().status().error_code);
+  ASSERT_TRUE(client().status().cors_error);
+  EXPECT_EQ(network::mojom::CORSError::kDisallowedByMode,
+            *client().status().cors_error);
+}
+
 TEST_F(CORSURLLoaderTest, CrossOriginRequestWithCORSModeButMissingCORSHeader) {
   const GURL origin("http://example.com");
   const GURL url("http://other.com/foo.png");
