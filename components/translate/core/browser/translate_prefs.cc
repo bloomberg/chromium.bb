@@ -8,10 +8,13 @@
 #include <utility>
 
 #include "base/feature_list.h"
+#include "base/i18n/rtl.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -21,6 +24,8 @@
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_pref_names.h"
 #include "components/translate/core/common/translate_util.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/l10n/l10n_util_collator.h"
 
 namespace translate {
 
@@ -153,6 +158,11 @@ void DenialTimeUpdate::AddDenialTime(base::Time denial_time) {
   while (GetDenialTimes()->GetSize() >= max_denial_count_)
     GetDenialTimes()->Remove(0, nullptr);
 }
+
+TranslateLanguageInfo::TranslateLanguageInfo() = default;
+
+TranslateLanguageInfo::TranslateLanguageInfo(
+    const TranslateLanguageInfo& other) = default;
 
 TranslatePrefs::TranslatePrefs(PrefService* user_prefs,
                                const char* accept_languages_pref,
@@ -335,6 +345,84 @@ void TranslatePrefs::RearrangeLanguage(
   std::rotate(first, it, last);
 
   UpdateLanguageList(languages);
+}
+
+// static
+void TranslatePrefs::GetLanguageInfoList(
+    const std::string& app_locale,
+    std::vector<TranslateLanguageInfo>* language_list) {
+  DCHECK(language_list != nullptr);
+
+  if (app_locale.empty()) {
+    return;
+  }
+
+  language_list->clear();
+
+  // Collect the language codes from the supported accept-languages.
+  std::vector<std::string> language_codes;
+  l10n_util::GetAcceptLanguagesForLocale(app_locale, &language_codes);
+
+  // Map of [display name -> {language code, native display name}].
+  typedef std::pair<std::string, base::string16> LanguagePair;
+  typedef std::map<base::string16, LanguagePair,
+                   l10n_util::StringComparator<base::string16>>
+      LanguageMap;
+
+  // Collator used to sort display names in the given locale.
+  UErrorCode error = U_ZERO_ERROR;
+  std::unique_ptr<icu::Collator> collator(
+      icu::Collator::createInstance(icu::Locale(app_locale.c_str()), error));
+  if (U_FAILURE(error)) {
+    collator.reset();
+  }
+  LanguageMap language_map(
+      l10n_util::StringComparator<base::string16>(collator.get()));
+
+  // Build the list of display names and the language map.
+  for (const auto& code : language_codes) {
+    const base::string16 display_name =
+        l10n_util::GetDisplayNameForLocale(code, app_locale, false);
+    const base::string16 native_display_name =
+        l10n_util::GetDisplayNameForLocale(code, code, false);
+    language_map[display_name] = std::make_pair(code, native_display_name);
+  }
+
+  // Get the list of translatable languages and convert to a set.
+  std::vector<std::string> translate_languages;
+  translate::TranslateDownloadManager::GetSupportedLanguages(
+      &translate_languages);
+  const std::set<std::string> translate_language_set(
+      translate_languages.begin(), translate_languages.end());
+
+  // Build the language list from the language map.
+  for (const auto& entry : language_map) {
+    const base::string16& display_name = entry.first;
+    const LanguagePair& pair = entry.second;
+
+    TranslateLanguageInfo language;
+    language.code = pair.first;
+
+    base::string16 adjusted_display_name(display_name);
+    base::i18n::AdjustStringForLocaleDirection(&adjusted_display_name);
+    language.display_name = base::UTF16ToUTF8(adjusted_display_name);
+
+    base::string16 adjusted_native_display_name(pair.second);
+    base::i18n::AdjustStringForLocaleDirection(&adjusted_native_display_name);
+    language.native_display_name =
+        base::UTF16ToUTF8(adjusted_native_display_name);
+
+    std::string supports_translate_code = pair.first;
+    if (base::FeatureList::IsEnabled(translate::kImprovedLanguageSettings)) {
+      // Extract the base language: if the base language can be translated, then
+      // even the regional one should be marked as such.
+      translate::ToTranslateLanguageSynonym(&supports_translate_code);
+    }
+    language.supports_translate =
+        translate_language_set.count(supports_translate_code) > 0;
+
+    language_list->push_back(language);
+  }
 }
 
 void TranslatePrefs::BlockLanguage(const std::string& input_language) {

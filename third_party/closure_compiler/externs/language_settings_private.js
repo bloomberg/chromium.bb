@@ -24,6 +24,7 @@ chrome.languageSettingsPrivate.MoveType = {
   TOP: 'TOP',
   UP: 'UP',
   DOWN: 'DOWN',
+  UNKNOWN: 'UNKNOWN',
 };
 
 /**
@@ -31,7 +32,6 @@ chrome.languageSettingsPrivate.MoveType = {
  *   code: string,
  *   displayName: string,
  *   nativeDisplayName: string,
- *   displayNameRTL: (boolean|undefined),
  *   supportsUI: (boolean|undefined),
  *   supportsSpellcheck: (boolean|undefined),
  *   supportsTranslate: (boolean|undefined)

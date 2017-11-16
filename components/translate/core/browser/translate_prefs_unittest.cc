@@ -16,11 +16,15 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/translate/core/browser/translate_download_manager.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using base::test::ScopedFeatureList;
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
+
+using base::test::ScopedFeatureList;
+using ::testing::ElementsAreArray;
+using ::testing::UnorderedElementsAreArray;
 
 const char kTestLanguage[] = "en";
 
@@ -69,7 +73,7 @@ class TranslatePrefsTest : public testing::Test {
   // Checks that the provided strings are equivalent to the language prefs.
   // Chrome OS uses a different pref, so we need to handle it separately.
   void ExpectLanguagePrefs(const std::string& expected,
-                           const std::string& expected_chromeos) {
+                           const std::string& expected_chromeos) const {
     if (expected.empty()) {
       EXPECT_TRUE(prefs_->GetString(kAcceptLanguagesPref).empty());
     } else {
@@ -86,11 +90,12 @@ class TranslatePrefsTest : public testing::Test {
 
   // Similar to function above: this one expects both ChromeOS and other
   // platforms to have the same value of language prefs.
-  void ExpectLanguagePrefs(const std::string& expected) {
+  void ExpectLanguagePrefs(const std::string& expected) const {
     ExpectLanguagePrefs(expected, expected);
   }
 
-  void ExpectBlockedLanguageListContent(const std::vector<std::string>& list) {
+  void ExpectBlockedLanguageListContent(
+      const std::vector<std::string>& list) const {
     const base::ListValue* const blacklist =
         prefs_->GetList(kTranslateBlockedLanguagesPref);
     const int input_size = list.size();
@@ -100,6 +105,43 @@ class TranslatePrefsTest : public testing::Test {
       blacklist->GetString(i, &value);
       EXPECT_EQ(list[i], value);
     }
+  }
+
+  // Returns a vector of language codes from the elements of the given
+  // |language_list|.
+  std::vector<std::string> ExtractLanguageCodes(
+      const std::vector<TranslateLanguageInfo>& language_list) const {
+    std::vector<std::string> output;
+    for (const auto& item : language_list) {
+      output.push_back(item.code);
+    }
+    return output;
+  }
+
+  // Returns a vector of display names from the elements of the given
+  // |language_list|.
+  std::vector<std::string> ExtractDisplayNames(
+      const std::vector<TranslateLanguageInfo>& language_list) const {
+    std::vector<std::string> output;
+    for (const auto& item : language_list) {
+      output.push_back(item.display_name);
+    }
+    return output;
+  }
+
+  // Finds and returns the element in |language_list| that has the given code.
+  TranslateLanguageInfo GetLanguageByCode(
+      const std::string& language_code,
+      const std::vector<TranslateLanguageInfo>& language_list) const {
+    // Perform linear search as we don't care much about efficiency in test.
+    // The size of the vector is ~150.
+    TranslateLanguageInfo result;
+    for (const auto& i : language_list) {
+      if (language_code == i.code) {
+        result = i;
+      }
+    }
+    return result;
   }
 
   std::unique_ptr<sync_preferences::TestingPrefServiceSyncable> prefs_;
@@ -323,6 +365,157 @@ TEST_F(TranslatePrefsTest, UpdateLanguageListFeatureEnabled) {
   languages = {"en-US", "en", "fr", "fr-CA"};
   translate_prefs_->UpdateLanguageList(languages);
   ExpectLanguagePrefs("en-US,en,fr,fr-CA");
+}
+
+// Test that GetLanguageInfoList() returns the correct list of languages based
+// on the given locale.
+TEST_F(TranslatePrefsTest, GetLanguageInfoListCorrectLocale) {
+  std::vector<TranslateLanguageInfo> language_list;
+  std::vector<std::string> expected_codes;
+
+  l10n_util::GetAcceptLanguagesForLocale("en-US", &expected_codes);
+  TranslatePrefs::GetLanguageInfoList("en-US", &language_list);
+  std::vector<std::string> codes = ExtractLanguageCodes(language_list);
+  EXPECT_THAT(codes, UnorderedElementsAreArray(expected_codes));
+
+  language_list.clear();
+  expected_codes.clear();
+  codes.clear();
+  l10n_util::GetAcceptLanguagesForLocale("ja", &expected_codes);
+  TranslatePrefs::GetLanguageInfoList("ja", &language_list);
+  codes = ExtractLanguageCodes(language_list);
+  EXPECT_THAT(codes, UnorderedElementsAreArray(expected_codes));
+
+  language_list.clear();
+  expected_codes.clear();
+  codes.clear();
+  l10n_util::GetAcceptLanguagesForLocale("es-AR", &expected_codes);
+  TranslatePrefs::GetLanguageInfoList("es-AR", &language_list);
+  codes = ExtractLanguageCodes(language_list);
+  EXPECT_THAT(codes, UnorderedElementsAreArray(expected_codes));
+}
+
+// Check the output of GetLanguageInfoList().
+TEST_F(TranslatePrefsTest, GetLanguageInfoListOutput) {
+  std::vector<TranslateLanguageInfo> language_list;
+
+  // Empty locale returns empty output.
+  TranslatePrefs::GetLanguageInfoList("", &language_list);
+  EXPECT_TRUE(language_list.empty());
+
+  // Output is sorted.
+  language_list.clear();
+  TranslatePrefs::GetLanguageInfoList("en-US", &language_list);
+  const std::vector<std::string> display_names =
+      ExtractDisplayNames(language_list);
+  std::vector<std::string> sorted(display_names);
+  std::sort(sorted.begin(), sorted.end());
+  EXPECT_THAT(display_names, ElementsAreArray(sorted));
+}
+
+// Check a sample of languages returned by GetLanguageInfoList().
+TEST_F(TranslatePrefsTest, GetLanguageInfoListSampleLanguages) {
+  ScopedFeatureList disable_feature;
+  disable_feature.InitAndDisableFeature(translate::kImprovedLanguageSettings);
+
+  std::vector<TranslateLanguageInfo> language_list;
+  TranslateLanguageInfo language;
+
+  //-----------------------------------
+  // Test with US locale.
+  TranslatePrefs::GetLanguageInfoList("en-US", &language_list);
+
+  language = GetLanguageByCode("en", language_list);
+  EXPECT_EQ("en", language.code);
+  EXPECT_EQ("English", language.display_name);
+  EXPECT_EQ("English", language.native_display_name);
+  EXPECT_TRUE(language.supports_translate);
+
+  language = GetLanguageByCode("en-US", language_list);
+  EXPECT_EQ("en-US", language.code);
+  EXPECT_EQ("English (United States)", language.display_name);
+  EXPECT_EQ("English (United States)", language.native_display_name);
+  EXPECT_FALSE(language.supports_translate);
+
+  language = GetLanguageByCode("it", language_list);
+  EXPECT_EQ("it", language.code);
+  EXPECT_EQ("Italian", language.display_name);
+  EXPECT_EQ("italiano", language.native_display_name);
+  EXPECT_TRUE(language.supports_translate);
+
+  language = GetLanguageByCode("it-IT", language_list);
+  EXPECT_EQ("it-IT", language.code);
+  EXPECT_EQ("Italian (Italy)", language.display_name);
+  EXPECT_EQ("italiano (Italia)", language.native_display_name);
+  EXPECT_FALSE(language.supports_translate);
+
+  language = GetLanguageByCode("ru", language_list);
+  EXPECT_EQ("ru", language.code);
+  EXPECT_EQ("Russian", language.display_name);
+  EXPECT_EQ("русский", language.native_display_name);
+  EXPECT_TRUE(language.supports_translate);
+
+  //-----------------------------------
+  // Test with Italian locale.
+  language_list.clear();
+  TranslatePrefs::GetLanguageInfoList("it", &language_list);
+
+  language = GetLanguageByCode("en-US", language_list);
+  EXPECT_EQ("en-US", language.code);
+  EXPECT_EQ("inglese (Stati Uniti)", language.display_name);
+  EXPECT_EQ("English (United States)", language.native_display_name);
+  EXPECT_FALSE(language.supports_translate);
+
+  language = GetLanguageByCode("it", language_list);
+  EXPECT_EQ("it", language.code);
+  EXPECT_EQ("italiano", language.display_name);
+  EXPECT_EQ("italiano", language.native_display_name);
+  EXPECT_TRUE(language.supports_translate);
+
+  language = GetLanguageByCode("it-IT", language_list);
+  EXPECT_EQ("it-IT", language.code);
+  EXPECT_EQ("italiano (Italia)", language.display_name);
+  EXPECT_EQ("italiano (Italia)", language.native_display_name);
+  EXPECT_FALSE(language.supports_translate);
+
+  language = GetLanguageByCode("fr-FR", language_list);
+  EXPECT_EQ("fr-FR", language.code);
+  EXPECT_EQ("francese (Francia)", language.display_name);
+  EXPECT_EQ("français (France)", language.native_display_name);
+  EXPECT_FALSE(language.supports_translate);
+}
+
+// With feature enabled, GetLanguageInfoList() should set different values for
+// supports_translate.
+// TODO(claudiomagni): Clean up this method once the feature is launched.
+TEST_F(TranslatePrefsTest, GetLanguageInfoListFeatureEnabled) {
+  ScopedFeatureList enable_feature;
+  enable_feature.InitAndEnableFeature(translate::kImprovedLanguageSettings);
+
+  std::vector<TranslateLanguageInfo> language_list;
+  TranslateLanguageInfo language;
+
+  TranslatePrefs::GetLanguageInfoList("en-US", &language_list);
+
+  language = GetLanguageByCode("en", language_list);
+  EXPECT_EQ("en", language.code);
+  EXPECT_TRUE(language.supports_translate);
+
+  language = GetLanguageByCode("en-US", language_list);
+  EXPECT_EQ("en-US", language.code);
+  EXPECT_TRUE(language.supports_translate);
+
+  language = GetLanguageByCode("it", language_list);
+  EXPECT_EQ("it", language.code);
+  EXPECT_TRUE(language.supports_translate);
+
+  language = GetLanguageByCode("it-IT", language_list);
+  EXPECT_EQ("it-IT", language.code);
+  EXPECT_TRUE(language.supports_translate);
+
+  language = GetLanguageByCode("zh-HK", language_list);
+  EXPECT_EQ("zh-HK", language.code);
+  EXPECT_TRUE(language.supports_translate);
 }
 
 TEST_F(TranslatePrefsTest, BlockLanguage) {

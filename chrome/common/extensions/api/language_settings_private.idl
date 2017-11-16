@@ -22,9 +22,6 @@ namespace languageSettingsPrivate {
     // The name of the language as it is in its own language.
     DOMString nativeDisplayName;
 
-    // Whether the display name has RTL. Defaults to false.
-    boolean? displayNameRTL;
-
     // Whether the UI can be displayed in this language. Defaults to false.
     boolean? supportsUI;
 
