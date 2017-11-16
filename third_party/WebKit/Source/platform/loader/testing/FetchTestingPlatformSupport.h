@@ -7,7 +7,7 @@
 
 #include <memory>
 #include "platform/heap/Persistent.h"
-#include "platform/testing/TestingPlatformSupport.h"
+#include "platform/testing/TestingPlatformSupportWithMockScheduler.h"
 
 namespace blink {
 

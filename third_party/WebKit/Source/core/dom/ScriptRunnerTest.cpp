@@ -9,7 +9,7 @@
 #include "platform/bindings/RuntimeCallStats.h"
 #include "platform/heap/Handle.h"
 #include "platform/scheduler/renderer/web_view_scheduler.h"
-#include "platform/testing/TestingPlatformSupport.h"
+#include "platform/testing/TestingPlatformSupportWithMockScheduler.h"
 #include "public/platform/Platform.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -5,7 +5,9 @@
 #include "platform/LongTaskDetector.h"
 
 #include "platform/CrossThreadFunctional.h"
-#include "platform/testing/TestingPlatformSupport.h"
+#include "platform/WebTaskRunner.h"
+#include "platform/testing/TestingPlatformSupportWithMockScheduler.h"
+#include "platform/wtf/CurrentTime.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
