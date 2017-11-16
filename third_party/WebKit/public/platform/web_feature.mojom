@@ -781,8 +781,6 @@ enum WebFeature {
 
   kCSSSelectorPseudoSlotted = 1118,
   kMediaDevicesEnumerateDevices = 1119,
-  kNonSecureSharedWorkerAccessedFromSecureContext = 1120,
-  kSecureSharedWorkerAccessedFromNonSecureContext = 1121,
   kEventComposedPath = 1123,
   kLinkHeaderPreload = 1124,
   kMouseWheelEvent = 1125,
