@@ -547,6 +547,7 @@ void av1_write_coeffs_mb(const AV1_COMMON *const cm, MACROBLOCK *x,
   }
 }
 
+#if !USE_CAUSAL_BASE_CTX
 static INLINE void get_base_ctx_set(const uint8_t *const levels,
                                     const int c,  // raster order
                                     const int bwl,
@@ -584,6 +585,7 @@ static INLINE void get_base_ctx_set(const uint8_t *const levels,
   }
   return;
 }
+#endif
 
 static INLINE int get_br_cost(tran_low_t abs_qc, int ctx,
                               const int *coeff_lps) {
