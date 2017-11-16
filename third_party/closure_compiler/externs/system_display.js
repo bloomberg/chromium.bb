@@ -114,6 +114,7 @@ chrome.system.display.DisplayLayout;
  *   id: string,
  *   name: string,
  *   mirroringSourceId: string,
+ *   mirroringDestinationIds: !Array<string>,
  *   isPrimary: boolean,
  *   isInternal: boolean,
  *   isEnabled: boolean,

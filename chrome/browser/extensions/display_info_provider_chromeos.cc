@@ -698,6 +698,11 @@ void DisplayInfoProviderChromeOS::UpdateDisplayUnitInfoForPlatform(
   if (display_manager->IsInMirrorMode()) {
     unit->mirroring_source_id =
         base::Int64ToString(display_manager->mirroring_source_id());
+    unit->mirroring_destination_ids.clear();
+    for (int64_t id : display_manager->GetCurrentDisplayIdList()) {
+      if (id != display_manager->mirroring_source_id())
+        unit->mirroring_destination_ids.emplace_back(base::Int64ToString(id));
+    }
   }
 
   const display::ManagedDisplayInfo& display_info =

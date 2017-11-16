@@ -80,6 +80,9 @@ Polymer({
       notify: true,
     },
 
+    /** Ids for mirroring destination displays. */
+    mirroringDestinationIds: Array,
+
     /** @private {!Array<number>} Mode index values for slider. */
     modeValues_: Array,
 
@@ -213,6 +216,10 @@ Polymer({
       return;
     settings.display.systemDisplayApi.getDisplayLayout(
         this.displayLayoutFetched_.bind(this, displays));
+    if (this.isMirrored_(displays))
+      this.mirroringDestinationIds = displays[0].mirroringDestinationIds;
+    else
+      this.mirroringDestinationIds = [];
   },
 
   /**
@@ -575,7 +582,8 @@ Polymer({
 
     this.unifiedDesktopMode_ = !!primaryDisplay && primaryDisplay.isUnified;
 
-    this.$.displayLayout.updateDisplays(this.displays, this.layouts);
+    this.$.displayLayout.updateDisplays(
+        this.displays, this.layouts, this.mirroringDestinationIds);
   },
 
   /** @private */
