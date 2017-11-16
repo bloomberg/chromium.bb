@@ -67,6 +67,16 @@ CONTENT_EXPORT extern const char kChromeUIPpapiFlashHangURL[];
 #if defined(OS_ANDROID)
 CONTENT_EXPORT extern const char kChromeUIGpuJavaCrashURL[];
 #endif
+#if defined(ADDRESS_SANITIZER) || defined(SYZYASAN)
+CONTENT_EXPORT extern const char kChromeUICrashHeapOverflowURL[];
+CONTENT_EXPORT extern const char kChromeUICrashHeapUnderflowURL[];
+CONTENT_EXPORT extern const char kChromeUICrashUseAfterFreeURL[];
+#endif
+#if defined(SYZYASAN)
+CONTENT_EXPORT extern const char kChromeUICrashCorruptHeapBlockURL[];
+CONTENT_EXPORT extern const char kChromeUICrashCorruptHeapURL[];
+CONTENT_EXPORT extern const char kChromeUICrashDcheckURL[];
+#endif
 
 // Special URL used to start a navigation to an error page.
 CONTENT_EXPORT extern const char kUnreachableWebDataURL[];

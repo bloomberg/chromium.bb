@@ -37,7 +37,7 @@ class TabStackTraceTest(tab_test_case.TabTestCase):
   def testCrashMinimalSymbols(self):
     with self.assertRaises(exceptions.DevtoolsTargetCrashException) as c:
       self._tab.Navigate('chrome://crash', timeout=5)
-    self.assertIn('PrepareRenderViewForNavigation',
+    self.assertIn('NavigateInternal',
                   '\n'.join(c.exception.stack_trace))
 
   # The breakpad file specific test only apply to platforms which use the

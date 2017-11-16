@@ -45,6 +45,7 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/resource_response.h"
 #include "content/public/common/url_loader_factory.mojom.h"
+#include "content/public/common/url_utils.h"
 #include "net/base/net_errors.h"
 #include "url/gurl.h"
 #include "url/url_util.h"

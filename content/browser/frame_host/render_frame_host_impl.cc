@@ -3530,14 +3530,8 @@ void RenderFrameHostImpl::CommitNavigation(
     stream_handle_ = std::move(body);
   }
 
-  // When navigating to a debug url, no commit is expected from the
-  // RenderFrameHost, nor should the throbber start. The NavigationRequest is
-  // also not stored in the FrameTreeNode. Therefore do not reset it, as this
-  // could cancel an existing pending navigation.
-  if (!IsRendererDebugURL(common_params.url)) {
-    pending_commit_ = true;
-    is_loading_ = true;
-  }
+  pending_commit_ = true;
+  is_loading_ = true;
 }
 
 void RenderFrameHostImpl::FailedNavigation(
@@ -3769,6 +3763,10 @@ void RenderFrameHostImpl::ClearFocusedElement() {
 }
 
 bool RenderFrameHostImpl::CanCommitURL(const GURL& url) {
+  // Renderer-debug URLs can never be committed.
+  if (IsRendererDebugURL(url))
+    return false;
+
   // TODO(creis): We should also check for WebUI pages here.  Also, when the
   // out-of-process iframes implementation is ready, we should check for
   // cross-site URLs that are not allowed to commit in this process.

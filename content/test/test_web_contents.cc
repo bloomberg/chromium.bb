@@ -26,6 +26,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/page_state.h"
+#include "content/public/common/url_utils.h"
 #include "content/public/test/browser_side_navigation_test_utils.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/navigation_simulator.h"
