@@ -113,6 +113,8 @@ class CastMediaSinkServiceImpl
                            CacheDialDiscoveredSinks);
   FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceImplTest,
                            DualDiscoveryDoesntDuplicateCacheItems);
+  FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceImplTest,
+                           CacheSinksForDirectNetworkChange);
   FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceImplTest, TestAttemptConnection);
   FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceImplTest,
                            TestInitRetryParametersWithFeatureDisabled);
