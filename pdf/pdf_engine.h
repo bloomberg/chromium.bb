@@ -348,6 +348,9 @@ class PDFEngine {
   virtual void MoveRangeSelectionExtent(const pp::Point& extent) = 0;
   virtual void SetSelectionBounds(const pp::Point& base,
                                   const pp::Point& extent) = 0;
+
+  // Remove focus from form widgets, consolidating the user input.
+  virtual void KillFormFocus() = 0;
 };
 
 // Interface for exports that wrap the PDF engine.

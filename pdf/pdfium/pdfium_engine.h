@@ -120,6 +120,7 @@ class PDFiumEngine : public PDFEngine,
   void OnDocumentComplete() override;
   void OnDocumentCanceled() override;
   void CancelBrowserDownload() override;
+  void KillFormFocus() override;
 
   void UnsupportedFeature(int type);
   void FontSubstituted();
@@ -333,7 +334,6 @@ class PDFiumEngine : public PDFEngine,
   void FitContentsToPrintableAreaIfRequired(
       FPDF_DOCUMENT doc,
       const PP_PrintSettings_Dev& print_settings);
-  void SaveSelectedFormForPrint();
 
   // Checks if |page| has selected text in a form element. If so, sets that as
   // the plugin's text selection.

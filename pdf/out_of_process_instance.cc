@@ -773,6 +773,11 @@ void OutOfProcessInstance::DidChangeView(const pp::View& view) {
   }
 }
 
+void OutOfProcessInstance::DidChangeFocus(bool has_focus) {
+  if (!has_focus)
+    engine_->KillFormFocus();
+}
+
 void OutOfProcessInstance::GetPrintPresetOptionsFromDocument(
     PP_PdfPrintPresetOptions_Dev* options) {
   options->is_scaling_disabled = PP_FromBool(IsPrintScalingDisabled());
