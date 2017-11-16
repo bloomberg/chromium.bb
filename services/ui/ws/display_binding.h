@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/public/interfaces/window_tree_host.mojom.h"
 #include "services/ui/ws/user_id.h"
 
