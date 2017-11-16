@@ -504,7 +504,7 @@ TEST_F(BackFwdMenuModelTest, FaviconLoadTest) {
   profile()->CreateFaviconService();
   Browser::CreateParams native_params(profile(), true);
   std::unique_ptr<Browser> browser(
-      chrome::CreateBrowserWithTestWindowForParams(&native_params));
+      CreateBrowserWithTestWindowForParams(&native_params));
   FaviconDelegate favicon_delegate;
 
   BackForwardMenuModel back_model(

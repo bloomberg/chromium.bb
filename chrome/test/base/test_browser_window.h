@@ -202,12 +202,8 @@ class TestBrowserWindowOwner : public chrome::BrowserListObserver {
   DISALLOW_COPY_AND_ASSIGN(TestBrowserWindowOwner);
 };
 
-namespace chrome {
-
 // Helper that handle the lifetime of TestBrowserWindow instances.
 std::unique_ptr<Browser> CreateBrowserWithTestWindowForParams(
     Browser::CreateParams* params);
-
-}  // namespace chrome
 
 #endif  // CHROME_TEST_BASE_TEST_BROWSER_WINDOW_H_

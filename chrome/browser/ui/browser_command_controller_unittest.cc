@@ -233,7 +233,7 @@ TEST_F(BrowserCommandControllerTest, AvatarMenuAlwaysDisabledInIncognitoMode) {
   Browser::CreateParams profile_params(
       original_profile->GetOffTheRecordProfile(), true);
   std::unique_ptr<Browser> otr_browser(
-      chrome::CreateBrowserWithTestWindowForParams(&profile_params));
+      CreateBrowserWithTestWindowForParams(&profile_params));
 
   chrome::BrowserCommandController command_controller(otr_browser.get());
   const CommandUpdater* command_updater = command_controller.command_updater();
@@ -476,7 +476,7 @@ TEST_F(BrowserCommandControllerTest, IncognitoModeOnSigninAllowedPrefChange) {
   Browser::CreateParams profile_params(profile1->GetOffTheRecordProfile(),
                                        true);
   std::unique_ptr<Browser> browser2(
-      chrome::CreateBrowserWithTestWindowForParams(&profile_params));
+      CreateBrowserWithTestWindowForParams(&profile_params));
 
   chrome::BrowserCommandController command_controller(browser2.get());
   const CommandUpdater* command_updater = command_controller.command_updater();
