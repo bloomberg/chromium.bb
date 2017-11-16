@@ -842,6 +842,26 @@ TEST_P(QuicSessionTestServer, RstStreamBeforeHeadersDecompressed) {
   EXPECT_TRUE(connection_->connected());
 }
 
+TEST_P(QuicSessionTestServer, OnStreamFrameFinStaticStreamId) {
+  // Send two bytes of payload.
+  QuicStreamFrame data1(kCryptoStreamId, true, 0, QuicStringPiece("HT"));
+  EXPECT_CALL(*connection_,
+              CloseConnection(
+                  QUIC_INVALID_STREAM_ID, "Attempt to close a static stream",
+                  ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET));
+  session_.OnStreamFrame(data1);
+}
+
+TEST_P(QuicSessionTestServer, OnRstStreamStaticStreamId) {
+  // Send two bytes of payload.
+  QuicRstStreamFrame rst1(kCryptoStreamId, QUIC_ERROR_PROCESSING_STREAM, 0);
+  EXPECT_CALL(*connection_,
+              CloseConnection(
+                  QUIC_INVALID_STREAM_ID, "Attempt to reset a static stream",
+                  ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET));
+  session_.OnRstStream(rst1);
+}
+
 TEST_P(QuicSessionTestServer, HandshakeUnblocksFlowControlBlockedStream) {
   // Test that if a stream is flow control blocked, then on receipt of the SHLO
   // containing a suitable send window offset, the stream becomes unblocked.
