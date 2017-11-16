@@ -1,5 +1,4 @@
 This is a testharness.js-based test.
-PASS Animation interface automated IDL tests
 PASS Animation interface: existence and properties of interface object
 PASS Animation interface object length
 PASS Animation interface object name

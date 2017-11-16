@@ -1,4 +1,5 @@
 This is a testharness.js-based test.
+Found 75 tests; 15 PASS, 60 FAIL, 0 TIMEOUT, 0 NOTRUN.
 FAIL Keyframes can be replaced with an empty keyframe effect.setKeyframes is not a function
 FAIL Keyframes can be replaced with a one property two value property-indexed keyframes specification effect.setKeyframes is not a function
 FAIL Keyframes can be replaced with a one shorthand property two value property-indexed keyframes specification effect.setKeyframes is not a function
@@ -13,11 +14,40 @@ FAIL Keyframes can be replaced with a one property one value property-indexed ke
 FAIL Keyframes can be replaced with a one property one non-array value property-indexed keyframes specification effect.setKeyframes is not a function
 FAIL Keyframes can be replaced with a one property two value property-indexed keyframes specification where the first value is invalid effect.setKeyframes is not a function
 FAIL Keyframes can be replaced with a one property two value property-indexed keyframes specification where the second value is invalid effect.setKeyframes is not a function
+FAIL Keyframes can be replaced with a property-indexed keyframe with a single offset effect.setKeyframes is not a function
+FAIL Keyframes can be replaced with a property-indexed keyframe with an array of offsets effect.setKeyframes is not a function
+FAIL Keyframes can be replaced with a property-indexed keyframe with an array of offsets that is too short effect.setKeyframes is not a function
+FAIL Keyframes can be replaced with a property-indexed keyframe with an array of offsets that is too long effect.setKeyframes is not a function
+FAIL Keyframes can be replaced with a property-indexed keyframe with an empty array of offsets effect.setKeyframes is not a function
+FAIL Keyframes can be replaced with a property-indexed keyframe with an array of offsets with an embedded null value effect.setKeyframes is not a function
+FAIL Keyframes can be replaced with a property-indexed keyframe with an array of offsets with a trailing null value effect.setKeyframes is not a function
+FAIL Keyframes can be replaced with a property-indexed keyframe with an array of offsets with leading and trailing null values effect.setKeyframes is not a function
+FAIL Keyframes can be replaced with a property-indexed keyframe with an array of offsets with adjacent null values effect.setKeyframes is not a function
+FAIL Keyframes can be replaced with a property-indexed keyframe with an array of offsets with all null values (and too many at that) effect.setKeyframes is not a function
+FAIL Keyframes can be replaced with a property-indexed keyframe with a single null offset effect.setKeyframes is not a function
+FAIL Keyframes can be replaced with a property-indexed keyframe with an array of offsets that is not strictly ascending in the unused part of the array effect.setKeyframes is not a function
+FAIL Keyframes can be replaced with a property-indexed keyframe without any specified easing effect.setKeyframes is not a function
+FAIL Keyframes can be replaced with a property-indexed keyframe with a single easing effect.setKeyframes is not a function
+FAIL Keyframes can be replaced with a property-indexed keyframe with an array of easings effect.setKeyframes is not a function
+FAIL Keyframes can be replaced with a property-indexed keyframe with an array of easings that is too short effect.setKeyframes is not a function
+FAIL Keyframes can be replaced with a property-indexed keyframe with a single-element array of easings effect.setKeyframes is not a function
+FAIL Keyframes can be replaced with a property-indexed keyframe with an empty array of easings effect.setKeyframes is not a function
+FAIL Keyframes can be replaced with a property-indexed keyframe with an array of easings that is too long effect.setKeyframes is not a function
+FAIL Keyframes can be replaced with a property-indexed keyframe with a single composite operation effect.setKeyframes is not a function
+FAIL Keyframes can be replaced with a property-indexed keyframe with a composite array effect.setKeyframes is not a function
+FAIL Keyframes can be replaced with a property-indexed keyframe with a composite array that is too short effect.setKeyframes is not a function
+FAIL Keyframes can be replaced with a property-indexed keyframe with a composite array that is too long effect.setKeyframes is not a function
+FAIL Keyframes can be replaced with a property-indexed keyframe with a single-element composite array effect.setKeyframes is not a function
 FAIL Keyframes can be replaced with a one property one keyframe sequence effect.setKeyframes is not a function
 FAIL Keyframes can be replaced with a one property two keyframe sequence effect.setKeyframes is not a function
 FAIL Keyframes can be replaced with a two property two keyframe sequence effect.setKeyframes is not a function
 FAIL Keyframes can be replaced with a one shorthand property two keyframe sequence effect.setKeyframes is not a function
 FAIL Keyframes can be replaced with a two property (a shorthand and one of its component longhands) two keyframe sequence effect.setKeyframes is not a function
+FAIL Keyframes can be replaced with a two property keyframe sequence where one property is missing from the first keyframe effect.setKeyframes is not a function
+FAIL Keyframes can be replaced with a two property keyframe sequence where one property is missing from the last keyframe effect.setKeyframes is not a function
+FAIL Keyframes can be replaced with a one property two keyframe sequence that needs to stringify its values effect.setKeyframes is not a function
+FAIL Keyframes can be replaced with a keyframe sequence with a CSS variable reference effect.setKeyframes is not a function
+FAIL Keyframes can be replaced with a keyframe sequence with a CSS variable reference in a shorthand property effect.setKeyframes is not a function
 FAIL Keyframes can be replaced with a keyframe sequence with duplicate values for a given interior offset effect.setKeyframes is not a function
 FAIL Keyframes can be replaced with a keyframe sequence with duplicate values for offsets 0 and 1 effect.setKeyframes is not a function
 FAIL Keyframes can be replaced with a two property four keyframe sequence effect.setKeyframes is not a function
@@ -30,21 +60,20 @@ FAIL Keyframes can be replaced with a two property keyframe sequence with some o
 FAIL Keyframes can be replaced with a one property keyframe sequence with all omitted offsets effect.setKeyframes is not a function
 FAIL Keyframes can be replaced with a keyframe sequence with different easing values, but the same easing value for a given offset effect.setKeyframes is not a function
 FAIL Keyframes can be replaced with a keyframe sequence with different composite values, but the same composite value for a given offset effect.setKeyframes is not a function
-FAIL Keyframes can be replaced with a one property two keyframe sequence that needs to stringify its values effect.setKeyframes is not a function
-FAIL Keyframes can be replaced with a keyframe sequence with a CSS variable reference effect.setKeyframes is not a function
-FAIL Keyframes can be replaced with a keyframe sequence with a CSS variable reference in a shorthand property effect.setKeyframes is not a function
-FAIL Keyframes can be replaced with a keyframe sequence where shorthand precedes longhand effect.setKeyframes is not a function
-FAIL Keyframes can be replaced with a keyframe sequence where longhand precedes shorthand effect.setKeyframes is not a function
-FAIL Keyframes can be replaced with a keyframe sequence where lesser shorthand precedes greater shorthand effect.setKeyframes is not a function
-FAIL Keyframes can be replaced with a keyframe sequence where greater shorthand precedes lesser shorthand effect.setKeyframes is not a function
-FAIL Keyframes can be replaced with a two property keyframe sequence where one property is missing from the first keyframe effect.setKeyframes is not a function
-FAIL Keyframes can be replaced with a two property keyframe sequence where one property is missing from the last keyframe effect.setKeyframes is not a function
-FAIL Keyframes can be replaced with a keyframe sequence with repeated values at offset 1 with different easings effect.setKeyframes is not a function
 PASS KeyframeEffect constructor throws with keyframes with an out-of-bounded positive offset
 PASS KeyframeEffect constructor throws with keyframes with an out-of-bounded negative offset
+PASS KeyframeEffect constructor throws with property-indexed keyframes not loosely sorted by offset
+PASS KeyframeEffect constructor throws with property-indexed keyframes not loosely sorted by offset even though not all offsets are specified
+PASS KeyframeEffect constructor throws with property-indexed keyframes with offsets out of range
 PASS KeyframeEffect constructor throws with keyframes not loosely sorted by offset
 PASS KeyframeEffect constructor throws with property-indexed keyframes with an invalid easing value
+PASS KeyframeEffect constructor throws with property-indexed keyframes with an invalid easing value as one of the array values
+PASS KeyframeEffect constructor throws with property-indexed keyframe with an invalid easing in the unused part of the array of easings
+PASS KeyframeEffect constructor throws with empty property-indexed keyframe with an invalid easing
+PASS KeyframeEffect constructor throws with empty property-indexed keyframe with an invalid easings array
 PASS KeyframeEffect constructor throws with a keyframe sequence with an invalid easing value
+PASS KeyframeEffect constructor throws with property-indexed keyframes with an invalid composite value
+PASS KeyframeEffect constructor throws with property-indexed keyframes with an invalid composite value as one of the array values
 PASS KeyframeEffect constructor throws with keyframes with an invalid composite value
 Harness: the test ran to completion.
 
