@@ -359,6 +359,22 @@ static INLINE int is_valid_mrc_mask(int n_masked_vals, int width, int height) {
 }
 #endif  // CONFIG_MRC_TX
 
+// Utility function that returns the log of the ratio of the col and row
+// sizes.
+static INLINE int get_rect_tx_log_ratio(int col, int row) {
+  if (col == row) return 0;
+  if (col > row) {
+    if (col == row * 2) return 1;
+    if (col == row * 4) return 2;
+    assert(0 && "Unsupported transform size");
+  } else {
+    if (row == col * 2) return -1;
+    if (row == col * 4) return -2;
+    assert(0 && "Unsupported transform size");
+  }
+  return 0;  // Invalid
+}
+
 void av1_gen_fwd_stage_range(int8_t *stage_range_col, int8_t *stage_range_row,
                              const TXFM_2D_FLIP_CFG *cfg, int bd);
 

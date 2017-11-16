@@ -193,6 +193,14 @@ static INLINE void inv_txfm2d_add_c(const int32_t *input, uint16_t *output,
   // for square transforms.
   const int txfm_size_col = cfg->row_cfg->txfm_size;
   const int txfm_size_row = cfg->col_cfg->txfm_size;
+  const int rect_type = get_rect_tx_log_ratio(txfm_size_col, txfm_size_row);
+  int rect_type2_shift = 0;
+  if (rect_type == 2 || rect_type == -2) {
+    const int txfm_size_max = AOMMAX(txfm_size_col, txfm_size_row);
+    // For 16x4 / 4x16 shift 1 bit, for 32x8 / 8x32 / 64x16 / 16x64 no need
+    // for any additional shift.
+    rect_type2_shift = (txfm_size_max == 16 ? 1 : 0);
+  }
   // Take the shift from the larger dimension in the rectangular case.
   const int8_t *shift = (txfm_size_col > txfm_size_row) ? cfg->row_cfg->shift
                                                         : cfg->col_cfg->shift;
@@ -219,10 +227,14 @@ static INLINE void inv_txfm2d_add_c(const int32_t *input, uint16_t *output,
   for (r = 0; r < txfm_size_row; ++r) {
     txfm_func_row(input, buf_ptr, cos_bit_row, stage_range_row);
     round_shift_array(buf_ptr, txfm_size_col, -shift[0]);
-    // Multiply everything by Sqrt2 if the transform is rectangular
-    if (txfm_size_row != txfm_size_col) {
+    // Multiply everything by Sqrt2 if the transform is rectangular with
+    // log ratio being 1 or -1, if the log ratio is 2 or -2, multiply by
+    // 2^rect_type2_shift.
+    if (abs(rect_type) == 1) {
       for (c = 0; c < txfm_size_col; ++c)
         buf_ptr[c] = (int32_t)dct_const_round_shift(buf_ptr[c] * Sqrt2);
+    } else if (rect_type2_shift) {
+      round_shift_array(buf_ptr, txfm_size_col, -rect_type2_shift);
     }
     input += txfm_size_col;
     buf_ptr += txfm_size_col;
