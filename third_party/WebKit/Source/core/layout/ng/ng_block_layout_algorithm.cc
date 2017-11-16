@@ -301,6 +301,25 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
   NGMarginStrut end_margin_strut = previous_inflow_position.margin_strut;
   LayoutUnit end_bfc_block_offset = previous_inflow_position.bfc_block_offset;
 
+  // If the current layout is a new formatting context, we need to encapsulate
+  // all of our floats.
+  if (ConstraintSpace().IsNewFormattingContext()) {
+    // We can use the BFC coordinates, as we are a new formatting context.
+    DCHECK_EQ(container_builder_.BfcOffset().value(), NGBfcOffset());
+
+    WTF::Optional<LayoutUnit> float_end_offset =
+        exclusion_space_->ClearanceOffset(EClear::kBoth);
+
+    // We only update the size of this fragment if we need to grow to
+    // encapsulate the floats.
+    if (float_end_offset && float_end_offset.value() > end_bfc_block_offset) {
+      end_margin_strut = NGMarginStrut();
+      end_bfc_block_offset = float_end_offset.value();
+      intrinsic_block_size_ =
+          std::max(intrinsic_block_size_, float_end_offset.value());
+    }
+  }
+
   // The end margin strut of an in-flow fragment contributes to the size of the
   // current fragment if:
   //  - There is block-end border/scrollbar/padding.
@@ -316,28 +335,39 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
     // *last* quirky margin.
     // TODO: revisit previous implementation to avoid changing behavior and
     // https://html.spec.whatwg.org/multipage/rendering.html#margin-collapsing-quirks
-    intrinsic_block_size_ = std::max(
-        intrinsic_block_size_,
-        previous_inflow_position.logical_block_offset +
-            (node_.IsQuirkyContainer() ? end_margin_strut.QuirkyContainerSum()
-                                       : end_margin_strut.Sum()));
+    LayoutUnit margin_strut_sum = node_.IsQuirkyContainer()
+                                      ? end_margin_strut.QuirkyContainerSum()
+                                      : end_margin_strut.Sum();
+    end_bfc_block_offset += margin_strut_sum;
+    bool updated = MaybeUpdateFragmentBfcOffset(end_bfc_block_offset);
+
+    if (updated && abort_when_bfc_resolved_) {
+      // New formatting contexts, and where we have an empty block affected by
+      // clearance should already have their BFC offset resolved, and shouldn't
+      // enter this branch.
+      DCHECK(!previous_inflow_position.empty_block_affected_by_clearance);
+      DCHECK(!ConstraintSpace().IsNewFormattingContext());
+
+      container_builder_.SwapUnpositionedFloats(&unpositioned_floats_);
+      return container_builder_.Abort(NGLayoutResult::kBfcOffsetResolved);
+    }
+
+    PositionPendingFloats(end_bfc_block_offset);
+
+    // We only grow the intrinsic block size if we have content (if we didn't
+    // update our BFC offset). E.g.
+    // <div style="margin-bottom: solid 20px"></div>
+    // In the above example the current layout won't have resolved its BFC
+    // offset yet, and shouldn't include the margin strut in its size.
+    if (!updated) {
+      intrinsic_block_size_ = std::max(
+          intrinsic_block_size_,
+          previous_inflow_position.logical_block_offset + margin_strut_sum);
+    }
+
+    intrinsic_block_size_ += border_scrollbar_padding_.block_end;
     end_margin_strut = NGMarginStrut();
   }
-
-  // If the current layout is a new formatting context, we need to encapsulate
-  // all of our floats.
-  if (ConstraintSpace().IsNewFormattingContext()) {
-    // We can use the BFC coordinates, as we are a new formatting context.
-    DCHECK_EQ(container_builder_.BfcOffset().value(), NGBfcOffset());
-
-    WTF::Optional<LayoutUnit> float_end_offset =
-        exclusion_space_->ClearanceOffset(EClear::kBoth);
-    if (float_end_offset)
-      intrinsic_block_size_ =
-          std::max(intrinsic_block_size_, float_end_offset.value());
-  }
-
-  intrinsic_block_size_ += border_scrollbar_padding_.block_end;
 
   // Recompute the block-axis size now that we know our content size.
   size.block_size = ComputeBlockSizeForFragment(ConstraintSpace(), Style(),
@@ -366,6 +396,7 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
     // TODO(glebl): handle minLogicalHeight, maxLogicalHeight.
     end_margin_strut = NGMarginStrut();
   }
+
   container_builder_.SetEndMarginStrut(end_margin_strut);
   container_builder_.SetIntrinsicBlockSize(intrinsic_block_size_);
 
