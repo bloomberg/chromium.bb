@@ -72209,6 +72209,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SB2.RemoteCall.ChecksPending" units="calls">
+  <obsolete>
+    Deprecated in M64 (Nov 2017). No longer generated.
+  </obsolete>
   <owner>nparker@chromium.org</owner>
   <summary>
     Number of outstanding calls for URLs getting classified through
