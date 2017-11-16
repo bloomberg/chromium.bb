@@ -390,7 +390,7 @@ TEST_F(VideoResourceUpdaterTest, ReuseResource) {
   EXPECT_EQ(VideoFrameExternalResources::YUV_RESOURCE, resources.type);
   EXPECT_EQ(size_t(3), resources.mailboxes.size());
   EXPECT_EQ(size_t(3), resources.release_callbacks.size());
-  EXPECT_EQ(size_t(0), resources.software_resources.size());
+  EXPECT_EQ(viz::kInvalidResourceId, resources.software_resource);
   // Expect exactly three texture uploads, one for each plane.
   EXPECT_EQ(3, context3d_->UploadCount());
 
@@ -424,7 +424,7 @@ TEST_F(VideoResourceUpdaterTest, ReuseResourceNoDelete) {
   EXPECT_EQ(VideoFrameExternalResources::YUV_RESOURCE, resources.type);
   EXPECT_EQ(size_t(3), resources.mailboxes.size());
   EXPECT_EQ(size_t(3), resources.release_callbacks.size());
-  EXPECT_EQ(size_t(0), resources.software_resources.size());
+  EXPECT_EQ(viz::kInvalidResourceId, resources.software_resource);
   // Expect exactly three texture uploads, one for each plane.
   EXPECT_EQ(3, context3d_->UploadCount());
 
@@ -463,7 +463,7 @@ TEST_F(VideoResourceUpdaterTest, ReuseResourceSoftwareCompositor) {
   EXPECT_EQ(VideoFrameExternalResources::SOFTWARE_RESOURCE, resources.type);
   EXPECT_EQ(size_t(0), resources.mailboxes.size());
   EXPECT_EQ(size_t(0), resources.release_callbacks.size());
-  EXPECT_EQ(size_t(1), resources.software_resources.size());
+  EXPECT_LT(viz::kInvalidResourceId, resources.software_resource);
   // Expect exactly one allocated shared bitmap.
   EXPECT_EQ(1, shared_bitmap_manager_->AllocationCount());
 
@@ -477,7 +477,7 @@ TEST_F(VideoResourceUpdaterTest, ReuseResourceSoftwareCompositor) {
   EXPECT_EQ(VideoFrameExternalResources::SOFTWARE_RESOURCE, resources.type);
   EXPECT_EQ(size_t(0), resources.mailboxes.size());
   EXPECT_EQ(size_t(0), resources.release_callbacks.size());
-  EXPECT_EQ(size_t(1), resources.software_resources.size());
+  EXPECT_LT(viz::kInvalidResourceId, resources.software_resource);
   // The data should be reused so expect no new allocations.
   EXPECT_EQ(0, shared_bitmap_manager_->AllocationCount());
 }
@@ -496,7 +496,7 @@ TEST_F(VideoResourceUpdaterTest, ReuseResourceNoDeleteSoftwareCompositor) {
   EXPECT_EQ(VideoFrameExternalResources::SOFTWARE_RESOURCE, resources.type);
   EXPECT_EQ(size_t(0), resources.mailboxes.size());
   EXPECT_EQ(size_t(0), resources.release_callbacks.size());
-  EXPECT_EQ(size_t(1), resources.software_resources.size());
+  EXPECT_LT(viz::kInvalidResourceId, resources.software_resource);
   // Expect exactly one allocated shared bitmap.
   EXPECT_EQ(1, shared_bitmap_manager_->AllocationCount());
 
@@ -506,7 +506,7 @@ TEST_F(VideoResourceUpdaterTest, ReuseResourceNoDeleteSoftwareCompositor) {
   EXPECT_EQ(VideoFrameExternalResources::SOFTWARE_RESOURCE, resources.type);
   EXPECT_EQ(size_t(0), resources.mailboxes.size());
   EXPECT_EQ(size_t(0), resources.release_callbacks.size());
-  EXPECT_EQ(size_t(1), resources.software_resources.size());
+  EXPECT_NE(viz::kInvalidResourceId, resources.software_resource);
   // The data should be reused so expect no new allocations.
   EXPECT_EQ(0, shared_bitmap_manager_->AllocationCount());
 }
@@ -526,7 +526,7 @@ TEST_F(VideoResourceUpdaterTest, CreateForHardwarePlanes) {
             resources.type);
   EXPECT_EQ(1u, resources.mailboxes.size());
   EXPECT_EQ(1u, resources.release_callbacks.size());
-  EXPECT_EQ(0u, resources.software_resources.size());
+  EXPECT_EQ(viz::kInvalidResourceId, resources.software_resource);
 
   video_frame = CreateTestYuvHardwareVideoFrame(media::PIXEL_FORMAT_I420, 3,
                                                 GL_TEXTURE_RECTANGLE_ARB);
@@ -535,7 +535,7 @@ TEST_F(VideoResourceUpdaterTest, CreateForHardwarePlanes) {
   EXPECT_EQ(VideoFrameExternalResources::YUV_RESOURCE, resources.type);
   EXPECT_EQ(3u, resources.mailboxes.size());
   EXPECT_EQ(3u, resources.release_callbacks.size());
-  EXPECT_EQ(0u, resources.software_resources.size());
+  EXPECT_EQ(viz::kInvalidResourceId, resources.software_resource);
   EXPECT_FALSE(resources.read_lock_fences_enabled);
 
   video_frame = CreateTestYuvHardwareVideoFrame(media::PIXEL_FORMAT_I420, 3,
@@ -563,7 +563,7 @@ TEST_F(VideoResourceUpdaterTest, CreateForHardwarePlanes_StreamTexture) {
   EXPECT_EQ(1u, resources.mailboxes.size());
   EXPECT_EQ((GLenum)GL_TEXTURE_EXTERNAL_OES, resources.mailboxes[0].target());
   EXPECT_EQ(1u, resources.release_callbacks.size());
-  EXPECT_EQ(0u, resources.software_resources.size());
+  EXPECT_EQ(viz::kInvalidResourceId, resources.software_resource);
   EXPECT_EQ(0, context3d_->TextureCreationCount());
 
   // A copied stream texture should return an RGBA resource in a new
@@ -576,7 +576,7 @@ TEST_F(VideoResourceUpdaterTest, CreateForHardwarePlanes_StreamTexture) {
   EXPECT_EQ(1u, resources.mailboxes.size());
   EXPECT_EQ((GLenum)GL_TEXTURE_2D, resources.mailboxes[0].target());
   EXPECT_EQ(1u, resources.release_callbacks.size());
-  EXPECT_EQ(0u, resources.software_resources.size());
+  EXPECT_EQ(viz::kInvalidResourceId, resources.software_resource);
   EXPECT_EQ(1, context3d_->TextureCreationCount());
 }
 
@@ -596,7 +596,7 @@ TEST_F(VideoResourceUpdaterTest, CreateForHardwarePlanes_TextureQuad) {
   EXPECT_EQ(1u, resources.mailboxes.size());
   EXPECT_EQ((GLenum)GL_TEXTURE_EXTERNAL_OES, resources.mailboxes[0].target());
   EXPECT_EQ(1u, resources.release_callbacks.size());
-  EXPECT_EQ(0u, resources.software_resources.size());
+  EXPECT_EQ(viz::kInvalidResourceId, resources.software_resource);
   EXPECT_EQ(0, context3d_->TextureCreationCount());
 }
 
@@ -727,7 +727,7 @@ TEST_F(VideoResourceUpdaterTest, CreateForHardwarePlanes_DualNV12) {
   EXPECT_EQ(VideoFrameExternalResources::YUV_RESOURCE, resources.type);
   EXPECT_EQ(2u, resources.mailboxes.size());
   EXPECT_EQ(2u, resources.release_callbacks.size());
-  EXPECT_EQ(0u, resources.software_resources.size());
+  EXPECT_EQ(viz::kInvalidResourceId, resources.software_resource);
   EXPECT_EQ((GLenum)GL_TEXTURE_EXTERNAL_OES, resources.mailboxes[0].target());
   // |updater| doesn't set |buffer_format| in this case.
   EXPECT_EQ(gfx::BufferFormat::RGBA_8888, resources.buffer_format);

@@ -13,6 +13,7 @@ namespace viz {
 
 using ResourceId = uint32_t;
 using ResourceIdSet = base::flat_set<ResourceId>;
+constexpr ResourceId kInvalidResourceId = 0;
 
 }  // namespace viz
 

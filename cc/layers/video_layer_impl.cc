@@ -113,7 +113,8 @@ bool VideoLayerImpl::WillDraw(DrawMode draw_mode,
 
   if (external_resources.type ==
       VideoFrameExternalResources::SOFTWARE_RESOURCE) {
-    software_resources_ = external_resources.software_resources;
+    DCHECK_GT(external_resources.software_resource, viz::kInvalidResourceId);
+    software_resource_ = external_resources.software_resource;
     software_release_callback_ =
         external_resources.software_release_callback;
     return true;
@@ -201,9 +202,7 @@ void VideoLayerImpl::AppendQuads(viz::RenderPass* render_pass,
     // TODO(danakj): Remove this, hide it in the hardware path.
     case VideoFrameExternalResources::SOFTWARE_RESOURCE: {
       DCHECK_EQ(frame_resources_.size(), 0u);
-      DCHECK_EQ(software_resources_.size(), 1u);
-      if (software_resources_.size() < 1u)
-        break;
+      DCHECK_GT(software_resource_, viz::kInvalidResourceId);
       bool premultiplied_alpha = true;
       gfx::PointF uv_top_left(0.f, 0.f);
       gfx::PointF uv_bottom_right(tex_width_scale, tex_height_scale);
@@ -212,11 +211,10 @@ void VideoLayerImpl::AppendQuads(viz::RenderPass* render_pass,
       bool nearest_neighbor = false;
       auto* texture_quad =
           render_pass->CreateAndAppendDrawQuad<viz::TextureDrawQuad>();
-      texture_quad->SetNew(shared_quad_state, quad_rect, visible_quad_rect,
-                           needs_blending, software_resources_[0],
-                           premultiplied_alpha, uv_top_left, uv_bottom_right,
-                           SK_ColorTRANSPARENT, opacity, flipped,
-                           nearest_neighbor, false);
+      texture_quad->SetNew(
+          shared_quad_state, quad_rect, visible_quad_rect, needs_blending,
+          software_resource_, premultiplied_alpha, uv_top_left, uv_bottom_right,
+          SK_ColorTRANSPARENT, opacity, flipped, nearest_neighbor, false);
       ValidateQuadResources(texture_quad);
       break;
     }
@@ -337,11 +335,10 @@ void VideoLayerImpl::DidDraw(LayerTreeResourceProvider* resource_provider) {
 
   if (frame_resource_type_ ==
       VideoFrameExternalResources::SOFTWARE_RESOURCE) {
-    for (size_t i = 0; i < software_resources_.size(); ++i) {
-      software_release_callback_.Run(gpu::SyncToken(), false);
-    }
+    DCHECK_GT(software_resource_, viz::kInvalidResourceId);
+    software_release_callback_.Run(gpu::SyncToken(), false);
 
-    software_resources_.clear();
+    software_resource_ = viz::kInvalidResourceId;
     software_release_callback_.Reset();
   } else {
     for (size_t i = 0; i < frame_resources_.size(); ++i)
