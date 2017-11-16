@@ -41,6 +41,7 @@
 #include "weston-desktop-shell-server-protocol.h"
 #include "shared/config-parser.h"
 #include "shared/helpers.h"
+#include "shared/timespec-util.h"
 #include "libweston-desktop/libweston-desktop.h"
 
 #define DEFAULT_NUM_WORKSPACES 1
@@ -1027,7 +1028,7 @@ reverse_workspace_change_animation(struct desktop_shell *shell,
 	shell->workspaces.anim_to = to;
 	shell->workspaces.anim_from = from;
 	shell->workspaces.anim_dir = -1 * shell->workspaces.anim_dir;
-	shell->workspaces.anim_timestamp = 0;
+	shell->workspaces.anim_timestamp = (struct timespec) { 0 };
 
 	weston_layer_set_position(&to->layer, WESTON_LAYER_POSITION_NORMAL);
 	weston_layer_set_position(&from->layer, WESTON_LAYER_POSITION_NORMAL - 1);
@@ -1084,14 +1085,15 @@ finish_workspace_change_animation(struct desktop_shell *shell,
 
 static void
 animate_workspace_change_frame(struct weston_animation *animation,
-			       struct weston_output *output, uint32_t msecs)
+			       struct weston_output *output,
+			       const struct timespec *time)
 {
 	struct desktop_shell *shell =
 		container_of(animation, struct desktop_shell,
 			     workspaces.animation);
 	struct workspace *from = shell->workspaces.anim_from;
 	struct workspace *to = shell->workspaces.anim_to;
-	uint32_t t;
+	int64_t t;
 	double x, y;
 
 	if (workspace_is_empty(from) && workspace_is_empty(to)) {
@@ -1099,19 +1101,19 @@ animate_workspace_change_frame(struct weston_animation *animation,
 		return;
 	}
 
-	if (shell->workspaces.anim_timestamp == 0) {
+	if (timespec_is_zero(&shell->workspaces.anim_timestamp)) {
 		if (shell->workspaces.anim_current == 0.0)
-			shell->workspaces.anim_timestamp = msecs;
+			shell->workspaces.anim_timestamp = *time;
 		else
-			shell->workspaces.anim_timestamp =
-				msecs -
+			timespec_add_msec(&shell->workspaces.anim_timestamp,
+				time,
 				/* Invers of movement function 'y' below. */
-				(asin(1.0 - shell->workspaces.anim_current) *
-				 DEFAULT_WORKSPACE_CHANGE_ANIMATION_LENGTH *
-				 M_2_PI);
+				-(asin(1.0 - shell->workspaces.anim_current) *
+				  DEFAULT_WORKSPACE_CHANGE_ANIMATION_LENGTH *
+				  M_2_PI));
 	}
 
-	t = msecs - shell->workspaces.anim_timestamp;
+	t = timespec_sub_to_msec(time, &shell->workspaces.anim_timestamp);
 
 	/*
 	 * x = [0, π/2]
@@ -1154,7 +1156,7 @@ animate_workspace_change(struct desktop_shell *shell,
 	shell->workspaces.anim_from = from;
 	shell->workspaces.anim_to = to;
 	shell->workspaces.anim_current = 0.0;
-	shell->workspaces.anim_timestamp = 0;
+	shell->workspaces.anim_timestamp = (struct timespec) { 0 };
 
 	output = container_of(shell->compositor->output_list.next,
 			      struct weston_output, link);

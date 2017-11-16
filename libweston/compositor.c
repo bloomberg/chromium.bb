@@ -2292,11 +2292,14 @@ weston_output_repaint(struct weston_output *output, void *repaint_data)
 	struct wl_list frame_callback_list;
 	pixman_region32_t output_damage;
 	int r;
+	struct timespec frame_time;
 
 	if (output->destroying)
 		return 0;
 
 	TL_POINT("core_repaint_begin", TLP_OUTPUT(output), TLP_END);
+
+	timespec_from_msec(&frame_time, output->frame_time);
 
 	/* Rebuild the surface list and update surface transforms up front. */
 	weston_compositor_build_view_list(ec);
@@ -2352,7 +2355,7 @@ weston_output_repaint(struct weston_output *output, void *repaint_data)
 
 	wl_list_for_each_safe(animation, next, &output->animation_list, link) {
 		animation->frame_counter++;
-		animation->frame(animation, output, output->frame_time);
+		animation->frame(animation, output, &frame_time);
 	}
 
 	TL_POINT("core_repaint_posted", TLP_OUTPUT(output), TLP_END);

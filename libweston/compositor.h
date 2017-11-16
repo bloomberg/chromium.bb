@@ -101,7 +101,8 @@ struct weston_mode {
 
 struct weston_animation {
 	void (*frame)(struct weston_animation *animation,
-		      struct weston_output *output, uint32_t msecs);
+		      struct weston_output *output,
+		      const struct timespec *time);
 	int frame_counter;
 	struct wl_list link;
 };
@@ -119,7 +120,7 @@ struct weston_spring {
 	double target;
 	double previous;
 	double min, max;
-	uint32_t timestamp;
+	struct timespec timestamp;
 	uint32_t clip;
 };
 
@@ -1352,7 +1353,7 @@ void
 weston_spring_init(struct weston_spring *spring,
 		   double k, double current, double target);
 void
-weston_spring_update(struct weston_spring *spring, uint32_t msec);
+weston_spring_update(struct weston_spring *spring, const struct timespec *time);
 int
 weston_spring_done(struct weston_spring *spring);
 

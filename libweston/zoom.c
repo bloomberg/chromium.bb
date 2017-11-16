@@ -36,12 +36,13 @@
 
 static void
 weston_zoom_frame_z(struct weston_animation *animation,
-		struct weston_output *output, uint32_t msecs)
+		    struct weston_output *output,
+		    const struct timespec *time)
 {
 	if (animation->frame_counter <= 1)
-		output->zoom.spring_z.timestamp = msecs;
+		output->zoom.spring_z.timestamp = *time;
 
-	weston_spring_update(&output->zoom.spring_z, msecs);
+	weston_spring_update(&output->zoom.spring_z, time);
 
 	if (output->zoom.spring_z.current > output->zoom.max_level)
 		output->zoom.spring_z.current = output->zoom.max_level;

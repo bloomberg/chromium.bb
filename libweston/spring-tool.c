@@ -24,10 +24,12 @@
  */
 
 #include <stdint.h>
+#include <inttypes.h>
 
 #include "config.h"
 
 #include "compositor.h"
+#include "shared/timespec-util.h"
 
 WL_EXPORT void
 weston_view_geometry_dirty(struct weston_view *view)
@@ -59,17 +61,18 @@ main(int argc, char *argv[])
 	const double friction = 1400;
 
 	struct weston_spring spring;
-	uint32_t time = 0;
+	struct timespec time = { 0 };
 
 	weston_spring_init(&spring, k, current, target);
 	spring.friction = friction;
 	spring.previous = 0.48;
-	spring.timestamp = 0;
+	spring.timestamp = (struct timespec) { 0 };
 
 	while (!weston_spring_done(&spring)) {
-		printf("\t%d\t%f\n", time, spring.current);
-		weston_spring_update(&spring, time);
-		time += 16;
+		printf("\t%" PRId64 "\t%f\n",
+		       timespec_to_msec(&time), spring.current);
+		weston_spring_update(&spring, &time);
+		timespec_add_msec(&time, &time, 16);
 	}
 
 	return 0;

@@ -30,12 +30,14 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <math.h>
+#include <inttypes.h>
 
 #include <unistd.h>
 #include <fcntl.h>
 
 #include "compositor.h"
 #include "shared/helpers.h"
+#include "shared/timespec-util.h"
 
 WL_EXPORT void
 weston_spring_init(struct weston_spring *spring,
@@ -52,7 +54,7 @@ weston_spring_init(struct weston_spring *spring,
 }
 
 WL_EXPORT void
-weston_spring_update(struct weston_spring *spring, uint32_t msec)
+weston_spring_update(struct weston_spring *spring, const struct timespec *time)
 {
 	double force, v, current, step;
 
@@ -61,14 +63,16 @@ weston_spring_update(struct weston_spring *spring, uint32_t msec)
 	 * This handles the case where time moves backwards or forwards in
 	 * large jumps.
 	 */
-	if (msec - spring->timestamp > 1000) {
-		weston_log("unexpectedly large timestamp jump (from %u to %u)\n",
-			   spring->timestamp, msec);
-		spring->timestamp = msec - 1000;
+	if (timespec_sub_to_msec(time, &spring->timestamp) > 1000) {
+		weston_log("unexpectedly large timestamp jump "
+			   "(from %" PRId64 " to %" PRId64 ")\n",
+			   timespec_to_msec(&spring->timestamp),
+			   timespec_to_msec(time));
+		timespec_add_msec(&spring->timestamp, time, -1000);
 	}
 
 	step = 0.01;
-	while (4 < msec - spring->timestamp) {
+	while (4 < timespec_sub_to_msec(time, &spring->timestamp)) {
 		current = spring->current;
 		v = current - spring->previous;
 		force = spring->k * (spring->target - current) / 10.0 +
@@ -108,7 +112,7 @@ weston_spring_update(struct weston_spring *spring, uint32_t msec)
 			break;
 		}
 
-		spring->timestamp += 4;
+		timespec_add_msec(&spring->timestamp, &spring->timestamp, 4);
 	}
 }
 
@@ -161,7 +165,8 @@ handle_animation_view_destroy(struct wl_listener *listener, void *data)
 
 static void
 weston_view_animation_frame(struct weston_animation *base,
-			    struct weston_output *output, uint32_t msecs)
+			    struct weston_output *output,
+			    const struct timespec *time)
 {
 	struct weston_view_animation *animation =
 		container_of(base,
@@ -170,9 +175,9 @@ weston_view_animation_frame(struct weston_animation *base,
 		animation->view->surface->compositor;
 
 	if (base->frame_counter <= 1)
-		animation->spring.timestamp = msecs;
+		animation->spring.timestamp = *time;
 
-	weston_spring_update(&animation->spring, msecs);
+	weston_spring_update(&animation->spring, time);
 
 	if (weston_spring_done(&animation->spring)) {
 		weston_view_schedule_repaint(animation->view);
@@ -254,8 +259,10 @@ weston_view_animation_create(struct weston_view *view,
 static void
 weston_view_animation_run(struct weston_view_animation *animation)
 {
+	struct timespec zero_time = { 0 };
+
 	animation->animation.frame_counter = 0;
-	weston_view_animation_frame(&animation->animation, NULL, 0);
+	weston_view_animation_frame(&animation->animation, NULL, &zero_time);
 }
 
 static void

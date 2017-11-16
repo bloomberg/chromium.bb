@@ -188,7 +188,7 @@ struct desktop_shell {
 		struct weston_animation animation;
 		struct wl_list anim_sticky_list;
 		int anim_dir;
-		uint32_t anim_timestamp;
+		struct timespec anim_timestamp;
 		double anim_current;
 		struct workspace *anim_from;
 		struct workspace *anim_to;
