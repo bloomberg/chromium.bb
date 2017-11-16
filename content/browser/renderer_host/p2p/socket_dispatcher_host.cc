@@ -131,7 +131,7 @@ void P2PSocketDispatcherHost::OnChannelClosing() {
   dns_requests_.clear();
 
   if (monitoring_networks_) {
-    net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
+    net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
     monitoring_networks_ = false;
   }
 }
@@ -159,7 +159,10 @@ bool P2PSocketDispatcherHost::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void P2PSocketDispatcherHost::OnIPAddressChanged() {
+void P2PSocketDispatcherHost::OnNetworkChanged(
+    net::NetworkChangeNotifier::ConnectionType type) {
+  if (type == net::NetworkChangeNotifier::CONNECTION_NONE)
+    return;
   // Notify the renderer about changes to list of network interfaces.
   network_list_task_runner_->PostTask(
       FROM_HERE,
@@ -200,7 +203,7 @@ P2PSocketDispatcherHost::~P2PSocketDispatcherHost() {
   DCHECK(dns_requests_.empty());
 
   if (monitoring_networks_)
-    net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
+    net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
 }
 
 P2PSocketHost* P2PSocketDispatcherHost::LookupSocket(int socket_id) {
@@ -210,7 +213,7 @@ P2PSocketHost* P2PSocketDispatcherHost::LookupSocket(int socket_id) {
 
 void P2PSocketDispatcherHost::OnStartNetworkNotifications() {
   if (!monitoring_networks_) {
-    net::NetworkChangeNotifier::AddIPAddressObserver(this);
+    net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
     monitoring_networks_ = true;
   }
 
@@ -221,7 +224,7 @@ void P2PSocketDispatcherHost::OnStartNetworkNotifications() {
 
 void P2PSocketDispatcherHost::OnStopNetworkNotifications() {
   if (monitoring_networks_) {
-    net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
+    net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
     monitoring_networks_ = false;
   }
 }

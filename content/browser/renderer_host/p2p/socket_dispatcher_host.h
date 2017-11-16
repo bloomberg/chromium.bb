@@ -39,7 +39,7 @@ class ResourceContext;
 
 class P2PSocketDispatcherHost
     : public content::BrowserMessageFilter,
-      public net::NetworkChangeNotifier::IPAddressObserver {
+      public net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
   P2PSocketDispatcherHost(content::ResourceContext* resource_context,
                           net::URLRequestContextGetter* url_context);
@@ -49,9 +49,9 @@ class P2PSocketDispatcherHost
   void OnDestruct() const override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
-  // net::NetworkChangeNotifier::IPAddressObserver interface.
-  void OnIPAddressChanged() override;
-
+  // net::NetworkChangeNotifier::NetworkChangeObserver interface.
+  void OnNetworkChanged(
+      net::NetworkChangeNotifier::ConnectionType type) override;
   // Starts the RTP packet header dumping. Must be called on the IO thread.
   void StartRtpDump(
       bool incoming,
