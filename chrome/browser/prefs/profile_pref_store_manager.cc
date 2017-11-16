@@ -154,5 +154,6 @@ ProfilePrefStoreManager::CreateTrackedPrefStoreConfiguration(
 #else
       base::string16(),
 #endif
-      std::move(validation_delegate), std::move(reset_on_load_observer));
+      validation_delegate.PassInterface(),
+      reset_on_load_observer.PassInterface());
 }

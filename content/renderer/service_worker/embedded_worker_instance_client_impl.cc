@@ -68,7 +68,8 @@ void EmbeddedWorkerInstanceClientImpl::StartWorker(
   DCHECK(!wrapper_);
   TRACE_EVENT0("ServiceWorker",
                "EmbeddedWorkerInstanceClientImpl::StartWorker");
-  auto interface_provider = std::move(provider_info->interface_provider);
+  service_manager::mojom::InterfaceProviderPtr interface_provider(
+      std::move(provider_info->interface_provider));
   auto client = std::make_unique<ServiceWorkerContextClient>(
       params.embedded_worker_id, params.service_worker_version_id, params.scope,
       params.script_url,

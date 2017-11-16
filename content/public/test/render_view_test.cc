@@ -111,14 +111,6 @@ bool GetWindowsKeyCode(char ascii_character, int* key_code) {
   }
 }
 
-// Returns an InterfaceProvider that is safe to call into, but will not actually
-// service any interface requests.
-service_manager::mojom::InterfaceProviderPtr CreateStubInterfaceProvider() {
-  ::service_manager::mojom::InterfaceProviderPtr stub_interface_provider_proxy;
-  mojo::MakeRequest(&stub_interface_provider_proxy);
-  return stub_interface_provider_proxy;
-}
-
 }  // namespace
 
 namespace content {
@@ -318,7 +310,7 @@ void RenderViewTest::SetUp() {
   view_params->web_preferences = WebPreferences();
   view_params->view_id = kRouteId;
   view_params->main_frame_routing_id = kMainFrameRouteId;
-  view_params->main_frame_interface_provider = CreateStubInterfaceProvider();
+  mojo::MakeRequest(&view_params->main_frame_interface_provider);
   view_params->main_frame_widget_routing_id = kMainFrameWidgetRouteId;
   view_params->session_storage_namespace_id = kInvalidSessionStorageNamespaceId;
   view_params->swapped_out = false;

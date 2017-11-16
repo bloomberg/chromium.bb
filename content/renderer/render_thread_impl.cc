@@ -2245,8 +2245,10 @@ void RenderThreadImpl::CreateFrame(mojom::CreateFrameParamsPtr params) {
   base::debug::SetCrashKeyValue("newframe_replicated_origin",
                                 params->replication_state.origin.Serialize());
   CompositorDependencies* compositor_deps = this;
+  service_manager::mojom::InterfaceProviderPtr interface_provider(
+      std::move(params->interface_provider));
   RenderFrameImpl::CreateFrame(
-      params->routing_id, std::move(params->interface_provider),
+      params->routing_id, std::move(interface_provider),
       params->proxy_routing_id, params->opener_routing_id,
       params->parent_routing_id, params->previous_sibling_routing_id,
       params->devtools_frame_token, params->replication_state, compositor_deps,

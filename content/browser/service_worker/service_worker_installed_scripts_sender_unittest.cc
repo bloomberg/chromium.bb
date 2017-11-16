@@ -538,7 +538,7 @@ TEST_F(ServiceWorkerInstalledScriptsSenderTest, RequestScriptBeforeStreaming) {
     renderer_manager =
         std::make_unique<MockServiceWorkerInstalledScriptsManager>(
             std::move(scripts_info->manager_request));
-    manager_host_ptr = std::move(scripts_info->manager_host_ptr);
+    manager_host_ptr.Bind(std::move(scripts_info->manager_host_ptr));
   }
   ASSERT_TRUE(renderer_manager);
 
@@ -625,7 +625,7 @@ TEST_F(ServiceWorkerInstalledScriptsSenderTest, RequestScriptAfterStreaming) {
     renderer_manager =
         std::make_unique<MockServiceWorkerInstalledScriptsManager>(
             std::move(scripts_info->manager_request));
-    manager_host_ptr = std::move(scripts_info->manager_host_ptr);
+    manager_host_ptr.Bind(std::move(scripts_info->manager_host_ptr));
   }
   ASSERT_TRUE(renderer_manager);
 

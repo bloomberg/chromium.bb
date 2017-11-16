@@ -63,7 +63,7 @@ class PrefServiceConnection : public mojom::PrefStoreObserver,
         std::move(connection->pref_store_connection->observer));
     connection->pref_store_connection->observer = mojo::MakeRequest(&observer_);
 
-    pref_store_ = std::move(connection->pref_store);
+    pref_store_.Bind(std::move(connection->pref_store));
     pref_store_binding_.Bind(mojo::MakeRequest(&connection->pref_store));
 
     pref_store_client_ =

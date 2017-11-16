@@ -782,7 +782,8 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
 
   auto url_loader = std::make_unique<DelegatingURLLoader>(
       std::move(url_loader_associated_ptr));
-  preload_handle_->url_loader = url_loader->CreateInterfacePtrAndBind();
+  preload_handle_->url_loader =
+      url_loader->CreateInterfacePtrAndBind().PassInterface();
   url_loader_assets_ = base::MakeRefCounted<URLLoaderAssets>(
       std::move(url_loader_factory), std::move(url_loader),
       std::move(url_loader_client));
@@ -848,7 +849,8 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreloadWithURLLoader(
   // DelegatingURLLoaderClient.
   auto url_loader = std::make_unique<DelegatingURLLoader>(
       std::move(url_loader_associated_ptr));
-  preload_handle_->url_loader = url_loader->CreateInterfacePtrAndBind();
+  preload_handle_->url_loader =
+      url_loader->CreateInterfacePtrAndBind().PassInterface();
 
   DCHECK(!url_loader_assets_);
   // Unlike the non-S13N code path, we don't own the URLLoaderFactory being used

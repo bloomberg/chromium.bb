@@ -18,35 +18,6 @@ namespace {
 
 using MemoryStrategy = BlobMemoryController::Strategy;
 
-bool CalculateBlobMemorySize(
-    const std::vector<blink::mojom::DataElementPtr>& elements,
-    size_t* shortcut_bytes,
-    uint64_t* total_bytes) {
-  DCHECK(shortcut_bytes);
-  DCHECK(total_bytes);
-
-  base::CheckedNumeric<uint64_t> total_size_checked = 0;
-  base::CheckedNumeric<size_t> shortcut_size_checked = 0;
-  for (const auto& e : elements) {
-    if (e->is_bytes()) {
-      const auto& bytes = e->get_bytes();
-      total_size_checked += bytes->length;
-      if (bytes->embedded_data) {
-        if (bytes->embedded_data->size() != bytes->length)
-          return false;
-        shortcut_size_checked += bytes->length;
-      }
-    } else {
-      continue;
-    }
-    if (!total_size_checked.IsValid() || !shortcut_size_checked.IsValid())
-      return false;
-  }
-  *shortcut_bytes = shortcut_size_checked.ValueOrDie();
-  *total_bytes = total_size_checked.ValueOrDie();
-  return true;
-}
-
 class BlobURLHandleImpl final : public blink::mojom::BlobURLHandle {
  public:
   static blink::mojom::BlobURLHandlePtr Create(
@@ -85,11 +56,12 @@ class BlobRegistryImpl::BlobUnderConstruction {
                         mojo::ReportBadMessageCallback bad_message_callback)
       : blob_registry_(blob_registry),
         builder_(uuid),
-        elements_(std::move(elements)),
         bad_message_callback_(std::move(bad_message_callback)),
         weak_ptr_factory_(this) {
     builder_.set_content_type(content_type);
     builder_.set_content_disposition(content_disposition);
+    for (auto& element : elements)
+      elements_.emplace_back(std::move(element));
   }
 
   // Call this after constructing to kick of fetching of UUIDs of blobs
@@ -103,6 +75,28 @@ class BlobRegistryImpl::BlobUnderConstruction {
   const std::string& uuid() const { return builder_.uuid(); }
 
  private:
+  // Holds onto a blink::mojom::DataElement struct and optionally a bound
+  // blink::mojom::BytesProviderPtr or blink::mojom::BlobPtr, if the element
+  // encapsulates a large byte array or a blob.
+  struct ElementEntry {
+    explicit ElementEntry(blink::mojom::DataElementPtr e)
+        : element(std::move(e)) {
+      if (element && element->is_bytes())
+        bytes_provider.Bind(std::move(element->get_bytes()->data));
+      else if (element && element->is_blob())
+        blob.Bind(std::move(element->get_blob()->blob));
+    }
+
+    ElementEntry(ElementEntry&& other) = default;
+    ~ElementEntry() = default;
+
+    ElementEntry& operator=(ElementEntry&& other) = default;
+
+    blink::mojom::DataElementPtr element;
+    blink::mojom::BytesProviderPtr bytes_provider;
+    blink::mojom::BlobPtr blob;
+  };
+
   BlobStorageContext* context() const { return blob_registry_->context_.get(); }
 
   // Marks this blob as broken. If an optional |bad_message_reason| is provided,
@@ -124,6 +118,33 @@ class BlobRegistryImpl::BlobUnderConstruction {
 
   void MarkAsFinishedAndDeleteSelf() {
     blob_registry_->blobs_under_construction_.erase(uuid());
+  }
+
+  bool CalculateBlobMemorySize(size_t* shortcut_bytes, uint64_t* total_bytes) {
+    DCHECK(shortcut_bytes);
+    DCHECK(total_bytes);
+
+    base::CheckedNumeric<uint64_t> total_size_checked = 0;
+    base::CheckedNumeric<size_t> shortcut_size_checked = 0;
+    for (const auto& entry : elements_) {
+      const auto& e = entry.element;
+      if (e->is_bytes()) {
+        const auto& bytes = e->get_bytes();
+        total_size_checked += bytes->length;
+        if (bytes->embedded_data) {
+          if (bytes->embedded_data->size() != bytes->length)
+            return false;
+          shortcut_size_checked += bytes->length;
+        }
+      } else {
+        continue;
+      }
+      if (!total_size_checked.IsValid() || !shortcut_size_checked.IsValid())
+        return false;
+    }
+    *shortcut_bytes = shortcut_size_checked.ValueOrDie();
+    *total_bytes = total_size_checked.ValueOrDie();
+    return true;
   }
 
   // Called when the UUID of a referenced blob is received.
@@ -175,7 +196,7 @@ class BlobRegistryImpl::BlobUnderConstruction {
   BlobDataBuilder builder_;
 
   // Elements as passed in to Register.
-  std::vector<blink::mojom::DataElementPtr> elements_;
+  std::vector<ElementEntry> elements_;
 
   // Callback to report a BadMessage on the binding on which Register was
   // called.
@@ -205,21 +226,21 @@ void BlobRegistryImpl::BlobUnderConstruction::StartTransportation() {
   }
 
   size_t blob_count = 0;
-  for (size_t i = 0; i < elements_.size(); ++i) {
-    const auto& element = elements_[i];
+  for (auto& entry : elements_) {
+    const auto& element = entry.element;
     if (element->is_blob()) {
       // If connection to blob is broken, something bad happened, so mark this
       // new blob as broken, which will delete |this| and keep it from doing
       // unneeded extra work.
-      element->get_blob()->blob.set_connection_error_handler(base::BindOnce(
+      entry.blob.set_connection_error_handler(base::BindOnce(
           &BlobUnderConstruction::MarkAsBroken, weak_ptr_factory_.GetWeakPtr(),
           BlobStatus::ERR_REFERENCED_BLOB_BROKEN, ""));
 
-      element->get_blob()->blob->GetInternalUUID(
+      entry.blob->GetInternalUUID(
           base::BindOnce(&BlobUnderConstruction::ReceivedBlobUUID,
                          weak_ptr_factory_.GetWeakPtr(), blob_count++));
     } else if (element->is_bytes()) {
-      element->get_bytes()->data.set_connection_error_handler(base::BindOnce(
+      entry.bytes_provider.set_connection_error_handler(base::BindOnce(
           &BlobUnderConstruction::MarkAsBroken, weak_ptr_factory_.GetWeakPtr(),
           BlobStatus::ERR_SOURCE_DIED_IN_TRANSIT, ""));
     }
@@ -234,8 +255,7 @@ void BlobRegistryImpl::BlobUnderConstruction::StartTransportation() {
   // transport strategy to use later.
   uint64_t transport_memory_size = 0;
   size_t shortcut_size = 0;
-  if (!CalculateBlobMemorySize(elements_, &shortcut_size,
-                               &transport_memory_size)) {
+  if (!CalculateBlobMemorySize(&shortcut_size, &transport_memory_size)) {
     MarkAsBroken(BlobStatus::ERR_INVALID_CONSTRUCTION_ARGUMENTS,
                  "Invalid byte element sizes in BlobRegistry::Register");
     return;
@@ -259,9 +279,9 @@ void BlobRegistryImpl::BlobUnderConstruction::StartTransportation() {
   if (memory_strategy != MemoryStrategy::NONE_NEEDED) {
     // Free up memory from embedded_data, since that data is going to get
     // requested asynchronously later again anyway.
-    for (auto& element : elements_) {
-      if (element->is_bytes())
-        element->get_bytes()->embedded_data = base::nullopt;
+    for (auto& entry : elements_) {
+      if (entry.element->is_bytes())
+        entry.element->get_bytes()->embedded_data = base::nullopt;
     }
   }
 
@@ -353,9 +373,11 @@ void BlobRegistryImpl::BlobUnderConstruction::ResolvedAllBlobDependencies() {
   }
 
   auto blob_uuid_it = referenced_blob_uuids_.begin();
-  for (const auto& element : elements_) {
+  for (const auto& entry : elements_) {
+    auto& element = entry.element;
     if (element->is_bytes()) {
-      transport_strategy_->AddBytesElement(element->get_bytes().get());
+      transport_strategy_->AddBytesElement(element->get_bytes().get(),
+                                           entry.bytes_provider);
     } else if (element->is_file()) {
       const auto& f = element->get_file();
       builder_.AppendFile(f->path, f->offset, f->length,

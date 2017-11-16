@@ -50,6 +50,8 @@ class InterfacePtr {
     internal_state_.Swap(&other.internal_state_);
   }
 
+  explicit InterfacePtr(PtrInfoType&& info) { Bind(std::move(info)); }
+
   // Takes over the binding of another InterfacePtr, and closes any message pipe
   // already bound to this pointer.
   InterfacePtr& operator=(InterfacePtr&& other) {

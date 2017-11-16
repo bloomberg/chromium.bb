@@ -8,12 +8,7 @@
 #include "base/callback.h"
 #include "storage/browser/blob/blob_memory_controller.h"
 #include "storage/browser/storage_browser_export.h"
-
-namespace blink {
-namespace mojom {
-class DataElementBytes;
-}
-}  // namespace blink
+#include "third_party/WebKit/common/blob/blob_registry.mojom.h"
 
 namespace storage {
 
@@ -37,8 +32,11 @@ class STORAGE_EXPORT BlobTransportStrategy {
   virtual ~BlobTransportStrategy();
 
   // Called once for each DataElementBytes in a blob. The |bytes| passed in must
-  // outlive the BlobTransportStrategy instance.
-  virtual void AddBytesElement(blink::mojom::DataElementBytes* bytes) = 0;
+  // outlive the BlobTransportStrategy instance. If |data| is bound, this call
+  // may use it to acquire the bytes asynchronously rather than reading from
+  // |bytes|.
+  virtual void AddBytesElement(blink::mojom::DataElementBytes* bytes,
+                               const blink::mojom::BytesProviderPtr& data) = 0;
 
   // Called when quota has been allocated and transportation should begin.
   // Implementations will call the |result_callback_| when transportation has

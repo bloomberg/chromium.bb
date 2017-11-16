@@ -92,12 +92,11 @@ void IndexedDBCallbacksImpl::ConvertValue(
                       WebString::FromUTF16(info->file->name),
                       WebString::FromUTF16(info->mime_type),
                       info->file->last_modified.ToDoubleT(), info->size,
-                      info->blob.PassInterface().PassHandle());
+                      info->blob.PassHandle());
     } else {
-      local_blob_info[i] =
-          WebBlobInfo(WebString::FromUTF8(info->uuid),
-                      WebString::FromUTF16(info->mime_type), info->size,
-                      info->blob.PassInterface().PassHandle());
+      local_blob_info[i] = WebBlobInfo(WebString::FromUTF8(info->uuid),
+                                       WebString::FromUTF16(info->mime_type),
+                                       info->size, info->blob.PassHandle());
     }
   }
 

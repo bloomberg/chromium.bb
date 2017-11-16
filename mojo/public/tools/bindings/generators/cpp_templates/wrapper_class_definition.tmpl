@@ -1,7 +1,7 @@
 {% for constructor in struct|struct_constructors %}
 {{struct.name}}::{{struct.name}}(
 {%-  for field in constructor.params  %}
-{%-    set type = field.kind|cpp_wrapper_param_type %}
+{%-    set type = field.kind|cpp_wrapper_param_type_new %}
 {%-    set name = field.name %}
     {{type}} {{name}}_in
 {%-    if not loop.last -%},{%- endif %}

@@ -18,7 +18,7 @@ Vector<blink::mojom::blink::SerializedBlobPtr> StructTraits<
     for (const auto& blob : input.message->BlobDataHandles()) {
       result.push_back(blink::mojom::blink::SerializedBlob::New(
           blob.value->Uuid(), blob.value->GetType(), blob.value->size(),
-          blob.value->CloneBlobPtr()));
+          blob.value->CloneBlobPtr().PassInterface()));
     }
   }
   return result;
@@ -40,7 +40,7 @@ bool StructTraits<blink::mojom::blink::CloneableMessage::DataView,
     out->message->BlobDataHandles().Set(
         blob->uuid,
         blink::BlobDataHandle::Create(blob->uuid, blob->content_type,
-                                      blob->size, blob->blob.PassInterface()));
+                                      blob->size, std::move(blob->blob)));
   }
 
   return true;

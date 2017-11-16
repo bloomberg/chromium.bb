@@ -43,9 +43,10 @@ void IMEDriver::StartSession(ui::mojom::StartSessionDetailsPtr details) {
 #if defined(OS_CHROMEOS)
   std::unique_ptr<RemoteTextInputClient> remote_client =
       base::MakeUnique<RemoteTextInputClient>(
-          std::move(details->client), details->text_input_type,
-          details->text_input_mode, details->text_direction,
-          details->text_input_flags, details->caret_bounds);
+          ui::mojom::TextInputClientPtr(std::move(details->client)),
+          details->text_input_type, details->text_input_mode,
+          details->text_direction, details->text_input_flags,
+          details->caret_bounds);
   mojo::MakeStrongBinding(
       base::MakeUnique<InputMethodBridge>(std::move(remote_client)),
       std::move(details->input_method_request));

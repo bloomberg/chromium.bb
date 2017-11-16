@@ -15,7 +15,7 @@ class {{export_attribute}} {{union.name}} {
   // Construct an instance holding |{{field.name}}|.
   static {{union.name}}Ptr
   New{{field.name|under_to_camel}}(
-      {{field.kind|cpp_wrapper_param_type}} {{field.name}}) {
+      {{field.kind|cpp_wrapper_param_type_new}} {{field.name}}) {
     auto result = {{union.name}}Ptr({{in_place_marker}});
     result->set_{{field.name}}(std::move({{field.name}}));
     return result;
@@ -70,7 +70,8 @@ class {{export_attribute}} {{union.name}} {
 {%-   endif %}
   }
 
-  void set_{{field.name}}({{field.kind|cpp_wrapper_param_type}} {{field.name}});
+  void set_{{field.name}}(
+      {{field.kind|cpp_wrapper_param_type_new}} {{field.name}});
 {%- endfor %}
 
  private:

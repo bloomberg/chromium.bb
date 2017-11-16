@@ -78,7 +78,7 @@ class TestSensorClient : public mojom::SensorClient {
         params->buffer_offset);
     ASSERT_TRUE(shared_buffer_);
 
-    sensor_ = std::move(params->sensor);
+    sensor_.Bind(std::move(params->sensor));
     client_binding_.Bind(std::move(params->client_request));
     std::move(quit_closure).Run();
   }

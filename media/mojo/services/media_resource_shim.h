@@ -21,7 +21,7 @@ class MediaResourceShim : public MediaResource {
   // Constructs the shim; at least a single audio or video stream must be
   // provided.  |demuxer_ready_cb| will be called once the streams have been
   // initialized.  Calling any method before then is an error.
-  MediaResourceShim(std::vector<mojom::DemuxerStreamPtr> streams,
+  MediaResourceShim(std::vector<mojom::DemuxerStreamPtrInfo> streams,
                     const base::Closure& demuxer_ready_cb);
   ~MediaResourceShim() override;
 

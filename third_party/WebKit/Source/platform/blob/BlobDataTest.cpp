@@ -267,14 +267,14 @@ class BlobDataHandleTest : public ::testing::Test {
     testing_platform_->Flush();
     EXPECT_EQ(0u, mock_blob_registry_.binding_requests.size());
     ASSERT_EQ(1u, mock_blob_registry_.registrations.size());
-    const auto& reg = mock_blob_registry_.registrations[0];
+    auto& reg = mock_blob_registry_.registrations[0];
     EXPECT_EQ(handle->Uuid(), reg.uuid);
     EXPECT_EQ(type.IsNull() ? "" : type, reg.content_type);
     EXPECT_EQ("", reg.content_disposition);
     ASSERT_EQ(expected_elements.size(), reg.elements.size());
     for (size_t i = 0; i < expected_elements.size(); ++i) {
       const auto& expected = expected_elements[i].element;
-      const auto& actual = reg.elements[i];
+      auto& actual = reg.elements[i];
       if (expected->is_bytes()) {
         ASSERT_TRUE(actual->is_bytes());
         EXPECT_EQ(expected->get_bytes()->length, actual->get_bytes()->length);
@@ -283,7 +283,9 @@ class BlobDataHandleTest : public ::testing::Test {
 
         base::RunLoop loop;
         Vector<uint8_t> received_bytes;
-        actual->get_bytes()->data->RequestAsReply(base::Bind(
+        mojom::blink::BytesProviderPtr data(
+            std::move(actual->get_bytes()->data));
+        data->RequestAsReply(base::Bind(
             [](base::Closure quit_closure, Vector<uint8_t>* bytes_out,
                const Vector<uint8_t>& bytes) {
               *bytes_out = bytes;
@@ -319,7 +321,8 @@ class BlobDataHandleTest : public ::testing::Test {
 
         base::RunLoop loop;
         String received_uuid;
-        actual->get_blob()->blob->GetInternalUUID(base::Bind(
+        mojom::blink::BlobPtr blob(std::move(actual->get_blob()->blob));
+        blob->GetInternalUUID(base::Bind(
             [](base::Closure quit_closure, String* uuid_out,
                const String& uuid) {
               *uuid_out = uuid;

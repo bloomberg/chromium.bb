@@ -18,10 +18,20 @@ CloneableMessage CloneableMessage::ShallowClone() const {
   CloneableMessage clone;
   clone.encoded_message = encoded_message;
   for (const auto& blob : blobs) {
-    mojom::BlobPtr blob_clone;
-    blob->blob->Clone(MakeRequest(&blob_clone));
-    clone.blobs.push_back(mojom::SerializedBlob::New(
-        blob->uuid, blob->content_type, blob->size, std::move(blob_clone)));
+    // NOTE: We dubiously exercise dual ownership of the blob's pipe handle here
+    // so that we can temporarily bind and send a message over the pipe without
+    // mutating the state of this CloneableMessage.
+    mojo::ScopedMessagePipeHandle handle(blob->blob.handle().get());
+    mojom::BlobPtr blob_proxy(
+        mojom::BlobPtrInfo(std::move(handle), blob->blob.version()));
+    mojom::BlobPtrInfo blob_clone_info;
+    blob_proxy->Clone(MakeRequest(&blob_clone_info));
+    clone.blobs.push_back(
+        mojom::SerializedBlob::New(blob->uuid, blob->content_type, blob->size,
+                                   std::move(blob_clone_info)));
+
+    // Not leaked - still owned by |blob->blob|.
+    ignore_result(blob_proxy.PassInterface().PassHandle().release());
   }
   return clone;
 }

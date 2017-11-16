@@ -36,15 +36,15 @@ class PersistentPrefStoreClientTest : public testing::Test,
 
   // testing::Test:
   void SetUp() override {
-    mojom::PersistentPrefStorePtr store_proxy;
-    binding_.Bind(mojo::MakeRequest(&store_proxy));
+    mojom::PersistentPrefStorePtrInfo store_proxy_info;
+    binding_.Bind(mojo::MakeRequest(&store_proxy_info));
     auto persistent_pref_store_client =
         base::MakeRefCounted<PersistentPrefStoreClient>(
             mojom::PersistentPrefStoreConnection::New(
                 mojom::PrefStoreConnection::New(
                     mojom::PrefStoreObserverRequest(),
                     std::make_unique<base::DictionaryValue>(), true),
-                std::move(store_proxy),
+                std::move(store_proxy_info),
                 ::PersistentPrefStore::PREF_READ_ERROR_NONE, false));
     auto pref_registry = base::MakeRefCounted<PrefRegistrySimple>();
     pref_registry->RegisterDictionaryPref(kDictionaryKey);

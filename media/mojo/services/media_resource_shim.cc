@@ -13,7 +13,7 @@
 namespace media {
 
 MediaResourceShim::MediaResourceShim(
-    std::vector<mojom::DemuxerStreamPtr> streams,
+    std::vector<mojom::DemuxerStreamPtrInfo> streams,
     const base::Closure& demuxer_ready_cb)
     : demuxer_ready_cb_(demuxer_ready_cb),
       streams_ready_(0),
@@ -22,9 +22,10 @@ MediaResourceShim::MediaResourceShim(
   DCHECK(!demuxer_ready_cb_.is_null());
 
   for (auto& s : streams) {
+    mojom::DemuxerStreamPtr stream(std::move(s));
     streams_.emplace_back(new MojoDemuxerStreamAdapter(
-        std::move(s), base::Bind(&MediaResourceShim::OnStreamReady,
-                                 weak_factory_.GetWeakPtr())));
+        std::move(stream), base::Bind(&MediaResourceShim::OnStreamReady,
+                                      weak_factory_.GetWeakPtr())));
   }
 }
 

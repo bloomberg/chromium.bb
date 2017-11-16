@@ -152,11 +152,8 @@ class FakeSensorProvider : public device::mojom::SensorProvider {
         init_params->maximum_frequency = sensor->GetMaximumSupportedFrequency();
         init_params->minimum_frequency = sensor->GetMinimumSupportedFrequency();
 
-        device::mojom::SensorPtr sensor_ptr;
         mojo::MakeStrongBinding(std::move(sensor),
-                                mojo::MakeRequest(&sensor_ptr));
-        init_params->sensor = std::move(sensor_ptr);
-
+                                mojo::MakeRequest(&init_params->sensor));
         std::move(callback).Run(std::move(init_params));
         break;
       }

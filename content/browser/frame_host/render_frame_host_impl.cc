@@ -1148,7 +1148,7 @@ bool RenderFrameHostImpl::CreateRenderFrame(int proxy_routing_id,
   BindInterfaceProviderRequest(mojo::MakeRequest(&interface_provider));
 
   mojom::CreateFrameParamsPtr params = mojom::CreateFrameParams::New();
-  params->interface_provider = std::move(interface_provider);
+  params->interface_provider = interface_provider.PassInterface();
   params->routing_id = routing_id_;
   params->proxy_routing_id = proxy_routing_id;
   params->opener_routing_id = opener_routing_id;
@@ -2913,13 +2913,14 @@ void RenderFrameHostImpl::CreateNewWindow(
       RenderFrameHostImpl::FromID(GetProcess()->GetID(), main_frame_route_id);
   DCHECK(rfh);
 
-  service_manager::mojom::InterfaceProviderPtr main_frame_interface_provider;
+  service_manager::mojom::InterfaceProviderPtrInfo
+      main_frame_interface_provider_info;
   rfh->BindInterfaceProviderRequest(
-      mojo::MakeRequest(&main_frame_interface_provider));
+      mojo::MakeRequest(&main_frame_interface_provider_info));
 
   mojom::CreateNewWindowReplyPtr reply = mojom::CreateNewWindowReply::New(
       render_view_route_id, main_frame_route_id, main_frame_widget_route_id,
-      std::move(main_frame_interface_provider), cloned_namespace->id(),
+      std::move(main_frame_interface_provider_info), cloned_namespace->id(),
       rfh->GetDevToolsFrameToken());
   std::move(callback).Run(mojom::CreateNewWindowStatus::kSuccess,
                           std::move(reply));
