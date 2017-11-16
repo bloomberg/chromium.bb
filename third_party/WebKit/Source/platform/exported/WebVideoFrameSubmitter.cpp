@@ -5,6 +5,8 @@
 #include "public/platform/WebVideoFrameSubmitter.h"
 
 #include <memory>
+#include <utility>
+
 #include "third_party/WebKit/Source/platform/graphics/VideoFrameSubmitter.h"
 
 namespace cc {
@@ -26,7 +28,7 @@ std::unique_ptr<WebVideoFrameSubmitter> WebVideoFrameSubmitter::Create(
     viz::SharedBitmapManager* shared_bitmap_manager,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager) {
   return std::make_unique<VideoFrameSubmitter>(
-      base::MakeUnique<VideoFrameResourceProvider>(
+      std::make_unique<VideoFrameResourceProvider>(
           std::move(context_provider_callback), shared_bitmap_manager,
           gpu_memory_buffer_manager));
 }
