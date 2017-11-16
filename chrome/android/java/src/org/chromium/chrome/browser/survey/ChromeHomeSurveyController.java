@@ -29,6 +29,7 @@ import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.components.variations.VariationsAssociatedData;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
+import org.chromium.ui.base.DeviceFormFactor;
 
 /**
  * Class that controls if and when to show surveys related to the Chrome Home experiment.
@@ -88,6 +89,7 @@ public class ChromeHomeSurveyController {
         if (CommandLine.getInstance().hasSwitch(ChromeSwitches.CHROME_HOME_FORCE_ENABLE_SURVEY)) {
             return true;
         }
+        if (DeviceFormFactor.isTablet()) return false;
         if (!isUMAEnabled()) return false;
         if (AccessibilityUtil.isAccessibilityEnabled()) return false;
         if (hasInfoBarBeenDisplayed()) return false;
