@@ -241,31 +241,31 @@ WebRequestEventDetails::GetAndClearDict() {
   return result;
 }
 
-void WebRequestEventDetails::FilterForPublicSession() {
-  request_body_ = nullptr;
-  request_headers_ = nullptr;
-  response_headers_ = nullptr;
-
-  extra_info_spec_ = 0;
+std::unique_ptr<WebRequestEventDetails>
+WebRequestEventDetails::CreatePublicSessionCopy() {
+  std::unique_ptr<WebRequestEventDetails> copy(new WebRequestEventDetails);
+  copy->initiator_ = initiator_;
+  copy->render_process_id_ = render_process_id_;
+  copy->render_frame_id_ = render_frame_id_;
 
   static const char* const kSafeAttributes[] = {
     "method", "requestId", "timeStamp", "type", "tabId", "frameId",
     "parentFrameId", "fromCache", "error", "ip", "statusLine", "statusCode"
   };
 
-  auto copy = GetAndClearDict();
-
   for (const char* safe_attr : kSafeAttributes) {
-    std::unique_ptr<base::Value> val;
-    if (copy->Remove(safe_attr, &val))
-      dict_.Set(safe_attr, std::move(val));
+    base::Value* val = dict_.FindKey(safe_attr);
+    if (val)
+      copy->dict_.SetKey(safe_attr, val->Clone());
   }
 
   // URL is stripped down to the origin.
   std::string url;
-  copy->GetString(keys::kUrlKey, &url);
+  dict_.GetString(keys::kUrlKey, &url);
   GURL gurl(url);
-  dict_.SetString(keys::kUrlKey, gurl.GetOrigin().spec());
+  copy->dict_.SetString(keys::kUrlKey, gurl.GetOrigin().spec());
+
+  return copy;
 }
 
 WebRequestEventDetails::WebRequestEventDetails()

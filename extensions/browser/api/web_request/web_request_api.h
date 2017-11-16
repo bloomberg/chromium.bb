@@ -319,6 +319,8 @@ class ExtensionWebRequestEventRouter {
   FRIEND_TEST_ALL_PREFIXES(ExtensionWebRequestTest, AccessRequestBodyData);
   FRIEND_TEST_ALL_PREFIXES(ExtensionWebRequestTest,
                            MinimalAccessRequestBodyData);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionWebRequestTest,
+                           ProperFilteringInPublicSession);
   FRIEND_TEST_ALL_PREFIXES(ExtensionWebRequestTest, NoAccessRequestBodyData);
   FRIEND_TEST_ALL_PREFIXES(ExtensionWebRequestTest, AddAndRemoveListeners);
   FRIEND_TEST_ALL_PREFIXES(ExtensionWebRequestTest, BlockedRequestsAreRemoved);
