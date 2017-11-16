@@ -43,11 +43,13 @@ class CHROMEOS_EXPORT HomedirMethods {
 
   virtual ~HomedirMethods() {}
 
-  // Asks cryptohomed to return data about the key identified by |label| for the
-  // user identified by |id|. At present, this does not return any secret
-  // information and the request does not need to be authenticated.
+  // Asks cryptohomed to return data about the key identified by |request| for
+  // the user identified by |id|. At present, this does not return any secret
+  // information and the request does not need to be authenticated, so an empty
+  // authorization request is sufficient.
   virtual void GetKeyDataEx(const Identification& id,
-                            const std::string& label,
+                            const AuthorizationRequest& auth_proto,
+                            const GetKeyDataRequest& request,
                             const GetKeyDataCallback& callback) = 0;
 
   // Asks cryptohomed to attempt authorization for user identified by |id| using

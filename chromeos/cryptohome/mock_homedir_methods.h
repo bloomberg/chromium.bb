@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "chromeos/cryptohome/homedir_methods.h"
+#include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace cryptohome {
@@ -21,9 +22,10 @@ class CHROMEOS_EXPORT MockHomedirMethods : public HomedirMethods {
 
   void SetUp(bool success, MountError return_code);
 
-  MOCK_METHOD3(GetKeyDataEx,
+  MOCK_METHOD4(GetKeyDataEx,
                void(const Identification& id,
-                    const std::string& label,
+                    const AuthorizationRequest& auth_proto,
+                    const GetKeyDataRequest& request,
                     const GetKeyDataCallback& callback));
   MOCK_METHOD3(CheckKeyEx,
                void(const Identification& id,

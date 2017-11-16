@@ -393,10 +393,13 @@ void StartMount(const base::WeakPtr<AuthAttemptState>& attempt,
     return;
   }
 
+  cryptohome::GetKeyDataRequest request;
+  request.mutable_key()->mutable_data()->set_label(kCryptohomeGAIAKeyLabel);
   cryptohome::HomedirMethods::GetInstance()->GetKeyDataEx(
       cryptohome::Identification(attempt->user_context.GetAccountId()),
-      kCryptohomeGAIAKeyLabel, base::Bind(&OnGetKeyDataEx, attempt, resolver,
-                                          ephemeral, create_if_nonexistent));
+      cryptohome::AuthorizationRequest(), request,
+      base::Bind(&OnGetKeyDataEx, attempt, resolver, ephemeral,
+                 create_if_nonexistent));
 }
 
 // Calls cryptohome's mount method for guest and also get the user hash from
