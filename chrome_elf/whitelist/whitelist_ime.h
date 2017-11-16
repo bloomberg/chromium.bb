@@ -12,10 +12,11 @@ namespace whitelist {
 // "static_cast<int>(IMEStatus::value)" to access underlying value.
 enum class IMEStatus {
   kSuccess = 0,
-  kErrorGeneric,
-  kMissingRegKey,
-  kRegAccessDenied,
-  kGenericRegFailure
+  kErrorGeneric = 1,
+  kMissingRegKey = 2,
+  kRegAccessDenied = 3,
+  kGenericRegFailure = 4,
+  COUNT
 };
 
 // This list of IMEs was provided by Microsoft as their own.

@@ -230,11 +230,16 @@ static_library("whitelist") {
   sources = [
     "whitelist/whitelist.cc",
     "whitelist/whitelist.h",
+    "whitelist/whitelist_file.cc",
+    "whitelist/whitelist_file.h",
+    "whitelist/whitelist_file_format.h",
     "whitelist/whitelist_ime.cc",
     "whitelist/whitelist_ime.h",
   ]
   deps = [
     ":nt_registry",
+    ":sha1",
+    "//chrome/install_static:install_static_util",
   ]
 }
 
@@ -251,6 +256,7 @@ test("chrome_elf_unittests") {
     "nt_registry/nt_registry_unittest.cc",
     "run_all_unittests.cc",
     "sha1/sha1_unittest.cc",
+    "whitelist/whitelist_file_unittest.cc",
     "whitelist/whitelist_ime_unittest.cc",
   ]
   include_dirs = [ "$target_gen_dir" ]
