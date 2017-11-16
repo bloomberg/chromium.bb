@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/mac/foundation_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
@@ -341,6 +342,19 @@ void TapEdit() {
       selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
                                    IDS_IOS_NAVIGATION_BAR_EDIT_BUTTON)]
       performAction:grey_tap()];
+}
+
+// Creates a PasswordForm with |index| being part of the username, password,
+// origin and realm.
+PasswordForm CreateSampleFormWithIndex(int index) {
+  PasswordForm form;
+  form.username_value =
+      base::ASCIIToUTF16(base::StringPrintf("concrete username %03d", index));
+  form.password_value =
+      base::ASCIIToUTF16(base::StringPrintf("concrete password %03d", index));
+  form.origin = GURL(base::StringPrintf("https://www%03d.example.com", index));
+  form.signon_realm = form.origin.spec();
+  return form;
 }
 
 }  // namespace
@@ -1221,6 +1235,66 @@ void TapEdit() {
       assertWithMatcher:grey_notNil()
                   error:&error];
   GREYAssertTrue(error, @"The settings page is still displayed");
+}
+
+// Test that even with many passwords the settings are still usable. In
+// particular, ensure that password entries "below the fold" are reachable and
+// their detail view is shown on tapping.
+// There are two bottlenecks potentially affecting the runtime of the test:
+// (1) Storing passwords on initialisation.
+// (2) Speed of EarlGrey UI operations such as scrolling.
+// To keep the test duration reasonable, the delay from (1) is eliminated in
+// storing just about enough passwords to ensure filling more than one page on
+// any device. To limit the effect of (2), custom large scrolling steps are
+// added to the usual scrolling actions.
+- (void)testManyPasswords {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      password_manager::features::kViewPasswords);
+
+  // Enough just to ensure filling more than one page on all devices.
+  constexpr int kPasswordsCount = 15;
+
+  // Send the passwords to the queue to be added to the PasswordStore.
+  for (int i = 1; i <= kPasswordsCount; ++i) {
+    GetPasswordStore()->AddLogin(CreateSampleFormWithIndex(i));
+  }
+
+  // Use TestStoreConsumer::GetStoreResults to wait for the background storing
+  // task to complete and to verify that the passwords have been stored.
+  TestStoreConsumer consumer;
+  GREYAssertEqual(kPasswordsCount, consumer.GetStoreResults().size(),
+                  @"Unexpected PasswordStore results.");
+
+  OpenPasswordSettings();
+
+  // Aim at an entry almost at the end of the list.
+  constexpr int kRemoteIndex = kPasswordsCount - 2;
+  // The scrolling in GetInteractionForPasswordEntry has too fine steps to
+  // reach the desired part of the list quickly. The following gives it a head
+  // start of almost the desired position, counting 30 points per entry and
+  // aiming 3 entries before |kRemoteIndex|.
+  constexpr int kJump = (kRemoteIndex - 3) * 30;
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   @"SavePasswordsCollectionViewController")]
+      performAction:grey_scrollInDirection(kGREYDirectionDown, kJump)];
+  [GetInteractionForPasswordEntry([NSString
+      stringWithFormat:@"www%03d.example.com, concrete username %03d",
+                       kRemoteIndex, kRemoteIndex]) performAction:grey_tap()];
+
+  // Check that the detail view loaded correctly by verifying the site content.
+  id<GREYMatcher> siteCell = grey_accessibilityLabel([NSString
+      stringWithFormat:@"https://www%03d.example.com/", kRemoteIndex]);
+  [GetInteractionForPasswordDetailItem(siteCell)
+      assertWithMatcher:grey_notNil()];
+
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+      performAction:grey_tap()];
 }
 
 @end
