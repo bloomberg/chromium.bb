@@ -16,6 +16,7 @@
 #include "base/memory/memory_coordinator_client.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/resource_coordinator/page_signal_receiver.h"
 #include "chrome/browser/sessions/session_restore_delegate.h"
 #include "chrome/browser/sessions/tab_loader_delegate.h"
 #include "content/public/browser/notification_observer.h"
@@ -44,7 +45,8 @@ class TabLoaderTest;
 class TabLoader : public content::NotificationObserver,
                   public base::RefCounted<TabLoader>,
                   public TabLoaderCallback,
-                  public base::MemoryCoordinatorClient {
+                  public base::MemoryCoordinatorClient,
+                  public resource_coordinator::PageSignalObserver {
  public:
   using RestoredTab = SessionRestoreDelegate::RestoredTab;
 
@@ -53,6 +55,9 @@ class TabLoader : public content::NotificationObserver,
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
+
+  // resource_coordinator::PageSignalObserver implementation.
+  void OnPageAlmostIdle(content::WebContents* web_contents) override;
 
   // TabLoaderCallback:
   void SetTabLoadingEnabled(bool enable_tab_loading) override;
@@ -63,6 +68,7 @@ class TabLoader : public content::NotificationObserver,
 
  private:
   FRIEND_TEST_ALL_PREFIXES(TabLoaderTest, OnMemoryStateChange);
+  FRIEND_TEST_ALL_PREFIXES(TabLoaderTest, UsePageAlmostIdleSignal);
   FRIEND_TEST_ALL_PREFIXES(TabRestoreTest,
                            TabsFromRestoredWindowsAreLoadedGradually);
 
