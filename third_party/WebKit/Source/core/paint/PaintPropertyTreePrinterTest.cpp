@@ -21,16 +21,8 @@ class PaintPropertyTreePrinterTest : public PaintControllerPaintTest {
 
  private:
   void SetUp() override {
-    Settings::SetMockScrollbarsEnabled(true);
-
     RenderingTest::SetUp();
     EnableCompositing();
-  }
-
-  void TearDown() override {
-    RenderingTest::TearDown();
-
-    Settings::SetMockScrollbarsEnabled(false);
   }
 };
 

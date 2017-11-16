@@ -78,16 +78,8 @@ PaintPropertyTreeBuilderTest::PaintPropertiesForElement(const char* name) {
 }
 
 void PaintPropertyTreeBuilderTest::SetUp() {
-  Settings::SetMockScrollbarsEnabled(true);
-
   RenderingTest::SetUp();
   EnableCompositing();
-}
-
-void PaintPropertyTreeBuilderTest::TearDown() {
-  RenderingTest::TearDown();
-
-  Settings::SetMockScrollbarsEnabled(false);
 }
 
 #define CHECK_VISUAL_RECT(expected, source_object, ancestor, slop_factor)      \
