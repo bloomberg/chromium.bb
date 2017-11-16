@@ -12,8 +12,8 @@
         "Tarball": "debian_stretch_arm_sysroot.tar.xz"
     },
     "stretch_arm64": {
-        "Revision": "2202c161310ffde63729f29d27fe7bb24a0bc540",
-        "Sha1Sum": "2649a7ffa2e0d9a42a9a567a33967ec706bd3b8e",
+        "Revision": "62a209c44d63af015bfd7b2bccb3ec37b08686e3",
+        "Sha1Sum": "f2e564cd96221820a0bd241d34158dfb24f6a220",
         "SysrootDir": "debian_stretch_arm64-sysroot",
         "Tarball": "debian_stretch_arm64_sysroot.tar.xz"
     },
