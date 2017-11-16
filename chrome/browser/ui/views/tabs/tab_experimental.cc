@@ -6,6 +6,7 @@
 
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
+#include "chrome/browser/ui/tabs/tab_data_experimental.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "components/grit/components_scaled_resources.h"
 #include "ui/views/border.h"
@@ -24,10 +25,11 @@ float GetTabEndcapWidth() {
   return GetLayoutInsets(TAB).left() - 0.5f;
 }
 
-}
+}  // namespace
 
-TabExperimental::TabExperimental()
+TabExperimental::TabExperimental(const TabDataExperimental* data)
     : views::View(),
+      data_(data),
       title_(new views::Label),
       hover_controller_(this),
       paint_(this) {
@@ -51,6 +53,11 @@ TabExperimental::TabExperimental()
 
 TabExperimental::~TabExperimental() {}
 
+void TabExperimental::SetClosing() {
+  closing_ = true;
+  data_ = nullptr;
+}
+
 void TabExperimental::SetActive(bool active) {
   if (active != active_) {
     active_ = active;
@@ -65,8 +72,8 @@ void TabExperimental::SetSelected(bool selected) {
   }
 }
 
-void TabExperimental::SetTitle(const base::string16& title) {
-  title_->SetText(title);
+void TabExperimental::DataUpdated() {
+  title_->SetText(data_->GetTitle());
 }
 
 int TabExperimental::GetOverlap() {

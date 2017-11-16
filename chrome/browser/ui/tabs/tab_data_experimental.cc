@@ -5,14 +5,14 @@
 #include "chrome/browser/ui/tabs/tab_data_experimental.h"
 
 #include "base/memory/ptr_util.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_experimental.h"
 #include "content/public/browser/web_contents.h"
 
 class TabDataExperimental::ContentsWatcher
     : public content::WebContentsObserver {
  public:
-  ContentsWatcher(TabStripModel* strip, content::WebContents* wc)
-      : WebContentsObserver(wc), tab_strip_model_(strip), contents_(wc) {}
+  ContentsWatcher(TabStripModelExperimental* model, content::WebContents* wc)
+      : WebContentsObserver(wc), tab_strip_model_(model), contents_(wc) {}
 
   void ReplaceContents(content::WebContents* new_contents) {
     contents_ = new_contents;
@@ -23,16 +23,12 @@ class TabDataExperimental::ContentsWatcher
  private:
   // WebContentsObserver implementation:
   void WebContentsDestroyed() override {
-    DCHECK_EQ(contents_, web_contents());
-
     // Note that we only detach the contents here, not close it - it's
     // already been closed. We just want to undo our bookkeeping.
-    int index = tab_strip_model_->GetIndexOfWebContents(contents_);
-    DCHECK_NE(TabStripModel::kNoTab, index);
-    tab_strip_model_->DetachWebContentsAt(index);
+    tab_strip_model_->DetachWebContents(contents_);
   }
 
-  TabStripModel* tab_strip_model_;
+  TabStripModelExperimental* tab_strip_model_;
   content::WebContents* contents_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentsWatcher);
@@ -42,10 +38,20 @@ TabDataExperimental::TabDataExperimental() = default;
 TabDataExperimental::TabDataExperimental(TabDataExperimental&&) noexcept =
     default;
 
-TabDataExperimental::TabDataExperimental(content::WebContents* contents,
-                                         TabStripModel* model)
-    : contents_(contents),
-      contents_watcher_(base::MakeUnique<ContentsWatcher>(model, contents)) {}
+TabDataExperimental::TabDataExperimental(TabDataExperimental* parent,
+                                         Type type,
+                                         content::WebContents* contents,
+                                         TabStripModelExperimental* model)
+    : parent_(parent),
+      type_(type),
+      contents_(contents),
+      contents_watcher_(base::MakeUnique<ContentsWatcher>(model, contents)) {
+  // kSingle and kHubAndSpoke requires a type.
+  DCHECK(type == Type::kGroup || contents);
+
+  // kGroup can't have a type.
+  DCHECK(type != Type::kGroup || !contents);
+}
 
 TabDataExperimental::~TabDataExperimental() = default;
 
@@ -56,6 +62,13 @@ const base::string16& TabDataExperimental::GetTitle() const {
   DCHECK(type() == Type::kSingle);
   // TODO(brettw) this will need to use TabUIHelper.
   return contents_->GetTitle();
+}
+
+bool TabDataExperimental::CountsAsViewIndex() const {
+  // Don't allow selection of a group when it's expanded (then it should
+  // go to the first child). Any non-group or non-expanded thing counts
+  // as the view index.
+  return type_ != Type::kGroup || !expanded_;
 }
 
 void TabDataExperimental::ReplaceContents(content::WebContents* new_contents) {

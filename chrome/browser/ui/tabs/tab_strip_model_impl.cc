@@ -374,9 +374,10 @@ WebContents* TabStripModelImpl::ReplaceWebContentsAt(
   // too. We do this as nearly all observers need to treat a replacement of the
   // selected contents as the selection changing.
   if (active_index() == index) {
-    for (auto& observer : observers_)
+    for (auto& observer : observers_) {
       observer.ActiveTabChanged(old_contents, new_contents, active_index(),
                                 TabStripModelObserver::CHANGE_REASON_REPLACED);
+    }
   }
   return old_contents;
 }

@@ -10,17 +10,34 @@
 #include "ui/views/controls/glow_hover_controller.h"
 #include "ui/views/view.h"
 
+class TabDataExperimental;
+
 namespace views {
 class Label;
 }
 
 class TabExperimental : public views::View {
  public:
-  TabExperimental();
+  explicit TabExperimental(const TabDataExperimental* data);
   ~TabExperimental() override;
 
-  // Used to set/check whether this Tab is being animated closed.
-  void set_closing(bool closing) { closing_ = closing; }
+  // Will be null when closing.
+  const TabDataExperimental* data() const { return data_; }
+
+  // The view order is stored on a tab for the use of TabStrip layout and
+  // computatations. It is not used directly by this class. It represents this
+  // tab's position in the current layout.
+  size_t view_order() const { return view_order_; }
+  void set_view_order(size_t vo) { view_order_ = vo; }
+
+  // The ideal bounds is stored on a tab for the use of the TabStrip layout.
+  // It is not used directly by this class.
+  const gfx::Rect& ideal_bounds() const { return ideal_bounds_; }
+  void set_ideal_bounds(const gfx::Rect& r) { ideal_bounds_ = r; }
+
+  // Used to set/check whether this Tab is being animated closed. Marking a
+  // tab as closing will also clear the data_ pointer.
+  void SetClosing();
   bool closing() const { return closing_; }
 
   bool active() const { return active_; }
@@ -30,7 +47,10 @@ class TabExperimental : public views::View {
   // everything at once?
   void SetActive(bool active);
   void SetSelected(bool selected);
-  void SetTitle(const base::string16& title);
+
+  // TODO(brettw) need a way to specify what changed so the tab doesn't need
+  // to redraw everything.
+  void DataUpdated();
 
   // Returns the overlap between adjacent tabs.
   static int GetOverlap();
@@ -39,6 +59,12 @@ class TabExperimental : public views::View {
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override;
   void Layout() override;
+
+  // Will be null when closing.
+  const TabDataExperimental* data_;
+
+  size_t view_order_ = static_cast<size_t>(-1);
+  gfx::Rect ideal_bounds_;
 
   bool active_ = false;
   bool selected_ = false;
