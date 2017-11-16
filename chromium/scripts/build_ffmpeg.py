@@ -32,7 +32,7 @@ BRANDINGS = [
 
 ARCH_MAP = {
     'android': ['ia32', 'x64', 'mipsel', 'mips64el', 'arm-neon', 'arm64'],
-    'linux': ['ia32', 'x64', 'noasm-x64', 'arm', 'arm-neon', 'arm64'],
+    'linux': ['ia32', 'x64', 'mipsel', 'noasm-x64', 'arm', 'arm-neon', 'arm64'],
     'mac': ['x64'],
     'win': ['ia32', 'x64'],
 }
@@ -54,10 +54,11 @@ Platform specific build notes:
   linux ia32/x64:
     Script can run on a normal Ubuntu box.
 
-  linux arm/arm-neon/arm64:
-    Script can run on a normal Ubuntu with ARM/ARM64 ready Chromium checkout:
+  linux arm/arm-neon/arm64/mipsel:
+    Script can run on a normal Ubuntu with ARM/ARM64 or MIPS32 ready Chromium checkout:
       build/linux/sysroot_scripts/install-sysroot.py --arch=arm
       build/linux/sysroot_scripts/install-sysroot.py --arch=arm64
+      build/linux/sysroot_scripts/install-sysroot.py --arch=mips
 
   mac:
     Script must be run on OSX.  Additionally, ensure the Chromium (not Apple)
@@ -107,6 +108,8 @@ def DetermineHostOsAndArch():
     host_arch = 'x64'
   elif platform.machine() == 'aarch64':
     host_arch = 'arm64'
+  elif platform.machine() == 'mips32':
+    host_arch = 'mipsel'
   elif platform.machine() == 'mips64':
     host_arch = 'mips64el'
   elif platform.machine().startswith('arm'):
@@ -551,26 +554,30 @@ def ConfigureAndBuild(target_arch, target_os, host_os, host_arch, parallel_jobs,
           '--extra-cflags=-march=armv8-a',
       ])
     elif target_arch == 'mipsel':
-      if target_os != 'android':
-        print('MIPS is only supported on Android.\n')
-        return 1
-
       # These flags taken from android chrome build with target_cpu='mipsel'
       configure_flags['Common'].extend([
-          '--arch=mipsel',
-          '--disable-mips32r6',
-          '--disable-mips32r5',
-          '--disable-mips32r2',
-          '--disable-mipsdsp',
-          '--disable-mipsdspr2',
-          '--disable-msa',
-          '--enable-mipsfpu',
-          '--extra-cflags=-march=mipsel',
-          '--extra-cflags=-mcpu=mips32',
-          # Required to avoid errors about dynamic relocation w/o -fPIC.
-          '--extra-ldflags=-z notext'
+        '--arch=mipsel',
+        '--disable-mips32r6',
+        '--disable-mips32r5',
+        '--disable-mips32r2',
+        '--disable-mipsdsp',
+        '--disable-mipsdspr2',
+        '--disable-msa',
+        '--enable-mipsfpu',
+        '--extra-cflags=-march=mipsel',
+        '--extra-cflags=-mcpu=mips32',
+        # Required to avoid errors about dynamic relocation w/o -fPIC.
+        '--extra-ldflags=-z notext',
       ])
-
+      if target_os == 'linux':
+        configure_flags['Common'].extend([
+            '--enable-cross-compile',
+            '--target-os=linux',
+            '--sysroot=' + os.path.join(
+                CHROMIUM_ROOT_DIR, 'build/linux/debian_stretch_mips-sysroot'),
+            '--extra-cflags=--target=mipsel-linux-gnu',
+            '--extra-ldflags=--target=mipsel-linux-gnu',
+        ])
     elif target_arch == 'mips64el':
       if target_os != 'android':
         print('MIPS is only supported on Android.\n')
