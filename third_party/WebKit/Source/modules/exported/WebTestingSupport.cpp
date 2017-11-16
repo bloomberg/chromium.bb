@@ -36,19 +36,19 @@ namespace blink {
 void WebTestingSupport::InjectInternalsObject(WebLocalFrame* frame) {
   V8InternalsPartial::initialize();
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
-  WebCoreTestSupport::injectInternalsObject(frame->MainWorldScriptContext());
+  WebCoreTestSupport::InjectInternalsObject(frame->MainWorldScriptContext());
 }
 
 void WebTestingSupport::ResetInternalsObject(WebLocalFrame* frame) {
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
-  WebCoreTestSupport::resetInternalsObject(frame->MainWorldScriptContext());
+  WebCoreTestSupport::ResetInternalsObject(frame->MainWorldScriptContext());
 }
 
 void WebTestingSupport::InjectInternalsObject(v8::Local<v8::Context> context) {
   V8InternalsPartial::initialize();
   V8WorkerInternalsPartial::initialize();
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
-  WebCoreTestSupport::injectInternalsObject(context);
+  WebCoreTestSupport::InjectInternalsObject(context);
 }
 
 }  // namespace blink

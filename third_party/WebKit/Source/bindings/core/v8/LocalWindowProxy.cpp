@@ -48,8 +48,8 @@
 #include "core/inspector/MainThreadDebugger.h"
 #include "core/loader/FrameLoader.h"
 #include "platform/Histogram.h"
-#include "platform/bindings/ConditionalFeatures.h"
 #include "platform/bindings/DOMWrapperWorld.h"
+#include "platform/bindings/OriginTrialFeatures.h"
 #include "platform/bindings/ScriptForbiddenScope.h"
 #include "platform/bindings/V8DOMActivityLogger.h"
 #include "platform/bindings/V8DOMWrapper.h"
@@ -174,7 +174,7 @@ void LocalWindowProxy::Initialize() {
                                                    GetFrame(), origin);
     GetFrame()->Client()->DidCreateScriptContext(context, world_->GetWorldId());
 
-    InstallConditionalFeaturesOnGlobal(&V8Window::wrapperTypeInfo,
+    InstallOriginTrialFeaturesOnGlobal(&V8Window::wrapperTypeInfo,
                                        script_state_.get());
 
     if (world_->IsMainWorld()) {
@@ -182,7 +182,7 @@ void LocalWindowProxy::Initialize() {
       // for origin trials, which do not apply to extensions). Some conditional
       // bindings cannot be enabled until the execution context is available
       // (e.g. parsing the document, inspecting HTTP headers).
-      InstallConditionalFeatures(&V8Window::wrapperTypeInfo,
+      InstallOriginTrialFeatures(&V8Window::wrapperTypeInfo,
                                  script_state_.get(), v8::Local<v8::Object>(),
                                  v8::Local<v8::Function>());
       GetFrame()->Loader().DispatchDidClearWindowObjectInMainWorld();

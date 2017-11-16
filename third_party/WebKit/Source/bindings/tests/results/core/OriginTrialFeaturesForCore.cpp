@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 
 // This file has been auto-generated from the Jinja2 template
-// third_party/WebKit/Source/bindings/templates/ConditionalFeaturesForCore.cpp.tmpl
-// by the script generate_conditional_features.py.
+// third_party/WebKit/Source/bindings/templates/OriginTrialFeaturesForCore.cpp.tmpl
+// by the script generate_origin_trial_features.py.
 // DO NOT MODIFY!
 
 // clang-format off
 
-#include "bindings/core/v8/ConditionalFeaturesForCore.h"
+#include "bindings/core/v8/OriginTrialFeaturesForCore.h"
 
 #include "bindings/core/v8/V8TestObject.h"
 #include "bindings/core/v8/V8Window.h"
@@ -17,25 +17,25 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/Frame.h"
 #include "core/origin_trials/origin_trials.h"
-#include "platform/bindings/ConditionalFeatures.h"
+#include "platform/bindings/OriginTrialFeatures.h"
 #include "platform/bindings/ScriptState.h"
 
 namespace blink {
 
 namespace {
-InstallConditionalFeaturesFunction g_old_install_conditional_features_function =
+InstallOriginTrialFeaturesFunction g_old_install_origin_trial_features_function =
     nullptr;
-InstallConditionalFeaturesOnGlobalFunction
-    g_old_install_conditional_features_on_global_function = nullptr;
-InstallPendingConditionalFeatureFunction
-    g_old_install_pending_conditional_feature_function = nullptr;
+InstallOriginTrialFeaturesOnGlobalFunction
+    g_old_install_origin_trial_features_on_global_function = nullptr;
+InstallPendingOriginTrialFeatureFunction
+    g_old_install_pending_origin_trial_feature_function = nullptr;
 
-void InstallConditionalFeaturesForCore(
+void InstallOriginTrialFeaturesForCore(
     const WrapperTypeInfo* wrapper_type_info,
     const ScriptState* script_state,
     v8::Local<v8::Object> prototype_object,
     v8::Local<v8::Function> interface_object) {
-  (*g_old_install_conditional_features_function)(
+  (*g_old_install_origin_trial_features_function)(
       wrapper_type_info, script_state, prototype_object, interface_object);
 
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
@@ -56,8 +56,8 @@ void InstallConditionalFeaturesForCore(
                               interface_object);
     }
   }
-  // TODO(iclelland): Extract this common code out of ConditionalFeaturesForCore
-  // and ConditionalFeaturesForModules into a block.
+  // TODO(iclelland): Extract this common code out of OriginTrialFeaturesForCore
+  // and OriginTrialFeaturesForModules into a block.
   if (wrapper_type_info == &V8TestObject::wrapperTypeInfo) {
     if (OriginTrials::featureNameEnabled(execution_context)) {
       V8TestObject::installFeatureName(
@@ -66,10 +66,10 @@ void InstallConditionalFeaturesForCore(
   }
 }
 
-void InstallConditionalFeaturesOnGlobalForCore(
+void InstallOriginTrialFeaturesOnGlobalForCore(
     const WrapperTypeInfo* wrapper_type_info,
     const ScriptState* script_state) {
-  (*g_old_install_conditional_features_on_global_function)(wrapper_type_info,
+  (*g_old_install_origin_trial_features_on_global_function)(wrapper_type_info,
                                                            script_state);
 
   // TODO(chasej): Generate this logic at compile-time, based on interfaces with
@@ -80,12 +80,12 @@ void InstallConditionalFeaturesOnGlobalForCore(
   }
 }
 
-void InstallPendingConditionalFeatureForCore(const String& feature,
+void InstallPendingOriginTrialFeatureForCore(const String& feature,
                                              const ScriptState* script_state) {
-  (*g_old_install_pending_conditional_feature_function)(feature, script_state);
+  (*g_old_install_pending_origin_trial_feature_function)(feature, script_state);
 
-  // TODO(iclelland): Extract this common code out of ConditionalFeaturesForCore
-  // and ConditionalFeaturesForModules into a block.
+  // TODO(iclelland): Extract this common code out of OriginTrialFeaturesForCore
+  // and OriginTrialFeaturesForModules into a block.
   v8::Local<v8::Object> prototype_object;
   v8::Local<v8::Function> interface_object;
   v8::Isolate* isolate = script_state->GetIsolate();
@@ -102,15 +102,15 @@ void InstallPendingConditionalFeatureForCore(const String& feature,
 
 }  // namespace
 
-void RegisterInstallConditionalFeaturesForCore() {
-  g_old_install_conditional_features_function =
-      SetInstallConditionalFeaturesFunction(&InstallConditionalFeaturesForCore);
-  g_old_install_conditional_features_on_global_function =
-      SetInstallConditionalFeaturesOnGlobalFunction(
-          &InstallConditionalFeaturesOnGlobalForCore);
-  g_old_install_pending_conditional_feature_function =
-      SetInstallPendingConditionalFeatureFunction(
-          &InstallPendingConditionalFeatureForCore);
+void RegisterInstallOriginTrialFeaturesForCore() {
+  g_old_install_origin_trial_features_function =
+      SetInstallOriginTrialFeaturesFunction(&InstallOriginTrialFeaturesForCore);
+  g_old_install_origin_trial_features_on_global_function =
+      SetInstallOriginTrialFeaturesOnGlobalFunction(
+          &InstallOriginTrialFeaturesOnGlobalForCore);
+  g_old_install_pending_origin_trial_feature_function =
+      SetInstallPendingOriginTrialFeatureFunction(
+          &InstallPendingOriginTrialFeatureForCore);
 }
 
 }  // namespace blink

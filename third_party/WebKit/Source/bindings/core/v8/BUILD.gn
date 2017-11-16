@@ -128,7 +128,7 @@ generated_core_callback_function_files = [
   "$bindings_core_v8_output_dir/v8_resize_observer_callback.h",
 ]
 
-generate_conditional_features("bindings_core_conditional_features") {
+generate_origin_trial_features("bindings_core_origin_trial_features") {
   sources = core_idl_files + core_idl_with_modules_dependency_files +
             core_global_constructors_generated_idl_files
   component = "Core"
@@ -232,10 +232,10 @@ blink_core_sources("bindings_core_impl") {
                          generated_core_testing_dictionary_files -
                          generated_core_testing_callback_function_files
   sources = _non_testing_sources + bindings_core_generated_interface_files +
-            get_target_outputs(":bindings_core_conditional_features")
+            get_target_outputs(":bindings_core_origin_trial_features")
 
   deps = [
-    ":bindings_core_conditional_features",
+    ":bindings_core_origin_trial_features",
     ":bindings_core_v8_generated",
   ]
 }

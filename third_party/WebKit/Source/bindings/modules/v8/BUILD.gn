@@ -55,7 +55,7 @@ idl_compiler("generate_bindings_modules_v8_partial_interfaces_for_testing") {
   target_component = "modules"
 }
 
-generate_conditional_features("bindings_modules_conditional_features") {
+generate_origin_trial_features("bindings_modules_origin_trial_features") {
   sources =
       modules_idl_files + modules_global_constructors_generated_idl_files +
       modules_dependency_idl_files
@@ -104,10 +104,10 @@ blink_modules_sources("bindings_modules_impl") {
       get_target_outputs(":bindings_modules_impl_generated") +
       get_target_outputs(":generate_bindings_modules_v8_partial_interfaces") +
       get_target_outputs(":bindings_modules_v8_generated_init_partial") +
-      get_target_outputs(":bindings_modules_conditional_features")
+      get_target_outputs(":bindings_modules_origin_trial_features")
 
   deps = [
-    ":bindings_modules_conditional_features",
+    ":bindings_modules_origin_trial_features",
     ":bindings_modules_v8_generated",
   ]
 
