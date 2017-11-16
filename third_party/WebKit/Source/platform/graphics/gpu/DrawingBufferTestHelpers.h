@@ -41,6 +41,7 @@ class WebGraphicsContext3DProviderForTests
 
   // Not used by WebGL code.
   GrContext* GetGrContext() override { return nullptr; }
+  void InvalidateGrContext(uint32_t state) override {}
   bool BindToCurrentThread() override { return false; }
   const gpu::Capabilities& GetCapabilities() const override {
     return capabilities_;
@@ -48,6 +49,7 @@ class WebGraphicsContext3DProviderForTests
   const gpu::GpuFeatureInfo& GetGpuFeatureInfo() const override {
     return gpu_feature_info_;
   }
+  viz::GLHelper* GetGLHelper() override { return nullptr; }
   void SetLostContextCallback(const base::Closure&) {}
   void SetErrorMessageCallback(
       const base::Callback<void(const char*, int32_t id)>&) {}
