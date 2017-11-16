@@ -4,18 +4,15 @@
 
 #include "core/html/canvas/CanvasDrawListener.h"
 
-#include "platform/graphics/WebGraphicsContext3DProviderWrapper.h"
 #include "third_party/skia/include/core/SkImage.h"
+#include <memory>
 
 namespace blink {
 
 CanvasDrawListener::~CanvasDrawListener() {}
 
-void CanvasDrawListener::SendNewFrame(
-    sk_sp<SkImage> image,
-    WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider) {
-  handler_->SendNewFrame(
-      image, context_provider ? context_provider->ContextProvider() : nullptr);
+void CanvasDrawListener::SendNewFrame(sk_sp<SkImage> image) {
+  handler_->SendNewFrame(image.get());
 }
 
 bool CanvasDrawListener::NeedsNewFrame() const {
