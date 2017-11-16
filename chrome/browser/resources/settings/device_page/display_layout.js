@@ -36,6 +36,13 @@ Polymer({
      * @type {number}
      */
     visualScale: 1,
+
+    /**
+     * Ids for mirroring destination displays.
+     * @type {!Array<string>|undefined}
+     * @private
+     */
+    mirroringDestinationIds_: Array,
   },
 
   /** @private {!{left: number, top: number}} */
@@ -51,10 +58,12 @@ Polymer({
    * have been fetched from chrome.
    * @param {!Array<!chrome.system.display.DisplayUnitInfo>} displays
    * @param {!Array<!chrome.system.display.DisplayLayout>} layouts
+   * @param {!Array<string>} mirroringDestinationIds
    */
-  updateDisplays: function(displays, layouts) {
+  updateDisplays: function(displays, layouts, mirroringDestinationIds) {
     this.displays = displays;
     this.layouts = layouts;
+    this.mirroringDestinationIds_ = mirroringDestinationIds;
 
     this.initializeDisplayLayout(displays, layouts);
 
@@ -137,15 +146,15 @@ Polymer({
    * @param {string} id
    * @param {!chrome.system.display.Bounds} displayBounds
    * @param {number} visualScale
-   * @param {boolean=} opt_mirrored
+   * @param {number=} opt_offset
    * @return {string} The style string for the div.
    * @private
    */
-  getDivStyle_: function(id, displayBounds, visualScale, opt_mirrored) {
+  getDivStyle_: function(id, displayBounds, visualScale, opt_offset) {
     // This matches the size of the box-shadow or border in CSS.
     /** @const {number} */ var BORDER = 1;
     /** @const {number} */ var MARGIN = 4;
-    /** @const {number} */ var OFFSET = opt_mirrored ? -4 : 0;
+    /** @const {number} */ var OFFSET = opt_offset || 0;
     /** @const {number} */ var PADDING = 3;
     var bounds = this.getCalculatedDisplayBounds(id, true /* notest */);
     if (!bounds)
@@ -163,14 +172,22 @@ Polymer({
   },
 
   /**
-   * @param {string} id
-   * @param {!chrome.system.display.Bounds} displayBounds
+   * @param {number} mirroringDestinationIndex
+   * @param {number} mirroringDestinationDisplayNum
+   * @param {!Array<!chrome.system.display.DisplayUnitInfo>} displays
    * @param {number} visualScale
    * @return {string} The style string for the mirror div.
    * @private
    */
-  getMirrorDivStyle_: function(id, displayBounds, visualScale) {
-    return this.getDivStyle_(id, displayBounds, visualScale, true);
+  getMirrorDivStyle_: function(
+      mirroringDestinationIndex, mirroringDestinationDisplayNum, displays,
+      visualScale) {
+    // All destination displays have the same bounds as the mirroring source
+    // display, but we add a little offset to each destination display's bounds
+    // so that they can be distinguished from each other in the layout.
+    return this.getDivStyle_(
+        displays[0].id, displays[0].bounds, visualScale,
+        (mirroringDestinationDisplayNum - mirroringDestinationIndex) * -4);
   },
 
   /**

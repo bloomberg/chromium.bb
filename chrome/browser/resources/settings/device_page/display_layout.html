@@ -58,10 +58,11 @@
       }
     </style>
     <div id="displayArea" on-iron-resize="calculateVisualScale_">
-      <template is="dom-repeat" items="[[displays]]">
-        <div id="_mirror_[[item.id]]" class="display mirror"
+      <template is="dom-repeat" items="[[mirroringDestinationIds_]]">
+        <div id="_mirror_[[item]]" class="display mirror"
             hidden$="[[!mirroring]]"
-            style$="[[getMirrorDivStyle_(item.id, item.bounds, visualScale)]]">
+            style$="[[getMirrorDivStyle_(index, mirroringDestinationIds_.length,
+                                         displays, visualScale)]]">
         </div>
       </template>
       <template is="dom-repeat" items="[[displays]]">
