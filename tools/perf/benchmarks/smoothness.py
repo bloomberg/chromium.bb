@@ -150,6 +150,13 @@ class SmoothnessToughCanvasCases(_Smoothness):
         self.DisableStory('http://www.kevs3d.co.uk/dev/canvask3d/k3d_test.html',
                           [story_module.expectations.ANDROID_WEBVIEW],
                           'crbug.com/785485')
+        self.DisableStory('http://www.effectgames.com/demos/canvascycle/',
+                          [story_module.expectations.ANDROID_WEBVIEW],
+                          'crbug.com/785286')
+        self.DisableStory('http://www.smashcat.org/av/canvas_test/',
+                          [story_module.expectations.ANDROID_WEBVIEW],
+                          'crbug.com/785286')
+
     return StoryExpectations()
 
 
