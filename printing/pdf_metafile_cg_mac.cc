@@ -167,6 +167,11 @@ bool PdfMetafileCg::RenderPage(unsigned int page_number,
     return false;
   }
 
+  const unsigned int page_count = GetPageCount();
+  DCHECK_NE(page_count, 0U);
+  DCHECK_NE(page_number, 0U);
+  DCHECK_LE(page_number, page_count);
+
   CGPDFPageRef pdf_page = CGPDFDocumentGetPage(pdf_doc, page_number);
   CGRect source_rect = CGPDFPageGetBoxRect(pdf_page, kCGPDFCropBox);
   int pdf_src_rotation = CGPDFPageGetRotationAngle(pdf_page);
