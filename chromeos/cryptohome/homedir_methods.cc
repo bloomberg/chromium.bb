@@ -109,15 +109,11 @@ class HomedirMethodsImpl : public HomedirMethods {
   ~HomedirMethodsImpl() override {}
 
   void GetKeyDataEx(const Identification& id,
-                    const std::string& label,
+                    const cryptohome::AuthorizationRequest& auth_proto,
+                    const cryptohome::GetKeyDataRequest& request,
                     const GetKeyDataCallback& callback) override {
-    cryptohome::AuthorizationRequest kEmptyAuthProto;
-    cryptohome::GetKeyDataRequest request;
-
-    request.mutable_key()->mutable_data()->set_label(label);
-
     DBusThreadManager::Get()->GetCryptohomeClient()->GetKeyDataEx(
-        id, kEmptyAuthProto, request,
+        id, auth_proto, request,
         base::BindOnce(&HomedirMethodsImpl::OnGetKeyDataExCallback,
                        weak_ptr_factory_.GetWeakPtr(), callback));
   }

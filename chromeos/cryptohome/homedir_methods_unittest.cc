@@ -84,8 +84,11 @@ TEST_F(HomedirMethodsTest, GetKeyDataEx) {
 
   // Call GetKeyDataEx().
   std::vector<KeyDefinition> key_definitions;
+  cryptohome::GetKeyDataRequest get_key_data_request;
+  request.mutable_key()->mutable_data()->set_label(kKeyLabel);
   HomedirMethods::GetInstance()->GetKeyDataEx(
-      Identification(AccountId::FromUserEmail(kUserID)), kKeyLabel,
+      Identification(AccountId::FromUserEmail(kUserID)), AuthorizationRequest(),
+      get_key_data_request,
       base::Bind(
           [](std::vector<KeyDefinition>* out_key_definitions, bool success,
              MountError return_code,

@@ -21,8 +21,9 @@ MockHomedirMethods::~MockHomedirMethods() = default;
 void MockHomedirMethods::SetUp(bool success, MountError return_code) {
   success_ = success;
   return_code_ = return_code;
-  ON_CALL(*this, GetKeyDataEx(_, _, _)).WillByDefault(
-      WithArgs<2>(Invoke(this, &MockHomedirMethods::DoGetDataCallback)));
+  ON_CALL(*this, GetKeyDataEx(_, _, _, _))
+      .WillByDefault(
+          WithArgs<3>(Invoke(this, &MockHomedirMethods::DoGetDataCallback)));
   ON_CALL(*this, CheckKeyEx(_, _, _)).WillByDefault(
       WithArgs<2>(Invoke(this, &MockHomedirMethods::DoCallback)));
   ON_CALL(*this, MountEx(_, _, _, _)).WillByDefault(
