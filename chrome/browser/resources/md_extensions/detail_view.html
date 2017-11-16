@@ -170,6 +170,14 @@
       #options-section .control-line:first-child {
         border-top: var(--cr-separator-line);
       }
+
+      #load-path {
+        word-break: break-all;
+      }
+
+      #load-path > a[is='action-link'] {
+        display: inline;
+      }
     </style>
     <div id="container">
       <div id="main">
@@ -364,6 +372,13 @@
           <div class="section-title">$i18n{itemSource}</div>
           <div class="section-content">
             [[computeSourceString_(data.*)]]
+          </div>
+          <div id="load-path" class="section-content"
+              hidden$="[[!data.prettifiedPath]]">
+            <span>$i18n{itemExtensionPath}</span>
+            <a is="action-link" on-tap="onLoadPathTap_">
+              [[data.prettifiedPath]]
+            </a>
           </div>
         </div>
       </div>

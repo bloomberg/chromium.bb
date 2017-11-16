@@ -115,13 +115,21 @@ cr.define('extension_detail_view_tests', function() {
       Polymer.dom.flush();
       expectTrue(testIsVisible('#id-section'));
       expectTrue(testIsVisible('#inspectable-views'));
+
+      // Test whether the load path is displayed for unpacked extensions.
+      expectFalse(testIsVisible('#load-path'));
+      item.set('data.prettifiedPath', 'foo/bar/baz/');
+      Polymer.dom.flush();
+      expectTrue(testIsVisible('#load-path'));
     });
 
     test(assert(TestNames.ClickableElements), function() {
       var optionsUrl =
           'chrome-extension://' + extensionData.id + '/options.html';
       item.set('data.optionsPage', {openInTab: true, url: optionsUrl});
+      item.set('data.prettifiedPath', 'foo/bar/baz/');
       Polymer.dom.flush();
+
       mockDelegate.testClickingCalls(
           item.$$('#allow-incognito').getLabel(), 'setItemAllowedIncognito',
           [extensionData.id, true]);
@@ -139,6 +147,9 @@ cr.define('extension_detail_view_tests', function() {
           [extensionData]);
       mockDelegate.testClickingCalls(
           item.$$('#remove-extension'), 'deleteItem', [extensionData.id]);
+      mockDelegate.testClickingCalls(
+          item.$$('#load-path > a[is=\'action-link\']'),
+          'showInFolder', [extensionData.id]);
     });
 
     test(assert(TestNames.Indicator), function() {

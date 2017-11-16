@@ -260,6 +260,11 @@ cr.define('extensions', function() {
     openDevTools(args) {
       chrome.developerPrivate.openDevTools(args);
     }
+
+    /** @override */
+    showInFolder(id) {
+      chrome.developerPrivate.showPath(id);
+    }
   }
 
   cr.addSingletonGetter(Service);

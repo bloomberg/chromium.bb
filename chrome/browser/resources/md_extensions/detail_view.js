@@ -161,6 +161,11 @@ cr.define('extensions', function() {
     },
 
     /** @private */
+    onLoadPathTap_: function() {
+      this.delegate.showInFolder(this.data.id);
+    },
+
+    /** @private */
     onAllowIncognitoChange_: function() {
       this.delegate.setItemAllowedIncognito(
           this.data.id, this.$$('#allow-incognito').checked);

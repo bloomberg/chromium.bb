@@ -177,6 +177,8 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
   source->AddLocalizedString("extensionEnabled",
                              IDS_MD_EXTENSIONS_EXTENSION_ENABLED);
   source->AddLocalizedString("appEnabled", IDS_MD_EXTENSIONS_APP_ENABLED);
+  source->AddString("itemExtensionPath",
+                    l10n_util::GetStringUTF16(IDS_EXTENSIONS_PATH));
   source->AddLocalizedString("itemOff", IDS_MD_EXTENSIONS_ITEM_OFF);
   source->AddLocalizedString("itemOn", IDS_MD_EXTENSIONS_ITEM_ON);
   source->AddLocalizedString("itemOptions", IDS_MD_EXTENSIONS_ITEM_OPTIONS);
