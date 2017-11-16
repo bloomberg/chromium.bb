@@ -1,9 +1,9 @@
 Name: Google VR SDK
 Short Name: gvr
 URL: https://github.com/googlevr/gvr-android-sdk
-Version: 1.80.0
-Date: 29 August 2017
-Revision: ee5cb1c6138d0be57e82ddafc1b54d7d3e3e5560
+Version: 1.101.0
+Date: 13 November 2017
+Revision: 6aef4ab34276aac81ee38f1cb1d034de7fc4a4eb
 License: Apache 2.0
 License File: LICENSE
 Security Critical: yes

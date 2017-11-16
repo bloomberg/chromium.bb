@@ -371,6 +371,10 @@ JNI_GENERATOR_EXPORT jboolean
 Java_com_google_vr_ndk_base_GvrApi_nativeUsingDynamicLibrary(JNIEnv* env,
                                                              jclass jcaller);
 
+JNI_GENERATOR_EXPORT jboolean
+Java_com_google_vr_ndk_base_GvrApi_nativeUsingShimLibrary(JNIEnv* env,
+                                                          jclass jcaller);
+
 JNI_GENERATOR_EXPORT void
 Java_com_google_vr_ndk_base_GvrApi_nativeSetApplicationState(JNIEnv* env,
                                                              jclass jcaller,
@@ -1091,6 +1095,12 @@ static const JNINativeMethod kMethodsGvrApi[] = {
      "Z",
      reinterpret_cast<void*>(
          Java_com_google_vr_ndk_base_GvrApi_nativeUsingDynamicLibrary)},
+    {"nativeUsingShimLibrary",
+     "("
+     ")"
+     "Z",
+     reinterpret_cast<void*>(
+         Java_com_google_vr_ndk_base_GvrApi_nativeUsingShimLibrary)},
     {"nativeSetApplicationState",
      "("
      "Ljava/lang/ClassLoader;"
