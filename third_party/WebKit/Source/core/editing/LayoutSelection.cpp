@@ -625,12 +625,12 @@ void LayoutSelection::Commit() {
        paint_range_.EndLayoutObject()->GetSelectionState() !=
            SelectionState::kStartAndEnd)) {
     if (paint_range_.StartLayoutObject() == paint_range_.EndLayoutObject()) {
-      paint_range_.StartLayoutObject()->SetSelectionStateIfNeeded(
+      paint_range_.StartLayoutObject()->LayoutObject::SetSelectionState(
           SelectionState::kStartAndEnd);
     } else {
-      paint_range_.StartLayoutObject()->SetSelectionStateIfNeeded(
+      paint_range_.StartLayoutObject()->LayoutObject::SetSelectionState(
           SelectionState::kStart);
-      paint_range_.EndLayoutObject()->SetSelectionStateIfNeeded(
+      paint_range_.EndLayoutObject()->LayoutObject::SetSelectionState(
           SelectionState::kEnd);
     }
   }
