@@ -1453,6 +1453,7 @@ jumbo_source_set("unit_tests") {
     "dom/SpaceSplitStringTest.cpp",
     "dom/StaticRangeTest.cpp",
     "dom/TextTest.cpp",
+    "dom/TreeScopeAdopterTest.cpp",
     "dom/TreeScopeTest.cpp",
     "dom/UserGestureIndicatorTest.cpp",
     "dom/WhitespaceAttacherTest.cpp",

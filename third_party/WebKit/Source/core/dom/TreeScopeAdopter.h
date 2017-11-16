@@ -33,7 +33,7 @@ namespace blink {
 
 class TreeScope;
 
-class TreeScopeAdopter {
+class CORE_EXPORT TreeScopeAdopter {
   STACK_ALLOCATED();
 
  public:
