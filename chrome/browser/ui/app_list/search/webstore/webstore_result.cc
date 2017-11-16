@@ -28,6 +28,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension_urls.h"
 #include "net/base/url_util.h"
+#include "ui/app_list/app_list_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -55,7 +56,7 @@ WebstoreResult::WebstoreResult(Profile* profile,
   InitAndStartObserving();
   UpdateActions();
 
-  int icon_dimension = GetPreferredIconDimension();
+  int icon_dimension = GetPreferredIconDimension(this);
   icon_ = gfx::ImageSkia(
       base::MakeUnique<UrlIconSource>(
           base::Bind(&WebstoreResult::OnIconLoaded, weak_factory_.GetWeakPtr()),

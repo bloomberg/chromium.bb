@@ -23,7 +23,6 @@
 #include "extensions/common/manifest_url_handlers.h"
 #include "net/base/url_util.h"
 #include "rlz/features/features.h"
-#include "ui/app_list/app_list_folder_item.h"
 #include "ui/app_list/app_list_item.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/app_list_switches.h"

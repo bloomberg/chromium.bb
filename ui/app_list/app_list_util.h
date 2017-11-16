@@ -6,6 +6,7 @@
 #define UI_APP_LIST_APP_LIST_UTIL_H_
 
 #include "ui/app_list/app_list_export.h"
+#include "ui/app_list/search_result.h"
 #include "ui/events/event.h"
 
 namespace views {
@@ -27,6 +28,9 @@ APP_LIST_EXPORT bool CanProcessUpDownKeyTraversal(const ui::KeyEvent& event);
 APP_LIST_EXPORT bool ProcessLeftRightKeyTraversalForTextfield(
     views::Textfield* textfield,
     const ui::KeyEvent& key_event);
+
+// Returns the dimension at which a result's icon should be displayed.
+APP_LIST_EXPORT int GetPreferredIconDimension(SearchResult* search_result);
 
 }  // namespace app_list
 

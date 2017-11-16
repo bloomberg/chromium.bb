@@ -19,7 +19,6 @@
 #include "components/search_engines/template_url_service.h"
 #include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_model.h"
-#include "ui/app_list/search_box_model.h"
 
 namespace app_list {
 

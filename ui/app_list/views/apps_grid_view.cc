@@ -707,7 +707,8 @@ AppListItemView* AppsGridView::GetItemViewAt(int index) const {
 
 void AppsGridView::SetTopItemViewsVisible(bool visible) {
   int top_item_count =
-      std::min(static_cast<int>(kNumFolderTopItems), view_model_.view_size());
+      std::min(static_cast<int>(FolderImage::kNumFolderTopItems),
+               view_model_.view_size());
   for (int i = 0; i < top_item_count; ++i)
     GetItemViewAt(i)->icon()->SetVisible(visible);
 }

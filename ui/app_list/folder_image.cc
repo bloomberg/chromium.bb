@@ -8,8 +8,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "ui/app_list/app_list_constants.h"
-#include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_item.h"
 #include "ui/app_list/app_list_item_list.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -26,7 +24,12 @@ namespace app_list {
 
 namespace {
 
-const int kItemIconDimension = 16;
+constexpr int kItemIconDimension = 16;
+constexpr float kFolderBubbleRadius = 23;
+constexpr float kFolderBubbleOffsetY = 1;
+// Keep this consistent with |kGridIconDimension| in app_list_constants.cc.
+// TODO(hejq): Figure out a way to consolidate the two.
+constexpr int kGridIconDimension = 48;
 
 // Gets the size of a small app icon inside the folder icon.
 gfx::Size ItemIconSize() {
@@ -59,7 +62,7 @@ class FolderImageSource : public gfx::CanvasImageSource {
 
 FolderImageSource::FolderImageSource(const Icons& icons, const gfx::Size& size)
     : gfx::CanvasImageSource(size, false), icons_(icons), size_(size) {
-  DCHECK(icons.size() <= kNumFolderTopItems);
+  DCHECK(icons.size() <= FolderImage::kNumFolderTopItems);
 }
 
 FolderImageSource::~FolderImageSource() {
@@ -86,7 +89,7 @@ void FolderImageSource::Draw(gfx::Canvas* canvas) {
   bubble_center.Offset(0, -kFolderBubbleOffsetY);
   flags.setStyle(cc::PaintFlags::kFill_Style);
   flags.setAntiAlias(true);
-  flags.setColor(kFolderBubbleColor);
+  flags.setColor(FolderImage::kFolderBubbleColor);
   canvas->DrawCircle(bubble_center, kFolderBubbleRadius, flags);
 
   if (icons_.size() == 0)
@@ -97,13 +100,19 @@ void FolderImageSource::Draw(gfx::Canvas* canvas) {
   std::vector<gfx::Rect> top_icon_bounds =
       FolderImage::GetTopIconsBounds(gfx::Rect(size()));
 
-  for (size_t i = 0; i < kNumFolderTopItems && i < icons_.size(); ++i) {
+  for (size_t i = 0; i < FolderImage::kNumFolderTopItems && i < icons_.size();
+       ++i) {
     DrawIcon(canvas, icons_[i], item_icon_size, top_icon_bounds[i].x(),
              top_icon_bounds[i].y());
   }
 }
 
 }  // namespace
+
+// static
+const size_t FolderImage::kNumFolderTopItems = 4;
+const SkColor FolderImage::kFolderBubbleColor =
+    SkColorSetARGB(0x1F, 0xFF, 0xFF, 0xFF);
 
 FolderImage::FolderImage(AppListItemList* item_list) : item_list_(item_list) {
   item_list_->AddObserver(this);

@@ -6,8 +6,6 @@
 
 #include <map>
 
-#include "ui/app_list/app_list_constants.h"
-#include "ui/app_list/app_list_features.h"
 #include "ui/app_list/search/tokenized_string.h"
 #include "ui/app_list/search/tokenized_string_match.h"
 #include "ui/app_list/search_result_observer.h"
@@ -84,23 +82,6 @@ void SearchResult::SetPercentDownloaded(int percent_downloaded) {
   percent_downloaded_ = percent_downloaded;
   for (auto& observer : observers_)
     observer.OnPercentDownloadedChanged();
-}
-
-int SearchResult::GetPreferredIconDimension() const {
-  switch (display_type_) {
-    case DISPLAY_RECOMMENDATION:  // Falls through.
-    case DISPLAY_TILE:
-      return kTileIconSize;
-    case DISPLAY_LIST:
-      return kListIconSize;
-    case DISPLAY_NONE:
-    case DISPLAY_CARD:
-      return 0;
-    case DISPLAY_TYPE_LAST:
-      break;
-  }
-  NOTREACHED();
-  return 0;
 }
 
 void SearchResult::NotifyItemInstalled() {

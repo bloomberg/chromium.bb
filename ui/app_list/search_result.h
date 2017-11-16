@@ -170,9 +170,6 @@ class APP_LIST_EXPORT SearchResult {
     is_omnibox_search_ = is_omnibox_search;
   }
 
-  // Returns the dimension at which this result's icon should be displayed.
-  int GetPreferredIconDimension() const;
-
   void NotifyItemInstalled();
 
   void AddObserver(SearchResultObserver* observer);
