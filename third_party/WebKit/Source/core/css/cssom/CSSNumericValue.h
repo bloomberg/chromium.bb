@@ -40,6 +40,7 @@ class CORE_EXPORT CSSNumericValue : public CSSStyleValue {
   CSSNumericValue* div(const HeapVector<CSSNumberish>&, ExceptionState&);
   CSSNumericValue* min(const HeapVector<CSSNumberish>&, ExceptionState&);
   CSSNumericValue* max(const HeapVector<CSSNumberish>&, ExceptionState&);
+  bool equals(const HeapVector<CSSNumberish>&);
 
   // Converts between compatible types, as defined in the IDL.
   CSSNumericValue* to(const String&, ExceptionState&);
@@ -49,6 +50,7 @@ class CORE_EXPORT CSSNumericValue : public CSSStyleValue {
   virtual CSSUnitValue* to(CSSPrimitiveValue::UnitType) const = 0;
   virtual bool IsUnitValue() const = 0;
 
+  virtual bool Equals(const CSSNumericValue&) const = 0;
   const CSSNumericValueType& Type() const { return type_; }
 
  protected:

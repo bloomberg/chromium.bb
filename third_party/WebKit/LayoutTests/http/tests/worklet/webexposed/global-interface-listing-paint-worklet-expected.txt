@@ -49,6 +49,7 @@ CONSOLE MESSAGE: line 147: interface CSSNumericValue : CSSStyleValue
 CONSOLE MESSAGE: line 147:     method add
 CONSOLE MESSAGE: line 147:     method constructor
 CONSOLE MESSAGE: line 147:     method div
+CONSOLE MESSAGE: line 147:     method equals
 CONSOLE MESSAGE: line 147:     method max
 CONSOLE MESSAGE: line 147:     method min
 CONSOLE MESSAGE: line 147:     method mul
@@ -341,6 +342,7 @@ CONSOLE MESSAGE: line 147: interface CSSNumericValue : CSSStyleValue
 CONSOLE MESSAGE: line 147:     method add
 CONSOLE MESSAGE: line 147:     method constructor
 CONSOLE MESSAGE: line 147:     method div
+CONSOLE MESSAGE: line 147:     method equals
 CONSOLE MESSAGE: line 147:     method max
 CONSOLE MESSAGE: line 147:     method min
 CONSOLE MESSAGE: line 147:     method mul

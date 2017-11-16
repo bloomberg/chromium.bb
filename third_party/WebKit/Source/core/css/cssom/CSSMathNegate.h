@@ -40,6 +40,15 @@ class CORE_EXPORT CSSMathNegate : public CSSMathValue {
     CSSMathValue::Trace(visitor);
   }
 
+  bool Equals(const CSSNumericValue& other) const final {
+    if (other.GetType() != kNegateType)
+      return false;
+
+    // We can safely cast here as we know 'other' has the same type as us.
+    const auto& other_negate = static_cast<const CSSMathNegate&>(other);
+    return value_->Equals(*other_negate.value_);
+  }
+
  private:
   CSSMathNegate(CSSNumericValue* value, const CSSNumericValueType& type)
       : CSSMathValue(type), value_(value) {}

@@ -41,6 +41,15 @@ class CORE_EXPORT CSSMathInvert : public CSSMathValue {
     CSSMathValue::Trace(visitor);
   }
 
+  bool Equals(const CSSNumericValue& other) const final {
+    if (other.GetType() != kNegateType)
+      return false;
+
+    // We can safely cast here as we know 'other' has the same type as us.
+    const auto& other_invert = static_cast<const CSSMathInvert&>(other);
+    return value_->Equals(*other_invert.value_);
+  }
+
  private:
   CSSMathInvert(CSSNumericValue* value, const CSSNumericValueType& type)
       : CSSMathValue(type), value_(value) {}

@@ -16,6 +16,8 @@ typedef (double or CSSNumericValue) CSSNumberish;
   [RaisesException, NewObject] CSSNumericValue min(CSSNumberish... values);
   [RaisesException, NewObject] CSSNumericValue max(CSSNumberish... values);
 
+  boolean equals(CSSNumberish... values);
+
   [RaisesException, NewObject] CSSNumericValue to(DOMString unit);
 
   // Putting Exposed=Window in the next line makes |parse| not exposed to PaintWorklet.
