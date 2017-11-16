@@ -5,6 +5,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "chrome/browser/sync/chrome_sync_client.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
@@ -299,7 +300,13 @@ IN_PROC_BROWSER_TEST_F(TwoClientUssSyncTest, DisableEnable) {
   ASSERT_EQ(1U, model1->db().metadata_count());
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientUssSyncTest, ConflictResolution) {
+// Flaky on Linux. See https://crbug.com/785967.
+#if defined(OS_LINUX)
+#define MAYBE_ConflictResolution DISABLED_ConflictResolution
+#else
+#define MAYBE_ConflictResolution ConflictResolution
+#endif
+IN_PROC_BROWSER_TEST_F(TwoClientUssSyncTest, MAYBE_ConflictResolution) {
   ASSERT_TRUE(SetupSync());
   TestModelTypeSyncBridge* model0 = GetModelTypeSyncBridge(0);
   TestModelTypeSyncBridge* model1 = GetModelTypeSyncBridge(1);
