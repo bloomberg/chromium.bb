@@ -17,6 +17,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/pattern.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -526,14 +527,16 @@ class SSLUITest : public InProcessBrowserTest {
     observer.Wait();
   }
 
-  void SendInterstitialCommand(WebContents* tab, const std::string& command) {
+  void SendInterstitialCommand(
+      WebContents* tab,
+      security_interstitials::SecurityInterstitialCommands command) {
     InterstitialPage* interstitial_page = tab->GetInterstitialPage();
     ASSERT_TRUE(interstitial_page);
     ASSERT_EQ(SSLBlockingPage::kTypeForTesting,
               interstitial_page->GetDelegateForTesting()->GetTypeForTesting());
     SSLBlockingPage* ssl_interstitial = static_cast<SSLBlockingPage*>(
         interstitial_page->GetDelegateForTesting());
-    ssl_interstitial->CommandReceived(command);
+    ssl_interstitial->CommandReceived(base::IntToString(command));
   }
 
   static void GetFilePathWithHostAndPortReplacement(
@@ -814,9 +817,11 @@ class SSLUITestTransientAndCommitted
   }
 
   // SSLUITest:
-  void SendInterstitialCommand(WebContents* tab, const std::string& command) {
+  void SendInterstitialCommand(
+      WebContents* tab,
+      security_interstitials::SecurityInterstitialCommands command) {
     // TODO(crbug.com/785077): Execute script inside the interstitial.
-    GetDelegate(tab)->CommandReceived(command);
+    GetDelegate(tab)->CommandReceived(base::IntToString(command));
   }
 
   bool IsCommittedInterstitialTest() const { return GetParam(); }
@@ -1176,7 +1181,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestBrokenHTTPSMetricsReporting_Proceed) {
 
   // Decision should be recorded.
   SendInterstitialCommand(browser()->tab_strip_model()->GetActiveWebContents(),
-                          "1");
+                          security_interstitials::CMD_PROCEED);
   histograms.ExpectTotalCount(decision_histogram, 2);
   histograms.ExpectBucketCount(
       decision_histogram, security_interstitials::MetricsHelper::PROCEED, 1);
@@ -1213,7 +1218,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestBrokenHTTPSMetricsReporting_DontProceed) {
 
   // Decision should be recorded.
   SendInterstitialCommand(browser()->tab_strip_model()->GetActiveWebContents(),
-                          "0");
+                          security_interstitials::CMD_DONT_PROCEED);
   histograms.ExpectTotalCount(decision_histogram, 2);
   histograms.ExpectBucketCount(
       decision_histogram, security_interstitials::MetricsHelper::DONT_PROCEED,
@@ -1464,12 +1469,10 @@ IN_PROC_BROWSER_TEST_P(SSLUITestTransientAndCommitted,
     content::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::Source<NavigationController>(&tab->GetController()));
-    SendInterstitialCommand(
-        tab, base::IntToString(security_interstitials::CMD_DONT_PROCEED));
+    SendInterstitialCommand(tab, security_interstitials::CMD_DONT_PROCEED);
     observer.Wait();
   } else {
-    SendInterstitialCommand(
-        tab, base::IntToString(security_interstitials::CMD_DONT_PROCEED));
+    SendInterstitialCommand(tab, security_interstitials::CMD_DONT_PROCEED);
   }
 
   // We should be back at the original good page.
