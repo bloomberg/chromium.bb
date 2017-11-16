@@ -13,7 +13,6 @@ import org.chromium.base.Callback;
 import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.base.annotations.SuppressFBWarnings;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -79,7 +78,6 @@ public class AwSafeBrowsingConfigHelper {
      * @return true if app has opted in, false if opted out, and null if no preference specified.
      */
     @Nullable
-    @SuppressFBWarnings("NP_BOOLEAN_RETURN_NULL")
     private static Boolean getAppOptInPreference(Context appContext) {
         try {
             ApplicationInfo info = appContext.getPackageManager().getApplicationInfo(

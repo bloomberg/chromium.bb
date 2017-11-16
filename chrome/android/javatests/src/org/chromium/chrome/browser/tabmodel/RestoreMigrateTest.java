@@ -19,7 +19,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.StreamUtil;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
@@ -107,7 +106,6 @@ public class RestoreMigrateTest {
      */
     @Test
     @SuppressWarnings("unused")
-    @SuppressFBWarnings("DLS_DEAD_LOCAL_STORE")
     @SmallTest
     @Feature({"TabPersistentStore"})
     @UiThreadTest
@@ -168,7 +166,6 @@ public class RestoreMigrateTest {
      */
     @Test
     @SuppressWarnings("unused")
-    @SuppressFBWarnings("DLS_DEAD_LOCAL_STORE")
     @SmallTest
     @Feature({"TabPersistentStore"})
     @UiThreadTest
@@ -227,7 +224,6 @@ public class RestoreMigrateTest {
      */
     @Test
     @SuppressWarnings("unused")
-    @SuppressFBWarnings("DLS_DEAD_LOCAL_STORE")
     @SmallTest
     @Feature({"TabPersistentStore"})
     @UiThreadTest

@@ -10,7 +10,6 @@ import android.content.Context;
 import android.os.Bundle;
 import android.view.Window;
 
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.multidex.ChromiumMultiDexInstaller;
 
 import java.lang.reflect.InvocationHandler;
@@ -151,7 +150,6 @@ public class BaseChromiumApplication extends Application {
     }
 
     /** Ensure this application object is not out-of-date. */
-    @SuppressFBWarnings("DM_EXIT")
     private void checkAppBeingReplaced() {
         // During app update the old apk can still be triggered by broadcasts and spin up an
         // out-of-date application. Kill old applications in this bad state. See

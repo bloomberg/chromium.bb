@@ -21,7 +21,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.net.CronetEngine;
@@ -649,7 +648,6 @@ public class CronetHttpURLConnectionTest {
         connection.disconnect();
     }
 
-    @SuppressFBWarnings({"RANGE_ARRAY_OFFSET", "RANGE_ARRAY_LENGTH"})
     @Test
     @SmallTest
     @Feature({"Cronet"})

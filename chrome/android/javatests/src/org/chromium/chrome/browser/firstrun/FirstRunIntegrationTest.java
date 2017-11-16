@@ -25,7 +25,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
@@ -50,7 +49,6 @@ import java.util.List;
 public class FirstRunIntegrationTest {
 
     @Rule
-    @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
     public MultiActivityTestRule mTestRule = new MultiActivityTestRule();
 
     private FirstRunActivityTestObserver mTestObserver = new FirstRunActivityTestObserver();

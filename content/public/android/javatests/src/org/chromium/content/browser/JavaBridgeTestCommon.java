@@ -8,7 +8,6 @@ import android.util.Log;
 
 import org.junit.Assert;
 
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -30,7 +29,6 @@ public final class JavaBridgeTestCommon {
         mCallback = callback;
     }
 
-    @SuppressFBWarnings("CHROMIUM_SYNCHRONIZED_METHOD")
     public static class Controller {
         private static final int RESULT_WAIT_TIME = 5000;
 

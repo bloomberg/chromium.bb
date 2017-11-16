@@ -11,7 +11,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.mojo.MojoTestRule;
 import org.chromium.mojo.bindings.test.mojom.test_structs.MultiVersionStruct;
@@ -31,7 +30,6 @@ import org.chromium.mojo.system.impl.CoreImpl;
 @RunWith(BaseJUnit4ClassRunner.class)
 public class BindingsVersioningTest {
 
-    @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
     @Rule
     public MojoTestRule mTestRule = new MojoTestRule();
 

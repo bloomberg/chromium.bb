@@ -17,7 +17,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 
@@ -67,7 +66,6 @@ public class CrashFileManagerTest {
     private File mLogfile;
 
     @Before
-    @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_BAD_PRACTICE")
     public void setUp() throws Exception {
         mInitialModificationTimestamp = new Date().getTime();
         mModificationTimestamp = mInitialModificationTimestamp;
@@ -246,7 +244,6 @@ public class CrashFileManagerTest {
     @Test
     @SmallTest
     @Feature({"Android-AppBase"})
-    @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_BAD_PRACTICE")
     public void testSetReadyForUpload_MinidumpWithoutPid() throws IOException {
         File minidumpWithoutLogcat = new File(mTestRule.getCrashDir(), "foo.dmp");
         minidumpWithoutLogcat.createNewFile();
@@ -259,7 +256,6 @@ public class CrashFileManagerTest {
     @Test
     @SmallTest
     @Feature({"Android-AppBase"})
-    @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_BAD_PRACTICE")
     public void testSetReadyForUpload_MinidumpWithPid() throws IOException {
         File minidumpWithoutLogcat = new File(mTestRule.getCrashDir(), "foo.dmp" + TEST_PID);
         minidumpWithoutLogcat.createNewFile();
@@ -284,7 +280,6 @@ public class CrashFileManagerTest {
     @Test
     @SmallTest
     @Feature({"Android-AppBase"})
-    @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_BAD_PRACTICE")
     public void testGetMinidumpsReadyForUpload() throws IOException {
         File forcedFile = new File(mTestRule.getCrashDir(), "456_def.forced" + TEST_PID + ".try2");
         forcedFile.createNewFile();
@@ -477,7 +472,6 @@ public class CrashFileManagerTest {
     }
 
     @Test
-    @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_BAD_PRACTICE")
     @SmallTest
     @Feature({"Android-AppBase"})
     public void testMarkUploadSuccess_ForcedUpload() throws IOException {
@@ -705,7 +699,6 @@ public class CrashFileManagerTest {
     }
 
     @Test
-    @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_BAD_PRACTICE")
     @SmallTest
     @Feature({"Android-AppBase"})
     public void testCleanOutAllNonFreshMinidumpFiles() throws IOException {

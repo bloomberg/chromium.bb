@@ -18,7 +18,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Manual;
@@ -162,7 +161,6 @@ public class PopularUrlsTest {
             }
         }
 
-        @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_BAD_PRACTICE")
         public void write() throws IOException {
             FileWriter output = null;
             if (mFile.exists()) {
@@ -180,7 +178,6 @@ public class PopularUrlsTest {
             }
         }
 
-        @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_BAD_PRACTICE")
         public void cleanUp() {
             // Only perform cleanup when mAllClear flag is set, i.e.
             // when the test was not interrupted by a Java crash.

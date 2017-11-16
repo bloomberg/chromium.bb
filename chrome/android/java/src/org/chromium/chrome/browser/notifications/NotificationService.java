@@ -19,7 +19,6 @@ import android.os.SystemClock;
 import android.util.Log;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.webapps.WebappRegistry;
@@ -106,7 +105,6 @@ public class NotificationService extends IntentService {
      *
      * @param intent The intent containing the notification's information.
      */
-    @SuppressFBWarnings("DM_EXIT")
     static void dispatchIntentOnUIThread(Context context, Intent intent) {
         try {
             ChromeBrowserInitializer.getInstance(context).handleSynchronousStartup();

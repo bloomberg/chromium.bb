@@ -7,7 +7,6 @@ package com.android.webview.chromium;
 import android.webkit.WebBackForwardList;
 import android.webkit.WebHistoryItem;
 
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.content_public.browser.NavigationHistory;
 
 import java.util.ArrayList;
@@ -18,7 +17,6 @@ import java.util.List;
  * wrapper around NavigationHistory.
  */
 @SuppressWarnings("NoSynchronizedMethodCheck")
-@SuppressFBWarnings({"CHROMIUM_SYNCHRONIZED_METHOD", "SE_BAD_FIELD"})
 public class WebBackForwardListChromium extends WebBackForwardList {
     private final List<WebHistoryItemChromium> mHistroryItemList;
     private final int mCurrentIndex;

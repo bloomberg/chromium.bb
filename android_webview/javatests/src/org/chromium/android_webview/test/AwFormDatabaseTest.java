@@ -13,12 +13,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.AwFormDatabase;
-import org.chromium.base.annotations.SuppressFBWarnings;
 
 /** AwFormDatabaseTest. */
 @RunWith(AwJUnit4ClassRunner.class)
 public class AwFormDatabaseTest {
-    @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
     @Rule
     public AwActivityTestRule mActivityTestRule = new AwActivityTestRule();
 

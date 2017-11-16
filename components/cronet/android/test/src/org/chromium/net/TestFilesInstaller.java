@@ -10,7 +10,6 @@ import android.content.res.AssetManager;
 import org.chromium.base.FileUtils;
 import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
-import org.chromium.base.annotations.SuppressFBWarnings;
 
 import java.io.File;
 import java.io.IOException;
@@ -91,7 +90,6 @@ public final class TestFilesInstaller {
      * @param destFilePath the destination file path.
      * @throws IllegalStateException if the destination file already exists.
      */
-    @SuppressFBWarnings("OBL_UNSATISFIED_OBLIGATION_EXCEPTION_EDGE")
     private static void copyTestFile(Context context, String srcFilePath, String destFilePath)
             throws IOException {
         File destFile = new File(destFilePath);

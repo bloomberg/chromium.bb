@@ -27,7 +27,6 @@ import com.google.android.apps.chrome.appwidget.bookmarks.BookmarkThumbnailWidge
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
@@ -301,7 +300,6 @@ public class BookmarkWidgetService extends RemoteViewsService {
         }
 
         @UiThread
-        @SuppressFBWarnings("DM_EXIT")
         @Override
         public void onCreate() {
             // Required to be applied here redundantly to prevent crashes in the cases where the

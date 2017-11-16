@@ -21,7 +21,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
-import org.chromium.base.annotations.SuppressFBWarnings;
 
 import java.util.List;
 import java.util.concurrent.Semaphore;
@@ -150,7 +149,7 @@ public class ChildProcessServiceImpl {
      * @param context The application context.
      * @param hostContext The host context the library should be loaded with (i.e. Chrome).
      */
-    @SuppressFBWarnings("ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD") // For sCreateCalled check.
+    // For sCreateCalled check.
     public void create(final Context context, final Context hostContext) {
         mHostClassLoader = hostContext.getClassLoader();
         Log.i(TAG, "Creating new ChildProcessService pid=%d", Process.myPid());
@@ -166,7 +165,6 @@ public class ChildProcessServiceImpl {
 
         mMainThread = new Thread(new Runnable() {
             @Override
-            @SuppressFBWarnings("DM_EXIT")
             public void run() {
                 try {
                     // CommandLine must be initialized before everything else.
@@ -238,7 +236,6 @@ public class ChildProcessServiceImpl {
         mMainThread.start();
     }
 
-    @SuppressFBWarnings("DM_EXIT")
     public void destroy() {
         Log.i(TAG, "Destroying ChildProcessService pid=%d", Process.myPid());
         if (mActivitySemaphore.tryAcquire()) {

@@ -14,7 +14,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.MainDex;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 
 import java.io.File;
@@ -76,7 +75,6 @@ public class PureJavaExceptionReporter {
      *
      * @return whether the process is isolated, or null if cannot determine.
      */
-    @SuppressFBWarnings("NP_BOOLEAN_RETURN_NULL")
     public static Boolean detectIsIsolatedProcess() {
         try {
             Method isIsolatedMethod = android.os.Process.class.getMethod("isIsolated");

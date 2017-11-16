@@ -17,7 +17,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
@@ -102,7 +101,6 @@ public class MediaSessionTest {
 
     private MockAudioFocusChangeListener mAudioFocusChangeListener;
 
-    @SuppressFBWarnings("URF_UNREAD_FIELD")
     private MediaSessionObserver mObserver;
 
     private ArrayList<StateRecord> mStateRecords = new ArrayList<StateRecord>();

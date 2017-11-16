@@ -9,7 +9,6 @@ import android.content.Context;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.PathUtils;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.content.app.ContentApplication;
 
 /**
@@ -28,7 +27,6 @@ public class ContentShellApplication extends ContentApplication {
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
     }
 
-    @SuppressFBWarnings("DMI_HARDCODED_ABSOLUTE_FILENAME")
     @Override
     public void initCommandLine() {
         if (!CommandLine.isInitialized()) {

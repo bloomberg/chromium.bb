@@ -18,7 +18,6 @@ import android.view.View;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.contextmenu.ContextMenuParams;
@@ -55,7 +54,6 @@ public class BrowserActionActivity extends AsyncInitializationActivity {
     }
 
     @Override
-    @SuppressFBWarnings("URF_UNREAD_FIELD")
     protected boolean isStartedUpCorrectly(Intent intent) {
         if (intent == null
                 || !BrowserActionsIntent.ACTION_BROWSER_ACTIONS_OPEN.equals(intent.getAction())) {

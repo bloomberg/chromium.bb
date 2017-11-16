@@ -8,7 +8,6 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
 import org.chromium.components.background_task_scheduler.TaskIds;
@@ -26,7 +25,6 @@ public class DownloadResumptionScheduler {
     @SuppressLint("StaticFieldLeak")
     private static DownloadResumptionScheduler sDownloadResumptionScheduler;
 
-    @SuppressFBWarnings("LI_LAZY_INIT")
     public static DownloadResumptionScheduler getDownloadResumptionScheduler(Context context) {
         assert context == context.getApplicationContext();
         if (sDownloadResumptionScheduler == null) {

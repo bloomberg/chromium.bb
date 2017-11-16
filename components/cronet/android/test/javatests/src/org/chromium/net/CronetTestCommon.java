@@ -13,7 +13,6 @@ import org.junit.Assert;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.PathUtils;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.net.CronetTestRule.CronetTestFramework;
 import org.chromium.net.impl.CronetEngineBase;
 import org.chromium.net.impl.JavaCronetEngine;
@@ -83,7 +82,6 @@ final class CronetTestCommon {
         return getTestStorageDirectory();
     }
 
-    @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
     private static boolean recursiveDelete(File path) {
         if (path.isDirectory()) {
             for (File c : path.listFiles()) {
@@ -124,7 +122,6 @@ final class CronetTestCommon {
                 .createBuilder();
     }
 
-    @SuppressFBWarnings("DM_GC") // Used to trigger strictmode detecting leaked closeables
     void tearDown() throws Exception {
         try {
             // Run GC and finalizers a few times to pick up leaked closeables

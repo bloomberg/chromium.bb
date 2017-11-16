@@ -26,7 +26,6 @@ import org.chromium.android_webview.test.util.AwTestTouchUtils;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.JavascriptEventObserver;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -44,7 +43,6 @@ import java.util.concurrent.atomic.AtomicReference;
  * Integration tests for synchronous scrolling.
  */
 @RunWith(AwJUnit4ClassRunner.class)
-@SuppressFBWarnings("DLS_DEAD_LOCAL_STORE")
 public class AndroidScrollIntegrationTest {
     @Rule
     public AwActivityTestRule mActivityTestRule = new AwActivityTestRule() {

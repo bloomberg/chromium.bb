@@ -24,7 +24,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.omnibox.geo.VisibleNetworks.VisibleCell;
@@ -660,7 +659,6 @@ public class GeolocationHeader {
     }
 
     /** Records a data point for one of the GeolocationHeader.TimeListening* histograms. */
-    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     private static void recordTimeListeningHistogram(
             int locationSource, boolean locationAttached, long duration) {
         String name = getTimeListeningHistogramEnum(locationSource, locationAttached);

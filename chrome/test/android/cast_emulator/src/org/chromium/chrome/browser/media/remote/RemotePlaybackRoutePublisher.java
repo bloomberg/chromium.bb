@@ -27,7 +27,6 @@ import com.google.android.gms.cast.CastMediaControlIntent;
 
 import org.chromium.base.Log;
 import org.chromium.base.annotations.RemovableInRelease;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.browser.media.RoutePublisher;
 
 import java.util.ArrayList;
@@ -373,7 +372,6 @@ public final class RemotePlaybackRoutePublisher implements RoutePublisher {
             return success;
         }
 
-        @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
         private boolean handleStartSession(Intent intent, ControlRequestCallback callback) {
             boolean relaunch = intent.getBooleanExtra(
                     CastMediaControlIntent.EXTRA_CAST_RELAUNCH_APPLICATION, true);

@@ -12,14 +12,12 @@ import android.webkit.WebSettings.RenderPriority;
 import android.webkit.WebSettings.ZoomDensity;
 
 import org.chromium.android_webview.AwSettings;
-import org.chromium.base.annotations.SuppressFBWarnings;
 
 /**
  * Type adaptation layer between {@link android.webkit.WebSettings} and
  * {@link org.chromium.android_webview.AwSettings}.
  */
 @SuppressWarnings({"deprecation", "NoSynchronizedMethodCheck"})
-@SuppressFBWarnings("CHROMIUM_SYNCHRONIZED_METHOD")
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
 public class ContentSettingsAdapter extends android.webkit.WebSettings {
     private AwSettings mAwSettings;

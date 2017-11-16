@@ -10,7 +10,6 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.SparseArray;
 
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
@@ -26,14 +25,12 @@ public class MultiprocessTestClientServiceDelegate implements ChildProcessServic
     private ITestCallback mTestCallback;
 
     private final ITestController.Stub mTestController = new ITestController.Stub() {
-        @SuppressFBWarnings("DM_EXIT")
         @Override
         public boolean forceStopSynchronous(int exitCode) {
             System.exit(exitCode);
             return true;
         }
 
-        @SuppressFBWarnings("DM_EXIT")
         @Override
         public void forceStop(int exitCode) {
             System.exit(exitCode);

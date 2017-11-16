@@ -12,7 +12,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.mojo.MojoTestRule;
 import org.chromium.mojo.system.Core;
@@ -42,7 +41,6 @@ import java.util.concurrent.ScheduledExecutorService;
 @RunWith(BaseJUnit4ClassRunner.class)
 public class CoreImplTest {
 
-    @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
     @Rule
     public MojoTestRule mTestRule = new MojoTestRule();
 

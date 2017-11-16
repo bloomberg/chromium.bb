@@ -8,7 +8,6 @@ import android.view.Window;
 import android.view.WindowManager;
 
 import org.chromium.base.Log;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
@@ -33,7 +32,6 @@ public abstract class ContentShellBrowserTestActivity extends NativeBrowserTestA
      * among other things.
      */
     @Override
-    @SuppressFBWarnings("DM_EXIT")
     protected void initializeBrowserProcess() {
         try {
             LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized();

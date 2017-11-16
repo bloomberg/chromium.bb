@@ -20,7 +20,6 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwGeolocationPermissions;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.test.AwActivityTestRule.TestDependencyFactory;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.content_public.common.ContentUrlConstants;
@@ -272,7 +271,6 @@ public class GeolocationTest {
         mAwContents.evaluateJavaScriptForTests("initiate_getCurrentPosition();", null);
 
         AwActivityTestRule.pollInstrumentationThread(new Callable<Boolean>() {
-            @SuppressFBWarnings("DM_GC")
             @Override
             public Boolean call() throws Exception {
                 Runtime.getRuntime().gc();
@@ -295,7 +293,6 @@ public class GeolocationTest {
         mAwContents.evaluateJavaScriptForTests("initiate_getCurrentPosition();", null);
 
         AwActivityTestRule.pollInstrumentationThread(new Callable<Boolean>() {
-            @SuppressFBWarnings("DM_GC")
             @Override
             public Boolean call() throws Exception {
                 Runtime.getRuntime().gc();

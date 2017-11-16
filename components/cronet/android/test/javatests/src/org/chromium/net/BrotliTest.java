@@ -20,7 +20,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.net.CronetTestRule.OnlyRunNativeCronet;
@@ -32,7 +31,6 @@ import org.chromium.net.CronetTestRule.RequiresMinApi;
 @RunWith(BaseJUnit4ClassRunner.class)
 @RequiresMinApi(5) // Brotli support added in API version 5: crrev.com/465216
 public class BrotliTest {
-    @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
     @Rule
     public final CronetTestRule mTestRule = new CronetTestRule();
 

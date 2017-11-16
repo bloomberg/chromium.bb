@@ -27,7 +27,6 @@ import org.chromium.base.PowerMonitor;
 import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.build.BuildHooksAndroid;
 import org.chromium.chrome.R;
@@ -117,7 +116,6 @@ public class ProcessInitializationHandler {
     /**
      * @return The ProcessInitializationHandler for use during the lifetime of the browser process.
      */
-    @SuppressFBWarnings("LI_LAZY_INIT_STATIC")
     public static ProcessInitializationHandler getInstance() {
         ThreadUtils.checkUiThread();
         if (sInstance == null) {

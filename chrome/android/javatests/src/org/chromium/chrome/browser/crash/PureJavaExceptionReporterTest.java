@@ -11,7 +11,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.components.minidump_uploader.CrashTestRule;
 
@@ -26,7 +25,6 @@ import java.io.IOException;
 @RunWith(BaseJUnit4ClassRunner.class)
 public class PureJavaExceptionReporterTest {
     @Rule
-    @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
     public CrashTestRule mTestRule = new CrashTestRule();
 
     private static class TestPureJavaExceptionReporter extends PureJavaExceptionReporter {

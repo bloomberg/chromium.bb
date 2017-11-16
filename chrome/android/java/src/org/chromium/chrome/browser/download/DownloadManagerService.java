@@ -25,7 +25,6 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
@@ -188,7 +187,6 @@ public class DownloadManagerService
     /**
      * Creates DownloadManagerService.
      */
-    @SuppressFBWarnings("LI_LAZY_INIT") // Findbugs doesn't see this is only UI thread.
     public static DownloadManagerService getDownloadManagerService() {
         ThreadUtils.assertOnUiThread();
         Context appContext = ContextUtils.getApplicationContext();

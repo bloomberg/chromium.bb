@@ -23,7 +23,6 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.StreamUtil;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
@@ -350,7 +349,6 @@ public class TabPersistentStore extends TabPersister {
      *
      * @param ignoreIncognitoFiles Whether to skip loading incognito tabs.
      */
-    @SuppressFBWarnings("REC_CATCH_EXCEPTION")
     public void loadState(boolean ignoreIncognitoFiles) {
         long time = SystemClock.uptimeMillis();
 

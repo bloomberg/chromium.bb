@@ -23,7 +23,6 @@ import android.widget.ArrayAdapter;
 import android.widget.ListPopupWindow;
 
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation;
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.Animatable;
@@ -245,7 +244,6 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
     /**
      * @return The visually ordered list of visible {@link StripLayoutTab}s.
      */
-    @SuppressFBWarnings("EI_EXPOSE_REP")
     public StripLayoutTab[] getStripLayoutTabsToRender() {
         return mStripTabsToRender;
     }

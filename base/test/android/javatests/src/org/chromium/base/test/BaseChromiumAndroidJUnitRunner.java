@@ -20,7 +20,6 @@ import android.support.test.internal.runner.TestRequestBuilder;
 import android.support.test.runner.AndroidJUnitRunner;
 
 import org.chromium.base.Log;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.multidex.ChromiumMultiDexInstaller;
 
 import java.io.File;
@@ -155,7 +154,7 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
         finish(Activity.RESULT_OK, results);
     }
 
-    @SuppressFBWarnings("REC_CATCH_EXCEPTION") // For catch (Exception)
+    // For catch (Exception)
     private TestRequest createListTestRequest(Bundle arguments) {
         RunnerArgs runnerArgs =
                 new RunnerArgs.Builder().fromManifest(this).fromBundle(arguments).build();
