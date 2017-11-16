@@ -387,7 +387,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest,
 
 namespace {
 
-ash::mojom::WindowPinType GetCurrentWindowPinType() {
+aura::Window* GetCurrentWindow() {
   extensions::WindowController* controller = nullptr;
   for (auto* iter :
        extensions::WindowControllerList::GetInstance()->windows()) {
@@ -397,9 +397,17 @@ ash::mojom::WindowPinType GetCurrentWindowPinType() {
     }
   }
   EXPECT_TRUE(controller);
-  aura::Window* window = controller->window()->GetNativeWindow();
-  ash::mojom::WindowPinType type = window->GetProperty(ash::kWindowPinTypeKey);
+  return controller->window()->GetNativeWindow();
+}
+
+ash::mojom::WindowPinType GetCurrentWindowPinType() {
+  ash::mojom::WindowPinType type =
+      GetCurrentWindow()->GetProperty(ash::kWindowPinTypeKey);
   return type;
+}
+
+void SetCurrentWindowPinType(ash::mojom::WindowPinType type) {
+  GetCurrentWindow()->SetProperty(ash::kWindowPinTypeKey, type);
 }
 
 }  // namespace
@@ -425,6 +433,17 @@ IN_PROC_BROWSER_TEST_F(WindowOpenApiTest, UpdateWindowToLockedFullscreen) {
             GetCurrentWindowPinType());
 }
 
+IN_PROC_BROWSER_TEST_F(WindowOpenApiTest, RemoveLockedFullscreenFromWindow) {
+  SetCurrentWindowPinType(ash::mojom::WindowPinType::TRUSTED_PINNED);
+
+  ASSERT_TRUE(RunExtensionTestWithArg("locked_fullscreen/with_permission",
+                                      "removeLockedFullscreenFromWindow"))
+      << message_;
+
+  // Make sure the current window is removed from locked-fullscreen state.
+  EXPECT_EQ(ash::mojom::WindowPinType::NONE, GetCurrentWindowPinType());
+}
+
 IN_PROC_BROWSER_TEST_F(WindowOpenApiTest,
                        OpenLockedFullscreenWindowWithoutPermission) {
   ASSERT_TRUE(RunExtensionTestWithArg("locked_fullscreen/without_permission",
@@ -446,7 +465,19 @@ IN_PROC_BROWSER_TEST_F(WindowOpenApiTest,
 
   // chrome.windows.update call fails since this extension doesn't have the
   // correct permission and hence the current window has NONE as WindowPinType.
-  EXPECT_EQ(ash::mojom::WindowPinType::NONE,
+  EXPECT_EQ(ash::mojom::WindowPinType::NONE, GetCurrentWindowPinType());
+}
+
+IN_PROC_BROWSER_TEST_F(WindowOpenApiTest,
+                       RemoveLockedFullscreenFromWindowWithoutPermission) {
+  SetCurrentWindowPinType(ash::mojom::WindowPinType::TRUSTED_PINNED);
+
+  ASSERT_TRUE(RunExtensionTestWithArg("locked_fullscreen/without_permission",
+                                      "removeLockedFullscreenFromWindow"))
+      << message_;
+
+  // The current window is still locked-fullscreen.
+  EXPECT_EQ(ash::mojom::WindowPinType::TRUSTED_PINNED,
             GetCurrentWindowPinType());
 }
 #endif  // defined(OS_CHROMEOS)

@@ -17,9 +17,17 @@ updateWindowToLockedFullscreen = function() {
       chrome.test.callbackFail(error_msg))});
 };
 
+removeLockedFullscreenFromWindow = function() {
+  chrome.windows.getCurrent(null, function(window) {
+    chrome.windows.update(window.id, {state: 'fullscreen'},
+      chrome.test.callbackFail(error_msg));
+  });
+};
+
 const tests = {
   openLockedFullscreenWindow: openLockedFullscreenWindow,
   updateWindowToLockedFullscreen: updateWindowToLockedFullscreen,
+  removeLockedFullscreenFromWindow: removeLockedFullscreenFromWindow,
 };
 
 window.onload = function() {
