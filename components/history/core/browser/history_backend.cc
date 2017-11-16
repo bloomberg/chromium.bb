@@ -541,17 +541,19 @@ void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
         // can be called a lot, for example, the page cycler, and most of the
         // time we won't have changed anything.
         VisitRow visit_row;
-        if (request.did_replace_entry &&
-            db_->GetRowForVisit(last_ids.second, &visit_row) &&
-            visit_row.transition & ui::PAGE_TRANSITION_CHAIN_END) {
-          visit_row.transition = ui::PageTransitionFromInt(
-              visit_row.transition & ~ui::PAGE_TRANSITION_CHAIN_END);
-          db_->UpdateVisitRow(visit_row);
-        }
+        if (request.did_replace_entry) {
+          if (db_->GetRowForVisit(last_ids.second, &visit_row) &&
+              visit_row.transition & ui::PAGE_TRANSITION_CHAIN_END) {
+            visit_row.transition = ui::PageTransitionFromInt(
+                visit_row.transition & ~ui::PAGE_TRANSITION_CHAIN_END);
+            db_->UpdateVisitRow(visit_row);
+          }
 
-        if (base::FeatureList::IsEnabled(
-                kPropagateFaviconsAcrossClientRedirects)) {
-          extended_redirect_chain = GetCachedRecentRedirects(request.referrer);
+          if (base::FeatureList::IsEnabled(
+                  kPropagateFaviconsAcrossClientRedirects)) {
+            extended_redirect_chain =
+                GetCachedRecentRedirects(request.referrer);
+          }
         }
       }
     }
