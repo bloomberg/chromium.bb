@@ -5136,7 +5136,6 @@ crbug.com/591099 accessibility/input-type-range-value-change-event.html [ Crash 
 crbug.com/591099 accessibility/input-type-range-value-change.html [ Crash ]
 crbug.com/591099 accessibility/name-calc-summary.html [ Crash ]
 crbug.com/591099 animations/interpolation/height-interpolation.html [ Crash ]
-crbug.com/591099 compositing/overflow/border-radius-prevents-squashing-with-inline-transform.html [ Failure ]
 crbug.com/591099 compositing/overflow/composited-scroll-with-fractional-translation.html [ Pass ]
 crbug.com/591099 compositing/overflow/do-not-crash-use-after-free-update-widget-positions.html [ Crash ]
 crbug.com/591099 compositing/overflow/get-transform-from-non-box-container.html [ Crash ]

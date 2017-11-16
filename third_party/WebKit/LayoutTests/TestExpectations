@@ -107,7 +107,6 @@ crbug.com/771643 virtual/spv175/compositing/overflow/border-radius-on-grandparen
 crbug.com/771643 virtual/spv175/compositing/overflow/border-radius-on-parent-composited-grandchild.html [ Failure ]
 crbug.com/771643 virtual/spv175/compositing/overflow/border-radius-on-two-ancestors-composited-grandchild.html [ Failure ]
 crbug.com/771643 virtual/spv175/compositing/overflow/border-radius-outside-bounds-of-compositing-ancestor.html [ Failure ]
-crbug.com/771643 virtual/spv175/compositing/overflow/border-radius-prevents-squashing-with-inline-transform.html [ Failure ]
 crbug.com/771643 virtual/spv175/compositing/overflow/border-radius-styles-with-composited-child.html [ Failure ]
 crbug.com/771643 virtual/spv175/compositing/overflow/clip-content-under-overflow-controls.html [ Failure ]
 crbug.com/771643 virtual/spv175/compositing/overflow/composited-layer-under-border-radius-under-composited-layer.html [ Failure ]
