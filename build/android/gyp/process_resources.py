@@ -124,7 +124,6 @@ def _ParseArgs(args):
       'android_manifest',
       'dependencies_res_zips',
       'resource_dirs',
-      'resource_zip_out',
       )
   build_utils.CheckOptions(options, parser, required=required_options)
 
@@ -149,7 +148,7 @@ def _ParseArgs(args):
 
 
 def CreateRJavaFiles(srcjar_dir, main_r_txt_file, packages, r_txt_files,
-                     shared_resources):
+                     shared_resources, non_constant_id):
   assert len(packages) == len(r_txt_files), 'Need one R.txt file per package'
 
   # Map of (resource_type, name) -> Entry.
@@ -197,7 +196,7 @@ def CreateRJavaFiles(srcjar_dir, main_r_txt_file, packages, r_txt_files,
     build_utils.MakeDirectory(package_r_java_dir)
     package_r_java_path = os.path.join(package_r_java_dir, 'R.java')
     java_file_contents = _CreateRJavaFile(
-        package, resources_by_type, shared_resources)
+        package, resources_by_type, shared_resources, non_constant_id)
     with open(package_r_java_path, 'w') as f:
       f.write(java_file_contents)
 
@@ -215,7 +214,8 @@ def _ParseTextSymbolsFile(path):
   return ret
 
 
-def _CreateRJavaFile(package, resources_by_type, shared_resources):
+def _CreateRJavaFile(package, resources_by_type, shared_resources,
+                     non_constant_id):
   """Generates the contents of a R.java file."""
   # Keep these assignments all on one line to make diffing against regular
   # aapt-generated files easier.
@@ -235,11 +235,7 @@ public final class R {
     {% for resource_type in resource_types %}
     public static final class {{ resource_type }} {
         {% for e in resources[resource_type] %}
-        {% if shared_resources %}
-        public static {{ e.java_type }} {{ e.name }} = {{ e.value }};
-        {% else %}
-        public static final {{ e.java_type }} {{ e.name }} = {{ e.value }};
-        {% endif %}
+        public static {{ final }}{{ e.java_type }} {{ e.name }} = {{ e.value }};
         {% endfor %}
     }
     {% endfor %}
@@ -273,10 +269,12 @@ public final class R {
 }
 """, trim_blocks=True, lstrip_blocks=True)
 
+  final = '' if shared_resources or non_constant_id else 'final '
   return template.render(package=package,
                          resources=resources_by_type,
                          resource_types=sorted(resources_by_type),
-                         shared_resources=shared_resources)
+                         shared_resources=shared_resources,
+                         final=final)
 
 
 def CrunchDirectory(aapt, input_dir, output_dir):
@@ -522,7 +520,7 @@ def _OnStaleMd5(options):
       if packages:
         shared_resources = options.shared_resources or options.app_as_shared_lib
         CreateRJavaFiles(srcjar_dir, r_txt_path, packages, r_txt_files,
-                         shared_resources)
+                         shared_resources, options.non_constant_id)
 
     # This is the list of directories with resources to put in the final .zip
     # file. The order of these is important so that crunched/v14 resources
@@ -540,10 +538,13 @@ def _OnStaleMd5(options):
       zip_resource_dirs.append(crunch_dir)
       CrunchDirectory(aapt, input_dir, crunch_dir)
 
-    ZipResources(zip_resource_dirs, options.resource_zip_out)
+    if options.resource_zip_out:
+      ZipResources(zip_resource_dirs, options.resource_zip_out)
 
     if options.all_resources_zip_out:
-      CombineZips([options.resource_zip_out] + dep_zips,
+      all_zips = [options.resource_zip_out] if options.resource_zip_out else []
+      all_zips += dep_zips
+      CombineZips(all_zips,
                   options.all_resources_zip_out, options.support_zh_hk)
 
     if options.srcjar_out:

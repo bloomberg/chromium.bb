@@ -1140,6 +1140,7 @@ if (enable_java_templates) {
       supports_android = false
       main_class = invoker.main_class
       is_java_binary = true
+      assert(is_java_binary)  # Mark as used.
     }
   }
 
@@ -1174,17 +1175,49 @@ if (enable_java_templates) {
 
     _build_config = "$target_gen_dir/$target_name.build_config"
     _build_config_target_name = "${target_name}__build_config"
-    if (defined(invoker.deps)) {
+    _deps = [
+      "//testing/android/junit:junit_test_support",
+      "//third_party/junit",
+      "//third_party/mockito:mockito_java",
+      "//third_party/robolectric:robolectric_all_java",
+
       # This dep is required if any deps require android (but it doesn't hurt
       # to add it regardless) and is used by bytecode rewritten classes.
-      invoker.deps +=
-          [ "//build/android/buildhooks:build_hooks_android_impl_java" ]
+      "//build/android/buildhooks:build_hooks_android_impl_java",
+    ]
+    if (defined(invoker.deps)) {
+      _deps += invoker.deps
+    }
+    if (defined(invoker.java_files)) {
+      _java_sources_file = "$target_gen_dir/target_name.sources"
     }
     write_build_config(_build_config_target_name) {
       type = "junit_binary"
       build_config = _build_config
-      if (defined(invoker.deps)) {
-        possible_config_deps = invoker.deps
+
+      # Robolectric can handle deps that set !supports_android as well those
+      # that set requires_android.
+      bypass_platform_checks = true
+      possible_config_deps = _deps
+      if (defined(_java_sources_file)) {
+        java_sources_file = _java_sources_file
+      }
+      _target_dir_name = get_label_info(":$target_name", "dir")
+      jar_path = "$root_out_dir/lib.java$_target_dir_name/$target_name.jar"
+    }
+
+    _process_resources_target = "${target_name}__process_resources"
+    process_resources(_process_resources_target) {
+      deps = _deps + [ ":$_build_config_target_name" ]
+      build_config = _build_config
+      srcjar_path = "${target_gen_dir}/${target_name}.srcjar"
+      if (defined(invoker.package_name)) {
+        custom_package = invoker.package_name
+      }
+      if (defined(invoker.android_manifest_path)) {
+        android_manifest = invoker.android_manifest_path
+      } else {
+        android_manifest = "//build/android/AndroidManifest.xml"
       }
     }
 
@@ -1201,19 +1234,20 @@ if (enable_java_templates) {
     }
 
     java_binary(_java_binary_target_name) {
-      deps = []
+      forward_variables_from(invoker, "*", [ "deps" ])
       output_name = invoker.target_name
-      forward_variables_from(invoker, "*")
+      deps = _deps + [ ":$_build_config_target_name" ]
       testonly = true
-      bypass_platform_checks = true
+      override_build_config = _build_config
+      if (defined(_java_sources_file)) {
+        java_sources_file = _java_sources_file
+      }
       main_class = "org.chromium.testing.local.JunitTestMain"
       wrapper_script_name = "helper/$target_name"
-      deps += [
-        "//testing/android/junit:junit_test_support",
-        "//third_party/junit",
-        "//third_party/mockito:mockito_java",
-        "//third_party/robolectric:robolectric_all_java",
-      ]
+      if (!defined(srcjar_deps)) {
+        srcjar_deps = []
+      }
+      srcjar_deps += [ ":$_process_resources_target" ]
     }
     group(target_name) {
       public_deps = [
@@ -1745,8 +1779,6 @@ if (enable_java_templates) {
 
     # JUnit tests use resource zip files. These must not be put in gen/
     # directory or they will not be available to tester bots.
-    _resources_zip_rebased_path = rebase_path(target_gen_dir, root_gen_dir)
-    _resources_zip_path = "${root_out_dir}/resource_zips/${_resources_zip_rebased_path}/${target_name}.resources.zip"
     _all_resources_zip_path = "$_base_path.resources.all.zip"
     _jar_path = "$_base_path.jar"
     _lib_dex_path = "$_base_path.dex.jar"
@@ -1982,7 +2014,6 @@ if (enable_java_templates) {
       incremental_allowed = _incremental_allowed
       incremental_apk_path = "${_final_apk_path_no_ext}_incremental.apk"
       incremental_install_json_path = _incremental_install_json_path
-      resources_zip = _resources_zip_path
       build_config = _build_config
       android_manifest = _android_root_manifest
 
@@ -2073,8 +2104,6 @@ if (enable_java_templates) {
       srcjar_path = "${target_gen_dir}/${target_name}.srcjar"
       r_text_out_path = "${target_gen_dir}/${target_name}_R.txt"
       android_manifest = _android_manifest
-      resource_dirs = [ "//build/android/empty" ]
-      zip_path = _resources_zip_path
       all_resources_zip_path = _all_resources_zip_path
       generate_constant_ids = true
       proguard_file = _generated_proguard_config
