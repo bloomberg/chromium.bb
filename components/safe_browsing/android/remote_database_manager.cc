@@ -275,11 +275,6 @@ AsyncMatch RemoteSafeBrowsingDatabaseManager::CheckCsdWhitelistUrl(
   return AsyncMatch::MATCH;
 }
 
-bool RemoteSafeBrowsingDatabaseManager::MatchCsdWhitelistUrl(const GURL& url) {
-  NOTREACHED();
-  return true;
-}
-
 bool RemoteSafeBrowsingDatabaseManager::MatchDownloadWhitelistString(
     const std::string& str) {
   NOTREACHED();

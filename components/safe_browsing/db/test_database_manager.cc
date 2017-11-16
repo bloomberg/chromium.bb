@@ -79,11 +79,6 @@ AsyncMatch TestSafeBrowsingDatabaseManager::CheckCsdWhitelistUrl(
   return AsyncMatch::MATCH;
 }
 
-bool TestSafeBrowsingDatabaseManager::MatchCsdWhitelistUrl(const GURL& url) {
-  NOTIMPLEMENTED();
-  return true;
-}
-
 bool TestSafeBrowsingDatabaseManager::MatchDownloadWhitelistString(
     const std::string& str) {
   NOTIMPLEMENTED();
