@@ -79,7 +79,12 @@ void* GetRandomPageBase() {
   random <<= 32ULL;
   random |= static_cast<uintptr_t>(ranval(s_ranctx.Pointer()));
 
-#if defined(OS_WIN)
+// The kASLRMask and kASLROffset constants will be suitable for the
+// OS and build configuration.
+#if defined(MEMORY_TOOL_REPLACES_ALLOCATOR) || defined(OS_POSIX)
+  random &= internal::kASLRMask;
+  random += internal::kASLROffset;
+#else   // defined(OS_WIN)
   // Windows >= 8.1 has the full 47 bits. Use them where available.
   static bool windows_81 = false;
   static bool windows_81_initialized = false;
@@ -93,10 +98,7 @@ void* GetRandomPageBase() {
     random &= internal::kASLRMask;
   }
   random += internal::kASLROffset;
-#else   // defined(OS_POSIX)
-  random &= internal::kASLRMask;
-  random += internal::kASLROffset;
-#endif  // defined(OS_POSIX)
+#endif  // defined(OS_WIN)
 #else   // defined(ARCH_CPU_32_BITS)
 #if defined(OS_WIN)
   // On win32 host systems the randomization plus huge alignment causes
