@@ -38,8 +38,6 @@ static constexpr float kFullscreenVerticalOffset = -0.1f * kFullscreenDistance;
 
 static constexpr float kExitPromptWidth = 0.672f * kContentDistance;
 static constexpr float kExitPromptHeight = 0.2f * kContentDistance;
-static constexpr float kAudioPermissionPromptWidth = 0.552f * kContentDistance;
-static constexpr float kAudioPermissionPromptHeight = 0.2f * kContentDistance;
 
 static constexpr float kExitPromptVerticalOffset = -0.09f * kContentDistance;
 static constexpr float kPromptBackplaneSize = 1000.0;
@@ -52,6 +50,9 @@ static constexpr float kUrlBarWidth = kUrlBarWidthDMM * kUrlBarDistance;
 static constexpr float kUrlBarHeight = kUrlBarHeightDMM * kUrlBarDistance;
 static constexpr float kUrlBarVerticalOffset = -0.516f * kUrlBarDistance;
 static constexpr float kUrlBarRotationRad = -0.175f;
+
+static constexpr float kAudioPermissionPromptWidth = 0.63f * kUrlBarDistance;
+static constexpr float kAudioPermissionPromptHeight = 0.218f * kUrlBarDistance;
 
 static constexpr float kIndicatorHeight = 0.08f;
 static constexpr float kIndicatorGap = 0.05f;

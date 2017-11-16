@@ -984,7 +984,7 @@ void UiSceneManager::CreateAudioPermissionPrompt() {
 
   std::unique_ptr<AudioPermissionPrompt> audio_permission_prompt =
       base::MakeUnique<AudioPermissionPrompt>(
-          512,
+          1024,
           base::Bind(&UiSceneManager::OnExitPromptChoice,
                      base::Unretained(this), true),
           base::Bind(&UiSceneManager::OnExitPromptChoice,
@@ -994,8 +994,7 @@ void UiSceneManager::CreateAudioPermissionPrompt() {
   element->set_name(kAudioPermissionPrompt);
   element->set_draw_phase(kPhaseForeground);
   element->SetSize(kAudioPermissionPromptWidth, kAudioPermissionPromptHeight);
-  element->SetTranslate(0.0, kContentVerticalOffset + kExitPromptVerticalOffset,
-                        kTextureOffset - kContentDistance);
+  element->SetTranslate(0.0, kContentVerticalOffset, -kUrlBarDistance);
   element->AddBinding(
       VR_BIND(bool, UiSceneManager, this,
               browsing_mode() && model->prompting_to_audio_permission(),
