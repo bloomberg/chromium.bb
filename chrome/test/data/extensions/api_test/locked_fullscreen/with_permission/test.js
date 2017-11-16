@@ -23,9 +23,19 @@ updateWindowToLockedFullscreen = function() {
   }))});
 };
 
+removeLockedFullscreenFromWindow = function() {
+  chrome.windows.getCurrent(null, function(window) {
+    chrome.windows.update(window.id, {state: 'fullscreen'},
+      chrome.test.callbackPass(function(window) {
+        chrome.test.assertEq('fullscreen', window.state);
+    }));
+  });
+};
+
 const tests = {
   openLockedFullscreenWindow: openLockedFullscreenWindow,
   updateWindowToLockedFullscreen: updateWindowToLockedFullscreen,
+  removeLockedFullscreenFromWindow: removeLockedFullscreenFromWindow,
 };
 
 window.onload = function() {
