@@ -121,7 +121,9 @@ bool DistillerPageIOS::StringifyOutput() {
   return false;
 }
 
-DistillerPageIOS::~DistillerPageIOS() {}
+DistillerPageIOS::~DistillerPageIOS() {
+  DetachWebState();
+}
 
 void DistillerPageIOS::AttachWebState(
     std::unique_ptr<web::WebState> web_state) {
