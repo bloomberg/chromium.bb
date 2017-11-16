@@ -2786,6 +2786,8 @@ TEST_P(WindowEventDispatcherTest, TouchMovesMarkedWhenCausingScroll) {
 // scale factor changed). Test that hover effects are properly updated.
 TEST_P(WindowEventDispatcherTest, OnCursorMovedToRootLocationUpdatesHover) {
   WindowEventDispatcher* dispatcher = host()->dispatcher();
+  test::TestCursorClient cursor_client(root_window());
+  cursor_client.ShowCursor();
 
   std::unique_ptr<Window> w(CreateNormalWindow(1, root_window(), nullptr));
   w->SetBounds(gfx::Rect(20, 20, 20, 20));
@@ -2807,6 +2809,20 @@ TEST_P(WindowEventDispatcherTest, OnCursorMovedToRootLocationUpdatesHover) {
   dispatcher->OnCursorMovedToRootLocation(gfx::Point(11, 11));
   RunAllPendingInMessageLoop();
   EXPECT_TRUE(recorder.HasReceivedEvent(ui::ET_MOUSE_EXITED));
+  recorder.Reset();
+
+  // Hide the cursor, synthetic event will not be sent.
+  cursor_client.HideCursor();
+  dispatcher->OnCursorMovedToRootLocation(gfx::Point(22, 22));
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(recorder.events().empty());
+
+  // Cursor is hidden when locked, but synthetic move event still be dispatched.
+  cursor_client.LockCursor();
+  dispatcher->OnCursorMovedToRootLocation(gfx::Point(33, 33));
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(recorder.HasReceivedEvent(ui::ET_MOUSE_MOVED));
+  recorder.Reset();
 
   w->RemovePreTargetHandler(&recorder);
 }
