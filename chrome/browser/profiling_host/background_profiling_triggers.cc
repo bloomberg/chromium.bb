@@ -16,7 +16,7 @@ namespace profiling {
 namespace {
 // Check memory usage every hour. Trigger slow report if needed.
 const int kRepeatingCheckMemoryDelayInHours = 1;
-const int kSecondReportRepeatingCheckMemoryDelayInHours = 12;
+const int kThrottledReportRepeatingCheckMemoryDelayInHours = 12;
 
 #if defined(OS_ANDROID)
 const size_t kBrowserProcessMallocTriggerKb = 100 * 1024;    // 100 MB
@@ -67,6 +67,8 @@ BackgroundProfilingTriggers::BackgroundProfilingTriggers(
 BackgroundProfilingTriggers::~BackgroundProfilingTriggers() {}
 
 void BackgroundProfilingTriggers::StartTimer() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
   // Register a repeating timer to check memory usage periodically.
   timer_.Start(
       FROM_HERE, base::TimeDelta::FromHours(kRepeatingCheckMemoryDelayInHours),
@@ -97,14 +99,8 @@ bool BackgroundProfilingTriggers::IsOverTriggerThreshold(
 }
 
 void BackgroundProfilingTriggers::PerformMemoryUsageChecks() {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::BindOnce(
-          &BackgroundProfilingTriggers::PerformMemoryUsageChecksOnIOThread,
-          weak_ptr_factory_.GetWeakPtr()));
-}
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-void BackgroundProfilingTriggers::PerformMemoryUsageChecksOnIOThread() {
   memory_instrumentation::MemoryInstrumentation::GetInstance()
       ->RequestGlobalDump(
           base::Bind(&BackgroundProfilingTriggers::OnReceivedMemoryDump,
@@ -114,37 +110,38 @@ void BackgroundProfilingTriggers::PerformMemoryUsageChecksOnIOThread() {
 void BackgroundProfilingTriggers::OnReceivedMemoryDump(
     bool success,
     memory_instrumentation::mojom::GlobalMemoryDumpPtr dump) {
-  if (!success)
-    return;
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
+  if (!success) {
+    return;
+  }
+
+  bool report_was_sent = false;
   for (const auto& proc : dump->process_dumps) {
     if (IsOverTriggerThreshold(GetContentProcessType(proc->process_type),
                                proc->os_dump->private_footprint_kb)) {
       TriggerMemoryReportForProcess(proc->pid);
+      report_was_sent = true;
     }
+  }
+
+  if (report_was_sent) {
+    // If a report was sent, throttle the memory data collection rate to
+    // kThrottledReportRepeatingCheckMemoryDelayInHours to avoid sending too
+    // many reports from a known problematic client.
+    timer_.Start(
+        FROM_HERE,
+        base::TimeDelta::FromHours(
+            kThrottledReportRepeatingCheckMemoryDelayInHours),
+        base::Bind(&BackgroundProfilingTriggers::PerformMemoryUsageChecks,
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
 void BackgroundProfilingTriggers::TriggerMemoryReportForProcess(
     base::ProcessId pid) {
-  content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::UI)
-      ->PostTask(FROM_HERE,
-                 base::BindOnce(&BackgroundProfilingTriggers::
-                                    TriggerMemoryReportForProcessOnUIThread,
-                                weak_ptr_factory_.GetWeakPtr(), pid));
-}
-
-void BackgroundProfilingTriggers::TriggerMemoryReportForProcessOnUIThread(
-    base::ProcessId pid) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   host_->RequestProcessReport(pid, "MEMLOG_BACKGROUND_TRIGGER");
-
-  // Reset the timer to avoid uploading too many reports.
-  timer_.Start(
-      FROM_HERE,
-      base::TimeDelta::FromHours(kSecondReportRepeatingCheckMemoryDelayInHours),
-      base::Bind(&BackgroundProfilingTriggers::PerformMemoryUsageChecks,
-                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 }  // namespace profiling

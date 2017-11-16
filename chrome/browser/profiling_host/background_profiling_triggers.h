@@ -37,7 +37,6 @@ class BackgroundProfilingTriggers {
 
   // Check the current memory usage and send a slow-report if needed.
   void PerformMemoryUsageChecks();
-  void PerformMemoryUsageChecksOnIOThread();
 
   // Called when the memory dump is received. Performs
   // checks on memory usage and trigger a memory report with
@@ -48,11 +47,11 @@ class BackgroundProfilingTriggers {
 
   // Virtual for testing. Called when a memory report needs to be send.
   virtual void TriggerMemoryReportForProcess(base::ProcessId pid);
-  void TriggerMemoryReportForProcessOnUIThread(base::ProcessId pid);
+
+  ProfilingProcessHost* host_;
 
   // Timer to periodically check memory consumption and upload a slow-report.
   base::RepeatingTimer timer_;
-  ProfilingProcessHost* host_;
 
   base::WeakPtrFactory<BackgroundProfilingTriggers> weak_ptr_factory_;
 

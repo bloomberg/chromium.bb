@@ -8,8 +8,10 @@
 #include <utility>
 #include <vector>
 
+#include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
 #include "chrome/browser/profiling_host/profiling_process_host.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/coordinator.h"
 #include "services/resource_coordinator/public/interfaces/memory_instrumentation/memory_instrumentation.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -91,11 +93,17 @@ class FakeBackgroundProfilingTriggers : public BackgroundProfilingTriggers {
 
 class BackgroundProfilingTriggersTest : public testing::Test {
  public:
-  BackgroundProfilingTriggersTest() : triggers_(&host_) {}
+  BackgroundProfilingTriggersTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+        triggers_(&host_) {}
 
   void SetMode(ProfilingProcessHost::Mode mode) { host_.SetMode(mode); }
 
  protected:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  content::TestBrowserThreadBundle thread_bundle;
+
   ProfilingProcessHost host_;
   FakeBackgroundProfilingTriggers triggers_;
 };
