@@ -4271,8 +4271,19 @@ registerLoadRequestForURL:(const GURL&)requestURL
       self.navigationManagerImpl->DiscardNonCommittedItems();
   }
 
-  handler(allowNavigation ? WKNavigationResponsePolicyAllow
-                          : WKNavigationResponsePolicyCancel);
+  // Although the Apple documentation says that |handler| can be called
+  // immediately or saved and called asynchronously, there is a bug in
+  // iOS 10 (and possibly before) that JavaScript code is not executed
+  // when the |handler| is called asynchronously.
+  if (@available(iOS 11, *)) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+      handler(allowNavigation ? WKNavigationResponsePolicyAllow
+                              : WKNavigationResponsePolicyCancel);
+    });
+  } else {
+    handler(allowNavigation ? WKNavigationResponsePolicyAllow
+                            : WKNavigationResponsePolicyCancel);
+  }
 }
 
 - (void)webView:(WKWebView*)webView
