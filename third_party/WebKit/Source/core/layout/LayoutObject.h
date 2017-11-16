@@ -650,9 +650,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   bool IsSVGViewportContainer() const {
     return IsOfType(kLayoutObjectSVGViewportContainer);
   }
-  bool IsSVGGradientStop() const {
-    return IsOfType(kLayoutObjectSVGGradientStop);
-  }
   bool IsSVGHiddenContainer() const {
     return IsOfType(kLayoutObjectSVGHiddenContainer);
   }
@@ -1989,7 +1986,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     kLayoutObjectSVGTransformableContainer,
     kLayoutObjectSVGViewportContainer,
     kLayoutObjectSVGHiddenContainer,
-    kLayoutObjectSVGGradientStop,
     kLayoutObjectSVGShape,
     kLayoutObjectSVGText,
     kLayoutObjectSVGTextPath,

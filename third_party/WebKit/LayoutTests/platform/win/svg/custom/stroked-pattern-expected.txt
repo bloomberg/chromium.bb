@@ -3,9 +3,7 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
-      LayoutSVGResourceRadialGradient {radialGradient} [id="redToYellow"] [gradientUnits=objectBoundingBox] [center=(0.50,0.50)] [focal=(0.50,0.50)] [radius=0.50] [focalRadius=0.00]
-        LayoutSVGGradientStop {stop} [offset=0.00] [color=#FF0000]
-        LayoutSVGGradientStop {stop} [offset=1.00] [color=#FFFF00]
+      LayoutSVGResourceRadialGradient {radialGradient} [id="redToYellow"] [gradientUnits=objectBoundingBox] [stops=( #FF0000@0.00 #FFFF00@1.00 )] [center=(0.50,0.50)] [focal=(0.50,0.50)] [radius=0.50] [focalRadius=0.00]
       LayoutSVGResourcePattern {pattern} [id="pattern"] [patternUnits=userSpaceOnUse] [patternContentUnits=objectBoundingBox]
         LayoutSVGEllipse {circle} at (-20,-20) size 80x80 [stroke={[type=SOLID] [color=#640000] [stroke width=12.00]}] [fill={[type=RADIAL-GRADIENT] [id="redToYellow"]}] [cx=20.00] [cy=20.00] [r=40.00]
     LayoutSVGRect {rect} at (50,50) size 350x400 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=PATTERN] [id="pattern"]}] [x=50.00] [y=50.00] [width=350.00] [height=400.00]

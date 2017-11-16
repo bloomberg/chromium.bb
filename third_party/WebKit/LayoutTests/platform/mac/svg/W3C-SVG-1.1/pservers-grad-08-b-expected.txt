@@ -4,9 +4,7 @@ layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
     LayoutSVGContainer {g} at (20,8.80) size 415.48x164.83 [transform={m=((1.00,0.00)(0.00,1.50)) t=(0.00,0.00)}]
-      LayoutSVGResourceLinearGradient {linearGradient} [id="Gradient"] [gradientUnits=userSpaceOnUse] [start=(10,10)] [end=(440,10)]
-        LayoutSVGGradientStop {stop} [offset=0.00] [color=#0000FF]
-        LayoutSVGGradientStop {stop} [offset=1.00] [color=#FF0000]
+      LayoutSVGResourceLinearGradient {linearGradient} [id="Gradient"] [gradientUnits=userSpaceOnUse] [stops=( #0000FF@0.00 #FF0000@1.00 )] [start=(10,10)] [end=(440,10)]
       LayoutSVGText {text} at (20,8.80) size 415.48x78.13 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (20,8.80) size 415.48x78.13
           chunk 1 text run 1 at (20.00,70.00) startOffset 0 endOffset 16 width 415.50: "Gradient on fill"

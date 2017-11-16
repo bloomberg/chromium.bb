@@ -47,7 +47,6 @@
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/layout/ng/layout_ng_list_item.h"
-#include "core/layout/svg/LayoutSVGGradientStop.h"
 #include "core/layout/svg/LayoutSVGImage.h"
 #include "core/layout/svg/LayoutSVGInline.h"
 #include "core/layout/svg/LayoutSVGInlineText.h"
@@ -450,10 +449,6 @@ void Write(TextStream& ts,
            LayoutAsTextBehavior behavior) {
   if (o.IsSVGShape()) {
     Write(ts, ToLayoutSVGShape(o), indent);
-    return;
-  }
-  if (o.IsSVGGradientStop()) {
-    WriteSVGGradientStop(ts, ToLayoutSVGGradientStop(o), indent);
     return;
   }
   if (o.IsSVGResourceContainer()) {

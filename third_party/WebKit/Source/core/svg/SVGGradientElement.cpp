@@ -115,9 +115,12 @@ void SVGGradientElement::ChildrenChanged(const ChildrenChange& change) {
   if (change.by_parser)
     return;
 
-  if (LayoutObject* object = GetLayoutObject())
+  if (auto* object = ToLayoutSVGResourceContainer(GetLayoutObject())) {
     object->SetNeedsLayoutAndFullPaintInvalidation(
         LayoutInvalidationReason::kChildChanged);
+    if (object->EverHadLayout())
+      object->RemoveAllClientsFromCache();
+  }
 }
 
 void SVGGradientElement::CollectCommonAttributes(

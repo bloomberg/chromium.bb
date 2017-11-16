@@ -3,9 +3,7 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
-      LayoutSVGResourceLinearGradient {linearGradient} [id="g"] [gradientUnits=userSpaceOnUse] [start=(0,0)] [end=(0,600)]
-        LayoutSVGGradientStop {stop} [offset=0.00] [color=#FF0000]
-        LayoutSVGGradientStop {stop} [offset=1.00] [color=#00000080]
+      LayoutSVGResourceLinearGradient {linearGradient} [id="g"] [gradientUnits=userSpaceOnUse] [stops=( #FF0000@0.00 #00000080@1.00 )] [start=(0,0)] [end=(0,600)]
     LayoutSVGText {text} at (0,13) size 628.98x22 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (0,13) size 628.98x22
         chunk 1 text run 1 at (0.00,30.00) startOffset 0 endOffset 81 width 629.00: "You should see red, black, red, black text all rotated 45deg, translated by 100px"

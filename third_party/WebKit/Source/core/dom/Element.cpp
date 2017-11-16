@@ -3511,7 +3511,8 @@ bool Element::ShouldStoreNonLayoutObjectComputedStyle(
 #endif
 
   return style.Display() == EDisplay::kContents ||
-         IsHTMLOptGroupElement(*this) || IsHTMLOptionElement(*this);
+         IsHTMLOptGroupElement(*this) || IsHTMLOptionElement(*this) ||
+         IsSVGStopElement(*this);
 }
 
 void Element::StoreNonLayoutObjectComputedStyle(

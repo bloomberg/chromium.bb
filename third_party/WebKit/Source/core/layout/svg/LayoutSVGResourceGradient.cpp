@@ -103,9 +103,6 @@ SVGPaintServer LayoutSVGResourceGradient::PreparePaintServer(
 
 bool LayoutSVGResourceGradient::IsChildAllowed(LayoutObject* child,
                                                const ComputedStyle&) const {
-  if (child->IsSVGGradientStop())
-    return true;
-
   if (!child->IsSVGResourceContainer())
     return false;
 

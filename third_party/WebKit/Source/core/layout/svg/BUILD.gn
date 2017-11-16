@@ -14,8 +14,6 @@ blink_core_sources("svg_layout") {
     "LayoutSVGEllipse.h",
     "LayoutSVGForeignObject.cpp",
     "LayoutSVGForeignObject.h",
-    "LayoutSVGGradientStop.cpp",
-    "LayoutSVGGradientStop.h",
     "LayoutSVGHiddenContainer.cpp",
     "LayoutSVGHiddenContainer.h",
     "LayoutSVGImage.cpp",

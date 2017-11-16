@@ -266,8 +266,7 @@ void LayoutSVGRoot::StyleDidChange(StyleDifference diff,
 
 bool LayoutSVGRoot::IsChildAllowed(LayoutObject* child,
                                    const ComputedStyle&) const {
-  return child->IsSVG() && !(child->IsSVGInline() || child->IsSVGInlineText() ||
-                             child->IsSVGGradientStop());
+  return child->IsSVG() && !(child->IsSVGInline() || child->IsSVGInlineText());
 }
 
 void LayoutSVGRoot::AddChild(LayoutObject* child, LayoutObject* before_child) {
