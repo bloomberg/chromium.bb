@@ -3056,8 +3056,7 @@ static int rd_pick_filter_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
                                     int *rate, int *rate_tokenonly,
                                     int64_t *distortion, int *skippable,
                                     BLOCK_SIZE bsize, int mode_cost,
-                                    int64_t *best_rd, int64_t *best_model_rd,
-                                    uint16_t skip_mask) {
+                                    int64_t *best_rd, int64_t *best_model_rd) {
   MACROBLOCKD *const xd = &x->e_mbd;
   MODE_INFO *const mic = xd->mi[0];
   MB_MODE_INFO *mbmi = &mic->mbmi;
@@ -3076,7 +3075,6 @@ static int rd_pick_filter_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
     int this_rate;
     int64_t this_rd, this_model_rd;
     RD_STATS tokenonly_rd_stats;
-    if (skip_mask & (1 << fimode_to_intradir[mode])) continue;
     mbmi->filter_intra_mode_info.filter_intra_mode[0] = mode;
     this_model_rd = intra_model_yrd(cpi, x, bsize, mode_cost);
     if (*best_model_rd != INT64_MAX &&
@@ -3388,7 +3386,6 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
 #endif  // CONFIG_EXT_INTRA
 #if CONFIG_FILTER_INTRA
   int beat_best_rd = 0;
-  uint16_t filter_intra_mode_skip_mask = (1 << FILTER_INTRA_MODES) - 1;
 #endif  // CONFIG_FILTER_INTRA
   const int *bmode_costs;
   PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
@@ -3521,11 +3518,6 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
       this_rate += x->intrabc_cost[0];
 #endif  // CONFIG_INTRABC
     this_rd = RDCOST(x->rdmult, this_rate, this_distortion);
-#if CONFIG_FILTER_INTRA
-    if (best_rd == INT64_MAX || this_rd - best_rd < (best_rd >> 4)) {
-      filter_intra_mode_skip_mask ^= (1 << mbmi->mode);
-    }
-#endif  // CONFIG_FILTER_INTRA
 
     if (this_rd < best_rd) {
       best_mbmi = *mbmi;
@@ -3552,8 +3544,7 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
       !xd->lossless[mbmi->segment_id]) {
     if (rd_pick_filter_intra_sby(cpi, x, rate, rate_tokenonly, distortion,
                                  skippable, bsize, bmode_costs[DC_PRED],
-                                 &best_rd, &best_model_rd,
-                                 filter_intra_mode_skip_mask)) {
+                                 &best_rd, &best_model_rd)) {
       best_mbmi = *mbmi;
     }
   }

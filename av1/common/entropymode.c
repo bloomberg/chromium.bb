@@ -1560,8 +1560,8 @@ static const aom_prob default_compound_idx_probs[COMP_INDEX_CONTEXTS] = {
 
 #if CONFIG_FILTER_INTRA
 static const aom_cdf_prob default_filter_intra_mode_cdf[2][CDF_SIZE(
-    FILTER_INTRA_MODES)] = { { AOM_CDF6(22207, 23158, 24144, 24278, 30434) },
-                             { AOM_CDF6(32768, 32768, 32768, 32768, 32768) } };
+    FILTER_INTRA_MODES)] = { { AOM_CDF5(14259, 17304, 20463, 29377) },
+                             { AOM_CDF5(32768, 32768, 32768, 32768) } };
 
 static const aom_cdf_prob default_filter_intra_cdfs[TX_SIZES_ALL][CDF_SIZE(2)] =
     { { AOM_CDF2(10985) }, { AOM_CDF2(10985) }, { AOM_CDF2(16645) },

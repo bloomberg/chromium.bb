@@ -428,6 +428,8 @@ typedef struct FRAME_COUNTS {
 #if CONFIG_FILTER_INTRA
   unsigned int filter_intra_mode[PLANE_TYPES][FILTER_INTRA_MODES];
   unsigned int filter_intra_tx[TX_SIZES_ALL][2];
+  unsigned int filter_intra_mode_ctx[KF_MODE_CONTEXTS][KF_MODE_CONTEXTS]
+                                    [FILTER_INTRA_MODES];
 #endif  // CONFIG_FILTER_INTRA
 #if CONFIG_LPF_SB
   unsigned int lpf_reuse[LPF_REUSE_CONTEXT][2];
