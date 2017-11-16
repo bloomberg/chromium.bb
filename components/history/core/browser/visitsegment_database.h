@@ -6,6 +6,7 @@
 #define COMPONENTS_HISTORY_CORE_BROWSER_VISITSEGMENT_DATABASE_H_
 
 #include <memory>
+#include <string>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
@@ -87,7 +88,21 @@ class VisitSegmentDatabase {
   // presentation table is removed entirely.
   bool MigratePresentationIndex();
 
+  // Runs ComputeSegmentName() to recompute 'name'. If multiple segments have
+  // the same name, they are merged by:
+  // 1. Choosing one arbitrary |segment_id| and updating all references.
+  // 2. Merging duplicate |segment_usage| entries (add up visit counts).
+  // 3. Deleting old data for the absorbed segment.
+  bool MigrateVisitSegmentNames();
+
  private:
+  // Updates the |name| column for a single segment. Returns true on success.
+  bool RenameSegment(SegmentID segment_id, const std::string& new_name);
+  // Merges two segments such that data is aggregated, all former references to
+  // |from_segment_id| are updated to |to_segment_id| and |from_segment_id| is
+  // deleted. Returns true on success.
+  bool MergeSegments(SegmentID from_segment_id, SegmentID to_segment_id);
+
   DISALLOW_COPY_AND_ASSIGN(VisitSegmentDatabase);
 };
 
