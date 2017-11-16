@@ -22,6 +22,10 @@ class CONTENT_EXPORT RenderProcessHostObserver {
   // RenderProcessHost and get RenderProcessExited notifications.
   virtual void RenderProcessReady(RenderProcessHost* host) {}
 
+  // This method is invoked when the process when the process could shut down
+  // but may or may not be allowed.
+  virtual void RenderProcessShutdownRequested(RenderProcessHost* host) {}
+
   // This method is invoked when the process is going to exit and should not be
   // used for further navigations. Note that this is a COURTESY callback, not
   // guaranteed to be called for any particular process. Because this is the

@@ -49,8 +49,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(base::ThreadPriority,
 IPC_SYNC_MESSAGE_CONTROL0_1(ChildProcessHostMsg_HasGpuProcess,
                             bool /* result */)
 
-IPC_MESSAGE_CONTROL0(ChildProcessHostMsg_ShutdownRequest)
-
 #if defined(OS_WIN)
 // Request that the given font be loaded by the host so it's cached by the
 // OS. Please see ChildProcessHost::PreCacheFont for details.

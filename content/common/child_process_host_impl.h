@@ -82,9 +82,6 @@ class CONTENT_EXPORT ChildProcessHostImpl : public ChildProcessHost,
   void OnChannelError() override;
   void OnBadMessageReceived(const IPC::Message& message) override;
 
-  // Message handlers:
-  void OnShutdownRequest();
-
   // Initializes the IPC channel and returns true on success. |channel_| must be
   // non-null.
   bool InitChannel();

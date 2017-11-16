@@ -141,7 +141,7 @@ class CONTENT_EXPORT ChildThreadImpl
   friend class ChildProcess;
 
   // Called when the process refcount is 0.
-  void OnProcessFinalRelease();
+  virtual void OnProcessFinalRelease();
 
   // Called by subclasses to manually start the ServiceManagerConnection. Must
   // only be called if
@@ -162,6 +162,7 @@ class CONTENT_EXPORT ChildThreadImpl
       mojo::ScopedInterfaceEndpointHandle handle) override;
   void OnChannelConnected(int32_t peer_pid) override;
   void OnChannelError() override;
+  bool on_channel_error_called() const { return on_channel_error_called_; }
 
   bool IsInBrowserProcess() const;
 

@@ -562,6 +562,7 @@ class CONTENT_EXPORT RenderThreadImpl
       std::unique_ptr<blink::scheduler::RendererScheduler> scheduler);
 
  private:
+  void OnProcessFinalRelease() override;
   // IPC::Listener
   void OnChannelError() override;
 
