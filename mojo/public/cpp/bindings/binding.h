@@ -27,7 +27,10 @@ class MessageReceiver;
 // Represents the binding of an interface implementation to a message pipe.
 // When the |Binding| object is destroyed, the binding between the message pipe
 // and the interface is torn down and the message pipe is closed, leaving the
-// interface implementation in an unbound state.
+// interface implementation in an unbound state. Once the |Binding| object is
+// destroyed, it is guaranteed that no more method calls are dispatched to the
+// implementation and the connection error handler (if registered) won't be
+// called.
 //
 // Example:
 //

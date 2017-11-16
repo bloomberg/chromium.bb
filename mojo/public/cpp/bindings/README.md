@@ -432,6 +432,15 @@ void LoggerImpl::OnError() {
 The use of `base::Unretained` is *safe* because the error handler will never be
 invoked beyond the lifetime of `binding_`, and `this` owns `binding_`.
 
+### A Note About Endpoint Lifetime and Callbacks
+Once a `mojo::InterfacePtr<T>` is destroyed, it is guaranteed that pending
+callbacks as well as the connection error handler (if registered) won't be
+called.
+
+Once a `mojo::Binding<T>` is destroyed, it is guaranteed that no more method
+calls are dispatched to the implementation and the connection error handler (if
+registered) won't be called.
+
 ### A Note About Ordering
 
 As mentioned in the previous section, closing one end of a pipe will eventually

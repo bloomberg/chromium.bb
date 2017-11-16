@@ -24,7 +24,9 @@ namespace mojo {
 // A pointer to a local proxy of a remote Interface implementation. Uses a
 // message pipe to communicate with the remote implementation, and automatically
 // closes the pipe and deletes the proxy on destruction. The pointer must be
-// bound to a message pipe before the interface methods can be called.
+// bound to a message pipe before the interface methods can be called. Once a
+// pointer is destroyed, it is guaranteed that pending callbacks as well as the
+// connection error handler (if registered) won't be called.
 //
 // This class is thread hostile, as is the local proxy it manages, while bound
 // to a message pipe. All calls to this class or the proxy should be from the
