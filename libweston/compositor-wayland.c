@@ -1974,9 +1974,12 @@ input_handle_touch_down(void *data, struct wl_touch *wl_touch,
 	bool first_touch;
 	int32_t fx, fy;
 	double x, y;
+	struct timespec ts;
 
 	x = wl_fixed_to_double(fixed_x);
 	y = wl_fixed_to_double(fixed_y);
+
+	timespec_from_msec(&ts, time);
 
 	first_touch = (input->touch_points == 0);
 	input->touch_points++;
@@ -2015,7 +2018,7 @@ input_handle_touch_down(void *data, struct wl_touch *wl_touch,
 
 	weston_output_transform_coordinate(&output->base, x, y, &x, &y);
 
-	notify_touch(&input->base, time, id, x, y, WL_TOUCH_DOWN);
+	notify_touch(&input->base, &ts, id, x, y, WL_TOUCH_DOWN);
 	input->touch_active = true;
 }
 
@@ -2026,6 +2029,9 @@ input_handle_touch_up(void *data, struct wl_touch *wl_touch,
 	struct wayland_input *input = data;
 	struct wayland_output *output = input->touch_focus;
 	bool active = input->touch_active;
+	struct timespec ts;
+
+	timespec_from_msec(&ts, time);
 
 	input->touch_points--;
 	if (input->touch_points == 0) {
@@ -2053,7 +2059,7 @@ input_handle_touch_up(void *data, struct wl_touch *wl_touch,
 	}
 
 	if (active)
-		notify_touch(&input->base, time, id, 0, 0, WL_TOUCH_UP);
+		notify_touch(&input->base, &ts, id, 0, 0, WL_TOUCH_UP);
 }
 
 static void
@@ -2065,9 +2071,11 @@ input_handle_touch_motion(void *data, struct wl_touch *wl_touch,
 	struct wayland_output *output = input->touch_focus;
 	int32_t fx, fy;
 	double x, y;
+	struct timespec ts;
 
 	x = wl_fixed_to_double(fixed_x);
 	y = wl_fixed_to_double(fixed_y);
+	timespec_from_msec(&ts, time);
 
 	if (!output || !input->touch_active)
 		return;
@@ -2080,7 +2088,7 @@ input_handle_touch_motion(void *data, struct wl_touch *wl_touch,
 
 	weston_output_transform_coordinate(&output->base, x, y, &x, &y);
 
-	notify_touch(&input->base, time, id, x, y, WL_TOUCH_MOTION);
+	notify_touch(&input->base, &ts, id, x, y, WL_TOUCH_MOTION);
 }
 
 static void

@@ -1331,7 +1331,8 @@ take_surface_to_workspace_by_seat(struct desktop_shell *shell,
 }
 
 static void
-touch_move_grab_down(struct weston_touch_grab *grab, uint32_t time,
+touch_move_grab_down(struct weston_touch_grab *grab,
+		     const struct timespec *time,
 		     int touch_id, wl_fixed_t x, wl_fixed_t y)
 {
 }
@@ -3274,7 +3275,7 @@ fullscreen_binding(struct weston_keyboard *keyboard,
 }
 
 static void
-touch_move_binding(struct weston_touch *touch, uint32_t time, void *data)
+touch_move_binding(struct weston_touch *touch, const struct timespec *time, void *data)
 {
 	struct weston_surface *focus;
 	struct weston_surface *surface;
@@ -3774,7 +3775,8 @@ click_to_activate_binding(struct weston_pointer *pointer,
 }
 
 static void
-touch_to_activate_binding(struct weston_touch *touch, uint32_t time,
+touch_to_activate_binding(struct weston_touch *touch,
+			  const struct timespec *time,
 			  void *data)
 {
 	if (touch->grab != &touch->default_grab)

@@ -377,7 +377,8 @@ weston_compositor_run_button_binding(struct weston_compositor *compositor,
 
 void
 weston_compositor_run_touch_binding(struct weston_compositor *compositor,
-				    struct weston_touch *touch, uint32_t time,
+				    struct weston_touch *touch,
+				    const struct timespec *time,
 				    int touch_type)
 {
 	struct weston_binding *b, *tmp;

@@ -305,7 +305,7 @@ struct weston_keyboard_grab {
 struct weston_touch_grab;
 struct weston_touch_grab_interface {
 	void (*down)(struct weston_touch_grab *grab,
-			uint32_t time,
+			const struct timespec *time,
 			int touch_id,
 			wl_fixed_t sx,
 			wl_fixed_t sy);
@@ -412,7 +412,7 @@ struct weston_touch {
 	int grab_touch_id;
 	wl_fixed_t grab_x, grab_y;
 	uint32_t grab_serial;
-	uint32_t grab_time;
+	struct timespec grab_time;
 };
 
 void
@@ -516,7 +516,7 @@ weston_touch_end_grab(struct weston_touch *touch);
 bool
 weston_touch_has_focus_resource(struct weston_touch *touch);
 void
-weston_touch_send_down(struct weston_touch *touch, uint32_t time,
+weston_touch_send_down(struct weston_touch *touch, const struct timespec *time,
 		       int touch_id, wl_fixed_t x, wl_fixed_t y);
 void
 weston_touch_send_up(struct weston_touch *touch, uint32_t time, int touch_id);
@@ -1402,8 +1402,8 @@ void
 notify_keyboard_focus_out(struct weston_seat *seat);
 
 void
-notify_touch(struct weston_seat *seat, uint32_t time, int touch_id,
-	     double x, double y, int touch_type);
+notify_touch(struct weston_seat *seat, const struct timespec *time,
+	     int touch_id, double x, double y, int touch_type);
 void
 notify_touch_frame(struct weston_seat *seat);
 
@@ -1506,7 +1506,7 @@ weston_compositor_add_button_binding(struct weston_compositor *compositor,
 				     void *data);
 
 typedef void (*weston_touch_binding_handler_t)(struct weston_touch *touch,
-					       uint32_t time,
+					       const struct timespec *time,
 					       void *data);
 struct weston_binding *
 weston_compositor_add_touch_binding(struct weston_compositor *compositor,
@@ -1559,7 +1559,8 @@ weston_compositor_run_button_binding(struct weston_compositor *compositor,
 				     enum wl_pointer_button_state value);
 void
 weston_compositor_run_touch_binding(struct weston_compositor *compositor,
-				    struct weston_touch *touch, uint32_t time,
+				    struct weston_touch *touch,
+				    const struct timespec *time,
 				    int touch_type);
 int
 weston_compositor_run_axis_binding(struct weston_compositor *compositor,

@@ -718,8 +718,9 @@ static const struct weston_pointer_grab_interface pointer_drag_grab_interface = 
 };
 
 static void
-drag_grab_touch_down(struct weston_touch_grab *grab, uint32_t time,
-		int touch_id, wl_fixed_t sx, wl_fixed_t sy)
+drag_grab_touch_down(struct weston_touch_grab *grab,
+		     const struct timespec *time, int touch_id,
+		     wl_fixed_t sx, wl_fixed_t sy)
 {
 }
 

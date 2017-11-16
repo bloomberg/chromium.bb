@@ -306,13 +306,14 @@ handle_touch_with_coords(struct libinput_device *libinput_device,
 	double x;
 	double y;
 	uint32_t width, height;
-	uint32_t time;
+	struct timespec time;
 	int32_t slot;
 
 	if (!device->output)
 		return;
 
-	time = libinput_event_touch_get_time(touch_event);
+	timespec_from_usec(&time,
+			   libinput_event_touch_get_time_usec(touch_event));
 	slot = libinput_event_touch_get_seat_slot(touch_event);
 
 	width = device->output->current_mode->width;
@@ -323,7 +324,7 @@ handle_touch_with_coords(struct libinput_device *libinput_device,
 	weston_output_transform_coordinate(device->output,
 					   x, y, &x, &y);
 
-	notify_touch(device->seat, time, slot, x, y, touch_type);
+	notify_touch(device->seat, &time, slot, x, y, touch_type);
 }
 
 static void
@@ -346,10 +347,13 @@ handle_touch_up(struct libinput_device *libinput_device,
 {
 	struct evdev_device *device =
 		libinput_device_get_user_data(libinput_device);
-	uint32_t time = libinput_event_touch_get_time(touch_event);
+	struct timespec time;
 	int32_t slot = libinput_event_touch_get_seat_slot(touch_event);
 
-	notify_touch(device->seat, time, slot, 0, 0, WL_TOUCH_UP);
+	timespec_from_usec(&time,
+			   libinput_event_touch_get_time_usec(touch_event));
+
+	notify_touch(device->seat, &time, slot, 0, 0, WL_TOUCH_UP);
 }
 
 static void

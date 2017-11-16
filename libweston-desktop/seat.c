@@ -180,7 +180,8 @@ static const struct weston_pointer_grab_interface weston_desktop_seat_pointer_po
 
 static void
 weston_desktop_seat_popup_grab_touch_down(struct weston_touch_grab *grab,
-					  uint32_t time, int touch_id,
+					  const struct timespec *time,
+					  int touch_id,
 					  wl_fixed_t sx, wl_fixed_t sy)
 {
 	weston_touch_send_down(grab->touch, time, touch_id, sx, sy);

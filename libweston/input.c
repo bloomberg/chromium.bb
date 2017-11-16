@@ -670,7 +670,7 @@ weston_touch_has_focus_resource(struct weston_touch *touch)
  * resources of the client which currently has the surface with touch focus.
  */
 WL_EXPORT void
-weston_touch_send_down(struct weston_touch *touch, uint32_t time,
+weston_touch_send_down(struct weston_touch *touch, const struct timespec *time,
 		       int touch_id, wl_fixed_t x, wl_fixed_t y)
 {
 	struct wl_display *display = touch->seat->compositor->wl_display;
@@ -678,6 +678,7 @@ weston_touch_send_down(struct weston_touch *touch, uint32_t time,
 	struct wl_resource *resource;
 	struct wl_list *resource_list;
 	wl_fixed_t sx, sy;
+	uint32_t msecs;
 
 	if (!weston_touch_has_focus_resource(touch))
 		return;
@@ -686,15 +687,17 @@ weston_touch_send_down(struct weston_touch *touch, uint32_t time,
 
 	resource_list = &touch->focus_resource_list;
 	serial = wl_display_next_serial(display);
+	msecs = timespec_to_msec(time);
 	wl_resource_for_each(resource, resource_list)
-			wl_touch_send_down(resource, serial, time,
+			wl_touch_send_down(resource, serial, msecs,
 					   touch->focus->surface->resource,
 					   touch_id, sx, sy);
 }
 
 static void
-default_grab_touch_down(struct weston_touch_grab *grab, uint32_t time,
-			int touch_id, wl_fixed_t x, wl_fixed_t y)
+default_grab_touch_down(struct weston_touch_grab *grab,
+			const struct timespec *time, int touch_id,
+			wl_fixed_t x, wl_fixed_t y)
 {
 	weston_touch_send_down(grab->touch, time, touch_id, x, y);
 }
@@ -2140,8 +2143,8 @@ weston_touch_set_focus(struct weston_touch *touch, struct weston_view *view)
  *
  */
 WL_EXPORT void
-notify_touch(struct weston_seat *seat, uint32_t time, int touch_id,
-             double double_x, double double_y, int touch_type)
+notify_touch(struct weston_seat *seat, const struct timespec *time,
+	     int touch_id, double double_x, double double_y, int touch_type)
 {
 	struct weston_compositor *ec = seat->compositor;
 	struct weston_touch *touch = weston_seat_get_touch(seat);
@@ -2186,7 +2189,7 @@ notify_touch(struct weston_seat *seat, uint32_t time, int touch_id,
 			touch->grab_serial =
 				wl_display_get_serial(ec->wl_display);
 			touch->grab_touch_id = touch_id;
-			touch->grab_time = time;
+			touch->grab_time = *time;
 			touch->grab_x = x;
 			touch->grab_y = y;
 		}
@@ -2197,7 +2200,8 @@ notify_touch(struct weston_seat *seat, uint32_t time, int touch_id,
 		if (!ev)
 			break;
 
-		grab->interface->motion(grab, time, touch_id, x, y);
+		grab->interface->motion(grab, timespec_to_msec(time),
+					touch_id, x, y);
 		break;
 	case WL_TOUCH_UP:
 		if (touch->num_tp == 0) {
@@ -2211,7 +2215,7 @@ notify_touch(struct weston_seat *seat, uint32_t time, int touch_id,
 		weston_compositor_idle_release(ec);
 		touch->num_tp--;
 
-		grab->interface->up(grab, time, touch_id);
+		grab->interface->up(grab, timespec_to_msec(time), touch_id);
 		if (touch->num_tp == 0)
 			weston_touch_set_focus(touch, NULL);
 		break;

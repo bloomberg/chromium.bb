@@ -463,7 +463,8 @@ click_to_activate_binding(struct weston_pointer *pointer,
 }
 
 static void
-touch_to_activate_binding(struct weston_touch *touch, uint32_t time,
+touch_to_activate_binding(struct weston_touch *touch,
+			  const struct timespec *time,
 			  void *data)
 {
 	if (touch->grab != &touch->default_grab)
