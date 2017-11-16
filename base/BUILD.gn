@@ -1140,6 +1140,7 @@ jumbo_component("base") {
     ":base_flags",
     ":base_implementation",
     "//build/config:precompiled_headers",
+    "//build/config/compiler:noshadowing",
   ]
 
   deps = [

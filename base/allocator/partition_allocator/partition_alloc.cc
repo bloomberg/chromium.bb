@@ -1181,10 +1181,9 @@ static size_t PartitionPurgePage(PartitionPage* page, bool discard) {
 #endif
   memset(slot_usage, 1, num_slots);
   char* ptr = reinterpret_cast<char*>(PartitionPageToPointer(page));
-  PartitionFreelistEntry* entry = page->freelist_head;
   // First, walk the freelist for this page and make a bitmap of which slots
   // are not in use.
-  while (entry) {
+  for (PartitionFreelistEntry* entry = page->freelist_head; entry; /**/) {
     size_t slotIndex = (reinterpret_cast<char*>(entry) - ptr) / slot_size;
     DCHECK(slotIndex < num_slots);
     slot_usage[slotIndex] = 0;
@@ -1210,12 +1209,10 @@ static size_t PartitionPurgePage(PartitionPage* page, bool discard) {
   }
   // First, do the work of calculating the discardable bytes. Don't actually
   // discard anything unless the discard flag was passed in.
-  char* begin_ptr = nullptr;
-  char* end_ptr = nullptr;
-  size_t unprovisioned_bytes = 0;
   if (truncated_slots) {
-    begin_ptr = ptr + (num_slots * slot_size);
-    end_ptr = begin_ptr + (slot_size * truncated_slots);
+    size_t unprovisioned_bytes = 0;
+    char* begin_ptr = ptr + (num_slots * slot_size);
+    char* end_ptr = begin_ptr + (slot_size * truncated_slots);
     begin_ptr = reinterpret_cast<char*>(
         RoundUpToSystemPage(reinterpret_cast<size_t>(begin_ptr)));
     // We round the end pointer here up and not down because we're at the
@@ -1227,32 +1224,32 @@ static size_t PartitionPurgePage(PartitionPage* page, bool discard) {
       unprovisioned_bytes = end_ptr - begin_ptr;
       discardable_bytes += unprovisioned_bytes;
     }
-  }
-  if (unprovisioned_bytes && discard) {
-    DCHECK(truncated_slots > 0);
-    size_t num_new_entries = 0;
-    page->num_unprovisioned_slots += static_cast<uint16_t>(truncated_slots);
-    // Rewrite the freelist.
-    PartitionFreelistEntry** entry_ptr = &page->freelist_head;
-    for (size_t slotIndex = 0; slotIndex < num_slots; ++slotIndex) {
-      if (slot_usage[slotIndex])
-        continue;
-      PartitionFreelistEntry* entry = reinterpret_cast<PartitionFreelistEntry*>(
-          ptr + (slot_size * slotIndex));
-      *entry_ptr = PartitionFreelistMask(entry);
-      entry_ptr = reinterpret_cast<PartitionFreelistEntry**>(entry);
-      num_new_entries++;
+    if (unprovisioned_bytes && discard) {
+      DCHECK(truncated_slots > 0);
+      size_t num_new_entries = 0;
+      page->num_unprovisioned_slots += static_cast<uint16_t>(truncated_slots);
+      // Rewrite the freelist.
+      PartitionFreelistEntry** entry_ptr = &page->freelist_head;
+      for (size_t slotIndex = 0; slotIndex < num_slots; ++slotIndex) {
+        if (slot_usage[slotIndex])
+          continue;
+        auto* entry = reinterpret_cast<PartitionFreelistEntry*>(
+            ptr + (slot_size * slotIndex));
+        *entry_ptr = PartitionFreelistMask(entry);
+        entry_ptr = reinterpret_cast<PartitionFreelistEntry**>(entry);
+        num_new_entries++;
 #if !defined(OS_WIN)
-      last_slot = slotIndex;
+        last_slot = slotIndex;
 #endif
+      }
+      // Terminate the freelist chain.
+      *entry_ptr = nullptr;
+      // The freelist head is stored unmasked.
+      page->freelist_head = PartitionFreelistMask(page->freelist_head);
+      DCHECK(num_new_entries == num_slots - page->num_allocated_slots);
+      // Discard the memory.
+      DiscardSystemPages(begin_ptr, unprovisioned_bytes);
     }
-    // Terminate the freelist chain.
-    *entry_ptr = nullptr;
-    // The freelist head is stored unmasked.
-    page->freelist_head = PartitionFreelistMask(page->freelist_head);
-    DCHECK(num_new_entries == num_slots - page->num_allocated_slots);
-    // Discard the memory.
-    DiscardSystemPages(begin_ptr, unprovisioned_bytes);
   }
 
   // Next, walk the slots and for any not in use, consider where the system
@@ -1466,16 +1463,15 @@ void PartitionDumpStatsGeneric(PartitionRootGeneric* partition,
     for (size_t i = 0; i < num_direct_mapped_allocations; ++i) {
       uint32_t size = direct_map_lengths[i];
 
-      PartitionBucketMemoryStats stats;
-      memset(&stats, '\0', sizeof(stats));
-      stats.is_valid = true;
-      stats.is_direct_map = true;
-      stats.num_full_pages = 1;
-      stats.allocated_page_size = size;
-      stats.bucket_slot_size = size;
-      stats.active_bytes = size;
-      stats.resident_bytes = size;
-      dumper->PartitionsDumpBucketStats(partition_name, &stats);
+      PartitionBucketMemoryStats mapped_stats = {};
+      mapped_stats.is_valid = true;
+      mapped_stats.is_direct_map = true;
+      mapped_stats.num_full_pages = 1;
+      mapped_stats.allocated_page_size = size;
+      mapped_stats.bucket_slot_size = size;
+      mapped_stats.active_bytes = size;
+      mapped_stats.resident_bytes = size;
+      dumper->PartitionsDumpBucketStats(partition_name, &mapped_stats);
     }
   }
 
