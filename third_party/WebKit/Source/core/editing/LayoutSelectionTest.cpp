@@ -65,9 +65,9 @@ static bool TestLayoutObjectState(LayoutObject* object,
 using IsTypeOf =
     WTF::RepeatingFunction<bool(const LayoutObject& layout_object)>;
 using IsTypeOfSimple = bool(const LayoutObject& layout_object);
-#define USING_LAYOUTOBJECT_FUNC(member_func)            \
-  bool member_func(const LayoutObject& layout_object) { \
-    return layout_object.member_func();                 \
+#define USING_LAYOUTOBJECT_FUNC(member_func)                   \
+  static bool member_func(const LayoutObject& layout_object) { \
+    return layout_object.member_func();                        \
   }
 
 USING_LAYOUTOBJECT_FUNC(IsLayoutBlock);
@@ -92,6 +92,10 @@ static IsTypeOf IsLayoutTextFragmentOf(const String& text) {
         return ToLayoutText(object).IsTextFragment();
       },
       text);
+}
+
+static bool IsSVGTSpan(const LayoutObject& layout_object) {
+  return layout_object.GetName() == String("LayoutSVGTSpan");
 }
 
 static bool TestLayoutObject(LayoutObject* object,
@@ -606,6 +610,46 @@ TEST_F(LayoutSelectionTest, SVG) {
   TEST_NEXT(IsLayoutBlock, kStartAndEnd, NotInvalidate);
   TEST_NEXT(IsSVGRoot, kNone, NotInvalidate);
   TEST_NEXT(IsSVGText, kStartAndEnd, ShouldInvalidate);
+  TEST_NEXT("foobar", kStartAndEnd, ShouldInvalidate);
+  TEST_NO_NEXT_LAYOUT_OBJECT();
+  EXPECT_EQ(2, Selection().LayoutSelectionStart());
+  EXPECT_EQ(4, Selection().LayoutSelectionEnd());
+}
+
+// crbug.com/781705
+TEST_F(LayoutSelectionTest, SVGAncestor) {
+  const SelectionInDOMTree& selection = SetSelectionTextToBody(
+      "<svg><text x=10 y=10><tspan>fo^o|bar</tspan></text></svg>");
+  Selection().SetSelection(selection);
+  Selection().CommitAppearanceIfNeeded();
+  TEST_NEXT(IsLayoutBlock, kStartAndEnd, NotInvalidate);
+  TEST_NEXT(IsSVGRoot, kNone, NotInvalidate);
+  // LayoutSVGText should be invalidated.
+  TEST_NEXT(IsSVGText, kStartAndEnd, ShouldInvalidate);
+  TEST_NEXT(IsSVGTSpan, kNone, NotInvalidate);
+  TEST_NEXT("foobar", kStartAndEnd, ShouldInvalidate);
+  TEST_NO_NEXT_LAYOUT_OBJECT();
+  EXPECT_EQ(2, Selection().LayoutSelectionStart());
+  EXPECT_EQ(3, Selection().LayoutSelectionEnd());
+
+  UpdateAllLifecyclePhases();
+  TEST_NEXT(IsLayoutBlock, kStartAndEnd, NotInvalidate);
+  TEST_NEXT(IsSVGRoot, kNone, NotInvalidate);
+  TEST_NEXT(IsSVGText, kStartAndEnd, NotInvalidate);
+  TEST_NEXT(IsSVGTSpan, kNone, NotInvalidate);
+  TEST_NEXT("foobar", kStartAndEnd, NotInvalidate);
+  TEST_NO_NEXT_LAYOUT_OBJECT();
+
+  Selection().SetSelection(
+      SelectionInDOMTree::Builder()
+          .SetBaseAndExtent(selection.Base(),
+                            {selection.Extent().AnchorNode(), 4})
+          .Build());
+  Selection().CommitAppearanceIfNeeded();
+  TEST_NEXT(IsLayoutBlock, kStartAndEnd, NotInvalidate);
+  TEST_NEXT(IsSVGRoot, kNone, NotInvalidate);
+  TEST_NEXT(IsSVGText, kStartAndEnd, ShouldInvalidate);
+  TEST_NEXT(IsSVGTSpan, kNone, NotInvalidate);
   TEST_NEXT("foobar", kStartAndEnd, ShouldInvalidate);
   TEST_NO_NEXT_LAYOUT_OBJECT();
   EXPECT_EQ(2, Selection().LayoutSelectionStart());
