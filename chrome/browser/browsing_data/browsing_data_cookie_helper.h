@@ -91,21 +91,11 @@ class CannedBrowsingDataCookieHelper : public BrowsingDataCookieHelper {
                       const GURL& request_url,
                       const net::CookieList& cookie_list);
 
-  // Adds a CanonicalCookie that is created from the passed |cookie_line|
-  // (called set-cookie-string in RFC 6225). The |cookie_line| is parsed,
-  // normalized and validated. Invalid |cookie_line|s are ignored. The logic
-  // for parsing, normalizing an validating the |cookie_line| mirrors the logic
-  // of CookieMonster's method SetCookieWithOptions. If the |cookie_line| does
-  // not include a cookie domain attribute (called domain-av in RFC 6265) or a
-  // cookie path (called path-av in RFC 6265), then the host and the
-  // default-path of the request-uri are used as domain-value and path-value
-  // for the cookie. CanonicalCookies created from a |cookie_line| with no
-  // cookie domain attribute are host only cookies.
+  // Adds a CanonicalCookie.
   // TODO(markusheintz): Remove the dublicated logic.
   void AddChangedCookie(const GURL& frame_url,
                         const GURL& request_url,
-                        const std::string& cookie_line,
-                        const net::CookieOptions& options);
+                        const net::CanonicalCookie& cookie);
 
   // Clears the list of canned cookies.
   void Reset();

@@ -64,7 +64,7 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
                       int render_frame_id) override;
   bool AllowSetCookie(const GURL& url,
                       const GURL& first_party,
-                      const std::string& cookie_line,
+                      const net::CanonicalCookie& cookie,
                       content::ResourceContext* context,
                       int render_process_id,
                       int render_frame_id,

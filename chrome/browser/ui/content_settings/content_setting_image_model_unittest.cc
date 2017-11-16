@@ -111,11 +111,11 @@ TEST_F(ContentSettingImageModelTest, CookieAccessed) {
   EXPECT_TRUE(content_setting_image_model->get_tooltip().empty());
 
   net::CookieOptions options;
-  content_settings->OnCookieChanged(GURL("http://google.com"),
-                                    GURL("http://google.com"),
-                                    "A=B",
-                                    options,
-                                    false);
+  GURL origin("http://google.com");
+  std::unique_ptr<net::CanonicalCookie> cookie(
+      net::CanonicalCookie::Create(origin, "A=B", base::Time::Now(), options));
+  ASSERT_TRUE(cookie);
+  content_settings->OnCookieChanged(origin, origin, *cookie, options, false);
   content_setting_image_model->UpdateFromWebContents(web_contents());
   EXPECT_TRUE(content_setting_image_model->is_visible());
   EXPECT_TRUE(HasIcon(*content_setting_image_model));
