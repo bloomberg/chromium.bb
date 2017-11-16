@@ -65,7 +65,7 @@ class VisualRectMappingTest : public RenderingTest {
                                                                slow_map_rect);
       LayoutRect temp(geometry_mapper_rect.Rect());
       PaintLayer::MapRectInPaintInvalidationContainerToBacking(ancestor, temp);
-      geometry_mapper_rect.SetRect(FloatRect(temp));
+      geometry_mapper_rect = FloatClipRect(FloatRect(temp));
     }
     EXPECT_TRUE(EnclosingIntRect(slow_map_rect)
                     .Contains(EnclosingIntRect(expected_visual_rect)));
