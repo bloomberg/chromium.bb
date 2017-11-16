@@ -3073,9 +3073,9 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       refspec_opts.append('topic=%s' % options.topic)
 
     # Gerrit sorts hashtags, so order is not important.
-    hashtags = {self.SanitizeTag(t) for t in options.hashtags}
+    hashtags = {change_desc.sanitize_hash_tag(t) for t in options.hashtags}
     if not self.GetIssue():
-      hashtags.update(self.GetHashTags(change_desc.description))
+      hashtags.update(change_desc.get_hash_tags())
     refspec_opts += ['hashtag=%s' % t for t in sorted(hashtags)]
 
     refspec_suffix = ''
@@ -3141,40 +3141,6 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
           labels={'Code-Review': score})
 
     return 0
-
-  _STRIP_PREFIX_RGX = re.compile(
-      r'^(\s*(revert|reland)( "|:)?\s*)*', re.IGNORECASE)
-  _BRACKET_TAG_RGX = re.compile(r'\s*\[([^\[\]]+)\]')
-  _COLON_SEPARATED_TAG_RGX = re.compile(r'^([a-zA-Z0-9_\- ]+):')
-  _BAD_TAG_CHUNK_RGX = re.compile(r'[^a-zA-Z0-9]+')
-
-  @classmethod
-  def SanitizeTag(cls, tag):
-    """Returns a sanitized Gerrit hash tag. Can be used as parameter value."""
-    return cls._BAD_TAG_CHUNK_RGX.sub('-', tag).strip('-').lower()
-
-  @classmethod
-  def GetHashTags(cls, description):
-    """Extracts ans sanitizes a list of tags from a CL description."""
-
-    subject = description.split('\n', 1)[0]
-    subject = cls._STRIP_PREFIX_RGX.sub('', subject)
-
-    tags = []
-    start = 0
-    while True:
-      m = cls._BRACKET_TAG_RGX.match(subject, start)
-      if not m:
-        break
-      tags.append(cls.SanitizeTag(m.group(1)))
-      start = m.end()
-
-    if not tags:
-      # Try "Tag: " prefix.
-      m = cls._COLON_SEPARATED_TAG_RGX.match(subject)
-      if m:
-        tags.append(cls.SanitizeTag(m.group(1)))
-    return tags
 
   def _ComputeParent(self, remote, upstream_branch, custom_cl_base, force,
                      change_desc):
@@ -3383,6 +3349,10 @@ class ChangeDescription(object):
   CC_LINE = r'^[ \t]*(CC)[ \t]*=[ \t]*(.*?)[ \t]*$'
   BUG_LINE = r'^[ \t]*(?:(BUG)[ \t]*=|Bug:)[ \t]*(.*?)[ \t]*$'
   CHERRY_PICK_LINE = r'^\(cherry picked from commit [a-fA-F0-9]{40}\)$'
+  STRIP_HASH_TAG_PREFIX = r'^(\s*(revert|reland)( "|:)?\s*)*'
+  BRACKET_HASH_TAG = r'\s*\[([^\[\]]+)\]'
+  COLON_SEPARATED_HASH_TAG = r'^([a-zA-Z0-9_\- ]+):'
+  BAD_HASH_TAG_CHUNK = r'[^a-zA-Z0-9]+'
 
   def __init__(self, description):
     self._description_lines = (description or '').strip().splitlines()
@@ -3554,6 +3524,37 @@ class ChangeDescription(object):
     matches = [re.match(self.CC_LINE, line) for line in self._description_lines]
     cced = [match.group(2).strip() for match in matches if match]
     return cleanup_list(cced)
+
+  def get_hash_tags(self):
+    """Extracts and sanitizes a list of Gerrit hashtags."""
+    subject = (self._description_lines or ('',))[0]
+    subject = re.sub(
+        self.STRIP_HASH_TAG_PREFIX, '', subject, flags=re.IGNORECASE)
+
+    tags = []
+    start = 0
+    bracket_exp = re.compile(self.BRACKET_HASH_TAG)
+    while True:
+      m = bracket_exp.match(subject, start)
+      if not m:
+        break
+      tags.append(self.sanitize_hash_tag(m.group(1)))
+      start = m.end()
+
+    if not tags:
+      # Try "Tag: " prefix.
+      m = re.match(self.COLON_SEPARATED_HASH_TAG, subject)
+      if m:
+        tags.append(self.sanitize_hash_tag(m.group(1)))
+    return tags
+
+  @classmethod
+  def sanitize_hash_tag(cls, tag):
+    """Returns a sanitized Gerrit hash tag.
+
+    A sanitized hashtag can be used as a git push refspec parameter value.
+    """
+    return re.sub(cls.BAD_HASH_TAG_CHUNK, '-', tag).strip('-').lower()
 
   def update_with_git_number_footers(self, parent_hash, parent_msg, dest_ref):
     """Updates this commit description given the parent.

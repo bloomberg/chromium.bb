@@ -732,13 +732,6 @@ class TestGitCl(TestCase):
     ]
     self.assertTrue(git_cl.ask_for_explicit_yes('prompt'))
 
-  def test_ask_for_explicit_yes_true(self):
-    self.calls = [
-        (('ask_for_data', 'prompt [Yes/No]: '), 'yesish'),
-        (('ask_for_data', 'Please, type yes or no: '), 'nO'),
-    ]
-    self.assertFalse(git_cl.ask_for_explicit_yes('prompt'))
-
   def test_LoadCodereviewSettingsFromFile_gerrit(self):
     codereview_file = StringIO.StringIO('GERRIT_HOST: true')
     self.calls = [
@@ -1917,47 +1910,6 @@ class TestGitCl(TestCase):
     self.assertEquals(5, record_calls.times_called)
     self.assertEquals(0, ret)
 
-  def test_get_hash_tags(self):
-    cases = [
-      ('', []),
-      ('a', []),
-      ('[a]', ['a']),
-      ('[aa]', ['aa']),
-      ('[a ]', ['a']),
-      ('[a- ]', ['a']),
-      ('[a- b]', ['a-b']),
-      ('[a--b]', ['a-b']),
-      ('[a', []),
-      ('[a]x', ['a']),
-      ('[aa]x', ['aa']),
-      ('[a b]', ['a-b']),
-      ('[a  b]', ['a-b']),
-      ('[a__b]', ['a-b']),
-      ('[a] x', ['a']),
-      ('[a][b]', ['a', 'b']),
-      ('[a] [b]', ['a', 'b']),
-      ('[a][b]x', ['a', 'b']),
-      ('[a][b] x', ['a', 'b']),
-      ('[a]\n[b]', ['a']),
-      ('[a\nb]', []),
-      ('[a][', ['a']),
-      ('Revert "[a] feature"', ['a']),
-      ('Reland "[a] feature"', ['a']),
-      ('Revert: [a] feature', ['a']),
-      ('Reland: [a] feature', ['a']),
-      ('Revert "Reland: [a] feature"', ['a']),
-      ('Foo: feature', ['foo']),
-      ('Foo Bar: feature', ['foo-bar']),
-      ('Revert "Foo bar: feature"', ['foo-bar']),
-      ('Reland "Foo bar: feature"', ['foo-bar']),
-    ]
-    for desc, expected in cases:
-      actual = git_cl._GerritChangelistImpl.GetHashTags(desc)
-      self.assertEqual(
-          actual,
-          expected,
-          'GetHashTags(%r) == %r, expected %r' % (desc, actual, expected))
-
   def test_gerrit_change_id(self):
     self.calls = [
         ((['git', 'write-tree'], ),
@@ -2038,6 +1990,48 @@ class TestGitCl(TestCase):
       obj.update_reviewers(reviewers, tbrs)
       actual.append(obj.description)
     self.assertEqual(expected, actual)
+
+  def test_get_hash_tags(self):
+    cases = [
+      ('', []),
+      ('a', []),
+      ('[a]', ['a']),
+      ('[aa]', ['aa']),
+      ('[a ]', ['a']),
+      ('[a- ]', ['a']),
+      ('[a- b]', ['a-b']),
+      ('[a--b]', ['a-b']),
+      ('[a', []),
+      ('[a]x', ['a']),
+      ('[aa]x', ['aa']),
+      ('[a b]', ['a-b']),
+      ('[a  b]', ['a-b']),
+      ('[a__b]', ['a-b']),
+      ('[a] x', ['a']),
+      ('[a][b]', ['a', 'b']),
+      ('[a] [b]', ['a', 'b']),
+      ('[a][b]x', ['a', 'b']),
+      ('[a][b] x', ['a', 'b']),
+      ('[a]\n[b]', ['a']),
+      ('[a\nb]', []),
+      ('[a][', ['a']),
+      ('Revert "[a] feature"', ['a']),
+      ('Reland "[a] feature"', ['a']),
+      ('Revert: [a] feature', ['a']),
+      ('Reland: [a] feature', ['a']),
+      ('Revert "Reland: [a] feature"', ['a']),
+      ('Foo: feature', ['foo']),
+      ('Foo Bar: feature', ['foo-bar']),
+      ('Revert "Foo bar: feature"', ['foo-bar']),
+      ('Reland "Foo bar: feature"', ['foo-bar']),
+    ]
+    for desc, expected in cases:
+      change_desc = git_cl.ChangeDescription(desc)
+      actual = change_desc.get_hash_tags()
+      self.assertEqual(
+          actual,
+          expected,
+          'GetHashTags(%r) == %r, expected %r' % (desc, actual, expected))
 
   def test_get_target_ref(self):
     # Check remote or remote branch not present.
