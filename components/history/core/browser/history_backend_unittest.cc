@@ -1879,6 +1879,7 @@ TEST_F(HistoryBackendTest, RecentRedirectsForClientRedirects) {
   GURL server_redirect_url("http://google.com/a");
   GURL client_redirect_url("http://google.com/b");
   GURL landing_url("http://google.com/c");
+  GURL clicked_url("http://google.com/d");
 
   // Page A is browsed by user and server redirects to B.
   HistoryAddPageArgs request(
@@ -1887,14 +1888,22 @@ TEST_F(HistoryBackendTest, RecentRedirectsForClientRedirects) {
       ui::PAGE_TRANSITION_TYPED, history::SOURCE_BROWSED, false, true);
   backend_->AddPage(request);
 
-  // Client redirect to page C.
-  AddClientRedirect(client_redirect_url, landing_url, /*did_replace=*/false,
+  // Client redirect to page C (non-user initiated).
+  AddClientRedirect(client_redirect_url, landing_url, /*did_replace=*/true,
                     base::Time(), /*transition1=*/nullptr,
                     /*transition2=*/nullptr);
 
   EXPECT_THAT(
       backend_->recent_redirects_.Get(landing_url)->second,
       ElementsAre(server_redirect_url, client_redirect_url, landing_url));
+
+  // Navigation to page D (user initiated).
+  AddClientRedirect(landing_url, clicked_url, /*did_replace=*/false,
+                    base::Time(), /*transition1=*/nullptr,
+                    /*transition2=*/nullptr);
+
+  EXPECT_THAT(backend_->recent_redirects_.Get(clicked_url)->second,
+              ElementsAre(clicked_url));
 }
 
 // Test that there is no churn in icon mappings from calling
