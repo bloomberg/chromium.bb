@@ -192,6 +192,10 @@ IntRect UnionRectEvenIfEmpty(const Vector<IntRect>& rects) {
   return result;
 }
 
+std::ostream& operator<<(std::ostream& ostream, const IntRect& rect) {
+  return ostream << rect.ToString();
+}
+
 String IntRect::ToString() const {
   return String::Format("%s %s", Location().ToString().Ascii().data(),
                         Size().ToString().Ascii().data());

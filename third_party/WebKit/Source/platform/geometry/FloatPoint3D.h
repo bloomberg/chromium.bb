@@ -157,6 +157,7 @@ inline float FloatPoint3D::DistanceTo(const FloatPoint3D& a) const {
   return (*this - a).length();
 }
 
+PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const FloatPoint3D&);
 TextStream& operator<<(TextStream&, const FloatPoint3D&);
 
 // Redeclared here to avoid ODR issues.

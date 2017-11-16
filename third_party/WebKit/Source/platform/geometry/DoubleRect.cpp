@@ -47,6 +47,10 @@ void DoubleRect::Scale(float sx, float sy) {
   size_.SetHeight(Height() * sy);
 }
 
+std::ostream& operator<<(std::ostream& ostream, const DoubleRect& rect) {
+  return ostream << rect.ToString();
+}
+
 String DoubleRect::ToString() const {
   return String::Format("%s %s", Location().ToString().Ascii().data(),
                         Size().ToString().Ascii().data());

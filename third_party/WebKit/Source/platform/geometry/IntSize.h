@@ -153,6 +153,8 @@ inline bool operator!=(const IntSize& a, const IntSize& b) {
   return a.Width() != b.Width() || a.Height() != b.Height();
 }
 
+PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const IntSize&);
+
 // Redeclared here to avoid ODR issues.
 // See platform/testing/GeometryPrinters.h.
 void PrintTo(const IntSize&, std::ostream*);

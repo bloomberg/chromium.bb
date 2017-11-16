@@ -211,6 +211,8 @@ inline LayoutPoint FlooredLayoutPoint(const FloatSize& s) {
   return FlooredLayoutPoint(FloatPoint(s));
 }
 
+PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const LayoutPoint&);
+
 // Redeclared here to avoid ODR issues.
 // See platform/testing/GeometryPrinters.h.
 void PrintTo(const LayoutPoint&, std::ostream*);

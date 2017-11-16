@@ -253,6 +253,8 @@ PLATFORM_EXPORT FloatRect MapRect(const FloatRect&,
                                   const FloatRect& src_rect,
                                   const FloatRect& dest_rect);
 
+PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const FloatRect&);
+
 // Redeclared here to avoid ODR issues.
 // See platform/testing/GeometryPrinters.h.
 void PrintTo(const FloatRect&, std::ostream*);

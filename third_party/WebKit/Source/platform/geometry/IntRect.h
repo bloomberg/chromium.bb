@@ -220,6 +220,8 @@ inline bool operator!=(const IntRect& a, const IntRect& b) {
   return a.Location() != b.Location() || a.Size() != b.Size();
 }
 
+PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const IntRect&);
+
 // Redeclared here to avoid ODR issues.
 // See platform/testing/GeometryPrinters.h.
 void PrintTo(const IntRect&, std::ostream*);

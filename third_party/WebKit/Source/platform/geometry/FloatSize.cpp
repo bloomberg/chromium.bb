@@ -63,6 +63,10 @@ FloatSize::operator SkSize() const {
   return SkSize::Make(width_, height_);
 }
 
+std::ostream& operator<<(std::ostream& ostream, const FloatSize& size) {
+  return ostream << size.ToString();
+}
+
 String FloatSize::ToString() const {
   return String::Format("%lgx%lg", Width(), Height());
 }

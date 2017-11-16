@@ -245,6 +245,10 @@ bool FloatQuad::IsCounterclockwise() const {
   return Determinant(p2_ - p1_, p3_ - p2_) < 0;
 }
 
+std::ostream& operator<<(std::ostream& ostream, const FloatQuad& quad) {
+  return ostream << quad.ToString();
+}
+
 String FloatQuad::ToString() const {
   return String::Format("%s; %s; %s; %s", p1_.ToString().Ascii().data(),
                         p2_.ToString().Ascii().data(),

@@ -214,6 +214,8 @@ inline LayoutSize RoundedLayoutSize(const FloatSize& s) {
   return LayoutSize(s);
 }
 
+PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const LayoutSize&);
+
 // Redeclared here to avoid ODR issues.
 // See platform/testing/GeometryPrinters.h.
 void PrintTo(const LayoutSize&, std::ostream*);

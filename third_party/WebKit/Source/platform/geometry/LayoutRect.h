@@ -309,6 +309,8 @@ inline IntRect PixelSnappedIntRect(LayoutPoint location, LayoutSize size) {
                  PixelSnappedIntSize(size, location));
 }
 
+PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const LayoutRect&);
+
 // Redeclared here to avoid ODR issues.
 // See platform/testing/GeometryPrinters.h.
 void PrintTo(const LayoutRect&, std::ostream*);

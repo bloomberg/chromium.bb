@@ -51,6 +51,10 @@ float FloatPoint3D::AngleBetween(const FloatPoint3D& y) const {
   return 0;
 }
 
+std::ostream& operator<<(std::ostream& ostream, const FloatPoint3D& point) {
+  return ostream << point.ToString();
+}
+
 String FloatPoint3D::ToString() const {
   return String::Format("%lg,%lg,%lg", X(), Y(), Z());
 }

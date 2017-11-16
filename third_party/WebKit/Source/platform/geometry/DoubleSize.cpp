@@ -19,6 +19,10 @@ bool DoubleSize::IsZero() const {
          fabs(height_) < std::numeric_limits<double>::epsilon();
 }
 
+std::ostream& operator<<(std::ostream& ostream, const DoubleSize& size) {
+  return ostream << size.ToString();
+}
+
 String DoubleSize::ToString() const {
   return String::Format("%lgx%lg", Width(), Height());
 }
