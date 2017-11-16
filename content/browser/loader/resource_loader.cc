@@ -586,6 +586,8 @@ void ResourceLoader::StartRequestInternal() {
     request_->SetResponseHeadersCallback(base::Bind(
         &ResourceLoader::SetRawResponseHeaders, base::Unretained(this)));
   }
+  UMA_HISTOGRAM_TIMES("Net.ResourceLoader.TimeToURLRequestStart",
+                      base::TimeTicks::Now() - request_->creation_time());
   request_->Start();
 
   delegate_->DidStartRequest(this);

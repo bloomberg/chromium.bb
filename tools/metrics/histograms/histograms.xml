@@ -45319,6 +45319,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.ResourceLoader.TimeToURLRequestStart" units="ms">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    The time elapsed from URLRequest creation to when a ResourceLoader actually
+    calls Start on it.
+  </summary>
+</histogram>
+
 <histogram name="Net.ResponseSizeByProcess.Browser" units="KB">
   <obsolete>
     The code to record this histogram was removed November 2017.
