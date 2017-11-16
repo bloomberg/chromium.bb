@@ -134,16 +134,15 @@ class DevToolsTargetRegistry::ContentsObserver : public ObserverBase,
     std::unique_ptr<const TargetInfo> new_target = BuildTargetInfo(new_host);
     registry_->impl_task_runner_->PostTask(
         FROM_HERE,
-        base::BindOnce(&DevToolsTargetRegistry::Impl::Update,
-                       base::Unretained(registry_->impl_.get()),
+        base::BindOnce(&DevToolsTargetRegistry::Impl::Update, registry_->impl_,
                        std::move(old_target), std::move(new_target)));
   }
 
   void FrameDeleted(RenderFrameHost* render_frame_host) override {
     registry_->impl_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&DevToolsTargetRegistry::Impl::Update,
-                                  base::Unretained(registry_->impl_.get()),
-                                  BuildTargetInfo(render_frame_host), nullptr));
+        FROM_HERE,
+        base::BindOnce(&DevToolsTargetRegistry::Impl::Update, registry_->impl_,
+                       BuildTargetInfo(render_frame_host), nullptr));
   }
 
   void WebContentsDestroyed() override {
@@ -174,9 +173,8 @@ DevToolsTargetRegistry::RegisterWebContents(WebContents* web_contents) {
     infos.push_back(BuildTargetInfo(render_frame_host));
 
   impl_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&DevToolsTargetRegistry::Impl::AddAll,
-                     base::Unretained(impl_.get()), std::move(infos)));
+      FROM_HERE, base::BindOnce(&DevToolsTargetRegistry::Impl::AddAll, impl_,
+                                std::move(infos)));
   return observer;
 }
 
@@ -200,9 +198,8 @@ void DevToolsTargetRegistry::UnregisterWebContents(WebContents* web_contents) {
     infos.push_back(BuildTargetInfo(render_frame_host));
 
   impl_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&DevToolsTargetRegistry::Impl::RemoveAll,
-                     base::Unretained(impl_.get()), std::move(infos)));
+      FROM_HERE, base::BindOnce(&DevToolsTargetRegistry::Impl::RemoveAll, impl_,
+                                std::move(infos)));
 }
 
 DevToolsTargetRegistry::DevToolsTargetRegistry(
