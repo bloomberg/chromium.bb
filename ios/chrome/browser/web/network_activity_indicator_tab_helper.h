@@ -7,14 +7,11 @@
 
 #import <Foundation/Foundation.h>
 
-#import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 #include "ios/web/public/web_state/web_state_user_data.h"
 
-@class NSString;
-
-// Handles listening to webState network activity to control network activity
+// Handles listening to WebState network activity to control network activity
 // indicator.
 class NetworkActivityIndicatorTabHelper
     : public web::WebStateObserver,
@@ -30,12 +27,13 @@ class NetworkActivityIndicatorTabHelper
   // web::WebStateObserver overrides:
   void DidStartLoading(web::WebState* web_state) override;
   void DidStopLoading(web::WebState* web_state) override;
+  void WebStateDestroyed(web::WebState* web_state) override;
 
   // Clears any network activity state associated with this activity.
   void Stop();
 
   // Key used to uniquely identify this activity.
-  base::scoped_nsobject<NSString> network_activity_key_;
+  NSString* network_activity_key_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkActivityIndicatorTabHelper);
 };
