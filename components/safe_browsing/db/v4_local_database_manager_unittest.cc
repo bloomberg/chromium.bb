@@ -765,30 +765,6 @@ TEST_F(V4LocalDatabaseManagerTest, UsingWeakPtrDropsCallback) {
   WaitForTasksOnTaskRunner();
 }
 
-TEST_F(V4LocalDatabaseManagerTest, TestMatchCsdWhitelistUrl) {
-  SetupFakeManager();
-  GURL good_url("http://safe.com");
-  GURL other_url("http://iffy.com");
-
-  StoreAndHashPrefixes store_and_hash_prefixes;
-  store_and_hash_prefixes.emplace_back(GetUrlCsdWhitelistId(),
-                                       HashForUrl(good_url));
-
-  ReplaceV4Database(store_and_hash_prefixes, false /* not available */);
-  // No match, but since we never loaded the whitelist (not available),
-  // it defaults to true.
-  EXPECT_TRUE(v4_local_database_manager_->MatchCsdWhitelistUrl(good_url));
-
-  ReplaceV4Database(store_and_hash_prefixes, true /* available */);
-  // Not whitelisted.
-  EXPECT_FALSE(v4_local_database_manager_->MatchCsdWhitelistUrl(other_url));
-  // Whitelisted.
-  EXPECT_TRUE(v4_local_database_manager_->MatchCsdWhitelistUrl(good_url));
-
-  EXPECT_FALSE(FakeV4LocalDatabaseManager::PerformFullHashCheckCalled(
-      v4_local_database_manager_));
-}
-
 TEST_F(V4LocalDatabaseManagerTest, TestMatchDownloadWhitelistString) {
   SetupFakeManager();
   const std::string good_cert = "Good Cert";

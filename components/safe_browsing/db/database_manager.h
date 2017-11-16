@@ -170,14 +170,6 @@ class SafeBrowsingDatabaseManager
   // Match*(): Methods to synchronously check if various types are safe.
   //
 
-  // Check if the |url| matches any of the full-length hashes from the client-
-  // side phishing detection whitelist.  Returns true if there was a match and
-  // false otherwise.  To make sure we are conservative we will return true if
-  // an error occurs.  This method must be called on the IO thread.
-  //
-  // DEPRECATED. ref: http://crbug.com/714300
-  virtual bool MatchCsdWhitelistUrl(const GURL& url) = 0;
-
   // Check if SHA-256 hash of |str| matches any of the full-length hashes from
   // the download whitelist.  Returns true if there was a match and false
   // otherwise. To make sure we are conservative we will return true if an error
