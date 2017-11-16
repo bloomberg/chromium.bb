@@ -4118,3 +4118,5 @@ crbug.com/785179 [ Win7 Debug ] virtual/mojo-loading/http/tests/inspector-protoc
 crbug.com/785187 [ Mac ] virtual/mojo-loading/http/tests/devtools/elements/elements-panel-rewrite-href.js [ Skip ]
 crbug.com/785187 [ Linux ] virtual/mojo-loading/http/tests/devtools/elements/elements-panel-rewrite-href.js [ Failure Pass ]
 crbug.com/785187 [ Mac ] http/tests/devtools/elements/elements-panel-rewrite-href.js [ Failure Pass ]
+crbug.com/785662 [ Debug ] http/tests/devtools/sources/debugger-ui/reveal-not-skipped.js [ Failure Pass ]
+crbug.com/785662 [ Debug ] virtual/mojo-loading/http/tests/devtools/sources/debugger-ui/reveal-not-skipped.js [ Failure Pass ]
