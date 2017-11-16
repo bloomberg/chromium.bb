@@ -4,6 +4,7 @@
 
 #include "content/browser/browsing_data/clear_site_data_throttle.h"
 
+#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/scoped_observer.h"
@@ -18,6 +19,7 @@
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/common/resource_response_info.h"
 #include "content/public/common/resource_type.h"
@@ -37,6 +39,7 @@ const char kNameForLogging[] = "ClearSiteDataThrottle";
 const char kClearSiteDataHeader[] = "Clear-Site-Data";
 
 // Datatypes.
+const char kDatatypeWildcard[] = "\"*\"";
 const char kDatatypeCookies[] = "\"cookies\"";
 const char kDatatypeStorage[] = "\"storage\"";
 const char kDatatypeCache[] = "\"cache\"";
@@ -45,6 +48,11 @@ const char kDatatypeCache[] = "\"cache\"";
 const char kConsoleMessageTemplate[] = "Clear-Site-Data header on '%s': %s";
 const char kConsoleMessageCleared[] = "Cleared data types: %s.";
 const char kConsoleMessageDatatypeSeparator[] = ", ";
+
+bool AreExperimentalFeaturesEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableExperimentalWebPlatformFeatures);
+}
 
 bool IsNavigationRequest(net::URLRequest* request) {
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
@@ -447,25 +455,33 @@ bool ClearSiteDataThrottle::ParseHeader(const std::string& header,
   *clear_storage = false;
   *clear_cache = false;
 
-  std::string type_names;
-  for (const base::StringPiece& type : base::SplitStringPiece(
-           header, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
+  std::vector<std::string> input_types = base::SplitString(
+      header, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  std::string output_types;
+
+  for (unsigned i = 0; i < input_types.size(); i++) {
     bool* data_type = nullptr;
 
-    if (type == kDatatypeCookies) {
+    if (AreExperimentalFeaturesEnabled() &&
+        input_types[i] == kDatatypeWildcard) {
+      input_types.push_back(kDatatypeCookies);
+      input_types.push_back(kDatatypeStorage);
+      input_types.push_back(kDatatypeCache);
+      continue;
+    } else if (input_types[i] == kDatatypeCookies) {
       data_type = clear_cookies;
-    } else if (type == kDatatypeStorage) {
+    } else if (input_types[i] == kDatatypeStorage) {
       data_type = clear_storage;
-    } else if (type == kDatatypeCache) {
+    } else if (input_types[i] == kDatatypeCache) {
       delegate->AddMessage(
           current_url, "The \"cache\" datatype is temporarily not supported.",
           CONSOLE_MESSAGE_LEVEL_ERROR);
       continue;
     } else {
-      delegate->AddMessage(current_url,
-                           base::StringPrintf("Unrecognized type: %s.",
-                                              type.as_string().c_str()),
-                           CONSOLE_MESSAGE_LEVEL_ERROR);
+      delegate->AddMessage(
+          current_url,
+          base::StringPrintf("Unrecognized type: %s.", input_types[i].c_str()),
+          CONSOLE_MESSAGE_LEVEL_ERROR);
       continue;
     }
 
@@ -475,9 +491,9 @@ bool ClearSiteDataThrottle::ParseHeader(const std::string& header,
       continue;
 
     *data_type = true;
-    if (!type_names.empty())
-      type_names += kConsoleMessageDatatypeSeparator;
-    type_names += type.as_string();
+    if (!output_types.empty())
+      output_types += kConsoleMessageDatatypeSeparator;
+    output_types += input_types[i];
   }
 
   if (!*clear_cookies && !*clear_storage && !*clear_cache) {
@@ -489,7 +505,7 @@ bool ClearSiteDataThrottle::ParseHeader(const std::string& header,
   // Pretty-print which types are to be cleared.
   delegate->AddMessage(
       current_url,
-      base::StringPrintf(kConsoleMessageCleared, type_names.c_str()),
+      base::StringPrintf(kConsoleMessageCleared, output_types.c_str()),
       CONSOLE_MESSAGE_LEVEL_INFO);
 
   return true;
