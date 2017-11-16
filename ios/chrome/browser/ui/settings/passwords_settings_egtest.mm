@@ -188,6 +188,27 @@ id<GREYMatcher> DeleteButton() {
                     grey_interactable(), nullptr);
 }
 
+// Matcher for the Delete button in the list view, located at the bottom of the
+// screen.
+id<GREYMatcher> DeleteButtonAtBottom() {
+  // Selecting the "Delete" button is tricky, because its text is defined in the
+  // private part of MD components library. But it is the unique
+  // almost-completely visible element which is aligned with the bottom edge of
+  // the screen.
+  GREYLayoutConstraint* equalBottom = [GREYLayoutConstraint
+      layoutConstraintWithAttribute:kGREYLayoutAttributeBottom
+                          relatedBy:kGREYLayoutRelationEqual
+               toReferenceAttribute:kGREYLayoutAttributeBottom
+                         multiplier:1.0
+                           constant:0.0];
+  id<GREYMatcher> wholeScreen =
+      grey_accessibilityID(@"SavePasswordsCollectionViewController");
+  return grey_allOf(grey_layout(@[ equalBottom ], wholeScreen),
+                    grey_accessibilityTrait(UIAccessibilityTraitButton),
+                    grey_accessibilityElement(),
+                    grey_minimumVisiblePercent(0.98), nil);
+}
+
 // This is similar to grey_ancestor, but only limited to the immediate parent.
 id<GREYMatcher> MatchParentWith(id<GREYMatcher> parentMatcher) {
   MatchesBlock matches = ^BOOL(id element) {
@@ -564,6 +585,14 @@ PasswordForm CreateSampleFormWithIndex(int index) {
   // Also verify that the removed password is no longer in the list.
   [GetInteractionForPasswordEntry(@"example.com, concrete username")
       assertWithMatcher:grey_not(grey_sufficientlyVisible())];
+
+  // Finally, verify that the Edit button is visible and disabled, because there
+  // are no other password entries left for deletion via the "Edit" mode.
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
+                                   IDS_IOS_NAVIGATION_BAR_EDIT_BUTTON)]
+      assertWithMatcher:grey_allOf(grey_sufficientlyVisible(),
+                                   grey_not(grey_enabled()), nil)];
 
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
@@ -1124,25 +1153,7 @@ PasswordForm CreateSampleFormWithIndex(int index) {
   [GetInteractionForPasswordEntry(@"example.com, concrete username")
       performAction:grey_tap()];
 
-  // Selecting the "Delete" button is tricky, because its text is defined in the
-  // private part of MD components library. But it is the unique
-  // almost-completely visible element which is aligned with the bottom edge of
-  // the screen.
-  GREYLayoutConstraint* equalBottom = [GREYLayoutConstraint
-      layoutConstraintWithAttribute:kGREYLayoutAttributeBottom
-                          relatedBy:kGREYLayoutRelationEqual
-               toReferenceAttribute:kGREYLayoutAttributeBottom
-                         multiplier:1.0
-                           constant:0.0];
-  id<GREYMatcher> wholeScreen =
-      grey_accessibilityID(@"SavePasswordsCollectionViewController");
-  [[EarlGrey
-      selectElementWithMatcher:grey_allOf(
-                                   grey_layout(@[ equalBottom ], wholeScreen),
-                                   grey_accessibilityTrait(
-                                       UIAccessibilityTraitButton),
-                                   grey_accessibilityElement(),
-                                   grey_minimumVisiblePercent(0.98), nil)]
+  [[EarlGrey selectElementWithMatcher:DeleteButtonAtBottom()]
       performAction:grey_tap()];
 
   // Verify that the deletion was propagated to the PasswordStore.
@@ -1291,6 +1302,36 @@ PasswordForm CreateSampleFormWithIndex(int index) {
 
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+      performAction:grey_tap()];
+}
+
+// Checks that if all passwords are deleted in the list view, the disabled Edit
+// button replaces the Done button.
+- (void)testEditButtonUpdateOnDeletion {
+  // Save a password to be deleted later.
+  SaveExamplePasswordForm();
+
+  OpenPasswordSettings();
+
+  TapEdit();
+
+  // Select password entry to be removed.
+  [GetInteractionForPasswordEntry(@"example.com, concrete username")
+      performAction:grey_tap()];
+
+  [[EarlGrey selectElementWithMatcher:DeleteButtonAtBottom()]
+      performAction:grey_tap()];
+
+  // Verify that the Edit button is visible and disabled.
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
+                                   IDS_IOS_NAVIGATION_BAR_EDIT_BUTTON)]
+      assertWithMatcher:grey_allOf(grey_sufficientlyVisible(),
+                                   grey_not(grey_enabled()), nil)];
+
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]

@@ -589,7 +589,7 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
         if (!strongSelf)
           return;
         if (![strongSelf editButtonEnabled]) {
-          [strongSelf setEditing:NO];
+          [strongSelf.editor setEditing:NO];
         }
         [strongSelf updateEditButton];
       }];
@@ -605,6 +605,7 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
       break;
     }
   }
+  [self updateEditButton];
   [self reloadData];
   [self.navigationController popViewControllerAnimated:YES];
 }
