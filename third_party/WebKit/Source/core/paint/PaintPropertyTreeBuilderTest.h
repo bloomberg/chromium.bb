@@ -42,7 +42,6 @@ class PaintPropertyTreeBuilderTest : public PaintControllerPaintTest {
 
  private:
   void SetUp() override;
-  void TearDown() override;
 };
 
 }  // namespace blink
