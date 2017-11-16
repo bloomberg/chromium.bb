@@ -156,16 +156,14 @@ class SnapshotAuraTest : public testing::Test {
    public:
     SnapshotHolder() : completed_(false) {}
 
-    void SnapshotCallback(const gfx::Image& image) {
+    void SnapshotCallback(gfx::Image image) {
       DCHECK(!completed_);
       image_ = image;
       completed_ = true;
       run_loop_.Quit();
     }
     void WaitForSnapshot() { run_loop_.Run(); }
-    bool completed() const {
-      return completed_;
-    };
+    bool completed() const { return completed_; }
     const gfx::Image& image() const { return image_; }
 
    private:

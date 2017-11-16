@@ -137,7 +137,7 @@ void GrabViewSnapshotAsync(gfx::NativeView view,
 
 void GrabLayerSnapshotAsync(ui::Layer* layer,
                             const gfx::Rect& source_rect,
-                            const GrabLayerSnapshotCallback& callback) {
+                            const GrabWindowSnapshotAsyncCallback& callback) {
   MakeAsyncCopyRequest(
       layer, source_rect,
       base::BindOnce(&SnapshotAsync::RunCallbackWithCopyOutputResult,

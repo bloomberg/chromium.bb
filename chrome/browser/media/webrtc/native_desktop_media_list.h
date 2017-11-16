@@ -41,7 +41,7 @@ class NativeDesktopMediaList : public DesktopMediaListBase {
 #if defined(USE_AURA)
   void CaptureAuraWindowThumbnail(const content::DesktopMediaID& id);
   void OnAuraThumbnailCaptured(const content::DesktopMediaID& id,
-                               const gfx::Image& image);
+                               gfx::Image image);
 #endif
 
   // Task runner used for the |worker_|.

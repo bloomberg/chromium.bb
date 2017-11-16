@@ -37,8 +37,7 @@ class DesktopMediaListAsh : public DesktopMediaListBase {
   void EnumerateSources(
       std::vector<DesktopMediaListAsh::SourceDescription>* windows);
   void CaptureThumbnail(content::DesktopMediaID id, aura::Window* window);
-  void OnThumbnailCaptured(content::DesktopMediaID id,
-                           const gfx::Image& image);
+  void OnThumbnailCaptured(content::DesktopMediaID id, gfx::Image image);
 
   int pending_window_capture_requests_ = 0;
 

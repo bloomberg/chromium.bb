@@ -330,7 +330,7 @@ void NativeDesktopMediaList::CaptureAuraWindowThumbnail(
 }
 
 void NativeDesktopMediaList::OnAuraThumbnailCaptured(const DesktopMediaID& id,
-                                                     const gfx::Image& image) {
+                                                     gfx::Image image) {
   if (!image.IsEmpty()) {
     // Only new or changed thumbnail need update.
     new_aura_thumbnail_hashes_[id] = GetImageHash(image);

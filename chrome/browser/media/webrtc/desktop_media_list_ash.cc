@@ -125,7 +125,7 @@ void DesktopMediaListAsh::CaptureThumbnail(content::DesktopMediaID id,
 }
 
 void DesktopMediaListAsh::OnThumbnailCaptured(content::DesktopMediaID id,
-                                              const gfx::Image& image) {
+                                              gfx::Image image) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   UpdateSourceThumbnail(id, image.AsImageSkia());
