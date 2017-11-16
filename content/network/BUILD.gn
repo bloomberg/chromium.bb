@@ -43,6 +43,8 @@ source_set("network_sources") {
     "network_change_manager.h",
     "network_context.cc",
     "network_context.h",
+    "network_sandbox_hook_linux.cc",
+    "network_sandbox_hook_linux.h",
     "network_service_impl.cc",
     "network_service_impl.h",
     "network_service_url_loader_factory.cc",

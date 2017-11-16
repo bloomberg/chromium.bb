@@ -20,6 +20,7 @@ include_rules = [
   "+content/public/network",
   "+services/network",
   "+services/service_manager/public",
+  "+services/service_manager/sandbox",
 ]
 
 specific_include_rules = {
