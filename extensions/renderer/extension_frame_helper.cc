@@ -131,6 +131,39 @@ std::vector<content::RenderFrame*> ExtensionFrameHelper::GetExtensionFrames(
 }
 
 // static
+v8::Local<v8::Array> ExtensionFrameHelper::GetV8MainFrames(
+    v8::Local<v8::Context> context,
+    const std::string& extension_id,
+    int browser_window_id,
+    int tab_id,
+    ViewType view_type) {
+  std::vector<content::RenderFrame*> render_frames =
+      GetExtensionFrames(extension_id, browser_window_id, tab_id, view_type);
+  v8::Local<v8::Array> v8_frames = v8::Array::New(context->GetIsolate());
+
+  int v8_index = 0;
+  for (content::RenderFrame* frame : render_frames) {
+    if (!frame->IsMainFrame())
+      continue;
+
+    blink::WebLocalFrame* web_frame = frame->GetWebFrame();
+    if (!blink::WebFrame::ScriptCanAccess(web_frame))
+      continue;
+
+    v8::Local<v8::Context> frame_context = web_frame->MainWorldScriptContext();
+    if (!frame_context.IsEmpty()) {
+      v8::Local<v8::Value> window = frame_context->Global();
+      CHECK(!window.IsEmpty());
+      v8::Maybe<bool> maybe =
+          v8_frames->CreateDataProperty(context, v8_index++, window);
+      CHECK(maybe.IsJust() && maybe.FromJust());
+    }
+  }
+
+  return v8_frames;
+}
+
+// static
 content::RenderFrame* ExtensionFrameHelper::GetBackgroundPageFrame(
     const std::string& extension_id) {
   for (const ExtensionFrameHelper* helper : g_frame_helpers.Get()) {

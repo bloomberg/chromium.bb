@@ -14,6 +14,7 @@
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
 #include "extensions/common/view_type.h"
+#include "v8/include/v8.h"
 
 struct ExtensionMsg_ExternalConnectionInfo;
 struct ExtensionMsg_TabConnectionInfo;
@@ -46,6 +47,14 @@ class ExtensionFrameHelper
       int browser_window_id,
       int tab_id,
       ViewType view_type);
+  // Same as above, but returns a v8::Array of the v8 global objects for those
+  // frames, and only includes main frames.
+  // Returns an empty v8::Array if no frames are found.
+  static v8::Local<v8::Array> GetV8MainFrames(v8::Local<v8::Context> context,
+                                              const std::string& extension_id,
+                                              int browser_window_id,
+                                              int tab_id,
+                                              ViewType view_type);
 
   // Returns the main frame of the extension's background page, or null if there
   // isn't one in this process.
