@@ -21,7 +21,6 @@ import org.junit.runner.RunWith;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsStatics;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.ContentViewCore;
@@ -44,7 +43,6 @@ public class ContentViewMiscTest {
     private ContentViewCore mContentViewCore;
 
     @Before
-    @SuppressFBWarnings("URF_UNREAD_FIELD")
     public void setUp() throws Exception {
         mContentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =

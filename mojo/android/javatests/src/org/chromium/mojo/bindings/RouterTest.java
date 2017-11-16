@@ -12,7 +12,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.mojo.MojoTestRule;
 import org.chromium.mojo.bindings.BindingsTestUtils.CapturingErrorHandler;
@@ -168,7 +167,6 @@ public class RouterTest {
     private void clearAllMessageReceivers() {
         Thread myFinalizerThread = new Thread() {
             @Override
-            @SuppressFBWarnings("FI_EXPLICIT_INVOCATION")
             public void run() {
                 for (Pair<Message, MessageReceiver> receivedMessage :
                         mReceiver.messagesWithReceivers) {

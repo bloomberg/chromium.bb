@@ -12,7 +12,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.CleanupReference;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.Criteria;
@@ -38,7 +37,6 @@ public class CleanupReferenceTest {
             }
         };
 
-        @SuppressFBWarnings("URF_UNREAD_FIELD")
         public ReferredObject() {
             sObjectCount.incrementAndGet();
             mRef = new CleanupReference(this, new DestroyRunnable());
@@ -50,7 +48,6 @@ public class CleanupReferenceTest {
         sObjectCount.set(0);
     }
 
-    @SuppressFBWarnings("DM_GC")
     private void collectGarbage() {
         // While this is only a 'hint' to the VM, it's generally effective and sufficient on
         // dalvik. If this changes in future, maybe try allocating a few gargantuan objects
@@ -59,7 +56,6 @@ public class CleanupReferenceTest {
     }
 
     @Test
-    @SuppressFBWarnings("DLS_DEAD_LOCAL_STORE")
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testCreateSingle() throws Throwable {
@@ -76,7 +72,6 @@ public class CleanupReferenceTest {
     }
 
     @Test
-    @SuppressFBWarnings("UC_USELESS_OBJECT")
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testCreateMany() throws Throwable {

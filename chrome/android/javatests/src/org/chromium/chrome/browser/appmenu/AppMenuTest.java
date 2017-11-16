@@ -20,7 +20,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
@@ -55,7 +54,6 @@ public class AppMenuTest {
     /**
      * AppMenuHandler that will be used to intercept item selections for testing.
      */
-    @SuppressFBWarnings("URF_UNREAD_FIELD")
     public static class AppMenuHandlerForTest extends AppMenuHandler {
         int mLastSelectedItemId = -1;
 

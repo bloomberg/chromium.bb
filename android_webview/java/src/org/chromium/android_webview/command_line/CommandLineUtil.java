@@ -8,7 +8,6 @@ import android.os.Build;
 import android.os.StrictMode;
 
 import org.chromium.base.CommandLine;
-import org.chromium.base.annotations.SuppressFBWarnings;
 
 /**
  * Utility class for WebView's CommandLine - this is compiled into a separate target that can be
@@ -31,7 +30,6 @@ public class CommandLineUtil {
      * Initialize the CommandLine for WebView - this should be initialized on the same thread where
      * we subsequently access CommandLine.
      */
-    @SuppressFBWarnings("DMI_HARDCODED_ABSOLUTE_FILENAME")
     public static void initCommandLine() {
         if (isBuildDebuggable()) {
             // Suppress the StrictMode violation as this codepath is only hit on debuggable builds.

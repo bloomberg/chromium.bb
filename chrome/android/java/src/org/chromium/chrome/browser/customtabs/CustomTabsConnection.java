@@ -37,7 +37,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.TimeUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.RecordHistogram;
@@ -333,7 +332,6 @@ public class CustomTabsConnection {
     }
 
     /** Warmup activities that should only happen once. */
-    @SuppressFBWarnings("DM_EXIT")
     private static void initializeBrowser(final Context context) {
         ThreadUtils.assertOnUiThread();
         try {

@@ -13,7 +13,6 @@ import android.view.View;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.Linker;
@@ -49,7 +48,6 @@ public class ChromiumLinkerTestActivity extends Activity {
     private ShellManager mShellManager;
     private ActivityWindowAndroid mWindowAndroid;
 
-    @SuppressFBWarnings("DMI_HARDCODED_ABSOLUTE_FILENAME")
     @Override
     public void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

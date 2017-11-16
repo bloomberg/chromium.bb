@@ -29,7 +29,6 @@ import android.widget.FrameLayout;
 
 import org.chromium.base.SysUtils;
 import org.chromium.base.TraceEvent;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.Invalidator.Client;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
@@ -159,7 +158,6 @@ public class CompositorViewHolder extends FrameLayout
             invalidate();
         }
 
-        @SuppressFBWarnings("NP_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD")
         @Override
         protected void onDraw(Canvas canvas) {
             for (int i = 0; i < mRectangles.size(); i++) {

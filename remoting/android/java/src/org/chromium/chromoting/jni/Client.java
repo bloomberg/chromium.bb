@@ -6,7 +6,6 @@ package org.chromium.chromoting.jni;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chromoting.CapabilityManager;
 import org.chromium.chromoting.InputStub;
 import org.chromium.chromoting.Preconditions;
@@ -41,7 +40,6 @@ public class Client implements InputStub {
     }
 
     // Suppress FindBugs warning, since |sClient| is only used on the UI thread.
-    @SuppressFBWarnings("LI_LAZY_INIT_STATIC")
     public void destroy() {
         if (sClient != null) {
             disconnectFromHost();

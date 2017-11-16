@@ -22,7 +22,6 @@ import android.view.View;
 import org.chromium.android_webview.permission.AwPermissionRequest;
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.content_public.common.ContentUrlConstants;
 
 import java.security.Principal;
@@ -96,7 +95,6 @@ public abstract class AwContentsClient {
     /**
      * Parameters for the {@link AwContentsClient#shouldInterceptRequest} method.
      */
-    @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
     public static class AwWebResourceRequest {
         // Url of the request.
         public String url;

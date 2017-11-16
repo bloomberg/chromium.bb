@@ -9,7 +9,6 @@ import android.support.v4.view.ViewCompat;
 import android.view.View;
 import android.widget.PopupWindow.OnDismissListener;
 
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.browser.infobar.InfoBarContainer.InfoBarContainerObserver;
 import org.chromium.chrome.browser.infobar.InfoBarContainerLayout.Item;
 import org.chromium.chrome.browser.widget.textbubble.TextBubble;
@@ -103,7 +102,6 @@ class IPHInfoBarSupport implements OnDismissListener, InfoBarContainer.InfoBarAn
     // goes through the Android SDK, FindBugs does not see this as happening, so the FindBugs
     // warning for a field guaranteed to be non-null being checked for null equality needs to be
     // suppressed.
-    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     @Override
     public void notifyAllAnimationsFinished(Item frontInfoBar) {
         View view = frontInfoBar == null ? null : frontInfoBar.getView();
@@ -134,7 +132,6 @@ class IPHInfoBarSupport implements OnDismissListener, InfoBarContainer.InfoBarAn
     // goes through the Android SDK, FindBugs does not see this as happening, so the FindBugs
     // warning for a field guaranteed to be non-null being checked for null equality needs to be
     // suppressed.
-    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     @Override
     public void onRemoveInfoBar(InfoBarContainer container, InfoBar infoBar, boolean isLast) {
         if (mCurrentState != null && infoBar.getView() == mCurrentState.view) {

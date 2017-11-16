@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.browseractions;
 import android.os.AsyncTask;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.browseractions.BrowserActionsTabCreatorManager.BrowserActionsTabCreator;
 import org.chromium.chrome.browser.tab.Tab;
@@ -230,7 +229,6 @@ public class BrowserActionsTabModelSelector
     }
 
     @Override
-    @SuppressFBWarnings("ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")
     public void destroy() {
         super.destroy();
         mTabSaver.destroy();

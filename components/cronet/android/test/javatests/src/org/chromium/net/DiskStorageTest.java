@@ -20,7 +20,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.FileUtils;
 import org.chromium.base.PathUtils;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.net.CronetTestRule.OnlyRunNativeCronet;
@@ -37,7 +36,6 @@ import java.util.Arrays;
  */
 @RunWith(BaseJUnit4ClassRunner.class)
 public class DiskStorageTest {
-    @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
     @Rule
     public final CronetTestRule mTestRule = new CronetTestRule();
 

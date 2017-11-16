@@ -13,7 +13,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
@@ -37,13 +36,11 @@ import java.util.concurrent.TimeoutException;
  * main frame.
  */
 @RunWith(ContentJUnit4ClassRunner.class)
-@SuppressFBWarnings("UMAC_UNCALLABLE_METHOD_OF_ANONYMOUS_CLASS")
 public class JavaBridgeChildFrameTest {
     @Rule
     public JavaBridgeActivityTestRule mActivityTestRule =
             new JavaBridgeActivityTestRule().shouldSetUp(true);
 
-    @SuppressFBWarnings("CHROMIUM_SYNCHRONIZED_METHOD")
     private static class TestController extends Controller {
         private String mStringValue;
 

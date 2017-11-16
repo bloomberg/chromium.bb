@@ -57,7 +57,6 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.blink_public.web.WebReferrerPolicy;
 import org.chromium.components.autofill.AutofillProvider;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
@@ -1041,7 +1040,6 @@ public class AwContents implements SmartClipProvider {
 
     // getWindowAndroid is only called on UI thread, so there are no threading issues with lazy
     // initialization.
-    @SuppressFBWarnings("LI_LAZY_INIT_STATIC")
     private static WindowAndroidWrapper getWindowAndroid(Context context) {
         if (sContextWindowMap == null) sContextWindowMap = new WeakHashMap<>();
         WindowAndroidWrapper wrapper = sContextWindowMap.get(context);
@@ -2891,7 +2889,6 @@ public class AwContents implements SmartClipProvider {
     }
 
     // Called as a result of nativeUpdateLastHitTestData.
-    @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
     @CalledByNative
     private void updateHitTestData(
             int type, String extra, String href, String anchorText, String imgSrc) {

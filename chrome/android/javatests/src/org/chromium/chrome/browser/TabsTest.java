@@ -27,7 +27,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
@@ -835,7 +834,6 @@ public class TabsTest {
     /**
      * @return A stable read of allocated size (native + dalvik) after gc.
      */
-    @SuppressFBWarnings("DM_GC")
     private long getStableAllocatedSize() {
         // Measure the equivalent of allocated size native + dalvik in:
         // adb shell dumpsys meminfo | grep chrome -A 20
@@ -1871,7 +1869,6 @@ public class TabsTest {
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
-            @SuppressFBWarnings("DLS_DEAD_LOCAL_STORE")
             public void run() {
                 @SuppressWarnings("unused") // Avoid GC of observer
                 WebContentsObserver observer = new WebContentsObserver(tab.getWebContents()) {

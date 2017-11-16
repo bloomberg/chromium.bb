@@ -13,7 +13,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 
 import org.chromium.base.Log;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
@@ -132,7 +131,6 @@ public class AccountSigninActivity extends AppCompatActivity
     }
 
     @Override
-    @SuppressFBWarnings("DM_EXIT")
     protected void onCreate(Bundle savedInstanceState) {
         // The browser process must be started here because this activity may be started from the
         // recent apps list and it relies on other activities and the native library to be loaded.

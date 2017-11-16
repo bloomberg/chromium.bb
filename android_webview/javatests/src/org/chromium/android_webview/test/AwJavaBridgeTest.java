@@ -15,7 +15,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.AwContents;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
 
 /**
@@ -48,7 +47,6 @@ public class AwJavaBridgeTest {
                 mActivityTestRule.createAwTestContainerViewOnMainSync(client2);
         final AwContents awContents = mTestContainerView.getAwContents();
 
-        @SuppressFBWarnings("UMAC_UNCALLABLE_METHOD_OF_ANONYMOUS_CLASS")
         class Test {
             @JavascriptInterface
             public void destroy() {
@@ -100,7 +98,6 @@ public class AwJavaBridgeTest {
             Test(int value) {
                 mValue = value;
             }
-            @SuppressFBWarnings("UMAC_UNCALLABLE_METHOD_OF_ANONYMOUS_CLASS")
             @JavascriptInterface
             public int getValue() {
                 return mValue;
@@ -137,7 +134,6 @@ public class AwJavaBridgeTest {
             Test(int value) {
                 mValue = value;
             }
-            @SuppressFBWarnings("UMAC_UNCALLABLE_METHOD_OF_ANONYMOUS_CLASS")
             @JavascriptInterface
             public int getValue() {
                 return mValue;

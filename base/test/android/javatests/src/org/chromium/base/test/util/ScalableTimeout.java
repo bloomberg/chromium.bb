@@ -4,8 +4,6 @@
 
 package org.chromium.base.test.util;
 
-import org.chromium.base.annotations.SuppressFBWarnings;
-
 /**
  * Utility class for scaling various timeouts by a common factor.
  * For example, to run tests under Valgrind, you might want the following:
@@ -15,7 +13,6 @@ public class ScalableTimeout {
     private static Double sTimeoutScale;
     public static final String PROPERTY_FILE = "/data/local/tmp/chrome_timeout_scale";
 
-    @SuppressFBWarnings("DMI_HARDCODED_ABSOLUTE_FILENAME")
     public static long scaleTimeout(long timeout) {
         if (sTimeoutScale == null) {
             try {

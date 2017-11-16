@@ -13,7 +13,6 @@ import android.os.Environment;
 import android.test.InstrumentationTestRunner;
 import android.util.Log;
 
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.test.broker.OnDeviceInstrumentationBroker;
 import org.chromium.test.reporter.TestStatusReceiver;
@@ -67,7 +66,6 @@ public class OnDeviceInstrumentationDriver extends Instrumentation {
         @param arguments The arguments to parse.
      */
     @Override
-    @SuppressFBWarnings("DMI_HARDCODED_ABSOLUTE_FILENAME")
     public void onCreate(Bundle arguments) {
         mTargetArgs = new Bundle(arguments);
         mTargetPackage = arguments.getString(EXTRA_TARGET_PACKAGE);
@@ -147,7 +145,6 @@ public class OnDeviceInstrumentationDriver extends Instrumentation {
 
     /** Clean up the reporting service. */
     @Override
-    @SuppressFBWarnings("DMI_HARDCODED_ABSOLUTE_FILENAME")
     public void onDestroy() {
         super.onDestroy();
         if (mTimeoutScale != null) {

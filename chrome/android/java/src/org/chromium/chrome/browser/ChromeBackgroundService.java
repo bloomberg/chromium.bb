@@ -13,7 +13,6 @@ import com.google.android.gms.gcm.TaskParams;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
@@ -95,7 +94,6 @@ public class ChromeBackgroundService extends GcmTaskService {
     }
 
     @VisibleForTesting
-    @SuppressFBWarnings("DM_EXIT")
     protected void launchBrowser(Context context, String tag) {
         Log.i(TAG, "Launching browser");
         try {

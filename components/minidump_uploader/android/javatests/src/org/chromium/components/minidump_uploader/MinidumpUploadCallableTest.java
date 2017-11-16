@@ -12,7 +12,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.components.minidump_uploader.CrashTestRule.MockCrashReportingPermissionManager;
@@ -179,7 +178,6 @@ public class MinidumpUploadCallableTest {
         CrashTestRule.setUpMinidumpFile(mTestUpload, BOUNDARY);
     }
 
-    @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_BAD_PRACTICE")
     private void setForcedUpload() throws Exception {
         File renamed =
                 new File(mTestRule.getCrashDir(), mTestUpload.getName().replace(".dmp", ".forced"));
@@ -189,7 +187,6 @@ public class MinidumpUploadCallableTest {
     }
 
     @Before
-    @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_BAD_PRACTICE")
     public void setUp() throws Exception {
         mUploadLog = new File(mTestRule.getCrashDir(), CrashFileManager.CRASH_DUMP_LOGFILE);
         // Delete all logs from previous runs if possible.

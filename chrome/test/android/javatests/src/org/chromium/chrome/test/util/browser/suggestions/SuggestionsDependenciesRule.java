@@ -8,7 +8,6 @@ import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 
 import org.chromium.base.DiscardableReferencePool;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
@@ -55,9 +54,6 @@ public class SuggestionsDependenciesRule extends TestWatcher {
     /**
      * SuggestionsDependencyFactory that exposes and allows modifying the instances to be injected.
      */
-    // TODO(dgn): Warning emitted while all the exposed fields are not used, this should become
-    // unnecessary as we start using the rule.
-    @SuppressFBWarnings("UWF_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD")
     public static class TestFactory extends SuggestionsDependencyFactory {
         public SuggestionsSource suggestionsSource;
         public MostVisitedSites mostVisitedSites;

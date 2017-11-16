@@ -10,7 +10,6 @@ import android.support.annotation.IntDef;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -84,7 +83,6 @@ public class MainIntentBehaviorMetrics implements ApplicationStatus.ActivityStat
      *
      * This must only be called after the native libraries have been initialized.
      */
-    @SuppressFBWarnings("ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")
     public void onMainIntentWithNative(long backgroundDurationMs) {
         mLastMainIntentBehavior = null;
 

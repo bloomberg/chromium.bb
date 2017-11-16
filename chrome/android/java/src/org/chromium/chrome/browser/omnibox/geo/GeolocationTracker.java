@@ -17,7 +17,6 @@ import android.os.Process;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.annotations.SuppressFBWarnings;
 
 /**
  * Keeps track of the device's location, allowing synchronous location requests.
@@ -115,7 +114,6 @@ class GeolocationTracker {
      *
      * Note: this must be called only on the UI thread.
      */
-    @SuppressFBWarnings("LI_LAZY_INIT_UPDATE_STATIC")
     static void refreshLastKnownLocation(Context context, long maxAge) {
         ThreadUtils.assertOnUiThread();
 

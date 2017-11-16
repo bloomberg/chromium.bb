@@ -12,7 +12,6 @@ import android.os.SystemClock;
 
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
-import org.chromium.base.annotations.SuppressFBWarnings;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -96,7 +95,6 @@ public class EarlyTraceEvent {
 
     /** @see TraceEvent#MaybeEnableEarlyTracing().
      */
-    @SuppressFBWarnings("DMI_HARDCODED_ABSOLUTE_FILENAME")
     static void maybeEnable() {
         ThreadUtils.assertOnUiThread();
         boolean shouldEnable = false;

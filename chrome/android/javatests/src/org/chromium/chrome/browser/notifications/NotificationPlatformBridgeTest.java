@@ -28,7 +28,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
@@ -762,7 +761,6 @@ public class NotificationPlatformBridgeTest {
      * notification with the same tag to be dismissed prior to being shown.
      */
     @Test
-    @SuppressFBWarnings("DLS_DEAD_LOCAL_STORE")
     @MediumTest
     @Feature({"Browser", "Notifications"})
     public void testNotificationTagReplacement() throws Exception {

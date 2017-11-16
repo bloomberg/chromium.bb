@@ -10,7 +10,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ResourceId;
 import org.chromium.chrome.browser.preferences.autofill.AutofillAndPaymentsPreferences;
@@ -541,7 +540,6 @@ public class PersonalDataManager {
     private static PersonalDataManager sManager;
 
     // Suppress FindBugs warning, since |sManager| is only used on the UI thread.
-    @SuppressFBWarnings("LI_LAZY_INIT_STATIC")
     public static PersonalDataManager getInstance() {
         ThreadUtils.assertOnUiThread();
         if (sManager == null) {

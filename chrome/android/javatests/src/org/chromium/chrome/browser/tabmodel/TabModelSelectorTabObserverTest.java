@@ -15,7 +15,6 @@ import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ObserverList;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
@@ -32,7 +31,6 @@ public class TabModelSelectorTabObserverTest {
     private final TabModelSelectorObserverTestRule mTestRule =
             new TabModelSelectorObserverTestRule();
 
-    @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
     @Rule
     public final RuleChain mChain = RuleChain.outerRule(mTestRule).around(new UiThreadTestRule());
 

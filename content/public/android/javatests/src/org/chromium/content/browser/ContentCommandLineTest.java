@@ -13,7 +13,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.CommandLine;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.NativeLibraryTestRule;
@@ -140,7 +139,6 @@ public class ContentCommandLineTest {
     }
 
     @Test
-    @SuppressFBWarnings("DMI_HARDCODED_ABSOLUTE_FILENAME")
     @MediumTest
     @Feature({"Android-AppBase"})
     public void testFileInitialization() {

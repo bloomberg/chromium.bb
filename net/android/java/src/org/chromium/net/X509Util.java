@@ -17,7 +17,6 @@ import android.util.Pair;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.base.annotations.SuppressFBWarnings;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -233,7 +232,6 @@ public class X509Util {
      */
     // FindBugs' static field initialization warnings do not handle methods that are expected to be
     // called locked.
-    @SuppressFBWarnings({"LI_LAZY_INIT_STATIC", "LI_LAZY_INIT_UPDATE_STATIC"})
     private static void ensureInitializedLocked()
             throws CertificateException, KeyStoreException, NoSuchAlgorithmException {
         assert Thread.holdsLock(sLock);

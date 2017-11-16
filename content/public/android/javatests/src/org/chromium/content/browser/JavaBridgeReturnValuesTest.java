@@ -12,7 +12,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.JavaBridgeTestCommon.Controller;
@@ -36,7 +35,6 @@ public class JavaBridgeReturnValuesTest {
 
     // An instance of this class is injected into the page to test returning
     // Java values to JavaScript.
-    @SuppressFBWarnings("CHROMIUM_SYNCHRONIZED_METHOD")
     private static class TestObject extends Controller {
         private String mStringResult;
         private boolean mBooleanResult;

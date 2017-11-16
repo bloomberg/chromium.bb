@@ -15,7 +15,6 @@ import android.os.RemoteException;
 
 import org.chromium.base.BaseSwitches;
 import org.chromium.base.CommandLine;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
@@ -37,7 +36,6 @@ public class ChildProcessLauncherTestHelperService extends Service {
     public static final int MSG_UNBIND_SERVICE_REPLY = MSG_UNBIND_SERVICE + 1;
 
     private final Handler.Callback mHandlerCallback = new Handler.Callback() {
-        @SuppressFBWarnings("DM_EXIT")
         @Override
         public boolean handleMessage(Message msg) {
             switch (msg.what) {

@@ -10,7 +10,6 @@ import org.json.JSONException;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.components.sync.ModelType;
 import org.chromium.components.sync.PassphraseType;
 
@@ -100,7 +99,6 @@ public class ProfileSyncService {
      * Can only be accessed on the main thread.
      */
     @Nullable
-    @SuppressFBWarnings("LI_LAZY_INIT")
     public static ProfileSyncService get() {
         ThreadUtils.assertOnUiThread();
         if (!sInitialized) {

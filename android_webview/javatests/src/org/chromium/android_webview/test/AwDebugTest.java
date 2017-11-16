@@ -14,7 +14,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.AwDebug;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.parameter.SkipCommandLineParameterization;
 
@@ -30,7 +29,6 @@ import java.util.Scanner;
 @RunWith(AwJUnit4ClassRunner.class)
 @SkipCommandLineParameterization
 public class AwDebugTest {
-    @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
     @Rule
     public AwActivityTestRule mActivityTestRule = new AwActivityTestRule();
 

@@ -15,7 +15,6 @@ import org.chromium.base.DiscardableReferencePool;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.MainDex;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.build.BuildHooks;
 import org.chromium.build.BuildHooksAndroid;
@@ -111,7 +110,6 @@ public class ChromeApplication extends ContentApplication {
      *                    application-level TabModelSelectors.
      * @return The DocumentTabModelSelector for the application.
      */
-    @SuppressFBWarnings("LI_LAZY_INIT_STATIC")
     public static DocumentTabModelSelector getDocumentTabModelSelector() {
         ThreadUtils.assertOnUiThread();
         if (sDocumentTabModelSelector == null) {

@@ -11,7 +11,6 @@ import android.view.KeyEvent;
 import android.view.KeyboardShortcutGroup;
 import android.view.KeyboardShortcutInfo;
 
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -56,7 +55,6 @@ public class KeyboardShortcuts {
      * @return True if the event was handled. False if the event was ignored. Null if the event
      *         should be handled by the activity's parent class.
      */
-    @SuppressFBWarnings("NP_BOOLEAN_RETURN_NULL")
     public static Boolean dispatchKeyEvent(KeyEvent event, ChromeActivity activity,
             boolean uiInitialized) {
         int keyCode = event.getKeyCode();

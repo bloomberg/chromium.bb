@@ -14,7 +14,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.net.CronetTestRule;
@@ -31,7 +30,6 @@ import java.util.concurrent.ThreadFactory;
  */
 @RunWith(BaseJUnit4ClassRunner.class)
 public class MessageLoopTest {
-    @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
     @Rule
     public final CronetTestRule mTestRule = new CronetTestRule();
 
