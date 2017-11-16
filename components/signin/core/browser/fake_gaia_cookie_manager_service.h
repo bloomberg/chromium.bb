@@ -24,9 +24,11 @@ class FakeGaiaCookieManagerService : public GaiaCookieManagerService {
   void SetListAccountsResponseNoAccounts();
   void SetListAccountsResponseOneAccount(const char* email,
                                          const char* gaia_id);
-  void SetListAccountsResponseOneAccountWithExpiry(const char* account,
+  void SetListAccountsResponseOneAccountWithParams(const char* account,
                                                    const char* gaia_id,
-                                                   bool expired);
+                                                   bool is_email_valid,
+                                                   bool is_signed_out,
+                                                   bool verified);
   void SetListAccountsResponseTwoAccounts(const char* email1,
                                           const char* gaia_id1,
                                           const char* email2,
