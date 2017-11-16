@@ -1561,6 +1561,8 @@ split_static_library("ui") {
       "views/external_protocol_dialog.cc",
       "views/external_protocol_dialog.h",
       "views/profiles/avatar_button_style.h",
+      "views/profiles/badged_profile_photo.cc",
+      "views/profiles/badged_profile_photo.h",
       "views/profiles/profile_chooser_view.cc",
       "views/profiles/profile_chooser_view.h",
       "webui/app_launcher_page_ui.cc",
