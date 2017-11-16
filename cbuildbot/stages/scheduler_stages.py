@@ -59,13 +59,17 @@ class ScheduleSlavesStage(generic_stages.BuilderStage):
                     More context: crbug.com/661689
       dryrun: Whether a dryrun, default to False.
     """
+    # TODO: Find a way to unify these tags with
+    #       remote_try._GetRequestBody
     tags = ['buildset:%s' % buildset_tag,
             'build_type:%s' % build_config.build_type,
             'master:False',
             'master_config:%s' % self._run.config.name,
-            'cbb_config:%s' % build_name,
+            'cbb_display_label:%s' % build_config.display_label,
             'cbb_branch:%s' % self._run.manifest_branch,
-            'cbb_master_build_id:%s' % master_build_id]
+            'cbb_config:%s' % build_name,
+            'cbb_master_build_id:%s' % master_build_id,
+            'cbb_email:']
 
     if build_config.boards:
       for board in build_config.boards:

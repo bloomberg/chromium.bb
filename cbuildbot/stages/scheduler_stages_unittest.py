@@ -181,6 +181,7 @@ class ScheduleSalvesStageTest(generic_stages_unittest.AbstractStageTestCase):
     slave_config = config_lib.BuildConfig(
         name='slave',
         important=True, active_waterfall=waterfall.WATERFALL_INTERNAL,
+        display_label='cq',
         boards=['board_A'], build_type='paladin')
 
     stage = self.ConstructStage()
@@ -198,6 +199,7 @@ class ScheduleSalvesStageTest(generic_stages_unittest.AbstractStageTestCase):
     slave_config = config_lib.BuildConfig(
         name='slave',
         important=True, active_waterfall=waterfall.WATERFALL_INTERNAL,
+        display_label='cq',
         boards=['board_A', 'board_B'], build_type='paladin')
 
     stage = self.ConstructStage()

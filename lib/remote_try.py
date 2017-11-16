@@ -216,6 +216,8 @@ class RemoteTryJob(object):
     else:
       bucket = constants.TRYSERVER_BUILDBUCKET_BUCKET
 
+    # TODO: Find a way to unify these tags with
+    #       ScheduleSlavesStage.PostSlaveBuildToBuildbucket
     tags = ['cbb_display_label:%s' % self.display_label,
             'cbb_branch:%s' % self.branch,
             'cbb_config:%s' % bot,
