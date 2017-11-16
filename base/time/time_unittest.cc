@@ -653,9 +653,10 @@ TEST_F(TimeTest, FromExploded_MinMax) {
     EXPECT_FALSE(parsed_time.is_null());
 #endif
 
-#if !defined(OS_ANDROID)
+#if !defined(OS_ANDROID) && !defined(OS_MACOSX)
     // The dates earlier than |kExplodedMinYear| that don't work are OS version
-    // dependent on Android.
+    // dependent on Android and Mac (for example, macOS 10.13 seems to support
+    // dates before 1902).
     exploded.year--;
     EXPECT_FALSE(Time::FromUTCExploded(exploded, &parsed_time));
     EXPECT_TRUE(parsed_time.is_null());
