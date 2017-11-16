@@ -248,13 +248,19 @@ static void get_dist_cost_stats(LevelDownStats *stats, int scan_idx,
   stats->rd_low = RDCOST(txb_info->rdmult, stats->rate_low, stats->dist_low);
 
 #if CONFIG_LV_MAP_MULTI
-  int coeff_ctx = get_nz_map_ctx(levels, scan_idx, scan, txb_info->bwl,
-                                 txb_info->height, txb_info->tx_type, is_eob);
+  (void)levels;
   if ((stats->rd_low < stats->rd) && (stats->low_qc == 0)) {
-    stats->nz_rate = txb_costs->base_cost[coeff_ctx][0];
+    stats->nz_rate = low_qc_cost;
   } else {
-    // TODO(olah): revisit what non-zero cost should be used here
-    stats->nz_rate = txb_costs->base_cost[coeff_ctx][1];
+    if (stats->rd_low < stats->rd) {
+      const int low_qc_eob_cost =
+          get_coeff_cost(stats->low_qc, scan_idx, 1, txb_info, txb_costs);
+      stats->nz_rate = low_qc_cost - low_qc_eob_cost;
+    } else {
+      const int qc_eob_cost =
+          get_coeff_cost(qc, scan_idx, 1, txb_info, txb_costs);
+      stats->nz_rate = qc_cost - qc_eob_cost;
+    }
   }
 #else
   int coeff_ctx = get_nz_map_ctx(levels, scan_idx, scan, txb_info->bwl,
