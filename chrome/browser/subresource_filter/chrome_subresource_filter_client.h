@@ -86,6 +86,7 @@ enum SubresourceFilterAction {
   kActionForcedActivationNoUIResourceBlocked,
 
   // Logged when a popup is blocked due to subresource filter logic.
+  // DEPRECATED: this component no longer blocks popups.
   kActionPopupBlocked,
 
   kActionLastEntry
