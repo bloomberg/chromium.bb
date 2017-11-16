@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_MUS_KEYBOARD_UI_MUS_H_
-#define ASH_MUS_KEYBOARD_UI_MUS_H_
+#ifndef ASH_MUS_KEYBOARD_UI_MASH_H_
+#define ASH_MUS_KEYBOARD_UI_MASH_H_
 
 #include <stdint.h>
 
@@ -20,12 +20,12 @@ class Connector;
 
 namespace ash {
 
-class KeyboardUIMus : public KeyboardUI,
-                      public keyboard::mojom::KeyboardObserver {
+class KeyboardUIMash : public KeyboardUI,
+                       public keyboard::mojom::KeyboardObserver {
  public:
   // |connector| may be null in tests.
-  explicit KeyboardUIMus(service_manager::Connector* connector);
-  ~KeyboardUIMus() override;
+  explicit KeyboardUIMash(service_manager::Connector* connector);
+  ~KeyboardUIMash() override;
 
   static std::unique_ptr<KeyboardUI> Create(
       service_manager::Connector* connector);
@@ -48,9 +48,9 @@ class KeyboardUIMus : public KeyboardUI,
   keyboard::mojom::KeyboardPtr keyboard_;
   mojo::Binding<keyboard::mojom::KeyboardObserver> observer_binding_;
 
-  DISALLOW_COPY_AND_ASSIGN(KeyboardUIMus);
+  DISALLOW_COPY_AND_ASSIGN(KeyboardUIMash);
 };
 
 }  // namespace ash
 
-#endif  // ASH_MUS_KEYBOARD_UI_MUS_H_
+#endif  // ASH_MUS_KEYBOARD_UI_MASH_H_

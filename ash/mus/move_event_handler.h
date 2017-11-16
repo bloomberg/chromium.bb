@@ -23,7 +23,7 @@ class CancelModeEvent;
 
 namespace ash {
 
-class WorkspaceEventHandlerMus;
+class WorkspaceEventHandlerMash;
 
 // EventHandler attached to windows that may be dragged and/or resized. This
 // forwards to WmToplevelWindowEventHandler to handle the actual drag/resize.
@@ -59,9 +59,9 @@ class MoveEventHandler : public ui::EventHandler, public aura::WindowObserver {
   // Removes observer and EventHandler.
   void Detach();
 
-  // Returns the WorkspaceEventHandlerMus, or null if the window is not in a
+  // Returns the WorkspaceEventHandlerMash, or null if the window is not in a
   // workspace.
-  WorkspaceEventHandlerMus* GetWorkspaceEventHandlerMus();
+  WorkspaceEventHandlerMash* GetWorkspaceEventHandlerMash();
 
   // Overridden from ui::EventHandler:
   void OnMouseEvent(ui::MouseEvent* event) override;

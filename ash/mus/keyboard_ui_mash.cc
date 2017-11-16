@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/mus/keyboard_ui_mus.h"
+#include "ash/mus/keyboard_ui_mash.h"
 
 #include <memory>
 
@@ -11,40 +11,40 @@
 
 namespace ash {
 
-KeyboardUIMus::KeyboardUIMus(service_manager::Connector* connector)
+KeyboardUIMash::KeyboardUIMash(service_manager::Connector* connector)
     : is_enabled_(false), observer_binding_(this) {
   // TODO: chrome should register the keyboard interface with ash.
   // http://crbug.com/683289.
 }
 
-KeyboardUIMus::~KeyboardUIMus() {}
+KeyboardUIMash::~KeyboardUIMash() {}
 
 // static
-std::unique_ptr<KeyboardUI> KeyboardUIMus::Create(
+std::unique_ptr<KeyboardUI> KeyboardUIMash::Create(
     service_manager::Connector* connector) {
-  return std::make_unique<KeyboardUIMus>(connector);
+  return std::make_unique<KeyboardUIMash>(connector);
 }
 
-void KeyboardUIMus::Hide() {
+void KeyboardUIMash::Hide() {
   if (keyboard_)
     keyboard_->Hide();
 }
 
-void KeyboardUIMus::ShowInDisplay(const int64_t display_id) {
+void KeyboardUIMash::ShowInDisplay(const int64_t display_id) {
   // TODO(yhanada): Send display id after adding a display_id argument to
   // |Keyboard::Show()| in keyboard.mojom. See crbug.com/585253.
   if (keyboard_)
     keyboard_->Show();
 }
 
-bool KeyboardUIMus::IsEnabled() {
+bool KeyboardUIMash::IsEnabled() {
   return is_enabled_;
 }
 
-void KeyboardUIMus::OnKeyboardStateChanged(bool is_enabled,
-                                           bool is_visible,
-                                           uint64_t display_id,
-                                           const gfx::Rect& bounds) {
+void KeyboardUIMash::OnKeyboardStateChanged(bool is_enabled,
+                                            bool is_visible,
+                                            uint64_t display_id,
+                                            const gfx::Rect& bounds) {
   if (is_enabled_ == is_enabled)
     return;
 

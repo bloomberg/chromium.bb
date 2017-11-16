@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_MUS_BRIDGE_IMMERSIVE_HANDLER_FACTORY_MUS_H_
-#define ASH_MUS_BRIDGE_IMMERSIVE_HANDLER_FACTORY_MUS_H_
+#ifndef ASH_MUS_BRIDGE_IMMERSIVE_HANDLER_FACTORY_MASH_H_
+#define ASH_MUS_BRIDGE_IMMERSIVE_HANDLER_FACTORY_MASH_H_
 
 #include "ash/public/cpp/immersive/immersive_handler_factory.h"
 #include "base/macros.h"
 
 namespace ash {
 
-class ImmersiveHandlerFactoryMus : public ImmersiveHandlerFactory {
+class ImmersiveHandlerFactoryMash : public ImmersiveHandlerFactory {
  public:
-  ImmersiveHandlerFactoryMus();
-  ~ImmersiveHandlerFactoryMus() override;
+  ImmersiveHandlerFactoryMash();
+  ~ImmersiveHandlerFactoryMash() override;
 
   // ImmersiveHandlerFactory:
   std::unique_ptr<ImmersiveFocusWatcher> CreateFocusWatcher(
@@ -22,9 +22,9 @@ class ImmersiveHandlerFactoryMus : public ImmersiveHandlerFactory {
       ImmersiveFullscreenController* controller) override;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ImmersiveHandlerFactoryMus);
+  DISALLOW_COPY_AND_ASSIGN(ImmersiveHandlerFactoryMash);
 };
 
 }  // namespace ash
 
-#endif  // ASH_MUS_BRIDGE_IMMERSIVE_HANDLER_FACTORY_MUS_H_
+#endif  // ASH_MUS_BRIDGE_IMMERSIVE_HANDLER_FACTORY_MASH_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/mus/accelerators/accelerator_controller_delegate_mus.h"
+#include "ash/mus/accelerators/accelerator_controller_delegate_mash.h"
 
 #include "ash/mus/window_manager.h"
 #include "base/logging.h"
@@ -12,13 +12,14 @@
 
 namespace ash {
 
-AcceleratorControllerDelegateMus::AcceleratorControllerDelegateMus(
+AcceleratorControllerDelegateMash::AcceleratorControllerDelegateMash(
     WindowManager* window_manager)
     : window_manager_(window_manager) {}
 
-AcceleratorControllerDelegateMus::~AcceleratorControllerDelegateMus() {}
+AcceleratorControllerDelegateMash::~AcceleratorControllerDelegateMash() {}
 
-bool AcceleratorControllerDelegateMus::HandlesAction(AcceleratorAction action) {
+bool AcceleratorControllerDelegateMash::HandlesAction(
+    AcceleratorAction action) {
   // Accelerators that return true need to work differently in mash. These
   // should have implementations in CanPerformAction() and PerformAction().
   // Accelerators that return false have not been ported to work with mash yet.
@@ -49,7 +50,7 @@ bool AcceleratorControllerDelegateMus::HandlesAction(AcceleratorAction action) {
   return false;
 }
 
-bool AcceleratorControllerDelegateMus::CanPerformAction(
+bool AcceleratorControllerDelegateMash::CanPerformAction(
     AcceleratorAction action,
     const ui::Accelerator& accelerator,
     const ui::Accelerator& previous_accelerator) {
@@ -62,7 +63,7 @@ bool AcceleratorControllerDelegateMus::CanPerformAction(
   return false;
 }
 
-void AcceleratorControllerDelegateMus::PerformAction(
+void AcceleratorControllerDelegateMash::PerformAction(
     AcceleratorAction action,
     const ui::Accelerator& accelerator) {
   switch (action) {

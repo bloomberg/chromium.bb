@@ -4,7 +4,7 @@
 
 #include "ash/mus/move_event_handler.h"
 
-#include "ash/mus/bridge/workspace_event_handler_mus.h"
+#include "ash/mus/bridge/workspace_event_handler_mash.h"
 #include "ash/wm/window_util.h"
 #include "services/ui/public/interfaces/cursor/cursor.mojom.h"
 #include "ui/aura/mus/window_manager_delegate.h"
@@ -107,11 +107,11 @@ void MoveEventHandler::Detach() {
   window_ = nullptr;
 }
 
-WorkspaceEventHandlerMus* MoveEventHandler::GetWorkspaceEventHandlerMus() {
+WorkspaceEventHandlerMash* MoveEventHandler::GetWorkspaceEventHandlerMash() {
   if (!window_->parent())
     return nullptr;
 
-  return WorkspaceEventHandlerMus::Get(window_->parent());
+  return WorkspaceEventHandlerMash::Get(window_->parent());
 }
 
 void MoveEventHandler::OnMouseEvent(ui::MouseEvent* event) {
@@ -125,8 +125,8 @@ void MoveEventHandler::OnMouseEvent(ui::MouseEvent* event) {
         window_, ui::CursorData(CursorForWindowComponent(hit_test_location)));
   }
 
-  WorkspaceEventHandlerMus* workspace_event_handler =
-      GetWorkspaceEventHandlerMus();
+  WorkspaceEventHandlerMash* workspace_event_handler =
+      GetWorkspaceEventHandlerMash();
   if (workspace_event_handler)
     workspace_event_handler->OnMouseEvent(event, window_);
 }
@@ -134,8 +134,8 @@ void MoveEventHandler::OnMouseEvent(ui::MouseEvent* event) {
 void MoveEventHandler::OnGestureEvent(ui::GestureEvent* event) {
   toplevel_window_event_handler_.OnGestureEvent(event, window_);
 
-  WorkspaceEventHandlerMus* workspace_event_handler =
-      GetWorkspaceEventHandlerMus();
+  WorkspaceEventHandlerMash* workspace_event_handler =
+      GetWorkspaceEventHandlerMash();
   if (workspace_event_handler)
     workspace_event_handler->OnGestureEvent(event, window_);
 }
