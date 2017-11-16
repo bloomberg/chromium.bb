@@ -27,23 +27,15 @@ class TabLoaderTest : public testing::Test {
   // testing::Test:
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(features::kMemoryCoordinator);
-    content::SetUpMemoryCoordinatorProxyForTesting();
-
     test_web_contents_factory_.reset(new content::TestWebContentsFactory);
-    content::WebContents* contents =
-        test_web_contents_factory_->CreateWebContents(&testing_profile_);
-    restored_tabs_.push_back(RestoredTab(contents, false, false, false));
   }
 
   void TearDown() override {
-    restored_tabs_.clear();
     test_web_contents_factory_.reset();
   }
 
  protected:
   std::unique_ptr<content::TestWebContentsFactory> test_web_contents_factory_;
-  std::vector<RestoredTab> restored_tabs_;
-
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile testing_profile_;
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -60,7 +52,14 @@ class TabLoaderTest : public testing::Test {
 #define MAYBE_OnMemoryStateChange OnMemoryStateChange
 #endif
 TEST_F(TabLoaderTest, MAYBE_OnMemoryStateChange) {
-  TabLoader::RestoreTabs(restored_tabs_, base::TimeTicks());
+  content::SetUpMemoryCoordinatorProxyForTesting();
+
+  std::vector<RestoredTab> restored_tabs;
+  content::WebContents* contents =
+      test_web_contents_factory_->CreateWebContents(&testing_profile_);
+  restored_tabs.push_back(RestoredTab(contents, false, false, false));
+
+  TabLoader::RestoreTabs(restored_tabs, base::TimeTicks());
   EXPECT_TRUE(TabLoader::shared_tab_loader_->loading_enabled_);
   base::MemoryCoordinatorClientRegistry::GetInstance()->Notify(
       base::MemoryState::THROTTLED);
@@ -69,4 +68,26 @@ TEST_F(TabLoaderTest, MAYBE_OnMemoryStateChange) {
   base::RunLoop loop;
   loop.RunUntilIdle();
   EXPECT_FALSE(TabLoader::shared_tab_loader_->loading_enabled_);
+}
+
+TEST_F(TabLoaderTest, UsePageAlmostIdleSignal) {
+  std::vector<RestoredTab> restored_tabs;
+  content::WebContents* web_contents1 =
+      test_web_contents_factory_->CreateWebContents(&testing_profile_);
+  restored_tabs.push_back(RestoredTab(web_contents1, true, false, false));
+  content::WebContents* web_contents2 =
+      test_web_contents_factory_->CreateWebContents(&testing_profile_);
+  restored_tabs.push_back(RestoredTab(web_contents2, false, false, false));
+
+  TabLoader::RestoreTabs(restored_tabs, base::TimeTicks());
+  EXPECT_TRUE(TabLoader::shared_tab_loader_->loading_enabled_);
+  EXPECT_EQ(1u, TabLoader::shared_tab_loader_->tabs_loading_.size());
+  EXPECT_EQ(1u, TabLoader::shared_tab_loader_->tabs_to_load_.size());
+
+  // By calling this, TabLoader now considers |web_contents1| is loaded, and
+  // starts to load |web_contents2|.
+  TabLoader::shared_tab_loader_->OnPageAlmostIdle(web_contents1);
+  EXPECT_TRUE(TabLoader::shared_tab_loader_->loading_enabled_);
+  EXPECT_EQ(1u, TabLoader::shared_tab_loader_->tabs_loading_.size());
+  EXPECT_EQ(0u, TabLoader::shared_tab_loader_->tabs_to_load_.size());
 }

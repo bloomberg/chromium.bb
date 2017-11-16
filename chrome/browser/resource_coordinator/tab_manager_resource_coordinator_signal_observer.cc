@@ -23,7 +23,7 @@ TabManager::ResourceCoordinatorSignalObserver::
     page_signal_receiver->RemoveObserver(this);
 }
 
-void TabManager::ResourceCoordinatorSignalObserver::NotifyPageAlmostIdle(
+void TabManager::ResourceCoordinatorSignalObserver::OnPageAlmostIdle(
     content::WebContents* web_contents) {
   auto* web_contents_data =
       TabManager::WebContentsData::FromWebContents(web_contents);

@@ -21,7 +21,7 @@ namespace resource_coordinator {
 class PageSignalObserver {
  public:
   virtual ~PageSignalObserver() = default;
-  virtual void NotifyPageAlmostIdle(content::WebContents* web_contents) {}
+  virtual void OnPageAlmostIdle(content::WebContents* web_contents) {}
   virtual void OnExpectedTaskQueueingDurationSet(
       content::WebContents* web_contents,
       base::TimeDelta duration) {}
