@@ -5,12 +5,8 @@
 #ifndef CHROME_BROWSER_PRINTING_PRINT_ERROR_DIALOG_H_
 #define CHROME_BROWSER_PRINTING_PRINT_ERROR_DIALOG_H_
 
-namespace chrome {
-
 // Shows a window-modal error that printing failed for some unknown reason.
 // TODO(vitalybuka, crbug.com/351550): Should be replaced with better UI.
 void ShowPrintErrorDialog();
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_PRINTING_PRINT_ERROR_DIALOG_H_
