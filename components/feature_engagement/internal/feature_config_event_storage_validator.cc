@@ -39,6 +39,9 @@ bool FeatureConfigEventStorageValidator::ShouldKeep(
     return false;
 
   // Too old events should not be kept.
+  // Storage time of N=0:  Nothing should be kept.
+  // Storage time of N=1:  |current_day| should be kept.
+  // Storage time of N=2+: |current_day| plus |N-1| more days should be kept.
   uint32_t longest_storage_time = it->second;
   uint32_t age = current_day - event_day;
   if (longest_storage_time <= age)
