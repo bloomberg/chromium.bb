@@ -40,7 +40,6 @@ source_set("web") {
     ":navigation_resources",
     ":resources",
     "//base",
-    "//ios/web/download",
     "//ios/web/interstitials",
     "//ios/web/navigation",
     "//ios/web/net",
@@ -167,7 +166,6 @@ test("ios_web_unittests") {
     ":ios_web_web_state_unittests",
     ":ios_web_webui_unittests",
     "//ios/testing:http_server_bundle_data",
-    "//ios/web/download:download_unittests",
   ]
 
   assert_no_deps = ios_assert_no_deps
