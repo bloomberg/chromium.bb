@@ -43770,6 +43770,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicAltSvcFormat" enum="QuicAltSvcFormat">
+  <owner>wangyix@chromium.org</owner>
+  <summary>
+    Tracks the number of QUIC alt-svc advertisements parsed by Chrome in Google
+    format vs in IETF format.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicClientHelloRejectReasons" enum="QuicRejectReasons">
   <owner>rch@chromium.org</owner>
   <summary>

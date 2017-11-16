@@ -33961,6 +33961,11 @@ Called by update_net_error_codes.py.-->
   <int value="2" label="ALTERNATIVE_PROXY_USAGE_LOST_RACE"/>
 </enum>
 
+<enum name="QuicAltSvcFormat">
+  <int value="0" label="Google format"/>
+  <int value="1" label="IETF format"/>
+</enum>
+
 <enum name="QuicBadPacketLossEvents">
   <int value="1" label="ONE_PACKET_LOST"/>
   <int value="2" label="TWO_PACKETS_LOST"/>
