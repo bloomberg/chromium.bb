@@ -341,9 +341,12 @@ def PostUploadHook(cl, change, output_api):
   """git cl upload will call this hook after the issue is created/modified.
 
   This hook adds an extra try bot list to the CL description in order to run
-  Blink tests in addition to the CQ try bots.
+  Blink tests and additional GPU tests in addition to the CQ try bots.
   """
   return output_api.EnsureCQIncludeTrybotsAreAdded(
     cl,
-    ['master.tryserver.blink:linux_trusty_blink_rel'],
-    'Automatically added Blink trybots to run Blink tests on CQ.')
+    [
+      'master.tryserver.blink:linux_trusty_blink_rel',
+      'master.tryserver.chromium.android:android_optional_gpu_tests_rel',
+    ],
+    'Automatically added Blink and Android GPU trybots for CQ.')
