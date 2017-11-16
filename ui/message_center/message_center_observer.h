@@ -40,6 +40,13 @@ class MESSAGE_CENTER_EXPORT MessageCenterObserver {
   virtual void OnNotificationButtonClicked(const std::string& notification_id,
                                            int button_index) {}
 
+  // Called when a click event happens on a button with an input indexed by
+  // |button_index| of the notification associated with |notification_id|.
+  virtual void OnNotificationButtonClickedWithReply(
+      const std::string& notification_id,
+      int button_index,
+      const base::string16& reply) {}
+
   // Called when notification settings button is clicked. The |handled| argument
   // indicates whether the notification delegate already handled the operation.
   virtual void OnNotificationSettingsClicked(bool handled) {}

@@ -372,6 +372,15 @@ void ToastContentsView::ClickOnNotificationButton(
     collection_->ClickOnNotificationButton(notification_id, button_index);
 }
 
+void ToastContentsView::ClickOnNotificationButtonWithReply(
+    const std::string& notification_id,
+    int button_index,
+    const base::string16& reply) {
+  if (collection_)
+    collection_->ClickOnNotificationButtonWithReply(notification_id,
+                                                    button_index, reply);
+}
+
 void ToastContentsView::CreateWidget(
     PopupAlignmentDelegate* alignment_delegate) {
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);

@@ -95,6 +95,11 @@ void FakeMessageCenter::ClickOnNotificationButton(const std::string& id,
                                                   int button_index) {
 }
 
+void FakeMessageCenter::ClickOnNotificationButtonWithReply(
+    const std::string& id,
+    int button_index,
+    const base::string16& reply) {}
+
 void FakeMessageCenter::ClickOnSettingsButton(const std::string& id) {}
 
 void FakeMessageCenter::MarkSinglePopupAsShown(const std::string& id,

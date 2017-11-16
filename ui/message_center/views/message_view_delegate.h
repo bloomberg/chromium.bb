@@ -27,6 +27,10 @@ class MessageViewDelegate {
       const Notification& notification) = 0;
   virtual void ClickOnNotificationButton(const std::string& notification_id,
                                          int button_index) = 0;
+  virtual void ClickOnNotificationButtonWithReply(
+      const std::string& notification_id,
+      int button_index,
+      const base::string16& reply) = 0;
   virtual void ClickOnSettingsButton(const std::string& notification_id) = 0;
   // For ArcCustomNotificationView, size changes might come after the
   // notification update over Mojo. Provide a method here to notify when

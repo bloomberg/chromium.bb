@@ -131,6 +131,14 @@ class MESSAGE_CENTER_EXPORT MessageCenter {
   virtual void ClickOnNotificationButton(const std::string& id,
                                          int button_index) = 0;
 
+  // This should be called by UI classes when a notification button with an
+  // input is clicked to trigger the notification's delegate callback and also
+  // update the message center observers.
+  virtual void ClickOnNotificationButtonWithReply(
+      const std::string& id,
+      int button_index,
+      const base::string16& reply) = 0;
+
   // Called by the UI classes when the settings buttons is clicked
   // to trigger the notification's delegate and update the message
   // center observers.

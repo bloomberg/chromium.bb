@@ -199,6 +199,9 @@ class MessageCenterViewTest : public AshTestBase,
       const Notification& notification) override;
   void ClickOnNotificationButton(const std::string& notification_id,
                                  int button_index) override;
+  void ClickOnNotificationButtonWithReply(const std::string& notification_id,
+                                          int button_index,
+                                          const base::string16& reply) override;
   void ClickOnSettingsButton(const std::string& notification_id) override;
   void UpdateNotificationSize(const std::string& notification_id) override;
 
@@ -387,6 +390,14 @@ std::unique_ptr<ui::MenuModel> MessageCenterViewTest::CreateMenuModel(
 void MessageCenterViewTest::ClickOnNotificationButton(
     const std::string& notification_id,
     int button_index) {
+  // For this test, this method should not be invoked.
+  NOTREACHED();
+}
+
+void MessageCenterViewTest::ClickOnNotificationButtonWithReply(
+    const std::string& notification_id,
+    int button_index,
+    const base::string16& reply) {
   // For this test, this method should not be invoked.
   NOTREACHED();
 }
