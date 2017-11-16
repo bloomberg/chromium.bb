@@ -1,7 +1,5 @@
-CONSOLE MESSAGE: line 15: Done.
 Tests content is available for failed image request.
 
-Bug 84265
 http://127.0.0.1:8000/devtools/network/resources/404.php
 resource.type: image
 resources count = 1

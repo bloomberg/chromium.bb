@@ -1,10 +1,6 @@
 # These tests currently fail when run with --enable-browser-side-navigation
 # See https://crbug.com/576261
 
-# https://crbug.com/551000: PlzNavigate: DevTools support
-crbug.com/551000 http/tests/devtools/network/x-frame-options-deny.html [ Failure ]
-crbug.com/551000 virtual/mojo-loading/http/tests/devtools/network/x-frame-options-deny.html [ Failure ]
-
 # These tests are flaky.
 Bug(none) http/tests/security/popup-allowed-by-sandbox-can-navigate.html [ Failure ]
 Bug(none) virtual/mojo-loading/http/tests/security/popup-allowed-by-sandbox-can-navigate.html [ Failure ]
