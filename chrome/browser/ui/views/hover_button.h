@@ -46,6 +46,7 @@ class HoverButton : public views::LabelButton {
 
  protected:
   // views::LabelButton:
+  void StateChanged(ButtonState old_state) override;
   bool ShouldUseFloodFillInkDrop() const override;
 
   // views::InkDropHostView:
