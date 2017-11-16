@@ -380,6 +380,11 @@ WebString GetErrorString(const CORSError error,
           : String();
 
   switch (error) {
+    case CORSError::kDisallowedByMode:
+      return String::Format(
+          "Failed to load '%s': Cross origin requests are not allowed by "
+          "request mode.",
+          request_url.GetString().Utf8().data());
     case CORSError::kInvalidResponse:
       return String::Format(
           "%sInvalid response. Origin '%s' is therefore not allowed access.",

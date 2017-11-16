@@ -11,13 +11,15 @@
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 
+using network::mojom::CORSError;
+using network::mojom::FetchRequestMode;
+
 namespace content {
 
 namespace {
 
 bool CalculateCORSFlag(const ResourceRequest& request) {
-  if (request.fetch_request_mode ==
-          network::mojom::FetchRequestMode::kNavigate &&
+  if (request.fetch_request_mode == FetchRequestMode::kNavigate &&
       (request.resource_type == RESOURCE_TYPE_MAIN_FRAME ||
        request.resource_type == RESOURCE_TYPE_SUB_FRAME)) {
     return false;
@@ -54,6 +56,13 @@ CORSURLLoader::CORSURLLoader(
       fetch_credentials_mode_(resource_request.fetch_credentials_mode),
       fetch_cors_flag_(CalculateCORSFlag(resource_request)) {
   DCHECK(network_loader_factory_);
+
+  if (fetch_cors_flag_ &&
+      fetch_request_mode_ == FetchRequestMode::kSameOrigin) {
+    forwarding_client_->OnComplete(
+        network::URLLoaderStatus(CORSError::kDisallowedByMode));
+    return;
+  }
 
   // TODO(toyoshim): Needs some checks if the calculated fetch_cors_flag_
   // is allowed in this request or not.
@@ -108,11 +117,10 @@ void CORSURLLoader::OnReceiveResponse(
   DCHECK(!is_waiting_follow_redirect_call_);
   if (fetch_cors_flag_ &&
       blink::WebCORS::IsCORSEnabledRequestMode(fetch_request_mode_)) {
-    base::Optional<network::mojom::CORSError> cors_error =
-        blink::WebCORS::CheckAccess(
-            last_response_url_, response_head.headers->response_code(),
-            blink::WebHTTPHeaderMap(response_head.headers.get()),
-            fetch_credentials_mode_, security_origin_);
+    base::Optional<CORSError> cors_error = blink::WebCORS::CheckAccess(
+        last_response_url_, response_head.headers->response_code(),
+        blink::WebHTTPHeaderMap(response_head.headers.get()),
+        fetch_credentials_mode_, security_origin_);
     if (cors_error) {
       HandleComplete(network::URLLoaderStatus(*cors_error));
       return;

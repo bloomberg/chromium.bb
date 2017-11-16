@@ -277,11 +277,13 @@ void DocumentThreadableLoader::StartBlinkCORS(const ResourceRequest& request) {
     Clear();
     ResourceError error = ResourceError::CancelledDueToAccessCheckError(
         request.Url(), ResourceRequestBlockedReason::kOther,
-        "Cross origin requests are not supported.");
-    const String message = "Failed to load " + error.FailingURL() + ": " +
-                           error.LocalizedDescription();
-    GetExecutionContext()->AddConsoleMessage(
-        ConsoleMessage::Create(kJSMessageSource, kErrorMessageLevel, message));
+        WebCORS::GetErrorString(
+            network::mojom::CORSError::kDisallowedByMode, request.Url(),
+            WebURL(), 0 /* response_status_code */,
+            WebHTTPHeaderMap(HTTPHeaderMap()),
+            WebSecurityOrigin(GetSecurityOrigin()), request_context_));
+    GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
+        kJSMessageSource, kErrorMessageLevel, error.LocalizedDescription()));
     client->DidFail(error);
     return;
   }
