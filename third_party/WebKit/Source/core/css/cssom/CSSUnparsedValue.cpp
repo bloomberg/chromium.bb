@@ -19,12 +19,12 @@ StringView FindVariableName(CSSParserTokenRange& range) {
 
 StringOrCSSVariableReferenceValue VariableReferenceValue(
     const StringView& variable_name,
-    const HeapVector<StringOrCSSVariableReferenceValue>& fragments) {
+    const HeapVector<StringOrCSSVariableReferenceValue>& tokens) {
   CSSUnparsedValue* unparsed_value;
-  if (fragments.size() == 0)
+  if (tokens.size() == 0)
     unparsed_value = nullptr;
   else
-    unparsed_value = CSSUnparsedValue::Create(fragments);
+    unparsed_value = CSSUnparsedValue::Create(tokens);
 
   CSSStyleVariableReferenceValue* variable_reference =
       CSSStyleVariableReferenceValue::Create(variable_name.ToString(),
@@ -33,14 +33,14 @@ StringOrCSSVariableReferenceValue VariableReferenceValue(
       variable_reference);
 }
 
-HeapVector<StringOrCSSVariableReferenceValue> ParserTokenRangeToFragments(
+HeapVector<StringOrCSSVariableReferenceValue> ParserTokenRangeToTokens(
     CSSParserTokenRange range) {
-  HeapVector<StringOrCSSVariableReferenceValue> fragments;
+  HeapVector<StringOrCSSVariableReferenceValue> tokens;
   StringBuilder builder;
   while (!range.AtEnd()) {
     if (range.Peek().FunctionId() == CSSValueVar) {
       if (!builder.IsEmpty()) {
-        fragments.push_back(
+        tokens.push_back(
             StringOrCSSVariableReferenceValue::FromString(builder.ToString()));
         builder.Clear();
       }
@@ -49,38 +49,38 @@ HeapVector<StringOrCSSVariableReferenceValue> ParserTokenRangeToFragments(
       block.ConsumeWhitespace();
       if (block.Peek().GetType() == CSSParserTokenType::kCommaToken)
         block.Consume();
-      fragments.push_back(VariableReferenceValue(
-          variable_name, ParserTokenRangeToFragments(block)));
+      tokens.push_back(VariableReferenceValue(variable_name,
+                                              ParserTokenRangeToTokens(block)));
     } else {
       range.Consume().Serialize(builder);
     }
   }
   if (!builder.IsEmpty()) {
-    fragments.push_back(
+    tokens.push_back(
         StringOrCSSVariableReferenceValue::FromString(builder.ToString()));
   }
-  return fragments;
+  return tokens;
 }
 
 }  // namespace
 
 CSSUnparsedValue* CSSUnparsedValue::FromCSSValue(
     const CSSVariableReferenceValue& css_variable_reference_value) {
-  return CSSUnparsedValue::Create(ParserTokenRangeToFragments(
+  return CSSUnparsedValue::Create(ParserTokenRangeToTokens(
       css_variable_reference_value.VariableDataValue()->TokenRange()));
 }
 
 const CSSValue* CSSUnparsedValue::ToCSSValue() const {
   StringBuilder input;
 
-  for (unsigned i = 0; i < fragments_.size(); i++) {
+  for (unsigned i = 0; i < tokens_.size(); i++) {
     if (i) {
       input.Append("/**/");
     }
-    if (fragments_[i].IsString()) {
-      input.Append(fragments_[i].GetAsString());
-    } else if (fragments_[i].IsCSSVariableReferenceValue()) {
-      input.Append(fragments_[i].GetAsCSSVariableReferenceValue()->variable());
+    if (tokens_[i].IsString()) {
+      input.Append(tokens_[i].GetAsString());
+    } else if (tokens_[i].IsCSSVariableReferenceValue()) {
+      input.Append(tokens_[i].GetAsCSSVariableReferenceValue()->variable());
     } else {
       NOTREACHED();
     }
