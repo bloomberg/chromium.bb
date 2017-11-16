@@ -136,6 +136,7 @@
 -NaClBrowserTestNewlibVcacheExtension.ValidationCacheOfMainNexe
 -NetInternalsTest.netInternalsPrerenderViewFail
 -NetInternalsTest.netInternalsSessionBandwidthSucceed
+-NewTabUIProcessPerTabTest.NavBeforeNTPCommits
 -NewlibPackagedAppTest.MulticastPermissions
 -NewlibPackagedAppTest.NoSocketPermissions
 -NewlibPackagedAppTest.SocketPermissions
