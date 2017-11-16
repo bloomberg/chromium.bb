@@ -9,13 +9,14 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
-#include "base/metrics/user_metrics_action.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
+#include "chrome/browser/notifications/metrics/notification_metrics_logger.h"
+#include "chrome/browser/notifications/metrics/notification_metrics_logger_factory.h"
 #include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/notifications/web_notification_delegate.h"
@@ -128,6 +129,11 @@ static bool ShouldDisplayWebNotificationOnFullScreen(Profile* profile,
   return false;
 }
 
+NotificationMetricsLogger* GetMetricsLogger(BrowserContext* browser_context) {
+  return NotificationMetricsLoggerFactory::GetForBrowserContext(
+      browser_context);
+}
+
 }  // namespace
 
 // static
@@ -156,20 +162,19 @@ void PlatformNotificationServiceImpl::OnPersistentNotificationClick(
       CheckPermissionOnUIThread(browser_context, origin,
                                 kInvalidRenderProcessId);
 
+  NotificationMetricsLogger* metrics_logger = GetMetricsLogger(browser_context);
+
   // TODO(peter): Change this to a CHECK() when Issue 555572 is resolved.
   // Also change this method to be const again.
   if (permission_status != blink::mojom::PermissionStatus::GRANTED) {
-    base::RecordAction(base::UserMetricsAction(
-        "Notifications.Persistent.ClickedWithoutPermission"));
+    metrics_logger->LogPersistentNotificationClickWithoutPermission();
     return;
   }
 
   if (action_index.has_value()) {
-    base::RecordAction(base::UserMetricsAction(
-        "Notifications.Persistent.ClickedActionButton"));
+    metrics_logger->LogPersistentNotificationActionButtonClick();
   } else {
-    base::RecordAction(
-        base::UserMetricsAction("Notifications.Persistent.Clicked"));
+    metrics_logger->LogPersistentNotificationClick();
   }
 
 #if BUILDFLAG(ENABLE_BACKGROUND)
@@ -202,13 +207,12 @@ void PlatformNotificationServiceImpl::OnPersistentNotificationClose(
   if (closed_notifications_.erase(notification_id) != 0)
     return;
 
-  if (by_user) {
-    base::RecordAction(
-        base::UserMetricsAction("Notifications.Persistent.ClosedByUser"));
-  } else {
-    base::RecordAction(base::UserMetricsAction(
-        "Notifications.Persistent.ClosedProgrammatically"));
-  }
+  NotificationMetricsLogger* metrics_logger = GetMetricsLogger(browser_context);
+  if (by_user)
+    metrics_logger->LogPersistentNotificationClosedByUser();
+  else
+    metrics_logger->LogPersistentNotificationClosedProgrammatically();
+
   content::NotificationEventDispatcher::GetInstance()
       ->DispatchNotificationCloseEvent(
           browser_context, notification_id, origin, by_user,
@@ -384,7 +388,7 @@ void PlatformNotificationServiceImpl::DisplayPersistentNotification(
 
   NotificationDisplayServiceFactory::GetForProfile(profile)->Display(
       NotificationCommon::PERSISTENT, notification, std::move(metadata));
-  base::RecordAction(base::UserMetricsAction("Notifications.Persistent.Shown"));
+  GetMetricsLogger(browser_context)->LogPersistentNotificationShown();
 }
 
 void PlatformNotificationServiceImpl::CloseNotification(

@@ -2245,6 +2245,7 @@ test("unit_tests") {
     "../browser/net/spdyproxy/data_reduction_proxy_settings_unittest_android.cc",
     "../browser/net/url_info_unittest.cc",
     "../browser/notifications/desktop_notification_profile_util_unittest.cc",
+    "../browser/notifications/metrics/notification_metrics_logger_unittest.cc",
     "../browser/notifications/notification_channels_provider_android_unittest.cc",
     "../browser/notifications/notification_permission_context_unittest.cc",
     "../browser/notifications/notification_platform_bridge_mac_unittest.mm",
