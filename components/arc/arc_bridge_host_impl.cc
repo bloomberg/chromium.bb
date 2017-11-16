@@ -104,6 +104,12 @@ void ArcBridgeHostImpl::OnAuthInstanceReady(mojom::AuthInstancePtr auth_ptr) {
   OnInstanceReady(arc_bridge_service_->auth(), std::move(auth_ptr));
 }
 
+void ArcBridgeHostImpl::OnBackupSettingsInstanceReady(
+    mojom::BackupSettingsInstancePtr backup_settings_ptr) {
+  OnInstanceReady(arc_bridge_service_->backup_settings(),
+                  std::move(backup_settings_ptr));
+}
+
 void ArcBridgeHostImpl::OnBluetoothInstanceReady(
     mojom::BluetoothInstancePtr bluetooth_ptr) {
   OnInstanceReady(arc_bridge_service_->bluetooth(), std::move(bluetooth_ptr));

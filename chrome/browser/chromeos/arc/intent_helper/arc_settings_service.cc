@@ -32,6 +32,7 @@
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_prefs.h"
+#include "components/arc/common/backup_settings.mojom.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/arc/intent_helper/font_size_util.h"
 #include "components/onc/onc_pref_names.h"
@@ -421,9 +422,26 @@ void ArcSettingsServiceImpl::SyncAccessibilityVirtualKeyboardEnabled() const {
 }
 
 void ArcSettingsServiceImpl::SyncBackupEnabled() const {
-  SendBoolPrefSettingsBroadcast(
-      prefs::kArcBackupRestoreEnabled,
-      "org.chromium.arc.intent_helper.SET_BACKUP_ENABLED");
+  auto* backup_settings = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_bridge_service_->backup_settings(), SetBackupEnabled);
+  if (backup_settings) {
+    const PrefService::Preference* pref =
+        registrar_.prefs()->FindPreference(prefs::kArcBackupRestoreEnabled);
+    DCHECK(pref);
+    const base::Value* value = pref->GetValue();
+    DCHECK(value->is_bool());
+    backup_settings->SetBackupEnabled(value->GetBool(),
+                                      !pref->IsUserModifiable());
+  } else {
+    // TODO(crbug.com/783567): Remove this code path after we made sure we
+    // rolled the ARC image that implements backup_settings.
+    //
+    // Fallback to use intent broadcast, if the new method is not available.
+    SendBoolPrefSettingsBroadcast(
+        prefs::kArcBackupRestoreEnabled,
+        "org.chromium.arc.intent_helper.SET_BACKUP_ENABLED");
+  }
+
   if (GetPrefs()->IsManagedPreference(prefs::kArcBackupRestoreEnabled)) {
     // Unset the user pref so that if the pref becomes unmanaged at some point,
     // this change will be synced.

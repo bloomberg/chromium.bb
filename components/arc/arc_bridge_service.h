@@ -18,6 +18,7 @@ class AccessibilityHelperInstance;
 class AppInstance;
 class AudioInstance;
 class AuthInstance;
+class BackupSettingsInstance;
 class BluetoothInstance;
 class BootPhaseMonitorInstance;
 class CastReceiverInstance;
@@ -65,6 +66,9 @@ class ArcBridgeService {
   InstanceHolder<mojom::AppInstance>* app() { return &app_; }
   InstanceHolder<mojom::AudioInstance>* audio() { return &audio_; }
   InstanceHolder<mojom::AuthInstance>* auth() { return &auth_; }
+  InstanceHolder<mojom::BackupSettingsInstance>* backup_settings() {
+    return &backup_settings_;
+  }
   InstanceHolder<mojom::BluetoothInstance>* bluetooth() { return &bluetooth_; }
   InstanceHolder<mojom::BootPhaseMonitorInstance>* boot_phase_monitor() {
     return &boot_phase_monitor_;
@@ -134,6 +138,7 @@ class ArcBridgeService {
   InstanceHolder<mojom::AppInstance> app_;
   InstanceHolder<mojom::AudioInstance> audio_;
   InstanceHolder<mojom::AuthInstance> auth_;
+  InstanceHolder<mojom::BackupSettingsInstance> backup_settings_;
   InstanceHolder<mojom::BluetoothInstance> bluetooth_;
   InstanceHolder<mojom::BootPhaseMonitorInstance> boot_phase_monitor_;
   InstanceHolder<mojom::CastReceiverInstance> cast_receiver_;

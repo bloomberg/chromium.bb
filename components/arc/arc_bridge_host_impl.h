@@ -43,6 +43,8 @@ class ArcBridgeHostImpl : public mojom::ArcBridgeHost {
   void OnAppInstanceReady(mojom::AppInstancePtr app_ptr) override;
   void OnAudioInstanceReady(mojom::AudioInstancePtr audio_ptr) override;
   void OnAuthInstanceReady(mojom::AuthInstancePtr auth_ptr) override;
+  void OnBackupSettingsInstanceReady(
+      mojom::BackupSettingsInstancePtr backup_settings_ptr) override;
   void OnBluetoothInstanceReady(
       mojom::BluetoothInstancePtr bluetooth_ptr) override;
   void OnBootPhaseMonitorInstanceReady(
