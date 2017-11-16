@@ -1,0 +1,30 @@
+This is a testharness.js-based test.
+PASS Constructing a CSSRotation with a CSSUnitValue with type other than angle for the angle throws a TypeError
+PASS Constructing a CSSRotation with a CSSMathValue that doesn't match <angle> for the angle throws a TypeError
+PASS Constructing a CSSRotation with a CSSUnitValue with type other than number for the coordinates throws a TypeError
+FAIL Constructing a CSSRotation with a CSSMathValue that doesn't match <number> for the coordinates throws a TypeError assert_throws: function "() => new CSSRotation(coord, 0, 0, CSS.deg(0))" did not throw
+PASS Updating CSSRotation.x to a CSSUnitValue with type other than number throws a TypeError
+PASS Updating CSSRotation.x to a CSSMathValue that doesn't match <number> throws a TypeError
+PASS Updating CSSRotation.y to a CSSUnitValue with type other than number throws a TypeError
+PASS Updating CSSRotation.y to a CSSMathValue that doesn't match <number> throws a TypeError
+PASS Updating CSSRotation.z to a CSSUnitValue with type other than number throws a TypeError
+PASS Updating CSSRotation.z to a CSSMathValue that doesn't match <number> throws a TypeError
+PASS Updating CSSRotation.angle to a CSSUnitValue with type other than angle throws a TypeError
+PASS Updating CSSRotation.angle to a CSSMathValue that doesn't match <angle> throws a TypeError
+FAIL CSSRotation can be constructed from a single angle assert_equals: expected "CSSUnitValue" but got "Number"
+FAIL CSSRotation can be constructed from numberish coordinates assert_equals: expected "CSSUnitValue" but got "Number"
+FAIL CSSRotation can be constructed from CSSMathValues Failed to construct 'CSSRotation': Must pass an angle to CSSRotation
+FAIL CSSRotation.x can be updated to a double assert_equals: expected (object) object "3.14" but got (number) 3.14
+FAIL CSSRotation.x can be updated to a number CSSUnitValue assert_equals: expected "CSSUnitValue" but got "Number"
+FAIL CSSRotation.x can be updated to a CSSMathValue matching <number> assert_equals: expected "CSSMathSum" but got "Number"
+FAIL CSSRotation.y can be updated to a double assert_equals: expected (object) object "3.14" but got (number) 3.14
+FAIL CSSRotation.y can be updated to a number CSSUnitValue assert_equals: expected "CSSUnitValue" but got "Number"
+FAIL CSSRotation.y can be updated to a CSSMathValue matching <number> assert_equals: expected "CSSMathSum" but got "Number"
+FAIL CSSRotation.z can be updated to a double assert_equals: expected (object) object "3.14" but got (number) 3.14
+FAIL CSSRotation.z can be updated to a number CSSUnitValue assert_equals: expected "CSSUnitValue" but got "Number"
+FAIL CSSRotation.z can be updated to a CSSMathValue matching <number> assert_equals: expected "CSSMathSum" but got "Number"
+PASS CSSRotation.angle can be updated to a degree CSSUnitValue
+FAIL CSSRotation.angle can be updated to a CSSMathValue matching <angle> Failed to set the 'angle' property on 'CSSRotation': Must pass an angle to CSSRotation
+PASS Modifying CSSRotation.is2D can be updated to true or false
+Harness: the test ran to completion.
+
