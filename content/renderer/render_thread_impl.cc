@@ -1156,8 +1156,9 @@ mojom::StoragePartitionService* RenderThreadImpl::GetStoragePartitionService() {
 }
 
 mojom::RendererHost* RenderThreadImpl::GetRendererHost() {
-  if (!renderer_host_)
+  if (!renderer_host_) {
     GetChannel()->GetRemoteAssociatedInterface(&renderer_host_);
+  }
   return renderer_host_.get();
 }
 
@@ -1752,6 +1753,18 @@ void RenderThreadImpl::OnChannelError() {
   CHECK(!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSingleProcess));
   ChildThreadImpl::OnChannelError();
+}
+
+void RenderThreadImpl::OnProcessFinalRelease() {
+  if (on_channel_error_called())
+    return;
+  // The child process shutdown sequence is a request response based mechanism,
+  // where we send out an initial feeler request to the child process host
+  // instance in the browser to verify if it's ok to shutdown the child process.
+  // The browser then sends back a response if it's ok to shutdown. This avoids
+  // race conditions if the process refcount is 0 but there's an IPC message
+  // inflight that would addref it.
+  GetRendererHost()->ShutdownRequest();
 }
 
 bool RenderThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {

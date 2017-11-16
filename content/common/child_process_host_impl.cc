@@ -220,14 +220,6 @@ bool ChildProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {
   }
 
   if (!handled) {
-    handled = true;
-    IPC_BEGIN_MESSAGE_MAP(ChildProcessHostImpl, msg)
-      IPC_MESSAGE_HANDLER(ChildProcessHostMsg_ShutdownRequest,
-                          OnShutdownRequest)
-      IPC_MESSAGE_UNHANDLED(handled = false)
-    IPC_END_MESSAGE_MAP()
-
-    if (!handled)
       handled = delegate_->OnMessageReceived(msg);
   }
 
@@ -264,11 +256,6 @@ void ChildProcessHostImpl::OnChannelError() {
 
 void ChildProcessHostImpl::OnBadMessageReceived(const IPC::Message& message) {
   delegate_->OnBadMessageReceived(message);
-}
-
-void ChildProcessHostImpl::OnShutdownRequest() {
-  if (delegate_->CanShutdown())
-    child_control_->ProcessShutdown();
 }
 
 }  // namespace content

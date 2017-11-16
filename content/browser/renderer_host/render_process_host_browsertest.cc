@@ -167,11 +167,13 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
 
   host_destructions_ = 0;
   process_exits_ = 0;
-  rph->AddObserver(this);
-  ChildProcessHostMsg_ShutdownRequest msg;
-  rph->OnMessageReceived(msg);
 
-  // If the RPH sends a mistaken ChildProcessMsg_Shutdown, the renderer process
+  rph->AddObserver(this);
+
+  static_cast<mojom::RendererHost*>(static_cast<RenderProcessHostImpl*>(rph))
+      ->ShutdownRequest();
+
+  // If the RPH sends a mistaken ProcessShutdown, the renderer process
   // will take some time to die. Wait for a second tab to load in order to give
   // that time to happen.
   NavigateToURL(CreateBrowser(), test_url);

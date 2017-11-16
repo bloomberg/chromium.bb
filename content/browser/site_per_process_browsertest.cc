@@ -8847,34 +8847,21 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_FALSE(rvh->is_swapped_out_);
 }
 
-// Helper class to wait for a ChildProcessHostMsg_ShutdownRequest message to
-// arrive.
-class ShutdownRequestMessageFilter : public BrowserMessageFilter {
+// Helper class to wait for a ShutdownRequest message to arrive, in response to
+// which RenderProcessWillExit is called on observers by RenderProcessHost.
+class ShutdownObserver : public RenderProcessHostObserver {
  public:
-  ShutdownRequestMessageFilter()
-      : BrowserMessageFilter(ChildProcessMsgStart),
-        message_loop_runner_(new MessageLoopRunner) {}
+  ShutdownObserver() : message_loop_runner_(new MessageLoopRunner) {}
 
-  bool OnMessageReceived(const IPC::Message& message) override {
-    if (message.type() == ChildProcessHostMsg_ShutdownRequest::ID) {
-      content::BrowserThread::PostTask(
-          content::BrowserThread::UI, FROM_HERE,
-          base::BindOnce(&ShutdownRequestMessageFilter::OnShutdownRequest,
-                         this));
-    }
-    return false;
+  void RenderProcessShutdownRequested(RenderProcessHost* host) override {
+    message_loop_runner_->Quit();
   }
-
-  void OnShutdownRequest() { message_loop_runner_->Quit(); }
 
   void Wait() { message_loop_runner_->Run(); }
 
  private:
-  ~ShutdownRequestMessageFilter() override {}
-
   scoped_refptr<MessageLoopRunner> message_loop_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShutdownRequestMessageFilter);
+  DISALLOW_COPY_AND_ASSIGN(ShutdownObserver);
 };
 
 // Test for https://crbug.com/568836.  From an A-embed-B page, navigate the
@@ -8913,15 +8900,15 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // Navigate the subframe away from b.com.  Since this is the last active
   // frame in the b.com process, this causes the RenderWidget and RenderView to
   // be closed.  If this succeeds without crashing, the renderer will release
-  // the process and send a ChildProcessHostMsg_ShutdownRequest to the browser
+  // the process and send a ShutdownRequest to the browser
   // process to ask whether it's ok to terminate.  Thus, wait for this message
   // to ensure that the RenderView and widget were closed without crashing.
-  scoped_refptr<ShutdownRequestMessageFilter> filter =
-      new ShutdownRequestMessageFilter();
-  subframe_process->AddFilter(filter.get());
+  ShutdownObserver shutdown_observer;
+  subframe_process->AddObserver(&shutdown_observer);
   NavigateFrameToURL(root->child_at(0),
                      embedded_test_server()->GetURL("a.com", "/title1.html"));
-  filter->Wait();
+  shutdown_observer.Wait();
+  subframe_process->RemoveObserver(&shutdown_observer);
 
   // TODO(alexmos): Navigating the subframe back to b.com at this point would
   // trigger the race in https://crbug.com/535246, where the browser process
