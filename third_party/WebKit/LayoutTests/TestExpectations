@@ -705,7 +705,7 @@ crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-offsetLeft-continuat
 crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-padding-disables-text-quirk.html [ Failure ]
 crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-text-quirk-bpm.html [ Failure ]
 crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-width-containing-collapsed-whitespace-and-image-in-float.html [ Failure ]
-crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-with-empty-inline-children.html [ Failure ]
+crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-with-empty-inline-children.html [ Crash Failure ]
 crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-wrap-with-parent-padding.html [ Failure ]
 crbug.com/714962 virtual/layout_ng_paint/fast/inline/long-wrapped-line.html [ Failure ]
 crbug.com/714962 virtual/layout_ng_paint/fast/inline/nested-top-alignment.html [ Failure ]
