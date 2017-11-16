@@ -126,6 +126,11 @@ THIRD_PARTY_PKG_LIST = ['cherrypy', 'google/protobuf']
 UPDATE_PAYLOAD_DIR = os.path.join(
     constants.UPDATE_ENGINE_SCRIPTS_PATH, 'update_payload')
 
+# Number of seconds to wait for the post check version to settle.
+POST_CHECK_SETTLE_SECONDS = 5
+
+# Number of seconds to delay between post check retries.
+POST_CHECK_RETRY_SECONDS = 5
 
 class ChromiumOSUpdateError(Exception):
   """Thrown when there is a general ChromiumOS-specific update error."""
@@ -1369,23 +1374,39 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
   def PostCheckCrOSUpdate(self):
     """Post check for the whole auto-update process."""
     logging.debug('Post check for the whole CrOS update...')
+    start_time = time.time()
     # Not use 'sh' here since current device.RunCommand cannot recognize
     # the content of $FILE.
     autoreboot_cmd = ('FILE="%s" ; [ -f "$FILE" ] || '
                       '( touch "$FILE" ; start autoreboot )')
     self._RetryCommand(autoreboot_cmd % self.REMOTE_LAB_MACHINE_FILE_PATH,
                        **self._cmd_kwargs)
-    self._VerifyBootExpectations(
-        self.inactive_kernel, rollback_message=
-        'Build %s failed to boot on %s; system rolled back to previous '
-        'build' % (self.update_version, self.device.hostname))
-    # Check that we've got the build we meant to install.
-    if not self._CheckVersionToConfirmInstall():
-      raise ChromiumOSUpdateError(
-          'Failed to update %s to build %s; found build '
-          '%s instead' % (self.device.hostname,
-                          self.update_version,
-                          self._GetReleaseVersion()))
+
+    # Loop in case the initial check happens before the reboot.
+    while True:
+      try:
+        self._VerifyBootExpectations(
+            self.inactive_kernel, rollback_message=
+            'Build %s failed to boot on %s; system rolled back to previous '
+            'build' % (self.update_version, self.device.hostname))
+
+        # Check that we've got the build we meant to install.
+        if not self._CheckVersionToConfirmInstall():
+          raise ChromiumOSUpdateError(
+              'Failed to update %s to build %s; found build '
+              '%s instead' % (self.device.hostname,
+                              self.update_version,
+                              self._GetReleaseVersion()))
+      except (ChromiumOSUpdateError, RootfsUpdateError):
+        # If a minimum amount of time since starting the check has not
+        # occurred, wait and retry.
+        if time.time() - start_time < POST_CHECK_SETTLE_SECONDS:
+          logging.warning('Delaying for re-check of %s to update to %s' %
+                          (self.device.hostname, self.update_version))
+          time.sleep(POST_CHECK_RETRY_SECONDS)
+          continue
+        raise
+      break
 
     # For autoupdate_EndToEndTest only, we have one extra step to verify.
     if self.is_au_endtoendtest and not self._clobber_stateful:
