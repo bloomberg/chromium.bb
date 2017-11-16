@@ -1076,8 +1076,9 @@ xf_mouseEvent(rdpInput *input, UINT16 flags, UINT16 x, UINT16 y)
 		weston_event.discrete = (int)value;
 		weston_event.has_discrete = true;
 
-		notify_axis(peerContext->item.seat, weston_compositor_get_time(),
-			    &weston_event);
+		timespec_from_msec(&time, weston_compositor_get_time());
+
+		notify_axis(peerContext->item.seat, &time, &weston_event);
 		need_frame = true;
 	}
 

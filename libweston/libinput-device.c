@@ -230,6 +230,7 @@ handle_pointer_axis(struct libinput_device *libinput_device,
 	enum libinput_pointer_axis_source source;
 	uint32_t wl_axis_source;
 	bool has_vert, has_horiz;
+	struct timespec time;
 
 	has_vert = libinput_event_pointer_has_axis(pointer_event,
 				   LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL);
@@ -260,6 +261,9 @@ handle_pointer_axis(struct libinput_device *libinput_device,
 
 	notify_axis_source(device->seat, wl_axis_source);
 
+	timespec_from_usec(&time,
+			   libinput_event_pointer_get_time_usec(pointer_event));
+
 	if (has_vert) {
 		axis = LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL;
 		vert_discrete = get_axis_discrete(pointer_event, axis);
@@ -270,9 +274,7 @@ handle_pointer_axis(struct libinput_device *libinput_device,
 		weston_event.discrete = vert_discrete;
 		weston_event.has_discrete = (vert_discrete != 0);
 
-		notify_axis(device->seat,
-			    libinput_event_pointer_get_time(pointer_event),
-			    &weston_event);
+		notify_axis(device->seat, &time, &weston_event);
 	}
 
 	if (has_horiz) {
@@ -285,9 +287,7 @@ handle_pointer_axis(struct libinput_device *libinput_device,
 		weston_event.discrete = horiz_discrete;
 		weston_event.has_discrete = (horiz_discrete != 0);
 
-		notify_axis(device->seat,
-			    libinput_event_pointer_get_time(pointer_event),
-			    &weston_event);
+		notify_axis(device->seat, &time, &weston_event);
 	}
 
 	return true;

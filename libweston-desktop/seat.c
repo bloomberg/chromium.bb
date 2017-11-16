@@ -139,7 +139,7 @@ weston_desktop_seat_popup_grab_pointer_button(struct weston_pointer_grab *grab,
 
 static void
 weston_desktop_seat_popup_grab_pointer_axis(struct weston_pointer_grab *grab,
-					    uint32_t time,
+					    const struct timespec *time,
 					    struct weston_pointer_axis_event *event)
 {
 	weston_pointer_send_axis(grab->pointer, time, event);

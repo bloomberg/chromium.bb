@@ -514,16 +514,18 @@ default_grab_pointer_button(struct weston_pointer_grab *grab,
  */
 WL_EXPORT void
 weston_pointer_send_axis(struct weston_pointer *pointer,
-			 uint32_t time,
+			 const struct timespec *time,
 			 struct weston_pointer_axis_event *event)
 {
 	struct wl_resource *resource;
 	struct wl_list *resource_list;
+	uint32_t msecs;
 
 	if (!weston_pointer_has_focus_resource(pointer))
 		return;
 
 	resource_list = &pointer->focus_client->pointer_resources;
+	msecs = timespec_to_msec(time);
 	wl_resource_for_each(resource, resource_list) {
 		if (event->has_discrete &&
 		    wl_resource_get_version(resource) >=
@@ -532,12 +534,12 @@ weston_pointer_send_axis(struct weston_pointer *pointer,
 						      event->discrete);
 
 		if (event->value)
-			wl_pointer_send_axis(resource, time,
+			wl_pointer_send_axis(resource, msecs,
 					     event->axis,
 					     wl_fixed_from_double(event->value));
 		else if (wl_resource_get_version(resource) >=
 			 WL_POINTER_AXIS_STOP_SINCE_VERSION)
-			wl_pointer_send_axis_stop(resource, time,
+			wl_pointer_send_axis_stop(resource, msecs,
 						  event->axis);
 	}
 }
@@ -603,7 +605,7 @@ weston_pointer_send_frame(struct weston_pointer *pointer)
 
 static void
 default_grab_pointer_axis(struct weston_pointer_grab *grab,
-			  uint32_t time,
+			  const struct timespec *time,
 			  struct weston_pointer_axis_event *event)
 {
 	weston_pointer_send_axis(grab->pointer, time, event);
@@ -1685,7 +1687,7 @@ notify_button(struct weston_seat *seat, const struct timespec *time,
 }
 
 WL_EXPORT void
-notify_axis(struct weston_seat *seat, uint32_t time,
+notify_axis(struct weston_seat *seat, const struct timespec *time,
 	    struct weston_pointer_axis_event *event)
 {
 	struct weston_compositor *compositor = seat->compositor;
@@ -3339,7 +3341,7 @@ locked_pointer_grab_pointer_button(struct weston_pointer_grab *grab,
 
 static void
 locked_pointer_grab_pointer_axis(struct weston_pointer_grab *grab,
-				 uint32_t time,
+				 const struct timespec *time,
 				 struct weston_pointer_axis_event *event)
 {
 	weston_pointer_send_axis(grab->pointer, time, event);
@@ -4347,7 +4349,7 @@ confined_pointer_grab_pointer_button(struct weston_pointer_grab *grab,
 
 static void
 confined_pointer_grab_pointer_axis(struct weston_pointer_grab *grab,
-				   uint32_t time,
+				   const struct timespec *time,
 				   struct weston_pointer_axis_event *event)
 {
 	weston_pointer_send_axis(grab->pointer, time, event);

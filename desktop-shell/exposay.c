@@ -390,7 +390,8 @@ exposay_button(struct weston_pointer_grab *grab, const struct timespec *time,
 
 static void
 exposay_axis(struct weston_pointer_grab *grab,
-	     uint32_t time, struct weston_pointer_axis_event *event)
+	     const struct timespec *time,
+	     struct weston_pointer_axis_event *event)
 {
 }
 

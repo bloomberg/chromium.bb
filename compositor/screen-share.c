@@ -173,12 +173,15 @@ ss_seat_handle_axis(void *data, struct wl_pointer *pointer,
 {
 	struct ss_seat *seat = data;
 	struct weston_pointer_axis_event weston_event;
+	struct timespec ts;
 
 	weston_event.axis = axis;
 	weston_event.value = wl_fixed_to_double(value);
 	weston_event.has_discrete = false;
 
-	notify_axis(&seat->base, time, &weston_event);
+	timespec_from_msec(&ts, time);
+
+	notify_axis(&seat->base, &ts, &weston_event);
 	notify_pointer_frame(&seat->base);
 }
 

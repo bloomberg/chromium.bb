@@ -392,7 +392,7 @@ weston_compositor_run_touch_binding(struct weston_compositor *compositor,
 int
 weston_compositor_run_axis_binding(struct weston_compositor *compositor,
 				   struct weston_pointer *pointer,
-				   uint32_t time,
+				   const struct timespec *time,
 				   struct weston_pointer_axis_event *event)
 {
 	struct weston_binding *b, *tmp;

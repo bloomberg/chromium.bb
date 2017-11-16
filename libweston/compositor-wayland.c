@@ -1696,6 +1696,7 @@ input_handle_axis(void *data, struct wl_pointer *pointer,
 {
 	struct wayland_input *input = data;
 	struct weston_pointer_axis_event weston_event;
+	struct timespec ts;
 
 	weston_event.axis = axis;
 	weston_event.value = wl_fixed_to_double(value);
@@ -1712,7 +1713,9 @@ input_handle_axis(void *data, struct wl_pointer *pointer,
 		input->horiz.has_discrete = false;
 	}
 
-	notify_axis(&input->base, time, &weston_event);
+	timespec_from_msec(&ts, time);
+
+	notify_axis(&input->base, &ts, &weston_event);
 
 	if (input->seat_version < WL_POINTER_FRAME_SINCE_VERSION)
 		notify_pointer_frame(&input->base);
@@ -1741,11 +1744,14 @@ input_handle_axis_stop(void *data, struct wl_pointer *pointer,
 {
 	struct wayland_input *input = data;
 	struct weston_pointer_axis_event weston_event;
+	struct timespec ts;
 
 	weston_event.axis = axis;
 	weston_event.value = 0;
 
-	notify_axis(&input->base, time, &weston_event);
+	timespec_from_msec(&ts, time);
+
+	notify_axis(&input->base, &ts, &weston_event);
 }
 
 static void

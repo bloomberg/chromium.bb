@@ -1178,9 +1178,8 @@ x11_backend_deliver_button_event(struct x11_backend *b,
 			weston_event.has_discrete = true;
 			weston_event.axis =
 				WL_POINTER_AXIS_VERTICAL_SCROLL;
-			notify_axis(&b->core_seat,
-				    weston_compositor_get_time(),
-				    &weston_event);
+			timespec_from_msec(&time, weston_compositor_get_time());
+			notify_axis(&b->core_seat, &time, &weston_event);
 			notify_pointer_frame(&b->core_seat);
 		}
 		return;
@@ -1191,9 +1190,8 @@ x11_backend_deliver_button_event(struct x11_backend *b,
 			weston_event.has_discrete = true;
 			weston_event.axis =
 				WL_POINTER_AXIS_VERTICAL_SCROLL;
-			notify_axis(&b->core_seat,
-				    weston_compositor_get_time(),
-				    &weston_event);
+			timespec_from_msec(&time, weston_compositor_get_time());
+			notify_axis(&b->core_seat, &time, &weston_event);
 			notify_pointer_frame(&b->core_seat);
 		}
 		return;
@@ -1204,9 +1202,8 @@ x11_backend_deliver_button_event(struct x11_backend *b,
 			weston_event.has_discrete = true;
 			weston_event.axis =
 				WL_POINTER_AXIS_HORIZONTAL_SCROLL;
-			notify_axis(&b->core_seat,
-				    weston_compositor_get_time(),
-				    &weston_event);
+			timespec_from_msec(&time, weston_compositor_get_time());
+			notify_axis(&b->core_seat, &time, &weston_event);
 			notify_pointer_frame(&b->core_seat);
 		}
 		return;
@@ -1217,9 +1214,8 @@ x11_backend_deliver_button_event(struct x11_backend *b,
 			weston_event.has_discrete = true;
 			weston_event.axis =
 				WL_POINTER_AXIS_HORIZONTAL_SCROLL;
-			notify_axis(&b->core_seat,
-				    weston_compositor_get_time(),
-				    &weston_event);
+			timespec_from_msec(&time, weston_compositor_get_time());
+			notify_axis(&b->core_seat, &time, &weston_event);
 			notify_pointer_frame(&b->core_seat);
 		}
 		return;

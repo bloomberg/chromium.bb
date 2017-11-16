@@ -1431,7 +1431,8 @@ noop_grab_focus(struct weston_pointer_grab *grab)
 
 static void
 noop_grab_axis(struct weston_pointer_grab *grab,
-	       uint32_t time, struct weston_pointer_axis_event *event)
+	       const struct timespec *time,
+	       struct weston_pointer_axis_event *event)
 {
 }
 
@@ -3344,7 +3345,8 @@ resize_binding(struct weston_pointer *pointer, const struct timespec *time,
 }
 
 static void
-surface_opacity_binding(struct weston_pointer *pointer, uint32_t time,
+surface_opacity_binding(struct weston_pointer *pointer,
+			const struct timespec *time,
 			struct weston_pointer_axis_event *event,
 			void *data)
 {
@@ -3374,8 +3376,8 @@ surface_opacity_binding(struct weston_pointer *pointer, uint32_t time,
 }
 
 static void
-do_zoom(struct weston_seat *seat, uint32_t time, uint32_t key, uint32_t axis,
-	double value)
+do_zoom(struct weston_seat *seat, const struct timespec *time, uint32_t key,
+	uint32_t axis, double value)
 {
 	struct weston_compositor *compositor = seat->compositor;
 	struct weston_pointer *pointer = weston_seat_get_pointer(seat);
@@ -3424,7 +3426,7 @@ do_zoom(struct weston_seat *seat, uint32_t time, uint32_t key, uint32_t axis,
 }
 
 static void
-zoom_axis_binding(struct weston_pointer *pointer, uint32_t time,
+zoom_axis_binding(struct weston_pointer *pointer, const struct timespec *time,
 		  struct weston_pointer_axis_event *event,
 		  void *data)
 {
@@ -3435,7 +3437,11 @@ static void
 zoom_key_binding(struct weston_keyboard *keyboard, uint32_t time,
 		 uint32_t key, void *data)
 {
-	do_zoom(keyboard->seat, time, key, 0, 0);
+	struct timespec ts;
+
+	timespec_from_msec(&ts, time);
+
+	do_zoom(keyboard->seat, &ts, key, 0, 0);
 }
 
 static void
