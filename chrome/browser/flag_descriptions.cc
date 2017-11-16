@@ -249,11 +249,6 @@ const char kDriveSearchInChromeLauncherName[] =
 const char kDriveSearchInChromeLauncherDescription[] =
     "Files from Drive will show up when searching the Chrome App Launcher.";
 
-const char kDropSyncCredentialName[] =
-    "Drop sync credentials from password manager";
-const char kDropSyncCredentialDescription[] =
-    "The password manager will not offer to save the credential used to sync.";
-
 const char kEasyUnlockBluetoothLowEnergyDiscoveryName[] =
     "Smart Lock Bluetooth Low Energy Discovery";
 const char kEasyUnlockBluetoothLowEnergyDiscoveryDescription[] =
