@@ -68,7 +68,9 @@
     markPromiseAsHandled,
     DequeueValue,
     EnqueueValueWithSize,
-    ValidateAndNormalizeQueuingStrategy
+    ValidateAndNormalizeQueuingStrategy,
+    CallOrNoop1,
+    PromiseCallOrNoop1
   } = binding.streamOperations;
 
   const streamErrors = binding.streamErrors;
@@ -111,8 +113,6 @@
         'This readable stream reader has been released and cannot be used ' +
         'to monitor the stream\'s state';
 
-  const errTmplMustBeFunctionOrUndefined = name =>
-        `${name} must be a function or undefined`;
   const errCannotPipeLockedStream = 'Cannot pipe a locked stream';
   const errCannotPipeToALockedStream = 'Cannot pipe to a locked stream';
   const errDestinationStreamClosed = 'Destination stream closed';
@@ -457,7 +457,7 @@
 
       const controller = this;
 
-      const startResult = CallOrNoop(
+      const startResult = CallOrNoop1(
           underlyingSource, 'start', this, 'underlyingSource.start');
       thenPromise(
           Promise_resolve(startResult),
@@ -538,7 +538,7 @@
     controller[_queue] = new binding.SimpleQueue();
 
     const underlyingSource = controller[_underlyingSource];
-    return PromiseCallOrNoop(
+    return PromiseCallOrNoop1(
         underlyingSource, 'cancel', reason, 'underlyingSource.cancel');
   }
 
@@ -913,7 +913,7 @@
     controller[_readableStreamDefaultControllerBits] |= PULLING;
 
     const underlyingSource = controller[_underlyingSource];
-    const pullPromise = PromiseCallOrNoop(
+    const pullPromise = PromiseCallOrNoop1(
         underlyingSource, 'pull', controller, 'underlyingSource.pull');
 
     thenPromise(
@@ -1064,44 +1064,6 @@
   //
   // Other helpers
   //
-
-  // Modified from InvokeOrNoop in spec
-  function CallOrNoop(O, P, arg, nameForError) {
-    const method = O[P];
-    if (method === undefined) {
-      return undefined;
-    }
-    if (typeof method !== 'function') {
-      throw new TypeError(errTmplMustBeFunctionOrUndefined(nameForError));
-    }
-
-    return callFunction(method, O, arg);
-  }
-
-  // Modified from PromiseInvokeOrNoop in spec
-  function PromiseCallOrNoop(O, P, arg, nameForError) {
-    let method;
-    try {
-      method = O[P];
-    } catch (methodE) {
-      return Promise_reject(methodE);
-    }
-
-    if (method === undefined) {
-      return Promise_resolve(undefined);
-    }
-
-    if (typeof method !== 'function') {
-      return Promise_reject(
-          new TypeError(errTmplMustBeFunctionOrUndefined(nameForError)));
-    }
-
-    try {
-      return Promise_resolve(callFunction(method, O, arg));
-    } catch (e) {
-      return Promise_reject(e);
-    }
-  }
 
   function CreateIterResultObject(value, done) {
     return {value, done};
