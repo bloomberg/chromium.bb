@@ -5,7 +5,7 @@
 #include "platform/scroll/ScrollbarThemeAura.h"
 
 #include "platform/scroll/ScrollbarTestSuite.h"
-#include "platform/testing/TestingPlatformSupport.h"
+#include "platform/testing/TestingPlatformSupportWithMockScheduler.h"
 
 namespace blink {
 

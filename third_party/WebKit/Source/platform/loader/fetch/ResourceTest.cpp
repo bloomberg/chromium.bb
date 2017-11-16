@@ -11,7 +11,7 @@
 #include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/loader/testing/MockResource.h"
 #include "platform/loader/testing/MockResourceClient.h"
-#include "platform/testing/TestingPlatformSupport.h"
+#include "platform/testing/TestingPlatformSupportWithMockScheduler.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/wtf/Time.h"
 #include "platform/wtf/Vector.h"

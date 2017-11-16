@@ -7,7 +7,7 @@
 #include "core/paint/PaintEvent.h"
 #include "core/paint/PaintTiming.h"
 #include "core/testing/DummyPageHolder.h"
-#include "platform/testing/TestingPlatformSupport.h"
+#include "platform/testing/TestingPlatformSupportWithMockScheduler.h"
 #include "platform/wtf/text/StringBuilder.h"
 #include "public/platform/WebLayerTreeView.h"
 #include "testing/gtest/include/gtest/gtest.h"

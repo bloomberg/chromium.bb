@@ -124,6 +124,7 @@ jumbo_source_set("unit_tests") {
     "fetch/ResourceLoaderOptionsTest.cpp",
     "fetch/ResourceLoaderTest.cpp",
     "fetch/ResourceRequestTest.cpp",
+    "fetch/ResourceResponseTest.cpp",
     "fetch/ResourceTest.cpp",
   ]
 

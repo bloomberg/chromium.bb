@@ -5,7 +5,7 @@
 #include "core/loader/IdlenessDetector.h"
 
 #include "core/testing/DummyPageHolder.h"
-#include "platform/testing/TestingPlatformSupport.h"
+#include "platform/testing/TestingPlatformSupportWithMockScheduler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {

@@ -6,7 +6,7 @@
 
 #include "platform/SharedBuffer.h"
 #include "platform/graphics/BitmapImage.h"
-#include "platform/testing/TestingPlatformSupport.h"
+#include "platform/testing/TestingPlatformSupportWithMockScheduler.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

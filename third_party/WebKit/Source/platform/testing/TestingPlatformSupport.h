@@ -34,21 +34,13 @@
 #include <memory>
 #include <utility>
 #include "platform/PlatformExport.h"
-#include "platform/WebTaskRunner.h"
-#include "platform/scheduler/child/web_scheduler.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Assertions.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
-#include "public/platform/WebThread.h"
 
 namespace base {
-class SimpleTestTickClock;
 class TestDiscardableMemoryAllocator;
-}
-
-namespace cc {
-class OrderedSimpleTaskRunner;
 }
 
 namespace cc_blink {
@@ -56,9 +48,6 @@ class WebCompositorSupportImpl;
 }  // namespace cc_blink
 
 namespace blink {
-namespace scheduler {
-class RendererSchedulerImpl;
-}
 class WebCompositorSupport;
 class WebThread;
 
@@ -123,54 +112,6 @@ class TestingPlatformSupport : public Platform {
   const Config config_;
   Platform* const old_platform_;
   std::unique_ptr<TestingInterfaceProvider> interface_provider_;
-};
-
-// This class adds mocked scheduler support to TestingPlatformSupport.  See also
-// ScopedTestingPlatformSupport to use this class correctly.
-class TestingPlatformSupportWithMockScheduler : public TestingPlatformSupport {
-  WTF_MAKE_NONCOPYABLE(TestingPlatformSupportWithMockScheduler);
-
- public:
-  TestingPlatformSupportWithMockScheduler();
-  explicit TestingPlatformSupportWithMockScheduler(const Config&);
-  ~TestingPlatformSupportWithMockScheduler() override;
-
-  // Platform:
-  WebThread* CurrentThread() override;
-
-  // Runs a single task.
-  void RunSingleTask();
-
-  // Runs all currently queued immediate tasks and delayed tasks whose delay has
-  // expired plus any immediate tasks that are posted as a result of running
-  // those tasks.
-  //
-  // This function ignores future delayed tasks when deciding if the system is
-  // idle.  If you need to ensure delayed tasks run, try runForPeriodSeconds()
-  // instead.
-  void RunUntilIdle() override;
-
-  // Runs for |seconds| the testing clock is advanced by |seconds|.  Note real
-  // time elapsed will typically much less than |seconds| because delays between
-  // timers are fast forwarded.
-  void RunForPeriodSeconds(double seconds);
-
-  // Advances |m_clock| by |seconds|.
-  void AdvanceClockSeconds(double seconds);
-
-  scheduler::RendererSchedulerImpl* GetRendererScheduler() const;
-
-  // Controls the behavior of |m_mockTaskRunner| if true, then |m_clock| will
-  // be advanced to the next timer when there's no more immediate work to do.
-  void SetAutoAdvanceNowToPendingTasks(bool);
-
- protected:
-  static double GetTestTime();
-
-  std::unique_ptr<base::SimpleTestTickClock> clock_;
-  scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
-  std::unique_ptr<scheduler::RendererSchedulerImpl> scheduler_;
-  std::unique_ptr<WebThread> thread_;
 };
 
 // ScopedTestingPlatformSupport<MyTestingPlatformSupport> can be used to
