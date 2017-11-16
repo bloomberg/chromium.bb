@@ -68,6 +68,7 @@ include_rules = [
   "+third_party/boringssl/src/include",
   "+third_party/crashpad",
   "+third_party/cros_system_api",
+  "+third_party/libaom/av1_features.h",
   "+third_party/metrics_proto",
 
   # Code under //ash runs out-of-process under mustash (chrome --mash) so it
