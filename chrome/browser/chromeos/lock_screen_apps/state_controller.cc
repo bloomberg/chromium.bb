@@ -224,7 +224,8 @@ void StateController::InitializeWithCryptoKey(Profile* profile,
   lock_screen_data_ =
       base::MakeUnique<extensions::lock_screen_data::LockScreenItemStorage>(
           profile, g_browser_process->local_state(), crypto_key,
-          base_path.AppendASCII("lock_screen_app_data"));
+          base_path.AppendASCII("lock_screen_app_data"),
+          base_path.AppendASCII("lock_screen_app_data_v2"));
   lock_screen_data_->SetSessionLocked(false);
 
   chromeos::NoteTakingHelper::Get()->SetProfileWithEnabledLockScreenApps(

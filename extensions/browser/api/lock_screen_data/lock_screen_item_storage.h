@@ -19,6 +19,7 @@
 #include "base/sequenced_task_runner.h"
 #include "extensions/browser/api/lock_screen_data/data_item.h"
 #include "extensions/browser/extension_registry_observer.h"
+#include "extensions/common/extension_id.h"
 
 class PrefRegistrySimple;
 class PrefService;
@@ -40,6 +41,7 @@ class LocalValueStoreCache;
 namespace lock_screen_data {
 
 class DataItem;
+class LockScreenValueStoreMigrator;
 enum class OperationResult;
 
 // Keeps track of lock screen data items created by extensions.
@@ -77,11 +79,15 @@ class LockScreenItemStorage : public ExtensionRegistryObserver {
   // |local_state| - Local state preference.
   // |crypto_key| - Symmetric key that should be used to encrypt data content
   //     when it's persisted on the disk.
+  // |deprecated_storage_root| - The directory on the disk to which data item
+  //     content used to be persisted, and from which data items should be
+  //     migrated.
   // |storage_root| - Directory on the disk to which data item content should be
   //     persisted.
   LockScreenItemStorage(content::BrowserContext* context,
                         PrefService* local_state,
                         const std::string& crypto_key,
+                        const base::FilePath& deprecated_storage_root,
                         const base::FilePath& storage_root);
   ~LockScreenItemStorage() override;
 
@@ -120,6 +126,19 @@ class LockScreenItemStorage : public ExtensionRegistryObserver {
                               const Extension* extension,
                               UninstallReason reason) override;
 
+  // Used in tests to inject fake/stub data value store.
+  using ValueStoreCacheFactoryCallback =
+      base::Callback<std::unique_ptr<LocalValueStoreCache>(
+          const base::FilePath& root)>;
+  static void SetValueStoreCacheFactoryForTesting(
+      ValueStoreCacheFactoryCallback* factory_callback);
+
+  // Used in tests to inject fake value store migrator implementation.
+  using ValueStoreMigratorFactoryCallback =
+      base::Callback<std::unique_ptr<LockScreenValueStoreMigrator>()>;
+  static void SetValueStoreMigratorFactoryForTesting(
+      ValueStoreMigratorFactoryCallback* factory_callback);
+
   // Used in tests to inject fake data items implementations.
   using ItemFactoryCallback =
       base::Callback<std::unique_ptr<DataItem>(const std::string& id,
@@ -153,6 +172,8 @@ class LockScreenItemStorage : public ExtensionRegistryObserver {
       // The set of registered data items has been loaded; the cached list of
       // items should be up to date.
       kLoaded,
+      // The data for the extension is being removed.
+      kRemoving,
     };
 
     CachedExtensionData();
@@ -172,6 +193,11 @@ class LockScreenItemStorage : public ExtensionRegistryObserver {
 
   // The session state as seen by the LockScreenItemStorage.
   enum class SessionLockedState { kUnknown, kLocked, kNotLocked };
+
+  // Passed to the value store migrator as a callback that is run when an
+  // extension data migration from deprecated value store is completed.
+  // |extension_id| identifies the extension whose data is migrated.
+  void OnItemsMigratedForExtension(const ExtensionId& extension_id);
 
   // Whether the context is allowed to use LockScreenItemStorage.
   // Result depends on the current LockScreenItemStorage state - see
@@ -247,6 +273,16 @@ class LockScreenItemStorage : public ExtensionRegistryObserver {
   // should be deleted (for example if they are not installed anymore).
   std::set<std::string> GetExtensionsWithDataItems(bool include_empty);
 
+  // Gets the set of extensions whose data should be migrated from the
+  // deprecated value store.
+  // This set is inferred from the local state prefs - extensions whose
+  // information in the local state prefs is saved as an integer value have data
+  // items saved in the deprecated value store, and should thus be migrated.
+  // Once the data migration is complete, the local state prefs for the
+  // extension are updated to a dictionary with storage_version key set to the
+  // current value store version.
+  std::set<ExtensionId> GetExtensionsToMigrate();
+
   // Deletes data item data for all extensions that have existing data items,
   // but are not currently installed.
   void ClearUninstalledAppData();
@@ -257,13 +293,17 @@ class LockScreenItemStorage : public ExtensionRegistryObserver {
   // Removes local state entry for the extension.
   void RemoveExtensionFromLocalState(const std::string& id);
 
+  // Runs callback queued up by |EnsureCacheForExtensionLoaded|.
+  // |cache_data| - the per extension cache data that contains callback to be
+  // run.
+  void RunExtensionDataLoadCallbacks(CachedExtensionData* cache_data);
+
   content::BrowserContext* context_;
 
   // The user associated with the primary profile.
   const std::string user_id_;
   const std::string crypto_key_;
   PrefService* local_state_;
-  const base::FilePath storage_root_;
 
   std::unique_ptr<base::TickClock> tick_clock_;
 
@@ -272,8 +312,17 @@ class LockScreenItemStorage : public ExtensionRegistryObserver {
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observer_;
 
-  // Expected to be used only on FILE thread.
+  // The deprecated (shared) lock screen data value store cache. Items in this
+  // value store should be migrated to |value_store_cache_|.
+  // Expected to be used only on |task_runner_|.
+  std::unique_ptr<LocalValueStoreCache> deprecated_value_store_cache_;
+  // Value store that contains extensions' persisted lock screen item data.
+  // Expected to be used only on |task_runner_|.
   std::unique_ptr<LocalValueStoreCache> value_store_cache_;
+
+  // Used to migrate lock screen data items from deprecated value store to the
+  // currently active version of the lock screen data item value store.
+  std::unique_ptr<LockScreenValueStoreMigrator> storage_migrator_;
 
   // Mapping containing all known data items for extensions.
   ExtensionDataMap data_item_cache_;
