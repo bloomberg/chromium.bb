@@ -15,6 +15,7 @@ import os
 import shutil
 import signal
 import sys
+import tempfile
 import threading
 import traceback
 import unittest
@@ -413,10 +414,6 @@ def AddInstrumentationTestOptions(parser):
       dest='run_disabled', action='store_true',
       help='Also run disabled tests if applicable.')
   parser.add_argument(
-      '--render-results-directory',
-      dest='render_results_dir',
-      help='Directory to pull render test result images off of the device to.')
-  parser.add_argument(
       '--non-native-packed-relocations',
       action='store_true',
       help='Whether relocations were packed using the Android '
@@ -801,8 +798,21 @@ def RunTestsInPlatformMode(args):
 
   global_results_tags = set()
 
+  json_file = tempfile.NamedTemporaryFile(delete=False)
+  json_file.close()
+
   @contextlib.contextmanager
-  def write_json_file():
+  def json_finalizer():
+    try:
+      yield
+    finally:
+      if args.json_results_file and os.path.exists(json_file.name):
+        shutil.move(json_file.name, args.json_results_file)
+      else:
+        os.remove(json_file.name)
+
+  @contextlib.contextmanager
+  def json_writer():
     try:
       yield
     except Exception:
@@ -810,12 +820,8 @@ def RunTestsInPlatformMode(args):
       raise
     finally:
       json_results.GenerateJsonResultsFile(
-          all_raw_results, args.json_results_file,
+          all_raw_results, json_file.name,
           global_tags=list(global_results_tags))
-
-  json_writer = contextlib_ext.Optional(
-      write_json_file(),
-      args.json_results_file)
 
   @contextlib.contextmanager
   def upload_logcats_file():
@@ -850,8 +856,8 @@ def RunTestsInPlatformMode(args):
       args, env, test_instance, infra_error)
 
   ### Run.
-  with out_manager:
-    with json_writer, logcats_uploader, env, test_instance, test_run:
+  with out_manager, json_finalizer():
+    with json_writer(), logcats_uploader, env, test_instance, test_run:
 
       repetitions = (xrange(args.repeat + 1) if args.repeat >= 0
                      else itertools.count())
@@ -908,13 +914,13 @@ def RunTestsInPlatformMode(args):
                          str(tot_tests),
                          str(iteration_count))
 
-    if args.local_output and args.json_results_file:
+    if args.local_output:
       with out_manager.ArchivedTempfile(
           'test_results_presentation.html',
           'test_results_presentation',
           output_manager.Datatype.HTML) as results_detail_file:
         result_html_string, _, _ = test_results_presentation.result_details(
-            json_path=args.json_results_file,
+            json_path=json_file.name,
             test_name=args.command,
             cs_base_url='http://cs.chromium.org',
             local_output=True)
