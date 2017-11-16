@@ -28,6 +28,7 @@
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "third_party/skia/include/core/SkRegion.h"
+#include "third_party/skia/include/gpu/GrTypes.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -296,6 +297,8 @@ class GLHelper::CopyTextureToImpl
     void SetScaler(std::unique_ptr<GLHelper::ScalerInterface> scaler) override;
 
     GLHelper::ScalerInterface* scaler() const override;
+
+    bool IsFlippingOutput() const override;
 
     void ReadbackYUV(const gpu::Mailbox& mailbox,
                      const gpu::SyncToken& sync_token,
@@ -956,6 +959,13 @@ gfx::Size I420Converter::GetChromaPlaneTextureSize(
                    (output_size.height() + 1) / 2);
 }
 
+// static
+uint32_t ReadbackYUVInterface::GetGrGLBackendStateChanges() {
+  return kTextureBinding_GrGLBackendState | kView_GrGLBackendState |
+         kVertex_GrGLBackendState | kProgram_GrGLBackendState |
+         kRenderTarget_GrGLBackendState;
+}
+
 namespace {
 
 I420ConverterImpl::I420ConverterImpl(GLES2Interface* gl,
@@ -1117,6 +1127,10 @@ GLHelper::CopyTextureToImpl::ReadbackYUVImpl::scaler() const {
   return scaler_.get();
 }
 
+bool GLHelper::CopyTextureToImpl::ReadbackYUVImpl::IsFlippingOutput() const {
+  return I420ConverterImpl::IsFlippingOutput();
+}
+
 void GLHelper::CopyTextureToImpl::ReadbackYUVImpl::ReadbackYUV(
     const gpu::Mailbox& mailbox,
     const gpu::SyncToken& sync_token,
@@ -1215,6 +1229,26 @@ std::unique_ptr<ReadbackYUVInterface> GLHelper::CreateReadbackPipelineYUV(
   InitCopyTextToImpl();
   return copy_texture_to_impl_->CreateReadbackPipelineYUV(flip_vertically,
                                                           use_mrt);
+}
+
+ReadbackYUVInterface* GLHelper::GetReadbackPipelineYUV(
+    bool vertically_flip_texture) {
+  ReadbackYUVInterface* yuv_reader = nullptr;
+  if (vertically_flip_texture) {
+    if (!shared_readback_yuv_flip_) {
+      shared_readback_yuv_flip_ = CreateReadbackPipelineYUV(
+          vertically_flip_texture, true /* use_mrt */);
+    }
+    yuv_reader = shared_readback_yuv_flip_.get();
+  } else {
+    if (!shared_readback_yuv_noflip_) {
+      shared_readback_yuv_noflip_ = CreateReadbackPipelineYUV(
+          vertically_flip_texture, true /* use_mrt */);
+    }
+    yuv_reader = shared_readback_yuv_noflip_.get();
+  }
+  DCHECK(!yuv_reader->scaler());
+  return yuv_reader;
 }
 
 GLHelperReadbackSupport* GLHelper::GetReadbackSupport() {

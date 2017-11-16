@@ -25,6 +25,9 @@ class FakeWebGraphicsContext3DProvider : public WebGraphicsContext3DProvider {
   }
 
   GrContext* GetGrContext() override { return gr_context_.get(); }
+  void InvalidateGrContext(uint32_t state) override {
+    gr_context_->resetContext(state);
+  }
 
   const gpu::Capabilities& GetCapabilities() const override {
     return capabilities_;
@@ -33,6 +36,8 @@ class FakeWebGraphicsContext3DProvider : public WebGraphicsContext3DProvider {
   const gpu::GpuFeatureInfo& GetGpuFeatureInfo() const override {
     return gpu_feature_info_;
   }
+
+  viz::GLHelper* GetGLHelper() override { return nullptr; }
 
   bool IsSoftwareRendering() const override { return false; }
 

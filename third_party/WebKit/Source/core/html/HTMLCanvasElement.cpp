@@ -583,7 +583,7 @@ void HTMLCanvasElement::NotifyListenersCanvasChanged() {
         source_image->PaintImageForCurrentFrame().GetSkImage();
     for (CanvasDrawListener* listener : listeners_) {
       if (listener->NeedsNewFrame()) {
-        listener->SendNewFrame(image);
+        listener->SendNewFrame(image, source_image->ContextProviderWrapper());
       }
     }
   }
