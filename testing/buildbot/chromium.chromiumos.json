@@ -1497,6 +1497,19 @@
         "test": "content_browsertests"
       },
       {
+        "args": [
+          "--mus",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/mus.content_browsertests.filter"
+        ],
+        "name": "content_browsertests --mus",
+        "override_isolate_target": "content_browsertests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 2
+        },
+        "test": "content_browsertests"
+      },
+      {
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 2
