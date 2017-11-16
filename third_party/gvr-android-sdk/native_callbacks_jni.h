@@ -51,7 +51,7 @@ Java_com_google_vr_internal_controller_NativeCallbacks_handleStateChanged(
     JNIEnv* env,
     jobject jcaller,
     jlong userData,
-    jint controllerId,
+    jint controllerIndex,
     jint newState);
 
 JNI_GENERATOR_EXPORT void
@@ -59,6 +59,7 @@ Java_com_google_vr_internal_controller_NativeCallbacks_handleControllerRecentere
     JNIEnv* env,
     jobject jcaller,
     jlong userData,
+    jint controllerIndex,
     jlong timestampNanos,
     jfloat qx,
     jfloat qy,
@@ -70,6 +71,7 @@ Java_com_google_vr_internal_controller_NativeCallbacks_handleTouchEvent(
     JNIEnv* env,
     jobject jcaller,
     jlong userData,
+    jint controllerIndex,
     jlong timestampNanos,
     jint action,
     jfloat x,
@@ -80,6 +82,7 @@ Java_com_google_vr_internal_controller_NativeCallbacks_handleOrientationEvent(
     JNIEnv* env,
     jobject jcaller,
     jlong userData,
+    jint controllerIndex,
     jlong timestampNanos,
     jfloat qx,
     jfloat qy,
@@ -91,6 +94,7 @@ Java_com_google_vr_internal_controller_NativeCallbacks_handleButtonEvent(
     JNIEnv* env,
     jobject jcaller,
     jlong userData,
+    jint controllerIndex,
     jlong timestampNanos,
     jint buttonCode,
     jboolean down);
@@ -100,6 +104,7 @@ Java_com_google_vr_internal_controller_NativeCallbacks_handleAccelEvent(
     JNIEnv* env,
     jobject jcaller,
     jlong userData,
+    jint controllerIndex,
     jlong timestampNanos,
     jfloat x,
     jfloat y,
@@ -110,10 +115,32 @@ Java_com_google_vr_internal_controller_NativeCallbacks_handleGyroEvent(
     JNIEnv* env,
     jobject jcaller,
     jlong userData,
+    jint controllerIndex,
     jlong timestampNanos,
     jfloat x,
     jfloat y,
     jfloat z);
+
+JNI_GENERATOR_EXPORT void
+Java_com_google_vr_internal_controller_NativeCallbacks_handlePositionEvent(
+    JNIEnv* env,
+    jobject jcaller,
+    jlong userData,
+    jint controllerIndex,
+    jlong timestampNanos,
+    jfloat x,
+    jfloat y,
+    jfloat z);
+
+JNI_GENERATOR_EXPORT void
+Java_com_google_vr_internal_controller_NativeCallbacks_handleBatteryEvent(
+    JNIEnv* env,
+    jobject jcaller,
+    jlong userData,
+    jint controllerIndex,
+    jlong timestampNanos,
+    jboolean isCharging,
+    jint batteryLevelBucket);
 
 JNI_GENERATOR_EXPORT void
 Java_com_google_vr_internal_controller_NativeCallbacks_handleServiceInitFailed(
@@ -147,25 +174,6 @@ Java_com_google_vr_internal_controller_NativeCallbacks_handleServiceDisconnected
     jobject jcaller,
     jlong userData);
 
-JNI_GENERATOR_EXPORT void
-Java_com_google_vr_internal_controller_NativeCallbacks_handlePositionEvent(
-    JNIEnv* env,
-    jobject jcaller,
-    jlong userData,
-    jlong timestampNanos,
-    jfloat x,
-    jfloat y,
-    jfloat z);
-
-JNI_GENERATOR_EXPORT void
-Java_com_google_vr_internal_controller_NativeCallbacks_handleBatteryEvent(
-    JNIEnv* env,
-    jobject jcaller,
-    jlong userData,
-    jlong timestampNanos,
-    jboolean isCharging,
-    jint batteryLevelBucket);
-
 // Step 3: RegisterNatives.
 
 static const JNINativeMethod kMethodsNativeCallbacks[] = {
@@ -181,6 +189,7 @@ static const JNINativeMethod kMethodsNativeCallbacks[] = {
     {"handleControllerRecentered",
      "("
      "J"
+     "I"
      "J"
      "F"
      "F"
@@ -193,6 +202,7 @@ static const JNINativeMethod kMethodsNativeCallbacks[] = {
     {"handleTouchEvent",
      "("
      "J"
+     "I"
      "J"
      "I"
      "F"
@@ -204,6 +214,7 @@ static const JNINativeMethod kMethodsNativeCallbacks[] = {
     {"handleOrientationEvent",
      "("
      "J"
+     "I"
      "J"
      "F"
      "F"
@@ -216,6 +227,7 @@ static const JNINativeMethod kMethodsNativeCallbacks[] = {
     {"handleButtonEvent",
      "("
      "J"
+     "I"
      "J"
      "I"
      "Z"
@@ -226,6 +238,7 @@ static const JNINativeMethod kMethodsNativeCallbacks[] = {
     {"handleAccelEvent",
      "("
      "J"
+     "I"
      "J"
      "F"
      "F"
@@ -237,6 +250,7 @@ static const JNINativeMethod kMethodsNativeCallbacks[] = {
     {"handleGyroEvent",
      "("
      "J"
+     "I"
      "J"
      "F"
      "F"
@@ -245,6 +259,29 @@ static const JNINativeMethod kMethodsNativeCallbacks[] = {
      "V",
      reinterpret_cast<void*>(
          Java_com_google_vr_internal_controller_NativeCallbacks_handleGyroEvent)},
+    {"handlePositionEvent",
+     "("
+     "J"
+     "I"
+     "J"
+     "F"
+     "F"
+     "F"
+     ")"
+     "V",
+     reinterpret_cast<void*>(
+         Java_com_google_vr_internal_controller_NativeCallbacks_handlePositionEvent)},
+    {"handleBatteryEvent",
+     "("
+     "J"
+     "I"
+     "J"
+     "Z"
+     "I"
+     ")"
+     "V",
+     reinterpret_cast<void*>(
+         Java_com_google_vr_internal_controller_NativeCallbacks_handleBatteryEvent)},
     {"handleServiceInitFailed",
      "("
      "J"
@@ -282,27 +319,6 @@ static const JNINativeMethod kMethodsNativeCallbacks[] = {
      "V",
      reinterpret_cast<void*>(
          Java_com_google_vr_internal_controller_NativeCallbacks_handleServiceDisconnected)},
-    {"handlePositionEvent",
-     "("
-     "J"
-     "J"
-     "F"
-     "F"
-     "F"
-     ")"
-     "V",
-     reinterpret_cast<void*>(
-         Java_com_google_vr_internal_controller_NativeCallbacks_handlePositionEvent)},
-    {"handleBatteryEvent",
-     "("
-     "J"
-     "J"
-     "Z"
-     "I"
-     ")"
-     "V",
-     reinterpret_cast<void*>(
-         Java_com_google_vr_internal_controller_NativeCallbacks_handleBatteryEvent)},
 };
 
 static bool RegisterNativesImpl(JNIEnv* env) {

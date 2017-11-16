@@ -13,8 +13,11 @@ android_aar_prebuilt("controller_test_api_java") {
 }
 
 android_aar_prebuilt("gvr_common_java") {
-  aar_path = "src/libraries/sdk-common-1.80.0.aar"
-  proguard_configs = [ "proguard-gvr-chromium.txt" ]
+  aar_path = "src/libraries/sdk-common-1.101.0.aar"
+  proguard_configs = [
+    "src/proguard-gvr.txt",
+    "proguard-gvr-chromium.txt",
+  ]
   ignore_native_libraries = true
 
   # Ignore unused auto generated classes. Proguard will not strip them automatically because they
@@ -48,7 +51,7 @@ android_aar_prebuilt("gvr_common_java") {
 }
 
 android_aar_prebuilt("gvr_controller_java") {
-  aar_path = "src/libraries/sdk-controller-1.80.0.aar"
+  aar_path = "src/libraries/sdk-controller-1.101.0.aar"
   deps = [
     ":gvr_common_java",
   ]
