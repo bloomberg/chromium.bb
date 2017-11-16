@@ -1864,6 +1864,8 @@ void RenderFrameImpl::OnNavigate(
   DCHECK(!IsBrowserSideNavigationEnabled());
   TRACE_EVENT2("navigation,rail", "RenderFrameImpl::OnNavigate", "id",
                routing_id_, "url", common_params.url.possibly_invalid_spec());
+  if (devtools_agent_)
+    devtools_agent_->ContinueProgram();
   NavigateInternal(common_params, start_params, request_params,
                    std::unique_ptr<StreamOverrideParameters>(),
                    /*subresource_loader_factories=*/base::nullopt);
