@@ -1,11 +1,13 @@
 include_rules = [
   # Nothing from base.
   "-base",
-  # Nothing from chrome.
+  # Nothing from chrome except install_static.
   "-chrome",
+  "+chrome/install_static",
   # Carefully control local includes.
   "-chrome_elf",
   "+chrome_elf/nt_registry/nt_registry.h",
+  "+chrome_elf/sha1/sha1.h",
   "+chrome_elf/whitelist",
 ]
 specific_include_rules = {
