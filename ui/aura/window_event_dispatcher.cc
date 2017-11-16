@@ -828,11 +828,12 @@ ui::EventDispatchDetails WindowEventDispatcher::SynthesizeMouseMoveEvent() {
     return details;
   synthesize_mouse_move_ = false;
 
-  // No need to generate mouse event if the cursor is invisible.
+  // No need to generate mouse event if the cursor is invisible and not locked.
   client::CursorClient* cursor_client =
       client::GetCursorClient(host_->window());
   if (cursor_client && (!cursor_client->IsMouseEventsEnabled() ||
-                        !cursor_client->IsCursorVisible())) {
+                        (!cursor_client->IsCursorVisible() &&
+                         !cursor_client->IsCursorLocked()))) {
     return details;
   }
 
