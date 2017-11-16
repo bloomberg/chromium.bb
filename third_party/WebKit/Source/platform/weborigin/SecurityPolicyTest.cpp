@@ -213,23 +213,31 @@ TEST(SecurityPolicyTest, ReferrerPolicyFromHeaderValue) {
   struct TestCase {
     const char* header;
     bool is_valid;
+    ReferrerPolicyLegacyKeywordsSupport keywords;
     ReferrerPolicy expected_policy;
   };
 
   TestCase inputs[] = {
-      {"origin", true, kReferrerPolicyOrigin},
-      {"foo", false, kReferrerPolicyDefault},
-      {"origin, foo", true, kReferrerPolicyOrigin},
-      {"origin, foo-bar", true, kReferrerPolicyOrigin},
-      {"origin, foo bar", false, kReferrerPolicyDefault},
+      {"origin", true, kDoNotSupportReferrerPolicyLegacyKeywords,
+       kReferrerPolicyOrigin},
+      {"none", true, kSupportReferrerPolicyLegacyKeywords,
+       kReferrerPolicyNever},
+      {"none", false, kDoNotSupportReferrerPolicyLegacyKeywords,
+       kReferrerPolicyDefault},
+      {"foo", false, kDoNotSupportReferrerPolicyLegacyKeywords,
+       kReferrerPolicyDefault},
+      {"origin, foo", true, kDoNotSupportReferrerPolicyLegacyKeywords,
+       kReferrerPolicyOrigin},
+      {"origin, foo-bar", true, kDoNotSupportReferrerPolicyLegacyKeywords,
+       kReferrerPolicyOrigin},
+      {"origin, foo bar", false, kDoNotSupportReferrerPolicyLegacyKeywords,
+       kReferrerPolicyDefault},
   };
 
   for (TestCase test : inputs) {
     ReferrerPolicy actual_policy = kReferrerPolicyDefault;
-    EXPECT_EQ(test.is_valid,
-              SecurityPolicy::ReferrerPolicyFromHeaderValue(
-                  test.header, kDoNotSupportReferrerPolicyLegacyKeywords,
-                  &actual_policy));
+    EXPECT_EQ(test.is_valid, SecurityPolicy::ReferrerPolicyFromHeaderValue(
+                                 test.header, test.keywords, &actual_policy));
     if (test.is_valid)
       EXPECT_EQ(test.expected_policy, actual_policy);
   }
