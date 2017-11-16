@@ -1721,14 +1721,10 @@ weston_surface_update_size(struct weston_surface *surface)
 	surface_set_size(surface, width, height);
 }
 
-WL_EXPORT uint32_t
-weston_compositor_get_time(void)
+WL_EXPORT void
+weston_compositor_get_time(struct timespec *time)
 {
-       struct timeval tv;
-
-       gettimeofday(&tv, NULL);
-
-       return tv.tv_sec * 1000 + tv.tv_usec / 1000;
+	clock_gettime(CLOCK_REALTIME, time);
 }
 
 WL_EXPORT struct weston_view *

@@ -4209,11 +4209,11 @@ static void launch_desktop_shell_process(void *data);
 static void
 respawn_desktop_shell_process(struct desktop_shell *shell)
 {
-	uint32_t time;
+	struct timespec time;
 
 	/* if desktop-shell dies more than 5 times in 30 seconds, give up */
-	time = weston_compositor_get_time();
-	if (time - shell->child.deathstamp > 30000) {
+	weston_compositor_get_time(&time);
+	if (timespec_sub_to_msec(&time, &shell->child.deathstamp) > 30000) {
 		shell->child.deathstamp = time;
 		shell->child.deathcount = 0;
 	}
@@ -5043,7 +5043,7 @@ wet_shell_init(struct weston_compositor *ec,
 			     shell, bind_desktop_shell) == NULL)
 		return -1;
 
-	shell->child.deathstamp = weston_compositor_get_time();
+	weston_compositor_get_time(&shell->child.deathstamp);
 
 	shell->panel_position = WESTON_DESKTOP_SHELL_PANEL_POSITION_TOP;
 

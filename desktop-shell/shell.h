@@ -161,7 +161,7 @@ struct desktop_shell {
 		struct wl_listener client_destroy_listener;
 
 		unsigned deathcount;
-		uint32_t deathstamp;
+		struct timespec deathstamp;
 	} child;
 
 	bool locked;

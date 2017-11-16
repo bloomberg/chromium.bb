@@ -1674,8 +1674,8 @@ void
 weston_buffer_reference(struct weston_buffer_reference *ref,
 			struct weston_buffer *buffer);
 
-uint32_t
-weston_compositor_get_time(void);
+void
+weston_compositor_get_time(struct timespec *time);
 
 void
 weston_compositor_destroy(struct weston_compositor *ec);

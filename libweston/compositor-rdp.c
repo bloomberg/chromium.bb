@@ -1035,7 +1035,7 @@ xf_mouseEvent(rdpInput *input, UINT16 flags, UINT16 x, UINT16 y)
 	if (flags & PTR_FLAGS_MOVE) {
 		output = peerContext->rdpBackend->output;
 		if (x < output->base.width && y < output->base.height) {
-			timespec_from_msec(&time, weston_compositor_get_time());
+			weston_compositor_get_time(&time);
 			notify_motion_absolute(peerContext->item.seat, &time,
 					x, y);
 			need_frame = true;
@@ -1050,7 +1050,7 @@ xf_mouseEvent(rdpInput *input, UINT16 flags, UINT16 x, UINT16 y)
 		button = BTN_MIDDLE;
 
 	if (button) {
-		timespec_from_msec(&time, weston_compositor_get_time());
+		weston_compositor_get_time(&time);
 		notify_button(peerContext->item.seat, &time, button,
 			(flags & PTR_FLAGS_DOWN) ? WL_POINTER_BUTTON_STATE_PRESSED : WL_POINTER_BUTTON_STATE_RELEASED
 		);
@@ -1076,7 +1076,7 @@ xf_mouseEvent(rdpInput *input, UINT16 flags, UINT16 x, UINT16 y)
 		weston_event.discrete = (int)value;
 		weston_event.has_discrete = true;
 
-		timespec_from_msec(&time, weston_compositor_get_time());
+		weston_compositor_get_time(&time);
 
 		notify_axis(peerContext->item.seat, &time, &weston_event);
 		need_frame = true;
@@ -1097,7 +1097,7 @@ xf_extendedMouseEvent(rdpInput *input, UINT16 flags, UINT16 x, UINT16 y)
 
 	output = peerContext->rdpBackend->output;
 	if (x < output->base.width && y < output->base.height) {
-		timespec_from_msec(&time, weston_compositor_get_time());
+		weston_compositor_get_time(&time);
 		notify_motion_absolute(peerContext->item.seat, &time, x, y);
 	}
 
@@ -1161,7 +1161,7 @@ xf_input_keyboard_event(rdpInput *input, UINT16 flags, UINT16 code)
 
 		/*weston_log("code=%x ext=%d vk_code=%x scan_code=%x\n", code, (flags & KBD_FLAGS_EXTENDED) ? 1 : 0,
 				vk_code, scan_code);*/
-		timespec_from_msec(&time, weston_compositor_get_time());
+		weston_compositor_get_time(&time);
 		notify_key(peerContext->item.seat, &time,
 					scan_code - 8, keyState, STATE_UPDATE_AUTOMATIC);
 	}

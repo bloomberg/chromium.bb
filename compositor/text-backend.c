@@ -106,7 +106,7 @@ struct text_backend {
 		struct wl_client *client;
 
 		unsigned deathcount;
-		uint32_t deathstamp;
+		struct timespec deathstamp;
 	} input_method;
 
 	struct wl_listener client_listener;
@@ -938,11 +938,14 @@ static void launch_input_method(struct text_backend *text_backend);
 static void
 respawn_input_method_process(struct text_backend *text_backend)
 {
-	uint32_t time;
+	struct timespec time;
+	int64_t tdiff;
 
 	/* if input_method dies more than 5 times in 10 seconds, give up */
-	time = weston_compositor_get_time();
-	if (time - text_backend->input_method.deathstamp > 10000) {
+	weston_compositor_get_time(&time);
+	tdiff = timespec_sub_to_msec(&time,
+				     &text_backend->input_method.deathstamp);
+	if (tdiff > 10000) {
 		text_backend->input_method.deathstamp = time;
 		text_backend->input_method.deathcount = 0;
 	}

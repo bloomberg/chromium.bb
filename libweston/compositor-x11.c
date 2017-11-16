@@ -1178,7 +1178,7 @@ x11_backend_deliver_button_event(struct x11_backend *b,
 			weston_event.has_discrete = true;
 			weston_event.axis =
 				WL_POINTER_AXIS_VERTICAL_SCROLL;
-			timespec_from_msec(&time, weston_compositor_get_time());
+			weston_compositor_get_time(&time);
 			notify_axis(&b->core_seat, &time, &weston_event);
 			notify_pointer_frame(&b->core_seat);
 		}
@@ -1190,7 +1190,7 @@ x11_backend_deliver_button_event(struct x11_backend *b,
 			weston_event.has_discrete = true;
 			weston_event.axis =
 				WL_POINTER_AXIS_VERTICAL_SCROLL;
-			timespec_from_msec(&time, weston_compositor_get_time());
+			weston_compositor_get_time(&time);
 			notify_axis(&b->core_seat, &time, &weston_event);
 			notify_pointer_frame(&b->core_seat);
 		}
@@ -1202,7 +1202,7 @@ x11_backend_deliver_button_event(struct x11_backend *b,
 			weston_event.has_discrete = true;
 			weston_event.axis =
 				WL_POINTER_AXIS_HORIZONTAL_SCROLL;
-			timespec_from_msec(&time, weston_compositor_get_time());
+			weston_compositor_get_time(&time);
 			notify_axis(&b->core_seat, &time, &weston_event);
 			notify_pointer_frame(&b->core_seat);
 		}
@@ -1214,7 +1214,7 @@ x11_backend_deliver_button_event(struct x11_backend *b,
 			weston_event.has_discrete = true;
 			weston_event.axis =
 				WL_POINTER_AXIS_HORIZONTAL_SCROLL;
-			timespec_from_msec(&time, weston_compositor_get_time());
+			weston_compositor_get_time(&time);
 			notify_axis(&b->core_seat, &time, &weston_event);
 			notify_pointer_frame(&b->core_seat);
 		}
@@ -1224,7 +1224,7 @@ x11_backend_deliver_button_event(struct x11_backend *b,
 		break;
 	}
 
-	timespec_from_msec(&time, weston_compositor_get_time());
+	weston_compositor_get_time(&time);
 
 	notify_button(&b->core_seat, &time, button,
 		      is_button_pressed ? WL_POINTER_BUTTON_STATE_PRESSED :
@@ -1260,7 +1260,7 @@ x11_backend_deliver_motion_event(struct x11_backend *b,
 		.dy = y - b->prev_y
 	};
 
-	timespec_from_msec(&time, weston_compositor_get_time());
+	weston_compositor_get_time(&time);
 	notify_motion(&b->core_seat, &time, &motion_event);
 	notify_pointer_frame(&b->core_seat);
 
@@ -1352,8 +1352,7 @@ x11_backend_handle_event(int fd, uint32_t mask, void *data)
 				 * and fall through and handle the new
 				 * event below. */
 				update_xkb_state_from_core(b, key_release->state);
-				timespec_from_msec(&time,
-						   weston_compositor_get_time());
+				weston_compositor_get_time(&time);
 				notify_key(&b->core_seat,
 					   &time,
 					   key_release->detail - 8,
@@ -1398,7 +1397,7 @@ x11_backend_handle_event(int fd, uint32_t mask, void *data)
 			key_press = (xcb_key_press_event_t *) event;
 			if (!b->has_xkb)
 				update_xkb_state_from_core(b, key_press->state);
-			timespec_from_msec(&time, weston_compositor_get_time());
+			weston_compositor_get_time(&time);
 			notify_key(&b->core_seat,
 				   &time,
 				   key_press->detail - 8,
@@ -1414,7 +1413,7 @@ x11_backend_handle_event(int fd, uint32_t mask, void *data)
 				break;
 			}
 			key_release = (xcb_key_press_event_t *) event;
-			timespec_from_msec(&time, weston_compositor_get_time());
+			weston_compositor_get_time(&time);
 			notify_key(&b->core_seat,
 				   &time,
 				   key_release->detail - 8,
@@ -1522,7 +1521,7 @@ x11_backend_handle_event(int fd, uint32_t mask, void *data)
 	case XCB_KEY_RELEASE:
 		key_release = (xcb_key_press_event_t *) prev;
 		update_xkb_state_from_core(b, key_release->state);
-		timespec_from_msec(&time, weston_compositor_get_time());
+		weston_compositor_get_time(&time);
 		notify_key(&b->core_seat,
 			   &time,
 			   key_release->detail - 8,
