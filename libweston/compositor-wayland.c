@@ -1644,6 +1644,7 @@ input_handle_button(void *data, struct wl_pointer *pointer,
 {
 	struct wayland_input *input = data;
 	enum theme_location location;
+	struct timespec ts;
 
 	if (!input->output)
 		return;
@@ -1682,7 +1683,8 @@ input_handle_button(void *data, struct wl_pointer *pointer,
 	}
 
 	if (location == THEME_LOCATION_CLIENT_AREA) {
-		notify_button(&input->base, time, button, state);
+		timespec_from_msec(&ts, time);
+		notify_button(&input->base, &ts, button, state);
 		if (input->seat_version < WL_POINTER_FRAME_SINCE_VERSION)
 			notify_pointer_frame(&input->base);
 	}

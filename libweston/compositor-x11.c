@@ -1133,6 +1133,7 @@ x11_backend_deliver_button_event(struct x11_backend *b,
 	struct x11_output *output;
 	struct weston_pointer_axis_event weston_event;
 	bool is_button_pressed = event->response_type == XCB_BUTTON_PRESS;
+	struct timespec time = { 0 };
 
 	assert(event->response_type == XCB_BUTTON_PRESS ||
 	       event->response_type == XCB_BUTTON_RELEASE);
@@ -1227,8 +1228,9 @@ x11_backend_deliver_button_event(struct x11_backend *b,
 		break;
 	}
 
-	notify_button(&b->core_seat,
-		      weston_compositor_get_time(), button,
+	timespec_from_msec(&time, weston_compositor_get_time());
+
+	notify_button(&b->core_seat, &time, button,
 		      is_button_pressed ? WL_POINTER_BUTTON_STATE_PRESSED :
 					  WL_POINTER_BUTTON_STATE_RELEASED);
 	notify_pointer_frame(&b->core_seat);

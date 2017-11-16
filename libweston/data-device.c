@@ -638,7 +638,8 @@ data_device_end_pointer_drag_grab(struct weston_pointer_drag *drag)
 
 static void
 drag_grab_button(struct weston_pointer_grab *grab,
-		 uint32_t time, uint32_t button, uint32_t state_w)
+		 const struct timespec *time,
+		 uint32_t button, uint32_t state_w)
 {
 	struct weston_pointer_drag *drag =
 		container_of(grab, struct weston_pointer_drag, grab);

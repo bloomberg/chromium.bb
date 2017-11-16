@@ -1050,7 +1050,8 @@ xf_mouseEvent(rdpInput *input, UINT16 flags, UINT16 x, UINT16 y)
 		button = BTN_MIDDLE;
 
 	if (button) {
-		notify_button(peerContext->item.seat, weston_compositor_get_time(), button,
+		timespec_from_msec(&time, weston_compositor_get_time());
+		notify_button(peerContext->item.seat, &time, button,
 			(flags & PTR_FLAGS_DOWN) ? WL_POINTER_BUTTON_STATE_PRESSED : WL_POINTER_BUTTON_STATE_RELEASED
 		);
 		need_frame = true;

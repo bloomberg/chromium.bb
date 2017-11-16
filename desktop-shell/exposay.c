@@ -364,8 +364,8 @@ exposay_motion(struct weston_pointer_grab *grab,
 }
 
 static void
-exposay_button(struct weston_pointer_grab *grab, uint32_t time, uint32_t button,
-               uint32_t state_w)
+exposay_button(struct weston_pointer_grab *grab, const struct timespec *time,
+	       uint32_t button, uint32_t state_w)
 {
 	struct desktop_shell *shell =
 		container_of(grab, struct desktop_shell, exposay.grab_ptr);

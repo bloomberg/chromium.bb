@@ -460,26 +460,28 @@ weston_pointer_has_focus_resource(struct weston_pointer *pointer)
  */
 WL_EXPORT void
 weston_pointer_send_button(struct weston_pointer *pointer,
-			   uint32_t time, uint32_t button,
+			   const struct timespec *time, uint32_t button,
 			   enum wl_pointer_button_state state)
 {
 	struct wl_display *display = pointer->seat->compositor->wl_display;
 	struct wl_list *resource_list;
 	struct wl_resource *resource;
 	uint32_t serial;
+	uint32_t msecs;
 
 	if (!weston_pointer_has_focus_resource(pointer))
 		return;
 
 	resource_list = &pointer->focus_client->pointer_resources;
 	serial = wl_display_next_serial(display);
+	msecs = timespec_to_msec(time);
 	wl_resource_for_each(resource, resource_list)
-		wl_pointer_send_button(resource, serial, time, button, state);
+		wl_pointer_send_button(resource, serial, msecs, button, state);
 }
 
 static void
 default_grab_pointer_button(struct weston_pointer_grab *grab,
-			    uint32_t time, uint32_t button,
+			    const struct timespec *time, uint32_t button,
 			    enum wl_pointer_button_state state)
 {
 	struct weston_pointer *pointer = grab->pointer;
@@ -1652,8 +1654,8 @@ weston_view_activate(struct weston_view *view,
 }
 
 WL_EXPORT void
-notify_button(struct weston_seat *seat, uint32_t time, int32_t button,
-	      enum wl_pointer_button_state state)
+notify_button(struct weston_seat *seat, const struct timespec *time,
+	      int32_t button, enum wl_pointer_button_state state)
 {
 	struct weston_compositor *compositor = seat->compositor;
 	struct weston_pointer *pointer = weston_seat_get_pointer(seat);
@@ -1662,7 +1664,7 @@ notify_button(struct weston_seat *seat, uint32_t time, int32_t button,
 		weston_compositor_idle_inhibit(compositor);
 		if (pointer->button_count == 0) {
 			pointer->grab_button = button;
-			pointer->grab_time = time;
+			pointer->grab_time = *time;
 			pointer->grab_x = pointer->x;
 			pointer->grab_y = pointer->y;
 		}
@@ -3328,7 +3330,7 @@ locked_pointer_grab_pointer_motion(struct weston_pointer_grab *grab,
 
 static void
 locked_pointer_grab_pointer_button(struct weston_pointer_grab *grab,
-				   uint32_t time,
+				   const struct timespec *time,
 				   uint32_t button,
 				   uint32_t state_w)
 {
@@ -4336,7 +4338,7 @@ confined_pointer_grab_pointer_motion(struct weston_pointer_grab *grab,
 
 static void
 confined_pointer_grab_pointer_button(struct weston_pointer_grab *grab,
-				     uint32_t time,
+				     const struct timespec *time,
 				     uint32_t button,
 				     uint32_t state_w)
 {

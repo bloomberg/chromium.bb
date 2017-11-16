@@ -272,7 +272,8 @@ struct weston_pointer_grab_interface {
 		       const struct timespec *time,
 		       struct weston_pointer_motion_event *event);
 	void (*button)(struct weston_pointer_grab *grab,
-		       uint32_t time, uint32_t button, uint32_t state);
+		       const struct timespec *time,
+		       uint32_t button, uint32_t state);
 	void (*axis)(struct weston_pointer_grab *grab,
 		     uint32_t time,
 		     struct weston_pointer_axis_event *event);
@@ -383,7 +384,7 @@ struct weston_pointer {
 	wl_fixed_t grab_x, grab_y;
 	uint32_t grab_button;
 	uint32_t grab_serial;
-	uint32_t grab_time;
+	struct timespec grab_time;
 
 	wl_fixed_t x, y;
 	wl_fixed_t sx, sy;
@@ -431,7 +432,8 @@ bool
 weston_pointer_has_focus_resource(struct weston_pointer *pointer);
 void
 weston_pointer_send_button(struct weston_pointer *pointer,
-			   uint32_t time, uint32_t button, uint32_t state_w);
+			   const struct timespec *time,
+			   uint32_t button, uint32_t state_w);
 void
 weston_pointer_send_axis(struct weston_pointer *pointer,
 			 uint32_t time,
@@ -1371,8 +1373,8 @@ void
 notify_motion_absolute(struct weston_seat *seat, const struct timespec *time,
 		       double x, double y);
 void
-notify_button(struct weston_seat *seat, uint32_t time, int32_t button,
-	      enum wl_pointer_button_state state);
+notify_button(struct weston_seat *seat, const struct timespec *time,
+	      int32_t button, enum wl_pointer_button_state state);
 void
 notify_axis(struct weston_seat *seat, uint32_t time,
 	    struct weston_pointer_axis_event *event);
@@ -1492,7 +1494,8 @@ weston_compositor_add_modifier_binding(struct weston_compositor *compositor,
 				       void *data);
 
 typedef void (*weston_button_binding_handler_t)(struct weston_pointer *pointer,
-						uint32_t time, uint32_t button,
+						const struct timespec *time,
+						uint32_t button,
 						void *data);
 struct weston_binding *
 weston_compositor_add_button_binding(struct weston_compositor *compositor,
@@ -1549,7 +1552,8 @@ weston_compositor_run_modifier_binding(struct weston_compositor *compositor,
 				       enum wl_keyboard_key_state state);
 void
 weston_compositor_run_button_binding(struct weston_compositor *compositor,
-				     struct weston_pointer *pointer, uint32_t time,
+				     struct weston_pointer *pointer,
+				     const struct timespec *time,
 				     uint32_t button,
 				     enum wl_pointer_button_state value);
 void

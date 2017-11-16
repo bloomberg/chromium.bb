@@ -151,6 +151,7 @@ handle_pointer_button(struct libinput_device *libinput_device,
 		libinput_event_pointer_get_button_state(pointer_event);
 	int seat_button_count =
 		libinput_event_pointer_get_seat_button_count(pointer_event);
+	struct timespec time;
 
 	/* Ignore button events that are not seat wide state changes. */
 	if ((button_state == LIBINPUT_BUTTON_STATE_PRESSED &&
@@ -159,8 +160,10 @@ handle_pointer_button(struct libinput_device *libinput_device,
 	     seat_button_count != 0))
 		return false;
 
-	notify_button(device->seat,
-		      libinput_event_pointer_get_time(pointer_event),
+	timespec_from_usec(&time,
+			   libinput_event_pointer_get_time_usec(pointer_event));
+
+	notify_button(device->seat, &time,
 		      libinput_event_pointer_get_button(pointer_event),
                       button_state);
 

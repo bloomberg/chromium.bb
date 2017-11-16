@@ -1507,7 +1507,7 @@ move_grab_motion(struct weston_pointer_grab *grab,
 
 static void
 move_grab_button(struct weston_pointer_grab *grab,
-		 uint32_t time, uint32_t button, uint32_t state_w)
+		 const struct timespec *time, uint32_t button, uint32_t state_w)
 {
 	struct shell_grab *shell_grab = container_of(grab, struct shell_grab,
 						    grab);
@@ -1634,7 +1634,8 @@ resize_grab_motion(struct weston_pointer_grab *grab,
 
 static void
 resize_grab_button(struct weston_pointer_grab *grab,
-		   uint32_t time, uint32_t button, uint32_t state_w)
+		   const struct timespec *time,
+		   uint32_t button, uint32_t state_w)
 {
 	struct weston_resize_grab *resize = (struct weston_resize_grab *) grab;
 	struct weston_pointer *pointer = grab->pointer;
@@ -1778,7 +1779,8 @@ busy_cursor_grab_motion(struct weston_pointer_grab *grab,
 
 static void
 busy_cursor_grab_button(struct weston_pointer_grab *base,
-			uint32_t time, uint32_t button, uint32_t state)
+			const struct timespec *time,
+			uint32_t button, uint32_t state)
 {
 	struct shell_grab *grab = (struct shell_grab *) base;
 	struct shell_surface *shsurf = grab->shsurf;
@@ -3203,7 +3205,7 @@ static const struct weston_desktop_shell_interface desktop_shell_implementation 
 };
 
 static void
-move_binding(struct weston_pointer *pointer, uint32_t time,
+move_binding(struct weston_pointer *pointer, const struct timespec *time,
 	     uint32_t button, void *data)
 {
 	struct weston_surface *focus;
@@ -3295,7 +3297,7 @@ touch_move_binding(struct weston_touch *touch, uint32_t time, void *data)
 }
 
 static void
-resize_binding(struct weston_pointer *pointer, uint32_t time,
+resize_binding(struct weston_pointer *pointer, const struct timespec *time,
 	       uint32_t button, void *data)
 {
 	struct weston_surface *focus;
@@ -3515,7 +3517,8 @@ rotate_grab_motion(struct weston_pointer_grab *grab,
 
 static void
 rotate_grab_button(struct weston_pointer_grab *grab,
-		   uint32_t time, uint32_t button, uint32_t state_w)
+		   const struct timespec *time,
+		   uint32_t button, uint32_t state_w)
 {
 	struct rotate_grab *rotate =
 		container_of(grab, struct rotate_grab, base.grab);
@@ -3593,8 +3596,8 @@ surface_rotate(struct shell_surface *shsurf, struct weston_pointer *pointer)
 }
 
 static void
-rotate_binding(struct weston_pointer *pointer, uint32_t time, uint32_t button,
-	       void *data)
+rotate_binding(struct weston_pointer *pointer, const struct timespec *time,
+	       uint32_t button, void *data)
 {
 	struct weston_surface *focus;
 	struct weston_surface *base_surface;
@@ -3754,7 +3757,8 @@ activate_binding(struct weston_seat *seat,
 }
 
 static void
-click_to_activate_binding(struct weston_pointer *pointer, uint32_t time,
+click_to_activate_binding(struct weston_pointer *pointer,
+		          const struct timespec *time,
 			  uint32_t button, void *data)
 {
 	if (pointer->grab != &pointer->default_grab)

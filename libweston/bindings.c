@@ -349,7 +349,8 @@ weston_compositor_run_modifier_binding(struct weston_compositor *compositor,
 void
 weston_compositor_run_button_binding(struct weston_compositor *compositor,
 				     struct weston_pointer *pointer,
-				     uint32_t time, uint32_t button,
+				     const struct timespec *time,
+				     uint32_t button,
 				     enum wl_pointer_button_state state)
 {
 	struct weston_binding *b, *tmp;

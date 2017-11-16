@@ -159,8 +159,11 @@ ss_seat_handle_button(void *data, struct wl_pointer *pointer,
 		      uint32_t state)
 {
 	struct ss_seat *seat = data;
+	struct timespec ts;
 
-	notify_button(&seat->base, time, button, state);
+	timespec_from_msec(&ts, time);
+
+	notify_button(&seat->base, &ts, button, state);
 	notify_pointer_frame(&seat->base);
 }
 

@@ -35,6 +35,7 @@
 
 #include "libweston-desktop.h"
 #include "internal.h"
+#include "shared/timespec-util.h"
 
 struct weston_desktop_seat {
 	struct wl_listener seat_destroy_listener;
@@ -116,7 +117,8 @@ weston_desktop_seat_popup_grab_pointer_motion(struct weston_pointer_grab *grab,
 
 static void
 weston_desktop_seat_popup_grab_pointer_button(struct weston_pointer_grab *grab,
-					      uint32_t time, uint32_t button,
+					      const struct timespec *time,
+					      uint32_t button,
 					      enum wl_pointer_button_state state)
 {
 	struct weston_desktop_seat *seat =
@@ -130,7 +132,8 @@ weston_desktop_seat_popup_grab_pointer_button(struct weston_pointer_grab *grab,
 	if (weston_pointer_has_focus_resource(pointer))
 		weston_pointer_send_button(pointer, time, button, state);
 	else if (state == WL_POINTER_BUTTON_STATE_RELEASED &&
-		 (initial_up || (time - grab->pointer->grab_time) > 500))
+		 (initial_up ||
+		  (timespec_sub_to_msec(time, &grab->pointer->grab_time) > 500)))
 		weston_desktop_seat_popup_grab_end(seat);
 }
 

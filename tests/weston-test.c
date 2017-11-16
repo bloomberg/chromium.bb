@@ -171,10 +171,14 @@ static void
 send_button(struct wl_client *client, struct wl_resource *resource,
 	    int32_t button, uint32_t state)
 {
+	struct timespec time;
+
 	struct weston_test *test = wl_resource_get_user_data(resource);
 	struct weston_seat *seat = get_seat(test);
 
-	notify_button(seat, 100, button, state);
+	timespec_from_msec(&time, 100);
+
+	notify_button(seat, &time, button, state);
 }
 
 static void
