@@ -23,6 +23,8 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/lazy_instance.h"
+#include "base/memory/protected_memory.h"
+#include "base/memory/protected_memory_cfi.h"
 #include "base/native_library.h"
 #include "base/pickle.h"
 #include "base/posix/eintr_wrapper.h"
@@ -214,23 +216,32 @@ typedef struct tm* (*LocaltimeFunction)(const time_t* timep);
 typedef struct tm* (*LocaltimeRFunction)(const time_t* timep,
                                          struct tm* result);
 
-static pthread_once_t g_libc_localtime_funcs_guard = PTHREAD_ONCE_INIT;
-static LocaltimeFunction g_libc_localtime;
-static LocaltimeFunction g_libc_localtime64;
-static LocaltimeRFunction g_libc_localtime_r;
-static LocaltimeRFunction g_libc_localtime64_r;
+struct LibcFunctions {
+  LocaltimeFunction localtime;
+  LocaltimeFunction localtime64;
+  LocaltimeRFunction localtime_r;
+  LocaltimeRFunction localtime64_r;
+};
+
+static pthread_once_t g_libc_funcs_guard = PTHREAD_ONCE_INIT;
+// The libc function pointers are stored in read-only memory after being
+// dynamically resolved as a security mitigation to prevent the pointer from
+// being tampered with. See crbug.com/771365 for details.
+static PROTECTED_MEMORY_SECTION base::ProtectedMemory<LibcFunctions>
+    g_libc_funcs;
 
 static void InitLibcLocaltimeFunctions() {
-  g_libc_localtime = reinterpret_cast<LocaltimeFunction>(
-      dlsym(RTLD_NEXT, "localtime"));
-  g_libc_localtime64 = reinterpret_cast<LocaltimeFunction>(
-      dlsym(RTLD_NEXT, "localtime64"));
-  g_libc_localtime_r = reinterpret_cast<LocaltimeRFunction>(
-      dlsym(RTLD_NEXT, "localtime_r"));
-  g_libc_localtime64_r = reinterpret_cast<LocaltimeRFunction>(
-      dlsym(RTLD_NEXT, "localtime64_r"));
+  auto writer = base::AutoWritableMemory::Create(g_libc_funcs);
+  g_libc_funcs->localtime =
+      reinterpret_cast<LocaltimeFunction>(dlsym(RTLD_NEXT, "localtime"));
+  g_libc_funcs->localtime64 =
+      reinterpret_cast<LocaltimeFunction>(dlsym(RTLD_NEXT, "localtime64"));
+  g_libc_funcs->localtime_r =
+      reinterpret_cast<LocaltimeRFunction>(dlsym(RTLD_NEXT, "localtime_r"));
+  g_libc_funcs->localtime64_r =
+      reinterpret_cast<LocaltimeRFunction>(dlsym(RTLD_NEXT, "localtime64_r"));
 
-  if (!g_libc_localtime || !g_libc_localtime_r) {
+  if (!g_libc_funcs->localtime || !g_libc_funcs->localtime_r) {
     // http://code.google.com/p/chromium/issues/detail?id=16800
     //
     // Nvidia's libGL.so overrides dlsym for an unknown reason and replaces
@@ -242,14 +253,14 @@ static void InitLibcLocaltimeFunctions() {
                   "http://code.google.com/p/chromium/issues/detail?id=16800";
   }
 
-  if (!g_libc_localtime)
-    g_libc_localtime = gmtime;
-  if (!g_libc_localtime64)
-    g_libc_localtime64 = g_libc_localtime;
-  if (!g_libc_localtime_r)
-    g_libc_localtime_r = gmtime_r;
-  if (!g_libc_localtime64_r)
-    g_libc_localtime64_r = g_libc_localtime_r;
+  if (!g_libc_funcs->localtime)
+    g_libc_funcs->localtime = gmtime;
+  if (!g_libc_funcs->localtime64)
+    g_libc_funcs->localtime64 = g_libc_funcs->localtime;
+  if (!g_libc_funcs->localtime_r)
+    g_libc_funcs->localtime_r = gmtime_r;
+  if (!g_libc_funcs->localtime64_r)
+    g_libc_funcs->localtime64_r = g_libc_funcs->localtime_r;
 }
 
 // Define localtime_override() function with asm name "localtime", so that all
@@ -269,9 +280,9 @@ struct tm* localtime_override(const time_t* timep) {
     return &time_struct;
   }
 
-  CHECK_EQ(0, pthread_once(&g_libc_localtime_funcs_guard,
-                           InitLibcLocaltimeFunctions));
-  struct tm* res = g_libc_localtime(timep);
+  CHECK_EQ(0, pthread_once(&g_libc_funcs_guard, InitLibcLocaltimeFunctions));
+  struct tm* res =
+      base::UnsanitizedCfiCall(g_libc_funcs, &LibcFunctions::localtime)(timep);
 #if defined(MEMORY_SANITIZER)
   if (res) __msan_unpoison(res, sizeof(*res));
   if (res->tm_zone) __msan_unpoison_string(res->tm_zone);
@@ -293,9 +304,9 @@ struct tm* localtime64_override(const time_t* timep) {
     return &time_struct;
   }
 
-  CHECK_EQ(0, pthread_once(&g_libc_localtime_funcs_guard,
-                           InitLibcLocaltimeFunctions));
-  struct tm* res = g_libc_localtime64(timep);
+  CHECK_EQ(0, pthread_once(&g_libc_funcs_guard, InitLibcLocaltimeFunctions));
+  struct tm* res = base::UnsanitizedCfiCall(g_libc_funcs,
+                                            &LibcFunctions::localtime64)(timep);
 #if defined(MEMORY_SANITIZER)
   if (res) __msan_unpoison(res, sizeof(*res));
   if (res->tm_zone) __msan_unpoison_string(res->tm_zone);
@@ -314,9 +325,9 @@ struct tm* localtime_r_override(const time_t* timep, struct tm* result) {
     return result;
   }
 
-  CHECK_EQ(0, pthread_once(&g_libc_localtime_funcs_guard,
-                           InitLibcLocaltimeFunctions));
-  struct tm* res = g_libc_localtime_r(timep, result);
+  CHECK_EQ(0, pthread_once(&g_libc_funcs_guard, InitLibcLocaltimeFunctions));
+  struct tm* res = base::UnsanitizedCfiCall(
+      g_libc_funcs, &LibcFunctions::localtime_r)(timep, result);
 #if defined(MEMORY_SANITIZER)
   if (res) __msan_unpoison(res, sizeof(*res));
   if (res->tm_zone) __msan_unpoison_string(res->tm_zone);
@@ -335,9 +346,9 @@ struct tm* localtime64_r_override(const time_t* timep, struct tm* result) {
     return result;
   }
 
-  CHECK_EQ(0, pthread_once(&g_libc_localtime_funcs_guard,
-                           InitLibcLocaltimeFunctions));
-  struct tm* res = g_libc_localtime64_r(timep, result);
+  CHECK_EQ(0, pthread_once(&g_libc_funcs_guard, InitLibcLocaltimeFunctions));
+  struct tm* res = base::UnsanitizedCfiCall(
+      g_libc_funcs, &LibcFunctions::localtime64_r)(timep, result);
 #if defined(MEMORY_SANITIZER)
   if (res) __msan_unpoison(res, sizeof(*res));
   if (res->tm_zone) __msan_unpoison_string(res->tm_zone);
