@@ -40,7 +40,7 @@ bool MemoryMappedFile::MapFileRegionToMemory(
       DPLOG(ERROR) << "fstat " << file_.GetPlatformFile();
       return false;
     }
-    if (!IsValueInRangeForNumericType<size_t>(static_cast<uint64_t>(file_len)))
+    if (!IsValueInRangeForNumericType<size_t>(file_len))
       return false;
     map_size = static_cast<size_t>(file_len);
     length_ = map_size;

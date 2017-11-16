@@ -53,8 +53,7 @@ bool MemoryMappedFile::MapFileRegionToMemory(
   if (region == MemoryMappedFile::Region::kWholeFile) {
     DCHECK_NE(READ_WRITE_EXTEND, access);
     int64_t file_len = file_.GetLength();
-    if (file_len <= 0 ||
-        !IsValueInRangeForNumericType<size_t>(static_cast<uint64_t>(file_len)))
+    if (file_len <= 0 || !IsValueInRangeForNumericType<size_t>(file_len))
       return false;
     length_ = static_cast<size_t>(file_len);
   } else {
