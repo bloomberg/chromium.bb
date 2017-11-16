@@ -20888,11 +20888,36 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-2005270485" label="DXGI_ERROR_ACCESS_DENIED"/>
   <int value="-2005270484" label="DXGI_ERROR_NAME_ALREADY_EXISTS"/>
   <int value="-2005270483" label="DXGI_ERROR_SDK_COMPONENT_MISSING"/>
+  <int value="-2004287487" label="AUDCLNT_E_NOT_INITIALIZED"/>
+  <int value="-2004287486" label="AUDCLNT_E_ALREADY_INITIALIZED"/>
+  <int value="-2004287485" label="AUDCLNT_E_WRONG_ENDPOINT_TYPE"/>
+  <int value="-2004287484" label="AUDCLNT_E_DEVICE_INVALIDATED"/>
+  <int value="-2004287483" label="AUDCLNT_E_NOT_STOPPED"/>
+  <int value="-2004287482" label="AUDCLNT_E_BUFFER_TOO_LARGE"/>
+  <int value="-2004287481" label="AUDCLNT_E_OUT_OF_ORDER"/>
   <int value="-2004287480" label="AUDCLNT_E_UNSUPPORTED_FORMAT"/>
+  <int value="-2004287479" label="AUDCLNT_E_INVALID_SIZE"/>
   <int value="-2004287478" label="AUDCLNT_E_DEVICE_IN_USE"/>
+  <int value="-2004287477" label="AUDCLNT_E_BUFFER_OPERATION_PENDING"/>
+  <int value="-2004287476" label="AUDCLNT_E_THREAD_NOT_REGISTERED"/>
+  <int value="-2004287474" label="AUDCLNT_E_EXCLUSIVE_MODE_NOT_ALLOWED"/>
+  <int value="-2004287473" label="AUDCLNT_E_ENDPOINT_CREATE_FAILED"/>
+  <int value="-2004287472" label="AUDCLNT_E_SERVICE_NOT_RUNNING"/>
+  <int value="-2004287471" label="AUDCLNT_E_EVENTHANDLE_NOT_EXPECTED"/>
+  <int value="-2004287470" label="AUDCLNT_E_EXCLUSIVE_MODE_ONLY"/>
+  <int value="-2004287469" label="AUDCLNT_E_BUFDURATION_PERIOD_NOT_EQUAL"/>
+  <int value="-2004287468" label="AUDCLNT_E_EVENTHANDLE_NOT_SET"/>
+  <int value="-2004287467" label="AUDCLNT_E_INCORRECT_BUFFER_SIZE"/>
+  <int value="-2004287466" label="AUDCLNT_E_BUFFER_SIZE_ERROR"/>
   <int value="-2004287465" label="AUDCLNT_E_CPUUSAGE_EXCEEDED"/>
+  <int value="-2004287464" label="AUDCLNT_E_BUFFER_ERROR"/>
+  <int value="-2004287463" label="AUDCLNT_E_BUFFER_SIZE_NOT_ALIGNED"/>
+  <int value="-2004287456" label="AUDCLNT_E_INVALID_DEVICE_PERIOD"/>
   <int value="-1606219753" label="GOOPDATE_E_NON_BLOCKING_CALL_PENDING"/>
   <int value="-1606219747" label="GOOPDATE_E_APP_USING_EXTERNAL_UPDATER"/>
+  <int value="143196161" label="AUDCLNT_S_BUFFER_EMPTY"/>
+  <int value="143196162" label="AUDCLNT_S_THREAD_ALREADY_REGISTERED"/>
+  <int value="143196163" label="AUDCLNT_S_POSITION_STALLED"/>
 </enum>
 
 <enum name="HttpAuthCount">
