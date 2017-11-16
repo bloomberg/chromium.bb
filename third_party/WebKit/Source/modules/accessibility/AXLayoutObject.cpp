@@ -1917,7 +1917,7 @@ int AXLayoutObject::IndexForVisiblePosition(
     // TODO(chromium-accessibility): We reach here only when passing a position
     // outside of the node range. This shouldn't happen, but is happening as
     // found in crbug.com/756435.
-    NOTREACHED();
+    LOG(WARNING) << "AX position out of node range";
     return 0;
   }
 
