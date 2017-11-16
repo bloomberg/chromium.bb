@@ -52,20 +52,6 @@ var testParams = [
 
 for (let params of testParams) {
   test(() => {
-    assert_equals(params.input.x, params.x);
-    assert_equals(params.input.y, params.y);
-    assert_equals(params.input.z, params.z);
-  }, "x, y, and z values are correct for " + params.cssText);
-}
-
-for (let params of testParams) {
-  test(() => {
-    assert_equals(params.input.is2D, params.is2D);
-  }, "is2D value is correct for " + params.cssText);
-}
-
-for (let params of testParams) {
-  test(() => {
     assert_equals(params.input.toString(), params.cssText);
   }, "toString is correct for " + params.cssText);
 }
@@ -75,18 +61,16 @@ test(() => {
   assert_throws(new TypeError(), () => { new CSSScale(1); });
 }, "Invalid number of arguments to constructor throws an exception.");
 
+/* FIXME: The spec doesn't say these are invalid.
+   https://drafts.css-houdini.org/css-typed-om-1/#dom-cssscale-cssscale */
 test(() => {
   assert_throws(new TypeError(), () => { new CSSScale(NaN, 0); });
   assert_throws(new TypeError(), () => { new CSSScale(0, NaN); });
   assert_throws(new TypeError(), () => { new CSSScale(NaN, NaN); });
   assert_throws(new TypeError(), () => { new CSSScale(Infinity, 0); });
   assert_throws(new TypeError(), () => { new CSSScale(-Infinity, 0); });
-  assert_throws(new TypeError(), () => { new CSSScale("hello", 0); });
-  assert_throws(new TypeError(), () => { new CSSScale(0, "world"); });
   assert_throws(new TypeError(), () => { new CSSScale(undefined, 0); });
-  assert_throws(new TypeError(), () => { new CSSScale({}, {}); });
 
-  assert_throws(new TypeError(), () => { new CSSScale("hello", 0, 0); });
   assert_throws(new TypeError(), () => { new CSSScale(0, NaN, 0); });
   assert_throws(new TypeError(), () => { new CSSScale(0, Infinity, 0); });
   assert_throws(new TypeError(), () => { new CSSScale(0, 0, NaN); });
@@ -98,9 +82,6 @@ test(() => {
   });
   assert_throws(new TypeError(), () => { new CSSScale(NaN, undefined, 0); });
   assert_throws(new TypeError(), () => { new CSSScale(NaN, 0, NaN); });
-  assert_throws(new TypeError(), () => { new CSSScale(0, "hello", "world"); });
-  assert_throws(new TypeError(), () => { new CSSScale(0, {}, {}); });
-  assert_throws(new TypeError(), () => { new CSSScale({}, {}, {}); });
   assert_throws(new TypeError(), () => { new CSSScale(NaN, NaN, NaN); });
 }, "Invalid input throws an exception.");
 
@@ -118,15 +99,5 @@ for (let params of testParams) {
     assert_matrix_approx_equals(inputAsMatrix, expectedMatrix, EPSILON);
   }, "asMatrix is constructed correctly for " + params.cssText);
 }
-
-test(() => {
-  var actual = new CSSScale(0, 0, 0);
-  actual.x = 1;
-  actual.y = 2;
-  actual.z = 3;
-  assert_equals(actual.x, 1);
-  assert_equals(actual.y, 2);
-  assert_equals(actual.z, 3);
-}, "x, y, z are mutable attributes.");
 
 </script>
