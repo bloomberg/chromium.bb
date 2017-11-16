@@ -1398,6 +1398,11 @@ void AutofillManager::FillOrPreviewDataModelForm(
   }
 
   DCHECK_EQ(form_structure->field_count(), form.fields.size());
+
+  if (base::FeatureList::IsEnabled(kAutofillRationalizeFieldTypePredictions)) {
+    form_structure->RationalizePhoneNumbersInSection(autofill_field->section());
+  }
+
   for (size_t i = 0; i < form_structure->field_count(); ++i) {
     if (form_structure->field(i)->section() != autofill_field->section())
       continue;
