@@ -37,12 +37,11 @@ class SadTabViewTest : public CocoaTest {
 TEST_VIEW(SadTabViewTest, view_);
 
 TEST(SadTabViewBehaviorTest, ClickOnLinks) {
-  using chrome::SadTab;
   using Action = SadTab::Action;
 
-  class MockSadTab : public chrome::SadTab {
+  class MockSadTab : public SadTab {
    public:
-    MockSadTab() : SadTab(nullptr, chrome::SAD_TAB_KIND_CRASHED) {}
+    MockSadTab() : SadTab(nullptr, SAD_TAB_KIND_CRASHED) {}
     MOCK_METHOD0(RecordFirstPaint, void());
     MOCK_METHOD1(PerformAction, void(Action));
   };

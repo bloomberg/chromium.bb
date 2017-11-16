@@ -12,7 +12,7 @@
 // A view that displays the "sad tab" (aka crash page).
 @interface SadTabView : NSView
 
-- (instancetype)initWithFrame:(NSRect)frame sadTab:(chrome::SadTab*)sadTab;
+- (instancetype)initWithFrame:(NSRect)frame sadTab:(SadTab*)sadTab;
 
 @end
 

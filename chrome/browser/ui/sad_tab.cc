@@ -84,8 +84,6 @@ bool AreOtherTabsOpen() {
 
 }  // namespace
 
-namespace chrome {
-
 // static
 bool SadTab::ShouldShow(base::TerminationStatus status) {
   switch (status) {
@@ -115,15 +113,15 @@ int SadTab::GetTitle() {
     return IDS_SAD_TAB_TITLE;
   switch (kind_) {
 #if defined(OS_CHROMEOS)
-    case chrome::SAD_TAB_KIND_KILLED_BY_OOM:
+    case SAD_TAB_KIND_KILLED_BY_OOM:
       return IDS_SAD_TAB_RELOAD_TITLE;
 #endif
-    case chrome::SAD_TAB_KIND_OOM:
+    case SAD_TAB_KIND_OOM:
 #if defined(OS_WIN)  // Only Windows has OOM sad tab strings.
       return IDS_SAD_TAB_OOM_TITLE;
 #endif
-    case chrome::SAD_TAB_KIND_CRASHED:
-    case chrome::SAD_TAB_KIND_KILLED:
+    case SAD_TAB_KIND_CRASHED:
+    case SAD_TAB_KIND_KILLED:
       return IDS_SAD_TAB_RELOAD_TITLE;
   }
   NOTREACHED();
@@ -133,16 +131,16 @@ int SadTab::GetTitle() {
 int SadTab::GetMessage() {
   switch (kind_) {
 #if defined(OS_CHROMEOS)
-    case chrome::SAD_TAB_KIND_KILLED_BY_OOM:
+    case SAD_TAB_KIND_KILLED_BY_OOM:
       return IDS_KILLED_TAB_BY_OOM_MESSAGE;
 #endif
-    case chrome::SAD_TAB_KIND_OOM:
+    case SAD_TAB_KIND_OOM:
       if (show_feedback_button_)
         return AreOtherTabsOpen() ? IDS_SAD_TAB_OOM_MESSAGE_TABS
                                   : IDS_SAD_TAB_OOM_MESSAGE_NOTABS;
       return IDS_SAD_TAB_MESSAGE;
-    case chrome::SAD_TAB_KIND_CRASHED:
-    case chrome::SAD_TAB_KIND_KILLED:
+    case SAD_TAB_KIND_CRASHED:
+    case SAD_TAB_KIND_KILLED:
       return show_feedback_button_ ? IDS_SAD_TAB_RELOAD_TRY
                                    : IDS_SAD_TAB_MESSAGE;
   }
@@ -170,13 +168,13 @@ std::vector<int> SadTab::GetSubMessages() {
 
   switch (kind_) {
 #if defined(OS_CHROMEOS)
-    case chrome::SAD_TAB_KIND_KILLED_BY_OOM:
+    case SAD_TAB_KIND_KILLED_BY_OOM:
       return std::vector<int>();
 #endif
-    case chrome::SAD_TAB_KIND_OOM:
+    case SAD_TAB_KIND_OOM:
       return std::vector<int>();
-    case chrome::SAD_TAB_KIND_CRASHED:
-    case chrome::SAD_TAB_KIND_KILLED:
+    case SAD_TAB_KIND_CRASHED:
+    case SAD_TAB_KIND_KILLED:
       std::vector<int> message_ids = {IDS_SAD_TAB_RELOAD_RESTART_BROWSER,
                                       IDS_SAD_TAB_RELOAD_RESTART_DEVICE};
       // Only show incognito suggestion if not already in Incognito mode.
@@ -201,18 +199,18 @@ void SadTab::RecordFirstPaint() {
   recorded_paint_ = true;
 
   switch (kind_) {
-    case chrome::SAD_TAB_KIND_CRASHED:
+    case SAD_TAB_KIND_CRASHED:
       UMA_SAD_TAB_COUNTER("Tabs.SadTab.CrashDisplayed");
       break;
-    case chrome::SAD_TAB_KIND_OOM:
+    case SAD_TAB_KIND_OOM:
       UMA_SAD_TAB_COUNTER("Tabs.SadTab.OomDisplayed");
       break;
 #if defined(OS_CHROMEOS)
-    case chrome::SAD_TAB_KIND_KILLED_BY_OOM:
+    case SAD_TAB_KIND_KILLED_BY_OOM:
       UMA_SAD_TAB_COUNTER("Tabs.SadTab.KillDisplayed.OOM");
 #endif
     // Fallthrough
-    case chrome::SAD_TAB_KIND_KILLED:
+    case SAD_TAB_KIND_KILLED:
       UMA_SAD_TAB_COUNTER("Tabs.SadTab.KillDisplayed");
       break;
   }
@@ -228,8 +226,8 @@ void SadTab::PerformAction(SadTab::Action action) {
                   ui_metrics::SadTabEvent::BUTTON_CLICKED);
       if (show_feedback_button_) {
         ShowFeedbackPage(
-            FindBrowserWithWebContents(web_contents_),
-            kFeedbackSourceSadTabPage,
+            chrome::FindBrowserWithWebContents(web_contents_),
+            chrome::kFeedbackSourceSadTabPage,
             l10n_util::GetStringUTF8(kind_ == SAD_TAB_KIND_CRASHED
                                          ? IDS_CRASHED_TAB_FEEDBACK_MESSAGE
                                          : IDS_KILLED_TAB_FEEDBACK_MESSAGE),
@@ -256,14 +254,14 @@ SadTab::SadTab(content::WebContents* web_contents, SadTabKind kind)
       show_feedback_button_(ShouldShowFeedbackButton()),
       recorded_paint_(false) {
   switch (kind) {
-    case chrome::SAD_TAB_KIND_CRASHED:
+    case SAD_TAB_KIND_CRASHED:
       UMA_SAD_TAB_COUNTER("Tabs.SadTab.CrashCreated");
       break;
-    case chrome::SAD_TAB_KIND_OOM:
+    case SAD_TAB_KIND_OOM:
       UMA_SAD_TAB_COUNTER("Tabs.SadTab.OomCreated");
       break;
 #if defined(OS_CHROMEOS)
-    case chrome::SAD_TAB_KIND_KILLED_BY_OOM:
+    case SAD_TAB_KIND_KILLED_BY_OOM:
       UMA_SAD_TAB_COUNTER("Tabs.SadTab.KillCreated.OOM");
       {
         const std::string spec = web_contents->GetURL().GetOrigin().spec();
@@ -272,12 +270,10 @@ SadTab::SadTab(content::WebContents* web_contents, SadTabKind kind)
       }
 #endif
     // Fall through
-    case chrome::SAD_TAB_KIND_KILLED:
+    case SAD_TAB_KIND_KILLED:
       UMA_SAD_TAB_COUNTER("Tabs.SadTab.KillCreated");
       LOG(WARNING) << "Tab Killed: "
                    << web_contents->GetURL().GetOrigin().spec();
       break;
   }
 }
-
-}  // namespace chrome
