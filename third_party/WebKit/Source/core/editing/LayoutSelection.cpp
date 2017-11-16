@@ -222,15 +222,24 @@ static void SetShouldInvalidateIfNeeds(LayoutObject* layout_object) {
     return;
   layout_object->SetShouldInvalidateSelection();
 
-  // We should invalidate if parent of |layout_object| is LayoutSVGText because
-  // SVGRootInlineBoxPainter::Paint() paints selection for |layout_object| in
-  // LayoutSVGText and it is invoked when parent LayoutSVGText is invalidated.
+  // We should invalidate if ancestor of |layout_object| is LayoutSVGText
+  // because SVGRootInlineBoxPainter::Paint() paints selection for
+  // |layout_object| in/ LayoutSVGText and it is invoked when parent
+  // LayoutSVGText is invalidated.
   // That is different from InlineTextBoxPainter::Paint() which paints
   // LayoutText selection when LayoutText is invalidated.
-  LayoutObject* const parent = layout_object->Parent();
-  if (!parent || !parent->IsSVGText() || parent->ShouldInvalidateSelection())
+  if (!layout_object->IsSVG())
     return;
-  parent->SetShouldInvalidateSelection();
+  for (LayoutObject* parent = layout_object->Parent(); parent;
+       parent = parent->Parent()) {
+    if (parent->IsSVGRoot())
+      return;
+    if (parent->IsSVGText()) {
+      if (!parent->ShouldInvalidateSelection())
+        parent->SetShouldInvalidateSelection();
+      return;
+    }
+  }
 }
 
 // Set ShouldInvalidateSelection flag of LayoutObjects
