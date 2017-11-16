@@ -19,10 +19,9 @@ namespace content {
 
 class BrowserContext;
 
-// This is the dispatcher to be used for firing events related to persistent
-// notifications on a Service Worker. This class is a singleton, the instance of
-// which can be retrieved using the static GetInstance() method. All methods
-// must be called on the UI thread.
+// This is the dispatcher to be used for firing events related to notifications.
+// This class is a singleton, the instance of which can be retrieved using the
+// static GetInstance() method. All methods must be called on the UI thread.
 class CONTENT_EXPORT NotificationEventDispatcher {
  public:
   static NotificationEventDispatcher* GetInstance();
