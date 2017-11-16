@@ -114,6 +114,14 @@ void MessagePopupCollection::ClickOnNotificationButton(
   message_center_->ClickOnNotificationButton(notification_id, button_index);
 }
 
+void MessagePopupCollection::ClickOnNotificationButtonWithReply(
+    const std::string& notification_id,
+    int button_index,
+    const base::string16& reply) {
+  message_center_->ClickOnNotificationButtonWithReply(notification_id,
+                                                      button_index, reply);
+}
+
 void MessagePopupCollection::ClickOnSettingsButton(
     const std::string& notification_id) {
   message_center_->ClickOnSettingsButton(notification_id);

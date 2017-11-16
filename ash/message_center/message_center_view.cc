@@ -471,6 +471,14 @@ void MessageCenterView::ClickOnNotificationButton(
   message_center_->ClickOnNotificationButton(notification_id, button_index);
 }
 
+void MessageCenterView::ClickOnNotificationButtonWithReply(
+    const std::string& notification_id,
+    int button_index,
+    const base::string16& reply) {
+  message_center_->ClickOnNotificationButtonWithReply(notification_id,
+                                                      button_index, reply);
+}
+
 void MessageCenterView::ClickOnSettingsButton(
     const std::string& notification_id) {
   message_center_->ClickOnSettingsButton(notification_id);

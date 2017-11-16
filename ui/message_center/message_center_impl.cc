@@ -479,7 +479,7 @@ void MessageCenterImpl::ClickOnNotificationButton(const std::string& id,
                                                   int button_index) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!iterating_);
-  if (FindVisibleNotificationById(id) == NULL)
+  if (!FindVisibleNotificationById(id))
     return;
 #if defined(OS_CHROMEOS)
   if (HasPopupNotifications())
@@ -493,6 +493,28 @@ void MessageCenterImpl::ClickOnNotificationButton(const std::string& id,
     internal::ScopedNotificationsIterationLock lock(this);
     for (auto& observer : observer_list_)
       observer.OnNotificationButtonClicked(id, button_index);
+  }
+}
+
+void MessageCenterImpl::ClickOnNotificationButtonWithReply(
+    const std::string& id,
+    int button_index,
+    const base::string16& reply) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  if (!FindVisibleNotificationById(id))
+    return;
+#if defined(OS_CHROMEOS)
+  if (HasPopupNotifications())
+    MarkSinglePopupAsShown(id, true);
+#endif
+  scoped_refptr<NotificationDelegate> delegate =
+      notification_list_->GetNotificationDelegate(id);
+  if (delegate.get())
+    delegate->ButtonClickWithReply(button_index, reply);
+  {
+    internal::ScopedNotificationsIterationLock lock(this);
+    for (auto& observer : observer_list_)
+      observer.OnNotificationButtonClickedWithReply(id, button_index, reply);
   }
 }
 

@@ -101,6 +101,9 @@ class MESSAGE_CENTER_EXPORT ToastContentsView
       const Notification& notification) override;
   void ClickOnNotificationButton(const std::string& notification_id,
                                  int button_index) override;
+  void ClickOnNotificationButtonWithReply(const std::string& notification_id,
+                                          int button_index,
+                                          const base::string16& reply) override;
   void ClickOnSettingsButton(const std::string& notification_id) override;
   void UpdateNotificationSize(const std::string& notification_id) override;
 

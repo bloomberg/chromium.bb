@@ -69,6 +69,9 @@ class MESSAGE_CENTER_EXPORT MessageCenterImpl
   void ClickOnNotification(const std::string& id) override;
   void ClickOnNotificationButton(const std::string& id,
                                  int button_index) override;
+  void ClickOnNotificationButtonWithReply(const std::string& id,
+                                          int button_index,
+                                          const base::string16& reply) override;
   void ClickOnSettingsButton(const std::string& id) override;
   void MarkSinglePopupAsShown(const std::string& id,
                               bool mark_notification_as_read) override;
