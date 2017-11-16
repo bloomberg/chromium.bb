@@ -29,7 +29,9 @@ void NetworkActivityIndicatorTabHelper::CreateForWebState(
 NetworkActivityIndicatorTabHelper::NetworkActivityIndicatorTabHelper(
     web::WebState* web_state,
     NSString* tab_id)
-    : web::WebStateObserver(web_state), network_activity_key_([tab_id copy]) {}
+    : network_activity_key_([tab_id copy]) {
+  web_state->AddObserver(this);
+}
 
 NetworkActivityIndicatorTabHelper::~NetworkActivityIndicatorTabHelper() {
   Stop();
@@ -48,6 +50,11 @@ void NetworkActivityIndicatorTabHelper::DidStartLoading(
 void NetworkActivityIndicatorTabHelper::DidStopLoading(
     web::WebState* web_state) {
   Stop();
+}
+
+void NetworkActivityIndicatorTabHelper::WebStateDestroyed(
+    web::WebState* web_state) {
+  web_state->RemoveObserver(this);
 }
 
 void NetworkActivityIndicatorTabHelper::Stop() {
