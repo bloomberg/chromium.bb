@@ -29,17 +29,6 @@ std::unique_ptr<T[]> WrapArrayUnique(T* ptr) {
   return std::unique_ptr<T[]>(ptr);
 }
 
-// TODO(crbug.com/755727): Inline all uses (even though this will lose the
-// static_assert).
-template <typename T, typename... Args>
-auto MakeUnique(Args&&... args)
-    -> decltype(std::make_unique<T>(std::forward<Args>(args)...)) {
-  static_assert(
-      !WTF::IsGarbageCollectedType<typename std::remove_extent<T>::type>::value,
-      "Garbage collected types should not be stored in std::unique_ptr!");
-  return std::make_unique<T>(std::forward<Args>(args)...);
-}
-
 }  // namespace WTF
 
 using WTF::WrapArrayUnique;
