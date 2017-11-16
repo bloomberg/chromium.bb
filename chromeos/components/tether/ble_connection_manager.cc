@@ -188,6 +188,11 @@ void BleConnectionManager::ConnectionMetadata::OnMessageSent(
   manager_->SendMessageSentEvent(sequence_number);
 }
 
+void BleConnectionManager::ConnectionMetadata::
+    OnGattCharacteristicsNotAvailable() {
+  // TODO(khorimoto): Work around GATT bug. See crbug.com/784968.
+}
+
 BleConnectionManager::BleConnectionManager(
     cryptauth::CryptAuthService* cryptauth_service,
     scoped_refptr<device::BluetoothAdapter> adapter,

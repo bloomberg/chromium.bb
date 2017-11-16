@@ -248,6 +248,18 @@ void BluetoothLowEnergyWeaveClientConnection::DestroyConnection(
     RecordBleWeaveConnectionResult(result);
   }
 
+  if (result ==
+          BleWeaveConnectionResult::
+              BLE_WEAVE_CONNECTION_RESULT_TIMEOUT_FINDING_GATT_CHARACTERISTICS ||
+      result ==
+          BleWeaveConnectionResult::
+              BLE_WEAVE_CONNECTION_RESULT_ERROR_FINDING_GATT_CHARACTERISTICS ||
+      result ==
+          BleWeaveConnectionResult::
+              BLE_WEAVE_CONNECTION_RESULT_ERROR_GATT_CHARACTERISTIC_NOT_AVAILABLE) {
+    NotifyGattCharacteristicsNotAvailable();
+  }
+
   if (adapter_) {
     adapter_->RemoveObserver(this);
     adapter_ = nullptr;

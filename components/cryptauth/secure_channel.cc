@@ -212,6 +212,15 @@ void SecureChannel::OnSendCompleted(const cryptauth::Connection& connection,
   Disconnect();
 }
 
+void SecureChannel::OnGattCharacteristicsNotAvailable() {
+  NotifyGattCharacteristicsNotAvailable();
+}
+
+void SecureChannel::NotifyGattCharacteristicsNotAvailable() {
+  for (auto& observer : observer_list_)
+    observer.OnGattCharacteristicsNotAvailable();
+}
+
 void SecureChannel::TransitionToStatus(const Status& new_status) {
   if (new_status == status_) {
     // Only report changes to state.

@@ -32,6 +32,13 @@ class ConnectionObserver {
   virtual void OnSendCompleted(const Connection& connection,
                                const WireMessage& message,
                                bool success) {}
+
+  // Called when GATT characteristics are not available. This observer function
+  // is a temporary work-around (see crbug.com/784968).
+  // TODO(khorimoto): This observer function is specific to only one Connection
+  //     implementation, so it is hacky to include it as part of the observer
+  //     for Connection. Remove this work-around when it is no longer necessary.
+  virtual void OnGattCharacteristicsNotAvailable() {}
 };
 
 }  // namespace cryptauth

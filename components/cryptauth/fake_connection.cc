@@ -78,6 +78,10 @@ void FakeConnection::ReceiveMessage(
   pending_payload_.clear();
 }
 
+void FakeConnection::NotifyGattCharacteristicsNotAvailable() {
+  Connection::NotifyGattCharacteristicsNotAvailable();
+}
+
 void FakeConnection::SendMessageImpl(std::unique_ptr<WireMessage> message) {
   CHECK(!current_message_);
   current_message_ = std::move(message);
