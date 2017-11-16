@@ -1151,9 +1151,10 @@ TEST(UnionTest, InterfaceInUnion) {
   Binding<SmallCache> bindings(&impl, MakeRequest(&ptr));
 
   HandleUnionPtr handle(HandleUnion::New());
-  handle->set_f_small_cache(std::move(ptr));
+  handle->set_f_small_cache(ptr.PassInterface());
 
-  handle->get_f_small_cache()->SetIntValue(10);
+  ptr.Bind(std::move(handle->get_f_small_cache()));
+  ptr->SetIntValue(10);
   run_loop.Run();
   EXPECT_EQ(10, impl.int_value());
 }
@@ -1165,9 +1166,9 @@ TEST(UnionTest, InterfaceInUnionFactoryFunction) {
   SmallCachePtr ptr;
   Binding<SmallCache> bindings(&impl, MakeRequest(&ptr));
 
-  HandleUnionPtr handle(HandleUnion::NewFSmallCache(std::move(ptr)));
-
-  handle->get_f_small_cache()->SetIntValue(10);
+  HandleUnionPtr handle = HandleUnion::NewFSmallCache(ptr.PassInterface());
+  ptr.Bind(std::move(handle->get_f_small_cache()));
+  ptr->SetIntValue(10);
   run_loop.Run();
   EXPECT_EQ(10, impl.int_value());
 }
@@ -1180,7 +1181,7 @@ TEST(UnionTest, InterfaceInUnionSerialization) {
   Binding<SmallCache> bindings(&impl, MakeRequest(&ptr));
 
   HandleUnionPtr handle(HandleUnion::New());
-  handle->set_f_small_cache(std::move(ptr));
+  handle->set_f_small_cache(ptr.PassInterface());
 
   mojo::Message message;
   mojo::internal::SerializationContext context;
@@ -1192,7 +1193,8 @@ TEST(UnionTest, InterfaceInUnionSerialization) {
   HandleUnionPtr handle2(HandleUnion::New());
   mojo::internal::Deserialize<HandleUnionDataView>(data, &handle2, &context);
 
-  handle2->get_f_small_cache()->SetIntValue(10);
+  ptr.Bind(std::move(handle2->get_f_small_cache()));
+  ptr->SetIntValue(10);
   run_loop.Run();
   EXPECT_EQ(10, impl.int_value());
 }

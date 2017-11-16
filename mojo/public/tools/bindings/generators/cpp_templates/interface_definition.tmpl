@@ -10,7 +10,7 @@
   serialization_context.TakeHandlesFromMessage({{message}});
   bool success = true;
 {%-   for param in struct.packed.packed_fields_in_ordinal_order %}
-  {{param.field.kind|cpp_wrapper_type}} p_{{param.field.name}}{};
+  {{param.field.kind|cpp_wrapper_call_type}} p_{{param.field.name}}{};
 {%-   endfor %}
   {{struct.name}}DataView input_data_view({{params}}, &serialization_context);
   {{struct_macros.deserialize(struct, "input_data_view", "p_%s", "success")}}
@@ -62,7 +62,7 @@ class {{class_name}}_{{method.name}}_HandleSyncResponse
   {{class_name}}_{{method.name}}_HandleSyncResponse(
       bool* result
 {%-       for param in method.response_parameters -%}
-      , {{param.kind|cpp_wrapper_type}}* out_{{param.name}}
+      , {{param.kind|cpp_wrapper_call_type}}* out_{{param.name}}
 {%-       endfor %})
       : result_(result)
 {%-       for param in method.response_parameters -%}
@@ -74,7 +74,7 @@ class {{class_name}}_{{method.name}}_HandleSyncResponse
  private:
   bool* result_;
 {%-       for param in method.response_parameters %}
-  {{param.kind|cpp_wrapper_type}}* out_{{param.name}}_;
+  {{param.kind|cpp_wrapper_call_type}}* out_{{param.name}}_;
 {%-       endfor -%}
   DISALLOW_COPY_AND_ASSIGN({{class_name}}_{{method.name}}_HandleSyncResponse);
 };
@@ -597,7 +597,7 @@ void {{interface.name}}AsyncWaiter::{{method.name}}(
       base::Bind(
           [](base::RunLoop* loop
 {%-   for param in method.response_parameters -%},
-             {{param.kind|cpp_wrapper_type}}* out_{{param.name}}
+             {{param.kind|cpp_wrapper_call_type}}* out_{{param.name}}
 {%    endfor -%}
 {%-   for param in method.response_parameters -%},
              {{param.kind|cpp_wrapper_param_type}} {{param.name}}

@@ -78,7 +78,7 @@ MojoRendererService::~MojoRendererService() {}
 
 void MojoRendererService::Initialize(
     mojom::RendererClientAssociatedPtrInfo client,
-    base::Optional<std::vector<mojom::DemuxerStreamPtr>> streams,
+    base::Optional<std::vector<mojom::DemuxerStreamPtrInfo>> streams,
     const base::Optional<GURL>& media_url,
     const base::Optional<GURL>& site_for_cookies,
     InitializeCallback callback) {

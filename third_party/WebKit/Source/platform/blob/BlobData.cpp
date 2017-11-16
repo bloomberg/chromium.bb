@@ -57,6 +57,7 @@ using mojom::blink::BlobPtr;
 using mojom::blink::BlobPtrInfo;
 using mojom::blink::BlobRegistryPtr;
 using mojom::blink::BytesProviderPtr;
+using mojom::blink::BytesProviderPtrInfo;
 using mojom::blink::BytesProviderRequest;
 using mojom::blink::DataElement;
 using mojom::blink::DataElementBlob;
@@ -342,7 +343,7 @@ BlobDataHandle::BlobDataHandle(std::unique_ptr<BlobData> data, long long size)
             }
             last_bytes_provider->AppendData(item.data);
           } else {
-            BytesProviderPtr bytes_provider;
+            BytesProviderPtrInfo bytes_provider_info;
             auto provider = std::make_unique<BlobBytesProvider>(item.data);
             last_bytes_provider = provider.get();
             if (file_runner) {
@@ -350,15 +351,16 @@ BlobDataHandle::BlobDataHandle(std::unique_ptr<BlobData> data, long long size)
               // instead, only using the File thread for actual file operations.
               file_runner->PostTask(
                   FROM_HERE,
-                  CrossThreadBind(&BindBytesProvider,
-                                  WTF::Passed(std::move(provider)),
-                                  WTF::Passed(MakeRequest(&bytes_provider))));
+                  CrossThreadBind(
+                      &BindBytesProvider, WTF::Passed(std::move(provider)),
+                      WTF::Passed(MakeRequest(&bytes_provider_info))));
             } else {
               BindBytesProvider(std::move(provider),
-                                MakeRequest(&bytes_provider));
+                                MakeRequest(&bytes_provider_info));
             }
-            DataElementBytesPtr bytes_element = DataElementBytes::New(
-                item.data->length(), WTF::nullopt, std::move(bytes_provider));
+            DataElementBytesPtr bytes_element =
+                DataElementBytes::New(item.data->length(), WTF::nullopt,
+                                      std::move(bytes_provider_info));
             if (should_embed_bytes) {
               bytes_element->embedded_data = Vector<uint8_t>();
               bytes_element->embedded_data->Append(item.data->data(),
@@ -381,9 +383,9 @@ BlobDataHandle::BlobDataHandle(std::unique_ptr<BlobData> data, long long size)
                   WTF::Time::FromDoubleT(item.expected_modification_time))));
           break;
         case BlobDataItem::kBlob: {
-          BlobPtr blob_clone = item.blob_data_handle->CloneBlobPtr();
           elements.push_back(DataElement::NewBlob(DataElementBlob::New(
-              std::move(blob_clone), item.offset, item.length)));
+              item.blob_data_handle->CloneBlobPtr().PassInterface(),
+              item.offset, item.length)));
           break;
         }
       }

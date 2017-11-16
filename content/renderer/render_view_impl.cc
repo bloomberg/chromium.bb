@@ -624,10 +624,12 @@ void RenderViewImpl::Initialize(
       RenderFrameImpl::ResolveOpener(params->opener_frame_route_id);
 
   if (params->main_frame_routing_id != MSG_ROUTING_NONE) {
-    CHECK(params->main_frame_interface_provider.is_bound());
+    CHECK(params->main_frame_interface_provider.is_valid());
+    service_manager::mojom::InterfaceProviderPtr main_frame_interface_provider(
+        std::move(params->main_frame_interface_provider));
     main_render_frame_ = RenderFrameImpl::CreateMainFrame(
         this, params->main_frame_routing_id,
-        std::move(params->main_frame_interface_provider),
+        std::move(main_frame_interface_provider),
         params->main_frame_widget_routing_id, params->hidden, screen_info(),
         compositor_deps_, opener_frame, params->devtools_main_frame_token,
         params->replicated_frame_state);

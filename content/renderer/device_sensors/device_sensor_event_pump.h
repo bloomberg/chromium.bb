@@ -116,7 +116,7 @@ class CONTENT_EXPORT DeviceSensorEventPump
       mode = params->mode;
       default_config = params->default_configuration;
 
-      sensor = std::move(params->sensor);
+      sensor.Bind(std::move(params->sensor));
       client_binding.Bind(std::move(params->client_request));
 
       shared_buffer_handle = std::move(params->memory);

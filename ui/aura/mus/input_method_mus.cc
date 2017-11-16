@@ -162,7 +162,8 @@ void InputMethodMus::OnDidChangeFocusedClient(
   if (ime_driver_) {
     ui::mojom::StartSessionDetailsPtr details =
         ui::mojom::StartSessionDetails::New();
-    details->client = text_input_client_->CreateInterfacePtrAndBind();
+    details->client =
+        text_input_client_->CreateInterfacePtrAndBind().PassInterface();
     details->input_method_request = MakeRequest(&input_method_ptr_);
     input_method_ = input_method_ptr_.get();
     details->text_input_type = focused->GetTextInputType();

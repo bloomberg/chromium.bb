@@ -181,7 +181,7 @@ void SensorProxy::OnSensorCreated(SensorInitParamsPtr params) {
     return;
   }
 
-  sensor_ = std::move(params->sensor);
+  sensor_.Bind(std::move(params->sensor));
   client_binding_.Bind(std::move(params->client_request));
 
   shared_buffer_handle_ = std::move(params->memory);

@@ -14,7 +14,7 @@
 
 {%  for field in union.fields %}
 void {{union.name}}::set_{{field.name}}(
-    {{field.kind|cpp_wrapper_param_type}} {{field.name}}) {
+    {{field.kind|cpp_wrapper_param_type_new}} {{field.name}}) {
 {%-   if field.kind|is_object_kind or
            field.kind|is_any_handle_or_interface_kind %}
   if (tag_ == Tag::{{field.name|upper}}) {

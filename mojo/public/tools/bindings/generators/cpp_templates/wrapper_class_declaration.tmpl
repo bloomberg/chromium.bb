@@ -36,7 +36,7 @@ class {{export_attribute}} {{struct.name}} {
 {% for constructor in struct|struct_constructors %}
   {% if constructor.params|length == 1 %}explicit {% endif %}{{struct.name}}(
 {%-   for field in constructor.params %}
-{%-     set type = field.kind|cpp_wrapper_param_type %}
+{%-     set type = field.kind|cpp_wrapper_param_type_new %}
 {%-     set name = field.name %}
       {{type}} {{name}}
 {%-     if not loop.last -%},{%- endif %}

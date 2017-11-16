@@ -165,11 +165,11 @@ TEST_F(DataViewTest, EnumArray) {
 }
 
 TEST_F(DataViewTest, InterfaceArray) {
-  TestInterfacePtr ptr;
-  TestInterfaceImpl impl(MakeRequest(&ptr));
+  TestInterfacePtrInfo ptr_info;
+  TestInterfaceImpl impl(MakeRequest(&ptr_info));
 
   TestStructPtr obj(TestStruct::New());
-  obj->f_interface_array.push_back(std::move(ptr));
+  obj->f_interface_array.push_back(std::move(ptr_info));
 
   auto data_view_holder = SerializeTestStruct(std::move(obj));
   auto& data_view = *data_view_holder->data_view;

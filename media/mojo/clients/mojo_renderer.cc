@@ -75,13 +75,12 @@ void MojoRenderer::InitializeRendererFromStreams(
   // Create mojom::DemuxerStream for each demuxer stream and bind its lifetime
   // to the pipe.
   std::vector<DemuxerStream*> streams = media_resource_->GetAllStreams();
-  std::vector<mojom::DemuxerStreamPtr> stream_proxies;
+  std::vector<mojom::DemuxerStreamPtrInfo> stream_proxies;
 
   for (auto* stream : streams) {
-    mojom::DemuxerStreamPtr stream_proxy;
-    std::unique_ptr<MojoDemuxerStreamImpl> mojo_stream =
-        base::MakeUnique<MojoDemuxerStreamImpl>(stream,
-                                                MakeRequest(&stream_proxy));
+    mojom::DemuxerStreamPtrInfo stream_proxy_info;
+    auto mojo_stream = std::make_unique<MojoDemuxerStreamImpl>(
+        stream, mojo::MakeRequest(&stream_proxy_info));
 
     // Using base::Unretained(this) is safe because |this| owns |mojo_stream|,
     // and the error handler can't be invoked once |mojo_stream| is destroyed.
@@ -90,7 +89,7 @@ void MojoRenderer::InitializeRendererFromStreams(
                    base::Unretained(this), mojo_stream.get()));
 
     streams_.push_back(std::move(mojo_stream));
-    stream_proxies.push_back(std::move(stream_proxy));
+    stream_proxies.push_back(std::move(stream_proxy_info));
   }
 
   BindRemoteRendererIfNeeded();
@@ -121,7 +120,7 @@ void MojoRenderer::InitializeRendererFromUrl(media::RendererClient* client) {
   // Using base::Unretained(this) is safe because |this| owns
   // |remote_renderer_|, and the callback won't be dispatched if
   // |remote_renderer_| is destroyed.
-  std::vector<mojom::DemuxerStreamPtr> streams;
+  std::vector<mojom::DemuxerStreamPtrInfo> streams;
   remote_renderer_->Initialize(
       std::move(client_ptr_info), std::move(streams), url_params.media_url,
       url_params.site_for_cookies,

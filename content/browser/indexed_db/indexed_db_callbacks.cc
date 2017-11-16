@@ -768,10 +768,10 @@ bool IndexedDBCallbacks::IOThreadHelper::CreateAllBlobs(
   for (size_t i = 0; i < blob_info.size(); ++i) {
     std::string uuid = CreateBlobData(blob_info[i]);
     if (features::IsMojoBlobsEnabled()) {
-      blink::mojom::BlobPtr blob_ptr;
+      blink::mojom::BlobPtrInfo blob_ptr_info;
       storage::BlobImpl::Create(blob_context->GetBlobDataFromUUID(uuid),
-                                MakeRequest(&blob_ptr));
-      (*blob_or_file_info)[i]->blob = std::move(blob_ptr);
+                                MakeRequest(&blob_ptr_info));
+      (*blob_or_file_info)[i]->blob = std::move(blob_ptr_info);
     }
     (*blob_or_file_info)[i]->uuid = std::move(uuid);
   }

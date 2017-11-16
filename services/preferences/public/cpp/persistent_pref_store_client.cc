@@ -150,7 +150,7 @@ PersistentPrefStoreClient::PersistentPrefStoreClient(
     : weak_factory_(this) {
   read_error_ = connection->read_error;
   read_only_ = connection->read_only;
-  pref_store_ = std::move(connection->pref_store);
+  pref_store_.Bind(std::move(connection->pref_store));
   if (error_delegate_ && read_error_ != PREF_READ_ERROR_NONE)
     error_delegate_->OnError(read_error_);
   error_delegate_.reset();

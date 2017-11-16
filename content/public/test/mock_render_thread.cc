@@ -83,10 +83,10 @@ class MockRenderMessageFilterImpl : public mojom::RenderMessageFilter {
 
 // Returns an InterfaceProvider that is safe to call into, but will not actually
 // service any interface requests.
-service_manager::mojom::InterfaceProviderPtr CreateStubInterfaceProvider() {
-  ::service_manager::mojom::InterfaceProviderPtr stub_interface_provider_proxy;
-  mojo::MakeRequest(&stub_interface_provider_proxy);
-  return stub_interface_provider_proxy;
+service_manager::mojom::InterfaceProviderPtrInfo CreateStubInterfaceProvider() {
+  ::service_manager::mojom::InterfaceProviderPtrInfo info;
+  mojo::MakeRequest(&info);
+  return info;
 }
 
 }  // namespace
@@ -296,7 +296,7 @@ void MockRenderThread::OnCreateChildFrame(
     base::UnguessableToken* devtools_frame_token) {
   *new_render_frame_id = new_frame_routing_id_++;
   *new_interface_provider =
-      CreateStubInterfaceProvider().PassInterface().PassHandle().release();
+      CreateStubInterfaceProvider().PassHandle().release();
   *devtools_frame_token = base::UnguessableToken::Create();
 }
 

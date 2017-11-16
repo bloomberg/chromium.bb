@@ -94,6 +94,26 @@ struct Serializer<InterfacePtrDataView<Base>, InterfacePtr<T>> {
 };
 
 template <typename Base, typename T>
+struct Serializer<InterfacePtrDataView<Base>, InterfacePtrInfo<T>> {
+  static_assert(std::is_base_of<Base, T>::value, "Interface type mismatch.");
+
+  static void Serialize(InterfacePtrInfo<T>& input,
+                        Interface_Data* output,
+                        SerializationContext* context) {
+    context->AddInterfaceInfo(input.PassHandle(), input.version(), output);
+  }
+
+  static bool Deserialize(Interface_Data* input,
+                          InterfacePtrInfo<T>* output,
+                          SerializationContext* context) {
+    *output = InterfacePtrInfo<T>(
+        context->TakeHandleAs<mojo::MessagePipeHandle>(input->handle),
+        input->version);
+    return true;
+  }
+};
+
+template <typename Base, typename T>
 struct Serializer<InterfaceRequestDataView<Base>, InterfaceRequest<T>> {
   static_assert(std::is_base_of<Base, T>::value, "Interface type mismatch.");
 

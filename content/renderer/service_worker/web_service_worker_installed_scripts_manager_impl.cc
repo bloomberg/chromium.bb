@@ -224,12 +224,13 @@ WebServiceWorkerInstalledScriptsManagerImpl::Create(
     mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
   auto script_container = base::MakeRefCounted<ThreadSafeScriptContainer>();
+  mojom::ServiceWorkerInstalledScriptsManagerHostPtr manager_host_ptr(
+      std::move(installed_scripts_info->manager_host_ptr));
   std::unique_ptr<blink::WebServiceWorkerInstalledScriptsManager> manager =
       base::WrapUnique<WebServiceWorkerInstalledScriptsManagerImpl>(
           new WebServiceWorkerInstalledScriptsManagerImpl(
               std::move(installed_scripts_info->installed_urls),
-              script_container,
-              std::move(installed_scripts_info->manager_host_ptr)));
+              script_container, std::move(manager_host_ptr)));
   io_task_runner->PostTask(
       FROM_HERE,
       base::BindOnce(&Internal::Create, script_container,

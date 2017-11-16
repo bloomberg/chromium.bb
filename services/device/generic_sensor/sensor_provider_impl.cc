@@ -96,10 +96,10 @@ void SensorProviderImpl::SensorCreated(
   auto sensor_impl = std::make_unique<SensorImpl>(sensor);
   init_params->client_request = sensor_impl->GetClient();
 
-  mojom::SensorPtr sensor_ptr;
+  mojom::SensorPtrInfo sensor_ptr_info;
   mojo::MakeStrongBinding(std::move(sensor_impl),
-                          mojo::MakeRequest(&sensor_ptr));
-  init_params->sensor = std::move(sensor_ptr);
+                          mojo::MakeRequest(&sensor_ptr_info));
+  init_params->sensor = std::move(sensor_ptr_info);
 
   init_params->memory = std::move(cloned_handle);
   init_params->buffer_offset = SensorReadingSharedBuffer::GetOffset(type);

@@ -37,7 +37,7 @@ const {{method.name}}Callback& callback
 {%-   if method.response_parameters %}
 {%-     if method.parameters %}, {% endif %}
 {%-     for param in method.response_parameters -%}
-{{param.kind|cpp_wrapper_type}}* out_{{prefix}}{{param.name}}
+{{param.kind|cpp_wrapper_call_type}}* out_{{prefix}}{{param.name}}
 {%-       if not loop.last %}, {% endif %}
 {%-     endfor %}
 {%-   endif -%}
@@ -89,8 +89,12 @@ class {{message_typename}}
           &kMessageTag,
           {{message_name}},
           message_flags)
-{%-     for param in parameters %}
+{%-     for param in parameters -%}
+{%-       if param.kind|is_interface_kind %}
+      , param_{{param.name}}_(param_{{param.name}}.PassInterface())
+{%-       else %}
       , param_{{param.name}}_(std::move(param_{{param.name}}))
+{%-       endif %}
 {%-     endfor -%} {}
   ~{{message_typename}}() override = default;
 
@@ -133,8 +137,12 @@ class {{message_typename}}
 {%-         endif -%}
 {%-       endif -%}) {
     impl->{{method.name}}(
-{%-       for param in parameters %}
+{%-       for param in parameters -%}
+{%-         if param.kind|is_interface_kind %}
+        {{param.kind|get_name_for_kind}}Ptr(std::move(param_{{param.name}}_))
+{%-         else %}
         std::move(param_{{param.name}}_)
+{%-         endif %}
         {%- if not loop.last -%}, {%- endif %}
 {%-       endfor %}
 {%-       if method.response_parameters != None %}
@@ -144,8 +152,12 @@ class {{message_typename}}
 {%-     else %}
   void Dispatch({{interface.name}}::{{method.name}}Callback* callback) {
     std::move(*callback).Run(
-{%-       for param in parameters %}
+{%-       for param in parameters -%}
+{%-         if param.kind|is_interface_kind %}
+        {{param.kind|get_name_for_kind}}Ptr(std::move(param_{{param.name}}_))
+{%-         else %}
         std::move(param_{{param.name}}_)
+{%-         endif %}
         {%- if not loop.last -%}, {% endif -%}
 {%-       endfor -%});
   }
@@ -153,11 +165,15 @@ class {{message_typename}}
 {%        if method.sync %}
   void HandleSyncResponse(
 {%          for param in parameters %}
-      {{param.kind|cpp_wrapper_type}}* out_{{param.name}}
+      {{param.kind|cpp_wrapper_call_type}}* out_{{param.name}}
       {%- if not loop.last -%}, {% endif -%}
 {%-         endfor -%}) {
-{%          for param in parameters %}
+{%          for param in parameters -%}
+{%-           if param.kind|is_interface_kind %}
+    out_{{param.name}}->Bind(std::move(param_{{param.name}}_));
+{%-           else %}
     *out_{{param.name}} = std::move(param_{{param.name}}_);
+{%-           endif %}
 {%          endfor %}
   }
 {%-       endif -%}
