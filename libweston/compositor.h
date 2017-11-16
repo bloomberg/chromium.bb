@@ -310,7 +310,7 @@ struct weston_touch_grab_interface {
 			wl_fixed_t sx,
 			wl_fixed_t sy);
 	void (*up)(struct weston_touch_grab *grab,
-			uint32_t time,
+			const struct timespec *time,
 			int touch_id);
 	void (*motion)(struct weston_touch_grab *grab,
 			uint32_t time,
@@ -519,7 +519,8 @@ void
 weston_touch_send_down(struct weston_touch *touch, const struct timespec *time,
 		       int touch_id, wl_fixed_t x, wl_fixed_t y);
 void
-weston_touch_send_up(struct weston_touch *touch, uint32_t time, int touch_id);
+weston_touch_send_up(struct weston_touch *touch, const struct timespec *time,
+		     int touch_id);
 void
 weston_touch_send_motion(struct weston_touch *touch, uint32_t time,
 			 int touch_id, wl_fixed_t x, wl_fixed_t y);

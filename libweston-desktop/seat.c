@@ -189,7 +189,8 @@ weston_desktop_seat_popup_grab_touch_down(struct weston_touch_grab *grab,
 
 static void
 weston_desktop_seat_popup_grab_touch_up(struct weston_touch_grab *grab,
-					uint32_t time, int touch_id)
+					const struct timespec *time,
+					int touch_id)
 {
 	weston_touch_send_up(grab->touch, time, touch_id);
 }

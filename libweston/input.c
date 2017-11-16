@@ -713,25 +713,28 @@ default_grab_touch_down(struct weston_touch_grab *grab,
  * resources of the client which currently has the surface with touch focus.
  */
 WL_EXPORT void
-weston_touch_send_up(struct weston_touch *touch, uint32_t time, int touch_id)
+weston_touch_send_up(struct weston_touch *touch, const struct timespec *time,
+		     int touch_id)
 {
 	struct wl_display *display = touch->seat->compositor->wl_display;
 	uint32_t serial;
 	struct wl_resource *resource;
 	struct wl_list *resource_list;
+	uint32_t msecs;
 
 	if (!weston_touch_has_focus_resource(touch))
 		return;
 
 	resource_list = &touch->focus_resource_list;
 	serial = wl_display_next_serial(display);
+	msecs = timespec_to_msec(time);
 	wl_resource_for_each(resource, resource_list)
-		wl_touch_send_up(resource, serial, time, touch_id);
+		wl_touch_send_up(resource, serial, msecs, touch_id);
 }
 
 static void
 default_grab_touch_up(struct weston_touch_grab *grab,
-		      uint32_t time, int touch_id)
+		      const struct timespec *time, int touch_id)
 {
 	weston_touch_send_up(grab->touch, time, touch_id);
 }
@@ -2215,7 +2218,7 @@ notify_touch(struct weston_seat *seat, const struct timespec *time,
 		weston_compositor_idle_release(ec);
 		touch->num_tp--;
 
-		grab->interface->up(grab, timespec_to_msec(time), touch_id);
+		grab->interface->up(grab, time, touch_id);
 		if (touch->num_tp == 0)
 			weston_touch_set_focus(touch, NULL);
 		break;

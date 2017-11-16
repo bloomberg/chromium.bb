@@ -1591,7 +1591,8 @@ touch_nope_grab_down(struct weston_touch_grab *grab,
 }
 
 static void
-touch_move_workspace_grab_up(struct weston_touch_grab *grab, uint32_t time,
+touch_move_workspace_grab_up(struct weston_touch_grab *grab,
+			     const struct timespec *time,
 			     int touch_id)
 {
 	struct touch_move_grab *tch_move_grab = (struct touch_move_grab *)grab;

@@ -1338,7 +1338,8 @@ touch_move_grab_down(struct weston_touch_grab *grab,
 }
 
 static void
-touch_move_grab_up(struct weston_touch_grab *grab, uint32_t time, int touch_id)
+touch_move_grab_up(struct weston_touch_grab *grab, const struct timespec *time,
+		   int touch_id)
 {
 	struct weston_touch_move_grab *move =
 		(struct weston_touch_move_grab *) container_of(

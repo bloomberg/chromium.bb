@@ -738,7 +738,7 @@ data_device_end_touch_drag_grab(struct weston_touch_drag *drag)
 
 static void
 drag_grab_touch_up(struct weston_touch_grab *grab,
-		uint32_t time, int touch_id)
+		   const struct timespec *time, int touch_id)
 {
 	struct weston_touch_drag *touch_drag =
 		container_of(grab, struct weston_touch_drag, grab);
