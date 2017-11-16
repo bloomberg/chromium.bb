@@ -284,7 +284,8 @@ bool SecurityPolicy::ReferrerPolicyFromString(
       (legacy_keywords_support == kSupportReferrerPolicyLegacyKeywords);
 
   if (EqualIgnoringASCIICase(policy, "no-referrer") ||
-      (support_legacy_keywords && EqualIgnoringASCIICase(policy, "never"))) {
+      (support_legacy_keywords && (EqualIgnoringASCIICase(policy, "never") ||
+                                   EqualIgnoringASCIICase(policy, "none")))) {
     *result = kReferrerPolicyNever;
     return true;
   }
