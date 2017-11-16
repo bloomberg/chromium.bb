@@ -299,7 +299,8 @@ void CacheStorageDispatcherHost::OnCacheBatch(
   cache->BatchOperation(
       operations,
       base::BindOnce(&CacheStorageDispatcherHost::OnCacheBatchCallback, this,
-                     thread_id, request_id, base::Passed(it->second.Clone())));
+                     thread_id, request_id, base::Passed(it->second.Clone())),
+      base::BindOnce(&CacheStorageDispatcherHost::OnBadMessage, this));
 }
 
 void CacheStorageDispatcherHost::OnCacheClosed(int cache_id) {
@@ -479,6 +480,11 @@ void CacheStorageDispatcherHost::OnCacheBatchCallback(
   }
 
   Send(new CacheStorageMsg_CacheBatchSuccess(thread_id, request_id));
+}
+
+void CacheStorageDispatcherHost::OnBadMessage(
+    bad_message::BadMessageReason reason) {
+  bad_message::ReceivedBadMessage(this, reason);
 }
 
 CacheStorageDispatcherHost::CacheID

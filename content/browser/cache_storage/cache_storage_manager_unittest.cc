@@ -445,7 +445,8 @@ class CacheStorageManagerTest : public testing::Test {
     cache->BatchOperation(
         std::vector<CacheStorageBatchOperation>(1, operation),
         base::BindOnce(&CacheStorageManagerTest::CachePutCallback,
-                       base::Unretained(this), base::Unretained(&loop)));
+                       base::Unretained(this), base::Unretained(&loop)),
+        CacheStorageCache::BadMessageCallback());
     loop.Run();
 
     return callback_error_ == CacheStorageError::kSuccess;
@@ -465,7 +466,8 @@ class CacheStorageManagerTest : public testing::Test {
     cache->BatchOperation(
         std::vector<CacheStorageBatchOperation>(1, operation),
         base::BindOnce(&CacheStorageManagerTest::CacheDeleteCallback,
-                       base::Unretained(this), base::Unretained(&loop)));
+                       base::Unretained(this), base::Unretained(&loop)),
+        CacheStorageCache::BadMessageCallback());
     loop.Run();
 
     return callback_error_ == CacheStorageError::kSuccess;

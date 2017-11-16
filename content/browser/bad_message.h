@@ -209,6 +209,7 @@ enum BadMessageReason {
   BPG_RESIZE_PARAMS_CHANGED_LOCAL_SURFACE_ID_UNCHANGED = 183,
   RFH_NEGATIVE_SELECTION_START_OFFSET = 184,
   WEBUI_BAD_SCHEME_ACCESS = 185,
+  CSDH_UNEXPECTED_OPERATION = 186,
 
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. RenderFrameHost becomes RFH) plus a unique description of the

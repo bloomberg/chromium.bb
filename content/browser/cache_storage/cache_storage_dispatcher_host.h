@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "content/browser/bad_message.h"
 #include "content/browser/cache_storage/cache_storage.h"
 #include "content/browser/cache_storage/cache_storage_index.h"
 #include "content/public/browser/browser_message_filter.h"
@@ -155,6 +156,9 @@ class CONTENT_EXPORT CacheStorageDispatcherHost : public BrowserMessageFilter {
                             int request_id,
                             CacheStorageCacheHandle cache_handle,
                             blink::mojom::CacheStorageError error);
+
+  // Called when a bad message is detected while executing operations.
+  void OnBadMessage(bad_message::BadMessageReason reason);
 
   // Hangs onto a cache handle. Returns a unique cache_id. Call
   // DropCacheReference when the reference is no longer needed.

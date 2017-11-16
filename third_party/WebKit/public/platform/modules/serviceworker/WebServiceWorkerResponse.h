@@ -77,6 +77,10 @@ class BLINK_PLATFORM_EXPORT WebServiceWorkerResponse {
 
   mojo::ScopedMessagePipeHandle CloneBlobPtr() const;
 
+  WebString SideDataBlobUUID() const;
+  uint64_t SideDataBlobSize() const;
+  mojo::ScopedMessagePipeHandle CloneSideDataBlobPtr() const;
+
   // Provides a more detailed error when status() is zero.
   void SetError(mojom::ServiceWorkerResponseError);
   mojom::ServiceWorkerResponseError GetError() const;
@@ -95,6 +99,8 @@ class BLINK_PLATFORM_EXPORT WebServiceWorkerResponse {
 
   void SetBlobDataHandle(scoped_refptr<BlobDataHandle>);
   scoped_refptr<BlobDataHandle> GetBlobDataHandle() const;
+
+  void SetSideDataBlobDataHandle(scoped_refptr<BlobDataHandle>);
 #endif
 
  private:

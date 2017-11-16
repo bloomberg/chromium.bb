@@ -92,7 +92,7 @@ ServiceWorkerResponse GetServiceWorkerResponseFromWebResponse(
     blob = base::MakeRefCounted<storage::BlobHandle>(std::move(blob_ptr));
   }
 
-  return ServiceWorkerResponse(
+  ServiceWorkerResponse response = ServiceWorkerResponse(
       GetURLList(web_response.UrlList()), web_response.Status(),
       web_response.StatusText().Utf8(), web_response.ResponseType(),
       GetHeaderMap(web_response), web_response.BlobUUID().Utf8(),
@@ -101,6 +101,19 @@ ServiceWorkerResponse GetServiceWorkerResponseFromWebResponse(
       !web_response.CacheStorageCacheName().IsNull(),
       web_response.CacheStorageCacheName().Utf8(),
       GetHeaderList(web_response.CorsExposedHeaderNames()));
+  if (!web_response.SideDataBlobSize())
+    return response;
+  response.side_data_blob_uuid = web_response.SideDataBlobUUID().Utf8();
+  response.side_data_blob_size = web_response.SideDataBlobSize();
+  auto side_data_blob_pipe = web_response.CloneSideDataBlobPtr();
+  if (side_data_blob_pipe.is_valid()) {
+    blink::mojom::BlobPtr side_data_blob_ptr;
+    side_data_blob_ptr.Bind(blink::mojom::BlobPtrInfo(
+        std::move(side_data_blob_pipe), blink::mojom::Blob::Version_));
+    response.side_data_blob = base::MakeRefCounted<storage::BlobHandle>(
+        std::move(side_data_blob_ptr));
+  }
+  return response;
 }
 
 }  // namespace content
