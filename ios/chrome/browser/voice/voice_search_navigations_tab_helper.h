@@ -35,6 +35,11 @@ class VoiceSearchNavigationTabHelper
   void NavigationItemCommitted(
       web::WebState* web_state,
       const web::LoadCommittedDetails& load_details) override;
+  void WebStateDestroyed(web::WebState* web_state) override;
+
+  // The WebState this instance is observing. Will be null after
+  // WebStateDestroyed has been called.
+  web::WebState* web_state_ = nullptr;
 
   // Whether a voice search navigation is expected.
   bool will_navigate_to_voice_search_result_ = false;
