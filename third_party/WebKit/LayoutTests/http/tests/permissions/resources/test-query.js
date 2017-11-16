@@ -75,6 +75,26 @@ async_test(function(test) {
 }, 'Test geolocation permission in ' + get_current_scope() + ' scope.');
 
 async_test(function(test) {
+    navigator.permissions.query({name:'camera'}).then(function(result) {
+        assert_true(result instanceof PermissionStatus);
+        assert_equals(result.state, 'denied');
+        test.done();
+    }).catch(function() {
+        assert_unreached('querying camera permission should not fail.')
+    });
+}, 'Test geolocation permission in ' + get_current_scope() + ' scope.');
+
+async_test(function(test) {
+    navigator.permissions.query({name:'microphone'}).then(function(result) {
+        assert_true(result instanceof PermissionStatus);
+        assert_equals(result.state, 'denied');
+        test.done();
+    }).catch(function() {
+        assert_unreached('querying microphone permission should not fail.')
+    });
+}, 'Test geolocation permission in ' + get_current_scope() + ' scope.');
+
+async_test(function(test) {
     navigator.permissions.query({name:'midi'}).then(function(result) {
         assert_true(result instanceof PermissionStatus);
         assert_equals(result.state, 'denied');
