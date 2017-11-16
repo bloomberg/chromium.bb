@@ -38,7 +38,7 @@ SNAPSHOT_EXPORT bool GrabViewSnapshot(gfx::NativeView view,
 // These functions take a snapshot of |source_rect|, specified in layer space
 // coordinates (DIP for desktop, physical pixels for Android), and scale the
 // snapshot to |target_size| (in physical pixels), asynchronously.
-typedef base::Callback<void(const gfx::Image& snapshot)>
+typedef base::Callback<void(gfx::Image snapshot)>
     GrabWindowSnapshotAsyncCallback;
 SNAPSHOT_EXPORT void GrabWindowSnapshotAndScaleAsync(
     gfx::NativeWindow window,

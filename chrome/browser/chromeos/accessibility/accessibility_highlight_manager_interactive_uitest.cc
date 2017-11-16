@@ -131,7 +131,7 @@ class AccessibilityHighlightManagerTest : public InProcessBrowserTest {
   SkColor average_diff_color() { return average_diff_color_; }
 
  private:
-  void GotSnapshot(const gfx::Image& image) {
+  void GotSnapshot(gfx::Image image) {
     image_ = image;
     content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
                                      run_loop_quitter_);

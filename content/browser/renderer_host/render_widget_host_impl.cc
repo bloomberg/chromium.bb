@@ -2556,7 +2556,7 @@ void RenderWidgetHostImpl::OnSnapshotFromSurfaceReceived(
 }
 
 void RenderWidgetHostImpl::OnSnapshotReceived(int snapshot_id,
-                                              const gfx::Image& image) {
+                                              gfx::Image image) {
   // Any pending snapshots with a lower ID than the one received are considered
   // to be implicitly complete, and returned the same snapshot data.
   PendingSnapshotMap::iterator it = pending_browser_snapshots_.begin();

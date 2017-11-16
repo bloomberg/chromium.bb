@@ -19,7 +19,7 @@ namespace {
 
 void OnFrameScalingFinished(const GrabWindowSnapshotAsyncCallback& callback,
                             const SkBitmap& scaled_bitmap) {
-  callback.Run(gfx::Image(gfx::ImageSkia::CreateFrom1xBitmap(scaled_bitmap)));
+  callback.Run(gfx::Image::CreateFrom1xBitmap(scaled_bitmap));
 }
 
 SkBitmap ScaleBitmap(const SkBitmap& input_bitmap,

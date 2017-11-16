@@ -42,11 +42,13 @@
 #include "components/arc/instance_holder.h"
 #include "components/session_manager/core/session_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_owner.h"
 #include "ui/compositor/layer_tree_owner.h"
+#include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_util.h"
@@ -158,18 +160,21 @@ std::unique_ptr<ui::LayerTreeOwner> CreateLayerTreeForSnapshot(
 void EncodeAndReturnImage(
     ArcVoiceInteractionFrameworkService::CaptureFullscreenCallback callback,
     std::unique_ptr<ui::LayerTreeOwner> old_layer_owner,
-    const gfx::Image& image) {
+    gfx::Image image) {
   old_layer_owner.reset();
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE,
       base::TaskTraits{base::MayBlock(), base::TaskPriority::USER_BLOCKING},
+      // We use SkBitmap here to avoid passing in gfx::Image directly, which
+      // shares a single gfx::ImageStorage that's not threadsafe.
+      // Alternatively, we could also pass in |image| with std::move().
       base::BindOnce(
-          [](const gfx::Image& image) -> std::vector<uint8_t> {
+          [](SkBitmap image) -> std::vector<uint8_t> {
             std::vector<uint8_t> res;
-            gfx::JPEG1xEncodedDataFromImage(image, 100, &res);
+            gfx::JPEGCodec::Encode(image, 100, &res);
             return res;
           },
-          image),
+          image.AsBitmap()),
       std::move(callback));
 }
 

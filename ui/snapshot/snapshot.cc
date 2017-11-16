@@ -4,6 +4,8 @@
 
 #include "ui/snapshot/snapshot.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/task_scheduler/post_task.h"
@@ -37,10 +39,10 @@ void EncodeImageAndScheduleCallback(
     scoped_refptr<base::RefCountedMemory> (*encode_func)(const gfx::Image&),
     const base::Callback<void(scoped_refptr<base::RefCountedMemory> data)>&
         callback,
-    const gfx::Image& image) {
+    gfx::Image image) {
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::Bind(encode_func, image), callback);
+      base::Bind(encode_func, std::move(image)), callback);
 }
 
 }  // namespace

@@ -770,7 +770,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
                                      const SkBitmap& bitmap,
                                      ReadbackResponse response);
 
-  void OnSnapshotReceived(int snapshot_id, const gfx::Image& image);
+  void OnSnapshotReceived(int snapshot_id, gfx::Image image);
 
   // 1. Grants permissions to URL (if any)
   // 2. Grants permissions to filenames
