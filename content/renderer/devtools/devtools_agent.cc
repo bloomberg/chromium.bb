@@ -109,10 +109,6 @@ bool DevToolsAgent::OnMessageReceived(const IPC::Message& message) {
                         OnRequestNewWindowACK)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
-
-  if (message.type() == FrameMsg_Navigate::ID)
-    ContinueProgram();  // Don't want to swallow the message.
-
   return handled;
 }
 

@@ -47,6 +47,7 @@ class CONTENT_EXPORT DevToolsAgent : public RenderFrameObserver,
 
   bool IsAttached();
   void DetachAllSessions();
+  void ContinueProgram();
 
  private:
   friend class DevToolsAgentTest;
@@ -83,7 +84,6 @@ class CONTENT_EXPORT DevToolsAgent : public RenderFrameObserver,
                                     const std::string& message);
   void OnInspectElement(int session_id, int x, int y);
   void OnRequestNewWindowACK(int session_id, bool success);
-  void ContinueProgram();
 
   void GotManifest(int session_id,
                    int command_id,
