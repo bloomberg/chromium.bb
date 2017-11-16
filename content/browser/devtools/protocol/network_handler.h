@@ -29,6 +29,8 @@ struct URLLoaderStatus;
 namespace content {
 class DevToolsAgentHostImpl;
 class RenderFrameHostImpl;
+struct GlobalRequestID;
+class InterceptionHandle;
 class NavigationHandle;
 class NavigationRequest;
 class NavigationThrottle;
@@ -140,19 +142,18 @@ class NetworkHandler : public DevToolsDomainHandler,
   void AppendDevToolsHeaders(net::HttpRequestHeaders* headers);
   bool ShouldBypassServiceWorker() const;
 
-  void RequestIntercepted(std::unique_ptr<InterceptedRequestInfo> request_info);
-
  private:
+  void RequestIntercepted(std::unique_ptr<InterceptedRequestInfo> request_info);
   void SetNetworkConditions(mojom::NetworkConditionsPtr conditions);
 
   std::unique_ptr<Network::Frontend> frontend_;
   RenderProcessHost* process_;
   RenderFrameHostImpl* host_;
   bool enabled_;
-  bool interception_enabled_;
   std::string user_agent_;
   std::vector<std::pair<std::string, std::string>> extra_headers_;
   std::string host_id_;
+  std::unique_ptr<InterceptionHandle> interception_handle_;
   bool bypass_service_worker_;
   base::WeakPtrFactory<NetworkHandler> weak_factory_;
 

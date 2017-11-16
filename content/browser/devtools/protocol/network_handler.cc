@@ -689,7 +689,6 @@ NetworkHandler::NetworkHandler(const std::string& host_id)
       process_(nullptr),
       host_(nullptr),
       enabled_(false),
-      interception_enabled_(false),
       host_id_(host_id),
       bypass_service_worker_(false),
       weak_factory_(this) {
@@ -731,8 +730,7 @@ Response NetworkHandler::Enable(Maybe<int> max_total_size,
 Response NetworkHandler::Disable() {
   enabled_ = false;
   user_agent_ = std::string();
-  SetRequestInterception(
-      protocol::Array<protocol::Network::RequestPattern>::create());
+  interception_handle_.reset();
   SetNetworkConditions(nullptr);
   extra_headers_.clear();
   return Response::FallThrough();
@@ -1132,33 +1130,36 @@ DispatchResponse NetworkHandler::SetRequestInterception(
   if (!interceptor)
     return Response::Error("Interception not supported");
 
-  FrameTreeNode* frame_tree_node = host_->frame_tree_node();
-  if (patterns->length()) {
-    std::vector<DevToolsURLRequestInterceptor::Pattern> interceptor_patterns;
-    for (size_t i = 0; i < patterns->length(); ++i) {
-      base::flat_set<ResourceType> resource_types;
-      std::string resource_type = patterns->get(i)->GetResourceType("");
-      if (!resource_type.empty()) {
-        if (!AddInterceptedResourceType(resource_type, &resource_types)) {
-          return Response::InvalidParams(
-              base::StringPrintf("Cannot intercept resources of type '%s'",
-                                 resource_type.c_str()));
-        }
-      }
-      interceptor_patterns.push_back(DevToolsURLRequestInterceptor::Pattern(
-          patterns->get(i)->GetUrlPattern("*"), std::move(resource_types),
-          ToInterceptorStage(patterns->get(i)->GetInterceptionStage(
-              protocol::Network::InterceptionStageEnum::Request))));
-    }
-
-    interceptor->StartInterceptingRequests(frame_tree_node,
-                                           weak_factory_.GetWeakPtr(),
-                                           std::move(interceptor_patterns));
-    interception_enabled_ = true;
-  } else {
-    interceptor->StopInterceptingRequests(frame_tree_node);
-    interception_enabled_ = false;
+  if (!patterns->length()) {
+    interception_handle_.reset();
+    return Response::OK();
   }
+
+  std::vector<DevToolsURLRequestInterceptor::Pattern> interceptor_patterns;
+  for (size_t i = 0; i < patterns->length(); ++i) {
+    base::flat_set<ResourceType> resource_types;
+    std::string resource_type = patterns->get(i)->GetResourceType("");
+    if (!resource_type.empty()) {
+      if (!AddInterceptedResourceType(resource_type, &resource_types)) {
+        return Response::InvalidParams(base::StringPrintf(
+            "Cannot intercept resources of type '%s'", resource_type.c_str()));
+      }
+    }
+    interceptor_patterns.push_back(DevToolsURLRequestInterceptor::Pattern(
+        patterns->get(i)->GetUrlPattern("*"), std::move(resource_types),
+        ToInterceptorStage(patterns->get(i)->GetInterceptionStage(
+            protocol::Network::InterceptionStageEnum::Request))));
+  }
+
+  if (interception_handle_) {
+    interception_handle_->UpdatePatterns(std::move(interceptor_patterns));
+  } else {
+    interception_handle_ = interceptor->StartInterceptingRequests(
+        host_->frame_tree_node(), std::move(interceptor_patterns),
+        base::Bind(&NetworkHandler::RequestIntercepted,
+                   weak_factory_.GetWeakPtr()));
+  }
+
   return Response::OK();
 }
 
@@ -1289,7 +1290,7 @@ std::unique_ptr<Network::Request> NetworkHandler::CreateRequestFromURLRequest(
 
 std::unique_ptr<NavigationThrottle> NetworkHandler::CreateThrottleForNavigation(
     NavigationHandle* navigation_handle) {
-  if (!interception_enabled_)
+  if (!interception_handle_)
     return nullptr;
   std::unique_ptr<NavigationThrottle> throttle(new NetworkNavigationThrottle(
       weak_factory_.GetWeakPtr(), navigation_handle));

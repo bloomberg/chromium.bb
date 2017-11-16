@@ -16,38 +16,30 @@ namespace {
 const char kDevToolsInterceptorController[] = "DevToolsInterceptorController";
 }
 
-void DevToolsInterceptorController::StartInterceptingRequests(
+std::unique_ptr<InterceptionHandle>
+DevToolsInterceptorController::StartInterceptingRequests(
     const FrameTreeNode* target_frame,
-    base::WeakPtr<protocol::NetworkHandler> network_handler,
-    std::vector<Pattern> intercepted_patterns) {
+    std::vector<Pattern> intercepted_patterns,
+    RequestInterceptedCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   const base::UnguessableToken& target_id =
       target_frame->devtools_frame_token();
-  target_handles_[target_id] = target_registry_->RegisterWebContents(
-      WebContentsImpl::FromFrameTreeNode(target_frame));
 
-  std::unique_ptr<DevToolsURLRequestInterceptor::InterceptedPage>
-      intercepted_page(new DevToolsURLRequestInterceptor::InterceptedPage(
-          std::move(network_handler), intercepted_patterns));
+  auto filter_entry =
+      std::make_unique<DevToolsURLRequestInterceptor::FilterEntry>(
+          target_id, std::move(intercepted_patterns), std::move(callback));
+  DevToolsTargetRegistry::RegistrationHandle registration_handle =
+      target_registry_->RegisterWebContents(
+          WebContentsImpl::FromFrameTreeNode(target_frame));
+  std::unique_ptr<InterceptionHandle> handle(new InterceptionHandle(
+      std::move(registration_handle), interceptor_, filter_entry.get()));
+
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&DevToolsURLRequestInterceptor::StartInterceptingRequests,
-                     interceptor_, target_id, std::move(intercepted_page)));
-}
-
-void DevToolsInterceptorController::StopInterceptingRequests(
-    const FrameTreeNode* target_frame) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  const base::UnguessableToken& target_id =
-      target_frame->devtools_frame_token();
-  if (!target_handles_.erase(target_id))
-    return;
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&DevToolsURLRequestInterceptor::StopInterceptingRequests,
-                     interceptor_, target_id));
+      base::BindOnce(&DevToolsURLRequestInterceptor::AddFilterEntry,
+                     interceptor_, std::move(filter_entry)));
+  return handle;
 }
 
 void DevToolsInterceptorController::ContinueInterceptedRequest(
@@ -117,5 +109,29 @@ DevToolsInterceptorController::DevToolsInterceptorController(
 }
 
 DevToolsInterceptorController::~DevToolsInterceptorController() = default;
+
+InterceptionHandle::InterceptionHandle(
+    DevToolsTargetRegistry::RegistrationHandle registration,
+    base::WeakPtr<DevToolsURLRequestInterceptor> interceptor,
+    DevToolsURLRequestInterceptor::FilterEntry* entry)
+    : registration_(registration),
+      interceptor_(std::move(interceptor)),
+      entry_(entry) {}
+
+InterceptionHandle::~InterceptionHandle() {
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&DevToolsURLRequestInterceptor::RemoveFilterEntry,
+                     interceptor_, entry_));
+}
+
+void InterceptionHandle::UpdatePatterns(
+    std::vector<DevToolsURLRequestInterceptor::Pattern> patterns) {
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&DevToolsURLRequestInterceptor::UpdatePatterns,
+                     interceptor_, base::Unretained(entry_),
+                     std::move(patterns)));
+}
 
 }  // namespace content

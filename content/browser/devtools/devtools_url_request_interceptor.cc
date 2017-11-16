@@ -21,6 +21,17 @@ InterceptedRequestInfo::InterceptedRequestInfo()
 
 InterceptedRequestInfo::~InterceptedRequestInfo() = default;
 
+DevToolsURLRequestInterceptor::FilterEntry::FilterEntry(
+    const base::UnguessableToken& target_id,
+    std::vector<Pattern> patterns,
+    RequestInterceptedCallback callback)
+    : target_id(target_id),
+      patterns(std::move(patterns)),
+      callback(std::move(callback)) {}
+
+DevToolsURLRequestInterceptor::FilterEntry::FilterEntry(FilterEntry&&) {}
+DevToolsURLRequestInterceptor::FilterEntry::~FilterEntry() {}
+
 // static
 bool DevToolsURLRequestInterceptor::IsNavigationRequest(
     ResourceType resource_type) {
@@ -133,9 +144,8 @@ net::URLRequestJob* DevToolsURLRequestInterceptor::InnerMaybeInterceptRequest(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
   // Bail out if we're not intercepting anything.
-  if (target_id_to_intercepted_page_.empty())
+  if (target_id_to_entries_.empty())
     return nullptr;
   // Don't try to intercept blob resources.
   if (request->url().SchemeIsBlob())
@@ -148,46 +158,24 @@ net::URLRequestJob* DevToolsURLRequestInterceptor::InnerMaybeInterceptRequest(
       TargetInfoForRequestInfo(resource_request_info);
   if (!target_info)
     return nullptr;
-  auto it =
-      target_id_to_intercepted_page_.find(target_info->devtools_target_id);
-  if (it == target_id_to_intercepted_page_.end())
-    return nullptr;
-  const InterceptedPage& intercepted_page = *it->second;
 
   // We don't want to intercept our own sub requests.
   if (sub_requests_.find(request) != sub_requests_.end())
     return nullptr;
 
-  InterceptionStage interception_stage = DONT_INTERCEPT;
-  const std::string url =
-      protocol::NetworkHandler::ClearUrlRef(request->url()).spec();
-  for (const Pattern& pattern : intercepted_page.intercepted_patterns) {
-    if (!pattern.resource_types.empty() &&
-        pattern.resource_types.find(resource_request_info->GetResourceType()) ==
-            pattern.resource_types.end()) {
-      continue;
-    }
-    if (base::MatchPattern(url, pattern.url_pattern)) {
-      if (pattern.interception_stage == REQUEST &&
-          interception_stage == RESPONSE) {
-        interception_stage = BOTH;
-        break;
-      } else if (pattern.interception_stage == RESPONSE &&
-                 interception_stage == REQUEST) {
-        interception_stage = BOTH;
-        break;
-      }
-      interception_stage = pattern.interception_stage;
-    }
-  }
-
-  if (interception_stage == DONT_INTERCEPT)
+  ResourceType resource_type = resource_request_info->GetResourceType();
+  InterceptionStage interception_stage;
+  FilterEntry* entry =
+      FilterEntryForRequest(target_info->devtools_target_id, request->url(),
+                            resource_type, &interception_stage);
+  if (!entry)
     return nullptr;
+  DCHECK(interception_stage != DONT_INTERCEPT);
 
   bool is_redirect;
   std::string interception_id = GetIdForRequest(request, &is_redirect);
 
-  if (IsNavigationRequest(resource_request_info->GetResourceType())) {
+  if (IsNavigationRequest(resource_type)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::BindOnce(&DevToolsInterceptorController::NavigationStarted,
@@ -196,33 +184,91 @@ net::URLRequestJob* DevToolsURLRequestInterceptor::InnerMaybeInterceptRequest(
   }
 
   DevToolsURLInterceptorRequestJob* job = new DevToolsURLInterceptorRequestJob(
-      this, interception_id, request, network_delegate,
-      target_info->devtools_token, target_info->devtools_target_id,
-      intercepted_page.network_handler, is_redirect,
-      resource_request_info->GetResourceType(), interception_stage);
+      this, interception_id, reinterpret_cast<intptr_t>(entry), request,
+      network_delegate, target_info->devtools_token, entry->callback,
+      is_redirect, resource_request_info->GetResourceType(),
+      interception_stage);
   interception_id_to_job_map_[interception_id] = job;
   return job;
 }
 
-void DevToolsURLRequestInterceptor::StartInterceptingRequests(
-    const base::UnguessableToken& target_id,
-    std::unique_ptr<InterceptedPage> interceptedPage) {
+void DevToolsURLRequestInterceptor::AddFilterEntry(
+    std::unique_ptr<FilterEntry> entry) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  target_id_to_intercepted_page_[target_id] = std::move(interceptedPage);
+  const base::UnguessableToken& target_id = entry->target_id;
+  auto it = target_id_to_entries_.find(target_id);
+  if (it == target_id_to_entries_.end()) {
+    it = target_id_to_entries_
+             .emplace(target_id, std::vector<std::unique_ptr<FilterEntry>>())
+             .first;
+  }
+  it->second.push_back(std::move(entry));
 }
 
-void DevToolsURLRequestInterceptor::StopInterceptingRequests(
-    const base::UnguessableToken& target_id) {
+void DevToolsURLRequestInterceptor::RemoveFilterEntry(
+    const FilterEntry* entry) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  target_id_to_intercepted_page_.erase(target_id);
-
-  // Tell any jobs associated with associated agent host to stop intercepting.
   for (const auto pair : interception_id_to_job_map_) {
-    if (pair.second->target_id() == target_id)
+    if (pair.second->owning_entry_id() == reinterpret_cast<intptr_t>(entry))
       pair.second->StopIntercepting();
   }
+
+  auto it = target_id_to_entries_.find(entry->target_id);
+  if (it == target_id_to_entries_.end())
+    return;
+  base::EraseIf(it->second, [entry](const std::unique_ptr<FilterEntry>& e) {
+    return e.get() == entry;
+  });
+  if (it->second.empty())
+    target_id_to_entries_.erase(it);
+}
+
+void DevToolsURLRequestInterceptor::UpdatePatterns(
+    FilterEntry* entry,
+    std::vector<Pattern> patterns) {
+  entry->patterns = std::move(patterns);
+}
+
+DevToolsURLRequestInterceptor::FilterEntry*
+DevToolsURLRequestInterceptor::FilterEntryForRequest(
+    const base::UnguessableToken target_id,
+    const GURL& url,
+    ResourceType resource_type,
+    InterceptionStage* stage) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  *stage = DONT_INTERCEPT;
+
+  auto it = target_id_to_entries_.find(target_id);
+  if (it == target_id_to_entries_.end())
+    return nullptr;
+
+  const std::vector<std::unique_ptr<FilterEntry>>& entries = it->second;
+  const std::string url_str = protocol::NetworkHandler::ClearUrlRef(url).spec();
+  for (const auto& entry : entries) {
+    for (const Pattern& pattern : entry->patterns) {
+      if (!pattern.resource_types.empty() &&
+          pattern.resource_types.find(resource_type) ==
+              pattern.resource_types.end()) {
+        continue;
+      }
+      if (base::MatchPattern(url_str, pattern.url_pattern)) {
+        if (pattern.interception_stage == REQUEST && *stage == RESPONSE) {
+          *stage = BOTH;
+          break;
+        } else if (pattern.interception_stage == RESPONSE &&
+                   *stage == REQUEST) {
+          *stage = BOTH;
+          break;
+        }
+        *stage = pattern.interception_stage;
+      }
+    }
+    if (*stage != DONT_INTERCEPT)
+      return entry.get();
+  }
+  return nullptr;
 }
 
 void DevToolsURLRequestInterceptor::RegisterSubRequest(
@@ -303,13 +349,5 @@ DevToolsURLRequestInterceptor::Modifications::Modifications(
       mark_as_canceled(mark_as_canceled) {}
 
 DevToolsURLRequestInterceptor::Modifications::~Modifications() {}
-
-DevToolsURLRequestInterceptor::InterceptedPage::InterceptedPage(
-    base::WeakPtr<protocol::NetworkHandler> network_handler,
-    std::vector<Pattern> intercepted_patterns)
-    : network_handler(network_handler),
-      intercepted_patterns(std::move(intercepted_patterns)) {}
-
-DevToolsURLRequestInterceptor::InterceptedPage::~InterceptedPage() = default;
 
 }  // namespace content
