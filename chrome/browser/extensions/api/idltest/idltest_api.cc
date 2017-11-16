@@ -7,38 +7,40 @@
 #include <stddef.h>
 
 #include <memory>
+#include <utility>
 
 #include "base/values.h"
 
-using base::Value;
-
 namespace {
 
-std::unique_ptr<base::ListValue> CopyBinaryValueToIntegerList(
-    const Value* input) {
-  std::unique_ptr<base::ListValue> output(new base::ListValue());
-  for (char c : input->GetBlob()) {
-    output->AppendInteger(c);
-  }
-  return output;
+std::unique_ptr<base::Value> CopyBinaryValueToIntegerList(
+    const base::Value::BlobStorage& input) {
+  base::Value output(base::Value::Type::LIST);
+  auto& list = output.GetList();
+  list.reserve(input.size());
+  for (int c : input)
+    list.emplace_back(c);
+  return base::Value::ToUniquePtrValue(std::move(output));
 }
 
 }  // namespace
 
 ExtensionFunction::ResponseAction IdltestSendArrayBufferFunction::Run() {
-  Value* input = NULL;
-  EXTENSION_FUNCTION_VALIDATE(args_ != NULL && args_->GetBinary(0, &input));
-  return RespondNow(OneArgument(CopyBinaryValueToIntegerList(input)));
+  EXTENSION_FUNCTION_VALIDATE(args_ && !args_->GetList().empty());
+  const auto& value = args_->GetList()[0];
+  EXTENSION_FUNCTION_VALIDATE(value.is_blob());
+  return RespondNow(OneArgument(CopyBinaryValueToIntegerList(value.GetBlob())));
 }
 
 ExtensionFunction::ResponseAction IdltestSendArrayBufferViewFunction::Run() {
-  Value* input = NULL;
-  EXTENSION_FUNCTION_VALIDATE(args_ != NULL && args_->GetBinary(0, &input));
-  return RespondNow(OneArgument(CopyBinaryValueToIntegerList(input)));
+  EXTENSION_FUNCTION_VALIDATE(args_ && !args_->GetList().empty());
+  const auto& value = args_->GetList()[0];
+  EXTENSION_FUNCTION_VALIDATE(value.is_blob());
+  return RespondNow(OneArgument(CopyBinaryValueToIntegerList(value.GetBlob())));
 }
 
 ExtensionFunction::ResponseAction IdltestGetArrayBufferFunction::Run() {
-  std::string hello = "hello world";
+  static constexpr char kHello[] = "hello world";
   return RespondNow(
-      OneArgument(Value::CreateWithCopiedBuffer(hello.c_str(), hello.size())));
+      OneArgument(base::Value::CreateWithCopiedBuffer(kHello, strlen(kHello))));
 }

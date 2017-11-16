@@ -1221,23 +1221,6 @@ bool ListValue::GetString(size_t index, string16* out_value) const {
   return value->GetAsString(out_value);
 }
 
-bool ListValue::GetBinary(size_t index, const Value** out_value) const {
-  const Value* value;
-  bool result = Get(index, &value);
-  if (!result || !value->IsType(Type::BINARY))
-    return false;
-
-  if (out_value)
-    *out_value = value;
-
-  return true;
-}
-
-bool ListValue::GetBinary(size_t index, Value** out_value) {
-  return static_cast<const ListValue&>(*this).GetBinary(
-      index, const_cast<const Value**>(out_value));
-}
-
 bool ListValue::GetDictionary(size_t index,
                               const DictionaryValue** out_value) const {
   const Value* value;

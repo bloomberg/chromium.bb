@@ -534,12 +534,17 @@ SocketWriteFunction::SocketWriteFunction()
 SocketWriteFunction::~SocketWriteFunction() {}
 
 bool SocketWriteFunction::Prepare() {
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &socket_id_));
-  base::Value* data = NULL;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetBinary(1, &data));
+  const auto& list = args_->GetList();
+  EXTENSION_FUNCTION_VALIDATE(list.size() >= 2);
+  const auto& socket_id_value = list[0];
+  const auto& data_value = list[1];
+  EXTENSION_FUNCTION_VALIDATE(socket_id_value.is_int());
+  EXTENSION_FUNCTION_VALIDATE(data_value.is_blob());
 
-  io_buffer_size_ = data->GetBlob().size();
-  io_buffer_ = new net::WrappedIOBuffer(data->GetBlob().data());
+  socket_id_ = socket_id_value.GetInt();
+  io_buffer_size_ = data_value.GetBlob().size();
+  io_buffer_ =
+      base::MakeRefCounted<net::WrappedIOBuffer>(data_value.GetBlob().data());
   return true;
 }
 
@@ -615,20 +620,29 @@ SocketSendToFunction::SocketSendToFunction()
 SocketSendToFunction::~SocketSendToFunction() {}
 
 bool SocketSendToFunction::Prepare() {
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &socket_id_));
-  base::Value* data = NULL;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetBinary(1, &data));
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(2, &hostname_));
-  int port;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(3, &port));
+  const auto& list = args_->GetList();
+  EXTENSION_FUNCTION_VALIDATE(list.size() >= 4);
+  const auto& socket_id_value = list[0];
+  const auto& data_value = list[1];
+  const auto& hostname_value = list[2];
+  const auto& port_value = list[3];
+  EXTENSION_FUNCTION_VALIDATE(socket_id_value.is_int());
+  EXTENSION_FUNCTION_VALIDATE(data_value.is_blob());
+  EXTENSION_FUNCTION_VALIDATE(hostname_value.is_string());
+  EXTENSION_FUNCTION_VALIDATE(port_value.is_int());
+
+  int port = port_value.GetInt();
   if (!IsPortValid(port)) {
     error_ = kPortInvalidError;
     return false;
   }
   port_ = static_cast<uint16_t>(port);
+  socket_id_ = socket_id_value.GetInt();
+  hostname_ = hostname_value.GetString();
 
-  io_buffer_size_ = data->GetBlob().size();
-  io_buffer_ = new net::WrappedIOBuffer(data->GetBlob().data());
+  io_buffer_size_ = data_value.GetBlob().size();
+  io_buffer_ =
+      base::MakeRefCounted<net::WrappedIOBuffer>(data_value.GetBlob().data());
   return true;
 }
 
