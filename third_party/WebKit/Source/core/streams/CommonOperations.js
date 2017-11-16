@@ -160,6 +160,77 @@
     return {size, highWaterMark};
   }
 
+  //
+  // Invoking functions.
+  // These differ from the Invoke versions in the spec in that they take a fixed
+  // number of arguments rather than a list, and also take a name to be used for
+  // the function on error.
+  //
+
+  // Internal utility functions. Not exported.
+  const callFunction = v8.uncurryThis(global.Function.prototype.call);
+  const errTmplMustBeFunctionOrUndefined = name =>
+        `${name} must be a function or undefined`;
+  const Promise_resolve = v8.simpleBind(Promise.resolve, Promise);
+  const Promise_reject = v8.simpleBind(Promise.reject, Promise);
+
+  function resolveMethod(O, P, nameForError) {
+    const method = O[P];
+
+    if (typeof method !== 'function' && typeof method !== 'undefined') {
+      throw new TypeError(errTmplMustBeFunctionOrUndefined(nameForError));
+    }
+
+    return method;
+  }
+
+  // Modified from InvokeOrNoop in spec. Takes 1 argument.
+  function CallOrNoop1(O, P, arg0, nameForError) {
+    const method = resolveMethod(O, P, nameForError);
+    if (method === undefined) {
+      return undefined;
+    }
+
+    return callFunction(method, O, arg0);
+  }
+
+  // Modified from PromiseInvokeOrNoop in spec. Version with no arguments.
+  function PromiseCallOrNoop0(O, P, nameForError) {
+    try {
+      const method = resolveMethod(O, P, nameForError);
+      if (method === undefined) {
+        return Promise_resolve();
+      }
+
+      return Promise_resolve(callFunction(method, O));
+    } catch (e) {
+      return Promise_reject(e);
+    }
+  }
+
+  // Modified from PromiseInvokeOrNoop in spec. Version with 1 argument.
+  function PromiseCallOrNoop1(O, P, arg0, nameForError) {
+    try {
+      return Promise_resolve(CallOrNoop1(O, P, arg0, nameForError));
+    } catch (e) {
+      return Promise_reject(e);
+    }
+  }
+
+  // Modified from PromiseInvokeOrNoop in spec. Version with 2 arguments.
+  function PromiseCallOrNoop2(O, P, arg0, arg1, nameForError) {
+    try {
+      const method = resolveMethod(O, P, nameForError);
+      if (method === undefined) {
+        return Promise_resolve();
+      }
+
+      return Promise_resolve(callFunction(method, O, arg0, arg1));
+    } catch (e) {
+      return Promise_reject(e);
+    }
+  }
+
   binding.streamOperations = {
     _queue,
     _queueTotalSize,
@@ -172,6 +243,10 @@
     EnqueueValueWithSize,
     PeekQueueValue,
     ResetQueue,
-    ValidateAndNormalizeQueuingStrategy
+    ValidateAndNormalizeQueuingStrategy,
+    CallOrNoop1,
+    PromiseCallOrNoop0,
+    PromiseCallOrNoop1,
+    PromiseCallOrNoop2
   };
 });

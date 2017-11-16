@@ -59,7 +59,6 @@
   // https://docs.google.com/document/d/1AT5-T0aHGp7Lt29vPWFr2-qG8r3l9CByyvKwEuA8Ec0/edit#heading=h.9yixony1a18r
   const defineProperty = global.Object.defineProperty;
 
-  const Function_apply = v8.uncurryThis(global.Function.prototype.apply);
   const Function_call = v8.uncurryThis(global.Function.prototype.call);
 
   const TypeError = global.TypeError;
@@ -85,7 +84,11 @@
     EnqueueValueWithSize,
     PeekQueueValue,
     ResetQueue,
-    ValidateAndNormalizeQueuingStrategy
+    ValidateAndNormalizeQueuingStrategy,
+    CallOrNoop1,
+    PromiseCallOrNoop0,
+    PromiseCallOrNoop1,
+    PromiseCallOrNoop2
   } = binding.streamOperations;
 
   // User-visible strings.
@@ -101,7 +104,6 @@
         `Cannot ${action} a ${state} writable stream`;
   const errReleasedWriterClosedPromise = 'This writable stream writer has ' +
         'been released and cannot be used to monitor the stream\'s state';
-  const templateErrorIsNotAFunction = f => `${f} is not a function`;
 
   // These verbs are used after errWriterLockReleasedPrefix
   const verbUsedToGetTheDesiredSize = 'used to get the desiredSize';
@@ -799,7 +801,8 @@
   // or impossible, so use static dispatch for now. This will have to be fixed
   // when adding a byte controller.
   function WritableStreamDefaultControllerAbortSteps(controller, reason) {
-    return PromiseInvokeOrNoop(controller[_underlyingSink], 'abort', [reason]);
+    return PromiseCallOrNoop1(controller[_underlyingSink], 'abort', reason,
+                              'underlyingSink.abort');
   }
 
   function WritableStreamDefaultControllerErrorSteps(controller) {
@@ -807,8 +810,8 @@
   }
 
   function WritableStreamDefaultControllerStartSteps(controller) {
-    const startResult =
-          InvokeOrNoop(controller[_underlyingSink], 'start', [controller]);
+    const startResult = CallOrNoop1(controller[_underlyingSink], 'start',
+                                    controller, 'underlyingSink.start');
     const stream = controller[_controlledWritableStream];
     const startPromise = Promise_resolve(startResult);
     thenPromise(
@@ -920,7 +923,8 @@
     // assert(controller[_queue].length === 0,
     //        'controller.[[queue]] is empty.');
     const sinkClosePromise =
-          PromiseInvokeOrNoop(controller[_underlyingSink], 'close', []);
+          PromiseCallOrNoop0(controller[_underlyingSink], 'close',
+                             'underlyingSink.close');
     thenPromise(
         sinkClosePromise, () => WritableStreamFinishInFlightClose(stream),
         reason => WritableStreamFinishInFlightCloseWithError(stream, reason));
@@ -929,8 +933,9 @@
   function WritableStreamDefaultControllerProcessWrite(controller, chunk) {
     const stream = controller[_controlledWritableStream];
     WritableStreamMarkFirstWriteRequestInFlight(stream);
-    const sinkWritePromise = PromiseInvokeOrNoop(
-        controller[_underlyingSink], 'write', [chunk, controller]);
+    const sinkWritePromise = PromiseCallOrNoop2(
+        controller[_underlyingSink], 'write', chunk, controller,
+        'underlyingSink.write');
     thenPromise(
         sinkWritePromise,
         () => {
@@ -963,37 +968,6 @@
     // assert((stream[_stateAndFlags] & STATE_MASK) === WRITABLE,
     //        '_stream_.[[state]] is `"writable"`.');
     WritableStreamStartErroring(stream, error);
-  }
-
-  // Miscellaneous Operations
-
-  // This differs from "CallOrNoop" in the ReadableStream implementation in
-  // that it takes the arguments as an array, so that multiple arguments can be
-  // passed.
-  //
-  // TODO(ricea): Consolidate with ReadableStream implementation.
-  function InvokeOrNoop(O, P, args) {
-    // assert(IsPropertyKey(P),
-    //        'P is a valid property key.');
-    if (args === undefined) {
-      args = [];
-    }
-    const method = O[P];
-    if (method === undefined) {
-      return undefined;
-    }
-    if (typeof method !== 'function') {
-      throw new TypeError(templateErrorIsNotAFunction(P));
-    }
-    return Function_apply(method, O, args);
-  }
-
-  function PromiseInvokeOrNoop(O, P, args) {
-    try {
-      return Promise_resolve(InvokeOrNoop(O, P, args));
-    } catch (e) {
-      return Promise_reject(e);
-    }
   }
 
   //

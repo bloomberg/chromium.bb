@@ -34,7 +34,6 @@
   // https://docs.google.com/document/d/1AT5-T0aHGp7Lt29vPWFr2-qG8r3l9CByyvKwEuA8Ec0/edit#heading=h.9yixony1a18r
   const defineProperty = global.Object.defineProperty;
 
-  const Function_apply = v8.uncurryThis(global.Function.prototype.apply);
   const Function_call = v8.uncurryThis(global.Function.prototype.call);
 
   const TypeError = global.TypeError;
@@ -46,7 +45,12 @@
   const Promise_reject = v8.simpleBind(Promise.reject, Promise);
 
   // From CommonOperations.js
-  const {hasOwnPropertyNoThrow, resolvePromise} = binding.streamOperations;
+  const {
+    hasOwnPropertyNoThrow,
+    resolvePromise,
+    CallOrNoop1,
+    PromiseCallOrNoop1
+  } = binding.streamOperations;
 
   // User-visible strings.
   const streamErrors = binding.streamErrors;
@@ -88,7 +92,8 @@
       // explicitly.
       TransformStreamSetBackpressure(this, true);
 
-      const startResult = InvokeOrNoop(transformer, 'start', [controller]);
+      const startResult = CallOrNoop1(transformer, 'start', controller,
+                                      'transformer.start');
       resolvePromise(startPromise, startResult);
     }
 
@@ -291,8 +296,9 @@
       const stream = this[_ownerTransformStream];
       const readable = stream[_readable];
 
-      const flushPromise = PromiseInvokeOrNoop(
-          stream[_transformer], 'flush', [stream[_transformStreamController]]);
+      const flushPromise = PromiseCallOrNoop1(
+          stream[_transformer], 'flush', stream[_transformStreamController],
+          'transformer.flush');
 
       return thenPromise(
           flushPromise,
@@ -380,34 +386,6 @@
     cancel(reason) {
       TransformStreamErrorWritableAndUnblockWrite(
           this[_ownerTransformStream], reason);
-    }
-  }
-
-  // Miscellaneous Operations
-
-  // TODO(ricea): Consolidate with ReadableStream / WritableStream
-  // implementations.
-  function InvokeOrNoop(O, P, args) {
-    // assert(IsPropertyKey(P),
-    //        'P is a valid property key.');
-    if (args === undefined) {
-      args = [];
-    }
-    const method = O[P];
-    if (method === undefined) {
-      return undefined;
-    }
-    if (typeof method !== 'function') {
-      throw new TypeError(templateErrorIsNotAFunction(P));
-    }
-    return Function_apply(method, O, args);
-  }
-
-  function PromiseInvokeOrNoop(O, P, args) {
-    try {
-      return Promise_resolve(InvokeOrNoop(O, P, args));
-    } catch (e) {
-      return Promise_reject(e);
     }
   }
 
