@@ -35,11 +35,9 @@ TimedCanvasDrawListener* TimedCanvasDrawListener::Create(
   return listener;
 }
 
-void TimedCanvasDrawListener::SendNewFrame(
-    sk_sp<SkImage> image,
-    WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider) {
+void TimedCanvasDrawListener::SendNewFrame(sk_sp<SkImage> image) {
   frame_capture_requested_ = false;
-  CanvasDrawListener::SendNewFrame(image, context_provider);
+  CanvasDrawListener::SendNewFrame(std::move(image));
 }
 
 void TimedCanvasDrawListener::RequestFrameTimerFired(TimerBase*) {

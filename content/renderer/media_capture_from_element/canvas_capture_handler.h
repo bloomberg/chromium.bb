@@ -45,13 +45,11 @@ class CONTENT_EXPORT CanvasCaptureHandler final
   static std::unique_ptr<CanvasCaptureHandler> CreateCanvasCaptureHandler(
       const blink::WebSize& size,
       double frame_rate,
-      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
       blink::WebMediaStreamTrack* track);
 
-  // blink::WebCanvasCaptureHandler implementation.
-  void SendNewFrame(
-      sk_sp<SkImage> image,
-      blink::WebGraphicsContext3DProvider* context_provider) override;
+  // blink::WebCanvasCaptureHandler Implementation.
+  void SendNewFrame(const SkImage* image) override;
   bool NeedsNewFrame() const override;
 
   // Functions called by media::VideoCapturerSource implementation.
@@ -62,6 +60,7 @@ class CONTENT_EXPORT CanvasCaptureHandler final
       const media::VideoCapturerSource::RunningCallback& running_callback);
   void RequestRefreshFrame();
   void StopVideoCapture();
+  blink::WebSize GetSourceSize() const { return size_; }
 
  private:
   // A VideoCapturerSource instance is created, which is responsible for handing
@@ -71,37 +70,10 @@ class CONTENT_EXPORT CanvasCaptureHandler final
   CanvasCaptureHandler(
       const blink::WebSize& size,
       double frame_rate,
-      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
       blink::WebMediaStreamTrack* track);
 
-  // Helper functions to read pixel content.
-  void ReadARGBPixelsSync(sk_sp<SkImage> image);
-  void ReadARGBPixelsAsync(
-      sk_sp<SkImage> image,
-      blink::WebGraphicsContext3DProvider* context_provider);
-  void ReadYUVPixelsAsync(
-      sk_sp<SkImage> image,
-      blink::WebGraphicsContext3DProvider* context_provider);
-  void OnARGBPixelsReadAsync(sk_sp<SkImage> image,
-                             scoped_refptr<media::VideoFrame> temp_argb_frame,
-                             base::TimeTicks this_frame_ticks,
-                             bool flip,
-                             bool success);
-  void OnYUVPixelsReadAsync(sk_sp<SkImage> image,
-                            scoped_refptr<media::VideoFrame> yuv_frame,
-                            base::TimeTicks this_frame_ticks,
-                            bool success);
-
-  scoped_refptr<media::VideoFrame> ConvertToYUVFrame(
-      bool is_opaque,
-      bool flip,
-      const uint8_t* source_ptr,
-      const gfx::Size& image_size,
-      int stride,
-      SkColorType source_color_type);
-  void SendFrame(scoped_refptr<media::VideoFrame> video_frame,
-                 base::TimeTicks this_frame_ticks);
-
+  void CreateNewFrame(const SkImage* image);
   void AddVideoCapturerSourceToVideoTrack(
       std::unique_ptr<media::VideoCapturerSource> source,
       blink::WebMediaStreamTrack* web_track);
@@ -112,8 +84,14 @@ class CONTENT_EXPORT CanvasCaptureHandler final
 
   media::VideoCaptureFormat capture_format_;
   bool ask_for_new_frame_;
+
+  const blink::WebSize size_;
+  gfx::Size last_size;
+  std::vector<uint8_t> temp_data_;
+  size_t temp_data_stride_;
+  SkImageInfo image_info_;
   media::VideoFramePool frame_pool_;
-  base::Optional<base::TimeTicks> first_frame_ticks_;
+
   scoped_refptr<media::VideoFrame> last_frame_;
 
   const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
