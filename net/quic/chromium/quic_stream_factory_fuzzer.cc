@@ -9,6 +9,7 @@
 #include "net/base/test_completion_callback.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/multi_log_ct_verifier.h"
+#include "net/cert/x509_certificate.h"
 #include "net/dns/fuzzed_host_resolver.h"
 #include "net/http/http_server_properties_impl.h"
 #include "net/http/transport_security_state.h"
@@ -21,13 +22,15 @@
 #include "net/socket/fuzzed_socket_factory.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/default_channel_id_store.h"
-#include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
-#include "net/test/test_data_directory.h"
 
 namespace net {
 
 namespace {
+
+const char kCertData[] = {
+#include "net/data/ssl/certificates/wildcard.inc"
+};
 
 class MockSSLConfigService : public SSLConfigService {
  public:
@@ -66,7 +69,8 @@ struct Env {
         std::make_unique<ChannelIDService>(new DefaultChannelIDStore(nullptr));
     cert_transparency_verifier = std::make_unique<MultiLogCTVerifier>();
     verify_details.cert_verify_result.verified_cert =
-        ImportCertFromFile(GetTestCertsDirectory(), "wildcard.pem");
+        X509Certificate::CreateFromBytes(kCertData, arraysize(kCertData));
+    CHECK(verify_details.cert_verify_result.verified_cert);
     verify_details.cert_verify_result.is_issued_by_known_root = true;
   }
 
