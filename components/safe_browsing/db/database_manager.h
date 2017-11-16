@@ -178,10 +178,10 @@ class SafeBrowsingDatabaseManager
   // DEPRECATED. ref: http://crbug.com/714300
   virtual bool MatchCsdWhitelistUrl(const GURL& url) = 0;
 
-  // Check if |str| matches any of the full-length hashes from the download
-  // whitelist.  Returns true if there was a match and false otherwise. To make
-  // sure we are conservative we will return true if an error occurs.  This
-  // method must be called on the IO thread.
+  // Check if SHA-256 hash of |str| matches any of the full-length hashes from
+  // the download whitelist.  Returns true if there was a match and false
+  // otherwise. To make sure we are conservative we will return true if an error
+  // occurs.  This method must be called on the IO thread.
   virtual bool MatchDownloadWhitelistString(const std::string& str) = 0;
 
   // Check if the |url| matches any of the full-length hashes from the download
