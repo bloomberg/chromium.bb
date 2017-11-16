@@ -657,6 +657,10 @@ extern const char kConsumerManagementStage[];
 extern const char kIsBootstrappingSlave[];
 extern const char kReportArcStatusEnabled[];
 extern const char kNetworkThrottlingEnabled[];
+extern const char kPowerMetricsDailySample[];
+extern const char kPowerMetricsIdleScreenDimCount[];
+extern const char kPowerMetricsIdleScreenOffCount[];
+extern const char kPowerMetricsIdleSuspendCount[];
 #endif  // defined(OS_CHROMEOS)
 
 extern const char kClearPluginLSODataEnabled[];

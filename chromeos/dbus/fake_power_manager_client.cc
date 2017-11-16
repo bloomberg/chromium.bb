@@ -203,6 +203,12 @@ void FakePowerManagerClient::SendKeyboardBrightnessChanged(
     observer.KeyboardBrightnessChanged(level, user_initiated);
 }
 
+void FakePowerManagerClient::SendScreenIdleStateChanged(
+    const power_manager::ScreenIdleState& proto) {
+  for (auto& observer : observers_)
+    observer.ScreenIdleStateChanged(proto);
+}
+
 void FakePowerManagerClient::SendPowerButtonEvent(
     bool down,
     const base::TimeTicks& timestamp) {
