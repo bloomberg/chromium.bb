@@ -196,6 +196,7 @@ static_library("v4_local_database_manager") {
     "//base",
     "//components/safe_browsing:webui_proto",
     "//content/public/browser",
+    "//crypto",
     "//net",
     "//url",
   ]

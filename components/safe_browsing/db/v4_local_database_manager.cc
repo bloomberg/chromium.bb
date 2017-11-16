@@ -23,6 +23,7 @@
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "crypto/sha2.h"
 
 using content::BrowserThread;
 using base::TimeTicks;
@@ -434,7 +435,8 @@ bool V4LocalDatabaseManager::MatchDownloadWhitelistString(
     return false;
   }
 
-  return HandleHashSynchronously(str, stores_to_check);
+  return HandleHashSynchronously(crypto::SHA256HashString(str),
+                                 stores_to_check);
 }
 
 bool V4LocalDatabaseManager::MatchDownloadWhitelistUrl(const GURL& url) {
