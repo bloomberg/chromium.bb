@@ -30,23 +30,23 @@ constexpr base::TimeDelta RetryChooserTimeout = base::TimeDelta::FromSeconds(5);
 
 SurfaceChooserHelper::SurfaceChooserHelper(
     std::unique_ptr<AndroidVideoSurfaceChooser> surface_chooser,
+    bool is_overlay_required,
+    bool promote_aggressively,
     std::unique_ptr<PromotionHintAggregator> promotion_hint_aggregator,
     std::unique_ptr<base::TickClock> tick_clock)
     : surface_chooser_(std::move(surface_chooser)),
+      is_overlay_required_(is_overlay_required),
       promotion_hint_aggregator_(
           promotion_hint_aggregator
               ? std::move(promotion_hint_aggregator)
               : base::MakeUnique<PromotionHintAggregatorImpl>()),
       tick_clock_(tick_clock ? std::move(tick_clock)
-                             : base::MakeUnique<base::DefaultTickClock>()) {}
+                             : base::MakeUnique<base::DefaultTickClock>()) {
+  surface_chooser_state_.is_required = is_overlay_required_;
+  surface_chooser_state_.promote_aggressively = promote_aggressively;
+}
 
 SurfaceChooserHelper::~SurfaceChooserHelper() {}
-
-void SurfaceChooserHelper::SetIsOverlayRequired(bool required) {
-  is_overlay_required_ = required;
-  surface_chooser_state_.is_required =
-      requires_secure_video_surface_ || is_overlay_required_;
-}
 
 void SurfaceChooserHelper::SetSecureSurfaceMode(SecureSurfaceMode mode) {
   bool is_secure = false;
@@ -67,10 +67,6 @@ void SurfaceChooserHelper::SetSecureSurfaceMode(SecureSurfaceMode mode) {
   surface_chooser_state_.is_secure = is_secure;
   surface_chooser_state_.is_required =
       requires_secure_video_surface_ || is_overlay_required_;
-}
-
-void SurfaceChooserHelper::SetPromoteAggressively(bool promote_aggressively) {
-  surface_chooser_state_.promote_aggressively = promote_aggressively;
 }
 
 void SurfaceChooserHelper::SetIsFullscreen(bool is_fullscreen) {

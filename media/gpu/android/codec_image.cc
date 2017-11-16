@@ -98,9 +98,11 @@ bool CodecImage::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
   // Move the overlay if needed.
   if (most_recent_bounds_ != bounds_rect) {
     most_recent_bounds_ = bounds_rect;
-    // TODO(liberato): When we start getting promotion hints, then we should
-    // not send a hint from NotifyPromotionHint() if it's promotable and we
-    // don't have a surface texture.  We'll handle it here.
+    // Note that, if we're actually promoted to overlay, that this is where the
+    // hint is sent to the callback.  NotifyPromotionHint detects this case and
+    // lets us do it.  If we knew that we were going to get promotion hints,
+    // then we could always let NotifyPromotionHint do it.  Unfortunately, we
+    // don't know that.
     promotion_hint_cb_.Run(PromotionHintAggregator::Hint(bounds_rect, true));
   }
 
@@ -130,6 +132,21 @@ void CodecImage::GetTextureMatrix(float matrix[16]) {
   RenderToSurfaceTextureFrontBuffer(BindingsMode::kDontRestore);
   surface_texture_->GetTransformMatrix(matrix);
   YInvertMatrix(matrix);
+}
+
+void CodecImage::NotifyPromotionHint(bool promotion_hint,
+                                     int display_x,
+                                     int display_y,
+                                     int display_width,
+                                     int display_height) {
+  // If this is promotable, and we're using an overlay, then skip sending this
+  // hint.  ScheduleOverlayPlane will do it.
+  if (promotion_hint && !surface_texture_)
+    return;
+
+  promotion_hint_cb_.Run(PromotionHintAggregator::Hint(
+      gfx::Rect(display_x, display_y, display_width, display_height),
+      promotion_hint));
 }
 
 bool CodecImage::RenderToFrontBuffer() {

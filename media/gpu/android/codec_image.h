@@ -58,7 +58,7 @@ class MEDIA_GPU_EXPORT CodecImage : public gpu::gles2::GLStreamTextureImage {
                            int display_x,
                            int display_y,
                            int display_width,
-                           int display_height) override {}
+                           int display_height) override;
 
   // Whether the codec buffer has been rendered to the front buffer.
   bool was_rendered_to_front_buffer() const {
