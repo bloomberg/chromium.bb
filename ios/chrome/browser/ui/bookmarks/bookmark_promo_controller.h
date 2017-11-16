@@ -7,7 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-@protocol ApplicationCommands;
+@protocol SigninPresenter;
 
 namespace ios {
 class ChromeBrowserState;
@@ -40,7 +40,7 @@ class PrefRegistrySyncable;
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
                             delegate:
                                 (id<BookmarkPromoControllerDelegate>)delegate
-                          dispatcher:(id<ApplicationCommands>)dispatcher;
+                           presenter:(id<SigninPresenter>)presenter;
 
 // Presents the sign-in UI, presenting from |baseViewController|.
 - (void)showSignInFromViewController:(UIViewController*)baseViewController;
