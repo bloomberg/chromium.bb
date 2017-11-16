@@ -106053,6 +106053,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
              within the page."/>
   <suffix name="MainFrameDidFinishLoad"
       label="Recorded when DidFinishLoad is called for the main frame."/>
+  <suffix name="ServiceWorkerControlledMainFrameDidFinishLoad"
+      label="Recorded when DidFinishLoad is called for the main frame which
+             is controlled by a service worker."/>
   <suffix name="AfterBackgrounded.5min"
       label="Recorded 5 minutes after backgrounded."/>
   <suffix name="AfterBackgrounded.10min"
@@ -106065,6 +106068,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="MainFrame.PeakDuringLoad"
       label="In the main frame, polled each time CreateURLLoader is called,
              and the maximum value is recorded when DidFinishLoad is called."/>
+  <suffix name="ServiceWorkerControlledMainFrame.PeakDuringLoad"
+      label="In the main frame which is controlled by a service worker,
+             polled each time CreateURLLoader is called, and the maximum
+             value is recorded when DidFinishLoad is called."/>
   <affected-histogram name="Memory.Experimental.Renderer.BlinkGC"/>
   <affected-histogram name="Memory.Experimental.Renderer.Discardable"/>
   <affected-histogram name="Memory.Experimental.Renderer.Malloc"/>

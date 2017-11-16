@@ -1255,6 +1255,9 @@ class CONTENT_EXPORT RenderFrameImpl
   // Whether or not a navigation in this frame consumes user gestures.
   bool ConsumeGestureOnNavigation() const;
 
+  // Whether or not the frame is controlled by a service worker.
+  bool IsControlledByServiceWorker();
+
   mojom::URLLoaderFactory* custom_url_loader_factory() {
     return custom_url_loader_factory_.get();
   }

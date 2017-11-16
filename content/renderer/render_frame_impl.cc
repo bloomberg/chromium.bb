@@ -28,11 +28,13 @@
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/process/process.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -725,6 +727,42 @@ std::vector<gfx::Size> ConvertToFaviconSizes(
   for (const blink::WebSize& web_size : web_sizes)
     result.push_back(gfx::Size(web_size));
   return result;
+}
+
+// Use this for histograms with dynamically generated names, which otherwise
+// can't use the UMA_HISTOGRAM_MEMORY_MB macro without code duplication.
+void RecordSuffixedMemoryMBHistogram(base::StringPiece name,
+                                     base::StringPiece suffix,
+                                     int sample_mb) {
+  std::string name_with_suffix;
+  name.CopyToString(&name_with_suffix);
+  suffix.AppendToString(&name_with_suffix);
+  base::UmaHistogramMemoryMB(name_with_suffix, sample_mb);
+}
+
+void RecordSuffixedRendererMemoryMetrics(
+    const RenderThreadImpl::RendererMemoryMetrics& memory_metrics,
+    base::StringPiece suffix) {
+  RecordSuffixedMemoryMBHistogram("Memory.Experimental.Renderer.PartitionAlloc",
+                                  suffix,
+                                  memory_metrics.partition_alloc_kb / 1024);
+  RecordSuffixedMemoryMBHistogram("Memory.Experimental.Renderer.BlinkGC",
+                                  suffix, memory_metrics.blink_gc_kb / 1024);
+  RecordSuffixedMemoryMBHistogram("Memory.Experimental.Renderer.Malloc", suffix,
+                                  memory_metrics.malloc_mb);
+  RecordSuffixedMemoryMBHistogram("Memory.Experimental.Renderer.Discardable",
+                                  suffix, memory_metrics.discardable_kb / 1024);
+  RecordSuffixedMemoryMBHistogram(
+      "Memory.Experimental.Renderer.V8MainThreadIsolate", suffix,
+      memory_metrics.v8_main_thread_isolate_mb);
+  RecordSuffixedMemoryMBHistogram("Memory.Experimental.Renderer.TotalAllocated",
+                                  suffix, memory_metrics.total_allocated_mb);
+  RecordSuffixedMemoryMBHistogram(
+      "Memory.Experimental.Renderer.NonDiscardableTotalAllocated", suffix,
+      memory_metrics.non_discardable_total_allocated_mb);
+  RecordSuffixedMemoryMBHistogram(
+      "Memory.Experimental.Renderer.TotalAllocatedPerRenderView", suffix,
+      memory_metrics.total_allocated_per_render_view_mb);
 }
 
 }  // namespace
@@ -4246,68 +4284,20 @@ void RenderFrameImpl::DidFinishLoad() {
                                       document_loader->GetRequest().Url()));
 
   ReportPeakMemoryStats();
-  if (RenderThreadImpl::current()) {
-    RenderThreadImpl::RendererMemoryMetrics memory_metrics;
-    if (!RenderThreadImpl::current()->GetRendererMemoryMetrics(&memory_metrics))
-      return;
-    UMA_HISTOGRAM_MEMORY_MB(
-        "Memory.Experimental.Renderer.PartitionAlloc.DidFinishLoad",
-        memory_metrics.partition_alloc_kb / 1024);
-    UMA_HISTOGRAM_MEMORY_MB(
-        "Memory.Experimental.Renderer.BlinkGC.DidFinishLoad",
-        memory_metrics.blink_gc_kb / 1024);
-    UMA_HISTOGRAM_MEMORY_MB(
-        "Memory.Experimental.Renderer.Malloc.DidFinishLoad",
-        memory_metrics.malloc_mb);
-    UMA_HISTOGRAM_MEMORY_MB(
-        "Memory.Experimental.Renderer.Discardable.DidFinishLoad",
-        memory_metrics.discardable_kb / 1024);
-    UMA_HISTOGRAM_MEMORY_MB(
-        "Memory.Experimental.Renderer.V8MainThreadIsolate.DidFinishLoad",
-        memory_metrics.v8_main_thread_isolate_mb);
-    UMA_HISTOGRAM_MEMORY_MB(
-        "Memory.Experimental.Renderer.TotalAllocated.DidFinishLoad",
-        memory_metrics.total_allocated_mb);
-    UMA_HISTOGRAM_MEMORY_MB(
-        "Memory.Experimental.Renderer.NonDiscardableTotalAllocated."
-        "DidFinishLoad",
-        memory_metrics.non_discardable_total_allocated_mb);
-    UMA_HISTOGRAM_MEMORY_MB(
-        "Memory.Experimental.Renderer.TotalAllocatedPerRenderView."
-        "DidFinishLoad",
-        memory_metrics.total_allocated_per_render_view_mb);
-    if (IsMainFrame()) {
-      UMA_HISTOGRAM_MEMORY_MB(
-          "Memory.Experimental.Renderer.PartitionAlloc."
-          "MainFrameDidFinishLoad",
-          memory_metrics.partition_alloc_kb / 1024);
-      UMA_HISTOGRAM_MEMORY_MB(
-          "Memory.Experimental.Renderer.BlinkGC.MainFrameDidFinishLoad",
-          memory_metrics.blink_gc_kb / 1024);
-      UMA_HISTOGRAM_MEMORY_MB(
-          "Memory.Experimental.Renderer.Malloc.MainFrameDidFinishLoad",
-          memory_metrics.malloc_mb);
-      UMA_HISTOGRAM_MEMORY_MB(
-          "Memory.Experimental.Renderer.Discardable.MainFrameDidFinishLoad",
-          memory_metrics.discardable_kb / 1024);
-      UMA_HISTOGRAM_MEMORY_MB(
-          "Memory.Experimental.Renderer.V8MainThreadIsolate."
-          "MainFrameDidFinishLoad",
-          memory_metrics.v8_main_thread_isolate_mb);
-      UMA_HISTOGRAM_MEMORY_MB(
-          "Memory.Experimental.Renderer.TotalAllocated."
-          "MainFrameDidFinishLoad",
-          memory_metrics.total_allocated_mb);
-      UMA_HISTOGRAM_MEMORY_MB(
-          "Memory.Experimental.Renderer.NonDiscardableTotalAllocated."
-          "MainFrameDidFinishLoad",
-          memory_metrics.non_discardable_total_allocated_mb);
-      UMA_HISTOGRAM_MEMORY_MB(
-          "Memory.Experimental.Renderer.TotalAllocatedPerRenderView."
-          "MainFrameDidFinishLoad",
-          memory_metrics.total_allocated_per_render_view_mb);
-    }
-  }
+  if (!RenderThreadImpl::current())
+    return;
+  RenderThreadImpl::RendererMemoryMetrics memory_metrics;
+  if (!RenderThreadImpl::current()->GetRendererMemoryMetrics(&memory_metrics))
+    return;
+  RecordSuffixedRendererMemoryMetrics(memory_metrics, ".DidFinishLoad");
+  if (!IsMainFrame())
+    return;
+  RecordSuffixedRendererMemoryMetrics(memory_metrics,
+                                      ".MainFrameDidFinishLoad");
+  if (!IsControlledByServiceWorker())
+    return;
+  RecordSuffixedRendererMemoryMetrics(
+      memory_metrics, ".ServiceWorkerControlledMainFrameDidFinishLoad");
 }
 
 void RenderFrameImpl::DidNavigateWithinPage(
@@ -7304,66 +7294,31 @@ void RenderFrameImpl::ReportPeakMemoryStats() {
   if (!base::FeatureList::IsEnabled(features::kReportRendererPeakMemoryStats))
     return;
 
-  UMA_HISTOGRAM_MEMORY_MB(
-      "Memory.Experimental.Renderer.PartitionAlloc.PeakDuringLoad",
-      peak_memory_metrics_.partition_alloc_kb / 1024);
-  UMA_HISTOGRAM_MEMORY_MB("Memory.Experimental.Renderer.BlinkGC.PeakDuringLoad",
-                          peak_memory_metrics_.blink_gc_kb / 1024);
-  UMA_HISTOGRAM_MEMORY_MB("Memory.Experimental.Renderer.Malloc.PeakDuringLoad",
-                          peak_memory_metrics_.malloc_mb);
-  UMA_HISTOGRAM_MEMORY_MB(
-      "Memory.Experimental.Renderer.Discardable.PeakDuringLoad",
-      peak_memory_metrics_.discardable_kb / 1024);
-  UMA_HISTOGRAM_MEMORY_MB(
-      "Memory.Experimental.Renderer.V8MainThreadIsolate.PeakDuringLoad",
-      peak_memory_metrics_.v8_main_thread_isolate_mb);
-  UMA_HISTOGRAM_MEMORY_MB(
-      "Memory.Experimental.Renderer.TotalAllocated.PeakDuringLoad",
-      peak_memory_metrics_.total_allocated_mb);
-  UMA_HISTOGRAM_MEMORY_MB(
-      "Memory.Experimental.Renderer.NonDiscardableTotalAllocated."
-      "PeakDuringLoad",
-      peak_memory_metrics_.non_discardable_total_allocated_mb);
-  UMA_HISTOGRAM_MEMORY_MB(
-      "Memory.Experimental.Renderer.TotalAllocatedPerRenderView."
-      "PeakDuringLoad",
-      peak_memory_metrics_.total_allocated_per_render_view_mb);
-  if (IsMainFrame()) {
-    UMA_HISTOGRAM_MEMORY_MB(
-        "Memory.Experimental.Renderer.PartitionAlloc."
-        "MainFrame.PeakDuringLoad",
-        peak_memory_metrics_.partition_alloc_kb / 1024);
-    UMA_HISTOGRAM_MEMORY_MB(
-        "Memory.Experimental.Renderer.BlinkGC.MainFrame.PeakDuringLoad",
-        peak_memory_metrics_.blink_gc_kb / 1024);
-    UMA_HISTOGRAM_MEMORY_MB(
-        "Memory.Experimental.Renderer.Malloc.MainFrame.PeakDuringLoad",
-        peak_memory_metrics_.malloc_mb);
-    UMA_HISTOGRAM_MEMORY_MB(
-        "Memory.Experimental.Renderer.Discardable.MainFrame.PeakDuringLoad",
-        peak_memory_metrics_.discardable_kb / 1024);
-    UMA_HISTOGRAM_MEMORY_MB(
-        "Memory.Experimental.Renderer.V8MainThreadIsolate."
-        "MainFrame.PeakDuringLoad",
-        peak_memory_metrics_.v8_main_thread_isolate_mb);
-    UMA_HISTOGRAM_MEMORY_MB(
-        "Memory.Experimental.Renderer.TotalAllocated."
-        "MainFrame.PeakDuringLoad",
-        peak_memory_metrics_.total_allocated_mb);
-    UMA_HISTOGRAM_MEMORY_MB(
-        "Memory.Experimental.Renderer.NonDiscardableTotalAllocated."
-        "MainFrame.PeakDuringLoad",
-        peak_memory_metrics_.non_discardable_total_allocated_mb);
-    UMA_HISTOGRAM_MEMORY_MB(
-        "Memory.Experimental.Renderer.TotalAllocatedPerRenderView."
-        "MainFrame.PeakDuringLoad",
-        peak_memory_metrics_.total_allocated_per_render_view_mb);
-  }
+  RecordSuffixedRendererMemoryMetrics(peak_memory_metrics_, ".PeakDuringLoad");
+  if (!IsMainFrame())
+    return;
+  RecordSuffixedRendererMemoryMetrics(peak_memory_metrics_,
+                                      ".MainFrame.PeakDuringLoad");
+  if (!IsControlledByServiceWorker())
+    return;
+  RecordSuffixedRendererMemoryMetrics(
+      peak_memory_metrics_, ".ServiceWorkerControlledMainFrame.PeakDuringLoad");
 }
 
 bool RenderFrameImpl::ConsumeGestureOnNavigation() const {
   return is_main_frame_ &&
          base::FeatureList::IsEnabled(kConsumeGestureOnNavigation);
+}
+
+bool RenderFrameImpl::IsControlledByServiceWorker() {
+  blink::WebServiceWorkerNetworkProvider* web_provider =
+      frame_->GetDocumentLoader()->GetServiceWorkerNetworkProvider();
+  if (!web_provider)
+    return false;
+  ServiceWorkerNetworkProvider* provider =
+      ServiceWorkerNetworkProvider::FromWebServiceWorkerNetworkProvider(
+          web_provider);
+  return provider->IsControlledByServiceWorker();
 }
 
 RenderFrameImpl::PendingNavigationInfo::PendingNavigationInfo(
