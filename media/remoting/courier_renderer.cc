@@ -40,7 +40,7 @@ constexpr base::TimeDelta kTrackingWindow = base::TimeDelta::FromSeconds(5);
 // poor and the controller is notified.
 constexpr base::TimeDelta kMediaPlaybackDelayThreshold =
     base::TimeDelta::FromMilliseconds(750);
-constexpr int kPlaybackDelayCountThreshold = 3;
+constexpr int kPlaybackDelayCountThreshold = 10;
 
 // The allowed percentage of the number of video frames dropped vs. the number
 // of the video frames decoded. When exceeds this limit, the user experience is
