@@ -2046,6 +2046,28 @@
             ]
         }
     ],
+    "NTPPopularSitesWithShortNames": [
+        {
+            "platforms": [
+                "android",
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "HoldbackControl",
+                    "params": {
+                        "version": "5_shortname"
+                    }
+                },
+                {
+                    "name": "Holdback",
+                    "params": {
+                        "version": "5_shortname-control"
+                    }
+                }
+            ]
+        }
+    ],
     "NTPRecentForeignTabs": [
         {
             "platforms": [
