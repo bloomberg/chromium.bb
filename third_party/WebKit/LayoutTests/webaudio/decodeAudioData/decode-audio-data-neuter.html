@@ -58,7 +58,7 @@
         should(
             context.decodeAudioData(buffer),
             'decodeAudioData on neutered buffer')
-            .beRejected('TypeError')
+            .beRejectedWith('DataCloneError')
             .then(() => task.done());
       });
 
