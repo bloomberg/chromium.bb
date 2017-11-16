@@ -591,5 +591,20 @@
     "prefix": "mouseevent_fractional",
     "base": "fast/events",
     "args": ["--enable-blink-features=FractionalMouseEvent"]
+  },
+  {
+    "prefix": "incremental-shadow-dom",
+    "base": "external/wpt/shadow-dom",
+    "args": ["--enable-blink-features=IncrementalShadowDOM"]
+  },
+  {
+    "prefix": "incremental-shadow-dom",
+    "base": "fast/dom/shadow",
+    "args": ["--enable-blink-features=IncrementalShadowDOM"]
+  },
+  {
+    "prefix": "incremental-shadow-dom",
+    "base": "shadow-dom",
+    "args": ["--enable-blink-features=IncrementalShadowDOM"]
   }
 ]
