@@ -63,6 +63,14 @@ class SecureChannel : public ConnectionObserver {
     // corresponds to the value returned by an earlier call to SendMessage().
     virtual void OnMessageSent(SecureChannel* secure_channel,
                                int sequence_number) {}
+
+    // Called when GATT characteristics are not available. This observer
+    // function is a temporary work-around (see crbug.com/784968).
+    // TODO(khorimoto): This observer function is specific to only one
+    //     SecureChannel implementation, so it is hacky to include it as part of
+    //     the observer for SecureChannel. Remove this work-around when it is no
+    //     longer necessary.
+    virtual void OnGattCharacteristicsNotAvailable() {}
   };
 
   class Factory {
@@ -110,10 +118,13 @@ class SecureChannel : public ConnectionObserver {
   void OnSendCompleted(const cryptauth::Connection& connection,
                        const cryptauth::WireMessage& wire_message,
                        bool success) override;
+  void OnGattCharacteristicsNotAvailable() override;
 
  protected:
   SecureChannel(std::unique_ptr<Connection> connection,
                 CryptAuthService* cryptauth_service);
+
+  void NotifyGattCharacteristicsNotAvailable();
 
   Status status_;
 

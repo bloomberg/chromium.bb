@@ -38,6 +38,9 @@ class FakeConnection : public Connection {
   // container WireMessage format.
   void ReceiveMessage(const std::string& feature, const std::string& payload);
 
+  // Notifies observers that GATT characteristics are unavailable.
+  void NotifyGattCharacteristicsNotAvailable();
+
   // Returns the current message in progress of being sent.
   WireMessage* current_message() { return current_message_.get(); }
 

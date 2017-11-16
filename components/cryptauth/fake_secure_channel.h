@@ -29,6 +29,7 @@ class FakeSecureChannel : public SecureChannel {
   void ChangeStatus(const Status& new_status);
   void ReceiveMessage(const std::string& feature, const std::string& payload);
   void CompleteSendingMessage(int sequence_number);
+  void NotifyGattCharacteristicsNotAvailable();
 
   std::vector<Observer*> observers() { return observers_; }
 

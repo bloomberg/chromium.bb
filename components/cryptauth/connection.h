@@ -92,6 +92,8 @@ class Connection {
   virtual std::unique_ptr<WireMessage> DeserializeWireMessage(
       bool* is_incomplete_message);
 
+  void NotifyGattCharacteristicsNotAvailable();
+
   // Returns a string describing the associated device for logging purposes.
   std::string GetDeviceInfoLogString();
 

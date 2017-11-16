@@ -176,6 +176,7 @@ class BleConnectionManager : public BleScanner::Observer {
                            const std::string& payload) override;
     void OnMessageSent(cryptauth::SecureChannel* secure_channel,
                        int sequence_number) override;
+    void OnGattCharacteristicsNotAvailable() override;
 
    private:
     friend class BleConnectionManagerTest;

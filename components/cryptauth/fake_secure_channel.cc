@@ -47,6 +47,10 @@ void FakeSecureChannel::CompleteSendingMessage(int sequence_number) {
   }
 }
 
+void FakeSecureChannel::NotifyGattCharacteristicsNotAvailable() {
+  SecureChannel::NotifyGattCharacteristicsNotAvailable();
+}
+
 void FakeSecureChannel::Initialize() {}
 
 int FakeSecureChannel::SendMessage(const std::string& feature,
