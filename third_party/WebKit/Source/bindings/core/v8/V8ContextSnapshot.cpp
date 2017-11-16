@@ -63,8 +63,6 @@ v8::Local<v8::Function> ConstructPlainType(v8::Isolate* isolate,
     prototype_object->SetAlignedPointerInInternalField(
         kV8PrototypeTypeIndex, const_cast<WrapperTypeInfo*>(type));
   }
-  type->PreparePrototypeAndInterfaceObject(
-      context, world, prototype_object, interface_object, interface_template);
 
   return interface_object;
 }
@@ -182,7 +180,7 @@ v8::Local<v8::Context> V8ContextSnapshot::CreateContextFromSnapshot(
   return context;
 }
 
-void V8ContextSnapshot::InstallRuntimeEnabledFeatures(
+void V8ContextSnapshot::InstallConditionalFeatures(
     v8::Local<v8::Context> context,
     Document* document) {
   ScriptState* script_state = ScriptState::From(context);
@@ -209,6 +207,9 @@ void V8ContextSnapshot::InstallRuntimeEnabledFeatures(
                                           .As<v8::Object>();
     V8Window::install_runtime_enabled_features_function_(
         isolate, world, window_wrapper, prototype, interface);
+    type->InstallConditionalFeatures(context, world, window_wrapper, prototype,
+                                     interface,
+                                     type->domTemplate(isolate, world));
     InstallOriginTrialFeatures(type, script_state, prototype, interface);
   }
   {
@@ -219,6 +220,9 @@ void V8ContextSnapshot::InstallRuntimeEnabledFeatures(
                                           .As<v8::Object>();
     V8EventTarget::InstallRuntimeEnabledFeatures(
         isolate, world, v8::Local<v8::Object>(), prototype, interface);
+    type->InstallConditionalFeatures(context, world, v8::Local<v8::Object>(),
+                                     prototype, interface,
+                                     type->domTemplate(isolate, world));
     InstallOriginTrialFeatures(type, script_state, prototype, interface);
   }
 
@@ -240,6 +244,9 @@ void V8ContextSnapshot::InstallRuntimeEnabledFeatures(
                                           .As<v8::Object>();
     V8HTMLDocument::InstallRuntimeEnabledFeatures(
         isolate, world, document_wrapper, prototype, interface);
+    type->InstallConditionalFeatures(context, world, document_wrapper,
+                                     prototype, interface,
+                                     type->domTemplate(isolate, world));
     InstallOriginTrialFeatures(type, script_state, prototype, interface);
   }
   {
@@ -250,6 +257,9 @@ void V8ContextSnapshot::InstallRuntimeEnabledFeatures(
                                           .As<v8::Object>();
     V8Document::InstallRuntimeEnabledFeatures(
         isolate, world, v8::Local<v8::Object>(), prototype, interface);
+    type->InstallConditionalFeatures(context, world, v8::Local<v8::Object>(),
+                                     prototype, interface,
+                                     type->domTemplate(isolate, world));
     InstallOriginTrialFeatures(type, script_state, prototype, interface);
   }
   {
@@ -260,6 +270,9 @@ void V8ContextSnapshot::InstallRuntimeEnabledFeatures(
                                           .As<v8::Object>();
     V8Node::InstallRuntimeEnabledFeatures(
         isolate, world, v8::Local<v8::Object>(), prototype, interface);
+    type->InstallConditionalFeatures(context, world, v8::Local<v8::Object>(),
+                                     prototype, interface,
+                                     type->domTemplate(isolate, world));
     InstallOriginTrialFeatures(type, script_state, prototype, interface);
   }
 }

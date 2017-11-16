@@ -118,13 +118,27 @@ class {{v8_class}} {
      * a C++ pointer to the DOM object (if the object is not in oilpan) #}
   static const int internalFieldCount = kV8DefaultWrapperInternalFieldCount;
   {# End custom internal fields #}
-  {% if prepare_prototype_and_interface_object_func %}
-  {{exported}}static void preparePrototypeAndInterfaceObject(v8::Local<v8::Context>, const DOMWrapperWorld&, v8::Local<v8::Object> prototypeObject, v8::Local<v8::Function> interfaceObject, v8::Local<v8::FunctionTemplate> interfaceTemplate);
+
+  {% if install_conditional_features_func %}
+  {{exported}}static void InstallConditionalFeatures(
+      v8::Local<v8::Context>,
+      const DOMWrapperWorld&,
+      v8::Local<v8::Object> instanceObject,
+      v8::Local<v8::Object> prototypeObject,
+      v8::Local<v8::Function> interfaceObject,
+      v8::Local<v8::FunctionTemplate> interfaceTemplate);
   {% elif has_partial_interface %}
-  {{exported}}static void preparePrototypeAndInterfaceObject(v8::Local<v8::Context>, const DOMWrapperWorld&, v8::Local<v8::Object> prototypeObject, v8::Local<v8::Function> interfaceObject, v8::Local<v8::FunctionTemplate> interfaceTemplate) {}
+  {{exported}}static void InstallConditionalFeatures(
+      v8::Local<v8::Context>,
+      const DOMWrapperWorld&,
+      v8::Local<v8::Object> instanceObject,
+      v8::Local<v8::Object> prototypeObject,
+      v8::Local<v8::Function> interfaceObject,
+      v8::Local<v8::FunctionTemplate> interfaceTemplate) {}
   {% endif %}
   {% if has_install_conditional_features_on_global_func %}
-  {{exported}}static void InstallConditionalFeaturesOnGlobal(v8::Local<v8::Context>, const DOMWrapperWorld&);
+  {{exported}}static void InstallConditionalFeaturesOnGlobal(
+      v8::Local<v8::Context>, const DOMWrapperWorld&);
   {% endif %}{# has_install_conditional_features_on_global_func #}
 
   {% if has_partial_interface %}
@@ -132,7 +146,7 @@ class {{v8_class}} {
       InstallTemplateFunction,
       InstallRuntimeEnabledFeaturesFunction,
       InstallRuntimeEnabledFeaturesOnTemplateFunction,
-      PreparePrototypeAndInterfaceObjectFunction);
+      InstallConditionalFeaturesFunction);
   {{exported}}static void install{{v8_class}}Template(v8::Isolate*, const DOMWrapperWorld&, v8::Local<v8::FunctionTemplate> interfaceTemplate);
   {% for method in methods if method.overloads and method.overloads.has_partial_overloads %}
   {{exported}}static void register{{method.name | blink_capitalize}}MethodForPartialInterface(void (*)(const v8::FunctionCallbackInfo<v8::Value>&));

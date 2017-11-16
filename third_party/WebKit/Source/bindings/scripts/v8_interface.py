@@ -411,18 +411,14 @@ def interface_context(interface, interfaces):
 
     # Conditionally enabled attributes
     conditionally_enabled_attributes = v8_attributes.filter_conditionally_enabled(attributes)
-    conditionally_enabled_attributes_on_prototype_or_interface = (  # pylint: disable=invalid-name
-        [attr for attr in conditionally_enabled_attributes if attr['on_prototype'] or attr['on_interface']])
-    conditionally_enabled_constructors = (
-        [attr for attr in conditionally_enabled_attributes if attr['constructor_type']])
-    has_conditionally_enabled_secure_attributes = any(  # pylint: disable=invalid-name
-        v8_attributes.is_secure_context(attribute) for attribute in conditionally_enabled_attributes)
+    conditional_attributes = [attr for attr in conditionally_enabled_attributes if not attr['constructor_type']]
+    conditional_interface_objects = [attr for attr in conditionally_enabled_attributes if attr['constructor_type']]
+    has_conditional_secure_attributes = any(  # pylint: disable=invalid-name
+        v8_attributes.is_secure_context(attr) for attr in conditional_attributes)
     context.update({
-        'conditionally_enabled_attributes': {
-            'on_prototype_or_interface': conditionally_enabled_attributes_on_prototype_or_interface,
-            'constructor_type': conditionally_enabled_constructors,
-        },
-        'has_conditionally_enabled_secure_attributes': has_conditionally_enabled_secure_attributes,
+        'conditional_attributes': conditional_attributes,
+        'conditional_interface_objects': conditional_interface_objects,
+        'has_conditional_secure_attributes': has_conditional_secure_attributes,
     })
 
     # Methods
@@ -434,13 +430,13 @@ def interface_context(interface, interfaces):
     })
 
     # Conditionally enabled methods
-    conditionally_enabled_methods = v8_methods.filter_conditionally_enabled(methods, interface.is_partial)
-    has_conditionally_enabled_secure_methods = any(  # pylint: disable=invalid-name
-        v8_methods.is_secure_context(method) for method in conditionally_enabled_methods)
+    conditional_methods = v8_methods.filter_conditionally_enabled(methods, interface.is_partial)
+    has_conditional_secure_methods = any(  # pylint: disable=invalid-name
+        v8_methods.is_secure_context(method) for method in conditional_methods)
     context.update({
-        'has_conditionally_enabled_secure_methods':
-            has_conditionally_enabled_secure_methods,
-        'conditionally_enabled_methods': conditionally_enabled_methods,
+        'has_conditional_secure_methods':
+            has_conditional_secure_methods,
+        'conditional_methods': conditional_methods,
     })
 
     # Window.idl in Blink has indexed properties, but the spec says Window
@@ -456,13 +452,15 @@ def interface_context(interface, interfaces):
     })
 
     # Conditionally enabled members
-    prepare_prototype_and_interface_object_func = None  # pylint: disable=invalid-name
-    if unscopables or conditionally_enabled_attributes_on_prototype_or_interface or conditionally_enabled_methods:
-        prepare_prototype_and_interface_object_func = '%s::preparePrototypeAndInterfaceObject' % v8_class_name_or_partial  # pylint: disable=invalid-name
+    install_conditional_features_func = None  # pylint: disable=invalid-name
+    if unscopables or conditional_attributes or conditional_methods:
+        install_conditional_features_func = (  # pylint: disable=invalid-name
+            v8_class_name_or_partial + '::InstallConditionalFeatures')
+    has_install_conditional_features_on_global_func = bool(conditional_interface_objects)  # pylint: disable=invalid-name
 
     context.update({
-        'prepare_prototype_and_interface_object_func': prepare_prototype_and_interface_object_func,
-        'has_install_conditional_features_on_global_func': bool(conditionally_enabled_constructors),
+        'install_conditional_features_func': install_conditional_features_func,
+        'has_install_conditional_features_on_global_func': has_install_conditional_features_on_global_func,
     })
 
     context.update({

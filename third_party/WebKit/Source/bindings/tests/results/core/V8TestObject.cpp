@@ -90,7 +90,7 @@ const WrapperTypeInfo V8TestObject::wrapperTypeInfo = {
     V8TestObject::domTemplate,
     V8TestObject::Trace,
     V8TestObject::TraceWrappers,
-    V8TestObject::preparePrototypeAndInterfaceObject,
+    V8TestObject::InstallConditionalFeatures,
     "TestObject",
     nullptr,
     WrapperTypeInfo::kWrapperTypeObjectPrototype,
@@ -13825,25 +13825,49 @@ TestObject* NativeValueTraits<TestObject>::NativeValue(v8::Isolate* isolate, v8:
   return nativeValue;
 }
 
-void V8TestObject::preparePrototypeAndInterfaceObject(v8::Local<v8::Context> context, const DOMWrapperWorld& world, v8::Local<v8::Object> prototypeObject, v8::Local<v8::Function> interfaceObject, v8::Local<v8::FunctionTemplate> interfaceTemplate) {
+void V8TestObject::InstallConditionalFeatures(
+    v8::Local<v8::Context> context,
+    const DOMWrapperWorld& world,
+    v8::Local<v8::Object> instanceObject,
+    v8::Local<v8::Object> prototypeObject,
+    v8::Local<v8::Function> interfaceObject,
+    v8::Local<v8::FunctionTemplate> interfaceTemplate) {
+  CHECK(!interfaceTemplate.IsEmpty());
+  DCHECK((!prototypeObject.IsEmpty() && !interfaceObject.IsEmpty()) ||
+         !instanceObject.IsEmpty());
+
   v8::Isolate* isolate = context->GetIsolate();
 
-  v8::Local<v8::Name> unscopablesSymbol(v8::Symbol::GetUnscopables(isolate));
-  v8::Local<v8::Object> unscopables;
-  if (V8CallBoolean(prototypeObject->HasOwnProperty(context, unscopablesSymbol)))
-    unscopables = prototypeObject->Get(context, unscopablesSymbol).ToLocalChecked().As<v8::Object>();
-  else
-    unscopables = v8::Object::New(isolate);
-  unscopables->CreateDataProperty(context, V8AtomicString(isolate, "unscopableLongAttribute"), v8::True(isolate)).FromJust();
-  unscopables->CreateDataProperty(context, V8AtomicString(isolate, "unscopableOriginTrialEnabledLongAttribute"), v8::True(isolate)).FromJust();
-  if (RuntimeEnabledFeatures::FeatureNameEnabled()) {
-    unscopables->CreateDataProperty(context, V8AtomicString(isolate, "unscopableRuntimeEnabledLongAttribute"), v8::True(isolate)).FromJust();
+  if (!prototypeObject.IsEmpty()) {
+    v8::Local<v8::Name> unscopablesSymbol(v8::Symbol::GetUnscopables(isolate));
+    v8::Local<v8::Object> unscopables;
+    bool has_unscopables;
+    if (prototypeObject->HasOwnProperty(context, unscopablesSymbol).To(&has_unscopables) && has_unscopables) {
+      unscopables = prototypeObject->Get(context, unscopablesSymbol).ToLocalChecked().As<v8::Object>();
+    } else {
+      unscopables = v8::Object::New(isolate);
+    }
+    unscopables->CreateDataProperty(
+        context, V8AtomicString(isolate, "unscopableLongAttribute"), v8::True(isolate))
+        .FromJust();
+    unscopables->CreateDataProperty(
+        context, V8AtomicString(isolate, "unscopableOriginTrialEnabledLongAttribute"), v8::True(isolate))
+        .FromJust();
+    if (RuntimeEnabledFeatures::FeatureNameEnabled()) {
+      unscopables->CreateDataProperty(
+          context, V8AtomicString(isolate, "unscopableRuntimeEnabledLongAttribute"), v8::True(isolate))
+          .FromJust();
+    }
+    if (RuntimeEnabledFeatures::FeatureNameEnabled()) {
+      unscopables->CreateDataProperty(
+          context, V8AtomicString(isolate, "unscopableRuntimeEnabledVoidMethod"), v8::True(isolate))
+          .FromJust();
+    }
+    unscopables->CreateDataProperty(
+        context, V8AtomicString(isolate, "unscopableVoidMethod"), v8::True(isolate))
+        .FromJust();
+    prototypeObject->CreateDataProperty(context, unscopablesSymbol, unscopables).FromJust();
   }
-  if (RuntimeEnabledFeatures::FeatureNameEnabled()) {
-    unscopables->CreateDataProperty(context, V8AtomicString(isolate, "unscopableRuntimeEnabledVoidMethod"), v8::True(isolate)).FromJust();
-  }
-  unscopables->CreateDataProperty(context, V8AtomicString(isolate, "unscopableVoidMethod"), v8::True(isolate)).FromJust();
-  prototypeObject->CreateDataProperty(context, unscopablesSymbol, unscopables).FromJust();
 }
 
 }  // namespace blink

@@ -37,7 +37,7 @@ const WrapperTypeInfo V8TestInterface5::wrapperTypeInfo = {
     V8TestInterface5::domTemplate,
     V8TestInterface5::Trace,
     V8TestInterface5::TraceWrappers,
-    V8TestInterface5::preparePrototypeAndInterfaceObject,
+    V8TestInterface5::InstallConditionalFeatures,
     "TestInterface5",
     &V8TestInterfaceEmpty::wrapperTypeInfo,
     WrapperTypeInfo::kWrapperTypeObjectPrototype,
@@ -1068,64 +1068,77 @@ TestInterface5Implementation* NativeValueTraits<TestInterface5Implementation>::N
   return nativeValue;
 }
 
-void V8TestInterface5::preparePrototypeAndInterfaceObject(v8::Local<v8::Context> context, const DOMWrapperWorld& world, v8::Local<v8::Object> prototypeObject, v8::Local<v8::Function> interfaceObject, v8::Local<v8::FunctionTemplate> interfaceTemplate) {
+void V8TestInterface5::InstallConditionalFeatures(
+    v8::Local<v8::Context> context,
+    const DOMWrapperWorld& world,
+    v8::Local<v8::Object> instanceObject,
+    v8::Local<v8::Object> prototypeObject,
+    v8::Local<v8::Function> interfaceObject,
+    v8::Local<v8::FunctionTemplate> interfaceTemplate) {
+  CHECK(!interfaceTemplate.IsEmpty());
+  DCHECK((!prototypeObject.IsEmpty() && !interfaceObject.IsEmpty()) ||
+         !instanceObject.IsEmpty());
+
   v8::Isolate* isolate = context->GetIsolate();
+
   v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
   ExecutionContext* executionContext = ToExecutionContext(context);
   DCHECK(executionContext);
 
-  if (executionContext && (executionContext->IsDocument())) {
-    static const V8DOMConfiguration::AccessorConfiguration accessor_configurations[] = {
-        { "windowExposedAttribute", V8TestInterface5::windowExposedAttributeAttributeGetterCallback, V8TestInterface5::windowExposedAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds },
-    };
-    V8DOMConfiguration::InstallAccessors(
-        isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject,
-        signature, accessor_configurations,
-        WTF_ARRAY_LENGTH(accessor_configurations));
-  }
-  if (executionContext && (executionContext->IsWorkerGlobalScope())) {
-    static const V8DOMConfiguration::AccessorConfiguration accessor_configurations[] = {
-        { "workerExposedAttribute", V8TestInterface5::workerExposedAttributeAttributeGetterCallback, V8TestInterface5::workerExposedAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds },
-    };
-    V8DOMConfiguration::InstallAccessors(
-        isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject,
-        signature, accessor_configurations,
-        WTF_ARRAY_LENGTH(accessor_configurations));
-  }
-  if (executionContext && (executionContext->IsWorkerGlobalScope())) {
-    const V8DOMConfiguration::MethodConfiguration workerExposedMethodMethodConfiguration[] = {
-      {"workerExposedMethod", V8TestInterface5::workerExposedMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds}
-    };
-    for (const auto& methodConfig : workerExposedMethodMethodConfiguration)
-      V8DOMConfiguration::InstallMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, methodConfig);
-  }
-  if (executionContext && (executionContext->IsDocument())) {
-    const V8DOMConfiguration::MethodConfiguration windowExposedMethodMethodConfiguration[] = {
-      {"windowExposedMethod", V8TestInterface5::windowExposedMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds}
-    };
-    for (const auto& methodConfig : windowExposedMethodMethodConfiguration)
-      V8DOMConfiguration::InstallMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, methodConfig);
-  }
-  if (executionContext && (executionContext->IsWorkerGlobalScope())) {
-    const V8DOMConfiguration::MethodConfiguration workerExposedStaticMethodMethodConfiguration[] = {
-      {"workerExposedStaticMethod", V8TestInterface5::workerExposedStaticMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnInterface, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds}
-    };
-    for (const auto& methodConfig : workerExposedStaticMethodMethodConfiguration)
-      V8DOMConfiguration::InstallMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, methodConfig);
-  }
-  if (executionContext && (executionContext->IsDocument())) {
-    const V8DOMConfiguration::MethodConfiguration windowExposedStaticMethodMethodConfiguration[] = {
-      {"windowExposedStaticMethod", V8TestInterface5::windowExposedStaticMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnInterface, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds}
-    };
-    for (const auto& methodConfig : windowExposedStaticMethodMethodConfiguration)
-      V8DOMConfiguration::InstallMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, methodConfig);
-  }
-  if (executionContext && (executionContext->IsDocument() || executionContext->IsServiceWorkerGlobalScope())) {
-    const V8DOMConfiguration::MethodConfiguration windowAndServiceWorkerExposedMethodMethodConfiguration[] = {
-      {"windowAndServiceWorkerExposedMethod", V8TestInterface5::windowAndServiceWorkerExposedMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds}
-    };
-    for (const auto& methodConfig : windowAndServiceWorkerExposedMethodMethodConfiguration)
-      V8DOMConfiguration::InstallMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, methodConfig);
+  if (!prototypeObject.IsEmpty() || !interfaceObject.IsEmpty()) {
+    if (executionContext && (executionContext->IsDocument())) {
+      static const V8DOMConfiguration::AccessorConfiguration accessor_configurations[] = {
+          { "windowExposedAttribute", V8TestInterface5::windowExposedAttributeAttributeGetterCallback, V8TestInterface5::windowExposedAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds },
+      };
+      V8DOMConfiguration::InstallAccessors(
+          isolate, world, instanceObject, prototypeObject, interfaceObject,
+          signature, accessor_configurations,
+          WTF_ARRAY_LENGTH(accessor_configurations));
+    }
+    if (executionContext && (executionContext->IsWorkerGlobalScope())) {
+      static const V8DOMConfiguration::AccessorConfiguration accessor_configurations[] = {
+          { "workerExposedAttribute", V8TestInterface5::workerExposedAttributeAttributeGetterCallback, V8TestInterface5::workerExposedAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds },
+      };
+      V8DOMConfiguration::InstallAccessors(
+          isolate, world, instanceObject, prototypeObject, interfaceObject,
+          signature, accessor_configurations,
+          WTF_ARRAY_LENGTH(accessor_configurations));
+    }
+    if (executionContext && (executionContext->IsWorkerGlobalScope())) {
+      const V8DOMConfiguration::MethodConfiguration workerExposedMethodMethodConfiguration[] = {
+        {"workerExposedMethod", V8TestInterface5::workerExposedMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds}
+      };
+      for (const auto& methodConfig : workerExposedMethodMethodConfiguration)
+        V8DOMConfiguration::InstallMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, methodConfig);
+    }
+    if (executionContext && (executionContext->IsDocument())) {
+      const V8DOMConfiguration::MethodConfiguration windowExposedMethodMethodConfiguration[] = {
+        {"windowExposedMethod", V8TestInterface5::windowExposedMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds}
+      };
+      for (const auto& methodConfig : windowExposedMethodMethodConfiguration)
+        V8DOMConfiguration::InstallMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, methodConfig);
+    }
+    if (executionContext && (executionContext->IsWorkerGlobalScope())) {
+      const V8DOMConfiguration::MethodConfiguration workerExposedStaticMethodMethodConfiguration[] = {
+        {"workerExposedStaticMethod", V8TestInterface5::workerExposedStaticMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnInterface, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds}
+      };
+      for (const auto& methodConfig : workerExposedStaticMethodMethodConfiguration)
+        V8DOMConfiguration::InstallMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, methodConfig);
+    }
+    if (executionContext && (executionContext->IsDocument())) {
+      const V8DOMConfiguration::MethodConfiguration windowExposedStaticMethodMethodConfiguration[] = {
+        {"windowExposedStaticMethod", V8TestInterface5::windowExposedStaticMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnInterface, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds}
+      };
+      for (const auto& methodConfig : windowExposedStaticMethodMethodConfiguration)
+        V8DOMConfiguration::InstallMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, methodConfig);
+    }
+    if (executionContext && (executionContext->IsDocument() || executionContext->IsServiceWorkerGlobalScope())) {
+      const V8DOMConfiguration::MethodConfiguration windowAndServiceWorkerExposedMethodMethodConfiguration[] = {
+        {"windowAndServiceWorkerExposedMethod", V8TestInterface5::windowAndServiceWorkerExposedMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds}
+      };
+      for (const auto& methodConfig : windowAndServiceWorkerExposedMethodMethodConfiguration)
+        V8DOMConfiguration::InstallMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, methodConfig);
+    }
   }
 }
 

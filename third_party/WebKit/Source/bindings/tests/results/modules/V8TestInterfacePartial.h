@@ -31,7 +31,13 @@ class V8TestInterfacePartial {
  public:
   static void initialize();
   static void implementsCustomVoidMethodMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
-  static void preparePrototypeAndInterfaceObject(v8::Local<v8::Context>, const DOMWrapperWorld&, v8::Local<v8::Object>, v8::Local<v8::Function>, v8::Local<v8::FunctionTemplate>);
+  static void InstallConditionalFeatures(
+      v8::Local<v8::Context>,
+      const DOMWrapperWorld&,
+      v8::Local<v8::Object> instance,
+      v8::Local<v8::Object> prototype,
+      v8::Local<v8::Function> interface,
+      v8::Local<v8::FunctionTemplate> interface_template);
 
   static void installOriginTrialPartialFeature(ScriptState*, v8::Local<v8::Object> instance);
   static void installOriginTrialPartialFeature(v8::Isolate*, const DOMWrapperWorld&, v8::Local<v8::Object> instance, v8::Local<v8::Object> prototype, v8::Local<v8::Function> interface);
