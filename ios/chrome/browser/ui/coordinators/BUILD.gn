@@ -26,6 +26,8 @@ source_set("test_support") {
     "browser_coordinator_test.mm",
     "browser_coordinator_test_util.h",
     "browser_coordinator_test_util.mm",
+    "test_browser_coordinator.h",
+    "test_browser_coordinator.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
