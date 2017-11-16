@@ -501,7 +501,8 @@ v8::MaybeLocal<v8::Module> V8ScriptRunner::CompileModule(
     AccessControlStatus access_control_status,
     const TextPosition& start_position,
     const ReferrerScriptInfo& referrer_info) {
-  TRACE_EVENT1("v8", "v8.compileModule", "fileName", file_name.Utf8());
+  TRACE_EVENT1("v8,devtools.timeline", "v8.compileModule", "fileName",
+               file_name.Utf8());
 
   v8::ScriptOrigin origin(
       V8String(isolate, file_name),
@@ -695,7 +696,7 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::EvaluateModule(
     v8::Local<v8::Module> module,
     v8::Local<v8::Context> context,
     v8::Isolate* isolate) {
-  TRACE_EVENT0("v8", "v8.evaluateModule");
+  TRACE_EVENT0("v8,devtools.timeline", "v8.evaluateModule");
   RUNTIME_CALL_TIMER_SCOPE(isolate, RuntimeCallStats::CounterId::kV8);
   v8::MicrotasksScope microtasks_scope(isolate,
                                        v8::MicrotasksScope::kRunMicrotasks);
