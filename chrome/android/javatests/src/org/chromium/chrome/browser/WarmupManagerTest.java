@@ -202,9 +202,9 @@ public class WarmupManagerTest {
     public void testPreconnect() throws Exception {
         EmbeddedTestServer server = new EmbeddedTestServer();
         try {
-            // The predictor prepares 1 connection when asked to preconnect. Initializes the
-            // semaphore to be unlocked after 1 connection.
-            final Semaphore connectionsSemaphore = new Semaphore(0);
+            // The predictor prepares 2 connections when asked to preconnect. Initializes the
+            // semaphore to be unlocked after 2 connections.
+            final Semaphore connectionsSemaphore = new Semaphore(1 - 2);
 
             // Cannot use EmbeddedTestServer#createAndStartServer(), as we need to add the
             // connection listener.
@@ -224,7 +224,7 @@ public class WarmupManagerTest {
             if (!connectionsSemaphore.tryAcquire(5, TimeUnit.SECONDS)) {
                 // Starts at -1.
                 int actualConnections = connectionsSemaphore.availablePermits() + 1;
-                Assert.fail("Expected 1 connection, got " + actualConnections);
+                Assert.fail("Expected 2 connections, got " + actualConnections);
             }
         } finally {
             server.stopAndDestroyServer();

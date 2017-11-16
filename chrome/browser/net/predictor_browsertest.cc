@@ -30,7 +30,6 @@
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/net/predictor.h"
-#include "chrome/browser/predictors/loading_predictor_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -515,9 +514,7 @@ class PredictorBrowserTest : public InProcessBrowserTest {
         Predictor::kMaxSpeculativeResolveQueueDelayMs + 300);
     rule_based_resolver_proc_->AddRuleWithLatency("delay.google.com",
                                                   "127.0.0.1", 1000 * 60);
-    scoped_feature_list_.InitWithFeatures(
-        {features::kPreconnectMore},
-        {predictors::kSpeculativePreconnectFeature});
+    scoped_feature_list_.InitAndEnableFeature(features::kPreconnectMore);
   }
 
   ~PredictorBrowserTest() override {}
