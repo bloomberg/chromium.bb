@@ -73,11 +73,9 @@ class AV1Trans64x64HT : public libaom_test::TransformTestBase,
   IhtFunc inv_txfm_;
 };
 
-TEST_P(AV1Trans64x64HT, AccuracyCheck) { RunAccuracyCheck(4, 0.2); }
 TEST_P(AV1Trans64x64HT, CoeffCheck) { RunCoeffCheck(); }
 TEST_P(AV1Trans64x64HT, MemCheck) { RunMemCheck(); }
 TEST_P(AV1Trans64x64HT, InvCoeffCheck) { RunInvCoeffCheck(); }
-TEST_P(AV1Trans64x64HT, InvAccuracyCheck) { RunInvAccuracyCheck(4); }
 
 using std::tr1::make_tuple;
 
