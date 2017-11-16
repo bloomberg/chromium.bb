@@ -830,6 +830,7 @@ syncer::SyncError TemplateURLService::ProcessSyncChanges(
   DCHECK(loaded_);
 
   base::AutoReset<bool> processing_changes(&processing_syncer_changes_, true);
+  bool should_notify = false;
 
   // We've started syncing, so set our origin member to the base Sync value.
   // As we move through Sync Code, we may set this to increasingly specific
@@ -888,7 +889,7 @@ syncer::SyncError TemplateURLService::ProcessSyncChanges(
         TemplateURLData data(existing_turl->data());
         data.SetKeyword(updated_keyword);
         TemplateURL new_turl(data);
-        Update(existing_turl, new_turl);
+        should_notify |= UpdateNoNotify(existing_turl, new_turl);
 
         syncer::SyncData sync_data = CreateSyncDataFromTemplateURL(new_turl);
         new_changes.push_back(syncer::SyncChange(FROM_HERE,
@@ -899,7 +900,8 @@ syncer::SyncError TemplateURLService::ProcessSyncChanges(
         continue;
       }
 
-      Remove(existing_turl);
+      RemoveNoNotify(existing_turl);
+      should_notify = true;
     } else if (iter->change_type() == syncer::SyncChange::ACTION_ADD) {
       if (existing_turl) {
         error = sync_error_factory_->CreateAndUploadError(
@@ -910,8 +912,8 @@ syncer::SyncError TemplateURLService::ProcessSyncChanges(
       const std::string guid = turl->sync_guid();
       if (existing_keyword_turl) {
         // Resolve any conflicts so we can safely add the new entry.
-        ResolveSyncKeywordConflict(turl.get(), existing_keyword_turl,
-                                   &new_changes);
+        should_notify |= ResolveSyncKeywordConflict(
+            turl.get(), existing_keyword_turl, &new_changes);
       }
       base::AutoReset<DefaultSearchChangeOrigin> change_origin(
           &dsp_change_origin_, DSP_CHANGE_SYNC_ADD);
@@ -921,8 +923,10 @@ syncer::SyncError TemplateURLService::ProcessSyncChanges(
       std::unique_ptr<TemplateURL> added_ptr =
           base::MakeUnique<TemplateURL>(data);
       TemplateURL* added = added_ptr.get();
-      if (Add(std::move(added_ptr)))
+      if (AddNoNotify(std::move(added_ptr), true)) {
+        should_notify = true;
         MaybeUpdateDSEAfterSync(added);
+      }
     } else if (iter->change_type() == syncer::SyncChange::ACTION_UPDATE) {
       if (!existing_turl) {
         error = sync_error_factory_->CreateAndUploadError(
@@ -933,17 +937,23 @@ syncer::SyncError TemplateURLService::ProcessSyncChanges(
       if (existing_keyword_turl && (existing_keyword_turl != existing_turl)) {
         // Resolve any conflicts with other entries so we can safely update the
         // keyword.
-        ResolveSyncKeywordConflict(turl.get(), existing_keyword_turl,
-                                   &new_changes);
+        should_notify |= ResolveSyncKeywordConflict(
+            turl.get(), existing_keyword_turl, &new_changes);
       }
-      if (Update(existing_turl, *turl))
+      if (UpdateNoNotify(existing_turl, *turl)) {
+        should_notify = true;
         MaybeUpdateDSEAfterSync(existing_turl);
+      }
     } else {
       // We've unexpectedly received an ACTION_INVALID.
       error = sync_error_factory_->CreateAndUploadError(
           FROM_HERE,
           "ProcessSyncChanges received an ACTION_INVALID");
     }
+  }
+
+  if (should_notify) {
+    NotifyObservers();
   }
 
   // If something went wrong, we want to prematurely exit to avoid pushing
@@ -982,6 +992,7 @@ syncer::SyncMergeResult TemplateURLService::MergeDataAndStartSyncing(
   // We do a lot of calls to Add/Remove/ResetTemplateURL here, so ensure we
   // don't step on our own toes.
   base::AutoReset<bool> processing_changes(&processing_syncer_changes_, true);
+  bool should_notify = false;
 
   // We've started syncing, so set our origin member to the base Sync value.
   // As we move through Sync Code, we may set this to increasingly specific
@@ -1034,7 +1045,7 @@ syncer::SyncMergeResult TemplateURLService::MergeDataAndStartSyncing(
         // TemplateURLID and the TemplateURL may have to be reparsed. This
         // also makes the local data's last_modified timestamp equal to Sync's,
         // avoiding an Update on the next MergeData call.
-        Update(local_turl, *sync_turl);
+        should_notify |= UpdateNoNotify(local_turl, *sync_turl);
         merge_result.set_num_items_modified(
             merge_result.num_items_modified() + 1);
       } else if (sync_turl->last_modified() < local_turl->last_modified()) {
@@ -1051,9 +1062,14 @@ syncer::SyncMergeResult TemplateURLService::MergeDataAndStartSyncing(
       // into our local model. This will handle any conflicts with local (and
       // already-synced) TemplateURLs. It will prefer to keep entries from Sync
       // over not-yet-synced TemplateURLs.
-      MergeInSyncTemplateURL(sync_turl.get(), sync_data_map, &new_changes,
-                             &local_data_map, &merge_result);
+      should_notify |=
+          MergeInSyncTemplateURL(sync_turl.get(), sync_data_map, &new_changes,
+                                 &local_data_map, &merge_result);
     }
+  }
+
+  if (should_notify) {
+    NotifyObservers();
   }
 
   // The remaining SyncData in local_data_map should be everything that needs to
@@ -1114,13 +1130,9 @@ void TemplateURLService::ProcessTemplateURLChange(
   if (turl->type() == TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION)
     return;
 
-  syncer::SyncChangeList changes;
-
   syncer::SyncData sync_data = CreateSyncDataFromTemplateURL(*turl);
-  changes.push_back(syncer::SyncChange(from_here,
-                                       type,
-                                       sync_data));
-
+  syncer::SyncChangeList changes = {
+      syncer::SyncChange(from_here, type, sync_data)};
   sync_processor_->ProcessSyncChanges(FROM_HERE, changes);
 }
 
@@ -2059,14 +2071,14 @@ void TemplateURLService::UpdateProvidersCreatedByPolicy(
   }
 }
 
-void TemplateURLService::ResetTemplateURLGUID(TemplateURL* url,
+bool TemplateURLService::ResetTemplateURLGUID(TemplateURL* url,
                                               const std::string& guid) {
   DCHECK(loaded_);
   DCHECK(!guid.empty());
 
   TemplateURLData data(url->data());
   data.sync_guid = guid;
-  UpdateNoNotify(url, TemplateURL(data));
+  return UpdateNoNotify(url, TemplateURL(data));
 }
 
 base::string16 TemplateURLService::UniquifyKeyword(const TemplateURL& turl,
@@ -2107,7 +2119,7 @@ bool TemplateURLService::IsLocalTemplateURLBetter(
          (prefer_local_default && local_turl == GetDefaultSearchProvider());
 }
 
-void TemplateURLService::ResolveSyncKeywordConflict(
+bool TemplateURLService::ResolveSyncKeywordConflict(
     TemplateURL* unapplied_sync_turl,
     TemplateURL* applied_sync_turl,
     syncer::SyncChangeList* change_list) {
@@ -2118,6 +2130,7 @@ void TemplateURLService::ResolveSyncKeywordConflict(
   DCHECK_EQ(applied_sync_turl->keyword(), unapplied_sync_turl->keyword());
   DCHECK_EQ(TemplateURL::NORMAL, applied_sync_turl->type());
 
+  bool should_notify = false;
   // Both |unapplied_sync_turl| and |applied_sync_turl| are known to Sync, so
   // don't delete either of them. Instead, determine which is "better" and
   // uniquify the other one, sending an update to the server for the updated
@@ -2136,7 +2149,7 @@ void TemplateURLService::ResolveSyncKeywordConflict(
     // Update |applied_sync_turl| in the local model with the new keyword.
     TemplateURLData data(applied_sync_turl->data());
     data.SetKeyword(new_keyword);
-    Update(applied_sync_turl, TemplateURL(data));
+    should_notify = UpdateNoNotify(applied_sync_turl, TemplateURL(data));
   }
   // The losing TemplateURL should have their keyword updated. Send a change to
   // the server to reflect this change.
@@ -2144,9 +2157,11 @@ void TemplateURLService::ResolveSyncKeywordConflict(
   change_list->push_back(syncer::SyncChange(FROM_HERE,
       syncer::SyncChange::ACTION_UPDATE,
       sync_data));
+
+  return should_notify;
 }
 
-void TemplateURLService::MergeInSyncTemplateURL(
+bool TemplateURLService::MergeInSyncTemplateURL(
     TemplateURL* sync_turl,
     const SyncDataMap& sync_data,
     syncer::SyncChangeList* change_list,
@@ -2159,6 +2174,7 @@ void TemplateURLService::MergeInSyncTemplateURL(
   TemplateURL* conflicting_turl =
       FindNonExtensionTemplateURLForKeyword(sync_turl->keyword());
   bool should_add_sync_turl = true;
+  bool should_notify = false;
 
   // Resolve conflicts with local TemplateURLs.
   if (conflicting_turl) {
@@ -2168,7 +2184,8 @@ void TemplateURLService::MergeInSyncTemplateURL(
       // remove it. In this case, we want to uniquify the worse one and send an
       // update for the changed keyword to sync. We can reuse the logic from
       // ResolveSyncKeywordConflict for this.
-      ResolveSyncKeywordConflict(sync_turl, conflicting_turl, change_list);
+      should_notify |=
+          ResolveSyncKeywordConflict(sync_turl, conflicting_turl, change_list);
       merge_result->set_num_items_modified(
           merge_result->num_items_modified() + 1);
     } else {
@@ -2177,7 +2194,8 @@ void TemplateURLService::MergeInSyncTemplateURL(
       // allow the entry from Sync to overtake it in the model.
       const std::string guid = conflicting_turl->sync_guid();
       if (IsLocalTemplateURLBetter(conflicting_turl, sync_turl)) {
-        ResetTemplateURLGUID(conflicting_turl, sync_turl->sync_guid());
+        should_notify |=
+            ResetTemplateURLGUID(conflicting_turl, sync_turl->sync_guid());
         syncer::SyncData sync_data =
             CreateSyncDataFromTemplateURL(*conflicting_turl);
         change_list->push_back(syncer::SyncChange(
@@ -2192,7 +2210,8 @@ void TemplateURLService::MergeInSyncTemplateURL(
         // We guarantee that this isn't the local search provider. Otherwise,
         // local would have won.
         DCHECK(conflicting_turl != GetDefaultSearchProvider());
-        Remove(conflicting_turl);
+        RemoveNoNotify(conflicting_turl);
+        should_notify = true;
         merge_result->set_num_items_deleted(
             merge_result->num_items_deleted() + 1);
       }
@@ -2227,12 +2246,16 @@ void TemplateURLService::MergeInSyncTemplateURL(
                                   false)) {
       std::string guid = conflicting_prepopulated_turl->sync_guid();
       if (conflicting_prepopulated_turl == default_search_provider_) {
+        // ApplyDefaultSearchChange() may change something that requires a
+        // notification, but if so, it will send out that notification, and we
+        // are not involved, thus we do not update |should_notify| here.
         ApplyDefaultSearchChange(&sync_turl->data(),
                                  DefaultSearchManager::FROM_USER);
         merge_result->set_num_items_modified(
             merge_result->num_items_modified() + 1);
       } else {
-        Remove(conflicting_prepopulated_turl);
+        RemoveNoNotify(conflicting_prepopulated_turl);
+        should_notify = true;
         merge_result->set_num_items_deleted(merge_result->num_items_deleted() +
                                             1);
       }
@@ -2250,10 +2273,14 @@ void TemplateURLService::MergeInSyncTemplateURL(
     TemplateURL* added = added_ptr.get();
     base::AutoReset<DefaultSearchChangeOrigin> change_origin(
         &dsp_change_origin_, DSP_CHANGE_SYNC_ADD);
-    if (Add(std::move(added_ptr)))
+    if (AddNoNotify(std::move(added_ptr), true)) {
+      should_notify = true;
       MaybeUpdateDSEAfterSync(added);
+    }
     merge_result->set_num_items_added(merge_result->num_items_added() + 1);
   }
+
+  return should_notify;
 }
 
 void TemplateURLService::PatchMissingSyncGUIDs(

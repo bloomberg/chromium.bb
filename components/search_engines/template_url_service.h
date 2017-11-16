@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "base/callback_list.h"
+#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -633,8 +634,10 @@ class TemplateURLService : public WebDataServiceConsumer,
       const TemplateURLData* default_from_prefs);
 
   // Resets the sync GUID of the specified TemplateURL and persists the change
-  // to the database. This does not notify observers.
-  void ResetTemplateURLGUID(TemplateURL* url, const std::string& guid);
+  // to the database. This does not notify observers, but returns if a change
+  // was made. It is the caller's responsibility to call NotifyObservers().
+  bool ResetTemplateURLGUID(TemplateURL* url,
+                            const std::string& guid) WARN_UNUSED_RESULT;
 
   // Attempts to generate a unique keyword for |turl| based on its original
   // keyword. If its keyword is already unique, that is returned. Otherwise, it
@@ -665,10 +668,13 @@ class TemplateURLService : public WebDataServiceConsumer,
   // or applied as an update to an existing TemplateURL.
   // Since both entries are known to Sync and one of their keywords will change,
   // an ACTION_UPDATE will be appended to |change_list| to reflect this change.
-  // Note that |applied_sync_turl| must not be an extension keyword.
-  void ResolveSyncKeywordConflict(TemplateURL* unapplied_sync_turl,
+  // Note that |applied_sync_turl| must not be an extension keyword. This does
+  // not notify observers, but returns if a change was made. It is the caller's
+  // responsibility to call NotifyObservers().
+  bool ResolveSyncKeywordConflict(TemplateURL* unapplied_sync_turl,
                                   TemplateURL* applied_sync_turl,
-                                  syncer::SyncChangeList* change_list);
+                                  syncer::SyncChangeList* change_list)
+      WARN_UNUSED_RESULT;
 
   // Adds |sync_turl| into the local model, possibly removing or updating a
   // local TemplateURL to make room for it. This expects |sync_turl| to be a new
@@ -683,12 +689,18 @@ class TemplateURLService : public WebDataServiceConsumer,
   // sent up to Sync.
   // |merge_result| tracks the changes made to the local model. Added/modified/
   // deleted are updated depending on how the |sync_turl| is merged in.
-  // This should only be called from MergeDataAndStartSyncing.
-  void MergeInSyncTemplateURL(TemplateURL* sync_turl,
+  // This should only be called from MergeDataAndStartSyncing. Some of the
+  // changes performed in this method skip notifying observers, and return
+  // whether the caller needs to invoke NotifyObservers(). Note that some
+  // changes caused by this method may still call NotifyObservers() itself,
+  // particularly when dealing with the default search engine, but these will
+  // not effect the returned bool.
+  bool MergeInSyncTemplateURL(TemplateURL* sync_turl,
                               const SyncDataMap& sync_data,
                               syncer::SyncChangeList* change_list,
                               SyncDataMap* local_data,
-                              syncer::SyncMergeResult* merge_result);
+                              syncer::SyncMergeResult* merge_result)
+      WARN_UNUSED_RESULT;
 
   // Goes through a vector of TemplateURLs and ensure that both the in-memory
   // and database copies have valid sync_guids. This is to fix crbug.com/102038,
