@@ -16,10 +16,6 @@ namespace features {
 const base::Feature kAffiliationBasedMatching = {
     "affiliation-based-matching", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Drop the sync credential if captured for saving, do not offer it for saving.
-const base::Feature kDropSyncCredential = {"drop-sync-credential",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Use HTML based username detector.
 const base::Feature kEnableHtmlBasedUsernameDetector = {
     "EnableHtmlBaseUsernameDetector", base::FEATURE_DISABLED_BY_DEFAULT};

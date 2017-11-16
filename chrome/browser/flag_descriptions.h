@@ -180,9 +180,6 @@ extern const char kDistanceFieldTextDescription[];
 extern const char kDriveSearchInChromeLauncherName[];
 extern const char kDriveSearchInChromeLauncherDescription[];
 
-extern const char kDropSyncCredentialName[];
-extern const char kDropSyncCredentialDescription[];
-
 extern const char kEasyUnlockBluetoothLowEnergyDiscoveryName[];
 extern const char kEasyUnlockBluetoothLowEnergyDiscoveryDescription[];
 

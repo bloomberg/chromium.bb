@@ -1919,9 +1919,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEmbeddedExtensionOptionsDescription, kOsDesktop,
      SINGLE_VALUE_TYPE(extensions::switches::kEnableEmbeddedExtensionOptions)},
 #endif  // ENABLE_EXTENSIONS
-    {"drop-sync-credential", flag_descriptions::kDropSyncCredentialName,
-     flag_descriptions::kDropSyncCredentialDescription, kOsAll,
-     FEATURE_VALUE_TYPE(password_manager::features::kDropSyncCredential)},
 #if !defined(OS_ANDROID)
     {"enable-message-center-new-style-notification",
      flag_descriptions::kMessageCenterNewStyleNotificationName,

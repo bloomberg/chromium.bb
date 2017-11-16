@@ -18,7 +18,6 @@ namespace features {
 // alongside the definition of their values in the .cc file.
 
 extern const base::Feature kAffiliationBasedMatching;
-extern const base::Feature kDropSyncCredential;
 extern const base::Feature kEnableHtmlBasedUsernameDetector;
 extern const base::Feature kEnableManualFallbacksFilling;
 extern const base::Feature kEnableManualFallbacksFillingStandalone;

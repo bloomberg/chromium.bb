@@ -819,40 +819,36 @@ void PasswordManager::OnLoginSuccessful() {
     }
   }
 
-  if (base::FeatureList::IsEnabled(features::kDropSyncCredential)) {
-    DCHECK(provisional_save_manager_->submitted_form());
-    if (!client_->GetStoreResultFilter()->ShouldSave(
-            *provisional_save_manager_->submitted_form())) {
+  DCHECK(provisional_save_manager_->submitted_form());
+  if (!client_->GetStoreResultFilter()->ShouldSave(
+          *provisional_save_manager_->submitted_form())) {
 #if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS)) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
-      // When |username_value| is empty, it's not clear whether the submitted
-      // credentials are really sync credentials. Don't save sync password hash
-      // in that case.
-      if (!provisional_save_manager_->submitted_form()
-               ->username_value.empty()) {
-        password_manager::PasswordStore* store = client_->GetPasswordStore();
-        // May be null in tests.
-        if (store) {
-          bool is_sync_password_change =
-              !provisional_save_manager_->submitted_form()
-                   ->new_password_element.empty();
-          metrics_util::LogSyncPasswordHashChange(
-              is_sync_password_change ? metrics_util::SyncPasswordHashChange::
-                                            CHANGED_IN_CONTENT_AREA
-                                      : metrics_util::SyncPasswordHashChange::
-                                            SAVED_IN_CONTENT_AREA);
-          store->SaveSyncPasswordHash(
-              provisional_save_manager_->submitted_form()->password_value);
-        }
+    // When |username_value| is empty, it's not clear whether the submitted
+    // credentials are really sync credentials. Don't save sync password hash
+    // in that case.
+    if (!provisional_save_manager_->submitted_form()->username_value.empty()) {
+      password_manager::PasswordStore* store = client_->GetPasswordStore();
+      // May be null in tests.
+      if (store) {
+        bool is_sync_password_change =
+            !provisional_save_manager_->submitted_form()
+                 ->new_password_element.empty();
+        metrics_util::LogSyncPasswordHashChange(
+            is_sync_password_change
+                ? metrics_util::SyncPasswordHashChange::CHANGED_IN_CONTENT_AREA
+                : metrics_util::SyncPasswordHashChange::SAVED_IN_CONTENT_AREA);
+        store->SaveSyncPasswordHash(
+            provisional_save_manager_->submitted_form()->password_value);
       }
-#endif
-      provisional_save_manager_->WipeStoreCopyIfOutdated();
-      client_->GetMetricsRecorder().RecordProvisionalSaveFailure(
-          PasswordManagerMetricsRecorder::SYNC_CREDENTIAL, main_frame_url_,
-          provisional_save_manager_->observed_form().origin, logger.get());
-      provisional_save_manager_.reset();
-      return;
     }
+#endif
+    provisional_save_manager_->WipeStoreCopyIfOutdated();
+    client_->GetMetricsRecorder().RecordProvisionalSaveFailure(
+        PasswordManagerMetricsRecorder::SYNC_CREDENTIAL, main_frame_url_,
+        provisional_save_manager_->observed_form().origin, logger.get());
+    provisional_save_manager_.reset();
+    return;
   }
 
   provisional_save_manager_->LogSubmitPassed();
