@@ -121,6 +121,12 @@ public class CastWebContentsActivity extends Activity {
     }
 
     protected void handleIntent(Intent intent) {
+        // Do not load the WebContents if we are simply bringing the same
+        // activity to the foreground.
+        if (intent.getData() == null || mInstanceId == intent.getData().getPath()) {
+          return;
+        }
+
         intent.setExtrasClassLoader(WebContents.class.getClassLoader());
         mInstanceId = intent.getData().getPath();
 
