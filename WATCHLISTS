@@ -829,7 +829,7 @@
     },
     'feature_policy': {
       'filepath': 'third_party/WebKit/Source/platform/feature_policy/|' \
-                  'third_party/WebKit/Source/bindings/core/v8/ConditionalFeatures',
+                  'third_party/WebKit/Source/bindings/core/v8/OriginTrialFeatures',
     },
     'fileapi': {
       'filepath': 'file_system/|' \

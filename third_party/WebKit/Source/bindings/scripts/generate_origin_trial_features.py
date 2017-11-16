@@ -26,7 +26,7 @@ from v8_utilities import (binding_header_basename, v8_class_name,
 MODULE_PYNAME = os.path.splitext(os.path.basename(__file__))[0] + '.py'
 
 
-ConditionalInterfaceInfo = namedtuple('ConditionalInterfaceInfo', [
+OriginTrialInterfaceInfo = namedtuple('OriginTrialInterfaceInfo', [
     'name', 'v8_class', 'v8_class_or_partial', 'is_global'])
 
 
@@ -34,7 +34,7 @@ def get_install_functions(interfaces, feature_names):
     """Construct a list of V8 bindings installation functions for each feature
     on each interface.
 
-    interfaces is a list of ConditionalInterfaceInfo tuples
+    interfaces is a list of OriginTrialInterfaceInfo tuples
     feature_names is a list of strings, containing names of features which can
         be installed on those interfaces.
     """
@@ -49,7 +49,7 @@ def get_install_functions(interfaces, feature_names):
         for interface_info in interfaces]
 
 
-def get_conditional_feature_names_from_interface(interface):
+def get_origin_trial_feature_names_from_interface(interface):
     feature_names = set()
     if ('OriginTrialEnabled' in interface.extended_attributes and
             interface.is_partial):
@@ -79,7 +79,7 @@ def interface_is_global(interface):
             'PrimaryGlobal' in interface.extended_attributes)
 
 
-def conditional_features_info(info_provider, reader, idl_filenames, target_component, snake_case):
+def origin_trial_features_info(info_provider, reader, idl_filenames, target_component, snake_case):
     """Read a set of IDL files and compile the mapping between interfaces and
     the conditional features defined on them.
 
@@ -95,7 +95,7 @@ def conditional_features_info(info_provider, reader, idl_filenames, target_compo
 
     for idl_filename in idl_filenames:
         interface, implements = read_idl_file(reader, idl_filename)
-        feature_names = get_conditional_feature_names_from_interface(interface)
+        feature_names = get_origin_trial_feature_names_from_interface(interface)
 
         # If this interface implements another one,
         # it inherits any conditional features from it.
@@ -104,7 +104,7 @@ def conditional_features_info(info_provider, reader, idl_filenames, target_compo
             implemented_interface, _ = read_idl_file(
                 reader,
                 info_provider.interfaces_info[implement.right_interface].get('full_path'))
-            feature_names |= get_conditional_feature_names_from_interface(implemented_interface)
+            feature_names |= get_origin_trial_feature_names_from_interface(implemented_interface)
 
         feature_names = list(feature_names)
         if feature_names:
@@ -130,7 +130,7 @@ def conditional_features_info(info_provider, reader, idl_filenames, target_compo
                 # If this is a partial interface in the same component as
                 # its parent, then treat it as a non-partial interface.
                 interface.is_partial = False
-            interface_info = ConditionalInterfaceInfo(interface.name,
+            interface_info = OriginTrialInterfaceInfo(interface.name,
                                                       v8_class_name(interface),
                                                       v8_class_name_or_partial(
                                                           interface),
@@ -142,7 +142,7 @@ def conditional_features_info(info_provider, reader, idl_filenames, target_compo
     return features_for_type, types_for_feature, includes
 
 
-def conditional_features_context(generator_name, feature_info, snake_case):
+def origin_trial_features_context(generator_name, feature_info, snake_case):
     context = {'code_generator': generator_name}
 
     # Unpack the feature info tuple.
@@ -154,7 +154,7 @@ def conditional_features_context(generator_name, feature_info, snake_case):
         'core/dom/ExecutionContext.h',
         'core/frame/Frame.h',
         'core/origin_trials/origin_trials.h',
-        'platform/bindings/ConditionalFeatures.h',
+        'platform/bindings/OriginTrialFeatures.h',
         'platform/bindings/ScriptState.h',
         # TODO(iclelland): Remove the need to explicitly include this; it is
         # here because the ContextFeatureSettings code needs it.
@@ -205,33 +205,33 @@ def parse_options():
     return options
 
 
-def generate_conditional_features(info_provider, options, idl_filenames):
+def generate_origin_trial_features(info_provider, options, idl_filenames):
     reader = IdlReader(info_provider.interfaces_info, options.cache_directory)
     jinja_env = initialize_jinja_env(options.cache_directory)
 
     # Extract the bidirectional mapping of conditional features <-> interfaces
     # from the global info provider and the supplied list of IDL files.
-    feature_info = conditional_features_info(info_provider,
-                                             reader, idl_filenames,
-                                             options.target_component.lower(),
-                                             options.snake_case_generated_files)
+    feature_info = origin_trial_features_info(info_provider,
+                                              reader, idl_filenames,
+                                              options.target_component.lower(),
+                                              options.snake_case_generated_files)
 
     # Convert that mapping into the context required for the Jinja2 templates.
-    template_context = conditional_features_context(
+    template_context = origin_trial_features_context(
         MODULE_PYNAME, feature_info, options.snake_case_generated_files)
 
     # Generate and write out the header file
     header_text = render_template(jinja_env.get_template(
-        'ConditionalFeaturesFor%s.h.tmpl' % options.target_component.title()), template_context)
+        'OriginTrialFeaturesFor%s.h.tmpl' % options.target_component.title()), template_context)
     header_path = posixpath.join(options.output_directory,
-                                 'ConditionalFeaturesFor%s.h' % options.target_component.title())
+                                 'OriginTrialFeaturesFor%s.h' % options.target_component.title())
     write_file(header_text, header_path)
 
     # Generate and write out the implementation file
     cpp_text = render_template(jinja_env.get_template(
-        'ConditionalFeaturesFor%s.cpp.tmpl' % options.target_component.title()), template_context)
+        'OriginTrialFeaturesFor%s.cpp.tmpl' % options.target_component.title()), template_context)
     cpp_path = posixpath.join(options.output_directory,
-                              'ConditionalFeaturesFor%s.cpp' % options.target_component.title())
+                              'OriginTrialFeaturesFor%s.cpp' % options.target_component.title())
     write_file(cpp_text, cpp_path)
 
 
@@ -242,7 +242,7 @@ def main():
         os.path.normpath(options.info_dir), options.target_component.lower())
     idl_filenames = map(str.strip, open(options.idl_files_list))
 
-    generate_conditional_features(info_provider, options, idl_filenames)
+    generate_origin_trial_features(info_provider, options, idl_filenames)
     return 0
 
 

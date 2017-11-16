@@ -42,7 +42,7 @@ from code_generator_web_agent_api import CodeGeneratorWebAgentAPI
 from compute_interfaces_info_individual import InterfaceInfoCollector
 from compute_interfaces_info_overall import (compute_interfaces_info_overall,
                                              interfaces_info)
-from generate_conditional_features import generate_conditional_features
+from generate_origin_trial_features import generate_origin_trial_features
 from idl_compiler import (generate_bindings,
                           generate_union_type_containers,
                           generate_dictionary_impl,
@@ -364,7 +364,7 @@ def bindings_tests(output_directory, verbose, suppress_diff):
                 info_provider,
                 options,
                 dictionary_impl_filenames)
-            generate_conditional_features(
+            generate_origin_trial_features(
                 info_provider,
                 options,
                 [filename for filename in idl_filenames

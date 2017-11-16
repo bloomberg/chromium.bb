@@ -459,11 +459,10 @@ def interface_context(interface, interfaces):
     prepare_prototype_and_interface_object_func = None  # pylint: disable=invalid-name
     if unscopables or conditionally_enabled_attributes_on_prototype_or_interface or conditionally_enabled_methods:
         prepare_prototype_and_interface_object_func = '%s::preparePrototypeAndInterfaceObject' % v8_class_name_or_partial  # pylint: disable=invalid-name
-    has_install_conditional_features_on_global_func = bool(conditionally_enabled_constructors)  # pylint: disable=invalid-name
 
     context.update({
         'prepare_prototype_and_interface_object_func': prepare_prototype_and_interface_object_func,
-        'has_install_conditional_features_on_global_func': has_install_conditional_features_on_global_func,
+        'has_install_conditional_features_on_global_func': bool(conditionally_enabled_constructors),
     })
 
     context.update({

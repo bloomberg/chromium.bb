@@ -33,7 +33,7 @@
 #include <stdlib.h>
 #include <memory>
 #include "platform/InstanceCounters.h"
-#include "platform/bindings/ConditionalFeatures.h"
+#include "platform/bindings/OriginTrialFeatures.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/bindings/V8Binding.h"
 #include "platform/bindings/V8ObjectConstructor.h"
@@ -133,8 +133,7 @@ v8::Local<v8::Function> V8PerContextData::ConstructorForTypeSlowCase(
                                              interface_template);
   }
 
-  // Origin Trials
-  InstallConditionalFeatures(type, ScriptState::From(current_context),
+  InstallOriginTrialFeatures(type, ScriptState::From(current_context),
                              prototype_object, interface_object);
   constructor_map_.Set(type, interface_object);
   return interface_object;

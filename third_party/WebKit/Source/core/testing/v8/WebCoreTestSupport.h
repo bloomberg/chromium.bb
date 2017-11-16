@@ -30,9 +30,9 @@
 
 namespace WebCoreTestSupport {
 
-void injectInternalsObject(v8::Local<v8::Context>);
-void resetInternalsObject(v8::Local<v8::Context>);
-void registerInstallConditionalFeaturesForTesting();
+void InjectInternalsObject(v8::Local<v8::Context>);
+void ResetInternalsObject(v8::Local<v8::Context>);
+void RegisterInstallOriginTrialFeaturesForTesting();
 
 }  // namespace WebCoreTestSupport
 

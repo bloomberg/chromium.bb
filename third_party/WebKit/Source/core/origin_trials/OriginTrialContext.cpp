@@ -15,7 +15,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "platform/Histogram.h"
-#include "platform/bindings/ConditionalFeatures.h"
+#include "platform/bindings/OriginTrialFeatures.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/Vector.h"
@@ -201,7 +201,7 @@ void OriginTrialContext::InitializePendingFeatures() {
   for (auto enabled_trial : enabled_trials_) {
     if (installed_trials_.Contains(enabled_trial))
       continue;
-    InstallPendingConditionalFeature(enabled_trial, script_state);
+    InstallPendingOriginTrialFeature(enabled_trial, script_state);
     installed_trials_.insert(enabled_trial);
   }
 }

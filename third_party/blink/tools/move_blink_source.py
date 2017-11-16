@@ -248,7 +248,7 @@ Bug: 768828
         for source, dest in file_pairs:
             _, source_base = self._fs.split(source)
             _, dest_base = self._fs.split(dest)
-            # ConditionalFeaturesForCore.h in bindings/tests/results/modules/
+            # OriginTrialFeaturesForCore.h in bindings/tests/results/modules/
             # confuses generated/checked-in detection in _replace_include_path().
             if 'bindings/tests' in source.replace('\\', '/'):
                 continue
