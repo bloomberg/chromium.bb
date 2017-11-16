@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.survey.SurveyController;
 import org.chromium.components.minidump_uploader.util.CrashReportingPermissionManager;
 import org.chromium.components.minidump_uploader.util.NetworkPermissionUtil;
+import org.chromium.ui.base.DeviceFormFactor;
 
 /**
  * Reads, writes, and migrates preferences related to network usage and privacy.
@@ -225,7 +226,7 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
     public void setUsageAndCrashReporting(boolean enabled) {
         mSharedPreferences.edit().putBoolean(PREF_METRICS_REPORTING, enabled).apply();
         syncUsageAndCrashReportingPrefs();
-        if (!enabled) {
+        if (!enabled && !DeviceFormFactor.isTablet()) {
             SurveyController.getInstance().clearCache(ContextUtils.getApplicationContext());
         }
     }
