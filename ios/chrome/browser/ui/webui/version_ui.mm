@@ -100,6 +100,7 @@ web::WebUIIOSDataSource* CreateVersionUIDataSource() {
   html_source->AddResourcePath(version_ui::kAboutVersionCSS,
                                IDR_VERSION_UI_CSS);
   html_source->SetDefaultResource(IDR_VERSION_UI_HTML);
+  html_source->UseGzip();
   return html_source;
 }
 

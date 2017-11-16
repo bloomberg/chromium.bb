@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/webui/i18n_source_stream.h"
+#include "ui/base/webui/i18n_source_stream.h"
 
 #include <algorithm>
 #include <utility>
@@ -11,14 +11,14 @@
 #include "base/strings/string_piece.h"
 #include "net/base/io_buffer.h"
 
-namespace content {
+namespace ui {
 
 I18nSourceStream::~I18nSourceStream() {}
 
 std::unique_ptr<I18nSourceStream> I18nSourceStream::Create(
     std::unique_ptr<SourceStream> upstream,
     SourceStream::SourceType type,
-    const ui::TemplateReplacements* replacements) {
+    const TemplateReplacements* replacements) {
   DCHECK(replacements);
   std::unique_ptr<I18nSourceStream> source(
       new I18nSourceStream(std::move(upstream), type, replacements));
@@ -27,7 +27,7 @@ std::unique_ptr<I18nSourceStream> I18nSourceStream::Create(
 
 I18nSourceStream::I18nSourceStream(std::unique_ptr<SourceStream> upstream,
                                    SourceStream::SourceType type,
-                                   const ui::TemplateReplacements* replacements)
+                                   const TemplateReplacements* replacements)
     : FilterSourceStream(type, std::move(upstream)),
       replacements_(replacements) {}
 
@@ -60,7 +60,7 @@ int I18nSourceStream::FilterData(net::IOBuffer* output_buffer,
     to_process.swap(input_);
   }
 
-  output_.append(ui::ReplaceTemplateExpressions(to_process, *replacements_));
+  output_.append(ReplaceTemplateExpressions(to_process, *replacements_));
   int bytes_out =
       std::min(output_.size(), static_cast<size_t>(output_buffer_size));
   output_.copy(output_buffer->data(), bytes_out);
@@ -68,4 +68,4 @@ int I18nSourceStream::FilterData(net::IOBuffer* output_buffer,
   return bytes_out;
 }
 
-}  // namespace content
+}  // namespace ui

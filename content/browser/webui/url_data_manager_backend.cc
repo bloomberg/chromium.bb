@@ -30,7 +30,6 @@
 #include "content/browser/net/view_blob_internals_job_factory.h"
 #include "content/browser/net/view_http_cache_job_factory.h"
 #include "content/browser/resource_context_impl.h"
-#include "content/browser/webui/i18n_source_stream.h"
 #include "content/browser/webui/shared_resources_data_source.h"
 #include "content/browser/webui/url_data_source_impl.h"
 #include "content/browser/webui/web_ui_data_source_impl.h"
@@ -52,6 +51,7 @@
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_job_factory.h"
 #include "ui/base/template_expressions.h"
+#include "ui/base/webui/i18n_source_stream.h"
 #include "url/url_util.h"
 
 namespace content {
@@ -251,7 +251,7 @@ std::unique_ptr<net::SourceStream> URLRequestChromeJob::SetUpSourceStream() {
   }
 
   if (replacements_) {
-    source_stream = I18nSourceStream::Create(
+    source_stream = ui::I18nSourceStream::Create(
         std::move(source_stream), net::SourceStream::TYPE_NONE, replacements_);
   }
 

@@ -38,6 +38,7 @@ web::WebUIIOSDataSource* CreatePhysicalWebUIDataSource() {
   html_source->AddResourcePath(physical_web_ui::kPhysicalWebLinkIcon,
                                IDR_PHYSICAL_WEB_UI_LINK_ICON);
   html_source->SetDefaultResource(IDR_PHYSICAL_WEB_UI_HTML);
+  html_source->UseGzip();
   return html_source;
 }
 

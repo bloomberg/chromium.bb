@@ -614,11 +614,10 @@ class Node(object):
     Args:
       data: The data to compressed.
     Returns:
-      The data in compressed format. If the format was unknown or not supported
-      on the target platform then returns the data uncompressed.
+      The data in compressed format. If the format was unknown then this returns
+      the data uncompressed.
     '''
-    if (self.attrs.get('compress') != 'gzip'
-        or self.GetRoot().target_platform == 'ios'):
+    if self.attrs.get('compress') != 'gzip':
       return data
 
     # We only use rsyncable compression on Linux.

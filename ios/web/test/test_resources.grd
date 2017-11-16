@@ -8,9 +8,9 @@
   </outputs>
   <release seq="1">
     <includes>
-      <include name="IDR_MOJO_TEST_HTML" file="data/mojo_test.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-      <include name="IDR_MOJO_TEST_JS" file="data/mojo_test.js" type="BINDATA" />
-      <include name="IDR_MOJO_TEST_MOJO_JS" file="${root_gen_dir}/ios/web/test/mojo_test.mojom.js" use_base_dir="false" type="BINDATA"/>
+      <include name="IDR_MOJO_TEST_HTML" file="data/mojo_test.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
+      <include name="IDR_MOJO_TEST_JS" file="data/mojo_test.js" type="BINDATA" compress="gzip" />
+      <include name="IDR_MOJO_TEST_MOJO_JS" file="${root_gen_dir}/ios/web/test/mojo_test.mojom.js" use_base_dir="false" type="BINDATA" compress="gzip" />
     </includes>
   </release>
 </grit>

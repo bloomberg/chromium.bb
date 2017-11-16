@@ -56,6 +56,9 @@ class WebUIIOSDataSourceImpl::InternalDataSource : public URLDataSourceIOS {
   bool ShouldDenyXFrameOptions() const override {
     return parent_->deny_xframe_options_;
   }
+  bool IsGzipped(const std::string& path) const override {
+    return parent_->use_gzip_;
+  }
 
  private:
   WebUIIOSDataSourceImpl* parent_;
@@ -118,6 +121,15 @@ void WebUIIOSDataSourceImpl::DisableDenyXFrameOptions() {
   deny_xframe_options_ = false;
 }
 
+void WebUIIOSDataSourceImpl::UseGzip() {
+  use_gzip_ = true;
+}
+
+const ui::TemplateReplacements* WebUIIOSDataSourceImpl::GetReplacements()
+    const {
+  return &replacements_;
+}
+
 std::string WebUIIOSDataSourceImpl::GetSource() const {
   return source_name_;
 }
@@ -168,7 +180,9 @@ void WebUIIOSDataSourceImpl::StartDataRequest(
   if (result != path_to_idr_map_.end())
     resource_id = result->second;
   DCHECK_NE(resource_id, -1);
-  SendFromResourceBundle(path, callback, resource_id);
+  scoped_refptr<base::RefCountedMemory> response(
+      GetWebClient()->GetDataResourceBytes(resource_id));
+  callback.Run(response);
 }
 
 void WebUIIOSDataSourceImpl::SendLocalizedStringsAsJSON(
@@ -176,23 +190,6 @@ void WebUIIOSDataSourceImpl::SendLocalizedStringsAsJSON(
   std::string template_data;
   webui::AppendJsonJS(&localized_strings_, &template_data);
   callback.Run(base::RefCountedString::TakeString(&template_data));
-}
-
-void WebUIIOSDataSourceImpl::SendFromResourceBundle(
-    const std::string& path,
-    const URLDataSourceIOS::GotDataCallback& callback,
-    int idr) {
-  scoped_refptr<base::RefCountedMemory> response(
-      GetWebClient()->GetDataResourceBytes(idr));
-
-  if (response.get() && GetMimeType(path) == "text/html") {
-    std::string replaced = ui::ReplaceTemplateExpressions(
-        base::StringPiece(response->front_as<char>(), response->size()),
-        replacements_);
-    response = base::RefCountedString::TakeString(&replaced);
-  }
-
-  callback.Run(response);
 }
 
 }  // namespace web
