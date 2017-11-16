@@ -26,8 +26,6 @@ std::string PermissionUtil::GetPermissionString(
       return "Notifications";
     case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
       return "MidiSysEx";
-    case CONTENT_SETTINGS_TYPE_PUSH_MESSAGING:
-      return "PushMessaging";
     case CONTENT_SETTINGS_TYPE_DURABLE_STORAGE:
       return "DurableStorage";
     case CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
@@ -62,8 +60,6 @@ std::string PermissionUtil::ConvertContentSettingsTypeToSafeBrowsingName(
       return "NOTIFICATIONS";
     case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
       return "MIDI_SYSEX";
-    case CONTENT_SETTINGS_TYPE_PUSH_MESSAGING:
-      return "PUSH_MESSAGING";
     case CONTENT_SETTINGS_TYPE_DURABLE_STORAGE:
       return "DURABLE_STORAGE";
     case CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
@@ -95,8 +91,6 @@ PermissionRequestType PermissionUtil::GetRequestType(ContentSettingsType type) {
       return PermissionRequestType::PERMISSION_NOTIFICATIONS;
     case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
       return PermissionRequestType::PERMISSION_MIDI_SYSEX;
-    case CONTENT_SETTINGS_TYPE_PUSH_MESSAGING:
-      return PermissionRequestType::PERMISSION_PUSH_MESSAGING;
     case CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
       return PermissionRequestType::PERMISSION_PROTECTED_MEDIA_IDENTIFIER;
     case CONTENT_SETTINGS_TYPE_PLUGINS:
@@ -124,8 +118,6 @@ bool PermissionUtil::GetPermissionType(ContentSettingsType type,
     *out = PermissionType::GEOLOCATION;
   } else if (type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
     *out = PermissionType::NOTIFICATIONS;
-  } else if (type == CONTENT_SETTINGS_TYPE_PUSH_MESSAGING) {
-    *out = PermissionType::PUSH_MESSAGING;
   } else if (type == CONTENT_SETTINGS_TYPE_MIDI) {
     *out = PermissionType::MIDI;
   } else if (type == CONTENT_SETTINGS_TYPE_MIDI_SYSEX) {
@@ -154,18 +146,10 @@ bool PermissionUtil::GetPermissionType(ContentSettingsType type,
   return true;
 }
 
-ContentSettingsType PermissionUtil::GetContentSettingsStorageType(
-    ContentSettingsType type) {
-  if (type == CONTENT_SETTINGS_TYPE_PUSH_MESSAGING)
-    return CONTENT_SETTINGS_TYPE_NOTIFICATIONS;
-  return type;
-}
-
 bool PermissionUtil::IsPermission(ContentSettingsType type) {
   switch (type) {
     case CONTENT_SETTINGS_TYPE_GEOLOCATION:
     case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
-    case CONTENT_SETTINGS_TYPE_PUSH_MESSAGING:
     case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
     case CONTENT_SETTINGS_TYPE_DURABLE_STORAGE:
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:

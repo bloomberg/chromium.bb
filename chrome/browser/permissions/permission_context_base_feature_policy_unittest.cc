@@ -152,8 +152,7 @@ TEST_F(PermissionContextBaseFeaturePolicyTest, DefaultPolicy) {
   EXPECT_EQ(CONTENT_SETTING_BLOCK, GetPermissionForFrame(&geolocation, child));
 
   // Notifications is ask by default in top level frames but not in subframes.
-  NotificationPermissionContext notifications(
-      profile(), CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+  NotificationPermissionContext notifications(profile());
   EXPECT_EQ(CONTENT_SETTING_ASK, GetPermissionForFrame(&notifications, parent));
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             GetPermissionForFrame(&notifications, child));

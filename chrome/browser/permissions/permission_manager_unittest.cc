@@ -148,7 +148,6 @@ class PermissionManagerTest : public ChromeRenderViewHostTestHarness {
 
 TEST_F(PermissionManagerTest, GetPermissionStatusDefault) {
   CheckPermissionStatus(PermissionType::MIDI_SYSEX, PermissionStatus::ASK);
-  CheckPermissionStatus(PermissionType::PUSH_MESSAGING, PermissionStatus::ASK);
   CheckPermissionStatus(PermissionType::NOTIFICATIONS, PermissionStatus::ASK);
   CheckPermissionStatus(PermissionType::GEOLOCATION, PermissionStatus::ASK);
 #if defined(OS_ANDROID)
@@ -164,8 +163,6 @@ TEST_F(PermissionManagerTest, GetPermissionStatusAfterSet) {
   SetPermission(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, CONTENT_SETTING_ALLOW);
   CheckPermissionStatus(PermissionType::NOTIFICATIONS,
                         PermissionStatus::GRANTED);
-  CheckPermissionStatus(PermissionType::PUSH_MESSAGING,
-                        PermissionStatus::GRANTED);
 
   SetPermission(CONTENT_SETTINGS_TYPE_MIDI_SYSEX, CONTENT_SETTING_ALLOW);
   CheckPermissionStatus(PermissionType::MIDI_SYSEX, PermissionStatus::GRANTED);
@@ -180,9 +177,6 @@ TEST_F(PermissionManagerTest, GetPermissionStatusAfterSet) {
 
 TEST_F(PermissionManagerTest, CheckPermissionResultDefault) {
   CheckPermissionResult(CONTENT_SETTINGS_TYPE_MIDI_SYSEX, CONTENT_SETTING_ASK,
-                        PermissionStatusSource::UNSPECIFIED);
-  CheckPermissionResult(CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
-                        CONTENT_SETTING_ASK,
                         PermissionStatusSource::UNSPECIFIED);
   CheckPermissionResult(CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
                         CONTENT_SETTING_ASK,
@@ -204,9 +198,6 @@ TEST_F(PermissionManagerTest, CheckPermissionResultAfterSet) {
 
   SetPermission(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, CONTENT_SETTING_ALLOW);
   CheckPermissionResult(CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-                        CONTENT_SETTING_ALLOW,
-                        PermissionStatusSource::UNSPECIFIED);
-  CheckPermissionResult(CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
                         CONTENT_SETTING_ALLOW,
                         PermissionStatusSource::UNSPECIFIED);
 

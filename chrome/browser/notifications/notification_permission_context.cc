@@ -156,16 +156,11 @@ void VisibilityTimerTabHelper::RunTask(const base::Closure& task) {
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(VisibilityTimerTabHelper);
 
-NotificationPermissionContext::NotificationPermissionContext(
-    Profile* profile,
-    ContentSettingsType content_settings_type)
+NotificationPermissionContext::NotificationPermissionContext(Profile* profile)
     : PermissionContextBase(profile,
-                            content_settings_type,
+                            CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
                             blink::FeaturePolicyFeature::kNotFound),
-      weak_factory_ui_thread_(this) {
-  DCHECK(content_settings_type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS ||
-         content_settings_type == CONTENT_SETTINGS_TYPE_PUSH_MESSAGING);
-}
+      weak_factory_ui_thread_(this) {}
 
 NotificationPermissionContext::~NotificationPermissionContext() {}
 

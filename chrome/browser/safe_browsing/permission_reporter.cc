@@ -32,8 +32,6 @@ PermissionReport::PermissionType PermissionTypeForReport(
   switch (permission) {
     case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
       return PermissionReport::MIDI_SYSEX;
-    case CONTENT_SETTINGS_TYPE_PUSH_MESSAGING:
-      return PermissionReport::PUSH_MESSAGING;
     case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
       return PermissionReport::NOTIFICATIONS;
     case CONTENT_SETTINGS_TYPE_GEOLOCATION:

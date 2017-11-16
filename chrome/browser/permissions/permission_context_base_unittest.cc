@@ -128,8 +128,7 @@ class TestPermissionContext : public PermissionContextBase {
                                           const GURL& url_b) {
     auto* map = HostContentSettingsMapFactory::GetForProfile(profile());
     return map->GetContentSetting(url_a.GetOrigin(), url_b.GetOrigin(),
-                                  content_settings_storage_type(),
-                                  std::string());
+                                  content_settings_type(), std::string());
   }
 
   void RequestPermission(content::WebContents* web_contents,
@@ -780,35 +779,12 @@ TEST_F(PermissionContextBaseTests, TestDismissVariations) {
   TestVariationBlockOnSeveralDismissals_TestContent();
 }
 
-// Test that too many dismissals for push messaging will result in notifications
-// being embargoed.
-TEST_F(PermissionContextBaseTests, PushMessagingEmbargoEmbargoesNotifications) {
-  GURL url("https://www.google.com");
-  SetUpUrl(url);
-  DismissMultipleTimesAndExpectBlock(url, CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
-                                     3);
-  PermissionManager* permission_manager = PermissionManager::Get(profile());
-
-  // Check push messaging is now embargoed.
-  PermissionResult result = permission_manager->GetPermissionStatus(
-      CONTENT_SETTINGS_TYPE_PUSH_MESSAGING, url, url);
-  EXPECT_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
-  EXPECT_EQ(PermissionStatusSource::MULTIPLE_DISMISSALS, result.source);
-
-  // Check notifications yields the same result.
-  result = permission_manager->GetPermissionStatus(
-      CONTENT_SETTINGS_TYPE_NOTIFICATIONS, url, url);
-  EXPECT_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
-  EXPECT_EQ(PermissionStatusSource::MULTIPLE_DISMISSALS, result.source);
-}
-
 // Simulates non-valid requesting URL.
 // The permission should be denied but not saved for future use.
 TEST_F(PermissionContextBaseTests, TestNonValidRequestingUrl) {
   TestRequestPermissionInvalidUrl(CONTENT_SETTINGS_TYPE_GEOLOCATION);
   TestRequestPermissionInvalidUrl(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
   TestRequestPermissionInvalidUrl(CONTENT_SETTINGS_TYPE_MIDI_SYSEX);
-  TestRequestPermissionInvalidUrl(CONTENT_SETTINGS_TYPE_PUSH_MESSAGING);
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
   TestRequestPermissionInvalidUrl(
       CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER);
@@ -838,7 +814,6 @@ TEST_F(PermissionContextBaseTests, TestGlobalKillSwitch) {
   TestGlobalPermissionsKillSwitch(CONTENT_SETTINGS_TYPE_GEOLOCATION);
   TestGlobalPermissionsKillSwitch(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
   TestGlobalPermissionsKillSwitch(CONTENT_SETTINGS_TYPE_MIDI_SYSEX);
-  TestGlobalPermissionsKillSwitch(CONTENT_SETTINGS_TYPE_PUSH_MESSAGING);
   TestGlobalPermissionsKillSwitch(CONTENT_SETTINGS_TYPE_DURABLE_STORAGE);
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
   TestGlobalPermissionsKillSwitch(

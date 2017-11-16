@@ -174,9 +174,7 @@ void LayoutTestMessageFilter::OnSetPermission(
     type = PermissionType::MIDI;
   } else if (name == "midi-sysex") {
     type = PermissionType::MIDI_SYSEX;
-  } else if (name == "push-messaging") {
-    type = PermissionType::PUSH_MESSAGING;
-  } else if (name == "notifications") {
+  } else if (name == "push-messaging" || name == "notifications") {
     type = PermissionType::NOTIFICATIONS;
   } else if (name == "geolocation") {
     type = PermissionType::GEOLOCATION;

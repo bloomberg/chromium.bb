@@ -166,8 +166,6 @@ class PermissionContextBase : public KeyedService {
     return content_settings_type_;
   }
 
-  ContentSettingsType content_settings_storage_type() const;
-
  private:
   friend class PermissionContextBaseTests;
 

@@ -137,8 +137,7 @@ blink::mojom::PermissionStatus LayoutTestPermissionManager::GetPermissionStatus(
   // Immitates the behaviour of the NotificationPermissionContext in that
   // permission cannot be requested from cross-origin iframes, which the current
   // permission status should reflect when it's status is ASK.
-  if (permission == PermissionType::NOTIFICATIONS ||
-      permission == PermissionType::PUSH_MESSAGING) {
+  if (permission == PermissionType::NOTIFICATIONS) {
     if (requesting_origin != embedding_origin &&
         it->second == blink::mojom::PermissionStatus::ASK) {
       return blink::mojom::PermissionStatus::DENIED;

@@ -283,8 +283,8 @@ void PermissionContextBase::ResetPermission(const GURL& requesting_origin,
                                             const GURL& embedding_origin) {
   HostContentSettingsMapFactory::GetForProfile(profile_)
       ->SetContentSettingDefaultScope(requesting_origin, embedding_origin,
-                                      content_settings_storage_type(),
-                                      std::string(), CONTENT_SETTING_DEFAULT);
+                                      content_settings_type_, std::string(),
+                                      CONTENT_SETTING_DEFAULT);
 }
 
 void PermissionContextBase::CancelPermissionRequest(
@@ -314,7 +314,7 @@ ContentSetting PermissionContextBase::GetPermissionStatusInternal(
     const GURL& embedding_origin) const {
   return HostContentSettingsMapFactory::GetForProfile(profile_)
       ->GetContentSetting(requesting_origin, embedding_origin,
-                          content_settings_storage_type(), std::string());
+                          content_settings_type_, std::string());
 }
 
 void PermissionContextBase::DecidePermission(
@@ -434,13 +434,8 @@ void PermissionContextBase::UpdateContentSetting(
 
   HostContentSettingsMapFactory::GetForProfile(profile_)
       ->SetContentSettingDefaultScope(requesting_origin, embedding_origin,
-                                      content_settings_storage_type(),
-                                      std::string(), content_setting);
-}
-
-ContentSettingsType PermissionContextBase::content_settings_storage_type()
-    const {
-  return PermissionUtil::GetContentSettingsStorageType(content_settings_type_);
+                                      content_settings_type_, std::string(),
+                                      content_setting);
 }
 
 bool PermissionContextBase::PermissionAllowedByFeaturePolicy(

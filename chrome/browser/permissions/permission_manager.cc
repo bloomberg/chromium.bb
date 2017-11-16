@@ -85,8 +85,6 @@ ContentSettingsType PermissionTypeToContentSetting(PermissionType permission) {
       return CONTENT_SETTINGS_TYPE_MIDI;
     case PermissionType::MIDI_SYSEX:
       return CONTENT_SETTINGS_TYPE_MIDI_SYSEX;
-    case PermissionType::PUSH_MESSAGING:
-      return CONTENT_SETTINGS_TYPE_PUSH_MESSAGING;
     case PermissionType::NOTIFICATIONS:
       return CONTENT_SETTINGS_TYPE_NOTIFICATIONS;
     case PermissionType::GEOLOCATION:
@@ -263,12 +261,8 @@ PermissionManager::PermissionManager(Profile* profile)
       base::MakeUnique<MidiSysexPermissionContext>(profile);
   permission_contexts_[CONTENT_SETTINGS_TYPE_MIDI] =
       base::MakeUnique<MidiPermissionContext>(profile);
-  permission_contexts_[CONTENT_SETTINGS_TYPE_PUSH_MESSAGING] =
-      base::MakeUnique<NotificationPermissionContext>(
-          profile, CONTENT_SETTINGS_TYPE_PUSH_MESSAGING);
   permission_contexts_[CONTENT_SETTINGS_TYPE_NOTIFICATIONS] =
-      base::MakeUnique<NotificationPermissionContext>(
-          profile, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+      base::MakeUnique<NotificationPermissionContext>(profile);
 #if !defined(OS_ANDROID)
   permission_contexts_[CONTENT_SETTINGS_TYPE_GEOLOCATION] =
       base::MakeUnique<GeolocationPermissionContext>(profile);
