@@ -174,8 +174,11 @@ def GetSymbolToSectionsMapFromObjectFiles(obj_dir):
                               ' unexpectedly in more than one section: ' +
                               ', '.join(symbol_to_sections_map[symbol]))
     elif not section.startswith('.text.'):
-      symbol_warnings.Write('Symbol ' + symbol +
-                            ' in incorrect section ' + section)
+      # Assembly functions have section ".text". These are all grouped together
+      # near the end of the orderfile via an explicit ".text" entry.
+      if section != '.text':
+        symbol_warnings.Write('Symbol ' + symbol +
+                              ' in incorrect section ' + section)
     else:
       # In most cases we expect just one item in this list, and maybe 4 or so in
       # the worst case.
