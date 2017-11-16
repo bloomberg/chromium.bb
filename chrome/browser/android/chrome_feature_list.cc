@@ -120,7 +120,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &ntp_snippets::kForeignSessionsSuggestionsFeature,
     &ntp_snippets::kNotificationsFeature,
     &ntp_snippets::kPublisherFaviconsFromNewServerFeature,
-    &ntp_tiles::kLowerResolutionFaviconsFeature,
     &ntp_tiles::kSiteExplorationUiFeature,
     &offline_pages::kBackgroundLoaderForDownloadsFeature,
     &offline_pages::kOfflinePagesCTFeature,    // See crbug.com/620421.

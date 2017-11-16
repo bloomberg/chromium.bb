@@ -23,10 +23,6 @@ extern const base::Feature kPopularSitesBakedInContentFeature;
 // Likely tiles on the New Tab Page.
 extern const base::Feature kNtpMostLikelyFaviconsFromServerFeature;
 
-// Feature to allow displaying lower resolution favicons for Tiles on the New
-// Tab Page.
-extern const base::Feature kLowerResolutionFaviconsFeature;
-
 // Feature to provide site exploration tiles in addition to personal tiles.
 extern const base::Feature kSiteExplorationUiFeature;
 

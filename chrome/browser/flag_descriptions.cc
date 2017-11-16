@@ -1833,13 +1833,6 @@ const char kEnableNtpMostLikelyFaviconsFromServerDescription[] =
     "If enabled, missing favicons for NTP tiles get downloaded from Google. "
     "This only applies to tiles that originate from synced history.";
 
-const char kNtpTilesLowerResolutionFaviconsName[] =
-    "Show also lower resolution favicons in NTP tiles.";
-const char kNtpTilesLowerResolutionFaviconsDescription[] =
-    "If enabled, the size limit for a favicon to get displayed in an NTP tile "
-    "decreases. Tiles where the largest available favicon is below this limit "
-    "get displayed as colored tiles.";
-
 const char kEnableNtpOfflinePageDownloadSuggestionsName[] =
     "Show offline page downloads on the New Tab page";
 const char kEnableNtpOfflinePageDownloadSuggestionsDescription[] =
