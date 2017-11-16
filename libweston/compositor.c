@@ -2292,14 +2292,12 @@ weston_output_repaint(struct weston_output *output, void *repaint_data)
 	struct wl_list frame_callback_list;
 	pixman_region32_t output_damage;
 	int r;
-	struct timespec frame_time;
+	uint32_t frame_time_msec;
 
 	if (output->destroying)
 		return 0;
 
 	TL_POINT("core_repaint_begin", TLP_OUTPUT(output), TLP_END);
-
-	timespec_from_msec(&frame_time, output->frame_time);
 
 	/* Rebuild the surface list and update surface transforms up front. */
 	weston_compositor_build_view_list(ec);
@@ -2348,14 +2346,16 @@ weston_output_repaint(struct weston_output *output, void *repaint_data)
 
 	weston_compositor_repick(ec);
 
+	frame_time_msec = timespec_to_msec(&output->frame_time);
+
 	wl_list_for_each_safe(cb, cnext, &frame_callback_list, link) {
-		wl_callback_send_done(cb->resource, output->frame_time);
+		wl_callback_send_done(cb->resource, frame_time_msec);
 		wl_resource_destroy(cb->resource);
 	}
 
 	wl_list_for_each_safe(animation, next, &output->animation_list, link) {
 		animation->frame_counter++;
-		animation->frame(animation, output, &frame_time);
+		animation->frame(animation, output, &output->frame_time);
 	}
 
 	TL_POINT("core_repaint_posted", TLP_OUTPUT(output), TLP_END);
@@ -2520,7 +2520,7 @@ weston_output_finish_frame(struct weston_output *output,
 						  output->msc,
 						  presented_flags);
 
-	output->frame_time = timespec_to_msec(stamp);
+	output->frame_time = *stamp;
 
 	timespec_add_nsec(&output->next_repaint, stamp, refresh_nsec);
 	timespec_add_msec(&output->next_repaint, &output->next_repaint,

@@ -36,6 +36,7 @@
 
 #include "compositor.h"
 #include "shared/helpers.h"
+#include "shared/timespec-util.h"
 
 #include "wcap/wcap-decode.h"
 
@@ -259,7 +260,7 @@ weston_recorder_frame_notify(struct wl_listener *listener, void *data)
 		container_of(listener, struct weston_recorder, frame_listener);
 	struct weston_output *output = data;
 	struct weston_compositor *compositor = output->compositor;
-	uint32_t msecs = output->frame_time;
+	uint32_t msecs = timespec_to_msec(&output->frame_time);
 	pixman_box32_t *r;
 	pixman_region32_t damage, transformed_damage;
 	int i, j, k, n, width, height, run, stride;
