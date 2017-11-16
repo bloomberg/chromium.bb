@@ -2714,9 +2714,6 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_ACCESSIBILITY_OMNIBOX_BTN_REFINE" desc="Content description for the omnibox refine button.">
         Refine
       </message>
-      <message name="IDS_ACCESSIBILITY_BOOKMARK_MORE_INFO" desc="Content description for the button that shows option menu for a bookmark.">
-        Options
-      </message>
       <message name="IDS_ACCESSIBILITY_CANCEL_SELECTION" desc="Content description for the cancel selection button that deselects the selected items in a selectable list view.">
         Cancel selection
       </message>
@@ -2725,6 +2722,9 @@ To obtain new licenses, connect to the internet and play your downloaded content
       </message>
       <message name="IDS_ACCESSIBILITY_DRAWER_TOGGLE_BTN_CLOSE" desc="Content description for the button to close the navigation drawer.">
         Close navigation drawer
+      </message>
+      <message name="IDS_ACCESSIBILITY_LIST_MENU_BUTTON" desc="Content description for the button that shows option menu for a list item.">
+        Options
       </message>
       <message name="IDS_ACCESSIBILITY_TOOLBAR_SCREEN_POSITION" desc="Accessibility announcement to inform users about a toolbar's location.">
         Options available near top of the screen

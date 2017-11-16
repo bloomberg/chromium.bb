@@ -139,9 +139,10 @@ public class BookmarkActionBar extends SelectableListToolbar<BookmarkId>
         }
     }
 
-    // BookmarkUIObserver implementations.
-
-    @Override
+    /**
+     * Sets the delegate to use to handle UI actions related to this action bar.
+     * @param delegate A {@link BookmarkDelegate} instance to handle all backend interaction.
+     */
     public void onBookmarkDelegateInitialized(BookmarkDelegate delegate) {
         mDelegate = delegate;
         mDelegate.addUIObserver(this);
@@ -150,6 +151,8 @@ public class BookmarkActionBar extends SelectableListToolbar<BookmarkId>
 
         getMenu().setGroupEnabled(R.id.selection_mode_menu_group, true);
     }
+
+    // BookmarkUIObserver implementations.
 
     @Override
     public void onDestroy() {

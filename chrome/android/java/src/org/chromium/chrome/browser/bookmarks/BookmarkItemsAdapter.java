@@ -259,9 +259,10 @@ class BookmarkItemsAdapter
         }
     }
 
-    // BookmarkUIObserver implementations.
-
-    @Override
+    /**
+     * Sets the delegate to use to handle UI actions related to this adapter.
+     * @param delegate A {@link BookmarkDelegate} instance to handle all backend interaction.
+     */
     public void onBookmarkDelegateInitialized(BookmarkDelegate delegate) {
         mDelegate = delegate;
         mDelegate.addUIObserver(this);
@@ -290,6 +291,7 @@ class BookmarkItemsAdapter
         populateTopLevelFoldersList();
     }
 
+    // BookmarkUIObserver implementations.
     @Override
     public void onDestroy() {
         mDelegate.removeUIObserver(this);
