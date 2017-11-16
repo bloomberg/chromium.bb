@@ -24,12 +24,10 @@ void ChromeWebContentsViewDelegateViewsMac::SizeChanged(const gfx::Size& size) {
 }
 
 #if BUILDFLAG(MAC_VIEWS_BROWSER)
-namespace chrome {
 
 content::WebContentsViewDelegate* CreateWebContentsViewDelegate(
     content::WebContents* web_contents) {
   return new ChromeWebContentsViewDelegateViewsMac(web_contents);
 }
 
-}  // namespace chrome
 #endif  // MAC_VIEWS_BROWSER

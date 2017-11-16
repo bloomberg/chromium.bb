@@ -10,11 +10,7 @@ class WebContents;
 class WebContentsViewDelegate;
 }
 
-namespace chrome {
-
 content::WebContentsViewDelegate* CreateWebContentsViewDelegate(
     content::WebContents* web_contents);
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_TAB_CONTENTS_CHROME_WEB_CONTENTS_VIEW_DELEGATE_H_

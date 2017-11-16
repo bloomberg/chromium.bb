@@ -1041,7 +1041,7 @@ void ChromeContentBrowserClient::GetStoragePartitionConfigForSite(
 content::WebContentsViewDelegate*
     ChromeContentBrowserClient::GetWebContentsViewDelegate(
         content::WebContents* web_contents) {
-  return chrome::CreateWebContentsViewDelegate(web_contents);
+  return CreateWebContentsViewDelegate(web_contents);
 }
 
 void ChromeContentBrowserClient::RenderProcessWillLaunch(
