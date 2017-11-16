@@ -142,12 +142,6 @@ class PatchTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(PatchTest);
 };
 
-// Flaky on Mac. http://crbug.com/785936
-#if defined(OS_MACOSX)
-#define MAYBE_CheckBsdiffOperation DISABLED_CheckBsdiffOperation
-#else
-#define MAYBE_CheckBsdiffOperation CheckBsdiffOperation
-#endif
 IN_PROC_BROWSER_TEST_F(PatchTest, CheckBsdiffOperation) {
   constexpr int kExpectedResult = bsdiff::OK;
 
@@ -161,13 +155,7 @@ IN_PROC_BROWSER_TEST_F(PatchTest, CheckBsdiffOperation) {
   EXPECT_TRUE(base::ContentsEqual(TestFile("binary_output.bin"), output_file));
 }
 
-// Flaky on Mac. http://crbug.com/785936
-#if defined(OS_MACOSX)
-#define MAYBE_CheckCourgetteOperation DISABLED_CheckCourgetteOperation
-#else
-#define MAYBE_CheckCourgetteOperation CheckCourgetteOperation
-#endif
-IN_PROC_BROWSER_TEST_F(PatchTest, MAYBE_CheckCourgetteOperation) {
+IN_PROC_BROWSER_TEST_F(PatchTest, CheckCourgetteOperation) {
   constexpr int kExpectedResult = courgette::C_OK;
 
   base::FilePath input_file = InputFilePath("binary_input.bin");
