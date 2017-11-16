@@ -137,8 +137,8 @@ class WebRequestEventDetails {
   // dictionary is empty.
   std::unique_ptr<base::DictionaryValue> GetAndClearDict();
 
-  // Filters the data, leaving only whitelisted data for Public Session.
-  void FilterForPublicSession();
+  // Returns a filtered copy with only whitelisted data for public session.
+  std::unique_ptr<WebRequestEventDetails> CreatePublicSessionCopy();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(

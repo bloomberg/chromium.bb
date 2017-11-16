@@ -67,6 +67,11 @@
 #include "testing/gtest/include/gtest/gtest-message.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/login/scoped_test_public_session_login_state.h"
+#include "components/crx_file/id_util.h"
+#endif
+
 namespace helpers = extension_web_request_api_helpers;
 namespace keys = extension_web_request_api_constants;
 namespace web_request = extensions::api::web_request;
@@ -794,6 +799,72 @@ TEST_F(ExtensionWebRequestTest, MinimalAccessRequestBodyData) {
 
   EXPECT_EQ(i, ipc_sender_.sent_end());
 }
+
+#if defined(OS_CHROMEOS)
+// Tests that proper filtering is applied in public session (non-whitelisted
+// extension gets some things filtered out, while there's no filtering applied
+// for a whitelisted extension).
+TEST_F(ExtensionWebRequestTest, ProperFilteringInPublicSession) {
+  chromeos::ScopedTestPublicSessionLoginState state;
+  const std::string kEventName(web_request::OnBeforeRequest::kEventName);
+  ExtensionWebRequestEventRouter::RequestFilter filter;
+  // Whitelisted extension (User Agent Switcher).
+  const std::string extension_id1("djflhoibgkdhkhhcedjiklpkjnoahfmg");
+  const std::string extension_id2 =
+      crx_file::id_util::GenerateId("nonwhitelisted");
+  int extra_info_spec_body = 0;
+  ASSERT_TRUE(GenerateInfoSpec("requestBody", &extra_info_spec_body));
+  base::WeakPtrFactory<TestIPCSender> ipc_sender_factory(&ipc_sender_);
+
+  bool kExpected[] = {
+    true,
+    false,
+  };
+
+  ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
+      &profile_, extension_id1, extension_id1, events::FOR_TEST, kEventName,
+      kEventName + "/1", filter, extra_info_spec_body, 0, 0,
+      ipc_sender_factory.GetWeakPtr());
+  ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
+      &profile_, extension_id2, extension_id2, events::FOR_TEST, kEventName,
+      kEventName + "/1", filter, extra_info_spec_body, 0, 0,
+      ipc_sender_factory.GetWeakPtr());
+
+  // Only one request is sent, but more than one event will be triggered.
+  for (size_t i = 1; i < arraysize(kExpected); ++i)
+    ipc_sender_.PushTask(base::Bind(&base::DoNothing));
+
+  const std::vector<char> part_of_body(1);
+  FireURLRequestWithData("POST", nullptr, part_of_body, part_of_body);
+
+  base::RunLoop().RunUntilIdle();
+
+  // Clean-up
+  ExtensionWebRequestEventRouter::EventListener::ID id1(
+      &profile_, extension_id1, kEventName + "/1", 0, 0);
+  ExtensionWebRequestEventRouter::EventListener::ID id2(
+      &profile_, extension_id2, kEventName + "/1", 0, 0);
+  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(id1,
+                                                                     false);
+  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(id2,
+                                                                     false);
+
+  TestIPCSender::SentMessages::const_iterator i = ipc_sender_.sent_begin();
+
+  for (size_t test = 0; test < arraysize(kExpected); ++test, ++i) {
+    SCOPED_TRACE(testing::Message("iteration number ") << test);
+    EXPECT_NE(i, ipc_sender_.sent_end());
+    IPC::Message* message = i->get();
+    const base::DictionaryValue* details = nullptr;
+    ExtensionMsg_DispatchEvent::Param param;
+    GetPartOfMessageArguments(message, &details, &param);
+    ASSERT_TRUE(details != nullptr);
+    EXPECT_EQ(kExpected[test], details->HasKey(keys::kRequestBodyKey));
+  }
+
+  EXPECT_EQ(i, ipc_sender_.sent_end());
+}
+#endif
 
 TEST_F(ExtensionWebRequestTest, NoAccessRequestBodyData) {
   // We verify that URLRequest body is NOT accessible to OnBeforeRequest

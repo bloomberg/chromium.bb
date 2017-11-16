@@ -93,6 +93,8 @@ source_set("browser_sources") {
     "declarative_user_script_master.h",
     "deferred_start_render_host.h",
     "deferred_start_render_host_observer.h",
+    "device_local_account_util.cc",
+    "device_local_account_util.h",
     "error_map.cc",
     "error_map.h",
     "event_listener_map.cc",
