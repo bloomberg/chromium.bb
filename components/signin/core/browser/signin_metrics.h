@@ -296,6 +296,10 @@ enum class AccountRelation : int {
 // Different types of reporting. This is used as a histogram suffix.
 enum class ReportingType { PERIODIC, ON_CHANGE };
 
+// -----------------------------------------------------------------------------
+// Histograms
+// -----------------------------------------------------------------------------
+
 // Tracks the access point of sign in on desktop.
 void LogSigninAccessPointStarted(AccessPoint access_point);
 void LogSigninAccessPointCompleted(AccessPoint access_point);
@@ -391,42 +395,13 @@ void LogAccountRelation(const AccountRelation relation,
 // between multiple users.
 void LogIsShared(const bool is_shared, const ReportingType type);
 
-// These intermediate macros are necessary when we may emit to different
-// histograms from the same logical place in the code. The base histogram macros
-// expand in a way that can only work for a single histogram name, so these
-// allow a single place in the code to fan out for multiple names.
-#define INVESTIGATOR_HISTOGRAM_CUSTOM_COUNTS(name, type, sample, min, max, \
-                                             bucket_count)                 \
-  switch (type) {                                                          \
-    case ReportingType::PERIODIC:                                          \
-      UMA_HISTOGRAM_CUSTOM_COUNTS(name "_Periodic", sample, min, max,      \
-                                  bucket_count);                           \
-      break;                                                               \
-    case ReportingType::ON_CHANGE:                                         \
-      UMA_HISTOGRAM_CUSTOM_COUNTS(name "_OnChange", sample, min, max,      \
-                                  bucket_count);                           \
-      break;                                                               \
-  }
+// -----------------------------------------------------------------------------
+// User actions
+// -----------------------------------------------------------------------------
 
-#define INVESTIGATOR_HISTOGRAM_BOOLEAN(name, type, sample) \
-  switch (type) {                                          \
-    case ReportingType::PERIODIC:                          \
-      UMA_HISTOGRAM_BOOLEAN(name "_Periodic", sample);     \
-      break;                                               \
-    case ReportingType::ON_CHANGE:                         \
-      UMA_HISTOGRAM_BOOLEAN(name "_OnChange", sample);     \
-      break;                                               \
-  }
-
-#define INVESTIGATOR_HISTOGRAM_ENUMERATION(name, type, sample, boundary_value) \
-  switch (type) {                                                              \
-    case ReportingType::PERIODIC:                                              \
-      UMA_HISTOGRAM_ENUMERATION(name "_Periodic", sample, boundary_value);     \
-      break;                                                                   \
-    case ReportingType::ON_CHANGE:                                             \
-      UMA_HISTOGRAM_ENUMERATION(name "_OnChange", sample, boundary_value);     \
-      break;                                                                   \
-  }
+// Records corresponding sign in user action for an access point.
+void RecordSigninUserActionForAccessPoint(
+    signin_metrics::AccessPoint access_point);
 
 }  // namespace signin_metrics
 

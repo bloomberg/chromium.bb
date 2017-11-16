@@ -17,17 +17,12 @@
 #include "chrome/browser/ui/sync/profile_signin_confirmation_helper.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "components/signin/core/browser/signin_tracker.h"
-#include "content/public/browser/web_contents_observer.h"
 
 class Browser;
 
 namespace browser_sync {
 class ProfileSyncService;
 }  // namespace browser_sync
-
-namespace content {
-class WebContents;
-}  // namespace content
 
 namespace syncer {
 class SyncSetupInProgressHandle;
@@ -38,7 +33,6 @@ class SyncSetupInProgressHandle;
 // the job is done.
 class OneClickSigninSyncStarter : public SigninTracker::Observer,
                                   public chrome::BrowserListObserver,
-                                  public content::WebContentsObserver,
                                   public LoginUIService::Observer {
  public:
   enum ProfileMode {
@@ -98,11 +92,6 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
   // OneClickSigninSyncStarter from a browser, provide both.
   // If |display_confirmation| is true, the user will be prompted to confirm the
   // signin before signin completes.
-  // |web_contents| is used to show the sync UI if it's showing a blank page
-  // and not about to be closed. It can be NULL.
-  // If |web_contents| is non-NULL and the |continue_url| is non-empty, the
-  // |web_contents| will be navigated to the |continue_url| once both signin and
-  // Sync setup are complete.
   // |callback| is always executed before OneClickSigninSyncStarter is deleted.
   // It can be empty.
   OneClickSigninSyncStarter(Profile* profile,
@@ -111,12 +100,11 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
                             const std::string& email,
                             const std::string& password,
                             const std::string& refresh_token,
+                            signin_metrics::AccessPoint signin_access_point,
+                            signin_metrics::Reason signin_reason,
                             ProfileMode profile_mode,
                             StartSyncMode start_mode,
-                            content::WebContents* web_contents,
                             ConfirmationRequired display_confirmation,
-                            const GURL& current_url,
-                            const GURL& continue_url,
                             Callback callback);
 
   // Convenience method to create a sign-in sync starter for an account that
@@ -129,7 +117,8 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
                             Browser* browser,
                             const std::string& gaia_id,
                             const std::string& email,
-                            content::WebContents* web_contents,
+                            signin_metrics::AccessPoint signin_access_point,
+                            signin_metrics::Reason signin_reason,
                             Callback callback);
 
   // chrome::BrowserListObserver override.
@@ -150,7 +139,6 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
   friend class OneClickSigninSyncStarterTest;
   FRIEND_TEST_ALL_PREFIXES(OneClickSigninSyncStarterTest, CallbackSigninFailed);
   FRIEND_TEST_ALL_PREFIXES(OneClickSigninSyncStarterTest, CallbackNull);
-  FRIEND_TEST_ALL_PREFIXES(OneClickSigninSyncStarterTest, LoadContinueUrl);
 
   // Initializes the internals of the OneClickSigninSyncStarter object. Can also
   // be used to re-initialize the object to refer to a newly created profile.
@@ -236,11 +224,11 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
 
   Profile* profile_;
   Browser* browser_;
+  signin_metrics::AccessPoint signin_access_point_;
+  signin_metrics::Reason signin_reason_;
   std::unique_ptr<SigninTracker> signin_tracker_;
   StartSyncMode start_mode_;
   ConfirmationRequired confirmation_required_;
-  GURL current_url_;
-  GURL continue_url_;
 
   // Callback executed when sync setup succeeds or fails.
   Callback sync_setup_completed_callback_;

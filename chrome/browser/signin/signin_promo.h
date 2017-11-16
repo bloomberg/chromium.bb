@@ -81,9 +81,6 @@ GURL GetReauthURLWithEmailForDialog(signin_metrics::AccessPoint access_point,
                                     signin_metrics::Reason reason,
                                     const std::string& email);
 
-// Gets the next page URL from the query portion of the sign in promo URL.
-GURL GetNextPageURLForPromoURL(const GURL& url);
-
 // Gets the partition URL for the embedded sign in frame/webview.
 GURL GetSigninPartitionURL();
 

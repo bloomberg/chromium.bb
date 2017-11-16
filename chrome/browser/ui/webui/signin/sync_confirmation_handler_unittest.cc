@@ -58,12 +58,11 @@ class TestingOneClickSigninSyncStarter : public OneClickSigninSyncStarter {
                                    const std::string& email,
                                    const std::string& password,
                                    const std::string& refresh_token,
+                                   signin_metrics::AccessPoint access_point,
+                                   signin_metrics::Reason signin_reason,
                                    ProfileMode profile_mode,
                                    StartSyncMode start_mode,
-                                   content::WebContents* web_contents,
                                    ConfirmationRequired display_confirmation,
-                                   const GURL& current_url,
-                                   const GURL& continue_url,
                                    Callback callback)
       : OneClickSigninSyncStarter(profile,
                                   browser,
@@ -71,12 +70,11 @@ class TestingOneClickSigninSyncStarter : public OneClickSigninSyncStarter {
                                   email,
                                   password,
                                   refresh_token,
+                                  access_point,
+                                  signin_reason,
                                   profile_mode,
                                   start_mode,
-                                  web_contents,
                                   display_confirmation,
-                                  current_url,
-                                  continue_url,
                                   callback) {}
 
  protected:
@@ -108,9 +106,11 @@ class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest {
     // SigninManager.
     new TestingOneClickSigninSyncStarter(
         profile(), browser(), "gaia", "foo@example.com", "password",
-        "refresh_token", OneClickSigninSyncStarter::CURRENT_PROFILE,
-        OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS, nullptr,
-        OneClickSigninSyncStarter::NO_CONFIRMATION, GURL(), GURL(),
+        "refresh_token", signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN,
+        signin_metrics::Reason::REASON_UNKNOWN_REASON,
+        OneClickSigninSyncStarter::CURRENT_PROFILE,
+        OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS,
+        OneClickSigninSyncStarter::NO_CONFIRMATION,
         OneClickSigninSyncStarter::Callback());
   }
 

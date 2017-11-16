@@ -79,24 +79,21 @@ OneClickSigninSyncStarter::OneClickSigninSyncStarter(
     const std::string& email,
     const std::string& password,
     const std::string& refresh_token,
+    signin_metrics::AccessPoint signin_access_point,
+    signin_metrics::Reason signin_reason,
     ProfileMode profile_mode,
     StartSyncMode start_mode,
-    content::WebContents* web_contents,
     ConfirmationRequired confirmation_required,
-    const GURL& current_url,
-    const GURL& continue_url,
     Callback sync_setup_completed_callback)
-    : content::WebContentsObserver(web_contents),
-      profile_(nullptr),
+    : profile_(nullptr),
+      signin_access_point_(signin_access_point),
+      signin_reason_(signin_reason),
       start_mode_(start_mode),
       confirmation_required_(confirmation_required),
-      current_url_(current_url),
-      continue_url_(continue_url),
       sync_setup_completed_callback_(sync_setup_completed_callback),
       first_account_added_to_cookie_(false),
       weak_pointer_factory_(this) {
   DCHECK(profile);
-  DCHECK(web_contents || continue_url.is_empty());
   BrowserList::AddObserver(this);
   Initialize(profile, browser);
 
@@ -112,7 +109,8 @@ OneClickSigninSyncStarter::OneClickSigninSyncStarter(
     Browser* browser,
     const std::string& gaia_id,
     const std::string& email,
-    content::WebContents* web_contents,
+    signin_metrics::AccessPoint signin_access_point,
+    signin_metrics::Reason signin_reason,
     Callback callback)
     : OneClickSigninSyncStarter(
           profile,
@@ -121,12 +119,11 @@ OneClickSigninSyncStarter::OneClickSigninSyncStarter(
           email,
           std::string() /* password */,
           std::string() /* refresh_token */,
+          signin_access_point,
+          signin_reason,
           OneClickSigninSyncStarter::CURRENT_PROFILE,
           OneClickSigninSyncStarter::CONFIRM_SYNC_SETTINGS_FIRST,
-          web_contents,
           OneClickSigninSyncStarter::CONFIRM_AFTER_SIGNIN,
-          GURL() /* current_url */,
-          GURL() /* continue_url */,
           callback) {
   DCHECK(signin::IsDicePrepareMigrationEnabled());
 }
@@ -508,12 +505,8 @@ void OneClickSigninSyncStarter::SigninFailed(
 }
 
 void OneClickSigninSyncStarter::SigninSuccess() {
-  if (!current_url_.is_valid())  // Could be invalid for tests.
-    return;
-  signin_metrics::LogSigninAccessPointCompleted(
-      signin::GetAccessPointForPromoURL(current_url_));
-  signin_metrics::LogSigninReason(
-      signin::GetSigninReasonForPromoURL(current_url_));
+  signin_metrics::LogSigninAccessPointCompleted(signin_access_point_);
+  signin_metrics::LogSigninReason(signin_reason_);
   base::RecordAction(base::UserMetricsAction("Signin_Signin_Succeed"));
 }
 
