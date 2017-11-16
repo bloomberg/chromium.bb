@@ -15,9 +15,10 @@
 namespace content {
 
 // Wrapper class that adds cross-origin resource sharing capabilities
-// (https://www.w3.org/TR/cors/), delegating requests as well as potential
-// preflight requests to the supplied |network_loader_factory|. It is owned by
-// the CORSURLLoaderFactory that created it.
+// (https://fetch.spec.whatwg.org/#http-cors-protocol), delegating requests as
+// well as potential preflight requests to the supplied
+// |network_loader_factory|. It is owned by the CORSURLLoaderFactory that
+// created it.
 class CONTENT_EXPORT CORSURLLoader : public mojom::URLLoader,
                                      public mojom::URLLoaderClient {
  public:
