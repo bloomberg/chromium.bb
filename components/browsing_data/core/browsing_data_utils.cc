@@ -34,6 +34,7 @@ base::Time CalculateBeginDeleteTime(TimePeriod time_period) {
       diff = base::TimeDelta::FromHours(4 * 7 * 24);
       break;
     case TimePeriod::ALL_TIME:
+    case TimePeriod::OLDER_THAN_30_DAYS:
       delete_begin_time = base::Time();
       break;
   }
@@ -41,7 +42,9 @@ base::Time CalculateBeginDeleteTime(TimePeriod time_period) {
 }
 
 base::Time CalculateEndDeleteTime(TimePeriod time_period) {
-  // No TimePeriod currently supports the second time bound.
+  if (time_period == TimePeriod::OLDER_THAN_30_DAYS) {
+    return base::Time::Now() - base::TimeDelta::FromDays(30);
+  }
   return base::Time::Max();
 }
 
@@ -63,6 +66,10 @@ void RecordDeletionForPeriod(TimePeriod period) {
     case TimePeriod::ALL_TIME:
       base::RecordAction(
           base::UserMetricsAction("ClearBrowsingData_Everything"));
+      break;
+    case TimePeriod::OLDER_THAN_30_DAYS:
+      base::RecordAction(
+          base::UserMetricsAction("ClearBrowsingData_OlderThan30Days"));
       break;
   }
 }
@@ -88,6 +95,10 @@ void RecordTimePeriodChange(TimePeriod period) {
     case TimePeriod::ALL_TIME:
       base::RecordAction(base::UserMetricsAction(
           "ClearBrowsingData_TimePeriodChanged_Everything"));
+      break;
+    case TimePeriod::OLDER_THAN_30_DAYS:
+      base::RecordAction(base::UserMetricsAction(
+          "ClearBrowsingData_TimePeriodChanged_OlderThan30Days"));
       break;
   }
 }

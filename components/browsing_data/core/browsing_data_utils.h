@@ -43,7 +43,8 @@ enum class TimePeriod {
   LAST_WEEK,
   FOUR_WEEKS,
   ALL_TIME,
-  TIME_PERIOD_LAST = ALL_TIME
+  OLDER_THAN_30_DAYS,
+  TIME_PERIOD_LAST = OLDER_THAN_30_DAYS
 };
 
 // Calculate the begin time for the deletion range specified by |time_period|.

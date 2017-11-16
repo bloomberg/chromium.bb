@@ -24371,6 +24371,7 @@ from previous Chrome versions.
   <int value="-1778993296" label="ContextualSearchMlTapSuppression:disabled"/>
   <int value="-1772172557" label="enable-osk-overscroll"/>
   <int value="-1767470652" label="out-of-process-pdf"/>
+  <int value="-1755301960" label="ClearOldBrowsingData:enabled"/>
   <int value="-1751928267" label="disable-icon-ntp"/>
   <int value="-1749176684" label="PauseBackgroundTabs:disabled"/>
   <int value="-1746767834" label="ssl-interstitial-v2-gray"/>
@@ -25592,6 +25593,7 @@ from previous Chrome versions.
   <int value="1697189972" label="WebPaymentsSingleAppUiSkip:disabled"/>
   <int value="1700394127" label="OverlayScrollbar:disabled"/>
   <int value="1701972870" label="NTPSnippetsIncreasedVisibility:enabled"/>
+  <int value="1702090999" label="ClearOldBrowsingData:disabled"/>
   <int value="1702821235" label="WebAssembly:enabled"/>
   <int value="1705724232" label="use-android-midi-api"/>
   <int value="1713230497" label="ColorCorrectRendering:disabled"/>
