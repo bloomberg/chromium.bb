@@ -26,10 +26,10 @@
 #ifndef AudioProcessingEvent_h
 #define AudioProcessingEvent_h
 
+#include "base/memory/scoped_refptr.h"
 #include "modules/EventModules.h"
 #include "modules/webaudio/AudioBuffer.h"
 #include "modules/webaudio/AudioProcessingEventInit.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

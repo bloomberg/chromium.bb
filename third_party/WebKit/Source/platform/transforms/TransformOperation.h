@@ -25,11 +25,11 @@
 #ifndef TransformOperation_h
 #define TransformOperation_h
 
+#include "base/memory/scoped_refptr.h"
 #include "platform/geometry/FloatSize.h"
 #include "platform/transforms/TransformationMatrix.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/RefCounted.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

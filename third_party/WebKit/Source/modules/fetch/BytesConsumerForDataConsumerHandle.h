@@ -5,10 +5,10 @@
 #ifndef BytesConsumerForDataConsumerHandle_h
 #define BytesConsumerForDataConsumerHandle_h
 
+#include "base/memory/scoped_refptr.h"
 #include "modules/ModulesExport.h"
 #include "modules/fetch/BytesConsumer.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebDataConsumerHandle.h"
 

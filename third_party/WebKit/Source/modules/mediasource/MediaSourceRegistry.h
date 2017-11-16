@@ -31,10 +31,10 @@
 #ifndef MediaSourceRegistry_h
 #define MediaSourceRegistry_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/html/URLRegistry.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/HashMap.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/text/StringHash.h"
 
 namespace blink {

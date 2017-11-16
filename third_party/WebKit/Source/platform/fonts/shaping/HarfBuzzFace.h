@@ -31,12 +31,12 @@
 #ifndef HarfBuzzFace_h
 #define HarfBuzzFace_h
 
+#include "base/memory/scoped_refptr.h"
 #include "platform/fonts/UnicodeRangeSet.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/RefCounted.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/text/CharacterNames.h"
 
 #include <hb.h>

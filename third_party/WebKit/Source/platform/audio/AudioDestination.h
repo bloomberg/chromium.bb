@@ -30,10 +30,10 @@
 #define AudioDestination_h
 
 #include <memory>
+#include "base/memory/scoped_refptr.h"
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/AudioIOCallback.h"
 #include "platform/wtf/ThreadSafeRefCounted.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebAudioDevice.h"
 #include "public/platform/WebThread.h"

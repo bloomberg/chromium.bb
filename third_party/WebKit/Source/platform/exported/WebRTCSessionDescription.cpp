@@ -30,8 +30,8 @@
 
 #include "public/platform/WebRTCSessionDescription.h"
 
+#include "base/memory/scoped_refptr.h"
 #include "platform/wtf/RefCounted.h"
-#include "platform/wtf/RefPtr.h"
 #include "public/platform/WebString.h"
 
 namespace blink {

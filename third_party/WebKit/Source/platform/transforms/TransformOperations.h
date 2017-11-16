@@ -25,10 +25,10 @@
 #ifndef TransformOperations_h
 #define TransformOperations_h
 
+#include "base/memory/scoped_refptr.h"
 #include "platform/geometry/LayoutSize.h"
 #include "platform/transforms/TransformOperation.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {

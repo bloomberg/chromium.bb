@@ -5,11 +5,11 @@
 #ifndef FontFallbackIterator_h
 #define FontFallbackIterator_h
 
+#include "base/memory/scoped_refptr.h"
 #include "platform/fonts/FontDataForRangeSet.h"
 #include "platform/fonts/FontFallbackPriority.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/RefCounted.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/Unicode.h"
 

@@ -24,11 +24,11 @@
  */
 
 #include "platform/audio/HRTFPanner.h"
+#include "base/memory/scoped_refptr.h"
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/AudioUtilities.h"
 #include "platform/audio/HRTFDatabase.h"
 #include "platform/wtf/MathExtras.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

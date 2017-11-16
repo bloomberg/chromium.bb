@@ -26,10 +26,10 @@
 #ifndef WebGLProgram_h
 #define WebGLProgram_h
 
+#include "base/memory/scoped_refptr.h"
 #include "modules/webgl/WebGLShader.h"
 #include "modules/webgl/WebGLSharedPlatform3DObject.h"
 #include "platform/bindings/TraceWrapperMember.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

@@ -31,10 +31,10 @@
 #ifndef CalculationValue_h
 #define CalculationValue_h
 
+#include "base/memory/scoped_refptr.h"
 #include "platform/Length.h"
 #include "platform/LengthFunctions.h"
 #include "platform/wtf/RefCounted.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

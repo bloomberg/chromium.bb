@@ -21,9 +21,9 @@
 #ifndef CustomFontData_h
 #define CustomFontData_h
 
+#include "base/memory/scoped_refptr.h"
 #include "platform/PlatformExport.h"
 #include "platform/wtf/RefCounted.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

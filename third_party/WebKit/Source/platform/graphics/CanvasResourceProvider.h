@@ -5,11 +5,11 @@
 #ifndef CanvasResourceProvider_h
 #define CanvasResourceProvider_h
 
+#include "base/memory/scoped_refptr.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/CanvasColorParams.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/RefCounted.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/WeakPtr.h"
 #include "third_party/khronos/GLES2/gl2.h"

@@ -5,10 +5,10 @@
 #ifndef SetSinkIdCallbacks_h
 #define SetSinkIdCallbacks_h
 
+#include "base/memory/scoped_refptr.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebSetSinkIdCallbacks.h"
 

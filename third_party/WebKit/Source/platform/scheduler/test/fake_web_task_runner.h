@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "platform/WebTaskRunner.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 namespace scheduler {

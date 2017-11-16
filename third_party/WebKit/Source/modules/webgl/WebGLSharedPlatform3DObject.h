@@ -5,8 +5,8 @@
 #ifndef WebGLSharedPlatform3DObject_h
 #define WebGLSharedPlatform3DObject_h
 
+#include "base/memory/scoped_refptr.h"
 #include "modules/webgl/WebGLSharedObject.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

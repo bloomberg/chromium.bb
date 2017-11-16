@@ -29,10 +29,10 @@
 #ifndef SecurityOriginHash_h
 #define SecurityOriginHash_h
 
+#include "base/memory/scoped_refptr.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

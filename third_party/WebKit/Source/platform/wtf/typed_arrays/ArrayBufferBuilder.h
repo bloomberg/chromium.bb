@@ -31,9 +31,9 @@
 #ifndef ArrayBufferBuilder_h
 #define ArrayBufferBuilder_h
 
+#include "base/memory/scoped_refptr.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/text/WTFString.h"
 #include "platform/wtf/typed_arrays/ArrayBuffer.h"
 

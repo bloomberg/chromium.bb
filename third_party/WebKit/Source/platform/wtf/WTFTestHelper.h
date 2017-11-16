@@ -5,10 +5,10 @@
 #ifndef WTF_WTFTestHelper_h
 #define WTF_WTFTestHelper_h
 
+#include "base/memory/scoped_refptr.h"
 #include "platform/wtf/HashFunctions.h"
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/RefCounted.h"
-#include "platform/wtf/RefPtr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace WTF {

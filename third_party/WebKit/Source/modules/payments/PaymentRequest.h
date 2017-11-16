@@ -5,6 +5,7 @@
 #ifndef PaymentRequest_h
 #define PaymentRequest_h
 
+#include "base/memory/scoped_refptr.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "core/dom/ContextLifecycleObserver.h"
@@ -20,7 +21,6 @@
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Compiler.h"
 #include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/modules/payments/payment_request.mojom-blink.h"

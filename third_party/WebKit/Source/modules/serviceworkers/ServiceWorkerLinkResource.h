@@ -5,10 +5,10 @@
 #ifndef ServiceWorkerLinkResource_h
 #define ServiceWorkerLinkResource_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/html/LinkResource.h"
 #include "modules/ModulesExport.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

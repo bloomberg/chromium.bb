@@ -30,10 +30,10 @@
 
 #include "modules/quota/DOMWindowQuota.h"
 
+#include "base/memory/scoped_refptr.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "modules/quota/DeprecatedStorageInfo.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

@@ -24,8 +24,8 @@
 
 #include "public/platform/WebAudioBus.h"
 
+#include "base/memory/scoped_refptr.h"
 #include "platform/audio/AudioBus.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

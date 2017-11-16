@@ -5,10 +5,10 @@
 #ifndef AudioWorkletNode_h
 #define AudioWorkletNode_h
 
+#include "base/memory/scoped_refptr.h"
 #include "modules/webaudio/AudioNode.h"
 #include "modules/webaudio/AudioParamMap.h"
 #include "modules/webaudio/AudioWorkletNodeOptions.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Threading.h"
 
 namespace blink {

@@ -25,12 +25,12 @@
 #ifndef TimingFunction_h
 #define TimingFunction_h
 
+#include "base/memory/scoped_refptr.h"
 #include "cc/animation/timing_function.h"
 #include "platform/PlatformExport.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/RefCounted.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/text/WTFString.h"
 

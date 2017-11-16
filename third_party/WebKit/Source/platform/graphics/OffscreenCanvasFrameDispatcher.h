@@ -5,10 +5,10 @@
 #ifndef OffscreenCanvasFrameDispatcher_h
 #define OffscreenCanvasFrameDispatcher_h
 
+#include "base/memory/scoped_refptr.h"
 #include "platform/PlatformExport.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/geometry/IntRect.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/WeakPtr.h"
 
 namespace blink {

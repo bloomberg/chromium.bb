@@ -29,10 +29,10 @@
 #ifndef IDBEventDispatcher_h
 #define IDBEventDispatcher_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/dom/events/EventTarget.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {

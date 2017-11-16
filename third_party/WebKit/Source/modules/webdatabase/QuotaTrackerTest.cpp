@@ -4,8 +4,8 @@
 
 #include "modules/webdatabase/QuotaTracker.h"
 
+#include "base/memory/scoped_refptr.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "platform/wtf/RefPtr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {

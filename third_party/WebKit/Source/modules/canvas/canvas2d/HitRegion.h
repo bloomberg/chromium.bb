@@ -5,12 +5,12 @@
 #ifndef HitRegion_h
 #define HitRegion_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/dom/Element.h"
 #include "modules/canvas/canvas2d/HitRegionOptions.h"
 #include "platform/graphics/Path.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

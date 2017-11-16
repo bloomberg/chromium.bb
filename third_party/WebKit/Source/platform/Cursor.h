@@ -26,11 +26,11 @@
 #ifndef Cursor_h
 #define Cursor_h
 
+#include "base/memory/scoped_refptr.h"
 #include "platform/PlatformExport.h"
 #include "platform/geometry/IntPoint.h"
 #include "platform/graphics/Image.h"
 #include "platform/wtf/Assertions.h"
-#include "platform/wtf/RefPtr.h"
 
 // To avoid conflicts with the CreateWindow macro from the Windows SDK...
 #undef CopyCursor

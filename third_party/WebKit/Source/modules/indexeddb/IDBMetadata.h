@@ -29,11 +29,11 @@
 #ifndef IDBMetadata_h
 #define IDBMetadata_h
 
+#include "base/memory/scoped_refptr.h"
 #include "modules/indexeddb/IDBKeyPath.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/RefCounted.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/text/StringHash.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/modules/indexeddb/WebIDBMetadata.h"

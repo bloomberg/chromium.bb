@@ -5,6 +5,7 @@
 #include "modules/fetch/Body.h"
 
 #include <memory>
+#include "base/memory/scoped_refptr.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/V8ArrayBuffer.h"
 #include "core/dom/ExecutionContext.h"
@@ -18,7 +19,6 @@
 #include "platform/bindings/ScriptState.h"
 #include "platform/bindings/V8ThrowException.h"
 #include "platform/network/ParsedContentType.h"
-#include "platform/wtf/RefPtr.h"
 #include "public/platform/WebDataConsumerHandle.h"
 
 namespace blink {

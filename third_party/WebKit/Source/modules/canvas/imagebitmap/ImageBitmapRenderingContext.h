@@ -5,10 +5,10 @@
 #ifndef ImageBitmapRenderingContext_h
 #define ImageBitmapRenderingContext_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/html/canvas/CanvasRenderingContextFactory.h"
 #include "modules/ModulesExport.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

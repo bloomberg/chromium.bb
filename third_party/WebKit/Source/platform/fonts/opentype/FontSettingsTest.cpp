@@ -4,7 +4,7 @@
 
 #include "platform/fonts/opentype/FontSettings.h"
 
-#include "platform/wtf/RefPtr.h"
+#include "base/memory/scoped_refptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {

@@ -5,6 +5,7 @@
 #include "modules/fetch/Response.h"
 
 #include <memory>
+#include "base/memory/scoped_refptr.h"
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8ArrayBuffer.h"
@@ -32,7 +33,6 @@
 #include "platform/network/HTTPHeaderMap.h"
 #include "platform/network/NetworkUtils.h"
 #include "platform/network/http_names.h"
-#include "platform/wtf/RefPtr.h"
 #include "public/platform/WebCORS.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerResponse.h"
 #include "services/network/public/interfaces/fetch_api.mojom-blink.h"

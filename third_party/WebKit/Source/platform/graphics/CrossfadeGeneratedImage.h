@@ -26,11 +26,11 @@
 #ifndef CrossfadeGeneratedImage_h
 #define CrossfadeGeneratedImage_h
 
+#include "base/memory/scoped_refptr.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/GeneratedImage.h"
 #include "platform/graphics/Image.h"
 #include "platform/graphics/ImageObserver.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

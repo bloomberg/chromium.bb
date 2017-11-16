@@ -29,11 +29,11 @@
 #ifndef AudioBuffer_h
 #define AudioBuffer_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/typed_arrays/ArrayBufferViewHelpers.h"
 #include "core/typed_arrays/DOMTypedArray.h"
 #include "modules/ModulesExport.h"
 #include "platform/bindings/ScriptWrappable.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {

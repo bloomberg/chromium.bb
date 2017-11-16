@@ -5,9 +5,9 @@
 #ifndef SegmentReader_h
 #define SegmentReader_h
 
+#include "base/memory/scoped_refptr.h"
 #include "platform/SharedBuffer.h"
 #include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/ThreadSafeRefCounted.h"
 
 class SkData;

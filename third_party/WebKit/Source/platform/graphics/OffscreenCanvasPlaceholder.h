@@ -6,8 +6,8 @@
 #define OffscreenCanvasPlaceholder_h
 
 #include <memory>
+#include "base/memory/scoped_refptr.h"
 #include "platform/PlatformExport.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/WeakPtr.h"
 
 namespace blink {

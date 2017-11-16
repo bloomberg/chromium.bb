@@ -5,11 +5,11 @@
 #ifndef InstalledAppController_h
 #define InstalledAppController_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/frame/LocalFrame.h"
 #include "modules/ModulesExport.h"
 #include "platform/Supplementable.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
 #include "public/platform/WebVector.h"
 #include "public/platform/modules/installedapp/WebRelatedApplication.h"

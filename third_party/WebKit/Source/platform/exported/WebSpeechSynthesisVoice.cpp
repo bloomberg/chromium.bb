@@ -25,8 +25,8 @@
 
 #include "public/platform/WebSpeechSynthesisVoice.h"
 
+#include "base/memory/scoped_refptr.h"
 #include "platform/speech/PlatformSpeechSynthesisVoice.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

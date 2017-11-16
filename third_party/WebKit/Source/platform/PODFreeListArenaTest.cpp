@@ -25,8 +25,8 @@
 
 #include "platform/PODFreeListArena.h"
 
+#include "base/memory/scoped_refptr.h"
 #include "platform/testing/ArenaTestHelpers.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

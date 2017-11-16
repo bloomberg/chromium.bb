@@ -28,11 +28,11 @@
 #ifndef FrameData_h
 #define FrameData_h
 
+#include "base/memory/scoped_refptr.h"
 #include "platform/graphics/ImageOrientation.h"
 #include "platform/graphics/paint/PaintImage.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Time.h"
 #include "platform/wtf/VectorTraits.h"
 

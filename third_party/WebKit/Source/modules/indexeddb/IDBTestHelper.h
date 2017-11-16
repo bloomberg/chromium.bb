@@ -5,8 +5,8 @@
 #ifndef IDBTestHelper_h
 #define IDBTestHelper_h
 
+#include "base/memory/scoped_refptr.h"
 #include "modules/indexeddb/IDBValue.h"
-#include "platform/wtf/RefPtr.h"
 #include "v8/include/v8.h"
 
 namespace blink {

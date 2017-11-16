@@ -31,8 +31,8 @@
 #ifndef RTCStatsRequest_h
 #define RTCStatsRequest_h
 
+#include "base/memory/scoped_refptr.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {
