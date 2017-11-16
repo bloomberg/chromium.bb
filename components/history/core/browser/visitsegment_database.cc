@@ -16,6 +16,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "components/history/core/browser/page_usage_data.h"
 #include "sql/statement.h"
@@ -104,23 +105,29 @@ std::string VisitSegmentDatabase::ComputeSegmentName(const GURL& url) {
   // TODO(brettw) this should probably use the registry controlled
   // domains service.
   GURL::Replacements r;
-  const char kWWWDot[] = "www.";
-  const int kWWWDotLen = arraysize(kWWWDot) - 1;
-
   std::string host = url.host();
-  // Remove www. to avoid some dups.
-  if (static_cast<int>(host.size()) > kWWWDotLen &&
-      base::StartsWith(host, kWWWDot, base::CompareCase::INSENSITIVE_ASCII)) {
-    r.SetHost(host.c_str(),
-              url::Component(kWWWDotLen,
-                             static_cast<int>(host.size()) - kWWWDotLen));
+
+  // Strip various common prefixes in order to group the resulting hostnames
+  // together and avoid duplicates.
+  for (base::StringPiece prefix : {"www.", "m.", "mobile.", "touch."}) {
+    if (host.size() > prefix.size() &&
+        base::StartsWith(host, prefix, base::CompareCase::INSENSITIVE_ASCII)) {
+      r.SetHost(host.c_str(),
+                url::Component(prefix.size(), host.size() - prefix.size()));
+      break;
+    }
   }
+
   // Remove other stuff we don't want.
   r.ClearUsername();
   r.ClearPassword();
   r.ClearQuery();
   r.ClearRef();
   r.ClearPort();
+
+  // Canonicalize https to http in order to avoid duplicates.
+  if (url.SchemeIs(url::kHttpsScheme))
+    r.SetSchemeStr(url::kHttpScheme);
 
   return url.ReplaceComponents(r).spec();
 }
@@ -322,6 +329,86 @@ bool VisitSegmentDatabase::MigratePresentationIndex() {
       GetDB().Execute("DROP TABLE segments") &&
       GetDB().Execute("ALTER TABLE segments_tmp RENAME TO segments") &&
       transaction.Commit();
+}
+
+bool VisitSegmentDatabase::MigrateVisitSegmentNames() {
+  sql::Statement select(
+      GetDB().GetUniqueStatement("SELECT id, name FROM segments"));
+  if (!select.is_valid())
+    return false;
+
+  bool success = true;
+  while (select.Step()) {
+    SegmentID id = select.ColumnInt64(0);
+    std::string old_name = select.ColumnString(1);
+    std::string new_name = ComputeSegmentName(GURL(old_name));
+    if (new_name.empty() || old_name == new_name)
+      continue;
+
+    SegmentID to_segment_id = GetSegmentNamed(new_name);
+    if (to_segment_id) {
+      // |new_name| is already in use, so merge.
+      success = success && MergeSegments(/*from_segment_id=*/id, to_segment_id);
+    } else {
+      // Trivial rename of the segment.
+      success = success && RenameSegment(id, new_name);
+    }
+  }
+  return success;
+}
+
+bool VisitSegmentDatabase::RenameSegment(SegmentID segment_id,
+                                         const std::string& new_name) {
+  sql::Statement statement(GetDB().GetCachedStatement(
+      SQL_FROM_HERE, "UPDATE segments SET name = ? WHERE id = ?"));
+  statement.BindString(0, new_name);
+  statement.BindInt64(1, segment_id);
+  return statement.Run();
+}
+
+bool VisitSegmentDatabase::MergeSegments(SegmentID from_segment_id,
+                                         SegmentID to_segment_id) {
+  sql::Transaction transaction(&GetDB());
+  if (!transaction.Begin())
+    return false;
+
+  // For each time slot where there are visits for the absorbed segment
+  // (|from_segment_id|), add them to the absorbing/staying segment
+  // (|to_segment_id|).
+  sql::Statement select(
+      GetDB().GetCachedStatement(SQL_FROM_HERE,
+                                 "SELECT time_slot, visit_count FROM "
+                                 "segment_usage WHERE segment_id = ?"));
+  select.BindInt64(0, from_segment_id);
+  while (select.Step()) {
+    base::Time ts = base::Time::FromInternalValue(select.ColumnInt64(0));
+    int64_t visit_count = select.ColumnInt64(1);
+    IncreaseSegmentVisitCount(to_segment_id, ts, visit_count);
+  }
+
+  // Update all references in the visits database.
+  sql::Statement update(GetDB().GetCachedStatement(
+      SQL_FROM_HERE, "UPDATE visits SET segment_id = ? WHERE segment_id = ?"));
+  update.BindInt64(0, to_segment_id);
+  update.BindInt64(1, from_segment_id);
+  if (!update.Run())
+    return false;
+
+  // Delete old segment usage data.
+  sql::Statement deletion1(GetDB().GetCachedStatement(
+      SQL_FROM_HERE, "DELETE FROM segment_usage WHERE segment_id = ?"));
+  deletion1.BindInt64(0, from_segment_id);
+  if (!deletion1.Run())
+    return false;
+
+  // Delete old segment data.
+  sql::Statement deletion2(GetDB().GetCachedStatement(
+      SQL_FROM_HERE, "DELETE FROM segments WHERE id = ?"));
+  deletion2.BindInt64(0, from_segment_id);
+  if (!deletion2.Run())
+    return false;
+
+  return transaction.Commit();
 }
 
 }  // namespace history
