@@ -148,12 +148,14 @@ class DepsChecker(DepsBuilder):
     return self.CheckIncludesAndImports(
         added_includes, cpp_checker.CppChecker(self.verbose))
 
-  def CheckAddedJavaImports(self, added_imports):
+  def CheckAddedJavaImports(self, added_imports, allow_multiple_definitions=None):
     """This is used from PRESUBMIT.py to check new import statements added in
     the change being presubmit checked.
 
     Args:
       added_imports: ((file_path, (import_line, import_line, ...), ...)
+      allow_multiple_definitions: [file_name, file_name, ...]. List of java file
+                                  names allowing multipe definition in presubmit check.
 
     Return:
       A list of tuples, (bad_file_path, rule_type, rule_description)
@@ -163,7 +165,7 @@ class DepsChecker(DepsBuilder):
     return self.CheckIncludesAndImports(
         added_imports,
         java_checker.JavaChecker(self.base_directory, self.verbose,
-                                 added_imports))
+                                 added_imports, allow_multiple_definitions))
 
   def CheckAddedProtoImports(self, added_imports):
     """This is used from PRESUBMIT.py to check new #import statements added in

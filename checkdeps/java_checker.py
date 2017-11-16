@@ -37,10 +37,12 @@ class JavaChecker(object):
   # statements.
   _EXTRACT_IMPORT_PATH = re.compile('^import\s+(?:static\s+)?([\w\.]+)\s*;')
 
-  def __init__(self, base_directory, verbose, added_imports=None):
+  def __init__(self, base_directory, verbose, added_imports=None,
+               allow_multiple_definitions=None):
     self._base_directory = base_directory
     self._verbose = verbose
     self._classmap = {}
+    self._allow_multiple_definitions = allow_multiple_definitions or []
     if added_imports:
       added_classset = self._PrescanImportFiles(added_imports)
       self._PrescanFiles(added_classset)
@@ -113,10 +115,11 @@ class JavaChecker(object):
     if full_class_name:
       if full_class_name in self._classmap:
         if self._verbose or full_class_name in added_classset:
-          print 'WARNING: multiple definitions of %s:' % full_class_name
-          print '    ' + filepath
-          print '    ' + self._classmap[full_class_name]
-          print
+          if not any((re.match(i, filepath) for i in self._allow_multiple_definitions)):
+            print 'WARNING: multiple definitions of %s:' % full_class_name
+            print '    ' + filepath
+            print '    ' + self._classmap[full_class_name]
+            print
       else:
         self._classmap[full_class_name] = filepath
     elif self._verbose:
