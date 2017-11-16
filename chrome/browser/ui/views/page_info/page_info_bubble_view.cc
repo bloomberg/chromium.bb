@@ -666,6 +666,8 @@ gfx::Size PageInfoBubbleView::CalculatePreferredSize() const {
 
   int height = views::View::CalculatePreferredSize().height();
   int width = kMinBubbleWidth;
+  // Don't get any smaller than the current size.
+  width = std::max(width, GetLocalBounds().width());
   if (site_settings_view_) {
     width = std::max(width, permissions_view_->GetPreferredSize().width());
   }
