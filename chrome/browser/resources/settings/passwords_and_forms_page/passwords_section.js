@@ -246,11 +246,20 @@ Polymer({
     },
 
     /** @private */
-    showImportExportPasswords_: {
+    showExportPasswords_: {
       type: Boolean,
       value: function() {
-        return loadTimeData.valueExists('showImportExportPasswords') &&
-            loadTimeData.getBoolean('showImportExportPasswords');
+        return loadTimeData.valueExists('showExportPasswords') &&
+            loadTimeData.getBoolean('showExportPasswords');
+      }
+    },
+
+    /** @private */
+    showImportPasswords_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.valueExists('showImportPasswords') &&
+            loadTimeData.getBoolean('showImportPasswords');
       }
     },
 
@@ -503,6 +512,17 @@ Polymer({
    */
   getOnOffLabel_: function(toggleValue) {
     return toggleValue ? this.i18n('toggleOn') : this.i18n('toggleOff');
+  },
+
+  /**
+   * @private
+   * @param {boolean} showExportPasswords
+   * @param {boolean} showImportPasswords
+   * @return {boolean}
+   */
+  showImportOrExportPasswords_: function(
+      showExportPasswords, showImportPasswords) {
+    return showExportPasswords || showImportPasswords;
   }
 });
 })();

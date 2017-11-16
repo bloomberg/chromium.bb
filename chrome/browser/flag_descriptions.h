@@ -661,8 +661,11 @@ extern const char kPasswordForceSavingDescription[];
 extern const char kPasswordGenerationName[];
 extern const char kPasswordGenerationDescription[];
 
-extern const char kPasswordImportExportName[];
-extern const char kPasswordImportExportDescription[];
+extern const char kPasswordExportName[];
+extern const char kPasswordExportDescription[];
+
+extern const char kPasswordImportName[];
+extern const char kPasswordImportDescription[];
 
 extern const char kPasswordSelectionName[];
 extern const char kPasswordSelectionDescription[];

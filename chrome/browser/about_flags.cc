@@ -2562,10 +2562,14 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kProtectSyncCredentialOnReauthDescription, kOsAll,
      FEATURE_VALUE_TYPE(
          password_manager::features::kProtectSyncCredentialOnReauth)},
-    {"password-import-export", flag_descriptions::kPasswordImportExportName,
-     flag_descriptions::kPasswordImportExportDescription,
+    {"password-export", flag_descriptions::kPasswordExportName,
+     flag_descriptions::kPasswordExportDescription,
      kOsWin | kOsMac | kOsCrOS | kOsLinux,
-     FEATURE_VALUE_TYPE(password_manager::features::kPasswordImportExport)},
+     FEATURE_VALUE_TYPE(password_manager::features::kPasswordExport)},
+    {"password-import", flag_descriptions::kPasswordImportName,
+     flag_descriptions::kPasswordImportDescription,
+     kOsWin | kOsMac | kOsCrOS | kOsLinux,
+     FEATURE_VALUE_TYPE(password_manager::features::kPasswordImport)},
 #if defined(OS_CHROMEOS)
     {"enable-experimental-accessibility-features",
      flag_descriptions::kExperimentalAccessibilityFeaturesName,
