@@ -282,6 +282,8 @@ component("base") {
     "user_activity/user_activity_observer.h",
     "view_prop.cc",
     "view_prop.h",
+    "webui/i18n_source_stream.cc",
+    "webui/i18n_source_stream.h",
     "webui/jstemplate_builder.cc",
     "webui/jstemplate_builder.h",
     "webui/web_ui_util.cc",
@@ -785,6 +787,7 @@ test("ui_base_unittests") {
     "test/page_transition_types_unittest.cc",
     "test/run_all_unittests.cc",
     "user_activity/user_activity_detector_unittest.cc",
+    "webui/i18n_source_stream_unittest.cc",
   ]
   if (!is_ios) {
     sources += [
@@ -875,6 +878,7 @@ test("ui_base_unittests") {
     "//base/test:test_support",
     "//mojo/edk/system",
     "//net",
+    "//net:test_support",
     "//skia",
     "//testing/gmock",
     "//testing/gtest",

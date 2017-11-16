@@ -1442,7 +1442,6 @@ test("content_unittests") {
     "../browser/webauth/cbor/cbor_values_unittest.cc",
     "../browser/webauth/cbor/cbor_writer_unittest.cc",
     "../browser/websockets/websocket_manager_unittest.cc",
-    "../browser/webui/i18n_source_stream_unittest.cc",
     "../browser/webui/url_data_manager_backend_unittest.cc",
     "../browser/webui/web_ui_data_source_unittest.cc",
     "../browser/webui/web_ui_message_handler_unittest.cc",

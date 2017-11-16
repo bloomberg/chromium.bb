@@ -46,6 +46,7 @@ web::WebUIIOSDataSource* CreateSyncInternalsHTMLSource() {
   source->AddResourcePath(syncer::sync_ui_util::kTrafficLogJS,
                           IDR_SYNC_DRIVER_SYNC_INTERNALS_TRAFFIC_LOG_JS);
   source->SetDefaultResource(IDR_SYNC_DRIVER_SYNC_INTERNALS_INDEX_HTML);
+  source->UseGzip();
   return source;
 }
 

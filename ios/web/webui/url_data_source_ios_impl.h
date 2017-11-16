@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "ios/web/webui/url_data_manager_ios.h"
+#include "ui/base/template_expressions.h"
 
 namespace base {
 class RefCountedMemory;
@@ -63,6 +64,9 @@ class URLDataSourceIOSImpl
 
   const std::string& source_name() const { return source_name_; }
   URLDataSourceIOS* source() const { return source_.get(); }
+
+  // Replacements for i18n or null if no replacements are desired.
+  virtual const ui::TemplateReplacements* GetReplacements() const;
 
  protected:
   virtual ~URLDataSourceIOSImpl();

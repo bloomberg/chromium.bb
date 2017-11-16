@@ -103,6 +103,7 @@ class TestUI : public WebUIIOSController {
     source->AddResourcePath("mojo_bindings.js", IDR_IOS_MOJO_BINDINGS_JS);
     source->AddResourcePath("mojo_test.mojom.js", IDR_MOJO_TEST_MOJO_JS);
     source->SetDefaultResource(IDR_MOJO_TEST_HTML);
+    source->UseGzip();
 
     web::WebState* web_state = web_ui->GetWebState();
     web::WebUIIOSDataSource::Add(web_state->GetBrowserState(), source);

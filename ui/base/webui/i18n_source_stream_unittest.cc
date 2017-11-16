@@ -4,13 +4,13 @@
 
 #include <utility>
 
-#include "content/browser/webui/i18n_source_stream.h"
 #include "net/base/io_buffer.h"
 #include "net/base/test_completion_callback.h"
 #include "net/filter/mock_source_stream.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/webui/i18n_source_stream.h"
 
-namespace content {
+namespace ui {
 
 namespace {
 
@@ -160,7 +160,7 @@ class I18nSourceStreamTest : public ::testing::TestWithParam<I18nTestParam> {
   net::MockSourceStream* source_;
   std::unique_ptr<I18nSourceStream> stream_;
 
-  ui::TemplateReplacements replacements_;
+  TemplateReplacements replacements_;
 };
 
 INSTANTIATE_TEST_CASE_P(
@@ -262,4 +262,4 @@ TEST_P(I18nSourceStreamTest, LargeFilterTests) {
   EXPECT_EQ("i18n", stream()->Description());
 }
 
-}  // namespace content
+}  // namespace ui

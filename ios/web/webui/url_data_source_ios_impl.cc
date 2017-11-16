@@ -54,4 +54,8 @@ void URLDataSourceIOSImpl::SendResponseOnIOThread(
     backend_->DataAvailable(request_id, bytes.get());
 }
 
+const ui::TemplateReplacements* URLDataSourceIOSImpl::GetReplacements() const {
+  return nullptr;
+}
+
 }  // namespace web

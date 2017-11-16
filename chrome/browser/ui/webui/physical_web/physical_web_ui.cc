@@ -35,6 +35,7 @@ content::WebUIDataSource* CreatePhysicalWebHTMLSource() {
   source->SetDefaultResource(IDR_PHYSICAL_WEB_UI_HTML);
   source->AddResourcePath(physical_web_ui::kPhysicalWebLinkIcon,
                           IDR_PHYSICAL_WEB_UI_LINK_ICON);
+  source->UseGzip();
   return source;
 }
 

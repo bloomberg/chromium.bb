@@ -26,6 +26,7 @@ web::WebUIIOSDataSource* CreateOmahaUIHTMLSource() {
   source->SetJsonPath("strings.js");
   source->AddResourcePath("omaha.js", IDR_IOS_OMAHA_JS);
   source->SetDefaultResource(IDR_IOS_OMAHA_HTML);
+  source->UseGzip();
   return source;
 }
 

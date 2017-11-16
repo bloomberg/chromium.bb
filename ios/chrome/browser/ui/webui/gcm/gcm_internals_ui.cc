@@ -168,6 +168,7 @@ GCMInternalsUI::GCMInternalsUI(web::WebUIIOS* web_ui)
   html_source->AddResourcePath(gcm_driver::kGcmInternalsJS,
                                IDR_GCM_DRIVER_GCM_INTERNALS_JS);
   html_source->SetDefaultResource(IDR_GCM_DRIVER_GCM_INTERNALS_HTML);
+  html_source->UseGzip();
 
   web::WebUIIOSDataSource::Add(ios::ChromeBrowserState::FromWebUIIOS(web_ui),
                                html_source);

@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_WEBUI_I18N_SOURCE_STREAM_H_
-#define CONTENT_BROWSER_WEBUI_I18N_SOURCE_STREAM_H_
+#ifndef UI_BASE_WEBUI_I18N_SOURCE_STREAM_H_
+#define UI_BASE_WEBUI_I18N_SOURCE_STREAM_H_
 
 #include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "content/common/content_export.h"
 #include "net/filter/filter_source_stream.h"
 #include "ui/base/template_expressions.h"
+#include "ui/base/ui_base_export.h"
 
-namespace content {
+namespace ui {
 
-class CONTENT_EXPORT I18nSourceStream : public net::FilterSourceStream {
+class UI_BASE_EXPORT I18nSourceStream : public net::FilterSourceStream {
  public:
   ~I18nSourceStream() override;
 
@@ -29,7 +29,7 @@ class CONTENT_EXPORT I18nSourceStream : public net::FilterSourceStream {
  private:
   I18nSourceStream(std::unique_ptr<SourceStream> previous,
                    SourceStream::SourceType type,
-                   const ui::TemplateReplacements* replacements);
+                   const TemplateReplacements* replacements);
 
   // SourceStream implementation.
   std::string GetTypeAsString() const override;
@@ -51,11 +51,11 @@ class CONTENT_EXPORT I18nSourceStream : public net::FilterSourceStream {
   std::string output_;
 
   // A map of i18n replacement keys and translations.
-  const ui::TemplateReplacements* replacements_;  // weak
+  const TemplateReplacements* replacements_;  // weak
 
   DISALLOW_COPY_AND_ASSIGN(I18nSourceStream);
 };
 
-}  // namespace content
+}  // namespace ui
 
-#endif  // CONTENT_BROWSER_WEBUI_I18N_SOURCE_STREAM_H_
+#endif  // UI_BASE_WEBUI_I18N_SOURCE_STREAM_H_
