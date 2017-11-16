@@ -219,7 +219,7 @@ class PermissionManager::PermissionResponseCallback {
         request_answered_(false) {}
 
   ~PermissionResponseCallback() {
-    if (!request_answered_ &&
+    if (!request_answered_ && permission_manager_.get() &&
         permission_manager_->pending_requests_.Lookup(request_id_)) {
       permission_manager_->pending_requests_.Remove(request_id_);
     }
@@ -227,8 +227,10 @@ class PermissionManager::PermissionResponseCallback {
 
   void OnPermissionsRequestResponseStatus(ContentSetting content_setting) {
     request_answered_ = true;
-    permission_manager_->OnPermissionsRequestResponseStatus(
-        request_id_, permission_id_, content_setting);
+    if (permission_manager_.get()) {
+      permission_manager_->OnPermissionsRequestResponseStatus(
+          request_id_, permission_id_, content_setting);
+    }
   }
 
  private:
