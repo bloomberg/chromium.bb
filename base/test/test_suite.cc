@@ -4,6 +4,8 @@
 
 #include "base/test/test_suite.h"
 
+#include <signal.h>
+
 #include <memory>
 
 #include "base/at_exit.h"
@@ -314,6 +316,40 @@ void TestSuite::UnitTestAssertHandler(const char* file,
   _exit(1);
 }
 
+#if defined(OS_WIN)
+namespace {
+
+// Disable optimizations to prevent function folding or other transformations
+// that will make the call stacks on failures more confusing.
+#pragma optimize("", off)
+// Handlers for invalid parameter, pure call, and abort. They generate a
+// breakpoint to ensure that we get a call stack on these failures.
+void InvalidParameter(const wchar_t* expression,
+                      const wchar_t* function,
+                      const wchar_t* file,
+                      unsigned int line,
+                      uintptr_t reserved) {
+  // CRT printed message is sufficient.
+  __debugbreak();
+  _exit(1);
+}
+
+void PureCall() {
+  fprintf(stderr, "Pure-virtual function call. Terminating.\n");
+  __debugbreak();
+  _exit(1);
+}
+
+void AbortHandler(int signal) {
+  // Print EOL after the CRT abort message.
+  fprintf(stderr, "\n");
+  __debugbreak();
+}
+#pragma optimize("", on)
+
+}  // namespace
+#endif
+
 void TestSuite::SuppressErrorDialogs() {
 #if defined(OS_WIN)
   UINT new_flags = SEM_FAILCRITICALERRORS |
@@ -334,6 +370,11 @@ void TestSuite::SuppressErrorDialogs() {
   _CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDERR);
   _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_FILE | _CRTDBG_MODE_DEBUG);
 #endif  // defined(_DEBUG)
+
+  // See crbug.com/783040 for test code to trigger all of these failures.
+  _set_invalid_parameter_handler(InvalidParameter);
+  _set_purecall_handler(PureCall);
+  signal(SIGABRT, AbortHandler);
 #endif  // defined(OS_WIN)
 }
 
