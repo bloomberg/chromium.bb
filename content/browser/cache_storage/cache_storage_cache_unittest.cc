@@ -284,6 +284,11 @@ std::unique_ptr<crypto::SymmetricKey> CreateTestPaddingKey() {
                                       "abc123");
 }
 
+void OnBadMessage(base::Optional<bad_message::BadMessageReason>* result,
+                  bad_message::BadMessageReason reason) {
+  *result = reason;
+}
+
 }  // namespace
 
 // A CacheStorageCache that can optionally delay during backend creation.
@@ -427,12 +432,7 @@ class CacheStorageCacheTest : public testing::Test {
     for (int i = 0; i < 100; ++i)
       expected_blob_data_ += kTestData;
 
-    std::unique_ptr<storage::BlobDataBuilder> blob_data(
-        new storage::BlobDataBuilder("blob-id:myblob"));
-    blob_data->AppendData(expected_blob_data_);
-
-    blob_handle_ =
-        blob_storage_context->context()->AddFinishedBlob(blob_data.get());
+    blob_handle_ = BuildBlobHandle("blob-id:myblob", expected_blob_data_);
 
     scoped_refptr<storage::BlobHandle> blob;
     if (features::IsMojoBlobsEnabled()) {
@@ -481,6 +481,29 @@ class CacheStorageCacheTest : public testing::Test {
         std::move(cors_exposed_header_names));
   }
 
+  std::unique_ptr<storage::BlobDataHandle> BuildBlobHandle(
+      const std::string& uuid,
+      const std::string& data) {
+    std::unique_ptr<storage::BlobDataBuilder> builder =
+        std::make_unique<storage::BlobDataBuilder>(uuid);
+    builder->AppendData(data);
+    return blob_storage_context_->AddFinishedBlob(builder.get());
+  }
+
+  void CopySideDataToResponse(storage::BlobDataHandle* side_data_blob_handle,
+                              ServiceWorkerResponse* response) {
+    response->side_data_blob_uuid = side_data_blob_handle->uuid();
+    response->side_data_blob_size = side_data_blob_handle->size();
+    if (features::IsMojoBlobsEnabled()) {
+      blink::mojom::BlobPtr blob_ptr;
+      storage::BlobImpl::Create(
+          std::make_unique<storage::BlobDataHandle>(*side_data_blob_handle),
+          MakeRequest(&blob_ptr));
+      response->side_data_blob =
+          base::MakeRefCounted<storage::BlobHandle>(std::move(blob_ptr));
+    }
+  }
+
   std::unique_ptr<ServiceWorkerFetchRequest> CopyFetchRequest(
       const ServiceWorkerFetchRequest& request) {
     return std::make_unique<ServiceWorkerFetchRequest>(
@@ -495,7 +518,8 @@ class CacheStorageCacheTest : public testing::Test {
     cache_->BatchOperation(
         operations,
         base::BindOnce(&CacheStorageCacheTest::ErrorTypeCallback,
-                       base::Unretained(this), base::Unretained(loop.get())));
+                       base::Unretained(this), base::Unretained(loop.get())),
+        base::BindOnce(&OnBadMessage, base::Unretained(&bad_message_reason_)));
     // TODO(jkarlin): These functions should use base::RunLoop().RunUntilIdle()
     // once the cache uses a passed in task runner instead of the CACHE thread.
     loop->Run();
@@ -750,6 +774,7 @@ class CacheStorageCacheTest : public testing::Test {
   std::unique_ptr<ServiceWorkerResponse> callback_response_;
   std::unique_ptr<storage::BlobDataHandle> callback_response_data_;
   std::vector<std::string> callback_strings_;
+  base::Optional<bad_message::BadMessageReason> bad_message_reason_;
   bool callback_closed_ = false;
   int64_t callback_size_ = 0;
 };
@@ -888,7 +913,7 @@ TEST_P(CacheStorageCacheTestP, ResponseURLEmpty) {
   EXPECT_EQ(0u, callback_response_->url_list.size());
 }
 
-TEST_F(CacheStorageCacheTest, PutBodyDropBlobRef) {
+TEST_P(CacheStorageCacheTestP, PutBodyDropBlobRef) {
   CacheStorageBatchOperation operation;
   operation.operation_type = CACHE_STORAGE_CACHE_OPERATION_TYPE_PUT;
   operation.request = body_request_;
@@ -898,13 +923,29 @@ TEST_F(CacheStorageCacheTest, PutBodyDropBlobRef) {
   cache_->BatchOperation(
       std::vector<CacheStorageBatchOperation>(1, operation),
       base::BindOnce(&CacheStorageCacheTestP::ErrorTypeCallback,
-                     base::Unretained(this), base::Unretained(loop.get())));
+                     base::Unretained(this), base::Unretained(loop.get())),
+      CacheStorageCache::BadMessageCallback());
   // The handle should be held by the cache now so the deref here should be
   // okay.
   blob_handle_.reset();
   loop->Run();
 
   EXPECT_EQ(CacheStorageError::kSuccess, callback_error_);
+}
+
+TEST_P(CacheStorageCacheTestP, PutBadMessage) {
+  CacheStorageBatchOperation operation;
+  operation.operation_type = CACHE_STORAGE_CACHE_OPERATION_TYPE_PUT;
+  operation.request = body_request_;
+  operation.response = body_response_;
+  operation.response.blob_size = UINT64_MAX;
+
+  std::vector<CacheStorageBatchOperation> operations =
+      std::vector<CacheStorageBatchOperation>(2, operation);
+  EXPECT_EQ(CacheStorageError::kErrorStorage, BatchOperation(operations));
+  EXPECT_EQ(bad_message::CSDH_UNEXPECTED_OPERATION, *bad_message_reason_);
+
+  EXPECT_FALSE(Match(body_request_));
 }
 
 TEST_P(CacheStorageCacheTestP, PutReplace) {
@@ -1449,6 +1490,83 @@ TEST_P(CacheStorageCacheTestP, PutResponseType) {
       TestResponseType(network::mojom::FetchResponseType::kOpaqueRedirect));
 }
 
+TEST_P(CacheStorageCacheTestP, PutWithSideData) {
+  ServiceWorkerResponse response(body_response_);
+
+  const std::string expected_side_data = "SideData";
+  std::unique_ptr<storage::BlobDataHandle> side_data_blob_handle =
+      BuildBlobHandle("blob-id:mysideblob", expected_side_data);
+
+  CopySideDataToResponse(side_data_blob_handle.get(), &response);
+  EXPECT_TRUE(Put(body_request_, response));
+
+  EXPECT_TRUE(Match(body_request_));
+  EXPECT_TRUE(callback_response_data_);
+  EXPECT_TRUE(
+      ResponseBodiesEqual(expected_blob_data_, *callback_response_data_));
+  EXPECT_TRUE(
+      ResponseSideDataEqual(expected_side_data, *callback_response_data_));
+}
+
+TEST_P(CacheStorageCacheTestP, PutWithSideData_QuotaExceeded) {
+  mock_quota_manager_->SetQuota(GURL(kOrigin), storage::kStorageTypeTemporary,
+                                expected_blob_data_.size() - 1);
+  ServiceWorkerResponse response(body_response_);
+  const std::string expected_side_data = "SideData";
+  std::unique_ptr<storage::BlobDataHandle> side_data_blob_handle =
+      BuildBlobHandle("blob-id:mysideblob", expected_side_data);
+
+  CopySideDataToResponse(side_data_blob_handle.get(), &response);
+  // When the available space is not enough for the body, Put operation must
+  // fail.
+  EXPECT_FALSE(Put(body_request_, response));
+  EXPECT_EQ(CacheStorageError::kErrorQuotaExceeded, callback_error_);
+}
+
+TEST_P(CacheStorageCacheTestP, PutWithSideData_QuotaExceededSkipSideData) {
+  mock_quota_manager_->SetQuota(GURL(kOrigin), storage::kStorageTypeTemporary,
+                                expected_blob_data_.size());
+  ServiceWorkerResponse response(body_response_);
+  const std::string expected_side_data = "SideData";
+  std::unique_ptr<storage::BlobDataHandle> side_data_blob_handle =
+      BuildBlobHandle("blob-id:mysideblob", expected_side_data);
+
+  CopySideDataToResponse(side_data_blob_handle.get(), &response);
+  // When the available space is enough for the body but not enough for the side
+  // data, Put operation must succeed.
+  EXPECT_TRUE(Put(body_request_, response));
+
+  EXPECT_TRUE(Match(body_request_));
+  EXPECT_TRUE(callback_response_data_);
+  EXPECT_TRUE(
+      ResponseBodiesEqual(expected_blob_data_, *callback_response_data_));
+  // The side data should not be written.
+  EXPECT_TRUE(ResponseSideDataEqual("", *callback_response_data_));
+}
+
+TEST_P(CacheStorageCacheTestP, PutWithSideData_BadMessage) {
+  ServiceWorkerResponse response(body_response_);
+
+  const std::string expected_side_data = "SideData";
+  std::unique_ptr<storage::BlobDataHandle> side_data_blob_handle =
+      BuildBlobHandle("blob-id:mysideblob", expected_side_data);
+
+  CopySideDataToResponse(side_data_blob_handle.get(), &response);
+
+  CacheStorageBatchOperation operation;
+  operation.operation_type = CACHE_STORAGE_CACHE_OPERATION_TYPE_PUT;
+  operation.request = body_request_;
+  operation.response = response;
+  operation.response.blob_size = UINT64_MAX;
+
+  std::vector<CacheStorageBatchOperation> operations =
+      std::vector<CacheStorageBatchOperation>(1, operation);
+  EXPECT_EQ(CacheStorageError::kErrorStorage, BatchOperation(operations));
+  EXPECT_EQ(bad_message::CSDH_UNEXPECTED_OPERATION, *bad_message_reason_);
+
+  EXPECT_FALSE(Match(body_request_));
+}
+
 TEST_P(CacheStorageCacheTestP, WriteSideData) {
   base::Time response_time(base::Time::Now());
   ServiceWorkerResponse response(body_response_);
@@ -1777,7 +1895,8 @@ TEST_P(CacheStorageCacheTestP, VerifySerialScheduling) {
       std::vector<CacheStorageBatchOperation>(1, operation1),
       base::BindOnce(&CacheStorageCacheTest::SequenceCallback,
                      base::Unretained(this), 1, &sequence_out,
-                     close_loop1.get()));
+                     close_loop1.get()),
+      CacheStorageCache::BadMessageCallback());
 
   // Blocks on creating the cache entry.
   base::RunLoop().RunUntilIdle();
@@ -1793,7 +1912,8 @@ TEST_P(CacheStorageCacheTestP, VerifySerialScheduling) {
       std::vector<CacheStorageBatchOperation>(1, operation2),
       base::BindOnce(&CacheStorageCacheTest::SequenceCallback,
                      base::Unretained(this), 2, &sequence_out,
-                     close_loop2.get()));
+                     close_loop2.get()),
+      CacheStorageCache::BadMessageCallback());
 
   // The second put operation should wait for the first to complete.
   base::RunLoop().RunUntilIdle();

@@ -143,6 +143,7 @@ size_t ServiceWorkerResponse::EstimatedStructSize() {
   }
   for (const auto& header : cors_exposed_header_names)
     size += header.size();
+  size += side_data_blob_uuid.size();
   return size;
 }
 

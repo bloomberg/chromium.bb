@@ -16,6 +16,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "content/browser/bad_message.h"
 #include "content/common/cache_storage/cache_storage_types.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "net/base/io_buffer.h"
@@ -58,6 +59,8 @@ class CONTENT_EXPORT CacheStorageCache {
  public:
   using ErrorCallback =
       base::OnceCallback<void(blink::mojom::CacheStorageError)>;
+  using BadMessageCallback =
+      base::OnceCallback<void(bad_message::BadMessageReason)>;
   using ResponseCallback =
       base::OnceCallback<void(blink::mojom::CacheStorageError,
                               std::unique_ptr<ServiceWorkerResponse>,
@@ -139,11 +142,14 @@ class CONTENT_EXPORT CacheStorageCache {
   // TODO(nhiroki): This function should run all operations atomically.
   // http://crbug.com/486637
   void BatchOperation(const std::vector<CacheStorageBatchOperation>& operations,
-                      ErrorCallback callback);
+                      ErrorCallback callback,
+                      BadMessageCallback bad_message_callback);
   void BatchDidGetUsageAndQuota(
       const std::vector<CacheStorageBatchOperation>& operations,
       ErrorCallback callback,
-      int64_t space_required,
+      BadMessageCallback bad_message_callback,
+      uint64_t space_required,
+      uint64_t side_data_size,
       storage::QuotaStatusCode status_code,
       int64_t usage,
       int64_t quota);
@@ -351,6 +357,8 @@ class CONTENT_EXPORT CacheStorageCache {
   void PutDidWriteHeaders(std::unique_ptr<PutContext> put_context,
                           int expected_bytes,
                           int rv);
+  void PutWriteBlobToCache(std::unique_ptr<PutContext> put_context,
+                           int disk_cache_body_index);
   void PutDidWriteBlobToCache(std::unique_ptr<PutContext> put_context,
                               BlobToDiskCacheIDMap::KeyType blob_to_cache_key,
                               disk_cache::ScopedEntryPtr entry,
