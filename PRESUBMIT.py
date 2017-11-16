@@ -450,6 +450,7 @@ _KNOWN_INVALID_JSON_FILE_PATTERNS = [
     r'test[\\\/]data[\\\/]',
     r'^components[\\\/]policy[\\\/]resources[\\\/]policy_templates\.json$',
     r'^third_party[\\\/]protobuf[\\\/]',
+    r'^third_party[\\\/]WebKit[\\\/]LayoutTests[\\\/]external[\\\/]wpt[\\\/]',
 ]
 
 
