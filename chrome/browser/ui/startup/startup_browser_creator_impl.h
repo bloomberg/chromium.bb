@@ -145,7 +145,8 @@ class StartupBrowserCreatorImpl {
                                    const StartupTabs& cmd_line_tabs,
                                    bool process_startup,
                                    bool is_ephemeral_profile,
-                                   bool is_post_crash_launch);
+                                   bool is_post_crash_launch,
+                                   bool are_startup_urls_managed);
 
   // Begins an asynchronous session restore if current state allows it (e.g.,
   // this is not process startup) and SessionService indicates that one is
