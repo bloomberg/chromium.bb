@@ -25,21 +25,12 @@ JNI_EXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
   base::android::InitVM(vm);
   JNIEnv* env = base::android::AttachCurrentThread();
 
-  if (!base::android::IsSelectiveJniRegistrationEnabled(env)) {
-    if (!RegisterNonMainDexNatives(env)) {
-      return -1;
-    }
-  }
-
-  if (!RegisterMainDexNatives(env)) {
+  if (!base::android::IsSelectiveJniRegistrationEnabled(env) &&
+      !RegisterNonMainDexNatives(env)) {
     return -1;
   }
-
-  // TODO(agrieve): Delete this block, this is a no-op now.
-  // https://crbug.com/683256.
-  if (base::android::IsSelectiveJniRegistrationEnabled(env)) {
-    base::android::SetJniRegistrationType(
-        base::android::SELECTIVE_JNI_REGISTRATION);
+  if (!RegisterMainDexNatives(env)) {
+    return -1;
   }
   if (!android::OnJNIOnLoadRegisterJNI(env)) {
     return -1;

@@ -322,7 +322,7 @@ static const JNINativeMethod kMethodsNativeCallbacks[] = {
 };
 
 static bool RegisterNativesImpl(JNIEnv* env) {
-  if (jni_generator::ShouldSkipJniRegistration(false))
+  if (base::android::IsSelectiveJniRegistrationEnabled(env))
     return true;
 
   const int kMethodsNativeCallbacksSize = arraysize(kMethodsNativeCallbacks);
