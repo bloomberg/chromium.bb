@@ -7,9 +7,8 @@
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/components/tether/error_tolerant_ble_advertisement_impl.h"
-#include "components/cryptauth/local_device_data_provider.h"
+#include "components/cryptauth/ble/ble_advertisement_generator.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
-#include "components/cryptauth/remote_beacon_seed_fetcher.h"
 #include "components/proximity_auth/logging/logging.h"
 #include "device/bluetooth/bluetooth_advertisement.h"
 
@@ -60,7 +59,6 @@ BleAdvertiserImpl::BleAdvertiserImpl(
     : remote_beacon_seed_fetcher_(remote_beacon_seed_fetcher),
       local_device_data_provider_(local_device_data_provider),
       ble_synchronizer_(ble_synchronizer),
-      eid_generator_(base::MakeUnique<cryptauth::ForegroundEidGenerator>()),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       weak_ptr_factory_(this) {}
 
@@ -82,39 +80,10 @@ bool BleAdvertiserImpl::StartAdvertisingToDevice(
     return false;
   }
 
-  std::string local_device_public_key;
-  if (!local_device_data_provider_->GetLocalDeviceData(&local_device_public_key,
-                                                       nullptr)) {
-    PA_LOG(WARNING) << "Error fetching the local device's public key. Cannot "
-                    << "advertise without the public key.";
-    return false;
-  }
-
-  if (local_device_public_key.empty()) {
-    PA_LOG(WARNING) << "Local device's public key is empty. Cannot advertise "
-                    << "with an invalid key.";
-    return false;
-  }
-
-  std::vector<cryptauth::BeaconSeed> remote_beacon_seeds;
-  if (!remote_beacon_seed_fetcher_->FetchSeedsForDevice(remote_device,
-                                                        &remote_beacon_seeds)) {
-    PA_LOG(WARNING) << "Error fetching beacon seeds for device with ID "
-                    << remote_device.GetTruncatedDeviceIdForLogs() << ". "
-                    << "Cannot advertise without seeds.";
-    return false;
-  }
-
-  if (remote_beacon_seeds.empty()) {
-    PA_LOG(WARNING) << "No synced seeds exist for device with ID "
-                    << remote_device.GetTruncatedDeviceIdForLogs() << ". "
-                    << "Cannot advertise without seeds.";
-    return false;
-  }
-
   std::unique_ptr<cryptauth::DataWithTimestamp> service_data =
-      eid_generator_->GenerateAdvertisement(local_device_public_key,
-                                            remote_beacon_seeds);
+      cryptauth::BleAdvertisementGenerator::GenerateBleAdvertisement(
+          remote_device, local_device_data_provider_,
+          remote_beacon_seed_fetcher_);
   if (!service_data) {
     PA_LOG(WARNING) << "Error generating advertisement for device with ID "
                     << remote_device.GetTruncatedDeviceIdForLogs() << ". "
@@ -151,10 +120,8 @@ bool BleAdvertiserImpl::AreAdvertisementsRegistered() {
   return false;
 }
 
-void BleAdvertiserImpl::SetTestDoubles(
-    std::unique_ptr<cryptauth::ForegroundEidGenerator> test_eid_generator,
+void BleAdvertiserImpl::SetTaskRunnerForTesting(
     scoped_refptr<base::TaskRunner> test_task_runner) {
-  eid_generator_ = std::move(test_eid_generator);
   task_runner_ = test_task_runner;
 }
 
