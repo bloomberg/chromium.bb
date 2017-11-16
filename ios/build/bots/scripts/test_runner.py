@@ -775,6 +775,12 @@ class DeviceTestRunner(TestRunner):
         else:
           self.xctestrun_data['TestTargetName'].update(
             {'OnlyTestIdentifiers': test_filter})
+      if self.env_vars:
+        self.xctestrun_data['TestTargetName'].update(
+          {'EnvironmentVariables': self.env_vars})
+      if self.test_args:
+        self.xctestrun_data['TestTargetName'].update(
+          {'CommandLineArguments': self.test_args})
       plistlib.writePlist(self.xctestrun_data, self.xctestrun_file)
       return [
         'xcodebuild',
