@@ -32442,12 +32442,82 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram
+    name="Media.AudioOutputStreamProxy.GetPreferredOutputStreamParametersWin.CreateClientResult"
+    enum="Hresult">
+  <owner>marinaciocea@chromium.org</owner>
+  <summary>
+    This histogram is the 3nd potential failure step in
+    CoreAudioUtil::GetPreferredAudioParameters. The success% of this histogram
+    is input for
+    Media.AudioOutputStreamProxy.GetPreferredOutputStreamParametersWin.GetMixFormatResult
+    histogram.
+  </summary>
+</histogram>
+
+<histogram
+    name="Media.AudioOutputStreamProxy.GetPreferredOutputStreamParametersWin.CreateDeviceEnumeratorResult"
+    enum="Hresult">
+  <owner>marinaciocea@chromium.org</owner>
+  <summary>
+    This histogram is the 1st potential failure step in
+    CoreAudioUtil::GetPreferredAudioParameters. The success% of this histogram
+    is input for
+    Media.AudioOutputStreamProxy.GetPreferredOutputStreamParametersWin.CreateDeviceResult
+    histogram.
+  </summary>
+</histogram>
+
+<histogram
+    name="Media.AudioOutputStreamProxy.GetPreferredOutputStreamParametersWin.CreateDeviceResult"
+    enum="Hresult">
+  <owner>marinaciocea@chromium.org</owner>
+  <summary>
+    This histogram is the 2nd potential failure step in
+    CoreAudioUtil::GetPreferredAudioParameters. The success% of this histogram
+    is input for
+    Media.AudioOutputStreamProxy.GetPreferredOutputStreamParametersWin.CreateClientResult
+    histogram.
+  </summary>
+</histogram>
+
+<histogram
+    name="Media.AudioOutputStreamProxy.GetPreferredOutputStreamParametersWin.GetDevicePeriodResult"
+    enum="Hresult">
+  <owner>marinaciocea@chromium.org</owner>
+  <summary>
+    This histogram is the last potential failure step in
+    CoreAudioUtil::GetPreferredAudioParameters.
+  </summary>
+</histogram>
+
+<histogram
+    name="Media.AudioOutputStreamProxy.GetPreferredOutputStreamParametersWin.GetMixFormatResult"
+    enum="Hresult">
+  <owner>marinaciocea@chromium.org</owner>
+  <summary>
+    This histogram is the 4nd potential failure step in
+    CoreAudioUtil::GetPreferredAudioParameters. The success% of this histogram
+    is input for
+    Media.AudioOutputStreamProxy.GetPreferredOutputStreamParametersWin.GetDevicePeriodResult
+    histogram.
+  </summary>
+</histogram>
+
 <histogram name="Media.AudioOutputStreamProxy.StreamFormat"
     enum="AudioOutputProxyStreamFormat">
   <owner>olka@chromium.org</owner>
   <summary>
     Records format used by AudioManager to create audio output stream proxy. If
     a fake stream is created it results in muted audio playback.
+
+    On Windows, the failure reasons that can lead to fake stream creation are
+    tracked with the following histograms:
+    Media.AudioOutputStreamProxy.GetPreferredOutputStreamParametersWin.CreateDeviceEnumeratorResult
+    Media.AudioOutputStreamProxy.GetPreferredOutputStreamParametersWin.CreateDeviceResult
+    Media.AudioOutputStreamProxy.GetPreferredOutputStreamParametersWin.CreateClientResult
+    Media.AudioOutputStreamProxy.GetPreferredOutputStreamParametersWin.GetMixFormatResult
+    Media.AudioOutputStreamProxy.GetPreferredOutputStreamParametersWin.GetDevicePeriodResult
   </summary>
 </histogram>
 
