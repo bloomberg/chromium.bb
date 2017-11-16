@@ -20,6 +20,10 @@ class GIN_EXPORT V8Platform : public v8::Platform {
 
   // v8::Platform implementation.
   void OnCriticalMemoryPressure() override;
+  std::shared_ptr<v8::TaskRunner> GetForegroundTaskRunner(
+      v8::Isolate*) override;
+  std::shared_ptr<v8::TaskRunner> GetBackgroundTaskRunner(
+      v8::Isolate*) override;
   size_t NumberOfAvailableBackgroundThreads() override;
   void CallOnBackgroundThread(
       v8::Task* task,
