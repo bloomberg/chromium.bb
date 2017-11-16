@@ -41,9 +41,11 @@ HoverButton::HoverButton(views::ButtonListener* button_listener,
       DISTANCE_CONTROL_LIST_VERTICAL);
   SetBorder(CreateBorderWithVerticalSpacing(vert_spacing));
 
-  // Turn on highlighting when the button is hovered or focused.
+  // Turn on highlighting when the button is focused only - hovering the button
+  // will request focus.
   SetInkDropMode(views::InkDropHostView::InkDropMode::ON);
   GetInkDrop()->SetShowHighlightOnFocus(true);
+  GetInkDrop()->SetShowHighlightOnHover(false);
   // Don't show the ripple on non-MD.
   if (!ui::MaterialDesignController::IsSecondaryUiMaterial())
     set_ink_drop_visible_opacity(0);
@@ -152,6 +154,18 @@ void HoverButton::SetSubtitleElideBehavior(gfx::ElideBehavior elide_behavior) {
   DCHECK(subtitle_);
   if (!subtitle_->text().empty())
     subtitle_->SetElideBehavior(elide_behavior);
+}
+
+void HoverButton::StateChanged(ButtonState old_state) {
+  LabelButton::StateChanged(old_state);
+
+  // |HoverButtons| are designed for use in a list, so ensure only one button
+  // can have a hover background at any time by requesting focus on hover.
+  if (state() == STATE_HOVERED || state() == STATE_PRESSED) {
+    RequestFocus();
+  } else if (state() == STATE_NORMAL && HasFocus()) {
+    GetFocusManager()->SetFocusedView(nullptr);
+  }
 }
 
 bool HoverButton::ShouldUseFloodFillInkDrop() const {
