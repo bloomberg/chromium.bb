@@ -119,7 +119,7 @@ class TimeTest : public testing::Test {
 #else
 #define MAYBE_TimeT TimeT
 #endif
-TEST_F(TimeTest, TimeT) {
+TEST_F(TimeTest, MAYBE_TimeT) {
   // C library time and exploded time.
   time_t now_t_1 = time(nullptr);
   struct tm tms;
