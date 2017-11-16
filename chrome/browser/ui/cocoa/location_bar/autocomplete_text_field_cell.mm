@@ -348,31 +348,17 @@ size_t CalculatePositionsInFrame(
 - (void)drawWithFrame:(NSRect)frame inView:(NSView*)controlView {
   BOOL inDarkMode = [[controlView window] inIncognitoModeWithSystemTheme];
   BOOL showingFirstResponder = [self showsFirstResponder];
-  // Adjust the inset by 1/2 the line width to get a crisp line (screen pixels
-  // lay between cooridnate space lines).
-  CGFloat insetSize = 1 - singlePixelLineWidth_ / 2.;
-  if (showingFirstResponder && !inDarkMode) {
-    insetSize++;
-  }
 
-  // Compute the border's bezier path.
-  NSRect pathRect = NSInsetRect(frame, insetSize, insetSize);
-  NSBezierPath* path =
-      [NSBezierPath bezierPathWithRoundedRect:pathRect
-                                      xRadius:kCornerRadius
-                                      yRadius:kCornerRadius];
-  [path setLineWidth:showingFirstResponder ? singlePixelLineWidth_ * 2
-                                           : singlePixelLineWidth_];
+  // There's a special focus color for incognito, which needs to replace the
+  // border stroke to provide sufficient contrast with focus.
+  NSColor* opaqueFocusColor = inDarkMode
+                                  ? [NSColor colorWithSRGBRed:123 / 255.
+                                                        green:170 / 255.
+                                                         blue:247 / 255.
+                                                        alpha:1]
+                                  : [NSColor keyboardFocusIndicatorColor];
 
-  // Fill the background.
-  [[self backgroundColor] set];
-  if (isPopupMode_) {
-    NSRectFillUsingOperation(NSInsetRect(frame, 1, 1), NSCompositeSourceOver);
-  } else {
-    [path fill];
-  }
-
-  // Draw the border.
+  // Set the border color.
   const ui::ThemeProvider* provider = [[controlView window] themeProvider];
   bool increaseContrast = provider && provider->ShouldIncreaseContrast();
   if (!inDarkMode) {
@@ -385,32 +371,66 @@ size_t CalculatePositionsInFrame(
   } else {
     if (increaseContrast) {
       [[NSColor whiteColor] set];
+    } else if (showingFirstResponder) {
+      [opaqueFocusColor set];
     } else {
       const CGFloat k30PercentAlpha = 0.3;
       [[NSColor colorWithCalibratedWhite:0 alpha:k30PercentAlpha] set];
     }
   }
-  [path stroke];
+
+  // First, draw the border with a filled rounded rectangle, and draw the
+  // "background" over it to make a stroke. This avoids drawing a stroke with
+  // inner and outer radii that differ by an irrational delta. The stroke is
+  // inset by one screen pixel from the frame to make room for the focus ring,
+  // should it be needed.
+  NSRect rect =
+      NSInsetRect(frame, singlePixelLineWidth_, singlePixelLineWidth_);
+  NSBezierPath* path = [NSBezierPath bezierPathWithRoundedRect:rect
+                                                       xRadius:kCornerRadius
+                                                       yRadius:kCornerRadius];
+  [path fill];
+
+  // Draw the "background". This will look terrible if it's not opaque. Note
+  // that insetting rounded rectangles also decreases the corner radius,
+  // consistent with SkRRect::inset().
+  DCHECK_EQ(1.0, [[self backgroundColor] alphaComponent]);
+  [[self backgroundColor] set];
+  const CGFloat innerBorderRadius = kCornerRadius - singlePixelLineWidth_;
+  rect =
+      NSInsetRect(frame, 2 * singlePixelLineWidth_, 2 * singlePixelLineWidth_);
+  path = [NSBezierPath bezierPathWithRoundedRect:rect
+                                         xRadius:innerBorderRadius
+                                         yRadius:innerBorderRadius];
+  [path fill];
 
   // Draw the interior contents. We do this after drawing the border as some
   // of the interior controls draw over it.
   [self drawInteriorWithFrame:frame inView:controlView];
 
-  // Draw the focus ring.
-  if (showingFirstResponder) {
-    CGFloat alphaComponent = 0.5 / singlePixelLineWidth_;
-    if (inDarkMode) {
-      // Special focus color for Material Incognito.
-      [[NSColor colorWithSRGBRed:123 / 255.
-                           green:170 / 255.
-                            blue:247 / 255.
-                           alpha:1] set];
-    } else {
-      [[[NSColor keyboardFocusIndicatorColor]
-          colorWithAlphaComponent:alphaComponent] set];
-    }
-    [path stroke];
-  }
+  if (!showingFirstResponder)
+    return;
+
+  // Draw the focus ring. It is always 1 real pixel either side of the border.
+  // That is, 3 real pixels wide; filling the frame.
+  constexpr CGFloat kFocusAlpha = 0.5;
+  [[opaqueFocusColor colorWithAlphaComponent:kFocusAlpha] set];
+  const CGFloat outerFocusRadius = kCornerRadius + singlePixelLineWidth_;
+  const CGFloat innerFocusRadius = kCornerRadius - 2 * singlePixelLineWidth_;
+  rect =
+      NSInsetRect(frame, 3 * singlePixelLineWidth_, 3 * singlePixelLineWidth_);
+  path = [NSBezierPath bezierPathWithRoundedRect:rect
+                                         xRadius:innerFocusRadius
+                                         yRadius:innerFocusRadius];
+  [path setWindingRule:NSEvenOddWindingRule];
+  [path appendBezierPath:[NSBezierPath
+                             bezierPathWithRoundedRect:frame
+                                               xRadius:outerFocusRadius
+                                               yRadius:outerFocusRadius]];
+  gfx::ScopedNSGraphicsContextSaveGState scopedGState;
+  [path addClip];
+  // Clipping determines the shape, so just fill.
+  NSRectFillUsingOperation(frame, NSCompositeSourceOver);
 }
 
 - (void)drawInteriorWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
