@@ -6218,7 +6218,7 @@ fuzzer_test("net_spdy_session_fuzzer") {
     ":test_support",
     "//base",
     "//net",
-    "//net/data/ssl/certificates:generate_spdy_session_fuzzer_includes",
+    "//net/data/ssl/certificates:generate_fuzzer_cert_includes",
   ]
   dict = "data/fuzzer_dictionaries/net_spdy_session_fuzzer.dict"
   seed_corpus = "data/fuzzer_data/net_spdy_session_fuzzer/"
@@ -6291,5 +6291,6 @@ fuzzer_test("net_quic_stream_factory_fuzzer") {
     ":quic_test_tools",
     ":test_support",
     "//net",
+    "//net/data/ssl/certificates:generate_fuzzer_cert_includes",
   ]
 }
