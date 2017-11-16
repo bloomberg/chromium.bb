@@ -31,6 +31,7 @@
 
 #include "compositor.h"
 #include "shared/helpers.h"
+#include "shared/timespec-util.h"
 
 struct weston_binding {
 	uint32_t key;
@@ -192,7 +193,7 @@ struct binding_keyboard_grab {
 
 static void
 binding_key(struct weston_keyboard_grab *grab,
-	    uint32_t time, uint32_t key, uint32_t state_w)
+	    const struct timespec *time, uint32_t key, uint32_t state_w)
 {
 	struct binding_keyboard_grab *b =
 		container_of(grab, struct binding_keyboard_grab, grab);
@@ -201,6 +202,7 @@ binding_key(struct weston_keyboard_grab *grab,
 	uint32_t serial;
 	struct weston_keyboard *keyboard = grab->keyboard;
 	struct wl_display *display = keyboard->seat->compositor->wl_display;
+	uint32_t msecs;
 
 	if (key == b->key) {
 		if (state == WL_KEYBOARD_KEY_STATE_RELEASED) {
@@ -215,10 +217,11 @@ binding_key(struct weston_keyboard_grab *grab,
 	}
 	if (!wl_list_empty(&keyboard->focus_resource_list)) {
 		serial = wl_display_next_serial(display);
+		msecs = timespec_to_msec(time);
 		wl_resource_for_each(resource, &keyboard->focus_resource_list) {
 			wl_keyboard_send_key(resource,
 					     serial,
-					     time,
+					     msecs,
 					     key,
 					     state);
 		}
@@ -255,8 +258,9 @@ static const struct weston_keyboard_grab_interface binding_grab = {
 };
 
 static void
-install_binding_grab(struct weston_keyboard *keyboard, uint32_t time,
-		     uint32_t key, struct weston_surface *focus)
+install_binding_grab(struct weston_keyboard *keyboard,
+		     const struct timespec *time, uint32_t key,
+		     struct weston_surface *focus)
 {
 	struct binding_keyboard_grab *grab;
 
@@ -282,7 +286,7 @@ install_binding_grab(struct weston_keyboard *keyboard, uint32_t time,
 void
 weston_compositor_run_key_binding(struct weston_compositor *compositor,
 				  struct weston_keyboard *keyboard,
-				  uint32_t time, uint32_t key,
+				  const struct timespec *time, uint32_t key,
 				  enum wl_keyboard_key_state state)
 {
 	struct weston_binding *b, *tmp;
@@ -416,7 +420,7 @@ weston_compositor_run_axis_binding(struct weston_compositor *compositor,
 int
 weston_compositor_run_debug_binding(struct weston_compositor *compositor,
 				    struct weston_keyboard *keyboard,
-				    uint32_t time, uint32_t key,
+				    const struct timespec *time, uint32_t key,
 				    enum wl_keyboard_key_state state)
 {
 	weston_key_binding_handler_t handler;
@@ -443,7 +447,7 @@ struct debug_binding_grab {
 };
 
 static void
-debug_binding_key(struct weston_keyboard_grab *grab, uint32_t time,
+debug_binding_key(struct weston_keyboard_grab *grab, const struct timespec *time,
 		  uint32_t key, uint32_t state)
 {
 	struct debug_binding_grab *db = (struct debug_binding_grab *) grab;
@@ -455,6 +459,7 @@ debug_binding_key(struct weston_keyboard_grab *grab, uint32_t time,
 	int check_binding = 1;
 	int i;
 	struct wl_list *resource_list;
+	uint32_t msecs;
 
 	if (state == WL_KEYBOARD_KEY_STATE_RELEASED) {
 		/* Do not run bindings on key releases */
@@ -503,8 +508,9 @@ debug_binding_key(struct weston_keyboard_grab *grab, uint32_t time,
 	if (send) {
 		serial = wl_display_next_serial(display);
 		resource_list = &grab->keyboard->focus_resource_list;
+		msecs = timespec_to_msec(time);
 		wl_resource_for_each(resource, resource_list) {
-			wl_keyboard_send_key(resource, serial, time, key, state);
+			wl_keyboard_send_key(resource, serial, msecs, key, state);
 		}
 	}
 
@@ -548,7 +554,7 @@ struct weston_keyboard_grab_interface debug_binding_keyboard_grab = {
 };
 
 static void
-debug_binding(struct weston_keyboard *keyboard, uint32_t time,
+debug_binding(struct weston_keyboard *keyboard, const struct timespec *time,
 	      uint32_t key, void *data)
 {
 	struct debug_binding_grab *grab;

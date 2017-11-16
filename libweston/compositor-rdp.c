@@ -1135,6 +1135,7 @@ xf_input_keyboard_event(rdpInput *input, UINT16 flags, UINT16 code)
 	enum wl_keyboard_key_state keyState;
 	RdpPeerContext *peerContext = (RdpPeerContext *)input->context;
 	int notify = 0;
+	struct timespec time;
 
 	if (!(peerContext->item.flags & RDP_PEER_ACTIVATED))
 		FREERDP_CB_RETURN(TRUE);
@@ -1160,7 +1161,8 @@ xf_input_keyboard_event(rdpInput *input, UINT16 flags, UINT16 code)
 
 		/*weston_log("code=%x ext=%d vk_code=%x scan_code=%x\n", code, (flags & KBD_FLAGS_EXTENDED) ? 1 : 0,
 				vk_code, scan_code);*/
-		notify_key(peerContext->item.seat, weston_compositor_get_time(),
+		timespec_from_msec(&time, weston_compositor_get_time());
+		notify_key(peerContext->item.seat, &time,
 					scan_code - 8, keyState, STATE_UPDATE_AUTOMATIC);
 	}
 

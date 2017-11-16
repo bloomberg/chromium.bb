@@ -54,7 +54,8 @@ static void weston_desktop_seat_popup_grab_end(struct weston_desktop_seat *seat)
 
 static void
 weston_desktop_seat_popup_grab_keyboard_key(struct weston_keyboard_grab *grab,
-					    uint32_t time, uint32_t key,
+					    const struct timespec *time,
+					    uint32_t key,
 					    enum wl_keyboard_key_state state)
 {
 	weston_keyboard_send_key(grab->keyboard, time, key, state);

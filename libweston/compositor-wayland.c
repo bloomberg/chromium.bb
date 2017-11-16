@@ -1905,9 +1905,12 @@ input_handle_key(void *data, struct wl_keyboard *keyboard,
 		 uint32_t serial, uint32_t time, uint32_t key, uint32_t state)
 {
 	struct wayland_input *input = data;
+	struct timespec ts;
+
+	timespec_from_msec(&ts, time);
 
 	input->key_serial = serial;
-	notify_key(&input->base, time, key,
+	notify_key(&input->base, &ts, key,
 		   state ? WL_KEYBOARD_KEY_STATE_PRESSED :
 			   WL_KEYBOARD_KEY_STATE_RELEASED,
 		   input->keyboard_state_update);
@@ -2515,8 +2518,8 @@ create_cursor(struct wayland_backend *b,
 }
 
 static void
-fullscreen_binding(struct weston_keyboard *keyboard, uint32_t time,
-		   uint32_t key, void *data)
+fullscreen_binding(struct weston_keyboard *keyboard,
+		   const struct timespec *time, uint32_t key, void *data)
 {
 	struct wayland_backend *b = data;
 	struct wayland_input *input = NULL;

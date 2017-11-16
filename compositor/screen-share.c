@@ -277,9 +277,11 @@ ss_seat_handle_key(void *data, struct wl_keyboard *keyboard,
 		   uint32_t key, uint32_t state)
 {
 	struct ss_seat *seat = data;
+	struct timespec ts;
 
+	timespec_from_msec(&ts, time);
 	seat->key_serial = serial;
-	notify_key(&seat->base, time, key,
+	notify_key(&seat->base, &ts, key,
 		   state ? WL_KEYBOARD_KEY_STATE_PRESSED :
 			   WL_KEYBOARD_KEY_STATE_RELEASED,
 		   seat->keyboard_state_update);
@@ -1092,8 +1094,8 @@ weston_output_find(struct weston_compositor *c, int32_t x, int32_t y)
 }
 
 static void
-share_output_binding(struct weston_keyboard *keyboard, uint32_t time, uint32_t key,
-		     void *data)
+share_output_binding(struct weston_keyboard *keyboard,
+		     const struct timespec *time, uint32_t key, void *data)
 {
 	struct weston_output *output;
 	struct weston_pointer *pointer;

@@ -3804,8 +3804,8 @@ find_primary_gpu(struct drm_backend *b, const char *seat)
 }
 
 static void
-planes_binding(struct weston_keyboard *keyboard, uint32_t time, uint32_t key,
-	       void *data)
+planes_binding(struct weston_keyboard *keyboard, const struct timespec *time,
+	       uint32_t key, void *data)
 {
 	struct drm_backend *b = data;
 
@@ -3885,8 +3885,8 @@ create_recorder(struct drm_backend *b, int width, int height,
 }
 
 static void
-recorder_binding(struct weston_keyboard *keyboard, uint32_t time, uint32_t key,
-		 void *data)
+recorder_binding(struct weston_keyboard *keyboard, const struct timespec *time,
+		 uint32_t key, void *data)
 {
 	struct drm_backend *b = data;
 	struct drm_output *output;
@@ -3927,8 +3927,8 @@ recorder_binding(struct weston_keyboard *keyboard, uint32_t time, uint32_t key,
 }
 #else
 static void
-recorder_binding(struct weston_keyboard *keyboard, uint32_t time, uint32_t key,
-		 void *data)
+recorder_binding(struct weston_keyboard *keyboard, const struct timespec *time,
+		 uint32_t key, void *data)
 {
 	weston_log("Compiled without libva support\n");
 }
@@ -3979,8 +3979,8 @@ switch_to_gl_renderer(struct drm_backend *b)
 }
 
 static void
-renderer_switch_binding(struct weston_keyboard *keyboard, uint32_t time,
-			uint32_t key, void *data)
+renderer_switch_binding(struct weston_keyboard *keyboard,
+			const struct timespec *time, uint32_t key, void *data)
 {
 	struct drm_backend *b =
 		to_drm_backend(keyboard->seat->compositor);

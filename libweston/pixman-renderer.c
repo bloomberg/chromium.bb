@@ -804,8 +804,8 @@ pixman_renderer_surface_copy_content(struct weston_surface *surface,
 }
 
 static void
-debug_binding(struct weston_keyboard *keyboard, uint32_t time, uint32_t key,
-	      void *data)
+debug_binding(struct weston_keyboard *keyboard, const struct timespec *time,
+	      uint32_t key, void *data)
 {
 	struct weston_compositor *ec = data;
 	struct pixman_renderer *pr = (struct pixman_renderer *) ec->renderer;

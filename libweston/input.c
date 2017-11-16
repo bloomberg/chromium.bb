@@ -842,26 +842,29 @@ weston_keyboard_has_focus_resource(struct weston_keyboard *keyboard)
  */
 WL_EXPORT void
 weston_keyboard_send_key(struct weston_keyboard *keyboard,
-			 uint32_t time, uint32_t key,
+			 const struct timespec *time, uint32_t key,
 			 enum wl_keyboard_key_state state)
 {
 	struct wl_resource *resource;
 	struct wl_display *display = keyboard->seat->compositor->wl_display;
 	uint32_t serial;
 	struct wl_list *resource_list;
+	uint32_t msecs;
 
 	if (!weston_keyboard_has_focus_resource(keyboard))
 		return;
 
 	resource_list = &keyboard->focus_resource_list;
 	serial = wl_display_next_serial(display);
+	msecs = timespec_to_msec(time);
 	wl_resource_for_each(resource, resource_list)
-		wl_keyboard_send_key(resource, serial, time, key, state);
+		wl_keyboard_send_key(resource, serial, msecs, key, state);
 };
 
 static void
 default_grab_keyboard_key(struct weston_keyboard_grab *grab,
-			  uint32_t time, uint32_t key, uint32_t state)
+			  const struct timespec *time, uint32_t key,
+			  uint32_t state)
 {
 	weston_keyboard_send_key(grab->keyboard, time, key, state);
 }
@@ -1944,7 +1947,7 @@ update_keymap(struct weston_seat *seat)
 }
 
 WL_EXPORT void
-notify_key(struct weston_seat *seat, uint32_t time, uint32_t key,
+notify_key(struct weston_seat *seat, const struct timespec *time, uint32_t key,
 	   enum wl_keyboard_key_state state,
 	   enum weston_key_state_update update_state)
 {
@@ -1996,7 +1999,7 @@ notify_key(struct weston_seat *seat, uint32_t time, uint32_t key,
 
 	keyboard->grab_serial = wl_display_get_serial(compositor->wl_display);
 	if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
-		keyboard->grab_time = time;
+		keyboard->grab_time = *time;
 		keyboard->grab_key = key;
 	}
 }

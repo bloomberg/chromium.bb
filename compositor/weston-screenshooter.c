@@ -112,8 +112,8 @@ screenshooter_sigchld(struct weston_process *process, int status)
 }
 
 static void
-screenshooter_binding(struct weston_keyboard *keyboard, uint32_t time,
-		      uint32_t key, void *data)
+screenshooter_binding(struct weston_keyboard *keyboard,
+		      const struct timespec *time, uint32_t key, void *data)
 {
 	struct screenshooter *shooter = data;
 	char *screenshooter_exe;
@@ -135,7 +135,7 @@ screenshooter_binding(struct weston_keyboard *keyboard, uint32_t time,
 }
 
 static void
-recorder_binding(struct weston_keyboard *keyboard, uint32_t time,
+recorder_binding(struct weston_keyboard *keyboard, const struct timespec *time,
 		 uint32_t key, void *data)
 {
 	struct weston_compositor *ec = keyboard->seat->compositor;

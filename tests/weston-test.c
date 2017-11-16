@@ -210,8 +210,11 @@ send_key(struct wl_client *client, struct wl_resource *resource,
 {
 	struct weston_test *test = wl_resource_get_user_data(resource);
 	struct weston_seat *seat = get_seat(test);
+	struct timespec time;
 
-	notify_key(seat, 100, key, state, STATE_UPDATE_AUTOMATIC);
+	timespec_from_msec(&time, 100);
+
+	notify_key(seat, &time, key, state, STATE_UPDATE_AUTOMATIC);
 }
 
 static void

@@ -442,8 +442,8 @@ exposay_maybe_move(struct desktop_shell *shell, int row, int column)
 }
 
 static void
-exposay_key(struct weston_keyboard_grab *grab, uint32_t time, uint32_t key,
-            uint32_t state_w)
+exposay_key(struct weston_keyboard_grab *grab, const struct timespec *time,
+	    uint32_t key, uint32_t state_w)
 {
 	struct weston_seat *seat = grab->keyboard->seat;
 	struct desktop_shell *shell =

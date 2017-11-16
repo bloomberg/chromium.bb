@@ -38,6 +38,7 @@
 #include "text-input-unstable-v1-server-protocol.h"
 #include "input-method-unstable-v1-server-protocol.h"
 #include "shared/helpers.h"
+#include "shared/timespec-util.h"
 
 struct text_input_manager;
 struct input_method;
@@ -607,11 +608,13 @@ unbind_keyboard(struct wl_resource *resource)
 
 static void
 input_method_context_grab_key(struct weston_keyboard_grab *grab,
-			      uint32_t time, uint32_t key, uint32_t state_w)
+			      const struct timespec *time, uint32_t key,
+			      uint32_t state_w)
 {
 	struct weston_keyboard *keyboard = grab->keyboard;
 	struct wl_display *display;
 	uint32_t serial;
+	uint32_t msecs;
 
 	if (!keyboard->input_method_resource)
 		return;
@@ -619,8 +622,9 @@ input_method_context_grab_key(struct weston_keyboard_grab *grab,
 	display = wl_client_get_display(
 		wl_resource_get_client(keyboard->input_method_resource));
 	serial = wl_display_next_serial(display);
+	msecs = timespec_to_msec(time);
 	wl_keyboard_send_key(keyboard->input_method_resource,
-			     serial, time, key, state_w);
+			     serial, msecs, key, state_w);
 }
 
 static void
@@ -693,8 +697,11 @@ input_method_context_key(struct wl_client *client,
 	struct weston_seat *seat = context->input_method->seat;
 	struct weston_keyboard *keyboard = weston_seat_get_keyboard(seat);
 	struct weston_keyboard_grab *default_grab = &keyboard->default_grab;
+	struct timespec ts;
 
-	default_grab->interface->key(default_grab, time, key, state_w);
+	timespec_from_msec(&ts, time);
+
+	default_grab->interface->key(default_grab, &ts, key, state_w);
 }
 
 static void

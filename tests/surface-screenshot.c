@@ -133,8 +133,8 @@ unpremultiply_and_swap_a8b8g8r8_to_PAMrgba(void *pixels, size_t size)
 }
 
 static void
-trigger_binding(struct weston_keyboard *keyboard, uint32_t time, uint32_t key,
-		void *data)
+trigger_binding(struct weston_keyboard *keyboard, const struct timespec *time,
+		uint32_t key, void *data)
 {
 	const char *prefix = "surfaceshot-";
 	const char *suffix = ".pam";

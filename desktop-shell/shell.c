@@ -3232,7 +3232,7 @@ move_binding(struct weston_pointer *pointer, const struct timespec *time,
 }
 
 static void
-maximize_binding(struct weston_keyboard *keyboard, uint32_t time,
+maximize_binding(struct weston_keyboard *keyboard, const struct timespec *time,
 		 uint32_t button, void *data)
 {
 	struct weston_surface *focus = keyboard->focus;
@@ -3251,8 +3251,8 @@ maximize_binding(struct weston_keyboard *keyboard, uint32_t time,
 }
 
 static void
-fullscreen_binding(struct weston_keyboard *keyboard, uint32_t time,
-		   uint32_t button, void *data)
+fullscreen_binding(struct weston_keyboard *keyboard,
+		   const struct timespec *time, uint32_t button, void *data)
 {
 	struct weston_surface *focus = keyboard->focus;
 	struct weston_surface *surface;
@@ -3434,18 +3434,14 @@ zoom_axis_binding(struct weston_pointer *pointer, const struct timespec *time,
 }
 
 static void
-zoom_key_binding(struct weston_keyboard *keyboard, uint32_t time,
+zoom_key_binding(struct weston_keyboard *keyboard, const struct timespec *time,
 		 uint32_t key, void *data)
 {
-	struct timespec ts;
-
-	timespec_from_msec(&ts, time);
-
-	do_zoom(keyboard->seat, &ts, key, 0, 0);
+	do_zoom(keyboard->seat, time, key, 0, 0);
 }
 
 static void
-terminate_binding(struct weston_keyboard *keyboard, uint32_t time,
+terminate_binding(struct weston_keyboard *keyboard, const struct timespec *time,
 		  uint32_t key, void *data)
 {
 	struct weston_compositor *compositor = data;
@@ -4421,7 +4417,7 @@ switcher_destroy(struct switcher *switcher)
 
 static void
 switcher_key(struct weston_keyboard_grab *grab,
-	     uint32_t time, uint32_t key, uint32_t state_w)
+	     const struct timespec *time, uint32_t key, uint32_t state_w)
 {
 	struct switcher *switcher = container_of(grab, struct switcher, grab);
 	enum wl_keyboard_key_state state = state_w;
@@ -4457,7 +4453,7 @@ static const struct weston_keyboard_grab_interface switcher_grab = {
 };
 
 static void
-switcher_binding(struct weston_keyboard *keyboard, uint32_t time,
+switcher_binding(struct weston_keyboard *keyboard, const struct timespec *time,
 		 uint32_t key, void *data)
 {
 	struct desktop_shell *shell = data;
@@ -4478,7 +4474,7 @@ switcher_binding(struct weston_keyboard *keyboard, uint32_t time,
 }
 
 static void
-backlight_binding(struct weston_keyboard *keyboard, uint32_t time,
+backlight_binding(struct weston_keyboard *keyboard, const struct timespec *time,
 		  uint32_t key, void *data)
 {
 	struct weston_compositor *compositor = data;
@@ -4511,8 +4507,8 @@ backlight_binding(struct weston_keyboard *keyboard, uint32_t time,
 }
 
 static void
-force_kill_binding(struct weston_keyboard *keyboard, uint32_t time,
-		   uint32_t key, void *data)
+force_kill_binding(struct weston_keyboard *keyboard,
+		   const struct timespec *time, uint32_t key, void *data)
 {
 	struct weston_surface *focus_surface;
 	struct wl_client *client;
@@ -4538,8 +4534,8 @@ force_kill_binding(struct weston_keyboard *keyboard, uint32_t time,
 }
 
 static void
-workspace_up_binding(struct weston_keyboard *keyboard, uint32_t time,
-		     uint32_t key, void *data)
+workspace_up_binding(struct weston_keyboard *keyboard,
+		     const struct timespec *time, uint32_t key, void *data)
 {
 	struct desktop_shell *shell = data;
 	unsigned int new_index = shell->workspaces.current;
@@ -4553,8 +4549,8 @@ workspace_up_binding(struct weston_keyboard *keyboard, uint32_t time,
 }
 
 static void
-workspace_down_binding(struct weston_keyboard *keyboard, uint32_t time,
-		       uint32_t key, void *data)
+workspace_down_binding(struct weston_keyboard *keyboard,
+		       const struct timespec *time, uint32_t key, void *data)
 {
 	struct desktop_shell *shell = data;
 	unsigned int new_index = shell->workspaces.current;
@@ -4568,8 +4564,8 @@ workspace_down_binding(struct weston_keyboard *keyboard, uint32_t time,
 }
 
 static void
-workspace_f_binding(struct weston_keyboard *keyboard, uint32_t time,
-		    uint32_t key, void *data)
+workspace_f_binding(struct weston_keyboard *keyboard,
+		    const struct timespec *time, uint32_t key, void *data)
 {
 	struct desktop_shell *shell = data;
 	unsigned int new_index;
@@ -4585,7 +4581,8 @@ workspace_f_binding(struct weston_keyboard *keyboard, uint32_t time,
 
 static void
 workspace_move_surface_up_binding(struct weston_keyboard *keyboard,
-				  uint32_t time, uint32_t key, void *data)
+				  const struct timespec *time, uint32_t key,
+				  void *data)
 {
 	struct desktop_shell *shell = data;
 	unsigned int new_index = shell->workspaces.current;
@@ -4601,7 +4598,8 @@ workspace_move_surface_up_binding(struct weston_keyboard *keyboard,
 
 static void
 workspace_move_surface_down_binding(struct weston_keyboard *keyboard,
-				    uint32_t time, uint32_t key, void *data)
+				    const struct timespec *time, uint32_t key,
+				    void *data)
 {
 	struct desktop_shell *shell = data;
 	unsigned int new_index = shell->workspaces.current;

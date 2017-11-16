@@ -289,8 +289,8 @@ struct weston_pointer_grab {
 
 struct weston_keyboard_grab;
 struct weston_keyboard_grab_interface {
-	void (*key)(struct weston_keyboard_grab *grab, uint32_t time,
-		    uint32_t key, uint32_t state);
+	void (*key)(struct weston_keyboard_grab *grab,
+		    const struct timespec *time, uint32_t key, uint32_t state);
 	void (*modifiers)(struct weston_keyboard_grab *grab, uint32_t serial,
 			  uint32_t mods_depressed, uint32_t mods_latched,
 			  uint32_t mods_locked, uint32_t group);
@@ -492,7 +492,7 @@ bool
 weston_keyboard_has_focus_resource(struct weston_keyboard *keyboard);
 void
 weston_keyboard_send_key(struct weston_keyboard *keyboard,
-			 uint32_t time, uint32_t key,
+			 const struct timespec *time, uint32_t key,
 			 enum wl_keyboard_key_state state);
 void
 weston_keyboard_send_modifiers(struct weston_keyboard *keyboard,
@@ -583,7 +583,7 @@ struct weston_keyboard {
 	struct weston_keyboard_grab default_grab;
 	uint32_t grab_key;
 	uint32_t grab_serial;
-	uint32_t grab_time;
+	struct timespec grab_time;
 
 	struct wl_array keys;
 
@@ -1385,7 +1385,7 @@ void
 notify_pointer_frame(struct weston_seat *seat);
 
 void
-notify_key(struct weston_seat *seat, uint32_t time, uint32_t key,
+notify_key(struct weston_seat *seat, const struct timespec *time, uint32_t key,
 	   enum wl_keyboard_key_state state,
 	   enum weston_key_state_update update_state);
 void
@@ -1475,7 +1475,8 @@ weston_compositor_pick_view(struct weston_compositor *compositor,
 
 struct weston_binding;
 typedef void (*weston_key_binding_handler_t)(struct weston_keyboard *keyboard,
-					     uint32_t time, uint32_t key,
+					     const struct timespec *time,
+					     uint32_t key,
 					     void *data);
 struct weston_binding *
 weston_compositor_add_key_binding(struct weston_compositor *compositor,
@@ -1541,7 +1542,7 @@ weston_binding_list_destroy_all(struct wl_list *list);
 void
 weston_compositor_run_key_binding(struct weston_compositor *compositor,
 				  struct weston_keyboard *keyboard,
-				  uint32_t time,
+				  const struct timespec *time,
 				  uint32_t key,
 				  enum wl_keyboard_key_state state);
 
@@ -1567,7 +1568,8 @@ weston_compositor_run_axis_binding(struct weston_compositor *compositor,
 				   struct weston_pointer_axis_event *event);
 int
 weston_compositor_run_debug_binding(struct weston_compositor *compositor,
-				    struct weston_keyboard *keyboard, uint32_t time,
+				    struct weston_keyboard *keyboard,
+				    const struct timespec *time,
 				    uint32_t key,
 				    enum wl_keyboard_key_state state);
 

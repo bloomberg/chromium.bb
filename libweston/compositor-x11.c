@@ -1325,6 +1325,7 @@ x11_backend_handle_event(int fd, uint32_t mask, void *data)
 	uint32_t i, set;
 	uint8_t response_type;
 	int count;
+	struct timespec time;
 
 	prev = NULL;
 	count = 0;
@@ -1351,8 +1352,10 @@ x11_backend_handle_event(int fd, uint32_t mask, void *data)
 				 * and fall through and handle the new
 				 * event below. */
 				update_xkb_state_from_core(b, key_release->state);
+				timespec_from_msec(&time,
+						   weston_compositor_get_time());
 				notify_key(&b->core_seat,
-					   weston_compositor_get_time(),
+					   &time,
 					   key_release->detail - 8,
 					   WL_KEYBOARD_KEY_STATE_RELEASED,
 					   STATE_UPDATE_AUTOMATIC);
@@ -1395,8 +1398,9 @@ x11_backend_handle_event(int fd, uint32_t mask, void *data)
 			key_press = (xcb_key_press_event_t *) event;
 			if (!b->has_xkb)
 				update_xkb_state_from_core(b, key_press->state);
+			timespec_from_msec(&time, weston_compositor_get_time());
 			notify_key(&b->core_seat,
-				   weston_compositor_get_time(),
+				   &time,
 				   key_press->detail - 8,
 				   WL_KEYBOARD_KEY_STATE_PRESSED,
 				   b->has_xkb ? STATE_UPDATE_NONE :
@@ -1410,8 +1414,9 @@ x11_backend_handle_event(int fd, uint32_t mask, void *data)
 				break;
 			}
 			key_release = (xcb_key_press_event_t *) event;
+			timespec_from_msec(&time, weston_compositor_get_time());
 			notify_key(&b->core_seat,
-				   weston_compositor_get_time(),
+				   &time,
 				   key_release->detail - 8,
 				   WL_KEYBOARD_KEY_STATE_RELEASED,
 				   STATE_UPDATE_NONE);
@@ -1517,8 +1522,9 @@ x11_backend_handle_event(int fd, uint32_t mask, void *data)
 	case XCB_KEY_RELEASE:
 		key_release = (xcb_key_press_event_t *) prev;
 		update_xkb_state_from_core(b, key_release->state);
+		timespec_from_msec(&time, weston_compositor_get_time());
 		notify_key(&b->core_seat,
-			   weston_compositor_get_time(),
+			   &time,
 			   key_release->detail - 8,
 			   WL_KEYBOARD_KEY_STATE_RELEASED,
 			   STATE_UPDATE_AUTOMATIC);

@@ -376,7 +376,7 @@ shell_destroy(struct wl_listener *listener, void *data)
 }
 
 static void
-terminate_binding(struct weston_keyboard *keyboard, uint32_t time,
+terminate_binding(struct weston_keyboard *keyboard, const struct timespec *time,
 		  uint32_t key, void *data)
 {
 	struct weston_compositor *compositor = data;

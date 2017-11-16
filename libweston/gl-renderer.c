@@ -3534,7 +3534,8 @@ compile_shaders(struct weston_compositor *ec)
 }
 
 static void
-fragment_debug_binding(struct weston_keyboard *keyboard, uint32_t time,
+fragment_debug_binding(struct weston_keyboard *keyboard,
+		       const struct timespec *time,
 		       uint32_t key, void *data)
 {
 	struct weston_compositor *ec = data;
@@ -3560,7 +3561,8 @@ fragment_debug_binding(struct weston_keyboard *keyboard, uint32_t time,
 }
 
 static void
-fan_debug_repaint_binding(struct weston_keyboard *keyboard, uint32_t time,
+fan_debug_repaint_binding(struct weston_keyboard *keyboard,
+			  const struct timespec *time,
 			  uint32_t key, void *data)
 {
 	struct weston_compositor *compositor = data;
