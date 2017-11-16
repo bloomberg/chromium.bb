@@ -94,5 +94,10 @@ void TabDialogsViewsMac::HideManagePasswordsBubble() {
     TabDialogsCocoa::HideManagePasswordsBubble();
     return;
   }
-  ManagePasswordsBubbleView::CloseCurrentBubble();
+  if (!ManagePasswordsBubbleView::manage_password_bubble())
+    return;
+  content::WebContents* bubble_web_contents =
+      ManagePasswordsBubbleView::manage_password_bubble()->web_contents();
+  if (web_contents() == bubble_web_contents)
+    ManagePasswordsBubbleView::CloseCurrentBubble();
 }

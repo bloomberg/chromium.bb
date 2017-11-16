@@ -289,7 +289,7 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, CloseOnKey) {
   EXPECT_FALSE(IsBubbleShowing());
 }
 
-IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, TwoTabsWithBubble) {
+IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, TwoTabsWithBubbleSwitch) {
   // Set up the first tab with the bubble.
   SetupPendingPassword();
   EXPECT_TRUE(IsBubbleShowing());
@@ -303,6 +303,28 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, TwoTabsWithBubble) {
   EXPECT_TRUE(IsBubbleShowing());
   // Back to the first tab.
   tab_model->ActivateTabAt(0, true);
+  EXPECT_FALSE(IsBubbleShowing());
+}
+
+IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, TwoTabsWithBubbleClose) {
+  // Set up the second tab and bring the bubble there.
+  AddTabAtIndex(1, GURL("http://example.com/"), ui::PAGE_TRANSITION_TYPED);
+  TabStripModel* tab_model = browser()->tab_strip_model();
+  tab_model->ActivateTabAt(1, true);
+  EXPECT_FALSE(IsBubbleShowing());
+  EXPECT_EQ(1, tab_model->active_index());
+  SetupPendingPassword();
+  EXPECT_TRUE(IsBubbleShowing());
+  // Back to the first tab. Set up the bubble.
+  tab_model->ActivateTabAt(0, true);
+  // Drain message pump to ensure the bubble view is cleared so that it can be
+  // created again (it is checked on Mac to prevent re-opening the bubble when
+  // clicking the location bar button repeatedly).
+  content::RunAllPendingInMessageLoop();
+  SetupPendingPassword();
+  EXPECT_TRUE(IsBubbleShowing());
+  // Close the tab.
+  ASSERT_TRUE(tab_model->CloseWebContentsAt(0, 0));
   EXPECT_FALSE(IsBubbleShowing());
 }
 
