@@ -332,7 +332,6 @@ VaapiVideoDecodeAccelerator::VaapiVideoDecodeAccelerator(
     const MakeGLContextCurrentCallback& make_context_current_cb,
     const BindGLImageCallback& bind_image_cb)
     : state_(kUninitialized),
-      num_input_buffers_(0),
       input_ready_(&lock_),
       create_vaapi_picture_callback_(base::Bind(&VaapiPicture::CreatePicture)),
       surfaces_available_(&lock_),
@@ -511,9 +510,8 @@ void VaapiVideoDecodeAccelerator::QueueInputBuffer(
         new InputBuffer(bitstream_buffer.id(), std::move(shm),
                         BindToCurrentLoop(base::Bind(
                             &Client::NotifyEndOfBitstreamBuffer, client_)))));
-    ++num_input_buffers_;
-    TRACE_COUNTER1("Video Decoder", "Stream buffers at decoder",
-                   num_input_buffers_);
+
+    TRACE_COUNTER1("Video Decoder", "Input buffers", input_buffers_.size());
   }
 
   input_ready_.Signal();
@@ -558,33 +556,26 @@ bool VaapiVideoDecodeAccelerator::GetInputBuffer_Locked() {
   }
 
   // We could have got woken up in a different state or never got to sleep
-  // due to current state; check for that.
-  switch (state_) {
-    case kDecoding:
-    case kIdle:
-      DCHECK(!input_buffers_.empty());
+  // due to current state.
+  if (state_ != kDecoding && state_ != kIdle)
+    return false;
 
-      curr_input_buffer_ = input_buffers_.front();
-      input_buffers_.pop();
+  DCHECK(!input_buffers_.empty());
+  curr_input_buffer_ = input_buffers_.front();
+  input_buffers_.pop();
 
-      if (curr_input_buffer_->IsFlushRequest()) {
-        VLOGF(4) << "New flush buffer";
-      } else {
-        VLOGF(4) << "New current bitstream buffer, id: "
-                 << curr_input_buffer_->id()
-                 << " size: " << curr_input_buffer_->shm()->size();
-
-        decoder_->SetStream(
-            static_cast<uint8_t*>(curr_input_buffer_->shm()->memory()),
-            curr_input_buffer_->shm()->size());
-      }
-      return true;
-
-    default:
-      // We got woken up due to being destroyed/reset, ignore any already
-      // queued inputs.
-      return false;
+  if (curr_input_buffer_->IsFlushRequest()) {
+    VLOGF(4) << "New flush buffer";
+    return true;
   }
+
+  VLOGF(4) << "New current input buffer, id: " << curr_input_buffer_->id()
+           << " size: " << curr_input_buffer_->shm()->size() << "B";
+  decoder_->SetStream(
+      static_cast<uint8_t*>(curr_input_buffer_->shm()->memory()),
+      curr_input_buffer_->shm()->size());
+
+  return true;
 }
 
 void VaapiVideoDecodeAccelerator::ReturnCurrInputBuffer_Locked() {
@@ -593,9 +584,7 @@ void VaapiVideoDecodeAccelerator::ReturnCurrInputBuffer_Locked() {
   DCHECK(curr_input_buffer_.get());
   curr_input_buffer_.reset();
 
-  --num_input_buffers_;
-  TRACE_COUNTER1("Video Decoder", "Stream buffers at decoder",
-                 num_input_buffers_);
+  TRACE_COUNTER1("Video Decoder", "Input buffers", input_buffers_.size());
 }
 
 // TODO(posciak): refactor the whole class to remove sleeping in wait for
@@ -920,7 +909,6 @@ void VaapiVideoDecodeAccelerator::FlushTask() {
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
   DCHECK(curr_input_buffer_.get() && curr_input_buffer_->IsFlushRequest());
 
-
   curr_input_buffer_.reset();
 
   // First flush all the pictures that haven't been outputted, notifying the
@@ -1008,14 +996,9 @@ void VaapiVideoDecodeAccelerator::Reset() {
   finish_flush_pending_ = false;
 
   // Drop all remaining input buffers, if present.
-  while (!input_buffers_.empty()) {
-    const auto& input_buffer = input_buffers_.front();
-    if (!input_buffer->IsFlushRequest())
-      --num_input_buffers_;
+  while (!input_buffers_.empty())
     input_buffers_.pop();
-  }
-  TRACE_COUNTER1("Video Decoder", "Stream buffers at decoder",
-                 num_input_buffers_);
+  TRACE_COUNTER1("Video Decoder", "Input buffers", input_buffers_.size());
 
   decoder_thread_task_runner_->PostTask(
       FROM_HERE, base::Bind(&VaapiVideoDecodeAccelerator::ResetTask,
@@ -1108,13 +1091,11 @@ bool VaapiVideoDecodeAccelerator::TryToSetupDecodeOnSeparateThread(
 
 bool VaapiVideoDecodeAccelerator::DecodeSurface(
     const scoped_refptr<VaapiDecodeSurface>& dec_surface) {
-  if (!vaapi_wrapper_->ExecuteAndDestroyPendingBuffers(
-          dec_surface->va_surface()->id())) {
+  const bool result = vaapi_wrapper_->ExecuteAndDestroyPendingBuffers(
+      dec_surface->va_surface()->id());
+  if (!result)
     VLOGF(1) << "Failed decoding picture";
-    return false;
-  }
-
-  return true;
+  return result;
 }
 
 void VaapiVideoDecodeAccelerator::SurfaceReady(
@@ -1157,10 +1138,7 @@ VaapiVideoDecodeAccelerator::CreateSurface() {
       vaapi_wrapper_->va_surface_format(), va_surface_release_cb_));
   available_va_surfaces_.pop_front();
 
-  scoped_refptr<VaapiDecodeSurface> dec_surface =
-      new VaapiDecodeSurface(curr_input_buffer_->id(), va_surface);
-
-  return dec_surface;
+  return new VaapiDecodeSurface(curr_input_buffer_->id(), va_surface);
 }
 
 VaapiVideoDecodeAccelerator::VaapiH264Accelerator::VaapiH264Accelerator(
