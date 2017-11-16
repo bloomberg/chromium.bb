@@ -1350,12 +1350,8 @@ void LayoutInline::DirtyLinesFromChangedChild(
     MarkingBehavior marking_behavior) {
   // During layout tree construction, we can't detect whether this node is
   // in LayoutNG or not.
-  if (Parent() && EnclosingNGBlockFlow()) {
-    // TODO(layout-dev): Once we supports box fragment level dirtiness,
-    // we should mark box fragments for |child| node only.
-    SelfNeedsLayout();
-    // TODO(layout-dev): We are not sure why do we need to tell ancestors
-    // line dirtiness. See also |LineLayoutItem::SetAncestorLineBoxDirty()|.
+  if (RuntimeEnabledFeatures::LayoutNGEnabled() && Parent() &&
+      EnclosingNGBlockFlow()) {
     SetAncestorLineBoxDirty();
     return;
   }
