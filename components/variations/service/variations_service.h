@@ -214,6 +214,7 @@ class VariationsService
                            LoadPermanentConsistencyCountry);
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, CountryHeader);
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, GetVariationsServerURL);
+  FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, VariationsURLHasParams);
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, RequestsInitiallyAllowed);
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, RequestsInitiallyNotAllowed);
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest,

@@ -87,8 +87,10 @@ public class AwVariationsSeedFetchService extends JobService {
     private void fetchVariationsSeed() {
         assert !ThreadUtils.runningOnUiThread();
         try {
+            // TODO(paulmiller): Addd milestone and channel information to seed request.
+            // crbug.com/784905
             SeedInfo seedInfo = VariationsSeedFetcher.get().downloadContent(
-                    VariationsSeedFetcher.VariationsPlatform.ANDROID_WEBVIEW, "");
+                    VariationsSeedFetcher.VariationsPlatform.ANDROID_WEBVIEW, "", "", "");
             transferFetchedSeed(seedInfo);
         } catch (IOException e) {
             // Exceptions are handled and logged in the downloadContent method, so we don't
