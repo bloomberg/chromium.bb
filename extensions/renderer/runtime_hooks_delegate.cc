@@ -165,7 +165,6 @@ RequestResult RuntimeHooksDelegate::HandleSendMessage(
   v8::Local<v8::Context> v8_context = script_context->v8_context();
   messaging_util::MessageOptions options;
   if (!arguments[2]->IsNull()) {
-    std::string error;
     messaging_util::ParseOptionsResult parse_result =
         messaging_util::ParseMessageOptions(
             v8_context, arguments[2].As<v8::Object>(),
@@ -185,10 +184,10 @@ RequestResult RuntimeHooksDelegate::HandleSendMessage(
 
   v8::Local<v8::Value> v8_message = arguments[1];
   std::unique_ptr<Message> message =
-      messaging_util::MessageFromV8(v8_context, v8_message);
+      messaging_util::MessageFromV8(v8_context, v8_message, &error);
   if (!message) {
     RequestResult result(RequestResult::INVALID_INVOCATION);
-    result.error = "Illegal argument to runtime.sendMessage for 'message'.";
+    result.error = std::move(error);
     return result;
   }
 
@@ -213,12 +212,12 @@ RequestResult RuntimeHooksDelegate::HandleSendNativeMessage(
 
   v8::Local<v8::Value> v8_message = arguments[1];
   DCHECK(!v8_message.IsEmpty());
-  std::unique_ptr<Message> message =
-      messaging_util::MessageFromV8(script_context->v8_context(), v8_message);
+  std::string error;
+  std::unique_ptr<Message> message = messaging_util::MessageFromV8(
+      script_context->v8_context(), v8_message, &error);
   if (!message) {
     RequestResult result(RequestResult::INVALID_INVOCATION);
-    result.error =
-        "Illegal argument to runtime.sendNativeMessage for 'message'.";
+    result.error = std::move(error);
     return result;
   }
 

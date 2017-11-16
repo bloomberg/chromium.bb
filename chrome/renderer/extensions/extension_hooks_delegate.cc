@@ -161,11 +161,11 @@ RequestResult ExtensionHooksDelegate::HandleSendRequest(
   }
 
   v8::Local<v8::Value> v8_message = arguments[1];
-  std::unique_ptr<Message> message =
-      messaging_util::MessageFromV8(script_context->v8_context(), v8_message);
+  std::unique_ptr<Message> message = messaging_util::MessageFromV8(
+      script_context->v8_context(), v8_message, &error);
   if (!message) {
     RequestResult result(RequestResult::INVALID_INVOCATION);
-    result.error = "Illegal argument to extension.sendRequest for 'message'.";
+    result.error = std::move(error);
     return result;
   }
 
