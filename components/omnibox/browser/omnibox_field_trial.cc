@@ -548,15 +548,27 @@ float OmniboxFieldTrial::HQPExperimentalTopicalityThreshold() {
 
 int OmniboxFieldTrial::MaxNumHQPUrlsIndexedAtStartup() {
   const char* param = kMaxNumHQPUrlsIndexedAtStartupOnNonLowEndDevicesParam;
-  if (base::SysInfo::IsLowEndDevice())
+  const bool is_low_end_device = base::SysInfo::IsLowEndDevice();
+  if (is_low_end_device)
     param = kMaxNumHQPUrlsIndexedAtStartupOnLowEndDevicesParam;
   std::string param_value(variations::GetVariationParamValue(
       kBundledExperimentFieldTrialName, param));
   int num_urls;
   if (base::StringToInt(param_value, &num_urls))
     return num_urls;
+
+#if defined(OS_ANDROID)
+  // Limits on Android are chosen based on experiment results. See
+  // crbug.com/715852#c18.
+  constexpr int kMaxNumHQPUrlsIndexedAtStartupOnLowEndDevices = 100;
+  constexpr int kMaxNumHQPUrlsIndexedAtStartupOnNonLowEndDevices = 1000;
+  if (is_low_end_device)
+    return kMaxNumHQPUrlsIndexedAtStartupOnLowEndDevices;
+  return kMaxNumHQPUrlsIndexedAtStartupOnNonLowEndDevices;
+#else
   // Default value is set to -1 for unlimited number of urls.
   return -1;
+#endif  // defined(OS_ANDROID)
 }
 
 size_t OmniboxFieldTrial::HQPMaxVisitsToScore() {
