@@ -67,18 +67,6 @@
         $i18n{handlerRemove}
       </button>
     </dialog>
-
-<if expr="chromeos">
-  <template is="dom-if" if="[[settingsAppAvailable_]]">
-    <div class="settings-box first"
-        on-tap="onManageAndroidAppsTap_" actionable>
-      <div class="start">
-        <div>$i18n{androidAppsManageAppLinks}</div>
-      </div>
-      <button class="icon-external" is="paper-icon-button-light"></button>
-    </div>
-  </template>
-</if>
   </template>
   <script src="protocol_handlers.js"></script>
 </dom-module>

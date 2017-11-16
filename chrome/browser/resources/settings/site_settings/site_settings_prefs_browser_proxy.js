@@ -266,12 +266,6 @@ cr.define('settings', function() {
      * @param {string} host The host to remove zoom levels for.
      */
     removeZoomLevel(host) {}
-
-    /**
-     * Links to com.android.settings.Settings$ManageDomainUrlsActivity on ARC
-     * side, this is to manage app preferences.
-     */
-    showAndroidManageAppLinks() {}
   }
 
   /**
@@ -391,11 +385,6 @@ cr.define('settings', function() {
     /** @override */
     removeZoomLevel(host) {
       chrome.send('removeZoomLevel', [host]);
-    }
-
-    /** @override */
-    showAndroidManageAppLinks() {
-      chrome.send('showAndroidManageAppLinks');
     }
   }
 

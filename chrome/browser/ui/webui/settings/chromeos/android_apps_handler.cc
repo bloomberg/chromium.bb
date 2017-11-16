@@ -34,10 +34,6 @@ void AndroidAppsHandler::RegisterMessages() {
       "showAndroidAppsSettings",
       base::Bind(&AndroidAppsHandler::ShowAndroidAppsSettings,
                  weak_ptr_factory_.GetWeakPtr()));
-  web_ui()->RegisterMessageCallback(
-      "showAndroidManageAppLinks",
-      base::Bind(&AndroidAppsHandler::ShowAndroidManageAppLinks,
-                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void AndroidAppsHandler::OnJavascriptAllowed() {
@@ -105,25 +101,13 @@ void AndroidAppsHandler::ShowAndroidAppsSettings(const base::ListValue* args) {
   args->GetBoolean(0, &activated_from_keyboard);
   int flags = activated_from_keyboard ? ui::EF_NONE : ui::EF_LEFT_MOUSE_BUTTON;
 
-  arc::LaunchAndroidSettingsApp(profile_, flags,
-                                GetDisplayIdForCurrentProfile());
-}
-
-void AndroidAppsHandler::ShowAndroidManageAppLinks(
-    const base::ListValue* args) {
-  DCHECK_EQ(0U, args->GetSize());
-
-  arc::LaunchSettingsAppActivity(profile_, arc::kSettingsAppDomainUrlActivity,
-                                 ui::EF_NONE /* flags */,
-                                 GetDisplayIdForCurrentProfile());
-}
-
-int64_t AndroidAppsHandler::GetDisplayIdForCurrentProfile() {
   // Settings in secondary profile cannot access ARC.
-  DCHECK(arc::IsArcAllowedForProfile(profile_));
-  return display::Screen::GetScreen()
-      ->GetDisplayNearestView(web_ui()->GetWebContents()->GetNativeView())
-      .id();
+  CHECK(arc::IsArcAllowedForProfile(profile_));
+  const int64_t display_id =
+      display::Screen::GetScreen()
+          ->GetDisplayNearestView(web_ui()->GetWebContents()->GetNativeView())
+          .id();
+  arc::LaunchAndroidSettingsApp(profile_, flags, display_id);
 }
 
 }  // namespace settings

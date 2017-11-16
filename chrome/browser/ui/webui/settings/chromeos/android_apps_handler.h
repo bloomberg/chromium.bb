@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_ANDROID_APPS_HANDLER_H_
 
 #include <memory>
-#include <string>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -50,8 +49,6 @@ class AndroidAppsHandler : public ::settings::SettingsPageUIHandler,
   void HandleRequestAndroidAppsInfo(const base::ListValue* args);
   void SendAndroidAppsInfo();
   void ShowAndroidAppsSettings(const base::ListValue* args);
-  void ShowAndroidManageAppLinks(const base::ListValue* args);
-  int64_t GetDisplayIdForCurrentProfile();
 
   ScopedObserver<ArcAppListPrefs, ArcAppListPrefs::Observer>
       arc_prefs_observer_;
