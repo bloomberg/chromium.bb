@@ -52,7 +52,7 @@ function submitAndGo() {
 
 function onAuthError() {
   if (window.domAutomationController) {
-    window.domAutomationController.send(4444, 'loginfail');
+    window.domAutomationController.send('loginfail');
   }
 }
 
