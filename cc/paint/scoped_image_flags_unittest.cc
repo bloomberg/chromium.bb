@@ -80,10 +80,4 @@ TEST(ScopedImageFlagsTest, NoImageProvider) {
   EXPECT_EQ(scoped_flags.flags()->getAlpha(), SkMulDiv255Round(255, 10));
 }
 
-TEST(ScopedImageFlagsTest, NoOverrides) {
-  PaintFlags flags;
-  ScopedImageFlags scoped_flags(nullptr, &flags, SkMatrix::I(), 255);
-  EXPECT_EQ(scoped_flags.flags(), &flags);
-}
-
 }  // namespace cc

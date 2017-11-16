@@ -1722,10 +1722,20 @@ void PaintOpBuffer::Playback(SkCanvas* canvas,
 
     if (op->IsPaintOpWithFlags()) {
       const auto* flags_op = static_cast<const PaintOpWithFlags*>(op);
-      ScopedImageFlags scoped_flags(params.image_provider, &flags_op->flags,
-                                    canvas->getTotalMatrix(), iter.alpha());
-      if (scoped_flags.flags())
-        flags_op->RasterWithFlags(canvas, scoped_flags.flags(), params);
+
+      base::Optional<ScopedImageFlags> scoped_flags;
+      const bool needs_flag_override =
+          iter.alpha() != 255 ||
+          (flags_op->flags.HasDiscardableImages() && params.image_provider);
+      if (needs_flag_override) {
+        scoped_flags.emplace(params.image_provider, &flags_op->flags,
+                             canvas->getTotalMatrix(), iter.alpha());
+      }
+
+      const PaintFlags* raster_flags =
+          scoped_flags ? scoped_flags->flags() : &flags_op->flags;
+      if (raster_flags)
+        flags_op->RasterWithFlags(canvas, raster_flags, params);
       continue;
     }
 
