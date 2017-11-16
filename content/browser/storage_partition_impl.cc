@@ -476,9 +476,6 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
       base::WrapUnique(new StoragePartitionImpl(
           context, partition_path, context->GetSpecialStoragePolicy()));
 
-  partition->is_in_memory_ = in_memory;
-  partition->relative_partition_path_ = relative_partition_path;
-
   // All of the clients have to be created and registered with the
   // QuotaManager prior to the QuotaManger being used. We do them
   // all together here prior to handing out a reference to anything
@@ -548,6 +545,10 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
   scoped_refptr<ChromeBlobStorageContext> blob_context =
       ChromeBlobStorageContext::GetFor(context);
 
+  partition->network_context_ =
+      GetContentClient()->browser()->CreateNetworkContext(
+          context, in_memory, relative_partition_path);
+
   if (base::FeatureList::IsEnabled(features::kNetworkService)) {
     BlobURLLoaderFactory::BlobContextGetter blob_getter =
         base::BindOnce(&BlobStorageContextGetter, blob_context);
@@ -588,9 +589,8 @@ StoragePartitionImpl::GetMediaURLRequestContext() {
 
 mojom::NetworkContext* StoragePartitionImpl::GetNetworkContext() {
   // Create the NetworkContext as needed, when the network service is disabled.
-  if (!base::FeatureList::IsEnabled(features::kNetworkService)) {
-    if (network_context_)
-      return network_context_.get();
+  if (!network_context_) {
+    DCHECK(!base::FeatureList::IsEnabled(features::kNetworkService));
     DCHECK(!network_context_owner_);
     network_context_owner_ = std::make_unique<NetworkContextOwner>();
     BrowserThread::PostTask(
@@ -598,12 +598,6 @@ mojom::NetworkContext* StoragePartitionImpl::GetNetworkContext() {
         base::BindOnce(&NetworkContextOwner::Initialize,
                        base::Unretained(network_context_owner_.get()),
                        MakeRequest(&network_context_), url_request_context_));
-    return network_context_.get();
-  }
-
-  if (!network_context_.is_bound() || network_context_.encountered_error()) {
-    network_context_ = GetContentClient()->browser()->CreateNetworkContext(
-        browser_context_, is_in_memory_, relative_partition_path_);
   }
   return network_context_.get();
 }
@@ -1008,10 +1002,6 @@ void StoragePartitionImpl::Flush() {
 
 void StoragePartitionImpl::ClearBluetoothAllowedDevicesMapForTesting() {
   bluetooth_allowed_devices_map_->Clear();
-}
-
-void StoragePartitionImpl::FlushNetworkInterfaceForTesting() {
-  network_context_.FlushForTesting();
 }
 
 BrowserContext* StoragePartitionImpl::browser_context() const {
