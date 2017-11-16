@@ -38,6 +38,21 @@ struct ComponentInfo {
 // Optimization Hints component.
 class OptimizationGuideService {
  public:
+  // Enumerates the possible outcomes of processing hints. Used in UMA
+  // histograms, so the order of enumerators should not be changed.
+  //
+  // Keep in sync with OptimizationGuideProcessHintsResult in
+  // tools/metrics/histograms/enums.xml.
+  enum class ProcessHintsResult {
+    SUCCESS,
+    FAILED_INVALID_PARAMETERS,
+    FAILED_READING_FILE,
+    FAILED_INVALID_CONFIGURATION,
+
+    // Insert new values before this line.
+    MAX,
+  };
+
   explicit OptimizationGuideService(
       const scoped_refptr<base::SingleThreadTaskRunner>& io_thread_task_runner);
 

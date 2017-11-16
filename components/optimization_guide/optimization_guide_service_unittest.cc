@@ -11,6 +11,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/version.h"
 #include "components/optimization_guide/optimization_guide_service_observer.h"
@@ -103,12 +104,18 @@ class OptimizationGuideServiceTest : public testing::Test {
 };
 
 TEST_F(OptimizationGuideServiceTest, ProcessHintsInvalidVersionIgnored) {
+  base::HistogramTester histogram_tester;
   AddObserver();
   UpdateHints(base::Version(""), base::FilePath(kFileName));
 
   RunUntilIdle();
 
   EXPECT_FALSE(observer()->received_notification());
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.ProcessHintsResult",
+      static_cast<int>(OptimizationGuideService::ProcessHintsResult::
+                           FAILED_INVALID_PARAMETERS),
+      1);
 }
 
 TEST_F(OptimizationGuideServiceTest, ProcessHintsPastVersionIgnored) {
@@ -148,24 +155,37 @@ TEST_F(OptimizationGuideServiceTest, ProcessHintsSameVersionIgnored) {
 }
 
 TEST_F(OptimizationGuideServiceTest, ProcessHintsEmptyFileNameIgnored) {
+  base::HistogramTester histogram_tester;
   AddObserver();
   UpdateHints(base::Version("1.0.0"), base::FilePath(FILE_PATH_LITERAL("")));
 
   RunUntilIdle();
 
   EXPECT_FALSE(observer()->received_notification());
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.ProcessHintsResult",
+      static_cast<int>(OptimizationGuideService::ProcessHintsResult::
+                           FAILED_INVALID_PARAMETERS),
+      1);
 }
 
 TEST_F(OptimizationGuideServiceTest, ProcessHintsInvalidFileIgnored) {
+  base::HistogramTester histogram_tester;
   AddObserver();
   UpdateHints(base::Version("1.0.0"), base::FilePath(kFileName));
 
   RunUntilIdle();
 
   EXPECT_FALSE(observer()->received_notification());
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.ProcessHintsResult",
+      static_cast<int>(
+          OptimizationGuideService::ProcessHintsResult::FAILED_READING_FILE),
+      1);
 }
 
 TEST_F(OptimizationGuideServiceTest, ProcessHintsNotAConfigInFileIgnored) {
+  base::HistogramTester histogram_tester;
   AddObserver();
   const base::FilePath filePath = temp_dir().Append(kFileName);
   ASSERT_EQ(static_cast<int32_t>(3), base::WriteFile(filePath, "boo", 3));
@@ -175,9 +195,15 @@ TEST_F(OptimizationGuideServiceTest, ProcessHintsNotAConfigInFileIgnored) {
   RunUntilIdle();
 
   EXPECT_FALSE(observer()->received_notification());
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.ProcessHintsResult",
+      static_cast<int>(OptimizationGuideService::ProcessHintsResult::
+                           FAILED_INVALID_CONFIGURATION),
+      1);
 }
 
 TEST_F(OptimizationGuideServiceTest, ProcessHintsIssuesNotification) {
+  base::HistogramTester histogram_tester;
   AddObserver();
   const base::FilePath filePath = temp_dir().Append(kFileName);
   proto::Configuration config;
@@ -193,6 +219,10 @@ TEST_F(OptimizationGuideServiceTest, ProcessHintsIssuesNotification) {
   proto::Configuration received_config = observer()->received_config();
   ASSERT_EQ(1, received_config.hints_size());
   ASSERT_EQ("google.com", received_config.hints()[0].key());
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.ProcessHintsResult",
+      static_cast<int>(OptimizationGuideService::ProcessHintsResult::SUCCESS),
+      1);
 }
 
 TEST_F(OptimizationGuideServiceTest,

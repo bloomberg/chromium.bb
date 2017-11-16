@@ -54925,6 +54925,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Time spent on specific OOBE screen.</summary>
 </histogram>
 
+<histogram name="OptimizationGuide.ProcessHintsResult"
+    enum="OptimizationGuideProcessHintsResult">
+  <owner>dougarnett@chromium.org</owner>
+  <owner>sophiechang@chromium.org</owner>
+  <summary>
+    Whether processing the hints succeeded or failed at a particular step.
+    Recorded when the OptimizationGuideService receives a notification to
+    process hints.
+  </summary>
+</histogram>
+
 <histogram name="OriginChip.Pressed">
   <obsolete>
     Deprecated with CL 731423002. OriginChip has been removed.

@@ -30149,6 +30149,13 @@ Called by update_net_error_codes.py.-->
   <int value="1" label="Active other profiles."/>
 </enum>
 
+<enum name="OptimizationGuideProcessHintsResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="FailedInvalidParameters"/>
+  <int value="2" label="FailedReadingFile"/>
+  <int value="3" label="FailedInvalidConfiguration"/>
+</enum>
+
 <enum name="OriginTrialEnableResult">
   <obsolete>
     Obsolete as of M54 and replaced by OriginTrialTokenStatus.

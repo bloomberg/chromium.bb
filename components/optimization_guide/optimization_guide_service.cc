@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/task_scheduler/post_task.h"
 
 namespace optimization_guide {
@@ -18,6 +19,13 @@ namespace {
 // Version "0" corresponds to no processed version. By service conventions,
 // we represent it as a dotted triple.
 const char kNullVersion[] = "0.0.0";
+
+void RecordProcessHintsResult(
+    OptimizationGuideService::ProcessHintsResult result) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "OptimizationGuide.ProcessHintsResult", static_cast<int>(result),
+      static_cast<int>(OptimizationGuideService::ProcessHintsResult::MAX));
+}
 
 }  // namespace
 
@@ -93,22 +101,30 @@ void OptimizationGuideService::ProcessHintsInBackground(
   // TODO(crbug.com/783246): Add crash loop detection to ensure bad component
   // updates do not crash Chrome.
 
-  if (!component_info.hints_version.IsValid())
+  if (!component_info.hints_version.IsValid()) {
+    RecordProcessHintsResult(ProcessHintsResult::FAILED_INVALID_PARAMETERS);
     return;
+  }
   if (latest_processed_version_.CompareTo(component_info.hints_version) >= 0)
     return;
-  if (component_info.hints_path.empty())
+  if (component_info.hints_path.empty()) {
+    RecordProcessHintsResult(ProcessHintsResult::FAILED_INVALID_PARAMETERS);
     return;
+  }
   std::string binary_pb;
-  if (!base::ReadFileToString(component_info.hints_path, &binary_pb))
+  if (!base::ReadFileToString(component_info.hints_path, &binary_pb)) {
+    RecordProcessHintsResult(ProcessHintsResult::FAILED_READING_FILE);
     return;
+  }
 
   proto::Configuration new_config;
   if (!new_config.ParseFromString(binary_pb)) {
-    DVLOG(1) << "Failed parsing proto";
+    RecordProcessHintsResult(ProcessHintsResult::FAILED_INVALID_CONFIGURATION);
     return;
   }
   latest_processed_version_ = component_info.hints_version;
+
+  RecordProcessHintsResult(ProcessHintsResult::SUCCESS);
   io_thread_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&OptimizationGuideService::DispatchHintsOnIOThread,
