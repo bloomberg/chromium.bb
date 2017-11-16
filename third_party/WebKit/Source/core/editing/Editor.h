@@ -244,7 +244,7 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
                            FindOptions);
 
   const VisibleSelection& Mark() const;  // Mark, to be used as emacs uses it.
-  void SetMark(const VisibleSelection&);
+  void SetMark();
 
   void ComputeAndSetTypingStyle(CSSPropertyValueSet*, InputEvent::InputType);
 
@@ -368,10 +368,6 @@ inline void Editor::SetStartNewKillRingSequence(bool flag) {
 
 inline const VisibleSelection& Editor::Mark() const {
   return mark_;
-}
-
-inline void Editor::SetMark(const VisibleSelection& selection) {
-  mark_ = selection;
 }
 
 inline bool Editor::MarkedTextMatchesAreHighlighted() const {

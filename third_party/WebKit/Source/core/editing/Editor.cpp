@@ -1763,6 +1763,10 @@ FrameSelection& Editor::GetFrameSelection() const {
   return GetFrame().Selection();
 }
 
+void Editor::SetMark() {
+  mark_ = GetFrameSelection().ComputeVisibleSelectionInDOMTree();
+}
+
 void Editor::ToggleOverwriteModeEnabled() {
   overwrite_mode_enabled_ = !overwrite_mode_enabled_;
   GetFrameSelection().SetShouldShowBlockCursor(overwrite_mode_enabled_);
