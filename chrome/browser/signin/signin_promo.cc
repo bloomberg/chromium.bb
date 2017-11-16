@@ -269,17 +269,6 @@ GURL GetReauthURLWithEmailForDialog(signin_metrics::AccessPoint access_point,
                       true /* is_constrained */);
 }
 
-GURL GetNextPageURLForPromoURL(const GURL& url) {
-  std::string value;
-  if (net::GetValueForKeyInQuery(url, kSignInPromoQueryKeyContinue, &value)) {
-    GURL continue_url = GURL(value);
-    if (continue_url.is_valid())
-      return continue_url;
-  }
-
-  return GURL();
-}
-
 GURL GetSigninPartitionURL() {
   return GURL("chrome-guest://chrome-signin/?");
 }

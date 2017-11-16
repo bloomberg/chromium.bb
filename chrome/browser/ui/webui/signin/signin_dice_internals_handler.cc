@@ -12,6 +12,7 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
@@ -42,18 +43,22 @@ void SigninDiceInternalsHandler::HandleEnableSync(const base::ListValue* args) {
     return;
   }
 
+  Browser* browser = chrome::FindLastActiveWithProfile(profile_);
+  DCHECK(browser);
+
   AccountTrackerService* tracker =
       AccountTrackerServiceFactory::GetForProfile(profile_);
   ProfileOAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
   std::vector<std::string> account_ids = token_service->GetAccounts();
   if (account_ids.empty()) {
-    StartWebGaiaSigninAndStartSyncWhenDone();
+    browser->window()->ShowAvatarBubbleFromAvatarButton(
+        BrowserWindow::AVATAR_BUBBLE_MODE_SIGNIN,
+        signin::ManageAccountsParams(),
+        signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN, false);
     return;
   }
 
-  Browser* browser = chrome::FindLastActiveWithProfile(profile_);
-  DCHECK(browser);
   std::string account_id = account_ids[0];
   std::string gaia_id = tracker->GetAccountInfo(account_id).gaia;
   std::string email = tracker->GetAccountInfo(account_id).email;
@@ -62,8 +67,10 @@ void SigninDiceInternalsHandler::HandleEnableSync(const base::ListValue* args) {
   // OneClickSigninSyncStarter is suicidal (it will kill itself once it finishes
   // enabling sync).
   OneClickSigninSyncStarter::Callback callback;
-  new OneClickSigninSyncStarter(profile_, browser, gaia_id, email,
-                                web_ui()->GetWebContents(), callback);
+  new OneClickSigninSyncStarter(
+      profile_, browser, gaia_id, email,
+      signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN,
+      signin_metrics::Reason::REASON_UNKNOWN_REASON, callback);
 }
 
 void SigninDiceInternalsHandler::HandleDisableSync(
@@ -77,15 +84,4 @@ void SigninDiceInternalsHandler::HandleDisableSync(
   VLOG(2) << "[Dice] Sign out.";
   signin_manager->SignOut(signin_metrics::USER_TUNED_OFF_SYNC_FROM_DICE_UI,
                           signin_metrics::SignoutDelete::IGNORE_METRIC);
-}
-
-void SigninDiceInternalsHandler::StartWebGaiaSigninAndStartSyncWhenDone() {
-  chrome::ScopedTabbedBrowserDisplayer displayer(profile_);
-  chrome::ShowSingletonTab(displayer.browser(),
-                           GaiaUrls::GetInstance()->add_account_url());
-  content::WebContents* active_contents =
-      displayer.browser()->tab_strip_model()->GetActiveWebContents();
-  DCHECK_EQ(GaiaUrls::GetInstance()->add_account_url(),
-            active_contents->GetVisibleURL());
-  DiceTabHelper::CreateForWebContents(active_contents);
 }

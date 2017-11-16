@@ -53,9 +53,13 @@ void ProcessDiceHeaderObserverImpl::DidFinishRefreshTokenFetch(
     return;
   }
 
+  DiceTabHelper* tab_helper = DiceTabHelper::FromWebContents(web_contents);
+  DCHECK(tab_helper);
+
   // OneClickSigninSyncStarter is suicidal (it will kill itself once it finishes
   // enabling sync).
   VLOG(1) << "Start sync after web sign-in.";
-  new OneClickSigninSyncStarter(profile, browser, gaia_id, email, web_contents,
-                                OneClickSigninSyncStarter::Callback());
+  new OneClickSigninSyncStarter(
+      profile, browser, gaia_id, email, tab_helper->signin_access_point(),
+      tab_helper->signin_reason(), OneClickSigninSyncStarter::Callback());
 }

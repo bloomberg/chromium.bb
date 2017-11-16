@@ -80,7 +80,9 @@ class SigninViewController {
 
   // Shows the DICE-specific sign-in flow: opens a Gaia sign-in webpage in a new
   // tab attached to |browser|.
-  void ShowDiceSigninTab(Browser* browser);
+  void ShowDiceSigninTab(profiles::BubbleViewMode mode,
+                         Browser* browser,
+                         signin_metrics::AccessPoint access_point);
 
   // Returns the web contents of the modal dialog.
   content::WebContents* GetModalDialogWebContentsForTesting();

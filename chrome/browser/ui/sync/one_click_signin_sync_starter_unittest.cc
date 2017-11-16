@@ -70,14 +70,14 @@ class OneClickSigninSyncStarterTest : public ChromeRenderViewHostTestHarness {
   }
 
  protected:
-  void CreateSyncStarter(OneClickSigninSyncStarter::Callback callback,
-                         const GURL& continue_url) {
+  void CreateSyncStarter(OneClickSigninSyncStarter::Callback callback) {
     sync_starter_ = new OneClickSigninSyncStarter(
-        profile(), NULL, kTestingGaiaId, kTestingUsername, std::string(),
-        "refresh_token", OneClickSigninSyncStarter::CURRENT_PROFILE,
-        OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS, web_contents(),
-        OneClickSigninSyncStarter::NO_CONFIRMATION, GURL(), continue_url,
-        callback);
+        profile(), nullptr, kTestingGaiaId, kTestingUsername, std::string(),
+        "refresh_token", signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN,
+        signin_metrics::Reason::REASON_UNKNOWN_REASON,
+        OneClickSigninSyncStarter::CURRENT_PROFILE,
+        OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS,
+        OneClickSigninSyncStarter::NO_CONFIRMATION, callback);
   }
 
   // Deletes itself when SigninFailed() or SigninSuccess() is called.
@@ -106,8 +106,7 @@ class OneClickSigninSyncStarterTest : public ChromeRenderViewHostTestHarness {
 // Verifies that the callback is invoked when sync setup fails.
 TEST_F(OneClickSigninSyncStarterTest, CallbackSigninFailed) {
   CreateSyncStarter(base::Bind(&OneClickSigninSyncStarterTest::Callback,
-                               base::Unretained(this)),
-                    GURL());
+                               base::Unretained(this)));
   sync_starter_->SigninFailed(GoogleServiceAuthError(
       GoogleServiceAuthError::REQUEST_CANCELED));
   EXPECT_EQ(1, failed_count_);
@@ -116,7 +115,7 @@ TEST_F(OneClickSigninSyncStarterTest, CallbackSigninFailed) {
 
 // Verifies that there is no crash when the callback is NULL.
 TEST_F(OneClickSigninSyncStarterTest, CallbackNull) {
-  CreateSyncStarter(OneClickSigninSyncStarter::Callback(), GURL());
+  CreateSyncStarter(OneClickSigninSyncStarter::Callback());
   sync_starter_->SigninFailed(GoogleServiceAuthError(
       GoogleServiceAuthError::REQUEST_CANCELED));
   EXPECT_EQ(0, failed_count_);

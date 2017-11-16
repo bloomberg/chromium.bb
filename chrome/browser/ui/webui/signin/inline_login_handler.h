@@ -41,10 +41,6 @@ class InlineLoginHandler : public content::WebUIMessageHandler {
   void CloseDialogFromJavascript();
 
  private:
-  // Record correspond sign in user action for an access point.
-  void RecordSigninUserActionForAccessPoint(
-      signin_metrics::AccessPoint access_point);
-
   // JS callback to prepare for starting auth.
   void HandleInitializeMessage(const base::ListValue* args);
 

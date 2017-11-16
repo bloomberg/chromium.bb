@@ -10,6 +10,7 @@
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/core/browser/signin_metrics.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_browser_provider_observer_bridge.h"
 #include "ios/chrome/browser/pref_names.h"
@@ -91,28 +92,6 @@ void RecordSigninImpressionWithNoAccountUserActionForAccessPoint(
     case signin_metrics::AccessPoint::ACCESS_POINT_TAB_SWITCHER:
       base::RecordAction(base::UserMetricsAction(
           "Signin_ImpressionWithNoAccount_FromTabSwitcher"));
-      break;
-    default:
-      NOTREACHED() << "Unexpected value for access point "
-                   << static_cast<int>(access_point);
-      break;
-  }
-}
-
-void RecordSigninUserActionForAccessPoint(
-    signin_metrics::AccessPoint access_point) {
-  switch (access_point) {
-    case signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_MANAGER:
-      base::RecordAction(
-          base::UserMetricsAction("Signin_Signin_FromBookmarkManager"));
-      break;
-    case signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS:
-      base::RecordAction(
-          base::UserMetricsAction("Signin_Signin_FromRecentTabs"));
-      break;
-    case signin_metrics::AccessPoint::ACCESS_POINT_TAB_SWITCHER:
-      base::RecordAction(
-          base::UserMetricsAction("Signin_Signin_FromTabSwitcher"));
       break;
     default:
       NOTREACHED() << "Unexpected value for access point "
@@ -462,7 +441,7 @@ const char* AlreadySeenSigninViewPreferenceKey(
     (SigninPromoView*)signinPromoView {
   DCHECK(!_defaultIdentity && ![self isInvalidOrClosed]);
   [self sendImpressionsTillSigninButtonsHistogram];
-  RecordSigninUserActionForAccessPoint(_accessPoint);
+  signin_metrics::RecordSigninUserActionForAccessPoint(_accessPoint);
   RecordSigninNewAccountUserActionForAccessPoint(_accessPoint);
   __weak SigninPromoViewMediator* weakSelf = self;
   ShowSigninCommand* command = [[ShowSigninCommand alloc]
@@ -480,7 +459,7 @@ const char* AlreadySeenSigninViewPreferenceKey(
     (SigninPromoView*)signinPromoView {
   DCHECK(_defaultIdentity && ![self isInvalidOrClosed]);
   [self sendImpressionsTillSigninButtonsHistogram];
-  RecordSigninUserActionForAccessPoint(_accessPoint);
+  signin_metrics::RecordSigninUserActionForAccessPoint(_accessPoint);
   RecordSigninDefaultUserActionForAccessPoint(_accessPoint);
   __weak SigninPromoViewMediator* weakSelf = self;
   ShowSigninCommand* command = [[ShowSigninCommand alloc]
@@ -499,7 +478,7 @@ const char* AlreadySeenSigninViewPreferenceKey(
   DCHECK(_defaultIdentity && ![self isInvalidOrClosed]);
   [self sendImpressionsTillSigninButtonsHistogram];
   RecordSigninNotDefaultUserActionForAccessPoint(_accessPoint);
-  RecordSigninUserActionForAccessPoint(_accessPoint);
+  signin_metrics::RecordSigninUserActionForAccessPoint(_accessPoint);
   __weak SigninPromoViewMediator* weakSelf = self;
   ShowSigninCommand* command = [[ShowSigninCommand alloc]
       initWithOperation:AUTHENTICATION_OPERATION_SIGNIN

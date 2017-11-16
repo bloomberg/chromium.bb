@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
 #include "chrome/browser/ui/webui/signin/inline_login_handler.h"
 #include "chrome/browser/ui/webui/signin/signin_email_confirmation_dialog.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 
 // Implementation for the inline login WebUI handler on desktop Chrome. Once
@@ -189,9 +190,7 @@ class InlineSigninHelper : public GaiaAuthConsumer {
   // for tokens.
   virtual void CreateSyncStarter(
       Browser* browser,
-      content::WebContents* contents,
       const GURL& current_url,
-      const GURL& continue_url,
       const std::string& refresh_token,
       OneClickSigninSyncStarter::ProfileMode profile_mode,
       OneClickSigninSyncStarter::StartSyncMode start_mode,
