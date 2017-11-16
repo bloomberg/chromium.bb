@@ -5,7 +5,8 @@
 #ifndef EXTENSIONS_BROWSER_API_DECLARATIVE_DECLARATIVE_API_H_
 #define EXTENSIONS_BROWSER_API_DECLARATIVE_DECLARATIVE_API_H_
 
-#include "base/compiler_specific.h"
+#include <string>
+
 #include "base/memory/ref_counted.h"
 #include "extensions/browser/api/declarative/rules_registry.h"
 #include "extensions/browser/extension_function.h"

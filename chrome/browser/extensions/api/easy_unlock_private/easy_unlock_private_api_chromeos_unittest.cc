@@ -154,23 +154,22 @@ class EasyUnlockPrivateApiTest : public extensions::ExtensionApiUnittest {
     const base::ListValue* result_list = function->GetResultList();
     if (!result_list) {
       LOG(ERROR) << "Function has no result list.";
-      return "";
+      return std::string();
     }
 
     if (result_list->GetSize() != 1u) {
       LOG(ERROR) << "Invalid number of results.";
-      return "";
+      return std::string();
     }
 
-    const base::Value* result_binary_value;
-    if (!result_list->GetBinary(0, &result_binary_value) ||
-        !result_binary_value) {
+    const auto& result_binary_value = result_list->GetList()[0];
+    if (!result_binary_value.is_blob()) {
       LOG(ERROR) << "Result not a binary value.";
-      return "";
+      return std::string();
     }
 
-    return std::string(result_binary_value->GetBlob().data(),
-                       result_binary_value->GetBlob().size());
+    return std::string(result_binary_value.GetBlob().data(),
+                       result_binary_value.GetBlob().size());
   }
 
   chromeos::EasyUnlockClient* client_;
@@ -191,17 +190,14 @@ TEST_F(EasyUnlockPrivateApiTest, GenerateEcP256KeyPair) {
   ASSERT_TRUE(result_list);
   ASSERT_EQ(2u, result_list->GetSize());
 
-  const base::Value* public_key;
-  ASSERT_TRUE(result_list->GetBinary(0, &public_key));
-  ASSERT_TRUE(public_key);
-
-  const base::Value* private_key;
-  ASSERT_TRUE(result_list->GetBinary(1, &private_key));
-  ASSERT_TRUE(private_key);
+  const base::Value& public_key = result_list->GetList()[0];
+  const base::Value& private_key = result_list->GetList()[1];
+  ASSERT_TRUE(public_key.is_blob());
+  ASSERT_TRUE(private_key.is_blob());
 
   EXPECT_TRUE(chromeos::FakeEasyUnlockClient::IsEcP256KeyPair(
-      std::string(private_key->GetBlob().data(), private_key->GetBlob().size()),
-      std::string(public_key->GetBlob().data(), public_key->GetBlob().size())));
+      std::string(private_key.GetBlob().data(), private_key.GetBlob().size()),
+      std::string(public_key.GetBlob().data(), public_key.GetBlob().size())));
 }
 
 TEST_F(EasyUnlockPrivateApiTest, PerformECDHKeyAgreement) {

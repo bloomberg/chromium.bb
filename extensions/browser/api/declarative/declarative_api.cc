@@ -6,6 +6,10 @@
 
 #include <stddef.h>
 
+#include <memory>
+#include <utility>
+#include <vector>
+
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -87,36 +91,28 @@ void RecordUMAHelper(DeclarativeAPIFunctionType type) {
                             kDeclarativeApiFunctionCallTypeMax);
 }
 
-void ConvertBinaryDictionaryValuesToBase64(base::DictionaryValue* dict);
+void ConvertBinaryDictionaryValuesToBase64(base::Value* dict);
 
 // Encodes |binary| as base64 and returns a new StringValue populated with the
 // encoded string.
-std::unique_ptr<base::Value> ConvertBinaryToBase64(base::Value* binary) {
-  std::string binary_data(binary->GetBlob().data(), binary->GetBlob().size());
+base::Value ConvertBinaryToBase64(const base::Value& binary) {
+  std::string binary_data(binary.GetBlob().data(), binary.GetBlob().size());
   std::string data64;
   base::Base64Encode(binary_data, &data64);
-  return std::unique_ptr<base::Value>(new base::Value(data64));
+  return base::Value(std::move(data64));
 }
 
 // Parses through |args| replacing any BinaryValues with base64 encoded
 // StringValues. Recurses over any nested ListValues, and calls
 // ConvertBinaryDictionaryValuesToBase64 for any nested DictionaryValues.
-void ConvertBinaryListElementsToBase64(base::ListValue* args) {
-  size_t index = 0;
-  for (base::ListValue::iterator iter = args->begin(); iter != args->end();
-       ++iter, ++index) {
-    if (iter->IsType(base::Value::Type::BINARY)) {
-      base::Value* binary = NULL;
-      if (args->GetBinary(index, &binary))
-        args->Set(index, ConvertBinaryToBase64(binary));
-    } else if (iter->IsType(base::Value::Type::LIST)) {
-      base::ListValue* list;
-      iter->GetAsList(&list);
-      ConvertBinaryListElementsToBase64(list);
-    } else if (iter->IsType(base::Value::Type::DICTIONARY)) {
-      base::DictionaryValue* dict;
-      iter->GetAsDictionary(&dict);
-      ConvertBinaryDictionaryValuesToBase64(dict);
+void ConvertBinaryListElementsToBase64(base::Value* args) {
+  for (auto& value : args->GetList()) {
+    if (value.is_blob()) {
+      value = ConvertBinaryToBase64(value);
+    } else if (value.is_list()) {
+      ConvertBinaryListElementsToBase64(&value);
+    } else if (value.is_dict()) {
+      ConvertBinaryDictionaryValuesToBase64(&value);
     }
   }
 }
@@ -124,31 +120,22 @@ void ConvertBinaryListElementsToBase64(base::ListValue* args) {
 // Parses through |dict| replacing any BinaryValues with base64 encoded
 // StringValues. Recurses over any nested DictionaryValues, and calls
 // ConvertBinaryListElementsToBase64 for any nested ListValues.
-void ConvertBinaryDictionaryValuesToBase64(base::DictionaryValue* dict) {
-  for (base::DictionaryValue::Iterator iter(*dict); !iter.IsAtEnd();
-       iter.Advance()) {
-    if (iter.value().IsType(base::Value::Type::BINARY)) {
-      base::Value* binary = NULL;
-      if (dict->GetBinary(iter.key(), &binary))
-        dict->Set(iter.key(), ConvertBinaryToBase64(binary));
-    } else if (iter.value().IsType(base::Value::Type::LIST)) {
-      const base::ListValue* list;
-      iter.value().GetAsList(&list);
-      ConvertBinaryListElementsToBase64(const_cast<base::ListValue*>(list));
-    } else if (iter.value().IsType(base::Value::Type::DICTIONARY)) {
-      const base::DictionaryValue* dict;
-      iter.value().GetAsDictionary(&dict);
-      ConvertBinaryDictionaryValuesToBase64(
-          const_cast<base::DictionaryValue*>(dict));
+void ConvertBinaryDictionaryValuesToBase64(base::Value* dict) {
+  for (auto it : dict->DictItems()) {
+    auto& value = it.second;
+    if (value.is_blob()) {
+      value = ConvertBinaryToBase64(value);
+    } else if (value.is_list()) {
+      ConvertBinaryListElementsToBase64(&value);
+    } else if (value.is_dict()) {
+      ConvertBinaryDictionaryValuesToBase64(&value);
     }
   }
 }
 
 }  // namespace
 
-RulesFunction::RulesFunction()
-    : rules_registry_(NULL) {
-}
+RulesFunction::RulesFunction() {}
 
 RulesFunction::~RulesFunction() {}
 
@@ -160,10 +147,10 @@ bool RulesFunction::HasPermission() {
 
   // <webview> embedders use the declarativeWebRequest API via
   // <webview>.onRequest.
-  if (web_view_instance_id != 0 &&
-      extension_->permissions_data()->HasAPIPermission(
-          extensions::APIPermission::kWebView))
+  if (web_view_instance_id && extension_->permissions_data()->HasAPIPermission(
+                                  APIPermission::kWebView)) {
     return true;
+  }
   return ExtensionFunction::HasPermission();
 }
 
