@@ -1412,6 +1412,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadResourceThrottleCancels) {
       g_browser_process->download_request_limiter()->GetDownloadState(
           web_contents, web_contents, true);
   ASSERT_TRUE(tab_download_state);
+  tab_download_state->set_download_seen();
   tab_download_state->SetDownloadStatusAndNotify(
       DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED);
 

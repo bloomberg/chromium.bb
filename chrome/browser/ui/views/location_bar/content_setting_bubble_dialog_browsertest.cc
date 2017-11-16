@@ -58,13 +58,16 @@ void ContentSettingBubbleDialogTest::ShowDialogBubble(
     case CONTENT_SETTINGS_TYPE_GEOLOCATION:
       content_settings->OnGeolocationPermissionSet(GURL::EmptyGURL(), false);
       break;
-    case CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS:
+    case CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS: {
       // Automatic downloads are handled by DownloadRequestLimiter.
-      g_browser_process->download_request_limiter()
-          ->GetDownloadState(web_contents, web_contents, true)
-          ->SetDownloadStatusAndNotify(
-              DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED);
+      DownloadRequestLimiter::TabDownloadState* tab_download_state =
+          g_browser_process->download_request_limiter()->GetDownloadState(
+              web_contents, web_contents, true);
+      tab_download_state->set_download_seen();
+      tab_download_state->SetDownloadStatusAndNotify(
+          DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED);
       break;
+    }
     case CONTENT_SETTINGS_TYPE_POPUPS: {
       GURL url(
           embedded_test_server()->GetURL("/popup_blocker/popup-many-10.html"));
