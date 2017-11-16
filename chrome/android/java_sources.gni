@@ -1312,6 +1312,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/widget/FloatLabelLayout.java",
   "java/src/org/chromium/chrome/browser/widget/FullscreenControlContainer.java",
   "java/src/org/chromium/chrome/browser/widget/ImageViewTinter.java",
+  "java/src/org/chromium/chrome/browser/widget/ListMenuButton.java",
   "java/src/org/chromium/chrome/browser/widget/LoadingView.java",
   "java/src/org/chromium/chrome/browser/widget/MaterialProgressBar.java",
   "java/src/org/chromium/chrome/browser/widget/NumberRollView.java",
