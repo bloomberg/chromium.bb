@@ -770,14 +770,16 @@ drag_grab_touch_focus(struct weston_touch_drag *drag)
 }
 
 static void
-drag_grab_touch_motion(struct weston_touch_grab *grab, uint32_t time,
-		int touch_id, wl_fixed_t x, wl_fixed_t y)
+drag_grab_touch_motion(struct weston_touch_grab *grab,
+		       const struct timespec *time,
+		       int touch_id, wl_fixed_t x, wl_fixed_t y)
 {
 	struct weston_touch_drag *touch_drag =
 		container_of(grab, struct weston_touch_drag, grab);
 	struct weston_touch *touch = grab->touch;
 	wl_fixed_t view_x, view_y;
 	float fx, fy;
+	uint32_t msecs;
 
 	if (touch_id != touch->grab_touch_id)
 		return;
@@ -791,11 +793,12 @@ drag_grab_touch_motion(struct weston_touch_grab *grab, uint32_t time,
 	}
 
 	if (touch_drag->base.focus_resource) {
+		msecs = timespec_to_msec(time);
 		weston_view_from_global_fixed(touch_drag->base.focus,
 					touch->grab_x, touch->grab_y,
 					&view_x, &view_y);
-		wl_data_device_send_motion(touch_drag->base.focus_resource, time,
-					view_x, view_y);
+		wl_data_device_send_motion(touch_drag->base.focus_resource,
+					   msecs, view_x, view_y);
 	}
 }
 

@@ -752,12 +752,14 @@ default_grab_touch_up(struct weston_touch_grab *grab,
  * resources of the client which currently has the surface with touch focus.
  */
 WL_EXPORT void
-weston_touch_send_motion(struct weston_touch *touch, uint32_t time,
-			 int touch_id, wl_fixed_t x, wl_fixed_t y)
+weston_touch_send_motion(struct weston_touch *touch,
+			 const struct timespec *time, int touch_id,
+			 wl_fixed_t x, wl_fixed_t y)
 {
 	struct wl_resource *resource;
 	struct wl_list *resource_list;
 	wl_fixed_t sx, sy;
+	uint32_t msecs;
 
 	if (!weston_touch_has_focus_resource(touch))
 		return;
@@ -765,15 +767,17 @@ weston_touch_send_motion(struct weston_touch *touch, uint32_t time,
 	weston_view_from_global_fixed(touch->focus, x, y, &sx, &sy);
 
 	resource_list = &touch->focus_resource_list;
+	msecs = timespec_to_msec(time);
 	wl_resource_for_each(resource, resource_list) {
-		wl_touch_send_motion(resource, time,
+		wl_touch_send_motion(resource, msecs,
 				     touch_id, sx, sy);
 	}
 }
 
 static void
-default_grab_touch_motion(struct weston_touch_grab *grab, uint32_t time,
-			  int touch_id, wl_fixed_t x, wl_fixed_t y)
+default_grab_touch_motion(struct weston_touch_grab *grab,
+			  const struct timespec *time, int touch_id,
+			  wl_fixed_t x, wl_fixed_t y)
 {
 	weston_touch_send_motion(grab->touch, time, touch_id, x, y);
 }
@@ -2203,8 +2207,7 @@ notify_touch(struct weston_seat *seat, const struct timespec *time,
 		if (!ev)
 			break;
 
-		grab->interface->motion(grab, timespec_to_msec(time),
-					touch_id, x, y);
+		grab->interface->motion(grab, time, touch_id, x, y);
 		break;
 	case WL_TOUCH_UP:
 		if (touch->num_tp == 0) {

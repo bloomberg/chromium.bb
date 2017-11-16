@@ -1551,8 +1551,9 @@ pointer_move_grab_motion(struct weston_pointer_grab *grab,
 }
 
 static void
-touch_move_grab_motion(struct weston_touch_grab *grab, uint32_t time,
-		       int touch_id, wl_fixed_t x, wl_fixed_t y)
+touch_move_grab_motion(struct weston_touch_grab *grab,
+		       const struct timespec *time, int touch_id,
+		       wl_fixed_t x, wl_fixed_t y)
 {
 	struct touch_move_grab *tch_move_grab = (struct touch_move_grab *)grab;
 
