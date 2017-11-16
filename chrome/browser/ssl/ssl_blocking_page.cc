@@ -14,12 +14,12 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/interstitials/chrome_controller_client.h"
 #include "chrome/browser/interstitials/chrome_metrics_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/ssl/cert_report_helper.h"
 #include "chrome/browser/ssl/ssl_cert_reporter.h"
+#include "chrome/browser/ssl/ssl_error_controller_client.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/security_interstitials/core/controller_client.h"
@@ -178,13 +178,13 @@ SSLBlockingPage::SSLBlockingPage(
     std::unique_ptr<ChromeMetricsHelper> metrics_helper,
     bool is_superfish,
     const base::Callback<void(content::CertificateRequestResultType)>& callback)
-    : SecurityInterstitialPage(
-          web_contents,
-          request_url,
-          base::MakeUnique<ChromeControllerClient>(web_contents,
-                                                   ssl_info,
-                                                   request_url,
-                                                   std::move(metrics_helper))),
+    : SecurityInterstitialPage(web_contents,
+                               request_url,
+                               base::MakeUnique<SSLErrorControllerClient>(
+                                   web_contents,
+                                   ssl_info,
+                                   request_url,
+                                   std::move(metrics_helper))),
       callback_(callback),
       ssl_info_(ssl_info),
       overridable_(overridable),
