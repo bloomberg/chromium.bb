@@ -55,8 +55,8 @@ struct UiInitialState;
 //           kScreenCaptureIndicator
 //           kLocationAccessIndicator
 //           kBluetoothConnectedIndicator
-//       kExitPrompt
-//         kExitPromptBackplane
+//       kExitPromptBackplane
+//         kExitPrompt
 //       kExclusiveScreenToastTransientParent
 //         kExclusiveScreenToast
 //       kCloseButton
