@@ -448,7 +448,13 @@ public class SingleCategoryPreferences extends PreferenceFragment
         if (preference instanceof WebsitePreference) {
             WebsitePreference website = (WebsitePreference) preference;
             website.setFragment(SingleWebsitePreferences.class.getName());
-            website.putSiteIntoExtras(SingleWebsitePreferences.EXTRA_SITE);
+            // EXTRA_SITE re-uses already-fetched permissions, which we can only use if the Website
+            // was populated with data for all permission types.
+            if (mCategory.showAllSites()) {
+                website.putSiteIntoExtras(SingleWebsitePreferences.EXTRA_SITE);
+            } else {
+                website.putSiteAddressIntoExtras(SingleWebsitePreferences.EXTRA_SITE_ADDRESS);
+            }
         }
 
         return super.onPreferenceTreeClick(screen, preference);

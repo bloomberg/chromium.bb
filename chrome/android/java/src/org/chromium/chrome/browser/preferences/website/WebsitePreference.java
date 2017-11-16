@@ -69,6 +69,10 @@ class WebsitePreference extends Preference implements FaviconImageCallback {
         getExtras().putSerializable(key, mSite);
     }
 
+    public void putSiteAddressIntoExtras(String key) {
+        getExtras().putSerializable(key, mSite.getAddress());
+    }
+
     /**
      * Return the Website this object is representing.
      */
