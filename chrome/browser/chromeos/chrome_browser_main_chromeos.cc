@@ -86,6 +86,7 @@
 #include "chrome/browser/chromeos/power/freezer_cgroup_process_manager.h"
 #include "chrome/browser/chromeos/power/idle_action_warning_observer.h"
 #include "chrome/browser/chromeos/power/power_data_collector.h"
+#include "chrome/browser/chromeos/power/power_metrics_reporter.h"
 #include "chrome/browser/chromeos/power/power_prefs.h"
 #include "chrome/browser/chromeos/power/renderer_freezer.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -1017,6 +1018,10 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   renderer_freezer_ = base::MakeUnique<RendererFreezer>(
       base::MakeUnique<FreezerCgroupProcessManager>());
 
+  power_metrics_reporter_ = std::make_unique<PowerMetricsReporter>(
+      DBusThreadManager::Get()->GetPowerManagerClient(),
+      g_browser_process->local_state());
+
   g_browser_process->platform_part()->InitializeAutomaticRebootManager();
   g_browser_process->platform_part()->InitializeDeviceDisablingManager();
 
@@ -1134,6 +1139,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   network_pref_state_observer_.reset();
   extension_volume_observer_.reset();
   power_prefs_.reset();
+  power_metrics_reporter_.reset();
   renderer_freezer_.reset();
   wake_on_wifi_manager_.reset();
   network_throttling_observer_.reset();

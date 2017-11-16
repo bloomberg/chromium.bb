@@ -98,6 +98,9 @@ class CHROMEOS_EXPORT FakePowerManagerClient : public PowerManagerClient {
   // keyboard brightness to |level|.
   void SendKeyboardBrightnessChanged(int level, bool user_initiated);
 
+  // Notifies observers about the screen idle state changing.
+  void SendScreenIdleStateChanged(const power_manager::ScreenIdleState& proto);
+
   // Notifies observers that the power button has been pressed or released.
   void SendPowerButtonEvent(bool down, const base::TimeTicks& timestamp);
 

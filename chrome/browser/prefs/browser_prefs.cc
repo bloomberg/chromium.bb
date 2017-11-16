@@ -226,6 +226,7 @@
 #include "chrome/browser/chromeos/policy/device_status_collector.h"
 #include "chrome/browser/chromeos/policy/dm_token_storage.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
+#include "chrome/browser/chromeos/power/power_metrics_reporter.h"
 #include "chrome/browser/chromeos/power/power_prefs.h"
 #include "chrome/browser/chromeos/preferences.h"
 #include "chrome/browser/chromeos/printing/synced_printers_manager.h"
@@ -397,6 +398,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   chromeos::HIDDetectionScreenHandler::RegisterPrefs(registry);
   chromeos::DemoModeDetector::RegisterPrefs(registry);
   chromeos::NetworkThrottlingObserver::RegisterPrefs(registry);
+  chromeos::PowerMetricsReporter::RegisterLocalStatePrefs(registry);
   chromeos::Preferences::RegisterPrefs(registry);
   chromeos::RegisterDisplayLocalStatePrefs(registry);
   chromeos::ResetScreen::RegisterPrefs(registry);
