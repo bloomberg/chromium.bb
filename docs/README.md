@@ -252,6 +252,7 @@ used when committed.
     iOS app open links in Chrome.
 *   [User Agent in Chrome for iOS](ios/user_agent.md) - Notes on User Agent
     strings using Chrome for iOS.
+*   [Running iOS test suites locally](ios/testing.md)
 
 ### Media
 *   [Audio Focus Handling](media/audio_focus.md) - How multiple MediaSession
