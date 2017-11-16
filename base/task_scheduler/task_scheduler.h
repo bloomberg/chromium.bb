@@ -23,7 +23,7 @@
 #include "build/build_config.h"
 
 namespace gin {
-class V8Platform;
+class V8BackgroundTaskRunner;
 }
 
 namespace content {
@@ -210,7 +210,7 @@ class BASE_EXPORT TaskScheduler {
   static TaskScheduler* GetInstance();
 
  private:
-  friend class gin::V8Platform;
+  friend class gin::V8BackgroundTaskRunner;
   friend class content::BrowserMainLoopTest_CreateThreadsInSingleProcess_Test;
 
   // Returns the maximum number of non-single-threaded non-blocked tasks posted

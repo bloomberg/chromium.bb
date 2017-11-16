@@ -10,6 +10,8 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "gin/public/gin_embedders.h"
+#include "gin/v8_foreground_task_runner.h"
+#include "gin/v8_foreground_task_runner_with_locker.h"
 
 using v8::ArrayBuffer;
 using v8::Eternal;
@@ -26,12 +28,16 @@ PerIsolateData::PerIsolateData(
     ArrayBuffer::Allocator* allocator,
     IsolateHolder::AccessMode access_mode,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : isolate_(isolate),
-      allocator_(allocator),
-      access_mode_(access_mode),
-      task_runner_(
-          task_runner ? task_runner : base::ThreadTaskRunnerHandle::Get()) {
+    : isolate_(isolate), allocator_(allocator) {
   isolate_->SetData(kEmbedderNativeGin, this);
+
+  task_runner = task_runner ? task_runner : base::ThreadTaskRunnerHandle::Get();
+  if (access_mode == IsolateHolder::kUseLocker) {
+    task_runner_ = std::make_shared<V8ForegroundTaskRunnerWithLocker>(
+        isolate, task_runner);
+  } else {
+    task_runner_ = std::make_shared<V8ForegroundTaskRunner>(task_runner);
+  }
 }
 
 PerIsolateData::~PerIsolateData() {
@@ -120,7 +126,7 @@ NamedPropertyInterceptor* PerIsolateData::GetNamedPropertyInterceptor(
 
 void PerIsolateData::EnableIdleTasks(
     std::unique_ptr<V8IdleTaskRunner> idle_task_runner) {
-  idle_task_runner_ = std::move(idle_task_runner);
+  task_runner_->EnableIdleTasks(std::move(idle_task_runner));
 }
 
 }  // namespace gin
