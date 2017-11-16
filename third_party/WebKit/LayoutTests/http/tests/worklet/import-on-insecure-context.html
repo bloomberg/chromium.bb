@@ -2,13 +2,13 @@
 <meta charset="utf-8">
 <title>Worklet: addModule() on an insecure context</title>
 <body>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
 <script src="/resources/get-host-info.js"></script>
 <script>
 
-// This test should be in chromium/ because Worklets are now restrected to
-// secure contexts by Chromium's policy.
+// This test should not be upstreamed to WPT because Worklets are now restrected
+// to secure contexts by Chrome's policy.
 
 if (window.location.origin != get_host_info().UNAUTHENTICATED_ORIGIN) {
   test(t => {
