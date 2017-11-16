@@ -5,12 +5,14 @@
 #ifndef CONTENT_BROWSER_PAYMENTS_PAYMENT_APP_INFO_FETCHER_H_
 #define CONTENT_BROWSER_PAYMENTS_PAYMENT_APP_INFO_FETCHER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/browser/stored_payment_app.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/manifest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -38,6 +40,14 @@ class PaymentAppInfoFetcher
 
  private:
   friend class base::RefCountedThreadSafe<PaymentAppInfoFetcher>;
+
+  // Keeps track of the web contents.
+  class WebContentsHelper : public WebContentsObserver {
+   public:
+    explicit WebContentsHelper(WebContents* web_contents);
+    ~WebContentsHelper() override;
+  };
+
   ~PaymentAppInfoFetcher();
 
   void StartFromUIThread(
@@ -51,12 +61,17 @@ class PaymentAppInfoFetcher
   void OnIconFetched(const SkBitmap& icon);
   void PostPaymentAppInfoFetchResultToIOThread();
 
+  // Prints the warning |message| in the DevTools console, if possible.
+  // Otherwise logs the warning on command line.
+  void WarnIfPossible(const std::string& message);
+
   GURL context_url_;
   PaymentAppInfoFetchCallback callback_;
 
-  int context_process_id_;
-  int context_frame_id_;
+  std::unique_ptr<WebContentsHelper> web_contents_helper_;
   std::unique_ptr<PaymentAppInfo> fetched_payment_app_info_;
+  GURL manifest_url_;
+  GURL icon_url_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentAppInfoFetcher);
 };
