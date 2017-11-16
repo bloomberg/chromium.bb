@@ -1,0 +1,48 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/html/cr.html">
+<link rel="import" href="checkbox_radio_css.html">
+<link rel="import" href="input_css.html">
+<link rel="import" href="print_preview_shared_css.html">
+<link rel="import" href="settings_section.html">
+
+<dom-module id="print-preview-pages-settings">
+  <template>
+    <style include="print-preview-shared checkbox-radio input">
+      :host .radio .user-value {
+        -webkit-margin-start: 0.6em;
+        flex: 1;
+        width: 100%;
+      }
+    </style>
+    <print-preview-settings-section class="input-settings-section">
+      <span slot="title">$i18n{pagesLabel}</span>
+      <div slot="controls">
+        <div class="radio">
+          <label><input type="radio" name="pages" id="all-radio-button"
+              checked="{{allSelected_::change}}">
+            <span>$i18n{optionAllPages}</span>
+          </label>
+          <label class="custom-input-wrapper"
+              for="page-settings-custom-input" tabindex=-1>
+            <input type="radio" name="pages" id="custom-radio-button"
+                on-click="onCustomRadioClick_">
+            <input class="user-value" type="text"
+                value="{{inputString_::input}}" id="page-settings-custom-input"
+                checked="{{customSelected_::change}}"
+                pattern="([0-9]*(-)?[0-9]*(,)( )?)*([0-9]*(-)?[0-9]*(,)?( )?)?"
+                on-focus="onCustomInputFocus_" on-blur="onCustomInputBlur_"
+                placeholder="$i18n{examplePageRangeText}"
+                aria-label="$i18n{examplePageRangeText}">
+          </label>
+        </div>
+        <span class="hint" aria-live="polite"
+            inner-h-t-m-l="[[getHintMessage_(errorState_,
+                                             model.documentNumPages)]]"
+            hidden$="[[hintHidden_(inputString_, errorState_)]]">
+        </span>
+      </div>
+    </print-preview-settings-section>
+  </template>
+  <script src="pages_settings.js"></script>
+</dom-module>

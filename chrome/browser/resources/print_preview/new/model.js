@@ -17,8 +17,10 @@ cr.exportPath('print_preview_new');
  *   duplex: boolean,
  *   copiesInvalid: boolean,
  *   scalingInvalid: boolean,
+ *   pagesInvalid: boolean,
  *   isPdfDocument: boolean,
  *   fitToPageScaling: string,
+ *   documentNumPages: number,
  * }}
  */
 print_preview_new.Model;
