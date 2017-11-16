@@ -8856,12 +8856,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "crashpad_tests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "crypto_unittests"
       },
       {
