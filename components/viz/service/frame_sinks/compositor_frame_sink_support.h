@@ -109,6 +109,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   // CapturableFrameSink implementation.
   void AttachCaptureClient(CapturableFrameSink::Client* client) override;
   void DetachCaptureClient(CapturableFrameSink::Client* client) override;
+  gfx::Size GetSurfaceSize() override;
   void RequestCopyOfSurface(
       std::unique_ptr<CopyOutputRequest> request) override;
 
