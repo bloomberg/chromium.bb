@@ -159,5 +159,11 @@ class CxxDependencyTest(unittest.TestCase):
     # currently checked because the PRESUBMIT test mocks are missing too
     # much functionality...
 
+    # External module checks should not affect CSS files.
+    def testCheckCSSIgnored(self):
+        filename = 'third_party/WebKit/Source/devtools/front_end/timeline/someFile.css'
+        errors = self.runCheck(filename, ['.toolbar::after { color: pink; }\n'])
+        self.assertEqual([], errors)
+
 if __name__ == '__main__':
     unittest.main()

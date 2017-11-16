@@ -122,15 +122,17 @@ def _CheckForForbiddenChromiumCode(input_api, output_api):
     # the file), so we duplicate the logic here...
     results = []
     for f in input_api.AffectedFiles():
-        errors = audit_non_blink_usage.check(f.LocalPath(),
-                                             [(i + 1, l) for i, l in enumerate(f.NewContents())])
+        path = f.LocalPath()
+        _, ext = os.path.splitext(path)
+        if ext not in ('.cc', '.cpp', '.h', '.mm'):
+            continue
+        errors = audit_non_blink_usage.check(path, [(i + 1, l) for i, l in enumerate(f.NewContents())])
         if errors:
-            errors = audit_non_blink_usage.check(f.LocalPath(), f.ChangedContents())
+            errors = audit_non_blink_usage.check(path, f.ChangedContents())
             if errors:
                 for line_number, disallowed_identifier in errors:
                     results.append(output_api.PresubmitError(
-                        '%s:%d uses disallowed identifier %s' % (f.LocalPath(), line_number,
-                                                                 disallowed_identifier)))
+                        '%s:%d uses disallowed identifier %s' % (path, line_number, disallowed_identifier)))
     return results
 
 
