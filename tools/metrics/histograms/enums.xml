@@ -32908,6 +32908,9 @@ Called by update_net_error_codes.py.-->
              shown on a reload."/>
   <int value="9"
       label="Host blacklisted by server rules provided to the client."/>
+  <int value="10"
+      label="Host not whitelisted by server rules provided to the client."/>
+  <int value="11" label="Preview Allowed without server rule check."/>
 </enum>
 
 <enum name="PreviewsInfoBarAction">

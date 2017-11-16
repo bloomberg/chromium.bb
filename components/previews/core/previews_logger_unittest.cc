@@ -410,6 +410,21 @@ TEST_F(PreviewsLoggerTest, LogPreviewDecisionDescriptionServerRules) {
   EXPECT_EQ(expected_description, actual_description);
 }
 
+TEST_F(PreviewsLoggerTest, LogPreviewDecisionDescriptionNotWhitelisedByServer) {
+  std::string actual_description = LogPreviewDecisionAndGetReasonDescription(
+      PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER);
+  std::string expected_description = "Host not whitelisted by server rules";
+  EXPECT_EQ(expected_description, actual_description);
+}
+
+TEST_F(PreviewsLoggerTest,
+       LogPreviewDecisionDescriptionAllowedWithoutServerOptimizationHints) {
+  std::string actual_description = LogPreviewDecisionAndGetReasonDescription(
+      PreviewsEligibilityReason::ALLOWED_WITHOUT_OPTIMIZATION_HINTS);
+  std::string expected_description = "Allowed (but without server rule check)";
+  EXPECT_EQ(expected_description, actual_description);
+}
+
 TEST_F(PreviewsLoggerTest, NotifyObserversOfNewBlacklistedHost) {
   TestPreviewsLoggerObserver observers[3];
 

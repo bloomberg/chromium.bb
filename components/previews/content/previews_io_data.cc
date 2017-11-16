@@ -58,6 +58,24 @@ bool AllowedOnReload(PreviewsType type) {
   return false;
 }
 
+bool IsServerWhitelistedType(PreviewsType type) {
+  switch (type) {
+    // These types check server whitelist, if available.
+    case PreviewsType::NOSCRIPT:
+      return true;
+    case PreviewsType::OFFLINE:
+    case PreviewsType::LITE_PAGE:
+    case PreviewsType::LOFI:
+    case PreviewsType::AMP_REDIRECTION:
+      return false;
+    case PreviewsType::NONE:
+    case PreviewsType::LAST:
+      break;
+  }
+  NOTREACHED();
+  return false;
+}
+
 }  // namespace
 
 PreviewsIOData::PreviewsIOData(
@@ -247,19 +265,24 @@ bool PreviewsIOData::ShouldAllowPreviewAtECT(
     return false;
   }
 
-  // Check any provided optimization guidance from the server. This data is
-  // provided through ComponentUpdater (at least originally).
-  if (params::IsOptimizationHintsEnabled()) {
-    // Optimization hints are configured. Check specific previews types that
-    // use them.
-    // TODO(dougarnett): Generalize at some point.
-    if (type == PreviewsType::NOSCRIPT) {
-      // Ensure the URL is whitelisted for NoScript.
+  // Check whitelist from the server, if provided.
+  if (IsServerWhitelistedType(type)) {
+    if (params::IsOptimizationHintsEnabled()) {
+      // Optimization hints are configured, so require whitelist match.
       if (!previews_opt_guide_ ||
           !previews_opt_guide_->IsWhitelisted(request, type)) {
-        // TODO(dougarnett) bug 780859: Add and log eligibility reason for this.
+        LogPreviewDecisionMade(
+            PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER,
+            request.url(), base::Time::Now(), type);
         return false;
       }
+    } else {
+      // Since server optimization guidance not configure, allow the preview
+      // but with qualified eligibility reason.
+      LogPreviewDecisionMade(
+          PreviewsEligibilityReason::ALLOWED_WITHOUT_OPTIMIZATION_HINTS,
+          request.url(), base::Time::Now(), type);
+      return true;
     }
   }
 

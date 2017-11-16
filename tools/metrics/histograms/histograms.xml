@@ -65519,7 +65519,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     When evaluating whether to show a user a preview, the preview might be
     disallowed for various reasons. If the preview is disallowed, then this
     reports the reason for disallowing it. If the preview is allowed, then this
-    reports &quot;Previews Allowed&quot;.
+    generally reports &quot;Previews Allowed&quot;. It may instead report
+    &quot;Previews Allowed without server rule check&quot; for a preview that
+    expects to check server rules but they are not enabled.
   </summary>
 </histogram>
 
