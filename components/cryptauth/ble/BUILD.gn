@@ -6,6 +6,8 @@ import("//testing/test.gni")
 
 static_library("ble") {
   sources = [
+    "ble_advertisement_generator.cc",
+    "ble_advertisement_generator.h",
     "bluetooth_low_energy_characteristics_finder.cc",
     "bluetooth_low_energy_characteristics_finder.h",
     "bluetooth_low_energy_weave_client_connection.cc",
@@ -37,9 +39,28 @@ static_library("ble") {
   ]
 }
 
+static_library("test_support") {
+  sources = [
+    "fake_ble_advertisement_generator.cc",
+    "fake_ble_advertisement_generator.h",
+  ]
+
+  deps = [
+    ":ble",
+    "//base",
+    "//components/cryptauth",
+    "//components/cryptauth/ble",
+  ]
+
+  public_deps = [
+    "//components/cryptauth/proto",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "ble_advertisement_generator_unittest.cc",
     "bluetooth_low_energy_characteristics_finder_unittest.cc",
     "bluetooth_low_energy_weave_client_connection_unittest.cc",
     "bluetooth_low_energy_weave_packet_generator_unittest.cc",
