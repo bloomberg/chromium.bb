@@ -11,37 +11,21 @@ class TabDataExperimental;
 
 class TabStripModelExperimentalObserver {
  public:
-  // If the group is null the index is into the toplevel tab strip.
-  virtual void TabInsertedAt(/*Group* group,*/ int index, bool is_active) = 0;
-  virtual void TabClosedAt(/*Group* group,*/ int index) = 0;
+  // If the parent is null the index is into the toplevel tab strip.
+  virtual void TabInserted(const TabDataExperimental* data, bool is_active) = 0;
+  virtual void TabClosing(const TabDataExperimental* data) = 0;
 
-  virtual void TabChangedAt(int index,
-                            const TabDataExperimental& data,
-                            TabStripModelObserver::TabChangeType type) = 0;
+  // TODO(brettw) need a way to specify what changed so the tab doesn't need
+  // to redraw everything.
+  virtual void TabChanged(const TabDataExperimental* data) = 0;
 
-  virtual void TabSelectionChanged(
-      const ui::ListSelectionModel& old_selection,
-      const ui::ListSelectionModel& new_selection) = 0;
-
-  /* TODO(brettw) add group notifications. Some initial thinking:
-  struct GroupCreateParams {
-    Group* group;
-
-    // This is the range of existing tabs in the toplevel tab strip that are
-    // incorporated into the group. These are effectively removed from the
-    // toplevel and inserted into the group without changing them.
-    //
-    // The range is, like STL, [begin, end) and it may be empty.
-    int incorporate_begin;
-    int incorporate_end;
-
-    // These are indicies of new tabs that are added inside the group.
-    std::vector<int> added_indices;
-  };
-  virtual void GroupCreatedAt(const GroupCreateParams& params) = 0;
-
-  virtual void GroupDestroyedAt(int index) = 0;
-  */
+  // TODO(brettw) Need to add support for multi-selection. We probably don't
+  // want to expose a ListSelectionModel here because of the mismatch between
+  // indices and tabs. Probably we want a vector of selected tabs or something.
+  //
+  // |old_active| will be null for the first call.
+  virtual void TabSelectionChanged(const TabDataExperimental* old_active,
+                                   const TabDataExperimental* new_active) = 0;
 
  private:
 };

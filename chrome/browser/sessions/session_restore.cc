@@ -679,9 +679,10 @@ class SessionRestoreImpl : public content::NotificationObserver {
     if (!session_service)
       return;
     TabStripModel* tab_strip = browser->tab_strip_model();
-    for (int i = initial_count; i < tab_strip->count(); ++i)
+    for (int i = initial_count; i < tab_strip->count(); ++i) {
       session_service->TabRestored(tab_strip->GetWebContentsAt(i),
                                    tab_strip->IsTabPinned(i));
+    }
   }
 
   // The profile to create the sessions for.

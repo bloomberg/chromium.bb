@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/containers/flat_map.h"
+#include "base/containers/flat_set.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -28,7 +30,6 @@
 #include "ui/views/view_targeter_delegate.h"
 
 class NewTabButton;
-class StackedTabStripLayout;
 class TabDragController;
 class TabExperimental;
 class TabStripModelExperimental;
@@ -63,21 +64,6 @@ class TabStripExperimental : public TabStrip,
   TabAlertState GetTabAlertState(int tab_index) const override;
   void UpdateLoadingAnimations() override;
 
-  // If |adjust_layout| is true the stacked layout changes based on whether the
-  // user uses a mouse or a touch device with the tabstrip.
-  void set_adjust_layout(bool adjust_layout) { adjust_layout_ = adjust_layout; }
-
-  // |stacked_layout_| defines what should happen when the tabs won't fit at
-  // their ideal size. When |stacked_layout_| is true the tabs are always sized
-  // to their ideal size and stacked on top of each other so that only a certain
-  // set of tabs are visible. This is used when the user uses a touch device.
-  // When |stacked_layout_| is false the tabs shrink to accommodate the
-  // available space. This is the default.
-  bool stacked_layout() const { return stacked_layout_; }
-
-  // Sets |stacked_layout_| and animates if necessary.
-  void SetStackedLayout(bool stacked_layout);
-
   // Returns the bounds of the new tab button.
   gfx::Rect GetNewTabButtonBounds();
 
@@ -98,13 +84,6 @@ class TabStripExperimental : public TabStrip,
                const TabRendererData& data);
   */
 
-  // Returns true if the tab is not partly or fully clipped (due to overflow),
-  // and the tab couldn't become partly clipped due to changing the selected tab
-  // (for example, if currently the strip has the last tab selected, and
-  // changing that to the first tab would cause |tab| to be pushed over enough
-  // to clip).
-  bool ShouldTabBeVisible(const TabExperimental* tab) const;
-
   // Invoked from the controller when the close initiates from the TabController
   // (the user clicked the tab close button or middle clicked the tab). This is
   // invoked from Close. Because of unload handlers Close is not always
@@ -115,26 +94,19 @@ class TabStripExperimental : public TabStrip,
   void SetTabNeedsAttention(int model_index, bool attention);
 
   // Retrieves the ideal bounds for the Tab at the specified index.
+  /*
   const gfx::Rect& ideal_bounds(int tab_data_index) {
     return tabs_.ideal_bounds(tab_data_index);
   }
-
-  // Returns the Tab at |index|.
-  TabExperimental* tab_at(int index) const { return tabs_.view_at(index); }
+  */
 
   // Returns the NewTabButton.
   /* TODO(brettw) new tab button.
   NewTabButton* new_tab_button() { return new_tab_button_; }
   */
 
-  // Returns the index of the specified tab in the model coordinate system, or
-  // -1 if tab is closing or not valid.
-  int GetModelIndexOfTab(const TabExperimental* tab) const;
-
-  // Gets the number of Tabs in the tab strip.
-  int tab_count() const { return tabs_.view_size(); }
-
   // Cover method for TabStripController::GetCount.
+  // TODO(brettw) remove this.
   int GetModelCount() const;
 
   // Cover method for TabStripController::IsValidIndex.
@@ -164,14 +136,11 @@ class TabStripExperimental : public TabStrip,
   void FileSupported(const GURL& url, bool supported);
 
   // TabStripModelExperimentalObserver implementation:
-  void TabInsertedAt(int index, bool is_active) override;
-  void TabClosedAt(int index) override;
-  void TabChangedAt(int index,
-                    const TabDataExperimental& data,
-                    TabStripModelObserver::TabChangeType type) override;
-  void TabSelectionChanged(
-      const ui::ListSelectionModel& old_selection,
-      const ui::ListSelectionModel& new_selection) override;
+  void TabInserted(const TabDataExperimental* data, bool is_active) override;
+  void TabClosing(const TabDataExperimental* data) override;
+  void TabChanged(const TabDataExperimental* data) override;
+  void TabSelectionChanged(const TabDataExperimental* old_data,
+                           const TabDataExperimental* new_data) override;
 
   // TabController overrides:
   /*
@@ -230,11 +199,6 @@ class TabStripExperimental : public TabStrip,
   views::View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
 
  private:
-  using Tabs = std::vector<TabExperimental*>;
-  using TabsClosingMap = std::map<int, Tabs>;
-  using FindClosingTabResult =
-      std::pair<TabsClosingMap::iterator, Tabs::iterator>;
-
   class RemoveTabDelegate;
 
   friend class TabDragController;
@@ -284,14 +248,15 @@ class TabStripExperimental : public TabStrip,
   int GetActiveIndex() const;
 
   // Invoked from |AddTabAt| after the newly created tab has been inserted.
-  void StartInsertTabAnimation(int model_index);
+  void StartInsertTabAnimation(const TabDataExperimental* data,
+                               TabExperimental* tab);
 
   // Invoked from |MoveTab| after |tab_data_| has been updated to animate the
   // move.
   void StartMoveTabAnimation();
 
   // Starts the remove tab animation.
-  void StartRemoveTabAnimation(int model_index);
+  void StartRemoveTabAnimation(TabExperimental* tab);
 
   // Schedules the animations and bounds changes necessary for a remove tab
   // animation.
@@ -308,15 +273,9 @@ class TabStripExperimental : public TabStrip,
   // Invoked from Layout if the size changes or layout is really needed.
   void DoLayout();
 
-  // Sets the visibility state of all tabs based on ShouldTabBeVisible().
-  void SetTabVisibility();
-
   // Drags the active tab by |delta|. |initial_positions| is the x-coordinates
   // of the tabs when the drag started.
   void DragActiveTab(const std::vector<int>& initial_positions, int delta);
-
-  // Sets the ideal bounds x-coordinates to |positions|.
-  void SetIdealBoundsFromPositions(const std::vector<int>& positions);
 
   // Stacks the dragged tabs. This is used if the drag operation is
   // MOVE_VISIBLE_TABS and the tabs don't fill the tabstrip. When this happens
@@ -326,63 +285,16 @@ class TabStripExperimental : public TabStrip,
   // Returns true if dragging has resulted in temporarily stacking the tabs.
   bool IsStackingDraggedTabs() const;
 
-  // Invoked during drag to layout the tabs being dragged in |tabs| at
-  // |location|. If |initial_drag| is true, this is the initial layout after the
-  // user moved the mouse far enough to trigger a drag.
-  void LayoutDraggedTabsAt(const Tabs& tabs,
-                           TabExperimental* active_tab,
-                           const gfx::Point& location,
-                           bool initial_drag);
-
-  // Calculates the bounds needed for each of the tabs, placing the result in
-  // |bounds|.
-  void CalculateBoundsForDraggedTabs(const Tabs& tabs,
-                                     std::vector<gfx::Rect>* bounds);
-
-  // Returns the size needed for the specified tabs. This is invoked during drag
-  // and drop to calculate offsets and positioning.
-  int GetSizeNeededForTabs(const Tabs& tabs);
-
   // Returns the number of pinned tabs.
   int GetPinnedTabCount() const;
 
-  // Returns the last tab in the strip that's actually visible.  This will be
-  // the actual last tab unless the strip is in the overflow node_data.
-  const TabExperimental* GetLastVisibleTab() const;
-
   // Adds the tab at |index| to |tabs_closing_map_| and removes the tab from
   // |tabs_|.
-  void RemoveTabFromViewModel(int index);
+  void RemoveTabFromViewModel(TabExperimental* tab);
 
   // Cleans up the Tab from the TabStrip. This is called from the tab animation
   // code and is not a general-purpose method.
   void RemoveAndDeleteTab(TabExperimental* tab);
-
-  // Adjusts the indices of all tabs in |tabs_closing_map_| whose index is
-  // >= |index| to have a new index of |index + delta|.
-  void UpdateTabsClosingMap(int index, int delta);
-
-  // Used by TabDragController when the user starts or stops dragging tabs.
-  void StartedDraggingTabs(const Tabs& tabs);
-
-  // Invoked when TabDragController detaches a set of tabs.
-  void DraggedTabsDetached();
-
-  // Used by TabDragController when the user stops dragging tabs. |move_only| is
-  // true if the move behavior is TabDragController::MOVE_VISIBLE_TABS.
-  // |completed| is true if the drag operation completed successfully, false if
-  // it was reverted.
-  void StoppedDraggingTabs(const Tabs& tabs,
-                           const std::vector<int>& initial_positions,
-                           bool move_only,
-                           bool completed);
-
-  // Invoked from StoppedDraggingTabs to cleanup |tab|. If |tab| is known
-  // |is_first_tab| is set to true.
-  void StoppedDraggingTab(TabExperimental* tab, bool* is_first_tab);
-
-  // Takes ownership of |controller|.
-  void OwnDragController(TabDragController* controller);
 
   // Destroys the current TabDragController. This cancel the existing drag
   // operation.
@@ -390,18 +302,6 @@ class TabStripExperimental : public TabStrip,
 
   // Releases ownership of the current TabDragController.
   TabDragController* ReleaseDragController();
-
-  // Finds |tab| in the |tab_closing_map_| and returns a pair of iterators
-  // indicating precisely where it is.
-  FindClosingTabResult FindClosingTab(const TabExperimental* tab);
-
-  // Paints all the tabs in |tabs_closing_map_[index]|.
-  void PaintClosingTabs(int index, const views::PaintInfo& paint_info);
-
-  // Invoked when a mouse event occurs over |source|. Potentially switches the
-  // |stacked_layout_|.
-  void UpdateStackedLayoutFromMouseEvent(views::View* source,
-                                         const ui::MouseEvent& event);
 
   // -- Tab Resize Layout -----------------------------------------------------
 
@@ -471,7 +371,7 @@ class TabStripExperimental : public TabStrip,
   // Starts various types of TabStrip animations.
   void StartResizeLayoutAnimation();
   void StartPinnedTabAnimation();
-  void StartMouseInitiatedRemoveTabAnimation(int model_index);
+  void StartMouseInitiatedRemoveTabAnimation(TabExperimental* tab);
 
   // Returns true if the specified point in TabStrip coords is within the
   // hit-test region of the specified Tab.
@@ -483,38 +383,15 @@ class TabStripExperimental : public TabStrip,
   // Returns the position normal tabs start at.
   int GetStartXForNormalTabs() const;
 
-  // Returns the tab to use for event handling. This uses FindTabForEventFrom()
-  // to do the actual searching.  This method should be called when
-  // |touch_layout_| is set.
-  TabExperimental* FindTabForEvent(const gfx::Point& point);
-
-  // Helper for FindTabForEvent().  Returns the tab to use for event handling
-  // starting at index |start| and iterating by |delta|.
-  TabExperimental* FindTabForEventFrom(const gfx::Point& point,
-                                       int start,
-                                       int delta);
-
   // For a given point, finds a tab that is hit by the point. If the point hits
   // an area on which two tabs are overlapping, the tab is selected as follows:
   // - If one of the tabs is active, select it.
   // - Select the left one.
-  // If no tabs are hit, returns null.  This method should be called when
-  // |touch_layout_| is not set.
+  // If no tabs are hit, returns null.
   TabExperimental* FindTabHitByPoint(const gfx::Point& point);
 
   // Returns the x-coordinates of the tabs.
   std::vector<int> GetTabXCoordinates();
-
-  // Creates/Destroys |touch_layout_| as necessary.
-  void SwapLayoutIfNecessary();
-
-  // Returns true if |touch_layout_| is needed.
-  bool NeedsTouchLayout() const;
-
-  // Sets the value of |reset_to_shrink_on_exit_|. If true |mouse_watcher_| is
-  // used to track when the mouse truly exits the tabstrip and the stacked
-  // layout is reset.
-  void SetResetToShrinkOnExit(bool value);
 
   // views::ButtonListener implementation:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
@@ -534,19 +411,37 @@ class TabStripExperimental : public TabStrip,
   // views::ViewTargeterDelegate:
   views::View* TargetForRect(views::View* root, const gfx::Rect& rect) override;
 
+  // Returns the tab for the given data. The tab might not be owned directly
+  // by this class, but could be owned by another tab. This handles "not found"
+  // by returning null.
+  TabExperimental* TabForData(const TabDataExperimental* data);
+
+  // Invalidates the cached paint order for tabs. Call this whenever the model
+  // changes.
+  void InvalidateViewOrder();
+
+  // Ensures that view_order_ corresponds to the latest tabs_ structure.
+  void EnsureViewOrderUpToDate() const;
+
   // -- Member Variables ------------------------------------------------------
 
   TabStripModelExperimental* model_;
 
-  // There is a one-to-one mapping between each of the tabs in the
-  // TabStripController (TabStripModel) and |tabs_|. Because we animate tab
-  // removal there exists a period of time where a tab is displayed but not in
-  // the model. When this occurs the tab is removed from |tabs_| and placed in
-  // |tabs_closing_map_|. When the animation completes the tab is removed from
-  // |tabs_closing_map_|. The painting code ensures both sets of tabs are
-  // painted, and the event handling code ensures only tabs in |tabs_| are used.
-  views::ViewModelT<TabExperimental> tabs_;
-  TabsClosingMap tabs_closing_map_;
+  // Active tabs currently in the model. Whenever this changes be sure to call
+  // InvalidateViewOrder().
+  base::flat_map<const TabDataExperimental*, TabExperimental*> tabs_;
+
+  // Tabs currently in the view that lack a model representation because
+  // they're in the process of animating closed.
+  // TODO(brettw) order these properly like the TabStripImpl does. Currently
+  // this will cause them to be painted in order of their memory address!
+  base::flat_set<TabExperimental*> closing_tabs_;
+
+  // Cached ordered vector for painting the tabs. This will include everything
+  // in the tabs_ map and also the items in closing_tabs_.
+  //
+  // This is computed by EnsureViewOrderUpToDate().
+  mutable std::vector<TabExperimental*> view_order_;
 
   // The "New Tab" button.
   /* TODO(brettw) new tab button.
@@ -595,19 +490,6 @@ class TabStripExperimental : public TabStrip,
 
   // Size we last layed out at.
   gfx::Size last_layout_size_;
-
-  // See description above stacked_layout().
-  bool stacked_layout_ = false;
-
-  // Should the layout dynamically adjust?
-  bool adjust_layout_ = false;
-
-  // Only used while in touch mode.
-  std::unique_ptr<StackedTabStripLayout> touch_layout_;
-
-  // If true the |stacked_layout_| is set to false when the mouse exits the
-  // tabstrip (as determined using MouseWatcher).
-  bool reset_to_shrink_on_exit_ = false;
 
   // Location of the mouse at the time of the last move.
   gfx::Point last_mouse_move_location_;

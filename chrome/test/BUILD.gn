@@ -3943,6 +3943,7 @@ test("unit_tests") {
     ]
     sources += [
       "../../ui/views/controls/webview/webview_unittest.cc",
+      "../browser/ui/tabs/tab_strip_model_experimental_unittest.cc",
       "../browser/ui/views/apps/app_info_dialog/app_info_dialog_views_unittest.cc",
       "../browser/ui/views/apps/app_info_dialog/app_info_permissions_panel_unittest.cc",
       "../browser/ui/views/confirm_bubble_views_unittest.cc",
