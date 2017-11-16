@@ -30,6 +30,7 @@
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using extensions::api::desktop_capture::ChooseDesktopMedia::Results::Options;
 using content::DesktopMediaID;
 
 namespace extensions {
@@ -70,7 +71,7 @@ void DesktopCaptureChooseDesktopMediaFunctionBase::Cancel() {
   scoped_refptr<DesktopCaptureChooseDesktopMediaFunctionBase> self(this);
   if (picker_) {
     picker_.reset();
-    SetResult(base::MakeUnique<base::Value>(std::string()));
+    SetResultList(Create(std::string(), Options()));
     SendResponse(true);
   }
 }
@@ -249,10 +250,9 @@ void DesktopCaptureChooseDesktopMediaFunctionBase::OnPickerDialogResults(
                                       extension()->name());
   }
 
-  api::desktop_capture::ChooseDesktopMedia::Results::Options options;
+  Options options;
   options.can_request_audio_track = source.audio_share;
-  results_ = api::desktop_capture::ChooseDesktopMedia::Results::Create(result,
-                                                                       options);
+  results_ = Create(result, options);
   SendResponse(true);
 }
 
