@@ -88,6 +88,13 @@ target(link_target_type, "libc++") {
     "//build/config/sanitizers:sanitizer_options_link_helper",
   ]
   defines = [ "_LIBCPP_BUILDING_LIBRARY" ]
+  if (!is_clang && !libcpp_is_static) {
+    # This is a temporary workaround to get libc++ builds working with
+    # gcc.  It can be removed with either
+    # https://reviews.llvm.org/D35326 or
+    # https://reviews.llvm.org/D35388 lands.
+    defines += [ "_LIBCPP_EXTERN_TEMPLATE_TYPE_VIS=__attribute__((__visibility__(\"default\")))" ]
+  }
 
   deps = [
     "//buildtools/third_party/libc++abi",
