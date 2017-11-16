@@ -28,6 +28,7 @@
 #import "ios/chrome/browser/ui/settings/sync_settings_collection_view_controller.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/user_feedback/user_feedback_provider.h"
@@ -39,7 +40,8 @@
 #error "This file requires ARC support."
 #endif
 
-// TODO(crbug.com/620361): Remove the entire class when iOS 9 is dropped.
+// TODO(crbug.com/785484): Implements workarounds for bugs between iOS and MDC.
+// To be removed or refactored when iOS 9 is dropped.
 @interface SettingsAppBarContainerViewController
     : MDCAppBarContainerViewController
 @end
@@ -50,12 +52,31 @@
 
 - (UIViewController*)childViewControllerForStatusBarHidden {
   if (!base::ios::IsRunningOnIOS10OrLater()) {
-    // TODO(crbug.com/620361): Remove the entire method override when iOS 9 is
+    // TODO(crbug.com/785484): Remove the entire method override when iOS 9 is
     // dropped.
     return self.contentViewController;
   } else {
     return [super childViewControllerForStatusBarHidden];
   }
+}
+
+// TODO(crbug.com/785484): Investigate if this can be fixed in MDC.
+- (void)viewDidLayoutSubviews {
+  [super viewDidLayoutSubviews];
+
+  UILayoutGuide* safeAreaLayoutGuide = SafeAreaLayoutGuideForView(self.view);
+  UIView* contentView = self.contentViewController.view;
+  UIView* headerView = self.appBar.headerViewController.headerView;
+  contentView.translatesAutoresizingMaskIntoConstraints = NO;
+  [NSLayoutConstraint activateConstraints:@[
+    [contentView.topAnchor constraintEqualToAnchor:headerView.bottomAnchor],
+    [contentView.leadingAnchor
+        constraintEqualToAnchor:safeAreaLayoutGuide.leadingAnchor],
+    [contentView.trailingAnchor
+        constraintEqualToAnchor:safeAreaLayoutGuide.trailingAnchor],
+    [contentView.bottomAnchor
+        constraintEqualToAnchor:safeAreaLayoutGuide.bottomAnchor],
+  ]];
 }
 
 - (UIViewController*)childViewControllerForStatusBarStyle {
@@ -574,17 +595,10 @@ initWithRootViewController:(UIViewController*)rootViewController
         [[SettingsAppBarContainerViewController alloc]
             initWithContentViewController:controller];
 
+    // TODO(crbug.com/785484): Investigate if this and below can be removed.
     // Configure the style.
+    appBarContainer.view.backgroundColor = [UIColor whiteColor];
     ConfigureAppBarWithCardStyle(appBarContainer.appBar);
-
-    // Adjust the frame of the contained view controller's view to be below the
-    // app bar.
-    CGRect contentFrame = controller.view.frame;
-    CGSize headerSize = [appBarContainer.appBar.headerViewController.headerView
-        sizeThatFits:contentFrame.size];
-    contentFrame = UIEdgeInsetsInsetRect(
-        contentFrame, UIEdgeInsetsMake(headerSize.height, 0, 0, 0));
-    controller.view.frame = contentFrame;
 
     // Register the app bar container and return it.
     [self registerAppBarContainer:appBarContainer];
