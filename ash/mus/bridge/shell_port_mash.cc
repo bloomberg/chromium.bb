@@ -8,12 +8,12 @@
 #include <utility>
 
 #include "ash/accelerators/accelerator_controller.h"
-#include "ash/mus/accelerators/accelerator_controller_delegate_mus.h"
+#include "ash/mus/accelerators/accelerator_controller_delegate_mash.h"
 #include "ash/mus/accelerators/accelerator_controller_registrar.h"
-#include "ash/mus/bridge/immersive_handler_factory_mus.h"
-#include "ash/mus/bridge/workspace_event_handler_mus.h"
+#include "ash/mus/bridge/immersive_handler_factory_mash.h"
+#include "ash/mus/bridge/workspace_event_handler_mash.h"
 #include "ash/mus/drag_window_resizer_mash.h"
-#include "ash/mus/keyboard_ui_mus.h"
+#include "ash/mus/keyboard_ui_mash.h"
 #include "ash/mus/window_manager.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
@@ -33,7 +33,7 @@ ShellPortMash::ShellPortMash(
     : ShellPortMus(window_manager),
       pointer_watcher_event_router_(pointer_watcher_event_router),
       immersive_handler_factory_(
-          std::make_unique<ImmersiveHandlerFactoryMus>()) {
+          std::make_unique<ImmersiveHandlerFactoryMash>()) {
   DCHECK(pointer_watcher_event_router_);
   DCHECK_EQ(Config::MASH, GetAshConfig());
 }
@@ -116,11 +116,11 @@ ShellPortMash::CreateTabletModeEventHandler() {
 
 std::unique_ptr<WorkspaceEventHandler>
 ShellPortMash::CreateWorkspaceEventHandler(aura::Window* workspace_window) {
-  return std::make_unique<WorkspaceEventHandlerMus>(workspace_window);
+  return std::make_unique<WorkspaceEventHandlerMash>(workspace_window);
 }
 
 std::unique_ptr<KeyboardUI> ShellPortMash::CreateKeyboardUI() {
-  return KeyboardUIMus::Create(window_manager_->connector());
+  return KeyboardUIMash::Create(window_manager_->connector());
 }
 
 void ShellPortMash::AddPointerWatcher(views::PointerWatcher* watcher,
@@ -162,7 +162,7 @@ ShellPortMash::CreateAcceleratorController() {
   DCHECK(add_result);
 
   accelerator_controller_delegate_ =
-      std::make_unique<AcceleratorControllerDelegateMus>(window_manager_);
+      std::make_unique<AcceleratorControllerDelegateMash>(window_manager_);
   accelerator_controller_registrar_ =
       std::make_unique<AcceleratorControllerRegistrar>(
           window_manager_, accelerator_namespace_id);

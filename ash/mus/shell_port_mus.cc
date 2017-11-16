@@ -12,7 +12,7 @@
 #include "ash/host/ash_window_tree_host_init_params.h"
 #include "ash/mus/ash_window_tree_host_mus.h"
 #include "ash/mus/display_synchronizer.h"
-#include "ash/mus/keyboard_ui_mus.h"
+#include "ash/mus/keyboard_ui_mash.h"
 #include "ash/mus/touch_transform_setter_mus.h"
 #include "ash/mus/window_manager.h"
 #include "ash/pointer_watcher_adapter_classic.h"

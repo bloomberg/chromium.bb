@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/mus/bridge/immersive_handler_factory_mus.h"
+#include "ash/mus/bridge/immersive_handler_factory_mash.h"
 
 #include <memory>
 
@@ -12,12 +12,12 @@
 
 namespace ash {
 
-ImmersiveHandlerFactoryMus::ImmersiveHandlerFactoryMus() {}
+ImmersiveHandlerFactoryMash::ImmersiveHandlerFactoryMash() {}
 
-ImmersiveHandlerFactoryMus::~ImmersiveHandlerFactoryMus() {}
+ImmersiveHandlerFactoryMash::~ImmersiveHandlerFactoryMash() {}
 
 std::unique_ptr<ImmersiveFocusWatcher>
-ImmersiveHandlerFactoryMus::CreateFocusWatcher(
+ImmersiveHandlerFactoryMash::CreateFocusWatcher(
     ImmersiveFullscreenController* controller) {
   // ImmersiveFocusWatcher does two interesting things:
   // . It listens for focus in the top view and triggers reveal.
@@ -32,7 +32,7 @@ ImmersiveHandlerFactoryMus::CreateFocusWatcher(
 }
 
 std::unique_ptr<ImmersiveGestureHandler>
-ImmersiveHandlerFactoryMus::CreateGestureHandler(
+ImmersiveHandlerFactoryMash::CreateGestureHandler(
     ImmersiveFullscreenController* controller) {
   // http://crbug.com/640394.
   NOTIMPLEMENTED_LOG_ONCE();

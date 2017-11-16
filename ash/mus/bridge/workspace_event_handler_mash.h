@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_MUS_BRIDGE_WORKSPACE_EVENT_HANDLER_MUS_H_
-#define ASH_MUS_BRIDGE_WORKSPACE_EVENT_HANDLER_MUS_H_
+#ifndef ASH_MUS_BRIDGE_WORKSPACE_EVENT_HANDLER_MASH_H_
+#define ASH_MUS_BRIDGE_WORKSPACE_EVENT_HANDLER_MASH_H_
 
 #include "ash/wm/workspace/workspace_event_handler.h"
 #include "base/macros.h"
@@ -15,14 +15,14 @@ class Window;
 namespace ash {
 
 // TODO(sky): investigate if can use aura version.
-class WorkspaceEventHandlerMus : public WorkspaceEventHandler {
+class WorkspaceEventHandlerMash : public WorkspaceEventHandler {
  public:
-  explicit WorkspaceEventHandlerMus(aura::Window* workspace_window);
-  ~WorkspaceEventHandlerMus() override;
+  explicit WorkspaceEventHandlerMash(aura::Window* workspace_window);
+  ~WorkspaceEventHandlerMash() override;
 
-  // Returns the WorkspaceEventHandlerMus associated with |window|, or null
+  // Returns the WorkspaceEventHandlerMash associated with |window|, or null
   // if |window| is not the workspace window.
-  static WorkspaceEventHandlerMus* Get(aura::Window* window);
+  static WorkspaceEventHandlerMash* Get(aura::Window* window);
 
   // Returns the window associated with the workspace.
   aura::Window* workspace_window() { return workspace_window_; }
@@ -30,9 +30,9 @@ class WorkspaceEventHandlerMus : public WorkspaceEventHandler {
  private:
   aura::Window* workspace_window_;
 
-  DISALLOW_COPY_AND_ASSIGN(WorkspaceEventHandlerMus);
+  DISALLOW_COPY_AND_ASSIGN(WorkspaceEventHandlerMash);
 };
 
 }  // namespace ash
 
-#endif  // ASH_MUS_BRIDGE_WORKSPACE_EVENT_HANDLER_MUS_H_
+#endif  // ASH_MUS_BRIDGE_WORKSPACE_EVENT_HANDLER_MASH_H_

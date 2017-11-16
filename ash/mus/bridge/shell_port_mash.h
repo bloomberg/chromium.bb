@@ -19,9 +19,9 @@ class PointerWatcherEventRouter;
 
 namespace ash {
 
-class AcceleratorControllerDelegateMus;
+class AcceleratorControllerDelegateMash;
 class AcceleratorControllerRegistrar;
-class ImmersiveHandlerFactoryMus;
+class ImmersiveHandlerFactoryMash;
 class WindowManager;
 
 // ShellPort implementation for mash. See ash/README.md for more. Subclass of
@@ -68,11 +68,11 @@ class ShellPortMash : public ShellPortMus {
 
  private:
   views::PointerWatcherEventRouter* pointer_watcher_event_router_ = nullptr;
-  std::unique_ptr<AcceleratorControllerDelegateMus>
+  std::unique_ptr<AcceleratorControllerDelegateMash>
       accelerator_controller_delegate_;
   std::unique_ptr<AcceleratorControllerRegistrar>
       accelerator_controller_registrar_;
-  std::unique_ptr<ImmersiveHandlerFactoryMus> immersive_handler_factory_;
+  std::unique_ptr<ImmersiveHandlerFactoryMash> immersive_handler_factory_;
 
   bool cursor_touch_visible_ = true;
 

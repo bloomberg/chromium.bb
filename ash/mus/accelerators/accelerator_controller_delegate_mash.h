@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_MUS_ACCELERATORS_ACCELERATOR_CONTROLLER_DELEGATE_MUS_H_
-#define ASH_MUS_ACCELERATORS_ACCELERATOR_CONTROLLER_DELEGATE_MUS_H_
+#ifndef ASH_MUS_ACCELERATORS_ACCELERATOR_CONTROLLER_DELEGATE_MASH_H_
+#define ASH_MUS_ACCELERATORS_ACCELERATOR_CONTROLLER_DELEGATE_MASH_H_
 
 #include "ash/accelerators/accelerator_controller_delegate.h"
 #include "base/macros.h"
@@ -13,10 +13,10 @@ namespace ash {
 class WindowManager;
 
 // Controls accelerators that are specific to mash.
-class AcceleratorControllerDelegateMus : public AcceleratorControllerDelegate {
+class AcceleratorControllerDelegateMash : public AcceleratorControllerDelegate {
  public:
-  explicit AcceleratorControllerDelegateMus(WindowManager* window_manager);
-  ~AcceleratorControllerDelegateMus() override;
+  explicit AcceleratorControllerDelegateMash(WindowManager* window_manager);
+  ~AcceleratorControllerDelegateMash() override;
 
   // AcceleratorControllerDelegate:
   bool HandlesAction(AcceleratorAction action) override;
@@ -29,9 +29,9 @@ class AcceleratorControllerDelegateMus : public AcceleratorControllerDelegate {
  private:
   WindowManager* window_manager_;
 
-  DISALLOW_COPY_AND_ASSIGN(AcceleratorControllerDelegateMus);
+  DISALLOW_COPY_AND_ASSIGN(AcceleratorControllerDelegateMash);
 };
 
 }  // namespace ash
 
-#endif  // ASH_MUS_ACCELERATORS_ACCELERATOR_CONTROLLER_DELEGATE_MUS_H_
+#endif  // ASH_MUS_ACCELERATORS_ACCELERATOR_CONTROLLER_DELEGATE_MASH_H_
