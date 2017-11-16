@@ -5,7 +5,6 @@
 #include "ui/app_list/app_list_folder_item.h"
 
 #include "base/guid.h"
-#include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_item_list.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia.h"

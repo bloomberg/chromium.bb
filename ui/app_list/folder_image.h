@@ -39,6 +39,12 @@ class APP_LIST_EXPORT FolderImageObserver {
 class APP_LIST_EXPORT FolderImage : public AppListItemListObserver,
                                     public AppListItemObserver {
  public:
+  // Number of the top items in a folder, which are shown inside the folder icon
+  // and animated when opening and closing a folder.
+  static const size_t kNumFolderTopItems;
+  // Color of the folder ink bubble, 12% white..
+  static const SkColor kFolderBubbleColor;
+
   explicit FolderImage(AppListItemList* item_list);
   ~FolderImage() override;
 

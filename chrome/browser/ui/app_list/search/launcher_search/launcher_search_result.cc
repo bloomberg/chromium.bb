@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/launcher_search_provider/launcher_search_provider_service.h"
 #include "chrome/browser/ui/app_list/search/launcher_search/launcher_search_icon_image_loader_impl.h"
 #include "chrome/browser/ui/app_list/search/search_util.h"
+#include "ui/app_list/app_list_util.h"
 
 using chromeos::launcher_search_provider::Service;
 
@@ -39,7 +40,7 @@ LauncherSearchResult::LauncherSearchResult(
             chromeos::launcher_search_provider::kMaxSearchResultScore);
 
   icon_image_loader_.reset(new LauncherSearchIconImageLoaderImpl(
-      icon_url, profile, extension, GetPreferredIconDimension(),
+      icon_url, profile, extension, GetPreferredIconDimension(this),
       std::move(error_reporter)));
   icon_image_loader_->LoadResources();
 

@@ -314,7 +314,7 @@ void AppListView::Initialize(const InitParams& params) {
 
   UMA_HISTOGRAM_TIMES(kAppListCreationTimeHistogram,
                       base::Time::Now() - start_time);
-  app_list_main_view_->model()->RecordFolderMetrics();
+  RecordFolderMetrics();
 }
 
 void AppListView::SetBubbleArrow(views::BubbleBorder::Arrow arrow) {
@@ -1543,6 +1543,26 @@ void AppListView::SetBackgroundShieldColor() {
   GetWallpaperProminentColors(&prominent_colors);
   app_list_background_shield_->layer()->SetColor(
       GetBackgroundShieldColor(prominent_colors));
+}
+
+void AppListView::RecordFolderMetrics() {
+  int number_of_apps_in_folders = 0;
+  int number_of_folders = 0;
+  AppListItemList* item_list =
+      app_list_main_view_->model()->top_level_item_list();
+  for (size_t i = 0; i < item_list->item_count(); ++i) {
+    AppListItem* item = item_list->item_at(i);
+    if (item->GetItemType() != AppListFolderItem::kItemType)
+      continue;
+    ++number_of_folders;
+    AppListFolderItem* folder = static_cast<AppListFolderItem*>(item);
+    if (folder->folder_type() == AppListFolderItem::FOLDER_TYPE_OEM)
+      continue;  // Don't count items in OEM folders.
+    number_of_apps_in_folders += folder->item_list()->item_count();
+  }
+  UMA_HISTOGRAM_COUNTS_100(kNumberOfFoldersHistogram, number_of_folders);
+  UMA_HISTOGRAM_COUNTS_100(kNumberOfAppsInFoldersHistogram,
+                           number_of_apps_in_folders);
 }
 
 }  // namespace app_list

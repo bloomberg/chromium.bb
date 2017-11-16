@@ -321,6 +321,10 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   void GetWallpaperProminentColors(std::vector<SkColor>* colors);
   void SetBackgroundShieldColor();
 
+  // Records the number of folders, and the number of items in folders for UMA
+  // histograms.
+  void RecordFolderMetrics();
+
   AppListViewDelegate* delegate_;  // Weak. Owned by AppListService.
   AppListModel* const model_;      // Not Owned.
 

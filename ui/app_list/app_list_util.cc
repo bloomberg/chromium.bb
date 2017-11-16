@@ -4,6 +4,7 @@
 
 #include "ui/app_list/app_list_util.h"
 
+#include "ui/app_list/app_list_constants.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/focus/focus_manager.h"
 
@@ -74,6 +75,23 @@ bool ProcessLeftRightKeyTraversalForTextfield(views::Textfield* textfield,
   // Move focus outside the textfield.
   textfield->GetFocusManager()->AdvanceFocus(move_focus_reverse);
   return true;
+}
+
+int GetPreferredIconDimension(SearchResult* search_result) {
+  switch (search_result->display_type()) {
+    case SearchResult::DISPLAY_RECOMMENDATION:  // Falls through.
+    case SearchResult::DISPLAY_TILE:
+      return kTileIconSize;
+    case SearchResult::DISPLAY_LIST:
+      return kListIconSize;
+    case SearchResult::DISPLAY_NONE:
+    case SearchResult::DISPLAY_CARD:
+      return 0;
+    case SearchResult::DISPLAY_TYPE_LAST:
+      break;
+  }
+  NOTREACHED();
+  return 0;
 }
 
 }  // namespace app_list

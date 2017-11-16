@@ -13,7 +13,6 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_export.h"
 #include "ui/app_list/app_list_item_list.h"
 #include "ui/app_list/app_list_item_list_observer.h"
@@ -146,10 +145,6 @@ class APP_LIST_EXPORT AppListModel : public AppListItemListObserver {
   // Sets whether or not the folder UI should be enabled. If |folders_enabled|
   // is false, removes any non-OEM folders.
   void SetFoldersEnabled(bool folders_enabled);
-
-  // Records the number of folders, and the number of items in folders for UMA
-  // histograms.
-  void RecordFolderMetrics();
 
   // Sets whether or not the custom launcher page should be enabled.
   void SetCustomLauncherPageEnabled(bool enabled);

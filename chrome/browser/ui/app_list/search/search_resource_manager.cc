@@ -62,8 +62,8 @@ void SearchResourceManager::OnSpeechRecognitionStateChanged(
         (new_state == SPEECH_RECOGNITION_HOTWORD_LISTENING)
             ? IDS_SEARCH_BOX_HOTWORD_HINT
             : IDS_SEARCH_BOX_HINT));
+    search_box_->SetSpeechRecognitionButton(CreateNewProperty(new_state));
   }
-  search_box_->SetSpeechRecognitionButton(CreateNewProperty(new_state));
 }
 
 }  // namespace app_list

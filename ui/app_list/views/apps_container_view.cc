@@ -8,9 +8,7 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_features.h"
-#include "ui/app_list/app_list_folder_item.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/views/app_list_folder_view.h"
 #include "ui/app_list/views/app_list_item_view.h"
@@ -330,7 +328,8 @@ void AppsContainerView::CreateViewsForFolderTopItemsAnimation(
   std::vector<gfx::Rect> top_items_bounds =
       GetTopItemIconBoundsInActiveFolder();
   top_icon_animation_pending_count_ =
-      std::min(kNumFolderTopItems, active_folder->item_list()->item_count());
+      std::min(FolderImage::kNumFolderTopItems,
+               active_folder->item_list()->item_count());
   for (size_t i = 0; i < top_icon_animation_pending_count_; ++i) {
     if (active_folder->GetTopIcon(i).isNull())
       continue;

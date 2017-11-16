@@ -54,13 +54,9 @@ const int kGridSelectedCornerRadius = 8;
 
 const SkColor kFolderTitleColor = SkColorSetRGB(0x33, 0x33, 0x33);
 const SkColor kFolderTitleHintTextColor = SkColorSetRGB(0xA0, 0xA0, 0xA0);
-// Color of the folder ink bubble, 12% white..
-const SkColor kFolderBubbleColor = SkColorSetARGB(0x1F, 0xFF, 0xFF, 0xFF);
 // Color of the folder bubble shadow.
 const SkColor kFolderShadowColor = SkColorSetRGB(0xBF, 0xBF, 0xBF);
 const float kFolderBubbleOpacity = 0.12f;
-const float kFolderBubbleRadius = 23;
-const float kFolderBubbleOffsetY = 1;
 const int kFolderBackgroundBubbleRadius = 288;
 
 const SkColor kCardBackgroundColor = SkColorSetRGB(0xFA, 0xFA, 0xFC);
@@ -97,6 +93,8 @@ const gfx::Tween::Type kFolderFadeOutTweenType = gfx::Tween::FAST_OUT_LINEAR_IN;
 // Preferred number of columns and rows in apps grid.
 const int kPreferredCols = 5;
 const int kPreferredRows = 5;
+// Keep |kGridIconDimension| in folder_image.cc consistent with this.
+// TODO(hejq): Figure out a way to consolidate the two.
 const int kGridIconDimension = 48;
 
 // The preferred app badge icon size.
@@ -170,10 +168,6 @@ const int kShelfSize = 48;
 
 // Max items allowed in a folder.
 const size_t kMaxFolderItems = 20;
-
-// Number of the top items in a folder, which are shown inside the folder icon
-// and animated when opening and closing a folder.
-const size_t kNumFolderTopItems = 4;
 
 // Maximum length of the folder name in chars.
 const size_t kMaxFolderNameChars = 80;

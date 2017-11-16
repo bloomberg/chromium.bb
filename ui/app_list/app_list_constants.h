@@ -52,11 +52,8 @@ APP_LIST_EXPORT extern const int kGridSelectedCornerRadius;
 
 APP_LIST_EXPORT extern const SkColor kFolderTitleColor;
 APP_LIST_EXPORT extern const SkColor kFolderTitleHintTextColor;
-APP_LIST_EXPORT extern const SkColor kFolderBubbleColor;
 APP_LIST_EXPORT extern const SkColor kFolderShadowColor;
 APP_LIST_EXPORT extern const float kFolderBubbleOpacity;
-APP_LIST_EXPORT extern const float kFolderBubbleRadius;
-APP_LIST_EXPORT extern const float kFolderBubbleOffsetY;
 
 APP_LIST_EXPORT extern const int kFolderBackgroundBubbleRadius;
 
@@ -112,7 +109,6 @@ APP_LIST_EXPORT extern const int kShelfSize;
 
 APP_LIST_EXPORT extern const size_t kMaxFolderItems;
 APP_LIST_EXPORT extern const size_t kMaxFolderItems;
-APP_LIST_EXPORT extern const size_t kNumFolderTopItems;
 APP_LIST_EXPORT extern const size_t kMaxFolderNameChars;
 
 APP_LIST_EXPORT extern const ui::ResourceBundle::FontStyle kItemTextFontStyle;
