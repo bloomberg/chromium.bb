@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/views/permission_bubble/permission_prompt_impl.h"
 
 #include <stddef.h>
+#include <memory>
+#include <utility>
 
 #include "base/strings/string16.h"
 #include "build/build_config.h"
@@ -80,6 +82,7 @@ class PermissionsBubbleDialogDelegateView
   bool Cancel() override;
   bool Accept() override;
   bool Close() override;
+  void AddedToWidget() override;
   int GetDefaultDialogButton() const override;
   int GetDialogButtons() const override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
@@ -166,6 +169,25 @@ PermissionsBubbleDialogDelegateView::~PermissionsBubbleDialogDelegateView() {
 void PermissionsBubbleDialogDelegateView::CloseBubble() {
   owner_ = nullptr;
   GetWidget()->Close();
+}
+
+void PermissionsBubbleDialogDelegateView::AddedToWidget() {
+  std::unique_ptr<views::Label> title =
+      views::BubbleFrameView::CreateDefaultTitleLabel(GetWindowTitle());
+
+  // Elide from head in order to keep the most significant part of the origin
+  // and avoid spoofing. Note that in English, GetWindowTitle() returns a string
+  // "$ORIGIN wants to", so the "wants to" will not be elided. In other
+  // languages, the non-origin part may appear fully or partly before the origin
+  // (e.g., in Filipino, "Gusto ng $ORIGIN na"), which means it may be elided.
+  // This is not optimal, but it is necessary to avoid origin spoofing. See
+  // crbug.com/774438.
+  title->SetElideBehavior(gfx::ELIDE_HEAD);
+
+  // Multiline breaks elision, which would mean a very long origin gets
+  // truncated from the least significant side. Explicitly disable multiline.
+  title->SetMultiLine(false);
+  GetBubbleFrameView()->SetTitleView(std::move(title));
 }
 
 ui::AXRole PermissionsBubbleDialogDelegateView::GetAccessibleWindowRole()
