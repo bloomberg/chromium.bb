@@ -90,6 +90,30 @@ bool CheckVlogIsOn(LoggingSeverity severity, const char (&file)[N]) {
 #undef RTC_PLOG
 #define RTC_PLOG(sev, err) RTC_LOG_ERR_EX(sev, err)
 
+// The RTC_DLOG macros are equivalent to their RTC_LOG counterparts except that
+// they only generate code in debug builds.
+#if defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON)
+#define RTC_DLOG_IS_ON 0
+#else
+#define RTC_DLOG_IS_ON 1
+#endif
+
+#if RTC_DLOG_IS_ON
+#define RTC_DLOG(sev) RTC_LOG(sev)
+#define RTC_DLOG_V(sev) RTC_LOG_V(sev)
+#define RTC_DLOG_F(sev) RTC_LOG_F(sev)
+#else
+#define RTC_DLOG_EAT_STREAM_PARAMS(sev) \
+  (true ? true : ((void)(rtc::sev), true)) \
+      ? static_cast<void>(0)          \
+      : rtc::LogMessageVoidify() &    \
+        rtc::DiagnosticLogMessage(__FILE__, __LINE__, rtc::sev, \
+                                  rtc::ERRCTX_NONE, 0).stream()
+#define RTC_DLOG(sev) RTC_DLOG_EAT_STREAM_PARAMS(sev)
+#define RTC_DLOG_V(sev) RTC_DLOG_EAT_STREAM_PARAMS(sev)
+#define RTC_DLOG_F(sev) RTC_DLOG_EAT_STREAM_PARAMS(sev)
+#endif
+
 #endif  // LOGGING_INSIDE_WEBRTC
 
 #endif  // THIRD_PARTY_WEBRTC_OVERRIDES_WEBRTC_RTC_BASE_LOGGING_H_
