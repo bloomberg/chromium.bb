@@ -47,6 +47,10 @@ class JavaScriptDialogBlockingState
                           web::NavigationContext* navigation_context) override;
   void WebStateDestroyed(web::WebState* web_state) override;
 
+  // The WebState this instance is observing. Will be null after
+  // WebStateDestroyed has been called.
+  web::WebState* web_state_ = nullptr;
+
   // Whether to show the blocking option.
   size_t dialog_count_ = 0;
   // The NavigationItem for which JavaScript dialogs were blocked.
