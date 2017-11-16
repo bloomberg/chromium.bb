@@ -1348,28 +1348,56 @@ IN_PROC_BROWSER_TEST_P(WebViewPointerLockInteractiveTest,
 //     transitionedWindowFrame],"
 // See similar bug: http://crbug.com/169820.
 //
-// In addition to the above, these tests are flaky on many platforms:
+// In addition to the above, these tests are flaky on some platforms:
 // http://crbug.com/468660
+#if defined(OS_WIN)
+#define MAYBE_FullscreenAllow_EmbedderHasPermission \
+  FullscreenAllow_EmbedderHasPermission
+#else
+#define MAYBE_FullscreenAllow_EmbedderHasPermission \
+  DISABLED_FullscreenAllow_EmbedderHasPermission
+#endif
 IN_PROC_BROWSER_TEST_P(WebViewInteractiveTest,
-                       DISABLED_FullscreenAllow_EmbedderHasPermission) {
+                       MAYBE_FullscreenAllow_EmbedderHasPermission) {
   FullscreenTestHelper("testFullscreenAllow",
                        "web_view/fullscreen/embedder_has_permission");
 }
 
+#if defined(OS_WIN)
+#define MAYBE_FullscreenDeny_EmbedderHasPermission \
+  FullscreenDeny_EmbedderHasPermission
+#else
+#define MAYBE_FullscreenDeny_EmbedderHasPermission \
+  DISABLED_FullscreenDeny_EmbedderHasPermission
+#endif
 IN_PROC_BROWSER_TEST_P(WebViewInteractiveTest,
-                       DISABLED_FullscreenDeny_EmbedderHasPermission) {
+                       MAYBE_FullscreenDeny_EmbedderHasPermission) {
   FullscreenTestHelper("testFullscreenDeny",
                        "web_view/fullscreen/embedder_has_permission");
 }
 
+#if defined(OS_WIN)
+#define MAYBE_FullscreenAllow_EmbedderHasNoPermission \
+  FullscreenAllow_EmbedderHasNoPermission
+#else
+#define MAYBE_FullscreenAllow_EmbedderHasNoPermission \
+  DISABLED_FullscreenAllow_EmbedderHasNoPermission
+#endif
 IN_PROC_BROWSER_TEST_P(WebViewInteractiveTest,
-                       DISABLED_FullscreenAllow_EmbedderHasNoPermission) {
+                       MAYBE_FullscreenAllow_EmbedderHasNoPermission) {
   FullscreenTestHelper("testFullscreenAllow",
                        "web_view/fullscreen/embedder_has_no_permission");
 }
 
+#if defined(OS_WIN)
+#define MAYBE_FullscreenDeny_EmbedderHasNoPermission \
+  FullscreenDeny_EmbedderHasNoPermission
+#else
+#define MAYBE_FullscreenDeny_EmbedderHasNoPermission \
+  DISABLED_FullscreenDeny_EmbedderHasNoPermission
+#endif
 IN_PROC_BROWSER_TEST_P(WebViewInteractiveTest,
-                       DISABLED_FullscreenDeny_EmbedderHasNoPermission) {
+                       MAYBE_FullscreenDeny_EmbedderHasNoPermission) {
   FullscreenTestHelper("testFullscreenDeny",
                        "web_view/fullscreen/embedder_has_no_permission");
 }
