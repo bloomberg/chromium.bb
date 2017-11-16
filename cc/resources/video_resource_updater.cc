@@ -401,6 +401,8 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
     DCHECK_EQ(plane_resources.size(), 1u);
     PlaneResource& plane_resource = *plane_resources[0];
     DCHECK_EQ(plane_resource.resource_format(), kRGBResourceFormat);
+    DCHECK(!software_compositor ||
+           plane_resource.resource_id() > viz::kInvalidResourceId);
     DCHECK_EQ(software_compositor, plane_resource.mailbox().IsZero());
 
     if (!plane_resource.Matches(video_frame->unique_id(), 0)) {
@@ -433,8 +435,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
     }
 
     if (software_compositor) {
-      external_resources.software_resources.push_back(
-          plane_resource.resource_id());
+      external_resources.software_resource = plane_resource.resource_id();
       external_resources.software_release_callback =
           base::Bind(&RecycleResource, weak_ptr_factory_.GetWeakPtr(),
                      plane_resource.resource_id());
