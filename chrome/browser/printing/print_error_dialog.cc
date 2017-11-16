@@ -11,13 +11,11 @@
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace chrome {
-
 namespace {
 
 void ShowPrintErrorDialogTask() {
   Browser* browser = chrome::FindLastActive();
-  ShowWarningMessageBox(
+  chrome::ShowWarningMessageBox(
       browser ? browser->window()->GetNativeWindow() : NULL,
       l10n_util::GetStringUTF16(IDS_PRINT_SPOOL_FAILED_TITLE_TEXT),
       l10n_util::GetStringUTF16(IDS_PRINT_SPOOL_FAILED_ERROR_TEXT));
@@ -30,5 +28,3 @@ void ShowPrintErrorDialog() {
   content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
                                    base::BindOnce(&ShowPrintErrorDialogTask));
 }
-
-}  // namespace chrome

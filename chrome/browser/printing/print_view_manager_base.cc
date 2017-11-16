@@ -268,7 +268,7 @@ void PrintViewManagerBase::OnPrintingFailed(int cookie) {
   PrintManager::OnPrintingFailed(cookie);
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-  chrome::ShowPrintErrorDialog();
+  ShowPrintErrorDialog();
 #endif
 
   ReleasePrinterQuery();
