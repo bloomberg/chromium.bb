@@ -29,8 +29,8 @@
 #ifndef AudioFileReader_h
 #define AudioFileReader_h
 
+#include "base/memory/scoped_refptr.h"
 #include "platform/PlatformExport.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

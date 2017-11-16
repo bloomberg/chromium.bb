@@ -30,10 +30,10 @@
 
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
 
+#include "base/memory/scoped_refptr.h"
 #include "platform/graphics/StaticBitmapImage.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/runtime_enabled_features.h"
-#include "platform/wtf/RefPtr.h"
 #include "third_party/skia/include/core/SkSurface.h"
 
 namespace blink {

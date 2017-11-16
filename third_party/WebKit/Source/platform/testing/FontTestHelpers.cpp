@@ -4,12 +4,12 @@
 
 #include "platform/testing/FontTestHelpers.h"
 
+#include "base/memory/scoped_refptr.h"
 #include "platform/SharedBuffer.h"
 #include "platform/fonts/Font.h"
 #include "platform/fonts/FontCustomPlatformData.h"
 #include "platform/fonts/FontSelector.h"
 #include "platform/testing/UnitTestHelpers.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 namespace testing {

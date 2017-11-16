@@ -5,8 +5,8 @@
 #ifndef WebFrameScheduler_h
 #define WebFrameScheduler_h
 
+#include "base/memory/scoped_refptr.h"
 #include "platform/ScopedVirtualTimePauser.h"
-#include "platform/wtf/RefPtr.h"
 #include "public/platform/TaskType.h"
 
 #include <memory>

@@ -32,6 +32,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "core/dom/DOMStringList.h"
@@ -47,7 +48,6 @@
 #include "platform/blob/BlobData.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/HashMap.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Time.h"
 #include "public/platform/WebBlobInfo.h"
 #include "public/platform/modules/indexeddb/WebIDBCursor.h"

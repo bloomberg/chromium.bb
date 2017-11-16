@@ -6,11 +6,11 @@
 #define IDBValue_h
 
 #include <memory>
+#include "base/memory/scoped_refptr.h"
 #include "modules/ModulesExport.h"
 #include "modules/indexeddb/IDBKey.h"
 #include "modules/indexeddb/IDBKeyPath.h"
 #include "platform/SharedBuffer.h"
-#include "platform/wtf/RefPtr.h"
 #include "public/platform/WebVector.h"
 
 namespace blink {

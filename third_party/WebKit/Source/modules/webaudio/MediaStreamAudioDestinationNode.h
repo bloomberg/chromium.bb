@@ -26,10 +26,10 @@
 #ifndef MediaStreamAudioDestinationNode_h
 #define MediaStreamAudioDestinationNode_h
 
+#include "base/memory/scoped_refptr.h"
 #include "modules/mediastream/MediaStream.h"
 #include "modules/webaudio/AudioBasicInspectorNode.h"
 #include "platform/audio/AudioBus.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

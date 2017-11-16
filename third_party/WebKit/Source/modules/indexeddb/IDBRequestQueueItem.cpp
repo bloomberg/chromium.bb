@@ -6,13 +6,13 @@
 
 #include <memory>
 
+#include "base/memory/scoped_refptr.h"
 #include "core/dom/DOMException.h"
 #include "modules/indexeddb/IDBKey.h"
 #include "modules/indexeddb/IDBRequest.h"
 #include "modules/indexeddb/IDBRequestLoader.h"
 #include "modules/indexeddb/IDBValue.h"
 #include "platform/wtf/PtrUtil.h"
-#include "platform/wtf/RefPtr.h"
 #include "public/platform/modules/indexeddb/WebIDBCursor.h"
 
 namespace blink {

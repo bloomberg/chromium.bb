@@ -33,10 +33,10 @@
 
 #include <memory>
 
+#include "base/memory/scoped_refptr.h"
 #include "modules/ModulesExport.h"
 #include "modules/mediastream/UserMediaClient.h"
 #include "platform/wtf/PtrUtil.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

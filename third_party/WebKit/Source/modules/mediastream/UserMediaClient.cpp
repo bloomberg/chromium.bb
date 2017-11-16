@@ -30,9 +30,9 @@
 
 #include "modules/mediastream/UserMediaClient.h"
 
+#include "base/memory/scoped_refptr.h"
 #include "modules/mediastream/ApplyConstraintsRequest.h"
 #include "modules/mediastream/UserMediaRequest.h"
-#include "platform/wtf/RefPtr.h"
 #include "public/web/WebApplyConstraintsRequest.h"
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebMediaDeviceChangeObserver.h"

@@ -32,10 +32,10 @@
 
 #include <algorithm>
 #include <memory>
+#include "base/memory/scoped_refptr.h"
 #include "platform/SharedBuffer.h"
 #include "platform/graphics/Image.h"
 #include "platform/image-decoders/ImageDecoder.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
 #include "public/platform/WebData.h"
 #include "public/platform/WebSize.h"

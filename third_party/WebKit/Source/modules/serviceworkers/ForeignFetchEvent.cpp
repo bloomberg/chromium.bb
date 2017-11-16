@@ -4,11 +4,11 @@
 
 #include "modules/serviceworkers/ForeignFetchEvent.h"
 
+#include "base/memory/scoped_refptr.h"
 #include "bindings/core/v8/ToV8ForCore.h"
 #include "modules/fetch/Request.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScope.h"
 #include "platform/bindings/V8PrivateProperty.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

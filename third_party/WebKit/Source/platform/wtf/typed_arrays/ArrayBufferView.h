@@ -26,11 +26,11 @@
 #ifndef ArrayBufferView_h
 #define ArrayBufferView_h
 
+#include <limits.h>
+#include "base/memory/scoped_refptr.h"
 #include "platform/wtf/RefCounted.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/WTFExport.h"
 #include "platform/wtf/typed_arrays/ArrayBuffer.h"
-#include <limits.h>
 
 namespace WTF {
 

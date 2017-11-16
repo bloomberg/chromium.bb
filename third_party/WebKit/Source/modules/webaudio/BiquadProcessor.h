@@ -27,12 +27,12 @@
 #define BiquadProcessor_h
 
 #include <memory>
+#include "base/memory/scoped_refptr.h"
 #include "modules/webaudio/AudioNode.h"
 #include "modules/webaudio/AudioParam.h"
 #include "platform/audio/AudioDSPKernel.h"
 #include "platform/audio/AudioDSPKernelProcessor.h"
 #include "platform/audio/Biquad.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

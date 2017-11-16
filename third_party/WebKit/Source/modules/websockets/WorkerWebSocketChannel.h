@@ -33,6 +33,7 @@
 
 #include <stdint.h>
 #include <memory>
+#include "base/memory/scoped_refptr.h"
 #include "bindings/core/v8/SourceLocation.h"
 #include "core/workers/ParentFrameTaskRunners.h"
 #include "core/workers/WorkerThreadLifecycleObserver.h"
@@ -42,7 +43,6 @@
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/Forward.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebTraceLocation.h"

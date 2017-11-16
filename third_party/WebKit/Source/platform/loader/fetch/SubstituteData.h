@@ -26,10 +26,10 @@
 #ifndef SubstituteData_h
 #define SubstituteData_h
 
+#include "base/memory/scoped_refptr.h"
 #include "platform/SharedBuffer.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

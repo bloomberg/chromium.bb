@@ -24,8 +24,8 @@
 #include <stdint.h>
 #include <memory>
 #include <type_traits>
+#include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/StdLibExtras.h"
 
 namespace WTF {

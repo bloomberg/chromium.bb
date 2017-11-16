@@ -31,6 +31,7 @@
 #include "platform/blob/BlobRegistry.h"
 
 #include <memory>
+#include "base/memory/scoped_refptr.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/blob/BlobData.h"
@@ -39,7 +40,6 @@
 #include "platform/weborigin/URLSecurityOriginMap.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/HashMap.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/ThreadSpecific.h"
 #include "platform/wtf/Threading.h"
 #include "platform/wtf/text/StringHash.h"

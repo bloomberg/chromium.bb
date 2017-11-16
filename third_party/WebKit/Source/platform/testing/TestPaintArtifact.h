@@ -12,7 +12,6 @@
 #include "platform/graphics/paint/PaintArtifact.h"
 #include "platform/graphics/paint/TransformPaintPropertyNode.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
 
 namespace cc {

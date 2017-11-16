@@ -25,6 +25,7 @@
 
 #include "platform/graphics/Canvas2DLayerBridge.h"
 
+#include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "components/viz/common/quads/texture_mailbox.h"
@@ -47,7 +48,6 @@
 #include "platform/scheduler/child/web_scheduler.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/testing/TestingPlatformSupport.h"
-#include "platform/wtf/RefPtr.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebTraceLocation.h"

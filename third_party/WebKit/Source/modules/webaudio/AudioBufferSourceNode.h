@@ -27,12 +27,12 @@
 #define AudioBufferSourceNode_h
 
 #include <memory>
+#include "base/memory/scoped_refptr.h"
 #include "modules/webaudio/AudioBuffer.h"
 #include "modules/webaudio/AudioParam.h"
 #include "modules/webaudio/AudioScheduledSourceNode.h"
 #include "modules/webaudio/PannerNode.h"
 #include "platform/audio/AudioBus.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Threading.h"
 
 namespace blink {

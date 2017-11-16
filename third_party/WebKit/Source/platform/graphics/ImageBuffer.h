@@ -29,6 +29,7 @@
 #define ImageBuffer_h
 
 #include <memory>
+#include "base/memory/scoped_refptr.h"
 #include "platform/PlatformExport.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/IntSize.h"
@@ -40,7 +41,6 @@
 #include "platform/graphics/paint/PaintRecord.h"
 #include "platform/transforms/AffineTransform.h"
 #include "platform/wtf/Forward.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/WTFString.h"
 #include "platform/wtf/typed_arrays/Uint8ClampedArray.h"

@@ -22,8 +22,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "base/memory/scoped_refptr.h"
 #include "platform/fonts/opentype/OpenTypeTypes.h"
-#include "platform/wtf/RefPtr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {

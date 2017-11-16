@@ -27,10 +27,10 @@
 #define ArrayBuffer_h
 
 #include "base/allocator/partition_allocator/oom.h"
+#include "base/memory/scoped_refptr.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/RefCounted.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/WTFExport.h"
 #include "platform/wtf/typed_arrays/ArrayBufferContents.h"
 

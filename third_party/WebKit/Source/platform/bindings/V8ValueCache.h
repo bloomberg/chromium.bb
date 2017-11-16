@@ -26,12 +26,12 @@
 #ifndef V8ValueCache_h
 #define V8ValueCache_h
 
+#include "base/memory/scoped_refptr.h"
 #include "platform/PlatformExport.h"
 #include "platform/bindings/V8GlobalValueMap.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/text/AtomicString.h"
 #include "platform/wtf/text/WTFString.h"
 #include "v8/include/v8.h"

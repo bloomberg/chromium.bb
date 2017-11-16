@@ -21,11 +21,11 @@
 #ifndef WTF_VectorTraits_h
 #define WTF_VectorTraits_h
 
-#include "platform/wtf/RefPtr.h"
-#include "platform/wtf/TypeTraits.h"
 #include <memory>
 #include <type_traits>
 #include <utility>
+#include "base/memory/scoped_refptr.h"
+#include "platform/wtf/TypeTraits.h"
 
 namespace WTF {
 

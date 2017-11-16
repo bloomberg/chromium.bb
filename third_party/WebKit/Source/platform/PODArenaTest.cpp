@@ -26,8 +26,8 @@
 #include "platform/PODArena.h"
 
 #include <algorithm>
+#include "base/memory/scoped_refptr.h"
 #include "platform/testing/ArenaTestHelpers.h"
-#include "platform/wtf/RefPtr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {

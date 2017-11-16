@@ -31,11 +31,11 @@
 #include "public/platform/WebFileSystemCallbacks.h"
 
 #include <memory>
+#include "base/memory/scoped_refptr.h"
 #include "platform/AsyncFileSystemCallbacks.h"
 #include "platform/FileMetadata.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/RefCounted.h"
-#include "platform/wtf/RefPtr.h"
 #include "public/platform/WebFileInfo.h"
 #include "public/platform/WebFileSystem.h"
 #include "public/platform/WebFileSystemEntry.h"

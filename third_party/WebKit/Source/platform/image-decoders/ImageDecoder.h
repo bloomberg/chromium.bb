@@ -28,6 +28,7 @@
 #define ImageDecoder_h
 
 #include <memory>
+#include "base/memory/scoped_refptr.h"
 #include "platform/PlatformExport.h"
 #include "platform/SharedBuffer.h"
 #include "platform/graphics/ColorBehavior.h"
@@ -36,7 +37,6 @@
 #include "platform/image-decoders/ImageFrame.h"
 #include "platform/image-decoders/SegmentReader.h"
 #include "platform/wtf/Assertions.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Time.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/WTFString.h"

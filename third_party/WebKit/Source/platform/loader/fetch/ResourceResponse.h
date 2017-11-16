@@ -30,6 +30,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/memory/scoped_refptr.h"
 #include "base/time/time.h"
 #include "platform/PlatformExport.h"
 #include "platform/blob/BlobData.h"
@@ -39,7 +40,6 @@
 #include "platform/network/HTTPParsers.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/RefCounted.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Time.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/CString.h"

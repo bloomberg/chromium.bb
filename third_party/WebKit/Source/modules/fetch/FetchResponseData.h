@@ -6,10 +6,10 @@
 #define FetchResponseData_h
 
 #include <memory>
+#include "base/memory/scoped_refptr.h"
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Time.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/AtomicString.h"

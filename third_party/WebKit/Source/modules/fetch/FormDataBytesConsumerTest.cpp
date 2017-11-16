@@ -4,6 +4,7 @@
 
 #include "modules/fetch/FormDataBytesConsumer.h"
 
+#include "base/memory/scoped_refptr.h"
 #include "core/html/forms/FormData.h"
 #include "core/testing/DummyPageHolder.h"
 #include "core/typed_arrays/DOMArrayBuffer.h"
@@ -11,7 +12,6 @@
 #include "modules/fetch/BytesConsumerTestUtil.h"
 #include "platform/blob/BlobData.h"
 #include "platform/network/EncodedFormData.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/WTFString.h"
 #include "testing/gmock/include/gmock/gmock.h"

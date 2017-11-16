@@ -31,9 +31,9 @@
 #include "public/platform/WebPrerender.h"
 
 #include <memory>
+#include "base/memory/scoped_refptr.h"
 #include "platform/Prerender.h"
 #include "platform/wtf/PtrUtil.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

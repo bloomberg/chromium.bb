@@ -26,11 +26,11 @@
 #ifndef IDBKey_h
 #define IDBKey_h
 
+#include "base/memory/scoped_refptr.h"
 #include "modules/ModulesExport.h"
 #include "platform/SharedBuffer.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/WTFString.h"
 

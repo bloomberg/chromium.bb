@@ -26,10 +26,10 @@
 #ifndef OfflineAudioCompletionEvent_h
 #define OfflineAudioCompletionEvent_h
 
+#include "base/memory/scoped_refptr.h"
 #include "modules/EventModules.h"
 #include "modules/webaudio/AudioBuffer.h"
 #include "modules/webaudio/OfflineAudioCompletionEventInit.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

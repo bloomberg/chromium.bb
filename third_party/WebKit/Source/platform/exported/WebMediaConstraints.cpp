@@ -31,7 +31,7 @@
 #include "public/platform/WebMediaConstraints.h"
 
 #include <math.h>
-#include "platform/wtf/RefPtr.h"
+#include "base/memory/scoped_refptr.h"
 #include "platform/wtf/ThreadSafeRefCounted.h"
 #include "platform/wtf/text/StringBuilder.h"
 #include "platform/wtf/text/WTFString.h"

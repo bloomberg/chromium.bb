@@ -23,9 +23,9 @@
 #ifndef BidiContext_h
 #define BidiContext_h
 
+#include "base/memory/scoped_refptr.h"
 #include "platform/PlatformExport.h"
 #include "platform/wtf/Assertions.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/ThreadSafeRefCounted.h"
 #include "platform/wtf/text/Unicode.h"
 

@@ -28,6 +28,7 @@
 
 #include "modules/accessibility/AXObjectCacheImpl.h"
 
+#include "base/memory/scoped_refptr.h"
 #include "core/dom/AccessibleNode.h"
 #include "core/dom/Document.h"
 #include "core/editing/EditingUtilities.h"
@@ -85,7 +86,6 @@
 #include "modules/accessibility/AXVirtualObject.h"
 #include "modules/permissions/PermissionUtils.h"
 #include "platform/wtf/PtrUtil.h"
-#include "platform/wtf/RefPtr.h"
 #include "public/platform/TaskType.h"
 #include "public/platform/modules/permissions/permission.mojom-blink.h"
 #include "public/platform/modules/permissions/permission_status.mojom-blink.h"

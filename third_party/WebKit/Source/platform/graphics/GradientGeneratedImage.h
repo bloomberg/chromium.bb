@@ -26,9 +26,9 @@
 #ifndef GradientGeneratedImage_h
 #define GradientGeneratedImage_h
 
+#include "base/memory/scoped_refptr.h"
 #include "platform/graphics/GeneratedImage.h"
 #include "platform/graphics/Gradient.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

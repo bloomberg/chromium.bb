@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <utility>
+#include "base/memory/scoped_refptr.h"
 #include "bindings/core/v8/CallbackPromiseAdapter.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMException.h"
@@ -19,7 +20,6 @@
 #include "modules/serviceworkers/ServiceWorkerWindowClientCallback.h"
 #include "platform/bindings/V8ThrowException.h"
 #include "platform/wtf/PtrUtil.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerClientQueryOptions.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerClientsInfo.h"

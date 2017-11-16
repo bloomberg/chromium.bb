@@ -25,8 +25,8 @@
 #ifndef SkewTransformOperation_h
 #define SkewTransformOperation_h
 
+#include "base/memory/scoped_refptr.h"
 #include "platform/transforms/TransformOperation.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

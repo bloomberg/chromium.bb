@@ -72,11 +72,11 @@
 #ifndef PODRedBlackTree_h
 #define PODRedBlackTree_h
 
+#include "base/memory/scoped_refptr.h"
 #include "platform/PODFreeListArena.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/RefPtr.h"
 #ifndef NDEBUG
 #include "platform/wtf/text/CString.h"
 #include "platform/wtf/text/StringBuilder.h"

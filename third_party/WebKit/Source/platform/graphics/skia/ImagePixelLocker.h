@@ -5,10 +5,10 @@
 #ifndef ImagePixelLocker_h
 #define ImagePixelLocker_h
 
+#include "base/memory/scoped_refptr.h"
 #include "platform/heap/Heap.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/RefPtr.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 

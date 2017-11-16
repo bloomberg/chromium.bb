@@ -4,10 +4,10 @@
 
 #include "modules/indexeddb/IDBValue.h"
 
+#include "base/memory/scoped_refptr.h"
 #include "bindings/core/v8/serialization/SerializedScriptValue.h"
 #include "platform/blob/BlobData.h"
 #include "platform/wtf/PtrUtil.h"
-#include "platform/wtf/RefPtr.h"
 #include "public/platform/WebBlobInfo.h"
 #include "public/platform/modules/indexeddb/WebIDBValue.h"
 #include "v8/include/v8.h"

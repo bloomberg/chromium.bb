@@ -27,11 +27,11 @@
 #define MediaStreamAudioSourceNode_h
 
 #include <memory>
+#include "base/memory/scoped_refptr.h"
 #include "modules/mediastream/MediaStream.h"
 #include "modules/webaudio/AudioNode.h"
 #include "platform/audio/AudioSourceProvider.h"
 #include "platform/audio/AudioSourceProviderClient.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Threading.h"
 
 namespace blink {

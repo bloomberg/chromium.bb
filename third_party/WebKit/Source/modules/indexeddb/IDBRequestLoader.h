@@ -7,9 +7,9 @@
 
 #include <memory>
 
+#include "base/memory/scoped_refptr.h"
 #include "core/fileapi/FileReaderLoaderClient.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {

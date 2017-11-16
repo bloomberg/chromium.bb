@@ -28,9 +28,9 @@
 
 #include <memory>
 #include "base/gtest_prod_util.h"
+#include "base/memory/scoped_refptr.h"
 #include "modules/ModulesExport.h"
 #include "modules/webaudio/AudioNode.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/ThreadingPrimitives.h"
 
 namespace blink {

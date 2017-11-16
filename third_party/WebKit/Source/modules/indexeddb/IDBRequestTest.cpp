@@ -27,6 +27,7 @@
 
 #include <memory>
 
+#include "base/memory/scoped_refptr.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "core/dom/DOMException.h"
@@ -48,7 +49,6 @@
 #include "platform/SharedBuffer.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/testing/TestingPlatformSupport.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/dtoa/utils.h"
 #include "public/platform/WebURLLoaderMockFactory.h"

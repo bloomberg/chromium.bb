@@ -26,8 +26,8 @@
 #ifndef UnitTestHelpers_h
 #define UnitTestHelpers_h
 
+#include "base/memory/scoped_refptr.h"
 #include "platform/Timer.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {

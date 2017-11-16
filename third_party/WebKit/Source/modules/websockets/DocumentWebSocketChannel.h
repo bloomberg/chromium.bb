@@ -34,6 +34,7 @@
 #include <stdint.h>
 #include <memory>
 #include <utility>
+#include "base/memory/scoped_refptr.h"
 #include "bindings/core/v8/SourceLocation.h"
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/FileError.h"
@@ -46,7 +47,6 @@
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/Deque.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/CString.h"
 #include "platform/wtf/text/WTFString.h"

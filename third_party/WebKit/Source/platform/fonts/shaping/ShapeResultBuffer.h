@@ -5,10 +5,10 @@
 #ifndef ShapeResultBuffer_h
 #define ShapeResultBuffer_h
 
+#include "base/memory/scoped_refptr.h"
 #include "platform/PlatformExport.h"
 #include "platform/fonts/shaping/ShapeResult.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {

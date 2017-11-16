@@ -31,12 +31,12 @@
 #ifndef ResourceLoaderOptions_h
 #define ResourceLoaderOptions_h
 
+#include "base/memory/scoped_refptr.h"
 #include "platform/CrossThreadCopier.h"
 #include "platform/loader/fetch/FetchInitiatorInfo.h"
 #include "platform/loader/fetch/IntegrityMetadata.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {

@@ -7,8 +7,8 @@
 
 #include <utility>
 
+#include "base/memory/scoped_refptr.h"
 #include "platform/wtf/RefCounted.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {

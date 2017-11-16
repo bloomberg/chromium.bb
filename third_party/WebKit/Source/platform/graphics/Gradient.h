@@ -29,6 +29,7 @@
 #ifndef Gradient_h
 #define Gradient_h
 
+#include "base/memory/scoped_refptr.h"
 #include "platform/PlatformExport.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/GraphicsTypes.h"
@@ -36,7 +37,6 @@
 #include "platform/graphics/paint/PaintShader.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/RefCounted.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 

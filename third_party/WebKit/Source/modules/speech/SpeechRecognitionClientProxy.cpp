@@ -26,6 +26,7 @@
 #include "modules/speech/SpeechRecognitionClientProxy.h"
 
 #include <memory>
+#include "base/memory/scoped_refptr.h"
 #include "core/dom/ExecutionContext.h"
 #include "modules/speech/SpeechGrammarList.h"
 #include "modules/speech/SpeechRecognition.h"
@@ -34,7 +35,6 @@
 #include "modules/speech/SpeechRecognitionResultList.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/PtrUtil.h"
-#include "platform/wtf/RefPtr.h"
 #include "public/platform/WebSecurityOrigin.h"
 #include "public/web/WebSpeechGrammar.h"
 #include "public/web/WebSpeechRecognitionHandle.h"

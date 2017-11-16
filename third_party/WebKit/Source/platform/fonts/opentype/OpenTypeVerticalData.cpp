@@ -25,11 +25,11 @@
 #include "platform/fonts/opentype/OpenTypeVerticalData.h"
 
 #include "SkTypeface.h"
+#include "base/memory/scoped_refptr.h"
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/fonts/opentype/OpenTypeTypes.h"
 #include "platform/fonts/skia/SkiaTextMetrics.h"
 #include "platform/geometry/FloatRect.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 namespace OpenType {

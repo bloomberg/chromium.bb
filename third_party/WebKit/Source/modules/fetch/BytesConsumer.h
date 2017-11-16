@@ -5,12 +5,12 @@
 #ifndef BytesConsumer_h
 #define BytesConsumer_h
 
+#include "base/memory/scoped_refptr.h"
 #include "modules/ModulesExport.h"
 #include "platform/blob/BlobData.h"
 #include "platform/heap/Handle.h"
 #include "platform/network/EncodedFormData.h"
 #include "platform/wtf/Compiler.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {

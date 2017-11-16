@@ -5,9 +5,9 @@
 #ifndef LockOrientationCallback_h
 #define LockOrientationCallback_h
 
+#include "base/memory/scoped_refptr.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/RefPtr.h"
 #include "public/platform/modules/screen_orientation/WebLockOrientationCallback.h"
 #include "public/platform/modules/screen_orientation/WebScreenOrientationType.h"
 

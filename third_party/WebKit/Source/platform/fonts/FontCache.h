@@ -34,6 +34,7 @@
 
 #include <memory>
 
+#include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
 #include "platform/PlatformExport.h"
 #include "platform/fonts/FallbackListCompositeKey.h"
@@ -48,7 +49,6 @@
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/HashMap.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/text/CString.h"
 #include "platform/wtf/text/Unicode.h"

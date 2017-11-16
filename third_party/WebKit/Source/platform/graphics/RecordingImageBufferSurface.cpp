@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/memory/scoped_refptr.h"
 #include "platform/Histogram.h"
 #include "platform/graphics/CanvasHeuristicParameters.h"
 #include "platform/graphics/CanvasMetrics.h"
@@ -16,7 +17,6 @@
 #include "platform/graphics/paint/PaintRecorder.h"
 #include "platform/wtf/CheckedNumeric.h"
 #include "platform/wtf/PtrUtil.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

@@ -4,10 +4,10 @@
 
 #include "platform/image-decoders/SegmentReader.h"
 
+#include "base/memory/scoped_refptr.h"
 #include "platform/SharedBuffer.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/ThreadingPrimitives.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkRWBuffer.h"

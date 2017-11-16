@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/memory/scoped_refptr.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMException.h"
@@ -24,7 +25,6 @@
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/wtf/Assertions.h"
-#include "platform/wtf/RefPtr.h"
 #include "public/platform/Platform.h"
 #include "public/platform/modules/push_messaging/WebPushClient.h"
 #include "public/platform/modules/push_messaging/WebPushProvider.h"

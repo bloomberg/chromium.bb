@@ -28,6 +28,7 @@
 
 #include <memory>
 
+#include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
 #include "cc/layers/texture_layer_client.h"
 #include "components/viz/common/quads/texture_mailbox.h"
@@ -39,13 +40,11 @@
 #include "platform/wtf/CheckedNumeric.h"
 #include "platform/wtf/Deque.h"
 #include "platform/wtf/RefCounted.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/WeakPtr.h"
 #include "public/platform/WebExternalTextureLayer.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/gfx/color_space.h"
-
 
 struct SkImageInfo;
 

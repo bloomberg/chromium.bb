@@ -28,6 +28,7 @@
 
 #include "modules/canvas/canvas2d/CanvasStyle.h"
 
+#include "base/memory/scoped_refptr.h"
 #include "core/CSSPropertyNames.h"
 #include "core/css/CSSPropertyValueSet.h"
 #include "core/css/parser/CSSParser.h"
@@ -37,7 +38,6 @@
 #include "modules/canvas/canvas2d/CanvasPattern.h"
 #include "platform/graphics/paint/PaintFlags.h"
 #include "platform/graphics/skia/SkiaUtils.h"
-#include "platform/wtf/RefPtr.h"
 #include "third_party/skia/include/core/SkShader.h"
 
 namespace blink {

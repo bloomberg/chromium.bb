@@ -8,7 +8,7 @@
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/GetPtr.h"
 #if DCHECK_IS_ON()
-#include "platform/wtf/RefPtr.h"
+#include "base/memory/scoped_refptr.h"
 #endif
 #include "platform/wtf/text/StringImpl.h"
 #include "platform/wtf/text/Unicode.h"

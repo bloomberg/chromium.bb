@@ -31,6 +31,7 @@
 #include "platform/blob/BlobData.h"
 
 #include <memory>
+#include "base/memory/scoped_refptr.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/Histogram.h"
@@ -42,7 +43,6 @@
 #include "platform/runtime_enabled_features.h"
 #include "platform/text/LineEnding.h"
 #include "platform/wtf/PtrUtil.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/CString.h"
 #include "platform/wtf/text/TextEncoding.h"

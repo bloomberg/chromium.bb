@@ -25,7 +25,7 @@
 
 #include "platform/wtf/typed_arrays/ArrayBuffer.h"
 
-#include "platform/wtf/RefPtr.h"
+#include "base/memory/scoped_refptr.h"
 #include "platform/wtf/typed_arrays/ArrayBufferView.h"
 
 namespace WTF {

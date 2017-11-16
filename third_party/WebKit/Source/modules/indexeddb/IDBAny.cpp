@@ -25,12 +25,12 @@
 
 #include "modules/indexeddb/IDBAny.h"
 
+#include "base/memory/scoped_refptr.h"
 #include "core/dom/DOMStringList.h"
 #include "modules/indexeddb/IDBCursorWithValue.h"
 #include "modules/indexeddb/IDBDatabase.h"
 #include "modules/indexeddb/IDBIndex.h"
 #include "modules/indexeddb/IDBObjectStore.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

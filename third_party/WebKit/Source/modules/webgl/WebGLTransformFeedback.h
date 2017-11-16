@@ -5,9 +5,9 @@
 #ifndef WebGLTransformFeedback_h
 #define WebGLTransformFeedback_h
 
+#include "base/memory/scoped_refptr.h"
 #include "modules/webgl/WebGLContextObject.h"
 #include "modules/webgl/WebGLProgram.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

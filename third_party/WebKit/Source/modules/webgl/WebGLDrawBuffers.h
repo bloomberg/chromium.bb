@@ -26,8 +26,8 @@
 #ifndef WebGLDrawBuffers_h
 #define WebGLDrawBuffers_h
 
+#include "base/memory/scoped_refptr.h"
 #include "modules/webgl/WebGLExtension.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

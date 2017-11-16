@@ -5,6 +5,7 @@
 #include "platform/graphics/RecordingImageBufferSurface.h"
 
 #include <memory>
+#include "base/memory/scoped_refptr.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/ImageBuffer.h"
@@ -13,7 +14,6 @@
 #include "platform/graphics/paint/PaintCanvas.h"
 #include "platform/graphics/paint/PaintRecord.h"
 #include "platform/testing/TestingPlatformSupport.h"
-#include "platform/wtf/RefPtr.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebTraceLocation.h"

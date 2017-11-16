@@ -27,9 +27,9 @@
 #define DelayProcessor_h
 
 #include <memory>
+#include "base/memory/scoped_refptr.h"
 #include "modules/webaudio/AudioParam.h"
 #include "platform/audio/AudioDSPKernelProcessor.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

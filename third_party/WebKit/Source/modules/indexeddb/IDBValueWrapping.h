@@ -5,12 +5,12 @@
 #ifndef IDBValueWrapping_h
 #define IDBValueWrapping_h
 
+#include "base/memory/scoped_refptr.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/serialization/SerializedScriptValue.h"
 #include "modules/ModulesExport.h"
 #include "platform/SharedBuffer.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
 #include "public/platform/WebBlobInfo.h"
 #include "v8/include/v8.h"

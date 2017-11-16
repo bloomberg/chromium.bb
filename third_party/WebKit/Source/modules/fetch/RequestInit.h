@@ -5,13 +5,13 @@
 #ifndef RequestInit_h
 #define RequestInit_h
 
+#include "base/memory/scoped_refptr.h"
 #include "bindings/core/v8/NativeValueTraits.h"
 #include "bindings/modules/v8/byte_string_sequence_sequence_or_byte_string_byte_string_record.h"
 #include "modules/fetch/Headers.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/Referrer.h"
 #include "platform/wtf/Optional.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {

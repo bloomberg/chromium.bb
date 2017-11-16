@@ -29,6 +29,7 @@
 #ifndef StrokeData_h
 #define StrokeData_h
 
+#include "base/memory/scoped_refptr.h"
 #include "platform/PlatformExport.h"
 #include "platform/graphics/DashArray.h"
 #include "platform/graphics/Gradient.h"
@@ -36,7 +37,6 @@
 #include "platform/graphics/Pattern.h"
 #include "platform/graphics/paint/PaintFlags.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/RefPtr.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPathEffect.h"
 

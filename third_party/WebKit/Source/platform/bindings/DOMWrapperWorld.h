@@ -33,11 +33,11 @@
 
 #include <memory>
 
+#include "base/memory/scoped_refptr.h"
 #include "platform/PlatformExport.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/RefCounted.h"
-#include "platform/wtf/RefPtr.h"
 #include "public/platform/WebIsolatedWorldIds.h"
 #include "v8/include/v8.h"
 

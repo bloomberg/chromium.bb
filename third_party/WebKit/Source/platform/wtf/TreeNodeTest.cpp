@@ -25,8 +25,8 @@
 
 #include "platform/wtf/TreeNode.h"
 
+#include "base/memory/scoped_refptr.h"
 #include "platform/wtf/RefCounted.h"
-#include "platform/wtf/RefPtr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace WTF {

@@ -5,11 +5,11 @@
 #ifndef FilterDisplayItem_h
 #define FilterDisplayItem_h
 
+#include <memory>
+#include "base/memory/scoped_refptr.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/CompositorFilterOperations.h"
 #include "platform/graphics/paint/DisplayItem.h"
-#include "platform/wtf/RefPtr.h"
-#include <memory>
 
 namespace blink {
 

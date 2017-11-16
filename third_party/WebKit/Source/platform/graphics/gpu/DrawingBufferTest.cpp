@@ -31,6 +31,7 @@
 #include "platform/graphics/gpu/DrawingBuffer.h"
 
 #include <memory>
+#include "base/memory/scoped_refptr.h"
 #include "components/viz/common/quads/texture_mailbox.h"
 #include "components/viz/common/resources/single_release_callback.h"
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
@@ -44,7 +45,6 @@
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/testing/TestingPlatformSupport.h"
 #include "platform/wtf/PtrUtil.h"
-#include "platform/wtf/RefPtr.h"
 #include "public/platform/Platform.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "v8/include/v8.h"

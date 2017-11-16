@@ -31,9 +31,9 @@
 #ifndef DeviceOrientationDispatcher_h
 #define DeviceOrientationDispatcher_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/frame/PlatformEventDispatcher.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/RefPtr.h"
 #include "public/platform/WebPlatformEventType.h"
 #include "public/platform/modules/device_orientation/WebDeviceOrientationListener.h"
 
