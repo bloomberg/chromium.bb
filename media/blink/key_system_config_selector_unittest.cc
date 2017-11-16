@@ -276,7 +276,7 @@ class KeySystemConfigSelectorTest : public testing::Test {
     config_ = result;
   }
 
-  void OnNotSupported(const blink::WebString&) { not_supported_count_++; }
+  void OnNotSupported() { not_supported_count_++; }
 
   std::unique_ptr<FakeKeySystems> key_systems_;
   std::unique_ptr<FakeMediaPermission> media_permission_;

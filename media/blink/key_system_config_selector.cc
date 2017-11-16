@@ -33,13 +33,6 @@ using EmeFeatureRequirement =
 
 namespace {
 
-// The rejection message when the key system is not supported or when none of
-// the requested configurations is supported should always be the same to help
-// avoid leaking internal information unnecessarily.
-// See https://crbug.com/760720
-const char kUnsupportedKeySystemOrConfigMessage[] =
-    "Unsupported keySystem or supportedConfigurations.";
-
 static EmeConfigRule GetSessionTypeConfigRule(EmeSessionTypeSupport support) {
   switch (support) {
     case EmeSessionTypeSupport::INVALID:
@@ -165,7 +158,7 @@ struct KeySystemConfigSelector::SelectionRequest {
   blink::WebSecurityOrigin security_origin;
   base::Callback<void(const blink::WebMediaKeySystemConfiguration&,
                       const CdmConfig&)> succeeded_cb;
-  base::Callback<void(const blink::WebString&)> not_supported_cb;
+  base::Closure not_supported_cb;
   bool was_permission_requested = false;
   bool is_permission_granted = false;
 };
@@ -860,7 +853,7 @@ void KeySystemConfigSelector::SelectConfig(
     const blink::WebSecurityOrigin& security_origin,
     base::Callback<void(const blink::WebMediaKeySystemConfiguration&,
                         const CdmConfig&)> succeeded_cb,
-    base::Callback<void(const blink::WebString&)> not_supported_cb) {
+    base::Closure not_supported_cb) {
   // Continued from requestMediaKeySystemAccess(), step 6, from
   // https://w3c.github.io/encrypted-media/#requestmediakeysystemaccess
   //
@@ -868,13 +861,13 @@ void KeySystemConfigSelector::SelectConfig(
   //     agent, reject promise with a NotSupportedError. String comparison
   //     is case-sensitive.
   if (!key_system.ContainsOnlyASCII()) {
-    not_supported_cb.Run(kUnsupportedKeySystemOrConfigMessage);
+    not_supported_cb.Run();
     return;
   }
 
   std::string key_system_ascii = key_system.Ascii();
   if (!key_systems_->IsSupportedKeySystem(key_system_ascii)) {
-    not_supported_cb.Run(kUnsupportedKeySystemOrConfigMessage);
+    not_supported_cb.Run();
     return;
   }
 
@@ -896,7 +889,7 @@ void KeySystemConfigSelector::SelectConfig(
   // Therefore, always support Clear Key key system and only check settings for
   // other key systems.
   if (!is_encrypted_media_enabled && !IsClearKey(key_system_ascii)) {
-    not_supported_cb.Run(kUnsupportedKeySystemOrConfigMessage);
+    not_supported_cb.Run();
     return;
   }
 
@@ -970,7 +963,7 @@ void KeySystemConfigSelector::SelectConfigInternal(
   }
 
   // 6.4. Reject promise with a NotSupportedError.
-  request->not_supported_cb.Run(kUnsupportedKeySystemOrConfigMessage);
+  request->not_supported_cb.Run();
 }
 
 void KeySystemConfigSelector::OnPermissionResult(
