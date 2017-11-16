@@ -315,26 +315,15 @@ bool VerifyFromAndroidTrustManager(
   return true;
 }
 
-bool GetChainDEREncodedBytes(X509Certificate* cert,
+void GetChainDEREncodedBytes(X509Certificate* cert,
                              std::vector<std::string>* chain_bytes) {
-  X509Certificate::OSCertHandle cert_handle = cert->os_cert_handle();
-  X509Certificate::OSCertHandles cert_handles =
-      cert->GetIntermediateCertificates();
-
-  // Make sure the peer's own cert is the first in the chain, if it's not
-  // already there.
-  if (cert_handles.empty() || cert_handles[0] != cert_handle)
-    cert_handles.insert(cert_handles.begin(), cert_handle);
-
-  chain_bytes->reserve(cert_handles.size());
-  for (X509Certificate::OSCertHandles::const_iterator it =
-       cert_handles.begin(); it != cert_handles.end(); ++it) {
-    std::string cert_bytes;
-    if(!X509Certificate::GetDEREncoded(*it, &cert_bytes))
-      return false;
-    chain_bytes->push_back(cert_bytes);
+  chain_bytes->reserve(1 + cert->GetIntermediateCertificates().size());
+  chain_bytes->emplace_back(
+      net::x509_util::CryptoBufferAsStringPiece(cert->os_cert_handle()));
+  for (auto* handle : cert->GetIntermediateCertificates()) {
+    chain_bytes->emplace_back(
+        net::x509_util::CryptoBufferAsStringPiece(handle));
   }
-  return true;
 }
 
 }  // namespace
@@ -360,8 +349,7 @@ int CertVerifyProcAndroid::VerifyInternal(
     const CertificateList& additional_trust_anchors,
     CertVerifyResult* verify_result) {
   std::vector<std::string> cert_bytes;
-  if (!GetChainDEREncodedBytes(cert, &cert_bytes))
-    return ERR_CERT_INVALID;
+  GetChainDEREncodedBytes(cert, &cert_bytes);
   if (!VerifyFromAndroidTrustManager(
           cert_bytes, hostname, GetGlobalCertNetFetcher(), verify_result)) {
     NOTREACHED();
