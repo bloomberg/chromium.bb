@@ -53,6 +53,7 @@ class OutOfProcessInstance : public pp::Instance,
   void HandleMessage(const pp::Var& message) override;
   bool HandleInputEvent(const pp::InputEvent& event) override;
   void DidChangeView(const pp::View& view) override;
+  void DidChangeFocus(bool has_focus) override;
 
   // pp::Find_Private implementation.
   bool StartFind(const std::string& text, bool case_sensitive) override;

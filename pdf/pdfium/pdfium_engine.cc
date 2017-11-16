@@ -1537,7 +1537,7 @@ pp::Buffer_Dev PDFiumEngine::PrintPagesAsRasterPDF(
   if (!output_doc)
     return pp::Buffer_Dev();
 
-  SaveSelectedFormForPrint();
+  KillFormFocus();
 
   std::vector<PDFiumPage> pages_to_print;
   // width and height of source PDF pages.
@@ -1637,7 +1637,7 @@ pp::Buffer_Dev PDFiumEngine::PrintPagesAsPDF(
   if (!output_doc)
     return pp::Buffer_Dev();
 
-  SaveSelectedFormForPrint();
+  KillFormFocus();
 
   std::string page_number_str;
   for (uint32_t index = 0; index < page_range_count; ++index) {
@@ -1691,7 +1691,7 @@ void PDFiumEngine::FitContentsToPrintableAreaIfRequired(
   }
 }
 
-void PDFiumEngine::SaveSelectedFormForPrint() {
+void PDFiumEngine::KillFormFocus() {
   FORM_ForceToKillFocus(form_);
   SetInFormTextArea(false);
 }
