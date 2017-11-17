@@ -21,6 +21,7 @@
 #include "base/values.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/android/vr_shell/android_ui_gesture_target.h"
+#include "chrome/browser/android/vr_shell/autocomplete_controller.h"
 #include "chrome/browser/android/vr_shell/vr_compositor.h"
 #include "chrome/browser/android/vr_shell/vr_gl_thread.h"
 #include "chrome/browser/android/vr_shell/vr_shell_delegate.h"
@@ -151,6 +152,7 @@ VrShell::VrShell(JNIEnv* env,
       ui_initial_state, reprojected_rendering_, HasDaydreamSupport(env));
   ui_ = gl_thread_.get();
   toolbar_ = base::MakeUnique<vr::ToolbarHelper>(ui_, this);
+  autocomplete_controller_ = base::MakeUnique<vr::AutocompleteController>(ui_);
 
   gl_thread_->Start();
 
@@ -753,9 +755,13 @@ void VrShell::SetVoiceSearchActive(bool active) {
   }
 }
 
-void VrShell::StartAutocomplete(const base::string16& string) {}
+void VrShell::StartAutocomplete(const base::string16& string) {
+  autocomplete_controller_->Start(string);
+}
 
-void VrShell::StopAutocomplete() {}
+void VrShell::StopAutocomplete() {
+  autocomplete_controller_->Stop();
+}
 
 bool VrShell::HasAudioPermission() {
   JNIEnv* env = base::android::AttachCurrentThread();
