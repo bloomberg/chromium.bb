@@ -88,6 +88,9 @@ class QuicEndpoint : public Endpoint,
   void OnWriteBlocked() override {}
   void OnSuccessfulVersionNegotiation(
       const QuicTransportVersion& version) override {}
+  void OnConnectivityProbeReceived(
+      const QuicSocketAddress& self_address,
+      const QuicSocketAddress& peer_address) override {}
   void OnCongestionWindowChange(QuicTime now) override {}
   void OnConnectionMigration(PeerAddressChangeType type) override {}
   void OnPathDegrading() override {}

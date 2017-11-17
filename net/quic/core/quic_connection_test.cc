@@ -809,6 +809,15 @@ class QuicConnectionTest : public QuicTestWithParam<TestParams> {
     }
   }
 
+  void ProcessReceivedPacket(const QuicSocketAddress& self_address,
+                             const QuicSocketAddress& peer_address,
+                             const QuicReceivedPacket& packet) {
+    connection_.ProcessUdpPacket(self_address, peer_address, packet);
+    if (connection_.GetSendAlarm()->IsSet()) {
+      connection_.GetSendAlarm()->Fire();
+    }
+  }
+
   void ProcessFramePacket(QuicFrame frame) {
     ProcessFramePacketWithAddresses(frame, kSelfAddress, kPeerAddress);
   }
@@ -1245,6 +1254,203 @@ TEST_P(QuicConnectionTest, PeerAddressChangeAtServer) {
   ProcessFramePacketWithAddresses(QuicFrame(&stream_frame), kSelfAddress,
                                   kNewPeerAddress);
   EXPECT_EQ(kNewPeerAddress, connection_.peer_address());
+}
+
+TEST_P(QuicConnectionTest, ReceivePaddedPingAtServer) {
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+  set_perspective(Perspective::IS_SERVER);
+  QuicPacketCreatorPeer::SetSendVersionInPacket(creator_, false);
+  EXPECT_EQ(Perspective::IS_SERVER, connection_.perspective());
+
+  // Clear peer address.
+  QuicConnectionPeer::SetPeerAddress(&connection_, QuicSocketAddress());
+  EXPECT_FALSE(connection_.peer_address().IsInitialized());
+
+  QuicStreamFrame stream_frame(1u, false, 0u, QuicStringPiece());
+  EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(AnyNumber());
+  ProcessFramePacketWithAddresses(QuicFrame(&stream_frame), kSelfAddress,
+                                  kPeerAddress);
+  EXPECT_EQ(kPeerAddress, connection_.peer_address());
+
+  EXPECT_CALL(visitor_, OnConnectionMigration(PORT_CHANGE)).Times(0);
+  EXPECT_CALL(visitor_, OnConnectivityProbeReceived(_, _)).Times(0);
+
+  // Process a padded PING packet with no peer address change on server side
+  // will be ignored.
+  std::unique_ptr<QuicEncryptedPacket> probing_packet(
+      QuicPacketCreatorPeer::SerializeConnectivityProbingPacket(
+          &peer_creator_));
+  std::unique_ptr<QuicReceivedPacket> received(
+      ConstructReceivedPacket(*probing_packet, clock_.Now()));
+
+  ProcessReceivedPacket(kSelfAddress, kPeerAddress, *received);
+  EXPECT_EQ(kPeerAddress, connection_.peer_address());
+}
+
+TEST_P(QuicConnectionTest, ReceiveConnectivityProbingAtServer) {
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+  set_perspective(Perspective::IS_SERVER);
+  QuicPacketCreatorPeer::SetSendVersionInPacket(creator_, false);
+  EXPECT_EQ(Perspective::IS_SERVER, connection_.perspective());
+
+  // Clear peer address.
+  QuicConnectionPeer::SetPeerAddress(&connection_, QuicSocketAddress());
+  EXPECT_FALSE(connection_.peer_address().IsInitialized());
+
+  QuicStreamFrame stream_frame(1u, false, 0u, QuicStringPiece());
+  EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(AnyNumber());
+  ProcessFramePacketWithAddresses(QuicFrame(&stream_frame), kSelfAddress,
+                                  kPeerAddress);
+  EXPECT_EQ(kPeerAddress, connection_.peer_address());
+
+  if (FLAGS_quic_reloadable_flag_quic_server_reply_to_connectivity_probing) {
+    EXPECT_CALL(visitor_, OnConnectionMigration(PORT_CHANGE)).Times(0);
+    EXPECT_CALL(visitor_, OnConnectivityProbeReceived(_, _)).Times(1);
+  } else {
+    EXPECT_CALL(visitor_, OnConnectionMigration(PORT_CHANGE)).Times(1);
+    EXPECT_CALL(visitor_, OnConnectivityProbeReceived(_, _)).Times(0);
+  }
+
+  // Process a padded PING packet from a new peer address on server side
+  // is effectively receiving a connectivity probing.
+  const QuicSocketAddress kNewPeerAddress =
+      QuicSocketAddress(QuicIpAddress::Loopback6(), /*port=*/23456);
+
+  std::unique_ptr<QuicEncryptedPacket> probing_packet(
+      QuicPacketCreatorPeer::SerializeConnectivityProbingPacket(
+          &peer_creator_));
+  std::unique_ptr<QuicReceivedPacket> received(
+      ConstructReceivedPacket(*probing_packet, clock_.Now()));
+
+  ProcessReceivedPacket(kSelfAddress, kNewPeerAddress, *received);
+  if (FLAGS_quic_reloadable_flag_quic_server_reply_to_connectivity_probing) {
+    EXPECT_EQ(kPeerAddress, connection_.peer_address());
+  } else {
+    EXPECT_EQ(kNewPeerAddress, connection_.peer_address());
+  }
+
+  // Process another packet with the old peer address on server side will not
+  // start peer migration.
+  EXPECT_CALL(visitor_, OnConnectionMigration(PORT_CHANGE)).Times(0);
+  ProcessFramePacketWithAddresses(QuicFrame(&stream_frame), kSelfAddress,
+                                  kPeerAddress);
+}
+
+TEST_P(QuicConnectionTest, MigrateAfterProbingAtServer) {
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+  set_perspective(Perspective::IS_SERVER);
+  QuicPacketCreatorPeer::SetSendVersionInPacket(creator_, false);
+  EXPECT_EQ(Perspective::IS_SERVER, connection_.perspective());
+
+  // Clear peer address.
+  QuicConnectionPeer::SetPeerAddress(&connection_, QuicSocketAddress());
+  EXPECT_FALSE(connection_.peer_address().IsInitialized());
+
+  QuicStreamFrame stream_frame(1u, false, 0u, QuicStringPiece());
+  EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(AnyNumber());
+  ProcessFramePacketWithAddresses(QuicFrame(&stream_frame), kSelfAddress,
+                                  kPeerAddress);
+  EXPECT_EQ(kPeerAddress, connection_.peer_address());
+
+  if (FLAGS_quic_reloadable_flag_quic_server_reply_to_connectivity_probing) {
+    EXPECT_CALL(visitor_, OnConnectionMigration(PORT_CHANGE)).Times(0);
+    EXPECT_CALL(visitor_, OnConnectivityProbeReceived(_, _)).Times(1);
+  } else {
+    EXPECT_CALL(visitor_, OnConnectionMigration(PORT_CHANGE)).Times(1);
+    EXPECT_CALL(visitor_, OnConnectivityProbeReceived(_, _)).Times(0);
+  }
+  // Process a padded PING packet from a new peer address on server side
+  // is effectively receiving a connectivity probing.
+  const QuicSocketAddress kNewPeerAddress =
+      QuicSocketAddress(QuicIpAddress::Loopback6(), /*port=*/23456);
+
+  std::unique_ptr<QuicEncryptedPacket> probing_packet(
+      QuicPacketCreatorPeer::SerializeConnectivityProbingPacket(
+          &peer_creator_));
+  std::unique_ptr<QuicReceivedPacket> received(
+      ConstructReceivedPacket(*probing_packet, clock_.Now()));
+  ProcessReceivedPacket(kSelfAddress, kNewPeerAddress, *received);
+  if (FLAGS_quic_reloadable_flag_quic_server_reply_to_connectivity_probing) {
+    EXPECT_EQ(kPeerAddress, connection_.peer_address());
+  } else {
+    EXPECT_EQ(kNewPeerAddress, connection_.peer_address());
+  }
+
+  // Process another non-probing packet with the new peer address on server
+  // side will start peer migration.
+  if (FLAGS_quic_reloadable_flag_quic_server_reply_to_connectivity_probing) {
+    EXPECT_CALL(visitor_, OnConnectionMigration(PORT_CHANGE)).Times(1);
+  } else {
+    EXPECT_CALL(visitor_, OnConnectionMigration(PORT_CHANGE)).Times(0);
+  }
+
+  ProcessFramePacketWithAddresses(QuicFrame(&stream_frame), kSelfAddress,
+                                  kNewPeerAddress);
+  EXPECT_EQ(kNewPeerAddress, connection_.peer_address());
+}
+
+TEST_P(QuicConnectionTest, ReceivePaddedPingAtClient) {
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+  set_perspective(Perspective::IS_CLIENT);
+  EXPECT_EQ(Perspective::IS_CLIENT, connection_.perspective());
+
+  // Clear peer address.
+  QuicConnectionPeer::SetPeerAddress(&connection_, QuicSocketAddress());
+  EXPECT_FALSE(connection_.peer_address().IsInitialized());
+
+  QuicStreamFrame stream_frame(1u, false, 0u, QuicStringPiece());
+  EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(AnyNumber());
+  ProcessFramePacketWithAddresses(QuicFrame(&stream_frame), kSelfAddress,
+                                  kPeerAddress);
+  EXPECT_EQ(kPeerAddress, connection_.peer_address());
+
+  // Process a padded PING packet with same address on client side is ignored.
+  EXPECT_CALL(visitor_, OnConnectionMigration(PORT_CHANGE)).Times(0);
+  EXPECT_CALL(visitor_, OnConnectivityProbeReceived(_, _)).Times(0);
+
+  std::unique_ptr<QuicEncryptedPacket> probing_packet(
+      QuicPacketCreatorPeer::SerializeConnectivityProbingPacket(
+          &peer_creator_));
+  std::unique_ptr<QuicReceivedPacket> received(
+      ConstructReceivedPacket(*probing_packet, clock_.Now()));
+  ProcessReceivedPacket(kSelfAddress, kPeerAddress, *received);
+
+  EXPECT_EQ(kPeerAddress, connection_.peer_address());
+}
+
+TEST_P(QuicConnectionTest, ReceiveConnectivityProbingAtClient) {
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+  set_perspective(Perspective::IS_CLIENT);
+  EXPECT_EQ(Perspective::IS_CLIENT, connection_.perspective());
+
+  // Clear peer address.
+  QuicConnectionPeer::SetPeerAddress(&connection_, QuicSocketAddress());
+  EXPECT_FALSE(connection_.peer_address().IsInitialized());
+
+  QuicStreamFrame stream_frame(1u, false, 0u, QuicStringPiece());
+  EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(AnyNumber());
+  ProcessFramePacketWithAddresses(QuicFrame(&stream_frame), kSelfAddress,
+                                  kPeerAddress);
+  EXPECT_EQ(kPeerAddress, connection_.peer_address());
+
+  // Process a padded PING packet with a different self address on client side
+  // is effectively receiving a connectivity probing.
+  EXPECT_CALL(visitor_, OnConnectionMigration(PORT_CHANGE)).Times(0);
+  if (FLAGS_quic_reloadable_flag_quic_server_reply_to_connectivity_probing) {
+    EXPECT_CALL(visitor_, OnConnectivityProbeReceived(_, _)).Times(1);
+  }
+
+  const QuicSocketAddress kNewSelfAddress =
+      QuicSocketAddress(QuicIpAddress::Loopback6(), /*port=*/23456);
+
+  std::unique_ptr<QuicEncryptedPacket> probing_packet(
+      QuicPacketCreatorPeer::SerializeConnectivityProbingPacket(
+          &peer_creator_));
+  std::unique_ptr<QuicReceivedPacket> received(
+      ConstructReceivedPacket(*probing_packet, clock_.Now()));
+  ProcessReceivedPacket(kNewSelfAddress, kPeerAddress, *received);
+
+  EXPECT_EQ(kPeerAddress, connection_.peer_address());
 }
 
 TEST_P(QuicConnectionTest, PeerAddressChangeAtClient) {

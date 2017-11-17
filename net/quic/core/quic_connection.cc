@@ -182,6 +182,10 @@ QuicConnection::QuicConnection(
     : framer_(supported_versions,
               helper->GetClock()->ApproximateNow(),
               perspective),
+      server_reply_to_connectivity_probes_(
+          FLAGS_quic_reloadable_flag_quic_server_reply_to_connectivity_probing),
+      current_packet_content_(NO_FRAMES_RECEIVED),
+      current_peer_migration_type_(NO_CHANGE),
       helper_(helper),
       alarm_factory_(alarm_factory),
       per_packet_options_(nullptr),
@@ -640,6 +644,13 @@ bool QuicConnection::OnPacketHeader(const QuicPacketHeader& header) {
     return false;
   }
 
+  if (server_reply_to_connectivity_probes_) {
+    QUIC_FLAG_COUNT_N(
+        quic_reloadable_flag_quic_server_reply_to_connectivity_probing, 1, 4);
+    // Initialize the current packet content stats.
+    current_packet_content_ = NO_FRAMES_RECEIVED;
+    current_peer_migration_type_ = NO_CHANGE;
+  }
   PeerAddressChangeType peer_migration_type =
       QuicUtils::DetermineAddressChangeType(peer_address_,
                                             last_packet_source_address_);
@@ -647,15 +658,25 @@ bool QuicConnection::OnPacketHeader(const QuicPacketHeader& header) {
   // new address.
   if (header.packet_number > received_packet_manager_.GetLargestObserved() &&
       peer_migration_type != NO_CHANGE) {
+    QUIC_DLOG(INFO) << ENDPOINT << "Peer's ip:port changed from "
+                    << peer_address_.ToString() << " to "
+                    << last_packet_source_address_.ToString();
     if (perspective_ == Perspective::IS_CLIENT) {
-      QUIC_DLOG(INFO) << ENDPOINT << "Peer's ip:port changed from "
-                      << peer_address_.ToString() << " to "
-                      << last_packet_source_address_.ToString();
       peer_address_ = last_packet_source_address_;
     } else if (active_peer_migration_type_ == NO_CHANGE) {
       // Only migrate connection to a new peer address if there is no
       // pending change underway.
-      StartPeerMigration(peer_migration_type);
+      if (server_reply_to_connectivity_probes_) {
+        // Cache the current migration change type, which will start peer
+        // migration immediately if this packet is not a connectivity probing
+        // packet.
+        QUIC_FLAG_COUNT_N(
+            quic_reloadable_flag_quic_server_reply_to_connectivity_probing, 2,
+            4);
+        current_peer_migration_type_ = peer_migration_type;
+      } else {
+        StartPeerMigration(peer_migration_type);
+      }
     }
   }
 
@@ -676,6 +697,11 @@ bool QuicConnection::OnPacketHeader(const QuicPacketHeader& header) {
 
 bool QuicConnection::OnStreamFrame(const QuicStreamFrame& frame) {
   DCHECK(connected_);
+
+  // Since a stream frame was received, this is not a connectivity probe.
+  // A probe only contains a PING and full padding.
+  UpdatePacketContent(NOT_PADDED_PING);
+
   if (debug_visitor_ != nullptr) {
     debug_visitor_->OnStreamFrame(frame);
   }
@@ -707,6 +733,11 @@ bool QuicConnection::OnStreamFrame(const QuicStreamFrame& frame) {
 
 bool QuicConnection::OnAckFrame(const QuicAckFrame& incoming_ack) {
   DCHECK(connected_);
+
+  // Since an ack frame was received, this is not a connectivity probe.
+  // A probe only contains a PING and full padding.
+  UpdatePacketContent(NOT_PADDED_PING);
+
   if (debug_visitor_ != nullptr) {
     debug_visitor_->OnAckFrame(incoming_ack);
   }
@@ -756,6 +787,11 @@ bool QuicConnection::OnAckFrame(const QuicAckFrame& incoming_ack) {
 
 bool QuicConnection::OnStopWaitingFrame(const QuicStopWaitingFrame& frame) {
   DCHECK(connected_);
+
+  // Since a stop waiting frame was received, this is not a connectivity probe.
+  // A probe only contains a PING and full padding.
+  UpdatePacketContent(NOT_PADDED_PING);
+
   if (no_stop_waiting_frames_) {
     return true;
   }
@@ -783,6 +819,8 @@ bool QuicConnection::OnStopWaitingFrame(const QuicStopWaitingFrame& frame) {
 
 bool QuicConnection::OnPaddingFrame(const QuicPaddingFrame& frame) {
   DCHECK(connected_);
+  UpdatePacketContent(SECOND_FRAME_IS_PADDING);
+
   if (debug_visitor_ != nullptr) {
     debug_visitor_->OnPaddingFrame(frame);
   }
@@ -791,6 +829,8 @@ bool QuicConnection::OnPaddingFrame(const QuicPaddingFrame& frame) {
 
 bool QuicConnection::OnPingFrame(const QuicPingFrame& frame) {
   DCHECK(connected_);
+  UpdatePacketContent(FIRST_FRAME_IS_PING);
+
   if (debug_visitor_ != nullptr) {
     debug_visitor_->OnPingFrame(frame);
   }
@@ -858,6 +898,11 @@ const char* QuicConnection::ValidateStopWaitingFrame(
 
 bool QuicConnection::OnRstStreamFrame(const QuicRstStreamFrame& frame) {
   DCHECK(connected_);
+
+  // Since a reset stream frame was received, this is not a connectivity probe.
+  // A probe only contains a PING and full padding.
+  UpdatePacketContent(NOT_PADDED_PING);
+
   if (debug_visitor_ != nullptr) {
     debug_visitor_->OnRstStreamFrame(frame);
   }
@@ -874,6 +919,11 @@ bool QuicConnection::OnRstStreamFrame(const QuicRstStreamFrame& frame) {
 bool QuicConnection::OnConnectionCloseFrame(
     const QuicConnectionCloseFrame& frame) {
   DCHECK(connected_);
+
+  // Since a connection close frame was received, this is not a connectivity
+  // probe. A probe only contains a PING and full padding.
+  UpdatePacketContent(NOT_PADDED_PING);
+
   if (debug_visitor_ != nullptr) {
     debug_visitor_->OnConnectionCloseFrame(frame);
   }
@@ -893,6 +943,11 @@ bool QuicConnection::OnConnectionCloseFrame(
 
 bool QuicConnection::OnGoAwayFrame(const QuicGoAwayFrame& frame) {
   DCHECK(connected_);
+
+  // Since a go away frame was received, this is not a connectivity probe.
+  // A probe only contains a PING and full padding.
+  UpdatePacketContent(NOT_PADDED_PING);
+
   if (debug_visitor_ != nullptr) {
     debug_visitor_->OnGoAwayFrame(frame);
   }
@@ -910,6 +965,11 @@ bool QuicConnection::OnGoAwayFrame(const QuicGoAwayFrame& frame) {
 
 bool QuicConnection::OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) {
   DCHECK(connected_);
+
+  // Since a window update frame was received, this is not a connectivity probe.
+  // A probe only contains a PING and full padding.
+  UpdatePacketContent(NOT_PADDED_PING);
+
   if (debug_visitor_ != nullptr) {
     debug_visitor_->OnWindowUpdateFrame(frame, time_of_last_received_packet_);
   }
@@ -924,6 +984,11 @@ bool QuicConnection::OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) {
 
 bool QuicConnection::OnBlockedFrame(const QuicBlockedFrame& frame) {
   DCHECK(connected_);
+
+  // Since a blocked frame was received, this is not a connectivity probe.
+  // A probe only contains a PING and full padding.
+  UpdatePacketContent(NOT_PADDED_PING);
+
   if (debug_visitor_ != nullptr) {
     debug_visitor_->OnBlockedFrame(frame);
   }
@@ -945,6 +1010,30 @@ void QuicConnection::OnPacketComplete() {
 
   QUIC_DVLOG(1) << ENDPOINT << "Got packet " << last_header_.packet_number
                 << " for " << last_header_.connection_id;
+
+  if (server_reply_to_connectivity_probes_) {
+    QUIC_FLAG_COUNT_N(
+        quic_reloadable_flag_quic_server_reply_to_connectivity_probing, 3, 4);
+    if (current_packet_content_ == SECOND_FRAME_IS_PADDING) {
+      QUIC_DVLOG(1) << ENDPOINT << "Received a padded PING packet";
+      if (last_packet_source_address_ != peer_address_ ||
+          last_packet_destination_address_ != self_address_) {
+        // Padded PING packet associated with self/peer address change is a
+        // connectivity probing packet.
+        QUIC_DVLOG(1) << ENDPOINT
+                      << "Received a connectivity probing packet for "
+                      << last_header_.connection_id << " frome ip:port: "
+                      << last_packet_source_address_.ToString()
+                      << " to ip:port "
+                      << last_packet_destination_address_.ToString();
+        visitor_->OnConnectivityProbeReceived(last_packet_destination_address_,
+                                              last_packet_source_address_);
+      }
+    } else if (current_peer_migration_type_ != NO_CHANGE) {
+      StartPeerMigration(current_peer_migration_type_);
+    }
+    current_peer_migration_type_ = NO_CHANGE;
+  }
 
   // An ack will be sent if a missing retransmittable packet was received;
   const bool was_missing =
@@ -2555,6 +2644,48 @@ void QuicConnection::CheckIfApplicationLimited() {
       !visitor_->WillingAndAbleToWrite()) {
     sent_packet_manager_.OnApplicationLimited();
   }
+}
+
+void QuicConnection::UpdatePacketContent(PacketContent type) {
+  if (!server_reply_to_connectivity_probes_) {
+    return;
+  }
+  QUIC_FLAG_COUNT_N(
+      quic_reloadable_flag_quic_server_reply_to_connectivity_probing, 4, 4);
+  if (current_packet_content_ == NOT_PADDED_PING) {
+    // We have already learned the current packet is not a connectivity
+    // probing packet. Peer migration should have already been started earlier
+    // if needed.
+    return;
+  }
+
+  if (type == NO_FRAMES_RECEIVED) {
+    return;
+  }
+
+  if (type == FIRST_FRAME_IS_PING) {
+    if (current_packet_content_ == NO_FRAMES_RECEIVED) {
+      current_packet_content_ = FIRST_FRAME_IS_PING;
+      return;
+    }
+  }
+
+  if (type == SECOND_FRAME_IS_PADDING) {
+    if (current_packet_content_ == FIRST_FRAME_IS_PING) {
+      current_packet_content_ = SECOND_FRAME_IS_PADDING;
+      return;
+    }
+  }
+
+  current_packet_content_ = NOT_PADDED_PING;
+  if (current_peer_migration_type_ == NO_CHANGE) {
+    return;
+  }
+
+  // Start peer migration immediately when the current packet is confirmed not
+  // a connectivity probing packet.
+  StartPeerMigration(current_peer_migration_type_);
+  current_peer_migration_type_ = NO_CHANGE;
 }
 
 void QuicConnection::SetStreamNotifier(
