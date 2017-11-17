@@ -21,7 +21,7 @@
 # not SKIP, just WONTFIX.
 fast/harness/sample-fail-mismatch-reftest.html [ WontFix ]
 # Not intended to be run as a test.
-fast/harness/test-expectations.html [ WontFix ]
+fast/harness/results.html [ WontFix ]
 # Platform specific virtual test suites.
 [ Win Mac Android ] virtual/linux-subpixel [ WontFix ]
 
