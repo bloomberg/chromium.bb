@@ -28,7 +28,6 @@
 #include "ui/app_list/views/contents_view.h"
 #include "ui/app_list/views/search_box_view.h"
 #include "ui/app_list/views/search_result_page_view.h"
-#include "ui/app_list/views/start_page_view.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/button.h"
@@ -67,8 +66,6 @@ void AppListMainView::Init(int initial_apps_page,
   app_list::PaginationModel* pagination_model = GetAppsPaginationModel();
   if (pagination_model->is_valid_page(initial_apps_page))
     pagination_model->SelectPage(initial_apps_page, false);
-
-  OnSearchEngineIsGoogleChanged(model_->search_engine_is_google());
 }
 
 void AppListMainView::AddContentsViews() {
@@ -135,13 +132,6 @@ void AppListMainView::NotifySearchBoxVisibilityChanged() {
 
 const char* AppListMainView::GetClassName() const {
   return "AppListMainView";
-}
-
-void AppListMainView::OnSearchEngineIsGoogleChanged(bool is_google) {
-  if (contents_view_->start_page_view()) {
-    contents_view_->start_page_view()->instant_container()->SetVisible(
-        is_google);
-  }
 }
 
 void AppListMainView::ActivateApp(AppListItem* item, int event_flags) {

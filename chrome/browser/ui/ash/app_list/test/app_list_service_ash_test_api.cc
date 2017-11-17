@@ -11,7 +11,6 @@
 #include "ui/app_list/views/apps_container_view.h"
 #include "ui/app_list/views/apps_grid_view.h"
 #include "ui/app_list/views/contents_view.h"
-#include "ui/app_list/views/start_page_view.h"
 
 AppListServiceAshTestApi::AppListServiceAshTestApi() {}
 
@@ -32,13 +31,6 @@ app_list::AppsGridView* AppListServiceAshTestApi::GetRootGridView() const {
       ->contents_view()
       ->apps_container_view()
       ->apps_grid_view();
-}
-
-app_list::StartPageView* AppListServiceAshTestApi::GetStartPageView() const {
-  return GetAppListView()
-      ->app_list_main_view()
-      ->contents_view()
-      ->start_page_view();
 }
 
 void AppListServiceAshTestApi::LayoutContentsView() {

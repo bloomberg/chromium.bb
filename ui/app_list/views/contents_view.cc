@@ -22,7 +22,6 @@
 #include "ui/app_list/views/search_result_list_view.h"
 #include "ui/app_list/views/search_result_page_view.h"
 #include "ui/app_list/views/search_result_tile_item_list_view.h"
-#include "ui/app_list/views/start_page_view.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -67,16 +66,9 @@ void ContentsView::Init(AppListModel* model) {
 
   apps_container_view_ = new AppsContainerView(app_list_main_view_, model);
 
-  // Start page is only for non-fullscreen app list.
-  if (is_fullscreen_app_list_enabled_) {
-    // Add |apps_container_view_| as STATE_START corresponding page for
-    // fullscreen app list.
-    AddLauncherPage(apps_container_view_, AppListModel::STATE_START);
-  } else {
-    start_page_view_ =
-        new StartPageView(app_list_main_view_, view_delegate, app_list_view_);
-    AddLauncherPage(start_page_view_, AppListModel::STATE_START);
-  }
+  // Add |apps_container_view_| as STATE_START corresponding page for
+  // fullscreen app list.
+  AddLauncherPage(apps_container_view_, AppListModel::STATE_START);
 
   // Search results UI.
   search_results_page_view_ = new SearchResultPageView();

@@ -11,7 +11,6 @@ namespace app_list {
 class AppListPresenterImpl;
 class AppListView;
 class AppsGridView;
-class StartPageView;
 }  // namespace app_list
 
 // Accesses private data from an AppListServiceAsh and AppListPresenterImpl
@@ -26,9 +25,6 @@ class AppListServiceAshTestApi {
 
   // Gets the root level apps grid view.
   app_list::AppsGridView* GetRootGridView() const;
-
-  // Gets the start page view.
-  app_list::StartPageView* GetStartPageView() const;
 
   // Calls Layout() on the app_list::ContentsView.
   void LayoutContentsView();
