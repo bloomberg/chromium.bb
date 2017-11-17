@@ -138,9 +138,13 @@ static INLINE void aom_write_symbol(aom_writer *w, int symb, aom_cdf_prob *cdf,
 #if CONFIG_LV_MAP
 static INLINE void aom_write_bin(aom_writer *w, int symb, aom_cdf_prob *cdf,
                                  int nsymbs) {
+#if CONFIG_LV_MAP_MULTI
+  aom_write_cdf(w, symb, cdf, nsymbs);
+#else
   aom_cdf_prob this_cdf[3] = { (aom_cdf_prob)((cdf[0] >> 8) << 8), 0, 0 };
   this_cdf[0] = clamp(this_cdf[0], (1 << 8), (127 << 8));
   aom_write_cdf(w, symb, this_cdf, nsymbs);
+#endif
   if (w->allow_update_cdf) update_bin(cdf, symb, nsymbs);
   // printf("bin: %d\n", this_cdf[0]);
 }
