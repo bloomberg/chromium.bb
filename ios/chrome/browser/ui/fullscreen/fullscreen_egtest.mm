@@ -36,24 +36,6 @@ namespace {
 // The page height of test pages. This must be big enough to triger fullscreen.
 const int kPageHeightEM = 200;
 
-// TODO(crbug.com/638674): Move this to a shared location as it is a duplicate
-// of ios/web/shell/test/page_state_egtest.mm.
-// Returns a matcher for asserting that element's content offset matches the
-// given |offset|.
-id<GREYMatcher> ContentOffset(CGPoint offset) {
-  MatchesBlock matches = ^BOOL(UIScrollView* element) {
-    return CGPointEqualToPoint([element contentOffset], offset);
-  };
-  DescribeToBlock describe = ^(id<GREYDescription> description) {
-    [description appendText:@"contentOffset"];
-  };
-  return grey_allOf(
-      grey_kindOfClass([UIScrollView class]),
-      [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
-                                           descriptionBlock:describe],
-      nil);
-}
-
 // Hides the toolbar by scrolling down.
 void HideToolbarUsingUI() {
   [[EarlGrey
@@ -107,7 +89,7 @@ void AssertURLIs(const GURL& expectedURL) {
   [[EarlGrey
       selectElementWithMatcher:web::WebViewScrollView(
                                    chrome_test_util::GetCurrentWebState())]
-      assertWithMatcher:ContentOffset(CGPointMake(0, yOffset))];
+      assertWithMatcher:grey_scrollViewContentOffset(CGPointMake(0, yOffset))];
 }
 
 // Verifies that the toolbar properly appears/disappears when scrolling up/down
