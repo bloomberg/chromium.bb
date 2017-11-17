@@ -83,6 +83,8 @@ class PLATFORM_EXPORT LayoutRectOutsets {
   void SetBottom(LayoutUnit value) { bottom_ = value; }
   void SetLeft(LayoutUnit value) { left_ = value; }
 
+  void ClampNegativeToZero();
+
   // Produces a new LayoutRectOutsets in line orientation
   // (https://www.w3.org/TR/css-writing-modes-3/#line-orientation), whose
   // - |top| is the logical 'over',
@@ -115,6 +117,14 @@ inline LayoutRectOutsets& operator+=(LayoutRectOutsets& a,
   return a;
 }
 
+inline LayoutRectOutsets& operator+=(LayoutRectOutsets& a, LayoutUnit b) {
+  a.SetTop(a.Top() + b);
+  a.SetRight(a.Right() + b);
+  a.SetBottom(a.Bottom() + b);
+  a.SetLeft(a.Left() + b);
+  return a;
+}
+
 inline LayoutRectOutsets operator+(const LayoutRectOutsets& a,
                                    const LayoutRectOutsets& b) {
   return LayoutRectOutsets(a.Top() + b.Top(), a.Right() + b.Right(),
@@ -123,6 +133,14 @@ inline LayoutRectOutsets operator+(const LayoutRectOutsets& a,
 
 inline LayoutRectOutsets operator-(const LayoutRectOutsets& a) {
   return LayoutRectOutsets(-a.Top(), -a.Right(), -a.Bottom(), -a.Left());
+}
+
+inline LayoutRectOutsets EnclosingLayoutRectOutsets(
+    const FloatRectOutsets& rect) {
+  return LayoutRectOutsets(LayoutUnit::FromFloatCeil(rect.Top()),
+                           LayoutUnit::FromFloatCeil(rect.Right()),
+                           LayoutUnit::FromFloatCeil(rect.Bottom()),
+                           LayoutUnit::FromFloatCeil(rect.Left()));
 }
 
 }  // namespace blink
