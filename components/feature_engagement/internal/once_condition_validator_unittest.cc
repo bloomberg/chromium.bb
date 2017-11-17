@@ -10,6 +10,7 @@
 #include "components/feature_engagement/internal/editable_configuration.h"
 #include "components/feature_engagement/internal/event_model.h"
 #include "components/feature_engagement/internal/never_availability_model.h"
+#include "components/feature_engagement/internal/noop_display_lock_controller.h"
 #include "components/feature_engagement/internal/proto/event.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -58,6 +59,7 @@ class OnceConditionValidatorTest : public ::testing::Test {
   EditableConfiguration configuration_;
   TestEventModel event_model_;
   NeverAvailabilityModel availability_model_;
+  NoopDisplayLockController display_lock_controller_;
   OnceConditionValidator validator_;
 
  private:
@@ -70,12 +72,13 @@ TEST_F(OnceConditionValidatorTest, EnabledFeatureShouldTriggerOnce) {
   // Only the first call to MeetsConditions() should lead to enlightenment.
   EXPECT_TRUE(validator_
                   .MeetsConditions(kTestFeatureFoo, kValidFeatureConfig,
-                                   event_model_, availability_model_, 0u)
+                                   event_model_, availability_model_,
+                                   display_lock_controller_, 0u)
                   .NoErrors());
   validator_.NotifyIsShowing(kTestFeatureFoo, FeatureConfig(), {""});
-  ConditionValidator::Result result =
-      validator_.MeetsConditions(kTestFeatureFoo, kValidFeatureConfig,
-                                 event_model_, availability_model_, 0u);
+  ConditionValidator::Result result = validator_.MeetsConditions(
+      kTestFeatureFoo, kValidFeatureConfig, event_model_, availability_model_,
+      display_lock_controller_, 0u);
   EXPECT_FALSE(result.NoErrors());
   EXPECT_FALSE(result.session_rate_ok);
   EXPECT_FALSE(result.trigger_ok);
@@ -89,11 +92,13 @@ TEST_F(OnceConditionValidatorTest,
   // OnlyOneFeatureShouldTriggerPerSession test below.
   EXPECT_TRUE(validator_
                   .MeetsConditions(kTestFeatureBar, kValidFeatureConfig,
-                                   event_model_, availability_model_, 0u)
+                                   event_model_, availability_model_,
+                                   display_lock_controller_, 0u)
                   .NoErrors());
   EXPECT_TRUE(validator_
                   .MeetsConditions(kTestFeatureFoo, kValidFeatureConfig,
-                                   event_model_, availability_model_, 0u)
+                                   event_model_, availability_model_,
+                                   display_lock_controller_, 0u)
                   .NoErrors());
 }
 
@@ -101,54 +106,59 @@ TEST_F(OnceConditionValidatorTest, StillTriggerWhenAllFeaturesDisabled) {
   // No features should get to show enlightenment.
   EXPECT_TRUE(validator_
                   .MeetsConditions(kTestFeatureFoo, kValidFeatureConfig,
-                                   event_model_, availability_model_, 0u)
+                                   event_model_, availability_model_,
+                                   display_lock_controller_, 0u)
                   .NoErrors());
   EXPECT_TRUE(validator_
                   .MeetsConditions(kTestFeatureBar, kValidFeatureConfig,
-                                   event_model_, availability_model_, 0u)
+                                   event_model_, availability_model_,
+                                   display_lock_controller_, 0u)
                   .NoErrors());
 }
 
 TEST_F(OnceConditionValidatorTest, OnlyTriggerWhenModelIsReady) {
   event_model_.SetIsReady(false);
-  ConditionValidator::Result result =
-      validator_.MeetsConditions(kTestFeatureFoo, kValidFeatureConfig,
-                                 event_model_, availability_model_, 0u);
+  ConditionValidator::Result result = validator_.MeetsConditions(
+      kTestFeatureFoo, kValidFeatureConfig, event_model_, availability_model_,
+      display_lock_controller_, 0u);
   EXPECT_FALSE(result.NoErrors());
   EXPECT_FALSE(result.event_model_ready_ok);
 
   event_model_.SetIsReady(true);
   EXPECT_TRUE(validator_
                   .MeetsConditions(kTestFeatureFoo, kValidFeatureConfig,
-                                   event_model_, availability_model_, 0u)
+                                   event_model_, availability_model_,
+                                   display_lock_controller_, 0u)
                   .NoErrors());
 }
 
 TEST_F(OnceConditionValidatorTest, OnlyTriggerIfNothingElseIsShowing) {
   validator_.NotifyIsShowing(kTestFeatureBar, FeatureConfig(), {""});
-  ConditionValidator::Result result =
-      validator_.MeetsConditions(kTestFeatureFoo, kValidFeatureConfig,
-                                 event_model_, availability_model_, 0u);
+  ConditionValidator::Result result = validator_.MeetsConditions(
+      kTestFeatureFoo, kValidFeatureConfig, event_model_, availability_model_,
+      display_lock_controller_, 0u);
   EXPECT_FALSE(result.NoErrors());
   EXPECT_FALSE(result.currently_showing_ok);
 
   validator_.NotifyDismissed(kTestFeatureBar);
   EXPECT_TRUE(validator_
                   .MeetsConditions(kTestFeatureFoo, kValidFeatureConfig,
-                                   event_model_, availability_model_, 0u)
+                                   event_model_, availability_model_,
+                                   display_lock_controller_, 0u)
                   .NoErrors());
 }
 
 TEST_F(OnceConditionValidatorTest, DoNotTriggerForInvalidConfig) {
-  ConditionValidator::Result result =
-      validator_.MeetsConditions(kTestFeatureFoo, kInvalidFeatureConfig,
-                                 event_model_, availability_model_, 0u);
+  ConditionValidator::Result result = validator_.MeetsConditions(
+      kTestFeatureFoo, kInvalidFeatureConfig, event_model_, availability_model_,
+      display_lock_controller_, 0u);
   EXPECT_FALSE(result.NoErrors());
   EXPECT_FALSE(result.config_ok);
 
   EXPECT_TRUE(validator_
                   .MeetsConditions(kTestFeatureFoo, kValidFeatureConfig,
-                                   event_model_, availability_model_, 0u)
+                                   event_model_, availability_model_,
+                                   display_lock_controller_, 0u)
                   .NoErrors());
 }
 

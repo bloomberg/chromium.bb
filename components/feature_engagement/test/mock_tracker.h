@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_FEATURE_ENGAGEMENT_TEST_MOCK_TRACKER_H_
 #define COMPONENTS_FEATURE_ENGAGEMENT_TEST_MOCK_TRACKER_H_
 
+#include <memory>
+#include <string>
+
 #include "base/macros.h"
 #include "components/feature_engagement/public/tracker.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -23,8 +26,9 @@ class MockTracker : public Tracker {
   MOCK_CONST_METHOD1(WouldTriggerHelpUI, bool(const base::Feature& feature));
   MOCK_CONST_METHOD1(GetTriggerState,
                      Tracker::TriggerState(const base::Feature& feature));
-  MOCK_METHOD1(Dismissed, void(const base::Feature& feature));
   MOCK_CONST_METHOD0(IsInitialized, bool());
+  MOCK_METHOD1(Dismissed, void(const base::Feature& feature));
+  MOCK_METHOD0(AcquireDisplayLock, std::unique_ptr<DisplayLockHandle>());
   MOCK_METHOD1(AddOnInitializedCallback, void(OnInitializedCallback callback));
 
  private:

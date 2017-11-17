@@ -5,6 +5,7 @@
 package org.chromium.components.feature_engagement;
 
 import android.support.annotation.CheckResult;
+import android.support.annotation.Nullable;
 
 import org.chromium.base.Callback;
 
@@ -15,6 +16,17 @@ import org.chromium.base.Callback;
  * Tracker is the core class for the feature engagement.
  */
 public interface Tracker {
+    /**
+     * A handle for the display lock. While this is unreleased, no in-product help can be displayed.
+     */
+    interface DisplayLockHandle {
+        /**
+         * This method must be invoked when the lock should be released, and it must be invoked on
+         * the main thread.
+         */
+        void release();
+    }
+
     /**
      * Must be called whenever an event happens.
      */
@@ -66,6 +78,20 @@ public interface Tracker {
      * Must be called after display of feature enlightenment finishes for a particular feature.
      */
     void dismissed(String feature);
+
+    /**
+     * Acquiring a display lock means that no in-product help can be displayed while it is held. To
+     * release the lock, delete the handle. If in-product help is already displayed while the
+     * display lock is acquired, the lock is still handed out, but it will not dismiss the current
+     * in-product help. However, no new in-product help will be shown until all locks have been
+     * released. It is required to invoke {@link DisplayLockHandle#release()} once the lock should
+     * no longer be held.
+     * The DisplayLockHandle must be released on the main thread.
+     * @return a DisplayLockHandle, or {@code null} if no handle could be retrieved.
+     */
+    @CheckResult
+    @Nullable
+    DisplayLockHandle acquireDisplayLock();
 
     /**
      * Returns whether the tracker has been successfully initialized. During startup, this will be

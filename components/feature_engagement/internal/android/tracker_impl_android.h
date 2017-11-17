@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_FEATURE_ENGAGEMENT_INTERNAL_ANDROID_TRACKER_IMPL_ANDROID_H_
 #define COMPONENTS_FEATURE_ENGAGEMENT_INTERNAL_ANDROID_TRACKER_IMPL_ANDROID_H_
 
+#include <memory>
 #include <string>
 #include <unordered_map>
 
@@ -15,12 +16,41 @@
 #include "base/supports_user_data.h"
 #include "components/feature_engagement/internal/tracker_impl.h"
 #include "components/feature_engagement/public/feature_list.h"
+#include "components/feature_engagement/public/tracker.h"
 
 namespace base {
 struct Feature;
 }  // namespace base
 
 namespace feature_engagement {
+
+// JNI bridge between DisplayLockHandleAndroid in Java and C++.
+// This class owns the underlying DisplayLockHandle acquired from the backing
+// Tracker. Ownership of this class is released to Java, which means Java owners
+// MUST call release() before removing their reference to this object.
+// This class must be in this header file, since it is used by the generated
+// JNI code.
+class DisplayLockHandleAndroid {
+ public:
+  DisplayLockHandleAndroid(
+      std::unique_ptr<DisplayLockHandle> display_lock_handle);
+  ~DisplayLockHandleAndroid();
+
+  // Returns the Java-side of this JNI bridge.
+  base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
+
+  // Deletes |this|.
+  void Release(JNIEnv* env, const base::android::JavaParamRef<jobject>& jobj);
+
+ private:
+  // The DisplayLockHandle that this JNI bridge owns.
+  std::unique_ptr<DisplayLockHandle> display_lock_handle_;
+
+  // The Java-side of this JNI bridge.
+  base::android::ScopedJavaGlobalRef<jobject> java_obj_;
+
+  DISALLOW_COPY_AND_ASSIGN(DisplayLockHandleAndroid);
+};
 
 // JNI bridge between TrackerImpl in Java and C++. See the
 // public API of Tracker for documentation for all methods.
@@ -57,6 +87,9 @@ class TrackerImplAndroid : public base::SupportsUserData::Data {
   virtual void Dismissed(JNIEnv* env,
                          const base::android::JavaRef<jobject>& jobj,
                          const base::android::JavaParamRef<jstring>& jfeature);
+  virtual base::android::ScopedJavaLocalRef<jobject> AcquireDisplayLock(
+      JNIEnv* env,
+      const base::android::JavaRef<jobject>& jobj);
   virtual bool IsInitialized(JNIEnv* env,
                              const base::android::JavaRef<jobject>& jobj);
   virtual void AddOnInitializedCallback(

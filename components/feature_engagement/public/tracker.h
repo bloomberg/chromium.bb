@@ -5,12 +5,14 @@
 #ifndef COMPONENTS_FEATURE_ENGAGEMENT_PUBLIC_TRACKER_H_
 #define COMPONENTS_FEATURE_ENGAGEMENT_PUBLIC_TRACKER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
 #include "build/build_config.h"
@@ -21,6 +23,19 @@
 #endif  // defined(OS_ANDROID)
 
 namespace feature_engagement {
+
+// A handle for the display lock. While this is unreleased, no in-product help
+// can be displayed.
+class DisplayLockHandle {
+ public:
+  typedef base::OnceClosure ReleaseCallback;
+  explicit DisplayLockHandle(ReleaseCallback callback);
+  ~DisplayLockHandle();
+
+ private:
+  ReleaseCallback release_callback_;
+  DISALLOW_COPY_AND_ASSIGN(DisplayLockHandle);
+};
 
 // The Tracker provides a backend for displaying feature
 // enlightenment or in-product help (IPH) with a clean and easy to use API to be
@@ -98,6 +113,17 @@ class Tracker : public KeyedService {
   // Must be called after display of feature enlightenment finishes for a
   // particular |feature|.
   virtual void Dismissed(const base::Feature& feature) = 0;
+
+  // Acquiring a display lock means that no in-product help can be displayed
+  // while it is held. To release the lock, delete the handle.
+  // If in-product help is already displayed while the display lock is
+  // acquired, the lock is still handed out, but it will not dismiss the current
+  // in-product help. However, no new in-product help will be shown until all
+  // locks have been released. It is required to release the DisplayLockHandle
+  // once the lock should no longer be held.
+  // The DisplayLockHandle must be released on the main thread.
+  // This method returns nullptr if no handle could be retrieved.
+  virtual std::unique_ptr<DisplayLockHandle> AcquireDisplayLock() = 0;
 
   // Returns whether the tracker has been successfully initialized. During
   // startup, this will be false until the internal models have been loaded at

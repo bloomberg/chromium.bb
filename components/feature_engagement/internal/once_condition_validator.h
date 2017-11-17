@@ -17,6 +17,7 @@ struct Feature;
 
 namespace feature_engagement {
 class AvailabilityModel;
+class DisplayLockController;
 class EventModel;
 
 // An ConditionValidator that will ensure that each base::Feature will meet
@@ -43,6 +44,7 @@ class OnceConditionValidator : public ConditionValidator {
       const FeatureConfig& config,
       const EventModel& event_model,
       const AvailabilityModel& availability_model,
+      const DisplayLockController& display_lock_controller,
       uint32_t current_day) const override;
   void NotifyIsShowing(
       const base::Feature& feature,
