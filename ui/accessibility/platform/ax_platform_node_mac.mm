@@ -44,7 +44,8 @@ RoleMap BuildRoleMap() {
       {ui::AX_ROLE_COLOR_WELL, NSAccessibilityColorWellRole},
       {ui::AX_ROLE_COLUMN, NSAccessibilityColumnRole},
       {ui::AX_ROLE_COLUMN_HEADER, @"AXCell"},
-      {ui::AX_ROLE_COMBO_BOX, NSAccessibilityComboBoxRole},
+      {ui::AX_ROLE_COMBO_BOX_GROUPING, NSAccessibilityGroupRole},
+      {ui::AX_ROLE_COMBO_BOX_MENU_BUTTON, NSAccessibilityButtonRole},
       {ui::AX_ROLE_COMPLEMENTARY, NSAccessibilityGroupRole},
       {ui::AX_ROLE_CONTENT_INFO, NSAccessibilityGroupRole},
       {ui::AX_ROLE_DATE, @"AXDateField"},
@@ -134,6 +135,7 @@ RoleMap BuildRoleMap() {
       {ui::AX_ROLE_TAB_PANEL, NSAccessibilityGroupRole},
       {ui::AX_ROLE_TERM, NSAccessibilityGroupRole},
       {ui::AX_ROLE_TEXT_FIELD, NSAccessibilityTextFieldRole},
+      {ui::AX_ROLE_TEXT_FIELD_WITH_COMBO_BOX, NSAccessibilityComboBoxRole},
       {ui::AX_ROLE_TIME, NSAccessibilityGroupRole},
       {ui::AX_ROLE_TIMER, NSAccessibilityGroupRole},
       {ui::AX_ROLE_TOGGLE_BUTTON, NSAccessibilityCheckBoxRole},
@@ -430,13 +432,14 @@ bool AlsoUseShowMenuActionForDefaultAction(const ui::AXNodeData& data) {
 
   switch (node_->GetData().role) {
     case ui::AX_ROLE_TEXT_FIELD:
+    case ui::AX_ROLE_TEXT_FIELD_WITH_COMBO_BOX:
     case ui::AX_ROLE_STATIC_TEXT:
       [axAttributes addObject:kTextAttributes];
       if (!node_->GetData().HasState(ui::AX_STATE_PROTECTED))
         [axAttributes addObjectsFromArray:kUnprotectedTextAttributes];
     // Fallthrough.
     case ui::AX_ROLE_CHECK_BOX:
-    case ui::AX_ROLE_COMBO_BOX:
+    case ui::AX_ROLE_COMBO_BOX_MENU_BUTTON:
     case ui::AX_ROLE_MENU_ITEM_CHECK_BOX:
     case ui::AX_ROLE_MENU_ITEM_RADIO:
     case ui::AX_ROLE_RADIO_BUTTON:
