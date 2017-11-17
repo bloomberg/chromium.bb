@@ -343,7 +343,7 @@ TEST(PaymentRequestTest, RejectShowPromiseOnErrorPaymentMethodNotSupported) {
       payments::mojom::blink::PaymentErrorReason::NOT_SUPPORTED);
 
   v8::MicrotasksScope::PerformCheckpoint(scope.GetScriptState()->GetIsolate());
-  EXPECT_EQ("NotSupportedError: The payment method is not supported",
+  EXPECT_EQ("NotSupportedError: The payment method \"foo\" is not supported",
             error_message);
 }
 

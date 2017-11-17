@@ -272,7 +272,7 @@ public class PaymentRequestMetricsTest implements MainActivityStartCallback {
         mPaymentRequestTestRule.openPageAndClickNodeAndWait(
                 "androidPayBuy", mPaymentRequestTestRule.getShowFailed());
         mPaymentRequestTestRule.expectResultContains(
-                new String[] {"The payment method is not supported"});
+                new String[] {"The payment method", "not supported"});
 
         // Make sure that it is not logged as an abort.
         mPaymentRequestTestRule.assertOnlySpecificAbortMetricLogged(-1 /* none */);
@@ -302,7 +302,7 @@ public class PaymentRequestMetricsTest implements MainActivityStartCallback {
         mPaymentRequestTestRule.openPageAndClickNodeAndWait(
                 "noSupported", mPaymentRequestTestRule.getShowFailed());
         mPaymentRequestTestRule.expectResultContains(
-                new String[] {"The payment method is not supported"});
+                new String[] {"The payment method", "not supported"});
 
         // Make sure that it is not logged as an abort.
         mPaymentRequestTestRule.assertOnlySpecificAbortMetricLogged(-1 /* none */);
