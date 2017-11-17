@@ -24,6 +24,9 @@ static_library("internal") {
     "condition_validator.h",
     "configuration.cc",
     "configuration.h",
+    "display_lock_controller.h",
+    "display_lock_controller_impl.cc",
+    "display_lock_controller_impl.h",
     "editable_configuration.cc",
     "editable_configuration.h",
     "event_model.h",
@@ -45,6 +48,8 @@ static_library("internal") {
     "never_condition_validator.h",
     "never_event_storage_validator.cc",
     "never_event_storage_validator.h",
+    "noop_display_lock_controller.cc",
+    "noop_display_lock_controller.h",
     "once_condition_validator.cc",
     "once_condition_validator.h",
     "persistent_availability_store.cc",
@@ -95,6 +100,7 @@ source_set("unit_tests") {
     "chrome_variations_configuration_unittest.cc",
     "condition_validator_unittest.cc",
     "configuration_unittest.cc",
+    "display_lock_controller_impl_unittest.cc",
     "editable_configuration_unittest.cc",
     "event_model_impl_unittest.cc",
     "feature_config_condition_validator_unittest.cc",
@@ -104,6 +110,7 @@ source_set("unit_tests") {
     "never_availability_model_unittest.cc",
     "never_condition_validator_unittest.cc",
     "never_event_storage_validator_unittest.cc",
+    "noop_display_lock_controller_unittest.cc",
     "once_condition_validator_unittest.cc",
     "persistent_availability_store_unittest.cc",
     "persistent_event_store_unittest.cc",
@@ -132,6 +139,7 @@ if (is_android) {
     deps = [
       "//base:base_java",
       "//components/feature_engagement/public:public_java",
+      "//third_party/android_tools:android_support_annotations_java",
     ]
   }
 

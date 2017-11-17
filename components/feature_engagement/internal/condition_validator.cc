@@ -18,7 +18,8 @@ ConditionValidator::Result::Result(bool initial_values)
       preconditions_ok(initial_values),
       session_rate_ok(initial_values),
       availability_model_ready_ok(initial_values),
-      availability_ok(initial_values) {}
+      availability_ok(initial_values),
+      display_lock_ok(initial_values) {}
 
 ConditionValidator::Result::Result(const Result& other) {
   event_model_ready_ok = other.event_model_ready_ok;
@@ -31,12 +32,14 @@ ConditionValidator::Result::Result(const Result& other) {
   session_rate_ok = other.session_rate_ok;
   availability_model_ready_ok = other.availability_model_ready_ok;
   availability_ok = other.availability_ok;
+  display_lock_ok = other.display_lock_ok;
 }
 
 bool ConditionValidator::Result::NoErrors() const {
   return event_model_ready_ok && currently_showing_ok && feature_enabled_ok &&
          config_ok && used_ok && trigger_ok && preconditions_ok &&
-         session_rate_ok && availability_model_ready_ok && availability_ok;
+         session_rate_ok && availability_model_ready_ok && availability_ok &&
+         display_lock_ok;
 }
 
 std::ostream& operator<<(std::ostream& os,
@@ -51,7 +54,8 @@ std::ostream& operator<<(std::ostream& os,
             << ", session_rate_ok=" << result.session_rate_ok
             << ", availability_model_ready_ok="
             << result.availability_model_ready_ok
-            << ", availability_ok=" << result.availability_ok << " }";
+            << ", availability_ok=" << result.availability_ok
+            << ", display_lock_ok=" << result.display_lock_ok << " }";
 }
 
 }  // namespace feature_engagement

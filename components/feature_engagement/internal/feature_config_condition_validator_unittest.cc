@@ -5,6 +5,7 @@
 #include "components/feature_engagement/internal/feature_config_condition_validator.h"
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/feature_list.h"
@@ -13,8 +14,10 @@
 #include "components/feature_engagement/internal/availability_model.h"
 #include "components/feature_engagement/internal/configuration.h"
 #include "components/feature_engagement/internal/event_model.h"
+#include "components/feature_engagement/internal/noop_display_lock_controller.h"
 #include "components/feature_engagement/internal/proto/event.pb.h"
 #include "components/feature_engagement/internal/test/event_util.h"
+#include "components/feature_engagement/public/tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace feature_engagement {
@@ -116,6 +119,28 @@ class TestAvailabilityModel : public AvailabilityModel {
   DISALLOW_COPY_AND_ASSIGN(TestAvailabilityModel);
 };
 
+class TestDisplayLockController : public DisplayLockController {
+ public:
+  TestDisplayLockController() = default;
+  ~TestDisplayLockController() override = default;
+
+  std::unique_ptr<DisplayLockHandle> AcquireDisplayLock() override {
+    return nullptr;
+  }
+
+  bool IsDisplayLocked() const override { return next_display_locked_result_; }
+
+  void SetNextIsDisplayLockedResult(bool result) {
+    next_display_locked_result_ = result;
+  }
+
+ private:
+  // The next result to return from IsDisplayLocked().
+  bool next_display_locked_result_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(TestDisplayLockController);
+};
+
 class FeatureConfigConditionValidatorTest : public ::testing::Test {
  public:
   FeatureConfigConditionValidatorTest() = default;
@@ -128,29 +153,34 @@ class FeatureConfigConditionValidatorTest : public ::testing::Test {
     FeatureConfig config = GetAcceptingFeatureConfig();
     config.event_configs.insert(EventConfig("event1", comparator, window, 0));
     return validator_.MeetsConditions(kTestFeatureFoo, config, event_model_,
-                                      availability_model_, current_day);
+                                      availability_model_,
+                                      display_lock_controller_, current_day);
   }
 
   ConditionValidator::Result GetResultForDay(const FeatureConfig& config,
                                              uint32_t current_day) {
     return validator_.MeetsConditions(kTestFeatureFoo, config, event_model_,
-                                      availability_model_, current_day);
+                                      availability_model_,
+                                      display_lock_controller_, current_day);
   }
 
   ConditionValidator::Result GetResultForDayZero(const FeatureConfig& config) {
     return validator_.MeetsConditions(kTestFeatureFoo, config, event_model_,
-                                      availability_model_, 0);
+                                      availability_model_,
+                                      display_lock_controller_, 0);
   }
 
   ConditionValidator::Result GetResultForDayZeroForFeature(
       const base::Feature& feature,
       const FeatureConfig& config) {
     return validator_.MeetsConditions(feature, config, event_model_,
-                                      availability_model_, 0);
+                                      availability_model_,
+                                      display_lock_controller_, 0);
   }
 
   TestEventModel event_model_;
   TestAvailabilityModel availability_model_;
+  TestDisplayLockController display_lock_controller_;
   FeatureConfigConditionValidator validator_;
   uint32_t current_day_;
 
@@ -661,7 +691,8 @@ TEST_F(FeatureConfigConditionValidatorTest, TestMultipleEvents) {
   config.event_configs.insert(
       EventConfig("event2", Comparator(EQUAL, 5u), 99u, 0));
   ConditionValidator::Result result = validator_.MeetsConditions(
-      kTestFeatureFoo, config, event_model_, availability_model_, current_day);
+      kTestFeatureFoo, config, event_model_, availability_model_,
+      display_lock_controller_, current_day);
   EXPECT_TRUE(result.NoErrors());
 
   // Verify validator counts correctly for two events last 100 days.
@@ -671,7 +702,8 @@ TEST_F(FeatureConfigConditionValidatorTest, TestMultipleEvents) {
   config.event_configs.insert(
       EventConfig("event2", Comparator(EQUAL, 10u), 100u, 0));
   result = validator_.MeetsConditions(kTestFeatureFoo, config, event_model_,
-                                      availability_model_, current_day);
+                                      availability_model_,
+                                      display_lock_controller_, current_day);
   EXPECT_TRUE(result.NoErrors());
 
   // Verify validator counts correctly for two events last 101 days.
@@ -681,7 +713,8 @@ TEST_F(FeatureConfigConditionValidatorTest, TestMultipleEvents) {
   config.event_configs.insert(
       EventConfig("event2", Comparator(EQUAL, 15u), 101u, 0));
   result = validator_.MeetsConditions(kTestFeatureFoo, config, event_model_,
-                                      availability_model_, current_day);
+                                      availability_model_,
+                                      display_lock_controller_, current_day);
   EXPECT_TRUE(result.NoErrors());
 
   // Verify validator counts correctly for two events last 101 days, and returns
@@ -692,7 +725,8 @@ TEST_F(FeatureConfigConditionValidatorTest, TestMultipleEvents) {
   config.event_configs.insert(
       EventConfig("event2", Comparator(EQUAL, 15u), 101u, 0));
   result = validator_.MeetsConditions(kTestFeatureFoo, config, event_model_,
-                                      availability_model_, current_day);
+                                      availability_model_,
+                                      display_lock_controller_, current_day);
   EXPECT_FALSE(result.NoErrors());
   EXPECT_FALSE(result.preconditions_ok);
 
@@ -704,7 +738,8 @@ TEST_F(FeatureConfigConditionValidatorTest, TestMultipleEvents) {
   config.event_configs.insert(
       EventConfig("event2", Comparator(EQUAL, 0), 101u, 0));
   result = validator_.MeetsConditions(kTestFeatureFoo, config, event_model_,
-                                      availability_model_, current_day);
+                                      availability_model_,
+                                      display_lock_controller_, current_day);
   EXPECT_FALSE(result.NoErrors());
   EXPECT_FALSE(result.preconditions_ok);
 
@@ -716,7 +751,8 @@ TEST_F(FeatureConfigConditionValidatorTest, TestMultipleEvents) {
   config.event_configs.insert(
       EventConfig("event2", Comparator(EQUAL, 0), 101u, 0));
   result = validator_.MeetsConditions(kTestFeatureFoo, config, event_model_,
-                                      availability_model_, current_day);
+                                      availability_model_,
+                                      display_lock_controller_, current_day);
   EXPECT_FALSE(result.NoErrors());
   EXPECT_FALSE(result.preconditions_ok);
 }
@@ -796,6 +832,24 @@ TEST_F(FeatureConfigConditionValidatorTest, TestMultipleEventsWithSameName) {
   EXPECT_FALSE(GetResultForDay(config, 5u).NoErrors());
   EXPECT_FALSE(GetResultForDay(config, 99u).NoErrors());
   EXPECT_TRUE(GetResultForDay(config, 100u).NoErrors());
+}
+
+TEST_F(FeatureConfigConditionValidatorTest, DisplayLockedStatus) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures({kTestFeatureFoo}, {});
+
+  // When the display is locked, the result should be negative.
+  display_lock_controller_.SetNextIsDisplayLockedResult(true);
+
+  ConditionValidator::Result result =
+      GetResultForDayZero(GetAcceptingFeatureConfig());
+  EXPECT_FALSE(result.NoErrors());
+  EXPECT_FALSE(result.display_lock_ok);
+
+  // Setting the display to unlocked should make the result positive.
+  display_lock_controller_.SetNextIsDisplayLockedResult(false);
+
+  EXPECT_TRUE(GetResultForDayZero(GetAcceptingFeatureConfig()).NoErrors());
 }
 
 }  // namespace feature_engagement

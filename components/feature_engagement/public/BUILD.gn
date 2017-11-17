@@ -15,6 +15,7 @@ source_set("public") {
     "feature_constants.h",
     "feature_list.cc",
     "feature_list.h",
+    "tracker.cc",
     "tracker.h",
   ]
 

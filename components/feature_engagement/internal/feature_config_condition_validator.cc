@@ -11,6 +11,7 @@
 #include "base/feature_list.h"
 #include "components/feature_engagement/internal/availability_model.h"
 #include "components/feature_engagement/internal/configuration.h"
+#include "components/feature_engagement/internal/display_lock_controller.h"
 #include "components/feature_engagement/internal/event_model.h"
 #include "components/feature_engagement/internal/proto/event.pb.h"
 #include "components/feature_engagement/public/feature_list.h"
@@ -27,6 +28,7 @@ ConditionValidator::Result FeatureConfigConditionValidator::MeetsConditions(
     const FeatureConfig& config,
     const EventModel& event_model,
     const AvailabilityModel& availability_model,
+    const DisplayLockController& display_lock_controller,
     uint32_t current_day) const {
   ConditionValidator::Result result(true);
   result.event_model_ready_ok = event_model.IsReady();
@@ -50,6 +52,8 @@ ConditionValidator::Result FeatureConfigConditionValidator::MeetsConditions(
 
   result.availability_ok = AvailabilityMeetsConditions(
       feature, config.availability, availability_model, current_day);
+
+  result.display_lock_ok = !display_lock_controller.IsDisplayLocked();
 
   return result;
 }

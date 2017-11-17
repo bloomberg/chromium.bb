@@ -167,6 +167,9 @@ void RecordShouldTriggerHelpUI(const base::Feature& feature,
     LogTriggerHelpUIResult(
         name, TriggerHelpUIResult::FAILURE_AVAILABILITY_PRECONDITION_UNMET);
   }
+  if (!result.display_lock_ok) {
+    LogTriggerHelpUIResult(name, TriggerHelpUIResult::FAILURE_DISPLAY_LOCK);
+  }
 }
 
 void RecordUserDismiss() {

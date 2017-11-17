@@ -5,6 +5,7 @@
 #include "components/feature_engagement/internal/tracker_impl.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/feature_list.h"
@@ -17,6 +18,7 @@
 #include "base/test/user_action_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/feature_engagement/internal/availability_model_impl.h"
+#include "components/feature_engagement/internal/display_lock_controller.h"
 #include "components/feature_engagement/internal/editable_configuration.h"
 #include "components/feature_engagement/internal/event_model_impl.h"
 #include "components/feature_engagement/internal/in_memory_event_store.h"
@@ -158,6 +160,31 @@ class TestAvailabilityModel : public AvailabilityModel {
   DISALLOW_COPY_AND_ASSIGN(TestAvailabilityModel);
 };
 
+class TestDisplayLockController : public DisplayLockController {
+ public:
+  TestDisplayLockController() = default;
+  ~TestDisplayLockController() override = default;
+
+  std::unique_ptr<DisplayLockHandle> AcquireDisplayLock() override {
+    return std::move(next_display_lock_handle_);
+  }
+
+  bool IsDisplayLocked() const override { return false; }
+
+  void SetNextDisplayLockHandle(
+      std::unique_ptr<DisplayLockHandle> display_lock_handle) {
+    next_display_lock_handle_ = std::move(display_lock_handle);
+  }
+
+  void NoopCallback() {}
+
+ private:
+  // The next DisplayLockHandle to return.
+  std::unique_ptr<DisplayLockHandle> next_display_lock_handle_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestDisplayLockController);
+};
+
 class TrackerImplTest : public ::testing::Test {
  public:
   TrackerImplTest() = default;
@@ -187,9 +214,14 @@ class TrackerImplTest : public ::testing::Test {
     availability_model_ = availability_model.get();
     availability_model_->SetIsReady(ShouldAvailabilityStoreBeReady());
 
+    auto display_lock_controller =
+        std::make_unique<TestDisplayLockController>();
+    display_lock_controller_ = display_lock_controller.get();
+
     tracker_.reset(new TrackerImpl(
         std::move(event_model), std::move(availability_model),
-        std::move(configuration), base::MakeUnique<OnceConditionValidator>(),
+        std::move(configuration), std::move(display_lock_controller),
+        base::MakeUnique<OnceConditionValidator>(),
         base::MakeUnique<TestTimeProvider>()));
   }
 
@@ -387,6 +419,7 @@ class TrackerImplTest : public ::testing::Test {
   std::unique_ptr<TrackerImpl> tracker_;
   TestInMemoryEventStore* event_store_;
   TestAvailabilityModel* availability_model_;
+  TestDisplayLockController* display_lock_controller_;
   Configuration* configuration_;
   base::HistogramTester histogram_tester_;
 
@@ -823,6 +856,15 @@ TEST_F(TrackerImplTest, TestNotifyEvent) {
   ASSERT_EQ(1, bar_event.events_size());
   EXPECT_EQ(1u, bar_event.events(0).day());
   EXPECT_EQ(1u, bar_event.events(0).count());
+}
+
+TEST_F(TrackerImplTest, ShouldPassThroughAcquireDisplayLock) {
+  auto lock_handle = std::make_unique<DisplayLockHandle>(
+      base::Bind(&TestDisplayLockController::NoopCallback,
+                 base::Unretained(display_lock_controller_)));
+  DisplayLockHandle* lock_handle_ptr = lock_handle.get();
+  display_lock_controller_->SetNextDisplayLockHandle(std::move(lock_handle));
+  EXPECT_EQ(lock_handle_ptr, tracker_->AcquireDisplayLock().get());
 }
 
 }  // namespace feature_engagement

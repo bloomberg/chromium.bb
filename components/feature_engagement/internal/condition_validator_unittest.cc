@@ -76,6 +76,12 @@ TEST(ConditionValidatorResultTest, TestAvailabilityFailed) {
   EXPECT_FALSE(result.NoErrors());
 }
 
+TEST(ConditionValidatorResultTest, TestDisplayLockFailed) {
+  ConditionValidator::Result result(true);
+  result.display_lock_ok = false;
+  EXPECT_FALSE(result.NoErrors());
+}
+
 TEST(ConditionValidatorResultTest, TestMultipleErrors) {
   ConditionValidator::Result result(true);
   result.preconditions_ok = false;

@@ -61,8 +61,11 @@ enum class TriggerHelpUIResult {
   // Same as |SUCCESS|, but feature configuration was set to tracking only.
   SUCCESS_TRACKING_ONLY = 12,
 
+  // Display of help UI is locked.
+  FAILURE_DISPLAY_LOCK = 13,
+
   // Last entry for the enum.
-  COUNT = 13,
+  COUNT = 14,
 };
 
 // Used in the metrics to track the configuration parsing event.

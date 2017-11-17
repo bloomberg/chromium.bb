@@ -40469,6 +40469,7 @@ Full version information for the fingerprint enum values:
   <int value="10" label="FAILURE_AVAILABILITY_MODEL_NOT_READY"/>
   <int value="11" label="FAILURE_AVAILABILITY_PRECONDITION_UNMET"/>
   <int value="12" label="SUCCESS_TRACKING_ONLY"/>
+  <int value="13" label="FAILURE_DISPLAY_LOCK"/>
 </enum>
 
 <enum name="TrimMemoryLevel">

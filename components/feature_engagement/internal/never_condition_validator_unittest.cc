@@ -10,6 +10,7 @@
 #include "components/feature_engagement/internal/configuration.h"
 #include "components/feature_engagement/internal/event_model.h"
 #include "components/feature_engagement/internal/never_availability_model.h"
+#include "components/feature_engagement/internal/noop_display_lock_controller.h"
 #include "components/feature_engagement/internal/proto/event.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -49,6 +50,7 @@ class NeverConditionValidatorTest : public ::testing::Test {
  protected:
   TestEventModel event_model_;
   NeverAvailabilityModel availability_model_;
+  NoopDisplayLockController display_lock_controller_;
   NeverConditionValidator validator_;
 
  private:
@@ -60,11 +62,13 @@ class NeverConditionValidatorTest : public ::testing::Test {
 TEST_F(NeverConditionValidatorTest, ShouldNeverMeetConditions) {
   EXPECT_FALSE(validator_
                    .MeetsConditions(kTestFeatureFoo, FeatureConfig(),
-                                    event_model_, availability_model_, 0u)
+                                    event_model_, availability_model_,
+                                    display_lock_controller_, 0u)
                    .NoErrors());
   EXPECT_FALSE(validator_
                    .MeetsConditions(kTestFeatureBar, FeatureConfig(),
-                                    event_model_, availability_model_, 0u)
+                                    event_model_, availability_model_,
+                                    display_lock_controller_, 0u)
                    .NoErrors());
 }
 

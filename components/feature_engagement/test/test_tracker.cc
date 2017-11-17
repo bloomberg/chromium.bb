@@ -4,6 +4,8 @@
 
 #include "components/feature_engagement/test/test_tracker.h"
 
+#include <utility>
+
 #include "base/memory/ptr_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/feature_engagement/internal/chrome_variations_configuration.h"
@@ -13,6 +15,7 @@
 #include "components/feature_engagement/internal/in_memory_event_store.h"
 #include "components/feature_engagement/internal/init_aware_event_model.h"
 #include "components/feature_engagement/internal/never_availability_model.h"
+#include "components/feature_engagement/internal/noop_display_lock_controller.h"
 #include "components/feature_engagement/internal/system_time_provider.h"
 #include "components/feature_engagement/internal/tracker_impl.h"
 #include "components/feature_engagement/public/feature_list.h"
@@ -37,7 +40,7 @@ std::unique_ptr<Tracker> CreateTestTracker() {
 
   return base::MakeUnique<TrackerImpl>(
       std::move(event_model), base::MakeUnique<NeverAvailabilityModel>(),
-      std::move(configuration),
+      std::move(configuration), std::make_unique<NoopDisplayLockController>(),
       base::MakeUnique<FeatureConfigConditionValidator>(),
       base::MakeUnique<SystemTimeProvider>());
 }
