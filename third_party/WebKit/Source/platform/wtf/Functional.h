@@ -210,77 +210,6 @@ struct CheckGCedTypeRestrictions<std::index_sequence<Ns...>, Args...>
 
 }  // namespace internal
 
-#if DCHECK_IS_ON()
-
-template <typename CallbackType,
-          typename RunType = typename CallbackType::RunType>
-class ThreadCheckingCallbackWrapper;
-
-// This class wraps a callback and applies thread checking on its construction,
-// destruction and invocation (on Run()).
-template <typename CallbackType, typename R, typename... Args>
-class ThreadCheckingCallbackWrapper<CallbackType, R(Args...)> {
- public:
-  explicit ThreadCheckingCallbackWrapper(CallbackType callback)
-      : callback_(std::move(callback)) {}
-
-  ~ThreadCheckingCallbackWrapper() {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  }
-
-  R Run(Args... args) {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    return RunInternal(&callback_, std::forward<Args>(args)...);
-  }
-
-  bool IsCancelled() const { return callback_.IsCancelled(); }
-
- private:
-  static R RunInternal(base::RepeatingCallback<R(Args...)>* callback,
-                       Args&&... args) {
-    return callback->Run(std::forward<Args>(args)...);
-  }
-
-  static R RunInternal(base::OnceCallback<R(Args...)>* callback,
-                       Args&&... args) {
-    return std::move(*callback).Run(std::forward<Args>(args)...);
-  }
-
-  SEQUENCE_CHECKER(sequence_checker_);
-  CallbackType callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(ThreadCheckingCallbackWrapper);
-};
-
-}  // namespace WTF
-
-namespace base {
-
-template <typename CallbackType,
-          typename R,
-          typename... Args,
-          typename... BoundArgs>
-struct CallbackCancellationTraits<
-    R (WTF::ThreadCheckingCallbackWrapper<CallbackType>::*)(Args...),
-    std::tuple<
-        std::unique_ptr<WTF::ThreadCheckingCallbackWrapper<CallbackType>>,
-        BoundArgs...>> {
-  static constexpr bool is_cancellable = true;
-
-  template <typename Functor, typename Receiver, typename... RunArgs>
-  static bool IsCancelled(const Functor&,
-                          const Receiver& receiver,
-                          const RunArgs&...) {
-    return receiver->IsCancelled();
-  }
-};
-
-}  // namespace base
-
-namespace WTF {
-
-#endif
-
 template <typename Signature>
 class Function;
 
@@ -292,23 +221,32 @@ class Function<R(Args...)> {
   Function() {}
   explicit Function(base::Callback<R(Args...)> callback)
       : callback_(std::move(callback)) {}
-  ~Function() {}
+  ~Function() { DCHECK_CALLED_ON_VALID_THREAD(thread_checker_); }
 
   Function(const Function&) = delete;
   Function& operator=(const Function&) = delete;
 
-  Function(Function&& other) : callback_(std::move(other.callback_)) {}
+  Function(Function&& other) : callback_(std::move(other.callback_)) {
+    DCHECK_CALLED_ON_VALID_THREAD(other.thread_checker_);
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+    DETACH_FROM_THREAD(other.thread_checker_);
+  }
 
   Function& operator=(Function&& other) {
+    DCHECK_CALLED_ON_VALID_THREAD(other.thread_checker_);
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+    DETACH_FROM_THREAD(other.thread_checker_);
     callback_ = std::move(other.callback_);
     return *this;
   }
 
   R Run(Args... args) const & {
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     return callback_.Run(std::forward<Args>(args)...);
   }
 
   R Run(Args... args) && {
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     return std::move(callback_).Run(std::forward<Args>(args)...);
   }
 
@@ -321,6 +259,7 @@ class Function<R(Args...)> {
   }
 
  private:
+  THREAD_CHECKER(thread_checker_);
   base::Callback<R(Args...)> callback_;
 };
 
@@ -374,15 +313,8 @@ Function<base::MakeUnboundRunType<FunctionType, BoundParameters...>> Bind(
                 "A bound argument uses a bad pattern.");
   using UnboundRunType =
       base::MakeUnboundRunType<FunctionType, BoundParameters...>;
-  auto cb =
-      base::Bind(function, std::forward<BoundParameters>(bound_parameters)...);
-#if DCHECK_IS_ON()
-  using WrapperType =
-      ThreadCheckingCallbackWrapper<base::Callback<UnboundRunType>>;
-  cb = base::Bind(&WrapperType::Run,
-                  std::make_unique<WrapperType>(std::move(cb)));
-#endif
-  return Function<UnboundRunType>(std::move(cb));
+  return Function<UnboundRunType>(
+      base::Bind(function, std::forward<BoundParameters>(bound_parameters)...));
 }
 
 // TODO(tzik): Replace WTF::Function with base::OnceCallback, and
