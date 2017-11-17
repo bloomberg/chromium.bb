@@ -131,12 +131,26 @@ const WORD_END_REGEXP = /\S\s/;
  * start boundary.
  * @param {string|undefined} text The string to search through
  * @param {number} indexAfter The index into text at which to start
-                     searching.
+ *      searching.
+ * @param {NodeGroupItem} nodeGroupItem The node whose name we are
+ *      searching through.
  * @return {number} The index of the next word's start
  */
-function getNextWordStart(text, indexAfter) {
-  // Fall back to the given index if we can't find a match.
-  return nextWordHelper(text, indexAfter, WORD_START_REGEXP, indexAfter);
+function getNextWordStart(text, indexAfter, nodeGroupItem) {
+  if (nodeGroupItem.node.wordStarts === undefined) {
+    // Try to parse using a regex, which is imperfect.
+    // Fall back to the given index if we can't find a match.
+    return nextWordHelper(text, indexAfter, WORD_START_REGEXP, indexAfter);
+  }
+  for (var i = 0; i < nodeGroupItem.node.wordStarts.length; i++) {
+    if (nodeGroupItem.node.wordStarts[i] + nodeGroupItem.startChar <
+        indexAfter) {
+      continue;
+    }
+    return nodeGroupItem.node.wordStarts[i] + nodeGroupItem.startChar;
+  }
+  // Default.
+  return indexAfter;
 }
 
 /**
@@ -144,13 +158,26 @@ function getNextWordStart(text, indexAfter) {
  * end boundary.
  * @param {string|undefined} text The string to search through
  * @param {number} indexAfter The index into text at which to start
-                     searching.
+ *      searching.
+ * @param {NodeGroupItem} nodeGroupItem The node whose name we are
+ *      searching through.
  * @return {number} The index of the next word's end
  */
-function getNextWordEnd(text, indexAfter) {
-  // Fall back to the full length of the text if we can't find
-  // a match.
-  return nextWordHelper(text, indexAfter, WORD_END_REGEXP, text.length - 2) + 1;
+function getNextWordEnd(text, indexAfter, nodeGroupItem) {
+  if (nodeGroupItem.node.wordEnds === undefined) {
+    // Try to parse using a regex, which is imperfect.
+    // Fall back to the full length of the text if we can't find a match.
+    return nextWordHelper(text, indexAfter, WORD_END_REGEXP, text.length - 1) +
+        1;
+  }
+  for (var i = 0; i < nodeGroupItem.node.wordEnds.length; i++) {
+    if (nodeGroupItem.node.wordEnds[i] + nodeGroupItem.startChar < indexAfter) {
+      continue;
+    }
+    return nodeGroupItem.node.wordEnds[i] + nodeGroupItem.startChar;
+  }
+  // Default.
+  return text.length;
 }
 
 /**
@@ -586,9 +613,11 @@ SelectToSpeak.prototype = {
                   // between words, and another to make it to the start of the
                   // next node name.
                   if (event.charIndex + 2 >= next.startChar) {
-                    // Move to the next node the next node.
+                    // Move to the next node.
                     this.currentNodeGroupIndex_ += 1;
                     this.currentNode_ = next;
+                    // TODO: If the next node is a non-word character, like an
+                    // open or closed paren, we should keep moving.
                     this.currentNodeWord_ = null;
                     if (!this.wordHighlight_) {
                       // If we are doing a per-word highlight, we will test the
@@ -821,13 +850,13 @@ SelectToSpeak.prototype = {
       return;
     }
     // Get the next word based on the event's charIndex.
-    let nextWordStart = getNextWordStart(text, charIndex);
-    let nextWordEnd = getNextWordEnd(text, nextWordStart);
+    let nextWordStart = getNextWordStart(text, charIndex, this.currentNode_);
+    let nextWordEnd = getNextWordEnd(text, nextWordStart, this.currentNode_);
     // Map the next word into the node's index from the text.
     let nodeStart = nextWordStart - this.currentNode_.startChar;
     let nodeEnd = Math.min(
         nextWordEnd - this.currentNode_.startChar,
-        this.currentNode_.node.name.length - 1);
+        this.currentNode_.node.name.length);
     if ((this.currentNodeWord_ == null ||
          nodeStart >= this.currentNodeWord_.end) &&
         nodeStart != nodeEnd) {

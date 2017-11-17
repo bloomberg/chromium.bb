@@ -106,20 +106,43 @@ TEST_F('SelectToSpeakUnitTest', 'GetNodeVisibilityStateWithRootWebArea',
   assertEquals(getNodeState(iframeNode), NodeState.NODE_STATE_NORMAL);
 });
 
+TEST_F('SelectToSpeakUnitTest', 'getNextWordStartWithoutWordStarts', function() {
+  let node = {node: {}};
+  assertEquals(0, getNextWordStart('kitty cat', 0, node));
+  assertEquals(1, getNextWordStart(' kitty cat', 0, node));
+  assertEquals(6, getNextWordStart('kitty cat', 5, node));
+  assertEquals(6, getNextWordStart('kitty cat', 6, node));
+  assertEquals(7, getNextWordStart('kitty "cat"', 5, node));
+});
+
+TEST_F('SelectToSpeakUnitTest', 'getNextWordEndWithoutWordEnds', function() {
+  let node = {node: {}};
+  assertEquals(5, getNextWordEnd('kitty cat', 0, node));
+  assertEquals(6, getNextWordEnd(' kitty cat', 0, node));
+  assertEquals(9, getNextWordEnd('kitty cat', 6, node));
+  assertEquals(9, getNextWordEnd('kitty cat', 7, node));
+});
+
 TEST_F('SelectToSpeakUnitTest', 'getNextWordStart', function() {
-  assertEquals(0, getNextWordStart('kitty cat', 0));
-  assertEquals(1, getNextWordStart(' kitty cat', 0));
-  assertEquals(6, getNextWordStart('kitty cat', 5));
-  assertEquals(6, getNextWordStart('kitty cat', 6));
-  assertEquals(7, getNextWordStart('kitty "cat"', 5));
+  let node = {node: {wordStarts: [0, 6]}, startChar: 0};
+  assertEquals(0, getNextWordStart('kitty cat', 0, node));
+  assertEquals(6, getNextWordStart('kitty cat', 5, node));
+  assertEquals(6, getNextWordStart('kitty cat', 6, node));
+
+  node.startChar = 10;
+  assertEquals(10, getNextWordStart('once upon kitty cat', 9, node));
+  assertEquals(16, getNextWordStart('once upon kitty cat', 15, node));
 });
 
 TEST_F('SelectToSpeakUnitTest', 'getNextWordEnd', function() {
-  assertEquals(5, getNextWordEnd('kitty cat', 0));
-  assertEquals(6, getNextWordEnd(' kitty cat', 0));
-  assertEquals(8, getNextWordEnd('kitty cat', 6));
-  assertEquals(8, getNextWordEnd('kitty cat', 7));
-  assertEquals(10, getNextWordEnd('kitty "cat"', 5));
+  let node = {node: {wordEnds: [5, 9]}, startChar: 0};
+  assertEquals(5, getNextWordEnd('kitty cat', 0, node));
+  assertEquals(5, getNextWordEnd('kitty cat', 5, node));
+  assertEquals(9, getNextWordEnd('kitty cat', 6, node));
+
+  node.startChar = 10;
+  assertEquals(15, getNextWordEnd('once upon kitty cat', 9, node));
+  assertEquals(19, getNextWordEnd('once upon kitty cat', 17, node));
 });
 
 TEST_F('SelectToSpeakUnitTest', 'findAllMatching', function() {
