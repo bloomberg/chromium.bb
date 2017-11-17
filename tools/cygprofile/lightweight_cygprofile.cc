@@ -146,16 +146,9 @@ __attribute__((__always_inline__)) void mcount() {
   if (value & mask)
     return;
 
-  // On CAS and memory ordering:
-  // - std::atomic::compare_exchange_weak() updates |value| (non-const
-  //   reference)
-  // - We do not need any barrier because no other memory location is
-  //   read/modified in this thread, hence the relaxed memory ordering.
-  uint32_t desired;
-  do {
-    desired = value | mask;
-  } while (element->compare_exchange_weak(value, desired,
-                                          std::memory_order_relaxed));
+  // We do not need any barrier because no other memory location is
+  // read/modified in this thread, hence the relaxed memory ordering.
+  std::atomic_fetch_or_explicit(element, mask, std::memory_order_relaxed);
 }
 
 void __cyg_profile_func_enter(void* unused1, void* unused2) {
