@@ -208,7 +208,6 @@ dev_list="\
   rpm
   ruby
   subversion
-  ttf-dejavu-core
   wdiff
   x11-utils
   xcompmgr
@@ -469,11 +468,6 @@ else
 fi
 if package_exists xfonts-mathml; then
   dev_list="${dev_list} xfonts-mathml"
-fi
-if package_exists fonts-indic; then
-  dev_list="${dev_list} fonts-indic"
-else
-  dev_list="${dev_list} ttf-indic-fonts"
 fi
 if package_exists php7.1-cgi; then
   dev_list="${dev_list} php7.1-cgi libapache2-mod-php7.1"

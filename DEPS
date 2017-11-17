@@ -927,6 +927,18 @@ hooks = [
                 '--no_auth',
                 '--bucket', 'chromium-browser-clang/rc',
                 '-s', 'src/build/toolchain/win/rc/linux64/rc.sha1',
+    ]
+  },
+  {
+    'name': 'content_shell_fonts',
+    'pattern': '.',
+    'action': [ 'download_from_google_storage',
+                '--no_resume',
+                '--platform=linux*',
+                '--extract',
+                '--no_auth',
+                '--bucket', 'chromium-fonts',
+                '-s', 'src/third_party/content_shell_fonts/content_shell_test_fonts.tar.gz.sha1',
     ],
   },
   # Pull order files for the win/clang build.

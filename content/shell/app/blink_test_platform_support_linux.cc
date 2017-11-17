@@ -44,6 +44,13 @@ bool BlinkTestPlatformInitialize() {
       return false;
     }
   }
+
+  for (size_t i = 0; i < gfx::kNumCloudStorageSyncedFonts; ++i) {
+    if (!gfx::LoadCloudStorageSyncedFontIntoFontConfig(
+            gfx::kCloudStorageSyncedFonts[i]))
+      return false;
+  }
+
   for (size_t i = 0; i < arraysize(kLocalFonts); ++i) {
     if (!gfx::LoadFontIntoFontconfig(base_path.Append(kLocalFonts[i])))
       return false;

@@ -1,4 +1,4 @@
-layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 619
+layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 635
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 785x600
   LayoutBlockFlow {HTML} at (0,0) size 785x600
@@ -11,25 +11,25 @@ layer at (0,0) size 785x600
             text run at (141,0) width 68: "bug 26660"
         LayoutText {#text} at (209,0) size 4x19
           text run at (209,0) width 4: "."
-      LayoutBlockFlow {P} at (0,568) size 769x0
-layer at (8,103) size 252x58 transparent
-  LayoutBlockFlow {DIV} at (0,95) size 252x58 [border: (1px solid #008000)]
-    LayoutText {#text} at (1,4) size 229x47
-      text run at (1,4) width 229: "Straight \x{916}\x{94B}\x{91C}\x{947}\x{902} \x{92C}\x{941}\x{927}\x{935}\x{93E}\x{930} \x{915}\x{940} \x{938}\x{941}\x{92C}\x{939} \x{939}\x{94B}\x{928}\x{947} \x{935}\x{93E}\x{932}\x{93E}"
-      text run at (1,32) width 72: "\x{92A}\x{942}\x{930}\x{94D}\x{923} 123 abc"
-layer at (8,236) size 252x58 transparent
-  LayoutBlockFlow {DIV} at (0,228) size 252x58 [border: (1px solid #008000)]
-    LayoutText {#text} at (1,4) size 228x47
-      text run at (1,4) width 228: "Now rotated \x{916}\x{94B}\x{91C}\x{947}\x{902} \x{92C}\x{941}\x{927}\x{935}\x{93E}\x{930} \x{915}\x{940} \x{938}\x{941}\x{92C}\x{939} \x{939}\x{94B}\x{928}\x{947}"
-      text run at (1,32) width 103: "\x{935}\x{93E}\x{932}\x{93E} \x{92A}\x{942}\x{930}\x{94D}\x{923} 123 abc"
-layer at (8,369) size 252x58 transparent
-  LayoutBlockFlow {DIV} at (0,361) size 252x58 [border: (1px solid #008000)]
-    LayoutText {#text} at (1,4) size 228x47
-      text run at (1,4) width 228: "Now rotated \x{916}\x{94B}\x{91C}\x{947}\x{902} \x{92C}\x{941}\x{927}\x{935}\x{93E}\x{930} \x{915}\x{940} \x{938}\x{941}\x{92C}\x{939} \x{939}\x{94B}\x{928}\x{947}"
-      text run at (1,32) width 103: "\x{935}\x{93E}\x{932}\x{93E} \x{92A}\x{942}\x{930}\x{94D}\x{923} 123 abc"
-layer at (8,502) size 252x58 transparent
-  LayoutBlockFlow {DIV} at (0,494) size 252x58 [border: (1px solid #008000)]
-    LayoutText {#text} at (1,4) size 228x47
-      text run at (1,4) width 115: "Now rotated \x{916}\x{94B}\x{91C}\x{947}\x{902} "
-      text run at (116,4) width 113: "\x{92C}\x{941}\x{927}\x{935}\x{93E}\x{930} \x{915}\x{940} \x{938}\x{941}\x{92C}\x{939} \x{939}\x{94B}\x{928}\x{947}"
-      text run at (1,32) width 103: "\x{935}\x{93E}\x{932}\x{93E} \x{92A}\x{942}\x{930}\x{94D}\x{923} 123 abc"
+      LayoutBlockFlow {P} at (0,584) size 769x0
+layer at (8,103) size 252x62 transparent
+  LayoutBlockFlow {DIV} at (0,95) size 252x62 [border: (1px solid #008000)]
+    LayoutText {#text} at (1,6) size 229x49
+      text run at (1,6) width 229: "Straight \x{916}\x{94B}\x{91C}\x{947}\x{902} \x{92C}\x{941}\x{927}\x{935}\x{93E}\x{930} \x{915}\x{940} \x{938}\x{941}\x{92C}\x{939} \x{939}\x{94B}\x{928}\x{947} \x{935}\x{93E}\x{932}\x{93E}"
+      text run at (1,36) width 72: "\x{92A}\x{942}\x{930}\x{94D}\x{923} 123 abc"
+layer at (8,240) size 252x62 transparent
+  LayoutBlockFlow {DIV} at (0,232) size 252x62 [border: (1px solid #008000)]
+    LayoutText {#text} at (1,6) size 228x49
+      text run at (1,6) width 228: "Now rotated \x{916}\x{94B}\x{91C}\x{947}\x{902} \x{92C}\x{941}\x{927}\x{935}\x{93E}\x{930} \x{915}\x{940} \x{938}\x{941}\x{92C}\x{939} \x{939}\x{94B}\x{928}\x{947}"
+      text run at (1,36) width 103: "\x{935}\x{93E}\x{932}\x{93E} \x{92A}\x{942}\x{930}\x{94D}\x{923} 123 abc"
+layer at (8,377) size 252x62 transparent
+  LayoutBlockFlow {DIV} at (0,369) size 252x62 [border: (1px solid #008000)]
+    LayoutText {#text} at (1,6) size 228x49
+      text run at (1,6) width 228: "Now rotated \x{916}\x{94B}\x{91C}\x{947}\x{902} \x{92C}\x{941}\x{927}\x{935}\x{93E}\x{930} \x{915}\x{940} \x{938}\x{941}\x{92C}\x{939} \x{939}\x{94B}\x{928}\x{947}"
+      text run at (1,36) width 103: "\x{935}\x{93E}\x{932}\x{93E} \x{92A}\x{942}\x{930}\x{94D}\x{923} 123 abc"
+layer at (8,514) size 252x62 transparent
+  LayoutBlockFlow {DIV} at (0,506) size 252x62 [border: (1px solid #008000)]
+    LayoutText {#text} at (1,6) size 228x49
+      text run at (1,6) width 115: "Now rotated \x{916}\x{94B}\x{91C}\x{947}\x{902} "
+      text run at (116,6) width 113: "\x{92C}\x{941}\x{927}\x{935}\x{93E}\x{930} \x{915}\x{940} \x{938}\x{941}\x{92C}\x{939} \x{939}\x{94B}\x{928}\x{947}"
+      text run at (1,36) width 103: "\x{935}\x{93E}\x{932}\x{93E} \x{92A}\x{942}\x{930}\x{94D}\x{923} 123 abc"
