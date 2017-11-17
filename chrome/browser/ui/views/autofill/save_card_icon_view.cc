@@ -22,8 +22,6 @@ SaveCardIconView::SaveCardIconView(CommandUpdater* command_updater,
       browser_(browser) {
   set_id(VIEW_ID_SAVE_CREDIT_CARD_BUTTON);
   SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_SAVE_CREDIT_CARD));
-  if (browser)
-    browser->tab_strip_model()->AddObserver(this);
 }
 
 SaveCardIconView::~SaveCardIconView() {}
@@ -42,12 +40,6 @@ views::BubbleDialogDelegateView* SaveCardIconView::GetBubble() const {
 
 const gfx::VectorIcon& SaveCardIconView::GetVectorIcon() const {
   return kCreditCardIcon;
-}
-
-void SaveCardIconView::TabDeactivated(content::WebContents* contents) {
-  SaveCardBubbleControllerImpl* controller = GetController();
-  if (controller)
-    controller->HideBubble();
 }
 
 SaveCardBubbleControllerImpl* SaveCardIconView::GetController() const {

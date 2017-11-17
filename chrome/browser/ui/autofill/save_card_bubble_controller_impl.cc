@@ -327,6 +327,14 @@ void SaveCardBubbleControllerImpl::DidFinishNavigation(
   }
 }
 
+void SaveCardBubbleControllerImpl::WasHidden() {
+  HideBubble();
+}
+
+void SaveCardBubbleControllerImpl::WebContentsDestroyed() {
+  HideBubble();
+}
+
 void SaveCardBubbleControllerImpl::ShowBubble() {
   DCHECK(!save_card_callback_.is_null());
   DCHECK(!save_card_bubble_view_);
