@@ -226,9 +226,8 @@ config("default_sanitizer_ldflags") {
     # and dlls, see link_executable and link_shared_library below.
     # This here handles only the component build.
     if (target_cpu == "x64") {
-      # Windows 64-bit. TODO(etienneb): Remove the assert when this is ready.
+      # Windows 64-bit.
       if (is_component_build) {
-        assert(false, "win/asan does not work in 64-bit yet")
         libs = [
           "clang_rt.asan_dynamic-x86_64.lib",
           "clang_rt.asan_dynamic_runtime_thunk-x86_64.lib",
