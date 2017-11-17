@@ -1,6 +1,5 @@
 Tests "Bypass for network" checkbox works with CORS requests. crbug.com/771742
 
-
 Loading an iframe.
 The iframe loaded.
 CORS fetch(): 1

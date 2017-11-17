@@ -1,6 +1,5 @@
 Tests the navigation request related events are available in the DevTools
 
-
 -----------------
 Loading an iframe.
 onRequestStarted:

@@ -1,13 +1,18 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/service-workers/service-workers-test.js"></script>
-<script src="../../inspector/resources-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
-  const url = "http://localhost:8000/devtools/service-workers/resources/" +
-              "bypass-for-network-redirect.php";
+(async function() {
+  TestRunner.addResult(`Tests "Bypass for network" checkbox with redirection doesn't cause crash.\n`);
+  await TestRunner.loadModule('application_test_runner');
+  await TestRunner.loadModule('console_test_runner');
+  await TestRunner.showPanel('resources');
+  await TestRunner.loadHTML(`
+      <p>Tests &quot;Bypass for network&quot; checkbox with redirection doesn't cause crash.</p>
+    `);
+
+  const url = 'http://localhost:8000/devtools/service-workers/resources/' +
+      'bypass-for-network-redirect.php';
   const frameId = 'frame_id';
 
   UI.inspectorView.showPanel('sources')
@@ -32,11 +37,4 @@ function test() {
         TestRunner.addResult(exception);
         TestRunner.completeTest();
       });
-}
-
-</script>
-</head>
-<body onload="runTest()">
-<p>Tests "Bypass for network" checkbox with redirection doesn't cause crash.<p>
-</body>
-</html>
+})();

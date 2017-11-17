@@ -1,11 +1,13 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/service-workers/service-workers-test.js"></script>
-<script src="../../inspector/resources-test.js"></script>
-<script src="../../inspector/console-test.js"></script>
-<script>
-function test() {
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+(async function() {
+  TestRunner.addResult(`Tests that User-Agent override works for requests from Service Workers.\n`);
+  await TestRunner.loadModule('application_test_runner');
+  await TestRunner.loadModule('console_test_runner');
+  await TestRunner.showPanel('resources');
+
   function waitForTarget() {
     return new Promise(function(resolve) {
       var sniffer = {
@@ -45,7 +47,7 @@ function test() {
 
   ApplicationTestRunner.registerServiceWorker(scriptURL, scope)
       .then(waitForTarget)
-      .then(ApplicationTestRunner.postToServiceWorker.bind(InspectorTest, scope, 'message'))
+      .then(ApplicationTestRunner.postToServiceWorker.bind(ApplicationTestRunner, scope, 'message'))
       .then(waitForConsoleMessage.bind(null, /HTTP_USER_AGENT/))
       .then(function(msg) {
         TestRunner.addResult('Overriden user agent: ' + msg.messageText);
@@ -57,7 +59,7 @@ function test() {
         return ApplicationTestRunner.registerServiceWorker(scriptURL + '?2', scope);
       })
       .then(waitForTarget)
-      .then(ApplicationTestRunner.postToServiceWorker.bind(InspectorTest, scope, 'message'))
+      .then(ApplicationTestRunner.postToServiceWorker.bind(ApplicationTestRunner, scope, 'message'))
       .then(waitForConsoleMessage.bind(null, /HTTP_USER_AGENT/))
       .then(function(msg) {
         TestRunner.addResult('User agent without override is correct: ' + (msg.messageText != userAgentString));
@@ -71,11 +73,4 @@ function test() {
         console.log(err);
         TestRunner.completeTest();
       });
-}
-
-</script>
-</head>
-<body onload="runTest()">
-<p>Tests that User-Agent override works for requests from Service Workers.</p>
-</body>
-</html>
+})();

@@ -1,6 +1,5 @@
 Tests "Force update on page load" checkbox
 
-
 A new ServiceWorker is activated.
 The first ServiceWorker is activated.
 The first frame loaded.

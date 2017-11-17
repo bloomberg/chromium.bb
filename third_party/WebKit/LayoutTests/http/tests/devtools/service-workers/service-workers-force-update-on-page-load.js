@@ -1,11 +1,15 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/service-workers/service-workers-test.js"></script>
-<script src="../../inspector/resources-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(`Tests "Force update on page load" checkbox\n`);
+  await TestRunner.loadModule('application_test_runner');
+  await TestRunner.showPanel('resources');
+  await TestRunner.loadHTML(`
+      <p>Tests &quot;Force update on page load&quot; checkbox</p>
+    `);
+
   const scriptURL = 'http://127.0.0.1:8000/devtools/service-workers/resources/force-update-on-page-load-worker.php';
   const scope = 'http://127.0.0.1:8000/devtools/service-workers/resources/service-worker-force-update-on-page-load/';
 
@@ -79,11 +83,4 @@ function test() {
       });
   UI.panels.resources._sidebar.serviceWorkersTreeElement.select();
   ApplicationTestRunner.registerServiceWorker(scriptURL, scope);
-}
-
-</script>
-</head>
-<body onload="runTest()">
-<p>Tests "Force update on page load" checkbox<p>
-</body>
-</html>
+})();

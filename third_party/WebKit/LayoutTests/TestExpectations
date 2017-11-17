@@ -1713,8 +1713,8 @@ crbug.com/479533 accessibility/show-context-menu.html [ Skip ]
 crbug.com/479533 accessibility/show-context-menu-shadowdom.html [ Skip ]
 crbug.com/483653 accessibility/scroll-containers.html [ Skip ]
 
-crbug.com/491764 http/tests/devtools/service-workers/user-agent-override.html [ Pass Timeout ]
-crbug.com/491764 virtual/mojo-loading/http/tests/devtools/service-workers/user-agent-override.html [ Pass Timeout ]
+crbug.com/491764 http/tests/devtools/service-workers/user-agent-override.js [ Pass Timeout ]
+crbug.com/491764 virtual/mojo-loading/http/tests/devtools/service-workers/user-agent-override.js [ Pass Timeout ]
 
 # Fails with leak detector.
 crbug.com/622915 [ Linux ] ietestcenter/css3/grid/grid-column-003.htm [ Skip ]
