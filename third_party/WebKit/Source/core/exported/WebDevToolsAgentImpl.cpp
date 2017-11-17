@@ -320,8 +320,8 @@ InspectorSession* WebDevToolsAgentImpl::InitializeSession(int session_id,
       InspectorLayerTreeAgent::Create(inspected_frames_.Get(), this);
   session->Append(layer_tree_agent);
 
-  InspectorNetworkAgent* network_agent =
-      new InspectorNetworkAgent(inspected_frames_.Get(), nullptr);
+  InspectorNetworkAgent* network_agent = new InspectorNetworkAgent(
+      inspected_frames_.Get(), nullptr, session->V8Session());
   network_agents_.Set(session_id, network_agent);
   session->Append(network_agent);
 

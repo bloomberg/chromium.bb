@@ -1,3 +1,4 @@
+Tests that ScriptSearchScope performs search across all sources correctly. See https://bugs.webkit.org/show_bug.cgi?id=41350
 
 
 Running: testIgnoreCaseAndIgnoreDynamicScript
