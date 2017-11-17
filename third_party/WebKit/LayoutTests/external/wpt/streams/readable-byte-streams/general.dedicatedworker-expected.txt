@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 72 tests; 1 PASS, 71 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 73 tests; 2 PASS, 71 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS getReader({mode: "byob"}) throws on non-bytes streams
 FAIL ReadableStream with byte source can be constructed with no errors bytes type is not yet implemented
 FAIL getReader({mode}) must perform ToString() bytes type is not yet implemented
@@ -72,5 +72,6 @@ FAIL ReadableStreamBYOBReader can be constructed directly bytes type is not yet 
 FAIL ReadableStreamBYOBReader constructor requires a ReadableStream argument bytes type is not yet implemented
 FAIL ReadableStreamBYOBReader constructor requires an unlocked ReadableStream bytes type is not yet implemented
 FAIL ReadableStreamBYOBReader constructor requires a ReadableStream with type "bytes" bytes type is not yet implemented
+PASS ReadableStream constructor should not accept a strategy with a size defined if type is "bytes"
 Harness: the test ran to completion.
 
