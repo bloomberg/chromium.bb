@@ -39,6 +39,7 @@ class WindowAndroid;
 }  // namespace ui
 
 namespace vr {
+class AutocompleteController;
 class BrowserUiInterface;
 class ToolbarHelper;
 class WebContentsEventForwarder;
@@ -246,13 +247,15 @@ class VrShell : device::GvrGamepadDataProvider,
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   std::unique_ptr<VrGLThread> gl_thread_;
-  bool reprojected_rendering_;
-
   vr::BrowserUiInterface* ui_;
+
+  // These instances make use of ui_ (provided by gl_thread_), and hence must be
+  // destroyed before gl_thread_;
   std::unique_ptr<vr::ToolbarHelper> toolbar_;
-  // SpeechRecognizer uses a pointer to ui_, which is essentially a gl_thread_.
-  // So it should appears after gl_thread_ to make sure it is destoryed first.
+  std::unique_ptr<vr::AutocompleteController> autocomplete_controller_;
   std::unique_ptr<vr::SpeechRecognizer> speech_recognizer_;
+
+  bool reprojected_rendering_;
 
   device::mojom::GeolocationConfigPtr geolocation_config_;
 
