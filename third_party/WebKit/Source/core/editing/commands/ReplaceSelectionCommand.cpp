@@ -1368,8 +1368,10 @@ void ReplaceSelectionCommand::DoApply(EditingState* editing_state) {
     node = next;
   }
 
-  if (IsRichlyEditablePosition(insertion_pos))
+  if (IsRichlyEditablePosition(insertion_pos)) {
     RemoveUnrenderedTextNodesAtEnds(inserted_nodes);
+    ABORT_EDITING_COMMAND_IF(!inserted_nodes.RefNode());
+  }
 
   GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
@@ -1411,11 +1413,13 @@ void ReplaceSelectionCommand::DoApply(EditingState* editing_state) {
         !(fragment.HasInterchangeNewlineAtEnd() && selection_is_plain_text)))) {
     ContainerNode* parent = end_br->parentNode();
     inserted_nodes.WillRemoveNode(*end_br);
+    ABORT_EDITING_COMMAND_IF(!inserted_nodes.RefNode());
     RemoveNode(end_br, editing_state);
     if (editing_state->IsAborted())
       return;
     if (Node* node_to_remove = HighestNodeToRemoveInPruning(parent)) {
       inserted_nodes.WillRemoveNode(*node_to_remove);
+      ABORT_EDITING_COMMAND_IF(!inserted_nodes.RefNode());
       RemoveNode(node_to_remove, editing_state);
       if (editing_state->IsAborted())
         return;
