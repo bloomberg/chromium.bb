@@ -23,24 +23,7 @@
 -WebRtcCaptureFromElementBrowserTest.CaptureFromOpaqueCanvas2DHandlesContextLoss
 
 # OOPIFs aren't supported yet http://crbug.com/778751
--CrossProcessFrameTreeBrowserTest.*
--CrossSiteResourceHandlerTest.*
--DownloadContentTest.DownloadAttributeCrossOriginIFrame
--DownloadContentTest.DownloadIgnoresXFO
--DumpAccessibilityTreeTest.AccessibilityIframeCoordinatesCrossProcess
--DumpAccessibilityTreeTest.AccessibilityIframeCrossProcess
--DumpAccessibilityTreeTest.AccessibilityIframeTransformCrossProcess
--DumpAccessibilityTreeTest.AccessibilityIframeTransformNested
--DumpAccessibilityTreeTest.AccessibilityIframeTransformNestedCrossProcess
--FindRequestManagerTests/FindRequestManagerTest.*
--IsolateIcelandFrameTreeBrowserTest.ProcessSwitchForIsolatedBlob
--IsolatedDevToolsProtocolTest.ControlNavigationsChildFrames
--IsolatedOriginTest.*
--MHTMLGenerationSitePerProcessTest.GenerateMHTML
 -PointerLockBrowserTest.*
--RenderWidgetHostViewChildFrameTest.*
--RequestDelayingSitePerProcessBrowserTest.*
--ScreenOrientationOOPIFBrowserTest.*
 -SecurityExploitBrowserTest.PageStateToWrongEntry
 -SitePerProcessAccessibilityBrowserTest.*
 -SitePerProcessBrowserTest.*
@@ -53,10 +36,7 @@
 -SitePerProcessHighDPIBrowserTest.*
 -SitePerProcessIgnoreCertErrorsBrowserTest.*
 -SitePerProcessMouseWheelBrowserTest.*
--TopDocumentIsolationTest.*
 -TouchSelectionForCrossProcessFramesTests/TouchSelectionControllerClientAuraSiteIsolationTest.*
--WakeLockTest.OutOfProcessFrame
--WakeLockTest.UnlockAfterCrashOutOfProcessFrame
 
 # Copy Surface timing out http://crbug.com/785257
 -GLAndSoftwareCompositing/CompositingRenderWidgetHostViewBrowserTest.*
