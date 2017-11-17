@@ -652,6 +652,12 @@ base::TimeDelta TimestampMs(int milliseconds) {
   return base::TimeDelta::FromMilliseconds(milliseconds);
 }
 
+TEST_F(PipelineIntegrationTest, WaveLayoutChange) {
+  ASSERT_EQ(PIPELINE_OK, Start("layout_change.wav"));
+  Play();
+  ASSERT_TRUE(WaitUntilOnEnded());
+}
+
 TEST_F(PipelineIntegrationTest, PlaybackTooManyChannels) {
   EXPECT_EQ(PIPELINE_ERROR_INITIALIZATION_FAILED, Start("9ch.wav"));
 }
