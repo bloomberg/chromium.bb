@@ -145,6 +145,13 @@ PermissionRequestManager::~PermissionRequestManager() {
 void PermissionRequestManager::AddRequest(PermissionRequest* request) {
   DCHECK(!vr::VrTabHelper::IsInVr(web_contents()));
 
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDenyPermissionPrompts)) {
+    request->PermissionDenied();
+    request->RequestFinished();
+    return;
+  }
+
   // TODO(tsergeant): change the UMA to no longer mention bubbles.
   base::RecordAction(base::UserMetricsAction("PermissionBubbleRequest"));
 
