@@ -90,13 +90,20 @@ MediaRouterElementsBrowserTest.prototype = {
         document.dispatchEvent(event);
       }
 
+      function setMediaRemotingEnabled(enabled) {
+        const event = new CustomEvent(
+            'mock-set-media-remoting-enabled', {detail: {enabled: enabled}});
+        document.dispatchEvent(event);
+      }
+
       return {
         pauseCurrentMedia: pauseCurrentMedia,
         playCurrentMedia: playCurrentMedia,
         seekCurrentMedia: seekCurrentMedia,
         setCurrentMediaMute: setCurrentMediaMute,
         setCurrentMediaVolume: setCurrentMediaVolume,
-        setHangoutsLocalPresent: setHangoutsLocalPresent
+        setHangoutsLocalPresent: setHangoutsLocalPresent,
+        setMediaRemotingEnabled: setMediaRemotingEnabled
       };
     });
   },

@@ -81,6 +81,15 @@
             </paper-checkbox>
           </div>
         </div>
+        <div id="media-remoting-enabled-controls"
+             hidden="[[!routeStatus.mirroringExtraData]]">
+          <paper-checkbox
+              checked="[[!mediaRemotingEnabled_]]"
+              id="always-use-mirroring-checkbox"
+              on-change="onMediaRemotingEnabledChange_">
+            <span>[[i18n('alwaysUseMirroringTitle')]]</span>
+          </paper-checkbox>
+        </div>
       </div>
     </div>
   </template>

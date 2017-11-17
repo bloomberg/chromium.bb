@@ -50,6 +50,15 @@ Polymer({
     },
 
     /**
+     * Keep in sync with media remoting individual user setting.
+     * @private {boolean}
+     */
+    mediaRemotingEnabled_: {
+      type: Boolean,
+      value: true,
+    },
+
+    /**
      * The timestamp for when the initial media status was loaded.
      * @private {number}
      */
@@ -362,6 +371,8 @@ Polymer({
     }
     this.hangoutsLocalPresent_ = !!newRouteStatus.hangoutsExtraData &&
         newRouteStatus.hangoutsExtraData.localPresent;
+    this.mediaRemotingEnabled_ = !!newRouteStatus.mirroringExtraData &&
+        newRouteStatus.mirroringExtraData.mediaRemotingEnabled;
   },
 
   /**
@@ -433,6 +444,16 @@ Polymer({
     var target = /** @type {{immediateValue: number}} */ (e.target);
     this.displayedVolume_ = target.immediateValue;
     media_router.browserApi.setCurrentMediaVolume(this.displayedVolume_);
+  },
+
+  /**
+   * Called when the "always use mirroring" box is changed by the user.
+   * @param {!Event} e "always use mirroring" paper-checkbox's change event
+   * @private
+   */
+  onMediaRemotingEnabledChange_: function(e) {
+    this.mediaRemotingEnabled_ = !e.target.checked;
+    media_router.browserApi.setMediaRemotingEnabled(this.mediaRemotingEnabled_);
   },
 
   /**
