@@ -243,7 +243,7 @@ GpuProcessTransportFactory::CreateSoftwareOutputDevice(
     return base::WrapUnique(new viz::SoftwareOutputDevice);
 
 #if defined(USE_AURA)
-  if (IsUsingMus()) {
+  if (IsMusHostingViz()) {
     NOTREACHED();
     return nullptr;
   }
