@@ -193,10 +193,10 @@ void VizMainImpl::CreateGpuService(
       gpu::GpuProcessActivityFlags(std::move(activity_flags)),
       dependencies_.sync_point_manager, dependencies_.shutdown_event);
 
-  if (pending_frame_sink_manager_request_.is_pending()) {
+  if (!pending_frame_sink_manager_params_.is_null()) {
     CreateFrameSinkManagerInternal(
-        std::move(pending_frame_sink_manager_request_),
-        std::move(pending_frame_sink_manager_client_info_));
+        std::move(pending_frame_sink_manager_params_));
+    pending_frame_sink_manager_params_.reset();
   }
   if (delegate_)
     delegate_->OnGpuServiceConnection(gpu_service_.get());
@@ -215,25 +215,23 @@ void VizMainImpl::CreateUkmRecorderIfNeeded(
 }
 
 void VizMainImpl::CreateFrameSinkManager(
-    mojom::FrameSinkManagerRequest request,
-    mojom::FrameSinkManagerClientPtr client) {
+    mojom::FrameSinkManagerParamsPtr params) {
   DCHECK(compositor_thread_task_runner_);
   DCHECK(gpu_thread_task_runner_->BelongsToCurrentThread());
   if (!gpu_service_ || !gpu_service_->is_initialized()) {
-    pending_frame_sink_manager_request_ = std::move(request);
-    pending_frame_sink_manager_client_info_ = client.PassInterface();
+    DCHECK(pending_frame_sink_manager_params_.is_null());
+    pending_frame_sink_manager_params_ = std::move(params);
     return;
   }
-  CreateFrameSinkManagerInternal(std::move(request), client.PassInterface());
+  CreateFrameSinkManagerInternal(std::move(params));
 }
 
 void VizMainImpl::CreateFrameSinkManagerInternal(
-    mojom::FrameSinkManagerRequest request,
-    mojom::FrameSinkManagerClientPtrInfo client_info) {
+    mojom::FrameSinkManagerParamsPtr params) {
   DCHECK(!gpu_command_service_);
   DCHECK(gpu_service_);
   DCHECK(gpu_thread_task_runner_->BelongsToCurrentThread());
-  gpu_command_service_ = new gpu::GpuInProcessThreadService(
+  gpu_command_service_ = base::MakeRefCounted<gpu::GpuInProcessThreadService>(
       gpu_thread_task_runner_, gpu_service_->sync_point_manager(),
       gpu_service_->mailbox_manager(), gpu_service_->share_group(),
       gpu_service_->gpu_feature_info());
@@ -241,24 +239,23 @@ void VizMainImpl::CreateFrameSinkManagerInternal(
   compositor_thread_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&VizMainImpl::CreateFrameSinkManagerOnCompositorThread,
-                 base::Unretained(this), base::Passed(std::move(request)),
-                 base::Passed(std::move(client_info))));
+                 base::Unretained(this), base::Passed(&params)));
 }
 
 void VizMainImpl::CreateFrameSinkManagerOnCompositorThread(
-    mojom::FrameSinkManagerRequest request,
-    mojom::FrameSinkManagerClientPtrInfo client_info) {
+    mojom::FrameSinkManagerParamsPtr params) {
   DCHECK(!frame_sink_manager_);
   mojom::FrameSinkManagerClientPtr client;
-  client.Bind(std::move(client_info));
+  client.Bind(std::move(params->frame_sink_manager_client));
 
   display_provider_ = base::MakeUnique<GpuDisplayProvider>(
-      gpu_command_service_, gpu_service_->gpu_channel_manager());
+      params->restart_id, gpu_command_service_,
+      gpu_service_->gpu_channel_manager());
 
   frame_sink_manager_ = base::MakeUnique<FrameSinkManagerImpl>(
       SurfaceManager::LifetimeType::REFERENCES, display_provider_.get());
-  frame_sink_manager_->BindAndSetClient(std::move(request), nullptr,
-                                        std::move(client));
+  frame_sink_manager_->BindAndSetClient(std::move(params->frame_sink_manager),
+                                        nullptr, std::move(client));
 }
 
 void VizMainImpl::CloseVizMainBindingOnGpuThread(base::WaitableEvent* wait) {

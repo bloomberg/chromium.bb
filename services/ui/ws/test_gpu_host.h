@@ -22,8 +22,7 @@ class TestGpuHost : public GpuHost {
   void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget) override {}
   void OnAcceleratedWidgetDestroyed(gfx::AcceleratedWidget widget) override {}
   void CreateFrameSinkManager(
-      viz::mojom::FrameSinkManagerRequest request,
-      viz::mojom::FrameSinkManagerClientPtr client) override;
+      viz::mojom::FrameSinkManagerParamsPtr params) override;
 
   std::unique_ptr<viz::TestFrameSinkManagerImpl> frame_sink_manager_;
 

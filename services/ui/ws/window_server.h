@@ -14,6 +14,7 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
+#include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -412,6 +413,9 @@ class WindowServer : public ServerWindowDelegate,
   WindowManagerWindowTreeFactorySet window_manager_window_tree_factory_set_;
 
   viz::SurfaceId root_surface_id_;
+
+  // Incremented when the viz process is restarted.
+  uint32_t viz_restart_id_ = viz::BeginFrameSource::kNotRestartableId + 1;
 
   // Provides interfaces to create and manage FrameSinks.
   std::unique_ptr<viz::HostFrameSinkManager> host_frame_sink_manager_;

@@ -104,9 +104,8 @@ void DefaultGpuHost::OnAcceleratedWidgetDestroyed(
 }
 
 void DefaultGpuHost::CreateFrameSinkManager(
-    viz::mojom::FrameSinkManagerRequest request,
-    viz::mojom::FrameSinkManagerClientPtr client) {
-  viz_main_->CreateFrameSinkManager(std::move(request), std::move(client));
+    viz::mojom::FrameSinkManagerParamsPtr params) {
+  viz_main_->CreateFrameSinkManager(std::move(params));
 }
 
 GpuClient* DefaultGpuHost::AddInternal(mojom::GpuRequest request) {
