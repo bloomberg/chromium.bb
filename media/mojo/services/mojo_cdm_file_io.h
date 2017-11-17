@@ -29,14 +29,13 @@ namespace media {
 // Implements a cdm::FileIO that communicates with mojom::CdmStorage.
 class MEDIA_MOJO_EXPORT MojoCdmFileIO : public cdm::FileIO {
  public:
-  // Callback to report the size of file read by |this|.
-  // TODO(xhwang): Move |file_read_cb| into |delegate| as well.
-  using FileReadCB = base::RepeatingCallback<void(int)>;
-
   class Delegate {
    public:
-    // Notify the delegate to close |cdm_file_io|.
+    // Notifies the delegate to close |cdm_file_io|.
     virtual void CloseCdmFileIO(MojoCdmFileIO* cdm_file_io) = 0;
+
+    // Reports the size of file read by MojoCdmFileIO.
+    virtual void ReportFileReadSize(int file_size_bytes) = 0;
   };
 
   // The constructor and destructor of cdm::FileIO are protected so that the CDM
@@ -45,8 +44,7 @@ class MEDIA_MOJO_EXPORT MojoCdmFileIO : public cdm::FileIO {
   // management.
   MojoCdmFileIO(Delegate* delegate,
                 cdm::FileIOClient* client,
-                mojom::CdmStorage* cdm_storage,
-                FileReadCB file_read_cb);
+                mojom::CdmStorage* cdm_storage);
   ~MojoCdmFileIO() override;
 
   // cdm::FileIO implementation.
@@ -104,9 +102,6 @@ class MEDIA_MOJO_EXPORT MojoCdmFileIO : public cdm::FileIO {
   cdm::FileIOClient* client_ = nullptr;
 
   mojom::CdmStorage* cdm_storage_ = nullptr;
-
-  // Callback to report the size of a file that was read.
-  FileReadCB file_read_cb_;
 
   // Keep track of the file being used. As this class can only be used for
   // accessing a single file, once |file_name_| is set it shouldn't be changed.

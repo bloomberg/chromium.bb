@@ -76,8 +76,8 @@ class MojoCdmFileIOTest : public testing::Test, public MojoCdmFileIO::Delegate {
     client_ = std::make_unique<MockFileIOClient>();
     cdm_storage_ = std::make_unique<MockCdmStorage>();
     ASSERT_TRUE(cdm_storage_->SetUp());
-    file_io_ = std::make_unique<MojoCdmFileIO>(
-        this, client_.get(), cdm_storage_.get(), MojoCdmFileIO::FileReadCB());
+    file_io_ = std::make_unique<MojoCdmFileIO>(this, client_.get(),
+                                               cdm_storage_.get());
   }
 
   // MojoCdmFileIO::Delegate implementation.
@@ -85,6 +85,8 @@ class MojoCdmFileIOTest : public testing::Test, public MojoCdmFileIO::Delegate {
     DCHECK_EQ(file_io_.get(), cdm_file_io);
     file_io_.reset();
   }
+
+  void ReportFileReadSize(int file_size_bytes) override {}
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<MojoCdmFileIO> file_io_;

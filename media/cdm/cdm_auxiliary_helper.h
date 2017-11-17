@@ -35,15 +35,15 @@ class MEDIA_EXPORT CdmAuxiliaryHelper : public CdmAllocator,
   CdmAuxiliaryHelper();
   ~CdmAuxiliaryHelper() override;
 
-  // Callback to report the size of file read by |this|.
+  // Callback to report the size of file read by cdm::FileIO created by |this|.
   using FileReadCB = base::RepeatingCallback<void(int)>;
+  virtual void SetFileReadCB(FileReadCB file_read_cb);
 
   // Given |client|, creates a cdm::FileIO object and returns it.
   // The caller does not own the returned object and should not delete it
   // directly. Instead, it should call cdm::FileIO::Close() after it's not
   // needed anymore.
-  virtual cdm::FileIO* CreateCdmFileIO(cdm::FileIOClient* client,
-                                       FileReadCB file_read_cb);
+  virtual cdm::FileIO* CreateCdmFileIO(cdm::FileIOClient* client);
 
   // CdmAllocator implementation.
   cdm::Buffer* CreateCdmBuffer(size_t capacity) override;

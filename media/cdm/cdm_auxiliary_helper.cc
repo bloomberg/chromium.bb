@@ -11,8 +11,9 @@ namespace media {
 CdmAuxiliaryHelper::CdmAuxiliaryHelper() {}
 CdmAuxiliaryHelper::~CdmAuxiliaryHelper() {}
 
-cdm::FileIO* CdmAuxiliaryHelper::CreateCdmFileIO(cdm::FileIOClient* client,
-                                                 FileReadCB file_read_cb) {
+void CdmAuxiliaryHelper::SetFileReadCB(FileReadCB file_read_cb) {}
+
+cdm::FileIO* CdmAuxiliaryHelper::CreateCdmFileIO(cdm::FileIOClient* client) {
   return nullptr;
 }
 

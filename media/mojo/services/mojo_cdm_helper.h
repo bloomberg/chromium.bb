@@ -37,8 +37,8 @@ class MEDIA_MOJO_EXPORT MojoCdmHelper final : public CdmAuxiliaryHelper,
   ~MojoCdmHelper() final;
 
   // CdmAuxiliaryHelper implementation.
-  cdm::FileIO* CreateCdmFileIO(cdm::FileIOClient* client,
-                               FileReadCB file_read_cb) final;
+  void SetFileReadCB(FileReadCB file_read_cb) final;
+  cdm::FileIO* CreateCdmFileIO(cdm::FileIOClient* client) final;
   cdm::Buffer* CreateCdmBuffer(size_t capacity) final;
   std::unique_ptr<VideoFrameImpl> CreateCdmVideoFrame() final;
   void QueryStatus(QueryStatusCB callback) final;
@@ -51,6 +51,7 @@ class MEDIA_MOJO_EXPORT MojoCdmHelper final : public CdmAuxiliaryHelper,
 
   // MojoCdmFileIO::Delegate implementation.
   void CloseCdmFileIO(MojoCdmFileIO* cdm_file_io) final;
+  void ReportFileReadSize(int file_size_bytes) final;
 
  private:
   // All services are created lazily.
@@ -70,6 +71,8 @@ class MEDIA_MOJO_EXPORT MojoCdmHelper final : public CdmAuxiliaryHelper,
   std::unique_ptr<CdmAllocator> allocator_;
   mojom::OutputProtectionPtr output_protection_ptr_;
   mojom::PlatformVerificationPtr platform_verification_ptr_;
+
+  FileReadCB file_read_cb_;
 
   // A list of open cdm::FileIO objects.
   std::vector<std::unique_ptr<MojoCdmFileIO>> cdm_file_io_set_;
