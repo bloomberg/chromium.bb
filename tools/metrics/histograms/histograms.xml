@@ -30490,7 +30490,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="JSDialogs.DismissalCause"
+<histogram base="true" name="JSDialogs.DismissalCause"
     enum="JavaScriptDialogDismissalCause">
   <owner>avi@chromium.org</owner>
   <summary>The cause of dismissal of JavaScript dialogs.</summary>
@@ -30526,7 +30526,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="JSDialogs.IsForemost" enum="BooleanForemost">
+<histogram base="true" name="JSDialogs.IsForemost" enum="BooleanForemost">
   <owner>avi@chromium.org</owner>
   <summary>
     For dialogs, whether or not they were spawned by a tab that was foremost.
@@ -30541,6 +30541,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram base="true" name="JSDialogs.Scheme" enum="NavigationScheme">
+  <owner>avi@chromium.org</owner>
+  <summary>The scheme of the URL showing a JavaScript dialog.</summary>
+</histogram>
+
 <histogram name="JSDialogs.SiteEngagementOfBeforeUnload" units="%">
   <obsolete>
     Deprecated 2017-10.
@@ -30552,7 +30557,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="JSDialogs.SiteEngagementOfDialogs" units="%">
+<histogram base="true" name="JSDialogs.SiteEngagementOfDialogs" units="%">
   <obsolete>
     Deprecated 2016-10. Site engagement needed to be measured in small buckets
     anyway so it was never high-resolution enough for use.
@@ -101150,6 +101155,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="Prompt"/>
   <affected-histogram name="JSDialogs.DismissalCause"/>
   <affected-histogram name="JSDialogs.IsForemost"/>
+  <affected-histogram name="JSDialogs.Scheme"/>
   <affected-histogram name="JSDialogs.SiteEngagementOfDialogs"/>
 </histogram_suffixes>
 
