@@ -15,7 +15,6 @@
 #include "base/macros.h"
 #include "media/base/media_export.h"
 #include "media/cdm/api/content_decryption_module.h"
-#include "media/cdm/cdm_file_io.h"
 
 namespace media {
 

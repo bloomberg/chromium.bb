@@ -125,6 +125,7 @@ source_set("unit_tests") {
     sources += [
       "services/mojo_cdm_allocator_unittest.cc",
       "services/mojo_cdm_file_io_unittest.cc",
+      "services/mojo_cdm_helper_unittest.cc",
     ]
     deps += [ "//media/cdm:cdm_api" ]
   }

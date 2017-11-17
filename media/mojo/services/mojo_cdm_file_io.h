@@ -17,7 +17,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "media/cdm/api/content_decryption_module.h"
-#include "media/cdm/cdm_file_io.h"
 #include "media/mojo/interfaces/cdm_storage.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
 
@@ -27,15 +26,30 @@ namespace media {
 // separate thread so as to not impact decoding happening on the same thread.
 // The new thread may need to block shutdown so that the file is not corrupted.
 
-// Implements a CdmFileIO that communicates with mojom::CdmStorage.
-class MEDIA_MOJO_EXPORT MojoCdmFileIO : public CdmFileIO {
+// Implements a cdm::FileIO that communicates with mojom::CdmStorage.
+class MEDIA_MOJO_EXPORT MojoCdmFileIO : public cdm::FileIO {
  public:
-  MojoCdmFileIO(cdm::FileIOClient* client,
+  // Callback to report the size of file read by |this|.
+  // TODO(xhwang): Move |file_read_cb| into |delegate| as well.
+  using FileReadCB = base::RepeatingCallback<void(int)>;
+
+  class Delegate {
+   public:
+    // Notify the delegate to close |cdm_file_io|.
+    virtual void CloseCdmFileIO(MojoCdmFileIO* cdm_file_io) = 0;
+  };
+
+  // The constructor and destructor of cdm::FileIO are protected so that the CDM
+  // cannot delete the object directly. Here we declare the constructor and
+  // destructor as public so that we can use std::unique_ptr<> for better memory
+  // management.
+  MojoCdmFileIO(Delegate* delegate,
+                cdm::FileIOClient* client,
                 mojom::CdmStorage* cdm_storage,
                 FileReadCB file_read_cb);
   ~MojoCdmFileIO() override;
 
-  // CdmFileIO implementation.
+  // cdm::FileIO implementation.
   void Open(const char* file_name, uint32_t file_name_size) final;
   void Read() final;
   void Write(const uint8_t* data, uint32_t data_size) final;
@@ -84,10 +98,12 @@ class MEDIA_MOJO_EXPORT MojoCdmFileIO : public CdmFileIO {
   // Callback to notify client of error asynchronously.
   void NotifyClientOfError(ErrorType error);
 
-  // Results of CdmFileIO operations are sent asynchronously via |client_|.
-  cdm::FileIOClient* client_;
+  Delegate* delegate_ = nullptr;
 
-  mojom::CdmStorage* cdm_storage_;
+  // Results of cdm::FileIO operations are sent asynchronously via |client_|.
+  cdm::FileIOClient* client_ = nullptr;
+
+  mojom::CdmStorage* cdm_storage_ = nullptr;
 
   // Callback to report the size of a file that was read.
   FileReadCB file_read_cb_;

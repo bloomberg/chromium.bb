@@ -14,32 +14,36 @@
 #include "base/macros.h"
 #include "media/base/media_export.h"
 #include "media/cdm/cdm_allocator.h"
-#include "media/cdm/cdm_file_io.h"
 #include "media/cdm/output_protection.h"
 #include "media/cdm/platform_verification.h"
+
+namespace cdm {
+class FileIO;
+class FileIOClient;
+}  // namespace cdm
 
 namespace media {
 
 // Provides a wrapper on the auxiliary functions (CdmAllocator, CdmFileIO,
-// OutputProtection, PlatformVerification) needed by the CDM. The default
-// implementation does nothing -- it simply returns NULL, false, 0, etc.
-// as required to meet the interface.
+// OutputProtection, PlatformVerification) needed by the library CDM. The
+// default implementation does nothing -- it simply returns nullptr, false, 0,
+// etc. as required to meet the interface.
 class MEDIA_EXPORT CdmAuxiliaryHelper : public CdmAllocator,
                                         public OutputProtection,
                                         public PlatformVerification {
  public:
-  // Callback to create CdmAllocator for the created CDM.
-  using CreationCB =
-      base::RepeatingCallback<std::unique_ptr<CdmAuxiliaryHelper>()>;
-
   CdmAuxiliaryHelper();
   ~CdmAuxiliaryHelper() override;
 
-  // Given |client|, create a CdmFileIO object and return it. Caller owns the
-  // returned object, and should only destroy it after Close() has been called.
-  virtual std::unique_ptr<CdmFileIO> CreateCdmFileIO(
-      cdm::FileIOClient* client,
-      CdmFileIO::FileReadCB file_read_cb);
+  // Callback to report the size of file read by |this|.
+  using FileReadCB = base::RepeatingCallback<void(int)>;
+
+  // Given |client|, creates a cdm::FileIO object and returns it.
+  // The caller does not own the returned object and should not delete it
+  // directly. Instead, it should call cdm::FileIO::Close() after it's not
+  // needed anymore.
+  virtual cdm::FileIO* CreateCdmFileIO(cdm::FileIOClient* client,
+                                       FileReadCB file_read_cb);
 
   // CdmAllocator implementation.
   cdm::Buffer* CreateCdmBuffer(size_t capacity) override;

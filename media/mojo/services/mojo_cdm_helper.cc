@@ -4,6 +4,7 @@
 
 #include "media/mojo/services/mojo_cdm_helper.h"
 
+#include "base/stl_util.h"
 #include "media/base/scoped_callback_runner.h"
 #include "media/cdm/cdm_helpers.h"
 #include "media/mojo/services/mojo_cdm_allocator.h"
@@ -18,14 +19,19 @@ MojoCdmHelper::MojoCdmHelper(
 
 MojoCdmHelper::~MojoCdmHelper() {}
 
-std::unique_ptr<CdmFileIO> MojoCdmHelper::CreateCdmFileIO(
-    cdm::FileIOClient* client,
-    CdmFileIO::FileReadCB file_read_cb) {
+cdm::FileIO* MojoCdmHelper::CreateCdmFileIO(cdm::FileIOClient* client,
+                                            FileReadCB file_read_cb) {
   ConnectToCdmStorage();
 
   // Pass a reference to CdmStorage so that MojoCdmFileIO can open a file.
-  return std::make_unique<MojoCdmFileIO>(client, cdm_storage_ptr_.get(),
-                                         std::move(file_read_cb));
+  auto mojo_cdm_file_io = std::make_unique<MojoCdmFileIO>(
+      this, client, cdm_storage_ptr_.get(), std::move(file_read_cb));
+
+  cdm::FileIO* cdm_file_io = mojo_cdm_file_io.get();
+  DVLOG(3) << __func__ << ": cdm_file_io = " << cdm_file_io;
+
+  cdm_file_io_set_.push_back(std::move(mojo_cdm_file_io));
+  return cdm_file_io;
 }
 
 cdm::Buffer* MojoCdmHelper::CreateCdmBuffer(size_t capacity) {
@@ -67,6 +73,14 @@ void MojoCdmHelper::GetStorageId(uint32_t version, StorageIdCB callback) {
       std::move(callback), version, std::vector<uint8_t>());
   ConnectToPlatformVerification();
   platform_verification_ptr_->GetStorageId(version, std::move(scoped_callback));
+}
+
+void MojoCdmHelper::CloseCdmFileIO(MojoCdmFileIO* cdm_file_io) {
+  DVLOG(3) << __func__ << ": cdm_file_io = " << cdm_file_io;
+  base::EraseIf(cdm_file_io_set_,
+                [cdm_file_io](const std::unique_ptr<MojoCdmFileIO>& ptr) {
+                  return ptr.get() == cdm_file_io;
+                });
 }
 
 void MojoCdmHelper::ConnectToCdmStorage() {

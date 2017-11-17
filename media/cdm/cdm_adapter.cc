@@ -30,7 +30,6 @@
 #include "media/base/video_frame.h"
 #include "media/base/video_types.h"
 #include "media/cdm/cdm_auxiliary_helper.h"
-#include "media/cdm/cdm_file_io.h"
 #include "media/cdm/cdm_helpers.h"
 #include "media/cdm/cdm_module.h"
 #include "media/cdm/cdm_wrapper.h"
@@ -1153,13 +1152,8 @@ void CdmAdapter::OnDeferredInitializationDone(cdm::StreamType stream_type,
 
 cdm::FileIO* CdmAdapter::CreateFileIO(cdm::FileIOClient* client) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-
-  std::unique_ptr<CdmFileIO> file_io = helper_->CreateCdmFileIO(
+  return helper_->CreateCdmFileIO(
       client, base::Bind(&CdmAdapter::OnFileRead, weak_factory_.GetWeakPtr()));
-
-  // The CDM owns the returned object and must call FileIO::Close()
-  // to release it.
-  return file_io.release();
 }
 
 void CdmAdapter::RequestStorageId(uint32_t version) {
