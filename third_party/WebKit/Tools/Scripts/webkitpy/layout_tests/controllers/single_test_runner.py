@@ -203,7 +203,7 @@ class SingleTestRunner(object):
         elif self._options.copy_baselines:
             output_dir = fs.join(port.baseline_version_dir(), fs.dirname(self._test_name))
         else:
-            output_dir = fs.dirname(port.expected_filename(self._test_name, extension))
+            output_dir = fs.dirname(port.expected_filename(self._test_name, extension, fallback_base_for_virtual=False))
 
         fs.maybe_make_directory(output_dir)
         output_basename = fs.basename(fs.splitext(self._test_name)[0] + '-expected' + extension)
