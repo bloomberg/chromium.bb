@@ -14,7 +14,7 @@ source_set("libunwind") {
 
   # On desktop Linux, libunwind symbols conflict with glibc's, so
   # always make them hidden, even for component builds.
-  if (libcpp_is_static || !is_fuschia) {
+  if (libcpp_is_static || !is_fuchsia) {
     defines = [ "_LIBUNWIND_DISABLE_VISIBILITY_ANNOTATIONS" ]
   }
   sources = [
