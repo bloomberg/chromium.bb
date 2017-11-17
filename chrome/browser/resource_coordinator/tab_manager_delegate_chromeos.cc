@@ -610,7 +610,7 @@ bool TabManagerDelegate::KillArcProcess(const int nspid) {
 bool TabManagerDelegate::KillTab(const TabStats& tab_stats,
                                  DiscardCondition condition) {
   // Check |tab_manager_| is alive before taking tabs into consideration.
-  return tab_manager_ && tab_manager_->CanDiscardTab(tab_stats) &&
+  return tab_manager_ && tab_manager_->CanDiscardTab(tab_stats, condition) &&
          tab_manager_->DiscardTabById(tab_stats.tab_contents_id, condition);
 }
 

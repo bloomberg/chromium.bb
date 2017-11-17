@@ -105,9 +105,11 @@ class TabManager : public TabStripModelObserver,
   bool IsTabDiscarded(content::WebContents* contents) const;
 
   // Goes through a list of checks to see if a tab is allowed to be discarded by
-  // the automatic tab discarding mechanism. Note that this is not used when
-  // discarding a particular tab from about:discards.
-  bool CanDiscardTab(const TabStats& tab_stats) const;
+  // the automatic tab discarding mechanism under |condition|. Note that this is
+  // not used when discarding a particular tab from about:discards or from an
+  // extension.
+  bool CanDiscardTab(const TabStats& tab_stats,
+                     DiscardCondition condition) const;
 
   // Discards a tab to free the memory occupied by its renderer. The tab still
   // exists in the tab-strip; clicking on it will reload it. If the |condition|
@@ -149,10 +151,6 @@ class TabManager : public TabStripModelObserver,
 
   void AddObserver(TabLifetimeObserver* observer);
   void RemoveObserver(TabLifetimeObserver* observer);
-
-  // Used in tests to change the protection time of the tabs.
-  void set_minimum_protection_time_for_tests(
-      base::TimeDelta minimum_protection_time);
 
   // Returns the auto-discardable state of the tab. When true, the tab is
   // eligible to be automatically discarded when critical memory pressure hits,
@@ -224,6 +222,11 @@ class TabManager : public TabStripModelObserver,
 
   // Returns the number of tabs open in all browser instances.
   int GetTabCount() const;
+
+  // Duration during which a tab cannot be automatically discarded after having
+  // been active.
+  static constexpr base::TimeDelta kDiscardProtectionTime =
+      base::TimeDelta::FromMinutes(10);
 
  private:
   friend class TabManagerStatsCollectorTest;
@@ -489,10 +492,6 @@ class TabManager : public TabStripModelObserver,
 
   // Number of times a tab has been discarded, for statistics.
   int discard_count_;
-
-  // This allows protecting tabs for a certain amount of time after being
-  // backgrounded.
-  base::TimeDelta minimum_protection_time_;
 
   // A backgrounded renderer will be purged between min_time_to_purge_ and
   // max_time_to_purge_.
