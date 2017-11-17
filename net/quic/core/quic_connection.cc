@@ -1467,6 +1467,22 @@ void QuicConnection::WritePendingRetransmissions() {
   }
 }
 
+void QuicConnection::SendProbingRetransmissions() {
+  while (CanWrite(HAS_RETRANSMITTABLE_DATA)) {
+    const bool can_retransmit =
+        sent_packet_manager_.MaybeRetransmitOldestPacket(
+            PROBING_RETRANSMISSION);
+    if (!can_retransmit) {
+      QUIC_DVLOG(1)
+          << "Cannot send probing retransmissions: nothing to retransmit.";
+      break;
+    }
+
+    DCHECK(sent_packet_manager_.HasPendingRetransmissions());
+    WritePendingRetransmissions();
+  }
+}
+
 void QuicConnection::RetransmitUnackedPackets(
     TransmissionType retransmission_type) {
   sent_packet_manager_.RetransmitUnackedPackets(retransmission_type);

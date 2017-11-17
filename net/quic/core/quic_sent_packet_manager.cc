@@ -358,6 +358,7 @@ void QuicSentPacketManager::MarkForRetransmission(
   // Both TLP and the new RTO leave the packets in flight and let the loss
   // detection decide if packets are lost.
   if (transmission_type != TLP_RETRANSMISSION &&
+      transmission_type != PROBING_RETRANSMISSION &&
       transmission_type != RTO_RETRANSMISSION) {
     unacked_packets_.RemoveFromInFlight(packet_number);
   }
@@ -586,6 +587,10 @@ bool QuicSentPacketManager::MaybeRetransmitTailLossProbe() {
   if (pending_timer_transmission_count_ == 0) {
     return false;
   }
+  return MaybeRetransmitOldestPacket(TLP_RETRANSMISSION);
+}
+
+bool QuicSentPacketManager::MaybeRetransmitOldestPacket(TransmissionType type) {
   QuicPacketNumber packet_number = unacked_packets_.GetLeastUnacked();
   for (QuicUnackedPacketMap::const_iterator it = unacked_packets_.begin();
        it != unacked_packets_.end(); ++it, ++packet_number) {
@@ -593,7 +598,7 @@ bool QuicSentPacketManager::MaybeRetransmitTailLossProbe() {
     if (!it->in_flight || it->retransmittable_frames.empty()) {
       continue;
     }
-    MarkForRetransmission(packet_number, TLP_RETRANSMISSION);
+    MarkForRetransmission(packet_number, type);
     return true;
   }
   QUIC_DLOG(ERROR)

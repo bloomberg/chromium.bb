@@ -86,7 +86,8 @@ enum TransmissionType : int8_t {
   LOSS_RETRANSMISSION,         // Retransmits due to loss detection.
   RTO_RETRANSMISSION,          // Retransmits due to retransmit time out.
   TLP_RETRANSMISSION,          // Tail loss probes.
-  LAST_TRANSMISSION_TYPE = TLP_RETRANSMISSION,
+  PROBING_RETRANSMISSION,      // Retransmission in order to probe bandwidth.
+  LAST_TRANSMISSION_TYPE = PROBING_RETRANSMISSION,
 };
 
 enum HasRetransmittableData : int8_t {
@@ -208,12 +209,7 @@ enum QuicPacketPrivateFlags {
 // QUIC. Note that this is separate from the congestion feedback type -
 // some congestion control algorithms may use the same feedback type
 // (Reno and Cubic are the classic example for that).
-enum CongestionControlType {
-  kCubicBytes,
-  kRenoBytes,
-  kBBR,
-  kPCC
-};
+enum CongestionControlType { kCubicBytes, kRenoBytes, kBBR, kPCC };
 
 enum LossDetectionType {
   kNack,          // Used to mimic TCP's loss detection.
