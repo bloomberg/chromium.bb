@@ -47,9 +47,8 @@ class PixelExpectations(GpuTestExpectations):
     # TODO(vmiura) check / generate reference images for Android devices
     self.Fail('Pixel_SolidColorBackground', ['mac', 'android'], bug=624256)
 
-    # Comment out for rebaseline
-    #self.Fail('Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorker',
-    #    ['mac', ('nvidia', 0xfe9)], bug=706016)
+    self.Fail('Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorker',
+        ['mac', ('nvidia', 0xfe9)], bug=706016)
     self.Fail('Pixel_CSSFilterEffects',
         ['mac', ('nvidia', 0xfe9)], bug=690277)
 
@@ -63,14 +62,13 @@ class PixelExpectations(GpuTestExpectations):
     self.Flaky('Pixel_ScissorTestWithPreserveDrawingBuffer', ['mac'],
                bug=660461)
 
-    # Comment out for rebaseline
-    #self.Flaky('Pixel_OffscreenCanvas2DResizeOnWorker',
-    #    ['win10', ('intel', 0x1912)], bug=690663)
+    self.Flaky('Pixel_OffscreenCanvas2DResizeOnWorker',
+        ['win10', ('intel', 0x1912)], bug=690663)
 
-    #self.Flaky('Pixel_OffscreenCanvasTransferBeforeStyleResize',
-    #          ['mac', 'linux', 'win', 'android'], bug=735228)
-    #self.Flaky('Pixel_OffscreenCanvasTransferAfterStyleResize',
-    #          ['mac', 'linux', 'win', 'android'], bug=735171)
+    self.Flaky('Pixel_OffscreenCanvasTransferBeforeStyleResize',
+              ['mac', 'linux', 'win', 'android'], bug=735228)
+    self.Flaky('Pixel_OffscreenCanvasTransferAfterStyleResize',
+              ['mac', 'linux', 'win', 'android'], bug=735171)
 
     self.Flaky('Pixel_OffscreenCanvasWebGLSoftwareCompositingWorker',
         ['mac', ('nvidia', 0xfe9), 'debug'], bug=751328)
@@ -88,15 +86,3 @@ class PixelExpectations(GpuTestExpectations):
         ['highsierra', ('intel', 0xa2e)], bug=774809)
     self.Fail('Pixel_WebGLGreenTriangle_NonChromiumImage_NoAA_NoAlpha',
         ['highsierra', ('intel', 0xa2e)], bug=774809)
-
-    # Rebaseline
-    self.Fail('Pixel_OffscreenCanvas2DResizeOnWorker', bug=785392)
-    self.Fail('Pixel_OffscreenCanvasAccelerated2D', bug=785392)
-    self.Fail('Pixel_OffscreenCanvasAccelerated2DWorker', bug=785392)
-    self.Fail('Pixel_OffscreenCanvasTransferAfterStyleResize', bug=785392)
-    self.Fail('Pixel_OffscreenCanvasTransferBeforeStyleResize', bug=785392)
-    self.Fail('Pixel_OffscreenCanvasUnaccelerated2DGPUCompositing', bug=785392)
-    self.Fail('Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorker', bug=785392)
-    self.Fail('Pixel_OffscreenCanvasWebGLDefault', bug=785392)
-    self.Fail('Pixel_OffscreenCanvasWebGLDefaultWorker', bug=785392)
-    self.Fail('Pixel_OffscreenCanvasWebglResizeOnWorker', bug=785392)
