@@ -54,7 +54,6 @@
 #include "ios/chrome/browser/ui/browser_list/browser_list_session_service_factory.h"
 #include "ios/chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "ios/chrome/browser/web_data_service_factory.h"
-#import "ios/clean/chrome/browser/ui/overlays/overlay_service_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -112,7 +111,6 @@ void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   GoogleLogoServiceFactory::GetInstance();
   LanguageModelFactory::GetInstance();
   OAuth2TokenServiceFactory::GetInstance();
-  OverlayServiceFactory::GetInstance();
   ReadingListModelFactory::GetInstance();
   SigninClientFactory::GetInstance();
   suggestions::SuggestionsServiceFactory::GetInstance();
