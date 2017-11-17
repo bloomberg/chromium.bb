@@ -459,15 +459,6 @@ SystemTray* Shell::GetPrimarySystemTray() {
   return GetPrimaryRootWindowController()->GetSystemTray();
 }
 
-void Shell::SetTouchHudProjectionEnabled(bool enabled) {
-  if (is_touch_hud_projection_enabled_ == enabled)
-    return;
-
-  is_touch_hud_projection_enabled_ = enabled;
-  for (auto& observer : shell_observers_)
-    observer.OnTouchHudProjectionToggled(enabled);
-}
-
 FirstRunHelper* Shell::CreateFirstRunHelper() {
   return new FirstRunHelperImpl;
 }
@@ -618,7 +609,6 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
       display_configurator_(new display::DisplayConfigurator()),
       native_cursor_manager_(nullptr),
       simulate_modal_window_open_for_testing_(false),
-      is_touch_hud_projection_enabled_(false),
       weak_factory_(this) {
   // TODO(sky): better refactor cash/mash dependencies. Perhaps put all cash
   // state on ShellPortClassic. http://crbug.com/671246.
@@ -833,11 +823,11 @@ Shell::~Shell() {
 void Shell::Init(const ShellInitParams& init_params) {
   const Config config = shell_port_->GetAshConfig();
 
+  // These controllers call Shell::Get() in their constructors, so they cannot
+  // be in the member initialization list.
   if (switches::IsNightLightEnabled())
     night_light_controller_ = std::make_unique<NightLightController>();
-
   touch_devices_controller_ = std::make_unique<TouchDevicesController>();
-
   bluetooth_power_controller_ = std::make_unique<BluetoothPowerController>();
 
   wallpaper_delegate_ = shell_delegate_->CreateWallpaperDelegate();

@@ -498,12 +498,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   // Starts the animation that occurs on first login.
   void DoInitialWorkspaceAnimation();
 
-  void SetTouchHudProjectionEnabled(bool enabled);
-
-  bool is_touch_hud_projection_enabled() const {
-    return is_touch_hud_projection_enabled_;
-  }
-
   // NOTE: Prefer ScopedRootWindowForNewWindows when setting temporarily.
   void set_root_window_for_new_windows(aura::Window* root) {
     root_window_for_new_windows_ = root;
@@ -783,8 +777,6 @@ class ASH_EXPORT Shell : public SessionObserver,
 
   // For testing only: simulate that a modal window is open
   bool simulate_modal_window_open_for_testing_;
-
-  bool is_touch_hud_projection_enabled_;
 
   // See comment for GetRootWindowForNewWindows().
   aura::Window* root_window_for_new_windows_ = nullptr;

@@ -11,7 +11,6 @@
 
 #include "ash/ash_export.h"
 #include "ash/public/cpp/shelf_types.h"
-#include "ash/shell_observer.h"
 #include "ash/wm/workspace/workspace_types.h"
 #include "base/macros.h"
 #include "ui/aura/window.h"
@@ -77,14 +76,14 @@ class RootWindowLayoutManager;
 // The RootWindowController for particular root window is stored in
 // its property (RootWindowSettings) and can be obtained using
 // |RootWindowController::ForWindow(aura::Window*)| function.
-class ASH_EXPORT RootWindowController : public ShellObserver {
+class ASH_EXPORT RootWindowController {
  public:
   // Enumerates the type of display. If there is only a single display then
   // it is primary. In a multi-display environment one monitor is deemed the
   // PRIMARY and all others SECONDARY.
   enum class RootWindowType { PRIMARY, SECONDARY };
 
-  ~RootWindowController() override;
+  ~RootWindowController();
 
   // Creates and Initialize the RootWindowController for primary display.
   static void CreateForPrimaryDisplay(AshWindowTreeHost* host);
@@ -123,6 +122,9 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
 
   // Initializes the shelf for this root window and notifies observers.
   void InitializeShelf();
+
+  // Enables projection touch HUD.
+  void SetTouchHudProjectionEnabled(bool enable);
 
   // Get touch HUDs associated with this root window controller.
   TouchHudDebug* touch_hud_debug() const { return touch_hud_debug_; }
@@ -277,12 +279,6 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   // not this is the first boot.
   void CreateSystemWallpaper(RootWindowType root_window_type);
 
-  // Enables projection touch HUD.
-  void EnableTouchHudProjection();
-
-  // Disables projection touch HUD.
-  void DisableTouchHudProjection();
-
   // Resets Shell::GetRootWindowForNewWindows() if appropriate. This is called
   // during shutdown to make sure GetRootWindowForNewWindows() isn't referencing
   // this.
@@ -290,9 +286,6 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
 
   // Callback for MenuModelAdapter.
   void OnMenuClosed();
-
-  // Overridden from ShellObserver.
-  void OnTouchHudProjectionToggled(bool enabled) override;
 
   std::unique_ptr<AshWindowTreeHost> ash_host_;
   std::unique_ptr<aura::WindowTreeHost> mus_window_tree_host_;

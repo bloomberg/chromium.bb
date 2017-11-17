@@ -747,9 +747,6 @@ const char kAttestationEnabled[] = "attestation.enabled";
 // remote attestation.
 const char kAttestationExtensionWhitelist[] = "attestation.extension_whitelist";
 
-// A boolean pref indicating whether the projection touch HUD is enabled or not.
-const char kTouchHudProjectionEnabled[] = "touch_hud.projection_enabled";
-
 // A boolean pref recording whether user has dismissed the multiprofile
 // itroduction dialog show.
 const char kMultiProfileNeverShowIntro[] =
