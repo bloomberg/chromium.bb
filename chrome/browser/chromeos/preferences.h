@@ -7,8 +7,6 @@
 
 #include <string>
 
-#include "ash/shell_observer.h"
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -42,7 +40,6 @@ class InputMethodSyncer;
 // the preferences. These include touchpad settings, etc.
 // When the preferences change, we change the settings to reflect the new value.
 class Preferences : public sync_preferences::PrefServiceSyncableObserver,
-                    public ash::ShellObserver,
                     public user_manager::UserManager::UserSessionStateObserver {
  public:
   Preferences();
@@ -106,9 +103,6 @@ class Preferences : public sync_preferences::PrefServiceSyncableObserver,
   // sync_preferences::PrefServiceSyncableObserver implementation.
   void OnIsSyncingChanged() override;
 
-  // Overriden from ash::ShellObserver.
-  void OnTouchHudProjectionToggled(bool enabled) override;
-
   // Overriden form user_manager::UserManager::UserSessionStateObserver.
   void ActiveUserChanged(const user_manager::User* active_user) override;
 
@@ -132,7 +126,6 @@ class Preferences : public sync_preferences::PrefServiceSyncableObserver,
   BooleanPrefMember primary_mouse_button_right_;
   BooleanPrefMember mouse_reverse_scroll_;
   FilePathPrefMember download_default_directory_;
-  BooleanPrefMember touch_hud_projection_enabled_;
 
   // Input method preferences.
   StringPrefMember preload_engines_;

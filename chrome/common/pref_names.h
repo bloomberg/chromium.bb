@@ -259,7 +259,6 @@ extern const char kPowerForceNonzeroBrightnessForUserActivity[];
 extern const char kTermsOfServiceURL[];
 extern const char kAttestationEnabled[];
 extern const char kAttestationExtensionWhitelist[];
-extern const char kTouchHudProjectionEnabled[];
 extern const char kMultiProfileNeverShowIntro[];
 extern const char kMultiProfileWarningShowDismissed[];
 extern const char kMultiProfileUserBehavior[];

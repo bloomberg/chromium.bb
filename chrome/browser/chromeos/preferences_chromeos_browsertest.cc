@@ -8,7 +8,6 @@
 #include <set>
 #include <string>
 
-#include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -88,7 +87,6 @@ class PreferencesTest : public LoginManagerTest {
     prefs->SetBoolean(prefs::kNaturalScroll, variant);
     prefs->SetInteger(prefs::kMouseSensitivity, !variant);
     prefs->SetInteger(prefs::kTouchpadSensitivity, variant);
-    prefs->SetBoolean(prefs::kTouchHudProjectionEnabled, !variant);
     prefs->SetBoolean(prefs::kLanguageXkbAutoRepeatEnabled, variant);
     prefs->SetInteger(prefs::kLanguageXkbAutoRepeatDelay, variant ? 100 : 500);
     prefs->SetInteger(prefs::kLanguageXkbAutoRepeatInterval, variant ? 1 : 4);
@@ -114,8 +112,6 @@ class PreferencesTest : public LoginManagerTest {
               input_settings_->current_mouse_settings().GetSensitivity());
     EXPECT_EQ(prefs->GetInteger(prefs::kTouchpadSensitivity),
               input_settings_->current_touchpad_settings().GetSensitivity());
-    EXPECT_EQ(prefs->GetBoolean(prefs::kTouchHudProjectionEnabled),
-              ash::Shell::Get()->is_touch_hud_projection_enabled());
     EXPECT_EQ(prefs->GetBoolean(prefs::kLanguageXkbAutoRepeatEnabled),
               keyboard_->auto_repeat_is_enabled_);
     input_method::AutoRepeatRate rate = keyboard_->last_auto_repeat_rate_;

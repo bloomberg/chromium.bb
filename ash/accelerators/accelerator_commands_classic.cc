@@ -5,6 +5,7 @@
 #include "ash/accelerators/accelerator_commands_classic.h"
 
 #include "ash/shell.h"
+#include "ash/touch/touch_devices_controller.h"
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/window_state.h"
 #include "base/metrics/user_metrics.h"
@@ -14,8 +15,9 @@ namespace accelerators {
 
 void ToggleTouchHudProjection() {
   base::RecordAction(base::UserMetricsAction("Accel_Touch_Hud_Clear"));
-  bool enabled = Shell::Get()->is_touch_hud_projection_enabled();
-  Shell::Get()->SetTouchHudProjectionEnabled(!enabled);
+  TouchDevicesController* controller = Shell::Get()->touch_devices_controller();
+  controller->SetTouchHudProjectionEnabled(
+      !controller->IsTouchHudProjectionEnabled());
 }
 
 void Unpin() {

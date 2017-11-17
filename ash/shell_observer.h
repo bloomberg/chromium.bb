@@ -37,9 +37,6 @@ class ASH_EXPORT ShellObserver {
   // Invoked when the shelf auto-hide behavior in |root_window| is changed.
   virtual void OnShelfAutoHideBehaviorChanged(aura::Window* root_window) {}
 
-  // Invoked when the projection touch HUD is toggled.
-  virtual void OnTouchHudProjectionToggled(bool enabled) {}
-
   // Invoked when entering or exiting fullscreen mode in |root_window|.
   virtual void OnFullscreenStateChanged(bool is_fullscreen,
                                         aura::Window* root_window) {}

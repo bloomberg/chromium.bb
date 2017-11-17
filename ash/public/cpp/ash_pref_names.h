@@ -55,6 +55,7 @@ ASH_PUBLIC_EXPORT extern const char kWallpaperColors[];
 ASH_PUBLIC_EXPORT extern const char kUserBluetoothAdapterEnabled[];
 ASH_PUBLIC_EXPORT extern const char kSystemBluetoothAdapterEnabled[];
 
+ASH_PUBLIC_EXPORT extern const char kTouchHudProjectionEnabled[];
 ASH_PUBLIC_EXPORT extern const char kTouchpadEnabled[];
 ASH_PUBLIC_EXPORT extern const char kTouchscreenEnabled[];
 

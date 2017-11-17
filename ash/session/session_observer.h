@@ -45,10 +45,11 @@ class ASH_EXPORT SessionObserver {
   // Called when the signin screen profile |prefs| are ready.
   virtual void OnSigninScreenPrefServiceInitialized(PrefService* prefs) {}
 
-  // Called when the PrefService for the active user session changes. This can
-  // be due to the active user session changing or the PrefService for the
-  // currently-active user session becoming initialized. This is never called
-  // with null.
+  // Called when the PrefService for the active user session changes, i.e.
+  // after the first user logs in, after a multiprofile user is added, and after
+  // switching to a different multiprofile user. Happens later than
+  // OnActiveUserSessionChanged() because the PrefService is asynchronously
+  // initialized. Never called with null.
   virtual void OnActiveUserPrefServiceChanged(PrefService* pref_service) {}
 
  protected:
