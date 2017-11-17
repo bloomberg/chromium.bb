@@ -334,7 +334,7 @@ IN_PROC_BROWSER_TEST_F(ThumbnailTest,
   // Give the renderer process some time to actually paint it. Without this,
   // there's a chance we might attempt to take a screenshot before the first
   // paint, which would fail.
-  Sleep(base::TimeDelta::FromMilliseconds(100));
+  Sleep(base::TimeDelta::FromMilliseconds(200));
 
   // Before navigating away from the red page, we should take a thumbnail.
   // Note that the page load is deliberately slowed down, so that the
