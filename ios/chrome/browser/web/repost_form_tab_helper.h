@@ -35,10 +35,17 @@ class RepostFormTabHelper : public web::WebStateUserData<RepostFormTabHelper>,
   RepostFormTabHelper(web::WebState* web_state,
                       id<RepostFormTabHelperDelegate> delegate);
 
+  // Called to dismiss the repost form dialog.
+  void DismissReportFormDialog();
+
   // web::WebStateObserver overrides:
   void DidStartNavigation(web::WebState* web_state,
                           web::NavigationContext* navigation_context) override;
   void WebStateDestroyed(web::WebState* web_state) override;
+
+  // The WebState this instance is observing. Will be null after
+  // WebStateDestroyed has been called.
+  web::WebState* web_state_ = nullptr;
 
   __weak id<RepostFormTabHelperDelegate> delegate_ = nil;
 

@@ -5283,13 +5283,14 @@ bubblePresenterForFeature:(const base::Feature&)feature
 #pragma mark - RepostFormTabHelperDelegate
 
 - (void)repostFormTabHelper:(RepostFormTabHelper*)helper
-    presentRepostFromDialogAtPoint:(CGPoint)location
-                 completionHandler:(void (^)(BOOL))completion {
-  _repostFormCoordinator = [[RepostFormCoordinator alloc]
-      initWithBaseViewController:self
-                  dialogLocation:location
-                        webState:helper->web_state()
-               completionHandler:completion];
+    presentRepostFormDialogForWebState:(web::WebState*)webState
+                         dialogAtPoint:(CGPoint)location
+                     completionHandler:(void (^)(BOOL))completion {
+  _repostFormCoordinator =
+      [[RepostFormCoordinator alloc] initWithBaseViewController:self
+                                                 dialogLocation:location
+                                                       webState:webState
+                                              completionHandler:completion];
   [_repostFormCoordinator start];
 }
 

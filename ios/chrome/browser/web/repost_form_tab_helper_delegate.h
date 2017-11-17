@@ -15,9 +15,10 @@ class RepostFormTabHelper;
 // Asks the delegate to present repost form dialog at the given |location|.
 // Delegate must call |completionHandler| with YES if form data should be
 // reposted and with NO otherwise.
-- (void)repostFormTabHelper:(RepostFormTabHelper*)tabHelper
-    presentRepostFromDialogAtPoint:(CGPoint)location
-                 completionHandler:(void (^)(BOOL))completionHandler;
+- (void)repostFormTabHelper:(RepostFormTabHelper*)helper
+    presentRepostFormDialogForWebState:(web::WebState*)webState
+                         dialogAtPoint:(CGPoint)location
+                     completionHandler:(void (^)(BOOL))completionHandler;
 
 // Asks the delegate to dismiss repost form dialog.
 - (void)repostFormTabHelperDismissRepostFormDialog:
