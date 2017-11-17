@@ -7,7 +7,7 @@
 #include <string>
 #include <utility>
 #include "core/dom/Element.h"
-#include "core/testing/DummyPageHolder.h"
+#include "core/testing/PageTestBase.h"
 #include "modules/document_metadata/CopylessPasteExtractor.h"
 #include "platform/json/JSONValues.h"
 #include "public/platform/modules/document_metadata/copyless_paste.mojom-blink.h"
@@ -26,16 +26,12 @@ using mojom::document_metadata::blink::ValuesPtr;
 using mojom::document_metadata::blink::WebPage;
 using mojom::document_metadata::blink::WebPagePtr;
 
-class CopylessPasteExtractorTest : public ::testing::Test {
+class CopylessPasteExtractorTest : public PageTestBase {
  public:
   CopylessPasteExtractorTest() {}
 
  protected:
-  void SetUp() override;
-
   void TearDown() override { ThreadState::Current()->CollectAllGarbage(); }
-
-  Document& GetDocument() const { return dummy_page_holder_->GetDocument(); }
 
   WebPagePtr Extract() {
     return CopylessPasteExtractor::extract(GetDocument());
@@ -56,14 +52,7 @@ class CopylessPasteExtractorTest : public ::testing::Test {
   PropertyPtr createEntityProperty(const String& name, EntityPtr value);
 
   WebPagePtr createWebPage(const String& url, const String& title);
-
- private:
-  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
 };
-
-void CopylessPasteExtractorTest::SetUp() {
-  dummy_page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
-}
 
 void CopylessPasteExtractorTest::SetHTMLInnerHTML(const String& html_content) {
   GetDocument().documentElement()->SetInnerHTMLFromString((html_content));

@@ -21,25 +21,16 @@
 #include "core/loader/EmptyClients.h"
 #include "core/page/AutoscrollController.h"
 #include "core/page/Page.h"
-#include "core/testing/DummyPageHolder.h"
+#include "core/testing/PageTestBase.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 
-class EventHandlerTest : public ::testing::Test {
+class EventHandlerTest : public PageTestBase {
  protected:
   void SetUp() override;
-
-  Page& GetPage() const { return dummy_page_holder_->GetPage(); }
-  Document& GetDocument() const { return dummy_page_holder_->GetDocument(); }
-  FrameSelection& Selection() const {
-    return GetDocument().GetFrame()->Selection();
-  }
   void SetHtmlInnerHTML(const char* html_content);
   ShadowRoot* SetShadowContent(const char* shadow_content, const char* host);
-
- protected:
-  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
 };
 
 class TapEventBuilder : public WebGestureEvent {
@@ -88,7 +79,7 @@ class MousePressEventBuilder : public WebMouseEvent {
 };
 
 void EventHandlerTest::SetUp() {
-  dummy_page_holder_ = DummyPageHolder::Create(IntSize(300, 400));
+  PageTestBase::SetUp(IntSize(300, 400));
 }
 
 void EventHandlerTest::SetHtmlInnerHTML(const char* html_content) {
@@ -789,7 +780,7 @@ class EventHandlerTooltipTest : public EventHandlerTest {
     Page::PageClients clients;
     FillWithEmptyClients(clients);
     clients.chrome_client = chrome_client_.Get();
-    dummy_page_holder_ = DummyPageHolder::Create(IntSize(800, 600), &clients);
+    SetupPageWithClients(&clients);
   }
 
   String& LastToolTip() { return chrome_client_->LastToolTip(); }

@@ -46,7 +46,7 @@
 #include "core/loader/appcache/ApplicationCacheHost.h"
 #include "core/page/Page.h"
 #include "core/page/ValidationMessageClient.h"
-#include "core/testing/DummyPageHolder.h"
+#include "core/testing/PageTestBase.h"
 #include "platform/heap/Handle.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/weborigin/ReferrerPolicy.h"
@@ -58,24 +58,12 @@
 
 namespace blink {
 
-class DocumentTest : public ::testing::Test {
+class DocumentTest : public PageTestBase {
  protected:
-  void SetUp() override;
-
   void TearDown() override { ThreadState::Current()->CollectAllGarbage(); }
 
-  Document& GetDocument() const { return dummy_page_holder_->GetDocument(); }
-  Page& GetPage() const { return dummy_page_holder_->GetPage(); }
-
   void SetHtmlInnerHTML(const char*);
-
- private:
-  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
 };
-
-void DocumentTest::SetUp() {
-  dummy_page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
-}
 
 void DocumentTest::SetHtmlInnerHTML(const char* html_content) {
   GetDocument().documentElement()->SetInnerHTMLFromString(
