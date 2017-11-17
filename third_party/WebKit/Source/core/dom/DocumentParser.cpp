@@ -80,9 +80,9 @@ void DocumentParser::Detach() {
   document_ = nullptr;
 }
 
-void DocumentParser::SuspendScheduledTasks() {}
+void DocumentParser::PauseScheduledTasks() {}
 
-void DocumentParser::ResumeScheduledTasks() {}
+void DocumentParser::UnpauseScheduledTasks() {}
 
 void DocumentParser::AddClient(DocumentParserClient* client) {
   clients_.insert(client);

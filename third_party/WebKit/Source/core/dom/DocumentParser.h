@@ -109,8 +109,8 @@ class CORE_EXPORT DocumentParser
   }
 
   // FIXME: The names are not very accurate :(
-  virtual void SuspendScheduledTasks();
-  virtual void ResumeScheduledTasks();
+  virtual void PauseScheduledTasks();
+  virtual void UnpauseScheduledTasks();
 
   void AddClient(DocumentParserClient*);
   void RemoveClient(DocumentParserClient*);
