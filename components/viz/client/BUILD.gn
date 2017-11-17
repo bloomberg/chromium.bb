@@ -29,3 +29,22 @@ viz_component("client") {
     "//services/viz/public/interfaces",
   ]
 }
+
+viz_source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "client_layer_tree_frame_sink_unittest.cc",
+  ]
+
+  deps = [
+    ":client",
+    "//base",
+    "//base/test:test_support",
+    "//cc:test_support",
+    "//components/viz/client",
+    "//components/viz/test:test_support",
+    "//mojo/public/cpp/bindings",
+    "//services/viz/public/interfaces",
+    "//testing/gtest",
+  ]
+}

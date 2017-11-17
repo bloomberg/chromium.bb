@@ -99,8 +99,8 @@ class VIZ_CLIENT_EXPORT ClientLayerTreeFrameSink
   // ExternalBeginFrameSourceClient implementation.
   void OnNeedsBeginFrames(bool needs_begin_frames) override;
 
-  static void OnMojoConnectionError(uint32_t custom_reason,
-                                    const std::string& description);
+  void OnMojoConnectionError(uint32_t custom_reason,
+                             const std::string& description);
 
   bool begin_frames_paused_ = false;
   bool needs_begin_frames_ = false;

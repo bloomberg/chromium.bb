@@ -87,13 +87,15 @@ bool ClientLayerTreeFrameSink::BindToClient(
   if (pipes_.compositor_frame_sink_info.is_valid()) {
     compositor_frame_sink_.Bind(std::move(pipes_.compositor_frame_sink_info));
     compositor_frame_sink_.set_connection_error_with_reason_handler(
-        base::Bind(ClientLayerTreeFrameSink::OnMojoConnectionError));
+        base::Bind(&ClientLayerTreeFrameSink::OnMojoConnectionError,
+                   weak_factory_.GetWeakPtr()));
     compositor_frame_sink_ptr_ = compositor_frame_sink_.get();
   } else if (pipes_.compositor_frame_sink_associated_info.is_valid()) {
     compositor_frame_sink_associated_.Bind(
         std::move(pipes_.compositor_frame_sink_associated_info));
     compositor_frame_sink_associated_.set_connection_error_with_reason_handler(
-        base::Bind(ClientLayerTreeFrameSink::OnMojoConnectionError));
+        base::Bind(&ClientLayerTreeFrameSink::OnMojoConnectionError,
+                   weak_factory_.GetWeakPtr()));
     compositor_frame_sink_ptr_ = compositor_frame_sink_associated_.get();
   }
   client_binding_.Bind(std::move(pipes_.client_request));
@@ -216,12 +218,13 @@ void ClientLayerTreeFrameSink::OnNeedsBeginFrames(bool needs_begin_frames) {
   compositor_frame_sink_ptr_->SetNeedsBeginFrame(needs_begin_frames);
 }
 
-// static
 void ClientLayerTreeFrameSink::OnMojoConnectionError(
     uint32_t custom_reason,
     const std::string& description) {
   if (custom_reason)
     DLOG(FATAL) << description;
+  if (client_)
+    client_->DidLoseLayerTreeFrameSink();
 }
 
 }  // namespace viz

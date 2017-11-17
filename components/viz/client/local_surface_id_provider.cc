@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/viz/client/local_surface_id_provider.h"
+
 #include "components/viz/common/quads/compositor_frame.h"
 
 namespace viz {
