@@ -112,8 +112,9 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
   void DetermineGenerationElement();
 
   // Helper function which takes care of the form processing and collecting the
-  // information which is required to show the generation popup.
-  void SetUpUserTriggeredGeneration();
+  // information which is required to show the generation popup. Returns true if
+  // all required information is collected.
+  bool SetUpUserTriggeredGeneration();
 
   // Show password generation UI anchored at |generation_element_|.
   void ShowGenerationPopup();
