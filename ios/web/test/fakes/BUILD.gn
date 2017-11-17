@@ -17,8 +17,6 @@ source_set("fakes") {
   sources = [
     "crw_fake_back_forward_list.h",
     "crw_fake_back_forward_list.mm",
-    "crw_fake_nsurl_session_task.h",
-    "crw_fake_nsurl_session_task.mm",
     "fake_navigation_manager_delegate.h",
     "fake_navigation_manager_delegate.mm",
   ]
