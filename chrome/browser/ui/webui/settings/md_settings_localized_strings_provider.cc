@@ -325,6 +325,7 @@ void AddAndroidAppStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_ANDROID_APPS_DISABLE_DIALOG_MESSAGE},
       {"androidAppsDisableDialogRemove",
        IDS_SETTINGS_ANDROID_APPS_DISABLE_DIALOG_REMOVE},
+      {"androidAppsManageAppLinks", IDS_SETTINGS_ANDROID_APPS_MANAGE_APP_LINKS},
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));

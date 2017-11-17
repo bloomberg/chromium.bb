@@ -856,9 +856,11 @@
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_PROTOCOL_HANDLERS_HTML"
                  file="site_settings/protocol_handlers.html"
+                 preprocess="true"
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_PROTOCOL_HANDLERS_JS"
                  file="site_settings/protocol_handlers.js"
+                 preprocess="true"
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_ROUTE_HTML"
                  file="route.html"
@@ -909,6 +911,7 @@
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_SITE_SETTINGS_PREFS_BROWSER_PROXY_JS"
                  file="site_settings/site_settings_prefs_browser_proxy.js"
+                 preprocess="true"
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_SITE_DETAILS_HTML"
                  file="site_settings/site_details.html"

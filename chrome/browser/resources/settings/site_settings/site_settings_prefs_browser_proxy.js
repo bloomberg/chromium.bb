@@ -266,6 +266,14 @@ cr.define('settings', function() {
      * @param {string} host The host to remove zoom levels for.
      */
     removeZoomLevel(host) {}
+
+    // <if expr="chromeos">
+    /**
+     * Links to com.android.settings.Settings$ManageDomainUrlsActivity on ARC
+     * side, this is to manage app preferences.
+     */
+    showAndroidManageAppLinks() {}
+    // </if>
   }
 
   /**
@@ -386,6 +394,13 @@ cr.define('settings', function() {
     removeZoomLevel(host) {
       chrome.send('removeZoomLevel', [host]);
     }
+
+    // <if expr="chromeos">
+    /** @override */
+    showAndroidManageAppLinks() {
+      chrome.send('showAndroidManageAppLinks');
+    }
+    // </if>
   }
 
   // The singleton instance_ is replaced with a test version of this wrapper
