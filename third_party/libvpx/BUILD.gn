@@ -210,6 +210,8 @@ if (current_cpu == "x86" || (current_cpu == "x64" && !is_msan)) {
     configs += [ "//build/config/compiler:no_chromium_code" ]
     configs += [ ":libvpx_config" ]
     if (is_win) {
+      # clang-cl does not accept this flag.
+      # https://bugs.chromium.org/p/chromium/issues/detail?id=783370
       cflags = [ "/arch:AVX512" ]
     } else {
       cflags = [
