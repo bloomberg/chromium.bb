@@ -5,11 +5,7 @@
 #ifndef SERVICES_SERVICE_MANAGER_SANDBOX_LINUX_BPF_GPU_POLICY_LINUX_H_
 #define SERVICES_SERVICE_MANAGER_SANDBOX_LINUX_BPF_GPU_POLICY_LINUX_H_
 
-#include <memory>
-
-#include "base/logging.h"
-#include "base/macros.h"
-#include "sandbox/linux/syscall_broker/broker_process.h"
+#include "sandbox/linux/bpf_dsl/bpf_dsl.h"
 #include "services/service_manager/sandbox/export.h"
 #include "services/service_manager/sandbox/linux/bpf_base_policy_linux.h"
 
@@ -23,23 +19,8 @@ class SERVICE_MANAGER_SANDBOX_EXPORT GpuProcessPolicy : public BPFBasePolicy {
   sandbox::bpf_dsl::ResultExpr EvaluateSyscall(
       int system_call_number) const override;
 
-  std::unique_ptr<BPFBasePolicy> GetBrokerSandboxPolicy() override;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(GpuProcessPolicy);
-};
-
-class SERVICE_MANAGER_SANDBOX_EXPORT GpuBrokerProcessPolicy
-    : public GpuProcessPolicy {
- public:
-  GpuBrokerProcessPolicy();
-  ~GpuBrokerProcessPolicy() override;
-
-  sandbox::bpf_dsl::ResultExpr EvaluateSyscall(
-      int system_call_number) const override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(GpuBrokerProcessPolicy);
 };
 
 }  // namespace service_manager

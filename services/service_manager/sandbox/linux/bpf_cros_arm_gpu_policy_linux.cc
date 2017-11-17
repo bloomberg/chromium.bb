@@ -4,19 +4,11 @@
 
 #include "services/service_manager/sandbox/linux/bpf_cros_arm_gpu_policy_linux.h"
 
-#include <dlfcn.h>
-#include <errno.h>
 #include <fcntl.h>
 #include <sys/socket.h>
-#include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
 
-#include <memory>
-#include <string>
-#include <vector>
-
-#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -32,7 +24,6 @@ using sandbox::bpf_dsl::Arg;
 using sandbox::bpf_dsl::Error;
 using sandbox::bpf_dsl::If;
 using sandbox::bpf_dsl::ResultExpr;
-using sandbox::SyscallSets;
 
 namespace service_manager {
 
@@ -71,32 +62,6 @@ ResultExpr CrosArmGpuProcessPolicy::EvaluateSyscall(int sysno) const {
     default:
       // Default to the generic GPU policy.
       return GpuProcessPolicy::EvaluateSyscall(sysno);
-  }
-}
-
-std::unique_ptr<BPFBasePolicy>
-CrosArmGpuProcessPolicy::GetBrokerSandboxPolicy() {
-  return std::make_unique<CrosArmGpuBrokerProcessPolicy>();
-}
-
-CrosArmGpuBrokerProcessPolicy::CrosArmGpuBrokerProcessPolicy()
-    : CrosArmGpuProcessPolicy(false) {}
-
-CrosArmGpuBrokerProcessPolicy::~CrosArmGpuBrokerProcessPolicy() {}
-
-// A GPU broker policy is the same as a GPU policy with open and
-// openat allowed.
-ResultExpr CrosArmGpuBrokerProcessPolicy::EvaluateSyscall(int sysno) const {
-  switch (sysno) {
-#if !defined(__aarch64__)
-    case __NR_access:
-    case __NR_open:
-#endif  // !defined(__aarch64__)
-    case __NR_faccessat:
-    case __NR_openat:
-      return Allow();
-    default:
-      return CrosArmGpuProcessPolicy::EvaluateSyscall(sysno);
   }
 }
 

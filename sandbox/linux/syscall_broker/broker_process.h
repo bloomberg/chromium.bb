@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/pickle.h"
 #include "base/process/process.h"
+#include "sandbox/linux/bpf_dsl/trap_registry.h"
 #include "sandbox/linux/syscall_broker/broker_policy.h"
 #include "sandbox/sandbox_export.h"
 
@@ -69,6 +70,11 @@ class SANDBOX_EXPORT BrokerProcess {
   int Open(const char* pathname, int flags) const;
 
   int broker_pid() const { return broker_pid_; }
+
+  // Handler to be used with a bpf_dsl Trap() function to forward system calls
+  // to the methods above.
+  static intptr_t SIGSYS_Handler(const arch_seccomp_data& args,
+                                 void* aux_broker_process);
 
  private:
   friend class BrokerProcessTestHelper;

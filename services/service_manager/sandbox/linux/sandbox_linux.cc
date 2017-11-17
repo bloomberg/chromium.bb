@@ -42,6 +42,7 @@
 #include "sandbox/linux/suid/client/setuid_sandbox_client.h"
 #include "sandbox/linux/syscall_broker/broker_process.h"
 #include "sandbox/sandbox_features.h"
+#include "services/service_manager/sandbox/linux/bpf_broker_policy_linux.h"
 #include "services/service_manager/sandbox/linux/sandbox_seccomp_bpf_linux.h"
 #include "services/service_manager/sandbox/sandbox.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
@@ -118,9 +119,7 @@ bool UpdateProcessTypeAndEnableSandbox(
       command_line->GetSwitchValueASCII(switches::kProcessType)
           .append("-broker"));
 
-  std::unique_ptr<BPFBasePolicy> broker_side_policy =
-      client_sandbox_policy->GetBrokerSandboxPolicy();
-
+  auto broker_side_policy = std::make_unique<BrokerProcessPolicy>();
   if (broker_side_hook)
     CHECK(std::move(broker_side_hook).Run(broker_side_policy.get(), options));
 

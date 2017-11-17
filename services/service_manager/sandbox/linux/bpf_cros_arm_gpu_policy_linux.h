@@ -5,7 +5,7 @@
 #ifndef SERVICES_SERVICE_MANAGER_SANDBOX_LINUX_BPF_CROS_ARM_GPU_POLICY_LINUX_H_
 #define SERVICES_SERVICE_MANAGER_SANDBOX_LINUX_BPF_CROS_ARM_GPU_POLICY_LINUX_H_
 
-#include "base/macros.h"
+#include "sandbox/linux/bpf_dsl/bpf_dsl.h"
 #include "services/service_manager/sandbox/export.h"
 #include "services/service_manager/sandbox/linux/bpf_gpu_policy_linux.h"
 
@@ -21,26 +21,11 @@ class SERVICE_MANAGER_SANDBOX_EXPORT CrosArmGpuProcessPolicy
   sandbox::bpf_dsl::ResultExpr EvaluateSyscall(
       int system_call_number) const override;
 
-  std::unique_ptr<BPFBasePolicy> GetBrokerSandboxPolicy() override;
-
  private:
 #if defined(__arm__) || defined(__aarch64__)
   const bool allow_shmat_;  // Allow shmat(2).
 #endif
   DISALLOW_COPY_AND_ASSIGN(CrosArmGpuProcessPolicy);
-};
-
-class SERVICE_MANAGER_SANDBOX_EXPORT CrosArmGpuBrokerProcessPolicy
-    : public CrosArmGpuProcessPolicy {
- public:
-  CrosArmGpuBrokerProcessPolicy();
-  ~CrosArmGpuBrokerProcessPolicy() override;
-
-  sandbox::bpf_dsl::ResultExpr EvaluateSyscall(
-      int system_call_number) const override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CrosArmGpuBrokerProcessPolicy);
 };
 
 }  // namespace service_manager

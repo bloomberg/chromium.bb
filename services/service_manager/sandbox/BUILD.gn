@@ -27,6 +27,8 @@ component("sandbox") {
     sources += [
       "linux/bpf_base_policy_linux.cc",
       "linux/bpf_base_policy_linux.h",
+      "linux/bpf_broker_policy_linux.cc",
+      "linux/bpf_broker_policy_linux.h",
       "linux/bpf_cdm_policy_linux.cc",
       "linux/bpf_cdm_policy_linux.h",
       "linux/bpf_cros_amd_gpu_policy_linux.cc",

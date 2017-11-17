@@ -6,7 +6,6 @@
 #define SERVICES_SERVICE_MANAGER_SANDBOX_LINUX_SANDBOX_SECCOMP_BPF_LINUX_H_
 
 #include <memory>
-#include <string>
 
 #include "base/callback.h"
 #include "base/files/scoped_file.h"
