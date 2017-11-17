@@ -617,7 +617,7 @@ commit_changes(struct ivi_layout *layout)
 			* the weston_view below this ivi_view. Otherwise content
 			* of this ivi_view will stay visible.
 			*/
-			if ((ivilayer->prop.event_mask | ivisurf->prop.event_mask) &&
+			if ((ivilayer->prop.event_mask | ivisurf->prop.event_mask) &
 			    IVI_NOTIFICATION_VISIBILITY)
 				weston_view_damage_below(ivi_view->view);
 
