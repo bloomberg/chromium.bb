@@ -237,13 +237,17 @@ FYI_WATERFALL = {
   'builders': {
     'GPU Win Builder' : {},
     'GPU Win Builder (dbg)' : {},
+    'GPU Win dEQP Builder': {},
     'GPU Win x64 Builder' : {},
     'GPU Win x64 Builder (dbg)' : {},
+    'GPU Win x64 dEQP Builder' : {},
     'GPU Mac Builder' : {},
     'GPU Mac Builder (dbg)' : {},
+    'GPU Mac dEQP Builder' : {},
     'GPU Linux Builder' : {},
     'GPU Linux Builder (dbg)' : {},
     'GPU Linux Ozone Builder' : {},
+    'GPU Linux dEQP Builder' : {},
   },
 
   'testers': {
