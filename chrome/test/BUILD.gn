@@ -2745,6 +2745,7 @@ test("unit_tests") {
       "../browser/search/search_unittest.cc",
       "../browser/sessions/persistent_tab_restore_service_unittest.cc",
       "../browser/signin/mutable_profile_oauth2_token_service_delegate_unittest.cc",
+      "../browser/signin/signin_promo_unittest.cc",
       "../browser/speech/extension_api/extension_manifests_tts_unittest.cc",
       "../browser/speech/tts_controller_unittest.cc",
       "../browser/sync/sessions/browser_list_router_helper_unittest.cc",
