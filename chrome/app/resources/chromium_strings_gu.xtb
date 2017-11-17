@@ -73,7 +73,6 @@
 <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="328888136576916638">Google API કીઝ ખૂટે છે. Chromium ની કેટલીક કાર્યક્ષમતા અક્ષમ થશે.</translation>
 <translation id="3296368748942286671">જ્યારે Chromium બંધ થાય ત્યારે પૃષ્ઠભૂમિ ઍપ્લિકેશનો ચલાવવાનું ચાલુ રાખો</translation>
-<translation id="3312805357485578561">Chromium એ અસામાન્ય વર્તન શોધ્યું</translation>
 <translation id="331951419404882060">સાઇન ઇનમાં ભૂલ આવવાને કારણે Chromium તમારા ડેટાને સમન્વયિત કરી શક્યું નથી.</translation>
 <translation id="3474745554856756813">આ, <ph name="ITEMS_COUNT" /> આઇટમને આ ઉપકરણમાંથી કાઢી નાખશે. પછીથી તમારો ડેટા પુનઃપ્રાપ્ત કરવા માટે, Chromium માં <ph name="USER_EMAIL" /> તરીકે સાઇન ઇન કરો.</translation>
 <translation id="3509308970982693815">કૃપા કરીને બધી Chromium વિંડોઝ બંધ કરો અને ફરીથી પ્રયાસ કરો.</translation>
@@ -93,7 +92,6 @@
 <translation id="4050175100176540509">નવીનતમ સંસ્કરણમાં મહત્વપૂર્ણ સુરક્ષા સુધારણાઓ અને નવી સુવિધાઓ ઉપલબ્ધ છે.</translation>
 <translation id="407254336480250557"><ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /> પસંદ કરો</translation>
 <translation id="4077262827416206768">કૃપા કરીને બધી Chromium વિંડોઝને બંધ કરો અને આ ફેરફારને પ્રભાવમાં લાવવા માટે Chromium ને ફરી શરૂ કરો.</translation>
-<translation id="4207043877577553402"><ph name="BEGIN_BOLD" />ચેતવણી:<ph name="END_BOLD" /> Chromium એક્સ્ટેંશનને તમારો બ્રાઉઝિંગ ઇતિહાસ રેકોર્ડ કરવાથી રોકી શકતું નથી. છૂપા મોડમાં આ એક્સ્ટેંશનને અક્ષમ કરવા માટે, આ વિકલ્પને પસંદ ન કરો.</translation>
 <translation id="421369550622382712">Chromium માટે શ્રેષ્ઠ એપ્લીકેશન્સ, રમતો, એક્સટેન્શન્સ અને થીમ્સ શોધો.</translation>
 <translation id="4222580632002216401">તમે હવે Chromium માં સાઇન ઇન છો! સમન્વયન તમારા વ્યવસ્થાપક દ્વારા અક્ષમ કરેલું છે.</translation>
 <translation id="4224199872375172890">Chromium અપ ટૂ ડેટ છે.</translation>
@@ -175,7 +173,6 @@
 કેટલીક સુવિધાઓ ઉપલબ્ધ થઈ શકે છે. કૃપા કરીને ભિન્ન પ્રોફાઇલ નિર્દેશિકાનો ઉલ્લેખ કરો અથવા Chromium નાં નવા સંસ્કરણનો ઉપયોગ કરો.</translation>
 <translation id="6734080038664603509">&amp;Chromium ને અપડેટ કરો</translation>
 <translation id="6734291798041940871">Chromium, તમારા કમ્પ્યુટર પર તમામ વપરાશકર્તાઓ માટે પહેલાંથી ઇન્સ્ટૉલ કરેલ છે.</translation>
-<translation id="6798578729981748444">આયાત કરવાનું સમાપ્ત કરવા માટે, બધી Firefox વિંડો બંધ કરો.</translation>
 <translation id="6810143991807788455">વર્તમાન સેટિંગ્સની જાણ કરીને Chromium ને વધુ સારું બનાવવામાં સહાય કરો</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6883876366448858277">Google શોધ, પરત આવતી વ્યાખ્યાઓ, ચિત્રો અને અન્ય શોધ પરિણામોને એક શબ્દ અને તેની આસપાસનો સંદર્ભ મોકલે છે.</translation>
@@ -217,7 +214,7 @@ Chromium તમારી સેટિંગ્સને પુનઃપ્રા
 <translation id="7747138024166251722">ઇન્સ્ટોલર અસ્થાયી ડાયરેક્ટરી બનાવી શક્યું નથી. કૃપા કરીને ખાલી ડિસ્ક સ્પેસ માટે અને સૉફ્ટવેર ઇન્સ્ટોલ કરવાની પરવાનગી માટે તપાસો.</translation>
 <translation id="7756122083761163394">આ વ્યક્તિનો બ્રાઉઝિંગ ડેટા આ ઉપકરણમાંથી કાઢી નાખવામાં આવશે. આ ડેટા પાછો મેળવવા માટે, Chromeમાં $2 તરીકે સાઇન ઇન કરો.</translation>
 <translation id="7774736947049807614">પ્રમાણીકરણ પ્રમાણપત્ર નિષ્ફળ થયું. કૃપા કરીને Chromiumમાં ફરીથી <ph name="USER_NAME" /> તરીકે સાઇન ઇન કરો અથવા વધુ માહિતી માટે તમારા વ્યવસ્થાપકનો સંપર્ક કરો. <ph name="ADDITIONAL_EXPLANATION" /></translation>
-<translation id="7867198900892795913">Chromium નવીનતમ વર્ઝન પર અપડેટ ન કરી શક્યું, તેથી તમે નવી સુવિધાઓ અને સુરક્ષાના સુધારા ચૂકી રહ્યા છો.</translation>
+<translation id="7867198900892795913">Chromium નવીનતમ વર્ઝન પર અપડેટ ન થઈ શક્યું, તેથી તમે નવી સુવિધાઓ અને સુરક્ષાના સુધારા ચૂકી રહ્યા છો.</translation>
 <translation id="7937630085815544518">તમે Chromium માં <ph name="USER_EMAIL_ADDRESS" /> તરીકે સાઇન ઇન કર્યું હતું. ફરીથી સાઇન ઇન કરવા માટે કૃપા કરીને એ જ એકાઉન્ટનો ઉપયોગ કરો.</translation>
 <translation id="795025003224538582">પુનઃપ્રારંભ કરશો નહીં</translation>
 <translation id="7962572577636132072">Chromium આપમેળે અપડેટ થાય છે જેથી કરીને તમારી પાસે હંમેશા સૌથી તાજું સંસ્કરણ રહે છે.</translation>

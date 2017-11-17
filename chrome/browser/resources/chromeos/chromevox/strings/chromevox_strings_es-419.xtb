@@ -4,7 +4,7 @@
 <translation id="100812568230599391">Cambia el estilo de la pantalla a intercalar.</translation>
 <translation id="1012173283529841972">Elemento de lista</translation>
 <translation id="1013742170491673792">srched</translation>
-<translation id="1022586497894531524">¿Estás usando los comentarios por voz de ChromeVox por primera vez? Este instructivo rápido explica los aspectos básicos para comenzar a usar ChromeVox.</translation>
+<translation id="1022586497894531524">¿Estás usando los comentarios por voz de ChromeVox por primera vez? En este instructivo rápido se explican los aspectos básicos para comenzar a usar ChromeVox.</translation>
 <translation id="1023866615269196768">Ampliada</translation>
 <translation id="1025074108959230262">Modo permanente inhabilitado</translation>
 <translation id="1031961866430398710">luego</translation>
@@ -171,7 +171,7 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="2770781857296573485">Ingresar exploración de grupos</translation>
 <translation id="2777845298774924149">Salió.</translation>
 <translation id="2781264313200109999">Comienzo de un vínculo</translation>
-<translation id="2784959586797362050">Como siempre, si deseas enviarnos tus comentarios, presiona la tecla Buscar + a, luego, i. Esperamos tus mensajes.</translation>
+<translation id="2784959586797362050">Como siempre, si deseas enviarnos comentarios, presiona la tecla Buscar + a, luego, i. Esperamos tus mensajes.</translation>
 <translation id="2800204403141299078">No hay más elementos diferentes.</translation>
 <translation id="2800780099804980316">No hay ningún encabezado de nivel 1 anterior.</translation>
 <translation id="280499067616661124">ChromeVox se encuentra en la página</translation>
@@ -237,7 +237,7 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="3241638166094654466">Celdas en cada línea:</translation>
 <translation id="3286390186030710347">Control deslizante</translation>
 <translation id="3299925995433437805">No hay ningún vínculo visitado posterior.</translation>
-<translation id="3300348286427369683">Compatibilidad con el texto enriquecido. ChromeVox ahora es compatible con campos de texto enriquecido, lo que incluye comandos de navegación, movimientos del cursor para braille, selección y más.</translation>
+<translation id="3300348286427369683">Compatibilidad con el texto enriquecido. ChromeVox ahora es compatible con campos de texto enriquecido, lo que incluye comandos de navegación, movimientos del cursor para braille, selección y mucho más.</translation>
 <translation id="3307886118343381874">Ir al final de la tabla</translation>
 <translation id="3311969765485641742">Presiona Alt+Mayúscula+A para revisar las alertas.</translation>
 <translation id="3312997241656799641">Siguiente vínculo visitado</translation>
@@ -434,7 +434,7 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="4827410568042294688">sin seleccionar</translation>
 <translation id="4842108708071771135">No hay ningún bloque entrecomillado posterior.</translation>
 <translation id="4844625982113518938">Presiona cualquier tecla para aprender su nombre. Para cerrar el modo de aprendizaje, presiona Ctrl + W.</translation>
-<translation id="4846428657345567687">¡Bienvenido a ChromeVox!</translation>
+<translation id="4846428657345567687">¡Te damos la bienvenida a ChromeVox!</translation>
 <translation id="4846487886195635104">Fin del texto tachado</translation>
 <translation id="4848993367330139335">tmprz</translation>
 <translation id="4850023505158945298">Elemento anterior similar</translation>
@@ -472,7 +472,7 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="5098541983634824365">Saliendo de la cuadrícula</translation>
 <translation id="5102981729317424850">Barra de herramientas</translation>
 <translation id="5105050547967751155">rq</translation>
-<translation id="5106547198195128110">Tenemos algunos cambios en esta versión nueva. Estas son las novedades:</translation>
+<translation id="5106547198195128110">Tenemos algunos cambios en la versión nueva. Estas son las novedades:</translation>
 <translation id="5110983769041734144">No hay ningún campo de formulario anterior.</translation>
 <translation id="5111640677200759579">Encabezado de columna</translation>
 <translation id="5136967254288895616">No hay ningún vínculo anterior.</translation>
@@ -589,7 +589,7 @@ Para abrir el menú del navegador Chrome, presiona Alt + F.</translation>
 <translation id="6065293622157674001">Inicio del error gramatical</translation>
 <translation id="6082768461603900813">Navegación básica</translation>
 <translation id="6092707270915298410">Final de un vínculo</translation>
-<translation id="6118126368611144850">Apps de Android para Chrome. Si tienes Play Store en tu dispositivo, conoce ChromeVox con las apps de Android. Descarga Google Chrome Canary desde Play Store.</translation>
+<translation id="6118126368611144850">Apps de Android para Chrome. Si tienes Play Store en tu dispositivo, conoce ChromeVox con las apps de Android. Descarga Google Chrome Canary desde Play Store.</translation>
 <translation id="611827076493383239">vtd</translation>
 <translation id="6119955456199054975">Fin de celda</translation>
 <translation id="6122013438240733403">btn</translation>

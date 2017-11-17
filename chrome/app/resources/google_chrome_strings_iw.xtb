@@ -11,7 +11,6 @@
 <translation id="123620459398936149">‏מערכת ההפעלה של Chrome לא הצליחה לסנכרן את הנתונים שלך. עדכן את משפט הסיסמה שלך לסנכרון.</translation>
 <translation id="127345590676626841">‏Chrome מתעדכן באופן אוטומטי, כך שתמיד ברשותך הגרסה העדכנית ביותר. כשההורדה תסתיים, Chrome יופעל מחדש ותוכל להמשיך.</translation>
 <translation id="1302523850133262269">‏המתן בזמן ש-Chrome מתקין את עדכוני המערכת האחרונים.</translation>
-<translation id="1350930993895295930">‏Chrome זיהה התנהגות חריגה</translation>
 <translation id="137466361146087520">‏גרסת הביטא של Google Chrome</translation>
 <translation id="1393853151966637042">‏קבלת עזרה לשימוש ב-Chrome</translation>
 <translation id="1399397803214730675">‏במחשב זה מותקנת כבר גירסה עדכנית יותר של Google Chrome. אם התוכנה אינה פועלת, הסר את ההתקנה של Google Chrome ונסה שוב.</translation>
@@ -191,7 +190,6 @@
 <translation id="6566149418543181476">‏מעדכן את Google Chrome‏ (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">‏אתה משתמש ב-<ph name="PROFILE_EMAIL" /> כדי לסנכרן את הפריטים שלך ב-Chrome. עבור אל '<ph name="SETTINGS_LINK" />' כדי לעדכן את העדפות הסנכרון או להשתמש ב-Chrome ללא חשבון Google.</translation>
 <translation id="6600954340915313787">‏הועתק אל Chrome</translation>
-<translation id="6626317981028933585">‏למרבה הצער, הגדרות Mozilla Firefox שלך אינן זמינות בשעה שהדפדפן פועל. על מנת לייבא הגדרות אלו ל-Google Chrome, שמור את עבודתך וסגור את כל חלונות Firefox. לאחר מכן, לחץ על 'המשך'.</translation>
 <translation id="6634887557811630702">‏Google Chrome מעודכן.</translation>
 <translation id="6676384891291319759">גישה אל האינטרנט</translation>
 <translation id="6697947395630195233">‏Chrome זקוק לגישה אל המיקום שלך כדי לשתף אותו עם האתר הזה.</translation>
@@ -274,7 +272,6 @@
 <translation id="9026991721384951619">‏מערכת ההפעלה של Chrome לא הצליחה לסנכרן את הנתונים שלך מפני שפרטי הכניסה של חשבונך אינם מעודכנים.</translation>
 <translation id="9067395829937117663">‏כדי להשתמש ב-Google Chrome יש צורך ב-Windows מגירסה 7 ואילך.</translation>
 <translation id="9084668267983921457">‏אישור האימות נכשל. עליך להיכנס שוב לחשבונך ב-Google Chrome או לפנות למנהל המערכת שלך לקבלת מידע נוסף. <ph name="ADDITIONAL_EXPLANATION" /></translation>
-<translation id="9107728822479888688">‏<ph name="BEGIN_BOLD" />אזהרה:<ph name="END_BOLD" /> ‏‏Google Chrome‏ אינו יכול למנוע מתוספים לתעד את היסטוריית הגלישה שלך. כדי להשבית תוסף זה במצב גלישה פרטית, בטל אפשרות זו.</translation>
 <translation id="911206726377975832">למחוק גם את נתוני הגלישה שלך?</translation>
 <translation id="919706545465235479">‏עדכן את Chrome כדי להתחיל את הסנכרון</translation>
 <translation id="924447568950697217">‏הגדר את Chrome בתור דפדפן ברירת המחדל</translation>

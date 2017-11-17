@@ -619,7 +619,6 @@ Als het beleid niet is ingesteld, is de updatefunctionaliteit voor <ph name="TPM
 
       Zie https://developers.google.com/safe-browsing voor meer informatie over Safe Browsing.</translation>
 <translation id="3016255526521614822">Notitie-apps die zijn toegestaan op het <ph name="PRODUCT_OS_NAME" />-vergrendelingsscherm toevoegen aan de witte lijst</translation>
-<translation id="3021409116652377124">Plug-inzoeker uitschakelen</translation>
 <translation id="3030000825273123558">Rapportage van statistieken inschakelen</translation>
 <translation id="3034580675120919256">Hiermee kun je instellen of JavaScript op websites mag worden uitgevoerd. Het uitvoeren van JavaScript kan voor alle websites worden toegestaan of voor alle websites worden geweigerd.
 
@@ -922,17 +921,6 @@ Als het beleid niet is ingesteld, is de updatefunctionaliteit voor <ph name="TPM
 
           Deze optie is meestal uitgeschakeld als beveiliging tegen phishing. Als dit beleid niet wordt ingesteld, wordt de optie uitgeschakeld en mag subinhoud van derden geen dialoogvenster voor algemene HTTP-authenticatie als pop-up weergeven.</translation>
 <translation id="4056910949759281379">SPDY-protocol uitschakelen</translation>
-<translation id="4077363032873906037">Hiermee wordt de beperkte inlogfunctie van <ph name="PRODUCT_NAME" /> in Google Apps ingeschakeld en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen.
-
-Als je deze instelling activeert, kan de gebruiker Google Apps alleen openen via accounts van de opgegeven domeinen (dit werkt niet voor gmail.com/googlemail.com).
-
-Met deze instelling wordt NIET voorkomen dat de gebruiker kan inloggen op een beheerd apparaat waarvoor Google-verificatie is vereist. De gebruiker kan nog steeds inloggen op accounts van andere domeinen, maar krijgt een foutmelding wanneer wordt geprobeerd Google Apps te gebruiken met deze accounts.
-
-Als je deze instelling leeg laat of niet instelt, kan de gebruiker Google Apps via elk account openen.
-
-Door dit beleid wordt de kop 'X-GoogApps-Allowed-Domains' toegevoegd aan alle HTTP- en HTTPS-verzoeken voor alle google.com-domeinen, zoals beschreven in https://support.google.com/a/answer/1668854.
-
-Gebruikers kunnen deze instelling niet wijzigen of overschrijven.</translation>
 <translation id="408029843066770167">Query's naar een Google-tijdservice toestaan</translation>
 <translation id="4088589230932595924">Incognitomodus afgedwongen</translation>
 <translation id="4088983553732356374">Hiermee kun je instellen of websites lokaal gegevens mogen instellen. Het instellen van lokale gegevens kan worden toegestaan voor alle websites of worden geweigerd voor alle websites.
@@ -950,7 +938,6 @@ Gebruikers kunnen deze instelling niet wijzigen of overschrijven.</translation>
           De beleidswaarde moet in milliseconden worden opgegeven.</translation>
 <translation id="4105989332710272578">Handhaving van Certificaattransparantie voor een lijst met URL's uitschakelen</translation>
 <translation id="4121350739760194865">Voorkomen dat app-promoties worden weergegeven op de pagina 'Nieuw tabblad'</translation>
-<translation id="4133144443101280166">Intervallen buiten gebruikstijd wanneer het beleid DeviceOffHours |ignored_policy_proto_tags| wordt vrijgegeven</translation>
 <translation id="4157003184375321727">Besturingssysteem- en firmwareversie rapporteren</translation>
 <translation id="4183229833636799228">Standaardinstelling voor <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">URL voor het valideren van verificatietoken voor client voor externe toegang</translation>
@@ -1165,7 +1152,6 @@ Elk lijstitem van het beleid is een tekenreeks die een extensie-ID en een update
 Met <ph name="EXTENSION_POLICY_EXAMPLE" /> wordt de app <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> bijvoorbeeld geïnstalleerd via de standaard update-URL van de Chrome Web Store. Raadpleeg <ph name="LINK_TO_EXTENSION_DOC2" /> voor meer informatie over het hosten van extensies.
 
 Als dit beleid niet wordt ingesteld, worden apps en extensies automatisch geïnstalleerd en kan de gebruiker elke app of extensie in <ph name="PRODUCT_NAME" /> verwijderen.</translation>
-<translation id="4882546920824859909">Domeinen definiëren voor toegang tot Google-apps</translation>
 <translation id="4897928009230106190">Specificeert de parameters die worden gebruikt voor het uitvoeren van een voorgestelde zoekopdracht met POST. Het bestaat uit door komma's gescheiden naam/waarde-paren. Als een waarde een templateparameter, zoals {searchTerms} in het bovenstaande voorbeeld, is, wordt de waarde vervangen door echte zoektermgegevens.
 
           Dit beleid is optioneel. Als het beleid niet is ingesteld, wordt de voorgestelde zoekopdracht verzonden met de GET-methode.
@@ -1234,7 +1220,6 @@ Als dit beleid niet wordt ingesteld, worden apps en extensies automatisch geïns
 
           Als dit beleid niet wordt ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites op basis van het beleid 'DefaultNotificationsSetting' (als dit is ingesteld) of anders op basis van de configuratie van de gebruiker.</translation>
 <translation id="5219844027738217407">Voor Android-apps is dit beleid alleen van invloed op de microfoon. Wanneer dit beleid is ingesteld op true (waar), wordt voor alle Android-apps, zonder uitzondering, de microfoon gedempt.</translation>
-<translation id="5226033722357981948">Aangeven of de plug-inzoeker moet worden uitgeschakeld</translation>
 <translation id="523505283826916779">Toegankelijkheidsinstellingen</translation>
 <translation id="5247006254130721952">Gevaarlijke downloads blokkeren</translation>
 <translation id="5255162913209987122">Kan worden aanbevolen</translation>
@@ -1372,13 +1357,6 @@ Als dit beleid niet wordt ingesteld, worden apps en extensies automatisch geïns
 <translation id="5728154254076636808">Het maken van roaming-exemplaren voor <ph name="PRODUCT_NAME" />-profielgegevens inschakelen</translation>
 <translation id="5732972008943405952">Formuliergegevens voor Automatisch aanvullen importeren uit standaardbrowser bij eerste uitvoering</translation>
 <translation id="5765780083710877561">Beschrijving:</translation>
-<translation id="5768309557753179144">Chromium en Google Chrome ondersteunen dezelfde reeks beleidsregels. Dit document bevat mogelijk niet-vrijgegeven beleidsregels (dat wil zeggen, het item 'Ondersteund op' verwijst naar een nog niet vrijgegeven versie van <ph name="PRODUCT_NAME" />) die zonder kennisgeving kunnen worden gewijzigd of verwijderd en waarvoor geen enkele garanties worden geleverd, waaronder geen garanties met betrekking tot hun beveiligings- en privacy-eigenschappen.
-
-      Deze beleidsregels zijn uitsluitend bedoeld voor het configureren van instanties van <ph name="PRODUCT_NAME" /> binnen je organisatie. Gebruik van deze beleidsregels buiten je organisatie (bijvoorbeeld in een openbaar gedistribueerd programma) wordt beschouwd als malware en wordt waarschijnlijk gelabeld als malware door Google en antivirusproviders.
-
-      Je hoeft deze instellingen niet handmatig te configureren. Je kunt gebruiksvriendelijke templates voor Windows, Mac en Linux downloaden via <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
-
-      De aanbevolen manier om beleidsregels te configureren op Windows, is via GPO, maar het toewijzen van beleidsregels via een register wordt nog steeds ondersteund voor Windows-instanties die zijn gekoppeld aan een <ph name="MS_AD_NAME" />-domein.</translation>
 <translation id="5770738360657678870">Ontwikkelaarskanaal (mogelijk instabiel)</translation>
 <translation id="5774856474228476867">Zoek-URL voor standaardzoekprovider</translation>
 <translation id="5776485039795852974">Altijd goedkeuring vragen wanneer een site bureaubladmeldingen wil weergeven</translation>
@@ -1705,9 +1683,6 @@ Als dit beleid niet wordt ingesteld, worden apps en extensies automatisch geïns
       Als dit beleid niet wordt ingesteld, wordt netwerkvoorspelling ingeschakeld, maar kan de gebruiker dit wijzigen.</translation>
 <translation id="6658245400435704251">Bepaalt het maximaal aantal seconden dat een apparaat willekeurig de download van een update mag uitstellen vanaf het moment dat de update voor het eerst naar de server werd gepusht. Het apparaat kan een deel van deze tijd wachten in termen van kloktijd en het resterende deel in termen van het aantal updatecontroles. De maximale spreiding is in elk geval begrensd door een constante periode zodat een apparaat nooit vastloopt tijdens het wachten tot een update kan worden gedownload.</translation>
 <translation id="6689792153960219308">De hardwarestatus melden</translation>
-<translation id="6693751878507293182">Als je deze instelling inschakelt, wordt het automatisch zoeken naar en de installatie van ontbrekende plug-ins uitgeschakeld in <ph name="PRODUCT_NAME" />.
-
-      Als je deze optie uitschakelt of niet instelt, wordt de zoekfunctie voor plug-ins geactiveerd.</translation>
 <translation id="6699880231565102694">Authenticatie in twee stappen inschakelen voor hosts voor externe toegang</translation>
 <translation id="6724842112053619797">Als je deze instelling inschakelt, worden de instellingen die zijn opgeslagen in <ph name="PRODUCT_NAME" />-profielen (zoals bladwijzers, gegevens voor automatisch aanvullen, wachtwoorden, enzovoort), ook geschreven naar een bestand dat is opgeslagen in de map voor roaming-gebruikersprofielen of op een locatie die de beheerder heeft opgegeven via het beleid <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Als je dit beleid inschakelt, wordt cloud-synchronisatie uitgeschakeld.
 
@@ -1955,7 +1930,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       Als je deze instelling inschakelt, gebruikt <ph name="PRODUCT_NAME" /> de gespecificeerde landinstelling. Als de geconfigureerde landinstelling niet wordt ondersteund, wordt 'en-US' gebruikt.
 
       Als deze instelling is uitgeschakeld of niet is ingesteld, gebruikt <ph name="PRODUCT_NAME" /> de door de gebruiker gespecificeerde landinstelling (indien geconfigureerd), de landinstelling voor het systeem of 'en-US'.</translation>
-<translation id="7651739109954974365">Bepaalt of gegevensroaming moet worden ingeschakeld voor het apparaat. Als dit is ingesteld op 'true', wordt gegevensroaming toegestaan. Als de instelling niet wordt geconfigureerd of op 'false' is ingesteld, is gegevensroaming niet beschikbaar.</translation>
+<translation id="7651739109954974365">Bepaalt of dataroaming moet worden ingeschakeld voor het apparaat. Als dit is ingesteld op 'true', wordt dataroaming toegestaan. Als de instelling niet wordt geconfigureerd of op 'false' is ingesteld, is dataroaming niet beschikbaar.</translation>
 <translation id="7683777542468165012">Beleid dynamisch vernieuwen</translation>
 <translation id="7694807474048279351">Plannen dat het apparaat automatisch opnieuw opstart nadat een update van <ph name="PRODUCT_OS_NAME" /> is uitgevoerd.
 
@@ -1987,6 +1962,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
           Als deze instelling is uitgeschakeld of niet is ingesteld, wordt authenticatie in twee stappen niet ingeschakeld en wordt het standaardgedrag van een door de gebruiker gedefinieerde pincode gebruikt.</translation>
 <translation id="7750991880413385988">Pagina 'Nieuw tabblad' openen</translation>
+<translation id="7754704193130578113">Voorafgaand aan een download vragen waar een bestand moet worden opgeslagen</translation>
 <translation id="7761446981238915769">De lijst met geïnstalleerde apps op het inlogscherm configureren</translation>
 <translation id="7761526206824804472">Hiermee worden een of meer aanbevolen talen voor een openbare sessie ingesteld, waardoor gebruikers gemakkelijk een van deze talen kunnen kiezen.
 
@@ -2045,7 +2021,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="7841880500990419427">Minimale TLS-versie om op terug te vallen</translation>
 <translation id="7842869978353666042">Opties voor Google Drive configureren</translation>
 <translation id="7843525027689416831">Hiermee worden de markeringen gespecificeerd die bij het starten moeten worden toegepast op <ph name="PRODUCT_NAME" />. De opgegeven markeringen worden alleen toegepast op het inlogscherm. Markeringen die worden ingesteld via dit beleid, worden niet doorgevoerd in gebruikerssessies.</translation>
-<translation id="7844537954833753199">Hiermee worden extensiebeheerinstellingen voor <ph name="PRODUCT_NAME" /> geconfigureerd.
+<translation id="7844537954833753199">Hiermee worden extensiebeheerinstellingen voor <ph name="PRODUCT_NAME" /> ingesteld.
 
           Met dit beleid worden meerdere instellingen beheerd, waaronder instellingen die worden beheerd door bestaande, aan extensies gerelateerde beleidsregels. Dit beleid overschrijft alle oudere beleidsregels als beide zijn ingesteld.
 
@@ -2061,11 +2037,11 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
           De <ph name="INSTALLTION_MODE" /> kan ook worden geconfigureerd voor meerdere extensies, waaronder de extensie <ph name="DEFAULT_SCOPE" /> (als standaardinstellingen) en extensies met dezelfde update-URL. Alleen de waarden <ph name="ALLOWED" /> en <ph name="BLOCKED" /> kunnen in dit geval worden gebruikt.
 
-          Als de modus is ingesteld op <ph name="FORCE_INSTALLED" /> of <ph name="NORMAL_INSTALLED" />, moet er ook een <ph name="UPDATE_URL" /> worden geconfigureerd. Houd er rekening mee dat de in dit beleid ingestelde update-URL alleen wordt gebruikt voor de eerste installatie. Daaropvolgende updates van de extensie gebruiken de update-URL die in het manifest van de extensie is opgenomen. De update-URL moet naar een XML-document met een updatemanifest verwijzen, zoals hierboven genoemd.
+          Als de modus is ingesteld op <ph name="FORCE_INSTALLED" /> of <ph name="NORMAL_INSTALLED" />, moet er ook een <ph name="UPDATE_URL" /> worden ingesteld. Houd er rekening mee dat de in dit beleid ingestelde update-URL alleen wordt gebruikt voor de eerste installatie. Daaropvolgende updates van de extensie gebruiken de update-URL die in het manifest van de extensie is opgenomen. De update-URL moet naar een XML-document met een updatemanifest verwijzen, zoals hierboven genoemd.
 
           <ph name="BLOCKED_PERMISSIONS" />: Is toegewezen aan een lijst met tekenreeksen die de geblokkeerde API-machtigingen voor de extensie aangeven. De namen van de machtigingen zijn hetzelfde als de tekenreeksen voor machtigingen die zijn opgenomen in het manifest van de extensie, zoals beschreven in <ph name="LINK_TO_EXTENSION_DOC3" />. Deze instelling kan ook worden geconfigureerd voor de extensie <ph name="DEFAULT_SCOPE" />. Als de extensie een machtiging nodig heeft die op de blokkeerlijst staat, kan deze niet worden geladen. Als de extensie een geblokkeerde machtiging bevat als optionele vereiste, wordt deze als gebruikelijk behandeld, maar wordt het aanvragen van conflicterende machtigingen automatisch afgewezen tijdens de uitvoering.
 
-          <ph name="ALLOWED_PERMISSIONS" />: Vergelijkbaar met <ph name="BLOCKED_PERMISSIONS" />, maar in dit geval worden sommige machtigingen expliciet toegestaan die wellicht zijn geblokkeerd via lijsten met globaal geblokkeerde machtigingen. Deze instelling kan daarom niet worden geconfigureerd voor de extensie <ph name="DEFAULT_SCOPE" />. Houd er rekening mee dat deze instelling niet automatisch verleende machtigingen aan extensies geeft.
+          <ph name="ALLOWED_PERMISSIONS" />: Vergelijkbaar met <ph name="BLOCKED_PERMISSIONS" />, maar in dit geval worden sommige machtigingen expliciet toegestaan die wellicht zijn geblokkeerd via lijsten met algemeen geblokkeerde machtigingen. Deze instelling kan daarom niet worden geconfigureerd voor de extensie <ph name="DEFAULT_SCOPE" />. Houd er rekening mee dat deze instelling niet automatisch verleende machtigingen aan extensies geeft.
 
           <ph name="MINIMUM_VERSION_REQUIRED" />: Is toegewezen aan een versietekenreeks. De indeling van de versietekenreeks is hetzelfde als de indeling in het manifest van de extensie, zoals beschreven in <ph name="LINK_TO_EXTENSION_DOC4" />. Een extensie met een versie ouder dan de opgegeven minimum versie wordt uitgeschakeld. Dit is ook van toepassing op automatisch geïnstalleerde extensies.
 
@@ -2074,7 +2050,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
           <ph name="INSTALL_SOURCES" />: Elk item in deze lijst is een overeenkomstpatroon voor een extensie (<ph name="LINK_TO_MATCH_PATTERNS" />). Gebruikers kunnen gemakkelijk items installeren vanaf elke URL die overeenkomt met een item in deze lijst. De locatie van het <ph name="EXTENSION_SUFFIX_WILDCARD" />-bestand en de pagina waar de download wordt gestart (dat wil zeggen, de verwijzing), moeten beide zijn toegestaan op basis van deze patronen.
 
           <ph name="ALLOWED_TYPES" />: Met deze instelling worden de toegestane typen extensies/apps die in <ph name="PRODUCT_NAME" /> kunnen worden geïnstalleerd, op een witte lijst gezet. De waarde is een lijst met tekenreeksen waarbij elke tekenreeks een van de volgende moet zijn: <ph name="VALID_ALLOWED_TYPES" />. Raadpleeg de documentatie over <ph name="PRODUCT_NAME" />-extensies voor meer informatie over deze typen.
-          <ph name="BLOCKED_INSTALL_MESSAGE" />: Als een gebruiker probeert een extensie te installeren, maar deze wordt geblokkeerd door beleid, geeft de Chrome Web Store een algemene foutmelding weer. Met deze instelling kun je tekst toevoegen aan de foutmelding. Deze tekst kan bijvoorbeeld worden gebruikt om gebruikers naar je helpdesk te brengen of uit te leggen waarom een bepaalde extensie wordt geblokkeerd. De foutmelding wordt afgekapt als deze meer dan 1000 tekens bevat.
+          <ph name="BLOCKED_INSTALL_MESSAGE" />: Als een gebruiker probeert een extensie te installeren, maar deze wordt geblokkeerd door beleid, geeft de Chrome Web Store een algemene foutmelding weer. Met deze instelling kun je tekst toevoegen aan de foutmelding. Deze tekst kan bijvoorbeeld worden gebruikt om gebruikers door te verwijzen naar je helpdesk of uit te leggen waarom een bepaalde extensie wordt geblokkeerd. De foutmelding wordt afgekapt als deze meer dan 1000 tekens bevat.
           <ph name="RUNTIME_BLOCKED_HOSTS" />: Accepteert een lijst met hosts waarmee een extensie geen interactie mag hebben. Dit omvat het invoegen van JavaScript, het aanpassen en bekijken van webRequests/webNavigation en het bekijken en aanpassen van cookies. De indeling is vergelijkbaar met overeenkomstpatronen <ph name="LINK_TO_MATCH_PATTERNS" />, behalve dat er geen paden kunnen worden gedefinieerd (zoals "*://*.example.com"). Dit biedt ook ondersteuning voor effectieve TLD-jokertekens ("*://example.*").
           <ph name="RUNTIME_ALLOWED_HOSTS" />: Accepteert een lijst met hosts waarmee een extensie interactie mag hebben, ongeacht of ze worden vermeld in <ph name="RUNTIME_BLOCKED_HOSTS" />. Dit is dezelfde indeling als <ph name="RUNTIME_BLOCKED_HOSTS" />.
           </translation>
@@ -2239,7 +2215,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
       Als dit beleid is ingesteld op 'false' (onwaar) of niet is geconfigureerd, kan de gebruiker de browser gebruiken zonder in te loggen bij <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8382184662529825177">Het gebruik van externe verificatie inschakelen voor het beveiligen van content voor het apparaat</translation>
-<translation id="838870586332499308">Gegevensroaming inschakelen</translation>
+<translation id="838870586332499308">Dataroaming inschakelen</translation>
 <translation id="8390049129576938611">Hiermee wordt de interne pdf-viewer in <ph name="PRODUCT_NAME" /> uitgeschakeld. In plaats daarvan wordt dit beschouwd als download. De gebruiker kan pdf-bestanden openen met de standaard-app.
 
       Als dit beleid niet wordt ingesteld of wordt uitgeschakeld, wordt de pdf-plug-in gebruikt om pdf-bestanden te openen, tenzij de gebruiker deze uitschakelt.</translation>
@@ -2250,11 +2226,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="8451988835943702790">De pagina 'Nieuw tabblad' als homepage gebruiken</translation>
 <translation id="8465065632133292531">Parameters voor instant-URL die POST gebruikt</translation>
 <translation id="847472800012384958">Niet toestaan dat sites pop-ups weergeven</translation>
-<translation id="8476127435468057643">Controleert of NTLMv2 is ingeschakeld.
-
-Alle recente versies van Samba en Windows-servers ondersteunen NTLMv2. Dit moet alleen worden uitgeschakeld voor achterwaartse compatibiliteit en vermindert de beveiliging van verificatie.
-
-Als dit beleid niet is gedefinieerd, is de standaardwaarde momenteel 'false' (onwaar) voor achterwaartse compatibiliteit. In de toekomst wordt dit gewijzigd in 'true' (waar).</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
 <translation id="8484458986062090479">Hiermee kun je de lijst aanpassen van URL-patronen die altijd door de hostbrowser moeten worden verwerkt.
 

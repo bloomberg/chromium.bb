@@ -26,7 +26,6 @@
 <translation id="15373452373711364">نشانگر موشواره بزرگ</translation>
 <translation id="1550523713251050646">برای گزینه‌های بیشتر کلیک کنید</translation>
 <translation id="1621499497873603021">زمان باقیمانده تا خالی‌شدن شارژ باتری، <ph name="TIME_LEFT" /></translation>
-<translation id="16620462294541761">متأسفانه، گذرواژه شما تأیید نشد. لطفاً دوباره امتحان کنید.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> باقی‌مانده</translation>
 <translation id="1698760176351776263">‏نشانی IPv6: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">این دستگاه توسط سازمانی مدیریت می‌شود</translation>
@@ -69,9 +68,10 @@
 <translation id="2509468283778169019">‏CAPS LOCK روشن است</translation>
 <translation id="2532589005999780174">حالت کنتراست بالا</translation>
 <translation id="2597972630681408282">«نور شب»: <ph name="NIGHT_LIGHT_STATUS" /></translation>
+<translation id="2617342710774726426">سیم‌کارت قفل است</translation>
 <translation id="2653659639078652383">ارائه</translation>
-<translation id="2675319268637823299">سرپرستی ورود چندگانه به سیستم را برای <ph name="USER_EMAIL" /> غیرمجاز کرده است.
-    برای ادامه، همه کاربران باید از سیستم خارج شوند.</translation>
+<translation id="2675319268637823299">یکی از سرپرست‌ها ورود چندگانه به سیستم را برای <ph name="USER_EMAIL" /> غیرمجاز کرده است.
+    برای ادامه دادن، همه کاربران باید از سیستم خارج شوند.</translation>
 <translation id="2700058918926273959">جلسه در <ph name="SESSION_TIME_REMAINING" /> به پایان می‌رسد. از سیستم خارج خواهید شد.</translation>
 <translation id="2727977024730340865">باتری به شارژر برق ضعیف متصل است. شارژ باتری ممکن است قابل اطمینان نباشد.</translation>
 <translation id="2761704814324807722">سینی وضعیت، زمان <ph name="TIME" />، ‏<ph name="BATTERY" /></translation>
@@ -174,7 +174,6 @@
 <translation id="5571066253365925590">بلوتوث فعال شد</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />، <ph name="DATE" /></translation>
 <translation id="5600837773213129531">‏برای غیرفعال کردن بازخورد گفتاری، Ctrl + Alt + Z را فشار دهید.</translation>
-<translation id="5612734644261457353">متأسفیم، تأیید گذرواژه شما همچنان امکان‌پذیر نیست. اگر به‌تازگی گذرواژه خود را تغییر داده‌اید، گذرواژه جدید شما هنگامی‌که از سیستم خارج شدید، اعمال می‌شود؛ لطفاً اینجا از گذرواژه قدیمی خود استفاده کنید.</translation>
 <translation id="5648021990716966815">فیش میکروفون</translation>
 <translation id="5673434351075758678">از «<ph name="FROM_LOCALE" />» به «<ph name="TO_LOCALE" />» بعد از همگام‌سازی تنظیمات.</translation>
 <translation id="5744083938413354016">کشیدن با ضربه زدن</translation>
@@ -284,10 +283,10 @@
 <translation id="8261506727792406068">حذف</translation>
 <translation id="8308637677604853869">منوی قبلی</translation>
 <translation id="8351131234907093545">یادداشت ایجاد کنید</translation>
-<translation id="8392234662362215700">‏برای تغییر طرح کلی صفحه‌کلید، Control-Shift و فاصله را فشار دهید.</translation>
 <translation id="8428213095426709021">تنظیمات</translation>
 <translation id="8433186206711564395">تنظیمات شبکه</translation>
 <translation id="8433977262951327081">میان‌بر نمایش ابزارک اعلان گزینه‌های ورودی در قفسه تغییر کرده است. لطفاً به‌جای <ph name="OLD_SHORTCUT" /> از <ph name="NEW_SHORTCUT" /> استفاده کنید.</translation>
+<translation id="8452135315243592079">سیم‌کارت وجود ندارد</translation>
 <translation id="8454013096329229812">‏Wi-Fi روشن است.</translation>
 <translation id="847056008324733326">تنظیمات مقیاس نمایش</translation>
 <translation id="8477270416194247200">‏برای لغو کردن Alt+Search یا Shift را فشار دهید.</translation>
@@ -315,7 +314,6 @@
 <translation id="9091626656156419976">نمایشگر <ph name="DISPLAY_NAME" /> برداشته شد</translation>
 <translation id="9111102763498581341">باز کردن قفل</translation>
 <translation id="9151726767154816831">‏راه‌اندازی مجدد و Powerwash برای به‌روزرسانی</translation>
-<translation id="9181036778675416867">برای یادداشت‌برداری، گرفتن عکس صفحه‌نمایش، استفاده از دستیار، نشانگر لیزری یا ذره‌بین، روی دکمه قلم در قفسه ضربه بزنید.</translation>
 <translation id="9194617393863864469">ورود به سیستم حسابی دیگر...</translation>
 <translation id="9201131092683066720">باتری <ph name="PERCENTAGE" /> درصد پر است.</translation>
 <translation id="9210037371811586452">خروج از حالت میزکار یکپارچه</translation>

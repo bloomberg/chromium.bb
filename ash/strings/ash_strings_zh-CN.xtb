@@ -26,7 +26,6 @@
 <translation id="15373452373711364">大号鼠标光标</translation>
 <translation id="1550523713251050646">点击即可查看更多选项</translation>
 <translation id="1621499497873603021">电池电量将在 <ph name="TIME_LEFT" />后耗尽</translation>
-<translation id="16620462294541761">抱歉，无法验证您的密码，请重试。</translation>
 <translation id="1677472565718498478">电量尚余 <ph name="TIME" /></translation>
 <translation id="1698760176351776263">IPv6 地址：<ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">此设备是受企业管理的设备</translation>
@@ -69,6 +68,7 @@
 <translation id="2509468283778169019">CAPS LOCK 已打开</translation>
 <translation id="2532589005999780174">高反差模式</translation>
 <translation id="2597972630681408282">夜间模式：<ph name="NIGHT_LIGHT_STATUS" /></translation>
+<translation id="2617342710774726426">SIM 卡已被锁定</translation>
 <translation id="2653659639078652383">提交</translation>
 <translation id="2675319268637823299">管理员已禁止 <ph name="USER_EMAIL" /> 参与多帐号登录。
     所有用户都必须先退出帐号才能继续。</translation>
@@ -174,7 +174,6 @@
 <translation id="5571066253365925590">蓝牙已启用</translation>
 <translation id="5597451508971090205"><ph name="DATE" /><ph name="SHORT_WEEKDAY" /></translation>
 <translation id="5600837773213129531">按 Ctrl + Alt + Z 即可停用语音反馈。</translation>
-<translation id="5612734644261457353">抱歉，我们仍然无法验证您的密码。提示：如果您刚刚改了密码，新密码将在您退出后应用。请在此使用您的旧密码。</translation>
 <translation id="5648021990716966815">麦克风耳机插孔</translation>
 <translation id="5673434351075758678">当系统同步完您的设置后，“<ph name="FROM_LOCALE" />”即会改为“<ph name="TO_LOCALE" />”。</translation>
 <translation id="5744083938413354016">点按拖动</translation>
@@ -284,10 +283,10 @@
 <translation id="8261506727792406068">删除</translation>
 <translation id="8308637677604853869">上一菜单</translation>
 <translation id="8351131234907093545">创建记事</translation>
-<translation id="8392234662362215700">按 Ctrl+Shift+空格键可切换键盘布局。</translation>
 <translation id="8428213095426709021">设置</translation>
 <translation id="8433186206711564395">网络设置</translation>
 <translation id="8433977262951327081">用于在任务栏中显示输入法选项菜单气泡的快捷键已更改。请使用<ph name="NEW_SHORTCUT" />（而不是 <ph name="OLD_SHORTCUT" />）。</translation>
+<translation id="8452135315243592079">缺少 SIM 卡</translation>
 <translation id="8454013096329229812">Wi-Fi 已打开。</translation>
 <translation id="847056008324733326">显示比例设置</translation>
 <translation id="8477270416194247200">按 Alt+搜索键或按 Shift 键可取消。</translation>
@@ -315,7 +314,6 @@
 <translation id="9091626656156419976">已移除显示器“<ph name="DISPLAY_NAME" />”</translation>
 <translation id="9111102763498581341">解锁</translation>
 <translation id="9151726767154816831">重新启动并通过 Powerwash 来进行更新</translation>
-<translation id="9181036778675416867">点按任务栏中的触控笔按钮即可记事、截取屏幕截图，并可使用智能助理、激光笔或放大镜。</translation>
 <translation id="9194617393863864469">登录其他用户帐号…</translation>
 <translation id="9201131092683066720">电池电量为<ph name="PERCENTAGE" />%。</translation>
 <translation id="9210037371811586452">正在退出统一桌面模式</translation>

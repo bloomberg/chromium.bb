@@ -615,7 +615,6 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 
       Ďalšie informácie o Bezpečnom prehliadaní získate na adrese https://developers.google.com/safe-browsing.</translation>
 <translation id="3016255526521614822">Pridať na bielu listinu aplikácie na písanie poznámok, ktoré sú povolené na uzamknutej obrazovke systému <ph name="PRODUCT_OS_NAME" /></translation>
-<translation id="3021409116652377124">Zakázať nástroj na hľadanie doplnkov</translation>
 <translation id="3030000825273123558">Povoliť hlásenia o metrikách</translation>
 <translation id="3034580675120919256">Umožní nastaviť, či môžu webové stránky spúšťať kód JavaScript. Spúšťanie kódu JavaScript sa dá pre všetky webové stránky buď umožniť, alebo naopak zamietnuť.
 
@@ -912,25 +911,6 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 
           Táto funkcia je zvyčajne zakázaná kvôli ochrane pred phishingom (neoprávneným získavaním údajov). Ak toto pravidlo nie je nastavené, je zakázané a vnorenému obsahu tretej strany sa nepovolí zobrazovať kontextové dialógové okno s protokolom HTTP Basic Auth.</translation>
 <translation id="4056910949759281379">Zakázať protokol SPDY</translation>
-<translation id="4077363032873906037">Umožňuje povoliť obmedzený denník prehliadača <ph name="PRODUCT_NAME" /> vo funkcii v službe Google Apps a zabráni používateľom toto nastavenie meniť.
-
-      Ak toto nastavenie definujete, používateľ získa prístup iba k aplikáciám Google
-      používajúcim účty z určených domén (upozorňujeme, že to nefunguje
-      v prípade domény gmail.com/googlemail.com).
-
-      Toto nastavenie NEZABRÁNI používateľom prihlasovať sa na spravovaných
-      zariadeniach, ktoré vyžadujú overenie totožnosti Google. Používateľ sa bude môcť naďalej
-      prihlasovať do účtov z iných domén, ale ak sa v nich pokúsi použiť
-      službu Google Apps, zobrazí sa chybové hlásenie.
-
-      Ak toto nastavenie ponecháte prázdne alebo ho nenakonfigurujete, používateľ bude môcť
-      do služby Google Apps získať prístup pomocou akéhokoľvek účtu.
-
-      Toto pravidlo spôsobí, že hlavička X-GoogApps-Allowed-Domains bude pripojená
-      ku všetkým žiadostiam HTTP a HTTPS do všetkých domén google.com tak, ako je to opísané na adrese
-      https://support.google.com/a/answer/1668854.
-
-      Používatelia nemôžu toto nastavenie zmeniť ani prepísať.</translation>
 <translation id="408029843066770167">Povolenie dopytov odosielaných do časovej služby Google</translation>
 <translation id="4088589230932595924">Vynútený režim inkognito</translation>
 <translation id="4088983553732356374">Umožňuje nastaviť, či môžu webové stránky nastavovať miestne údaje. Nastavenie miestnych údajov je možné buď povoliť pre všetky webové stránky, alebo ho pre všetky webové stránky zakázať.
@@ -948,7 +928,6 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
           Hodnota pravidla by mala byť uvedená v milisekundách.</translation>
 <translation id="4105989332710272578">Zakázať vynucovanie pravidla transparentnosti certifikátov pre zoznam webových adries</translation>
 <translation id="4121350739760194865">Zabraňuje tomu, aby sa propagácie aplikácií zobrazovali na stránke Nová karta</translation>
-<translation id="4133144443101280166">Intervaly nečinnosti, kedy sú povolené pravidlá |ignored_policy_proto_tags| upravujúce parameter OffHours</translation>
 <translation id="4157003184375321727">Hlásiť verziu operačného systému a firmvéru</translation>
 <translation id="4183229833636799228">Predvolené nastavenie doplnku <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">Webová adresa na potvrdenie overovacieho tokenu klienta vzdialeného pripojenia</translation>
@@ -1176,7 +1155,6 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
           Napríklad pravidlo <ph name="EXTENSION_POLICY_EXAMPLE" /> nainštaluje aplikáciu <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> zo štandardnej webovej adresy aktualizácie Internetového obchodu Chrome. Ďalšie informácie o hostení rozšírení si môžete prečítať na adrese <ph name="LINK_TO_EXTENSION_DOC2" />.
 
           Ak toto pravidlo nenastavíte, nebudú sa automaticky inštalovať žiadne aplikácie ani rozšírenia a používateľ môže odinštalovať ľubovoľnú aplikáciu alebo rozšírenie v prehliadači <ph name="PRODUCT_NAME" />.</translation>
-<translation id="4882546920824859909">Definovať domény s povoleným prístupom do služby Google Apps</translation>
 <translation id="4897928009230106190">Určuje parametre, ktoré sa použijú pri hľadaní návrhov pomocou metódy POST. Pozostáva z párov názov/hodnota oddelených čiarkami. Ak je hodnota parameter šablóny, napr. hodnota {searchTerms} v príklade vyššie, bude nahradená údajmi skutočných vyhľadávaných výrazov.
 
           Toto pravidlo je voliteľné. Ak nie je nastavené, žiadosť o vyhľadávanie návrhu sa odošle pomocou metódy GET.
@@ -1241,7 +1219,6 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 
           Ak toto pravidlo ponecháte nenastavené, použije sa v prípade všetkých webových stránok globálna predvolená hodnota buď z pravidla „DefaultNotificationsSetting“ (ak je nastavené), alebo z osobnej konfigurácie používateľa.</translation>
 <translation id="5219844027738217407">V prípade aplikácii pre Android toto pravidlo ovplyvňuje iba mikrofón. Keď je toto pravidlo nastavené na hodnotu True, mikrofón je stlmený pre všetky aplikácie pre Android (bez výnimiek).</translation>
-<translation id="5226033722357981948">Určiť, či má byť nástroj na vyhľadávanie doplnkov zakázaný</translation>
 <translation id="523505283826916779">Nastavenia zjednodušenia prístupu</translation>
 <translation id="5247006254130721952">Blokovať nebezpečné súbory na stiahnutie</translation>
 <translation id="5255162913209987122">Odporúča sa</translation>
@@ -1380,14 +1357,6 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 <translation id="5728154254076636808">Povoliť vytváranie roamingových kópií údajov profilu v prehliadači <ph name="PRODUCT_NAME" /></translation>
 <translation id="5732972008943405952">Importovať údaje automatického dopĺňania formulárov z predvoleného prehliadača pri prvom spustení</translation>
 <translation id="5765780083710877561">Popis:</translation>
-<translation id="5768309557753179144">Prehliadače Chromium a Google Chrome podporujú rovnaké pravidlá. Upozorňujeme, že tento dokument môže obsahovať zatiaľ nevydané pravidlá (t. j. ich záznam „Podporované na“ odkazuje na zatiaľ nevydanú verziu softvéru <ph name="PRODUCT_NAME" />), a že tieto pravidlá môžu byť zmenené alebo odstránené bez predchádzajúceho upozornenia, pričom nie sú kryté zárukou akéhokoľvek druhu vrátane záruk týkajúcich sa bezpečnosti a súkromia.
-
-Tieto pravidlá sú výhradne určené na použitie pri konfigurácii inštancií prehliadača <ph name="PRODUCT_NAME" /> vo vašej organizácii. Použitie týchto pravidiel mimo vašej organizácie (napr. vo verejne distribuovanom programe) je považované za malvér. Google a dodávatelia antivírusových softvérov ho pravdepodobne budú preto označovať ako malvér.
-
-Tieto nastavenia nie je potrebné konfigurovať ručne! Jednoducho použiteľné šablóny pre Windows, Mac a Linux sú k dispozícii na stiahnutie na adrese <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
-
-Odporúčaný spôsob nastavenia pravidiel v systéme Windows je prostredníctvom objektu pravidiel skupiny (GPO). Spravovanie pravidiel prostredníctvom registrov je však v inštanciách systému Windows pripojených k doméne
- <ph name="MS_AD_NAME" /> naďalej podporované.</translation>
 <translation id="5770738360657678870">Verzia pre vývojárov (môže byť nestabilná)</translation>
 <translation id="5774856474228476867">Webová adresa vyhľadávania predvoleného poskytovateľa vyhľadávania</translation>
 <translation id="5776485039795852974">Opýtať sa vždy, keď chcú stránky zobrazovať upozornenia na pracovnej ploche</translation>
@@ -1712,9 +1681,6 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je prostredníctv
       Ak ponecháte toto pravidlo nenastavené, bude predpovedanie siete aktivované, no používatelia budú môcť nastavenie zmeniť.</translation>
 <translation id="6658245400435704251">Určí počet sekúnd, o koľko môže zariadenie náhodne zdržať sťahovanie aktualizácie odvtedy, čo bola aktualizácia odoslaná na server. Zariadenie môže čakať určitý čas a sa pokúsiť o určitý počet kontrol aktualizácií. Oneskorenie je obmedzené nemenným maximálnym časovým intervalom tak, aby zariadenie nečakalo na stiahnutie aktualizácie donekonečna.</translation>
 <translation id="6689792153960219308">Nahlásiť stav hardvéru</translation>
-<translation id="6693751878507293182">Ak tu nastavíte na hodnotu povolené, automatické vyhľadávanie a inštalovanie chýbajúcich doplnkov bude v prehliadači <ph name="PRODUCT_NAME" /> zakázané.
-
-      Ak túto možnosť nastavíte ako zakázanú alebo ju ponecháte nenastavenú, nástroj na vyhľadávanie doplnkov bude aktívny.</translation>
 <translation id="6699880231565102694">Povolenie dvojfázového overenia totožnosti pre hostiteľov vzdialeného prístupu</translation>
 <translation id="6724842112053619797">Ak povolíte toto nastavenie, nastavenia uložené v profiloch <ph name="PRODUCT_NAME" /> (napr. záložky, údaje automatického dopĺňania, heslá atď.) sa zapíšu tiež do súboru uloženého v priečinku roamingového používateľského profilu alebo v umiestnení špecifikovanom správcom prostredníctvom pravidla <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Povolenie tohto pravidla vypne synchronizáciu s cloudom.
 
@@ -1996,6 +1962,7 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je prostredníctv
 
           Ak je toto nastavenie zakázané alebo nie je nastavené, dvojfázové overenie totožnosti nebude povolené a namiesto neho bude použitá predvolená možnosť – používateľom zadaný kód PIN.</translation>
 <translation id="7750991880413385988">Otvoriť stránku Nová karta</translation>
+<translation id="7754704193130578113">Pred každým sťahovaním sa spýtať, kam uložiť súbor</translation>
 <translation id="7761446981238915769">Konfigurácia zoznamu nainštalovaných aplikácií na prihlasovacej obrazovke</translation>
 <translation id="7761526206824804472">Nastaví jedno alebo viac odporúčaných miestnych nastavení pre verejnú reláciu a umožní používateľom poľahky z nich niektoré vybrať.
 
@@ -2054,7 +2021,7 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je prostredníctv
 <translation id="7841880500990419427">Minimálna záložná verzia protokolu TLS</translation>
 <translation id="7842869978353666042">Konfigurácia možností služby Disk Google</translation>
 <translation id="7843525027689416831">Určuje príznaky, ktoré sa použijú pri spúšťaní prehliadača <ph name="PRODUCT_NAME" />. Určené príznaky budú použité iba na prihlasovacej obrazovke. Príznaky nastavené prostredníctvom tohto pravidla sa neprenesú do relácií používateľov.</translation>
-<translation id="7844537954833753199">Umožňuje konfiguráciu nastavení správy pre <ph name="PRODUCT_NAME" />.
+<translation id="7844537954833753199">Umožňuje konfigurovať nastavenia správy pre <ph name="PRODUCT_NAME" />.
 
           Toto pravidlo ovláda viaceré nastavenia, ako aj nastavenia ovládané existujúcimi pravidlami týkajúcimi sa rozšírení. Ak nastavíte obe, toto pravidlo prepíše všetky staré pravidlá.
 
@@ -2062,8 +2029,8 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je prostredníctv
 
           Konfigurácia pre jednotlivé rozšírenia (alebo rozšírenia s rovnakou webovou adresou aktualizácie) je ďalší slovník, ktorý môže obsahovať polia uvedené nižšie.
 
-          <ph name="INSTALLATION_MODE" />: spustí mapovanie na reťazec označujúci režim inštalácie daného rozšírenia. Platné reťazce:
-          * <ph name="ALLOWED" />: umožňuje používateľovi nainštalovať rozšírenie. Ide o predvolené správanie.
+          <ph name="INSTALLATION_MODE" />: spustí mapovanie na reťazec označujúci režim inštalácie daného rozšírenia. Medzi platné reťazce patria:
+          * <ph name="ALLOWED" />: umožňuje používateľovi nainštalovať rozšírenie.
           * <ph name="BLOCKED" />: zablokuje inštaláciu rozšírenia.
           * <ph name="FORCE_INSTALLED" />: rozšírenie sa automaticky nainštaluje a používateľ ho nebude môcť odstrániť.
           * <ph name="NORMAL_INSTALLED" />: rozšírenie sa automaticky nainštaluje, ale používateľ ho bude môcť zakázať.
@@ -2074,7 +2041,7 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je prostredníctv
 
           <ph name="BLOCKED_PERMISSIONS" />: spustí mapovanie na zoznam reťazcov označujúci blokované povolenia rozhrania API pre dané rozšírenie. Názvy povolení sú rovnaké ako reťazce povolení uvedené v manifeste daného rozšírenia tak, ako je to uvedené na adrese <ph name="LINK_TO_EXTENSION_DOC3" />. Toto nastavenie môžete nakonfigurovať aj pre rozšírenie <ph name="DEFAULT_SCOPE" />. Ak rozšírenie vyžaduje povolenie, ktoré sa nachádza v zozname blokovaných položiek, toto povolenie sa nenačíta. Ak ako nepovinnú požiadavku obsahuje blokované povolenie, bude spracované bežným spôsobom. Ak však vyžiada povolenia, ktoré sú v konflikte, budú automaticky zakázané pri spustení.
 
-          <ph name="ALLOWED_PERMISSIONS" />: je rovnaké nastavenie ako <ph name="BLOCKED_PERMISSIONS" />, ale na rozdiel od neho explicitne povolí niektoré povolenia, ktoré môžu byť blokované globálnym zoznamom blokovaných povolení, a preto ho nie je možné nakonfigurovať pre rozšírenie <ph name="DEFAULT_SCOPE" />. Uvedomte si, že toto nastavenie neudeľuje rozšíreniam povolenia automaticky.
+          <ph name="ALLOWED_PERMISSIONS" />: je rovnaké nastavenie ako <ph name="BLOCKED_PERMISSIONS" />, ale na rozdiel od neho explicitne povolí niektoré povolenia, ktoré môžu byť blokované globálnym zoznamom blokovaných povolení, a preto ho nie je možné nakonfigurovať pre rozšírenie <ph name="DEFAULT_SCOPE" />. Upozorňujeme, že toto nastavenie neudeľuje rozšíreniam povolenia automaticky.
 
           <ph name="MINIMUM_VERSION_REQUIRED" />: spustí mapovanie na reťazec verzie. Formát reťazca verzie je rovnaký ako ten, ktorý bol použitý v manifeste daného rozšírenia tak, ako je to uvedené na adrese <ph name="LINK_TO_EXTENSION_DOC4" />. Rozšírenia so staršou verziou ako stanovená minimálna verzia budú zakázané. Platí to aj pre rozšírenia, ktorých inštalácia bola vynútená.
 
@@ -2082,9 +2049,9 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je prostredníctv
 
           <ph name="INSTALL_SOURCES" />: všetky položky v tomto zozname sú vzory zodpovedajúce typu rozšírenia (<ph name="LINK_TO_MATCH_PATTERNS" />). Používatelia budú môcť poľahky inštalovať položky z ľubovoľnej webovej adresy, ktorá sa bude zhodovať s položkou v tomto zozname. Pomocou týchto vzorov musíte povoliť umiestnenie súboru <ph name="EXTENSION_SUFFIX_WILDCARD" /> a stránku, na ktorej sa spustí sťahovanie (t. j. sprostredkovateľa).
 
-          <ph name="ALLOWED_TYPES" />: toto nastavenie pridá na bielu listinu povolené typy rozšírenia/aplikácií, ktoré je možné nainštalovať v prehliadači <ph name="PRODUCT_NAME" />.  Daná hodnota je zoznam týchto reťazcov: <ph name="VALID_ALLOWED_TYPES" />. Ďalšie informácie o týchto typoch si môžete prečítať v dokumentácii k rozšíreniam pre <ph name="PRODUCT_NAME" />.
+          <ph name="ALLOWED_TYPES" />: toto nastavenie pridá na bielu listinu povolené typy rozšírenia/aplikácií, ktoré je možné nainštalovať v prehliadači <ph name="PRODUCT_NAME" />.  Daná hodnota je zoznam týchto reťazcov: <ph name="VALID_ALLOWED_TYPES" />. Ďalšie informácie o týchto typoch si môžete prečítať v dokumentácii k rozšíreniam prehliadača <ph name="PRODUCT_NAME" />.
           <ph name="BLOCKED_INSTALL_MESSAGE" />: Ak sa používateľ pokúsi nainštalovať rozšírenie, ktoré je blokované pravidlami, Internetový obchod Chrome zobrazí všeobecné chybové hlásenie. Toto nastavenie umožňuje k nemu pripojiť text. Môžete to využiť na nasmerovanie používateľov na vašu stránku technickej pomoci, vysvetliť dôvod blokovania konkrétneho rozšírenia a pod. Toto chybové hlásenie musí mať maximálne 1 000 znakov, inak bude skrátené.
-          <ph name="RUNTIME_BLOCKED_HOSTS" />: umožní prijať zoznam hostiteľov, s ktorými nebude môcť rozšírenie interagovať. Patria sem vkladanie javascriptu, upravovanie alebo zobrazovanie parametrov webRequests / webNavigation, zobrazovanie a upravovanie súborov cookie. Formát je podobný hľadaniu zhôd so vzormi <ph name="LINK_TO_MATCH_PATTERNS" />, avšak nemôžete definovať žiadne cesty, napr. *://*.example.com. Tiež je podporované efektívne používanie zástupných znakov TLD, napr. *://example.*.
+          <ph name="RUNTIME_BLOCKED_HOSTS" />: umožní prijať zoznam hostiteľov, s ktorými nebude môcť rozšírenie interagovať. Patria sem vkladanie JavaScriptu, upravovanie alebo zobrazovanie parametrov webRequests / webNavigation, zobrazovanie a upravovanie súborov cookie. Formát je podobný hľadaniu zhôd so vzormi <ph name="LINK_TO_MATCH_PATTERNS" /> , avšak nemôžete definovať žiadne cesty, napr. *://*.príklad.com. Tiež je podporované efektívne používanie zástupných znakov TLD, napr. *://príklad.*.
           <ph name="RUNTIME_ALLOWED_HOSTS" />: Umožňuje prijať zoznam hostiteľov, s ktorými môže rozšírenie interagovať bez ohľadu na to, či sú uvedené v zozname <ph name="RUNTIME_BLOCKED_HOSTS" />. Má rovnaký formát ako <ph name="RUNTIME_BLOCKED_HOSTS" />.
           </translation>
 <translation id="787125417158068494">Ak je pravidlo nastavené na hodnotu SyncDisabled alebo nie je nakonfigurované, certifikáty systému <ph name="PRODUCT_OS_NAME" /> nie sú pre aplikácie ARC k dispozícii.
@@ -2260,11 +2227,6 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je prostredníctv
 <translation id="8451988835943702790">Použiť stránku Nová karta ako domovskú stránku</translation>
 <translation id="8465065632133292531">Parametre pre webovú adresu okamžitého vyhľadávania, ktorá používa metódu POST</translation>
 <translation id="847472800012384958">Zakázať všetkým stránkam zobrazovať kontextové okná</translation>
-<translation id="8476127435468057643">Umožňuje nastaviť, či je aktivovaný protokol NTLMv2.
-
-          Všetky nedávne verzie serverov Samba a Windows podporujú NTLMv2. Mali by ste ho deaktivovať iba vtedy, ak potrebujete zaistiť spätnú kompatibilitu, pretože to znižuje zabezpečenie overenia totožnosti.
-
-          Ak toto pravidlo nenastavíte, predvolená hodnota je momentálne možnosť False (Nepravda) v prípade spätnej kompatibility, ale v budúcnosti sa zmení na hodnotu True.</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
 <translation id="8484458986062090479">Prispôsobte si zoznam vzorov webových adries, ktoré by mali byť vždy vykresľované hostiteľským prehliadačom.
 

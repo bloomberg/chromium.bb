@@ -597,7 +597,6 @@
 
       Lihat https://developers.google.com/safe-browsing untuk mendapatkan informasi selengkapnya terkait SafeBrowsing.</translation>
 <translation id="3016255526521614822">Beri akses aplikasi pencatat yang diizinkan di layar kunci <ph name="PRODUCT_OS_NAME" /></translation>
-<translation id="3021409116652377124">Nonaktifkan pencari plugin</translation>
 <translation id="3030000825273123558">Aktifkan pelaporan metrik</translation>
 <translation id="3034580675120919256">Memungkinkan Anda menyetel apakah situs web diizinkan menjalankan JavaScript. Menjalankan JavaScript dapat diizinkan atau ditolak untuk semua situs web. Jika kebijakan ini tidak disetel, 'AllowJavaScript' akan digunakan dan pengguna dapat mengubahnya.</translation>
 <translation id="3038323923255997294">Terus jalankan aplikasi latar belakang saat <ph name="PRODUCT_NAME" /> ditutup</translation>
@@ -886,25 +885,6 @@
 <translation id="4027608872760987929">Aktifkan penyedia penelusuran default</translation>
 <translation id="4039085364173654945">Mengontrol apakah sub-konten pihak ketiga pada halaman diizinkan untuk memunculkan kotak dialog HTTP Otorisasi Dasar. Biasanya, kebijakan ini dinonaktifkan sebagai pertahanan atas phishing. Jika tidak disetel, kebijakan ini akan dinonaktifkan dan sub-konten pihak ketiga tidak akan diizinkan untuk memunculkan kotak dialog HTTP Otorisasi Dasar.</translation>
 <translation id="4056910949759281379">Nonaktifkan protokol SPDY</translation>
-<translation id="4077363032873906037">Mengaktifkan fitur login <ph name="PRODUCT_NAME" /> yang dibatasi di Google Apps dan mencegah pengguna mengubah setelan ini.
-
-      Jika Anda menetapkan setelan ini, pengguna hanya dapat mengakses Google
-      Apps menggunakan akun dari domain yang ditentukan (perhatikan bahwa setelan ini tidak
-      berfungsi untuk gmail.com/googlemail.com).
-
-      Setelan ini TIDAK akan mencegah pengguna login di perangkat yang dikelola
-      yang memerlukan autentikasi Google. Pengguna tetap dapat
-      login ke akun dari domain lain, namun mereka akan menerima error
-      saat mencoba menggunakan Google Apps dengan akun tersebut.
-
-      Jika Anda mengosongkan/tidak mengonfigurasi setelan ini, pengguna dapat
-      mengakses Google Apps dengan akun apa pun.
-
-      Kebijakan ini menyebabkan header X-GoogApps-Allowed-Domains ditambahkan ke
-      semua permintaan HTTP dan HTTPS ke semua domain google.com, seperti yang dijelaskan dalam
-      https://support.google.com/a/answer/1668854.
-
-      Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
 <translation id="408029843066770167">Izinkan kueri ke layanan waktu Google</translation>
 <translation id="4088589230932595924">Mode penyamaran dipaksakan</translation>
 <translation id="4088983553732356374">Memungkinkan Anda menentukan apakah situs web diizinkan untuk menyetel data lokal atau tidak. Penyetelan data lokal bisa diizinkan untuk semua situs web atau ditolak untuk semua situs web.
@@ -922,7 +902,6 @@
           Nilai kebijakan harus ditetapkan dalam milidetik.</translation>
 <translation id="4105989332710272578">Nonaktifkan penerapan Transparansi Sertifikat untuk daftar URL</translation>
 <translation id="4121350739760194865">Mencegah promosi apl muncul di halaman tab baru</translation>
-<translation id="4133144443101280166">Interval di luar jam kerja saat OffHours |ignored_policy_proto_tags| perangkat dirilis</translation>
 <translation id="4157003184375321727">Laporkan versi OS dan firmware</translation>
 <translation id="4183229833636799228">Setelan <ph name="FLASH_PLUGIN_NAME" /> default</translation>
 <translation id="4192388905594723944">URL untuk memvalidasi token autentikasi klien akses jarak jauh</translation>
@@ -1139,7 +1118,6 @@
           Misalnya, <ph name="EXTENSION_POLICY_EXAMPLE" /> menginstal aplikasi <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> dari URL "update" Toko Web Chrome standar. Untuk informasi selengkapnya tentang menghosting ekstensi, lihat: <ph name="LINK_TO_EXTENSION_DOC2" />.
 
           Jika kebijakan ini tidak disetel, tidak ada aplikasi atau ekstensi yang otomatis diinstal dan pengguna dapat meng-uninstal aplikasi atau ekstensi apa pun di <ph name="PRODUCT_NAME" />.</translation>
-<translation id="4882546920824859909">Menetapkan domain yang diizinkan untuk mengakses Google Apps</translation>
 <translation id="4897928009230106190">Menentukan parameter yang digunakan saat melakukan penelusuran saran dengan POST. Terdiri dari pasangan nama/nilai yang dipisahkan koma. Jika nilai  parameter template, seperti {searchTerms} pada contoh di atas, akan diganti dengan data istilah penelusuran nyata.
 
           Kebijakan ini bersifat opsional. Jika tidak disetel, sarankan permintaan saran penelusuran akan dikirim menggunakan metode GET.
@@ -1192,7 +1170,6 @@
       Jika kebijakan ini tidak disetel atau disetel ke False, mode pengembang akan tetap tersedia untuk perangkat.</translation>
 <translation id="5208240613060747912">Memungkinkan Anda menyetel daftar pola url yang menentukan situs yang tidak diizinkan untuk menampilkan pemberitahuan. Jika kebijakan ini tidak disetel, nilai default global akan digunakan untuk semua situs, baik dari kebijakan 'DefaultNotificationsSetting', jika disetel, atau konfigurasi pribadi pengguna.</translation>
 <translation id="5219844027738217407">Untuk aplikasi Android, kebijakan ini hanya memengaruhi mikrofon. Jika kebijakan disetel ke true, mikrofon akan dibisukan untuk semua aplikasi Android, tanpa pengecualian.</translation>
-<translation id="5226033722357981948">Menentukan apakah pencari plugin harus dinonaktifkan</translation>
 <translation id="523505283826916779">Setelan aksesibilitas</translation>
 <translation id="5247006254130721952">Blokir download yang berbahaya</translation>
 <translation id="5255162913209987122">Dapat Direkomendasikan</translation>
@@ -1321,26 +1298,6 @@
 <translation id="5728154254076636808">Mengaktifkan pembuatan salinan roaming untuk data profil <ph name="PRODUCT_NAME" /></translation>
 <translation id="5732972008943405952">Mengimpor data formulir isi-otomatis dari browser default saat pertama kali dijalankan</translation>
 <translation id="5765780083710877561">Deskripsi:</translation>
-<translation id="5768309557753179144">Chromium dan Google Chrome mendukung rangkaian kebijakan
-      yang sama. Harap diperhatikan bahwa dokumen ini dapat berisi kebijakan yang belum dirilis
-      (yaitu entri 'Didukung di' merujuk ke versi <ph name="PRODUCT_NAME" />
-      yang belum dirilis) yang dapat berubah atau
-      dihapus tanpa pemberitahuan sebelumnya dan tidak ada jaminan
-      apa pun yang diberikan, termasuk tidak ada jaminan sehubungan dengan properti
-      privasi dan keamanan.
-
-      Kebijakan ini khusus ditujukan untuk mengonfigurasi instance
-      internal <ph name="PRODUCT_NAME" /> ke
-      organisasi Anda. Penggunaan kebijakan ini di luar organisasi (
-      misalnya, dalam program yang didistribusikan secara publik) dianggap sebagai malware dan kemungkinan
-      akan diberi label sebagai malware oleh Google dan vendor anti-virus.
-
-      Setelan ini tidak perlu dikonfigurasi secara manual. Template
-      untuk Windows, Mac, dan Linux yang mudah digunakan dapat didownload dari <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
-
-      Cara yang disarankan untuk mengonfigurasi kebijakan di Windows adalah melalui GPO, meskipun
-      menyediakan kebijakan melalui registry tetap didukung untuk instance Windows
-      yang bergabung dalam domain <ph name="MS_AD_NAME" />.</translation>
 <translation id="5770738360657678870">Saluran pengembang (mungkin tidak stabil)</translation>
 <translation id="5774856474228476867">URL penelusuran penyedia penelusuran default</translation>
 <translation id="5776485039795852974">Tanyakan setiap kali situs ingin menampilkan pemberitahuan desktop</translation>
@@ -1648,7 +1605,6 @@
       Jika kebijakan ini tidak disetel, prediksi jaringan akan diaktifkan namun pengguna dapat mengubahnya.</translation>
 <translation id="6658245400435704251">Menentukan jumlah waktu (dalam detik) sebuah perangkat dapat menunda download pembaruannya secara acak dari saat pembaruan tersebut pertama kali didorong ke server. Perangkat dapat menunggu dengan sebagian dari waktu ini dari segi prediksi waktu penyelesaian tugas dan sisa waktunya dari segi jumlah pemeriksaan pembaruan. Dalam keadaan apa pun, penyebaran dibatasi dengan jumlah waktu yang konstan sehingga perangkat tidak akan terus menunggu download pembaruan selamanya.</translation>
 <translation id="6689792153960219308">Melaporkan status hardware</translation>
-<translation id="6693751878507293182">Jika Anda menyetel setelan ini untuk mengaktifkan penelusuran otomatis, pemasangan plugin yang hilang akan dinonaktifkan dalam <ph name="PRODUCT_NAME" />. Menyetel opsi ini menjadi nonaktif atau membiarkannya tidak disetel akan mengaktifkan pencari plugin.</translation>
 <translation id="6699880231565102694">Mengaktifkan autentikasi dua faktor untuk hosting akses jarak jauh</translation>
 <translation id="6724842112053619797">Jika Anda mengaktifkan setelan ini, setelan yang disimpan di profil <ph name="PRODUCT_NAME" /> seperti bookmark, data IsiOtomatis, sandi, dan informasi lainnya juga akan ditulis ke file yang disimpan di folder profil pengguna Roaming atau lokasi yang ditentukan oleh Administrator melalui kebijakan <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Mengaktifkan kebijakan ini akan menonaktifkan sinkronisasi cloud.
 
@@ -1908,6 +1864,7 @@
 
           Jika setelan ini dinonaktifkan atau tidak disetel, maka dua faktor tidak akan diaktifkan dan perilaku default yaitu menggunakan PIN yang ditentukan pengguna, akan digunakan.</translation>
 <translation id="7750991880413385988">Buka Halaman Tab Baru</translation>
+<translation id="7754704193130578113">Tanyakan lokasi penyimpanan setiap file sebelum mendownload</translation>
 <translation id="7761446981238915769">Konfigurasi daftar aplikasi yang terpasang di layar masuk</translation>
 <translation id="7761526206824804472">Menyetel satu atau beberapa bahasa yang disarankan untuk sesi publik memungkinkan pengguna memilih salah satu bahasa tersebut dengan mudah.
 
@@ -1968,7 +1925,7 @@
 
           Kebijakan ini mengontrol beberapa setelan, termasuk setelan yang dikontrol oleh kebijakan terkait ekstensi yang sudah ada mana pun. Kebijakan ini akan menggantikan kebijakan lama apa pun jika keduanya disetel.
 
-          Kebijakan ini memetakan ID ekstensi atau URL update ke konfigurasinya. Dengan ID ekstensi, konfigurasi akan diterapkan ke ekstensi yang ditentukan saja. Konfigurasi default dapat disetel untuk ID khusus <ph name="DEFAULT_SCOPE" />, yang akan diterapkan ke semua ekstensi yang tidak memiliki konfigurasi kustom yang disetel dalam kebijakan ini. Dengan URL update, konfigurasi akan diterapkan ke semua ekstensi dengan URL update persis yang dinyatakan dalam manifes ekstensi ini, seperti yang dijelaskan dalam <ph name="LINK_TO_EXTENSION_DOC1" />.
+          Kebijakan ini memetakan ID ekstensi atau URL update ke konfigurasinya. Dengan ID ekstensi, konfigurasi hanya akan diterapkan ke ekstensi yang ditentukan. Konfigurasi default dapat disetel untuk ID khusus <ph name="DEFAULT_SCOPE" />, yang akan diterapkan ke semua ekstensi yang tidak memiliki konfigurasi kustom, yang disetel dalam kebijakan ini. Dengan URL update, konfigurasi akan diterapkan ke semua ekstensi dengan URL update persis yang dinyatakan dalam manifes ekstensi ini, seperti yang dijelaskan dalam <ph name="LINK_TO_EXTENSION_DOC1" />.
 
           Konfigurasi untuk setiap ekstensi (atau ekstensi dengan URL update yang sama) adalah kamus lain yang dapat berisi kolom yang didokumentasikan di bawah.
 
@@ -1978,24 +1935,24 @@
           * <ph name="FORCE_INSTALLED" />: ekstensi akan otomatis diinstal dan tidak dapat dihapus oleh pengguna.
           * <ph name="NORMAL_INSTALLED" />: ekstensi akan otomatis diinstal, tapi dapat dinonaktifkan oleh pengguna.
 
-          <ph name="INSTALLTION_MODE" /> juga dapat dikonfigurasikan untuk beberapa ekstensi, termasuk ekstensi <ph name="DEFAULT_SCOPE" /> (sebagai setelan default) dan ekstensi dengan URL update yang sama. Dalam kasus ini, hanya nilai <ph name="ALLOWED" /> dan <ph name="BLOCKED" /> yang dapat digunakan.
+          <ph name="INSTALLTION_MODE" /> juga dapat dikonfigurasi untuk beberapa ekstensi, termasuk ekstensi <ph name="DEFAULT_SCOPE" /> (sebagai setelan default) dan ekstensi dengan URL update yang sama. Dalam hal ini, hanya nilai <ph name="ALLOWED" /> dan <ph name="BLOCKED" /> yang dapat digunakan.
 
-          Jika mode disetel ke <ph name="FORCE_INSTALLED" /> atau <ph name="NORMAL_INSTALLED" />, <ph name="UPDATE_URL" /> harus dikonfigurasikan juga. Perhatikan bahwa URL update yang disetel di dalam kebijakan ini hanya digunakan untuk penginstalan awal; update ekstensi berikutnya akan menggunakan URL update yang ditunjukkan di manifes ekstensi. URL update harus mengarahkan ke dokumen XML Manifes Update seperti yang dijelaskan di atas.
+          Jika mode disetel ke <ph name="FORCE_INSTALLED" /> atau <ph name="NORMAL_INSTALLED" />, <ph name="UPDATE_URL" /> juga harus dikonfigurasi. Perhatikan bahwa URL update yang disetel di dalam kebijakan ini hanya digunakan untuk penginstalan awal; update ekstensi berikutnya akan menggunakan URL update yang ditunjukkan di manifes ekstensi. URL update harus mengarah ke dokumen XML Manifes Update seperti yang dijelaskan di atas.
 
-          <ph name="BLOCKED_PERMISSIONS" />: memetakan ke daftar string yang menunjukkan izin API yang diblokir untuk ekstensi. Nama izin sama dengan string izin yang dinyatakan dalam manifes ekstensi seperti yang dijelaskan dalam <ph name="LINK_TO_EXTENSION_DOC3" />. Setelan ini juga dapat dikonfigurasikan untuk ekstensi <ph name="DEFAULT_SCOPE" />. Jika ekstensi mewajibkan izin yang berada di daftar blokir, ekstensi tidak akan diizinkan untuk dimuat. Jika ekstensi berisi izin yang diblokir sebagai persyaratan opsional, ekstensi akan ditangani dengan cara normal, tapi permintaan izin yang menimbulkan bentrok akan ditolak secara otomatis saat waktu proses.
+          <ph name="BLOCKED_PERMISSIONS" />: memetakan ke daftar string yang menunjukkan izin API yang diblokir untuk ekstensi. Nama izin sama dengan string izin yang dinyatakan dalam manifes ekstensi seperti yang dijelaskan dalam <ph name="LINK_TO_EXTENSION_DOC3" />. Setelan ini juga dapat dikonfigurasi untuk ekstensi <ph name="DEFAULT_SCOPE" />. Jika ekstensi mewajibkan izin yang berada di daftar blokir, ekstensi tidak akan diizinkan untuk dimuat. Jika ekstensi berisi izin yang diblokir sebagai persyaratan opsional, ekstensi akan ditangani dengan cara normal, tapi permintaan izin yang menimbulkan bentrok akan ditolak secara otomatis saat waktu proses.
 
-          <ph name="ALLOWED_PERMISSIONS" />: mirip dengan <ph name="BLOCKED_PERMISSIONS" />, namun mengizinkan beberapa izin secara eksplisit yang mungkin diblokir oleh daftar izin yang diblokir secara global, sehingga tidak dapat dikonfigurasikan untuk ekstensi <ph name="DEFAULT_SCOPE" />. Perhatikan bahwa setelan ini tidak memberikan izin yang dijamin ke ekstensi secara otomatis.
+          <ph name="ALLOWED_PERMISSIONS" />: mirip dengan <ph name="BLOCKED_PERMISSIONS" />, namun mengizinkan beberapa izin secara eksplisit yang mungkin diblokir oleh daftar izin yang diblokir secara global, sehingga tidak dapat dikonfigurasi untuk ekstensi <ph name="DEFAULT_SCOPE" />. Perhatikan bahwa setelan ini tidak memberikan izin yang dijamin ke ekstensi secara otomatis.
 
           <ph name="MINIMUM_VERSION_REQUIRED" />: memetakan ke string versi. Format string versi sama dengan format yang digunakan dalam manifes ekstensi, seperti yang dijelaskan dalam <ph name="LINK_TO_EXTENSION_DOC4" />. Ekstensi dengan versi yang lebih lama daripada versi minimum yang ditentukan akan dinonaktifkan. Hal ini juga berlaku pada ekstensi yang diinstal paksa.
 
-          Setelan berikut dapat digunakan hanya untuk konfigurasi <ph name="DEFAULT_SCOPE" /> default:
+           Setelan berikut dapat digunakan hanya untuk konfigurasi <ph name="DEFAULT_SCOPE" /> default:
 
-          <ph name="INSTALL_SOURCES" />: Setiap item dalam daftar ini adalah pola pencocokan gaya ekstensi (<ph name="LINK_TO_MATCH_PATTERNS" />). Pengguna dapat dengan mudah menginstal item dari URL apa pun yang cocok dengan item di daftar ini. Baik lokasi halaman maupun file <ph name="EXTENSION_SUFFIX_WILDCARD" /> tempat download dimulai (yaitu perujuk) harus diizinkan oleh pola ini.
+          <ph name="INSTALL_SOURCES" />: Setiap item dalam daftar ini adalah pola pencocokan gaya ekstensi (<ph name="LINK_TO_MATCH_PATTERNS" />). Pengguna dapat dengan mudah menginstal item dari URL apa pun yang cocok dengan item di daftar ini. Lokasi halaman maupun file <ph name="EXTENSION_SUFFIX_WILDCARD" /> tempat download dimulai (yaitu perujuk) harus diizinkan oleh pola ini.
 
           <ph name="ALLOWED_TYPES" />: Setelan ini memberi akses jenis ekstensi/aplikasi yang diizinkan yang dapat diinstal di <ph name="PRODUCT_NAME" />. Nilainya adalah daftar string, masing-masing terdiri dari: <ph name="VALID_ALLOWED_TYPES" />. Lihat dokumentasi ekstensi <ph name="PRODUCT_NAME" /> untuk informasi selengkapnya tentang jenis ini.
-          <ph name="BLOCKED_INSTALL_MESSAGE" />: Jika pengguna mencoba menginstal ekstensi namun diblokir oleh kebijakan, Toko Web Chrome akan menampilkan pesan error umum. Setelan ini mengizinkan Anda menambahkan teks ke pesan error. Setelan ini dapat digunakan untuk mengarahkan pengguna ke layanan bantuan, menjelaskan alasan ekstensi tertentu diblokir, atau hal-hal lain. Pesan error ini akan terpotong jika lebih dari 1000 karakter.
+          <ph name="BLOCKED_INSTALL_MESSAGE" />: Jika pengguna mencoba menginstal ekstensi namun diblokir oleh kebijakan, Toko Web Chrome akan menampilkan pesan error umum. Setelan ini mengizinkan Anda menambahkan teks ke pesan error. Setelan ini dapat digunakan untuk mengarahkan pengguna ke layanan bantuan, menjelaskan alasan ekstensi tertentu diblokir, atau hal-hal lain. Pesan error ini akan terpotong jika lebih dari 1.000 karakter.
           <ph name="RUNTIME_BLOCKED_HOSTS" />: Menerima daftar host yang interaksinya dengan ekstensi akan diblokir. Hal ini termasuk melakukan injeksi JavaScript, mengubah dan melihat webRequests/webNavigation, serta melihat dan mengubah cookie. Formatnya mirip dengan Pola Pencocokan <ph name="LINK_TO_MATCH_PATTERNS" />, kecuali tidak ada path yang dapat ditentukan. Mis. "*://*.example.com". Format ini juga mendukung penulisan karakter pengganti TLD yang efektif, misalnya "*://example.*".
-          <ph name="RUNTIME_ALLOWED_HOSTS" />: Menerima daftar host yang dapat berinteraksi dengan ekstensi terlepas dari apakah host terdaftar di dalam <ph name="RUNTIME_BLOCKED_HOSTS" /> atau tidak. Formatnya sama dengan format <ph name="RUNTIME_BLOCKED_HOSTS" />.
+          <ph name="RUNTIME_ALLOWED_HOSTS" />: Menerima daftar host yang dapat berinteraksi dengan ekstensi, terlepas dari apakah host terdaftar di dalam <ph name="RUNTIME_BLOCKED_HOSTS" /> atau tidak. Formatnya sama dengan format <ph name="RUNTIME_BLOCKED_HOSTS" />.
           </translation>
 <translation id="787125417158068494">Jika disetel ke SyncDisabled atau tidak dikonfigurasi, sertifikat <ph name="PRODUCT_OS_NAME" /> tidak tersedia untuk aplikasi ARC.
 
@@ -2156,11 +2113,6 @@
 <translation id="8451988835943702790">Gunakan Halaman Tab Baru sebagai beranda</translation>
 <translation id="8465065632133292531">Parameter untuk URL instan yang menggunakan POST</translation>
 <translation id="847472800012384958">Jangan izinkan situs mana pun menampilkan pop-up</translation>
-<translation id="8476127435468057643">Mengontrol apakah NTLMv2 diaktifkan atau tidak.
-
-          Semua server Windows dan Samba versi terbaru mendukung NTLMv2. Kebijakan ini seharusnya hanya dinonaktifkan untuk kompatibilitas dengan versi sebelumnya dan mengurangi keamanan autentikasi.
-
-          Nilai default saat ini jika kebijakan tersebut tidak ditentukan adalah false untuk kompatibilitas dengan versi sebelumnya, namun akan diubah ke true di masa mendatang.</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
 <translation id="8484458986062090479">Menyesuaikan daftar pola URL yang harus selalu dirender oleh browser host.
 

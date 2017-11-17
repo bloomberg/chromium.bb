@@ -13,7 +13,6 @@
 <translation id="123620459398936149">Chrome ОС не може да синхронизује податке. Ажурирајте приступну фразу за Синхронизацију.</translation>
 <translation id="127345590676626841">Chrome се аутоматски ажурира, па увек имате најновију верзију. Када ово преузимање буде довршено, Chrome ће се поново покренути и бићете спремни.</translation>
 <translation id="1302523850133262269">Сачекајте да Chrome инсталира најновија ажурирања система.</translation>
-<translation id="1350930993895295930">Chrome је открио необично понашање</translation>
 <translation id="137466361146087520">Google Chrome бета</translation>
 <translation id="1393853151966637042">Пронађи помоћ за коришћење Chrome-а</translation>
 <translation id="1399397803214730675">Овај рачунар већ има новију верзију Google Chrome прегледача. Ако софтвер не функционише, деинсталирајте Google Chrome и покушајте поново.</translation>
@@ -199,7 +198,6 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="6566149418543181476">Ажурирање Google Chrome-а (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">Користите <ph name="PROFILE_EMAIL" /> за синхронизацију Chrome садржаја. Да бисте ажурирали подешавање синхронизације или користили Chrome без Google налога, посетите <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6600954340915313787">Копирана у Chrome</translation>
-<translation id="6626317981028933585">Нажалост, није могуће приступити подешавањима за Mozilla Firefox док се тај прегледач користи. Да бисте увезли ова подешавања у Google Chrome, сачувајте оно што се урадили и затворите све прозоре Firefox прегледача. Затим кликните на „Настави“.</translation>
 <translation id="6634887557811630702">Google Chrome је ажуриран.</translation>
 <translation id="6676384891291319759">Приступите Интернету</translation>
 <translation id="6697947395630195233">Chrome тражи приступ вашој локацији да бисте је делили са овим сајтом.</translation>
@@ -282,7 +280,6 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="9026991721384951619">Chrome ОС не може да синхронизује податке зато што су подаци за пријављивање на налог застарели.</translation>
 <translation id="9067395829937117663">За Google Chrome је потребан Windows 7 или новија верзија.</translation>
 <translation id="9084668267983921457">Није успела потврда идентитета помоћу овог сертификата. Поново се пријавите у Google Chrome или контактирајте администратора за више информација. <ph name="ADDITIONAL_EXPLANATION" /></translation>
-<translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Упозорење:<ph name="END_BOLD" /> Google Chrome не може да спречи додатке да снимају историју прегледања. Да бисте онемогућили овај додатак у режиму без архивирања, опозовите избор ове опције.</translation>
 <translation id="911206726377975832">Желите ли да избришете и податке прегледања?</translation>
 <translation id="919706545465235479">Ажурирајте Chrome да бисте започели синхронизацију</translation>
 <translation id="924447568950697217">Поставите Chrome за подразумевани прегледач</translation>

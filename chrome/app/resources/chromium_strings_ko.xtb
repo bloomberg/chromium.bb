@@ -73,7 +73,6 @@
 <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="328888136576916638">Google API 키가 누락되었습니다. Chromium의 일부 기능이 사용 중지됩니다.</translation>
 <translation id="3296368748942286671">Chromium 종료 후에도 백그라운드 앱을 계속 실행</translation>
-<translation id="3312805357485578561">Chromium에서 비정상적인 동작을 감지했습니다.</translation>
 <translation id="331951419404882060">로그인 중 오류가 발생하여 Chromium OS에서 데이터를 동기화하지 못했습니다.</translation>
 <translation id="3474745554856756813">항목 <ph name="ITEMS_COUNT" />개가 기기에서 삭제됩니다. 나중에 데이터를 가져오려면 Chromium에 <ph name="USER_EMAIL" />(으)로 로그인하세요.</translation>
 <translation id="3509308970982693815">Chromium 창을 모두 닫고 다시 시도해 보세요.</translation>
@@ -93,7 +92,6 @@
 <translation id="4050175100176540509">최신 버전에는 중요한 보안 개선사항 및 새로운 기능이 포함되어 있습니다.</translation>
 <translation id="407254336480250557"><ph name="SMALL_PRODUCT_LOGO" /><ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /> 선택</translation>
 <translation id="4077262827416206768">모든 Chromium 창을 닫은 뒤 다시 Chromium을 실행하면 변경 사항이 반영됩니다.</translation>
-<translation id="4207043877577553402"><ph name="BEGIN_BOLD" />경고:<ph name="END_BOLD" /> Chromium은 확장 프로그램이 인터넷 사용기록을 저장하지 못하도록 할 수 없습니다. 시크릿 모드에서 이 확장 프로그램을 사용 중지하려면 옵션을 선택 취소하세요.</translation>
 <translation id="421369550622382712">Chromium에 유용한 앱, 게임, 확장 프로그램, 테마를 찾아보세요.</translation>
 <translation id="4222580632002216401">Chromium에 로그인했습니다! 관리자가 동기화를 사용 중지했습니다.</translation>
 <translation id="4224199872375172890">Chromium이 최신 버전입니다.</translation>
@@ -175,7 +173,6 @@
 일부 기능을 사용할 수 없습니다. 다른 프로필 디렉토리를 지정하거나 Chromium의 새로운 버전을 사용하시기 바랍니다.</translation>
 <translation id="6734080038664603509">Chromium 업데이트</translation>
 <translation id="6734291798041940871">모든 사용자가 사용할 수 있도록 컴퓨터에 Chromium이 이미 설치되어 있습니다.</translation>
-<translation id="6798578729981748444">가져오기를 완료하려면 Firefox 창을 모두 닫으세요.</translation>
 <translation id="6810143991807788455">현재 설정을 보고하여 Chromium 개선에 참여</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6883876366448858277">단어와 관련 컨텍스트를 Google 검색에 전송하며 정의, 사진, 기타 검색결과를 표시합니다.</translation>

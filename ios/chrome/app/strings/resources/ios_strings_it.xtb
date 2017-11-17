@@ -129,7 +129,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta visualizzando a
 <translation id="3329904751041170572">Connessione al server non riuscita.</translation>
 <translation id="3335947283844343239">Riapri scheda chiusa</translation>
 <translation id="3393920035788932672">Popup consentiti</translation>
-<translation id="3414292259312108062">Chrome archivierà questa password nelle <ph name="BEGIN_LINK" />password Google salvate<ph name="END_LINK" /> per inserirla automaticamente, in modo da non doverla imparare a memoria.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Visualizzazione divisa</translation>
 <translation id="3474624961160222204">Continua come <ph name="NAME" /></translation>
@@ -152,7 +151,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta visualizzando a
 <translation id="3779810277399252432">Nessuna connessione a Internet.</translation>
 <translation id="3783017676699494206">Salva immagine</translation>
 <translation id="385051799172605136">Indietro</translation>
-<translation id="3857761338463387655">Crea email con:</translation>
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3928666092801078803">Unisci i miei dati</translation>
 <translation id="3950820424414687140">Accedi</translation>
@@ -204,6 +202,7 @@ I tuoi dati vengono criptati con la tua passphrase di sincronizzazione. Inserisc
 <translation id="5005498671520578047">Copia password</translation>
 <translation id="5010803260590204777">Apri una scheda di navigazione in incognito per navigare sul Web in privato.</translation>
 <translation id="5011684439661633295">Salve, <ph name="FULL_ACCOUNT_NAME" /></translation>
+<translation id="5039804452771397117">Consenti</translation>
 <translation id="5062321486222145940">Installa Google Drive</translation>
 <translation id="5083464117946352670">Impossibile stabilire le dimensioni del file.</translation>
 <translation id="5094827893301452931">Tweet completato.</translation>
@@ -262,7 +261,6 @@ La funzione Handoff deve anche essere attivata nella sezione Generali di Imposta
 <translation id="6122191549521593678">Online</translation>
 <translation id="6127379762771434464">Elemento rimosso</translation>
 <translation id="6136914049981179737">Secondi fa</translation>
-<translation id="6149061208933997199">Utilizza password</translation>
 <translation id="6158823227857319455">Nuova scheda</translation>
 <translation id="616831107264507309">Leggi dopo</translation>
 <translation id="6184086493125982861">Mostra schede</translation>
@@ -272,7 +270,6 @@ La funzione Handoff deve anche essere attivata nella sezione Generali di Imposta
 <translation id="6254066287920239840">Apri i link all'interno dell'app invece che nel browser.</translation>
 <translation id="6255097610484507482">Modifica carta di credito</translation>
 <translation id="6308436439357671616">In questo modo puoi scattare e caricare foto.</translation>
-<translation id="6314335155547195432">Genera password</translation>
 <translation id="6324528485781869530">Cambia account di sincronizzazione</translation>
 <translation id="6324669097367352121">Impostazioni accesso</translation>
 <translation id="6337234675334993532">Crittografia</translation>
@@ -290,7 +287,6 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="6418346271604475326">Preparazione del PDF</translation>
 <translation id="6445051938772793705">Paese</translation>
 <translation id="6445981559479772097">Messaggio inviato.</translation>
-<translation id="6456425917241817154">Password generata da Chrome</translation>
 <translation id="6464071786529933911">Apri in nuova scheda in incognito</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elementi eliminati</translation>
 <translation id="6541915733953096570">Ultima ora</translation>
@@ -313,6 +309,7 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="7004499039102548441">Schede recenti</translation>
 <translation id="7006788746334555276">Impostazioni contenuti</translation>
 <translation id="7031882061095297553">Sincronizza con</translation>
+<translation id="7053983685419859001">Blocca</translation>
 <translation id="7062545763355031412">Accetta e cambia account</translation>
 <translation id="7108338896283013870">Nascondi</translation>
 <translation id="7133798577887235672">Nome e cognome</translation>
@@ -345,7 +342,6 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="7649070708921625228">Guida</translation>
 <translation id="7658239707568436148">Annulla</translation>
 <translation id="7671141431838911305">INSTALLA</translation>
-<translation id="7677825787905683892">Scegli l'app email predefinita</translation>
 <translation id="7765158879357617694">Sposta</translation>
 <translation id="7769602470925380267">Accetta ed esci</translation>
 <translation id="7772032839648071052">Conferma passphrase</translation>
@@ -409,7 +405,6 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="9083392325882095631">1 elemento</translation>
 <translation id="9100610230175265781">Passphrase obbligatoria</translation>
 <translation id="9148126808321036104">Esegui di nuovo l'accesso</translation>
-<translation id="914898748153555155">Puoi cambiare questa preferenza in qualsiasi momento nelle impostazioni Chrome</translation>
 <translation id="91549621916703028">Crea più schede per tutte le tue attività</translation>
 <translation id="9157836665414082580">Elimina finestre di dialogo</translation>
 <translation id="9188680907066685419">Esci dall'account gestito</translation>

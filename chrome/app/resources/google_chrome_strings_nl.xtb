@@ -13,7 +13,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="123620459398936149">Chrome OS kan je gegevens niet synchroniseren. Update je wachtwoordzin voor synchronisatie.</translation>
 <translation id="127345590676626841">Chrome wordt automatisch bijgewerkt, zodat je altijd beschikt over de nieuwste versie. Wanneer deze download is voltooid, wordt Chrome opnieuw gestart en kun je doorgaan.</translation>
 <translation id="1302523850133262269">Wacht terwijl Chrome de nieuwste systeemupdates installeert.</translation>
-<translation id="1350930993895295930">Chrome heeft ongebruikelijk gedrag gedetecteerd</translation>
 <translation id="137466361146087520">Google Chrome Bèta</translation>
 <translation id="1393853151966637042">Hulp bij het gebruik van Chrome</translation>
 <translation id="1399397803214730675">Deze computer beschikt al over een nieuwere versie van Google Chrome. Als de software niet werkt, verwijder je Google Chrome en probeer je het opnieuw.</translation>
@@ -197,7 +196,6 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="6566149418543181476">Google Chrome updaten (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">Je gebruikt <ph name="PROFILE_EMAIL" /> om je Chrome-bestanden te synchroniseren. Als je je synchronisatievoorkeur wilt bijwerken of Chrome zonder Google-account wilt gebruiken, ga je naar '<ph name="SETTINGS_LINK" />'.</translation>
 <translation id="6600954340915313787">Gekopieerd naar Chrome</translation>
-<translation id="6626317981028933585">Je instellingen voor Mozilla Firefox zijn helaas niet beschikbaar als deze browser is geopend. Sla je werk op en sluit alle Firefox-vensters om de instellingen te kunnen importeren naar Google Chrome. Klik hierna op 'Doorgaan'.</translation>
 <translation id="6634887557811630702">Google Chrome is bijgewerkt.</translation>
 <translation id="6676384891291319759">Verbinding maken met internet</translation>
 <translation id="6697947395630195233">Chrome heeft toegang tot je locatie nodig om je locatie met deze site te delen.</translation>
@@ -280,7 +278,6 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="9026991721384951619">Chrome OS kan je gegevens niet synchroniseren omdat de inloggegevens voor je account zijn verouderd.</translation>
 <translation id="9067395829937117663">Voor Google Chrome is Windows 7 of hoger vereist.</translation>
 <translation id="9084668267983921457">Verificatiecertificaat mislukt. Log opnieuw in bij Google Chrome of neem contact op met je beheerder voor meer informatie. <ph name="ADDITIONAL_EXPLANATION" /></translation>
-<translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Waarschuwing:<ph name="END_BOLD" /> Google Chrome kan niet voorkomen dat extensies je browsegeschiedenis registreren. Als je deze extensie in de incognitomodus wilt uitschakelen, verwijder je het vinkje bij deze optie.</translation>
 <translation id="911206726377975832">Ook browsegegevens wissen?</translation>
 <translation id="919706545465235479">Chrome updaten om de synchronisatie te starten</translation>
 <translation id="924447568950697217">Chrome instellen als je standaardbrowser</translation>

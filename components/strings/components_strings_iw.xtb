@@ -78,6 +78,9 @@
 <translation id="154408704832528245">בחירת כתובת למסירה</translation>
 <translation id="1549470594296187301">‏JavaScript צריך להיות מופעל כדי להשתמש בתכונה זו.</translation>
 <translation id="1559528461873125649">אין קובץ או ספרייה בשם זה</translation>
+<translation id="1559572115229829303">‏&lt;p&gt;לא ניתן ליצור חיבור פרטי אל <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> משום שהתאריך והשעה במכשיר שלך (<ph name="DATE_AND_TIME" />) שגויים.&lt;/p&gt;
+
+      &lt;p&gt;שנה את התאריך והשעה בקטע &lt;strong&gt;כללי&lt;/strong&gt; באפליקציה &lt;strong&gt;הגדרות&lt;/strong&gt;‏.&lt;/p&gt;</translation>
 <translation id="1583429793053364125">משהו השתבש בעת הצגת דף אינטרנט זה.</translation>
 <translation id="1590457302292452960">יצירת סיסמה חזקה...</translation>
 <translation id="1592005682883173041">גישה לנתונים מקומיים</translation>
@@ -359,13 +362,9 @@
 <translation id="3530944546672790857">{COUNT,plural, =0{לפחות פריט אחד במכשירים מסונכרנים}=1{פריט אחד (ופריטים נוספים במכשירים מסונכרנים)}two{שני פריטים (ופריטים נוספים במכשירים מסונכרנים)}many{# פריטים (ופריטים נוספים במכשירים מסונכרנים)}other{# פריטים (ופריטים נוספים במכשירים מסונכרנים)}}</translation>
 <translation id="3539171420378717834">שמור עותק של הכרטיס הזה במכשיר הזה</translation>
 <translation id="3542684924769048008">השתמש בסיסמה עבור:</translation>
-<translation id="3545341443414427877">אי אפשר ליצור חיבור פרטי לאתר <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, מאחר שהתאריך והשעה של המחשב שלך (<ph name="DATE_AND_TIME" />) לא נכונים. <ph name="BEGIN_LEARN_MORE_LINK" />מידע נוסף<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="3549644494707163724">הצפן את כל הנתונים המסונכרנים באמצעות משפט הסיסמה שלך לסנכרון</translation>
 <translation id="3556433843310711081">המנהל שלך יכול לבטל בשבילך את החסימה</translation>
 <translation id="3566021033012934673">החיבור שלך אינו פרטי</translation>
-<translation id="3569145463236695319">‏&lt;p&gt;אי אפשר ליצור חיבור פרטי לאתר <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, מאחר שהתאריך והשעה של המכשיר שלך (<ph name="DATE_AND_TIME" />) לא נכונים.&lt;/p&gt;
-
-      &lt;p&gt;התאם את התאריך והשעה מהקטע &lt;strong&gt;כללי&lt;/strong&gt; של אפליקציית ה&lt;strong&gt;הגדרות&lt;/strong&gt;.&lt;/p&gt; <ph name="BEGIN_LEARN_MORE_LINK" />מידע נוסף<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="358285529439630156">אפשר לשלם באמצעות כרטיסי אשראי וכרטיסים משולמים מראש.</translation>
 <translation id="3582930987043644930">הוסף שם</translation>
@@ -584,6 +583,7 @@ Del</translation>
     <ph name="LIST_ITEM" />היכנס אל <ph name="BEGIN_LEARN_MORE_LINK" />מרכז העזרה של Chrome<ph name="END_LEARN_MORE_LINK" /> כדי ללמוד איך להסיר לצמיתות את התוכנה מהמחשב
     <ph name="END_LIST" /></translation>
 <translation id="5285570108065881030">הצגת כל הסיסמאות השמורות</translation>
+<translation id="5287240709317226393">‏הצג קובצי Cookie</translation>
 <translation id="5299298092464848405">שגיאה בניתוח המדיניות</translation>
 <translation id="5308380583665731573">התחברות</translation>
 <translation id="5308689395849655368">דיווח קריסות מושבת.</translation>
@@ -692,7 +692,6 @@ Del</translation>
 <translation id="614940544461990577">נסה:</translation>
 <translation id="6151417162996330722">תקופת התוקף של אישור השרת ארוכה מדי.</translation>
 <translation id="6157877588268064908">עליך לבחור כתובת כדי לראות שיטות משלוח ודרישות</translation>
-<translation id="6158003235852588289">‏הגלישה הבטוחה של Google זיהתה לאחרונה דיוג באתר <ph name="SITE" />. אתרי דיוג מתחזים לאתרים אחרים במטרה להונות אותך.</translation>
 <translation id="6165508094623778733">למידע נוסף</translation>
 <translation id="6169916984152623906">עכשיו באפשרותך לגלוש באופן פרטי, ואנשים אחרים שמשתמשים במכשיר הזה לא יראו את הפעילות שלך. עם זאת, עדיין תתבצע שמירה של הורדות וסימניות.</translation>
 <translation id="6177128806592000436">החיבור שלך לאתר הזה לא מאובטח</translation>
@@ -783,7 +782,6 @@ Del</translation>
 <translation id="6973656660372572881">‏צוינו שרתי Proxy קבועים וכתובת אתר של הסקריפט מסוג ‎.Pac</translation>
 <translation id="6989763994942163495">הצג הגדרות מתקדמות...</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
-<translation id="7012372675181957985">‏ייתכן שלחשבון Google שלך יש סוגים אחרים של היסטוריית גלישה שזמינים בכתובת <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="7029809446516969842">סיסמאות</translation>
 <translation id="7050187094878475250">ניסית להגיע אל <ph name="DOMAIN" />, אך השרת הציג אישור שתקופת התוקף שלו ארוכה מדי ולכן אינו מהימן.</translation>
 <translation id="7053983685419859001">חסום</translation>
@@ -811,6 +809,7 @@ Del</translation>
 <translation id="7220786058474068424">מעבד</translation>
 <translation id="724691107663265825">האתר שלפניך מכיל תוכנה זדונית</translation>
 <translation id="724975217298816891">הזן את תאריך התפוגה ואת קוד האימות של <ph name="CREDIT_CARD" /> כדי לעדכן את פרטי הכרטיס. ברגע שתאשר, פרטי הכרטיס שלך ישותפו עם האתר הזה.</translation>
+<translation id="725866823122871198">לא ניתן ליצור חיבור פרטי אל <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> מפני שהתאריך והשעה (<ph name="DATE_AND_TIME" />) במחשב שלך שגויים.</translation>
 <translation id="7260504762447901703">בטל גישה</translation>
 <translation id="7271803869921933038">כרטיסים משולמים מראש שהסוחר מקבל</translation>
 <translation id="7275334191706090484">סימניות מנוהלות</translation>
@@ -825,7 +824,6 @@ Del</translation>
 <translation id="7378627244592794276">לא</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7390545607259442187">אשר את הכרטיס</translation>
-<translation id="739697976928952788">הצגת כל הסיסמאות השמורות</translation>
 <translation id="7400418766976504921">כתובת אתר</translation>
 <translation id="7419106976560586862">נתיב פרופיל</translation>
 <translation id="7424977062513257142">דף המוטמע בדף אינטרנט זה אומר:</translation>
@@ -955,7 +953,6 @@ Del</translation>
 <translation id="8293206222192510085">הוסף סימניה</translation>
 <translation id="8294431847097064396">מקור</translation>
 <translation id="8298115750975731693">‏ייתכן שתידרש להיכנס ל-<ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> עבור רשת ה-Wi-Fi שבה אתה משתמש (<ph name="WIFI_NAME" />).</translation>
-<translation id="8306404619377842860">אי אפשר ליצור חיבור פרטי אל <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> מאחר שהתאריך והשעה של המכשיר שלך (<ph name="DATE_AND_TIME" />) לא נכונים. <ph name="BEGIN_LEARN_MORE_LINK" />מידע נוסף<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8308427013383895095">התרגום נכשל עקב בעיה בחיבור הרשת.</translation>
 <translation id="8311129316111205805">טעינת הפעלה</translation>
 <translation id="8332188693563227489">הגישה ל-<ph name="HOST_NAME" /> נדחתה</translation>
@@ -981,6 +978,7 @@ Del</translation>
 <translation id="8543181531796978784">באפשרותך <ph name="BEGIN_ERROR_LINK" />לדווח על בעיית זיהוי<ph name="END_ERROR_LINK" /> או, אם אתה מבין את סיכוני האבטחה, <ph name="BEGIN_LINK" />להיכנס לאתר הזה, שאינו מאובטח<ph name="END_LINK" />.</translation>
 <translation id="8543556556237226809">יש לך שאלות? עליך לפנות לאיש הקשר שמפקח על הפרופיל שלך.</translation>
 <translation id="8553075262323480129">התרגום נכשל כיוון שלא הייתה אפשרות לקבוע את שפת הדף.</translation>
+<translation id="8559762987265718583">לא ניתן ליצור חיבור פרטי אל <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> מפני שהתאריך והשעה (<ph name="DATE_AND_TIME" />) במכשיר שלך שגויים.</translation>
 <translation id="8571890674111243710">מתרגם דף ל<ph name="LANGUAGE" />...</translation>
 <translation id="858637041960032120">הוסף מספר טלפון
 </translation>

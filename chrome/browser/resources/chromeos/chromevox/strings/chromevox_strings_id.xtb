@@ -43,7 +43,7 @@ Jika telah menyelesaikan tutorial, gunakan ChromeVox untuk mengakses tombol Tutu
 <translation id="1339428534620983148">Kolom tabel sebelumnya</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1346748346194534595">Kanan</translation>
-<translation id="135978014023467274">Update ke ChromeVox 63 berhasil!</translation>
+<translation id="135978014023467274">Update ke ChromeVox 63 berhasil.</translation>
 <translation id="136718599399906424">Baris tabel berikutnya</translation>
 <translation id="1377925789329510816">Ini adalah judul terakhir. Tekan Penelusuran+H untuk meringkas judul pertama, atau Penelusuran+Shift+H untuk membuka judul kedua pada halaman ini.</translation>
 <translation id="1383876407941801731">Telusuri</translation>
@@ -237,7 +237,7 @@ Jika telah menyelesaikan tutorial, gunakan ChromeVox untuk mengakses tombol Tutu
 <translation id="3241638166094654466">Sel di tiap baris:</translation>
 <translation id="3286390186030710347">Penggeser</translation>
 <translation id="3299925995433437805">Tidak ada link yang dikunjungi selanjutnya.</translation>
-<translation id="3300348286427369683">Dukungan teks kaya. Kini, ChromeVox mendukung kolom teks kaya, termasuk perintah lewati, perutean kursor braille, pilihan, dan masih banyak lagi.</translation>
+<translation id="3300348286427369683">Dukungan teks kaya. Kini ChromeVox mendukung kolom teks kaya, termasuk perintah lewati, perutean kursor braille, pilihan, dan masih banyak lagi.</translation>
 <translation id="3307886118343381874">Berpindah ke akhir tabel</translation>
 <translation id="3311969765485641742">Tekan Alt+Shift+A untuk memeriksa notifikasi</translation>
 <translation id="3312997241656799641">Tautan yang dikunjungi selanjutnya</translation>
@@ -472,7 +472,7 @@ Jika telah menyelesaikan tutorial, gunakan ChromeVox untuk mengakses tombol Tutu
 <translation id="5098541983634824365">Meninggalkan kisi.</translation>
 <translation id="5102981729317424850">Bilah alat</translation>
 <translation id="5105050547967751155">rq</translation>
-<translation id="5106547198195128110">Kami memiliki beberapa perubahan menarik dalam rilis baru ini; berikut adalah perubahan yang baru:</translation>
+<translation id="5106547198195128110">Kami memiliki beberapa perubahan menarik dalam rilis baru ini; berikut apa saja yang baru:</translation>
 <translation id="5110983769041734144">Tidak ada bidang formulir sebelumnya.</translation>
 <translation id="5111640677200759579">Judul kolom</translation>
 <translation id="5136967254288895616">Tidak ada link sebelumnya.</translation>
@@ -630,7 +630,7 @@ Untuk membuka menu browser Chrome, tekan Alt+F.</translation>
 <translation id="6493991254603208962">mengurangi Kecerahan</translation>
 <translation id="6508059270146105198">Pindahkan layar braille ke bagian bawah halaman</translation>
 <translation id="6536864053412760904">Token Math ML</translation>
-<translation id="6540201937398578274">Di ChromeVox, tombol Penelusuran adalah tombol pengubah. Sebagian besar pintasan ChromeVox dimulai dengan tombol Penelusuran. Anda juga dapat menggunakan tombol panah untuk navigasi.</translation>
+<translation id="6540201937398578274">Di ChromeVox, tombol Penelusuran adalah kunci pengubah. Sebagian besar pintasan ChromeVox dimulai dengan tombol Penelusuran. Anda juga dapat menggunakan tombol panah untuk navigasi.</translation>
 <translation id="6550720799683018100">Ubah peta tombol saat ini dengan memilih opsi dari daftar di bawah.</translation>
 <translation id="6561818612645211875">Berpindah ke awal baris saat ini</translation>
 <translation id="6587021927234520429">Tidak ada judul tingkat 4 berikutnya.</translation>

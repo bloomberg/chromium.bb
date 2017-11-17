@@ -129,7 +129,6 @@
 <translation id="3329904751041170572">Не вдалось під’єднатися до сервера.</translation>
 <translation id="3335947283844343239">Знову відкрити закриту вкладку</translation>
 <translation id="3393920035788932672">Спливаючі вікна дозволені</translation>
-<translation id="3414292259312108062">Chrome додасть пароль у розділ <ph name="BEGIN_LINK" />Збережені паролі Google<ph name="END_LINK" /> й автоматично вводитиме його, тож вам не потрібно нічого запам’ятовувати.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> хв</translation>
 <translation id="3448016392200048164">Режим розділеного екрана</translation>
 <translation id="3474624961160222204">Продовжити як <ph name="NAME" /></translation>
@@ -152,7 +151,6 @@
 <translation id="3779810277399252432">Немає з’єднання з Інтернетом</translation>
 <translation id="3783017676699494206">Зберегти зображення</translation>
 <translation id="385051799172605136">Назад</translation>
-<translation id="3857761338463387655">Створити електронний лист у додатку:</translation>
 <translation id="3897092660631435901">Меню</translation>
 <translation id="3928666092801078803">Об’єднати мої дані</translation>
 <translation id="3950820424414687140">Увійти</translation>
@@ -204,6 +202,7 @@
 <translation id="5005498671520578047">Копіювати пароль</translation>
 <translation id="5010803260590204777">Щоб переглядати веб-сторінки конфіденційно відкрийте анонімну вкладку.</translation>
 <translation id="5011684439661633295">Вітаємо, <ph name="FULL_ACCOUNT_NAME" />!</translation>
+<translation id="5039804452771397117">Дозволити</translation>
 <translation id="5062321486222145940">Установити Google Диск</translation>
 <translation id="5083464117946352670">Невідомий розмір файлу.</translation>
 <translation id="5094827893301452931">Твіт опубліковано.</translation>
@@ -262,7 +261,6 @@
 <translation id="6122191549521593678">Онлайн</translation>
 <translation id="6127379762771434464">Веб-сайт видалено</translation>
 <translation id="6136914049981179737">Мить тому</translation>
-<translation id="6149061208933997199">Прийняти пароль</translation>
 <translation id="6158823227857319455">Нова вкладка</translation>
 <translation id="616831107264507309">Читати пізніше</translation>
 <translation id="6184086493125982861">Показати вкладки</translation>
@@ -272,7 +270,6 @@
 <translation id="6254066287920239840">Відкривайте посилання в додатку, а не у веб-переглядачі.</translation>
 <translation id="6255097610484507482">Редагувати дані кредитної картки</translation>
 <translation id="6308436439357671616">Ви зможете робити й завантажувати фотографії.</translation>
-<translation id="6314335155547195432">Згенерувати пароль</translation>
 <translation id="6324528485781869530">Змінити обліковий запис для синхронізації</translation>
 <translation id="6324669097367352121">Налаштування входу</translation>
 <translation id="6337234675334993532">Шифрування</translation>
@@ -290,7 +287,6 @@
 <translation id="6418346271604475326">Підготовка PDF</translation>
 <translation id="6445051938772793705">Країна</translation>
 <translation id="6445981559479772097">Повідомлення надіслано.</translation>
-<translation id="6456425917241817154">Пароль, згенерований Chrome</translation>
 <translation id="6464071786529933911">Відкрити в анонімній вкладці</translation>
 <translation id="6482629121755362506">Видалено елементів: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="6541915733953096570">Остання година</translation>
@@ -313,6 +309,7 @@
 <translation id="7004499039102548441">Останні вкладки</translation>
 <translation id="7006788746334555276">Веб-контент</translation>
 <translation id="7031882061095297553">Синхронізувати</translation>
+<translation id="7053983685419859001">Блокувати</translation>
 <translation id="7062545763355031412">Прийняти та перейти в інший обліковий запис</translation>
 <translation id="7108338896283013870">Сховати</translation>
 <translation id="7133798577887235672">Повне ім’я</translation>
@@ -345,7 +342,6 @@
 <translation id="7649070708921625228">Довідка</translation>
 <translation id="7658239707568436148">Скасувати</translation>
 <translation id="7671141431838911305">INSTALL</translation>
-<translation id="7677825787905683892">Вибрати поштовий додаток за умовчанням</translation>
 <translation id="7765158879357617694">Перемістити</translation>
 <translation id="7769602470925380267">Прийняти та вийти</translation>
 <translation id="7772032839648071052">Підтвердити парольну фразу</translation>
@@ -409,7 +405,6 @@
 <translation id="9083392325882095631">1 закладка</translation>
 <translation id="9100610230175265781">Потрібно вказати парольну фразу</translation>
 <translation id="9148126808321036104">Увійти знову</translation>
-<translation id="914898748153555155">Цей параметр можна будь-коли змінити в налаштуваннях Chrome</translation>
 <translation id="91549621916703028">Створюйте різні вкладки для всіх своїх завдань</translation>
 <translation id="9157836665414082580">Заблокувати діалогові вікна</translation>
 <translation id="9188680907066685419">Вийти з керованого облікового запису</translation>

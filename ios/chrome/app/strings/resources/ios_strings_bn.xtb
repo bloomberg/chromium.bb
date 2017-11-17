@@ -7,7 +7,7 @@
 <translation id="1076421457278169141">কোড স্ক্যান করা হয়েছে</translation>
 <translation id="1084365883616172403">Facebook পোষ্ট সম্পূর্ণ হয়েছে৷</translation>
 <translation id="1104948393051856124">স্বীকার করুন ও চালিয়ে যান</translation>
-<translation id="1112015203684611006">মুদ্রণ ব্যর্থ হয়েছে।</translation>
+<translation id="1112015203684611006">প্রিন্ট ব্যর্থ হয়েছে।</translation>
 <translation id="1125564390852150847">নতুন ট্যাব তৈরি করুন।</translation>
 <translation id="1145536944570833626">বিদ্যমান ডেটা মুছুন।</translation>
 <translation id="1165039591588034296">ত্রুটি</translation>
@@ -129,7 +129,6 @@
 <translation id="3329904751041170572">সার্ভারের সাথে সংযোগ করা যাযনি৷</translation>
 <translation id="3335947283844343239">বন্ধ হওয়া ট্যাব আবার খুলুন</translation>
 <translation id="3393920035788932672">মঞ্জুরিপ্রাপ্ত পপ-আপ</translation>
-<translation id="3414292259312108062">Chrome এটিকে আপনার <ph name="BEGIN_LINK" />Google এর সংরক্ষিত পাসওয়ার্ডগুলি<ph name="END_LINK" /> এ সংরক্ষণ করতে এবং আপনার জন্য এটিকে স্বতঃপূর্ণ করবে যাতে করে আপনাকে এটি আর মনে রাখতে না হয়৷</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> মিনিট</translation>
 <translation id="3448016392200048164">বিভক্ত দৃশ্য</translation>
 <translation id="3474624961160222204"><ph name="NAME" /> হিসাবে চালিয়ে যান</translation>
@@ -152,7 +151,6 @@
 <translation id="3779810277399252432">কোনও ইন্টারনেট সংযোগ নেই৷</translation>
 <translation id="3783017676699494206">ছবি সেভ করুন</translation>
 <translation id="385051799172605136">ফিরুন</translation>
-<translation id="3857761338463387655">ইমেল লিখতে এই অ্যাপটি ব্যবহার করুন:</translation>
 <translation id="3897092660631435901">মেনু</translation>
 <translation id="3928666092801078803">আমার ডেটা একত্রিত করুন</translation>
 <translation id="3950820424414687140">প্রবেশ করুন</translation>
@@ -204,6 +202,7 @@
 <translation id="5005498671520578047">পাসওয়ার্ড কপি করুন</translation>
 <translation id="5010803260590204777">ব্যক্তিগতভাবে ওয়েব ব্রাউজ করার জন্য একটি ছদ্মবেশী ট্যাব খুলুন।</translation>
 <translation id="5011684439661633295">হেলো, <ph name="FULL_ACCOUNT_NAME" /></translation>
+<translation id="5039804452771397117">অনুমতি দিন</translation>
 <translation id="5062321486222145940">Google ড্রাইভ ইনস্টল করুন</translation>
 <translation id="5083464117946352670">ফাইলের আকার নির্ধারণ করা যাচ্ছে না।</translation>
 <translation id="5094827893301452931">Tweet সম্পূর্ণ হয়েছে৷</translation>
@@ -263,7 +262,6 @@
 <translation id="6122191549521593678">অনলাইন</translation>
 <translation id="6127379762771434464">আইটেম সরানো হয়েছে</translation>
 <translation id="6136914049981179737">সেকেন্ড আগে</translation>
-<translation id="6149061208933997199">পাসওয়ার্ড ব্যবহার করুন</translation>
 <translation id="6158823227857319455">নতুন ট্যাব</translation>
 <translation id="616831107264507309">পরে পড়ুন</translation>
 <translation id="6184086493125982861">ট্যাব দেখান</translation>
@@ -273,7 +271,6 @@
 <translation id="6254066287920239840">ব্রাউজারের পরিবর্তে অ্যাপটিতে লিঙ্কগুলি খুলুন।</translation>
 <translation id="6255097610484507482">ক্রেডিট কার্ড সম্পাদনা করুন</translation>
 <translation id="6308436439357671616">এটি আপনাকে ফটো তুলতে এবং আপলোড করতে দেয়।</translation>
-<translation id="6314335155547195432">পাসওয়ার্ড তৈরি করুন</translation>
 <translation id="6324528485781869530">সিঙ্ক অ্যাকাউন্ট পাল্টান</translation>
 <translation id="6324669097367352121">প্রবেশ করুন সেটিংস</translation>
 <translation id="6337234675334993532">এনক্রিপশন</translation>
@@ -291,7 +288,6 @@
 <translation id="6418346271604475326">PDF প্রস্তুত হচ্ছে</translation>
 <translation id="6445051938772793705">দেশ</translation>
 <translation id="6445981559479772097">বার্তা পাঠানো হয়েছে৷</translation>
-<translation id="6456425917241817154">Chrome দ্বারা সৃষ্ট পাসওয়ার্ড</translation>
 <translation id="6464071786529933911">নতুন ছদ্মবেশী ট্যাবে খুলুন</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" />টি আইটেম মোছা হয়েছে</translation>
 <translation id="6541915733953096570">গত এক ঘণ্টা</translation>
@@ -314,6 +310,7 @@
 <translation id="7004499039102548441">সাম্প্রতিক ট্যাবগুলি</translation>
 <translation id="7006788746334555276">সামগ্রী সেটিংস</translation>
 <translation id="7031882061095297553">এতে সিঙ্ক করুন</translation>
+<translation id="7053983685419859001">ব্লক করুন</translation>
 <translation id="7062545763355031412">স্বীকার করে অ্যাকাউন্টগুলি সুইচ করুন</translation>
 <translation id="7108338896283013870">লুকান</translation>
 <translation id="7133798577887235672">সম্পূর্ণ নাম</translation>
@@ -346,7 +343,6 @@
 <translation id="7649070708921625228">সহায়তা</translation>
 <translation id="7658239707568436148">বাতিল</translation>
 <translation id="7671141431838911305">ইনস্টল করুন</translation>
-<translation id="7677825787905683892">ডিফল্ট ইমেল অ্যাপ বেছে নিন</translation>
 <translation id="7765158879357617694">সরান</translation>
 <translation id="7769602470925380267">স্বীকার করে প্রস্থান করুন</translation>
 <translation id="7772032839648071052">পাসফ্রেজ নিশ্চিত করুন</translation>
@@ -410,7 +406,6 @@
 <translation id="9083392325882095631">১টি আইটেম</translation>
 <translation id="9100610230175265781">পাসফ্রেজের প্রয়োজন</translation>
 <translation id="9148126808321036104">আবার প্রবেশ করুন</translation>
-<translation id="914898748153555155">আপনি যেকোনও সময়ে Chrome সেটিংসে গিয়ে এই পছন্দটি পরিবর্তন করতে পারবেন</translation>
 <translation id="91549621916703028">আপনার সবকটি টাস্কের জন্য একাধিক ট্যাব তৈরি করুন</translation>
 <translation id="9157836665414082580">ডায়ালগ রুদ্ধ করুন</translation>
 <translation id="9188680907066685419">পরিচালিত অ্যাকাউন্ট থেকে প্রস্থান করুন</translation>

@@ -590,7 +590,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
       Consulta https://developers.google.com/safe-browsing para obtener más información sobre Navegación segura.</translation>
 <translation id="3016255526521614822">Incluir en la lista blanca las apps para tomar notas que se permiten en la pantalla bloqueada de <ph name="PRODUCT_OS_NAME" /></translation>
-<translation id="3021409116652377124">Inhabilitar el buscador de complemento</translation>
 <translation id="3030000825273123558">Activar los informes estadísticos</translation>
 <translation id="3034580675120919256">Te permite configurar si los sitios web pueden ejecutar JavaScript. La ejecución de JavaScript puede permitirse para todos los sitios web o denegarse para todos los sitios web. Si esta política no se configura, se usará "AllowJavaScript" y el usuario podrá cambiarla.</translation>
 <translation id="3038323923255997294">Continuar ejecutando aplicaciones en segundo plano cuando <ph name="PRODUCT_NAME" /> esté cerrado</translation>
@@ -878,26 +877,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="4027608872760987929">Habilitar el proveedor de búsqueda predeterminado</translation>
 <translation id="4039085364173654945">Controla si se permite que el subcontenido de terceros en una página muestre cuadros de diálogo emergentes de autenticación básica de HTTP. Normalmente, esto se inhabilita a modo defensa contra la suplantación de identidad. Si esta política no se configura, se inhabilita esta opción y no se permite que el subcontenido de terceros muestre cuadros de diálogo emergentes de autenticación básica de HTTP.</translation>
 <translation id="4056910949759281379">Inhabilitar el protocolo SPDY</translation>
-<translation id="4077363032873906037">Habilita la función de acceso restringido de <ph name="PRODUCT_NAME" /> en Google Apps e impide que los usuarios cambien esta configuración.
-
-      Si defines esta configuración, el usuario solamente podrá acceder a
-      Google Apps a través de cuentas de los dominios especificados
-      (ten en cuenta que no funciona para gmail.com/googlemail.com).
-
-      Esta configuración NO impedirá que el usuario acceda en un dispositivo
-      administrado que requiera autenticación de Google. De todos modos, el
-      usuario podrá acceder a cuentas desde otros dominios, pero recibirá un
-      mensaje de error cuando intente usar Google Apps con esas cuentas.
-
-      Si dejas esta configuración vacía o sin establecer, el usuario podrá acceder
-      a Google Apps con cualquier cuenta.
-
-      Esta política hace que el encabezado X-GoogApps-Allowed-Domains se
-      agregue a todas las solicitudes HTTP y HTTPS para todos los dominios
-      google.com, como se describe en
-      https://support.google.com/a/answer/1668854.
-
-      Los usuarios no pueden cambiar ni anular esta configuración.</translation>
 <translation id="408029843066770167">Permitir consultas a un servicio de hora de Google</translation>
 <translation id="4088589230932595924">Modo incógnito forzado</translation>
 <translation id="4088983553732356374">Permite establecer si los sitios web pueden configurar datos locales. La configuración de datos locales puede permitirse para todos los sitios web o rechazarse para todos ellos.
@@ -915,7 +894,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
           El valor de la política debe especificarse en milisegundos.</translation>
 <translation id="4105989332710272578">Inhabilitar la aplicación del Certificado de transparencia para una lista de URL</translation>
 <translation id="4121350739760194865">Impedir que aparezcan las promociones de aplicaciones en la página de la nueva pestaña</translation>
-<translation id="4133144443101280166">Intervalos de horas inactivas cuando se ejecutan las OffHours |ignored_policy_proto_tags| del dispositivo</translation>
 <translation id="4157003184375321727">Informar la versión de firmware y SO.</translation>
 <translation id="4183229833636799228">Configuración predeterminada de <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">URL para la validación del token de autenticación del cliente de acceso remoto</translation>
@@ -1132,7 +1110,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
           Por ejemplo, <ph name="EXTENSION_POLICY_EXAMPLE" /> instala la app de <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> desde la URL de actualización convencional de Chrome Web Store. Para obtener más información sobre las extensiones de host, consulta: <ph name="LINK_TO_EXTENSION_DOC2" />.
 
           Si esta política no se establece, no se instalan apps ni extensiones de forma automática, y el usuario puede desinstalar cualquier app o extensión en <ph name="PRODUCT_NAME" />.</translation>
-<translation id="4882546920824859909">Definir los dominios con permiso para acceder a Google Apps</translation>
 <translation id="4897928009230106190">Especifica los parámetros utilizados al realizar una búsqueda de sugerencias con POST. Se compone de pares de nombre/valor separados por coma. Si un valor es un parámetro de plantilla, como {searchTerms} en el ejemplo anterior, se reemplazará por datos de términos de búsqueda reales.
 
           Esta política es opcional. Si no se establece, la solicitud de búsqueda de sugerencias se enviará mediante el método GET.
@@ -1185,7 +1162,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Si la política se establece en False o no se establece, el modo de programador seguirá disponible para el dispositivo.</translation>
 <translation id="5208240613060747912">Te permite configurar una lista de patrones de URL que especifican los sitios que no están autorizados a mostrar notificaciones. Si esta política no se configura, se usará el valor global predeterminado para todos los sitios ya sea de la política "DefaultNotificationsSetting", si está configurada, o de otro tipo de configuración personal del usuario.</translation>
 <translation id="5219844027738217407">Para las apps de Android, esta política solo afecta al micrófono. Cuando esta política se establece como falsa, se silencia el micrófono para todas las apps de Android, sin excepciones.</translation>
-<translation id="5226033722357981948">Indicar si el buscador de complemento se debe inhabilitar.</translation>
 <translation id="523505283826916779">Configuración de accesibilidad</translation>
 <translation id="5247006254130721952">Bloquear las descargas peligrosas</translation>
 <translation id="5255162913209987122">Se puede recomendar</translation>
@@ -1310,23 +1286,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="5728154254076636808">Habilita la creación de las copias de itinerancia para los datos de perfil de <ph name="PRODUCT_NAME" /></translation>
 <translation id="5732972008943405952">Importar el formulario de Autocompletar del navegador predeterminado en la primera ejecución</translation>
 <translation id="5765780083710877561">Descripción:</translation>
-<translation id="5768309557753179144">Chromium y Google Chrome están regidos por las mismas políticas.
-      Debes tener en cuenta que es posible que este documento incluya
-      políticas no publicadas (p. ej., la entrada "Disponible en" hace
-      referencia a una versión de <ph name="PRODUCT_NAME" /> que aún no se publicó) que están
-      sujetas a cambios o eliminación sin previo aviso, y que no cuentan con
-      garantías de ningún tipo, p. ej., aquellas relacionadas
-      con las propiedades de seguridad y privacidad.
-
-      Estas políticas están formuladas específicamente para configurar
-      instancias de <ph name="PRODUCT_NAME" /> dentro de la organización.
-      El uso de estas políticas fuera de la organización (p. ej., en un
-      programa de distribución pública) se considera software malicioso y
-      es posible que Google y los proveedores de antivirus lo consideren como tal.
-
-      No es necesario ajustar manualmente estas opciones de configuración. Hay plantillas para Windows, Mac y Linux disponibles para descargar en <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
-
-      Se recomienda configurar la política en Windows a través de GPO, aunque para las instancias de Windows que son parte de un dominio de <ph name="MS_AD_NAME" /> todavía es posible hacer la disposición de políticas a través del registro.</translation>
 <translation id="5770738360657678870">Canal para desarrolladores (puede ser inestable)</translation>
 <translation id="5774856474228476867">Dirección URL de búsqueda de proveedores de búsqueda predeterminada</translation>
 <translation id="5776485039795852974">Preguntar siempre que un sitio quiera mostrar notificaciones de escritorio.</translation>
@@ -1635,7 +1594,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Si no se establece esta política, la predicción de red se habilitará, pero el usuario podrá cambiarla.</translation>
 <translation id="6658245400435704251">Especifica la cantidad máxima de segundos que un dispositivo puede retrasar aleatoriamente la descarga de una actualización desde el momento en el que la descarga se envío al servidor por primera vez. El dispositivo puede dedicar una parte de este tiempo al proceso de actualización y el resto a realizar las comprobaciones necesarias. En cualquier caso, el límite superior de la dispersión es un período de tiempo constante, para que el dispositivo no se quede bloqueado mientras espera descargar una actualización.</translation>
 <translation id="6689792153960219308">Informar estado de hardware</translation>
-<translation id="6693751878507293182">Si se habilita esta opción, se inhabilitará la búsqueda automática y la instalación de los complementos faltantes en <ph name="PRODUCT_NAME" />. Si se habilita o no se configura esta opción, el buscador de complementos estará activo.</translation>
 <translation id="6699880231565102694">Habilitar autenticación de dos factores para los hosts de acceso remoto.</translation>
 <translation id="6724842112053619797">Si habilitas esta configuración, los datos almacenados en los perfiles de <ph name="PRODUCT_NAME" />, como los favoritos, los datos de Autocompletar, las contraseñas, etc. también se guardarán en un archivo almacenado en la carpeta de perfil del usuario Roaming o una ubicación que el administrador especifique mediante la política <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Si habilitas esta política, se inhabilita la sincronización en la nube.
 
@@ -1895,6 +1853,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 
           Si esta configuración está inhabilitada o no está establecida, no se habilitarán los dos factores y se utilizará el comportamiento predeterminado de un PIN definido por el usuario.</translation>
 <translation id="7750991880413385988">Abrir la página Nueva pestaña</translation>
+<translation id="7754704193130578113">Pedir ubicación antes de la descarga</translation>
 <translation id="7761446981238915769">Configura la lista de apps instaladas en la pantalla de acceso</translation>
 <translation id="7761526206824804472">Establece una o más configuraciones regionales para una sesión pública y permite que los usuarios elijan fácilmente una de estas configuraciones regionales.
 
@@ -1951,25 +1910,25 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="7841880500990419427">Versión mínima de TLS para resguardo</translation>
 <translation id="7842869978353666042">Opciones de configuración de Google Drive</translation>
 <translation id="7843525027689416831">Especifica las marcas que se deben aplicar a <ph name="PRODUCT_NAME" /> cuando se inicia. Las marcas especificadas se aplican solo en la pantalla de acceso. Las marcas establecidas mediante esta política no se propagan a las sesiones de usuario.</translation>
-<translation id="7844537954833753199">Establece la configuración de la administración de extensiones para <ph name="PRODUCT_NAME" />.
+<translation id="7844537954833753199">Establece la configuración de la administración de extensiones <ph name="PRODUCT_NAME" />.
 
           Esta política controla diferentes opciones de configuración, incluidas las que controlan las políticas existentes relacionadas con las extensiones. Esta política anulará cualquier política heredada, si ambas están configuradas.
 
-          Esta política asigna una ID de extensión o una URL de actualización a su configuración. Con una ID de extensión, la configuración se aplicará solo a la extensión específica. Se puede establecer una configuración predeterminada para <ph name="DEFAULT_SCOPE" /> del ID especial, que se aplicará a todas las extensiones que no tengan una configuración a medida establecida en esta política. Con una URL de actualización, la configuración se aplicará a todas las extensiones con la URL de actualización exacta que se indica en el manifiesto de esta extensión, como se describe en <ph name="LINK_TO_EXTENSION_DOC1" />.
+          Esta política asigna un ID de extensión o una URL de actualización a su configuración. Con un ID de extensión, la configuración se aplicará solo a la extensión específica. Se puede establecer una configuración predeterminada para <ph name="DEFAULT_SCOPE" /> del ID especial, que se aplicará a todas las extensiones que no tengan una configuración personalizada establecida en esta política. Con una URL de actualización, la configuración se aplicará a todas las extensiones con la URL de actualización exacta que se indica en el manifiesto de esta extensión, como se describe en <ph name="LINK_TO_EXTENSION_DOC1" />.
 
           La configuración para cada extensión (o extensiones con la misma URL de actualización) es otro diccionario que puede contener los campos que se documentan a continuación.
 
           <ph name="INSTALLATION_MODE" />: Especifica una string que indica el modo de instalación para la extensión. Las strings válidas son:
           * <ph name="ALLOWED" />: Permite que el usuario instale la extensión. Este es el comportamiento predeterminado.
           * <ph name="BLOCKED" />: Bloquea la instalación de la extensión.
-          * <ph name="FORCE_INSTALLED" />: La extensión se instala automáticamente, y el usuario no puede quitarla.
+          * <ph name="FORCE_INSTALLED" />: La extensión se instala automáticamente y el usuario no puede quitarla.
           * <ph name="NORMAL_INSTALLED" />: La extensión se instala automáticamente, pero el usuario puede inhabilitarla.
 
           El <ph name="INSTALLTION_MODE" /> también se puede configurar para varias extensiones, incluida la extensión <ph name="DEFAULT_SCOPE" /> (como configuración predeterminada) y las extensiones con la misma URL de actualización. En este caso, solo se pueden usar los valores <ph name="ALLOWED" /> y <ph name="BLOCKED" />.
 
-          Si el modo se establece como <ph name="FORCE_INSTALLED" /> o <ph name="NORMAL_INSTALLED" />, entonces también se debe establecer una <ph name="UPDATE_URL" />. Ten en cuenta que el conjunto de URL de actualización que se establece en esta política solo se usa para la primera instalación; las actualizaciones posteriores de la extensión usarán la URL de actualización que se indica en el manifiesto de la extensión. La URL de actualización debe indicar un documento XML de manifiesto de actualización, como se mencionó anteriormente.
+          Si el modo se establece como <ph name="FORCE_INSTALLED" /> o <ph name="NORMAL_INSTALLED" />, también se debe establecer una <ph name="UPDATE_URL" />. Ten en cuenta que el conjunto de URL de actualización que se establece en esta política solo se usa para la primera instalación; las actualizaciones posteriores de la extensión usarán la URL de actualización que se indica en el manifiesto de la extensión. La URL de actualización debe indicar un documento XML de manifiesto de actualización, como se mencionó anteriormente.
 
-          <ph name="BLOCKED_PERMISSIONS" />: Especifica una lista de strings que indica los permisos de API bloqueados para la extensión. Los nombres de los permisos son los mismos que las strings de permisos declaradas en el manifiesto de la extensión, como se describe en <ph name="LINK_TO_EXTENSION_DOC3" />. Esta configuración también se puede configurar para la extensión <ph name="DEFAULT_SCOPE" />. Si la extensión requiere un permiso que se encuentra en la lista de elementos bloqueados, no se permitirá la carga. Si contiene un permiso bloqueado como requisito opcional, se ejecutará normalmente, pero la solicitud de los permisos conflictivos se negará automáticamente en el tiempo de ejecución.
+          <ph name="BLOCKED_PERMISSIONS" />: Especifica una lista de strings que indica los permisos de API bloqueados para la extensión. Los nombres de los permisos son los mismos que las strings de permisos declaradas en el manifiesto de la extensión, como se describe en <ph name="LINK_TO_EXTENSION_DOC3" />. Esta configuración también se puede establecer para la extensión <ph name="DEFAULT_SCOPE" />. Si la extensión requiere un permiso que se encuentra en la lista de elementos bloqueados, no se permitirá la carga. Si contiene un permiso bloqueado como requisito opcional, se ejecutará normalmente, pero la solicitud de los permisos conflictivos se negará automáticamente en el tiempo de ejecución.
 
           <ph name="ALLOWED_PERMISSIONS" />: Similar a <ph name="BLOCKED_PERMISSIONS" />, pero permite de forma explícita algunos permisos que pueden estar incluidos en la lista de permisos bloqueados global. De esta manera, no se puede configurar para la extensión <ph name="DEFAULT_SCOPE" />. Ten en cuenta que esta configuración no otorga permisos a las extensiones de forma automática.
 
@@ -1977,11 +1936,11 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 
           Las siguientes opciones solo se pueden usar para la configuración <ph name="DEFAULT_SCOPE" /> predeterminada:
 
-          <ph name="INSTALL_SOURCES" />: Cada elemento en esta lista es un patrón de coincidencia de estilo-extensión (<ph name="LINK_TO_MATCH_PATTERNS" />). Los usuarios podrán instalar elementos fácilmente desde cualquier URL que coincida con un elemento en la esta lista. Estos patrones deben permitir tanto la ubicación del archivo de <ph name="EXTENSION_SUFFIX_WILDCARD" /> como la página donde se inicia la descarga (es decir, la URL de referencia).
+          <ph name="INSTALL_SOURCES" />: Cada elemento de esta lista es un patrón de coincidencia de estilo-extensión (<ph name="LINK_TO_MATCH_PATTERNS" />). Los usuarios podrán instalar elementos fácilmente desde cualquier URL que coincida con un elemento de esta lista. Estos patrones deben permitir tanto la ubicación del archivo de <ph name="EXTENSION_SUFFIX_WILDCARD" /> como la página donde se inicia la descarga (es decir, la URL de referencia).
 
-          <ph name="ALLOWED_TYPES" />: Esta opción indica los tipos permitidos de extensiones o apps que se pueden instalar en <ph name="PRODUCT_NAME" />. El valor es una lista de strings; cada una debe ser una de las siguientes: <ph name="VALID_ALLOWED_TYPES" />. Consulta la documentación sobre extensiones de <ph name="PRODUCT_NAME" /> para obtener más información sobre estos tipos.
-          <ph name="BLOCKED_INSTALL_MESSAGE" />: Si un usuario intenta instalar una extensión, pero está bloqueada por una política, Chrome Webstore muestra un mensaje de error general. Esta opción te permite agregar texto al mensaje de error. Se puede usar para dirigir a los usuarios al servicio de asistencia, explicar por qué una extensión específica está bloqueada o mostrar otro mensaje. Este mensaje se error se mostrará cortado si excede los 1000 caracteres.
-          <ph name="RUNTIME_BLOCKED_HOSTS" />: Acepta una lista de hosts en los que se bloqueará la interacción con una extensión. Incluye agregar javascript, alterar y ver webRequests/webNavigation, y ver y alterar cookies. Tiene un formato similar al de Match Patterns <ph name="LINK_TO_MATCH_PATTERNS" />, excepto que pueden no definirse rutas. p. ej. "*://*.ejemplo.com". También es compatible con los comodines TLD efectivos, p. ej. "*://ejemplo.*".
+          <ph name="ALLOWED_TYPES" />: Esta opción indica los tipos permitidos de extensiones o apps que se pueden instalar en <ph name="PRODUCT_NAME" />.  El valor es una lista de strings; cada una de ellas debe ser una de las siguientes: <ph name="VALID_ALLOWED_TYPES" />. Consulta la documentación sobre extensiones de <ph name="PRODUCT_NAME" /> para obtener más información sobre estos tipos.
+          <ph name="BLOCKED_INSTALL_MESSAGE" />: Si un usuario intenta instalar una extensión, pero está bloqueada por una política, Chrome Webstore muestra un mensaje de error general. Esta opción te permite agregar texto al mensaje de error. Se puede usar para dirigir a los usuarios al servicio de asistencia, explicar por qué una extensión específica está bloqueada o mostrar otro mensaje. Este mensaje se error se mostrará cortado si excede los 1000 caracteres.
+          <ph name="RUNTIME_BLOCKED_HOSTS" />: Acepta una lista de hosts en los que se bloqueará la interacción con una extensión. Incluye agregar javascript, alterar y ver webRequests/webNavigation, y ver y alterar cookies. Tiene un formato similar al de Match Patterns <ph name="LINK_TO_MATCH_PATTERNS" />, excepto que pueden no definirse rutas (p. ej., "*://*.ejemplo.com"). También es compatible con los comodines TLD efectivos (p. ej., "*://ejemplo.*").
           <ph name="RUNTIME_ALLOWED_HOSTS" />: Acepta una lista de hosts con las que una extensión puede interactuar, más allá de que se indiquen en <ph name="RUNTIME_BLOCKED_HOSTS" />. Tiene el mismo formato que <ph name="RUNTIME_BLOCKED_HOSTS" />.
           </translation>
 <translation id="787125417158068494">Si se establece en SyncDisabled o no se configura, los certificados de <ph name="PRODUCT_OS_NAME" /> no estarán disponibles para las apps de ARC.
@@ -2147,11 +2106,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="8451988835943702790">Usar la página Nueva pestaña como página principal</translation>
 <translation id="8465065632133292531">Parámetros para URL instantánea que utiliza POST</translation>
 <translation id="847472800012384958">No permitir que ningún sitio muestre ventanas emergentes</translation>
-<translation id="8476127435468057643">Controla si está habilitada la autenticación NTLMv2.
-
-          Todas las versiones recientes de servidores de Samba y Windows son compatibles con NTLMv2. Solo debe inhabilitarse para admitir la compatibilidad con versiones anteriores y reduce la seguridad de la autenticación.
-
-          El valor predeterminado cuando esta política no está definida actualmente es falso para la compatibilidad con versiones anteriores, pero cambiará a verdadero en el futuro.</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
 <translation id="8484458986062090479">Personaliza la lista de los patrones de URL que siempre deben procesarse en el navegador del host.
 

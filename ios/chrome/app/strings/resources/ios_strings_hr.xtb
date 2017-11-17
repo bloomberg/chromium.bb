@@ -129,7 +129,6 @@ Na primjer, neke web-lokacije mogu reagirati na taj zahtjev prikazivanjem oglasa
 <translation id="3329904751041170572">Povezivanje s poslužiteljem nije moguće.</translation>
 <translation id="3335947283844343239">Ponovo otvori zatvorenu karticu</translation>
 <translation id="3393920035788932672">Dopušteni skočni</translation>
-<translation id="3414292259312108062">Chrome će to pohraniti u vašim <ph name="BEGIN_LINK" />Googleovim spremljenim zaporkama<ph name="END_LINK" /> i automatski popuniti umjesto vas kako ne biste morali pamtiti.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Podijeljeni prikaz</translation>
 <translation id="3474624961160222204">Nastavi kao <ph name="NAME" /></translation>
@@ -152,7 +151,6 @@ Na primjer, neke web-lokacije mogu reagirati na taj zahtjev prikazivanjem oglasa
 <translation id="3779810277399252432">Nema internetske veze.</translation>
 <translation id="3783017676699494206">Spremi sliku</translation>
 <translation id="385051799172605136">Natrag</translation>
-<translation id="3857761338463387655">Izradite e-poruku pomoću klijenta:</translation>
 <translation id="3897092660631435901">Izbornik</translation>
 <translation id="3928666092801078803">Kombiniranje podataka</translation>
 <translation id="3950820424414687140">Prijava</translation>
@@ -204,6 +202,7 @@ Vaši su podaci šifrirani vašom šifrom za sinkronizaciju. Unesite je da biste
 <translation id="5005498671520578047">Kopiranje zaporke</translation>
 <translation id="5010803260590204777">Otvorite anonimnu karticu da biste pregledavali web u privatnosti.</translation>
 <translation id="5011684439661633295">Pozdrav, <ph name="FULL_ACCOUNT_NAME" /></translation>
+<translation id="5039804452771397117">Dopusti</translation>
 <translation id="5062321486222145940">Instaliraj Google disk</translation>
 <translation id="5083464117946352670">Veličina datoteke nije utvrđena.</translation>
 <translation id="5094827893301452931">Tweet je dovršen.</translation>
@@ -262,7 +261,6 @@ Handoff mora biti omogućen i u odjeljku Općenito u Postavkama, a vaši uređaj
 <translation id="6122191549521593678">Na mreži</translation>
 <translation id="6127379762771434464">Stavka je uklonjena</translation>
 <translation id="6136914049981179737">Prije nekoliko sek.</translation>
-<translation id="6149061208933997199">Upotrijebi zaporku</translation>
 <translation id="6158823227857319455">Nova kartica</translation>
 <translation id="616831107264507309">Pročitajte kasnije</translation>
 <translation id="6184086493125982861">Prikaz kartica</translation>
@@ -272,7 +270,6 @@ Handoff mora biti omogućen i u odjeljku Općenito u Postavkama, a vaši uređaj
 <translation id="6254066287920239840">Otvaranje veza u aplikaciji, a ne u pregledniku.</translation>
 <translation id="6255097610484507482">Uredi kreditnu karticu</translation>
 <translation id="6308436439357671616">To vam omogućuje snimanje i prijenos fotografija.</translation>
-<translation id="6314335155547195432">Generiranje zaporke</translation>
 <translation id="6324528485781869530">Promjena računa za sink.</translation>
 <translation id="6324669097367352121">Postavke prijave</translation>
 <translation id="6337234675334993532">Enkripcija</translation>
@@ -290,7 +287,6 @@ Vaši su podaci šifrirani vašom šifrom za sinkronizaciju <ph name="TIME" />. 
 <translation id="6418346271604475326">Priprema PDF-a</translation>
 <translation id="6445051938772793705">Zemlja</translation>
 <translation id="6445981559479772097">Poruka je poslana.</translation>
-<translation id="6456425917241817154">Zaporka koju je generirao Chrome</translation>
 <translation id="6464071786529933911">Otvori na novoj anonimnoj kartici</translation>
 <translation id="6482629121755362506">Broj izbrisanih stavki: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="6541915733953096570">Od proteklog sata</translation>
@@ -313,6 +309,7 @@ Vaši su podaci šifrirani vašom šifrom za sinkronizaciju <ph name="TIME" />. 
 <translation id="7004499039102548441">Nedavne kartice</translation>
 <translation id="7006788746334555276">Postavke sadržaja</translation>
 <translation id="7031882061095297553">Sinkronizacija s računima</translation>
+<translation id="7053983685419859001">Blokiraj</translation>
 <translation id="7062545763355031412">Prihvati i promijeni račun</translation>
 <translation id="7108338896283013870">Sakrij preglednik</translation>
 <translation id="7133798577887235672">Ime i prezime</translation>
@@ -345,7 +342,6 @@ Vaši su podaci šifrirani vašom šifrom za sinkronizaciju <ph name="TIME" />. 
 <translation id="7649070708921625228">Pomoć</translation>
 <translation id="7658239707568436148">Odustani</translation>
 <translation id="7671141431838911305">INSTALIRANJE</translation>
-<translation id="7677825787905683892">Odaberite zadanu aplikaciju za e-poštu</translation>
 <translation id="7765158879357617694">Pomakni</translation>
 <translation id="7769602470925380267">Prihvati i odjavi se</translation>
 <translation id="7772032839648071052">Potvrdi zaporku</translation>
@@ -409,7 +405,6 @@ Vaši su podaci šifrirani vašom šifrom za sinkronizaciju <ph name="TIME" />. 
 <translation id="9083392325882095631">1 stavka</translation>
 <translation id="9100610230175265781">Potrebna je zaporka</translation>
 <translation id="9148126808321036104">Prijavite se ponovno</translation>
-<translation id="914898748153555155">Tu postavku možete promijeniti u bilo kojem trenutku u postavkama Chromea</translation>
 <translation id="91549621916703028">Izradite više kartica za sve svoje zadatke</translation>
 <translation id="9157836665414082580">Izostavi dijaloge</translation>
 <translation id="9188680907066685419">Odjava s upravljanog računa</translation>

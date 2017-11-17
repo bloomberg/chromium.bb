@@ -78,8 +78,11 @@
 <translation id="154408704832528245">Afleveradres kiezen</translation>
 <translation id="1549470594296187301">JavaScript moet zijn ingeschakeld om deze functie te kunnen gebruiken.</translation>
 <translation id="1559528461873125649">Dit bestand of deze directory bestaat niet</translation>
+<translation id="1559572115229829303">&lt;p&gt;Er kan geen privéverbinding met <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> tot stand worden gebracht, omdat de datum en tijd van je apparaat (<ph name="DATE_AND_TIME" />) onjuist zijn.&lt;/p&gt;
+
+          &lt;p&gt;Pas in het gedeelte &lt;strong&gt;Algemeen&lt;/strong&gt; van de app &lt;strong&gt;Instellingen&lt;/strong&gt; de datum en tijd aan.&lt;/p&gt;</translation>
 <translation id="1583429793053364125">Er is iets misgegaan met het weergeven van deze webpagina.</translation>
-<translation id="1590457302292452960">Een sterk wachtwoord genereren...</translation>
+<translation id="1590457302292452960">Een sterk wachtwoord genereren…</translation>
 <translation id="1592005682883173041">Lokale gegevenstoegang</translation>
 <translation id="1594030484168838125">Kiezen</translation>
 <translation id="1620510694547887537">Camera</translation>
@@ -356,13 +359,9 @@
 <translation id="3530944546672790857">{COUNT,plural, =0{Ten minste één item op gesynchroniseerde apparaten}=1{1 item (en meer op gesynchroniseerde apparaten)}other{# items (en meer op gesynchroniseerde apparaten)}}</translation>
 <translation id="3539171420378717834">Een exemplaar van deze kaart op dit apparaat bewaren</translation>
 <translation id="3542684924769048008">Wachtwoord gebruiken voor:</translation>
-<translation id="3545341443414427877">Er kan geen privéverbinding met <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> tot stand worden gebracht, omdat de datum en tijd van je computer (<ph name="DATE_AND_TIME" />) onjuist zijn. <ph name="BEGIN_LEARN_MORE_LINK" />Meer informatie<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="3549644494707163724">Alle gesynchroniseerde gegevens versleutelen met je eigen wachtwoordzin voor synchronisatie</translation>
 <translation id="3556433843310711081">Je beheerder kan de blokkering van de site opheffen</translation>
 <translation id="3566021033012934673">Je verbinding is niet privé</translation>
-<translation id="3569145463236695319">&lt;p&gt;Er kan geen privéverbinding met <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> tot stand worden gebracht, omdat de datum en tijd van je apparaat (<ph name="DATE_AND_TIME" />) onjuist zijn.&lt;/p&gt;
-
-      &lt;p&gt;Pas in het gedeelte &lt;strong&gt;Algemeen&lt;/strong&gt; van de app &lt;strong&gt;Instellingen&lt;/strong&gt; de datum en tijd aan.&lt;/p&gt; <ph name="BEGIN_LEARN_MORE_LINK" />Meer informatie<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="358285529439630156">Creditcards en prepaidkaarten worden geaccepteerd.</translation>
 <translation id="3582930987043644930">Voeg naam toe</translation>
@@ -576,6 +575,7 @@
     <ph name="LIST_ITEM" />Ga naar het <ph name="BEGIN_LEARN_MORE_LINK" />Helpcentrum van Chrome<ph name="END_LEARN_MORE_LINK" /> voor meer informatie over hoe je de software definitief van je computer kunt verwijderen.
     <ph name="END_LIST" /></translation>
 <translation id="5285570108065881030">Alle opgeslagen wachtwoorden weergeven</translation>
+<translation id="5287240709317226393">Cookies weergeven</translation>
 <translation id="5299298092464848405">Fout bij het parseren van het beleid</translation>
 <translation id="5308380583665731573">Verbinding maken</translation>
 <translation id="5308689395849655368">Crashrapportage is uitgeschakeld.</translation>
@@ -635,6 +635,7 @@
 <translation id="5675650730144413517">Deze pagina werkt niet</translation>
 <translation id="5685654322157854305">Verzendadres toevoegen</translation>
 <translation id="5689199277474810259">Exporteren naar JSON</translation>
+<translation id="5689516760719285838">Locatie</translation>
 <translation id="5710435578057952990">De identiteit van deze website is niet geverifieerd.</translation>
 <translation id="5719499550583120431">Prepaidkaarten worden geaccepteerd.</translation>
 <translation id="5720705177508910913">Huidige gebruiker</translation>
@@ -682,7 +683,6 @@
 <translation id="614940544461990577">Probeer het volgende:</translation>
 <translation id="6151417162996330722">Het servercertificaat heeft een te lange geldigheidsperiode.</translation>
 <translation id="6157877588268064908">Selecteer een adres om verzendmethoden en vereisten te bekijken</translation>
-<translation id="6158003235852588289">Google Safe Browsing heeft onlangs phishing gedetecteerd op <ph name="SITE" />. Phishingsites doen zich voor als een andere website om je te misleiden.</translation>
 <translation id="6165508094623778733">Meer informatie</translation>
 <translation id="6169916984152623906">Je kunt nu privé browsen, zodat andere mensen die dit apparaat gebruiken, jouw activiteit niet kunnen zien. Downloads en bladwijzers worden echter wel opgeslagen.</translation>
 <translation id="6177128806592000436">Je verbinding met deze site is niet veilig</translation>
@@ -773,7 +773,6 @@
 <translation id="6973656660372572881">Zowel vaste proxyservers als een pac-script-URL worden gespecificeerd.</translation>
 <translation id="6989763994942163495">Geavanceerde instellingen weergeven...</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
-<translation id="7012372675181957985">Voor je Google-account kunnen andere vormen van browsegeschiedenis beschikbaar zijn via <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="7029809446516969842">Wachtwoorden</translation>
 <translation id="7050187094878475250">Je hebt geprobeerd <ph name="DOMAIN" /> te bereiken, maar de server heeft een certificaat gepresenteerd waarvan de geldigheidsperiode te lang is om betrouwbaar te zijn.</translation>
 <translation id="7053983685419859001">Blokkeren</translation>
@@ -801,6 +800,7 @@
 <translation id="7220786058474068424">Verwerken</translation>
 <translation id="724691107663265825">De volgende website bevat malware</translation>
 <translation id="724975217298816891">Geef de vervaldatum en CVC-code voor <ph name="CREDIT_CARD" /> op om je creditcardgegevens te updaten. Zodra je bevestigt, worden je creditcardgegevens gedeeld met deze site.</translation>
+<translation id="725866823122871198">Er kan geen privéverbinding met <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> tot stand worden gebracht, omdat de datum en tijd van de computer (<ph name="DATE_AND_TIME" />) onjuist zijn.</translation>
 <translation id="7260504762447901703">Toegang intrekken</translation>
 <translation id="7271803869921933038">Geaccepteerde prepaidkaarten</translation>
 <translation id="7275334191706090484">Beheerde bladwijzers</translation>
@@ -815,7 +815,6 @@
 <translation id="7378627244592794276">Nee</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7390545607259442187">Creditcard bevestigen</translation>
-<translation id="739697976928952788">Alle opgeslagen wachtwoorden weergeven</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419106976560586862">Profielpad</translation>
 <translation id="7424977062513257142">Een ingesloten pagina op deze webpagina meldt het volgende:</translation>
@@ -945,7 +944,6 @@
 <translation id="8293206222192510085">Bladwijzer toevoegen</translation>
 <translation id="8294431847097064396">Bron</translation>
 <translation id="8298115750975731693">Het is mogelijk dat je <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> moet bezoeken van het wifi-netwerk (<ph name="WIFI_NAME" />) dat je gebruikt.</translation>
-<translation id="8306404619377842860">Er kan geen privéverbinding met <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> tot stand worden gebracht, omdat de datum en tijd van je apparaat (<ph name="DATE_AND_TIME" />) onjuist zijn. <ph name="BEGIN_LEARN_MORE_LINK" />Meer informatie<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8308427013383895095">De vertaling is mislukt omdat er een probleem is opgetreden met de netwerkverbinding.</translation>
 <translation id="8311129316111205805">Sessie laden</translation>
 <translation id="8332188693563227489">Toegang tot <ph name="HOST_NAME" /> is geweigerd</translation>
@@ -971,11 +969,12 @@
 <translation id="8543181531796978784">Je kunt <ph name="BEGIN_ERROR_LINK" />een detectieprobleem melden<ph name="END_ERROR_LINK" />. Als je de veiligheidsrisico's begrijpt, kun je ook <ph name="BEGIN_LINK" />deze onveilige site bezoeken<ph name="END_LINK" />.</translation>
 <translation id="8543556556237226809">Vragen? Neem contact op met de persoon die je profiel beheert.</translation>
 <translation id="8553075262323480129">De vertaling is mislukt omdat de taal van de pagina niet kan worden bepaald.</translation>
+<translation id="8559762987265718583">Er kan geen privéverbinding met <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> tot stand worden gebracht, omdat de datum en tijd van je apparaat (<ph name="DATE_AND_TIME" />) onjuist zijn.</translation>
 <translation id="8571890674111243710">Pagina wordt vertaald in het <ph name="LANGUAGE" />...</translation>
 <translation id="858637041960032120">Telnr. toevoegen</translation>
 <translation id="859285277496340001">Er wordt in het certificaat geen methode gespecificeerd waarmee kan worden gecontroleerd of het certificaat is ingetrokken.</translation>
 <translation id="8620436878122366504">Je ouders hebben dit nog niet goedgekeurd</translation>
-<translation id="8625384913736129811">Deze creditcard opslaan op dit apparaat</translation>
+<translation id="8625384913736129811">Deze kaart opslaan op dit apparaat</translation>
 <translation id="8647750283161643317">Alle standaardinstellingen herstellen</translation>
 <translation id="8660471606262461360">Van Google Payments</translation>
 <translation id="8688672835843460752">Beschikbaar</translation>

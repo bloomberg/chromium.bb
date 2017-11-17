@@ -11,7 +11,6 @@
 <translation id="123620459398936149">Не удалось синхронизировать данные. Обновите кодовую фразу в Sync.</translation>
 <translation id="127345590676626841">Chrome обновляется автоматически, поэтому у вас всегда будет установлена последняя версия. После завершения скачивания и перезагрузки вы сможете продолжить работу.</translation>
 <translation id="1302523850133262269">Подождите, пока Chrome устанавливает последние обновления системы</translation>
-<translation id="1350930993895295930">В работе Chrome обнаружены сбои</translation>
 <translation id="137466361146087520">Google Chrome (бета)</translation>
 <translation id="1393853151966637042">Справочный центр</translation>
 <translation id="1399397803214730675">На компьютере уже установлена последняя версия браузера Google Chrome. Если он не работает, удалите его и установите снова.</translation>
@@ -191,7 +190,6 @@
 <translation id="6566149418543181476">Обновление Google Chrome (<ph name="PROGRESS_PERCENT" />)…</translation>
 <translation id="6598387184982954187">Для синхронизации данных Chrome используется аккаунт <ph name="PROFILE_EMAIL" />. Изменить параметры синхронизации или отключить аккаунт можно в <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6600954340915313787">Скопировано в Chrome</translation>
-<translation id="6626317981028933585">К сожалению, настройки Mozilla Firefox недоступны при открытом браузере. Чтобы импортировать настройки в Google Chrome, сохраните работу, закройте все окна Firefox и нажмите "Далее".</translation>
 <translation id="6634887557811630702">Вы используете самую новую версию Chrome.</translation>
 <translation id="6676384891291319759">Доступ в Интернет</translation>
 <translation id="6697947395630195233">Для этого сайта Chrome запрашивает доступ к данным о вашем местоположении.</translation>
@@ -274,7 +272,6 @@
 <translation id="9026991721384951619">Не удалось выполнить синхронизацию, так как учетные данные устарели.</translation>
 <translation id="9067395829937117663">Для работы Google Chrome необходима ОС Windows 7 или более поздней версии.</translation>
 <translation id="9084668267983921457">Ошибка сертификата аутентификации. Войдите в Google Chrome ещё раз или обратитесь за информацией к администратору. <ph name="ADDITIONAL_EXPLANATION" /></translation>
-<translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Внимание!<ph name="END_BOLD" /> Google Chrome не может запретить расширениям записывать историю браузера. Чтобы отключить это расширение в режиме инкогнито, снимите этот флажок.</translation>
 <translation id="911206726377975832">Также удалить данные о работе в браузере?</translation>
 <translation id="919706545465235479">Чтобы начать синхронизацию, обновите Chrome</translation>
 <translation id="924447568950697217">Как назначить Chrome браузером по умолчанию</translation>

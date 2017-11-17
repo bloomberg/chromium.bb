@@ -127,7 +127,6 @@
 <translation id="3329904751041170572">ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์</translation>
 <translation id="3335947283844343239">เปิดแท็บที่ปิดไปแล้วขึ้นใหม่</translation>
 <translation id="3393920035788932672">อนุญาตให้แสดงป๊อปอัป</translation>
-<translation id="3414292259312108062">Chrome จะเก็บข้อมูลนี้ไว้ใน<ph name="BEGIN_LINK" />รหัสผ่านที่บันทึกไว้ของ Google<ph name="END_LINK" /> และป้อนให้คุณโดยอัตโนมัติ เพื่อให้คุณไม่ต้องจำเอง</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> นาที</translation>
 <translation id="3448016392200048164">Split View</translation>
 <translation id="3474624961160222204">ดำเนินการต่อในชื่อ <ph name="NAME" /></translation>
@@ -150,7 +149,6 @@
 <translation id="3779810277399252432">ไม่มีการเชื่อมต่ออินเทอร์เน็ต</translation>
 <translation id="3783017676699494206">บันทึกภาพ</translation>
 <translation id="385051799172605136">กลับ</translation>
-<translation id="3857761338463387655">สร้างอีเมลด้วย:</translation>
 <translation id="3897092660631435901">เมนู</translation>
 <translation id="3928666092801078803">รวมข้อมูลของฉัน</translation>
 <translation id="3950820424414687140">ลงชื่อเข้าใช้</translation>
@@ -202,6 +200,7 @@
 <translation id="5005498671520578047">คัดลอกรหัสผ่าน</translation>
 <translation id="5010803260590204777">เปิดแท็บที่ไม่ระบุตัวตนเพื่อท่องเว็บในแบบส่วนตัว</translation>
 <translation id="5011684439661633295">สวัสดี คุณ <ph name="FULL_ACCOUNT_NAME" /></translation>
+<translation id="5039804452771397117">อนุญาต</translation>
 <translation id="5062321486222145940">ติดตั้ง Google ไดรฟ์</translation>
 <translation id="5083464117946352670">ไม่สามารถระบุขนาดไฟล์ได้</translation>
 <translation id="5094827893301452931">ทวีตแล้ว</translation>
@@ -260,7 +259,6 @@
 <translation id="6122191549521593678">ออนไลน์</translation>
 <translation id="6127379762771434464">นำรายการออกแล้ว</translation>
 <translation id="6136914049981179737">วินาทีแล้ว</translation>
-<translation id="6149061208933997199">ใช้รหัสผ่าน</translation>
 <translation id="6158823227857319455">แท็บใหม่</translation>
 <translation id="616831107264507309">อ่านทีหลัง</translation>
 <translation id="6184086493125982861">แสดงแท็บ</translation>
@@ -270,7 +268,6 @@
 <translation id="6254066287920239840">เปิดลิงก์ในแอปแทนเบราว์เซอร์</translation>
 <translation id="6255097610484507482">แก้ไขบัตรเครดิต</translation>
 <translation id="6308436439357671616">ช่วยให้คุณถ่ายและอัปโหลดรูปภาพได้</translation>
-<translation id="6314335155547195432">สร้างรหัสผ่าน</translation>
 <translation id="6324528485781869530">เปลี่ยนบัญชีที่จะซิงค์</translation>
 <translation id="6324669097367352121">ตั้งค่าลงชื่อเข้าใช้</translation>
 <translation id="6337234675334993532">การเข้ารหัส</translation>
@@ -288,7 +285,6 @@
 <translation id="6418346271604475326">กำลังเตรียม PDF</translation>
 <translation id="6445051938772793705">ประเทศ</translation>
 <translation id="6445981559479772097">ส่งข้อความแล้ว</translation>
-<translation id="6456425917241817154">รหัสผ่านสร้างโดย Chrome</translation>
 <translation id="6464071786529933911">เปิดในแท็บที่ไม่ระบุตัวตนใหม่</translation>
 <translation id="6482629121755362506">ลบแล้ว <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> รายการ</translation>
 <translation id="6541915733953096570">ชั่วโมงที่ผ่านมา</translation>
@@ -311,6 +307,7 @@
 <translation id="7004499039102548441">แท็บล่าสุด</translation>
 <translation id="7006788746334555276">การตั้งค่าเนื้อหา</translation>
 <translation id="7031882061095297553">ซิงค์กับ</translation>
+<translation id="7053983685419859001">บล็อก</translation>
 <translation id="7062545763355031412">ยอมรับและเปลี่ยนบัญชี</translation>
 <translation id="7108338896283013870">ซ่อน</translation>
 <translation id="7133798577887235672">ชื่อและนามสกุล</translation>
@@ -343,7 +340,6 @@
 <translation id="7649070708921625228">ช่วยเหลือ</translation>
 <translation id="7658239707568436148">ยกเลิก</translation>
 <translation id="7671141431838911305">ติดตั้ง</translation>
-<translation id="7677825787905683892">เลือกแอปอีเมลเริ่มต้น</translation>
 <translation id="7765158879357617694">ย้าย</translation>
 <translation id="7769602470925380267">ยอมรับและออกจากระบบ</translation>
 <translation id="7772032839648071052">ยืนยันข้อความรหัสผ่าน</translation>
@@ -407,7 +403,6 @@
 <translation id="9083392325882095631">1 รายการ</translation>
 <translation id="9100610230175265781">ต้องระบุรหัสผ่าน</translation>
 <translation id="9148126808321036104">ลงชื่อเข้าใช้อีกครั้ง</translation>
-<translation id="914898748153555155">คุณสามารถเปลี่ยนค่ากำหนดนี้ได้ทุกเมื่อในการตั้งค่า Chrome</translation>
 <translation id="91549621916703028">สร้างแท็บหลายแท็บเพื่อรองรับงานทั้งหมด</translation>
 <translation id="9157836665414082580">ระงับกล่องโต้ตอบ</translation>
 <translation id="9188680907066685419">ออกจากระบบบัญชีที่มีการจัดการ</translation>

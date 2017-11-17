@@ -26,7 +26,6 @@
 <translation id="15373452373711364">Suuri hiiren osoitin</translation>
 <translation id="1550523713251050646">Näet lisävaihtoehtoja klikkaamalla tätä.</translation>
 <translation id="1621499497873603021">Akku on tyhjä <ph name="TIME_LEFT" /> kuluttua</translation>
-<translation id="16620462294541761">Salasanasi vahvistaminen epäonnistui. Yritä uudelleen.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> jäljellä</translation>
 <translation id="1698760176351776263">IPv6-osoite: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">Tämä laite on yrityksen hallinnoima.</translation>
@@ -69,9 +68,10 @@
 <translation id="2509468283778169019">CAPS LOCK on päällä</translation>
 <translation id="2532589005999780174">Suuri kontrasti -tila</translation>
 <translation id="2597972630681408282">Yövalo: <ph name="NIGHT_LIGHT_STATUS" /></translation>
+<translation id="2617342710774726426">SIM-kortti on lukittu.</translation>
 <translation id="2653659639078652383">Lähetä</translation>
-<translation id="2675319268637823299">Järjestelmänvalvojan kiellon vuoksi <ph name="USER_EMAIL" /> ei voi käyttää usealle tilille kirjautumista.
-    Kaikkien käyttäjien on kirjauduttava ulos ennen jatkamista.</translation>
+<translation id="2675319268637823299">Järjestelmänvalvoja on kieltänyt käyttäjää <ph name="USER_EMAIL" /> kirjautumasta sisään useille tileille.
+    Kaikkien käyttäjien on kirjauduttava ulos jatkaakseen käyttöä.</translation>
 <translation id="2700058918926273959">Istunnon loppumiseen on <ph name="SESSION_TIME_REMAINING" />. Sinut kirjataan ulos.</translation>
 <translation id="2727977024730340865">Pienitehoinen laturi kytketty. Akku ei ehkä lataudu luotettavasti.</translation>
 <translation id="2761704814324807722">Tila-alue, aika <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -174,7 +174,6 @@
 <translation id="5571066253365925590">Bluetooth käytössä</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
 <translation id="5600837773213129531">Poista äänipalaute käytöstä painamalla Ctrl+Alt+Z.</translation>
-<translation id="5612734644261457353">Salasanan vahvistaminen ei onnistunut vieläkään. Huomaa: Jos vaihdoit salasanasi äskettäin, uusi salasana otetaan käyttöön kirjauduttuasi ulos. Käytä tässä vanhaa salasanaasi.</translation>
 <translation id="5648021990716966815">Mikrofoniliitäntä</translation>
 <translation id="5673434351075758678">Muutos asetusten synkronoinnin yhteydessä: <ph name="FROM_LOCALE" /> – <ph name="TO_LOCALE" /></translation>
 <translation id="5744083938413354016">Napauttamalla vetäminen</translation>
@@ -284,10 +283,10 @@ Käytä tätä ominaisuutta vain luotettavien tilien kanssa.</translation>
 <translation id="8261506727792406068">Poista</translation>
 <translation id="8308637677604853869">Edellinen valikko</translation>
 <translation id="8351131234907093545">Luo muistiinpano</translation>
-<translation id="8392234662362215700">Vaihda näppäimistöasettelua painamalla Control + Shift + välilyönti.</translation>
 <translation id="8428213095426709021">Asetukset</translation>
 <translation id="8433186206711564395">Verkkoasetukset</translation>
 <translation id="8433977262951327081">Hyllyn syöttöasetukset näyttävä valikkokupla on muuttunut. Käytä uutta pikanäppäintä <ph name="NEW_SHORTCUT" /> vanhan (<ph name="OLD_SHORTCUT" />) sijaan.</translation>
+<translation id="8452135315243592079">SIM-kortti puuttuu.</translation>
 <translation id="8454013096329229812">Wi-Fi on käytössä.</translation>
 <translation id="847056008324733326">Näytön skaalauksen asetukset</translation>
 <translation id="8477270416194247200">Peruuta painamalla Alt+haku tai vaihto.</translation>
@@ -315,7 +314,6 @@ Myöhemmät ilmoitukset, ikkunat ja valintaikkunat voidaan jakaa työpöytien v�
 <translation id="9091626656156419976">Näyttö <ph name="DISPLAY_NAME" /> poistettu</translation>
 <translation id="9111102763498581341">Poista lukitus</translation>
 <translation id="9151726767154816831">Käynnistä laite uudelleen ja suorita powerwash asentaaksesi päivitykset</translation>
-<translation id="9181036778675416867">Napauttamalla hyllyn näyttökynäpainiketta voit tehdä muistiinpanoja, tallentaa kuvakaappauksen ja käyttää Assistantia, laserosoitinta tai suurennuslasia.</translation>
 <translation id="9194617393863864469">Kirjaa sisään toinen käyttäjä…</translation>
 <translation id="9201131092683066720">Akussa on virtaa <ph name="PERCENTAGE" /> %.</translation>
 <translation id="9210037371811586452">Poistutaan yhtenäisen työpöydän tilasta</translation>

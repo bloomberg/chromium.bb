@@ -78,6 +78,9 @@
 <translation id="154408704832528245">Vælg leveringsadresse</translation>
 <translation id="1549470594296187301">JavaScript skal være aktiveret, før du kan bruge denne funktion.</translation>
 <translation id="1559528461873125649">Filen eller mappen findes ikke</translation>
+<translation id="1559572115229829303">&lt;p&gt;Der kan ikke oprettes en privat forbindelse til <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, da datoen og tiden på din enhed (<ph name="DATE_AND_TIME" />) er forkert.&lt;/p&gt;
+
+      &lt;p&gt;Juster datoen og tiden i sektionen &lt;strong&gt;Generelt&lt;/strong&gt; i appen &lt;strong&gt;Indstillinger&lt;/strong&gt;.&lt;/p&gt;</translation>
 <translation id="1583429793053364125">Der opstod en fejl ved visningen af denne webside.</translation>
 <translation id="1590457302292452960">Generer en stærk adgangskode...</translation>
 <translation id="1592005682883173041">Lokal dataadgang</translation>
@@ -359,13 +362,9 @@
 <translation id="3530944546672790857">{COUNT,plural, =0{Mindst 1 element på synkroniserede enheder}=1{1 element (og flere på synkroniserede enheder)}one{# element (og flere på synkroniserede enheder)}other{# elementer (og flere på synkroniserede enheder)}}</translation>
 <translation id="3539171420378717834">Gem en kopi af dette kort på denne enhed</translation>
 <translation id="3542684924769048008">Brug adgangskode til:</translation>
-<translation id="3545341443414427877">Der kan ikke oprettes forbindelse til <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, da din computers dato og klokkeslæt (<ph name="DATE_AND_TIME" />) er forkerte. <ph name="BEGIN_LEARN_MORE_LINK" />Få flere oplysninger<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="3549644494707163724">Krypter alle synkroniserede data med din egen adgangssætning til synkronisering</translation>
 <translation id="3556433843310711081">Din administrator kan fjerne blokeringen for dig</translation>
 <translation id="3566021033012934673">Din forbindelse er ikke privat</translation>
-<translation id="3569145463236695319">&lt;p&gt;Der kan ikke oprettes en privat forbindelse til <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, da din computers dato og klokkeslæt (<ph name="DATE_AND_TIME" />) er forkerte.&lt;/p&gt;
-
-      &lt;p&gt;Tilpas dato og klokkeslæt i sektionen &lt;strong&gt;Generelt&lt;/strong&gt; i appen &lt;strong&gt;Indstillinger&lt;/strong&gt;.&lt;/p&gt; <ph name="BEGIN_LEARN_MORE_LINK" />Få flere oplysninger<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="358285529439630156">Kreditkort og forudbetalte kort accepteres.</translation>
 <translation id="3582930987043644930">Tilføj navn</translation>
@@ -580,6 +579,7 @@
     <ph name="LIST_ITEM" />Besøg <ph name="BEGIN_LEARN_MORE_LINK" />Hjælp til Chrome<ph name="END_LEARN_MORE_LINK" /> for at få flere oplysninger om, hvordan du permanent fjerner softwaren fra din computer
     <ph name="END_LIST" /></translation>
 <translation id="5285570108065881030">Se alle gemte adgangskoder</translation>
+<translation id="5287240709317226393">Vis cookies</translation>
 <translation id="5299298092464848405">Der opstod en fejl ved parsing af politik</translation>
 <translation id="5308380583665731573">Få forbindelse</translation>
 <translation id="5308689395849655368">Rapportering af nedbrud er deaktiveret.</translation>
@@ -639,6 +639,7 @@
 <translation id="5675650730144413517">Denne side virker ikke</translation>
 <translation id="5685654322157854305">Tilføj leveringsadresse</translation>
 <translation id="5689199277474810259">Eksportér i JSON</translation>
+<translation id="5689516760719285838">Placering</translation>
 <translation id="5710435578057952990">Dette websites identitet er ikke blevet bekræftet.</translation>
 <translation id="5719499550583120431">Forudbetalte kort accepteres.</translation>
 <translation id="5720705177508910913">Aktuel bruger</translation>
@@ -687,7 +688,6 @@
 <translation id="614940544461990577">Prøv at:</translation>
 <translation id="6151417162996330722">Servercertifikatet har en gyldighedsperiode, der er for lang.</translation>
 <translation id="6157877588268064908">Vælg en adresse for at se forsendelsesmetoder og -krav</translation>
-<translation id="6158003235852588289">Google Beskyttet browsing registrerede for nylig phishing på <ph name="SITE" />. Phishing-websites udgiver sig for at være andre websites med det formål at narre dig.</translation>
 <translation id="6165508094623778733">Flere oplysninger</translation>
 <translation id="6169916984152623906">Nu kan du gå på nettet privat, og andre brugere på denne enhed kan ikke se din aktivitet. Downloads og bogmærker gemmes dog stadig.</translation>
 <translation id="6177128806592000436">Din forbindelse til dette website er ikke sikker.</translation>
@@ -757,7 +757,7 @@
 <translation id="6753269504797312559">Politikkens værdi</translation>
 <translation id="6757797048963528358">Din enhed gik i dvale.</translation>
 <translation id="6778737459546443941">Din forælder har ikke godkendt det endnu</translation>
-<translation id="681021252041861472">Skal udfyldes</translation>
+<translation id="681021252041861472">Obligatorisk felt</translation>
 <translation id="6810899417690483278">Tilpasnings-id</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6824266427216888781">Områdedata kunne ikke indlæses</translation>
@@ -778,7 +778,6 @@
 <translation id="6973656660372572881">Både faste proxyservere og en webadresse for .pac-script angives.</translation>
 <translation id="6989763994942163495">Vis avancerede indstillinger...</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
-<translation id="7012372675181957985">Din Google-konto kan have andre former for browserhistorik på <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="7029809446516969842">Adgangskoder</translation>
 <translation id="7050187094878475250">Du forsøgte at gå til <ph name="DOMAIN" />, men serveren præsenterede et certifikat, hvis gyldighedsperiode er for lang til at være pålidelig.</translation>
 <translation id="7053983685419859001">Bloker</translation>
@@ -806,6 +805,7 @@
 <translation id="7220786058474068424">Behandler</translation>
 <translation id="724691107663265825">Det site, du er på vej til, indeholder malware</translation>
 <translation id="724975217298816891">Opdater dine kortoplysninger ved at indtaste udløbsdatoen og kontrolkoden for <ph name="CREDIT_CARD" />. Når du bekræfter, deles dine kortoplysninger med dette website.</translation>
+<translation id="725866823122871198">Der kunne ikke oprettes en privat forbindelse til <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, da dato og tid (<ph name="DATE_AND_TIME" />) på din enhed er forkerte.</translation>
 <translation id="7260504762447901703">Tilbagekald adgangstilladelsen</translation>
 <translation id="7271803869921933038">Accepterede forudbetalte kort</translation>
 <translation id="7275334191706090484">Administrerede bogmærker</translation>
@@ -820,7 +820,6 @@
 <translation id="7378627244592794276">Nej</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7390545607259442187">Bekræft kort</translation>
-<translation id="739697976928952788">Se alle gemte adgangskoder</translation>
 <translation id="7400418766976504921">Webadresse</translation>
 <translation id="7419106976560586862">Profilsti</translation>
 <translation id="7424977062513257142">En integreret side på denne webside siger:</translation>
@@ -950,7 +949,6 @@
 <translation id="8293206222192510085">Tilføj bogmærke</translation>
 <translation id="8294431847097064396">Kilde</translation>
 <translation id="8298115750975731693">Det Wi-Fi-netværk, du bruger (<ph name="WIFI_NAME" />), kan kræve, at du går til <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
-<translation id="8306404619377842860">Der kan ikke oprettes en privat forbindelse til <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, da enhedens dato og klokkeslæt (<ph name="DATE_AND_TIME" />) ikke er korrekte. <ph name="BEGIN_LEARN_MORE_LINK" />Få flere oplysninger<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8308427013383895095">Oversættelsen mislykkedes på grund af problemer med netværksforbindelsen.</translation>
 <translation id="8311129316111205805">Indlæs session</translation>
 <translation id="8332188693563227489">Adgangen til <ph name="HOST_NAME" /> blev nægtet</translation>
@@ -976,6 +974,7 @@
 <translation id="8543181531796978784">Du kan <ph name="BEGIN_ERROR_LINK" />rapportere et registreringsproblem<ph name="END_ERROR_LINK" /> eller, hvis du forstår den sikkerhedsrisiko, du udsætter dig for, <ph name="BEGIN_LINK" />kan du gå til dette usikre website<ph name="END_LINK" />.</translation>
 <translation id="8543556556237226809">Har du spørgsmål? Kontakt din profiladministrator.</translation>
 <translation id="8553075262323480129">Oversættelsen mislykkedes, fordi sidens sprog ikke kunne fastslås.</translation>
+<translation id="8559762987265718583">Der kan ikke oprettes en privat forbindelse til <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, da tid og dato (<ph name="DATE_AND_TIME" />) på din enhed er forkerte.</translation>
 <translation id="8571890674111243710">Oversætter siden til <ph name="LANGUAGE" />...</translation>
 <translation id="858637041960032120">Tilføj tlf.nr.
 </translation>

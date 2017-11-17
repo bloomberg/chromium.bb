@@ -78,6 +78,9 @@
 <translation id="154408704832528245">选择速递地址</translation>
 <translation id="1549470594296187301">必须启用 JavaScript 才能使用此功能。</translation>
 <translation id="1559528461873125649">不存在此类文件或目录</translation>
+<translation id="1559572115229829303">&lt;p&gt;您设备的日期和时间（<ph name="DATE_AND_TIME" />）不正确，因此无法与 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> 建立私密连接。&lt;/p&gt;
+
+      &lt;p&gt;请在&lt;strong&gt;设置&lt;/strong&gt;应用的&lt;strong&gt;通用&lt;/strong&gt;部分调整日期和时间。&lt;/p&gt;</translation>
 <translation id="1583429793053364125">显示此网页时出了点问题。</translation>
 <translation id="1590457302292452960">生成一个安全系数高的密码…</translation>
 <translation id="1592005682883173041">本地数据访问权限</translation>
@@ -357,13 +360,9 @@
 <translation id="3530944546672790857">{COUNT,plural, =0{在已同步的设备上至少有 1 项内容}=1{1 项内容（在已同步的设备上还有更多内容）}other{# 项内容（在已同步的设备上还有更多内容）}}</translation>
 <translation id="3539171420378717834">在此设备上保存此信用卡的副本</translation>
 <translation id="3542684924769048008">使用以下项的密码：</translation>
-<translation id="3545341443414427877">您设备的日期和时间（<ph name="DATE_AND_TIME" />）不正确，因此无法与 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> 建立私密连接。<ph name="BEGIN_LEARN_MORE_LINK" />了解详情<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="3549644494707163724">使用您自己的同步密码加密所有已同步数据</translation>
 <translation id="3556433843310711081">您的管理员可为您取消屏蔽此网站</translation>
 <translation id="3566021033012934673">您的连接不是私密连接</translation>
-<translation id="3569145463236695319">&lt;p&gt;您设备的日期和时间（<ph name="DATE_AND_TIME" />）不正确，因此无法与 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> 建立私密连接。&lt;/p&gt;
-
-      &lt;p&gt;请在&lt;strong&gt;设置&lt;/strong&gt;应用的&lt;strong&gt;常规&lt;/strong&gt;部分调整日期和时间。&lt;/p&gt;<ph name="BEGIN_LEARN_MORE_LINK" />了解详情<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="3574305903863751447"><ph name="COUNTRY" /><ph name="STATE" /><ph name="CITY" /></translation>
 <translation id="358285529439630156">接受信用卡和预付卡。</translation>
 <translation id="3582930987043644930">添加名称</translation>
@@ -577,6 +576,7 @@
     <ph name="LIST_ITEM" />访问 <ph name="BEGIN_LEARN_MORE_LINK" />Chrome 帮助中心<ph name="END_LEARN_MORE_LINK" />，了解如何从您的计算机中永久移除此类软件
     <ph name="END_LIST" /></translation>
 <translation id="5285570108065881030">显示所有已保存的密码</translation>
+<translation id="5287240709317226393">显示 Cookie</translation>
 <translation id="5299298092464848405">解析策略时出错</translation>
 <translation id="5308380583665731573">连接</translation>
 <translation id="5308689395849655368">已停用崩溃报告。</translation>
@@ -636,6 +636,7 @@
 <translation id="5675650730144413517">该网页无法正常运作</translation>
 <translation id="5685654322157854305">添加送货地址</translation>
 <translation id="5689199277474810259">导出为 JSON 格式</translation>
+<translation id="5689516760719285838">位置</translation>
 <translation id="5710435578057952990">此网站尚未经过身份验证。</translation>
 <translation id="5719499550583120431">接受预付卡。</translation>
 <translation id="5720705177508910913">当前用户</translation>
@@ -683,7 +684,6 @@
 <translation id="614940544461990577">请试试以下办法：</translation>
 <translation id="6151417162996330722">该服务器证书的有效期过长。</translation>
 <translation id="6157877588268064908">要查看送货方式和要求，请选择相应地址</translation>
-<translation id="6158003235852588289">Google 安全浏览功能最近在 <ph name="SITE" /> 上检测到网上诱骗行为。网上诱骗网站会假冒其他网站来欺骗您。</translation>
 <translation id="6165508094623778733">了解详情</translation>
 <translation id="6169916984152623906">现在，您便可进行私密浏览了。共用此设备的其他用户将不会看到您的活动，但您下载的内容和添加的书签仍会保存在设备上。</translation>
 <translation id="6177128806592000436">您与此网站之间建立的连接不安全</translation>
@@ -774,7 +774,6 @@
 <translation id="6973656660372572881">固定代理服务器和 .pac 脚本网址均已指定。</translation>
 <translation id="6989763994942163495">显示高级设置...</translation>
 <translation id="7012363358306927923">中国银联</translation>
-<translation id="7012372675181957985">您的 Google 帐号在 <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> 上可能有其他形式的浏览记录</translation>
 <translation id="7029809446516969842">密码</translation>
 <translation id="7050187094878475250">您尝试访问 <ph name="DOMAIN" />，但服务器提供的证书不可信（有效期过长）。</translation>
 <translation id="7053983685419859001">禁止</translation>
@@ -802,6 +801,7 @@
 <translation id="7220786058474068424">正在处理</translation>
 <translation id="724691107663265825">您要访问的网站包含恶意软件</translation>
 <translation id="724975217298816891">输入“<ph name="CREDIT_CARD" />”的过期日期和银行卡验证码 (CVC) 以更新您的信用卡详情。在您确认后，您的信用卡详情将与此网站共享。</translation>
+<translation id="725866823122871198">您计算机的日期和时间（<ph name="DATE_AND_TIME" />）不正确，因此无法与 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> 建立私密连接。</translation>
 <translation id="7260504762447901703">撤消访问权限</translation>
 <translation id="7271803869921933038">接受的预付卡</translation>
 <translation id="7275334191706090484">受管理的书签</translation>
@@ -816,7 +816,6 @@
 <translation id="7378627244592794276">否</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7390545607259442187">确认信用卡</translation>
-<translation id="739697976928952788">显示所有已保存的密码</translation>
 <translation id="7400418766976504921">网址</translation>
 <translation id="7419106976560586862">个人资料路径</translation>
 <translation id="7424977062513257142">此网页上的嵌入式页面显示：</translation>
@@ -946,7 +945,6 @@
 <translation id="8293206222192510085">添加书签</translation>
 <translation id="8294431847097064396">来源</translation>
 <translation id="8298115750975731693">您要使用的 Wi-Fi 网络（<ph name="WIFI_NAME" />）可能需要您访问 <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />。</translation>
-<translation id="8306404619377842860">您设备的日期和时间（<ph name="DATE_AND_TIME" />）不正确，因此无法与 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> 建立私密连接。<ph name="BEGIN_LEARN_MORE_LINK" />了解详情<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8308427013383895095">由于网络连接问题，翻译失败。</translation>
 <translation id="8311129316111205805">加载会话</translation>
 <translation id="8332188693563227489">访问 <ph name="HOST_NAME" /> 的请求遭到拒绝</translation>
@@ -972,6 +970,7 @@
 <translation id="8543181531796978784">您可以<ph name="BEGIN_ERROR_LINK" />报告检测问题<ph name="END_ERROR_LINK" />；或者，如果您了解自己将面临的安全风险，则可以<ph name="BEGIN_LINK" />访问这个不安全的网站<ph name="END_LINK" />。</translation>
 <translation id="8543556556237226809">有问题？请与负责监管您的个人资料的人员联系。</translation>
 <translation id="8553075262323480129">系统无法确定该网页的语言，因此无法进行翻译。</translation>
+<translation id="8559762987265718583">您设备的日期和时间（<ph name="DATE_AND_TIME" />）不正确，因此无法与 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> 建立私密连接。</translation>
 <translation id="8571890674111243710">正在将网页翻译成<ph name="LANGUAGE" />...</translation>
 <translation id="858637041960032120">添加电话号码
 </translation>

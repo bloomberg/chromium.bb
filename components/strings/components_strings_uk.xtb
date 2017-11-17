@@ -78,6 +78,9 @@
 <translation id="154408704832528245">Вибрати адресу доставки</translation>
 <translation id="1549470594296187301">Щоб користуватися цією функцією, потрібно ввімкнути JavaScript.</translation>
 <translation id="1559528461873125649">Такого файла або каталогу немає</translation>
+<translation id="1559572115229829303">&lt;p&gt;Не вдається встановити конфіденційне з’єднання із сайтом <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, оскільки на вашому пристрої неправильно налаштовано дату й час (<ph name="DATE_AND_TIME" />).&lt;/p&gt;
+
+      &lt;p&gt;Налаштуйте дату й час у розділі &lt;strong&gt;Загальні&lt;/strong&gt; додатка &lt;strong&gt;Налаштування&lt;/strong&gt;.&lt;/p&gt;</translation>
 <translation id="1583429793053364125">Під час показу цієї сторінки сталася помилка.</translation>
 <translation id="1590457302292452960">Створіть надійний пароль…</translation>
 <translation id="1592005682883173041">Доступ до локальних даних</translation>
@@ -359,13 +362,9 @@
 <translation id="3530944546672790857">{COUNT,plural, =0{Принаймні 1 запис на синхронізованих пристроях}=1{1 запис (і ще на синхронізованих пристроях)}one{# запис (і ще на синхронізованих пристроях)}few{# записи (і ще на синхронізованих пристроях)}many{# записів (і ще на синхронізованих пристроях)}other{# запису (і ще на синхронізованих пристроях)}}</translation>
 <translation id="3539171420378717834">Зберігати копію даних цієї картки на цьому пристрої</translation>
 <translation id="3542684924769048008">Використовувати пароль для:</translation>
-<translation id="3545341443414427877">Не вдається встановити конфіденційне з’єднання з доменом <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, оскільки на комп’ютері налаштовано неправильні дату й час (<ph name="DATE_AND_TIME" />). <ph name="BEGIN_LEARN_MORE_LINK" />Докладніше<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="3549644494707163724">Шифрувати всі синхронізовані дані за допомогою власної парольної фрази для синхронізації</translation>
 <translation id="3556433843310711081">Адміністратор може розблокувати його</translation>
 <translation id="3566021033012934673">З’єднання не конфіденційне</translation>
-<translation id="3569145463236695319">&lt;p&gt;Не вдається встановити конфіденційне з’єднання з доменом <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, оскільки на вашому пристрої налаштовано неправильні дату й час (<ph name="DATE_AND_TIME" />).&lt;/p&gt;
-
-      &lt;p&gt;Налаштуйте дату й час у розділі &lt;strong&gt;Загальні&lt;/strong&gt; додатка &lt;strong&gt;Налаштування&lt;/strong&gt;.&lt;/p&gt; <ph name="BEGIN_LEARN_MORE_LINK" />Докладніше<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="358285529439630156">Кредитні та передплачені картки, які приймаються.</translation>
 <translation id="3582930987043644930">Додати ім’я</translation>
@@ -580,6 +579,7 @@
     <ph name="LIST_ITEM" />Відвідайте <ph name="BEGIN_LEARN_MORE_LINK" />Довідковий центр Chrome<ph name="END_LEARN_MORE_LINK" />, щоб дізнатися, як повністю видалити програмне забезпечення з комп’ютера
     <ph name="END_LIST" /></translation>
 <translation id="5285570108065881030">Показати всі збережені паролі</translation>
+<translation id="5287240709317226393">Показати cookie-файли</translation>
 <translation id="5299298092464848405">Помилка аналізу правила</translation>
 <translation id="5308380583665731573">Під’єднатися</translation>
 <translation id="5308689395849655368">Повідомлення про аварійне завершення роботи вимкнено.</translation>
@@ -639,6 +639,7 @@
 <translation id="5675650730144413517">Сторінка не працює</translation>
 <translation id="5685654322157854305">Додати адресу доставки</translation>
 <translation id="5689199277474810259">Експортувати у формат JSON</translation>
+<translation id="5689516760719285838">Місцезнаходження</translation>
 <translation id="5710435578057952990">Ідентифікаційну інформацію цього веб-сайта не було перевірено.</translation>
 <translation id="5719499550583120431">Передплачені картки, які приймаються.</translation>
 <translation id="5720705177508910913">Поточний користувач</translation>
@@ -687,7 +688,6 @@
 <translation id="614940544461990577">Спробуйте:</translation>
 <translation id="6151417162996330722">Сертифікат сервера має задовгий термін дії.</translation>
 <translation id="6157877588268064908">Укажіть адресу, щоб переглянути способи відправлення та вимоги.</translation>
-<translation id="6158003235852588289">Функція безпечного перегляду від Google нещодавно виявила фішинг на сайті <ph name="SITE" />. Фішингові сайти видають себе за інші сайти, щоб ошукати вас.</translation>
 <translation id="6165508094623778733">Докладніше</translation>
 <translation id="6169916984152623906">Тепер ви можете переглядати вміст анонімно. Інші користувачі вашого пристрою не бачитимуть дані про вашу активність. Однак завантаження та закладки зберігатимуться.</translation>
 <translation id="6177128806592000436">Ваше з’єднання з цим сайтом не захищене</translation>
@@ -778,7 +778,6 @@
 <translation id="6973656660372572881">Указано фіксовані проксі-сервери та URL-адреса сценарію .pac.</translation>
 <translation id="6989763994942163495">Показати розширені налаштування...</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
-<translation id="7012372675181957985">Історія веб-перегляду також може зберігатися у вашому обліковому записі Google на сторінці <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="7029809446516969842">Паролі</translation>
 <translation id="7050187094878475250">Ви намагалися зв’язатися з доменом <ph name="DOMAIN" />, але сервер надав сертифікат із задовгим терміном дії.</translation>
 <translation id="7053983685419859001">Блокувати</translation>
@@ -806,6 +805,7 @@
 <translation id="7220786058474068424">Обробка</translation>
 <translation id="724691107663265825">Сайт містить зловмисне програмне забезпечення</translation>
 <translation id="724975217298816891">Введіть термін дії та код CVC картки <ph name="CREDIT_CARD" />, щоб оновити її дані. Щойно ви підтвердите дані картки, цей сайт отримає доступ до них.</translation>
+<translation id="725866823122871198">Не вдається встановити конфіденційне з’єднання з <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, оскільки на комп’ютері встановлено неправильні дату й час (<ph name="DATE_AND_TIME" />).</translation>
 <translation id="7260504762447901703">Скасувати доступ</translation>
 <translation id="7271803869921933038">Передплачені картки, які приймаються до оплати</translation>
 <translation id="7275334191706090484">Закладки, якими керує адміністратор</translation>
@@ -820,7 +820,6 @@
 <translation id="7378627244592794276">Ні</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7390545607259442187">Підтвердити дані картки</translation>
-<translation id="739697976928952788">Показати всі збережені паролі</translation>
 <translation id="7400418766976504921">URL-адреса</translation>
 <translation id="7419106976560586862">Шлях до профілю</translation>
 <translation id="7424977062513257142">Повідомлення з вбудованої сторінки на цій веб-сторінці:</translation>
@@ -894,7 +893,7 @@
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Видалити дані для автозаповнення форм із Chrome?</translation>
 <translation id="7815407501681723534">Знайдено результатів за запитом "<ph name="SEARCH_STRING" />": <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /></translation>
-<translation id="7818867226424560206">Керування правилами</translation>
+<translation id="7818867226424560206">Керування правилом</translation>
 <translation id="782886543891417279">Можливо, щоб під’єднатися до цієї мережі Wi-Fi (<ph name="WIFI_NAME" />), потрібно відвідати її сторінку входу.</translation>
 <translation id="785549533363645510">Навіть у режимі анонімного перегляду ваш роботодавець, постачальник послуг Інтернету чи веб-сайти, які ви відвідуєте, можуть бачити, що ви переглядаєте.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" />: <ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
@@ -950,7 +949,6 @@
 <translation id="8293206222192510085">Додати закладку</translation>
 <translation id="8294431847097064396">Джерело</translation>
 <translation id="8298115750975731693">Можливо, щоб під’єднатися до цієї мережі Wi-Fi (<ph name="WIFI_NAME" />), потрібно відвідати сторінку <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
-<translation id="8306404619377842860">Не вдається встановити конфіденційне з’єднання з доменом <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, оскільки на пристрої налаштовано неправильні дату й час (<ph name="DATE_AND_TIME" />). <ph name="BEGIN_LEARN_MORE_LINK" />Докладніше<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8308427013383895095">Переклад не виконано через проблему підключення до мережі.</translation>
 <translation id="8311129316111205805">Завантажити сеанс</translation>
 <translation id="8332188693563227489">Відмовлено в доступі до хосту <ph name="HOST_NAME" /></translation>
@@ -976,6 +974,7 @@
 <translation id="8543181531796978784">Ви можете <ph name="BEGIN_ERROR_LINK" />повідомити про проблему з пошуком<ph name="END_ERROR_LINK" /> або <ph name="BEGIN_LINK" />перейти на цей незахищений сайт<ph name="END_LINK" /> (якщо розумієте, наскільки це небезпечно).</translation>
 <translation id="8543556556237226809">Маєте запитання? Зв’яжіться з особою, яка контролює ваш профіль.</translation>
 <translation id="8553075262323480129">Помилка перекладу. Неможливо визначити мову сторінки.</translation>
+<translation id="8559762987265718583">Не вдається встановити конфіденційне з’єднання з <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, оскільки на пристрої встановлено неправильні дату й час (<ph name="DATE_AND_TIME" />).</translation>
 <translation id="8571890674111243710">Виконується переклад сторінки такою мовою: <ph name="LANGUAGE" />...</translation>
 <translation id="858637041960032120">Додати тел.номер
 </translation>

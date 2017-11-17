@@ -11,7 +11,6 @@
 <translation id="123620459398936149">Chrome OS 無法同步處理你的資料，請更新你的同步通關密語。</translation>
 <translation id="127345590676626841">Chrome 會自動更新，隨時讓你使用最新版本。完成這項下載作業後，Chrome 會重新啟動，自動為你進行更新。</translation>
 <translation id="1302523850133262269">請稍候，Chrome 正在安裝最新的系統更新。</translation>
-<translation id="1350930993895295930">Chrome 偵測到異常行為</translation>
 <translation id="137466361146087520">Google Chrome 測試版</translation>
 <translation id="1393853151966637042">前往 Chrome 說明頁面</translation>
 <translation id="1399397803214730675">這台電腦已安裝較新的 Google Chrome 版本，如果軟體無法順利運作，請解除安裝 Google Chrome，然後再試一次。</translation>
@@ -193,7 +192,6 @@ Google Chrome 無法復原你的設定。</translation>
 <translation id="6566149418543181476">正在更新 Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">你正使用 <ph name="PROFILE_EMAIL" /> 帳戶同步處理你的 Chrome 資料。如要更新你的偏好設定，或是在未登入 Google 帳戶的情況下使用 Chrome，請前往 [<ph name="SETTINGS_LINK" />]。</translation>
 <translation id="6600954340915313787">已複製到 Chrome</translation>
-<translation id="6626317981028933585">抱歉，我們無法在 Mozilla Firefox 執行時取得其設定。如果要將這些設定匯入到 Google Chrome，請儲存你的工作，並關閉所有 Firefox 視窗。然後按一下 [繼續]。</translation>
 <translation id="6634887557811630702">Google Chrome 目前是最新版本。</translation>
 <translation id="6676384891291319759">連線到網際網路</translation>
 <translation id="6697947395630195233">Chrome 需要位置資訊存取權，才能與這個網站分享你的位置資訊。</translation>
@@ -276,7 +274,6 @@ Google Chrome 無法復原你的設定。</translation>
 <translation id="9026991721384951619">你的帳戶登入詳細資料尚未更新，因此 Chrome 作業系統無法同步處理你的資料。</translation>
 <translation id="9067395829937117663">Google Chrome 僅支援 Windows 7 以上版本的作業系統。</translation>
 <translation id="9084668267983921457">驗證憑證無效，請重新登入 Google Chrome 或向你的管理員洽詢詳情。<ph name="ADDITIONAL_EXPLANATION" /></translation>
-<translation id="9107728822479888688"><ph name="BEGIN_BOLD" />警告：<ph name="END_BOLD" />Google Chrome 無法阻止擴充功能記錄你的瀏覽紀錄，如要在無痕模式中停用這個擴充功能，請取消選取這個選項。 </translation>
 <translation id="911206726377975832">你要一併刪除瀏覽資料嗎？</translation>
 <translation id="919706545465235479">如要開始同步處理，請更新 Chrome</translation>
 <translation id="924447568950697217">將 Chrome 設為預設瀏覽器</translation>

@@ -78,6 +78,9 @@
 <translation id="154408704832528245">Escolher endereço de entrega</translation>
 <translation id="1549470594296187301">É necessário ativar o JavaScript para utilizar esta funcionalidade.</translation>
 <translation id="1559528461873125649">Esse ficheiro ou diretório não existe</translation>
+<translation id="1559572115229829303">&lt;p&gt;Não é possível estabelecer uma ligação privada a <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, porque a data e a hora (<ph name="DATE_AND_TIME" />) do seu dispositivo estão incorretas.&lt;/p&gt;
+
+      &lt;p&gt;Ajuste a data e a hora na secção &lt;strong&gt;Geral&lt;/strong&gt; da aplicação &lt;strong&gt;Definições&lt;/strong&gt;.&lt;/p&gt;</translation>
 <translation id="1583429793053364125">Ocorreu um erro ao apresentar esta página Web.</translation>
 <translation id="1590457302292452960">Gerar uma palavra-passe forte...</translation>
 <translation id="1592005682883173041">Acesso aos dados locais</translation>
@@ -359,13 +362,9 @@
 <translation id="3530944546672790857">{COUNT,plural, =0{Pelo menos 1 item em dispositivos sincronizados}=1{1 item (e mais em dispositivos sincronizados)}one{# itens (e mais em dispositivos sincronizados)}other{# itens (e mais em dispositivos sincronizados)}}</translation>
 <translation id="3539171420378717834">Guardar uma cópia deste cartão neste dispositivo</translation>
 <translation id="3542684924769048008">Utilizar palavra-passe para:</translation>
-<translation id="3545341443414427877">Não é possível estabelecer uma ligação privada a <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, porque a data e a hora do seu computador (<ph name="DATE_AND_TIME" />) estão erradas. <ph name="BEGIN_LEARN_MORE_LINK" />Saiba mais<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="3549644494707163724">Encriptar todos os dados sincronizados com a sua própria frase de acesso de sincronização</translation>
 <translation id="3556433843310711081">O seu gestor pode desbloqueá-lo</translation>
 <translation id="3566021033012934673">A sua ligação não é privada</translation>
-<translation id="3569145463236695319">&lt;p&gt;Não é possível estabelecer uma ligação privada a <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, porque a data e a hora do seu dispositivo (<ph name="DATE_AND_TIME" />) estão erradas.&lt;/p&gt;
-
-      &lt;p&gt;Ajuste a data e a hora na secção &lt;strong&gt;Geral&lt;/strong&gt; da aplicação &lt;strong&gt;Definições&lt;/strong&gt;.&lt;/p&gt; <ph name="BEGIN_LEARN_MORE_LINK" />Saiba mais<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="358285529439630156">Os cartões de crédito e pré-pagos são admitidos.</translation>
 <translation id="3582930987043644930">Adicionar nome</translation>
@@ -580,6 +579,7 @@
     <ph name="LIST_ITEM" />Visite o <ph name="BEGIN_LEARN_MORE_LINK" />Centro de Ajuda do Chrome<ph name="END_LEARN_MORE_LINK" /> para saber como remover permanentemente o software do computador
     <ph name="END_LIST" /></translation>
 <translation id="5285570108065881030">Mostrar todas as palavras-passe guardadas</translation>
+<translation id="5287240709317226393">Mostrar cookies</translation>
 <translation id="5299298092464848405">Erro ao analisar a política</translation>
 <translation id="5308380583665731573">Ligar</translation>
 <translation id="5308689395849655368">O relatório de falha está desativado.</translation>
@@ -639,6 +639,7 @@
 <translation id="5675650730144413517">Esta página não está a funcionar</translation>
 <translation id="5685654322157854305">Adicionar morada para envio</translation>
 <translation id="5689199277474810259">Exportar para JSON</translation>
+<translation id="5689516760719285838">Local</translation>
 <translation id="5710435578057952990">A identidade deste Web site não foi verificada.</translation>
 <translation id="5719499550583120431">Os cartões pré-pagos são admitidos.</translation>
 <translation id="5720705177508910913">Utilizador atual</translation>
@@ -687,7 +688,6 @@
 <translation id="614940544461990577">Experimente:</translation>
 <translation id="6151417162996330722">O certificado do servidor tem um período de validade demasiado longo.</translation>
 <translation id="6157877588268064908">Para ver os métodos de envio e os requisitos, selecione um endereço</translation>
-<translation id="6158003235852588289">A Navegação segura do Google detetou recentemente phishing em <ph name="SITE" />. Os sites de phishing simulam ser outros Websites para enganá-lo.</translation>
 <translation id="6165508094623778733">Saiba mais</translation>
 <translation id="6169916984152623906">Agora, pode navegar em privado e as outras pessoas que utilizarem este dispositivo não veem a sua atividade. No entanto, as transferências e os marcadores são guardados.</translation>
 <translation id="6177128806592000436">A sua ligação a este site não é segura</translation>
@@ -778,7 +778,6 @@
 <translation id="6973656660372572881">Foram especificados servidores proxy fixos e um URL de script .pac.</translation>
 <translation id="6989763994942163495">Mostrar definições avançadas...</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
-<translation id="7012372675181957985">A sua Conta Google pode ter outras formas do histórico de navegação em <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="7029809446516969842">Palavras-passe</translation>
 <translation id="7050187094878475250">Tentou aceder a <ph name="DOMAIN" />, mas o servidor apresentou um certificado cujo período de validade é demasiado longo para ser fidedigno.</translation>
 <translation id="7053983685419859001">Bloquear</translation>
@@ -806,6 +805,7 @@
 <translation id="7220786058474068424">A processar</translation>
 <translation id="724691107663265825">O site que pretende visitar contém software malicioso</translation>
 <translation id="724975217298816891">Introduza a data de validade e o Código de Segurança/CVC de <ph name="CREDIT_CARD" /> para atualizar os detalhes do cartão. Ao confirmar, os detalhes do cartão são partilhados com este site.</translation>
+<translation id="725866823122871198">Não é possível estabelecer uma ligação privada a <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, porque a data e a hora do computador (<ph name="DATE_AND_TIME" />) estão incorretas.</translation>
 <translation id="7260504762447901703">Revogar acesso</translation>
 <translation id="7271803869921933038">Cartões pré-pagos aceites</translation>
 <translation id="7275334191706090484">Marcadores Geridos</translation>
@@ -820,7 +820,6 @@
 <translation id="7378627244592794276">Não</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7390545607259442187">Confirmar cartão</translation>
-<translation id="739697976928952788">Mostrar todas as palavras-passe guardadas</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419106976560586862">Caminho do Perfil</translation>
 <translation id="7424977062513257142">Uma página incorporada nesta página Web diz:</translation>
@@ -950,7 +949,6 @@
 <translation id="8293206222192510085">Adicionar marcador</translation>
 <translation id="8294431847097064396">Origem</translation>
 <translation id="8298115750975731693">A rede Wi-Fi que está a utilizar (<ph name="WIFI_NAME" />) pode exigir que visite <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
-<translation id="8306404619377842860">Não é possível estabelecer uma ligação privada a <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, porque a data e a hora do seu dispositivo (<ph name="DATE_AND_TIME" />) estão erradas. <ph name="BEGIN_LEARN_MORE_LINK" />Saiba mais<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8308427013383895095">A tradução falhou devido a um problema com a ligação de rede.</translation>
 <translation id="8311129316111205805">Carregar sessão</translation>
 <translation id="8332188693563227489">O acesso a <ph name="HOST_NAME" /> foi recusado</translation>
@@ -976,6 +974,7 @@
 <translation id="8543181531796978784">Pode <ph name="BEGIN_ERROR_LINK" />comunicar um problema de deteção<ph name="END_ERROR_LINK" /> ou, se compreende os riscos para a sua segurança, <ph name="BEGIN_LINK" />aceda a este site não seguro<ph name="END_LINK" />.</translation>
 <translation id="8543556556237226809">Tem dúvidas? Contacte a pessoa que supervisiona o seu perfil.</translation>
 <translation id="8553075262323480129">A tradução falhou porque não foi possível determinar o idioma da página.</translation>
+<translation id="8559762987265718583">Não é possível estabelecer uma ligação privada a <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, porque a data e a hora do seu dispositivo (<ph name="DATE_AND_TIME" />) estão incorretas.</translation>
 <translation id="8571890674111243710">A traduzir a página para <ph name="LANGUAGE" />...</translation>
 <translation id="858637041960032120">Adic. n.º telef.
 </translation>

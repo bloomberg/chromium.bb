@@ -4,7 +4,7 @@
 <translation id="100812568230599391">Изменить стиль дисплея на чередующийся</translation>
 <translation id="1012173283529841972">Пункт списка</translation>
 <translation id="1013742170491673792">srched</translation>
-<translation id="1022586497894531524">Используете голосовое сопровождение ChromeVox впервые? Благодаря нашему руководству вы быстро научитесь работать с этим сервисом.</translation>
+<translation id="1022586497894531524">Впервые используете ChromeVox для озвучивания текста на экране? Благодаря нашему руководству вы быстро научитесь работать с этим сервисом.</translation>
 <translation id="1023866615269196768">Объединенные ячейки.</translation>
 <translation id="1025074108959230262">Режим залипания отключен</translation>
 <translation id="1031961866430398710">затем</translation>
@@ -43,7 +43,7 @@
 <translation id="1339428534620983148">Перейти к предыдущему столбцу таблицы</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1346748346194534595">Справа</translation>
-<translation id="135978014023467274">Теперь вы используете ChromeVox 63!</translation>
+<translation id="135978014023467274">Теперь вы используете ChromeVox 63</translation>
 <translation id="136718599399906424">Перейти к следующей строке таблицы</translation>
 <translation id="1377925789329510816">Это последний заголовок. Чтобы вернуться к первому заголовку, нажмите SEARCH + Р. Чтобы перейти ко второму заголовку на этой странице, нажмите SEARCH + SHIFT + Р.</translation>
 <translation id="1383876407941801731">Поиск</translation>
@@ -414,7 +414,7 @@
 <translation id="461613135510474570">Предложение.</translation>
 <translation id="463135993322337640">Чтобы узнать об изменениях в новой версии, нажмите клавишу ChromeVox, а затем Щ и Т.</translation>
 <translation id="4647836961514597010">Палитра цветов</translation>
-<translation id="4660783501463101648">Мы отказались от ChromeVox Classic. Теперь на него нельзя переключиться с помощью клавиатуры.</translation>
+<translation id="4660783501463101648">Мы отказались от ChromeVox Classic. Теперь на эту версию нельзя переключиться с помощью клавиатуры.</translation>
 <translation id="4661075872484491155">tree</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4688873778442829762">grd</translation>
@@ -630,7 +630,7 @@
 <translation id="6493991254603208962">Уменьшить яркость</translation>
 <translation id="6508059270146105198">Разместить дисплей Брайля внизу страницы</translation>
 <translation id="6536864053412760904">Токены MathML.</translation>
-<translation id="6540201937398578274">Поиск – это клавиша-модификатор в ChromeVox. Она используется во многих сочетаниях клавиш. Для навигации используются клавиши со стрелками.</translation>
+<translation id="6540201937398578274">Поиск – это клавиша-модификатор в ChromeVox. С нее начинаются многие сочетания клавиш. Для навигации используются клавиши со стрелками.</translation>
 <translation id="6550720799683018100">Выберите комбинацию клавиш из списка ниже</translation>
 <translation id="6561818612645211875">Перейти к началу текущей строки</translation>
 <translation id="6587021927234520429">Следующего заголовка четвертого уровня нет.</translation>

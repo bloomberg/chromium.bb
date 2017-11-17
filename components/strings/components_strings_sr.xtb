@@ -78,6 +78,9 @@
 <translation id="154408704832528245">Одаберите адресу за доставу</translation>
 <translation id="1549470594296187301">JavaScript мора да буде омогућен да бисте користили ову функцију.</translation>
 <translation id="1559528461873125649">Нема такве датотеке или директоријума</translation>
+<translation id="1559572115229829303">&lt;p&gt;Није могуће успоставити приватну везу са доменом <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> јер датум и време на уређају (<ph name="DATE_AND_TIME" />) нису тачни.&lt;/p&gt;
+
+      &lt;p&gt;Прилагодите датум и време у одељку &lt;strong&gt;Опште&lt;/strong&gt; у апликацији &lt;strong&gt;Подешавања&lt;/strong&gt;.&lt;/p&gt;</translation>
 <translation id="1583429793053364125">Дошло је до грешке при приказивању ове веб-странице.</translation>
 <translation id="1590457302292452960">Генеришите јаку лозинку...</translation>
 <translation id="1592005682883173041">Приступ локалним подацима</translation>
@@ -359,13 +362,9 @@
 <translation id="3530944546672790857">{COUNT,plural, =0{Најмање 1 ставка на синхронизованим уређајима}=1{1 ставка (и још ставки на синхронизованим уређајима)}one{# ставка (и још ставки на синхронизованим уређајима)}few{# ставке (и још ставки на синхронизованим уређајима)}other{# ставки (и још ставки на синхронизованим уређајима)}}</translation>
 <translation id="3539171420378717834">Задржи копију ове картице на овом уређају</translation>
 <translation id="3542684924769048008">Користи лозинку за:</translation>
-<translation id="3545341443414427877">Успостављање приватне везе са доменом <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> није успело јер су датум и време рачунара (<ph name="DATE_AND_TIME" />) нетачни. <ph name="BEGIN_LEARN_MORE_LINK" />Сазнајте више<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="3549644494707163724">Шифруј све синхронизоване податке помоћу моје приступне фразе за синхронизацију</translation>
 <translation id="3556433843310711081">Менаџер може да га деблокира за вас</translation>
 <translation id="3566021033012934673">Веза није приватна</translation>
-<translation id="3569145463236695319">&lt;p&gt;Успостављање приватне везе са доменом <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> није успело јер су датум и време уређаја (<ph name="DATE_AND_TIME" />) нетачни.&lt;/p&gt;
-
-      &lt;p&gt;Прилагодите датум и време у одељку &lt;strong&gt;Опште&lt;/strong&gt; у апликацији &lt;strong&gt;Подешавања&lt;/strong&gt;.&lt;/p&gt; <ph name="BEGIN_LEARN_MORE_LINK" />Сазнајте више<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="358285529439630156">Прихватају се кредитне и припејд картице.</translation>
 <translation id="3582930987043644930">Додајте име</translation>
@@ -580,6 +579,7 @@
     <ph name="LIST_ITEM" />Посетите <ph name="BEGIN_LEARN_MORE_LINK" />Chrome центар за помоћ<ph name="END_LEARN_MORE_LINK" /> да бисте сазнали како да трајно уклоните софтвер са свог рачунара
     <ph name="END_LIST" /></translation>
 <translation id="5285570108065881030">Прикажи све сачуване лозинке</translation>
+<translation id="5287240709317226393">Прикажи колачиће</translation>
 <translation id="5299298092464848405">Грешка при рашчлањивању смерница</translation>
 <translation id="5308380583665731573">Повезивање</translation>
 <translation id="5308689395849655368">Извештавање о отказивању је онемогућено.</translation>
@@ -639,6 +639,7 @@
 <translation id="5675650730144413517">Ова страница не функционише</translation>
 <translation id="5685654322157854305">Додај адресу за испоруку</translation>
 <translation id="5689199277474810259">Извези у JSON</translation>
+<translation id="5689516760719285838">Локација</translation>
 <translation id="5710435578057952990">Идентитет овог веб-сајта није верификован.</translation>
 <translation id="5719499550583120431">Прихватају се припејд картице.</translation>
 <translation id="5720705177508910913">Тренутни корисник</translation>
@@ -686,7 +687,6 @@
 <translation id="614940544461990577">Покушајте:</translation>
 <translation id="6151417162996330722">Сертификат сервера има предугачак период важења.</translation>
 <translation id="6157877588268064908">Да бисте видели начине и захтеве за слање, изаберите адресу</translation>
-<translation id="6158003235852588289">Google безбедно прегледање је недавно открило „пецање“ на <ph name="SITE" />. Сајтови са „пецањем“ се представљају као неки други веб-сајтови да би вас преварили.</translation>
 <translation id="6165508094623778733">Сазнајте више</translation>
 <translation id="6169916984152623906">Сада можете да прегледате приватно и други људи који користе овај уређај неће видети ваше активности. Међутим, преузимања и обележивачи ће бити сачувани.</translation>
 <translation id="6177128806592000436">Веза са овим сајтом није безбедна</translation>
@@ -777,7 +777,6 @@
 <translation id="6973656660372572881">Наведени су и фиксни прокси сервери и URL адреса .pac скрипте.</translation>
 <translation id="6989763994942163495">Прикажи напредна подешавања...</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
-<translation id="7012372675181957985">Google налог има друге облике историје прегледања на <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="7029809446516969842">Лозинке</translation>
 <translation id="7050187094878475250">Покушали сте да посетите <ph name="DOMAIN" />, али је сервер представио сертификат са периодом важења који је предугачак да би био поуздан.</translation>
 <translation id="7053983685419859001">Блокирај</translation>
@@ -805,6 +804,7 @@
 <translation id="7220786058474068424">Обрада</translation>
 <translation id="724691107663265825">Сајт који ћете посетити садржи малвер</translation>
 <translation id="724975217298816891">Унесите рок трајања и CVC за картицу <ph name="CREDIT_CARD" /> да бисте ажурирали податке о картици. Када будете потврдили, подаци о картици ће бити послати овом сајту.</translation>
+<translation id="725866823122871198">Није могуће успоставити приватну везу са доменом <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> јер време и датум на рачунару (<ph name="DATE_AND_TIME" />) нису тачни.</translation>
 <translation id="7260504762447901703">Опозовите приступ</translation>
 <translation id="7271803869921933038">Припејд картице које се прихватају</translation>
 <translation id="7275334191706090484">Обележивачи којим се управља</translation>
@@ -819,7 +819,6 @@
 <translation id="7378627244592794276">Не</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7390545607259442187">Потврдите картицу</translation>
-<translation id="739697976928952788">Прикажи све сачуване лозинке</translation>
 <translation id="7400418766976504921">URL адреса</translation>
 <translation id="7419106976560586862">Путања профила</translation>
 <translation id="7424977062513257142">Уграђена страница на овој веб-страници каже:</translation>
@@ -949,7 +948,6 @@
 <translation id="8293206222192510085">Додавање обележивача</translation>
 <translation id="8294431847097064396">Извор</translation>
 <translation id="8298115750975731693">Wi-Fi мрежа коју користите (<ph name="WIFI_NAME" />) ће можда захтевати да посетите <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
-<translation id="8306404619377842860">Успостављање приватне везе са доменом <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> није успело јер су датум и време уређаја (<ph name="DATE_AND_TIME" />) нетачни. <ph name="BEGIN_LEARN_MORE_LINK" />Сазнајте више<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8308427013383895095">Превођење није успело због проблема са мрежном везом.</translation>
 <translation id="8311129316111205805">Учитај сесију</translation>
 <translation id="8332188693563227489">Приступ хосту <ph name="HOST_NAME" /> је одбијен</translation>
@@ -975,6 +973,7 @@
 <translation id="8543181531796978784">Можете да <ph name="BEGIN_ERROR_LINK" />пријавите проблем са откривањем<ph name="END_ERROR_LINK" /> или, ако схватате безбедносне ризике, <ph name="BEGIN_LINK" />посетите овај небезбедан сајт<ph name="END_LINK" />.</translation>
 <translation id="8543556556237226809">Имате питања? Контактирајте особу која вам надгледа профил.</translation>
 <translation id="8553075262323480129">Превод није успео јер језик странице није могао да буде утврђен.</translation>
+<translation id="8559762987265718583">Није могуће успоставити приватну везу са доменом <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> јер датум и време на уређају (<ph name="DATE_AND_TIME" />) нису тачни.</translation>
 <translation id="8571890674111243710">Превођење странице на <ph name="LANGUAGE" />...</translation>
 <translation id="858637041960032120">Додај тел. број
 </translation>

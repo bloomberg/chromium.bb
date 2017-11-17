@@ -129,7 +129,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="3329904751041170572">No se ha podido establecer conexión con el servidor.</translation>
 <translation id="3335947283844343239">Volver a abrir pestaña cerrada</translation>
 <translation id="3393920035788932672">Pop-ups permitidos</translation>
-<translation id="3414292259312108062">Chrome almacenará esta contraseña en las <ph name="BEGIN_LINK" />contraseñas guardadas de Google<ph name="END_LINK" /> y utilizará la función Autocompletar para que no tengas que memorizarla.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Vista dividida</translation>
 <translation id="3474624961160222204">Continuar como <ph name="NAME" /></translation>
@@ -152,7 +151,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="3779810277399252432">No hay conexión a Internet.</translation>
 <translation id="3783017676699494206">Guardar imagen</translation>
 <translation id="385051799172605136">Atrás</translation>
-<translation id="3857761338463387655">Crear correo electrónico con:</translation>
 <translation id="3897092660631435901">Menú</translation>
 <translation id="3928666092801078803">Combinar mis datos</translation>
 <translation id="3950820424414687140">Iniciar sesión</translation>
@@ -204,6 +202,7 @@ Tus datos se han cifrado con tu frase de contraseña de sincronización. Introd�
 <translation id="5005498671520578047">Copiar contraseña</translation>
 <translation id="5010803260590204777">Abre una pestaña de incógnito para navegar por la Web de forma privada.</translation>
 <translation id="5011684439661633295">Hola, <ph name="FULL_ACCOUNT_NAME" />:</translation>
+<translation id="5039804452771397117">Permitir</translation>
 <translation id="5062321486222145940">Instalar Google Drive</translation>
 <translation id="5083464117946352670">Tamaño de archivo desconocido.</translation>
 <translation id="5094827893301452931">Tuit enviado</translation>
@@ -262,7 +261,6 @@ Handoff también debe estar habilitado en la sección General de Ajustes, y los 
 <translation id="6122191549521593678">Online</translation>
 <translation id="6127379762771434464">Elemento quitado</translation>
 <translation id="6136914049981179737">Hace segundos</translation>
-<translation id="6149061208933997199">Utilizar contraseña</translation>
 <translation id="6158823227857319455">Nueva pestaña</translation>
 <translation id="616831107264507309">Leer más adelante</translation>
 <translation id="6184086493125982861">Mostrar pestañas</translation>
@@ -272,7 +270,6 @@ Handoff también debe estar habilitado en la sección General de Ajustes, y los 
 <translation id="6254066287920239840">Abrir enlaces en la aplicación en lugar de en el navegador.</translation>
 <translation id="6255097610484507482">Editar tarjeta de crédito</translation>
 <translation id="6308436439357671616">Esto te permite hacer fotos y subirlas.</translation>
-<translation id="6314335155547195432">Generar contraseña</translation>
 <translation id="6324528485781869530">Cambiar cuenta de sincronización</translation>
 <translation id="6324669097367352121">Ajustes de inicio de sesión</translation>
 <translation id="6337234675334993532">Cifrado</translation>
@@ -290,7 +287,6 @@ Tus datos se cifraron con tu frase de contraseña de sincronización el <ph name
 <translation id="6418346271604475326">Preparando PDF</translation>
 <translation id="6445051938772793705">País</translation>
 <translation id="6445981559479772097">Mensaje enviado</translation>
-<translation id="6456425917241817154">Generada por Chrome</translation>
 <translation id="6464071786529933911">Abrir en pestaña incógnito</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elementos eliminados</translation>
 <translation id="6541915733953096570">Hace una hora</translation>
@@ -313,6 +309,7 @@ Tus datos se cifraron con tu frase de contraseña de sincronización el <ph name
 <translation id="7004499039102548441">Pestañas recientes</translation>
 <translation id="7006788746334555276">Configuración de contenido</translation>
 <translation id="7031882061095297553">Sincronizar con</translation>
+<translation id="7053983685419859001">Bloquear</translation>
 <translation id="7062545763355031412">Aceptar y cambiar de cuenta</translation>
 <translation id="7108338896283013870">Ocultar</translation>
 <translation id="7133798577887235672">Nombre completo</translation>
@@ -345,7 +342,6 @@ Tus datos se cifraron con tu frase de contraseña de sincronización el <ph name
 <translation id="7649070708921625228">Ayuda</translation>
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7671141431838911305">INSTALAR</translation>
-<translation id="7677825787905683892">Elegir aplicación de correo electrónico predeterminada</translation>
 <translation id="7765158879357617694">Mover</translation>
 <translation id="7769602470925380267">Aceptar y cerrar sesión</translation>
 <translation id="7772032839648071052">Repite la contraseña</translation>
@@ -409,7 +405,6 @@ Tus datos se cifraron con tu frase de contraseña de sincronización el <ph name
 <translation id="9083392325882095631">1 elemento</translation>
 <translation id="9100610230175265781">Se debe introducir una frase de contraseña</translation>
 <translation id="9148126808321036104">Volver a iniciar sesión</translation>
-<translation id="914898748153555155">Puedes cambiar esta preferencia en cualquier momento en la configuración de Chrome.</translation>
 <translation id="91549621916703028">Crea varias pestañas para todas tus tareas</translation>
 <translation id="9157836665414082580">Quitar cuadros de diálogo</translation>
 <translation id="9188680907066685419">Cierra sesión en la cuenta gestionada</translation>

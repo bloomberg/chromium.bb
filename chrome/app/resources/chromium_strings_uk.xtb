@@ -71,7 +71,6 @@
 <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="328888136576916638">Ключі API Google відсутні. Деякі функції Chromium буде вимкнено.</translation>
 <translation id="3296368748942286671">Продовжувати роботу фонових програм, коли Chromium закрито</translation>
-<translation id="3312805357485578561">У Chromium виявлено незвичну активність</translation>
 <translation id="331951419404882060">ОС Chromium не вдалося синхронізувати ваші дані через помилку входу.</translation>
 <translation id="3474745554856756813">З цього пристрою буде видалено стільки елементів: <ph name="ITEMS_COUNT" />. Щоб відновити дані пізніше, увійдіть в обліковий запис Chromium як <ph name="USER_EMAIL" />.</translation>
 <translation id="3509308970982693815">Закрийте всі вікна Chromium і повторіть спробу.</translation>
@@ -91,7 +90,6 @@
 <translation id="4050175100176540509">В останній версії покращено безпеку та додано нові функції.</translation>
 <translation id="407254336480250557">Виберіть <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="4077262827416206768">Щоб зміна почала діяти, закрийте всі вікна Chromium і перезапустіть його.</translation>
-<translation id="4207043877577553402"><ph name="BEGIN_BOLD" />Застереження:<ph name="END_BOLD" /> Chromium не може заборонити розширенням реєструвати вашу історію веб-перегляду. Щоб вимкнути це розширення в режимі анонімного перегляду, зніміть прапорець поруч із цим параметром.</translation>
 <translation id="421369550622382712">Знаходьте чудові додатки, ігри, розширення й теми для Chromium.</translation>
 <translation id="4222580632002216401">Ви ввійшли в Chromium. Проте ваш адміністратор вимкнув синхронізацію.</translation>
 <translation id="4224199872375172890">У вас остання версія Chromium.</translation>
@@ -173,7 +171,6 @@
 Деякі функції можуть бути недоступними. Укажіть інший каталог профілю або скористайтеся новішою версією Chromium.</translation>
 <translation id="6734080038664603509">Оновити &amp;Chromium</translation>
 <translation id="6734291798041940871">Chromium уже встановлено для всіх користувачів на вашому комп’ютері.</translation>
-<translation id="6798578729981748444">Щоб завершити імпорт, закрийте всі вікна Firefox.</translation>
 <translation id="6810143991807788455">Допоможіть покращити Chromium, надсилаючи звіти про поточні налаштування</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6883876366448858277">надсилає слово та його контекст у Пошук Google і повертає визначення, зображення й інші результати пошуку.</translation>

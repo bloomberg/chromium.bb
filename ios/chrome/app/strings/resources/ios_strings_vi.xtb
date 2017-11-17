@@ -129,7 +129,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="3329904751041170572">Không thể kết nối với máy chủ.</translation>
 <translation id="3335947283844343239">Mở lại Tab đã Đóng</translation>
 <translation id="3393920035788932672">Cửa sổ bật lên được cho phép</translation>
-<translation id="3414292259312108062">Chrome sẽ lưu mật khẩu này vào <ph name="BEGIN_LINK" />Mật khẩu đã lưu của Google<ph name="END_LINK" /> và tự động điền mật khẩu cho bạn để bạn không phải tự ghi nhớ.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> phút</translation>
 <translation id="3448016392200048164">Chế độ xem phân tách</translation>
 <translation id="3474624961160222204">Tiếp tục với tên <ph name="NAME" /></translation>
@@ -152,7 +151,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="3779810277399252432">Không có kết nối Internet.</translation>
 <translation id="3783017676699494206">Lưu hình ảnh</translation>
 <translation id="385051799172605136">Quay lại</translation>
-<translation id="3857761338463387655">Tạo email bằng:</translation>
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3928666092801078803">Kết hợp dữ liệu của tôi</translation>
 <translation id="3950820424414687140">Đăng nhập</translation>
@@ -204,6 +202,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="5005498671520578047">Sao chép mật khẩu</translation>
 <translation id="5010803260590204777">Mở tab ẩn danh để duyệt web một cách riêng tư.</translation>
 <translation id="5011684439661633295">Xin chào <ph name="FULL_ACCOUNT_NAME" />!</translation>
+<translation id="5039804452771397117">Cho phép</translation>
 <translation id="5062321486222145940">Cài đặt Google Drive</translation>
 <translation id="5083464117946352670">Không thể xác định kích thước tệp.</translation>
 <translation id="5094827893301452931">Đã đăng lên Twitter.</translation>
@@ -262,7 +261,6 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="6122191549521593678">Trực tuyến</translation>
 <translation id="6127379762771434464">Đã xóa mục</translation>
 <translation id="6136914049981179737">Giây trước</translation>
-<translation id="6149061208933997199">Sử dụng mật khẩu</translation>
 <translation id="6158823227857319455">Tab mới</translation>
 <translation id="616831107264507309">Đọc sau</translation>
 <translation id="6184086493125982861">Hiển thị tab</translation>
@@ -272,7 +270,6 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="6254066287920239840">Mở liên kết trong ứng dụng thay vì trình duyệt.</translation>
 <translation id="6255097610484507482">Chỉnh sửa thẻ tín dụng</translation>
 <translation id="6308436439357671616">Điều này cho phép bạn chụp và tải ảnh lên.</translation>
-<translation id="6314335155547195432">Tạo mật khẩu</translation>
 <translation id="6324528485781869530">Chuyển đổi tài khoản đồng bộ hóa</translation>
 <translation id="6324669097367352121">Cài đặt đăng nhập</translation>
 <translation id="6337234675334993532">Mã hóa</translation>
@@ -290,7 +287,6 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="6418346271604475326">Đang chuẩn bị PDF</translation>
 <translation id="6445051938772793705">Quốc gia</translation>
 <translation id="6445981559479772097">Đã gửi tin nhắn.</translation>
-<translation id="6456425917241817154">Chrome đã tạo mật khẩu</translation>
 <translation id="6464071786529933911">Mở trong tab ẩn danh mới</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> dấu trang đã bị xóa</translation>
 <translation id="6541915733953096570">Giờ trước</translation>
@@ -313,6 +309,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="7004499039102548441">Các tab gần đây</translation>
 <translation id="7006788746334555276">Cài đặt nội dung</translation>
 <translation id="7031882061095297553">Đồng bộ hóa với</translation>
+<translation id="7053983685419859001">Chặn</translation>
 <translation id="7062545763355031412">Chấp nhận và chuyển đổi tài khoản</translation>
 <translation id="7108338896283013870">Ẩn</translation>
 <translation id="7133798577887235672">Tên đầy đủ</translation>
@@ -345,7 +342,6 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="7649070708921625228">Trợ giúp</translation>
 <translation id="7658239707568436148">Hủy</translation>
 <translation id="7671141431838911305">CÀI ĐẶT</translation>
-<translation id="7677825787905683892">Chọn ứng dụng email mặc định</translation>
 <translation id="7765158879357617694">Di chuyển</translation>
 <translation id="7769602470925380267">Chấp nhận và đăng xuất</translation>
 <translation id="7772032839648071052">Xác nhận cụm mật khẩu</translation>
@@ -409,7 +405,6 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="9083392325882095631">1 mục</translation>
 <translation id="9100610230175265781">Yêu cầu cụm mật khẩu</translation>
 <translation id="9148126808321036104">Đăng nhập lại</translation>
-<translation id="914898748153555155">Bạn có thể thay đổi tùy chọn này bất kỳ lúc nào trong cài đặt Chrome</translation>
 <translation id="91549621916703028">Tạo nhiều tab cho tất cả các hoạt động của bạn</translation>
 <translation id="9157836665414082580">Hộp thoại loại bỏ</translation>
 <translation id="9188680907066685419">Đăng xuất khỏi tài khoản được quản lý</translation>

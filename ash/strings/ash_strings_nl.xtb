@@ -26,7 +26,6 @@
 <translation id="15373452373711364">Grote muisaanwijzer</translation>
 <translation id="1550523713251050646">Klik voor meer opties</translation>
 <translation id="1621499497873603021">Resterende tijd totdat de batterij leeg is: <ph name="TIME_LEFT" /></translation>
-<translation id="16620462294541761">Je wachtwoord kan niet worden geverifieerd. Probeer het opnieuw.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> resterend</translation>
 <translation id="1698760176351776263">IPv6-adres: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">Dit apparaat wordt beheerd door een onderneming</translation>
@@ -69,9 +68,10 @@
 <translation id="2509468283778169019">CAPS LOCK is ingeschakeld</translation>
 <translation id="2532589005999780174">Modus voor hoog contrast</translation>
 <translation id="2597972630681408282">Nachtverlichting: <ph name="NIGHT_LIGHT_STATUS" /></translation>
+<translation id="2617342710774726426">Simkaart is vergrendeld</translation>
 <translation id="2653659639078652383">Verzenden</translation>
 <translation id="2675319268637823299">Een beheerder heeft <ph name="USER_EMAIL" /> geen toestemming gegeven voor toegang tot meerdere accounts.
-Alle gebruikers moeten uitloggen om door te gaan.</translation>
+    Alle gebruikers moet uitloggen om door te gaan.</translation>
 <translation id="2700058918926273959">Sessie loopt af over <ph name="SESSION_TIME_REMAINING" />. Je wordt uitgelogd.</translation>
 <translation id="2727977024730340865">Aangesloten op een laag-vermogen-lader. Opladen van de batterij mogelijk niet betrouwbaar.</translation>
 <translation id="2761704814324807722">Statusvak, tijd <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -97,7 +97,7 @@ Alle gebruikers moeten uitloggen om door te gaan.</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Opnieuw starten om updates uit te voeren</translation>
 <translation id="3147142846278915599">Launcher (apps synchroniseren...)</translation>
-<translation id="315116470104423982">Mobiele gegevens</translation>
+<translation id="315116470104423982">Mobiele data</translation>
 <translation id="3153444934357957346">Je kunt maximaal <ph name="MULTI_PROFILE_USER_LIMIT" /> accounts hebben in Toegang tot meerdere accounts.</translation>
 <translation id="3236488194889173876">Geen mobiel netwerk beschikbaar</translation>
 <translation id="3294437725009624529">Gast</translation>
@@ -174,7 +174,6 @@ Alle gebruikers moeten uitloggen om door te gaan.</translation>
 <translation id="5571066253365925590">Bluetooth ingeschakeld</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
 <translation id="5600837773213129531">Druk op Ctrl + Alt + Z om gesproken feedback uit te schakelen.</translation>
-<translation id="5612734644261457353">Je wachtwoord kan nog steeds niet worden geverifieerd. Opmerking: als je je wachtwoord onlangs hebt gewijzigd, wordt je nieuwe wachtwoord doorgevoerd zodra je uitlogt. Gebruik hier het oude wachtwoord.</translation>
 <translation id="5648021990716966815">Microfoonaansluiting</translation>
 <translation id="5673434351075758678">Van '<ph name="FROM_LOCALE" />' naar '<ph name="TO_LOCALE" />' na synchronisatie van je instellingen.</translation>
 <translation id="5744083938413354016">Tikken en slepen</translation>
@@ -284,10 +283,10 @@ Gebruik deze functie alleen met accounts die je vertrouwt.</translation>
 <translation id="8261506727792406068">Verwijderen</translation>
 <translation id="8308637677604853869">Vorig menu</translation>
 <translation id="8351131234907093545">Notitie maken</translation>
-<translation id="8392234662362215700">Druk op Ctrl-Shift-spatiebalk om de toetsenbordindeling te wijzigen.</translation>
 <translation id="8428213095426709021">Instellingen</translation>
 <translation id="8433186206711564395">Netwerkinstellingen</translation>
 <translation id="8433977262951327081">De sneltoets om de ballon van het menu met invoeropties op de plank weer te geven, is gewijzigd. Gebruik <ph name="NEW_SHORTCUT" /> in plaats van <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="8452135315243592079">Simkaart ontbreekt</translation>
 <translation id="8454013096329229812">Wifi is ingeschakeld.</translation>
 <translation id="847056008324733326">Instellingen voor weergaveschaal</translation>
 <translation id="8477270416194247200">Druk op Alt+Zoeken of Shift om te annuleren.</translation>
@@ -315,7 +314,6 @@ Verdere meldingen, vensters en dialoogvensters worden mogelijk verdeeld over de 
 <translation id="9091626656156419976">Display <ph name="DISPLAY_NAME" /> is verwijderd</translation>
 <translation id="9111102763498581341">Ontgrendelen</translation>
 <translation id="9151726767154816831">Opnieuw opstarten en de functie Powerwash gebruiken om bij te werken</translation>
-<translation id="9181036778675416867">Tik op de stylusknop op de plank om een notitie of screenshot te maken of de Assistent, de laserpen of het vergrootglas te gebruiken.</translation>
 <translation id="9194617393863864469">Een andere gebruiker inloggen...</translation>
 <translation id="9201131092683066720">De batterij is <ph name="PERCENTAGE" />% vol.</translation>
 <translation id="9210037371811586452">Samengestelde desktopmodus wordt gesloten</translation>

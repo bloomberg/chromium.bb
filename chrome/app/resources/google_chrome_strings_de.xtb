@@ -11,7 +11,6 @@
 <translation id="123620459398936149">Chrome OS konnte Ihre Daten nicht synchronisieren. Bitte aktualisieren Sie Ihre Passphrase für die Synchronisierung.</translation>
 <translation id="127345590676626841">Chrome wird automatisch aktualisiert, sodass Sie immer über die neueste Version verfügen. Nach Abschluss des Downloads wird Chrome neu gestartet und Sie können fortfahren.</translation>
 <translation id="1302523850133262269">Bitte warten Sie, bis die aktuellen Systemupdates von Chrome installiert wurden.</translation>
-<translation id="1350930993895295930">Chrome hat ungewöhnliches Verhalten erkannt.</translation>
 <translation id="137466361146087520">Google Chrome Beta</translation>
 <translation id="1393853151966637042">Hilfe für Chrome aufrufen</translation>
 <translation id="1399397803214730675">Auf diesem Computer befindet sich bereits eine neuere Version von Google Chrome. Falls die Software nicht funktioniert, deinstallieren Sie Google Chrome und versuchen Sie es erneut.</translation>
@@ -191,7 +190,6 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="6566149418543181476">Google Chrome wird aktualisiert (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">Ihre E-Mail-Adresse <ph name="PROFILE_EMAIL" /> wird zurzeit für die Synchronisierung Ihrer Chrome-Inhalte verwendet. Wenn Sie Ihre Synchronisierungseinstellungen ändern oder Chrome ohne Google-Konto verwenden möchten, rufen Sie <ph name="SETTINGS_LINK" /> auf.</translation>
 <translation id="6600954340915313787">In Chrome kopiert</translation>
-<translation id="6626317981028933585">Leider sind Ihre Mozilla Firefox-Einstellungen nicht verfügbar, wenn dieser Browser ausgeführt wird. Um diese Einstellungen in Google Chrome zu importieren, speichern Sie Ihre Arbeit und schließen Sie alle Firefox-Fenster. Klicken Sie anschließend auf "Weiter".</translation>
 <translation id="6634887557811630702">Google Chrome ist auf dem neuesten Stand.</translation>
 <translation id="6676384891291319759">Internetzugriff</translation>
 <translation id="6697947395630195233">Chrome benötigt Zugriff auf Ihren Standort, um ihn mit dieser Website zu teilen.</translation>
@@ -274,7 +272,6 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="9026991721384951619">Chrome OS konnte Ihre Daten nicht synchronisieren, da die Anmeldedaten Ihres Kontos veraltet sind.</translation>
 <translation id="9067395829937117663">Für Google Chrome ist Windows 7 oder höher erforderlich.</translation>
 <translation id="9084668267983921457">Authentifizierungszertifikat fehlgeschlagen. Bitte melden Sie sich wieder bei Google Chrome an oder wenden Sie sich an Ihren Administrator, um weitere Informationen zu erhalten. <ph name="ADDITIONAL_EXPLANATION" /></translation>
-<translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Achtung:<ph name="END_BOLD" /> Google Chrome kann nicht verhindern, dass Ihr Browserverlauf von Erweiterungen protokolliert wird. Deaktivieren Sie diese Erweiterung für den Inkognitomodus, indem Sie das entsprechende Kästchen deaktivieren.</translation>
 <translation id="911206726377975832">Auch die Browserdaten löschen?</translation>
 <translation id="919706545465235479">Aktualisieren Sie Chrome, um die Synchronisierung zu starten</translation>
 <translation id="924447568950697217">Chrome als Standardbrowser festlegen</translation>

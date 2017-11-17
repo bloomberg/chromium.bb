@@ -78,6 +78,9 @@
 <translation id="154408704832528245">डिलीवरी पता चुनें</translation>
 <translation id="1549470594296187301">इस सुविधा का उपयोग करने के लिए JavaScript को सक्षम किया जाना चाहिए.</translation>
 <translation id="1559528461873125649">कोई ऐसी फ़ाइल या निर्देशिका नहीं है</translation>
+<translation id="1559572115229829303">&lt;p&gt;<ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> से निजी कनेक्‍शन स्‍थापित नहीं किया जा सकता क्‍योंकि आपके डिवाइस का दिनांक और समय (<ph name="DATE_AND_TIME" />) गलत है.&lt;/p&gt;
+
+      &lt;p&gt;कृपया दिनांक और समय को &lt;strong&gt;सेटिंग&lt;/strong&gt; ऐप के &lt;strong&gt;सामान्‍य&lt;/strong&gt; अनुभाग से एडजस्‍ट करें.&lt;/p&gt;</translation>
 <translation id="1583429793053364125">यह वेबपेज प्रदर्शित करते समय कोई समस्या हुई.</translation>
 <translation id="1590457302292452960">मज़बूत पासवर्ड जनरेट करें...</translation>
 <translation id="1592005682883173041">स्थानीय डेटा एक्सेस</translation>
@@ -359,13 +362,9 @@
 <translation id="3530944546672790857">{COUNT,plural, =0{सिंक किए हुए डिवाइस पर कम से कम 1 आइटम}=1{1 आइटम (सिंक किए हुए डिवाइस पर और भी बहुत कुछ)}one{# आइटम (सिंक किए हुए डिवाइस पर और भी बहुत कुछ)}other{# आइटम (सिंक किए हुए डिवाइस पर और भी बहुत कुछ)}}</translation>
 <translation id="3539171420378717834">इस डिवाइस पर इस कार्ड की कॉपी रखें</translation>
 <translation id="3542684924769048008">इसके लिए पासवर्ड का उपयोग करें:</translation>
-<translation id="3545341443414427877"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> से निजी कनेक्शन नहीं बनाया जा सका क्योंकि आपके कंप्यूटर का दिनांक और समय (<ph name="DATE_AND_TIME" />) गलत है. <ph name="BEGIN_LEARN_MORE_LINK" />अधिक जानें<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="3549644494707163724">सभी समन्वयित डेटा को अपने स्वयं के समन्वयन पासफ़्रेज़ के साथ एन्क्रिप्ट करें</translation>
 <translation id="3556433843310711081">आपका प्रबंधक इसे आपके लिए अनवरोधित कर सकता है</translation>
 <translation id="3566021033012934673">आपका कनेक्शन निजी नहीं है</translation>
-<translation id="3569145463236695319">&lt;p&gt;<ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> से निजी कनेक्शन नहीं बनाया जा सका क्योंकि आपके कंप्यूटर का दिनांक और समय (<ph name="DATE_AND_TIME" />) गलत है.&lt;/p&gt;
-
-      &lt;p&gt;कृपया &lt;strong&gt;सेटिंग&lt;/strong&gt; ऐप्लिकेशन के &lt;strong&gt;सामान्य&lt;/strong&gt; अनुभाग से दिनांक और समय एडजस्ट करें.&lt;/p&gt; <ph name="BEGIN_LEARN_MORE_LINK" />अधिक जानें<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="358285529439630156">क्रेडिट और प्रीपेड कार्ड स्वीकार किए जाते हैं.</translation>
 <translation id="3582930987043644930">नाम जोड़ें</translation>
@@ -580,6 +579,7 @@
     <ph name="LIST_ITEM" />अपने कंप्यूटर से हमेशा के लिए सॉफ़्टवेयर को निकालने का तरीका जानने के लिए <ph name="BEGIN_LEARN_MORE_LINK" />Chrome सहायता केंद्र<ph name="END_LEARN_MORE_LINK" /> पर जाएं
     <ph name="END_LIST" /></translation>
 <translation id="5285570108065881030">सेव किए गए सभी पासवर्ड दिखाएं</translation>
+<translation id="5287240709317226393">कुकीज़ दिखाएं</translation>
 <translation id="5299298092464848405">नीति पार्स करने में गड़बड़ी</translation>
 <translation id="5308380583665731573">कनेक्ट करें</translation>
 <translation id="5308689395849655368">क्रैश की रिपोर्ट करना अक्षम कर दिया गया है.</translation>
@@ -639,6 +639,7 @@
 <translation id="5675650730144413517">यह पेज काम नहीं कर रहा है</translation>
 <translation id="5685654322157854305">शिपिंग पता जोड़ें</translation>
 <translation id="5689199277474810259">JSON में निर्यात करें</translation>
+<translation id="5689516760719285838">स्थान</translation>
 <translation id="5710435578057952990">इस वेबसाइट की पहचान सत्यापित नहीं की गई है.</translation>
 <translation id="5719499550583120431">प्रीपेड कार्ड स्वीकार किए जाते हैं.</translation>
 <translation id="5720705177508910913">वर्तमान उपयोगकर्ता</translation>
@@ -687,7 +688,6 @@
 <translation id="614940544461990577">यह आज़माकर देखें:</translation>
 <translation id="6151417162996330722">सर्वर प्रमाणपत्र की मान्‍यता अवधि बहुत लंबी है.</translation>
 <translation id="6157877588268064908">शिपिंग के तरीके और ज़रूरतें देखने केे लिए, कोई पता चुनें</translation>
-<translation id="6158003235852588289">Google सुरक्षित ब्राउज़िंग को <ph name="SITE" /> पर हाल ही में फ़िशिंग का पता चला है. फ़िशिंग साइटें आपको भ्रमित करने के लिए अन्य वेबसाइटें होने का दावा करती हैं.</translation>
 <translation id="6165508094623778733">अधिक जानें</translation>
 <translation id="6169916984152623906">अब आप निजी रूप से ब्राउज़ कर सकते हैं और इस डिवाइस का उपयोग करने वाले दूसरे लोगों को आपकी गतिविधि दिखाई नहीं देगी. लेकिन डाउनलोड और बुकमार्क सेव होंगे.</translation>
 <translation id="6177128806592000436">इस साइट से आपका कनेक्‍शन सुरक्षित नहीं है</translation>
@@ -778,7 +778,6 @@
 <translation id="6973656660372572881">फ़िक्‍स्‍ड प्रॉक्‍सी सर्वर और .pac स्‍क्रिप्‍ट URL दोनों ही निर्दिष्ट हैं.</translation>
 <translation id="6989763994942163495">अतिरिक्त सेटिंग दिखाएं...</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
-<translation id="7012372675181957985">आपके Google खाते में <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> पर ब्राउज़िंग इतिहास के अन्य रूप उपलब्ध हो सकते हैं</translation>
 <translation id="7029809446516969842">पासवर्ड</translation>
 <translation id="7050187094878475250">आपने <ph name="DOMAIN" /> तक पहुंचने का प्रयास किया था, लेकिन सर्वर ने ऐसा प्रमाणपत्र प्रस्‍तुत किया जिसकी मान्‍यता अवधि विश्‍वसनीय होने के लिए बहुत लंबी है.</translation>
 <translation id="7053983685419859001">अवरोधित करें</translation>
@@ -806,6 +805,7 @@
 <translation id="7220786058474068424">संसाधित हो रहा है</translation>
 <translation id="724691107663265825">साइट में आगे मैलवेयर हैं</translation>
 <translation id="724975217298816891">अपने कार्ड विवरण अपडेट करने के लिए <ph name="CREDIT_CARD" /> का समय समाप्ति दिनांक और CVC डालें. आपकी तरफ से पुष्टि हो जाने पर, आपके कार्ड के विवरण इस साइट के साथ साझा किए जाएंगे.</translation>
+<translation id="725866823122871198"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> से एक निजी कनेक्‍शन स्‍थापित नहीं किया जा सकता क्‍योंकि आपके कंप्‍यूटर का दिनांक और समय (<ph name="DATE_AND_TIME" />) गलत है.</translation>
 <translation id="7260504762447901703">एक्सेस निरस्त करें</translation>
 <translation id="7271803869921933038">स्वीकार किए जाने वाले प्रीपेड कार्ड</translation>
 <translation id="7275334191706090484">प्रबंधित बुकमार्क</translation>
@@ -820,7 +820,6 @@
 <translation id="7378627244592794276">नहीं</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7390545607259442187">कार्ड की पुष्टि करें</translation>
-<translation id="739697976928952788">सेव किए गए सभी पासवर्ड दिखाएं</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419106976560586862">प्रोफ़ाइल पथ</translation>
 <translation id="7424977062513257142">इस वेबपृष्‍ठ पर एम्‍बेड किए गए पृष्‍ठ का कहना है:</translation>
@@ -950,7 +949,6 @@
 <translation id="8293206222192510085">बुकमार्क जोड़ें</translation>
 <translation id="8294431847097064396">स्रोत</translation>
 <translation id="8298115750975731693">आप जिस वाई-फ़ाई का उपयोग कर रहे हैं (<ph name="WIFI_NAME" />) उसके लिए आपको <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> पर जाने की आवश्‍यकता हो सकती है.</translation>
-<translation id="8306404619377842860"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> से निजी कनेक्शन नहीं बनाया जा सकता क्योंकि आपके डिवाइस का दिनांक और समय (<ph name="DATE_AND_TIME" />) गलत है. <ph name="BEGIN_LEARN_MORE_LINK" />अधिक जानें<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8308427013383895095">नेटवर्क कनेक्शन में कोई समस्या होने के कारण अनुवाद विफल हुआ.</translation>
 <translation id="8311129316111205805">सत्र लोड करें</translation>
 <translation id="8332188693563227489"><ph name="HOST_NAME" /> का एक्सेस अस्वीकृत किया गया</translation>
@@ -976,6 +974,7 @@
 <translation id="8543181531796978784">आप <ph name="BEGIN_ERROR_LINK" />पहचान संबंधी समस्‍या की रिपोर्ट<ph name="END_ERROR_LINK" /> कर सकते हैं या यदि आप अपनी सुरक्षा से जुड़े जोखिमों को समझते हैं, तो <ph name="BEGIN_LINK" />इस असुरक्षित साइट पर जा<ph name="END_LINK" /> सकते हैं.</translation>
 <translation id="8543556556237226809">प्रश्न पूछना चाहते हैं? तो उस व्यक्ति से संपर्क करें जो आपकी प्रोफ़ाइल की निगरानी करता है.</translation>
 <translation id="8553075262323480129">अनुवाद विफल हो गया क्योंकि पेज की भाषा निर्धारित नहीं की जा सकी.</translation>
+<translation id="8559762987265718583"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> से एक निजी कनेक्‍शन स्‍थापित नहीं किया जा सकता क्‍योंकि आपके डिवाइस का दिनांक और समय (<ph name="DATE_AND_TIME" />) गलत है.</translation>
 <translation id="8571890674111243710">पेज का अनुवाद <ph name="LANGUAGE" /> में कर रहा है...</translation>
 <translation id="858637041960032120">फ़ोन नंबर जोड़ें
 </translation>

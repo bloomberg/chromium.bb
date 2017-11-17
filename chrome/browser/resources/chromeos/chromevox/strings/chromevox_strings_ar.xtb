@@ -30,8 +30,8 @@
 <translation id="1201402288615127009">التالي</translation>
 <translation id="1206619573307042055">صورة بها نص متحرك</translation>
 <translation id="1213216066620407844">‏ChromeVox - تزويد Chrome بالصوت</translation>
-<translation id="1225437811932752266">‏تهانينا! لقد تعلمت أساسيات استخدام ChromeVox بنجاح. تذكر أنه يمكنك فتح قائمة أوامر ChromeVox في أي وقت عن طريق الضغط على بحث+نقطة. ولمعرفة مزيد من المعلومات حول ChromeVox ونظام التشغيل Chrome، انتقل إلى المقالات التالية.
-عند الانتهاء من البرنامج التعليمي، استخدم ChromeVox للانتقال إلى الزر "إغلاق" والنقر عليه.</translation>
+<translation id="1225437811932752266">‏تهانينا! لقد تعلمت أساسيات استخدام ChromeVox بنجاح. تذكّر أنه يمكنك فتح قائمة أوامر ChromeVox في أي وقت عن طريق الضغط على "بحث+نقطة". ولمعرفة مزيد من المعلومات حول ChromeVox ونظام التشغيل Chrome، انتقل إلى المقالات التالية.
+إذا انتهيت من البرنامج التعليمي، استخدم ChromeVox للانتقال إلى الزر "إغلاق" والنقر عليه.</translation>
 <translation id="1229276918471378188">الانتقال السابق</translation>
 <translation id="1237866625126425153">rdgrp</translation>
 <translation id="1251750620252348585">عنوان المستوى السادس التالي</translation>
@@ -171,7 +171,7 @@
 <translation id="2770781857296573485">الدخول إلى استكشاف المجموعات</translation>
 <translation id="2777845298774924149">تم الإنهاء</translation>
 <translation id="2781264313200109999">بدء الرابط</translation>
-<translation id="2784959586797362050">‏يمكنك دائمًا إرسال تعليقات إلينا مباشرةً بالضغط على "Search+a"، ثم "i". نحن متشوقون لمعرفة رأيك.</translation>
+<translation id="2784959586797362050">‏يمكنك دائمًا إرسال تعليقات إلينا مباشرةً بالضغط على "Search+a"، ثم "i". نتطلع بشدة لمعرفة رأيك.</translation>
 <translation id="2800204403141299078">ليس هناك المزيد من العناصر المختلفة.</translation>
 <translation id="2800780099804980316">ليس هناك عنوان سابق من المستوى الأول.</translation>
 <translation id="280499067616661124">‏البحث في صفحة ChromeVox</translation>
@@ -412,7 +412,7 @@
 <translation id="4601367666219428522">‏جدول <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">تجاهل الضغط على المفتاح التالي</translation>
 <translation id="461613135510474570">جملة</translation>
-<translation id="463135993322337640">‏اضغط على ChromeVox o،n للاطلاع على الجديد</translation>
+<translation id="463135993322337640">‏اضغط على "ChromeVox o، n" للاطلاع على الميزات الجديدة</translation>
 <translation id="4647836961514597010">علبة الألوان</translation>
 <translation id="4660783501463101648">‏تمت إزالة الإصدار الكلاسيكي. وتمت إزالة مفتاح تبديل لوحة المفاتيح للعودة إلى الإصدار الكلاسيكي من ChromeVox.</translation>
 <translation id="4661075872484491155">متفرع</translation>
@@ -472,7 +472,7 @@
 <translation id="5098541983634824365">مغادرة الشبكة.</translation>
 <translation id="5102981729317424850">شريط الأدوات</translation>
 <translation id="5105050547967751155">rq</translation>
-<translation id="5106547198195128110">لقد أجرينا بعض التغييرات المثيرة في الإصدار الجديد. إليك الجديد:</translation>
+<translation id="5106547198195128110">لقد أجرينا بعض التغييرات المثيرة في الإصدار الجديد، فيما يلي الميزات الجديدة:</translation>
 <translation id="5110983769041734144">ليس هناك حقل نموذج سابق.</translation>
 <translation id="5111640677200759579">عنوان العمود</translation>
 <translation id="5136967254288895616">ليس هناك رابط سابق.</translation>
@@ -589,7 +589,7 @@
 <translation id="6065293622157674001">بداية الخطأ النحوي</translation>
 <translation id="6082768461603900813">التنقل الأساسي</translation>
 <translation id="6092707270915298410">انتهاء الرابط</translation>
-<translation id="6118126368611144850">‏تطبيقات Android لـ Chrome. إذا كان لديك متجر Play على جهازك، اطلع على لمحة سريعة عن ChromeVox مع تطبيقات Android. جرّب الدعم التجريبي من خلال تنزيل Google Chrome Canary من متجر Play.</translation>
+<translation id="6118126368611144850">‏تطبيقات Android في متصفح Chrome. إذا كان لديك متجر Play على جهازك، اطلع على لمحة سريعة عن ChromeVox مع تطبيقات Android. جرّب الدعم التجريبي من خلال تنزيل Google Chrome Canary من متجر Play.</translation>
 <translation id="611827076493383239">vtd</translation>
 <translation id="6119955456199054975">نهاية الخلية.</translation>
 <translation id="6122013438240733403">btn</translation>

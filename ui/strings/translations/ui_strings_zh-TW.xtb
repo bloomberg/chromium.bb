@@ -91,7 +91,6 @@
 <translation id="5941711191222866238">縮到最小</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 小時}other{# 小時}}</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME" /></translation>
-<translation id="598033046487663418">所有應用程式</translation>
 <translation id="6012623610530968780">第 <ph name="SELECTED_PAGE" /> 頁 (共 <ph name="TOTAL_PAGE_NUM" /> 頁)</translation>
 <translation id="6022924867608035986">清除搜尋框文字</translation>
 <translation id="6040143037577758943">關閉</translation>

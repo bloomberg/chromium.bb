@@ -580,7 +580,6 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 
       Visita il sito https://developers.google.com/safe-browsing per avere ulteriori informazioni sulla funzione Navigazione sicura.</translation>
 <translation id="3016255526521614822">Autorizza l'uso di app per scrivere note nella schermata di blocco di <ph name="PRODUCT_OS_NAME" /></translation>
-<translation id="3021409116652377124">Disabilita ricerca plug-in</translation>
 <translation id="3030000825273123558">Attiva rapporti sulle metriche</translation>
 <translation id="3034580675120919256">Permette di stabilire se consentire o meno l'esecuzione di JavaScript nei siti web. L'esecuzione di JavaScript può essere consentita o negata per tutti i siti web. Se questa norma non viene impostata, verrà utilizzato il valore "AllowJavaScript", che potrà essere modificato dagli utenti.</translation>
 <translation id="3038323923255997294">Continua a eseguire applicazioni in background dopo la chiusura di <ph name="PRODUCT_NAME" /></translation>
@@ -863,25 +862,6 @@ Avviso. È consigliabile mantenere attivati gli aggiornamenti automatici per con
 <translation id="4027608872760987929">Attiva il provider di ricerca predefinito</translation>
 <translation id="4039085364173654945">Consente di stabilire se per i contenuti secondari di terze parti presenti in una pagina è consentita la visualizzazione di una finestra di dialogo Autorizzazione di base HTTP. Generalmente questa norma non è attiva per tutela dal phishing. Se questa norma non viene impostata, l'impostazione verrà disattivata e per i contenuti secondari di terze parti non potrà essere visualizzata una finestra di dialogo Autorizzazione di base HTTP.</translation>
 <translation id="4056910949759281379">Disabilita protocollo SPDY</translation>
-<translation id="4077363032873906037">Consente di attivare la funzione di accesso limitato di <ph name="PRODUCT_NAME" /> su G Suite e di impedire agli utenti di modificare questa impostazione.
-
-      Se l'impostazione viene definita, l'utente potrà accedere a G Suite
-      soltanto tramite gli account dei domini specificati (tieni presente che ciò
-      non funziona con gmail.com/googlemail.com).
-
-      L'impostazione NON impedirà all'utente di accedere su un dispositivo gestito
-      che richiede l'autenticazione di Google. L'utente potrà comunque accedere
-      ad account di altri domini, ma nel caso provi a utilizzare G Suite
-      con tali account verrà visualizzato un messaggio di errore.
-
-      Se l'impostazione viene lasciata vuota/non configurata, l'utente potrà
-      accedere a G Suite con qualsiasi account.
-
-      Questa norma comporta l'aggiunta dell'intestazione X-GoogApps-Allowed-Domains
-      a tutte le richieste HTTP e HTTPS inviate a tutti i domini google.com,
-      come descritto alla pagina https://support.google.com/a/answer/1668854.
-
-      L'utente non può modificare o ignorare questa impostazione.</translation>
 <translation id="408029843066770167">Consenti query a un servizio orario di Google</translation>
 <translation id="4088589230932595924">Modalità di navigazione in incognito forzata</translation>
 <translation id="4088983553732356374">Consente di stabilire se consentire o meno ai siti web di impostare dati locali. L'impostazione dei dati locali può essere consentita o vietata per tutti i siti web.
@@ -899,7 +879,6 @@ Se questa norma non viene impostata, viene utilizzato un periodo di tempo predef
 Il valore della norma deve essere specificato in millisecondi.</translation>
 <translation id="4105989332710272578">Disattiva l'imposizione di Certificate Transparency per un elenco di URL</translation>
 <translation id="4121350739760194865">Impedisci la visualizzazione delle promozioni di applicazioni nella pagina Nuova scheda</translation>
-<translation id="4133144443101280166">Intervalli di orari di minore attività quando vengono rilasciate le norme OffHours |ignored_policy_proto_tags| del dispositivo</translation>
 <translation id="4157003184375321727">Indica versione sistema operativo e firmware</translation>
 <translation id="4183229833636799228">Impostazione predefinita per il plug-in <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">URL per la convalida del token di autenticazione del client di accesso remoto</translation>
@@ -1110,7 +1089,6 @@ Se questa norma non viene impostata o viene lasciata vuota, qualsiasi utente pot
           Ad esempio, <ph name="EXTENSION_POLICY_EXAMPLE" /> installa l'app <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> dall'URL di "aggiornamento" del Chrome Web Store standard. Ulteriori informazioni sulle estensioni in hosting sono disponibili all'indirizzo <ph name="LINK_TO_EXTENSION_DOC2" />.
 
           Se questa norma non è impostata, le app e le estensioni non vengono installate automaticamente e l'utente può disinstallare qualsiasi app o estensione in <ph name="PRODUCT_NAME" />.</translation>
-<translation id="4882546920824859909">Definisci i domini autorizzati ad accedere a Google Apps</translation>
 <translation id="4897928009230106190">Consente di specificare i parametri utilizzati durante la ricerca di suggerimenti con POST. Si tratta di coppie di nome/valore separate da virgole. Se un valore è il parametro di un modello, come {searchTerms} nell'esempio precedente, verrà sostituito con i dati dei termini di ricerca reali.
 
 Questa norma è facoltativa. Se non viene impostata, la richiesta di ricerca di suggerimenti verrà inviata utilizzando il metodo GET.
@@ -1161,7 +1139,6 @@ Se questa norma non viene impostata viene utilizzata la riga di comando predefin
       Se questa norma non è impostata o è impostata su False, la modalità sviluppatore continuerà a essere disponibile per il dispositivo.</translation>
 <translation id="5208240613060747912">Consente di impostare un elenco di pattern URL che specificano i siti non autorizzati a visualizzare notifiche. Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma "DefaultNotificationsSetting", se è impostata, oppure verrà utilizzata la configurazione personale dell'utente.</translation>
 <translation id="5219844027738217407">Nell'ambito delle app Android, la norma influisce solo sul microfono. Se la norma viene impostata su true, il microfono viene disattivato per tutte le app Android, senza alcuna eccezione.</translation>
-<translation id="5226033722357981948">Specifica se la ricerca plug-in deve essere disattivata</translation>
 <translation id="523505283826916779">Impostazioni di accessibilità</translation>
 <translation id="5247006254130721952">Blocca download pericolosi</translation>
 <translation id="5255162913209987122">Può essere consigliata</translation>
@@ -1289,14 +1266,6 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
 <translation id="5728154254076636808">Consente la creazione di copie di roaming per i dati dei profili <ph name="PRODUCT_NAME" /></translation>
 <translation id="5732972008943405952">Importa i dati della Compilazione automatica dei moduli dal browser predefinito alla prima esecuzione</translation>
 <translation id="5765780083710877561">Descrizione:</translation>
-<translation id="5768309557753179144">Chromium e Google Chrome supportano lo stesso insieme di norme. Questo documento potrebbe includere norme destinate a versioni non ancora introdotte (la relativa voce "Supported on" si riferisce a una versione non rilasciata di <ph name="PRODUCT_NAME" />). Tali norme sono soggette a modifica o rimozione senza preavviso e non viene fornita alcuna garanzia in merito, neanche in relazione alle proprietà di privacy e sicurezza.
-
-      Queste norme devono essere utilizzate esclusivamente per la configurazione delle istanze di <ph name="PRODUCT_NAME" /> interne all'organizzazione. L'utilizzo di queste norme al di fuori dell'organizzazione (ad esempio in un programma distribuito pubblicamente) viene considerato malware e potrebbe essere contrassegnato come malware da Google e dai fornitori di programmi antivirus.
-.
-
-      Non è necessario configurare manualmente queste impostazioni. È possibile scaricare modelli di facile utilizzo per Windows, Mac e Linux da <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
-
-      Su Windows è consigliabile configurare le norme tramite Criteri di gruppo, anche se la specifica di norme tramite il registro di sistema è ancora supportata per le istanze di Windows che fanno parte di un dominio <ph name="MS_AD_NAME" />.</translation>
 <translation id="5770738360657678870">Canale Dev (potrebbe essere instabile)</translation>
 <translation id="5774856474228476867">URL di ricerca del provider di ricerca predefinito</translation>
 <translation id="5776485039795852974">Chiedi ogni volta che un sito desidera mostrare le notifiche desktop</translation>
@@ -1599,7 +1568,6 @@ Se questa norma non viene impostata o se l'elenco è vuoto, sarà possibile acce
       Se questa norma non viene impostata, la previsione di rete verrà attivata ma l'utente potrà modificarla.</translation>
 <translation id="6658245400435704251">Consente di specificare il numero di secondi massimo per cui un dispositivo può ritardare in modo casuale il download di un suo aggiornamento dal momento della pubblicazione dell'aggiornamento sul server. Il dispositivo può attendere una parte di questo tempo in termini di tempo reale e la parte rimanente in termini di numero di controlli della disponibilità di aggiornamenti. In ogni caso, la dispersione ha un limite massimo pari a un periodo di tempo costante in modo che un dispositivo non si blocchi mai in attesa di scaricare un aggiornamento.</translation>
 <translation id="6689792153960219308">Segnala lo stato dell'hardware</translation>
-<translation id="6693751878507293182">Se attivi questa impostazione, la ricerca automatica e l'installazione dei plug-in mancanti verranno disattivate in <ph name="PRODUCT_NAME" />. Se disattivi questa opzione o non la imposti, la funzione di ricerca dei plug-in sarà attiva.</translation>
 <translation id="6699880231565102694">Abilita autenticazione a due fattori per gli host di accesso remoto</translation>
 <translation id="6724842112053619797">Se attivi questa impostazione, le impostazioni memorizzate nei profili <ph name="PRODUCT_NAME" />, come i preferiti, i dati della compilazione automatica, le password e così via, saranno scritte anche in un file memorizzato nella cartella del profilo utente Roaming o in una posizione specificata dall'amministratore tramite la norma <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Se si attiva questa norma, viene disattivata la sincronizzazione nella cloud.
 
@@ -1858,6 +1826,7 @@ Nota. Attualmente i riavvii automatici vengono attivati soltanto durante la visu
 
           Se questa impostazione è disabilitata o non è impostata, l'autenticazione a due fattori non sarà attiva e verrà utilizzato il comportamento predefinito che prevede l'uso di un PIN definito dall'utente.</translation>
 <translation id="7750991880413385988">Apri pagina Nuova scheda</translation>
+<translation id="7754704193130578113">Chiedi dove salvare il file prima di scaricarlo</translation>
 <translation id="7761446981238915769">Configura l'elenco di app installate nella schermata di accesso</translation>
 <translation id="7761526206824804472">Consente di selezionare una o più impostazioni internazionali per una sessione pubblica, consentendo agli utenti di sceglierne facilmente una.
 
@@ -1930,7 +1899,7 @@ Se questa norma non viene impostata, <ph name="PRODUCT_NAME" /> utilizzerà il v
 
           Il campo <ph name="INSTALLTION_MODE" /> può anche essere configurato per più estensioni, compresa l'estensione <ph name="DEFAULT_SCOPE" /> (come impostazione predefinita) e le estensioni con lo stesso URL di aggiornamento. In questo caso possono essere utilizzati solo i valori <ph name="ALLOWED" /> e <ph name="BLOCKED" />.
 
-          Se la modalità è impostata su <ph name="FORCE_INSTALLED" /> o <ph name="NORMAL_INSTALLED" /> è necessario configurare anche un campo <ph name="UPDATE_URL" />. L'URL di aggiornamento impostato in questa norma viene utilizzato solo per l'installazione iniziale. Per i successivi aggiornamenti dell'estensione verrà utilizzato l'URL di aggiornamento indicato nel file manifest del'estensione. L'URL di aggiornamento dovrebbe rimandare a un documento XML Manifest di aggiornamento come descritto in precedenza.
+          Se la modalità è impostata su <ph name="FORCE_INSTALLED" /> o <ph name="NORMAL_INSTALLED" /> è necessario configurare anche un campo <ph name="UPDATE_URL" />. L'URL di aggiornamento impostato in questa norma viene utilizzato solo per l'installazione iniziale. Per i successivi aggiornamenti dell'estensione verrà utilizzato l'URL di aggiornamento indicato nel file manifest dell'estensione L'URL di aggiornamento dovrebbe rimandare a un documento XML Manifest di aggiornamento come descritto in precedenza.
 
           <ph name="BLOCKED_PERMISSIONS" />: corrisponde a un elenco di stringhe indicanti le autorizzazioni API per l'estensione. I nomi delle autorizzazioni corrispondono alle stringhe di autorizzazione indicate nel file manifest dell'estensione, come descritto all'indirizzo <ph name="LINK_TO_EXTENSION_DOC3" />. Questa impostazione può essere configurata anche per l'estensione <ph name="DEFAULT_SCOPE" />. Se per l'estensione è necessaria un'autorizzazione che è presente nell'elenco di quelle bloccate, non potrà essere caricata. Se contiene un'autorizzazione bloccata come requisito opzionale, verrà trattata normalmente, ma la richiesta di autorizzazioni in conflitto verrà declinata automaticamente in fase di runtime.
 
@@ -1938,7 +1907,7 @@ Se questa norma non viene impostata, <ph name="PRODUCT_NAME" /> utilizzerà il v
 
           <ph name="MINIMUM_VERSION_REQUIRED" />: corrisponde a una stringa della versione. Il formato della stringa della versione corrisponde a quello utilizzato nel file manifest delle estensioni, come descritto all'indirizzo <ph name="LINK_TO_EXTENSION_DOC4" />. Un'estensione con una versione precedente rispetto alla versione minima specificata viene disattivata. Ciò vale anche per le estensioni con installazione imposta.
 
-          Le seguenti impostazioni possono essere utilizzate solo per la configurazione <ph name="DEFAULT_SCOPE" />:
+          Le seguenti impostazioni possono essere utilizzate solo per la configurazione <ph name="DEFAULT_SCOPE" /> predefinita:
 
           <ph name="INSTALL_SOURCES" />: ogni voce presente in questo elenco è uno schema di corrispondenza in stile di estensione (<ph name="LINK_TO_MATCH_PATTERNS" />). Gli utenti potranno installare facilmente elementi dagli URL corrispondenti a una voce nell'elenco. Questi schemi devono consentire sia la posizione del file <ph name="EXTENSION_SUFFIX_WILDCARD" /> sia la pagina da cui viene avviato il download (il referrer).
 
@@ -2095,11 +2064,6 @@ Se la norma viene impostata su false o non viene configurata, l'utente può util
 <translation id="8451988835943702790">Usa la pagina Nuova scheda come Pagina iniziale</translation>
 <translation id="8465065632133292531">Parametri per l'URL istantaneo che utilizza POST</translation>
 <translation id="847472800012384958">Non consentire la visualizzazione di popup nei siti</translation>
-<translation id="8476127435468057643">Consente di verificare se l'autenticazione NTLMv2 è attiva.
-
-          Tutte le versioni recenti dei server Samba e Windows supportano l'autenticazione NTLMv2, che deve essere disattivata solo per garantire la compatibilità con le versioni precedenti, in quanto riduce la sicurezza dell'autenticazione.
-
-          Il valore predefinito quando questa norma non è definita è attualmente false per garantire la compatibilità con le versioni precedenti, ma in futuro diventerà true.</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
 <translation id="8484458986062090479">Consente di personalizzare l'elenco di pattern URL per i quali il rendering deve sempre essere eseguito dal browser host.
 

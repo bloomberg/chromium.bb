@@ -129,7 +129,6 @@
 <translation id="3329904751041170572">सर्व्हरशी कनेक्ट करू शकलो नाही.</translation>
 <translation id="3335947283844343239">बंद केलेले टॅब पुन्हा उघडा</translation>
 <translation id="3393920035788932672">पॉप-अपला अनुमती</translation>
-<translation id="3414292259312108062">Chrome हे आपल्या <ph name="BEGIN_LINK" />Google ने सेव्ह केलेले पासवर्ड<ph name="END_LINK" /> मध्ये जतन करेल आणि तुमच्यासाठी हे स्वयं-भरण करेल जेणेकरून आपल्याला हे लक्षात ठेवावे लागत नाही.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> मिनिटे</translation>
 <translation id="3448016392200048164">विभाजित दृश्य</translation>
 <translation id="3474624961160222204"><ph name="NAME" /> म्हणून सुरु ठेवा</translation>
@@ -152,7 +151,6 @@
 <translation id="3779810277399252432">कोणतेही इंटरनेट कनेक्शन नाही.</translation>
 <translation id="3783017676699494206">प्रतिमा सेव्ह करा</translation>
 <translation id="385051799172605136">मागील</translation>
-<translation id="3857761338463387655">याने ईमेल तयार करा:</translation>
 <translation id="3897092660631435901">मेनू</translation>
 <translation id="3928666092801078803">माझा डेटा एकत्र करा</translation>
 <translation id="3950820424414687140">साइन इन करा</translation>
@@ -205,6 +203,7 @@
 <translation id="5005498671520578047">पासवर्ड कॉपी करा</translation>
 <translation id="5010803260590204777">वेब खाजगीपणे ब्राउझ करण्‍यासाठी गुप्त टॅब उघडा.</translation>
 <translation id="5011684439661633295">हाय, <ph name="FULL_ACCOUNT_NAME" /></translation>
+<translation id="5039804452771397117">परवानगी द्या</translation>
 <translation id="5062321486222145940">Google ड्राइव्ह इंस्टॉल करा</translation>
 <translation id="5083464117946352670">फाईल आकार निर्धारित करू शकत नाही.</translation>
 <translation id="5094827893301452931">Tweet पूर्ण केले.</translation>
@@ -263,7 +262,6 @@
 <translation id="6122191549521593678">ऑनलाइन</translation>
 <translation id="6127379762771434464">आयटम काढला</translation>
 <translation id="6136914049981179737">सेकंदांपूर्वी</translation>
-<translation id="6149061208933997199">पासवर्ड वापरा</translation>
 <translation id="6158823227857319455">नवीन टॅब</translation>
 <translation id="616831107264507309">नंतर वाचा</translation>
 <translation id="6184086493125982861">टॅब दर्शवा</translation>
@@ -273,7 +271,6 @@
 <translation id="6254066287920239840">ब्राउझर ऐवजी अॅपमध्ये दुवे उघडा.</translation>
 <translation id="6255097610484507482">क्रेडिट कार्ड संपादित करा</translation>
 <translation id="6308436439357671616">हे आपल्याला फोटो घेऊ आणि अपलोड करू देते.</translation>
-<translation id="6314335155547195432">पासवर्ड व्युत्पन्न करा</translation>
 <translation id="6324528485781869530">संकालन खाते स्विच करा</translation>
 <translation id="6324669097367352121">साइन इन सेटिंग्ज</translation>
 <translation id="6337234675334993532">कूटबद्धीकरण</translation>
@@ -291,7 +288,6 @@
 <translation id="6418346271604475326">PDF तयार करीत आहे</translation>
 <translation id="6445051938772793705">देश</translation>
 <translation id="6445981559479772097">संदेश पाठविला.</translation>
-<translation id="6456425917241817154">पासवर्ड Chrome द्वारे व्युत्पन्न करण्यात आला</translation>
 <translation id="6464071786529933911">नवीन गुप्त टॅबमध्ये उघडा</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> आयटम हटविले</translation>
 <translation id="6541915733953096570">गेल्या तासात</translation>
@@ -314,6 +310,7 @@
 <translation id="7004499039102548441">अलीकडील टॅब</translation>
 <translation id="7006788746334555276">सामग्री सेटिंग्ज</translation>
 <translation id="7031882061095297553">यावर संकालित करा</translation>
+<translation id="7053983685419859001">अवरोधित करा</translation>
 <translation id="7062545763355031412">स्वीकार करा आणि खाती स्विच करा</translation>
 <translation id="7108338896283013870">लपवा</translation>
 <translation id="7133798577887235672">पूर्ण नाव</translation>
@@ -346,7 +343,6 @@
 <translation id="7649070708921625228">मदत</translation>
 <translation id="7658239707568436148">रद्द करा</translation>
 <translation id="7671141431838911305">स्‍थापित करा</translation>
-<translation id="7677825787905683892">डीफॉल्ट ईमेल अॅप निवडा</translation>
 <translation id="7765158879357617694">हलवा</translation>
 <translation id="7769602470925380267">स्वीकार करा आणि साइन आउट करा</translation>
 <translation id="7772032839648071052">सांकेतिक वाक्यांशाची पुष्टी करा</translation>
@@ -410,7 +406,6 @@
 <translation id="9083392325882095631">1 आयटम</translation>
 <translation id="9100610230175265781">सांकेतिक वाक्यांश आवश्यक</translation>
 <translation id="9148126808321036104">पुन्हा साइन इन करा </translation>
-<translation id="914898748153555155">तुम्ही हे प्राधान्य Chrome सेटिंग्जमध्ये कधीही बदलू शकता</translation>
 <translation id="91549621916703028">तुमच्या सर्व कार्यांसाठी अनेक टॅब तयार करा</translation>
 <translation id="9157836665414082580">संवाद दर्शवू नका</translation>
 <translation id="9188680907066685419">व्यवस्थापित केलेल्या खात्यामधून साइन आउट करा</translation>

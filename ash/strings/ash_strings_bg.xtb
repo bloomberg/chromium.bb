@@ -26,7 +26,6 @@
 <translation id="15373452373711364">Голям курсор на мишката</translation>
 <translation id="1550523713251050646">Кликнете за още опции</translation>
 <translation id="1621499497873603021">Оставащо време до изразходването на батерията: <ph name="TIME_LEFT" /></translation>
-<translation id="16620462294541761">За съжаление паролата ви не можа да бъде потвърдена. Моля, опитайте отново.</translation>
 <translation id="1677472565718498478">Оставащо време: <ph name="TIME" /></translation>
 <translation id="1698760176351776263">IPv6 адрес: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">Това устройство се управлява корпоративно</translation>
@@ -69,6 +68,7 @@
 <translation id="2509468283778169019">„CAPS LOCK“ е включен</translation>
 <translation id="2532589005999780174">Режим на висок контраст</translation>
 <translation id="2597972630681408282">Нощно осветление: <ph name="NIGHT_LIGHT_STATUS" /></translation>
+<translation id="2617342710774726426">SIM картата е заключена</translation>
 <translation id="2653659639078652383">Изпращане</translation>
 <translation id="2675319268637823299">Администратор е деактивирал централизирания вход за <ph name="USER_EMAIL" />.
 За да продължите, всички потребители трябва да излязат.</translation>
@@ -174,7 +174,6 @@
 <translation id="5571066253365925590">Bluetooth е активиран</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
 <translation id="5600837773213129531">Натиснете Ctrl + Alt + Z, за да деактивирате обратната връзка с говор.</translation>
-<translation id="5612734644261457353">За съжаление паролата ви пак не можа да бъде потвърдена. Забележка: Ако наскоро сте я променили, новата ще се приложи, щом излезете от профила си. Моля, използвайте старата парола тук.</translation>
 <translation id="5648021990716966815">Жак за микрофон</translation>
 <translation id="5673434351075758678">От <ph name="FROM_LOCALE" /> към <ph name="TO_LOCALE" /> след синхронизиране на настройките ви.</translation>
 <translation id="5744083938413354016">Преместване чрез докосване</translation>
@@ -284,10 +283,10 @@
 <translation id="8261506727792406068">Изтриване</translation>
 <translation id="8308637677604853869">Предишно меню</translation>
 <translation id="8351131234907093545">Създаване на бележка</translation>
-<translation id="8392234662362215700">Натиснете „Control-Shift-интервал“ за превключване на клавиатурната подредба.</translation>
 <translation id="8428213095426709021">Настройки</translation>
 <translation id="8433186206711564395">Настройки на мрежата</translation>
 <translation id="8433977262951327081">Комбинацията за показване в лавицата на балончето с менюто за опциите за въвеждане е променена. Моля, използвайте <ph name="NEW_SHORTCUT" /> вместо <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="8452135315243592079">SIM картата липсва</translation>
 <translation id="8454013096329229812">Wi-Fi е включен.</translation>
 <translation id="847056008324733326">Настройки за мащаба на показване</translation>
 <translation id="8477270416194247200">Натиснете Alt + клавиша „търсене“ или само Shift, за да анулирате.</translation>
@@ -315,7 +314,6 @@
 <translation id="9091626656156419976">Екранът „<ph name="DISPLAY_NAME" />“ бе премахнат</translation>
 <translation id="9111102763498581341">Отключване</translation>
 <translation id="9151726767154816831">Рестартирайте и извършете Powerwash, за да актуализирате</translation>
-<translation id="9181036778675416867">Докоснете бутона с икона на писалка в лавицата, за да създадете бележка, да направите екранна снимка или да използвате асистента, лазерната показалка или лупата.</translation>
 <translation id="9194617393863864469">Влизане в профила на друг потребител...</translation>
 <translation id="9201131092683066720">Батерията е <ph name="PERCENTAGE" />% пълна.</translation>
 <translation id="9210037371811586452">Излиза се от режима на обединен работен плот</translation>

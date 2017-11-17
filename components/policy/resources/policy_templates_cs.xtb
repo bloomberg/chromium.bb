@@ -602,7 +602,6 @@ Pokud zásadu nenastavíte, bude se považovat za aktivované (viz popis výše)
 
       Další informace o Bezpečném prohlížení najdete na stránce https://developers.google.com/safe-browsing.</translation>
 <translation id="3016255526521614822">Seznam povolených aplikací k přidávání poznámek na obrazovku uzamčení v systému <ph name="PRODUCT_OS_NAME" /></translation>
-<translation id="3021409116652377124">Deaktivovat nástroj pro vyhledávání pluginů</translation>
 <translation id="3030000825273123558">Povolit hlášení o metrikách</translation>
 <translation id="3034580675120919256">Umožňuje nastavit, zda mohou webové stránky spouštět JavaScript. Spouštění JavaScriptu lze buď povolit pro všechny weby, nebo naopak pro všechny weby zakázat.
 
@@ -900,17 +899,6 @@ Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky glob�
 
           Tato možnost je obvykle vypnuta jako ochrana proti phishingu. Pokud zásada není nastavena, je tato možnost vypnuta a u obsahu třetích stran nebude povoleno vyskakování dialogového okna HTTP Basic Auth.</translation>
 <translation id="4056910949759281379">Deaktivovat protokol SPDY</translation>
-<translation id="4077363032873906037">Aktivuje ve službě Google Apps funkci omezeného přihlašování prohlížeče <ph name="PRODUCT_NAME" /> a znemožní uživatelům toto nastavení změnit.
-
-Pokud toto nastavení definujete, uživatel bude moci služby Google Apps používat pouze pomocí účtů ze zadaných domén. (Tuto funkci nelze použít pro domény gmail.com/googlemail.com.)
-
-Toto nastavení uživateli NEZABRÁNÍ v přihlášení na spravovaném zařízení, které vyžaduje ověření Google. Uživatel se i nadále bude moci přihlašovat k účtům v jiných doménách, ale při pokusu o použití služby Google Apps s těmito účty se mu zobrazí chyba.
-
-Pokud toto nastavení ponecháte prázdné nebo nenakonfigurované, uživatel bude moci služby Google Apps používat pomocí libovolného účtu.
-
-Tato zásada způsobí, že bude k požadavkům HTTP a HTTPS odesílaným do domén Google přidáno záhlaví X-GoogApps-Allowed-Domains popsané na stránce https://support.google.com/a/answer/1668854.
-
-Uživatelé toto nastavení nemohou změnit ani přepsat.</translation>
 <translation id="408029843066770167">Povolit dotazy na časovou službu Google</translation>
 <translation id="4088589230932595924">Anonymní režim je povinný.</translation>
 <translation id="4088983553732356374">Umožňuje určit, zda mohou webové stránky nastavovat místní data. Nastavení místních dat lze buď povolit pro všechny weby, nebo je pro všechny weby zakázat.
@@ -928,7 +916,6 @@ Není-li zásada nastavena, bude použita zásada AllowCookies a uživatelé ji
           Hodnota zásady se zadává v milisekundách.</translation>
 <translation id="4105989332710272578">Deaktivovat vynucování zásad Certificate Transparency pro seznam adres URL</translation>
 <translation id="4121350739760194865">Zabraňuje zobrazování propagace aplikací na stránce Nová karta</translation>
-<translation id="4133144443101280166">Intervaly, ve kterých na zařízení nebudou uplatňovány zásady |ignored_policy_proto_tags|</translation>
 <translation id="4157003184375321727">Hlásit verzi operačního systému a firmwaru</translation>
 <translation id="4183229833636799228">Výchozí nastavení pluginu <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">Adresa URL k potvrzení ověřovacího tokenu klienta vzdáleného připojení</translation>
@@ -1146,7 +1133,6 @@ Každá položka v seznamu zásady představuje řetězec, který obsahuje ID r
 Například <ph name="EXTENSION_POLICY_EXAMPLE" /> nainstaluje aplikaci <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> ze standardní adresy URL pro aktualizaci z Internetového obchodu Chrome. Další informace o hostování rozšíření viz <ph name="LINK_TO_EXTENSION_DOC2" />.
 
 Je-li tato zásada ponechána nenastavená, žádné aplikace ani rozšíření se automaticky neinstalují a uživatel v prohlížeči <ph name="PRODUCT_NAME" /> může kteroukoliv aplikaci nebo rozšíření odinstalovat.</translation>
-<translation id="4882546920824859909">Definování domén, kterým je povolen přístup ke službám Google Apps</translation>
 <translation id="4897928009230106190">Udává parametry, které se použijí při vyhledávání s našeptávačem pomocí metody POST. Sestává z párů název–hodnota oddělených čárkou. Pokud je hodnotou parametr šablony (např. {searchTerms} v příkladu výše), bude nahrazen skutečnými údaji vyhledávacích dotazů.
           Tato zásada je nepovinná. Pokud není nastavena, požadavek na vyhledávání s našeptávačem bude odeslán pomocí metody GET.
 
@@ -1214,7 +1200,6 @@ Je-li tato zásada ponechána nenastavená, žádné aplikace ani rozšíření 
 
          Pokud zásadu nenastavíte, použije se pro všechny webové stránky globální výchozí hodnota buď ze zásady DefaultNotificationsSetting (pokud je nastavena), nebo z osobního nastavení uživatele.</translation>
 <translation id="5219844027738217407">U aplikací Android má tato zásada vliv pouze na mikrofon. Když je tato zásada nastavena na hodnotu True, je mikrofon pro všechny aplikace Android bez výjimky ztlumen.</translation>
-<translation id="5226033722357981948">Určuje, zda má být deaktivován nástroj pro vyhledávání pluginů</translation>
 <translation id="523505283826916779">Nastavení usnadnění přístupu</translation>
 <translation id="5247006254130721952">Blokovat nebezpečná stahování</translation>
 <translation id="5255162913209987122">Doporučuje se</translation>
@@ -1350,13 +1335,6 @@ Pokud tato zásada není nastavena nebo je nastavena na hodnotu false, prohlíž
 <translation id="5728154254076636808">Povoluje vytvoření cestovních kopií dat profilu <ph name="PRODUCT_NAME" /></translation>
 <translation id="5732972008943405952">Importovat při prvním spuštění údaje automatického vyplňování formulářů z výchozího prohlížeče</translation>
 <translation id="5765780083710877561">Popis:</translation>
-<translation id="5768309557753179144">Prohlížeče Chromium a Google Chrome podporují stejné zásady. Upozorňujeme, že tento dokument může obsahovat nevydané zásady (tj. jejich údaj „Podpora“ odkazuje na dosud nevydanou verzi prohlížeče <ph name="PRODUCT_NAME" />) a že tyto zásady mohou být bez předchozího oznámení změněny nebo odstraněny. Na takové zásady se nevztahují žádné záruky, např. ani záruky ohledně zabezpečení a ochrany soukromí.
-
-Tyto zásady jsou určeny pouze ke konfiguraci interních instancí prohlížeče <ph name="PRODUCT_NAME" /> ve vaší organizaci. Použití zásad mimo organizaci (např. ve veřejně distribuovaném programu) je považováno za malware a pravděpodobně bude společností Google a dodavateli antivirového softwaru takto i označeno.
-
-Tato nastavení není potřeba konfigurovat ručně. Na adrese <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" /> jsou k dispozici ke stažení snadno použitelné šablony pro Windows, Mac a Linux.
-
-Doporučený způsob nastavení zásad ve Windows je prostřednictvím objektu zásad skupiny (GPO). V instancích Windows připojených k doméně <ph name="MS_AD_NAME" /> je však stále podporováno spravování zásad prostřednictvím registrů.</translation>
 <translation id="5770738360657678870">Verze pro vývojáře (mohou být nestabilní)</translation>
 <translation id="5774856474228476867">Adresa URL vyhledávání výchozího poskytovatele vyhledávání</translation>
 <translation id="5776485039795852974">Dotázat se vždy, když se webové stránky snaží zobrazit oznámení na ploše</translation>
@@ -1681,9 +1659,6 @@ Pokud zásadu nastavíte na hodnotu Vždy, Nikdy nebo Pouze Wi-Fi, uživatelé j
 Není-li tato zásada nastavena na konkrétní hodnotu, bude předvídání sítě aktivováno, ale uživatelé budou moci nastavení změnit.</translation>
 <translation id="6658245400435704251">Určí počet sekund, o který může zařízení náhodně zdržet stahování aktualizace od doby, kdy byla poprvé zveřejněna na serveru. Zařízení může čekat určitý čas a pokusit se o určitý počet kontrol aktualizací. Zpoždění je však v každém případě omezeno neměnným maximálním časovým limitem tak, aby zařízení nečekalo na stažení aktualizace donekonečna.</translation>
 <translation id="6689792153960219308">Nahlásit stav hardwaru</translation>
-<translation id="6693751878507293182">Pokud toto nastavení aktivujete, budou automatické vyhledávání a instalace chybějících pluginů v aplikaci <ph name="PRODUCT_NAME" /> zakázány.
-
-      Pokud tuto možnost deaktivujete nebo nenastavíte, bude nástroj pro vyhledávání pluginů aktivní.</translation>
 <translation id="6699880231565102694">Povolit dvoufázové ověření pro hostitele vzdáleného přístupu</translation>
 <translation id="6724842112053619797">Pokud zapnete toto nastavení, budou nastavení uložená v profilech <ph name="PRODUCT_NAME" /> (např. záložky, data automatického vyplňování nebo hesla) zapsána také do souboru uloženého ve složce cestovního uživatelského profilu nebo v umístění, které definuje administrátor prostřednictvím zásady <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Aktivací této zásady deaktivujete cloudovou synchronizaci.
 
@@ -1962,6 +1937,7 @@ Tato zásada je určena k internímu použití prohlížečem <ph name="PRODUCT_
 
           Je-li toto nastavení vypnuto nebo není-li nastaveno, dvoufázové ověření nebude aktivováno a namísto něj bude použita výchozí možnost, což je uživatelem zadaný kód PIN.</translation>
 <translation id="7750991880413385988">Otevřít stránku Nová karta</translation>
+<translation id="7754704193130578113">Před stažením se vždy zeptat na místo uložení každého souboru</translation>
 <translation id="7761446981238915769">Konfigurace seznamu nainstalovaných aplikací na přihlašovací obrazovce</translation>
 <translation id="7761526206824804472">Nastavuje jeden nebo více doporučených jazyků pro veřejnou relaci, což uživatelům usnadňuje výběr některého z nich.
 
@@ -2020,7 +1996,7 @@ Tato zásada je určena k internímu použití prohlížečem <ph name="PRODUCT_
 <translation id="7843525027689416831">Udává příznaky, které mají být na prohlížeč <ph name="PRODUCT_NAME" /> použity při spuštění (použijí se pouze na přihlašovací obrazovce). Příznaky nastavené prostřednictvím této zásady nezasahují do uživatelských relací.</translation>
 <translation id="7844537954833753199">Konfiguruje nastavení správy rozšíření prohlížeče <ph name="PRODUCT_NAME" />.
 
-          Tato zásada řídí několik nastavení, včetně těch, která jsou konfigurována existujícími zásadami pro rozšíření. Pokud je tato zásada nastavena, přepíše všechny starší nastavené zásady.
+          Tato zásada řídí několik nastavení, včetně těch, která jsou nakonfigurována existujícími zásadami pro rozšíření. Pokud je tato zásada nastavena, přepíše všechny starší nastavené zásady.
 
           Tato zásada mapuje konfiguraci na ID rozšíření nebo adresu URL. Pokud je definováno ID rozšíření, bude konfigurace použita pouze na konkrétní rozšíření. Pro zvláštní ID <ph name="DEFAULT_SCOPE" /> lze nastavit výchozí konfiguraci. Tato konfigurace bude použita na všechna rozšíření, která nemají v této zásadě nastavenou vlastní konfiguraci. Pokud je definována adresa URL pro aktualizaci, bude konfigurace použita na všechna rozšíření, která mají v manifestu uvedenou přesně tuto adresu URL pro aktualizaci (viz <ph name="LINK_TO_EXTENSION_DOC1" />).
 
@@ -2047,8 +2023,8 @@ Tato zásada je určena k internímu použití prohlížečem <ph name="PRODUCT_
           <ph name="INSTALL_SOURCES" />: každá položka v tomto seznamu představuje vzor podobný jako u rozšíření (<ph name="LINK_TO_MATCH_PATTERNS" />). Uživatelé budou moci jednoduše instalovat položky z jakékoli adresy, která odpovídá položce v tomto seznamu. V těchto vzorech musí být povoleno umístění souboru <ph name="EXTENSION_SUFFIX_WILDCARD" /> i stránka, ze které bude zahájeno stahování (tj. zdroj odkazu).
 
           <ph name="ALLOWED_TYPES" />: toto nastavení vytvoří seznam povolených rozšíření nebo aplikací, které lze nainstalovat do prohlížeče <ph name="PRODUCT_NAME" />. Hodnota představuje seznam řetězců. Musí se jednat o řetězce z následujícího výčtu: <ph name="VALID_ALLOWED_TYPES" />. Další informace o těchto typech naleznete v dokumentaci k rozšířením prohlížeče <ph name="PRODUCT_NAME" />.
-          <ph name="BLOCKED_INSTALL_MESSAGE" />: Pokud se uživatel pokouší nainstalovat rozšíření, které je blokováno zásadami, zobrazí Internetový obchod Chrome obecnou chybovou zprávu. Pomocí tohoto nastavení lze k chybové zprávě přidat text. Můžete pomocí něj uživatele nasměrovat na oddělení nápovědy, vysvětlit, proč je konkrétní rozšíření blokováno, nebo poskytnou jiné informace. Pokud tato chybová zpráva bude delší než 1000 znaků, bude oříznuta.
-          <ph name="RUNTIME_BLOCKED_HOSTS" />: Představuje seznam hostitelů, se kterými rozšíření nebude smět interagovat. Týká se to vkládání JavaScriptu, úprav a zobrazování požadavků webRequest a webNavigation a zobrazování a úprav souborů cookie. Formát se podobá vzorům (<ph name="LINK_TO_MATCH_PATTERNS" />), ale není dovoleno zadávat cesty, například „*://*.example.com“. Jsou podporovány také zástupné znaky pro domény nejvyšší úrovně, například „*://example.*“.
+          <ph name="BLOCKED_INSTALL_MESSAGE" />: Pokud se uživatel pokusí nainstalovat rozšíření, které je blokováno zásadami, zobrazí Internetový obchod Chrome obecnou chybovou zprávu. Pomocí tohoto nastavení lze k chybové zprávě přidat text. Můžete pomocí něj uživatele nasměrovat na oddělení nápovědy, vysvětlit, proč je konkrétní rozšíření blokováno, nebo poskytnou jiné informace. Pokud tato chybová zpráva bude delší než 1000 znaků, bude oříznuta.
+          <ph name="RUNTIME_BLOCKED_HOSTS" />: Představuje seznam hostitelů, se kterými rozšíření nebude smět interagovat. Formát se podobá vzorům (<ph name="LINK_TO_MATCH_PATTERNS" />), ale není dovoleno zadávat cesty, například „*://*.example.com“. Jsou podporovány také zástupné znaky pro domény nejvyšší úrovně, například „*://example.*“.
           <ph name="RUNTIME_ALLOWED_HOSTS" />: Představuje seznam hostitelů, se kterými rozšíření může interagovat bez ohledu na to, zda jsou uvedeni v seznamu <ph name="RUNTIME_BLOCKED_HOSTS" />. Formát je stejný jako u seznamu <ph name="RUNTIME_BLOCKED_HOSTS" />.
           </translation>
 <translation id="787125417158068494">Pokud je tato zásada nastavena na hodnotu SyncDisabled nebo není nakonfigurována, certifikáty systému <ph name="PRODUCT_OS_NAME" /> nejsou k dispozici aplikacím ARC.
@@ -2213,11 +2189,6 @@ Pokud tuto zásadu nenastavíte, použije se zásada BlockKeygen a uživatel ji
 <translation id="8451988835943702790">Jako domovskou použít stránku Nová karta</translation>
 <translation id="8465065632133292531">Parametry pro adresu URL dynamického vyhledávání používající metodu POST</translation>
 <translation id="847472800012384958">Nepovolit zobrazení vyskakovacích oken žádným webovým stránkám</translation>
-<translation id="8476127435468057643">Udává, zda je povolen protokol NTLMv2.
-
-Všechny verze serverů Samba a Windows z poslední doby protokol NTLMv2 podporují. Jeho zakázání snižuje bezpečnost ověřování a měly byste k němu přistupovat jen v případě, že potřebujete zajistit zpětnou kompatibilitu.
-
-Když tato zásada není definována, používá se v současné době výchozí hodnota false. V budoucnu ale výchozí hodnota bude změněna na true.</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
 <translation id="8484458986062090479">Umožňuje personalizovat seznam vzorů adres URL, které by měl vždy vykreslit hostitelský prohlížeč.
 

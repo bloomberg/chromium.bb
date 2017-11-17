@@ -26,7 +26,6 @@
 <translation id="15373452373711364">Stor musemarkør</translation>
 <translation id="1550523713251050646">Klik for at se flere muligheder</translation>
 <translation id="1621499497873603021">Tid tilbage, indtil batteriet er tomt, <ph name="TIME_LEFT" /></translation>
-<translation id="16620462294541761">Din adgangskode blev ikke bekræftet. Prøv igen.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> tilbage</translation>
 <translation id="1698760176351776263">IPv6-adresse: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">Denne enhed er virksomhedsadministreret</translation>
@@ -69,6 +68,7 @@
 <translation id="2509468283778169019">CAPS LOCK er slået til</translation>
 <translation id="2532589005999780174">Tilstanden Høj kontrast</translation>
 <translation id="2597972630681408282">Nattelys: <ph name="NIGHT_LIGHT_STATUS" /></translation>
+<translation id="2617342710774726426">SIM-kortet er låst</translation>
 <translation id="2653659639078652383">Indsend</translation>
 <translation id="2675319268637823299">En administrator har afvist samlet login fra flere konti for <ph name="USER_EMAIL" />.
     Alle brugere skal logge ud for at fortsætte.</translation>
@@ -174,7 +174,6 @@
 <translation id="5571066253365925590">Bluetooth er aktiveret</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" /> d. <ph name="DATE" /></translation>
 <translation id="5600837773213129531">Tryk på Ctrl+Alt+Z for at deaktivere oplæsning.</translation>
-<translation id="5612734644261457353">Din adgangskode kunne desværre stadig ikke bekræftes. Bemærk! Hvis du har ændret din adgangskode for nylig, anvendes din nye adgangskode først, når du har logget ud. Du skal bruge den gamle adgangskode her.</translation>
 <translation id="5648021990716966815">Stik til mikrofon</translation>
 <translation id="5673434351075758678">Fra "<ph name="FROM_LOCALE" />" til "<ph name="TO_LOCALE" />", efter at du har synkroniseret dine indstillinger.</translation>
 <translation id="5744083938413354016">Tryk og træk</translation>
@@ -284,10 +283,10 @@ Brug kun denne funktion til konti, du har tillid til.</translation>
 <translation id="8261506727792406068">Slet</translation>
 <translation id="8308637677604853869">Forrige menu</translation>
 <translation id="8351131234907093545">Opret note</translation>
-<translation id="8392234662362215700">Tryk på Ctrl+Shift+mellemrumstasten for at skifte tastaturlayout.</translation>
 <translation id="8428213095426709021">Indstillinger</translation>
 <translation id="8433186206711564395">Netværksindstillinger</translation>
 <translation id="8433977262951327081">Genvejen til menuboblen med indtastningsmuligheder på hylden har ændret sig. Brug <ph name="NEW_SHORTCUT" /> i stedet for <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="8452135315243592079">SIM-kort mangler</translation>
 <translation id="8454013096329229812">Wi-Fi er slået til.</translation>
 <translation id="847056008324733326">Indstillinger for visningsskala</translation>
 <translation id="8477270416194247200">Tryk på Alt+Søg eller Shift for at annullere.</translation>
@@ -315,7 +314,6 @@ Efterfølgende underretninger, vinduer og dialogbokse kan blive delt mellem skri
 <translation id="9091626656156419976">Skærmen <ph name="DISPLAY_NAME" /> blev fjernet</translation>
 <translation id="9111102763498581341">Lås op</translation>
 <translation id="9151726767154816831">Genstart, og udfør en powerwash for at opdatere</translation>
-<translation id="9181036778675416867">Tryk på knappen for styluspen på hylden for at skrive en note, tage et screenshot eller bruge assistenten, laserpegepinden eller luppen.</translation>
 <translation id="9194617393863864469">Log ind med en anden bruger...</translation>
 <translation id="9201131092683066720">Batteriet er <ph name="PERCENTAGE" /> % opladet.</translation>
 <translation id="9210037371811586452">Lukker tilstanden Kombineret skrivebord</translation>

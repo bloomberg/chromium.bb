@@ -26,7 +26,6 @@
 <translation id="15373452373711364">큰 마우스 커서</translation>
 <translation id="1550523713251050646">더 많은 옵션을 확인하려면 클릭하세요.</translation>
 <translation id="1621499497873603021">남은 배터리 사용 시간은 <ph name="TIME_LEFT" />입니다.</translation>
-<translation id="16620462294541761">비밀번호가 일치하지 않습니다. 다시 시도해 주세요.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> 남음</translation>
 <translation id="1698760176351776263">IPv6 주소: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">기업에서 관리하는 기기입니다.</translation>
@@ -69,9 +68,10 @@
 <translation id="2509468283778169019">CAPS LOCK이 켜져 있습니다.</translation>
 <translation id="2532589005999780174">고대비 모드</translation>
 <translation id="2597972630681408282">야간 조명: <ph name="NIGHT_LIGHT_STATUS" /></translation>
+<translation id="2617342710774726426">SIM 카드가 잠겨 있습니다.</translation>
 <translation id="2653659639078652383">제출</translation>
 <translation id="2675319268637823299">관리자가 <ph name="USER_EMAIL" />의 멀티 로그인을 허용하지 않았습니다.
-계속하려면 모든 사용자가 로그아웃해야 합니다.</translation>
+    계속하려면 모든 사용자가 로그아웃해야 합니다.</translation>
 <translation id="2700058918926273959">세션이 <ph name="SESSION_TIME_REMAINING" /> 후에 종료되어 로그아웃됩니다.</translation>
 <translation id="2727977024730340865">저출력 충전기에 연결되었습니다. 배터리 충전 상태가 불안정합니다.</translation>
 <translation id="2761704814324807722">상태 표시줄, 시간 <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -174,7 +174,6 @@
 <translation id="5571066253365925590">블루투스를 사용함</translation>
 <translation id="5597451508971090205"><ph name="DATE" /> <ph name="SHORT_WEEKDAY" /></translation>
 <translation id="5600837773213129531">음성 피드백을 사용 중지하려면 Ctrl + Alt + Z를 누르세요.</translation>
-<translation id="5612734644261457353">비밀번호를 여전히 확인할 수 없습니다. 참고: 최근에 비밀번호를 변경한 경우 로그아웃해야 새로운 비밀번호가 적용됩니다. 이전 비밀번호를 사용해 보세요.</translation>
 <translation id="5648021990716966815">마이크 잭</translation>
 <translation id="5673434351075758678">설정 동기화 후 ‘<ph name="FROM_LOCALE" />’에서 ‘<ph name="TO_LOCALE" />’(으)로 변경합니다.</translation>
 <translation id="5744083938413354016">탭 드래그</translation>
@@ -284,10 +283,10 @@
 <translation id="8261506727792406068">삭제</translation>
 <translation id="8308637677604853869">이전 메뉴</translation>
 <translation id="8351131234907093545">메모 만들기</translation>
-<translation id="8392234662362215700">키보드 레이아웃을 전환하려면 Control-Shift-Space 키를 누르세요.</translation>
 <translation id="8428213095426709021">설정</translation>
 <translation id="8433186206711564395">네트워크 설정</translation>
 <translation id="8433977262951327081">실행기에서 입력 옵션 메뉴 도움말 풍선을 표시하는 단축키가 변경되었습니다. <ph name="OLD_SHORTCUT" /> 대신 <ph name="NEW_SHORTCUT" />을(를) 사용하세요.</translation>
+<translation id="8452135315243592079">SIM 카드 없음</translation>
 <translation id="8454013096329229812">Wi-Fi가 켜져 있습니다.</translation>
 <translation id="847056008324733326">배율 설정 표시</translation>
 <translation id="8477270416194247200">취소하려면 Alt+검색 또는 Shift 키를 누르세요.</translation>
@@ -315,7 +314,6 @@
 <translation id="9091626656156419976">디스플레이 <ph name="DISPLAY_NAME" /> 제거됨</translation>
 <translation id="9111102763498581341">잠금 해제</translation>
 <translation id="9151726767154816831">업데이트하려면 다시 시작하고 Powerwash하세요.</translation>
-<translation id="9181036778675416867">실행기에서 스타일러스 버튼을 탭하여 메모를 작성하거나, 스크린샷을 찍거나, 어시스턴트, 레이저 포인터, 돋보기를 활용할 수 있습니다.</translation>
 <translation id="9194617393863864469">다른 사용자로 로그인...</translation>
 <translation id="9201131092683066720">배터리가 <ph name="PERCENTAGE" />% 남았습니다.</translation>
 <translation id="9210037371811586452">통합 바탕화면 모드 종료 중</translation>

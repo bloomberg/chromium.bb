@@ -26,7 +26,6 @@
 <translation id="15373452373711364">Duży kursor myszy</translation>
 <translation id="1550523713251050646">Kliknij, by wyświetlić więcej opcji</translation>
 <translation id="1621499497873603021">Czas pozostały do wyczerpania baterii: <ph name="TIME_LEFT" /></translation>
-<translation id="16620462294541761">Niestety, nie udało się zweryfikować Twojego hasła. Spróbuj ponownie.</translation>
 <translation id="1677472565718498478">Pozostało <ph name="TIME" /></translation>
 <translation id="1698760176351776263">Adres IPv6: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">Tym urządzeniem zarządza firma</translation>
@@ -69,6 +68,7 @@
 <translation id="2509468283778169019">CAPS LOCK jest włączony.</translation>
 <translation id="2532589005999780174">Tryb wysokiego kontrastu</translation>
 <translation id="2597972630681408282">Podświetlenie nocne: <ph name="NIGHT_LIGHT_STATUS" /></translation>
+<translation id="2617342710774726426">Karta SIM jest zablokowana</translation>
 <translation id="2653659639078652383">Prześlij</translation>
 <translation id="2675319268637823299">Administrator nie zezwolił na wielokrotne logowanie użytkownika <ph name="USER_EMAIL" />.
     Aby kontynuować, wszyscy użytkownicy muszą się wylogować.</translation>
@@ -174,7 +174,6 @@
 <translation id="5571066253365925590">Bluetooth włączony</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
 <translation id="5600837773213129531">Naciśnij Ctrl + Alt + Z, by wyłączyć komunikaty głosowe.</translation>
-<translation id="5612734644261457353">Nadal nie można zweryfikować Twojego hasła. Uwaga: jeśli ostatnio hasło było zmieniane, nowe hasło zostanie zastosowane, gdy się wylogujesz. Tu podaj stare hasło.</translation>
 <translation id="5648021990716966815">Gniazdo mikrofonu</translation>
 <translation id="5673434351075758678">Z języka: „<ph name="FROM_LOCALE" />” na „<ph name="TO_LOCALE" />” po zsynchronizowaniu ustawień.</translation>
 <translation id="5744083938413354016">Przeciąganie dotykiem</translation>
@@ -284,10 +283,10 @@ Używaj jej tylko w przypadku kont, którym ufasz.</translation>
 <translation id="8261506727792406068">Usuń</translation>
 <translation id="8308637677604853869">Poprzednie menu</translation>
 <translation id="8351131234907093545">Utwórz notatkę</translation>
-<translation id="8392234662362215700">Naciśnij Control+Shift+spacja, by przełączyć układ klawiatury.</translation>
 <translation id="8428213095426709021">Ustawienia</translation>
 <translation id="8433186206711564395">Ustawienia sieci</translation>
 <translation id="8433977262951327081">Zmieniliśmy skrót, który pokazuje dymek menu opcji wejścia na półce. Zamiast <ph name="OLD_SHORTCUT" /> używaj teraz <ph name="NEW_SHORTCUT" />.</translation>
+<translation id="8452135315243592079">Brak karty SIM</translation>
 <translation id="8454013096329229812">Wi-Fi włączone.</translation>
 <translation id="847056008324733326">Ustawienia skali wyświetlania</translation>
 <translation id="8477270416194247200">Aby anulować, naciśnij Alt + Szukaj lub Shift.</translation>
@@ -315,7 +314,6 @@ Kolejne powiadomienia, okna i okna dialogowe mogą być dzielone między pulpita
 <translation id="9091626656156419976">Wyświetlacz <ph name="DISPLAY_NAME" /> został usunięty</translation>
 <translation id="9111102763498581341">Odblokuj</translation>
 <translation id="9151726767154816831">Uruchom ponownie i wykonaj Powerwash, by zaktualizować</translation>
-<translation id="9181036778675416867">Kliknij przycisk rysika na półce, by zrobić notatkę lub zrzut ekranu, skorzystać z Asystenta albo użyć wskaźnika laserowego lub lupy.</translation>
 <translation id="9194617393863864469">Zaloguj innego użytkownika...</translation>
 <translation id="9201131092683066720">Naładowanie baterii: <ph name="PERCENTAGE" />%.</translation>
 <translation id="9210037371811586452">Wyłączam tryb ujednoliconego pulpitu</translation>

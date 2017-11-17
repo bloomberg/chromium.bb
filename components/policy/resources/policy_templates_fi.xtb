@@ -597,7 +597,6 @@ Kaikki luettelon kohteet ovat tunnuksia, joiden perusteella erotetaan laitteesee
 
       Voit lukea lisää Selaussuojasta osoitteessa https://developers.google.com/safe-browsing.</translation>
 <translation id="3016255526521614822">Luo luettelo sallituista muistiinpanosovelluksista, jotka <ph name="PRODUCT_OS_NAME" /> voi näyttää lukitusnäytöllä.</translation>
-<translation id="3021409116652377124">Poista laajennuksien haku käytöstä</translation>
 <translation id="3030000825273123558">Ota tilastoraportit käyttöön</translation>
 <translation id="3034580675120919256">Voit määrittää, saavatko sivustot suorittaa JavaScriptiä. JavaScriptin suorittaminen voidaan joko sallia kaikille sivustoille tai kieltää kaikilta sivustoilta. Jos tätä käytäntöä ei ole asetettu, käytetään AllowJavaScript-määritystä, ja käyttäjä voi muuttaa sitä.</translation>
 <translation id="3038323923255997294">Jätä taustasovellukset käyntiin, kun <ph name="PRODUCT_NAME" /> suljetaan</translation>
@@ -885,25 +884,6 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 <translation id="4027608872760987929">Ota oletushakupalvelu käyttöön</translation>
 <translation id="4039085364173654945">Määrittää, saako sivulla oleva kolmannen osapuolen alasisältö näyttää HTTP Basic Auth -valintaikkunan. Asetus on yleensä poistettu käytöstä tietojenkalastelun estotoimenpiteenä. Jos käytäntöä ei ole määritetty, asetus ei ole käytössä eikä kolmannen osapuolen alasisältö saa näyttää HTTP Basic Auth -valintaikkunaa.</translation>
 <translation id="4056910949759281379">Poista SPDY-protokolla käytöstä</translation>
-<translation id="4077363032873906037">Sallii kohteen <ph name="PRODUCT_NAME" /> rajoitetun Google Apps ‑kirjautumistoiminnon ja estää käyttäjiä muuttamasta tätä asetusta
-
-      Jos määrität tämän asetuksen, käyttäjä pääsee Google
-      Apps ‑sovelluksiin vain määrättyjen verkkotunnusten tileiltä (huomaa, että tämä ei
-      toimi gmail.comin/googlemail.comin kohdalla).
-
-      Asetus ei estä käyttäjää kirjautumasta sisään hallinnoidulla laitteella,
-      joka edellyttää Google-todennusta. Käyttäjä voi silti kirjautua muiden
-      verkkotunnusten tileille, mutta Google Appsiin siirtyminen johtaa 
-      virheilmoitukseen.
-
-      Jos tätä asetusta ei määritetä, käyttäjät voivat käyttää Google Appsia
-      millä tahansa tilillä.
-
-      Tämän käytännön seurauksena X-GoogApps-Allowed-Domains-otsikko lisätään
-      kaikkiin google.com-verkkotunnuksiin tehtäviin HTTP- ja HTTPS-pyyntöihin.
-      Lisätietoja on artikkelissa https://support.google.com/a/answer/1668854.
-
-      Käyttäjät eivät voi muuttaa tai ohittaa tätä asetusta.</translation>
 <translation id="408029843066770167">Salli kyselyt Googlen aikapalveluun</translation>
 <translation id="4088589230932595924">Incognito-tila pakotettu</translation>
 <translation id="4088983553732356374">Tällä käytännöllä määritetään, onko sivustoilla lupa luoda paikallisia tietoja. Paikallisten tietojen luominen voidaan sallia kaikille sivustoille tai kieltää kaikilta sivustoilta.
@@ -921,7 +901,6 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
           Tämän käytännön arvo täytyy määrittää millisekunteina.</translation>
 <translation id="4105989332710272578">Poista Certificate Transparency ‑vaatimus tietyiltä URL-osoitteilta</translation>
 <translation id="4121350739760194865">Estä sovelluskampanjoita näkymästä uusi välilehti -sivulla</translation>
-<translation id="4133144443101280166">Käytöstä poiston aikavälit, kun laitteen OffHours |ignored_policy_proto_tags| ‑käytännöt julkaistaan</translation>
 <translation id="4157003184375321727">Ilmoita käyttöjärjestelmän ja laiteohjelmiston versio</translation>
 <translation id="4183229833636799228"><ph name="FLASH_PLUGIN_NAME" />-oletusasetus</translation>
 <translation id="4192388905594723944">URL-osoite etäkäytön isännän todennustunnuksen varmentamista varten</translation>
@@ -1139,7 +1118,6 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
           Esimerkiksi <ph name="EXTENSION_POLICY_EXAMPLE" /> asentaa sovelluksen <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> Chrome Web Storen tavallisen päivitysosoitteen kautta. Lisätietoja laajennusten isännöinnistä: <ph name="LINK_TO_EXTENSION_DOC2" />.
 
           Jos tätä käytäntöä ei ole määritetty, mitään sovelluksia tai laajennuksia ei asenneta automaattisesti ja käyttäjä voi poistaa minkä tahansa sovelluksen tai laajennuksen kohteessa <ph name="PRODUCT_NAME" />.</translation>
-<translation id="4882546920824859909">Määritä verkkotunnukset, joille sallitaan Google Apps -käyttö</translation>
 <translation id="4897928009230106190">Määrittää parametrit, joita käytetään tehtäessä ehdotushakuja POST-metodin avulla. Se koostuu pilkuilla erotetuista nimi/arvo-pareista. Jos arvo on malliparametri kuten yllä olevan esimerkin {searchTerms}, se korvataan oikeilla hakusanatiedoilla.
 
           Tämä käytäntö on valinnainen. Jos sitä ei ole määritetty, ehdotushakupyyntö lähetetään GET-metodin avulla.
@@ -1192,7 +1170,6 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
       Jos käytäntöä ei määritetä tai sen arvoksi asetetaan False, laitetta voi käyttää kehittäjätilassa.</translation>
 <translation id="5208240613060747912">Voit määrittää luettelon URL-malleja, joissa määritetään sivustot, jotka eivät saa näyttää ilmoituksia. Jos tätä käytäntöä ei ole määritetty, kaikille sivustoille käytetään joko DefaultNotificationsSetting-käytännön yleistä oletusarvoa, jos se on asetettu, tai käyttäjän henkilökohtaisia määrityksiä.</translation>
 <translation id="5219844027738217407">Android-sovellusten kohdalla tämä käytäntö vaikuttaa vain mikrofoniin. Kun tämän käytännön arvoksi on määritetty tosi, mikrofoni on mykistetty kaikkien Android-sovellusten kohdalla, ilman poikkeuksia.</translation>
-<translation id="5226033722357981948">Määritä, tuleeko laajennuksien haun olla pois käytöstä</translation>
 <translation id="523505283826916779">Käytettävyysasetukset</translation>
 <translation id="5247006254130721952">Estä vaaralliset lataukset</translation>
 <translation id="5255162913209987122">Suositus</translation>
@@ -1321,24 +1298,6 @@ Jos käytäntöä ei määritetä, käyttäjät voivat valita, tuleeko hylly pii
 <translation id="5728154254076636808">Salli roaming-kopioiden luominen <ph name="PRODUCT_NAME" /> ‑profiilitiedoista.</translation>
 <translation id="5732972008943405952">Tuo automaattisen täytön lomaketiedot oletusselaimesta ensimmäisen käynnistyksen yhteydessä</translation>
 <translation id="5765780083710877561">Kuvaus:</translation>
-<translation id="5768309557753179144">Chromium ja Google Chrome tukevat samoja
-      käytäntöjä. Huomaa, että tämä dokumentti voi sisältää julkaisemattomia
-      käytäntöjä (niiden tukimerkintä viittaa tuotteen <ph name="PRODUCT_NAME" /> versioon, jota ei ole vielä
-      julkaistu), joita voidaan muuttaa tai poistaa ilman erillistä ilmoitusta ja
-      joille ei tarjota minkäänlaisia takuita, kuten niiden tietoturva-
-      tai tietosuojaominaisuuksiin liittyviä takuita.
-
-      Näiden käytäntöjen tarkoituksena on tuotteen <ph name="PRODUCT_NAME" /> esiintymien määrittäminen
-      organisaation sisäistä käyttöä varten. Näiden käytäntöjen käyttöä organisaation
-      ulkopuolella (esimerkiksi julkisesti jaeltavassa ohjelmassa) käsitellään
-      samalla tavoin kuin haittaohjelmia, ja Google ja virustorjuntapalvelujen tarjoajat todennäköisesti merkitsevät tällaisen käytön haitalliseksi.
-
-      Näitä asetuksia ei tarvitse määrittää manuaalisesti! Voit ladata
-      helppokäyttöisiä malleja Windowsille, Macille ja Linuxille täältä: <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
-
-      Suosittelemme määrittämään käytännöt Windowsissa ryhmäkäytäntöobjekteina,
-      mutta <ph name="MS_AD_NAME" /> ‑verkkotunnukseen yhdistetyt Windows-esiintymät tukevat
-      myös käytäntöjen jakelua rekisterin avulla.</translation>
 <translation id="5770738360657678870">Kehittäjäversio (saattaa olla epävakaa)</translation>
 <translation id="5774856474228476867">Oletushakupalvelun haku-URL-osoite</translation>
 <translation id="5776485039795852974">Kysy minulta aina, kun sivusto haluaa näyttää työpöytäilmoituksia</translation>
@@ -1644,7 +1603,6 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
       Jos tätä käytäntöä ei aseteta, verkon ennakointi otetaan käyttöön, mutta käyttäjä voi muokata asetusta.</translation>
 <translation id="6658245400435704251">Määrittää sekunteina ajan, jonka laite voi viivyttää päivityksen lataamista siitä hetkestä, kun päivitys on lähetetty palvelimelle. Osa odotusajasta voidaan määrittää aikana ja loput päivitystarkistusten määränä. Hajonnalle on kuitenkin yläraja, joten laite ei koskaan jää odottamaan päivityksen lataamista loputtomasti.</translation>
 <translation id="6689792153960219308">Laitteiston tilan raportointi</translation>
-<translation id="6693751878507293182">Jos otat tämän asetuksen käyttöön, automaattinen haku ja puuttuvien laajennuksien asentaminen poistetaan käytöstä tuotteessa <ph name="PRODUCT_NAME" />. Jos poistat asetuksen käytöstä tai et määritä sitä, laajennuksien etsintä on käytössä.</translation>
 <translation id="6699880231565102694">Ota kahden tekijän todennus käyttöön etäisännille</translation>
 <translation id="6724842112053619797">Jos tämä asetus on käytössä, <ph name="PRODUCT_NAME" /> ‑profiileihin tallennetut tiedot, esim. kirjanmerkit, automaattisen täytön tiedot ja salasanat, tallennetaan myös roaming-käyttäjän profiilitiedostoon tai järjestelmänvalvojan <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />-käytännössä määrittämään sijaintiin. Pilvisynkronointi poistetaan käytöstä, kun tämä käytäntö on käytössä.
 
@@ -1902,6 +1860,7 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 
           Jos tämä asetus ei ole käytössä tai sitä ei ole määritetty, kahden tekijän todennus ei ole käytössä, vaan käytetään käyttäjän määrittämää PIN-koodia.</translation>
 <translation id="7750991880413385988">Avaa Uusi välilehti -sivu</translation>
+<translation id="7754704193130578113">Kysy, minne kukin tiedosto tallennetaan ennen lataamista</translation>
 <translation id="7761446981238915769">Muokkaa kirjautumisnäytöllä asennettavien sovellusten luetteloa</translation>
 <translation id="7761526206824804472">Asettaa julkisia käyttökertoja varten yhden tai useamman suositellun kielen, joista käyttäjät voivat valita haluamansa.
 
@@ -1958,7 +1917,7 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 <translation id="7841880500990419427">TLS:n käytettävä vähimmäisversio</translation>
 <translation id="7842869978353666042">Määritä Google Driven asetukset</translation>
 <translation id="7843525027689416831">Määrittää merkinnät, joita käytetään sovelluksessa <ph name="PRODUCT_NAME" /> sen käynnistyksen yhteydessä. Määritettyjä merkintöjä käytetään vain kirjautumisnäytöllä. Tämän käytännön kautta määritettyjä merkintöjä ei oteta yleisesti käyttöön käyttäjäistunnoissa.</translation>
-<translation id="7844537954833753199">Tämä määrittää laajennusten hallinta-asetuksia, joita <ph name="PRODUCT_NAME" /> käyttää.
+<translation id="7844537954833753199">Määrittää laajennusten hallinta-asetuksia, joita <ph name="PRODUCT_NAME" /> käyttää
 
           Tämä käytäntö hallitsee useita asetuksia, mukaan lukien nykyisten laajennuksiin liittyvien käytäntöjen hallitsemia asetuksia. Tämä käytäntö ohittaa mahdolliset aiemmin määritetyt käytännöt.
 
@@ -1972,7 +1931,7 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
           * <ph name="FORCE_INSTALLED" />: Laajennus asennetaan automaattisesti, eikä käyttäjä voi poistaa sitä.
           * <ph name="NORMAL_INSTALLED" />: Laajennus asennetaan automaattisesti, mutta käyttäjä voi poistaa sen käytöstä.
 
-          <ph name="INSTALLTION_MODE" /> on määritettävissä myös useita laajennuksia varten, jolloin sitä voivat käyttää <ph name="DEFAULT_SCOPE" /> (oletusasetuksina) ja samaa päivitys-URL-osoitetta käyttävät laajennukset. Tällöin <ph name="ALLOWED" /> ja <ph name="BLOCKED" /> ovat ainoat kelvolliset arvot.
+          <ph name="INSTALLTION_MODE" /> on määritettävissä myös useita laajennuksia varten, jolloin sitä voivat käyttää <ph name="DEFAULT_SCOPE" /> oletusasetuksina) ja samaa päivitys-URL-osoitetta käyttävät laajennukset. Tällöin <ph name="ALLOWED" /> ja <ph name="BLOCKED" /> ovat ainoat kelvolliset arvot.
 
           Jos tila on <ph name="FORCE_INSTALLED" /> tai <ph name="NORMAL_INSTALLED" />, myös <ph name="UPDATE_URL" /> täytyy määrittää. Huomaa, että tässä käytännössä asetettua päivitys-URL-osoitetta käytetään vain ensimmäisellä asennuskerralla, ja laajennuksen myöhemmillä päivityskerroilla käytetään laajennuksen teknisissä tiedoissa olevaa päivitys-URL-osoitetta. Kuten yllä todetaan, päivitys-URL-osoitteen tulee johtaa tekniset päivitystiedot sisältävään XML-tiedostoon (Update Manifest XML).
 
@@ -1987,8 +1946,8 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
           <ph name="INSTALL_SOURCES" />: Kukin tämän luettelon kohde on laajennuksen kaltainen vastaavuusmalli (<ph name="LINK_TO_MATCH_PATTERNS" />). Käyttäjät voivat helposti asentaa kohteita URL-osoitteista, jotka vastaavat tässä luettelossa olevia kohteita. Sekä tiedoston <ph name="EXTENSION_SUFFIX_WILDCARD" /> sijainnin että latauksen aloitussivun (eli viittaavan sivun) täytyy olla sallittuja näiden mallien perusteella.
 
           <ph name="ALLOWED_TYPES" />: Tämä asetus lisää sallittujen luetteloon kaikki laajennukset/sovellukset, joiden asentamisen <ph name="PRODUCT_NAME" /> sallii. Asetuksen arvo on merkkijonoluettelo, jonka kunkin kohteen tulee olla jokin seuraavista: <ph name="VALID_ALLOWED_TYPES" />. Lisätietoja tyypeistä on saatavilla tuotteen <ph name="PRODUCT_NAME" /> laajennusdokumentaatiosta.
-          <ph name="BLOCKED_INSTALL_MESSAGE" />: Jos käyttäjä yrittää asentaa laajennuksen, mutta asennus estetään käytännön perusteella, Chrome Web Store näyttää käyttäjälle yleisen virheilmoituksen. Tämän asetuksen avulla voit lisätä tekstiä virheilmoitukseen, jolloin voit esimerkiksi ohjata käyttäjän asiakastukeen tai kertoa, miksi laajennus on estetty. Virheilmoituksen tekstiä ei näytetä kokonaan, jos sen pituus on yli 1 000 merkkiä.
-          <ph name="RUNTIME_BLOCKED_HOSTS" />: Tämä hyväksyy luettelon isännistä, joiden toiminta laajennuksen kanssa estetään. Tällaiseen toimintaan sisältyvät JavaScript-koodin syöttäminen, webRequest- ja webNavigation-kohteiden katselu ja muuttaminen sekä evästeiden katselu ja muuttaminen. Luettelokohteiden muoto muistuttaa vastaavuusmalleja (<ph name="LINK_TO_MATCH_PATTERNS" />), mutta ne eivät saa sisältää polkuja, kuten "*://*.example.com". Tämä asetus tukee myös TLD-jokerimerkkien käyttöä. Esimerkiksi: "*://example.*".
+          <ph name="BLOCKED_INSTALL_MESSAGE" />: Jos käyttäjä yrittää asentaa laajennuksen, mutta asennus estetään käytännön perusteella, Chrome Web Store näyttää käyttäjälle yleisen virheilmoituksen. Tämän asetuksen avulla voit lisätä tekstiä virheilmoitukseen, jolloin voit esimerkiksi ohjata käyttäjän asiakastukeen tai kertoa, miksi laajennus on estetty. Virheilmoituksen tekstiä ei näytetä kokonaan, jos sen pituus on yli 1 000 merkkiä.
+          <ph name="RUNTIME_BLOCKED_HOSTS" />: Tämä hyväksyy luettelon isännistä, joiden toiminta laajennuksen kanssa estetään. Tällaiseen toimintaan sisältyvät JavaScript-koodin syöttäminen, webRequest- ja webNavigation-kohteiden katselu ja muuttaminen sekä evästeiden katselu ja muuttaminen. Luettelokohteiden muoto muistuttaa vastaavuusmalleja <ph name="LINK_TO_MATCH_PATTERNS" />, mutta ne eivät saa sisältää polkuja, kuten "*://*.example.com". Tämä asetus tukee myös TLD-jokerimerkkien käyttöä. Esimerkiksi: "*://example.*".
           <ph name="RUNTIME_ALLOWED_HOSTS" />: Tämä hyväksyy luettelon isännistä, joiden toiminta laajennuksen kanssa sallitaan riippumatta siitä, sisältääkö <ph name="RUNTIME_BLOCKED_HOSTS" /> niitä. Tämä asetus ja <ph name="RUNTIME_BLOCKED_HOSTS" /> käyttävät samanlaista luettelokohteiden muotoilua.
           </translation>
 <translation id="787125417158068494">Jos tämän käytännön arvo on SyncDisabled tai sitä ei ole määritetty, ARC-sovellukset eivät voi käyttää <ph name="PRODUCT_OS_NAME" /> -varmenteita.
@@ -2150,11 +2109,6 @@ Tämä käytäntö ei ole käytössä tavallisilla käyttäjätileillä.</transl
 <translation id="8451988835943702790">Käytä Uusi välilehti -sivua etusivuna</translation>
 <translation id="8465065632133292531">POST-metodia käyttävän pikahaun URL-osoitteen parametrit</translation>
 <translation id="847472800012384958">Älä anna sivustojen näyttää ponnahdusikkunoita</translation>
-<translation id="8476127435468057643">Hallinnoi NTLMv2:n käytössä oloa.
-
-          Kaikki Samba- ja Windows-palvelinten viimeaikaiset versiot tukevat NTLMv2:ta. Se pitäisi poistaa käytöstä vain takautuvan yhteensopivuuden vuoksi, sillä tämä huonontaa todennuksen turvallisuutta.
-
-          Kun tätä käytäntöä ei ole määritetty, sen oletusarvo on epätosi takautuvan yhteensopivuuden vuoksi, mutta tämä muuttuu tulevaisuudessa.</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
 <translation id="8484458986062090479">Muokkaa niiden URL-mallien luetteloa, jotka isäntäselaimen tulee aina piirtää näytölle.
  

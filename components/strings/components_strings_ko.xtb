@@ -78,6 +78,9 @@
 <translation id="154408704832528245">배달 주소 선택</translation>
 <translation id="1549470594296187301">이 기능을 이용하려면 자바스크립트를 사용하도록 설정해야 합니다.</translation>
 <translation id="1559528461873125649">해당 파일이나 디렉토리가 없습니다.</translation>
+<translation id="1559572115229829303">&lt;p&gt;기기의 날짜와 시간(<ph name="DATE_AND_TIME" />)이 잘못되어 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />에 비공개로 연결할 수 없습니다.&lt;/p&gt;
+
+      &lt;p&gt;&lt;strong&gt;설정&lt;/strong&gt; 앱의 &lt;strong&gt;일반&lt;/strong&gt; 섹션에서 날짜와 시간을 맞추세요.&lt;/p&gt;</translation>
 <translation id="1583429793053364125">이 웹페이지를 표시하는 도중 문제가 발생했습니다.</translation>
 <translation id="1590457302292452960">안전한 비밀번호를 만드세요...</translation>
 <translation id="1592005682883173041">로컬 데이터 액세스</translation>
@@ -226,7 +229,7 @@
 <translation id="2666117266261740852">다른 탭 또는 앱 닫기</translation>
 <translation id="2674170444375937751">방문 기록에서 이 페이지를 삭제하시겠습니까?</translation>
 <translation id="2677748264148917807">나가기</translation>
-<translation id="2699302886720511147">사용 가능한 카드</translation>
+<translation id="2699302886720511147">사용할 수 있는 카드</translation>
 <translation id="2702801445560668637">읽기 목록</translation>
 <translation id="2704283930420550640">값이 형식과 일치하지 않습니다.</translation>
 <translation id="2704951214193499422">현재 Chromium에서 카드를 확인할 수 없습니다. 나중에 다시 시도해 주세요.</translation>
@@ -359,13 +362,9 @@
 <translation id="3530944546672790857">{COUNT,plural, =0{동기화된 기기에 항목 1개 이상}=1{항목 1개(동기화된 기기에는 그 이상)}other{항목 #개(동기화된 기기에는 그 이상)}}</translation>
 <translation id="3539171420378717834">카드 사본을 이 기기에 저장</translation>
 <translation id="3542684924769048008">비밀번호 사용 항목:</translation>
-<translation id="3545341443414427877">컴퓨터의 날짜와 시간(<ph name="DATE_AND_TIME" />)이 잘못되었으므로 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />에 비공개로 연결할 수 없습니다. <ph name="BEGIN_LEARN_MORE_LINK" />자세히 알아보기<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="3549644494707163724">나만의 동기화 암호로 모든 동기화 데이터 암호화</translation>
 <translation id="3556433843310711081">관리자가 차단 해제할 수 있습니다.</translation>
 <translation id="3566021033012934673">연결이 비공개로 설정되어 있지 않습니다.</translation>
-<translation id="3569145463236695319">&lt;p&gt;기기의 날짜와 시간(<ph name="DATE_AND_TIME" />)이 잘못되었으므로 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />에 비공개로 연결할 수 없습니다.&lt;/p&gt;
-
-      &lt;p&gt;&lt;strong&gt;설정&lt;/strong&gt; 앱의 &lt;strong&gt;일반&lt;/strong&gt; 섹션에서 날짜와 시간을 맞추세요.&lt;/p&gt; <ph name="BEGIN_LEARN_MORE_LINK" />자세히 알아보기<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="3574305903863751447"><ph name="COUNTRY" /> <ph name="STATE" />, <ph name="CITY" /></translation>
 <translation id="358285529439630156">신용카드 및 선불카드를 사용할 수 있습니다.</translation>
 <translation id="3582930987043644930">이름 추가</translation>
@@ -580,6 +579,7 @@
     <ph name="LIST_ITEM" /><ph name="BEGIN_LEARN_MORE_LINK" />Chrome 고객센터<ph name="END_LEARN_MORE_LINK" />를 방문하여 컴퓨터에서 소프트웨어를 영구적으로 삭제하는 방법을 알아보세요.
     <ph name="END_LIST" /></translation>
 <translation id="5285570108065881030">저장된 비밀번호 모두 표시</translation>
+<translation id="5287240709317226393">쿠키 표시</translation>
 <translation id="5299298092464848405">정책을 파싱하는 중 오류 발생</translation>
 <translation id="5308380583665731573">연결</translation>
 <translation id="5308689395849655368">비정상 종료 보고가 사용 중지되었습니다.</translation>
@@ -639,6 +639,7 @@
 <translation id="5675650730144413517">페이지가 작동하지 않습니다.</translation>
 <translation id="5685654322157854305">배송지 주소 추가</translation>
 <translation id="5689199277474810259">JSON 형식으로 내보내기</translation>
+<translation id="5689516760719285838">위치</translation>
 <translation id="5710435578057952990">이 웹사이트의 주소가 확인되지 않았습니다.</translation>
 <translation id="5719499550583120431">선불카드를 사용할 수 있습니다.</translation>
 <translation id="5720705177508910913">현재 사용자</translation>
@@ -687,7 +688,6 @@
 <translation id="614940544461990577">다음을 시도:</translation>
 <translation id="6151417162996330722">서버 인증서의 유효 기간이 너무 깁니다.</translation>
 <translation id="6157877588268064908">배송 방법과 요구사항을 확인하려면 주소를 선택하세요.</translation>
-<translation id="6158003235852588289">Google 세이프 브라우징이 최근 <ph name="SITE" />에서 피싱을 감지했습니다. 피싱 사이트는 사용자를 속이기 위해 다른 웹사이트인 것처럼 가장합니다.</translation>
 <translation id="6165508094623778733">자세히 알아보기</translation>
 <translation id="6169916984152623906">이제 비공개로 인터넷을 사용할 수 있으며, 이 기기를 사용하는 다른 사용자가 내 활동을 볼 수 없습니다. 하지만 다운로드한 항목과 북마크는 저장됩니다.</translation>
 <translation id="6177128806592000436">이 사이트에 대한 연결은 안전하지 않습니다.</translation>
@@ -778,7 +778,6 @@
 <translation id="6973656660372572881">고정 프록시 서버와 .pac 스크립트 URL이 모두 지정되어 있습니다.</translation>
 <translation id="6989763994942163495">고급 설정 표시</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
-<translation id="7012372675181957985">Google 계정에 다른 형식의 탐색 기록이 <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />에 남아있을 수 있습니다.</translation>
 <translation id="7029809446516969842">비밀번호</translation>
 <translation id="7050187094878475250"><ph name="DOMAIN" />에 접속하려고 했지만 서버가 제시한 인증서의 유효 기간이 너무 길어서 신뢰할 수 없습니다.</translation>
 <translation id="7053983685419859001">차단</translation>
@@ -806,6 +805,7 @@
 <translation id="7220786058474068424">처리 중</translation>
 <translation id="724691107663265825">다음 사이트에 멀웨어가 있습니다.</translation>
 <translation id="724975217298816891">카드 세부정보를 업데이트하려면 <ph name="CREDIT_CARD" /> 카드의 만료일과 CVC를 입력하세요. 카드를 확인하면 카드 세부정보가 이 사이트와 공유됩니다.</translation>
+<translation id="725866823122871198">컴퓨터의 날짜와 시간(<ph name="DATE_AND_TIME" />)이 잘못되어 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />에 대한 비공개 연결을 설정할 수 없습니다.</translation>
 <translation id="7260504762447901703">액세스 취소</translation>
 <translation id="7271803869921933038">사용 가능한 선불카드</translation>
 <translation id="7275334191706090484">관리 북마크</translation>
@@ -820,7 +820,6 @@
 <translation id="7378627244592794276">안함</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7390545607259442187">카드 확인</translation>
-<translation id="739697976928952788">저장된 비밀번호 모두 표시</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419106976560586862">프로필 경로</translation>
 <translation id="7424977062513257142">이 웹페이지에 삽입된 페이지 내용:</translation>
@@ -950,7 +949,6 @@
 <translation id="8293206222192510085">북마크 추가</translation>
 <translation id="8294431847097064396">출처</translation>
 <translation id="8298115750975731693">사용 중인 Wi-Fi(<ph name="WIFI_NAME" />)에서 <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> 방문을 요청할 수 있습니다.</translation>
-<translation id="8306404619377842860">기기의 날짜와 시간(<ph name="DATE_AND_TIME" />)이 잘못되었으므로 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />에 비공개로 연결할 수 없습니다. <ph name="BEGIN_LEARN_MORE_LINK" />자세히 알아보기<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8308427013383895095">네트워크 연결 문제로 인해 번역에 실패했습니다.</translation>
 <translation id="8311129316111205805">세션 로드</translation>
 <translation id="8332188693563227489"><ph name="HOST_NAME" />에 대한 액세스가 거부됨</translation>
@@ -976,6 +974,7 @@
 <translation id="8543181531796978784"><ph name="BEGIN_ERROR_LINK" />감지 문제를 신고<ph name="END_ERROR_LINK" />할 수 있으며, 보안에 미치는 위험을 감수한다면 <ph name="BEGIN_LINK" />이 안전하지 않은 사이트를 방문<ph name="END_LINK" />할 수 있습니다.</translation>
 <translation id="8543556556237226809">질문이 있으신가요? 프로필 관리자에게 문의하세요.</translation>
 <translation id="8553075262323480129">페이지의 언어를 결정할 수 없으므로 번역하지 못했습니다.</translation>
+<translation id="8559762987265718583">기기의 날짜와 시간(<ph name="DATE_AND_TIME" />)이 잘못되어 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />에 대한 비공개 연결을 설정할 수 없습니다.</translation>
 <translation id="8571890674111243710">페이지를 <ph name="LANGUAGE" />(으)로 번역 중...</translation>
 <translation id="858637041960032120">번호 추가</translation>
 <translation id="859285277496340001">인증서는 취소 여부를 확인하는 매커니즘을 지정하지 않습니다.</translation>

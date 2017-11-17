@@ -129,7 +129,6 @@ Niektoré webové stránky môžu napríklad na túto žiadosť odpovedať zobra
 <translation id="3329904751041170572">Nepodarilo sa pripojiť k serveru.</translation>
 <translation id="3335947283844343239">Znova otvoriť zatvorenú kartu</translation>
 <translation id="3393920035788932672">Povolené okná</translation>
-<translation id="3414292259312108062">Prehliadač Chrome ho uchová do priečinka <ph name="BEGIN_LINK" />Uložené heslá Google<ph name="END_LINK" /> a automaticky ho bude dopĺňať, takže si ho nemusíte pamätať.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Rozdelené zobrazenie</translation>
 <translation id="3474624961160222204">Pokračovať ako <ph name="NAME" /></translation>
@@ -152,7 +151,6 @@ Niektoré webové stránky môžu napríklad na túto žiadosť odpovedať zobra
 <translation id="3779810277399252432">Internetové pripojenie nie je k dispozícii.</translation>
 <translation id="3783017676699494206">Uložiť obrázok</translation>
 <translation id="385051799172605136">Naspäť</translation>
-<translation id="3857761338463387655">Vytvoriť správu pomocou adresy:</translation>
 <translation id="3897092660631435901">Ponuka</translation>
 <translation id="3928666092801078803">Spojiť moje dáta</translation>
 <translation id="3950820424414687140">Prihlásiť sa</translation>
@@ -204,6 +202,7 @@ Niektoré webové stránky môžu napríklad na túto žiadosť odpovedať zobra
 <translation id="5005498671520578047">Kopírovanie hesla</translation>
 <translation id="5010803260590204777">Otvorte kartu inkognito a prehliadajte web v súkromí.</translation>
 <translation id="5011684439661633295">Ahoj, <ph name="FULL_ACCOUNT_NAME" /></translation>
+<translation id="5039804452771397117">Povoliť</translation>
 <translation id="5062321486222145940">Nainštalovať Disk Google</translation>
 <translation id="5083464117946352670">Nedá sa zistiť veľkosť súboru.</translation>
 <translation id="5094827893301452931">Tweet bol uverejnený.</translation>
@@ -262,7 +261,6 @@ Funkciu Handoff musíte povoliť v nastaveniach v časti Všeobecné a vaše zar
 <translation id="6122191549521593678">Online</translation>
 <translation id="6127379762771434464">Položka bola odstránená</translation>
 <translation id="6136914049981179737">Pred chvíľou</translation>
-<translation id="6149061208933997199">Použiť heslo</translation>
 <translation id="6158823227857319455">Nová karta</translation>
 <translation id="616831107264507309">Prečítať neskôr</translation>
 <translation id="6184086493125982861">Zobraziť karty</translation>
@@ -272,7 +270,6 @@ Funkciu Handoff musíte povoliť v nastaveniach v časti Všeobecné a vaše zar
 <translation id="6254066287920239840">Otvárať odkazy v aplikácii namiesto prehliadača.</translation>
 <translation id="6255097610484507482">Upraviť platobnú kartu</translation>
 <translation id="6308436439357671616">Umožňuje fotiť a nahrať fotky.</translation>
-<translation id="6314335155547195432">Generovanie hesla</translation>
 <translation id="6324528485781869530">Prepnutie účtu na synchronizáciu</translation>
 <translation id="6324669097367352121">Nastavenia prihlásenia</translation>
 <translation id="6337234675334993532">Šifrovanie</translation>
@@ -290,7 +287,6 @@ Vaše údaje boli <ph name="TIME" /> zašifrované pomocou vlastnej prístupovej
 <translation id="6418346271604475326">Príprava PDF</translation>
 <translation id="6445051938772793705">Krajina</translation>
 <translation id="6445981559479772097">Správa sa odoslala.</translation>
-<translation id="6456425917241817154">Heslo vygenerované prehliadačom Chrome</translation>
 <translation id="6464071786529933911">Otvoriť na novej karte inkognito</translation>
 <translation id="6482629121755362506">Počet odstránených položiek: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="6541915733953096570">Posledná hodina</translation>
@@ -313,6 +309,7 @@ Vaše údaje boli <ph name="TIME" /> zašifrované pomocou vlastnej prístupovej
 <translation id="7004499039102548441">Nedávne karty</translation>
 <translation id="7006788746334555276">Nastavenia obsahu</translation>
 <translation id="7031882061095297553">Kam synchronizovať</translation>
+<translation id="7053983685419859001">Blokovať</translation>
 <translation id="7062545763355031412">Prijať a prepnúť účty</translation>
 <translation id="7108338896283013870">Skryť</translation>
 <translation id="7133798577887235672">Celé meno</translation>
@@ -345,7 +342,6 @@ Vaše údaje boli <ph name="TIME" /> zašifrované pomocou vlastnej prístupovej
 <translation id="7649070708921625228">Pomocník</translation>
 <translation id="7658239707568436148">Zrušiť</translation>
 <translation id="7671141431838911305">INŠTALOVAŤ</translation>
-<translation id="7677825787905683892">Vybrať predvolenú e-mailovú aplikáciu</translation>
 <translation id="7765158879357617694">Presunúť</translation>
 <translation id="7769602470925380267">Prijať a odhlásiť</translation>
 <translation id="7772032839648071052">Potvrďte prístupovú frázu</translation>
@@ -409,7 +405,6 @@ Vaše údaje boli <ph name="TIME" /> zašifrované pomocou vlastnej prístupovej
 <translation id="9083392325882095631">1 položka</translation>
 <translation id="9100610230175265781">Vyžaduje sa prístupová fráza</translation>
 <translation id="9148126808321036104">Znova sa prihlásiť</translation>
-<translation id="914898748153555155">Túto predvoľbu môžete kedykoľvek zmeniť v nastaveniach Chromu</translation>
 <translation id="91549621916703028">Vytvorte viacero kariet pre všetky úlohy</translation>
 <translation id="9157836665414082580">Obmedziť dialógové okná</translation>
 <translation id="9188680907066685419">Odhlásenie zo spravovaného účtu</translation>

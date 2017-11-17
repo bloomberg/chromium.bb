@@ -26,7 +26,6 @@
 <translation id="15373452373711364">பெரிய மவுஸ் இடஞ்சுட்டி</translation>
 <translation id="1550523713251050646">மேலும் விருப்பங்களுக்குக் கிளிக் செய்யவும்</translation>
 <translation id="1621499497873603021">இன்னும் <ph name="TIME_LEFT" /> இல் பேட்டரி காலியாகிவிடும்</translation>
-<translation id="16620462294541761">மன்னிக்கவும், உங்கள் கடவுச்சொல்லைச் சரிபார்க்க முடியவில்லை. தயவுசெய்து மீண்டும் முயற்சி செய்க.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> மணி நேரம்</translation>
 <translation id="1698760176351776263">IPv6 முகவரி: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">இந்தச் சாதனத்தை நிர்வகிப்பது: நிறுவனம்</translation>
@@ -69,6 +68,7 @@
 <translation id="2509468283778169019">CAPS LOCK இயக்கத்தில்</translation>
 <translation id="2532589005999780174">அதிக ஒளி மாறுபாட்டுப் பயன்முறை</translation>
 <translation id="2597972630681408282">இரவு ஒளி: <ph name="NIGHT_LIGHT_STATUS" /></translation>
+<translation id="2617342710774726426">சிம் கார்டு பூட்டப்பட்டுள்ளது</translation>
 <translation id="2653659639078652383">சமர்ப்பி</translation>
 <translation id="2675319268637823299"><ph name="USER_EMAIL" />க்கு, பல உள்நுழைவை நிர்வாகி அனுமதிக்கவில்லை.
     தொடர, எல்லாப் பயனர்களும் வெளியேற வேண்டும்.</translation>
@@ -174,7 +174,6 @@
 <translation id="5571066253365925590">புளூடூத் இயக்கப்பட்டது</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
 <translation id="5600837773213129531">பேச்சுவடிவக் கருத்தை முடக்க, Ctrl + Alt + Zஐ அழுத்தவும்.</translation>
-<translation id="5612734644261457353">மன்னிக்கவும், உங்கள் கடவுச்சொல் இன்னும் சரிபார்க்கப்படவில்லை. குறிப்பு: உங்கள் கடவுச்சொல்லை சமீபத்தில் மாற்றியிருந்தால், நீங்கள் வெளியேறியவுடன் புதிய கடவுச்சொல் செயல்படுத்தப்படும், இங்கு பழைய கடவுச்சொல்லைப் பயன்படுத்தவும்.</translation>
 <translation id="5648021990716966815">மைக் ஜாக்</translation>
 <translation id="5673434351075758678">அமைப்புகளை ஒத்திசைத்த பின்னர், "<ph name="FROM_LOCALE" />" இலிருந்து "<ph name="TO_LOCALE" />"க்கு மாற்றப்பட்டது.</translation>
 <translation id="5744083938413354016">தட்டி நகர்த்துதல்</translation>
@@ -284,10 +283,10 @@
 <translation id="8261506727792406068">நீக்கு</translation>
 <translation id="8308637677604853869">முந்தைய மெனு</translation>
 <translation id="8351131234907093545">குறிப்பை உருவாக்கு</translation>
-<translation id="8392234662362215700">விசைப்பலகை தளவமைப்பை மாற்ற, கன்ட்ரோல்-ஷிஃப்ட்-ஸ்பேஸ் விசையை அழுத்தவும்.</translation>
 <translation id="8428213095426709021">அமைப்புகள்</translation>
 <translation id="8433186206711564395">நெட்வொர்க் அமைப்புகள்</translation>
 <translation id="8433977262951327081">உள்ளீட்டு விருப்பங்கள் மெனு குமிழியை, ஷெல்ஃபில் காட்டுவதற்கான குறுக்குவழி மாறியுள்ளது. <ph name="OLD_SHORTCUT" />க்குப் பதிலாக <ph name="NEW_SHORTCUT" />ஐப் பயன்படுத்தவும்.</translation>
+<translation id="8452135315243592079">சிம் கார்டு இல்லை</translation>
 <translation id="8454013096329229812">வைஃபை இயக்கத்தில் உள்ளது.</translation>
 <translation id="847056008324733326">திரை அளவு அமைப்புகள்</translation>
 <translation id="8477270416194247200">ரத்துசெய்ய, ஆல்ட்+தேடல் அல்லது ஷிஃப்ட் விசையை அழுத்தவும்.</translation>
@@ -315,7 +314,6 @@
 <translation id="9091626656156419976"><ph name="DISPLAY_NAME" /> டிஸ்ப்ளே அகற்றப்பட்டது</translation>
 <translation id="9111102763498581341">பூட்டைத் திற</translation>
 <translation id="9151726767154816831">புதுப்பிக்க, மறுதுவக்கம் செய்து பவர்வாஷ் செய்யவும்</translation>
-<translation id="9181036778675416867">குறிப்பெடுக்க, ஸ்கிரீன்ஷாட்டை எடுக்க, அசிஸ்டண்ட், லேசர் பாயிண்டர் அல்லது உருப்பெருக்கி ஆகியவற்றைப் பயன்படுத்த, ஷெல்ஃபில் உள்ள ஸ்டைலஸ் பொத்தானைத் தட்டவும்.</translation>
 <translation id="9194617393863864469">வேறொருவராக உள்நுழை...</translation>
 <translation id="9201131092683066720">பேட்டரி <ph name="PERCENTAGE" />% நிரம்பியது.</translation>
 <translation id="9210037371811586452">ஒன்றிணைந்த டெஸ்க்டாப் பயன்முறையிலிருந்து வெளியேறுகிறது</translation>

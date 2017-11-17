@@ -26,7 +26,6 @@
 <translation id="15373452373711364">Cursor grande do mouse</translation>
 <translation id="1550523713251050646">Clique para ver mais opções</translation>
 <translation id="1621499497873603021">O tempo restante até que a bateria se esgote é de <ph name="TIME_LEFT" /></translation>
-<translation id="16620462294541761">Não foi possível confirmar sua senha. Tente novamente.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> restante(s)</translation>
 <translation id="1698760176351776263">Endereço IPv6: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">Este dispositivo é gerenciado por uma empresa</translation>
@@ -69,9 +68,10 @@
 <translation id="2509468283778169019">CAPS LOCK está ativado</translation>
 <translation id="2532589005999780174">Modo de alto contraste</translation>
 <translation id="2597972630681408282">Modo noturno: <ph name="NIGHT_LIGHT_STATUS" /></translation>
+<translation id="2617342710774726426">O cartão SIM está bloqueado</translation>
 <translation id="2653659639078652383">Enviar</translation>
-<translation id="2675319268637823299">Um administrador bloqueou o login múltiplo para <ph name="USER_EMAIL" />.
-Todos os usuários devem sair para continuar.</translation>
+<translation id="2675319268637823299">Um administrador desativou o login múltiplo para <ph name="USER_EMAIL" />.
+    Todos os usuários devem sair para continuar.</translation>
 <translation id="2700058918926273959">A sessão termina em <ph name="SESSION_TIME_REMAINING" />. Você será desconectado.</translation>
 <translation id="2727977024730340865">Conectado a um carregador de baixa potência. O carregamento da bateria pode não ser confiável.</translation>
 <translation id="2761704814324807722">Bandeja de status, tempo <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -174,7 +174,6 @@ Todos os usuários devem sair para continuar.</translation>
 <translation id="5571066253365925590">Bluetooth ativado</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
 <translation id="5600837773213129531">Pressione Ctrl + Alt + Z para desativar o feedback falado.</translation>
-<translation id="5612734644261457353">Não foi possível confirmar sua senha. Nota: se você alterou sua senha recentemente, a nova senha será aplicada depois que você sair. Use a senha antiga aqui.</translation>
 <translation id="5648021990716966815">Entrada para microfone</translation>
 <translation id="5673434351075758678">De "<ph name="FROM_LOCALE" />" para "<ph name="TO_LOCALE" />" após a sincronização das suas configurações.</translation>
 <translation id="5744083938413354016">Arrastar com toque</translation>
@@ -284,10 +283,10 @@ Use esse recurso somente com contas nas quais você confia.</translation>
 <translation id="8261506727792406068">Excluir</translation>
 <translation id="8308637677604853869">Menu anterior</translation>
 <translation id="8351131234907093545">Criar nota</translation>
-<translation id="8392234662362215700">Pressione Control-Shift-Barra de espaço para trocar o layout do teclado.</translation>
 <translation id="8428213095426709021">Configurações</translation>
 <translation id="8433186206711564395">Configurações de rede</translation>
 <translation id="8433977262951327081">O atalho para mostrar o balão de menu de opções de entrada na estante foi alterado. Use <ph name="NEW_SHORTCUT" /> em vez de <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="8452135315243592079">Cartão SIM ausente</translation>
 <translation id="8454013096329229812">O Wi-Fi está ligado.</translation>
 <translation id="847056008324733326">Exibir configurações de escala</translation>
 <translation id="8477270416194247200">Pressione Alt+Pesquisar ou Shift para cancelar.</translation>
@@ -315,7 +314,6 @@ Notificações posteriores, janelas e caixas de diálogo podem ser divididas ent
 <translation id="9091626656156419976">Tela <ph name="DISPLAY_NAME" /> removida</translation>
 <translation id="9111102763498581341">Desbloquear</translation>
 <translation id="9151726767154816831">Reinicie e execute um powerwash para atualizar</translation>
-<translation id="9181036778675416867">Toque no botão da stylus na estante para criar uma nota, uma captura de tela, usar o Assistente, o apontador laser ou a lupa.</translation>
 <translation id="9194617393863864469">Fazer login com outro usuário...</translation>
 <translation id="9201131092683066720">A bateria está <ph name="PERCENTAGE" />% carregada.</translation>
 <translation id="9210037371811586452">Saindo do modo de área de trabalho unificada</translation>

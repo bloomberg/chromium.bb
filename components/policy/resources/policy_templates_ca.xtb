@@ -594,7 +594,6 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
 
       Per obtenir més informació sobre Navegació segura, consulta https://developers.google.com/safe-browsing.</translation>
 <translation id="3016255526521614822">Afegeix a la llista blanca les aplicacions per prendre notes que es permeten a la pantalla de bloqueig de <ph name="PRODUCT_OS_NAME" /></translation>
-<translation id="3021409116652377124">Desactiva el cercador de connectors</translation>
 <translation id="3030000825273123558">Activa la creació d'informes de mètriques</translation>
 <translation id="3034580675120919256">Us permet definir si els llocs web poden executar JavaScript. L'execució de JavaScript es pot autoritzar o denegar per a tots els llocs web. Si no es defineix aquesta política, s'utilitzarà el paràmetre "AllowJavaScript" i l'usuari podrà canviar-lo.</translation>
 <translation id="3038323923255997294">Continua executant les aplicacions en segon pla quan es tanqui <ph name="PRODUCT_NAME" /></translation>
@@ -878,17 +877,6 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="4027608872760987929">Activa el proveïdor de cerca predeterminat</translation>
 <translation id="4039085364173654945">Controla si el contingut secundari de tercers en una pàgina pot fer aparèixer un quadre de diàleg d'autenticació bàsica HTTP. Normalment es desactiva com a defensa de pesca (suplantació d'identitat). Si no es defineix aquesta política, aquest paràmetre es desactivarà i el contingut secundari de tercers no podrà fer aparèixer un quadre de diàleg d'autenticació bàsica HTTP.</translation>
 <translation id="4056910949759281379">Desactiva el protocol SPDY</translation>
-<translation id="4077363032873906037">Activa la funció d'inici de sessió restringit de <ph name="PRODUCT_NAME" /> a Google Apps i impedeix que els usuaris canviïn aquesta opció de configuració.
-
-      Si defineixes aquesta opció, l'usuari només podrà accedir a Google Apps amb comptes dels dominis especificats (tingues en compte que això no funciona per a gmail.com/googlemail.com).
-
-      Aquesta opció NO impedeix que l'usuari iniciï la sessió en un dispositiu gestionat que requereixi l'autenticació de Google. L'usuari continuarà tenint permís per iniciar la sessió en comptes d'altres dominis, però veurà un error quan provi d'utilitzar Google Apps amb aquests comptes.
-
-      Si deixes aquesta opció en blanc o sense configurar, l'usuari podrà accedir a Google Apps amb qualsevol compte.
-
-      Aquesta política provoca que la capçalera X-GoogApps-Allowed-Domains s'afegeixi a totes les sol·licituds HTTP i HTTPS fetes en qualsevol domini de google.com, tal com es descriu a https://support.google.com/a/answer/1668854.
-
-      Els usuaris no poden modificar ni substituir aquesta opció.</translation>
 <translation id="408029843066770167">Permet fer consultes a un servei de temps de Google</translation>
 <translation id="4088589230932595924">S'ha forçat el mode d'incògnit</translation>
 <translation id="4088983553732356374">Us permet establir si els llocs web estan autoritzats per establir les dades locals. L'ajust de les dades locals es pot autoritzar o denegar per a tots els llocs web.
@@ -906,7 +894,6 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
           El valor de la política s'ha d'indicar en mil·lisegons.</translation>
 <translation id="4105989332710272578">Desactiva l'aplicació de la Transparència de certificats per a una llista d'URL</translation>
 <translation id="4121350739760194865">Impedeix que les promocions d'aplicacions apareguin a la pestanya nova</translation>
-<translation id="4133144443101280166">Intervals d'horari de desactivació en què s'apliquen les polítiques "OffHours" |ignored_policy_proto_tags| del dispositiu</translation>
 <translation id="4157003184375321727">Informació del SO i de la versió de microprogramari</translation>
 <translation id="4183229833636799228">Configuració predeterminada del connector <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">URL per validar el testimoni d'autenticació del client per a l'accés remot</translation>
@@ -1116,7 +1103,6 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
           Per exemple, <ph name="EXTENSION_POLICY_EXAMPLE" /> instal·la l'aplicació <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> des de l'URL d'actualització estàndard de Chrome Web Store. Per obtenir més informació sobre com allotjar extensions, consulta: <ph name="LINK_TO_EXTENSION_DOC2" />.
 
           Si aquesta política es deixa sense establir, no s'instal·larà automàticament cap aplicació ni cap extensió i l'usuari podrà desinstal·lar-ne qualsevol a <ph name="PRODUCT_NAME" />.</translation>
-<translation id="4882546920824859909">Definiu els dominis que tenen permís per accedir a Google Apps for Work</translation>
 <translation id="4897928009230106190">Especifica els paràmetres utilitzats en fer una cerca suggerida amb POST. Consisteix en parelles de nom/valor separades per comes. Si un valor és un paràmetre de plantilla, com ara {searchTerms} a l'exemple anterior, se substituirà per dades de termes de cerca reals.
 
           Aquesta política és opcional. Si no es defineix, la sol·licitud de cerca suggerida s'enviarà mitjançant el mètode GET.
@@ -1167,7 +1153,6 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
       Si aquesta política no es defineix o s'estableix com a falsa, el mode de desenvolupador continuarà disponible al dispositiu.</translation>
 <translation id="5208240613060747912">Us permet definir una llista de patrons d'URL que especifiquen els llocs en què no està permès mostrar notificacions. Si no es defineix aquesta política, s'utilitzarà el valor global predeterminat per a tots els llocs tant de la política "DefaultNotificationsSetting", si es defineix, com d'un altre tipus de configuració personal de l'usuari.</translation>
 <translation id="5219844027738217407">En el cas de les aplicacions per a Android, aquesta política afecta només el micròfon. Quan s'estableix en "true", es desactiva el micròfon en totes les aplicacions per a Android, sense cap excepció.</translation>
-<translation id="5226033722357981948">Indica si s'ha de desactivar el cercador de connectors</translation>
 <translation id="523505283826916779">Configuració d'accessibilitat</translation>
 <translation id="5247006254130721952">Bloqueja baixades perilloses</translation>
 <translation id="5255162913209987122">Es pot recomanar</translation>
@@ -1295,13 +1280,6 @@ Si la política no es defineix, els usuaris podran triar si el prestatge s'ha d'
 <translation id="5728154254076636808">Permet crear còpies itinerants de les dades de perfil que tingui <ph name="PRODUCT_NAME" /></translation>
 <translation id="5732972008943405952">Importa les dades d'emplenament automàtic de formularis des del navegador predeterminat quan s'inicia per primera vegada</translation>
 <translation id="5765780083710877561">Descripció:</translation>
-<translation id="5768309557753179144">Tant Chromium com Google Chrome admeten el mateix conjunt de polítiques. Tingues en compte que aquest document pot incloure polítiques no publicades (per exemple, l'entrada "Compatible amb" pot fer referència a una versió de <ph name="PRODUCT_NAME" /> que encara no s'ha publicat). Aquestes polítiques es poden canviar o suprimir sense avís previ i no se'n proporcionen garanties de cap tipus, incloses les garanties relacionades amb les seves propietats de seguretat i privadesa.
-
-      La finalitat exclusiva d'aquestes polítiques és configurar instàncies de <ph name="PRODUCT_NAME" /> internes de la teva organització. L'ús de les polítiques fora de l'organització (per exemple, en un programa distribuït públicament) es considera programari maliciós i és possible que Google i els proveïdors d'antivirus l'etiquetin com a tal.
-
-      No cal que configuris aquestes opcions manualment. Pots baixar plantilles fàcils d'utilitzar per a Windows, Mac i Linux de la pàgina <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
-
-      La manera recomanada de configurar la política a Windows és amb GPO, tot i que encara es permet proporcionar la política mitjançant el registre per a instàncies de Windows vinculades a un domini de <ph name="MS_AD_NAME" />.</translation>
 <translation id="5770738360657678870">Canal per a desenvolupadors (pot ser inestable)</translation>
 <translation id="5774856474228476867">URL de cerca del proveïdor de cerques predeterminat</translation>
 <translation id="5776485039795852974">Demana permís cada vegada que un lloc vulgui mostrar notificacions d'escriptori</translation>
@@ -1608,7 +1586,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Si aquesta política no s'estableix, la predicció de xarxa s'activarà però l'usuari podrà canviar-la.</translation>
 <translation id="6658245400435704251">Especifica el nombre de segons fins a què un dispositiu pot retardar aleatòriament la baixada d'una actualització des del moment en què l'actualització es transmet per primera vegada des del servidor. El dispositiu pot esperar una part d'aquest temps en termes de rellotge i la part restant en termes de nombre de comprovacions d'actualitzacions. En qualsevol cas, la dispersió tendeix cap amunt a una quantitat constant de temps, de manera que un dispositiu mai no es quedi encallat mentre espera que es baixi una actualització.</translation>
 <translation id="6689792153960219308">Informa de l'estat del maquinari</translation>
-<translation id="6693751878507293182">Si es defineix aquest paràmetre com a activat, es desactivaran la cerca automàtica i la instal·lació dels connectors que falten a <ph name="PRODUCT_NAME" />. Si es defineix aquest paràmetre com a desactivat o si es deixa sense definir, el cercador de connectors quedarà actiu.</translation>
 <translation id="6699880231565102694">Activació de l'autenticació de dos factors per als amfitrions d'accés remot</translation>
 <translation id="6724842112053619797">Si actives aquesta opció de configuració, les opcions de configuració emmagatzemades als perfils que hi ha a <ph name="PRODUCT_NAME" />, com ara les adreces d'interès, les dades d'Emplenament automàtic o les contrasenyes, entre d'altres, també s'introduiran en un fitxer emmagatzemat a la carpeta Itinerància del perfil de l'usuari o a la ubicació especificada per l'administrador a la política <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. En activar aquesta política, es desactiva la sincronització en núvol.
 
@@ -1868,6 +1845,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
           Si desactiveu aquest paràmetre o si no el definiu, no s'establirà l'autenticació de dos factors i s'utilitzarà el comportament predeterminat en què cal un PIN definit per l'usuari.</translation>
 <translation id="7750991880413385988">Obre la pàgina Pestanya nova</translation>
+<translation id="7754704193130578113">Pregunta on es desarà cada fitxer abans de baixar-lo</translation>
 <translation id="7761446981238915769">Configura la llista d'aplicacions instal·lades a la pantalla d'inici de sessió</translation>
 <translation id="7761526206824804472">Estableix una o més configuracions regionals recomanades per a sessions públiques, de manera que els usuaris en poden triar una fàcilment.
 
@@ -1931,7 +1909,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
           La configuració de cada extensió (o d'extensions amb el mateix URL d'actualització) és un altre diccionari que pot incloure els camps indicats a continuació.
 
-          <ph name="INSTALLATION_MODE" />: assigna una cadena que indica el mode d'instal·lació de l'extensió. Les cadenes vàlides són:
+          <ph name="INSTALLATION_MODE" />: assigna a una cadena que indica el mode d'instal·lació de l'extensió. Les cadenes vàlides són:
           * <ph name="ALLOWED" />: permet que l'usuari instal·li l'extensió. És el comportament predeterminat.
           * <ph name="BLOCKED" />: bloqueja la instal·lació de l'extensió.
           * <ph name="FORCE_INSTALLED" />: l'extensió s'instal·la automàticament i l'usuari no la pot suprimir.
@@ -1952,7 +1930,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
           <ph name="INSTALL_SOURCES" />: tots els elements d'aquesta llista són un patró de coincidència amb l'estil de l'extensió (consulta <ph name="LINK_TO_MATCH_PATTERNS" />). Els usuaris podran instal·lar fàcilment els elements de qualsevol URL que coincideixi amb un element d'aquesta llista. Aquests patrons han de permetre tant la ubicació del fitxer <ph name="EXTENSION_SUFFIX_WILDCARD" /> com la pàgina on comença la baixada (és a dir, l'URL de referència).
 
           <ph name="ALLOWED_TYPES" />: aquesta opció afegeix a la llista blanca els tipus d'extensions i d'aplicacions admesos que es poden instal·lar a <ph name="PRODUCT_NAME" />. El valor és una llista de cadenes, cadascuna de les quals hauria de ser una de les següents: <ph name="VALID_ALLOWED_TYPES" />. Consulta la documentació sobre les extensions de <ph name="PRODUCT_NAME" /> per obtenir-ne més informació.
-          <ph name="BLOCKED_INSTALL_MESSAGE" />: si un usuari prova d'instal·lar una extensió però la política li ho impedeix, es mostra un missatge d'error genèric a Chrome Web Store. Aquesta opció et permet incloure text al missatge d'error. Això et pot servir per redirigir els usuaris al centre d'ajuda, explicar-los per què s'ha bloquejat una extensió concreta o una altra cosa. Si el missatge té més de 1.000 caràcters, es truncarà.
+          <ph name="BLOCKED_INSTALL_MESSAGE" />: si un usuari prova d'instal·lar una extensió però la política li ho impedeix, es mostra un missatge d'error genèric a Chrome Web Store. Aquesta opció et permet incloure text al missatge d'error. Això et pot servir per redirigir els usuaris al centre d'ajuda, explicar-los per què s'ha bloquejat una extensió concreta o una altra cosa. Si el missatge d'error té més de 1.000 caràcters, es truncarà.
           <ph name="RUNTIME_BLOCKED_HOSTS" />: accepta una llista d'amfitrions amb què una extensió no pot interaccionar. Això inclou introduir JavaScript, modificar i mostrar els esdeveniments webRequests o webNavigation, i mostrar i modificar galetes. El format s'assembla als patrons de coincidència <ph name="LINK_TO_MATCH_PATTERNS" />, però no es poden definir camins. Per exemple, "*://*.example.com". Això també admet l'ús efectiu de comodins de domini de nivell superior, com ara "*://example.*".
           <ph name="RUNTIME_ALLOWED_HOSTS" />: accepta una llista d'amfitrions amb què una extensió pot interaccionar, independentment de si s'han inclòs a la llista <ph name="RUNTIME_BLOCKED_HOSTS" />. És el mateix format que <ph name="RUNTIME_BLOCKED_HOSTS" />.
           </translation>
@@ -2115,11 +2093,6 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
 <translation id="8451988835943702790">Fes servir la pàgina de pestanya nova com a pàgina d'inici</translation>
 <translation id="8465065632133292531">Paràmetres per a l'URL instantani que utilitza POST</translation>
 <translation id="847472800012384958">No permetis que cap lloc mostri elements emergents</translation>
-<translation id="8476127435468057643">Controla si l'autenticació NTLMv2 està activada.
-
-          Totes les versions recents dels servidors de Samba i Windows admeten NTLMv2. Aquesta política només s'ha de desactivar per permetre la compatibilitat amb versions anteriors i redueix la seguretat de l'autenticació.
-
-          Quan no es defineix aquesta política, el valor predeterminat actual per a la compatibilitat amb versions anteriors és "false", però en el futur canviarà a "true".</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
 <translation id="8484458986062090479">Personalitza la llista de patrons d'URL que ha de renderitzar sempre el navegador amfitrió.
 

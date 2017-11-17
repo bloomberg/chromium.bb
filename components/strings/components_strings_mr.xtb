@@ -78,6 +78,9 @@
 <translation id="154408704832528245">वितरणाचा पत्ता निवडा</translation>
 <translation id="1549470594296187301">हे वैशिष्‍ट्य वापरण्‍यासाठी JavaScript सक्षम करणे आवश्‍यक आहे.</translation>
 <translation id="1559528461873125649">अशी कोणतीही फाइल किंवा निर्देशिका नाही</translation>
+<translation id="1559572115229829303">&lt;p&gt;आपल्या डिव्हाइसची तारीख आणि वेळ (<ph name="DATE_AND_TIME" />) चुकीची असल्यामुळे <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> सह खाजगी कनेक्शन इंस्टॉल केले जाऊ शकत नाही.&lt;/p&gt;
+
+      &lt;p&gt;कृपया &lt;strong&gt;सेटिंग्ज&lt;/strong&gt; अॅपच्या &lt;strong&gt;सर्वसाधारण&lt;/strong&gt; विभागातील तारीख आणि वेळ समायोजित करा.&lt;/p&gt;</translation>
 <translation id="1583429793053364125">हे वेबपृष्‍ठ प्रदर्शित करताना काहीतरी चूक झाली.</translation>
 <translation id="1590457302292452960">क्लिष्ट पासवर्ड तयार करा...</translation>
 <translation id="1592005682883173041">स्थानिक डेटा प्रवेश</translation>
@@ -359,13 +362,9 @@
 <translation id="3530944546672790857">{COUNT,plural, =0{ सिंक केलेल्या डिव्हाइसवर किमान 1 आयटम}=1{1 आयटम (सिंक केलेल्या डिव्‍हाइसवर आणखी काही)}one{# आयटम (सिंक केलेल्या डिव्‍हाइसवर आणखी काही)}other{# आयटम (सिंक केलेल्या डिव्‍हाइसवर आणि आणखी काही)}}</translation>
 <translation id="3539171420378717834">या डिव्हाइसवर या कार्डची एक प्रत ठेवा</translation>
 <translation id="3542684924769048008">यासाठी पासवर्ड वापरा:</translation>
-<translation id="3545341443414427877">तुमच्या काँप्युटरची तारीख आणि वेळ (<ph name="DATE_AND_TIME" />) चुकीची असल्यामुळे <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> साठी एक खासगी कनेक्शन तयार करू शकत नाही. <ph name="BEGIN_LEARN_MORE_LINK" />आणखी जाणून घ्या<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="3549644494707163724">आपल्या स्वतःच्या वाक्यांशासह सर्व संंकालित केलेला डेटा कूटबद्ध करा</translation>
 <translation id="3556433843310711081">आपला व्यवस्थापक तुमच्यासाठी ती अनावरोधित करू शकतो</translation>
 <translation id="3566021033012934673">आपले कनेक्शन खाजगी नाही</translation>
-<translation id="3569145463236695319">&lt;p&gt;तुमच्या डीव्हाइसची तारीख आणि वेळ (<ph name="DATE_AND_TIME" />) चुकीची असल्यामुळे <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> साठी एक खाजगी कनेक्शन तयार करू शकत नाही.&lt;/p&gt;
-
-      &lt;p&gt;कृपया अ‍ॅपच्या &lt;strong&gt;सेटिंग्ज&lt;/strong&gt; मधील &lt;strong&gt;सामान्य&lt;/strong&gt; विभागातून तारीख आणि वेळ नीट करा.&lt;/p&gt; <ph name="BEGIN_LEARN_MORE_LINK" />आणखी जाणून घ्या<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="358285529439630156">क्रेडिट आणि प्रीपेड कार्डे स्वीकारली जातात.</translation>
 <translation id="3582930987043644930">नाव जोडा</translation>
@@ -580,6 +579,7 @@
     <ph name="LIST_ITEM" /> सॉफ्टवेअर तुमच्या काँप्युटरवरून काढून कसे टाकावे हे माहीत करण्यासाठी <ph name="BEGIN_LEARN_MORE_LINK" />Chrome मदत केंद्र<ph name="END_LEARN_MORE_LINK" /> वर जा
     <ph name="END_LIST" /></translation>
 <translation id="5285570108065881030">सर्व सेव्ह केलेले पासवर्ड दाखवा</translation>
+<translation id="5287240709317226393">कुकीज दर्शवा</translation>
 <translation id="5299298092464848405">धोरण विश्लेषित करताना त्रुटी</translation>
 <translation id="5308380583665731573">कनेक्‍ट करा</translation>
 <translation id="5308689395849655368">क्रॅश अहवाल अक्षम केला गेला आहे.</translation>
@@ -688,7 +688,6 @@
 <translation id="614940544461990577">हे करून पहा:</translation>
 <translation id="6151417162996330722">सर्व्हर प्रमाणपत्रास वैधता कालावधी आहे जो खूप मोठा आहे.</translation>
 <translation id="6157877588268064908">शिपिंग पद्धती आणि आवश्यकता पाहण्यासाठी, एक पत्ता निवडा</translation>
-<translation id="6158003235852588289">Google सुरक्षित ब्राउझ करण्याला अलीकडे <ph name="SITE" />वर फिशिंग आढळले. फिशिंग साइट तुम्हाला फसवण्यासाठी दुसर्‍या वेबसाइट असल्याचे दाखवतात.</translation>
 <translation id="6165508094623778733">अधिक जाणून घ्या</translation>
 <translation id="6169916984152623906">आता आपण खाजगीरित्या ब्राउझ करू शकता आणि हे डिव्हाइस वापरणारे इतर लोक आपले क्रियाकलाप पाहू शकणार नाहीत. तथापि, डाउनलोड आणि बुकमार्क सेव्ह केले जातील.</translation>
 <translation id="6177128806592000436">या साइटवरील आपले कनेक्शन सुरक्षित नाही</translation>
@@ -779,7 +778,6 @@
 <translation id="6973656660372572881">निश्चित प्रॉक्सी सर्व्हर आणि .pac स्क्रिप्ट URL निर्दिष्‍ट करण्‍यात आले आहेत.</translation>
 <translation id="6989763994942163495">प्रगत सेटिंग्ज दर्शवा...</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
-<translation id="7012372675181957985">आपल्या Google खात्यात <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> वर ब्राउझिंग इतिहासाची अन्य स्वरूपे असू शकतात</translation>
 <translation id="7029809446516969842">पासवर्ड</translation>
 <translation id="7050187094878475250">आपण <ph name="DOMAIN" /> वर पोहोचण्याचा प्रयत्न केला, परंतु सर्व्हरने एक प्रमाणपत्र सादर केले आहे ज्याचा वैधता कालावधी हा विश्वासार्हतेसाठी खूप मोठा आहे.</translation>
 <translation id="7053983685419859001">अवरोधित करा</translation>
@@ -807,6 +805,7 @@
 <translation id="7220786058474068424">प्रक्रिया करत आहे</translation>
 <translation id="724691107663265825">साइटमध्ये पुढे मालवेअर आहे</translation>
 <translation id="724975217298816891">आपले कार्ड तपशील अपडेट करण्‍यासाठी <ph name="CREDIT_CARD" /> करिता कालबाह्यता तारीख आणि CVC प्रविष्‍ट करा. आपण पुष्टी केल्यावर, आपले कार्ड तपशील या साइटसह सामायिक केले जातील.</translation>
+<translation id="725866823122871198">आपल्या संगणकाची तारीख आणि वेळ (<ph name="DATE_AND_TIME" />) चुकीची असल्यामुळे <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> सह खाजगी कनेक्शन इंस्टॉल केले जाऊ शकत नाही.</translation>
 <translation id="7260504762447901703">प्रवेश रद्द करा</translation>
 <translation id="7271803869921933038">स्वीकारली जाणारी प्रीपेड कार्डे</translation>
 <translation id="7275334191706090484">व्यवस्थापित केलेले बुकमार्क</translation>
@@ -821,7 +820,6 @@
 <translation id="7378627244592794276">नाही</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7390545607259442187">कार्डची पुष्टी करा</translation>
-<translation id="739697976928952788">सर्व सेव्ह केलेले पासवर्ड दाखवा</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419106976560586862">प्रोफाइल पथ</translation>
 <translation id="7424977062513257142">या वेबपृष्ठावरील एम्बेड केलेले पृष्ठ म्हणते:</translation>
@@ -951,7 +949,6 @@
 <translation id="8293206222192510085">बुकमार्क जोडा</translation>
 <translation id="8294431847097064396">स्रोत</translation>
 <translation id="8298115750975731693">आपण वापरत असलेल्या (<ph name="WIFI_NAME" />) Wi-Fi ला आपण <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> ला भेट देण्याची आवश्यकता असू शकते.</translation>
-<translation id="8306404619377842860">तुमच्या डीव्हाइसची तारीख आणि वेळ (<ph name="DATE_AND_TIME" />)चुकीची असल्यामुळे <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> साठी खाजगी कनेक्शन तयार करू शकत नाही. <ph name="BEGIN_LEARN_MORE_LINK" />आणखी जाणून घ्या<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8308427013383895095">नेटवर्क कनेक्शनसह समस्या असल्यामुळे भाषांतर अयशस्वी झाला.</translation>
 <translation id="8311129316111205805">सेशन लोड करा</translation>
 <translation id="8332188693563227489"><ph name="HOST_NAME" /> मधील प्रवेश नाकारला</translation>
@@ -977,6 +974,7 @@
 <translation id="8543181531796978784">आपण <ph name="BEGIN_ERROR_LINK" />ओळखण्‍याच्या समस्‍येचा अहवाल<ph name="END_ERROR_LINK" /> देऊ शकता किंवा आपल्‍या सुरक्षिततेस असणार्‍या जोखीम आपण समजत असल्‍यास, <ph name="BEGIN_LINK" />या असुरक्षित साइटला भेट द्या<ph name="END_LINK" />.</translation>
 <translation id="8543556556237226809">प्रश्न आहेत? तुमच्या प्रोफाइलचे निरीक्षण करणाऱ्या व्यक्तीशी संपर्क साधा.</translation>
 <translation id="8553075262323480129">भाषांतर करण्यात अयशस्वी कारण पृष्ठाची भाषा निर्धारित करणे शक्य नाही.</translation>
+<translation id="8559762987265718583">आपल्या डिव्हाइसची तारीख आणि वेळ (<ph name="DATE_AND_TIME" />) चुकीची असल्याने <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> सह खाजगी कनेक्शन इंस्टॉल केले जाऊ शकले नाही.</translation>
 <translation id="8571890674111243710"><ph name="LANGUAGE" /> मध्ये पृष्ठ अनुवादित करत आहे...</translation>
 <translation id="858637041960032120">फोन नंबर जोडा</translation>
 <translation id="859285277496340001">प्रमाणपत्र निरस्त झाले आहे किंवा नाही हे तपासण्यासाठी प्रणाली निर्दिष्ट करत नाही.</translation>

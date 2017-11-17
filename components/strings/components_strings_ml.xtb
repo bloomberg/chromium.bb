@@ -78,6 +78,9 @@
 <translation id="154408704832528245">ഡെലിവറി നൽകേണ്ട വിലാസം തിരഞ്ഞെടുക്കുക</translation>
 <translation id="1549470594296187301">ഈ ഫീച്ചർ ഉപയോഗിക്കാൻ JavaScript പ്രവർത്തനക്ഷമമാക്കിയിരിക്കണം.</translation>
 <translation id="1559528461873125649">അത്തരത്തിലുള്ള ഫയലോ ഡയറക്ടറിയോ ഇല്ല</translation>
+<translation id="1559572115229829303">&lt;p&gt;നിങ്ങളുടെ ഉപകരണത്തിന്റെ തീയതിയും സമയവും (<ph name="DATE_AND_TIME" />) തെറ്റായതിനാൽ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> എന്നതിലേക്ക് ഒരു സ്വകാര്യ കണക്ഷൻ സ്ഥാപിക്കാനാകില്ല.&lt;/p&gt;
+
+          &lt;p&gt;&lt;strong&gt;ക്രമീകരണ&lt;/strong&gt; ആപ്പിന്റെ &lt;strong&gt;പൊതുവായവ&lt;/strong&gt; വിഭാഗത്തിൽ നിന്ന് തീയതിയും സമയവും ക്രമീകരിക്കുക.&lt;/p&gt;</translation>
 <translation id="1583429793053364125">ഈ വെബ്‌പേജ് പ്രദർശിപ്പിക്കുമ്പോൾ എന്തോ കുഴപ്പം സംഭവിച്ചു.</translation>
 <translation id="1590457302292452960">ശക്തമായൊരു പാസ്‌വേഡ് സൃഷ്ടിക്കുക...</translation>
 <translation id="1592005682883173041">പ്രാദേശിക ഡാറ്റ ആക്‌സസ്സ്</translation>
@@ -358,13 +361,9 @@
 <translation id="3530944546672790857">{COUNT,plural, =0{സമന്വയിപ്പിച്ച ഉപകരണങ്ങളിൽ ഒരു ഇനമെങ്കിലും}=1{ഒരു ഇനം (ഒപ്പം സമന്വയിപ്പിച്ച ഉപകരണങ്ങളിൽ അതിൽ കൂടുതലും)}other{# ഇനങ്ങൾ (ഒപ്പം സമന്വയിപ്പിച്ച ഉപകരണങ്ങളിൽ അതിൽ കൂടുതലും)}}</translation>
 <translation id="3539171420378717834">ഈ ഉപകരണത്തിൽ ഈ കാർഡിന്റെ ഒരു പകർപ്പ് സൂക്ഷിക്കുക</translation>
 <translation id="3542684924769048008">ഇതിനായി പാസ്‌വേഡ് ഉപയോഗിക്കുക:</translation>
-<translation id="3545341443414427877">നിങ്ങളുടെ കമ്പ്യൂട്ടറിന്റെ തീയതിയും സമയവും (<ph name="DATE_AND_TIME" />) തെറ്റായതിനാൽ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> എന്നതിലേക്കുള്ള സ്വകാര്യ കണക്ഷൻ സ്ഥാപിക്കാനാവില്ല. <ph name="BEGIN_LEARN_MORE_LINK" />കൂടുതലറിയുക<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="3549644494707163724">നിങ്ങളുടെ സ്വന്തം പാസ്‌ഫ്രെയ്‌സ് ഉപയോഗിച്ച് എല്ലാ സമന്വിത ഡാറ്റയും എൻക്രിപ്റ്റുചെയ്യുക</translation>
 <translation id="3556433843310711081">നിങ്ങൾക്ക് വേണ്ടി ഇത് അൺബ്ലോക്കുചെയ്യാൻ മാനേജർക്ക് കഴിയും</translation>
 <translation id="3566021033012934673">നിങ്ങളുടെ കണക്ഷൻ സ്വകാര്യമല്ല</translation>
-<translation id="3569145463236695319">&lt;p&gt;നിങ്ങളുടെ കമ്പ്യൂട്ടറിന്റെ തീയതിയും സമയവും (<ph name="DATE_AND_TIME" />) തെറ്റായതിനാൽ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> എന്നതിലേക്കുള്ള സ്വകാര്യ കണക്ഷൻ സ്ഥാപിക്കാനാവില്ല.&lt;/p&gt;
-
-      &lt;p&gt;&lt;strong&gt;ക്രമീകരണ&lt;/strong&gt; ആപ്പിന്റെ &lt;strong&gt;പൊതുവായ&lt;/strong&gt; വിഭാഗത്തിൽ നിന്ന് തീയതിയും സമയവും ക്രമീകരിക്കുക.&lt;/p&gt; <ph name="BEGIN_LEARN_MORE_LINK" />കൂടുതലറിയുക<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="358285529439630156">ക്രെഡിറ്റ് കാർഡുകളും പ്രീപെയ്ഡ് കാർഡുകളും സ്വീകരിക്കുന്നു.</translation>
 <translation id="3582930987043644930">പേര് ചേർക്കുക</translation>
@@ -579,6 +578,7 @@
     <ph name="LIST_ITEM" />നിങ്ങളുടെ കമ്പ്യൂട്ടറിൽ നിന്ന് എങ്ങനെയാണ് സോഫ്റ്റ്‌വെയർ ശാശ്വതമായി നീക്കംചെയ്യുന്നത് എന്നറിയാൻ <ph name="BEGIN_LEARN_MORE_LINK" />Chrome സഹായ കേന്ദ്രം<ph name="END_LEARN_MORE_LINK" /> സന്ദർശിക്കുക
     <ph name="END_LIST" /></translation>
 <translation id="5285570108065881030">സംരക്ഷിച്ച എല്ലാ പാസ്‌വേഡുകളും കാണിക്കുക</translation>
+<translation id="5287240709317226393">കുക്കികള്‍ കാണിക്കുക</translation>
 <translation id="5299298092464848405">നയം പാഴ്‌സുചെയ്യുന്നതിൽ പിശക്</translation>
 <translation id="5308380583665731573">കണക്‌റ്റുചെയ്യുക</translation>
 <translation id="5308689395849655368">ക്രാഷ് റിപ്പോര്‍ട്ടുചെയ്യല്‍ അപ്രാപ്തമാക്കി.</translation>
@@ -686,7 +686,6 @@
 <translation id="614940544461990577">പരീക്ഷിച്ചുനോക്കൂ:</translation>
 <translation id="6151417162996330722">സെർവർ സർട്ടിഫിക്കറ്റിന് ദൈർഘ്യമേറിയ ഒരു കാലയളവ് ഉണ്ട്.</translation>
 <translation id="6157877588268064908">ഷിപ്പിംഗ് രീതികളും ആവശ്യകതകളും കാണാൻ ഒരു വിലാസം തിരഞ്ഞെടുക്കുക</translation>
-<translation id="6158003235852588289"><ph name="SITE" />-ൽ Google സുരക്ഷിത ബ്രൗസിംഗ് ഈയിടെ ഫിഷിംഗ് കണ്ടെത്തി. നിങ്ങളെ കബളിപ്പിക്കാൻ ഫിഷിംഗ് സൈറ്റുകൾ മറ്റു വെബ്‌സൈറ്റുകളായി നടിക്കുന്നതാണ്.</translation>
 <translation id="6165508094623778733">കൂടുതൽ‍ മനസിലാക്കുക</translation>
 <translation id="6169916984152623906">നിങ്ങൾക്കിപ്പോൾ സ്വകാര്യമായി ബ്രൗസ് ചെയ്യാം, ഈ ഉപകരണം ഉപയോഗിക്കുന്ന മറ്റ് ആളുകൾക്ക് നിങ്ങളുടെ ആക്‌റ്റിവിറ്റി കാണാനാവില്ല. എന്നാൽ ഡൗൺലോഡുകളും ബുക്ക്‌മാർക്കുകളും സംരക്ഷിക്കപ്പെടും.</translation>
 <translation id="6177128806592000436">ഈ സൈറ്റിലേക്കുള്ള നിങ്ങളുടെ കണക്ഷൻ സുരക്ഷിതമല്ല</translation>
@@ -777,7 +776,6 @@
 <translation id="6973656660372572881">സ്ഥിരമായ പ്രോക്‌സി സെർവറുകളും ഒരു സ്‌ക്രിപ്റ്റ് URL-ഉം വ്യക്തമാക്കിയിരിക്കുന്നു.</translation>
 <translation id="6989763994942163495">വിപുലമായ ക്രമീകരണങ്ങൾ കാണിക്കുക...</translation>
 <translation id="7012363358306927923">ചൈന UnionPay</translation>
-<translation id="7012372675181957985">നിങ്ങളുടെ Google അക്കൗണ്ടിന് <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> എന്നതിൽ മറ്റ് തരത്തിലുള്ള ബ്രൗസിംഗ് ചരിത്രമുണ്ടായിരിക്കാം</translation>
 <translation id="7029809446516969842">പാസ്‌വേഡുകള്‍</translation>
 <translation id="7050187094878475250">നിങ്ങൾ <ph name="DOMAIN" /> എന്നതിലെത്താൻ ശ്രമിച്ചു, എന്നാൽ തീരെ വിശ്വാസയോഗ്യമല്ലാത്ത ഒരു കാലാവധിയുള്ള സർട്ടിഫിക്കറ്റാണ് സെർവർ കാണിക്കുന്നത്.</translation>
 <translation id="7053983685419859001">തടയുക</translation>
@@ -805,6 +803,7 @@
 <translation id="7220786058474068424">പ്രോസസ്സുചെയ്യുന്നു</translation>
 <translation id="724691107663265825">സൈറ്റിൽ മാൽവെയർ അടങ്ങിയിരിക്കുന്നു</translation>
 <translation id="724975217298816891">നിങ്ങളുടെ കാർഡ് വിശദാംശങ്ങൾ അപ്‌ഡേറ്റുചെയ്യാൻ <ph name="CREDIT_CARD" />-ന്റെ കാലാവധി തീരുന്ന തീയതിയും CVC-യും നൽകുക. സ്ഥിരീകരിച്ച് കഴിഞ്ഞാൽ, ഈ സൈറ്റുമായി കാർഡ് വിശദാംശങ്ങൾ പങ്കിടും.</translation>
+<translation id="725866823122871198">നിങ്ങളുടെ കമ്പ്യൂട്ടറിന്റെ തീയതിയും സമയവും (<ph name="DATE_AND_TIME" />) തെറ്റായതിനാൽ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> എന്നതിലേക്കുള്ള സ്വകാര്യ കണക്ഷൻ സ്ഥാപിക്കാനാവില്ല.</translation>
 <translation id="7260504762447901703">ആക്‌സസ്സ് റദ്ദാക്കുക</translation>
 <translation id="7271803869921933038">പ്രീപെയ്ഡ് കാർഡുകൾ സ്വീകരിക്കുന്നു</translation>
 <translation id="7275334191706090484">നിയന്ത്രിത ബുക്ക്‌മാർക്കുകൾ</translation>
@@ -819,7 +818,6 @@
 <translation id="7378627244592794276">വേണ്ട</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7390545607259442187">കാർഡ് സ്ഥിരീകരിക്കുക</translation>
-<translation id="739697976928952788">സംരക്ഷിച്ച എല്ലാ പാസ്‌വേഡുകളും കാണിക്കുക</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419106976560586862">പ്രൊഫൈൽ പാത</translation>
 <translation id="7424977062513257142">ഈ വെബ്‌സൈറ്റിലെ ഒരു എംബഡ് ചെയ്‌ത പേജ് പറയുന്നത്:</translation>
@@ -949,7 +947,6 @@
 <translation id="8293206222192510085">ബുക്ക്‌മാര്‍‌ക്ക് ചേര്‍‌ക്കുക</translation>
 <translation id="8294431847097064396">ഉറവിടം</translation>
 <translation id="8298115750975731693">നിങ്ങൾ ഉപയോഗിക്കുന്ന Wi-Fi (<ph name="WIFI_NAME" />), <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> സന്ദർശിക്കാൻ നിങ്ങളോട് ആവശ്യപ്പെടാം.</translation>
-<translation id="8306404619377842860">നിങ്ങളുടെ ഉപകരണത്തിന്റെ തീയതിയും സമയവും <ph name="DATE_AND_TIME" /> തെറ്റായതിനാൽ, <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> എന്നതിലേക്കുള്ള ഒരു സ്വകാര്യ കണക്‌ഷൻ സ്ഥാപിക്കാനായില്ല. <ph name="BEGIN_LEARN_MORE_LINK" />കൂടുതലറിയുക<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8308427013383895095">നെറ്റ്വര്‍ക്ക് കണക്ഷനിലെ ഒരു പിശക് കാരണം വിവര്‍ത്തനം പരാജയപ്പെട്ടു.</translation>
 <translation id="8311129316111205805">സെഷൻ ലോഡ് ചെയ്യുക</translation>
 <translation id="8332188693563227489"><ph name="HOST_NAME" /> ഹോസ്‌റ്റിലേക്കുള്ള ആക്‌സസ്സ് നിരസിച്ചു</translation>
@@ -975,6 +972,7 @@
 <translation id="8543181531796978784">നിങ്ങൾക്ക് <ph name="BEGIN_ERROR_LINK" />സുരക്ഷാപ്രശ്‌നം റിപ്പോർട്ടുചെയ്യാം<ph name="END_ERROR_LINK" /> അല്ലെങ്കിൽ, സുരക്ഷയെ ബാധിച്ചേക്കാവുന്ന അപകട സാധ്യതകളെക്കുറിച്ച് ബോധ്യമുണ്ടെങ്കിൽ <ph name="BEGIN_LINK" />സുരക്ഷിതമല്ലാത്ത ഈ സൈറ്റ്<ph name="END_LINK" />സന്ദർശിക്കുക.</translation>
 <translation id="8543556556237226809">ചോദ്യങ്ങളുണ്ടോ? നിങ്ങളുടെ പ്രൊഫൈൽ സൂപ്പർവൈസുചെയ്‌ത വ്യക്തിയെ ബന്ധപ്പെടുക.</translation>
 <translation id="8553075262323480129">പേജിന്‍റെ ഭാഷ നിര്‍‌ണ്ണയിക്കാന്‍‌ കഴിയാത്തതിനാല്‍‌ വിവര്‍‌ത്തനം പരാജയപ്പെട്ടു.</translation>
+<translation id="8559762987265718583">നിങ്ങളുടെ ഉപകരണത്തിന്റെ തീയതിയും സമയവും (<ph name="DATE_AND_TIME" />) തെറ്റായതിനാൽ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> എന്നതിലേക്കുള്ള സ്വകാര്യ കണക്ഷൻ സ്ഥാപിക്കാനാവില്ല.</translation>
 <translation id="8571890674111243710"><ph name="LANGUAGE" /> ലേക്ക് പേജ് വിവര്‍‌ത്തനം ചെയ്യുന്നു...</translation>
 <translation id="858637041960032120">ഫോൺ നം. ചേർക്കൂ
 </translation>

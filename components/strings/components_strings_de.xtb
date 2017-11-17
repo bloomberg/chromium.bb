@@ -78,6 +78,9 @@
 <translation id="154408704832528245">Lieferadresse auswählen</translation>
 <translation id="1549470594296187301">Für diese Funktion muss JavaScript aktiviert sein.</translation>
 <translation id="1559528461873125649">Datei oder Verzeichnis nicht vorhanden</translation>
+<translation id="1559572115229829303">&lt;p&gt;Es kann keine private Verbindung zu <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> hergestellt werden, weil Datum und Uhrzeit (<ph name="DATE_AND_TIME" />) Ihres Geräts falsch sind.&lt;/p&gt;
+
+          &lt;p&gt;Stellen Sie in der App &lt;strong&gt;Einstellungen&lt;/strong&gt; im Bereich &lt;strong&gt;Allgemein&lt;/strong&gt; Datum und Uhrzeit richtig ein.&lt;/p&gt;</translation>
 <translation id="1583429793053364125">Fehler beim Anzeigen dieser Webseite.</translation>
 <translation id="1590457302292452960">Starkes Passwort generieren...</translation>
 <translation id="1592005682883173041">Zugriff auf lokale Daten</translation>
@@ -359,13 +362,9 @@
 <translation id="3530944546672790857">{COUNT,plural, =0{Mindestens 1 Eintrag auf synchronisierten Geräten}=1{1 Eintrag (und weitere auf synchronisierten Geräten)}other{# Einträge (und weitere auf synchronisierten Geräten)}}</translation>
 <translation id="3539171420378717834">Kopie dieser Karte auf diesem Gerät speichern</translation>
 <translation id="3542684924769048008">Passwort verwenden für:</translation>
-<translation id="3545341443414427877">Eine private Verbindung mit <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ist nicht möglich, da Datum und Uhrzeit Ihres Computers (<ph name="DATE_AND_TIME" />) falsch eingestellt sind. <ph name="BEGIN_LEARN_MORE_LINK" />Weitere Informationen<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="3549644494707163724">Alle synchronisierten Daten mit Ihrer eigenen Synchronisierungspassphrase verschlüsseln</translation>
 <translation id="3556433843310711081">Dein Administrator kann die Blockierung aufheben</translation>
 <translation id="3566021033012934673">Dies ist keine sichere Verbindung</translation>
-<translation id="3569145463236695319">&lt;p&gt;Eine private Verbindung mit <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ist nicht möglich, da Datum und Uhrzeit Ihres Geräts (<ph name="DATE_AND_TIME" />) falsch eingestellt sind.&lt;/p&gt;
-
-      &lt;p&gt;Passen Sie Datum und Uhrzeit im Abschnitt &lt;strong&gt;Allgemein&lt;/strong&gt; der App &lt;strong&gt;Einstellungen&lt;/strong&gt; an.&lt;/p&gt; <ph name="BEGIN_LEARN_MORE_LINK" />Weitere Informationen<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="358285529439630156">Kredit- und Prepaidkarten werden akzeptiert.</translation>
 <translation id="3582930987043644930">Namen hinzufügen</translation>
@@ -579,6 +578,7 @@
     <ph name="LIST_ITEM" />In der <ph name="BEGIN_LEARN_MORE_LINK" />Chrome-Hilfe<ph name="END_LEARN_MORE_LINK" /> finden Sie eine Anleitung, wie Sie die Software endgültig von Ihrem Computer entfernen.
     <ph name="END_LIST" /></translation>
 <translation id="5285570108065881030">Alle gespeicherten Passwörter anzeigen</translation>
+<translation id="5287240709317226393">Cookies anzeigen</translation>
 <translation id="5299298092464848405">Fehler beim Parsen der Richtlinie</translation>
 <translation id="5308380583665731573">Verbinden</translation>
 <translation id="5308689395849655368">Die Absturzberichtsfunktion ist deaktiviert.</translation>
@@ -638,6 +638,7 @@
 <translation id="5675650730144413517">Diese Seite funktioniert nicht</translation>
 <translation id="5685654322157854305">Versandadresse hinzufügen</translation>
 <translation id="5689199277474810259">Als JSON exportieren</translation>
+<translation id="5689516760719285838">Ort</translation>
 <translation id="5710435578057952990">Die Identität dieser Website wurde nicht verifiziert.</translation>
 <translation id="5719499550583120431">Prepaidkarten werden akzeptiert.</translation>
 <translation id="5720705177508910913">Aktueller Nutzer</translation>
@@ -686,7 +687,6 @@
 <translation id="614940544461990577">Versuchen Sie Folgendes:</translation>
 <translation id="6151417162996330722">Die Gültigkeitsdauer des Serverzertifikats ist zu lang.</translation>
 <translation id="6157877588268064908">Wählen Sie eine Adresse aus, um Versandoptionen und -anforderungen zu sehen</translation>
-<translation id="6158003235852588289">Google Safe Browsing hat kürzlich Phishingaktivitäten auf <ph name="SITE" /> festgestellt. Phishingwebsites geben sich als andere Websites aus, um Sie zu täuschen.</translation>
 <translation id="6165508094623778733">Weitere Informationen</translation>
 <translation id="6169916984152623906">Sie können jetzt privat surfen. Für andere Personen, die dieses Gerät nutzen, sind Ihre Aktivitäten nicht sichtbar. Ihre Downloads und Lesezeichen werden jedoch gespeichert.</translation>
 <translation id="6177128806592000436">Die Verbindung zu dieser Website ist nicht sicher</translation>
@@ -756,7 +756,7 @@
 <translation id="6753269504797312559">Wert der Richtlinie</translation>
 <translation id="6757797048963528358">Ihr Gerät ist im Ruhemodus.</translation>
 <translation id="6778737459546443941">Dein Elternteil hat die Berechtigung noch nicht erteilt</translation>
-<translation id="681021252041861472">Pflichtfeld</translation>
+<translation id="681021252041861472">Erforderliches Feld</translation>
 <translation id="6810899417690483278">Personalisierungs-ID</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6824266427216888781">Fehler beim Laden der Regionsdaten</translation>
@@ -777,7 +777,6 @@
 <translation id="6973656660372572881">Sowohl feste Proxyserver als auch eine PAC-Skript-URL sind festgelegt.</translation>
 <translation id="6989763994942163495">Erweiterte Einstellungen anzeigen</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
-<translation id="7012372675181957985">Möglicherweise sind in Ihrem Google-Konto noch andere Formen des Browserverlaufs unter <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> vorhanden</translation>
 <translation id="7029809446516969842">Passwörter</translation>
 <translation id="7050187094878475250">Sie haben versucht, <ph name="DOMAIN" /> zu erreichen. Der Server hat jedoch ein Zertifikat präsentiert, dessen Gültigkeitsdauer zu lang ist, um vertrauenswürdig zu sein.</translation>
 <translation id="7053983685419859001">Blockieren</translation>
@@ -805,6 +804,7 @@
 <translation id="7220786058474068424">Verarbeitung läuft</translation>
 <translation id="724691107663265825">Malware auf nachfolgender Website</translation>
 <translation id="724975217298816891">Geben Sie das Gültigkeitsdatum und den CVC für <ph name="CREDIT_CARD" /> ein, um Ihre Kartendetails zu aktualisieren. Nach erfolgter Bestätigung werden die Kartendetails an diese Website weitergegeben.</translation>
+<translation id="725866823122871198">Es kann keine private Verbindung zu <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> hergestellt werden, weil Datum und Uhrzeit Ihres Computers falsch sind (<ph name="DATE_AND_TIME" />).</translation>
 <translation id="7260504762447901703">Zugriff entziehen</translation>
 <translation id="7271803869921933038">Akzeptierte Prepaidkarten</translation>
 <translation id="7275334191706090484">Verwaltete Lesezeichen</translation>
@@ -819,7 +819,6 @@
 <translation id="7378627244592794276">Nein</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7390545607259442187">Karte bestätigen</translation>
-<translation id="739697976928952788">Alle gespeicherten Passwörter anzeigen</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419106976560586862">Profilpfad</translation>
 <translation id="7424977062513257142">Auf einer in dieser Webseite eingebetteten Seite wird Folgendes angezeigt:</translation>
@@ -949,7 +948,6 @@
 <translation id="8293206222192510085">Lesezeichen hinzufügen</translation>
 <translation id="8294431847097064396">Quelle</translation>
 <translation id="8298115750975731693">Unter Umständen erfordert das verwendete WLAN (<ph name="WIFI_NAME" />), dass Sie <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> aufrufen.</translation>
-<translation id="8306404619377842860">Eine private Verbindung mit <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ist nicht möglich, da Datum und Uhrzeit Ihres Geräts (<ph name="DATE_AND_TIME" />) falsch eingestellt sind. <ph name="BEGIN_LEARN_MORE_LINK" />Weitere Informationen<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8308427013383895095">Die Übersetzung ist aufgrund eines Problems mit der Netzwerkverbindung fehlgeschlagen.</translation>
 <translation id="8311129316111205805">Sitzung laden</translation>
 <translation id="8332188693563227489">Der Zugriff auf <ph name="HOST_NAME" /> wurde verweigert</translation>
@@ -975,12 +973,13 @@
 <translation id="8543181531796978784">Sie können ein <ph name="BEGIN_ERROR_LINK" />Erkennungsproblem melden<ph name="END_ERROR_LINK" /> oder, wenn Sie die Sicherheitsrisiken kennen, <ph name="BEGIN_LINK" />diese unsichere Website aufrufen<ph name="END_LINK" />.</translation>
 <translation id="8543556556237226809">Fragen? Wenden Sie sich an die Person, die Ihr Profil überwacht.</translation>
 <translation id="8553075262323480129">Die Übersetzung ist fehlgeschlagen, weil die Sprache der Seite nicht ermittelt werden konnte.</translation>
+<translation id="8559762987265718583">Es kann keine private Verbindung zu <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> hergestellt werden, weil Datum und Uhrzeit Ihres Geräts falsch sind (<ph name="DATE_AND_TIME" />).</translation>
 <translation id="8571890674111243710">Seite wird in folgende Sprache übersetzt: <ph name="LANGUAGE" />...</translation>
 <translation id="858637041960032120">Weitere Nummer
 </translation>
 <translation id="859285277496340001">In dem Zertifikat ist kein Mechanismus angegeben, mit dem geprüft werden kann, ob es zurückgerufen wurde.</translation>
 <translation id="8620436878122366504">Deine Eltern haben die Berechtigung noch nicht erteilt</translation>
-<translation id="8625384913736129811">Diese Karte auf diesem Gerät speichern</translation>
+<translation id="8625384913736129811">Diese Karte für dieses Gerät speichern</translation>
 <translation id="8647750283161643317">Alle auf Standardeinstellung zurücksetzen</translation>
 <translation id="8660471606262461360">Aus Google Payments</translation>
 <translation id="8688672835843460752">Verfügbar</translation>

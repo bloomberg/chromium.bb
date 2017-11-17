@@ -30,7 +30,7 @@
 <translation id="1201402288615127009">Tiếp theo</translation>
 <translation id="1206619573307042055">bảng chữ chạy</translation>
 <translation id="1213216066620407844">ChromeVox - Mang tính năng Thoại lên Chrome</translation>
-<translation id="1225437811932752266">Xin chúc mừng! Bạn đã tìm hiểu xong thông tin cơ bản để sử dụng hiệu quả ChromeVox. Hãy nhớ rằng bạn có thể mở menu lệnh ChromeVox bất cứ lúc nào bằng cách nhấn phím Tìm kiếm+Dấu chấm. Để tìm hiểu thêm về ChromeVox và Chrome OS, hãy truy cập vào các bài viết dưới đây.
+<translation id="1225437811932752266">Xin chúc mừng! Bạn đã tìm hiểu xong thông tin cơ bản để sử dụng ChromeVox một cách hiệu quả. Hãy nhớ rằng bạn có thể mở menu lệnh ChromeVox bất cứ lúc nào bằng cách nhấn phím Tìm kiếm+Dấu chấm. Để tìm hiểu thêm về ChromeVox và Chrome OS, hãy truy cập vào các bài viết dưới đây.
 Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đi tới nút Đóng và nhấp vào nút đó.</translation>
 <translation id="1229276918471378188">Bước nhảy trước</translation>
 <translation id="1237866625126425153">rdgrp</translation>
@@ -412,7 +412,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="4601367666219428522">bảng <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">Bỏ qua nhấn phím tiếp theo</translation>
 <translation id="461613135510474570">Câu</translation>
-<translation id="463135993322337640">Bạn có thể tìm hiểu tính năng mới bằng cách nhấn ChromeVox+o+n</translation>
+<translation id="463135993322337640">Bạn có thể tìm hiểu tính năng mới bằng cách nhấn ChromeVox, o, n</translation>
 <translation id="4647836961514597010">Công cụ chọn màu</translation>
 <translation id="4660783501463101648">Đã xóa phiên bản cổ điển. Phím chuyển đổi trên bàn phím để quay về phiên bản ChromeVox cổ điển đã bị xóa.</translation>
 <translation id="4661075872484491155">cây</translation>
@@ -589,7 +589,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="6065293622157674001">Đầu lỗi ngữ pháp</translation>
 <translation id="6082768461603900813">Điều hướng cơ bản</translation>
 <translation id="6092707270915298410">Kết thúc liên kết</translation>
-<translation id="6118126368611144850">Ứng dụng Android dành cho Chrome. Nếu thiết bị của bạn có Cửa hàng Play, hãy thử ChromeVox với các ứng dụng Android. Hãy tải Google Chrome Canary xuống từ Cửa hàng Play và dùng thử các tính năng thử nghiệm được hỗ trợ.</translation>
+<translation id="6118126368611144850">Ứng dụng Android dành cho Chrome. Nếu thiết bị của bạn có Cửa hàng Play, hãy dùng thử ChromeVox với các ứng dụng Android. Để dùng thử các tính năng thử nghiệm được hỗ trợ, hãy tải Google Chrome Canary xuống từ Cửa hàng Play.</translation>
 <translation id="611827076493383239">vtd</translation>
 <translation id="6119955456199054975">Cuối ô.</translation>
 <translation id="6122013438240733403">btn</translation>
@@ -630,7 +630,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="6493991254603208962">Giảm độ sáng</translation>
 <translation id="6508059270146105198">Di chuyển màn hình chữ nổi xuống cuối trang</translation>
 <translation id="6536864053412760904">Mã thông báo toán học ML</translation>
-<translation id="6540201937398578274">Trong ChromeVox, phím Tìm kiếm là phím bổ trợ. Hầu hết các phím tắt trên ChromeVox đều bắt đầu bằng phím Tìm kiếm. Ngoài ra, bạn cũng sẽ sử dụng các phím mũi tên để di chuyển.</translation>
+<translation id="6540201937398578274">Trong ChromeVox, phím Tìm kiếm là phím bổ trợ. Hầu hết các phím tắt trên ChromeVox đều bắt đầu bằng phím Tìm kiếm. Ngoài ra, bạn có thể sử dụng các phím mũi tên để di chuyển.</translation>
 <translation id="6550720799683018100">Thay đổi sơ đồ bàn phím hiện tại bằng cách chọn một tùy chọn từ danh sách bên dưới.</translation>
 <translation id="6561818612645211875">Đi tới đầu hàng hiện tại</translation>
 <translation id="6587021927234520429">Không có tiêu đề cấp 4 tiếp theo nào.</translation>

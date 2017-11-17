@@ -100,7 +100,7 @@
 <translation id="1454846751303307294">Membolehkan anda menetapkan senarai pola url yang menentukan tapak yang tidak dibenarkan untuk menjalankan JavaScript.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada dari dasar 'DefaultJavaScriptSetting' jika ia ditetapkan atau konfigurasi peribadi pengguna tersebut jika sebaliknya.</translation>
-<translation id="1456822151187621582">Windows (klien <ph name="PRODUCT_OS_NAME" />):</translation>
+<translation id="1456822151187621582">Windows (pelanggan <ph name="PRODUCT_OS_NAME" />):</translation>
 <translation id="1464848559468748897">Mengawal tingkah laku pengguna dalam sesi berbilang profil pada peranti <ph name="PRODUCT_OS_NAME" />.
 
       Jika dasar ini ditetapkan kepada 'MultiProfileUserBehaviorUnrestricted', pengguna boleh menjadi sama ada pengguna utama atau sekunder dalam sesi berbilang profil.
@@ -573,7 +573,7 @@
           Jika tetapan ini dilumpuhkan dan sambungan UDP keluar ditapis oleh firewall, maka mesin ini hanya akan membenarkan sambungan dari mesin pelanggan di dalam rangkaian setempat sahaja.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, tetapan ini akan didayakan.</translation>
-<translation id="2823870601012066791">Lokasi pendaftaran Windows untuk klien <ph name="PRODUCT_OS_NAME" />:</translation>
+<translation id="2823870601012066791">Lokasi pendaftaran Windows untuk pelanggan <ph name="PRODUCT_OS_NAME" />:</translation>
 <translation id="2824715612115726353">Dayakan mod Inkognito</translation>
 <translation id="2838830882081735096">Tidak membenarkan penghijrahan data dan ARC</translation>
 <translation id="2844404652289407061">Mendayakan ketersediaan Sentuh untuk Cari dalam paparan kandungan <ph name="PRODUCT_NAME" />.
@@ -621,7 +621,6 @@
 
       Lihat https://developers.google.com/safe-browsing untuk mendapatkan maklumat tentang Penyemakan Imbas Selamat.</translation>
 <translation id="3016255526521614822">Apl pencatatan nota senarai putih dibenarkan pada skrin kunci <ph name="PRODUCT_OS_NAME" /></translation>
-<translation id="3021409116652377124">Lumpuhkan pencari pemalam</translation>
 <translation id="3030000825273123558">Dayakan laporan metrik</translation>
 <translation id="3034580675120919256">Membolehkan anda menetapkan sama ada laman web dibenarkan untuk menjalankan JavaScript. Menjalankan JavaScript boleh dibenarkan untuk semua tapak web atau dinafikan untuk semua tapak web.
 
@@ -924,25 +923,6 @@
 
           Biasanya perkara ini dilumpuhkan sebagai perlindungan daripada pemancingan data. Jika dasar ini tidak ditetapkan, tetapan ini dilumpuhkan dan kandungan kecil pihak ketiga tidak akan dibenarkan untuk menimbulkan kotak dialog Pengesahan Asas HTTP.</translation>
 <translation id="4056910949759281379">Lumpuhkan protokol SPDY</translation>
-<translation id="4077363032873906037">Mendayakan ciri log masuk terhad <ph name="PRODUCT_NAME" /> dalam Google Apps dan menghalang pengguna daripada menukar tetapan ini.
-      
-      Jika anda mentakrifkan tetapan ini, pengguna hanya dapat mengakses Google
-      Apps menggunakan akaun daripada domain yang ditentukan (sila ambil
-      perhatian bahawa tetapan ini tidak berfungsi untuk gmail.com/googlemail.com).
-      
-      Tetapan ini TIDAK akan menghalang pengguna daripada log masuk pada peranti
-      terurus yang memerlukan pengesahan Google. Pengguna masih akan dibenarkan
-      log masuk ke akaun daripada domain lain tetapi mereka akan menerima ralat
-      semasa cuba menggunakan Google Apps dengan akaun itu.
-      
-      Jika anda membiarkan tetapan ini kosong/tidak dikonfigurasi, pengguna
-      akan dapat mengakses Google Apps dengan mana-mana akaun.
-
-      Dasar ini menyebabkan pengepala X-GoogApps-Allowed-Domains ditambahkan pada
-      semua permintaan HTTP dan HTTPS pada semua domain google.com, seperti yang diterangkan dalam
-      https://support.google.com/a/answer/1668854.
-
-      Pengguna tidak boleh menukar atau membatalkan tetapan ini.</translation>
 <translation id="408029843066770167">Benarkan pertanyaan kepada perkhidmatan masa Google</translation>
 <translation id="4088589230932595924">Mod Inkognito dipaksa</translation>
 <translation id="4088983553732356374">Membenarkan anda menetapkan sama ada tapak web dibenarkan untuk menetapkan data setempat. Penetapan data setempat boleh dibenarkan untuk semua tapak web atau dinafikan untuk semua tapak web.
@@ -960,7 +940,6 @@
           Nilai dasar harus dinyatakan dalam milisaat.</translation>
 <translation id="4105989332710272578">Lumpuhkan penguatkuasaan Ketelusan Sijil untuk senarai URL</translation>
 <translation id="4121350739760194865">Elakkan promosi apl daripada muncul pada halaman tab baharu</translation>
-<translation id="4133144443101280166">Selang masa waktu mati apabila OffHours peranti |ignored_policy_proto_tags| dikeluarkan</translation>
 <translation id="4157003184375321727">Laporkan versi OS dan perisian tegar</translation>
 <translation id="4183229833636799228">Tetapan <ph name="FLASH_PLUGIN_NAME" /> lalai</translation>
 <translation id="4192388905594723944">URL untuk mengesahkan token pengesahan pelanggan akses jauh</translation>
@@ -1187,7 +1166,6 @@
           Contohnya, <ph name="EXTENSION_POLICY_EXAMPLE" /> memasang apl <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> daripada URL "kemas kini" standard Gedung Web Chrome. Untuk mendapatkan maklumat lanjut tentang mengehoskan sambungan, lihat: <ph name="LINK_TO_EXTENSION_DOC2" />.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, tiada apl mahupun sambungan dipasang secara automatik dan pengguna boleh menyahpasang sebarang apl dan sambungan dalam <ph name="PRODUCT_NAME" />.</translation>
-<translation id="4882546920824859909">Tentukan domain yang dibenarkan untuk mengakses Google Apps</translation>
 <translation id="4897928009230106190">Menentukan parameter yang digunakan apabila melakukan carian cadangan dengan POST. Parameter ini mengandungi pasangan nama/nilai yang dipisahkan koma. Jika nilai merupakan parameter templat, seperti {searchTerms} dalam contoh di atas, nilai ini akan digantikan dengan data istilah carian sebenar.
 
           Dasar ini tidak wajib. Jika tidak ditetapkan, cadangan permintaan carian akan dihantar menggunakan kaedah GET.
@@ -1253,7 +1231,6 @@
 
           Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada dari dasar 'DefaultNotificationsSetting' jika ia ditetapkan atau konfigurasi peribadi pengguna jika sebaliknya.</translation>
 <translation id="5219844027738217407">Untuk apl Android, dasar ini memberi kesan kepada mikrofon sahaja. Apabila dasar ini ditetapkan kepada benar, mikrofon akan diredam untuk semua apl Android, tanpa pengecualian.</translation>
-<translation id="5226033722357981948">Tentukan sama ada pencari pemalam perlu dilumpuhkan</translation>
 <translation id="523505283826916779">Tetapan kebolehcapaian</translation>
 <translation id="5247006254130721952">Sekat muat turun berbahaya</translation>
 <translation id="5255162913209987122">Boleh Disyorkan</translation>
@@ -1391,26 +1368,6 @@
 <translation id="5728154254076636808">Dayakan pembuatan salinan perayauan bagi data profil <ph name="PRODUCT_NAME" /></translation>
 <translation id="5732972008943405952">Import data borang autolengkap daripada penyemak imbas lalai pada kali pertama menjalankannya</translation>
 <translation id="5765780083710877561">Huraian:</translation>
-<translation id="5768309557753179144">Chromium dan Google Chrome menyokong set dasar
-      yang sama. Harap maklum bahawa dokumen ini mungkin menyertakan dasar yang belum dikeluarkan
-      (contohnya masukan 'Disokong pada' mereka merujuk pada versi <ph name="PRODUCT_NAME" /> yang belum dikeluarkan)
-      yang tertakluk kepada
-      perubahan atau pengalihan keluar tanpa notis dan tidak memberikan
-      sebarang jaminan, termasuk tiada jaminan berhubung sifat keselamatan
-      dan privasi mereka.
-
-      Dasar ini hanya bertujuan digunakan untuk mengkonfigurasi kejadian
-      <ph name="PRODUCT_NAME" /> dalaman untuk organisasi
-      anda. Penggunaan dasar ini di luar daripada organisasi anda (contohnya,
-      dalam atur cara yang diedarkan secara terbuka) dianggap perisian hasad dan akan
-      dilabelkan sebagai perisian hasad oleh Google dan vendor anti-virus.
-
-      Tetapan ini tidak perlu dikonfigurasikan secara manual! Templat yang
-      mudah digunakan untuk Windows, Mac dan Linux tersedia untuk dimuat turun daripada <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
-
-      Cara yang disyorkan untuk mengkonfigurasikan dasar di Windows adalah melalui GPO, walaupun
-      memperuntukkan dasar melalui daftaran masih disokong untuk tika
-      Windows yang disertakan pada domain <ph name="MS_AD_NAME" />.</translation>
 <translation id="5770738360657678870">Saluran Dev (mungkin tidak stabil)</translation>
 <translation id="5774856474228476867">URL carian pembekal carian lalai</translation>
 <translation id="5776485039795852974">Tanya setiap kali tapak mahu menunjukkan pemberitahuan desktop</translation>
@@ -1570,7 +1527,7 @@
 <translation id="6076099373507468537">Menentukan senarai peranti USB yang dibenarkan untuk ditanggalkan daripada pemacu inti peranti tersebut untuk digunakan menerusi API chrome.usb terus dalam aplikasi web. Entri ialah pasangan Pengecam Vendor USB dan Pengecam Produk untuk mengenal pasti perkakasan khusus.
 
       Jika dasar ini tidak dikonfigurasikan, senarai peranti USB yang boleh ditanggalkan ditetapkan sebagai kosong.</translation>
-<translation id="6083631234867522991">Windows (klien Windows):</translation>
+<translation id="6083631234867522991">Windows (pelanggan Windows):</translation>
 <translation id="6093156968240188330">Benarkan pengguna jauh berinteraksi dengan tetingkap ternaik dalam sesi bantuan jauh</translation>
 <translation id="6095999036251797924">Menyatakan tempoh masa tanpa input pengguna yang selepas itu skrin dikunci semasa berfungsi dengan kuasa AC atau bateri.
 
@@ -1737,9 +1694,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       Jika dasar ini dibiarkan tanpa ditetapkan, ramalan rangkaian akan didayakan tetapi pengguna akan boleh mengubahnya.</translation>
 <translation id="6658245400435704251">Menyatakan bilangan saat sehingga peranti boleh melambatkan muat turun kemas kini secara rawak dari masa kemas kini mula ditolak keluar ke pelayan. Peranti mungkin menunggu sebahagian masa ini dari segi masa jam dinding dan bahagian yang selebihnya dari segi bilangan semakan kemas kini. Dalam apa jua keadaan, serakan atas disempadani oleh jumlah masa yang tetap supaya peranti tidak sekali-kali akan tersekat menunggu selama-lamanya untuk memuat turun kemas kini.</translation>
 <translation id="6689792153960219308">Laporkan status perkakasan</translation>
-<translation id="6693751878507293182">Jika anda menetapkan tetapan ini kepada didayakan, carian automatik dan pemasangan pemalam yang tiada akan dilumpuhkan dalam <ph name="PRODUCT_NAME" />.
-
-      Menetapkan pilihan ini kepada dilumpuhkan atau membiarkannya tanpa ditetapkan, pencari pemalam akan diaktifkan.</translation>
 <translation id="6699880231565102694">Dayakan pengesahan dua faktor untuk hos akses jauh</translation>
 <translation id="6724842112053619797">Jika anda mendayakan tetapan ini, tetapan yang disimpan dalam profil <ph name="PRODUCT_NAME" /> seperti penanda halaman, data autolengkap, kata laluan dan sebagainya akan turut ditulis pada fail yang disimpan dalam folder profil "Roaming" pengguna atau lokasi yang ditentukan oleh Pentadbir melaui dasar <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Sekiranya dasar ini didayakan, penyegerakan awan akan dilumpuhkan.
 
@@ -2020,6 +1974,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 
           Jika tetapan ini dilumpuhkan atau tidak ditetapkan, maka dua faktor tidak akan didayakan dan gelagat lalai menggunakan PIN yang ditentukan pengguna akan digunakan.</translation>
 <translation id="7750991880413385988">Buka Halaman Tab Baharu</translation>
+<translation id="7754704193130578113">Tanyakan tempat untuk menyimpan setiap fail sebelum memuat turun</translation>
 <translation id="7761446981238915769">Konfigurasikan senarai apl yang dipasang pada skrin log masuk</translation>
 <translation id="7761526206824804472">Menetapkan satu atau beberapa penempatan yang disyorkan untuk sesi awam, membolehkan para pengguna memilih satu daripada penempatan ini dengan mudah.
 
@@ -2082,7 +2037,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 
           Dasar ini mengawal berbilang tetapan, termasuk tetapan yang dikawal oleh mana-mana dasar berkaitan sambungan yang sedia ada. Dasar ini akan mengatasi sebarang dasar lama jika kedua-duanya ditetapkan.
 
-          Dasar ini memetakan ID sambungan atau URL kemas kini kepada konfigurasinya. Dengan ID sambungan, konfigurasi akan diterapkan pada sambungan yang dinyatakan sahaja. Konfigurasi lalai boleh ditetapkan untuk ID khas <ph name="DEFAULT_SCOPE" />, yang akan diterapkan pada semua sambungan yang tidak menetapkan konfigurasi tersuai dalam dasar ini. Dengan URL kemas kini, konfigurasi akan diterapkan pada semua sambungan dengan URL kemas kini sebenar yang dinyatakan dalam manifes sambungan ini, seperti yang dihuraikan di <ph name="LINK_TO_EXTENSION_DOC1" />.
+          Dasar ini memetakan ID sambungan atau URL kemas kini kepada konfigurasinya. Dengan ID sambungan, konfigurasi akan digunakan pada sambungan yang dinyatakan sahaja. Konfigurasi lalai boleh ditetapkan untuk ID khas <ph name="DEFAULT_SCOPE" />, yang akan digunakan pada semua sambungan yang tidak menetapkan konfigurasi tersuai dalam dasar ini. Dengan URL kemas kini, konfigurasi akan digunakan pada semua sambungan dengan URL kemas kini sebenar yang dinyatakan dalam manifes sambungan ini, seperti yang dihuraikan <ph name="LINK_TO_EXTENSION_DOC1" />.
 
           Konfigurasi bagi setiap sambungan (atau sambungan dengan URL kemas kini yang sama) ialah kamus lain yang boleh mengandungi medan yang didokumenkan di bawah.
 
@@ -2094,7 +2049,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 
           <ph name="INSTALLTION_MODE" /> boleh dikonfigurasikan untuk berbilang sambungan juga, termasuk sambungan <ph name="DEFAULT_SCOPE" /> (sebagai tetapan lalai) dan sambungan dengan URL kemas kini yang sama. Hanya nilai <ph name="ALLOWED" /> dan <ph name="BLOCKED" /> boleh digunakan dalam keadaan ini.
 
-          Jika mod ditetapkan kepada <ph name="FORCE_INSTALLED" /> atau <ph name="NORMAL_INSTALLED" />, maka <ph name="UPDATE_URL" /> mesti dikonfigurasikan juga. Sila ambil perhatian bahawa URL kemas kini yang ditetapkan dalam dasar ini hanya digunakan untuk pemasangan awal; kemas kini yang berikutnya bagi sambungan tersebut akan menggunakan URL kemas kini yang ditunjukkan dalam manifes sambungan. URL kemas kini harus menunjuk kepada dokumen XML Manifes Kemas Kini seperti disebut di atas.
+          Jika mod ditetapkan kepada <ph name="FORCE_INSTALLED" /> atau <ph name="NORMAL_INSTALLED" /> maka <ph name="UPDATE_URL" /> must be configured too. mesti dikonfigurasikan juga. Sila ambil perhatian bahawa URL kemas kini yang ditetapkan dalam dasar ini hanya digunakan untuk pemasangan awal; kemas kini yang berikutnya bagi sambungan tersebut akan menggunakan URL kemas kini yang ditunjukkan dalam manifes sambungan. URL kemas kini harus menunjuk kepada dokumen XML Manifes Kemas Kini seperti disebut di atas.
 
           <ph name="BLOCKED_PERMISSIONS" />: memetakan kepada senarai rentetan yang menunjukkan kebenaran API yang disekat untuk sambungan. Nama kebenaran adalah sama seperti rentetan kebenaran yang diisytiharkan dalam manifes sambungan seperti yang dihuraikan di <ph name="LINK_TO_EXTENSION_DOC3" />. Tetapan ini turut boleh dikonfiguraskan untuk sambungan <ph name="DEFAULT_SCOPE" />. Jika sambungan memerlukan kebenaran yang terdapat dalam senarai sekat, pemuatan sambungan tersebut tidak akan dibenarkan. Jika sambungan tersebut mengandungi kebenaran yang disekat sebagai keperluan pilihan, sambungan akan dikendalikan seperti biasa, tetapi permintaan kebenaran yang bercanggah akan ditolak secara automatik pada waktu jalan.
 
@@ -2283,11 +2238,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="8451988835943702790">Gunakan Halaman Tab Baharu sebagai halaman utama</translation>
 <translation id="8465065632133292531">Parameter untuk URL semerta yang menggunakan POST</translation>
 <translation id="847472800012384958">Jangan benarkan mana-mana tapak untuk menunjukkan pop muncul</translation>
-<translation id="8476127435468057643">Mengawal sama ada NTLMv2 didayakan.
-
-          Semua versi terbaharu pelayan Samba dan Windows menyokong NTLMv2. Ciri ini harus dilumpuhkan untuk keserasian mundur sahaja dan mengurangkan keselamatan pengesahan.
-
-          Nilai lalai apabila dasar ini tidak ditakrifkan ialah palsu pada masa ini untuk keserasian mundur, tetapi akan berubah kepada benar pada masa hadapan.</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
 <translation id="8484458986062090479">Sesuaikan senarai pola URL yang sentiasa harus dipaparkan oleh penyemak imbas hos.
 
@@ -2321,7 +2271,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
           Jika tetapan ini palsu, peranti tidak akan menggunakan pembuktian jauh untuk perlindungan kandungan dan peranti mungkin tidak dapat memainkan kandungan yang dilindungi.
 
           Jika tetapan ini benar atau tidak ditetapkan, pembuktian jauh boleh digunakan untuk perlindungan kandungan.</translation>
-<translation id="8650974590712548439">Lokasi pendaftaran Windows untuk klien Windows:</translation>
+<translation id="8650974590712548439">Lokasi pendaftaran Windows untuk pelanggan Windows:</translation>
 <translation id="8654286232573430130">Menentukan pelayan yang harus disenaraiputihkan untuk pengesahan bersepadu. Pengesahan bersepadu hanya didayakan apabila <ph name="PRODUCT_NAME" /> menerima cabaran pengesahan daripada proksi atau daripada pelayan yang dibenarkan dalam senarai ini.
 
           Asingkan berbilang nama pelayan dengan koma. Kad bebas (*) dibenarkan.

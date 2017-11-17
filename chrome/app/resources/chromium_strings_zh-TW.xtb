@@ -71,7 +71,6 @@
 <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="328888136576916638">缺少 Google API 金鑰，系統將停用 Chromium 的部分功能。</translation>
 <translation id="3296368748942286671">在 Chromium 關閉時繼續執行背景應用程式</translation>
-<translation id="3312805357485578561">Chromium 偵測到異常行為</translation>
 <translation id="331951419404882060">登入時發生錯誤，因此 Chromium 作業系統無法同步處理你的資料。</translation>
 <translation id="3474745554856756813">登出後，系統會將 <ph name="ITEMS_COUNT" /> 個項目從這個裝置上刪除。日後如要重新取得你的資料，請以 <ph name="USER_EMAIL" /> 身分登入 Chromium。</translation>
 <translation id="3509308970982693815">請關閉所有 Chromium 視窗，然後再試一次。</translation>
@@ -91,7 +90,6 @@
 <translation id="4050175100176540509">最新版本包含重要的安全性改善與新功能。</translation>
 <translation id="407254336480250557">選取 [<ph name="SMALL_PRODUCT_LOGO" /> Chromium]<ph name="BEGIN_BOLD" /><ph name="END_BOLD" /></translation>
 <translation id="4077262827416206768">請關閉所有 Chromium 視窗，並且重新啟用 Chromium，這項變更即會生效。</translation>
-<translation id="4207043877577553402"><ph name="BEGIN_BOLD" />警告：<ph name="END_BOLD" />Chromium 無法阻止擴充功能記錄你的瀏覽活動，如要在無痕模式中停用這個擴充功能，請取消選取這個選項。 </translation>
 <translation id="421369550622382712">探索 Chromium 專用的優質應用程式、遊戲、擴充功能和主題。</translation>
 <translation id="4222580632002216401">你現在已登入 Chromium！但管理員已關閉同步功能。</translation>
 <translation id="4224199872375172890">Chromium 目前是最新版本。</translation>
@@ -173,7 +171,6 @@
 這表示你可能無法使用部分功能。請指定另一個設定檔目錄，或使用較新版本的 Chromium。</translation>
 <translation id="6734080038664603509">更新 Chromium(&amp;C)</translation>
 <translation id="6734291798041940871">電腦上的所有使用者都已經安裝 Chromium 了。</translation>
-<translation id="6798578729981748444">如要結束匯入作業，請關閉所有 Firefox 視窗。</translation>
 <translation id="6810143991807788455">只要回報目前的設定，就能助我們一臂之力，讓 Chromium 更臻完美</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6883876366448858277">將特定字詞及其上下文內容傳送至 Google 搜尋，並傳回字詞定義、相關圖片和其他搜尋結果。</translation>

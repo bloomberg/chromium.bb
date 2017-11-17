@@ -129,7 +129,6 @@
 <translation id="3329904751041170572">تعذر الاتصال بالخادم.</translation>
 <translation id="3335947283844343239">إعادة فتح علامة التبويب المغلقة</translation>
 <translation id="3393920035788932672">النوافذ المنبثقة المسموح بها</translation>
-<translation id="3414292259312108062">‏سيخزن Chrome ذلك في <ph name="BEGIN_LINK" />كلمات مرور Chrome المحفوظة<ph name="END_LINK" /> ويكتبها تلقائيًا بالنيابة عنك حتى لا تضطر لحفظها بنفسك.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> دقيقة</translation>
 <translation id="3448016392200048164">تقسيم العرض</translation>
 <translation id="3474624961160222204">المتابعة باسم <ph name="NAME" /></translation>
@@ -152,7 +151,6 @@
 <translation id="3779810277399252432">لا يتوفر اتصال بالإنترنت.</translation>
 <translation id="3783017676699494206">حفظ الصورة</translation>
 <translation id="385051799172605136">الرجوع إلى الوراء</translation>
-<translation id="3857761338463387655">إنشاء بريد إلكتروني من خلال:</translation>
 <translation id="3897092660631435901">قائمة</translation>
 <translation id="3928666092801078803">جمع البيانات التابعة لي</translation>
 <translation id="3950820424414687140">تسجيل الدخول</translation>
@@ -204,6 +202,7 @@
 <translation id="5005498671520578047">نسخ كلمة المرور</translation>
 <translation id="5010803260590204777">افتح علامة تبويب تصفح متخفي لتصفح الويب في أجواء من الخصوصية.</translation>
 <translation id="5011684439661633295">مرحبًا <ph name="FULL_ACCOUNT_NAME" /></translation>
+<translation id="5039804452771397117">سماح</translation>
 <translation id="5062321486222145940">‏تثبيت Google Drive</translation>
 <translation id="5083464117946352670">تعذر تحديد حجم الملف.</translation>
 <translation id="5094827893301452931">‏اكتملت مشاركة Tweet.</translation>
@@ -262,7 +261,6 @@
 <translation id="6122191549521593678">متصل</translation>
 <translation id="6127379762771434464">أُزيلَ عنصر</translation>
 <translation id="6136914049981179737">قبل ثانية</translation>
-<translation id="6149061208933997199">استخدام كلمة المرور</translation>
 <translation id="6158823227857319455">علامة تبويب جديدة</translation>
 <translation id="616831107264507309">القراءة لاحقًا</translation>
 <translation id="6184086493125982861">إظهار علامات التبويب</translation>
@@ -272,7 +270,6 @@
 <translation id="6254066287920239840">فتح الروابط في التطبيق بدلاً من المتصفح.</translation>
 <translation id="6255097610484507482">تعديل بطاقة الائتمان</translation>
 <translation id="6308436439357671616">هذا يتيح لك التقاط الصور وتحميلها.</translation>
-<translation id="6314335155547195432">إنشاء كلمة المرور</translation>
 <translation id="6324528485781869530">تبديل حساب المزامنة</translation>
 <translation id="6324669097367352121">إعدادات تسجيل الدخول</translation>
 <translation id="6337234675334993532">تشفير</translation>
@@ -290,7 +287,6 @@
 <translation id="6418346271604475326">‏جارٍ إعداد PDF</translation>
 <translation id="6445051938772793705">البلد</translation>
 <translation id="6445981559479772097">تم إرسال الرسالة.</translation>
-<translation id="6456425917241817154">‏تم إنشاء كلمة المرور من قبل Chrome</translation>
 <translation id="6464071786529933911">فتح في علامة تبويب جديدة للتصفح المتخفي</translation>
 <translation id="6482629121755362506">تم حذف <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> من العناصر</translation>
 <translation id="6541915733953096570">الساعة الماضية</translation>
@@ -313,6 +309,7 @@
 <translation id="7004499039102548441">علامات التبويب الأخيرة</translation>
 <translation id="7006788746334555276">إعدادات المحتوى</translation>
 <translation id="7031882061095297553">مزامنة لـ</translation>
+<translation id="7053983685419859001">منع</translation>
 <translation id="7062545763355031412">قبول الحسابات وتبديلها</translation>
 <translation id="7108338896283013870">إخفاء</translation>
 <translation id="7133798577887235672">الاسم بالكامل</translation>
@@ -345,7 +342,6 @@
 <translation id="7649070708921625228">مساعدة</translation>
 <translation id="7658239707568436148">إلغاء</translation>
 <translation id="7671141431838911305">تثبيت</translation>
-<translation id="7677825787905683892">اختيار تطبيق البريد الإلكتروني التلقائي</translation>
 <translation id="7765158879357617694">نقل</translation>
 <translation id="7769602470925380267">قبول وتسجيل الخروج</translation>
 <translation id="7772032839648071052">تأكيد عبارة المرور</translation>
@@ -409,7 +405,6 @@
 <translation id="9083392325882095631">عنصر واحد</translation>
 <translation id="9100610230175265781">عبارة المرور مطلوبة</translation>
 <translation id="9148126808321036104">تسجيل الدخول مرة أخرى</translation>
-<translation id="914898748153555155">‏يمكنك تغيير هذا التفضيل في أي وقت في إعدادات Chrome</translation>
 <translation id="91549621916703028">إنشاء علامات تبويب متعددة لجميع مهامك</translation>
 <translation id="9157836665414082580">إيقاف مربعات الحوار</translation>
 <translation id="9188680907066685419">تسجيل الخروج من الحساب المُدار</translation>

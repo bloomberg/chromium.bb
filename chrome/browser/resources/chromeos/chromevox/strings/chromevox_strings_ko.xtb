@@ -30,7 +30,7 @@
 <translation id="1201402288615127009">다음</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1213216066620407844">ChromeVox - Chrome이 말을 합니다.</translation>
-<translation id="1225437811932752266">축하합니다! ChromeVox를 사용하기 위한 기본사항을 배웠습니다. 언제든지 검색+마침표를 눌러서 ChromeVox 명령 메뉴를 열 수 있습니다. ChromeVox와 Chrome OS에 대해 더 자세히 알아보려면 다음 도움말을 참고하세요.
+<translation id="1225437811932752266">축하합니다! ChromeVox를 사용하기 위한 기본사항을 배웠습니다. 언제든지 검색+마침표를 눌러서 ChromeVox 명령 메뉴를 열 수 있습니다. ChromeVox와 Chrome OS에 관해 더 자세히 알아보려면 다음 도움말을 참고하세요.
 가이드를 완료했다면 ChromeVox를 사용하여 닫기 버튼으로 이동해 클릭하세요.</translation>
 <translation id="1229276918471378188">이전 점프</translation>
 <translation id="1237866625126425153">rdgrp</translation>
@@ -237,7 +237,7 @@
 <translation id="3241638166094654466">각 행의 셀 수:</translation>
 <translation id="3286390186030710347">슬라이더</translation>
 <translation id="3299925995433437805">다음 방문한 링크가 없습니다.</translation>
-<translation id="3300348286427369683">리치 텍스트가 지원됩니다. 이제 ChromeVox에서 이동 명령어, 점자 커서 라우팅, 선택 등의 리치 텍스트 입력란이 지원됩니다.</translation>
+<translation id="3300348286427369683">서식 있는 텍스트가 지원됩니다. 이제 ChromeVox에서 이동 명령어, 점자 커서 라우팅, 선택 등의 서식 있는 텍스트 입력란이 지원됩니다.</translation>
 <translation id="3307886118343381874">표의 마지막으로 이동</translation>
 <translation id="3311969765485641742">알림을 검토하려면 Alt+Shift+A를 누릅니다.</translation>
 <translation id="3312997241656799641">다음 방문한 링크</translation>

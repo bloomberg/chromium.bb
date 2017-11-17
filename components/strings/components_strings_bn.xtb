@@ -78,6 +78,9 @@
 <translation id="154408704832528245">ডেলিভারি ঠিকানা বেছে নিন</translation>
 <translation id="1549470594296187301">এই বৈশিষ্ট্যটি ব্যবহার করার জন্য JavaScript সক্ষম করা প্রয়োজন।</translation>
 <translation id="1559528461873125649">এমন কোন ফাইল বা ডিরেক্টরি নেই</translation>
+<translation id="1559572115229829303">&lt;p&gt;<ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> এ একটি ব্যক্তিগত সংযোগ স্থাপন করা যায়নি কারণ আপনার ডিভাইসের তারিখ এবং সময় (<ph name="DATE_AND_TIME" />) সঠিক নয়৷&lt;/p&gt;
+
+&lt;p&gt;দয়া করে &lt;strong&gt;সেটিংস&lt;/strong&gt; অ্যাপ্লিকেশানের &lt;strong&gt;সাধারণ&lt;/strong&gt; বিভাগ থেকে তারিখ এবং সময় সংশোধন করুন৷&lt;/p&gt;</translation>
 <translation id="1583429793053364125">এই ওয়েবপৃষ্ঠাটি দেখানোর সময় কোনো সমস্যা হয়েছে।</translation>
 <translation id="1590457302292452960">একটি কঠিন পাসওয়ার্ড তৈরি করুন...</translation>
 <translation id="1592005682883173041">স্থানীয় ডেটা অ্যাক্সেস</translation>
@@ -360,13 +363,9 @@
 <translation id="3530944546672790857">{COUNT,plural, =0{সিঙ্ক করা ডিভাইসে কমপক্ষে ১টি আইটেম}=1{১টি আইটেম (এবং সিঙ্ক করা ডিভাইসে আরও)}one{#টি আইটেম (এবং সিঙ্ক করা ডিভাইসে আরও)}other{#টি আইটেম (এবং সিঙ্ক করা ডিভাইসে আরও)}}</translation>
 <translation id="3539171420378717834">এই ডিভাইসে কার্ডটির একটি প্রতিলিপি রাখুন</translation>
 <translation id="3542684924769048008">এর জন্য পাসওয়ার্ড ব্যবহার করুন:</translation>
-<translation id="3545341443414427877"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> এর সাথে ব্যক্তিগত সংযোগ স্থাপন করা যাবে না কারণ আপনার কম্পিউটারের তারিখ ও সময় (<ph name="DATE_AND_TIME" />) সঠিক নয়। <ph name="BEGIN_LEARN_MORE_LINK" />আরও জানুন<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="3549644494707163724">আপনার নিজস্ব সিঙ্ক পাসফ্রেজের মাধ্যমে সমস্ত সিঙ্ক হওয়া ডেটা এনক্রিপ্ট করুন</translation>
 <translation id="3556433843310711081">আপনার পরিচালক আপনার হয়ে এটি অবরোধ মুক্ত করতে পারবে</translation>
 <translation id="3566021033012934673">আপনার সংযোগ ব্যক্তিগত নয়</translation>
-<translation id="3569145463236695319">&lt;p&gt;<ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> এর সাথে ব্যক্তিগত সংযোগ স্থাপন করা যাবে না কারণ আপনার ডিভাইসের তারিখ ও সময় (<ph name="DATE_AND_TIME" />) সঠিক নয়।&lt;/p&gt;
-
-      &lt;p&gt;অনুগ্রহ করে &lt;strong&gt;সেটিংস&lt;/strong&gt; অ্যাপের &lt;strong&gt;সাধারণ&lt;/strong&gt; বিভাগ থেকে তারিখ এবং সময় সংশোধন করুন।&lt;/p&gt; <ph name="BEGIN_LEARN_MORE_LINK" />আরও জানুন<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="358285529439630156">ক্রেডিট এবং প্রিপেড কার্ড গ্রহণ করা হয়।</translation>
 <translation id="3582930987043644930">নাম যোগ করুন</translation>
@@ -581,6 +580,7 @@
     <ph name="LIST_ITEM" />আপনার কম্পিউটার থেকে কিভাবে স্থায়ীভাবে সফ্টওয়্যার সরিয়ে ফেলতে হয় সেটি জানতে <ph name="BEGIN_LEARN_MORE_LINK" />Chrome সহায়তা কেন্দ্রে<ph name="END_LEARN_MORE_LINK" /> দেখুন
     <ph name="END_LIST" /></translation>
 <translation id="5285570108065881030">সেভ করা সমস্ত পাসওয়ার্ড দেখান</translation>
+<translation id="5287240709317226393">কুকিজ দেখান</translation>
 <translation id="5299298092464848405">নীতি বিশ্লেষণ করার সময় ত্রুটি</translation>
 <translation id="5308380583665731573">সংযুক্ত করুন</translation>
 <translation id="5308689395849655368">ক্র্যাশ প্রতিবেদন অক্ষম আছে৷</translation>
@@ -687,7 +687,6 @@
 <translation id="614940544461990577">এটি করে দেখুন:</translation>
 <translation id="6151417162996330722">সার্ভারের শংসাপত্রের বৈধতার সময়সীমা আছে যা খুবই দীর্ঘ।</translation>
 <translation id="6157877588268064908">শিপিং এর পদ্ধতি এবং প্রয়োজনীয়তা দেখতে একটি ঠিকানা বেছে নিন</translation>
-<translation id="6158003235852588289">Google এর নিরাপদ ব্রাউজিং সম্প্রতি <ph name="SITE" /> এ ফিশিং শনাক্ত করেছে। ফিশিং সাইটগুলি আপনাকে প্রতারিত করার জন্য অন্যান্য সাইট যেমন হয় সেইরকম ভান করে।</translation>
 <translation id="6165508094623778733">আরও জানুন</translation>
 <translation id="6169916984152623906">এখন আপনি গোপনভাবে ব্রাউজ করতে পারেন, এবং অন্য যেসব বক্তি এই ডিভাইস ব্যবহার করেন তারা আপনার কার্যকলাপ দেখতে পাবেন না। তবে, আপনার ডাউনলোড এবং বুকমার্কগুলি সংরক্ষণ করা হবে।</translation>
 <translation id="6177128806592000436">এই সাইটে আপনার সংযোগ নিরাপদ নয়</translation>
@@ -778,7 +777,6 @@
 <translation id="6973656660372572881">স্থির প্রক্সি সার্ভার এবং .pac স্ক্রিপ্ট URL-এর উভয়ই নির্দিষ্ট আছে৷</translation>
 <translation id="6989763994942163495">উন্নত সেটিংস দেখান ...</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
-<translation id="7012372675181957985"><ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> এ আপনার Google অ্যাকাউন্টের অন্যান্য ধরনের ব্রাউজিং ইতিহাস থাকতে পারে</translation>
 <translation id="7029809446516969842">পাসওয়ার্ড</translation>
 <translation id="7050187094878475250">আমি <ph name="DOMAIN" />-এ সংযোগ করার চেষ্টা করেছেন, কিন্তু সার্ভার একটি শংসাপত্র উপস্থাপন করেছে যার বৈধতার সময়সীমা এত বেশী যে বিশ্বাসযোগ্য নয়।</translation>
 <translation id="7053983685419859001">ব্লক করুন</translation>
@@ -806,6 +804,7 @@
 <translation id="7220786058474068424">প্রক্রিয়ায় রয়েছে</translation>
 <translation id="724691107663265825">এই সাইটটিতে ম্যালওয়্যার আছে</translation>
 <translation id="724975217298816891">আপনার কার্ডের বিবরণ আপডেট করার জন্য মেয়াদ শেষের তারিখ এবং <ph name="CREDIT_CARD" /> এর CVC  লিখুন। আপনি নিশ্চিত করলে, আপনার কার্ডের বিবরণ এই সাইটের সাথে শেয়ার করা হবে।</translation>
+<translation id="725866823122871198"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> এ একটি ব্যক্তিগত সংযোগ স্থাপন করা যায়নি কারণ আপনার কম্পিউটারের তারিখ এবং সময় (<ph name="DATE_AND_TIME" />) সঠিক নয়৷</translation>
 <translation id="7260504762447901703">অ্যাক্সেস প্রত্যাহার করুন</translation>
 <translation id="7271803869921933038">প্রিপেড কার্ড গ্রহণ করা হয়</translation>
 <translation id="7275334191706090484">পরিচালিত বুকমার্কগুলি</translation>
@@ -820,7 +819,6 @@
 <translation id="7378627244592794276">না</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7390545607259442187">কার্ড নিশ্চিত করুন</translation>
-<translation id="739697976928952788">সেভ করা সমস্ত পাসওয়ার্ড দেখুন</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419106976560586862">প্রোফাইল পথ</translation>
 <translation id="7424977062513257142">এই ওয়েব পৃষ্ঠায় একটি এম্বেডেড পৃষ্ঠা বলছে:</translation>
@@ -950,7 +948,6 @@
 <translation id="8293206222192510085">বুকমার্ক যুক্ত করুন</translation>
 <translation id="8294431847097064396">উৎস</translation>
 <translation id="8298115750975731693">আপনি যে (<ph name="WIFI_NAME" />) Wi-Fiটি ব্যবহার করছেন সেটির জন্য অপনাকে <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> তে যেতে হতে পারে৷</translation>
-<translation id="8306404619377842860"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> এর সাথে ব্যক্তিগত সংযোগ স্থাপন করা যাবে না কারণ আপনার ডিভাইসের তারিখ ও সময় (<ph name="DATE_AND_TIME" />) সঠিক নয়। <ph name="BEGIN_LEARN_MORE_LINK" />আরও জানুন<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8308427013383895095">নেটওয়ার্ক সংযোগে কোন সমস্যা হওয়ার কারণে অনুবাদ ব্যর্থ হয়েছে৷</translation>
 <translation id="8311129316111205805">সেশন লোড করুন</translation>
 <translation id="8332188693563227489"><ph name="HOST_NAME" /> এ অ্যাক্সেস অস্বীকার করা হয়েছে</translation>
@@ -976,6 +973,7 @@
 <translation id="8543181531796978784">আপনি <ph name="BEGIN_ERROR_LINK" />একটি সনাক্তকরণ সমস্যা প্রতিবেদন করতে পারেন<ph name="END_ERROR_LINK" /> অথবা, আপনি আপনার নিরাপত্তা ঝুঁকি বুঝতে পারলে, <ph name="BEGIN_LINK" />এই অনিরাপদ সাইটটি ঘুরে দেখুন<ph name="END_LINK" />।</translation>
 <translation id="8543556556237226809">প্রশ্ন? আপনার প্রোফাইল যে তত্ত্বাবধান করে তার সাথে যোগাযোগ করুন।</translation>
 <translation id="8553075262323480129">পৃষ্ঠার ভাষা নির্ধারণ না করতে পারার কারণে অনুবাদ ব্যর্থ হয়েছে৷</translation>
+<translation id="8559762987265718583"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> এ একটি ব্যক্তিগত সংযোগ স্থাপন করা যায়নি কারণ আপনার ডিভাইসের তারিখ এবং সময় (<ph name="DATE_AND_TIME" />) সঠিক নয়৷</translation>
 <translation id="8571890674111243710">পৃষ্ঠাটি<ph name="LANGUAGE" />তে অনুবাদ করুন...</translation>
 <translation id="858637041960032120">ফোননম্বর জুড়ুন</translation>
 <translation id="859285277496340001">শংসাপত্রটি প্রত্যাহার করা হয়েছে কিনা তা যাচাই করতে শংসাপত্রটি কোনও কারিগরীকে নির্দিষ্ট করে না৷</translation>

@@ -72,7 +72,6 @@
 <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="328888136576916638">Google API की गहाळ आहेत. Chromium ची काही कार्यक्षमता अक्षम केली जाईल.</translation>
 <translation id="3296368748942286671">Chromium बंद असताना पार्श्वभूमी अॅप्लिकेशन चालवणे सुरू ठेवा</translation>
-<translation id="3312805357485578561">Chromium ला असामान्य वर्तन आढळले आहे</translation>
 <translation id="331951419404882060">साइन इन करण्यात त्रुटीमुळे Chromium OS आपला डेटा संकालित करू शकले नाही.</translation>
 <translation id="3474745554856756813">हे या डिव्‍हाइस मधून <ph name="ITEMS_COUNT" /> आयटम हटवेल. नंतर आपला डेटा पुनर्प्राप्त करण्‍यासाठी, Chromium मध्ये <ph name="USER_EMAIL" /> म्हणून साइन इन करा.</translation>
 <translation id="3509308970982693815">कृपया सर्व Chromium विंडो बंद करा आणि पुन्‍हा प्रयत्‍न करा.</translation>
@@ -92,7 +91,6 @@
 <translation id="4050175100176540509">नवीनतम आवृत्तीमध्‍ये महत्त्वाच्या सुरक्षितता सुधारणा आणि नवीन वैशिष्ट्ये उपलब्‍ध आहेत.</translation>
 <translation id="407254336480250557"><ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /> निवडा</translation>
 <translation id="4077262827416206768">कृपया हा बदल प्रभावी होण्‍यासाठी सर्व Chromium विंडो बंद करा आणि Chromium पुन्‍हा लाँच करा.</translation>
-<translation id="4207043877577553402"><ph name="BEGIN_BOLD" />चेतावणी:<ph name="END_BOLD" /> आपला ब्राउझिंग इतिहास रेकॉर्ड करण्यापासून विस्तारांना Chromium प्रतिबंधित करू शकत नाही. गुप्त विंडोमध्ये हा विस्तार अक्षम करण्यासाठी, या पर्यायाची निवड रद्द करा.</translation>
 <translation id="421369550622382712">Chromium साठी उत्कृष्ट अॅप्स, गेम, विस्तार आणि थीम शोधा</translation>
 <translation id="4222580632002216401">आपण आता Chromium वर साइन इन केले आहे! आपल्या प्रशासकाद्वारे संकालन अक्षम केले गेले आहे.</translation>
 <translation id="4224199872375172890">Chromium अद्ययावत आहे.</translation>
@@ -174,7 +172,6 @@
 काही वैशिष्‍ट्ये अनुपलब्‍ध असू शकतील. कृपया एक भिन्न प्रोफाइल निर्देशिका निर्दिष्‍ट करा किंवा Chromium ची नवीन आवृत्ती वापरा.</translation>
 <translation id="6734080038664603509">&amp;Chromium अपडेट करा</translation>
 <translation id="6734291798041940871">आपल्या संगणकावर सर्व वापरकर्त्यांसाठी Chromium आधीच इंस्टॉल केले आहे.</translation>
-<translation id="6798578729981748444">आयात करणे पूर्ण करण्यासाठी, सर्व Firefox विंडो बंद करा.</translation>
 <translation id="6810143991807788455">वर्तमान सेटिंग्जचा अहवाल देऊन Chromium उत्कृष्ट बनविण्यास मदत करा</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6883876366448858277">Google शोध वर, परत करणार्‍या परिभाषा, चित्रे, शोध परिणाम आणि इतर शोध परिणामांना शब्द आणि त्याच्या आसपासचा संदर्भ पाठविते.</translation>

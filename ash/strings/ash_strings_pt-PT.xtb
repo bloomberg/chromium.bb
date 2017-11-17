@@ -26,7 +26,6 @@
 <translation id="15373452373711364">Cursor do rato grande</translation>
 <translation id="1550523713251050646">Clicar para obter mais opções</translation>
 <translation id="1621499497873603021">Tempo restante até a bateria terminar, <ph name="TIME_LEFT" /></translation>
-<translation id="16620462294541761">Lamentamos, mas não foi possível confirmar a sua palavra-passe. Tente novamente.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> restante(s)</translation>
 <translation id="1698760176351776263">Endereço IPv6: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">Este dispositivo é gerido pela empresa</translation>
@@ -69,8 +68,9 @@
 <translation id="2509468283778169019">CAPS LOCK está ativado</translation>
 <translation id="2532589005999780174">Modo de alto contraste</translation>
 <translation id="2597972630681408282">Luz noturna: <ph name="NIGHT_LIGHT_STATUS" /></translation>
+<translation id="2617342710774726426">O cartão SIM está bloqueado</translation>
 <translation id="2653659639078652383">Submeter</translation>
-<translation id="2675319268637823299">Um gestor não permitiu o início de sessão integrado para <ph name="USER_EMAIL" />.
+<translation id="2675319268637823299">Um administrador não permitiu o início de sessão integrado para <ph name="USER_EMAIL" />.
     Todos os utilizadores têm de terminar sessão para continuar.</translation>
 <translation id="2700058918926273959">A sessão termina em <ph name="SESSION_TIME_REMAINING" />. A sua sessão será terminada.</translation>
 <translation id="2727977024730340865">Ligado a um carregador de baixo consumo. O carregamento da bateria pode não ser fiável.</translation>
@@ -174,7 +174,6 @@
 <translation id="5571066253365925590">Bluetooth ativado</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
 <translation id="5600837773213129531">Prima Ctrl + Alt + Z para desativar os comentários de voz.</translation>
-<translation id="5612734644261457353">Lamentamos, mas não foi possível confirmar a sua palavra-passe. Nota: se alterou a palavra-passe recentemente, a nova palavra-passe será aplicada quando terminar sessão. Utilize a palavra-passe antiga aqui.</translation>
 <translation id="5648021990716966815">Entrada para microfone</translation>
 <translation id="5673434351075758678">De "<ph name="FROM_LOCALE" />" para "<ph name="TO_LOCALE" />" após a sincronização das suas definições.</translation>
 <translation id="5744083938413354016">Arrastamento através do toque</translation>
@@ -284,10 +283,10 @@ Utilize esta funcionalidade apenas com contas fidedignas.</translation>
 <translation id="8261506727792406068">Eliminar</translation>
 <translation id="8308637677604853869">Menu anterior</translation>
 <translation id="8351131234907093545">Criar nota</translation>
-<translation id="8392234662362215700">Prima Control-Shift-Espaço para mudar o esquema de teclado.</translation>
 <translation id="8428213095426709021">Definições</translation>
 <translation id="8433186206711564395">Definições da rede</translation>
 <translation id="8433977262951327081">O atalho para mostrar o balão do menu de opções de introdução na prateleira foi alterado. Utilize <ph name="NEW_SHORTCUT" /> em vez de <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="8452135315243592079">Cartão SIM em falta</translation>
 <translation id="8454013096329229812">A ligação Wi-Fi está ativada.</translation>
 <translation id="847056008324733326">Definições de escala do ecrã</translation>
 <translation id="8477270416194247200">Prima Alt + Pesquisar ou Shift para cancelar.</translation>
@@ -315,7 +314,6 @@ Utilize esta funcionalidade apenas com contas fidedignas.</translation>
 <translation id="9091626656156419976">Ecrã <ph name="DISPLAY_NAME" /> removido</translation>
 <translation id="9111102763498581341">Desbloquear</translation>
 <translation id="9151726767154816831">Reiniciar e efetuar um Powerwash para atualizar</translation>
-<translation id="9181036778675416867">Toque no botão da caneta stylus na prateleira para tirar uma nota, criar uma captura de ecrã ou utilizar o Assistente do Google, o ponteiro de laser ou a lupa.</translation>
 <translation id="9194617393863864469">Iniciar sessão com outro utilizador...</translation>
 <translation id="9201131092683066720">A bateria está <ph name="PERCENTAGE" />% cheia.</translation>
 <translation id="9210037371811586452">A sair do Modo de ambiente de trabalho unificado</translation>

@@ -91,7 +91,6 @@
 <translation id="5941711191222866238">Свернуть</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 час}one{# час}few{# часа}many{# часов}other{# часа}}</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME" /></translation>
-<translation id="598033046487663418">Все приложения</translation>
 <translation id="6012623610530968780">Страница <ph name="SELECTED_PAGE" /> из <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Удалить текст из окна поиска</translation>
 <translation id="6040143037577758943">Закрыть</translation>

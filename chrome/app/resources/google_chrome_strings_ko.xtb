@@ -13,7 +13,6 @@
 <translation id="123620459398936149">Chrome OS에서 데이터를 동기화하지 못했습니다. 동기화 암호를 업데이트하세요.</translation>
 <translation id="127345590676626841">Chrome은 자동으로 업데이트되므로 항상 최신 버전을 사용할 수 있습니다. 이 다운로드가 완료되면 Chrome이 다시 시작되며 계속 작업할 수 있습니다.</translation>
 <translation id="1302523850133262269">Chrome에서 최신 시스템 업데이트를 설치하는 동안 잠시 기다려 주세요.</translation>
-<translation id="1350930993895295930">Chrome에서 비정상적인 동작을 감지했습니다.</translation>
 <translation id="137466361146087520">Chrome 베타</translation>
 <translation id="1393853151966637042">Chrome 사용에 대한 도움말</translation>
 <translation id="1399397803214730675">컴퓨터에 Chrome 최신 버전이 설치되어 있습니다. 실행되지 않는 경우 제거한 후 다시 시도하세요.</translation>
@@ -199,7 +198,6 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="6566149418543181476">Chrome 업데이트 중(<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">Chrome 콘텐츠를 동기화하기 위해 <ph name="PROFILE_EMAIL" />을(를) 사용 중입니다. 동기화 환경설정을 업데이트하거나 Google 계정 없이 Chrome을 사용하려면 <ph name="SETTINGS_LINK" />(으)로 이동하세요.</translation>
 <translation id="6600954340915313787">Chrome에 복사됨</translation>
-<translation id="6626317981028933585">Mozilla Firefox 브라우저가 실행 중일 때는 설정 기능을 사용할 수 없습니다. 이 설정을 Chrome으로 가져오려면 현재 작업을 저장하고 Firefox 창을 모두 닫습니다. 그런 다음 '계속'을 클릭합니다.</translation>
 <translation id="6634887557811630702">Chrome이 최신 버전입니다.</translation>
 <translation id="6676384891291319759">인터넷 연결</translation>
 <translation id="6697947395630195233">Chrome이 이 사이트와 위치를 공유하려면 내 위치에 액세스하도록 허용해야 합니다.</translation>
@@ -282,7 +280,6 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="9026991721384951619">계정의 로그인 세부정보가 오래되어 Chrome OS에서 데이터를 동기화하지 못했습니다.</translation>
 <translation id="9067395829937117663">Chrome은 Windows 7 이상 버전에서 사용할 수 있습니다.</translation>
 <translation id="9084668267983921457">인증서가 실패했습니다. Chrome에 다시 로그인하거나 관리자에게 문의하여 자세히 알아보세요. <ph name="ADDITIONAL_EXPLANATION" /></translation>
-<translation id="9107728822479888688"><ph name="BEGIN_BOLD" />경고:<ph name="END_BOLD" /> Chrome에서는 확장 프로그램에 인터넷 사용기록이 저장될 수 있습니다. 시크릿 모드에서 이 확장 프로그램을 사용 중지하려면 옵션을 선택 취소하세요.</translation>
 <translation id="911206726377975832">인터넷 사용 기록도 삭제하시겠습니까?</translation>
 <translation id="919706545465235479">동기화를 시작하려면 Chrome을 업데이트하세요.</translation>
 <translation id="924447568950697217">Chrome을 기본 브라우저로 지정</translation>

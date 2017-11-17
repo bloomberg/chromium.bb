@@ -26,7 +26,6 @@
 <translation id="15373452373711364">Large mouse cursor</translation>
 <translation id="1550523713251050646">Click for more options</translation>
 <translation id="1621499497873603021">Time left until battery is empty, <ph name="TIME_LEFT" /></translation>
-<translation id="16620462294541761">Sorry, your password could not be verified. Please try again.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> left</translation>
 <translation id="1698760176351776263">IPv6 address: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">This device is enterprise managed</translation>
@@ -69,8 +68,9 @@
 <translation id="2509468283778169019">CAPS LOCK is on</translation>
 <translation id="2532589005999780174">High contrast mode</translation>
 <translation id="2597972630681408282">Night Light: <ph name="NIGHT_LIGHT_STATUS" /></translation>
+<translation id="2617342710774726426">SIM card is locked</translation>
 <translation id="2653659639078652383">Submit</translation>
-<translation id="2675319268637823299">An administrator has disallowed multiple sign-in for <ph name="USER_EMAIL" />.
+<translation id="2675319268637823299">An administrator has dismissed multiple sign-ins for <ph name="USER_EMAIL" />.
     All users must sign out to continue.</translation>
 <translation id="2700058918926273959">Session ends in <ph name="SESSION_TIME_REMAINING" />. You will be signed out.</translation>
 <translation id="2727977024730340865">Plugged in to a low-power charger. Battery charging may not be reliable.</translation>
@@ -174,7 +174,6 @@
 <translation id="5571066253365925590">Bluetooth enabled</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
 <translation id="5600837773213129531">Press Ctrl + Alt + Z to disable spoken feedback.</translation>
-<translation id="5612734644261457353">Sorry, your password still could not be verified. Note: if you changed your password recently, your new password will be applied once you sign out, please use the old password here.</translation>
 <translation id="5648021990716966815">Mic jack</translation>
 <translation id="5673434351075758678">From '<ph name="FROM_LOCALE" />' to '<ph name="TO_LOCALE" />' after syncing your settings.</translation>
 <translation id="5744083938413354016">Tap dragging</translation>
@@ -284,10 +283,10 @@ Only use this feature with accounts that you trust.</translation>
 <translation id="8261506727792406068">Delete</translation>
 <translation id="8308637677604853869">Previous menu</translation>
 <translation id="8351131234907093545">Create note</translation>
-<translation id="8392234662362215700">Tap Control-Shift-Space to switch keyboard layout.</translation>
 <translation id="8428213095426709021">Settings</translation>
 <translation id="8433186206711564395">Network settings</translation>
 <translation id="8433977262951327081">The shortcut to show the input options menu bubble in the shelf has changed. Please use <ph name="NEW_SHORTCUT" /> instead of <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="8452135315243592079">Missing SIM card</translation>
 <translation id="8454013096329229812">Wi-Fi is turned on.</translation>
 <translation id="847056008324733326">Display scale settings</translation>
 <translation id="8477270416194247200">Press Alt+Search or Shift to cancel.</translation>
@@ -315,7 +314,6 @@ Subsequent notifications, windows and dialogues may be split between desktops.</
 <translation id="9091626656156419976">Removed display <ph name="DISPLAY_NAME" /></translation>
 <translation id="9111102763498581341">Unlock</translation>
 <translation id="9151726767154816831">Restart and powerwash to update</translation>
-<translation id="9181036778675416867">Tap the stylus button on the shelf to take a note or screenshot, or to use the assistant, laser pointer or magnifying glass.</translation>
 <translation id="9194617393863864469">Sign in another user...</translation>
 <translation id="9201131092683066720">Battery is <ph name="PERCENTAGE" />% full.</translation>
 <translation id="9210037371811586452">Exiting unified desktop mode</translation>

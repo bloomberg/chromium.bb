@@ -69,7 +69,6 @@
 <translation id="3258596308407688501">Chromium దీని డేటా డైరెక్టరీని చదవలేదు మరియు దీనిలో వ్రాయలేదు: <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="328888136576916638">Google API కీలు లేవు. Chromium కార్యాచరణలో కొంత భాగం నిలిపివేయబడుతుంది.</translation>
 <translation id="3296368748942286671">Chromium మూసివేయబడినప్పుడు నేపథ్య అనువర్తనాలను అమలు చేయడాన్ని కొనసాగించు</translation>
-<translation id="3312805357485578561">Chromium అసాధారణ ప్రవర్తనను గుర్తించింది</translation>
 <translation id="331951419404882060">సైన్ ఇన్ చేయడంలో లోపం సంభవించినందున Chromium OS మీ డేటాను సమకాలీకరించలేకపోయింది.</translation>
 <translation id="3474745554856756813">ఇది ఈ పరికరం నుండి <ph name="ITEMS_COUNT" /> అంశాలను తొలగిస్తుంది. మీ డేటాను తర్వాత తిరిగి పొందడానికి, Chromiumకి <ph name="USER_EMAIL" /> వలె సైన్ ఇన్ చేయండి.</translation>
 <translation id="3509308970982693815">దయచేసి అన్ని Chromium విండోలను మూసివేసి, మళ్లీ ప్రయత్నించండి.</translation>
@@ -89,7 +88,6 @@
 <translation id="4050175100176540509">ముఖ్యమైన భద్రతా మెరుగుదలలు మరియు కొత్త లక్షణాలు తాజా సంస్కరణలో అందుబాటులో ఉన్నాయి.</translation>
 <translation id="407254336480250557"><ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" />ని ఎంచుకోండి</translation>
 <translation id="4077262827416206768">దయచేసి అన్ని Chromium విండోలను మూసివేసి, ఈ మార్పు ప్రభావాన్ని కావడం కోసం Chromiumని మళ్లీ ప్రారంభించండి.</translation>
-<translation id="4207043877577553402"><ph name="BEGIN_BOLD" />హెచ్చరిక:<ph name="END_BOLD" /> Chromium మీ బ్రౌజింగ్ చరిత్రను రికార్డ్ చేయడం నుండి పొడిగింపును నిరోధించలేదు. ఈ పొడిగింపును అజ్ఞాత మోడ్‌లో ఆపివేయడానికి, ఈ ఎంపికను రద్దు చేయండి.</translation>
 <translation id="421369550622382712">Chromium కోసం గొప్ప అనువర్తనాలు, ఆటలు, పొడిగింపులు మరియు థీమ్‌లను కనుగొనండి.</translation>
 <translation id="4222580632002216401">ఇప్పుడు మీరు Chromiumకు సైన్ ఇన్ చేసారు! మీ నిర్వాహకులు సమకాలీకరణను నిలిపివేసారు.</translation>
 <translation id="4224199872375172890">Chromium తాజాగా ఉంది.</translation>
@@ -171,7 +169,6 @@
 కొన్ని లక్షణాలు అందుబాటులో ఉండకపోవచ్చు. దయచేసి వేరొక ప్రొఫైల్ డైరెక్టరీని పేర్కొనండి లేదా Chromium యొక్క క్రొత్త సంస్కరణని ఉపయోగించండి.</translation>
 <translation id="6734080038664603509">&amp;Chromiumని నవీకరించండి</translation>
 <translation id="6734291798041940871">మీ కంప్యూటర్‌లోని వినియోగదారులందరికీ Chromium ఇప్పటికే ఇన్‌స్టాల్ చేయబడింది.</translation>
-<translation id="6798578729981748444">దిగుమతిని పూర్తి చేయాలంటే, అన్ని Firefox విండోలను మూసివేయండి.</translation>
 <translation id="6810143991807788455">ప్రస్తుత సెట్టింగ్‌లను నివేదించడం ద్వారా Chromiumని మెరుగుపరచడంలో సహాయపడండి</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6883876366448858277">ఒక పదాన్ని మరియు దాని సంబంధిత సందర్భాన్ని Google శోధనకు పంపుతుంది, ప్రతిస్పందనగా దాని నుండి నిర్వచనాలు, చిత్రాలు మరియు ఇతర శోధన ఫలితాలను అందిస్తుంది.</translation>

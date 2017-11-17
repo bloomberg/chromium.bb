@@ -26,7 +26,6 @@
 <translation id="15373452373711364">大型滑鼠游標</translation>
 <translation id="1550523713251050646">按一下即可查看更多選項</translation>
 <translation id="1621499497873603021">電池剩餘使用時間：<ph name="TIME_LEFT" /></translation>
-<translation id="16620462294541761">很抱歉，系統無法驗證你的密碼，請再試一次。</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> 後用盡</translation>
 <translation id="1698760176351776263">IPv6 位址：<ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">這個裝置受到企業管理</translation>
@@ -69,6 +68,7 @@
 <translation id="2509468283778169019">大寫鍵已啟用</translation>
 <translation id="2532589005999780174">高反差模式</translation>
 <translation id="2597972630681408282">夜燈功能：<ph name="NIGHT_LIGHT_STATUS" /></translation>
+<translation id="2617342710774726426">SIM 卡已鎖定</translation>
 <translation id="2653659639078652383">提交</translation>
 <translation id="2675319268637823299">管理員已禁止 <ph name="USER_EMAIL" /> 的多重登入功能。
     所有使用者都必須登出，才能繼續操作。</translation>
@@ -174,7 +174,6 @@
 <translation id="5571066253365925590">藍牙已啟用</translation>
 <translation id="5597451508971090205"><ph name="DATE" /><ph name="SHORT_WEEKDAY" /></translation>
 <translation id="5600837773213129531">按下 Ctrl + Alt + Z 鍵即可停用互動朗讀功能。</translation>
-<translation id="5612734644261457353">很抱歉，系統仍然無法驗證你的密碼。注意：如果你的密碼最近有所異動，新密碼會在你登出後立即生效，目前請在這裡使用舊密碼。</translation>
 <translation id="5648021990716966815">麥克風插孔</translation>
 <translation id="5673434351075758678">同步處理設定後，「<ph name="FROM_LOCALE" />」已變更為「<ph name="TO_LOCALE" />」。</translation>
 <translation id="5744083938413354016">輕觸拖曳</translation>
@@ -284,10 +283,10 @@
 <translation id="8261506727792406068">刪除</translation>
 <translation id="8308637677604853869">前一個選單</translation>
 <translation id="8351131234907093545">寫筆記</translation>
-<translation id="8392234662362215700">按下 Ctrl + Shift + 空格鍵可切換鍵盤配置。</translation>
 <translation id="8428213095426709021">設定</translation>
 <translation id="8433186206711564395">網路設定</translation>
 <translation id="8433977262951327081">在檔案櫃中顯示輸入選項選單方塊的快速鍵已變更，請改用：<ph name="NEW_SHORTCUT" /> (停用 <ph name="OLD_SHORTCUT" />)。</translation>
+<translation id="8452135315243592079">找不到 SIM 卡</translation>
 <translation id="8454013096329229812">Wi-Fi 已開啟。</translation>
 <translation id="847056008324733326">顯示比例設定</translation>
 <translation id="8477270416194247200">按下 Alt + 搜尋鍵或 Shift 鍵即可取消。</translation>
@@ -315,7 +314,6 @@
 <translation id="9091626656156419976">「<ph name="DISPLAY_NAME" />」螢幕已移除</translation>
 <translation id="9111102763498581341">解除鎖定</translation>
 <translation id="9151726767154816831">重新啟動並執行 Powerwash 即可更新</translation>
-<translation id="9181036778675416867">輕觸檔案櫃的觸控筆圖示即可做筆記、擷取螢幕畫面，以及使用小幫手、雷射筆和放大鏡。</translation>
 <translation id="9194617393863864469">登入其他使用者帳戶...</translation>
 <translation id="9201131092683066720">電池電量為 <ph name="PERCENTAGE" />%。</translation>
 <translation id="9210037371811586452">退出整合桌面模式</translation>

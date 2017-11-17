@@ -13,7 +13,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="123620459398936149">Det gick inte att synkronisera data med Chrome OS. Uppdatera lösenfrasen för synkronisering.</translation>
 <translation id="127345590676626841">Chrome uppdateras automatiskt så att du alltid har den senaste versionen. När den här nedladdningen är klar startas Chrome om och sedan är du igång.</translation>
 <translation id="1302523850133262269">Vänta medan de senaste systemuppdateringarna installeras av Chrome.</translation>
-<translation id="1350930993895295930">Chrome har upptäckt ovanligt beteende</translation>
 <translation id="137466361146087520">Google Chrome beta</translation>
 <translation id="1393853151966637042">Få hjälp med att använda Chrome</translation>
 <translation id="1399397803214730675">Det finns redan en senare version av Google Chrome på den här datorn. Om programmet inte fungerar avinstallerar du Google Chrome och försöker igen.</translation>
@@ -125,7 +124,7 @@ Ytterligare anvisningar har skickats med e-post till dig på <ph name="ACCOUNT_E
 <translation id="4480040274068703980">Det gick inte att synkronisera data med Chrome OS på grund av ett inloggningsfel.</translation>
 <translation id="4561051373932531560">I Google Chrome kan du klicka på ett telefonnummer på nätet och ringa det med Skype!</translation>
 <translation id="4567424176335768812">Du är inloggad som <ph name="USER_EMAIL_ADDRESS" />. Nu kan du komma åt dina bokmärken, historik och andra inställningar på alla enheter som du är inloggad på.</translation>
-<translation id="4600710005438004015">Det gick inte att uppdatera Chrome till den senaste versionen, så du går miste om några nya funktioner och säkerhetskorrigeringar.</translation>
+<translation id="4600710005438004015">Det gick inte att uppdatera Chrome till den senaste versionen. Därför går du miste om nya funktioner och säkerhetskorrigeringar.</translation>
 <translation id="4631713731678262610">Dölj i Chrome-menyn</translation>
 <translation id="4633000520311261472">Vi har gjort Chrome säkrare genom att inaktivera vissa tillägg som inte finns i <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> och som kan ha lagts till utan att du vet om det.</translation>
 <translation id="4664415150087723341">En särskild säkerhetsuppdatering för Google Chrome installerades precis. Tillämpa uppdateringen genom att starta om (vi återställer flikarna).</translation>
@@ -199,7 +198,6 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="6566149418543181476">Google Chrome uppdateras (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">Du använder <ph name="PROFILE_EMAIL" /> för att synkronisera dina grejer i Chrome. Om du vill uppdatera synkroniseringsinställningen eller använda Chrome utan ett Google-konto besöker du <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6600954340915313787">Kopierat till Chrome</translation>
-<translation id="6626317981028933585">Inställningarna för Mozilla Firefox är tyvärr inte tillgängliga medan webbläsaren körs. Om du vill importera dessa inställningar till Google Chrome måste du spara ditt arbete och stänga alla Firefox-fönster. Klicka sedan på Fortsätt.</translation>
 <translation id="6634887557811630702">Google Chrome behöver inte uppdateras.</translation>
 <translation id="6676384891291319759">Gå ut på Internet</translation>
 <translation id="6697947395630195233">Du behöver ge Chrome åtkomstbehörighet till din plats om den ska kunna delas med webbplatsen.</translation>
@@ -282,7 +280,6 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="9026991721384951619">Det gick inte att synkronisera data med Chrome OS eftersom inloggningsuppgifterna för kontot är inaktuella.</translation>
 <translation id="9067395829937117663">För Google Chrome krävs Windows 7 eller senare.</translation>
 <translation id="9084668267983921457">Autentiseringscertifikatet fungerade inte. Logga in i Google Chrome igen eller kontakta administratören. <ph name="ADDITIONAL_EXPLANATION" /></translation>
-<translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Varning!<ph name="END_BOLD" /> Google Chrome kan inte förhindra tillägg från att registrera din webbhistorik. Om du vill inaktivera det här tillägget i inkognitoläge avmarkerar du detta tillval.</translation>
 <translation id="911206726377975832">Vill du även ta bort din webbinformation?</translation>
 <translation id="919706545465235479">Du måste uppdatera Chrome innan synkroniseringen kan starta</translation>
 <translation id="924447568950697217">Använda Chrome som standardwebbläsare</translation>

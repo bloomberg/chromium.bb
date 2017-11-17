@@ -78,6 +78,9 @@
 <translation id="154408704832528245">బట్వాడా చిరునామాను ఎంచుకోండి</translation>
 <translation id="1549470594296187301">ఈ లక్షణాన్ని ఉపయోగించడానికి జావాస్క్రిప్ట్ తప్పనిసరిగా ప్రారంభించాలి.</translation>
 <translation id="1559528461873125649">అటువంటి ఫైల్ లేదా డైరెక్టరీ లేదు</translation>
+<translation id="1559572115229829303">&lt;p&gt;మీ పరికరం తేదీ మరియు సమయం (<ph name="DATE_AND_TIME" />) తప్పుగా ఉన్నందున <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />కి ప్రైవేట్ కనెక్షన్ ఏర్పాటు చేయడం సాధ్యపడదు.&lt;/p&gt;
+
+          &lt;p&gt;దయచేసి &lt;strong&gt;సెట్టింగ్‌లు&lt;/strong&gt; అనువర్తనం యొక్క &lt;strong&gt;సాధారణం&lt;/strong&gt; విభాగంలో తేదీ మరియు సమయాన్ని సర్దుబాటు చేయండి.&lt;/p&gt;</translation>
 <translation id="1583429793053364125">ఈ వెబ్ పేజీని ప్రదర్శిస్తున్నప్పుడు ఏదో తప్పు జరిగింది.</translation>
 <translation id="1590457302292452960">శక్తివంతమైన పాస్‌వర్డ్‌ని రూపొందించండి...</translation>
 <translation id="1592005682883173041">స్థానిక డేటా ప్రాప్యత</translation>
@@ -359,13 +362,9 @@
 <translation id="3530944546672790857">{COUNT,plural, =0{సమకాలీకరించిన పరికరాల్లో కనీసం 1 అంశం}=1{1 అంశం (మరియు సమకాలీకరించిన పరికరాల్లో మరిన్ని)}other{# అంశాలు (మరియు సమకాలీకరించిన పరికరాల్లో మరిన్ని)}}</translation>
 <translation id="3539171420378717834">ఈ పరికరంలో ఈ కార్డ్ కాపీని ఉంచు</translation>
 <translation id="3542684924769048008">దీని కోసం పాస్‌వర్డ్‌ను ఉపయోగించండి:</translation>
-<translation id="3545341443414427877">మీ కంప్యూటర్ తేదీ మరియు సమయం (<ph name="DATE_AND_TIME" />) తప్పుగా ఉన్నందున <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />కి ప్రైవేట్ కనెక్షన్ ఏర్పాటు కాలేదు. <ph name="BEGIN_LEARN_MORE_LINK" />మరింత తెలుసుకోండి<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="3549644494707163724">మీ స్వంత సమకాలీకరణ రహస్య పదబంధంతో సమకాలీకరించబడిన డేటా మొత్తాన్ని గుప్తీకరించండి</translation>
 <translation id="3556433843310711081">మీ నిర్వాహకుడు మీ కోసం దీన్ని అన్‌బ్లాక్ చేయగలరు</translation>
 <translation id="3566021033012934673">మీ కనెక్షన్ ప్రైవేట్ కాదు</translation>
-<translation id="3569145463236695319">&lt;p&gt;మీ పరికరం తేదీ మరియు సమయం (<ph name="DATE_AND_TIME" />) తప్పుగా ఉన్నందున <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />కి ప్రైవేట్ కనెక్షన్ ఏర్పాటు కాలేదు.&lt;/p&gt;
-
-    &lt;p&gt;దయచేసి &lt;strong&gt;సెట్టింగ్‌లు&lt;/strong&gt; అనువర్తనం యొక్క &lt;strong&gt;సాధారణ&lt;/strong&gt; విభాగం నుండి తేదీ మరియు సమయాన్ని సర్దుబాటు చేయండి.&lt;/p&gt; <ph name="BEGIN_LEARN_MORE_LINK" />మరింత తెలుసుకోండి<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="358285529439630156">క్రెడిట్ మరియు ప్రీపెయిడ్ కార్డ్‌లు ఆమోదించబడతాయి.</translation>
 <translation id="3582930987043644930">పేరు జోడించండి</translation>
@@ -580,6 +579,7 @@
     <ph name="LIST_ITEM" />మీ కంప్యూటర్ నుండి శాశ్వతంగా సాఫ్ట్‌వేర్‌ను ఎలా తొలగించాలో తెలుసుకోవడానికి <ph name="BEGIN_LEARN_MORE_LINK" />Chrome సహాయ కేంద్రం<ph name="END_LEARN_MORE_LINK" />ని సందర్శించండి
     <ph name="END_LIST" /></translation>
 <translation id="5285570108065881030">సేవ్ చేసిన అన్ని పాస్‌వర్డ్‌లను చూపు</translation>
+<translation id="5287240709317226393">కుక్కీలను చూపించు</translation>
 <translation id="5299298092464848405">విధానాన్ని అన్వయించడంలో లోపం</translation>
 <translation id="5308380583665731573">కనెక్ట్ చేయండి</translation>
 <translation id="5308689395849655368">క్రాష్ నివేదిక నిలిపివెయ్యబడింది.</translation>
@@ -687,7 +687,6 @@
 <translation id="614940544461990577">ఇలా చేసి ప్రయత్నించండి:</translation>
 <translation id="6151417162996330722">సర్వర్ ప్రమాణపత్రం చెల్లుబాటు వ్యవధి చాలా ఎక్కువ కాలం ఉంది.</translation>
 <translation id="6157877588268064908">రవాణా పద్ధతులు మరియు అవసరాలను చూడాలంటే, చిరునామాని ఎంచుకోండి</translation>
-<translation id="6158003235852588289">Google సురక్షిత బ్రౌజింగ్ ఇటీవల <ph name="SITE" />లో ఫిషింగ్‌ని గుర్తించింది. ఫిషింగ్ సైట్‌లు వేరే వెబ్‌సైట్‌ల వలె ప్రవర్తించడం ద్వారా మిమ్మల్ని మాయ చేయవచ్చు.</translation>
 <translation id="6165508094623778733">మరింత తెలుసుకోండి</translation>
 <translation id="6169916984152623906">‌ఇప్పుడు మీరు వ్యక్తిగతంగా బ్రౌజ్ చేయవచ్చు మరియు ఈ పరికరాన్ని ఉపయోగించే ఇతర వ్యక్తులకు మీ కార్యాచరణ కనిపించదు. అయినప్పటికీ, డౌన్‌లోడ్‌లు మరియు బుక్‌మార్క్‌లు సేవ్ చేయబడతాయి.</translation>
 <translation id="6177128806592000436">ఈ సైట్‌కి మీ కనెక్షన్ సురక్షితంగా లేదు</translation>
@@ -778,7 +777,6 @@
 <translation id="6973656660372572881">రెండు స్థిర ప్రాక్సీ సర్వర్లు మరియు ఒక .pac స్క్రిప్ట్ URL పేర్కొనబడ్డాయి.</translation>
 <translation id="6989763994942163495">అధునాతన సెట్టింగ్‌లను చూపించు...</translation>
 <translation id="7012363358306927923">చైనా యూనియన్ పే</translation>
-<translation id="7012372675181957985">మీ Google ఖాతా <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />లో ఇతర బ్రౌజింగ్ చరిత్ర రూపాలు ఉండవచ్చు.</translation>
 <translation id="7029809446516969842">పాస్‌వర్డ్‌లు</translation>
 <translation id="7050187094878475250">మీరు <ph name="DOMAIN" />ని చేరుకోవడానికి ప్రయత్నించారు, కానీ సర్వర్ అందించిన ప్రమాణపత్రం విశ్వసించలేనంత ఎక్కువ చెల్లుబాటు వ్యవధిని కలిగి ఉంది.</translation>
 <translation id="7053983685419859001">నిరోధించు</translation>
@@ -806,6 +804,7 @@
 <translation id="7220786058474068424">ప్రాసెస్ చేస్తోంది</translation>
 <translation id="724691107663265825">సైట్ మున్ముందు మాల్వేర్ కలిగి ఉంది</translation>
 <translation id="724975217298816891">మీ కార్డ్ వివరాలను నవీకరించడానికి <ph name="CREDIT_CARD" /> కార్డ్ గడువు ముగింపు తేదీ మరియు CVCని నమోదు చేయండి. మీరు నిర్ధారించిన తర్వాత, మీ కార్డ్ వివరాలు ఈ సైట్‌తో భాగస్వామ్యం చేయబడతాయి.</translation>
+<translation id="725866823122871198">మీ కంప్యూటర్ తేదీ మరియు సమయం (<ph name="DATE_AND_TIME" />) తప్పుగా ఉన్నందున <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />కి ప్రైవేట్ కనెక్షన్ ఏర్పాటు చేయబడదు.</translation>
 <translation id="7260504762447901703">ప్రాప్యతను ఉపసంహరించు</translation>
 <translation id="7271803869921933038">ఆమోదించే ప్రీపెయిడ్ కార్డ్‌లు</translation>
 <translation id="7275334191706090484">నిర్వహించబడిన బుక్‌మార్క్‌లు</translation>
@@ -820,7 +819,6 @@
 <translation id="7378627244592794276">వద్దు</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7390545607259442187">కార్డ్‌ని నిర్ధారించండి</translation>
-<translation id="739697976928952788">సేవ్ చేసిన అన్ని పాస్‌వర్డ్‌లను చూపు</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419106976560586862">ప్రొఫైల్ మార్గం</translation>
 <translation id="7424977062513257142">ఈ వెబ్‌పేజీలోని పొందుపరిచిన పేజీ ఇలా చెబుతోంది:</translation>
@@ -950,7 +948,6 @@
 <translation id="8293206222192510085">బుక్‌మార్క్‌లను జోడించు</translation>
 <translation id="8294431847097064396">మూలం</translation>
 <translation id="8298115750975731693">మీరు ఉపయోగిస్తున్న Wi-Fi (<ph name="WIFI_NAME" />)కి మీరు <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />ని సందర్శించడం అవసరం.</translation>
-<translation id="8306404619377842860">మీ పరికరం యొక్క తేదీ మరియు సమయం (<ph name="DATE_AND_TIME" />) తప్పుగా ఉన్న కారణంగా <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />కు ప్రైవేట్ కనెక్షన్‌ని ఏర్పాటు చేయడం సాధ్యం కాదు. <ph name="BEGIN_LEARN_MORE_LINK" />మరింత తెలుసుకోండి<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8308427013383895095">నెట్‌వర్క్ కనెక్షన్‌తో సమస్య ఉన్నందున అనువాదం విఫలమైంది.</translation>
 <translation id="8311129316111205805">సెషన్‌ని లోడ్ చేయి</translation>
 <translation id="8332188693563227489"><ph name="HOST_NAME" />కి ప్రాప్యత నిరాకరించబడింది</translation>
@@ -976,6 +973,7 @@
 <translation id="8543181531796978784">మీరు <ph name="BEGIN_ERROR_LINK" />గుర్తింపు సమస్యను నివేదించవచ్చు<ph name="END_ERROR_LINK" /> లేదా మీకు మీ భద్రతకు పొంచి ఉన్న ప్రమాదాలు అర్థం అయ్యి ఉంటే, <ph name="BEGIN_LINK" />ఈ అసురక్షిత సైట్‌ను సందర్శించండి<ph name="END_LINK" />.</translation>
 <translation id="8543556556237226809">ప్రశ్నలు ఏమైనా ఉన్నాయా? మీ ప్రొఫైల్‌ను పర్యవేక్షించే వ్యక్తిని సంప్రదించండి.</translation>
 <translation id="8553075262323480129">పేజీ భాష నిర్థారించలేకపోయినందున అనువాదం విఫలమైంది.</translation>
+<translation id="8559762987265718583">మీ పరికరం తేదీ మరియు సమయం (<ph name="DATE_AND_TIME" />) తప్పుగా ఉన్నందున <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />కి ప్రైవేట్ కనెక్షన్ ఏర్పాటు చేయబడదు.</translation>
 <translation id="8571890674111243710">పేజీని <ph name="LANGUAGE" />కు అనువదిస్తోంది...</translation>
 <translation id="858637041960032120">ఫోన్ నం. జోడిం.
 </translation>

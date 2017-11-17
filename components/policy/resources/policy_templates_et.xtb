@@ -623,7 +623,6 @@
 
       Vaadake lisateavet ohutu sirvimise kohta aadressilt https://developers.google.com/safe-browsing.</translation>
 <translation id="3016255526521614822">Lisage lubatud rakenduste loendisse märkmete tegemise rakendused, mida <ph name="PRODUCT_OS_NAME" /> võib lukustuskuval näidata</translation>
-<translation id="3021409116652377124">Keela pistikprogrammide leidja</translation>
 <translation id="3030000825273123558">Luba mõõdikute aruandlus</translation>
 <translation id="3034580675120919256">Võimaldab määrata, kas veebisaitidel on lubatud käitada JavaScripti. JavaScripti käitamise saab kõikidel veebisaitidel lubada või keelata.
 
@@ -917,25 +916,6 @@
 
           Tavaliselt on see andmepüügi eest kaitsmiseks keelatud. Kui see reegel ei ole määratud, siis see keelatakse ja kolmanda osapoole alamsisu ei saa HTTP Basic Authi hüpikdialoogina avaneda.</translation>
 <translation id="4056910949759281379">Keela SPDY-protokoll</translation>
-<translation id="4077363032873906037">Lubab rakenduse <ph name="PRODUCT_NAME" /> piiratud sisselogimise funktsiooni Google'i rakendustes ja takistab kasutajaid seadet muutmast.
-
-      Kui määrate selle seade, saab kasutaja Google'i rakendusi kasutada
-      ainult määratud domeenide kontodega (pange tähele, et see ei
-      tööta saidil gmail.com/googlemail.com).
-
-      Seade EI takista kasutajat sisse logimast hallatud seadmes, mis
-      nõuab Google'i autentimist. Kasutajal on lubatud muudelt domeenidelt
-      pärit kontodele sisse logida, ent nende kontodega Google'i rakendusi
-      kasutades kuvatakse veateade.
-
-      Kui jätate seade tühjaks/seadistamata, on Google'i rakenduste
-      kasutamine lubatud kõikide kontodega.
-
-      Reegli kasutamisel lisatakse kõigile google.com-i domeenidele edastatavate
-      HTTP- ja HTTPS-taotlustele päis X-GoogApps-Allowed-Domains, nagu on
-      kirjeldatud aadressil https://support.google.com/a/answer/1668854.
-
-      Kasutajad ei saa seadet muuta ega alistada.</translation>
 <translation id="408029843066770167">Google'i kellaajateenuses päringute lubamine</translation>
 <translation id="4088589230932595924">Inkognito režiim on jõustatud</translation>
 <translation id="4088983553732356374">Võimaldab teil seadistada, kas veebisaitidel on lubatud määrata kohalikke andmeid. Kohalike andmete määramise saab lubada või keelata kõigi veebisaitide jaoks.
@@ -953,7 +933,6 @@
           Reegli väärtus tuleb määrata millisekundites.</translation>
 <translation id="4105989332710272578">Sertifikaadi läbipaistvuse jõustamise keelamine URL-ide loendi jaoks</translation>
 <translation id="4121350739760194865">Rakenduste reklaamide ilmumise takistamine uuel vahelehel</translation>
-<translation id="4133144443101280166">Väljalülitatud aegade intervallid, kui seadme reegel OffHours |ignored_policy_proto_tags| avaldatakse</translation>
 <translation id="4157003184375321727">OS-ist ja püsivara versioonist teavitamine</translation>
 <translation id="4183229833636799228">Pistikprogrammi <ph name="FLASH_PLUGIN_NAME" /> vaikeseade</translation>
 <translation id="4192388905594723944">URL kaugjuurdepääsuga kliendi autentimismärgi kinnitamiseks</translation>
@@ -1179,7 +1158,6 @@
           Näiteks reegel  <ph name="EXTENSION_POLICY_EXAMPLE" /> installib laienduse <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> rakenduse standardselt Chrome’i veebipoe „värskenduse” URL-ilt. Lisateavet hostimise laienduste kohta leiate siit: <ph name="LINK_TO_EXTENSION_DOC2" />.
 
           Kui see reegel jäetakse määramata, ei installita automaatselt mitte ühtegi rakendust ega laiendust ja kasutaja saab iga rakenduse või laienduse desinstallida teenuses <ph name="PRODUCT_NAME" />.</translation>
-<translation id="4882546920824859909">Google'i rakenduste kasutamise loaga domeenide määramine</translation>
 <translation id="4897928009230106190">Täpsustab parameetri, mida kasutatakse POST-meetodiga soovituse otsingu tegemisel. See koosneb komaga eraldatud nime/väärtuse paaridest. Kui väärtus on malliparameeter, nt {searchTerms} ülalolevas näites, siis asendatakse see otsingutermini andmetega.
 
           See reegel on valikuline. Kui see pole määratud, siis saadetakse soovituse otsingu taotlus GET-meetodiga.
@@ -1247,7 +1225,6 @@
 
           Kui jätate selle reegli määramata, siis kasutatakse kõikide saitide puhul globaalset vaikeväärtust, mis pärineb reeglist „DefaultNotificationsSetting”, kui see on määratud, või kasutaja isiklikku konfigureerimist.</translation>
 <translation id="5219844027738217407">Androidi rakenduste puhul mõjutab see reegel ainult mikrofoni. Kui reegli väärtuseks on määratud Tõene, on mikrofon ilma eranditeta kõigi Androidi rakenduste puhul vaigistatud.</translation>
-<translation id="5226033722357981948">Määramine, kas pistikprogrammide leidja tuleks keelata</translation>
 <translation id="523505283826916779">Juurdepääsuseaded</translation>
 <translation id="5247006254130721952">Blokeeri ohtlikud allalaadimised</translation>
 <translation id="5255162913209987122">Võib soovitada</translation>
@@ -1385,25 +1362,6 @@
 <translation id="5728154254076636808">Lubab teenuse <ph name="PRODUCT_NAME" /> profiiliandmete puhul rändluskoopiate loomise</translation>
 <translation id="5732972008943405952">Esmakordsel käivitamisel vaikebrauserist automaatselt täidetud vormi andmete importimine</translation>
 <translation id="5765780083710877561">Kirjeldus:</translation>
-<translation id="5768309557753179144">Nii Chromium kui ka Google Chrome toetavad sama reeglite
-      komplekti. Pange tähele, et see dokument võib sisaldada avaldamata reegleid
-      (seega kirje „toetatud versioonis” viitab rakenduse <ph name="PRODUCT_NAME" /> veel avaldamata
-      versioonile) ja sellised reeglid võivad ette teatamata
-      muutuda või need võidakse eemaldada ning nende puhul ei pakuta
-      mingeid garantiisid (sh turvalisuse ja privaatsusega seotud garantiid).
-
-      Need reeglid on mõeldud ainult teie organisatsioonisiseste teenuse
-      <ph name="PRODUCT_NAME" /> eksemplaride seadistamiseks.
-      Nende reeglite kasutamist väljaspool organisatsiooni (nt avalikult
-      levitatavas programmis) loetakse pahavaraks ja ilmselt
-      tähistavad selle pahavaraks ka Google ja viirusetõrjepakkujad.
-
-      Neid seadeid ei pea käsitsi seadistama. Hõlpsalt kasutatavad
-      mallid Windowsile, Macile ja Linuxile on allalaadimiseks saadaval siin: <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
-
-      Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu,
-      kuigi reegli varustamist registri kaudu toetatakse endiselt Windowsi
-      eksemplarides, mis on liidetud domeeniga <ph name="MS_AD_NAME" />.</translation>
 <translation id="5770738360657678870">Arendaja kanal (võib olla ebastabiilne)</translation>
 <translation id="5774856474228476867">Vaikeotsingupakkuja otsingu URL</translation>
 <translation id="5776485039795852974">Küsi iga kord, kui sait tahab näidata töölauateatisi</translation>
@@ -1729,9 +1687,6 @@
       Kui see reegel jäetakse määramata, on võrguprognoosid lubatud, kuid kasutaja saab seda muuta.</translation>
 <translation id="6658245400435704251">Määrab sekundite arvu pärast värskenduse serverist väljalaskmist, mille jooksul võib seade värskenduse allalaadimist juhuslikult viivitada. Seade võib oodata osa ajast reaalajas ja ülejäänud aja sõltuvalt värskenduste otsimiste arvust. Igal juhul on hajutatuse ülempiir seotud ajalise konstandiga, et seade ei jääks värskenduse allalaadimist igaveseks ootama.</translation>
 <translation id="6689792153960219308">Riistvara oleku aruanne</translation>
-<translation id="6693751878507293182">Seade lubamisel keelatakse rakenduses <ph name="PRODUCT_NAME" /> automaatne otsing ja puuduvate pistikprogrammide installimine.
-
-      Kui keelate valiku või jätate selle määramata, siis on pistikprogrammide leidja aktiivne.</translation>
 <translation id="6699880231565102694">Kahetasandilise autentimise lubamine kaugjuurdepääsu hostidele</translation>
 <translation id="6724842112053619797">Kui lubate selle seade, kirjutatakse teenuse <ph name="PRODUCT_NAME" /> profiilide salvestatud seaded, näiteks järjehoidjad, automaatse täitmise andmed, paroolid jms, faili, mis talletatakse rändlust kasutava profiili kausta või asukohta, mille administraator määrab reegliga <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Reegli lubamine keelab pilveteenusega sünkroonimise.
 
@@ -2014,6 +1969,7 @@
 
           Kui seade on keelatud või pole määratud, siis pole kahetasandiline autentimine lubatud ja vaikimisi kasutatakse kasutaja määratud PIN-koodi.</translation>
 <translation id="7750991880413385988">Ava uus vaheleht</translation>
+<translation id="7754704193130578113">Küsi enne iga faili allalaadimist, kuhu see salvestada.</translation>
 <translation id="7761446981238915769">Sisselogimisekraanil olevate installitud rakenduste loendi seadistamine</translation>
 <translation id="7761526206824804472">Avalikule seansile määratakse üks või mitu soovitatud lokaati, et kasutajad saaksid hõlpsalt valida ühe lokaatidest.
 
@@ -2277,11 +2233,6 @@
 <translation id="8451988835943702790">Kasuta avalehena Uut vahelehte</translation>
 <translation id="8465065632133292531">Parameetrid Instant-URL-i jaoks, mis kasutab POST-meetodit</translation>
 <translation id="847472800012384958">Keela kõikidel saitidel hüpikakende näitamine</translation>
-<translation id="8476127435468057643">Juhib, kas NTLMv2 on lubatud või mitte.
-
-          Kõik hiljutised Samba ja Windowsi serverid toetavad NTLMv2. See tuleks keelata ainult tagasiulatuva ühilduvuse puhul ja see vähendab autentimise turvalisust.
-
-          Kui see reegel on määramata, siis on vaikeväärtus tagasiulatuva ühilduvuse puhul väär, kuid tulevikus muudetakse see tõeseks.</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
 <translation id="8484458986062090479">Kohandab loendit URL-i mustritest, mille peab alati renderdama hostbrauser.
 

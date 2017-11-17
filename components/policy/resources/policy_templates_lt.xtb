@@ -623,7 +623,6 @@
 
       Daugiau informacijos apie Saugų naršymą rasite adresu https://developers.google.com/safe-browsing.</translation>
 <translation id="3016255526521614822">Įtraukti į baltąjį sąrašą užrašų programas, kurios leidžiamos „<ph name="PRODUCT_OS_NAME" />“ užrakinimo ekrane</translation>
-<translation id="3021409116652377124">Neleisti papildinių ieškiklio</translation>
 <translation id="3030000825273123558">Įgalinti metrikos ataskaitų teikimą</translation>
 <translation id="3034580675120919256">Leidžiama nustatyti, ar svetainėse leidžiama paleisti „JavaScript“. Gali būti leidžiama arba draudžiama paleisti „JavaScript“ visose svetainėse.
 
@@ -927,25 +926,6 @@
 
           Įprastai tai neleidžiama siekiant apsisaugoti nuo sukčiavimo. Nenustačius šios politikos, tai neleidžiama ir trečiosios šalies papildomo turinio neleidžiama pateikti iššokančiajame HTTP pagrindinės prieigos teisės dialogo lange.</translation>
 <translation id="4056910949759281379">Neleisti SPDY protokolo</translation>
-<translation id="4077363032873906037">Įgalinama „<ph name="PRODUCT_NAME" />“ apribota prisijungimo funkcija sistemoje „Google Apps“ ir naudotojams neleidžiama keisti šio nustatymo.
-
-      Jei apibrėšite šį nustatymą, naudotojas galės pasiekti „Google
-      Apps“ tik naudodamas nurodytus domenus (atminkite, tai neveikia
-      naudojant gmail.com/googlemail.com).
-
-      Šis nustatymas NEUŽDRAUS naudotojui prisijungti tvarkomame įrenginyje,
-      kuriame reikia atlikti „Google“ autentifikavimo procesą. Naudotojui vis tiek bus leidžiama
-      prisijungti prie paskyrų iš kitų domenų, bet bus rodoma klaida,
-      kai jie bandys naudoti „Google Apps“ su tomis paskyromis.
-
-      Jei paliksite šį nustatymą tuščią / nesukonfigūruotą, naudotojas galės
-      pasiekti „Google Apps“ naudodamas bet kurią paskyrą.
-
-      Pagal šią politiką antraštė „X-GoogApps-Allowed-Domains“ pridedama prie
-      visų HTTP ir HTTPS užklausų į visus google.com domenus, kaip aprašyta adresu
-      https://support.google.com/a/answer/1668854.
-
-      Naudotojai negali keisti ar nepaisyti šio nustatymo.</translation>
 <translation id="408029843066770167">Leisti užklausas į „Google“ laiko paslaugą</translation>
 <translation id="4088589230932595924">Įjungtas inkognito režimas</translation>
 <translation id="4088983553732356374">Leidžiama nustatyti, ar svetainėms galima nustatyti vietinius duomenis. Nustatyti vietinius duomenis galima leisti arba uždrausti visoms svetainėms.
@@ -963,7 +943,6 @@
           Politikos vertė turėtų būti nurodyta milisekundėmis.</translation>
 <translation id="4105989332710272578">Sertifikato skaidrumo taikymo URL sąrašui išjungimas</translation>
 <translation id="4121350739760194865">Neleisti rodyti programų reklamų naujo skirtuko puslapyje</translation>
-<translation id="4133144443101280166">Nenaudojimo valandų intervalai, kai netaikoma įrenginio politika „OffHours“ |ignored_policy_proto_tags|</translation>
 <translation id="4157003184375321727">Pranešti OS ir programinės aparatinės įrangos versiją</translation>
 <translation id="4183229833636799228">Numatytasis „<ph name="FLASH_PLUGIN_NAME" />“ nustatymas</translation>
 <translation id="4192388905594723944">URL, skirtas nuotolinio prisijungimo kliento autentifikavimo prieigos raktui patvirtinti</translation>
@@ -1189,7 +1168,6 @@
           Pavyzdžiui, <ph name="EXTENSION_POLICY_EXAMPLE" /> įdiegia „<ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" />“ programą iš standartinio „Chrome“ internetinės parduotuvės „naujinio“ URL. Jei reikia daugiau informacijos apie plėtinių priglobimą, žr. <ph name="LINK_TO_EXTENSION_DOC2" />.
 
           Nenustačius šios politikos, jokios programos ar plėtiniai neįdiegiami automatiškai, o naudotojas gali pašalinti bet kurią programą ar plėtinį naudodamas „<ph name="PRODUCT_NAME" />“.</translation>
-<translation id="4882546920824859909">Nurodyti domenus, kuriems leidžiama pasiekti „Google Apps“</translation>
 <translation id="4897928009230106190">Nurodomi parametrai, naudojami atliekant pasiūlymų paiešką naudojant POST. Jie sudaryti iš kableliais atskirtų pavadinimų / verčių porų. Jei vertė yra šablono parametras, pvz., {searchTerms} anksčiau pateiktame pavyzdyje, ji pakeičiama realiais paieškos terminų duomenimis.
 
           Ši politika pasirenkama. Jei nenustatyta, siūlomos paieškos užklausa siunčiama naudojant GET metodą.
@@ -1260,7 +1238,6 @@
 
           Nenustačius šios politikos, visose svetainėse naudojama visuotinė numatytoji vertė iš politikos „Numatytasis pranešimų nustatymas“ (jei nustatyta) arba naudotojo asmeninės konfigūracijos.</translation>
 <translation id="5219844027738217407">„Android“ programose ši politika turi įtakos tik mikrofonui. Kai ši politika nustatyta į „Tiesa“, mikrofonas be išimčių nutildomas visose „Android“ programose.</translation>
-<translation id="5226033722357981948">Nurodyti, ar turi būti neleidžiamas papildinių ieškiklis</translation>
 <translation id="523505283826916779">Pasiekiamumo nustatymai</translation>
 <translation id="5247006254130721952">Blokuoti pavojingus atsisiuntimus</translation>
 <translation id="5255162913209987122">Gali būti rekomenduojama</translation>
@@ -1398,26 +1375,6 @@
 <translation id="5728154254076636808">Įgalinti „<ph name="PRODUCT_NAME" />“ profilio duomenų tarptinklinio ryšio kopijų kūrimą</translation>
 <translation id="5732972008943405952">Automatinio pildymo formų duomenų importavimas iš numatytosios naršyklės paleidus pirmą kartą</translation>
 <translation id="5765780083710877561">Aprašas:</translation>
-<translation id="5768309557753179144">Tiek „Chromium“, tiek „Google Chrome“ palaiko tas pačias politikos
-      nuostatas. Atminkite, kad šiame dokumente gali būti neišleistų politikos nuostatų
-      (pvz., įrašas „Palaikoma naudojant“ nurodo neišleistos versijos
-      „<ph name="PRODUCT_NAME" />“), kurios gali būti
-      pakeistos arba pašalintos be išankstinio įspėjimo ir neteikiamos
-      jokios garantijos, įskaitant garantijas dėl jų saugos
-      ir privatumo nuostatų.
-
-      Šios politikos nuostatos griežtai skirtos konfigūruoti tik
-      „<ph name="PRODUCT_NAME" />“ objektams organizacijos
-      viduje. Šių politikos nuostatų naudojimas už organizacijos ribų (pvz.,
-      viešai platinamoje programoje) laikomas kenkėjišku ir
-      „Google“ bei antivirusinės programinės įrangos teikėjai tai tikriausiai laikys kenkėjiška programa.
-
-      Šių nustatymų nereikia konfigūruoti rankiniu būdu! Lengvai naudojamų
-      šablonų, skirtų „Windows“, „Mac“ ir „Linux“, galite atsisiųsti adresu <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
-
-      Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačiau
-      aprūpinimo politika naudojant registrą vis tiek palaikoma „Windows“ objektuose,
-      kurie susieti su „<ph name="MS_AD_NAME" />“ domenu.</translation>
 <translation id="5770738360657678870">Kuriamas kanalas (gali būti nestabilus)</translation>
 <translation id="5774856474228476867">Numatytojo paieškos teikėjo paieškos URL</translation>
 <translation id="5776485039795852974">Paklausti kaskart, kai svetainėje norima rodyti darbalaukio pranešimus</translation>
@@ -1742,9 +1699,6 @@
       Jei ši politika nebus nustatyta, bus įgalintas tinklo numatymas, bet naudotojas galės jį pakeisti.</translation>
 <translation id="6658245400435704251">Nurodoma, iki kiek sekundžių įrenginys gali atsitiktinai atidėti naujinio atsisiuntimą nuo tada, kai naujinys buvo pirmąkart išsiųstas iš serverio. Įrenginys gali laukti dalį šio laiko pagal realųjį laiką, o likusią dalį – pagal naujinio tikrinimo kartus. Bet kuriuo atveju yra nustatyta viršutinė sklaidos riba (tam tikra trukmė), kad įrenginys nelauktų atsisiuntimo be galo.</translation>
 <translation id="6689792153960219308">Aparatinės įrangos būsenos ataskaitos pateikimas</translation>
-<translation id="6693751878507293182">Jei įgalinsite šį nustatymą, automatinė paieška ir trūkstamų papildinių diegimas bus neleidžiami „<ph name="PRODUCT_NAME" />“.
-
-      Neleidus šios parinkties ar jos nenustačius papildinių paieškos priemonė bus aktyvi.</translation>
 <translation id="6699880231565102694">Įgalinti nuotolinės prieigos prieglobų autentifikavimą dviem veiksniais</translation>
 <translation id="6724842112053619797">Jei įgalinsite šį nustatymą, saugomą „<ph name="PRODUCT_NAME" />“ profiliuose, pvz., žymėse, automatinio pildymo duomenyse, slaptažodžiuose ir kt., išsaugoti nustatymai taip pat bus įrašyti į failą, saugomą tarptinklinio ryšio naudotojo profilio aplanke arba administratoriaus nurodytoje vietoje pagal „<ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />“ politiką. Sinchronizavimas debesyje automatiškai išjungiamas, kai įgalinama ši politika.
 
@@ -2026,6 +1980,7 @@
 
           Jei šis nustatymas neleidžiamas arba nenustatytas, dviejų veiksnių funkcija neįgalinama ir naudojama numatytoji naudotojo (-os) nurodyto PIN kodo funkcija.</translation>
 <translation id="7750991880413385988">Naujo skirtuko puslapio atidarymas</translation>
+<translation id="7754704193130578113">Prieš atsiunčiant failą klausti, kur jį išsaugoti</translation>
 <translation id="7761446981238915769">Įdiegtų programų sąrašo konfigūravimas prisijungimo ekrane</translation>
 <translation id="7761526206824804472">Nustatoma mažiausiai viena rekomenduojama viešų sesijų lokalė, leidžiant naudotojams lengvai pasirinkti vieną iš šių lokalių.
 
@@ -2113,8 +2068,8 @@
           „<ph name="INSTALL_SOURCES" />“: kiekvienas elementas šiame sąraše yra plėtinio stiliaus atitikties šablonas (<ph name="LINK_TO_MATCH_PATTERNS" />). Naudotojai galės lengvai įdiegti elementus iš bet kurio URL, kuris atitinka elementą šiame sąraše. Failo <ph name="EXTENSION_SUFFIX_WILDCARD" /> vieta ir puslapis, iš kurio pradedamas atsisiuntimas (t. y. persiuntimo URL), turi būti leidžiami šiuose šablonuose.
 
           „<ph name="ALLOWED_TYPES" />“: nustačius šį nustatymą leidžiami plėtinio / programų, kuriuos galima įdiegti „<ph name="PRODUCT_NAME" />“, tipai įtraukiami į baltąjį sąrašą. Vertė – tai eilučių, kurių kiekviena turi būti vienos iš šių verčių: <ph name="VALID_ALLOWED_TYPES" />, sąrašas. Jei reikia daugiau informacijos apie šiuos tipus, žr. „<ph name="PRODUCT_NAME" />“ plėtinių dokumentus.
-          „<ph name="BLOCKED_INSTALL_MESSAGE" />“: jei naudotojas bando įdiegti plėtinį, bet jis blokuojamas atsižvelgiant į politiką, „Chrome“ internetinėje parduotuvėje rodomas bendrosios klaidos pranešimas. Naudojant šį nustatymą galima pridėti teksto prie klaidos pranešimo. Tai gali būti naudojama naudotojams nukreipti į pagalbos centrą, paaiškinti, kodėl tam tikras plėtinys blokuojamas, ir kitais tikslais. Šis pranešimas bus sutrumpintas, jei bus ilgesnis nei 1 000 simbolių ilgio.
-          „<ph name="RUNTIME_BLOCKED_HOSTS" />“: priimamas prieglobos serverių, su kuriais bus blokuojamos plėtinio sąveikos, sąrašas. Tai apima „javascript“ įtraukimą, „webRequest“ / „webNavigation“ keitimą ir peržiūrą, slapukų peržiūrą ir keitimą. Formatas yra panašus į atitikties šablonus <ph name="LINK_TO_MATCH_PATTERNS" />, išskyrus tai, kad galima nustatyti kelius, pvz., „*://*.pavyzdys.lt“. Taip pat palaikomi TLD pakaitos simboliai, pvz., „*://pavyzdys.*“.
+          „<ph name="BLOCKED_INSTALL_MESSAGE" />“: jei naudotojas bando įdiegti plėtinį, bet jis blokuojamas atsižvelgiant į politiką, „Chrome“ internetinėje parduotuvėje rodomas bendrosios klaidos pranešimas. Naudojant šį nustatymą galima pridėti teksto prie klaidos pranešimo. Tai gali būti naudojama naudotojams nukreipti į pagalbos centrą, paaiškinti, kodėl tam tikras plėtinys blokuojamas, ir kitais tikslais. Šis klaidos pranešimas bus sutrumpintas, jei bus ilgesnis nei 1 000 simbolių ilgio.
+          „<ph name="RUNTIME_BLOCKED_HOSTS" />“: priimamas prieglobos serverių, su kuriais bus blokuojamos plėtinio sąveikos, sąrašas. Tai apima „javascript“ įtraukimą, „webRequest“ / „webNavigation“ keitimą ir peržiūrą, slapukų peržiūrą ir keitimą. Formatas yra panašus į atitikties šablonus <ph name="LINK_TO_MATCH_PATTERNS" />, išskyrus tai, kad negalima nustatyti jokių kelių, pvz., „*://*.example.com“. aip pat palaikomi veiksmingi TLD pakaitos simboliai, pvz., „*://example.*“.
           „<ph name="RUNTIME_ALLOWED_HOSTS" />“: priimamas prieglobos serverių, su kuriais plėtinys gali sąveikauti, sąrašas, neatsižvelgiant į tai, ar jie pateikiami sąraše „<ph name="RUNTIME_BLOCKED_HOSTS" />“. Sąrašas pateikiamas tokiu pačiu formatu kaip ir „<ph name="RUNTIME_BLOCKED_HOSTS" />“.
           </translation>
 <translation id="787125417158068494">Nustačius „SyncDisabled“ arba nesukonfigūravus, <ph name="PRODUCT_OS_NAME" /> sertifikatų nebus galima naudoti ARC programose.
@@ -2289,11 +2244,6 @@
 <translation id="8451988835943702790">Naudoti naujo skirtuko puslapį kaip pagrindinį puslapį</translation>
 <translation id="8465065632133292531">Intuityviosios paieškos URL parametrai, kuriuose naudojama POST</translation>
 <translation id="847472800012384958">Neleisti jokioje svetainėje rodyti iššokančiųjų langų</translation>
-<translation id="8476127435468057643">Valdoma, ar įgalint „NTLMv2“.
-
-          Visų naujausių versijų „Samba“ ir „Windows“ serveriai palaiko „NTLMv2“. Tai turėtų būti išjungta tik atgalinio suderinamumo tikslais, nes suprastėja autentifikavimo sauga.
-
-          Numatytoji vertė atgaliniam suderinamumui įjungti, kai ši politika neapibrėžta, šiuo metu yra „false“, bet ateityje bus pakeista į „true“.</translation>
 <translation id="8477885780684655676">1.0 versijos TLS</translation>
 <translation id="8484458986062090479">Tinkinkite URL šablonų, kuriuos prieglobos naršyklė visada turėtų pateikti, sąrašą.
 

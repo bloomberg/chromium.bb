@@ -129,7 +129,6 @@
 <translation id="3329904751041170572">לא ניתן להתחבר לשרת.</translation>
 <translation id="3335947283844343239">פתח מחדש כרטיסייה שנסגרה</translation>
 <translation id="3393920035788932672">חלונות קופצים מותרים</translation>
-<translation id="3414292259312108062">‏Chrome יאחסן את הסיסמה ב<ph name="BEGIN_LINK" />סיסמאות Google השמורות<ph name="END_LINK" /> ויזין אותה באופן אוטומטי כדי שלא תצטרך לזכור אותה.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> דק'</translation>
 <translation id="3448016392200048164">תצוגה מפוצלת</translation>
 <translation id="3474624961160222204">המשך כ-<ph name="NAME" /></translation>
@@ -152,7 +151,6 @@
 <translation id="3779810277399252432">אין חיבור לאינטרנט.</translation>
 <translation id="3783017676699494206">שמור תמונה</translation>
 <translation id="385051799172605136">חזור</translation>
-<translation id="3857761338463387655">כתוב אימייל בעזרת:</translation>
 <translation id="3897092660631435901">תפריט</translation>
 <translation id="3928666092801078803">שילוב הנתונים שלי</translation>
 <translation id="3950820424414687140">כניסה</translation>
@@ -204,6 +202,7 @@
 <translation id="5005498671520578047">העתק סיסמה</translation>
 <translation id="5010803260590204777">פתח כרטיסייה של גלישה בסתר כדי לגלוש בפרטיות באינטרנט.</translation>
 <translation id="5011684439661633295">שלום, <ph name="FULL_ACCOUNT_NAME" /></translation>
+<translation id="5039804452771397117">אפשר</translation>
 <translation id="5062321486222145940">‏התקן את Google Drive</translation>
 <translation id="5083464117946352670">גודל הקובץ אינו ידוע.</translation>
 <translation id="5094827893301452931">הציוץ בוצע.</translation>
@@ -262,7 +261,6 @@
 <translation id="6122191549521593678">מקוון</translation>
 <translation id="6127379762771434464">הפריט הוסר</translation>
 <translation id="6136914049981179737">שניות</translation>
-<translation id="6149061208933997199">השתמש בסיסמה</translation>
 <translation id="6158823227857319455">כרטיסייה חדשה</translation>
 <translation id="616831107264507309">קרא אחר כך</translation>
 <translation id="6184086493125982861">הצג כרטיסיות</translation>
@@ -272,7 +270,6 @@
 <translation id="6254066287920239840">פתח קישורים באפליקציה ולא בדפדפן.</translation>
 <translation id="6255097610484507482">ערוך כרטיס אשראי</translation>
 <translation id="6308436439357671616">אישור זה מאפשר לך לצלם ולעדכן תמונות.</translation>
-<translation id="6314335155547195432">צור סיסמה</translation>
 <translation id="6324528485781869530">החלפת חשבון לסנכרון</translation>
 <translation id="6324669097367352121">הגדרות כניסה</translation>
 <translation id="6337234675334993532">הצפנה</translation>
@@ -290,7 +287,6 @@
 <translation id="6418346271604475326">‏מכין PDF</translation>
 <translation id="6445051938772793705">ארץ</translation>
 <translation id="6445981559479772097">ההודעה נשלחה.</translation>
-<translation id="6456425917241817154">‏סיסמה שנוצרה על ידי Chrome</translation>
 <translation id="6464071786529933911">פתח בכרטיסיית גלישה בסתר חדשה</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> פריטים נמחקו</translation>
 <translation id="6541915733953096570">מהשעה האחרונה</translation>
@@ -313,6 +309,7 @@
 <translation id="7004499039102548441">כרטיסיות אחרונות</translation>
 <translation id="7006788746334555276">הגדרות תוכן</translation>
 <translation id="7031882061095297553">סינכרון עם</translation>
+<translation id="7053983685419859001">חסום</translation>
 <translation id="7062545763355031412">קבל והחלף חשבונות</translation>
 <translation id="7108338896283013870">הסתר</translation>
 <translation id="7133798577887235672">שם מלא</translation>
@@ -345,7 +342,6 @@
 <translation id="7649070708921625228">עזרה</translation>
 <translation id="7658239707568436148">ביטול</translation>
 <translation id="7671141431838911305">התקנה</translation>
-<translation id="7677825787905683892">בחירה של יישום ברירת המחדל לאימייל</translation>
 <translation id="7765158879357617694">העבר</translation>
 <translation id="7769602470925380267">קבל וצא מהחשבון</translation>
 <translation id="7772032839648071052">אשר משפט-סיסמה</translation>
@@ -409,7 +405,6 @@
 <translation id="9083392325882095631">פריט אחד</translation>
 <translation id="9100610230175265781">יש להזין ביטוי סיסמה</translation>
 <translation id="9148126808321036104">היכנס שוב</translation>
-<translation id="914898748153555155">‏אפשר לשנות את ההעדפה הזו דרך הגדרות Chrome</translation>
 <translation id="91549621916703028">ניתן ליצור כרטיסיות מרובות בשביל כל המשימות</translation>
 <translation id="9157836665414082580">הסתר תיבות דו-שיח</translation>
 <translation id="9188680907066685419">צא מהחשבון המנוהל</translation>

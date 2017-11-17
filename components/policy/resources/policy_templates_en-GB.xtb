@@ -623,7 +623,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
       See https://developers.google.com/safe-browsing for more info on SafeBrowsing.</translation>
 <translation id="3016255526521614822">Whitelist note-taking apps allowed on the <ph name="PRODUCT_OS_NAME" /> lock screen</translation>
-<translation id="3021409116652377124">Disable plug-in finder</translation>
 <translation id="3030000825273123558">Enable metrics reporting</translation>
 <translation id="3034580675120919256">Allows you to set whether websites are allowed to run JavaScript. Running JavaScript can be either allowed for all websites or denied for all websites.
 
@@ -927,25 +926,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           Typically this is disabled as a phishing defence. If this policy is not set, this is disabled and third-party sub-content will not be allowed to pop up a HTTP Basic Auth dialogue box.</translation>
 <translation id="4056910949759281379">Disable SPDY protocol</translation>
-<translation id="4077363032873906037">Enables <ph name="PRODUCT_NAME" />'s restricted login feature in Google Apps and prevents users from changing this setting.
-
-      If you define this setting, the user will only be able to access Google
-      Apps using accounts from the specified domains (note that this does not
-      work for gmail.com/googlemail.com).
-
-      This setting will NOT prevent the user from logging in on a managed device
-      that requires Google authentication. The user will still be allowed to
-      sign in to accounts from other domains, but they will receive an error
-      when trying to use Google Apps with those accounts.
-
-      If you leave this setting empty/not configured, the user will be able to
-      access Google Apps with any account.
-
-      This policy causes the X-GoogApps-Allowed-Domains header to be appended to
-      all HTTP and HTTPS requests to all google.com domains, as described in
-      https://support.google.com/a/answer/1668854.
-
-      Users cannot change or override this setting.</translation>
 <translation id="408029843066770167">Allow queries to a Google time service</translation>
 <translation id="4088589230932595924">Incognito mode forced.</translation>
 <translation id="4088983553732356374">Allows you to set whether websites are allowed to set local data. Setting local data can be either allowed for all websites or denied for all websites.
@@ -963,7 +943,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           The policy value should be specified in milliseconds.</translation>
 <translation id="4105989332710272578">Disable Certificate Transparency enforcement for a list of URLs</translation>
 <translation id="4121350739760194865">Prevent app promotions from appearing on the new tab page</translation>
-<translation id="4133144443101280166">Off hours intervals when device OffHours |ignored_policy_proto_tags| are released</translation>
 <translation id="4157003184375321727">Report OS and firmware version</translation>
 <translation id="4183229833636799228">Default <ph name="FLASH_PLUGIN_NAME" /> setting</translation>
 <translation id="4192388905594723944">URL for validating remote access client authentication token</translation>
@@ -1190,7 +1169,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           For example, <ph name="EXTENSION_POLICY_EXAMPLE" /> installs the <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> app from the standard Chrome Web Store 'update' URL. For more information about hosting extensions, see: <ph name="LINK_TO_EXTENSION_DOC2" />.
 
           If this policy is left not set, no apps or extensions are installed automatically and the user can uninstall any app or extension in <ph name="PRODUCT_NAME" />.</translation>
-<translation id="4882546920824859909">Define domains allowed to access Google Apps</translation>
 <translation id="4897928009230106190">Specifies the parameters used when doing suggestion search with POST. It consists of comma-separated name/value pairs. If a value is a template parameter, like {searchTerms} in above example, it will be replaced with real search terms data.
 
           This policy is optional. If not set, suggest search request will be sent using the GET method.
@@ -1261,7 +1239,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           If this policy is left unset the global default value will be used for all sites either from the 'DefaultNotificationsSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
 <translation id="5219844027738217407">For Android apps, this policy affects the microphone only. When this policy is set to true, the microphone is muted for all Android apps, with no exceptions.</translation>
-<translation id="5226033722357981948"> finder should be disabled</translation>
 <translation id="523505283826916779">Accessibility settings</translation>
 <translation id="5247006254130721952">Block dangerous downloads</translation>
 <translation id="5255162913209987122">Can be Recommended</translation>
@@ -1399,26 +1376,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="5728154254076636808">Enable the creation of roaming copies for <ph name="PRODUCT_NAME" /> profile data</translation>
 <translation id="5732972008943405952">Import autofill form data from default browser on first run</translation>
 <translation id="5765780083710877561">Description:</translation>
-<translation id="5768309557753179144">Both Chromium and Google Chrome support the same set of
-      policies. Please note that this document may include unreleased policies
-      (i.e. their 'Supported on' entry refers to a not-yet released version of
-      <ph name="PRODUCT_NAME" />) which are subject
-      to change or removal without notice and for which no guarantees of any
-      kind are provided, including no guarantees with respect to their security
-      and privacy properties.
-
-      These policies are strictly intended to be used to configure instances of
-      <ph name="PRODUCT_NAME" /> internal to your
-      organisation. Use of these policies outside of your organisation (for
-      example, in a publicly distributed program) is considered malware and will
-      likely be labelled as malware by Google and anti-virus vendors.
-
-      These settings don't need to be configured manually! Easy-to-use
-      templates for Windows, Mac and Linux are available for download from <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
-
-      The recommended way to configure policy on Windows is via GPO, although
-      provisioning policy via registry is still supported for Windows instances
-      that are joined to a <ph name="MS_AD_NAME" /> domain.</translation>
 <translation id="5770738360657678870">Dev channel (may be unstable)</translation>
 <translation id="5774856474228476867">Default search provider search URL</translation>
 <translation id="5776485039795852974">Ask every time a site wants to show desktop notifications</translation>
@@ -1740,9 +1697,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If this policy is left not set, network prediction will be enabled but the user will be able to change it.</translation>
 <translation id="6658245400435704251">Specifies the number of seconds up to which a device may randomly delay its download of an update from the time the update was first pushed out to the server. The device may wait a portion of this time in terms of wall-clock-time and the remaining portion in terms of the number of update checks. In any case, the scatter is upper bounded to a constant amount of time so that a device does not ever get stuck waiting to download an update forever.</translation>
 <translation id="6689792153960219308">Report hardware status</translation>
-<translation id="6693751878507293182">If you set this setting to enabled the automatic search and installation of missing plug-ins will be disabled in <ph name="PRODUCT_NAME" />.
-
-      Setting this option to disabled or leave it unset the plug-in finder will be active.</translation>
 <translation id="6699880231565102694">Enable two-factor authentication for remote access hosts</translation>
 <translation id="6724842112053619797">If you enable this setting, the settings stored in <ph name="PRODUCT_NAME" /> profiles like bookmarks, auto-fill data, passwords, etc. will also be written to a file stored in the roaming user profile folder or a location specified by the Administrator through the <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" /> policy. Enabling this policy disables cloud sync.
 
@@ -2024,6 +1978,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           If this setting is disabled or not set, then two-factor will not be enabled and the default behaviour of having a user-defined PIN will be used.</translation>
 <translation id="7750991880413385988">Open New Tab Page</translation>
+<translation id="7754704193130578113">Ask where to save each file before downloading</translation>
 <translation id="7761446981238915769">Configure the list of installed apps on the login screen</translation>
 <translation id="7761526206824804472">Sets one or more recommended locales for a public session, allowing users to easily choose one of these locales.
 
@@ -2090,30 +2045,30 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           The configuration for each extension (or extensions with same update URL) is another dictionary that can contain the fields documented below.
 
-          <ph name="INSTALLATION_MODE" />:  Maps to a string indicating the installation mode for the extension. The valid strings are:
-          * <ph name="ALLOWED" />: Allows the extension to be installed by the user. This is the default behaviour.
-          * <ph name="BLOCKED" />: Blocks installation of the extension.
-          * <ph name="FORCE_INSTALLED" />: The extension is automatically installed and can't be removed by the user.
-          * <ph name="NORMAL_INSTALLED" />: The extension is automatically installed but can be disabled by the user.
+          <ph name="INSTALLATION_MODE" />: maps to a string indicating the installation mode for the extension. The valid strings are:
+          * <ph name="ALLOWED" />: allows the extension to be installed by the user. This is the default behaviour.
+          * <ph name="BLOCKED" />: blocks installation of the extension.
+          * <ph name="FORCE_INSTALLED" />: the extension is automatically installed and can't be removed by the user.
+          * <ph name="NORMAL_INSTALLED" />: the extension is automatically installed but can be disabled by the user.
 
           The <ph name="INSTALLTION_MODE" /> can also be configured for multiple extensions as well, including the <ph name="DEFAULT_SCOPE" /> extension (as default settings) and extensions with same update URL. Only the <ph name="ALLOWED" /> and <ph name="BLOCKED" /> values can be used in this case.
 
           If the mode is set to <ph name="FORCE_INSTALLED" /> or <ph name="NORMAL_INSTALLED" /> then an <ph name="UPDATE_URL" /> must be configured too. Note that the update URL set in this policy is only used for the initial installation; subsequent updates of the extension will use the update URL indicated in the extension's manifest. The update URL should point to an Update Manifest XML document as mentioned above.
 
-          <ph name="BLOCKED_PERMISSIONS" />: Maps to a list of strings indicating the blocked API permissions for the extension. The permissions names are same as the permission strings declared in manifest of extension as described at <ph name="LINK_TO_EXTENSION_DOC3" />. This setting can also be configured for <ph name="DEFAULT_SCOPE" /> extension. If the extension requires a permission which is on the block list, it will not be allowed to load. If it contains a blocked permission as optional requirement, it will be handled in the normal way, but requesting conflicting permissions will be declined automatically at runtime.
+          <ph name="BLOCKED_PERMISSIONS" />: maps to a list of strings indicating the blocked API permissions for the extension. The permissions names are same as the permission strings declared in manifest of extension as described at <ph name="LINK_TO_EXTENSION_DOC3" />. This setting also can be configured for <ph name="DEFAULT_SCOPE" /> extension. If the extension requires a permission which is on the blocklist, it will not be allowed to load. If it contains a blocked permission as optional requirement, it will be handled in the normal way, but requesting conflicting permissions will be declined automatically at runtime.
 
-          <ph name="ALLOWED_PERMISSIONS" />: Similar to <ph name="BLOCKED_PERMISSIONS" />, but instead explicitly allow some permissions which might be blocked by global blocked permission list, thus can not be configured for <ph name="DEFAULT_SCOPE" /> extension. Note that this setting doesn't give granted permissions to extensions automatically.
+          <ph name="ALLOWED_PERMISSIONS" />: similar to <ph name="BLOCKED_PERMISSIONS" />, but instead explicitly allow some permissions which might be blocked by global blocked permission list, thus can not be configured for <ph name="DEFAULT_SCOPE" /> extension. Note that this setting doesn't give granted permissions to extensions automatically.
 
-          <ph name="MINIMUM_VERSION_REQUIRED" />: Maps to a version string. The format of the version string is the same as the one used in extension manifest, as described at <ph name="LINK_TO_EXTENSION_DOC4" />. An extension with a version older than the specified minimum version will be disabled. This applies to force-installed extensions as well.
+          <ph name="MINIMUM_VERSION_REQUIRED" />: maps to a version string. The format of the version string is the same as the one used in extension manifest, as described at <ph name="LINK_TO_EXTENSION_DOC4" />. An extension with a version older than the specified minimum version will be disabled. This applies to force-installed extensions as well.
 
           The following settings can be used only for the default <ph name="DEFAULT_SCOPE" /> configuration:
 
-          <ph name="INSTALL_SOURCES" />: Each item in this list is an extension-style match pattern (<ph name="LINK_TO_MATCH_PATTERNS" />). Users will be able to easily install items from any URL that matches an item in this list. Both the location of the <ph name="EXTENSION_SUFFIX_WILDCARD" /> file and the page where the download is started from (i.e. the referrer) must be allowed by these patterns.
+          <ph name="INSTALL_SOURCES" />: Each item in this list is an extension-style match pattern (<ph name="LINK_TO_MATCH_PATTERNS" />). Users will be able to easily install items from any URL that matches an item in this list. Both the location of the <ph name="EXTENSION_SUFFIX_WILDCARD" /> file and the page where the download is started from (i.e.  the referrer) must be allowed by these patterns.
 
-          <ph name="ALLOWED_TYPES" />: This setting whitelists the allowed types of extension/apps that can be installed in <ph name="PRODUCT_NAME" />. The value is a list of strings, each of which should be one of the following: <ph name="VALID_ALLOWED_TYPES" />. See the <ph name="PRODUCT_NAME" /> extensions documentation for more information on these types.
-          <ph name="BLOCKED_INSTALL_MESSAGE" />: If a user tries to install an extension, but it is blocked by policy, the Chrome Web Store displays a generic error message. This setting allows you to append text to the error message. This could be used to direct users to your help desk, explain why a particular extension is blocked, or something else. This error message will be truncated if longer than 1,000 characters.
-          <ph name="RUNTIME_BLOCKED_HOSTS" />: Accepts a list of hosts that an extension will be blocked from interacting with. This includes injecting javascript, altering and viewing webRequests/ webNavigation, viewing and altering cookies. The format is similar to Match Patterns <ph name="LINK_TO_MATCH_PATTERNS" /> except no paths may be defined. e.g. "*://*.example.com". This also supports effective TLD wildcarding e.g. "*://example.*".
-          <ph name="RUNTIME_ALLOWED_HOSTS" />: Accepts a list of hosts that an extension can interact with, regardless of whether they are listed in <ph name="RUNTIME_BLOCKED_HOSTS" />. This is the same format as <ph name="RUNTIME_BLOCKED_HOSTS" />.
+          <ph name="ALLOWED_TYPES" />: This setting whitelists the allowed types of extension/apps that can be installed in <ph name="PRODUCT_NAME" />.  The value is a list of strings, each of which should be one of the following: <ph name="VALID_ALLOWED_TYPES" />. See the <ph name="PRODUCT_NAME" /> extensions documentation for more information on these types.
+          <ph name="BLOCKED_INSTALL_MESSAGE" />: If a user tries to install an extension, but it is blocked by policy, the Chrome Webstore displays a generic error message. This setting allows you to append text to the error message. This could be be used to direct users to your help desk, explain why a particular extension is blocked or something else. This error message will be truncated if longer than 1000 characters.
+          <ph name="RUNTIME_BLOCKED_HOSTS" />: Accepts a list of hosts that an extension will be blocked from interacting with. This includes injecting javascript, altering and viewing webRequests / webNavigation, viewing and altering cookies. The format is similar to Match Patterns <ph name="LINK_TO_MATCH_PATTERNS" /> except no paths may be defined. e.g. '*://*.example.com'. This also supports effective TLD wildcarding e.g. '*://example.*'.
+          <ph name="RUNTIME_ALLOWED_HOSTS" />: Accepts a list of hosts that an extension can interact with regardless of whether they are listed in <ph name="RUNTIME_BLOCKED_HOSTS" />. This is the same format as <ph name="RUNTIME_BLOCKED_HOSTS" />.
           </translation>
 <translation id="787125417158068494">If set to SyncDisabled or not configured, <ph name="PRODUCT_OS_NAME" /> certificates are not available for ARC-apps.
 
@@ -2287,11 +2242,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="8451988835943702790">Use New Tab Page as homepage</translation>
 <translation id="8465065632133292531">Parameters for instant URL which uses POST</translation>
 <translation id="847472800012384958">Do not allow any site to show pop-ups</translation>
-<translation id="8476127435468057643">Controls whether NTLMv2 is enabled.
-
-          All recent versions of Samba and Windows servers support NTLMv2. This should only be disabled for backwards compatability and reduces the security of authentication.
-
-          The default value when this policy is not defined is currently false for backwards compatability, but will change to true in the future.</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
 <translation id="8484458986062090479">Customise the list of URL patterns that should always be rendered by the host browser.
 

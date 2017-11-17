@@ -4,7 +4,7 @@
 <translation id="100812568230599391">Görüntüleme stilini üst üste (interleave) olarak değiştirin.</translation>
 <translation id="1012173283529841972">Liste öğesi</translation>
 <translation id="1013742170491673792">srched</translation>
-<translation id="1022586497894531524">ChromeVox sözlü geri bildirimini ilk kez mi kullanıyorsunuz? Bu hızlı eğiticide ChromeVox'u kullanmaya başlamak için gereken temel bilgiler açıklanmaktadır.</translation>
+<translation id="1022586497894531524">ChromeVox sözlü geri bildirimini ilk kez mi kullanıyorsunuz? Bu hızlı eğiticide, ChromeVox'ı kullanmaya başlamak için gereken temel bilgiler açıklanmaktadır.</translation>
 <translation id="1023866615269196768">Farklı satıra veya sütuna geçildi.</translation>
 <translation id="1025074108959230262">Yapışkan mod devre dışı bırakıldı</translation>
 <translation id="1031961866430398710">sonra</translation>
@@ -30,8 +30,8 @@
 <translation id="1201402288615127009">Sonraki</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1213216066620407844">ChromeVox - Chrome'un Sesi</translation>
-<translation id="1225437811932752266">Tebrikler! ChromeVox kullanımıyla ilgili temel bilgileri başarıyla öğrendiniz. ChromeVox komut menüsünü Arama+Nokta tuşlarına basarak istediğiniz zaman açabileceğinizi unutmayın. ChromeVox ve Chrome OS hakkında daha da fazla bilgi edinmek için aşağıdaki makaleleri inceleyin.
-Eğiticiyle işiniz bittiğinde, ChromeVox'u kullanarak Kapat düğmesine gidin ve düğmeyi tıklayın.</translation>
+<translation id="1225437811932752266">Tebrikler! ChromeVox (beta) kullanımıyla ilgili temel bilgileri başarıyla öğrendiniz. ChromeVox komut menüsünü Arama+Nokta tuşlarına basarak istediğiniz zaman açabileceğinizi unutmayın. ChromeVox ve Chrome OS hakkında daha da fazla bilgi edinmek için aşağıdaki makaleleri ziyaret edin.
+Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin ve düğmeyi tıklayın.</translation>
 <translation id="1229276918471378188">Önceki atlama</translation>
 <translation id="1237866625126425153">rdgrp</translation>
 <translation id="1251750620252348585">Sonraki 6. düzey başlık</translation>
@@ -170,7 +170,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'u kullanarak Kapat düğmesine gidin 
 <translation id="2770781857296573485">Grup keşfine geç</translation>
 <translation id="2777845298774924149">Çıkıldı</translation>
 <translation id="2781264313200109999">Bağlantı başlangıcı</translation>
-<translation id="2784959586797362050">Her zaman olduğu gibi Arama+a ve ardından i tuşlarına basarak geri bildiriminizi bize doğrudan gönderebilirsiniz. Düşüncelerinizi öğrenmeyi çok istiyoruz.</translation>
+<translation id="2784959586797362050">Her zaman olduğu gibi Arama+a ve ardından i tuşlarına basarak geri bildiriminizi bize doğrudan gönderebilirsiniz. Düşüncelerinizi öğrenmeyi çok isteriz.</translation>
 <translation id="2800204403141299078">Başka farklı öğe yok.</translation>
 <translation id="2800780099804980316">Önceki 1. düzey başlık yok.</translation>
 <translation id="280499067616661124">ChromeVox sayfada bul</translation>
@@ -471,7 +471,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'u kullanarak Kapat düğmesine gidin 
 <translation id="5098541983634824365">Tablodan çıkılıyor.</translation>
 <translation id="5102981729317424850">Araç çubuğu</translation>
 <translation id="5105050547967751155">rq</translation>
-<translation id="5106547198195128110">Bu yeni sürümde heyecan verici bazı değişiklikler yaptık; yapılan değişiklikleri burada bulabilirsiniz:</translation>
+<translation id="5106547198195128110">Bu yeni sürümde heyecan verici bazı değişiklikler yaptık. Değişiklikleri burada bulabilirsiniz:</translation>
 <translation id="5110983769041734144">Önceki form alanı yok.</translation>
 <translation id="5111640677200759579">Sütun üst bilgisi</translation>
 <translation id="5136967254288895616">Önceki bağlantı yok.</translation>

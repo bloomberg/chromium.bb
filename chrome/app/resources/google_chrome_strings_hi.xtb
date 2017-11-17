@@ -11,7 +11,6 @@
 <translation id="123620459398936149">Chrome OS आपका डेटा समन्वयित नहीं कर सका. कृपया अपना समन्वयन पासफ़्रेज़ अपडेट करें.</translation>
 <translation id="127345590676626841">Chrome अपने आप अपडेट हो जाता है ताकि आपके पास हमेशा सबसे नवीनतम वर्शन रहे. जब यह डाउनलोड पूर्ण हो जाता है, तो Chrome पुन: प्रारंभ होगा और आप आगे बढ़ जाएंगे.</translation>
 <translation id="1302523850133262269">कृपया Chrome के द्वारा नवीनतम सिस्टम अपडेट इंस्टॉल करने के दौरान प्रतीक्षा करें.</translation>
-<translation id="1350930993895295930">Chrome ने असामान्‍य व्‍यवहार का पता लगाया है</translation>
 <translation id="137466361146087520">Google Chrome बीटा</translation>
 <translation id="1393853151966637042">Chrome का उपयोग करने के बारे में सहायता प्राप्त करें</translation>
 <translation id="1399397803214730675">इस कंप्यूटर में Google Chrome का अधिक नवीन वर्शन पहले से मौजूद है. यदि सॉफ्टवेयर काम नहीं कर रहा है, तो कृपया Google Chrome अनइंस्‍टॉल करें और फिर से प्रयास करें.</translation>
@@ -193,7 +192,6 @@
 <translation id="6566149418543181476">Google Chrome अपडेट हो रहा है (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">आप अपनी Chrome सामग्री को समन्वयित करने के लिए <ph name="PROFILE_EMAIL" /> का उपयोग कर रहे हैं. अपनी समन्वयन प्राथमिकता को अपडेट करने या Google खाते के बिना Chrome का उपयोग करने के लिए, <ph name="SETTINGS_LINK" /> पर जाएं.</translation>
 <translation id="6600954340915313787">Chrome पर कॉपी किया गया</translation>
-<translation id="6626317981028933585">खेद है, आपकी Mozilla Firefox सेटिंग उपलब्ध नहीं हैं जबकि वह ब्राउजर चल रहा है. उन सेटिंग को Google Chrome पर आयात करने के लिए, अपने कार्य सहेजें और सभी Firefox विंडो बंद करें. इसके बाद जारी रखें पर क्लिक करें.</translation>
 <translation id="6634887557811630702">Google Chrome अद्यतित है</translation>
 <translation id="6676384891291319759">इंटरनेट तक पहुंच स्थापित करें</translation>
 <translation id="6697947395630195233">Chrome को इस साइट से आपका स्थान साझा करने के लिए आपके स्थान का एक्सेस चाहिए.</translation>
@@ -276,7 +274,6 @@
 <translation id="9026991721384951619">Chrome OS आपका डेटा समन्वयित नहीं कर सका क्योंकि आपके खाता प्रवेश विवरण पुराने हो चुके हैं.</translation>
 <translation id="9067395829937117663">Google Chrome के लिए Windows 7 या उसके बाद के वर्शन की आवश्यकता होती है.</translation>
 <translation id="9084668267983921457">प्रमाणीकरण प्रमाणपत्र विफल रहा. कृपया Google Chrome में फिर से प्रवेश करें या अधिक जानकारी के लिए अपने व्यवस्थापक से संपर्क करें. <ph name="ADDITIONAL_EXPLANATION" /></translation>
-<translation id="9107728822479888688"><ph name="BEGIN_BOLD" />चेतावनी:<ph name="END_BOLD" /> Google Chrome एक्‍सटेंशन को आपका ब्राउज़िंग इतिहास रिकॉर्ड करने से रोक नहीं सकता. गुप्त मोड में यह एक्‍सटेंशन अक्षम करने के लिए, इस विकल्प को ना चनें.</translation>
 <translation id="911206726377975832">अपने ब्राउज़िंग डेटा भी हटाएं?</translation>
 <translation id="919706545465235479">सिंक शुरू करने के लिए Chrome अपडेट करें</translation>
 <translation id="924447568950697217">Chrome को अपना डिफ़ॉल्ट ब्राउज़र बनाएं</translation>
