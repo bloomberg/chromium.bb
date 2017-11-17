@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/core/browser/fill_util.h"
+#include "components/autofill/core/browser/field_filler.h"
 
 #include <stdint.h>
 
@@ -33,7 +33,6 @@ using base::ASCIIToUTF16;
 using base::StringToInt;
 
 namespace autofill {
-namespace fill_util {
 
 namespace {
 
@@ -72,8 +71,8 @@ bool SetSelectControlValue(const base::string16& value, FormFieldData* field) {
 bool SetSelectControlValueSubstringMatch(const base::string16& value,
                                          bool ignore_whitespace,
                                          FormFieldData* field) {
-  int best_match =
-      FindShortestSubstringMatchInSelect(value, ignore_whitespace, field);
+  int best_match = FieldFiller::FindShortestSubstringMatchInSelect(
+      value, ignore_whitespace, field);
 
   if (best_match >= 0) {
     field->value = field->option_values[best_match];
@@ -309,7 +308,8 @@ bool FillCreditCardTypeSelectControl(const base::string16& value,
 void FillPhoneNumberField(const AutofillField& field,
                           const base::string16& number,
                           FormFieldData* field_data) {
-  field_data->value = GetPhoneNumberValue(field, number, *field_data);
+  field_data->value =
+      FieldFiller::GetPhoneNumberValue(field, number, *field_data);
 }
 
 // Set |field_data|'s value to |number|, or possibly an appropriate substring
@@ -530,11 +530,15 @@ base::string16 RemoveWhitespace(const base::string16& value) {
 
 }  // namespace
 
-bool FillFormField(const AutofillField& field,
-                   const base::string16& value,
-                   const std::string& address_language_code,
-                   const std::string& app_locale,
-                   FormFieldData* field_data) {
+FieldFiller::FieldFiller(const std::string& app_locale)
+    : app_locale_(app_locale) {}
+
+FieldFiller::~FieldFiller() {}
+
+bool FieldFiller::FillFormField(const AutofillField& field,
+                                const base::string16& value,
+                                const std::string& address_language_code,
+                                FormFieldData* field_data) {
   AutofillType type = field.Type();
 
   // Don't fill if autocomplete=off is set on |field| on desktop for non credit
@@ -549,7 +553,7 @@ bool FillFormField(const AutofillField& field,
     FillPhoneNumberField(field, value, field_data);
     return true;
   } else if (field_data->form_control_type == "select-one") {
-    return FillSelectControl(type, value, app_locale, field_data);
+    return FillSelectControl(type, value, app_locale_, field_data);
   } else if (field_data->form_control_type == "month") {
     return FillMonthControl(value, field_data);
   } else if (type.GetStorableType() == ADDRESS_HOME_STREET_ADDRESS) {
@@ -577,9 +581,11 @@ bool FillFormField(const AutofillField& field,
 
 // TODO(crbug.com/581514): Add support for filling only the prefix/suffix for
 // phone numbers with 10 or 11 digits.
-base::string16 GetPhoneNumberValue(const AutofillField& field,
-                                   const base::string16& number,
-                                   const FormFieldData& field_data) {
+// static
+base::string16 FieldFiller::GetPhoneNumberValue(
+    const AutofillField& field,
+    const base::string16& number,
+    const FormFieldData& field_data) {
   // TODO(crbug.com/581485): Investigate the use of libphonenumber here.
   // Check to see if the |field| size matches the "prefix" or "suffix" size or
   // if
@@ -615,9 +621,11 @@ base::string16 GetPhoneNumberValue(const AutofillField& field,
   return number;
 }
 
-int FindShortestSubstringMatchInSelect(const base::string16& value,
-                                       bool ignore_whitespace,
-                                       const FormFieldData* field) {
+// static
+int FieldFiller::FindShortestSubstringMatchInSelect(
+    const base::string16& value,
+    bool ignore_whitespace,
+    const FormFieldData* field) {
   DCHECK_EQ(field->option_values.size(), field->option_contents.size());
 
   int best_match = -1;
@@ -645,5 +653,4 @@ int FindShortestSubstringMatchInSelect(const base::string16& value,
   return best_match;
 }
 
-}  // namespace fill_util
 }  // namespace autofill

@@ -26,6 +26,7 @@
 #include "components/autofill/core/browser/autofill_handler.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/card_unmask_delegate.h"
+#include "components/autofill/core/browser/field_filler.h"
 #include "components/autofill/core/browser/form_data_importer.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/form_types.h"
@@ -470,6 +471,9 @@ class AutofillManager : public AutofillHandler,
   // Handles importing of address and credit card data from forms.
   // Must be initialized (and thus listed) after payments_client_.
   std::unique_ptr<FormDataImporter> form_data_importer_;
+
+  // Used to help fill data into fields.
+  FieldFiller field_filler_;
 
   base::circular_deque<std::string> autofilled_form_signatures_;
 

@@ -48,7 +48,6 @@
 #include "components/autofill/core/browser/country_names.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
-#include "components/autofill/core/browser/fill_util.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/phone_number.h"
@@ -210,6 +209,7 @@ AutofillManager::AutofillManager(
                                              payments_client_.get(),
                                              client->GetPersonalDataManager(),
                                              app_locale)),
+      field_filler_(app_locale),
       autocomplete_history_manager_(
           std::make_unique<AutocompleteHistoryManager>(driver, client)),
       form_interactions_ukm_logger_(
@@ -1228,6 +1228,7 @@ AutofillManager::AutofillManager(AutofillDriver* driver,
                                              payments_client_.get(),
                                              personal_data,
                                              app_locale_)),
+      field_filler_("en-US"),
       autocomplete_history_manager_(
           std::make_unique<AutocompleteHistoryManager>(driver, client)),
       form_interactions_ukm_logger_(
@@ -1606,7 +1607,7 @@ std::vector<Suggestion> AutofillManager::GetProfileSuggestions(
   // Adjust phone number to display in prefix/suffix case.
   if (autofill_field.Type().GetStorableType() == PHONE_HOME_NUMBER) {
     for (size_t i = 0; i < suggestions.size(); ++i) {
-      suggestions[i].value = fill_util::GetPhoneNumberValue(
+      suggestions[i].value = FieldFiller::GetPhoneNumberValue(
           autofill_field, suggestions[i].value, field);
     }
   }
@@ -1979,8 +1980,8 @@ void AutofillManager::FillFieldWithValue(
     const base::string16& profile_full_name,
     FormFieldData* field_data,
     bool should_notify) {
-  if (fill_util::FillFormField(*autofill_field, value, profile_language_code,
-                               app_locale_, field_data)) {
+  if (field_filler_.FillFormField(*autofill_field, value, profile_language_code,
+                                  field_data)) {
     // Mark the cached field as autofilled, so that we can detect when a
     // user edits an autofilled field (for metrics).
     autofill_field->is_autofilled = true;
