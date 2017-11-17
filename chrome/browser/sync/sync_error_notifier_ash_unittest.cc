@@ -16,9 +16,6 @@
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
-#include "chrome/test/base/testing_browser_process.h"
-#include "chrome/test/base/testing_profile.h"
-#include "chrome/test/base/testing_profile_manager.h"
 #include "components/browser_sync/profile_sync_service_mock.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -32,10 +29,9 @@ using ::testing::_;
 
 namespace {
 
-const char kTestAccountId[] = "testuser@test.com";
-
-// Notification ID corresponding to kProfileSyncNotificationId + kTestAccountId.
-const char kNotificationId[] = "chrome://settings/sync/testuser@test.com";
+// Notification ID corresponding to kProfileSyncNotificationId + the test
+// profile's name.
+const char kNotificationId[] = "chrome://settings/sync/testing_profile";
 
 class FakeLoginUIService: public LoginUIService {
  public:
@@ -69,28 +65,20 @@ class SyncErrorNotifierTest : public BrowserWithTestWindowTest {
   ~SyncErrorNotifierTest() override {}
 
   void SetUp() override {
-    DCHECK(TestingBrowserProcess::GetGlobal());
-
     BrowserWithTestWindowTest::SetUp();
 
-    profile_manager_ = std::make_unique<TestingProfileManager>(
-        TestingBrowserProcess::GetGlobal());
-    ASSERT_TRUE(profile_manager_->SetUp());
-
-    profile_ = profile_manager_->CreateTestingProfile(kTestAccountId);
-
     service_ = std::make_unique<browser_sync::ProfileSyncServiceMock>(
-        CreateProfileSyncServiceParamsForTest(profile_));
+        CreateProfileSyncServiceParamsForTest(profile()));
 
     FakeLoginUIService* login_ui_service = static_cast<FakeLoginUIService*>(
         LoginUIServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-            profile_, BuildMockLoginUIService));
+            profile(), BuildMockLoginUIService));
     login_ui_service->SetLoginUI(&login_ui_);
 
     error_controller_ =
         std::make_unique<syncer::SyncErrorController>(service_.get());
     error_notifier_ =
-        std::make_unique<SyncErrorNotifier>(error_controller_.get(), profile_);
+        std::make_unique<SyncErrorNotifier>(error_controller_.get(), profile());
 
     notification_ui_manager_ = g_browser_process->notification_ui_manager();
   }
@@ -98,7 +86,6 @@ class SyncErrorNotifierTest : public BrowserWithTestWindowTest {
   void TearDown() override {
     error_notifier_->Shutdown();
     service_.reset();
-    profile_manager_.reset();
 
     BrowserWithTestWindowTest::TearDown();
   }
@@ -122,7 +109,7 @@ class SyncErrorNotifierTest : public BrowserWithTestWindowTest {
 
     const message_center::Notification* notification =
         notification_ui_manager_->FindById(
-            kNotificationId, NotificationUIManager::GetProfileID(profile_));
+            kNotificationId, NotificationUIManager::GetProfileID(profile()));
     if (expected_notification) {
       ASSERT_TRUE(notification);
       ASSERT_FALSE(notification->title().empty());
@@ -132,11 +119,9 @@ class SyncErrorNotifierTest : public BrowserWithTestWindowTest {
     }
   }
 
-  std::unique_ptr<TestingProfileManager> profile_manager_;
   std::unique_ptr<syncer::SyncErrorController> error_controller_;
   std::unique_ptr<SyncErrorNotifier> error_notifier_;
   std::unique_ptr<browser_sync::ProfileSyncServiceMock> service_;
-  TestingProfile* profile_;
   FakeLoginUI login_ui_;
   NotificationUIManager* notification_ui_manager_;
 
@@ -150,7 +135,7 @@ TEST_F(SyncErrorNotifierTest, PassphraseNotification) {
   user_manager::ScopedUserManager scoped_enabler(
       std::make_unique<chromeos::MockUserManager>());
   ASSERT_FALSE(notification_ui_manager_->FindById(
-      kNotificationId, NotificationUIManager::GetProfileID(profile_)));
+      kNotificationId, NotificationUIManager::GetProfileID(profile())));
 
   syncer::SyncEngine::Status status;
   EXPECT_CALL(*service_, QueryDetailedSyncStatus(_))
@@ -169,7 +154,7 @@ TEST_F(SyncErrorNotifierTest, PassphraseNotification) {
 
   // Sumulate discarded notification and check that notification is not shown.
   notification_ui_manager_->CancelById(
-      kNotificationId, NotificationUIManager::GetProfileID(profile_));
+      kNotificationId, NotificationUIManager::GetProfileID(profile()));
   {
     SCOPED_TRACE("Not expecting notification, one was already discarded");
     VerifySyncErrorNotifierResult(GoogleServiceAuthError::NONE,

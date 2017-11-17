@@ -25,7 +25,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/ime_controller_client.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
-#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -130,9 +129,6 @@ class InputMethodManagerImplTest :  public BrowserWithTestWindowTest {
   ~InputMethodManagerImplTest() override {}
 
   void SetUp() override {
-    profile_manager_.reset(new TestingProfileManager(GetBrowserProcess()));
-    ASSERT_TRUE(profile_manager_->SetUp());
-
     ui::InitializeInputMethodForTesting();
 
     delegate_ = new FakeInputMethodDelegate();
@@ -164,8 +160,6 @@ class InputMethodManagerImplTest :  public BrowserWithTestWindowTest {
     candidate_window_controller_ = NULL;
     keyboard_ = NULL;
     manager_.reset();
-
-    profile_manager_.reset();
   }
 
  protected:
@@ -345,11 +339,6 @@ class InputMethodManagerImplTest :  public BrowserWithTestWindowTest {
     ime_list_.push_back(ext2);
   }
 
-  TestingBrowserProcess* GetBrowserProcess() {
-    return TestingBrowserProcess::GetGlobal();
-  }
-
-  std::unique_ptr<TestingProfileManager> profile_manager_;
   std::unique_ptr<InputMethodManagerImpl> manager_;
   FakeInputMethodDelegate* delegate_;
   MockCandidateWindowController* candidate_window_controller_;

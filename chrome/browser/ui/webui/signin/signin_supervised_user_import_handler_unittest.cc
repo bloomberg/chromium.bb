@@ -74,27 +74,14 @@ class SigninSupervisedUserImportHandlerTest : public BrowserWithTestWindowTest {
     BrowserWithTestWindowTest::SetUp();
     handler_.reset(new TestSigninSupervisedUserImportHandler(web_ui()));
 
-    // Build a test profile.
-    profile_manager_.reset(
-        new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
-    ASSERT_TRUE(profile_manager_->SetUp());
-
-    TestingProfile::TestingFactories factories;
-    factories.push_back(std::make_pair(SigninManagerFactory::GetInstance(),
-                                       BuildFakeSigninManagerBase));
-    profile_ = profile_manager_.get()->CreateTestingProfile(
-        "test-profile",
-        std::unique_ptr<sync_preferences::PrefServiceSyncable>(),
-        base::UTF8ToUTF16("test-profile"), 0, std::string(), factories);
-
     // Authenticate the test profile.
     fake_signin_manager_ = static_cast<FakeSigninManagerForTesting*>(
-        SigninManagerFactory::GetForProfile(profile_));
+        SigninManagerFactory::GetForProfile(profile()));
     fake_signin_manager_->SetAuthenticatedAccountInfo(kTestGaiaId, kTestEmail);
 
     // Add supervised users to the profile.
     SupervisedUserSyncService* sync_service_ =
-        SupervisedUserSyncServiceFactory::GetForProfile(profile_);
+        SupervisedUserSyncServiceFactory::GetForProfile(profile());
     syncer::SyncDataList sync_data;
     sync_data.push_back(CreateSyncData(kSupervisedUserId,
                                        kSupervisedUsername,
@@ -111,10 +98,13 @@ class SigninSupervisedUserImportHandlerTest : public BrowserWithTestWindowTest {
   }
 
   void TearDown() override {
-    profile_manager_.reset();
     handler_.reset();
     web_ui_.reset();
     BrowserWithTestWindowTest::TearDown();
+  }
+
+  TestingProfile::TestingFactories GetTestingFactories() override {
+    return {{SigninManagerFactory::GetInstance(), BuildFakeSigninManagerBase}};
   }
 
   content::TestWebUI* web_ui() {
@@ -123,14 +113,6 @@ class SigninSupervisedUserImportHandlerTest : public BrowserWithTestWindowTest {
 
   TestSigninSupervisedUserImportHandler* handler() {
     return handler_.get();
-  }
-
-  TestingProfileManager* profile_manager() {
-    return profile_manager_.get();
-  }
-
-  TestingProfile* profile() {
-    return profile_;
   }
 
   FakeSigninManagerForTesting* signin_manager() {
@@ -156,8 +138,6 @@ class SigninSupervisedUserImportHandlerTest : public BrowserWithTestWindowTest {
  private:
   std::unique_ptr<content::TestWebUI> web_ui_;
   std::unique_ptr<TestSigninSupervisedUserImportHandler> handler_;
-  std::unique_ptr<TestingProfileManager> profile_manager_;
-  TestingProfile* profile_;
   FakeSigninManagerForTesting* fake_signin_manager_;
 };
 
@@ -214,9 +194,8 @@ TEST_F(SigninSupervisedUserImportHandlerTest, AuthError) {
 
 TEST_F(SigninSupervisedUserImportHandlerTest, CustodianIsSupervised) {
   // Build a supervised test profile.
-  TestingProfile* profile_ = profile_manager()->CreateTestingProfile(
-      "supervised-test-profile",
-      std::unique_ptr<sync_preferences::PrefServiceSyncable>(),
+  TestingProfile* supervised_profile = profile_manager()->CreateTestingProfile(
+      "supervised-test-profile", nullptr,
       base::UTF8ToUTF16("supervised-test-profile"), 0,
       "12345",  // supervised_user_id
       TestingProfile::TestingFactories());
@@ -224,7 +203,7 @@ TEST_F(SigninSupervisedUserImportHandlerTest, CustodianIsSupervised) {
   // Test the JS -> C++ -> JS callback path.
   base::ListValue list_args;
   list_args.AppendString(kTestCallbackId);
-  list_args.AppendString(profile_->GetPath().AsUTF16Unsafe());
+  list_args.AppendString(supervised_profile->GetPath().AsUTF16Unsafe());
   handler()->GetExistingSupervisedUsers(&list_args);
 
   // Expect to do nothing.

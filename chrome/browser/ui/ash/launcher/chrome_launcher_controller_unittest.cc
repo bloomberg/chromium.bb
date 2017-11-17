@@ -388,12 +388,6 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
 
     BrowserWithTestWindowTest::SetUp();
 
-    if (!profile_manager_) {
-      profile_manager_.reset(
-          new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
-      ASSERT_TRUE(profile_manager_->SetUp());
-    }
-
     model_observer_ = std::make_unique<TestShelfModelObserver>();
     model_ = std::make_unique<ash::ShelfModel>();
     model_->AddObserver(model_observer_.get());
@@ -1012,7 +1006,6 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
   std::unique_ptr<TestChromeLauncherController> launcher_controller_;
   std::unique_ptr<TestShelfModelObserver> model_observer_;
   std::unique_ptr<ash::ShelfModel> model_;
-  std::unique_ptr<TestingProfileManager> profile_manager_;
 
   FakeTabletModeController fake_tablet_mode_controller_;
   std::unique_ptr<TabletModeClient> tablet_mode_client_;
@@ -1162,14 +1155,6 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
 
   // Overwrite the Setup function to enable multi profile and needed objects.
   void SetUp() override {
-    profile_manager_.reset(
-        new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
-
-    ASSERT_TRUE(profile_manager_->SetUp());
-
-    // AvatarMenu and multiple profiles works after user logged in.
-    profile_manager_->SetLoggedIn(true);
-
     // Initialize the UserManager singleton to a fresh FakeUserManager instance.
     user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
         std::make_unique<chromeos::FakeChromeUserManager>());
@@ -1180,6 +1165,9 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
     // Initialize the rest.
     ChromeLauncherControllerTest::SetUp();
 
+    // AvatarMenu and multiple profiles works after user logged in.
+    profile_manager()->SetLoggedIn(true);
+
     // Ensure there are multiple profiles. User 0 is created during setup.
     CreateMultiUserProfile("user1");
     ASSERT_TRUE(SessionControllerClient::IsMultiProfileAvailable());
@@ -1188,9 +1176,6 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
   void TearDown() override {
     ChromeLauncherControllerTest::TearDown();
     user_manager_enabler_.reset();
-    for (ProfileToNameMap::iterator it = created_profiles_.begin();
-         it != created_profiles_.end(); ++it)
-      profile_manager_->DeleteTestingProfile(it->second);
     chromeos::WallpaperManager::Shutdown();
 
     // A Task is leaked if we don't destroy everything, then run the message
@@ -1270,17 +1255,9 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
   TestingProfile* CreateProfile() override {
     return CreateMultiUserProfile("user0");
   }
-  void DestroyProfile(TestingProfile* profile) override {
-    // Delete the profile through our profile manager.
-    ProfileToNameMap::iterator it = created_profiles_.find(profile);
-    DCHECK(it != created_profiles_.end());
-    profile_manager_->DeleteTestingProfile(it->second);
-    created_profiles_.erase(it);
-  }
 
  private:
   typedef std::map<Profile*, std::string> ProfileToNameMap;
-  TestingProfileManager* profile_manager() { return profile_manager_.get(); }
 
   chromeos::FakeChromeUserManager* GetFakeUserManager() {
     return static_cast<chromeos::FakeChromeUserManager*>(

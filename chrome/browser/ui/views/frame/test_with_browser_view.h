@@ -11,7 +11,6 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 
 class BrowserView;
-class ScopedTestingLocalState;
 
 // Base class for BrowserView based unit tests. TestWithBrowserView creates
 // a Browser with a valid BrowserView and BrowserFrame with as little else as
@@ -32,7 +31,6 @@ class TestWithBrowserView : public BrowserWithTestWindowTest {
 
  private:
   BrowserView* browser_view_;  // Not owned.
-  std::unique_ptr<ScopedTestingLocalState> local_state_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWithBrowserView);
 };

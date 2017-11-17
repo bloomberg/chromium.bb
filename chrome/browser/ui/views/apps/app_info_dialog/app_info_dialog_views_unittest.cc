@@ -110,12 +110,6 @@ class AppInfoDialogViewsTest : public BrowserWithTestWindowTest,
     return extension_environment_.profile();
   }
 
-  void DestroyProfile(TestingProfile* profile) override {
-#if defined(OS_CHROMEOS)
-    arc_test_.TearDown();
-#endif
-  }
-
  protected:
   void ShowAppInfo(const std::string& app_id) {
     ShowAppInfoForProfile(app_id, extension_environment_.profile());
@@ -207,8 +201,9 @@ TEST_F(AppInfoDialogViewsTest, DestroyedProfileClosesDialog) {
   browser_window->Close();
   browser_window.reset();
 
-  // This does not actually destroy the profile; see DestroyProfile above.
-  DestroyProfile(profile());
+#if defined(OS_CHROMEOS)
+  arc_test_.TearDown();
+#endif
 
   // The following does nothing: it just ensures the Widget close is being
   // triggered by the DeleteProfile() call rather than the code above.

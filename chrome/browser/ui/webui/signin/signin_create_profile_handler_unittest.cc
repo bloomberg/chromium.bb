@@ -171,10 +171,7 @@ class SigninCreateProfileHandlerTest : public BrowserWithTestWindowTest {
 
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
-
-    profile_manager_.reset(
-        new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
-    ASSERT_TRUE(profile_manager_->SetUp());
+    profile_manager()->DeleteAllTestingProfiles();
 
     handler_.reset(new TestSigninCreateProfileHandler(web_ui(),
                                                       profile_manager()));
@@ -182,7 +179,7 @@ class SigninCreateProfileHandlerTest : public BrowserWithTestWindowTest {
     TestingProfile::TestingFactories factories;
     factories.push_back(std::make_pair(SigninManagerFactory::GetInstance(),
                                        BuildFakeSigninManagerBase));
-    custodian_ = profile_manager_.get()->CreateTestingProfile(
+    custodian_ = profile_manager()->CreateTestingProfile(
         "custodian-profile",
         std::unique_ptr<sync_preferences::TestingPrefServiceSyncable>(),
         base::UTF8ToUTF16("custodian-profile"), 0, std::string(), factories);
@@ -229,7 +226,6 @@ class SigninCreateProfileHandlerTest : public BrowserWithTestWindowTest {
 
   void TearDown() override {
     handler_.reset();
-    profile_manager_.reset();
     BrowserWithTestWindowTest::TearDown();
   }
 
@@ -239,10 +235,6 @@ class SigninCreateProfileHandlerTest : public BrowserWithTestWindowTest {
 
   TestSigninCreateProfileHandler* handler() {
     return handler_.get();
-  }
-
-  TestingProfileManager* profile_manager() {
-    return profile_manager_.get();
   }
 
   TestingProfile* custodian() {
@@ -255,7 +247,6 @@ class SigninCreateProfileHandlerTest : public BrowserWithTestWindowTest {
 
  private:
   std::unique_ptr<content::TestWebUI> web_ui_;
-  std::unique_ptr<TestingProfileManager> profile_manager_;
   TestingProfile* custodian_;
   FakeSigninManagerForTesting* fake_signin_manager_;
   std::unique_ptr<TestSigninCreateProfileHandler> handler_;

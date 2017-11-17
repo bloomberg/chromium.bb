@@ -132,7 +132,6 @@ class EPKPChallengeKeyTestBase : public BrowserWithTestWindowTest {
  protected:
   explicit EPKPChallengeKeyTestBase(ProfileType profile_type)
       : settings_helper_(false),
-        profile_manager_(TestingBrowserProcess::GetGlobal()),
         profile_type_(profile_type),
         fake_user_manager_(new chromeos::FakeChromeUserManager),
         user_manager_enabler_(base::WrapUnique(fake_user_manager_)) {
@@ -155,8 +154,6 @@ class EPKPChallengeKeyTestBase : public BrowserWithTestWindowTest {
   }
 
   void SetUp() override {
-    ASSERT_TRUE(profile_manager_.SetUp());
-
     BrowserWithTestWindowTest::SetUp();
     if (profile_type_ == ProfileType::USER_PROFILE) {
       // Set the user preferences.
@@ -175,17 +172,11 @@ class EPKPChallengeKeyTestBase : public BrowserWithTestWindowTest {
       case ProfileType::USER_PROFILE:
         fake_user_manager_->AddUserWithAffiliation(
             AccountId::FromUserEmail(kUserEmail), true);
-        return profile_manager_.CreateTestingProfile(kUserEmail);
+        return profile_manager()->CreateTestingProfile(kUserEmail);
 
       case ProfileType::SIGNIN_PROFILE:
-        return profile_manager_.CreateTestingProfile(chrome::kInitialProfile);
+        return profile_manager()->CreateTestingProfile(chrome::kInitialProfile);
     }
-  }
-
-  void DestroyProfile(TestingProfile* profile) override {
-    profile_manager_.DeleteTestingProfile(profile->GetProfileUserName());
-    // Profile itself will be destroyed later in
-    // ProfileManager::ProfileInfo::~ProfileInfo() .
   }
 
   // Derived classes can override this method to set the required authenticated
@@ -201,7 +192,6 @@ class EPKPChallengeKeyTestBase : public BrowserWithTestWindowTest {
   chromeos::ScopedCrosSettingsTestHelper settings_helper_;
   scoped_refptr<Extension> extension_;
   chromeos::StubInstallAttributes stub_install_attributes_;
-  TestingProfileManager profile_manager_;
   ProfileType profile_type_;
   // fake_user_manager_ is owned by user_manager_enabler_.
   chromeos::FakeChromeUserManager* fake_user_manager_;
@@ -561,9 +551,7 @@ class EPKPChallengeMachineKeyUnmanagedUserTest
 
   TestingProfile* CreateProfile() override {
     fake_user_manager_->AddUser(account_id_);
-    TestingProfile* profile =
-        profile_manager_.CreateTestingProfile(account_id_.GetUserEmail());
-    return profile;
+    return profile_manager()->CreateTestingProfile(account_id_.GetUserEmail());
   }
 
   const AccountId account_id_ =
@@ -585,9 +573,7 @@ class EPKPChallengeUserKeyUnmanagedUserTest : public EPKPChallengeUserKeyTest {
 
   TestingProfile* CreateProfile() override {
     fake_user_manager_->AddUser(account_id_);
-    TestingProfile* profile =
-        profile_manager_.CreateTestingProfile(account_id_.GetUserEmail());
-    return profile;
+    return profile_manager()->CreateTestingProfile(account_id_.GetUserEmail());
   }
 
   const AccountId account_id_ =

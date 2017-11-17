@@ -157,13 +157,10 @@ class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest {
     return new DialogTestBrowserWindow;
   }
 
-  TestingProfile* CreateProfile() override {
-    TestingProfile::Builder builder;
-    builder.AddTestingFactory(AccountFetcherServiceFactory::GetInstance(),
-                              FakeAccountFetcherServiceBuilder::BuildForTests);
-    builder.AddTestingFactory(
-        SigninManagerFactory::GetInstance(), BuildFakeSigninManagerBase);
-    return builder.Build().release();
+  TestingProfile::TestingFactories GetTestingFactories() override {
+    return {{AccountFetcherServiceFactory::GetInstance(),
+             FakeAccountFetcherServiceBuilder::BuildForTests},
+            {SigninManagerFactory::GetInstance(), BuildFakeSigninManagerBase}};
   }
 
  protected:

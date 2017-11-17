@@ -47,24 +47,17 @@ const char* kLandingPage_3 = "https://www.google.com/C";
 
 class WebUsbDetectorTest : public BrowserWithTestWindowTest {
  public:
-  WebUsbDetectorTest() : profile_manager_(TestingBrowserProcess::GetGlobal()) {}
+  WebUsbDetectorTest() {}
   ~WebUsbDetectorTest() override = default;
 
-  // Use the profile_manager_'s profile so that we can manage which one is most
-  // recently active.
   TestingProfile* CreateProfile() override {
-    return profile_manager_.CreateTestingProfile(kProfileName);
+    return profile_manager()->CreateTestingProfile(kProfileName);
   }
 
-  // Since the profile is owned by profile_manager_, we do not need to destroy
-  // it.
-  void DestroyProfile(TestingProfile* profile) override {}
-
   void SetUp() override {
-    ASSERT_TRUE(profile_manager_.SetUp());
     BrowserWithTestWindowTest::SetUp();
 #if defined(OS_CHROMEOS)
-    profile_manager_.SetLoggedIn(true);
+    profile_manager()->SetLoggedIn(true);
     chromeos::ProfileHelper::Get()->SetActiveUserIdForTesting(kProfileName);
 #endif
     BrowserList::SetLastActive(browser());
@@ -95,7 +88,6 @@ class WebUsbDetectorTest : public BrowserWithTestWindowTest {
  private:
   DISALLOW_COPY_AND_ASSIGN(WebUsbDetectorTest);
   std::unique_ptr<WebUsbDetector> web_usb_detector_;
-  TestingProfileManager profile_manager_;
 };
 
 TEST_F(WebUsbDetectorTest, UsbDeviceAddedAndRemoved) {

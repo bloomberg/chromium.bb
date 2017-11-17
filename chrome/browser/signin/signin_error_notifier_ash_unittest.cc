@@ -19,7 +19,6 @@
 #include "chrome/browser/signin/signin_error_notifier_factory_ash.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
-#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/signin/core/browser/fake_auth_status_provider.h"
@@ -32,20 +31,17 @@
 
 namespace {
 
-static const char kTestAccountId[] = "testuser@test.com";
+static const char kTestAccountId[] = "testing_profile";
 
 // Notification ID corresponding to kProfileSigninNotificationId +
 // kTestAccountId.
 static const char kNotificationId[] =
-    "chrome://settings/signin/testuser@test.com";
+    "chrome://settings/signin/testing_profile";
 
 class SigninErrorNotifierTest : public BrowserWithTestWindowTest {
  public:
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
-    profile_manager_.reset(
-        new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
-    ASSERT_TRUE(profile_manager_->SetUp());
 
     mock_user_manager_ = new chromeos::MockUserManager();
     user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
@@ -57,19 +53,8 @@ class SigninErrorNotifierTest : public BrowserWithTestWindowTest {
     notification_ui_manager_ = g_browser_process->notification_ui_manager();
   }
 
-  void TearDown() override {
-    profile_manager_.reset();
-    BrowserWithTestWindowTest::TearDown();
-  }
-
-  TestingProfile* CreateProfile() override {
-    // Create a signed-in profile.
-    TestingProfile::Builder builder;
-    builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
-                              BuildFakeSigninManagerBase);
-    std::unique_ptr<TestingProfile> profile = builder.Build();
-    profile->set_profile_name(kTestAccountId);
-    return profile.release();
+  TestingProfile::TestingFactories GetTestingFactories() override {
+    return {{SigninManagerFactory::GetInstance(), BuildFakeSigninManagerBase}};
   }
 
  protected:
@@ -81,7 +66,6 @@ class SigninErrorNotifierTest : public BrowserWithTestWindowTest {
     *message = notification->message();
   }
 
-  std::unique_ptr<TestingProfileManager> profile_manager_;
   SigninErrorController* error_controller_;
   NotificationUIManager* notification_ui_manager_;
   chromeos::MockUserManager* mock_user_manager_;  // Not owned.

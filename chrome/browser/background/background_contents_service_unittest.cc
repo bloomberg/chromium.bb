@@ -22,7 +22,6 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chrome/test/base/testing_profile_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/notification_service.h"
@@ -157,7 +156,9 @@ class NotificationWaiter : public message_center::MessageCenterObserver {
         static_cast<MessageCenterNotificationManager*>(
             g_browser_process->notification_ui_manager());
     DCHECK(manager);
-    return manager->FindById(delegate_id, profile_)->id();
+    return manager
+        ->FindById(delegate_id, NotificationUIManager::GetProfileID(profile_))
+        ->id();
   }
 
   std::string target_id_;
@@ -175,15 +176,13 @@ class BackgroundContentsServiceNotificationTest
 
   // Overridden from testing::Test
   void SetUp() override {
-    BrowserWithTestWindowTest::SetUp();
     // In ChromeOS environment, BrowserWithTestWindowTest initializes
     // MessageCenter.
 #if !defined(OS_CHROMEOS)
     message_center::MessageCenter::Initialize();
 #endif
-    profile_manager_.reset(new TestingProfileManager(
-        TestingBrowserProcess::GetGlobal()));
-    ASSERT_TRUE(profile_manager_->SetUp());
+    BrowserWithTestWindowTest::SetUp();
+
     MessageCenterNotificationManager* manager =
         static_cast<MessageCenterNotificationManager*>(
             g_browser_process->notification_ui_manager());
@@ -191,12 +190,10 @@ class BackgroundContentsServiceNotificationTest
   }
 
   void TearDown() override {
-    g_browser_process->notification_ui_manager()->StartShutdown();
-    profile_manager_.reset();
+    BrowserWithTestWindowTest::TearDown();
 #if !defined(OS_CHROMEOS)
     message_center::MessageCenter::Shutdown();
 #endif
-    BrowserWithTestWindowTest::TearDown();
   }
 
  protected:
@@ -216,8 +213,6 @@ class BackgroundContentsServiceNotificationTest
   }
 
  private:
-  std::unique_ptr<TestingProfileManager> profile_manager_;
-
   DISALLOW_COPY_AND_ASSIGN(BackgroundContentsServiceNotificationTest);
 };
 

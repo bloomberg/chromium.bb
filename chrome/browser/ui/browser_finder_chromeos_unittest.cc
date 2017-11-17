@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/test_browser_window_aura.h"
-#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -37,7 +36,7 @@ class BrowserFinderChromeOSTest : public BrowserWithTestWindowTest {
 
   TestingProfile* CreateMultiUserProfile(const AccountId& account_id) {
     TestingProfile* profile =
-        profile_manager_->CreateTestingProfile(account_id.GetUserEmail());
+        profile_manager()->CreateTestingProfile(account_id.GetUserEmail());
     const user_manager::User* user = fake_user_manager_->AddUser(account_id);
     chromeos::ProfileHelper::Get()->SetUserToProfileMappingForTesting(
         const_cast<user_manager::User*>(user), profile);
@@ -63,14 +62,11 @@ class BrowserFinderChromeOSTest : public BrowserWithTestWindowTest {
 
  private:
   void SetUp() override {
-    profile_manager_.reset(
-        new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
-    ASSERT_TRUE(profile_manager_->SetUp());
     test_account_id1_ = AccountId::FromUserEmail(kTestAccount1);
     test_account_id2_ = AccountId::FromUserEmail(kTestAccount2);
-    profile_manager_->SetLoggedIn(true);
-    chromeos::WallpaperManager::Initialize();
     BrowserWithTestWindowTest::SetUp();
+    profile_manager()->SetLoggedIn(true);
+    chromeos::WallpaperManager::Initialize();
     second_profile_ = CreateMultiUserProfile(test_account_id2_);
   }
 
@@ -78,22 +74,13 @@ class BrowserFinderChromeOSTest : public BrowserWithTestWindowTest {
     chrome::MultiUserWindowManager::DeleteInstance();
     BrowserWithTestWindowTest::TearDown();
     chromeos::WallpaperManager::Shutdown();
-    if (second_profile_) {
-      DestroyProfile(second_profile_);
-      second_profile_ = nullptr;
-    }
   }
 
   TestingProfile* CreateProfile() override {
     return CreateMultiUserProfile(test_account_id1_);
   }
 
-  void DestroyProfile(TestingProfile* test_profile) override {
-    profile_manager_->DeleteTestingProfile(test_profile->GetProfileUserName());
-  }
-
   TestingProfile* second_profile_;
-  std::unique_ptr<TestingProfileManager> profile_manager_;
   chrome::MultiUserWindowManagerChromeOS* multi_user_window_manager_;
 
   // |fake_user_manager_| is owned by |user_manager_enabler_|

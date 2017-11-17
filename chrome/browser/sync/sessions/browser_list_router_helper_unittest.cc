@@ -9,6 +9,8 @@
 #include "chrome/browser/sync/sessions/sync_sessions_web_contents_router_factory.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
+#include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "components/sync_sessions/synced_tab_delegate.h"
 
 namespace sync_sessions {
@@ -39,19 +41,19 @@ class BrowserListRouterHelperTest : public BrowserWithTestWindowTest {
 
 TEST_F(BrowserListRouterHelperTest, ObservationScopedToSingleProfile) {
   TestingProfile* profile_1 = profile();
-  std::unique_ptr<TestingProfile> profile_2(
-      BrowserWithTestWindowTest::CreateProfile());
+  TestingProfile* profile_2 =
+      profile_manager()->CreateTestingProfile("testing_profile2");
 
   std::unique_ptr<BrowserWindow> window_2(CreateBrowserWindow());
   std::unique_ptr<Browser> browser_2(
-      CreateBrowser(profile_2.get(), browser()->type(), false, window_2.get()));
+      CreateBrowser(profile_2, browser()->type(), false, window_2.get()));
 
   SyncSessionsWebContentsRouter* router_1 =
       SyncSessionsWebContentsRouterFactory::GetInstance()->GetForProfile(
           profile_1);
   SyncSessionsWebContentsRouter* router_2 =
       SyncSessionsWebContentsRouterFactory::GetInstance()->GetForProfile(
-          profile_2.get());
+          profile_2);
 
   router_1->StartRoutingTo(&handler_1);
   router_2->StartRoutingTo(&handler_2);
@@ -76,7 +78,7 @@ TEST_F(BrowserListRouterHelperTest, ObservationScopedToSingleProfile) {
   std::unique_ptr<Browser> new_browser_in_first_profile(
       CreateBrowser(profile_1, browser()->type(), false, window_3.get()));
   std::unique_ptr<Browser> new_browser_in_second_profile(
-      CreateBrowser(profile_2.get(), browser()->type(), false, window_4.get()));
+      CreateBrowser(profile_2, browser()->type(), false, window_4.get()));
 
   GURL gurl_3("http://foo3.com");
   GURL gurl_4("http://foo4.com");
