@@ -29,6 +29,7 @@ const char kSignInPromoQueryKeySource[] = "source";
 const char kSignInPromoQueryKeyConstrained[] = "constrained";
 const char kSignInPromoQueryKeyShowAccountManagement[] =
     "showAccountManagement";
+const char kSigninPromoLandingURLSuccessPage[] = "success.html";
 
 // Returns true if we should show the sign in promo at startup.
 bool ShouldShowPromoAtStartup(Profile* profile, bool is_new_profile);

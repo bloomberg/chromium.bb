@@ -7,9 +7,6 @@
 #include <limits.h>
 
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/signin/gaia_auth_extension_loader.h"
@@ -35,8 +32,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
-#include "google_apis/gaia/gaia_urls.h"
-#include "net/base/escape.h"
 #include "net/base/url_util.h"
 #include "url/gurl.h"
 
@@ -98,16 +93,22 @@ GURL GetPromoURL(signin_metrics::AccessPoint access_point,
   CHECK_NE(static_cast<int>(reason),
            static_cast<int>(signin_metrics::Reason::REASON_UNKNOWN_REASON));
 
-  std::string url(chrome::kChromeUIChromeSigninURL);
-  base::StringAppendF(&url, "?%s=%d", signin::kSignInPromoQueryKeyAccessPoint,
-                      static_cast<int>(access_point));
-  base::StringAppendF(&url, "&%s=%d", signin::kSignInPromoQueryKeyReason,
-                      static_cast<int>(reason));
-  if (auto_close)
-    base::StringAppendF(&url, "&%s=1", signin::kSignInPromoQueryKeyAutoClose);
-  if (is_constrained)
-    base::StringAppendF(&url, "&%s=1", signin::kSignInPromoQueryKeyConstrained);
-  return GURL(url);
+  GURL url(chrome::kChromeUIChromeSigninURL);
+  url = net::AppendQueryParameter(
+      url, signin::kSignInPromoQueryKeyAccessPoint,
+      base::IntToString(static_cast<int>(access_point)));
+  url = net::AppendQueryParameter(url, signin::kSignInPromoQueryKeyReason,
+                                  base::IntToString(static_cast<int>(reason)));
+  if (auto_close) {
+    url = net::AppendQueryParameter(url, signin::kSignInPromoQueryKeyAutoClose,
+                                    "1");
+  }
+  if (is_constrained) {
+    url = net::AppendQueryParameter(
+        url, signin::kSignInPromoQueryKeyConstrained, "1");
+  }
+
+  return url;
 }
 
 GURL GetReauthURL(signin_metrics::AccessPoint access_point,
@@ -187,26 +188,28 @@ void SetUserSkippedPromo(Profile* profile) {
 }
 
 GURL GetLandingURL(signin_metrics::AccessPoint access_point) {
-  std::string url = base::StringPrintf(
-      "%s/success.html?%s=%d", extensions::kGaiaAuthExtensionOrigin,
-      kSignInPromoQueryKeyAccessPoint, static_cast<int>(access_point));
+  GURL url(extensions::kGaiaAuthExtensionOrigin);
+  GURL::Replacements replacements;
+  replacements.SetPathStr(kSigninPromoLandingURLSuccessPage);
+  url = url.ReplaceComponents(replacements);
+
+  url = net::AppendQueryParameter(
+      url, kSignInPromoQueryKeyAccessPoint,
+      base::IntToString(static_cast<int>(access_point)));
 
   // TODO(gogerald): right now, gaia server needs to distinguish the source from
   // signin_metrics::SOURCE_START_PAGE, signin_metrics::SOURCE_SETTINGS and
   // the others to show advanced sync settings, remove them after
   // switching to Minute Maid sign in flow.
+  signin_metrics::Source source = signin_metrics::SOURCE_OTHERS;
   if (access_point == signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE) {
-    base::StringAppendF(&url, "&%s=%d", kSignInPromoQueryKeySource,
-                        signin_metrics::SOURCE_START_PAGE);
+    source = signin_metrics::SOURCE_START_PAGE;
   } else if (access_point ==
              signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS) {
-    base::StringAppendF(&url, "&%s=%d", kSignInPromoQueryKeySource,
-                        signin_metrics::SOURCE_SETTINGS);
-  } else {
-    base::StringAppendF(&url, "&%s=%d", kSignInPromoQueryKeySource,
-                        signin_metrics::SOURCE_OTHERS);
+    source = signin_metrics::SOURCE_SETTINGS;
   }
-
+  url = net::AppendQueryParameter(url, signin::kSignInPromoQueryKeySource,
+                                  base::IntToString(static_cast<int>(source)));
   return GURL(url);
 }
 
