@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/toolbar/legacy_toolbar_coordinator.h"
 
 #import "ios/chrome/browser/ui/toolbar/omnibox_focuser.h"
+#import "ios/chrome/browser/ui/toolbar/toolbar_button_updater.h"
 #import "ios/chrome/browser/ui/toolbar/web_toolbar_controller.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 
@@ -51,11 +52,11 @@
 }
 
 - (id<TabHistoryPositioner>)tabHistoryPositioner {
-  return self.toolbarController;
+  return self.toolbarController.buttonUpdater;
 }
 
 - (id<TabHistoryUIUpdater>)tabHistoryUIUpdater {
-  return self.toolbarController;
+  return self.toolbarController.buttonUpdater;
 }
 
 - (id<QRScannerResultLoading>)QRScannerResultLoader {

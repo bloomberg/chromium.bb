@@ -32,8 +32,6 @@
                   OmniboxFocuser,
                   VoiceSearchControllerDelegate,
                   ActivityServicePositioner,
-                  TabHistoryPositioner,
-                  TabHistoryUIUpdater,
                   QRScannerResultLoading,
                   BubbleViewAnchorPointProvider>
 @end

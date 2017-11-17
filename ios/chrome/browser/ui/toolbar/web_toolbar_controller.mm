@@ -58,6 +58,7 @@
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_base_feature.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_utils.h"
 #import "ios/chrome/browser/ui/toolbar/public/web_toolbar_controller_constants.h"
+#import "ios/chrome/browser/ui/toolbar/toolbar_button_updater.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_controller+protected.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_model_ios.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_resource_macros.h"
@@ -133,13 +134,6 @@ using ios::material::TimingFunction;
   // icon should indicate so.
   BOOL _isTTSPlaying;
 
-  // Keeps track of whether or not the back button's images have been reversed.
-  ToolbarButtonMode _backButtonMode;
-
-  // Keeps track of whether or not the forward button's images have been
-  // reversed.
-  ToolbarButtonMode _forwardButtonMode;
-
   // Keeps track of the last known toolbar frame.
   CGRect _lastKnownToolbarFrame;
 
@@ -190,8 +184,6 @@ using ios::material::TimingFunction;
 // Called by long press gesture recognizer, used to display back/forward
 // history.
 - (void)handleLongPress:(UILongPressGestureRecognizer*)gesture;
-- (void)setImagesForNavButton:(UIButton*)button
-        withTabHistoryVisible:(BOOL)tabHistoryVisible;
 // Returns a map where the keys are names of text-to-speech notifications and
 // the values are the selectors to use for these notifications.
 + (const std::map<__strong NSString*, SEL>&)selectorsForTTSNotificationNames;
@@ -234,6 +226,7 @@ using ios::material::TimingFunction;
 
 @implementation WebToolbarController
 
+@synthesize buttonUpdater = _buttonUpdater;
 @synthesize delegate = _delegate;
 @synthesize urlLoader = _urlLoader;
 
@@ -307,9 +300,12 @@ using ios::material::TimingFunction;
                           alpha:1.0];
     [_locationBarView.textField setPlaceholderTextColor:placeholderTextColor];
   }
+
+  _buttonUpdater = [[ToolbarButtonUpdater alloc] init];
+
   _backButton = [[UIButton alloc]
       initWithFrame:LayoutRectGetRect(kBackButtonFrame[idiom])];
-
+  _buttonUpdater.backButton = _backButton;
   [_backButton setAutoresizingMask:UIViewAutoresizingFlexibleTrailingMargin() |
                                    UIViewAutoresizingFlexibleTopMargin];
 
@@ -317,6 +313,7 @@ using ios::material::TimingFunction;
   // called.
   _forwardButton = [[UIButton alloc]
       initWithFrame:LayoutRectGetRect(kForwardButtonFrame[idiom])];
+  _buttonUpdater.forwardButton = _forwardButton;
   [_forwardButton
       setAutoresizingMask:UIViewAutoresizingFlexibleTrailingMargin() |
                           UIViewAutoresizingFlexibleTopMargin];
@@ -457,8 +454,6 @@ using ios::material::TimingFunction;
                      action:@selector(goForward)
            forControlEvents:UIControlEventTouchUpInside];
 
-  _backButtonMode = ToolbarButtonModeNormal;
-  _forwardButtonMode = ToolbarButtonModeNormal;
   UILongPressGestureRecognizer* backLongPress =
       [[UILongPressGestureRecognizer alloc]
           initWithTarget:self
@@ -1069,32 +1064,6 @@ using ios::material::TimingFunction;
   }
 }
 
-#pragma mark - TabHistory Requirements
-
-- (CGPoint)originPointForToolbarButton:(ToolbarButtonType)toolbarButton {
-  UIButton* historyButton = toolbarButton ? _backButton : _forwardButton;
-
-  // Set the origin for the tools popup to the leading side of the bottom of the
-  // pressed buttons.
-  CGRect buttonBounds = [historyButton.imageView bounds];
-  CGPoint leadingBottomCorner = CGPointMake(CGRectGetLeadingEdge(buttonBounds),
-                                            CGRectGetMaxY(buttonBounds));
-  CGPoint origin = [historyButton.imageView convertPoint:leadingBottomCorner
-                                                  toView:historyButton.window];
-  return origin;
-}
-
-- (void)updateUIForTabHistoryPresentationFrom:(ToolbarButtonType)button {
-  UIButton* historyButton = button ? _backButton : _forwardButton;
-  // Keep the button pressed by swapping the normal and highlighted images.
-  [self setImagesForNavButton:historyButton withTabHistoryVisible:YES];
-}
-
-- (void)updateUIForTabHistoryWasDismissed {
-  [self setImagesForNavButton:_backButton withTabHistoryVisible:NO];
-  [self setImagesForNavButton:_forwardButton withTabHistoryVisible:NO];
-}
-
 #pragma mark -
 #pragma mark DropAndNavigateDelegate
 
@@ -1386,26 +1355,6 @@ using ios::material::TimingFunction;
     [_reloadButton setHidden:YES];
     [_stopButton setHidden:NO];
   }
-}
-
-- (void)setImagesForNavButton:(UIButton*)button
-        withTabHistoryVisible:(BOOL)tabHistoryVisible {
-  BOOL isBackButton = button == _backButton;
-  ToolbarButtonMode newMode =
-      tabHistoryVisible ? ToolbarButtonModeReversed : ToolbarButtonModeNormal;
-  if (isBackButton && newMode == _backButtonMode)
-    return;
-  if (!isBackButton && newMode == _forwardButtonMode)
-    return;
-
-  UIImage* normalImage = [button imageForState:UIControlStateNormal];
-  UIImage* highlightedImage = [button imageForState:UIControlStateHighlighted];
-  [button setImage:highlightedImage forState:UIControlStateNormal];
-  [button setImage:normalImage forState:UIControlStateHighlighted];
-  if (isBackButton)
-    _backButtonMode = newMode;
-  else
-    _forwardButtonMode = newMode;
 }
 
 - (void)updateToolbarAlphaForFrame:(CGRect)frame {

@@ -148,6 +148,7 @@ using web::WebStateImpl;
 - (void)selectedTabChanged;
 - (void)dismissToolsMenuPopup;
 - (void)cancelOmniboxEdit;
+- (ToolbarButtonUpdater*)buttonUpdater;
 
 @property(nonatomic, readonly, weak) UIViewController* viewController;
 @end
@@ -182,6 +183,9 @@ using web::WebStateImpl;
 }
 - (UIViewController*)viewController {
   return self;
+}
+- (ToolbarButtonUpdater*)buttonUpdater {
+  return nil;
 }
 @end
 

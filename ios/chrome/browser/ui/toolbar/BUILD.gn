@@ -14,6 +14,8 @@ source_set("toolbar") {
     "toolbar_adapter.mm",
     "toolbar_button_tints.h",
     "toolbar_button_tints.mm",
+    "toolbar_button_updater.h",
+    "toolbar_button_updater.mm",
     "toolbar_controller+protected.h",
     "toolbar_controller.h",
     "toolbar_controller.mm",
