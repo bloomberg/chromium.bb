@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/ui/toolbar/public/abstract_toolbar.h"
 
 @class Tab;
+@class ToolbarButtonUpdater;
 @protocol WebToolbarDelegate;
 
 // WebToolbarController public interface.
@@ -42,6 +43,8 @@
 @property(nonatomic, weak) id<WebToolbarDelegate> delegate;
 // Convienence getter for the UIViewController.
 @property(nonatomic, readonly, weak) UIViewController* viewController;
+// Object handling the updates of the buttons.
+@property(nonatomic, strong) ToolbarButtonUpdater* buttonUpdater;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_PUBLIC_ABSTRACT_WEB_TOOLBAR_H_

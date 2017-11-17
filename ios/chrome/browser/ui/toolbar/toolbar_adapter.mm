@@ -13,6 +13,7 @@
 
 @implementation ToolbarAdapter
 @synthesize backgroundView = _backgroundView;
+@synthesize buttonUpdater = _buttonAdapter;
 @synthesize toolbarCoordinator = _toolbarCoordinator;
 @synthesize delegate = _delegate;
 @synthesize toolsPopupController = _toolsPopupController;
