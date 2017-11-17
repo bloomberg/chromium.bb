@@ -11,53 +11,34 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
-#include "base/sequence_checker.h"
-#include "base/synchronization/waitable_event.h"
-#include "ipc/ipc_listener.h"
-#include "ipc/ipc_sender.h"
+#include "base/threading/thread_checker.h"
 #include "media/gpu/ipc/service/gpu_jpeg_decode_accelerator_factory_provider.h"
 #include "media/gpu/mojo/jpeg_decoder.mojom.h"
 #include "media/video/jpeg_decode_accelerator.h"
-
-namespace base {
-class SingleThreadTaskRunner;
-}
-
-namespace gpu {
-class FilteredSender;
-}
 
 namespace media {
 
 // TODO(c.padhi): Move GpuJpegDecodeAccelerator to media/gpu/mojo, see
 // http://crbug.com/699255.
-class GpuJpegDecodeAccelerator
-    : public IPC::Sender,
-      public mojom::GpuJpegDecodeAccelerator,
-      public base::SupportsWeakPtr<GpuJpegDecodeAccelerator> {
+// Implementation of a mojom::GpuJpegDecodeAccelerator which runs in the GPU
+// process, and wraps a JpegDecodeAccelerator.
+class GpuJpegDecodeAccelerator : public mojom::GpuJpegDecodeAccelerator,
+                                 public JpegDecodeAccelerator::Client {
  public:
-  // |channel| must outlive this object.
-  // This convenience constructor internally calls
-  // GpuJpegDecodeAcceleratorFactoryProvider::GetAcceleratorFactories() to
-  // fill |accelerator_factory_functions_|.
-  GpuJpegDecodeAccelerator(
-      gpu::FilteredSender* channel,
-      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
+  static void Create(mojom::GpuJpegDecodeAcceleratorRequest request);
 
-  // |channel| must outlive this object.
-  GpuJpegDecodeAccelerator(
-      gpu::FilteredSender* channel,
-      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-      std::vector<GpuJpegDecodeAcceleratorFactoryProvider::CreateAcceleratorCB>
-          accelerator_factory_functions);
   ~GpuJpegDecodeAccelerator() override;
 
-  void AddClient(int32_t route_id, base::Callback<void(bool)> response);
+  // JpegDecodeAccelerator::Client implementation.
+  void VideoFrameReady(int32_t buffer_id) override;
+  void NotifyError(int32_t buffer_id,
+                   JpegDecodeAccelerator::Error error) override;
 
-  void NotifyDecodeStatus(int32_t route_id,
-                          int32_t bitstream_buffer_id,
-                          JpegDecodeAccelerator::Error error);
+ private:
+  // This constructor internally calls
+  // GpuJpegDecodeAcceleratorFactoryProvider::GetAcceleratorFactories() to
+  // fill |accelerator_factory_functions_|.
+  GpuJpegDecodeAccelerator();
 
   // mojom::GpuJpegDecodeAccelerator implementation.
   void Initialize(InitializeCallback callback) override;
@@ -68,35 +49,20 @@ class GpuJpegDecodeAccelerator
               DecodeCallback callback) override;
   void Uninitialize() override;
 
-  // Function to delegate sending to actual sender.
-  bool Send(IPC::Message* message) override;
+  void NotifyDecodeStatus(int32_t bitstream_buffer_id,
+                          JpegDecodeAccelerator::Error error);
 
- private:
-  class Client;
-  class MessageFilter;
-
-  void ClientRemoved();
-
-  std::vector<GpuJpegDecodeAcceleratorFactoryProvider::CreateAcceleratorCB>
+  const std::vector<
+      GpuJpegDecodeAcceleratorFactoryProvider::CreateAcceleratorCB>
       accelerator_factory_functions_;
 
-  gpu::FilteredSender* channel_;
+  DecodeCallback decode_cb_;
 
-  // The message filter to run JpegDecodeAccelerator::Decode on IO thread.
-  scoped_refptr<MessageFilter> filter_;
+  std::unique_ptr<JpegDecodeAccelerator> accelerator_;
 
-  // GPU child task runner.
-  scoped_refptr<base::SingleThreadTaskRunner> child_task_runner_;
+  THREAD_CHECKER(thread_checker_);
 
-  // GPU IO task runner.
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
-
-  // Number of clients added to |filter_|.
-  int client_number_;
-
-  SEQUENCE_CHECKER(sequence_checker_);
-
-  DISALLOW_IMPLICIT_CONSTRUCTORS(GpuJpegDecodeAccelerator);
+  DISALLOW_COPY_AND_ASSIGN(GpuJpegDecodeAccelerator);
 };
 
 }  // namespace media

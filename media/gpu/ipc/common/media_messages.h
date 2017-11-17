@@ -22,13 +22,6 @@
 
 #define IPC_MESSAGE_START MediaMsgStart
 
-IPC_STRUCT_BEGIN(AcceleratedJpegDecoderMsg_Decode_Params)
-  IPC_STRUCT_MEMBER(media::BitstreamBuffer, input_buffer)
-  IPC_STRUCT_MEMBER(gfx::Size, coded_size)
-  IPC_STRUCT_MEMBER(base::SharedMemoryHandle, output_video_frame_handle)
-  IPC_STRUCT_MEMBER(uint32_t, output_buffer_size)
-IPC_STRUCT_END()
-
 IPC_STRUCT_BEGIN(AcceleratedVideoEncoderMsg_Encode_Params)
   IPC_STRUCT_MEMBER(int32_t, frame_id)
   IPC_STRUCT_MEMBER(base::TimeDelta, timestamp)
@@ -196,34 +189,3 @@ IPC_MESSAGE_ROUTED1(AcceleratedVideoEncoderHostMsg_NotifyError,
 
 // Send destroy request to the encoder.
 IPC_MESSAGE_ROUTED0(AcceleratedVideoEncoderMsg_Destroy)
-
-//------------------------------------------------------------------------------
-// Accelerated JPEG Decoder Messages
-// These messages are sent from the Browser process to GPU process.
-
-// Create and initialize a hardware jpeg decoder using the specified route_id.
-// Created decoders should be freed with AcceleratedJpegDecoderMsg_Destroy when
-// no longer needed.
-IPC_SYNC_MESSAGE_CONTROL1_1(GpuChannelMsg_CreateJpegDecoder,
-                            int32_t /* route_id */,
-                            bool /* succeeded */)
-
-// Decode one JPEG image from shared memory |input_buffer_handle| with size
-// |input_buffer_size|. The input buffer is associated with |input_buffer_id|
-// and the size of JPEG image is |coded_size|. Decoded I420 frame data will
-// be put onto shared memory associated with |output_video_frame_handle|
-// with size limit |output_buffer_size|.
-IPC_MESSAGE_ROUTED1(AcceleratedJpegDecoderMsg_Decode,
-                    AcceleratedJpegDecoderMsg_Decode_Params)
-
-// Send destroy request to the decoder.
-IPC_MESSAGE_ROUTED0(AcceleratedJpegDecoderMsg_Destroy)
-
-//------------------------------------------------------------------------------
-// Accelerated JPEG Decoder Host Messages
-// These messages are sent from the GPU process to Browser process.
-//
-// Report decode status.
-IPC_MESSAGE_ROUTED2(AcceleratedJpegDecoderHostMsg_DecodeAck,
-                    int32_t, /* bitstream_buffer_id */
-                    media::JpegDecodeAccelerator::Error /* error */)

@@ -600,12 +600,11 @@ test("video_decode_accelerator_service_unittest") {
   deps = [
     ":gpu",
     "//base",
-    "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//gpu:test_support",
     "//media/gpu/ipc/common",
     "//media/gpu/ipc/service",
-    "//testing/gmock",
+    "//media/test:run_all_unittests",
     "//testing/gtest",
     "//ui/gfx:test_support",
     "//ui/gfx/geometry",
