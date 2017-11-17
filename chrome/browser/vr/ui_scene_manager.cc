@@ -325,7 +325,7 @@ void UiSceneManager::CreateContentQuad(ContentInputDelegate* delegate) {
   auto hit_plane = base::MakeUnique<InvisibleHitTarget>();
   hit_plane->set_name(kBackplane);
   hit_plane->set_draw_phase(kPhaseForeground);
-  hit_plane->SetSize(kBackplaneSize, kBackplaneSize);
+  hit_plane->SetSize(kBackplaneSize, kSceneHeight);
   hit_plane->SetTranslate(0, 0, -kTextureOffset);
   scene_->AddUiElement(k2dBrowsingContentGroup, std::move(hit_plane));
 
