@@ -3730,7 +3730,11 @@ void AXPlatformNodeWin::HandleSpecialTextOffset(LONG* offset) {
   if (*offset == IA2_TEXT_OFFSET_LENGTH) {
     *offset = static_cast<LONG>(GetText().length());
   } else if (*offset == IA2_TEXT_OFFSET_CARET) {
-    *offset = static_cast<LONG>(GetIntAttribute(AX_ATTR_TEXT_SEL_END));
+    int selection_start, selection_end;
+    GetSelectionOffsets(&selection_start, &selection_end);
+    if (selection_end < 0)
+      *offset = 0;
+    *offset = static_cast<LONG>(selection_end);
   }
 }
 
