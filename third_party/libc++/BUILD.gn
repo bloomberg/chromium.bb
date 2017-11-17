@@ -6,6 +6,9 @@ import("//build/config/c++/c++.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/toolchain/toolchain.gni")
 
+# TODO(jmadill): Remove once configs are migrated. http://crbug.com/727437
+import("//build/config/angle_temp.gni")
+
 # Used by libc++ and libc++abi.
 config("config") {
   defines = [ "LIBCXX_BUILDING_LIBCXXABI" ]
@@ -75,7 +78,6 @@ target(link_target_type, "libc++") {
   configs -= [
     "//build/config/compiler:chromium_code",
     "//build/config/compiler:no_rtti",
-    "//build/config/gcc:no_exceptions",
     "//build/config/coverage:default_coverage",
   ]
   if (is_android && !libcpp_is_static) {
@@ -87,6 +89,15 @@ target(link_target_type, "libc++") {
     "//build/config/compiler:rtti",
     "//build/config/sanitizers:sanitizer_options_link_helper",
   ]
+
+  # TODO(jmadill): Fix when configs are migrated. http://crbug.com/727437
+  if (is_temp_angle) {
+    configs -= [ "//build/config/compiler:no_exceptions" ]
+    configs += [ "//build/config/compiler:exceptions" ]
+  } else {
+    configs -= [ "//build/config/gcc:no_exceptions" ]
+  }
+
   defines = [ "_LIBCPP_BUILDING_LIBRARY" ]
   if (!is_clang && !libcpp_is_static) {
     # This is a temporary workaround to get libc++ builds working with

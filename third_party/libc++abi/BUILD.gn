@@ -2,6 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# TODO(jmadill): Remove once configs are migrated. http://crbug.com/727437
+import("//build/config/angle_temp.gni")
+
 source_set("libc++abi") {
   visibility = [ "//buildtools/third_party/libc++" ]
   deps = []
@@ -50,7 +53,6 @@ source_set("libc++abi") {
   configs -= [
     "//build/config/compiler:chromium_code",
     "//build/config/compiler:no_rtti",
-    "//build/config/gcc:no_exceptions",
     "//build/config/coverage:default_coverage",
   ]
   configs += [
@@ -58,4 +60,12 @@ source_set("libc++abi") {
     "//build/config/compiler:rtti",
     "//buildtools/third_party/libc++:config",
   ]
+
+  # TODO(jmadill): Fix when configs are migrated. http://crbug.com/727437
+  if (is_temp_angle) {
+    configs -= [ "//build/config/compiler:no_exceptions" ]
+    configs += [ "//build/config/compiler:exceptions" ]
+  } else {
+    configs -= [ "//build/config/gcc:no_exceptions" ]
+  }
 }

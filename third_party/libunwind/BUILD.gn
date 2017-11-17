@@ -4,6 +4,9 @@
 
 import("//build/config/c++/c++.gni")
 
+# TODO(jmadill): Remove once configs are migrated. http://crbug.com/727437
+import("//build/config/angle_temp.gni")
+
 config("libunwind_config") {
   # ValueAsBitPattern in Unwind-EHABI.cpp is only used on Debug builds.
   cflags = [ "-Wno-unused-function" ]
@@ -34,7 +37,6 @@ source_set("libunwind") {
   configs -= [
     "//build/config/compiler:chromium_code",
     "//build/config/compiler:no_rtti",
-    "//build/config/gcc:no_exceptions",
     "//build/config/coverage:default_coverage",
   ]
   configs += [
@@ -45,4 +47,12 @@ source_set("libunwind") {
     # Must be after no_chromium_code
     ":libunwind_config",
   ]
+
+  # TODO(jmadill): Fix when configs are migrated. http://crbug.com/727437
+  if (is_temp_angle) {
+    configs -= [ "//build/config/compiler:no_exceptions" ]
+    configs += [ "//build/config/compiler:exceptions" ]
+  } else {
+    configs -= [ "//build/config/gcc:no_exceptions" ]
+  }
 }
