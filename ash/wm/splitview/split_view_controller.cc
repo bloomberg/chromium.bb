@@ -58,16 +58,6 @@ gfx::Point GetBoundedPosition(const gfx::Point& location_in_screen,
                bounds_in_screen.y()));
 }
 
-// Returns ture if |left_window_| should be placed on the left or top side of
-// the screen.
-bool IsLeftWindowOnTopOrLeftOfScreen(
-    blink::WebScreenOrientationLockType screen_orientation) {
-  return screen_orientation ==
-             blink::kWebScreenOrientationLockLandscapePrimary ||
-         screen_orientation ==
-             blink::kWebScreenOrientationLockPortraitSecondary;
-}
-
 // Transpose the given |rect|.
 void TransposeRect(gfx::Rect* rect) {
   rect->SetRect(rect->y(), rect->x(), rect->height(), rect->width());
@@ -98,6 +88,15 @@ bool SplitViewController::ShouldAllowSplitView() {
     return false;
   }
   return true;
+}
+
+// static
+bool SplitViewController::IsLeftWindowOnTopOrLeftOfScreen(
+    blink::WebScreenOrientationLockType screen_orientation) {
+  return screen_orientation ==
+             blink::kWebScreenOrientationLockLandscapePrimary ||
+         screen_orientation ==
+             blink::kWebScreenOrientationLockPortraitSecondary;
 }
 
 bool SplitViewController::CanSnap(aura::Window* window) {

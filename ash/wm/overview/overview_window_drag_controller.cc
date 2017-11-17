@@ -23,17 +23,12 @@ namespace ash {
 
 namespace {
 
-// The minimum offset that will be considered as a drag event.
-constexpr int kMinimiumDragOffset = 5;
-
 // Returns true if |screen_orientation| is a primary orientation.
 bool IsPrimaryScreenOrientation(
     blink::WebScreenOrientationLockType screen_orientation) {
-  if (screen_orientation == blink::kWebScreenOrientationLockLandscapePrimary ||
-      screen_orientation == blink::kWebScreenOrientationLockPortraitPrimary) {
-    return true;
-  }
-  return false;
+  return screen_orientation ==
+             blink::kWebScreenOrientationLockLandscapePrimary ||
+         screen_orientation == blink::kWebScreenOrientationLockPortraitPrimary;
 }
 
 }  // namespace
@@ -48,8 +43,15 @@ OverviewWindowDragController::~OverviewWindowDragController() {}
 void OverviewWindowDragController::InitiateDrag(
     WindowSelectorItem* item,
     const gfx::Point& location_in_screen) {
-  previous_event_location_ = location_in_screen;
   item_ = item;
+
+  previous_event_location_ = location_in_screen;
+  // No need to track the initial event location if the event does not start in
+  // a snap region.
+  initial_event_location_ =
+      GetSnapPosition(location_in_screen) == SplitViewController::NONE
+          ? base::nullopt
+          : base::make_optional(location_in_screen);
 
   window_selector_->SetSplitViewOverviewOverlayIndicatorType(
       split_view_controller_->CanSnap(item->GetWindow())
@@ -59,12 +61,14 @@ void OverviewWindowDragController::InitiateDrag(
 }
 
 void OverviewWindowDragController::Drag(const gfx::Point& location_in_screen) {
-  if (!did_move_ &&
-      (std::abs(location_in_screen.x() - previous_event_location_.x()) <
-           kMinimiumDragOffset ||
-       std::abs(location_in_screen.y() - previous_event_location_.y()) <
-           kMinimiumDragOffset)) {
-    return;
+  if (!did_move_) {
+    gfx::Vector2d distance = location_in_screen - previous_event_location_;
+    // Do not start dragging if the distance from |location_in_screen| to
+    // |previous_event_location_| is not greater than |kMinimumDragOffset|.
+    if (std::abs(distance.x()) < kMinimumDragOffset &&
+        std::abs(distance.y()) < kMinimumDragOffset) {
+      return;
+    }
   }
   did_move_ = true;
 
@@ -75,25 +79,28 @@ void OverviewWindowDragController::Drag(const gfx::Point& location_in_screen) {
   item_->SetBounds(bounds, OverviewAnimationType::OVERVIEW_ANIMATION_NONE);
   previous_event_location_ = location_in_screen;
 
-  UpdatePhantomWindowAndWindowGrid(location_in_screen);
+  if (ShouldUpdatePhantomWindowOrSnap(location_in_screen)) {
+    UpdatePhantomWindowAndWindowGrid(location_in_screen);
 
-  // Show the CANNOT_SNAP ui on the split view overview overlay if the window
-  // cannot be snapped, otherwise show the drag ui only while the phantom window
-  // is hidden.
-  IndicatorType indicator_type = IndicatorType::CANNOT_SNAP;
-  if (split_view_controller_->CanSnap(item_->GetWindow())) {
-    indicator_type = IsPhantomWindowShowing() ? IndicatorType::NONE
-                                              : IndicatorType::DRAG_AREA;
+    // Show the CANNOT_SNAP ui on the split view overview overlay if the window
+    // cannot be snapped, otherwise show the drag ui only while the phantom
+    // window is hidden.
+    IndicatorType indicator_type = IndicatorType::CANNOT_SNAP;
+    if (split_view_controller_->CanSnap(item_->GetWindow())) {
+      indicator_type = IsPhantomWindowShowing() ? IndicatorType::NONE
+                                                : IndicatorType::DRAG_AREA;
+    }
+    window_selector_->SetSplitViewOverviewOverlayIndicatorType(indicator_type,
+                                                               gfx::Point());
   }
-  window_selector_->SetSplitViewOverviewOverlayIndicatorType(indicator_type,
-                                                             gfx::Point());
 }
 
 void OverviewWindowDragController::CompleteDrag(
     const gfx::Point& location_in_screen) {
   // Update window grid bounds and |snap_position_| in case the screen
   // orientation was changed.
-  UpdatePhantomWindowAndWindowGrid(location_in_screen);
+  if (ShouldUpdatePhantomWindowOrSnap(location_in_screen))
+    UpdatePhantomWindowAndWindowGrid(location_in_screen);
   phantom_window_controller_.reset();
   window_selector_->SetSplitViewOverviewOverlayIndicatorType(
       IndicatorType::NONE, gfx::Point());
@@ -104,10 +111,12 @@ void OverviewWindowDragController::CompleteDrag(
     did_move_ = false;
     // If the window was dragged around but should not be snapped, move it back
     // to overview window grid.
-    if (snap_position_ == SplitViewController::NONE)
+    if (!ShouldUpdatePhantomWindowOrSnap(location_in_screen) ||
+        snap_position_ == SplitViewController::NONE) {
       window_selector_->PositionWindows(true /* animate */);
-    else
+    } else {
       SnapWindow(snap_position_);
+    }
   }
 }
 
@@ -184,8 +193,51 @@ void OverviewWindowDragController::UpdatePhantomWindowAndWindowGrid(
   phantom_window_controller_->Show(phantom_bounds_in_screen);
 }
 
+bool OverviewWindowDragController::ShouldUpdatePhantomWindowOrSnap(
+    const gfx::Point& event_location) {
+  if (initial_event_location_ == base::nullopt)
+    return true;
+
+  auto snap_position = GetSnapPosition(event_location);
+  if (snap_position == SplitViewController::NONE) {
+    // If the event started in a snap region, but has since moved out set
+    // |initial_event_location_| to |event_location| which is guarenteed to not
+    // be in a snap region so that the phantom window or snap mechanism works
+    // normally for the rest of the drag.
+    initial_event_location_ = base::nullopt;
+    return true;
+  }
+
+  // The phantom window can update or the item can snap even if the drag events
+  // are in the snap region, if the event has traveled past the threshold in the
+  // direction of the attempted snap region.
+  const gfx::Vector2d distance = event_location - *initial_event_location_;
+  // Check the x-axis distance for landscape, y-axis distance for portrait.
+  int distance_scalar =
+      split_view_controller_->IsCurrentScreenOrientationLandscape()
+          ? distance.x()
+          : distance.y();
+
+  // If the snap region is physically on the left/top side of the device, check
+  // that |distance_scalar| is less than -|threshold|. If the snap region is
+  // physically on the right/bottom side of the device, check that
+  // |distance_scalar| is greater than |threshold|. Note: in some orientations
+  // SplitViewController::LEFT is not physically on the left/top.
+  const int threshold =
+      OverviewWindowDragController::kMinimumDragOffsetAlreadyInSnapRegionDp;
+  const bool inverted = !SplitViewController::IsLeftWindowOnTopOrLeftOfScreen(
+      Shell::Get()->screen_orientation_controller()->GetCurrentOrientation());
+  const bool on_the_left_or_top =
+      (!inverted && snap_position == SplitViewController::LEFT) ||
+      (inverted && snap_position == SplitViewController::RIGHT);
+
+  return on_the_left_or_top ? distance_scalar <= -threshold
+                            : distance_scalar >= threshold;
+}
+
 SplitViewController::SnapPosition OverviewWindowDragController::GetSnapPosition(
     const gfx::Point& location_in_screen) const {
+  DCHECK(item_);
   gfx::Rect area(
       ScreenUtil::GetDisplayWorkAreaBoundsInParent(item_->GetWindow()));
   ::wm::ConvertRectToScreen(item_->GetWindow()->GetRootWindow(), &area);
