@@ -8,27 +8,27 @@ namespace cc {
 namespace devtools_instrumentation {
 
 namespace internal {
-extern const char kCategory[] = TRACE_DISABLED_BY_DEFAULT("devtools.timeline");
-extern const char kCategoryFrame[] =
+const char kCategory[] = TRACE_DISABLED_BY_DEFAULT("devtools.timeline");
+const char kCategoryFrame[] =
     TRACE_DISABLED_BY_DEFAULT("devtools.timeline.frame");
-extern const char kData[] = "data";
-extern const char kFrameId[] = "frameId";
-extern const char kLayerId[] = "layerId";
-extern const char kLayerTreeId[] = "layerTreeId";
-extern const char kPixelRefId[] = "pixelRefId";
+const char kData[] = "data";
+const char kFrameId[] = "frameId";
+const char kLayerId[] = "layerId";
+const char kLayerTreeId[] = "layerTreeId";
+const char kPixelRefId[] = "pixelRefId";
 
-extern const char kImageDecodeTask[] = "ImageDecodeTask";
-extern const char kBeginFrame[] = "BeginFrame";
-extern const char kNeedsBeginFrameChanged[] = "NeedsBeginFrameChanged";
-extern const char kActivateLayerTree[] = "ActivateLayerTree";
-extern const char kRequestMainThreadFrame[] = "RequestMainThreadFrame";
-extern const char kBeginMainThreadFrame[] = "BeginMainThreadFrame";
-extern const char kDrawFrame[] = "DrawFrame";
-extern const char kCompositeLayers[] = "CompositeLayers";
+const char kImageDecodeTask[] = "ImageDecodeTask";
+const char kBeginFrame[] = "BeginFrame";
+const char kNeedsBeginFrameChanged[] = "NeedsBeginFrameChanged";
+const char kActivateLayerTree[] = "ActivateLayerTree";
+const char kRequestMainThreadFrame[] = "RequestMainThreadFrame";
+const char kBeginMainThreadFrame[] = "BeginMainThreadFrame";
+const char kDrawFrame[] = "DrawFrame";
+const char kCompositeLayers[] = "CompositeLayers";
 }  // namespace internal
 
-extern const char kPaintSetup[] = "PaintSetup";
-extern const char kUpdateLayer[] = "UpdateLayer";
+const char kPaintSetup[] = "PaintSetup";
+const char kUpdateLayer[] = "UpdateLayer";
 
 ScopedImageDecodeTask::ScopedImageDecodeTask(const void* image_ptr,
                                              DecodeType decode_type,

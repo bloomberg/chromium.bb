@@ -7,7 +7,7 @@
 namespace extensionoptions {
 
 // API namespace.
-extern const char kAPINamespace[] = "extensionOptionsInternal";
+const char kAPINamespace[] = "extensionOptionsInternal";
 
 const char kExtensionId[] = "extension";
 

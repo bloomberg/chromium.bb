@@ -43,7 +43,7 @@ const char kSwitchRequestParam[] = "test-request";
 
 // Disables pings. Pings are the requests sent to the update server that report
 // the success or the failure of component install or update attempts.
-extern const char kSwitchDisablePings[] = "disable-pings";
+const char kSwitchDisablePings[] = "disable-pings";
 
 // Sets the URL for updates.
 const char kSwitchUrlSource[] = "url-source";

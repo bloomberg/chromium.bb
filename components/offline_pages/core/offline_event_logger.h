@@ -13,9 +13,8 @@
 
 namespace offline_pages {
 
-// Maximum number of recorded Logs to keep track of at any moment. Defined in
-// offline_event_logger.cc.
-extern const size_t kMaxLogCount;
+// Maximum number of recorded Logs to keep track of at any moment.
+constexpr size_t kMaxLogCount = 50;
 
 // Facilitates the logging of events. Subclasses should create methods that
 // call RecordActivity to write into the log. |SetIsLogging|, |GetLogs|, and
@@ -34,7 +33,7 @@ class OfflineEventLogger {
   // to the event logger instance.
   class Client {
    public:
-    virtual ~Client(){};
+    virtual ~Client() {}
     virtual void CustomLog(const std::string& message) = 0;
   };
 

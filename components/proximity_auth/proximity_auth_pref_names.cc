@@ -27,7 +27,7 @@ const char kEasyUnlockLocalStateUserPrefs[] = "easy_unlock.user_prefs";
 
 // Whether or not EasyUnlock is enabled on the ChromeOS login screen (in
 // addition to the lock screen).
-extern const char kProximityAuthIsChromeOSLoginEnabled[] =
+const char kProximityAuthIsChromeOSLoginEnabled[] =
     "proximity_auth.is_chromeos_login_enabled";
 
 // The timestamp of the last password entry in milliseconds, used to enforce
@@ -40,7 +40,7 @@ const char kProximityAuthLastPromotionCheckTimestampMs[] =
     "proximity_auth.last_promotion_check_timestamp_ms";
 
 // The number of times the promotion was shown to the user.
-extern const char kProximityAuthPromotionShownCount[] =
+const char kProximityAuthPromotionShownCount[] =
     "proximity_auth.promotion_shown_count";
 
 // The dictionary containing remote BLE devices.

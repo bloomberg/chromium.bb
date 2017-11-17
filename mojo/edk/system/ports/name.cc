@@ -8,9 +8,9 @@ namespace mojo {
 namespace edk {
 namespace ports {
 
-extern const PortName kInvalidPortName = {0, 0};
+const PortName kInvalidPortName = {0, 0};
 
-extern const NodeName kInvalidNodeName = {0, 0};
+const NodeName kInvalidNodeName = {0, 0};
 
 std::ostream& operator<<(std::ostream& stream, const Name& name) {
   std::ios::fmtflags flags(stream.flags());
