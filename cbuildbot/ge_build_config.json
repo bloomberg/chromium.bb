@@ -1202,18 +1202,6 @@
       ]
     },
     {
-      "name": "reef",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": false,
-          "leader_board": true,
-          "board_group": "reef",
-          "arch": "X86_INTERNAL"
-        }
-      ]
-    },
-    {
       "name": "reks",
       "configs": [
         {
@@ -1814,27 +1802,15 @@
       ]
     },
     {
-      "name": "reef-uni",
-      "reference_board_name": "reef-uni",
+      "name": "reef",
+      "reference_board_name": "reef",
       "arch": "X86_INTERNAL",
       "builder": "RELEASE",
       "experimental": false,
       "models": [
         {
-          "board_name": "reef-uni",
-          "name": "alan",
-          "cq_test_enabled": false,
-          "release_builder_test_pool": "bvt"
-        },
-        {
           "board_name": "reef",
           "name": "basking",
-          "cq_test_enabled": false,
-          "release_builder_test_pool": "bvt"
-        },
-        {
-          "board_name": "reef-uni",
-          "name": "bigdaddy",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
         },
@@ -1845,36 +1821,9 @@
           "release_builder_test_pool": "bvt"
         },
         {
-          "board_name": "pyro",
-          "name": "pyro",
-          "cq_test_enabled": false,
-          "release_builder_test_pool": "bvt"
-        },
-        {
           "board_name": "reef",
           "name": "reef",
           "cq_test_enabled": false,
-          "release_builder_test_pool": "bvt"
-        },
-        {
-          "board_name": "sand",
-          "name": "sand",
-          "test_suites": [
-            "sanity",
-            "bvt-inline",
-            "bvt-installer",
-            "bvt-arc",
-            "au",
-            "bvt-cq",
-            "bvt-perbuild"
-          ],
-          "cq_test_enabled": false,
-          "release_builder_test_pool": "bvt"
-        },
-        {
-          "board_name": "snappy",
-          "name": "snappy",
-          "cq_test_enabled": true,
           "release_builder_test_pool": "bvt"
         }
       ]
