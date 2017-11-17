@@ -24,6 +24,7 @@ namespace vr {
 
 class ContentInputForwarder {
  public:
+  virtual ~ContentInputForwarder() {}
   virtual void ForwardEvent(std::unique_ptr<blink::WebInputEvent> event,
                             int content_id) = 0;
 };

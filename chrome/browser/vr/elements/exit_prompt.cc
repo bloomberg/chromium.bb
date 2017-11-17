@@ -10,8 +10,8 @@
 namespace vr {
 
 ExitPrompt::ExitPrompt(int preferred_width,
-                       const base::Callback<void()>& primary_button_callback,
-                       const base::Callback<void()>& secondary_buttton_callback)
+                       const ExitPrompt::Callback& primary_button_callback,
+                       const ExitPrompt::Callback& secondary_buttton_callback)
     : TexturedElement(preferred_width),
       texture_(base::MakeUnique<ExitPromptTexture>()),
       primary_button_callback_(primary_button_callback),
@@ -50,9 +50,9 @@ void ExitPrompt::OnButtonDown(const gfx::PointF& position) {
 
 void ExitPrompt::OnButtonUp(const gfx::PointF& position) {
   if (primary_down_ && texture_->HitsPrimaryButton(position))
-    primary_button_callback_.Run();
+    primary_button_callback_.Run(reason_);
   else if (secondary_down_ && texture_->HitsSecondaryButton(position))
-    secondary_buttton_callback_.Run();
+    secondary_buttton_callback_.Run(reason_);
 
   primary_down_ = false;
   secondary_down_ = false;

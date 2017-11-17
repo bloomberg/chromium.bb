@@ -164,8 +164,8 @@ UiSceneManager::UiSceneManager(UiBrowserInterface* browser,
   CreateBackground();
   CreateViewportAwareRoot();
   CreateContentQuad(content_input_delegate);
-  CreateExitPrompt();
-  CreateAudioPermissionPrompt();
+  CreateExitPrompt(model);
+  CreateAudioPermissionPrompt(model);
   CreateWebVRExitWarning();
   CreateSystemIndicators();
   CreateUrlBar(model);
@@ -197,13 +197,35 @@ void UiSceneManager::Create2dBrowsingSubtreeRoots(Model* model) {
   element->set_hit_testable(false);
   scene_->AddUiElement(k2dBrowsingRoot, std::move(element));
 
+  auto browsing_mode_toggle = base::MakeUnique<UiElement>();
+  browsing_mode_toggle->set_hit_testable(false);
+  browsing_mode_toggle->AddBinding(
+      VR_BIND_FUNC(bool, UiSceneManager, this, browsing_mode(), UiElement,
+                   browsing_mode_toggle.get(), SetVisible));
+
   element = base::MakeUnique<UiElement>();
   element->set_name(k2dBrowsingForeground);
   element->set_hit_testable(false);
   element->SetTransitionedProperties({OPACITY});
   element->SetTransitionDuration(base::TimeDelta::FromMilliseconds(
       kSpeechRecognitionOpacityAnimationDurationMs));
-  scene_->AddUiElement(k2dBrowsingRoot, std::move(element));
+  element->AddBinding(base::MakeUnique<Binding<ModalPromptType>>(
+      base::Bind([](Model* m) { return m->active_modal_prompt_type; },
+                 base::Unretained(model)),
+      base::Bind(
+          [](UiElement* e, const ModalPromptType& t) {
+            if (t == kModalPromptTypeExitVRForSiteInfo) {
+              e->SetVisibleImmediately(false);
+            } else if (t == kModalPromptTypeExitVRForAudioPermission) {
+              e->SetOpacity(kModalPromptFadeOpacity);
+            } else {
+              e->SetVisible(true);
+            }
+          },
+          base::Unretained(element.get()))));
+
+  browsing_mode_toggle->AddChild(std::move(element));
+  scene_->AddUiElement(k2dBrowsingRoot, std::move(browsing_mode_toggle));
 
   element = base::MakeUnique<UiElement>();
   element->set_name(k2dBrowsingContentGroup);
@@ -211,9 +233,6 @@ void UiSceneManager::Create2dBrowsingSubtreeRoots(Model* model) {
   element->SetSize(kContentWidth, kContentHeight);
   element->set_hit_testable(false);
   element->SetTransitionedProperties({TRANSFORM});
-  element->AddBinding(VR_BIND(bool, UiSceneManager, this,
-                              browsing_mode() && !model->prompting_to_exit(),
-                              UiElement, element.get(), SetVisible(value)));
   scene_->AddUiElement(k2dBrowsingForeground, std::move(element));
 }
 
@@ -826,10 +845,8 @@ void UiSceneManager::CreateUrlBar(Model* model) {
   url_bar->SetTranslate(0, kUrlBarVerticalOffset, -kUrlBarDistance);
   url_bar->SetRotate(1, 0, 0, kUrlBarRotationRad);
   url_bar->SetSize(kUrlBarWidth, kUrlBarHeight);
-  url_bar->AddBinding(VR_BIND_FUNC(
-      bool, UiSceneManager, this,
-      browsing_mode() && !model->prompting_to_exit() && !model->fullscreen(),
-      UiElement, url_bar.get(), SetVisible));
+  url_bar->AddBinding(VR_BIND(bool, UiSceneManager, this, fullscreen(),
+                              UiElement, url_bar.get(), SetVisible(!value)));
   url_bar_ = url_bar.get();
   scene_->AddUiElement(k2dBrowsingForeground, std::move(url_bar));
 
@@ -941,28 +958,31 @@ void UiSceneManager::CreateCloseButton() {
   scene_->AddUiElement(k2dBrowsingForeground, std::move(element));
 }
 
-void UiSceneManager::CreateExitPrompt() {
+void UiSceneManager::CreateExitPrompt(Model* model) {
   std::unique_ptr<UiElement> element;
 
   // Place an invisible but hittable plane behind the exit prompt, to keep the
   // reticle roughly planar with the content if near content.
   auto backplane = base::MakeUnique<InvisibleHitTarget>();
-  exit_prompt_backplane_ = backplane.get();
-  element = std::move(backplane);
-  element->set_name(kExitPromptBackplane);
-  element->set_draw_phase(kPhaseForeground);
-  element->SetVisible(false);
-  element->SetSize(kPromptBackplaneSize, kPromptBackplaneSize);
-  element->SetTranslate(0.0, kContentVerticalOffset + kExitPromptVerticalOffset,
-                        kTextureOffset - kContentDistance);
+  backplane->set_name(kExitPromptBackplane);
+  backplane->set_draw_phase(kPhaseForeground);
+  backplane->SetSize(kPromptBackplaneSize, kPromptBackplaneSize);
+  backplane->SetTranslate(0.0,
+                          kContentVerticalOffset + kExitPromptVerticalOffset,
+                          kTextureOffset - kContentDistance);
   EventHandlers event_handlers;
   event_handlers.button_up = base::Bind(
-      &UiSceneManager::OnExitPromptBackplaneClicked, base::Unretained(this));
-  element->set_event_handlers(event_handlers);
-  element->AddBinding(VR_BIND_FUNC(
-      bool, UiSceneManager, this, browsing_mode() && model->prompting_to_exit(),
-      UiElement, element.get(), SetVisible));
-  scene_->AddUiElement(k2dBrowsingForeground, std::move(element));
+      [](UiSceneManager* manager, Model* m) {
+        manager->OnExitPromptBackplaneClicked(
+            GetReasonForPrompt(m->active_modal_prompt_type));
+      },
+      base::Unretained(this), base::Unretained(model));
+  backplane->set_event_handlers(event_handlers);
+  backplane->AddBinding(VR_BIND_FUNC(
+      bool, Model, model,
+      active_modal_prompt_type == kModalPromptTypeExitVRForSiteInfo, UiElement,
+      backplane.get(), SetVisible));
+  scene_->AddUiElement(k2dBrowsingRoot, std::move(backplane));
 
   std::unique_ptr<ExitPrompt> exit_prompt = base::MakeUnique<ExitPrompt>(
       512,
@@ -970,37 +990,79 @@ void UiSceneManager::CreateExitPrompt() {
                  false),
       base::Bind(&UiSceneManager::OnExitPromptChoice, base::Unretained(this),
                  true));
-  exit_prompt_ = exit_prompt.get();
-  element = std::move(exit_prompt);
-  element->set_name(kExitPrompt);
-  element->set_draw_phase(kPhaseForeground);
-  element->SetVisible(true);
-  element->SetSize(kExitPromptWidth, kExitPromptHeight);
-  element->SetTranslate(0.0, 0.0, kTextureOffset);
-  scene_->AddUiElement(kExitPromptBackplane, std::move(element));
+  exit_prompt->set_name(kExitPrompt);
+  exit_prompt->set_draw_phase(kPhaseForeground);
+  exit_prompt->SetVisible(true);
+  exit_prompt->SetSize(kExitPromptWidth, kExitPromptHeight);
+  exit_prompt->SetTranslate(0.0, 0.0, kTextureOffset);
+  exit_prompt->AddBinding(base::MakeUnique<Binding<ModalPromptType>>(
+      base::Bind([](Model* m) { return m->active_modal_prompt_type; },
+                 base::Unretained(model)),
+      base::Bind(
+          [](ExitPrompt* e, const ModalPromptType& p) {
+            e->set_reason(GetReasonForPrompt(p));
+            switch (p) {
+              case kModalPromptTypeExitVRForSiteInfo:
+                e->SetContentMessageId(
+                    IDS_VR_SHELL_EXIT_PROMPT_DESCRIPTION_SITE_INFO);
+                break;
+              default:
+                e->SetContentMessageId(IDS_VR_SHELL_EXIT_PROMPT_DESCRIPTION);
+                break;
+            }
+          },
+          base::Unretained(exit_prompt.get()))));
+  scene_->AddUiElement(kExitPromptBackplane, std::move(exit_prompt));
 }
 
-void UiSceneManager::CreateAudioPermissionPrompt() {
+void UiSceneManager::CreateAudioPermissionPrompt(Model* model) {
   std::unique_ptr<UiElement> element;
 
-  std::unique_ptr<AudioPermissionPrompt> audio_permission_prompt =
+  // Place an invisible but hittable plane behind the exit prompt, to keep the
+  // reticle roughly planar with the content if near content.
+  auto backplane = base::MakeUnique<InvisibleHitTarget>();
+  backplane->set_draw_phase(kPhaseForeground);
+  backplane->set_name(kAudioPermissionPromptBackplane);
+  backplane->SetSize(kPromptBackplaneSize, kPromptBackplaneSize);
+  backplane->SetTranslate(0.0,
+                          kContentVerticalOffset + kExitPromptVerticalOffset,
+                          kTextureOffset - kContentDistance);
+  EventHandlers event_handlers;
+  event_handlers.button_up = base::Bind(
+      [](UiSceneManager* manager, Model* m) {
+        manager->OnExitPromptBackplaneClicked(
+            GetReasonForPrompt(m->active_modal_prompt_type));
+      },
+      base::Unretained(this), base::Unretained(model));
+  backplane->set_event_handlers(event_handlers);
+  backplane->SetVisible(false);
+  backplane->SetTransitionedProperties({OPACITY});
+  backplane->AddBinding(VR_BIND_FUNC(
+      bool, Model, model,
+      active_modal_prompt_type == kModalPromptTypeExitVRForAudioPermission,
+      UiElement, backplane.get(), SetVisible));
+
+  std::unique_ptr<Shadow> shadow = base::MakeUnique<Shadow>();
+  shadow->set_draw_phase(kPhaseForeground);
+  shadow->set_name(kAudioPermissionPromptShadow);
+  shadow->set_corner_radius(kContentCornerRadius);
+
+  std::unique_ptr<AudioPermissionPrompt> prompt =
       base::MakeUnique<AudioPermissionPrompt>(
           1024,
           base::Bind(&UiSceneManager::OnExitPromptChoice,
-                     base::Unretained(this), true),
+                     base::Unretained(this), true,
+                     UiUnsupportedMode::kAndroidPermissionNeeded),
           base::Bind(&UiSceneManager::OnExitPromptChoice,
-                     base::Unretained(this), false));
-  audio_permission_prompt_ = audio_permission_prompt.get();
-  element = std::move(audio_permission_prompt);
-  element->set_name(kAudioPermissionPrompt);
-  element->set_draw_phase(kPhaseForeground);
-  element->SetSize(kAudioPermissionPromptWidth, kAudioPermissionPromptHeight);
-  element->SetTranslate(0.0, kContentVerticalOffset, -kUrlBarDistance);
-  element->AddBinding(
-      VR_BIND(bool, UiSceneManager, this,
-              browsing_mode() && model->prompting_to_audio_permission(),
-              UiElement, element.get(), SetVisible(value)));
-  scene_->AddUiElement(k2dBrowsingForeground, std::move(element));
+                     base::Unretained(this), false,
+                     UiUnsupportedMode::kAndroidPermissionNeeded));
+  prompt->set_name(kAudioPermissionPrompt);
+  prompt->set_draw_phase(kPhaseForeground);
+  prompt->SetSize(kAudioPermissionPromptWidth, kAudioPermissionPromptHeight);
+  prompt->SetTranslate(0.0, 0.0f, kAudionPermisionPromptDepth);
+  shadow->AddChild(std::move(prompt));
+  backplane->AddChild(std::move(shadow));
+  scene_->AddUiElement(k2dBrowsingRoot, std::move(backplane));
 }
 
 void UiSceneManager::CreateToasts(Model* model) {
@@ -1325,34 +1387,6 @@ void UiSceneManager::SetFullscreen(bool fullscreen) {
   ConfigureScene();
 }
 
-void UiSceneManager::SetExitVrPromptEnabled(bool enabled,
-                                            UiUnsupportedMode reason) {
-  DCHECK(enabled || reason == UiUnsupportedMode::kCount);
-  if (!enabled) {
-    prompting_to_exit_ = enabled;
-    prompting_to_audio_permission_ = enabled;
-    ConfigureScene();
-    return;
-  }
-
-  if ((prompting_to_exit_ || prompting_to_audio_permission_) && enabled) {
-    browser_->OnExitVrPromptResult(exit_vr_prompt_reason_,
-                                   ExitVrPromptChoice::CHOICE_NONE);
-  }
-  if (reason == UiUnsupportedMode::kUnhandledPageInfo) {
-    exit_prompt_->SetContentMessageId(
-        IDS_VR_SHELL_EXIT_PROMPT_DESCRIPTION_SITE_INFO);
-    prompting_to_exit_ = enabled;
-  } else if (reason == UiUnsupportedMode::kAndroidPermissionNeeded) {
-    prompting_to_audio_permission_ = enabled;
-  } else {
-    exit_prompt_->SetContentMessageId(IDS_VR_SHELL_EXIT_PROMPT_DESCRIPTION);
-    prompting_to_exit_ = enabled;
-  }
-  exit_vr_prompt_reason_ = reason;
-  ConfigureScene();
-}
-
 void UiSceneManager::OnBackButtonClicked() {
   browser_->NavigateBack();
 }
@@ -1361,27 +1395,28 @@ void UiSceneManager::OnSecurityIconClickedForTesting() {
   OnSecurityIconClicked();
 }
 
-void UiSceneManager::OnExitPromptChoiceForTesting(bool chose_exit) {
-  OnExitPromptChoice(chose_exit);
+void UiSceneManager::OnExitPromptChoiceForTesting(bool chose_exit,
+                                                  UiUnsupportedMode reason) {
+  OnExitPromptChoice(chose_exit, reason);
 }
 
 void UiSceneManager::OnSecurityIconClicked() {
   browser_->OnUnsupportedMode(UiUnsupportedMode::kUnhandledPageInfo);
 }
 
-void UiSceneManager::OnExitPromptBackplaneClicked() {
-  browser_->OnExitVrPromptResult(exit_vr_prompt_reason_,
-                                 ExitVrPromptChoice::CHOICE_NONE);
+void UiSceneManager::OnExitPromptBackplaneClicked(UiUnsupportedMode reason) {
+  browser_->OnExitVrPromptResult(reason, ExitVrPromptChoice::CHOICE_NONE);
 }
 
 void UiSceneManager::OnExitRecognizingSpeechClicked() {
   browser_->SetVoiceSearchActive(false);
 }
 
-void UiSceneManager::OnExitPromptChoice(bool chose_exit) {
-  browser_->OnExitVrPromptResult(exit_vr_prompt_reason_,
-                                 chose_exit ? ExitVrPromptChoice::CHOICE_EXIT
-                                            : ExitVrPromptChoice::CHOICE_STAY);
+void UiSceneManager::OnExitPromptChoice(bool chose_exit,
+                                        UiUnsupportedMode reason) {
+  browser_->OnExitVrPromptResult(reason, chose_exit
+                                             ? ExitVrPromptChoice::CHOICE_EXIT
+                                             : ExitVrPromptChoice::CHOICE_STAY);
 }
 
 void UiSceneManager::SetToolbarState(const ToolbarState& state) {

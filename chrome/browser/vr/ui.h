@@ -95,6 +95,8 @@ class Ui : public BrowserUiInterface {
   void SetOmniboxSuggestions(std::unique_ptr<OmniboxSuggestions> suggestions);
 
  private:
+  UiBrowserInterface* browser_;
+
   // This state may be further abstracted into a SkiaUi object.
   std::unique_ptr<vr::UiScene> scene_;
   std::unique_ptr<vr::Model> model_;

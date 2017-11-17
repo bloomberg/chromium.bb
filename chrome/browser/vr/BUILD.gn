@@ -116,6 +116,8 @@ static_library("vr_common") {
     "gltf_parser.h",
     "macros.h",
     "model/controller_model.h",
+    "model/modal_prompt_type.cc",
+    "model/modal_prompt_type.h",
     "model/model.cc",
     "model/model.h",
     "model/omnibox_suggestions.cc",
@@ -250,6 +252,7 @@ test("vr_common_unittests") {
     "ui_renderer_unittest.cc",
     "ui_scene_manager_unittest.cc",
     "ui_scene_unittest.cc",
+    "ui_unittest.cc",
     "vr_gl_util_unittest.cc",
   ]
 
