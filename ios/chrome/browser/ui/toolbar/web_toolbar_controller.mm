@@ -102,7 +102,6 @@ using ios::material::TimingFunction;
 @interface WebToolbarController ()<DropAndNavigateDelegate,
                                    LocationBarDelegate,
                                    OmniboxPopupPositioner,
-                                   ToolbarAssistiveKeyboardDelegate,
                                    ToolbarViewDelegate> {
   // Top-level view for web content.
   UIView* _webToolbar;
@@ -159,6 +158,8 @@ using ios::material::TimingFunction;
 
   // The current browser state.
   ios::ChromeBrowserState* _browserState;  // weak
+
+  ToolbarAssistiveKeyboardDelegateImpl* _keyboardDelegate;
 }
 
 // Accessor for cancel button. Handles lazy initialization.
@@ -227,8 +228,6 @@ using ios::material::TimingFunction;
 // restore the omnibox's background image.
 - (void)animationDidStop:(CAAnimation*)anim finished:(BOOL)flag;
 - (void)updateSnapshotWithWidth:(CGFloat)width forced:(BOOL)force;
-// Insert 'com' without the period if cursor is directly after a period.
-- (NSString*)updateTextForDotCom:(NSString*)text;
 // Updates all buttons visibility, including the parent class buttons.
 - (void)updateToolbarButtons;
 @end
@@ -276,6 +275,9 @@ using ios::material::TimingFunction;
                                         font:[MDCTypography subheadFont]
                                    textColor:textColor
                                    tintColor:tintColor];
+  _keyboardDelegate = [[ToolbarAssistiveKeyboardDelegateImpl alloc] init];
+  _keyboardDelegate.dispatcher = dispatcher;
+  _keyboardDelegate.omniboxTextField = _locationBarView.textField;
 
   // Disable default drop interactions on the omnibox.
   // TODO(crbug.com/739903): Handle drop events once Chrome iOS is built with
@@ -523,7 +525,8 @@ using ios::material::TimingFunction;
     [self.view addSubview:_determinateProgressView];
   }
 
-  ConfigureAssistiveKeyboardViews(_locationBarView.textField, kDotComTLD, self);
+  ConfigureAssistiveKeyboardViews(_locationBarView.textField, kDotComTLD,
+                                  _keyboardDelegate);
 
   // Add the handler to preload voice search when the voice search button is
   // tapped, but only if voice search is enabled.
@@ -1060,42 +1063,6 @@ using ios::material::TimingFunction;
     UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification,
                                     _locationBarView.textField);
   }
-}
-
-#pragma mark -
-#pragma mark ToolbarAssistiveKeyboardDelegate
-
-- (void)keyboardAccessoryVoiceSearchTouchDown:(UIView*)view {
-  if (ios::GetChromeBrowserProvider()
-          ->GetVoiceSearchProvider()
-          ->IsVoiceSearchEnabled()) {
-    [self preloadVoiceSearch:view];
-  }
-}
-
-- (void)keyboardAccessoryVoiceSearchTouchUpInside:(UIView*)view {
-  if (ios::GetChromeBrowserProvider()
-          ->GetVoiceSearchProvider()
-          ->IsVoiceSearchEnabled()) {
-    base::RecordAction(UserMetricsAction("MobileCustomRowVoiceSearch"));
-    StartVoiceSearchCommand* command =
-        [[StartVoiceSearchCommand alloc] initWithOriginView:view];
-    [self.dispatcher startVoiceSearch:command];
-  }
-}
-
-- (void)keyboardAccessoryCameraSearchTouchUp {
-  base::RecordAction(UserMetricsAction("MobileCustomRowCameraSearch"));
-  [self.dispatcher showQRScanner];
-}
-
-- (void)keyboardAccessoryExternalSearchTouchUp {
-  [self.dispatcher launchExternalSearch];
-}
-
-- (void)keyPressed:(NSString*)title {
-  NSString* text = [self updateTextForDotCom:title];
-  [_locationBarView.textField insertTextWhileEditing:text];
 }
 
 #pragma mark - TabHistory Requirements
@@ -2342,19 +2309,6 @@ using ios::material::TimingFunction;
   } else if (gesture.view == _forwardButton) {
     [self.dispatcher showTabHistoryPopupForForwardHistory];
   }
-}
-
-- (NSString*)updateTextForDotCom:(NSString*)text {
-  if ([text isEqualToString:kDotComTLD]) {
-    UITextRange* textRange = [_locationBarView.textField selectedTextRange];
-    NSInteger pos = [_locationBarView.textField
-        offsetFromPosition:[_locationBarView.textField beginningOfDocument]
-                toPosition:textRange.start];
-    if (pos > 0 &&
-        [[_locationBarView.textField text] characterAtIndex:pos - 1] == '.')
-      return [kDotComTLD substringFromIndex:1];
-  }
-  return text;
 }
 
 - (void)loadURLForQuery:(NSString*)query {
