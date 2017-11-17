@@ -10,6 +10,10 @@
 
 namespace tests_hook {
 
+bool DisableContentSuggestions() {
+  return true;
+}
+
 bool DisableContextualSearch() {
   return true;
 }
