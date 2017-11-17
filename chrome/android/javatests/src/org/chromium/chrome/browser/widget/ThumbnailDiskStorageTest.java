@@ -17,6 +17,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content.browser.test.util.Criteria;
@@ -274,6 +275,7 @@ public class ThumbnailDiskStorageTest {
      * Verify that removeFromDisk removes all thumbnails with the same content ID but different
      * sizes.
      */
+    @DisabledTest(message = "crbug.com/778829")
     @Test
     @SmallTest
     public void testRemoveAllThumbnailsWithSameContentId() throws Throwable {
