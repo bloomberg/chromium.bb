@@ -2061,7 +2061,9 @@ int av1_optimize_txb(const AV1_COMMON *cm, MACROBLOCK *x, int plane,
 
   const int shift = av1_get_tx_scale(tx_size);
   const int64_t rdmult =
-      (x->rdmult * plane_rd_mult[is_inter][plane_type] + 2) >> 2;
+      ((x->rdmult * plane_rd_mult[is_inter][plane_type] << (2 * (xd->bd - 8))) +
+       2) >>
+      2;
   uint8_t levels_buf[TX_PAD_2D];
   uint8_t *const levels = set_levels(levels_buf, width);
 
