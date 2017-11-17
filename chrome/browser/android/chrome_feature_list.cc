@@ -116,7 +116,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &payments::features::kWebPaymentsModifiers,
     &kWebPaymentsSingleAppUiSkip,
     &kWebVrAutopresentFromIntent,
-    &kWebVRCardboardSupport,
+    &kWebVrCardboardSupport,
     &ntp_snippets::kIncreasedVisibility,
     &ntp_snippets::kForeignSessionsSuggestionsFeature,
     &ntp_snippets::kNotificationsFeature,
@@ -338,7 +338,7 @@ const base::Feature kWebPaymentsSingleAppUiSkip{
 const base::Feature kWebVrAutopresentFromIntent{
     "WebVrAutopresentFromIntent", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kWebVRCardboardSupport{"WebVRCardboardSupport",
+const base::Feature kWebVrCardboardSupport{"WebVrCardboardSupport",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 static jboolean IsInitialized(JNIEnv* env, const JavaParamRef<jclass>& clazz) {

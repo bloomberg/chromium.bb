@@ -76,7 +76,7 @@ extern const base::Feature kVrBrowsingInCustomTab;
 extern const base::Feature kVrLaunchIntents;
 extern const base::Feature kWebPaymentsSingleAppUiSkip;
 extern const base::Feature kWebVrAutopresentFromIntent;
-extern const base::Feature kWebVRCardboardSupport;
+extern const base::Feature kWebVrCardboardSupport;
 
 }  // namespace android
 }  // namespace chrome
