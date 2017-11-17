@@ -289,43 +289,15 @@ std::unique_ptr<CommitContribution> ModelTypeWorker::GetContribution(
     return std::unique_ptr<CommitContribution>();
   }
 
-  // Add local changes to entity trackers and copy them into on-the-wire
-  // protobuf.
-  google::protobuf::RepeatedPtrField<sync_pb::SyncEntity> commit_entities;
-  for (const CommitRequestData& commit : response) {
-    const EntityData& data = commit.entity.value();
-    DCHECK(data.is_deleted() ||
-           (type_ == GetModelTypeFromSpecifics(data.specifics)))
-        << "Local change has wrong type: "
-        << ModelTypeToString(GetModelTypeFromSpecifics(data.specifics))
-        << ", expected: " << ModelTypeToString(type_);
-    WorkerEntityTracker* entity = CreateEntityTracker(data.client_tag_hash);
-    entity->RequestCommit(commit);
-    sync_pb::SyncEntity* commit_entity = commit_entities.Add();
-    entity->PopulateCommitProto(commit_entity);
-    AdjustCommitProto(commit_entity);
-  }
-
-  DCHECK((size_t)commit_entities.size() <= max_entries);
+  DCHECK(response.size() <= max_entries);
   return std::make_unique<NonBlockingTypeCommitContribution>(
-      model_type_state_.type_context(), commit_entities, this,
-      debug_info_emitter_, CommitOnlyTypes().Has(GetModelType()));
+      GetModelType(), model_type_state_.type_context(), response, this,
+      cryptographer_.get(), debug_info_emitter_,
+      CommitOnlyTypes().Has(GetModelType()));
 }
 
 void ModelTypeWorker::OnCommitResponse(CommitResponseDataList* response_list) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  for (CommitResponseData& response : *response_list) {
-    WorkerEntityTracker* entity = GetEntityTracker(response.client_tag_hash);
-
-    // There's no way we could have committed an entry we know nothing about.
-    if (entity == nullptr) {
-      NOTREACHED() << "Received commit response for item unknown to us."
-                   << " Model type: " << ModelTypeToString(type_)
-                   << " ID: " << response.id;
-    }
-
-    entity->ReceiveCommitResponse(&response);
-  }
 
   // Send the responses back to the model thread. It needs to know which
   // items have been successfully committed so it can save that information in
@@ -374,59 +346,6 @@ bool ModelTypeWorker::CanCommitItems() const {
 bool ModelTypeWorker::BlockForEncryption() const {
   // Should be using encryption, but we do not have the keys.
   return cryptographer_ && !cryptographer_->is_ready();
-}
-
-void ModelTypeWorker::AdjustCommitProto(sync_pb::SyncEntity* sync_entity) {
-  DCHECK(CanCommitItems());
-
-  // Initial commits need our help to generate a client ID.
-  if (sync_entity->version() == kUncommittedVersion) {
-    DCHECK(sync_entity->id_string().empty()) << sync_entity->id_string();
-    // TODO(crbug.com/516866): This is incorrect for bookmarks for two reasons:
-    // 1) Won't be able to match previously committed bookmarks to the ones
-    //    with server ID.
-    // 2) Recommitting an item in a case of failing to receive commit response
-    //    would result in generating a different client ID, which in turn
-    //    would result in a duplication.
-    // We should generate client ID on the frontend side instead.
-    sync_entity->set_id_string(base::GenerateGUID());
-    sync_entity->set_version(0);
-  } else {
-    DCHECK(!sync_entity->id_string().empty());
-  }
-
-  // Encrypt the specifics and hide the title if necessary.
-  if (cryptographer_) {
-    // If there is a cryptographer and CanCommitItems() is true then the
-    // cryptographer is valid and ready to encrypt.
-    sync_pb::EntitySpecifics encrypted_specifics;
-    bool result = cryptographer_->Encrypt(
-        sync_entity->specifics(), encrypted_specifics.mutable_encrypted());
-    DCHECK(result);
-    sync_entity->mutable_specifics()->CopyFrom(encrypted_specifics);
-    sync_entity->set_name("encrypted");
-  }
-
-  // Always include enough specifics to identify the type. Do this even in
-  // deletion requests, where the specifics are otherwise invalid.
-  AddDefaultFieldValue(type_, sync_entity->mutable_specifics());
-
-  // TODO(crbug.com/516866): Set parent_id_string for hierarchical types here.
-
-  if (CommitOnlyTypes().Has(GetModelType())) {
-    DCHECK(!cryptographer_);
-    // Remove absolutely everything we can get away with. We do not want to
-    // remove |client_defined_unique_tag| yet because the commit contribution
-    // needs the id to track the responses. They will remove it instead.
-    sync_entity->clear_attachment_id();
-    sync_entity->clear_ctime();
-    sync_entity->clear_deleted();
-    sync_entity->clear_folder();
-    sync_entity->clear_id_string();
-    sync_entity->clear_mtime();
-    sync_entity->clear_name();
-    sync_entity->clear_version();
-  }
 }
 
 bool ModelTypeWorker::UpdateEncryptionKeyName() {

@@ -6,7 +6,9 @@
 
 #include <algorithm>
 
+#include "base/guid.h"
 #include "base/values.h"
+#include "components/sync/base/time.h"
 #include "components/sync/engine/non_blocking_sync_common.h"
 #include "components/sync/engine_impl/model_type_worker.h"
 #include "components/sync/protocol/proto_value_conversions.h"
@@ -14,17 +16,21 @@
 namespace syncer {
 
 NonBlockingTypeCommitContribution::NonBlockingTypeCommitContribution(
+    ModelType type,
     const sync_pb::DataTypeContext& context,
-    const google::protobuf::RepeatedPtrField<sync_pb::SyncEntity>& entities,
+    const CommitRequestDataList& commit_requests,
     ModelTypeWorker* worker,
+    Cryptographer* cryptographer,
     DataTypeDebugInfoEmitter* debug_info_emitter,
-    bool clear_client_defined_unique_tags)
-    : worker_(worker),
+    bool only_commit_specifics)
+    : type_(type),
+      worker_(worker),
+      cryptographer_(cryptographer),
       context_(context),
-      entities_(entities),
+      commit_requests_(commit_requests),
       cleaned_up_(false),
       debug_info_emitter_(debug_info_emitter),
-      clear_client_defined_unique_tags_(clear_client_defined_unique_tags) {}
+      only_commit_specifics_(only_commit_specifics) {}
 
 NonBlockingTypeCommitContribution::~NonBlockingTypeCommitContribution() {
   DCHECK(cleaned_up_);
@@ -35,13 +41,20 @@ void NonBlockingTypeCommitContribution::AddToCommitMessage(
   sync_pb::CommitMessage* commit_message = msg->mutable_commit();
   entries_start_index_ = commit_message->entries_size();
 
-  std::copy(entities_.begin(), entities_.end(),
-            RepeatedPtrFieldBackInserter(commit_message->mutable_entries()));
+  commit_message->mutable_entries()->Reserve(commit_message->entries_size() +
+                                             commit_requests_.size());
 
-  if (clear_client_defined_unique_tags_) {
-    for (int i = entries_start_index_; i < commit_message->entries_size();
-         ++i) {
-      commit_message->mutable_entries(i)->clear_client_defined_unique_tag();
+  for (const auto& commit_request : commit_requests_) {
+    sync_pb::SyncEntity* sync_entity = commit_message->add_entries();
+    if (only_commit_specifics_) {
+      DCHECK(!commit_request.entity->is_deleted());
+      DCHECK(!cryptographer_);
+      // Only send specifics to server for commit-only types.
+      sync_entity->mutable_specifics()->CopyFrom(
+          commit_request.entity->specifics);
+    } else {
+      PopulateCommitProto(commit_request, sync_entity);
+      AdjustCommitProto(sync_entity);
     }
   }
 
@@ -49,7 +62,7 @@ void NonBlockingTypeCommitContribution::AddToCommitMessage(
     commit_message->add_client_contexts()->CopyFrom(context_);
 
   CommitCounters* counters = debug_info_emitter_->GetMutableCommitCounters();
-  counters->num_commits_attempted += entities_.size();
+  counters->num_commits_attempted += commit_requests_.size();
 }
 
 SyncerError NonBlockingTypeCommitContribution::ProcessCommitResponse(
@@ -64,30 +77,28 @@ SyncerError NonBlockingTypeCommitContribution::ProcessCommitResponse(
 
   CommitResponseDataList response_list;
 
-  for (int i = 0; i < entities_.size(); ++i) {
+  for (size_t i = 0; i < commit_requests_.size(); ++i) {
     const sync_pb::CommitResponse_EntryResponse& entry_response =
         commit_response.entryresponse(entries_start_index_ + i);
 
     switch (entry_response.response_type()) {
       case sync_pb::CommitResponse::INVALID_MESSAGE:
         LOG(ERROR) << "Server reports commit message is invalid.";
-        DLOG(ERROR) << "Message was: "
-                    << SyncEntityToValue(entities_.Get(i), false).get();
         unknown_error = true;
         break;
       case sync_pb::CommitResponse::CONFLICT:
         DVLOG(1) << "Server reports conflict for commit message.";
-        DVLOG(1) << "Message was: "
-                 << SyncEntityToValue(entities_.Get(i), false).get();
         ++conflicting_commits;
         break;
       case sync_pb::CommitResponse::SUCCESS: {
         ++successes;
         CommitResponseData response_data;
+        const CommitRequestData& commit_request = commit_requests_[i];
         response_data.id = entry_response.id_string();
-        response_data.client_tag_hash =
-            entities_.Get(i).client_defined_unique_tag();
         response_data.response_version = entry_response.version();
+        response_data.client_tag_hash = commit_request.entity->client_tag_hash;
+        response_data.sequence_number = commit_request.sequence_number;
+        response_data.specifics_hash = commit_request.specifics_hash;
         response_list.push_back(response_data);
         break;
       }
@@ -134,7 +145,63 @@ void NonBlockingTypeCommitContribution::CleanUp() {
 }
 
 size_t NonBlockingTypeCommitContribution::GetNumEntries() const {
-  return entities_.size();
+  return commit_requests_.size();
+}
+
+// static
+void NonBlockingTypeCommitContribution::PopulateCommitProto(
+    const CommitRequestData& commit_entity,
+    sync_pb::SyncEntity* commit_proto) {
+  const EntityData& entity_data = commit_entity.entity.value();
+
+  commit_proto->set_id_string(entity_data.id);
+  commit_proto->set_client_defined_unique_tag(entity_data.client_tag_hash);
+  commit_proto->set_version(commit_entity.base_version);
+  commit_proto->set_deleted(entity_data.is_deleted());
+  commit_proto->set_folder(false);
+  commit_proto->set_name(entity_data.non_unique_name);
+  // TODO(stanisc): This doesn't support bookmarks yet.
+  DCHECK(entity_data.parent_id.empty());
+  // TODO(crbug.com/516866): Set parent_id_string for hierarchical types here.
+
+  if (!entity_data.is_deleted()) {
+    commit_proto->set_ctime(TimeToProtoTime(entity_data.creation_time));
+    commit_proto->set_mtime(TimeToProtoTime(entity_data.modification_time));
+    commit_proto->mutable_specifics()->CopyFrom(entity_data.specifics);
+  }
+}
+
+void NonBlockingTypeCommitContribution::AdjustCommitProto(
+    sync_pb::SyncEntity* commit_proto) {
+  // Initial commits need our help to generate a client ID.
+  if (commit_proto->version() == kUncommittedVersion) {
+    DCHECK(commit_proto->id_string().empty()) << commit_proto->id_string();
+    // TODO(crbug.com/516866): This is incorrect for bookmarks for two reasons:
+    // 1) Won't be able to match previously committed bookmarks to the ones
+    //    with server ID.
+    // 2) Recommitting an item in a case of failing to receive commit response
+    //    would result in generating a different client ID, which in turn
+    //    would result in a duplication.
+    // We should generate client ID on the frontend side instead.
+    commit_proto->set_id_string(base::GenerateGUID());
+    commit_proto->set_version(0);
+  } else {
+    DCHECK(!commit_proto->id_string().empty());
+  }
+
+  // Encrypt the specifics and hide the title if necessary.
+  if (cryptographer_) {
+    sync_pb::EntitySpecifics encrypted_specifics;
+    bool result = cryptographer_->Encrypt(
+        commit_proto->specifics(), encrypted_specifics.mutable_encrypted());
+    DCHECK(result);
+    commit_proto->mutable_specifics()->CopyFrom(encrypted_specifics);
+    commit_proto->set_name("encrypted");
+  }
+
+  // Always include enough specifics to identify the type. Do this even in
+  // deletion requests, where the specifics are otherwise invalid.
+  AddDefaultFieldValue(type_, commit_proto->mutable_specifics());
 }
 
 }  // namespace syncer

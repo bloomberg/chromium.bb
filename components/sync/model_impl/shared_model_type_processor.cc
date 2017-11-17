@@ -380,7 +380,7 @@ void SharedModelTypeProcessor::OnCommitCompleted(
   // their commit_requested_sequence_number so they are committed again on next
   // sync cycle.
   // TODO(crbug.com/740757): Iterating over all entities is inefficient. It is
-  // better to remember in GetLocalChanges which entities are bieng committed
+  // better to remember in GetLocalChanges which entities are being committed
   // and adjust only them. Alternatively we can make worker return commit status
   // for all entities, not just successful ones and use that to lookup entities
   // to clear.

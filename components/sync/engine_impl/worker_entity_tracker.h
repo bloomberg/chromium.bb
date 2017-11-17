@@ -37,24 +37,6 @@ class WorkerEntityTracker {
 
   ~WorkerEntityTracker();
 
-  // Returns true if this entity should be commited to the server.
-  bool HasPendingCommit() const;
-
-  // Returns true if pending commit contains deleted entity.
-  bool PendingCommitIsDeletion() const;
-
-  // Populates a sync_pb::SyncEntity for a commit.
-  void PopulateCommitProto(sync_pb::SyncEntity* commit_entity) const;
-
-  // Updates this entity with data from the latest version that the
-  // model asked us to commit. May clobber state related to the
-  // model's previous commit attempt(s).
-  void RequestCommit(const CommitRequestData& data);
-
-  // Tracks the receipt of a commit response and fills in some local-only data
-  // on it to be passed back to the processor.
-  void ReceiveCommitResponse(CommitResponseData* ack);
-
   // Handles receipt of an update from the server.
   void ReceiveUpdate(const UpdateResponseData& update);
 
@@ -82,43 +64,14 @@ class WorkerEntityTracker {
   const std::string& client_tag_hash() const { return client_tag_hash_; }
 
  private:
-  // Checks if the current state indicates a conflict.
-  //
-  // This can be true only while a call to this object is in progress.
-  // Conflicts are always cleared before the method call ends.
-  bool IsInConflict() const;
-
-  // Checks if the server knows about this item.
-  bool IsServerKnown() const;
-
-  // Clears flag and optionally clears state associated with a pending commit.
-  void ClearPendingCommit();
-
   // The hashed client tag for this entry.
   const std::string client_tag_hash_;
 
   // The ID for this entry. May be empty if the entry has never been committed.
   std::string id_;
 
-  // Used to track in-flight commit requests on the model thread. All we need
-  // to do here is return it back to the model thread when the pending commit
-  // is completed and confirmed. Not valid if no commit is pending.
-  int64_t sequence_number_ = 0;
-
-  // The server version on which this item is based.
-  int64_t base_version_ = kUncommittedVersion;
-
-  // The highest version seen in a commit response for this entry.
-  int64_t highest_commit_response_version_ = kUncommittedVersion;
-
   // The highest version seen in a GU response for this entry.
   int64_t highest_gu_response_version_ = kUncommittedVersion;
-
-  // A commit for this entity waiting for a sync cycle to be committed.
-  std::unique_ptr<CommitRequestData> pending_commit_;
-
-  // The specifics hash for the pending commit if there is one, "" otherwise.
-  std::string pending_commit_specifics_hash_;
 
   // An update for this entity which can't be applied right now. The presence
   // of an pending update prevents commits. As of this writing, the only
