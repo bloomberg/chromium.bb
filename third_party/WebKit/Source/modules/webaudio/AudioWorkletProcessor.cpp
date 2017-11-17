@@ -4,40 +4,33 @@
 
 #include "modules/webaudio/AudioWorkletProcessor.h"
 
+#include "core/dom/MessagePort.h"
+#include "core/workers/WorkerGlobalScope.h"
 #include "modules/webaudio/AudioBuffer.h"
 #include "modules/webaudio/AudioWorkletGlobalScope.h"
 
 namespace blink {
 
-// This static factory should be called after an instance of |AudioWorkletNode|
-// gets created by user-supplied JS code in the main thread. This factory must
-// not be called by user in |AudioWorkletGlobalScope|.
 AudioWorkletProcessor* AudioWorkletProcessor::Create(
-    AudioWorkletGlobalScope* global_scope,
-    const String& name) {
+    ExecutionContext* context) {
+  AudioWorkletGlobalScope* global_scope = ToAudioWorkletGlobalScope(context);
   DCHECK(global_scope);
   DCHECK(global_scope->IsContextThread());
-  return new AudioWorkletProcessor(global_scope, name);
+
+  // Get the stored initialization parameter from the global scope.
+  ProcessorCreationParams* params = global_scope->GetProcessorCreationParams();
+  DCHECK(params);
+
+  MessagePort* port = MessagePort::Create(*global_scope);
+  port->Entangle(std::move(params->PortChannel()));
+  return new AudioWorkletProcessor(global_scope, params->Name(), port);
 }
 
 AudioWorkletProcessor::AudioWorkletProcessor(
     AudioWorkletGlobalScope* global_scope,
-    const String& name)
-    : global_scope_(global_scope), instance_(this), name_(name) {}
-
-AudioWorkletProcessor::~AudioWorkletProcessor() {}
-
-void AudioWorkletProcessor::SetInstance(v8::Isolate* isolate,
-                                        v8::Local<v8::Object> instance) {
-  DCHECK(global_scope_->IsContextThread());
-  instance_.Set(isolate, instance);
-}
-
-v8::Local<v8::Object> AudioWorkletProcessor::InstanceLocal(
-    v8::Isolate* isolate) {
-  DCHECK(global_scope_->IsContextThread());
-  return instance_.NewLocal(isolate);
-}
+    const String& name,
+    MessagePort* port)
+    : global_scope_(global_scope), processor_port_(port), name_(name) {}
 
 bool AudioWorkletProcessor::Process(
     Vector<AudioBus*>* input_buses,
@@ -50,14 +43,14 @@ bool AudioWorkletProcessor::Process(
                                 param_value_map, current_time);
 }
 
-void AudioWorkletProcessor::Trace(blink::Visitor* visitor) {
-  visitor->Trace(global_scope_);
-  ScriptWrappable::Trace(visitor);
+MessagePort* AudioWorkletProcessor::port() const {
+  return processor_port_.Get();
 }
 
-void AudioWorkletProcessor::TraceWrappers(
-    const ScriptWrappableVisitor* visitor) const {
-  visitor->TraceWrappers(instance_.Cast<v8::Value>());
+void AudioWorkletProcessor::Trace(blink::Visitor* visitor) {
+  visitor->Trace(global_scope_);
+  visitor->Trace(processor_port_);
+  ScriptWrappable::Trace(visitor);
 }
 
 }  // namespace blink

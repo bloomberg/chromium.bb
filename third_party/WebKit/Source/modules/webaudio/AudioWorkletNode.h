@@ -18,6 +18,7 @@ class AudioWorkletProcessor;
 class BaseAudioContext;
 class CrossThreadAudioParamInfo;
 class ExceptionState;
+class MessagePort;
 
 enum class AudioWorkletProcessorState {
   kPending,
@@ -108,6 +109,7 @@ class AudioWorkletNode final : public AudioNode,
 
   // IDL
   AudioParamMap* parameters() const;
+  MessagePort* port() const;
   String processorState() const;
   DEFINE_ATTRIBUTE_EVENT_LISTENER(processorstatechange);
 
@@ -117,9 +119,11 @@ class AudioWorkletNode final : public AudioNode,
   AudioWorkletNode(BaseAudioContext&,
                    const String& name,
                    const AudioWorkletNodeOptions&,
-                   const Vector<CrossThreadAudioParamInfo>);
+                   const Vector<CrossThreadAudioParamInfo>,
+                   MessagePort* node_port);
 
   Member<AudioParamMap> parameter_map_;
+  Member<MessagePort> node_port_;
   AudioWorkletProcessorState processor_state_;
 };
 

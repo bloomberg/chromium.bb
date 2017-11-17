@@ -29,7 +29,7 @@
 
 [
     Constructor(DOMString type, optional MessageEventInit eventInitDict),
-    Exposed=(Window,Worker),
+    Exposed=(Window,Worker,AudioWorklet),
     RaisesException=Constructor
 ] interface MessageEvent : Event {
     [Custom=Getter] readonly attribute any data;
