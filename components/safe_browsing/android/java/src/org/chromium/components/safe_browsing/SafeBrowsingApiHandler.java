@@ -34,7 +34,7 @@ public interface SafeBrowsingApiHandler {
 
     /**
      * Verifies that SafeBrowsingApiHandler can operate and initializes if feasible.
-     * Should be called on IO thread.
+     * Should be called on the same sequence as |startUriLookup|.
      *
      * @return the handler if it's usable, or null if the API is not supported.
      */
@@ -42,7 +42,7 @@ public interface SafeBrowsingApiHandler {
 
     /**
      * Start a URI-lookup to determine if it matches one of the specified threats.
-     * This is called on every URL resource Chrome loads, on the IO thread.
+     * This is called on every URL resource Chrome loads, on the same sequence as |init|.
      */
     public void startUriLookup(long callbackId, String uri, int[] threatsOfInterest);
 }
