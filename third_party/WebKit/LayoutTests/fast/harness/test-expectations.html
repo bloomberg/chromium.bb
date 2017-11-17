@@ -57,19 +57,6 @@ p, h2, h3, h4 {
   font-size: x-large;
   font-weight: bold;
 }
-#rebaseline {
-  box-sizing: border-box;
-  position: fixed;
-  width: 96vw;
-  height: 96vh;
-  top: 2vh;
-  left: 2vw;
-  border: 5px solid black;
-  background-color: white;
-  padding: 16px;
-  box-shadow: 0 0 20px;
-  overflow: auto;
-}
 .fix-width {
   display: inline-block;
   width: 7em;
@@ -223,7 +210,14 @@ p, h2, h3, h4 {
   <h4>1. Plain text</h4>
   <pre>fast/forms/<a href="https://cs.chromium.org/chromium/src/third_party/WebKit/LayoutTests/fast/forms/validation-bubble-appearance-rtl-ui.html?q=validation-bubble-appearance-rtl-ui.html&dr">validation-bubble-appearance-rtl-ui.html</a></pre>
   <p>Plain text shows the test path.</p>
-  <h4>2. TestExpectations</a></h4>
+
+  <h4>2. Plain text wrapped</h4>
+  All test paths are placed in the same line. This is useful to copy a list of tests to a command line.
+  For example, by pasting the wrapped paint text into a command line starting with
+  <pre>run-webkit-tests --reset-results ...</pre>
+  we can rebaseline the selected list of tests.
+
+  <h4>3. TestExpectations</a></h4>
 <pre><a href="#">crbug.com/bug</a> layout/test/path/<a href="#">test.html</a> [ Status ]</pre>
   <p>TestExpectationsshow lines as they'd appear in <a
     href="https://chromium.googlesource.com/chromium/src/+/master/docs/testing/layout_test_expectations.md">TestExpectations</a> file.</p>
@@ -243,12 +237,12 @@ TestResult(CRASH) + TextExpectation(Failure) => [ Failure <b>Crash</b> ]</pre>
   <p>If you are doing a lot of TestExpectation edits, the hope is that this will make
   your job as easy as copy and paste.</p>
 
-  <h4>3. Crash site</h4>
+  <h4>4. Crash site</h4>
   <pre>
 ### Crash site: Internals.cpp(3455)
   editing/pasteboard/<a href="https://cs.chromium.org/chromium/src/third_party/WebKit/LayoutTests/editing/pasteboard/copy-paste-white-space.html?q=copy-paste-white-space.html&dr">copy-paste-white-space.html</a></pre>
   <p>Crash site groups "Crash" tests with similar stack traces together. For best results, use it while filtering only crashes.</p>
-  <h4>4. Text mismatch</h4>
+  <h4>5. Text mismatch</h4>
   <pre>
 ### Text mismatch failure: general text mismatch
   accessibility/dimensions-include-descendants.html
@@ -259,9 +253,6 @@ TestResult(CRASH) + TextExpectation(Failure) => [ Failure <b>Crash</b> ]</pre>
 </pre>
   <p>Text mistmatch groups "Text failure" tests together.
   </p>
-  <h4>5. Rebaseline</h4>
-  <p>Generates a bash script to rebaseline based on new results. @xiaochengh knows
-  the details on how to use it.</p>
   <h3>Viewing results of a single test</h3>
   <p>Click on images to zoom in. Select image viewing mode from the popup.</p>
   <p>When viewing images for the first time, red flash highlights enclosing
@@ -330,7 +321,6 @@ TestResult(CRASH) + TextExpectation(Failure) => [ Failure <b>Crash</b> ]</pre>
       <option value="expectation">TestExpectations</option>
       <option value="crashsite">Crash site</option>
       <option value="textmismatch">Text mismatch</option>
-      <option value="rebaseline">Rebaseline</option>
     </select>
 </div>
 
@@ -469,8 +459,6 @@ const Report = {
         return {print: Report.printCrashSite, render: Report.renderGroupCrashSite};
       case "textmismatch":
         return {print: Report.printTextMismatch, render: Report.renderGroupTextMismatch};
-      case "rebaseline":
-        return {print: Report.printRebaseline, render: Report.renderResultList};
       case "plainwrapped":
         return {print: Report.printPlainTestWrapped, render: Report.renderResultList}
       case "plain":
@@ -563,44 +551,6 @@ const Report = {
 
   printTextMismatch: (test, path, traversal) => {
     Report.printWithKey(test, path, traversal, "text_mismatch");
-  },
-
-  printRebaseline: (test, path, traversal) => {
-    let parser = new PathParser(path);
-    let actualNames = [];
-    let expectedNames = [];
-    switch (test.actualFinal) {
-      case "IMAGE+TEXT":
-        actualNames.push("-actual.txt");
-        expectedNames.push("-expected.txt");
-        // fall through IMAGE
-      case "IMAGE":
-        actualNames.push("-actual.png");
-        expectedNames.push("-expected.png");
-      break;
-      case "TEXT":
-        actualNames.push("-actual.txt");
-        expectedNames.push("-expected.txt");
-      break;
-      default:
-        return;
-    }
-    // Change directory if in wrong place
-    let dir = parser.dir;
-    if (dir != traversal.rebaselineDir) {
-      if (traversal.rebaselineDir) {
-        let depth = (traversal.rebaselineDir.match(/\//g) || []).length;
-        traversal.html.push(`<div>cd ${'..' + '/..'.repeat(depth)};</div>`);
-      }
-      traversal.html.push(`<div>mkdir -p ${dir};</div>`);
-      traversal.html.push(`<div>cd ${dir};</div>`);
-      traversal.rebaselineDir = dir;
-    }
-    for (let i=0; i<actualNames.length; i++) {
-      let url = new URL(parser.resultLink(actualNames[i]), window.location.href);
-      traversal.html.push(`<div>wget ${url.href};</div>`);
-      traversal.html.push(`<div>mv ${parser.basename + actualNames[i]} ${parser.basename + expectedNames[i]};</div>`);
-    }
   },
 
   indicateNone: (report) => {
