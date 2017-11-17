@@ -191,6 +191,7 @@ gStatsWhitelist.set('transport', kRTCTransportStats);
 var kRTCIceCandidateStats = new RTCStats_(null, {
   transportId: 'string',
   isRemote: 'boolean',
+  networkType: 'string',
   ip: 'string',
   port: 'number',
   protocol: 'string',
