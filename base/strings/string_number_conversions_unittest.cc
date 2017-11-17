@@ -25,7 +25,7 @@ namespace base {
 namespace {
 
 template <typename INT>
-struct IntToStringTest {
+struct NumberToStringTest {
   INT num;
   const char* sexpected;
   const char* uexpected;
@@ -33,14 +33,14 @@ struct IntToStringTest {
 
 }  // namespace
 
-TEST(StringNumberConversionsTest, IntToString) {
-  static const IntToStringTest<int> int_tests[] = {
-      { 0, "0", "0" },
-      { -1, "-1", "4294967295" },
-      { std::numeric_limits<int>::max(), "2147483647", "2147483647" },
-      { std::numeric_limits<int>::min(), "-2147483648", "2147483648" },
+TEST(StringNumberConversionsTest, NumberToString) {
+  static const NumberToStringTest<int> int_tests[] = {
+      {0, "0", "0"},
+      {-1, "-1", "4294967295"},
+      {std::numeric_limits<int>::max(), "2147483647", "2147483647"},
+      {std::numeric_limits<int>::min(), "-2147483648", "2147483648"},
   };
-  static const IntToStringTest<int64_t> int64_tests[] = {
+  static const NumberToStringTest<int64_t> int64_tests[] = {
       {0, "0", "0"},
       {-1, "-1", "18446744073709551615"},
       {
@@ -52,18 +52,20 @@ TEST(StringNumberConversionsTest, IntToString) {
   };
 
   for (size_t i = 0; i < arraysize(int_tests); ++i) {
-    const IntToStringTest<int>* test = &int_tests[i];
-    EXPECT_EQ(IntToString(test->num), test->sexpected);
-    EXPECT_EQ(IntToString16(test->num), UTF8ToUTF16(test->sexpected));
-    EXPECT_EQ(UintToString(test->num), test->uexpected);
-    EXPECT_EQ(UintToString16(test->num), UTF8ToUTF16(test->uexpected));
+    const NumberToStringTest<int>& test = int_tests[i];
+    EXPECT_EQ(NumberToString(test.num), test.sexpected);
+    EXPECT_EQ(NumberToString16(test.num), UTF8ToUTF16(test.sexpected));
+    EXPECT_EQ(NumberToString(static_cast<unsigned>(test.num)), test.uexpected);
+    EXPECT_EQ(NumberToString16(static_cast<unsigned>(test.num)),
+              UTF8ToUTF16(test.uexpected));
   }
   for (size_t i = 0; i < arraysize(int64_tests); ++i) {
-    const IntToStringTest<int64_t>* test = &int64_tests[i];
-    EXPECT_EQ(Int64ToString(test->num), test->sexpected);
-    EXPECT_EQ(Int64ToString16(test->num), UTF8ToUTF16(test->sexpected));
-    EXPECT_EQ(Uint64ToString(test->num), test->uexpected);
-    EXPECT_EQ(Uint64ToString16(test->num), UTF8ToUTF16(test->uexpected));
+    const NumberToStringTest<int64_t>& test = int64_tests[i];
+    EXPECT_EQ(NumberToString(test.num), test.sexpected);
+    EXPECT_EQ(NumberToString16(test.num), UTF8ToUTF16(test.sexpected));
+    EXPECT_EQ(NumberToString(static_cast<uint64_t>(test.num)), test.uexpected);
+    EXPECT_EQ(NumberToString16(static_cast<uint64_t>(test.num)),
+              UTF8ToUTF16(test.uexpected));
   }
 }
 
@@ -79,7 +81,7 @@ TEST(StringNumberConversionsTest, Uint64ToString) {
   };
 
   for (size_t i = 0; i < arraysize(cases); ++i)
-    EXPECT_EQ(cases[i].output, Uint64ToString(cases[i].input));
+    EXPECT_EQ(cases[i].output, NumberToString(cases[i].input));
 }
 
 TEST(StringNumberConversionsTest, SizeTToString) {
@@ -102,7 +104,7 @@ TEST(StringNumberConversionsTest, SizeTToString) {
   };
 
   for (size_t i = 0; i < arraysize(cases); ++i)
-    EXPECT_EQ(cases[i].output, SizeTToString(cases[i].input));
+    EXPECT_EQ(cases[i].output, NumberToString(cases[i].input));
 }
 
 TEST(StringNumberConversionsTest, StringToInt) {
@@ -826,19 +828,20 @@ TEST(StringNumberConversionsTest, DoubleToString) {
   };
 
   for (size_t i = 0; i < arraysize(cases); ++i) {
-    EXPECT_EQ(cases[i].expected, DoubleToString(cases[i].input));
+    EXPECT_EQ(cases[i].expected, NumberToString(cases[i].input));
+    EXPECT_EQ(cases[i].expected, UTF16ToUTF8(NumberToString16(cases[i].input)));
   }
 
   // The following two values were seen in crashes in the wild.
   const char input_bytes[8] = {0, 0, 0, 0, '\xee', '\x6d', '\x73', '\x42'};
   double input = 0;
   memcpy(&input, input_bytes, arraysize(input_bytes));
-  EXPECT_EQ("1335179083776", DoubleToString(input));
+  EXPECT_EQ("1335179083776", NumberToString(input));
   const char input_bytes2[8] =
       {0, 0, 0, '\xa0', '\xda', '\x6c', '\x73', '\x42'};
   input = 0;
   memcpy(&input, input_bytes2, arraysize(input_bytes2));
-  EXPECT_EQ("1334890332160", DoubleToString(input));
+  EXPECT_EQ("1334890332160", NumberToString(input));
 }
 
 TEST(StringNumberConversionsTest, HexEncode) {

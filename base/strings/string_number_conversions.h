@@ -14,6 +14,7 @@
 #include "base/base_export.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
+#include "build/build_config.h"
 
 // ----------------------------------------------------------------------------
 // IMPORTANT MESSAGE FROM YOUR SPONSOR
@@ -39,24 +40,66 @@ namespace base {
 
 // Number -> string conversions ------------------------------------------------
 
-BASE_EXPORT std::string IntToString(int value);
-BASE_EXPORT string16 IntToString16(int value);
+// Ignores locale! see warning above.
+BASE_EXPORT std::string NumberToString(int32_t value);
+BASE_EXPORT std::string NumberToString(uint32_t value);
+BASE_EXPORT std::string NumberToString(int64_t value);
+BASE_EXPORT std::string NumberToString(uint64_t value);
+BASE_EXPORT std::string NumberToString(double value);
 
-BASE_EXPORT std::string UintToString(unsigned value);
-BASE_EXPORT string16 UintToString16(unsigned value);
+BASE_EXPORT base::string16 NumberToString16(int32_t value);
+BASE_EXPORT base::string16 NumberToString16(uint32_t value);
+BASE_EXPORT base::string16 NumberToString16(int64_t value);
+BASE_EXPORT base::string16 NumberToString16(uint64_t value);
+BASE_EXPORT base::string16 NumberToString16(double value);
 
-BASE_EXPORT std::string Int64ToString(int64_t value);
-BASE_EXPORT string16 Int64ToString16(int64_t value);
+// Compilers seem to disagree about whether size_t is a different name for
+// uint32_t/uint64_t, or whether it's a completely different type that requires
+// a conversion. Therefore, a size_t version must exist for some compilers (to
+// avoid ambiguous call errors), but must not exist for others (to avoid
+// multiple definition errors).
+#if defined(OS_MACOSX)
+BASE_EXPORT std::string NumberToString(size_t value);
+BASE_EXPORT base::string16 NumberToString16(size_t value);
+#endif
 
-BASE_EXPORT std::string Uint64ToString(uint64_t value);
-BASE_EXPORT string16 Uint64ToString16(uint64_t value);
-
-BASE_EXPORT std::string SizeTToString(size_t value);
-BASE_EXPORT string16 SizeTToString16(size_t value);
-
-// DoubleToString converts the double to a string format that ignores the
-// locale. If you want to use locale specific formatting, use ICU.
-BASE_EXPORT std::string DoubleToString(double value);
+// Type-specific naming for backwards compatibility.
+//
+// TODO(brettw) these should be removed and callers converted to the overloaded
+// "NumberToString" variant.
+inline std::string IntToString(int value) {
+  return NumberToString(value);
+}
+inline string16 IntToString16(int value) {
+  return NumberToString16(value);
+}
+inline std::string UintToString(unsigned value) {
+  return NumberToString(value);
+}
+inline string16 UintToString16(unsigned value) {
+  return NumberToString16(value);
+}
+inline std::string Int64ToString(int64_t value) {
+  return NumberToString(value);
+}
+inline string16 Int64ToString16(int64_t value) {
+  return NumberToString16(value);
+}
+inline std::string Uint64ToString(uint64_t value) {
+  return NumberToString(value);
+}
+inline string16 Uint64ToString16(uint64_t value) {
+  return NumberToString16(value);
+}
+inline std::string SizeTToString(size_t value) {
+  return NumberToString(value);
+}
+inline string16 SizeTToString16(size_t value) {
+  return NumberToString16(value);
+}
+inline std::string DoubleToString(double value) {
+  return NumberToString(value);
+}
 
 // String -> number conversions ------------------------------------------------
 
