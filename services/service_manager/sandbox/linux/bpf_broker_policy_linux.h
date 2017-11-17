@@ -7,16 +7,14 @@
 
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"
 #include "services/service_manager/sandbox/export.h"
-#include "services/service_manager/sandbox/linux/bpf_gpu_policy_linux.h"
+#include "services/service_manager/sandbox/linux/bpf_base_policy_linux.h"
 
 namespace service_manager {
 
 // A broker policy is one for a privileged syscall broker that allows
 // access, open, openat, and (in the non-Chrome OS case) unlink.
-// TODO(tsepez): probably should not inherit from any other process policy,
-// since that may include random syscalls that this does not need.
 class SERVICE_MANAGER_SANDBOX_EXPORT BrokerProcessPolicy
-    : public GpuProcessPolicy {
+    : public BPFBasePolicy {
  public:
   BrokerProcessPolicy();
   ~BrokerProcessPolicy() override;
