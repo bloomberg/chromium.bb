@@ -273,7 +273,10 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewBrowserTestBase,
   EXPECT_TRUE(WaitForLoadStop(web_contents));
   EXPECT_EQ(web_contents->GetMainFrame()->GetProcess(),
             new_web_contents->GetMainFrame()->GetProcess());
-  FrameWatcher(web_contents).WaitFrames(5);
+  MainThreadFrameObserver observer(
+      web_contents->GetRenderViewHost()->GetWidget());
+  for (int i = 0; i < 5; ++i)
+    observer.Wait();
 }
 
 enum CompositingMode {

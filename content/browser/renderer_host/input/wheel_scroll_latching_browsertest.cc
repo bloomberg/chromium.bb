@@ -141,7 +141,9 @@ class WheelScrollLatchingBrowserTest : public ContentBrowserTest {
     EXPECT_EQ(0, ExecuteScriptAndExtractInt("documentWheelEventCounter"));
     EXPECT_EQ(0, ExecuteScriptAndExtractInt("scrollableDivWheelEventCounter"));
 
-    FrameWatcher frame_watcher(shell()->web_contents());
+    MainThreadFrameObserver frame_observer(
+        shell()->web_contents()->GetRenderViewHost()->GetWidget());
+
     auto input_msg_watcher = std::make_unique<InputMsgWatcher>(
         GetWidgetHost(), blink::WebInputEvent::kMouseWheel);
 
@@ -169,7 +171,7 @@ class WheelScrollLatchingBrowserTest : public ContentBrowserTest {
 
     while (ExecuteScriptAndExtractInt("document.scrollingElement.scrollTop") <
            -delta_y) {
-      frame_watcher.WaitFrames(1);
+      frame_observer.Wait();
     }
 
     EXPECT_EQ(0, ExecuteScriptAndExtractInt("scrollableDiv.scrollTop"));
@@ -187,7 +189,7 @@ class WheelScrollLatchingBrowserTest : public ContentBrowserTest {
     if (wheel_scroll_latching_enabled_) {
       while (ExecuteScriptAndExtractInt("document.scrollingElement.scrollTop") <
              -2 * delta_y) {
-        frame_watcher.WaitFrames(1);
+        frame_observer.Wait();
       }
 
       EXPECT_EQ(0, ExecuteScriptAndExtractInt("scrollableDiv.scrollTop"));
@@ -196,7 +198,7 @@ class WheelScrollLatchingBrowserTest : public ContentBrowserTest {
                 ExecuteScriptAndExtractInt("scrollableDivWheelEventCounter"));
     } else {  // !wheel_scroll_latching_enabled_
       while (ExecuteScriptAndExtractInt("scrollableDiv.scrollTop") < -delta_y)
-        frame_watcher.WaitFrames(1);
+        frame_observer.Wait();
 
       EXPECT_EQ(1, ExecuteScriptAndExtractInt("documentWheelEventCounter"));
       EXPECT_EQ(1,
@@ -246,7 +248,6 @@ IN_PROC_BROWSER_TEST_F(WheelScrollLatchingBrowserTest,
   EXPECT_EQ(0, ExecuteScriptAndExtractInt("documentWheelEventCounter"));
   EXPECT_EQ(0, ExecuteScriptAndExtractInt("scrollableDivWheelEventCounter"));
 
-  FrameWatcher frame_watcher(shell()->web_contents());
   auto update_msg_watcher = std::make_unique<InputMsgWatcher>(
       GetWidgetHost(), blink::WebInputEvent::kGestureScrollUpdate);
 

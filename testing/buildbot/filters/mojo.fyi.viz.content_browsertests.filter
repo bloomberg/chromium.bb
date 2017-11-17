@@ -5,11 +5,14 @@
 # FrameWatcher::WaitFrames times out http://crbug.com/785013
 -CompositedScrollingBrowserTest.*
 -NonBlockingEventBrowserTest.*
--RenderWidgetHostViewBrowserTestBase.CompositorWorksWhenReusingRenderer
--ScrollLatencyBrowserTest.*
 -TouchActionBrowserTest.*
--WheelScrollLatchingBrowserTest.WheelEventTarget
--WheelScrollLatchingDisabledBrowserTest.*
+
+# Fails to receive histogram updates http://crbug.com/786151
+-ScrollLatencyBrowserTest.*
+
+# Flaky timeout while waiting for scoll update http://crbug.com/786132
+WheelScrollLatchingBrowserTest.WheelScrollingRelatchWhenLatchedScrollerRemoved
+
 
 # Crash during shutdown on wrong thread http://crbug.com/785023
 -ContentBrowserTestSanityTest.SingleProcess
