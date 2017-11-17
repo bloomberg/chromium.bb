@@ -37,7 +37,6 @@ class SearchResultAnswerCardView;
 class SearchResultListView;
 class SearchResultPageView;
 class SearchResultTileItemListView;
-class StartPageView;
 
 // A view to manage launcher pages within the Launcher (eg. start page, apps
 // grid view, search results). There can be any number of launcher pages, only
@@ -96,7 +95,6 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   AppsContainerView* apps_container_view() const {
     return apps_container_view_;
   }
-  StartPageView* start_page_view() const { return start_page_view_; }
   SearchResultPageView* search_results_page_view() const {
     return search_results_page_view_;
   }
@@ -205,7 +203,6 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   SearchResultAnswerCardView* search_result_answer_card_view_ = nullptr;
   SearchResultTileItemListView* search_result_tile_item_list_view_ = nullptr;
   SearchResultListView* search_result_list_view_ = nullptr;
-  StartPageView* start_page_view_ = nullptr;
 
   // The child page views. Owned by the views hierarchy.
   std::vector<AppListPage*> app_list_pages_;

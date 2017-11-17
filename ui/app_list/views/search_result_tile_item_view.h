@@ -73,7 +73,7 @@ class APP_LIST_EXPORT SearchResultTileItemView
   void Layout() override;
   gfx::Size CalculatePreferredSize() const override;
 
-  // Whether the tile item view is a suggested app, used in StartPageView.
+  // Whether the tile item view is a suggested app.
   const bool is_suggested_app_;
 
   SearchResultContainerView* result_container_;  // Parent view
