@@ -36,7 +36,7 @@ scoped_refptr<NGLayoutResult> NGPageLayoutAlgorithm::Layout() {
       CreateConstraintSpaceForPages(page_size);
   container_builder_.SetInlineSize(border_box_size.inline_size);
 
-  NGWritingMode writing_mode = ConstraintSpace().WritingMode();
+  WritingMode writing_mode = ConstraintSpace().GetWritingMode();
   scoped_refptr<NGBlockBreakToken> break_token = BreakToken();
   LayoutUnit intrinsic_block_size;
   NGLogicalOffset page_offset(border_scrollbar_padding.StartOffset());
@@ -106,8 +106,7 @@ NGPageLayoutAlgorithm::CreateConstraintSpaceForPages(
   space_builder.SetIsNewFormattingContext(true);
   space_builder.SetIsAnonymous(true);
 
-  return space_builder.ToConstraintSpace(
-      FromPlatformWritingMode(Style().GetWritingMode()));
+  return space_builder.ToConstraintSpace(Style().GetWritingMode());
 }
 
 }  // namespace blink

@@ -7,9 +7,9 @@
 
 #include "core/CoreExport.h"
 #include "core/layout/ng/geometry/ng_logical_offset.h"
-#include "core/layout/ng/ng_writing_mode.h"
 #include "platform/LayoutUnit.h"
 #include "platform/text/TextDirection.h"
+#include "platform/text/WritingMode.h"
 
 namespace blink {
 
@@ -42,7 +42,7 @@ struct CORE_EXPORT NGBoxStrut {
 
   bool IsEmpty() const;
 
-  NGPhysicalBoxStrut ConvertToPhysical(NGWritingMode, TextDirection) const;
+  NGPhysicalBoxStrut ConvertToPhysical(WritingMode, TextDirection) const;
 
   // The following two operators exist primarily to have an easy way to access
   // the sum of border and padding.
@@ -85,7 +85,7 @@ struct CORE_EXPORT NGPhysicalBoxStrut {
                      LayoutUnit left)
       : top(top), right(right), bottom(bottom), left(left) {}
 
-  NGBoxStrut ConvertToLogical(NGWritingMode, TextDirection) const;
+  NGBoxStrut ConvertToLogical(WritingMode, TextDirection) const;
   NGPixelSnappedPhysicalBoxStrut SnapToDevicePixels() const;
 
   LayoutUnit HorizontalSum() const { return left + right; }

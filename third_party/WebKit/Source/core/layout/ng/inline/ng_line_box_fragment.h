@@ -8,13 +8,13 @@
 #include "core/CoreExport.h"
 #include "core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "core/layout/ng/ng_fragment.h"
-#include "core/layout/ng/ng_writing_mode.h"
+#include "platform/text/WritingMode.h"
 
 namespace blink {
 
 class CORE_EXPORT NGLineBoxFragment final : public NGFragment {
  public:
-  NGLineBoxFragment(NGWritingMode writing_mode,
+  NGLineBoxFragment(WritingMode writing_mode,
                     const NGPhysicalLineBoxFragment& physical_fragment)
       : NGFragment(writing_mode, physical_fragment) {}
 };

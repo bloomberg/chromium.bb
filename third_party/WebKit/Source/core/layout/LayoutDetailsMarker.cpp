@@ -46,6 +46,9 @@ LayoutDetailsMarker::Orientation LayoutDetailsMarker::GetOrientation() const {
       if (Style()->IsLeftToRightDirection())
         return IsOpen() ? kRight : kDown;
       return IsOpen() ? kRight : kUp;
+    // TODO(layout-dev): Sideways-lr and sideways-rl are not yet supported.
+    default:
+      break;
   }
   NOTREACHED();
   return kRight;

@@ -19,7 +19,7 @@ struct NGLogicalOffset;
 // Return relative position offset as defined by style.
 CORE_EXPORT NGLogicalOffset
 ComputeRelativeOffset(const ComputedStyle& child_style,
-                      NGWritingMode container_writing_mode,
+                      WritingMode container_writing_mode,
                       TextDirection container_direction,
                       NGLogicalSize container_size);
 

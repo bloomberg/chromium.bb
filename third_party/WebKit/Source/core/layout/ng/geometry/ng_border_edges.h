@@ -6,7 +6,7 @@
 #define NGBorderEdges_h
 
 #include "core/CoreExport.h"
-#include "core/layout/ng/ng_writing_mode.h"
+#include "platform/text/WritingMode.h"
 
 namespace blink {
 
@@ -36,8 +36,8 @@ struct CORE_EXPORT NGBorderEdges {
     kLeft = 8,
     kAll = kTop | kRight | kBottom | kLeft
   };
-  static NGBorderEdges FromPhysical(unsigned, NGWritingMode);
-  unsigned ToPhysical(NGWritingMode) const;
+  static NGBorderEdges FromPhysical(unsigned, WritingMode);
+  unsigned ToPhysical(WritingMode) const;
 };
 
 }  // namespace blink

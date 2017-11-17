@@ -74,8 +74,7 @@ WTF::Optional<LayoutUnit> CalculateFragmentationOffset(
     const NGUnpositionedFloat& unpositioned_float,
     const NGConstraintSpace& parent_space) {
   const ComputedStyle& style = unpositioned_float.node.Style();
-  DCHECK(FromPlatformWritingMode(style.GetWritingMode()) ==
-         parent_space.WritingMode());
+  DCHECK(style.GetWritingMode() == parent_space.GetWritingMode());
 
   if (parent_space.HasBlockFragmentation()) {
     return parent_space.FragmentainerSpaceAtBfcStart() - origin_block_offset;
@@ -105,7 +104,7 @@ scoped_refptr<NGConstraintSpace> CreateConstraintSpaceForFloat(
       .SetIsNewFormattingContext(true)
       .SetIsShrinkToFit(true)
       .SetTextDirection(style.Direction())
-      .ToConstraintSpace(FromPlatformWritingMode(style.GetWritingMode()));
+      .ToConstraintSpace(style.GetWritingMode());
 }
 
 }  // namespace
@@ -117,15 +116,15 @@ LayoutUnit ComputeInlineSizeForUnpositionedFloat(
 
   const ComputedStyle& style = unpositioned_float->node.Style();
 
-  bool is_same_writing_mode = FromPlatformWritingMode(style.GetWritingMode()) ==
-                              parent_space.WritingMode();
+  bool is_same_writing_mode =
+      style.GetWritingMode() == parent_space.GetWritingMode();
 
   // If we've already performed layout on the unpositioned float, just return
   // the cached value.
   if (unpositioned_float->layout_result) {
     DCHECK(!is_same_writing_mode);
     DCHECK(unpositioned_float->layout_result->PhysicalFragment());
-    return NGFragment(parent_space.WritingMode(),
+    return NGFragment(parent_space.GetWritingMode(),
                       *unpositioned_float->layout_result->PhysicalFragment())
         .InlineSize();
   }
@@ -158,7 +157,7 @@ LayoutUnit ComputeInlineSizeForUnpositionedFloat(
 
   DCHECK(fragment.BreakToken()->IsFinished());
 
-  return NGFragment(parent_space.WritingMode(), fragment).InlineSize();
+  return NGFragment(parent_space.GetWritingMode(), fragment).InlineSize();
 }
 
 NGPositionedFloat PositionFloat(LayoutUnit origin_block_offset,
@@ -179,9 +178,8 @@ NGPositionedFloat PositionFloat(LayoutUnit origin_block_offset,
 
 #if DCHECK_IS_ON()
   bool is_same_writing_mode =
-      FromPlatformWritingMode(
-          unpositioned_float->node.Style().GetWritingMode()) ==
-      parent_space.WritingMode();
+      unpositioned_float->node.Style().GetWritingMode() ==
+      parent_space.GetWritingMode();
 #endif
 
   scoped_refptr<NGLayoutResult> layout_result;
@@ -207,7 +205,7 @@ NGPositionedFloat PositionFloat(LayoutUnit origin_block_offset,
   }
 
   DCHECK(layout_result->PhysicalFragment());
-  NGFragment float_fragment(parent_space.WritingMode(),
+  NGFragment float_fragment(parent_space.GetWritingMode(),
                             *layout_result->PhysicalFragment());
 
   // TODO(glebl): This should check for infinite opportunity instead.

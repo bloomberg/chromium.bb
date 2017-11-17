@@ -96,7 +96,7 @@ scoped_refptr<NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
   container_builder_.SetInlineSize(border_box_size.inline_size);
   container_builder_.SetBlockSize(border_box_size.block_size);
 
-  NGWritingMode writing_mode = ConstraintSpace().WritingMode();
+  WritingMode writing_mode = ConstraintSpace().GetWritingMode();
   scoped_refptr<NGBlockBreakToken> break_token = BreakToken();
   LayoutUnit intrinsic_block_size;
   LayoutUnit column_inline_offset(border_scrollbar_padding.inline_start);
@@ -194,7 +194,8 @@ LayoutUnit NGColumnLayoutAlgorithm::CalculateBalancedColumnBlockSize(
 
   // TODO(mstensho): This is where the fun begins. We need to examine the entire
   // fragment tree, not just the root.
-  NGFragment fragment(space->WritingMode(), *result->PhysicalFragment().get());
+  NGFragment fragment(space->GetWritingMode(),
+                      *result->PhysicalFragment().get());
   LayoutUnit single_strip_block_size = fragment.BlockSize();
 
   // Some extra care is required the division here. We want a the resulting
@@ -232,8 +233,7 @@ NGColumnLayoutAlgorithm::CreateConstraintSpaceForColumns(
   space_builder.SetIsNewFormattingContext(true);
   space_builder.SetIsAnonymous(true);
 
-  return space_builder.ToConstraintSpace(
-      FromPlatformWritingMode(Style().GetWritingMode()));
+  return space_builder.ToConstraintSpace(Style().GetWritingMode());
 }
 
 scoped_refptr<NGConstraintSpace>
@@ -245,8 +245,7 @@ NGColumnLayoutAlgorithm::CreateConstaintSpaceForBalancing(
   space_builder.SetIsNewFormattingContext(true);
   space_builder.SetIsAnonymous(true);
 
-  return space_builder.ToConstraintSpace(
-      FromPlatformWritingMode(Style().GetWritingMode()));
+  return space_builder.ToConstraintSpace(Style().GetWritingMode());
 }
 
 }  // namespace Blink

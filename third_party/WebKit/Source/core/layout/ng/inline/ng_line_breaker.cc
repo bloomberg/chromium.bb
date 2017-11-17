@@ -442,7 +442,7 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleAtomicInline(
   DCHECK(item_result->layout_result->PhysicalFragment());
 
   item_result->inline_size =
-      NGFragment(constraint_space_.WritingMode(),
+      NGFragment(constraint_space_.GetWritingMode(),
                  *item_result->layout_result->PhysicalFragment())
           .InlineSize();
 

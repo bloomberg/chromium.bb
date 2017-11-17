@@ -19,7 +19,7 @@ NGLineHeightMetrics NGBoxFragment::BaselineMetrics(
 
   LayoutBox* layout_box = ToLayoutBox(physical_fragment_.GetLayoutObject());
   bool is_parallel_writing_mode =
-      IsHorizontalWritingMode(constraint_space.WritingMode()) ==
+      IsHorizontalWritingMode(constraint_space.GetWritingMode()) ==
       layout_box->IsHorizontalWritingMode();
 
   if (is_parallel_writing_mode) {

@@ -103,8 +103,8 @@ class NGInlineNodeTest : public NGLayoutTest {
     NGPhysicalSize icb_size(LayoutUnit(200), LayoutUnit(200));
 
     scoped_refptr<NGConstraintSpace> constraint_space =
-        NGConstraintSpaceBuilder(kHorizontalTopBottom, icb_size)
-            .ToConstraintSpace(kHorizontalTopBottom);
+        NGConstraintSpaceBuilder(WritingMode::kHorizontalTb, icb_size)
+            .ToConstraintSpace(WritingMode::kHorizontalTb);
     scoped_refptr<NGLayoutResult> result =
         NGInlineLayoutAlgorithm(node, *constraint_space).Layout();
 

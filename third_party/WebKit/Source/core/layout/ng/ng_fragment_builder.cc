@@ -18,7 +18,7 @@ namespace blink {
 
 NGFragmentBuilder::NGFragmentBuilder(NGLayoutInputNode node,
                                      scoped_refptr<const ComputedStyle> style,
-                                     NGWritingMode writing_mode,
+                                     WritingMode writing_mode,
                                      TextDirection direction)
     : NGContainerFragmentBuilder(style, writing_mode, direction),
       node_(node),
@@ -28,7 +28,7 @@ NGFragmentBuilder::NGFragmentBuilder(NGLayoutInputNode node,
 
 NGFragmentBuilder::NGFragmentBuilder(LayoutObject* layout_object,
                                      scoped_refptr<const ComputedStyle> style,
-                                     NGWritingMode writing_mode,
+                                     WritingMode writing_mode,
                                      TextDirection direction)
     : NGContainerFragmentBuilder(style, writing_mode, direction),
       node_(nullptr),
@@ -110,22 +110,22 @@ void NGFragmentBuilder::AddOutOfFlowLegacyCandidate(
   // Need 0,0 physical coordinates as child offset. Because offset
   // is stored as logical, must convert physical 0,0 to logical.
   NGLogicalOffset zero_offset;
-  switch (WritingMode()) {
-    case kHorizontalTopBottom:
+  switch (GetWritingMode()) {
+    case WritingMode::kHorizontalTb:
       if (IsLtr(Direction()))
         zero_offset = NGLogicalOffset();
       else
         zero_offset = NGLogicalOffset(inline_size_, LayoutUnit());
       break;
-    case kVerticalRightLeft:
-    case kSidewaysRightLeft:
+    case WritingMode::kVerticalRl:
+    case WritingMode::kSidewaysRl:
       if (IsLtr(Direction()))
         zero_offset = NGLogicalOffset(LayoutUnit(), block_size_);
       else
         zero_offset = NGLogicalOffset(inline_size_, block_size_);
       break;
-    case kVerticalLeftRight:
-    case kSidewaysLeftRight:
+    case WritingMode::kVerticalLr:
+    case WritingMode::kSidewaysLr:
       if (IsLtr(Direction()))
         zero_offset = NGLogicalOffset();
       else
@@ -169,13 +169,13 @@ void NGFragmentBuilder::AddBaseline(NGBaselineRequest request,
 scoped_refptr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment() {
   DCHECK_EQ(offsets_.size(), children_.size());
 
-  NGPhysicalSize physical_size = Size().ConvertToPhysical(WritingMode());
+  NGPhysicalSize physical_size = Size().ConvertToPhysical(GetWritingMode());
 
   NGPhysicalOffsetRect contents_visual_rect({}, physical_size);
   for (size_t i = 0; i < children_.size(); ++i) {
     NGPhysicalFragment* child = children_[i].get();
     child->SetOffset(offsets_[i].ConvertToPhysical(
-        WritingMode(), Direction(), physical_size, child->Size()));
+        GetWritingMode(), Direction(), physical_size, child->Size()));
     child->PropagateContentsVisualRect(&contents_visual_rect);
   }
 
@@ -197,7 +197,7 @@ scoped_refptr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment() {
       base::AdoptRef(new NGPhysicalBoxFragment(
           layout_object_, Style(), physical_size, children_,
           contents_visual_rect, baselines_, BoxType(),
-          border_edges_.ToPhysical(WritingMode()), std::move(break_token)));
+          border_edges_.ToPhysical(GetWritingMode()), std::move(break_token)));
 
   Vector<NGPositionedFloat> positioned_floats;
 

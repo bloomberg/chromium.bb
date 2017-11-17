@@ -12,19 +12,19 @@
 namespace blink {
 
 NGPhysicalOffset NGLogicalOffset::ConvertToPhysical(
-    NGWritingMode mode,
+    WritingMode mode,
     TextDirection direction,
     NGPhysicalSize outer_size,
     NGPhysicalSize inner_size) const {
   switch (mode) {
-    case kHorizontalTopBottom:
+    case WritingMode::kHorizontalTb:
       if (direction == TextDirection::kLtr)
         return NGPhysicalOffset(inline_offset, block_offset);
       else
         return NGPhysicalOffset(
             outer_size.width - inline_offset - inner_size.width, block_offset);
-    case kVerticalRightLeft:
-    case kSidewaysRightLeft:
+    case WritingMode::kVerticalRl:
+    case WritingMode::kSidewaysRl:
       if (direction == TextDirection::kLtr)
         return NGPhysicalOffset(
             outer_size.width - block_offset - inner_size.width, inline_offset);
@@ -32,14 +32,14 @@ NGPhysicalOffset NGLogicalOffset::ConvertToPhysical(
         return NGPhysicalOffset(
             outer_size.width - block_offset - inner_size.width,
             outer_size.height - inline_offset - inner_size.height);
-    case kVerticalLeftRight:
+    case WritingMode::kVerticalLr:
       if (direction == TextDirection::kLtr)
         return NGPhysicalOffset(block_offset, inline_offset);
       else
         return NGPhysicalOffset(
             block_offset,
             outer_size.height - inline_offset - inner_size.height);
-    case kSidewaysLeftRight:
+    case WritingMode::kSidewaysLr:
       if (direction == TextDirection::kLtr)
         return NGPhysicalOffset(
             block_offset,

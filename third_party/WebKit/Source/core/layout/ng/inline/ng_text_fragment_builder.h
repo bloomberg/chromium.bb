@@ -22,7 +22,7 @@ class CORE_EXPORT NGTextFragmentBuilder final : public NGBaseFragmentBuilder {
   STACK_ALLOCATED();
 
  public:
-  NGTextFragmentBuilder(NGInlineNode, NGWritingMode);
+  NGTextFragmentBuilder(NGInlineNode, WritingMode);
 
   // NOTE: Takes ownership of the shape result within the item result.
   void SetItem(NGInlineItemResult*, LayoutUnit line_height);

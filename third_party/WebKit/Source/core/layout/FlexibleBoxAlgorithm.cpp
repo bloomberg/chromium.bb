@@ -467,6 +467,9 @@ TransformedWritingMode FlexLayoutAlgorithm::GetTransformedWritingMode(
       return style.IsLeftToRightDirection()
                  ? TransformedWritingMode::kTopToBottomWritingMode
                  : TransformedWritingMode::kBottomToTopWritingMode;
+    // TODO(layout-dev): Sideways-lr and sideways-rl are not yet supported.
+    default:
+      break;
   }
   NOTREACHED();
   return TransformedWritingMode::kTopToBottomWritingMode;

@@ -8,7 +8,7 @@
 #include "core/CoreExport.h"
 #include "core/layout/ng/ng_fragment.h"
 #include "core/layout/ng/ng_physical_box_fragment.h"
-#include "core/layout/ng/ng_writing_mode.h"
+#include "platform/text/WritingMode.h"
 
 namespace blink {
 
@@ -18,7 +18,7 @@ struct NGLineHeightMetrics;
 
 class CORE_EXPORT NGBoxFragment final : public NGFragment {
  public:
-  NGBoxFragment(NGWritingMode writing_mode,
+  NGBoxFragment(WritingMode writing_mode,
                 const NGPhysicalBoxFragment& physical_fragment)
       : NGFragment(writing_mode, physical_fragment) {}
 

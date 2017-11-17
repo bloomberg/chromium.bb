@@ -12,8 +12,8 @@
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_layout_test.h"
 #include "core/layout/ng/ng_physical_box_fragment.h"
-#include "core/layout/ng/ng_writing_mode.h"
 #include "platform/text/TextDirection.h"
+#include "platform/text/WritingMode.h"
 #include "platform/wtf/Allocator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -57,7 +57,7 @@ class FragmentChildIterator {
 };
 
 scoped_refptr<NGConstraintSpace> ConstructBlockLayoutTestConstraintSpace(
-    NGWritingMode writing_mode,
+    WritingMode writing_mode,
     TextDirection direction,
     NGLogicalSize size,
     bool shrink_to_fit = false,

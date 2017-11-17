@@ -6,9 +6,9 @@
 #define NGPhysicalOffset_h
 
 #include "core/CoreExport.h"
-#include "core/layout/ng/ng_writing_mode.h"
 #include "platform/LayoutUnit.h"
 #include "platform/text/TextDirection.h"
+#include "platform/text/WritingMode.h"
 
 namespace blink {
 
@@ -29,7 +29,7 @@ struct CORE_EXPORT NGPhysicalOffset {
   // https://drafts.csswg.org/css-writing-modes-3/#logical-to-physical
   // @param outer_size the size of the rect (typically a fragment).
   // @param inner_size the size of the inner rect (typically a child fragment).
-  NGLogicalOffset ConvertToLogical(NGWritingMode,
+  NGLogicalOffset ConvertToLogical(WritingMode,
                                    TextDirection,
                                    NGPhysicalSize outer_size,
                                    NGPhysicalSize inner_size) const;

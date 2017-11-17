@@ -256,7 +256,7 @@ void NGInlineLayoutStateStack::CreateBoxFragments(
   for (const BoxFragmentPlaceholder& placeholder : box_placeholders_) {
     const ComputedStyle* style = placeholder.item->Style();
     NGFragmentBuilder box(placeholder.item->GetLayoutObject(), style,
-                          FromPlatformWritingMode(style->GetWritingMode()),
+                          style->GetWritingMode(),
                           placeholder.item->Direction());
     const NGLogicalOffset& box_offset =
         (*line_box)[placeholder.fragment_end].offset;

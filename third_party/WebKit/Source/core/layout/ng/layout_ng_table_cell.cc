@@ -40,7 +40,7 @@ void LayoutNGTableCell::UpdateBlockLayout(bool relayout_children) {
     NGLogicalOffset logical_offset(LogicalLeft() + section->Location().X(),
                                    LogicalTop() + section->Location().Y());
     physical_offset = logical_offset.ConvertToPhysical(
-        constraint_space->WritingMode(), constraint_space->Direction(),
+        constraint_space->GetWritingMode(), constraint_space->Direction(),
         section_size, fragment->Size());
   }
   fragment->SetOffset(physical_offset);

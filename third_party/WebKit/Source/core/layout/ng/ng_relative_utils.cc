@@ -14,7 +14,7 @@ namespace blink {
 
 // Returns the child's relative position wrt the containing fragment.
 NGLogicalOffset ComputeRelativeOffset(const ComputedStyle& child_style,
-                                      NGWritingMode container_writing_mode,
+                                      WritingMode container_writing_mode,
                                       TextDirection container_direction,
                                       NGLogicalSize container_logical_size) {
   NGLogicalOffset offset;
@@ -54,20 +54,20 @@ NGLogicalOffset ComputeRelativeOffset(const ComputedStyle& child_style,
   bool is_ltr = container_direction == TextDirection::kLtr;
 
   switch (container_writing_mode) {
-    case kHorizontalTopBottom:
+    case WritingMode::kHorizontalTb:
       offset.inline_offset = is_ltr ? left.value() : right.value();
       offset.block_offset = top.value();
       break;
-    case kVerticalRightLeft:
-    case kSidewaysRightLeft:
+    case WritingMode::kVerticalRl:
+    case WritingMode::kSidewaysRl:
       offset.inline_offset = is_ltr ? top.value() : bottom.value();
       offset.block_offset = right.value();
       break;
-    case kVerticalLeftRight:
+    case WritingMode::kVerticalLr:
       offset.inline_offset = is_ltr ? top.value() : bottom.value();
       offset.block_offset = left.value();
       break;
-    case kSidewaysLeftRight:
+    case WritingMode::kSidewaysLr:
       offset.inline_offset = is_ltr ? bottom.value() : top.value();
       offset.block_offset = left.value();
       break;

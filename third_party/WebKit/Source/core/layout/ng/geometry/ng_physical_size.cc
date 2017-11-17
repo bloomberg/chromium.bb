@@ -14,9 +14,9 @@ bool NGPhysicalSize::operator==(const NGPhysicalSize& other) const {
   return std::tie(other.width, other.height) == std::tie(width, height);
 }
 
-NGLogicalSize NGPhysicalSize::ConvertToLogical(NGWritingMode mode) const {
-  return mode == kHorizontalTopBottom ? NGLogicalSize(width, height)
-                                      : NGLogicalSize(height, width);
+NGLogicalSize NGPhysicalSize::ConvertToLogical(WritingMode mode) const {
+  return mode == WritingMode::kHorizontalTb ? NGLogicalSize(width, height)
+                                            : NGLogicalSize(height, width);
 }
 
 LayoutSize NGPhysicalSize::ToLayoutSize() const {

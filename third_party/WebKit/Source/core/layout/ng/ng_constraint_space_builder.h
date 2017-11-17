@@ -23,7 +23,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   // them to the constructor below.
   NGConstraintSpaceBuilder(const NGConstraintSpace& parent_space);
 
-  NGConstraintSpaceBuilder(NGWritingMode writing_mode, NGPhysicalSize icb_size);
+  NGConstraintSpaceBuilder(WritingMode writing_mode, NGPhysicalSize icb_size);
 
   NGConstraintSpaceBuilder& SetAvailableSize(NGLogicalSize available_size);
 
@@ -82,8 +82,8 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   //    updated.
   //  - Has its size is determined by its parent layout (flex, abs-pos).
   //
-  // NGWritingMode specifies the writing mode of the generated space.
-  scoped_refptr<NGConstraintSpace> ToConstraintSpace(NGWritingMode);
+  // WritingMode specifies the writing mode of the generated space.
+  scoped_refptr<NGConstraintSpace> ToConstraintSpace(WritingMode);
 
  private:
   // Relative to parent_writing_mode_.

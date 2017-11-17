@@ -54,7 +54,7 @@ const NGPhysicalBoxFragment* FragmentChildIterator::NextChild() {
 }
 
 scoped_refptr<NGConstraintSpace> ConstructBlockLayoutTestConstraintSpace(
-    NGWritingMode writing_mode,
+    WritingMode writing_mode,
     TextDirection direction,
     NGLogicalSize size,
     bool shrink_to_fit,

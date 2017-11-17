@@ -34,10 +34,10 @@ class NGLineBreakerTest : public NGBaseLayoutAlgorithmTest {
 
     scoped_refptr<NGConstraintSpace> space =
         NGConstraintSpaceBuilder(
-            NGWritingMode::kHorizontalTopBottom,
+            WritingMode::kHorizontalTb,
             /* icb_size */ {NGSizeIndefinite, NGSizeIndefinite})
             .SetAvailableSize({available_width, NGSizeIndefinite})
-            .ToConstraintSpace(NGWritingMode::kHorizontalTopBottom);
+            .ToConstraintSpace(WritingMode::kHorizontalTb);
 
     Vector<NGPositionedFloat> positioned_floats;
     Vector<scoped_refptr<NGUnpositionedFloat>> unpositioned_floats;
