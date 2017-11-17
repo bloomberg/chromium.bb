@@ -3305,7 +3305,7 @@ void Document::CheckCompleted() {
   // No need to repeat if we've already notified this load as finished.
   if (!Loader()->SentDidFinishLoad()) {
     if (frame_->IsMainFrame())
-      ViewportDescription().ReportMobilePageStats(frame_);
+      GetViewportDescription().ReportMobilePageStats(frame_);
     Loader()->SetSentDidFinishLoad();
     frame_->Client()->DispatchDidFinishLoad();
     if (!frame_)
