@@ -29,14 +29,6 @@ class CONTENT_EXPORT MediaStreamDispatcherEventHandler {
   virtual void OnDeviceStopped(const std::string& label,
                                const MediaStreamDevice& device) = 0;
 
-  // A device has been opened.
-  virtual void OnDeviceOpened(int request_id,
-                              const std::string& label,
-                              const MediaStreamDevice& device) = 0;
-
-  // Failed to open the device.
-  virtual void OnDeviceOpenFailed(int request_id) = 0;
-
  protected:
   virtual ~MediaStreamDispatcherEventHandler() {}
 };

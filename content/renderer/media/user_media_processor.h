@@ -113,10 +113,6 @@ class CONTENT_EXPORT UserMediaProcessor
                                 MediaStreamRequestResult result) override;
   void OnDeviceStopped(const std::string& label,
                        const MediaStreamDevice& device) override;
-  void OnDeviceOpened(int request_id,
-                      const std::string& label,
-                      const MediaStreamDevice& device) override;
-  void OnDeviceOpenFailed(int request_id) override;
 
  protected:
   // These methods are virtual for test purposes. A test can override them to

@@ -21,7 +21,6 @@
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/renderer_host/media/fake_video_capture_provider.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
-#include "content/browser/renderer_host/media/media_stream_requester.h"
 #include "content/browser/renderer_host/media/media_stream_ui_proxy.h"
 #include "content/browser/renderer_host/media/video_capture_host.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
@@ -72,38 +71,6 @@ void VideoInputDevicesEnumerated(base::Closure quit_closure,
 // Id used to identify the capture session between renderer and
 // video_capture_host. This is an arbitrary value.
 static const int kDeviceId = 555;
-
-class MockMediaStreamRequester
-    : public MediaStreamRequester,
-      public base::SupportsWeakPtr<MockMediaStreamRequester> {
- public:
-  MockMediaStreamRequester() {}
-  virtual ~MockMediaStreamRequester() {}
-
-  // MediaStreamRequester implementation.
-  MOCK_METHOD5(StreamGenerated,
-               void(int render_frame_id,
-                    int page_request_id,
-                    const std::string& label,
-                    const MediaStreamDevices& audio_devices,
-                    const MediaStreamDevices& video_devices));
-  MOCK_METHOD3(StreamGenerationFailed,
-      void(int render_frame_id,
-           int page_request_id,
-           content::MediaStreamRequestResult result));
-  MOCK_METHOD3(DeviceStopped,
-               void(int render_frame_id,
-                    const std::string& label,
-                    const MediaStreamDevice& device));
-  MOCK_METHOD4(DeviceOpened,
-               void(int render_frame_id,
-                    int page_request_id,
-                    const std::string& label,
-                    const MediaStreamDevice& device));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockMediaStreamRequester);
-};
 
 ACTION_P2(ExitMessageLoop, task_runner, quit_closure) {
   task_runner->PostTask(FROM_HERE, quit_closure);
@@ -180,23 +147,16 @@ class VideoCaptureTest : public testing::Test,
     // Open the first device.
     {
       base::RunLoop run_loop;
-      MediaStreamDevice opened_device;
       media_stream_manager_->OpenDevice(
-          stream_requester_.AsWeakPtr(), render_process_id, render_frame_id,
+          render_process_id, render_frame_id,
           browser_context_.GetMediaDeviceIDSalt(), page_request_id,
           video_devices[0].device_id, MEDIA_DEVICE_VIDEO_CAPTURE,
-          security_origin);
-      EXPECT_CALL(stream_requester_,
-                  DeviceOpened(render_frame_id, page_request_id, _, _))
-          .Times(1)
-          .WillOnce(DoAll(ExitMessageLoop(task_runner_, run_loop.QuitClosure()),
-                          SaveArg<2>(&opened_device_label_),
-                          SaveArg<3>(&opened_device)));
+          security_origin,
+          base::BindOnce(&VideoCaptureTest::OnDeviceOpened,
+                         base::Unretained(this), run_loop.QuitClosure()));
       run_loop.Run();
-      Mock::VerifyAndClearExpectations(&stream_requester_);
-      ASSERT_NE(MediaStreamDevice::kNoId, opened_device.session_id);
-      opened_session_id_ = opened_device.session_id;
     }
+    ASSERT_NE(MediaStreamDevice::kNoId, opened_session_id_);
   }
 
   void CloseSession() {
@@ -317,9 +277,19 @@ class VideoCaptureTest : public testing::Test,
         /*tests_use_fake_render_frame_hosts=*/true);
   }
 
+  void OnDeviceOpened(base::Closure quit_closure,
+                      bool success,
+                      const std::string& label,
+                      const MediaStreamDevice& opened_device) {
+    if (success) {
+      opened_device_label_ = label;
+      opened_session_id_ = opened_device.session_id;
+    }
+    quit_closure.Run();
+  }
+
   // |media_stream_manager_| needs to outlive |thread_bundle_| because it is a
   // MessageLoop::DestructionObserver.
-  StrictMock<MockMediaStreamRequester> stream_requester_;
   std::unique_ptr<MediaStreamManager> media_stream_manager_;
   const content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<media::AudioManager> audio_manager_;

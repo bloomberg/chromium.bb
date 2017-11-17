@@ -51,10 +51,6 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
   void DeviceStopped(int render_frame_id,
                      const std::string& label,
                      const MediaStreamDevice& device) override;
-  void DeviceOpened(int render_frame_id,
-                    int page_request_id,
-                    const std::string& label,
-                    const MediaStreamDevice& device) override;
 
   void set_salt_and_origin_callback_for_testing(
       MediaDeviceSaltAndOriginCallback callback) {
@@ -73,21 +69,20 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
       int render_frame_id);
   void OnMediaStreamDispatcherConnectionError(int render_frame_id);
   void CancelAllRequests();
-  void DeviceOpenFailed(int render_frame_id, int page_request_id);
 
   // mojom::MediaStreamDispatcherHost implementation
   void GenerateStream(int32_t render_frame_id,
                       int32_t request_id,
                       const StreamControls& controls,
                       bool user_gesture) override;
-  void CancelGenerateStream(int32_t render_frame_id,
-                            int32_t request_id) override;
+  void CancelRequest(int32_t render_frame_id, int32_t request_id) override;
   void StopStreamDevice(int32_t render_frame_id,
                         const std::string& device_id) override;
   void OpenDevice(int32_t render_frame_id,
                   int32_t request_id,
                   const std::string& device_id,
-                  MediaStreamType type) override;
+                  MediaStreamType type,
+                  OpenDeviceCallback callback) override;
   void CloseDevice(const std::string& label) override;
   void SetCapturingLinkSecured(int32_t session_id,
                                MediaStreamType type,
@@ -104,6 +99,7 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
                     int32_t request_id,
                     const std::string& device_id,
                     MediaStreamType type,
+                    OpenDeviceCallback callback,
                     const std::pair<std::string, url::Origin>& salt_and_origin);
 
   const int render_process_id_;

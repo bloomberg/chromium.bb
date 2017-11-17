@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/memory/weak_ptr.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "content/public/common/media_stream_request.h"
@@ -25,6 +26,7 @@ namespace content {
 const int kAudioSessionId = 3;
 const int kVideoSessionId = 5;
 const int kScreenSessionId = 7;
+const int kRenderId = 9;
 const int kRequestId1 = 10;
 const int kRequestId2 = 20;
 
@@ -63,15 +65,6 @@ class MockMediaStreamDispatcherEventHandler
     if (IsAudioInputMediaType(device.type))
       EXPECT_TRUE(device.IsSameDevice(audio_device_));
   }
-
-  void OnDeviceOpened(int request_id,
-                      const std::string& label,
-                      const MediaStreamDevice& device) override {
-    request_id_ = request_id;
-    label_ = label;
-  }
-
-  void OnDeviceOpenFailed(int request_id) override { request_id_ = request_id; }
 
   void ResetStoredParameters() {
     request_id_ = -1;
@@ -141,12 +134,22 @@ class MediaStreamDispatcherTest : public ::testing::Test {
     EXPECT_EQ(handler_->label_, label);
 
     if (controls_.audio.requested)
-      EXPECT_EQ(dispatcher_->audio_session_id(label, 0), kAudioSessionId);
+      EXPECT_EQ(dispatcher_->audio_session_id(label), kAudioSessionId);
 
     if (controls_.video.requested)
-      EXPECT_EQ(dispatcher_->video_session_id(label, 0), kVideoSessionId);
+      EXPECT_EQ(dispatcher_->video_session_id(label), kVideoSessionId);
 
     return label;
+  }
+
+  void OnDeviceOpened(base::Closure quit_closure,
+                      const MediaStreamDevice& input_device,
+                      const std::string& input_label,
+                      bool success,
+                      const std::string& label,
+                      const MediaStreamDevice& device) {
+    dispatcher_->AddStream(input_label, input_device);
+    quit_closure.Run();
   }
 
  protected:
@@ -174,66 +177,14 @@ TEST_F(MediaStreamDispatcherTest, GenerateStreamAndStopDevices) {
   // Stop the actual audio device and verify that there is no valid
   // |session_id|.
   dispatcher_->StopStreamDevice(handler_->audio_device_);
-  EXPECT_EQ(dispatcher_->audio_session_id(label1, 0), MediaStreamDevice::kNoId);
-  EXPECT_EQ(dispatcher_->audio_session_id(label2, 0), MediaStreamDevice::kNoId);
+  EXPECT_EQ(dispatcher_->audio_session_id(label1), MediaStreamDevice::kNoId);
+  EXPECT_EQ(dispatcher_->audio_session_id(label2), MediaStreamDevice::kNoId);
 
   // Stop the actual video device and verify that there is no valid
   // |session_id|.
   dispatcher_->StopStreamDevice(handler_->video_device_);
-  EXPECT_EQ(dispatcher_->video_session_id(label1, 0), MediaStreamDevice::kNoId);
-  EXPECT_EQ(dispatcher_->video_session_id(label2, 0), MediaStreamDevice::kNoId);
-}
-
-TEST_F(MediaStreamDispatcherTest, BasicVideoDevice) {
-  MediaStreamDevice video_device;
-  video_device.name = "Camera";
-  video_device.id = "device_path";
-  video_device.type = MEDIA_DEVICE_VIDEO_CAPTURE;
-  video_device.session_id = kVideoSessionId;
-
-  EXPECT_EQ(dispatcher_->requests_.size(), size_t(0));
-  EXPECT_EQ(dispatcher_->label_stream_map_.size(), size_t(0));
-
-  int ipc_request_id1 = dispatcher_->next_ipc_id_;
-  dispatcher_->OpenDevice(kRequestId1, handler_->AsWeakPtr(), video_device.id,
-                          MEDIA_DEVICE_VIDEO_CAPTURE);
-  int ipc_request_id2 = dispatcher_->next_ipc_id_;
-  EXPECT_NE(ipc_request_id1, ipc_request_id2);
-  dispatcher_->OpenDevice(kRequestId2, handler_->AsWeakPtr(), video_device.id,
-                          MEDIA_DEVICE_VIDEO_CAPTURE);
-  EXPECT_EQ(dispatcher_->requests_.size(), size_t(2));
-
-  // Complete the OpenDevice of request 1.
-  std::string stream_label1 = std::string("stream1");
-  dispatcher_->OnDeviceOpened(ipc_request_id1, stream_label1, video_device);
-  EXPECT_EQ(handler_->request_id_, kRequestId1);
-
-  // Complete the OpenDevice of request 2.
-  std::string stream_label2 = std::string("stream2");
-  dispatcher_->OnDeviceOpened(ipc_request_id2, stream_label2, video_device);
-  EXPECT_EQ(handler_->request_id_, kRequestId2);
-
-  EXPECT_EQ(dispatcher_->requests_.size(), size_t(0));
-  EXPECT_EQ(dispatcher_->label_stream_map_.size(), size_t(2));
-
-  // Check the video_session_id.
-  EXPECT_EQ(dispatcher_->video_session_id(stream_label1, 0), kVideoSessionId);
-  EXPECT_EQ(dispatcher_->video_session_id(stream_label2, 0), kVideoSessionId);
-
-  // Close the device from request 2.
-  dispatcher_->CloseDevice(stream_label2);
-  EXPECT_EQ(dispatcher_->video_session_id(stream_label2, 0),
-            MediaStreamDevice::kNoId);
-
-  // Close the device from request 1.
-  dispatcher_->CloseDevice(stream_label1);
-  EXPECT_EQ(dispatcher_->video_session_id(stream_label1, 0),
-            MediaStreamDevice::kNoId);
-  EXPECT_EQ(dispatcher_->label_stream_map_.size(), size_t(0));
-
-  // Verify that the request have been completed.
-  EXPECT_EQ(dispatcher_->label_stream_map_.size(), size_t(0));
-  EXPECT_EQ(dispatcher_->requests_.size(), size_t(0));
+  EXPECT_EQ(dispatcher_->video_session_id(label1), MediaStreamDevice::kNoId);
+  EXPECT_EQ(dispatcher_->video_session_id(label2), MediaStreamDevice::kNoId);
 }
 
 TEST_F(MediaStreamDispatcherTest, TestFailure) {
@@ -269,7 +220,7 @@ TEST_F(MediaStreamDispatcherTest, TestFailure) {
                                  video_devices);
   EXPECT_EQ(handler_->request_id_, kRequestId1);
   EXPECT_EQ(handler_->label_, stream_label1);
-  EXPECT_EQ(dispatcher_->video_session_id(stream_label1, 0), kVideoSessionId);
+  EXPECT_EQ(dispatcher_->video_session_id(stream_label1), kVideoSessionId);
 }
 
 TEST_F(MediaStreamDispatcherTest, CancelGenerateStream) {
@@ -314,7 +265,7 @@ TEST_F(MediaStreamDispatcherTest, DeviceClosed) {
   // Verify that MediaStreamDispatcherEventHandler::OnDeviceStopped has been
   // called.
   EXPECT_EQ(label, handler_->device_stopped_label_);
-  EXPECT_EQ(dispatcher_->video_session_id(label, 0), MediaStreamDevice::kNoId);
+  EXPECT_EQ(dispatcher_->video_session_id(label), MediaStreamDevice::kNoId);
 }
 
 TEST_F(MediaStreamDispatcherTest, GetNonScreenCaptureDevices) {
@@ -330,48 +281,48 @@ TEST_F(MediaStreamDispatcherTest, GetNonScreenCaptureDevices) {
   screen_device.type = MEDIA_DESKTOP_VIDEO_CAPTURE;
   screen_device.session_id = kScreenSessionId;
 
-  EXPECT_EQ(dispatcher_->requests_.size(), 0u);
+  std::string stream_label1 = std::string("stream1");
+  std::string stream_label2 = std::string("stream2");
+
   EXPECT_EQ(dispatcher_->label_stream_map_.size(), 0u);
 
-  int ipc_request_id1 = dispatcher_->next_ipc_id_;
-  dispatcher_->OpenDevice(kRequestId1, handler_->AsWeakPtr(), video_device.id,
-                          MEDIA_DEVICE_VIDEO_CAPTURE);
-  int ipc_request_id2 = dispatcher_->next_ipc_id_;
-  EXPECT_NE(ipc_request_id1, ipc_request_id2);
-  dispatcher_->OpenDevice(kRequestId2, handler_->AsWeakPtr(), screen_device.id,
-                          MEDIA_DESKTOP_VIDEO_CAPTURE);
-  EXPECT_EQ(dispatcher_->requests_.size(), 2u);
+  // OpenDevice request 1
+  base::RunLoop run_loop1;
+  mock_dispatcher_host_.OpenDevice(
+      kRenderId, kRequestId1, video_device.id, MEDIA_DEVICE_VIDEO_CAPTURE,
+      base::BindOnce(&MediaStreamDispatcherTest::OnDeviceOpened,
+                     base::Unretained(this), run_loop1.QuitClosure(),
+                     video_device, stream_label1));
+  run_loop1.Run();
 
-  // Complete the OpenDevice of request 1.
-  std::string stream_label1 = std::string("stream1");
-  dispatcher_->OnDeviceOpened(ipc_request_id1, stream_label1, video_device);
-  EXPECT_EQ(handler_->request_id_, kRequestId1);
+  // OpenDevice request 2
+  base::RunLoop run_loop2;
+  mock_dispatcher_host_.OpenDevice(
+      kRenderId, kRequestId2, screen_device.id, MEDIA_DEVICE_VIDEO_CAPTURE,
+      base::BindOnce(&MediaStreamDispatcherTest::OnDeviceOpened,
+                     base::Unretained(this), run_loop2.QuitClosure(),
+                     screen_device, stream_label2));
+  run_loop2.Run();
 
-  // Complete the OpenDevice of request 2.
-  std::string stream_label2 = std::string("stream2");
-  dispatcher_->OnDeviceOpened(ipc_request_id2, stream_label2, screen_device);
-  EXPECT_EQ(handler_->request_id_, kRequestId2);
-
-  EXPECT_EQ(dispatcher_->requests_.size(), 0u);
   EXPECT_EQ(dispatcher_->label_stream_map_.size(), 2u);
 
   // Only the device with type MEDIA_DEVICE_VIDEO_CAPTURE will be returned.
   MediaStreamDevices video_devices = dispatcher_->GetNonScreenCaptureDevices();
   EXPECT_EQ(video_devices.size(), 1u);
+  EXPECT_EQ(video_devices[0].type, MEDIA_DEVICE_VIDEO_CAPTURE);
 
   // Close the device from request 2.
-  dispatcher_->CloseDevice(stream_label2);
-  EXPECT_EQ(dispatcher_->video_session_id(stream_label2, 0),
+  dispatcher_->RemoveStream(stream_label2);
+  EXPECT_EQ(dispatcher_->video_session_id(stream_label2),
             MediaStreamDevice::kNoId);
 
   // Close the device from request 1.
-  dispatcher_->CloseDevice(stream_label1);
-  EXPECT_EQ(dispatcher_->video_session_id(stream_label1, 0),
+  dispatcher_->RemoveStream(stream_label1);
+  EXPECT_EQ(dispatcher_->video_session_id(stream_label1),
             MediaStreamDevice::kNoId);
 
   // Verify that the request have been completed.
   EXPECT_EQ(dispatcher_->label_stream_map_.size(), 0u);
-  EXPECT_EQ(dispatcher_->requests_.size(), 0u);
 }
 
 }  // namespace content

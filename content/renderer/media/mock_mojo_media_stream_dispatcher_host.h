@@ -26,13 +26,17 @@ class MockMojoMediaStreamDispatcherHost
 
   MOCK_METHOD4(GenerateStream,
                void(int32_t, int32_t, const StreamControls&, bool));
-  MOCK_METHOD2(CancelGenerateStream, void(int32_t, int32_t));
+  MOCK_METHOD2(CancelRequest, void(int32_t, int32_t));
   MOCK_METHOD2(StopStreamDevice, void(int32_t, const std::string&));
-  MOCK_METHOD4(OpenDevice,
-               void(int32_t, int32_t, const std::string&, MediaStreamType));
   MOCK_METHOD1(CloseDevice, void(const std::string&));
   MOCK_METHOD3(SetCapturingLinkSecured, void(int32_t, MediaStreamType, bool));
   MOCK_METHOD1(StreamStarted, void(const std::string&));
+
+  void OpenDevice(int32_t render_frame_id,
+                  int32_t request_id,
+                  const std::string& device_id,
+                  MediaStreamType type,
+                  OpenDeviceCallback callback) override;
 
  private:
   mojo::BindingSet<mojom::MediaStreamDispatcherHost> bindings_;

@@ -30,9 +30,8 @@ class MockMediaStreamDispatcher : public MediaStreamDispatcher {
       const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler)
       override;
   void StopStreamDevice(const MediaStreamDevice& device) override;
-  bool IsStream(const std::string& label) override;
-  int video_session_id(const std::string& label, int index) override;
-  int audio_session_id(const std::string& label, int index) override;
+  int video_session_id(const std::string& label) override;
+  int audio_session_id(const std::string& label) override;
 
   int audio_input_request_id() const { return audio_input_request_id_; }
   int request_stream_counter() const { return request_stream_counter_; }

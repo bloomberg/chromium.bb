@@ -13,9 +13,9 @@
 #include "base/memory/weak_ptr.h"
 #include "content/common/media/media_devices.h"
 #include "content/common/media/media_devices.mojom.h"
+#include "content/common/media/media_stream.mojom.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
-#include "content/renderer/media/media_stream_dispatcher_eventhandler.h"
 #include "content/renderer/pepper/pepper_device_enumeration_host_helper.h"
 #include "ppapi/c/pp_instance.h"
 
@@ -23,8 +23,7 @@ namespace content {
 class MediaStreamDispatcher;
 
 class PepperMediaDeviceManager
-    : public MediaStreamDispatcherEventHandler,
-      public PepperDeviceEnumerationHostHelper::Delegate,
+    : public PepperDeviceEnumerationHostHelper::Delegate,
       public RenderFrameObserver,
       public RenderFrameObserverTracker<PepperMediaDeviceManager>,
       public base::SupportsWeakPtr<PepperMediaDeviceManager> {
@@ -62,20 +61,6 @@ class PepperMediaDeviceManager
   // Gets audio/video session ID given a label.
   int GetSessionID(PP_DeviceType_Dev type, const std::string& label);
 
-  // MediaStreamDispatcherEventHandler implementation.
-  void OnStreamGenerated(int request_id,
-                         const std::string& label,
-                         const MediaStreamDevices& audio_devices,
-                         const MediaStreamDevices& video_devices) override;
-  void OnStreamGenerationFailed(int request_id,
-                                MediaStreamRequestResult result) override;
-  void OnDeviceStopped(const std::string& label,
-                       const MediaStreamDevice& device) override;
-  void OnDeviceOpened(int request_id,
-                      const std::string& label,
-                      const MediaStreamDevice& device) override;
-  void OnDeviceOpenFailed(int request_id) override;
-
   // Stream type conversion.
   static MediaStreamType FromPepperDeviceType(PP_DeviceType_Dev type);
 
@@ -89,9 +74,10 @@ class PepperMediaDeviceManager
   // a reentrancy problem.
   void StopEnumerateDevicesDelayed(int request_id);
 
-  void NotifyDeviceOpened(int request_id,
-                          bool succeeded,
-                          const std::string& label);
+  void OnDeviceOpened(int request_id,
+                      bool success,
+                      const std::string& label,
+                      const MediaStreamDevice& device);
 
   void DevicesEnumerated(const DevicesCallback& callback,
                          MediaDeviceType type,
@@ -101,6 +87,7 @@ class PepperMediaDeviceManager
                       MediaDeviceType type,
                       const MediaDeviceInfoArray& enumeration);
 
+  const mojom::MediaStreamDispatcherHostPtr& GetMediaStreamDispatcherHost();
   MediaStreamDispatcher* GetMediaStreamDispatcher() const;
   const ::mojom::MediaDevicesDispatcherHostPtr& GetMediaDevicesDispatcher();
 
@@ -109,6 +96,7 @@ class PepperMediaDeviceManager
   typedef std::map<int, OpenDeviceCallback> OpenCallbackMap;
   OpenCallbackMap open_callbacks_;
 
+  mojom::MediaStreamDispatcherHostPtr dispatcher_host_;
   ::mojom::MediaDevicesDispatcherHostPtr media_devices_dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperMediaDeviceManager);
