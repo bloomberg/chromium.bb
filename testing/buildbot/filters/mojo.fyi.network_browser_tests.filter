@@ -893,10 +893,7 @@
 -ErrorPageTest.DNSError_GoBack2AndForward
 -ErrorPageTest.DNSError_GoBack2Forward2
 -ErrorPageTest.Empty404
--ErrorPageTest.Empty500
 -ErrorPageTest.Failed
--ErrorPageTest.IFrameDNSError_GoBack
--ErrorPageTest.IFrameDNSError_JavaScript
 -ErrorPageTest.SniffSmallHttpErrorResponseAsDownload
 -ErrorPageTest.StaleCacheStatus
 

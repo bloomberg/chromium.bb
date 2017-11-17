@@ -862,8 +862,12 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, IFrameDNSError_Basic) {
 // Test that a DNS error occuring in an iframe does not result in an
 // additional session history entry.
 IN_PROC_BROWSER_TEST_F(ErrorPageTest, MAYBE_IFrameDNSError_GoBack) {
-  NavigateToFileURL("title2.html");
-  NavigateToFileURL("iframe_dns_error.html");
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL("/title2.html"));
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("/iframe_dns_error.html"));
   GoBackAndWaitForTitle("Title Of Awesomeness", 1);
   EXPECT_EQ(0, link_doctor_interceptor()->num_requests());
 }
@@ -891,13 +895,16 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, MAYBE_IFrameDNSError_GoBackAndForward) {
 // To ensure that the main document has completed loading, JavaScript is used to
 // inject an iframe after loading is done.
 IN_PROC_BROWSER_TEST_F(ErrorPageTest, IFrameDNSError_JavaScript) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
   content::WebContents* wc =
       browser()->tab_strip_model()->GetActiveWebContents();
   GURL fail_url =
       URLRequestFailedJob::GetMockHttpUrl(net::ERR_NAME_NOT_RESOLVED);
 
   // Load a regular web page, in which we will inject an iframe.
-  NavigateToFileURL("title2.html");
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL("/title2.html"));
 
   // We expect to have two history entries, since we started off with navigation
   // to "about:blank" and then navigated to "title2.html".
@@ -977,7 +984,10 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, Empty404) {
 // Checks that a local error page is shown in response to a 500 error page
 // without a body.
 IN_PROC_BROWSER_TEST_F(ErrorPageTest, Empty500) {
-  NavigateToFileURL("errorpage/empty500.html");
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("/errorpage/empty500.html"));
   // This depends on the non-internationalized error ID string in
   // localized_error.cc.
   ExpectDisplayingLocalErrorPage(browser(), "HTTP ERROR 500");
