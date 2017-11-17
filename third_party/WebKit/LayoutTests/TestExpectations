@@ -3438,7 +3438,6 @@ crbug.com/755405 [ Android ] external/wpt/custom-elements/parser/parser-construc
 crbug.com/755405 [ Android ] external/wpt/custom-elements/reactions/Attr.html [ Failure ]
 crbug.com/755405 [ Android ] external/wpt/custom-elements/reactions/Selection.html [ Failure ]
 crbug.com/755405 [ Android ] external/wpt/custom-elements/upgrading/upgrading-parser-created-element.html [ Failure ]
-crbug.com/755405 [ Android ] external/wpt/dom/historical.html [ Failure ]
 crbug.com/755405 [ Android ] external/wpt/dom/interface-objects.html [ Failure ]
 crbug.com/755405 [ Android ] external/wpt/dom/collections/HTMLCollection-as-proto-length-get-throws.html [ Failure ]
 crbug.com/755405 [ Android ] external/wpt/dom/events/AddEventListenerOptions-once.html [ Failure ]
