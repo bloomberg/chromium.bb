@@ -11942,6 +11942,36 @@
         "unittests": false,
         "vm_tests": []
     },
+    "chromeos-infra-puppet-pre-cq": {
+        "active_waterfall": "chromeos",
+        "archive": false,
+        "boards": [],
+        "build_timeout": 3600,
+        "build_type": "pre_cq",
+        "builder_class_name": "infra_builders.PuppetPreCqBuilder",
+        "chrome_sdk_build_chrome": false,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Test Puppet specs",
+        "display_label": "pre_cq",
+        "doc": "https://chrome-internal.googlesource.com/chromeos/chromeos-admin/+/HEAD/puppet/README.md",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
+        "important": true,
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "overlays": "both",
+        "pre_cq": true,
+        "sanity_check_threshold": 3,
+        "trybot_list": true,
+        "unittests": false,
+        "upload_standalone_images": false,
+        "vm_tests": []
+    },
     "chromite-pre-cq": {
         "_template": "pre_cq",
         "boards": [],

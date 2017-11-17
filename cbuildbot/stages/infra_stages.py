@@ -113,6 +113,24 @@ class RegisterInfraGoPackagesStage(generic_stages.BuilderStage,
     return self._run.attrs.version_info.VersionString()
 
 
+class TestPuppetSpecsStage(generic_stages.BuilderStage):
+  """Run Puppet RSpec tests."""
+
+  def PerformStage(self):
+    """Build infra Go packages."""
+    # TODO(ayatane): Put this into the SDK?
+    commands.RunBuildScript(
+        self._build_root,
+        ['emerge', 'ruby'],
+        sudo=True,
+        enter_chroot=True)
+    commands.RunBuildScript(
+        self._build_root,
+        ['bash', '-c',
+         'cd ../../chromeos-admin/puppet && make -j -O check GEM=gem19'],
+        enter_chroot=True)
+
+
 def _StageChrootFilesIntoDir(target_path, paths):
   """Install chroot files into a staging directory.
 

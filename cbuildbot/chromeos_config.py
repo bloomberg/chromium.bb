@@ -2120,6 +2120,23 @@ def PreCqBuilders(site_config, boards_dict, ge_build_config):
       useflags=append_useflags(['-chrome_internal']),
   )
 
+  site_config.AddWithoutTemplate(
+      'chromeos-infra-puppet-pre-cq',
+      site_config.templates.pre_cq,
+      site_config.templates.internal,
+      site_config.templates.no_hwtest_builder,
+      site_config.templates.no_unittest_builder,
+      site_config.templates.no_vmtest_builder,
+      boards=[],
+      builder_class_name='infra_builders.PuppetPreCqBuilder',
+      use_sdk=True,
+      build_timeout=60 * 60,
+      description='Test Puppet specs',
+      doc='https://chrome-internal.googlesource.com/'
+          'chromeos/chromeos-admin/+/HEAD/puppet/README.md',
+      active_waterfall=waterfall.WATERFALL_INTERNAL,
+  )
+
 
 def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
   """Create all build configs associated with the Android PFQ.
