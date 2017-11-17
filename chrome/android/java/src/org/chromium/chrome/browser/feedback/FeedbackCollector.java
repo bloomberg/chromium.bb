@@ -79,6 +79,7 @@ public class FeedbackCollector implements Runnable {
         sources.add(new DataReductionProxyFeedbackSource(profile));
         sources.add(new HistogramFeedbackSource(profile));
         sources.add(new ChromeHomeFeedbackSource(profile));
+        sources.add(new LowEndDeviceFeedbackSource());
 
         return sources;
     }
