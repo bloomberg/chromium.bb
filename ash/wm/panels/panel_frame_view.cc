@@ -5,7 +5,7 @@
 #include "ash/wm/panels/panel_frame_view.h"
 
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
-#include "ash/frame/default_header_painter.h"
+#include "ash/frame/default_frame_header.h"
 #include "ash/frame/frame_border_hit_test.h"
 #include "ash/shell.h"
 #include "ash/wm/resize_handle_window_targeter.h"
@@ -28,7 +28,7 @@ PanelFrameView::PanelFrameView(views::Widget* frame, FrameType frame_type)
   wm::InstallResizeHandleWindowTargeterForWindow(GetWidgetWindow(), nullptr);
   DCHECK(!frame_->widget_delegate()->CanMaximize());
   if (frame_type != FRAME_NONE)
-    InitHeaderPainter();
+    InitFrameHeader();
   Shell::Get()->AddShellObserver(this);
 }
 
@@ -38,29 +38,29 @@ PanelFrameView::~PanelFrameView() {
 
 void PanelFrameView::SetFrameColors(SkColor active_frame_color,
                                     SkColor inactive_frame_color) {
-  header_painter_->SetFrameColors(active_frame_color, inactive_frame_color);
+  frame_header_->SetFrameColors(active_frame_color, inactive_frame_color);
   GetWidgetWindow()->SetProperty(aura::client::kTopViewColor,
-                                 header_painter_->GetInactiveFrameColor());
+                                 frame_header_->GetInactiveFrameColor());
 }
 
 const char* PanelFrameView::GetClassName() const {
   return kViewClassName;
 }
 
-void PanelFrameView::InitHeaderPainter() {
-  header_painter_.reset(new DefaultHeaderPainter);
+void PanelFrameView::InitFrameHeader() {
+  frame_header_.reset(new DefaultFrameHeader);
   GetWidgetWindow()->SetProperty(aura::client::kTopViewColor,
-                                 header_painter_->GetInactiveFrameColor());
+                                 frame_header_->GetInactiveFrameColor());
 
   caption_button_container_ = new FrameCaptionButtonContainerView(frame_);
   AddChildView(caption_button_container_);
 
-  header_painter_->Init(frame_, this, caption_button_container_, nullptr);
+  frame_header_->Init(frame_, this, caption_button_container_, nullptr);
 
   if (frame_->widget_delegate()->ShouldShowWindowIcon()) {
     window_icon_ = new views::ImageView();
     AddChildView(window_icon_);
-    header_painter_->UpdateLeftHeaderView(window_icon_);
+    frame_header_->UpdateLeftHeaderView(window_icon_);
   }
 }
 
@@ -69,24 +69,24 @@ aura::Window* PanelFrameView::GetWidgetWindow() {
 }
 
 int PanelFrameView::NonClientTopBorderHeight() const {
-  if (!header_painter_)
+  if (!frame_header_)
     return 0;
-  return header_painter_->GetHeaderHeightForPainting();
+  return frame_header_->GetHeaderHeightForPainting();
 }
 
 gfx::Size PanelFrameView::GetMinimumSize() const {
-  if (!header_painter_)
+  if (!frame_header_)
     return gfx::Size();
   gfx::Size min_client_view_size(frame_->client_view()->GetMinimumSize());
-  return gfx::Size(std::max(header_painter_->GetMinimumHeaderWidth(),
+  return gfx::Size(std::max(frame_header_->GetMinimumHeaderWidth(),
                             min_client_view_size.width()),
                    NonClientTopBorderHeight() + min_client_view_size.height());
 }
 
 void PanelFrameView::Layout() {
-  if (!header_painter_)
+  if (!frame_header_)
     return;
-  header_painter_->LayoutHeader();
+  frame_header_->LayoutHeader();
   GetWidgetWindow()->SetProperty(aura::client::kTopViewInset,
                                  NonClientTopBorderHeight());
 }
@@ -109,9 +109,9 @@ void PanelFrameView::UpdateWindowIcon() {
 }
 
 void PanelFrameView::UpdateWindowTitle() {
-  if (!header_painter_)
+  if (!frame_header_)
     return;
-  header_painter_->SchedulePaintForTitle();
+  frame_header_->SchedulePaintForTitle();
 }
 
 void PanelFrameView::SizeConstraintsChanged() {}
@@ -130,22 +130,21 @@ gfx::Rect PanelFrameView::GetWindowBoundsForClientBounds(
 }
 
 int PanelFrameView::NonClientHitTest(const gfx::Point& point) {
-  if (!header_painter_)
+  if (!frame_header_)
     return HTNOWHERE;
   return FrameBorderNonClientHitTest(this, nullptr, caption_button_container_,
                                      point);
 }
 
 void PanelFrameView::OnPaint(gfx::Canvas* canvas) {
-  if (!header_painter_)
+  if (!frame_header_)
     return;
   bool paint_as_active = ShouldPaintAsActive();
   caption_button_container_->SetPaintAsActive(paint_as_active);
 
-  HeaderPainter::Mode header_mode = paint_as_active
-                                        ? HeaderPainter::MODE_ACTIVE
-                                        : HeaderPainter::MODE_INACTIVE;
-  header_painter_->PaintHeader(canvas, header_mode);
+  FrameHeader::Mode header_mode =
+      paint_as_active ? FrameHeader::MODE_ACTIVE : FrameHeader::MODE_INACTIVE;
+  frame_header_->PaintHeader(canvas, header_mode);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

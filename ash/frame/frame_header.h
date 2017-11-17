@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_FRAME_HEADER_PAINTER_H_
-#define ASH_FRAME_HEADER_PAINTER_H_
+#ifndef ASH_FRAME_FRAME_HEADER_H_
+#define ASH_FRAME_FRAME_HEADER_H_
 
 #include "ash/ash_export.h"
 
@@ -13,12 +13,12 @@ class Canvas;
 
 namespace ash {
 
-// Helper class for painting the window header.
-class ASH_EXPORT HeaderPainter {
+// Helper class for managing the window header.
+class ASH_EXPORT FrameHeader {
  public:
   enum Mode { MODE_ACTIVE, MODE_INACTIVE };
 
-  virtual ~HeaderPainter() {}
+  virtual ~FrameHeader() {}
 
   // Returns the header's minimum width.
   virtual int GetMinimumHeaderWidth() const = 0;
@@ -41,11 +41,11 @@ class ASH_EXPORT HeaderPainter {
   // Schedule a re-paint of the entire title.
   virtual void SchedulePaintForTitle() = 0;
 
-  // True to instruct the painter to paint the header as an active
+  // True to instruct the frame header to paint the header as an active
   // state.
   virtual void SetPaintAsActive(bool paint_as_active) = 0;
 };
 
 }  // namespace ash
 
-#endif  // ASH_FRAME_HEADER_PAINTER_H_
+#endif  // ASH_FRAME_FRAME_HEADER_H_

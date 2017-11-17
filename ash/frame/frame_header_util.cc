@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/frame/header_painter_util.h"
+#include "ash/frame/frame_header_util.h"
 
 #include <algorithm>
 
@@ -44,22 +44,22 @@ const int kThemeFrameImageInsetX = 5;
 namespace ash {
 
 // static
-int HeaderPainterUtil::GetTopCornerRadiusWhenRestored() {
+int FrameHeaderUtil::GetTopCornerRadiusWhenRestored() {
   return kTopCornerRadiusWhenRestored;
 }
 
 // static
-int HeaderPainterUtil::GetLeftViewXInset() {
+int FrameHeaderUtil::GetLeftViewXInset() {
   return kLeftViewXInset;
 }
 
 // static
-int HeaderPainterUtil::GetThemeBackgroundXInset() {
+int FrameHeaderUtil::GetThemeBackgroundXInset() {
   return kThemeFrameImageInsetX;
 }
 
 // static
-gfx::Rect HeaderPainterUtil::GetTitleBounds(
+gfx::Rect FrameHeaderUtil::GetTitleBounds(
     const views::View* left_view,
     const views::View* right_view,
     const gfx::FontList& title_font_list) {
@@ -74,10 +74,10 @@ gfx::Rect HeaderPainterUtil::GetTitleBounds(
 }
 
 // static
-bool HeaderPainterUtil::CanAnimateActivation(views::Widget* widget) {
+bool FrameHeaderUtil::CanAnimateActivation(views::Widget* widget) {
   // Do not animate the header if the parent (e.g.
   // kShellWindowId_DefaultContainer) is already animating. All of the
-  // implementers of HeaderPainter animate activation by continuously painting
+  // implementers of FrameHeader animate activation by continuously painting
   // during the animation. This gives the parent's animation a slower frame
   // rate.
   // TODO(sky): Expose a better way to determine this rather than assuming the

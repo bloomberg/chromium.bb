@@ -7,8 +7,8 @@
 #include "ash/ash_constants.h"
 #include "ash/frame/caption_buttons/frame_caption_button.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
-#include "ash/frame/default_header_painter.h"
-#include "ash/frame/header_painter.h"
+#include "ash/frame/default_frame_header.h"
+#include "ash/frame/frame_header.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
 #include "ash/shell.h"
@@ -186,7 +186,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, ImmersiveFullscreen) {
 
   // Frame paints by default.
   EXPECT_TRUE(frame_view->ShouldPaint());
-  EXPECT_LT(0, frame_view->header_painter_->GetHeaderHeightForPainting());
+  EXPECT_LT(0, frame_view->frame_header_->GetHeaderHeightForPainting());
 
   // Enter both browser fullscreen and tab fullscreen. Entering browser
   // fullscreen should enable immersive fullscreen.
@@ -207,7 +207,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, ImmersiveFullscreen) {
   revealed_lock.reset();
   EXPECT_FALSE(immersive_mode_controller->IsRevealed());
   EXPECT_FALSE(frame_view->ShouldPaint());
-  EXPECT_EQ(0, frame_view->header_painter_->GetHeaderHeightForPainting());
+  EXPECT_EQ(0, frame_view->frame_header_->GetHeaderHeightForPainting());
 
   // Repeat test but without tab fullscreen.
   ExitFullscreenModeForTabAndWait(browser(), web_contents);
@@ -218,13 +218,13 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, ImmersiveFullscreen) {
   EXPECT_TRUE(immersive_mode_controller->IsRevealed());
   EXPECT_TRUE(frame_view->ShouldPaint());
   EXPECT_TRUE(frame_view->caption_button_container_->visible());
-  EXPECT_LT(0, frame_view->header_painter_->GetHeaderHeightForPainting());
+  EXPECT_LT(0, frame_view->frame_header_->GetHeaderHeightForPainting());
 
   // Ending the reveal. Immersive browser should have the same behavior as full
   // screen, i.e., having an origin of (0,0).
   revealed_lock.reset();
   EXPECT_FALSE(frame_view->ShouldPaint());
-  EXPECT_EQ(0, frame_view->header_painter_->GetHeaderHeightForPainting());
+  EXPECT_EQ(0, frame_view->frame_header_->GetHeaderHeightForPainting());
 
   // Exiting immersive fullscreen should make the caption buttons and the frame
   // visible again.
@@ -232,7 +232,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, ImmersiveFullscreen) {
   EXPECT_FALSE(immersive_mode_controller->IsEnabled());
   EXPECT_TRUE(frame_view->ShouldPaint());
   EXPECT_TRUE(frame_view->caption_button_container_->visible());
-  EXPECT_LT(0, frame_view->header_painter_->GetHeaderHeightForPainting());
+  EXPECT_LT(0, frame_view->frame_header_->GetHeaderHeightForPainting());
 }
 
 // Tests that Avatar icon should show on the top left corner of the teleported
@@ -483,10 +483,10 @@ IN_PROC_BROWSER_TEST_F(HostedAppNonClientFrameViewAshTest, HostedAppFrame) {
   EXPECT_TRUE(frame_view->hosted_app_button_container_->visible());
 
   // Ensure the theme color is set.
-  auto* header_painter = static_cast<ash::DefaultHeaderPainter*>(
-      frame_view->header_painter_.get());
-  EXPECT_EQ(SK_ColorBLUE, header_painter->GetActiveFrameColor());
-  EXPECT_EQ(SK_ColorBLUE, header_painter->GetInactiveFrameColor());
+  auto* frame_header =
+      static_cast<ash::DefaultFrameHeader*>(frame_view->frame_header_.get());
+  EXPECT_EQ(SK_ColorBLUE, frame_header->GetActiveFrameColor());
+  EXPECT_EQ(SK_ColorBLUE, frame_header->GetInactiveFrameColor());
 
   // Show the menu.
   HostedAppButtonContainer::AppMenuButton* menu_button =

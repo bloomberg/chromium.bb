@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_HEADER_PAINTER_ASH_H_
-#define CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_HEADER_PAINTER_ASH_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_FRAME_HEADER_ASH_H_
+#define CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_FRAME_HEADER_ASH_H_
 
 #include <memory>
 
-#include "ash/frame/header_painter.h"
+#include "ash/frame/frame_header.h"
 #include "base/macros.h"
 #include "ui/gfx/animation/animation_delegate.h"
 
@@ -17,25 +17,25 @@ class BrowserView;
 namespace ash {
 class FrameCaptionButton;
 class FrameCaptionButtonContainerView;
-}
+}  // namespace ash
 
 namespace gfx {
 class Rect;
 class SlideAnimation;
-}
+}  // namespace gfx
 namespace views {
 class View;
 class Widget;
-}
+}  // namespace views
 
-// Helper class for painting the browser window header.
-class BrowserHeaderPainterAsh : public ash::HeaderPainter,
-                                public gfx::AnimationDelegate {
+// Helper class for managing the browser window header.
+class BrowserFrameHeaderAsh : public ash::FrameHeader,
+                              public gfx::AnimationDelegate {
  public:
-  BrowserHeaderPainterAsh();
-  ~BrowserHeaderPainterAsh() override;
+  BrowserFrameHeaderAsh();
+  ~BrowserFrameHeaderAsh() override;
 
-  // BrowserHeaderPainterAsh does not take ownership of any of the parameters.
+  // BrowserFrameHeaderAsh does not take ownership of any of the parameters.
   // |back_button| can be nullptr, and the frame will not have a back button.
   void Init(views::Widget* frame,
             BrowserView* browser_view,
@@ -44,7 +44,7 @@ class BrowserHeaderPainterAsh : public ash::HeaderPainter,
             ash::FrameCaptionButtonContainerView* caption_button_container,
             ash::FrameCaptionButton* back_button);
 
-  // ash::HeaderPainter overrides:
+  // ash::FrameHeader overrides:
   int GetMinimumHeaderWidth() const override;
   void PaintHeader(gfx::Canvas* canvas, Mode mode) override;
   void LayoutHeader() override;
@@ -101,7 +101,7 @@ class BrowserHeaderPainterAsh : public ash::HeaderPainter,
 
   std::unique_ptr<gfx::SlideAnimation> activation_animation_;
 
-  DISALLOW_COPY_AND_ASSIGN(BrowserHeaderPainterAsh);
+  DISALLOW_COPY_AND_ASSIGN(BrowserFrameHeaderAsh);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_HEADER_PAINTER_ASH_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_FRAME_HEADER_ASH_H_

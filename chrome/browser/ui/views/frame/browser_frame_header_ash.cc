@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/frame/browser_header_painter_ash.h"
+#include "chrome/browser/ui/views/frame/browser_frame_header_ash.h"
 
 #include "ash/ash_layout_constants.h"
 #include "ash/frame/caption_buttons/frame_caption_button.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
-#include "ash/frame/header_painter_util.h"
+#include "ash/frame/frame_header_util.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "base/logging.h"
 #include "chrome/browser/themes/theme_properties.h"
@@ -47,11 +47,14 @@ SkPath MakeRoundRectPath(const gfx::Rect& bounds,
   SkRect rect = gfx::RectToSkRect(bounds);
   const SkScalar kTopLeftRadius = SkIntToScalar(top_left_corner_radius);
   const SkScalar kTopRightRadius = SkIntToScalar(top_right_corner_radius);
-  SkScalar radii[8] = {
-      kTopLeftRadius, kTopLeftRadius,  // top-left
-      kTopRightRadius, kTopRightRadius,  // top-right
-      0, 0,   // bottom-right
-      0, 0};  // bottom-left
+  SkScalar radii[8] = {kTopLeftRadius,
+                       kTopLeftRadius,  // top-left
+                       kTopRightRadius,
+                       kTopRightRadius,  // top-right
+                       0,
+                       0,  // bottom-right
+                       0,
+                       0};  // bottom-left
   SkPath path;
   path.addRoundRect(rect, radii, SkPath::kCW_Direction);
   return path;
@@ -103,9 +106,9 @@ void PaintFrameImagesInRoundRect(gfx::Canvas* canvas,
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
-// BrowserHeaderPainterAsh, public:
+// BrowserFrameHeaderAsh, public:
 
-BrowserHeaderPainterAsh::BrowserHeaderPainterAsh()
+BrowserFrameHeaderAsh::BrowserFrameHeaderAsh()
     : frame_(nullptr),
       is_tabbed_(false),
       is_incognito_(false),
@@ -115,13 +118,11 @@ BrowserHeaderPainterAsh::BrowserHeaderPainterAsh()
       painted_height_(0),
       initial_paint_(true),
       mode_(MODE_INACTIVE),
-      activation_animation_(new gfx::SlideAnimation(this)) {
-}
+      activation_animation_(new gfx::SlideAnimation(this)) {}
 
-BrowserHeaderPainterAsh::~BrowserHeaderPainterAsh() {
-}
+BrowserFrameHeaderAsh::~BrowserFrameHeaderAsh() {}
 
-void BrowserHeaderPainterAsh::Init(
+void BrowserFrameHeaderAsh::Init(
     views::Widget* frame,
     BrowserView* browser_view,
     BrowserNonClientFrameViewAsh* header_view,
@@ -150,20 +151,19 @@ void BrowserHeaderPainterAsh::Init(
     back_button_->set_use_light_images(is_incognito_);
 }
 
-int BrowserHeaderPainterAsh::GetMinimumHeaderWidth() const {
+int BrowserFrameHeaderAsh::GetMinimumHeaderWidth() const {
   // Ensure we have enough space for the window icon and buttons. We allow
   // the title string to collapse to zero width.
   return GetTitleBounds().x() +
-      caption_button_container_->GetMinimumSize().width();
+         caption_button_container_->GetMinimumSize().width();
 }
 
-void BrowserHeaderPainterAsh::PaintHeader(gfx::Canvas* canvas, Mode mode) {
+void BrowserFrameHeaderAsh::PaintHeader(gfx::Canvas* canvas, Mode mode) {
   Mode old_mode = mode_;
   mode_ = mode;
 
   if (mode_ != old_mode) {
-    if (!initial_paint_ &&
-        ash::HeaderPainterUtil::CanAnimateActivation(frame_)) {
+    if (!initial_paint_ && ash::FrameHeaderUtil::CanAnimateActivation(frame_)) {
       activation_animation_->SetSlideDuration(kActivationCrossfadeDurationMs);
       if (mode_ == MODE_ACTIVE)
         activation_animation_->Show();
@@ -187,7 +187,7 @@ void BrowserHeaderPainterAsh::PaintHeader(gfx::Canvas* canvas, Mode mode) {
   }
 }
 
-void BrowserHeaderPainterAsh::LayoutHeader() {
+void BrowserFrameHeaderAsh::LayoutHeader() {
   // Purposefully set |painted_height_| to an invalid value. We cannot use
   // |painted_height_| because the computation of |painted_height_| may depend
   // on having laid out the window controls.
@@ -199,8 +199,7 @@ void BrowserHeaderPainterAsh::LayoutHeader() {
   gfx::Size caption_button_container_size =
       caption_button_container_->GetPreferredSize();
   caption_button_container_->SetBounds(
-      view_->width() - caption_button_container_size.width(),
-      0,
+      view_->width() - caption_button_container_size.width(), 0,
       caption_button_container_size.width(),
       caption_button_container_size.height());
 
@@ -208,32 +207,31 @@ void BrowserHeaderPainterAsh::LayoutHeader() {
     // Vertically center the window icon with respect to the caption button
     // container.
     gfx::Size icon_size(window_icon_->GetPreferredSize());
-    int icon_offset_y = (caption_button_container_->height() -
-                         icon_size.height()) / 2;
-    window_icon_->SetBounds(ash::HeaderPainterUtil::GetLeftViewXInset(),
-                            icon_offset_y,
-                            icon_size.width(),
+    int icon_offset_y =
+        (caption_button_container_->height() - icon_size.height()) / 2;
+    window_icon_->SetBounds(ash::FrameHeaderUtil::GetLeftViewXInset(),
+                            icon_offset_y, icon_size.width(),
                             icon_size.height());
   }
 }
 
-int BrowserHeaderPainterAsh::GetHeaderHeight() const {
+int BrowserFrameHeaderAsh::GetHeaderHeight() const {
   return caption_button_container_->height();
 }
 
-int BrowserHeaderPainterAsh::GetHeaderHeightForPainting() const {
+int BrowserFrameHeaderAsh::GetHeaderHeightForPainting() const {
   return painted_height_;
 }
 
-void BrowserHeaderPainterAsh::SetHeaderHeightForPainting(int height) {
+void BrowserFrameHeaderAsh::SetHeaderHeightForPainting(int height) {
   painted_height_ = height;
 }
 
-void BrowserHeaderPainterAsh::SchedulePaintForTitle() {
+void BrowserFrameHeaderAsh::SchedulePaintForTitle() {
   view_->SchedulePaintInRect(GetTitleBounds());
 }
 
-void BrowserHeaderPainterAsh::SetPaintAsActive(bool paint_as_active) {
+void BrowserFrameHeaderAsh::SetPaintAsActive(bool paint_as_active) {
   caption_button_container_->SetPaintAsActive(paint_as_active);
   if (back_button_)
     back_button_->set_paint_as_active(paint_as_active);
@@ -242,16 +240,15 @@ void BrowserHeaderPainterAsh::SetPaintAsActive(bool paint_as_active) {
 ///////////////////////////////////////////////////////////////////////////////
 // gfx::AnimationDelegate overrides:
 
-void BrowserHeaderPainterAsh::AnimationProgressed(
+void BrowserFrameHeaderAsh::AnimationProgressed(
     const gfx::Animation* animation) {
   view_->SchedulePaintInRect(GetPaintedBounds());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// BrowserHeaderPainterAsh, private:
+// BrowserFrameHeaderAsh, private:
 
-void BrowserHeaderPainterAsh::PaintFrameImages(gfx::Canvas* canvas,
-                                               bool active) {
+void BrowserFrameHeaderAsh::PaintFrameImages(gfx::Canvas* canvas, bool active) {
   int alpha = activation_animation_->CurrentValueBetween(0, 0xFF);
   if (!active)
     alpha = 0xFF - alpha;
@@ -265,15 +262,15 @@ void BrowserHeaderPainterAsh::PaintFrameImages(gfx::Canvas* canvas,
 
   int corner_radius = 0;
   if (!frame_->IsMaximized() && !frame_->IsFullscreen())
-    corner_radius = ash::HeaderPainterUtil::GetTopCornerRadiusWhenRestored();
+    corner_radius = ash::FrameHeaderUtil::GetTopCornerRadiusWhenRestored();
 
-  PaintFrameImagesInRoundRect(
-      canvas, frame_image, frame_overlay_image, alpha, background_color,
-      GetPaintedBounds(), corner_radius,
-      ash::HeaderPainterUtil::GetThemeBackgroundXInset());
+  PaintFrameImagesInRoundRect(canvas, frame_image, frame_overlay_image, alpha,
+                              background_color, GetPaintedBounds(),
+                              corner_radius,
+                              ash::FrameHeaderUtil::GetThemeBackgroundXInset());
 }
 
-void BrowserHeaderPainterAsh::PaintTitleBar(gfx::Canvas* canvas) {
+void BrowserFrameHeaderAsh::PaintTitleBar(gfx::Canvas* canvas) {
   // The window icon is painted by its own views::View.
   canvas->DrawStringRectWithFlags(frame_->widget_delegate()->GetWindowTitle(),
                                   BrowserFrame::GetTitleFontList(),
@@ -283,7 +280,7 @@ void BrowserHeaderPainterAsh::PaintTitleBar(gfx::Canvas* canvas) {
                                   gfx::Canvas::NO_SUBPIXEL_RENDERING);
 }
 
-void BrowserHeaderPainterAsh::UpdateCaptionButtons() {
+void BrowserFrameHeaderAsh::UpdateCaptionButtons() {
   caption_button_container_->SetButtonImage(ash::CAPTION_BUTTON_ICON_MINIMIZE,
                                             ash::kWindowControlMinimizeIcon);
   caption_button_container_->SetButtonImage(ash::CAPTION_BUTTON_ICON_CLOSE,
@@ -308,12 +305,12 @@ void BrowserHeaderPainterAsh::UpdateCaptionButtons() {
   caption_button_container_->SetButtonSize(button_size);
 }
 
-gfx::Rect BrowserHeaderPainterAsh::GetPaintedBounds() const {
+gfx::Rect BrowserFrameHeaderAsh::GetPaintedBounds() const {
   return gfx::Rect(view_->width(), painted_height_);
 }
 
-gfx::Rect BrowserHeaderPainterAsh::GetTitleBounds() const {
+gfx::Rect BrowserFrameHeaderAsh::GetTitleBounds() const {
   views::View* left_view = window_icon_ ? window_icon_ : back_button_;
-  return ash::HeaderPainterUtil::GetTitleBounds(
+  return ash::FrameHeaderUtil::GetTitleBounds(
       left_view, caption_button_container_, BrowserFrame::GetTitleFontList());
 }

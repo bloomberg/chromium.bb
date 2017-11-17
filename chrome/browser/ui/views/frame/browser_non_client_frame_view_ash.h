@@ -20,7 +20,7 @@ class TabIconView;
 namespace ash {
 class FrameCaptionButton;
 class FrameCaptionButtonContainerView;
-class HeaderPainter;
+class FrameHeader;
 }
 
 // Provides the BrowserNonClientFrameView for Chrome OS.
@@ -91,7 +91,7 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
   FRIEND_TEST_ALL_PREFIXES(ImmersiveModeControllerAshHostedAppBrowserTest,
                            FrameLayout);
 
-  friend class BrowserHeaderPainterAsh;
+  friend class BrowserFrameHeaderAsh;
 
   // Distance between the left edge of the NonClientFrameView and the tab strip.
   int GetTabStripLeftInset() const;
@@ -124,7 +124,7 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
   TabIconView* window_icon_;
 
   // Helper class for painting the header.
-  std::unique_ptr<ash::HeaderPainter> header_painter_;
+  std::unique_ptr<ash::FrameHeader> frame_header_;
 
   // Container for extra frame buttons shown for hosted app windows.
   // Owned by views hierarchy.

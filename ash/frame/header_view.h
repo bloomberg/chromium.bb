@@ -26,7 +26,7 @@ class Widget;
 
 namespace ash {
 
-class DefaultHeaderPainter;
+class DefaultFrameHeader;
 class FrameCaptionButton;
 class FrameCaptionButtonContainerView;
 enum class FrameBackButtonState;
@@ -106,7 +106,7 @@ class ASH_EXPORT HeaderView : public views::View,
   views::Widget* target_widget_;
 
   // Helper for painting the header.
-  std::unique_ptr<DefaultHeaderPainter> header_painter_;
+  std::unique_ptr<DefaultFrameHeader> frame_header_;
 
   views::ImageView* avatar_icon_;
 

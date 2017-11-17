@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_FRAME_HEADER_PAINTER_UTIL_H_
-#define ASH_FRAME_HEADER_PAINTER_UTIL_H_
+#ifndef ASH_FRAME_FRAME_HEADER_UTIL_H_
+#define ASH_FRAME_FRAME_HEADER_UTIL_H_
 
 #include "ash/ash_export.h"
 #include "base/macros.h"
@@ -11,17 +11,17 @@
 namespace gfx {
 class FontList;
 class Rect;
-}
+}  // namespace gfx
 namespace views {
 class View;
 class Widget;
-}
+}  // namespace views
 
 namespace ash {
 
 // Static-only helper class for functionality used across multiple
-// implementations of HeaderPainter.
-class ASH_EXPORT HeaderPainterUtil {
+// implementations of FrameHeader.
+class ASH_EXPORT FrameHeaderUtil {
  public:
   // Returns the radius of the header's corners when the window is restored.
   static int GetTopCornerRadiusWhenRestored();
@@ -47,9 +47,9 @@ class ASH_EXPORT HeaderPainterUtil {
   static bool CanAnimateActivation(views::Widget* widget);
 
  private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(HeaderPainterUtil);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(FrameHeaderUtil);
 };
 
 }  // namespace ash
 
-#endif  // ASH_FRAME_HEADER_PAINTER_UTIL_H_
+#endif  // ASH_FRAME_FRAME_HEADER_UTIL_H_
