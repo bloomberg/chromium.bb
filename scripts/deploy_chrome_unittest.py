@@ -161,7 +161,7 @@ class TestDisableRootfsVerification(DeployTest):
   def testDisableRootfsVerificationFailure(self):
     """Test failure to disable rootfs verification."""
     #pylint: disable=unused-argument
-    def RaiseRunCommandError(timeout_sec=None, cold_reboot=False):
+    def RaiseRunCommandError(timeout_sec=None):
       raise cros_build_lib.RunCommandError('Mock RunCommandError', 0)
     self.remote_reboot_mock.side_effect = RaiseRunCommandError
     self.assertRaises(cros_build_lib.RunCommandError,

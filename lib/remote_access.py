@@ -395,28 +395,14 @@ class RemoteAccess(object):
     new_boot_id = self._GetBootId(rebooting=True)
     return new_boot_id and new_boot_id != old_boot_id
 
-  def RemoteReboot(self, timeout_sec=REBOOT_MAX_WAIT, cold_reboot=False):
-    """Reboot the remote device.
 
-    Args:
-      timeout_sec: the maximum wait time for reboot.
-      cold_reboot: reset the EC or not.
-    """
-    if cold_reboot:
-      logging.info('Cold rebooting (reset EC) %s...', self.remote_host)
-      # Perform EC reset at shutdown.
-      cmd = ['sync']
-      cmd += ['&&', 'sleep', '3']
-      cmd += ['&&', 'ectool', 'reboot_ec', 'cold', 'at-shutdown']
-      cmd += ['&&', 'shutdown', '-H', 'now']
-    else:
-      logging.info('Rebooting %s...', self.remote_host)
-      cmd = ['reboot']
-
+  def RemoteReboot(self, timeout_sec=REBOOT_MAX_WAIT):
+    """Reboot the remote device."""
+    logging.info('Rebooting %s...', self.remote_host)
     old_boot_id = self._GetBootId()
     # Use ssh_error_ok=True in the remote shell invocations because the reboot
     # might kill sshd before the connection completes normally.
-    self.RemoteSh(cmd, ssh_error_ok=True, remote_sudo=True)
+    self.RemoteSh(['reboot'], ssh_error_ok=True, remote_sudo=True)
     time.sleep(CHECK_INTERVAL)
     try:
       timeout_util.WaitForReturnTrue(lambda: self._CheckIfRebooted(old_boot_id),
@@ -955,15 +941,9 @@ class RemoteDevice(object):
       logging.error('Error connecting to device %s', self.hostname)
       raise
 
-  def Reboot(self, timeout_sec=REBOOT_MAX_WAIT, cold_reboot=False):
-    """Reboot the device.
-
-    Args:
-      timeout_sec: the maximum wait time for reboot.
-      cold_reboot: reset the EC or not.
-    """
-    return self.GetAgent().RemoteReboot(timeout_sec=timeout_sec,
-                                        cold_reboot=cold_reboot)
+  def Reboot(self, timeout_sec=REBOOT_MAX_WAIT):
+    """Reboot the device."""
+    return self.GetAgent().RemoteReboot(timeout_sec=timeout_sec)
 
   def BaseRunCommand(self, cmd, **kwargs):
     """Executes a shell command on the device with output captured by default.
