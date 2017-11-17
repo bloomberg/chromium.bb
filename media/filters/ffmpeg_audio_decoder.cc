@@ -223,16 +223,12 @@ bool FFmpegAudioDecoder::OnNewFrame(bool* decoded_frame_this_loop,
 
   const bool is_sample_rate_change =
       frame->sample_rate != config_.samples_per_second();
-  const bool is_config_change =
-      is_sample_rate_change || channels != config_.channels() ||
-      // TODO(tguilbert, dalecurtis): Due to http://crbug.com/600538 we need to
-      // allow channel layout changes for the moment. See if ffmpeg is fixable.
-      channel_layout != config_.channel_layout();
-
+  const bool is_config_change = is_sample_rate_change ||
+                                channels != config_.channels() ||
+                                channel_layout != config_.channel_layout();
   if (is_config_change) {
-    // Only allow midstream configuration changes for AAC. Sample format is
-    // not expected to change between AAC profiles.
-    if (config_.codec() != kCodecAAC || frame->format != av_sample_format_) {
+    // Sample format is never expected to change.
+    if (frame->format != av_sample_format_) {
       MEDIA_LOG(ERROR, media_log_)
           << "Unsupported midstream configuration change!"
           << " Sample Rate: " << frame->sample_rate << " vs "
@@ -246,7 +242,7 @@ bool FFmpegAudioDecoder::OnNewFrame(bool* decoded_frame_this_loop,
     }
 
     MEDIA_LOG(DEBUG, media_log_)
-        << " Detected AAC midstream configuration change"
+        << " Detected midstream configuration change"
         << " PTS:" << buffer->timestamp().InMicroseconds()
         << " Sample Rate: " << frame->sample_rate << " vs "
         << config_.samples_per_second() << ", ChannelLayout: " << channel_layout
