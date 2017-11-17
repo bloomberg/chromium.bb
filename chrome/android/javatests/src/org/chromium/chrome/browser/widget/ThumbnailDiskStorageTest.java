@@ -213,6 +213,7 @@ public class ThumbnailDiskStorageTest {
     /**
      * Verify that retrieveThumbnail makes the called entry the most recent entry in cache.
      */
+    @DisabledTest(message = "crbug.com/786212")
     @Test
     @SmallTest
     public void testRetrieveThumbnailShouldMakeEntryMostRecent() throws Throwable {
