@@ -9,13 +9,11 @@
             {
                 "domain": "Page",
                 "include": [ "enable", "disable", "setAdBlockingEnabled" ],
-                "include_types": [],
                 "include_events": []
             },
             {
                 "domain": "Browser",
                 "include": [ "getWindowForTarget", "getWindowBounds", "setWindowBounds", "close" ],
-                "include_types": [ "Bounds" ],
                 "include_events": []
             },
             {
