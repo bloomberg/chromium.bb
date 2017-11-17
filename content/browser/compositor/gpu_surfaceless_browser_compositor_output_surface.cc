@@ -111,20 +111,20 @@ void GpuSurfacelessBrowserCompositorOutputSurface::Reshape(
 }
 
 void GpuSurfacelessBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted(
-    const std::vector<ui::LatencyInfo>& latency_info,
-    gfx::SwapResult result,
+    const gfx::SwapResponse& response,
     const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac) {
+  gfx::SwapResponse modified_response(response);
   bool force_swap = false;
-  if (result == gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS) {
+  if (response.result == gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS) {
     // Even through the swap failed, this is a fixable error so we can pretend
     // it succeeded to the rest of the system.
-    result = gfx::SwapResult::SWAP_ACK;
+    modified_response.result = gfx::SwapResult::SWAP_ACK;
     buffer_queue_->RecreateBuffers();
     force_swap = true;
   }
   buffer_queue_->PageFlipComplete();
   GpuBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted(
-      latency_info, result, params_mac);
+      modified_response, params_mac);
   if (force_swap)
     client_->SetNeedsRedrawRect(gfx::Rect(swap_size_));
 }

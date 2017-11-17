@@ -64,7 +64,7 @@ class TestImageTransportSurfaceDelegate
   const GpuPreferences& GetGpuPreferences() const override {
     return gpu_preferences_;
   }
-  void SetLatencyInfoCallback(const LatencyInfoCallback& callback) override {}
+  void SetSnapshotRequestedCallback(const base::Closure& callback) override {}
   void UpdateVSyncParameters(base::TimeTicks timebase,
                              base::TimeDelta interval) override {}
   void AddFilter(IPC::MessageFilter* message_filter) override {}

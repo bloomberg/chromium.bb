@@ -24,10 +24,6 @@ namespace base {
 class Lock;
 }
 
-namespace ui {
-class LatencyInfo;
-}
-
 namespace gpu {
 class GpuControlClient;
 struct SyncToken;
@@ -121,10 +117,8 @@ class GPU_EXPORT GpuControl {
   // first so does not need to be flushed.
   virtual bool CanWaitUnverifiedSyncToken(const SyncToken& sync_token) = 0;
 
-  // Add |latency_info| to be reported and augumented with GPU latency
-  // components next time there is a GPU buffer swap.
-  virtual void AddLatencyInfo(
-      const std::vector<ui::LatencyInfo>& latency_info) = 0;
+  // Indicates whether a snapshot is associated with the next swap.
+  virtual void SetSnapshotRequested() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GpuControl);

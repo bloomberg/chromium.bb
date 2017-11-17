@@ -254,7 +254,9 @@ void CreateContextProviderAfterGpuChannelEstablished(
   callback.Run(std::move(context_provider));
 }
 
-class AndroidOutputSurface : public viz::OutputSurface {
+class AndroidOutputSurface
+    : public viz::OutputSurface,
+      public viz::OutputSurface::LatencyInfoCache::Client {
  public:
   AndroidOutputSurface(
       scoped_refptr<ui::ContextProviderCommandBuffer> context_provider,
@@ -263,6 +265,7 @@ class AndroidOutputSurface : public viz::OutputSurface {
         swap_buffers_callback_(std::move(swap_buffers_callback)),
         overlay_candidate_validator_(
             new viz::CompositorOverlayCandidateValidatorAndroid()),
+        latency_info_cache_(this),
         weak_ptr_factory_(this) {
     capabilities_.max_frames_pending = kMaxDisplaySwapBuffers;
   }
@@ -270,13 +273,21 @@ class AndroidOutputSurface : public viz::OutputSurface {
   ~AndroidOutputSurface() override = default;
 
   void SwapBuffers(viz::OutputSurfaceFrame frame) override {
-    GetCommandBufferProxy()->AddLatencyInfo(frame.latency_info);
+    if (latency_info_cache_.WillSwap(std::move(frame.latency_info)))
+      GetCommandBufferProxy()->SetSnapshotRequested();
+
     if (frame.sub_buffer_rect) {
       DCHECK(frame.sub_buffer_rect->IsEmpty());
       context_provider_->ContextSupport()->CommitOverlayPlanes();
     } else {
       context_provider_->ContextSupport()->Swap();
     }
+  }
+
+  // OutputSurface::LatencyInfoCache::Client implementation.
+  void LatencyInfoCompleted(
+      const std::vector<ui::LatencyInfo>& latency_info) override {
+    RenderWidgetHostImpl::OnGpuSwapBuffersCompleted(latency_info);
   }
 
   void BindToClient(viz::OutputSurfaceClient* client) override {
@@ -341,18 +352,19 @@ class AndroidOutputSurface : public viz::OutputSurface {
   }
 
   void OnSwapBuffersCompleted(
-      const std::vector<ui::LatencyInfo>& latency_info,
-      gfx::SwapResult result,
+      const gfx::SwapResponse& response,
       const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac) {
-    RenderWidgetHostImpl::OnGpuSwapBuffersCompleted(latency_info);
     client_->DidReceiveSwapBuffersAck();
     swap_buffers_callback_.Run();
+    latency_info_cache_.OnSwapBuffersCompleted(response);
   }
 
  private:
   viz::OutputSurfaceClient* client_ = nullptr;
   base::Closure swap_buffers_callback_;
   std::unique_ptr<viz::OverlayCandidateValidator> overlay_candidate_validator_;
+  LatencyInfoCache latency_info_cache_;
+
   base::WeakPtrFactory<AndroidOutputSurface> weak_ptr_factory_;
 };
 

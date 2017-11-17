@@ -324,10 +324,7 @@ class RecordReplayContext : public GpuControl {
     return true;
   }
 
-  void AddLatencyInfo(
-      const std::vector<ui::LatencyInfo>& latency_info) override {
-    NOTIMPLEMENTED();
-  }
+  void SetSnapshotRequested() override { NOTIMPLEMENTED(); }
 
   GpuPreferences gpu_preferences_;
 

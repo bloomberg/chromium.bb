@@ -67,7 +67,6 @@ source_set("ipc_client_sources") {
     "//ui/gfx/ipc",
     "//ui/gfx/ipc/geometry",
     "//ui/gl",
-    "//ui/latency/ipc",
     "//url/ipc:url_ipc",
   ]
   public_deps = [

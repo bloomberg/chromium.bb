@@ -21,7 +21,6 @@
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/latency/latency_info.h"
 
 namespace gpu {
 
@@ -127,7 +126,7 @@ class MockClientGpuControl : public GpuControl {
                                      const base::Closure& callback));
   MOCK_METHOD1(WaitSyncTokenHint, void(const SyncToken&));
   MOCK_METHOD1(CanWaitUnverifiedSyncToken, bool(const SyncToken&));
-  MOCK_METHOD1(AddLatencyInfo, void(const std::vector<ui::LatencyInfo>&));
+  MOCK_METHOD0(SetSnapshotRequested, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockClientGpuControl);

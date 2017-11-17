@@ -45,8 +45,7 @@ class TestContextSupport : public gpu::ContextSupport {
   uint64_t ShareGroupTracingGUID() const override;
   void SetErrorMessageCallback(
       const base::Callback<void(const char*, int32_t)>& callback) override;
-  void AddLatencyInfo(
-      const std::vector<ui::LatencyInfo>& latency_info) override;
+  void SetSnapshotRequested() override;
   bool ThreadSafeShallowLockDiscardableTexture(uint32_t texture_id) override;
   void CompleteLockDiscardableTexureOnContextThread(
       uint32_t texture_id) override;

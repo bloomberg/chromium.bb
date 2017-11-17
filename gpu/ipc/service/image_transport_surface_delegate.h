@@ -10,7 +10,6 @@
 #include "gpu/gpu_export.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "ui/gfx/swap_result.h"
-#include "ui/latency/latency_info.h"
 
 #if defined(OS_MACOSX)
 #include "ui/base/cocoa/remote_layer_api.h"
@@ -49,8 +48,7 @@ struct GPU_EXPORT SwapBuffersCompleteParams {
   float scale_factor;
   gpu::TextureInUseResponses in_use_responses;
 #endif
-  std::vector<ui::LatencyInfo> latency_info;
-  gfx::SwapResult result;
+  gfx::SwapResponse response;
 };
 
 class GPU_EXPORT ImageTransportSurfaceDelegate {
@@ -63,7 +61,7 @@ class GPU_EXPORT ImageTransportSurfaceDelegate {
       SurfaceHandle child_window) = 0;
 #endif
 
-  // Tells the delegate that SwapBuffers returned and passes latency info.
+  // Tells the delegate that SwapBuffers returned.
   virtual void DidSwapBuffersComplete(SwapBuffersCompleteParams params) = 0;
 
   // Returns the features available for the ContextGroup.
@@ -71,10 +69,7 @@ class GPU_EXPORT ImageTransportSurfaceDelegate {
 
   virtual const GpuPreferences& GetGpuPreferences() const = 0;
 
-  using LatencyInfoCallback =
-      base::Callback<void(const std::vector<ui::LatencyInfo>&)>;
-  // |callback| is called when the delegate has updated LatencyInfo available.
-  virtual void SetLatencyInfoCallback(const LatencyInfoCallback& callback) = 0;
+  virtual void SetSnapshotRequestedCallback(const base::Closure& callback) = 0;
 
   // Informs the delegate about updated vsync parameters.
   virtual void UpdateVSyncParameters(base::TimeTicks timebase,
