@@ -29,6 +29,7 @@
 #include "net/ssl/ssl_info.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/redirect_info.h"
+#include "services/network/public/cpp/cors_error_status.h"
 #include "services/network/public/cpp/url_loader_status.h"
 #include "services/network/public/interfaces/fetch_api.mojom.h"
 #include "third_party/WebKit/public/platform/WebMixedContentContextType.h"
@@ -294,6 +295,11 @@ IPC_STRUCT_TRAITS_END()
 IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::CORSError,
                           network::mojom::CORSError::kLast)
 
+IPC_STRUCT_TRAITS_BEGIN(network::CORSErrorStatus)
+  IPC_STRUCT_TRAITS_MEMBER(cors_error)
+  IPC_STRUCT_TRAITS_MEMBER(related_response_headers)
+IPC_STRUCT_TRAITS_END()
+
 IPC_STRUCT_TRAITS_BEGIN(network::URLLoaderStatus)
   IPC_STRUCT_TRAITS_MEMBER(error_code)
   IPC_STRUCT_TRAITS_MEMBER(exists_in_cache)
@@ -301,7 +307,7 @@ IPC_STRUCT_TRAITS_BEGIN(network::URLLoaderStatus)
   IPC_STRUCT_TRAITS_MEMBER(encoded_data_length)
   IPC_STRUCT_TRAITS_MEMBER(encoded_body_length)
   IPC_STRUCT_TRAITS_MEMBER(decoded_body_length)
-  IPC_STRUCT_TRAITS_MEMBER(cors_error)
+  IPC_STRUCT_TRAITS_MEMBER(cors_error_status)
 IPC_STRUCT_TRAITS_END()
 
 // Resource messages sent from the browser to the renderer.

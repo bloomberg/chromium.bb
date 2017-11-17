@@ -7,7 +7,10 @@
 
 #include <string>
 
+#include "base/optional.h"
+#include "content/common/content_export.h"
 #include "content/public/common/resource_response_info.h"
+#include "services/network/public/interfaces/cors.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -19,7 +22,10 @@ struct CONTENT_EXPORT SyncLoadResponse : ResourceResponseInfo {
   ~SyncLoadResponse();
 
   // The response error code.
-  int error_code;
+  int error_code = 0;
+
+  // Optional CORS error details.
+  base::Optional<network::mojom::CORSError> cors_error;
 
   // The final URL of the response.  This may differ from the request URL in
   // the case of a server redirect.
