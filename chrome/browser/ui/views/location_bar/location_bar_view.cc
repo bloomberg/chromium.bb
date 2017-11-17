@@ -764,8 +764,13 @@ bool LocationBarView::RefreshSaveCreditCardIconView() {
 }
 
 bool LocationBarView::RefreshFindBarIcon() {
-  if (!find_bar_icon_ || !browser_ || !browser_->window())
+  // |browser_| may be nullptr since some unit tests pass it in for the
+  // Browser*. |browser_->window()| may return nullptr because Update() is
+  // called while BrowserWindow is being constructed.
+  if (!find_bar_icon_ || !browser_ || !browser_->window() ||
+      !browser_->HasFindBarController()) {
     return false;
+  }
   const bool was_visible = find_bar_icon_->visible();
   find_bar_icon_->SetVisible(
       browser_->GetFindBarController()->find_bar()->IsFindBarVisible());
