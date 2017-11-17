@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_HOST_HOST_SESSION_OPTIONS_H_
-#define REMOTING_HOST_HOST_SESSION_OPTIONS_H_
+#ifndef REMOTING_BASE_SESSION_OPTIONS_H_
+#define REMOTING_BASE_SESSION_OPTIONS_H_
 
 #include <map>
 #include <string>
@@ -16,12 +16,12 @@ namespace remoting {
 // Session based host options sending from client. This class parses and stores
 // session configuration from client side to control the behavior of other host
 // components.
-class HostSessionOptions final {
+class SessionOptions final {
  public:
-  HostSessionOptions();
-  ~HostSessionOptions();
+  SessionOptions();
+  ~SessionOptions();
 
-  HostSessionOptions(const std::string& parameter);
+  SessionOptions(const std::string& parameter);
 
   // Appends one key-value pair into current instance.
   void Append(const std::string& key, const std::string& value);
@@ -45,18 +45,18 @@ class HostSessionOptions final {
   std::string Export() const;
 
   // Overwrite current instance with |parameter|, which is a string returned by
-  // Export() function. So a parent process can send HostSessionOptions to a
+  // Export() function. So a parent process can send SessionOptions to a
   // child process.
   void Import(const std::string& parameter);
 
  private:
   std::map<std::string, std::string> options_;
 
-  HostSessionOptions(HostSessionOptions&&) = delete;
-  HostSessionOptions& operator=(HostSessionOptions&&) = delete;
-  DISALLOW_COPY_AND_ASSIGN(HostSessionOptions);
+  SessionOptions(SessionOptions&&) = delete;
+  SessionOptions& operator=(SessionOptions&&) = delete;
+  DISALLOW_COPY_AND_ASSIGN(SessionOptions);
 };
 
 }  // namespace remoting
 
-#endif  // REMOTING_HOST_HOST_SESSION_OPTIONS_H_
+#endif  // REMOTING_BASE_SESSION_OPTIONS_H_

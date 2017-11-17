@@ -15,6 +15,7 @@
 #include "build/build_config.h"
 #include "remoting/base/capabilities.h"
 #include "remoting/base/constants.h"
+#include "remoting/base/session_options.h"
 #include "remoting/base/logging.h"
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/desktop_environment.h"
@@ -243,17 +244,17 @@ void ClientSession::OnConnectionAuthenticated() {
   // Notify EventHandler.
   event_handler_->OnSessionAuthenticated(this);
 
-  const HostSessionOptions host_session_options(
+  const SessionOptions session_options(
       host_experiment_session_plugin_.configuration());
 
   base::Optional<std::string> video_codec =
-      host_session_options.Get("Video-Codec");
+      session_options.Get("Video-Codec");
   if (video_codec) {
     connection_->SetPreferredVideoCodec(*video_codec);
   }
 
   DesktopEnvironmentOptions options = desktop_environment_options_;
-  options.ApplyHostSessionOptions(host_session_options);
+  options.ApplySessionOptions(session_options);
   // Create the desktop environment. Drop the connection if it could not be
   // created for any reason (for instance the curtain could not initialize).
   desktop_environment_ =
