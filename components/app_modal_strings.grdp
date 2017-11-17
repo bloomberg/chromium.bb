@@ -2,26 +2,49 @@
 <grit-part>
 
   <!-- JavaScript Dialog Box strings -->
-  <message name="IDS_JAVASCRIPT_MESSAGEBOX_TITLE" desc="Title for JavaScript prompt and confirm originating from a webpage">
-    <ph name="SITE">$1<ex>http://www.google.com</ex></ph> says:
-  </message>
-  <message name="IDS_JAVASCRIPT_MESSAGEBOX_TITLE_IFRAME" desc="Title for JavaScript prompt and confirm originating from an iframe inside the webpage">
-    An embedded page at <ph name="SITE">$1<ex>http://www.google.com</ex></ph> says:
-  </message>
-  <message name="IDS_JAVASCRIPT_MESSAGEBOX_TITLE_NONSTANDARD_URL" desc="Title for JavaScript prompt and confirm originating from a webpage with a non-standard URL such as |data:|">
-    This page says:
-  </message>
-  <message name="IDS_JAVASCRIPT_MESSAGEBOX_TITLE_NONSTANDARD_URL_IFRAME" desc="Title for JavaScript prompt and confirm originating from an iframe inside the webpage with a non-standard URL such as |data:|">
-    An embedded page on this webpage says:
-  </message>
+  <if expr="not use_titlecase">
+    <message name="IDS_JAVASCRIPT_MESSAGEBOX_TITLE" desc="Title for JavaScript prompt and confirm originating from a webpage">
+      <ph name="SITE">$1<ex>http://www.google.com</ex></ph> says
+    </message>
+    <message name="IDS_JAVASCRIPT_MESSAGEBOX_TITLE_IFRAME" desc="Title for JavaScript prompt and confirm originating from an iframe inside the webpage">
+      An embedded page at <ph name="SITE">$1<ex>http://www.google.com</ex></ph> says
+    </message>
+    <message name="IDS_JAVASCRIPT_MESSAGEBOX_TITLE_NONSTANDARD_URL" desc="Title for JavaScript prompt and confirm originating from a webpage with a non-standard URL such as |data:|">
+      This page says
+    </message>
+    <message name="IDS_JAVASCRIPT_MESSAGEBOX_TITLE_NONSTANDARD_URL_IFRAME" desc="Title for JavaScript prompt and confirm originating from an iframe inside the webpage with a non-standard URL such as |data:|">
+      An embedded page on this page says
+    </message>
+  </if>
+  <if expr="use_titlecase">
+    <message name="IDS_JAVASCRIPT_MESSAGEBOX_TITLE" desc="Title for JavaScript prompt and confirm originating from a webpage">
+      <ph name="SITE">$1<ex>http://www.google.com</ex></ph> Says
+    </message>
+    <message name="IDS_JAVASCRIPT_MESSAGEBOX_TITLE_IFRAME" desc="Title for JavaScript prompt and confirm originating from an iframe inside the webpage">
+      An Embedded Page at <ph name="SITE">$1<ex>http://www.google.com</ex></ph> Says
+    </message>
+    <message name="IDS_JAVASCRIPT_MESSAGEBOX_TITLE_NONSTANDARD_URL" desc="Title for JavaScript prompt and confirm originating from a webpage with a non-standard URL such as |data:|">
+      This Page Says
+    </message>
+    <message name="IDS_JAVASCRIPT_MESSAGEBOX_TITLE_NONSTANDARD_URL_IFRAME" desc="Title for JavaScript prompt and confirm originating from an iframe inside the webpage with a non-standard URL such as |data:|">
+      An Embedded Page on This Page Says
+    </message>
+  </if>
   <message name="IDS_JAVASCRIPT_MESSAGEBOX_SUPPRESS_OPTION" desc="Optional UI shown on the message box, in the form of a checkbox, allowing the user to suppress additional message boxes from the page.">
     Prevent this page from creating additional dialogs.
   </message>
 
   <!-- "Before Unload" Dialog Box strings -->
-  <message name="IDS_BEFOREUNLOAD_MESSAGEBOX_TITLE" desc="Title for the 'before unload' dialog.">
-    Do you want to leave this site?
-  </message>
+  <if expr="not use_titlecase">
+    <message name="IDS_BEFOREUNLOAD_MESSAGEBOX_TITLE" desc="Title for the 'before unload' dialog.">
+      Do you want to leave this site?
+    </message>
+  </if>
+  <if expr="use_titlecase">
+    <message name="IDS_BEFOREUNLOAD_MESSAGEBOX_TITLE" desc="Title for the 'before unload' dialog.">
+      Do You Want to Leave This Site?
+    </message>
+  </if>
   <message name="IDS_BEFOREUNLOAD_MESSAGEBOX_MESSAGE" desc="Text shown as the message of the 'before unload' dialog.">
     Changes you made may not be saved.
   </message>
@@ -33,9 +56,16 @@
   </message>
 
   <!-- "Before Reload" Dialog Box strings (same as "Before Unload" but when reloading rather than unloading the page -->
-  <message name="IDS_BEFORERELOAD_MESSAGEBOX_TITLE" desc="Title for the 'before unload' dialog for reloads.">
-    Do you want to reload this site?
-  </message>
+  <if expr="not use_titlecase">
+    <message name="IDS_BEFORERELOAD_MESSAGEBOX_TITLE" desc="Title for the 'before unload' dialog for reloads.">
+      Do you want to reload this site?
+    </message>
+  </if>
+  <if expr="use_titlecase">
+    <message name="IDS_BEFORERELOAD_MESSAGEBOX_TITLE" desc="Title for the 'before unload' dialog for reloads.">
+      Do You Want to Reload This Site?
+    </message>
+  </if>
   <message name="IDS_BEFORERELOAD_MESSAGEBOX_OK_BUTTON_LABEL" desc="The text on the button which reloads the page.">
     Reload
   </message>
