@@ -277,7 +277,7 @@ static INLINE void update_qcoeff(const int coeff_idx, const tran_low_t qc,
                                  const TxbInfo *const txb_info) {
   txb_info->qcoeff[coeff_idx] = qc;
   txb_info->levels[get_paded_idx(coeff_idx, txb_info->bwl)] =
-      (uint8_t)clamp(abs(qc), 0, UINT8_MAX);
+      (uint8_t)clamp(abs(qc), 0, INT8_MAX);
 }
 
 static INLINE void update_coeff(const int coeff_idx, const tran_low_t qc,
@@ -300,7 +300,7 @@ static INLINE void av1_txb_init_levels(const tran_low_t *const coeff,
 
   for (int i = 0; i < height; i++) {
     for (int j = 0; j < width; j++) {
-      *ls++ = (uint8_t)clamp(abs(coeff[i * width + j]), 0, UINT8_MAX);
+      *ls++ = (uint8_t)clamp(abs(coeff[i * width + j]), 0, INT8_MAX);
     }
     for (int j = 0; j < TX_PAD_HOR; j++) {
       *ls++ = 0;
