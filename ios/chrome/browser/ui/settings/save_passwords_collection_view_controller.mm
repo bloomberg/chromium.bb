@@ -129,10 +129,6 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
   std::vector<std::unique_ptr<autofill::PasswordForm>> savedForms_;
   // The list of the user's blacklisted sites.
   std::vector<std::unique_ptr<autofill::PasswordForm>> blacklistedForms_;
-  // Deletion of password being asynchronous, and the method taking a reference
-  // to the PasswordForm, the PasswordForm must outlive the calls to
-  // RemoveLogin. This vector will ensure this.
-  std::vector<std::unique_ptr<autofill::PasswordForm>> deletedForms_;
   // Map containing duplicates of saved passwords.
   password_manager::DuplicatesMap savedPasswordDuplicates_;
   // Map containing duplicates of blacklisted passwords.
@@ -543,7 +539,6 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
 
     forms.erase(formIterator);
     passwordStore_->RemoveLogin(*form);
-    deletedForms_.push_back(std::move(form));
     if (blacklisted) {
       ++blacklistedDeleted;
     } else {
