@@ -72,5 +72,6 @@ FAIL ReadableStreamBYOBReader can be constructed directly bytes type is not yet 
 FAIL ReadableStreamBYOBReader constructor requires a ReadableStream argument bytes type is not yet implemented
 FAIL ReadableStreamBYOBReader constructor requires an unlocked ReadableStream bytes type is not yet implemented
 FAIL ReadableStreamBYOBReader constructor requires a ReadableStream with type "bytes" bytes type is not yet implemented
+PASS ReadableStream constructor should not accept a strategy with a size defined if type is "bytes"
 Harness: the test ran to completion.
 
