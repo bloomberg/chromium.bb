@@ -200,3 +200,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_less_probe_rtt, false)
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_server_reply_to_connectivity_probing,
           true)
+
+// If true, truncates QUIC error strings to 256 characters before writing them
+// to the wire.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_truncate_long_details, true)
