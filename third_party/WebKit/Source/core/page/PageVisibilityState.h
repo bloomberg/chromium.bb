@@ -33,18 +33,11 @@
 
 #include "core/CoreExport.h"
 #include "platform/wtf/text/WTFString.h"
+#include "third_party/WebKit/common/page/page_visibility_state.mojom-blink.h"
 
 namespace blink {
 
-// The enum is not flag protected as it is used in the WebKit chromium API
-// without flag protection.
-enum PageVisibilityState {
-  kPageVisibilityStateVisible,
-  kPageVisibilityStateHidden,
-  kPageVisibilityStatePrerender,
-};
-
-CORE_EXPORT String PageVisibilityStateString(PageVisibilityState);
+CORE_EXPORT String PageVisibilityStateString(mojom::PageVisibilityState);
 
 }  // namespace blink
 

@@ -175,6 +175,7 @@
 #include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 #include "storage/common/data_element.h"
 #include "third_party/WebKit/common/frame_policy.h"
+#include "third_party/WebKit/common/page/page_visibility_state.mojom.h"
 #include "third_party/WebKit/public/platform/FilePathConversion.h"
 #include "third_party/WebKit/public/platform/InterfaceProvider.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
@@ -7059,13 +7060,13 @@ void RenderFrameImpl::CheckIfAudioSinkExistsAndIsAuthorized(
                    .device_status());
 }
 
-blink::WebPageVisibilityState RenderFrameImpl::VisibilityState() const {
+blink::mojom::PageVisibilityState RenderFrameImpl::VisibilityState() const {
   const RenderFrameImpl* local_root = GetLocalRoot();
-  blink::WebPageVisibilityState current_state =
+  blink::mojom::PageVisibilityState current_state =
       local_root->render_widget_->is_hidden()
-          ? blink::kWebPageVisibilityStateHidden
-          : blink::kWebPageVisibilityStateVisible;
-  blink::WebPageVisibilityState override_state = current_state;
+          ? blink::mojom::PageVisibilityState::kHidden
+          : blink::mojom::PageVisibilityState::kVisible;
+  blink::mojom::PageVisibilityState override_state = current_state;
   if (GetContentClient()->renderer()->ShouldOverridePageVisibilityState(
           this, &override_state))
     return override_state;
@@ -7096,7 +7097,7 @@ void RenderFrameImpl::ScrollRectToVisibleInParentFrame(
       routing_id_, rect_to_scroll, properties));
 }
 
-blink::WebPageVisibilityState RenderFrameImpl::GetVisibilityState() const {
+blink::mojom::PageVisibilityState RenderFrameImpl::GetVisibilityState() const {
   return VisibilityState();
 }
 

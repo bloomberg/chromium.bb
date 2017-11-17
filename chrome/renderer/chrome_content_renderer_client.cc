@@ -114,6 +114,7 @@
 #include "printing/features/features.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/WebKit/common/page/page_visibility_state.mojom.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebCache.h"
 #include "third_party/WebKit/public/platform/WebRuntimeFeatures.h"
@@ -1363,11 +1364,11 @@ ChromeContentRendererClient::GetPrescientNetworking() {
 
 bool ChromeContentRendererClient::ShouldOverridePageVisibilityState(
     const content::RenderFrame* render_frame,
-    blink::WebPageVisibilityState* override_state) {
+    blink::mojom::PageVisibilityState* override_state) {
   if (!prerender::PrerenderHelper::IsPrerendering(render_frame))
     return false;
 
-  *override_state = blink::kWebPageVisibilityStatePrerender;
+  *override_state = blink::mojom::PageVisibilityState::kPrerender;
   return true;
 }
 

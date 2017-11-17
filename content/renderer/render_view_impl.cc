@@ -109,6 +109,7 @@
 #include "net/http/http_util.h"
 #include "ppapi/features/features.h"
 #include "skia/ext/platform_canvas.h"
+#include "third_party/WebKit/common/page/page_visibility_state.mojom.h"
 #include "third_party/WebKit/public/platform/FilePathConversion.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebConnectionType.h"
@@ -567,9 +568,9 @@ void RenderViewImpl::Initialize(
 #endif
   display_mode_ = params->initial_size.display_mode;
 
-  webview_ = WebView::Create(this, is_hidden()
-                                       ? blink::kWebPageVisibilityStateHidden
-                                       : blink::kWebPageVisibilityStateVisible);
+  webview_ = WebView::Create(
+      this, is_hidden() ? blink::mojom::PageVisibilityState::kHidden
+                        : blink::mojom::PageVisibilityState::kVisible);
   RenderWidget::Init(show_callback, webview_->GetWidget());
 
   g_view_map.Get().insert(std::make_pair(webview(), this));
@@ -2188,9 +2189,9 @@ void RenderViewImpl::OnPageWasHidden() {
     // frame. Currently, this is done because the main frame may override the
     // visibility of the page when prerendering. In order to fix this,
     // prerendering must be made aware of OOPIFs. https://crbug.com/440544
-    blink::WebPageVisibilityState visibilityState =
+    blink::mojom::PageVisibilityState visibilityState =
         GetMainRenderFrame() ? GetMainRenderFrame()->VisibilityState()
-                             : blink::kWebPageVisibilityStateHidden;
+                             : blink::mojom::PageVisibilityState::kHidden;
     webview()->SetVisibilityState(visibilityState, false);
   }
 }
@@ -2201,9 +2202,9 @@ void RenderViewImpl::OnPageWasShown() {
 #endif
 
   if (webview()) {
-    blink::WebPageVisibilityState visibilityState =
+    blink::mojom::PageVisibilityState visibilityState =
         GetMainRenderFrame() ? GetMainRenderFrame()->VisibilityState()
-                             : blink::kWebPageVisibilityStateVisible;
+                             : blink::mojom::PageVisibilityState::kVisible;
     webview()->SetVisibilityState(visibilityState, false);
   }
 }

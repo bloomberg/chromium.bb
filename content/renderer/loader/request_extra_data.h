@@ -13,7 +13,7 @@
 #include "content/common/navigation_params.h"
 #include "content/public/common/url_loader_throttle.h"
 #include "content/renderer/loader/web_url_loader_impl.h"
-#include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
+#include "third_party/WebKit/common/page/page_visibility_state.mojom.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "ui/base/page_transition_types.h"
@@ -31,7 +31,8 @@ class CONTENT_EXPORT RequestExtraData : public blink::WebURLRequest::ExtraData {
   RequestExtraData();
   ~RequestExtraData() override;
 
-  void set_visibility_state(blink::WebPageVisibilityState visibility_state) {
+  void set_visibility_state(
+      blink::mojom::PageVisibilityState visibility_state) {
     visibility_state_ = visibility_state;
   }
   void set_render_frame_id(int render_frame_id) {
@@ -146,7 +147,7 @@ class CONTENT_EXPORT RequestExtraData : public blink::WebURLRequest::ExtraData {
   void CopyToResourceRequest(ResourceRequest* request) const;
 
  private:
-  blink::WebPageVisibilityState visibility_state_;
+  blink::mojom::PageVisibilityState visibility_state_;
   int render_frame_id_;
   bool is_main_frame_;
   url::Origin frame_origin_;

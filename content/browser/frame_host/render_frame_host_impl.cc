@@ -145,6 +145,7 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/WebKit/common/feature_policy/feature_policy.h"
 #include "third_party/WebKit/common/frame_policy.h"
+#include "third_party/WebKit/common/page/page_visibility_state.mojom.h"
 #include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/ax_tree_id_registry.h"
 #include "ui/accessibility/ax_tree_update.h"
@@ -796,7 +797,7 @@ RenderFrameHostImpl::GetRemoteAssociatedInterfaces() {
   return remote_associated_interfaces_.get();
 }
 
-blink::WebPageVisibilityState RenderFrameHostImpl::GetVisibilityState() {
+blink::mojom::PageVisibilityState RenderFrameHostImpl::GetVisibilityState() {
   // Works around the crashes seen in https://crbug.com/501863, where the
   // active WebContents from a browser iterator may contain a render frame
   // detached from the frame tree. This tries to find a RenderWidgetHost
@@ -812,12 +813,12 @@ blink::WebPageVisibilityState RenderFrameHostImpl::GetVisibilityState() {
     frame = frame->GetParent();
   }
   if (!frame)
-    return blink::kWebPageVisibilityStateHidden;
+    return blink::mojom::PageVisibilityState::kHidden;
 
-  blink::WebPageVisibilityState visibility_state =
+  blink::mojom::PageVisibilityState visibility_state =
       GetRenderWidgetHost()->is_hidden()
-          ? blink::kWebPageVisibilityStateHidden
-          : blink::kWebPageVisibilityStateVisible;
+          ? blink::mojom::PageVisibilityState::kHidden
+          : blink::mojom::PageVisibilityState::kVisible;
   GetContentClient()->browser()->OverridePageVisibilityState(this,
                                                              &visibility_state);
   return visibility_state;

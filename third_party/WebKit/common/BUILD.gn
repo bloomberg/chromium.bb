@@ -101,6 +101,7 @@ mojom("mojo_platform_bindings") {
     "blob/blob.mojom",
     "blob/blob_registry.mojom",
     "blob/size_getter.mojom",
+    "page/page_visibility_state.mojom",
   ]
 
   public_deps = [

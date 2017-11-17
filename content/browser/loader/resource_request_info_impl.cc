@@ -15,6 +15,7 @@
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/process_type.h"
 #include "net/url_request/url_request.h"
+#include "third_party/WebKit/common/page/page_visibility_state.mojom.h"
 
 namespace content {
 
@@ -60,32 +61,32 @@ void ResourceRequestInfo::AllocateForTesting(
 
   ResourceRequestInfoImpl* info = new ResourceRequestInfoImpl(
       ResourceRequesterInfo::CreateForRendererTesting(
-          render_process_id),                 // resource_requester_info
-      render_view_id,                         // route_id
-      -1,                                     // frame_tree_node_id
-      0,                                      // origin_pid
-      0,                                      // request_id
-      render_frame_id,                        // render_frame_id
-      is_main_frame,                          // is_main_frame
-      resource_type,                          // resource_type
-      ui::PAGE_TRANSITION_LINK,               // transition_type
-      false,                                  // should_replace_current_entry
-      false,                                  // is_download
-      false,                                  // is_stream
-      allow_download,                         // allow_download
-      false,                                  // has_user_gesture
-      false,                                  // enable load timing
-      request->has_upload(),                  // enable upload progress
-      false,                                  // do_not_prompt_for_login
-      false,                                  // keep_alive
-      blink::kWebReferrerPolicyDefault,       // referrer_policy
-      blink::kWebPageVisibilityStateVisible,  // visibility_state
-      context,                                // context
-      false,                                  // report_raw_headers
-      is_async,                               // is_async
-      previews_state,                         // previews_state
-      nullptr,                                // body
-      false);                                 // initiated_in_secure_context
+          render_process_id),            // resource_requester_info
+      render_view_id,                    // route_id
+      -1,                                // frame_tree_node_id
+      0,                                 // origin_pid
+      0,                                 // request_id
+      render_frame_id,                   // render_frame_id
+      is_main_frame,                     // is_main_frame
+      resource_type,                     // resource_type
+      ui::PAGE_TRANSITION_LINK,          // transition_type
+      false,                             // should_replace_current_entry
+      false,                             // is_download
+      false,                             // is_stream
+      allow_download,                    // allow_download
+      false,                             // has_user_gesture
+      false,                             // enable load timing
+      request->has_upload(),             // enable upload progress
+      false,                             // do_not_prompt_for_login
+      false,                             // keep_alive
+      blink::kWebReferrerPolicyDefault,  // referrer_policy
+      blink::mojom::PageVisibilityState::kVisible,  // visibility_state
+      context,                                      // context
+      false,                                        // report_raw_headers
+      is_async,                                     // is_async
+      previews_state,                               // previews_state
+      nullptr,                                      // body
+      false);  // initiated_in_secure_context
   info->AssociateWithRequest(request);
   info->set_navigation_ui_data(std::move(navigation_ui_data));
 }
@@ -147,7 +148,7 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
     bool do_not_prompt_for_login,
     bool keepalive,
     blink::WebReferrerPolicy referrer_policy,
-    blink::WebPageVisibilityState visibility_state,
+    blink::mojom::PageVisibilityState visibility_state,
     ResourceContext* context,
     bool report_raw_headers,
     bool is_async,
@@ -274,8 +275,8 @@ blink::WebReferrerPolicy ResourceRequestInfoImpl::GetReferrerPolicy() const {
   return referrer_policy_;
 }
 
-blink::WebPageVisibilityState
-ResourceRequestInfoImpl::GetVisibilityState() const {
+blink::mojom::PageVisibilityState ResourceRequestInfoImpl::GetVisibilityState()
+    const {
   return visibility_state_;
 }
 

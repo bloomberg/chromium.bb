@@ -20,8 +20,8 @@
 #include "net/base/request_priority.h"
 #include "net/http/http_request_headers.h"
 #include "services/network/public/interfaces/fetch_api.mojom.h"
+#include "third_party/WebKit/common/page/page_visibility_state.mojom.h"
 #include "third_party/WebKit/public/platform/WebMixedContentContextType.h"
-#include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
@@ -59,8 +59,8 @@ struct CONTENT_EXPORT ResourceRequest {
   blink::WebReferrerPolicy referrer_policy = blink::kWebReferrerPolicyAlways;
 
   // The frame's visibility state.
-  blink::WebPageVisibilityState visibility_state =
-      blink::kWebPageVisibilityStateVisible;
+  blink::mojom::PageVisibilityState visibility_state =
+      blink::mojom::PageVisibilityState::kVisible;
 
   // Additional HTTP request headers.
   net::HttpRequestHeaders headers;

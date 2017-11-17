@@ -28,7 +28,6 @@
 #include "net/http/http_response_headers.h"
 #include "third_party/WebKit/common/frame_policy.h"
 #include "third_party/WebKit/public/platform/WebMixedContentContextType.h"
-#include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/web_bluetooth.mojom.h"
 #include "third_party/WebKit/public/web/WebTreeScopeType.h"
 #include "ui/base/page_transition_types.h"

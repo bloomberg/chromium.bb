@@ -32,6 +32,7 @@
 #include "content/public/common/push_messaging_status.mojom.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "third_party/WebKit/common/page/page_visibility_state.mojom.h"
 #include "third_party/WebKit/public/platform/modules/budget_service/budget_service.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
@@ -230,10 +231,10 @@ bool PushMessagingNotificationManager::IsTabVisible(
 
   // Ignore minimized windows.
   switch (active_web_contents->GetMainFrame()->GetVisibilityState()) {
-    case blink::kWebPageVisibilityStateHidden:
-    case blink::kWebPageVisibilityStatePrerender:
+    case blink::mojom::PageVisibilityState::kHidden:
+    case blink::mojom::PageVisibilityState::kPrerender:
       return false;
-    case blink::kWebPageVisibilityStateVisible:
+    case blink::mojom::PageVisibilityState::kVisible:
       break;
   }
 

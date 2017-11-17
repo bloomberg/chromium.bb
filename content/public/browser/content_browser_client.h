@@ -35,7 +35,7 @@
 #include "services/service_manager/sandbox/sandbox_type.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/quota/quota_manager.h"
-#include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
+#include "third_party/WebKit/common/page/page_visibility_state.mojom.h"
 #include "third_party/WebKit/public/web/window_features.mojom.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
@@ -794,7 +794,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // |visibility_state| should not be null. It will only be set if needed.
   virtual void OverridePageVisibilityState(
       RenderFrameHost* render_frame_host,
-      blink::WebPageVisibilityState* visibility_state) {}
+      blink::mojom::PageVisibilityState* visibility_state) {}
 
   // Allows an embedder to provide its own ControllerPresentationServiceDelegate
   // implementation. Returns nullptr if unavailable.

@@ -87,6 +87,7 @@
 #include "net/url_request/url_request_test_util.h"
 #include "storage/browser/blob/shareable_file_reference.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/common/page/page_visibility_state.mojom.h"
 
 // TODO(eroman): Write unit tests for SafeBrowsing that exercise
 //               SafeBrowsingResourceHandler.
@@ -1081,9 +1082,9 @@ class ResourceDispatcherHostTest : public testing::Test, public IPC::Sender {
       CommonNavigationParams common_params;
       common_params.url = url;
       std::unique_ptr<NavigationRequestInfo> request_info(
-          new NavigationRequestInfo(common_params, begin_params, url, true,
-                                    false, false, -1, false, false,
-                                    blink::kWebPageVisibilityStateVisible));
+          new NavigationRequestInfo(
+              common_params, begin_params, url, true, false, false, -1, false,
+              false, blink::mojom::PageVisibilityState::kVisible));
       std::unique_ptr<NavigationURLLoader> test_loader =
           NavigationURLLoader::Create(
               browser_context_->GetResourceContext(),

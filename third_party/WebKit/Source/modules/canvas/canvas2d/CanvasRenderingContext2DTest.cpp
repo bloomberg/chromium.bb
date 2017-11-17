@@ -37,6 +37,7 @@
 #include "public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/common/page/page_visibility_state.mojom-blink.h"
 #include "third_party/skia/include/core/SkColorSpaceXform.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -1407,8 +1408,8 @@ TEST_F(CanvasRenderingContext2DTestWithTestingPlatform,
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   // Hide element to trigger hibernation (if enabled).
-  GetDocument().GetPage()->SetVisibilityState(kPageVisibilityStateHidden,
-                                              false);
+  GetDocument().GetPage()->SetVisibilityState(
+      mojom::PageVisibilityState::kHidden, false);
   RunUntilIdle();  // Run hibernation task.
   // If enabled, hibernation should cause compositing update.
   EXPECT_EQ(!!CANVAS2D_HIBERNATION_ENABLED,
@@ -1418,8 +1419,8 @@ TEST_F(CanvasRenderingContext2DTestWithTestingPlatform,
   EXPECT_FALSE(layer->NeedsCompositingInputsUpdate());
 
   // Wake up again, which should request a compositing update synchronously.
-  GetDocument().GetPage()->SetVisibilityState(kPageVisibilityStateVisible,
-                                              false);
+  GetDocument().GetPage()->SetVisibilityState(
+      mojom::PageVisibilityState::kVisible, false);
   EXPECT_EQ(!!CANVAS2D_HIBERNATION_ENABLED,
             layer->NeedsCompositingInputsUpdate());
   RunUntilIdle();  // Clear task queue.
@@ -1443,8 +1444,8 @@ TEST_F(CanvasRenderingContext2DTestWithTestingPlatform,
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   // Hide element to trigger hibernation (if enabled).
-  GetDocument().GetPage()->SetVisibilityState(kPageVisibilityStateHidden,
-                                              false);
+  GetDocument().GetPage()->SetVisibilityState(
+      mojom::PageVisibilityState::kHidden, false);
   RunUntilIdle();  // Run hibernation task.
   // Never hibernate a canvas with no resource provider
   EXPECT_FALSE(layer->NeedsCompositingInputsUpdate());

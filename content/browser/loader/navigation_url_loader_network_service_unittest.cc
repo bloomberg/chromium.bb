@@ -27,6 +27,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/common/page/page_visibility_state.mojom.h"
 
 namespace content {
 
@@ -123,7 +124,7 @@ class NavigationURLLoaderNetworkServiceTest : public testing::Test {
             false /* parent_is_main_frame */, false /* are_ancestors_secure */,
             -1 /* frame_tree_node_id */, false /* is_for_guests_only */,
             false /* report_raw_headers */,
-            blink::kWebPageVisibilityStateVisible));
+            blink::mojom::PageVisibilityState::kVisible));
 
     std::vector<std::unique_ptr<URLLoaderRequestHandler>> handlers;
     most_recent_resource_request_ = base::nullopt;

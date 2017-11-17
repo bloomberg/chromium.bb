@@ -60,7 +60,6 @@
 #include "public/platform/WebFileSystemType.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
 #include "public/platform/WebLoadingBehaviorFlag.h"
-#include "public/platform/WebPageVisibilityState.h"
 #include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebSetSinkIdCallbacks.h"
 #include "public/platform/WebSourceLocation.h"
@@ -73,6 +72,7 @@
 #include "public/platform/WebWorkerFetchContext.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerProvider.h"
 #include "third_party/WebKit/common/feature_policy/feature_policy.h"
+#include "third_party/WebKit/common/page/page_visibility_state.mojom-shared.h"
 #include "third_party/WebKit/common/sandbox_flags.h"
 #include "v8/include/v8.h"
 
@@ -836,8 +836,8 @@ class BLINK_EXPORT WebFrameClient {
   // Visibility ----------------------------------------------------------
 
   // Returns the current visibility of the WebFrame.
-  virtual WebPageVisibilityState VisibilityState() const {
-    return kWebPageVisibilityStateVisible;
+  virtual mojom::PageVisibilityState VisibilityState() const {
+    return mojom::PageVisibilityState::kVisible;
   }
 
   // Overwrites the given URL to use an HTML5 embed if possible.

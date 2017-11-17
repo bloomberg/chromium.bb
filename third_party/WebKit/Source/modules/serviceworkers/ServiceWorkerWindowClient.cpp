@@ -42,8 +42,7 @@ ServiceWorkerWindowClient::ServiceWorkerWindowClient(
 ServiceWorkerWindowClient::~ServiceWorkerWindowClient() {}
 
 String ServiceWorkerWindowClient::visibilityState() const {
-  return PageVisibilityStateString(
-      static_cast<PageVisibilityState>(page_visibility_state_));
+  return PageVisibilityStateString(page_visibility_state_);
 }
 
 ScriptPromise ServiceWorkerWindowClient::focus(ScriptState* script_state) {

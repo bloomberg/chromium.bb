@@ -271,9 +271,9 @@ class WebMediaPlayerImplTest : public testing::Test {
  public:
   WebMediaPlayerImplTest()
       : media_thread_("MediaThreadForTest"),
-        web_view_(
-            blink::WebView::Create(nullptr,
-                                   blink::kWebPageVisibilityStateVisible)),
+        web_view_(blink::WebView::Create(
+            nullptr,
+            blink::mojom::PageVisibilityState::kVisible)),
         web_local_frame_(
             blink::WebLocalFrame::CreateMainFrame(web_view_,
                                                   &web_frame_client_,

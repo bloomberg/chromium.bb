@@ -6,12 +6,13 @@
 
 #include "base/logging.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "third_party/WebKit/common/page/page_visibility_state.mojom.h"
 
 namespace content {
 
 ServiceWorkerClientInfo::ServiceWorkerClientInfo()
     : ServiceWorkerClientInfo(std::string(),
-                              blink::kWebPageVisibilityStateLast,
+                              blink::mojom::PageVisibilityState::kLast,
                               false,
                               GURL(),
                               REQUEST_CONTEXT_FRAME_TYPE_LAST,
@@ -21,7 +22,7 @@ ServiceWorkerClientInfo::ServiceWorkerClientInfo()
 
 ServiceWorkerClientInfo::ServiceWorkerClientInfo(
     const std::string& client_uuid,
-    blink::WebPageVisibilityState page_visibility_state,
+    blink::mojom::PageVisibilityState page_visibility_state,
     bool is_focused,
     const GURL& url,
     RequestContextFrameType frame_type,
@@ -41,7 +42,7 @@ ServiceWorkerClientInfo::ServiceWorkerClientInfo(
     const ServiceWorkerClientInfo& other) = default;
 
 bool ServiceWorkerClientInfo::IsEmpty() const {
-  return page_visibility_state == blink::kWebPageVisibilityStateLast &&
+  return page_visibility_state == blink::mojom::PageVisibilityState::kLast &&
          is_focused == false && url.is_empty() &&
          frame_type == REQUEST_CONTEXT_FRAME_TYPE_LAST &&
          client_type == blink::kWebServiceWorkerClientTypeLast;

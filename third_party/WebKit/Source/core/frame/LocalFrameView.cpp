@@ -135,6 +135,7 @@
 #include "public/platform/WebDisplayItemList.h"
 #include "public/platform/WebRect.h"
 #include "public/platform/WebRemoteScrollProperties.h"
+#include "third_party/WebKit/common/page/page_visibility_state.mojom-blink.h"
 
 // Used to check for dirty layouts violating document lifecycle rules.
 // If arg evaluates to true, the program will continue. If arg evaluates to
@@ -1750,7 +1751,8 @@ IntPoint LocalFrameView::LastKnownMousePosition() const {
 
 bool LocalFrameView::ShouldSetCursor() const {
   Page* page = GetFrame().GetPage();
-  return page && page->VisibilityState() != kPageVisibilityStateHidden &&
+  return page &&
+         page->VisibilityState() != mojom::PageVisibilityState::kHidden &&
          !frame_->GetEventHandler().IsMousePositionUnknown() &&
          page->GetFocusController().IsActive();
 }

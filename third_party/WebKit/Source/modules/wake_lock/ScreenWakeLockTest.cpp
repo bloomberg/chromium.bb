@@ -14,10 +14,10 @@
 #include "platform/testing/TestingPlatformSupport.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
-#include "public/platform/WebPageVisibilityState.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/common/page/page_visibility_state.mojom-blink.h"
 
 #include <memory>
 
@@ -110,7 +110,7 @@ class ScreenWakeLockTest : public ::testing::Test {
   void Show() {
     DCHECK(web_view_helper_.WebView());
     web_view_helper_.WebView()->SetVisibilityState(
-        kWebPageVisibilityStateVisible, false);
+        mojom::blink::PageVisibilityState::kVisible, false);
     // Let the notification sink through the mojo pipes.
     testing::RunPendingTasks();
   }
@@ -118,7 +118,7 @@ class ScreenWakeLockTest : public ::testing::Test {
   void Hide() {
     DCHECK(web_view_helper_.WebView());
     web_view_helper_.WebView()->SetVisibilityState(
-        kWebPageVisibilityStateHidden, false);
+        mojom::blink::PageVisibilityState::kHidden, false);
     // Let the notification sink through the mojo pipes.
     testing::RunPendingTasks();
   }

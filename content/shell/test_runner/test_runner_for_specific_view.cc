@@ -34,6 +34,7 @@
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
 #include "gin/wrappable.h"
+#include "third_party/WebKit/common/page/page_visibility_state.mojom.h"
 #include "third_party/WebKit/public/platform/WebCanvas.h"
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebPasswordCredential.h"
@@ -98,7 +99,8 @@ void TestRunnerForSpecificView::Reset() {
     web_view()->SetSelectionColors(0xff1e90ff, 0xff000000, 0xffc8c8c8,
                                    0xff323232);
 #endif
-    web_view()->SetVisibilityState(kWebPageVisibilityStateVisible, true);
+    web_view()->SetVisibilityState(blink::mojom::PageVisibilityState::kVisible,
+                                   true);
     if (web_view()->MainFrame()->IsWebLocalFrame()) {
       web_view()->MainFrame()->ToWebLocalFrame()->EnableViewSourceMode(false);
       web_view()->SetTextZoomFactor(1);
@@ -479,11 +481,14 @@ void TestRunnerForSpecificView::ForceRedSelectionColors() {
 void TestRunnerForSpecificView::SetPageVisibility(
     const std::string& new_visibility) {
   if (new_visibility == "visible")
-    web_view()->SetVisibilityState(kWebPageVisibilityStateVisible, false);
+    web_view()->SetVisibilityState(blink::mojom::PageVisibilityState::kVisible,
+                                   false);
   else if (new_visibility == "hidden")
-    web_view()->SetVisibilityState(kWebPageVisibilityStateHidden, false);
+    web_view()->SetVisibilityState(blink::mojom::PageVisibilityState::kHidden,
+                                   false);
   else if (new_visibility == "prerender")
-    web_view()->SetVisibilityState(kWebPageVisibilityStatePrerender, false);
+    web_view()->SetVisibilityState(
+        blink::mojom::PageVisibilityState::kPrerender, false);
 }
 
 void TestRunnerForSpecificView::SetTextDirection(

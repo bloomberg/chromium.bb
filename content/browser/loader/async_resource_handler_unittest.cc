@@ -50,6 +50,7 @@
 #include "net/url_request/url_request_test_job.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/common/page/page_visibility_state.mojom.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
@@ -169,31 +170,31 @@ class AsyncResourceHandlerTest : public ::testing::Test,
         new RecordingResourceMessageFilter(resource_context_.get(), &context_);
     ResourceRequestInfoImpl* info = new ResourceRequestInfoImpl(
         filter_->requester_info_for_test(),
-        0,                                      // route_id
-        -1,                                     // frame_tree_node_id
-        0,                                      // origin_pid
-        0,                                      // request_id
-        0,                                      // render_frame_id
-        false,                                  // is_main_frame
-        RESOURCE_TYPE_IMAGE,                    // resource_type
-        ui::PAGE_TRANSITION_LINK,               // transition_type
-        false,                                  // should_replace_current_entry
-        false,                                  // is_download
-        false,                                  // is_stream
-        false,                                  // allow_download
-        false,                                  // has_user_gesture
-        false,                                  // enable load timing
-        false,                                  // enable upload progress
-        false,                                  // do_not_prompt_for_login
-        false,                                  // keep_alive
-        blink::kWebReferrerPolicyDefault,       // referrer_policy
-        blink::kWebPageVisibilityStateVisible,  // visibility_state
-        resource_context_.get(),                // context
-        false,                                  // report_raw_headers
-        true,                                   // is_async
-        PREVIEWS_OFF,                           // previews_state
-        nullptr,                                // body
-        false);                                 // initiated_in_secure_context
+        0,                                 // route_id
+        -1,                                // frame_tree_node_id
+        0,                                 // origin_pid
+        0,                                 // request_id
+        0,                                 // render_frame_id
+        false,                             // is_main_frame
+        RESOURCE_TYPE_IMAGE,               // resource_type
+        ui::PAGE_TRANSITION_LINK,          // transition_type
+        false,                             // should_replace_current_entry
+        false,                             // is_download
+        false,                             // is_stream
+        false,                             // allow_download
+        false,                             // has_user_gesture
+        false,                             // enable load timing
+        false,                             // enable upload progress
+        false,                             // do_not_prompt_for_login
+        false,                             // keep_alive
+        blink::kWebReferrerPolicyDefault,  // referrer_policy
+        blink::mojom::PageVisibilityState::kVisible,  // visibility_state
+        resource_context_.get(),                      // context
+        false,                                        // report_raw_headers
+        true,                                         // is_async
+        PREVIEWS_OFF,                                 // previews_state
+        nullptr,                                      // body
+        false);  // initiated_in_secure_context
     info->AssociateWithRequest(request.get());
     std::unique_ptr<AsyncResourceHandler> handler =
         std::make_unique<AsyncResourceHandler>(request.get(), &rdh_);

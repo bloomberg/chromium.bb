@@ -17,6 +17,7 @@
 #include "platform/testing/TestingPlatformSupport.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/common/page/page_visibility_state.mojom-blink.h"
 
 using ::testing::Mock;
 
@@ -111,12 +112,14 @@ TEST_F(OffscreenCanvasTest, AnimationSuspendedWhilePlaceholderHidden) {
   EXPECT_FALSE(Dispatcher()->IsAnimationSuspended());
 
   // Change visibility to hidden -> animation should be suspended
-  Page().GetPage().SetVisibilityState(kPageVisibilityStateHidden, false);
+  Page().GetPage().SetVisibilityState(mojom::PageVisibilityState::kHidden,
+                                      false);
   platform()->RunUntilIdle();
   EXPECT_TRUE(Dispatcher()->IsAnimationSuspended());
 
   // Change visibility to visible -> animation should resume
-  Page().GetPage().SetVisibilityState(kPageVisibilityStateVisible, false);
+  Page().GetPage().SetVisibilityState(mojom::PageVisibilityState::kVisible,
+                                      false);
   platform()->RunUntilIdle();
   EXPECT_FALSE(Dispatcher()->IsAnimationSuspended());
 }

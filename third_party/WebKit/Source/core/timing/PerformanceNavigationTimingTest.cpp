@@ -6,6 +6,7 @@
 
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/common/page/page_visibility_state.mojom-blink.h"
 
 namespace blink {
 
@@ -23,19 +24,20 @@ class PerformanceNavigationTimingTest : public ::testing::Test {
 };
 
 TEST_F(PerformanceNavigationTimingTest, GetNavigationType) {
-  page_holder_->GetPage().SetVisibilityState(kPageVisibilityStatePrerender,
-                                             false);
+  page_holder_->GetPage().SetVisibilityState(
+      mojom::PageVisibilityState::kPrerender, false);
   AtomicString returned_type = GetNavigationType(kNavigationTypeBackForward,
                                                  &page_holder_->GetDocument());
   EXPECT_EQ(returned_type, "prerender");
 
-  page_holder_->GetPage().SetVisibilityState(kPageVisibilityStateHidden, false);
+  page_holder_->GetPage().SetVisibilityState(
+      mojom::PageVisibilityState::kHidden, false);
   returned_type = GetNavigationType(kNavigationTypeBackForward,
                                     &page_holder_->GetDocument());
   EXPECT_EQ(returned_type, "back_forward");
 
-  page_holder_->GetPage().SetVisibilityState(kPageVisibilityStateVisible,
-                                             false);
+  page_holder_->GetPage().SetVisibilityState(
+      mojom::PageVisibilityState::kVisible, false);
   returned_type = GetNavigationType(kNavigationTypeFormResubmitted,
                                     &page_holder_->GetDocument());
   EXPECT_EQ(returned_type, "navigate");

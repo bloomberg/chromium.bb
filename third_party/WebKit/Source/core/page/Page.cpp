@@ -138,7 +138,7 @@ Page::Page(PageClients& page_clients)
       tab_key_cycles_through_elements_(true),
       paused_(false),
       device_scale_factor_(1),
-      visibility_state_(kPageVisibilityStateVisible),
+      visibility_state_(mojom::PageVisibilityState::kVisible),
       page_lifecycle_state_(PageLifecycleState::kUnknown),
       is_cursor_visible_(true),
       subframe_count_(0) {
@@ -427,7 +427,7 @@ void Page::VisitedStateChanged(LinkHash link_hash) {
   }
 }
 
-void Page::SetVisibilityState(PageVisibilityState visibility_state,
+void Page::SetVisibilityState(mojom::PageVisibilityState visibility_state,
                               bool is_initial_state) {
   if (visibility_state_ == visibility_state)
     return;
@@ -440,12 +440,12 @@ void Page::SetVisibilityState(PageVisibilityState visibility_state,
     main_frame_->DidChangeVisibilityState();
 }
 
-PageVisibilityState Page::VisibilityState() const {
+mojom::PageVisibilityState Page::VisibilityState() const {
   return visibility_state_;
 }
 
 bool Page::IsPageVisible() const {
-  return VisibilityState() == kPageVisibilityStateVisible;
+  return VisibilityState() == mojom::PageVisibilityState::kVisible;
 }
 
 void Page::SetLifecycleState(PageLifecycleState state) {

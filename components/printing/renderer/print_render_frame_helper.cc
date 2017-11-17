@@ -36,6 +36,7 @@
 #include "printing/metafile_skia_wrapper.h"
 #include "printing/pdf_metafile_skia.h"
 #include "printing/units.h"
+#include "third_party/WebKit/common/page/page_visibility_state.mojom.h"
 #include "third_party/WebKit/common/sandbox_flags.h"
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebDoubleSize.h"
@@ -582,8 +583,8 @@ void PrintRenderFrameHelper::PrintHeaderAndFooter(
                            page_layout.margin_top + page_layout.margin_bottom +
                                page_layout.content_height);
 
-  blink::WebView* web_view =
-      blink::WebView::Create(nullptr, blink::kWebPageVisibilityStateVisible);
+  blink::WebView* web_view = blink::WebView::Create(
+      nullptr, blink::mojom::PageVisibilityState::kVisible);
   web_view->GetSettings()->SetJavaScriptEnabled(true);
 
   class HeaderAndFooterClient final : public blink::WebFrameClient {
@@ -826,7 +827,7 @@ void PrepareFrameAndViewForPrint::CopySelection(
   prefs.javascript_enabled = false;
 
   blink::WebView* web_view =
-      blink::WebView::Create(this, blink::kWebPageVisibilityStateVisible);
+      blink::WebView::Create(this, blink::mojom::PageVisibilityState::kVisible);
   owns_web_view_ = true;
   content::RenderView::ApplyWebPreferences(prefs, web_view);
   blink::WebLocalFrame* main_frame =
