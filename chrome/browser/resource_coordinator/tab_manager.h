@@ -169,8 +169,7 @@ class TabManager : public TabStripModelObserver,
 
   // Returns true when a given renderer can be purged if the specified
   // renderer is eligible for purging.
-  // TODO(tasak): rename this to CanPurgeBackgroundedRenderer.
-  bool CanSuspendBackgroundedRenderer(int render_process_id) const;
+  bool CanPurgeBackgroundedRenderer(int render_process_id) const;
 
   // Indicates how TabManager should load pending background tabs. The mode is
   // recorded in tracing for easier debugging. The existing explicit numbering
