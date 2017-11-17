@@ -173,8 +173,6 @@ class EditAnnotationsView(generic.base.View):
     if finalize_form.is_valid():
       self._MaybeSaveFinalizeMessage()
 
-
-
     self._annotations_formset = ba_forms.AnnotationsFormSet(request.POST)
     if self._annotations_formset.is_valid():
       self._SaveAnnotations()
@@ -203,7 +201,7 @@ class EditAnnotationsView(generic.base.View):
     """Creates a finalize buildMessage for this build."""
     has_finalize_message = self._GetFinalizeRow().exists()
     if not has_finalize_message:
-      build = self._GetBuildRow()
+      build = self._GetBuildRow().build_entry
       ba_models.BuildMessageTable(
           build_id=build,
           message_type=
