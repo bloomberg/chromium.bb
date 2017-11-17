@@ -63,7 +63,7 @@ TEST(ComputedStyleTest, FocusRingWidth) {
 TEST(ComputedStyleTest, FocusRingOutset) {
   scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
   style->SetOutlineStyle(EBorderStyle::kSolid);
-  style->SetOutlineStyleIsAuto(kOutlineIsAutoOn);
+  style->SetOutlineStyleIsAuto(static_cast<bool>(OutlineIsAuto::kOn));
   style->SetEffectiveZoom(4.75);
 #if defined(OS_MACOSX)
   ASSERT_EQ(4, style->OutlineOutsetExtent());

@@ -91,7 +91,7 @@ enum PseudoId {
                          (1 << (kPseudoIdBackdrop - kFirstPublicPseudoId))
 };
 
-enum OutlineIsAuto { kOutlineIsAutoOff = 0, kOutlineIsAutoOn };
+enum class OutlineIsAuto : bool { kOff = false, kOn = true };
 
 // Random visual rendering model attributes. Not inherited.
 

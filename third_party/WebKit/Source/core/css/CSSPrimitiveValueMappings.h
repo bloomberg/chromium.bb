@@ -154,8 +154,8 @@ inline EBorderStyle CSSIdentifierValue::ConvertTo() const {
 template <>
 inline OutlineIsAuto CSSIdentifierValue::ConvertTo() const {
   if (value_id_ == CSSValueAuto)
-    return kOutlineIsAutoOn;
-  return kOutlineIsAutoOff;
+    return OutlineIsAuto::kOn;
+  return OutlineIsAuto::kOff;
 }
 
 template <>

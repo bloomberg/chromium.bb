@@ -320,7 +320,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyOutlineStyle(
     const CSSValue& value) {
   const CSSIdentifierValue& identifier_value = ToCSSIdentifierValue(value);
   state.Style()->SetOutlineStyleIsAuto(
-      identifier_value.ConvertTo<OutlineIsAuto>());
+      static_cast<bool>(identifier_value.ConvertTo<OutlineIsAuto>()));
   state.Style()->SetOutlineStyle(identifier_value.ConvertTo<EBorderStyle>());
 }
 
