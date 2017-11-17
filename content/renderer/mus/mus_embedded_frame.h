@@ -59,6 +59,10 @@ class MusEmbeddedFrame {
   // the MusEmbeddedFrame is created before the WindowTree has been obtained.
   void OnTreeAvailable();
 
+  // Called when the WindowTree held by |renderer_window_tree_client_| is about
+  // to change. This means the renderer was reembeded.
+  void OnTreeWillChange();
+
   // Does the actual embedding.
   void CreateChildWindowAndEmbed(const base::UnguessableToken& token);
 
@@ -71,6 +75,9 @@ class MusEmbeddedFrame {
   const ui::ClientSpecificId window_id_;
 
   std::unique_ptr<PendingState> pending_state_;
+
+  // If set, the WindowTree that state was created on has changed.
+  bool tree_changed_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(MusEmbeddedFrame);
 };

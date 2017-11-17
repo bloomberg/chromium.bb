@@ -57,6 +57,9 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   bool OnMessageReceivedFromEmbedder(const IPC::Message& message,
                                      RenderWidgetHostImpl* embedder);
 
+  // Called when this RenderWidgetHostViewGuest is attached.
+  void OnAttached();
+
   // RenderWidgetHostView implementation.
   bool OnMessageReceived(const IPC::Message& msg) override;
   void InitAsChild(gfx::NativeView parent_view) override;
@@ -155,8 +158,6 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
 
  private:
   friend class RenderWidgetHostView;
-
-  void Init();
 
   void SendSurfaceInfoToEmbedderImpl(
       const viz::SurfaceInfo& surface_info,

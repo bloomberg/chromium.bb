@@ -29,6 +29,13 @@ void OnEmbedAck(bool success) {
 
 MusEmbeddedFrame::~MusEmbeddedFrame() {
   renderer_window_tree_client_->OnEmbeddedFrameDestroyed(this);
+
+  // If the tree changed the old tree the window was created in was dropped and
+  // the server implictly cleaned up. As such, no need to do cleanup here (and
+  // we don't have a handle to the right WindowTree at this point).
+  if (tree_changed_)
+    return;
+
   // If there is |pending_state_| it means we didn't actually create the window
   // yet and there is nothing to do.
   if (pending_state_)
@@ -40,6 +47,9 @@ MusEmbeddedFrame::~MusEmbeddedFrame() {
 void MusEmbeddedFrame::SetWindowBounds(
     const viz::LocalSurfaceId& local_surface_id,
     const gfx::Rect& bounds) {
+  if (tree_changed_)
+    return;
+
   if (!window_tree()) {
     DCHECK(pending_state_);
     pending_state_->bounds = bounds;
@@ -82,10 +92,16 @@ void MusEmbeddedFrame::CreateChildWindowAndEmbed(
 }
 
 void MusEmbeddedFrame::OnTreeAvailable() {
+  // See header for description, always called before OnTreeWillChange().
+  DCHECK(!tree_changed_);
   std::unique_ptr<PendingState> pending_state = std::move(pending_state_);
   CreateChildWindowAndEmbed(pending_state->token);
   if (pending_state->was_set_window_bounds_called)
     SetWindowBounds(pending_state->local_surface_id, pending_state->bounds);
+}
+
+void MusEmbeddedFrame::OnTreeWillChange() {
+  tree_changed_ = true;
 }
 
 uint32_t MusEmbeddedFrame::GetAndAdvanceNextChangeId() {
@@ -93,7 +109,9 @@ uint32_t MusEmbeddedFrame::GetAndAdvanceNextChangeId() {
 }
 
 ui::mojom::WindowTree* MusEmbeddedFrame::window_tree() {
-  return renderer_window_tree_client_->tree_.get();
+  // Once |tree_changed_| is true the WindowTree this instance used has changed
+  // and it no longer makes sense to use it (the original window was deleted).
+  return tree_changed_ ? nullptr : renderer_window_tree_client_->tree_.get();
 }
 
 MusEmbeddedFrame::PendingState::PendingState() = default;
