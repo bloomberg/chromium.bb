@@ -56,8 +56,6 @@ void UiRenderer::DrawSplashScreen(const RenderInfo& render_info) {
   if (elements.empty())
     return;
 
-  LOG(ERROR) << "lolk drawing splash screen";
-
   // WebVR is incompatible with 3D world compositing since the
   // depth buffer was already populated with unknown scaling - the
   // WebVR app has full control over zNear/zFar. Just leave the
