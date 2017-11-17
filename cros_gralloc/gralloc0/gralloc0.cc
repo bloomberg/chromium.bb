@@ -6,6 +6,7 @@
 
 #include "../cros_gralloc_driver.h"
 
+#include <cassert>
 #include <hardware/gralloc.h>
 #include <memory.h>
 
