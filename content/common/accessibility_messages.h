@@ -203,9 +203,10 @@ IPC_MESSAGE_ROUTED1(
     AccessibilityHostMsg_FindInPageResultParams)
 
 // Sent in response to AccessibilityMsg_HitTest.
-IPC_MESSAGE_ROUTED3(AccessibilityHostMsg_ChildFrameHitTestResult,
+IPC_MESSAGE_ROUTED4(AccessibilityHostMsg_ChildFrameHitTestResult,
                     gfx::Point /* location tested */,
-                    int /* node id of result */,
+                    int /* routing id of child frame */,
+                    int /* browser plugin instance id of child frame */,
                     ui::AXEvent /* event to fire */)
 
 // Sent in response to AccessibilityMsg_SnapshotTree. The callback id that was

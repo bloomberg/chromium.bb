@@ -654,7 +654,11 @@ void RenderAccessibilityImpl::OnHitTest(const gfx::Point& point,
       data.HasContentIntAttribute(
           AX_CONTENT_ATTR_CHILD_BROWSER_PLUGIN_INSTANCE_ID)) {
     Send(new AccessibilityHostMsg_ChildFrameHitTestResult(
-        routing_id(), point, obj.AxID(), event_to_fire));
+        routing_id(), point,
+        data.GetContentIntAttribute(AX_CONTENT_ATTR_CHILD_ROUTING_ID),
+        data.GetContentIntAttribute(
+            AX_CONTENT_ATTR_CHILD_BROWSER_PLUGIN_INSTANCE_ID),
+        event_to_fire));
     return;
   }
 
