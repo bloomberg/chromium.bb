@@ -15,8 +15,8 @@ class _ProguardOutputFilter(object):
   """
 
   IGNORE_RE = re.compile(
-      r'(?:Pro.*version|Note:|Reading|Preparing|ProgramClass:|'
-      '.*:.*(?:MANIFEST\.MF|\.empty))')
+      r'Pro.*version|Note:|Reading|Preparing|Printing|ProgramClass:|Searching|'
+      r'jar \[|\d+ class path entries checked|.*:.*(?:MANIFEST\.MF|\.empty)')
 
   def __init__(self):
     self._last_line_ignored = False
@@ -176,6 +176,16 @@ class ProguardCmdBuilder(object):
       inputs.append(self._mapping)
     return inputs
 
+  def GetOutputs(self):
+    return [
+        self._outjar,
+        self._outjar + '.flags',
+        self._outjar + '.info',
+        self._outjar + '.mapping',
+        self._outjar + '.seeds',
+        self._outjar + '.usage',
+    ]
+
   def _WriteFlagsFile(self, out):
     # Quite useful for auditing proguard flags.
     for config in sorted(self._configs):
@@ -196,12 +206,14 @@ class ProguardCmdBuilder(object):
 
   def CheckOutput(self):
     self.build()
-    # Proguard will skip writing these files if they would be empty. Create
-    # empty versions of them all now so that they are updated as the build
-    # expects.
-    open(self._outjar + '.seeds', 'w').close()
-    open(self._outjar + '.usage', 'w').close()
-    open(self._outjar + '.mapping', 'w').close()
+
+    # There are a couple scenarios (.mapping files and switching from no
+    # proguard -> proguard) where GN's copy() target is used on output
+    # paths. These create hardlinks, so we explicitly unlink here to avoid
+    # updating files with multiple links.
+    for path in self.GetOutputs():
+      if os.path.exists(path):
+        os.unlink(path)
 
     with open(self._outjar + '.flags', 'w') as out:
       self._WriteFlagsFile(out)
@@ -218,6 +230,12 @@ class ProguardCmdBuilder(object):
                             print_stderr=True,
                             stdout_filter=stdout_filter,
                             stderr_filter=stderr_filter)
+
+    # Proguard will skip writing -printseeds / -printusage / -printmapping if
+    # the files would be empty, but ninja needs all outputs to exist.
+    open(self._outjar + '.seeds', 'a').close()
+    open(self._outjar + '.usage', 'a').close()
+    open(self._outjar + '.mapping', 'a').close()
 
     this_info = {
       'inputs': self._injars,
