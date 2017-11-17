@@ -165,6 +165,9 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
   // Returns the last GLContext made current, virtual or real.
   static GLContext* GetCurrent();
 
+  // TODO(sunnyps): Remove after crbug.com/724999 is fixed.
+  static GLContext* GetRealCurrentForDebugging();
+
   virtual bool WasAllocatedUsingRobustnessExtension();
 
   // Make this context current when used for context virtualization.

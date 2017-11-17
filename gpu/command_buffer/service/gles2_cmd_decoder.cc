@@ -12195,6 +12195,15 @@ error::Error GLES2DecoderImpl::HandlePostSubBufferCHROMIUM(
         base::Bind(&GLES2DecoderImpl::FinishAsyncSwapBuffers,
                    weak_ptr_factory_.GetWeakPtr()));
   } else {
+    // TODO(sunnyps): Remove Alias calls after crbug.com/724999 is fixed.
+    gl::GLContext* current = gl::GLContext::GetCurrent();
+    base::debug::Alias(&current);
+    gl::GLContext* real_current = gl::GLContext::GetRealCurrentForDebugging();
+    base::debug::Alias(&real_current);
+    gl::GLContext* context = context_.get();
+    base::debug::Alias(&context);
+    bool is_current = context_->IsCurrent(surface_.get());
+    base::debug::Alias(&is_current);
     FinishSwapBuffers(surface_->PostSubBuffer(c.x, c.y, c.width, c.height));
   }
 
@@ -15994,6 +16003,15 @@ void GLES2DecoderImpl::DoSwapBuffers() {
         base::Bind(&GLES2DecoderImpl::FinishAsyncSwapBuffers,
                    weak_ptr_factory_.GetWeakPtr()));
   } else {
+    // TODO(sunnyps): Remove Alias calls after crbug.com/724999 is fixed.
+    gl::GLContext* current = gl::GLContext::GetCurrent();
+    base::debug::Alias(&current);
+    gl::GLContext* real_current = gl::GLContext::GetRealCurrentForDebugging();
+    base::debug::Alias(&real_current);
+    gl::GLContext* context = context_.get();
+    base::debug::Alias(&context);
+    bool is_current = context_->IsCurrent(surface_.get());
+    base::debug::Alias(&is_current);
     FinishSwapBuffers(surface_->SwapBuffers());
   }
 
