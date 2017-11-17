@@ -120,7 +120,8 @@ void SurfacesInstance::DrawAndSwap(const gfx::Size& viewport,
                                    const gfx::Rect& clip,
                                    const gfx::Transform& transform,
                                    const gfx::Size& frame_size,
-                                   const viz::SurfaceId& child_id) {
+                                   const viz::SurfaceId& child_id,
+                                   float device_scale_factor) {
   DCHECK(std::find(child_ids_.begin(), child_ids_.end(), child_id) !=
          child_ids_.end());
 
@@ -150,13 +151,15 @@ void SurfacesInstance::DrawAndSwap(const gfx::Size& viewport,
   frame.metadata.begin_frame_ack =
       viz::BeginFrameAck::CreateManualAckWithDamage();
   frame.render_pass_list.push_back(std::move(render_pass));
-  frame.metadata.device_scale_factor = 1.f;
+  frame.metadata.device_scale_factor = device_scale_factor;
   frame.metadata.referenced_surfaces = child_ids_;
 
-  if (!root_id_.is_valid() || viewport != surface_size_) {
+  if (!root_id_.is_valid() || viewport != surface_size_ ||
+      device_scale_factor != device_scale_factor_) {
     root_id_ = local_surface_id_allocator_->GenerateId();
     surface_size_ = viewport;
-    display_->SetLocalSurfaceId(root_id_, 1.f);
+    device_scale_factor_ = device_scale_factor;
+    display_->SetLocalSurfaceId(root_id_, device_scale_factor);
   }
   bool result = support_->SubmitCompositorFrame(root_id_, std::move(frame));
   DCHECK(result);
@@ -202,7 +205,7 @@ void SurfacesInstance::SetSolidColorRootFrame() {
   frame.metadata.begin_frame_ack =
       viz::BeginFrameAck::CreateManualAckWithDamage();
   frame.metadata.referenced_surfaces = child_ids_;
-  frame.metadata.device_scale_factor = 1;
+  frame.metadata.device_scale_factor = device_scale_factor_;
   bool result = support_->SubmitCompositorFrame(root_id_, std::move(frame));
   DCHECK(result);
 }
