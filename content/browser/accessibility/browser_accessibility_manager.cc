@@ -446,27 +446,6 @@ void BrowserAccessibilityManager::OnFindInPageResult(
     ActivateFindInPageResult(request_id);
 }
 
-void BrowserAccessibilityManager::OnChildFrameHitTestResult(
-    const gfx::Point& point,
-    int hit_obj_id,
-    ui::AXEvent event_to_fire) {
-  BrowserAccessibility* obj = GetFromID(hit_obj_id);
-  if (!obj || !obj->HasIntAttribute(ui::AX_ATTR_CHILD_TREE_ID))
-    return;
-
-  BrowserAccessibilityManager* child_manager =
-      BrowserAccessibilityManager::FromID(
-          obj->GetIntAttribute(ui::AX_ATTR_CHILD_TREE_ID));
-  if (!child_manager || !child_manager->delegate())
-    return;
-
-  ui::AXActionData action_data;
-  action_data.target_point = point;
-  action_data.action = ui::AX_ACTION_HIT_TEST;
-  action_data.hit_test_event_to_fire = event_to_fire;
-  return child_manager->delegate()->AccessibilityPerformAction(action_data);
-}
-
 void BrowserAccessibilityManager::ActivateFindInPageResult(
     int request_id) {
   find_in_page_info_.active_request_id = request_id;

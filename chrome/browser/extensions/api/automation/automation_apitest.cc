@@ -202,6 +202,13 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, DISABLED_DesktopFocusIframe) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, DesktopHitTestIframe) {
+  StartEmbeddedTestServer();
+  ASSERT_TRUE(
+      RunExtensionSubtest("automation/tests/desktop", "hit_test_iframe.html"))
+      << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(AutomationApiTest, DesktopFocusViews) {
   AutomationManagerAura::GetInstance()->Enable(browser()->profile());
   // Trigger the shelf subtree to be computed.

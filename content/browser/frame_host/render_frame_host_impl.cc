@@ -2552,12 +2552,33 @@ void RenderFrameHostImpl::OnAccessibilityFindInPageResult(
 
 void RenderFrameHostImpl::OnAccessibilityChildFrameHitTestResult(
     const gfx::Point& point,
-    int hit_obj_id,
+    int child_frame_routing_id,
+    int child_frame_browser_plugin_instance_id,
     ui::AXEvent event_to_fire) {
-  if (browser_accessibility_manager_) {
-    browser_accessibility_manager_->OnChildFrameHitTestResult(point, hit_obj_id,
-                                                              event_to_fire);
+  RenderFrameHostImpl* child_frame = nullptr;
+  if (child_frame_routing_id) {
+    RenderFrameProxyHost* rfph = nullptr;
+    LookupRenderFrameHostOrProxy(GetProcess()->GetID(), child_frame_routing_id,
+                                 &child_frame, &rfph);
+    if (rfph)
+      child_frame = rfph->frame_tree_node()->current_frame_host();
+  } else if (child_frame_browser_plugin_instance_id) {
+    child_frame =
+        static_cast<RenderFrameHostImpl*>(delegate()->GetGuestByInstanceID(
+            this, child_frame_browser_plugin_instance_id));
+  } else {
+    NOTREACHED();
   }
+
+  if (!child_frame)
+    return;
+
+  ui::AXActionData action_data;
+  action_data.target_point = point;
+  action_data.action = ui::AX_ACTION_HIT_TEST;
+  action_data.hit_test_event_to_fire = event_to_fire;
+
+  child_frame->AccessibilityPerformAction(action_data);
 }
 
 void RenderFrameHostImpl::OnAccessibilitySnapshotResponse(

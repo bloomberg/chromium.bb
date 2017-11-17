@@ -809,9 +809,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const std::vector<AccessibilityHostMsg_LocationChangeParams>& params);
   void OnAccessibilityFindInPageResult(
       const AccessibilityHostMsg_FindInPageResultParams& params);
-  void OnAccessibilityChildFrameHitTestResult(const gfx::Point& point,
-                                              int hit_obj_id,
-                                              ui::AXEvent event_to_fire);
+  void OnAccessibilityChildFrameHitTestResult(
+      const gfx::Point& point,
+      int child_frame_routing_id,
+      int child_frame_browser_plugin_instance_id,
+      ui::AXEvent event_to_fire);
   void OnAccessibilitySnapshotResponse(
       int callback_id,
       const AXContentTreeUpdate& snapshot);
