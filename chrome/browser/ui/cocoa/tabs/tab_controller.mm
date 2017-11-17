@@ -83,6 +83,9 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 
 @property(nonatomic) int currentAttentionTypes;  // Bitmask of AttentionType.
 
+// Recomputes the iconView's frame and updates it with or without animation.
+- (void)updateIconViewFrameWithAnimation:(BOOL)shouldAnimate;
+
 @end
 
 @implementation TabController
@@ -149,7 +152,7 @@ static const CGFloat kPinnedTabWidth = kDefaultTabHeight * 2;
     iconView_.reset([[SpriteView alloc] initWithFrame:iconViewFrame]);
     [iconView_ setAutoresizingMask:isRTL ? NSViewMinXMargin | NSViewMinYMargin
                                          : NSViewMaxXMargin | NSViewMinYMargin];
-    [self updateIconViewFrame];
+    [self updateIconViewFrameWithAnimation:NO];
     [tabView addSubview:iconView_];
 
     // Set up the title.
@@ -310,11 +313,11 @@ static const CGFloat kPinnedTabWidth = kDefaultTabHeight * 2;
 - (void)setPinned:(BOOL)pinned {
   if (pinned_ != pinned) {
     pinned_ = pinned;
-    [self updateIconViewFrame];
+    [self updateIconViewFrameWithAnimation:YES];
   }
 }
 
-- (void)updateIconViewFrame {
+- (void)updateIconViewFrameWithAnimation:(BOOL)shouldAnimate {
   NSRect iconViewFrame = [iconView_ frame];
 
   if ([self pinned]) {
@@ -328,9 +331,11 @@ static const CGFloat kPinnedTabWidth = kDefaultTabHeight * 2;
               : kTabLeadingPadding;
   }
 
-  // If the pinned status has changed, animating the view to its new
-  // location looks much better than jumping there.
-  [[iconView_ animator] setFrame:iconViewFrame];
+  if (shouldAnimate) {
+    [[iconView_ animator] setFrame:iconViewFrame];
+  } else {
+    [iconView_ setFrame:iconViewFrame];
+  }
 }
 
 - (SpriteView*)iconView {
