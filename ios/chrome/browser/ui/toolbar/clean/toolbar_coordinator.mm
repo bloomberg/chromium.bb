@@ -12,8 +12,11 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
+#include "components/search_engines/util.h"
+#include "ios/chrome/browser/autocomplete/autocomplete_scheme_classifier_impl.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
+#include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/ui/omnibox/location_bar_controller.h"
 #include "ios/chrome/browser/ui/omnibox/location_bar_controller_impl.h"
 #include "ios/chrome/browser/ui/omnibox/location_bar_delegate.h"
@@ -238,6 +241,58 @@
 - (void)onFakeboxAnimationComplete {
   DCHECK(!IsIPadIdiom());
   self.viewController.view.hidden = NO;
+}
+
+#pragma mark - VoiceSearchControllerDelegate
+
+- (void)receiveVoiceSearchResult:(NSString*)result {
+  DCHECK(result);
+  [self loadURLForQuery:result];
+}
+
+#pragma mark - QRScannerResultLoading
+
+- (void)receiveQRScannerResult:(NSString*)result loadImmediately:(BOOL)load {
+  DCHECK(result);
+  if (load) {
+    [self loadURLForQuery:result];
+  } else {
+    [self focusOmnibox];
+    [_locationBarView.textField insertTextWhileEditing:result];
+    // The call to |setText| shouldn't be needed, but without it the "Go" button
+    // of the keyboard is disabled.
+    [_locationBarView.textField setText:result];
+    // Notify the accessibility system to start reading the new contents of the
+    // Omnibox.
+    UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification,
+                                    _locationBarView.textField);
+  }
+}
+
+#pragma mark - Private
+
+// Navigate to |query| from omnibox.
+- (void)loadURLForQuery:(NSString*)query {
+  GURL searchURL;
+  metrics::OmniboxInputType type = AutocompleteInput::Parse(
+      base::SysNSStringToUTF16(query), std::string(),
+      AutocompleteSchemeClassifierImpl(), nullptr, nullptr, &searchURL);
+  if (type != metrics::OmniboxInputType::URL || !searchURL.is_valid()) {
+    searchURL = GetDefaultSearchURLForSearchTerms(
+        ios::TemplateURLServiceFactory::GetForBrowserState(self.browserState),
+        base::SysNSStringToUTF16(query));
+  }
+  if (searchURL.is_valid()) {
+    // It is necessary to include PAGE_TRANSITION_FROM_ADDRESS_BAR in the
+    // transition type is so that query-in-the-omnibox is triggered for the
+    // URL.
+    ui::PageTransition transition = ui::PageTransitionFromInt(
+        ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
+    [self.URLLoader loadURL:GURL(searchURL)
+                   referrer:web::Referrer()
+                 transition:transition
+          rendererInitiated:NO];
+  }
 }
 
 @end
