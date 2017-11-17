@@ -327,6 +327,7 @@ DemuxResult FFmpegDemuxForTest(const base::FilePath& filepath,
       audio ? ::media::DemuxerStream::AUDIO : ::media::DemuxerStream::VIDEO;
   ::media::DemuxerStream* stream = demuxer.GetFirstStream(stream_type);
   CHECK(stream);
+  stream->EnableBitstreamConverter();
 
   DemuxResult demux_result;
   if (audio) {
