@@ -1,21 +1,23 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/resources-test.js"></script>
-<script src="../../inspector/resource-tree/resource-tree-test.js"></script>
-<script>
-function loadStylesheet()
-{
-    var styleElement = document.createElement("link");
-    styleElement.rel = "stylesheet";
-    styleElement.href = "resources/styles-initial.css";
-    document.head.appendChild(styleElement);
-}
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(
+      `Tests resource content is correctly loaded if Resource.requestContent was called before network request was finished. https://bugs.webkit.org/show_bug.cgi?id=90153\n`);
+  await TestRunner.loadModule('application_test_runner');
+  await TestRunner.showPanel('resources');
+
   TestRunner.addSniffer(SDK.ResourceTreeFrame.prototype, '_addRequest', requestAdded, true);
   TestRunner.addSniffer(TestRunner.PageAgent, 'getResourceContent', pageAgentGetResourceContentCalled, true);
-  TestRunner.evaluateInPage('loadStylesheet()');
+  TestRunner.evaluateInPageAsync(`
+    (function loadStylesheet() {
+      var styleElement = document.createElement("link");
+      styleElement.rel = "stylesheet";
+      styleElement.href = "${TestRunner.url('resources/styles-initial.css')}";
+      document.head.appendChild(styleElement);
+    })();
+  `);
   var contentWasRequested = false;
   var resource;
 
@@ -43,11 +45,4 @@ function test() {
     TestRunner.addResult('Resource content: ' + content);
     TestRunner.completeTest();
   }
-}
-</script>
-</head>
-<body onload="runTest()">
-<p>Tests resource content is correctly loaded if Resource.requestContent was called before network request was finished.</p>
-<a href="https://bugs.webkit.org/show_bug.cgi?id=90153">Bug 90153</a>
-</body>
-</html>
+})();

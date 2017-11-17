@@ -9,7 +9,7 @@ function addScript()
     var promise = new Promise(x => fulfill = x);
     var script = document.createElement("script");
     script.type = "text/javascript";
-    script.src = "resources/script-with-constant-last-modified.php";
+    script.src = "../resource-tree/resources/script-with-constant-last-modified.php";
     script.onload = fulfill;
     document.body.appendChild(script);
     return promise;

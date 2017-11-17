@@ -1,100 +1,66 @@
 Tests resource tree model for imports.
 
 Resources:
-document http://127.0.0.1:8000/devtools/resource-tree/resource-tree-htmlimports.html
 document http://127.0.0.1:8000/devtools/resource-tree/resources/import-child.html
 document http://127.0.0.1:8000/devtools/resource-tree/resources/import-hello.html
 script http://127.0.0.1:8000/devtools/resource-tree/resources/import-hello.js
-script http://127.0.0.1:8000/inspector/debugger-test.js
-script http://127.0.0.1:8000/inspector/inspector-test.js
-script http://127.0.0.1:8000/inspector/resource-tree/resource-tree-test.js
-script http://127.0.0.1:8000/inspector/resources-test.js
+document http://127.0.0.1:8000/devtools/resources/inspected-page.html
 
 Resources URL Map:
-http://127.0.0.1:8000/devtools/resource-tree/resource-tree-htmlimports.html == http://127.0.0.1:8000/devtools/resource-tree/resource-tree-htmlimports.html
 http://127.0.0.1:8000/devtools/resource-tree/resources/import-child.html == http://127.0.0.1:8000/devtools/resource-tree/resources/import-child.html
 http://127.0.0.1:8000/devtools/resource-tree/resources/import-hello.html == http://127.0.0.1:8000/devtools/resource-tree/resources/import-hello.html
 http://127.0.0.1:8000/devtools/resource-tree/resources/import-hello.js == http://127.0.0.1:8000/devtools/resource-tree/resources/import-hello.js
-http://127.0.0.1:8000/inspector/debugger-test.js == http://127.0.0.1:8000/inspector/debugger-test.js
-http://127.0.0.1:8000/inspector/inspector-test.js == http://127.0.0.1:8000/inspector/inspector-test.js
-http://127.0.0.1:8000/inspector/resource-tree/resource-tree-test.js == http://127.0.0.1:8000/inspector/resource-tree/resource-tree-test.js
-http://127.0.0.1:8000/inspector/resources-test.js == http://127.0.0.1:8000/inspector/resources-test.js
+http://127.0.0.1:8000/devtools/resources/inspected-page.html == http://127.0.0.1:8000/devtools/resources/inspected-page.html
 
 Resources Tree:
 Frames
     top
         Scripts
-            debugger-test.js
             import-hello.js
-            inspector-test.js
-            resource-tree-test.js
-            resources-test.js
         import-child.html
         import-hello.html
-        resource-tree-htmlimports.html
+        inspected-page.html
 Sources:
 -------- Setting mode: [frame]
 top
   import-child.html
   import-hello.html
-  resource-tree-htmlimports.html
-  debugger-test.js
+  inspected-page.html
   import-hello.js
-  inspector-test.js
-  resource-tree-test.js
-  resources-test.js
 Sources:
 -------- Setting mode: [frame/domain]
 top
   127.0.0.1:8000
     import-child.html
     import-hello.html
-    resource-tree-htmlimports.html
-    debugger-test.js
+    inspected-page.html
     import-hello.js
-    inspector-test.js
-    resource-tree-test.js
-    resources-test.js
 Sources:
 -------- Setting mode: [frame/domain/folder]
 top
   127.0.0.1:8000
-    devtools/resource-tree
-      resources
+    devtools
+      resource-tree/resources
         import-child.html
         import-hello.html
         import-hello.js
-      resource-tree-htmlimports.html
-    inspector
-      resource-tree
-        resource-tree-test.js
-      debugger-test.js
-      inspector-test.js
-      resources-test.js
+      resources
+        inspected-page.html
 Sources:
 -------- Setting mode: [domain]
 127.0.0.1:8000
   import-child.html
   import-hello.html
-  resource-tree-htmlimports.html
-  debugger-test.js
+  inspected-page.html
   import-hello.js
-  inspector-test.js
-  resource-tree-test.js
-  resources-test.js
 Sources:
 -------- Setting mode: [domain/folder]
 127.0.0.1:8000
-  devtools/resource-tree
-    resources
+  devtools
+    resource-tree/resources
       import-child.html
       import-hello.html
       import-hello.js
-    resource-tree-htmlimports.html
-  inspector
-    resource-tree
-      resource-tree-test.js
-    debugger-test.js
-    inspector-test.js
-    resources-test.js
+    resources
+      inspected-page.html
 

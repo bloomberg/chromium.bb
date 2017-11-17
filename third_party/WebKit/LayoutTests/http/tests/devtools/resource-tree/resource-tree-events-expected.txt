@@ -1,6 +1,5 @@
 Tests top frame navigation events.
 
-
 Navigating root frame
     FrameAdded : root1
     SecurityOriginRemoved : http://127.0.0.1:8000
