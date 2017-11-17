@@ -378,6 +378,7 @@ void Coordinator::StopAndFlushAgent(mojo::ScopedDataPipeProducerHandle stream,
   }
   DCHECK(!trace_streamer_);
   DCHECK(stream.is_valid());
+  is_tracing_ = false;
 
   // Do not send |StartTracing| to agents that connect from now on.
   agent_registry_->RemoveAgentInitializationCallback();
