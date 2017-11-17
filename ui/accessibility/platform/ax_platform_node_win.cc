@@ -2645,7 +2645,8 @@ int AXPlatformNodeWin::MSAARole() {
     case AX_ROLE_COLUMN_HEADER:
       return ROLE_SYSTEM_COLUMNHEADER;
 
-    case AX_ROLE_COMBO_BOX:
+    case AX_ROLE_COMBO_BOX_GROUPING:
+    case AX_ROLE_COMBO_BOX_MENU_BUTTON:
       return ROLE_SYSTEM_COMBOBOX;
 
     case AX_ROLE_COMPLEMENTARY:
@@ -2874,6 +2875,9 @@ int AXPlatformNodeWin::MSAARole() {
     case AX_ROLE_TEXT_FIELD:
     case AX_ROLE_SEARCH_BOX:
       return ROLE_SYSTEM_TEXT;
+
+    case AX_ROLE_TEXT_FIELD_WITH_COMBO_BOX:
+      return ROLE_SYSTEM_COMBOBOX;
 
     case AX_ROLE_ABBR:
     case AX_ROLE_TIME:
@@ -3394,7 +3398,7 @@ std::vector<base::string16> AXPlatformNodeWin::ComputeIA2Attributes() {
   // object (as opposed to treating it like a native Windows text box).
   // The text-model:a1 attribute is documented here:
   // http://www.linuxfoundation.org/collaborate/workgroups/accessibility/ia2/ia2_implementation_guide
-  if (GetData().role == AX_ROLE_TEXT_FIELD) {
+  if (IsEditField(GetData().role)) {
     result.push_back(L"text-model:a1;");
   }
 

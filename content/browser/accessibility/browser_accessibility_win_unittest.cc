@@ -499,7 +499,7 @@ TEST_F(BrowserAccessibilityTest, TestComplexHypertext) {
 
   ui::AXNodeData combo_box;
   combo_box.id = 12;
-  combo_box.role = ui::AX_ROLE_COMBO_BOX;
+  combo_box.role = ui::AX_ROLE_TEXT_FIELD_WITH_COMBO_BOX;
   combo_box.SetName(base::UTF16ToUTF8(combo_box_name));
   combo_box.SetValue(base::UTF16ToUTF8(combo_box_value));
 
@@ -811,7 +811,7 @@ TEST_F(BrowserAccessibilityTest, TestValueAttributeInTextControls) {
   combo_box_text.id = 3;
   combo_box.SetName("Combo box:");
   combo_box_text.SetName("Combo box text");
-  combo_box.role = ui::AX_ROLE_COMBO_BOX;
+  combo_box.role = ui::AX_ROLE_TEXT_FIELD_WITH_COMBO_BOX;
   combo_box_text.role = ui::AX_ROLE_STATIC_TEXT;
   combo_box.AddState(ui::AX_STATE_EDITABLE);
   combo_box.AddState(ui::AX_STATE_FOCUSABLE);
@@ -1106,7 +1106,7 @@ TEST_F(BrowserAccessibilityTest, TestCaretAndSelectionInSimpleFields) {
 
   ui::AXNodeData combo_box;
   combo_box.id = 2;
-  combo_box.role = ui::AX_ROLE_COMBO_BOX;
+  combo_box.role = ui::AX_ROLE_TEXT_FIELD_WITH_COMBO_BOX;
   combo_box.AddState(ui::AX_STATE_EDITABLE);
   combo_box.AddState(ui::AX_STATE_FOCUSABLE);
   combo_box.SetValue("Test1");
@@ -1881,7 +1881,7 @@ TEST_F(BrowserAccessibilityTest, TestExistingMisspellingsInSimpleTextFields) {
 
   ui::AXNodeData combo_box;
   combo_box.id = 2;
-  combo_box.role = ui::AX_ROLE_COMBO_BOX;
+  combo_box.role = ui::AX_ROLE_TEXT_FIELD_WITH_COMBO_BOX;
   combo_box.AddState(ui::AX_STATE_EDITABLE);
   combo_box.AddState(ui::AX_STATE_FOCUSABLE);
   combo_box.SetValue(value1 + value2);
@@ -1995,7 +1995,7 @@ TEST_F(BrowserAccessibilityTest, TestNewMisspellingsInSimpleTextFields) {
 
   ui::AXNodeData combo_box;
   combo_box.id = 2;
-  combo_box.role = ui::AX_ROLE_COMBO_BOX;
+  combo_box.role = ui::AX_ROLE_TEXT_FIELD_WITH_COMBO_BOX;
   combo_box.AddState(ui::AX_STATE_EDITABLE);
   combo_box.AddState(ui::AX_STATE_FOCUSABLE);
   combo_box.SetValue(value1 + value2);

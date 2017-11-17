@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_enums.h"
 #include "ui/accessibility/ax_node.h"
+#include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_serializable_tree.h"
 #include "ui/accessibility/platform/ax_android_constants.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -41,15 +42,8 @@ bool HasOnlyTextChildren(const AXNode* node) {
 
 // TODO(muyuanli): share with BrowserAccessibility.
 bool IsSimpleTextControl(const AXNode* node, uint32_t state) {
-  switch (node->data().role) {
-    case AX_ROLE_COMBO_BOX:
-    case AX_ROLE_SEARCH_BOX:
-      return true;
-    case AX_ROLE_TEXT_FIELD:
-      return !node->data().HasState(AX_STATE_RICHLY_EDITABLE);
-    default:
-      return false;
-  }
+  return IsEditField(node->data().role) &&
+         !node->data().HasState(AX_STATE_RICHLY_EDITABLE);
 }
 
 bool IsRichTextEditable(const AXNode* node) {
@@ -167,7 +161,8 @@ base::string16 GetText(const AXNode* node, bool show_password) {
       return value;
 
     switch (node->data().role) {
-      case AX_ROLE_COMBO_BOX:
+      case AX_ROLE_COMBO_BOX_MENU_BUTTON:
+      case AX_ROLE_TEXT_FIELD_WITH_COMBO_BOX:
       case AX_ROLE_POP_UP_BUTTON:
       case AX_ROLE_TEXT_FIELD:
         return value;
@@ -317,11 +312,12 @@ AX_EXPORT const char* AXSnapshotNodeAndroid::AXRoleToAndroidClassName(
     case AX_ROLE_SEARCH_BOX:
     case AX_ROLE_SPIN_BUTTON:
     case AX_ROLE_TEXT_FIELD:
+    case AX_ROLE_TEXT_FIELD_WITH_COMBO_BOX:
       return kAXEditTextClassname;
     case AX_ROLE_SLIDER:
       return kAXSeekBarClassname;
     case AX_ROLE_COLOR_WELL:
-    case AX_ROLE_COMBO_BOX:
+    case AX_ROLE_COMBO_BOX_MENU_BUTTON:
     case AX_ROLE_DATE:
     case AX_ROLE_POP_UP_BUTTON:
     case AX_ROLE_INPUT_TIME:
