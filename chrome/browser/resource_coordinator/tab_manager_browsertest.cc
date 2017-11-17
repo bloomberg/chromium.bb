@@ -438,7 +438,7 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, ProtectVideoTabs) {
   EXPECT_TRUE(tab_manager->DiscardTabImpl(TabManager::kProactiveShutdown));
 }
 
-IN_PROC_BROWSER_TEST_F(TabManagerTest, CanSuspendBackgroundedRenderer) {
+IN_PROC_BROWSER_TEST_F(TabManagerTest, CanPurgeBackgroundedRenderer) {
   TabManager* tab_manager = g_browser_process->GetTabManager();
 
   // Open 2 tabs, the second one being in the background.
@@ -464,13 +464,13 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, CanSuspendBackgroundedRenderer) {
 
   // Should not be able to suspend a tab which plays a video.
   int render_process_id = tab->GetMainFrame()->GetProcess()->GetID();
-  ASSERT_FALSE(tab_manager->CanSuspendBackgroundedRenderer(render_process_id));
+  ASSERT_FALSE(tab_manager->CanPurgeBackgroundedRenderer(render_process_id));
 
   // Remove the video stream.
   video_stream_ui.reset();
 
   // Should be able to suspend the background tab now.
-  EXPECT_TRUE(tab_manager->CanSuspendBackgroundedRenderer(render_process_id));
+  EXPECT_TRUE(tab_manager->CanPurgeBackgroundedRenderer(render_process_id));
 }
 
 IN_PROC_BROWSER_TEST_F(TabManagerTest, AutoDiscardable) {

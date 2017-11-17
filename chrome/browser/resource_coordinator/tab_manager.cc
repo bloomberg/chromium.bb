@@ -521,7 +521,7 @@ content::WebContents* TabManager::GetWebContentsById(
   return model->GetWebContentsAt(index);
 }
 
-bool TabManager::CanSuspendBackgroundedRenderer(int render_process_id) const {
+bool TabManager::CanPurgeBackgroundedRenderer(int render_process_id) const {
   // A renderer can be purged if it's not playing media.
   auto tab_stats = GetUnsortedTabStats();
   for (auto& tab : tab_stats) {
@@ -801,7 +801,7 @@ void TabManager::PurgeBackgroundedTabsIfNeeded() {
   for (auto& tab : tab_stats) {
     if (!tab.render_process_host->IsProcessBackgrounded())
       continue;
-    if (!CanSuspendBackgroundedRenderer(tab.child_process_host_id))
+    if (!CanPurgeBackgroundedRenderer(tab.child_process_host_id))
       continue;
 
     WebContents* content = GetWebContentsById(tab.tab_contents_id);
