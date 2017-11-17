@@ -1686,18 +1686,12 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
 - (void)loadNativeViewWithSuccess:(BOOL)loadSuccess
                 navigationContext:(web::NavigationContextImpl*)context {
-  if (loadSuccess) {
-    // No DidStartNavigation callback for displaying error page.
-    _webStateImpl->OnNavigationStarted(context);
-  }
+  _webStateImpl->OnNavigationStarted(context);
   const GURL currentURL([self currentURL]);
   [self didStartLoading];
   self.navigationManagerImpl->CommitPendingItem();
   _loadPhase = web::PAGE_LOADED;
-  if (loadSuccess) {
-    // No DidFinishNavigation callback for displaying error page.
-    _webStateImpl->OnNavigationFinished(context);
-  }
+  _webStateImpl->OnNavigationFinished(context);
 
   // Perform post-load-finished updates.
   [self didFinishWithURL:currentURL loadSuccess:loadSuccess];
@@ -2962,10 +2956,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
   [self loadCompleteWithSuccess:NO forNavigation:navigation];
   [self loadErrorInNativeView:error navigationContext:navigationContext];
-  if ([_navigationStates stateForNavigation:navigation] ==
-      web::WKNavigationState::PROVISIONALY_FAILED) {
-    _webStateImpl->OnNavigationFinished(navigationContext);
-  }
 }
 
 - (void)handleCancelledError:(NSError*)error {
