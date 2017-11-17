@@ -4,6 +4,7 @@
 
 #include "modules/webaudio/AudioWorkletNode.h"
 
+#include "modules/EventModules.h"
 #include "modules/webaudio/AudioBuffer.h"
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
@@ -13,6 +14,7 @@
 #include "modules/webaudio/AudioWorkletProcessor.h"
 #include "modules/webaudio/AudioWorkletProcessorDefinition.h"
 #include "modules/webaudio/CrossThreadAudioWorkletProcessorInfo.h"
+#include "platform/CrossThreadFunctional.h"
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/AudioUtilities.h"
 #include "platform/heap/Persistent.h"
@@ -50,6 +52,11 @@ AudioWorkletHandler::AudioWorkletHandler(
     AddOutput(channel_count);
   }
 
+  if (Context()->GetExecutionContext()) {
+    task_runner_ =
+        Context()->GetExecutionContext()->GetTaskRunner(TaskType::kUnthrottled);
+  }
+
   Initialize();
 }
 
@@ -70,41 +77,43 @@ scoped_refptr<AudioWorkletHandler> AudioWorkletHandler::Create(
 void AudioWorkletHandler::Process(size_t frames_to_process) {
   DCHECK(Context()->IsAudioThread());
 
-  // The initialization of handler or the associated processor might not be
-  // ready yet. If so, zero out the connected output and exit early.
-  if (!processor_) {
+  // Render and update the node state when the processor is ready and runnable.
+  if (processor_ && processor_->IsRunnable()) {
+    Vector<AudioBus*> inputBuses;
+    Vector<AudioBus*> outputBuses;
+    for (unsigned i = 0; i < NumberOfInputs(); ++i)
+      inputBuses.push_back(Input(i).Bus());
+    for (unsigned i = 0; i < NumberOfOutputs(); ++i)
+      outputBuses.push_back(Output(i).Bus());
+
+    for (const auto& param_name : param_value_map_.Keys()) {
+      const auto param_handler = param_handler_map_.at(param_name);
+      AudioFloatArray* param_values = param_value_map_.at(param_name);
+      if (param_handler->HasSampleAccurateValues()) {
+        param_handler->CalculateSampleAccurateValues(
+            param_values->Data(), frames_to_process);
+      } else {
+        std::fill(param_values->Data(),
+                  param_values->Data() + frames_to_process,
+                  param_handler->Value());
+      }
+    }
+
+    // Run the render code and check the state of processor. Finish the
+    // processor if needed.
+    if (!processor_->Process(&inputBuses, &outputBuses, &param_value_map_,
+                             Context()->currentTime()) ||
+        !processor_->IsRunnable()) {
+      FinishProcessorOnRenderThread();
+    }
+  } else {
+    // The initialization of handler or the associated processor might not be
+    // ready yet or it is in 'non-runnable' state. If so, zero out the connected
+    // output.
     for (unsigned i = 0; i < NumberOfOutputs(); ++i) {
       if (Output(i).IsConnected())
         Output(i).Bus()->Zero();
     }
-    return;
-  }
-
-  Vector<AudioBus*> inputBuses;
-  Vector<AudioBus*> outputBuses;
-  for (unsigned i = 0; i < NumberOfInputs(); ++i)
-    inputBuses.push_back(Input(i).Bus());
-  for (unsigned i = 0; i < NumberOfOutputs(); ++i)
-    outputBuses.push_back(Output(i).Bus());
-
-  for (const auto& param_name : param_value_map_.Keys()) {
-    const auto param_handler = param_handler_map_.at(param_name);
-    AudioFloatArray* param_values = param_value_map_.at(param_name);
-    if (param_handler->HasSampleAccurateValues()) {
-      param_handler->CalculateSampleAccurateValues(
-          param_values->Data(), frames_to_process);
-    } else {
-      std::fill(param_values->Data(),
-                param_values->Data() + frames_to_process,
-                param_handler->Value());
-    }
-  }
-
-  bool process_result = processor_->Process(
-      &inputBuses, &outputBuses, &param_value_map_, Context()->currentTime());
-
-  if (!process_result) {
-    FinishProcessorOnRenderThread();
   }
 }
 
@@ -138,16 +147,46 @@ void AudioWorkletHandler::SetProcessorOnRenderThread(
   // TODO(hongchan): unify the thread ID check. The thread ID for this call
   // is different from |Context()->IsAudiothread()|.
   DCHECK(!IsMainThread());
+
+  // |processor| can be nullptr when the invocation of user-supplied constructor
+  // fails. That failure sets the processor to "error" state.
   processor_ = processor;
+  AudioWorkletProcessorState new_state;
+  new_state = processor_ ? AudioWorkletProcessorState::kRunning
+                         : AudioWorkletProcessorState::kError;
+  task_runner_->PostTask(
+      BLINK_FROM_HERE,
+      CrossThreadBind(&AudioWorkletHandler::NotifyProcessorStateChange,
+                      WrapRefCounted(this), new_state));
 }
 
 void AudioWorkletHandler::FinishProcessorOnRenderThread() {
   DCHECK(Context()->IsAudioThread());
+
+  // The non-runnable processor means that the processor stopped due to an
+  // exception thrown by the user-supplied code.
+  AudioWorkletProcessorState new_state;
+  new_state = processor_->IsRunnable()
+      ? AudioWorkletProcessorState::kStopped
+      : AudioWorkletProcessorState::kError;
+  task_runner_->PostTask(
+        BLINK_FROM_HERE,
+        CrossThreadBind(&AudioWorkletHandler::NotifyProcessorStateChange,
+                        WrapRefCounted(this), new_state));
+
   // TODO(hongchan): After this point, The handler has no more pending activity
   // and ready for GC.
   Context()->NotifySourceNodeFinishedProcessing(this);
   processor_.Clear();
   tail_time_ = 0;
+}
+
+void AudioWorkletHandler::NotifyProcessorStateChange(
+    AudioWorkletProcessorState state) {
+  DCHECK(IsMainThread());
+  if (!Context() || !Context()->GetExecutionContext() || !GetNode())
+    return;
+  static_cast<AudioWorkletNode*>(GetNode())->SetProcessorState(state);
 }
 
 // ----------------------------------------------------------------
@@ -157,7 +196,8 @@ AudioWorkletNode::AudioWorkletNode(
     const String& name,
     const AudioWorkletNodeOptions& options,
     const Vector<CrossThreadAudioParamInfo> param_info_list)
-    : AudioNode(context) {
+    : AudioNode(context),
+      processor_state_(AudioWorkletProcessorState::kPending) {
   HeapHashMap<String, Member<AudioParam>> audio_param_map;
   HashMap<String, scoped_refptr<AudioParamHandler>> param_handler_map;
   for (const auto& param_info : param_info_list) {
@@ -279,8 +319,45 @@ bool AudioWorkletNode::HasPendingActivity() const {
   return !context()->IsContextClosed();
 }
 
+void AudioWorkletNode::SetProcessorState(AudioWorkletProcessorState new_state) {
+  DCHECK(IsMainThread());
+  switch (processor_state_) {
+    case AudioWorkletProcessorState::kPending:
+      DCHECK(new_state == AudioWorkletProcessorState::kRunning ||
+             new_state == AudioWorkletProcessorState::kError);
+      break;
+    case AudioWorkletProcessorState::kRunning:
+      DCHECK(new_state == AudioWorkletProcessorState::kStopped ||
+             new_state == AudioWorkletProcessorState::kError);
+      break;
+    case AudioWorkletProcessorState::kStopped:
+    case AudioWorkletProcessorState::kError:
+      NOTREACHED()
+          << "The state never changes once it reaches kStopped or kError.";
+      return;
+  }
+
+  processor_state_ = new_state;
+  DispatchEvent(Event::Create(EventTypeNames::processorstatechange));
+}
+
 AudioParamMap* AudioWorkletNode::parameters() const {
   return parameter_map_;
+}
+
+String AudioWorkletNode::processorState() const {
+  switch (processor_state_) {
+    case AudioWorkletProcessorState::kPending:
+      return "pending";
+    case AudioWorkletProcessorState::kRunning:
+      return "running";
+    case AudioWorkletProcessorState::kStopped:
+      return "stopped";
+    case AudioWorkletProcessorState::kError:
+      return "error";
+  }
+  NOTREACHED();
+  return g_empty_string;
 }
 
 AudioWorkletHandler& AudioWorkletNode::GetWorkletHandler() const {

@@ -4,6 +4,13 @@
 
 // https://webaudio.github.io/web-audio-api/#AudioWorkletNode
 
+enum AudioWorkletProcessorState {
+    "pending",
+    "running",
+    "stopped",
+    "error"
+};
+
 [
     ActiveScriptWrappable,
     Constructor(BaseAudioContext context, DOMString name, optional AudioWorkletNodeOptions options),
@@ -15,6 +22,6 @@
     readonly attribute AudioParamMap parameters;
     // TODO(hongchan): Implement the following.
     // readonly attribute MessagePort port;
-    // readonly attribute AudioWorkletProcessorState processorState;
-    // attribute EventHandler onprocessorstatechange;
+    readonly attribute AudioWorkletProcessorState processorState;
+    attribute EventHandler onprocessorstatechange;
 };
