@@ -19,6 +19,7 @@
 #include "core/probe/CoreProbes.h"
 #include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/Performance.h"
+#include "platform/CrossThreadFunctional.h"
 #include "platform/Histogram.h"
 #include "platform/WebFrameScheduler.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
@@ -185,9 +186,9 @@ void PaintTiming::SetFirstContentfulPaint(double stamp) {
 }
 
 void PaintTiming::RegisterNotifySwapTime(PaintEvent event) {
-  RegisterNotifySwapTime(event,
-                         WTF::Bind(&PaintTiming::ReportSwapTime,
-                                   WrapCrossThreadWeakPersistent(this), event));
+  RegisterNotifySwapTime(
+      event, CrossThreadBind(&PaintTiming::ReportSwapTime,
+                             WrapCrossThreadWeakPersistent(this), event));
 }
 
 void PaintTiming::RegisterNotifySwapTime(PaintEvent event,

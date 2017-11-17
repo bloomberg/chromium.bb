@@ -7,10 +7,10 @@
 #include "core/css/FontFaceSetDocument.h"
 #include "core/paint/PaintTiming.h"
 #include "core/probe/CoreProbes.h"
+#include "platform/CrossThreadFunctional.h"
 #include "platform/Histogram.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
-#include "platform/wtf/Functional.h"
 #include "public/platform/TaskType.h"
 #include "public/platform/WebLayerTreeView.h"
 
@@ -247,8 +247,8 @@ void FirstMeaningfulPaintDetector::ReportHistograms() {
 void FirstMeaningfulPaintDetector::RegisterNotifySwapTime(PaintEvent event) {
   ++outstanding_swap_promise_count_;
   paint_timing_->RegisterNotifySwapTime(
-      event, WTF::Bind(&FirstMeaningfulPaintDetector::ReportSwapTime,
-                       WrapCrossThreadWeakPersistent(this), event));
+      event, CrossThreadBind(&FirstMeaningfulPaintDetector::ReportSwapTime,
+                             WrapCrossThreadWeakPersistent(this), event));
 }
 
 void FirstMeaningfulPaintDetector::ReportSwapTime(
