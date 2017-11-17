@@ -1,10 +1,5 @@
 Tests the Timeline API instrumentation of a Layout event
 
-text
-text
-text
-text
-text
 Layout Properties:
 {
     data : {
@@ -26,7 +21,7 @@ Layout Properties:
     startTime : <number>
     type : "Layout"
 }
-Text details for Layout: timeline-layout.html:17
+Text details for Layout: timeline-layout.js:39
 Layout Properties:
 {
     data : {
@@ -48,5 +43,5 @@ Layout Properties:
     startTime : <number>
     type : "Layout"
 }
-Text details for Layout: timeline-layout.html:17
+Text details for Layout: timeline-layout.js:39
 

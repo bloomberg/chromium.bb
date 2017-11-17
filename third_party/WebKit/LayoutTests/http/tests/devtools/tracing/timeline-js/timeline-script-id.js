@@ -1,10 +1,18 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/timeline-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(
+      `Test that checks location resolving mechanics for TimerInstall TimerRemove and FunctionCall events with scriptId.
+       It expects two FunctionCall for InjectedScript, two TimerInstall events, two FunctionCall events and one TimerRemove event to be logged with performActions.js script name and some line number.\n`);
+  await TestRunner.loadModule('performance_test_runner');
+  await TestRunner.showPanel('timeline');
+  await TestRunner.evaluateInPagePromise(`
+      if (!window.testRunner)
+          setTimeout(performActions, 2000);
+  `);
+
   function performActions() {
     var callback;
     var promise = new Promise((fulfill) => callback = fulfill);
@@ -52,19 +60,4 @@ function test() {
     PerformanceTestRunner.walkTimelineEventTree(formatter);
     TestRunner.completeTest();
   }
-}
-
-if (!window.testRunner)
-    setTimeout(performActions, 2000);
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Test that checks location resolving mechanics for TimerInstall TimerRemove and FunctionCall events with scriptId.
-</p><p>
-It expects two FunctionCall for InjectedScript, two TimerInstall events, two FunctionCall events and one TimerRemove event to be logged with performActions.js script name and some line number.
-</p>
-</body>
-</html>
+})();
