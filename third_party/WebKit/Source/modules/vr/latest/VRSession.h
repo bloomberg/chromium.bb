@@ -9,6 +9,7 @@
 #include "core/dom/events/EventTarget.h"
 #include "modules/vr/latest/VRFrameRequestCallbackCollection.h"
 #include "platform/bindings/TraceWrapperMember.h"
+#include "platform/geometry/DoubleSize.h"
 #include "platform/heap/Handle.h"
 #include "platform/transforms/TransformationMatrix.h"
 #include "platform/wtf/Forward.h"
@@ -64,6 +65,10 @@ class VRSession final : public EventTargetWithInlineData {
   // dimensions when the developer does not specify one. Should be a value that
   // provides a good balance between quality and performance.
   double DefaultFramebufferScale() const { return 1.0; }
+
+  // Describes the ideal dimensions of layer framebuffers, preferrably defined
+  // as the size which gives 1:1 pixel ratio at the center of the user's view.
+  DoubleSize IdealFramebufferSize() const;
 
   // EventTarget overrides.
   ExecutionContext* GetExecutionContext() const override;

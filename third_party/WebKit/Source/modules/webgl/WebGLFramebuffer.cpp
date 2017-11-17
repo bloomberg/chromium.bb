@@ -202,14 +202,20 @@ void WebGLTextureAttachment::Unattach(gpu::gles2::GLES2Interface* gl,
 WebGLFramebuffer::WebGLAttachment::WebGLAttachment() {}
 
 WebGLFramebuffer* WebGLFramebuffer::Create(WebGLRenderingContextBase* ctx) {
-  return new WebGLFramebuffer(ctx);
+  return new WebGLFramebuffer(ctx, false);
 }
 
-WebGLFramebuffer::WebGLFramebuffer(WebGLRenderingContextBase* ctx)
+WebGLFramebuffer* WebGLFramebuffer::CreateOpaque(
+    WebGLRenderingContextBase* ctx) {
+  return new WebGLFramebuffer(ctx, true);
+}
+
+WebGLFramebuffer::WebGLFramebuffer(WebGLRenderingContextBase* ctx, bool opaque)
     : WebGLContextObject(ctx),
       object_(0),
       has_ever_been_bound_(false),
       web_gl1_depth_stencil_consistent_(true),
+      opaque_(opaque),
       read_buffer_(GL_COLOR_ATTACHMENT0) {
   ctx->ContextGL()->GenFramebuffers(1, &object_);
 }
@@ -360,6 +366,14 @@ void WebGLFramebuffer::RemoveAttachmentFromBoundFramebuffer(
 }
 
 GLenum WebGLFramebuffer::CheckDepthStencilStatus(const char** reason) const {
+  // This function is called any time framebuffer completeness is checked, which
+  // makes it the most convenient place to add this check.
+  if (opaque_) {
+    if (opaque_complete_)
+      return GL_FRAMEBUFFER_COMPLETE;
+    *reason = "cannot render to a WebVR layer outside of a frame callback";
+    return GL_FRAMEBUFFER_UNSUPPORTED;
+  }
   if (Context()->IsWebGL2OrHigher() || web_gl1_depth_stencil_consistent_)
     return GL_FRAMEBUFFER_COMPLETE;
   *reason = "conflicting DEPTH/STENCIL/DEPTH_STENCIL attachments";
