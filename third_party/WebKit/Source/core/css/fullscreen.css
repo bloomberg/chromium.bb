@@ -58,6 +58,7 @@ iframe:-webkit-full-screen {
     height: 100% !important;
     left: 0 !important;
     top: 0 !important;
+    transform: none !important;
 }
 
 :-webkit-full-screen:-internal-video-persistent-ancestor :not(:-internal-video-persistent-ancestor) {
