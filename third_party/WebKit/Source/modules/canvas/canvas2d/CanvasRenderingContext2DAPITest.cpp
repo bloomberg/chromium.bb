@@ -11,7 +11,7 @@
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/ImageData.h"
 #include "core/loader/EmptyClients.h"
-#include "core/testing/DummyPageHolder.h"
+#include "core/testing/PageTestBase.h"
 #include "modules/accessibility/AXObject.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
 #include "modules/canvas/canvas2d/CanvasGradient.h"
@@ -26,21 +26,17 @@ using ::testing::Mock;
 
 namespace blink {
 
-class CanvasRenderingContext2DAPITest : public ::testing::Test {
+class CanvasRenderingContext2DAPITest : public PageTestBase {
  protected:
   CanvasRenderingContext2DAPITest();
   void SetUp() override;
 
-  DummyPageHolder& Page() const { return *dummy_page_holder_; }
-  Document& GetDocument() const { return *document_; }
   HTMLCanvasElement& CanvasElement() const { return *canvas_element_; }
   CanvasRenderingContext2D* Context2d() const;
 
   void CreateContext(OpacityMode);
 
  private:
-  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
-  Persistent<Document> document_;
   Persistent<HTMLCanvasElement> canvas_element_;
 };
 
@@ -66,13 +62,11 @@ void CanvasRenderingContext2DAPITest::CreateContext(OpacityMode opacity_mode) {
 void CanvasRenderingContext2DAPITest::SetUp() {
   Page::PageClients page_clients;
   FillWithEmptyClients(page_clients);
-  dummy_page_holder_ =
-      DummyPageHolder::Create(IntSize(800, 600), &page_clients);
-  document_ = &dummy_page_holder_->GetDocument();
-  document_->documentElement()->SetInnerHTMLFromString(
+  SetupPageWithClients(&page_clients);
+  GetDocument().documentElement()->SetInnerHTMLFromString(
       "<body><canvas id='c'></canvas></body>");
-  document_->View()->UpdateAllLifecyclePhases();
-  canvas_element_ = ToHTMLCanvasElement(document_->getElementById("c"));
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  canvas_element_ = ToHTMLCanvasElement(GetDocument().getElementById("c"));
 }
 
 TEST_F(CanvasRenderingContext2DAPITest, SetShadowColor_Clamping) {

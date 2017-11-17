@@ -23,6 +23,7 @@ class PageTestBase : public ::testing::Test {
   void SetUp() override;
   void TearDown() override;
 
+  void SetUp(IntSize);
   void SetupPageWithClients(Page::PageClients* = 0,
                             LocalFrameClient* = nullptr,
                             FrameSettingOverrideFunction = nullptr);

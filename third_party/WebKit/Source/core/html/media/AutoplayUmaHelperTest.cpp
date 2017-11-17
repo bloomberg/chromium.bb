@@ -8,7 +8,7 @@
 #include "core/html/media/AutoplayPolicy.h"
 #include "core/html/media/HTMLMediaElement.h"
 #include "core/html/media/HTMLVideoElement.h"
-#include "core/testing/DummyPageHolder.h"
+#include "core/testing/PageTestBase.h"
 
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -36,10 +36,8 @@ class MockAutoplayUmaHelper : public AutoplayUmaHelper {
   }
 };
 
-class AutoplayUmaHelperTest : public ::testing::Test {
+class AutoplayUmaHelperTest : public PageTestBase {
  protected:
-  Document& GetDocument() { return page_holder_->GetDocument(); }
-
   HTMLMediaElement& MediaElement() {
     Element* element = GetDocument().getElementById("video");
     DCHECK(element);
@@ -48,11 +46,9 @@ class AutoplayUmaHelperTest : public ::testing::Test {
 
   MockAutoplayUmaHelper& UmaHelper() { return *uma_helper_; }
 
-  std::unique_ptr<DummyPageHolder>& PageHolder() { return page_holder_; }
-
  private:
   void SetUp() override {
-    page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
+    PageTestBase::SetUp();
     GetDocument().documentElement()->SetInnerHTMLFromString(
         "<video id=video></video>", ASSERT_NO_EXCEPTION);
     HTMLMediaElement& element = MediaElement();
@@ -63,7 +59,6 @@ class AutoplayUmaHelperTest : public ::testing::Test {
 
   void TearDown() override { uma_helper_.Clear(); }
 
-  std::unique_ptr<DummyPageHolder> page_holder_;
   Persistent<MockAutoplayUmaHelper> uma_helper_;
 };
 
@@ -73,7 +68,7 @@ TEST_F(AutoplayUmaHelperTest, VisibilityChangeWhenUnload) {
   MediaElement().setMuted(true);
   UmaHelper().OnAutoplayInitiated(AutoplaySource::kMethod);
   UmaHelper().HandlePlayingEvent();
-  PageHolder().reset();
+  PageTestBase::TearDown();
   ::testing::Mock::VerifyAndClear(&UmaHelper());
 }
 

@@ -9,7 +9,7 @@
 #include "core/frame/LocalFrameView.h"
 #include "core/html/HTMLHeadElement.h"
 #include "core/html/HTMLLinkElement.h"
-#include "core/testing/DummyPageHolder.h"
+#include "core/testing/PageTestBase.h"
 #include "platform/wtf/text/StringBuilder.h"
 #include "public/platform/WebDistillability.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -24,23 +24,12 @@ const unsigned kTextContentLengthSaturation = 1000;
 // sentences.
 const unsigned kParagraphLengthThreshold = 140;
 
-class DocumentStatisticsCollectorTest : public ::testing::Test {
+class DocumentStatisticsCollectorTest : public PageTestBase {
  protected:
-  void SetUp() override;
-
   void TearDown() override { ThreadState::Current()->CollectAllGarbage(); }
 
-  Document& GetDocument() const { return dummy_page_holder_->GetDocument(); }
-
   void SetHtmlInnerHTML(const String&);
-
- private:
-  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
 };
-
-void DocumentStatisticsCollectorTest::SetUp() {
-  dummy_page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
-}
 
 void DocumentStatisticsCollectorTest::SetHtmlInnerHTML(
     const String& html_content) {
