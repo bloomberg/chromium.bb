@@ -377,11 +377,7 @@ int HttpCache::Writers::DoLoop(int result) {
   if (next_state_ == State::NONE) {
     read_buf_ = NULL;
     callback_.Reset();
-    if (all_writers_.empty()) {
-      DCHECK(cache_callback_);
-      network_transaction_.reset();
-    }
-
+    DCHECK(!all_writers_.empty() || cache_callback_);
     if (cache_callback_)
       std::move(cache_callback_).Run();
     // |this| may have been destroyed in the cache_callback_.

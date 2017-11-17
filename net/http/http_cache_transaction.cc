@@ -639,8 +639,8 @@ void HttpCache::Transaction::WriterAboutToBeRemovedFromEntry(int result) {
 
   // Since the transaction can no longer access the network transaction, save
   // all network related info now.
-  if (InWriters() && entry_->writers->network_transaction() &&
-      moved_network_transaction_to_writers_) {
+  if (moved_network_transaction_to_writers_ &&
+      entry_->writers->network_transaction()) {
     SaveNetworkTransactionInfo(*(entry_->writers->network_transaction()));
   }
 
@@ -656,8 +656,8 @@ void HttpCache::Transaction::WriterAboutToBeRemovedFromEntry(int result) {
 
 void HttpCache::Transaction::WriteModeTransactionAboutToBecomeReader() {
   mode_ = READ;
-  if (InWriters() && entry_->writers->network_transaction() &&
-      moved_network_transaction_to_writers_) {
+  if (moved_network_transaction_to_writers_ &&
+      entry_->writers->network_transaction()) {
     SaveNetworkTransactionInfo(*(entry_->writers->network_transaction()));
   }
 }
