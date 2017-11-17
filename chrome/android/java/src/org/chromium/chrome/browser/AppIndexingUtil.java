@@ -79,6 +79,7 @@ public class AppIndexingUtil {
             copylessPaste.getEntities(new CopylessPaste.GetEntitiesResponse() {
                 @Override
                 public void call(WebPage webpage) {
+                    copylessPaste.close();
                     putCacheEntry(url, webpage != null);
                     if (sCallbackForTesting != null) {
                         sCallbackForTesting.onResult(webpage);
