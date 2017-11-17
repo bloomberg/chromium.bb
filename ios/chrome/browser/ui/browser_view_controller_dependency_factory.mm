@@ -15,6 +15,8 @@
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/key_commands_provider.h"
+#import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_base_feature.h"
+#import "ios/chrome/browser/ui/toolbar/toolbar_adapter.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_model_delegate_ios.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_model_impl_ios.h"
 #import "ios/chrome/browser/ui/toolbar/web_toolbar_controller.h"
@@ -28,12 +30,15 @@
 
 @implementation BrowserViewControllerDependencyFactory {
   ios::ChromeBrowserState* browserState_;
+  WebStateList* webStateList_;
 }
 
-- (id)initWithBrowserState:(ios::ChromeBrowserState*)browserState {
+- (id)initWithBrowserState:(ios::ChromeBrowserState*)browserState
+              webStateList:(WebStateList*)webStateList {
   self = [super init];
   if (self) {
     browserState_ = browserState;
+    webStateList_ = webStateList;
   }
   return self;
 }
@@ -61,11 +66,21 @@ newToolbarControllerWithDelegate:(id<WebToolbarDelegate>)delegate
                        urlLoader:(id<UrlLoader>)urlLoader
                       dispatcher:
                           (id<ApplicationCommands, BrowserCommands>)dispatcher {
-  return static_cast<id<Toolbar>>([[WebToolbarController alloc]
-      initWithDelegate:delegate
-             urlLoader:urlLoader
-          browserState:browserState_
-            dispatcher:dispatcher]);
+  id<Toolbar> toolbarController;
+  if (base::FeatureList::IsEnabled(kPropertyAnimationsToolbar)) {
+    toolbarController = static_cast<id<Toolbar>>([[ToolbarAdapter alloc]
+        initWithDispatcher:dispatcher
+              browserState:browserState_
+              webStateList:webStateList_]);
+
+  } else {
+    toolbarController = static_cast<id<Toolbar>>([[WebToolbarController alloc]
+        initWithDelegate:delegate
+               urlLoader:urlLoader
+            browserState:browserState_
+              dispatcher:dispatcher]);
+  }
+  return toolbarController;
 }
 
 - (KeyCommandsProvider*)newKeyCommandsProvider {

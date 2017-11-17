@@ -40,6 +40,8 @@
 - (void)resetToolbarAfterSideSwipeSnapshot;
 // WebToolbarDelegate delegate.
 @property(nonatomic, weak) id<WebToolbarDelegate> delegate;
+// Convienence getter for the UIViewController.
+@property(nonatomic, readonly, weak) UIViewController* viewController;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_PUBLIC_ABSTRACT_WEB_TOOLBAR_H_

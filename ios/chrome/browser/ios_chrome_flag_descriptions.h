@@ -20,6 +20,10 @@ extern const char kBrowserTaskSchedulerDescription[];
 extern const char kCaptivePortalName[];
 extern const char kCaptivePortalDescription[];
 
+// Title and description for the flag to enable Clean Toolbar.
+extern const char kCleanToolbarName[];
+extern const char kCleanToolbarDescription[];
+
 // Title and description for the flag to enable Contextual Search.
 extern const char kContextualSearch[];
 extern const char kContextualSearchDescription[];

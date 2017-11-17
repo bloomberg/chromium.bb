@@ -390,7 +390,8 @@
                                     tabModel:(TabModel*)tabModel {
   BrowserViewControllerDependencyFactory* factory =
       [[BrowserViewControllerDependencyFactory alloc]
-          initWithBrowserState:browserState];
+          initWithBrowserState:browserState
+                  webStateList:[tabModel webStateList]];
   return [[BrowserViewController alloc]
                 initWithTabModel:tabModel
                     browserState:browserState

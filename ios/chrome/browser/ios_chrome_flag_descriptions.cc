@@ -25,6 +25,11 @@ const char kCaptivePortalDescription[] =
     "When enabled, the Captive Portal landing page will be displayed if it is "
     "detected that the user is connected to a Captive Portal network.";
 
+const char kCleanToolbarName[] = "Clean Toolbar";
+const char kCleanToolbarDescription[] =
+    "When enabled, the Clean Toolbar will be used instead of "
+    "WebToolbarController.";
+
 const char kContextualSearch[] = "Contextual Search";
 const char kContextualSearchDescription[] =
     "Whether or not Contextual Search is enabled.";
