@@ -109,25 +109,21 @@ class HomedirMethodsImpl : public HomedirMethods {
   ~HomedirMethodsImpl() override {}
 
   void GetKeyDataEx(const Identification& id,
-                    const cryptohome::AuthorizationRequest& auth_proto,
+                    const cryptohome::AuthorizationRequest& auth,
                     const cryptohome::GetKeyDataRequest& request,
                     const GetKeyDataCallback& callback) override {
     DBusThreadManager::Get()->GetCryptohomeClient()->GetKeyDataEx(
-        id, auth_proto, request,
+        id, auth, request,
         base::BindOnce(&HomedirMethodsImpl::OnGetKeyDataExCallback,
                        weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   void CheckKeyEx(const Identification& id,
-                  const Authorization& auth,
+                  const cryptohome::AuthorizationRequest& auth,
+                  const cryptohome::CheckKeyRequest& request,
                   const Callback& callback) override {
-    cryptohome::AuthorizationRequest auth_proto;
-    cryptohome::CheckKeyRequest request;
-
-    FillAuthorizationProtobuf(auth, &auth_proto);
-
     DBusThreadManager::Get()->GetCryptohomeClient()->CheckKeyEx(
-        id, auth_proto, request,
+        id, auth, request,
         base::BindOnce(&HomedirMethodsImpl::OnBaseReplyCallback,
                        weak_ptr_factory_.GetWeakPtr(), callback));
   }

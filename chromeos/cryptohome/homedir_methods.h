@@ -48,14 +48,15 @@ class CHROMEOS_EXPORT HomedirMethods {
   // information and the request does not need to be authenticated, so an empty
   // authorization request is sufficient.
   virtual void GetKeyDataEx(const Identification& id,
-                            const AuthorizationRequest& auth_proto,
+                            const AuthorizationRequest& auth,
                             const GetKeyDataRequest& request,
                             const GetKeyDataCallback& callback) = 0;
 
   // Asks cryptohomed to attempt authorization for user identified by |id| using
   // |auth|. This can be used to unlock a user session.
   virtual void CheckKeyEx(const Identification& id,
-                          const Authorization& auth,
+                          const AuthorizationRequest& auth,
+                          const CheckKeyRequest& request,
                           const Callback& callback) = 0;
 
   // Asks cryptohomed to find the cryptohome for user identified by |id| and
