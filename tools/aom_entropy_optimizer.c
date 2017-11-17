@@ -212,6 +212,7 @@ static int counts_to_cdf(const aom_count_type *counts, aom_cdf_prob *cdf,
     else
       cdf[i] = (csum[i] * CDF_PROB_TOP + round_shift) / sum;
   }
+  if (sum <= 0) cdf[0] = CDF_PROB_TOP - 1;
   return 0;
 }
 
