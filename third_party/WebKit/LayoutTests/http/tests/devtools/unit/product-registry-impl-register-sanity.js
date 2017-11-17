@@ -1,6 +1,5 @@
-
-TestRunner.loadModule('product_registry_impl').then(test);
-function test() {
+(async function(){
+  await TestRunner.loadModule('product_registry_impl');
   TestRunner.addResult("This tests product registry impl's register function.");
 
   resetProductRegistry();
@@ -60,4 +59,4 @@ function test() {
     TestRunner.addResult("Cleared ProductRegistryImpl");
     ProductRegistryImpl._productsByDomainHash.clear();
   }
-}
+})();

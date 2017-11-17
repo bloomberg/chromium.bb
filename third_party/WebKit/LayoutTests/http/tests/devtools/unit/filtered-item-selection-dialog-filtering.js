@@ -1,5 +1,5 @@
-TestRunner.loadModule("quick_open").then(test);
-function test() {
+(async function() {
+    await TestRunner.loadModule("quick_open");
     TestRunner.addResult("Check to see that FilteredItemSelectionDialog uses proper regex to filter results.");
 
     var overridenInput = [];
@@ -83,4 +83,4 @@ function test() {
             return checkQuery("", ["abc", "abcd"]);
         }
     ]);
-}
+})();
