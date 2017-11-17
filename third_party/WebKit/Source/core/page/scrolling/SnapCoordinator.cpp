@@ -43,8 +43,8 @@ static LayoutBox* FindSnapContainer(const LayoutBox& snap_area) {
 
 void SnapCoordinator::SnapAreaDidChange(LayoutBox& snap_area,
                                         ScrollSnapAlign scroll_snap_align) {
-  if (scroll_snap_align.alignmentX == kSnapAlignmentNone &&
-      scroll_snap_align.alignmentY == kSnapAlignmentNone) {
+  if (scroll_snap_align.alignmentX == SnapAlignment::kNone &&
+      scroll_snap_align.alignmentY == SnapAlignment::kNone) {
     snap_area.SetSnapContainer(nullptr);
     return;
   }

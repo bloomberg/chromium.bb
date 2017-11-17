@@ -249,22 +249,17 @@ enum CSSBoxType {
   kContentBox
 };
 
-enum SnapAxis {
-  kSnapAxisBoth,
-  kSnapAxisX,
-  kSnapAxisY,
-  kSnapAxisBlock,
-  kSnapAxisInline,
+enum class SnapAxis : unsigned {
+  kBoth,
+  kX,
+  kY,
+  kBlock,
+  kInline,
 };
 
 enum class SnapStrictness { kProximity, kMandatory };
 
-enum SnapAlignment {
-  kSnapAlignmentNone,
-  kSnapAlignmentStart,
-  kSnapAlignmentEnd,
-  kSnapAlignmentCenter
-};
+enum class SnapAlignment : unsigned { kNone, kStart, kEnd, kCenter };
 
 enum TextEmphasisPosition {
   kOverRight,
