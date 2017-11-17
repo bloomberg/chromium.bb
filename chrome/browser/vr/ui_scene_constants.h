@@ -51,6 +51,8 @@ static constexpr float kUrlBarHeight = kUrlBarHeightDMM * kUrlBarDistance;
 static constexpr float kUrlBarVerticalOffset = -0.516f * kUrlBarDistance;
 static constexpr float kUrlBarRotationRad = -0.175f;
 
+static constexpr float kOverlayPlaneDistance = 2.3f;
+
 static constexpr float kAudioPermissionPromptWidth = 0.63f * kUrlBarDistance;
 static constexpr float kAudioPermissionPromptHeight = 0.218f * kUrlBarDistance;
 static constexpr float kAudionPermisionPromptDepth = 0.11f;

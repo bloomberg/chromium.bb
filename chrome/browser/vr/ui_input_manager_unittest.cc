@@ -289,4 +289,29 @@ TEST_F(UiInputManagerContentTest, ExitPromptHitTesting) {
   EXPECT_EQ(exit_prompt->id(), reticle_model.target_element_id);
 }
 
+TEST_F(UiInputManagerContentTest, AudioPermissionPromptHitTesting) {
+  model_->active_modal_prompt_type = kModalPromptTypeExitVRForAudioPermission;
+  EXPECT_TRUE(AnimateBy(MsToDelta(500)));
+
+  UiElement* url_bar = scene_->GetUiElementByName(UiElementName::kUrlBar);
+  gfx::Point3F url_bar_center;
+  url_bar->world_space_transform().TransformPoint(&url_bar_center);
+  gfx::Point3F origin;
+
+  ControllerModel controller_model;
+  controller_model.laser_direction = url_bar_center - origin;
+  controller_model.laser_origin = origin;
+  controller_model.touchpad_button_state = UiInputManager::ButtonState::DOWN;
+  ReticleModel reticle_model;
+  GestureList gesture_list;
+  input_manager_->HandleInput(MsToTicks(1), controller_model, &reticle_model,
+                              &gesture_list);
+
+  // Even if the reticle is over the URL bar, the backplane should be in front
+  // and should be hit.
+  ASSERT_NE(0, reticle_model.target_element_id);
+  EXPECT_EQ(scene_->GetUiElementByName(kAudioPermissionPromptBackplane)->id(),
+            reticle_model.target_element_id);
+}
+
 }  // namespace vr
