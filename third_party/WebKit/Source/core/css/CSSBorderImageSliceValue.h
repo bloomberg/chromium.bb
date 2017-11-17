@@ -30,6 +30,7 @@
 #include "core/css/CSSQuadValue.h"
 
 namespace blink {
+namespace cssvalue {
 
 class CSSBorderImageSliceValue : public CSSValue {
  public:
@@ -60,6 +61,7 @@ class CSSBorderImageSliceValue : public CSSValue {
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSBorderImageSliceValue,
                             IsBorderImageSliceValue());
 
+}  // namespace cssvalue
 }  // namespace blink
 
 #endif  // CSSBorderImageSliceValue_h

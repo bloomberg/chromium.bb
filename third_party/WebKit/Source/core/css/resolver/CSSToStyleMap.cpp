@@ -577,8 +577,8 @@ void CSSToStyleMap::MapNinePieceImageSlice(StyleResolverState&,
     return;
 
   // Retrieve the border image value.
-  const CSSBorderImageSliceValue& border_image_slice =
-      ToCSSBorderImageSliceValue(value);
+  const cssvalue::CSSBorderImageSliceValue& border_image_slice =
+      cssvalue::ToCSSBorderImageSliceValue(value);
 
   // Set up a length box to represent our image slices.
   LengthBox box;

@@ -28,6 +28,7 @@
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {
+namespace cssvalue {
 
 CSSBorderImageSliceValue::CSSBorderImageSliceValue(CSSQuadValue* slices,
                                                    bool fill)
@@ -55,4 +56,5 @@ void CSSBorderImageSliceValue::TraceAfterDispatch(blink::Visitor* visitor) {
   CSSValue::TraceAfterDispatch(visitor);
 }
 
+}  // namespace cssvalue
 }  // namespace blink
