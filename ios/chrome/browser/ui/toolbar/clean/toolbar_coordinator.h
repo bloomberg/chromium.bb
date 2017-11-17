@@ -25,7 +25,7 @@ class ChromeBrowserState;
 @property(nonatomic, weak) id<ApplicationCommands, BrowserCommands> dispatcher;
 // The web state list this ToolbarCoordinator is handling.
 @property(nonatomic, assign) WebStateList* webStateList;
-// Audience, notified of the
+// Delegate for this coordinator.
 @property(nonatomic, weak) id<ToolbarCoordinatorDelegate> delegate;
 // URL loader for the toolbar.
 @property(nonatomic, weak) id<UrlLoader> URLLoader;
