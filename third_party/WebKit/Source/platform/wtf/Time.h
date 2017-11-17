@@ -39,6 +39,10 @@ class TimeWrapper {
     return TimeWrapper(WrappedTimeType::Now());
   }
 
+  static TimeWrapper UnixEpoch() {
+    return TimeWrapper(WrappedTimeType::UnixEpoch());
+  }
+
   int64_t ToInternalValueForTesting() const { return value_.ToInternalValue(); }
 
   // Only use this conversion when interfacing with legacy code that represents

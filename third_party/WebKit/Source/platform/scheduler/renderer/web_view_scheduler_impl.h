@@ -48,7 +48,7 @@ class PLATFORM_EXPORT WebViewSchedulerImpl : public WebViewScheduler {
   std::unique_ptr<WebFrameScheduler> CreateFrameScheduler(
       BlameContext* blame_context,
       WebFrameScheduler::FrameType frame_type) override;
-  void EnableVirtualTime() override;
+  base::TimeTicks EnableVirtualTime() override;
   void DisableVirtualTimeForTesting() override;
   bool VirtualTimeAllowedToAdvance() const override;
   void SetVirtualTimePolicy(VirtualTimePolicy virtual_time_policy) override;

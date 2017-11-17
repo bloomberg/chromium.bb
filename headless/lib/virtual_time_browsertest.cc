@@ -64,7 +64,8 @@ class VirtualTimeBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
   }
 
   void SetVirtualTimePolicyDone(
-      std::unique_ptr<emulation::SetVirtualTimePolicyResult>) {
+      std::unique_ptr<emulation::SetVirtualTimePolicyResult> result) {
+    EXPECT_LT(0, result->GetVirtualTimeBase());
     // Virtual time is paused, so start navigating.
     devtools_client_->GetPage()->Navigate(initial_url_);
   }
@@ -136,14 +137,14 @@ class VirtualTimeObserverTest : public VirtualTimeBrowserTest {
 
   void OnVirtualTimeAdvanced(
       const emulation::VirtualTimeAdvancedParams& params) override {
-    log_.push_back(
-        base::StringPrintf("Advanced to %dms", params.GetVirtualTimeElapsed()));
+    log_.push_back(base::StringPrintf("Advanced to %.fms",
+                                      params.GetVirtualTimeElapsed()));
   }
 
   void OnVirtualTimePaused(
       const emulation::VirtualTimePausedParams& params) override {
     log_.push_back(
-        base::StringPrintf("Paused @ %dms", params.GetVirtualTimeElapsed()));
+        base::StringPrintf("Paused @ %.fms", params.GetVirtualTimeElapsed()));
   }
 };
 
