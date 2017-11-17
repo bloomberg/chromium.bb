@@ -110,6 +110,7 @@ if (use_locally_built_instrumented_libraries) {
       ":libdbus-glib-1-2",
       ":libdbusmenu",
       ":libdbusmenu-glib4",
+      ":libdconf1",
       ":libexpat1",
       ":libffi6",
       ":libfontconfig1",
@@ -458,6 +459,13 @@ if (use_locally_built_instrumented_libraries) {
       "--disable-vala",
     ]
     pre_build = "scripts/pre-build/autogen.sh"
+  }
+
+  instrumented_library("libdconf1") {
+    extra_configure_flags = [
+      "--disable-static",
+      "--disable-introspection",
+    ]
   }
 
   instrumented_library("libexpat1") {
