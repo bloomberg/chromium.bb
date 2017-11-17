@@ -1708,10 +1708,6 @@ Node::InsertionNotificationRequest Element::InsertedInto(
   // by the time we reach updateId
   ContainerNode::InsertedInto(insertion_point);
 
-  if (ContainsFullScreenElement() && parentElement() &&
-      !parentElement()->ContainsFullScreenElement())
-    SetContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(true);
-
   DCHECK(!HasRareData() || !GetElementRareData()->HasPseudoElements());
 
   if (!insertion_point->IsInTreeScope())
