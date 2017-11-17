@@ -26,6 +26,8 @@ enum class PermissionType {
   FLASH = 11,
   SENSORS = 12,
   ACCESSIBILITY_EVENTS = 13,
+  CLIPBOARD_READ = 14,
+  CLIPBOARD_WRITE = 15,
 
   // Always keep this at the end.
   NUM,
