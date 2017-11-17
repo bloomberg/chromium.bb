@@ -13,13 +13,17 @@
 if (window.location.origin != get_host_info().UNAUTHENTICATED_ORIGIN) {
   test(t => {
     assert_not_equals(undefined, CSS.paintWorklet);
-  }, 'CSS.paintWorklet should be available on a secure context.');
+    assert_not_equals(undefined, window.animationWorklet);
+    assert_not_equals(undefined, window.audioWorklet);
+  }, 'Worklets should be available on a secure context.');
   window.location = get_host_info().UNAUTHENTICATED_ORIGIN +
                     window.location.pathname;
 } else {
   test(t => {
     assert_equals(undefined, CSS.paintWorklet);
-  }, 'CSS.paintWorklet should not be available on an insecure context.');
+    assert_equals(undefined, window.animationWorklet);
+    assert_equals(undefined, window.audioWorklet);
+  }, 'Worklets should not be available on an insecure context.');
 }
 
 </script>

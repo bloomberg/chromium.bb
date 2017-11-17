@@ -6,9 +6,8 @@
 
 [
     ImplementedAs=WindowAudioWorklet,
-    RuntimeEnabled=AudioWorklet
-    // TODO(nhiroki): Specify the [SecureContext] attribute when it's supported.
-    // (https://crbug.com/782121)
+    RuntimeEnabled=AudioWorklet,
+    SecureContext
 ] partial interface Window {
     readonly attribute Worklet audioWorklet;
 };
