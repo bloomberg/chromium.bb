@@ -1,0 +1,37 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+(async function() {
+  TestRunner.addResult(`Tests extracting information about original functions from bound ones\n`);
+  await TestRunner.loadModule('performance_test_runner');
+  await TestRunner.showPanel('timeline');
+  await TestRunner.loadHTML(`
+      <button id="btn"></button>
+    `);
+  await TestRunner.evaluateInPagePromise(`
+      function original() { }
+
+      function performActions()
+      {
+          var b = document.getElementById("btn");
+          var foo = original.bind();
+          b.onclick = foo;
+          b.click();
+      }
+  `);
+
+  PerformanceTestRunner.evaluateWithTimeline('performActions()', finish);
+
+  function finish() {
+    PerformanceTestRunner.timelineModel().mainThreadEvents().forEach(event => {
+      if (event.name !== TimelineModel.TimelineModel.RecordType.FunctionCall)
+        return;
+      var data = event.args['data'];
+      var scriptName = data.scriptName;
+      var scriptNameShort = scriptName.substring(scriptName.lastIndexOf('/') + 1);
+      TestRunner.addResult(`${event.name} ${scriptNameShort}: ${data.scriptLine}`);
+    });
+    TestRunner.completeTest();
+  }
+})();

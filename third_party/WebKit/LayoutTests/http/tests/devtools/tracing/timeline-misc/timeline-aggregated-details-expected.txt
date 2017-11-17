@@ -1,3 +1,5 @@
+Test timeline aggregated details.
+
 Cleared ProductRegistryImpl
 Adding entry: *.google.com
 

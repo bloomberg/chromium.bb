@@ -1,13 +1,10 @@
 Tests the Timeline API instrumentation of style recalc invalidator invalidations.
 
-PASS
-PASS
-PASS
 
 Running: testClassName
 [
     {
-        cause : {reason: Element has pending invalidation list, stackTrace: .../devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.html:9}
+        cause : {reason: Element has pending invalidation list, stackTrace: test://evaluations/0/timeline-style-recalc-all-invalidator-types.js:36}
         changedAttribute : undefined
         changedClass : "red"
         changedId : undefined
@@ -18,7 +15,7 @@ Running: testClassName
         type : "StyleRecalcInvalidationTracking"
     }
     {
-        cause : {reason: Element has pending invalidation list, stackTrace: .../devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.html:10}
+        cause : {reason: Element has pending invalidation list, stackTrace: test://evaluations/0/timeline-style-recalc-all-invalidator-types.js:37}
         changedAttribute : undefined
         changedClass : "red"
         changedId : undefined
@@ -35,7 +32,7 @@ Running: testIdWithoutStyleChange
 Running: testId
 [
     {
-        cause : {reason: Element has pending invalidation list, stackTrace: .../devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.html:25}
+        cause : {reason: Element has pending invalidation list, stackTrace: test://evaluations/0/timeline-style-recalc-all-invalidator-types.js:52}
         changedAttribute : undefined
         changedClass : undefined
         changedId : "testElementFour"
@@ -46,7 +43,7 @@ Running: testId
         type : "StyleRecalcInvalidationTracking"
     }
     {
-        cause : {reason: Element has pending invalidation list, stackTrace: .../devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.html:26}
+        cause : {reason: Element has pending invalidation list, stackTrace: test://evaluations/0/timeline-style-recalc-all-invalidator-types.js:53}
         changedAttribute : undefined
         changedClass : undefined
         changedId : "testElementFive"
@@ -61,7 +58,7 @@ Running: testId
 Running: testStyleAttributeChange
 [
     {
-        cause : {reason: StyleSheetChange, stackTrace: .../devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.html:33}
+        cause : {reason: StyleSheetChange, stackTrace: test://evaluations/0/timeline-style-recalc-all-invalidator-types.js:60}
         changedAttribute : undefined
         changedClass : undefined
         changedId : undefined
@@ -72,7 +69,7 @@ Running: testStyleAttributeChange
         type : "StyleRecalcInvalidationTracking"
     }
     {
-        cause : {reason: StyleSheetChange, stackTrace: .../devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.html:34}
+        cause : {reason: StyleSheetChange, stackTrace: test://evaluations/0/timeline-style-recalc-all-invalidator-types.js:61}
         changedAttribute : undefined
         changedClass : undefined
         changedId : undefined
@@ -87,7 +84,7 @@ Running: testStyleAttributeChange
 Running: testAttributeChange
 [
     {
-        cause : {reason: Attribute, stackTrace: .../devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.html:41}
+        cause : {reason: Attribute, stackTrace: test://evaluations/0/timeline-style-recalc-all-invalidator-types.js:68}
         changedAttribute : undefined
         changedClass : undefined
         changedId : undefined
@@ -98,7 +95,7 @@ Running: testAttributeChange
         type : "StyleRecalcInvalidationTracking"
     }
     {
-        cause : {reason: Attribute, stackTrace: .../devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.html:42}
+        cause : {reason: Attribute, stackTrace: test://evaluations/0/timeline-style-recalc-all-invalidator-types.js:69}
         changedAttribute : undefined
         changedClass : undefined
         changedId : undefined
@@ -109,7 +106,7 @@ Running: testAttributeChange
         type : "StyleRecalcInvalidationTracking"
     }
     {
-        cause : {reason: Element has pending invalidation list, stackTrace: .../devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.html:41}
+        cause : {reason: Element has pending invalidation list, stackTrace: test://evaluations/0/timeline-style-recalc-all-invalidator-types.js:68}
         changedAttribute : "dir"
         changedClass : undefined
         changedId : undefined
@@ -120,7 +117,7 @@ Running: testAttributeChange
         type : "StyleRecalcInvalidationTracking"
     }
     {
-        cause : {reason: Element has pending invalidation list, stackTrace: .../devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.html:42}
+        cause : {reason: Element has pending invalidation list, stackTrace: test://evaluations/0/timeline-style-recalc-all-invalidator-types.js:69}
         changedAttribute : "dir"
         changedClass : undefined
         changedId : undefined
@@ -135,7 +132,7 @@ Running: testAttributeChange
 Running: testPseudoChange
 [
     {
-        cause : {reason: PseudoClass, stackTrace: .../devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.html:51}
+        cause : {reason: PseudoClass, stackTrace: test://evaluations/0/timeline-style-recalc-all-invalidator-types.js:78}
         changedAttribute : undefined
         changedClass : undefined
         changedId : undefined

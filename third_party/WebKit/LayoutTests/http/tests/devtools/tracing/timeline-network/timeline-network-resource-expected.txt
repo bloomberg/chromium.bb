@@ -1,6 +1,5 @@
 Tests the Timeline API instrumentation of a network resource load
 
-Script resource loaded
 
 ResourceSendRequest Properties:
 {
