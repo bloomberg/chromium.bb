@@ -701,7 +701,7 @@ TEST(X509CertificateTest, Pickle) {
   intermediates.push_back(thawte_cert_handle);
   scoped_refptr<X509Certificate> cert = X509Certificate::CreateFromHandle(
       google_cert_handle, intermediates);
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), cert.get());
+  ASSERT_TRUE(cert);
 
   X509Certificate::FreeOSCertHandle(google_cert_handle);
   X509Certificate::FreeOSCertHandle(thawte_cert_handle);
@@ -711,9 +711,8 @@ TEST(X509CertificateTest, Pickle) {
 
   base::PickleIterator iter(pickle);
   scoped_refptr<X509Certificate> cert_from_pickle =
-      X509Certificate::CreateFromPickle(
-          &iter, X509Certificate::PICKLETYPE_CERTIFICATE_CHAIN_V3);
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), cert_from_pickle.get());
+      X509Certificate::CreateFromPickle(&iter);
+  ASSERT_TRUE(cert_from_pickle);
   EXPECT_TRUE(X509Certificate::IsSameOSCert(
       cert->os_cert_handle(), cert_from_pickle->os_cert_handle()));
   const X509Certificate::OSCertHandles& cert_intermediates =
