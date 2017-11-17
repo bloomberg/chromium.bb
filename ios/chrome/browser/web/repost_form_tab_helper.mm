@@ -15,9 +15,13 @@ DEFINE_WEB_STATE_USER_DATA_KEY(RepostFormTabHelper);
 RepostFormTabHelper::RepostFormTabHelper(
     web::WebState* web_state,
     id<RepostFormTabHelperDelegate> delegate)
-    : web::WebStateObserver(web_state), delegate_(delegate) {}
+    : web_state_(web_state), delegate_(delegate) {
+  web_state_->AddObserver(this);
+}
 
-RepostFormTabHelper::~RepostFormTabHelper() = default;
+RepostFormTabHelper::~RepostFormTabHelper() {
+  DCHECK(!web_state_);
+}
 
 void RepostFormTabHelper::CreateForWebState(
     web::WebState* web_state,
@@ -31,6 +35,12 @@ void RepostFormTabHelper::CreateForWebState(
   }
 }
 
+void RepostFormTabHelper::DismissReportFormDialog() {
+  if (is_presenting_dialog_)
+    [delegate_ repostFormTabHelperDismissRepostFormDialog:this];
+  is_presenting_dialog_ = false;
+}
+
 void RepostFormTabHelper::PresentDialog(
     CGPoint location,
     const base::Callback<void(bool)>& callback) {
@@ -38,22 +48,24 @@ void RepostFormTabHelper::PresentDialog(
   is_presenting_dialog_ = true;
   base::Callback<void(bool)> local_callback(callback);
   [delegate_ repostFormTabHelper:this
-      presentRepostFromDialogAtPoint:location
-                   completionHandler:^(BOOL should_continue) {
-                     is_presenting_dialog_ = false;
-                     local_callback.Run(should_continue);
-                   }];
+      presentRepostFormDialogForWebState:web_state_
+                           dialogAtPoint:location
+                       completionHandler:^(BOOL should_continue) {
+                         is_presenting_dialog_ = false;
+                         local_callback.Run(should_continue);
+                       }];
 }
 
 void RepostFormTabHelper::DidStartNavigation(web::WebState* web_state,
                                              web::NavigationContext*) {
-  if (is_presenting_dialog_)
-    [delegate_ repostFormTabHelperDismissRepostFormDialog:this];
-  is_presenting_dialog_ = false;
+  DCHECK_EQ(web_state_, web_state);
+  DismissReportFormDialog();
 }
 
 void RepostFormTabHelper::WebStateDestroyed(web::WebState* web_state) {
-  if (is_presenting_dialog_)
-    [delegate_ repostFormTabHelperDismissRepostFormDialog:this];
-  is_presenting_dialog_ = false;
+  DCHECK_EQ(web_state_, web_state);
+  DismissReportFormDialog();
+
+  web_state_->RemoveObserver(this);
+  web_state_ = nullptr;
 }
