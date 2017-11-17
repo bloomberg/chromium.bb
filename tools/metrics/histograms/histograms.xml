@@ -2312,13 +2312,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Arc.AndroidBootTime" units="ms">
   <owner>elijahtaylor@google.com</owner>
-  <owner>mitsuji@google.com</owner>
+  <owner>shihuis@google.com</owner>
   <summary>The time elapsed for booting up the ARC instance.</summary>
 </histogram>
 
 <histogram name="Arc.AppCount">
   <owner>elijahtaylor@google.com</owner>
-  <owner>mitsuji@google.com</owner>
+  <owner>shihuis@google.com</owner>
   <summary>
     The number of ARC apps open at any given time. Collected every 5 minutes.
     This indicates both how many users are engaging with apps and, when they do
@@ -2328,7 +2328,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Arc.AppsInstalledAtStartup" units="App Count">
   <owner>elijahtaylor@google.com</owner>
-  <owner>mitsuji@google.com</owner>
+  <owner>shihuis@google.com</owner>
   <summary>
     Total number of ARC apps installed on a device measured at startup. Note:
     This includes launchable apps that are installed by default, such as Play
@@ -2338,7 +2338,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Arc.boot_progress" units="ms">
   <owner>elijahtaylor@google.com</owner>
-  <owner>mitsuji@google.com</owner>
+  <owner>shihuis@google.com</owner>
   <summary>
     The relative time of a boot progress event since the ARC starts.
   </summary>
@@ -2374,7 +2374,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Arc.CumulativeUseTime" units="seconds">
   <owner>elijahtaylor@google.com</owner>
-  <owner>mitsuji@google.com</owner>
+  <owner>shihuis@google.com</owner>
   <summary>
     ARC use time. The use time is incremented in regular intervals while android
     container is active. Reported at most once a day, at which point accumulated
@@ -2423,14 +2423,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Arc.IntentHandlerAction" enum="ArcIntentHandlerAction">
   <owner>elijahtaylor@google.com</owner>
-  <owner>mitsuji@google.com</owner>
+  <owner>shihuis@google.com</owner>
   <summary>ARC intent handler action taken by user.</summary>
 </histogram>
 
 <histogram name="Arc.IntentHandlerDestinationPlatform"
     enum="ArcIntentHandlerDestinationPlatform">
   <owner>elijahtaylor@google.com</owner>
-  <owner>mitsuji@google.com</owner>
+  <owner>shihuis@google.com</owner>
   <summary>
     ARC intent handler destination platform. The destination may be specified
     due to the user explicit selection or a previously stored preference.
@@ -2439,31 +2439,31 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Arc.LowMemoryKiller.Count">
   <owner>elijahtaylor@google.com</owner>
-  <owner>mitsuji@google.com</owner>
+  <owner>shihuis@google.com</owner>
   <summary>Cumulative count of low memory kills in one user session.</summary>
 </histogram>
 
 <histogram name="Arc.LowMemoryKiller.FreedSize" units="KB">
   <owner>elijahtaylor@google.com</owner>
-  <owner>mitsuji@google.com</owner>
+  <owner>shihuis@google.com</owner>
   <summary>The memory size freed by each low memory kill event.</summary>
 </histogram>
 
 <histogram name="Arc.LowMemoryKiller.TimeDelta" units="ms">
   <owner>elijahtaylor@google.com</owner>
-  <owner>mitsuji@google.com</owner>
+  <owner>shihuis@google.com</owner>
   <summary>The elapsed time to last low memory kill event.</summary>
 </histogram>
 
 <histogram name="Arc.OOMKills.Count" units="kills">
   <owner>elijahtaylor@google.com</owner>
-  <owner>mitsuji@google.com</owner>
+  <owner>shihuis@google.com</owner>
   <summary>Cumulative count of OOM kills in one user session.</summary>
 </histogram>
 
 <histogram name="Arc.OOMKills.Score" units="badness score">
   <owner>elijahtaylor@google.com</owner>
-  <owner>mitsuji@google.com</owner>
+  <owner>shihuis@google.com</owner>
   <summary>
     The oom_badness score of a OOM killed process as reported by kernel.
   </summary>
@@ -2471,19 +2471,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Arc.OOMKills.TimeDelta" units="ms">
   <owner>elijahtaylor@google.com</owner>
-  <owner>mitsuji@google.com</owner>
+  <owner>shihuis@google.com</owner>
   <summary>The elapsed time since last OOM kill event.</summary>
 </histogram>
 
 <histogram name="Arc.OptInAction" enum="ArcOptInAction">
   <owner>elijahtaylor@google.com</owner>
-  <owner>mitsuji@google.com</owner>
+  <owner>shihuis@google.com</owner>
   <summary>Arc OptIn action taken by user.</summary>
 </histogram>
 
 <histogram name="Arc.OptInCancel" enum="ArcOptInCancel">
   <owner>elijahtaylor@google.com</owner>
-  <owner>mitsuji@google.com</owner>
+  <owner>shihuis@google.com</owner>
   <summary>Arc OptIn cancelation reason.</summary>
 </histogram>
 
@@ -2644,7 +2644,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Arc.State" enum="BooleanEnabled">
   <owner>elijahtaylor@google.com</owner>
-  <owner>mitsuji@google.com</owner>
+  <owner>shihuis@google.com</owner>
   <summary>
     Whether ARC is enabled or not.  Before M56 this was collected only on login
     and when ARC was enabled or disabled.  From M56 forward this is collected
