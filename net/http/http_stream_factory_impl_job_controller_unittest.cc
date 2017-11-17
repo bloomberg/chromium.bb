@@ -260,7 +260,6 @@ class HttpStreamFactoryImplJobControllerTest : public ::testing::Test {
 
   void SetAlternativeService(const HttpRequestInfo& request_info,
                              AlternativeService alternative_service) {
-    HostPortPair host_port_pair = HostPortPair::FromURL(request_info.url);
     url::SchemeHostPort server(request_info.url);
     base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
     if (alternative_service.protocol == kProtoQUIC) {
@@ -2212,7 +2211,6 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, GetAlternativeServiceInfoFor) {
   Initialize(request_info);
   url::SchemeHostPort server(request_info.url);
   AlternativeService alternative_service(kProtoQUIC, server.host(), 443);
-  HostPortPair host_port_pair = HostPortPair::FromURL(request_info.url);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
 
   // Set alternative service with no advertised version.
