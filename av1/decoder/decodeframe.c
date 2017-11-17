@@ -1473,8 +1473,8 @@ static void setup_frame_size(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
 #if CONFIG_FRAME_SUPERRES
   setup_superres(cm, rb, &width, &height);
 #endif  // CONFIG_FRAME_SUPERRES
-  setup_render_size(cm, rb);
   resize_context_buffers(cm, width, height);
+  setup_render_size(cm, rb);
 
   lock_buffer_pool(pool);
   if (aom_realloc_frame_buffer(
@@ -1540,6 +1540,7 @@ static void setup_frame_size_with_refs(AV1_COMMON *cm,
 #if CONFIG_FRAME_SUPERRES
       setup_superres(cm, rb, &width, &height);
 #endif  // CONFIG_FRAME_SUPERRES
+      resize_context_buffers(cm, width, height);
       found = 1;
       break;
     }
@@ -1556,6 +1557,7 @@ static void setup_frame_size_with_refs(AV1_COMMON *cm,
 #if CONFIG_FRAME_SUPERRES
     setup_superres(cm, rb, &width, &height);
 #endif  // CONFIG_FRAME_SUPERRES
+    resize_context_buffers(cm, width, height);
     setup_render_size(cm, rb);
   }
 
@@ -1583,8 +1585,6 @@ static void setup_frame_size_with_refs(AV1_COMMON *cm,
       aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                          "Referenced frame has incompatible color format");
   }
-
-  resize_context_buffers(cm, width, height);
 
   lock_buffer_pool(pool);
   if (aom_realloc_frame_buffer(
