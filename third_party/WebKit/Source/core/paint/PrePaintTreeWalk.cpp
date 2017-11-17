@@ -186,18 +186,8 @@ bool PrePaintTreeWalk::NeedsTreeBuilderContextUpdate(
              object);
 }
 
-void PrePaintTreeWalk::Walk(const LayoutObject& object,
-                            const PrePaintTreeWalkContext& parent_context) {
-  // Early out from the tree walk if possible.
-  bool needs_tree_builder_context_update =
-      this->NeedsTreeBuilderContextUpdate(object, parent_context);
-  if (!needs_tree_builder_context_update &&
-      !object.ShouldCheckForPaintInvalidation())
-    return;
-
-  PrePaintTreeWalkContext context(parent_context,
-                                  needs_tree_builder_context_update);
-
+void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
+                                    PrePaintTreeWalkContext& context) {
   // This must happen before updatePropertiesForSelf, because the latter reads
   // some of the state computed here.
   UpdateAuxiliaryObjectProperties(object, context);
@@ -223,6 +213,20 @@ void PrePaintTreeWalk::Walk(const LayoutObject& object,
   }
 
   CompositingLayerPropertyUpdater::Update(object);
+}
+
+void PrePaintTreeWalk::Walk(const LayoutObject& object,
+                            const PrePaintTreeWalkContext& parent_context) {
+  // Early out from the tree walk if possible.
+  bool needs_tree_builder_context_update =
+      this->NeedsTreeBuilderContextUpdate(object, parent_context);
+  if (!needs_tree_builder_context_update &&
+      !object.ShouldCheckForPaintInvalidation())
+    return;
+
+  PrePaintTreeWalkContext context(parent_context,
+                                  needs_tree_builder_context_update);
+  WalkInternal(object, context);
 
   for (const LayoutObject* child = object.SlowFirstChild(); child;
        child = child->NextSibling()) {
