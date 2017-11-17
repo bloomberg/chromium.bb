@@ -76,3 +76,7 @@ Current patches:
   libavcodec/mips/aacdec_mips.c
     update_ltp_mips() function fails to compile:
         "error: couldn't allocate output register for constraint 'r'"
+
+  libavformat/utils.c
+   av_read_frame() : Prevent undefined shift with wrap_bits > 63. Pushed to
+   upstream, so should be available by next roll (M65).
