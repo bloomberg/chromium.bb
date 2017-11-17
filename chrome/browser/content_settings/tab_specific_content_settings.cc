@@ -779,13 +779,6 @@ void TabSpecificContentSettings::DidStartNavigation(
     return;
   }
 
-  const content::NavigationController& controller =
-      web_contents()->GetController();
-  content::NavigationEntry* last_committed_entry =
-      controller.GetLastCommittedEntry();
-  if (last_committed_entry)
-    previous_url_ = last_committed_entry->GetURL();
-
   // If we're displaying a network error page do not reset the content
   // settings delegate's cookies so the user has a chance to modify cookie
   // settings.
@@ -851,19 +844,14 @@ void TabSpecificContentSettings::ClearMidiContentSettings() {
 
 void TabSpecificContentSettings::GeolocationDidNavigate(
     content::NavigationHandle* navigation_handle) {
-  ContentSettingsUsagesState::CommittedDetails committed_details;
-  committed_details.current_url = navigation_handle->GetURL();
-  committed_details.previous_url = previous_url_;
-
-  geolocation_usages_state_.DidNavigate(committed_details);
+  geolocation_usages_state_.DidNavigate(navigation_handle->GetURL(),
+                                        navigation_handle->GetPreviousURL());
 }
 
 void TabSpecificContentSettings::MidiDidNavigate(
     content::NavigationHandle* navigation_handle) {
-  ContentSettingsUsagesState::CommittedDetails committed_details;
-  committed_details.current_url = navigation_handle->GetURL();
-  committed_details.previous_url = previous_url_;
-  midi_usages_state_.DidNavigate(committed_details);
+  midi_usages_state_.DidNavigate(navigation_handle->GetURL(),
+                                 navigation_handle->GetPreviousURL());
 }
 
 void TabSpecificContentSettings::BlockAllContentForTesting() {
