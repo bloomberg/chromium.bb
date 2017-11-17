@@ -91,9 +91,8 @@ const char kPropertyAnimationsToolbarDescription[] =
     "When enabled, Toolbar animations will be done using "
     "UIViewPropertyAnimator";
 
-extern const char kSafeAreaCompatibleToolbarName[] =
-    "Safe Area Compatible Toolbar";
-extern const char kSafeAreaCompatibleToolbarDescription[] =
+const char kSafeAreaCompatibleToolbarName[] = "Safe Area Compatible Toolbar";
+const char kSafeAreaCompatibleToolbarDescription[] =
     "When enabled, the toolbar resizes itself when the safe area changes.";
 
 const char kShareCanonicalURLName[] = "Share Canonical URL";

@@ -27,14 +27,15 @@ class HistogramSamples;
 
 namespace metrics {
 
-namespace internal {
-extern const int kOmniboxEventLimit;
-extern const int kUserActionEventLimit;
-}
-
 class MetricsProvider;
 class MetricsServiceClient;
 class DelegatingProvider;
+
+namespace internal {
+// Maximum number of events before truncation.
+constexpr int kOmniboxEventLimit = 5000;
+constexpr int kUserActionEventLimit = 5000;
+}  // namespace internal
 
 class MetricsLog {
  public:
