@@ -48,6 +48,10 @@ CreateUnifiedManagedDisplayModeList(
 // Tests if the |info| has display mode that matches |ui_scale|.
 bool HasDisplayModeForUIScale(const ManagedDisplayInfo& info, float ui_scale);
 
+// Returns true if the first display should unconditionally be considered an
+// internal display.
+bool ForceFirstDisplayInternal();
+
 // Computes the bounds that defines the bounds between two displays.
 // Returns false if two displays do not intersect.
 DISPLAY_MANAGER_EXPORT bool ComputeBoundary(

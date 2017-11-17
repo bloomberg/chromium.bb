@@ -6,10 +6,16 @@
 
 #include <algorithm>
 
+#include "base/command_line.h"
 #include "base/sys_info.h"
+#include "ui/display/display_switches.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/geometry/size_f.h"
+
+#if defined(OS_CHROMEOS)
+#include "chromeos/system/statistics_provider.h"
+#endif
 
 namespace display {
 
@@ -150,6 +156,18 @@ bool HasDisplayModeForUIScale(const ManagedDisplayInfo& info, float ui_scale) {
   const ManagedDisplayInfo::ManagedDisplayModeList& modes =
       info.display_modes();
   return std::find_if(modes.begin(), modes.end(), comparator) != modes.end();
+}
+
+bool ForceFirstDisplayInternal() {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  bool ret = command_line->HasSwitch(::switches::kUseFirstDisplayAsInternal);
+#if defined(OS_CHROMEOS)
+  // Touch view mode is only available to internal display. We force the
+  // display as internal for emulator to test touch view mode.
+  ret = ret ||
+        chromeos::system::StatisticsProvider::GetInstance()->IsRunningOnVm();
+#endif
+  return ret;
 }
 
 bool ComputeBoundary(const Display& a_display,
