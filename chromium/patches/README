@@ -83,3 +83,8 @@ Current patches:
   libavformat/utils.c
     av_read_frame() : Prevent undefined shift with wrap_bits > 63. Pushed to
     upstream, so should be upstream by M65 roll. http://crbug.com/783459
+
+  libavcodec/mpegaudiodsp.c
+    ff_mpadsp_init() : Use ff_thread_once() to prevent multiple initialization
+    of static tables. Pushed to upstream, so should be upstream by M65 roll.
+    http://crbug.com/784159
