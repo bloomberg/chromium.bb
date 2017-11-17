@@ -91,7 +91,6 @@
 <translation id="5941711191222866238">تصغير</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{ساعة واحدة}zero{# من الساعات}two{ساعتان (#)}few{# ساعات}many{# ساعةً}other{# من الساعات}}</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME" /></translation>
-<translation id="598033046487663418">جميع التطبيقات</translation>
 <translation id="6012623610530968780">صفحة <ph name="SELECTED_PAGE" /> من <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">محو نص مربع البحث</translation>
 <translation id="6040143037577758943">إغلاق</translation>

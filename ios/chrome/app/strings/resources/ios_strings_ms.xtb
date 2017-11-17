@@ -129,7 +129,6 @@ Contohnya, sesetengah tapak web mungkin menyambut permintaan ini dengan memapark
 <translation id="3329904751041170572">Tidak dapat menyambung ke pelayan.</translation>
 <translation id="3335947283844343239">Buka Semula Tab Yang Ditutup</translation>
 <translation id="3393920035788932672">Pop Timbul Dibenarkn</translation>
-<translation id="3414292259312108062">Chrome akan menyimpan ini dalam <ph name="BEGIN_LINK" />Kata laluan Google yang disimpan<ph name="END_LINK" /> anda dan auto isi untuk anda agar anda tidak perlu mengingati kata laluan itu sendiri.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Paparan Pisah</translation>
 <translation id="3474624961160222204">Teruskan sebagai <ph name="NAME" /></translation>
@@ -152,7 +151,6 @@ Contohnya, sesetengah tapak web mungkin menyambut permintaan ini dengan memapark
 <translation id="3779810277399252432">Tiada sambungan Internet.</translation>
 <translation id="3783017676699494206">Simpan Imej</translation>
 <translation id="385051799172605136">Kembali</translation>
-<translation id="3857761338463387655">Buat e-mel menggunakan:</translation>
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3928666092801078803">Gabungkan data saya</translation>
 <translation id="3950820424414687140">Log masuk</translation>
@@ -204,6 +202,7 @@ Data anda disulitkan dengan ungkapan laluan segerak anda. Masukkannya untuk memu
 <translation id="5005498671520578047">Salin kata laluan</translation>
 <translation id="5010803260590204777">Buka tab inkognito untuk menyemak imbas web secara sulit.</translation>
 <translation id="5011684439661633295">Hai, <ph name="FULL_ACCOUNT_NAME" /></translation>
+<translation id="5039804452771397117">Benarkan</translation>
 <translation id="5062321486222145940">Pasang Google Drive</translation>
 <translation id="5083464117946352670">Tidak dapat menentukan saiz fail.</translation>
 <translation id="5094827893301452931">Tweet selesai.</translation>
@@ -262,7 +261,6 @@ Serah mestilah turut didayakan dalam bahagian Umum pada Tetapan dan peranti anda
 <translation id="6122191549521593678">Dalam talian</translation>
 <translation id="6127379762771434464">Item dialih keluar</translation>
 <translation id="6136914049981179737">Bbrp saat lalu</translation>
-<translation id="6149061208933997199">Gunakan Kata Laluan</translation>
 <translation id="6158823227857319455">Tab Baharu</translation>
 <translation id="616831107264507309">Baca Kemudian</translation>
 <translation id="6184086493125982861">Paparkan Tab</translation>
@@ -272,7 +270,6 @@ Serah mestilah turut didayakan dalam bahagian Umum pada Tetapan dan peranti anda
 <translation id="6254066287920239840">Buka pautan dalam Apl dan bukannya penyemak imbas.</translation>
 <translation id="6255097610484507482">Edit Kad Kredit</translation>
 <translation id="6308436439357671616">Langkah ini membolehkan anda mengambil dan memuat naik foto.</translation>
-<translation id="6314335155547195432">Jana Kata Laluan</translation>
 <translation id="6324528485781869530">Tukar Akaun Segerak</translation>
 <translation id="6324669097367352121">Tetapan log masuk</translation>
 <translation id="6337234675334993532">Penyulitan</translation>
@@ -290,7 +287,6 @@ Data anda disulitkan dengan ungkapan laluan segerak anda pada <ph name="TIME" />
 <translation id="6418346271604475326">Menyediakan PDF</translation>
 <translation id="6445051938772793705">Negara</translation>
 <translation id="6445981559479772097">Mesej dihantar.</translation>
-<translation id="6456425917241817154">Kata Laluan Dijana oleh Chrome</translation>
 <translation id="6464071786529933911">Buka dalam Tab Inkognito Baharu</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> item dipadamkan</translation>
 <translation id="6541915733953096570">Sejam Yang Lalu</translation>
@@ -313,6 +309,7 @@ Data anda disulitkan dengan ungkapan laluan segerak anda pada <ph name="TIME" />
 <translation id="7004499039102548441">Tab Terbaharu</translation>
 <translation id="7006788746334555276">Tetapan Kandungan</translation>
 <translation id="7031882061095297553">Segerakkan ke</translation>
+<translation id="7053983685419859001">Sekat</translation>
 <translation id="7062545763355031412">Terima dan tukar akaun</translation>
 <translation id="7108338896283013870">Sembunyikan</translation>
 <translation id="7133798577887235672">Nama Penuh</translation>
@@ -345,7 +342,6 @@ Data anda disulitkan dengan ungkapan laluan segerak anda pada <ph name="TIME" />
 <translation id="7649070708921625228">Bantuan</translation>
 <translation id="7658239707568436148">Batal</translation>
 <translation id="7671141431838911305">PASANG</translation>
-<translation id="7677825787905683892">Pilih Apl E-mel Lalai</translation>
 <translation id="7765158879357617694">Alih</translation>
 <translation id="7769602470925380267">Terima dan log keluar</translation>
 <translation id="7772032839648071052">Sahkan frasa laluan</translation>
@@ -409,7 +405,6 @@ Data anda disulitkan dengan ungkapan laluan segerak anda pada <ph name="TIME" />
 <translation id="9083392325882095631">1 item</translation>
 <translation id="9100610230175265781">Frasa laluan diperlukan</translation>
 <translation id="9148126808321036104">Log masuk semula</translation>
-<translation id="914898748153555155">Anda boleh menukar pilihan ini pada bila-bila masa dalam tetapan Chrome</translation>
 <translation id="91549621916703028">Buat berbilang tab untuk semua tugasan anda</translation>
 <translation id="9157836665414082580">Sekat Dialog</translation>
 <translation id="9188680907066685419">Log keluar daripada akaun terurus</translation>

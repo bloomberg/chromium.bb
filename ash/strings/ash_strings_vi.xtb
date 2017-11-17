@@ -26,7 +26,6 @@
 <translation id="15373452373711364">Con trỏ chuột lớn</translation>
 <translation id="1550523713251050646">Nhấp để xem các tùy chọn khác</translation>
 <translation id="1621499497873603021">Thời gian còn lại cho đến khi pin hết, <ph name="TIME_LEFT" /></translation>
-<translation id="16620462294541761">Rất tiếc, không thể xác minh được mật khẩu của bạn. Vui lòng thử lại.</translation>
 <translation id="1677472565718498478">Còn <ph name="TIME" /></translation>
 <translation id="1698760176351776263">Địa chỉ IPv6: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">Thiết bị này do doanh nghiệp quản lý</translation>
@@ -69,6 +68,7 @@
 <translation id="2509468283778169019">Đang bật CAPS LOCK</translation>
 <translation id="2532589005999780174">Chế độ tương phản cao</translation>
 <translation id="2597972630681408282">Đèn đọc sách: <ph name="NIGHT_LIGHT_STATUS" /></translation>
+<translation id="2617342710774726426">Thẻ SIM bị khóa</translation>
 <translation id="2653659639078652383">Gửi</translation>
 <translation id="2675319268637823299">Quản trị viên không cho phép đăng nhập nhiều tài khoản đối với <ph name="USER_EMAIL" />.
     Tất cả người dùng phải đăng xuất để tiếp tục.</translation>
@@ -174,7 +174,6 @@
 <translation id="5571066253365925590">Đã bật bluetooth</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
 <translation id="5600837773213129531">Nhấn Ctrl + Alt + Z để tắt phản hồi bằng giọng nói.</translation>
-<translation id="5612734644261457353">Rất tiếc, mật khẩu của bạn vẫn không thể xác minh được. Lưu ý: nếu gần đây bạn đã thay đổi mật khẩu của bạn, mật khẩu mới của bạn sẽ vẫn được áp dụng khi bạn đăng xuất, vui lòng sử dụng mật khẩu cũ của bạn tại đây.</translation>
 <translation id="5648021990716966815">Giắc cắm micrô</translation>
 <translation id="5673434351075758678">Từ "<ph name="FROM_LOCALE" />" sang "<ph name="TO_LOCALE" />" sau khi đồng bộ hóa cài đặt của bạn.</translation>
 <translation id="5744083938413354016">Kéo nhấn</translation>
@@ -284,10 +283,10 @@ Chỉ sử dụng tính năng này với các tài khoản mà bạn tin tưởn
 <translation id="8261506727792406068">Xóa</translation>
 <translation id="8308637677604853869">Menu trước</translation>
 <translation id="8351131234907093545">Tạo ghi chú</translation>
-<translation id="8392234662362215700">Ấn Control-Shift-Space để chuyển đổi bố cục bàn phím.</translation>
 <translation id="8428213095426709021">Cài đặt</translation>
 <translation id="8433186206711564395">Cài đặt mạng</translation>
 <translation id="8433977262951327081">Phím tắt để hiển thị bong bóng menu tùy chọn nhập trong giá đã thay đổi. Vui lòng sử dụng <ph name="NEW_SHORTCUT" /> thay cho <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="8452135315243592079">Thiếu thẻ SIM</translation>
 <translation id="8454013096329229812">Wi-Fi đang bật.</translation>
 <translation id="847056008324733326">Cài đặt tỷ lệ hiển thị</translation>
 <translation id="8477270416194247200">Nhấn phím Alt+Search hoặc Shift để hủy.</translation>
@@ -315,7 +314,6 @@ Các thông báo, cửa sổ và hộp thoại tiếp theo có thể bị phân 
 <translation id="9091626656156419976">Đã xóa màn hình <ph name="DISPLAY_NAME" /></translation>
 <translation id="9111102763498581341">Mở khóa</translation>
 <translation id="9151726767154816831">Khởi động lại và powerwash để cập nhật</translation>
-<translation id="9181036778675416867">Hãy nhấn vào nút bút cảm ứng trên giá để ghi chú, chụp ảnh màn hình, sử dụng trợ lý, con trỏ laser hoặc kính lúp.</translation>
 <translation id="9194617393863864469">Đăng nhập người dùng khác...</translation>
 <translation id="9201131092683066720">Pin đầy <ph name="PERCENTAGE" />%.</translation>
 <translation id="9210037371811586452">Đang thoát chế độ màn hình hợp nhất</translation>

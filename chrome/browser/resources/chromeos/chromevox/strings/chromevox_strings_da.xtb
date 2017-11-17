@@ -30,7 +30,7 @@
 <translation id="1201402288615127009">Næste</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1213216066620407844">ChromeVox – talerør til Chrome</translation>
-<translation id="1225437811932752266">Du har nu fået de grundlæggende oplysninger for at kunne bruge ChromeVox. Husk, at du til enhver tid kan åbne kommandomenuen i ChromeVox ved at trykke på Søg+punktum. Gå til følgende artikler for at få flere oplysninger om ChromeVox og Chrome OS.
+<translation id="1225437811932752266">Du har nu fået de grundlæggende oplysninger for at kunne bruge ChromeVox. Husk, at du til enhver tid kan åbne kommandomenuen i ChromeVox ved at trykke på Søg+punktum. Du kan få flere oplysninger om ChromeVox og Chrome OS i følgende artikler.
 Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og klikke på den.</translation>
 <translation id="1229276918471378188">Forrige hop</translation>
 <translation id="1237866625126425153">rdgrp</translation>
@@ -43,7 +43,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="1339428534620983148">Forrige tabelkolonne</translation>
 <translation id="1342835525016946179">artikel</translation>
 <translation id="1346748346194534595">Højre</translation>
-<translation id="135978014023467274">Du har opdateret til ChromeVox 63.</translation>
+<translation id="135978014023467274">Du har opdateret til ChromeVox 63</translation>
 <translation id="136718599399906424">Næste tabelrække</translation>
 <translation id="1377925789329510816">Dette er den sidste overskrift. Tryk på søgetasten+H for at gå til den første overskrift, eller tryk på søgetasten+Shift+H for at gå til den anden overskrift på siden.</translation>
 <translation id="1383876407941801731">Søg</translation>
@@ -171,7 +171,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="2770781857296573485">Start udforskning af grupper</translation>
 <translation id="2777845298774924149">Lukket</translation>
 <translation id="2781264313200109999">Starten på et link</translation>
-<translation id="2784959586797362050">Du kan som altid sende os direkte feedback ved at trykke på søgetasten+A og derefter I. Vi glæder os til at høre fra dig.</translation>
+<translation id="2784959586797362050">Du kan som altid sende os direkte feedback ved at trykke på søgetasten+a og derefter i. Vi glæder os til at høre fra dig.</translation>
 <translation id="2800204403141299078">Ikke flere anderledes elementer.</translation>
 <translation id="2800780099804980316">Ingen tidligere niveau 1-overskrifter.</translation>
 <translation id="280499067616661124">ChromeVox-fund på siden</translation>
@@ -237,7 +237,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="3241638166094654466">Celler i hver linje:</translation>
 <translation id="3286390186030710347">Skyder</translation>
 <translation id="3299925995433437805">Intet næste besøgte link.</translation>
-<translation id="3300348286427369683">Understøttelse af RTF. ChromeVox understøtter nu RTF-felter, bl.a. hoppekommandoer, routingmarkør til brailletekst, valg og meget mere.</translation>
+<translation id="3300348286427369683">Understøttelse af RTF. ChromeVox understøtter nu RTF-felter, bl.a. hoppekommandoer, markørstyring til brailletekst, valg og meget mere.</translation>
 <translation id="3307886118343381874">Gå til slutningen af ​​tabellen</translation>
 <translation id="3311969765485641742">Tryk på Alt+Shift+A for at gennemse underretninger</translation>
 <translation id="3312997241656799641">Næste besøgte link</translation>
@@ -414,7 +414,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="461613135510474570">Sætning</translation>
 <translation id="463135993322337640">Tryk på ChromeVox o, n for at se, hvad der er nyt</translation>
 <translation id="4647836961514597010">Farvevælger</translation>
-<translation id="4660783501463101648">Classic er fjernet. Tastaturtasten, som skifter tilbage til ChromeVox Classic, er fjernet.</translation>
+<translation id="4660783501463101648">Classic er fjernet. Tastaturknappen, som skifter tilbage til ChromeVox Classic, er fjernet.</translation>
 <translation id="4661075872484491155">træ</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4688873778442829762">git</translation>

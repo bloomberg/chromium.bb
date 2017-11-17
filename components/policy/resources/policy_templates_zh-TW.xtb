@@ -597,7 +597,6 @@
 
       如需進一步瞭解「安全瀏覽」功能，請參閱 https://developers.google.com/safe-browsing。</translation>
 <translation id="3016255526521614822">將「<ph name="PRODUCT_OS_NAME" />」螢幕鎖定畫面允許的筆記應用程式加入許可清單</translation>
-<translation id="3021409116652377124">停用外掛程式尋找工具</translation>
 <translation id="3030000825273123558">啟用計量報告</translation>
 <translation id="3034580675120919256">允許你設定是否要讓網站執行 JavaScript。你可以允許或禁止所有網站執行 JavaScript。如果未設定這項政策，系統會使用「AllowJavaScript」，不過使用者可以變更設定。</translation>
 <translation id="3038323923255997294">在 <ph name="PRODUCT_NAME" /> 關閉時繼續執行背景應用程式 </translation>
@@ -884,25 +883,6 @@
 <translation id="4027608872760987929">啟用預設搜尋引擎</translation>
 <translation id="4039085364173654945">控制是否允許網頁上的第三方附屬內容彈出「HTTP 基本驗證」對話方塊。為了防止網路釣魚，這項功能通常會停用。如果未設定這項政策，系統會停用這項功能，並且不允許第三方附屬內容彈出「HTTP 基本驗證」對話方塊。</translation>
 <translation id="4056910949759281379">停用 SPDY 通訊協定</translation>
-<translation id="4077363032873906037">啟用 <ph name="PRODUCT_NAME" /> 的 Google Apps 受限登入功能，並且禁止使用者變更這項設定。
-
-      定義這項設定後，使用者只能使用指定網域中的帳戶
-      存取 Google Apps 服務 (請注意，這項限制不適用於
-      gmail.com/googlemail.com)。
-
-      這項設定「不會」禁止使用者在需要通過 Google
-      驗證程序的受管理裝置上登入帳戶。使用者仍可
-      登入其他網域中的帳戶，但使用這類帳戶
-      存取 Google Apps 時會收到錯誤訊息。
-
-      如果將這項設定留空 (即不予設定)，使用者就可以
-      使用任何帳戶存取 Google Apps。
-
-      套用這項政策後，傳送給所有 google.com 網域的 HTTP 和 HTTPS 要求
-      都會加上 X-GoogApps-Allowed-Domains 標頭。詳情請參閱以下說明文章：
-      https://support.google.com/a/answer/1668854。
-
-      使用者無法變更或覆寫這項設定。</translation>
 <translation id="408029843066770167">允許向 Google 時間服務傳送查詢</translation>
 <translation id="4088589230932595924">強制使用無痕模式</translation>
 <translation id="4088983553732356374">可讓您設定是否允許網站設定本機資料。您可以允許所有網站都能設定本機資料，也可以禁止所有網站設定本機資料。
@@ -920,7 +900,6 @@
           指定政策值時需以毫秒為單位。</translation>
 <translation id="4105989332710272578">不針對列出的網址強制執行憑證透明化政策</translation>
 <translation id="4121350739760194865">阻止應用程式宣傳資訊在新分頁上顯示</translation>
-<translation id="4133144443101280166">裝置 OffHours |ignored_policy_proto_tags| 解除時的停機時間間隔</translation>
 <translation id="4157003184375321727">回報作業系統和韌體版本</translation>
 <translation id="4183229833636799228"><ph name="FLASH_PLUGIN_NAME" /> 預設設定</translation>
 <translation id="4192388905594723944">用於驗證遠端存取用戶端驗證憑證的網址</translation>
@@ -1137,7 +1116,6 @@
           舉例來說，<ph name="EXTENSION_POLICY_EXAMPLE" /> 會透過標準 Chrome 線上應用程式商店「更新」網址安裝「<ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" />」應用程式。如需進一步瞭解如何代管擴充功能，請參閱 <ph name="LINK_TO_EXTENSION_DOC2" />。
 
           如果未設定這項政策，則不會自動安裝任何應用程式或擴充功能，且使用者可以在 <ph name="PRODUCT_NAME" /> 中解除安裝任何應用程式或擴充功能。</translation>
-<translation id="4882546920824859909">定義允許存取 Google Apps 的網域</translation>
 <translation id="4897928009230106190">指定使用 POST 提供搜尋建議時所用的參數，其包含以逗號分隔的名稱/數值配對。如果數值為範本參數 (例如上例中的 {searchTerms})，系統將會以實際的搜尋字詞資料替代這個數值。
 
           這項政策是選擇性的，如果未設定，系統將使用 GET 方法傳送搜尋建議要求。
@@ -1190,7 +1168,6 @@
       如未設定這項政策，或將政策設定為 False，則裝置仍可使用開發人員模式。</translation>
 <translation id="5208240613060747912">允許你設定網址模式清單，指定不可以展示通知的網站。如果未設定這項政策，系統會從「DefaultNotificationsSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
 <translation id="5219844027738217407">這項政策對 Android 應用程式的影響僅限於麥克風。將這項政策設為 true 時，所有 Android 應用程式皆無法使用麥克風 (設為靜音)，沒有任何例外。</translation>
-<translation id="5226033722357981948">指定是否該停用外掛程式尋找工具</translation>
 <translation id="523505283826916779">協助工具設定</translation>
 <translation id="5247006254130721952">封鎖危險下載作業</translation>
 <translation id="5255162913209987122">建議使用</translation>
@@ -1319,26 +1296,6 @@
 <translation id="5728154254076636808">允許建立 <ph name="PRODUCT_NAME" /> 設定檔資料的漫遊複本</translation>
 <translation id="5732972008943405952">首次執行時從預設瀏覽器匯入自動填入表單資料</translation>
 <translation id="5765780083710877561">說明：</translation>
-<translation id="5768309557753179144">Chromium 和 Google Chrome 支援同一套
-      政策。請注意，這份文件可能包含未發佈的政策 
-      (即「支援環境」項目是指尚未發佈的
-      <ph name="PRODUCT_NAME" /> 版本)，後續有關這些政策的變更與移除
-      恕不另行通知，我們也不提供任何方面的保證，
-      包括安全性和隱私權方面
-      的保證。
-
-      這些政策僅適用於設定貴機構內部的 
-      <ph name="PRODUCT_NAME" /> 執行個體。
-      如果在機構外 
-      (例如公開發佈的程式中) 使用這些政策，會被視為惡意軟體行徑，
-      且 Google 和防毒軟體廠商可能會將其標示為惡意軟體。
-
-      這些設定不需手動配置！
-      你可以在 <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" /> 下載簡單易用的範本，直接在 Windows、Mac 和 Linux 系統中使用。
-
-      你仍可在已加入 <ph name="MS_AD_NAME" /> 網域的 Windows 執行個體透過登錄檔佈建政策，
-      但我們建議你在 Windows 透過 GPO 
-      設定政策。</translation>
 <translation id="5770738360657678870">開發頻道 (可能不穩定)</translation>
 <translation id="5774856474228476867">預設搜尋引擎搜尋網址</translation>
 <translation id="5776485039795852974">每當網站要顯示桌面通知時詢問我</translation>
@@ -1646,7 +1603,6 @@
       如未設定這項政策，系統會啟用網路預測功能，但使用者可以自行變更。</translation>
 <translation id="6658245400435704251">指定裝置可以任意延遲下載某項更新的秒數上限 (以該項更新初次被推送到伺服器的時間為準)。你可以將這項裝置等待時間的其中一部分設定為等待的時間長度，剩下的部分則設定為檢查更新的次數。不論採取哪種方式，分散時間皆不得超過固定時間長度，這樣就可以避免裝置由於持續等待下載某項更新而停止回應。</translation>
 <translation id="6689792153960219308">回報硬體狀態</translation>
-<translation id="6693751878507293182">如果你將這項設定調整為啟用，則系統會停用「<ph name="PRODUCT_NAME" />」中的自動搜尋功能，且缺漏的外掛程式也不會自動安裝。如果將這個選項設為停用，或未調整這項設定，即可啟動外掛程式尋找工具。</translation>
 <translation id="6699880231565102694">為遠端存取主機啟用雙重驗證機制</translation>
 <translation id="6724842112053619797">如果啟用這項設定，系統會將儲存在 <ph name="PRODUCT_NAME" /> 設定檔中的設定 (例如書籤、自動填入資料、密碼等) 一併寫入儲存在漫遊使用者設定檔資料夾中的檔案，或是管理員透過 <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" /> 政策指定的位置。啟用這項政策時，雲端同步處理功能會遭到停用：
 
@@ -1904,6 +1860,7 @@
 
           如果你停用這項設定或並未進行設置，系統就不會啟用雙重驗證機制，而預設行為則會改採用輸入使用者定義的 PIN。</translation>
 <translation id="7750991880413385988">開啟新分頁</translation>
+<translation id="7754704193130578113">下載每個檔案前先詢問儲存位置</translation>
 <translation id="7761446981238915769">設定登入畫面中的已安裝應用程式清單</translation>
 <translation id="7761526206824804472">為公開工作階段設定一個或多個建議的語言代碼，方便讓使用者從中選擇自己偏好的設定。
 
@@ -1978,7 +1935,7 @@
 
           如果將模式設為 <ph name="FORCE_INSTALLED" /> 或 <ph name="NORMAL_INSTALLED" />，則必須一併設定 <ph name="UPDATE_URL" />。請注意，系統只會在初次安裝擴充功能時使用你在這項政策中設定的更新網址，後續更新擴充功能時則會使用擴充功能的資訊清單指示的更新網址。更新網址應指向前述更新資訊清單 XML 檔案。
 
-          <ph name="BLOCKED_PERMISSIONS" />：對應到字串清單，指示擴充功能的封鎖 API 權限。權限名稱與擴充功能資訊清單宣告的權限字串相同 (如 <ph name="LINK_TO_EXTENSION_DOC3" /> 所述)。你也可以針對 <ph name="DEFAULT_SCOPE" /> 擴充功能配置這項設定。如果擴充功能要求封鎖清單中的權限，則無法載入。如果擴充功能含有封鎖的權限，但屬於選擇性要求，系統會以一般方式進行處理。不過，一旦要求的權限發生衝突，系統會自動在執行階段拒絕要求。 
+          <ph name="BLOCKED_PERMISSIONS" />：對應到字串清單，指示擴充功能的封鎖 API 權限。權限名稱與擴充功能資訊清單宣告的權限字串相同 (如 <ph name="LINK_TO_EXTENSION_DOC3" /> 所述)。你也可以針對 <ph name="DEFAULT_SCOPE" /> 擴充功能配置這項設定。如果擴充功能要求封鎖清單中的權限，則無法載入。如果擴充功能含有封鎖的權限，但屬於選擇性要求，系統會以一般方式進行處理。不過，一旦要求的權限發生衝突，系統會自動在執行階段拒絕要求。
 
           <ph name="ALLOWED_PERMISSIONS" />：與 <ph name="BLOCKED_PERMISSIONS" /> 相似，但明確允許部分可能遭到全域封鎖權限清單封鎖的權限，因此無法針對 <ph name="DEFAULT_SCOPE" /> 擴充功能進行設定。請注意，這項設定不會自動將權限授予擴充功能。
 
@@ -2143,11 +2100,6 @@
 <translation id="8451988835943702790">將新分頁設為首頁</translation>
 <translation id="8465065632133292531">使用 POST 的互動智慧搜尋網址參數</translation>
 <translation id="847472800012384958">不允許任何網站顯示彈出式視窗</translation>
-<translation id="8476127435468057643">控制是否啟用 NTLMv2。
-
-          近期的所有 Samba 和 Windows 伺服器版本均支援 NTLMv2。除非是為了回溯相容性的緣故，否則請勿停用這項功能 (驗證功能的安全性會因此下降)。
-
-          未定義這項政策時，預設值目前為 false (因應回溯相容性需求)，但日後將變更為 true。</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
 <translation id="8484458986062090479">自訂主機瀏覽器應一律轉譯的網址模式清單。
 

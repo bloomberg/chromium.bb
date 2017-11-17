@@ -129,7 +129,6 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="3329904751041170572">Hindi makakonekta sa server.</translation>
 <translation id="3335947283844343239">Muling buksan ang Nakasarang Tab</translation>
 <translation id="3393920035788932672">Pinapayagan ang Mga Pop-up</translation>
-<translation id="3414292259312108062">Iiimbak ito ng Chrome sa iyong <ph name="BEGIN_LINK" />mga naka-save na password sa Google<ph name="END_LINK" /> at io-autofill ito para sa iyo nang sa gayon ay hindi mo na ito kailangang tandaan.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> (na) min</translation>
 <translation id="3448016392200048164">Split View</translation>
 <translation id="3474624961160222204">Magpatuloy bilang si <ph name="NAME" /></translation>
@@ -152,7 +151,6 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="3779810277399252432">Walang koneksyon sa internet.</translation>
 <translation id="3783017676699494206">I-save ang Larawan</translation>
 <translation id="385051799172605136">Bumalik</translation>
-<translation id="3857761338463387655">Gumawa ng email gamit ang:</translation>
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3928666092801078803">Pagsamahin ang aking data</translation>
 <translation id="3950820424414687140">Mag-sign in</translation>
@@ -204,6 +202,7 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync. Ilagay ito upa
 <translation id="5005498671520578047">Kopyahin password</translation>
 <translation id="5010803260590204777">Magbukas ng tab na incognito upang pribadong i-browse ang web.</translation>
 <translation id="5011684439661633295">Kamusta, <ph name="FULL_ACCOUNT_NAME" /></translation>
+<translation id="5039804452771397117">Payagan</translation>
 <translation id="5062321486222145940">I-install - Google Drive</translation>
 <translation id="5083464117946352670">Hindi matukoy ang file size.</translation>
 <translation id="5094827893301452931">Kumpleto na ang Tweet.</translation>
@@ -262,7 +261,6 @@ Dapat ding naka-enable ang handoff sa Pangkalahatang seksyon ng Mga Setting, at 
 <translation id="6122191549521593678">Online</translation>
 <translation id="6127379762771434464">Inalis ang item</translation>
 <translation id="6136914049981179737">Segundo</translation>
-<translation id="6149061208933997199">Gamitin ang Password</translation>
 <translation id="6158823227857319455">Bagong Tab</translation>
 <translation id="616831107264507309">Basahin Sa Ibang Pagkakataon</translation>
 <translation id="6184086493125982861">Ipakita ang Mga Tab</translation>
@@ -272,7 +270,6 @@ Dapat ding naka-enable ang handoff sa Pangkalahatang seksyon ng Mga Setting, at 
 <translation id="6254066287920239840">Buksan ang mga link sa app sa halip na sa browser.</translation>
 <translation id="6255097610484507482">I-edit ang Credit Card</translation>
 <translation id="6308436439357671616">Binibigyang-daan ka nito upang makakuha at makapag-upload ng mga larawan.</translation>
-<translation id="6314335155547195432">Bumuo ng password</translation>
 <translation id="6324528485781869530">Magpalit ng Account sa Pag-sync</translation>
 <translation id="6324669097367352121">Mga setting sa pag-sign in</translation>
 <translation id="6337234675334993532">Pag-encrypt</translation>
@@ -290,7 +287,6 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name=
 <translation id="6418346271604475326">Ihinahanda ang PDF</translation>
 <translation id="6445051938772793705">Bansa</translation>
 <translation id="6445981559479772097">Napadala na ang mensahe.</translation>
-<translation id="6456425917241817154">Binuo ng Chrome ang Password</translation>
 <translation id="6464071786529933911">Buksan sa Bagong Tab na Incognito</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> (na) item ang na-delete</translation>
 <translation id="6541915733953096570">Nakalipas na Oras</translation>
@@ -313,6 +309,7 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name=
 <translation id="7004499039102548441">Mga Kamakailang Tab</translation>
 <translation id="7006788746334555276">Mga Setting ng Nilalaman</translation>
 <translation id="7031882061095297553">I-sync sa</translation>
+<translation id="7053983685419859001">Harangan</translation>
 <translation id="7062545763355031412">Tanggapin at lumipat ng account</translation>
 <translation id="7108338896283013870">Itago</translation>
 <translation id="7133798577887235672">Buong Pangalan</translation>
@@ -345,7 +342,6 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name=
 <translation id="7649070708921625228">Tulong</translation>
 <translation id="7658239707568436148">Ikansela</translation>
 <translation id="7671141431838911305">INSTALL</translation>
-<translation id="7677825787905683892">Pumili ng Default na Email App</translation>
 <translation id="7765158879357617694">Ilipat</translation>
 <translation id="7769602470925380267">Tanggapin at mag-sign out</translation>
 <translation id="7772032839648071052">Kumpirmahin ang passphrase</translation>
@@ -409,7 +405,6 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name=
 <translation id="9083392325882095631">1 item</translation>
 <translation id="9100610230175265781">Kinakailangan ang passphrase</translation>
 <translation id="9148126808321036104">Muling mag-sign in</translation>
-<translation id="914898748153555155">Maaari mong baguhin ang kagustuhang ito anumang oras sa mga setting ng Chrome</translation>
 <translation id="91549621916703028">Gumawa ng maraming tab para sa lahat ng iyong gawain</translation>
 <translation id="9157836665414082580">Pigilan ang Mga Dialog</translation>
 <translation id="9188680907066685419">Mag-sign out sa pinamamahalaang account</translation>

@@ -4,7 +4,7 @@
 <translation id="100812568230599391">سبک نمایش را به جاگذاری تغییر دهید.</translation>
 <translation id="1012173283529841972">مورد فهرست</translation>
 <translation id="1013742170491673792">srched</translation>
-<translation id="1022586497894531524">‏اولین بار است که از بازخورد گفتاری ChromeVox استفاده می‌کنید؟ اصول اولیه شروع به کار با ChromeVox در این آموزش گام‌به‌گام توضیح داده می‌شود.</translation>
+<translation id="1022586497894531524">‏اولین بار است که از بازخورد گفتاری ChromeVox استفاده می‌کنید؟ این آموزش گام‌به‌گام سریع، اصول اولیه شروع به کار با ChromeVox را توضیح می‌دهد.</translation>
 <translation id="1023866615269196768">گسترش یافت.</translation>
 <translation id="1025074108959230262">حالت چسبان غیرفعال شد</translation>
 <translation id="1031961866430398710">سپس</translation>
@@ -30,8 +30,8 @@
 <translation id="1201402288615127009">بعدی</translation>
 <translation id="1206619573307042055">نوشتار متحرک روی صفحه</translation>
 <translation id="1213216066620407844">‏ChromeVox - ارائه صدا به Chrome</translation>
-<translation id="1225437811932752266">‏تبریک می‌گوییم!‌ اصول اولیه استفاده از ChromeVox را باموفقیت یاد گرفتید. به یاد داشته باشید می‌توانید هرزمان خواستید با فشار دادن «Search+Period»، منوی فرمان ChromeVox را باز کنید. برای آشنایی بیشتر با ChromeVox و سیستم عامل Chrome، از مقاله‌های زیر بازدید کنید.
-اگر آموزش گام‌به‌گام را به پایان رسانده‌اید، با استفاده از ChromeVox به دکمه «بستن» بروید و روی آن کلیک کنید.</translation>
+<translation id="1225437811932752266">‏تبریک می‌گوییم!‌ اصول اولیه استفاده از ChromeVox را با موفقیت یاد گرفتید. به یاد داشته باشید می‌توانید هرزمان که خواستید با فشار دادن Search+Period، منوی فرمان ChromeVox را باز کنید. برای اینکه درباره ChromeVox و سیستم‌عامل Chrome از این هم بیشتر بدانید، مقاله‌های زیر را ببینید.
+اگر آموزش گام‌به‌گام را به پایان رسانده‌اید، با استفاده از ChromeVox به دکمه «بستن» پیمایش کنید و روی آن کلیک کنید.</translation>
 <translation id="1229276918471378188">پرش قبلی</translation>
 <translation id="1237866625126425153">rdgrp</translation>
 <translation id="1251750620252348585">عنوان بعدی سطح ۶</translation>
@@ -43,7 +43,7 @@
 <translation id="1339428534620983148">ستون قبلی جدول</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1346748346194534595">راست</translation>
-<translation id="135978014023467274">‏به ChromeVox نسخه ۶۳ به‌روزرسانی کردید!</translation>
+<translation id="135978014023467274">‏به ChromeVox نسخه ۶۳ به‌روزرسانی شدید!</translation>
 <translation id="136718599399906424">ردیف بعدی جدول</translation>
 <translation id="1377925789329510816">‏این آخرین عنوان است. با فشار دادن Search+H اولین عنوان را ببندید یا با فشار دادن Search+Shift+H به عنوان دوم در این صفحه بروید.</translation>
 <translation id="1383876407941801731">جستجو</translation>
@@ -171,7 +171,7 @@
 <translation id="2770781857296573485">به کاوش گروه وارد شوید</translation>
 <translation id="2777845298774924149">خارج شد</translation>
 <translation id="2781264313200109999">شروع پیوند</translation>
-<translation id="2784959586797362050">‏مثل همیشه، می‌توانید با فشار دادن Search+a و سپس i مستقیماً برایمان بازخورد ارسال کنید. مشتاق شنیدن نظرات شما هستیم.</translation>
+<translation id="2784959586797362050">‏مثل همیشه، می‌توانید با فشار دادن Search+a و سپس i مستقیماً برای ما بازخورد ارسال کنید. مشتاق شنیدن نظرات شما هستیم.</translation>
 <translation id="2800204403141299078">هیچ عنصر متفاوت دیگری نیست.</translation>
 <translation id="2800780099804980316">عنوان سطح ۱ قبلی وجود ندارد.</translation>
 <translation id="280499067616661124">‏«پیدا کردن در صفحه» ChromeVox</translation>
@@ -237,7 +237,7 @@
 <translation id="3241638166094654466">تعداد سلول‌ها در هر خط:</translation>
 <translation id="3286390186030710347">اسلایدر</translation>
 <translation id="3299925995433437805">پیوند بازدید شده بعدی وجود ندارد.</translation>
-<translation id="3300348286427369683">‏پشتیبانی از نوشتار پیشرفته. ChromeVox اکنون از فیلدهای نوشتار پیشرفته، مانند فرمان‌های پرش، مسیریابی مکان‌نمای بریل، انتخاب و غیره پشتیبانی می‌کند.</translation>
+<translation id="3300348286427369683">‏پشتیبانی از نوشتار غنی. ChromeVox اکنون از فیلدهای نوشتار غنی (مثل فرمان‌های پرش، مسیریابی مکان‌نمای بریل، انتخاب و غیره) پشتیبانی می‌کند.</translation>
 <translation id="3307886118343381874">رفتن به انتهای جدول</translation>
 <translation id="3311969765485641742">‏برای بررسی هشدارها Alt+Shift+A را فشار دهید</translation>
 <translation id="3312997241656799641">پیوند بازدید شده بعدی</translation>
@@ -412,9 +412,9 @@
 <translation id="4601367666219428522">‏جدول <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">نادیده گرفتن فشار دکمه بعدی</translation>
 <translation id="461613135510474570">جمله</translation>
-<translation id="463135993322337640">‏ChromeVox o, n را فشار دهید تا درباره موارد جدید اطلاعات دریافت کنید</translation>
+<translation id="463135993322337640">‏برای آشنایی با موارد جدید،‌ به ترتیب کلیدهای ChromeVox،‏ n و o را فشار دهید</translation>
 <translation id="4647836961514597010">انتخابگر رنگ</translation>
-<translation id="4660783501463101648">‏نسخه کلاسیک حذف شد. تغییر وضعیت صفحه‌کلید برای جابه‌جایی به «ChromeVox کلاسیک» حذف شده است.</translation>
+<translation id="4660783501463101648">‏نسخه کلاسیک برداشته شد. تغییر حالت صفحه‌کلید برای تغییر برگشتن به ChromeVox Classic برداشته شد.</translation>
 <translation id="4661075872484491155">درخت</translation>
 <translation id="4668929960204016307">،</translation>
 <translation id="4688873778442829762">grd</translation>
@@ -434,7 +434,7 @@
 <translation id="4827410568042294688">انتخاب لغو شد</translation>
 <translation id="4842108708071771135">نقل قول بعدی موجود نیست.</translation>
 <translation id="4844625982113518938">‏برای یاد گرفتن نام آن، کلیدی را فشار دهید. Ctrl+W حالت یادگیری را خواهد بست.</translation>
-<translation id="4846428657345567687">‏به ChromeVox خوش آمدید!</translation>
+<translation id="4846428657345567687">‏به ChromeVox خوش‌آمدید!</translation>
 <translation id="4846487886195635104">پایان خط‌‌ زدن</translation>
 <translation id="4848993367330139335">tmr</translation>
 <translation id="4850023505158945298">عنصر مشابه قبلی.</translation>
@@ -472,7 +472,7 @@
 <translation id="5098541983634824365">خروج از حالت جدولی.</translation>
 <translation id="5102981729317424850">نوار ابزار</translation>
 <translation id="5105050547967751155">rq</translation>
-<translation id="5106547198195128110">چند تغییر جالب در این نسخه جدید ارائه می‌دهیم، موارد جدید در اینجا آمده‌اند:</translation>
+<translation id="5106547198195128110">چند تغییر جالب در این نسخه جدید ارائه داده‌ایم. موارد جدید در اینجا آمده‌اند:</translation>
 <translation id="5110983769041734144">فیلد فرم قبلی وجود ندارد.</translation>
 <translation id="5111640677200759579">عنوان ستون</translation>
 <translation id="5136967254288895616">پیوند قبلی موجود نیست.</translation>
@@ -630,7 +630,7 @@
 <translation id="6493991254603208962">کم کردن روشنایی</translation>
 <translation id="6508059270146105198">انتقال صفحه‌نمایش بریل به پایین صفحه</translation>
 <translation id="6536864053412760904">‏کد ML ریاضی</translation>
-<translation id="6540201937398578274">‏در ChromeVox، کلید «جستجو» کلید تغییردهنده است. اکثر میان‌برهای ChromeVox با کلید «جستجو» شروع می‌شوند. از کلیدهای پیکان نیز برای پیمایش استفاده می‌کنید.</translation>
+<translation id="6540201937398578274">‏در ChromeVox، کلید «جستجو» (Search) کلید تغییردهنده است. اکثر میان‌برهای ChromeVox با کلید «جستجو» شروع می‌شوند. از کلیدهای پیکان نیز برای پیمایش استفاده می‌کنید.</translation>
 <translation id="6550720799683018100">نقشه کلید کنونی را با انتخاب یک گزینه از فهرست زیر تغییر دهید.</translation>
 <translation id="6561818612645211875">رفتن به شروع ردیف کنونی</translation>
 <translation id="6587021927234520429">عنوان سطح ۴ بعدی وجود ندارد.</translation>

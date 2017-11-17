@@ -129,7 +129,6 @@
 <translation id="3329904751041170572">Повезивање са сервером није могуће.</translation>
 <translation id="3335947283844343239">Поново отвори затворену картицу</translation>
 <translation id="3393920035788932672">Дозвољени искачући прозори</translation>
-<translation id="3414292259312108062">Chrome ће ово сачувати у вашим <ph name="BEGIN_LINK" />Google сачуваним лозинкама<ph name="END_LINK" /> и аутоматски унети тако да не морате да памтите.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> мин</translation>
 <translation id="3448016392200048164">Подељени приказ</translation>
 <translation id="3474624961160222204">Настави као <ph name="NAME" /></translation>
@@ -152,7 +151,6 @@
 <translation id="3779810277399252432">Нема интернет везе.</translation>
 <translation id="3783017676699494206">Сачувај слику</translation>
 <translation id="385051799172605136">Назад</translation>
-<translation id="3857761338463387655">Напишите имејл помоћу:</translation>
 <translation id="3897092660631435901">Мени</translation>
 <translation id="3928666092801078803">Комбинуј податке</translation>
 <translation id="3950820424414687140">Пријави ме</translation>
@@ -204,6 +202,7 @@
 <translation id="5005498671520578047">Копирање лозинке</translation>
 <translation id="5010803260590204777">Отворите картицу Без архивирања да бисте приватно прегледали веб.</translation>
 <translation id="5011684439661633295">Здраво, <ph name="FULL_ACCOUNT_NAME" /></translation>
+<translation id="5039804452771397117">Дозволи</translation>
 <translation id="5062321486222145940">Инсталирај Google диск</translation>
 <translation id="5083464117946352670">Није могуће утврдити величину датотеке.</translation>
 <translation id="5094827893301452931">Твит је довршен.</translation>
@@ -262,7 +261,6 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="6122191549521593678">Онлајн</translation>
 <translation id="6127379762771434464">Уклонили сте ставку</translation>
 <translation id="6136914049981179737">Малопре</translation>
-<translation id="6149061208933997199">Користи лозинку</translation>
 <translation id="6158823227857319455">Нова картица</translation>
 <translation id="616831107264507309">Прочитајте касније</translation>
 <translation id="6184086493125982861">Прикажи картице</translation>
@@ -272,7 +270,6 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="6254066287920239840">Отварајте ликнове у апликацији уместо у прегледачу.</translation>
 <translation id="6255097610484507482">Измена кредитне картице</translation>
 <translation id="6308436439357671616">Ово вам омогућава да снимате и отпремате слике.</translation>
-<translation id="6314335155547195432">Генериши лозинку</translation>
 <translation id="6324528485781869530">Промените налог за синхронизацију</translation>
 <translation id="6324669097367352121">Подешавања пријављивања</translation>
 <translation id="6337234675334993532">Шифровање</translation>
@@ -290,7 +287,6 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="6418346271604475326">Припрема PDF датотеке</translation>
 <translation id="6445051938772793705">Земља</translation>
 <translation id="6445981559479772097">Порука је послата.</translation>
-<translation id="6456425917241817154">Лозинку генерише Chrome</translation>
 <translation id="6464071786529933911">Отвори у новој картици без архивирања</translation>
 <translation id="6482629121755362506">Број избрисаних ставки је <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="6541915733953096570">Претходни сат</translation>
@@ -313,6 +309,7 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="7004499039102548441">Недавне картице</translation>
 <translation id="7006788746334555276">Подешавања садржаја</translation>
 <translation id="7031882061095297553">Синхронизујте са</translation>
+<translation id="7053983685419859001">Блокирај</translation>
 <translation id="7062545763355031412">Прихватам, промени налог</translation>
 <translation id="7108338896283013870">Сакриј</translation>
 <translation id="7133798577887235672">Име и презиме</translation>
@@ -345,7 +342,6 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="7649070708921625228">Помоћ</translation>
 <translation id="7658239707568436148">Откажи</translation>
 <translation id="7671141431838911305">ИНСТАЛИРАЊЕ</translation>
-<translation id="7677825787905683892">Одаберите подразумевану апликацију за имејл</translation>
 <translation id="7765158879357617694">Премести</translation>
 <translation id="7769602470925380267">Прихватам, одјави ме</translation>
 <translation id="7772032839648071052">Потврди приступну фразу</translation>
@@ -409,7 +405,6 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="9083392325882095631">1 ставка</translation>
 <translation id="9100610230175265781">Потребна је приступна фраза</translation>
 <translation id="9148126808321036104">Пријави ме поново</translation>
-<translation id="914898748153555155">Можете да промените ово подешавање у било ком тренутку у подешавањима Chrome-а</translation>
 <translation id="91549621916703028">Направите више картица за све задатке</translation>
 <translation id="9157836665414082580">Спречи дијалоге</translation>
 <translation id="9188680907066685419">Одјавите се са налога којим се управља</translation>

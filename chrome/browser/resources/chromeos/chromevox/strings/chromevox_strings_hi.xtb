@@ -30,8 +30,8 @@
 <translation id="1201402288615127009">अगला</translation>
 <translation id="1206619573307042055">मार्की</translation>
 <translation id="1213216066620407844">ChromeVox - Chrome को ध्‍वनि देना</translation>
-<translation id="1225437811932752266">बधाई हो! आपने ChromeVox का उपयोग करने के लिए ज़रूरी बातें सफलतापूर्वक सीख ली हैं. याद रखें कि आप Search+Period दबाकर किसी भी समय ChromeVox का निर्देश मेन्यू खोल सकते हैं. ChromeVox और Chrome OS के बारे में और भी अधिक जानने के लिए, नीचे दिए गए लेखों पर जाएं.
-अगर आपने ट्यूटोरियल पूरा कर लिया है, तो ChromeVox का उपयोग करके बंद करें बटन पर जाएं  और उस पर क्लिक करें.</translation>
+<translation id="1225437811932752266">बधाई हो! आपने ChromeVox का उपयोग करने के लिए ज़रूरी बातें सफलतापूर्वक सीख ली हैं. याद रखें कि आप Search+Period दबाकर किसी भी समय ChromeVox का निर्देश मेन्यू खोल सकते हैं. ChromeVox और Chrome OS के बारे में और भी अधिक जानने के लिए, नीचे दिए गए लेखों पर आएं.
+अगर आपने ट्यूटोरियल पूरा कर लिया है, तो ChromeVox का इस्तेमाल करके बंद करें बटन पर जाएं और उस पर क्लिक करें.</translation>
 <translation id="1229276918471378188">पिछला जंप</translation>
 <translation id="1237866625126425153">rdgrp</translation>
 <translation id="1251750620252348585">अगले स्‍तर 6 का शीर्षक</translation>
@@ -237,7 +237,7 @@
 <translation id="3241638166094654466">हर एक पंक्ति में सेल:</translation>
 <translation id="3286390186030710347">स्लाइडर</translation>
 <translation id="3299925995433437805">बाद में देखा गया कोई लिंक नहीं.</translation>
-<translation id="3300348286427369683">रिच टेक्स्ट के साथ काम करता है. अब ChromeVox रिच टेक्स्ट वाली फ़ील्ड के साथ काम करता है जिसमें कहीं भी सीधे पहुंचाने के निर्देश, ब्रेल कर्सर की रूटिंग, चयन आदि शामिल हैं.</translation>
+<translation id="3300348286427369683">रिच टेक्स्ट के साथ काम करता है. अब ChromeVox रिच टेक्स्ट वाली फ़ील्ड के साथ काम करता है जिसमें कहीं भी सीधे पहुंचाने के निर्देश, ब्रेल कर्सर की रूटिंग, चयन वगैरह शामिल हैं.</translation>
 <translation id="3307886118343381874">तालिका के अंत में जाएं</translation>
 <translation id="3311969765485641742">नोटिफ़िकेशन की समीक्षा करने के लिए Alt+Shift+A दबाएं</translation>
 <translation id="3312997241656799641">बाद में देखा गया लिंक</translation>
@@ -341,7 +341,7 @@
 <translation id="3897092660631435901">मेनू</translation>
 <translation id="3909320334364316587">पिछले स्‍तर 6 का शीर्षक</translation>
 <translation id="3914173277599553213">आवश्यक</translation>
-<translation id="3914732343065571127">ChromeVox के निर्देश संदर्भ</translation>
+<translation id="3914732343065571127">ChromeVox का निर्देश संदर्भ</translation>
 <translation id="3962990492275676168">वर्तमान स्‍थान से पढ़ना प्रारंभ करें</translation>
 <translation id="4004802134384979325">चेक किया गया</translation>
 <translation id="4006140876663370126">img</translation>
@@ -414,7 +414,7 @@
 <translation id="461613135510474570">वाक्य</translation>
 <translation id="463135993322337640">नया क्या है, यह जानने के लिए ChromeVox o, n दबाएं</translation>
 <translation id="4647836961514597010">रंग पिकर</translation>
-<translation id="4660783501463101648">क्लासिक निकाल दिया गया. ChromeVox क्लासिक में वापस ले जाने वाला कीबोर्ड टॉगल निकाल दिया गया है.</translation>
+<translation id="4660783501463101648">क्लासिक को हटाया गया. ChromeVox क्लासिक में वापस ले जाने वाला कीबोर्ड टॉगल हटा दिया गया है.</translation>
 <translation id="4661075872484491155">ट्री</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4688873778442829762">grd</translation>
@@ -630,7 +630,7 @@ Chrome ब्राउज़र मेनू खोलने के लिए, A
 <translation id="6493991254603208962">स्‍क्रीन की रोशनी कम करें</translation>
 <translation id="6508059270146105198">ब्रेल प्रदर्शन को पेज के नीचे ले जाएं</translation>
 <translation id="6536864053412760904">गणित ML टोकन</translation>
-<translation id="6540201937398578274">ChromeVox में, खोज की, बदलने वाली की होती है. ज़्यादातर ChromeVox शॉर्टकट खोज की से शुरू होते हैं. आप नेविगेट करने के लिए तीर की का उपयोग भी कर सकेंगे.</translation>
+<translation id="6540201937398578274">ChromeVox में, खोज की, बदलने वाली की होती है. ज़्यादातर ChromeVox शॉर्टकट खोज की से शुरू होते हैं. आप नेविगेशन के लिए तीर की का इस्तेमाल भी कर सकेंगे.</translation>
 <translation id="6550720799683018100">नीचे दी गई सूची से विकल्प चुनकर वर्तमान कीमैप बदलें.</translation>
 <translation id="6561818612645211875">वर्तमान पंक्ति के प्रारंभ पर जाएं</translation>
 <translation id="6587021927234520429">कोई अगला स्तर 4 शीर्षक नहीं.</translation>

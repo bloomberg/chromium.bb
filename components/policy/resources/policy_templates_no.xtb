@@ -611,7 +611,6 @@
 
       Gå til https://developers.google.com/safe-browsing for å få mer informasjon om Safe Browsing.</translation>
 <translation id="3016255526521614822">Godkjenn notatapper for å tillate dem på låseskjermen for <ph name="PRODUCT_OS_NAME" /></translation>
-<translation id="3021409116652377124">Deaktiver programtilleggssøk</translation>
 <translation id="3030000825273123558">Aktiver rapportering av beregninger</translation>
 <translation id="3034580675120919256">Gjør at du kan angi om nettsteder får kjøre JavaScript. Kjøring av JavaScript kan tillates for alle nettsteder, eller nektes for alle nettsteder.
           Hvis denne retningslinjen ikke angis, brukes AllowJavaScript, og brukeren kan endre på dette.</translation>
@@ -899,25 +898,6 @@
 
           Dette deaktiveres vanligvis for å beskytte seg mot nettfisking. Hvis denne retningslinjen ikke er angitt, er den deaktivert, og tredjeparts underinnhold kan ikke åpne en HTTP Basic Auth-dialogrute som forgrunnsvindu.</translation>
 <translation id="4056910949759281379">Deaktiver SPDY-protokoll</translation>
-<translation id="4077363032873906037">Aktiverer begrenset pålogging for <ph name="PRODUCT_NAME" /> i Google-apper og hindrer brukere fra å endre denne innstillingen.
-
-      Hvis du definerer denne innstillingen, har brukerne bare tilgang til 
-      Google-apper via kontoer fra de spesifiserte domenene (merk at dette 
-      ikke fungerer for gmail.com/googlemail.com).
-
-      Denne innstillingen hindrer IKKE brukerne fra å logge på administrerte
-      enheter som krever Google-autentisering. Brukerne kan fremdeles logge
-      på kontoene sine fra andre domener, men de får opp en feil når de prøver
-      å bruke Google-apper med disse kontoene.
-
-      Hvis du lar denne innstillingen stå tom / ikke konfigurerer den, har
-      brukerne tilgang til Google-apper med hvilken som helst konto.
-
-      Denne regelen gjør at hodeelementet X-GoogApps-Allowed-Domains blir lagt 
-      til i alle HTTP- og HTTPS-forespørsler til alle google.com-domener, som 
-      beskrevet i https://support.google.com/a/answer/1668854.
-
-      Brukere kan ikke endre eller overstyre denne innstillingen.</translation>
 <translation id="408029843066770167">Tillat forespørsler til en Google-tjeneste for klokkeslett</translation>
 <translation id="4088589230932595924">Tvungen inkognitomodus</translation>
 <translation id="4088983553732356374">Gjør det mulig å velge om nettsteder kan angi lokale data. Dette kan enten tillates for alle nettsteder eller blokkeres for alle nettsteder.
@@ -935,7 +915,6 @@
           Innstillingsverdien må angis i millisekunder.</translation>
 <translation id="4105989332710272578">Slå av tvungen sertifikatåpenhet for en liste med nettadresser</translation>
 <translation id="4121350739760194865">Gjør at programkampanjer ikke vises på siden Ny fane</translation>
-<translation id="4133144443101280166">Intervaller utenfor arbeidstiden når enhetens OffHours |ignored_policy_proto_tags| er tilgjengelig</translation>
 <translation id="4157003184375321727">Rapportering av operativsystem og maskinvareversjon</translation>
 <translation id="4183229833636799228">Standard <ph name="FLASH_PLUGIN_NAME" />-innstilling</translation>
 <translation id="4192388905594723944">Nettadressen for validering av autentiseringstokenet for klienten for ekstern tilgang</translation>
@@ -1153,7 +1132,6 @@
           <ph name="EXTENSION_POLICY_EXAMPLE" /> installerer for eksempel <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" />-appen fra standardnettadressen for oppdatering for Chrome Nettmarked. Hvis du vil ha mer informasjon om verter for utvidelser, kan du se: <ph name="LINK_TO_EXTENSION_DOC2" />
 
           Hvis denne regelen ikke angis, installeres ingen apper eller utvidelser automatisk, og brukeren kan avinstallere hvilken som helst app eller utvidelse i <ph name="PRODUCT_NAME" />.</translation>
-<translation id="4882546920824859909">Spesifiser hvilke domener som har tilgang til Google-apper</translation>
 <translation id="4897928009230106190">Angir parameterene som brukes når du utfører et forslagssøk med POST. De består av kommainndelte navn og verdi-par. Hvis en verdi er et malparameter, som {searchTerms} i eksempelet ovenfor, blir den erstattet med virkelige søkeordsdata.
 
           Denne innstillingen er valgfri. Hvis den ikke er angitt, blir forespørsler om søkeforslag sendt via GET-metoden.
@@ -1215,7 +1193,6 @@
 
           Hvis denne retningslinjen ikke angis, brukes den globale standardverdien for alle nettsteder, enten fra retningslinjen DefaultNotificationsSetting hvis den er angitt, eller fra brukerens egen konfigurasjon hvis den nevnte retningslinjen ikke er angitt.</translation>
 <translation id="5219844027738217407">For Android-apper har denne regelen bare innvirkning på mikrofonen. Når denne regelen er angitt som «true» (sann), slås mikrofonen av for alle Android-apper – uten unntak.</translation>
-<translation id="5226033722357981948">Angir hvorvidt programtilleggssøket skal deaktiveres</translation>
 <translation id="523505283826916779">Tilgjengelighetsinnstillinger</translation>
 <translation id="5247006254130721952">Blokkér farlige nedlastinger</translation>
 <translation id="5255162913209987122">Kan anbefales</translation>
@@ -1353,17 +1330,6 @@
 <translation id="5728154254076636808">Slå på oppretting av roaming-kopier for <ph name="PRODUCT_NAME" />-profildata</translation>
 <translation id="5732972008943405952">Importér autofylldata for skjemaer fra standardnettleseren ved den første kjøringen</translation>
 <translation id="5765780083710877561">Beskrivelse:</translation>
-<translation id="5768309557753179144">Både Chromium og Google Chrome støtter det samme settet med regler. Merk at dette dokumentet kan inneholde upubliserte regler 
-      (dvs. at reglenes «Støttes på»-informasjon kan vise til en upublisert versjon
-      <ph name="PRODUCT_NAME" />) som kan endres eller fjernes uten varsel. Det gis ingen garantier av noe slag, verken i forbindelse med sikkerhet, personvern eller annet, for slike upubliserte regler.
-
-      Disse reglene er kun ment å brukes for å konfigurere forekomster av 
-      <ph name="PRODUCT_NAME" /> internt i organisasjonen din. Bruk av disse reglene utenfor organisasjonen (for eksempel i et offentlig distribuert program) regnes som skadelig programvare og blir sannsynligvis merket som skadelig programvare av Google og antivirus-leverandører.
-
-      Disse innstillingene trenger ikke å konfigureres manuelt. Maler for Windows, Mac og Linux som er enkle å bruke, er tilgjengelige for nedlasting fra <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
-
-      Vi anbefaler å konfigurere regler på Windows via GPO, men
-      tildeling av regler via registeret støttes fortsatt for Windows-forekomster som er knyttet til et <ph name="MS_AD_NAME" />-domene.</translation>
 <translation id="5770738360657678870">Utviklerkanal (kan være ustabil)</translation>
 <translation id="5774856474228476867">Nettadresse for søk for standard søkeleverandør</translation>
 <translation id="5776485039795852974">Spør hver gang et nettsted ønsker å vise skrivebordsvarslinger</translation>
@@ -1690,9 +1656,6 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
       Hvis denne regelen ikke spesifiseres, er nettverksforutsigelse slått på, men brukeren kan endre innstillingen.</translation>
 <translation id="6658245400435704251">Angir grensen for hvor mange sekunder en enhet tilfeldig kan utsette nedlastingen av en oppdatering, fra tidspunktet oppdateringen første ble sendt til tjeneren. Enheten kan sette av en del av denne tiden i form av faktisk ventetid, og den gjenværende delen i form av antall oppdateringer som skal kontrolleres. I alle tilfelle er det den øvre grensen for spredning knyttet til en konstant tidsmengde, slik at enheten aldri blir stående fast og vente på å laste ned en oppdatering for alltid.</translation>
 <translation id="6689792153960219308">Rapportér maskinvarestatus</translation>
-<translation id="6693751878507293182">Hvis du aktiverer denne innstillingen, deaktiveres automatisk søk og installering av manglende programtillegg i <ph name="PRODUCT_NAME" />.
-
-      Hvis dette alternativet deaktiveres eller ikke angis, vil programtilleggsøket være aktivt.</translation>
 <translation id="6699880231565102694">Aktiver to-delt autentisering for verter med ekstern adgang</translation>
 <translation id="6724842112053619797">Hvis du slår på denne innstillingen, blir innstillingene som er lagret i <ph name="PRODUCT_NAME" />-profiler (for eksempel bokmerker, autofylldata, passord også videre), også skrevet til en fil som lagres i mappen for roaming-brukerprofilen, eller på et sted som bestemmes av administratoren via regelen <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Når du slår på denne regelen, deaktiveres skysynkronisering.
 
@@ -1968,6 +1931,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
           Hvis denne innstillingen er deaktivert eller ikke angitt, er ikke to-delt autentisering i bruk. I stedet må brukere oppgi en egendefinert PIN-kode (standard atferd).</translation>
 <translation id="7750991880413385988">Åpne Ny fane-siden</translation>
+<translation id="7754704193130578113">Spør før nedlasting hvor hver fil skal lagres</translation>
 <translation id="7761446981238915769">Konfigurer listen over installerte apper på påloggingsskjermen</translation>
 <translation id="7761526206824804472">Angir én eller flere anbefalte lokaliteter for en offentlig økt, slik at brukerne enkelt kan velge en av disse lokalitetene.
 
@@ -2227,11 +2191,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="8451988835943702790">Bruk siden Ny fane som startside</translation>
 <translation id="8465065632133292531">Parametere for Instant-nettadresser som bruker POST</translation>
 <translation id="847472800012384958">Ikke la noen nettsteder vise forgrunnsvinduer</translation>
-<translation id="8476127435468057643">Kontrollerer om NTLMv2 er aktivert eller ikke.
-
-          Alle nylige versjoner av Samba og Windows-tjenere støtter NTLMv2. NTLMv2 må bare slås av for bakoverkompatibilitet, siden sikkerheten for autentisering reduseres.
-
-          Standardverdien når denne regelen ikke er definert, er for øyeblikket «false» for bakoverkompatibilitet, men skal endres til «true» senere.</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
 <translation id="8484458986062090479">Tilpass listen over nettadressemønstre som alltid skal gjengis av vertsnettleseren.
 

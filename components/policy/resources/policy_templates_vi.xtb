@@ -622,7 +622,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Hãy xem https://developers.google.com/safe-browsing để biết thêm thông tin về Duyệt web an toàn.</translation>
 <translation id="3016255526521614822">Đưa các ứng dụng ghi chú được phép trên màn hình khóa của <ph name="PRODUCT_OS_NAME" /> vào danh sách cho phép</translation>
-<translation id="3021409116652377124">Vô hiệu hóa trình tìm kiếm plugin</translation>
 <translation id="3030000825273123558">Bật báo cáo số liệu</translation>
 <translation id="3034580675120919256">Cho phép bạn đặt liệu các trang web có được phép chạy JavaScript hay không. Bạn có thể cho phép hoặc từ chối chạy JavaScript đối với tất cả các trang web.
 
@@ -919,25 +918,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Thông thường, chính sách này được tắt nhằm đề phòng hoạt động lừa đảo. Nếu không thiết lập chính sách này, chính sách sẽ bị tắt và nội dung phụ bên thứ ba sẽ không được phép bật lên hộp thoại Xác thực cơ bản HTTP.</translation>
 <translation id="4056910949759281379">Vô hiệu hóa giao thức SPDY</translation>
-<translation id="4077363032873906037">Bật tính năng đăng nhập bị hạn chế của <ph name="PRODUCT_NAME" /> trong Google Apps và ngăn người dùng thay đổi cài đặt này.
-
-      Nếu bạn xác định cài đặt này, thì người dùng sẽ chỉ có thể truy cập vào Google
-      Apps bằng tài khoản từ miền được chỉ định (lưu ý rằng cài đặt này không
-      hỗ trợ gmail.com/googlemail.com).
-
-      Cài đặt này sẽ KHÔNG ngăn người dùng đăng nhập trên thiết bị được quản lý
-      yêu cầu xác thực của Google. Người dùng sẽ vẫn được phép
-      đăng nhập vào tài khoản từ các miền khác nhưng họ sẽ gặp lỗi
-      khi cố sử dụng Google Apps bằng những tài khoản đó.
-
-      Nếu bạn để trống/không định cấu hình cài đặt này, thì người dùng sẽ có thể
-      truy cập vào Google Apps bằng bất kỳ tài khoản nào.
-
-      Chính sách này sẽ thêm tiêu đề X-GoogApps-Allowed-Domains vào
-      tất cả các yêu cầu HTTP và HTTPS cho tất cả các miền google.com, như được mô tả trong
-      https://support.google.com/a/answer/1668854.
-
-      Người dùng không thể thay đổi hoặc ghi đè cài đặt này.</translation>
 <translation id="408029843066770167">Cho phép gửi truy vấn tới dịch vụ thời gian của Google</translation>
 <translation id="4088589230932595924">Bắt buộc chế độ ẩn danh</translation>
 <translation id="4088983553732356374">Cho phép bạn đặt trang web được phép hay không được phép đặt dữ liệu cục bộ. Bạn có thể cho phép hoặc từ chối cho phép tất cả các trang web đặt dữ liệu cục bộ.
@@ -955,7 +935,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Phải chỉ định giá trị chính sách bằng mili giây.</translation>
 <translation id="4105989332710272578">Tắt buộc thực thi Tính minh bạch của chứng chỉ cho danh sách URL</translation>
 <translation id="4121350739760194865">Chặn các quảng cáo ứng dụng xuất hiện trên trang tab mới</translation>
-<translation id="4133144443101280166">Khoảng thời gian tắt khi chính sách |ignored_policy_proto_tags| OffHours của thiết bị được phát hành</translation>
 <translation id="4157003184375321727">Báo cáo phiên bản hệ điều hành và chương trình cơ sở</translation>
 <translation id="4183229833636799228">Cài đặt <ph name="FLASH_PLUGIN_NAME" /> mặc định</translation>
 <translation id="4192388905594723944">URL để xác thực mã thông báo xác thực ứng dụng truy cập từ xa</translation>
@@ -1180,7 +1159,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Ví dụ: <ph name="EXTENSION_POLICY_EXAMPLE" /> cài đặt ứng dụng <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> từ URL "cập nhật" của Cửa hàng Chrome trực tuyến. Để biết thêm thông tin về việc lưu trữ tiện ích, hãy xem: <ph name="LINK_TO_EXTENSION_DOC2" />.
 
           Nếu không đặt chính sách này, thì sẽ không có ứng dụng hoặc tiện ích nào được cài đặt tự động và người dùng có thể gỡ cài đặt mọi ứng dụng hoặc tiện ích trong <ph name="PRODUCT_NAME" />.</translation>
-<translation id="4882546920824859909">Xác định miền được phép truy cập Google Apps</translation>
 <translation id="4897928009230106190">Chỉ định tham số được dùng khi thực hiện tìm kiếm theo đề xuất với POST. Tham số này bao gồm các cặp tên/giá trị phân tách bằng dấu phẩy. Nếu một giá trị là tham số mẫu như {searchTerms} trong ví dụ trên, tham số đó sẽ được thay thế bằng dữ liệu cụm từ tìm kiếm thực.
 
           Chính sách này là tùy chọn. Nếu không đặt, yêu cầu tìm kiếm theo đề xuất sẽ được gửi bằng phương thức GET.
@@ -1247,7 +1225,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Nếu không thiết lập chính sách này, giá trị mặc định chung từ chính sách 'DefaultCookiesSetting' nếu chính sách này được thiết lập hoặc từ cấu hình cá nhân của người dùng sẽ được sử dụng cho tất cả các trang web.</translation>
 <translation id="5219844027738217407">Đối với các ứng dụng Android, chính sách này chỉ ảnh hưởng đến micrô. Khi chính sách này được đặt thành true, micrô sẽ bị tắt tiếng cho tất cả ứng dụng Android mà không có ngoại lệ nào.</translation>
-<translation id="5226033722357981948">Chỉ định có nên vô hiệu hóa trình tìm kiếm plugin hay không</translation>
 <translation id="523505283826916779">Cài đặt trợ năng</translation>
 <translation id="5247006254130721952">Chặn các mục tải xuống nguy hiểm</translation>
 <translation id="5255162913209987122">Có thể được đề xuất</translation>
@@ -1389,26 +1366,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="5728154254076636808">Bật tạo bản sao chuyển vùng cho dữ liệu hồ sơ của <ph name="PRODUCT_NAME" /></translation>
 <translation id="5732972008943405952">Nhập dữ liệu biểu mẫu tự động điền từ trình duyệt mặc định trong lần chạy đầu tiên</translation>
 <translation id="5765780083710877561">Mô tả:</translation>
-<translation id="5768309557753179144">Cả Chromium và Google Chrome đều hỗ trợ nhóm chính sách giống nhau. Xin
-      lưu ý rằng tài liệu này có thể bao gồm các chính sách chưa được ban hành
-      (nghĩa là mục nhập 'Được hỗ trợ trên' của các chính sách này đề cập đến một
-      phiên bản <ph name="PRODUCT_NAME" /> chưa phát hành). Các chính sách này có thể bị
-      thay đổi hoặc xóa bỏ mà không thông báo trước. Chúng tôi không bảo đảm bất kỳ  
-      điều gì, kể cả bảo đảm cho các thuộc tính bảo mật
-      và quyền riêng tư.
-
-      Các chính sách này chỉ dùng cho mục đích định cấu hình các
-      phiên bản <ph name="PRODUCT_NAME" /> nội bộ trong tổ chức của bạn. Việc sử dụng
-      các chính sách này bên ngoài tổ chức (ví dụ: trong một chương trình được
-      phân phối công khai) sẽ bị coi là phần mềm độc hại và có thể bị Google và 
-      các nhà cung cấp phần mềm diệt vi-rút gắn nhãn là phần mềm độc hại.
-
-      Bạn không cần định cấu hình các cài đặt này theo cách thủ công! Bạn có tải các
-      mẫu dễ sử dụng dành cho Windows, Mac và Linux xuống từ <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
-
-      Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù
-      việc cấp phép chính sách qua cổng đăng ký vẫn được hỗ trợ cho các phiên bản
-      Windows tham gia miền <ph name="MS_AD_NAME" />.</translation>
 <translation id="5770738360657678870">Kênh nhà phát triển (có thể không ổn định)</translation>
 <translation id="5774856474228476867">URL tìm kiếm nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
 <translation id="5776485039795852974">Hỏi mỗi lần trang web muốn hiển thị thông báo trên màn hình</translation>
@@ -1729,9 +1686,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu chính sách này không được đặt, dự đoán mạng sẽ được bật nhưng người dùng sẽ có thể thay đổi cài đặt đó.</translation>
 <translation id="6658245400435704251">Chỉ định số giây tối đa mà thiết bị có thể ngẫu nhiên trì hoãn việc tải xuống bản cập nhật từ thời điểm bản cập nhật được đưa lên máy chủ lần đầu tiên. Thiết bị có thể đợi một phần số thời gian này là thời gian thực và phần thời gian còn lại là thời gian kiểm tra bản cập nhật. Trong bất kỳ trường hợp nào, việc phân tán bị chặn trên ở lượng thời gian cố định để thiết bị không bao giờ phải chờ mãi để tải xuống bản cập nhật.</translation>
 <translation id="6689792153960219308">Báo cáo trạng thái phần cứng</translation>
-<translation id="6693751878507293182">Nếu bạn đặt cài đặt này thành bật, tìm kiếm tự động và cài đặt plugin bị thiếu sẽ bị tắt trong <ph name="PRODUCT_NAME" />.
-
-      Đặt thành tắt hoặc không đặt tùy chọn này, trình tìm kiếm plugin sẽ hoạt động.</translation>
 <translation id="6699880231565102694">Bật xác thực hai bước cho máy chủ truy cập từ xa</translation>
 <translation id="6724842112053619797">Nếu bạn bật cài đặt này, thì các cài đặt được lưu trữ trong cấu hình của <ph name="PRODUCT_NAME" /> như dấu trang, dữ liệu tự động điền, mật khẩu, v.v. cũng sẽ được ghi vào một tệp được lưu trữ trong thư mục cấu hình Người dùng chuyển vùng hoặc một vị trí do Quản trị viên chỉ định thông qua chính sách <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Việc bật chính sách này sẽ tắt đồng bộ hóa trên đám mây.
 
@@ -2004,6 +1958,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Nếu cài đặt này bị tắt hoặc không được đặt thì tính năng xác thực hai bước sẽ không được bật và hành vi mặc định là có mã PIN do người dùng xác định sẽ được sử dụng.</translation>
 <translation id="7750991880413385988">Mở trang tab mới</translation>
+<translation id="7754704193130578113">Hỏi vị trí lưu từng tệp trước khi tải xuống</translation>
 <translation id="7761446981238915769">Định cấu hình danh sách ứng dụng đã cài đặt trên màn hình đăng nhập</translation>
 <translation id="7761526206824804472">Đặt một hoặc nhiều ngôn ngữ được đề xuất cho phiên công khai, nhờ đó cho phép người dùng dễ dàng chọn một trong các ngôn ngữ này.
 
@@ -2068,7 +2023,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Chính sách này ánh xạ một ID tiện ích hoặc URL cập nhật tới cấu hình của chính sách. Với ID tiện ích, cấu hình sẽ chỉ được áp dụng cho tiện ích đã chỉ định. Bạn có thể đặt cấu hình mặc định cho ID đặc biệt <ph name="DEFAULT_SCOPE" />, cấu hình này sẽ áp dụng cho tất cả các tiện ích chưa đặt cấu hình tùy chỉnh trong chính sách này. Với URL cập nhật, cấu hình sẽ được áp dụng cho tất cả tiện ích có URL cập nhật chính xác đã nêu trong tệp kê khai của tiện ích này, như mô tả tại <ph name="LINK_TO_EXTENSION_DOC1" />.
 
-          Cấu hình cho mỗi tiện ích (hoặc các tiện ích có cùng URL cập nhật) là từ điển khác có thể chứa các trường được nêu dưới đây.
+          Cấu hình cho mỗi tiện ích (hoặc các tiện ích có cùng URL cập nhật) là một từ điển khác có thể chứa các trường được nêu dưới đây.
 
           <ph name="INSTALLATION_MODE" />: ánh xạ tới một chuỗi cho biết chế độ cài đặt của tiện ích. Các chuỗi hợp lệ là:
           * <ph name="ALLOWED" />: cho phép người dùng cài đặt tiện ích. Đây là chế độ mặc định.
@@ -2078,11 +2033,11 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           <ph name="INSTALLTION_MODE" /> cũng có thể được định cấu hình cho nhiều tiện ích, bao gồm cả tiện ích <ph name="DEFAULT_SCOPE" /> (giống như cài đặt mặc định) và các tiện ích có cùng URL cập nhật. Chỉ có thể sử dụng các giá trị <ph name="ALLOWED" /> và <ph name="BLOCKED" /> trong trường hợp này.
 
-          Nếu chế độ được đặt thành <ph name="FORCE_INSTALLED" /> hoặc <ph name="NORMAL_INSTALLED" /> thì <ph name="UPDATE_URL" /> cũng phải được định cấu hình. Lưu ý rằng URL cập nhật được đặt trong chính sách này chỉ dùng cho cài đặt ban đầu; các lần cập nhật tiện ích tiếp theo sẽ sử dụng URL cập nhật nêu trong tệp kê khai của tiện ích. URL cập nhật phải trỏ tới tài liệu XML của tệp kê khai cập nhật như đề cập ở trên.
+          Nếu đặt chế độ thành <ph name="FORCE_INSTALLED" /> hoặc <ph name="NORMAL_INSTALLED" /> thì bạn cũng phải định cấu hình <ph name="UPDATE_URL" />. Lưu ý rằng URL cập nhật được đặt trong chính sách này chỉ dùng cho cài đặt ban đầu; các lần cập nhật tiện ích tiếp theo sẽ sử dụng URL cập nhật nêu trong tệp kê khai của tiện ích. URL cập nhật phải trỏ tới tài liệu XML của Tệp kê khai cập nhật như đề cập ở trên.
 
-          <ph name="BLOCKED_PERMISSIONS" />: ánh xạ tới danh sách các chuỗi cho biết các quyền API bị chặn đối với tiện ích. Tên quyền giống với các chuỗi quyền được khai báo trong tệp kê khai của tiện ích như mô tả tại <ph name="LINK_TO_EXTENSION_DOC3" />. Cài đặt này cũng có thể được định cấu hình cho tiện ích <ph name="DEFAULT_SCOPE" />. Nếu tiện ích yêu cầu quyền có trên danh sách chặn thì quyền đó sẽ không được phép tải. Nếu tiện ích chứa một quyền bị chặn dưới dạng yêu cầu tùy chọn, quyền đó sẽ được xử lý theo cách thông thường, nhưng việc yêu cầu các quyền xung đột sẽ tự động bị từ chối vào thời gian chạy.
+          <ph name="BLOCKED_PERMISSIONS" />: ánh xạ tới danh sách các chuỗi cho biết các quyền API bị chặn đối với tiện ích. Tên quyền giống với các chuỗi quyền được khai báo trong tệp kê khai của tiện ích như mô tả tại <ph name="LINK_TO_EXTENSION_DOC3" />. Cài đặt này cũng có thể được định cấu hình cho tiện ích <ph name="DEFAULT_SCOPE" />. Nếu tiện ích yêu cầu quyền có trên danh sách chặn thì quyền đó sẽ không được phép tải. Nếu tiện ích chứa một quyền bị chặn dưới dạng yêu cầu tùy chọn, thì quyền đó sẽ được xử lý theo cách thông thường, nhưng việc yêu cầu các quyền xung đột sẽ tự động bị từ chối vào thời gian chạy.
 
-          <ph name="ALLOWED_PERMISSIONS" />: tương tự như <ph name="BLOCKED_PERMISSIONS" /> nhưng cho phép rõ ràng một số quyền có thể bị chặn theo danh sách quyền bị chặn chung nên không thể định cấu hình cho tiện ích <ph name="DEFAULT_SCOPE" />. Lưu ý rằng cài đặt này không tự động cung cấp quyền đã cấp cho tiện ích.
+          <ph name="ALLOWED_PERMISSIONS" />: tương tự như <ph name="BLOCKED_PERMISSIONS" />, nhưng cho phép rõ ràng một số quyền có thể bị chặn theo danh sách quyền bị chặn chung nên không thể định cấu hình cho tiện ích <ph name="DEFAULT_SCOPE" />. Lưu ý rằng cài đặt này không tự động cung cấp quyền đã cấp cho tiện ích.
 
           <ph name="MINIMUM_VERSION_REQUIRED" />: ánh xạ tới chuỗi phiên bản. Định dạng của chuỗi phiên bản tương tự như định dạng dùng trong tệp kê khai của tiện ích, như mô tả tại <ph name="LINK_TO_EXTENSION_DOC4" />. Tiện ích có phiên bản cũ hơn phiên bản tối thiểu đã chỉ định sẽ bị tắt. Điều này cũng áp dụng cho các tiện ích bị buộc cài đặt.
 
@@ -2090,9 +2045,9 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           <ph name="INSTALL_SOURCES" />: Mỗi mục trong danh sách này là mẫu khớp với kiểu của tiện ích (<ph name="LINK_TO_MATCH_PATTERNS" />). Người dùng có thể dễ dàng cài đặt các mục từ URL bất kỳ khớp với một mục trong danh sách này. Cả vị trí của tệp <ph name="EXTENSION_SUFFIX_WILDCARD" /> và trang nơi bắt đầu tải xuống (tức là liên kết giới thiệu) phải được các mẫu này cho phép.
 
-          <ph name="ALLOWED_TYPES" />: Cài đặt này đưa vào danh sách cho phép các loại tiện ích/ứng dụng được phép cài đặt trong <ph name="PRODUCT_NAME" />. Giá trị là một danh sách chuỗi, mỗi chuỗi phải là một trong số các loại sau: <ph name="VALID_ALLOWED_TYPES" />. Hãy xem tài liệu về tiện ích <ph name="PRODUCT_NAME" /> để biết thêm thông tin về các loại này.
+          <ph name="ALLOWED_TYPES" />: Cài đặt này đưa vào danh sách cho phép các loại tiện ích/ứng dụng được phép cài đặt trong <ph name="PRODUCT_NAME" />.  Giá trị là một danh sách chuỗi, mỗi chuỗi phải thuộc một trong số các loại sau: <ph name="VALID_ALLOWED_TYPES" />. Hãy xem tài liệu về tiện ích <ph name="PRODUCT_NAME" /> để biết thêm thông tin về các loại này.
           <ph name="BLOCKED_INSTALL_MESSAGE" />: Nếu người dùng cố cài đặt một tiện ích nhưng bị chặn bởi chính sách, thì Cửa hàng Chrome trực tuyến sẽ hiển thị thông báo lỗi chung. Cài đặt này cho phép bạn thêm văn bản vào thông báo lỗi. Thông báo này có thể được dùng để chuyển hướng người dùng đến bộ phận trợ giúp, giải thích nguyên nhân một tiện ích cụ thể bị chặn hoặc cho mục đích khác. Thông báo lỗi này sẽ bị cắt bớt nếu dài hơn 1000 ký tự.
-          <ph name="RUNTIME_BLOCKED_HOSTS" />: Chấp nhận danh sách các máy chủ mà một tiện ích sẽ bị chặn tương tác. Việc này bao gồm chèn javascript, thay đổi và xem webRequests / webNavigation, xem và thay đổi cookie. Định dạng tương tự như Mẫu khớp <ph name="LINK_TO_MATCH_PATTERNS" /> trừ trường hợp không xác định được đường dẫn. Ví dụ: "*://*.example.com". Ngoài ra còn hỗ trợ cả ký tự đại diện cho miền cấp cao nhất (TLD) hiệu quả, ví dụ: "*://example.*".
+          <ph name="RUNTIME_BLOCKED_HOSTS" />: Chấp nhận danh sách các máy chủ mà một tiện ích sẽ bị chặn tương tác. Việc này bao gồm chèn javascript, thay đổi và xem webRequests/webNavigation, xem và thay đổi cookie. Định dạng tương tự như Mẫu khớp <ph name="LINK_TO_MATCH_PATTERNS" /> trừ trường hợp không xác định được đường dẫn, ví dụ: "*://*.example.com". Ngoài ra còn hỗ trợ cả ký tự đại diện cho miền cấp cao nhất (TLD) hiệu quả, ví dụ: "*://example.*".
           <ph name="RUNTIME_ALLOWED_HOSTS" />: Chấp nhận danh sách các máy chủ mà một tiện ích có thể tương tác bất kể các máy chủ đó có tên trong <ph name="RUNTIME_BLOCKED_HOSTS" /> hay không. Định dạng tương tự như <ph name="RUNTIME_BLOCKED_HOSTS" />.
           </translation>
 <translation id="787125417158068494">Nếu được đặt thành SyncDisabled hoặc không được định cấu hình, các chứng chỉ <ph name="PRODUCT_OS_NAME" /> sẽ không khả dụng cho ứng dụng ARC.
@@ -2282,11 +2237,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="8451988835943702790">Sử dụng trang Tab mới làm trang chủ</translation>
 <translation id="8465065632133292531">Tham số cho URL tức thì sử dụng POST</translation>
 <translation id="847472800012384958">Không cho phép bất kỳ trang web nào hiển thị cửa sổ bật lên</translation>
-<translation id="8476127435468057643">Kiểm soát xem NTLMv2 có được bật hay không.
-
-          Tất cả phiên bản gần đây của máy chủ Samba và Windows đều hỗ trợ NTLMv2. Chỉ nên tắt cài đặt này trong trường hợp muốn có khả năng tương thích ngược và giảm tính bảo mật của quá trình xác thực.
-
-          Giá trị mặc định khi chính sách này không được xác định hiện là false để có khả năng tương thích ngược nhưng sẽ thay đổi thành true trong tương lai.</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
 <translation id="8484458986062090479">Tùy chỉnh danh sách các mẫu URL sẽ luôn được trình duyệt chính hiển thị.
 

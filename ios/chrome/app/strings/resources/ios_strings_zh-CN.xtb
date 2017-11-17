@@ -129,7 +129,6 @@
 <translation id="3329904751041170572">无法连接到服务器。</translation>
 <translation id="3335947283844343239">重新打开关闭的标签页</translation>
 <translation id="3393920035788932672">允许显示弹出式窗口</translation>
-<translation id="3414292259312108062">Chrome 会将此密码存储在 <ph name="BEGIN_LINK" />Google 保存的密码<ph name="END_LINK" />中，并会在需要时自动填充此密码，因此您记不住它也没有关系。</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" />分钟</translation>
 <translation id="3448016392200048164">分割视图</translation>
 <translation id="3474624961160222204">继续以<ph name="NAME" />的身份使用</translation>
@@ -152,7 +151,6 @@
 <translation id="3779810277399252432">无互联网连接。</translation>
 <translation id="3783017676699494206">保存图片</translation>
 <translation id="385051799172605136">后退</translation>
-<translation id="3857761338463387655">通过以下应用撰写电子邮件：</translation>
 <translation id="3897092660631435901">菜单</translation>
 <translation id="3928666092801078803">合并我的数据</translation>
 <translation id="3950820424414687140">登录</translation>
@@ -204,6 +202,7 @@
 <translation id="5005498671520578047">复制密码</translation>
 <translation id="5010803260590204777">打开一个隐身标签页即可私密地浏览网络。</translation>
 <translation id="5011684439661633295"><ph name="FULL_ACCOUNT_NAME" />，您好！</translation>
+<translation id="5039804452771397117">允许</translation>
 <translation id="5062321486222145940">安装Google云端硬盘</translation>
 <translation id="5083464117946352670">无法确定文件大小。</translation>
 <translation id="5094827893301452931">Tweet 信息发布已完成。</translation>
@@ -262,7 +261,6 @@
 <translation id="6122191549521593678">在线</translation>
 <translation id="6127379762771434464">该项已移除</translation>
 <translation id="6136914049981179737">几秒前</translation>
-<translation id="6149061208933997199">使用密码</translation>
 <translation id="6158823227857319455">打开新的标签页</translation>
 <translation id="616831107264507309">稍后阅读</translation>
 <translation id="6184086493125982861">显示标签页</translation>
@@ -272,7 +270,6 @@
 <translation id="6254066287920239840">在应用（而非浏览器）中打开链接。</translation>
 <translation id="6255097610484507482">修改信用卡</translation>
 <translation id="6308436439357671616">这样，您就可以拍摄并上传照片。</translation>
-<translation id="6314335155547195432">生成密码</translation>
 <translation id="6324528485781869530">切换同步帐号</translation>
 <translation id="6324669097367352121">登录设置</translation>
 <translation id="6337234675334993532">加密</translation>
@@ -290,7 +287,6 @@
 <translation id="6418346271604475326">正在准备 PDF 文件</translation>
 <translation id="6445051938772793705">国家/地区</translation>
 <translation id="6445981559479772097">短信已发送。</translation>
-<translation id="6456425917241817154">Chrome 生成的密码</translation>
 <translation id="6464071786529933911">在新的无痕式标签页中打开</translation>
 <translation id="6482629121755362506">删除了<ph name="NUMBER_OF_SELECTED_BOOKMARKS" />项</translation>
 <translation id="6541915733953096570">过去 1 小时</translation>
@@ -313,6 +309,7 @@
 <translation id="7004499039102548441">最近打开的标签页</translation>
 <translation id="7006788746334555276">内容设置</translation>
 <translation id="7031882061095297553">同步到</translation>
+<translation id="7053983685419859001">禁止</translation>
 <translation id="7062545763355031412">接受并切换帐号</translation>
 <translation id="7108338896283013870">隐藏</translation>
 <translation id="7133798577887235672">全称</translation>
@@ -345,7 +342,6 @@
 <translation id="7649070708921625228">帮助</translation>
 <translation id="7658239707568436148">取消</translation>
 <translation id="7671141431838911305">安装</translation>
-<translation id="7677825787905683892">选择默认电子邮件应用</translation>
 <translation id="7765158879357617694">移动</translation>
 <translation id="7769602470925380267">接受并退出</translation>
 <translation id="7772032839648071052">确认密码</translation>
@@ -409,7 +405,6 @@
 <translation id="9083392325882095631">有1个书签</translation>
 <translation id="9100610230175265781">必须提供密码</translation>
 <translation id="9148126808321036104">重新登录</translation>
-<translation id="914898748153555155">您随时可在 Chrome 设置中更改此项偏好设置</translation>
 <translation id="91549621916703028">为您的所有任务创建多个标签页</translation>
 <translation id="9157836665414082580">禁止显示对话框</translation>
 <translation id="9188680907066685419">退出受管理的帐号</translation>

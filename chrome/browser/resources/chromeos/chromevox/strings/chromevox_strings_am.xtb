@@ -30,7 +30,7 @@
 <translation id="1201402288615127009">ቀጣይ</translation>
 <translation id="1206619573307042055">መልሶ መልስ</translation>
 <translation id="1213216066620407844">ChromeVox - ድምጽ ለChrome መስጠት</translation>
-<translation id="1225437811932752266">እንኳን ደስ አለዎት! ChromeVoxን ለመጠቀም የሚያስፈልጉትን መሠረታዊ ነገሮች በተሳካ ሁኔታ አውቀዋቸዋል። በማንኛውም ጊዜ Search+Period በመጫን የChromeVox ትዕዛዝ ምናሌን መክፈት እንደሚችሉ ያስታውሱ። አሁንም ስለChromeVox እና Chrome OS ተጨማሪ ለማወቅ ከፈለጉ የሚከተሉትን ጽሑፎች ይጎብኙ።
+<translation id="1225437811932752266">እንኳን ደስ አለዎት! ChromeVox (ቅድመ-ይሁንታ)ን ለመጠቀም የሚያስፈልጉትን መሠረታዊ ነገሮች በተሳካ ሁኔታ አውቀዋቸዋል። በማንኛውም ጊዜ Search+Period በመጫን የChromeVox ትዕዛዝ ምናሌን መክፈት እንደሚችሉ ያስታውሱ። አሁንም ስለChromeVox እና Chrome OS ይበልጥ ተጨማሪ ለማወቅ ከፈለጉ የሚከተሉትን ጽሑፎች ይጎብኙ።
 የአጋዥ ስልጠናውን ከጨረሱ ChromeVoxን ተጠቅመው ወደ ዝጋ አዝራር ይሂዱና ጠቅ ያድርጉት።</translation>
 <translation id="1229276918471378188">ቀዳሚ ዝላይ</translation>
 <translation id="1237866625126425153">rdgrp</translation>
@@ -411,7 +411,7 @@
 <translation id="4601367666219428522">ሠንጠረዥ <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">ቀጣይ ቁልፍ መጫንን ችላ ብሎ በመተው ላይ</translation>
 <translation id="461613135510474570">አረፍተ ነገር</translation>
-<translation id="463135993322337640">ምን አዲስ ነገር እንዳለ ለማወቅ ChromeVox o፣ ከዚያ n ይጫኑ</translation>
+<translation id="463135993322337640">ምን አዲስ ነገር እንዳለ ለማወቅ ChromeVox o፣ n ይጫኑ</translation>
 <translation id="4647836961514597010">ቀለም መምረጫ</translation>
 <translation id="4660783501463101648">የታወቀ ገጽታ ተወግዷል። ተመልሶ ወደ የታወቀው የChromeVox ገጽታ የሚወስደው የቁልፍ ሰሌዳ መቀያየሪያው ተወግዷል።</translation>
 <translation id="4661075872484491155">ዛፍ</translation>
@@ -629,7 +629,7 @@
 <translation id="6493991254603208962">ብሩህነት ቀንስ</translation>
 <translation id="6508059270146105198">የብሬይል ማሳያውን ወደ ገጹ ግርጌ ያንቀሳቅሱ</translation>
 <translation id="6536864053412760904">የMath ML ማስመሰያ</translation>
-<translation id="6540201937398578274">በChromeVox ውስጥ የፍለጋ ቁልፍ የመቀየሪያ ቁልፉ ነው። አብዛኛዎቹ የChromeVox አቋራጮች በፍለጋ ቁልፉ ነው የሚጀምሩት። እንዲሁም ለአሰሳ የቀስት ቁልፎቹን ነው የሚጠቀሙት።</translation>
+<translation id="6540201937398578274">በChromeVox ውስጥ የፍለጋ ቁልፉ የመቀየሪያ ቁልፍ ነው። አብዛኛዎቹ የChromeVox አቋራጮች በፍለጋ ቁልፉ ነው የሚጀምሩት። እንዲሁም ለአሰሳ የቀስት ቁልፎቹን ነው የሚጠቀሙት።</translation>
 <translation id="6550720799683018100">ከታች ካለው ዝርዝር አንድ አማራጭ በመምረጥ የአሁኑ የቁልፍ አደራደር ይቀይሩት።</translation>
 <translation id="6561818612645211875">ወደ የአሁኑ ረድፍ መጀመሪያ ሂድ</translation>
 <translation id="6587021927234520429">ምንም ቀጣይ የደረጃ 4 ርዕስ የለም።</translation>

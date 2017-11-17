@@ -30,7 +30,7 @@
 <translation id="1201402288615127009">Susunod</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1213216066620407844">ChromeVox - Nagbibigay ng Boses sa Chrome</translation>
-<translation id="1225437811932752266">Congratulations! Natutunan mo na ang mga kinakailangan sa paggamit ng ChromeVox. Tandaang maaari mong buksan ang menu ng command sa ChromeVox anumang oras sa pamamagitan ng pagpindot sa Paghahanap+Tuldok. Upang mas matuto pa tungkol sa ChromeVox at Chrome OS, bisitahin ang mga sumusunod na artikulo.
+<translation id="1225437811932752266">Binabati ka namin! Natutunan mo ang mga kinakailangan sa matagumpay na paggamit ng ChromeVox. Tandaang maaari mong buksan ang menu ng command sa ChromeVox anumang oras sa pamamagitan ng pagpindot sa Paghahanap+Tuldok. Upang mas matuto pa tungkol sa ChromeVox at Chrome OS, bisitahin ang mga sumusunod na artikulo.
 Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button na Isara at i-click ito.</translation>
 <translation id="1229276918471378188">Nakaraang paglaktaw</translation>
 <translation id="1237866625126425153">rdgrp</translation>
@@ -43,7 +43,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="1339428534620983148">Nakaraang column ng talahanayan</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1346748346194534595">Kanan</translation>
-<translation id="135978014023467274">Na-update ka na sa ChromeVox 63!</translation>
+<translation id="135978014023467274">Na-update ka sa ChromeVox 63!</translation>
 <translation id="136718599399906424">Susunod na row ng talahanayan</translation>
 <translation id="1377925789329510816">Ito ang huling heading. Pindutin ang Search+H upang pumunta sa unang heading, o ang Search+Shift+H upang pumunta sa pangalawang heading sa page na ito.</translation>
 <translation id="1383876407941801731">Hanapin</translation>
@@ -414,7 +414,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="461613135510474570">Pangungusap</translation>
 <translation id="463135993322337640">Pindutin ang ChromeVox o, n upang malaman kung ano ang bago</translation>
 <translation id="4647836961514597010">Tagapili ng kulay</translation>
-<translation id="4660783501463101648">Inalis ang classic. Inalis na ang toggle ng keyboard upang lumipat sa ChromeVox Classic.</translation>
+<translation id="4660783501463101648">Inalis ang classic. Inalis ang toggle ng keyboard upang lumipat sa ChromeVox Classic.</translation>
 <translation id="4661075872484491155">tree</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4688873778442829762">grd</translation>
@@ -630,7 +630,7 @@ Upang buksan ang menu ng Chrome browser, pindutin ang Alt+F.</translation>
 <translation id="6493991254603208962">Babaan ang brightness</translation>
 <translation id="6508059270146105198">Ilipat ang display ng braille sa ibaba ng page</translation>
 <translation id="6536864053412760904">Math ML Token</translation>
-<translation id="6540201937398578274">Sa ChromeVox, ang Key sa paghahanap ang modifier key. Nagsisimula ang karamihan sa mga shortcut ng ChromeVox sa Key sa paghahanap. Gagamitin mo rin ang mga arrow key sa pag-navigate.</translation>
+<translation id="6540201937398578274">Sa ChromeVox, ang Key sa paghahanap ay ang modifier key. Nagsisimula ang karamihan sa mga shortcut ng ChromeVox sa Key sa paghahanap. Gagamitin mo rin ang mga arrow key sa pag-navigate.</translation>
 <translation id="6550720799683018100">Palitan ang kasalukuyang keymap sa pamamagitan ng pagpili ng opsyon sa listahan sa ibaba.</translation>
 <translation id="6561818612645211875">Pumunta sa umpisa ng kasalukuyang row</translation>
 <translation id="6587021927234520429">Walang susunod na heading sa antas 4.</translation>

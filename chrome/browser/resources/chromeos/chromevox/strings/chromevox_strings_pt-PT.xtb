@@ -31,7 +31,7 @@
 <translation id="1206619573307042055">painel rolante</translation>
 <translation id="1213216066620407844">ChromeVox - A dar voz ao Chrome</translation>
 <translation id="1225437811932752266">Parabéns! Aprendeu as noções básicas para utilizar o ChromeVox com êxito. Não se esqueça de que pode abrir o menu de comandos do ChromeVox a qualquer momento ao premir Pesquisar + Ponto. Para saber ainda mais acerca do ChromeVox e do Chrome OS, visite os artigos seguintes.
-Se concluiu o tutorial, utilize o ChromeVox para navegar até ao botão Fechar e clique no mesmo.</translation>
+Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e clique no mesmo.</translation>
 <translation id="1229276918471378188">Avanço anterior</translation>
 <translation id="1237866625126425153">rdgrp</translation>
 <translation id="1251750620252348585">Título de nível 6 seguinte</translation>
@@ -171,7 +171,7 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar até ao botão Fechar e
 <translation id="2770781857296573485">Entrar na exploração de grupos</translation>
 <translation id="2777845298774924149">Saiu</translation>
 <translation id="2781264313200109999">Início do link</translation>
-<translation id="2784959586797362050">Como sempre, pode enviar-nos os seus comentários diretamente ao premir Pesquisar+a e, de seguida, i. Estamos ansiosos por saber a sua opinião.</translation>
+<translation id="2784959586797362050">Como sempre, pode enviar-nos os seus comentários diretamente ao premir Pesquisar + a e, em seguida, i. Estamos ansiosos por saber a sua opinião.</translation>
 <translation id="2800204403141299078">Não existem mais elementos diferentes.</translation>
 <translation id="2800780099804980316">Não existe nenhum título de nível 1 anterior.</translation>
 <translation id="280499067616661124">Localizar na página do ChromeVox</translation>
@@ -412,7 +412,7 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar até ao botão Fechar e
 <translation id="4601367666219428522">tbl <ph name="TABLENAME" /> <ph name="TABLEROWS" /> x <ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">Ignorar tecla premida seguinte</translation>
 <translation id="461613135510474570">Frase</translation>
-<translation id="463135993322337640">Prima ChromeVox o, n para saber quais são as novidades</translation>
+<translation id="463135993322337640">Prima ChromeVox o, n para saber quais são as novidades.</translation>
 <translation id="4647836961514597010">Seletor de cores</translation>
 <translation id="4660783501463101648">A opção Classic foi removida. O interruptor do teclado para voltar ao ChromeVox Classic foi removido.</translation>
 <translation id="4661075872484491155">árvore</translation>
@@ -630,7 +630,7 @@ Para abrir o menu do navegador Chrome, prima Alt + F.</translation>
 <translation id="6493991254603208962">Diminuir o brilho</translation>
 <translation id="6508059270146105198">Mover linha braille para o fim da página</translation>
 <translation id="6536864053412760904">Token de matemática ML</translation>
-<translation id="6540201937398578274">No ChromeVox, a tecla Pesquisar é a tecla de modificação. A maioria dos atalhos do ChromeVox começa com a tecla Pesquisar. Também pode utilizar as teclas de seta para a navegação.</translation>
+<translation id="6540201937398578274">No ChromeVox, a tecla Pesquisa é a tecla de modificação. A maioria dos atalhos do ChromeVox começa com a tecla Pesquisar. Também pode utilizar as teclas de seta para a navegação.</translation>
 <translation id="6550720799683018100">Alterar o mapa de teclas atual ao selecionar uma opção da lista abaixo.</translation>
 <translation id="6561818612645211875">Ir para o início da linha atual</translation>
 <translation id="6587021927234520429">Não existe nenhum título de nível 4 seguinte.</translation>

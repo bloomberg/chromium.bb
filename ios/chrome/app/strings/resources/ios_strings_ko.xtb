@@ -129,7 +129,6 @@
 <translation id="3329904751041170572">서버에 연결하지 못했습니다.</translation>
 <translation id="3335947283844343239">닫은 탭 다시 열기</translation>
 <translation id="3393920035788932672">팝업 허용</translation>
-<translation id="3414292259312108062">Chrome은 이 비밀번호를 <ph name="BEGIN_LINK" />Google에 저장된 비밀번호<ph name="END_LINK" />에 저장하고 자동완성 기능을 지원하므로 직접 기억할 필요가 없습니다.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" />분</translation>
 <translation id="3448016392200048164">분할 보기</translation>
 <translation id="3474624961160222204"><ph name="NAME" />(으)로 계속</translation>
@@ -152,7 +151,6 @@
 <translation id="3779810277399252432">인터넷에 연결되어 있지 않습니다.</translation>
 <translation id="3783017676699494206">이미지 저장</translation>
 <translation id="385051799172605136">뒤로</translation>
-<translation id="3857761338463387655">다음을 사용하여 이메일 만들기:</translation>
 <translation id="3897092660631435901">메뉴</translation>
 <translation id="3928666092801078803">내 데이터 결합하기</translation>
 <translation id="3950820424414687140">로그인</translation>
@@ -204,6 +202,7 @@
 <translation id="5005498671520578047">비밀번호 복사</translation>
 <translation id="5010803260590204777">시크릿 탭을 열어 웹을 비공개로 탐색하세요.</translation>
 <translation id="5011684439661633295"><ph name="FULL_ACCOUNT_NAME" />님, 안녕하세요.</translation>
+<translation id="5039804452771397117">허용</translation>
 <translation id="5062321486222145940">Google 드라이브 설치</translation>
 <translation id="5083464117946352670">파일 크기를 알 수 없습니다.</translation>
 <translation id="5094827893301452931">Tweet이 완료되었습니다.</translation>
@@ -262,7 +261,6 @@
 <translation id="6122191549521593678">온라인</translation>
 <translation id="6127379762771434464">항목 삭제됨</translation>
 <translation id="6136914049981179737">초 전</translation>
-<translation id="6149061208933997199">비밀번호 사용</translation>
 <translation id="6158823227857319455">새 탭</translation>
 <translation id="616831107264507309">나중에 읽기</translation>
 <translation id="6184086493125982861">탭 표시</translation>
@@ -272,7 +270,6 @@
 <translation id="6254066287920239840">브라우저 대신 앱에서 링크 열기</translation>
 <translation id="6255097610484507482">신용카드 수정</translation>
 <translation id="6308436439357671616">액세스를 허용하면 사진을 찍고 업로드할 수 있습니다.</translation>
-<translation id="6314335155547195432">비밀번호 생성</translation>
 <translation id="6324528485781869530">동기화 계정 전환</translation>
 <translation id="6324669097367352121">로그인 설정</translation>
 <translation id="6337234675334993532">암호화</translation>
@@ -290,7 +287,6 @@
 <translation id="6418346271604475326">PDF 준비 중</translation>
 <translation id="6445051938772793705">국가</translation>
 <translation id="6445981559479772097">메시지가 전송되었습니다.</translation>
-<translation id="6456425917241817154">Chrome에서 생성한 비밀번호</translation>
 <translation id="6464071786529933911">새 시크릿 탭에서 열기</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" />개 항목 삭제함</translation>
 <translation id="6541915733953096570">지난 1시간</translation>
@@ -313,6 +309,7 @@
 <translation id="7004499039102548441">최근 탭</translation>
 <translation id="7006788746334555276">콘텐츠 설정</translation>
 <translation id="7031882061095297553">동기화 가능 계정</translation>
+<translation id="7053983685419859001">차단</translation>
 <translation id="7062545763355031412">동의 및 계정 전환</translation>
 <translation id="7108338896283013870">숨기기</translation>
 <translation id="7133798577887235672">이름</translation>
@@ -345,7 +342,6 @@
 <translation id="7649070708921625228">도움말</translation>
 <translation id="7658239707568436148">취소</translation>
 <translation id="7671141431838911305">설치</translation>
-<translation id="7677825787905683892">기본 이메일 앱 선택</translation>
 <translation id="7765158879357617694">이동</translation>
 <translation id="7769602470925380267">동의 및 로그아웃</translation>
 <translation id="7772032839648071052">암호 확인</translation>
@@ -409,7 +405,6 @@
 <translation id="9083392325882095631">항목 1개</translation>
 <translation id="9100610230175265781">암호를 입력해야 합니다.</translation>
 <translation id="9148126808321036104">다시 로그인</translation>
-<translation id="914898748153555155">Chrome 설정에서 언제든지 이 환경설정을 변경할 수 있습니다.</translation>
 <translation id="91549621916703028">여러 개의 탭을 만들어 다양한 작업을 동시에 진행하세요.</translation>
 <translation id="9157836665414082580">대화상자 숨기기</translation>
 <translation id="9188680907066685419">관리 계정에서 로그아웃</translation>

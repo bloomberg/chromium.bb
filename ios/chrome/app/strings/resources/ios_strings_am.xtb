@@ -129,7 +129,6 @@
 <translation id="3329904751041170572">ከአገልጋዩ ጋር መገናኘት አልቻለም።</translation>
 <translation id="3335947283844343239">የተዘጋውን ትር ዳግም ክፈት</translation>
 <translation id="3393920035788932672">ብቅ-ባዮች ተፈቅደዋል</translation>
-<translation id="3414292259312108062">Chrome ይህንን በእርስዎ በ<ph name="BEGIN_LINK" />Google የተቀመጡ የይለፍ ቃሎች<ph name="END_LINK" /> ያከማቸው እና እራስዎ ማስታወስ እንዳያስፈልግዎት በራስ-ሰር ይሞላልዎታል።</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> ደቂቃዎች</translation>
 <translation id="3448016392200048164">የተከፈለ ዕይታ</translation>
 <translation id="3474624961160222204">እንደ <ph name="NAME" /> ይቀጥሉ</translation>
@@ -152,7 +151,6 @@
 <translation id="3779810277399252432">ምንም የበይነመረብ ግንኙነት የለም።</translation>
 <translation id="3783017676699494206">ምስሉን አስቀምጥ</translation>
 <translation id="385051799172605136">ተመለስ</translation>
-<translation id="3857761338463387655">ኢሜይል በዚህ ይፍጠሩ፦</translation>
 <translation id="3897092660631435901">ምናሌ</translation>
 <translation id="3928666092801078803">የእኔን ውሂብ አጣምር</translation>
 <translation id="3950820424414687140">ይግቡ</translation>
@@ -204,6 +202,7 @@
 <translation id="5005498671520578047">የይለፍ ቃል ቅዳ</translation>
 <translation id="5010803260590204777">ድሩን በግል ለማሰስ ማንነት የማያሳውቅ ትር ይክፈቱ።</translation>
 <translation id="5011684439661633295">ሠላም፣ <ph name="FULL_ACCOUNT_NAME" /></translation>
+<translation id="5039804452771397117">ፍቀድ</translation>
 <translation id="5062321486222145940">Google Driveን ጫን</translation>
 <translation id="5083464117946352670">የፋይል መጠን ማወቅ አልተቻለም።</translation>
 <translation id="5094827893301452931">Tweet ተጠናቅቋል።</translation>
@@ -262,7 +261,6 @@ Handoff እንዲሁም በSettings ውስጥ ባለው የGeneral ክፍል ላ
 <translation id="6122191549521593678">መስመር ላይ</translation>
 <translation id="6127379762771434464">ንጥል ተወግዷል</translation>
 <translation id="6136914049981179737">ከሰከንዶች በፊት</translation>
-<translation id="6149061208933997199">የይለፍ ቃል ይጠቀሙ</translation>
 <translation id="6158823227857319455">አዲስ ትር</translation>
 <translation id="616831107264507309">በኋላ ላይ ያንብቡ</translation>
 <translation id="6184086493125982861">ትሮችን አሳይ</translation>
@@ -272,7 +270,6 @@ Handoff እንዲሁም በSettings ውስጥ ባለው የGeneral ክፍል ላ
 <translation id="6254066287920239840">አገናኞችን ከአሳሽ ይልቅ በመተግበሪያ ውስጥ ይክፈቱ።</translation>
 <translation id="6255097610484507482">ክሬዲት ካርድን አርትዕ</translation>
 <translation id="6308436439357671616">ይህ ፎቶዎችን እንዲያነሱ እና እንዲሰቅሉ ያስችልዎታል።</translation>
-<translation id="6314335155547195432">የይለፍ ቃል አፍልቅ</translation>
 <translation id="6324528485781869530">የማመሳስል መቀየሪያ መለያ</translation>
 <translation id="6324669097367352121">የመግቢያ ቅንብሮች</translation>
 <translation id="6337234675334993532">ምስጠራ</translation>
@@ -290,7 +287,6 @@ Handoff እንዲሁም በSettings ውስጥ ባለው የGeneral ክፍል ላ
 <translation id="6418346271604475326">ፒዲኤፍ በመዘጋጀት ላይ</translation>
 <translation id="6445051938772793705">አገር</translation>
 <translation id="6445981559479772097">መልዕክት ተልኳል።</translation>
-<translation id="6456425917241817154">በChrome የፈለቀ የይለፍ ቃል</translation>
 <translation id="6464071786529933911">በአዲስ ማንነት የማያሳውቅ ትር ውስጥ ክፈት</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> ንጥሎች ተሰርዘዋል</translation>
 <translation id="6541915733953096570">ያለፈው ሰዓት</translation>
@@ -313,6 +309,7 @@ Handoff እንዲሁም በSettings ውስጥ ባለው የGeneral ክፍል ላ
 <translation id="7004499039102548441">የቅርብ ጊዜ ትሮች</translation>
 <translation id="7006788746334555276">የይዘት ቅንብሮች </translation>
 <translation id="7031882061095297553">አሥምር ወደ</translation>
+<translation id="7053983685419859001">አግድ</translation>
 <translation id="7062545763355031412">ይቀበሉ እና መለያዎችን ይቀይሩ</translation>
 <translation id="7108338896283013870">ደብቅ</translation>
 <translation id="7133798577887235672">ሙሉ ስም</translation>
@@ -345,7 +342,6 @@ Handoff እንዲሁም በSettings ውስጥ ባለው የGeneral ክፍል ላ
 <translation id="7649070708921625228">እገዛ</translation>
 <translation id="7658239707568436148">ይቅር</translation>
 <translation id="7671141431838911305">ጫን</translation>
-<translation id="7677825787905683892">ነባሪ የኢሜይል መተግበሪያ ይምረጡ</translation>
 <translation id="7765158879357617694">ውሰድ</translation>
 <translation id="7769602470925380267">ተቀበልና ዘግተህ ውጣ</translation>
 <translation id="7772032839648071052">የይለፍ ሐረግ ያረጋግጡ</translation>
@@ -409,7 +405,6 @@ Handoff እንዲሁም በSettings ውስጥ ባለው የGeneral ክፍል ላ
 <translation id="9083392325882095631">1 ንጥል</translation>
 <translation id="9100610230175265781">የይለፍ ሐረግ ያስፈልጋል</translation>
 <translation id="9148126808321036104">እንደገና ይግቡ</translation>
-<translation id="914898748153555155">ይህ አማራጭ በማናቸውም ጊዜ በChrome ቅንብሮች ውስጥ መለወጥ ይችላሉ</translation>
 <translation id="91549621916703028">ለሁሉም ተግባሮችዎ በርካታ ትሮችን ይፍጠሩ</translation>
 <translation id="9157836665414082580">መገናኛዎችን አፍን</translation>
 <translation id="9188680907066685419">ከሚተዳደር መለያ ዘግግተህ ውጣ</translation>

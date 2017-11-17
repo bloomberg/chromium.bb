@@ -129,7 +129,6 @@
 <translation id="3329904751041170572">സെര്‍വറിലേക്ക് കണക്റ്റുചെയ്യാൻ കഴിഞ്ഞില്ല.</translation>
 <translation id="3335947283844343239">അടച്ച ടാബ് വീണ്ടും തുറക്കുക</translation>
 <translation id="3393920035788932672">പോപ്പ്-അപ്പുകൾ അനുവദിച്ചു</translation>
-<translation id="3414292259312108062">ഇത് നിങ്ങളുടെ <ph name="BEGIN_LINK" />Google സംരക്ഷിത പാസ്‌വേഡുകളിൽ<ph name="END_LINK" /> Chrome സംരക്ഷിക്കുകയും നിങ്ങൾക്കായി ഓട്ടോഫിൽ ചെയ്യുകയും ചെയ്യുന്നതിനാൽ ഓർക്കേണ്ടതില്ല.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> മി.</translation>
 <translation id="3448016392200048164">വിഭജിത കാഴ്‌ച</translation>
 <translation id="3474624961160222204"><ph name="NAME" /> ആയി തുടരുക</translation>
@@ -152,7 +151,6 @@
 <translation id="3779810277399252432">ഇന്റർനെറ്റ് കണക്ഷനില്ല.</translation>
 <translation id="3783017676699494206">ഇമേജ് സംരക്ഷിക്കുക</translation>
 <translation id="385051799172605136">പിന്നോട്ട്</translation>
-<translation id="3857761338463387655">ഇത് ഉപയോഗിച്ച് ഇമെയിൽ സൃഷ്‌ടിക്കുക:</translation>
 <translation id="3897092660631435901">മെനു</translation>
 <translation id="3928666092801078803">എന്റെ വിവരങ്ങൾ സംയോജിപ്പിക്കുക</translation>
 <translation id="3950820424414687140">സൈൻ ഇൻ</translation>
@@ -204,6 +202,7 @@
 <translation id="5005498671520578047">പാസ്‌വേഡ് പകർത്തുക</translation>
 <translation id="5010803260590204777">വെബ് സ്വകാര്യമായി ബ്രൗസുചെയ്യാൻ ഒരു ആൾമാറാട്ട ടാബ് തുറക്കുക.</translation>
 <translation id="5011684439661633295">ഹായ്, <ph name="FULL_ACCOUNT_NAME" /></translation>
+<translation id="5039804452771397117">അനുവദിക്കൂ</translation>
 <translation id="5062321486222145940">Google ഡ്രൈവ് ഇൻസ്‌റ്റാളുചെയ്യുക</translation>
 <translation id="5083464117946352670">ഫയൽ വലുപ്പം നിർണ്ണയിക്കാനാവില്ല.</translation>
 <translation id="5094827893301452931">Tweet പങ്കിടൽ പൂർത്തിയായി.</translation>
@@ -262,7 +261,6 @@
 <translation id="6122191549521593678">ഓൺലൈൻ</translation>
 <translation id="6127379762771434464">ഇനം നീക്കംചെയ്‌തു</translation>
 <translation id="6136914049981179737">സെക്കൻഡ് മുമ്പ്</translation>
-<translation id="6149061208933997199">പാസ്‌വേഡ് ഉപയോഗിക്കുക</translation>
 <translation id="6158823227857319455">പുതിയ ടാബ്</translation>
 <translation id="616831107264507309">പിന്നീട് വായിക്കുക</translation>
 <translation id="6184086493125982861">ടാബുകൾ കാണിക്കുക</translation>
@@ -272,7 +270,6 @@
 <translation id="6254066287920239840">ബ്രൗസറിന് പകരം ആപ്പിൽ ലിങ്കുകൾ തുറക്കുക.</translation>
 <translation id="6255097610484507482">ക്രെഡിറ്റ് കാര്‍ഡ് എഡിറ്റുചെയ്യുക</translation>
 <translation id="6308436439357671616">ഫോട്ടോകളെടുത്ത് അപ്‌ലോഡുചെയ്യാൻ ഇത് നിങ്ങളെ അനുവദിക്കുന്നു.</translation>
-<translation id="6314335155547195432">പാസ്‌വേഡ് സൃഷ്‌ടിക്കുക</translation>
 <translation id="6324528485781869530">സമന്വയ അക്കൗണ്ട് മാറുക</translation>
 <translation id="6324669097367352121">സൈൻ ഇൻ ക്രമീകരണങ്ങൾ</translation>
 <translation id="6337234675334993532">എന്‍ക്രിപ്ഷന്‍</translation>
@@ -290,7 +287,6 @@
 <translation id="6418346271604475326">PDF തയ്യാറാക്കുന്നു</translation>
 <translation id="6445051938772793705">രാജ്യം</translation>
 <translation id="6445981559479772097">സന്ദേശം അയച്ചു.</translation>
-<translation id="6456425917241817154">Chrome സൃഷ്‌ടിച്ച പാസ്‌വേഡ്</translation>
 <translation id="6464071786529933911">പുതിയ ആൾമാറാട്ട ടാബിൽ തുറക്കുക</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> ഇനങ്ങൾ ഇല്ലാതാക്കി</translation>
 <translation id="6541915733953096570">കഴിഞ്ഞ ഒരു മണിക്കൂറിലെ</translation>
@@ -313,6 +309,7 @@
 <translation id="7004499039102548441">സമീപകാല ടാബുകൾ</translation>
 <translation id="7006788746334555276">ഉള്ളടക്ക ക്രമീകരണങ്ങള്‍‌</translation>
 <translation id="7031882061095297553">ഇതിലേക്ക് സമന്വയിപ്പിക്കുക</translation>
+<translation id="7053983685419859001">തടയുക</translation>
 <translation id="7062545763355031412">അംഗീകരിച്ചശേഷം, അക്കൗണ്ടുകൾ മാറുക</translation>
 <translation id="7108338896283013870">മറയ്ക്കുക</translation>
 <translation id="7133798577887235672">പൂർണ്ണമായ പേര്</translation>
@@ -345,7 +342,6 @@
 <translation id="7649070708921625228">സഹായം</translation>
 <translation id="7658239707568436148">റദ്ദാക്കൂ</translation>
 <translation id="7671141431838911305">ഇൻസ്റ്റാളുചെയ്യുക</translation>
-<translation id="7677825787905683892">ഡിഫോൾട്ട് ഇമെയിൽ ആപ്പ് തിരഞ്ഞെടുക്കുക</translation>
 <translation id="7765158879357617694">നീക്കുക</translation>
 <translation id="7769602470925380267">അംഗീകരിച്ചശേഷം, സൈൻ ഔട്ട് ചെയ്യുക</translation>
 <translation id="7772032839648071052">പാസ്ഫ്രേസ് സ്ഥിരീകരിക്കുക</translation>
@@ -409,7 +405,6 @@
 <translation id="9083392325882095631">ഒരു ഇനം</translation>
 <translation id="9100610230175265781">പാസ്‌ഫ്രെയ്‌സ് ആവശ്യമാണ്</translation>
 <translation id="9148126808321036104">വീണ്ടും പ്രവേശിക്കുക</translation>
-<translation id="914898748153555155">Chrome ക്രമീകരണത്തിൽ ഏത് സമയത്തും നിങ്ങൾക്ക് ഈ മുൻഗണന മാറ്റാവുന്നതാണ്.</translation>
 <translation id="91549621916703028">നിങ്ങളുടെ എല്ലാ ടാസ്‌ക്കുകൾക്കും ഒന്നിലധികം ടാബുകൾ സൃഷ്ടിക്കുക</translation>
 <translation id="9157836665414082580">ഡയലോഗുകൾ നിയന്ത്രിക്കുക</translation>
 <translation id="9188680907066685419">മാനേജുചെയ്‌ത അക്കൗണ്ടിൽ നിന്ന് സൈൻ ഔട്ട് ചെയ്യുക</translation>

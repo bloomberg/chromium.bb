@@ -130,7 +130,6 @@
 <translation id="3329904751041170572">اتصال به سرور امکان‌پذیر نیست.</translation>
 <translation id="3335947283844343239">باز کردن مجدد برگه بسته شده</translation>
 <translation id="3393920035788932672">پنجره‌های بازشو مجاز است</translation>
-<translation id="3414292259312108062">‏Chrome این گذرواژه را در <ph name="BEGIN_LINK" />گذرواژه‌های ذخیره‌شده Google<ph name="END_LINK" /> شما ذخیره می‌کند و به صورت خودکار آن را برایتان وارد می‌کند، بنابراین نیازی نیست آن را به خاطر بسپارید.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> دقیقه</translation>
 <translation id="3448016392200048164">نمای تقسیم</translation>
 <translation id="3474624961160222204">ادامه به‌عنوان <ph name="NAME" /></translation>
@@ -153,7 +152,6 @@
 <translation id="3779810277399252432">اتصال اینترنتی ندارید</translation>
 <translation id="3783017676699494206">ذخیره تصویر</translation>
 <translation id="385051799172605136">بازگشت</translation>
-<translation id="3857761338463387655">ایجاد رایانامه با:</translation>
 <translation id="3897092660631435901">منو</translation>
 <translation id="3928666092801078803">ادغام کردن داده‌های من</translation>
 <translation id="3950820424414687140">ورود به سیستم</translation>
@@ -205,6 +203,7 @@
 <translation id="5005498671520578047">کپی گذرواژه</translation>
 <translation id="5010803260590204777">برای مرور وب به صورت خصوصی برگه ناشناس باز کنید.</translation>
 <translation id="5011684439661633295">سلام، <ph name="FULL_ACCOUNT_NAME" /></translation>
+<translation id="5039804452771397117">اجازه دادن</translation>
 <translation id="5062321486222145940">‏نصب Google Drive</translation>
 <translation id="5083464117946352670">تعیین اندازه فایل ممکن نیست.</translation>
 <translation id="5094827893301452931">‏Tweet انجام شد.</translation>
@@ -263,7 +262,6 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="6122191549521593678">آنلاین</translation>
 <translation id="6127379762771434464">مورد برداشته شد</translation>
 <translation id="6136914049981179737">ثانیه‌هایی قبل</translation>
-<translation id="6149061208933997199">استفاده از گذرواژه</translation>
 <translation id="6158823227857319455">برگه جدید</translation>
 <translation id="616831107264507309">خواندن در فرصتی دیگر</translation>
 <translation id="6184086493125982861">نمایش برگه‌ها</translation>
@@ -273,7 +271,6 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="6254066287920239840">پیوندها به‌جای مرورگر در برنامه باز شوند.</translation>
 <translation id="6255097610484507482">ویرایش کارت اعتباری</translation>
 <translation id="6308436439357671616">این کار به شما اجازه می‌دهد عکس بگیرید و آن‌ها را بارگذاری کنید.</translation>
-<translation id="6314335155547195432">تولید گذرواژه</translation>
 <translation id="6324528485781869530">تغییر وضعیت حساب همگام‌سازی</translation>
 <translation id="6324669097367352121">تنظیمات ورود به سیستم</translation>
 <translation id="6337234675334993532">رمزگذاری</translation>
@@ -291,7 +288,6 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="6418346271604475326">‏آماده‌سازی PDF</translation>
 <translation id="6445051938772793705">کشور</translation>
 <translation id="6445981559479772097">پیام ارسال شد.</translation>
-<translation id="6456425917241817154">‏گذرواژه ایجادشده توسط Chrome</translation>
 <translation id="6464071786529933911">در برگه ناشناس جدید</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> مورد حذف شد</translation>
 <translation id="6541915733953096570">ساعت گذشته</translation>
@@ -314,6 +310,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="7004499039102548441">برگه‌های جدید</translation>
 <translation id="7006788746334555276">تنظیمات محتوا</translation>
 <translation id="7031882061095297553">همگام‌سازی در</translation>
+<translation id="7053983685419859001">مسدود کردن</translation>
 <translation id="7062545763355031412">پذیرش و تغییر حساب‌ها</translation>
 <translation id="7108338896283013870">عدم نمایش</translation>
 <translation id="7133798577887235672">نام کامل</translation>
@@ -346,7 +343,6 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="7649070708921625228">راهنما</translation>
 <translation id="7658239707568436148">لغو</translation>
 <translation id="7671141431838911305">نصب</translation>
-<translation id="7677825787905683892">انتخاب برنامه رایانامه پیش‌فرض</translation>
 <translation id="7765158879357617694">انتقال</translation>
 <translation id="7769602470925380267">پذیرش و خروج از سیستم</translation>
 <translation id="7772032839648071052">تأیید عبارت عبور</translation>
@@ -410,7 +406,6 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="9083392325882095631">۱ مورد</translation>
 <translation id="9100610230175265781">عبارت عبور لازم است</translation>
 <translation id="9148126808321036104">ورود مجدد به سیستم</translation>
-<translation id="914898748153555155">‏هر وقت خواستید می‌توانید این تنظیم برگزیده را در تنظیمات Chrome تغییر دهید.</translation>
 <translation id="91549621916703028">چند برگه برای همه کارهایتان ایجاد کنید</translation>
 <translation id="9157836665414082580">توقف نمایش کادرهای گفتگو</translation>
 <translation id="9188680907066685419">خروج از حساب مدیریت‌شده</translation>

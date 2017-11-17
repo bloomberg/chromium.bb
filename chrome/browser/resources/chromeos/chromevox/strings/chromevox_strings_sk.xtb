@@ -170,7 +170,7 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="2770781857296573485">Vstúpiť do režimu preskúmavania skupín</translation>
 <translation id="2777845298774924149">Ukončené</translation>
 <translation id="2781264313200109999">Začiatok odkazu</translation>
-<translation id="2784959586797362050">Ako zvyčajne, spätnú väzbu nám môžete odoslať priamo tak, že stlačíte kombináciu klávesov Hľadať+a a potom kláves i. Tešíme sa na váš názor.</translation>
+<translation id="2784959586797362050">Spätnú väzbu nám môžete ako zvyčajne odoslať priamo tak, že stlačíte kombináciu klávesov Hľadať + A a potom kláves I. Tešíme sa na váš názor.</translation>
 <translation id="2800204403141299078">Žiadne ďalšie odlišné prvky</translation>
 <translation id="2800780099804980316">Žiadny predchádzajúci nadpis 1. úrovne</translation>
 <translation id="280499067616661124">Vyhľadávanie ChromeVox na stránke</translation>
@@ -411,7 +411,7 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="4601367666219428522">tabl. <ph name="TABLENAME" /> <ph name="TABLEROWS" /> x <ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">Ďalšie stlačenie klávesa bude ignorované</translation>
 <translation id="461613135510474570">Veta</translation>
-<translation id="463135993322337640">Ak chcete získať ďalšie informácie o novinkách, stlačte tlačidlá ChromeVox + o + n</translation>
+<translation id="463135993322337640">Ak chcete získať ďalšie informácie o novinkách, stlačte tlačidlá ChromeVox + O + N</translation>
 <translation id="4647836961514597010">Výber farieb</translation>
 <translation id="4660783501463101648">Klasická verzia bola odstránená. Prepínač na klávesnici umožňujúci prepnúť späť na verziu ChromeVox Classic bol odstránený.</translation>
 <translation id="4661075872484491155">strom</translation>
@@ -433,7 +433,7 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="4827410568042294688">nevybrané</translation>
 <translation id="4842108708071771135">Žiadny ďalší prvok blockquote</translation>
 <translation id="4844625982113518938">Po stlačení ľubovoľného klávesu sa dozviete jeho názov. Kombináciou klávesov Ctrl+W režim učenia ukončíte.</translation>
-<translation id="4846428657345567687">Vitajte v sprievodcovi čítačkou ChromeVox!</translation>
+<translation id="4846428657345567687">Vitajte v čítačke ChromeVox!</translation>
 <translation id="4846487886195635104">Koniec prečiarknutia</translation>
 <translation id="4848993367330139335">časovač</translation>
 <translation id="4850023505158945298">Predchádzajúci podobný prvok</translation>

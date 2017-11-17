@@ -237,7 +237,7 @@ Se você não quer mais ver o tutorial, use o ChromeVox para navegar até o bot�
 <translation id="3241638166094654466">Células em cada linha:</translation>
 <translation id="3286390186030710347">Slide</translation>
 <translation id="3299925995433437805">Não há próximo link visitado.</translation>
-<translation id="3300348286427369683">Compatibilidade com rich text: o ChromeVox agora é compatível com campos rich text, incluindo comandos jump, roteamento de cursor braille, seleção e muito mais.</translation>
+<translation id="3300348286427369683">Compatibilidade com rich text. O ChromeVox agora é compatível com campos rich text, incluindo comandos jump, roteamento de cursor braille, seleção e muito mais.</translation>
 <translation id="3307886118343381874">Ir para o fim da tabela</translation>
 <translation id="3311969765485641742">Pressione Alt+Shift+A para analisar os alertas</translation>
 <translation id="3312997241656799641">Próximo link visitado</translation>
@@ -412,7 +412,7 @@ Se você não quer mais ver o tutorial, use o ChromeVox para navegar até o bot�
 <translation id="4601367666219428522">tab <ph name="TABLENAME" />: <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">Ignorando o uso da tecla "Próximo"</translation>
 <translation id="461613135510474570">Sentença</translation>
-<translation id="463135993322337640">Pressione ChromeVox o, n para conhecer as novidades</translation>
+<translation id="463135993322337640">Pressione "ChromeVox" "o", "n" para conhecer as novidades</translation>
 <translation id="4647836961514597010">Seletor de cores</translation>
 <translation id="4660783501463101648">ChromeVox Classic removido. O botão do teclado para voltar para o ChromeVox Classic foi removido.</translation>
 <translation id="4661075872484491155">tree</translation>
@@ -472,7 +472,7 @@ Se você não quer mais ver o tutorial, use o ChromeVox para navegar até o bot�
 <translation id="5098541983634824365">Saindo da grade.</translation>
 <translation id="5102981729317424850">Barra de ferramentas</translation>
 <translation id="5105050547967751155">rq</translation>
-<translation id="5106547198195128110">Trouxemos algumas mudanças empolgantes nesta nova versão. Veja as novidades:</translation>
+<translation id="5106547198195128110">Trouxemos algumas mudanças incríveis nesta nova versão. Veja as novidades:</translation>
 <translation id="5110983769041734144">Nenhum campo de formulário anterior.</translation>
 <translation id="5111640677200759579">Cabeçalho da coluna</translation>
 <translation id="5136967254288895616">Não há link anterior.</translation>
@@ -589,7 +589,7 @@ Para abrir o menu do navegador Chrome, pressione Alt+F.</translation>
 <translation id="6065293622157674001">Início do erro de gramática</translation>
 <translation id="6082768461603900813">Navegação básica</translation>
 <translation id="6092707270915298410">Fim do link</translation>
-<translation id="6118126368611144850">Apps Android para Chrome. Se a Play Store estiver instalada no seu dispositivo, dê uma olhada no ChromeVox com apps do Android. Teste o suporte experimental fazendo o download do Google Chrome Canary na Play Store.</translation>
+<translation id="6118126368611144850">Apps para Android no Chrome. Se a Play Store estiver instalada no seu dispositivo, dê uma olhada no ChromeVox com aplicativos para Android. Teste o suporte experimental fazendo o download do Google Chrome Canary na Play Store.</translation>
 <translation id="611827076493383239">vtd</translation>
 <translation id="6119955456199054975">Final da célula.</translation>
 <translation id="6122013438240733403">btn</translation>

@@ -129,7 +129,6 @@
 <translation id="3329904751041170572">సర్వర్‌కు కనెక్ట్ చేయడం సాధ్యపడలేదు.</translation>
 <translation id="3335947283844343239">మూసిన ట్యాబ్‌ను మళ్ళీ తెరువు</translation>
 <translation id="3393920035788932672">పాప్-అప్‌లు అనుమతించబడ్డాయి</translation>
-<translation id="3414292259312108062">Chrome దీన్ని మీ <ph name="BEGIN_LINK" />Google సేవ్ చేసిన పాస్‌వర్డ్‌లు<ph name="END_LINK" />లో నిల్వ చేస్తుంది మరియు మీ కోసం దీన్ని స్వీయపూర్తి చేస్తుంది, కావున మీ అంతట మీరే దీన్ని గుర్తుంచుకోవాల్సిన అవసరం లేదు.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> నిమి</translation>
 <translation id="3448016392200048164">విభజన వీక్షణ</translation>
 <translation id="3474624961160222204"><ph name="NAME" /> వలె కొనసాగించు</translation>
@@ -152,7 +151,6 @@
 <translation id="3779810277399252432">ఇంటర్నెట్ కనెక్షన్ లేదు.</translation>
 <translation id="3783017676699494206">చిత్రాన్ని సేవ్ చేయి</translation>
 <translation id="385051799172605136">వెనుకకు</translation>
-<translation id="3857761338463387655">దీనితో ఇమెయిల్‌ని సృష్టించండి:</translation>
 <translation id="3897092660631435901">మెను</translation>
 <translation id="3928666092801078803">నా డేటాను కలపండి</translation>
 <translation id="3950820424414687140">సైన్ ఇన్</translation>
@@ -204,6 +202,7 @@
 <translation id="5005498671520578047">పాస్‌వర్డ్ కాపీచేయడం</translation>
 <translation id="5010803260590204777">వెబ్‌ను ప్రైవేట్‌గా బ్రౌజ్ చేయడానికి అజ్ఞాత ట్యాబ్‌ను తెరవండి.</translation>
 <translation id="5011684439661633295">హాయ్, <ph name="FULL_ACCOUNT_NAME" /></translation>
+<translation id="5039804452771397117">అనుమతించు</translation>
 <translation id="5062321486222145940">Google డిస్క్ ఇన్‌. చేయి</translation>
 <translation id="5083464117946352670">ఫైల్ పరిమాణం గుర్తించలేకపో..</translation>
 <translation id="5094827893301452931">ట్వీట్ చేయడం పూర్తయింది.</translation>
@@ -262,7 +261,6 @@
 <translation id="6122191549521593678">ఆన్‌లైన్</translation>
 <translation id="6127379762771434464">అంశాన్ని తీసివేసారు</translation>
 <translation id="6136914049981179737">సెకన్ల క్రితం</translation>
-<translation id="6149061208933997199">పాస్‌వర్డ్‌ను ఉపయోగించు</translation>
 <translation id="6158823227857319455">కొత్త ట్యాబ్</translation>
 <translation id="616831107264507309">తర్వాత చదవండి</translation>
 <translation id="6184086493125982861">ట్యాబ్‌లను చూపించు</translation>
@@ -272,7 +270,6 @@
 <translation id="6254066287920239840">లింక్‌లను బ్రౌజర్‌కు బదులుగా అనువర్తనంలో తెరవండి.</translation>
 <translation id="6255097610484507482">క్రెడిట్ కార్డ్‌ను సవరించు</translation>
 <translation id="6308436439357671616">దీని వలన మీరు ఫోటోలను తీసి, అప్‌లోడ్ చేయగలుగుతారు.</translation>
-<translation id="6314335155547195432">పాస్‌వర్డ్‌ను రూపొందించు</translation>
 <translation id="6324528485781869530">సమకాలీకరణ ఖాతాను మార్చండి</translation>
 <translation id="6324669097367352121">సైన్ ఇన్ సెట్టింగ్‌లు</translation>
 <translation id="6337234675334993532">గుప్తీకరణ</translation>
@@ -290,7 +287,6 @@
 <translation id="6418346271604475326">PDF సిద్ధపరు.</translation>
 <translation id="6445051938772793705">దేశం</translation>
 <translation id="6445981559479772097">సందేశం పంపబడింది.</translation>
-<translation id="6456425917241817154">Chrome రూపొందించిన పాస్‌వర్డ్</translation>
 <translation id="6464071786529933911">కొత్త అజ్ఞాత ట్యాబ్‌లో తెరువు</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> అంశాలు తొలగించబడ్డాయి</translation>
 <translation id="6541915733953096570">గడిచిన గంట</translation>
@@ -313,6 +309,7 @@
 <translation id="7004499039102548441">ఇటీవలి ట్యాబ్‌లు</translation>
 <translation id="7006788746334555276">కంటెంట్ సెట్టింగ్‌లు</translation>
 <translation id="7031882061095297553">వీటికి సమకాలీకరించండి</translation>
+<translation id="7053983685419859001">నిరోధించు</translation>
 <translation id="7062545763355031412">అంగీకరిస్తున్నాను, ఖాతాలను మార్చు</translation>
 <translation id="7108338896283013870">దాచిపెట్టు</translation>
 <translation id="7133798577887235672">పూర్తి పేరు</translation>
@@ -345,7 +342,6 @@
 <translation id="7649070708921625228">సహాయం</translation>
 <translation id="7658239707568436148">రద్దు చెయ్యి</translation>
 <translation id="7671141431838911305">ఇన్‌స్టాల్ చేయి</translation>
-<translation id="7677825787905683892">డిఫాల్ట్ ఇమెయిల్ యాప్‌ను ఎంచుకోండి</translation>
 <translation id="7765158879357617694">తరలించు</translation>
 <translation id="7769602470925380267">అంగీకరిస్తున్నాను, సైన్ అవుట్ చేయి</translation>
 <translation id="7772032839648071052">పాస్‌ఫ్రేజ్‌ని నిర్ధారించండి</translation>
@@ -409,7 +405,6 @@
 <translation id="9083392325882095631">1 అంశం</translation>
 <translation id="9100610230175265781">రహస్య పదబంధం అవసరం</translation>
 <translation id="9148126808321036104">మళ్ళీ సైన్ ఇన్ చెయ్యండి</translation>
-<translation id="914898748153555155">మీరు ఈ ప్రాధాన్యతను ఎప్పుడైనా Chrome సెట్టింగ్‌లలో మార్చవచ్చు</translation>
 <translation id="91549621916703028">మీ అన్ని విధుల కోసం పలు ట్యాబ్‌లను సృష్టించండి</translation>
 <translation id="9157836665414082580">డైలాగ్‌లను కుదించు</translation>
 <translation id="9188680907066685419">నిర్వహిత ఖాతా నుండి సైన్ అవుట్ చేయండి</translation>

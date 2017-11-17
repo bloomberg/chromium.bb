@@ -129,7 +129,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="3329904751041170572">Der kunne ikke oprettes forbindelse til serveren.</translation>
 <translation id="3335947283844343239">Åbn lukket fane igen</translation>
 <translation id="3393920035788932672">Pop op-vinduer tilladt</translation>
-<translation id="3414292259312108062">Chrome gemmer denne i dine <ph name="BEGIN_LINK" />Gemte adgangskoder på Google<ph name="END_LINK" /> og autofylder den for dig, så du ikke behøver at huske den selv.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min.</translation>
 <translation id="3448016392200048164">Opdelt visning</translation>
 <translation id="3474624961160222204">Fortsæt som <ph name="NAME" /></translation>
@@ -152,7 +151,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="3779810277399252432">Ingen internetforbindelse.</translation>
 <translation id="3783017676699494206">Gem billede</translation>
 <translation id="385051799172605136">Tilbage</translation>
-<translation id="3857761338463387655">Opret mail med:</translation>
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3928666092801078803">Kombiner mine data</translation>
 <translation id="3950820424414687140">Log ind</translation>
@@ -204,6 +202,7 @@ Dine data er krypteret med din adgangssætning til synkronisering. Indtast den f
 <translation id="5005498671520578047">Kopiér adgangskode</translation>
 <translation id="5010803260590204777">Åbn en inkognitofane for at søge på nettet uden at blive registreret.</translation>
 <translation id="5011684439661633295">Hej <ph name="FULL_ACCOUNT_NAME" /></translation>
+<translation id="5039804452771397117">Tillad</translation>
 <translation id="5062321486222145940">Installer Google Drev</translation>
 <translation id="5083464117946352670">Kan ikke fastslå filstørrelse.</translation>
 <translation id="5094827893301452931">Indlæg delt på Twitter.</translation>
@@ -262,7 +261,6 @@ Handoff skal være aktiveret i afsnittet Generelt i Indstillinger, og dine enhed
 <translation id="6122191549521593678">Online</translation>
 <translation id="6127379762771434464">Elementet blev fjernet</translation>
 <translation id="6136914049981179737">Sek. siden</translation>
-<translation id="6149061208933997199">Brug adgangskoden</translation>
 <translation id="6158823227857319455">Ny fane</translation>
 <translation id="616831107264507309">Læs senere</translation>
 <translation id="6184086493125982861">Vis faner</translation>
@@ -272,7 +270,6 @@ Handoff skal være aktiveret i afsnittet Generelt i Indstillinger, og dine enhed
 <translation id="6254066287920239840">Åbn links i appen i stedet for i browseren.</translation>
 <translation id="6255097610484507482">Rediger kreditkort</translation>
 <translation id="6308436439357671616">Dette giver dig mulighed for at tage og uploade billeder.</translation>
-<translation id="6314335155547195432">Generér adgangskode</translation>
 <translation id="6324528485781869530">Skift synkroniseringskonto</translation>
 <translation id="6324669097367352121">Loginindstillinger</translation>
 <translation id="6337234675334993532">Kryptering</translation>
@@ -290,7 +287,6 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="6418346271604475326">Forbereder PDF</translation>
 <translation id="6445051938772793705">Land</translation>
 <translation id="6445981559479772097">Beskeden er sendt.</translation>
-<translation id="6456425917241817154">Adgangskode genereret af Chrome</translation>
 <translation id="6464071786529933911">Åbn i ny inkognitofane</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> bogmærker blev slettet</translation>
 <translation id="6541915733953096570">Seneste time</translation>
@@ -313,6 +309,7 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="7004499039102548441">Seneste faner</translation>
 <translation id="7006788746334555276">Indstillinger for indhold</translation>
 <translation id="7031882061095297553">Synkroniser til</translation>
+<translation id="7053983685419859001">Bloker</translation>
 <translation id="7062545763355031412">Acceptér, og skift konto</translation>
 <translation id="7108338896283013870">Skjul</translation>
 <translation id="7133798577887235672">Fulde navn</translation>
@@ -345,7 +342,6 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="7649070708921625228">Hjælp</translation>
 <translation id="7658239707568436148">Annuller</translation>
 <translation id="7671141431838911305">INSTALLER</translation>
-<translation id="7677825787905683892">Vælg standardmailapp</translation>
 <translation id="7765158879357617694">Flyt</translation>
 <translation id="7769602470925380267">Acceptér, og log ud</translation>
 <translation id="7772032839648071052">Bekræft adgangssætning</translation>
@@ -409,7 +405,6 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="9083392325882095631">1 element</translation>
 <translation id="9100610230175265781">Adgangssætning kræves</translation>
 <translation id="9148126808321036104">Log ind igen</translation>
-<translation id="914898748153555155">Du kan til enhver tid ændre denne præference i Chrome-indstillingerne</translation>
 <translation id="91549621916703028">Opret flere faner til alle dine opgaver</translation>
 <translation id="9157836665414082580">Skjul dialogbokse</translation>
 <translation id="9188680907066685419">Log ud af den administrerede konto</translation>
