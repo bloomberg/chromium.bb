@@ -1316,7 +1316,7 @@ class ValidationPool(object):
         for change in changes)
 
     sha1s = dict(
-        (change, change.GetLocalSHA1(repo, branch))
+        (change, change.GetLocalSHA1(repo, remote_ref.ref))
         for change in changes)
 
     return sha1s, errors
