@@ -112,12 +112,7 @@ void AssertNumberOfEntitiesWithName(int entity_count,
 @implementation SyncFakeServerTestCase
 
 - (void)tearDown {
-  GREYAssert(testing::WaitUntilConditionOrTimeout(
-                 testing::kWaitForUIElementTimeout,
-                 ^{
-                   return chrome_test_util::BookmarksLoaded();
-                 }),
-             @"Bookmark model did not load");
+  [ChromeEarlGrey waitForBookmarksToFinishLoading];
   chrome_test_util::ClearBookmarks();
   AssertNumberOfEntities(0, syncer::BOOKMARKS);
 
@@ -569,12 +564,7 @@ void AssertNumberOfEntitiesWithName(int entity_count,
 // TODO(crbug.com/646164): This is copied from bookmarks_egtest.mm and should
 // move to common location.
 - (void)addBookmark:(const GURL)url withTitle:(NSString*)title {
-  GREYAssert(testing::WaitUntilConditionOrTimeout(
-                 testing::kWaitForUIElementTimeout,
-                 ^{
-                   return chrome_test_util::BookmarksLoaded();
-                 }),
-             @"Bookmark model did not load");
+  [ChromeEarlGrey waitForBookmarksToFinishLoading];
   bookmarks::BookmarkModel* bookmark_model =
       ios::BookmarkModelFactory::GetForBrowserState(
           chrome_test_util::GetOriginalBrowserState());

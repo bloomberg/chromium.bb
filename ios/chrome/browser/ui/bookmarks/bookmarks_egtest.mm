@@ -140,15 +140,7 @@ id<GREYMatcher> ActionSheet(Action action) {
 
 - (void)setUp {
   [super setUp];
-  // Wait for bookmark model to be loaded.
-  GREYAssert(testing::WaitUntilConditionOrTimeout(
-                 testing::kWaitForUIElementTimeout,
-                 ^{
-                   return chrome_test_util::BookmarksLoaded();
-                 }),
-             @"Bookmark model did not load");
-  GREYAssert(chrome_test_util::ClearBookmarks(),
-             @"Not all bookmarks were removed.");
+  [ChromeEarlGrey waitForBookmarksToFinishLoading];
 }
 
 // Tear down called once per test.

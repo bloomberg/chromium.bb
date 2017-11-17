@@ -74,21 +74,6 @@ const CGFloat kScrollDisplacement = 50.0;
   }
 }
 
-// Verifies the internal state of the Bookmarks has loaded and is ready for use.
-// TODO(crbug.com/638674): Evaluate if this can move to shared code.
-- (void)verifyBookmarksLoaded {
-  BOOL (^block)
-  () = ^BOOL {
-    return chrome_test_util::BookmarksLoaded();
-  };
-  GREYCondition* bookmarksDoneLoading =
-      [GREYCondition conditionWithName:@"Waiting for bookmark model to load."
-                                 block:block];
-
-  BOOL success = [bookmarksDoneLoading waitWithTimeout:5];
-  GREYAssert(success, @"The bookmark model was not loaded.");
-}
-
 // Waits for the bookmark editor to display.
 // TODO(crbug.com/638674): Evaluate if this can move to shared code.
 - (void)waitForSingleBookmarkEditorToDisplay {
@@ -143,7 +128,7 @@ const CGFloat kScrollDisplacement = 50.0;
 // Tests that keyboard commands are not registered when the bookmark UI is
 // shown.
 - (void)testKeyboardCommandsNotRegistered_AddBookmarkPresented {
-  [self verifyBookmarksLoaded];
+  [ChromeEarlGrey waitForBookmarksToFinishLoading];
   BOOL success = chrome_test_util::ClearBookmarks();
   GREYAssert(success, @"Not all bookmarks were removed.");
 
