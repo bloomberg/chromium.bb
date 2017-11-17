@@ -96,7 +96,6 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   memset(levels_buf, 0,
          sizeof(*levels_buf) *
              ((width + TX_PAD_HOR) * (height + TX_PAD_VER) + TX_PAD_END));
-  memset(signs, 0, sizeof(*signs) * seg_eob);
 
   (void)blk_row;
   (void)blk_col;
