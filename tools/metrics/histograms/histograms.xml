@@ -68234,7 +68234,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Renderer4.ImageDecodeTaskDurationUs.OutOfRaster"
     units="microseconds">
-  <owner>vmpstr@chromium.org, khushalsagar@chromium.org</owner>
+  <owner>vmpstr@chromium.org</owner>
+  <owner>khushalsagar@chromium.org</owner>
   <summary>
     This metric records the duration of an image decode for out of raster path
     in the compositor. It is recorded every time we decode an image. It is
@@ -68746,7 +68747,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Replaced with RendererScheduler.NumberOfTasksPerQueueType2 as of May 2017.
   </obsolete>
-  <owner>altimin@chromium.org,alexclarke@chromium.org</owner>
+  <owner>altimin@chromium.org</owner>
+  <owner>alexclarke@chromium.org</owner>
   <summary>
     The number of completed renderer tasks split per task queue type. Used to
     monitor usage of each type of task queue. Reported each time when task is
@@ -68759,7 +68761,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Replaced with RendererScheduler.TaskCountPerQueueType as of July 2017.
   </obsolete>
-  <owner>altimin@chromium.org,alexclarke@chromium.org</owner>
+  <owner>altimin@chromium.org</owner>
+  <owner>alexclarke@chromium.org</owner>
   <summary>
     The number of completed renderer tasks split per task queue type. Used to
     monitor usage of each type of task queue. Reported each time when task is
@@ -68883,7 +68886,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Replaced with RendererScheduler.TaskDurationPerQueueType2 as of May 2017.
   </obsolete>
-  <owner>altimin@chromium.org,alexclarke@chromium.org</owner>
+  <owner>altimin@chromium.org</owner>
+  <owner>alexclarke@chromium.org</owner>
   <summary>
     Total duration of renderer tasks split per task queue type. Used to monitor
     usage of each type of task queues. Reported each time when task is completed
@@ -68896,7 +68900,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="RendererScheduler.TaskDurationPerQueueType2"
     enum="RendererSchedulerTaskQueueType" units="ms">
-  <owner>altimin@chromium.org,alexclarke@chromium.org</owner>
+  <owner>altimin@chromium.org</owner>
+  <owner>alexclarke@chromium.org</owner>
   <summary>
     Total duration of renderer tasks split per task queue type. Used to monitor
     usage of each type of task queues. Reported each time when task is completed
