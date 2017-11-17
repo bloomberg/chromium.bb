@@ -10,213 +10,113 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/shared_memory_handle.h"
-#include "base/memory/weak_ptr.h"
-#include "base/synchronization/waitable_event.h"
 #include "build/build_config.h"
-#include "gpu/ipc/client/gpu_channel_host.h"
-#include "ipc/ipc_listener.h"
-#include "ipc/ipc_message_macros.h"
-#include "ipc/ipc_message_utils.h"
-#include "media/gpu/ipc/common/media_messages.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 
 namespace media {
 
-// Class to receive AcceleratedJpegDecoderHostMsg_DecodeAck IPC message on IO
-// thread. This does very similar what MessageFilter usually does. It is not
-// MessageFilter because GpuChannelHost doesn't support AddFilter.
-class GpuJpegDecodeAcceleratorHost::Receiver : public IPC::Listener {
- public:
-  Receiver(Client* client,
-           const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
-      : client_(client),
-        io_task_runner_(io_task_runner),
-        weak_factory_for_io_(
-            base::MakeUnique<base::WeakPtrFactory<Receiver>>(this)),
-        weak_ptr_for_io_(weak_factory_for_io_->GetWeakPtr()) {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  }
-
-  ~Receiver() override {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    // If |io_task_runner_| no longer accepts tasks, |weak_factory_for_io_|
-    // will leak. This is acceptable, because that should only happen on
-    // Browser shutdown.
-    io_task_runner_->DeleteSoon(FROM_HERE, weak_factory_for_io_.release());
-  }
-
-  void InvalidateWeakPtrOnIOThread(base::WaitableEvent* event) {
-    DCHECK(io_task_runner_->BelongsToCurrentThread());
-    weak_factory_for_io_->InvalidateWeakPtrs();
-    event->Signal();
-  }
-
-  // IPC::Listener implementation.
-  void OnChannelError() override {
-    DCHECK(io_task_runner_->BelongsToCurrentThread());
-
-    OnDecodeAck(kInvalidBitstreamBufferId, PLATFORM_FAILURE);
-  }
-
-  bool OnMessageReceived(const IPC::Message& msg) override {
-    DCHECK(io_task_runner_->BelongsToCurrentThread());
-
-    bool handled = true;
-    IPC_BEGIN_MESSAGE_MAP(GpuJpegDecodeAcceleratorHost::Receiver, msg)
-      IPC_MESSAGE_HANDLER(AcceleratedJpegDecoderHostMsg_DecodeAck, OnDecodeAck)
-      IPC_MESSAGE_UNHANDLED(handled = false)
-    IPC_END_MESSAGE_MAP()
-    DCHECK(handled);
-    return handled;
-  }
-
-  base::WeakPtr<IPC::Listener> AsWeakPtrForIO() { return weak_ptr_for_io_; }
-
- private:
-  void OnDecodeAck(int32_t bitstream_buffer_id, Error error) {
-    DCHECK(io_task_runner_->BelongsToCurrentThread());
-
-    if (!client_)
-      return;
-
-    if (error == JpegDecodeAccelerator::NO_ERRORS) {
-      client_->VideoFrameReady(bitstream_buffer_id);
-    } else {
-      // Only NotifyError once.
-      // Client::NotifyError() may trigger deletion of |this| (on another
-      // thread), so calling it needs to be the last thing done on this stack!
-      Client* client = nullptr;
-      std::swap(client, client_);
-      client->NotifyError(bitstream_buffer_id, error);
-    }
-  }
-
-  Client* client_;
-
-  // GPU IO task runner.
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
-
-  SEQUENCE_CHECKER(sequence_checker_);
-
-  // Weak pointers will be invalidated on IO thread.
-  std::unique_ptr<base::WeakPtrFactory<Receiver>> weak_factory_for_io_;
-  base::WeakPtr<Receiver> weak_ptr_for_io_;
-
-  DISALLOW_COPY_AND_ASSIGN(Receiver);
-};
-
 GpuJpegDecodeAcceleratorHost::GpuJpegDecodeAcceleratorHost(
-    scoped_refptr<gpu::GpuChannelHost> channel,
-    int32_t route_id,
-    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
-    : channel_(std::move(channel)),
-      decoder_route_id_(route_id),
-      io_task_runner_(io_task_runner) {
-  DCHECK(channel_);
-  DCHECK_NE(decoder_route_id_, MSG_ROUTING_NONE);
-}
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+    mojom::GpuJpegDecodeAcceleratorPtrInfo jpeg_decoder)
+    : io_task_runner_(std::move(io_task_runner)),
+      jpeg_decoder_info_(std::move(jpeg_decoder)) {}
 
 GpuJpegDecodeAcceleratorHost::~GpuJpegDecodeAcceleratorHost() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  Send(new AcceleratedJpegDecoderMsg_Destroy(decoder_route_id_));
-
-  if (receiver_) {
-    channel_->RemoveRoute(decoder_route_id_);
-
-    // Invalidate weak ptr of |receiver_|. After that, no more messages will be
-    // routed to |receiver_| on IO thread.
-    base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
-                              base::WaitableEvent::InitialState::NOT_SIGNALED);
-    // Use of Unretained() is safe, because if the task executes, we block
-    // until it is finished by waiting on |event| below.
-    bool task_expected_to_run = io_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&Receiver::InvalidateWeakPtrOnIOThread,
-                              base::Unretained(receiver_.get()),
-                              base::Unretained(&event)));
-    // If the current call is happening during the browser shutdown, the
-    // |io_task_runner_| may no longer be accepting tasks.
-    if (task_expected_to_run)
-      event.Wait();
-  }
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
 }
 
-bool GpuJpegDecodeAcceleratorHost::Initialize(Client* client) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  bool succeeded = false;
-  // This cannot be on IO thread because the msg is synchronous.
-  Send(new GpuChannelMsg_CreateJpegDecoder(decoder_route_id_, &succeeded));
-
-  if (!succeeded) {
-    DLOG(ERROR) << "Send(GpuChannelMsg_CreateJpegDecoder()) failed";
-    return false;
-  }
-
-  receiver_.reset(new Receiver(client, io_task_runner_));
-
-  return true;
+bool GpuJpegDecodeAcceleratorHost::Initialize(
+    JpegDecodeAccelerator::Client* /*client*/) {
+  NOTIMPLEMENTED();
+  return false;
 }
 
 void GpuJpegDecodeAcceleratorHost::InitializeAsync(Client* client,
                                                    InitCB init_cb) {
-  // TODO(c.padhi): see https://crbug.com/699255.
-  NOTIMPLEMENTED();
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+
+  jpeg_decoder_.Bind(std::move(jpeg_decoder_info_));
+
+  // base::Unretained is safe because |this| owns |jpeg_decoder_|.
+  jpeg_decoder_.set_connection_error_handler(
+      base::Bind(&GpuJpegDecodeAcceleratorHost::OnLostConnectionToJpegDecoder,
+                 base::Unretained(this)));
+  jpeg_decoder_->Initialize(
+      base::Bind(&GpuJpegDecodeAcceleratorHost::OnInitializeDone,
+                 base::Unretained(this), std::move(init_cb), client));
 }
 
 void GpuJpegDecodeAcceleratorHost::Decode(
     const BitstreamBuffer& bitstream_buffer,
     const scoped_refptr<VideoFrame>& video_frame) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  DCHECK(jpeg_decoder_.is_bound());
 
   DCHECK(
       base::SharedMemory::IsHandleValid(video_frame->shared_memory_handle()));
 
-  AcceleratedJpegDecoderMsg_Decode_Params decode_params;
-  decode_params.input_buffer = bitstream_buffer;
-  base::SharedMemoryHandle input_handle =
-      channel_->ShareToGpuProcess(bitstream_buffer.handle());
-  if (!base::SharedMemory::IsHandleValid(input_handle)) {
-    DLOG(ERROR) << "Failed to duplicate handle of BitstreamBuffer";
-    return;
-  }
-  decode_params.input_buffer.set_handle(input_handle);
   base::SharedMemoryHandle output_handle =
-      channel_->ShareToGpuProcess(video_frame->shared_memory_handle());
+      base::SharedMemory::DuplicateHandle(video_frame->shared_memory_handle());
   if (!base::SharedMemory::IsHandleValid(output_handle)) {
     DLOG(ERROR) << "Failed to duplicate handle of VideoFrame";
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-    if (input_handle.OwnershipPassesToIPC()) {
-      input_handle.Close();
-    }
-#else
-// TODO(kcwu) fix the handle leak after crbug.com/493414 resolved.
-#endif
     return;
   }
 
   size_t output_buffer_size = VideoFrame::AllocationSize(
       video_frame->format(), video_frame->coded_size());
+  mojo::ScopedSharedBufferHandle output_frame_handle =
+      mojo::WrapSharedMemoryHandle(output_handle, output_buffer_size,
+                                   false /* read_only */);
 
-  decode_params.coded_size = video_frame->coded_size();
-  decode_params.output_video_frame_handle = output_handle;
-  decode_params.output_buffer_size =
-      base::checked_cast<uint32_t>(output_buffer_size);
-  Send(new AcceleratedJpegDecoderMsg_Decode(decoder_route_id_, decode_params));
+  // base::Unretained is safe because |this| owns |jpeg_decoder_|.
+  jpeg_decoder_->Decode(bitstream_buffer, video_frame->coded_size(),
+                        std::move(output_frame_handle),
+                        base::checked_cast<uint32_t>(output_buffer_size),
+                        base::Bind(&GpuJpegDecodeAcceleratorHost::OnDecodeAck,
+                                   base::Unretained(this)));
 }
 
 bool GpuJpegDecodeAcceleratorHost::IsSupported() {
-  return channel_->gpu_info().jpeg_decode_accelerator_supported;
+  return true;
 }
 
-void GpuJpegDecodeAcceleratorHost::Send(IPC::Message* message) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+void GpuJpegDecodeAcceleratorHost::OnInitializeDone(
+    InitCB init_cb,
+    JpegDecodeAccelerator::Client* client,
+    bool success) {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
 
-  if (!channel_->Send(message)) {
-    DLOG(ERROR) << "Send(" << message->type() << ") failed";
+  if (success)
+    client_ = client;
+
+  std::move(init_cb).Run(success);
+}
+
+void GpuJpegDecodeAcceleratorHost::OnDecodeAck(
+    int32_t bitstream_buffer_id,
+    JpegDecodeAccelerator::Error error) {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+
+  if (!client_)
+    return;
+
+  if (error == JpegDecodeAccelerator::Error::NO_ERRORS) {
+    client_->VideoFrameReady(bitstream_buffer_id);
+    return;
   }
+
+  // Only NotifyError once.
+  // Client::NotifyError() may trigger deletion of |this|, so calling it needs
+  // to be the last thing done on this stack!
+  Client* client = nullptr;
+  std::swap(client, client_);
+  client->NotifyError(bitstream_buffer_id, error);
 }
 
-base::WeakPtr<IPC::Listener> GpuJpegDecodeAcceleratorHost::GetReceiver() {
-  return receiver_->AsWeakPtrForIO();
+void GpuJpegDecodeAcceleratorHost::OnLostConnectionToJpegDecoder() {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  OnDecodeAck(kInvalidBitstreamBufferId,
+              JpegDecodeAccelerator::Error::PLATFORM_FAILURE);
 }
 
 }  // namespace media

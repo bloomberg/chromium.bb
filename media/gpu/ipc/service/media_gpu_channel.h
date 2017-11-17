@@ -11,7 +11,6 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "media/base/android_overlay_mojo_factory.h"
-#include "media/gpu/ipc/service/gpu_jpeg_decode_accelerator.h"
 #include "media/video/video_decode_accelerator.h"
 
 namespace media {
@@ -44,7 +43,6 @@ class MediaGpuChannel : public IPC::Listener, public IPC::Sender {
   bool OnMessageReceived(const IPC::Message& message) override;
 
   // Message handlers.
-  void OnCreateJpegDecoder(int32_t route_id, IPC::Message* reply_msg);
   void OnCreateVideoDecoder(int32_t command_buffer_route_id,
                             const VideoDecodeAccelerator::Config& config,
                             int32_t route_id,
@@ -55,7 +53,6 @@ class MediaGpuChannel : public IPC::Listener, public IPC::Sender {
 
   gpu::GpuChannel* const channel_;
   scoped_refptr<MediaGpuChannelFilter> filter_;
-  std::unique_ptr<GpuJpegDecodeAccelerator> jpeg_decoder_;
   AndroidOverlayMojoFactoryCB overlay_factory_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaGpuChannel);
