@@ -219,7 +219,6 @@ constexpr base::TimeDelta TabManager::kDefaultMinTimeToPurge;
 
 TabManager::TabManager()
     : discard_count_(0),
-      discard_once_(false),
 #if !defined(OS_CHROMEOS)
       minimum_protection_time_(base::TimeDelta::FromMinutes(10)),
 #endif
@@ -256,9 +255,6 @@ void TabManager::Start() {
   if (!base::FeatureList::IsEnabled(features::kAutomaticTabDiscarding))
     return;
 #endif
-
-  // Check if only one discard is allowed.
-  discard_once_ = CanOnlyDiscardOnce();
 
   if (!update_timer_.IsRunning()) {
     update_timer_.Start(FROM_HERE,
@@ -392,9 +388,11 @@ bool TabManager::CanDiscardTab(const TabStats& tab_stats) const {
   if (web_contents->GetContentsMimeType() == "application/pdf")
     return false;
 
-  // Do not discard a previously discarded tab if that's the desired behavior.
-  if (discard_once_ && GetWebContentsData(web_contents)->DiscardCount() > 0)
+// Do not discard a previously discarded tab on non-ChromeOS platforms.
+#if !defined(OS_CHROMEOS)
+  if (GetWebContentsData(web_contents)->DiscardCount() > 0)
     return false;
+#endif  // !defined(OS_CHROMEOS)
 
   // Do not discard a recently used tab.
   if (minimum_protection_time_.InSeconds() > 0) {
@@ -1048,23 +1046,6 @@ content::WebContents* TabManager::DiscardTabImpl(DiscardCondition condition) {
     }
   }
   return nullptr;
-}
-
-// Check the variation parameter to see if a tab can be discarded only once or
-// multiple times.
-// Default is to only discard once per tab.
-bool TabManager::CanOnlyDiscardOnce() const {
-#if defined(OS_WIN) || defined(OS_MACOSX)
-  // On Windows and MacOS, default to discarding only once unless otherwise
-  // specified by the variation parameter.
-  // TODO(georgesak): Add Linux when automatic discarding is enabled for that
-  // platform.
-  std::string allow_multiple_discards = variations::GetVariationParamValue(
-      features::kAutomaticTabDiscarding.name, "AllowMultipleDiscards");
-  return (allow_multiple_discards != "true");
-#else
-  return false;
-#endif
 }
 
 bool TabManager::IsActiveWebContentsInActiveBrowser(

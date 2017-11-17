@@ -402,9 +402,6 @@ class TabManager : public TabStripModelObserver,
   // Otherwise returns the new web_contents of the discarded tab.
   content::WebContents* DiscardTabImpl(DiscardCondition condition);
 
-  // Returns true if tabs can be discarded only once.
-  bool CanOnlyDiscardOnce() const;
-
   // Returns true if |web_contents| is the active WebContents in the last active
   // Browser.
   bool IsActiveWebContentsInActiveBrowser(content::WebContents* contents) const;
@@ -492,9 +489,6 @@ class TabManager : public TabStripModelObserver,
 
   // Number of times a tab has been discarded, for statistics.
   int discard_count_;
-
-  // Whether a tab can only ever discarded once.
-  bool discard_once_;
 
   // This allows protecting tabs for a certain amount of time after being
   // backgrounded.
