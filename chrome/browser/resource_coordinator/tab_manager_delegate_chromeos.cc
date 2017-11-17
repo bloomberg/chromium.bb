@@ -423,8 +423,7 @@ void TabManagerDelegate::ScheduleEarlyOomPrioritiesAdjustment() {
 
 // If able to get the list of ARC procsses, prioritize tabs and apps as a whole.
 // Otherwise try to kill tabs only.
-void TabManagerDelegate::LowMemoryKill(
-    TabManager::DiscardTabCondition condition) {
+void TabManagerDelegate::LowMemoryKill(DiscardCondition condition) {
   LoadTabListAndArcProcesses(
       tab_manager_, base::BindOnce(&TabManagerDelegate::LowMemoryKillImpl,
                                    weak_ptr_factory_.GetWeakPtr(), condition));
@@ -609,7 +608,7 @@ bool TabManagerDelegate::KillArcProcess(const int nspid) {
 }
 
 bool TabManagerDelegate::KillTab(const TabStats& tab_stats,
-                                 TabManager::DiscardTabCondition condition) {
+                                 DiscardCondition condition) {
   // Check |tab_manager_| is alive before taking tabs into consideration.
   return tab_manager_ && tab_manager_->CanDiscardTab(tab_stats) &&
          tab_manager_->DiscardTabById(tab_stats.tab_contents_id, condition);
@@ -620,7 +619,7 @@ chromeos::DebugDaemonClient* TabManagerDelegate::GetDebugDaemonClient() {
 }
 
 void TabManagerDelegate::LowMemoryKillImpl(
-    TabManager::DiscardTabCondition condition,
+    DiscardCondition condition,
     const TabStatsList& tab_list,
     const std::vector<arc::ArcProcess>& arc_processes) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
