@@ -28232,6 +28232,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="HttpCache.CantConditionalizeZeroFreshnessFromMemHint"
+    enum="Boolean">
+  <owner>morlovich@chromium.org</owner>
+  <summary>
+    For each request with HttpCache.CantConditionalizeCause == Zero Freshness,
+    this is true iff the zero freshness status was determined by looking at
+    in-memory hints in disk cache index, rather than by opening the entry and
+    looking at headers.
+  </summary>
+</histogram>
+
 <histogram name="HttpCache.EntryLockWait" units="ms">
   <owner>jkarlin@chromium.org</owner>
   <owner>gavinp@chromium.org</owner>

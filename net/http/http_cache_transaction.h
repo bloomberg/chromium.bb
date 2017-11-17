@@ -293,6 +293,13 @@ class NET_EXPORT_PRIVATE HttpCache::Transaction : public HttpTransaction {
     VALIDATION_CAUSE_MAX
   };
 
+  enum MemoryEntryDataHints {
+    // If this hint is set, the caching headers indicate we can't do anything
+    // with this entry (unless we are ignoring them thanks to a loadflag),
+    // i.e. it's expired and has nothing that permits validations.
+    HINT_UNUSABLE_PER_CACHING_HEADERS = (1 << 0),
+  };
+
   // Runs the state transition loop. Resets and calls |callback_| on exit,
   // unless the return value is ERR_IO_PENDING.
   int DoLoop(int result);
@@ -399,6 +406,24 @@ class NET_EXPORT_PRIVATE HttpCache::Transaction : public HttpTransaction {
   // Called to make the request conditional (to ask the server if the cached
   // copy is valid).  Returns true if able to make the request conditional.
   bool ConditionalizeRequest();
+
+  // Determines if saved response permits conditionalization, and extracts
+  // etag/last-modified values. Only depends on |response_.headers|.
+  // |*etag_value| and |*last_modified_value| will be set if true is returned,
+  // but may also be modified in other cases.
+  bool IsResponseConditionalizable(std::string* etag_value,
+                                   std::string* last_modified_value) const;
+
+  // Returns true if the resource info MemoryEntryDataHints bit flags in
+  // |in_memory_info| and the current request & load flags suggest that
+  // the cache entry in question is not actually usable for HTTP
+  // (i.e. already expired, and nothing is forcing us to disregard that).
+  bool MaybeRejectBasedOnEntryInMemoryData(uint8_t in_memory_info);
+
+  // Returns true if response_ is such that, if saved to cache, it would only
+  // be usable if load flags asked us to ignore caching headers.
+  // (return value of false makes no statement as to suitability of the entry).
+  bool ComputeUnusablePerCachingHeaders();
 
   // Makes sure that a 206 response is expected.  Returns true on success.
   // On success, handling_206_ will be set to true if we are processing a
@@ -597,6 +622,7 @@ class NET_EXPORT_PRIVATE HttpCache::Transaction : public HttpTransaction {
   base::Time open_entry_last_used_;
   base::TimeDelta stale_entry_freshness_;
   base::TimeDelta stale_entry_age_;
+  bool cant_conditionalize_zero_freshness_from_memhint_;
   bool recorded_histograms_;
 
   NetworkTransactionInfo network_transaction_info_;

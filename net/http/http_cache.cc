@@ -746,11 +746,7 @@ void HttpCache::DeletePendingOp(PendingOp* pending_op) {
 
 int HttpCache::OpenEntry(const std::string& key, ActiveEntry** entry,
                          Transaction* trans) {
-  ActiveEntry* active_entry = FindActiveEntry(key);
-  if (active_entry) {
-    *entry = active_entry;
-    return OK;
-  }
+  DCHECK(!FindActiveEntry(key));
 
   std::unique_ptr<WorkItem> item =
       std::make_unique<WorkItem>(WI_OPEN_ENTRY, trans, entry);
