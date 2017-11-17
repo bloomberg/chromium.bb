@@ -141,16 +141,18 @@ void BackgroundProfilingTriggers::OnReceivedMemoryDump(
     return;
   }
 
-  bool report_was_sent = false;
+  bool should_send_report = false;
   for (const auto& proc : dump->process_dumps) {
     if (IsOverTriggerThreshold(GetContentProcessType(proc->process_type),
                                proc->os_dump->private_footprint_kb)) {
-      TriggerMemoryReportForProcess(proc->pid);
-      report_was_sent = true;
+      should_send_report = true;
+      break;
     }
   }
 
-  if (report_was_sent) {
+  if (should_send_report) {
+    TriggerMemoryReport();
+
     // If a report was sent, throttle the memory data collection rate to
     // kThrottledReportRepeatingCheckMemoryDelayInHours to avoid sending too
     // many reports from a known problematic client.
@@ -163,10 +165,9 @@ void BackgroundProfilingTriggers::OnReceivedMemoryDump(
   }
 }
 
-void BackgroundProfilingTriggers::TriggerMemoryReportForProcess(
-    base::ProcessId pid) {
+void BackgroundProfilingTriggers::TriggerMemoryReport() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  host_->RequestProcessReport(pid, "MEMLOG_BACKGROUND_TRIGGER");
+  host_->RequestProcessReport("MEMLOG_BACKGROUND_TRIGGER");
 }
 
 }  // namespace profiling
