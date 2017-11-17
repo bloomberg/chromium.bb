@@ -4,6 +4,8 @@
 
 #include "ash/voice_interaction/voice_interaction_controller.h"
 
+#include <utility>
+
 namespace ash {
 
 VoiceInteractionController::VoiceInteractionController() : binding_(this) {}
@@ -47,6 +49,13 @@ void VoiceInteractionController::NotifySetupCompleted(bool completed) {
   setup_completed_ = completed;
   for (auto& observer : observers_)
     observer.OnVoiceInteractionSetupCompleted(completed);
+}
+
+void VoiceInteractionController::NotifyFeatureAllowed(
+    mojom::AssistantAllowedState state) {
+  allowed_state_ = state;
+  for (auto& observer : observers_)
+    observer.OnAssistantFeatureAllowedChanged(state);
 }
 
 }  // namespace ash

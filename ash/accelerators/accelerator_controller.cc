@@ -4,6 +4,7 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 
+#include <string>
 #include <utility>
 
 #include "ash/accelerators/accelerator_commands.h"
@@ -42,6 +43,7 @@
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/web_notification/web_notification_tray.h"
 #include "ash/utility/screenshot_controller.h"
+#include "ash/voice_interaction/voice_interaction_controller.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/screen_pinning_controller.h"
@@ -92,6 +94,7 @@ using message_center::SystemNotificationWarningLevel;
 // Toast id and duration for voice interaction shortcuts
 const char kSecondaryUserToastId[] = "voice_interaction_secondary_user";
 const char kUnsupportedLocaleToastId[] = "voice_interaction_locale_unsupported";
+const char kPolicyDisabledToastId[] = "voice_interaction_policy_disabled";
 const int kToastDurationMs = 2500;
 
 // The notification delegate that will be used to open the keyboard shortcut
@@ -172,6 +175,11 @@ void ShowDeprecatedAcceleratorNotification(const char* const notification_id,
   notification->set_clickable(true);
   message_center::MessageCenter::Get()->AddNotification(
       std::move(notification));
+}
+
+void ShowToast(std::string id, const base::string16& text) {
+  ToastData toast(id, text, kToastDurationMs, base::nullopt);
+  Shell::Get()->toast_manager()->Show(toast);
 }
 
 ui::Accelerator CreateAccelerator(ui::KeyboardCode keycode,
@@ -675,27 +683,36 @@ void HandleToggleVoiceInteraction(const ui::Accelerator& accelerator) {
         base::UserMetricsAction("VoiceInteraction.Started.Assistant"));
   }
 
-  // Show a toast if the active user is not primary.
-  if (Shell::Get()->session_controller()->GetPrimaryUserSession() !=
-      Shell::Get()->session_controller()->GetUserSession(0)) {
-    ash::ToastData toast(
-        kSecondaryUserToastId,
-        l10n_util::GetStringUTF16(
-            IDS_ASH_VOICE_INTERACTION_SECONDARY_USER_TOAST_MESSAGE),
-        kToastDurationMs, base::Optional<base::string16>());
-    ash::Shell::Get()->toast_manager()->Show(toast);
-    return;
-  }
-
-  // Show a toast if voice interaction is disabled due to unsupported locales.
-  if (!chromeos::switches::IsVoiceInteractionLocalesSupported()) {
-    ash::ToastData toast(
-        kUnsupportedLocaleToastId,
-        l10n_util::GetStringUTF16(
-            IDS_ASH_VOICE_INTERACTION_LOCALE_UNSUPPORTED_TOAST_MESSAGE),
-        kToastDurationMs, base::Optional<base::string16>());
-    ash::Shell::Get()->toast_manager()->Show(toast);
-    return;
+  switch (Shell::Get()->voice_interaction_controller()->allowed_state()) {
+    case mojom::AssistantAllowedState::DISALLOWED_BY_NONPRIMARY_USER:
+      // Show a toast if the active user is not primary.
+      ShowToast(kSecondaryUserToastId,
+                l10n_util::GetStringUTF16(
+                    IDS_ASH_VOICE_INTERACTION_SECONDARY_USER_TOAST_MESSAGE));
+      return;
+    case mojom::AssistantAllowedState::DISALLOWED_BY_LOCALE:
+      // Show a toast if voice interaction is disabled due to unsupported
+      // locales.
+      ShowToast(
+          kUnsupportedLocaleToastId,
+          l10n_util::GetStringUTF16(
+              IDS_ASH_VOICE_INTERACTION_LOCALE_UNSUPPORTED_TOAST_MESSAGE));
+      return;
+    case mojom::AssistantAllowedState::DISALLOWED_BY_ARC_POLICY:
+      // Show a toast if voice interaction is disabled due to enterprise policy.
+      ShowToast(kPolicyDisabledToastId,
+                l10n_util::GetStringUTF16(
+                    IDS_ASH_VOICE_INTERACTION_DISABLED_BY_POLICY_MESSAGE));
+      return;
+    case mojom::AssistantAllowedState::DISALLOWED_BY_ARC_DISALLOWED:
+    case mojom::AssistantAllowedState::DISALLOWED_BY_FLAG:
+    case mojom::AssistantAllowedState::DISALLOWED_BY_SUPERVISED_USER:
+    case mojom::AssistantAllowedState::DISALLOWED_BY_INCOGNITO:
+      // TODO(xiaohuic): show a specific toast.
+      return;
+    case mojom::AssistantAllowedState::ALLOWED:
+      // Nothing need to do if allowed.
+      break;
   }
 
   Shell::Get()->app_list()->ToggleVoiceInteractionSession();

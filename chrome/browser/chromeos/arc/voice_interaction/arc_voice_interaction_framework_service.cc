@@ -21,6 +21,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/task_scheduler/post_task.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/boot_phase_monitor/arc_boot_phase_monitor_bridge.h"
 #include "chrome/browser/chromeos/arc/voice_interaction/highlighter_controller_client.h"
 #include "chrome/browser/chromeos/arc/voice_interaction/voice_interaction_controller_client.h"
@@ -374,6 +375,10 @@ void ArcVoiceInteractionFrameworkService::HideMetalayer() {
 
 void ArcVoiceInteractionFrameworkService::OnArcPlayStoreEnabledChanged(
     bool enabled) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  voice_interaction_controller_client_->NotifyFeatureAllowed(
+      IsAssistantAllowedForProfile(Profile::FromBrowserContext(context_)));
+
   if (enabled)
     return;
 
@@ -390,7 +395,8 @@ void ArcVoiceInteractionFrameworkService::OnSessionStateChanged() {
   if (session_state != session_manager::SessionState::ACTIVE)
     return;
 
-  PrefService* prefs = Profile::FromBrowserContext(context_)->GetPrefs();
+  Profile* profile = Profile::FromBrowserContext(context_);
+  PrefService* prefs = profile->GetPrefs();
   bool enabled = prefs->GetBoolean(prefs::kVoiceInteractionEnabled);
   voice_interaction_controller_client_->NotifySettingsEnabled(enabled);
 
@@ -400,6 +406,9 @@ void ArcVoiceInteractionFrameworkService::OnSessionStateChanged() {
   bool setup_completed =
       prefs->GetBoolean(prefs::kArcVoiceInteractionValuePropAccepted);
   voice_interaction_controller_client_->NotifySetupCompleted(setup_completed);
+
+  voice_interaction_controller_client_->NotifyFeatureAllowed(
+      IsAssistantAllowedForProfile(profile));
 
   // We only want notify the status change on first user signed in.
   session_manager::SessionManager::Get()->RemoveObserver(this);

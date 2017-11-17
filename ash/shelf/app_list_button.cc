@@ -4,6 +4,7 @@
 
 #include "ash/shelf/app_list_button.h"
 
+#include <algorithm>
 #include <memory>
 #include <utility>
 
@@ -597,9 +598,9 @@ bool AppListButton::UseVoiceInteractionStyle() {
       Shell::Get()->voice_interaction_controller();
   bool settings_enabled = controller->settings_enabled();
   bool setup_completed = controller->setup_completed();
-  if (voice_interaction_overlay_ &&
-      chromeos::switches::IsVoiceInteractionEnabled() &&
-      Shell::Get()->session_controller()->IsUserPrimary() &&
+  bool is_feature_allowed =
+      controller->allowed_state() == mojom::AssistantAllowedState::ALLOWED;
+  if (voice_interaction_overlay_ && is_feature_allowed &&
       (settings_enabled || !setup_completed)) {
     return true;
   }

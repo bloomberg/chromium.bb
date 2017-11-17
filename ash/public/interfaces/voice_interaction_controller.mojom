@@ -22,6 +22,27 @@ enum VoiceInteractionState {
   RUNNING
 };
 
+enum AssistantAllowedState {
+  // Assistant feature is allowed.
+  ALLOWED = 0,
+  // Disallowed because ARC++ is disallowed. There could be many specific
+  // reasones why ARC++ is disallowed. This enum is a catch all. Some enums
+  // below will show specific reasons.
+  DISALLOWED_BY_ARC_DISALLOWED,
+  // Disallowed because ARC++ is disabled by policy.
+  DISALLOWED_BY_ARC_POLICY,
+  // Disallowed because user's locale is not compatible.
+  DISALLOWED_BY_LOCALE,
+  // Disallowed because the feature flag is off.
+  DISALLOWED_BY_FLAG,
+  // Disallowed because current user is not primary user.
+  DISALLOWED_BY_NONPRIMARY_USER,
+  // Disallowed because current user is supervised user.
+  DISALLOWED_BY_SUPERVISED_USER,
+  // Disallowed because incognito mode.
+  DISALLOWED_BY_INCOGNITO
+};
+
 // Interface for ash client (Chrome) to connect to the voice interaction
 // controller, which notifies changes of voice interaction related flags.
 interface VoiceInteractionController {
@@ -38,4 +59,8 @@ interface VoiceInteractionController {
 
   // Called when the voice interaction setup complete status is changed.
   NotifySetupCompleted(bool completed);
+
+  // Notify if voice interaction feature is allowed or not. e.g. not allowed
+  // if disabled by policy.
+  NotifyFeatureAllowed(AssistantAllowedState state);
 };
