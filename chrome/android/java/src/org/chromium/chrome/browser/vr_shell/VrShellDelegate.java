@@ -430,7 +430,6 @@ public class VrShellDelegate
             return true;
         }
         if (sInstance.mInVr || sInstance.mDonSucceeded) {
-            sInstance.onDensityChangedInternal(oldDpi, newDpi);
             sInstance.mDensityChanged = true;
             return true;
         }
@@ -1623,10 +1622,6 @@ public class VrShellDelegate
         mActivity.onExitVr();
         FrameLayout decor = (FrameLayout) mActivity.getWindow().getDecorView();
         decor.removeView(mVrShell.getContainer());
-    }
-
-    private void onDensityChangedInternal(float oldDpi, float newDpi) {
-        if (mVrShell != null) mVrShell.onDensityChanged(oldDpi, newDpi);
     }
 
     /**
