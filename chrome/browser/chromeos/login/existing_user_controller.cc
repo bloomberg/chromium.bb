@@ -564,7 +564,8 @@ void ExistingUserController::PerformLogin(
     return;
   }
   if (user_context.GetAccountId().GetAccountType() ==
-      AccountType::ACTIVE_DIRECTORY) {
+          AccountType::ACTIVE_DIRECTORY &&
+      user_context.GetAuthFlow() == UserContext::AUTH_FLOW_OFFLINE) {
     DCHECK(user_context.GetKey()->GetKeyType() == Key::KEY_TYPE_PASSWORD_PLAIN);
     // Try to get kerberos TGT while we have user's password typed on the pod
     // screen. Failure to get TGT here is OK - that could mean e.g. Active
