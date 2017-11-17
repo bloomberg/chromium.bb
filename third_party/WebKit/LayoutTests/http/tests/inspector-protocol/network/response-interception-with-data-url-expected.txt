@@ -1,0 +1,12 @@
+Tests to ensure iframe can change to data url while intercepting response.
+Network agent enabled
+Request Intercepted: resource.php?send=10000&chunked=1&size=1000
+Setting iframe to data url from renderer
+Continuing request unchanged
+
+Request Intercepted: data:,Dummy data
+Continuing request unchanged
+
+Body content received by renderer:
+Dummy data
+

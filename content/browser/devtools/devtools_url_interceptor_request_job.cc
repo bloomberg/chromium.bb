@@ -809,11 +809,14 @@ void DevToolsURLInterceptorRequestJob::OnInterceptedRequestResponseStarted(
   } else {
     std::unique_ptr<protocol::DictionaryValue> headers_dict(
         protocol::DictionaryValue::create());
-    size_t iter = 0;
-    std::string name, value;
-    while (sub_request_->request()->response_headers()->EnumerateHeaderLines(
-        &iter, &name, &value)) {
-      headers_dict->setString(name, value);
+    if (sub_request_->request()->response_headers()) {
+      size_t iter = 0;
+      std::string name;
+      std::string value;
+      while (sub_request_->request()->response_headers()->EnumerateHeaderLines(
+          &iter, &name, &value)) {
+        headers_dict->setString(name, value);
+      }
     }
     request_info->http_response_status_code =
         sub_request_->request()->GetResponseCode();
@@ -829,11 +832,6 @@ void DevToolsURLInterceptorRequestJob::OnInterceptedRequestResponseReady(
     const net::IOBuffer& buf,
     int result) {
   DCHECK(sub_request_);
-  if (waiting_for_user_response_ == WaitingForUserResponse::NOT_WAITING) {
-    // If we are not waiting for the request ack we need to begin reading
-    // from subrequest. There may be body requests to fulfill too.
-    NotifyHeadersComplete();
-  }
   if (result < 0) {
     sub_request_->Cancel();
     BrowserThread::PostTask(
@@ -844,13 +842,22 @@ void DevToolsURLInterceptorRequestJob::OnInterceptedRequestResponseReady(
             protocol::Response::Error(base::StringPrintf(
                 "Could not get response body because of error code: %d",
                 result))));
+  } else {
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::BindOnce(&SendPendingBodyRequestsOnUiThread,
+                                           std::move(pending_body_requests_),
+                                           std::string(buf.data(), result)));
+  }
+  if (request_->status().status() == net::URLRequestStatus::CANCELED ||
+      waiting_for_user_response_ != WaitingForUserResponse::NOT_WAITING) {
     return;
   }
-
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::BindOnce(&SendPendingBodyRequestsOnUiThread,
-                                         std::move(pending_body_requests_),
-                                         std::string(buf.data(), result)));
+  if (result < 0) {
+    NotifyStartError(net::URLRequestStatus::FromError(result));
+  } else {
+    // This call may consume the buffer.
+    NotifyHeadersComplete();
+  }
 }
 
 void DevToolsURLInterceptorRequestJob::StopIntercepting() {
@@ -863,6 +870,8 @@ void DevToolsURLInterceptorRequestJob::StopIntercepting() {
     case WaitingForUserResponse::NOT_WAITING:
       return;
 
+    case WaitingForUserResponse::WAITING_FOR_RESPONSE_ACK:
+    // Fallthough.
     case WaitingForUserResponse::WAITING_FOR_REQUEST_ACK:
       ProcessInterceptionRespose(
           std::make_unique<DevToolsURLRequestInterceptor::Modifications>(
@@ -872,8 +881,6 @@ void DevToolsURLInterceptorRequestJob::StopIntercepting() {
               protocol::Maybe<protocol::Network::AuthChallengeResponse>(),
               false));
       return;
-    case WaitingForUserResponse::WAITING_FOR_RESPONSE_ACK:
-    // Fallthough.
     case WaitingForUserResponse::WAITING_FOR_AUTH_ACK: {
       std::unique_ptr<protocol::Network::AuthChallengeResponse> auth_response =
           protocol::Network::AuthChallengeResponse::Create()

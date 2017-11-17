@@ -2965,6 +2965,10 @@ crbug.com/709227 external/wpt/workers/nested_worker.worker.html [ Timeout ]
 
 # Crashes
 crbug.com/709227 external/wpt/offscreen-canvas/fill-and-stroke-styles/2d.pattern.basic.nocontext.worker.html [ Crash ]
+crbug.com/786249 http/tests/inspector-protocol/network/response-interception-no-change-content-not-ready.js [ Crash ]
+crbug.com/786249 http/tests/inspector-protocol/network/response-interception-request-completes-network-closes.js [ Crash ]
+crbug.com/786249 virtual/mojo-loading/http/tests/inspector-protocol/network/response-interception-no-change-content-not-ready.js [ Crash ]
+crbug.com/786249 virtual/mojo-loading/http/tests/inspector-protocol/network/response-interception-request-completes-network-closes.js [ Crash ]
 
 # ====== Tests from enabling .any.js/.worker.js tests end here ========
 
