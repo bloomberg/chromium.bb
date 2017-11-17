@@ -250,6 +250,10 @@ void BrowserPlugin::CreateMusWindowAndEmbed(
   DCHECK(renderer_window_tree_client);
   mus_embedded_frame_ =
       renderer_window_tree_client->CreateMusEmbeddedFrame(this, embed_token);
+  if (attached() && local_surface_id_.is_valid()) {
+    mus_embedded_frame_->SetWindowBounds(local_surface_id_,
+                                         FrameRectInPixels());
+  }
 }
 #endif
 

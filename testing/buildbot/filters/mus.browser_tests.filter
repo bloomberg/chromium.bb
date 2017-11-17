@@ -20,12 +20,9 @@
 
 # TODO: fix, http://crbug.com/755328
 -WebViewTests/WebViewFocusTest.TouchFocusesEmbedder/0
--WebViewTests/WebViewSizeTest.Shim_TestResizeWebviewWithDisplayNoneResizesContent/0
 -WebViewTests/WebViewTest.InterstitialPageFocusedWidget/1
 -WebViewTests/WebViewTest.InterstitialPageRouteEvents/1
 
-# content::WaitForChildFrameSurfaceReady unsupported, https://crbug.com/774269.
--WebViewTests/WebViewTest.ReloadAfterCrash/1
-
 # content::WaitForChildFrameSurfaceReady unsupported, https://crbug.com/763452
 -PDFExtensionTest.ContextMenuCoordinates
+-WebViewTests/WebViewTest.ReloadAfterCrash/1
