@@ -53,6 +53,19 @@ void HeadlessRenderTest::OnTimeout() {
   FAIL() << "Renderer timeout";
 }
 
+void HeadlessRenderTest::CustomizeHeadlessBrowserContext(
+    HeadlessBrowserContext::Builder& builder) {
+  builder.SetOverrideWebPreferencesCallback(
+      base::Bind(&HeadlessRenderTest::OverrideWebPreferences,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void HeadlessRenderTest::OverrideWebPreferences(WebPreferences* preferences) {
+  preferences->hide_scrollbars = true;
+  preferences->javascript_enabled = true;
+  preferences->autoplay_policy = content::AutoplayPolicy::kUserGestureRequired;
+}
+
 void HeadlessRenderTest::UrlRequestFailed(net::URLRequest* request,
                                           int net_error,
                                           bool canceled_by_devtools) {
