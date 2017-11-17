@@ -116,25 +116,35 @@ TaskQueueImpl::MainThreadOnly::MainThreadOnly(
 TaskQueueImpl::MainThreadOnly::~MainThreadOnly() {}
 
 void TaskQueueImpl::UnregisterTaskQueue() {
-  base::AutoLock lock(any_thread_lock_);
-  base::AutoLock immediate_incoming_queue_lock(immediate_incoming_queue_lock_);
-  if (main_thread_only().time_domain)
-    main_thread_only().time_domain->UnregisterQueue(this);
+  {
+    base::AutoLock lock(any_thread_lock_);
+    base::AutoLock immediate_incoming_queue_lock(
+        immediate_incoming_queue_lock_);
+    if (main_thread_only().time_domain)
+      main_thread_only().time_domain->UnregisterQueue(this);
 
-  if (!any_thread().task_queue_manager)
-    return;
+    if (!any_thread().task_queue_manager)
+      return;
 
-  main_thread_only().on_task_completed_handler = OnTaskCompletedHandler();
-  any_thread().time_domain = nullptr;
-  main_thread_only().time_domain = nullptr;
+    main_thread_only().on_task_completed_handler = OnTaskCompletedHandler();
+    any_thread().time_domain = nullptr;
+    main_thread_only().time_domain = nullptr;
 
-  any_thread().task_queue_manager = nullptr;
-  main_thread_only().task_queue_manager = nullptr;
-  any_thread().on_next_wake_up_changed_callback = OnNextWakeUpChangedCallback();
-  main_thread_only().on_next_wake_up_changed_callback =
-      OnNextWakeUpChangedCallback();
+    any_thread().task_queue_manager = nullptr;
+    main_thread_only().task_queue_manager = nullptr;
+    any_thread().on_next_wake_up_changed_callback =
+        OnNextWakeUpChangedCallback();
+    main_thread_only().on_next_wake_up_changed_callback =
+        OnNextWakeUpChangedCallback();
+  }
+
+  // Flush the queues outside of the lock because TSAN complains about a lock
+  // order inversion for tasks that are posted from within a lock, with a
+  // destructor that acquires the same lock.
   main_thread_only().delayed_incoming_queue = std::priority_queue<Task>();
-  immediate_incoming_queue().clear();
+  // NB this should be safe since TaskQueueImpl::PostImmediateTaskImpl does
+  // nothing if any_thread().task_queue_manager is null.
+  immediate_incoming_queue_.clear();
   main_thread_only().immediate_work_queue.reset();
   main_thread_only().delayed_work_queue.reset();
 }
