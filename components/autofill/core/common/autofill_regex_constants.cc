@@ -136,14 +136,14 @@ const char kNameOnCardRe[] =
 const char kNameOnCardContextualRe[] = "name";
 const char kCardNumberRe[] =
     "(add)?(?:card|cc|acct).?(?:number|#|no|num|field)"
-    "|nummer"                 // de-DE
-    "|credito|numero|número"  // es
-    "|numéro"                 // fr-FR
-    "|カード番号"             // ja-JP
-    "|Номер.*карты"           // ru
-    "|信用卡号|信用卡号码"    // zh-CN
-    "|信用卡卡號"             // zh-TW
-    "|카드";                  // ko-KR
+    "|(?<!telefon|haus)nummer"  // de-DE
+    "|credito|numero|número"    // es
+    "|numéro"                   // fr-FR
+    "|カード番号"               // ja-JP
+    "|Номер.*карты"             // ru
+    "|信用卡号|信用卡号码"      // zh-CN
+    "|信用卡卡號"               // zh-TW
+    "|카드";                    // ko-KR
 const char kCardCvcRe[] =
     "verification|card.?identification|security.?code|card.?code"
     "|security.?number|card.?pin|c-v-v"
