@@ -4442,8 +4442,6 @@
       {
         "args": [
           "--enable-viz",
-          "--ozone-platform=headless",
-          "--override-use-software-gl-for-tests",
           "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.viz.content_browsertests.filter"
         ],
         "name": "viz_content_browsertests",
