@@ -253,10 +253,6 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 #pragma mark - MostVisitedSitesObserving
 
 - (void)onMostVisitedURLsAvailable:(const ntp_tiles::NTPTilesVector&)data {
-  // This is used by the content widget.
-  ntp_tile_saver::SaveMostVisitedToDisk(
-      data, self, app_group::ContentWidgetFaviconsFolder());
-
   if (_mostVisitedData.size() > 0) {
     // If some content is already displayed to the user, do not update it to
     // prevent updating the all the tiles without any action from the user.
@@ -275,8 +271,6 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 }
 
 - (void)onIconMadeAvailable:(const GURL&)siteUrl {
-  ntp_tile_saver::UpdateSingleFavicon(siteUrl, self,
-                                      app_group::ContentWidgetFaviconsFolder());
   for (size_t i = 0; i < _mostVisitedData.size(); ++i) {
     const ntp_tiles::NTPTile& ntpTile = _mostVisitedData[i];
     if (ntpTile.url == siteUrl) {

@@ -9,7 +9,7 @@
 #include "base/test/scoped_task_environment.h"
 #import "components/ntp_tiles/ntp_tile.h"
 #import "ios/chrome/browser/ui/favicon/favicon_attributes.h"
-#import "ios/chrome/browser/ui/ntp/google_landing_data_source.h"
+#import "ios/chrome/browser/ui/favicon/favicon_attributes_provider.h"
 #import "ios/chrome/browser/ui/ntp/ntp_tile.h"
 #import "ios/chrome/test/block_cleanup_test.h"
 #import "net/base/mac/url_conversions.h"
@@ -53,23 +53,21 @@ class NTPTileSaverControllerTest : public BlockCleanupTest {
                          std::set<GURL> imageURLs,
                          std::set<GURL> fallbackURLs) {
     OCMStub([[mock ignoringNonObjectArgs]
-                getFaviconForPageURL:GURL()
-                                size:0
-                            useCache:NO
-                            callback:[OCMArg isNotNil]])
+                fetchFaviconAttributesForURL:GURL()
+                                  completion:[OCMArg isNotNil]])
         .andDo(^(NSInvocation* invocation) {
           GURL* urltest;
           [invocation getArgument:&urltest atIndex:2];
           if (imageURLs.find(GURL(*urltest)) != imageURLs.end()) {
             __unsafe_unretained void (^callback)(id);
-            [invocation getArgument:&callback atIndex:5];
+            [invocation getArgument:&callback atIndex:3];
             UIGraphicsBeginImageContext(CGSizeMake(10, 10));
             UIImage* image = UIGraphicsGetImageFromCurrentImageContext();
             UIGraphicsEndImageContext();
             callback([FaviconAttributes attributesWithImage:image]);
           } else if (fallbackURLs.find(GURL(*urltest)) != fallbackURLs.end()) {
             __unsafe_unretained void (^callback)(id);
-            [invocation getArgument:&callback atIndex:5];
+            [invocation getArgument:&callback atIndex:3];
             callback([FaviconAttributes
                 attributesWithMonogram:@"C"
                              textColor:UIColor.whiteColor
@@ -121,7 +119,7 @@ TEST_F(NTPTileSaverControllerTest, SaveMostVisitedToDisk) {
   fallbackTile.title = base::ASCIIToUTF16("Title");
   fallbackTile.url = GURL("http://fallback.com");
 
-  id mockFaviconFetcher = OCMProtocolMock(@protocol(GoogleLandingDataSource));
+  id mockFaviconFetcher = OCMClassMock([FaviconAttributesProvider class]);
   setupMockCallback(mockFaviconFetcher, {imageTile.url}, {fallbackTile.url});
 
   ntp_tiles::NTPTilesVector tiles = {
@@ -165,7 +163,7 @@ TEST_F(NTPTileSaverControllerTest, UpdateSingleFaviconFallback) {
   fallbackTile.title = base::ASCIIToUTF16("Title");
   fallbackTile.url = GURL("http://fallback.com");
 
-  id mockFaviconFetcher = OCMProtocolMock(@protocol(GoogleLandingDataSource));
+  id mockFaviconFetcher = OCMClassMock([FaviconAttributesProvider class]);
   setupMockCallback(mockFaviconFetcher, {imageTile1.url, imageTile2.url},
                     {fallbackTile.url});
 
@@ -198,7 +196,7 @@ TEST_F(NTPTileSaverControllerTest, UpdateSingleFaviconFallback) {
   verifyWithFallback(fallbackSavedTile, fallbackTitle, fallbackURL);
 
   // Mock returning a fallback value for the first image tile.
-  id mockFaviconFetcher2 = OCMProtocolMock(@protocol(GoogleLandingDataSource));
+  id mockFaviconFetcher2 = OCMClassMock([FaviconAttributesProvider class]);
   setupMockCallback(mockFaviconFetcher2, {imageTile2.url},
                     {imageTile1.url, fallbackTile.url});
   ntp_tile_saver::UpdateSingleFavicon(imageTile1.url, mockFaviconFetcher2,
