@@ -688,6 +688,52 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>The reason the bottom sheet was opened.</summary>
 </histogram>
 
+<histogram name="Android.ChromeHome.OpenSheetVelocity.Fail"
+    units="microseconds/dp">
+  <owner>mdjones@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    Records the reciprocal of the velocity of a swipe that did not result in the
+    bottom sheet opening. This value is recorded in microseconds per dp traveled
+    and is only recorded if the &quot;chrome-home-swipe-logic&quot; experiment
+    is set to &quot;velocity&quot;.
+  </summary>
+</histogram>
+
+<histogram name="Android.ChromeHome.OpenSheetVelocity.Navigation"
+    units="microseconds/dp">
+  <owner>mdjones@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    Records the reciprocal of the velocity of a swipe that resulted in the
+    bottom sheet opening and the user navigating to a URL or a different sheet
+    content. This value is recorded in microseconds per dp traveled.
+  </summary>
+</histogram>
+
+<histogram name="Android.ChromeHome.OpenSheetVelocity.NoNavigation"
+    units="microseconds/dp">
+  <owner>mdjones@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    Records the reciprocal of the velocity of a swipe that resulted in the
+    bottom sheet opening but the user taking no action (i.e. the next action is
+    the sheet closing). This value is recorded in microseconds per dp traveled.
+  </summary>
+</histogram>
+
+<histogram name="Android.ChromeHome.OpenSheetVelocity.Success"
+    units="microseconds/dp">
+  <owner>mdjones@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    Records the reciprocal velocity of a swipe that resulted in the bottom sheet
+    opening. This value is recorded in microseconds per dp traveled and is only
+    recorded if the &quot;chrome-home-swipe-logic&quot; experiment is set to
+    &quot;velocity&quot;.
+  </summary>
+</histogram>
+
 <histogram name="Android.ChromeHome.Promo.Result.Menu"
     enum="ChromeHomePromoResult">
   <owner>mdjones@chromium.org</owner>
