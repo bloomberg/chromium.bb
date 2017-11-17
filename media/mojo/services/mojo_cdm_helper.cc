@@ -19,13 +19,16 @@ MojoCdmHelper::MojoCdmHelper(
 
 MojoCdmHelper::~MojoCdmHelper() {}
 
-cdm::FileIO* MojoCdmHelper::CreateCdmFileIO(cdm::FileIOClient* client,
-                                            FileReadCB file_read_cb) {
+void MojoCdmHelper::SetFileReadCB(FileReadCB file_read_cb) {
+  file_read_cb_ = std::move(file_read_cb);
+}
+
+cdm::FileIO* MojoCdmHelper::CreateCdmFileIO(cdm::FileIOClient* client) {
   ConnectToCdmStorage();
 
   // Pass a reference to CdmStorage so that MojoCdmFileIO can open a file.
-  auto mojo_cdm_file_io = std::make_unique<MojoCdmFileIO>(
-      this, client, cdm_storage_ptr_.get(), std::move(file_read_cb));
+  auto mojo_cdm_file_io =
+      std::make_unique<MojoCdmFileIO>(this, client, cdm_storage_ptr_.get());
 
   cdm::FileIO* cdm_file_io = mojo_cdm_file_io.get();
   DVLOG(3) << __func__ << ": cdm_file_io = " << cdm_file_io;
@@ -81,6 +84,12 @@ void MojoCdmHelper::CloseCdmFileIO(MojoCdmFileIO* cdm_file_io) {
                 [cdm_file_io](const std::unique_ptr<MojoCdmFileIO>& ptr) {
                   return ptr.get() == cdm_file_io;
                 });
+}
+
+void MojoCdmHelper::ReportFileReadSize(int file_size_bytes) {
+  DVLOG(3) << __func__ << ": file_size_bytes = " << file_size_bytes;
+  if (file_read_cb_)
+    file_read_cb_.Run(file_size_bytes);
 }
 
 void MojoCdmHelper::ConnectToCdmStorage() {

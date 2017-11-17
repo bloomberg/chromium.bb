@@ -50,18 +50,15 @@ bool IsValidFileName(const std::string& name) {
 
 MojoCdmFileIO::MojoCdmFileIO(Delegate* delegate,
                              cdm::FileIOClient* client,
-                             mojom::CdmStorage* cdm_storage,
-                             FileReadCB file_read_cb)
+                             mojom::CdmStorage* cdm_storage)
     : delegate_(delegate),
       client_(client),
       cdm_storage_(cdm_storage),
-      file_read_cb_(std::move(file_read_cb)),
       weak_factory_(this) {
   DVLOG(1) << __func__;
   DCHECK(delegate_);
   DCHECK(client_);
   DCHECK(cdm_storage_);
-  // |file_read_cb_| may be null in tests.
 }
 
 MojoCdmFileIO::~MojoCdmFileIO() {
@@ -216,8 +213,7 @@ void MojoCdmFileIO::DoRead(int64_t num_bytes) {
 
   // Call this before OnReadComplete() so that we always have the latest file
   // size before CDM fires errors.
-  if (file_read_cb_)
-    file_read_cb_.Run(bytes_to_read);
+  delegate_->ReportFileReadSize(bytes_to_read);
 
   state_ = State::kOpened;
   client_->OnReadComplete(ClientStatus::kSuccess, buffer.data(), buffer.size());

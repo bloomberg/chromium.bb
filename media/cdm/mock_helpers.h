@@ -25,8 +25,8 @@ class MockCdmAuxiliaryHelper : public CdmAuxiliaryHelper {
   ~MockCdmAuxiliaryHelper() override;
 
   // CdmAuxiliaryHelper implementation.
-  cdm::FileIO* CreateCdmFileIO(cdm::FileIOClient* client,
-                               FileReadCB file_read_cb) override;
+  void SetFileReadCB(FileReadCB file_read_cb) override;
+  cdm::FileIO* CreateCdmFileIO(cdm::FileIOClient* client) override;
 
   cdm::Buffer* CreateCdmBuffer(size_t capacity) override;
   std::unique_ptr<VideoFrameImpl> CreateCdmVideoFrame() override;

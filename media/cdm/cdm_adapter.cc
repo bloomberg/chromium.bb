@@ -497,6 +497,9 @@ CdmAdapter::CdmAdapter(
   DCHECK(!session_keys_change_cb_.is_null());
   DCHECK(!session_expiration_update_cb_.is_null());
   DCHECK(helper_);
+
+  helper_->SetFileReadCB(
+      base::Bind(&CdmAdapter::OnFileRead, weak_factory_.GetWeakPtr()));
 }
 
 CdmAdapter::~CdmAdapter() {
@@ -1152,8 +1155,7 @@ void CdmAdapter::OnDeferredInitializationDone(cdm::StreamType stream_type,
 
 cdm::FileIO* CdmAdapter::CreateFileIO(cdm::FileIOClient* client) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  return helper_->CreateCdmFileIO(
-      client, base::Bind(&CdmAdapter::OnFileRead, weak_factory_.GetWeakPtr()));
+  return helper_->CreateCdmFileIO(client);
 }
 
 void CdmAdapter::RequestStorageId(uint32_t version) {
