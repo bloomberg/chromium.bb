@@ -128,13 +128,18 @@ bool SurfacelessGlRenderer::Initialize() {
   if (!GlRenderer::Initialize())
     return false;
 
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch("partial-primary-plane"))
+    primary_plane_rect_ = gfx::Rect(200, 200, 800, 800);
+  else
+    primary_plane_rect_ = gfx::Rect(size_);
+
   for (size_t i = 0; i < arraysize(buffers_); ++i) {
     buffers_[i].reset(new BufferWrapper());
-    if (!buffers_[i]->Initialize(widget_, size_))
+    if (!buffers_[i]->Initialize(widget_, primary_plane_rect_.size()))
       return false;
   }
 
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch("enable-overlay")) {
     gfx::Size overlay_size = gfx::Size(size_.width() / 8, size_.height() / 8);
     for (size_t i = 0; i < arraysize(overlay_buffer_); ++i) {
@@ -200,7 +205,7 @@ void SurfacelessGlRenderer::RenderFrame() {
     CHECK(overlay_list.front().overlay_handled);
     surface_->ScheduleOverlayPlane(0, gfx::OVERLAY_TRANSFORM_NONE,
                                    buffers_[back_buffer_]->image(),
-                                   gfx::Rect(size_), gfx::RectF(0, 0, 1, 1));
+                                   primary_plane_rect_, gfx::RectF(0, 0, 1, 1));
   }
 
   if (overlay_buffer_[0] && overlay_list.back().overlay_handled) {
@@ -220,7 +225,7 @@ void SurfacelessGlRenderer::PostRenderFrameTask(gfx::SwapResult result) {
     case gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS:
       for (size_t i = 0; i < arraysize(buffers_); ++i) {
         buffers_[i].reset(new BufferWrapper());
-        if (!buffers_[i]->Initialize(widget_, size_))
+        if (!buffers_[i]->Initialize(widget_, primary_plane_rect_.size()))
           LOG(FATAL) << "Failed to recreate buffer";
       }
     // Fall through since we want to render a new frame anyways.
