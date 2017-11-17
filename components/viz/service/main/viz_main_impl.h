@@ -87,8 +87,7 @@ class VizMainImpl : public gpu::GpuSandboxHelper, public mojom::VizMain {
   void CreateGpuService(mojom::GpuServiceRequest request,
                         mojom::GpuHostPtr gpu_host,
                         mojo::ScopedSharedBufferHandle activity_flags) override;
-  void CreateFrameSinkManager(mojom::FrameSinkManagerRequest request,
-                              mojom::FrameSinkManagerClientPtr client) override;
+  void CreateFrameSinkManager(mojom::FrameSinkManagerParamsPtr params) override;
 
   GpuServiceImpl* gpu_service() { return gpu_service_.get(); }
   const GpuServiceImpl* gpu_service() const { return gpu_service_.get(); }
@@ -97,12 +96,9 @@ class VizMainImpl : public gpu::GpuSandboxHelper, public mojom::VizMain {
   // Initializes GPU's UkmRecorder if GPU is running in it's own process.
   void CreateUkmRecorderIfNeeded(service_manager::Connector* connector);
 
-  void CreateFrameSinkManagerInternal(
-      mojom::FrameSinkManagerRequest request,
-      mojom::FrameSinkManagerClientPtrInfo client_info);
+  void CreateFrameSinkManagerInternal(mojom::FrameSinkManagerParamsPtr params);
   void CreateFrameSinkManagerOnCompositorThread(
-      mojom::FrameSinkManagerRequest request,
-      mojom::FrameSinkManagerClientPtrInfo client_info);
+      mojom::FrameSinkManagerParamsPtr params);
 
   void CloseVizMainBindingOnGpuThread(base::WaitableEvent* wait);
   void TearDownOnCompositorThread(base::WaitableEvent* wait);
@@ -129,10 +125,9 @@ class VizMainImpl : public gpu::GpuSandboxHelper, public mojom::VizMain {
   // The InCommandCommandBuffer::Service used by the frame sink manager.
   scoped_refptr<gpu::InProcessCommandBuffer::Service> gpu_command_service_;
 
-  // If the gpu service is not yet ready then we stash pending MessagePipes in
-  // these member variables.
-  mojom::FrameSinkManagerRequest pending_frame_sink_manager_request_;
-  mojom::FrameSinkManagerClientPtrInfo pending_frame_sink_manager_client_info_;
+  // If the gpu service is not yet ready then we stash pending
+  // FrameSinkManagerParams.
+  mojom::FrameSinkManagerParamsPtr pending_frame_sink_manager_params_;
 
   // Provides mojo interfaces for creating and managing FrameSinks.
   std::unique_ptr<FrameSinkManagerImpl> frame_sink_manager_;

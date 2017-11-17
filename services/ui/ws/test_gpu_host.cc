@@ -12,10 +12,9 @@ TestGpuHost::TestGpuHost() = default;
 TestGpuHost::~TestGpuHost() = default;
 
 void TestGpuHost::CreateFrameSinkManager(
-    viz::mojom::FrameSinkManagerRequest request,
-    viz::mojom::FrameSinkManagerClientPtr client) {
+    viz::mojom::FrameSinkManagerParamsPtr params) {
   frame_sink_manager_ = std::make_unique<viz::TestFrameSinkManagerImpl>();
-  frame_sink_manager_->BindRequest(std::move(request));
+  frame_sink_manager_->BindRequest(std::move(params->frame_sink_manager));
 }
 
 }  // namespace ws
