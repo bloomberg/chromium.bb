@@ -5,7 +5,7 @@
 #include "components/metrics/net/net_metrics_log_uploader.h"
 
 #include "base/base64.h"
-#include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/encrypted_messages/encrypted_message.pb.h"
@@ -19,9 +19,12 @@
 
 namespace {
 
+const base::Feature kHttpRetryFeature{"UMAHttpRetry",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Constants used for encrypting logs that are sent over HTTP. The
 // corresponding private key is used by the metrics server to decrypt logs.
-char kEncryptedMessageLabel[] = "metrics log";
+const char kEncryptedMessageLabel[] = "metrics log";
 
 static const uint8_t kServerPublicKey[] = {
     0x51, 0xcc, 0x52, 0x67, 0x42, 0x47, 0x3b, 0x10, 0xe8, 0x63, 0x18,
@@ -131,7 +134,6 @@ NetMetricsLogUploader::NetMetricsLogUploader(
     const MetricsLogUploader::UploadCallback& on_upload_complete)
     : request_context_getter_(request_context_getter),
       server_url_(server_url),
-      insecure_server_url_(""),
       mime_type_(mime_type.data(), mime_type.size()),
       service_type_(service_type),
       on_upload_complete_(on_upload_complete) {}
@@ -163,8 +165,7 @@ void NetMetricsLogUploader::UploadLog(const std::string& compressed_log_data,
   if (!insecure_server_url_.is_empty() && reporting_info.attempt_count() > 1 &&
       reporting_info.last_error_code() != 0 &&
       reporting_info.last_attempt_was_https() &&
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          "retry-uma-over-http")) {
+      base::FeatureList::IsEnabled(kHttpRetryFeature)) {
     UploadLogToURL(compressed_log_data, log_hash, reporting_info,
                    insecure_server_url_);
     return;
