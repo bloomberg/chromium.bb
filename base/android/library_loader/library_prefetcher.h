@@ -9,6 +9,8 @@
 
 #include <stdint.h>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/debug/proc_maps_linux.h"
 #include "base/gtest_prod_util.h"
@@ -27,6 +29,8 @@ namespace android {
 // the Android runtime, can be killed at any time, which is not an issue here.
 class BASE_EXPORT NativeLibraryPrefetcher {
  public:
+  using AddressRange = std::pair<uintptr_t, uintptr_t>;
+
   // Finds the ranges matching the native library, forks a low priority
   // process pre-fetching these ranges and wait()s for it.
   // Returns true for success.
@@ -35,8 +39,11 @@ class BASE_EXPORT NativeLibraryPrefetcher {
   // memory, or -1 in case of error.
   static int PercentageOfResidentNativeLibraryCode();
 
+  // Collects residency for the native library executable multiple times, then
+  // dumps it to disk.
+  static void PeriodicallyCollectResidency();
+
  private:
-  using AddressRange = std::pair<uintptr_t, uintptr_t>;
   // Returns true if the region matches native code or data.
   static bool IsGoodToPrefetch(const base::debug::MappedMemoryRegion& region);
   // Filters the regions to keep only libchrome ranges if possible.
