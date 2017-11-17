@@ -61,10 +61,8 @@ const char* GetLevelOfControl(
   PrefService* prefs = incognito ? profile->GetOffTheRecordPrefs()
                                  : profile->GetPrefs();
   bool from_incognito = false;
-  bool* from_incognito_ptr = incognito ? &from_incognito : NULL;
+  bool* from_incognito_ptr = incognito ? &from_incognito : nullptr;
   const PrefService::Preference* pref = prefs->FindPreference(browser_pref);
-  CHECK(pref);
-
   if (!pref->IsExtensionModifiable())
     return kNotControllable;
 
@@ -114,7 +112,7 @@ void DispatchEventToExtensions(Profile* profile,
       // a) incognito pref changes are visible only to the incognito tabs
       // b) regular pref changes are visible only to the incognito tabs if the
       //    incognito pref has not alredy been set
-      Profile* restrict_to_profile = NULL;
+      Profile* restrict_to_profile = nullptr;
       bool from_incognito = false;
       if (IncognitoInfo::IsSplitMode(extension.get())) {
         if (incognito && util::IsIncognitoEnabled(extension->id(), profile)) {
