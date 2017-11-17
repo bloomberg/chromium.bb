@@ -67,7 +67,9 @@ class CORE_EXPORT InspectorNetworkAgent final
  public:
   // TODO(horo): Extract the logic for frames and for workers into different
   // classes.
-  InspectorNetworkAgent(InspectedFrames*, WorkerGlobalScope*);
+  InspectorNetworkAgent(InspectedFrames*,
+                        WorkerGlobalScope*,
+                        v8_inspector::V8InspectorSession*);
   ~InspectorNetworkAgent() override;
   void Trace(blink::Visitor*) override;
 
@@ -204,6 +206,15 @@ class CORE_EXPORT InspectorNetworkAgent final
       std::unique_ptr<protocol::Network::Headers>) override;
   void getResponseBody(const String& request_id,
                        std::unique_ptr<GetResponseBodyCallback>) override;
+  protocol::Response searchInResponseBody(
+      const String& request_id,
+      const String& query,
+      Maybe<bool> case_sensitive,
+      Maybe<bool> is_regex,
+      std::unique_ptr<
+          protocol::Array<v8_inspector::protocol::Debugger::API::SearchMatch>>*
+          matches) override;
+
   protocol::Response setBlockedURLs(
       std::unique_ptr<protocol::Array<String>> urls) override;
   protocol::Response replayXHR(const String& request_id) override;
@@ -260,6 +271,7 @@ class CORE_EXPORT InspectorNetworkAgent final
   Member<InspectedFrames> inspected_frames_;
   // This is null while inspecting frames.
   Member<WorkerGlobalScope> worker_global_scope_;
+  v8_inspector::V8InspectorSession* v8_session_;
   Member<NetworkResourcesData> resources_data_;
 
   typedef HashMap<ThreadableLoaderClient*, unsigned long>
