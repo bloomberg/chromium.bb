@@ -1861,6 +1861,7 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
   'maps_pixel_test': {
     'target_name': 'maps',
     'args': [
+      '--dont-restore-color-profile-after-test',
       '--os-type',
       '${os_type}',
       '--build-revision',
@@ -1894,6 +1895,7 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
   'pixel_test': {
     'target_name': 'pixel',
     'args': [
+      '--dont-restore-color-profile-after-test',
       '--refimg-cloud-storage-bucket',
       'chromium-gpu-archive/reference-images',
       '--os-type',
@@ -1924,6 +1926,9 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
     ],
   },
   'screenshot_sync': {
+    'args': [
+      '--dont-restore-color-profile-after-test',
+    ],
     'tester_configs': [
       {
         'predicate': Predicates.DEFAULT_PLUS_V8,

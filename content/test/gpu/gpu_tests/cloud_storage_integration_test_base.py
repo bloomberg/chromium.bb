@@ -100,6 +100,13 @@ class CloudStorageIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
       help='Overrides the default on-disk location for generated test images '
       '(only used for local testing without a cloud storage account)',
       default=default_generated_data_dir)
+    parser.add_option(
+      '--dont-restore-color-profile-after-test',
+      dest='dont_restore_color_profile_after_test',
+      action='store_true', default=False,
+      help='(Mainly on Mac) don\'t restore the system\'s original color '
+      'profile after the test completes; leave the system using the sRGB color '
+      'profile. See http://crbug.com/784456.')
 
   def _CompareScreenshotSamples(self, tab, screenshot, expected_colors,
                                 device_pixel_ratio, test_machine_name):
