@@ -563,7 +563,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const CommonNavigationParams& common_params,
       const RequestNavigationParams& request_params,
       bool is_view_source,
-      base::Optional<SubresourceLoaderParams> subresource_loader_params);
+      base::Optional<SubresourceLoaderParams> subresource_loader_params,
+      const base::UnguessableToken& devtools_navigation_token);
 
   // PlzNavigate
   // Indicates that a navigation failed and that this RenderFrame should display

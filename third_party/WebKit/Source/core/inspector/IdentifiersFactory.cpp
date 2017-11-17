@@ -72,21 +72,11 @@ LocalFrame* IdentifiersFactory::FrameById(InspectedFrames* inspected_frames,
 
 // static
 String IdentifiersFactory::LoaderId(DocumentLoader* loader) {
-  return AddProcessIdPrefixTo(
-      WeakIdentifierMap<DocumentLoader>::Identifier(loader));
-}
-
-// static
-DocumentLoader* IdentifiersFactory::LoaderById(
-    InspectedFrames* inspected_frames,
-    const String& loader_id) {
-  bool ok;
-  int id = RemoveProcessIdPrefixFrom(loader_id, &ok);
-  if (!ok)
-    return nullptr;
-  DocumentLoader* loader = WeakIdentifierMap<DocumentLoader>::Lookup(id);
-  LocalFrame* frame = loader->GetFrame();
-  return frame && inspected_frames->Contains(frame) ? loader : nullptr;
+  if (!loader)
+    return g_empty_string;
+  const base::UnguessableToken& token = loader->GetDevToolsNavigationToken();
+  // token.ToString() is latin1.
+  return String(token.ToString().c_str());
 }
 
 // static

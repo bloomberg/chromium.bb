@@ -12,6 +12,7 @@
 #include "WebFrameLoadType.h"
 #include "WebHistoryItem.h"
 #include "WebImeTextSpan.h"
+#include "base/unguessable_token.h"
 #include "public/platform/TaskType.h"
 #include "public/platform/WebFocusType.h"
 #include "public/platform/WebSize.h"
@@ -190,11 +191,13 @@ class WebLocalFrame : public WebFrame {
 
   // Load the given URL. For history navigations, a valid WebHistoryItem
   // should be given, as well as a WebHistoryLoadType.
-  virtual void Load(const WebURLRequest&,
-                    WebFrameLoadType = WebFrameLoadType::kStandard,
-                    const WebHistoryItem& = WebHistoryItem(),
-                    WebHistoryLoadType = kWebHistoryDifferentDocumentLoad,
-                    bool is_client_redirect = false) = 0;
+  virtual void Load(
+      const WebURLRequest&,
+      WebFrameLoadType,
+      const WebHistoryItem&,
+      WebHistoryLoadType,
+      bool is_client_redirect,
+      const base::UnguessableToken& devtools_navigation_token) = 0;
 
   // This method is short-hand for calling LoadData, where mime_type is
   // "text/html" and text_encoding is "UTF-8".

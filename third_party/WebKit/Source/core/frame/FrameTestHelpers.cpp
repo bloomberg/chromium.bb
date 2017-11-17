@@ -118,7 +118,9 @@ void LoadHistoryItem(WebLocalFrame* frame,
                      WebHistoryLoadType load_type,
                      mojom::FetchCacheMode cache_mode) {
   WebURLRequest request = frame->RequestFromHistoryItem(item, cache_mode);
-  frame->Load(request, WebFrameLoadType::kBackForward, item);
+  frame->Load(request, WebFrameLoadType::kBackForward, item,
+              kWebHistoryDifferentDocumentLoad, /*is_client_redirect=*/false,
+              base::UnguessableToken::Create());
   PumpPendingRequestsForFrameToLoad(frame);
 }
 

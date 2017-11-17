@@ -122,7 +122,8 @@ DocumentLoader::DocumentLoader(LocalFrame* frame,
       was_blocked_after_csp_(false),
       state_(kNotStarted),
       in_data_received_(false),
-      data_buffer_(SharedBuffer::Create()) {
+      data_buffer_(SharedBuffer::Create()),
+      devtools_navigation_token_(base::UnguessableToken::Create()) {
   DCHECK(frame_);
 
   // The document URL needs to be added to the head of the list as that is

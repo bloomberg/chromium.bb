@@ -7386,7 +7386,9 @@ TEST_P(ParameterizedWebFrameTest, BackDuringChildFrameReload) {
   item.SetURLString(history_url.GetString());
   WebURLRequest request =
       main_frame->RequestFromHistoryItem(item, mojom::FetchCacheMode::kDefault);
-  main_frame->Load(request, WebFrameLoadType::kBackForward, item);
+  main_frame->Load(request, WebFrameLoadType::kBackForward, item,
+                   kWebHistoryDifferentDocumentLoad, false,
+                   base::UnguessableToken::Create());
 
   FrameTestHelpers::ReloadFrame(child_frame);
   EXPECT_EQ(item.UrlString(), main_frame->GetDocument().Url().GetString());
