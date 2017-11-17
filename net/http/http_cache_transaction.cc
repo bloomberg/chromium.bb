@@ -643,14 +643,14 @@ void HttpCache::Transaction::WriterAboutToBeRemovedFromEntry(int result) {
     SaveNetworkTransactionInfo(*(entry_->writers->network_transaction()));
   }
 
+  entry_ = nullptr;
+  mode_ = NONE;
+
   // Transactions in the midst of a Read call through writers will get any error
   // code through the IO callback but for idle transactions/transactions reading
   // from the cache, the error for a future Read must be stored here.
-  if (result < 0) {
-    entry_ = nullptr;
-    mode_ = NONE;
+  if (result < 0)
     shared_writing_error_ = result;
-  }
 }
 
 void HttpCache::Transaction::WriteModeTransactionAboutToBecomeReader() {
@@ -2092,8 +2092,8 @@ int HttpCache::Transaction::DoNetworkReadCacheWriteComplete(int result) {
   }
 
   if (result == 0) {
-    entry_ = nullptr;
-    mode_ = NONE;
+    DCHECK_EQ(NONE, mode_);
+    DCHECK(!entry_);
   } else {
     read_offset_ += result;
   }
