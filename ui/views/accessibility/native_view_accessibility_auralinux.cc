@@ -128,9 +128,9 @@ class AuraLinuxApplication
  private:
   friend struct base::DefaultSingletonTraits<AuraLinuxApplication>;
 
-  AuraLinuxApplication()
-      : platform_node_(ui::AXPlatformNode::Create(this)) {
+  AuraLinuxApplication() {
     data_.role = ui::AX_ROLE_APPLICATION;
+    platform_node_ = ui::AXPlatformNode::Create(this);
     if (ViewsDelegate::GetInstance()) {
       data_.AddStringAttribute(
           ui::AX_ATTR_NAME,
