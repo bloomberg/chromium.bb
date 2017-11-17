@@ -6,6 +6,7 @@ include_rules = [
   "+third_party/opus",
   "+third_party/webrtc",
   "+gpu/command_buffer/service/gpu_preferences.h",
+  "+media/cast",
   "+media/video",
   "+media/gpu",
   "+ui/gfx/geometry",
