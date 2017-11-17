@@ -29,7 +29,6 @@
 #include "core/dom/LayoutTreeBuilderTraversal.h"
 #include "core/dom/Node.h"
 #include "core/dom/V0InsertionPoint.h"
-#include "core/html/forms/HTMLOptGroupElement.h"
 #include "core/layout/LayoutObject.h"
 
 namespace blink {
