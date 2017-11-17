@@ -19,6 +19,20 @@ namespace ukm {
 
 namespace {
 
+// Merge the data from |in| to |out|.
+void MergeEntry(const mojom::UkmEntry* in, mojom::UkmEntry* out) {
+  if (out->event_hash) {
+    EXPECT_EQ(out->source_id, in->source_id);
+    EXPECT_EQ(out->event_hash, in->event_hash);
+  } else {
+    out->event_hash = in->event_hash;
+    out->source_id = in->source_id;
+  }
+  for (const auto& metric : in->metrics) {
+    out->metrics.emplace_back(metric->Clone());
+  }
+}
+
 // Provides a single merged ukm::mojom::UkmEntry proto that contains all metrics
 // from the given |entries|. |entries| must be non-empty, and all |entries| must
 // have the same |source_id| and |event_hash|.
@@ -27,16 +41,7 @@ mojom::UkmEntryPtr GetMergedEntry(
   EXPECT_FALSE(entries.empty());
   mojom::UkmEntryPtr merged_entry = mojom::UkmEntry::New();
   for (const auto* entry : entries) {
-    if (merged_entry->event_hash) {
-      EXPECT_EQ(merged_entry->source_id, entry->source_id);
-      EXPECT_EQ(merged_entry->event_hash, entry->event_hash);
-    } else {
-      merged_entry->event_hash = entry->event_hash;
-      merged_entry->source_id = entry->source_id;
-    }
-    for (const auto& metric : entry->metrics) {
-      merged_entry->metrics.emplace_back(metric->Clone());
-    }
+    MergeEntry(entry, merged_entry.get());
   }
   return merged_entry;
 }
@@ -119,12 +124,74 @@ const mojom::UkmEntry* TestUkmRecorder::GetEntryForEntryName(
   return nullptr;
 }
 
+std::vector<const mojom::UkmEntry*> TestUkmRecorder::GetEntriesByName(
+    base::StringPiece entry_name) const {
+  uint64_t hash = base::HashMetricName(entry_name);
+  std::vector<const mojom::UkmEntry*> result;
+  for (const auto& it : entries()) {
+    if (it->event_hash == hash)
+      result.push_back(it.get());
+  }
+  return result;
+}
+
+std::map<ukm::SourceId, mojom::UkmEntryPtr>
+TestUkmRecorder::GetMergedEntriesByName(base::StringPiece entry_name) const {
+  uint64_t hash = base::HashMetricName(entry_name);
+  std::map<ukm::SourceId, mojom::UkmEntryPtr> result;
+  for (const auto& it : entries()) {
+    if (it->event_hash != hash)
+      continue;
+    mojom::UkmEntryPtr& entry_ptr = result[it->source_id];
+    if (!entry_ptr)
+      entry_ptr = mojom::UkmEntry::New();
+    MergeEntry(it.get(), entry_ptr.get());
+  }
+  return result;
+}
+
+// static
+bool TestUkmRecorder::EntryHasMetric(const mojom::UkmEntry* entry,
+                                     base::StringPiece metric_name) {
+  return FindMetric(entry, metric_name) != nullptr;
+}
+
+void TestUkmRecorder::ExpectEntrySourceHasUrl(const mojom::UkmEntry* entry,
+                                              const GURL& url) const {
+  const UkmSource* src = GetSourceForSourceId(entry->source_id);
+  if (src == nullptr) {
+    FAIL() << "Entry source id has no associated Source.";
+    return;
+  }
+  EXPECT_EQ(src->url(), url);
+}
+
+// static
+const int64_t* TestUkmRecorder::GetEntryMetric(const mojom::UkmEntry* entry,
+                                               base::StringPiece metric_name) {
+  const mojom::UkmMetric* metric = FindMetric(entry, metric_name);
+  return metric ? &metric->value : nullptr;
+}
+
+// static
+void TestUkmRecorder::ExpectEntryMetric(const mojom::UkmEntry* entry,
+                                        base::StringPiece metric_name,
+                                        int64_t expected_value) {
+  const mojom::UkmMetric* metric = FindMetric(entry, metric_name);
+  if (metric == nullptr) {
+    FAIL() << "Failed to find metric for event: " << metric_name;
+    return;
+  }
+  EXPECT_EQ(metric->value, expected_value) << " for metric:" << metric_name;
+}
+
 // static
 const mojom::UkmMetric* TestUkmRecorder::FindMetric(
     const mojom::UkmEntry* entry,
-    const char* metric_name) {
+    base::StringPiece metric_name) {
+  uint64_t hash = base::HashMetricName(metric_name);
   for (const auto& metric : entry->metrics) {
-    if (metric->metric_hash == base::HashMetricName(metric_name))
+    if (metric->metric_hash == hash)
       return metric.get();
   }
   return nullptr;
