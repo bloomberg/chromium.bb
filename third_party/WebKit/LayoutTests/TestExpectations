@@ -1521,7 +1521,6 @@ crbug.com/421412 [ Mac ] fast/text/international/bdo-bidi-width.html [ Failure ]
 
 crbug.com/574283 [ Mac ] fast/scroll-behavior/smooth-scroll/ongoing-smooth-scroll-anchors.html [ Skip ]
 crbug.com/574283 [ Mac ] virtual/scroll_customization/fast/scroll-behavior/smooth-scroll/ongoing-smooth-scroll-anchors.html [ Skip ]
-crbug.com/574283 [ Mac ] virtual/threaded/fast/scroll-behavior/first-scroll-runs-on-compositor.html [ Skip ]
 crbug.com/574283 [ Mac ] virtual/threaded/fast/scroll-behavior/smooth-scroll/fixed-background-in-iframe.html [ Skip ]
 crbug.com/574283 [ Mac ] virtual/threaded/fast/scroll-behavior/smooth-scroll/horizontal-smooth-scroll-in-rtl.html [ Skip ]
 crbug.com/574283 [ Mac ] virtual/threaded/fast/scroll-behavior/smooth-scroll/main-thread-scrolling-reason-correctness.html [ Skip ]
@@ -1534,6 +1533,8 @@ crbug.com/665577 virtual/threaded/fast/scroll-behavior/smooth-scroll/mousewheel-
 crbug.com/665577 [ Linux Win ] virtual/threaded/fast/scroll-behavior/smooth-scroll/horizontal-smooth-scroll-in-rtl.html [ Pass Failure ]
 crbug.com/665577 [ Linux Win ] virtual/threaded/fast/scroll-behavior/smooth-scroll/mousewheel-scroll-interrupted.html [ Pass Failure ]
 crbug.com/665577 [ Linux Win ] virtual/threaded/fast/scroll-behavior/smooth-scroll/track-scroll.html [ Pass Failure ]
+
+crbug.com/778696 virtual/threaded/fast/scroll-behavior/first-scroll-runs-on-compositor.html [ Skip ]
 
 crbug.com/599670 [ Win Linux ] http/tests/devtools/resource-parameters-ipv6.html [ Timeout Failure Pass ]
 crbug.com/599670 [ Win Linux ] virtual/mojo-loading/http/tests/devtools/resource-parameters-ipv6.html [ Timeout Failure Pass ]
