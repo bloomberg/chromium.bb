@@ -112,9 +112,7 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
 #pragma mark - TestCase
 
 // Test case for the ContentSuggestion UI.
-@interface ContentSuggestionsTestCase : ChromeTestCase {
-  std::unique_ptr<base::test::ScopedCommandLine> _scopedCommandLine;
-}
+@interface ContentSuggestionsTestCase : ChromeTestCase
 
 // Current non-incognito browser state.
 @property(nonatomic, assign, readonly) ios::ChromeBrowserState* browserState;
@@ -172,11 +170,6 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
 }
 
 - (void)setUp {
-  // The command line is set up before [super setUp] in order to have the NTP
-  // opened with the command line already setup.
-  _scopedCommandLine = base::MakeUnique<base::test::ScopedCommandLine>();
-  base::CommandLine* commandLine = _scopedCommandLine->GetProcessCommandLine();
-  commandLine->AppendSwitch(switches::kEnableSuggestionsUI);
   self.provider->FireCategoryStatusChanged(self.category,
                                            CategoryStatus::AVAILABLE);
 
@@ -196,7 +189,6 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
 - (void)tearDown {
   self.provider->FireCategoryStatusChanged(
       self.category, CategoryStatus::ALL_SUGGESTIONS_EXPLICITLY_DISABLED);
-  _scopedCommandLine.reset();
   chrome_test_util::ClearBrowsingHistory();
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
   [super tearDown];

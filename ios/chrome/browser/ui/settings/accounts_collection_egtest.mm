@@ -77,38 +77,6 @@ id<GREYMatcher> ButtonWithIdentity(ChromeIdentity* identity) {
 
 @implementation AccountCollectionsTestCase
 
-+ (void)setUp {
-  [super setUp];
-
-  [self closeAllTabs];
-  ios::ChromeBrowserState* browserState =
-      chrome_test_util::GetOriginalBrowserState();
-
-  if (experimental_flags::IsSuggestionsUIEnabled()) {
-    // Sets the ContentSuggestionsService associated with this browserState to a
-    // service with no provider registered, allowing to register fake providers
-    // which do not require internet connection. The previous service is
-    // deleted.
-    IOSChromeContentSuggestionsServiceFactory::GetInstance()->SetTestingFactory(
-        browserState, ntp_snippets::CreateChromeContentSuggestionsService);
-  }
-}
-
-+ (void)tearDown {
-  [self closeAllTabs];
-  ios::ChromeBrowserState* browserState =
-      chrome_test_util::GetOriginalBrowserState();
-
-  if (experimental_flags::IsSuggestionsUIEnabled()) {
-    // Resets the Service associated with this browserState to a service with
-    // default providers. The previous service is deleted.
-    IOSChromeContentSuggestionsServiceFactory::GetInstance()->SetTestingFactory(
-        browserState,
-        ntp_snippets::CreateChromeContentSuggestionsServiceWithProviders);
-  }
-  [super tearDown];
-}
-
 // Tests that the Sync and Account Settings screen are correctly popped if the
 // signed in account is removed.
 - (void)testSignInPopUpAccountOnSyncSettings {

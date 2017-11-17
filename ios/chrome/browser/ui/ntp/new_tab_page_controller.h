@@ -114,7 +114,6 @@ std::string FragmentFromIdentifier(ntp_home::PanelIdentifier panel);
 @interface NewTabPageController (TestSupport)
 - (id<NewTabPagePanelProtocol>)currentController;
 - (BookmarkHomeTabletNTPController*)bookmarkController;
-- (GoogleLandingViewController*)googleLandingController;
 - (id<NewTabPagePanelProtocol>)incognitoController;
 @end
 

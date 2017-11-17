@@ -40,9 +40,6 @@ NSString* const kWhatsNewPromoStatus = @"WhatsNewPromoStatus";
 NSString* const kClearApplicationGroup = @"ClearApplicationGroup";
 const base::Feature kEnableThirdPartyKeyboardWorkaround{
     "EnableThirdPartyKeyboardWorkaround", base::FEATURE_ENABLED_BY_DEFAULT};
-const base::Feature kIOSNTPSuggestions{"IOSNTPSuggestions",
-                                       base::FEATURE_ENABLED_BY_DEFAULT};
-
 }  // namespace
 
 namespace experimental_flags {
@@ -142,19 +139,6 @@ bool IsViewCopyPasswordsEnabled() {
   NSString* viewCopyPasswordFlag = [[NSUserDefaults standardUserDefaults]
       objectForKey:kEnableViewCopyPasswords];
   return ![viewCopyPasswordFlag isEqualToString:@"Disabled"];
-}
-
-bool IsSuggestionsUIEnabled() {
-  // Check if the experimental flag is forced on or off.
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableSuggestionsUI))
-    return true;
-
-  if (command_line->HasSwitch(switches::kDisableSuggestionsUI))
-    return false;
-
-  // Check if the Finch experiment is turned on.
-  return base::FeatureList::IsEnabled(kIOSNTPSuggestions);
 }
 
 bool IsNewFeedbackKitEnabled() {
