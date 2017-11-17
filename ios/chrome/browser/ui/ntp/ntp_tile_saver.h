@@ -9,7 +9,7 @@
 
 #include "components/ntp_tiles/ntp_tile.h"
 
-@protocol GoogleLandingDataSource;
+@class FaviconAttributesProvider;
 @class NTPTile;
 
 // These functions are used to save the ntp tiles (favicon and name) offline for
@@ -22,7 +22,7 @@ namespace ntp_tile_saver {
 // Saves the most visited sites to disk with icons in |favicons_folder|, using
 // |favicon_fetcher| to get the favicons.
 void SaveMostVisitedToDisk(const ntp_tiles::NTPTilesVector& most_visited_data,
-                           id<GoogleLandingDataSource> favicon_fetcher,
+                           FaviconAttributesProvider* favicon_provider,
                            NSURL* favicons_folder);
 
 // Read the current saved most visited sites from disk.
@@ -31,7 +31,7 @@ NSDictionary* ReadSavedMostVisited();
 // Fetches the updated favicon for a single site and saves it in
 // |favicons_folder|.
 void UpdateSingleFavicon(const GURL& site_url,
-                         id<GoogleLandingDataSource> favicon_fetcher,
+                         FaviconAttributesProvider* favicon_provider,
                          NSURL* favicons_folder);
 
 }  // namespace ntp_tile_saver

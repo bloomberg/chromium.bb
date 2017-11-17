@@ -45,12 +45,13 @@ const CGFloat kMostVisitedFaviconMinimalSize = 32;
 @property(nonatomic, assign)
     ntp_snippets::ContentSuggestionsService* contentService;
 
-// FaviconAttributesProvider to fetch the favicon for the most visited tiles.
-@property(nonatomic, nullable, strong)
-    FaviconAttributesProvider* mostVisitedAttributesProvider;
 // FaviconAttributesProvider to fetch the favicon for the suggestions.
 @property(nonatomic, nullable, strong)
     FaviconAttributesProvider* suggestionsAttributesProvider;
+
+// Redefined as readwrite
+@property(nonatomic, nullable, strong, readwrite)
+    FaviconAttributesProvider* mostVisitedAttributesProvider;
 
 @end
 

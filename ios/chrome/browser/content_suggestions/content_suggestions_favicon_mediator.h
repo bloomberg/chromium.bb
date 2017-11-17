@@ -20,6 +20,7 @@ class ContentSuggestionsService;
 @protocol ContentSuggestionsDataSink;
 @class ContentSuggestionsItem;
 @class ContentSuggestionsMostVisitedItem;
+@class FaviconAttributesProvider;
 class LargeIconCache;
 
 // Mediator handling the fetching of the favicon for all ContentSuggestions
@@ -39,6 +40,10 @@ initWithContentService:
 
 // The data sink which should be notified of the changes in the items.
 @property(nonatomic, weak, nullable) id<ContentSuggestionsDataSink> dataSink;
+
+// FaviconAttributesProvider to fetch the favicon for the most visited tiles.
+@property(nonatomic, nullable, strong, readonly)
+    FaviconAttributesProvider* mostVisitedAttributesProvider;
 
 // Sets the |mostVisitedData| used to log the impression of the tiles.
 - (void)setMostVisitedDataForLogging:
