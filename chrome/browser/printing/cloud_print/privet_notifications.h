@@ -121,6 +121,12 @@ class PrivetNotificationService
   void OnNotificationsEnabledChanged();
   void StartLister();
 
+  void AddNotification(
+      int devices_active,
+      bool device_added,
+      std::unique_ptr<std::set<std::string>> displayed_notifications,
+      bool supports_synchronization);
+
   // Virtual for testing. The returned delegate is refcounted.
   virtual PrivetNotificationDelegate* CreateNotificationDelegate(
       Profile* profile);
