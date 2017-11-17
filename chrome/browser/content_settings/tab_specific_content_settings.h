@@ -457,9 +457,6 @@ class TabSpecificContentSettings
   std::string media_stream_requested_audio_device_;
   std::string media_stream_requested_video_device_;
 
-  // Holds the previous committed url during a navigation.
-  GURL previous_url_;
-
   // Observer to watch for content settings changed.
   ScopedObserver<HostContentSettingsMap, content_settings::Observer> observer_;
 

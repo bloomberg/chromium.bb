@@ -20,12 +20,6 @@ class HostContentSettingsMap;
 // the content setting usage.
 class ContentSettingsUsagesState {
  public:
-  // Information about navigation.
-  struct CommittedDetails {
-    GURL current_url;
-    GURL previous_url;
-  };
-
   ContentSettingsUsagesState(
       HostContentSettingsMap* host_content_settings_map,
       ContentSettingsType type);
@@ -41,7 +35,7 @@ class ContentSettingsUsagesState {
 
   // Delegated by WebContents to indicate a navigation has happened and we
   // may need to clear our settings.
-  void DidNavigate(const CommittedDetails& details);
+  void DidNavigate(const GURL& url, const GURL& previous_url);
 
   void ClearStateMap();
 
