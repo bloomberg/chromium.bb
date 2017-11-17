@@ -119,10 +119,18 @@ static constexpr int kFloorGridlineCount = 40;
 // Tiny distance to offset textures that should appear in the same plane.
 static constexpr float kTextureOffset = 0.01f;
 
-static constexpr float kVoiceSearchButtonWidth = 0.096f * kUrlBarDistance;
+static constexpr float kVoiceSearchUIGroupButtonDMM = 0.096f;
+static constexpr float kVoiceSearchButtonWidth =
+    kVoiceSearchUIGroupButtonDMM * kUrlBarDistance;
 static constexpr float kVoiceSearchButtonHeight = kVoiceSearchButtonWidth;
 static constexpr float kVoiceSearchButtonYOffset =
-    (0.5 * kUrlBarHeightDMM + 0.032) * kUrlBarDistance;
+    (0.5f * kUrlBarHeightDMM + 0.032f) * kUrlBarDistance;
+static constexpr float kVoiceSearchCloseButtonWidth =
+    kVoiceSearchUIGroupButtonDMM * kContentDistance;
+static constexpr float kVoiceSearchCloseButtonHeight =
+    kVoiceSearchCloseButtonWidth;
+static constexpr float kVoiceSearchCloseButtonYOffset =
+    0.316f * kContentDistance + 0.5f * kVoiceSearchCloseButtonWidth;
 
 static constexpr float kUnderDevelopmentNoticeFontHeightM =
     0.02f * kUrlBarDistance;
