@@ -34,7 +34,7 @@
 #include "bindings/core/v8/V8ErrorHandler.h"
 #include "bindings/core/v8/V8EventListener.h"
 #include "bindings/core/v8/V8Window.h"
-#include "bindings/core/v8/V8WorkerGlobalScopeEventListener.h"
+#include "bindings/core/v8/V8WorkerOrWorkletEventListener.h"
 #include "platform/bindings/V8PrivateProperty.h"
 
 namespace blink {
@@ -89,7 +89,7 @@ V8EventListener* V8EventListenerHelper::GetEventListener(
       isolate, object, listener_property, lookup,
       [object, is_attribute, script_state]() {
         return script_state->World().IsWorkerWorld()
-                   ? V8WorkerGlobalScopeEventListener::Create(
+                   ? V8WorkerOrWorkletEventListener::Create(
                          object, is_attribute, script_state)
                    : V8EventListener::Create(object, is_attribute,
                                              script_state);
