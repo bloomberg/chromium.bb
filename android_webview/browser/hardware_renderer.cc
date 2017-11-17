@@ -162,7 +162,8 @@ void HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info) {
                  draw_info->clip_right - draw_info->clip_left,
                  draw_info->clip_bottom - draw_info->clip_top);
   surfaces_->DrawAndSwap(viewport, clip, transform, surface_size_,
-                         viz::SurfaceId(frame_sink_id_, child_id_));
+                         viz::SurfaceId(frame_sink_id_, child_id_),
+                         device_scale_factor_);
 }
 
 void HardwareRenderer::AllocateSurface() {
