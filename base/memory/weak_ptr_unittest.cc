@@ -53,7 +53,27 @@ struct TargetBase {};
 struct Target : public TargetBase, public SupportsWeakPtr<Target> {
   virtual ~Target() {}
 };
+
 struct DerivedTarget : public Target {};
+
+// A class inheriting from Target and defining a nested type called 'Base'.
+// To guard against strange compilation errors.
+struct DerivedTargetWithNestedBase : public Target {
+  using Base = void;
+};
+
+// A struct with a virtual destructor.
+struct VirtualDestructor {
+  virtual ~VirtualDestructor() {}
+};
+
+// A class inheriting from Target where Target is not the first base, and where
+// the first base has a virtual method table. This creates a structure where the
+// Target base is not positioned at the beginning of
+// DerivedTargetMultipleInheritance.
+struct DerivedTargetMultipleInheritance : public VirtualDestructor,
+                                          public Target {};
+
 struct Arrow {
   WeakPtr<Target> target;
 };
@@ -288,6 +308,22 @@ TEST(WeakPtrTest, DerivedTarget) {
   DerivedTarget target;
   WeakPtr<DerivedTarget> ptr = AsWeakPtr(&target);
   EXPECT_EQ(&target, ptr.get());
+}
+
+TEST(WeakPtrTest, DerivedTargetWithNestedBase) {
+  DerivedTargetWithNestedBase target;
+  WeakPtr<DerivedTargetWithNestedBase> ptr = AsWeakPtr(&target);
+  EXPECT_EQ(&target, ptr.get());
+}
+
+TEST(WeakPtrTest, DerivedTargetMultipleInheritance) {
+  DerivedTargetMultipleInheritance d;
+  Target& b = d;
+  EXPECT_NE(static_cast<void*>(&d), static_cast<void*>(&b));
+  const WeakPtr<Target> pb = AsWeakPtr(&b);
+  EXPECT_EQ(pb.get(), &b);
+  const WeakPtr<DerivedTargetMultipleInheritance> pd = AsWeakPtr(&d);
+  EXPECT_EQ(pd.get(), &d);
 }
 
 TEST(WeakPtrFactoryTest, BooleanTesting) {
