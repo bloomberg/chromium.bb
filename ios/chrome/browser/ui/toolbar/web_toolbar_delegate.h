@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_UI_TOOLBAR_WEB_TOOLBAR_DELEGATE_H_
 #define IOS_CHROME_BROWSER_UI_TOOLBAR_WEB_TOOLBAR_DELEGATE_H_
 
-#import <Foundation/Foundation.h>
+#import "ios/chrome/browser/ui/toolbar/clean/toolbar_coordinator_delegate.h"
 
 class ToolbarModelIOS;
 
@@ -14,17 +14,10 @@ class WebState;
 }
 
 // Delegate interface, to be implemented by the WebToolbarController's delegate.
-@protocol WebToolbarDelegate<NSObject>
+@protocol WebToolbarDelegate<ToolbarCoordinatorDelegate>
 @required
-// Called when the location bar gains keyboard focus.
-- (IBAction)locationBarDidBecomeFirstResponder:(id)sender;
-// Called when the location bar loses keyboard focus.
-- (IBAction)locationBarDidResignFirstResponder:(id)sender;
-// Called when the location bar receives a key press.
-- (IBAction)locationBarBeganEdit:(id)sender;
 // Returns the WebState.
 - (web::WebState*)currentWebState;
-- (ToolbarModelIOS*)toolbarModelIOS;
 @optional
 // Called before the toolbar screenshot gets updated.
 - (void)willUpdateToolbarSnapshot;
