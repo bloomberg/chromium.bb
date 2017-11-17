@@ -12,6 +12,7 @@ viz_test("viz_unittests") {
   deps = [
     "//base",
     "//base/test:test_support",
+    "//components/viz/client:unit_tests",
     "//components/viz/common:unit_tests",
     "//components/viz/host:unit_tests",
     "//components/viz/service:unit_tests",
