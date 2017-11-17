@@ -1,6 +1,5 @@
 Tests V8 cache information of Service Worker Cache Storage in timeline
 
-
 v8.compile Properties:
 {
     data : {

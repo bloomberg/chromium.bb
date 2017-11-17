@@ -1,10 +1,12 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/service-workers/service-workers-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(`Tests the way service workers don't enable DOM agent and does enable Debugger agent.\n`);
+  await TestRunner.loadModule('application_test_runner');
+  await TestRunner.showPanel('resources');
+
   var scriptURL = 'http://127.0.0.1:8000/devtools/service-workers/resources/service-worker-empty.js';
   var scope = 'http://127.0.0.1:8000/devtools/service-workers/resources/scope1/';
 
@@ -45,11 +47,4 @@ function test() {
     }
     return obj;
   }
-}
-
-</script>
-</head>
-<body onload="runTest()">
-<p>Tests the way service workers don't enable DOM agent and does enable Debugger agent.</p>
-</body>
-</html>
+})();

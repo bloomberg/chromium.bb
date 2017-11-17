@@ -1,11 +1,13 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/debugger-test.js"></script>
-<script src="../../inspector/service-workers/service-workers-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(`Tests that we can pause in service worker.\n`);
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.loadModule('application_test_runner');
+  await TestRunner.showPanel('resources');
+
   var scriptURL = 'http://127.0.0.1:8000/devtools/service-workers/resources/service-worker-debugger.js';
   var scope = 'http://127.0.0.1:8000/devtools/service-workers/resources/scope-debugger/';
 
@@ -20,11 +22,4 @@ function test() {
     SourcesTestRunner.captureStackTrace(frames, async);
     SourcesTestRunner.completeDebuggerTest();
   }
-}
-
-</script>
-</head>
-<body onload="runTest()">
-<p>Tests that we can pause in service worker.</p>
-</body>
-</html>
+})();
