@@ -19,8 +19,6 @@ class COMPOSITOR_EXPORT LayerOwner {
   LayerOwner();
   virtual ~LayerOwner();
 
-  void SetLayer(std::unique_ptr<Layer> layer);
-
   // Releases the owning reference to its layer, and returns it.
   // This is used when you need to animate the presentation of the owner just
   // prior to destroying it. The Owner can be destroyed soon after calling this
@@ -42,6 +40,7 @@ class COMPOSITOR_EXPORT LayerOwner {
   bool OwnsLayer() const;
 
  protected:
+  void SetLayer(std::unique_ptr<Layer> layer);
   void DestroyLayer();
 
  private:
