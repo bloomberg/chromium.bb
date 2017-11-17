@@ -223,6 +223,9 @@ class PDFEngine {
 
     virtual void SelectionChanged(const pp::Rect& left, const pp::Rect& right) {
     }
+
+    // Sets edit mode state.
+    virtual void IsEditModeChanged(bool is_edit_mode) {}
   };
 
   // Factory method to create an instance of the PDF Engine.
