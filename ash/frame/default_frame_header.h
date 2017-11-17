@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_FRAME_DEFAULT_HEADER_PAINTER_H_
-#define ASH_FRAME_DEFAULT_HEADER_PAINTER_H_
+#ifndef ASH_FRAME_DEFAULT_FRAME_HEADER_H_
+#define ASH_FRAME_DEFAULT_FRAME_HEADER_H_
 
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/frame/header_painter.h"
+#include "ash/frame/frame_header.h"
 #include "ash/public/interfaces/window_style.mojom.h"
 #include "base/compiler_specific.h"  // override
 #include "base/gtest_prod_util.h"
@@ -19,31 +19,31 @@
 namespace gfx {
 class Rect;
 class SlideAnimation;
-}
+}  // namespace gfx
 namespace views {
 class View;
 class Widget;
-}
+}  // namespace views
 
 namespace ash {
 class FrameCaptionButton;
 class FrameCaptionButtonContainerView;
 
-// Helper class for painting the default window header.
-class ASH_EXPORT DefaultHeaderPainter : public HeaderPainter,
-                                        public gfx::AnimationDelegate {
+// Helper class for managing the default window header.
+class ASH_EXPORT DefaultFrameHeader : public FrameHeader,
+                                      public gfx::AnimationDelegate {
  public:
-  explicit DefaultHeaderPainter(
+  explicit DefaultFrameHeader(
       mojom::WindowStyle window_style = mojom::WindowStyle::DEFAULT);
-  ~DefaultHeaderPainter() override;
+  ~DefaultFrameHeader() override;
 
-  // DefaultHeaderPainter does not take ownership of any of the parameters.
+  // DefaultFrameHeader does not take ownership of any of the parameters.
   void Init(views::Widget* frame,
             views::View* header_view,
             FrameCaptionButtonContainerView* caption_button_container,
             FrameCaptionButton* back_button);
 
-  // HeaderPainter overrides:
+  // FrameHeader overrides:
   int GetMinimumHeaderWidth() const override;
   void PaintHeader(gfx::Canvas* canvas, Mode mode) override;
   void LayoutHeader() override;
@@ -74,9 +74,9 @@ class ASH_EXPORT DefaultHeaderPainter : public HeaderPainter,
   bool ShouldUseLightImages() const;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(DefaultHeaderPainterTest, BackButtonAlignment);
-  FRIEND_TEST_ALL_PREFIXES(DefaultHeaderPainterTest, TitleIconAlignment);
-  FRIEND_TEST_ALL_PREFIXES(DefaultHeaderPainterTest, LightIcons);
+  FRIEND_TEST_ALL_PREFIXES(DefaultFrameHeaderTest, BackButtonAlignment);
+  FRIEND_TEST_ALL_PREFIXES(DefaultFrameHeaderTest, TitleIconAlignment);
+  FRIEND_TEST_ALL_PREFIXES(DefaultFrameHeaderTest, LightIcons);
 
   // gfx::AnimationDelegate override:
   void AnimationProgressed(const gfx::Animation* animation) override;
@@ -128,9 +128,9 @@ class ASH_EXPORT DefaultHeaderPainter : public HeaderPainter,
 
   std::unique_ptr<gfx::SlideAnimation> activation_animation_;
 
-  DISALLOW_COPY_AND_ASSIGN(DefaultHeaderPainter);
+  DISALLOW_COPY_AND_ASSIGN(DefaultFrameHeader);
 };
 
 }  // namespace ash
 
-#endif  // ASH_FRAME_DEFAULT_HEADER_PAINTER_H_
+#endif  // ASH_FRAME_DEFAULT_FRAME_HEADER_H_

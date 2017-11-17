@@ -5,7 +5,7 @@ ash/accelerators/accelerator_controller_delegate.h
 ash/accelerators/accelerator_controller_delegate_aura.h
 ash/accelerators/accelerator_table.h
 ash/ash_export.h
-ash/frame/header_painter.h
+ash/frame/frame_header.h
 ash/metrics/task_switch_metrics_recorder.h
 ash/metrics/task_switch_source.h
 ash/metrics/user_metrics_action.h
@@ -70,7 +70,7 @@ chrome/browser/ui/ash/ash_util.h
 chrome/browser/ui/ash/multi_user/multi_user_util.h
 chrome/browser/ui/network_profile_bubble.h
 chrome/browser/ui/passwords/manage_passwords_icon.h
-chrome/browser/ui/views/frame/browser_header_painter_ash.h
+chrome/browser/ui/views/frame/browser_frame_header_ash.h
 chrome/browser/ui/webui/large_icon_source.h
 chrome/common/mac/app_shim_launch.h
 chrome/common/mac/app_shim_messages.h

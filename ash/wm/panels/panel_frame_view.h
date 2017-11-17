@@ -17,7 +17,7 @@ class ImageView;
 }
 
 namespace ash {
-class DefaultHeaderPainter;
+class DefaultFrameHeader;
 class FrameCaptionButtonContainerView;
 
 class ASH_EXPORT PanelFrameView : public views::NonClientFrameView,
@@ -39,7 +39,7 @@ class ASH_EXPORT PanelFrameView : public views::NonClientFrameView,
   const char* GetClassName() const override;
 
  private:
-  void InitHeaderPainter();
+  void InitFrameHeader();
 
   aura::Window* GetWidgetWindow();
 
@@ -74,7 +74,7 @@ class ASH_EXPORT PanelFrameView : public views::NonClientFrameView,
   gfx::Rect client_view_bounds_;
 
   // Helper class for painting the header.
-  std::unique_ptr<DefaultHeaderPainter> header_painter_;
+  std::unique_ptr<DefaultFrameHeader> frame_header_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelFrameView);
 };
