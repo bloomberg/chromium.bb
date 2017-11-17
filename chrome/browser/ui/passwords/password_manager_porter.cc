@@ -9,7 +9,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
@@ -18,6 +17,7 @@
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
+#include "chrome/browser/ui/passwords/destination_file_system.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/password_manager/core/browser/export/password_csv_writer.h"
@@ -34,11 +34,6 @@
 #endif
 
 namespace {
-
-// Wrapper for writing an std::string to a file.
-void WriteToFile(const base::FilePath& path, std::string data) {
-  base::WriteFile(path, data.c_str(), data.size());
-}
 
 // The following are not used on Android due to the |SelectFileDialog| being
 // unused.
@@ -206,10 +201,14 @@ void PasswordManagerPorter::ExportPasswordsToPath(const base::FilePath& path) {
       credential_provider_interface_->GetAllPasswords();
   UMA_HISTOGRAM_COUNTS("PasswordManager.ExportedPasswordsPerUserInCSV",
                        password_list.size());
+  std::unique_ptr<DestinationFileSystem> destination(
+      new DestinationFileSystem(path));
+
   base::PostTaskWithTraits(
       FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
-      base::Bind(
-          &WriteToFile, path,
+      base::BindOnce(
+          base::IgnoreResult(&DestinationFileSystem::Write),
+          base::Passed(std::move(destination)),
           base::Passed(password_manager::PasswordCSVWriter::SerializePasswords(
               password_list))));
 }
