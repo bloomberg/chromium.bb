@@ -164,11 +164,36 @@ void FormDataEncoder::AddFilenameToMultiPartHeader(
     Vector<char>& buffer,
     const WTF::TextEncoding& encoding,
     const String& filename) {
-  // FIXME: This loses data irreversibly if the filename includes characters you
-  // can't encode in the website's character set.
+  // Characters that cannot be encoded using the form's encoding will
+  // be escaped using numeric character references, e.g. &#128514; for
+  // 😂.
+  //
+  // This behavior is intended to match existing Firefox and Edge
+  // behavior.
+  //
+  // This aspect of multipart file upload (how to replace filename
+  // characters not representable in the form charset) is not
+  // currently specified in HTML, though it may be a good candidate
+  // for future standardization. An HTML issue tracker entry has
+  // been added for this: https://github.com/whatwg/html/issues/3223
+  //
+  // This behavior also exactly matches the already-standardized
+  // replacement behavior from HTML for entity names and values in
+  // multipart form data. The HTML standard specifically overrides RFC
+  // 7578 in this case and leaves the actual substitution mechanism
+  // implementation-defined.
+  //
+  // See also:
+  //
+  // https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#multipart-form-data
+  // https://www.chromestatus.com/features/5634575908732928
+  // https://crbug.com/661819
+  // https://encoding.spec.whatwg.org/#concept-encoding-process
+  // https://tools.ietf.org/html/rfc7578#section-4.2
+  // https://tools.ietf.org/html/rfc5987#section-3.2
   Append(buffer, "; filename=\"");
-  AppendQuotedString(
-      buffer, encoding.Encode(filename, WTF::kQuestionMarksForUnencodables));
+  AppendQuotedString(buffer,
+                     encoding.Encode(filename, WTF::kEntitiesForUnencodables));
   Append(buffer, '"');
 }
 
