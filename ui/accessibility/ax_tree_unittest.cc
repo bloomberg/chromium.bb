@@ -952,7 +952,7 @@ TEST(AXTreeTest, GetBoundsEmptyBoundsInheritsFromParent) {
   EXPECT_TRUE(IsNodeOffscreen(tree, 3));
 }
 
-TEST(AXTreeTest, GetBoundsCropsChildToRoot) {
+TEST(AXTreeTest, DISABLED_GetBoundsCropsChildToRoot) {
   AXTreeUpdate tree_update;
   tree_update.root_id = 1;
   tree_update.nodes.resize(5);
