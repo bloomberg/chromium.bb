@@ -1531,10 +1531,6 @@ public class Tab
         mIsTabStateDirty = true;
 
         if (finalizeCallback != null) finalizeCallback.run();
-
-        for (TabObserver observer : mObservers) {
-            observer.onReparentingFinished(this);
-        }
     }
 
     /**
