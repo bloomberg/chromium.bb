@@ -43818,6 +43818,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.PushedStreamAlreadyHasResponseHeaders" enum="Boolean">
+  <obsolete>
+    Deprecated 11/2017.
+  </obsolete>
   <owner>bnc@chromium.org</owner>
   <summary>
     Records whether HTTP/2 response headers have already arrived on a pushed
