@@ -156,8 +156,8 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader,
                                     network::mojom::FetchCredentialsMode,
                                     const ResourceResponse&,
                                     std::unique_ptr<WebDataConsumerHandle>);
-  // TODO(hintzed): CORS handled in Blink. Methods below named *BlinkCORS are to
-  // be removed after https://crbug.com/736308 is fixed (i.e. when CORS is
+  // TODO(toyoshim): CORS handled in Blink. Methods below named *BlinkCORS are
+  // to be removed after https://crbug.com/736308 is fixed (i.e. when CORS is
   // handled out of Blink).
   void DispatchInitialRequestBlinkCORS(ResourceRequest&);
   void MakeCrossOriginAccessRequestBlinkCORS(const ResourceRequest&);

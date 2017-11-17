@@ -59,8 +59,8 @@ CORSURLLoader::CORSURLLoader(
 
   if (fetch_cors_flag_ &&
       fetch_request_mode_ == FetchRequestMode::kSameOrigin) {
-    forwarding_client_->OnComplete(
-        network::URLLoaderStatus(CORSError::kDisallowedByMode));
+    forwarding_client_->OnComplete(network::URLLoaderStatus(
+        network::CORSErrorStatus(CORSError::kDisallowedByMode)));
     return;
   }
 
@@ -122,7 +122,9 @@ void CORSURLLoader::OnReceiveResponse(
         blink::WebHTTPHeaderMap(response_head.headers.get()),
         fetch_credentials_mode_, security_origin_);
     if (cors_error) {
-      HandleComplete(network::URLLoaderStatus(*cors_error));
+      // TODO(toyoshim): Generate related_response_headers here.
+      network::CORSErrorStatus cors_error_status(*cors_error);
+      HandleComplete(network::URLLoaderStatus(cors_error_status));
       return;
     }
   }

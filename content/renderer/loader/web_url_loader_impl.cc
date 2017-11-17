@@ -906,13 +906,15 @@ void WebURLLoaderImpl::Context::OnCompletedRequest(
         this, TRACE_EVENT_FLAG_FLOW_IN);
 
     if (status.error_code != net::OK) {
-      WebURLError error(status.error_code,
-                        status.exists_in_cache
-                            ? WebURLError::HasCopyInCache::kTrue
-                            : WebURLError::HasCopyInCache::kFalse,
-                        WebURLError::IsWebSecurityViolation::kFalse, url_);
-      client_->DidFail(error, total_transfer_size, encoded_body_size,
-                       status.decoded_body_length);
+      const WebURLError::HasCopyInCache has_copy_in_cache =
+          status.exists_in_cache ? WebURLError::HasCopyInCache::kTrue
+                                 : WebURLError::HasCopyInCache::kFalse;
+      client_->DidFail(
+          status.cors_error_status
+              ? WebURLError(*status.cors_error_status, has_copy_in_cache, url_)
+              : WebURLError(status.error_code, has_copy_in_cache,
+                            WebURLError::IsWebSecurityViolation::kFalse, url_),
+          total_transfer_size, encoded_body_size, status.decoded_body_length);
     } else {
       client_->DidFinishLoading(
           (status.completion_time - TimeTicks()).InSecondsF(),
@@ -1240,16 +1242,23 @@ void WebURLLoaderImpl::LoadSynchronously(const WebURLRequest& request,
 
   // TODO(tc): For file loads, we may want to include a more descriptive
   // status code or status text.
-  int error_code = sync_load_response.error_code;
+  const int error_code = sync_load_response.error_code;
   if (error_code != net::OK) {
-    // SyncResourceHandler returns ERR_ABORTED for CORS redirect errors,
-    // so we treat the error as a web security violation.
-    const bool is_web_security_violation = error_code == net::ERR_ABORTED;
-    error = WebURLError(error_code, WebURLError::HasCopyInCache::kFalse,
-                        is_web_security_violation
-                            ? WebURLError::IsWebSecurityViolation::kTrue
-                            : WebURLError::IsWebSecurityViolation::kFalse,
-                        final_url);
+    if (sync_load_response.cors_error) {
+      // TODO(toyoshim): Pass CORS error related headers here.
+      error =
+          WebURLError(network::CORSErrorStatus(*sync_load_response.cors_error),
+                      WebURLError::HasCopyInCache::kFalse, final_url);
+    } else {
+      // SyncResourceHandler returns ERR_ABORTED for CORS redirect errors,
+      // so we treat the error as a web security violation.
+      const WebURLError::IsWebSecurityViolation is_web_security_violation =
+          error_code == net::ERR_ABORTED
+              ? WebURLError::IsWebSecurityViolation::kTrue
+              : WebURLError::IsWebSecurityViolation::kFalse;
+      error = WebURLError(error_code, WebURLError::HasCopyInCache::kFalse,
+                          is_web_security_violation, final_url);
+    }
     return;
   }
 
