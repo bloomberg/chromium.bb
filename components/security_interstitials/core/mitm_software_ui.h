@@ -26,7 +26,7 @@ class MITMSoftwareUI {
   ~MITMSoftwareUI();
 
   void PopulateStringsForHTML(base::DictionaryValue* load_time_data);
-  void HandleCommand(SecurityInterstitialCommands command);
+  void HandleCommand(SecurityInterstitialCommand command);
 
  protected:
   void PopulateEnterpriseUserStringsForHTML(

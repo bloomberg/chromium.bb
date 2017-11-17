@@ -25,7 +25,7 @@ class SuperfishErrorUI : public SSLErrorUI {
   ~SuperfishErrorUI() override {}
 
   void PopulateStringsForHTML(base::DictionaryValue* load_time_data) override;
-  void HandleCommand(SecurityInterstitialCommands command) override;
+  void HandleCommand(SecurityInterstitialCommand command) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SuperfishErrorUI);

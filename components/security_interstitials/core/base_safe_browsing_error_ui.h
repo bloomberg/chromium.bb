@@ -148,7 +148,7 @@ class BaseSafeBrowsingErrorUI {
 
   virtual void PopulateStringsForHtml(
       base::DictionaryValue* load_time_data) = 0;
-  virtual void HandleCommand(SecurityInterstitialCommands command) = 0;
+  virtual void HandleCommand(SecurityInterstitialCommand command) = 0;
 
   virtual int GetHTMLTemplateId() const = 0;
 

@@ -224,8 +224,8 @@ void CaptivePortalBlockingPage::CommandReceived(const std::string& command) {
   int command_num = 0;
   bool command_is_num = base::StringToInt(command, &command_num);
   DCHECK(command_is_num) << command;
-  security_interstitials::SecurityInterstitialCommands cmd =
-      static_cast<security_interstitials::SecurityInterstitialCommands>(
+  security_interstitials::SecurityInterstitialCommand cmd =
+      static_cast<security_interstitials::SecurityInterstitialCommand>(
           command_num);
   switch (cmd) {
     case security_interstitials::CMD_OPEN_LOGIN:

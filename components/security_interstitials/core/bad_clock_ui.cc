@@ -82,7 +82,7 @@ void BadClockUI::PopulateClockStrings(base::DictionaryValue* load_time_data) {
       l10n_util::GetStringUTF16(IDS_CLOCK_ERROR_EXPLANATION));
 }
 
-void BadClockUI::HandleCommand(SecurityInterstitialCommands command) {
+void BadClockUI::HandleCommand(SecurityInterstitialCommand command) {
   switch (command) {
     case CMD_DONT_PROCEED:
       controller_->GoBack();

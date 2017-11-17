@@ -38,7 +38,7 @@ class SafeBrowsingQuietErrorUI
   // when creating the HTML.
   void PopulateStringsForHtml(base::DictionaryValue* load_time_data) override;
 
-  void HandleCommand(SecurityInterstitialCommands command) override;
+  void HandleCommand(SecurityInterstitialCommand command) override;
 
   // Manually set whether displaying in a giant WebView. Specifially used in
   // tests.

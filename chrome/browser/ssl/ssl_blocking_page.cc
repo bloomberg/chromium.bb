@@ -242,7 +242,7 @@ void SSLBlockingPage::CommandReceived(const std::string& command) {
   bool retval = base::StringToInt(command, &cmd);
   DCHECK(retval);
   ssl_error_ui_->HandleCommand(
-      static_cast<security_interstitials::SecurityInterstitialCommands>(cmd));
+      static_cast<security_interstitials::SecurityInterstitialCommand>(cmd));
 
   // Special handling for the reporting preference being changed.
   switch (cmd) {

@@ -68,7 +68,7 @@ void MITMSoftwareUI::PopulateStringsForHTML(
   MITMSoftwareUI::PopulateAtHomeUserStringsForHTML(load_time_data);
 }
 
-void MITMSoftwareUI::HandleCommand(SecurityInterstitialCommands command) {
+void MITMSoftwareUI::HandleCommand(SecurityInterstitialCommand command) {
   switch (command) {
     case CMD_DO_REPORT:
       controller_->SetReportingPreference(true);

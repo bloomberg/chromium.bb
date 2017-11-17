@@ -27,7 +27,7 @@ class BadClockUI {
   ~BadClockUI();
 
   void PopulateStringsForHTML(base::DictionaryValue* load_time_data);
-  void HandleCommand(SecurityInterstitialCommands command);
+  void HandleCommand(SecurityInterstitialCommand command);
 
  private:
   void PopulateClockStrings(base::DictionaryValue* load_time_data);

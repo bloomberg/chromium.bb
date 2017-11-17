@@ -48,7 +48,7 @@ class SSLErrorUI {
   virtual ~SSLErrorUI();
 
   virtual void PopulateStringsForHTML(base::DictionaryValue* load_time_data);
-  virtual void HandleCommand(SecurityInterstitialCommands command);
+  virtual void HandleCommand(SecurityInterstitialCommand command);
 
  protected:
   const net::SSLInfo& ssl_info() const;
