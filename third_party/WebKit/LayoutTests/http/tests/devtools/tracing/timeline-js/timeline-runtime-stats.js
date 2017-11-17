@@ -1,17 +1,27 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/timeline-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function performActions()
-{
-    var div = document.getElementById("foo")
-    div.style.width = "10px";
-    return div.offsetWidth;
-}
+(async function() {
+  TestRunner.addResult(`Check that RuntimeCallStats are present in profile.\n`);
+  await TestRunner.loadModule('performance_test_runner');
+  await TestRunner.showPanel('timeline');
+  await TestRunner.loadHTML(`
+      <div id="foo">
 
-function test() {
+
+
+      </div>
+    `);
+  await TestRunner.evaluateInPagePromise(`
+      function performActions()
+      {
+          var div = document.getElementById("foo")
+          div.style.width = "10px";
+          return div.offsetWidth;
+      }
+  `);
+
   Runtime.experiments.enableForTest('timelineV8RuntimeCallStats');
   Runtime.experiments.enableForTest('timelineShowAllEvents');
   PerformanceTestRunner.evaluateWithTimeline('performActions()', finish);
@@ -25,15 +35,4 @@ function test() {
     TestRunner.assertTrue(!!frame, 'FunctionCallback frame not found');
     TestRunner.completeTest();
   }
-}
-
-</script>
-</head>
-
-<body onload="runTest()">
-<div id="foo" />
-<p>
-Check that RuntimeCallStats are present in profile.
-</p>
-</body>
-</html>
+})();

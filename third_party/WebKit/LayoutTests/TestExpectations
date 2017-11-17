@@ -3872,17 +3872,17 @@ crbug.com/760546 [ Win7 Debug ] virtual/mojo-loading/http/tests/devtools/tracing
 
 # This test has a fixed number of time which can depend on performance.
 
-crbug.com/669329 http/tests/devtools/tracing/timeline-js/timeline-runtime-stats.html [ Pass Failure Crash ]
-crbug.com/669329 virtual/threaded/http/tests/devtools/tracing/timeline-js/timeline-runtime-stats.html [ Pass Failure Crash ]
-crbug.com/667560 virtual/mojo-loading/http/tests/devtools/tracing/timeline-js/timeline-runtime-stats.html [ Pass Failure Crash ]
+crbug.com/669329 http/tests/devtools/tracing/timeline-js/timeline-runtime-stats.js [ Pass Failure Crash ]
+crbug.com/669329 virtual/threaded/http/tests/devtools/tracing/timeline-js/timeline-runtime-stats.js [ Pass Failure Crash ]
+crbug.com/667560 virtual/mojo-loading/http/tests/devtools/tracing/timeline-js/timeline-runtime-stats.js [ Pass Failure Crash ]
 
 # Tests timing out on WebKit Linux Trusty MSAN
 crbug.com/760543 [ Linux Release ] http/tests/devtools/profiler/heap-snapshot-inspect-dom-wrapper.js [ Pass Timeout ]
 crbug.com/760543 [ Linux Release ] virtual/mojo-loading/http/tests/devtools/profiler/heap-snapshot-inspect-dom-wrapper.js [ Pass Timeout ]
 crbug.com/760543 [ Linux Release ] http/tests/devtools/tracing/console-timeline.js [ Pass Timeout ]
 crbug.com/760543 [ Linux Release ] virtual/mojo-loading/http/tests/devtools/tracing/console-timeline.js [ Pass Timeout ]
-crbug.com/760543 [ Linux Release ] http/tests/devtools/tracing/timeline-layout/timeline-layout-with-invalidations.html [ Pass Timeout ]
-crbug.com/760543 [ Linux Release ] virtual/mojo-loading/http/tests/devtools/tracing/timeline-layout/timeline-layout-with-invalidations.html [ Pass Timeout ]
+crbug.com/760543 [ Linux Release ] http/tests/devtools/tracing/timeline-layout/timeline-layout-with-invalidations.js [ Pass Timeout ]
+crbug.com/760543 [ Linux Release ] virtual/mojo-loading/http/tests/devtools/tracing/timeline-layout/timeline-layout-with-invalidations.js [ Pass Timeout ]
 crbug.com/760543 [ Linux Release ] http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations.html [ Pass Timeout ]
 crbug.com/760543 [ Linux Release ] virtual/mojo-loading/http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations.html [ Pass Timeout ]
 crbug.com/760543 [ Linux Release ] http/tests/devtools/tracing/timeline-paint/timeline-paint-with-style-recalc-invalidations.html [ Pass Timeout ]

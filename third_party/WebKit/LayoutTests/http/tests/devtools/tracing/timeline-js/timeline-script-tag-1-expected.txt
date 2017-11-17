@@ -1,6 +1,4 @@
-CONSOLE MESSAGE: line 8: iframe loaded
 Tests the Timeline API instrumentation of an HTML script tag.
-
 
 EvaluateScript Properties:
 {

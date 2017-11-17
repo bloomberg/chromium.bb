@@ -1,10 +1,12 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/timeline-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(`Checks the FunctionCall with no closing event processed properly.\n`);
+  await TestRunner.loadModule('performance_test_runner');
+  await TestRunner.showPanel('timeline');
+
   var sessionId = '6.23';
   var rawTraceEvents = [
     {
@@ -60,14 +62,4 @@ function test() {
       e => e.name === TimelineModel.TimelineModel.RecordType.FunctionCall);
   TestRunner.addResult(`${event.startTime} ${event.endTime}`);
   TestRunner.completeTest();
-}
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Checks the FunctionCall with no closing event processed properly.
-</p>
-</body>
-</html>
+})();

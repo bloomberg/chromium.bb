@@ -6220,7 +6220,7 @@ crbug.com/591099 http/tests/devtools/sources/debugger-ui/function-generator-deta
 crbug.com/591099 http/tests/devtools/sources/debugger/properties-special.js [ Failure ]
 crbug.com/591099 http/tests/devtools/startup/console/console-format-startup.html [ Failure ]
 crbug.com/591099 http/tests/devtools/text-autosizing-override.js [ Failure ]
-crbug.com/591099 http/tests/devtools/tracing/timeline-layout/timeline-layout-with-invalidations.html [ Failure ]
+crbug.com/591099 http/tests/devtools/tracing/timeline-layout/timeline-layout-with-invalidations.js [ Failure ]
 crbug.com/591099 http/tests/devtools/tracing/timeline-misc/timeline-bound-function.html [ Crash Failure ]
 crbug.com/591099 http/tests/devtools/tracing/timeline-paint/paint-profiler-update.html [ Crash ]
 crbug.com/591099 http/tests/devtools/websocket/network-preserve-selection-on-frame-receive.html [ Crash ]
