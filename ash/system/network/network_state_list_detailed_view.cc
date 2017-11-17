@@ -308,6 +308,10 @@ bool NetworkStateListDetailedView::ResetInfoBubble() {
 
 void NetworkStateListDetailedView::OnInfoBubbleDestroyed() {
   info_bubble_ = nullptr;
+
+  // Widget of info bubble is activated while info bubble is shown. To move
+  // focus back to the widget of this view, activate it again here.
+  GetWidget()->Activate();
 }
 
 views::View* NetworkStateListDetailedView::CreateNetworkInfoView() {
