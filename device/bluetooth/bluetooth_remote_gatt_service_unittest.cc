@@ -286,10 +286,6 @@ TEST_F(BluetoothRemoteGattServiceTest, GattCharacteristics_ObserversCalls) {
                              /* properties */ 0);
   SimulateGattCharacteristic(service, kTestUUIDReconnectionAddress,
                              /* properties */ 0);
-#if !defined(OS_WIN)
-  // TODO(620895) GattCharacteristicAdded has to be implemented for Windows.
-  EXPECT_EQ(4, observer.gatt_characteristic_added_count());
-#endif  // !defined(OS_WIN)
 
   // Simulate remove of characteristics one by one.
   EXPECT_EQ(4u, service->GetCharacteristics().size());
@@ -317,15 +313,6 @@ TEST_F(BluetoothRemoteGattServiceTest, GattCharacteristics_ObserversCalls) {
   EXPECT_EQ(4, observer.gatt_characteristic_removed_count());
   EXPECT_FALSE(service->GetCharacteristic(removed_char));
   EXPECT_EQ(0u, service->GetCharacteristics().size());
-
-#if defined(OS_MACOSX)
-  // SimulateGattServicesDiscovered
-  // 4 * SimulateGattCharacteristic
-  // 4 * SimulateGattCharacteristicRemoved
-  EXPECT_EQ(9, observer.gatt_service_changed_count());
-#else  // defined(OS_MACOSX)
-  EXPECT_EQ(4, observer.gatt_service_changed_count());
-#endif  // defined(OS_MACOSX)
 }
 #endif  //  defined(OS_MACOSX) || defined(OS_WIN)
 

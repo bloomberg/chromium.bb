@@ -184,6 +184,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
         BluetoothAdapter* adapter,
         BluetoothRemoteGattService* service) {}
 
+    // See "Deprecated GATT Added/Removed Events NOTE" above.
+    //
     // Called when properties of the remote GATT service |service| have changed.
     // This will get called for properties such as UUID, as well as for changes
     // to the list of known characteristics and included services. Observers
