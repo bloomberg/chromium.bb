@@ -72,7 +72,8 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
 
   // Creates workers following the |params| specification, allowing existing and
   // future tasks to run. Uses |service_thread_task_runner| to monitor for
-  // blocked threads in the pool. |thread_environment| Can only be called once.
+  // blocked threads in the pool. |worker_environment| specifies any requested
+  // environment to execute the tasks. Can only be called once.
   // CHECKs on failure.
   void Start(const SchedulerWorkerPoolParams& params,
              scoped_refptr<TaskRunner> service_thread_task_runner,
