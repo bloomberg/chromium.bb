@@ -14,7 +14,9 @@
 #include "bindings/core/v8/V8ObjectBuilder.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "bindings/modules/v8/V8AudioParamDescriptor.h"
+#include "bindings/modules/v8/V8AudioWorkletProcessor.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/MessagePort.h"
 #include "core/typed_arrays/DOMTypedArray.h"
 #include "core/workers/GlobalScopeCreationParams.h"
 #include "modules/webaudio/AudioBuffer.h"
@@ -46,6 +48,12 @@ AudioWorkletGlobalScope::AudioWorkletGlobalScope(
 
 AudioWorkletGlobalScope::~AudioWorkletGlobalScope() {}
 
+void AudioWorkletGlobalScope::Dispose() {
+  DCHECK(IsContextThread());
+  is_closing_ = true;
+  ThreadedWorkletGlobalScope::Dispose();
+}
+
 void AudioWorkletGlobalScope::registerProcessor(
     const String& name,
     const ScriptValue& class_definition,
@@ -75,8 +83,8 @@ void AudioWorkletGlobalScope::registerProcessor(
     return;
   }
 
-  v8::Local<v8::Function> class_definition_local =
-      v8::Local<v8::Function>::Cast(class_definition.V8Value());
+  v8::Local<v8::Object> class_definition_local =
+      v8::Local<v8::Object>::Cast(class_definition.V8Value());
 
   v8::Local<v8::Value> prototype_value_local;
   bool prototype_extracted =
@@ -139,11 +147,14 @@ void AudioWorkletGlobalScope::registerProcessor(
   processor_definition_map_.Set(name, definition);
 }
 
-AudioWorkletProcessor* AudioWorkletGlobalScope::CreateInstance(
+AudioWorkletProcessor* AudioWorkletGlobalScope::CreateProcessor(
     const String& name,
-    float sample_rate) {
+    float sample_rate,
+    MessagePortChannel message_port_channel) {
   DCHECK(IsContextThread());
 
+  // TODO(hongchan): do this only once when the association between
+  // BaseAudioContext and AudioWorkletGlobalScope is established.
   sample_rate_ = sample_rate;
 
   // The registered definition is already checked by AudioWorkletNode
@@ -156,27 +167,42 @@ AudioWorkletProcessor* AudioWorkletGlobalScope::CreateInstance(
 
   // V8 object instance construction: this construction process is here to make
   // the AudioWorkletProcessor class a thin wrapper of V8::Object instance.
-  // If the attempt to create an instance fails, or an error was thrown by
-  // the user-supplied constructor code, return nullptr.
   v8::Isolate* isolate = script_state->GetIsolate();
   v8::TryCatch block(isolate);
 
   // Routes errors/exceptions to the dev console.
   block.SetVerbose(true);
 
-  v8::Local<v8::Object> instance_local;
-  if (!V8ObjectConstructor::NewInstance(isolate,
-                                        definition->ConstructorLocal(isolate))
-           .ToLocal(&instance_local) ||
-    block.HasCaught()) {
+  DCHECK(!processor_creation_params_);
+  processor_creation_params_ = std::make_unique<ProcessorCreationParams>(
+      name, std::move(message_port_channel));
+
+  // This invokes the static constructor of AudioWorkletProcessor. There is no
+  // way to pass additional constructor arguments that are not described in
+  // WebIDL, the static constructor will look up |processor_creation_params_| in
+  // the global scope to perform the construction properly.
+  v8::Local<v8::Value> result;
+  bool did_construct =
+      V8ScriptRunner::CallAsConstructor(isolate,
+                                        definition->ConstructorLocal(isolate),
+                                        ExecutionContext::From(script_state),
+                                        0, nullptr)
+          .ToLocal(&result);
+  processor_creation_params_.reset();
+
+  // If 1) the attempt to call the constructor fails, 2) an error was thrown
+  // by the user-supplied constructor code. The invalid construction process
+  if (!did_construct || block.HasCaught()) {
     return nullptr;
   }
 
-  AudioWorkletProcessor* processor = AudioWorkletProcessor::Create(this, name);
-  DCHECK(processor);
+  // ToImplWithTypeCheck() may return nullptr whenthe type does not match.
+  AudioWorkletProcessor* processor =
+      V8AudioWorkletProcessor::ToImplWithTypeCheck(isolate, result);
 
-  processor->SetInstance(isolate, instance_local);
-  processor_instances_.push_back(processor);
+  if (processor) {
+    processor_instances_.push_back(processor);
+  }
 
   return processor;
 }
@@ -261,10 +287,12 @@ bool AudioWorkletGlobalScope::Process(
   // Perform JS function process() in AudioWorkletProcessor instance. The actual
   // V8 operation happens here to make the AudioWorkletProcessor class a thin
   // wrapper of v8::Object instance.
+  v8::Local<v8::Value> processor_handle =
+      ToV8(processor, script_state->GetContext()->Global(), isolate);
   v8::Local<v8::Value> local_result;
   if (!V8ScriptRunner::CallFunction(definition->ProcessLocal(isolate),
                                     ExecutionContext::From(script_state),
-                                    processor->InstanceLocal(isolate),
+                                    processor_handle,
                                     WTF_ARRAY_LENGTH(argv),
                                     argv,
                                     isolate).ToLocal(&local_result) ||
@@ -320,6 +348,10 @@ AudioWorkletGlobalScope::WorkletProcessorInfoListForSynchronization() {
     }
   }
   return processor_info_list;
+}
+
+ProcessorCreationParams* AudioWorkletGlobalScope::GetProcessorCreationParams() {
+  return processor_creation_params_.get();
 }
 
 void AudioWorkletGlobalScope::Trace(blink::Visitor* visitor) {

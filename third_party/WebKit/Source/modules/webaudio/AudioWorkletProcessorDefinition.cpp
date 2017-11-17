@@ -9,7 +9,7 @@ namespace blink {
 AudioWorkletProcessorDefinition* AudioWorkletProcessorDefinition::Create(
     v8::Isolate* isolate,
     const String& name,
-    v8::Local<v8::Function> constructor,
+    v8::Local<v8::Object> constructor,
     v8::Local<v8::Function> process) {
   DCHECK(!IsMainThread());
   return new AudioWorkletProcessorDefinition(isolate, name, constructor,
@@ -19,7 +19,7 @@ AudioWorkletProcessorDefinition* AudioWorkletProcessorDefinition::Create(
 AudioWorkletProcessorDefinition::AudioWorkletProcessorDefinition(
     v8::Isolate* isolate,
     const String& name,
-    v8::Local<v8::Function> constructor,
+    v8::Local<v8::Object> constructor,
     v8::Local<v8::Function> process)
     : name_(name),
       constructor_(isolate, this, constructor),
@@ -27,7 +27,7 @@ AudioWorkletProcessorDefinition::AudioWorkletProcessorDefinition(
 
 AudioWorkletProcessorDefinition::~AudioWorkletProcessorDefinition() {}
 
-v8::Local<v8::Function> AudioWorkletProcessorDefinition::ConstructorLocal(
+v8::Local<v8::Object> AudioWorkletProcessorDefinition::ConstructorLocal(
     v8::Isolate* isolate) {
   DCHECK(!IsMainThread());
   return constructor_.NewLocal(isolate);

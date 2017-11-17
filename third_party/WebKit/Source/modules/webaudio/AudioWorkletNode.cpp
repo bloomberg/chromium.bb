@@ -5,6 +5,8 @@
 #include "modules/webaudio/AudioWorkletNode.h"
 
 #include "modules/EventModules.h"
+#include "core/dom/MessageChannel.h"
+#include "core/dom/MessagePort.h"
 #include "modules/webaudio/AudioBuffer.h"
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
@@ -111,8 +113,7 @@ void AudioWorkletHandler::Process(size_t frames_to_process) {
     // ready yet or it is in 'non-runnable' state. If so, zero out the connected
     // output.
     for (unsigned i = 0; i < NumberOfOutputs(); ++i) {
-      if (Output(i).IsConnected())
-        Output(i).Bus()->Zero();
+      Output(i).Bus()->Zero();
     }
   }
 }
@@ -195,8 +196,10 @@ AudioWorkletNode::AudioWorkletNode(
     BaseAudioContext& context,
     const String& name,
     const AudioWorkletNodeOptions& options,
-    const Vector<CrossThreadAudioParamInfo> param_info_list)
+    const Vector<CrossThreadAudioParamInfo> param_info_list,
+    MessagePort* node_port)
     : AudioNode(context),
+      node_port_(node_port),
       processor_state_(AudioWorkletProcessorState::kPending) {
   HeapHashMap<String, Member<AudioParam>> audio_param_map;
   HashMap<String, scoped_refptr<AudioParamHandler>> param_handler_map;
@@ -293,8 +296,14 @@ AudioWorkletNode* AudioWorkletNode::Create(
     return nullptr;
   }
 
-  AudioWorkletNode* node = new AudioWorkletNode(
-      *context, name, options, proxy->GetParamInfoListForProcessor(name));
+  MessageChannel* channel =
+      MessageChannel::Create(context->GetExecutionContext());
+  MessagePortChannel processor_port_channel = channel->port2()->Disentangle();
+
+  AudioWorkletNode* node =
+      new AudioWorkletNode(*context, name, options,
+                           proxy->GetParamInfoListForProcessor(name),
+                           channel->port1());
 
   if (!node) {
     exception_state.ThrowDOMException(
@@ -310,7 +319,8 @@ AudioWorkletNode* AudioWorkletNode::Create(
 
   // This is non-blocking async call. |node| still can be returned to user
   // before the scheduled async task is completed.
-  proxy->CreateProcessor(&node->GetWorkletHandler());
+  proxy->CreateProcessor(&node->GetWorkletHandler(),
+                         std::move(processor_port_channel));
 
   return node;
 }
@@ -360,12 +370,17 @@ String AudioWorkletNode::processorState() const {
   return g_empty_string;
 }
 
+MessagePort* AudioWorkletNode::port() const {
+  return node_port_;
+}
+
 AudioWorkletHandler& AudioWorkletNode::GetWorkletHandler() const {
   return static_cast<AudioWorkletHandler&>(Handler());
 }
 
 void AudioWorkletNode::Trace(blink::Visitor* visitor) {
   visitor->Trace(parameter_map_);
+  visitor->Trace(node_port_);
   AudioNode::Trace(visitor);
 }
 

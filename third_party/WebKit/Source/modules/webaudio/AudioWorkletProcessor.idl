@@ -5,10 +5,11 @@
 // https://webaudio.github.io/web-audio-api/#AudioWorkletProcessor
 
 [
+    Constructor,
+    ConstructorCallWith=ExecutionContext,
     Exposed=AudioWorklet,
     Global=(Worklet,AudioWorklet),
     RuntimeEnabled=AudioWorklet
 ] interface AudioWorkletProcessor {
-  // TODO(hongchan): Implement the following.
-  // readonly attribute MessagePort port;
+  readonly attribute MessagePort port;
 };

@@ -27,6 +27,7 @@
 #ifndef MessageChannel_h
 #define MessageChannel_h
 
+#include "core/CoreExport.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 
@@ -35,7 +36,7 @@ namespace blink {
 class MessagePort;
 class ExecutionContext;
 
-class MessageChannel final : public ScriptWrappable {
+class CORE_EXPORT MessageChannel final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
