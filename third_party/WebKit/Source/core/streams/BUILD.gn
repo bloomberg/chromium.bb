@@ -6,7 +6,7 @@ import("//third_party/WebKit/Source/core/core.gni")
 
 blink_core_sources("streams") {
   sources = [
-    "ReadableStreamController.h",
+    "ReadableStreamDefaultControllerWrapper.h",
     "ReadableStreamOperations.cpp",
     "ReadableStreamOperations.h",
     "UnderlyingSourceBase.cpp",

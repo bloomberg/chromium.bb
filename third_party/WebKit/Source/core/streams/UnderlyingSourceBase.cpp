@@ -6,7 +6,7 @@
 
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptValue.h"
-#include "core/streams/ReadableStreamController.h"
+#include "core/streams/ReadableStreamDefaultControllerWrapper.h"
 #include "platform/bindings/ScriptState.h"
 #include "v8/include/v8.h"
 
@@ -18,7 +18,7 @@ ScriptPromise UnderlyingSourceBase::startWrapper(ScriptState* script_state,
   // construct multiple streams).
   DCHECK(!controller_);
 
-  controller_ = new ReadableStreamController(js_controller);
+  controller_ = new ReadableStreamDefaultControllerWrapper(js_controller);
 
   return Start(script_state);
 }
