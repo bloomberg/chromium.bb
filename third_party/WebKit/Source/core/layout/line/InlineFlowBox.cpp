@@ -1068,94 +1068,52 @@ inline void InlineFlowBox::AddTextBoxVisualOverflow(
   if (text_box->KnownToHaveNoOverflow())
     return;
 
+  LayoutRectOutsets visual_rect_outsets;
   const ComputedStyle& style =
       text_box->GetLineLayoutItem().StyleRef(IsFirstLineStyle());
 
   GlyphOverflowAndFallbackFontsMap::iterator it =
       text_box_data_map.find(text_box);
-  GlyphOverflow* glyph_overflow =
-      it == text_box_data_map.end() ? nullptr : &it->value.second;
-  bool is_flipped_line = style.IsFlippedLinesWritingMode();
+  if (it != text_box_data_map.end()) {
+    const GlyphOverflow& glyph_overflow = it->value.second;
+    bool is_flipped_line = style.IsFlippedLinesWritingMode();
+    visual_rect_outsets = EnclosingLayoutRectOutsets(FloatRectOutsets(
+        is_flipped_line ? glyph_overflow.bottom : glyph_overflow.top,
+        glyph_overflow.right,
+        is_flipped_line ? glyph_overflow.top : glyph_overflow.bottom,
+        glyph_overflow.left));
+  }
 
-  float top_glyph_edge =
-      glyph_overflow
-          ? (is_flipped_line ? glyph_overflow->bottom : glyph_overflow->top)
-          : 0;
-  float bottom_glyph_edge =
-      glyph_overflow
-          ? (is_flipped_line ? glyph_overflow->top : glyph_overflow->bottom)
-          : 0;
-  float left_glyph_edge = glyph_overflow ? glyph_overflow->left : 0;
-  float right_glyph_edge = glyph_overflow ? glyph_overflow->right : 0;
-
-  float stroke_overflow = style.TextStrokeWidth() / 2.0f;
-  float top_glyph_overflow = -stroke_overflow - top_glyph_edge;
-  float bottom_glyph_overflow = stroke_overflow + bottom_glyph_edge;
-  float left_glyph_overflow = -stroke_overflow - left_glyph_edge;
-  float right_glyph_overflow = stroke_overflow + right_glyph_edge;
+  if (float stroke_width = style.TextStrokeWidth()) {
+    visual_rect_outsets += LayoutUnit::FromFloatCeil(stroke_width / 2.0f);
+  }
 
   TextEmphasisPosition emphasis_mark_position;
   if (style.GetTextEmphasisMark() != TextEmphasisMark::kNone &&
       text_box->GetEmphasisMarkPosition(style, emphasis_mark_position)) {
-    float emphasis_mark_height =
-        style.GetFont().EmphasisMarkHeight(style.TextEmphasisMarkString());
-    if (HasEmphasisMarkBefore(text_box))
-      top_glyph_overflow = std::min(top_glyph_overflow, -emphasis_mark_height);
-    else
-      bottom_glyph_overflow =
-          std::max(bottom_glyph_overflow, emphasis_mark_height);
+    LayoutUnit emphasis_mark_height = LayoutUnit(
+        style.GetFont().EmphasisMarkHeight(style.TextEmphasisMarkString()));
+    if (HasEmphasisMarkBefore(text_box)) {
+      visual_rect_outsets.SetTop(
+          std::max(visual_rect_outsets.Top(), emphasis_mark_height));
+    } else {
+      visual_rect_outsets.SetBottom(
+          std::max(visual_rect_outsets.Bottom(), emphasis_mark_height));
+    }
   }
 
-  LayoutRectOutsets text_shadow_logical_outsets;
   if (ShadowList* text_shadow = style.TextShadow()) {
-    text_shadow_logical_outsets =
+    LayoutRectOutsets text_shadow_logical_outsets =
         LayoutRectOutsets(text_shadow->RectOutsetsIncludingOriginal())
             .LineOrientationOutsets(style.GetWritingMode());
+    text_shadow_logical_outsets.ClampNegativeToZero();
+    visual_rect_outsets += text_shadow_logical_outsets;
   }
 
-  // FIXME: This code currently uses negative values for expansion of the top
-  // and left edges. This should be cleaned up.
-  LayoutUnit text_shadow_logical_top = -text_shadow_logical_outsets.Top();
-  LayoutUnit text_shadow_logical_bottom = text_shadow_logical_outsets.Bottom();
-  LayoutUnit text_shadow_logical_left = -text_shadow_logical_outsets.Left();
-  LayoutUnit text_shadow_logical_right = text_shadow_logical_outsets.Right();
-
-  LayoutUnit child_overflow_logical_top(std::min(
-      text_shadow_logical_top + top_glyph_overflow, top_glyph_overflow));
-  LayoutUnit child_overflow_logical_bottom(
-      std::max(text_shadow_logical_bottom + bottom_glyph_overflow,
-               bottom_glyph_overflow));
-  LayoutUnit child_overflow_logical_left(std::min(
-      text_shadow_logical_left + left_glyph_overflow, left_glyph_overflow));
-  LayoutUnit child_overflow_logical_right(std::max(
-      text_shadow_logical_right + right_glyph_overflow, right_glyph_overflow));
-
-  int enclosing_logical_top_with_overflow =
-      (text_box->LogicalTop() + child_overflow_logical_top).Floor();
-  int enclosing_logical_bottom_with_overflow =
-      (text_box->LogicalBottom() + child_overflow_logical_bottom).Ceil();
-  int enclosing_logical_left_with_overflow =
-      (text_box->LogicalLeft() + child_overflow_logical_left).Floor();
-  int enclosing_logical_right_with_overflow =
-      (text_box->LogicalRight() + child_overflow_logical_right).Ceil();
-
-  LayoutUnit logical_top_visual_overflow =
-      std::min(LayoutUnit(enclosing_logical_top_with_overflow),
-               logical_visual_overflow.Y());
-  LayoutUnit logical_bottom_visual_overflow =
-      std::max(LayoutUnit(enclosing_logical_bottom_with_overflow),
-               logical_visual_overflow.MaxY());
-  LayoutUnit logical_left_visual_overflow =
-      std::min(LayoutUnit(enclosing_logical_left_with_overflow),
-               logical_visual_overflow.X());
-  LayoutUnit logical_right_visual_overflow =
-      std::max(LayoutUnit(enclosing_logical_right_with_overflow),
-               logical_visual_overflow.MaxX());
-
-  logical_visual_overflow =
-      LayoutRect(logical_left_visual_overflow, logical_top_visual_overflow,
-                 logical_right_visual_overflow - logical_left_visual_overflow,
-                 logical_bottom_visual_overflow - logical_top_visual_overflow);
+  LayoutRect frame_rect = text_box->LogicalFrameRect();
+  frame_rect.Expand(visual_rect_outsets);
+  frame_rect = LayoutRect(EnclosingIntRect(frame_rect));
+  logical_visual_overflow.Unite(frame_rect);
 
   if (logical_visual_overflow != text_box->LogicalFrameRect())
     text_box->SetLogicalOverflowRect(logical_visual_overflow);
