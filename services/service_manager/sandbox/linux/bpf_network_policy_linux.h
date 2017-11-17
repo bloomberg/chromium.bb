@@ -5,11 +5,7 @@
 #ifndef SERVICES_SERVICE_MANAGER_SANDBOX_LINUX_BPF_NETWORK_POLICY_LINUX_H_
 #define SERVICES_SERVICE_MANAGER_SANDBOX_LINUX_BPF_NETWORK_POLICY_LINUX_H_
 
-#include <memory>
-
-#include "base/logging.h"
-#include "base/macros.h"
-#include "sandbox/linux/syscall_broker/broker_process.h"
+#include "sandbox/linux/bpf_dsl/bpf_dsl.h"
 #include "services/service_manager/sandbox/export.h"
 #include "services/service_manager/sandbox/linux/bpf_base_policy_linux.h"
 
@@ -24,27 +20,8 @@ class SERVICE_MANAGER_SANDBOX_EXPORT NetworkProcessPolicy
   sandbox::bpf_dsl::ResultExpr EvaluateSyscall(
       int system_call_number) const override;
 
-  std::unique_ptr<BPFBasePolicy> GetBrokerSandboxPolicy() override;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkProcessPolicy);
-};
-
-// A network-broker policy is the same as a network policy with access, open,
-// openat and in the non-Chrome OS case unlink allowed.
-// TODO(tsepez): probably should not inherit from NetworkProceesPolicy,
-// since that may include socket syscalls that this does not need.
-class SERVICE_MANAGER_SANDBOX_EXPORT NetworkBrokerProcessPolicy
-    : public NetworkProcessPolicy {
- public:
-  NetworkBrokerProcessPolicy();
-  ~NetworkBrokerProcessPolicy() override;
-
-  sandbox::bpf_dsl::ResultExpr EvaluateSyscall(
-      int system_call_number) const override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NetworkBrokerProcessPolicy);
 };
 
 }  // namespace service_manager

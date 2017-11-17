@@ -4,22 +4,14 @@
 
 #include "services/service_manager/sandbox/linux/bpf_cros_amd_gpu_policy_linux.h"
 
-#include <dlfcn.h>
-#include <errno.h>
 #include <fcntl.h>
 #include <sys/socket.h>
-#include <sys/stat.h>
-#include <sys/types.h>
 
 // Some arch's (arm64 for instance) unistd.h don't pull in symbols used here
 // unless these are defined.
 #define __ARCH_WANT_SYSCALL_NO_AT
 #define __ARCH_WANT_SYSCALL_DEPRECATED
 #include <unistd.h>
-
-#include <memory>
-#include <string>
-#include <vector>
 
 #include "base/logging.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"
@@ -60,36 +52,6 @@ ResultExpr CrosAmdGpuProcessPolicy::EvaluateSyscall(int sysno) const {
     default:
       // Default to the generic GPU policy.
       return GpuProcessPolicy::EvaluateSyscall(sysno);
-  }
-}
-
-std::unique_ptr<BPFBasePolicy>
-CrosAmdGpuProcessPolicy::GetBrokerSandboxPolicy() {
-  return std::make_unique<CrosAmdGpuBrokerProcessPolicy>();
-}
-
-CrosAmdGpuBrokerProcessPolicy::CrosAmdGpuBrokerProcessPolicy() {}
-
-CrosAmdGpuBrokerProcessPolicy::~CrosAmdGpuBrokerProcessPolicy() {}
-
-// A GPU broker policy is the same as a GPU policy with access, open,
-// openat and in the non-Chrome OS case unlink allowed.
-ResultExpr CrosAmdGpuBrokerProcessPolicy::EvaluateSyscall(int sysno) const {
-  switch (sysno) {
-    case __NR_faccessat:
-    case __NR_openat:
-#if !defined(__aarch64__)
-    case __NR_access:
-    case __NR_open:
-#if !defined(OS_CHROMEOS)
-    // The broker process needs to able to unlink the temporary
-    // files that it may create. This is used by DRI3.
-    case __NR_unlink:
-#endif  // !defined(OS_CHROMEOS)
-#endif  // !define(__aarch64__)
-      return Allow();
-    default:
-      return CrosAmdGpuProcessPolicy::EvaluateSyscall(sysno);
   }
 }
 
