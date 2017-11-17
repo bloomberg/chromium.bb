@@ -18,6 +18,18 @@ var MenuActions = {
 };
 
 /**
+ * Type definition of AndroidAppsInfo entry. |playStoreEnabled| indicates that
+ * Play Store is enabled. |settingsAppAvailable| indicates that Android settings
+ * app is registered in the system.
+ * @typedef {{
+ *   playStoreEnabled: boolean,
+ *   settingsAppAvailable: boolean,
+ * }}
+ * @see chrome/browser/ui/webui/settings/chromeos/android_apps_handler.cc
+ */
+var AndroidAppsInfo;
+
+/**
  * @typedef {{host: string,
  *            protocol: string,
  *            spec: string}}
@@ -59,6 +71,14 @@ Polymer({
     /* Labels for the toggle on/off positions. */
     toggleOffLabel: String,
     toggleOnLabel: String,
+
+    // <if expr="chromeos">
+    /** @private */
+    settingsAppAvailable_: {
+      type: Boolean,
+      value: false,
+    },
+    // </if>
   },
 
   /** @override */
@@ -72,6 +92,29 @@ Polymer({
         this.setIgnoredProtocolHandlers_.bind(this));
     this.browserProxy.observeProtocolHandlers();
   },
+
+  // <if expr="chromeos">
+  /** @override */
+  attached: function() {
+    if (settings.AndroidAppsBrowserProxyImpl) {
+      cr.addWebUIListener(
+          'android-apps-info-update', this.androidAppsInfoUpdate_.bind(this));
+      settings.AndroidAppsBrowserProxyImpl.getInstance()
+          .requestAndroidAppsInfo();
+    }
+  },
+  // </if>
+
+  // <if expr="chromeos">
+  /**
+   * Receives updates on whether or not ARC settings app is available.
+   * @param {AndroidAppsInfo} info
+   * @private
+   */
+  androidAppsInfoUpdate_: function(info) {
+    this.settingsAppAvailable_ = info.settingsAppAvailable;
+  },
+  // </if>
 
   /**
    * Obtains the description for the main toggle.
@@ -177,5 +220,15 @@ Polymer({
         .showAt(
             /** @type {!Element} */ (
                 Polymer.dom(/** @type {!Event} */ (event)).localTarget));
-  }
+  },
+
+  // <if expr="chromeos">
+  /**
+   * Opens an activity to handle App links (preferred apps).
+   * @private
+   */
+  onManageAndroidAppsTap_: function() {
+    this.browserProxy.showAndroidManageAppLinks();
+  },
+  // </if>
 });
