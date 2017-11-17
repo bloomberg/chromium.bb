@@ -75,13 +75,18 @@ class CONTENT_EXPORT MediaStreamManager
       public base::PowerObserver {
  public:
   // Callback to deliver the result of a media request.
-  typedef base::OnceCallback<void(const MediaStreamDevices& devices,
-                                  std::unique_ptr<MediaStreamUIProxy> ui)>
-      MediaRequestResponseCallback;
+  using MediaRequestResponseCallback =
+      base::OnceCallback<void(const MediaStreamDevices& devices,
+                              std::unique_ptr<MediaStreamUIProxy> ui)>;
+
+  using OpenDeviceCallback =
+      base::OnceCallback<void(bool success,
+                              const std::string& label,
+                              const MediaStreamDevice& device)>;
 
   // Callback for testing.
-  typedef base::Callback<bool(const StreamControls&)>
-      GenerateStreamTestCallback;
+  using GenerateStreamTestCallback =
+      base::Callback<bool(const StreamControls&)>;
 
   // Adds |message| to native logs for outstanding device requests, for use by
   // render processes hosts whose corresponding render processes are requesting
@@ -165,17 +170,20 @@ class CONTENT_EXPORT MediaStreamManager
                         int render_frame_id,
                         const std::string& device_id);
 
-  // Open a device identified by |device_id|.  |type| must be either
+  // Open a device identified by |device_id|. |type| must be either
   // MEDIA_DEVICE_AUDIO_CAPTURE or MEDIA_DEVICE_VIDEO_CAPTURE.
-  // The request is identified using string returned to the caller.
-  void OpenDevice(base::WeakPtr<MediaStreamRequester> requester,
-                  int render_process_id,
+  // Providing a |requester| here is optional. It can be set to receive
+  // DeviceStopped notification. The request is identified using string returned
+  // to the caller.
+  void OpenDevice(int render_process_id,
                   int render_frame_id,
                   const std::string& salt,
                   int page_request_id,
                   const std::string& device_id,
                   MediaStreamType type,
-                  const url::Origin& security_origin);
+                  const url::Origin& security_origin,
+                  OpenDeviceCallback callback,
+                  base::WeakPtr<MediaStreamRequester> requester = nullptr);
 
   // Finds and returns the device id corresponding to the given
   // |source_id|. Returns true if there was a raw device id that matched the

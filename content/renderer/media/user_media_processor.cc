@@ -893,19 +893,6 @@ void UserMediaProcessor::OnCreateNativeTracksCompleted(
   DeleteWebRequest(request_info->web_request());
 }
 
-void UserMediaProcessor::OnDeviceOpened(int request_id,
-                                        const std::string& label,
-                                        const MediaStreamDevice& device) {
-  DVLOG(1) << "UserMediaClientImpl::OnDeviceOpened(" << request_id << ", "
-           << label << ")";
-  NOTIMPLEMENTED();
-}
-
-void UserMediaProcessor::OnDeviceOpenFailed(int request_id) {
-  DVLOG(1) << "UserMediaProcessor::VideoDeviceOpenFailed(" << request_id << ")";
-  NOTIMPLEMENTED();
-}
-
 void UserMediaProcessor::GetUserMediaRequestSucceeded(
     const blink::WebMediaStream& stream,
     blink::WebUserMediaRequest web_request) {

@@ -33,11 +33,6 @@ class CONTENT_EXPORT MediaStreamRequester {
   virtual void DeviceStopped(int render_frame_id,
                              const std::string& label,
                              const MediaStreamDevice& device) = 0;
-  // Called as a reply of a successful call to OpenDevice.
-  virtual void DeviceOpened(int render_frame_id,
-                            int page_request_id,
-                            const std::string& label,
-                            const MediaStreamDevice& device) = 0;
 
  protected:
   virtual ~MediaStreamRequester() {

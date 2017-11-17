@@ -117,8 +117,10 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
                     MediaStreamType type,
                     const base::Closure& quit_closure) {
     quit_closures_.push(quit_closure);
-    MediaStreamDispatcherHost::OpenDevice(render_frame_id, page_request_id,
-                                          device_id, type);
+    MediaStreamDispatcherHost::OpenDevice(
+        render_frame_id, page_request_id, device_id, type,
+        base::BindOnce(&MockMediaStreamDispatcherHost::OnDeviceOpened,
+                       base::Unretained(this)));
   }
 
   void OnStreamStarted(const std::string label) {
@@ -137,14 +139,6 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
                                 MediaStreamRequestResult result) override {
     OnStreamGenerationFailedInternal(request_id, result);
   }
-
-  void OnDeviceOpened(int32_t request_id,
-                      const std::string& label,
-                      const MediaStreamDevice& device) override {
-    OnDeviceOpenedInternal(request_id, label, device);
-  }
-
-  void OnDeviceOpenFailed(int32_t request_id) override {}
 
   void OnDeviceStopped(const std::string& label,
                        const MediaStreamDevice& device) override {
@@ -205,15 +199,17 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
     OnDeviceStopSuccess();
   }
 
-  void OnDeviceOpenedInternal(int request_id,
-                              const std::string& label,
-                              const MediaStreamDevice& device) {
+  void OnDeviceOpened(bool success,
+                      const std::string& label,
+                      const MediaStreamDevice& device) {
     base::Closure quit_closure = quit_closures_.front();
     quit_closures_.pop();
     task_runner_->PostTask(FROM_HERE, base::ResetAndReturn(&quit_closure));
-    label_ = label;
-    opened_device_ = device;
-    OnDeviceOpenSuccess();
+    if (success) {
+      label_ = label;
+      opened_device_ = device;
+      OnDeviceOpenSuccess();
+    }
   }
 
   mojo::BindingSet<mojom::MediaStreamDispatcher> bindings_;
@@ -882,7 +878,6 @@ TEST_F(MediaStreamDispatcherHostTest, Salt) {
   // Reset salt and try to generate third stream with the invalidated device ID.
   browser_context_ = std::make_unique<TestBrowserContext>();
   EXPECT_CALL(*host_, OnDeviceOpenSuccess()).Times(0);
-  EXPECT_CALL(*host_, OnStreamGenerationFailure(_, _));
   OpenVideoDeviceAndWaitForFailure(kRenderId, kPageRequestId, device_id1);
   // Last open device ID and session are from the second stream.
   EXPECT_EQ(session_id2, host_->opened_device_.session_id);

@@ -66,17 +66,11 @@ void MockMediaStreamDispatcher::StopStreamDevice(
   NOTREACHED();
 }
 
-bool MockMediaStreamDispatcher::IsStream(const std::string& label) {
-  return true;
-}
-
-int MockMediaStreamDispatcher::video_session_id(const std::string& label,
-                                                int index) {
+int MockMediaStreamDispatcher::video_session_id(const std::string& label) {
   return -1;
 }
 
-int MockMediaStreamDispatcher::audio_session_id(const std::string& label,
-                                                int index) {
+int MockMediaStreamDispatcher::audio_session_id(const std::string& label) {
   return -1;
 }
 

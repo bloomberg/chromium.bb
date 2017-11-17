@@ -67,14 +67,6 @@ interface MediaStreamDispatcher {
   // Informs the renderer that browser has failed to generate a stream.
   OnStreamGenerationFailed(int32 request_id, MediaStreamRequestResult result);
 
-  // TODO(wjia): should DeviceOpen* methods be merged with
-  // StreamGenerat* ones?
-  // Informs the renderer that browser has opened a device successfully.
-  OnDeviceOpened(int32 request_id, string label, MediaStreamDevice device);
-
-  // Informs the renderer that browser has failed to open a device.
-  OnDeviceOpenFailed(int32 request_id);
-
   // The browser reports that a media device has been stopped. Stopping was
   // triggered from the browser process.
   OnDeviceStopped(string label, MediaStreamDevice device);
@@ -87,15 +79,16 @@ interface MediaStreamDispatcherHost {
   GenerateStream(int32 render_frame_id, int32 request_id,
                  StreamControls controls, bool user_gesture);
 
-  // Cancels the request for a new media stream.
-  CancelGenerateStream(int32 render_frame_id, int32 request_id);
+  // Cancels the request for a new media stream or opening a device.
+  CancelRequest(int32 render_frame_id, int32 request_id);
 
   // Closes a stream device that has been opened by GenerateStream.
   StopStreamDevice(int32 render_frame_id, string device_id);
 
   // Opens a device identified by |device_id|.
   OpenDevice(int32 render_frame_id, int32 request_id, string device_id,
-             MediaStreamType type);
+             MediaStreamType type)
+      => (bool success, string label, MediaStreamDevice device);
 
   // Cancels an open request identified by |label|.
   CloseDevice(string label);
