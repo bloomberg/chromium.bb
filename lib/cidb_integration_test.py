@@ -172,6 +172,20 @@ class CIDBMigrationsTest(CIDBIntegrationTest):
         for action in constants.CL_ACTIONS]
     db.InsertCLActions(build_id, all_actions_list)
 
+  def testActionsWithNoBuildId(self):
+    """Test that we can insert a CLAction with no build id."""
+    db = self._PrepareDatabase()
+
+    a1 = clactions.CLAction.FromGerritPatchAndAction(
+        metadata_lib.GerritPatchTuple(1, 1, True),
+        constants.CL_ACTION_PICKED_UP)
+
+    db.InsertCLActions(None, [a1])
+
+    action_count = db._GetEngine().execute(
+        'select count(*) from clActionTable').fetchall()[0][0]
+    self.assertEqual(action_count, 1)
+
   def testWaterfallMigration(self):
     """Test that migrating waterfall from enum to varchar preserves value."""
     self.skipTest('Skipped obsolete waterfall migration test.')

@@ -174,7 +174,7 @@ DROP TABLE IF EXISTS `clActionTable`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `clActionTable` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `build_id` int(11) NOT NULL,
+  `build_id` int(11) DEFAULT NULL,
   `change_number` int(11) NOT NULL,
   `patch_number` int(11) NOT NULL,
   `change_source` enum('internal','external') NOT NULL,
