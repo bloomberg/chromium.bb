@@ -607,9 +607,7 @@ PRE_CQ_DEFAULT_CONFIGS = [
     'lumpy-no-vmtest-pre-cq',         # sandybridge  kernel 3.8
     'kevin-no-vmtest-pre-cq',         # arm64        kernel 4.4
     'nyan_blaze-no-vmtest-pre-cq',    # arm32        kernel 3.10
-    # TODO(crbug.com/757474) - Drop reef after reef-uni rollout
     'reef-no-vmtest-pre-cq',          # apollolake   kernel 4.4        vulkan
-    'reef-uni-no-vmtest-pre-cq',      # apollolake   kernel 4.4        vulkan
     'samus-no-vmtest-pre-cq',         # broadwell    kernel 3.14
     'whirlwind-no-vmtest-pre-cq',     # brillo
 ]

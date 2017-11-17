@@ -595,7 +595,6 @@ _x86_internal_release_boards = frozenset([
     'quawks',
     'rambi',
     'reef',
-    'reef-uni',
     'reks',
     'relm',
     'rikku',
@@ -675,7 +674,6 @@ _cheets_x86_boards = frozenset([
     'poppy',
     'pyro',
     'reef',
-    'reef-uni',
     'reks',
     'samus',
     'sand',
@@ -2330,7 +2328,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'poppy',
       'quawks',
       'reef',
-      'reef-uni',
       'samus',
       'scarlet',
       'sentry',
@@ -2599,7 +2596,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
     ('elm',            None,             'hana'),          # oak (MTK8173)
     ('kevin',          None,             'bob'),           # gru (RK3399)
     ('reef',           None,             None),            # reef (APL)
-    ('reef-uni',       None,             None),            # reef (APL)
     ('coral',          None,             None),            # coral (APL)
     (None,             None,             None),            # poppy (KBL)
   ])

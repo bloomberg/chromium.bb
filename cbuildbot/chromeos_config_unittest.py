@@ -203,19 +203,19 @@ class UnifiedBuildConfigTestCase(object):
   "release_branch": true,
   "reference_board_unified_builds": [
     {
-      "name": "reef-uni",
-      "reference_board_name": "reef-uni",
+      "name": "coral",
+      "reference_board_name": "coral",
       "builder": "RELEASE",
       "experimental": true,
       "arch": "X86_INTERNAL",
       "models" : [
         {
-          "name": "reef",
-          "board_name": "reef"
+          "name": "coral",
+          "board_name": "coral"
         },
         {
-          "name": "pyro",
-          "board_name": "pyro",
+          "name": "robo",
+          "board_name": "robo",
           "test_suites": ["sanity"],
           "cq_test_enabled": true
         }
@@ -263,15 +263,15 @@ class UnifiedBuildReleaseBuilders(
     UnifiedBuildConfigTestCase.setUp(self)
 
   def testUnifiedReleaseBuilders(self):
-    reef_uni_release = self._site_config['reef-uni-release']
-    self.assertIsNotNone(reef_uni_release)
-    models = reef_uni_release['models']
-    self.assertIn(config_lib.ModelTestConfig('reef', 'reef', []), models)
+    coral_release = self._site_config['coral-release']
+    self.assertIsNotNone(coral_release)
+    models = coral_release['models']
+    self.assertIn(config_lib.ModelTestConfig('coral', 'coral', []), models)
     self.assertIn(
-        config_lib.ModelTestConfig('pyro', 'pyro', ['sanity']), models)
+        config_lib.ModelTestConfig('robo', 'robo', ['sanity']), models)
 
     master_release = self._site_config['master-release']
-    self.assertIn('reef-uni-release', master_release['slave_configs'])
+    self.assertIn('coral-release', master_release['slave_configs'])
 
 class UnifiedBuildCqBuilders(
     cros_test_lib.OutputTestCase, UnifiedBuildConfigTestCase):
@@ -281,14 +281,14 @@ class UnifiedBuildCqBuilders(
     UnifiedBuildConfigTestCase.setUp(self)
 
   def testUnifiedCqBuilders(self):
-    reef_uni_paladin = self._site_config['reef-uni-paladin']
-    self.assertIsNotNone(reef_uni_paladin)
-    models = reef_uni_paladin['models']
+    coral_paladin = self._site_config['coral-paladin']
+    self.assertIsNotNone(coral_paladin)
+    models = coral_paladin['models']
     self.assertEquals(len(models), 1)
-    self.assertIn(config_lib.ModelTestConfig('pyro', 'pyro'), models)
+    self.assertIn(config_lib.ModelTestConfig('robo', 'robo'), models)
 
     master_paladin = self._site_config['master-paladin']
-    self.assertIn('reef-uni-paladin', master_paladin['slave_configs'])
+    self.assertIn('coral-paladin', master_paladin['slave_configs'])
 
 
 class ConfigPickleTest(ChromeosConfigTestBase):
