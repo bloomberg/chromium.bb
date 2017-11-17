@@ -8,12 +8,14 @@
 #include "base/memory/ptr_util.h"
 #include "base/scoped_observer.h"
 #include "base/strings/stringprintf.h"
+#import "ios/testing/wait_util.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/test/fakes/test_native_content.h"
 #import "ios/web/public/test/fakes/test_native_content_provider.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
+#import "ios/web/public/test/navigation_test_util.h"
 #import "ios/web/public/test/web_view_content_test_util.h"
 #import "ios/web/public/test/web_view_interaction_test_util.h"
 #import "ios/web/public/web_client.h"
@@ -89,6 +91,30 @@ ACTION_P3(VerifyNewPageFinishedContext, web_state, url, context) {
   NavigationManager* navigation_manager = web_state->GetNavigationManager();
   NavigationItem* item = navigation_manager->GetLastCommittedItem();
   EXPECT_GT(item->GetTimestamp().ToInternalValue(), 0);
+  EXPECT_EQ(url, item->GetURL());
+}
+
+// Verifies correctness of |NavigationContext| (|arg1|) for failed navigation
+// passed to |DidFinishNavigation|. Asserts that |NavigationContext| the same as
+// |context|.
+ACTION_P3(VerifyErrorFinishedContext, web_state, url, context) {
+  ASSERT_EQ(*context, arg1);
+  EXPECT_EQ(web_state, arg0);
+  ASSERT_TRUE((*context));
+  EXPECT_EQ(web_state, (*context)->GetWebState());
+  EXPECT_EQ(url, (*context)->GetUrl());
+  EXPECT_TRUE(
+      PageTransitionCoreTypeIs(ui::PageTransition::PAGE_TRANSITION_TYPED,
+                               (*context)->GetPageTransition()));
+  EXPECT_FALSE((*context)->IsSameDocument());
+  EXPECT_FALSE((*context)->IsPost());
+  EXPECT_EQ(NSURLErrorCannotFindHost, (*context)->GetError().code);
+  EXPECT_FALSE((*context)->IsRendererInitiated());
+  EXPECT_FALSE((*context)->GetResponseHeaders());
+  ASSERT_FALSE(web_state->IsLoading());
+  NavigationManager* navigation_manager = web_state->GetNavigationManager();
+  NavigationItem* item = navigation_manager->GetLastCommittedItem();
+  EXPECT_FALSE(item->GetTimestamp().is_null());
   EXPECT_EQ(url, item->GetURL());
 }
 
@@ -331,6 +357,7 @@ using test::HttpServer;
 using testing::Return;
 using testing::StrictMock;
 using testing::_;
+using testing::WaitUntilConditionOrTimeout;
 using web::test::WaitForWebViewContainingText;
 
 // Test fixture for WebStateDelegate::ProvisionalNavigationStarted,
@@ -389,6 +416,26 @@ TEST_F(NavigationCallbacksTest, NewPageNavigation) {
       .WillOnce(VerifyNewPageFinishedContext(web_state(), url, &context));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   LoadUrl(url);
+}
+
+// Tests failed navigation to a new page.
+TEST_F(NavigationCallbacksTest, FailedNavigation) {
+  const GURL url = HttpServer::MakeUrl("unsupported://chromium.test");
+
+  // Perform a navigation to url with unsupported scheme, which will fail.
+  NavigationContext* context = nullptr;
+  EXPECT_CALL(observer_, DidStartLoading(web_state()));
+  EXPECT_CALL(*decider_, ShouldAllowRequest(_, _)).WillOnce(Return(true));
+  EXPECT_CALL(observer_, DidStartNavigation(web_state(), _))
+      .WillOnce(VerifyNewPageStartedContext(web_state(), url, &context));
+  EXPECT_CALL(observer_, DidStopLoading(web_state()));
+  EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
+      .WillOnce(VerifyErrorFinishedContext(web_state(), url, &context));
+  // LoadUrl() expects sucessfull load and can not be used here.
+  web::test::LoadUrl(web_state(), url);
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(testing::kWaitForPageLoadTimeout, ^{
+    return !web_state()->IsLoading();
+  }));
 }
 
 // Tests web page reload navigation.
