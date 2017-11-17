@@ -83,6 +83,13 @@ QuicSession::~QuicSession() {
 void QuicSession::OnStreamFrame(const QuicStreamFrame& frame) {
   // TODO(rch) deal with the error case of stream id 0.
   QuicStreamId stream_id = frame.stream_id;
+  if (stream_id == kInvalidStreamId) {
+    connection()->CloseConnection(
+        QUIC_INVALID_STREAM_ID, "Recevied data for an invalid stream",
+        ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
+    return;
+  }
+
   if (frame.fin && QuicContainsKey(static_stream_map_, stream_id)) {
     connection()->CloseConnection(
         QUIC_INVALID_STREAM_ID, "Attempt to close a static stream",
@@ -105,7 +112,15 @@ void QuicSession::OnStreamFrame(const QuicStreamFrame& frame) {
 }
 
 void QuicSession::OnRstStream(const QuicRstStreamFrame& frame) {
-  if (QuicContainsKey(static_stream_map_, frame.stream_id)) {
+  QuicStreamId stream_id = frame.stream_id;
+  if (stream_id == kInvalidStreamId) {
+    connection()->CloseConnection(
+        QUIC_INVALID_STREAM_ID, "Recevied data for an invalid stream",
+        ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
+    return;
+  }
+
+  if (QuicContainsKey(static_stream_map_, stream_id)) {
     connection()->CloseConnection(
         QUIC_INVALID_STREAM_ID, "Attempt to reset a static stream",
         ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
@@ -116,7 +131,7 @@ void QuicSession::OnRstStream(const QuicRstStreamFrame& frame) {
     visitor_->OnRstStreamReceived(frame);
   }
 
-  QuicStream* stream = GetOrCreateDynamicStream(frame.stream_id);
+  QuicStream* stream = GetOrCreateDynamicStream(stream_id);
   if (!stream) {
     HandleRstOnValidNonexistentStream(frame);
     return;  // Errors are handled by GetOrCreateStream.
