@@ -242,6 +242,10 @@ const base::Feature kPepper3DImageChromium {
 const base::Feature kPWAFullCodeCache{"PWAFullCodeCache",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Port some content::ResourceScheduler functionalities to renderer.
+const base::Feature kRendererSideResourceScheduler{
+    "RendererSideResourceSchduler", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Throttle Blink's rendering pipeline based on frame visibility.
 const base::Feature kRenderingPipelineThrottling{
     "RenderingPipelineThrottling", base::FEATURE_ENABLED_BY_DEFAULT};

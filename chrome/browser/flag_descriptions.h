@@ -706,6 +706,9 @@ extern const char kReducedReferrerGranularityDescription[];
 extern const char kRemoveUsageOfDeprecatedGaiaSigninEndpointName[];
 extern const char kRemoveUsageOfDeprecatedGaiaSigninEndpointDescription[];
 
+extern const char kRendererSideResourceSchedulerName[];
+extern const char kRendererSideResourceSchedulerDescription[];
+
 extern const char kRequestTabletSiteName[];
 extern const char kRequestTabletSiteDescription[];
 
