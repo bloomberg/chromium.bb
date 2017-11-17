@@ -116,7 +116,13 @@ std::unique_ptr<views::Label> CreateOriginLabel(const url::Origin& origin) {
       CONTEXT_BODY_TEXT_SMALL, STYLE_SECONDARY);
 
   origin_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+
+  // Elide from head to prevent origin spoofing.
   origin_label->SetElideBehavior(gfx::ELIDE_HEAD);
+
+  // Multiline breaks elision, so explicitly disable multiline.
+  origin_label->SetMultiLine(false);
+
   return origin_label;
 }
 
