@@ -4,12 +4,24 @@
 
 #include "chrome/browser/signin/account_reconcilor_factory.h"
 
+#include <utility>
+
+#include "base/logging.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/signin/core/browser/account_reconcilor.h"
+#include "components/signin/core/browser/account_reconcilor_delegate.h"
+#include "components/signin/core/browser/mirror_account_reconcilor_delegate.h"
+#include "components/signin/core/browser/profile_management_switches.h"
+#include "components/signin/core/browser/signin_features.h"
+
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+#include "components/signin/core/browser/dice_account_reconcilor_delegate.h"
+#endif
 
 AccountReconcilorFactory::AccountReconcilorFactory()
     : BrowserContextKeyedServiceFactory(
@@ -43,12 +55,41 @@ KeyedService* AccountReconcilorFactory::BuildServiceInstanceFor(
       SigninManagerFactory::GetForProfile(profile),
       ChromeSigninClientFactory::GetForProfile(profile),
       GaiaCookieManagerServiceFactory::GetForProfile(profile),
-      profile->IsNewProfile());
+      CreateAccountReconcilorDelegate(profile));
   reconcilor->Initialize(true /* start_reconcile_if_tokens_available */);
   return reconcilor;
 }
 
 void AccountReconcilorFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  AccountReconcilor::RegisterProfilePrefs(registry);
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+  signin::DiceAccountReconcilorDelegate::RegisterProfilePrefs(registry);
+#endif
+}
+
+// static
+std::unique_ptr<signin::AccountReconcilorDelegate>
+AccountReconcilorFactory::CreateAccountReconcilorDelegate(Profile* profile) {
+  std::unique_ptr<signin::AccountReconcilorDelegate> delegate;
+  switch (signin::GetAccountConsistencyMethod()) {
+    case signin::AccountConsistencyMethod::kMirror:
+      delegate = std::make_unique<signin::MirrorAccountReconcilorDelegate>(
+          SigninManagerFactory::GetForProfile(profile));
+      break;
+    case signin::AccountConsistencyMethod::kDisabled:
+    case signin::AccountConsistencyMethod::kDiceFixAuthErrors:
+      delegate = std::make_unique<signin::AccountReconcilorDelegate>();
+      break;
+    case signin::AccountConsistencyMethod::kDicePrepareMigration:
+    case signin::AccountConsistencyMethod::kDiceMigration:
+    case signin::AccountConsistencyMethod::kDice:
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+      delegate = std::make_unique<signin::DiceAccountReconcilorDelegate>(
+          profile->GetPrefs(), profile->IsNewProfile());
+#else
+      NOTREACHED();
+#endif
+      break;
+  }
+  return delegate;
 }
