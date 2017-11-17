@@ -602,7 +602,6 @@ static void update_state(const AV1_COMP *const cpi, TileDataEnc *tile_data,
 #endif
   if (!frame_is_intra_only(cm)) {
     if (is_inter_block(mbmi)) {
-      av1_update_mv_count(td);
       if (bsize >= BLOCK_8X8) {
         // TODO(sarahparker): global motion stats need to be handled per-tile
         // to be compatible with tile-based threading.

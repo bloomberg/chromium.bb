@@ -945,8 +945,7 @@ void av1_read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 
 #if CONFIG_INTRABC
 static INLINE void read_mv(aom_reader *r, MV *mv, const MV *ref,
-                           nmv_context *ctx, nmv_context_counts *counts,
-                           MvSubpelPrecision precision);
+                           nmv_context *ctx, MvSubpelPrecision precision);
 
 static INLINE int is_mv_valid(const MV *mv);
 
@@ -955,10 +954,7 @@ static INLINE int assign_dv(AV1_COMMON *cm, MACROBLOCKD *xd, int_mv *mv,
                             BLOCK_SIZE bsize, aom_reader *r) {
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   (void)cm;
-  FRAME_COUNTS *counts = xd->counts;
-  nmv_context_counts *const dv_counts = counts ? &counts->dv : NULL;
-  read_mv(r, &mv->as_mv, &ref_mv->as_mv, &ec_ctx->ndvc, dv_counts,
-          MV_SUBPEL_NONE);
+  read_mv(r, &mv->as_mv, &ref_mv->as_mv, &ec_ctx->ndvc, MV_SUBPEL_NONE);
   // DV should not have sub-pel.
   assert((mv->as_mv.col & 7) == 0);
   assert((mv->as_mv.row & 7) == 0);
@@ -1222,8 +1218,7 @@ static int read_mv_component(aom_reader *r, nmv_component *mvcomp,
 }
 
 static INLINE void read_mv(aom_reader *r, MV *mv, const MV *ref,
-                           nmv_context *ctx, nmv_context_counts *counts,
-                           MvSubpelPrecision precision) {
+                           nmv_context *ctx, MvSubpelPrecision precision) {
   MV_JOINT_TYPE joint_type;
   MV diff = { 0, 0 };
   joint_type =
@@ -1242,8 +1237,6 @@ static INLINE void read_mv(aom_reader *r, MV *mv, const MV *ref,
                                  precision > MV_SUBPEL_NONE,
 #endif  // CONFIG_INTRABC || CONFIG_AMVR
                                  precision > MV_SUBPEL_LOW_PRECISION);
-
-  av1_inc_mv(&diff, counts, precision);
 
   mv->row = ref->row + diff.row;
   mv->col = ref->col + diff.col;
@@ -1634,16 +1627,13 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
 #endif
   switch (mode) {
     case NEWMV: {
-      FRAME_COUNTS *counts = xd->counts;
       for (i = 0; i < 1 + is_compound; ++i) {
         int8_t rf_type = av1_ref_frame_type(mbmi->ref_frame);
         int nmv_ctx =
             av1_nmv_ctx(xd->ref_mv_count[rf_type], xd->ref_mv_stack[rf_type], i,
                         mbmi->ref_mv_idx);
         nmv_context *const nmvc = &ec_ctx->nmvc[nmv_ctx];
-        nmv_context_counts *const mv_counts =
-            counts ? &counts->mv[nmv_ctx] : NULL;
-        read_mv(r, &mv[i].as_mv, &ref_mv[i].as_mv, nmvc, mv_counts, allow_hp);
+        read_mv(r, &mv[i].as_mv, &ref_mv[i].as_mv, nmvc, allow_hp);
         ret = ret && is_mv_valid(&mv[i].as_mv);
 
         pred_mv[i].as_int = ref_mv[i].as_int;
@@ -1692,7 +1682,6 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
       break;
     }
     case NEW_NEWMV: {
-      FRAME_COUNTS *counts = xd->counts;
       assert(is_compound);
       for (i = 0; i < 2; ++i) {
         int8_t rf_type = av1_ref_frame_type(mbmi->ref_frame);
@@ -1700,9 +1689,7 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
             av1_nmv_ctx(xd->ref_mv_count[rf_type], xd->ref_mv_stack[rf_type], i,
                         mbmi->ref_mv_idx);
         nmv_context *const nmvc = &ec_ctx->nmvc[nmv_ctx];
-        nmv_context_counts *const mv_counts =
-            counts ? &counts->mv[nmv_ctx] : NULL;
-        read_mv(r, &mv[i].as_mv, &ref_mv[i].as_mv, nmvc, mv_counts, allow_hp);
+        read_mv(r, &mv[i].as_mv, &ref_mv[i].as_mv, nmvc, allow_hp);
         ret = ret && is_mv_valid(&mv[i].as_mv);
       }
       break;
@@ -1720,57 +1707,45 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
       break;
     }
     case NEW_NEARESTMV: {
-      FRAME_COUNTS *counts = xd->counts;
       int8_t rf_type = av1_ref_frame_type(mbmi->ref_frame);
       int nmv_ctx = av1_nmv_ctx(xd->ref_mv_count[rf_type],
                                 xd->ref_mv_stack[rf_type], 0, mbmi->ref_mv_idx);
       nmv_context *const nmvc = &ec_ctx->nmvc[nmv_ctx];
-      nmv_context_counts *const mv_counts =
-          counts ? &counts->mv[nmv_ctx] : NULL;
-      read_mv(r, &mv[0].as_mv, &ref_mv[0].as_mv, nmvc, mv_counts, allow_hp);
+      read_mv(r, &mv[0].as_mv, &ref_mv[0].as_mv, nmvc, allow_hp);
       assert(is_compound);
       ret = ret && is_mv_valid(&mv[0].as_mv);
       mv[1].as_int = nearest_mv[1].as_int;
       break;
     }
     case NEAREST_NEWMV: {
-      FRAME_COUNTS *counts = xd->counts;
       int8_t rf_type = av1_ref_frame_type(mbmi->ref_frame);
       int nmv_ctx = av1_nmv_ctx(xd->ref_mv_count[rf_type],
                                 xd->ref_mv_stack[rf_type], 1, mbmi->ref_mv_idx);
-      nmv_context_counts *const mv_counts =
-          counts ? &counts->mv[nmv_ctx] : NULL;
       nmv_context *const nmvc = &ec_ctx->nmvc[nmv_ctx];
       mv[0].as_int = nearest_mv[0].as_int;
-      read_mv(r, &mv[1].as_mv, &ref_mv[1].as_mv, nmvc, mv_counts, allow_hp);
+      read_mv(r, &mv[1].as_mv, &ref_mv[1].as_mv, nmvc, allow_hp);
       assert(is_compound);
       ret = ret && is_mv_valid(&mv[1].as_mv);
       break;
     }
     case NEAR_NEWMV: {
-      FRAME_COUNTS *counts = xd->counts;
       int8_t rf_type = av1_ref_frame_type(mbmi->ref_frame);
       int nmv_ctx = av1_nmv_ctx(xd->ref_mv_count[rf_type],
                                 xd->ref_mv_stack[rf_type], 1, mbmi->ref_mv_idx);
       nmv_context *const nmvc = &ec_ctx->nmvc[nmv_ctx];
-      nmv_context_counts *const mv_counts =
-          counts ? &counts->mv[nmv_ctx] : NULL;
       mv[0].as_int = near_mv[0].as_int;
-      read_mv(r, &mv[1].as_mv, &ref_mv[1].as_mv, nmvc, mv_counts, allow_hp);
+      read_mv(r, &mv[1].as_mv, &ref_mv[1].as_mv, nmvc, allow_hp);
       assert(is_compound);
 
       ret = ret && is_mv_valid(&mv[1].as_mv);
       break;
     }
     case NEW_NEARMV: {
-      FRAME_COUNTS *counts = xd->counts;
       int8_t rf_type = av1_ref_frame_type(mbmi->ref_frame);
       int nmv_ctx = av1_nmv_ctx(xd->ref_mv_count[rf_type],
                                 xd->ref_mv_stack[rf_type], 0, mbmi->ref_mv_idx);
       nmv_context *const nmvc = &ec_ctx->nmvc[nmv_ctx];
-      nmv_context_counts *const mv_counts =
-          counts ? &counts->mv[nmv_ctx] : NULL;
-      read_mv(r, &mv[0].as_mv, &ref_mv[0].as_mv, nmvc, mv_counts, allow_hp);
+      read_mv(r, &mv[0].as_mv, &ref_mv[0].as_mv, nmvc, allow_hp);
       assert(is_compound);
       ret = ret && is_mv_valid(&mv[0].as_mv);
       mv[1].as_int = near_mv[1].as_int;

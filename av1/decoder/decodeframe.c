@@ -3327,10 +3327,6 @@ static void debug_check_frame_counts(const AV1_COMMON *const cm) {
   assert(!memcmp(cm->counts.comp_bwdref, zero_counts.comp_bwdref,
                  sizeof(cm->counts.comp_bwdref)));
   assert(!memcmp(cm->counts.skip, zero_counts.skip, sizeof(cm->counts.skip)));
-  assert(
-      !memcmp(&cm->counts.mv[0], &zero_counts.mv[0], sizeof(cm->counts.mv[0])));
-  assert(
-      !memcmp(&cm->counts.mv[1], &zero_counts.mv[1], sizeof(cm->counts.mv[0])));
 }
 #endif  // NDEBUG
 

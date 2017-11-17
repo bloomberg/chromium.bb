@@ -26,8 +26,6 @@ struct AV1Common;
 
 void av1_init_mv_probs(struct AV1Common *cm);
 
-void av1_adapt_mv_probs(struct AV1Common *cm, int usehp);
-
 #define MV_UPDATE_PROB 252
 
 /* Symbols for coding which components are zero jointly */
@@ -83,17 +81,9 @@ extern const aom_tree_index av1_mv_class0_tree[];
 extern const aom_tree_index av1_mv_fp_tree[];
 
 typedef struct {
-  aom_prob sign;
-  aom_prob classes[MV_CLASSES - 1];
   aom_cdf_prob classes_cdf[CDF_SIZE(MV_CLASSES)];
-  aom_prob class0[CLASS0_SIZE - 1];
-  aom_prob bits[MV_OFFSET_BITS];
-  aom_prob class0_fp[CLASS0_SIZE][MV_FP_SIZE - 1];
-  aom_prob fp[MV_FP_SIZE - 1];
   aom_cdf_prob class0_fp_cdf[CLASS0_SIZE][CDF_SIZE(MV_FP_SIZE)];
   aom_cdf_prob fp_cdf[CDF_SIZE(MV_FP_SIZE)];
-  aom_prob class0_hp;
-  aom_prob hp;
   aom_cdf_prob sign_cdf[CDF_SIZE(2)];
   aom_cdf_prob class0_hp_cdf[CDF_SIZE(2)];
   aom_cdf_prob hp_cdf[CDF_SIZE(2)];
@@ -102,7 +92,6 @@ typedef struct {
 } nmv_component;
 
 typedef struct {
-  aom_prob joints[MV_JOINTS - 1];
   aom_cdf_prob joints_cdf[CDF_SIZE(MV_JOINTS)];
   nmv_component comps[2];
 } nmv_context;
@@ -117,22 +106,6 @@ static INLINE MV_JOINT_TYPE av1_get_mv_joint(const MV *mv) {
 
 MV_CLASS_TYPE av1_get_mv_class(int z, int *offset);
 
-typedef struct {
-  unsigned int sign[2];
-  unsigned int classes[MV_CLASSES];
-  unsigned int class0[CLASS0_SIZE];
-  unsigned int bits[MV_OFFSET_BITS][2];
-  unsigned int class0_fp[CLASS0_SIZE][MV_FP_SIZE];
-  unsigned int fp[MV_FP_SIZE];
-  unsigned int class0_hp[2];
-  unsigned int hp[2];
-} nmv_component_counts;
-
-typedef struct {
-  unsigned int joints[MV_JOINTS];
-  nmv_component_counts comps[2];
-} nmv_context_counts;
-
 typedef enum {
 #if CONFIG_INTRABC || CONFIG_AMVR
   MV_SUBPEL_NONE = -1,
@@ -140,9 +113,6 @@ typedef enum {
   MV_SUBPEL_LOW_PRECISION = 0,
   MV_SUBPEL_HIGH_PRECISION,
 } MvSubpelPrecision;
-
-void av1_inc_mv(const MV *mv, nmv_context_counts *mvctx,
-                MvSubpelPrecision precision);
 
 #ifdef __cplusplus
 }  // extern "C"

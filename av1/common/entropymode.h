@@ -409,13 +409,9 @@ typedef struct FRAME_COUNTS {
   unsigned int skip_mode[SKIP_MODE_CONTEXTS][2];
 #endif  // CONFIG_EXT_SKIP
   unsigned int skip[SKIP_CONTEXTS][2];
-  nmv_context_counts mv[NMV_CONTEXTS];
 #if CONFIG_JNT_COMP
   unsigned int compound_index[COMP_INDEX_CONTEXTS][2];
 #endif  // CONFIG_JNT_COMP
-#if CONFIG_INTRABC
-  nmv_context_counts dv;
-#endif
   unsigned int delta_q[DELTA_Q_PROBS][2];
 #if CONFIG_EXT_DELTA_Q
 #if CONFIG_LOOPFILTER_LEVEL
