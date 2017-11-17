@@ -49,7 +49,7 @@ void DataUseAscriber::OnUrlRequestCompleted(const net::URLRequest& request,
                                             bool started) {}
 
 void DataUseAscriber::OnUrlRequestDestroyed(net::URLRequest* request) {
-  DataUseRecorder* recorder = GetOrCreateDataUseRecorder(request);
+  DataUseRecorder* recorder = GetDataUseRecorder(*request);
   if (recorder)
     recorder->OnUrlRequestDestroyed(request);
 }
