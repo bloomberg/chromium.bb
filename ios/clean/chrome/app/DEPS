@@ -1,9 +1,0 @@
-include_rules = [
-  "+components/content_settings",
-  "+components/crash/core/common",
-  "+ios/chrome/browser",
-  "+ios/net",
-  "+ios/public/provider/chrome",
-  "+ios/web/public",
-  "+third_party/breakpad/breakpad/src/client/ios",
-]
