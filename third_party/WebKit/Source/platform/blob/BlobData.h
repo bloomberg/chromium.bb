@@ -40,6 +40,7 @@
 #include "platform/wtf/ThreadingPrimitives.h"
 #include "platform/wtf/text/WTFString.h"
 #include "third_party/WebKit/common/blob/blob.mojom-blink.h"
+#include "third_party/WebKit/common/blob/blob_registry.mojom-blink.h"
 
 namespace blink {
 
@@ -261,6 +262,8 @@ class PLATFORM_EXPORT BlobDataHandle
   ~BlobDataHandle();
 
   mojom::blink::BlobPtr CloneBlobPtr();
+
+  static void SetBlobRegistryForTesting(mojom::blink::BlobRegistry*);
 
  private:
   BlobDataHandle();
