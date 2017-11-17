@@ -282,7 +282,7 @@ class CONTENT_EXPORT UserMediaProcessor
 
   const scoped_refptr<base::TaskRunner> worker_task_runner_;
 
-  RenderFrame* const render_frame_;
+  const int render_frame_id_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
