@@ -9,8 +9,14 @@
 
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/containers/flat_set.h"
+#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_traits.h"
+#include "base/trace_event/trace_event.h"
 #include "components/safe_browsing/android/safe_browsing_api_handler_util.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "content/public/browser/browser_thread.h"
@@ -25,6 +31,9 @@ using base::android::ToJavaIntArray;
 using content::BrowserThread;
 
 namespace safe_browsing {
+
+const base::Feature kDispatchSafetyNetCheckOffThread{
+    "DispatchSafetyNetCheckOffThread", base::FEATURE_DISABLED_BY_DEFAULT};
 
 namespace {
 void RunCallbackOnIOThread(
@@ -84,6 +93,7 @@ void OnUrlCheckDone(JNIEnv* env,
                     const JavaParamRef<jstring>& metadata) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(callback_id);
+  TRACE_EVENT0("safe_browsing", "SafeBrowsingApiHandlerBridge::OnUrlCheckDone");
 
   const std::string metadata_str =
       (metadata ? ConvertJavaStringToUTF8(env, metadata) : "");
@@ -130,19 +140,20 @@ void OnUrlCheckDone(JNIEnv* env,
 //
 // SafeBrowsingApiHandlerBridge
 //
-SafeBrowsingApiHandlerBridge::SafeBrowsingApiHandlerBridge()
-    : checked_api_support_(false) {}
+SafeBrowsingApiHandlerBridge::SafeBrowsingApiHandlerBridge() {}
 
-SafeBrowsingApiHandlerBridge::~SafeBrowsingApiHandlerBridge() {}
+SafeBrowsingApiHandlerBridge::~SafeBrowsingApiHandlerBridge() {
+  if (api_task_runner_)
+    api_task_runner_->DeleteSoon(FROM_HERE, core_.release());
+}
 
-bool SafeBrowsingApiHandlerBridge::CheckApiIsSupported() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!checked_api_support_) {
-    DVLOG(1) << "Checking API support.";
-    j_api_handler_ = Java_SafeBrowsingApiBridge_create(AttachCurrentThread());
-    checked_api_support_ = true;
+void SafeBrowsingApiHandlerBridge::Initialize() {
+  DCHECK(!core_);
+  core_ = std::make_unique<Core>();
+  if (base::FeatureList::IsEnabled(kDispatchSafetyNetCheckOffThread)) {
+    api_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
+        {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
   }
-  return j_api_handler_.obj() != nullptr;
 }
 
 void SafeBrowsingApiHandlerBridge::StartURLCheck(
@@ -150,7 +161,57 @@ void SafeBrowsingApiHandlerBridge::StartURLCheck(
     const GURL& url,
     const SBThreatTypeSet& threat_types) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  // Initialize on the first URL check, when the feature list API is ready to be
+  // used.
+  if (!core_)
+    Initialize();
 
+  // Note: it turns out in practice that dispatching the IPC to Google Play
+  // Services can be quite expensive in terms of wall time, often due to thread
+  // descheduling. Since this task runs in an extremely performance critical
+  // place (it blocks navigation and subresource requests), dispatch it on a
+  // worker thread. In high percentiles it seems like the dispatching can take
+  // >100ms, so use base::MayBlock even though we aren't technically doing
+  // blocking IO.
+  if (!api_task_runner_) {
+    core_->StartURLCheck(callback, url, threat_types);
+    return;
+  }
+  // Unretained is safe because the task to delete |core_| will be sequenced
+  // after any task posted here.
+  api_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&SafeBrowsingApiHandlerBridge::Core::StartURLCheck,
+                     base::Unretained(core_.get()), callback, url,
+                     threat_types));
+}
+
+SafeBrowsingApiHandlerBridge::Core::Core() {
+  // The sequence checker is constructed on a different sequence from where it
+  // is used.
+  DETACH_FROM_SEQUENCE(sequence_checker_);
+}
+
+SafeBrowsingApiHandlerBridge::Core::~Core() = default;
+
+bool SafeBrowsingApiHandlerBridge::Core::CheckApiIsSupported() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!checked_api_support_) {
+    DVLOG(1) << "Checking API support.";
+    j_api_handler_ = base::android::ScopedJavaGlobalRef<jobject>(
+        Java_SafeBrowsingApiBridge_create(AttachCurrentThread()));
+    checked_api_support_ = true;
+  }
+  return j_api_handler_.obj() != nullptr;
+}
+
+void SafeBrowsingApiHandlerBridge::Core::StartURLCheck(
+    const URLCheckCallbackMeta& callback,
+    const GURL& url,
+    const SBThreatTypeSet& threat_types) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  TRACE_EVENT0("safe_browsing",
+               "SafeBrowsingApiHandlerBridge::StartURLCheckAsync");
   if (!CheckApiIsSupported()) {
     // Mark all requests as safe. Only users who have an old, broken GMSCore or
     // have sideloaded Chrome w/o PlayStore should land here.

@@ -32,7 +32,6 @@ public final class SafeBrowsingApiBridge {
 
     /**
      * Create a SafeBrowsingApiHandler obj and initialize its client, if supported.
-     * Should be called on IO thread.
      *
      * @return the handler if it's usable, or null if the API is not supported.
      */
@@ -55,6 +54,9 @@ public final class SafeBrowsingApiBridge {
         return initSuccesssful ? handler : null;
     }
 
+    /**
+     * Starts a Safe Browsing check. Must be called on the same sequence as |create|.
+     */
     @CalledByNative
     private static void startUriLookup(
             SafeBrowsingApiHandler handler, long callbackId, String uri, int[] threatsOfInterest) {
