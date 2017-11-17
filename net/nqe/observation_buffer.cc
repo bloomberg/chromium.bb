@@ -43,6 +43,11 @@ ObservationBuffer::~ObservationBuffer() {}
 
 void ObservationBuffer::AddObservation(const Observation& observation) {
   DCHECK_LE(observations_.size(), params_->observation_buffer_size());
+
+  // Observations must be in the non-decreasing order of the timestamps.
+  DCHECK(observations_.empty() ||
+         observation.timestamp() >= observations_.back().timestamp());
+
   // Evict the oldest element if the buffer is already full.
   if (observations_.size() == params_->observation_buffer_size())
     observations_.pop_front();

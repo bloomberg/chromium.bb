@@ -1281,7 +1281,6 @@ NetworkQualityEstimator::GetRecentEffectiveConnectionTypeUsingMetrics(
 
   // If the device is currently offline, then return
   // EFFECTIVE_CONNECTION_TYPE_OFFLINE.
-
   if (current_network_id_.type == NetworkChangeNotifier::CONNECTION_NONE &&
       !disable_offline_check_) {
     return EFFECTIVE_CONNECTION_TYPE_OFFLINE;
