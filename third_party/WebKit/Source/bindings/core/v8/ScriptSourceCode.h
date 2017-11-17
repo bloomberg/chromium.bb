@@ -31,6 +31,7 @@
 #ifndef ScriptSourceCode_h
 #define ScriptSourceCode_h
 
+#include "bindings/core/v8/ScriptSourceLocationType.h"
 #include "bindings/core/v8/ScriptStreamer.h"
 #include "core/CoreExport.h"
 #include "core/loader/resource/ScriptResource.h"
@@ -51,6 +52,7 @@ class CORE_EXPORT ScriptSourceCode final {
   explicit ScriptSourceCode(ScriptResource*);
   ScriptSourceCode(
       const String& source,
+      ScriptSourceLocationType = ScriptSourceLocationType::kUnknown,
       const KURL& = KURL(),
       const TextPosition& start_position = TextPosition::MinimumPosition());
   ScriptSourceCode(ScriptStreamer*, ScriptResource*);
@@ -67,6 +69,9 @@ class CORE_EXPORT ScriptSourceCode final {
   const KURL& Url() const;
   int StartLine() const { return start_position_.line_.OneBasedInt(); }
   const TextPosition& StartPosition() const { return start_position_; }
+  ScriptSourceLocationType SourceLocationType() const {
+    return source_location_type_;
+  }
   String SourceMapUrl() const;
 
   ScriptStreamer* Streamer() const { return streamer_; }
@@ -79,6 +84,7 @@ class CORE_EXPORT ScriptSourceCode final {
   Member<ScriptStreamer> streamer_;
   mutable KURL url_;
   TextPosition start_position_;
+  ScriptSourceLocationType source_location_type_;
 };
 
 }  // namespace blink

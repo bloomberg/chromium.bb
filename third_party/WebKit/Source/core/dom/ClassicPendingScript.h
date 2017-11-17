@@ -5,6 +5,7 @@
 #ifndef ClassicPendingScript_h
 #define ClassicPendingScript_h
 
+#include "bindings/core/v8/ScriptSourceLocationType.h"
 #include "bindings/core/v8/ScriptStreamer.h"
 #include "core/dom/ClassicScript.h"
 #include "core/dom/PendingScript.h"
@@ -49,6 +50,7 @@ class CORE_EXPORT ClassicPendingScript final
   // For an inline script.
   static ClassicPendingScript* CreateInline(ScriptElementBase*,
                                             const TextPosition&,
+                                            ScriptSourceLocationType,
                                             const ScriptFetchOptions&);
 
   ~ClassicPendingScript() override;
@@ -90,6 +92,7 @@ class CORE_EXPORT ClassicPendingScript final
 
   ClassicPendingScript(ScriptElementBase*,
                        const TextPosition&,
+                       ScriptSourceLocationType,
                        const ScriptFetchOptions&,
                        bool is_external);
   ClassicPendingScript() = delete;
@@ -115,6 +118,7 @@ class CORE_EXPORT ClassicPendingScript final
 
   const ScriptFetchOptions options_;
 
+  const ScriptSourceLocationType source_location_type_;
   const bool is_external_;
   ReadyState ready_state_;
   bool integrity_failure_;

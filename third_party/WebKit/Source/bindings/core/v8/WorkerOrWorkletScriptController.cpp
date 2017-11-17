@@ -247,6 +247,7 @@ ScriptValue WorkerOrWorkletScriptController::Evaluate(
     const String& script,
     const String& file_name,
     const TextPosition& script_start_position,
+    ScriptSourceLocationType source_location_type,
     CachedMetadataHandler* cache_handler,
     V8CacheOptions v8_cache_options) {
   TRACE_EVENT1("devtools.timeline", "EvaluateScript", "data",
@@ -272,10 +273,10 @@ ScriptValue WorkerOrWorkletScriptController::Evaluate(
   // - A work{er,let} script doesn't have a nonce, and
   // - a work{er,let} script is always "not parser inserted".
   ReferrerScriptInfo referrer_info;
-  if (V8ScriptRunner::CompileScript(script_state_.get(), script, file_name,
-                                    String(), script_start_position,
-                                    cache_handler, kSharableCrossOrigin,
-                                    v8_cache_options, referrer_info)
+  if (V8ScriptRunner::CompileScript(
+          script_state_.get(), script, file_name, String(),
+          script_start_position, source_location_type, cache_handler,
+          kSharableCrossOrigin, v8_cache_options, referrer_info)
           .ToLocal(&compiled_script))
     maybe_result = V8ScriptRunner::RunCompiledScript(isolate_, compiled_script,
                                                      global_scope_);
@@ -315,7 +316,8 @@ bool WorkerOrWorkletScriptController::Evaluate(
 
   ExecutionState state(this);
   Evaluate(source_code.Source(), source_code.Url().GetString(),
-           source_code.StartPosition(), cache_handler, v8_cache_options);
+           source_code.StartPosition(), source_code.SourceLocationType(),
+           cache_handler, v8_cache_options);
   if (IsExecutionForbidden())
     return false;
 
@@ -360,7 +362,8 @@ ScriptValue WorkerOrWorkletScriptController::EvaluateAndReturnValueForTest(
     const ScriptSourceCode& source_code) {
   ExecutionState state(this);
   return Evaluate(source_code.Source(), source_code.Url().GetString(),
-                  source_code.StartPosition(), nullptr, kV8CacheOptionsDefault);
+                  source_code.StartPosition(), source_code.SourceLocationType(),
+                  nullptr, kV8CacheOptionsDefault);
 }
 
 void WorkerOrWorkletScriptController::ForbidExecution() {

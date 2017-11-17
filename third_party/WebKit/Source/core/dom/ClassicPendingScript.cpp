@@ -30,7 +30,8 @@ ClassicPendingScript* ClassicPendingScript::Fetch(
       url, element_document.GetSecurityOrigin(), encoding, defer);
 
   ClassicPendingScript* pending_script = new ClassicPendingScript(
-      element, TextPosition(), options, true /* is_external */);
+      element, TextPosition(), ScriptSourceLocationType::kExternalFile, options,
+      true /* is_external */);
 
   // [Intervention]
   // For users on slow connections, we want to avoid blocking the parser in
@@ -58,7 +59,8 @@ ClassicPendingScript* ClassicPendingScript::CreateExternalForTest(
     ScriptResource* resource) {
   DCHECK(resource);
   ClassicPendingScript* pending_script = new ClassicPendingScript(
-      element, TextPosition(), ScriptFetchOptions(), true /* is_external */);
+      element, TextPosition(), ScriptSourceLocationType::kExternalFile,
+      ScriptFetchOptions(), true /* is_external */);
   pending_script->SetResource(resource);
   pending_script->CheckState();
   return pending_script;
@@ -67,9 +69,11 @@ ClassicPendingScript* ClassicPendingScript::CreateExternalForTest(
 ClassicPendingScript* ClassicPendingScript::CreateInline(
     ScriptElementBase* element,
     const TextPosition& starting_position,
+    ScriptSourceLocationType source_location_type,
     const ScriptFetchOptions& options) {
-  ClassicPendingScript* pending_script = new ClassicPendingScript(
-      element, starting_position, options, false /* is_external */);
+  ClassicPendingScript* pending_script =
+      new ClassicPendingScript(element, starting_position, source_location_type,
+                               options, false /* is_external */);
   pending_script->CheckState();
   return pending_script;
 }
@@ -77,10 +81,12 @@ ClassicPendingScript* ClassicPendingScript::CreateInline(
 ClassicPendingScript::ClassicPendingScript(
     ScriptElementBase* element,
     const TextPosition& starting_position,
+    ScriptSourceLocationType source_location_type,
     const ScriptFetchOptions& options,
     bool is_external)
     : PendingScript(element, starting_position),
       options_(options),
+      source_location_type_(source_location_type),
       is_external_(is_external),
       ready_state_(is_external ? kWaitingForResource : kReady),
       integrity_failure_(false),
@@ -228,7 +234,8 @@ ClassicScript* ClassicPendingScript::GetSource(const KURL& document_url,
 
   error_occurred = ErrorOccurred();
   if (!is_external_) {
-    ScriptSourceCode source_code(GetElement()->TextFromChildren(), document_url,
+    ScriptSourceCode source_code(GetElement()->TextFromChildren(),
+                                 source_location_type_, document_url,
                                  StartingPosition());
     return ClassicScript::Create(source_code, options_);
   }
