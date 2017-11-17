@@ -192,11 +192,8 @@ TEST_F(BrowserCommandControllerTest, AvatarAcceleratorEnabledOnDesktop) {
   if (!profiles::IsMultipleProfilesEnabled())
     return;
 
-  TestingProfileManager testing_profile_manager(
-      TestingBrowserProcess::GetGlobal());
-  ASSERT_TRUE(testing_profile_manager.SetUp());
-  ProfileManager* profile_manager = testing_profile_manager.profile_manager();
-
+  TestingProfileManager* testing_profile_manager = profile_manager();
+  ProfileManager* profile_manager = testing_profile_manager->profile_manager();
   chrome::BrowserCommandController command_controller(browser());
   const CommandUpdater* command_updater = command_controller.command_updater();
 
@@ -206,19 +203,16 @@ TEST_F(BrowserCommandControllerTest, AvatarAcceleratorEnabledOnDesktop) {
   enabled = false;
 #endif
 
-  testing_profile_manager.CreateTestingProfile("p1");
   ASSERT_EQ(1U, profile_manager->GetNumberOfProfiles());
   EXPECT_EQ(enabled, command_updater->IsCommandEnabled(IDC_SHOW_AVATAR_MENU));
 
-  testing_profile_manager.CreateTestingProfile("p2");
+  testing_profile_manager->CreateTestingProfile("p2");
   ASSERT_EQ(2U, profile_manager->GetNumberOfProfiles());
   EXPECT_EQ(enabled, command_updater->IsCommandEnabled(IDC_SHOW_AVATAR_MENU));
 
-  testing_profile_manager.DeleteTestingProfile("p1");
+  testing_profile_manager->DeleteTestingProfile("p2");
   ASSERT_EQ(1U, profile_manager->GetNumberOfProfiles());
   EXPECT_EQ(enabled, command_updater->IsCommandEnabled(IDC_SHOW_AVATAR_MENU));
-
-  testing_profile_manager.DeleteTestingProfile("p2");
 }
 
 TEST_F(BrowserCommandControllerTest, AvatarMenuAlwaysDisabledInIncognitoMode) {

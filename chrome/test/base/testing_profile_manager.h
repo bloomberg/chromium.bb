@@ -105,6 +105,7 @@ class TestingProfileManager {
   const base::FilePath& profiles_dir();
   ProfileManager* profile_manager();
   ProfileAttributesStorage* profile_attributes_storage();
+  ScopedTestingLocalState* local_state() { return &local_state_; }
 
  private:
   friend class ProfileAttributesStorageTest;

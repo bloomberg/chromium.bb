@@ -8,14 +8,12 @@
 #include "base/test/test_timeouts.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/message_center_notification_manager.h"
 #include "chrome/browser/notifications/notification_test_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
-#include "chrome/test/base/testing_browser_process.h"
-#include "chrome/test/base/testing_profile.h"
-#include "chrome/test/base/testing_profile_manager.h"
 #include "components/prefs/testing_pref_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,7 +32,6 @@ class MessageCenterNotificationManagerTest : public BrowserWithTestWindowTest {
 
  protected:
   void SetUp() override {
-    BrowserWithTestWindowTest::SetUp();
 #if !defined(OS_CHROMEOS)
     // BrowserWithTestWindowTest owns an AshTestHelper on OS_CHROMEOS, which
     // in turn initializes the message center.  On other platforms, we need to
@@ -42,24 +39,18 @@ class MessageCenterNotificationManagerTest : public BrowserWithTestWindowTest {
     MessageCenter::Initialize();
 #endif
 
-    TestingBrowserProcess* browser_process = TestingBrowserProcess::GetGlobal();
-    profile_manager_.reset(new TestingProfileManager(browser_process));
-    ASSERT_TRUE(profile_manager_->SetUp());
-
+    BrowserWithTestWindowTest::SetUp();
     message_center_ = MessageCenter::Get();
     delegate_ = new FakeUiDelegate();
     notification_manager()->SetUiDelegateForTest(delegate_);
   }
 
   void TearDown() override {
-    profile_manager_.reset();
-
+    BrowserWithTestWindowTest::TearDown();
 #if !defined(OS_CHROMEOS)
     // Shutdown the message center if we initialized it manually.
     MessageCenter::Shutdown();
 #endif
-
-    BrowserWithTestWindowTest::TearDown();
   }
 
   MessageCenterNotificationManager* notification_manager() {
@@ -80,7 +71,6 @@ class MessageCenterNotificationManagerTest : public BrowserWithTestWindowTest {
   }
 
  private:
-  std::unique_ptr<TestingProfileManager> profile_manager_;
   MessageCenter* message_center_;
   FakeUiDelegate* delegate_;
 };

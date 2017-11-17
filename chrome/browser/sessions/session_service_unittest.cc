@@ -55,12 +55,8 @@ class SessionServiceTest : public BrowserWithTestWindowTest {
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
 
-    profile_manager_.reset(
-        new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
-    ASSERT_TRUE(profile_manager_->SetUp());
-
     std::string b = base::Int64ToString(base::Time::Now().ToInternalValue());
-    TestingProfile* profile = profile_manager_->CreateTestingProfile(b);
+    TestingProfile* profile = profile_manager()->CreateTestingProfile(b);
     SessionService* session_service = new SessionService(profile);
     path_ = profile->GetPath();
 
@@ -178,7 +174,6 @@ class SessionServiceTest : public BrowserWithTestWindowTest {
   base::FilePath path_;
 
   SessionServiceTestHelper helper_;
-  std::unique_ptr<TestingProfileManager> profile_manager_;
 };
 
 TEST_F(SessionServiceTest, Basic) {

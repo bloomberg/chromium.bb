@@ -57,28 +57,17 @@ class MenuError : public GlobalError {
 class AppMenuModelTest : public BrowserWithTestWindowTest,
                          public ui::AcceleratorProvider {
  public:
+  AppMenuModelTest() = default;
+  ~AppMenuModelTest() override = default;
+
   // Don't handle accelerators.
   bool GetAcceleratorForCommandId(int command_id,
                                   ui::Accelerator* accelerator) const override {
     return false;
   }
 
- protected:
-  void SetUp() override {
-    prefs_.reset(new TestingPrefServiceSimple());
-    chrome::RegisterLocalState(prefs_->registry());
-
-    TestingBrowserProcess::GetGlobal()->SetLocalState(prefs_.get());
-    BrowserWithTestWindowTest::SetUp();
-  }
-
-  void TearDown() override {
-    BrowserWithTestWindowTest::TearDown();
-    TestingBrowserProcess::GetGlobal()->SetLocalState(NULL);
-  }
-
  private:
-  std::unique_ptr<TestingPrefServiceSimple> prefs_;
+  DISALLOW_COPY_AND_ASSIGN(AppMenuModelTest);
 };
 
 // Copies parts of MenuModelTest::Delegate and combines them with the

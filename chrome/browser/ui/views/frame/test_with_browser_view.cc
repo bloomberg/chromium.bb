@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
-#include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
@@ -73,8 +72,6 @@ TestWithBrowserView::~TestWithBrowserView() {
 }
 
 void TestWithBrowserView::SetUp() {
-  local_state_.reset(
-      new ScopedTestingLocalState(TestingBrowserProcess::GetGlobal()));
 #if defined(OS_CHROMEOS)
   chromeos::input_method::InitializeForTesting(
       new chromeos::input_method::MockInputMethodManagerImpl);
@@ -99,7 +96,6 @@ void TestWithBrowserView::TearDown() {
 #if defined(OS_CHROMEOS)
   chromeos::input_method::Shutdown();
 #endif
-  local_state_.reset(nullptr);
 }
 
 TestingProfile* TestWithBrowserView::CreateProfile() {

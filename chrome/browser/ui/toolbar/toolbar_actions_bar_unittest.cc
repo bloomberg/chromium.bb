@@ -96,8 +96,6 @@ ToolbarActionsBarUnitTest::~ToolbarActionsBarUnitTest() {}
 
 void ToolbarActionsBarUnitTest::SetUp() {
   BrowserWithTestWindowTest::SetUp();
-  local_state_.reset(
-      new ScopedTestingLocalState(TestingBrowserProcess::GetGlobal()));
 
   // The toolbar typically displays extension icons, so create some extension
   // test infrastructure.
@@ -128,7 +126,6 @@ void ToolbarActionsBarUnitTest::TearDown() {
   overflow_browser_action_test_util_.reset();
   ToolbarActionsBar::disable_animations_for_testing_ = false;
   material_design_state_.reset();
-  local_state_.reset();
   BrowserWithTestWindowTest::TearDown();
 }
 

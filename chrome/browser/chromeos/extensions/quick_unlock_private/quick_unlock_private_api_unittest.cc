@@ -119,11 +119,9 @@ class QuickUnlockPrivateUnitTest : public ExtensionApiUnittest {
     modes_changed_handler_ = base::Bind(&DoNothing);
   }
 
-  TestingProfile* CreateProfile() override {
-    TestingProfile::Builder builder;
-    builder.AddTestingFactory(EasyUnlockServiceFactory::GetInstance(),
-                              &CreateEasyUnlockServiceForTest);
-    return builder.Build().release();
+  TestingProfile::TestingFactories GetTestingFactories() override {
+    return {{EasyUnlockServiceFactory::GetInstance(),
+             &CreateEasyUnlockServiceForTest}};
   }
 
   // If a mode change event is raised, fail the test.

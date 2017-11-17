@@ -18,7 +18,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/test_browser_window.h"
-#include "chrome/test/base/testing_browser_process.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "ui/message_center/message_center.h"
@@ -172,34 +172,15 @@ TEST_F(BrowserListTest, TabContentsIteratorVerifyBrowser) {
 
 TEST_F(BrowserListTest, MAYBE_AttemptRestart) {
   ASSERT_TRUE(g_browser_process);
-  TestingPrefServiceSimple testing_pref_service;
-  testing_pref_service.registry()->RegisterBooleanPref(
-      prefs::kWasRestarted, false);
-  testing_pref_service.registry()->RegisterBooleanPref(
-      prefs::kRestartLastSessionOnShutdown, false);
-#if defined(OS_WIN)
-  testing_pref_service.registry()->RegisterBooleanPref(
-      metrics::prefs::kMetricsReportingEnabled, false);
-#endif
-  testing_pref_service.registry()->RegisterListPref(
-      prefs::kProfilesLastActive);
-  testing_pref_service.registry()->RegisterDictionaryPref(
-      prefs::kProfileInfoCache);
+  TestingPrefServiceSimple* testing_pref_service =
+      profile_manager()->local_state()->Get();
 
   message_center::MessageCenter::Initialize();
-  TestingBrowserProcess* testing_browser_process =
-      TestingBrowserProcess::GetGlobal();
-  testing_browser_process->SetLocalState(&testing_pref_service);
-  ASSERT_TRUE(g_browser_process->local_state());
-  ProfileManager* profile_manager = new ProfileManager(base::FilePath());
-  testing_browser_process->SetProfileManager(profile_manager);
-
+  EXPECT_FALSE(testing_pref_service->GetBoolean(prefs::kWasRestarted));
   chrome::AttemptRestart();
-  EXPECT_TRUE(testing_pref_service.GetBoolean(prefs::kWasRestarted));
+  EXPECT_TRUE(testing_pref_service->GetBoolean(prefs::kWasRestarted));
 
   // Cancel the effects of us calling chrome::AttemptRestart. Otherwise tests
   // ran after this one will fail.
   browser_shutdown::SetTryingToQuit(false);
-
-  testing_browser_process->SetLocalState(NULL);
 }

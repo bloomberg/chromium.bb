@@ -34,7 +34,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
-#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -394,8 +393,7 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
  public:
   LockScreenAppStateTest()
       : fake_user_manager_(new chromeos::FakeChromeUserManager),
-        user_manager_enabler_(base::WrapUnique(fake_user_manager_)),
-        profile_manager_(TestingBrowserProcess::GetGlobal()) {}
+        user_manager_enabler_(base::WrapUnique(fake_user_manager_)) {}
 
   ~LockScreenAppStateTest() override = default;
 
@@ -403,8 +401,6 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
     command_line_ = base::MakeUnique<base::test::ScopedCommandLine>();
     command_line_->GetProcessCommandLine()->InitFromArgv({""});
     SetUpCommandLine(command_line_->GetProcessCommandLine());
-
-    ASSERT_TRUE(profile_manager_.SetUp());
 
     SetUpStylusAvailability();
 
@@ -433,7 +429,7 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
     InitExtensionSystem(profile());
 
     std::unique_ptr<FakeLockScreenProfileCreator> profile_creator =
-        base::MakeUnique<FakeLockScreenProfileCreator>(&profile_manager_);
+        base::MakeUnique<FakeLockScreenProfileCreator>(profile_manager());
     lock_screen_profile_creator_ = profile_creator.get();
 
     std::unique_ptr<TestAppManager> app_manager =
@@ -474,7 +470,6 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
     lock_screen_profile_creator_ = nullptr;
     app_window_.reset();
     BrowserWithTestWindowTest::TearDown();
-    profile_manager_.DeleteAllTestingProfiles();
     focus_cycler_delegate_.reset();
   }
 
@@ -482,15 +477,7 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
     const AccountId account_id(AccountId::FromUserEmail(kPrimaryProfileName));
     AddTestUser(account_id);
     fake_user_manager()->LoginUser(account_id);
-    return profile_manager_.CreateTestingProfile(kPrimaryProfileName);
-  }
-
-  void DestroyProfile(TestingProfile* test_profile) override {
-    if (test_profile == profile()) {
-      profile_manager_.DeleteTestingProfile(kPrimaryProfileName);
-    } else {
-      ADD_FAILURE() << "Request to destroy unknown profile.";
-    }
+    return profile_manager()->CreateTestingProfile(kPrimaryProfileName);
   }
 
   // Adds test user for the primary profile - virtual so test fixture can
@@ -705,7 +692,6 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
 
   chromeos::FakeChromeUserManager* fake_user_manager_;
   user_manager::ScopedUserManager user_manager_enabler_;
-  TestingProfileManager profile_manager_;
 
   // Run loop used to throttle test until async state controller initialization
   // is fully complete. The quit closure for this run loop will be passed to
