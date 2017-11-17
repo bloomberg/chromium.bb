@@ -83,7 +83,7 @@ enum UiElementName {
   kSpeechRecognitionListeningGrowingCircle,
   kSpeechRecognitionListeningInnerCircle,
   kSpeechRecognitionListeningMicrophoneIcon,
-  kSpeechRecognitionListeningBackplane,
+  kSpeechRecognitionListeningCloseButton,
   kSuggestionLayout,
 
   // This must be last.

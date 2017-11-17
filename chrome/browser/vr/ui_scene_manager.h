@@ -207,7 +207,6 @@ class UiSceneManager {
   TransientElement* exclusive_screen_toast_viewport_aware_transient_parent_ =
       nullptr;
   ShowUntilSignalTransientElement* splash_screen_transient_parent_ = nullptr;
-  UiElement* speech_recognition_prompt_backplane_ = nullptr;
   UiElement* exit_warning_ = nullptr;
   ContentElement* main_content_ = nullptr;
   UiElement* audio_capture_indicator_ = nullptr;

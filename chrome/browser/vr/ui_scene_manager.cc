@@ -738,18 +738,15 @@ void UiSceneManager::CreateVoiceSearchUiGroup(Model* model) {
   microphone_icon->SetSize(kCloseButtonWidth, kCloseButtonHeight);
   scene_->AddUiElement(kSpeechRecognitionListening, std::move(microphone_icon));
 
-  auto backplane = base::MakeUnique<InvisibleHitTarget>();
-  speech_recognition_prompt_backplane_ = backplane.get();
-  backplane->set_name(kSpeechRecognitionListeningBackplane);
-  backplane->set_draw_phase(kPhaseForeground);
-  backplane->SetSize(kPromptBackplaneSize, kPromptBackplaneSize);
-  backplane->SetTranslate(0.0, 0.0, kTextureOffset);
-  EventHandlers event_handlers;
-  event_handlers.button_up = base::Bind(
-      &UiSceneManager::OnExitRecognizingSpeechClicked, base::Unretained(this));
-  backplane->set_event_handlers(event_handlers);
-
-  scene_->AddUiElement(kSpeechRecognitionListening, std::move(backplane));
+  auto close_button = base::MakeUnique<Button>(
+      base::Bind(&UiSceneManager::OnExitRecognizingSpeechClicked,
+                 base::Unretained(this)),
+      kPhaseForeground, kVoiceSearchCloseButtonWidth,
+      kVoiceSearchCloseButtonHeight, vector_icons::kClose16Icon);
+  close_button->set_name(kSpeechRecognitionListeningCloseButton);
+  close_button->SetTranslate(0.0, -kVoiceSearchCloseButtonYOffset, 0.f);
+  BindColor(this, close_button.get(), &ColorScheme::button_colors);
+  scene_->AddUiElement(kSpeechRecognitionListening, std::move(close_button));
 
   UiElement* browser_foregroud =
       scene_->GetUiElementByName(k2dBrowsingForeground);
