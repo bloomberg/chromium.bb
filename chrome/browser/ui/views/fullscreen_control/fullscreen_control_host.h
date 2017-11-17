@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_FULLSCREEN_CONTROL_FULLSCREEN_CONTROL_HOST_H_
 
 #include "base/macros.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/ui/views/fullscreen_control/fullscreen_control_popup.h"
 #include "ui/events/event_handler.h"
 
@@ -13,7 +14,6 @@ class BrowserView;
 class FullscreenControlView;
 
 namespace ui {
-class LocatedEvent;
 class GestureEvent;
 class MouseEvent;
 class TouchEvent;
@@ -52,15 +52,16 @@ class FullscreenControlHost : public ui::EventHandler {
     TOUCH,       // A touch event caused the view to show.
   };
 
-  void HandleFullScreenControlVisibility(const ui::LocatedEvent* event,
-                                         InputEntryMethod input_entry_method);
   void ShowForInputEntryMethod(InputEntryMethod input_entry_method);
+  void OnVisibilityChanged();
+  void OnTouchPopupTimeout();
 
   InputEntryMethod input_entry_method_ = InputEntryMethod::NOT_ACTIVE;
 
   BrowserView* const browser_view_;
 
   FullscreenControlPopup fullscreen_control_popup_;
+  base::OneShotTimer touch_timeout_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(FullscreenControlHost);
 };

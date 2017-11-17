@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "base/macros.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/slide_animation.h"
@@ -25,7 +25,8 @@ class FullscreenControlView;
 class FullscreenControlPopup : public gfx::AnimationDelegate {
  public:
   FullscreenControlPopup(gfx::NativeView parent_view,
-                         const base::RepeatingClosure& on_button_pressed);
+                         const base::RepeatingClosure& on_button_pressed,
+                         const base::RepeatingClosure& on_visibility_changed);
   ~FullscreenControlPopup() override;
 
   // Shows the indicator with an animation that drops it off the top of
@@ -61,12 +62,16 @@ class FullscreenControlPopup : public gfx::AnimationDelegate {
 
   gfx::Rect CalculateBounds(int y_offset) const;
 
+  void OnVisibilityChanged();
+
   FullscreenControlView* const control_view_;
   const std::unique_ptr<views::Widget> popup_;
   const std::unique_ptr<gfx::SlideAnimation> animation_;
 
   // The bounds is empty when the popup is not showing.
   gfx::Rect parent_bounds_in_screen_;
+
+  const base::RepeatingClosure on_visibility_changed_;
 
   DISALLOW_COPY_AND_ASSIGN(FullscreenControlPopup);
 };
