@@ -28,7 +28,6 @@
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/ntp/google_landing_mediator.h"
-#import "ios/chrome/browser/ui/ntp/google_landing_view_controller.h"
 #import "ios/chrome/browser/ui/ntp/incognito_view_controller.h"
 #import "ios/chrome/browser/ui/ntp/modal_ntp.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_bar_item.h"
@@ -118,12 +117,9 @@ enum {
   __weak id<UrlLoader> _loader;
   __weak id<NewTabPageControllerObserver> _newTabPageObserver;
   BookmarkHomeTabletNTPController* _bookmarkController;
-  GoogleLandingViewController* _googleLandingController;
   IncognitoViewController* _incognitoController;
   // The currently visible controller, one of the above.
   __weak id<NewTabPagePanelProtocol> _currentController;
-
-  GoogleLandingMediator* _googleLandingMediator;
 
   RecentTabsTableCoordinator* _openTabsCoordinator;
   // Has the scrollView been initialized.
@@ -257,9 +253,7 @@ enum {
     bool isIncognito = _browserState->IsOffTheRecord();
 
     NSString* incognito = l10n_util::GetNSString(IDS_IOS_NEW_TAB_INCOGNITO);
-    NSString* home = experimental_flags::IsSuggestionsUIEnabled()
-                         ? l10n_util::GetNSString(IDS_IOS_NEW_TAB_HOME)
-                         : l10n_util::GetNSString(IDS_IOS_NEW_TAB_MOST_VISITED);
+    NSString* home = l10n_util::GetNSString(IDS_IOS_NEW_TAB_HOME);
     NSString* bookmarks =
         l10n_util::GetNSString(IDS_IOS_NEW_TAB_BOOKMARKS_PAGE_TITLE_MOBILE);
     NSString* openTabs = l10n_util::GetNSString(IDS_IOS_NEW_TAB_RECENT_TABS);
@@ -332,12 +326,9 @@ enum {
   // delegate.
   self.view.scrollView.delegate = nil;
 
-  [_googleLandingMediator shutdown];
-
   // This is not an ideal place to put view controller contaimnent, rather a
   // //web -wasDismissed method on CRWNativeContent would be more accurate. If
   // CRWNativeContent leaks, this will not be called.
-  [_googleLandingController removeFromParentViewController];
   [_bookmarkController removeFromParentViewController];
   [_incognitoController removeFromParentViewController];
   [[self.contentSuggestionsCoordinator viewController]
@@ -359,7 +350,6 @@ enum {
   // This methods is called by //web immediately before |self|'s view is removed
   // from the view hierarchy, making it an ideal spot to intiate view controller
   // containment methods.
-  [_googleLandingController willMoveToParentViewController:nil];
   [_bookmarkController willMoveToParentViewController:nil];
   [[_openTabsCoordinator viewController] willMoveToParentViewController:nil];
   [[self.contentSuggestionsCoordinator viewController]
@@ -586,7 +576,6 @@ enum {
     panelController = _bookmarkController;
     [_bookmarkController setDelegate:self];
   } else if (item.identifier == ntp_home::HOME_PANEL) {
-    if (experimental_flags::IsSuggestionsUIEnabled()) {
       if (!self.contentSuggestionsCoordinator) {
         self.contentSuggestionsCoordinator =
             [[ContentSuggestionsCoordinator alloc]
@@ -602,23 +591,6 @@ enum {
       }
       panelController = [self.contentSuggestionsCoordinator viewController];
       self.homePanel = self.contentSuggestionsCoordinator;
-    } else {
-      if (!_googleLandingController) {
-        _googleLandingController = [[GoogleLandingViewController alloc] init];
-        [_googleLandingController setDispatcher:self.dispatcher];
-        _googleLandingMediator = [[GoogleLandingMediator alloc]
-            initWithBrowserState:_browserState
-                    webStateList:[_tabModel webStateList]];
-        _googleLandingMediator.consumer = _googleLandingController;
-        _googleLandingMediator.dispatcher = self.dispatcher;
-        [_googleLandingMediator setUp];
-
-        [_googleLandingController setDataSource:_googleLandingMediator];
-        self.headerController = _googleLandingController;
-      }
-      panelController = _googleLandingController;
-      self.homePanel = _googleLandingController;
-    }
     [self.homePanel setDelegate:self];
   } else if (item.identifier == ntp_home::RECENT_TABS_PANEL) {
     if (!_openTabsCoordinator) {
@@ -818,10 +790,6 @@ enum {
 
 - (BookmarkHomeTabletNTPController*)bookmarkController {
   return _bookmarkController;
-}
-
-- (GoogleLandingViewController*)googleLandingController {
-  return _googleLandingController;
 }
 
 - (id<NewTabPagePanelProtocol>)incognitoController {

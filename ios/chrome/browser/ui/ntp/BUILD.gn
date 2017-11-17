@@ -84,18 +84,12 @@ source_set("ntp_internal") {
     "google_landing_consumer.h",
     "google_landing_mediator.h",
     "google_landing_mediator.mm",
-    "google_landing_view_controller.h",
-    "google_landing_view_controller.mm",
     "incognito_view.h",
     "incognito_view.mm",
     "incognito_view_controller.h",
     "incognito_view_controller.mm",
     "metrics.h",
     "metrics.mm",
-    "most_visited_cell.h",
-    "most_visited_cell.mm",
-    "most_visited_layout.h",
-    "most_visited_layout.mm",
     "new_tab_page_bar.h",
     "new_tab_page_bar.mm",
     "new_tab_page_bar_button.h",
@@ -109,8 +103,6 @@ source_set("ntp_internal") {
     "notification_promo_whats_new.mm",
     "ntp_tile_saver.h",
     "ntp_tile_saver.mm",
-    "whats_new_header_view.h",
-    "whats_new_header_view.mm",
   ]
   public_deps = [
     ":ntp_header",
@@ -243,8 +235,6 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "centering_scrollview_unittest.mm",
-    "google_landing_view_controller_unittest.mm",
-    "most_visited_cell_unittest.mm",
     "new_tab_page_bar_unittest.mm",
     "new_tab_page_controller_unittest.mm",
     "notification_promo_whats_new_unittest.mm",
@@ -301,7 +291,6 @@ source_set("eg_tests") {
   deps = [
     ":modal_ntp",
     ":ntp_controller",
-    ":ntp_internal",
     "//components/strings",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",

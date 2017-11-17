@@ -24,9 +24,6 @@ const char kDisableIOSFeatures[] = "disable-features";
 const char kDisableIOSPasswordSuggestions[] =
     "disable-ios-password-suggestions";
 
-// Disables the Suggestions UI
-const char kDisableSuggestionsUI[] = "disable-suggestions-ui";
-
 // Disables the 3rd party keyboard omnibox workaround.
 const char kDisableThirdPartyKeyboardWorkaround[] =
     "disable-third-party-keyboard-workaround";
@@ -45,9 +42,6 @@ const char kEnableIOSHandoffToOtherDevices[] =
 
 // Enables the Spotlight actions.
 const char kEnableSpotlightActions[] = "enable-spotlight-actions";
-
-// Enables the Suggestions UI
-const char kEnableSuggestionsUI[] = "enable-suggestions-ui";
 
 // Enables the 3rd party keyboard omnibox workaround.
 const char kEnableThirdPartyKeyboardWorkaround[] =
