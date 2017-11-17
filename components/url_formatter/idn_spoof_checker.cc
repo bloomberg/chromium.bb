@@ -238,6 +238,7 @@ bool IDNSpoofChecker::SafeToDisplayAsUnicode(base::StringPiece16 label,
     // - Disallow combining diacritical mark (U+0300-U+0339) after a non-LGC
     //   character. Other combining diacritical marks are not in the allowed
     //   character set.
+    // - Disallow dotless i (U+0131) followed by a combining mark.
     // - Disallow U+0307 (dot above) after 'i', 'j', 'l' or dotless i (U+0131).
     //   Dotless j (U+0237) is not in the allowed set to begin with.
     dangerous_pattern = new icu::RegexMatcher(
@@ -251,7 +252,8 @@ bool IDNSpoofChecker::SafeToDisplayAsUnicode(base::StringPiece16 label,
             R"(^[\p{scx=hira}]+[\u30d8-\u30da][\p{scx=hira}]+$|)"
             R"([a-z]\u30fb|\u30fb[a-z]|)"
             R"([^\p{scx=latn}\p{scx=grek}\p{scx=cyrl}][\u0300-\u0339]|)"
-            R"([ijl\u0131]\u0307)",
+            R"(\u0131[\u0300-\u0339]|)"
+            R"([ijl]\u0307)",
             -1, US_INV),
         0, status);
     tls_index.Set(dangerous_pattern);
