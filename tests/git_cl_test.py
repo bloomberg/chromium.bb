@@ -71,6 +71,8 @@ class ChangelistMock(object):
 class PresubmitMock(object):
   def __init__(self, *args, **kwargs):
     self.reviewers = []
+    self.more_cc = ['chromium-reviews+test-more-cc@chromium.org']
+
   @staticmethod
   def should_continue():
     return True
@@ -889,16 +891,17 @@ class TestGitCl(TestCase):
   def _cmd_line(description, args, similarity, find_copies, private, cc):
     """Returns the upload command line passed to upload.RealMain()."""
     return [
-        'upload', '--assume_yes', '--server',
-        'https://codereview.example.com',
+        'upload', '--assume_yes', '--server', 'https://codereview.example.com',
         '--message', description
     ] + args + [
-        '--cc', ','.join(['joe@example.com'] + cc),
-    ] + (['--private'] if private else []) + [
-        '--git_similarity', similarity or '50'
-    ] + (['--git_no_find_copies'] if find_copies is False else []) + [
-        'fake_ancestor_sha', 'HEAD'
-    ]
+        '--cc',
+        ','.join(
+            ['joe@example.com', 'chromium-reviews+test-more-cc@chromium.org'] +
+            cc),
+    ] + (['--private']
+         if private else []) + ['--git_similarity', similarity or '50'] + (
+             ['--git_no_find_copies']
+             if find_copies is False else []) + ['fake_ancestor_sha', 'HEAD']
 
   def _run_reviewer_test(
       self,
@@ -1627,9 +1630,10 @@ class TestGitCl(TestCase):
       ]
     calls += [
         ((['git', 'config', 'rietveld.cc'],), ''),
-        (('AddReviewers', 'chromium-review.googlesource.com',
-           123456 if squash else None, sorted(reviewers),
-          ['joe@example.com'] + cc, notify), ''),
+        (('AddReviewers', 'chromium-review.googlesource.com', 123456
+          if squash else None, sorted(reviewers),
+          ['joe@example.com', 'chromium-reviews+test-more-cc@chromium.org'] +
+          cc, notify), ''),
     ]
     if tbr:
       calls += [

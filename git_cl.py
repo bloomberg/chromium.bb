@@ -1155,7 +1155,7 @@ class Changelist(object):
     self.lookedup_patchset = False
     self.patchset = None
     self.cc = None
-    self.watchers = ()
+    self.more_cc = []
     self._remote = None
 
     self._codereview_impl = None
@@ -1203,21 +1203,19 @@ class Changelist(object):
     """
     if self.cc is None:
       base_cc = settings.GetDefaultCCList()
-      more_cc = ','.join(self.watchers)
+      more_cc = ','.join(self.more_cc)
       self.cc = ','.join(filter(None, (base_cc, more_cc))) or ''
     return self.cc
 
   def GetCCListWithoutDefault(self):
     """Return the users cc'd on this CL excluding default ones."""
     if self.cc is None:
-      self.cc = ','.join(self.watchers)
+      self.cc = ','.join(self.more_cc)
     return self.cc
 
-  def SetWatchers(self, watchers):
-    """Sets the list of email addresses that should be cc'd based on the changed
-    files in this CL.
-    """
-    self.watchers = watchers
+  def ExtendCC(self, more_cc):
+    """Extends the list of users to cc on this CL based on the changed files."""
+    self.more_cc.extend(more_cc)
 
   def GetBranch(self):
     """Returns the short branch name, e.g. 'master'."""
@@ -1627,7 +1625,7 @@ class Changelist(object):
     watchlist = watchlists.Watchlists(change.RepositoryRoot())
     files = [f.LocalPath() for f in change.AffectedFiles()]
     if not options.bypass_watchlists:
-      self.SetWatchers(watchlist.GetWatchersForPaths(files))
+      self.ExtendCC(watchlist.GetWatchersForPaths(files))
 
     if not options.bypass_hooks:
       if options.reviewers or options.tbrs or options.add_owners_to:
@@ -1646,6 +1644,7 @@ class Changelist(object):
         return 1
       if not options.reviewers and hook_results.reviewers:
         options.reviewers = hook_results.reviewers.split(',')
+      self.ExtendCC(hook_results.more_cc)
 
     # TODO(tandrii): Checking local patchset against remote patchset is only
     # supported for Rietveld. Extend it to Gerrit or remove it completely.

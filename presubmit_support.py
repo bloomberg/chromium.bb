@@ -94,6 +94,7 @@ class PresubmitOutput(object):
     self.input_stream = input_stream
     self.output_stream = output_stream
     self.reviewers = []
+    self.more_cc = []
     self.written_output = []
     self.error_count = 0
 
@@ -275,6 +276,11 @@ class OutputApi(object):
 
   def __init__(self, is_committing):
     self.is_committing = is_committing
+    self.more_cc = []
+
+  def AppendCC(self, cc):
+    """Appends a user to cc for this change."""
+    self.more_cc.append(cc)
 
   def PresubmitPromptOrNotify(self, *args, **kwargs):
     """Warn the user when uploading, but only notify if committing."""
@@ -1271,6 +1277,7 @@ class PresubmitExecuter(object):
     self.gerrit = gerrit_obj
     self.verbose = verbose
     self.dry_run = dry_run
+    self.more_cc = []
 
   def ExecPresubmitScript(self, script_text, presubmit_path):
     """Executes a single presubmit script.
@@ -1292,6 +1299,7 @@ class PresubmitExecuter(object):
     input_api = InputApi(self.change, presubmit_path, self.committing,
                          self.rietveld, self.verbose,
                          gerrit_obj=self.gerrit, dry_run=self.dry_run)
+    output_api = OutputApi(self.committing)
     context = {}
     try:
       exec script_text in context
@@ -1306,10 +1314,11 @@ class PresubmitExecuter(object):
       function_name = 'CheckChangeOnUpload'
     if function_name in context:
       try:
-        context['__args'] = (input_api, OutputApi(self.committing))
+        context['__args'] = (input_api, output_api)
         logging.debug('Running %s in %s', function_name, presubmit_path)
         result = eval(function_name + '(*__args)', context)
         logging.debug('Running %s done.', function_name)
+        self.more_cc = output_api.more_cc
       finally:
         map(os.remove, input_api._named_temporary_files)
       if not (isinstance(result, types.TupleType) or
@@ -1402,6 +1411,7 @@ def DoPresubmitChecks(change,
       presubmit_script = gclient_utils.FileRead(filename, 'rU')
       results += executer.ExecPresubmitScript(presubmit_script, filename)
 
+    output.more_cc.extend(executer.more_cc)
     errors = []
     notifications = []
     warnings = []

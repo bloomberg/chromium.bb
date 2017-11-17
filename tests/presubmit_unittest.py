@@ -1403,9 +1403,16 @@ class OutputApiUnittest(PresubmitTestsBase):
   def testMembersChanged(self):
     self.mox.ReplayAll()
     members = [
-      'MailTextResult', 'PresubmitError', 'PresubmitNotifyResult',
-      'PresubmitPromptWarning', 'PresubmitPromptOrNotify', 'PresubmitResult',
-      'is_committing', 'EnsureCQIncludeTrybotsAreAdded',
+        'AppendCC',
+        'MailTextResult',
+        'PresubmitError',
+        'PresubmitNotifyResult',
+        'PresubmitPromptWarning',
+        'PresubmitPromptOrNotify',
+        'PresubmitResult',
+        'is_committing',
+        'more_cc',
+        'EnsureCQIncludeTrybotsAreAdded',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(presubmit.OutputApi(False), members)
@@ -1423,6 +1430,12 @@ class OutputApiUnittest(PresubmitTestsBase):
     self.failIf(presubmit.OutputApi.PresubmitNotifyResult('').should_prompt)
 
     # TODO(joi) Test MailTextResult once implemented.
+
+  def testAppendCC(self):
+    output_api = presubmit.OutputApi(False)
+    output_api.AppendCC('chromium-reviews@chromium.org')
+    self.assertEquals(['chromium-reviews@chromium.org'], output_api.more_cc)
+
 
   def testOutputApiHandling(self):
     self.mox.ReplayAll()
