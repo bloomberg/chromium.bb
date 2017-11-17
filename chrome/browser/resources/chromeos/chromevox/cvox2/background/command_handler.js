@@ -279,7 +279,7 @@ CommandHandler.onCommand = function(command) {
     case 'previousLine':
       dir = Dir.BACKWARD;
       didNavigate = true;
-      current = current.move(cursors.Unit.LINE);
+      current = current.move(cursors.Unit.LINE, dir);
       break;
     case 'nextButton':
       dir = Dir.FORWARD;
@@ -457,13 +457,13 @@ CommandHandler.onCommand = function(command) {
       break;
     case 'jumpToTop':
       var node = AutomationUtil.findNodePost(
-          current.start.node.root, Dir.FORWARD, AutomationPredicate.leaf);
+          current.start.node.root, Dir.FORWARD, AutomationPredicate.object);
       if (node)
         current = cursors.Range.fromNode(node);
       break;
     case 'jumpToBottom':
-      var node = AutomationUtil.findNodePost(
-          current.start.node.root, Dir.BACKWARD, AutomationPredicate.leaf);
+      var node = AutomationUtil.findLastNode(
+          current.start.node.root, AutomationPredicate.object);
       if (node)
         current = cursors.Range.fromNode(node);
       break;

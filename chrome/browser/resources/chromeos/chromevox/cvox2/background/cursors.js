@@ -407,10 +407,7 @@ cursors.Cursor.prototype = {
         }
         break;
       case Unit.LINE:
-        var deepEquivalent = this.deepEquivalent;
-        newNode = deepEquivalent.node || newNode;
-        newIndex = deepEquivalent.index || 0;
-
+        newIndex = 0;
         switch (movement) {
           case Movement.BOUND:
             newNode = AutomationUtil.findNodeUntil(
@@ -551,9 +548,7 @@ cursors.WrappingCursor.prototype = {
       // Case 2: backward (sync downwards to a leaf), if already on the root.
       if (dir == Dir.BACKWARD && endpoint == this.node) {
         playEarcon = true;
-        endpoint = AutomationUtil.findNodePre(endpoint, dir, function(n) {
-          return pred(n) && !AutomationPredicate.shouldIgnoreNode(n);
-        }) || endpoint;
+        endpoint = AutomationUtil.findLastNode(endpoint, pred) || endpoint;
       }
 
       if (playEarcon)

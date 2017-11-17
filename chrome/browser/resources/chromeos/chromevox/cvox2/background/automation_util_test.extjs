@@ -5,6 +5,7 @@
 // Include test fixture.
 GEN_INCLUDE(['../../testing/chromevox_next_e2e_test_base.js']);
 
+GEN_INCLUDE(['../../testing/assert_additions.js']);
 GEN_INCLUDE(['../../testing/snippets.js']);
 
 /**
@@ -175,5 +176,40 @@ TEST_F('AutomationUtilE2ETest', 'HitTest', function() {
     assertEquals(a, AutomationUtil.hitTest(r, getCP(a.parent)));
     assertEquals(a.parent.parent,
                  AutomationUtil.hitTest(r, getCP(a.parent.parent)));
+  });
+});
+
+TEST_F('AutomationUtilE2ETest', 'FindLastNodeSimple', function() {
+  this.runWithLoadedTree(function() {/*!
+    <p aria-label=" "><div aria-label="x"></div></p>
+  */}, function(r) {
+    assertEquals('x',
+        AutomationUtil.findLastNode(r, function(n) {
+          return n.role == RoleType.GENERIC_CONTAINER;
+        }).name);
+  });
+});
+
+TEST_F('AutomationUtilE2ETest', 'FindLastNodeNonLeaf', function() {
+  this.runWithLoadedTree(function() {/*!
+    <div aria-label="x"><div aria-label=" "></div></div>
+  */}, function(r) {
+    assertEquals('x',
+        AutomationUtil.findLastNode(r, function(n) {
+          return n.role == RoleType.GENERIC_CONTAINER;
+        }).name);
+  });
+});
+
+TEST_F('AutomationUtilE2ETest', 'FindLastNodeComplex', function() {
+  this.runWithLoadedTree(function() {/*!
+    <p>start</p>
+    <div aria-label="x"><div aria-label=" "></div></div>
+    <p>end</p>
+  */}, function(r) {
+    assertEquals('x',
+        AutomationUtil.findLastNode(r, function(n) {
+          return n.role == RoleType.GENERIC_CONTAINER;
+        }).name);
   });
 });
