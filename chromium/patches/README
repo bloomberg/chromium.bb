@@ -88,3 +88,7 @@ Current patches:
     ff_mpadsp_init() : Use ff_thread_once() to prevent multiple initialization
     of static tables. Pushed to upstream, so should be upstream by M65 roll.
     http://crbug.com/784159
+
+  libavformat/oggdec.c
+    Removes CELT, DIRAC, DAALA, and SPEEX support form the ogg parser. We don't
+    support these codecs and the parsers have bugs. http://crbug.com/654612

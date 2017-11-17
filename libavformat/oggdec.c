@@ -41,16 +41,22 @@
 
 static const struct ogg_codec * const ogg_codecs[] = {
     &ff_skeleton_codec,
+#if 0  // These codecs are not supported by Chromium.
     &ff_daala_codec,
     &ff_dirac_codec,
     &ff_speex_codec,
+#endif
     &ff_vorbis_codec,
     &ff_theora_codec,
     &ff_flac_codec,
+#if 0  // These codecs are not supported by Chromium.
     &ff_celt_codec,
+#endif
     &ff_opus_codec,
     &ff_vp8_codec,
+#if 0  // These codecs are not supported by Chromium.
     &ff_old_dirac_codec,
+#endif
     &ff_old_flac_codec,
     &ff_ogm_video_codec,
     &ff_ogm_audio_codec,

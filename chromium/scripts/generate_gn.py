@@ -102,6 +102,13 @@ def CleanObjectFiles(object_files):
       'libavformat/log2_tab.o',  # Includes libavutil/log2_tab.c
       'libavformat/file_open.o',  # Includes libavutil/file_open.c
 
+      # These codecs are not supported by Chromium and allowing ogg to parse
+      # them can lead to issues. See http://crbug.com/654612 for an example.
+      'libavformat/oggparsecelt.o',
+      'libavformat/oggparsedaala.o',
+      'libavformat/oggparsedirac.o',
+      'libavformat/oggparsespeex.o',
+
       # The following files are removed to trim down on binary size.
       # TODO(ihf): Warning, it is *easy* right now to remove more files
       # than is healthy and end up with a library that the linker does
