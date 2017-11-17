@@ -53,13 +53,13 @@ static std::vector<std::unique_ptr<VideoDecoder>> CreateVideoDecodersForTest(
   }
 
 #if !defined(MEDIA_DISABLE_LIBVPX)
-  video_decoders.push_back(base::MakeUnique<VpxVideoDecoder>());
+  video_decoders.push_back(std::make_unique<OffloadingVpxVideoDecoder>());
 #endif  // !defined(MEDIA_DISABLE_LIBVPX)
 
 // Android does not have an ffmpeg video decoder.
 #if !defined(MEDIA_DISABLE_FFMPEG) && !defined(OS_ANDROID) && \
     !defined(DISABLE_FFMPEG_VIDEO_DECODERS)
-  video_decoders.push_back(base::MakeUnique<FFmpegVideoDecoder>(media_log));
+  video_decoders.push_back(std::make_unique<FFmpegVideoDecoder>(media_log));
 #endif
   return video_decoders;
 }
@@ -77,7 +77,7 @@ static std::vector<std::unique_ptr<AudioDecoder>> CreateAudioDecodersForTest(
 
 #if !defined(MEDIA_DISABLE_FFMPEG)
   audio_decoders.push_back(
-      base::MakeUnique<FFmpegAudioDecoder>(media_task_runner, media_log));
+      std::make_unique<FFmpegAudioDecoder>(media_task_runner, media_log));
 #endif
   return audio_decoders;
 }
@@ -310,7 +310,7 @@ PipelineStatus PipelineIntegrationTestBase::Start(
 PipelineStatus PipelineIntegrationTestBase::Start(const uint8_t* data,
                                                   size_t size,
                                                   uint8_t test_type) {
-  return StartInternal(base::MakeUnique<MemoryDataSource>(data, size), nullptr,
+  return StartInternal(std::make_unique<MemoryDataSource>(data, size), nullptr,
                        test_type);
 }
 

@@ -6,9 +6,8 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/test/simple_test_tick_clock.h"
+#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/limits.h"
@@ -41,7 +40,6 @@ class VpxVideoDecoderTest : public testing::Test {
     decoder_->Initialize(
         config, false, nullptr, NewExpectedBoolCB(success),
         base::Bind(&VpxVideoDecoderTest::FrameReady, base::Unretained(this)));
-    decoder_->SetTickClockForTesting(&test_clock_);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -161,9 +159,8 @@ class VpxVideoDecoderTest : public testing::Test {
 
   MOCK_METHOD1(DecodeDone, void(DecodeStatus));
 
-  base::MessageLoop message_loop_;
-  base::SimpleTestTickClock test_clock_;
-  std::unique_ptr<VpxVideoDecoder> decoder_;
+  base::test::ScopedTaskEnvironment task_env_;
+  std::unique_ptr<VideoDecoder> decoder_;
 
   scoped_refptr<DecoderBuffer> i_frame_buffer_;
   OutputFrames output_frames_;
@@ -174,17 +171,6 @@ class VpxVideoDecoderTest : public testing::Test {
 
 TEST_F(VpxVideoDecoderTest, Initialize_Normal) {
   Initialize();
-}
-
-TEST_F(VpxVideoDecoderTest, Reinitialize_Normal) {
-  Initialize();
-  Reinitialize();
-}
-
-TEST_F(VpxVideoDecoderTest, Reinitialize_AfterDecodeFrame) {
-  Initialize();
-  ExpectDecodingState();
-  Reinitialize();
 }
 
 TEST_F(VpxVideoDecoderTest, Reinitialize_AfterReset) {
@@ -205,6 +191,13 @@ TEST_F(VpxVideoDecoderTest, DecodeFrame_Normal) {
 // Decode |i_frame_buffer_| and then a frame with a larger width and verify
 // the output size was adjusted.
 TEST_F(VpxVideoDecoderTest, DecodeFrame_LargerWidth) {
+  DecodeIFrameThenTestFile("vp9-I-frame-1280x720", gfx::Size(1280, 720));
+}
+
+// Decode |i_frame_buffer_| and then a frame with a larger width and verify
+// the output size was adjusted.
+TEST_F(VpxVideoDecoderTest, Offloaded_DecodeFrame_LargerWidth) {
+  decoder_.reset(new OffloadingVpxVideoDecoder());
   DecodeIFrameThenTestFile("vp9-I-frame-1280x720", gfx::Size(1280, 720));
 }
 
@@ -261,19 +254,16 @@ TEST_F(VpxVideoDecoderTest, SimpleFrameReuse) {
 
   // Clear frame reference to return the frame to the pool.
   frame = nullptr;
-  EXPECT_EQ(1u, decoder_->GetPoolSizeForTesting());
 
   // Since we're decoding I-frames which are marked as having dependent frames,
   // libvpx will still have a ref on the previous buffer. So verify we see an
   // increase to two frames.
   Decode(i_frame_buffer_);
-  EXPECT_EQ(2u, decoder_->GetPoolSizeForTesting());
   EXPECT_NE(old_y_data, output_frames_.front()->data(VideoFrame::kYPlane));
 
   // Issuing another decode should reuse the first buffer now that the refs have
   // been dropped by the previous decode.
   Decode(i_frame_buffer_);
-  EXPECT_EQ(2u, decoder_->GetPoolSizeForTesting());
 
   ASSERT_EQ(2u, output_frames_.size());
   EXPECT_EQ(old_y_data, output_frames_.back()->data(VideoFrame::kYPlane));
@@ -286,13 +276,9 @@ TEST_F(VpxVideoDecoderTest, SimpleFormatChange) {
   Initialize();
   Decode(i_frame_buffer_);
   Decode(i_frame_buffer_);
-  EXPECT_EQ(2u, decoder_->GetPoolSizeForTesting());
   output_frames_.clear();
   base::RunLoop().RunUntilIdle();
-
-  // Verify decoding a larger frame simply resizes one of the existing buffers.
   Decode(large_frame);
-  EXPECT_EQ(2u, decoder_->GetPoolSizeForTesting());
 }
 
 TEST_F(VpxVideoDecoderTest, FrameValidAfterPoolDestruction) {
@@ -305,28 +291,6 @@ TEST_F(VpxVideoDecoderTest, FrameValidAfterPoolDestruction) {
   memset(output_frames_.front()->data(VideoFrame::kYPlane), 0xff,
          output_frames_.front()->rows(VideoFrame::kYPlane) *
              output_frames_.front()->stride(VideoFrame::kYPlane));
-}
-
-TEST_F(VpxVideoDecoderTest, StaleFramesAreExpired) {
-  Initialize();
-  Decode(i_frame_buffer_);
-  Decode(i_frame_buffer_);
-  Decode(i_frame_buffer_);
-  EXPECT_EQ(3u, decoder_->GetPoolSizeForTesting());
-
-  output_frames_.pop_back();
-  output_frames_.pop_back();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(3u, decoder_->GetPoolSizeForTesting());
-
-  // Advance clock far enough to hit stale timer.
-  test_clock_.Advance(base::TimeDelta::FromMinutes(1));
-  output_frames_.clear();
-  base::RunLoop().RunUntilIdle();
-
-  // The last frame should still have a ref internal to libvpx and the frame we
-  // just released isn't stale yet, so only 2 frames should remain.
-  EXPECT_EQ(2u, decoder_->GetPoolSizeForTesting());
 }
 
 // The test stream uses profile 2, which needs high bit depth support in libvpx.

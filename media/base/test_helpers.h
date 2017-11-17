@@ -88,12 +88,12 @@ class TestVideoConfig {
 
   static VideoDecoderConfig Normal(VideoCodec codec = kCodecVP8);
   static VideoDecoderConfig NormalH264();
-  static VideoDecoderConfig NormalEncrypted();
+  static VideoDecoderConfig NormalEncrypted(VideoCodec codec = kCodecVP8);
   static VideoDecoderConfig NormalRotated(VideoRotation rotation);
 
   // Returns a configuration that is larger in dimensions than Normal().
   static VideoDecoderConfig Large(VideoCodec codec = kCodecVP8);
-  static VideoDecoderConfig LargeEncrypted();
+  static VideoDecoderConfig LargeEncrypted(VideoCodec codec = kCodecVP8);
 
   // Returns coded size for Normal and Large config.
   static gfx::Size NormalCodedSize();
