@@ -255,22 +255,6 @@ void TabManager::Start() {
   // TODO(georgesak): remote this when deemed not needed anymore.
   if (!base::FeatureList::IsEnabled(features::kAutomaticTabDiscarding))
     return;
-
-  // Check the variation parameter to see if a tab is to be protected for an
-  // amount of time after being backgrounded. The value is in seconds. Default
-  // is 10 minutes if the variation is absent.
-  std::string minimum_protection_time_string =
-      variations::GetVariationParamValue(features::kAutomaticTabDiscarding.name,
-                                         "MinimumProtectionTime");
-  if (!minimum_protection_time_string.empty()) {
-    unsigned int minimum_protection_time_seconds = 0;
-    if (base::StringToUint(minimum_protection_time_string,
-                           &minimum_protection_time_seconds)) {
-      if (minimum_protection_time_seconds > 0)
-        minimum_protection_time_ =
-            base::TimeDelta::FromSeconds(minimum_protection_time_seconds);
-    }
-  }
 #endif
 
   // Check if only one discard is allowed.
