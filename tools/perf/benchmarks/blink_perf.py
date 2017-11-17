@@ -436,14 +436,12 @@ class BlinkPerfCanvas(_BlinkPerfBenchmark):
         self.DisableStory(
             'draw-static-canvas-2d-to-hw-accelerated-canvas-2d.html',
             [story.expectations.ANDROID_NEXUS5,
-             story.expectations.ANDROID_NEXUS5X,
-             story.expectations.ANDROID_WEBVIEW],
+             story.expectations.ANDROID_NEXUS5X],
             'crbug.com/784540')
         self.DisableStory(
             'draw-dynamic-canvas-2d-to-hw-accelerated-canvas-2d.html',
             [story.expectations.ANDROID_NEXUS5,
-             story.expectations.ANDROID_NEXUS5X,
-             story.expectations.ANDROID_WEBVIEW],
+             story.expectations.ANDROID_NEXUS5X],
             'crbug.com/784540')
     return StoryExpectations()
 
