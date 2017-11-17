@@ -883,25 +883,25 @@ TEST_P(ResourceProviderTest, OverlayPromotionHint) {
                                external_sync_token.GetData());
   EXPECT_TRUE(external_sync_token.HasData());
 
-  viz::TextureMailbox id1_mailbox(external_mailbox, external_sync_token,
-                                  GL_TEXTURE_EXTERNAL_OES);
-  id1_mailbox.set_wants_promotion_hint(true);
-  id1_mailbox.set_is_overlay_candidate(true);
-  id1_mailbox.set_is_backed_by_surface_texture(true);
-  viz::ResourceId id1 =
-      child_resource_provider_->CreateResourceFromTextureMailbox(
-          id1_mailbox, viz::SingleReleaseCallback::Create(
-                           base::Bind(&EmptyReleaseCallback)));
+  viz::TransferableResource id1_transfer =
+      viz::TransferableResource::MakeGLOverlay(
+          external_mailbox, GL_LINEAR, GL_TEXTURE_EXTERNAL_OES,
+          external_sync_token, gfx::Size(1, 1), true);
+  id1_transfer.wants_promotion_hint = true;
+  id1_transfer.is_backed_by_surface_texture = true;
+  viz::ResourceId id1 = child_resource_provider_->ImportResource(
+      id1_transfer,
+      viz::SingleReleaseCallback::Create(base::Bind(&EmptyReleaseCallback)));
 
-  viz::TextureMailbox id2_mailbox(external_mailbox, external_sync_token,
-                                  GL_TEXTURE_EXTERNAL_OES);
-  id2_mailbox.set_wants_promotion_hint(false);
-  id2_mailbox.set_is_overlay_candidate(true);
-  id2_mailbox.set_is_backed_by_surface_texture(false);
-  viz::ResourceId id2 =
-      child_resource_provider_->CreateResourceFromTextureMailbox(
-          id2_mailbox, viz::SingleReleaseCallback::Create(
-                           base::Bind(&EmptyReleaseCallback)));
+  viz::TransferableResource id2_transfer =
+      viz::TransferableResource::MakeGLOverlay(
+          external_mailbox, GL_LINEAR, GL_TEXTURE_EXTERNAL_OES,
+          external_sync_token, gfx::Size(1, 1), true);
+  id2_transfer.wants_promotion_hint = false;
+  id2_transfer.is_backed_by_surface_texture = false;
+  viz::ResourceId id2 = child_resource_provider_->ImportResource(
+      id2_transfer,
+      viz::SingleReleaseCallback::Create(base::Bind(&EmptyReleaseCallback)));
 
   std::vector<viz::ReturnedResource> returned_to_child;
   int child_id =
@@ -943,11 +943,11 @@ TEST_P(ResourceProviderTest, OverlayPromotionHint) {
   // Make sure that the request for a promotion hint was noticed.
   EXPECT_TRUE(resource_provider_->IsOverlayCandidate(mapped_id1));
   EXPECT_TRUE(resource_provider_->IsBackedBySurfaceTexture(mapped_id1));
-  EXPECT_TRUE(resource_provider_->WantsPromotionHint(mapped_id1));
+  EXPECT_TRUE(resource_provider_->WantsPromotionHintForTesting(mapped_id1));
 
   EXPECT_TRUE(resource_provider_->IsOverlayCandidate(mapped_id2));
   EXPECT_FALSE(resource_provider_->IsBackedBySurfaceTexture(mapped_id2));
-  EXPECT_FALSE(resource_provider_->WantsPromotionHint(mapped_id2));
+  EXPECT_FALSE(resource_provider_->WantsPromotionHintForTesting(mapped_id2));
 
   EXPECT_EQ(1u, resource_provider_->CountPromotionHintRequestsForTesting());
 

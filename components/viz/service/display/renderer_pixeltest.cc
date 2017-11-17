@@ -249,29 +249,26 @@ void CreateTestYUVVideoDrawQuad_FromVideoFrame(
 
   EXPECT_EQ(cc::VideoFrameExternalResources::YUV_RESOURCE, resources.type);
   EXPECT_EQ(media::VideoFrame::NumPlanes(video_frame->format()),
-            resources.mailboxes.size());
+            resources.resources.size());
   EXPECT_EQ(media::VideoFrame::NumPlanes(video_frame->format()),
             resources.release_callbacks.size());
 
-  ResourceId resource_y =
-      child_resource_provider->CreateResourceFromTextureMailbox(
-          resources.mailboxes[media::VideoFrame::kYPlane],
-          SingleReleaseCallback::Create(std::move(
-              resources.release_callbacks[media::VideoFrame::kYPlane])));
-  ResourceId resource_u =
-      child_resource_provider->CreateResourceFromTextureMailbox(
-          resources.mailboxes[media::VideoFrame::kUPlane],
-          SingleReleaseCallback::Create(std::move(
-              resources.release_callbacks[media::VideoFrame::kUPlane])));
-  ResourceId resource_v =
-      child_resource_provider->CreateResourceFromTextureMailbox(
-          resources.mailboxes[media::VideoFrame::kVPlane],
-          SingleReleaseCallback::Create(std::move(
-              resources.release_callbacks[media::VideoFrame::kVPlane])));
+  ResourceId resource_y = child_resource_provider->ImportResource(
+      resources.resources[media::VideoFrame::kYPlane],
+      SingleReleaseCallback::Create(
+          std::move(resources.release_callbacks[media::VideoFrame::kYPlane])));
+  ResourceId resource_u = child_resource_provider->ImportResource(
+      resources.resources[media::VideoFrame::kUPlane],
+      SingleReleaseCallback::Create(
+          std::move(resources.release_callbacks[media::VideoFrame::kUPlane])));
+  ResourceId resource_v = child_resource_provider->ImportResource(
+      resources.resources[media::VideoFrame::kVPlane],
+      SingleReleaseCallback::Create(
+          std::move(resources.release_callbacks[media::VideoFrame::kVPlane])));
   ResourceId resource_a = 0;
   if (with_alpha) {
-    resource_a = child_resource_provider->CreateResourceFromTextureMailbox(
-        resources.mailboxes[media::VideoFrame::kAPlane],
+    resource_a = child_resource_provider->ImportResource(
+        resources.resources[media::VideoFrame::kAPlane],
         SingleReleaseCallback::Create(std::move(
             resources.release_callbacks[media::VideoFrame::kAPlane])));
   }
@@ -363,13 +360,12 @@ void CreateTestY16TextureDrawQuad_FromVideoFrame(
           video_frame);
 
   EXPECT_EQ(cc::VideoFrameExternalResources::RGBA_RESOURCE, resources.type);
-  EXPECT_EQ(1u, resources.mailboxes.size());
+  EXPECT_EQ(1u, resources.resources.size());
   EXPECT_EQ(1u, resources.release_callbacks.size());
 
-  ResourceId resource_y =
-      child_resource_provider->CreateResourceFromTextureMailbox(
-          resources.mailboxes[0], SingleReleaseCallback::Create(std::move(
-                                      resources.release_callbacks[0])));
+  ResourceId resource_y = child_resource_provider->ImportResource(
+      resources.resources[0],
+      SingleReleaseCallback::Create(std::move(resources.release_callbacks[0])));
 
   // Transfer resource to the parent.
   cc::ResourceProvider::ResourceIdArray resource_ids_to_transfer;

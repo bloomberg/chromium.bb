@@ -123,20 +123,17 @@ bool VideoLayerImpl::WillDraw(DrawMode draw_mode,
   frame_resource_multiplier_ = external_resources.multiplier;
   frame_bits_per_channel_ = external_resources.bits_per_channel;
 
-  DCHECK_EQ(external_resources.mailboxes.size(),
+  DCHECK_EQ(external_resources.resources.size(),
             external_resources.release_callbacks.size());
   ResourceProvider::ResourceIdArray resource_ids;
-  resource_ids.reserve(external_resources.mailboxes.size());
-  for (size_t i = 0; i < external_resources.mailboxes.size(); ++i) {
-    unsigned resource_id = resource_provider->CreateResourceFromTextureMailbox(
-        external_resources.mailboxes[i],
+  resource_ids.reserve(external_resources.resources.size());
+  for (size_t i = 0; i < external_resources.resources.size(); ++i) {
+    unsigned resource_id = resource_provider->ImportResource(
+        external_resources.resources[i],
         viz::SingleReleaseCallback::Create(
-            std::move(external_resources.release_callbacks[i])),
-        external_resources.read_lock_fences_enabled,
-        external_resources.buffer_format);
-    frame_resources_.push_back(FrameResource(
-        resource_id, external_resources.mailboxes[i].size_in_pixels(),
-        external_resources.mailboxes[i].is_overlay_candidate()));
+            std::move(external_resources.release_callbacks[i])));
+    frame_resources_.push_back(
+        FrameResource(resource_id, external_resources.resources[i].size));
     resource_ids.push_back(resource_id);
   }
 
@@ -341,8 +338,8 @@ void VideoLayerImpl::DidDraw(LayerTreeResourceProvider* resource_provider) {
     software_resource_ = viz::kInvalidResourceId;
     software_release_callback_.Reset();
   } else {
-    for (size_t i = 0; i < frame_resources_.size(); ++i)
-      resource_provider->DeleteResource(frame_resources_[i].id);
+    for (const FrameResource& resource : frame_resources_)
+      resource_provider->RemoveImportedResource(resource.id);
     frame_resources_.clear();
   }
 

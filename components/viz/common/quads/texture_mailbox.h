@@ -83,20 +83,6 @@ class VIZ_COMMON_EXPORT TextureMailbox {
   SharedBitmap* shared_bitmap() const { return shared_bitmap_; }
   size_t SharedMemorySizeInBytes() const;
 
-#if defined(OS_ANDROID)
-  bool is_backed_by_surface_texture() const {
-    return is_backed_by_surface_texture_;
-  }
-
-  void set_is_backed_by_surface_texture(bool value) {
-    is_backed_by_surface_texture_ = value;
-  }
-
-  bool wants_promotion_hint() const { return wants_promotion_hint_; }
-
-  void set_wants_promotion_hint(bool value) { wants_promotion_hint_ = value; }
-#endif
-
  private:
   friend struct mojo::StructTraits<mojom::TextureMailboxDataView,
                                    TextureMailbox>;
@@ -105,10 +91,6 @@ class VIZ_COMMON_EXPORT TextureMailbox {
   SharedBitmap* shared_bitmap_;
   gfx::Size size_in_pixels_;
   bool is_overlay_candidate_;
-#if defined(OS_ANDROID)
-  bool is_backed_by_surface_texture_;
-  bool wants_promotion_hint_;
-#endif
   bool nearest_neighbor_;
   gfx::ColorSpace color_space_;
 };

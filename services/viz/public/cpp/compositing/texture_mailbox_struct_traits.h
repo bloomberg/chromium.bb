@@ -29,22 +29,6 @@ struct StructTraits<viz::mojom::TextureMailboxDataView, viz::TextureMailbox> {
     return input.is_overlay_candidate_;
   }
 
-  static bool is_backed_by_surface_texture(const viz::TextureMailbox& input) {
-#if defined(OS_ANDROID)
-    return input.is_backed_by_surface_texture_;
-#else
-    return false;
-#endif
-  }
-
-  static bool wants_promotion_hint(const viz::TextureMailbox& input) {
-#if defined(OS_ANDROID)
-    return input.wants_promotion_hint_;
-#else
-    return false;
-#endif
-  }
-
   static bool nearest_neighbor(const viz::TextureMailbox& input) {
     return input.nearest_neighbor_;
   }
@@ -55,10 +39,6 @@ struct StructTraits<viz::mojom::TextureMailboxDataView, viz::TextureMailbox> {
 
   static bool Read(viz::mojom::TextureMailboxDataView data,
                    viz::TextureMailbox* out) {
-#if defined(OS_ANDROID)
-    out->is_backed_by_surface_texture_ = data.is_backed_by_surface_texture();
-    out->wants_promotion_hint_ = data.wants_promotion_hint();
-#endif
     out->is_overlay_candidate_ = data.is_overlay_candidate();
     out->nearest_neighbor_ = data.nearest_neighbor();
 

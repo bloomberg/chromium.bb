@@ -20,10 +20,6 @@ TextureMailbox::TextureMailbox(const gpu::MailboxHolder& mailbox_holder)
     : mailbox_holder_(mailbox_holder),
       shared_bitmap_(nullptr),
       is_overlay_candidate_(false),
-#if defined(OS_ANDROID)
-      is_backed_by_surface_texture_(false),
-      wants_promotion_hint_(false),
-#endif
       nearest_neighbor_(false) {
 }
 
@@ -33,10 +29,6 @@ TextureMailbox::TextureMailbox(const gpu::Mailbox& mailbox,
     : mailbox_holder_(mailbox, sync_token, target),
       shared_bitmap_(nullptr),
       is_overlay_candidate_(false),
-#if defined(OS_ANDROID)
-      is_backed_by_surface_texture_(false),
-      wants_promotion_hint_(false),
-#endif
       nearest_neighbor_(false) {
 }
 
@@ -49,10 +41,6 @@ TextureMailbox::TextureMailbox(const gpu::Mailbox& mailbox,
       shared_bitmap_(nullptr),
       size_in_pixels_(size_in_pixels),
       is_overlay_candidate_(is_overlay_candidate),
-#if defined(OS_ANDROID)
-      is_backed_by_surface_texture_(false),
-      wants_promotion_hint_(false),
-#endif
       nearest_neighbor_(false) {
   DCHECK(!is_overlay_candidate || !size_in_pixels.IsEmpty());
 }
@@ -62,10 +50,6 @@ TextureMailbox::TextureMailbox(SharedBitmap* shared_bitmap,
     : shared_bitmap_(shared_bitmap),
       size_in_pixels_(size_in_pixels),
       is_overlay_candidate_(false),
-#if defined(OS_ANDROID)
-      is_backed_by_surface_texture_(false),
-      wants_promotion_hint_(false),
-#endif
       nearest_neighbor_(false) {
   // If an embedder of cc gives an invalid TextureMailbox, we should crash
   // here to identify the offender.

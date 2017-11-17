@@ -1310,10 +1310,6 @@ TEST_F(StructTraitsTest, TextureMailbox) {
   const gfx::ColorSpace color_space = gfx::ColorSpace(
       gfx::ColorSpace::PrimaryID::BT470M, gfx::ColorSpace::TransferID::GAMMA28,
       gfx::ColorSpace::MatrixID::BT2020_NCL, gfx::ColorSpace::RangeID::LIMITED);
-#if defined(OS_ANDROID)
-  const bool is_backed_by_surface_texture = true;
-  const bool wants_promotion_hint = true;
-#endif
 
   gpu::Mailbox mailbox;
   mailbox.SetName(mailbox_name);
@@ -1321,10 +1317,6 @@ TEST_F(StructTraitsTest, TextureMailbox) {
                        is_overlay_candidate);
   input.set_nearest_neighbor(nearest_neighbor);
   input.set_color_space(color_space);
-#if defined(OS_ANDROID)
-  input.set_is_backed_by_surface_texture(is_backed_by_surface_texture);
-  input.set_wants_promotion_hint(wants_promotion_hint);
-#endif
 
   TextureMailbox output;
   SerializeAndDeserialize<mojom::TextureMailbox>(input, &output);
@@ -1336,11 +1328,6 @@ TEST_F(StructTraitsTest, TextureMailbox) {
   EXPECT_EQ(is_overlay_candidate, output.is_overlay_candidate());
   EXPECT_EQ(nearest_neighbor, output.nearest_neighbor());
   EXPECT_EQ(color_space, output.color_space());
-#if defined(OS_ANDROID)
-  EXPECT_EQ(is_backed_by_surface_texture,
-            output.is_backed_by_surface_texture());
-  EXPECT_EQ(wants_promotion_hint, output.wants_promotion_hint());
-#endif
 }
 
 }  // namespace viz
