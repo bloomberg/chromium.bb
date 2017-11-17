@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "base/callback_forward.h"
 
 // Most utility should be put in components/arc/arc_util.{h,cc}, rather than
@@ -125,6 +126,10 @@ void UpdateArcFileSystemCompatibilityPrefIfNeeded(
     const AccountId& account_id,
     const base::FilePath& profile_path,
     const base::Closure& callback);
+
+// Returns whether Google Assistant feature is allowed for given |profile|.
+ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
+    const Profile* profile);
 
 }  // namespace arc
 

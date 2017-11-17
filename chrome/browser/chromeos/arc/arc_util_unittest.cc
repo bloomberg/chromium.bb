@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/sys_info.h"
+#include "base/test/icu_test_util.h"
 #include "base/test/scoped_command_line.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
@@ -467,6 +468,85 @@ TEST_F(ChromeArcUtilTest, ArcPlayStoreEnabledForProfile_Managed) {
   // Remove managed state.
   profile()->GetTestingPrefService()->RemoveManagedPref(prefs::kArcEnabled);
   EXPECT_FALSE(IsArcPlayStoreEnabledPreferenceManagedForProfile(profile()));
+}
+
+TEST_F(ChromeArcUtilTest, IsAssistantAllowedForProfile_Flag) {
+  base::CommandLine::ForCurrentProcess()->InitFromArgv({
+      "", "--arc-availability=officially-supported",
+  });
+  ScopedLogIn login(GetFakeUserManager(),
+                    AccountId::FromUserEmailGaiaId(
+                        profile()->GetProfileUserName(), kTestGaiaId));
+  EXPECT_EQ(ash::mojom::AssistantAllowedState::DISALLOWED_BY_FLAG,
+            IsAssistantAllowedForProfile(profile()));
+}
+
+TEST_F(ChromeArcUtilTest, IsAssistantAllowedForProfile_SecondaryUser) {
+  base::CommandLine::ForCurrentProcess()->InitFromArgv(
+      {"", "--arc-availability=officially-supported",
+       "--enable-voice-interaction"});
+  ScopedLogIn login2(
+      GetFakeUserManager(),
+      AccountId::FromUserEmailGaiaId("user2@gmail.com", "0123456789"));
+  ScopedLogIn login(GetFakeUserManager(),
+                    AccountId::FromUserEmailGaiaId(
+                        profile()->GetProfileUserName(), kTestGaiaId));
+
+  EXPECT_EQ(ash::mojom::AssistantAllowedState::DISALLOWED_BY_NONPRIMARY_USER,
+            IsAssistantAllowedForProfile(profile()));
+}
+
+TEST_F(ChromeArcUtilTest, IsAssistantAllowedForProfile_SupervisedUser) {
+  base::CommandLine::ForCurrentProcess()->InitFromArgv(
+      {"", "--arc-availability=officially-supported",
+       "--enable-voice-interaction"});
+  ScopedLogIn login(GetFakeUserManager(),
+                    AccountId::FromUserEmailGaiaId(
+                        profile()->GetProfileUserName(), kTestGaiaId));
+  profile()->SetSupervisedUserId("foo");
+  EXPECT_EQ(ash::mojom::AssistantAllowedState::DISALLOWED_BY_SUPERVISED_USER,
+            IsAssistantAllowedForProfile(profile()));
+}
+
+TEST_F(ChromeArcUtilTest, IsAssistantAllowedForProfile_Locale) {
+  base::CommandLine::ForCurrentProcess()->InitFromArgv(
+      {"", "--arc-availability=officially-supported",
+       "--enable-voice-interaction"});
+  base::test::ScopedRestoreICUDefaultLocale scoped_locale("he");
+  ScopedLogIn login(GetFakeUserManager(),
+                    AccountId::FromUserEmailGaiaId(
+                        profile()->GetProfileUserName(), kTestGaiaId));
+
+  EXPECT_EQ(ash::mojom::AssistantAllowedState::DISALLOWED_BY_LOCALE,
+            IsAssistantAllowedForProfile(profile()));
+}
+
+TEST_F(ChromeArcUtilTest, IsAssistantAllowedForProfile_Managed) {
+  base::CommandLine::ForCurrentProcess()->InitFromArgv(
+      {"", "--arc-availability=officially-supported",
+       "--enable-voice-interaction"});
+  ScopedLogIn login(GetFakeUserManager(),
+                    AccountId::FromUserEmailGaiaId(
+                        profile()->GetProfileUserName(), kTestGaiaId));
+  ASSERT_EQ(ash::mojom::AssistantAllowedState::ALLOWED,
+            IsAssistantAllowedForProfile(profile()));
+
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kArcEnabled, std::make_unique<base::Value>(false));
+
+  EXPECT_EQ(ash::mojom::AssistantAllowedState::DISALLOWED_BY_ARC_POLICY,
+            IsAssistantAllowedForProfile(profile()));
+
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kArcEnabled, std::make_unique<base::Value>(true));
+
+  EXPECT_EQ(ash::mojom::AssistantAllowedState::ALLOWED,
+            IsAssistantAllowedForProfile(profile()));
+
+  profile()->GetTestingPrefService()->RemoveManagedPref(prefs::kArcEnabled);
+
+  EXPECT_EQ(ash::mojom::AssistantAllowedState::ALLOWED,
+            IsAssistantAllowedForProfile(profile()));
 }
 
 // Test the AreArcAllOptInPreferencesIgnorableForProfile() function.

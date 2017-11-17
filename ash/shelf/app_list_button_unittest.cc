@@ -5,6 +5,7 @@
 #include "ash/shelf/app_list_button.h"
 
 #include <memory>
+#include <string>
 
 #include "ash/public/cpp/config.h"
 #include "ash/root_window_controller.h"
@@ -162,9 +163,9 @@ TEST_F(VoiceInteractionAppListButtonTest,
 }
 
 TEST_F(VoiceInteractionAppListButtonTest, LongPressGestureWithSecondaryUser) {
-  // Simulate two user with secondary user as active.
-  SimulateUserLogin("user1@test.com");
-  SimulateUserLogin("user2@test.com");
+  // Disallowed by secondary user.
+  Shell::Get()->voice_interaction_controller()->NotifyFeatureAllowed(
+      mojom::AssistantAllowedState::DISALLOWED_BY_NONPRIMARY_USER);
 
   // Enable voice interaction in system settings.
   Shell::Get()->voice_interaction_controller()->NotifySettingsEnabled(true);

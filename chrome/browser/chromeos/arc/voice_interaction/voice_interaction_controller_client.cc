@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/arc/voice_interaction/voice_interaction_controller_client.h"
 
+#include <utility>
+
 #include "ash/public/interfaces/constants.mojom.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -35,6 +37,12 @@ void VoiceInteractionControllerClient::NotifyContextEnabled(bool enabled) {
 void VoiceInteractionControllerClient::NotifySetupCompleted(bool completed) {
   DCHECK(voice_interaction_controller_);
   voice_interaction_controller_->NotifySetupCompleted(completed);
+}
+
+void VoiceInteractionControllerClient::NotifyFeatureAllowed(
+    ash::mojom::AssistantAllowedState state) {
+  DCHECK(voice_interaction_controller_);
+  voice_interaction_controller_->NotifyFeatureAllowed(state);
 }
 
 void VoiceInteractionControllerClient::SetControllerForTesting(
