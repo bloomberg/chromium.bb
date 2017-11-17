@@ -10,7 +10,6 @@
 #include "base/optional.h"
 #include "base/path_service.h"
 #include "base/task_scheduler/post_task.h"
-#include "base/task_scheduler/task_traits.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/component_installer_errors.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -43,11 +42,14 @@
      {"sha2hashstr",                                                         \
       "6d24de30f671da5aee6d463d9e446cafe9ddac672800a9defe86877dcde6c466"}}}};
 
+using content::BrowserThread;
+
 namespace component_updater {
 
 using ConfigMap = std::map<std::string, std::map<std::string, std::string>>;
 
 void LogRegistrationResult(base::Optional<bool> result) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!result.has_value()) {
     DVLOG(1) << "Call to imageloader service failed.";
     return;
@@ -61,6 +63,7 @@ void LogRegistrationResult(base::Optional<bool> result) {
 void ImageLoaderRegistration(const std::string& version,
                              const base::FilePath& install_dir,
                              const std::string& name) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   chromeos::ImageLoaderClient* loader =
       chromeos::DBusThreadManager::Get()->GetImageLoaderClient();
   if (loader) {
@@ -87,12 +90,7 @@ CrOSComponentInstallerPolicy::CrOSComponentInstallerPolicy(
     cell = stoul(strstream.substr(0, 2), nullptr, 16);
     strstream.erase(0, 2);
   }
-  task_runner_ = base::CreateSingleThreadTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::BACKGROUND,
-       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
 }
-
-CrOSComponentInstallerPolicy::~CrOSComponentInstallerPolicy() {}
 
 bool CrOSComponentInstallerPolicy::SupportsGroupPolicyEnabledComponentUpdates()
     const {
@@ -111,8 +109,9 @@ CrOSComponentInstallerPolicy::OnCustomInstall(
   if (!manifest.GetString("version", &version)) {
     return ToInstallerResult(update_client::InstallError::GENERIC_ERROR);
   }
-  task_runner_->PostTask(FROM_HERE, base::BindOnce(&ImageLoaderRegistration,
-                                                   version, install_dir, name));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&ImageLoaderRegistration, version, install_dir, name));
   return update_client::CrxInstaller::Result(update_client::InstallError::NONE);
 }
 
