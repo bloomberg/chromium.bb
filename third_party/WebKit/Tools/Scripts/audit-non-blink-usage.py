@@ -12,7 +12,7 @@ script can be run in standalone mode to check for existing violations.
 Example command:
 
 $ git ls-files third_party/WebKit \
-    | python third_party/WebKit/Tools/Scripts/audit-non-blink-usage
+    | python third_party/WebKit/Tools/Scripts/audit-non-blink-usage.py
 """
 
 import os
