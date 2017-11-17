@@ -78,7 +78,6 @@ class CONTENT_EXPORT CrossProcessFrameConnector
   void RenderProcessGone() override;
   void SetChildFrameSurface(const viz::SurfaceInfo& surface_info,
                             const viz::SurfaceSequence& sequence) override;
-  gfx::Rect ChildFrameRect() override;
   void UpdateCursor(const WebCursor& cursor) override;
   gfx::PointF TransformPointToRootCoordSpace(
       const gfx::PointF& point,
@@ -114,6 +113,8 @@ class CONTENT_EXPORT CrossProcessFrameConnector
   // is |view_|.
   void SetVisibilityForChildViews(bool visible) const override;
 
+  void SetRect(const gfx::Rect& frame_rect_in_pixels) override;
+
   // Exposed for tests.
   RenderWidgetHostViewBase* GetRootRenderWidgetHostViewForTesting() {
     return GetRootRenderWidgetHostView();
@@ -140,8 +141,6 @@ class CONTENT_EXPORT CrossProcessFrameConnector
   void OnRequireSequence(const viz::SurfaceId& id,
                          const viz::SurfaceSequence& sequence);
 
-  void SetRect(const gfx::Rect& frame_rect);
-
   // The RenderFrameProxyHost that routes messages to the parent frame's
   // renderer process.
   RenderFrameProxyHost* frame_proxy_in_parent_renderer_;
@@ -149,8 +148,6 @@ class CONTENT_EXPORT CrossProcessFrameConnector
   // The RenderWidgetHostView for the frame. Initially NULL.
   RenderWidgetHostViewChildFrame* view_;
 
-  gfx::Rect frame_rect_;
-  gfx::Rect frame_rect_in_dip_;
   bool is_inert_ = false;
 
   bool is_throttled_ = false;
@@ -161,6 +158,12 @@ class CONTENT_EXPORT CrossProcessFrameConnector
   bool is_hidden_ = false;
 
   bool is_scroll_bubbling_;
+
+  // The last frame rect received from the parent renderer.
+  // |last_received_frame_rect_| may be in DIP if use zoom for DSF is off.
+  gfx::Rect last_received_frame_rect_;
+
+  DISALLOW_COPY_AND_ASSIGN(CrossProcessFrameConnector);
 };
 
 }  // namespace content

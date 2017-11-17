@@ -67,9 +67,13 @@ class CONTENT_EXPORT FrameConnectorDelegate {
   virtual void SetChildFrameSurface(const viz::SurfaceInfo& surface_info,
                                     const viz::SurfaceSequence& sequence) {}
 
-  // Return the rect that the RenderWidgetHostViewChildFrame's content will
-  // render into.
-  virtual gfx::Rect ChildFrameRect();
+  // Return the rect in DIP that the RenderWidgetHostViewChildFrame's content
+  // will render into.
+  const gfx::Rect& frame_rect_in_dip() { return frame_rect_in_dip_; }
+
+  // Return the rect in pixels that the RenderWidgetHostViewChildFrame's content
+  // will render into.
+  const gfx::Rect& frame_rect_in_pixels() { return frame_rect_in_pixels_; }
 
   // Request that the platform change the mouse cursor when the mouse is
   // positioned over this view's content.
@@ -144,6 +148,10 @@ class CONTENT_EXPORT FrameConnectorDelegate {
   // child frame.
   const ScreenInfo& screen_info() const { return screen_info_; }
 
+  void SetScreenInfoForTesting(const ScreenInfo& screen_info) {
+    screen_info_ = screen_info;
+  }
+
   // Determines whether the current view's content is inert, either because
   // an HTMLDialogElement is being modally displayed in a higher-level frame,
   // or because the inert attribute has been specified.
@@ -164,6 +172,10 @@ class CONTENT_EXPORT FrameConnectorDelegate {
   // nested child RWHVCFs inside it.
   virtual void SetVisibilityForChildViews(bool visible) const {}
 
+  // Called to resize the child renderer. |frame_rect| is in pixels if
+  // zoom-for-dsf is enabled, and in DIP if not.
+  virtual void SetRect(const gfx::Rect& frame_rect);
+
 #if defined(USE_AURA)
   // Embeds a WindowTreeClient in the parent. This results in the parent
   // creating a window in the ui server so that this can render to the screen.
@@ -177,6 +189,8 @@ class CONTENT_EXPORT FrameConnectorDelegate {
                                      uint64_t sequence_number) {}
 
  protected:
+  explicit FrameConnectorDelegate(bool use_zoom_for_device_scale_factor);
+
   virtual ~FrameConnectorDelegate() {}
 
   // This is here rather than in the implementation class so that
@@ -184,7 +198,11 @@ class CONTENT_EXPORT FrameConnectorDelegate {
   gfx::Rect viewport_intersection_rect_;
 
   ScreenInfo screen_info_;
+  gfx::Rect frame_rect_in_dip_;
+  gfx::Rect frame_rect_in_pixels_;
   viz::LocalSurfaceId local_surface_id_;
+
+  const bool use_zoom_for_device_scale_factor_;
 };
 
 }  // namespace content

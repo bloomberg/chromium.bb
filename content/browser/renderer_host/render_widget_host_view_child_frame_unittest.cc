@@ -50,7 +50,8 @@ const viz::LocalSurfaceId kArbitraryLocalSurfaceId(
 
 class MockFrameConnectorDelegate : public FrameConnectorDelegate {
  public:
-  MockFrameConnectorDelegate() : FrameConnectorDelegate() {}
+  MockFrameConnectorDelegate(bool use_zoom_for_device_scale_factor)
+      : FrameConnectorDelegate(use_zoom_for_device_scale_factor) {}
   ~MockFrameConnectorDelegate() override {}
 
   void SetChildFrameSurface(const viz::SurfaceInfo& surface_info,
@@ -82,6 +83,10 @@ class RenderWidgetHostViewChildFrameTest : public testing::Test {
             base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
 
   void SetUp() override {
+    SetUpEnvironment(false /* use_zoom_for_device_scale_factor */);
+  }
+
+  void SetUpEnvironment(bool use_zoom_for_device_scale_factor) {
     browser_context_.reset(new TestBrowserContext);
 
 // ImageTransportFactory doesn't exist on Android.
@@ -99,7 +104,8 @@ class RenderWidgetHostViewChildFrameTest : public testing::Test {
         &delegate_, process_host, routing_id, std::move(widget), false);
     view_ = RenderWidgetHostViewChildFrame::Create(widget_host_);
 
-    test_frame_connector_ = new MockFrameConnectorDelegate();
+    test_frame_connector_ =
+        new MockFrameConnectorDelegate(use_zoom_for_device_scale_factor);
     view_->SetFrameConnectorDelegate(test_frame_connector_);
 
     viz::mojom::CompositorFrameSinkPtr sink;
@@ -299,6 +305,19 @@ class RenderWidgetHostViewChildFrameScrollLatchingDisabledTest
       RenderWidgetHostViewChildFrameScrollLatchingDisabledTest);
 };
 
+class RenderWidgetHostViewChildFrameZoomForDSFTest
+    : public RenderWidgetHostViewChildFrameTest {
+ public:
+  RenderWidgetHostViewChildFrameZoomForDSFTest() {}
+
+  void SetUp() override {
+    SetUpEnvironment(true /* use_zoom_for_device_scale_factor */);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewChildFrameZoomForDSFTest);
+};
+
 // Test that when a child scrolls and then stops consuming once it hits the
 // extent, we don't bubble the subsequent unconsumed GestureScrollUpdates
 // in the same gesture.
@@ -317,6 +336,22 @@ TEST_F(RenderWidgetHostViewChildFrameScrollLatchingDisabledTest,
   view_->GestureEventAck(gesture_scroll,
                          INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
   EXPECT_FALSE(test_frame_connector_->seen_bubbled_gsu_);
+}
+
+// Tests that moving the child around does not affect the physical backing size.
+TEST_F(RenderWidgetHostViewChildFrameZoomForDSFTest, PhysicalBackingSize) {
+  ScreenInfo screen_info;
+  screen_info.device_scale_factor = 2.0f;
+  test_frame_connector_->SetScreenInfoForTesting(screen_info);
+
+  gfx::Size frame_size_in_pixels(1276, 410);
+  gfx::Rect frame_rect_in_pixels(frame_size_in_pixels);
+  test_frame_connector_->SetRect(frame_rect_in_pixels);
+  EXPECT_EQ(frame_size_in_pixels, view_->GetPhysicalBackingSize());
+
+  frame_rect_in_pixels.set_origin(gfx::Point(230, 263));
+  test_frame_connector_->SetRect(frame_rect_in_pixels);
+  EXPECT_EQ(frame_size_in_pixels, view_->GetPhysicalBackingSize());
 }
 
 }  // namespace content
