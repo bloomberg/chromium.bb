@@ -28,9 +28,10 @@ if (is_android) {
   if (enable_chrome_android_internal) {
     import("//clank/config.gni")
   } else {
+    import("//build/config/android/sdk.gni")
     declare_args() {
       # Android SDK release. Currently, only "o" is publicly supported.
-      android_sdk_release = "o"
+      android_sdk_release = default_android_sdk_release
     }
   }
 
@@ -97,6 +98,9 @@ if (is_android) {
   if (!defined(webview_framework_jar)) {
     webview_framework_jar = webview_public_framework_jar
   }
+
+  assert(defined(default_android_sdk_root),
+         "SDK release " + android_sdk_release + " not recognized.")
 
   declare_args() {
     android_ndk_root = default_android_ndk_root
