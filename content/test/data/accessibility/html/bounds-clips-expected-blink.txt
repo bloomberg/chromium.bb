@@ -9,11 +9,11 @@ rootWebArea
 ++++staticText name='Also visible'
 ++++++inlineTextBox name='Also '
 ++++++inlineTextBox name='visible'
-++genericContainer offscreen
+++genericContainer
 ++++staticText offscreen name='Hidden'
 ++++++inlineTextBox offscreen name='Hidden'
 ++genericContainer size=(10, 10)
-++++genericContainer offscreen
+++++genericContainer
 ++++++staticText offscreen name='Also hidden'
 ++++++++inlineTextBox offscreen name='Also '
 ++++++++inlineTextBox offscreen name='hidden'
