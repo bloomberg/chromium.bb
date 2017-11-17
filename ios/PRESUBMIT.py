@@ -57,5 +57,5 @@ def PostUploadHook(cl, change, output_api):
               'master.tryserver.chromium.mac:ios-simulator-full-configs']
 
   return output_api.EnsureCQIncludeTrybotsAreAdded(
-    cl, try_bots, 'Automatically added Cronet and EarlGrey trybots to'
+    cl, try_bots, 'Automatically added Cronet and EarlGrey trybots to '
       'run tests on CQ.')
