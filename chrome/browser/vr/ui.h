@@ -73,6 +73,8 @@ class Ui : public BrowserUiInterface {
   void SetSpeechRecognitionEnabled(bool enabled) override;
   void SetRecognitionResult(const base::string16& result) override;
   void OnSpeechRecognitionStateChanged(int new_state) override;
+  void SetOmniboxSuggestions(
+      std::unique_ptr<OmniboxSuggestions> suggestions) override;
 
   bool ShouldRenderWebVr();
   void OnGlInitialized(unsigned int content_texture_id,
@@ -91,8 +93,6 @@ class Ui : public BrowserUiInterface {
   void OnSwapContents(int new_content_id);
   void OnContentBoundsChanged(int width, int height);
   void OnPlatformControllerInitialized(PlatformController* controller);
-
-  void SetOmniboxSuggestions(std::unique_ptr<OmniboxSuggestions> suggestions);
 
  private:
   UiBrowserInterface* browser_;

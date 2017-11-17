@@ -8,8 +8,19 @@ namespace vr {
 
 OmniboxSuggestion::OmniboxSuggestion(const base::string16& new_content,
                                      const base::string16& new_description,
-                                     AutocompleteMatch::Type new_type)
-    : content(new_content), description(new_description), type(new_type) {}
+                                     AutocompleteMatch::Type new_type,
+                                     GURL new_destination)
+    : content(new_content),
+      description(new_description),
+      type(new_type),
+      destination(new_destination) {}
+
+OmniboxSuggestion::OmniboxSuggestion(const OmniboxSuggestion& other) {
+  content = other.content;
+  description = other.description;
+  type = other.type;
+  destination = other.destination;
+}
 
 OmniboxSuggestions::OmniboxSuggestions() {}
 

@@ -13,8 +13,8 @@
 #include "chrome/browser/vr/controller_mesh.h"
 #include "chrome/browser/vr/model/model.h"
 #include "chrome/browser/vr/model/omnibox_suggestions.h"
+#include "chrome/browser/vr/model/toolbar_state.h"
 #include "chrome/browser/vr/test/constants.h"
-#include "chrome/browser/vr/toolbar_state.h"
 #include "chrome/browser/vr/ui.h"
 #include "chrome/browser/vr/ui_element_renderer.h"
 #include "chrome/browser/vr/ui_input_manager.h"
@@ -288,7 +288,7 @@ void VrTestContext::CreateFakeOmniboxSuggestions() {
     result->suggestions.emplace_back(OmniboxSuggestion(
         base::UTF8ToUTF16("Suggestion ") + base::IntToString16(i + 1),
         base::UTF8ToUTF16("Description text"),
-        AutocompleteMatch::Type::VOICE_SUGGEST));
+        AutocompleteMatch::Type::VOICE_SUGGEST, GURL("http://www.test.com/")));
   }
   ui_->SetOmniboxSuggestions(std::move(result));
 }
@@ -321,5 +321,9 @@ void VrTestContext::OnExitVrPromptResult(vr::UiUnsupportedMode reason,
   ui_->SetExitVrPromptEnabled(false, UiUnsupportedMode::kCount);
 }
 void VrTestContext::OnContentScreenBoundsChanged(const gfx::SizeF& bounds) {}
+
+void VrTestContext::StartAutocomplete(const base::string16& string) {}
+void VrTestContext::StopAutocomplete() {}
+void VrTestContext::Navigate(GURL gurl) {}
 
 }  // namespace vr

@@ -22,6 +22,7 @@ namespace vr_shell {
 
 class VrShell;
 class VrShellGl;
+struct OmniboxSuggestions;
 
 class VrGLThread : public base::android::JavaHandlerThread,
                    public vr::ContentInputForwarder,
@@ -55,6 +56,7 @@ class VrGLThread : public base::android::JavaHandlerThread,
   // vr::UiBrowserInterface implementation (UI calling to VrShell).
   void ExitPresent() override;
   void ExitFullscreen() override;
+  void Navigate(GURL gurl) override;
   void NavigateBack() override;
   void ExitCct() override;
   void OnUnsupportedMode(vr::UiUnsupportedMode mode) override;
@@ -62,6 +64,8 @@ class VrGLThread : public base::android::JavaHandlerThread,
                             vr::ExitVrPromptChoice choice) override;
   void OnContentScreenBoundsChanged(const gfx::SizeF& bounds) override;
   void SetVoiceSearchActive(bool active) override;
+  void StartAutocomplete(const base::string16& string) override;
+  void StopAutocomplete() override;
 
   // vr::BrowserUiInterface implementation (Browser calling to UI).
   void SetWebVrMode(bool enabled, bool show_toast) override;
@@ -82,6 +86,8 @@ class VrGLThread : public base::android::JavaHandlerThread,
   void SetSpeechRecognitionEnabled(bool enabled) override;
   void SetRecognitionResult(const base::string16& result) override;
   void OnSpeechRecognitionStateChanged(int new_state) override;
+  void SetOmniboxSuggestions(
+      std::unique_ptr<vr::OmniboxSuggestions> result) override;
 
  protected:
   void Init() override;

@@ -62,7 +62,7 @@ void Ui::SetFullscreen(bool enabled) {
 }
 
 void Ui::SetToolbarState(const ToolbarState& state) {
-  scene_manager_->SetToolbarState(state);
+  model_->toolbar_state = state;
 }
 
 void Ui::SetIncognito(bool enabled) {

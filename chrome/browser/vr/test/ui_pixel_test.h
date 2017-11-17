@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_VR_TEST_UI_PIXEL_TEST_H_
 #define CHROME_BROWSER_VR_TEST_UI_PIXEL_TEST_H_
 
+#include "chrome/browser/vr/model/toolbar_state.h"
 #include "chrome/browser/vr/test/gl_test_environment.h"
 #include "chrome/browser/vr/test/mock_browser_interface.h"
 #include "chrome/browser/vr/test/mock_content_input_delegate.h"
-#include "chrome/browser/vr/toolbar_state.h"
 #include "chrome/browser/vr/ui.h"
 #include "chrome/browser/vr/ui_input_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"

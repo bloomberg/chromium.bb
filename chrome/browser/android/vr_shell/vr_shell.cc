@@ -287,6 +287,13 @@ void VrShell::OnContentPaused(bool paused) {
     device->Focus();
 }
 
+void VrShell::Navigate(GURL url) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_VrShellImpl_loadUrl(
+      env, j_vr_shell_,
+      base::android::ConvertUTF8ToJavaString(env, url.spec()));
+}
+
 void VrShell::NavigateBack() {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_VrShellImpl_navigateBack(env, j_vr_shell_);
@@ -745,6 +752,10 @@ void VrShell::SetVoiceSearchActive(bool active) {
     speech_recognizer_->Stop();
   }
 }
+
+void VrShell::StartAutocomplete(const base::string16& string) {}
+
+void VrShell::StopAutocomplete() {}
 
 bool VrShell::HasAudioPermission() {
   JNIEnv* env = base::android::AttachCurrentThread();

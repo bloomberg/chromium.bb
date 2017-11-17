@@ -816,7 +816,7 @@ TEST_F(UiSceneManagerTest, OmniboxSuggestionBindings) {
 
   model_->omnibox_suggestions.emplace_back(
       OmniboxSuggestion(base::string16(), base::string16(),
-                        AutocompleteMatch::Type::VOICE_SUGGEST));
+                        AutocompleteMatch::Type::VOICE_SUGGEST, GURL()));
   OnBeginFrame();
   EXPECT_EQ(container->children().size(), 1u);
   EXPECT_GT(NumVisibleChildren(kSuggestionLayout), initially_visible);

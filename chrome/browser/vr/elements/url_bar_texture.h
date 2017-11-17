@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/vr/elements/ui_texture.h"
-#include "chrome/browser/vr/toolbar_state.h"
+#include "chrome/browser/vr/model/toolbar_state.h"
 #include "chrome/browser/vr/ui_unsupported_mode.h"
 #include "components/security_state/core/security_state.h"
 #include "ui/gfx/geometry/rect_f.h"
