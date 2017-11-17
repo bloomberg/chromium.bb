@@ -107,7 +107,10 @@ DSP_SRCS-$(HAVE_SSE4_1) += x86/blend_sse4.h
 DSP_SRCS-$(HAVE_SSE4_1) += x86/blend_a64_mask_sse4.c
 DSP_SRCS-$(HAVE_SSE4_1) += x86/blend_a64_hmask_sse4.c
 DSP_SRCS-$(HAVE_SSE4_1) += x86/blend_a64_vmask_sse4.c
+ifeq ($(CONFIG_JNT_COMP),yes)
 DSP_SRCS-$(HAVE_SSSE3)  += x86/jnt_variance_ssse3.c
+DSP_SRCS-$(HAVE_SSSE3)  += x86/jnt_sad_ssse3.c
+endif
 
 # interpolation filters
 DSP_SRCS-yes += aom_convolve.c

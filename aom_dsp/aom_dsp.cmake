@@ -66,6 +66,10 @@ if (CONFIG_JNT_COMP)
   set(AOM_DSP_COMMON_INTRIN_SSSE3
       ${AOM_DSP_COMMON_INTRIN_SSSE3}
       "${AOM_ROOT}/aom_dsp/x86/jnt_variance_ssse3.c")
+
+  set(AOM_DSP_COMMON_INTRIN_SSSE3
+      ${AOM_DSP_COMMON_INTRIN_SSSE3}
+      "${AOM_ROOT}/aom_dsp/x86/jnt_sad_ssse3.c")
 endif ()
 
 set(AOM_DSP_COMMON_INTRIN_SSE4_1

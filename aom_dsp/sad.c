@@ -34,6 +34,13 @@ static INLINE unsigned int sad(const uint8_t *a, int a_stride, const uint8_t *b,
 }
 
 #if CONFIG_JNT_COMP
+#define sadMxh(m)                                                          \
+  unsigned int aom_sad##m##xh_c(const uint8_t *a, int a_stride,            \
+                                const uint8_t *b, int b_stride, int width, \
+                                int height) {                              \
+    return sad(a, a_stride, b, b_stride, width, height);                   \
+  }
+
 #define sadMxN(m, n)                                                          \
   unsigned int aom_sad##m##x##n##_c(const uint8_t *src, int src_stride,       \
                                     const uint8_t *ref, int ref_stride) {     \
@@ -50,8 +57,8 @@ static INLINE unsigned int sad(const uint8_t *a, int a_stride, const uint8_t *b,
       const uint8_t *src, int src_stride, const uint8_t *ref, int ref_stride, \
       const uint8_t *second_pred, const JNT_COMP_PARAMS *jcp_param) {         \
     uint8_t comp_pred[m * n];                                                 \
-    aom_jnt_comp_avg_pred(comp_pred, second_pred, m, n, ref, ref_stride,      \
-                          jcp_param);                                         \
+    aom_jnt_comp_avg_pred_c(comp_pred, second_pred, m, n, ref, ref_stride,    \
+                            jcp_param);                                       \
     return sad(src, src_stride, comp_pred, m, m, n);                          \
   }
 #else  // CONFIG_JNT_COMP
@@ -177,6 +184,17 @@ sadMxNxK(4, 4, 3)
 sadMxNxK(4, 4, 8)
 sadMxNx4D(4, 4)
 
+#if CONFIG_JNT_COMP
+#if CONFIG_EXT_PARTITION
+sadMxh(128);
+#endif
+sadMxh(64);
+sadMxh(32);
+sadMxh(16);
+sadMxh(8);
+sadMxh(4);
+#endif  // CONFIG_JNT_COMP
+
 #if CONFIG_AV1 && CONFIG_EXT_PARTITION_TYPES
 sadMxN(4, 16)
 sadMxNx4D(4, 16)
@@ -198,7 +216,7 @@ sadMxNx4D(128, 32)
 /* clang-format on */
 
 #if CONFIG_HIGHBITDEPTH
-                            static INLINE
+                static INLINE
     unsigned int highbd_sad(const uint8_t *a8, int a_stride, const uint8_t *b8,
                             int b_stride, int width, int height) {
   int y, x;
