@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ReadableStreamController_h
-#define ReadableStreamController_h
+#ifndef ReadableStreamDefaultControllerWrapper_h
+#define ReadableStreamDefaultControllerWrapper_h
 
 #include "base/memory/scoped_refptr.h"
 #include "bindings/core/v8/ScriptValue.h"
@@ -16,22 +16,21 @@
 
 namespace blink {
 
-// TODO(tyoshino): Rename this to ReadableStreamDefaultControllerWrapper.
-class CORE_EXPORT ReadableStreamController final
-    : public GarbageCollectedFinalized<ReadableStreamController> {
+class CORE_EXPORT ReadableStreamDefaultControllerWrapper final
+    : public GarbageCollectedFinalized<ReadableStreamDefaultControllerWrapper> {
  public:
   void Trace(blink::Visitor* visitor) {}
 
-  explicit ReadableStreamController(ScriptValue controller)
+  explicit ReadableStreamDefaultControllerWrapper(ScriptValue controller)
       : script_state_(controller.GetScriptState()),
         js_controller_(controller.GetIsolate(), controller.V8Value()) {
     js_controller_.SetPhantom();
   }
 
-  // Users of the ReadableStreamController can call this to note that the stream
-  // has been canceled and thus they don't anticipate using the
-  // ReadableStreamController anymore.  (close/desiredSize/enqueue/error will
-  // become no-ops afterward.)
+  // Users of the ReadableStreamDefaultControllerWrapper can call this to note
+  // that the stream has been canceled and thus they don't anticipate using the
+  // ReadableStreamDefaultControllerWrapper anymore.
+  // (close/desiredSize/enqueue/error will become no-ops afterward.)
   void NoteHasBeenCanceled() { js_controller_.Clear(); }
 
   bool IsActive() const { return !js_controller_.IsEmpty(); }
@@ -118,4 +117,4 @@ class CORE_EXPORT ReadableStreamController final
 
 }  // namespace blink
 
-#endif  // ReadableStreamController_h
+#endif  // ReadableStreamDefaultControllerWrapper_h

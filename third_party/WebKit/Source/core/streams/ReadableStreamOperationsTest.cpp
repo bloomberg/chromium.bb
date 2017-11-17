@@ -11,7 +11,7 @@
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "bindings/core/v8/V8IteratorResultValue.h"
 #include "core/dom/Document.h"
-#include "core/streams/ReadableStreamController.h"
+#include "core/streams/ReadableStreamDefaultControllerWrapper.h"
 #include "core/streams/UnderlyingSourceBase.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/bindings/V8BindingMacros.h"
