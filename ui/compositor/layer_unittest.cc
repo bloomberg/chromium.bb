@@ -23,6 +23,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "cc/animation/animation_events.h"
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_player.h"
@@ -1405,7 +1406,13 @@ TEST_F(LayerWithRealCompositorTest, SetRootLayer) {
 // - After ScheduleDraw is called, or
 // - Whenever SetBounds, SetOpacity or SetTransform are called.
 // TODO(vollick): could be reorganized into compositor_unittest.cc
-TEST_F(LayerWithRealCompositorTest, CompositorObservers) {
+// Flaky on Windows. See https://crbug.com/784563.
+#if defined(OS_WIN)
+#define MAYBE_CompositorObservers DISABLED_CompositorObservers
+#else
+#define MAYBE_CompositorObservers CompositorObservers
+#endif
+TEST_F(LayerWithRealCompositorTest, MAYBE_CompositorObservers) {
   std::unique_ptr<Layer> l1(
       CreateColorLayer(SK_ColorRED, gfx::Rect(20, 20, 400, 400)));
   std::unique_ptr<Layer> l2(
