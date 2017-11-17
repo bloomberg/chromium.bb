@@ -44,18 +44,18 @@ public class ContentViewCoreSelectionTest {
     public ContentShellActivityTestRule mActivityTestRule = new ContentShellActivityTestRule();
     private static final String DATA_URL = UrlUtils.encodeHtmlDataUri(
             "<html><head><meta name=\"viewport\""
-            + "content=\"width=device-width, initial-scale=1.1, maximum-scale=1.5\" /></head>"
+            + "content=\"width=device-width\" /></head>"
             + "<body><form action=\"about:blank\">"
             + "<input id=\"empty_input_text\" type=\"text\" />"
-            + "<br/><input id=\"whitespace_input_text\" type=\"text\" value=\" \" />"
-            + "<br/><input id=\"input_text\" type=\"text\" value=\"SampleInputText\" />"
-            + "<br/><textarea id=\"textarea\" rows=\"2\" cols=\"20\">SampleTextArea</textarea>"
-            + "<br/><input id=\"password\" type=\"password\" value=\"SamplePassword\" size=\"10\"/>"
-            + "<br/><p><span id=\"smart_selection\">1600 Amphitheatre Parkway</span></p>"
-            + "<br/><p><span id=\"plain_text_1\">SamplePlainTextOne</span></p>"
-            + "<br/><p><span id=\"plain_text_2\">SamplePlainTextTwo</span></p>"
-            + "<br/><input id=\"disabled_text\" type=\"text\" disabled value=\"Sample Text\" />"
-            + "<br/><div id=\"rich_div\" contentEditable=\"true\" >Rich Editor</div>"
+            + "<input id=\"whitespace_input_text\" type=\"text\" value=\" \" />"
+            + "<input id=\"input_text\" type=\"text\" value=\"SampleInputText\" />"
+            + "<textarea id=\"textarea\" rows=\"2\" cols=\"20\">SampleTextArea</textarea>"
+            + "<input id=\"password\" type=\"password\" value=\"SamplePassword\" size=\"10\"/>"
+            + "<p><span id=\"smart_selection\">1600 Amphitheatre Parkway</span></p>"
+            + "<p><span id=\"plain_text_1\">SamplePlainTextOne</span></p>"
+            + "<p><span id=\"plain_text_2\">SamplePlainTextTwo</span></p>"
+            + "<input id=\"disabled_text\" type=\"text\" disabled value=\"Sample Text\" />"
+            + "<div id=\"rich_div\" contentEditable=\"true\" >Rich Editor</div>"
             + "</form></body></html>");
     private ContentViewCore mContentViewCore;
     private SelectionPopupController mSelectionPopupController;
