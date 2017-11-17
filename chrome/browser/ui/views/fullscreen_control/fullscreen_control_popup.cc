@@ -39,10 +39,13 @@ std::unique_ptr<views::Widget> CreatePopupWidget(gfx::NativeView parent_view,
 
 FullscreenControlPopup::FullscreenControlPopup(
     gfx::NativeView parent_view,
-    const base::RepeatingClosure& on_button_pressed)
+    const base::RepeatingClosure& on_button_pressed,
+    const base::RepeatingClosure& on_visibility_changed)
     : control_view_(new FullscreenControlView(on_button_pressed)),
       popup_(CreatePopupWidget(parent_view, control_view_)),
-      animation_(std::make_unique<gfx::SlideAnimation>(this)) {
+      animation_(std::make_unique<gfx::SlideAnimation>(this)),
+      on_visibility_changed_(on_visibility_changed) {
+  DCHECK(on_visibility_changed_);
   animation_->Reset(0);
 }
 
@@ -61,6 +64,8 @@ void FullscreenControlPopup::Show(const gfx::Rect& parent_bounds_in_screen) {
   // to prevent potential flickering.
   AnimationProgressed(animation_.get());
   popup_->Show();
+
+  OnVisibilityChanged();
 }
 
 void FullscreenControlPopup::Hide(bool animated) {
@@ -113,6 +118,7 @@ void FullscreenControlPopup::AnimationEnded(const gfx::Animation* animation) {
     // It's the end of the reversed animation. Just hide the popup in this case.
     parent_bounds_in_screen_ = gfx::Rect();
     popup_->Hide();
+    OnVisibilityChanged();
     return;
   }
   AnimationProgressed(animation);
@@ -126,4 +132,8 @@ gfx::Rect FullscreenControlPopup::CalculateBounds(int y_offset) const {
                         control_view_->GetPreferredSize().width() / 2,
                     parent_bounds_in_screen_.y() + y_offset);
   return {origin, control_view_->GetPreferredSize()};
+}
+
+void FullscreenControlPopup::OnVisibilityChanged() {
+  on_visibility_changed_.Run();
 }

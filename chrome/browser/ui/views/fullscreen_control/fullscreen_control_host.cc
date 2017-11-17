@@ -37,46 +37,28 @@ constexpr float kExitHeightScaleFactor = 1.5f;
 // +----------------------------+
 constexpr float kShowFullscreenExitControlHeight = 3.f;
 
+// Time to wait to hide the popup when it is triggered by touch input.
+constexpr int kTouchPopupTimeoutMs = 3000;
+
 }  // namespace
 
 FullscreenControlHost::FullscreenControlHost(BrowserView* browser_view,
                                              views::View* host_view)
     : browser_view_(browser_view),
-      fullscreen_control_popup_(browser_view->GetBubbleParentView(),
-                                base::Bind(&BrowserView::ExitFullscreen,
-                                           base::Unretained(browser_view))) {}
+      fullscreen_control_popup_(
+          browser_view->GetBubbleParentView(),
+          base::Bind(&BrowserView::ExitFullscreen,
+                     base::Unretained(browser_view)),
+          base::Bind(&FullscreenControlHost::OnVisibilityChanged,
+                     base::Unretained(this))) {}
 
 FullscreenControlHost::~FullscreenControlHost() = default;
 
 void FullscreenControlHost::OnMouseEvent(ui::MouseEvent* event) {
-  if (event->type() == ui::ET_MOUSE_MOVED)
-    HandleFullScreenControlVisibility(event, InputEntryMethod::MOUSE);
-}
-
-void FullscreenControlHost::OnTouchEvent(ui::TouchEvent* event) {
-  if (event->type() == ui::ET_TOUCH_MOVED)
-    HandleFullScreenControlVisibility(event, InputEntryMethod::TOUCH);
-}
-
-void FullscreenControlHost::OnGestureEvent(ui::GestureEvent* event) {
-  if (event->type() == ui::ET_GESTURE_LONG_TAP)
-    HandleFullScreenControlVisibility(event, InputEntryMethod::TOUCH);
-}
-
-void FullscreenControlHost::Hide(bool animate) {
-  fullscreen_control_popup_.Hide(animate);
-}
-
-bool FullscreenControlHost::IsVisible() const {
-  return fullscreen_control_popup_.IsVisible();
-}
-
-void FullscreenControlHost::HandleFullScreenControlVisibility(
-    const ui::LocatedEvent* event,
-    InputEntryMethod input_entry_method) {
-  if (fullscreen_control_popup_.IsAnimating() ||
+  if (event->type() != ui::ET_MOUSE_MOVED ||
+      fullscreen_control_popup_.IsAnimating() ||
       (input_entry_method_ != InputEntryMethod::NOT_ACTIVE &&
-       input_entry_method_ != input_entry_method)) {
+       input_entry_method_ != InputEntryMethod::MOUSE)) {
     return;
   }
 
@@ -88,14 +70,41 @@ void FullscreenControlHost::HandleFullScreenControlVisibility(
       if (event->y() >= y_limit)
         Hide(true);
     } else {
-      if (event->y() <= kShowFullscreenExitControlHeight ||
-          event->type() == ui::ET_GESTURE_LONG_TAP) {
-        ShowForInputEntryMethod(input_entry_method);
-      }
+      if (event->y() <= kShowFullscreenExitControlHeight)
+        ShowForInputEntryMethod(InputEntryMethod::MOUSE);
     }
   } else if (IsVisible()) {
     Hide(true);
   }
+}
+
+void FullscreenControlHost::OnTouchEvent(ui::TouchEvent* event) {
+  // Hide the popup if the popup is showing and the user touches outside of the
+  // popup.
+  if (event->type() == ui::ET_TOUCH_PRESSED && IsVisible() &&
+      !fullscreen_control_popup_.IsAnimating() &&
+      input_entry_method_ == InputEntryMethod::TOUCH) {
+    Hide(true);
+  }
+}
+
+void FullscreenControlHost::OnGestureEvent(ui::GestureEvent* event) {
+  if (event->type() == ui::ET_GESTURE_LONG_PRESS &&
+      browser_view_->IsFullscreen() && !IsVisible()) {
+    ShowForInputEntryMethod(InputEntryMethod::TOUCH);
+    touch_timeout_timer_.Start(
+        FROM_HERE, base::TimeDelta::FromMilliseconds(kTouchPopupTimeoutMs),
+        base::Bind(&FullscreenControlHost::OnTouchPopupTimeout,
+                   base::Unretained(this)));
+  }
+}
+
+void FullscreenControlHost::Hide(bool animate) {
+  fullscreen_control_popup_.Hide(animate);
+}
+
+bool FullscreenControlHost::IsVisible() const {
+  return fullscreen_control_popup_.IsVisible();
 }
 
 void FullscreenControlHost::ShowForInputEntryMethod(
@@ -105,4 +114,16 @@ void FullscreenControlHost::ShowForInputEntryMethod(
   if (bubble)
     bubble->HideImmediately();
   fullscreen_control_popup_.Show(browser_view_->GetClientAreaBoundsInScreen());
+}
+
+void FullscreenControlHost::OnVisibilityChanged() {
+  if (!IsVisible())
+    input_entry_method_ = InputEntryMethod::NOT_ACTIVE;
+}
+
+void FullscreenControlHost::OnTouchPopupTimeout() {
+  if (IsVisible() && !fullscreen_control_popup_.IsAnimating() &&
+      input_entry_method_ == InputEntryMethod::TOUCH) {
+    Hide(true);
+  }
 }

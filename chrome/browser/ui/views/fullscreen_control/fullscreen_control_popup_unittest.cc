@@ -29,7 +29,8 @@ class FullscreenControlPopupTest : public views::test::WidgetTest {
     parent_widget_->SetBounds(gfx::Rect(100, 100, 640, 480));
     parent_widget_->Show();
     popup_ = std::make_unique<FullscreenControlPopup>(
-        parent_widget_->GetNativeView(), base::BindRepeating(&base::DoNothing));
+        parent_widget_->GetNativeView(), base::BindRepeating(&base::DoNothing),
+        base::BindRepeating(&base::DoNothing));
     animation_api_ = std::make_unique<gfx::AnimationTestApi>(
         popup_->GetAnimationForTesting());
   }
