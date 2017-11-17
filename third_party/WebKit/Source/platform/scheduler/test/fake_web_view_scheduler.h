@@ -56,7 +56,7 @@ class FakeWebViewScheduler : public WebViewScheduler {
       WebFrameScheduler::FrameType frame_type) override {
     return nullptr;
   }
-  void EnableVirtualTime() override {}
+  base::TimeTicks EnableVirtualTime() override { return base::TimeTicks(); }
   void DisableVirtualTimeForTesting() override {}
   bool VirtualTimeAllowedToAdvance() const override { return false; }
   void SetVirtualTimePolicy(VirtualTimePolicy policy) override {}

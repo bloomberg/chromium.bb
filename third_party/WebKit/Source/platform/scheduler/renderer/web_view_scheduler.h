@@ -40,14 +40,17 @@ class PLATFORM_EXPORT WebViewScheduler {
 
   // Instructs this WebViewScheduler to use virtual time. When virtual time is
   // enabled the system doesn't actually sleep for the delays between tasks
-  // before executing them. E.g: A-E are delayed tasks
+  // before executing them. Returns the TimeTicks that virtual time offsets will
+  // be relative to.
+  //
+  // E.g: A-E are delayed tasks
   //
   // |    A   B C  D           E  (normal)
   // |-----------------------------> time
   //
   // |ABCDE                       (virtual time)
   // |-----------------------------> time
-  virtual void EnableVirtualTime() = 0;
+  virtual base::TimeTicks EnableVirtualTime() = 0;
 
   // Disables virtual time. Note that this is only used for testing, because
   // there's no reason to do this in production.

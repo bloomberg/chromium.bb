@@ -192,8 +192,9 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   using VirtualTimePolicy = WebViewScheduler::VirtualTimePolicy;
   using VirtualTimeObserver = WebViewScheduler::VirtualTimeObserver;
 
-  // Tells the scheduler that all TaskQueues should use virtual time.
-  void EnableVirtualTime();
+  // Tells the scheduler that all TaskQueues should use virtual time. Returns
+  // the TimeTicks that virtual time offsets will be relative to.
+  base::TimeTicks EnableVirtualTime();
 
   // Migrates all task queues to real time.
   void DisableVirtualTimeForTesting();

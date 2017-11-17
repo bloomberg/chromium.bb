@@ -1475,9 +1475,9 @@ WakeUpBudgetPool* RendererSchedulerImpl::GetWakeUpBudgetPoolForTesting() {
   return main_thread_only().wake_up_budget_pool;
 }
 
-void RendererSchedulerImpl::EnableVirtualTime() {
+base::TimeTicks RendererSchedulerImpl::EnableVirtualTime() {
   if (main_thread_only().use_virtual_time)
-    return;
+    return main_thread_only().initial_virtual_time;
   main_thread_only().use_virtual_time = true;
   DCHECK(!virtual_time_domain_);
   main_thread_only().initial_virtual_time = tick_clock()->NowTicks();
@@ -1502,6 +1502,7 @@ void RendererSchedulerImpl::EnableVirtualTime() {
 
   if (main_thread_only().virtual_time_stopped)
     VirtualTimePaused();
+  return main_thread_only().initial_virtual_time;
 }
 
 void RendererSchedulerImpl::DisableVirtualTimeForTesting() {
