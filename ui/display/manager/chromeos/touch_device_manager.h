@@ -172,6 +172,9 @@ class DISPLAY_MANAGER_EXPORT TouchDeviceManager {
   void AssociateInternalDevices(std::vector<ManagedDisplayInfo*>* displays,
                                 std::vector<ui::TouchscreenDevice>* devices);
 
+  void AssociateFromHistoricalData(std::vector<ManagedDisplayInfo*>* displays,
+                                   std::vector<ui::TouchscreenDevice>* devices);
+
   void AssociateUdlDevices(std::vector<ManagedDisplayInfo*>* displays,
                            std::vector<ui::TouchscreenDevice>* devices);
 

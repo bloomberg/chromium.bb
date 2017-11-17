@@ -31,6 +31,13 @@ ui::TouchscreenDevice CreateTouchscreenDevice(int id,
   return device;
 }
 
+TouchDeviceManager::TouchAssociationInfo CreateTouchAssociationInfo(
+    int days_old) {
+  TouchDeviceManager::TouchAssociationInfo info;
+  info.timestamp = base::Time::Now() - base::TimeDelta::FromDays(days_old);
+  return info;
+}
+
 }  // namespace
 
 using DisplayInfoList = std::vector<ManagedDisplayInfo>;
@@ -346,6 +353,232 @@ TEST_F(TouchAssociationTest,
 
   // Make sure all devices were matched.
   EXPECT_EQ(total, devices.size());
+}
+
+class TouchAssociationFromPrefTest : public TouchAssociationTest {
+ public:
+  TouchAssociationFromPrefTest() {}
+  ~TouchAssociationFromPrefTest() override {}
+
+  void SetUp() override {
+    TouchAssociationTest::SetUp();
+    TouchDeviceManager::TouchAssociationMap touch_associations;
+
+    devices_.push_back(CreateTouchscreenDevice(
+        1, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, gfx::Size(1920, 1080)));
+    devices_.push_back(CreateTouchscreenDevice(
+        2, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, gfx::Size(1024, 768)));
+    devices_.push_back(CreateTouchscreenDevice(
+        3, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, gfx::Size(640, 480)));
+    devices_.push_back(CreateTouchscreenDevice(
+        4, ui::InputDeviceType::INPUT_DEVICE_INTERNAL, gfx::Size(800, 600)));
+
+    // Create priority list for Device Id = 1
+    //   - Display Index 0
+    //   - Display Index 1
+    touch_associations[TouchDeviceIdentifier::FromDevice(devices_[0])] =
+        TouchDeviceManager::AssociationInfoMap();
+    touch_associations[TouchDeviceIdentifier::FromDevice(devices_[0])]
+                      [displays_[0].id()] = CreateTouchAssociationInfo(1);
+    touch_associations[TouchDeviceIdentifier::FromDevice(devices_[0])]
+                      [displays_[1].id()] = CreateTouchAssociationInfo(2);
+
+    // Create priority list for Device Id = 2
+    //   - Display Index 3
+    //   - Display Index 1
+    touch_associations[TouchDeviceIdentifier::FromDevice(devices_[1])] =
+        TouchDeviceManager::AssociationInfoMap();
+    touch_associations[TouchDeviceIdentifier::FromDevice(devices_[1])]
+                      [displays_[3].id()] = CreateTouchAssociationInfo(1);
+    touch_associations[TouchDeviceIdentifier::FromDevice(devices_[1])]
+                      [displays_[1].id()] = CreateTouchAssociationInfo(2);
+
+    // Craete priority list for Device Id = 3
+    //   - Display Index 2
+    //   - Display Index 3
+    //   - Display Index 0
+    touch_associations[TouchDeviceIdentifier::FromDevice(devices_[2])] =
+        TouchDeviceManager::AssociationInfoMap();
+    touch_associations[TouchDeviceIdentifier::FromDevice(devices_[2])]
+                      [displays_[2].id()] = CreateTouchAssociationInfo(1);
+    touch_associations[TouchDeviceIdentifier::FromDevice(devices_[2])]
+                      [displays_[3].id()] = CreateTouchAssociationInfo(2);
+    touch_associations[TouchDeviceIdentifier::FromDevice(devices_[2])]
+                      [displays_[0].id()] = CreateTouchAssociationInfo(3);
+
+    touch_device_manager_->RegisterTouchAssociations(touch_associations);
+  }
+
+  void TearDown() override {
+    TouchAssociationTest::TearDown();
+    devices_.clear();
+  }
+
+ protected:
+  std::vector<ui::TouchscreenDevice> devices_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TouchAssociationFromPrefTest);
+};
+
+TEST_F(TouchAssociationFromPrefTest, CorrectMapping) {
+  test::ScopedSetInternalDisplayId set_internal(display_manager(),
+                                                displays_[1].id());
+
+  touch_device_manager()->AssociateTouchscreens(&displays_, devices_);
+
+  EXPECT_EQ(GetTouchDeviceCount(displays_[0]), 1u);
+  EXPECT_TRUE(AreAssociated(displays_[0], devices_[0]));
+
+  EXPECT_EQ(GetTouchDeviceCount(displays_[1]), 1u);
+  EXPECT_TRUE(AreAssociated(displays_[1], devices_[3]));
+
+  EXPECT_EQ(GetTouchDeviceCount(displays_[2]), 1u);
+  EXPECT_TRUE(AreAssociated(displays_[2], devices_[2]));
+
+  EXPECT_EQ(GetTouchDeviceCount(displays_[3]), 1u);
+  EXPECT_TRUE(AreAssociated(displays_[3], devices_[1]));
+}
+
+TEST_F(TouchAssociationFromPrefTest, CorrectMappingWithSomeMissing) {
+  DisplayInfoList displays;
+  displays.push_back(displays_[1]);
+  displays.push_back(displays_[3]);
+
+  touch_device_manager()->AssociateTouchscreens(&displays, devices_);
+
+  EXPECT_EQ(GetTouchDeviceCount(displays_[0]), 0u);
+
+  EXPECT_EQ(GetTouchDeviceCount(displays_[1]), 1u);
+  EXPECT_TRUE(AreAssociated(displays_[1], devices_[0]));
+
+  EXPECT_EQ(GetTouchDeviceCount(displays_[2]), 0u);
+
+  EXPECT_EQ(GetTouchDeviceCount(displays_[3]), 2u);
+  EXPECT_TRUE(AreAssociated(displays_[3], devices_[1]));
+  EXPECT_TRUE(AreAssociated(displays_[3], devices_[2]));
+}
+
+TEST_F(TouchAssociationFromPrefTest, UpdateMappingBeforeAssociation) {
+  test::ScopedSetInternalDisplayId set_internal(display_manager(),
+                                                displays_[1].id());
+
+  // Reassociate display with id 4 to touch device with id 3. This will
+  // bring the display to the top of the priority list.
+  touch_device_manager()->AddTouchCalibrationData(
+      TouchDeviceIdentifier::FromDevice(devices_[2]), displays_[3].id(),
+      TouchCalibrationData());
+
+  touch_device_manager()->AssociateTouchscreens(&displays_, devices_);
+
+  EXPECT_EQ(GetTouchDeviceCount(displays_[0]), 1u);
+  EXPECT_TRUE(AreAssociated(displays_[0], devices_[0]));
+
+  EXPECT_EQ(GetTouchDeviceCount(displays_[1]), 1u);
+  EXPECT_TRUE(AreAssociated(displays_[1], devices_[3]));
+
+  EXPECT_EQ(GetTouchDeviceCount(displays_[2]), 0u);
+
+  EXPECT_EQ(GetTouchDeviceCount(displays_[3]), 2u);
+  EXPECT_TRUE(AreAssociated(displays_[3], devices_[1]));
+  EXPECT_TRUE(AreAssociated(displays_[3], devices_[2]));
+}
+
+TEST_F(TouchAssociationFromPrefTest, UpdateMappingAfterAssociation) {
+  test::ScopedSetInternalDisplayId set_internal(display_manager(),
+                                                displays_[1].id());
+
+  touch_device_manager()->AssociateTouchscreens(&displays_, devices_);
+
+  // Reassociate display with id 4 to touch device with id 3. This will
+  // bring the display to the top of the priority list. This should work even
+  // though the association of devices and displays is complete.
+  touch_device_manager()->AddTouchCalibrationData(
+      TouchDeviceIdentifier::FromDevice(devices_[2]), displays_[3].id(),
+      TouchCalibrationData());
+
+  EXPECT_EQ(GetTouchDeviceCount(displays_[0]), 1u);
+  EXPECT_TRUE(AreAssociated(displays_[0], devices_[0]));
+
+  EXPECT_EQ(GetTouchDeviceCount(displays_[1]), 1u);
+  EXPECT_TRUE(AreAssociated(displays_[1], devices_[3]));
+
+  EXPECT_EQ(GetTouchDeviceCount(displays_[2]), 0u);
+
+  EXPECT_EQ(GetTouchDeviceCount(displays_[3]), 2u);
+  EXPECT_TRUE(AreAssociated(displays_[3], devices_[1]));
+  EXPECT_TRUE(AreAssociated(displays_[3], devices_[2]));
+}
+
+TEST_F(TouchAssociationFromPrefTest, AssociatingDeviceToNewDisplay) {
+  test::ScopedSetInternalDisplayId set_internal(display_manager(),
+                                                displays_[1].id());
+
+  // Reassociate display with id 4 to touch device with id 3. This will
+  // bring the display to the top of the priority list.
+  touch_device_manager()->AddTouchCalibrationData(
+      TouchDeviceIdentifier::FromDevice(devices_[0]), displays_[2].id(),
+      TouchCalibrationData());
+
+  touch_device_manager()->AssociateTouchscreens(&displays_, devices_);
+
+  EXPECT_EQ(GetTouchDeviceCount(displays_[0]), 0u);
+
+  EXPECT_EQ(GetTouchDeviceCount(displays_[1]), 1u);
+  EXPECT_TRUE(AreAssociated(displays_[1], devices_[3]));
+
+  EXPECT_EQ(GetTouchDeviceCount(displays_[2]), 2u);
+  EXPECT_TRUE(AreAssociated(displays_[2], devices_[0]));
+  EXPECT_TRUE(AreAssociated(displays_[2], devices_[2]));
+
+  EXPECT_EQ(GetTouchDeviceCount(displays_[3]), 1u);
+  EXPECT_TRUE(AreAssociated(displays_[3], devices_[1]));
+}
+
+TEST_F(TouchAssociationFromPrefTest,
+       AssociatingDeviceToNewDisplayAfterAssociation) {
+  test::ScopedSetInternalDisplayId set_internal(display_manager(),
+                                                displays_[1].id());
+
+  touch_device_manager()->AssociateTouchscreens(&displays_, devices_);
+
+  // Reassociate display with id 4 to touch device with id 3. This will
+  // bring the display to the top of the priority list. This should work even
+  // though the association of devices and displays is already complete.
+  touch_device_manager()->AddTouchCalibrationData(
+      TouchDeviceIdentifier::FromDevice(devices_[0]), displays_[2].id(),
+      TouchCalibrationData());
+
+  EXPECT_EQ(GetTouchDeviceCount(displays_[0]), 0u);
+
+  EXPECT_EQ(GetTouchDeviceCount(displays_[1]), 1u);
+  EXPECT_TRUE(AreAssociated(displays_[1], devices_[3]));
+
+  EXPECT_EQ(GetTouchDeviceCount(displays_[2]), 2u);
+  EXPECT_TRUE(AreAssociated(displays_[2], devices_[0]));
+  EXPECT_TRUE(AreAssociated(displays_[2], devices_[2]));
+
+  EXPECT_EQ(GetTouchDeviceCount(displays_[3]), 1u);
+  EXPECT_TRUE(AreAssociated(displays_[3], devices_[1]));
+}
+
+TEST_F(TouchAssociationFromPrefTest, InternalDisplayIsNotMatched) {
+  test::ScopedSetInternalDisplayId set_internal(display_manager(),
+                                                displays_[0].id());
+
+  touch_device_manager()->AssociateTouchscreens(&displays_, devices_);
+
+  EXPECT_EQ(GetTouchDeviceCount(displays_[0]), 1u);
+  EXPECT_TRUE(AreAssociated(displays_[0], devices_[3]));
+
+  EXPECT_EQ(GetTouchDeviceCount(displays_[1]), 1u);
+  EXPECT_TRUE(AreAssociated(displays_[1], devices_[0]));
+
+  EXPECT_EQ(GetTouchDeviceCount(displays_[2]), 1u);
+  EXPECT_TRUE(AreAssociated(displays_[2], devices_[2]));
+
+  EXPECT_EQ(GetTouchDeviceCount(displays_[3]), 1u);
+  EXPECT_TRUE(AreAssociated(displays_[3], devices_[1]));
 }
 
 }  // namespace display
