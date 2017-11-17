@@ -4476,6 +4476,19 @@ static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
   (void)counts;
   const BLOCK_SIZE bsize = mbmi->sb_type;
 
+  // Update intra tx size cdf
+  if (block_signals_txsize(bsize) && !xd->lossless[mbmi->segment_id] &&
+      allow_update_cdf) {
+    const TX_SIZE tx_size = mbmi->tx_size;
+    const int tx_size_ctx = get_tx_size_context(xd);
+    const int32_t tx_size_cat = intra_tx_size_cat_lookup[bsize];
+    const TX_SIZE coded_tx_size = txsize_sqr_up_map[tx_size];
+    const int depth = tx_size_to_depth(coded_tx_size, tx_size_cat);
+    const int max_depths = tx_size_cat_to_max_depth(tx_size_cat);
+    update_cdf(fc->tx_size_cdf[tx_size_cat][tx_size_ctx], depth,
+               max_depths + 1);
+  }
+
   if (intraonly) {
 #if CONFIG_ENTROPY_STATS
     const PREDICTION_MODE above = av1_above_block_mode(mi, above_mi, 0);
