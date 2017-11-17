@@ -188,6 +188,8 @@ std::unique_ptr<base::trace_event::ConvertableToTraceFormat> DataAsTraceValue(
 ////////////////////////////////////////////////////////////////////////////////
 // TabManager
 
+constexpr base::TimeDelta TabManager::kDiscardProtectionTime;
+
 class TabManager::TabManagerSessionRestoreObserver final
     : public SessionRestoreObserver {
  public:
@@ -219,9 +221,6 @@ constexpr base::TimeDelta TabManager::kDefaultMinTimeToPurge;
 
 TabManager::TabManager()
     : discard_count_(0),
-#if !defined(OS_CHROMEOS)
-      minimum_protection_time_(base::TimeDelta::FromMinutes(10)),
-#endif
       browser_tab_strip_tracker_(this, nullptr, this),
       is_session_restore_loading_tabs_(false),
       background_tab_loading_mode_(BackgroundTabLoadingMode::kStaggered),
@@ -343,7 +342,8 @@ bool TabManager::IsTabDiscarded(content::WebContents* contents) const {
   return GetWebContentsData(contents)->IsDiscarded();
 }
 
-bool TabManager::CanDiscardTab(const TabStats& tab_stats) const {
+bool TabManager::CanDiscardTab(const TabStats& tab_stats,
+                               DiscardCondition condition) const {
 #if defined(OS_CHROMEOS)
   if (tab_stats.is_active && tab_stats.is_in_visible_window)
     return false;
@@ -388,22 +388,23 @@ bool TabManager::CanDiscardTab(const TabStats& tab_stats) const {
   if (web_contents->GetContentsMimeType() == "application/pdf")
     return false;
 
-// Do not discard a previously discarded tab on non-ChromeOS platforms.
-#if !defined(OS_CHROMEOS)
-  if (GetWebContentsData(web_contents)->DiscardCount() > 0)
-    return false;
-#endif  // !defined(OS_CHROMEOS)
-
-  // Do not discard a recently used tab.
-  if (minimum_protection_time_.InSeconds() > 0) {
-    auto delta =
-        NowTicks() - GetWebContentsData(web_contents)->LastInactiveTime();
-    if (delta < minimum_protection_time_)
-      return false;
-  }
-
   // Do not discard a tab that was explicitly disallowed to.
   if (!IsTabAutoDiscardable(web_contents))
+    return false;
+
+#if defined(OS_CHROMEOS)
+  // The following protections are ignored on ChromeOS during urgent discard,
+  // because running out of memory would lead to a kernel panic.
+  if (condition == DiscardCondition::kUrgent)
+    return true;
+#endif  // defined(OS_CHROMEOS)
+
+  if (GetWebContentsData(web_contents)->DiscardCount() > 0)
+    return false;
+
+  auto delta =
+      NowTicks() - GetWebContentsData(web_contents)->LastInactiveTime();
+  if (delta < kDiscardProtectionTime)
     return false;
 
   return true;
@@ -480,11 +481,6 @@ void TabManager::AddObserver(TabLifetimeObserver* observer) {
 
 void TabManager::RemoveObserver(TabLifetimeObserver* observer) {
   observers_.RemoveObserver(observer);
-}
-
-void TabManager::set_minimum_protection_time_for_tests(
-    base::TimeDelta minimum_protection_time) {
-  minimum_protection_time_ = minimum_protection_time;
 }
 
 bool TabManager::IsTabAutoDiscardable(content::WebContents* contents) const {
@@ -1038,7 +1034,7 @@ content::WebContents* TabManager::DiscardTabImpl(DiscardCondition condition) {
   // Loop until a non-discarded tab to kill is found.
   for (TabStatsList::const_reverse_iterator stats_rit = stats.rbegin();
        stats_rit != stats.rend(); ++stats_rit) {
-    if (CanDiscardTab(*stats_rit)) {
+    if (CanDiscardTab(*stats_rit, condition)) {
       WebContents* new_contents =
           DiscardTabById(stats_rit->tab_contents_id, condition);
       if (new_contents)

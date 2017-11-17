@@ -17,6 +17,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
@@ -31,6 +32,7 @@
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
+#include "chrome/browser/resource_coordinator/time.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -72,7 +74,25 @@ namespace keys = tabs_constants;
 namespace utils = extension_function_test_utils;
 
 namespace {
-using ExtensionTabsTest = PlatformAppBrowserTest;
+
+class ExtensionTabsTest : public PlatformAppBrowserTest {
+ public:
+  ExtensionTabsTest() : scoped_set_tick_clock_for_testing_(&test_clock_) {}
+
+  // Fast-forward time until no tab is protected from being discarded for having
+  // recently been used.
+  void FastForwardAfterDiscardProtectionTime() {
+    test_clock_.Advance(
+        resource_coordinator::TabManager::kDiscardProtectionTime);
+  }
+
+  base::SimpleTestTickClock test_clock_;
+  resource_coordinator::ScopedSetTickClockForTesting
+      scoped_set_tick_clock_for_testing_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ExtensionTabsTest);
+};
 
 class ExtensionWindowCreateTest : public InProcessBrowserTest {
  public:
@@ -1557,11 +1577,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DiscardWithoutId) {
   scoped_refptr<TabsDiscardFunction> discard(new TabsDiscardFunction());
   discard->set_extension(extension.get());
 
-  // Disable protection time to discard the tab without passing id.
-  resource_coordinator::TabManager* tab_manager =
-      g_browser_process->GetTabManager();
-  tab_manager->set_minimum_protection_time_for_tests(
-      base::TimeDelta::FromSeconds(0));
+  FastForwardAfterDiscardProtectionTime();
 
   // Run without passing an id.
   std::unique_ptr<base::DictionaryValue> result(utils::ToDictionary(
@@ -1569,7 +1585,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DiscardWithoutId) {
 
   // Confirms that TabManager sees the tab as discarded.
   web_contents = browser()->tab_strip_model()->GetWebContentsAt(1);
-  EXPECT_TRUE(tab_manager->IsTabDiscarded(web_contents));
+  EXPECT_TRUE(g_browser_process->GetTabManager()->IsTabDiscarded(web_contents));
 
   // Make sure the returned tab is the one discarded and its discarded state is
   // correct.
@@ -1585,10 +1601,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DiscardNoTabProtection) {
       browser(), GURL(url::kAboutBlankURL),
       WindowOpenDisposition::NEW_BACKGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-
-  // Make sure protection time isn't disabled.
-  g_browser_process->GetTabManager()->set_minimum_protection_time_for_tests(
-      base::TimeDelta::FromMinutes(10));
 
   // Set up the function with an extension.
   scoped_refptr<const Extension> extension = ExtensionBuilder("Test").Build();
