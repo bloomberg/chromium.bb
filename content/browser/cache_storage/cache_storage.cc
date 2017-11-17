@@ -627,8 +627,8 @@ void CacheStorage::HasCache(const std::string& cache_name,
       scheduler_->WrapCallbackToRunNext(std::move(callback))));
 }
 
-void CacheStorage::DeleteCache(const std::string& cache_name,
-                               BoolAndErrorCallback callback) {
+void CacheStorage::DoomCache(const std::string& cache_name,
+                             BoolAndErrorCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!initialized_)
@@ -639,7 +639,7 @@ void CacheStorage::DeleteCache(const std::string& cache_name,
       storage::kStorageTypeTemporary);
 
   scheduler_->ScheduleOperation(base::BindOnce(
-      &CacheStorage::DeleteCacheImpl, weak_factory_.GetWeakPtr(), cache_name,
+      &CacheStorage::DoomCacheImpl, weak_factory_.GetWeakPtr(), cache_name,
       scheduler_->WrapCallbackToRunNext(std::move(callback))));
 }
 
@@ -900,8 +900,8 @@ void CacheStorage::HasCacheImpl(const std::string& cache_name,
   std::move(callback).Run(has_cache, CacheStorageError::kSuccess);
 }
 
-void CacheStorage::DeleteCacheImpl(const std::string& cache_name,
-                                   BoolAndErrorCallback callback) {
+void CacheStorage::DoomCacheImpl(const std::string& cache_name,
+                                 BoolAndErrorCallback callback) {
   CacheStorageCacheHandle cache_handle = GetLoadedCache(cache_name);
   if (!cache_handle.value()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
