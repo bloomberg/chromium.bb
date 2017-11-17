@@ -63,8 +63,13 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   ~SplitViewController() override;
 
   // Returns true if split view mode is supported. Currently the split view
-  // mode is only supported in tablet mode (tablet mode).
+  // mode is only supported in tablet mode.
   static bool ShouldAllowSplitView();
+
+  // Returns true if |left_window_| should be placed on the left or top side of
+  // the screen.
+  static bool IsLeftWindowOnTopOrLeftOfScreen(
+      blink::WebScreenOrientationLockType screen_orientation);
 
   // Returns true if |window| can be activated and snapped.
   bool CanSnap(aura::Window* window);

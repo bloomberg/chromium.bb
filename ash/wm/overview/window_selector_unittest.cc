@@ -1929,6 +1929,14 @@ class SplitViewWindowSelectorTest : public WindowSelectorTest {
   SplitViewWindowSelectorTest() = default;
   ~SplitViewWindowSelectorTest() override = default;
 
+  enum class SelectorItemLocation {
+    CENTER,
+    ORIGIN,
+    TOP_RIGHT,
+    BOTTOM_RIGHT,
+    BOTTOM_LEFT,
+  };
+
   void SetUp() override {
     WindowSelectorTest::SetUp();
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -1966,12 +1974,45 @@ class SplitViewWindowSelectorTest : public WindowSelectorTest {
         ->split_view_divider_->GetDividerBoundsInScreen(is_dragging);
   }
 
-  void DragWindowTo(WindowSelectorItem* item, const gfx::Point& end_location) {
+  // Drags a window selector item |item| from its center or one of its corners
+  // to |end_location|. This should be used over
+  // DragWindowTo(WindowSelectorItem*, gfx::Point) when testing snapping a
+  // window, but the windows centerpoint may be inside a snap region, thus the
+  // window will not snapped.
+  void DragWindowTo(WindowSelectorItem* item,
+                    const gfx::Point& end_location,
+                    SelectorItemLocation location) {
     // Start drag in the middle of the seletor item.
-    const gfx::Point start_location(item->target_bounds().CenterPoint());
+    gfx::Point start_location;
+    switch (location) {
+      case SelectorItemLocation::CENTER:
+        start_location = item->target_bounds().CenterPoint();
+        break;
+      case SelectorItemLocation::ORIGIN:
+        start_location = item->target_bounds().origin();
+        break;
+      case SelectorItemLocation::TOP_RIGHT:
+        start_location = item->target_bounds().top_right();
+        break;
+      case SelectorItemLocation::BOTTOM_RIGHT:
+        start_location = item->target_bounds().bottom_right();
+        break;
+      case SelectorItemLocation::BOTTOM_LEFT:
+        start_location = item->target_bounds().bottom_left();
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
     window_selector()->InitiateDrag(item, start_location);
     window_selector()->Drag(item, end_location);
     window_selector()->CompleteDrag(item, end_location);
+  }
+
+  // Drags a window selector item |item| from its center point to
+  // |end_location|.
+  void DragWindowTo(WindowSelectorItem* item, const gfx::Point& end_location) {
+    DragWindowTo(item, end_location, SelectorItemLocation::CENTER);
   }
 
   // Creates a window which cannot be snapped by splitview.
@@ -2054,6 +2095,88 @@ TEST_F(SplitViewWindowSelectorTest, DragOverviewWindowToSnap) {
             SplitViewController::BOTH_SNAPPED);
   EXPECT_EQ(split_view_controller()->right_window(), window3.get());
   EXPECT_FALSE(window_selector_controller()->IsSelecting());
+}
+
+TEST_F(SplitViewWindowSelectorTest, Dragging) {
+  ui::test::EventGenerator& generator = GetEventGenerator();
+
+  std::unique_ptr<aura::Window> right_window = CreateTestWindow();
+  std::unique_ptr<aura::Window> left_window = CreateTestWindow();
+
+  ToggleOverview();
+  ASSERT_TRUE(window_selector_controller()->IsSelecting());
+
+  WindowSelectorItem* left_selector_item =
+      GetWindowItemForWindow(0, left_window.get());
+  WindowSelectorItem* right_selector_item =
+      GetWindowItemForWindow(0, right_window.get());
+
+  // The inset on each side of the screen which is a snap region. Items dragged
+  // to and released under this region will get snapped.
+  const int drag_offset = OverviewWindowDragController::kMinimumDragOffset;
+  const int drag_offset_snap_region =
+      OverviewWindowDragController::kMinimumDragOffsetAlreadyInSnapRegionDp;
+  const int edge_inset = OverviewWindowDragController::kScreenEdgeInsetForDrag;
+  const int screen_width =
+      ScreenUtil::GetDisplayWorkAreaBoundsInParent(left_window.get()).width();
+  // The selector item has a margin which does not accept events. Inset any
+  // event aimed at the selector items edge so events will reach it.
+  const int selector_item_inset = 20;
+
+  // Check the two windows set up have a region which is under no snap region, a
+  // region that is under the left snap region and a region that is under the
+  // right snap region.
+  ASSERT_GT(left_selector_item->target_bounds().CenterPoint().x(), edge_inset);
+  ASSERT_LT(
+      left_selector_item->target_bounds().origin().x() + selector_item_inset,
+      edge_inset);
+  ASSERT_GT(right_selector_item->target_bounds().top_right().x() -
+                selector_item_inset,
+            screen_width - edge_inset);
+
+  // Verify if the drag is not started in either snap region, the drag still
+  // must move by |drag_offset| before split view acknowledges the drag (ie.
+  // starts moving the selector item).
+  generator.set_current_location(
+      left_selector_item->target_bounds().CenterPoint());
+  generator.PressLeftButton();
+  const gfx::Rect left_original_bounds = left_selector_item->target_bounds();
+  generator.MoveMouseBy(drag_offset - 1, 0);
+  EXPECT_EQ(left_original_bounds, left_selector_item->target_bounds());
+  generator.MoveMouseBy(1, 0);
+  EXPECT_NE(left_original_bounds, left_selector_item->target_bounds());
+  generator.ReleaseLeftButton();
+
+  // Verify if the drag is started in the left snap region, the drag needs to
+  // move by |drag_offset_snap_region| towards the left side of the screen
+  // before split view acknowledges the drag (shows the phantom window).
+  ASSERT_TRUE(window_selector_controller()->IsSelecting());
+  generator.set_current_location(gfx::Point(
+      left_selector_item->target_bounds().origin().x() + selector_item_inset,
+      left_selector_item->target_bounds().CenterPoint().y()));
+  generator.PressLeftButton();
+  generator.MoveMouseBy(-drag_offset_snap_region + 1, 0);
+  EXPECT_FALSE(window_drag_controller()->IsPhantomWindowShowing());
+  generator.MoveMouseBy(-1, 0);
+  EXPECT_TRUE(window_drag_controller()->IsPhantomWindowShowing());
+  // Drag back to the middle before releasing so that we stay in overview mode
+  // on release.
+  generator.MoveMouseTo(left_original_bounds.CenterPoint());
+  generator.ReleaseLeftButton();
+
+  // Verify if the drag is started in the right snap region, the drag needs to
+  // move by |drag_offset_snap_region| towards the right side of the screen
+  // before split view acknowledges the drag.
+  ASSERT_TRUE(window_selector_controller()->IsSelecting());
+  generator.set_current_location(
+      gfx::Point(right_selector_item->target_bounds().top_right().x() -
+                     selector_item_inset,
+                 right_selector_item->target_bounds().CenterPoint().y()));
+  generator.PressLeftButton();
+  generator.MoveMouseBy(drag_offset_snap_region - 1, 0);
+  EXPECT_FALSE(window_drag_controller()->IsPhantomWindowShowing());
+  generator.MoveMouseBy(1, 0);
+  EXPECT_TRUE(window_drag_controller()->IsPhantomWindowShowing());
 }
 
 // Verify the window grid size changes as expected when dragging items around in
@@ -2415,7 +2538,7 @@ TEST_F(SplitViewWindowSelectorTest, SplitViewRotationTest) {
   work_area_rect =
       split_view_controller()->GetDisplayWorkAreaBoundsInScreen(window2.get());
   end_location2 = gfx::Point(work_area_rect.width(), work_area_rect.height());
-  DragWindowTo(selector_item2, end_location2);
+  DragWindowTo(selector_item2, end_location2, SelectorItemLocation::ORIGIN);
   EXPECT_EQ(split_view_controller()->state(),
             SplitViewController::BOTH_SNAPPED);
   EXPECT_EQ(split_view_controller()->left_window(), window2.get());
@@ -2440,7 +2563,7 @@ TEST_F(SplitViewWindowSelectorTest, SplitViewRotationTest) {
   work_area_rect =
       split_view_controller()->GetDisplayWorkAreaBoundsInScreen(window2.get());
   end_location2 = gfx::Point(work_area_rect.width(), work_area_rect.height());
-  DragWindowTo(selector_item2, end_location2);
+  DragWindowTo(selector_item2, end_location2, SelectorItemLocation::ORIGIN);
   EXPECT_EQ(split_view_controller()->state(),
             SplitViewController::BOTH_SNAPPED);
   EXPECT_EQ(split_view_controller()->left_window(), window2.get());
