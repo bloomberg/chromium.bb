@@ -179,12 +179,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
       const blink::mojom::ServiceWorkerObjectInfo& source_info);
 
   ServiceWorkerContextCore* GetContext();
-  // Returns the provider host with id equal to |provider_id|, or nullptr
-  // if the provider host could not be found or is not appropriate for
-  // initiating a request such as register/unregister/update.
-  ServiceWorkerProviderHost* GetProviderHostForRequest(
-      ProviderStatus* out_status,
-      int provider_id);
 
   const int render_process_id_;
   ResourceContext* resource_context_;

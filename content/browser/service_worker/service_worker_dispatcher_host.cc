@@ -510,36 +510,6 @@ ServiceWorkerContextCore* ServiceWorkerDispatcherHost::GetContext() {
   return context_wrapper_->context();
 }
 
-ServiceWorkerProviderHost*
-ServiceWorkerDispatcherHost::GetProviderHostForRequest(ProviderStatus* status,
-                                                       int provider_id) {
-  if (!GetContext()) {
-    *status = ProviderStatus::NO_CONTEXT;
-    return nullptr;
-  }
-
-  ServiceWorkerProviderHost* provider_host =
-      GetContext()->GetProviderHost(render_process_id_, provider_id);
-  if (!provider_host) {
-    *status = ProviderStatus::NO_HOST;
-    return nullptr;
-  }
-
-  if (!provider_host->IsContextAlive()) {
-    *status = ProviderStatus::DEAD_HOST;
-    return nullptr;
-  }
-
-  // TODO(falken): This check can be removed once crbug.com/439697 is fixed.
-  if (provider_host->document_url().is_empty()) {
-    *status = ProviderStatus::NO_URL;
-    return nullptr;
-  }
-
-  *status = ProviderStatus::OK;
-  return provider_host;
-}
-
 void ServiceWorkerDispatcherHost::OnTerminateWorker(int handle_id) {
   ServiceWorkerHandle* handle = handles_.Lookup(handle_id);
   if (!handle) {
