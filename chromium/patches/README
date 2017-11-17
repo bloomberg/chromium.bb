@@ -37,6 +37,10 @@ Current patches:
   libavformat/mov.c
     Always use av_realloc() for |extradata|. https://crbug.com/721872
 
+    Prevent NULL dereference in get_current_frag_stream_info. Applied from
+    e-mail to ffmpeg-devel@ list. Should be upstream by next roll.
+    http://crbug.com/786269
+
   libavformat/matroskadec.c
     Add CONFIG_LZO and CONFIG_SIPR_DECODER (and other CONFIG_*) checks to remove
     code that may be a security risk. Discuss with cevans@ before removing.
