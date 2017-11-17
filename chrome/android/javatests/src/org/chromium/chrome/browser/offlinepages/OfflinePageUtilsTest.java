@@ -16,7 +16,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.RetryOnFailure;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.OfflinePageModelObserver;
@@ -141,7 +141,7 @@ public class OfflinePageUtilsTest {
 
     @Test
     @SmallTest
-    @RetryOnFailure
+    @DisabledTest(message = "crbug.com/786237")
     public void testShowOfflineSnackbarIfNecessary() throws Exception {
         // Arrange - build a mock controller for sensing.
         OfflinePageUtils.setSnackbarDurationForTesting(1000);
