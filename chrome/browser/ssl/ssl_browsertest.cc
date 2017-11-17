@@ -569,7 +569,7 @@ class SSLUITest : public InProcessBrowserTest {
 
   void SendInterstitialCommand(
       WebContents* tab,
-      security_interstitials::SecurityInterstitialCommands command) {
+      security_interstitials::SecurityInterstitialCommand command) {
     InterstitialPage* interstitial_page = tab->GetInterstitialPage();
     ASSERT_TRUE(interstitial_page);
     ASSERT_EQ(SSLBlockingPage::kTypeForTesting,
@@ -859,7 +859,7 @@ class SSLUITestTransientAndCommitted
   // SSLUITest:
   void SendInterstitialCommand(
       WebContents* tab,
-      security_interstitials::SecurityInterstitialCommands command) {
+      security_interstitials::SecurityInterstitialCommand command) {
     // TODO(crbug.com/785077): Execute script inside the interstitial.
     GetInterstitialPageDelegate(tab)->CommandReceived(
         base::IntToString(command));

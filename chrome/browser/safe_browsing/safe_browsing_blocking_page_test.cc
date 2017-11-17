@@ -498,7 +498,7 @@ class SafeBrowsingBlockingPageBrowserTest
   }
 
   void SendCommand(
-      security_interstitials::SecurityInterstitialCommands command) {
+      security_interstitials::SecurityInterstitialCommand command) {
     WebContents* contents =
         browser()->tab_strip_model()->GetActiveWebContents();
     // We use InterstitialPage::GetInterstitialPage(tab) instead of

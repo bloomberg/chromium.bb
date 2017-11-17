@@ -200,7 +200,7 @@ void BaseBlockingPage::CommandReceived(
   DCHECK(retval) << page_cmd;
 
   sb_error_ui_->HandleCommand(
-      static_cast<security_interstitials::SecurityInterstitialCommands>(
+      static_cast<security_interstitials::SecurityInterstitialCommand>(
           command));
 }
 

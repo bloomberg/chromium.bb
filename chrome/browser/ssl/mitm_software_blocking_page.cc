@@ -140,7 +140,7 @@ void MITMSoftwareBlockingPage::CommandReceived(const std::string& command) {
   DCHECK(retval);
 
   mitm_software_ui_->HandleCommand(
-      static_cast<security_interstitials::SecurityInterstitialCommands>(cmd));
+      static_cast<security_interstitials::SecurityInterstitialCommand>(cmd));
 
   // Special handling for the reporting preference being changed.
   switch (cmd) {

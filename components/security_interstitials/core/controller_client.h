@@ -26,7 +26,7 @@ extern const char kPrivacyLinkHtml[];
 // These represent the commands sent from the interstitial JavaScript.
 // DO NOT reorder or change these without also changing the JavaScript!
 // See components/security_interstitials/core/browser/resources/
-enum SecurityInterstitialCommands {
+enum SecurityInterstitialCommand {
   // Used by tests
   CMD_TEXT_FOUND = -3,
   CMD_TEXT_NOT_FOUND = -2,

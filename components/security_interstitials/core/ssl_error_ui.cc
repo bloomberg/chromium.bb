@@ -161,7 +161,7 @@ void SSLErrorUI::PopulateNonOverridableStrings(
                             l10n_util::GetStringFUTF16(help_string, url));
 }
 
-void SSLErrorUI::HandleCommand(SecurityInterstitialCommands command) {
+void SSLErrorUI::HandleCommand(SecurityInterstitialCommand command) {
   switch (command) {
     case CMD_DONT_PROCEED:
       controller_->metrics_helper()->RecordUserDecision(

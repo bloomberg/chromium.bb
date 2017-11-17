@@ -5,7 +5,7 @@
 // This is the shared code for security interstitials. It is used for both SSL
 // interstitials and Safe Browsing interstitials.
 
-// Should match security_interstitials::SecurityInterstitialCommands
+// Should match security_interstitials::SecurityInterstitialCommand
 /** @enum| {string} */
 var SecurityInterstitialCommandId = {
   CMD_DONT_PROCEED: 0,

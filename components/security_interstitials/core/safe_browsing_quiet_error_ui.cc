@@ -89,7 +89,7 @@ void SafeBrowsingQuietErrorUI::SetGiantWebViewForTesting(
 }
 
 void SafeBrowsingQuietErrorUI::HandleCommand(
-    SecurityInterstitialCommands command) {
+    SecurityInterstitialCommand command) {
   switch (command) {
     case CMD_PROCEED: {
       // User pressed on the button to proceed.
