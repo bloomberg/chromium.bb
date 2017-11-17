@@ -6093,9 +6093,8 @@ void GLES2Implementation::SetErrorMessageCallback(
   error_message_callback_ = callback;
 }
 
-void GLES2Implementation::AddLatencyInfo(
-    const std::vector<ui::LatencyInfo>& latency_info) {
-  gpu_control_->AddLatencyInfo(latency_info);
+void GLES2Implementation::SetSnapshotRequested() {
+  gpu_control_->SetSnapshotRequested();
 }
 
 bool GLES2Implementation::ThreadSafeShallowLockDiscardableTexture(

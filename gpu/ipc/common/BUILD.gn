@@ -111,7 +111,6 @@ source_set("ipc_common_sources") {
     "//ui/gfx/ipc",
     "//ui/gfx/ipc/geometry",
     "//ui/gl",
-    "//ui/latency/ipc",
     "//url/ipc:url_ipc",
   ]
 

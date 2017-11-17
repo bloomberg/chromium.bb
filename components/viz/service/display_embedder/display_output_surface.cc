@@ -25,6 +25,7 @@ DisplayOutputSurface::DisplayOutputSurface(
     : OutputSurface(context_provider),
       synthetic_begin_frame_source_(synthetic_begin_frame_source),
       latency_tracker_(true),
+      latency_info_cache_(this),
       weak_ptr_factory_(this) {
   capabilities_.flipped_output_surface =
       context_provider->ContextCapabilities().flips_vertically;
@@ -83,8 +84,8 @@ void DisplayOutputSurface::Reshape(const gfx::Size& size,
 void DisplayOutputSurface::SwapBuffers(OutputSurfaceFrame frame) {
   DCHECK(context_provider_);
 
-  if (frame.latency_info.size() > 0)
-    context_provider_->ContextSupport()->AddLatencyInfo(frame.latency_info);
+  if (latency_info_cache_.WillSwap(std::move(frame.latency_info)))
+    context_provider_->ContextSupport()->SetSnapshotRequested();
 
   set_draw_rectangle_for_frame_ = false;
   if (frame.sub_buffer_rect) {
@@ -134,14 +135,17 @@ void DisplayOutputSurface::DidReceiveSwapBuffersAck(gfx::SwapResult result) {
 }
 
 void DisplayOutputSurface::OnGpuSwapBuffersCompleted(
-    const std::vector<ui::LatencyInfo>& latency_info,
-    gfx::SwapResult result,
+    const gfx::SwapResponse& response,
     const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac) {
+  DidReceiveSwapBuffersAck(response.result);
+  latency_info_cache_.OnSwapBuffersCompleted(response);
+}
+
+void DisplayOutputSurface::LatencyInfoCompleted(
+    const std::vector<ui::LatencyInfo>& latency_info) {
   for (const auto& latency : latency_info) {
-    if (latency.latency_components().size() > 0)
-      latency_tracker_.OnGpuSwapBuffersCompleted(latency);
+    latency_tracker_.OnGpuSwapBuffersCompleted(latency);
   }
-  DidReceiveSwapBuffersAck(result);
 }
 
 void DisplayOutputSurface::OnVSyncParametersUpdated(base::TimeTicks timebase,

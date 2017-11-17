@@ -16,10 +16,6 @@ class Rect;
 class RectF;
 }
 
-namespace ui {
-class LatencyInfo;
-}
-
 namespace gpu {
 
 struct SyncToken;
@@ -70,10 +66,8 @@ class ContextSupport {
   virtual void SetErrorMessageCallback(
       const base::Callback<void(const char*, int32_t)>& callback) = 0;
 
-  // Add |latency_info| to be reported and augumented with GPU latency
-  // components next time there is a GPU buffer swap.
-  virtual void AddLatencyInfo(
-      const std::vector<ui::LatencyInfo>& latency_info) = 0;
+  // Indicates whether a snapshot is associated with the next swap.
+  virtual void SetSnapshotRequested() = 0;
 
   // Allows locking a GPU discardable texture from any thread. Any successful
   // call to ThreadSafeShallowLockDiscardableTexture must be paired with a

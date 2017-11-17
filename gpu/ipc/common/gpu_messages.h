@@ -36,8 +36,6 @@
 #include "ui/gfx/ipc/gfx_param_traits.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/swap_result.h"
-#include "ui/latency/ipc/latency_info_param_traits.h"
-#include "ui/latency/latency_info.h"
 #include "url/ipc/url_param_traits.h"
 
 #if defined(OS_MACOSX)
@@ -88,8 +86,7 @@ IPC_STRUCT_BEGIN(GpuCommandBufferMsg_SwapBuffersCompleted_Params)
   IPC_STRUCT_MEMBER(float, scale_factor)
   IPC_STRUCT_MEMBER(gpu::TextureInUseResponses, in_use_responses)
 #endif
-  IPC_STRUCT_MEMBER(std::vector<ui::LatencyInfo>, latency_info)
-  IPC_STRUCT_MEMBER(gfx::SwapResult, result)
+  IPC_STRUCT_MEMBER(gfx::SwapResponse, response)
 IPC_STRUCT_END()
 
 //------------------------------------------------------------------------------
@@ -174,15 +171,14 @@ IPC_SYNC_MESSAGE_ROUTED3_1(GpuCommandBufferMsg_WaitForGetOffsetInRange,
 
 // Asynchronously synchronize the put and get offsets of both processes.
 // Caller passes its current put offset. Current state (including get offset)
-// is returned in shared memory. The input latency info for the current
-// frame is also sent to the GPU process.
+// is returned in shared memory.
 // TODO(sunnyps): This is an internal implementation detail of the gpu service
 // and is not sent by the client. Remove this once the non-scheduler code path
 // is removed.
 IPC_MESSAGE_ROUTED3(GpuCommandBufferMsg_AsyncFlush,
                     int32_t /* put_offset */,
                     uint32_t /* flush_id */,
-                    std::vector<ui::LatencyInfo> /* latency_info */)
+                    bool /* snapshot_requested */)
 
 // Sent by the GPU process to display messages in the console.
 IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_ConsoleMsg,
@@ -204,7 +200,7 @@ IPC_MESSAGE_ROUTED2(GpuCommandBufferMsg_Destroyed,
                     gpu::error::ContextLostReason, /* reason */
                     gpu::error::Error /* error */)
 
-// Tells the browser that SwapBuffers returned and passes latency info
+// Tells the browser that SwapBuffers returned.
 IPC_MESSAGE_ROUTED1(
     GpuCommandBufferMsg_SwapBuffersCompleted,
     GpuCommandBufferMsg_SwapBuffersCompleted_Params /* params */)

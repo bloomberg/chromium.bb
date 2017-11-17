@@ -1717,6 +1717,7 @@ test("content_unittests") {
     "//ui/gfx/ipc/skia",
     "//ui/gl",
     "//ui/gl:test_support",
+    "//ui/latency:test_support",
   ]
 
   data_deps = [

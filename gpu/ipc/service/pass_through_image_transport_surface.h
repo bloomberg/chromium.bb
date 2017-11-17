@@ -15,7 +15,6 @@
 #include "gpu/ipc/service/image_transport_surface.h"
 #include "gpu/ipc/service/image_transport_surface_delegate.h"
 #include "ui/gl/gl_surface.h"
-#include "ui/latency/latency_info.h"
 
 namespace gpu {
 
@@ -56,26 +55,25 @@ class PassThroughImageTransportSurface : public gl::GLSurfaceAdapter {
  private:
   ~PassThroughImageTransportSurface() override;
 
+  void SetSnapshotRequested();
+  bool GetAndResetSnapshotRequested();
+
   // If updated vsync parameters can be determined, send this information to
   // the browser.
   void SendVSyncUpdateIfAvailable();
 
   void UpdateSwapInterval();
 
-  // Add |latency_info| to be reported and augumented with GPU latency
-  // components next time there is a GPU buffer swap.
-  void AddLatencyInfo(const std::vector<ui::LatencyInfo>& latency_info);
-  std::unique_ptr<std::vector<ui::LatencyInfo>> StartSwapBuffers();
-  void FinishSwapBuffers(
-      std::unique_ptr<std::vector<ui::LatencyInfo>> latency_info,
-      gfx::SwapResult result);
-  void FinishSwapBuffersAsync(
-      std::unique_ptr<std::vector<ui::LatencyInfo>> latency_info,
-      GLSurface::SwapCompletionCallback callback,
-      gfx::SwapResult result);
+  void StartSwapBuffers(gfx::SwapResponse* response);
+  void FinishSwapBuffers(bool snapshot_requested, gfx::SwapResponse response);
+  void FinishSwapBuffersAsync(GLSurface::SwapCompletionCallback callback,
+                              bool snapshot_requested,
+                              gfx::SwapResponse response,
+                              gfx::SwapResult result);
 
   base::WeakPtr<ImageTransportSurfaceDelegate> delegate_;
-  std::vector<ui::LatencyInfo> latency_info_;
+  uint64_t swap_id_ = 0;
+  bool snapshot_requested_ = false;
   MultiWindowSwapInterval multi_window_swap_interval_ =
       kMultiWindowSwapIntervalDefault;
   int swap_generation_ = 0;

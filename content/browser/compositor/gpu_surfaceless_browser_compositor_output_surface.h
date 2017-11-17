@@ -51,8 +51,7 @@ class GpuSurfacelessBrowserCompositorOutputSurface
 
   // BrowserCompositorOutputSurface implementation.
   void OnGpuSwapBuffersCompleted(
-      const std::vector<ui::LatencyInfo>& latency_info,
-      gfx::SwapResult result,
+      const gfx::SwapResponse& response,
       const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac) override;
 
  private:
