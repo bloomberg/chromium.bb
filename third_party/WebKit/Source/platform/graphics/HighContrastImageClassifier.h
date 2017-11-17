@@ -29,6 +29,11 @@ class PLATFORM_EXPORT HighContrastImageClassifier {
 
   void SetRandomGeneratorForTesting() { use_testing_random_generator_ = true; }
 
+  HighContrastClassification ClassifyImageUsingDecisionTreeForTesting(
+      const std::vector<float>& features) {
+    return ClassifyImageUsingDecisionTree(features);
+  }
+
  private:
   enum class ColorMode { kColor = 0, kGrayscale = 1 };
 
@@ -75,6 +80,12 @@ class PLATFORM_EXPORT HighContrastImageClassifier {
 
   // Returns a random number in range [min, max).
   int GetRandomInt(const int min, const int max);
+
+  // Decides if the filter should be applied to the image or not, only using the
+  // decision tree. Returns 'kNotClassified' if decision tree cannot give a
+  // trustable answer.
+  HighContrastClassification ClassifyImageUsingDecisionTree(
+      const std::vector<float>&);
 
   bool use_testing_random_generator_;
   int testing_random_generator_seed_;
