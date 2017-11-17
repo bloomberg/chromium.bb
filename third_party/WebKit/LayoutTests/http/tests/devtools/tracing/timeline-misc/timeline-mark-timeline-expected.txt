@@ -1,4 +1,3 @@
-CONSOLE WARNING: line 9: 'console.markTimeline' is deprecated. Please use 'console.timeStamp' instead.
 Tests the Timeline API mark feature
 
 TimeStamp Properties:

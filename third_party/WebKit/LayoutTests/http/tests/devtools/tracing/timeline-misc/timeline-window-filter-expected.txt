@@ -1,5 +1,4 @@
 Tests the Timeline window filter.
-
 It applies different ranges to the OverviewGrid and expects that current view reflects the change.
 
 OverviewPane:

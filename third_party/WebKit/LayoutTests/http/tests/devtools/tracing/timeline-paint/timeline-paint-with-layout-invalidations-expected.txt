@@ -1,12 +1,10 @@
 Tests the Timeline API instrumentation of paint events with layout invalidations.
 
-PASS
-
 
 Running: testLocalFrame
 paint invalidations[
     {
-        cause : {reason: Inline CSS style declaration was mutated, stackTrace: .../devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations.html:9}
+        cause : {reason: Inline CSS style declaration was mutated, stackTrace: test://evaluations/0/timeline-paint-with-layout-invalidations.js:17}
         changedAttribute : undefined
         changedClass : undefined
         changedId : undefined
@@ -21,7 +19,7 @@ paint invalidations[
 Running: testSubframe
 second paint invalidations[
     {
-        cause : {reason: Inline CSS style declaration was mutated, stackTrace: .../devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations.html:17}
+        cause : {reason: Inline CSS style declaration was mutated, stackTrace: test://evaluations/0/timeline-paint-with-layout-invalidations.js:25}
         changedAttribute : undefined
         changedClass : undefined
         changedId : undefined
@@ -32,7 +30,7 @@ second paint invalidations[
         type : "StyleRecalcInvalidationTracking"
     }
     {
-        cause : {reason: Style changed, stackTrace: .../devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations.html:18}
+        cause : {reason: Style changed, stackTrace: test://evaluations/0/timeline-paint-with-layout-invalidations.js:26}
         changedAttribute : undefined
         changedClass : undefined
         changedId : undefined
@@ -43,7 +41,7 @@ second paint invalidations[
         type : "LayoutInvalidationTracking"
     }
     {
-        cause : {reason: Unknown, stackTrace: .../devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations.html:18}
+        cause : {reason: Unknown, stackTrace: test://evaluations/0/timeline-paint-with-layout-invalidations.js:26}
         changedAttribute : undefined
         changedClass : undefined
         changedId : undefined
