@@ -40,7 +40,7 @@ void MashTestSuite::Initialize() {
   // Load ash mus strings and resources; not 'common' (Chrome) resources.
   base::FilePath resources;
   PathService::Get(base::DIR_MODULE, &resources);
-  resources = resources.Append(FILE_PATH_LITERAL("ash_mus_resources.pak"));
+  resources = resources.Append(FILE_PATH_LITERAL("ash_service_resources.pak"));
   ui::ResourceBundle::InitSharedInstanceWithPakPath(resources);
 
   ash::AshTestHelper::config_ = ash::Config::MASH;

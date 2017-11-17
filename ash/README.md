@@ -26,9 +26,9 @@ Mustash
 ----------
 Ash is transitioning to use the mus window server and gpu process, found in
 //services/ui. Ash continues to use aura, but aura is backed by mus. Code to
-support mus is found in //ash/mus. There should be relatively few differences
-between the pure aura and the aura-mus versions of ash. Ash can by run in mus
-mode by passing the --mus command line flag.
+support mus is found in the ash directory. There should be relatively few
+differences between the pure aura and the aura-mus versions of ash. Ash can by
+run in mus mode by passing the --mus command line flag.
 
 Ash is also transitioning to run as a mojo service in its own process. This
 means that code in chrome cannot call into ash directly, but must use the mojo

@@ -28,7 +28,7 @@ source_set("lib") {
   ]
 
   if (is_chromeos) {
-    data_deps += [ "//ash/mus" ]
+    data_deps += [ "//ash:ash_service" ]
   }
 }
 

@@ -444,7 +444,7 @@ service_manifest("chrome_content_packaged_services_manifest_overlay") {
   if (is_chromeos) {
     packaged_services += [
       "//ash/autoclick/mus:manifest",
-      "//ash/mus:manifest",
+      "//ash:manifest",
       "//ash/touch_hud/mus:manifest",
       "//components/font_service:manifest",
     ]
