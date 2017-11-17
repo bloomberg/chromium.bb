@@ -37,16 +37,18 @@ for _path in _extra_import_paths:
     if os.path.isdir(_component):
       _third_party_dirs.append(_component)
 
-# Some chromite scripts make use of the chromite virtualenv located at
-# $CHROMITE_DIR/.venv. If we are in such a virtualenv, we want it to take
-# precedence over third_party.
-# Therefore, we leave sys.path unaltered up to the final element from the
-# virtualenv, and only insert third_party items after that.
 _insert_at = 0
-for _i, _path in reversed(list(enumerate(sys.path))):
-  if '/.cache/cros_venv/' in _path:
-    _insert_at = _i + 1
-    break
+if hasattr(sys, 'real_prefix'):
+  # sys.real_prefix should only exist in virtualenv (https://stackoverflow.com/
+  # questions/1871549/python-determine-if-running-inside-virtualenv#1883251)
+  # When it's in virtualenv, make sure the packages installed by the virtualenv
+  # have precedence over the third_party libraries.
+  virtual_env_path = sys.prefix
+  for _i, _path in reversed(list(enumerate(sys.path))):
+    if virtual_env_path in _path:
+      _insert_at = _i + 1
+      break
+
 sys.path[_insert_at:_insert_at] = _third_party_dirs
 
 # Fix the .__path__ attributes of these submodules to correspond with sys.path.
