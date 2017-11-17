@@ -7,6 +7,8 @@
 
 #include "remoting/protocol/webrtc_frame_scheduler.h"
 
+#include <memory>
+
 #include "base/containers/queue.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
@@ -17,6 +19,8 @@
 
 namespace remoting {
 namespace protocol {
+
+class BandwidthEstimator;
 
 // WebrtcFrameSchedulerSimple is a simple implementation of WebrtcFrameScheduler
 // that always keeps only one frame in the pipeline. It schedules each frame
@@ -90,6 +94,9 @@ class WebrtcFrameSchedulerSimple : public VideoChannelStateObserver,
   RunningSamples updated_region_area_;
 
   base::OneShotTimer capture_timer_;
+
+  // Estimates the bandwidth.
+  const std::unique_ptr<BandwidthEstimator> bandwidth_estimator_;
 
   base::ThreadChecker thread_checker_;
   base::WeakPtrFactory<WebrtcFrameSchedulerSimple> weak_factory_;
