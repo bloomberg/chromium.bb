@@ -615,11 +615,11 @@ bool ZygoteMain(
   const int sandbox_flags = linux_sandbox->GetStatus();
 
   const bool setuid_sandbox_engaged =
-      sandbox_flags & service_manager::Sandbox::kSUID;
+      sandbox_flags & service_manager::SandboxLinux::kSUID;
   CHECK_EQ(using_setuid_sandbox, setuid_sandbox_engaged);
 
   const bool namespace_sandbox_engaged =
-      sandbox_flags & service_manager::Sandbox::kUserNS;
+      sandbox_flags & service_manager::SandboxLinux::kUserNS;
   CHECK_EQ(using_namespace_sandbox, namespace_sandbox_engaged);
 
   Zygote zygote(sandbox_flags, std::move(fork_delegates), extra_children,

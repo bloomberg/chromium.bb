@@ -36,35 +36,6 @@ namespace service_manager {
 class SERVICE_MANAGER_SANDBOX_EXPORT Sandbox {
  public:
 #if defined(OS_LINUX)
-  // These form a bitmask which describes the conditions of the Linux sandbox.
-  // Note: this doesn't strictly give you the current status, it states
-  // what will be enabled when the relevant processes are initialized.
-  enum Status {
-    // SUID sandbox active.
-    kSUID = 1 << 0,
-
-    // Sandbox is using a new PID namespace.
-    kPIDNS = 1 << 1,
-
-    // Sandbox is using a new network namespace.
-    kNetNS = 1 << 2,
-
-    // seccomp-bpf sandbox active.
-    kSeccompBPF = 1 << 3,
-
-    // The Yama LSM module is present and enforcing.
-    kYama = 1 << 4,
-
-    // seccomp-bpf sandbox is active and the kernel supports TSYNC.
-    kSeccompTSYNC = 1 << 5,
-
-    // User namespace sandbox active.
-    kUserNS = 1 << 6,
-
-    // A flag that denotes an invalid sandbox status.
-    kInvalid = 1 << 31,
-  };
-
   static bool Initialize(SandboxType sandbox_type,
                          SandboxLinux::PreSandboxHook hook,
                          const SandboxLinux::Options& options);

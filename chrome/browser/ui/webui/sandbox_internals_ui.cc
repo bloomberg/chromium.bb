@@ -28,23 +28,23 @@ static void SetSandboxStatusData(content::WebUIDataSource* source) {
   const int status =
       content::ZygoteHost::GetInstance()->GetRendererSandboxStatus();
 
-  source->AddBoolean("suid", status & service_manager::Sandbox::kSUID);
-  source->AddBoolean("userNs", status & service_manager::Sandbox::kUserNS);
-  source->AddBoolean("pidNs", status & service_manager::Sandbox::kPIDNS);
-  source->AddBoolean("netNs", status & service_manager::Sandbox::kNetNS);
+  source->AddBoolean("suid", status & service_manager::SandboxLinux::kSUID);
+  source->AddBoolean("userNs", status & service_manager::SandboxLinux::kUserNS);
+  source->AddBoolean("pidNs", status & service_manager::SandboxLinux::kPIDNS);
+  source->AddBoolean("netNs", status & service_manager::SandboxLinux::kNetNS);
   source->AddBoolean("seccompBpf",
-                     status & service_manager::Sandbox::kSeccompBPF);
+                     status & service_manager::SandboxLinux::kSeccompBPF);
   source->AddBoolean("seccompTsync",
-                     status & service_manager::Sandbox::kSeccompTSYNC);
-  source->AddBoolean("yama", status & service_manager::Sandbox::kYama);
+                     status & service_manager::SandboxLinux::kSeccompTSYNC);
+  source->AddBoolean("yama", status & service_manager::SandboxLinux::kYama);
 
   // Require either the setuid or namespace sandbox for our first-layer sandbox.
-  bool good_layer1 = (status & service_manager::Sandbox::kSUID ||
-                      status & service_manager::Sandbox::kUserNS) &&
-                     status & service_manager::Sandbox::kPIDNS &&
-                     status & service_manager::Sandbox::kNetNS;
+  bool good_layer1 = (status & service_manager::SandboxLinux::kSUID ||
+                      status & service_manager::SandboxLinux::kUserNS) &&
+                     status & service_manager::SandboxLinux::kPIDNS &&
+                     status & service_manager::SandboxLinux::kNetNS;
   // A second-layer sandbox is also required to be adequately sandboxed.
-  bool good_layer2 = status & service_manager::Sandbox::kSeccompBPF;
+  bool good_layer2 = status & service_manager::SandboxLinux::kSeccompBPF;
   source->AddBoolean("sandboxGood", good_layer1 && good_layer2);
 }
 #endif
