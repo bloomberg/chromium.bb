@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Upload ASCII-named file in UTF-8 form</title>
+<link rel="help"
+      href="https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#multipart-form-data">
+<link rel="author" title="Benjamin C. Wiley Sittler"
+      href="mailto:bsittler@chromium.org">
+<script src="../../../../resources/testharness.js"></script>
+<script src="../../../../resources/testharnessreport.js"></script>
+<script src="resources/send-dragged-file-form-helper.js"></script>
+<script>
+'use strict';
+
+formPostFileUploadTest({
+  fileNameSource: 'ASCII',
+  fileBaseName: 'file-for-drag-to-send3.txt',
+  formEncoding: 'UTF-8',
+  expectedEncodedBaseName: 'file-for-drag-to-send3.txt',
+});
+
+</script>
