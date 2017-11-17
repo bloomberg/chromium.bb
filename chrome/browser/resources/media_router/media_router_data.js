@@ -250,6 +250,8 @@ cr.define('media_router', function() {
    * @param {number} duration The route's duration in seconds.
    * @param {number} currentTime The route's current position in seconds.
    *     Must not be greater than |duration|.
+   * @param {!{mediaRemotingEnabled: boolean}=} mirroringExtraData Only set for
+   *     mirroring routes.
    * @param {!{localPresent: boolean}=} hangoutsExtraData Only set for Hangouts
    *     routes.
    * @constructor
@@ -260,7 +262,7 @@ cr.define('media_router', function() {
       canSetVolume = false, canSeek = false,
       playState = media_router.PlayState.PLAYING, isPaused = false,
       isMuted = false, volume = 0, duration = 0, currentTime = 0,
-      hangoutsExtraData = undefined) {
+      hangoutsExtraData = undefined, mirroringExtraData = undefined) {
 
     /** @type {string} */
     this.title = title;
@@ -297,6 +299,9 @@ cr.define('media_router', function() {
 
     /** @type {!{localPresent: boolean}|undefined} */
     this.hangoutsExtraData = hangoutsExtraData;
+
+    /** @type {!{mediaRemotingEnabled: boolean}|undefined} */
+    this.mirroringExtraData = mirroringExtraData;
   };
 
   /**

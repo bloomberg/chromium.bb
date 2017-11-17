@@ -87,6 +87,10 @@
   padding: 0.3em 0;
 }
 
+paper-checkbox {
+  --paper-checkbox-checked-color: #1976D2;
+}
+
 #hangouts-local-present-controls {
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
@@ -99,7 +103,6 @@
 }
 
 #hangouts-local-present-checkbox {
-  --paper-checkbox-checked-color: #1976D2;
   --paper-checkbox-vertical-align: top;
 };
 
@@ -108,4 +111,18 @@
   font-size: 0.8em;
   margin-top: 2px;
   width: 249px;
+}
+
+#always-use-mirroring-checkbox {
+  --paper-checkbox-vertical-align: middle;
+  --paper-checkbox-label-spacing: 10%;
+  padding: 0.3em 0 0.3em 0;
+  width: 100%;
+}
+
+#media-remoting-enabled-controls {
+  display: inline-block;
+  font-size: 0.8em;
+  margin: 2px 8px;
+  width: 100%;
 }

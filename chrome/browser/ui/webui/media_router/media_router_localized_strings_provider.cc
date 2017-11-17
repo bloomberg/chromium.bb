@@ -59,6 +59,9 @@ void AddRouteDetailsStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString(
       "hangoutsLocalPresentSubtitle",
       IDS_MEDIA_ROUTER_ROUTE_DETAILS_HANGOUTS_LOCAL_PRESENT_SUBTITLE);
+  html_source->AddLocalizedString(
+      "alwaysUseMirroringTitle",
+      IDS_MEDIA_ROUTER_ROUTE_DETAILS_ALWAYS_USE_MIRRORING_TITLE);
 }
 
 void AddIssuesStrings(content::WebUIDataSource* html_source) {
