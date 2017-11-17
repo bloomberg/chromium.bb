@@ -361,7 +361,8 @@ TEST_F(RenderFrameImplTest, ZoomLimit) {
   GetMainRenderFrame()->SetHostZoomLevel(common_params.url, kMinZoomLevel);
   GetMainRenderFrame()->NavigateInternal(
       common_params, StartNavigationParams(), RequestNavigationParams(),
-      std::unique_ptr<StreamOverrideParameters>(), URLLoaderFactoryBundle());
+      std::unique_ptr<StreamOverrideParameters>(), URLLoaderFactoryBundle(),
+      base::UnguessableToken::Create());
   base::RunLoop().RunUntilIdle();
   EXPECT_DOUBLE_EQ(kMinZoomLevel, view_->GetWebView()->ZoomLevel());
 
@@ -372,7 +373,8 @@ TEST_F(RenderFrameImplTest, ZoomLimit) {
   GetMainRenderFrame()->SetHostZoomLevel(common_params.url, kMaxZoomLevel);
   GetMainRenderFrame()->NavigateInternal(
       common_params, StartNavigationParams(), RequestNavigationParams(),
-      std::unique_ptr<StreamOverrideParameters>(), URLLoaderFactoryBundle());
+      std::unique_ptr<StreamOverrideParameters>(), URLLoaderFactoryBundle(),
+      base::UnguessableToken::Create());
   base::RunLoop().RunUntilIdle();
   EXPECT_DOUBLE_EQ(kMaxZoomLevel, view_->GetWebView()->ZoomLevel());
 }

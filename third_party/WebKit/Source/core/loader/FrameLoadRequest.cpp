@@ -23,7 +23,8 @@ FrameLoadRequest::FrameLoadRequest(Document* origin_document,
     : FrameLoadRequest(origin_document,
                        resource_request,
                        frame_name,
-                       kCheckContentSecurityPolicy) {}
+                       kCheckContentSecurityPolicy,
+                       base::UnguessableToken::Create()) {}
 
 FrameLoadRequest::FrameLoadRequest(Document* origin_document,
                                    const ResourceRequest& resource_request,
@@ -32,7 +33,8 @@ FrameLoadRequest::FrameLoadRequest(Document* origin_document,
                        resource_request,
                        AtomicString(),
                        substitute_data,
-                       kCheckContentSecurityPolicy) {}
+                       kCheckContentSecurityPolicy,
+                       base::UnguessableToken::Create()) {}
 
 FrameLoadRequest::FrameLoadRequest(
     Document* origin_document,
@@ -43,8 +45,22 @@ FrameLoadRequest::FrameLoadRequest(
     : FrameLoadRequest(origin_document,
                        resource_request,
                        frame_name,
+                       should_check_main_world_content_security_policy,
+                       base::UnguessableToken::Create()) {}
+
+FrameLoadRequest::FrameLoadRequest(
+    Document* origin_document,
+    const ResourceRequest& resource_request,
+    const AtomicString& frame_name,
+    ContentSecurityPolicyDisposition
+        should_check_main_world_content_security_policy,
+    const base::UnguessableToken& devtools_navigation_token)
+    : FrameLoadRequest(origin_document,
+                       resource_request,
+                       frame_name,
                        SubstituteData(),
-                       should_check_main_world_content_security_policy) {}
+                       should_check_main_world_content_security_policy,
+                       devtools_navigation_token) {}
 
 FrameLoadRequest::FrameLoadRequest(
     Document* origin_document,
@@ -52,7 +68,8 @@ FrameLoadRequest::FrameLoadRequest(
     const AtomicString& frame_name,
     const SubstituteData& substitute_data,
     ContentSecurityPolicyDisposition
-        should_check_main_world_content_security_policy)
+        should_check_main_world_content_security_policy,
+    const base::UnguessableToken& devtools_navigation_token)
     : origin_document_(origin_document),
       resource_request_(resource_request),
       frame_name_(frame_name),
@@ -62,7 +79,8 @@ FrameLoadRequest::FrameLoadRequest(
       should_send_referrer_(kMaybeSendReferrer),
       should_set_opener_(kMaybeSetOpener),
       should_check_main_world_content_security_policy_(
-          should_check_main_world_content_security_policy) {
+          should_check_main_world_content_security_policy),
+      devtools_navigation_token_(devtools_navigation_token) {
   // These flags are passed to a service worker which controls the page.
   resource_request_.SetFetchRequestMode(
       network::mojom::FetchRequestMode::kNavigate);

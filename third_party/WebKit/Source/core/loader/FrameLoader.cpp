@@ -1794,6 +1794,8 @@ DocumentLoader* FrameLoader::CreateDocumentLoader(
           : DefaultSubstituteDataForURL(request.Url()),
       frame_load_request.ClientRedirect());
 
+  loader->SetDevToolsNavigationToken(
+      frame_load_request.GetDevToolsNavigationToken());
   loader->SetLoadType(load_type);
   loader->SetNavigationType(navigation_type);
   // TODO(japhet): This is needed because the browser process DCHECKs if the
