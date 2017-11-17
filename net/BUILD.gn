@@ -1745,6 +1745,8 @@ component("net") {
 
     if (enable_reporting) {
       sources += [
+        "network_error_logging/network_error_logging_service.cc",
+        "network_error_logging/network_error_logging_service.h",
         "reporting/reporting_browsing_data_remover.cc",
         "reporting/reporting_browsing_data_remover.h",
         "reporting/reporting_cache.cc",
@@ -5234,6 +5236,7 @@ test("net_unittests") {
 
   if (enable_reporting) {
     sources += [
+      "network_error_logging/network_error_logging_service_unittest.cc",
       "reporting/reporting_browsing_data_remover_unittest.cc",
       "reporting/reporting_cache_unittest.cc",
       "reporting/reporting_delivery_agent_unittest.cc",

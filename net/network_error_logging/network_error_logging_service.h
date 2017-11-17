@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_NETWORK_ERROR_LOGGING_NETWORK_ERROR_LOGGING_SERVICE_H_
-#define COMPONENTS_NETWORK_ERROR_LOGGING_NETWORK_ERROR_LOGGING_SERVICE_H_
+#ifndef NET_NETWORK_ERROR_LOGGING_NETWORK_ERROR_LOGGING_SERVICE_H_
+#define NET_NETWORK_ERROR_LOGGING_NETWORK_ERROR_LOGGING_SERVICE_H_
 
 #include <map>
 #include <memory>
@@ -14,8 +14,8 @@
 #include "base/macros.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
-#include "components/network_error_logging/network_error_logging_export.h"
 #include "net/base/net_errors.h"
+#include "net/base/net_export.h"
 #include "net/url_request/network_error_logging_delegate.h"
 
 namespace base {
@@ -31,13 +31,13 @@ class Origin;
 }  // namespace url
 
 namespace features {
-extern const base::Feature NETWORK_ERROR_LOGGING_EXPORT kNetworkErrorLogging;
+extern const base::Feature NET_EXPORT kNetworkErrorLogging;
 }  // namespace features
 
-namespace network_error_logging {
+namespace net {
 
-class NETWORK_ERROR_LOGGING_EXPORT NetworkErrorLoggingService
-    : public net::NetworkErrorLoggingDelegate {
+class NET_EXPORT NetworkErrorLoggingService
+    : public NetworkErrorLoggingDelegate {
  public:
   static const char kReportType[];
 
@@ -57,11 +57,11 @@ class NETWORK_ERROR_LOGGING_EXPORT NetworkErrorLoggingService
   // base::FeatureList.
   static std::unique_ptr<NetworkErrorLoggingService> Create();
 
-  // net::NetworkErrorLoggingDelegate implementation:
+  // NetworkErrorLoggingDelegate implementation:
 
   ~NetworkErrorLoggingService() override;
 
-  void SetReportingService(net::ReportingService* reporting_service) override;
+  void SetReportingService(ReportingService* reporting_service) override;
 
   void OnHeader(const url::Origin& origin, const std::string& value) override;
 
@@ -116,7 +116,7 @@ class NETWORK_ERROR_LOGGING_EXPORT NetworkErrorLoggingService
   std::unique_ptr<base::TickClock> tick_clock_;
 
   // Unowned.
-  net::ReportingService* reporting_service_;
+  ReportingService* reporting_service_;
 
   PolicyMap policies_;
   WildcardPolicyMap wildcard_policies_;
@@ -124,6 +124,6 @@ class NETWORK_ERROR_LOGGING_EXPORT NetworkErrorLoggingService
   DISALLOW_COPY_AND_ASSIGN(NetworkErrorLoggingService);
 };
 
-}  // namespace network_error_logging
+}  // namespace net
 
-#endif  // COMPONENTS_NETWORK_ERROR_LOGGING_NETWORK_ERROR_LOGGING_SERVICE_H_
+#endif  // NET_NETWORK_ERROR_LOGGING_NETWORK_ERROR_LOGGING_SERVICE_H_
