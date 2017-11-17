@@ -270,6 +270,10 @@ const IDNTestCase idn_cases[] = {
     // l followed by U+0307
     {"xn--lace-qwc.com", L"l\x0307" L"ace.com", false},
 
+    // Do not allow a combining mark after dotless i/j.
+    {"xn--pxel-lza29y.com", L"p\x0131\x0300xel.com", false},
+    {"xn--ack-gpb42h.com", L"\x0237\x0301" L"ack.com", false},
+
     // Mixed script confusable
     // google with Armenian Small Letter Oh(U+0585)
     {"xn--gogle-lkg.com", L"g\x0585ogle.com", false},
