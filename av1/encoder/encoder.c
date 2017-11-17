@@ -6141,8 +6141,12 @@ static void compute_internal_stats(AV1_COMP *cpi, int frame_bytes) {
 #if 0
       {
         FILE *f = fopen("q_used.stt", "a");
+        double y2 = psnr.psnr[1];
+        double u2 = psnr.psnr[2];
+        double v2 = psnr.psnr[3];
+        double frame_psnr2 = psnr.psnr[0];
         fprintf(f, "%5d : Y%f7.3:U%f7.3:V%f7.3:F%f7.3:S%7.3f\n",
-                cpi->common.current_video_frame, y2, u2, v2,
+                cm->current_video_frame, y2, u2, v2,
                 frame_psnr2, frame_ssim2);
         fclose(f);
       }
