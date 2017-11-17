@@ -419,7 +419,6 @@ typedef struct FRAME_COUNTS {
 #endif  // CONFIG_LOOPFILTER_LEVEL
   unsigned int delta_lf[DELTA_LF_PROBS][2];
 #endif
-  unsigned int tx_size_implied[TX_SIZES][TX_SIZES];
 #if CONFIG_ENTROPY_STATS
   unsigned int inter_ext_tx[EXT_TX_SETS_INTER][EXT_TX_SIZES][TX_TYPES];
   unsigned int intra_ext_tx[EXT_TX_SETS_INTRA][EXT_TX_SIZES][INTRA_MODES]

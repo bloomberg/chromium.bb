@@ -4936,8 +4936,6 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
       } else {
         intra_tx_size = tx_size;
       }
-      ++td->counts->tx_size_implied[max_txsize_lookup[bsize]]
-                                   [txsize_sqr_up_map[tx_size]];
 
       for (j = 0; j < mi_height; j++)
         for (i = 0; i < mi_width; i++)
