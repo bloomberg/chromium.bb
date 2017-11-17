@@ -117,7 +117,6 @@ source_set("unit_tests") {
   deps = [
     ":passwords",
     "//base",
-    "//base/test:test_support",
     "//components/autofill/core/common",
     "//components/autofill/ios/browser",
     "//components/password_manager/core/browser",
@@ -131,6 +130,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/ssl",
     "//ios/chrome/browser/ui/commands",
+    "//ios/testing:ios_test_support",
     "//ios/testing:ocmock_support",
     "//ios/web",
     "//ios/web/public/test",
