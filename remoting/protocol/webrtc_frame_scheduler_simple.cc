@@ -8,6 +8,7 @@
 
 #include "remoting/base/constants.h"
 #include "remoting/protocol/frame_stats.h"
+#include "remoting/protocol/webrtc_bandwidth_estimator.h"
 #include "remoting/protocol/webrtc_dummy_video_encoder.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 
@@ -54,9 +55,11 @@ int64_t GetRegionArea(const webrtc::DesktopRegion& region) {
 
 }  // namespace
 
+// TODO(zijiehe): Make the bandwidth estimator configurable.
 WebrtcFrameSchedulerSimple::WebrtcFrameSchedulerSimple()
     : pacing_bucket_(LeakyBucket::kUnlimitedDepth, 0),
       updated_region_area_(kStatsWindow),
+      bandwidth_estimator_(new WebrtcBandwidthEstimator()),
       weak_factory_(this) {}
 
 WebrtcFrameSchedulerSimple::~WebrtcFrameSchedulerSimple() {
@@ -74,14 +77,18 @@ void WebrtcFrameSchedulerSimple::OnChannelParameters(int packet_loss,
                                                      base::TimeDelta rtt) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  bandwidth_estimator_->UpdateRtt(rtt);
   rtt_estimate_ = rtt;
 }
 
 void WebrtcFrameSchedulerSimple::OnTargetBitrateChanged(int bandwidth_kbps) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  base::TimeTicks now = Now();
-  processing_time_estimator_.SetBandwidthKbps(bandwidth_kbps);
-  pacing_bucket_.UpdateRate(bandwidth_kbps * 1000 / 8, now);
+  bandwidth_estimator_->OnReceivedAck();
+  bandwidth_estimator_->OnBitrateEstimation(bandwidth_kbps);
+  processing_time_estimator_.SetBandwidthKbps(
+      bandwidth_estimator_->GetBitrateKbps());
+  pacing_bucket_.UpdateRate(
+      bandwidth_estimator_->GetBitrateKbps() * 1000 / 8, Now());
   ScheduleNextFrame();
 }
 
@@ -212,8 +219,11 @@ void WebrtcFrameSchedulerSimple::OnFrameEncoded(
 
   if (frame_stats) {
     frame_stats->rtt_estimate = rtt_estimate_;
-    frame_stats->bandwidth_estimate_kbps = pacing_bucket_.rate() * 8 / 1000;
+    frame_stats->bandwidth_estimate_kbps =
+        bandwidth_estimator_->GetBitrateKbps();
   }
+
+  bandwidth_estimator_->OnSendingFrame(*encoded_frame);
 }
 
 void WebrtcFrameSchedulerSimple::SetCurrentTimeForTest(base::TimeTicks now) {

@@ -17,6 +17,7 @@ static_library("protocol") {
     "auth_util.h",
     "authenticator.cc",
     "authenticator.h",
+    "bandwidth_estimator.h",
     "capability_names.h",
     "channel_authenticator.h",
     "channel_dispatcher_base.cc",
@@ -176,6 +177,8 @@ static_library("protocol") {
     "video_renderer.h",
     "video_stats_stub.h",
     "video_stub.h",
+    "webrtc_bandwidth_estimator.cc",
+    "webrtc_bandwidth_estimator.h",
   ]
 
   configs += [
