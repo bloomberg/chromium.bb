@@ -130,6 +130,7 @@ class MODULES_EXPORT PaymentRequest final
   String id_;
   String shipping_option_;
   String shipping_type_;
+  HashSet<String> method_names_;
   Member<ScriptPromiseResolver> show_resolver_;
   Member<ScriptPromiseResolver> complete_resolver_;
   Member<ScriptPromiseResolver> abort_resolver_;

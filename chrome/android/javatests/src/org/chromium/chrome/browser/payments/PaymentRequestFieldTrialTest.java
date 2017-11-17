@@ -60,7 +60,7 @@ public class PaymentRequestFieldTrialTest implements MainActivityStartCallback {
             throws InterruptedException, ExecutionException, TimeoutException {
         mPaymentRequestTestRule.openPageAndClickBuyAndWait(mPaymentRequestTestRule.getShowFailed());
         mPaymentRequestTestRule.expectResultContains(
-                new String[] {"The payment method is not supported"});
+                new String[] {"The payment method", "not supported"});
     }
 
     /**

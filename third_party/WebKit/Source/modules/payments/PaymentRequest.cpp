@@ -48,6 +48,7 @@
 #include "platform/runtime_enabled_features.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/HashSet.h"
+#include "platform/wtf/text/StringBuilder.h"
 #include "public/platform/Platform.h"
 #include "public/platform/TaskType.h"
 #include "public/platform/WebTraceLocation.h"
@@ -662,6 +663,7 @@ void ValidateAndConvertPaymentDetailsUpdate(const PaymentDetailsUpdate& input,
 void ValidateAndConvertPaymentMethodData(
     const HeapVector<PaymentMethodData>& input,
     Vector<payments::mojom::blink::PaymentMethodDataPtr>& output,
+    HashSet<String>& method_names,
     ExecutionContext& execution_context,
     ExceptionState& exception_state) {
   if (input.IsEmpty()) {
@@ -715,6 +717,7 @@ void ValidateAndConvertPaymentMethodData(
             "Invalid payment method identifier format");
         return;
       }
+      method_names.insert(identifier);
     }
 
     CountPaymentRequestNetworkNameInSupportedMethods(supported_methods,
@@ -1016,7 +1019,8 @@ PaymentRequest::PaymentRequest(ExecutionContext* execution_context,
 
   Vector<payments::mojom::blink::PaymentMethodDataPtr> validated_method_data;
   ValidateAndConvertPaymentMethodData(method_data, validated_method_data,
-                                      *GetExecutionContext(), exception_state);
+                                      method_names_, *GetExecutionContext(),
+                                      exception_state);
   if (exception_state.HadException())
     return;
 
@@ -1156,18 +1160,39 @@ void PaymentRequest::OnError(PaymentErrorReason error) {
   String message;
 
   switch (error) {
-    case PaymentErrorReason::USER_CANCEL:
+    case PaymentErrorReason::USER_CANCEL: {
       ec = kAbortError;
       message = "Request cancelled";
       break;
-    case PaymentErrorReason::NOT_SUPPORTED:
+    }
+
+    case PaymentErrorReason::NOT_SUPPORTED: {
       ec = kNotSupportedError;
-      message = "The payment method is not supported";
+      DCHECK_LE(1U, method_names_.size());
+      auto it = method_names_.begin();
+      if (method_names_.size() == 1U) {
+        message = "The payment method \"" + *it + "\" is not supported";
+      } else {
+        StringBuilder sb;
+        sb.Append("The payment methods \"");
+        sb.Append(*it);
+        sb.Append("\"");
+        while (++it != method_names_.end()) {
+          sb.Append(", \"");
+          sb.Append(*it);
+          sb.Append("\"");
+        }
+        sb.Append(" are not supported");
+        message = sb.ToString();
+      }
       break;
-    case PaymentErrorReason::UNKNOWN:
+    }
+
+    case PaymentErrorReason::UNKNOWN: {
       ec = kUnknownError;
       message = "Request failed";
       break;
+    }
   }
 
   DCHECK(!message.IsEmpty());

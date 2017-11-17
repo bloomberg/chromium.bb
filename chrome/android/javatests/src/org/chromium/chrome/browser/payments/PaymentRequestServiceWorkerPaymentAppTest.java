@@ -70,7 +70,7 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
 
         mPaymentRequestTestRule.openPageAndClickBuyAndWait(mPaymentRequestTestRule.getShowFailed());
         mPaymentRequestTestRule.expectResultContains(
-                new String[] {"show() rejected", "The payment method is not supported"});
+                new String[] {"show() rejected", "The payment method", "not supported"});
     }
 
     @Test

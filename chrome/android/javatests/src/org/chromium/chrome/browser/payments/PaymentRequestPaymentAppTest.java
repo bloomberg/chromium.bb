@@ -49,7 +49,7 @@ public class PaymentRequestPaymentAppTest {
             throws InterruptedException, ExecutionException, TimeoutException {
         mPaymentRequestTestRule.openPageAndClickBuyAndWait(mPaymentRequestTestRule.getShowFailed());
         mPaymentRequestTestRule.expectResultContains(
-                new String[] {"show() rejected", "The payment method is not supported"});
+                new String[] {"show() rejected", "The payment method", "not supported"});
     }
 
     /**
@@ -64,7 +64,7 @@ public class PaymentRequestPaymentAppTest {
         mPaymentRequestTestRule.installPaymentApp(NO_INSTRUMENTS, IMMEDIATE_RESPONSE);
         mPaymentRequestTestRule.openPageAndClickBuyAndWait(mPaymentRequestTestRule.getShowFailed());
         mPaymentRequestTestRule.expectResultContains(
-                new String[] {"show() rejected", "The payment method is not supported"});
+                new String[] {"show() rejected", "The payment method", "not supported"});
     }
 
     /**
@@ -79,7 +79,7 @@ public class PaymentRequestPaymentAppTest {
         mPaymentRequestTestRule.installPaymentApp(NO_INSTRUMENTS, DELAYED_RESPONSE);
         mPaymentRequestTestRule.openPageAndClickBuyAndWait(mPaymentRequestTestRule.getShowFailed());
         mPaymentRequestTestRule.expectResultContains(
-                new String[] {"show() rejected", "The payment method is not supported"});
+                new String[] {"show() rejected", "The payment method", "not supported"});
     }
 
     /**
@@ -122,7 +122,7 @@ public class PaymentRequestPaymentAppTest {
         mPaymentRequestTestRule.openPageAndClickBuyAndWait(mPaymentRequestTestRule.getShowFailed());
         ThreadUtils.runOnUiThreadBlocking(() -> app.respond());
         mPaymentRequestTestRule.expectResultContains(
-                new String[] {"show() rejected", "The payment method is not supported"});
+                new String[] {"show() rejected", "The payment method", "not supported"});
     }
 
     /**
