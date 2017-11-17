@@ -83,7 +83,7 @@ void RecordLibraryPreloaderRendereHistogram() {
   }
 }
 
-} // namespace
+}  // namespace
 
 static void RegisterChromiumAndroidLinkerRendererHistogram(
     JNIEnv* env,
@@ -192,6 +192,11 @@ static jint PercentageOfResidentNativeLibraryCode(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz) {
   return NativeLibraryPrefetcher::PercentageOfResidentNativeLibraryCode();
+}
+
+static void PeriodicallyCollectResidency(JNIEnv* env,
+                                         const JavaParamRef<jclass>& clazz) {
+  return NativeLibraryPrefetcher::PeriodicallyCollectResidency();
 }
 
 void SetVersionNumber(const char* version_number) {
