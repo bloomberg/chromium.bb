@@ -255,9 +255,10 @@ int GpuMain(const MainFunctionParams& parameters) {
 #elif defined(OS_LINUX)
 #error "Unsupported Linux platform."
 #elif defined(OS_MACOSX)
-    // This is necessary for CoreAnimation layers hosted in the GPU process to
-    // be drawn. See http://crbug.com/312462.
-    std::unique_ptr<base::MessagePump> pump(new base::MessagePumpCFRunLoop());
+    // Cross-process CoreAnimation requires a CFRunLoop to function at all, and
+    // requires a NSRunLoop to not starve under heavy load. See:
+    // https://crbug.com/312462#c51 and https://crbug.com/783298
+    std::unique_ptr<base::MessagePump> pump(new base::MessagePumpNSRunLoop());
     main_message_loop.reset(new base::MessageLoop(std::move(pump)));
 #else
     main_message_loop.reset(
