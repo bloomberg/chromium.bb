@@ -2906,6 +2906,7 @@ static int rd_pick_palette_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
 #endif  // CONFIG_FILTER_INTRA
 
   if (colors > 1 && colors <= 64) {
+    aom_clear_system_state();
     int r, c, i, k, palette_mode_cost;
     const int max_itr = 50;
     float *const data = x->palette_buffer->kmeans_data_buf;
@@ -4929,6 +4930,7 @@ static void rd_pick_palette_intra_sbuv(const AV1_COMP *const cpi, MACROBLOCK *x,
 
   colors = colors_u > colors_v ? colors_u : colors_v;
   if (colors > 1 && colors <= 64) {
+    aom_clear_system_state();
     int r, c, n, i, j;
     const int max_itr = 50;
     float lb_u, ub_u, val_u;
