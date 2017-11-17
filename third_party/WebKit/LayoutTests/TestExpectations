@@ -3609,7 +3609,6 @@ crbug.com/755405 [ Android ] fast/css/line-thickness-underline-strikethrough-ove
 crbug.com/755405 [ Android ] fast/css/text-overflow-ellipsis-strict.html [ Failure ]
 crbug.com/755405 [ Android ] fast/css/text-overflow-ellipsis.html [ Failure ]
 crbug.com/755405 [ Android ] fast/css/getComputedStyle/getComputedStyle-margin-percentage.html [ Failure ]
-crbug.com/755405 [ Android ] fast/css3-text/css3-text-decoration/text-decoration-skip-ink.html [ Failure ]
 crbug.com/755405 [ Android ] fast/css3-text/css3-text-decoration/text-decoration-style-inherit-links.html [ Failure ]
 crbug.com/755405 [ Android ] fast/css3-text/css3-text-decoration/text-decoration-style-inherit-not-propagated-by-out-of-flow.html [ Failure ]
 crbug.com/755405 [ Android ] fast/css3-text/css3-text-decoration/text-decoration-style-inherit-simple-underlines.html [ Failure ]
