@@ -6,6 +6,10 @@
 
 #include "base/task_scheduler/post_task.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiling_host/profiling_process_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/process_type.h"
@@ -76,6 +80,23 @@ void BackgroundProfilingTriggers::StartTimer() {
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
+bool BackgroundProfilingTriggers::IsAllowedToUpload() const {
+  if (!ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled()) {
+    return false;
+  }
+
+  // Do not upload if there is an incognito session running in any profile.
+  std::vector<Profile*> profiles =
+      g_browser_process->profile_manager()->GetLoadedProfiles();
+  for (Profile* profile : profiles) {
+    if (profile->HasOffTheRecordProfile()) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 bool BackgroundProfilingTriggers::IsOverTriggerThreshold(
     int content_process_type,
     uint32_t private_footprint_kb) {
@@ -100,6 +121,10 @@ bool BackgroundProfilingTriggers::IsOverTriggerThreshold(
 
 void BackgroundProfilingTriggers::PerformMemoryUsageChecks() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  if (!IsAllowedToUpload()) {
+    return;
+  }
 
   memory_instrumentation::MemoryInstrumentation::GetInstance()
       ->RequestGlobalDump(

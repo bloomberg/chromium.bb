@@ -19,6 +19,10 @@ class ProfilingProcessHost;
 // collection of memory dumps and upload the results to the slow-reports
 // service. BackgroundProfilingTriggers class sets a periodic timer and
 // interacts with ProfilingProcessHost to trigger and upload memory dumps.
+//
+// When started, memory information is collected every hour to check if any
+// process is over the trigger threshold. Once a report is uploaded, the
+// collection interval is changed to once every 12 hours.
 class BackgroundProfilingTriggers {
  public:
   explicit BackgroundProfilingTriggers(ProfilingProcessHost* host);
@@ -29,6 +33,13 @@ class BackgroundProfilingTriggers {
 
  private:
   friend class FakeBackgroundProfilingTriggers;
+  FRIEND_TEST_ALL_PREFIXES(BackgroundProfilingTriggersTest,
+                           IsAllowedToUpload_Metrics);
+  FRIEND_TEST_ALL_PREFIXES(BackgroundProfilingTriggersTest,
+                           IsAllowedToUpload_Incognito);
+
+  // Returns true if trace uploads are allowed.
+  bool IsAllowedToUpload() const;
 
   // Returns true if |private_footprint_kb| is large enough to trigger
   // a report for the given |content_process_type|.
