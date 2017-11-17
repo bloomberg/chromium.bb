@@ -1,5 +1,6 @@
-TestRunner.loadModule('quick_open').then(test);
-function test() {
+(async function() {
+  await TestRunner.loadModule('quick_open');
+
   TestRunner.addResult(
       'Test that FilteredListWidget.setProvider changes the provider.');
 
@@ -55,4 +56,4 @@ function test() {
       output.push(filteredListWidget._provider.itemKeyAt(item));
     TestRunner.addResult('Output:' + JSON.stringify(output));
   }
-}
+})();
