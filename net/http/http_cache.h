@@ -389,7 +389,9 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
 
   // Opens the disk cache entry associated with |key|, returning an ActiveEntry
   // in |*entry|. |trans| will be notified via its IO callback if this method
-  // returns ERR_IO_PENDING.
+  // returns ERR_IO_PENDING. This should not be called if there already is
+  // an active entry associated with |key|, e.g. you should call FindActiveEntry
+  // first.
   int OpenEntry(const std::string& key, ActiveEntry** entry,
                 Transaction* trans);
 

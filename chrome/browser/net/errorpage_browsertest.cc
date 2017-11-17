@@ -990,8 +990,9 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, Empty500) {
 IN_PROC_BROWSER_TEST_F(ErrorPageTest, StaleCacheStatus) {
   ASSERT_TRUE(embedded_test_server()->Start());
   // Load cache with entry with "nocache" set, to create stale
-  // cache.
-  GURL test_url(embedded_test_server()->GetURL("/nocache.html"));
+  // cache.  Currently it needs to at least have an etag for the cache to
+  // not give up on it entirely, however. See https://crbug.com/784520
+  GURL test_url(embedded_test_server()->GetURL("/nocache-with-etag.html"));
   NavigateToURLAndWaitForTitle(test_url, "Nocache Test Page", 1);
 
   // Reload same URL after forcing an error from the the network layer;
@@ -1272,7 +1273,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageNavigationCorrectionsFailTest,
   ASSERT_TRUE(embedded_test_server()->Start());
   // Load cache with entry with "nocache" set, to create stale
   // cache.
-  GURL test_url(embedded_test_server()->GetURL("/nocache.html"));
+  GURL test_url(embedded_test_server()->GetURL("/nocache-with-etag.html"));
   NavigateToURLAndWaitForTitle(test_url, "Nocache Test Page", 1);
 
   // Reload same URL after forcing an error from the the network layer;

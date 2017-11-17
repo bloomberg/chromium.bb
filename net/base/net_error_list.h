@@ -771,6 +771,11 @@ NET_ERROR(CACHE_LOCK_TIMEOUT, -409)
 // credentials aren't available.  There isn't a way to get them at that point.
 NET_ERROR(CACHE_AUTH_FAILURE_AFTER_READ, -410)
 
+// Internal not-quite error code for the HTTP cache. In-memory hints suggest
+// that the cache entry would not have been useable with the transaction's
+// current configuration (e.g. load flags, mode, etc.)
+NET_ERROR(CACHE_ENTRY_NOT_SUITABLE, -411)
+
 // The server's response was insecure (e.g. there was a cert error).
 NET_ERROR(INSECURE_RESPONSE, -501)
 

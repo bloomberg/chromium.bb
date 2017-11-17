@@ -199,7 +199,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewBrowserTest, ConfirmCacheInformationPlumbed) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // Load URL with "nocache" set, to create stale cache.
-  GURL test_url(embedded_test_server()->GetURL("/nocache.html"));
+  GURL test_url(embedded_test_server()->GetURL("/nocache-with-etag.html"));
   NavigateToURLAndWaitForTitle(test_url, "Nocache Test Page", 1);
 
   // Reload same URL after forcing an error from the the network layer;

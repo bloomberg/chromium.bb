@@ -177,6 +177,7 @@ HttpCache::Transaction::Transaction(RequestPriority priority, HttpCache* cache)
       shared_writing_error_(OK),
       cache_entry_status_(CacheEntryStatus::ENTRY_UNDEFINED),
       validation_cause_(VALIDATION_CAUSE_UNDEFINED),
+      cant_conditionalize_zero_freshness_from_memhint_(false),
       recorded_histograms_(false),
       moved_network_transaction_to_writers_(false),
       websocket_handshake_stream_base_create_helper_(NULL),
@@ -1100,6 +1101,21 @@ int HttpCache::Transaction::DoOpenEntry() {
   cache_pending_ = true;
   net_log_.BeginEvent(NetLogEventType::HTTP_CACHE_OPEN_ENTRY);
   first_cache_access_since_ = TimeTicks::Now();
+
+  // See if we already have something working with this cache key.
+  new_entry_ = cache_->FindActiveEntry(cache_key_);
+  if (new_entry_)
+    return OK;
+
+  // See if we could potentially quick-reject the entry based on hints the
+  // backend keeps in memory.
+  uint8_t in_memory_info =
+      cache_->GetCurrentBackend()->GetEntryInMemoryData(cache_key_);
+  if (MaybeRejectBasedOnEntryInMemoryData(in_memory_info)) {
+    cache_->GetCurrentBackend()->DoomEntry(cache_key_, base::Bind([](int) {}));
+    return net::ERR_CACHE_ENTRY_NOT_SUITABLE;
+  }
+
   return cache_->OpenEntry(cache_key_, &new_entry_, this);
 }
 
@@ -1119,6 +1135,17 @@ int HttpCache::Transaction::DoOpenEntryComplete(int result) {
   if (result == ERR_CACHE_RACE) {
     TransitionToState(STATE_HEADERS_PHASE_CANNOT_PROCEED);
     return OK;
+  }
+
+  if (result == ERR_CACHE_ENTRY_NOT_SUITABLE) {
+    // Documents the case this applies in
+    DCHECK_EQ(mode_, READ_WRITE);
+    // Record this as CantConditionalize, but otherwise proceed as we would
+    // below --- as OpenEntry has already dropped the old entry for us.
+    couldnt_conditionalize_request_ = true;
+    validation_cause_ = VALIDATION_CAUSE_ZERO_FRESHNESS;
+    cant_conditionalize_zero_freshness_from_memhint_ = true;
+    UpdateCacheEntryStatus(CacheEntryStatus::ENTRY_CANT_CONDITIONALIZE);
   }
 
   if (method_ == "PUT" || method_ == "DELETE" ||
@@ -2605,11 +2632,10 @@ bool HttpCache::Transaction::RequiresValidation() {
   return validation_required_by_headers;
 }
 
-bool HttpCache::Transaction::ConditionalizeRequest() {
+bool HttpCache::Transaction::IsResponseConditionalizable(
+    std::string* etag_value,
+    std::string* last_modified_value) const {
   DCHECK(response_.headers.get());
-
-  if (method_ == "PUT" || method_ == "DELETE")
-    return false;
 
   // This only makes sense for cached 200 or 206 responses.
   if (response_.headers->response_code() != 200 &&
@@ -2617,27 +2643,44 @@ bool HttpCache::Transaction::ConditionalizeRequest() {
     return false;
   }
 
+  // Just use the first available ETag and/or Last-Modified header value.
+  // TODO(darin): Or should we use the last?
+
+  if (response_.headers->GetHttpVersion() >= HttpVersion(1, 1))
+    response_.headers->EnumerateHeader(NULL, "etag", etag_value);
+
+  response_.headers->EnumerateHeader(NULL, "last-modified",
+                                     last_modified_value);
+
+  if (etag_value->empty() && last_modified_value->empty())
+    return false;
+
+  return true;
+}
+
+bool HttpCache::Transaction::ConditionalizeRequest() {
+  DCHECK(response_.headers.get());
+
+  if (method_ == "PUT" || method_ == "DELETE")
+    return false;
+
   if (fail_conditionalization_for_test_)
+    return false;
+
+  std::string etag_value;
+  std::string last_modified_value;
+  if (!IsResponseConditionalizable(&etag_value, &last_modified_value))
     return false;
 
   DCHECK(response_.headers->response_code() != 206 ||
          response_.headers->HasStrongValidators());
 
-  // Just use the first available ETag and/or Last-Modified header value.
-  // TODO(darin): Or should we use the last?
-
-  std::string etag_value;
-  if (response_.headers->GetHttpVersion() >= HttpVersion(1, 1))
-    response_.headers->EnumerateHeader(NULL, "etag", &etag_value);
-
-  std::string last_modified_value;
-  if (!vary_mismatch_) {
-    response_.headers->EnumerateHeader(NULL, "last-modified",
-                                       &last_modified_value);
+  if (vary_mismatch_) {
+    // Can't rely on last-modified if vary is different.
+    last_modified_value.clear();
+    if (etag_value.empty())
+      return false;
   }
-
-  if (etag_value.empty() && last_modified_value.empty())
-    return false;
 
   if (!partial_) {
     // Need to customize the request, so this forces us to allocate :(
@@ -2676,6 +2719,49 @@ bool HttpCache::Transaction::ConditionalizeRequest() {
   }
 
   return true;
+}
+
+bool HttpCache::Transaction::MaybeRejectBasedOnEntryInMemoryData(
+    uint8_t in_memory_info) {
+  // Not going to be clever with those...
+  if (partial_)
+    return false;
+
+  // Avoiding open based on in-memory hints requires us to be permitted to
+  // modify the cache, including deleting an old entry. Only the READ_WRITE
+  // and WRITE modes permit that... and WRITE never tries to open entries in the
+  // first place, so we shouldn't see it here.
+  DCHECK_NE(mode_, WRITE);
+  if (mode_ != READ_WRITE)
+    return false;
+
+  // If we are loading ignoring cache validity (aka back button), obviously
+  // can't reject things based on it.  Also if LOAD_ONLY_FROM_CACHE there is no
+  // hope of network offering anything better.
+  if (effective_load_flags_ & LOAD_SKIP_CACHE_VALIDATION ||
+      effective_load_flags_ & LOAD_ONLY_FROM_CACHE)
+    return false;
+
+  return (in_memory_info & HINT_UNUSABLE_PER_CACHING_HEADERS) ==
+         HINT_UNUSABLE_PER_CACHING_HEADERS;
+}
+
+bool HttpCache::Transaction::ComputeUnusablePerCachingHeaders() {
+  // unused_since_prefetch overrides some caching headers, so it may be useful
+  // regardless of what they say.
+  if (response_.unused_since_prefetch)
+    return false;
+
+  // Has an e-tag or last-modified: we can probably send a conditional request,
+  // so it's potentially useful.
+  std::string etag_ignored, last_modified_ignored;
+  if (IsResponseConditionalizable(&etag_ignored, &last_modified_ignored))
+    return false;
+
+  // If none of the above is true and the entry has zero freshness, then it
+  // won't be usable absent load flag override.
+  return response_.headers->GetFreshnessLifetimes(response_.response_time)
+      .freshness.is_zero();
 }
 
 // We just received some headers from the server. We may have asked for a range,
@@ -2895,6 +2981,13 @@ int HttpCache::Transaction::WriteResponseInfoToEntry(bool truncated) {
   data->Done();
 
   io_buf_len_ = data->pickle()->size();
+
+  // Summarize some info on cacheability in memory.
+  cache_->GetCurrentBackend()->SetEntryInMemoryData(
+      cache_key_, ComputeUnusablePerCachingHeaders()
+                      ? HINT_UNUSABLE_PER_CACHING_HEADERS
+                      : 0);
+
   return entry_->disk_entry->WriteData(kResponseInfoIndex, 0, data.get(),
                                        io_buf_len_, io_callback_, true);
 }
@@ -3238,6 +3331,11 @@ void HttpCache::Transaction::RecordHistograms() {
   if (cache_entry_status_ == CacheEntryStatus::ENTRY_CANT_CONDITIONALIZE) {
     UMA_HISTOGRAM_ENUMERATION("HttpCache.CantConditionalizeCause",
                               validation_cause_, VALIDATION_CAUSE_MAX);
+    if (validation_cause_ == VALIDATION_CAUSE_ZERO_FRESHNESS) {
+      UMA_HISTOGRAM_BOOLEAN(
+          "HttpCache.CantConditionalizeZeroFreshnessFromMemHint",
+          cant_conditionalize_zero_freshness_from_memhint_);
+    }
   }
 
   if (cache_entry_status_ == CacheEntryStatus::ENTRY_OTHER)
