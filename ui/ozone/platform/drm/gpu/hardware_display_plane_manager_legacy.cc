@@ -109,6 +109,14 @@ bool HardwareDisplayPlaneManagerLegacy::DisableOverlayPlanes(
   return true;
 }
 
+bool HardwareDisplayPlaneManagerLegacy::ValidatePrimarySize(
+    const OverlayPlane& primary,
+    const drmModeModeInfo& mode) {
+  DCHECK(primary.buffer.get());
+
+  return primary.buffer->GetSize() == gfx::Size(mode.hdisplay, mode.vdisplay);
+}
+
 bool HardwareDisplayPlaneManagerLegacy::SetPlaneData(
     HardwareDisplayPlaneList* plane_list,
     HardwareDisplayPlane* hw_plane,
