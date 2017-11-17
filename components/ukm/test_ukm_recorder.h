@@ -30,22 +30,55 @@ class TestUkmRecorder : public UkmRecorderImpl {
 
   size_t sources_count() const { return sources().size(); }
 
-  // Get all SourceIds with any data associated with them.
-  std::set<ukm::SourceId> GetSourceIds() const;
+  size_t entries_count() const { return entries().size(); }
 
+  // Get all recorded UkmSource data.
   const std::map<ukm::SourceId, std::unique_ptr<UkmSource>>& GetSources()
       const {
     return sources();
   }
+
+  // Get UkmSource data for a single SourceId.
+  const UkmSource* GetSourceForSourceId(ukm::SourceId source_id) const;
+
+  // Get all of the entries recorded for entry name.
+  std::vector<const mojom::UkmEntry*> GetEntriesByName(
+      base::StringPiece entry_name) const;
+
+  // Get the data for all entries with given entry name, merged to one entry
+  // for each source id. Intended for singular="true" metrics.
+  std::map<ukm::SourceId, mojom::UkmEntryPtr> GetMergedEntriesByName(
+      base::StringPiece entry_name) const;
+
+  // Check if an entry is associated with a url.
+  void ExpectEntrySourceHasUrl(const mojom::UkmEntry* entry,
+                               const GURL& url) const;
+
+  // Expect the value of a metric from an entry.
+  static void ExpectEntryMetric(const mojom::UkmEntry* entry,
+                                base::StringPiece metric_name,
+                                int64_t expected_value);
+
+  // Check if an entry contains a specific metric.
+  static bool EntryHasMetric(const mojom::UkmEntry* entry,
+                             base::StringPiece metric_name);
+
+  // Expect the value of a metric from an entry.
+  static const int64_t* GetEntryMetric(const mojom::UkmEntry* entry,
+                                       base::StringPiece metric_name);
+
+  // All of the methods below are deprecated.
+  // Use GetEntriesByName based testing instead.
+  // TODO(crbug/761524): Migrate tests and remove these.
+
+  // Get all SourceIds with any data associated with them.
+  std::set<ukm::SourceId> GetSourceIds() const;
 
   const UkmSource* GetSourceForUrl(const char* url) const;
   const UkmSource* GetSourceForUrl(const GURL& url) const {
     return GetSourceForUrl(url.spec().c_str());
   }
   std::vector<const ukm::UkmSource*> GetSourcesForUrl(const char* url) const;
-  const UkmSource* GetSourceForSourceId(ukm::SourceId source_id) const;
-
-  size_t entries_count() const { return entries().size(); }
 
   // Returns whether the given UKM |source| has an entry with the given
   // |event_name|.
@@ -123,7 +156,7 @@ class TestUkmRecorder : public UkmRecorderImpl {
 
   // Deprecated.
   static const mojom::UkmMetric* FindMetric(const mojom::UkmEntry* entry,
-                                            const char* metric_name);
+                                            base::StringPiece metric_name);
 
  private:
   ukm::mojom::UkmEntryPtr GetMergedEntryForSourceID(
