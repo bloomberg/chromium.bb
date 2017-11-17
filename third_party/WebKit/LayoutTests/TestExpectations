@@ -265,13 +265,6 @@ crbug.com/736052 virtual/prefer_compositing_to_lcd_text/compositing/overflow/com
 
 # ====== Paint team owned tests to here ======
 
-#### external/wpt/css/css-position
-crbug.com/702927 external/wpt/css/css-position/position-sticky-table-tr-top.html [ Failure ]
-crbug.com/702927 external/wpt/css/css-position/position-sticky-table-tr-bottom.html [ Failure ]
-crbug.com/702927 external/wpt/css/css-position/position-sticky-table-tfoot-bottom.html [ Failure ]
-crbug.com/702927 external/wpt/css/css-position/position-sticky-table-thead-top.html [ Failure ]
-crbug.com/702927 external/wpt/css/css-position/position-sticky-parsing.html [ Failure ]
-
 # ====== Layout team owned tests from here ======
 
 
