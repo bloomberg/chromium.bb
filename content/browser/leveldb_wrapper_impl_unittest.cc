@@ -480,8 +480,9 @@ TEST_P(LevelDBWrapperImplParamTest, DeleteAllWithoutLoadedEmptyMap) {
   ASSERT_EQ(0u, observations().size());
 }
 
-TEST_P(LevelDBWrapperImplParamTest, PutOverQuotaLargeValue) {
-  wrapper_impl()->SetCacheModeForTesting(GetParam());
+TEST_F(LevelDBWrapperImplParamTest, PutOverQuotaLargeValue) {
+  wrapper_impl()->SetCacheModeForTesting(
+      LevelDBWrapperImpl::CacheMode::KEYS_AND_VALUES);
   std::vector<uint8_t> key = ToBytes("newkey");
   std::vector<uint8_t> value(kTestSizeLimit, 4);
 
@@ -491,8 +492,9 @@ TEST_P(LevelDBWrapperImplParamTest, PutOverQuotaLargeValue) {
   EXPECT_TRUE(PutSync(key, value, base::nullopt));
 }
 
-TEST_P(LevelDBWrapperImplParamTest, PutOverQuotaLargeKey) {
-  wrapper_impl()->SetCacheModeForTesting(GetParam());
+TEST_F(LevelDBWrapperImplParamTest, PutOverQuotaLargeKey) {
+  wrapper_impl()->SetCacheModeForTesting(
+      LevelDBWrapperImpl::CacheMode::KEYS_AND_VALUES);
   std::vector<uint8_t> key(kTestSizeLimit, 'a');
   std::vector<uint8_t> value = ToBytes("newvalue");
 
@@ -502,8 +504,9 @@ TEST_P(LevelDBWrapperImplParamTest, PutOverQuotaLargeKey) {
   EXPECT_TRUE(PutSync(key, value, base::nullopt));
 }
 
-TEST_P(LevelDBWrapperImplParamTest, PutWhenAlreadyOverQuota) {
-  wrapper_impl()->SetCacheModeForTesting(GetParam());
+TEST_F(LevelDBWrapperImplParamTest, PutWhenAlreadyOverQuota) {
+  wrapper_impl()->SetCacheModeForTesting(
+      LevelDBWrapperImpl::CacheMode::KEYS_AND_VALUES);
   std::string key = "largedata";
   std::vector<uint8_t> value(kTestSizeLimit, 4);
   std::vector<uint8_t> old_value = value;
@@ -536,8 +539,9 @@ TEST_P(LevelDBWrapperImplParamTest, PutWhenAlreadyOverQuota) {
   EXPECT_FALSE(PutSync(ToBytes(key), value, old_value));
 }
 
-TEST_P(LevelDBWrapperImplParamTest, PutWhenAlreadyOverQuotaBecauseOfLargeKey) {
-  wrapper_impl()->SetCacheModeForTesting(GetParam());
+TEST_F(LevelDBWrapperImplParamTest, PutWhenAlreadyOverQuotaBecauseOfLargeKey) {
+  wrapper_impl()->SetCacheModeForTesting(
+      LevelDBWrapperImpl::CacheMode::KEYS_AND_VALUES);
   std::vector<uint8_t> key(kTestSizeLimit, 'x');
   std::vector<uint8_t> value = ToBytes("value");
   std::vector<uint8_t> old_value = value;
