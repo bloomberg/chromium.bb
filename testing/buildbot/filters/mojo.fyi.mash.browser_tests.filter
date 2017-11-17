@@ -1,51 +1,8 @@
--AcceleratorCommandsBrowserTest.*
--AccessibilityFeatureaApiTestInstantiatePermission/AccessibilityFeaturesApiTest.*
--AccessibilityManagerTest.*
--AffiliationCheck/EnterpriseDeviceAttributesTest.*
--AffiliationCheck/UserAffiliationBrowserTest.*
--AllForms/FormStructureBrowserTest.*
--AllProcesses/MemlogBrowserTest.*
--AppBackgroundPageApiTest.*
--AppListControllerGuestModeBrowserTest.*
--AppListControllerSearchResultsBrowserTest.*
--AppListServiceImplBrowserTest.*
--AppListTest.*
--AppViewTests/AppViewTest.*
--AppWindowApiTest.*
--ArcAppDeferredLauncherBrowserTest.*
--ArcAppDeferredLauncherWithParamsBrowserTestInstance/ArcAppDeferredLauncherWithParamsBrowserTest.*
--ArcAppUninstallDialogViewBrowserTest.*
--AutomationApiTest.*
--AutomationApiTestWithDeviceScaleFactor.*
--AutomationManagerAuraBrowserTest.*
--BlockingLoginTestInstance/BlockingLoginTest.*
--BluetoothPairingUITest.*
--BrailleDisplayPrivateAPIUserTest.*
--BrowserCloseManagerBrowserTest/BrowserCloseManagerBrowserTest.*
--BrowserCloseManagerWithDownloadsBrowserTest/BrowserCloseManagerWithDownloadsBrowserTest.*
--BrowserLoginTest.*
--BrowserNonClientFrameViewAshBackButtonTest.*
--BrowserNonClientFrameViewAshTest.*
+# These tests fail when running browser_tests --mash
+# http://crbug.com/678687
+
+# Uncategorized timeouts, crashes and failures.
 -BrowserTabRestoreTest.*
--BrowserTestTabbedOrApp/BrowserTestParam.*
--CaptivePortalAuthenticationIgnoresProxy/NetworkPortalDetectorImplBrowserTestIgnoreProxy.*
--CaptivePortalWindowCtorDtorTest.*
--CaptivePortalWindowTest.*
--CastStreamingApiTestWithPixelOutput.*
--CertificateReportingServiceBrowserTest.*
--CheckSystemTokenAvailability/EnterprisePlatformKeysTest.*
--ChromeFindRequestManagerTest.*
--ChromeMainTest.*
--ChromeNativeAppWindowViewsAuraAshBrowserTest.*
--ChromeOriginTrialsDisabledTokensTest.*
--ChromeOSInfoPrivateTest.*
--ChromeScreenshotGrabberBrowserTest.*
--ContentScriptApiTests/ContentScriptApiTest.*
--ContinueWhereILeftOffTest.*
--CrControlledButtonTest.*
--CrControlledRadioButtonTest.*
--CrExtensionsManagerTestWithMultipleExtensionTypesInstalled.*
--CustomizationWallpaperDownloaderBrowserTest.*
 -DeclarativeNetRequestBrowserTest_Packed.*
 -DeclarativeNetRequestBrowserTest.*
 -DefaultIsolation/TaskManagerOOPIFBrowserTest.*
@@ -295,8 +252,7 @@
 -RequestFileSystemDialogTest.*
 -ResetFirstAfterBootTest.*
 -SafeBrowsingBlockingPageBrowserTestWithThreatTypeAndIsolationSetting/SafeBrowsingBlockingPageBrowserTest.*
-# Flaky. SessionRestoreStatsCollector::Observe failure. crbug.com/785298
--SAMLPolicyTest.TransferCookiesAffiliated
+-SaveCardBubbleControllerImplTest.*
 -SessionRestoreTest.*
 -SessionRestoreTestChromeOS.*
 -SettingsA11yManagePasswords.*
@@ -318,9 +274,6 @@
 -TabCaptureApiPixelTest.*
 -TabManagerTest.*
 -TabRestoreTest.*
-# AtExit crash in task_manager::WebContentsTaskProvider::~WebContentsTaskProvider.
--TaskManagerBrowserTest.*
--TaskManagerMemoryCoordinatorBrowserTest.*
 -TaskManagerUtilityProcessBrowserTest.*
 -TrayAccessibilityLoginScreenTest.*
 -TrayAccessibilityTestInstance/TrayAccessibilityTest.*
@@ -341,3 +294,88 @@
 -WizardControllerKioskFlowTest.*
 -WizardControllerTest.*
 -ZoomBubbleBrowserTest.*
+
+# Extensive use of ash::WindowState.
+-AcceleratorCommandsBrowserTest.*
+
+# ChromeVoxPanel directly calls into ash to set panel height.
+-AccessibilityFeatureaApiTestInstantiatePermission/AccessibilityFeaturesApiTest.*
+-AccessibilityManagerTest.*
+-ChromeOSInfoPrivateTest.*
+
+# Crashes in net::URLRequestContext::CreateRequest.
+-AffiliationCheck/EnterpriseDeviceAttributesTest.*
+-AffiliationCheck/UserAffiliationBrowserTest.*
+
+# Uses ash::Shell::GetRootWindowForNewWindows to choose a display for the app list.
+# More generally, app list needs to move into ash.
+-AppListControllerGuestModeBrowserTest.*
+-AppListControllerSearchResultsBrowserTest.*
+-AppListServiceImplBrowserTest.*
+-AppListTest.*
+-ArcAppUninstallDialogViewBrowserTest.*
+
+# Accesses ash::Shelf to make assertions about the shelf view.
+-ArcAppDeferredLauncherBrowserTest.*
+-ArcAppDeferredLauncherWithParamsBrowserTestInstance/ArcAppDeferredLauncherWithParamsBrowserTest.*
+
+# Times out. Possibly general extensions test problem.
+-AppWindowApiTest.*
+
+# AutomationManagerAura::Enable() uses ash to get active window. More generally,
+# chrome a11y code directly accesses ash system UI widgets and views.
+-AutomationApiTest.*
+-AutomationApiTestWithDeviceScaleFactor.*
+-AutomationManagerAuraBrowserTest.*
+
+# Accessibility audit warning, then check failure in ProfileDestroyer:
+# hosts.empty() || profile->IsOffTheRecord() || profile->HasOffTheRecordProfile() || content::RenderProcessHost::run_renderer_in_process(). Profile still has 1 hosts
+-BluetoothPairingUITest.*
+
+# Direct access to ash window frames, tablet mode, overview mode, etc.
+-BrowserNonClientFrameViewAshBackButtonTest.*
+-BrowserNonClientFrameViewAshTest.*
+
+# Incorrect window bounds. Probably WindowSizerAsh problem.
+-BrowserTestTabbedOrApp/BrowserTestParam.*
+
+# Timeout waiting for notification.
+-CaptivePortalAuthenticationIgnoresProxy/NetworkPortalDetectorImplBrowserTestIgnoreProxy.*
+
+# ash::Shell access from ChromeViewsDelegate::CreateDefaultNonClientFrameView()
+# from chromeos::CaptivePortalWindowProxy::Show().
+-CaptivePortalWindowCtorDtorTest.*
+-CaptivePortalWindowTest.*
+
+# Need pixel copy support. http://crbug.com/754864
+-CastStreamingApiTestWithPixelOutput.*
+
+# RefCounted check failed: CalledOnValidSequence() from SchedulerWorkerDelegate::OnMainExit
+-CheckSystemTokenAvailability/EnterprisePlatformKeysTest.*
+
+# aura::CrashInFlightChange::ChangeFailed() when searching PDF.
+-ChromeFindRequestManagerTest.*
+
+# Need screenshot support. http://crbug.com/754899
+-ChromeScreenshotGrabberBrowserTest.*
+
+# ChromeBrowserMainExtraPartsAsh: Check failed: views::MusClient::Exists().
+-ChromeMainTest.*
+
+# Null immersive_fullscreen_controller_.
+-ChromeNativeAppWindowViewsAuraAshBrowserTest.*
+
+# SessionRestoreStatsCollector: Check failed: 0u < loading_tab_count_ (0 vs. 0)
+-ContinueWhereILeftOffTest.*
+
+# ash::Shell access in test for wallpaper images.
+-CustomizationWallpaperDownloaderBrowserTest.*
+
+# Flaky. SessionRestoreStatsCollector::Observe failure. crbug.com/785298
+-SAMLPolicyTest.TransferCookiesAffiliated
+
+# Flaky shutdown crashes in ~MusClient http://crbug.com/786234 and AtExit
+# crashes in ~WebContentsTaskProvider http://crbug.com/786230
+-AppBackgroundPageApiTest.*
+-TaskManagerBrowserTest.*
+-TaskManagerMemoryCoordinatorBrowserTest.*
