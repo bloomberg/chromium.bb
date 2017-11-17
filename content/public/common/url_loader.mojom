@@ -17,9 +17,6 @@ struct SSLInfo;
 struct URLRequestRedirectInfo;
 
 [Native]
-struct CORSErrorStatus;
-
-[Native]
 struct URLLoaderStatus;
 
 // This enum corresponds to net::RequestPriority. See its comments for details.

@@ -46,7 +46,7 @@ int ResourceError::BlockedByXSSAuditorErrorCode() {
 }
 
 ResourceError ResourceError::CancelledError(const KURL& url) {
-  return ResourceError(net::ERR_ABORTED, url, WTF::nullopt);
+  return ResourceError(net::ERR_ABORTED, url);
 }
 
 ResourceError ResourceError::CancelledDueToAccessCheckError(
@@ -69,24 +69,19 @@ ResourceError ResourceError::CancelledDueToAccessCheckError(
 }
 
 ResourceError ResourceError::CacheMissError(const KURL& url) {
-  return ResourceError(net::ERR_CACHE_MISS, url, WTF::nullopt);
+  return ResourceError(net::ERR_CACHE_MISS, url);
 }
 
 ResourceError ResourceError::TimeoutError(const KURL& url) {
-  return ResourceError(net::ERR_TIMED_OUT, url, WTF::nullopt);
+  return ResourceError(net::ERR_TIMED_OUT, url);
 }
 
 ResourceError ResourceError::Failure(const KURL& url) {
-  return ResourceError(net::ERR_FAILED, url, WTF::nullopt);
+  return ResourceError(net::ERR_FAILED, url);
 }
 
-ResourceError::ResourceError(
-    int error_code,
-    const KURL& url,
-    WTF::Optional<network::CORSErrorStatus> cors_error_status)
-    : error_code_(error_code),
-      failing_url_(url),
-      cors_error_status_(cors_error_status) {
+ResourceError::ResourceError(int error_code, const KURL& url)
+    : error_code_(error_code), failing_url_(url) {
   DCHECK_NE(error_code_, 0);
   InitializeDescription();
 }
@@ -95,15 +90,13 @@ ResourceError::ResourceError(const WebURLError& error)
     : error_code_(error.reason()),
       failing_url_(error.url()),
       is_access_check_(error.is_web_security_violation()),
-      has_copy_in_cache_(error.has_copy_in_cache()),
-      cors_error_status_(error.cors_error_status()) {
+      has_copy_in_cache_(error.has_copy_in_cache()) {
   DCHECK_NE(error_code_, 0);
   InitializeDescription();
 }
 
 ResourceError ResourceError::Copy() const {
-  ResourceError error_copy(error_code_, failing_url_.Copy(),
-                           cors_error_status_);
+  ResourceError error_copy(error_code_, failing_url_.Copy());
   error_copy.has_copy_in_cache_ = has_copy_in_cache_;
   error_copy.localized_description_ = localized_description_.IsolatedCopy();
   error_copy.is_access_check_ = is_access_check_;
@@ -111,16 +104,9 @@ ResourceError ResourceError::Copy() const {
 }
 
 ResourceError::operator WebURLError() const {
-  WebURLError::HasCopyInCache has_copy_in_cache =
-      has_copy_in_cache_ ? WebURLError::HasCopyInCache::kTrue
-                         : WebURLError::HasCopyInCache::kFalse;
-
-  if (cors_error_status_) {
-    DCHECK_EQ(net::ERR_FAILED, error_code_);
-    return WebURLError(*cors_error_status_, has_copy_in_cache, failing_url_);
-  }
-
-  return WebURLError(error_code_, has_copy_in_cache,
+  return WebURLError(error_code_,
+                     has_copy_in_cache_ ? WebURLError::HasCopyInCache::kTrue
+                                        : WebURLError::HasCopyInCache::kFalse,
                      is_access_check_
                          ? WebURLError::IsWebSecurityViolation::kTrue
                          : WebURLError::IsWebSecurityViolation::kFalse,
@@ -141,9 +127,6 @@ bool ResourceError::Compare(const ResourceError& a, const ResourceError& b) {
     return false;
 
   if (a.HasCopyInCache() != b.HasCopyInCache())
-    return false;
-
-  if (a.CORSErrorStatus() != b.CORSErrorStatus())
     return false;
 
   return true;

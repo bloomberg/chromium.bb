@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/time/time.h"
-#include "services/network/public/cpp/cors_error_status.h"
 #include "services/network/public/interfaces/cors.mojom.h"
 
 namespace network {
@@ -23,9 +22,9 @@ struct URLLoaderStatus {
   // |completion_time|.
   explicit URLLoaderStatus(int error_code);
 
-  // Sets ERR_FAILED to |error_code|, |error| to |cors_error_status|, and
+  // Sets ERR_FAILED to |error_code|, |error| to |cors_error|, and
   // base::TimeTicks::Now() to |completion_time|.
-  explicit URLLoaderStatus(const CORSErrorStatus& error);
+  explicit URLLoaderStatus(network::mojom::CORSError error);
 
   ~URLLoaderStatus();
 
@@ -50,7 +49,7 @@ struct URLLoaderStatus {
   int64_t decoded_body_length = 0;
 
   // Optional CORS error details.
-  base::Optional<CORSErrorStatus> cors_error_status;
+  base::Optional<network::mojom::CORSError> cors_error;
 };
 
 }  // namespace network

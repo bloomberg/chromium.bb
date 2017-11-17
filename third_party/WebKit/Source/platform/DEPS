@@ -61,9 +61,3 @@ include_rules = [
     "-core",
     "-modules",
 ]
-
-specific_include_rules = {
-    "WebURLError\.cpp": [
-        "+net/base/net_errors.h"
-     ]
-}
