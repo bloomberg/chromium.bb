@@ -80,6 +80,7 @@ const CGFloat kVerticalPadding = 16;
   self = [super initWithFrame:frame];
   if (self) {
     self.isAccessibilityElement = YES;
+    self.allowsCellInteractionsWhileEditing = YES;
 
     _textLabel = [[UILabel alloc] init];
     _textLabel.translatesAutoresizingMaskIntoConstraints = NO;
