@@ -95,6 +95,10 @@ bool IsNTPOrServiceWorkerURL(const GURL& url, Profile* profile) {
 
 bool IsURLAllowedForSupervisedUser(const GURL& url, Profile* profile) {
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+  // If this isn't a supervised user, skip the URL filter check, since it can be
+  // fairly expensive.
+  if (!profile->IsSupervised())
+    return true;
   SupervisedUserService* supervised_user_service =
       SupervisedUserServiceFactory::GetForProfile(profile);
   SupervisedUserURLFilter* url_filter = supervised_user_service->GetURLFilter();
