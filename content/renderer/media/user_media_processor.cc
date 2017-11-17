@@ -327,7 +327,8 @@ UserMediaProcessor::UserMediaProcessor(
       media_stream_dispatcher_(std::move(media_stream_dispatcher)),
       media_devices_dispatcher_cb_(std::move(media_devices_dispatcher_cb)),
       worker_task_runner_(worker_task_runner),
-      render_frame_(render_frame),
+      render_frame_id_(render_frame ? render_frame->GetRoutingID()
+                                    : MSG_ROUTING_NONE),
       weak_factory_(this) {
   DCHECK(dependency_factory_);
   DCHECK(media_stream_dispatcher_.get());
@@ -784,15 +785,15 @@ MediaStreamAudioSource* UserMediaProcessor::CreateAudioSource(
       !MediaStreamAudioProcessor::WouldModifyAudio(
           audio_processing_properties)) {
     *has_sw_echo_cancellation = false;
-    return new LocalMediaStreamAudioSource(render_frame_->GetRoutingID(),
-                                           device, source_ready);
+    return new LocalMediaStreamAudioSource(render_frame_id_, device,
+                                           source_ready);
   }
 
   // The audio device is not associated with screen capture and also requires
   // processing.
   ProcessedLocalAudioSource* source = new ProcessedLocalAudioSource(
-      render_frame_->GetRoutingID(), device, audio_processing_properties,
-      source_ready, dependency_factory_);
+      render_frame_id_, device, audio_processing_properties, source_ready,
+      dependency_factory_);
   *has_sw_echo_cancellation =
       audio_processing_properties.enable_sw_echo_cancellation;
   return source;
@@ -807,8 +808,7 @@ MediaStreamVideoSource* UserMediaProcessor::CreateVideoSource(
 
   return new MediaStreamVideoCapturerSource(
       stop_callback, device,
-      current_request_info_->video_capture_settings().capture_params(),
-      render_frame_);
+      current_request_info_->video_capture_settings().capture_params());
 }
 
 void UserMediaProcessor::CreateVideoTracks(

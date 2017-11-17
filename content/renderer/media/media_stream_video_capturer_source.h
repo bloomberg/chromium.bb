@@ -13,7 +13,6 @@
 #include "base/threading/thread_checker.h"
 #include "content/common/media/media_stream.mojom.h"
 #include "content/common/media/video_capture.h"
-#include "content/public/renderer/render_frame_observer.h"
 #include "content/renderer/media/media_stream_video_source.h"
 
 namespace media {
@@ -27,8 +26,7 @@ namespace content {
 // Render thread. Objects can be constructed either by indicating a |device| to
 // look for, or by plugging in a |source| constructed elsewhere.
 class CONTENT_EXPORT MediaStreamVideoCapturerSource
-    : public MediaStreamVideoSource,
-      public RenderFrameObserver {
+    : public MediaStreamVideoSource {
  public:
   MediaStreamVideoCapturerSource(
       const SourceStoppedCallback& stop_callback,
@@ -36,8 +34,7 @@ class CONTENT_EXPORT MediaStreamVideoCapturerSource
   MediaStreamVideoCapturerSource(
       const SourceStoppedCallback& stop_callback,
       const MediaStreamDevice& device,
-      const media::VideoCaptureParams& capture_params,
-      RenderFrame* render_frame);
+      const media::VideoCaptureParams& capture_params);
   ~MediaStreamVideoCapturerSource() override;
 
  private:
@@ -60,9 +57,6 @@ class CONTENT_EXPORT MediaStreamVideoCapturerSource
   base::Optional<media::VideoCaptureFormat> GetCurrentFormat() const override;
   base::Optional<media::VideoCaptureParams> GetCurrentCaptureParams()
       const override;
-
-  // RenderFrameObserver implementation.
-  void OnDestruct() final {}
 
   // Method to bind as RunningCallback in VideoCapturerSource::StartCapture().
   void OnRunStateChanged(const media::VideoCaptureParams& new_capture_params,

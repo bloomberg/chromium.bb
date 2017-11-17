@@ -161,9 +161,7 @@ void LocalVideoCapturerSource::OnStateUpdate(VideoCaptureState state) {
 MediaStreamVideoCapturerSource::MediaStreamVideoCapturerSource(
     const SourceStoppedCallback& stop_callback,
     std::unique_ptr<media::VideoCapturerSource> source)
-    : RenderFrameObserver(nullptr),
-      dispatcher_host_(nullptr),
-      source_(std::move(source)) {
+    : dispatcher_host_(nullptr), source_(std::move(source)) {
   media::VideoCaptureFormats preferred_formats = source_->GetPreferredFormats();
   if (!preferred_formats.empty())
     capture_params_.requested_format = preferred_formats.front();
@@ -173,10 +171,8 @@ MediaStreamVideoCapturerSource::MediaStreamVideoCapturerSource(
 MediaStreamVideoCapturerSource::MediaStreamVideoCapturerSource(
     const SourceStoppedCallback& stop_callback,
     const MediaStreamDevice& device,
-    const media::VideoCaptureParams& capture_params,
-    RenderFrame* render_frame)
-    : RenderFrameObserver(render_frame),
-      dispatcher_host_(nullptr),
+    const media::VideoCaptureParams& capture_params)
+    : dispatcher_host_(nullptr),
       source_(new LocalVideoCapturerSource(device.session_id)),
       capture_params_(capture_params) {
   SetStopCallback(stop_callback);
