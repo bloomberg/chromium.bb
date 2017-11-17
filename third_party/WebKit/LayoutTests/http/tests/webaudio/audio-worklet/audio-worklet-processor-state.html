@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>
+      Test AudioWorkletProcessorState in AudioWorkletNode
+    </title>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script>
+    <script src="../../../webaudio-resources/audit.js"></script>
+    <script src="audio-worklet-common.js"></script>
+  </head>
+  <body>
+    <script id="layout-test-code">
+      // TODO(hongchan): remove this assertion when AudioWorklet shipped.
+      assertAudioWorklet();
+
+      let audit = Audit.createTaskRunner();
+
+      const sampleRate = 48000;
+      const renderLength = sampleRate * 0.1;
+
+      // Test "pending", "running" and "stopped" state transition.
+      audit.define('pending-running-stopped',
+          (task, should) => {
+            let context = new OfflineAudioContext(1, renderLength, sampleRate);
+            let timedWorkletNode = new AudioWorkletNode(context, 'timed');
+
+            // The construction of associated processor has not been
+            // completed. In this state, no audio processing can happen and
+            // all messages to the processor will be queued.
+            should(timedWorkletNode.processorState,
+                   'Checking the processor state upon the constructor call')
+                .beEqualTo('pending');
+
+            timedWorkletNode.connect(context.destination);
+
+            // Checks the handler of |onprocessorstatechange|. Because the
+            // processor script is correct, the |running| state change MUST
+            // be fired.
+            let isFirstPhase = true;
+            timedWorkletNode.onprocessorstatechange = () => {
+              // The first phase should be "running".
+              if (isFirstPhase) {
+                should(timedWorkletNode.processorState,
+                       'Checking the processor state upon ' +
+                       'processorstatechange event')
+                    .beEqualTo('running');
+                isFirstPhase = false;
+              } else {
+                // The second phase in this test must be "stopped".
+                should(timedWorkletNode.processorState,
+                       'Checking the processor state after ' +
+                       'processor stopped processing')
+                    .beEqualTo('stopped');
+                task.done();
+              }
+            };
+
+            context.startRendering();
+          });
+
+      // Test the error state caused by the failure of processor constructor.
+      audit.define('constructor-error',
+          (task, should) => {
+            let context = new OfflineAudioContext(1, renderLength, sampleRate);
+            let constructorErrorWorkletNode =
+                new AudioWorkletNode(context, 'constructor-error');
+            should(constructorErrorWorkletNode.processorState,
+                   'constructorErrorWorkletNode.processorState after ' +
+                   'its construction')
+                .beEqualTo('pending');
+            constructorErrorWorkletNode.onprocessorstatechange = () => {
+              should(constructorErrorWorkletNode.processorState,
+                     'workletNode.processorState upon processorstatechange ' +
+                     'event after the failure from processor.constructor()')
+                  .beEqualTo('error');
+              task.done();
+            };
+          });
+
+      // Test the error state caused by the failure of processor's process()
+      // function.
+      audit.define('process-error',
+          (task, should) => {
+            let context = new OfflineAudioContext(1, renderLength, sampleRate);
+            let processErrorWorkletNode =
+                new AudioWorkletNode(context, 'process-error');
+            should(processErrorWorkletNode.processorState,
+                   'processErrorWorkletNode.processorState after ' +
+                   'its construction')
+                  .beEqualTo('pending');
+
+            processErrorWorkletNode.connect(context.destination);
+
+            let isFirstPhase = true;
+            processErrorWorkletNode.onprocessorstatechange = () => {
+              if (isFirstPhase) {
+                // Ignore the first state change event, which is "running";
+                isFirstPhase = false;
+              } else {
+                should(processErrorWorkletNode.processorState,
+                       'workletNode.processorState upon processorstatechange ' +
+                       'event after the failure from processor.process()')
+                    .beEqualTo('error');
+                task.done();
+              }
+            };
+
+            context.startRendering();
+          });
+
+      audioWorklet.addModule('state-processor.js').then(() => {
+        audit.run();
+      });
+    </script>
+  </body>
+</html>

@@ -146,20 +146,29 @@ AudioWorkletProcessor* AudioWorkletGlobalScope::CreateInstance(
 
   sample_rate_ = sample_rate;
 
+  // The registered definition is already checked by AudioWorkletNode
+  // construction process, so the |definition| here must be valid.
   AudioWorkletProcessorDefinition* definition = FindDefinition(name);
-  if (!definition)
-    return nullptr;
+  DCHECK(definition);
 
   ScriptState* script_state = ScriptController()->GetScriptState();
   ScriptState::Scope scope(script_state);
 
   // V8 object instance construction: this construction process is here to make
   // the AudioWorkletProcessor class a thin wrapper of V8::Object instance.
+  // If the attempt to create an instance fails, or an error was thrown by
+  // the user-supplied constructor code, return nullptr.
   v8::Isolate* isolate = script_state->GetIsolate();
+  v8::TryCatch block(isolate);
+
+  // Routes errors/exceptions to the dev console.
+  block.SetVerbose(true);
+
   v8::Local<v8::Object> instance_local;
   if (!V8ObjectConstructor::NewInstance(isolate,
                                         definition->ConstructorLocal(isolate))
-           .ToLocal(&instance_local)) {
+           .ToLocal(&instance_local) ||
+    block.HasCaught()) {
     return nullptr;
   }
 
@@ -246,9 +255,6 @@ bool AudioWorkletGlobalScope::Process(
     param_values.V8Value()
   };
 
-  // TODO(hongchan): Catch exceptions thrown in the process method. The verbose
-  // options forces the TryCatch object to save the exception location. The
-  // pending exception should be handled later.
   v8::TryCatch block(isolate);
   block.SetVerbose(true);
 
@@ -261,7 +267,12 @@ bool AudioWorkletGlobalScope::Process(
                                     processor->InstanceLocal(isolate),
                                     WTF_ARRAY_LENGTH(argv),
                                     argv,
-                                    isolate).ToLocal(&local_result)) {
+                                    isolate).ToLocal(&local_result) ||
+    block.HasCaught()) {
+    // process() method call method call failed for some reason or an exception
+    // was thrown by the user supplied code. Disable the processor to exclude
+    // it from the subsequent rendering task.
+    processor->MarkNonRunnable();
     return false;
   }
 
@@ -284,15 +295,9 @@ bool AudioWorkletGlobalScope::Process(
     }
   }
 
-  // Notify the handler with the successful invocation of user-supplied
-  // process() method when: 1) its return value is true and 2) there has been
-  // no exception thrown. Otherwise return false so the handler won't call
-  // process() method any more.
-  if (local_result->IsTrue() && !block.HasCaught()) {
-    return true;
-  }
-
-  return false;
+  // Return the value from the user-supplied |process()| function. It is
+  // used to maintain the lifetime of the node and the processor.
+  return local_result->IsTrue() && !block.HasCaught();
 }
 
 AudioWorkletProcessorDefinition* AudioWorkletGlobalScope::FindDefinition(

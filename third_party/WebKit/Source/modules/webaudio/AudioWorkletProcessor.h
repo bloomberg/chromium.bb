@@ -46,6 +46,12 @@ class MODULES_EXPORT AudioWorkletProcessor : public ScriptWrappable {
 
   const String& Name() const { return name_; }
 
+  // Mark this processor as "not runnable" so it does not execute the
+  // user-supplied code even after the associated node is connected to the
+  // graph.
+  void MarkNonRunnable() { is_runnable_ = false; }
+  bool IsRunnable() { return is_runnable_; }
+
   void Trace(blink::Visitor*);
   void TraceWrappers(const ScriptWrappableVisitor*) const;
 
@@ -55,6 +61,10 @@ class MODULES_EXPORT AudioWorkletProcessor : public ScriptWrappable {
   Member<AudioWorkletGlobalScope> global_scope_;
   TraceWrapperV8Reference<v8::Object> instance_;
   const String name_;
+
+  // Becomes |false| when Process() method throws an exception from the the
+  // user-supplied code. It is an irreversible transition.
+  bool is_runnable_ = true;
 };
 
 }  // namespace blink
