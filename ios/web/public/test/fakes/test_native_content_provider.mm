@@ -27,14 +27,17 @@
 - (id<CRWNativeContent>)controllerForURL:(const GURL&)URL
                                 webState:(web::WebState*)webState {
   auto nativeContent = _nativeContent.find(URL);
-  return nativeContent == _nativeContent.end() ? nil : nativeContent->second;
+  if (nativeContent == _nativeContent.end()) {
+    return nil;
+  }
+  return nativeContent->second;
 }
 
 - (id<CRWNativeContent>)controllerForURL:(const GURL&)URL
                                withError:(NSError*)error
                                   isPost:(BOOL)isPost {
-  auto nativeContent = _nativeContent.find(URL);
-  return nativeContent == _nativeContent.end() ? nil : nativeContent->second;
+  NOTREACHED();
+  return nil;
 }
 
 @end
