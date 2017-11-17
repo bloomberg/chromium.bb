@@ -14,18 +14,19 @@
 #include "base/test/values_test_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "components/network_error_logging/network_error_logging_service.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
+#include "net/network_error_logging/network_error_logging_service.h"
 #include "net/reporting/reporting_service.h"
 #include "net/socket/next_proto.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
+namespace net {
 namespace {
 
-class TestReportingService : public net::ReportingService {
+class TestReportingService : public ReportingService {
  public:
   struct Report {
     Report() {}
@@ -57,7 +58,7 @@ class TestReportingService : public net::ReportingService {
 
   const std::vector<Report>& reports() const { return reports_; }
 
-  // net::ReportingService implementation:
+  // ReportingService implementation:
 
   ~TestReportingService() override {}
 
@@ -89,7 +90,7 @@ class NetworkErrorLoggingServiceTest : public ::testing::Test {
  protected:
   NetworkErrorLoggingServiceTest() {
     scoped_feature_list_.InitAndEnableFeature(features::kNetworkErrorLogging);
-    service_ = network_error_logging::NetworkErrorLoggingService::Create();
+    service_ = NetworkErrorLoggingService::Create();
     CreateReportingService();
   }
 
@@ -107,15 +108,14 @@ class NetworkErrorLoggingServiceTest : public ::testing::Test {
     reporting_service_.reset();
   }
 
-  net::NetworkErrorLoggingDelegate::ErrorDetails MakeErrorDetails(
-      GURL url,
-      net::Error error_type) {
-    net::NetworkErrorLoggingDelegate::ErrorDetails details;
+  NetworkErrorLoggingDelegate::ErrorDetails MakeErrorDetails(GURL url,
+                                                             Error error_type) {
+    NetworkErrorLoggingDelegate::ErrorDetails details;
 
     details.uri = url;
     details.referrer = kReferrer_;
-    details.server_ip = net::IPAddress::IPv4AllZeros();
-    details.protocol = net::kProtoUnknown;
+    details.server_ip = IPAddress::IPv4AllZeros();
+    details.protocol = kProtoUnknown;
     details.status_code = 0;
     details.elapsed_time = base::TimeDelta::FromSeconds(1);
     details.type = error_type;
@@ -123,9 +123,7 @@ class NetworkErrorLoggingServiceTest : public ::testing::Test {
     return details;
   }
 
-  network_error_logging::NetworkErrorLoggingService* service() {
-    return service_.get();
-  }
+  NetworkErrorLoggingService* service() { return service_.get(); }
   const std::vector<TestReportingService::Report>& reports() {
     return reporting_service_->reports();
   }
@@ -146,14 +144,13 @@ class NetworkErrorLoggingServiceTest : public ::testing::Test {
 
   const std::string kGroup_ = "group";
 
-  const std::string kType_ =
-      network_error_logging::NetworkErrorLoggingService::kReportType;
+  const std::string kType_ = NetworkErrorLoggingService::kReportType;
 
   const GURL kReferrer_ = GURL("https://referrer.com/");
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-  std::unique_ptr<network_error_logging::NetworkErrorLoggingService> service_;
+  std::unique_ptr<NetworkErrorLoggingService> service_;
   std::unique_ptr<TestReportingService> reporting_service_;
 };
 
@@ -163,7 +160,7 @@ TEST_F(NetworkErrorLoggingServiceTest, FeatureDisabled) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndDisableFeature(features::kNetworkErrorLogging);
 
-  auto service = network_error_logging::NetworkErrorLoggingService::Create();
+  auto service = NetworkErrorLoggingService::Create();
   EXPECT_FALSE(service);
 }
 
@@ -176,8 +173,7 @@ TEST_F(NetworkErrorLoggingServiceTest, NoReportingService) {
 
   service()->OnHeader(kOrigin_, kHeader_);
 
-  service()->OnNetworkError(
-      MakeErrorDetails(kUrl_, net::ERR_CONNECTION_REFUSED));
+  service()->OnNetworkError(MakeErrorDetails(kUrl_, ERR_CONNECTION_REFUSED));
 }
 
 TEST_F(NetworkErrorLoggingServiceTest, OriginInsecure) {
@@ -187,14 +183,13 @@ TEST_F(NetworkErrorLoggingServiceTest, OriginInsecure) {
   service()->OnHeader(kInsecureOrigin, kHeader_);
 
   service()->OnNetworkError(
-      MakeErrorDetails(kInsecureUrl, net::ERR_CONNECTION_REFUSED));
+      MakeErrorDetails(kInsecureUrl, ERR_CONNECTION_REFUSED));
 
   EXPECT_TRUE(reports().empty());
 }
 
 TEST_F(NetworkErrorLoggingServiceTest, NoPolicyForOrigin) {
-  service()->OnNetworkError(
-      MakeErrorDetails(kUrl_, net::ERR_CONNECTION_REFUSED));
+  service()->OnNetworkError(MakeErrorDetails(kUrl_, ERR_CONNECTION_REFUSED));
 
   EXPECT_TRUE(reports().empty());
 }
@@ -202,8 +197,7 @@ TEST_F(NetworkErrorLoggingServiceTest, NoPolicyForOrigin) {
 TEST_F(NetworkErrorLoggingServiceTest, ReportQueued) {
   service()->OnHeader(kOrigin_, kHeader_);
 
-  service()->OnNetworkError(
-      MakeErrorDetails(kUrl_, net::ERR_CONNECTION_REFUSED));
+  service()->OnNetworkError(MakeErrorDetails(kUrl_, ERR_CONNECTION_REFUSED));
 
   EXPECT_EQ(1u, reports().size());
   EXPECT_EQ(kUrl_, reports()[0].url);
@@ -212,28 +206,21 @@ TEST_F(NetworkErrorLoggingServiceTest, ReportQueued) {
 
   const base::DictionaryValue* body;
   ASSERT_TRUE(reports()[0].body->GetAsDictionary(&body));
-  base::ExpectDictStringValue(
-      kUrl_.spec(), *body,
-      network_error_logging::NetworkErrorLoggingService::kUriKey);
-  base::ExpectDictStringValue(
-      kReferrer_.spec(), *body,
-      network_error_logging::NetworkErrorLoggingService::kReferrerKey);
+  base::ExpectDictStringValue(kUrl_.spec(), *body,
+                              NetworkErrorLoggingService::kUriKey);
+  base::ExpectDictStringValue(kReferrer_.spec(), *body,
+                              NetworkErrorLoggingService::kReferrerKey);
   // TODO(juliatuttle): Extract these constants.
-  base::ExpectDictStringValue(
-      "0.0.0.0", *body,
-      network_error_logging::NetworkErrorLoggingService::kServerIpKey);
-  base::ExpectDictStringValue(
-      "", *body,
-      network_error_logging::NetworkErrorLoggingService::kProtocolKey);
-  base::ExpectDictIntegerValue(
-      0, *body,
-      network_error_logging::NetworkErrorLoggingService::kStatusCodeKey);
-  base::ExpectDictIntegerValue(
-      1000, *body,
-      network_error_logging::NetworkErrorLoggingService::kElapsedTimeKey);
-  base::ExpectDictStringValue(
-      "tcp.refused", *body,
-      network_error_logging::NetworkErrorLoggingService::kTypeKey);
+  base::ExpectDictStringValue("0.0.0.0", *body,
+                              NetworkErrorLoggingService::kServerIpKey);
+  base::ExpectDictStringValue("", *body,
+                              NetworkErrorLoggingService::kProtocolKey);
+  base::ExpectDictIntegerValue(0, *body,
+                               NetworkErrorLoggingService::kStatusCodeKey);
+  base::ExpectDictIntegerValue(1000, *body,
+                               NetworkErrorLoggingService::kElapsedTimeKey);
+  base::ExpectDictStringValue("tcp.refused", *body,
+                              NetworkErrorLoggingService::kTypeKey);
 }
 
 TEST_F(NetworkErrorLoggingServiceTest, MaxAge0) {
@@ -241,8 +228,7 @@ TEST_F(NetworkErrorLoggingServiceTest, MaxAge0) {
 
   service()->OnHeader(kOrigin_, kHeaderMaxAge0_);
 
-  service()->OnNetworkError(
-      MakeErrorDetails(kUrl_, net::ERR_CONNECTION_REFUSED));
+  service()->OnNetworkError(MakeErrorDetails(kUrl_, ERR_CONNECTION_REFUSED));
 
   EXPECT_TRUE(reports().empty());
 }
@@ -252,7 +238,7 @@ TEST_F(NetworkErrorLoggingServiceTest,
   service()->OnHeader(kOrigin_, kHeader_);
 
   service()->OnNetworkError(
-      MakeErrorDetails(kUrlDifferentPort_, net::ERR_CONNECTION_REFUSED));
+      MakeErrorDetails(kUrlDifferentPort_, ERR_CONNECTION_REFUSED));
 
   EXPECT_TRUE(reports().empty());
 }
@@ -261,7 +247,7 @@ TEST_F(NetworkErrorLoggingServiceTest, ExcludeSubdomainsDoesntMatchSubdomain) {
   service()->OnHeader(kOrigin_, kHeader_);
 
   service()->OnNetworkError(
-      MakeErrorDetails(kUrlSubdomain_, net::ERR_CONNECTION_REFUSED));
+      MakeErrorDetails(kUrlSubdomain_, ERR_CONNECTION_REFUSED));
 
   EXPECT_TRUE(reports().empty());
 }
@@ -270,7 +256,7 @@ TEST_F(NetworkErrorLoggingServiceTest, IncludeSubdomainsMatchesDifferentPort) {
   service()->OnHeader(kOrigin_, kHeaderIncludeSubdomains_);
 
   service()->OnNetworkError(
-      MakeErrorDetails(kUrlDifferentPort_, net::ERR_CONNECTION_REFUSED));
+      MakeErrorDetails(kUrlDifferentPort_, ERR_CONNECTION_REFUSED));
 
   EXPECT_EQ(1u, reports().size());
   EXPECT_EQ(kUrlDifferentPort_, reports()[0].url);
@@ -280,7 +266,7 @@ TEST_F(NetworkErrorLoggingServiceTest, IncludeSubdomainsMatchesSubdomain) {
   service()->OnHeader(kOrigin_, kHeaderIncludeSubdomains_);
 
   service()->OnNetworkError(
-      MakeErrorDetails(kUrlSubdomain_, net::ERR_CONNECTION_REFUSED));
+      MakeErrorDetails(kUrlSubdomain_, ERR_CONNECTION_REFUSED));
 
   EXPECT_EQ(1u, reports().size());
 }
@@ -289,10 +275,10 @@ TEST_F(NetworkErrorLoggingServiceTest,
        IncludeSubdomainsDoesntMatchSuperdomain) {
   service()->OnHeader(kOriginSubdomain_, kHeaderIncludeSubdomains_);
 
-  service()->OnNetworkError(
-      MakeErrorDetails(kUrl_, net::ERR_CONNECTION_REFUSED));
+  service()->OnNetworkError(MakeErrorDetails(kUrl_, ERR_CONNECTION_REFUSED));
 
   EXPECT_TRUE(reports().empty());
 }
 
 }  // namespace
+}  // namespace net

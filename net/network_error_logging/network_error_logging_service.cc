@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/network_error_logging/network_error_logging_service.h"
+#include "net/network_error_logging/network_error_logging_service.h"
 
 #include <memory>
 #include <string>
@@ -31,6 +31,8 @@ const base::Feature kNetworkErrorLogging{"NetworkErrorLogging",
 
 }  // namespace features
 
+namespace net {
+
 namespace {
 
 const char kReportToKey[] = "report-to";
@@ -58,47 +60,47 @@ std::string GetSuperdomain(const std::string& domain) {
 }
 
 const struct {
-  net::Error error;
+  Error error;
   const char* type;
 } kErrorTypes[] = {
     // dns.unreachable?
-    {net::ERR_NAME_NOT_RESOLVED, "dns.name_not_resolved"},
-    {net::ERR_NAME_RESOLUTION_FAILED, "dns.failed"},
-    {net::ERR_DNS_TIMED_OUT, "dns.timed_out"},
+    {ERR_NAME_NOT_RESOLVED, "dns.name_not_resolved"},
+    {ERR_NAME_RESOLUTION_FAILED, "dns.failed"},
+    {ERR_DNS_TIMED_OUT, "dns.timed_out"},
 
-    {net::ERR_CONNECTION_TIMED_OUT, "tcp.timed_out"},
-    {net::ERR_CONNECTION_CLOSED, "tcp.closed"},
-    {net::ERR_CONNECTION_RESET, "tcp.reset"},
-    {net::ERR_CONNECTION_REFUSED, "tcp.refused"},
-    {net::ERR_CONNECTION_ABORTED, "tcp.aborted"},
-    {net::ERR_ADDRESS_INVALID, "tcp.address_invalid"},
-    {net::ERR_ADDRESS_UNREACHABLE, "tcp.address_unreachable"},
-    {net::ERR_CONNECTION_FAILED, "tcp.failed"},
+    {ERR_CONNECTION_TIMED_OUT, "tcp.timed_out"},
+    {ERR_CONNECTION_CLOSED, "tcp.closed"},
+    {ERR_CONNECTION_RESET, "tcp.reset"},
+    {ERR_CONNECTION_REFUSED, "tcp.refused"},
+    {ERR_CONNECTION_ABORTED, "tcp.aborted"},
+    {ERR_ADDRESS_INVALID, "tcp.address_invalid"},
+    {ERR_ADDRESS_UNREACHABLE, "tcp.address_unreachable"},
+    {ERR_CONNECTION_FAILED, "tcp.failed"},
 
-    {net::ERR_SSL_VERSION_OR_CIPHER_MISMATCH, "tls.version_or_cipher_mismatch"},
-    {net::ERR_BAD_SSL_CLIENT_AUTH_CERT, "tls.bad_client_auth_cert"},
-    {net::ERR_CERT_COMMON_NAME_INVALID, "tls.cert.name_invalid"},
-    {net::ERR_CERT_DATE_INVALID, "tls.cert.date_invalid"},
-    {net::ERR_CERT_AUTHORITY_INVALID, "tls.cert.authority_invalid"},
-    {net::ERR_CERT_INVALID, "tls.cert.invalid"},
-    {net::ERR_CERT_REVOKED, "tls.cert.revoked"},
-    {net::ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN,
+    {ERR_SSL_VERSION_OR_CIPHER_MISMATCH, "tls.version_or_cipher_mismatch"},
+    {ERR_BAD_SSL_CLIENT_AUTH_CERT, "tls.bad_client_auth_cert"},
+    {ERR_CERT_COMMON_NAME_INVALID, "tls.cert.name_invalid"},
+    {ERR_CERT_DATE_INVALID, "tls.cert.date_invalid"},
+    {ERR_CERT_AUTHORITY_INVALID, "tls.cert.authority_invalid"},
+    {ERR_CERT_INVALID, "tls.cert.invalid"},
+    {ERR_CERT_REVOKED, "tls.cert.revoked"},
+    {ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN,
      "tls.cert.pinned_key_not_in_cert_chain"},
-    {net::ERR_SSL_PROTOCOL_ERROR, "tls.protocol.error"},
+    {ERR_SSL_PROTOCOL_ERROR, "tls.protocol.error"},
     // tls.failed?
 
     // http.protocol.error?
-    {net::ERR_INVALID_HTTP_RESPONSE, "http.response.invalid"},
-    {net::ERR_TOO_MANY_REDIRECTS, "http.response.redirect_loop"},
+    {ERR_INVALID_HTTP_RESPONSE, "http.response.invalid"},
+    {ERR_TOO_MANY_REDIRECTS, "http.response.redirect_loop"},
     // http.failed?
 
-    {net::ERR_ABORTED, "abandoned"},
+    {ERR_ABORTED, "abandoned"},
     // unknown?
 
     // TODO(juliatuttle): Surely there are more errors we want here.
 };
 
-bool GetTypeFromNetError(net::Error error, std::string* type_out) {
+bool GetTypeFromNetError(Error error, std::string* type_out) {
   for (size_t i = 0; i < arraysize(kErrorTypes); ++i) {
     if (kErrorTypes[i].error == error) {
       *type_out = kErrorTypes[i].type;
@@ -109,8 +111,6 @@ bool GetTypeFromNetError(net::Error error, std::string* type_out) {
 }
 
 }  // namespace
-
-namespace network_error_logging {
 
 // static:
 
@@ -137,7 +137,7 @@ NetworkErrorLoggingService::Create() {
 NetworkErrorLoggingService::~NetworkErrorLoggingService() {}
 
 void NetworkErrorLoggingService::SetReportingService(
-    net::ReportingService* reporting_service) {
+    ReportingService* reporting_service) {
   reporting_service_ = reporting_service;
 }
 
@@ -317,13 +317,13 @@ void NetworkErrorLoggingService::MaybeRemoveWildcardPolicy(
 
 std::unique_ptr<const base::Value> NetworkErrorLoggingService::CreateReportBody(
     const std::string& type,
-    const net::NetworkErrorLoggingDelegate::ErrorDetails& details) const {
+    const NetworkErrorLoggingDelegate::ErrorDetails& details) const {
   auto body = base::MakeUnique<base::DictionaryValue>();
 
   body->SetString(kUriKey, details.uri.spec());
   body->SetString(kReferrerKey, details.referrer.spec());
   body->SetString(kServerIpKey, details.server_ip.ToString());
-  std::string protocol = net::NextProtoToString(details.protocol);
+  std::string protocol = NextProtoToString(details.protocol);
   if (protocol == "unknown")
     protocol = "";
   body->SetString(kProtocolKey, protocol);
@@ -334,4 +334,4 @@ std::unique_ptr<const base::Value> NetworkErrorLoggingService::CreateReportBody(
   return std::move(body);
 }
 
-}  // namespace network_error_logging
+}  // namespace net
