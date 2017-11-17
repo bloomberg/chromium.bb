@@ -78,8 +78,6 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   DECLARE_ALIGNED(16, uint8_t, level_counts[MAX_TX_SQUARE]);
   int8_t signs[MAX_TX_SQUARE];
 
-  memset(tcoeffs, 0, sizeof(*tcoeffs) * seg_eob);
-
   int all_zero = av1_read_record_bin(
       counts, r, ec_ctx->txb_skip_cdf[txs_ctx][txb_ctx->txb_skip_ctx], 2,
       ACCT_STR);
@@ -175,6 +173,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
         counts, r, ec_ctx->coeff_base_cdf[txs_ctx][plane_type][coeff_ctx], 4,
         ACCT_STR);
     levels[get_paded_idx(scan[c], bwl)] = level;
+    if (level) *max_scan_line = AOMMAX(*max_scan_line, scan[c]);
     // printf("base_cdf: %d %d %2d\n", txs_ctx, plane_type, coeff_ctx);
     // printf("base_cdf: %d %d %2d : %3d %3d %3d\n", txs_ctx, plane_type,
     // coeff_ctx,
@@ -216,12 +215,11 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
         }
       }
       levels[get_paded_idx(scan[c], bwl)] = k + 1;
+      *max_scan_line = AOMMAX(*max_scan_line, scan[c]);
     }
 #endif
 #endif
   }
-
-  *max_scan_line = *eob;
 
 #if USE_CAUSAL_BASE_CTX
   update_eob = *eob - 1;
