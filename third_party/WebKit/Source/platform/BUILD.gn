@@ -1086,6 +1086,8 @@ jumbo_component("platform") {
     "graphics/gpu/SharedGpuContext.h",
     "graphics/gpu/WebGLImageConversion.cpp",
     "graphics/gpu/WebGLImageConversion.h",
+    "graphics/highcontrast/highcontrast_classifier.cc",
+    "graphics/highcontrast/highcontrast_classifier.h",
     "graphics/paint/ClipDisplayItem.cpp",
     "graphics/paint/ClipDisplayItem.h",
     "graphics/paint/ClipPaintPropertyNode.cpp",
