@@ -1206,9 +1206,6 @@ bool VaapiVideoDecodeAccelerator::VaapiH264Accelerator::SubmitFrameMetadata(
 #undef FROM_SPS_TO_PP_SF2
 
 #define FROM_PPS_TO_PP(a) pic_param.a = pps->a
-  FROM_PPS_TO_PP(num_slice_groups_minus1);
-  pic_param.slice_group_map_type = 0;
-  pic_param.slice_group_change_rate_minus1 = 0;
   FROM_PPS_TO_PP(pic_init_qp_minus26);
   FROM_PPS_TO_PP(pic_init_qs_minus26);
   FROM_PPS_TO_PP(chroma_qp_index_offset);
