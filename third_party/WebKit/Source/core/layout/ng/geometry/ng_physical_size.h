@@ -6,8 +6,8 @@
 #define NGPhysicalSize_h
 
 #include "core/CoreExport.h"
-#include "core/layout/ng/ng_writing_mode.h"
 #include "platform/LayoutUnit.h"
+#include "platform/text/WritingMode.h"
 
 namespace blink {
 
@@ -24,7 +24,7 @@ struct CORE_EXPORT NGPhysicalSize {
   LayoutUnit width;
   LayoutUnit height;
 
-  NGLogicalSize ConvertToLogical(NGWritingMode mode) const;
+  NGLogicalSize ConvertToLogical(WritingMode mode) const;
 
   bool operator==(const NGPhysicalSize& other) const;
 

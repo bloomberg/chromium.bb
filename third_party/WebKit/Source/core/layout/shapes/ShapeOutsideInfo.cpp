@@ -217,6 +217,9 @@ inline LayoutUnit BorderBeforeInWritingMode(const LayoutBox& layout_box,
       return LayoutUnit(layout_box.BorderLeft());
     case WritingMode::kVerticalRl:
       return LayoutUnit(layout_box.BorderRight());
+    // TODO(layout-dev): Sideways-lr and sideways-rl are not yet supported.
+    default:
+      break;
   }
 
   NOTREACHED();
@@ -233,6 +236,9 @@ inline LayoutUnit BorderAndPaddingBeforeInWritingMode(
       return layout_box.BorderLeft() + layout_box.PaddingLeft();
     case WritingMode::kVerticalRl:
       return layout_box.BorderRight() + layout_box.PaddingRight();
+    // TODO(layout-dev): Sideways-lr and sideways-rl are not yet supported.
+    default:
+      break;
   }
 
   NOTREACHED();

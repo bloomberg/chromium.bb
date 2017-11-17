@@ -761,6 +761,9 @@ LayoutSize LayoutBoxModelObject::RelativePositionOffset() const {
     case WritingMode::kVerticalLr:
       offset.Expand(left.value(), LayoutUnit());
       break;
+    // TODO(layout-dev): Sideways-lr and sideways-rl are not yet supported.
+    default:
+      break;
   }
 
   // If the containing block of a relatively positioned element does not specify
@@ -808,6 +811,9 @@ LayoutSize LayoutBoxModelObject::RelativePositionOffset() const {
         offset.Expand(LayoutUnit(), top.value());
       else
         offset.SetHeight(-bottom.value());
+      break;
+    // TODO(layout-dev): Sideways-lr and sideways-rl are not yet supported.
+    default:
       break;
   }
   return offset;

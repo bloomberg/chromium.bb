@@ -6,25 +6,25 @@
 
 namespace blink {
 
-NGStaticPosition NGStaticPosition::Create(NGWritingMode writing_mode,
+NGStaticPosition NGStaticPosition::Create(WritingMode writing_mode,
                                           TextDirection direction,
                                           NGPhysicalOffset offset) {
   NGStaticPosition position;
   position.offset = offset;
   switch (writing_mode) {
-    case kHorizontalTopBottom:
+    case WritingMode::kHorizontalTb:
       position.type = (direction == TextDirection::kLtr) ? kTopLeft : kTopRight;
       break;
-    case kVerticalRightLeft:
-    case kSidewaysRightLeft:
+    case WritingMode::kVerticalRl:
+    case WritingMode::kSidewaysRl:
       position.type =
           (direction == TextDirection::kLtr) ? kTopRight : kBottomRight;
       break;
-    case kVerticalLeftRight:
+    case WritingMode::kVerticalLr:
       position.type =
           (direction == TextDirection::kLtr) ? kTopLeft : kBottomLeft;
       break;
-    case kSidewaysLeftRight:
+    case WritingMode::kSidewaysLr:
       position.type =
           (direction == TextDirection::kLtr) ? kBottomLeft : kTopLeft;
       break;

@@ -7,12 +7,12 @@
 namespace blink {
 
 NGBorderEdges NGBorderEdges::FromPhysical(unsigned physical_edges,
-                                          NGWritingMode writing_mode) {
-  if (writing_mode == kHorizontalTopBottom) {
+                                          WritingMode writing_mode) {
+  if (writing_mode == WritingMode::kHorizontalTb) {
     return NGBorderEdges(physical_edges & kTop, physical_edges & kRight,
                          physical_edges & kBottom, physical_edges & kLeft);
   }
-  if (writing_mode != kSidewaysLeftRight) {
+  if (writing_mode != WritingMode::kSidewaysLr) {
     return NGBorderEdges(physical_edges & kRight, physical_edges & kBottom,
                          physical_edges & kLeft, physical_edges & kTop);
   }
@@ -20,12 +20,12 @@ NGBorderEdges NGBorderEdges::FromPhysical(unsigned physical_edges,
                        physical_edges & kRight, physical_edges & kBottom);
 }
 
-unsigned NGBorderEdges::ToPhysical(NGWritingMode writing_mode) const {
-  if (writing_mode == kHorizontalTopBottom) {
+unsigned NGBorderEdges::ToPhysical(WritingMode writing_mode) const {
+  if (writing_mode == WritingMode::kHorizontalTb) {
     return (block_start ? kTop : 0) | (line_right ? kRight : 0) |
            (block_end ? kBottom : 0) | (line_left ? kLeft : 0);
   }
-  if (writing_mode != kSidewaysLeftRight) {
+  if (writing_mode != WritingMode::kSidewaysLr) {
     return (block_start ? kRight : 0) | (line_right ? kBottom : 0) |
            (block_end ? kLeft : 0) | (line_left ? kTop : 0);
   }

@@ -41,10 +41,10 @@ TEST_F(NGInlineLayoutAlgorithmTest, BreakToken) {
 
   scoped_refptr<NGConstraintSpace> constraint_space =
       NGConstraintSpaceBuilder(
-          kHorizontalTopBottom,
-          /* icb_size */ size.ConvertToPhysical(kHorizontalTopBottom))
+          WritingMode::kHorizontalTb,
+          /* icb_size */ size.ConvertToPhysical(WritingMode::kHorizontalTb))
           .SetAvailableSize(size)
-          .ToConstraintSpace(kHorizontalTopBottom);
+          .ToConstraintSpace(WritingMode::kHorizontalTb);
 
   scoped_refptr<NGLayoutResult> layout_result =
       inline_node.Layout(*constraint_space, nullptr);

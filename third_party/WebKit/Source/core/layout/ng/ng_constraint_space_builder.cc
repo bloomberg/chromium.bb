@@ -10,15 +10,15 @@ namespace blink {
 
 NGConstraintSpaceBuilder::NGConstraintSpaceBuilder(
     const NGConstraintSpace& parent_space)
-    : NGConstraintSpaceBuilder(parent_space.WritingMode(),
+    : NGConstraintSpaceBuilder(parent_space.GetWritingMode(),
                                parent_space.InitialContainingBlockSize()) {}
 
-NGConstraintSpaceBuilder::NGConstraintSpaceBuilder(NGWritingMode writing_mode,
+NGConstraintSpaceBuilder::NGConstraintSpaceBuilder(WritingMode writing_mode,
                                                    NGPhysicalSize icb_size)
     : initial_containing_block_size_(icb_size),
       fragmentainer_block_size_(NGSizeIndefinite),
       fragmentainer_space_at_bfc_start_(NGSizeIndefinite),
-      parent_writing_mode_(writing_mode),
+      parent_writing_mode_(static_cast<unsigned>(writing_mode)),
       is_fixed_size_inline_(false),
       is_fixed_size_block_(false),
       is_shrink_to_fit_(false),
@@ -160,11 +160,11 @@ NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::AddBaselineRequest(
 }
 
 scoped_refptr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
-    NGWritingMode out_writing_mode) {
+    WritingMode out_writing_mode) {
   // Whether the child and the containing block are parallel to each other.
   // Example: vertical-rl and vertical-lr
   bool is_in_parallel_flow = IsParallelWritingMode(
-      static_cast<NGWritingMode>(parent_writing_mode_), out_writing_mode);
+      static_cast<WritingMode>(parent_writing_mode_), out_writing_mode);
 
   NGLogicalSize available_size = available_size_;
   NGLogicalSize percentage_resolution_size = percentage_resolution_size_;
@@ -181,7 +181,7 @@ scoped_refptr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
   // https://www.w3.org/TR/css-writing-modes-3/#orthogonal-auto
   if (available_size.inline_size == NGSizeIndefinite) {
     DCHECK(!is_in_parallel_flow);
-    if (out_writing_mode == kHorizontalTopBottom) {
+    if (out_writing_mode == WritingMode::kHorizontalTb) {
       available_size.inline_size = initial_containing_block_size_.width;
     } else {
       available_size.inline_size = initial_containing_block_size_.height;
@@ -189,7 +189,7 @@ scoped_refptr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
   }
   if (percentage_resolution_size.inline_size == NGSizeIndefinite) {
     DCHECK(!is_in_parallel_flow);
-    if (out_writing_mode == kHorizontalTopBottom) {
+    if (out_writing_mode == WritingMode::kHorizontalTb) {
       percentage_resolution_size.inline_size =
           initial_containing_block_size_.width;
     } else {
@@ -227,7 +227,7 @@ scoped_refptr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
 
   if (is_in_parallel_flow) {
     return base::AdoptRef(new NGConstraintSpace(
-        static_cast<NGWritingMode>(out_writing_mode), false,
+        static_cast<WritingMode>(out_writing_mode), false,
         static_cast<TextDirection>(text_direction_), available_size,
         percentage_resolution_size, parent_percentage_resolution_inline_size,
         initial_containing_block_size_, fragmentainer_block_size_,

@@ -13,8 +13,8 @@
 #include "core/layout/ng/inline/ng_baseline.h"
 #include "core/layout/ng/ng_exclusion_space.h"
 #include "core/layout/ng/ng_unpositioned_float.h"
-#include "core/layout/ng/ng_writing_mode.h"
 #include "platform/text/TextDirection.h"
+#include "platform/text/WritingMode.h"
 #include "platform/wtf/Optional.h"
 #include "platform/wtf/RefCounted.h"
 #include "platform/wtf/text/WTFString.h"
@@ -47,8 +47,8 @@ class CORE_EXPORT NGConstraintSpace final
     return static_cast<TextDirection>(direction_);
   }
 
-  NGWritingMode WritingMode() const {
-    return static_cast<NGWritingMode>(writing_mode_);
+  WritingMode GetWritingMode() const {
+    return static_cast<WritingMode>(writing_mode_);
   }
 
   bool IsOrthogonalWritingModeRoot() const {
@@ -197,7 +197,7 @@ class CORE_EXPORT NGConstraintSpace final
   friend class NGConstraintSpaceBuilder;
   // Default constructor.
   NGConstraintSpace(
-      NGWritingMode,
+      WritingMode,
       bool is_orthogonal_writing_mode_root,
       TextDirection,
       NGLogicalSize available_size,

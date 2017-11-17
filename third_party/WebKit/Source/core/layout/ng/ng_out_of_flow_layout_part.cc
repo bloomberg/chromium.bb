@@ -25,8 +25,7 @@ NGOutOfFlowLayoutPart::NGOutOfFlowLayoutPart(
       container_builder_(container_builder),
       contains_absolute_(container.IsAbsoluteContainer()),
       contains_fixed_(container.IsFixedContainer()) {
-  NGWritingMode writing_mode(
-      FromPlatformWritingMode(container_style_.GetWritingMode()));
+  WritingMode writing_mode(container_style_.GetWritingMode());
 
   NGBoxStrut borders = ComputeBorders(container_space, container_style_);
   NGBoxStrut scrollers = container.GetScrollbarSizes();
@@ -78,10 +77,8 @@ scoped_refptr<NGLayoutResult> NGOutOfFlowLayoutPart::LayoutDescendant(
     NGLogicalOffset* offset) {
   DCHECK(descendant);
 
-  NGWritingMode container_writing_mode(
-      FromPlatformWritingMode(container_style_.GetWritingMode()));
-  NGWritingMode descendant_writing_mode(
-      FromPlatformWritingMode(descendant.Style().GetWritingMode()));
+  WritingMode container_writing_mode(container_style_.GetWritingMode());
+  WritingMode descendant_writing_mode(descendant.Style().GetWritingMode());
 
   // Adjust the static_position origin. The static_position coordinate origin is
   // relative to the container's border box, ng_absolute_utils expects it to be
@@ -166,12 +163,10 @@ scoped_refptr<NGLayoutResult> NGOutOfFlowLayoutPart::GenerateFragment(
     const NGAbsolutePhysicalPosition node_position) {
   // As the block_estimate is always in the descendant's writing mode, we build
   // the constraint space in the descendant's writing mode.
-  NGWritingMode writing_mode(
-      FromPlatformWritingMode(descendant.Style().GetWritingMode()));
-  NGLogicalSize container_size(container_size_
-                                   .ConvertToPhysical(FromPlatformWritingMode(
-                                       container_style_.GetWritingMode()))
-                                   .ConvertToLogical(writing_mode));
+  WritingMode writing_mode(descendant.Style().GetWritingMode());
+  NGLogicalSize container_size(
+      container_size_.ConvertToPhysical(container_style_.GetWritingMode())
+          .ConvertToLogical(writing_mode));
 
   LayoutUnit inline_size =
       node_position.size.ConvertToLogical(writing_mode).inline_size;

@@ -75,10 +75,10 @@ void CreateBidiRuns(BidiRunList<BidiRun>* bidi_runs,
   for (unsigned child_index = 0; child_index < children.size(); child_index++) {
     const auto& child = children[child_index];
 
-    NGFragment fragment(constraint_space.WritingMode(), *child);
+    NGFragment fragment(constraint_space.GetWritingMode(), *child);
 
     NGLogicalOffset fragment_offset = child->Offset().ConvertToLogical(
-        constraint_space.WritingMode(), TextDirection::kLtr, parent_size,
+        constraint_space.GetWritingMode(), TextDirection::kLtr, parent_size,
         child->Size());
 
     if (child->Type() == NGPhysicalFragment::kFragmentText) {
@@ -367,7 +367,7 @@ void PlaceLineBoxChildren(const Vector<NGInlineItem>& items,
                           LayoutBlockFlow& block_flow,
                           LineInfo& line_info) {
   FontBaseline baseline_type =
-      IsHorizontalWritingMode(constraint_space.WritingMode())
+      IsHorizontalWritingMode(constraint_space.GetWritingMode())
           ? FontBaseline::kAlphabeticBaseline
           : FontBaseline::kIdeographicBaseline;
 
@@ -381,11 +381,11 @@ void PlaceLineBoxChildren(const Vector<NGInlineItem>& items,
       continue;
 
     const auto& physical_line_box = ToNGPhysicalLineBoxFragment(*child);
-    NGFragment line_box(constraint_space.WritingMode(), physical_line_box);
+    NGFragment line_box(constraint_space.GetWritingMode(), physical_line_box);
 
     NGLogicalOffset line_box_offset =
         physical_line_box.Offset().ConvertToLogical(
-            constraint_space.WritingMode(), TextDirection::kLtr,
+            constraint_space.GetWritingMode(), TextDirection::kLtr,
             box_fragment.Size(), physical_line_box.Size());
 
     // Create a BidiRunList for this line.
@@ -658,7 +658,7 @@ scoped_refptr<NGLayoutResult> NGInlineNode::Layout(
 static LayoutUnit ComputeContentSize(NGInlineNode node,
                                      LayoutUnit available_inline_size) {
   const ComputedStyle& style = node.Style();
-  NGWritingMode writing_mode = FromPlatformWritingMode(style.GetWritingMode());
+  WritingMode writing_mode = style.GetWritingMode();
 
   scoped_refptr<NGConstraintSpace> space =
       NGConstraintSpaceBuilder(

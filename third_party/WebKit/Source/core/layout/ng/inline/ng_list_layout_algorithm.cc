@@ -26,7 +26,7 @@ void NGListLayoutAlgorithm::SetListMarkerPosition(
   const NGPhysicalFragment* physical_fragment =
       (*line_box)[list_marker_index].PhysicalFragment();
   DCHECK(physical_fragment);
-  NGFragment list_marker(constraint_space.WritingMode(), *physical_fragment);
+  NGFragment list_marker(constraint_space.GetWritingMode(), *physical_fragment);
 
   // Compute the inline offset relative to the line.
   bool is_image = false;  // TODO(kojii): implement

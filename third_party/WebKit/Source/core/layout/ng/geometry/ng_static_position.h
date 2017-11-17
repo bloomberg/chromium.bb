@@ -7,9 +7,9 @@
 
 #include "core/CoreExport.h"
 #include "core/layout/ng/geometry/ng_physical_offset.h"
-#include "core/layout/ng/ng_writing_mode.h"
 #include "platform/LayoutUnit.h"
 #include "platform/text/TextDirection.h"
+#include "platform/text/WritingMode.h"
 
 namespace blink {
 
@@ -22,9 +22,7 @@ struct CORE_EXPORT NGStaticPosition {
 
   // Creates a position with proper type wrt writing mode and direction.
   // It expects physical offset of inline_start/block_start vertex.
-  static NGStaticPosition Create(NGWritingMode,
-                                 TextDirection,
-                                 NGPhysicalOffset);
+  static NGStaticPosition Create(WritingMode, TextDirection, NGPhysicalOffset);
 
   // Left/Right/TopPosition functions map static position to inset of
   // left/right/top edge wrt container space.

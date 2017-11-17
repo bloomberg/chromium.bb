@@ -27,7 +27,7 @@ bool ShouldComputeBaseline(const LayoutBox& box) {
 }  // namespace
 
 NGConstraintSpace::NGConstraintSpace(
-    NGWritingMode writing_mode,
+    WritingMode writing_mode,
     bool is_orthogonal_writing_mode_root,
     TextDirection direction,
     NGLogicalSize available_size,
@@ -70,7 +70,7 @@ NGConstraintSpace::NGConstraintSpace(
       is_new_fc_(is_new_fc),
       is_anonymous_(is_anonymous),
       use_first_line_style_(use_first_line_style),
-      writing_mode_(writing_mode),
+      writing_mode_(static_cast<unsigned>(writing_mode)),
       is_orthogonal_writing_mode_root_(is_orthogonal_writing_mode_root),
       direction_(static_cast<unsigned>(direction)),
       margin_strut_(margin_strut),
@@ -84,11 +84,9 @@ NGConstraintSpace::NGConstraintSpace(
 
 scoped_refptr<NGConstraintSpace> NGConstraintSpace::CreateFromLayoutObject(
     const LayoutBox& box) {
-  auto writing_mode = FromPlatformWritingMode(box.StyleRef().GetWritingMode());
+  auto writing_mode = box.StyleRef().GetWritingMode();
   bool parallel_containing_block = IsParallelWritingMode(
-      FromPlatformWritingMode(
-          box.ContainingBlock()->StyleRef().GetWritingMode()),
-      writing_mode);
+      box.ContainingBlock()->StyleRef().GetWritingMode(), writing_mode);
   bool fixed_inline = false, fixed_block = false;
 
   LayoutUnit available_logical_width;
@@ -180,7 +178,7 @@ NGConstraintSpace::PercentageResolutionInlineSizeForParentWritingMode() const {
     return PercentageResolutionSize().inline_size;
   if (PercentageResolutionSize().block_size != NGSizeIndefinite)
     return PercentageResolutionSize().block_size;
-  if (IsHorizontalWritingMode(WritingMode()))
+  if (IsHorizontalWritingMode(GetWritingMode()))
     return InitialContainingBlockSize().height;
   return InitialContainingBlockSize().width;
 }
@@ -191,7 +189,7 @@ Optional<LayoutUnit> NGConstraintSpace::ParentPercentageResolutionInlineSize()
     return {};
   if (*parent_percentage_resolution_inline_size_ != NGSizeIndefinite)
     return *parent_percentage_resolution_inline_size_;
-  return initial_containing_block_size_.ConvertToLogical(WritingMode())
+  return initial_containing_block_size_.ConvertToLogical(GetWritingMode())
       .inline_size;
 }
 

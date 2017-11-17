@@ -34,16 +34,16 @@ bool AbsoluteVerticalNeedsEstimate(const ComputedStyle& style) {
 // vlr rtl => bottom left
 // vrl ltr => top right
 // vrl rtl => bottom right
-bool IsLeftDominant(const NGWritingMode container_writing_mode,
+bool IsLeftDominant(const WritingMode container_writing_mode,
                     const TextDirection container_direction) {
-  return (container_writing_mode != kVerticalRightLeft) &&
-         !(container_writing_mode == kHorizontalTopBottom &&
+  return (container_writing_mode != WritingMode::kVerticalRl) &&
+         !(container_writing_mode == WritingMode::kHorizontalTb &&
            container_direction == TextDirection::kRtl);
 }
 
-bool IsTopDominant(const NGWritingMode container_writing_mode,
+bool IsTopDominant(const WritingMode container_writing_mode,
                    const TextDirection container_direction) {
-  return (container_writing_mode == kHorizontalTopBottom) ||
+  return (container_writing_mode == WritingMode::kHorizontalTb) ||
          (container_direction != TextDirection::kRtl);
 }
 
@@ -52,7 +52,7 @@ LayoutUnit ResolveWidth(const Length& width,
                         const ComputedStyle& style,
                         const Optional<MinMaxSize>& child_minmax,
                         LengthResolveType resolve_type) {
-  if (space.WritingMode() == kHorizontalTopBottom)
+  if (space.GetWritingMode() == WritingMode::kHorizontalTb)
     return ResolveInlineLength(space, style, child_minmax, width, resolve_type);
   LayoutUnit computed_width =
       child_minmax.has_value() ? child_minmax->max_size : LayoutUnit();
@@ -65,7 +65,7 @@ LayoutUnit ResolveHeight(const Length& height,
                          const ComputedStyle& style,
                          const Optional<MinMaxSize>& child_minmax,
                          LengthResolveType resolve_type) {
-  if (space.WritingMode() != kHorizontalTopBottom)
+  if (space.GetWritingMode() != WritingMode::kHorizontalTb)
     return ResolveInlineLength(space, style, child_minmax, height,
                                resolve_type);
   LayoutUnit computed_height =
@@ -99,12 +99,12 @@ void ComputeAbsoluteHorizontal(const NGConstraintSpace& space,
                                const Optional<LayoutUnit>& incoming_width,
                                const NGStaticPosition& static_position,
                                const Optional<MinMaxSize>& child_minmax,
-                               const NGWritingMode container_writing_mode,
+                               const WritingMode container_writing_mode,
                                const TextDirection container_direction,
                                NGAbsolutePhysicalPosition* position) {
   NGLogicalSize percentage_logical = space.PercentageResolutionSize();
   NGPhysicalSize percentage_physical =
-      percentage_logical.ConvertToPhysical(space.WritingMode());
+      percentage_logical.ConvertToPhysical(space.GetWritingMode());
   Optional<LayoutUnit> margin_left;
   if (!style.MarginLeft().IsAuto())
     margin_left =
@@ -122,7 +122,7 @@ void ComputeAbsoluteHorizontal(const NGConstraintSpace& space,
   LayoutUnit border_padding = HorizontalBorderPadding(space, style);
   Optional<LayoutUnit> width = incoming_width;
   NGPhysicalSize container_size =
-      space.AvailableSize().ConvertToPhysical(space.WritingMode());
+      space.AvailableSize().ConvertToPhysical(space.GetWritingMode());
   DCHECK_NE(container_size.width, NGSizeIndefinite);
 
   // Solving the equation:
@@ -255,12 +255,12 @@ void ComputeAbsoluteVertical(const NGConstraintSpace& space,
                              const Optional<LayoutUnit>& incoming_height,
                              const NGStaticPosition& static_position,
                              const Optional<MinMaxSize>& child_minmax,
-                             const NGWritingMode container_writing_mode,
+                             const WritingMode container_writing_mode,
                              const TextDirection container_direction,
                              NGAbsolutePhysicalPosition* position) {
   NGLogicalSize percentage_logical = space.PercentageResolutionSize();
   NGPhysicalSize percentage_physical =
-      percentage_logical.ConvertToPhysical(space.WritingMode());
+      percentage_logical.ConvertToPhysical(space.GetWritingMode());
 
   Optional<LayoutUnit> margin_top;
   if (!style.MarginTop().IsAuto())
@@ -280,7 +280,7 @@ void ComputeAbsoluteVertical(const NGConstraintSpace& space,
   Optional<LayoutUnit> height = incoming_height;
 
   NGPhysicalSize container_size =
-      space.AvailableSize().ConvertToPhysical(space.WritingMode());
+      space.AvailableSize().ConvertToPhysical(space.GetWritingMode());
   DCHECK_NE(container_size.height, NGSizeIndefinite);
 
   // Solving the equation:
@@ -434,7 +434,7 @@ NGAbsolutePhysicalPosition ComputePartialAbsoluteWithChildInlineSize(
     const NGStaticPosition& static_position,
     const Optional<MinMaxSize>& child_minmax,
     const Optional<NGLogicalSize>& replaced_size,
-    const NGWritingMode container_writing_mode,
+    const WritingMode container_writing_mode,
     const TextDirection container_direction) {
   NGAbsolutePhysicalPosition position;
   if (style.IsHorizontalWritingMode()) {
@@ -469,7 +469,7 @@ void ComputeFullAbsoluteWithChildBlockSize(
     const NGStaticPosition& static_position,
     const Optional<LayoutUnit>& child_block_size,
     const Optional<NGLogicalSize>& replaced_size,
-    const NGWritingMode container_writing_mode,
+    const WritingMode container_writing_mode,
     const TextDirection container_direction,
     NGAbsolutePhysicalPosition* position) {
   // After partial size has been computed, child block size is either

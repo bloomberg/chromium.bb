@@ -37,7 +37,14 @@ namespace blink {
 // horizontal-tb, vertical-rl and vertical-lr.
 // Since these names aren't very self-explanatory, where possible use the
 // inline utility functions below.
-enum class WritingMode : unsigned { kHorizontalTb, kVerticalRl, kVerticalLr };
+enum class WritingMode : unsigned {
+  kHorizontalTb = 0,
+  kVerticalRl = 1,
+  kVerticalLr = 2,
+  // sideways-rl and sideways-lr are only supported by LayoutNG.
+  kSidewaysRl = 3,
+  kSidewaysLr = 4
+};
 
 // Lines have horizontal orientation; modes horizontal-tb.
 inline bool IsHorizontalWritingMode(WritingMode writing_mode) {
@@ -53,6 +60,12 @@ inline bool IsFlippedLinesWritingMode(WritingMode writing_mode) {
 // vertical-rl.
 inline bool IsFlippedBlocksWritingMode(WritingMode writing_mode) {
   return writing_mode == WritingMode::kVerticalRl;
+}
+
+// Whether the child and the containing block are parallel to each other.
+// Example: vertical-rl and vertical-lr
+inline bool IsParallelWritingMode(WritingMode a, WritingMode b) {
+  return (a == WritingMode::kHorizontalTb) == (b == WritingMode::kHorizontalTb);
 }
 
 }  // namespace blink

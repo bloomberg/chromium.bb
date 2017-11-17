@@ -18,7 +18,7 @@ namespace blink {
 NGLineBoxFragmentBuilder::NGLineBoxFragmentBuilder(
     NGInlineNode node,
     scoped_refptr<const ComputedStyle> style,
-    NGWritingMode writing_mode,
+    WritingMode writing_mode,
     TextDirection)
     : NGContainerFragmentBuilder(style, writing_mode, TextDirection::kLtr),
       node_(node) {}
@@ -38,8 +38,7 @@ NGLogicalSize NGLineBoxFragmentBuilder::Size() const {
 
 LayoutUnit NGLineBoxFragmentBuilder::ComputeBlockSize() const {
   LayoutUnit block_size;
-  NGWritingMode writing_mode(
-      FromPlatformWritingMode(node_.Style().GetWritingMode()));
+  WritingMode writing_mode(node_.Style().GetWritingMode());
 
   for (size_t i = 0; i < children_.size(); ++i) {
     block_size = std::max(
@@ -120,8 +119,7 @@ void NGLineBoxFragmentBuilder::AddChildren(ChildList& children) {
 scoped_refptr<NGLayoutResult> NGLineBoxFragmentBuilder::ToLineBoxFragment() {
   DCHECK_EQ(offsets_.size(), children_.size());
 
-  NGWritingMode writing_mode(
-      FromPlatformWritingMode(node_.Style().GetWritingMode()));
+  WritingMode writing_mode(node_.Style().GetWritingMode());
   NGPhysicalSize physical_size =
       NGLogicalSize(inline_size_, block_size_).ConvertToPhysical(writing_mode);
 

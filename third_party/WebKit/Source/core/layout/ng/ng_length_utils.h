@@ -9,8 +9,8 @@
 #include "core/layout/MinMaxSize.h"
 #include "core/layout/ng/geometry/ng_box_strut.h"
 #include "core/layout/ng/geometry/ng_logical_size.h"
-#include "core/layout/ng/ng_writing_mode.h"
 #include "platform/text/TextDirection.h"
+#include "platform/text/WritingMode.h"
 #include "platform/wtf/Optional.h"
 
 namespace blink {

@@ -19,52 +19,52 @@ TEST(NGGeometryUnitsTest, ConvertLogicalOffsetToPhysicalOffset) {
   NGPhysicalOffset offset;
 
   offset = logical_offset.ConvertToPhysical(
-      kHorizontalTopBottom, TextDirection::kLtr, outer_size, inner_size);
+      WritingMode::kHorizontalTb, TextDirection::kLtr, outer_size, inner_size);
   EXPECT_EQ(LayoutUnit(20), offset.left);
   EXPECT_EQ(LayoutUnit(30), offset.top);
 
   offset = logical_offset.ConvertToPhysical(
-      kHorizontalTopBottom, TextDirection::kRtl, outer_size, inner_size);
+      WritingMode::kHorizontalTb, TextDirection::kRtl, outer_size, inner_size);
   EXPECT_EQ(LayoutUnit(275), offset.left);
   EXPECT_EQ(LayoutUnit(30), offset.top);
 
   offset = logical_offset.ConvertToPhysical(
-      kVerticalRightLeft, TextDirection::kLtr, outer_size, inner_size);
+      WritingMode::kVerticalRl, TextDirection::kLtr, outer_size, inner_size);
   EXPECT_EQ(LayoutUnit(265), offset.left);
   EXPECT_EQ(LayoutUnit(20), offset.top);
 
   offset = logical_offset.ConvertToPhysical(
-      kVerticalRightLeft, TextDirection::kRtl, outer_size, inner_size);
+      WritingMode::kVerticalRl, TextDirection::kRtl, outer_size, inner_size);
   EXPECT_EQ(LayoutUnit(265), offset.left);
   EXPECT_EQ(LayoutUnit(315), offset.top);
 
   offset = logical_offset.ConvertToPhysical(
-      kSidewaysRightLeft, TextDirection::kLtr, outer_size, inner_size);
+      WritingMode::kSidewaysRl, TextDirection::kLtr, outer_size, inner_size);
   EXPECT_EQ(LayoutUnit(265), offset.left);
   EXPECT_EQ(LayoutUnit(20), offset.top);
 
   offset = logical_offset.ConvertToPhysical(
-      kSidewaysRightLeft, TextDirection::kRtl, outer_size, inner_size);
+      WritingMode::kSidewaysRl, TextDirection::kRtl, outer_size, inner_size);
   EXPECT_EQ(LayoutUnit(265), offset.left);
   EXPECT_EQ(LayoutUnit(315), offset.top);
 
   offset = logical_offset.ConvertToPhysical(
-      kVerticalLeftRight, TextDirection::kLtr, outer_size, inner_size);
+      WritingMode::kVerticalLr, TextDirection::kLtr, outer_size, inner_size);
   EXPECT_EQ(LayoutUnit(30), offset.left);
   EXPECT_EQ(LayoutUnit(20), offset.top);
 
   offset = logical_offset.ConvertToPhysical(
-      kVerticalLeftRight, TextDirection::kRtl, outer_size, inner_size);
+      WritingMode::kVerticalLr, TextDirection::kRtl, outer_size, inner_size);
   EXPECT_EQ(LayoutUnit(30), offset.left);
   EXPECT_EQ(LayoutUnit(315), offset.top);
 
   offset = logical_offset.ConvertToPhysical(
-      kSidewaysLeftRight, TextDirection::kLtr, outer_size, inner_size);
+      WritingMode::kSidewaysLr, TextDirection::kLtr, outer_size, inner_size);
   EXPECT_EQ(LayoutUnit(30), offset.left);
   EXPECT_EQ(LayoutUnit(315), offset.top);
 
   offset = logical_offset.ConvertToPhysical(
-      kSidewaysLeftRight, TextDirection::kRtl, outer_size, inner_size);
+      WritingMode::kSidewaysLr, TextDirection::kRtl, outer_size, inner_size);
   EXPECT_EQ(LayoutUnit(30), offset.left);
   EXPECT_EQ(LayoutUnit(20), offset.top);
 }

@@ -25,7 +25,7 @@ class NGLengthUtilsTest : public ::testing::Test {
       int block_size,
       bool fixed_inline = false,
       bool fixed_block = false,
-      NGWritingMode writing_mode = NGWritingMode::kHorizontalTopBottom) {
+      WritingMode writing_mode = WritingMode::kHorizontalTb) {
     NGLogicalSize size = {LayoutUnit(inline_size), LayoutUnit(block_size)};
 
     return NGConstraintSpaceBuilder(
@@ -384,7 +384,7 @@ TEST_F(NGLengthUtilsTest, testPadding) {
   style_->SetWritingMode(WritingMode::kVerticalRl);
 
   scoped_refptr<NGConstraintSpace> constraint_space(ConstructConstraintSpace(
-      200, 300, false, false, NGWritingMode::kVerticalRightLeft));
+      200, 300, false, false, WritingMode::kVerticalRl));
 
   NGBoxStrut padding = ComputePadding(*constraint_space, *style_);
 

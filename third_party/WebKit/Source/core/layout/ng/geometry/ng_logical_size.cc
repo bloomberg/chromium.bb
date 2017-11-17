@@ -8,9 +8,10 @@
 
 namespace blink {
 
-NGPhysicalSize NGLogicalSize::ConvertToPhysical(NGWritingMode mode) const {
-  return mode == kHorizontalTopBottom ? NGPhysicalSize(inline_size, block_size)
-                                      : NGPhysicalSize(block_size, inline_size);
+NGPhysicalSize NGLogicalSize::ConvertToPhysical(WritingMode mode) const {
+  return mode == WritingMode::kHorizontalTb
+             ? NGPhysicalSize(inline_size, block_size)
+             : NGPhysicalSize(block_size, inline_size);
 }
 
 bool NGLogicalSize::operator==(const NGLogicalSize& other) const {

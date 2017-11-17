@@ -5,8 +5,8 @@
 #include "core/layout/ng/ng_space_utils.h"
 
 #include "core/layout/ng/geometry/ng_bfc_offset.h"
-#include "core/layout/ng/ng_writing_mode.h"
 #include "core/style/ComputedStyle.h"
+#include "platform/text/WritingMode.h"
 
 namespace blink {
 
@@ -15,8 +15,7 @@ bool ShouldShrinkToFit(const ComputedStyle& parent_style,
   // Whether the child and the containing block are parallel to each other.
   // Example: vertical-rl and vertical-lr
   bool is_in_parallel_flow = IsParallelWritingMode(
-      FromPlatformWritingMode(parent_style.GetWritingMode()),
-      FromPlatformWritingMode(style.GetWritingMode()));
+      parent_style.GetWritingMode(), style.GetWritingMode());
 
   return style.Display() == EDisplay::kInlineBlock || style.IsFloating() ||
          !is_in_parallel_flow;
