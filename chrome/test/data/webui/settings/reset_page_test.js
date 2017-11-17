@@ -55,25 +55,18 @@ cr.define('settings_reset_page', function() {
         Polymer.dom.flush();
         var dialog = resetPage.$$('settings-reset-profile-dialog');
         assertTrue(!!dialog);
-        var onDialogClosed = new Promise(
-            function(resolve, reject) {
-              dialog.addEventListener('close', function() {
-                assertFalse(dialog.$.dialog.open);
-                resolve();
-              });
-            });
+        assertTrue(dialog.$.dialog.open);
 
-        return PolymerTest.flushTasks().then(function() {
-          resetPageBrowserProxy.whenCalled('onShowResetProfileDialog')
-              .then(function() {
-                assertTrue(dialog.$.dialog.open);
-                closeDialogFn(dialog);
-                return Promise.all([
-                  onDialogClosed,
-                  resetPageBrowserProxy.whenCalled('onHideResetProfileDialog'),
-                ]);
-              });
-        });
+        var whenDialogClosed = test_util.eventToPromise('close', dialog);
+
+        return resetPageBrowserProxy.whenCalled('onShowResetProfileDialog')
+            .then(function() {
+              closeDialogFn(dialog);
+              return Promise.all([
+                whenDialogClosed,
+                resetPageBrowserProxy.whenCalled('onHideResetProfileDialog'),
+              ]);
+            });
       }
 
       // Tests that the reset profile dialog opens and closes correctly and that

@@ -32,12 +32,6 @@ Polymer({
       value: cr.isChromeOS ? loadTimeData.getBoolean('allowPowerwash') : false
     },
 
-    /** @private */
-    showResetProfileDialog_: {
-      type: Boolean,
-      value: false,
-    },
-
     // <if expr="_google_chrome and is_win">
     /** @private */
     userInitiatedCleanupsEnabled_: {
@@ -55,9 +49,12 @@ Polymer({
    * @protected
    */
   currentRouteChanged: function(route) {
-    this.showResetProfileDialog_ =
-        route == settings.routes.TRIGGERED_RESET_DIALOG ||
-        route == settings.routes.RESET_DIALOG;
+    if (route == settings.routes.TRIGGERED_RESET_DIALOG ||
+        route == settings.routes.RESET_DIALOG) {
+      /** @type {!SettingsResetProfileDialogElement} */ (
+          this.$.resetProfileDialog.get())
+          .show();
+    }
   },
 
   /** @private */

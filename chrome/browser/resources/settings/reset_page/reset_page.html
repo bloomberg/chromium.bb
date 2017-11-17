@@ -36,7 +36,9 @@
               class="subpage-arrow" aria-label="$i18n{resetPageTitle}"
               aria-describedby="resetProfileSecondary"></button>
         </div>
-        <template is="dom-if" if="[[showResetProfileDialog_]]" restamp>
+        <!-- Keep a single instance of reset-profile-dialog on purpose, to
+          preserve state across show/hide operations. -->
+        <template is="cr-lazy-render" id="resetProfileDialog">
           <settings-reset-profile-dialog on-close="onResetProfileDialogClose_">
           </settings-reset-profile-dialog>
         </template>
