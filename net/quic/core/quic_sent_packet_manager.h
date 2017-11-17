@@ -126,6 +126,9 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   // pending.  Invoked after OnRetransmissionTimeout.
   bool MaybeRetransmitTailLossProbe();
 
+  // Retransmits the oldest pending packet.
+  bool MaybeRetransmitOldestPacket(TransmissionType type);
+
   // Removes the retransmittable frames from all unencrypted packets to ensure
   // they don't get retransmitted.
   void NeuterUnencryptedPackets();

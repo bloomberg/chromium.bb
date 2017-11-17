@@ -657,6 +657,7 @@ class TestConnection : public QuicConnection {
   }
 
   using QuicConnection::SelectMutualVersion;
+  using QuicConnection::SendProbingRetransmissions;
   using QuicConnection::set_defer_send_in_response_to_packets;
 
  private:
@@ -5381,6 +5382,63 @@ TEST_P(QuicConnectionTest, HasPendingControlFramesWhenRetransmittingPackets) {
   writer_->SetWritable();
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(5);
   connection_.OnCanWrite();
+}
+
+TEST_P(QuicConnectionTest, SendProbingRetransmissions) {
+  MockQuicConnectionDebugVisitor debug_visitor;
+  connection_.set_debug_visitor(&debug_visitor);
+
+  const QuicStreamId stream_id = 2;
+  QuicPacketNumber last_packet;
+  SendStreamDataToPeer(stream_id, "foo", 0, NO_FIN, &last_packet);
+  SendStreamDataToPeer(stream_id, "bar", 3, NO_FIN, &last_packet);
+  SendStreamDataToPeer(stream_id, "test", 6, NO_FIN, &last_packet);
+
+  const QuicByteCount old_bytes_in_flight =
+      connection_.sent_packet_manager().GetBytesInFlight();
+
+  // Allow 9 probing retransmissions to be sent.
+  {
+    InSequence seq;
+    EXPECT_CALL(*send_algorithm_, CanSend(_))
+        .Times(9 * 2)
+        .WillRepeatedly(Return(true));
+    EXPECT_CALL(*send_algorithm_, CanSend(_)).WillOnce(Return(false));
+  }
+  // Expect them retransmitted in cyclic order (foo, bar, test, foo, bar...).
+  QuicPacketCount sent_count = 0;
+  EXPECT_CALL(debug_visitor, OnPacketSent(_, _, _, _))
+      .WillRepeatedly(Invoke(testing::CreateFunctor(
+          [](TestPacketWriter* writer, QuicPacketCount* sent_count,
+             const SerializedPacket&, QuicPacketNumber, TransmissionType,
+             QuicTime) {
+            ASSERT_EQ(1u, writer->stream_frames().size());
+            // Identify the frames by stream offset (0, 3, 6, 0, 3...).
+            EXPECT_EQ(3 * (*sent_count % 3),
+                      writer->stream_frames()[0]->offset);
+            ++*sent_count;
+          },
+          base::Unretained(writer_.get()), base::Unretained(&sent_count))));
+
+  connection_.SendProbingRetransmissions();
+
+  // Ensure that the in-flight has increased.
+  const QuicByteCount new_bytes_in_flight =
+      connection_.sent_packet_manager().GetBytesInFlight();
+  EXPECT_GT(new_bytes_in_flight, old_bytes_in_flight);
+}
+
+// Ensure that SendProbingRetransmissions() does not retransmit anything when
+// there are no outstanding packets.
+TEST_P(QuicConnectionTest,
+       SendProbingRetransmissionsFailsWhenNothingToRetransmit) {
+  ASSERT_FALSE(connection_.sent_packet_manager().HasUnackedPackets());
+
+  MockQuicConnectionDebugVisitor debug_visitor;
+  connection_.set_debug_visitor(&debug_visitor);
+  EXPECT_CALL(debug_visitor, OnPacketSent(_, _, _, _)).Times(0);
+
+  connection_.SendProbingRetransmissions();
 }
 
 }  // namespace

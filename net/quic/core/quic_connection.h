@@ -762,6 +762,10 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Returns true if the packet should be discarded and not sent.
   virtual bool ShouldDiscardPacket(const SerializedPacket& packet);
 
+  // Retransmits packets continuously until blocked by the congestion control.
+  // If there are no packets to retransmit, does not do anything.
+  void SendProbingRetransmissions();
+
  private:
   friend class test::QuicConnectionPeer;
   friend class test::PacketSavingConnection;
