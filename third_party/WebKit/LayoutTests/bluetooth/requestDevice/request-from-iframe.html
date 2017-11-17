@@ -14,37 +14,33 @@ for (let i = 0; i < 5; i++) {
 
 bluetooth_test(() => setUpHealthThermometerAndHeartRateDevices()
   // 1. Load the iframes.
-  .then(() => new Promise(resolve => {
-    let numMessages = 0;
-    window.onmessage = messageEvent => {
-      if (messageEvent.data !== 'Ready') {
-        assert_unreached('Bad message, expected "Ready": ' +
-            messageEvent.data);
-      }
-
-      if (++numMessages === iframes.length) resolve();
-    }
-
+  .then(() => {
+    let promises = [];
     for (let iframe of iframes) {
       iframe.src = '../../resources/bluetooth/requestDevice-in-iframe.html';
       document.body.appendChild(iframe);
+      promises.push(new Promise(resolve =>
+        iframe.addEventListener('load', resolve)));
     }
-  }))
+    return Promise.all(promises);
+  })
   // 2. Request the device from the iframes.
   .then(() => new Promise(async (resolve) => {
     let numMessages = 0;
     window.onmessage = messageEvent => {
       if (messageEvent.data !== 'Success') {
         assert_unreached('Bad message, expected "Success": ' +
-            messageEvent.data);
+          messageEvent.data);
       }
 
-      if (++numMessages === iframes.length) resolve();
+      if (++numMessages === iframes.length) {
+        resolve();
+      }
     }
 
     for (let iframe of iframes) {
       await callWithTrustedClick(
           () => iframe.contentWindow.postMessage('Go', '*'));
     }
-  })), test_desc);
+})), test_desc);
 </script>

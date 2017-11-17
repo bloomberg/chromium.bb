@@ -4,7 +4,7 @@ window.onmessage = messageEvent => {
   // For requestDevice to work, 'Go' should be sent while
   // handling a user gesture.
   if (messageEvent.data !== 'Go') {
-    consele.error(messageEvent.data);
+    console.error(messageEvent.data);
   }
 
   navigator.bluetooth.requestDevice({
@@ -21,5 +21,4 @@ window.onmessage = messageEvent => {
       parent.postMessage(err.name + ': ' + err.message, '*');
     });
 };
-parent.postMessage("Ready", "*");
 </script>

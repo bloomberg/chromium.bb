@@ -5,28 +5,32 @@
 <script src="../../resources/testdriver-vendor.js"></script>
 <script src="../../resources/bluetooth/bluetooth-helpers.js"></script>
 <body>
-  <script>
-  "use strict";
-  async_test(test => {
-    window.onmessage = messageEvent => test.step(() => {
-      if (messageEvent.data === 'Ready') {
-        let iframe = document.querySelector('iframe');
-        callWithTrustedClick(() => {
-          iframe.contentWindow.postMessage('Go', '*');
-        });
-      } else {
-        assert_equals(messageEvent.data, 'SecurityError: requestDevice() ' +
-                                         'called from cross-origin iframe.');
-        test.done();
-      }
+<script>
+'use strict';
+const test_desc = 'Request device from a unique origin. ' +
+    'Should reject with SecurityError.';
+
+let iframe = document.createElement('iframe');
+
+bluetooth_test(() => getHealthThermometerDevice()
+  // 1. Load the iframe.
+  .then(() => new Promise(resolve => {
+    iframe.sandbox.add('allow-scripts');
+    iframe.src = '../../resources/bluetooth/requestDevice-in-iframe.html';
+    document.body.appendChild(iframe);
+    iframe.addEventListener('load', resolve);
+  }))
+  // 2. Request the device from the iframe.
+  .then(() => new Promise(resolve => {
+    window.onmessage = messageEvent => {
+      assert_equals(messageEvent.data, 'SecurityError: requestDevice() ' +
+          'called from cross-origin iframe.');
+      resolve();
+    }
+
+    callWithTrustedClick(() => {
+      iframe.contentWindow.postMessage('Go', '*');
     });
-    setBluetoothFakeAdapter('HeartRateAdapter')
-      .then(() => {
-        let iframe = document.createElement('iframe');
-        iframe.sandbox.add('allow-scripts');
-        iframe.src = '../../resources/bluetooth/requestDevice-in-iframe.html';
-        document.body.appendChild(iframe);
-      });
-  }, 'Request device from a unique origin. Should reject with SecurityError.');
-  </script>
+})), test_desc);
+</script>
 </body>
