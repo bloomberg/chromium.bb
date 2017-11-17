@@ -27,8 +27,8 @@
 
 - (UIViewController*)toolbarViewController {
   if (!_toolbarViewController)
-    _toolbarViewController =
-        static_cast<UIViewController*>(self.toolbarController);
+    _toolbarViewController = self.toolbarController.viewController;
+
   return _toolbarViewController;
 }
 

@@ -567,6 +567,10 @@ using ios::material::TimingFunction;
   [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
+- (UIViewController*)viewController {
+  return self;
+}
+
 #pragma mark -
 #pragma mark Acessors
 

@@ -33,9 +33,11 @@
 @end
 
 @implementation ToolbarCoordinator
-@synthesize viewController = _viewController;
-@synthesize webState = _webState;
+@synthesize browserState = _browserState;
+@synthesize dispatcher = _dispatcher;
 @synthesize mediator = _mediator;
+@synthesize viewController = _viewController;
+@synthesize webStateList = _webStateList;
 
 - (instancetype)init {
   if ((self = [super init])) {
@@ -47,26 +49,19 @@
 #pragma mark - BrowserCoordinator
 
 - (void)start {
-  if (self.started)
-    return;
-
-  ToolbarStyle style =
-      self.browser->browser_state()->IsOffTheRecord() ? INCOGNITO : NORMAL;
+  ToolbarStyle style = self.browserState->IsOffTheRecord() ? INCOGNITO : NORMAL;
   ToolbarButtonFactory* factory =
       [[ToolbarButtonFactory alloc] initWithStyle:style];
 
   self.viewController =
-      [[ToolbarViewController alloc] initWithDispatcher:self.callableDispatcher
+      [[ToolbarViewController alloc] initWithDispatcher:self.dispatcher
                                           buttonFactory:factory];
 
   self.mediator.consumer = self.viewController;
-  self.mediator.webStateList = &self.browser->web_state_list();
-
-  [super start];
+  self.mediator.webStateList = self.webStateList;
 }
 
 - (void)stop {
-  [super stop];
   [self.mediator disconnect];
 }
 

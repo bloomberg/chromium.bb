@@ -109,7 +109,8 @@ void PerfTestWithBVC::SetUp() {
 
   // Create the browser view controller with its testing factory.
   bvc_factory_.reset([[BrowserViewControllerDependencyFactory alloc]
-      initWithBrowserState:chrome_browser_state_.get()]);
+      initWithBrowserState:chrome_browser_state_.get()
+              webStateList:[tab_model_ webStateList]]);
   bvc_.reset([[BrowserViewController alloc]
                 initWithTabModel:tab_model_
                     browserState:chrome_browser_state_.get()

@@ -188,7 +188,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(kPropertyAnimationsToolbar)},
     {"new-fullscreen-controller", flag_descriptions::kNewFullscreenName,
      flag_descriptions::kNewFullscreenDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(fullscreen::features::kNewFullscreen)}};
+     FEATURE_VALUE_TYPE(fullscreen::features::kNewFullscreen)},
+    {"clean-toolbar", flag_descriptions::kCleanToolbarName,
+     flag_descriptions::kCleanToolbarDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kCleanToolbar)}};
 
 // Add all switches from experimental flags to |command_line|.
 void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
