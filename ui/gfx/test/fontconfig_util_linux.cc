@@ -6,9 +6,12 @@
 
 #include <fontconfig/fontconfig.h>
 
+#include "base/base_paths.h"
+#include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 
@@ -46,15 +49,17 @@ const char* const kSystemFontsForFontconfig[] = {
     "/usr/share/fonts/truetype/msttcorefonts/Verdana_Bold.ttf",
     "/usr/share/fonts/truetype/msttcorefonts/Verdana_Bold_Italic.ttf",
     "/usr/share/fonts/truetype/msttcorefonts/Verdana_Italic.ttf",
-    // The DejaVuSans font is used by the css2.1 tests.
-    "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSans.ttf",
-    "/usr/share/fonts/truetype/ttf-indic-fonts-core/lohit_hi.ttf",
-    "/usr/share/fonts/truetype/ttf-indic-fonts-core/lohit_ta.ttf",
-    "/usr/share/fonts/truetype/ttf-indic-fonts-core/MuktiNarrow.ttf",
 };
 
 const size_t kNumSystemFontsForFontconfig =
     arraysize(kSystemFontsForFontconfig);
+
+const char* const kCloudStorageSyncedFonts[] = {
+    // The DejaVuSans font is used by the css2.1 tests.
+    "DejaVuSans.ttf", "Lohit-Devanagari.ttf", "Lohit-Tamil.ttf",
+    "MuktiNarrow.ttf"};
+
+const size_t kNumCloudStorageSyncedFonts = arraysize(kCloudStorageSyncedFonts);
 
 const char kFontconfigFileHeader[] =
     "<?xml version=\"1.0\"?>\n"
@@ -88,8 +93,13 @@ void TearDownFontconfig() {
 bool LoadFontIntoFontconfig(const base::FilePath& path) {
   if (!base::PathExists(path)) {
     LOG(ERROR) << "You are missing " << path.value() << ". Try re-running "
-               << "build/install-build-deps.sh. Also see "
-               << "https://chromium.googlesource.com/chromium/src/+/master/docs/layout_tests_linux.md";
+               << "build/install-build-deps.sh. "
+               << "Please make sure that "
+               << "third_party/content_shell_fonts/ has downloaded "
+               << "and extracted the content_shell_test_fonts."
+               << "Also see "
+               << "https://chromium.googlesource.com/chromium/src/+/master/"
+               << "docs/layout_tests_linux.md";
     return false;
   }
 
@@ -110,6 +120,20 @@ bool LoadSystemFontIntoFontconfig(const std::string& basename) {
   }
   LOG(ERROR) << "Unable to find system font named " << basename;
   return false;
+}
+
+bool LoadCloudStorageSyncedFontIntoFontConfig(const std::string& fontfilename) {
+  base::FilePath content_shell_test_fonts_path;
+  PathService::Get(base::DIR_MODULE, &content_shell_test_fonts_path);
+  // See third_party/content_shell_test_fonts/ for information how these fonts
+  // are synced. Target directory out/<buildDir>/content_shell_test_fonts needs
+  // to match what is specified as the target in
+  // third_party/content_shell_test_fonts/BUILD.gn as output directory.
+  base::FilePath font_file_path =
+      content_shell_test_fonts_path
+          .Append(FILE_PATH_LITERAL("content_shell_test_fonts"))
+          .Append(FILE_PATH_LITERAL(fontfilename));
+  return LoadFontIntoFontconfig(font_file_path);
 }
 
 bool LoadConfigFileIntoFontconfig(const base::FilePath& path) {

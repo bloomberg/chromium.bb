@@ -18,6 +18,9 @@ namespace gfx {
 extern const char* const kSystemFontsForFontconfig[];
 extern const size_t kNumSystemFontsForFontconfig;
 
+extern const char* const kCloudStorageSyncedFonts[];
+extern const size_t kNumCloudStorageSyncedFonts;
+
 // Strings appearing at the beginning and end of Fontconfig XML files.
 extern const char kFontconfigFileHeader[];
 extern const char kFontconfigFileFooter[];
@@ -41,6 +44,11 @@ bool LoadFontIntoFontconfig(const base::FilePath& path);
 // of |basename|. Case is ignored. FcFontMatch() requires there to be at least
 // one font present.
 bool LoadSystemFontIntoFontconfig(const std::string& basename);
+
+// Loads a font named by |fontfilename|, taken from kCloudStorageSyncedFonts
+// into the current config. Returns true on success, false if the font cannot be
+// found from the set of cloud synced fonts.
+bool LoadCloudStorageSyncedFontIntoFontConfig(const std::string& fontfilename);
 
 // Instructs Fontconfig to load |path|, an XML configuration file, into the
 // current config, returning true on success.
