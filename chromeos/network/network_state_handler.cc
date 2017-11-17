@@ -12,8 +12,6 @@
 #include "base/command_line.h"
 #include "base/format_macros.h"
 #include "base/guid.h"
-#include "base/json/json_string_value_serializer.h"
-#include "base/json/json_writer.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -61,13 +59,6 @@ std::string GetLogName(const ManagedState* state) {
     return "None";
   return base::StringPrintf("%s (%s)", state->name().c_str(),
                             state->path().c_str());
-}
-
-std::string ValueAsString(const base::Value& value) {
-  std::string vstr;
-  base::JSONWriter::WriteWithOptions(
-      value, base::JSONWriter::OPTIONS_OMIT_BINARY_VALUES, &vstr);
-  return vstr.empty() ? "''" : vstr;
 }
 
 bool ShouldIncludeNetworkInList(const NetworkState* network_state,
@@ -1149,51 +1140,47 @@ void NetworkStateHandler::UpdateNetworkServiceProperty(
   if (!changed)
     return;
 
+  // If added to a Profile, request a full update so that a NetworkState
+  // gets created.
+  bool request_update =
+      prev_profile_path.empty() && !network->profile_path().empty();
+
+  bool notify_default = network->path() == default_network_path_;
+
   if (key == shill::kStateProperty || key == shill::kVisibleProperty) {
     network_list_sorted_ = false;
     if (ConnectionStateChanged(network, prev_connection_state,
                                prev_is_captive_portal)) {
-      OnNetworkConnectionStateChanged(network);
+      if (OnNetworkConnectionStateChanged(network))
+        notify_default = false;  // already notified
       // If the connection state changes, other properties such as IPConfig
       // may have changed, so request a full update.
-      RequestUpdateForNetwork(service_path);
-    }
-  } else {
-    std::string value_str;
-    value.GetAsString(&value_str);
-    // Some property changes are noisy and not interesting:
-    // * Wifi SignalStrength
-    // * WifiFrequencyList updates
-    // * Device property changes to "/" (occurs before a service is removed)
-    if (key != shill::kSignalStrengthProperty &&
-        key != shill::kWifiFrequencyListProperty &&
-        (key != shill::kDeviceProperty || value_str != "/")) {
-      std::string log_event = "NetworkPropertyUpdated";
-      // Trigger a default network update for interesting changes only.
-      if (network->path() == default_network_path_) {
-        NotifyDefaultNetworkChanged(network);
-        log_event = "Default" + log_event;
-      }
-      // Log event.
-      std::string detail = network->name() + "." + key;
-      detail += " = " + ValueAsString(value);
-      device_event_log::LogLevel log_level;
-      if (key == shill::kErrorProperty || key == shill::kErrorDetailsProperty) {
-        log_level = device_event_log::LOG_LEVEL_ERROR;
-      } else {
-        log_level = device_event_log::LOG_LEVEL_EVENT;
-      }
-      NET_LOG_LEVEL(log_level, log_event, detail);
+      request_update = true;
     }
   }
 
-  // All property updates signal 'NetworkPropertiesUpdated'.
-  NotifyNetworkPropertiesUpdated(network);
-
-  // If added to a Profile, request a full update so that a NetworkState
-  // gets created.
-  if (prev_profile_path.empty() && !network->profile_path().empty())
+  if (request_update)
     RequestUpdateForNetwork(service_path);
+
+  std::string value_str;
+  value.GetAsString(&value_str);
+  if (key == shill::kSignalStrengthProperty || key == shill::kWifiBSsid ||
+      key == shill::kWifiFrequency ||
+      key == shill::kWifiFrequencyListProperty ||
+      (key == shill::kDeviceProperty && value_str == "/")) {
+    // Uninteresting update. This includes 'Device' property changes to "/"
+    // (occurs before just a service is removed).
+    // For non active networks do not log or send any notifications.
+    if (!network->IsConnectingOrConnected())
+      return;
+    // Otherwise do not trigger 'default network changed'.
+    notify_default = false;
+  }
+
+  LogPropertyUpdated(network, key, value);
+  if (notify_default)
+    NotifyDefaultNetworkChanged(network);
+  NotifyNetworkPropertiesUpdated(network);
 }
 
 void NetworkStateHandler::UpdateDeviceProperty(const std::string& device_path,
@@ -1206,10 +1193,7 @@ void NetworkStateHandler::UpdateDeviceProperty(const std::string& device_path,
   if (!device->PropertyChanged(key, value))
     return;
 
-  std::string detail = device->name() + "." + key;
-  detail += " = " + ValueAsString(value);
-  NET_LOG_EVENT("DevicePropertyUpdated", detail);
-
+  LogPropertyUpdated(device, key, value);
   NotifyDeviceListChanged();
   NotifyDevicePropertiesUpdated(device);
 
@@ -1573,7 +1557,7 @@ NetworkStateHandler::ManagedStateList* NetworkStateHandler::GetManagedList(
   return nullptr;
 }
 
-void NetworkStateHandler::OnNetworkConnectionStateChanged(
+bool NetworkStateHandler::OnNetworkConnectionStateChanged(
     NetworkState* network) {
   SCOPED_NET_LOG_IF_SLOW();
   DCHECK(network);
@@ -1605,6 +1589,7 @@ void NetworkStateHandler::OnNetworkConnectionStateChanged(
     observer.NetworkConnectionStateChanged(network);
   if (notify_default)
     NotifyDefaultNetworkChanged(network);
+  return notify_default;
 }
 
 void NetworkStateHandler::NotifyDefaultNetworkChanged(
@@ -1643,6 +1628,23 @@ void NetworkStateHandler::NotifyScanCompleted(const DeviceState* device) {
   NET_LOG_DEBUG("NOTIFY:ScanCompleted", GetLogName(device));
   for (auto& observer : observers_)
     observer.ScanCompleted(device);
+}
+
+void NetworkStateHandler::LogPropertyUpdated(const ManagedState* state,
+                                             const std::string& key,
+                                             const base::Value& value) {
+  std::string type_str =
+      state->managed_type() == ManagedState::MANAGED_TYPE_DEVICE
+          ? "Device"
+          : state->path() == default_network_path_ ? "DefaultNetwork"
+                                                   : "Network";
+  device_event_log::LogLevel log_level =
+      (key == shill::kErrorProperty || key == shill::kErrorDetailsProperty)
+          ? device_event_log::LOG_LEVEL_ERROR
+          : device_event_log::LOG_LEVEL_EVENT;
+  DEVICE_LOG(::device_event_log::LOG_TYPE_NETWORK, log_level)
+      << type_str << "PropertyUpdated: " << state->name() << "." << key << " = "
+      << value;
 }
 
 std::string NetworkStateHandler::GetTechnologyForType(

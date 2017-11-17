@@ -113,8 +113,8 @@ class TestObserver final : public chromeos::NetworkStateHandlerObserver {
     default_network_ = network ? network->path() : "";
     default_network_connection_state_ =
         network ? network->connection_state() : "";
-    DVLOG(1) << "DefaultNetworkChanged: " << default_network_
-             << " State: " << default_network_connection_state_;
+    VLOG(1) << "DefaultNetworkChanged: " << default_network_
+            << " State: " << default_network_connection_state_;
   }
 
   void NetworkConnectionStateChanged(const NetworkState* network) override {
@@ -149,7 +149,7 @@ class TestObserver final : public chromeos::NetworkStateHandlerObserver {
   size_t scan_requested_count() { return scan_requested_count_; }
   size_t scan_completed_count() { return scan_completed_count_; }
   void reset_change_counts() {
-    DVLOG(1) << "=== RESET CHANGE COUNTS ===";
+    VLOG(1) << "=== RESET CHANGE COUNTS ===";
     default_network_change_count_ = 0;
     device_list_changed_count_ = 0;
     network_list_changed_count_ = 0;
@@ -827,24 +827,63 @@ TEST_F(NetworkStateHandlerTest, TetherScanningState) {
   EXPECT_EQ(1u, test_observer_->scan_completed_count());
 }
 
-TEST_F(NetworkStateHandlerTest, ServicePropertyChanged) {
-  // Set a service property.
+TEST_F(NetworkStateHandlerTest, ServicePropertyChangedDefaultNetwork) {
+  // Set a service property on the default network.
   const std::string eth1 = kShillManagerClientStubDefaultService;
   const NetworkState* ethernet = network_state_handler_->GetNetworkState(eth1);
   ASSERT_TRUE(ethernet);
   EXPECT_EQ("", ethernet->security_class());
   EXPECT_EQ(1, test_observer_->PropertyUpdatesForService(eth1));
+  EXPECT_EQ(0u, test_observer_->default_network_change_count());
   base::Value security_class_value("TestSecurityClass");
   SetServiceProperty(eth1, shill::kSecurityClassProperty, security_class_value);
   base::RunLoop().RunUntilIdle();
   ethernet = network_state_handler_->GetNetworkState(eth1);
   EXPECT_EQ("TestSecurityClass", ethernet->security_class());
   EXPECT_EQ(2, test_observer_->PropertyUpdatesForService(eth1));
+  EXPECT_EQ(1u, test_observer_->default_network_change_count());
 
   // Changing a service to the existing value should not trigger an update.
   SetServiceProperty(eth1, shill::kSecurityClassProperty, security_class_value);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(2, test_observer_->PropertyUpdatesForService(eth1));
+  EXPECT_EQ(1u, test_observer_->default_network_change_count());
+}
+
+TEST_F(NetworkStateHandlerTest, ServicePropertyChangedNotIneterstingActive) {
+  // Set an uninteresting service property on an active network.
+  const std::string wifi1 = kShillManagerClientStubDefaultWifi;
+  const NetworkState* wifi = network_state_handler_->GetNetworkState(wifi1);
+  ASSERT_TRUE(wifi);
+  EXPECT_EQ(1, wifi->signal_strength());
+  EXPECT_EQ(1, test_observer_->PropertyUpdatesForService(wifi1));
+  EXPECT_EQ(0u, test_observer_->default_network_change_count());
+  base::Value signal_strength_value(11);
+  SetServiceProperty(wifi1, shill::kSignalStrengthProperty,
+                     signal_strength_value);
+  base::RunLoop().RunUntilIdle();
+  wifi = network_state_handler_->GetNetworkState(wifi1);
+  EXPECT_EQ(11, wifi->signal_strength());
+  // The change should trigger an additional properties updated event.
+  EXPECT_EQ(2, test_observer_->PropertyUpdatesForService(wifi1));
+  EXPECT_EQ(0u, test_observer_->default_network_change_count());
+}
+
+TEST_F(NetworkStateHandlerTest, ServicePropertyChangedNotIneterstingInactive) {
+  // Set an uninteresting service property on an inactive network.
+  const std::string wifi2 = kShillManagerClientStubWifi2;
+  const NetworkState* wifi = network_state_handler_->GetNetworkState(wifi2);
+  ASSERT_TRUE(wifi);
+  EXPECT_EQ(1, wifi->signal_strength());
+  EXPECT_EQ(1, test_observer_->PropertyUpdatesForService(wifi2));
+  base::Value signal_strength_value(11);
+  SetServiceProperty(wifi2, shill::kSignalStrengthProperty,
+                     signal_strength_value);
+  base::RunLoop().RunUntilIdle();
+  wifi = network_state_handler_->GetNetworkState(wifi2);
+  EXPECT_EQ(11, wifi->signal_strength());
+  // The change should *not* trigger an additional properties updated event.
+  EXPECT_EQ(1, test_observer_->PropertyUpdatesForService(wifi2));
 }
 
 TEST_F(NetworkStateHandlerTest, GetState) {
