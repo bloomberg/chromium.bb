@@ -45,8 +45,12 @@ class TestExitPrompt : public ExitPrompt {
   bool secondary_button_pressed() const { return secondary_button_pressed_; }
 
  private:
-  void OnPrimaryButtonPressed() { primary_button_pressed_ = true; }
-  void OnSecondaryButtonPressed() { secondary_button_pressed_ = true; }
+  void OnPrimaryButtonPressed(UiUnsupportedMode reason) {
+    primary_button_pressed_ = true;
+  }
+  void OnSecondaryButtonPressed(UiUnsupportedMode reason) {
+    secondary_button_pressed_ = true;
+  }
 
   bool primary_button_pressed_ = false;
   bool secondary_button_pressed_ = false;

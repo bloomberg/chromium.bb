@@ -302,14 +302,18 @@ gfx::Transform VrTestContext::ViewProjectionMatrix() const {
   return ProjectionMatrix() * head_pose_;
 }
 
-void VrTestContext::SetVoiceSearchActive(bool active) {}
+void VrTestContext::SetVoiceSearchActive(bool active) {
+  OnUnsupportedMode(UiUnsupportedMode::kAndroidPermissionNeeded);
+}
 void VrTestContext::ExitPresent() {}
 void VrTestContext::ExitFullscreen() {}
 void VrTestContext::NavigateBack() {}
 void VrTestContext::ExitCct() {}
 void VrTestContext::OnUnsupportedMode(vr::UiUnsupportedMode mode) {
-  if (mode == UiUnsupportedMode::kUnhandledPageInfo)
+  if (mode == UiUnsupportedMode::kUnhandledPageInfo ||
+      mode == UiUnsupportedMode::kAndroidPermissionNeeded) {
     ui_->SetExitVrPromptEnabled(true, mode);
+  }
 }
 void VrTestContext::OnExitVrPromptResult(vr::UiUnsupportedMode reason,
                                          vr::ExitVrPromptChoice choice) {

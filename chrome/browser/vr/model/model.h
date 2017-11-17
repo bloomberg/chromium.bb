@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_VR_MODEL_MODEL_H_
 
 #include "chrome/browser/vr/model/controller_model.h"
+#include "chrome/browser/vr/model/modal_prompt_type.h"
 #include "chrome/browser/vr/model/omnibox_suggestions.h"
 #include "chrome/browser/vr/model/reticle_model.h"
 #include "chrome/browser/vr/model/speech_recognition_model.h"
@@ -29,6 +30,8 @@ struct Model {
 
   bool experimental_features_enabled = false;
   bool incognito = false;
+
+  ModalPromptType active_modal_prompt_type = kModalPromptTypeNone;
 
   std::vector<OmniboxSuggestion> omnibox_suggestions;
 };

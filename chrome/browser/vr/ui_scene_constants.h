@@ -53,6 +53,7 @@ static constexpr float kUrlBarRotationRad = -0.175f;
 
 static constexpr float kAudioPermissionPromptWidth = 0.63f * kUrlBarDistance;
 static constexpr float kAudioPermissionPromptHeight = 0.218f * kUrlBarDistance;
+static constexpr float kAudionPermisionPromptDepth = 0.11f;
 
 static constexpr float kIndicatorHeight = 0.08f;
 static constexpr float kIndicatorGap = 0.05f;
@@ -206,6 +207,8 @@ static constexpr int kControllerFadeOutMs = 550;
 static constexpr float kSpeechRecognitionResultTextYOffset = 0.5f;
 static constexpr int kSpeechRecognitionResultTimeoutSeconds = 2;
 static constexpr int kSpeechRecognitionOpacityAnimationDurationMs = 200;
+
+static constexpr float kModalPromptFadeOpacity = 0.5f;
 
 }  // namespace vr
 
