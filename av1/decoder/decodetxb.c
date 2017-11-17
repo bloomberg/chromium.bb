@@ -59,7 +59,11 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
                             int plane, tran_low_t *tcoeffs, TXB_CTX *txb_ctx,
                             TX_SIZE tx_size, int16_t *max_scan_line, int *eob) {
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
+#if TXCOEFF_TIMER
+  FRAME_COUNTS *counts = NULL;
+#else
   FRAME_COUNTS *counts = xd->counts;
+#endif
   TX_SIZE txs_ctx = get_txsize_context(tx_size);
   PLANE_TYPE plane_type = get_plane_type(plane);
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
