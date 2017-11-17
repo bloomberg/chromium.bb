@@ -7,14 +7,8 @@
 <dom-module id="print-preview-other-options-settings">
   <template>
     <style include="print-preview-shared checkbox-radio">
-      [slot='title'] {
-        --settings-section-title-style: {
-          padding-top: 7px;
-          align-self: flex-start;
-        }
-      }
     </style>
-    <print-preview-settings-section class="input-settings-section">
+    <print-preview-settings-section class="multirow-controls">
       <span slot="title" id="options-label">$i18n{optionsLabel}</span>
       <div slot="controls" class="checkbox">
         <div id="header-footer-container">

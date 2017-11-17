@@ -7,6 +7,7 @@
       'target_name': 'app',
       'dependencies': [
         'header',
+        'destination_settings',
         'pages_settings',
         'copies_settings',
         'layout_settings',
@@ -16,6 +17,7 @@
         'dpi_settings',
         'scaling_settings',
         'other_options_settings',
+        'advanced_options_settings',
         'model',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
@@ -25,6 +27,13 @@
       'dependencies': [
         'model',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
+      ],
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'destination_settings',
+      'dependencies': [
+        'model',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
@@ -85,6 +94,13 @@
     },
     {
       'target_name': 'other_options_settings',
+      'dependencies': [
+        'model',
+      ],
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'advanced_options_settings',
       'dependencies': [
         'model',
       ],
