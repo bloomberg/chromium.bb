@@ -1815,7 +1815,8 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
   if (!username_element->IsNull() &&
       IsElementAutocompletable(*username_element)) {
     // TODO(crbug.com/507714): Why not setSuggestedValue?
-    username_element->SetAutofillValue(blink::WebString::FromUTF16(username));
+    if (username_element->Value().Utf16() != username)
+      username_element->SetAutofillValue(blink::WebString::FromUTF16(username));
     UpdateFieldValueAndPropertiesMaskMap(*username_element, &username,
                                          FieldPropertiesFlags::AUTOFILLED,
                                          field_value_and_properties_map);
@@ -1831,7 +1832,8 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
   // Wait to fill in the password until a user gesture occurs. This is to make
   // sure that we do not fill in the DOM with a password until we believe the
   // user is intentionally interacting with the page.
-  password_element->SetSuggestedValue(blink::WebString::FromUTF16(password));
+  if (password_element->Value().Utf16() != password)
+    password_element->SetSuggestedValue(blink::WebString::FromUTF16(password));
   UpdateFieldValueAndPropertiesMaskMap(*password_element, &password,
                                        FieldPropertiesFlags::AUTOFILLED,
                                        field_value_and_properties_map);
