@@ -69,11 +69,11 @@ class TaskSchedulerWorkerPoolImplTestBase {
   TaskSchedulerWorkerPoolImplTestBase()
       : service_thread_("TaskSchedulerServiceThread"){};
 
-  void SetUp() {
+  void CommonSetUp() {
     CreateAndStartWorkerPool(TimeDelta::Max(), kNumWorkersInWorkerPool);
   }
 
-  void TearDown() {
+  void CommonTearDown() {
     service_thread_.Stop();
     task_tracker_.Flush();
     worker_pool_->WaitForAllWorkersIdleForTesting();
@@ -122,9 +122,11 @@ class TaskSchedulerWorkerPoolImplTest
  protected:
   TaskSchedulerWorkerPoolImplTest() = default;
 
-  void SetUp() override { TaskSchedulerWorkerPoolImplTestBase::SetUp(); }
+  void SetUp() override { TaskSchedulerWorkerPoolImplTestBase::CommonSetUp(); }
 
-  void TearDown() override { TaskSchedulerWorkerPoolImplTestBase::TearDown(); }
+  void TearDown() override {
+    TaskSchedulerWorkerPoolImplTestBase::CommonTearDown();
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TaskSchedulerWorkerPoolImplTest);
@@ -136,9 +138,11 @@ class TaskSchedulerWorkerPoolImplTestParam
  protected:
   TaskSchedulerWorkerPoolImplTestParam() = default;
 
-  void SetUp() override { TaskSchedulerWorkerPoolImplTestBase::SetUp(); }
+  void SetUp() override { TaskSchedulerWorkerPoolImplTestBase::CommonSetUp(); }
 
-  void TearDown() override { TaskSchedulerWorkerPoolImplTestBase::TearDown(); }
+  void TearDown() override {
+    TaskSchedulerWorkerPoolImplTestBase::CommonTearDown();
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TaskSchedulerWorkerPoolImplTestParam);
@@ -302,9 +306,11 @@ class TaskSchedulerWorkerPoolImplTestCOMMTAParam
  protected:
   TaskSchedulerWorkerPoolImplTestCOMMTAParam() = default;
 
-  void SetUp() override { TaskSchedulerWorkerPoolImplTestBase::SetUp(); }
+  void SetUp() override { TaskSchedulerWorkerPoolImplTestBase::CommonSetUp(); }
 
-  void TearDown() override { TaskSchedulerWorkerPoolImplTestBase::TearDown(); }
+  void TearDown() override {
+    TaskSchedulerWorkerPoolImplTestBase::CommonTearDown();
+  }
 
  private:
   void StartWorkerPool(TimeDelta suggested_reclaim_time,
@@ -909,12 +915,14 @@ class TaskSchedulerWorkerPoolBlockingTest
   }
 
   void SetUp() override {
-    TaskSchedulerWorkerPoolImplTestBase::SetUp();
+    TaskSchedulerWorkerPoolImplTestBase::CommonSetUp();
     task_runner_ =
         worker_pool_->CreateTaskRunnerWithTraits({WithBaseSyncPrimitives()});
   }
 
-  void TearDown() override { TaskSchedulerWorkerPoolImplTestBase::TearDown(); }
+  void TearDown() override {
+    TaskSchedulerWorkerPoolImplTestBase::CommonTearDown();
+  }
 
  protected:
   // Saturates the worker pool with a task that first blocks, waits to be
