@@ -5287,6 +5287,18 @@ the Bookmarks menu.">
         </message>
       </if>
 
+      <!-- Clipboard permission -->
+      <message name="IDS_CLIPBOARD_PERMISSION_FRAGMENT" desc="Permission request shown if the user is visiting a site that wants to read data from the system clipboard. Follows a prompt: 'This site would like to:'">
+        See text and images you copy to the clipboard
+      </message>
+      <if expr="is_android">
+        <message name="IDS_CLIPBOARD_INFOBAR_QUESTION" desc="Question asked on the info bar whenever URL wants to read data from the system clipboard">
+          <ph name="URL">
+            $1<ex>maps.google.com</ex>
+          </ph> wants to see text and images you copy to the clipboard.
+        </message>
+      </if>
+
       <!-- Feature Engagement Tracker strings -->
       <message name="IDS_BOOKMARK_PROMO_0" desc="Text shown on promotional UI appearing next to the Bookmarks button, which encourages users to use it.">
         Bookmark this page to easily find it later

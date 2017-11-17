@@ -57,9 +57,9 @@ PermissionType PermissionDescriptorToPermissionType(
     case PermissionName::ACCESSIBILITY_EVENTS:
       return PermissionType::ACCESSIBILITY_EVENTS;
     case PermissionName::CLIPBOARD_READ:
+      return PermissionType::CLIPBOARD_READ;
     case PermissionName::CLIPBOARD_WRITE:
-      NOTIMPLEMENTED();
-      break;
+      return PermissionType::CLIPBOARD_WRITE;
   }
 
   NOTREACHED();
@@ -86,6 +86,8 @@ blink::FeaturePolicyFeature PermissionTypeToFeaturePolicyFeature(
     case PermissionType::FLASH:
     case PermissionType::SENSORS:
     case PermissionType::ACCESSIBILITY_EVENTS:
+    case PermissionType::CLIPBOARD_READ:
+    case PermissionType::CLIPBOARD_WRITE:
     case PermissionType::NUM:
       // These aren't exposed by feature policy.
       return blink::FeaturePolicyFeature::kNotFound;

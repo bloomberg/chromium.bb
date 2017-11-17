@@ -29,6 +29,7 @@ aggregate_vector_icons("chrome_vector_icons") {
     "certificate.icon",
     "close_all.icon",
     "code.icon",
+    "content_paste.icon",
     "cookie.icon",
     "crashed_tab.icon",
     "credit_card.1x.icon",
