@@ -1125,7 +1125,7 @@ void PaintLayerScrollableArea::UpdateAfterStyleChange(
 
   UpdateScrollCornerStyle();
   UpdateResizerAreaSet();
-  UpdateResizerStyle();
+  UpdateResizerStyle(old_style);
 }
 
 bool PaintLayerScrollableArea::UpdateAfterCompositingChange() {
@@ -1673,7 +1673,15 @@ void PaintLayerScrollableArea::UpdateResizerAreaSet() {
     frame_view->RemoveResizerArea(Box());
 }
 
-void PaintLayerScrollableArea::UpdateResizerStyle() {
+void PaintLayerScrollableArea::UpdateResizerStyle(
+    const ComputedStyle* old_style) {
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() && old_style &&
+      old_style->Resize() != Box().StyleRef().Resize()) {
+    // Invalidate the composited scroll corner layer on resize style change.
+    if (auto* graphics_layer = LayerForScrollCorner())
+      graphics_layer->SetNeedsDisplay();
+  }
+
   if (!resizer_ && !Box().CanResize())
     return;
 

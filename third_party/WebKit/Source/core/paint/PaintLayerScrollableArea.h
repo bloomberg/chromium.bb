@@ -537,7 +537,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
 
   // See comments on isPointInResizeControl.
   void UpdateResizerAreaSet();
-  void UpdateResizerStyle();
+  void UpdateResizerStyle(const ComputedStyle* old_style);
 
   void UpdateScrollableAreaSet();
 
