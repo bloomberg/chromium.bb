@@ -459,6 +459,12 @@ void av1_fill_coeff_costs(MACROBLOCK *x, FRAME_CONTEXT *fc) {
                                  fc->txb_skip_cdf[tx_size][ctx], NULL);
 
 #if CONFIG_LV_MAP_MULTI
+#if USE_BASE_EOB_ALPHABET
+      for (int ctx = 0; ctx < SIG_COEF_CONTEXTS_EOB; ++ctx)
+        av1_cost_tokens_from_cdf(pcost->base_eob_cost[ctx],
+                                 fc->coeff_base_eob_cdf[tx_size][plane][ctx],
+                                 NULL);
+#endif
       for (int ctx = 0; ctx < SIG_COEF_CONTEXTS; ++ctx)
         av1_cost_tokens_from_cdf(pcost->base_cost[ctx],
                                  fc->coeff_base_cdf[tx_size][plane][ctx], NULL);

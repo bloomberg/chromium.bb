@@ -383,8 +383,23 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
     coeff_ctx =
         get_nz_map_ctx(levels, c, scan, bwl, height, tx_type, c == eob - 1);
     tran_low_t v = tcoeff[scan[c]];
+#if USE_BASE_EOB_ALPHABET
+    if (c == eob - 1) {
+      aom_write_symbol(
+          w, AOMMIN(abs(v), 3) - 1,
+          ec_ctx->coeff_base_eob_cdf[txs_ctx][plane_type]
+                                    [coeff_ctx - SIG_COEF_CONTEXTS +
+                                     SIG_COEF_CONTEXTS_EOB],
+          3);
+    } else {
+      aom_write_symbol(w, AOMMIN(abs(v), 3),
+                       ec_ctx->coeff_base_cdf[txs_ctx][plane_type][coeff_ctx],
+                       4);
+    }
+#else
     aom_write_symbol(w, AOMMIN(abs(v), 3),
                      ec_ctx->coeff_base_cdf[txs_ctx][plane_type][coeff_ctx], 4);
+#endif
 #else
     coeff_ctx = get_nz_map_ctx(levels, c, scan, bwl, height, tx_type);
     tran_low_t v = tcoeff[scan[c]];
@@ -675,7 +690,17 @@ int av1_cost_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
 #if CONFIG_LV_MAP_MULTI
     coeff_ctx =
         get_nz_map_ctx(levels, c, scan, bwl, height, tx_type, c == eob - 1);
+#if USE_BASE_EOB_ALPHABET
+    if (c == eob - 1) {
+      cost += coeff_costs
+                  ->base_eob_cost[coeff_ctx - SIG_COEF_CONTEXTS +
+                                  SIG_COEF_CONTEXTS_EOB][AOMMIN(level, 3) - 1];
+    } else {
+      cost += coeff_costs->base_cost[coeff_ctx][AOMMIN(level, 3)];
+    }
+#else
     cost += coeff_costs->base_cost[coeff_ctx][AOMMIN(level, 3)];
+#endif
 #else  // CONFIG_LV_MAP_MULTI
 #if USE_CAUSAL_BASE_CTX
     coeff_ctx = get_nz_map_ctx(levels, c, scan, bwl, height, tx_type);
@@ -1519,7 +1544,18 @@ static int get_coeff_cost(const tran_low_t qc, const int scan_idx,
   int coeff_ctx =
       get_nz_map_ctx(txb_info->levels, scan_idx, scan, txb_info->bwl,
                      txb_info->height, txb_info->tx_type, is_eob);
+#if USE_BASE_EOB_ALPHABET
+  if (is_eob) {
+    cost +=
+        txb_costs->base_eob_cost[coeff_ctx - SIG_COEF_CONTEXTS +
+                                 SIG_COEF_CONTEXTS_EOB][AOMMIN(abs_qc, 3) - 1];
+  } else {
+    cost += txb_costs->base_cost[coeff_ctx][AOMMIN(abs_qc, 3)];
+  }
+
+#else
   cost += txb_costs->base_cost[coeff_ctx][AOMMIN(abs_qc, 3)];
+#endif
 #else
 #if USE_CAUSAL_BASE_CTX
   int coeff_ctx =
@@ -2199,9 +2235,20 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
     (void)nz_map_count;
     coeff_ctx =
         get_nz_map_ctx(levels, c, scan, bwl, height, tx_type, c == eob - 1);
+#if USE_BASE_EOB_ALPHABET
+    if (c == eob - 1) {
+      update_cdf(ec_ctx->coeff_base_eob_cdf[txsize_ctx][plane_type]
+                                           [coeff_ctx - SIG_COEF_CONTEXTS +
+                                            SIG_COEF_CONTEXTS_EOB],
+                 AOMMIN(abs(v), 3) - 1, 3);
+    } else {
+      update_cdf(ec_ctx->coeff_base_cdf[txsize_ctx][plane_type][coeff_ctx],
+                 AOMMIN(abs(v), 3), 4);
+    }
+#else
     update_cdf(ec_ctx->coeff_base_cdf[txsize_ctx][plane_type][coeff_ctx],
                AOMMIN(abs(v), 3), 4);
-
+#endif
 #elif USE_CAUSAL_BASE_CTX
     coeff_ctx = get_nz_map_ctx(levels, c, scan, bwl, height, tx_type);
 

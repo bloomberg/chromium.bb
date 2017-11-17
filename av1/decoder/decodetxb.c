@@ -170,10 +170,27 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 #if CONFIG_LV_MAP_MULTI
     int coeff_ctx =
         get_nz_map_ctx(levels, c, scan, bwl, height, tx_type, c == *eob - 1);
+#if USE_BASE_EOB_ALPHABET
+    int level;
+    if (c == *eob - 1) {
+      level = av1_read_record_symbol(
+                  counts, r,
+                  ec_ctx->coeff_base_eob_cdf[txs_ctx][plane_type]
+                                            [coeff_ctx - SIG_COEF_CONTEXTS +
+                                             SIG_COEF_CONTEXTS_EOB],
+                  3, ACCT_STR) +
+              1;
+    } else {
+      level = av1_read_record_symbol(
+          counts, r, ec_ctx->coeff_base_cdf[txs_ctx][plane_type][coeff_ctx], 4,
+          ACCT_STR);
+    }
+#else
     int level = av1_read_record_symbol(
         counts, r, ec_ctx->coeff_base_cdf[txs_ctx][plane_type][coeff_ctx], 4,
         ACCT_STR);
-    levels[get_paded_idx(pos, bwl)] = level;
+#endif
+    levels[get_paded_idx(scan[c], bwl)] = level;
     if (level) *max_scan_line = AOMMAX(*max_scan_line, scan[c]);
     // printf("base_cdf: %d %d %2d\n", txs_ctx, plane_type, coeff_ctx);
     // printf("base_cdf: %d %d %2d : %3d %3d %3d\n", txs_ctx, plane_type,
