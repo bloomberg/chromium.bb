@@ -225,11 +225,11 @@ bool Zygote::GetProcessInfo(base::ProcessHandle pid,
 }
 
 bool Zygote::UsingSUIDSandbox() const {
-  return sandbox_flags_ & service_manager::Sandbox::kSUID;
+  return sandbox_flags_ & service_manager::SandboxLinux::kSUID;
 }
 
 bool Zygote::UsingNSSandbox() const {
-  return sandbox_flags_ & service_manager::Sandbox::kUserNS;
+  return sandbox_flags_ & service_manager::SandboxLinux::kUserNS;
 }
 
 bool Zygote::HandleRequestFromBrowser(int fd) {
@@ -445,8 +445,8 @@ int Zygote::ForkWithRealPid(const std::string& process_type,
     CHECK_NE(pid, 0);
   } else {
     CreatePipe(&read_pipe, &write_pipe);
-    if (sandbox_flags_ & service_manager::Sandbox::kPIDNS &&
-        sandbox_flags_ & service_manager::Sandbox::kUserNS) {
+    if (sandbox_flags_ & service_manager::SandboxLinux::kPIDNS &&
+        sandbox_flags_ & service_manager::SandboxLinux::kUserNS) {
       pid = sandbox::NamespaceSandbox::ForkInNewPidNamespace(
           /*drop_capabilities_in_child=*/true);
     } else {

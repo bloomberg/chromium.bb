@@ -132,7 +132,7 @@ bool UpdateProcessTypeAndEnableSandbox(
 SandboxLinux::SandboxLinux()
     : proc_fd_(-1),
       seccomp_bpf_started_(false),
-      sandbox_status_flags_(Sandbox::kInvalid),
+      sandbox_status_flags_(kInvalid),
       pre_initialized_(false),
       seccomp_bpf_supported_(false),
       seccomp_bpf_with_tsync_supported_(false),
@@ -230,35 +230,35 @@ int SandboxLinux::GetStatus() {
   if (!pre_initialized_) {
     return 0;
   }
-  if (sandbox_status_flags_ == Sandbox::kInvalid) {
+  if (sandbox_status_flags_ == kInvalid) {
     // Initialize sandbox_status_flags_.
     sandbox_status_flags_ = 0;
     if (setuid_sandbox_client_->IsSandboxed()) {
-      sandbox_status_flags_ |= Sandbox::kSUID;
+      sandbox_status_flags_ |= kSUID;
       if (setuid_sandbox_client_->IsInNewPIDNamespace())
-        sandbox_status_flags_ |= Sandbox::kPIDNS;
+        sandbox_status_flags_ |= kPIDNS;
       if (setuid_sandbox_client_->IsInNewNETNamespace())
-        sandbox_status_flags_ |= Sandbox::kNetNS;
+        sandbox_status_flags_ |= kNetNS;
     } else if (sandbox::NamespaceSandbox::InNewUserNamespace()) {
-      sandbox_status_flags_ |= Sandbox::kUserNS;
+      sandbox_status_flags_ |= kUserNS;
       if (sandbox::NamespaceSandbox::InNewPidNamespace())
-        sandbox_status_flags_ |= Sandbox::kPIDNS;
+        sandbox_status_flags_ |= kPIDNS;
       if (sandbox::NamespaceSandbox::InNewNetNamespace())
-        sandbox_status_flags_ |= Sandbox::kNetNS;
+        sandbox_status_flags_ |= kNetNS;
     }
 
     // We report whether the sandbox will be activated when renderers, workers
     // and PPAPI plugins go through sandbox initialization.
     if (seccomp_bpf_supported()) {
-      sandbox_status_flags_ |= Sandbox::kSeccompBPF;
+      sandbox_status_flags_ |= kSeccompBPF;
     }
 
     if (seccomp_bpf_with_tsync_supported()) {
-      sandbox_status_flags_ |= Sandbox::kSeccompTSYNC;
+      sandbox_status_flags_ |= kSeccompTSYNC;
     }
 
     if (yama_is_enforcing_) {
-      sandbox_status_flags_ |= Sandbox::kYama;
+      sandbox_status_flags_ |= kYama;
     }
   }
 
@@ -519,8 +519,7 @@ void SandboxLinux::CheckForBrokenPromises(SandboxType sandbox_type) {
   }
   // Make sure that any promise made with GetStatus() wasn't broken.
   bool promised_seccomp_bpf_would_start =
-      (sandbox_status_flags_ != Sandbox::kInvalid) &&
-      (GetStatus() & Sandbox::kSeccompBPF);
+      (sandbox_status_flags_ != kInvalid) && (GetStatus() & kSeccompBPF);
   CHECK(!promised_seccomp_bpf_would_start || seccomp_bpf_started_);
 }
 
