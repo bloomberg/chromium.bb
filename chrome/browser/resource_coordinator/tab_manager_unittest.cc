@@ -525,61 +525,6 @@ TEST_F(TabManagerTest, DiscardedTabKeepsLastActiveTime) {
   EXPECT_TRUE(tabstrip.empty());
 }
 
-// Test to see if a tab can only be discarded once. On Windows and Mac, this
-// defaults to true unless overridden through a variation parameter. On other
-// platforms, it's always false.
-#if defined(OS_WIN) || defined(OS_MACOSX)
-TEST_F(TabManagerTest, CanOnlyDiscardOnce) {
-  TabManager tab_manager;
-  const std::string kTrialName = features::kAutomaticTabDiscarding.name;
-
-  // Not setting the variation parameter.
-  {
-    bool discard_once_value = tab_manager.CanOnlyDiscardOnce();
-    EXPECT_TRUE(discard_once_value);
-  }
-
-  // Setting the variation parameter to true.
-  {
-    std::unique_ptr<base::FieldTrialList> field_trial_list_;
-    field_trial_list_.reset(new base::FieldTrialList(
-        base::MakeUnique<base::MockEntropyProvider>()));
-    variations::testing::ClearAllVariationParams();
-
-    std::map<std::string, std::string> params;
-    params["AllowMultipleDiscards"] = "true";
-    ASSERT_TRUE(variations::AssociateVariationParams(kTrialName, "A", params));
-    base::FieldTrialList::CreateFieldTrial(kTrialName, "A");
-
-    bool discard_once_value = tab_manager.CanOnlyDiscardOnce();
-    EXPECT_FALSE(discard_once_value);
-  }
-
-  // Setting the variation parameter to something else.
-  {
-    std::unique_ptr<base::FieldTrialList> field_trial_list_;
-    field_trial_list_.reset(new base::FieldTrialList(
-        base::MakeUnique<base::MockEntropyProvider>()));
-    variations::testing::ClearAllVariationParams();
-
-    std::map<std::string, std::string> params;
-    params["AllowMultipleDiscards"] = "somethingElse";
-    ASSERT_TRUE(variations::AssociateVariationParams(kTrialName, "B", params));
-    base::FieldTrialList::CreateFieldTrial(kTrialName, "B");
-
-    bool discard_once_value = tab_manager.CanOnlyDiscardOnce();
-    EXPECT_TRUE(discard_once_value);
-  }
-}
-#else
-TEST_F(TabManagerTest, CanOnlyDiscardOnce) {
-  TabManager tab_manager;
-
-  bool discard_once_value = tab_manager.CanOnlyDiscardOnce();
-  EXPECT_FALSE(discard_once_value);
-}
-#endif  // defined(OS_WIN) || defined(OS_MACOSX)
-
 TEST_F(TabManagerTest, DefaultTimeToPurgeInCorrectRange) {
   TabManager tab_manager;
   base::TimeDelta time_to_purge =
