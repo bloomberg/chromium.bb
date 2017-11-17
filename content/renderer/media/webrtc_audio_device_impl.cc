@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/trace_event/trace_event.h"
 #include "content/renderer/media/webrtc/processed_local_audio_source.h"
@@ -13,10 +14,6 @@
 #include "media/base/audio_bus.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/sample_rates.h"
-
-#if defined(OS_WIN)
-#include "base/win/windows_version.h"
-#endif
 
 using media::AudioParameters;
 using media::ChannelLayout;
@@ -71,38 +68,33 @@ void WebRtcAudioDeviceImpl::RenderData(media::AudioBus* audio_bus,
   }
 
   render_buffer_.resize(audio_bus->frames() * audio_bus->channels());
-  int frames_per_10_ms = (sample_rate / 100);
+  int frames_per_10_ms = sample_rate / 100;
   int bytes_per_sample = sizeof(render_buffer_[0]);
   // Client should always ask for 10ms.
   DCHECK_EQ(audio_bus->frames(), frames_per_10_ms);
 
   // Get 10ms audio and copy result to temporary byte buffer.
+  static const int kBitsPerByte = 8;
   int64_t elapsed_time_ms = -1;
   int64_t ntp_time_ms = -1;
-  static const int kBitsPerByte = 8;
-  int16_t* audio_data = &render_buffer_[0];
+  int16_t* audio_data = render_buffer_.data();
 
   TRACE_EVENT_BEGIN0("audio", "VoE::PullRenderData");
   audio_transport_callback_->PullRenderData(
       bytes_per_sample * kBitsPerByte, sample_rate, audio_bus->channels(),
       frames_per_10_ms, audio_data, &elapsed_time_ms, &ntp_time_ms);
   TRACE_EVENT_END0("audio", "VoE::PullRenderData");
-  if (elapsed_time_ms >= 0) {
+  if (elapsed_time_ms >= 0)
     *current_time = base::TimeDelta::FromMilliseconds(elapsed_time_ms);
-  }
 
   // De-interleave each channel and convert to 32-bit floating-point
   // with nominal range -1.0 -> +1.0 to match the callback format.
-  audio_bus->FromInterleaved(&render_buffer_[0],
-                             audio_bus->frames(),
-                             bytes_per_sample);
+  audio_bus->FromInterleaved(audio_data, audio_bus->frames(), bytes_per_sample);
 
   // Pass the render data to the playout sinks.
   base::AutoLock auto_lock(lock_);
-  for (PlayoutDataSinkList::const_iterator it = playout_sinks_.begin();
-       it != playout_sinks_.end(); ++it) {
-    (*it)->OnPlayoutData(audio_bus, sample_rate, audio_delay_milliseconds);
-  }
+  for (auto* sink : playout_sinks_)
+    sink->OnPlayoutData(audio_bus, sample_rate, audio_delay_milliseconds);
 }
 
 void WebRtcAudioDeviceImpl::RemoveAudioRenderer(WebRtcAudioRenderer* renderer) {
@@ -110,10 +102,8 @@ void WebRtcAudioDeviceImpl::RemoveAudioRenderer(WebRtcAudioRenderer* renderer) {
   base::AutoLock auto_lock(lock_);
   DCHECK_EQ(renderer, renderer_.get());
   // Notify the playout sink of the change.
-  for (PlayoutDataSinkList::const_iterator it = playout_sinks_.begin();
-       it != playout_sinks_.end(); ++it) {
-    (*it)->OnPlayoutDataSourceChanged();
-  }
+  for (auto* sink : playout_sinks_)
+    sink->OnPlayoutDataSourceChanged();
 
   renderer_ = nullptr;
 }
@@ -161,7 +151,7 @@ int32_t WebRtcAudioDeviceImpl::Terminate() {
   StopRecording();
   StopPlayout();
 
-  DCHECK(!renderer_.get() || !renderer_->IsStarted())
+  DCHECK(!renderer_ || !renderer_->IsStarted())
       << "The shared audio renderer shouldn't be running";
 
   {
@@ -192,7 +182,7 @@ bool WebRtcAudioDeviceImpl::PlayoutIsInitialized() const {
 int32_t WebRtcAudioDeviceImpl::RecordingIsAvailable(bool* available) {
   DCHECK(signaling_thread_checker_.CalledOnValidThread());
   base::AutoLock auto_lock(lock_);
-  *available = (!capturers_.empty());
+  *available = !capturers_.empty();
   return 0;
 }
 
@@ -200,7 +190,7 @@ bool WebRtcAudioDeviceImpl::RecordingIsInitialized() const {
   DVLOG(1) << "WebRtcAudioDeviceImpl::RecordingIsInitialized()";
   DCHECK(signaling_thread_checker_.CalledOnValidThread());
   base::AutoLock auto_lock(lock_);
-  return (!capturers_.empty());
+  return !capturers_.empty();
 }
 
 int32_t WebRtcAudioDeviceImpl::StartPlayout() {
@@ -323,7 +313,7 @@ int32_t WebRtcAudioDeviceImpl::StereoPlayoutIsAvailable(bool* available) const {
   // thread we're on since it might incorrectly initialize the
   // worker_thread_checker_.
   base::AutoLock auto_lock(lock_);
-  *available = renderer_.get() && renderer_->channels() == 2;
+  *available = renderer_ && renderer_->channels() == 2;
   return 0;
 }
 
@@ -366,7 +356,7 @@ int32_t WebRtcAudioDeviceImpl::RecordingSampleRate(
 int32_t WebRtcAudioDeviceImpl::PlayoutSampleRate(
     uint32_t* sample_rate) const {
   DCHECK(signaling_thread_checker_.CalledOnValidThread());
-  *sample_rate = renderer_.get() ? renderer_->sample_rate() : 0;
+  *sample_rate = renderer_ ? renderer_->sample_rate() : 0;
   return 0;
 }
 
@@ -377,7 +367,7 @@ bool WebRtcAudioDeviceImpl::SetAudioRenderer(WebRtcAudioRenderer* renderer) {
   // Here we acquire |lock_| in order to protect the internal state.
   {
     base::AutoLock auto_lock(lock_);
-    if (renderer_.get())
+    if (renderer_)
       return false;
   }
 
@@ -402,7 +392,7 @@ bool WebRtcAudioDeviceImpl::SetAudioRenderer(WebRtcAudioRenderer* renderer) {
   // We acquire |lock_| again and assert our precondition, since we are
   // accessing the internal state again.
   base::AutoLock auto_lock(lock_);
-  DCHECK(!renderer_.get());
+  DCHECK(!renderer_);
   renderer_ = renderer;
   return true;
 }
@@ -415,8 +405,7 @@ void WebRtcAudioDeviceImpl::AddAudioCapturer(
   DCHECK(!capturer->device().id.empty());
 
   base::AutoLock auto_lock(lock_);
-  DCHECK(std::find(capturers_.begin(), capturers_.end(), capturer) ==
-      capturers_.end());
+  DCHECK(!base::ContainsValue(capturers_, capturer));
   capturers_.push_back(capturer);
 }
 
@@ -434,8 +423,7 @@ void WebRtcAudioDeviceImpl::AddPlayoutSink(
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK(sink);
   base::AutoLock auto_lock(lock_);
-  DCHECK(std::find(playout_sinks_.begin(), playout_sinks_.end(), sink) ==
-      playout_sinks_.end());
+  DCHECK(!base::ContainsValue(playout_sinks_, sink));
   playout_sinks_.push_back(sink);
 }
 
