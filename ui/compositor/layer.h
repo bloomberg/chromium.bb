@@ -309,15 +309,16 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
 
   // Begins showing content from a surface with a particular ID.
   void SetShowPrimarySurface(
-      const viz::SurfaceInfo& surface_info,
+      const viz::SurfaceId& surface_id,
+      const gfx::Size& frame_size_in_dip,
       scoped_refptr<viz::SurfaceReferenceFactory> surface_ref);
 
   // In the event that the primary surface is not yet available in the
   // display compositor, the fallback surface will be used.
   void SetFallbackSurfaceId(const viz::SurfaceId& surface_id);
 
-  // Returns the primary SurfaceInfo set by SetShowPrimarySurface.
-  const viz::SurfaceInfo* GetPrimarySurfaceInfo() const;
+  // Returns the primary SurfaceId set by SetShowPrimarySurface.
+  const viz::SurfaceId* GetPrimarySurfaceId() const;
 
   // Returns the fallback SurfaceId set by SetFallbackSurfaceId.
   const viz::SurfaceId* GetFallbackSurfaceId() const;

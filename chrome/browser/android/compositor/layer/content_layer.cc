@@ -116,7 +116,7 @@ gfx::Size ContentLayer::ComputeSize(int id) const {
   cc::SurfaceLayer* surface_layer =
       static_cast<cc::SurfaceLayer*>(GetDrawsContentLeaf(live_layer));
   if (surface_layer)
-    size.SetToMax(surface_layer->primary_surface_info().size_in_pixels());
+    size.SetToMax(surface_layer->bounds());
 
   scoped_refptr<ThumbnailLayer> static_layer =
       tab_content_manager_->GetStaticLayer(id);

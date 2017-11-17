@@ -147,9 +147,12 @@ void BrowserPlugin::OnSetChildFrameSurface(
   if (!attached() || IsRunningInMash())
     return;
 
-  if (!enable_surface_synchronization_)
-    compositing_helper_->SetPrimarySurfaceInfo(surface_info);
-  compositing_helper_->SetFallbackSurfaceInfo(surface_info, sequence);
+  if (!enable_surface_synchronization_) {
+    compositing_helper_->SetPrimarySurfaceId(surface_info.id(),
+                                             frame_rect().size());
+  }
+  compositing_helper_->SetFallbackSurfaceId(surface_info.id(),
+                                            frame_rect().size(), sequence);
 }
 
 void BrowserPlugin::SendSatisfySequence(const viz::SurfaceSequence& sequence) {
@@ -265,10 +268,8 @@ void BrowserPlugin::WasResized() {
     local_surface_id_ = local_surface_id_allocator_.GenerateId();
 
   if (enable_surface_synchronization_ && frame_sink_id_.is_valid()) {
-    viz::SurfaceInfo surface_info(
-        viz::SurfaceId(frame_sink_id_, local_surface_id_),
-        GetDeviceScaleFactor(), FrameRectInPixels().size());
-    compositing_helper_->SetPrimarySurfaceInfo(surface_info);
+    compositing_helper_->SetPrimarySurfaceId(
+        viz::SurfaceId(frame_sink_id_, local_surface_id_), frame_rect().size());
   }
 
   bool position_changed =
@@ -765,8 +766,8 @@ void BrowserPlugin::OnMusEmbeddedFrameSurfaceChanged(
   if (!attached_)
     return;
 
-  compositing_helper_->SetFallbackSurfaceInfo(surface_info,
-                                              viz::SurfaceSequence());
+  compositing_helper_->SetFallbackSurfaceId(
+      surface_info.id(), frame_rect().size(), viz::SurfaceSequence());
 }
 
 void BrowserPlugin::OnMusEmbeddedFrameSinkIdAllocated(

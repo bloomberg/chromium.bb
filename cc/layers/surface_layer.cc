@@ -64,10 +64,10 @@ SurfaceLayer::~SurfaceLayer() {
   DCHECK(!layer_tree_host());
 }
 
-void SurfaceLayer::SetPrimarySurfaceInfo(const viz::SurfaceInfo& surface_info) {
-  if (primary_surface_info_ == surface_info)
+void SurfaceLayer::SetPrimarySurfaceId(const viz::SurfaceId& surface_id) {
+  if (primary_surface_id_ == surface_id)
     return;
-  primary_surface_info_ = surface_info;
+  primary_surface_id_ = surface_id;
   UpdateDrawsContent(HasDrawableContent());
   SetNeedsCommit();
 }
@@ -111,7 +111,7 @@ std::unique_ptr<LayerImpl> SurfaceLayer::CreateLayerImpl(
 }
 
 bool SurfaceLayer::HasDrawableContent() const {
-  return primary_surface_info_.is_valid() && Layer::HasDrawableContent();
+  return primary_surface_id_.is_valid() && Layer::HasDrawableContent();
 }
 
 void SurfaceLayer::SetLayerTreeHost(LayerTreeHost* host) {
@@ -136,7 +136,7 @@ void SurfaceLayer::PushPropertiesTo(LayerImpl* layer) {
   Layer::PushPropertiesTo(layer);
   TRACE_EVENT0("cc", "SurfaceLayer::PushPropertiesTo");
   SurfaceLayerImpl* layer_impl = static_cast<SurfaceLayerImpl*>(layer);
-  layer_impl->SetPrimarySurfaceInfo(primary_surface_info_);
+  layer_impl->SetPrimarySurfaceId(primary_surface_id_);
   layer_impl->SetFallbackSurfaceId(fallback_surface_id_);
   layer_impl->SetStretchContentToFillBounds(stretch_content_to_fill_bounds_);
   layer_impl->SetDefaultBackgroundColor(default_background_color_);

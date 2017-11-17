@@ -193,8 +193,9 @@ std::unique_ptr<Layer> Layer::Clone() const {
 
   // cc::Layer state.
   if (surface_layer_) {
-    if (surface_layer_->primary_surface_info().is_valid()) {
-      clone->SetShowPrimarySurface(surface_layer_->primary_surface_info(),
+    if (surface_layer_->primary_surface_id().is_valid()) {
+      clone->SetShowPrimarySurface(surface_layer_->primary_surface_id(),
+                                   frame_size_in_dip_,
                                    surface_layer_->surface_reference_factory());
     }
     if (surface_layer_->fallback_surface_id().is_valid())
@@ -773,7 +774,8 @@ bool Layer::TextureFlipped() const {
 }
 
 void Layer::SetShowPrimarySurface(
-    const viz::SurfaceInfo& surface_info,
+    const viz::SurfaceId& surface_id,
+    const gfx::Size& frame_size_in_dip,
     scoped_refptr<viz::SurfaceReferenceFactory> ref_factory) {
   DCHECK(type_ == LAYER_TEXTURED || type_ == LAYER_SOLID_COLOR);
 
@@ -784,14 +786,14 @@ void Layer::SetShowPrimarySurface(
     surface_layer_ = new_layer;
   }
 
-  surface_layer_->SetPrimarySurfaceInfo(surface_info);
+  surface_layer_->SetPrimarySurfaceId(surface_id);
 
-  frame_size_in_dip_ = gfx::ConvertSizeToDIP(surface_info.device_scale_factor(),
-                                             surface_info.size_in_pixels());
+  frame_size_in_dip_ = frame_size_in_dip;
   RecomputeDrawsContentAndUVRect();
 
   for (const auto& mirror : mirrors_)
-    mirror->dest()->SetShowPrimarySurface(surface_info, ref_factory);
+    mirror->dest()->SetShowPrimarySurface(surface_id, frame_size_in_dip,
+                                          ref_factory);
 }
 
 void Layer::SetFallbackSurfaceId(const viz::SurfaceId& surface_id) {
@@ -804,9 +806,9 @@ void Layer::SetFallbackSurfaceId(const viz::SurfaceId& surface_id) {
     mirror->dest()->SetFallbackSurfaceId(surface_id);
 }
 
-const viz::SurfaceInfo* Layer::GetPrimarySurfaceInfo() const {
+const viz::SurfaceId* Layer::GetPrimarySurfaceId() const {
   if (surface_layer_)
-    return &surface_layer_->primary_surface_info();
+    return &surface_layer_->primary_surface_id();
   return nullptr;
 }
 

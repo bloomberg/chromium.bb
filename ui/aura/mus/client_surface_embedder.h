@@ -37,9 +37,9 @@ class ClientSurfaceEmbedder {
                         const gfx::Insets& client_area_insets);
   ~ClientSurfaceEmbedder();
 
-  // Updates the clip layer and primary SurfaceInfo of the surface layer based
-  // on the provided |surface_info|.
-  void SetPrimarySurfaceInfo(const viz::SurfaceInfo& surface_info);
+  // Updates the clip layer and primary SurfaceId of the surface layer based
+  // on the provided |surface_id|.
+  void SetPrimarySurfaceId(const viz::SurfaceId& surface_id);
 
   // Sets the fallback SurfaceInfo of the surface layer. The clip layer is not
   // updated.
