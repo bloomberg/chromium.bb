@@ -3,79 +3,6 @@
 
 # Uncategorized timeouts, crashes and failures.
 -BrowserTabRestoreTest.*
--DeclarativeNetRequestBrowserTest_Packed.*
--DeclarativeNetRequestBrowserTest.*
--DefaultIsolation/TaskManagerOOPIFBrowserTest.*
--DefaultKeyboardExtensionBrowserTest.*
--DefaultProfileExtensionBrowserTest.*
--DefaultTaskDialog/FileManagerBrowserTest.*
--Delete/FileManagerBrowserTest.*
--DemoAppLauncherTest.*
--DeviceIDTest.*
--DeviceLocalAccountTest.*
--DirectoryTreeContextMenu/FileManagerBrowserTest.*
--DriveSpecific/FileManagerBrowserTest.*
--EnableDebuggingRequestedTest.*
--EnableDebuggingTest.*
--EncodingAliases/BrowserEncodingTest.*
--EncryptedMediaSupportedTypesClearKeyTest.*
--EncryptedMediaSupportedTypesExternalClearKeyTest.*
--EncryptedMediaSupportedTypesWidevineTest.*
--EnterpriseEnrollmentTest.*
--ErrorConsoleBrowserTest.*
--ErrorPageAutoReloadTest.*
--ErrorPageTest.*
--EventsApiTest.*
-# TODO: Very slow (>25 seconds) and occasional timeouts.
--ExecuteScriptApiTest/DestructiveScriptTest.*
--ExistingUserControllerActiveDirectoryTest.*
--ExistingUserControllerPublicSessionTest.*
--ExistingUserControllerUntrustedTest.*
--ExtensionApiNewTabTest.*
--ExtensionApiTabTest.*
--ExtensionApiTest.*
--ExtensionBrowserTest.*
--ExtensionBrowsingDataTest.*
--ExtensionContextMenuBrowserLazyTest.*
--ExtensionCrxInstallerTestWithExperimentalApis.*
--ExtensionDisabledGlobalErrorTest.*
--ExtensionFetchTest.*
--ExtensionInstallPromptBrowserTest.*
--ExtensionInstallUIBrowserTest.*
--ExtensionLoadingTest.*
--ExtensionManagementApiBrowserTest.*
--ExtensionManagementApiEscalationTest.*
--ExtensionManagementTest.*
--ExtensionOptionsApiTests/ExtensionOptionsApiTest.*
--ExtensionOverrideTest.*
--ExtensionPageCaptureApiTest.*
--ExtensionResourceRequestPolicyTest.*
--ExtensionsA11yTestFixture.*
--ExtensionSessionsTest.*
--ExtensionSettingsApiTest.*
--ExtensionStorageMonitorTest.*
--ExtensionTabsTest.*
--ExtensionUnloadBrowserTest.*
--ExtensionViewTests/ExtensionViewTest.*
-# DCHECK in ui::ws::WindowManagerState::DispatchInputEventToWindowImpl().
--ExtensionWebstoreGetWebGLStatusTest.*
--ExtensionWebstorePrivateApiTest.*
--ExtensionWebstorePrivateApiTestChild.*
--ExtensionWebUITest.*
--ExtensionWindowCreateTest.*
--ExtensionWindowLastFocusedTest.*
--FastUnloadTest.*
--FeedbackTest.*
--FileDisplay/FileManagerBrowserTest.*
--FileManagerJsTest.*
--FileManagerPrivateApiTest.*
--FileSystemApiTest.*
--FileSystemApiTestForDrive.*
--FileSystemProviderApiTest.*
--FindInPageControllerTest.*
--FirstRunUIBrowserTest.*
--ForceMaximizeOnFirstRunTest.*
--ForceMaximizePolicyFalseTest.*
 -GalleryBrowserTest.*
 -GalleryBrowserTestInGuestMode.*
 -GoodiesDisplayerBrowserTest.*
@@ -306,6 +233,10 @@
 # Crashes in net::URLRequestContext::CreateRequest.
 -AffiliationCheck/EnterpriseDeviceAttributesTest.*
 -AffiliationCheck/UserAffiliationBrowserTest.*
+-DefaultProfileExtensionBrowserTest.*
+-ExistingUserControllerActiveDirectoryTest.*
+-ExistingUserControllerPublicSessionTest.*
+-ExistingUserControllerUntrustedTest.*
 
 # Uses ash::Shell::GetRootWindowForNewWindows to choose a display for the app list.
 # More generally, app list needs to move into ash.
@@ -328,9 +259,9 @@
 -AutomationApiTestWithDeviceScaleFactor.*
 -AutomationManagerAuraBrowserTest.*
 
-# Accessibility audit warning, then check failure in ProfileDestroyer:
-# hosts.empty() || profile->IsOffTheRecord() || profile->HasOffTheRecordProfile() || content::RenderProcessHost::run_renderer_in_process(). Profile still has 1 hosts
+# profile_destroyer.cc(57) Check failed: hosts.empty() || profile->IsOffTheRecord() || profile->HasOffTheRecordProfile() || content::RenderProcessHost::run_renderer_in_process(). Profile still has 1 hosts
 -BluetoothPairingUITest.*
+-DemoAppLauncherTest.*
 
 # Direct access to ash window frames, tablet mode, overview mode, etc.
 -BrowserNonClientFrameViewAshBackButtonTest.*
@@ -365,11 +296,42 @@
 # Null immersive_fullscreen_controller_.
 -ChromeNativeAppWindowViewsAuraAshBrowserTest.*
 
-# SessionRestoreStatsCollector: Check failed: 0u < loading_tab_count_ (0 vs. 0)
+# session_restore_stats_collector.cc(210) Check failed: 0u < loading_tab_count_ (0 vs. 0)
 -ContinueWhereILeftOffTest.*
+-DeviceIDTest.*
 
 # ash::Shell access in test for wallpaper images.
 -CustomizationWallpaperDownloaderBrowserTest.*
+
+# Flaky: private_api_file_system.cc(811) Check failed: external_backend->CanHandleType(file_system_url.type()).
+-DefaultTaskDialog/FileManagerBrowserTest.*
+-QuickView/FileManagerBrowserTest.*
+
+# Need virtual keyboard support.
+-DefaultKeyboardExtensionBrowserTest.*
+
+# ash::Shell access for LogoutConfirmationController
+-DeviceLocalAccountTest.*
+
+# TODO: Very slow (>25 seconds) and occasional timeouts.
+-ExecuteScriptApiTest/DestructiveScriptTest.*
+
+# WindowPortMus check failed in fullscreen test:
+# window_mus_type() == WindowMusType::TOP_LEVEL_IN_WM || window_mus_type() == WindowMusType::EMBED_IN_OWNER.
+-ExtensionInstallUIBrowserTest.*
+
+# ozone_platform.cc(61) Check failed: instance_. OzonePlatform is not initialized
+-ExtensionWebstoreGetWebGLStatusTest.*
+
+# SystemLogsFetcher -> TouchLogSource -> ash::TouchHudDebug -> ash::Shell
+-FeedbackTest.*
+
+# FirstRunController -> ash::Shell
+-FirstRunUIBrowserTest.*
+
+# ash::Shell::display_manager() to update displays.
+-ForceMaximizeOnFirstRunTest.*
+-ForceMaximizePolicyFalseTest.*
 
 # Flaky. SessionRestoreStatsCollector::Observe failure. crbug.com/785298
 -SAMLPolicyTest.TransferCookiesAffiliated
@@ -377,5 +339,6 @@
 # Flaky shutdown crashes in ~MusClient http://crbug.com/786234 and AtExit
 # crashes in ~WebContentsTaskProvider http://crbug.com/786230
 -AppBackgroundPageApiTest.*
+-DefaultIsolation/TaskManagerOOPIFBrowserTest.*
 -TaskManagerBrowserTest.*
 -TaskManagerMemoryCoordinatorBrowserTest.*
