@@ -88,9 +88,7 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
   // existing CacheStorageCacheHandle(s) to the cache will remain valid but
   // future CacheStorage operations won't be able to access the cache. The cache
   // isn't actually erased from disk until the last handle is dropped.
-  // TODO(jkarlin): Rename to DoomCache.
-  void DeleteCache(const std::string& cache_name,
-                   BoolAndErrorCallback callback);
+  void DoomCache(const std::string& cache_name, BoolAndErrorCallback callback);
 
   // Calls the callback with the cache index.
   void EnumerateCaches(IndexCallback callback);
@@ -175,8 +173,8 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
                     BoolAndErrorCallback callback);
 
   // The DeleteCache callbacks are below.
-  void DeleteCacheImpl(const std::string& cache_name,
-                       BoolAndErrorCallback callback);
+  void DoomCacheImpl(const std::string& cache_name,
+                     BoolAndErrorCallback callback);
   void DeleteCacheDidWriteIndex(CacheStorageCacheHandle cache_handle,
                                 BoolAndErrorCallback callback,
                                 bool success);

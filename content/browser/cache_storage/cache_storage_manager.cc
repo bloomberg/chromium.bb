@@ -204,7 +204,7 @@ void CacheStorageManager::DeleteCache(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   CacheStorage* cache_storage = FindOrCreateCacheStorage(origin);
-  cache_storage->DeleteCache(cache_name, std::move(callback));
+  cache_storage->DoomCache(cache_name, std::move(callback));
 }
 
 void CacheStorageManager::EnumerateCaches(
