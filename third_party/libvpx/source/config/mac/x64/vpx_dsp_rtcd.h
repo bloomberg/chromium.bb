@@ -6265,7 +6265,8 @@ RTCD_EXTERN void (*vpx_sad8x8x8)(const uint8_t* src_ptr,
 
 int vpx_satd_c(const tran_low_t* coeff, int length);
 int vpx_satd_sse2(const tran_low_t* coeff, int length);
-#define vpx_satd vpx_satd_sse2
+int vpx_satd_avx2(const tran_low_t* coeff, int length);
+RTCD_EXTERN int (*vpx_satd)(const tran_low_t* coeff, int length);
 
 void vpx_scaled_2d_c(const uint8_t* src,
                      ptrdiff_t src_stride,
@@ -7821,6 +7822,9 @@ static void setup_rtcd_internal(void) {
   vpx_sad8x8x8 = vpx_sad8x8x8_c;
   if (flags & HAS_SSE4_1)
     vpx_sad8x8x8 = vpx_sad8x8x8_sse4_1;
+  vpx_satd = vpx_satd_sse2;
+  if (flags & HAS_AVX2)
+    vpx_satd = vpx_satd_avx2;
   vpx_scaled_2d = vpx_scaled_2d_c;
   if (flags & HAS_SSSE3)
     vpx_scaled_2d = vpx_scaled_2d_ssse3;
