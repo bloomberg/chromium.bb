@@ -1988,7 +1988,7 @@ crbug.com/711529 http/tests/security/cross-origin-createImageBitmap-structured-c
 crbug.com/711529 http/tests/workers/shared-worker-performance-timeline.html [ Timeout ]
 crbug.com/711529 virtual/mojo-loading/http/tests/notifications/serviceworker-notification-event.html [ Timeout ]
 crbug.com/711529 virtual/mojo-loading/http/tests/origin_trials/sample-api-workers.html [ Crash Timeout ]
-crbug.com/711529 virtual/mojo-loading/http/tests/permissions/test-api-surface.html [ Timeout ]
+crbug.com/711529 virtual/mojo-loading/http/tests/permissions/test-api-surface.html [ Failure Timeout ]
 crbug.com/711529 virtual/mojo-loading/http/tests/permissions/test-query.html [ Timeout ]
 crbug.com/711529 virtual/mojo-loading/http/tests/security/cross-origin-createImageBitmap-structured-clone.html [ Timeout ]
 crbug.com/711529 virtual/mojo-loading/http/tests/workers/shared-worker-performance-timeline.html [ Timeout ]
@@ -4109,3 +4109,4 @@ crbug.com/785980 [ Win10 ] http/tests/devtools/network/network-xhr-same-url-as-m
 # Sheriff failures 2017-11-17
 crbug.com/786235 http/tests/misc/resource-timing-sizes-tags.html [ Failure Pass ]
 crbug.com/786235 virtual/mojo-loading/http/tests/misc/resource-timing-sizes-tags.html [ Failure Pass ]
+crbug.com/786348 [ Win7 ] virtual/mojo-loading/http/tests/devtools/console/console-link-to-snippet.js [ Failure Pass ]
