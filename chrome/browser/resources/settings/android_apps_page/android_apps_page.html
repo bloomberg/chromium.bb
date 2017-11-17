@@ -21,7 +21,8 @@
         focus-config="[[focusConfig_]]">
       <neon-animatable route-path="default">
         <template is="dom-if" if="[[havePlayStoreApp]]" restamp>
-          <div id="android-apps" class="settings-box two-line first" actionable
+          <div id="android-apps" class="settings-box two-line first"
+              actionable$="[[androidAppsInfo.playStoreEnabled]]"
               on-tap="onSubpageTap_">
             <div class="start">
               $i18n{androidAppsPageLabel}
