@@ -38,11 +38,11 @@ Current patches:
     Always use av_realloc() for |extradata|. https://crbug.com/721872
 
     Prevent NULL dereference in get_current_frag_stream_info. Applied from
-    e-mail to ffmpeg-devel@ list. Should be upstream by next roll.
+    e-mail to ffmpeg-devel@ list; should be upstream by M65 roll.
     http://crbug.com/786269
 
     Prevent leak of |frame_duration_buffer|. http://crbug.com/782074. Should be
-    upstream by next roll.
+    upstream by M65 roll.
 
   libavformat/matroskadec.c
     Add CONFIG_LZO and CONFIG_SIPR_DECODER (and other CONFIG_*) checks to remove
@@ -81,5 +81,5 @@ Current patches:
         "error: couldn't allocate output register for constraint 'r'"
 
   libavformat/utils.c
-   av_read_frame() : Prevent undefined shift with wrap_bits > 63. Pushed to
-   upstream, so should be available by next roll (M65).
+    av_read_frame() : Prevent undefined shift with wrap_bits > 63. Pushed to
+    upstream, so should be upstream by M65 roll. http://crbug.com/783459
