@@ -300,7 +300,7 @@ static CSSValue* ValueForPositionOffset(const ComputedStyle& style,
   return ZoomAdjustedPixelValueForLength(offset, style);
 }
 
-static CSSBorderImageSliceValue* ValueForNinePieceImageSlice(
+static cssvalue::CSSBorderImageSliceValue* ValueForNinePieceImageSlice(
     const NinePieceImage& image) {
   // Create the slices.
   CSSPrimitiveValue* top = nullptr;
@@ -449,7 +449,8 @@ static CSSValue* ValueForNinePieceImage(const NinePieceImage& image,
     image_value = image.GetImage()->ComputedCSSValue();
 
   // Create the image slice.
-  CSSBorderImageSliceValue* image_slices = ValueForNinePieceImageSlice(image);
+  cssvalue::CSSBorderImageSliceValue* image_slices =
+      ValueForNinePieceImageSlice(image);
 
   // Create the border area slices.
   CSSValue* border_slices =
