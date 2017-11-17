@@ -2916,4 +2916,16 @@ TEST_F(RenderWidgetHostTest, FrameToken_RendererCrash) {
   EXPECT_EQ(1u, host_->processed_frame_messages_count());
 }
 
+TEST_F(RenderWidgetHostTest, InflightEventCountResetsAfterRebind) {
+  // Simulate a keyboard event.
+  SimulateKeyboardEvent(WebInputEvent::kRawKeyDown);
+
+  EXPECT_EQ(1u, host_->in_flight_event_count());
+  mojom::WidgetPtr widget;
+  std::unique_ptr<MockWidgetImpl> widget_impl =
+      std::make_unique<MockWidgetImpl>(mojo::MakeRequest(&widget));
+  host_->SetWidget(std::move(widget));
+  EXPECT_EQ(0u, host_->in_flight_event_count());
+}
+
 }  // namespace content
