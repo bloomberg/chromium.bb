@@ -11,6 +11,7 @@
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/google/core/browser/google_util.h"
+#include "components/omnibox/browser/omnibox_edit_model.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/ui/omnibox/location_bar_controller.h"
@@ -102,6 +103,13 @@
   self.locationBarView = nil;
 }
 
+#pragma mark - Public
+
+- (void)updateToolbarState {
+  // TODO(crbug.com/784911): This function should probably triggers something in
+  // the mediator. Investigate how to handle it.
+}
+
 #pragma mark - LocationBarDelegate
 
 - (void)loadGURLFromLocationBar:(const GURL&)url
@@ -137,7 +145,7 @@
 - (void)locationBarHasBecomeFirstResponder {
   [self.delegate locationBarDidBecomeFirstResponder];
   if (@available(iOS 10, *)) {
-    [self.viewController expandOmnibox];
+    [self.viewController expandOmniboxAnimated:YES];
   }
 }
 
@@ -161,11 +169,48 @@
   return toolbarModelIOS ? toolbarModelIOS->GetToolbarModel() : nullptr;
 }
 
-// TODO(crbug.com/78911): implement this protocol.
 #pragma mark - OmniboxFocuser
 
+- (void)focusOmnibox {
+  if (!self.viewController.view.hidden)
+    [_locationBarView.textField becomeFirstResponder];
+}
+
 - (void)cancelOmniboxEdit {
-  // TODO(crbug.com/784911): Implement this.
+  _locationBar->HideKeyboardAndEndEditing();
+  [self updateToolbarState];
+}
+
+- (void)focusFakebox {
+  if (IsIPadIdiom()) {
+    OmniboxEditModel* model = _locationBar->GetLocationEntry()->model();
+    // Setting the caret visibility to false causes OmniboxEditModel to indicate
+    // that omnibox interaction was initiated from the fakebox. Note that
+    // SetCaretVisibility is a no-op unless OnSetFocus is called first.  Only
+    // set fakebox on iPad, where there is a distinction between the omnibox
+    // and the fakebox on the NTP.  On iPhone there is no visible omnibox, so
+    // there's no need to indicate interaction was initiated from the fakebox.
+    model->OnSetFocus(false);
+    model->SetCaretVisibility(false);
+  } else {
+    [self.viewController expandOmniboxAnimated:NO];
+  }
+
+  [self focusOmnibox];
+}
+
+- (void)onFakeboxBlur {
+  DCHECK(!IsIPadIdiom());
+  // Hide the toolbar if the NTP is currently displayed.
+  web::WebState* webState = [self getWebState];
+  if (webState && (webState->GetVisibleURL() == GURL(kChromeUINewTabURL))) {
+    self.viewController.view.hidden = YES;
+  }
+}
+
+- (void)onFakeboxAnimationComplete {
+  DCHECK(!IsIPadIdiom());
+  self.viewController.view.hidden = NO;
 }
 
 @end
