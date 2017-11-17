@@ -290,6 +290,8 @@ class PrivetNotificationsNotificationTest : public testing::Test {
 TEST_F(PrivetNotificationsNotificationTest, AddToCloudPrint) {
   TestPrivetNotificationService service(profile());
   service.PrivetNotify(1 /* devices_active */, true /* added */);
+  // The notification is added asynchronously.
+  base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(1U, ui_manager()->GetNotificationCount());
   const auto& notification = ui_manager()->GetNotificationAt(0);
@@ -304,6 +306,8 @@ TEST_F(PrivetNotificationsNotificationTest, AddToCloudPrint) {
 TEST_F(PrivetNotificationsNotificationTest, DontShowAgain) {
   TestPrivetNotificationService service(profile());
   service.PrivetNotify(1 /* devices_active */, true /* added */);
+  // The notification is added asynchronously.
+  base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(1U, ui_manager()->GetNotificationCount());
   const auto& notification = ui_manager()->GetNotificationAt(0);
