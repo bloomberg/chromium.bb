@@ -41,7 +41,7 @@ class ScreenshotSyncIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     # missing" infobar, which causes flakiness in tests.
     return [
       '--force-color-profile=srgb',
-      '--enable-features=ColorCorrectRendering',
+      '--ensure-forced-color-profile',
       '--test-type=gpu'] + browser_args
 
   @classmethod

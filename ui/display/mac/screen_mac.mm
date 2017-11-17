@@ -11,7 +11,6 @@
 #include <map>
 #include <memory>
 
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
@@ -74,27 +73,37 @@ Display BuildDisplayForScreen(NSScreen* screen) {
     display.set_bounds(gfx::ScreenRectFromNSRect(frame));
     display.set_work_area(gfx::ScreenRectFromNSRect(visible_frame));
   }
-  CGFloat scale = [screen backingScaleFactor];
 
+  // Compute device scale factor
+  CGFloat scale = [screen backingScaleFactor];
   if (Display::HasForceDeviceScaleFactor())
     scale = Display::GetForcedDeviceScaleFactor();
-
   display.set_device_scale_factor(scale);
 
-  if (!Display::HasForceColorProfile()) {
-    gfx::ICCProfile icc_profile;
-    CGColorSpaceRef cg_color_space = [[screen colorSpace] CGColorSpace];
-    if (cg_color_space) {
-      base::ScopedCFTypeRef<CFDataRef> cf_icc_profile(
-          CGColorSpaceCopyICCProfile(cg_color_space));
-      if (cf_icc_profile) {
-        icc_profile = gfx::ICCProfile::FromData(
-            CFDataGetBytePtr(cf_icc_profile), CFDataGetLength(cf_icc_profile));
-      }
+  // Compute the color profile.
+  gfx::ICCProfile icc_profile;
+  CGColorSpaceRef cg_color_space = [[screen colorSpace] CGColorSpace];
+  if (cg_color_space) {
+    base::ScopedCFTypeRef<CFDataRef> cf_icc_profile(
+        CGColorSpaceCopyICCProfile(cg_color_space));
+    if (cf_icc_profile) {
+      icc_profile = gfx::ICCProfile::FromData(CFDataGetBytePtr(cf_icc_profile),
+                                              CFDataGetLength(cf_icc_profile));
     }
-    icc_profile.HistogramDisplay(display.id());
-    display.set_color_space(icc_profile.GetColorSpace());
   }
+  icc_profile.HistogramDisplay(display.id());
+  gfx::ColorSpace screen_color_space = icc_profile.GetColorSpace();
+  if (Display::HasForceColorProfile()) {
+    if (Display::HasEnsureForcedColorProfile()) {
+      CHECK_EQ(screen_color_space, display.color_space())
+          << "The display's color space does not match the color space that "
+             "was forced by the command line. This will cause pixel tests to "
+             "fail.";
+    }
+  } else {
+    display.set_color_space(screen_color_space);
+  }
+
   display.set_color_depth(NSBitsPerPixelFromDepth([screen depth]));
   display.set_depth_per_component(NSBitsPerSampleFromDepth([screen depth]));
   display.set_is_monochrome(CGDisplayUsesForceToGray());

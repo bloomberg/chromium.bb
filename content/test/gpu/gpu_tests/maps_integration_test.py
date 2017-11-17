@@ -43,7 +43,7 @@ class MapsIntegrationTest(
     super(MapsIntegrationTest, cls).SetUpProcess()
     browser_args = [
         '--force-color-profile=srgb',
-        '--enable-features=ColorCorrectRendering']
+        '--ensure-forced-color-profile']
     cls.CustomizeBrowserArgs(browser_args)
     cls.StartWPRServer(os.path.join(wpr_path, 'maps_005.wprgo'),
                        cloud_storage.PUBLIC_BUCKET)

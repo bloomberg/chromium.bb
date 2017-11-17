@@ -142,6 +142,14 @@ bool Display::HasForceColorProfile() {
   return has_force_color_profile;
 }
 
+// static
+bool Display::HasEnsureForcedColorProfile() {
+  static bool has_ensure_forced_color_profile =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnsureForcedColorProfile);
+  return has_ensure_forced_color_profile;
+}
+
 Display::Display() : Display(kInvalidDisplayId) {}
 
 Display::Display(int64_t id) : Display(id, gfx::Rect()) {}

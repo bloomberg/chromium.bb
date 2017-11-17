@@ -67,7 +67,7 @@ class PixelIntegrationTest(
     # All tests receive the following options.
     return [
       '--force-color-profile=srgb',
-      '--enable-features=ColorCorrectRendering',
+      '--ensure-forced-color-profile',
       '--enable-gpu-benchmarking',
       '--test-type=gpu'] + browser_args
 

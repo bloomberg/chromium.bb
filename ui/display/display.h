@@ -96,6 +96,10 @@ class DISPLAY_EXPORT Display final {
   // command line via "--force-color-profile".
   static bool HasForceColorProfile();
 
+  // Indicates if the display color profile being forced should be ensured to
+  // be in use by the operating system as well.
+  static bool HasEnsureForcedColorProfile();
+
   // Resets the caches used to determine if a device scale factor is being
   // forced from the command line via "--force-device-scale-factor", and thus
   // ensures that the command line is reevaluated.
