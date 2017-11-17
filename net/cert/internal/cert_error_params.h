@@ -32,16 +32,9 @@ class NET_EXPORT CertErrorParams {
   // used for pretty printing the error.
   virtual std::string ToDebugString() const = 0;
 
-  // TODO(crbug.com/634443): Add methods to access the underlying
-  // structure, should they be needed for non-pretty-printing use cases.
-
  private:
   DISALLOW_COPY_AND_ASSIGN(CertErrorParams);
 };
-
-// TODO(crbug.com/634443): Should the underlying parameter classes be exposed
-// so error consumers can access their data directly? (Without having to go
-// through the generic virtuals).
 
 // Creates a parameter object that holds a copy of |der|, and names it |name|
 // in debug string outputs.
