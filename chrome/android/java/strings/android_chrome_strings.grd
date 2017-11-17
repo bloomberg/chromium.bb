@@ -2795,14 +2795,14 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
       <message name="IDS_CONTEXTUAL_SEARCH_QUICK_ACTION_CAPTION_GENERIC_WEBSITE" desc="Caption displayed in the Contextual Search bar prompting the user to navigate to a web page.">
         Go to page
       </message>
-      <message name="IDS_CONTEXTUAL_SEARCH_IPH_ENTITY" desc="The in-product-help message for encouraging users to open the Contextual Search panel to learn to more about the phrase they have tapped on. This is a placeholder while the string is being finalized. Do not translate for now.">
-        Open this panel to find more information
+      <message name="IDS_CONTEXTUAL_SEARCH_IPH_ENTITY" desc="An in-product-help message for the Touch to Search feature on Chrome Android. The message encourages users to open a panel that contains search results for the word or phrase they tapped on.">
+        See instant search results in this panel
       </message>
-      <message name="IDS_CONTEXTUAL_SEARCH_IPH_SEARCH_RESULT" desc="The in-product-help message for encouraging users to open the Contextual Search panel to see related results about a phrase they have selected. This is a placeholder while the string is being finalized. Do not translate for now.">
-        Open this panel to find related search results
+      <message name="IDS_CONTEXTUAL_SEARCH_IPH_SEARCH_RESULT" desc="An in-product-help message for the Touch to Search feature. It encourages users to open the Touch to Search panel to see search results for a word or phrase they have tapped.">
+        Tap a word to search instantly or see related actions
       </message>
-      <message name="IDS_CONTEXTUAL_SEARCH_IPH_TAP" desc="The in-product-help message for encouraging users to tap instead of long pressing for triggeting Contextual Search. This is a placeholder while the string is being finalized. Do not translate for now.">
-        You can also search with one tap
+      <message name="IDS_CONTEXTUAL_SEARCH_IPH_TAP" desc="An in-product-help message for encouraging users to tap instead of long pressing to trigger the Touch to Search feature.">
+        You can also search with a quick tap on a word
       </message>
 
       <!-- Web apps -->

@@ -33,6 +33,7 @@ import org.chromium.chrome.browser.externalnav.ExternalNavigationParams;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.gsa.GSAContextDisplaySelection;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
@@ -401,7 +402,7 @@ public class ContextualSearchManager
 
         mSearchRequest = null;
 
-        mInProductHelp.dismiss(mActivity.getActivityTab().getProfile());
+        mInProductHelp.dismiss(Profile.getLastUsedProfile().getOriginalProfile());
 
         if (mIsShowingPromo && !mDidLogPromoOutcome && mSearchPanel.wasPromoInteractive()) {
             ContextualSearchUma.logPromoOutcome(mWasActivatedByTap, mIsMandatoryPromo);
@@ -486,7 +487,7 @@ public class ContextualSearchManager
         mWereSearchResultsSeen = false;
 
         mInProductHelp.beforePanelShown(
-                isTap, mPolicy.isTapSupported(), mActivity.getActivityTab().getProfile());
+                isTap, mPolicy.isTapSupported(), Profile.getLastUsedProfile().getOriginalProfile());
 
         // Note: now that the contextual search has properly started, set the promo involvement.
         if (mPolicy.isPromoAvailable()) {
@@ -718,11 +719,11 @@ public class ContextualSearchManager
         mReceivedContextualCardsEntityData = !quickActionShown && receivedCaptionOrThumbnail;
 
         if (mReceivedContextualCardsEntityData) {
-            Tracker tracker =
-                    TrackerFactory.getTrackerForProfile(mActivity.getActivityTab().getProfile());
+            Tracker tracker = TrackerFactory.getTrackerForProfile(
+                    Profile.getLastUsedProfile().getOriginalProfile());
             tracker.notifyEvent(EventConstants.CONTEXTUAL_SEARCH_ENTITY_RESULT);
             mInProductHelp.onEntityDataReceived(
-                    mWasActivatedByTap, mActivity.getActivityTab().getProfile());
+                    mWasActivatedByTap, Profile.getLastUsedProfile().getOriginalProfile());
         }
 
         ContextualSearchUma.logContextualCardsDataShown(mReceivedContextualCardsEntityData);
@@ -1232,12 +1233,13 @@ public class ContextualSearchManager
     @Override
     public void onPanelFinishedShowing() {
         mInProductHelp.onPanelFinishedShowing(
-                mWasActivatedByTap, mActivity.getActivityTab().getProfile());
+                mWasActivatedByTap, Profile.getLastUsedProfile().getOriginalProfile());
     }
 
     @Override
     public void onPanelExpandedOrMaximized() {
-        mInProductHelp.onPanelExpandedOrMaximized(mActivity.getActivityTab().getProfile());
+        mInProductHelp.onPanelExpandedOrMaximized(
+                Profile.getLastUsedProfile().getOriginalProfile());
     }
 
     /**
