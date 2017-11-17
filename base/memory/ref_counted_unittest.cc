@@ -581,6 +581,16 @@ TEST(RefCountedUnitTest, TestOverloadResolutionMove) {
   EXPECT_EQ(other2, Overloaded(std::move(other)));
 }
 
+TEST(RefCountedUnitTest, TestMakeRefCounted) {
+  scoped_refptr<Derived> derived = new Derived;
+  EXPECT_TRUE(derived->HasOneRef());
+  derived = nullptr;
+
+  scoped_refptr<Derived> derived2 = base::MakeRefCounted<Derived>();
+  EXPECT_TRUE(derived2->HasOneRef());
+  derived2 = nullptr;
+}
+
 TEST(RefCountedUnitTest, TestInitialRefCountIsOne) {
   scoped_refptr<InitialRefCountIsOne> obj =
       base::MakeRefCounted<InitialRefCountIsOne>();
