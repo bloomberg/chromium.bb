@@ -1572,7 +1572,6 @@ void av1_fdct64_new(const int32_t *input, int32_t *output,
 
   // stage 1;
   stage++;
-  cospi = cospi_arr(cos_bit[stage]);
   bf1 = output;
   bf1[0] = input[0] + input[63];
   bf1[1] = input[1] + input[62];
@@ -2281,7 +2280,6 @@ void av1_fdct64_new(const int32_t *input, int32_t *output,
 
   // stage 11
   stage++;
-  cospi = cospi_arr(cos_bit[stage]);
   bf0 = step;
   bf1 = output;
   bf1[0] = bf0[0];

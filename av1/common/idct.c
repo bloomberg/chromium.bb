@@ -63,13 +63,13 @@ static void iidtx32_c(const tran_low_t *input, tran_low_t *output) {
   }
 }
 
-#if CONFIG_TX64X64 && !CONFIG_DAALA_TX64
+#if CONFIG_TX64X64 && (!CONFIG_DAALA_TX32 || !CONFIG_DAALA_TX64)
 static void iidtx64_c(const tran_low_t *input, tran_low_t *output) {
   for (int i = 0; i < 64; ++i) {
     output[i] = (tran_low_t)dct_const_round_shift(input[i] * 4 * Sqrt2);
   }
 }
-#endif  // CONFIG_TX64X64
+#endif  // CONFIG_TX64X64 && (!CONFIG_DAALA_TX32 || !CONFIG_DAALA_TX64)
 
 // For use in lieu of ADST
 static void ihalfright32_c(const tran_low_t *input, tran_low_t *output) {
@@ -85,7 +85,7 @@ static void ihalfright32_c(const tran_low_t *input, tran_low_t *output) {
   // Note overall scaling factor is 4 times orthogonal
 }
 
-#if CONFIG_TX64X64 && !CONFIG_DAALA_TX64
+#if CONFIG_TX64X64 && (!CONFIG_DAALA_TX32 || !CONFIG_DAALA_TX64)
 static void idct64_col_c(const tran_low_t *input, tran_low_t *output) {
   int32_t in[64], out[64];
 
@@ -115,7 +115,7 @@ static void ihalfright64_c(const tran_low_t *input, tran_low_t *output) {
   aom_idct32_c(inputhalf, output + 32);
   // Note overall scaling factor is 4 * sqrt(2)  times orthogonal
 }
-#endif  // CONFIG_TX64X64
+#endif  // CONFIG_TX64X64 && (!CONFIG_DAALA_TX32 || !CONFIG_DAALA_TX64)
 
 // Inverse identity transform and add.
 #if !(CONFIG_DAALA_TX4 && CONFIG_DAALA_TX8 && CONFIG_DAALA_TX16 && \

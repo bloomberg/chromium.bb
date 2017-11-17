@@ -2434,6 +2434,10 @@ static int64_t txfm_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
       mbmi->filter_intra_mode_info.use_filter_intra_mode[0] &&
       !av1_filter_intra_allowed_txsize(tx_size)) {
     rd_stats->rate = INT_MAX;
+    // Note: Initialize following to avoid uninitialied warnings.
+    rd_stats->dist = INT64_MAX;
+    rd_stats->skip = 0;
+    rd_stats->sse = INT64_MAX;
     return INT64_MAX;
   }
 #endif
