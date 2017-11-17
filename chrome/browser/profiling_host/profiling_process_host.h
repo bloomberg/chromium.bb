@@ -105,15 +105,15 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
 
   void ConfigureBackgroundProfilingTriggers();
 
-  // Sends a message to the profiling process that it dump the given process'
+  // Sends a message to the profiling process to dump the given process'
   // memory data to the given file.
   void RequestProcessDump(base::ProcessId pid,
                           base::FilePath dest,
                           base::OnceClosure done);
 
-  // Sends a message to the profiling process that it report the given process'
+  // Sends a message to the profiling process to report all profiled processes
   // memory data to the crash server (slow-report).
-  void RequestProcessReport(base::ProcessId pid, std::string trigger_name);
+  void RequestProcessReport(std::string trigger_name);
 
   // For testing. Only one can be set at a time. Will be called after the
   // profiling process dumps heaps into the trace log. No guarantees are made

@@ -228,13 +228,9 @@ void MemoryInternalsDOMHandler::HandleReportProcess(
     const base::ListValue* args) {
   if (!args->is_list() || args->GetList().size() != 1)
     return;
-  const base::Value& pid_value = args->GetList()[0];
-  if (!pid_value.is_int())
-    return;
 
-  int pid = pid_value.GetInt();
   ProfilingProcessHost::GetInstance()->RequestProcessReport(
-      pid, "MEMLOG_MANUAL_TRIGGER");
+      "MEMLOG_MANUAL_TRIGGER");
 }
 
 void MemoryInternalsDOMHandler::GetChildProcessesOnIOThread(

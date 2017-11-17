@@ -448,8 +448,7 @@ void ProfilingProcessHost::RequestProcessDump(base::ProcessId pid,
                      kNoTriggerName, std::move(done)));
 }
 
-void ProfilingProcessHost::RequestProcessReport(base::ProcessId pid,
-                                                std::string trigger_name) {
+void ProfilingProcessHost::RequestProcessReport(std::string trigger_name) {
   // https://crbug.com/753218: Add e2e tests for this code path.
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   if (!connector_) {
