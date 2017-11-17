@@ -314,7 +314,6 @@ static const int sig_ref_offset_horiz[SIG_REF_OFFSET_NUM][2] = {
 static INLINE int get_nz_count_mag(const uint8_t *const levels, const int bwl,
                                    const int row, const int col,
                                    const TX_CLASS tx_class, int *const mag) {
-  const int stride = (1 << bwl) + TX_PAD_HOR;
   int count = 0;
   *mag = 0;
   for (int idx = 0; idx < SIG_REF_OFFSET_NUM; ++idx) {
@@ -330,7 +329,8 @@ static INLINE int get_nz_count_mag(const uint8_t *const levels, const int bwl,
                                             : sig_ref_offset_horiz[idx][1]));
     const int ref_row = row + row_offset;
     const int ref_col = col + col_offset;
-    const int nb_pos = ref_row * stride + ref_col;
+    const int nb_pos =
+        (ref_row << bwl) + (ref_row << TX_PAD_HOR_LOG2) + ref_col;
     const int level = levels[nb_pos];
     count += (level != 0);
 #if 1

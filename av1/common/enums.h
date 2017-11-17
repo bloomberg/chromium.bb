@@ -251,6 +251,7 @@ typedef enum ATTRIBUTE_PACKED {
 #define MAX_TX_SQUARE (MAX_TX_SIZE * MAX_TX_SIZE)
 
 // Pad 4 extra columns to remove horizontal availability check.
+#define TX_PAD_HOR_LOG2 2
 #define TX_PAD_HOR 4
 // Pad 6 extra rows (2 on top and 4 on bottom) to remove vertical availability
 // check.
