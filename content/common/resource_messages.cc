@@ -54,8 +54,7 @@ bool ReadCert(const base::Pickle* m,
     return false;
   if (!has_object)
     return true;
-  *cert = net::X509Certificate::CreateFromPickle(
-      iter, net::X509Certificate::PICKLETYPE_CERTIFICATE_CHAIN_V3);
+  *cert = net::X509Certificate::CreateFromPickle(iter);
   return !!cert->get();
 }
 

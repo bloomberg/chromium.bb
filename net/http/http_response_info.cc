@@ -24,18 +24,6 @@ namespace net {
 
 namespace {
 
-X509Certificate::PickleType GetPickleTypeForVersion(int version) {
-  switch (version) {
-    case 1:
-      return X509Certificate::PICKLETYPE_SINGLE_CERTIFICATE;
-    case 2:
-      return X509Certificate::PICKLETYPE_CERTIFICATE_CHAIN_V2;
-    case 3:
-    default:
-      return X509Certificate::PICKLETYPE_CERTIFICATE_CHAIN_V3;
-  }
-}
-
 bool KeyExchangeGroupIsValid(int ssl_connection_status) {
   // TLS 1.3 and later always treat the field correctly.
   if (SSLConnectionStatusToVersion(ssl_connection_status) >=
@@ -58,7 +46,7 @@ enum {
   RESPONSE_INFO_VERSION = 3,
 
   // The minimum version supported for deserializing response info.
-  RESPONSE_INFO_MINIMUM_VERSION = 1,
+  RESPONSE_INFO_MINIMUM_VERSION = 3,
 
   // We reserve up to 8 bits for the version number.
   RESPONSE_INFO_VERSION_MASK = 0xFF,
@@ -217,8 +205,7 @@ bool HttpResponseInfo::InitFromPickle(const base::Pickle& pickle,
 
   // Read ssl-info
   if (flags & RESPONSE_INFO_HAS_CERT) {
-    X509Certificate::PickleType type = GetPickleTypeForVersion(version);
-    ssl_info.cert = X509Certificate::CreateFromPickle(&iter, type);
+    ssl_info.cert = X509Certificate::CreateFromPickle(&iter);
     if (!ssl_info.cert.get())
       return false;
   }
@@ -274,17 +261,13 @@ bool HttpResponseInfo::InitFromPickle(const base::Pickle& pickle,
 
   // Read socket_address.
   std::string socket_address_host;
-  if (iter.ReadString(&socket_address_host)) {
-    // If the host was written, we always expect the port to follow.
-    uint16_t socket_address_port;
-    if (!iter.ReadUInt16(&socket_address_port))
-      return false;
-    socket_address = HostPortPair(socket_address_host, socket_address_port);
-  } else if (version > 1) {
-    // socket_address was not always present in version 1 of the response
-    // info, so we don't fail if it can't be read.
+  if (!iter.ReadString(&socket_address_host))
     return false;
-  }
+  // If the host was written, we always expect the port to follow.
+  uint16_t socket_address_port;
+  if (!iter.ReadUInt16(&socket_address_port))
+    return false;
+  socket_address = HostPortPair(socket_address_host, socket_address_port);
 
   // Read protocol-version.
   if (flags & RESPONSE_INFO_HAS_ALPN_NEGOTIATED_PROTOCOL) {
