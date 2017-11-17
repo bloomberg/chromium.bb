@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef V8WorkerGlobalScopeEventListener_h
-#define V8WorkerGlobalScopeEventListener_h
+#ifndef V8WorkerOrWorkletEventListener_h
+#define V8WorkerOrWorkletEventListener_h
 
 #include "bindings/core/v8/V8EventListener.h"
 #include "platform/wtf/RefPtr.h"
@@ -39,16 +39,13 @@ namespace blink {
 
 class Event;
 
-// TODO(nhiroki): Rename this to V8WorkerOrWorkletGlobalScopeEventListener.
-// (https://crbug.com/782696)
-class V8WorkerGlobalScopeEventListener final : public V8EventListener {
+class V8WorkerOrWorkletEventListener final : public V8EventListener {
  public:
-  static V8WorkerGlobalScopeEventListener* Create(
-      v8::Local<v8::Object> listener,
-      bool is_inline,
-      ScriptState* script_state) {
-    V8WorkerGlobalScopeEventListener* event_listener =
-        new V8WorkerGlobalScopeEventListener(is_inline, script_state);
+  static V8WorkerOrWorkletEventListener* Create(v8::Local<v8::Object> listener,
+                                                bool is_inline,
+                                                ScriptState* script_state) {
+    V8WorkerOrWorkletEventListener* event_listener =
+        new V8WorkerOrWorkletEventListener(is_inline, script_state);
     event_listener->SetListenerObject(listener);
     return event_listener;
   }
@@ -56,7 +53,7 @@ class V8WorkerGlobalScopeEventListener final : public V8EventListener {
   void HandleEvent(ScriptState*, Event*) override;
 
  protected:
-  V8WorkerGlobalScopeEventListener(bool is_inline, ScriptState*);
+  V8WorkerOrWorkletEventListener(bool is_inline, ScriptState*);
 
  private:
   v8::Local<v8::Value> CallListenerFunction(ScriptState*,
@@ -67,4 +64,4 @@ class V8WorkerGlobalScopeEventListener final : public V8EventListener {
 
 }  // namespace blink
 
-#endif  // V8WorkerGlobalScopeEventListener_h
+#endif  // V8WorkerOrWorkletEventListener_h

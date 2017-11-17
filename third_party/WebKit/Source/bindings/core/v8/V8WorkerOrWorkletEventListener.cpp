@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "bindings/core/v8/V8WorkerGlobalScopeEventListener.h"
+#include "bindings/core/v8/V8WorkerOrWorkletEventListener.h"
 
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8Event.h"
@@ -44,18 +44,18 @@
 
 namespace blink {
 
-V8WorkerGlobalScopeEventListener::V8WorkerGlobalScopeEventListener(
+V8WorkerOrWorkletEventListener::V8WorkerOrWorkletEventListener(
     bool is_inline,
     ScriptState* script_state)
     : V8EventListener(is_inline, script_state) {}
 
-void V8WorkerGlobalScopeEventListener::HandleEvent(ScriptState* script_state,
-                                                   Event* event) {
+void V8WorkerOrWorkletEventListener::HandleEvent(ScriptState* script_state,
+                                                 Event* event) {
   v8::Local<v8::Context> context = script_state->GetContext();
-  WorkerOrWorkletScriptController* script =
+  WorkerOrWorkletScriptController* script_controller =
       ToWorkerOrWorkletGlobalScope(ToExecutionContext(context))
           ->ScriptController();
-  if (!script)
+  if (!script_controller)
     return;
 
   ScriptState::Scope scope(script_state);
@@ -69,7 +69,7 @@ void V8WorkerGlobalScopeEventListener::HandleEvent(ScriptState* script_state,
                      v8::Local<v8::Value>::New(GetIsolate(), js_event));
 }
 
-v8::Local<v8::Value> V8WorkerGlobalScopeEventListener::CallListenerFunction(
+v8::Local<v8::Value> V8WorkerOrWorkletEventListener::CallListenerFunction(
     ScriptState* script_state,
     v8::Local<v8::Value> js_event,
     Event* event) {
@@ -92,7 +92,7 @@ v8::Local<v8::Value> V8WorkerGlobalScopeEventListener::CallListenerFunction(
 
 // FIXME: Remove getReceiverObject().
 // This is almost identical to V8AbstractEventListener::getReceiverObject().
-v8::Local<v8::Object> V8WorkerGlobalScopeEventListener::GetReceiverObject(
+v8::Local<v8::Object> V8WorkerOrWorkletEventListener::GetReceiverObject(
     ScriptState* script_state,
     Event* event) {
   v8::Local<v8::Object> listener =
