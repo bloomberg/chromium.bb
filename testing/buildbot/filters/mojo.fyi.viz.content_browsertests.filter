@@ -49,6 +49,7 @@ WheelScrollLatchingBrowserTest.WheelScrollingRelatchWhenLatchedScrollerRemoved
 
 # No ContextProvider http://crbug.com/785268
 -ImageTransportFactoryTearDownBrowserTest.*
+-ImageTransportFactoryBrowserTest.TestLostContext
 
 # GetSnapshotFromBrowser doesn't return snapshots http://crbug.com/785308
 -SnapshotBrowserTest.*
@@ -57,3 +58,6 @@ WheelScrollLatchingBrowserTest.WheelScrollingRelatchWhenLatchedScrollerRemoved
 # http://crbug.com/777882
 -TouchSelectionControllerClientAuraScaleFactorTest.*
 -TouchSelectionControllerClientAuraTest.*
+
+# TODO: investigate flaky failure http://crbug.com/783434
+-GpuProcessHostBrowserTest.Shutdown
