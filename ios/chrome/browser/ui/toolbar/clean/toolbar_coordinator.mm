@@ -28,7 +28,10 @@
 #import "ios/chrome/browser/ui/url_loader.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
+#import "ios/web/public/navigation_item.h"
+#import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/web_state/web_state.h"
+#include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -108,6 +111,30 @@
 - (void)updateToolbarState {
   // TODO(crbug.com/784911): This function should probably triggers something in
   // the mediator. Investigate how to handle it.
+}
+
+- (void)updateToolbarForSideSwipeSnapshot:(web::WebState*)webState {
+  web::NavigationItem* item =
+      webState->GetNavigationManager()->GetVisibleItem();
+  GURL URL = item ? item->GetURL().GetOrigin() : GURL::EmptyGURL();
+  BOOL isNTP = URL == GURL(kChromeUINewTabURL);
+
+  // Don't do anything for a live non-ntp tab.
+  if (webState == [self getWebState] && !isNTP) {
+    [_locationBarView setHidden:NO];
+    return;
+  }
+
+  self.viewController.view.hidden = NO;
+  [_locationBarView setHidden:YES];
+  [self.mediator updateConsumerForWebState:webState];
+  [self.viewController updateForSideSwipeSnapshotOnNTP:isNTP];
+}
+
+- (void)resetToolbarAfterSideSwipeSnapshot {
+  [self.mediator updateConsumerForWebState:[self getWebState]];
+  [_locationBarView setHidden:NO];
+  [self.viewController resetAfterSideSwipeSnapshot];
 }
 
 #pragma mark - LocationBarDelegate

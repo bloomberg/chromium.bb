@@ -77,6 +77,14 @@
   // TODO(crbug.com/785210): Implement this.
 }
 
+- (void)updateForSideSwipeSnapshotOnNTP:(BOOL)onNTP {
+  // TODO(crbug.com/785756): Implement this.
+}
+
+- (void)resetAfterSideSwipeSnapshot {
+  // TODO(crbug.com/785756): Implement this.
+}
+
 #pragma mark - View lifecyle
 
 - (void)viewDidLoad {
