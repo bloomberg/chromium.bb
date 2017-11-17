@@ -6,6 +6,7 @@
 
 #include "base/sys_info.h"
 #include "build/build_config.h"
+#include "platform/CrossThreadFunctional.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/fonts/FontGlobalContext.h"
 #include "platform/graphics/ImageDecodingStore.h"
@@ -114,7 +115,8 @@ void MemoryCoordinator::OnPurgeMemory() {
       continue;
 
     thread->GetWebTaskRunner()->PostTask(
-        FROM_HERE, WTF::Bind(MemoryCoordinator::ClearThreadSpecificMemory));
+        FROM_HERE,
+        CrossThreadBind(MemoryCoordinator::ClearThreadSpecificMemory));
   }
 }
 
