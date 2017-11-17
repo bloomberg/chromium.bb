@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/memory/weak_ptr.h"
-#include "remoting/host/host_session_options.h"
+#include "remoting/base/session_options.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capture_options.h"
 
 namespace remoting {
@@ -42,8 +42,8 @@ class DesktopEnvironmentOptions final {
   const webrtc::DesktopCaptureOptions* desktop_capture_options() const;
   webrtc::DesktopCaptureOptions* desktop_capture_options();
 
-  // Reads configurations from a HostSessionOptions instance.
-  void ApplyHostSessionOptions(const HostSessionOptions& options);
+  // Reads configurations from a SessionOptions instance.
+  void ApplySessionOptions(const SessionOptions& options);
 
  private:
   // Sets default values for default constructor and CreateDefault() function.

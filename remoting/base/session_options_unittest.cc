@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/host_session_options.h"
+#include "remoting/base/session_options.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace remoting {
 
-TEST(HostSessionOptionsTest, ShouldBeAbleToAppendOptions) {
-  HostSessionOptions options;
+TEST(SessionOptionsTest, ShouldBeAbleToAppendOptions) {
+  SessionOptions options;
   options.Import("A:, B C :1, DE:2, EF");
   ASSERT_TRUE(options.Get("A"));
   ASSERT_EQ(*options.Get("B C "), "1");
@@ -24,35 +24,35 @@ TEST(HostSessionOptionsTest, ShouldBeAbleToAppendOptions) {
   ASSERT_EQ(*options.Get("--FF"), "3");
 }
 
-TEST(HostSessionOptionsTest, ShouldRemoveEmptyKeys) {
-  HostSessionOptions options;
+TEST(SessionOptionsTest, ShouldRemoveEmptyKeys) {
+  SessionOptions options;
   options.Import("A:1,:,B:");
   ASSERT_TRUE(options.Get("A"));
   ASSERT_TRUE(options.Get("B"));
   ASSERT_FALSE(options.Get(""));
 }
 
-TEST(HostSessionOptionsTest, ShouldRemoveNonASCIIKeyOrValue) {
-  HostSessionOptions options;
+TEST(SessionOptionsTest, ShouldRemoveNonASCIIKeyOrValue) {
+  SessionOptions options;
   options.Import("\xE9\x9B\xAA:value,key:\xE9\xA3\x9E,key2:value2");
   ASSERT_FALSE(options.Get("\xE9\x9B\xAA"));
   ASSERT_FALSE(options.Get("key"));
   ASSERT_EQ(*options.Get("key2"), "value2");
 }
 
-TEST(HostSessionOptionsTest, ImportAndExport) {
-  HostSessionOptions options;
+TEST(SessionOptionsTest, ImportAndExport) {
+  SessionOptions options;
   options.Import("A:,B:,C:D,E:V");
   std::string result = options.Export();
 
-  HostSessionOptions other;
+  SessionOptions other;
   other.Append("C", "X");
   other.Import(result);
   ASSERT_EQ(options.Export(), other.Export());
 }
 
-TEST(HostSessionOptionsTest, ConvertToBool) {
-  HostSessionOptions options;
+TEST(SessionOptionsTest, ConvertToBool) {
+  SessionOptions options;
   options.Import("A:,B:x,C:true,D:TRUE,E:1,F:2,G:FALSE,H:0,I");
   ASSERT_TRUE(*options.GetBool("A"));
   ASSERT_FALSE(options.GetBool("B"));
@@ -65,8 +65,8 @@ TEST(HostSessionOptionsTest, ConvertToBool) {
   ASSERT_FALSE(options.GetBool("I"));
 }
 
-TEST(HostSessionOptionsTest, ConvertToint) {
-  HostSessionOptions options;
+TEST(SessionOptionsTest, ConvertToint) {
+  SessionOptions options;
   options.Import("A:100,B:-200,C:x,D:");
   ASSERT_EQ(*options.GetInt("A"), 100);
   ASSERT_EQ(*options.GetInt("B"), -200);

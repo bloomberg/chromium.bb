@@ -90,8 +90,8 @@ void DesktopEnvironmentOptions::set_enable_file_transfer(bool enabled) {
   enable_file_transfer_ = enabled;
 }
 
-void DesktopEnvironmentOptions::ApplyHostSessionOptions(
-    const HostSessionOptions& options) {
+void DesktopEnvironmentOptions::ApplySessionOptions(
+    const SessionOptions& options) {
 #if defined(OS_WIN)
   base::Optional<bool> directx_capturer =
       options.GetBool("DirectX-Capturer");
