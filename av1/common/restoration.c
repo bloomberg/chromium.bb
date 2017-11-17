@@ -1593,9 +1593,11 @@ int av1_loop_restoration_corners_in_sb(const struct AV1Common *cm, int plane,
   //   MI_SIZE * m = N / D u
   //
   // from which we get u = D * MI_SIZE * m / N
-  const int mi_to_num_x = mi_size_x * cm->superres_scale_denominator;
+  const int mi_to_num_x = av1_superres_unscaled(cm)
+                              ? mi_size_x
+                              : mi_size_x * cm->superres_scale_denominator;
   const int mi_to_num_y = mi_size_y;
-  const int denom_x = size * SCALE_NUMERATOR;
+  const int denom_x = av1_superres_unscaled(cm) ? size : size * SCALE_NUMERATOR;
   const int denom_y = size;
 #else
   const int mi_to_num_x = mi_size_x;
@@ -1672,30 +1674,36 @@ static void save_deblock_boundary_lines(
   const int src_height = cm->mi_rows << (MI_SIZE_LOG2 - ss_y);
   assert(row + RESTORATION_CTX_VERT <= src_height);
 #endif  // NDEBUG
-
-#if CONFIG_HORZONLY_FRAME_SUPERRES
-  const int ss_x = is_uv && cm->subsampling_x;
-  const int upscaled_width = (cm->superres_upscaled_width + ss_x) >> ss_x;
-  const int step = av1_get_upscale_convolve_step(src_width, upscaled_width);
-#if CONFIG_HIGHBITDEPTH
-  if (use_highbd)
-    av1_highbd_convolve_horiz_rs(
-        (uint16_t *)src_rows, src_stride >> 1, (uint16_t *)bdry_rows,
-        bdry_stride >> 1, upscaled_width, RESTORATION_CTX_VERT,
-        &av1_resize_filter_normative[0][0], UPSCALE_NORMATIVE_TAPS, 0, step,
-        cm->bit_depth);
-  else
-#endif  // CONFIG_HIGHBITDEPTH
-    av1_convolve_horiz_rs(src_rows, src_stride, bdry_rows, bdry_stride,
-                          upscaled_width, RESTORATION_CTX_VERT,
-                          &av1_resize_filter_normative[0][0],
-                          UPSCALE_NORMATIVE_TAPS, 0, step);
-#else
   (void)cm;
-  const int upscaled_width = src_width;
-  const int line_bytes = src_width << use_highbd;
-  for (int i = 0; i < RESTORATION_CTX_VERT; i++) {
-    memcpy(bdry_rows + i * bdry_stride, src_rows + i * src_stride, line_bytes);
+
+  int upscaled_width;
+#if CONFIG_HORZONLY_FRAME_SUPERRES
+  if (!av1_superres_unscaled(cm)) {
+    const int ss_x = is_uv && cm->subsampling_x;
+    upscaled_width = (cm->superres_upscaled_width + ss_x) >> ss_x;
+    const int step = av1_get_upscale_convolve_step(src_width, upscaled_width);
+#if CONFIG_HIGHBITDEPTH
+    if (use_highbd)
+      av1_highbd_convolve_horiz_rs(
+          (uint16_t *)src_rows, src_stride >> 1, (uint16_t *)bdry_rows,
+          bdry_stride >> 1, upscaled_width, RESTORATION_CTX_VERT,
+          &av1_resize_filter_normative[0][0], UPSCALE_NORMATIVE_TAPS, 0, step,
+          cm->bit_depth);
+    else
+#endif  // CONFIG_HIGHBITDEPTH
+      av1_convolve_horiz_rs(src_rows, src_stride, bdry_rows, bdry_stride,
+                            upscaled_width, RESTORATION_CTX_VERT,
+                            &av1_resize_filter_normative[0][0],
+                            UPSCALE_NORMATIVE_TAPS, 0, step);
+  } else {
+#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
+    upscaled_width = src_width;
+    const int line_bytes = src_width << use_highbd;
+    for (int i = 0; i < RESTORATION_CTX_VERT; i++) {
+      memcpy(bdry_rows + i * bdry_stride, src_rows + i * src_stride,
+             line_bytes);
+    }
+#if CONFIG_HORZONLY_FRAME_SUPERRES
   }
 #endif  // CONFIG_HORZONLY_FRAME_SUPERRES
   extend_lines(bdry_rows, upscaled_width, RESTORATION_CTX_VERT, bdry_stride,
@@ -1716,16 +1724,18 @@ static void save_cdef_boundary_lines(const YV12_BUFFER_CONFIG *frame,
   uint8_t *bdry_start = bdry_buf + (RESTORATION_EXTRA_HORZ << use_highbd);
   const int bdry_stride = boundaries->stripe_boundary_stride << use_highbd;
   uint8_t *bdry_rows = bdry_start + RESTORATION_CTX_VERT * stripe * bdry_stride;
+  const int src_width = frame->crop_widths[is_uv];
 
 #if CONFIG_HORZONLY_FRAME_SUPERRES
   // At the point where this function is called, we've already applied
   // superres. So we don't need to extend the lines here, we can just
   // pull directly from the topmost row of the upscaled frame.
   const int ss_x = is_uv && cm->subsampling_x;
-  const int upscaled_width = (cm->superres_upscaled_width + ss_x) >> ss_x;
+  const int upscaled_width = av1_superres_unscaled(cm)
+                                 ? src_width
+                                 : (cm->superres_upscaled_width + ss_x) >> ss_x;
 #else
   (void)cm;
-  const int src_width = frame->crop_widths[is_uv];
   const int upscaled_width = src_width;
 #endif  // CONFIG_HORZONLY_FRAME_SUPERRES
   const int line_bytes = upscaled_width << use_highbd;
