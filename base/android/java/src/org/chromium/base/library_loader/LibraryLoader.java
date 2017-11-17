@@ -55,6 +55,7 @@ public class LibraryLoader {
 
     // The singleton instance of NativeLibraryPreloader.
     private static NativeLibraryPreloader sLibraryPreloader;
+    private static boolean sLibraryPreloaderCalled;
 
     // The singleton instance of LibraryLoader.
     private static volatile LibraryLoader sInstance;
@@ -147,6 +148,38 @@ public class LibraryLoader {
             }
             loadAlreadyLocked(ContextUtils.getApplicationContext());
             initializeAlreadyLocked();
+        }
+    }
+
+    /**
+     * Calls native library preloader (see {@link #setNativeLibraryPreloader}) with the app
+     * context. If there is no preloader set, this function does nothing.
+     * Preloader is called only once, so calling it explicitly via this method means
+     * that it won't be (implicitly) called during library loading.
+     */
+    public void preloadNow() {
+        preloadNowOverrideApplicationContext(ContextUtils.getApplicationContext());
+    }
+
+    /**
+     * Similar to {@link #preloadNow}, but allows specifying app context to use.
+     */
+    public void preloadNowOverrideApplicationContext(Context appContext) {
+        synchronized (sLock) {
+            if (!Linker.isUsed()) {
+                preloadAlreadyLocked(appContext);
+            }
+        }
+    }
+
+    private void preloadAlreadyLocked(Context appContext) {
+        try (TraceEvent te = TraceEvent.scoped("LibraryLoader.preloadAlreadyLocked")) {
+            // Preloader uses system linker, we shouldn't preload if Chromium linker is used.
+            assert !Linker.isUsed();
+            if (sLibraryPreloader != null && !sLibraryPreloaderCalled) {
+                mLibraryPreloaderStatus = sLibraryPreloader.loadLibrary(appContext);
+                sLibraryPreloaderCalled = true;
+            }
         }
     }
 
@@ -361,9 +394,7 @@ public class LibraryLoader {
 
                     linker.finishLibraryLoad();
                 } else {
-                    if (sLibraryPreloader != null) {
-                        mLibraryPreloaderStatus = sLibraryPreloader.loadLibrary(appContext);
-                    }
+                    preloadAlreadyLocked(appContext);
                     // Load libraries using the system linker.
                     for (String library : NativeLibraries.LIBRARIES) {
                         try {
