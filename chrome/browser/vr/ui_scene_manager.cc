@@ -1024,9 +1024,7 @@ void UiSceneManager::CreateAudioPermissionPrompt(Model* model) {
   backplane->set_draw_phase(kPhaseForeground);
   backplane->set_name(kAudioPermissionPromptBackplane);
   backplane->SetSize(kPromptBackplaneSize, kPromptBackplaneSize);
-  backplane->SetTranslate(0.0,
-                          kContentVerticalOffset + kExitPromptVerticalOffset,
-                          kTextureOffset - kContentDistance);
+  backplane->SetTranslate(0.0, kContentVerticalOffset, -kOverlayPlaneDistance);
   EventHandlers event_handlers;
   event_handlers.button_up = base::Bind(
       [](UiSceneManager* manager, Model* m) {
