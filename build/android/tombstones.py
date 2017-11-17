@@ -131,6 +131,8 @@ def _ResolveTombstones(jobs, tombstones, tombstone_symbolizer):
     data = pool.map(
         _ResolveTombstone,
         [[tombstone, tombstone_symbolizer] for tombstone in tombstones])
+    pool.close()
+    pool.join()
   resolved_tombstones = []
   for tombstone in data:
     resolved_tombstones.extend(tombstone)
