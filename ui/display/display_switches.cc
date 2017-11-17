@@ -16,6 +16,12 @@ const char kEnableMultiMirroring[] = "enable-multi-mirroring";
 // Enables software based mirroring.
 const char kEnableSoftwareMirroring[] = "ash-enable-software-mirroring";
 
+// Crash the browser at startup if the display's color profile does not match
+// the forced color profile. This is necessary on Mac because Chrome's pixel
+// output is always subject to the color conversion performed by the operating
+// system. On all other platforms, this is a no-op.
+const char kEnsureForcedColorProfile[] = "ensure-forced-color-profile";
+
 // Force all monitors to be treated as though they have the specified color
 // profile. Accepted values are "srgb" and "generic-rgb" (currently used by Mac
 // layout tests) and "color-spin-gamma24" (used by layout tests).
