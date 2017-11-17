@@ -90,13 +90,6 @@ class SmoothnessToughFiltersCases(_Smoothness):
   def Name(cls):
     return 'smoothness.tough_filters_cases'
 
-  def GetExpectations(self):
-    class StoryExpectations(story_module.expectations.StoryExpectations):
-      def SetExpectations(self):
-        self.DisableBenchmark([story_module.expectations.ANDROID_NEXUS6],
-                              'crbug.com/624032')
-    return StoryExpectations()
-
 
 @benchmark.Owner(emails=['senorblanco@chromium.org'])
 class SmoothnessToughPathRenderingCases(_Smoothness):
