@@ -48,32 +48,22 @@ void InitCrashReporterIfEnabled(bool enabled) {
 
 namespace first_run {
 
-bool ShowFirstRunDialog(Profile* profile) {
-  return FirstRunDialog::Show(profile);
+void ShowFirstRunDialog(Profile* profile) {
+  FirstRunDialog::Show(profile);
 }
 
 }  // namespace first_run
 
 // static
-bool FirstRunDialog::Show(Profile* profile) {
-  bool dialog_shown = false;
+void FirstRunDialog::Show(Profile* profile) {
+  FirstRunDialog* dialog = new FirstRunDialog(profile);
+  views::DialogDelegate::CreateDialogWidget(dialog, NULL, NULL)->Show();
 
-#if defined(GOOGLE_CHROME_BUILD)
-  // If the metrics reporting is managed, we won't ask.
-  if (!IsMetricsReportingPolicyManaged()) {
-    FirstRunDialog* dialog = new FirstRunDialog(profile);
-    views::DialogDelegate::CreateDialogWidget(dialog, NULL, NULL)->Show();
-
-    base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
-    base::MessageLoopForUI::ScopedNestableTaskAllower allow_nested(loop);
-    base::RunLoop run_loop;
-    dialog->quit_runloop_ = run_loop.QuitClosure();
-    run_loop.Run();
-    dialog_shown = true;
-  }
-#endif  // defined(GOOGLE_CHROME_BUILD)
-
-  return dialog_shown;
+  base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
+  base::MessageLoopForUI::ScopedNestableTaskAllower allow_nested(loop);
+  base::RunLoop run_loop;
+  dialog->quit_runloop_ = run_loop.QuitClosure();
+  run_loop.Run();
 }
 
 FirstRunDialog::FirstRunDialog(Profile* profile)

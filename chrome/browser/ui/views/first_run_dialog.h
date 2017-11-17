@@ -21,8 +21,7 @@ class FirstRunDialog : public views::DialogDelegateView,
                        public views::LinkListener {
  public:
   // Displays the first run UI for reporting opt-in, import data etc.
-  // Returns true if the dialog was shown.
-  static bool Show(Profile* profile);
+  static void Show(Profile* profile);
 
  private:
   explicit FirstRunDialog(Profile* profile);

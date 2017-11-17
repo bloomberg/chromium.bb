@@ -5,14 +5,27 @@
 #ifndef CHROME_BROWSER_FIRST_RUN_FIRST_RUN_DIALOG_H_
 #define CHROME_BROWSER_FIRST_RUN_FIRST_RUN_DIALOG_H_
 
+#include "base/callback_forward.h"
+#include "build/build_config.h"
+
+// Hide this function on platforms where the dialog does not exist.
+#if defined(OS_MACOSX) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+
 class Profile;
 
 namespace first_run {
 
-// Shows the first run dialog. Only called if IsOrganicFirstRun() is true.
-// Returns true if the dialog was shown.
-bool ShowFirstRunDialog(Profile* profile);
+// Shows the first run dialog. Only called for organic first runs on Mac and
+// desktop Linux official builds when metrics reporting is not already enabled.
+// Invokes ChangeMetricsReportingState() if consent is given to enable crash
+// reporting, and may initiate the flow to set the default browser.
+void ShowFirstRunDialog(Profile* profile);
+
+// Returns a Closure invoked before calling ShowFirstRunDialog(). For testing.
+base::OnceClosure& GetBeforeShowFirstRunDialogHookForTesting();
 
 }  // namespace first_run
+
+#endif  // OS_MACOSX || DESKTOP_LINUX
 
 #endif  // CHROME_BROWSER_FIRST_RUN_FIRST_RUN_DIALOG_H_
