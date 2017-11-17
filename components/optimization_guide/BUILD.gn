@@ -17,6 +17,20 @@ static_library("optimization_guide") {
   ]
 }
 
+static_library("test_support") {
+  testonly = true
+  sources = [
+    "test_component_creator.cc",
+    "test_component_creator.h",
+  ]
+  deps = [
+    ":optimization_guide",
+    "//base",
+    "//components/optimization_guide/proto:optimization_guide_proto",
+    "//testing/gtest",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
   sources = [

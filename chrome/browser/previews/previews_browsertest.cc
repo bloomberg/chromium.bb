@@ -3,11 +3,15 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/optimization_guide/optimization_guide_service.h"
+#include "components/optimization_guide/test_component_creator.h"
 #include "components/previews/core/previews_features.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -72,12 +76,14 @@ IN_PROC_BROWSER_TEST_F(PreviewsBrowserTest, NoScriptPreviewsDisabled) {
   EXPECT_FALSE(noscript_css_requested());
 }
 
-// This test class enables NoScriptPreviews via command line addition.
+// This test class enables NoScriptPreviews but without OptimizationHints.
 class PreviewsNoScriptBrowserTest : public PreviewsBrowserTest {
  public:
   PreviewsNoScriptBrowserTest() {
-    scoped_feature_list_.InitAndEnableFeature(
-        previews::features::kNoScriptPreviews);
+    // Explicitly disable server hints.
+    scoped_feature_list_.InitWithFeatures(
+        {previews::features::kNoScriptPreviews},
+        {previews::features::kOptimizationHints});
   }
 
   ~PreviewsNoScriptBrowserTest() override {}
@@ -104,4 +110,67 @@ IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
   // Verify loaded noscript tag triggered css resource but not js one.
   EXPECT_TRUE(noscript_css_requested());
   EXPECT_FALSE(noscript_js_requested());
+}
+
+// This test class enables NoScriptPreviews with OptimizationHints.
+class PreviewsOptimizationGuideBrowserTest : public PreviewsBrowserTest {
+ public:
+  PreviewsOptimizationGuideBrowserTest() {
+    scoped_feature_list_.InitWithFeatures(
+        {previews::features::kOptimizationHints,
+         previews::features::kNoScriptPreviews},
+        {});
+  }
+
+  ~PreviewsOptimizationGuideBrowserTest() override {}
+
+  void SetNoScriptWhitelist(
+      std::vector<std::string> whitelisted_noscript_sites) {
+    const optimization_guide::ComponentInfo& component_info =
+        test_component_creator_.CreateComponentInfoWithNoScriptWhitelist(
+            whitelisted_noscript_sites);
+    g_browser_process->optimization_guide_service()->ProcessHints(
+        component_info);
+
+    // Wait for hints to be processed by PreviewsOptimizationGuide.
+    base::RunLoop().RunUntilIdle();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+  optimization_guide::testing::TestComponentCreator test_component_creator_;
+};
+
+// Previews InfoBar (which this test triggers) does not work on Mac.
+// See crbug.com/782322 for detail.
+#if defined(OS_MACOSX)
+#define MAYBE_NoScriptPreviewsEnabledByWhitelist \
+  DISABLED_NoScriptPreviewsEnabledByWhitelist
+#else
+#define MAYBE_NoScriptPreviewsEnabledByWhitelist \
+  NoScriptPreviewsEnabledByWhitelist
+#endif
+
+IN_PROC_BROWSER_TEST_F(PreviewsOptimizationGuideBrowserTest,
+                       MAYBE_NoScriptPreviewsEnabledByWhitelist) {
+  // Whitelist test URL for NoScript.
+  SetNoScriptWhitelist({test_url().host()});
+
+  ui_test_utils::NavigateToURL(browser(), test_url());
+
+  // Verify loaded noscript tag triggered css resource but not js one.
+  EXPECT_TRUE(noscript_css_requested());
+  EXPECT_FALSE(noscript_js_requested());
+}
+
+IN_PROC_BROWSER_TEST_F(PreviewsOptimizationGuideBrowserTest,
+                       NoScriptPreviewsNotEnabledByWhitelist) {
+  // Whitelist random site for NoScript.
+  SetNoScriptWhitelist({"foo.com"});
+
+  ui_test_utils::NavigateToURL(browser(), test_url());
+
+  // Verify loaded js resource but not css triggered by noscript tag.
+  EXPECT_TRUE(noscript_js_requested());
+  EXPECT_FALSE(noscript_css_requested());
 }
