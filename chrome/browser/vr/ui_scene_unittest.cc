@@ -89,9 +89,6 @@ TEST(UiScene, AddRemoveElements) {
   EXPECT_EQ(removed_parent.get(), parent);
   EXPECT_EQ(NumElementsInSubtree(&scene.root_element()), 1u);
   EXPECT_EQ(scene.GetUiElementById(parent_id), nullptr);
-
-  // It is an error to remove an already-deleted element.
-  EXPECT_DCHECK_DEATH(scene.RemoveUiElement(child_id));
 }
 
 // This test creates a parent and child UI element, each with their own
