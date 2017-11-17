@@ -542,7 +542,7 @@ class Port(object):
 
         return [(None, baseline_filename)]
 
-    def expected_filename(self, test_name, suffix, return_default=True):
+    def expected_filename(self, test_name, suffix, return_default=True, fallback_base_for_virtual=True):
         """Given a test name, returns an absolute path to its expected results.
 
         If no expected results are found in any of the searched directories,
@@ -561,15 +561,20 @@ class Port(object):
                 search list of directories, e.g., 'win'.
             return_default: if True, returns the path to the generic expectation if nothing
                 else is found; if False, returns None.
+            fallback_base_for_virtual: For virtual test only. When no virtual specific
+                baseline is found, if this parameter is True, fallback to find baselines
+                of the base test; if False, depending on |return_default|, returns the
+                generic virtual baseline or None.
         """
         # FIXME: The [0] here is very mysterious, as is the destructured return.
         platform_dir, baseline_filename = self.expected_baselines(test_name, suffix)[0]
         if platform_dir:
             return self._filesystem.join(platform_dir, baseline_filename)
 
-        actual_test_name = self.lookup_virtual_test_base(test_name)
-        if actual_test_name:
-            return self.expected_filename(actual_test_name, suffix, return_default)
+        if fallback_base_for_virtual:
+            actual_test_name = self.lookup_virtual_test_base(test_name)
+            if actual_test_name:
+                return self.expected_filename(actual_test_name, suffix, return_default)
 
         if return_default:
             return self._filesystem.join(self.layout_tests_dir(), baseline_filename)

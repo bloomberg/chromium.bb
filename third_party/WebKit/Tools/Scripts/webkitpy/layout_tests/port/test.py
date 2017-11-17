@@ -110,13 +110,14 @@ class TestList(object):
 #
 # These numbers may need to be updated whenever we add or delete tests. This includes virtual tests.
 #
-TOTAL_TESTS = 106
+TOTAL_TESTS = 129
 TOTAL_WONTFIX = 3
 TOTAL_SKIPS = 21 + TOTAL_WONTFIX
 TOTAL_CRASHES = 76
 
 UNEXPECTED_PASSES = 1
-UNEXPECTED_FAILURES = 26
+UNEXPECTED_NON_VIRTUAL_FAILURES = 19
+UNEXPECTED_FAILURES = 45
 
 
 def unit_test_list():
@@ -526,6 +527,7 @@ class TestPort(Port):
             VirtualTestSuite(prefix='virtual_passes', base='passes', args=['--virtual-arg']),
             VirtualTestSuite(prefix='virtual_passes', base='passes_two', args=['--virtual-arg']),
             VirtualTestSuite(prefix='skipped', base='failures/expected', args=['--virtual-arg2']),
+            VirtualTestSuite(prefix='virtual_failures', base='failures/unexpected', args=['--virtual-arg3']),
             VirtualTestSuite(prefix='references_use_default_args', base='passes/reftest.html',
                              args=['--virtual-arg'], references_use_default_args=True),
             VirtualTestSuite(prefix='virtual_wpt', base='external/wpt', args=['--virtual-arg']),
