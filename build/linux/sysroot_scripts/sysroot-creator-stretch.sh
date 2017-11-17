@@ -34,59 +34,68 @@ DEBIAN_PACKAGES="\
   krb5-multidev
   libasound2
   libasound2-dev
+  libasyncns0
   libatk-bridge2.0-0
   libatk-bridge2.0-dev
   libatk1.0-0
   libatk1.0-dev
+  libatomic1
   libatspi2.0-0
   libatspi2.0-dev
   libattr1
+  libaudit1
   libavahi-client3
   libavahi-common3
-  libbluetooth3
+  libblkid1
   libbluetooth-dev
-  libbrlapi0.6
+  libbluetooth3
   libbrlapi-dev
+  libbrlapi0.6
   libbsd0
   libc6
   libc6-dev
-  libcairo2
-  libcairo2-dev
   libcairo-gobject2
   libcairo-script-interpreter2
+  libcairo2
+  libcairo2-dev
   libcap-dev
+  libcap-ng0
   libcap2
+  libcolord2
   libcomerr2
   libcups2
   libcups2-dev
   libcupsimage2
   libcupsimage2-dev
+  libdatrie1
+  libdb5.3
   libdbus-1-3
   libdbus-1-dev
   libdbus-glib-1-2
   libdconf-dev
   libdconf1
-  libdrm2
-  libdrm-dev
   libdrm-amdgpu1
+  libdrm-dev
   libdrm-nouveau2
   libdrm-radeon1
+  libdrm2
   libegl1-mesa
   libegl1-mesa-dev
-  libelf1
   libelf-dev
-  libepoxy0
+  libelf1
   libepoxy-dev
+  libepoxy0
   libexpat1
   libexpat1-dev
-  libffi6
   libffi-dev
+  libffi6
+  libflac8
   libfontconfig1
   libfontconfig1-dev
   libfreetype6
   libfreetype6-dev
-  libgbm1
   libgbm-dev
+  libgbm1
   libgcc-6-dev
   libgcc1
   libgconf-2-4
@@ -101,16 +110,17 @@ DEBIAN_PACKAGES="\
   libglapi-mesa
   libglib2.0-0
   libglib2.0-dev
-  libgnome-keyring0
+  libgmp10
   libgnome-keyring-dev
+  libgnome-keyring0
   libgnutls-dane0
   libgnutls-openssl27
-  libgnutlsxx28
   libgnutls28-dev
   libgnutls30
+  libgnutlsxx28
   libgomp1
-  libgpg-error0
   libgpg-error-dev
+  libgpg-error0
   libgraphite2-3
   libgraphite2-dev
   libgssapi-krb5-2
@@ -119,13 +129,20 @@ DEBIAN_PACKAGES="\
   libgtk-3-dev
   libgtk2.0-0
   libgtk2.0-dev
-  libharfbuzz0b
   libharfbuzz-dev
   libharfbuzz-gobject0
   libharfbuzz-icu0
-  libatomic1
-  libjsoncpp1
+  libharfbuzz0b
+  libhogweed4
+  libice6
+  libicu57
+  libidl-2-0
+  libidn11
+  libjbig0
+  libjpeg62-turbo
+  libjson-glib-1.0-0
   libjsoncpp-dev
+  libjsoncpp1
   libk5crypto3
   libkadm5clnt-mit11
   libkadm5srv-mit11
@@ -134,11 +151,20 @@ DEBIAN_PACKAGES="\
   libkrb5-3
   libkrb5-dev
   libkrb5support0
+  liblcms2-2
+  libltdl7
+  liblz4-1
+  liblzma5
+  liblzo2-2
+  libmount1
+  libnettle6
   libnspr4
   libnspr4-dev
+  libnss-db
   libnss3
   libnss3-dev
-  libnss-db
+  libogg0
+  liborbit-2-0
   liborbit2
   libp11-2
   libp11-kit0
@@ -146,37 +172,48 @@ DEBIAN_PACKAGES="\
   libpam0g-dev
   libpango-1.0-0
   libpango1.0-dev
-  libpangoft2-1.0-0
   libpangocairo-1.0-0
+  libpangoft2-1.0-0
   libpangox-1.0-0
   libpangoxft-1.0-0
-  libpci3
   libpci-dev
-  libpcre3
+  libpci3
+  libpciaccess0
   libpcre16-3
-  libpcre32-3
+  libpcre3
   libpcre3-dev
+  libpcre32-3
   libpcrecpp0v5
   libpixman-1-0
   libpixman-1-dev
-  libpng16-16
   libpng-dev
+  libpng16-16
   libpthread-stubs0-dev
-  libpulse0
   libpulse-dev
   libpulse-mainloop-glib0
+  libpulse0
+  librest-0.7-0
   libselinux1
-  libspeechd2
+  libsm6
+  libsndfile1
+  libsoup-gnome2.4-1
+  libsoup2.4-1
   libspeechd-dev
+  libspeechd2
+  libsqlite3-0
+  libssl-dev
   libssl1.0.2
   libssl1.1
-  libssl-dev
-  libstdc++6
   libstdc++-6-dev
+  libstdc++6
+  libsystemd0
   libtasn1-6
+  libthai0
+  libtiff5
   libudev-dev
   libudev1
-  libva1
+  libunbound2
+  libuuid1
   libva-dev
   libva-drm1
   libva-egl1
@@ -184,58 +221,64 @@ DEBIAN_PACKAGES="\
   libva-tpi1
   libva-wayland1
   libva-x11-1
+  libva1
+  libvorbis0a
+  libvorbisenc2
   libwayland-client0
   libwayland-cursor0
   libwayland-dev
   libwayland-egl1-mesa
   libwayland-server0
+  libwrap0
   libx11-6
   libx11-dev
-  libx11-xcb1
   libx11-xcb-dev
-  libxau6
-  libaudit1
+  libx11-xcb1
   libxau-dev
-  libxcb1
-  libxcb1-dev
+  libxau6
   libxcb-dri2-0
   libxcb-dri3-0
   libxcb-glx0
   libxcb-present0
   libxcb-render0
   libxcb-render0-dev
-  libxcb-sync1
   libxcb-shm0
   libxcb-shm0-dev
-  libxcomposite1
+  libxcb-sync1
+  libxcb-xfixes0
+  libxcb1
+  libxcb1-dev
   libxcomposite-dev
-  libxcursor1
+  libxcomposite1
   libxcursor-dev
-  libxdamage1
+  libxcursor1
   libxdamage-dev
-  libxdmcp6
+  libxdamage1
   libxdmcp-dev
-  libxext6
+  libxdmcp6
   libxext-dev
-  libxfixes3
+  libxext6
   libxfixes-dev
-  libxi6
+  libxfixes3
+  libxft2
   libxi-dev
-  libxinerama1
+  libxi6
   libxinerama-dev
-  libxkbcommon0
+  libxinerama1
   libxkbcommon-dev
-  libxrandr2
+  libxkbcommon0
+  libxml2
   libxrandr-dev
-  libxrender1
+  libxrandr2
   libxrender-dev
+  libxrender1
   libxshmfence1
-  libxss1
   libxss-dev
-  libxt6
+  libxss1
   libxt-dev
-  libxtst6
+  libxt6
   libxtst-dev
+  libxtst6
   libxxf86vm1
   linux-libc-dev
   mesa-common-dev
@@ -283,7 +326,6 @@ DEBIAN_PACKAGES_ARM="
 
 DEBIAN_PACKAGES_ARM64="
   libasan3
-  libdatrie1
   libdrm-freedreno1
   libdrm-tegra0
   libgmp10
