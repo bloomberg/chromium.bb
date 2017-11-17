@@ -40,7 +40,11 @@ class HeadlessRenderTest : public HeadlessAsyncDevTooledBrowserTest,
   virtual GURL GetPageUrl(HeadlessDevToolsClient* client) = 0;
   virtual void VerifyDom(dom_snapshot::GetSnapshotResult* dom_snapshot) = 0;
   virtual void OnTimeout();
+  virtual void OverrideWebPreferences(WebPreferences* preferences);
   void AllDone() { done_called_ = true; }
+
+  void CustomizeHeadlessBrowserContext(
+      HeadlessBrowserContext::Builder& builder) override;
 
   // HeadlessBrowserContext::Observer
   void UrlRequestFailed(net::URLRequest* request,
