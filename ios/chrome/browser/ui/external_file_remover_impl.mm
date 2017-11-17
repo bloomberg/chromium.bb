@@ -127,7 +127,7 @@ NSSet* ExternalFileRemoverImpl::GetReferencedExternalFiles() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Add files from all TabModels.
   NSMutableSet* referenced_external_files = [NSMutableSet set];
-  for (TabModel* tab_model in GetTabModelsForChromeBrowserState(
+  for (TabModel* tab_model in TabModelList::GetTabModelsForChromeBrowserState(
            browser_state_)) {
     NSSet* tab_model_files = [tab_model currentlyReferencedExternalFiles];
     if (tab_model_files) {

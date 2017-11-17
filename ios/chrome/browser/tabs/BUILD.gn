@@ -12,6 +12,7 @@ source_set("tabs") {
     "tab_helper_util.h",
     "tab_model.h",
     "tab_model_list.h",
+    "tab_model_list_observer.h",
     "tab_model_observer.h",
     "tab_model_synced_window_delegate.h",
     "tab_model_synced_window_delegate_getter.h",
@@ -182,8 +183,10 @@ source_set("unit_tests") {
     "//ios/web",
     "//ios/web/public/test",
     "//net",
+    "//testing/gmock",
     "//testing/gtest",
     "//third_party/ocmock",
+    "//ui/base",
     "//ui/gfx",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]

@@ -190,7 +190,7 @@ void IOSChromeMetricsServiceClient::Initialize() {
   // be worth revisiting this to still log events from non-incognito sessions.
   metrics_service_->RegisterMetricsProvider(
       base::MakeUnique<OmniboxMetricsProvider>(
-          base::Bind(&::IsOffTheRecordSessionActive)));
+          base::Bind(&TabModelList::IsOffTheRecordSessionActive)));
 
   {
     auto stability_metrics_provider =

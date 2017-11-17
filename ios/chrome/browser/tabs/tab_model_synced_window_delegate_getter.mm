@@ -32,7 +32,7 @@ TabModelSyncedWindowDelegatesGetter::GetSyncedWindowDelegates() {
   for (auto* browser_state : browser_states) {
     DCHECK(!browser_state->IsOffTheRecord());
     NSArray<TabModel*>* tabModels =
-        GetTabModelsForChromeBrowserState(browser_state);
+        TabModelList::GetTabModelsForChromeBrowserState(browser_state);
     for (TabModel* tabModel in tabModels) {
       if (tabModel.currentTab) {
         sync_sessions::SyncedWindowDelegate* synced_window_delegate =
