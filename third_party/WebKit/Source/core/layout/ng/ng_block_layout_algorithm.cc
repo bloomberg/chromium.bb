@@ -562,28 +562,17 @@ bool NGBlockLayoutAlgorithm::HandleNewFormattingContext(
   NGFragment fragment(ConstraintSpace().GetWritingMode(), physical_fragment);
 
   // Auto-margins are applied within the layout opportunity which fits.
-  // TODO(ikilpatrick): Some of these calculations should be pulled into
-  // ApplyAutoMargins.
-  NGBoxStrut margins(child_data.margins);
-  ApplyAutoMargins(child_style, opportunity.InlineSize(), fragment.InlineSize(),
-                   &margins);
-  margins.inline_end =
-      opportunity.InlineSize() - margins.inline_start - fragment.InlineSize();
-
-  bool is_ltr = direction == TextDirection::kLtr;
-  bool is_line_left_auto_margin =
-      (is_ltr && child_style.MarginStart().IsAuto()) ||
-      (!is_ltr && child_style.MarginEnd().IsAuto());
-
-  LayoutUnit line_left_auto_margin =
-      is_line_left_auto_margin ? margins.LineLeft(direction) : LayoutUnit();
+  NGBoxStrut auto_margins;
+  ApplyAutoMargins(child_style, Style(), opportunity.InlineSize(),
+                   fragment.InlineSize(), &auto_margins);
 
   NGBfcOffset child_bfc_offset(
-      opportunity.offset.line_offset + line_left_auto_margin,
+      opportunity.offset.line_offset + auto_margins.LineLeft(direction),
       opportunity.offset.block_offset);
 
-  NGLogicalOffset logical_offset =
-      CalculateLogicalOffset(fragment, child_data.margins, child_bfc_offset);
+  NGLogicalOffset logical_offset = LogicalFromBfcOffsets(
+      fragment, child_bfc_offset, ContainerBfcOffset(),
+      container_builder_.Size().inline_size, ConstraintSpace().Direction());
 
   if (ConstraintSpace().HasBlockFragmentation() &&
       ShouldBreakBeforeChild(child, physical_fragment,
@@ -1228,13 +1217,8 @@ NGBoxStrut NGBlockLayoutAlgorithm::CalculateMargins(
 
     // TODO(ikilpatrick): ApplyAutoMargins looks wrong as its not respecting
     // the parents writing mode?
-    ApplyAutoMargins(child_style, space->AvailableSize().inline_size,
+    ApplyAutoMargins(child_style, Style(), space->AvailableSize().inline_size,
                      child_inline_size, &margins);
-
-    // For inflow children we need to adjust the inline end margin such that it
-    // fits within the available inline size.
-    margins.inline_end = child_available_size_.inline_size -
-                         margins.inline_start - child_inline_size;
   }
   return margins;
 }
