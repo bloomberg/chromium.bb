@@ -193,3 +193,10 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_explicit_close_after_tlp, false)
 
 // Enables 3 new connection options to make PROBE_RTT more aggressive
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_less_probe_rtt, false)
+
+// If true, server will send a connectivity probing to the source address of the
+// received connectivity probing. Otherwise, server will treat connectivity
+// probing packet as normal packet
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_server_reply_to_connectivity_probing,
+          true)

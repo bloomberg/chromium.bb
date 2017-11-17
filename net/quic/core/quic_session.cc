@@ -170,6 +170,16 @@ void QuicSession::OnWriteBlocked() {
 void QuicSession::OnSuccessfulVersionNegotiation(
     const QuicTransportVersion& /*version*/) {}
 
+void QuicSession::OnConnectivityProbeReceived(
+    const QuicSocketAddress& self_address,
+    const QuicSocketAddress& peer_address) {
+  if (perspective() == Perspective::IS_SERVER) {
+    // Server only sends back a connectivity probe after received a
+    // connectivity probe from a new peer address.
+    connection_->SendConnectivityProbingPacket(nullptr, peer_address);
+  }
+}
+
 void QuicSession::OnPathDegrading() {}
 
 bool QuicSession::AllowSelfAddressChange() const {

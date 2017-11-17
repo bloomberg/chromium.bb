@@ -124,6 +124,11 @@ class QUIC_EXPORT_PRIVATE QuicConnectionVisitorInterface {
   virtual void OnSuccessfulVersionNegotiation(
       const QuicTransportVersion& version) = 0;
 
+  // Called when a connectivity probe has been received by the connection.
+  virtual void OnConnectivityProbeReceived(
+      const QuicSocketAddress& self_address,
+      const QuicSocketAddress& peer_address) = 0;
+
   // Called when a blocked socket becomes writable.
   virtual void OnCanWrite() = 0;
 
@@ -669,8 +674,9 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Sends a connectivity probing packet to |peer_address| with
   // |probing_writer|. If |probing_writer| is nullptr, will use default
   // packet writer to write the packet.
-  void SendConnectivityProbingPacket(QuicPacketWriter* probing_writer,
-                                     const QuicSocketAddress& peer_address);
+  virtual void SendConnectivityProbingPacket(
+      QuicPacketWriter* probing_writer,
+      const QuicSocketAddress& peer_address);
 
   // Sends an MTU discovery packet of size |mtu_discovery_target_| and updates
   // the MTU discovery alarm.
@@ -772,6 +778,13 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   typedef std::list<SerializedPacket> QueuedPacketList;
 
+  enum PacketContent {
+    NO_FRAMES_RECEIVED,
+    FIRST_FRAME_IS_PING,
+    SECOND_FRAME_IS_PADDING,
+    NOT_PADDED_PING,  // Set if the packet is not {PING, PADDING}.
+  };
+
   // Notifies the visitor of the close and marks the connection as disconnected.
   // Does not send a connection close frame to the peer.
   void TearDownLocalConnectionState(QuicErrorCode error,
@@ -869,7 +882,24 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // congestion controller if it is the case.
   void CheckIfApplicationLimited();
 
+  // Sets |current_packet_content_| to |type| if applicable. And
+  // starts peer miration if current packet is confirmed not a connectivity
+  // probe and |current_peer_migration_type_| indicates peer address change.
+  void UpdatePacketContent(PacketContent type);
+
   QuicFramer framer_;
+
+  // If true, server will respect client's connectivity probing packets and send
+  // connectivity probing to the source address of the received probing.
+  bool server_reply_to_connectivity_probes_;
+
+  // Contents received in the current packet, especially used to identify
+  // whether the current packet is a padded PING packet.
+  PacketContent current_packet_content_;
+  // Caches the current peer migration type if a peer migration might be
+  // initiated. As soon as the current packet is confirmed not a connectivity
+  // probe, peer migration will start.
+  PeerAddressChangeType current_peer_migration_type_;
   QuicConnectionHelperInterface* helper_;  // Not owned.
   QuicAlarmFactory* alarm_factory_;        // Not owned.
   PerPacketOptions* per_packet_options_;   // Not owned.

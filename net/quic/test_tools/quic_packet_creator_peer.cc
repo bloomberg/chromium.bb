@@ -77,6 +77,13 @@ SerializedPacket QuicPacketCreatorPeer::SerializeAllFrames(
 }
 
 // static
+std::unique_ptr<QuicEncryptedPacket>
+QuicPacketCreatorPeer::SerializeConnectivityProbingPacket(
+    QuicPacketCreator* creator) {
+  return creator->SerializeConnectivityProbingPacket();
+}
+
+// static
 EncryptionLevel QuicPacketCreatorPeer::GetEncryptionLevel(
     QuicPacketCreator* creator) {
   return creator->packet_.encryption_level;
