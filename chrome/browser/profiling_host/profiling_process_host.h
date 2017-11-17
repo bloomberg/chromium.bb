@@ -89,6 +89,7 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
 
   // Returns the mode set on the current process' command line.
   static Mode GetCurrentMode();
+  static Mode ConvertStringToMode(const std::string& input);
   bool ShouldProfileProcessType(int process_type);
 
   // Launches the profiling process and returns a pointer to it.
@@ -123,6 +124,7 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
   friend struct base::DefaultSingletonTraits<ProfilingProcessHost>;
   friend class BackgroundProfilingTriggersTest;
   friend class MemlogBrowserTest;
+  friend class ProfilingTestDriver;
   FRIEND_TEST_ALL_PREFIXES(ProfilingProcessHost, ShouldProfileNewRenderer);
 
   ProfilingProcessHost();
