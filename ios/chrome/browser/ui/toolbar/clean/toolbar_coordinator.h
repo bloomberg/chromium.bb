@@ -7,6 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
+#import "ios/chrome/browser/ui/toolbar/omnibox_focuser.h"
+
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
 @protocol ToolbarCoordinatorDelegate;
@@ -17,7 +19,7 @@ class ChromeBrowserState;
 }
 
 // Coordinator to run a toolbar -- a UI element housing controls.
-@interface ToolbarCoordinator : NSObject
+@interface ToolbarCoordinator : NSObject<OmniboxFocuser>
 
 // Weak reference to ChromeBrowserState;
 @property(nonatomic, assign) ios::ChromeBrowserState* browserState;

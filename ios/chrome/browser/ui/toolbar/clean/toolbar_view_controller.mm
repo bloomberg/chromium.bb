@@ -73,7 +73,7 @@
   // TODO(crbug.com/785210): Implement this.
 }
 
-- (void)expandOmnibox {
+- (void)expandOmniboxAnimated:(BOOL)animated {
   // TODO(crbug.com/785210): Implement this.
 }
 
