@@ -59,7 +59,7 @@ static uint8_t add_ref_mv_candidate(
     int is_integer,
 #endif
     BLOCK_SIZE bsize, int mi_row, int mi_col, int subsampling_x,
-    int subsampling_y) {
+    int subsampling_y, int do_warping) {
 #if CONFIG_INTRABC
   if (!is_inter_block(candidate)) return 0;
 #endif  // CONFIG_INTRABC
@@ -72,6 +72,7 @@ static uint8_t add_ref_mv_candidate(
   (void)mi_col;
   (void)subsampling_x;
   (void)subsampling_y;
+  (void)do_warping;
 #endif  // CONFIG_EXT_WARPED_MOTION
 
   if (rf[1] == NONE_FRAME) {
@@ -80,7 +81,7 @@ static uint8_t add_ref_mv_candidate(
       if (candidate->ref_frame[ref] == rf[0]) {
         int_mv this_refmv;
 #if CONFIG_EXT_WARPED_MOTION
-        if (candidate->motion_mode == WARPED_CAUSAL) {
+        if (candidate->motion_mode == WARPED_CAUSAL && do_warping) {
           WarpedMotionParams wm = candidate->wm_params[0];
           const int bw = block_size_wide[bsize];
           const int bh = block_size_high[bsize];
@@ -217,6 +218,7 @@ static uint8_t scan_row_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   }
   const int use_step_16 = (xd->n8_w >= 16);
   MODE_INFO **const candidate_mi0 = xd->mi + row_offset * xd->mi_stride;
+  const int do_warping = (row_offset == -1);
 
   for (i = 0; i < end_mi;) {
     const MODE_INFO *const candidate_mi = candidate_mi0[col_offset + i];
@@ -248,7 +250,7 @@ static uint8_t scan_row_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 #endif  // USE_CUR_GM_REFMV
         col_offset + i, weight, cm->cur_frame_force_integer_mv,
         xd->mi[0]->mbmi.sb_type, mi_row, mi_col, xd->plane[0].subsampling_x,
-        xd->plane[0].subsampling_y);
+        xd->plane[0].subsampling_y, do_warping);
 #else
     newmv_count += add_ref_mv_candidate(
         candidate_mi, candidate, rf, refmv_count, ref_mv_stack,
@@ -257,7 +259,7 @@ static uint8_t scan_row_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
         gm_mv_candidates, cm->global_motion,
 #endif  // USE_CUR_GM_REFMV
         col_offset + i, weight, xd->mi[0]->mbmi.sb_type, mi_row, mi_col,
-        xd->plane[0].subsampling_x, xd->plane[0].subsampling_y);
+        xd->plane[0].subsampling_x, xd->plane[0].subsampling_y, do_warping);
 #endif
 
     i += len;
@@ -286,6 +288,7 @@ static uint8_t scan_col_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     if (mi_row & 0x01 && xd->n8_h < n8_h_8) --row_offset;
   }
   const int use_step_16 = (xd->n8_h >= 16);
+  const int do_warping = (col_offset == -1);
 
   for (i = 0; i < end_mi;) {
     const MODE_INFO *const candidate_mi =
@@ -318,7 +321,7 @@ static uint8_t scan_col_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 #endif  // USE_CUR_GM_REFMV
         col_offset, weight, cm->cur_frame_force_integer_mv,
         xd->mi[0]->mbmi.sb_type, mi_row, mi_col, xd->plane[0].subsampling_x,
-        xd->plane[0].subsampling_y);
+        xd->plane[0].subsampling_y, do_warping);
 #else
     newmv_count += add_ref_mv_candidate(
         candidate_mi, candidate, rf, refmv_count, ref_mv_stack,
@@ -327,7 +330,7 @@ static uint8_t scan_col_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
         gm_mv_candidates, cm->global_motion,
 #endif  // USE_CUR_GM_REFMV
         col_offset, weight, xd->mi[0]->mbmi.sb_type, mi_row, mi_col,
-        xd->plane[0].subsampling_x, xd->plane[0].subsampling_y);
+        xd->plane[0].subsampling_x, xd->plane[0].subsampling_y, do_warping);
 #endif
     i += len;
   }
@@ -346,6 +349,7 @@ static uint8_t scan_blk_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   const TileInfo *const tile = &xd->tile;
   POSITION mi_pos;
   uint8_t newmv_count = 0;
+  const int do_warping = 1;
 
   mi_pos.row = row_offset;
   mi_pos.col = col_offset;
@@ -364,7 +368,8 @@ static uint8_t scan_blk_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
         gm_mv_candidates, cm->global_motion,
 #endif  // USE_CUR_GM_REFMV
         mi_pos.col, 2, cm->cur_frame_force_integer_mv, xd->mi[0]->mbmi.sb_type,
-        mi_row, mi_col, xd->plane[0].subsampling_x, xd->plane[0].subsampling_y);
+        mi_row, mi_col, xd->plane[0].subsampling_x, xd->plane[0].subsampling_y,
+        do_warping);
 #else
     newmv_count += add_ref_mv_candidate(
         candidate_mi, candidate, rf, refmv_count, ref_mv_stack,
@@ -373,7 +378,7 @@ static uint8_t scan_blk_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
         gm_mv_candidates, cm->global_motion,
 #endif  // USE_CUR_GM_REFMV
         mi_pos.col, 2, xd->mi[0]->mbmi.sb_type, mi_row, mi_col,
-        xd->plane[0].subsampling_x, xd->plane[0].subsampling_y);
+        xd->plane[0].subsampling_x, xd->plane[0].subsampling_y, do_warping);
 #endif
   }  // Analyze a single 8x8 block motion information.
 
