@@ -209,8 +209,7 @@ class EditAnnotationsView(generic.base.View):
       ).save()
 
   def _GetFinalizeRow(self):
-    """Gets the existing finalize message for this build_id, if it exists.
-    """
+    """Gets the existing finalize message for this build_id, if it exists."""
     return ba_models.BuildMessageTable.objects.filter(
         build_id=self._build_id,
         message_type=
