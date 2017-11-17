@@ -594,10 +594,6 @@ const char kExperimentalSecurityFeaturesDescription[] =
     "example. And locking powerful features to secure contexts. This flag will "
     "probably annoy you.";
 
-const char kExperimentalVRFeaturesName[] = "Experimental VR features";
-const char kExperimentalVRFeaturesDescription[] =
-    "Enables VR browsing features that are under development.";
-
 const char kExperimentalWebPlatformFeaturesName[] =
     "Experimental Web Platform features";
 const char kExperimentalWebPlatformFeaturesDescription[] =
@@ -1598,10 +1594,15 @@ const char kWebrtcStunOriginDescription[] =
 
 const char kWebvrName[] = "WebVR";
 const char kWebvrDescription[] =
-    "Enabling this option allows web applications to access experimental "
+    "Allow web applications to access experimental "
     "Virtual Reality APIs. Warning: Enabling this will also allow WebVR "
     "content on insecure origins to access these powerful APIs, and may pose a "
     "security risk.";
+
+const char kWebVrExperimentalRenderingName[] =
+    "WebVR experimental rendering optimizations";
+const char kWebVrExperimentalRenderingDescription[] =
+    "Experimental rendering path optimizations for WebVR.";
 
 const char kWifiCredentialSyncName[] = "WiFi credential sync";
 const char kWifiCredentialSyncDescription[] =
@@ -2702,44 +2703,41 @@ const char kAutomaticTabDiscardingDescription[] =
 
 #if BUILDFLAG(ENABLE_VR)
 
+const char kWebVrVsyncAlignName[] = "WebVR VSync-aligned timing";
+const char kWebVrVsyncAlignDescription[] =
+    "Align WebVR application rendering with VSync for smoother animations.";
+
 #if defined(OS_ANDROID)
 
-const char kEnableVrShellName[] = "Enable Chrome VR.";
-const char kEnableVrShellDescription[] =
-    "Allow browsing with a VR headset if available for this device.";
+const char kVrBrowsingName[] = "VR browsing";
+const char kVrBrowsingDescription[] =
+    "Browsing within a VR headset if available for this device.";
 
-const char kVrCustomTabBrowsingName[] = "Enable Custom Tab browsing in VR.";
-const char kVrCustomTabBrowsingDescription[] =
-    "Allow browsing with a VR headset in a Custom Tab if available for this "
-    "device.";
+const char kVrBrowsingExperimentalFeaturesName[] =
+    "VR browsing experimental features";
+const char kVrBrowsingExperimentalFeaturesDescription[] =
+    "Experimental VR browsing features that are under development.";
 
-const char kVrShellExperimentalRenderingName[] =
-    "Enable Chrome VR experimental rendering "
-    "features.";
-const char kVrShellExperimentalRenderingDescription[] =
-    "Turns on experimental rendering features for Chrome VR, like power saving "
-    "rendering modes.";
+const char kVrBrowsingExperimentalRenderingName[] =
+    "VR browsing experimental rendering features";
+const char kVrBrowsingExperimentalRenderingDescription[] =
+    "Experimental rendering features for VR browsing (e.g. power-saving "
+    "rendering modes).";
 
-const char kVrLaunchIntentName[] = "Enable VR intents";
-const char kVrLaunchIntentDescription[] =
+const char kVrBrowsingInCustomTabName[] = "VR browsing in Custom Tabs";
+const char kVrBrowsingInCustomTabDescription[] =
+    "Allow browsing within a VR headset while in a Custom Tab.";
+
+const char kVrLaunchIntentsName[] = "VR intents";
+const char kVrLaunchIntentsDescription[] =
     "Allow intents to launch Chrome in VR mode.";
 
-const char kWebVrAutopresentName[] = "Enable WebVr auto presentation";
-const char kWebVrAutopresentDescription[] =
-    "Allows auto presentation of WebVr content from trusted first-party apps";
-
-const char kWebVrVsyncAlignName[] = "Enable WebVR VSync-aligned timing";
-const char kWebVrVsyncAlignDescription[] =
-    "Enabling this option aligns WebVR application rendering with VSync "
-    "for smoother animations.";
+const char kWebVrAutopresentFromIntentName[] =
+    "WebVR auto presentation from intents";
+const char kWebVrAutopresentFromIntentDescription[] =
+    "Allow auto presentation of WebVR content from trusted first-party apps.";
 
 #endif  // OS_ANDROID
-
-const char kWebvrExperimentalRenderingName[] =
-    "WebVR experimental rendering optimizations";
-const char kWebvrExperimentalRenderingDescription[] =
-    "Enabling this option activates experimental rendering path optimizations "
-    "for WebVR.";
 
 #endif  // ENABLE_VR
 

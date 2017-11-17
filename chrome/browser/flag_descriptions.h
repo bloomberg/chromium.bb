@@ -375,9 +375,6 @@ extern const char kExperimentalKeyboardLockUiDescription[];
 extern const char kExperimentalSecurityFeaturesName[];
 extern const char kExperimentalSecurityFeaturesDescription[];
 
-extern const char kExperimentalVRFeaturesName[];
-extern const char kExperimentalVRFeaturesDescription[];
-
 extern const char kExperimentalWebPlatformFeaturesName[];
 extern const char kExperimentalWebPlatformFeaturesDescription[];
 
@@ -982,6 +979,9 @@ extern const char kWebrtcStunOriginDescription[];
 
 extern const char kWebvrName[];
 extern const char kWebvrDescription[];
+
+extern const char kWebVrExperimentalRenderingName[];
+extern const char kWebVrExperimentalRenderingDescription[];
 
 extern const char kWifiCredentialSyncName[];
 extern const char kWifiCredentialSyncDescription[];
@@ -1668,30 +1668,30 @@ extern const char kAutomaticTabDiscardingDescription[];
 
 #if BUILDFLAG(ENABLE_VR)
 
-#if defined(OS_ANDROID)
-
-extern const char kEnableVrShellName[];
-extern const char kEnableVrShellDescription[];
-
-extern const char kVrCustomTabBrowsingName[];
-extern const char kVrCustomTabBrowsingDescription[];
-
-extern const char kVrShellExperimentalRenderingName[];
-extern const char kVrShellExperimentalRenderingDescription[];
-
-extern const char kVrLaunchIntentName[];
-extern const char kVrLaunchIntentDescription[];
-
-extern const char kWebVrAutopresentName[];
-extern const char kWebVrAutopresentDescription[];
-
 extern const char kWebVrVsyncAlignName[];
 extern const char kWebVrVsyncAlignDescription[];
 
-#endif  // OS_ANDROID
+#if defined(OS_ANDROID)
 
-extern const char kWebvrExperimentalRenderingName[];
-extern const char kWebvrExperimentalRenderingDescription[];
+extern const char kVrBrowsingName[];
+extern const char kVrBrowsingDescription[];
+
+extern const char kVrBrowsingExperimentalFeaturesName[];
+extern const char kVrBrowsingExperimentalFeaturesDescription[];
+
+extern const char kVrBrowsingExperimentalRenderingName[];
+extern const char kVrBrowsingExperimentalRenderingDescription[];
+
+extern const char kVrBrowsingInCustomTabName[];
+extern const char kVrBrowsingInCustomTabDescription[];
+
+extern const char kVrLaunchIntentsName[];
+extern const char kVrLaunchIntentsDescription[];
+
+extern const char kWebVrAutopresentFromIntentName[];
+extern const char kWebVrAutopresentFromIntentDescription[];
+
+#endif  // OS_ANDROID
 
 #endif  // ENABLE_VR
 

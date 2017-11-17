@@ -132,7 +132,7 @@ VrShell::VrShell(JNIEnv* env,
                  float display_height_meters,
                  int display_width_pixels,
                  int display_height_pixels)
-    : vr_shell_enabled_(base::FeatureList::IsEnabled(features::kVrShell)),
+    : vr_shell_enabled_(base::FeatureList::IsEnabled(features::kVrBrowsing)),
       window_(window),
       compositor_(base::MakeUnique<VrCompositor>(window_)),
       delegate_provider_(delegate),
