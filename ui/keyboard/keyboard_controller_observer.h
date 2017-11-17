@@ -22,7 +22,7 @@ class KEYBOARD_EXPORT KeyboardControllerObserver {
 
   // DEPRECATED
   // Called when the keyboard bounds or visibility are about to change.
-  virtual void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) = 0;
+  virtual void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) {}
 
   // Called when the keyboard is shown or closed.
   virtual void OnKeyboardAvailabilityChanging(const bool is_available) {}
