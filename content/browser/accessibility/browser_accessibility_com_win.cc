@@ -2261,14 +2261,15 @@ LONG BrowserAccessibilityComWin::FindBoundary(
     IA2TextBoundaryType ia2_boundary,
     LONG start_offset,
     ui::TextBoundaryDirection direction) {
-  // If the boundary is relative to the caret, use the selection
-  // affinity, otherwise default to downstream affinity.
-  ui::AXTextAffinity affinity =
-      start_offset == IA2_TEXT_OFFSET_CARET
-          ? Manager()->GetTreeData().sel_focus_affinity
-          : ui::AX_TEXT_AFFINITY_DOWNSTREAM;
-
   HandleSpecialTextOffset(&start_offset);
+  // If the |start_offset| is equal to the location of the caret, then use the
+  // focus affinity, otherwise default to downstream affinity.
+  ui::AXTextAffinity affinity = ui::AX_TEXT_AFFINITY_DOWNSTREAM;
+  int selection_start, selection_end;
+  GetSelectionOffsets(&selection_start, &selection_end);
+  if (selection_end >= 0 && start_offset == selection_end)
+    affinity = Manager()->GetTreeData().sel_focus_affinity;
+
   if (ia2_boundary == IA2_TEXT_BOUNDARY_WORD) {
     switch (direction) {
       case ui::FORWARDS_DIRECTION: {
