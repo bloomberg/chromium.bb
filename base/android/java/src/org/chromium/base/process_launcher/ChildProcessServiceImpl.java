@@ -8,7 +8,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.Process;
@@ -143,6 +145,7 @@ public class ChildProcessServiceImpl {
 
     // The ClassLoader for the host context.
     private ClassLoader mHostClassLoader;
+    private Context mHostContext;
 
     /**
      * Loads Chrome's native libraries and initializes a ChildProcessServiceImpl.
@@ -152,6 +155,7 @@ public class ChildProcessServiceImpl {
     // For sCreateCalled check.
     public void create(final Context context, final Context hostContext) {
         mHostClassLoader = hostContext.getClassLoader();
+        mHostContext = hostContext;
         Log.i(TAG, "Creating new ChildProcessService pid=%d", Process.myPid());
         if (sCreateCalled) {
             throw new RuntimeException("Illegal child process reuse.");
@@ -278,6 +282,9 @@ public class ChildProcessServiceImpl {
                 intent.getBooleanExtra(ChildProcessConstants.EXTRA_BIND_TO_CALLER, false);
         mServiceBound = true;
         mDelegate.onServiceBound(intent);
+        // Don't block bind() with any extra work, post it to the application thread instead.
+        new Handler(Looper.getMainLooper())
+                .post(() -> mDelegate.preloadNativeLibrary(mHostContext));
         return mBinder;
     }
 

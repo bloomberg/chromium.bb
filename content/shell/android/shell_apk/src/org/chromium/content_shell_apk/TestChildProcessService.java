@@ -82,6 +82,15 @@ public class TestChildProcessService extends ChildProcessService {
         }
 
         @Override
+        public void preloadNativeLibrary(Context hostContext) {
+            try {
+                LibraryLoader.get(LibraryProcessType.PROCESS_CHILD).preloadNow();
+            } catch (ProcessInitException e) {
+                Log.e(TAG, "Failed to preload native library.", e);
+            }
+        }
+
+        @Override
         public boolean loadNativeLibrary(Context hostContext) {
             // Store the command line before loading the library to avoid an assert in CommandLine.
             mCommandLine = CommandLine.getJavaSwitchesOrNull();

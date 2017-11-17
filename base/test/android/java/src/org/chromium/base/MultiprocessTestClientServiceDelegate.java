@@ -54,6 +54,15 @@ public class MultiprocessTestClientServiceDelegate implements ChildProcessServic
     public void onDestroy() {}
 
     @Override
+    public void preloadNativeLibrary(Context hostContext) {
+        try {
+            LibraryLoader.get(LibraryProcessType.PROCESS_CHILD).preloadNow();
+        } catch (ProcessInitException pie) {
+            Log.w(TAG, "Unable to preload native libraries.", pie);
+        }
+    }
+
+    @Override
     public boolean loadNativeLibrary(Context hostContext) {
         try {
             LibraryLoader.get(LibraryProcessType.PROCESS_CHILD).loadNow();
