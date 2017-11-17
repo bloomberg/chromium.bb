@@ -721,4 +721,81 @@ TEST_F(FeatureConfigConditionValidatorTest, TestMultipleEvents) {
   EXPECT_FALSE(result.preconditions_ok);
 }
 
+TEST_F(FeatureConfigConditionValidatorTest, TestStaggeredTriggering) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures({kTestFeatureFoo}, {});
+
+  // Trigger maximum 2 times, and only 1 time last 2 days (today + yesterday).
+  FeatureConfig config;
+  config.valid = true;
+  config.used = EventConfig("used", Comparator(ANY, 0), 0, 0);
+  config.trigger = EventConfig("trigger", Comparator(LESS_THAN, 2), 100u, 100u);
+  config.session_rate = Comparator(ANY, 0);
+  config.availability = Comparator(ANY, 0);
+  config.event_configs.insert(
+      EventConfig("trigger", Comparator(LESS_THAN, 1u), 2u, 100u));
+
+  // Should be OK to trigger initially on day 0.
+  EXPECT_TRUE(GetResultForDay(config, 0u).NoErrors());
+
+  // Set that we triggered on day 0. We should then only trigger on day 2+.
+  Event trigger_event;
+  trigger_event.set_name("trigger");
+  test::SetEventCountForDay(&trigger_event, 0u, 1u);
+  event_model_.SetEvent(trigger_event);
+  EXPECT_FALSE(GetResultForDay(config, 0u).NoErrors());
+  EXPECT_FALSE(GetResultForDay(config, 1u).NoErrors());
+  EXPECT_TRUE(GetResultForDay(config, 2u).NoErrors());
+  EXPECT_TRUE(GetResultForDay(config, 3u).NoErrors());
+
+  // Set that we triggered again on day 2. We should then not trigger again
+  // until max storage time has passed (100 days), which would expire the
+  // trigger from day 0.
+  test::SetEventCountForDay(&trigger_event, 2u, 1u);
+  event_model_.SetEvent(trigger_event);
+  EXPECT_FALSE(GetResultForDay(config, 2u).NoErrors());
+  EXPECT_FALSE(GetResultForDay(config, 3u).NoErrors());
+  EXPECT_FALSE(GetResultForDay(config, 4u).NoErrors());
+  EXPECT_FALSE(GetResultForDay(config, 5u).NoErrors());
+  EXPECT_FALSE(GetResultForDay(config, 99u).NoErrors());
+  EXPECT_TRUE(GetResultForDay(config, 100u).NoErrors());
+}
+
+TEST_F(FeatureConfigConditionValidatorTest, TestMultipleEventsWithSameName) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures({kTestFeatureFoo}, {});
+
+  // Trigger maximum 2 times, and only 1 time last 2 days (today + yesterday).
+  FeatureConfig config = GetAcceptingFeatureConfig();
+  config.event_configs.insert(
+      EventConfig("event1", Comparator(LESS_THAN, 1u), 2u, 100u));
+  config.event_configs.insert(
+      EventConfig("event1", Comparator(LESS_THAN, 2u), 100u, 100u));
+
+  // Should be OK to trigger initially on day 0.
+  EXPECT_TRUE(GetResultForDay(config, 0u).NoErrors());
+
+  // Set that we had event1 on day 0. We should then only trigger on day 2+.
+  Event event1;
+  event1.set_name("event1");
+  test::SetEventCountForDay(&event1, 0u, 1u);
+  event_model_.SetEvent(event1);
+  EXPECT_FALSE(GetResultForDay(config, 0u).NoErrors());
+  EXPECT_FALSE(GetResultForDay(config, 1u).NoErrors());
+  EXPECT_TRUE(GetResultForDay(config, 2u).NoErrors());
+  EXPECT_TRUE(GetResultForDay(config, 3u).NoErrors());
+
+  // Set that we had event1 again on day 2. We should then not trigger again
+  // until max storage time has passed (100 days), which would expire the
+  // trigger from day 0.
+  test::SetEventCountForDay(&event1, 2u, 1u);
+  event_model_.SetEvent(event1);
+  EXPECT_FALSE(GetResultForDay(config, 2u).NoErrors());
+  EXPECT_FALSE(GetResultForDay(config, 3u).NoErrors());
+  EXPECT_FALSE(GetResultForDay(config, 4u).NoErrors());
+  EXPECT_FALSE(GetResultForDay(config, 5u).NoErrors());
+  EXPECT_FALSE(GetResultForDay(config, 99u).NoErrors());
+  EXPECT_TRUE(GetResultForDay(config, 100u).NoErrors());
+}
+
 }  // namespace feature_engagement
