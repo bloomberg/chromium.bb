@@ -200,7 +200,7 @@ SharedResourcesDataSource::GetAccessControlAllowOriginForOrigin(
 }
 
 bool SharedResourcesDataSource::IsGzipped(const std::string& path) const {
-  return path == "js/mojo_bindings.js";
+  return webui::IsSharedResourceGzipped(path);
 }
 
 }  // namespace content

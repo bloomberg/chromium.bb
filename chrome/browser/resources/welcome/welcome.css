@@ -215,7 +215,7 @@ body {
 }
 
 .watermark {
-  -webkit-mask-image: url(chrome://welcome/watermark.svg);
+  -webkit-mask-image: url(chrome://resources/images/google_logo.svg);
   -webkit-mask-repeat: no-repeat;
   -webkit-mask-size: 100%;
   animation: fadeIn 1s cubic-bezier(0, 0, .2, 1) both;

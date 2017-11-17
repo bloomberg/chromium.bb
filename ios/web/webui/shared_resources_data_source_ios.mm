@@ -75,4 +75,8 @@ std::string SharedResourcesDataSourceIOS::GetMimeType(
   return mime_type;
 }
 
+bool SharedResourcesDataSourceIOS::IsGzipped(const std::string& path) const {
+  return webui::IsSharedResourceGzipped(path);
+}
+
 }  // namespace web
