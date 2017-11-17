@@ -10,7 +10,6 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
-#import "base/test/ios/wait_util.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
@@ -19,6 +18,7 @@
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller_test.h"
 #import "ios/chrome/browser/ui/settings/password_details_collection_view_controller.h"
+#import "ios/testing/wait_util.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -227,9 +227,10 @@ TEST_F(SavePasswordsCollectionViewControllerTest, DeleteItems) {
     this->DeleteItem(i, j, ^{
       completionCalled = YES;
     });
-    base::test::ios::WaitUntilCondition(^bool() {
-      return completionCalled;
-    });
+    EXPECT_TRUE(testing::WaitUntilConditionOrTimeout(
+        testing::kWaitForUIElementTimeout, ^bool() {
+          return completionCalled;
+        }));
   };
 
   // Delete item in save passwords section.
@@ -261,9 +262,10 @@ TEST_F(SavePasswordsCollectionViewControllerTest, DeleteItemsWithDuplicates) {
     this->DeleteItem(i, j, ^{
       completionCalled = YES;
     });
-    base::test::ios::WaitUntilCondition(^bool() {
-      return completionCalled;
-    });
+    EXPECT_TRUE(testing::WaitUntilConditionOrTimeout(
+        testing::kWaitForUIElementTimeout, ^bool() {
+          return completionCalled;
+        }));
   };
 
   // Delete item in save passwords section.
