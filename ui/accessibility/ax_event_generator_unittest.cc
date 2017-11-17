@@ -415,6 +415,43 @@ TEST(AXEventGeneratorTest, LiveRegionChanged) {
       DumpEvents(&event_generator));
 }
 
+TEST(AXEventGeneratorTest, LiveRegionOnlyTextChanges) {
+  AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(3);
+  initial_state.nodes[0].id = 1;
+  initial_state.nodes[0].AddStringAttribute(ui::AX_ATTR_LIVE_STATUS, "polite");
+  initial_state.nodes[0].AddStringAttribute(ui::AX_ATTR_CONTAINER_LIVE_STATUS,
+                                            "polite");
+  initial_state.nodes[0].child_ids.push_back(2);
+  initial_state.nodes[0].child_ids.push_back(3);
+  initial_state.nodes[1].id = 2;
+  initial_state.nodes[1].role = ui::AX_ROLE_STATIC_TEXT;
+  initial_state.nodes[1].AddStringAttribute(ui::AX_ATTR_CONTAINER_LIVE_STATUS,
+                                            "polite");
+  initial_state.nodes[1].AddStringAttribute(ui::AX_ATTR_NAME, "Before 1");
+  initial_state.nodes[2].id = 3;
+  initial_state.nodes[2].role = ui::AX_ROLE_STATIC_TEXT;
+  initial_state.nodes[2].AddStringAttribute(ui::AX_ATTR_CONTAINER_LIVE_STATUS,
+                                            "polite");
+  initial_state.nodes[2].AddStringAttribute(ui::AX_ATTR_NAME, "Before 2");
+  AXTree tree(initial_state);
+
+  AXEventGenerator event_generator(&tree);
+  AXTreeUpdate update = initial_state;
+  update.nodes[1].AddStringAttribute(ui::AX_ATTR_DESCRIPTION, "Description 1");
+  update.nodes[2].AddIntAttribute(ui::AX_ATTR_CHECKED_STATE,
+                                  ui::AX_CHECKED_STATE_TRUE);
+
+  // Note that we do NOT expect a LIVE_REGION_CHANGED event here, because
+  // the name did not change.
+  EXPECT_TRUE(tree.Unserialize(update));
+  EXPECT_EQ(
+      "CHECKED_STATE_CHANGED on 3, "
+      "DESCRIPTION_CHANGED on 2",
+      DumpEvents(&event_generator));
+}
+
 TEST(AXEventGeneratorTest, BusyLiveRegionChanged) {
   AXTreeUpdate initial_state;
   initial_state.root_id = 1;

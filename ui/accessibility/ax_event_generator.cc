@@ -158,6 +158,9 @@ void AXEventGenerator::OnStringAttributeChanged(AXTree* tree,
   switch (attr) {
     case ui::AX_ATTR_NAME:
       AddEvent(node, Event::NAME_CHANGED);
+      if (node->data().HasStringAttribute(ui::AX_ATTR_CONTAINER_LIVE_STATUS)) {
+        FireLiveRegionEvents(node);
+      }
       break;
     case ui::AX_ATTR_DESCRIPTION:
       AddEvent(node, Event::DESCRIPTION_CHANGED);
@@ -271,6 +274,11 @@ void AXEventGenerator::OnTreeDataChanged(AXTree* tree,
 }
 
 void AXEventGenerator::OnNodeWillBeDeleted(AXTree* tree, AXNode* node) {
+  if (node->data().HasStringAttribute(ui::AX_ATTR_CONTAINER_LIVE_STATUS) &&
+      node->data().HasStringAttribute(ui::AX_ATTR_NAME)) {
+    FireLiveRegionEvents(node);
+  }
+
   DCHECK_EQ(tree_, tree);
   tree_events_.erase(node);
 }
@@ -310,17 +318,17 @@ void AXEventGenerator::OnAtomicUpdateFinished(
     AddEvent(tree->root(), Event::LOAD_COMPLETE);
 
   for (const auto& change : changes) {
-    if ((change.type == NODE_CREATED || change.type == SUBTREE_CREATED) &&
-        change.node->data().HasStringAttribute(ui::AX_ATTR_LIVE_STATUS)) {
-      if (change.node->data().role == ui::AX_ROLE_ALERT)
-        AddEvent(change.node, Event::ALERT);
-      else
-        AddEvent(change.node, Event::LIVE_REGION_CREATED);
-      continue;
-    }
-    if (change.node->data().HasStringAttribute(
-            ui::AX_ATTR_CONTAINER_LIVE_STATUS)) {
-      FireLiveRegionEvents(change.node);
+    if ((change.type == NODE_CREATED || change.type == SUBTREE_CREATED)) {
+      if (change.node->data().HasStringAttribute(ui::AX_ATTR_LIVE_STATUS)) {
+        if (change.node->data().role == ui::AX_ROLE_ALERT)
+          AddEvent(change.node, Event::ALERT);
+        else
+          AddEvent(change.node, Event::LIVE_REGION_CREATED);
+      } else if (change.node->data().HasStringAttribute(
+                     ui::AX_ATTR_CONTAINER_LIVE_STATUS) &&
+                 change.node->data().HasStringAttribute(ui::AX_ATTR_NAME)) {
+        FireLiveRegionEvents(change.node);
+      }
     }
   }
 
