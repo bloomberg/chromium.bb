@@ -5762,7 +5762,7 @@ I don't think this site should be blocked!
           Always show
         </message>
         <message name="IDS_POPUPS_BLOCKED_INFOBAR_TEXT" desc="Pop-up Blocking Title [CHAR-LIMIT=32] [ICU Syntax]">
-          {NUM_POPUPS,plural,=1{A pop-up is blocked} other{# pop-ups are blocked}}
+          {NUM_POPUPS,plural,=1{Pop-up blocked} other{# pop-ups blocked}}
         </message>
       </if>
       <message name="IDS_PDF_TAB_LABEL" desc="Label for the pdf plugin tab on Content Settings dialog">
