@@ -767,8 +767,6 @@ crbug.com/776656 virtual/incremental-shadow-dom/shadow-dom/focus-navigation-slot
 crbug.com/776656 virtual/incremental-shadow-dom/shadow-dom/focus-navigation-slot-with-tabindex.html [ Failure Crash ]
 crbug.com/776656 virtual/incremental-shadow-dom/shadow-dom/focus-navigation-slots.html [ Failure Crash ]
 crbug.com/776656 virtual/incremental-shadow-dom/shadow-dom/focus-navigation.html [ Failure Crash ]
-crbug.com/776656 virtual/incremental-shadow-dom/shadow-dom/fullscreen-element-in-shadow-complex.html [ Failure Crash ]
-crbug.com/776656 virtual/incremental-shadow-dom/shadow-dom/host-link-style.html [ Failure Crash ]
 crbug.com/776656 virtual/incremental-shadow-dom/shadow-dom/host-pseudo-elements.html [ Failure ]
 crbug.com/776656 virtual/incremental-shadow-dom/shadow-dom/layout.html [ Failure ]
 crbug.com/776656 virtual/incremental-shadow-dom/shadow-dom/nodetree-radio-node-list.html [ Failure Crash ]

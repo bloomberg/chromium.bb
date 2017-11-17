@@ -206,7 +206,7 @@ void HTMLSlotElement::AttachLayoutTree(AttachContext& context) {
     AttachContext children_context(context);
     children_context.resolved_style = nullptr;
 
-    for (auto& node : distributed_nodes_) {
+    for (auto& node : ChildrenInFlatTreeIfAssignmentIsSupported()) {
       if (node->NeedsAttach())
         node->AttachLayoutTree(children_context);
     }
@@ -214,6 +214,13 @@ void HTMLSlotElement::AttachLayoutTree(AttachContext& context) {
       context.previous_in_flow = children_context.previous_in_flow;
   }
   HTMLElement::AttachLayoutTree(context);
+}
+
+const HeapVector<Member<Node>>&
+HTMLSlotElement::ChildrenInFlatTreeIfAssignmentIsSupported() {
+  return RuntimeEnabledFeatures::IncrementalShadowDOMEnabled()
+             ? AssignedNodes()
+             : distributed_nodes_;
 }
 
 void HTMLSlotElement::DetachLayoutTree(const AttachContext& context) {

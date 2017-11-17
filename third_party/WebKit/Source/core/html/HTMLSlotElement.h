@@ -130,6 +130,8 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
 
   bool HasSlotableChild() const;
 
+  const HeapVector<Member<Node>>& ChildrenInFlatTreeIfAssignmentIsSupported();
+
   void LazyReattachDistributedNodesNaive();
 
   static void LazyReattachDistributedNodesByDynamicProgramming(
