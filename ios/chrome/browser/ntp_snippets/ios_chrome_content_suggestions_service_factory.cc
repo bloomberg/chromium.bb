@@ -7,6 +7,7 @@
 #include "base/memory/singleton.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
+#include "ios/chrome/app/tests_hook.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
@@ -56,6 +57,10 @@ IOSChromeContentSuggestionsServiceFactory::
 std::unique_ptr<KeyedService>
 IOSChromeContentSuggestionsServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* browser_state) const {
-  return ntp_snippets::CreateChromeContentSuggestionsServiceWithProviders(
-      browser_state);
+  if (tests_hook::DisableContentSuggestions()) {
+    return ntp_snippets::CreateChromeContentSuggestionsService(browser_state);
+  } else {
+    return ntp_snippets::CreateChromeContentSuggestionsServiceWithProviders(
+        browser_state);
+  }
 }

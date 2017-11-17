@@ -7,6 +7,10 @@
 
 namespace tests_hook {
 
+// Returns true if ContentSuggestions should be disabled to allow other tests to
+// run unimpeded.
+bool DisableContentSuggestions();
+
 // Returns true if contextual search should be disabled to allow other tests
 // to run unimpeded.
 bool DisableContextualSearch();

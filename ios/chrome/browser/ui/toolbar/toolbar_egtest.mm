@@ -405,8 +405,6 @@ void SelectNewTabPagePanel(ntp_home::PanelIdentifier panel_type) {
   id<GREYMatcher> locationbarButton = grey_allOf(
       grey_accessibilityLabel(l10n_util::GetNSString(IDS_OMNIBOX_EMPTY_HINT)),
       grey_minimumVisiblePercent(0.2), nil);
-  [[EarlGrey selectElementWithMatcher:locationbarButton]
-      assertWithMatcher:grey_text(@"Search or type URL")];
 
   [[EarlGrey selectElementWithMatcher:locationbarButton]
       performAction:grey_typeText(@"a")];
