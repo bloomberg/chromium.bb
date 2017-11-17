@@ -216,6 +216,8 @@ class ThreadCheckerMacroTest : public testing::Test {
 
   void ExpectNoDeathOnOtherThreadAfterDetach() {
     DCHECK_CALLED_ON_VALID_THREAD(my_thread_checker_);
+    DCHECK_CALLED_ON_VALID_THREAD(my_thread_checker_)
+        << "Make sure it compiles when DCHECK is off";
   }
 
  protected:
