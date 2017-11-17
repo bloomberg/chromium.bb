@@ -525,22 +525,30 @@ NGBoxStrut ComputePadding(const NGConstraintSpace& constraint_space,
 }
 
 void ApplyAutoMargins(const ComputedStyle& style,
+                      const ComputedStyle& containing_block_style,
                       LayoutUnit available_inline_size,
                       LayoutUnit inline_size,
                       NGBoxStrut* margins) {
   DCHECK(margins) << "Margins cannot be NULL here";
   const LayoutUnit used_space = inline_size + margins->InlineSum();
   const LayoutUnit available_space = available_inline_size - used_space;
-  if (available_space < LayoutUnit())
-    return;
-  if (style.MarginStart().IsAuto() && style.MarginEnd().IsAuto()) {
-    margins->inline_start = available_space / 2;
-    margins->inline_end = available_space - margins->inline_start;
-  } else if (style.MarginStart().IsAuto()) {
-    margins->inline_start = available_space;
-  } else if (style.MarginEnd().IsAuto()) {
-    margins->inline_end = available_space;
+  if (available_space > LayoutUnit()) {
+    if ((style.MarginStart().IsAuto() && style.MarginEnd().IsAuto()) ||
+        (!style.MarginStart().IsAuto() && !style.MarginEnd().IsAuto() &&
+         containing_block_style.GetTextAlign() == ETextAlign::kWebkitCenter)) {
+      margins->inline_start += available_space / 2;
+    } else if (style.MarginStart().IsAuto() ||
+               (containing_block_style.IsLeftToRightDirection() &&
+                containing_block_style.GetTextAlign() ==
+                    ETextAlign::kWebkitRight) ||
+               (!containing_block_style.IsLeftToRightDirection() &&
+                containing_block_style.GetTextAlign() ==
+                    ETextAlign::kWebkitLeft)) {
+      margins->inline_start += available_space;
+    }
   }
+  margins->inline_end =
+      available_inline_size - inline_size - margins->inline_start;
 }
 
 LayoutUnit ConstrainByMinMax(LayoutUnit length,
