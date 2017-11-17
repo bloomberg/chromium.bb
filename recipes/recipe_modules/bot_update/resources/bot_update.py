@@ -1004,7 +1004,7 @@ def parse_args():
                    help=('Deprecated.'))
   parse.add_option('--clobber', action='store_true',
                    help='Delete checkout first, always')
-  parse.add_option('--output_json', required=True,
+  parse.add_option('--output_json',
                    help='Output JSON information into a specified file')
   parse.add_option('--no_shallow', action='store_true',
                    help='Bypass disk detection and never shallow clone. '
@@ -1086,6 +1086,8 @@ def prepare(options, git_slns, active):
   step_text = '[%dGB/%dGB used (%d%%)]' % (used_disk_space_gb,
                                            total_disk_space_gb,
                                            percent_used)
+  if not options.output_json:
+    print '@@@STEP_TEXT@%s@@@' % step_text
   shallow = (total_disk_space < SHALLOW_CLONE_THRESHOLD
              and not options.no_shallow)
 
@@ -1147,16 +1149,17 @@ def checkout(options, git_slns, specs, revisions, step_text, shallow):
       ensure_no_checkout(dir_names, options.cleanup_dir)
       gclient_output = ensure_checkout(**checkout_parameters)
   except PatchFailed as e:
-    # Tell recipes information such as root, got_revision, etc.
-    emit_json(options.output_json,
-              did_run=True,
-              root=first_sln,
-              patch_apply_return_code=e.code,
-              patch_root=options.patch_root,
-              patch_failure=True,
-              failed_patch_body=e.output,
-              step_text='%s PATCH FAILED' % step_text,
-              fixed_revisions=revisions)
+    if options.output_json:
+      # Tell recipes information such as root, got_revision, etc.
+      emit_json(options.output_json,
+                did_run=True,
+                root=first_sln,
+                patch_apply_return_code=e.code,
+                patch_root=options.patch_root,
+                patch_failure=True,
+                failed_patch_body=e.output,
+                step_text='%s PATCH FAILED' % step_text,
+                fixed_revisions=revisions)
     raise
 
   # Take care of got_revisions outputs.
@@ -1179,17 +1182,18 @@ def checkout(options, git_slns, specs, revisions, step_text, shallow):
     got_revisions = { 'got_revision': 'BOT_UPDATE_NO_REV_FOUND' }
     #raise Exception('No got_revision(s) found in gclient output')
 
-  # Tell recipes information such as root, got_revision, etc.
-  emit_json(options.output_json,
-            did_run=True,
-            root=first_sln,
-            patch_root=options.patch_root,
-            step_text=step_text,
-            fixed_revisions=revisions,
-            properties=got_revisions,
-            manifest=create_manifest_old(),
-            source_manifest=create_manifest(
-                gclient_output, options.patch_root, options.gerrit_ref))
+  if options.output_json:
+    # Tell recipes information such as root, got_revision, etc.
+    emit_json(options.output_json,
+              did_run=True,
+              root=first_sln,
+              patch_root=options.patch_root,
+              step_text=step_text,
+              fixed_revisions=revisions,
+              properties=got_revisions,
+              manifest=create_manifest_old(),
+              source_manifest=create_manifest(
+                  gclient_output, options.patch_root, options.gerrit_ref))
 
 
 def print_debug_info():
