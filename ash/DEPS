@@ -2,6 +2,7 @@ include_rules = [
   "+device/bluetooth",
   "+cc/debug",
   "+cc/output",
+  "+chromeos/cryptohome",
   "+components/pref_registry",
   "+components/prefs",
   "+components/quirks",
@@ -16,9 +17,14 @@ include_rules = [
   "+components/wallpaper",
   "+gpu/config",
   "+media",
+  "+mash/public/interfaces",
+  "+mash/shelf/public",
+  "+mojo/common",
   "+mojo/public",
+  "+services/catalog/public",
   "+services/preferences/public",
   "+services/service_manager/public",
+  "+services/ui/common",
   "+services/ui/public",
   "+services/viz/public",
   "+skia/ext",
@@ -78,6 +84,9 @@ include_rules = [
 ]
 
 specific_include_rules = {
+  "app_launch_unittest.cc": [
+    "+mash/quick_launch/public",
+  ],
   "root_window_controller\.*": [
     "+ash/host"
   ],
@@ -89,7 +98,14 @@ specific_include_rules = {
     "+ash/host/ash_window_tree_host_init_params.h",
     "+ui/ozone/public"
   ],
+  "shell_port_mus\.cc": [
+    "+ash/host/ash_window_tree_host_init_params.h",
+    "+ash/host/ash_window_tree_host_mus.h",
+  ],
   "touch_transformer_controller\.*": [
     "+ash/host"
+  ],
+  "window_manager_service.cc": [
+    "+chromeos/cryptohome"
   ],
 }

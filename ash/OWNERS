@@ -9,4 +9,7 @@ per-file ash_strings.grd=*
 per-file ash_switches.*=*
 per-file BUILD.gn=*
 
+per-file manifest.json=set noparent
+per-file manifest.json=file://ipc/SECURITY_OWNERS
+
 # COMPONENT: UI>Shell

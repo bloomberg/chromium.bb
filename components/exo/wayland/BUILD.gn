@@ -63,7 +63,6 @@ source_set("wayland") {
 
   deps = [
     ":aura_shell_protocol",
-    "//ash",
     "//ash/public/cpp:ash_public_cpp",
     "//base",
     "//components/exo",
@@ -310,6 +309,7 @@ test("wayland_client_perftests") {
     ":client_support",
     ":simple",
     ":wayland",
+    "//ash",
     "//ash:test_support_without_content",
     "//ash/public/cpp:ash_public_cpp",
     "//base",

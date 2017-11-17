@@ -1,5 +1,0 @@
-specific_include_rules = {
-  "wm_test_screen\.cc": [
-    "+ui/aura/window.cc"
-  ],
-}

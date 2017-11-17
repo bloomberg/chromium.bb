@@ -34,7 +34,7 @@ include_rules = [
 
 specific_include_rules = {
   "mash_service_factory.cc": [
-    "+ash/mus/window_manager_service.h",
+    "+ash/window_manager_service.h",
     "+ash/autoclick/mus/autoclick_application.h",
     "+ash/public/interfaces",
     "+ash/touch_hud/mus/touch_hud_application.h",

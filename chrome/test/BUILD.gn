@@ -381,7 +381,7 @@ test("browser_tests") {
     data_deps += [
       # Needed for --run-in-mash, which triggers launching chrome.
       # TODO(sky): this seems wrong, figure a better way to get resources.
-      "//ash/mus:resources",
+      "//ash:ash_service_resources",
       "//chrome",
       "//ui/keyboard:resources",
     ]

@@ -28,7 +28,7 @@ group("all") {
   if (is_chromeos) {
     deps += [
       "//ash/autoclick/mus:accessibility_autoclick",
-      "//ash/mus/standalone:ash_standalone",
+      "//ash/standalone:ash_standalone",
       "//ash/touch_hud/mus:touch_hud",
       "//mash:mash_unittests",
     ]
@@ -58,8 +58,8 @@ catalog("catalog") {
 
   if (is_chromeos) {
     standalone_services += [
-      "//ash/mus:manifest",
-      "//ash/mus/standalone:manifest",
+      "//ash:manifest",
+      "//ash/standalone:manifest",
     ]
   }
 
@@ -87,7 +87,7 @@ copy("mash_catalog") {
 }
 
 if (is_chromeos) {
-  # TODO(jamescook): Move these tests into //ash/mus.
+  # TODO(jamescook): Move these tests into //ash.
   test("mash_unittests") {
     sources = [
       "test/mash_test_suite.cc",
@@ -95,9 +95,9 @@ if (is_chromeos) {
       "test/mash_unittests.cc",
     ]
     deps = [
+      "//ash:ash_service_resources",
+      "//ash:mash_unittests",
       "//ash:test_support_without_content",
-      "//ash/mus:resources",
-      "//ash/mus:unittests",
       "//ash/public/cpp:ash_public_cpp",
       "//base",
       "//base/test:test_support",
@@ -113,7 +113,7 @@ if (is_chromeos) {
     ]
     data_deps = [
       ":mash_unittests_catalog_copy",
-      "//ash/mus:resources",
+      "//ash:ash_service_resources",
     ]
   }
 

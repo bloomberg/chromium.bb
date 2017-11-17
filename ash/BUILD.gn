@@ -4,7 +4,11 @@
 
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
+import("//mojo/public/tools/bindings/mojom.gni")
+import("//services/service_manager/public/cpp/service.gni")
+import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
+import("//tools/grit/repack.gni")
 import("//ui/base/ui_features.gni")
 
 # Historical note: Ash shipped on Windows for a couple years to support
@@ -24,8 +28,14 @@ component("ash") {
     "accelerators/accelerator_controller_delegate.h",
     "accelerators/accelerator_controller_delegate_classic.cc",
     "accelerators/accelerator_controller_delegate_classic.h",
+    "accelerators/accelerator_controller_delegate_mash.cc",
+    "accelerators/accelerator_controller_delegate_mash.h",
+    "accelerators/accelerator_controller_registrar.cc",
+    "accelerators/accelerator_controller_registrar.h",
     "accelerators/accelerator_delegate.cc",
     "accelerators/accelerator_delegate.h",
+    "accelerators/accelerator_handler.h",
+    "accelerators/accelerator_ids.h",
     "accelerators/accelerator_router.cc",
     "accelerators/accelerator_router.h",
     "accelerators/accelerator_table.cc",
@@ -88,6 +98,8 @@ component("ash") {
     "debug.h",
     "default_wallpaper_delegate.cc",
     "default_wallpaper_delegate.h",
+    "disconnected_app_handler.cc",
+    "disconnected_app_handler.h",
     "display/ash_display_controller.cc",
     "display/ash_display_controller.h",
     "display/cursor_window_controller.cc",
@@ -103,6 +115,8 @@ component("ash") {
     "display/display_error_observer_chromeos.h",
     "display/display_move_window_util.cc",
     "display/display_move_window_util.h",
+    "display/display_synchronizer.cc",
+    "display/display_synchronizer.h",
     "display/display_util.cc",
     "display/display_util.h",
     "display/event_transformation_handler.cc",
@@ -148,6 +162,8 @@ component("ash") {
     "drag_drop/drag_drop_tracker.h",
     "drag_drop/drag_image_view.cc",
     "drag_drop/drag_image_view.h",
+    "event_matcher_util.cc",
+    "event_matcher_util.h",
     "fast_ink/fast_ink_pointer_controller.cc",
     "fast_ink/fast_ink_pointer_controller.h",
     "fast_ink/fast_ink_points.cc",
@@ -176,6 +192,8 @@ component("ash") {
     "frame/custom_frame_view_ash.h",
     "frame/default_frame_header.cc",
     "frame/default_frame_header.h",
+    "frame/detached_title_area_renderer.cc",
+    "frame/detached_title_area_renderer.h",
     "frame/frame_border_hit_test.cc",
     "frame/frame_border_hit_test.h",
     "frame/frame_header.h",
@@ -199,6 +217,8 @@ component("ash") {
     "host/ash_window_tree_host_mirroring_delegate.h",
     "host/ash_window_tree_host_mirroring_unified.cc",
     "host/ash_window_tree_host_mirroring_unified.h",
+    "host/ash_window_tree_host_mus.cc",
+    "host/ash_window_tree_host_mus.h",
     "host/ash_window_tree_host_platform.cc",
     "host/ash_window_tree_host_platform.h",
     "host/ash_window_tree_host_unified.cc",
@@ -213,6 +233,8 @@ component("ash") {
     "keyboard/keyboard_observer_register.h",
     "keyboard/keyboard_ui.cc",
     "keyboard/keyboard_ui.h",
+    "keyboard/keyboard_ui_mash.cc",
+    "keyboard/keyboard_ui_mash.h",
     "keyboard/keyboard_ui_observer.h",
     "laser/laser_pointer_controller.cc",
     "laser/laser_pointer_controller.h",
@@ -317,6 +339,8 @@ component("ash") {
     "mojo_interface_factory.h",
     "multi_profile_uma.cc",
     "multi_profile_uma.h",
+    "network_connect_delegate_mus.cc",
+    "network_connect_delegate_mus.h",
     "new_window_controller.cc",
     "new_window_controller.h",
     "note_taking_controller.cc",
@@ -403,12 +427,18 @@ component("ash") {
     "shell.cc",
     "shell.h",
     "shell_delegate.h",
+    "shell_delegate_mus.cc",
+    "shell_delegate_mus.h",
     "shell_init_params.h",
     "shell_observer.h",
     "shell_port.cc",
     "shell_port.h",
     "shell_port_classic.cc",
     "shell_port_classic.h",
+    "shell_port_mash.cc",
+    "shell_port_mash.h",
+    "shell_port_mus.cc",
+    "shell_port_mus.h",
     "shutdown_controller.cc",
     "shutdown_controller.h",
     "sticky_keys/sticky_keys_controller.cc",
@@ -702,6 +732,8 @@ component("ash") {
     "touch/touch_hud_projection.h",
     "touch/touch_observer_hud.cc",
     "touch/touch_observer_hud.h",
+    "touch/touch_transform_setter_mus.cc",
+    "touch/touch_transform_setter_mus.h",
     "touch/touch_uma.cc",
     "touch/touch_uma.h",
     "tray_action/tray_action.cc",
@@ -720,12 +752,18 @@ component("ash") {
     "wallpaper/wallpaper_controller.h",
     "wallpaper/wallpaper_controller_observer.h",
     "wallpaper/wallpaper_delegate.h",
+    "wallpaper/wallpaper_delegate_mus.cc",
+    "wallpaper/wallpaper_delegate_mus.h",
     "wallpaper/wallpaper_view.cc",
     "wallpaper/wallpaper_view.h",
     "wallpaper/wallpaper_widget_controller.cc",
     "wallpaper/wallpaper_widget_controller.h",
     "wallpaper/wallpaper_window_state_manager.cc",
     "wallpaper/wallpaper_window_state_manager.h",
+    "window_manager.cc",
+    "window_manager.h",
+    "window_manager_service.cc",
+    "window_manager_service.h",
     "window_user_data.h",
     "wm/always_on_top_controller.cc",
     "wm/always_on_top_controller.h",
@@ -749,6 +787,8 @@ component("ash") {
     "wm/drag_window_controller.h",
     "wm/drag_window_resizer.cc",
     "wm/drag_window_resizer.h",
+    "wm/drag_window_resizer_mash.cc",
+    "wm/drag_window_resizer_mash.h",
     "wm/event_client_impl.cc",
     "wm/event_client_impl.h",
     "wm/focus_rules.cc",
@@ -765,6 +805,8 @@ component("ash") {
     "wm/immersive_gesture_handler_classic.h",
     "wm/immersive_handler_factory_ash.cc",
     "wm/immersive_handler_factory_ash.h",
+    "wm/immersive_handler_factory_mash.cc",
+    "wm/immersive_handler_factory_mash.h",
     "wm/lock_action_handler_layout_manager.cc",
     "wm/lock_action_handler_layout_manager.h",
     "wm/lock_layout_manager.cc",
@@ -774,6 +816,8 @@ component("ash") {
     "wm/lock_state_observer.h",
     "wm/lock_window_state.cc",
     "wm/lock_window_state.h",
+    "wm/move_event_handler.cc",
+    "wm/move_event_handler.h",
     "wm/mru_window_tracker.cc",
     "wm/mru_window_tracker.h",
     "wm/native_cursor_manager_ash.h",
@@ -781,6 +825,8 @@ component("ash") {
     "wm/native_cursor_manager_ash_classic.h",
     "wm/native_cursor_manager_ash_mus.cc",
     "wm/native_cursor_manager_ash_mus.h",
+    "wm/non_client_frame_controller.cc",
+    "wm/non_client_frame_controller.h",
     "wm/overlay_event_filter.cc",
     "wm/overlay_event_filter.h",
     "wm/overview/cleanup_animation_observer.cc",
@@ -815,6 +861,8 @@ component("ash") {
     "wm/panels/panel_window_event_handler.h",
     "wm/panels/panel_window_resizer.cc",
     "wm/panels/panel_window_resizer.h",
+    "wm/property_util.cc",
+    "wm/property_util.h",
     "wm/resize_handle_window_targeter.cc",
     "wm/resize_handle_window_targeter.h",
     "wm/resize_shadow.cc",
@@ -872,6 +920,8 @@ component("ash") {
     "wm/tablet_mode/tablet_mode_window_state.h",
     "wm/tablet_mode/touchpad_and_keyboard_disabler.cc",
     "wm/tablet_mode/touchpad_and_keyboard_disabler.h",
+    "wm/top_level_window_factory.cc",
+    "wm/top_level_window_factory.h",
     "wm/toplevel_window_event_handler.cc",
     "wm/toplevel_window_event_handler.h",
     "wm/video_detector.cc",
@@ -934,6 +984,8 @@ component("ash") {
     "wm/workspace/workspace_event_handler.h",
     "wm/workspace/workspace_event_handler_classic.cc",
     "wm/workspace/workspace_event_handler_classic.h",
+    "wm/workspace/workspace_event_handler_mash.cc",
+    "wm/workspace/workspace_event_handler_mash.h",
     "wm/workspace/workspace_layout_manager.cc",
     "wm/workspace/workspace_layout_manager.h",
     "wm/workspace/workspace_types.h",
@@ -947,13 +999,32 @@ component("ash") {
   defines = [ "ASH_IMPLEMENTATION" ]
 
   public_deps = [
+    "//ash/public/cpp:ash_public_cpp",
     "//ash/resources",
     "//ash/resources/vector_icons",
     "//ash/strings",
+    "//ash/wayland",
+    "//mash/public/interfaces",
+    "//mojo/common:common_base",
+    "//services/ui/common:mus_common",
+    "//services/ui/public/cpp",
+    "//services/ui/public/cpp/input_devices",
+    "//services/ui/public/interfaces",
+    "//services/ui/public/interfaces/display",
+    "//skia",
+    "//ui/aura",
+    "//ui/events",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//ui/gfx/geometry/mojo",
+    "//ui/resources",
+    "//ui/strings",
+    "//ui/views",
+    "//ui/views/mus:for_mojo_application",
+    "//ui/wm",
   ]
   deps = [
     "//ash/autoclick/common:autoclick",
-    "//ash/public/cpp:ash_public_cpp",
     "//ash/touch_hud",
     "//base",
     "//base:i18n",
@@ -964,6 +1035,8 @@ component("ash") {
     "//chromeos",
     "//chromeos:power_manager_proto",
     "//components/device_event_log",
+    "//components/exo",
+    "//components/exo/wayland",
     "//components/onc",
     "//components/pref_registry",
     "//components/prefs",
@@ -984,10 +1057,7 @@ component("ash") {
     "//services/data_decoder/public/cpp",
     "//services/preferences/public/cpp",
     "//services/service_manager/public/cpp",
-    "//services/ui/public/cpp",
-    "//services/ui/public/cpp/input_devices",
-    "//services/ui/public/interfaces",
-    "//skia",
+    "//services/ui/public/interfaces/input_devices",
 
     # TODO(msw): Remove this; only ash_with_content should depend on webkit.
     "//third_party/WebKit/public:blink_headers",
@@ -996,7 +1066,6 @@ component("ash") {
     "//third_party/re2",
     "//ui/accessibility",
     "//ui/app_list/presenter",
-    "//ui/aura",
     "//ui/base",
     "//ui/base:ui_data_pack",
     "//ui/base/ime",
@@ -1009,27 +1078,26 @@ component("ash") {
     "//ui/display/manager",
     "//ui/display/types",
     "//ui/display/util",
-    "//ui/events",
     "//ui/events:dom_keycode_converter",
     "//ui/events:events_base",
     "//ui/events:gesture_detection",
     "//ui/events/devices",
+    "//ui/events/devices/mojo",
     "//ui/events/ozone:events_ozone",
-    "//ui/gfx",
-    "//ui/gfx/geometry",
     "//ui/keyboard",
+    "//ui/keyboard:mojom",
     "//ui/message_center",
     "//ui/message_center/public/cpp",
     "//ui/native_theme",
     "//ui/ozone",
     "//ui/platform_window",
     "//ui/platform_window/stub",
-    "//ui/resources",
-    "//ui/strings",
-    "//ui/views",
-    "//ui/wm",
     "//ui/wm/public",
     "//url",
+  ]
+
+  data_deps = [
+    "//ash/touch_hud/mus:touch_hud",
   ]
 
   # TODO(jamescook): Move to ash_unittests?
@@ -1041,6 +1109,11 @@ component("ash") {
   assert_no_deps = [
     "//content/public/browser",
     "//content/public/common",
+  ]
+
+  allow_circular_includes_from = [
+    "//components/exo",
+    "//components/exo/wayland",
   ]
 }
 
@@ -1315,7 +1388,6 @@ test("ash_unittests") {
     "metrics/task_switch_metrics_recorder_unittest.cc",
     "metrics/task_switch_time_tracker_unittest.cc",
     "metrics/user_metrics_recorder_unittest.cc",
-    "mus/window_manager_common_unittests.cc",
     "mus_property_mirror_ash_unittest.cc",
     "pointer_watcher_adapter_classic_unittest.cc",
     "root_window_controller_unittest.cc",
@@ -1412,6 +1484,7 @@ test("ash_unittests") {
     "virtual_keyboard_controller_unittest.cc",
     "voice_interaction/voice_interaction_controller_unittest.cc",
     "wallpaper/wallpaper_controller_unittest.cc",
+    "window_manager_common_unittests.cc",
     "window_user_data_unittest.cc",
     "wm/always_on_top_controller_unittest.cc",
     "wm/ash_focus_rules_unittest.cc",
@@ -1468,7 +1541,6 @@ test("ash_unittests") {
     ":ash",
     ":test_support_without_content",
     "//ash/autoclick/common:autoclick",
-    "//ash/mus:lib",
     "//ash/public/cpp:ash_public_cpp",
     "//ash/public/cpp:unit_tests",
     "//ash/resources",
@@ -1751,7 +1823,6 @@ static_library("test_support_common") {
   ]
   deps = [
     "//ash",
-    "//ash/mus:lib",
     "//ash/public/cpp:ash_public_cpp",
     "//ash/public/interfaces:test_interfaces",
     "//ash/resources",
@@ -1766,6 +1837,7 @@ static_library("test_support_common") {
     "//components/user_manager:user_manager",
     "//components/viz/test:test_support",
     "//device/bluetooth",
+    "//services/ui/public/cpp",
     "//services/ui/public/cpp/input_devices",
     "//services/ui/public/interfaces",
     "//skia",
@@ -1820,5 +1892,126 @@ static_library("interactive_ui_test_support") {
     "//ui/aura",
     "//ui/base",
     "//ui/gl:test_support",
+  ]
+}
+
+service("ash_service") {
+  output_name = "ash"
+
+  sources = [
+    "main.cc",
+  ]
+
+  deps = [
+    ":ash",
+    ":ash_service_resources",
+    ":ash_service_resources_200",
+    "//services/service_manager/public/cpp",
+  ]
+
+  # TODO(beng): This target relies on //mash/session, but there is a cycle so we
+  #             can't state that dependency here.
+  data_deps = [
+    ":ash_service_resources",
+    ":ash_service_resources_200",
+    "//services/ui",
+  ]
+}
+
+service_manifest("manifest") {
+  name = "ash"
+  source = "manifest.json"
+}
+
+# TODO: Load locale-specific strings.
+# TODO: Avoid duplication between Mash and Chrome pak files: crbug.com/628715.
+repack("ash_service_resources") {
+  output = "$root_out_dir/ash_service_resources.pak"
+  sources = [
+    "$root_gen_dir/ash/resources/ash_resources_100_percent.pak",
+    "$root_gen_dir/ash/strings/ash_strings_en-US.pak",
+    "$root_gen_dir/ui/chromeos/resources/ui_chromeos_resources_100_percent.pak",
+    "$root_gen_dir/ui/chromeos/strings/ui_chromeos_strings_en-US.pak",
+    "$root_gen_dir/ui/resources/ui_resources_100_percent.pak",
+    "$root_gen_dir/ui/strings/app_locale_settings_en-US.pak",
+    "$root_gen_dir/ui/strings/ui_strings_en-US.pak",
+    "$root_gen_dir/ui/views/resources/views_resources_100_percent.pak",
+  ]
+  deps = [
+    "//ash/resources",
+    "//ash/strings",
+    "//ui/chromeos/resources",
+    "//ui/chromeos/strings",
+    "//ui/resources",
+    "//ui/strings",
+    "//ui/views/mus:resources",
+    "//ui/views/resources",
+  ]
+}
+
+repack("ash_service_resources_200") {
+  output = "$root_out_dir/ash_service_resources_200.pak"
+  sources = [
+    "$root_gen_dir/ash/resources/ash_resources_200_percent.pak",
+    "$root_gen_dir/ui/chromeos/resources/ui_chromeos_resources_200_percent.pak",
+    "$root_gen_dir/ui/resources/ui_resources_200_percent.pak",
+    "$root_gen_dir/ui/views/resources/views_resources_200_percent.pak",
+  ]
+  deps = [
+    "//ash/resources",
+    "//ui/chromeos/resources",
+    "//ui/resources",
+    "//ui/views/resources",
+  ]
+}
+
+source_set("mash_unittests") {
+  testonly = true
+
+  sources = [
+    "app_launch_unittest.cc",
+    "display/display_synchronizer_unittest.cc",
+    "window_manager_unittest.cc",
+    "wm/non_client_frame_controller_unittest.cc",
+    "wm/top_level_window_factory_unittest.cc",
+  ]
+
+  deps = [
+    ":ash_service_resources",
+    "//ash",
+    "//ash:test_support_without_content",
+    "//ash/public/cpp:ash_public_cpp",
+    "//base",
+    "//base/test:test_config",
+    "//base/test:test_support",
+    "//mash/quick_launch/public/interfaces:constants",
+    "//mojo/public/cpp/system",
+    "//services/service_manager/public/cpp:service_test_support",
+    "//services/ui/common:mus_common",
+    "//services/ui/public/cpp",
+    "//services/ui/public/cpp/input_devices",
+    "//services/ui/public/interfaces",
+    "//skia",
+    "//testing/gtest",
+    "//ui/aura",
+    "//ui/aura:test_support",
+    "//ui/base",
+    "//ui/base:test_support",
+    "//ui/compositor:test_support",
+    "//ui/display",
+    "//ui/events",
+    "//ui/events:test_support",
+    "//ui/gfx:test_support",
+    "//ui/gfx/geometry",
+    "//ui/gfx/geometry/mojo",
+    "//ui/message_center",
+    "//ui/views:test_support",
+    "//ui/views/mus",
+  ]
+
+  data_deps = [
+    ":ash_service",
+    "//mash/quick_launch",
+    "//services/ui/ime/test_ime_driver",
   ]
 }

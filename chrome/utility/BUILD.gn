@@ -167,8 +167,8 @@ static_library("utility") {
 
   if (is_chromeos) {
     deps += [
+      "//ash",
       "//ash/autoclick/mus:lib",
-      "//ash/mus:lib",
       "//ash/touch_hud/mus:lib",
       "//chrome/services/file_util:lib",
     ]

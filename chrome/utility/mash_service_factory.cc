@@ -15,9 +15,9 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/autoclick/mus/autoclick_application.h"  // nogncheck
-#include "ash/mus/window_manager_service.h"           // nogncheck
 #include "ash/public/interfaces/constants.mojom.h"    // nogncheck
 #include "ash/touch_hud/mus/touch_hud_application.h"  // nogncheck
+#include "ash/window_manager_service.h"               // nogncheck
 #endif                                                // defined(OS_CHROMEOS)
 
 #if defined(OS_LINUX) && !defined(OS_ANDROID)
