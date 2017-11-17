@@ -3248,15 +3248,19 @@ TEST(NetworkQualityEstimatorTest, TestBDPComputation) {
 
 TEST(NetworkQualityEstimatorTest,
      TestComputeIncreaseInTransportRTTFullHostsOverlap) {
-  std::map<std::string, std::string> variation_params;
-  TestNetworkQualityEstimator estimator(variation_params);
+  std::unique_ptr<base::SimpleTestTickClock> tick_clock(
+      new base::SimpleTestTickClock());
+  base::SimpleTestTickClock* tick_clock_ptr = tick_clock.get();
+  tick_clock_ptr->Advance(base::TimeDelta::FromMinutes(1));
 
-  base::TimeTicks now = base::TimeTicks::Now();
+  std::map<std::string, std::string> variation_params;
+  variation_params["add_default_platform_observations"] = "false";
+  TestNetworkQualityEstimator estimator(variation_params);
+  estimator.SetTickClockForTesting(std::move(tick_clock));
+
+  base::TimeTicks now = tick_clock_ptr->NowTicks();
   base::TimeTicks recent = now - base::TimeDelta::FromMilliseconds(2500);
   base::TimeTicks historical = now - base::TimeDelta::FromSeconds(20);
-
-  estimator.SimulateNetworkChange(
-      NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI, "test");
 
   // Add historical observations. The 0 percentile for |host| is |10 * host|
   // ms.
@@ -3286,15 +3290,19 @@ TEST(NetworkQualityEstimatorTest,
 
 TEST(NetworkQualityEstimatorTest,
      TestComputeIncreaseInTransportRTTPartialHostsOverlap) {
-  std::map<std::string, std::string> variation_params;
-  TestNetworkQualityEstimator estimator(variation_params);
+  std::unique_ptr<base::SimpleTestTickClock> tick_clock(
+      new base::SimpleTestTickClock());
+  base::SimpleTestTickClock* tick_clock_ptr = tick_clock.get();
+  tick_clock_ptr->Advance(base::TimeDelta::FromMinutes(1));
 
-  base::TimeTicks now = base::TimeTicks::Now();
+  std::map<std::string, std::string> variation_params;
+  variation_params["add_default_platform_observations"] = "false";
+  TestNetworkQualityEstimator estimator(variation_params);
+  estimator.SetTickClockForTesting(std::move(tick_clock));
+
+  base::TimeTicks now = tick_clock_ptr->NowTicks();
   base::TimeTicks recent = now - base::TimeDelta::FromMilliseconds(2500);
   base::TimeTicks historical = now - base::TimeDelta::FromSeconds(20);
-
-  estimator.SimulateNetworkChange(
-      NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI, "test");
 
   // Add historical observations for hosts 1 and 2 with minimum RTT as
   // |10 * host|.
