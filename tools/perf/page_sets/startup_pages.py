@@ -41,3 +41,13 @@ class StartupPagesPageSet(story.StorySet):
     self.AddStory(StartedPage('about:blank', self))
     # Typical page.
     self.AddStory(StartedPage('http://bbc.co.uk', self))
+
+
+class ExperimentalStartupPagesPageSet(story.StorySet):
+  """Pages for testing starting Chrome with a URL."""
+
+  def __init__(self):
+    super(ExperimentalStartupPagesPageSet, self).__init__(
+        archive_data_file='data/startup_pages.json',
+        cloud_storage_bucket=story.PARTNER_BUCKET)
+    self.AddStory(StartedPage('http://bbc.co.uk', self))
