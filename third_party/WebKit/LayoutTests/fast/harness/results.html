@@ -1,1458 +1,2022 @@
-<!DOCTYPE html>
-<html>
-<head>
+<!doctype html>
+<meta charset="UTF-8">
+<title>Layout Tests</title>
+<!--
+Displays LayoutTests results.
+-->
 <style>
 html {
-    height: 100%;
+  scroll-behavior: smooth;
 }
-
 body {
-    margin: 0;
-    font-family: Helvetica, sans-serif;
-    font-size: 11pt;
-    display: -webkit-flex;
-    -webkit-flex-direction: column;
-    height: 100%;
+  font-family: sans-serif;
+  min-height: 120vh;
+}
+button {
+  margin-top: 4px;
 }
 
-body > * {
-    margin-left: 4px;
-    margin-top: 4px;
+p, h2, h3, h4 {
+  margin: 8px 0 4px 0;
 }
 
-h1 {
-    font-size: 14pt;
-    margin-top: 1.5em;
+#right-toolbar {
+  position: absolute;
+  top: 8px;
+  right: 0;
+  font-size: smaller;
 }
 
-p {
-    margin-bottom: 0.3em;
+#help {
+  font-family: sans-serif;
+  box-sizing: border-box;
+  position: fixed;
+  width: 96vw;
+  height: 96vh;
+  top: 2vh;
+  left: 2vw;
+  border: 5px solid black;
+  background-color: white;
+  padding: 16px;
+  box-shadow: 0 0 20px;
+  overflow: auto;
+  z-index: 1;
+}
+#summary > p {
+  margin: 0.2em 0 0 0;
+}
+#dashboard {
+  user-select: none;
+}
+#report {
+  font-family: monospace;
+}
+#report i {
+  color: green;
+  margin-left: 2em;
+  font-size: x-large;
+  font-weight: bold;
+}
+.fix-width {
+  display: inline-block;
+  width: 7em;
+  text-align: right;
+  margin-right: 1em;
+}
+.hidden {
+  display: none;
+}
+.warn {
+  color: red;
+}
+.h-expect {
+  margin-left: 1.25em;
+}
+.expect {
+  line-height: 200%;
+  cursor: zoom-in;
+}
+.expect:hover, .expect:focus {
+  background-color: #F4F4F4;
+}
+.expect:focus > .details {
+  visibility: visible;
+}
+.details {
+  box-sizing: border-box;
+  visibility: hidden;
+  display: inline-block;
+  position: relative;
+  top: 0.2em;
+  width: 1em;
+  height: 1em;
+  border-top: 0.5em solid transparent;
+  border-bottom: 0.5em solid transparent;
+  border-right: none;
+  border-left: 0.5em solid gray;
+  margin-right: .25em;
+  cursor: pointer;
+}
+.details.open {
+  visibility: visible !important;
+  top: 0.5em;
+  border-left: 0.5em solid transparent;
+  border-right: 0.5em solid transparent;
+  border-top: 0.5em solid gray;
+  border-bottom: none;
 }
 
-tr:not(.results-row) td {
-    white-space: nowrap;
+.result-frame {
+  border: 1px solid gray;
+  border-top: 1px solid transparent;
+  margin-left: 2.25em;
+  margin-right: 2.25em;
+  margin-top: 4px;
+  margin-bottom: 16px;
+}
+.result-menu {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+.result-menu li {
+  display: inline-block;
+  min-width: 100px;
+  font-size: larger;
+  border: 1px dotted gray;
+  border-bottom: 1px solid transparent;
+  margin-right: 8px;
+}
+.result-output iframe {
+  width: 100%;
+  height: 50vh;
+  max-height: 800px;
+  border: 0px solid gray;
+  resize: both;
+  overflow: auto;
+}
+#filters {
+  margin-top: 8px;
+}
+#filters label {
+  font-family: sans-serif;
+  font-size: smaller;
+}
+#filters input {
+  vertical-align: middle;
+  margin-top: 0;
+  margin-bottom: 0;
 }
 
-tr:not(.results-row) td:first-of-type {
-    white-space: normal;
+.flag {
+  display: inline-block;
+  vertical-align:middle;
+  width: 1.2em;
+  height: 1.2em;
+  border: 1px solid #DDD;
+  cursor: default;
+  user-select: none;
+  margin-right: 8px;
+}
+.flag.flagged::after {
+  content: "⚑";
+  user-select: none;
+  font-size: x-large;
+  position: relative;
+  top: -0.1em;
+  left: 0.1em;
+  line-height: 100%;
+  color: gray;
 }
 
-td:not(:first-of-type) {
-    text-transform: lowercase;
-}
-
-td {
-    padding: 1px 4px;
-}
-
-th:empty, td:empty {
-    padding: 0;
-}
-
-th {
-    -webkit-user-select: none;
-    -moz-user-select: none;
-}
-
-.content-container {
-    -webkit-flex: 1;
-    min-height: -webkit-min-content;
-    overflow: auto;
-}
-
-.note {
-    color: gray;
-    font-size: smaller;
-}
-
-.results-row {
-    background-color: white;
-}
-
-.results-row iframe, .results-row img {
-    width: 800px;
-    height: 600px;
-}
-
-.results-row[data-expanded="false"] {
-    display: none;
-}
-
-#toolbar {
-    position: fixed;
-    padding: 4px;
-    top: 2px;
-    right: 2px;
-    text-align: right;
-    background-color: rgba(255, 255, 255, 0.85);
-    border: 1px solid silver;
-    border-radius: 4px;
-}
-
-.expand-button {
-    background-color: white;
-    border: 1px solid gray;
-    cursor: default;
-    display: inline-block;
-    line-height: 1em;
-    margin: 0 3px 0 0;
-    position: relative;
-    text-align: center;
-    -webkit-user-select: none;
-    width: 1em;
-}
-
-.current {
-    color: red;
-}
-
-.current .expand-button {
-    border-color: red;
-}
-
-tbody .flag {
-    display: none;
-}
-
-tbody.flagged .flag {
-    display: inline;
-}
-
-.stopped-running-early-message {
-    border: 3px solid #d00;
-    font-weight: bold;
-    display: inline-block;
-    padding: 3px;
-}
-
-.result-container {
-    display: inline-block;
-    border: 1px solid gray;
-    margin: 4px;
-}
-
-.result-container iframe, .result-container img {
-    border: 0;
-    vertical-align: top;
-}
-
-.label {
-    padding-left: 3px;
-    font-weight: bold;
-    font-size: small;
-    background-color: silver;
-}
-
-.pixel-zoom-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 96%;
-    margin: 10px;
-    padding: 10px;
-    display: -webkit-box;
-    display: -moz-box;
-    pointer-events: none;
-    background-color: silver;
-    border-radius: 20px;
-    border: 1px solid gray;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.75);
-}
-
-.pixel-zoom-container > * {
-    -webkit-box-flex: 1;
-    -moz-box-flex: 1;
-    border: 1px solid black;
-    margin: 4px;
-    overflow: hidden;
-    background-color: white;
-}
-
-.pixel-zoom-container .scaled-image-container {
-    position: relative;
-    overflow: hidden;
-    width: 100%;
-    height: 400px;
-}
-
-.scaled-image-container > img {
-    position: absolute;
-    top: 0;
-    left: 0;
-    image-rendering: -webkit-optimize-contrast;
-}
-
-#flagged-tests {
-    margin: 1px;
-    padding: 5px;
-    height: 100px;
-}
-
-#flagged-test-container h2 {
-    display: inline-block;
-    margin: 0 10px 0 0;
-}
-
-#results-table > tbody:hover {
-    background-color: #DDD;
-}
 </style>
-<style id="unexpected-pass-style"></style>
-<style id="flaky-failures-style"></style>
-<style id="stderr-style"></style>
-<style id="unexpected-style"></style>
+<body>
+<h3>Test run summary <span id="builder_name"></span></h3>
+
+<div id="right-toolbar">
+  <a id="help_button" href="javascript:GUI.toggleVisibility('help')">help</a>
+  <div style="">go back to <a href="legacy-results.html">legacy-results.html</a></div>
+</div>
+
+<div id="help" class="hidden hide-on-esc">
+  <button style="position:fixed;right:40px;" onclick="GUI.toggleVisibility('help')">Close</button>
+  <h3>Keyboard navigation</h3>
+
+  <ul>
+  <li><b>Space</b> Show full results of the next test. This is the easiest way to navigate, just hit spacebar (and shift space to go back).
+  <li><b>Tab</b> to select the next test.
+  <li><b>Enter</b> to see test details. This will automatically close other details.
+  <li><b>ctrl A</b> to select text of all tests for easy copying.
+  <li><b>f</b> to flag.
+  </ul>
+  <p>Modifiers:</p>
+  <ul>
+  <li><b>Shift</b> hold shift key to keep other details open.
+  <li><b>Meta</b> meta means all. Toggle all flags, open all results (max 100).
+  </ul>
+  <p>This page lets you query and display test results.</p>
+
+  <h3>Querying Results</h3>
+
+  <p>Select the results you are interested in using "Query" buttons.
+  Narrow down the results further with "Filter" checkboxes.</p>
+
+  <p>"Did not pass" query will exclude PASS and WONTFIX tests.</p>
+
+  <h3>Displaying results.</h3>
+  <p>You can view the list of matched tests in several result formats.
+  Select format that works best for what you are trying to accomplish
+  using "format" popup. Following formats are available:</p>
+  <h4>1. Plain text</h4>
+  <pre>fast/forms/<a href="https://cs.chromium.org/chromium/src/third_party/WebKit/LayoutTests/fast/forms/validation-bubble-appearance-rtl-ui.html?q=validation-bubble-appearance-rtl-ui.html&dr">validation-bubble-appearance-rtl-ui.html</a></pre>
+  <p>Plain text shows the test path.</p>
+
+  <h4>2. Plain text wrapped</h4>
+  All test paths are placed in the same line. This is useful to copy a list of tests to a command line.
+  For example, by pasting the wrapped paint text into a command line starting with
+  <pre>run-webkit-tests --reset-results ...</pre>
+  we can rebaseline the selected list of tests.
+
+  <h4>3. TestExpectations</a></h4>
+<pre><a href="#">crbug.com/bug</a> layout/test/path/<a href="#">test.html</a> [ Status ]</pre>
+  <p>TestExpectationsshow lines as they'd appear in <a
+    href="https://chromium.googlesource.com/chromium/src/+/master/docs/testing/layout_test_expectations.md">TestExpectations</a> file.</p>
+
+  <p>The interesting part here is [ Status ]. Inside TestExpectations file, [ Status ]
+  can have multiple values, representing all expected results. For example:</p>
+
+<pre>[ Failure Slow Timeout Crash Pass ]</pre>
+
+  <p>Result lines include existing expected values, and make a guess about what the new
+  test expectation line should look like by merging together expected and actual
+  results. The actual result will be shown in bold. For example:</p>
+
+  <pre>TestResult(PASS) + TestExpectation(Failure) => [ Pass ]
+TestResult(CRASH) + TextExpectation(Failure) => [ Failure <b>Crash</b> ]</pre>
+
+  <p>If you are doing a lot of TestExpectation edits, the hope is that this will make
+  your job as easy as copy and paste.</p>
+
+  <h4>4. Crash site</h4>
+  <pre>
+### Crash site: Internals.cpp(3455)
+  editing/pasteboard/<a href="https://cs.chromium.org/chromium/src/third_party/WebKit/LayoutTests/editing/pasteboard/copy-paste-white-space.html?q=copy-paste-white-space.html&dr">copy-paste-white-space.html</a></pre>
+  <p>Crash site groups "Crash" tests with similar stack traces together. For best results, use it while filtering only crashes.</p>
+  <h4>5. Text mismatch</h4>
+  <pre>
+### Text mismatch failure: general text mismatch
+  accessibility/dimensions-include-descendants.html
+### Text mismatch failure: newlines only
+  accessibility/aria-controls-with-tabs.html
+### Text mismatch failure: spaces and tabs only
+  accessibility/aria-describedby-on-input.html
+</pre>
+  <p>Text mistmatch groups "Text failure" tests together.
+  </p>
+  <h3>Viewing results of a single test</h3>
+  <p>Click on images to zoom in. Select image viewing mode from the popup.</p>
+  <p>When viewing images for the first time, red flash highlights enclosing
+  rectangle that was colored red in the diff. Diff flash and color eyedropper
+  will not be available on file:// urls because of CSP.</p>
+  <h3>Flagging</h3>
+  <p>Tests can be flagged by clicking on that square box on the right hand side. View all flagged tests with "Flagged" filter. "F" is the keyboard shortcut.
+  <h3>Bugs</h3>
+  <p>If you are unhappy with results, please file a bug, or fix it <a href="https://cs.chromium.org/chromium/src/third_party/WebKit/LayoutTests/fast/harness/test-expectations.html">here</a>.</p>
+</div>
+<div id="summary">
+  <p><span class="fix-width">Passed</span><span id="summary_passed"></span></p>
+  <p><span class="fix-width">Regressions</span><span id="summary_regressions"></span></p>
+  <p><span class="fix-width">Total</span><span id="summary_total"></span></p>
+  <p><span class="fix-width">Counts</span><span id="summary_details"></span></p>
+</div>
+<hr>
+<div id="dashboard">
+  <div>
+    <span class="fix-width">Query</span>
+    <button id="button_unexpected_fail" onclick="javascript:Query.query('Unexpected failures', Filters.unexpectedFailure, true)">
+      Unexpected Failure
+      <span id="count_unexpected_fail"></span>
+    </button>
+    <button onclick="javascript:Query.query('Unexpected passes', Filters.unexpectedPass, true)">
+      Unexpected Pass
+      <span id="count_unexpected_pass"></span>
+    </button>
+    <button onclick="javascript:Query.query('Did not pass', Filters.notpass, true)">
+      Did not pass
+      <span id="count_testexpectations"></span>
+    </button>
+    <button onclick="javascript:Query.query('All', Filters.all, true)">
+      All
+      <span id="count_all"></span>
+    </button>
+    <button onclick="javascript:Query.query('Flaky', Filters.flaky, true)">
+      Flaky
+      <span id="count_flaky"></span>
+    </button>
+    <button onclick="javascript:Query.query('Flagged', Filters.flagged, true)">
+      Flagged
+    </button>
+  </div>
+  <div id="filters">
+    <span class="fix-width">Filters</span>
+    <input id="text-filter" onchange="Query.filterChanged()" type="text" placeholder="text filter, hit enter">
+    <label id="CRASH"><input type="checkbox">Crash <span></span></label>
+    <label id="TIMEOUT"><input type="checkbox">Timeout <span></span></label>
+    <label id="TEXT"><input type="checkbox">Text failure <span></span></label>
+    <label id="IMAGE"><input type="checkbox">Image failure <span></span></label>
+    <label id="IMAGE_TEXT"><input type="checkbox">Image+text failure <span></span></label>
+    <label id="SKIP"><input type="checkbox">Skipped <span></span></label>
+    <label id="PASS"><input type="checkbox">Pass <span></span></label>
+    <label id="WONTFIX"><input type="checkbox">WontFix <span></span></label>
+    <label id="MISSING"><input type="checkbox">Missing <span></span></label>
+  </div>
+</div>
+
+<div id="report_header" style="margin-top:8px">
+  <span class="fix-width">Tests shown</span><span id="report_title" style="font-weight:bold"></span>
+  in format:
+    <select id="report_format" onchange="Query.generateReport()">
+      <option value="plain" selected>Plain text</option>
+      <option value="plainwrapped">Plain text wrapped</option>
+      <option value="expectation">TestExpectations</option>
+      <option value="crashsite">Crash site</option>
+      <option value="textmismatch">Text mismatch</option>
+    </select>
+</div>
+
+<hr id="progress" align="left">
+<div id="report" style="margin-top:8px"></div>
 
 <script>
-'use strict';
+"use strict";
 
-var g_state;
+// Results loaded from full_results_jsonp.js.
+let globalResults = {};
+let globalTestMap = new Map();  // id => test
 
-function globalState() {
-    if (!g_state) {
-        g_state = {
-            crashTests: [],
-            leakTests: [],
-            flakyPassTests: [],
-            hasHttpTests: false,
-            hasImageFailures: false,
-            hasTextFailures: false,
-            missingResults: [],
-            results: {},
-            shouldToggleImages: true,
-            failingTests: [],
-            testsWithStderr: [],
-            timeoutTests: [],
-            unexpectedPassTests: []
-        };
+const TestResultInformation = {
+  "CRASH":      { index: 1, text: "Crash", isFailure: true, isSuccess: false },
+  "FAIL":       { index: 2, text: "Failure", isFailure: true, isSuccess: false },
+  "TEXT":       { index: 3, text: "Failure", isFailure: true, isSuccess: false },
+  "IMAGE":      { index: 4, text: "Failure", isFailure: true, isSuccess: false },
+  "IMAGE+TEXT": { index: 5, text: "Failure", isFailure: true, isSuccess: false },
+  "TIMEOUT":    { index: 6, text: "Timeout", isFailure: true, isSuccess: false },
+  "SLOW":       { index: 7, text: "Slow", isFailure: false, isSuccess: true },
+  "SKIP":       { index: 8, text: "Skip", isFailure: false, isSuccess: false },
+  "MISSING":    { index: 9, text: "Missing", isFailure: false, isSuccess: false },
+  "WONTFIX":    { index: 10, text: "WontFix", isFailure: false, isSuccess: false },
+  "NEEDSMANUALREBASELINE": { index: 11, text: "NeedsManualRebaseline", isFailure: false, isSuccess: false },
+  "PASS":       { index: 12, text: "Pass", isFailure: false, isSuccess: true },
+  "NOTRUN":     { index: 13, text: "NOTRUN", isFailure: false, isSuccess: true }
+};
+
+// Sorted from worst to best.
+const TestResultComparator = function (a, b) {
+  if (TestResultInformation[a].index > TestResultInformation[b].index)
+    return 1;
+  else if (TestResultInformation[a].index == TestResultInformation[b].index)
+    return 0;
+  else
+    return -1;
+};
+
+// Traversal traverses all the tests.
+// Use Traversal.traverse(filter, action) to perform action on selected tests.
+class Traversal {
+  constructor(testRoot, textFilter) {
+    this.root = testRoot;
+    this.reset();
+  }
+
+  traverse(filter, action) {
+    action = action || function() {};
+    this._helper(this.root, "", filter, action);
+  }
+
+  reset() {
+    this.testCount = 0;
+    this.filteredCount = 0;
+    this.lastDir = "";
+    this.html = [];
+    this.resultCounts = {};
+    return this;
+  }
+
+  _helper(node, path, filter, action) {
+    if ("actual" in node) {
+      this.testCount++;
+      if (filter(node, path)) {
+        this.filteredCount++;
+        // Ignore all results except final one, or not?
+        if (!(node.actualFinal in this.resultCounts))
+          this.resultCounts[node.actualFinal] = 0;
+        this.resultCounts[node.actualFinal]++;
+        action(node, path, this);
+      }
     }
-    return g_state;
-}
-
-// This function is used in the JSONP wrapper for failing_results.json;
-// when failing_results.json is loaded, the global state will be populated
-// with test results.
-function ADD_RESULTS(input) {
-    globalState().results = input;
-}
-</script>
-
-<script src="failing_results.json"></script>
-
-<script>
-'use strict';
-
-function stripExtension(test) {
-    var index = test.lastIndexOf('.');
-    return test.substring(0, index);
-}
-
-function matchesSelector(node, selector) {
-    if (node.webkitMatchesSelector) {
-        return node.webkitMatchesSelector(selector);
+    else {
+      for (let p of node.keys())
+        this._helper(node.get(p), path + "/" + p, filter, action);
     }
+  }
+} // class Traversal
 
-    if (node.mozMatchesSelector) {
-        return node.mozMatchesSelector(selector);
-    }
-}
+const PathParserGlobals = {
+  layout_tests_dir: null,
+  chromium_revision: null
+};
 
-function parentOfType(node, selector) {
-    while (node = node.parentNode) {
-        if (matchesSelector(node, selector)) {
-            return node;
-        }
-    }
-    return null;
-}
+class PathParser {
+  constructor(path) {
+    this.path = path;
+    let [href, dir, file] = path.match("/(.*)/(.*)");
+    this.dir = dir;
+    this.file = file;
+    let tmp;
+    [tmp, this.basename, this.extension] = file.match(/(.*)\.(\w+)/);
+    this.testHref = this.testBaseHref() + href.replace(/\/virtual\/[^\/]*/, "");
+  }
 
-function remove(node) {
-    node.parentNode.removeChild(node);
-}
+  static initGlobals(fullResults) {
+    for (let p in PathParserGlobals)
+      PathParserGlobals[p] = fullResults[p];
+  }
 
-function forEach(nodeList, handler) {
-    Array.prototype.forEach.call(nodeList, handler);
-}
+  resultLink(resultName) {
+    return this.dir + "/" + this.basename + resultName;
+  }
 
-// Returns HTML for an img or iframe element showing expected or actual results.
-function resultIframe(src) {
-    // FIXME: use audio tags for AUDIO tests?
-    var layoutTestsIndex = src.indexOf('LayoutTests');
-    var name;
-    if (layoutTestsIndex != -1) {
-        var hasTrac = src.indexOf('trac.webkit.org') != -1;
-        var prefix = hasTrac ? 'trac.webkit.org/.../' : '';
-        name = prefix + src.substring(layoutTestsIndex + 'LayoutTests/'.length);
+  testBaseHref() {
+    if (window.localStorage.getItem("testLocationOverride")) {
+      // Experimental preference.
+      // Use "window.localStorage.setItem("testLocationOverride", "file://path/to/your/LayoutTests")
+      return window.localStorage.getItem("testLocationOverride");
+    } else if (PathParserGlobals.layout_tests_dir) {
+      return PathParserGlobals.layout_tests_dir;
+    } else if (location.toString().indexOf('file://') == 0) {
+      // tests were run locally.
+      return "../../../third_party/WebKit/LayoutTests";
+    } else if (PathParserGlobals.chromium_revision) {
+      // Existing crrev list is incorrect:  https://crbug.com/750347
+      let correctedRevision = PathParserGlobals.chromium_revision.replace("refs/heads/master@{#", "").replace("}", "");
+      return "https://crrev.com/" + correctedRevision + "/third_party/WebKit/LayoutTests";
     } else {
-        var lastDashIndex = src.lastIndexOf('-pretty');
-        if (lastDashIndex == -1) {
-            lastDashIndex = src.lastIndexOf('-');
-        }
-        name = src.substring(lastDashIndex + 1);
+      return "https://chromium.googlesource.com/chromium/src/+/master/third_party/WebKit/LayoutTests";
+    }
+  }
+} // class PathParser
+
+// Report deals with displaying a single test.
+const Report = {
+
+  getDefaultPrinter: () => {
+    let val = document.querySelector("#report_format").value;
+    window.localStorage.setItem("reportFormat", val);
+    switch(document.querySelector("#report_format").value) {
+      case "expectation":
+        return {print: Report.printExpectation, render: Report.renderResultList};
+      case "crashsite":
+        return {print: Report.printCrashSite, render: Report.renderGroupCrashSite};
+      case "textmismatch":
+        return {print: Report.printTextMismatch, render: Report.renderGroupTextMismatch};
+      case "plainwrapped":
+        return {print: Report.printPlainTestWrapped, render: Report.renderResultList}
+      case "plain":
+      default:
+        return {print: Report.printPlainTest, render: Report.renderResultList};
+    }
+  },
+
+  printFlag: (test) => {
+   return `<div class="flag ${test.flagged ? "flagged" : ""}"></div>`;
+  },
+
+  printPlainTest: (test, path, traversal) => {
+    let pathParser = new PathParser(path);
+    let html = `
+    <div class='expect' tabindex='0' data-id='${test.expectId}'>
+      <div class='details'></div>${Report.printFlag(test)}
+     ${pathParser.dir}/<a target='test' tabindex='-1' href='${pathParser.testHref}'>${pathParser.file}</a>
+    </div>`;
+    traversal.html.push(html);
+  },
+
+  printPlainTestWrapped: (test, path, traversal) => {
+    let pathParser = new PathParser(path);
+    let html = ` ${pathParser.dir}/${pathParser.file}`;
+    traversal.html.push(html);
+  },
+
+  printExpectation: (test, path, traversal) => {
+    // TestExpectations file format is documented at:
+    // https://chromium.googlesource.com/chromium/src/+/master/docs/testing/layout_test_expectations.md
+
+    let pathParser = new PathParser(path);
+    // Print directory header if this test's directory is different from the last.
+    if (pathParser.dir != traversal.lastDir) {
+      traversal.html.push("<br>");
+      traversal.html.push("<div class='h-expect'>### " + pathParser.dir + "</div>");
+      traversal.lastDir = pathParser.dir;
     }
 
-    var tagName = (src.lastIndexOf('.png') == -1) ? 'iframe' : 'img';
-
-    if (tagName != 'img') {
-        src += '?format=txt';
+    let statusMap = new Map(test.expectedMap);
+    if (statusMap.has("PASS") && statusMap.size == 1)
+       statusMap.delete("PASS");
+    for (let s of test.actualMap.keys()) {
+      let result = s;
+      if (result == "TEXT" || result == "IMAGE" || result == "IMAGE+TEXT")
+        result = "FAIL";
+      if (result == "SKIP" && test.expectedMap.has("WONTFIX"))
+        result = "WONTFIX";
+      statusMap.set(result, "bold");
     }
-    return '<div class=result-container><div class=label>' +
-        name + '</div><' + tagName + ' src="' + src + '"></' + tagName + '></div>';
-}
+    let status = "";
+    for (let key of statusMap.keys()) {
+      if (statusMap.get(key) == "bold")
+        status += ` <b>${TestResultInformation[key].text}</b>`;
+      else
+        status += ` ${TestResultInformation[key].text}`;
+    }
+    let bug = test.actualMap.has("PASS") ? "" : "<span class='warn'>NEEDBUG</span>";
+    if (test.bugs && test.bugs.length > 0) {
+      bug = "";
+      for (let b of test.bugs) {
+        bug += `<a target='crbug' tabindex='-1' href='https://${b}'>${b}</a> `;
+      }
+    }
+    let html = `
+      <div class='expect' tabindex='0' data-id='${test.expectId}'><div class='details'></div>${Report.printFlag(test)}${bug}
+        ${pathParser.dir}/<a target='test' tabindex='-1' href='${pathParser.testHref}'>${pathParser.file}</a>
+        [ ${status} ]
+    </div>
+    `;
+    traversal.html.push(html);
+  },
 
-function togglingImage(prefix) {
-    return '<div class=result-container><div class="label imageText"></div>' +
-        '<img class=animatedImage data-prefix="' + prefix + '"></img></div>';
-}
+  printWithKey: (test, path, traversal, key_title) => {
+    let pathParser = new PathParser(path);
+    let key = test[key_title];
+    let html = ""
+      + `${Report.printFlag(test)}`
+      + pathParser.dir + "/"
+      + "<a target='test' tabindex='-1' href='" + pathParser.testHref + "'>"
+      + pathParser.file + "</a>";
+    html = "<div class='expect' tabindex='0' data-id='"+ test.expectId +"'><div class='details'></div>" + html + "</div>";
+    traversal.html.push({key: key, html: html});
+  },
 
-function toggleExpectations(element) {
-    var expandLink = element;
-    if (expandLink.className != 'expand-button-text') {
-        expandLink = expandLink.querySelector('.expand-button-text');
+  printCrashSite: (test, path, traversal) => {
+    Report.printWithKey(test, path, traversal, "crash_site");
+  },
+
+  printTextMismatch: (test, path, traversal) => {
+    Report.printWithKey(test, path, traversal, "text_mismatch");
+  },
+
+  indicateNone: (report) => {
+    let pre = document.createElement("div");
+    pre.innerHTML = "<i>None</i>";
+    report.appendChild(pre);
+  },
+
+  renderResultList: (html) => {
+    let report = document.querySelector("#report");
+    if (report.childNodes.length === 0 && html.length === 0) {
+      Report.indicateNone(report);
+      return;
     }
 
-    if (expandLink.textContent == '+') {
-        expandExpectations(expandLink, true);
+    let pre = document.createElement("div");
+    pre.innerHTML = html.join("\n");
+    report.appendChild(pre);
+  },
+
+  createContainerForGroup: (report, key, keyed_title, null_title) => {
+    let container = document.createElement("div");
+    container.setAttribute("key", key);
+    container.innerHTML = ""
+      + "<br><b>"
+      + (key !== 'null' ? `### ${keyed_title}: ${key}`
+                        : `### ${null_title}`)
+      + "</b>";
+
+    // The containers are sorted by key (except the "null" key) alphabetically.
+    // The "null" container always appears at the last.
+    if (key == "null") {
+      report.appendChild(container);
     } else {
-        collapseExpectations(expandLink);
-    }
-}
-
-function collapseExpectations(expandLink) {
-    expandLink.textContent = '+';
-    var existingResultsRow = parentOfType(expandLink, 'tbody').querySelector('.results-row');
-    if (existingResultsRow) {
-        updateExpandedState(existingResultsRow, false);
-    }
-}
-
-function updateExpandedState(row, isExpanded) {
-    row.setAttribute('data-expanded', isExpanded);
-    updateImageTogglingTimer();
-}
-
-function appendHTML(node, html) {
-    if (node.insertAdjacentHTML) {
-        node.insertAdjacentHTML('beforeEnd', html);
-    } else {
-        node.innerHTML += html;
-    }
-}
-
-function expandExpectations(expandLink, selectRow) {
-    var row = parentOfType(expandLink, 'tr');
-    var parentTbody = row.parentNode;
-    var existingResultsRow = parentTbody.querySelector('.results-row');
-
-    var enDash = '\u2013';
-    expandLink.textContent = enDash;
-    if (existingResultsRow) {
-        updateExpandedState(existingResultsRow, true);
-        if (selectRow) {
-            TestNavigator._setCurrentTest(parentTbody);
+      let inserted = false;
+      report.childNodes.forEach(sibling => {
+        if (inserted)
+          return;
+        let siblingKey = sibling.getAttribute("key");
+        if (siblingKey == "null" || siblingKey > key) {
+          report.insertBefore(container, sibling);
+          inserted = true;
         }
-        return;
+      });
+      if (!inserted)
+        report.appendChild(container);
     }
-
-    var newRow = document.createElement('tr');
-    newRow.className = 'results-row';
-    var newCell = document.createElement('td');
-    newCell.colSpan = row.querySelectorAll('td').length;
-
-    var resultLinks = row.querySelectorAll('.result-link');
-    for (var i = 0; i < resultLinks.length; i++) {
-        var link = resultLinks[i];
-        var result;
-        if (link.textContent == 'images') {
-            result = togglingImage(link.getAttribute('data-prefix'));
-        } else {
-            result = resultIframe(link.href);
-        }
-
-        appendHTML(newCell, result);
-    }
-
-    newRow.appendChild(newCell);
-    parentTbody.appendChild(newRow);
-
-    updateExpandedState(newRow, true);
-    if (selectRow) {
-        TestNavigator._setCurrentTest(parentTbody);
-    }
-    updateImageTogglingTimer();
-}
-
-function updateImageTogglingTimer() {
-    var hasVisibleAnimatedImage = document.querySelector(
-        '.results-row[data-expanded="true"] .animatedImage');
-    if (!hasVisibleAnimatedImage) {
-        clearInterval(globalState().togglingImageInterval);
-        globalState().togglingImageInterval = null;
-        return;
-    }
-
-    if (!globalState().togglingImageInterval) {
-        toggleImages();
-        globalState().togglingImageInterval = setInterval(toggleImages, 2000);
-    }
-}
-
-function async(func, args) {
-    setTimeout(function() { func.apply(null, args); }, 100);
-}
-
-function visibleTests(opt_container) {
-    var container = opt_container || document;
-    if (onlyShowUnexpectedFailures()) {
-        return container.querySelectorAll('tbody:not(.expected)');
-    } else {
-        return container.querySelectorAll('tbody');
-    }
-}
-
-function visibleExpandLinks() {
-    if (onlyShowUnexpectedFailures()) {
-        return document.querySelectorAll('tbody:not(.expected) .expand-button-text');
-    } else {
-        return document.querySelectorAll('.expand-button-text');
-    }
-}
-
-function expandAllExpectations() {
-    var expandLinks = visibleExpandLinks();
-    for (var i = 0, len = expandLinks.length; i < len; i++) {
-        async(expandExpectations, [expandLinks[i]]);
-    }
-}
-
-function collapseAllExpectations() {
-    var expandLinks = visibleExpandLinks();
-    for (var i = 0, len = expandLinks.length; i < len; i++) {
-        async(collapseExpectations, [expandLinks[i]]);
-    }
-}
-
-function shouldUseTracLinks() {
-    return !globalState().results.layout_tests_dir || !location.toString().indexOf('file://') == 0;
-}
-
-function testLinkTarget(test) {
-    var virtualMatch = /virtual\/[^\/]+\/(.*)/.exec(test);
-    var devirtualTest = virtualMatch ? virtualMatch[1] : test;
-    var target;
-    if (shouldUseTracLinks()) {
-        var revision = globalState().results.chromium_revision;
-        if (revision) {
-            target = 'https://crrev.com/' + revision;
-        } else {
-            target = 'https://chromium.googlesource.com/chromium/src/+/master';
-        }
-        target += '/third_party/WebKit/LayoutTests/' + devirtualTest;
-    } else {
-        target = globalState().results.layout_tests_dir + '/' + devirtualTest;
-    }
-    return target;
-}
-
-function testLink(test) {
-    var target = testLinkTarget(test);
-    var flagChar = '\u2691';
-    return '<a class=test-link href="' + target + '">' + test +
-        '</a><span class=flag onclick="unflag(this)"> ' + flagChar + '</span>';
-}
-
-function unflag(flag) {
-    var shouldFlag = false;
-    TestNavigator.flagTest(parentOfType(flag, 'tbody'), shouldFlag);
-    TestNavigator.updateFlaggedTestTextBox();
-}
-
-function testLinkWithExpandButton(test) {
-    return '<span class=expand-button onclick="toggleExpectations(this)">' +
-        '<span class=expand-button-text>+</span></span>' +
-        testLink(test);
-}
-
-function resultLink(testPrefix, suffix, contents) {
-    return '<a class=result-link href="' + testPrefix + suffix +
-        '" data-prefix="' + testPrefix + '">' + contents + '</a> ';
-}
-
-function processGlobalStateFor(testObject) {
-    var test = testObject.name;
-    if (testObject.has_stderr) {
-        globalState().testsWithStderr.push(testObject);
-    }
-
-    globalState().hasHttpTests = globalState().hasHttpTests || test.indexOf('http/') == 0;
-
-    var actual = testObject.actual;
-    var expected = testObject.expected || 'PASS';
-
-    if (actual == 'MISSING') {
-        // FIXME: make sure that new-run-webkit-tests spits out an -actual.txt file for
-        // tests with MISSING results.
-        globalState().missingResults.push(testObject);
-        return;
-    }
-
-    var actualTokens = actual.split(' ');
-    var passedWithImageOnlyFailureInRetry = actualTokens[0] == 'TEXT' && actualTokens[1] == 'IMAGE';
-    if (actualTokens[1] && actual.indexOf('PASS') != -1 ||
-            (!globalState().results.pixel_tests_enabled && passedWithImageOnlyFailureInRetry)) {
-        globalState().flakyPassTests.push(testObject);
-        return;
-    }
-
-    if (actual == 'PASS' && expected != 'PASS') {
-        if (expected != 'IMAGE' || (globalState().results.pixel_tests_enabled || testObject.reftest_type)) {
-            globalState().unexpectedPassTests.push(testObject);
-        }
-        return;
-    }
-
-    if (actual == 'CRASH') {
-        globalState().crashTests.push(testObject);
-        return;
-    }
-
-    if (actual == 'LEAK') {
-        globalState().leakTests.push(testObject);
-        return;
-    }
-
-    if (actual == 'TIMEOUT') {
-        globalState().timeoutTests.push(testObject);
-        return;
-    }
-
-    globalState().failingTests.push(testObject);
-
-    // FIXME: Handle tests with actual == PASS and expected == PASS.
-}
-
-function toggleImages() {
-    var images = document.querySelectorAll('.animatedImage');
-    var imageTexts = document.querySelectorAll('.imageText');
-    for (var i = 0, len = images.length; i < len; i++) {
-        var image = images[i];
-        var text = imageTexts[i];
-        if (text.textContent == 'Expected Image') {
-            text.textContent = 'Actual Image';
-            image.src = image.getAttribute('data-prefix') + '-actual.png';
-        } else {
-            text.textContent = 'Expected Image';
-            image.src = image.getAttribute('data-prefix') + '-expected.png';
-        }
-    }
-}
-
-function textResultLinks(test, prefix) {
-    var html = resultLink(prefix, '-expected.txt', 'expected') +
-        resultLink(prefix, '-actual.txt', 'actual') +
-        resultLink(prefix, '-diff.txt', 'diff') +
-        resultLink(prefix, '-pretty-diff.html', 'pretty diff');
-
-    return html;
-}
-
-function imageResultsCell(testObject, testPrefix, actual) {
-    var row = '';
-
-    if (actual.indexOf('IMAGE') != -1) {
-        globalState().hasImageFailures = true;
-
-        if (testObject.reftest_type && testObject.reftest_type.indexOf('!=') != -1) {
-            row += resultLink(testPrefix, '-expected-mismatch.html', 'ref mismatch html');
-            row += resultLink(testPrefix, '-actual.png', 'actual');
-        } else {
-            if (testObject.reftest_type && testObject.reftest_type.indexOf('==') != -1) {
-                row += resultLink(testPrefix, '-expected.html', 'ref html');
-            }
-            if (globalState().shouldToggleImages) {
-                row += resultLink(testPrefix, '-diffs.html', 'images');
-            } else {
-                row += resultLink(testPrefix, '-expected.png', 'expected');
-                row += resultLink(testPrefix, '-actual.png', 'actual');
-            }
-
-            row += resultLink(testPrefix, '-diff.png', 'diff');
-        }
-    }
-
-    if (actual.indexOf('MISSING') != -1 && testObject.is_missing_image) {
-        row += resultLink(testPrefix, '-actual.png', 'png result');
-    }
-
-    return row;
-}
-
-function tableRow(testObject) {
-    var row = '<tbody class="' + (testObject.is_unexpected ? '' : 'expected') + '"';
-    row += ' data-testname="' + testObject.name + '"';
-    if (testObject.reftest_type && testObject.reftest_type.indexOf('!=') != -1) {
-        row += ' mismatchreftest=true';
-    }
-    row += '><tr>';
-
-    row += '<td>' + testLinkWithExpandButton(testObject.name) + '</td>';
-
-    var testPrefix = stripExtension(testObject.name);
-    row += '<td>';
-
-    var actual = testObject.actual;
-    if (actual.indexOf('TEXT') != -1) {
-        globalState().hasTextFailures = true;
-        if (testObject.is_testharness_test) {
-            row += resultLink(testPrefix, '-actual.txt', 'actual');
-        } else {
-            row += textResultLinks(testObject.name, testPrefix);
-        }
-    }
-
-    if (actual.indexOf('AUDIO') != -1) {
-        row += resultLink(testPrefix, '-expected.wav', 'expected audio');
-        row += resultLink(testPrefix, '-actual.wav', 'actual audio');
-    }
-
-    if (actual.indexOf('MISSING') != -1) {
-        if (testObject.is_missing_audio) {
-            row += resultLink(testPrefix, '-actual.wav', 'audio result');
-        }
-        if (testObject.is_missing_text) {
-            row += resultLink(testPrefix, '-actual.txt', 'result');
-        }
-    }
-
-    if (actual.indexOf('CRASH') != -1) {
-        row += resultLink(testPrefix, '-crash-log.txt', 'crash log');
-        row += resultLink(testPrefix, '-sample.txt', 'sample');
-        if (testObject.has_stderr) {
-            row += resultLink(testPrefix, '-stderr.txt', 'stderr');
-        }
-    }
-
-    if (testObject.has_repaint_overlay) {
-        row += resultLink(testPrefix, '-overlay.html?' + encodeURIComponent(testLinkTarget(testObject.name)), 'overlay');
-    }
-
-    var actualTokens = actual.split(/\s+/);
-    var cell = imageResultsCell(testObject, testPrefix, actualTokens[0]);
-    if (!cell && actualTokens.length > 1) {
-        cell = imageResultsCell(testObject, 'retries/' + testPrefix, actualTokens[1]);
-    }
-
-    row += '</td><td>' + cell + '</td>' +
-        '<td>' + actual + '</td>' +
-        '<td>' + (actual.indexOf('MISSING') == -1 ? testObject.expected : '') + '</td>' +
-    '</tr></tbody>';
-    return row;
-}
-
-function forEachTest(handler, opt_tree, opt_prefix) {
-    var tree = opt_tree || globalState().results.tests;
-    var prefix = opt_prefix || '';
-
-    for (var key in tree) {
-        var newPrefix = prefix ? (prefix + '/' + key) : key;
-        if ('actual' in tree[key]) {
-            var testObject = tree[key];
-            testObject.name = newPrefix;
-            handler(testObject);
-        } else {
-            forEachTest(handler, tree[key], newPrefix);
-        }
-    }
-}
-
-function hasUnexpected(tests) {
-    return tests.some(function (test) { return test.is_unexpected; });
-}
-
-function updateTestListCounts() {
-    forEach(document.querySelectorAll('.test-list-count'), function(count) {
-        var container = parentOfType(count, 'div');
-        var testContainers;
-        if (onlyShowUnexpectedFailures()) {
-            testContainers = container.querySelectorAll('tbody:not(.expected)');
-        } else {
-            testContainers = container.querySelectorAll('tbody');
-        }
-
-        count.textContent = testContainers.length;
-    });
-}
-
-function flagAll(headerLink) {
-    var tests = visibleTests(parentOfType(headerLink, 'div'));
-    forEach(tests, function(test) {
-        TestNavigator.flagTest(test, true);
-    });
-    TestNavigator.updateFlaggedTestTextBox();
-}
-
-function unflagAll(headerLink) {
-    var tests = visibleTests(parentOfType(headerLink, 'div'));
-    forEach(tests, function(test) {
-        TestNavigator.flagTest(test, false);
-    });
-    TestNavigator.updateFlaggedTestTextBox();
-}
-
-function testListHeaderHtml(header) {
-    return '<h1>' + header +
-        ' (<span class=test-list-count></span>): [<a href="#" class=flag-all ' +
-        'onclick="flagAll(this)">flag all</a>] [<a href="#" class=flag-all ' +
-        'onclick="unflagAll(this)">unflag all</a>]</h1>';
-}
-
-function testList(tests, header, tableId) {
-    tests.sort();
-
-    var html = '<div' +
-        ((!hasUnexpected(tests) && tableId != 'stderr-table') ? ' class=expected' : '') +
-        ' id=' + tableId + '>' + testListHeaderHtml(header) + '<table>';
-
-    // FIXME: Include this for all testLists.
-    if (tableId == 'passes-table') {
-        html += '<thead><th>test</th><th>expected</th></thead>';
-    }
-
-    for (var i = 0; i < tests.length; i++) {
-        var testObject = tests[i];
-        var test = testObject.name;
-        html += '<tbody class="' +
-            ((testObject.is_unexpected || tableId == 'stderr-table') ? '' : 'expected') +
-            '" data-testname="' + test + '"><tr><td>' +
-            ((tableId == 'passes-table') ? testLink(test) : testLinkWithExpandButton(test)) +
-            '</td><td>';
-
-        if (tableId == 'stderr-table') {
-            html += resultLink(stripExtension(test), '-stderr.txt', 'stderr');
-        }
-        else if (tableId == 'passes-table') {
-            html += testObject.expected;
-        }
-        else if (tableId == 'crash-tests-table') {
-            html += resultLink(stripExtension(test), '-crash-log.txt', 'crash log');
-            html += resultLink(stripExtension(test), '-sample.txt', 'sample');
-            if (testObject.has_stderr) {
-                html += resultLink(stripExtension(test), '-stderr.txt', 'stderr');
-            }
-        } else if (tableId == 'leak-tests-table') {
-            html += resultLink(stripExtension(test), '-leak-log.txt', 'leak log');
-        }
-        else if (tableId == 'timeout-tests-table') {
-            // FIXME: only include timeout actual/diff results here if we actually spit out results for timeout tests.
-            html += textResultLinks(test, stripExtension(test));
-        }
-
-        if (testObject.has_repaint_overlay) {
-            html += resultLink(stripExtension(test), '-overlay.html?' + encodeURIComponent(testLinkTarget(test)), 'overlay');
-        }
-
-        html += '</td></tr></tbody>';
-    }
-    html += '</table></div>';
-    return html;
-}
-
-function toArray(nodeList) {
-    return Array.prototype.slice.call(nodeList);
-}
-
-function trim(string) {
-    return string.replace(/^[\s\xa0]+|[\s\xa0]+$/g, '');
-}
-
-// Just a namespace for code management.
-var TableSorter = {};
-
-TableSorter._forwardArrow = '<svg style="width:10px;height:10px"><polygon points="0,0 10,0 5,10" style="fill:#ccc"></svg>';
-
-TableSorter._backwardArrow = '<svg style="width:10px;height:10px"><polygon points="0,10 10,10 5,0" style="fill:#ccc"></svg>';
-
-TableSorter._sortedContents = function(header, arrow) {
-    return arrow + ' ' + trim(header.textContent) + ' ' + arrow;
-};
-
-TableSorter._updateHeaderClassNames = function(newHeader) {
-    var sortHeader = document.querySelector('.sortHeader');
-    if (sortHeader) {
-        if (sortHeader == newHeader) {
-            var isAlreadyReversed = sortHeader.classList.contains('reversed');
-            if (isAlreadyReversed) {
-                sortHeader.classList.remove('reversed');
-            } else {
-                sortHeader.classList.add('reversed');
-            }
-        } else {
-            sortHeader.textContent = sortHeader.textContent;
-            sortHeader.classList.remove('sortHeader');
-            sortHeader.classList.remove('reversed');
-        }
-    }
-
-    newHeader.classList.add('sortHeader');
-};
-
-TableSorter._textContent = function(tbodyRow, column) {
-    return tbodyRow.querySelectorAll('td')[column].textContent;
-};
-
-TableSorter._sortRows = function(newHeader, reversed) {
-    var testsTable = document.getElementById('results-table');
-    var headers = toArray(testsTable.querySelectorAll('th'));
-    var sortColumn = headers.indexOf(newHeader);
-
-    var rows = toArray(testsTable.querySelectorAll('tbody'));
-
-    rows.sort(function(a, b) {
-        // Only need to support lexicographic sort for now.
-        var aText = TableSorter._textContent(a, sortColumn);
-        var bText = TableSorter._textContent(b, sortColumn);
-
-        // Forward sort equal values by test name.
-        if (sortColumn && aText == bText) {
-            var aTestName = TableSorter._textContent(a, 0);
-            var bTestName = TableSorter._textContent(b, 0);
-            if (aTestName == bTestName) {
-                return 0;
-            }
-            return aTestName < bTestName ? -1 : 1;
-        }
-
-        if (reversed) {
-            return aText < bText ? 1 : -1;
-        } else {
-            return aText < bText ? -1 : 1;
-        }
-    });
-
-    for (var i = 0; i < rows.length; i++) {
-        testsTable.appendChild(rows[i]);
-    }
-};
-
-TableSorter.sortColumn = function(columnNumber) {
-    var newHeader = document.getElementById('results-table').querySelectorAll('th')[columnNumber];
-    TableSorter._sort(newHeader);
-};
-
-TableSorter.handleClick = function(e) {
-    var newHeader = e.target;
-    if (newHeader.localName != 'th') {
-        return;
-    }
-    TableSorter._sort(newHeader);
-};
-
-TableSorter._sort = function(newHeader) {
-    TableSorter._updateHeaderClassNames(newHeader);
-
-    var reversed = newHeader.classList.contains('reversed');
-    var sortArrow = reversed ? TableSorter._backwardArrow : TableSorter._forwardArrow;
-    newHeader.innerHTML = TableSorter._sortedContents(newHeader, sortArrow);
-
-    TableSorter._sortRows(newHeader, reversed);
-};
-
-var PixelZoomer = {};
-
-PixelZoomer.showOnDelay = true;
-PixelZoomer._zoomFactor = 6;
-
-var kResultWidth = 800;
-var kResultHeight = 600;
-
-var kZoomedResultWidth = kResultWidth * PixelZoomer._zoomFactor;
-var kZoomedResultHeight = kResultHeight * PixelZoomer._zoomFactor;
-
-PixelZoomer._zoomImageContainer = function(url) {
-    var container = document.createElement('div');
-    container.className = 'zoom-image-container';
-
-    var title = url.match(/\-([^\-]*)\.png/)[1];
-
-    var label = document.createElement('div');
-    label.className = 'label';
-    label.appendChild(document.createTextNode(title));
-    container.appendChild(label);
-
-    var imageContainer = document.createElement('div');
-    imageContainer.className = 'scaled-image-container';
-
-    var image = new Image();
-    image.src = url;
-    image.style.display = 'none';
-
-    var canvas = document.createElement('canvas');
-
-    imageContainer.appendChild(image);
-    imageContainer.appendChild(canvas);
-    container.appendChild(imageContainer);
-
     return container;
-};
+  },
 
-PixelZoomer._createContainer = function(e) {
-    var tbody = parentOfType(e.target, 'tbody');
-    var row = tbody.querySelector('tr');
-    var imageDiffLinks = row.querySelectorAll('a[href$=".png"]');
-
-    var container = document.createElement('div');
-    container.className = 'pixel-zoom-container';
-
-    var togglingImageLink = row.querySelector('a[href$="-diffs.html"]');
-    if (togglingImageLink) {
-        var prefix = togglingImageLink.getAttribute('data-prefix');
-        container.appendChild(PixelZoomer._zoomImageContainer(prefix + '-expected.png'));
-        container.appendChild(PixelZoomer._zoomImageContainer(prefix + '-actual.png'));
+  renderGroup: (html, keyed_title, null_title) => {
+    let report = document.querySelector("#report");
+    if (report.childNodes.length === 0 && html.length === 0) {
+      Report.indicateNone(report);
+      return;
     }
 
-    for (var i = 0; i < imageDiffLinks.length; i++) {
-        container.appendChild(PixelZoomer._zoomImageContainer(imageDiffLinks[i].href));
-    }
-
-    document.body.appendChild(container);
-    PixelZoomer._drawAll();
-};
-
-PixelZoomer._draw = function(imageContainer) {
-    var image = imageContainer.querySelector('img');
-    var canvas = imageContainer.querySelector('canvas');
-
-    if (!image.complete) {
-        image.onload = function() {
-            PixelZoomer._draw(imageContainer);
-        };
-        return;
-    }
-
-    canvas.width = imageContainer.clientWidth;
-    canvas.height = imageContainer.clientHeight;
-
-    var ctx = canvas.getContext('2d');
-    ctx.mozImageSmoothingEnabled = false;
-    ctx.imageSmoothingEnabled = false;
-    ctx.translate(imageContainer.clientWidth / 2, imageContainer.clientHeight / 2);
-    ctx.translate(-PixelZoomer._percentX * kZoomedResultWidth, -PixelZoomer._percentY * kZoomedResultHeight);
-    ctx.strokeRect(-1.5, -1.5, kZoomedResultWidth + 2, kZoomedResultHeight + 2);
-    ctx.scale(PixelZoomer._zoomFactor, PixelZoomer._zoomFactor);
-    ctx.drawImage(image, 0, 0);
-};
-
-PixelZoomer._drawAll = function() {
-    forEach(document.querySelectorAll('.pixel-zoom-container .scaled-image-container'), PixelZoomer._draw);
-};
-
-PixelZoomer.handleMouseOut = function(e) {
-    if (e.relatedTarget && e.relatedTarget.tagName != 'IFRAME') {
-        return;
-    }
-
-    // If e.relatedTarget is null, we've moused out of the document.
-    var container = document.querySelector('.pixel-zoom-container');
-    if (container) {
-        remove(container);
-    }
-};
-
-PixelZoomer.handleMouseMove = function(e) {
-    if (PixelZoomer._mouseMoveTimeout) {
-        clearTimeout(PixelZoomer._mouseMoveTimeout);
-    }
-
-    if (parentOfType(e.target, '.pixel-zoom-container')) {
-        return;
-    }
-
-    var container = document.querySelector('.pixel-zoom-container');
-
-    var resultContainer = (e.target.className == 'result-container') ?
-        e.target : parentOfType(e.target, '.result-container');
-    if (!resultContainer || !resultContainer.querySelector('img')) {
-        if (container) {
-            remove(container);
-        }
-        return;
-    }
-
-    var targetLocation = e.target.getBoundingClientRect();
-    PixelZoomer._percentX = (e.clientX - targetLocation.left) / targetLocation.width;
-    PixelZoomer._percentY = (e.clientY - targetLocation.top) / targetLocation.height;
-
-    if (!container) {
-        if (PixelZoomer.showOnDelay) {
-            PixelZoomer._mouseMoveTimeout = setTimeout(function() {
-                PixelZoomer._createContainer(e);
-            }, 400);
-            return;
-        }
-
-        PixelZoomer._createContainer(e);
-        return;
-    }
-
-    PixelZoomer._drawAll();
-};
-
-document.addEventListener('mousemove', PixelZoomer.handleMouseMove, false);
-document.addEventListener('mouseout', PixelZoomer.handleMouseOut, false);
-
-var TestNavigator = {};
-
-TestNavigator.reset = function() {
-    TestNavigator.currentTest = null;
-    TestNavigator.flaggedTests = {};
-    TestNavigator._createFlaggedTestContainer();
-};
-
-TestNavigator.handleKeyEvent = function(event) {
-    if (event.metaKey || event.shiftKey || event.ctrlKey) {
-        return;
-    }
-
-    switch (String.fromCharCode(event.charCode)) {
-    case 'i':
-        TestNavigator._scrollToFirstTest();
-        break;
-    case 'j':
-        TestNavigator._scrollToNextTest();
-        break;
-    case 'k':
-        TestNavigator._scrollToPreviousTest();
-        break;
-    case 'l':
-        TestNavigator._scrollToLastTest();
-        break;
-    case 'e':
-        TestNavigator._expandCurrentTest();
-        break;
-    case 'c':
-        TestNavigator._collapseCurrentTest();
-        break;
-    case 't':
-        TestNavigator._toggleCurrentTest();
-        break;
-    case 'f':
-        TestNavigator._toggleCurrentTestFlagged();
-        break;
-    }
-};
-
-TestNavigator._scrollToFirstTest = function() {
-    var links = visibleTests();
-    if (links.length == 0) {
-        return;
-    }
-    if (TestNavigator._setCurrentTest(links[0])) {
-        TestNavigator._scrollToCurrentTest();
-    }
-};
-
-TestNavigator._scrollToLastTest = function() {
-    var links = visibleTests();
-    if (links.length == 0) {
-        return;
-    }
-    if (TestNavigator._setCurrentTest(links[links.length - 1])) {
-        TestNavigator._scrollToCurrentTest();
-    }
-};
-
-TestNavigator._scrollToNextTest = function() {
-    if (!TestNavigator.currentTest) {
-        TestNavigator._scrollToFirstTest();
-        return;
-    }
-    var onlyUnexpected = onlyShowUnexpectedFailures();
-    for (var tbody = TestNavigator.currentTest.nextElementSibling; tbody; tbody = tbody.nextElementSibling) {
-        if (tbody.tagName.toLowerCase() != 'tbody') {
-            continue;
-        }
-        if (onlyUnexpected && tbody.classList.contains('expected')) {
-            continue;
-        }
-        if (TestNavigator._setCurrentTest(tbody)) {
-            TestNavigator._scrollToCurrentTest();
-        }
-        break;
-    }
-};
-
-TestNavigator._scrollToPreviousTest = function() {
-    if (!TestNavigator.currentTest) {
-        TestNavigator._scrollToLastTest();
-        return;
-    }
-    var onlyUnexpected = onlyShowUnexpectedFailures();
-    for (var tbody = TestNavigator.currentTest.previousElementSibling; tbody; tbody = tbody.previousElementSibling) {
-        if (tbody.tagName.toLowerCase() != 'tbody') {
-            continue;
-        }
-        if (onlyUnexpected && tbody.classList.contains('expected')) {
-            continue;
-        }
-        if (TestNavigator._setCurrentTest(tbody)) {
-            TestNavigator._scrollToCurrentTest();
-        }
-        break;
-    }
-};
-
-TestNavigator._currentTestExpandLink = function() {
-    return TestNavigator.currentTest.querySelector('.expand-button-text');
-};
-
-TestNavigator._expandCurrentTest = function() {
-    expandExpectations(TestNavigator._currentTestExpandLink());
-};
-
-TestNavigator._collapseCurrentTest = function() {
-    collapseExpectations(TestNavigator._currentTestExpandLink());
-};
-
-TestNavigator._toggleCurrentTest = function() {
-    toggleExpectations(TestNavigator._currentTestExpandLink());
-};
-
-TestNavigator._toggleCurrentTestFlagged = function() {
-    var testLink = TestNavigator.currentTest;
-    TestNavigator.flagTest(testLink, !testLink.classList.contains('flagged'));
-    TestNavigator.updateFlaggedTestTextBox();
-};
-
-// FIXME: Test navigator shouldn't know anything about flagging.
-// Flagging-related functionality could be extracted to a separate object.
-TestNavigator.flagTest = function(testTbody, shouldFlag) {
-    var testName = testTbody.getAttribute('data-testname');
-
-    if (shouldFlag) {
-        testTbody.classList.add('flagged');
-        TestNavigator.flaggedTests[testName] = 1;
-    } else {
-        testTbody.classList.remove('flagged');
-        delete TestNavigator.flaggedTests[testName];
-    }
-};
-
-TestNavigator._createFlaggedTestContainer = function() {
-    var flaggedTestContainer = document.createElement('div');
-    flaggedTestContainer.id = 'flagged-test-container';
-    flaggedTestContainer.innerHTML = '<h2>Flagged Tests</h2>' +
-        '<label title="Use newlines instead of spaces to separate flagged tests">' +
-            '<input id="use-newlines" type=checkbox checked onchange="handleToggleUseNewlines()">Use newlines</input>' +
-        '</label>' +
-        '<pre id="flagged-tests" contentEditable></pre>';
-    document.body.appendChild(flaggedTestContainer);
-};
-
-TestNavigator.updateFlaggedTestTextBox = function() {
-    var flaggedTestTextbox = document.getElementById('flagged-tests');
-    var flaggedTests = Object.keys(this.flaggedTests);
-    flaggedTests.sort();
-    var separator = document.getElementById('use-newlines').checked ? '\n' : ' ';
-    flaggedTestTextbox.innerHTML = flaggedTests.join(separator);
-    document.getElementById('flagged-test-container').style.display = flaggedTests.length ? '' : 'none';
-};
-
-TestNavigator._setCurrentTest = function(tbody) {
-    if (TestNavigator.currentTest) {
-        TestNavigator.currentTest.classList.remove('current');
-    }
-
-    TestNavigator.currentTest = tbody;
-    tbody.classList.add('current');
-
-    return true;
-};
-
-TestNavigator._scrollToCurrentTest = function() {
-    var targetLink = TestNavigator.currentTest;
-    if (!targetLink) {
-        return;
-    }
-
-    var rowRect = targetLink.getBoundingClientRect();
-    var container = document.querySelector('.content-container');
-    // rowRect is in client coordinates (i.e. relative to viewport), so we just
-    // want to add its top to the current scroll position.
-    container.scrollTop += rowRect.top - 20;
-};
-
-TestNavigator.onlyShowUnexpectedFailuresChanged = function() {
-    var currentTest = document.querySelector('.current');
-    if (!currentTest) {
-        return;
-    }
-
-    // If our currentTest became hidden, reset the currentTestIndex.
-    if (onlyShowUnexpectedFailures() && currentTest.classList.contains('expected')) {
-        TestNavigator._scrollToFirstTest();
-    }
-};
-
-document.addEventListener('keypress', TestNavigator.handleKeyEvent, false);
-
-
-function onlyShowUnexpectedFailures() {
-    return !document.getElementById('show-expected-failures').checked;
-}
-
-function handleStderrChange() {
-    OptionWriter.save();
-    document.getElementById('stderr-style').textContent =
-        document.getElementById('show-stderr').checked ?
-        '' : '#stderr-table { display: none; }';
-}
-
-function handleUnexpectedPassesChange() {
-    OptionWriter.save();
-    document.getElementById('unexpected-pass-style').textContent =
-        document.getElementById('show-unexpected-passes').checked ?
-        '' : '#passes-table { display: none; }';
-}
-
-function handleFlakyFailuresChange() {
-    OptionWriter.save();
-    document.getElementById('flaky-failures-style').textContent =
-        document.getElementById('show-flaky-failures').checked ?
-        '' : '.flaky { display: none; }';
-}
-
-function handleUnexpectedResultsChange() {
-    OptionWriter.save();
-    updateExpectedFailures();
-}
-
-function updateExpectedFailures() {
-    document.getElementById('unexpected-style').textContent = onlyShowUnexpectedFailures() ?
-        '.expected { display: none; }' : '';
-
-    updateTestListCounts();
-    TestNavigator.onlyShowUnexpectedFailuresChanged();
-}
-
-var OptionWriter = {};
-
-OptionWriter._key = 'run-webkit-tests-options';
-
-OptionWriter.save = function() {
-    var options = document.querySelectorAll('label input');
-    var data = {};
-    for (var i = 0, len = options.length; i < len; i++) {
-        var option = options[i];
-        data[option.id] = option.checked;
-    }
-    localStorage.setItem(OptionWriter._key, JSON.stringify(data));
-};
-
-OptionWriter.apply = function() {
-    var json = localStorage.getItem(OptionWriter._key);
-    if (!json) {
-        updateAllOptions();
-        return;
-    }
-
-    var data = JSON.parse(json);
-    for (var id in data) {
-        var input = document.getElementById(id);
-        if (input) {
-            input.checked = data[id];
-        }
-    }
-    updateAllOptions();
-};
-
-function updateAllOptions() {
-    forEach(document.querySelectorAll('input'), function(input) {
-        input.onchange();
+    let renderMap = {};
+    html.forEach(result => {
+      let key = result.key || "null";
+      if (!(key in renderMap)) {
+        let container =
+            report.querySelector(`div[key="${key}"]`) ||
+            Report.createContainerForGroup(report, key, keyed_title, null_title);
+        renderMap[key] = {container: container, html: ""};
+      }
+      renderMap[key].html += result.html;
     });
-}
 
-function handleToggleUseNewlines() {
-    OptionWriter.save();
-    TestNavigator.updateFlaggedTestTextBox();
-}
+    for (let key in renderMap)
+      renderMap[key].container.insertAdjacentHTML('beforeend', renderMap[key].html);
+  },
 
-function handleToggleImagesChange() {
-    OptionWriter.save();
-    updateTogglingImages();
-}
+  renderGroupCrashSite: (html) => {
+    Report.renderGroup(html, "Crash site", "Didn't crash");
+  },
 
-function updateTogglingImages() {
-    var shouldToggle = document.getElementById('toggle-images').checked;
-    globalState().shouldToggleImages = shouldToggle;
+  renderGroupTextMismatch: (html) => {
+    Report.renderGroup(html, "Text mismatch failure", "Didn't find text mismatch");
+  },
 
-    if (shouldToggle) {
-        forEach(document.querySelectorAll('table:not(#missing-table) tbody:not([mismatchreftest]) a[href$=".png"]'),
-                convertToTogglingHandler(function(prefix) {
-                    return resultLink(prefix, '-diffs.html', 'images');
-                }));
-        forEach(document.querySelectorAll('table:not(#missing-table) tbody:not([mismatchreftest]) img[src$=".png"]'),
-                convertToTogglingHandler(togglingImage));
+  getTestById: (testId) => {
+    return globalTestMap.get(parseInt(testId));
+  },
+
+   // Returns toolbar DOM
+  getResultToolbars: (test) => {
+    let toolbars = [];
+    let pathParser = new PathParser(test.expectPath);
+    toolbars.push(new PlainHtmlToolbar().createDom(test.actual));
+    for (let result of test.actualMap.keys()) {
+      switch(result) {
+        case "PASS":
+        case "SLOW":
+          if (Filters.unexpectedPass(test))
+            toolbars.push(new PlainHtmlToolbar().createDom("Expected: " + test.expected));
+          if (!test.has_stderr)
+            toolbars.push(new PlainHtmlToolbar().createDom("No errors"));
+          break;
+        case "SKIP":
+          toolbars.push(new PlainHtmlToolbar().createDom("Test did not run."));
+          break;
+        case "CRASH":
+          toolbars.push(new SimpleLinkToolbar().createDom(
+            pathParser.resultLink("-crash-log.txt"), "Crash log", "crash log"));
+          break;
+        case "TIMEOUT":
+          toolbars.push(new PlainHtmlToolbar().createDom("Test timed out. "
+            + ("time" in test ? `(${test.time}s)` : "")));
+          if (test.text_mismatch)
+            toolbars.push(new TextResultsToolbar().createDom(test));
+          break;
+        case "TEXT":
+          toolbars.push(new TextResultsToolbar().createDom(test));
+          break;
+        case "IMAGE":
+          toolbars.push(new ImageResultsToolbar().createDom(test));
+          break;
+        case "IMAGE+TEXT":
+          toolbars.push(new ImageResultsToolbar().createDom(test));
+          toolbars.push(new TextResultsToolbar().createDom(test));
+          break;
+        case "MISSING":
+          toolbars.push(new PlainHtmlToolbar().createDom("Baseline is missing."));
+          break;
+        default:
+          console.error("unexpected actual", test.actual);
+      }
+    }
+    if (test.has_stderr) {
+      toolbars.push(new SimpleLinkToolbar().createDom(
+            pathParser.resultLink("-stderr.txt"), "standard error", "stderr"));
+    }
+    return toolbars;
+  },
+  getResultsDiv: (test) => {
+    let div = document.createElement("div");
+    div.classList.add("result-frame");
+    div.innerHTML = `
+      <ul class="result-menu"></ul>
+      <div class="result-output"></div>
+    `;
+    // Initialize the results.
+    let menu = div.querySelector(".result-menu");
+    for (let toolbar of Report.getResultToolbars(test))
+      menu.appendChild(toolbar);
+    return div;
+  }
+}; // Report
+
+// Query generates a report for a given query.
+const Query = {
+  lastReport: null,
+  currentRAF: null,
+  currentPromise: null,
+  currentResolve: null,
+  currentReject: null,
+
+  createReportPromise: function() {
+    if (this.currentPromise) {
+      this.currentPromise = null;
+      this.currentReject();
+    }
+    this.currentPromise = new Promise( (resolve, reject) => {
+      this.currentResolve = resolve;
+      this.currentReject = reject;
+    });
+    this.currentPromise.catch( _ => {}); // stops uncaught rejection errors.
+  },
+
+  completeReportPromise: function(traversal) {
+    if (this.currentResolve)
+      this.currentResolve(traversal);
+    this.currentPromise = null;
+    this.currentResolve = null;
+    this.currentReject = null;
+  },
+
+  resetFilters: function() {
+    // Reset all filters.
+    for (let el of Array.from(
+          document.querySelectorAll("#filters > label"))) {
+      el.querySelector('input').checked = true;
+    }
+  },
+
+  updateFilters: function(traversal) {
+    for (let el of Array.from(
+          document.querySelectorAll("#filters > label"))) {
+      let count = traversal.resultCounts[el.id.replace("_", "+")];
+      if (count > 0) {
+        el.classList.remove("hidden");
+        el.querySelector('input').checked = true;
+        el.querySelector('span').innerText = count;
+      } else {
+        el.classList.add("hidden");
+        el.querySelector("input").checked = false;
+        el.querySelector("span").innerText = "";
+      }
+    }
+  },
+
+  filterChanged: function(ev) {
+    this.query();
+  },
+
+  applyFilters: function(queryFilter) {
+    var filterMap = new Map();
+    for (let el of Array.from(
+          document.querySelectorAll("#filters > label"))) {
+        if (el.querySelector('input').checked)
+          filterMap.set(el.id.replace("_", "+"), true);
+    }
+    let searchText = document.querySelector("#text-filter").value;
+    let textFilter = (!searchText || searchText.length < 1)
+      ? _ => true
+      : test => test.expectPath.includes(searchText);
+    return test => queryFilter(test) && filterMap.has(test.actualFinal) && textFilter(test);
+  },
+
+  query: function(name, queryFilter, reset) {
+    queryFilter = queryFilter || this.lastQueryFilter;
+    if (reset) {
+      this.resetFilters();
+      this.lastQueryFilter = queryFilter;
+      let savedSearchText = document.querySelector("#text-filter").value;
+      document.querySelector("#text-filter").value = "";
+      let traversal = new Traversal(globalResults.tests);
+      traversal.traverse(this.applyFilters(queryFilter));
+      this.updateFilters(traversal);
+      document.querySelector("#text-filter").value = savedSearchText;
+    }
+    let composedFilter = this.applyFilters(queryFilter);
+    this.generateReport(name, composedFilter);
+  },
+
+  // generateReport is async, returns promise.
+  // promise id fullfilled when traversal completes. Display will continue async.
+  generateReport: function(name, filter, report) {
+    if (this.currentRAF)
+      window.cancelAnimationFrame(this.currentRAF);
+    report = report || Report.getDefaultPrinter();
+    filter = filter || this.lastReport.filter;
+    name = name || this.lastReport.name;
+
+    // Store last report to redisplay.
+    this.lastReport = {name: name, filter: filter};
+    this.createReportPromise();
+
+    document.querySelector("#report").innerHTML = "";
+    document.querySelector("#report_title").innerHTML = name;
+    document.querySelector("#progress").style.width = "1%";
+    let traversal = new Traversal(globalResults.tests);
+    let chunkSize = 1000;
+    let index = 0;
+    let callback = _ => {
+      this.currentRAF = null;
+      let html = traversal.html.slice(index, index + chunkSize);
+      report.render(html);
+      index += chunkSize;
+      document.querySelector("#progress").style.width = Math.min((index / traversal.html.length * 100), 100) + "%";
+      if (index < traversal.html.length)
+        this.currentRAF = window.requestAnimationFrame(callback);
+    };
+    window.setTimeout( _ => {
+      traversal.traverse(filter, report.print);
+      this.completeReportPromise(traversal);
+      this.currentRAF = window.requestAnimationFrame(callback);
+    }, 0);
+    return this.currentPromise;
+  }
+}; // Query
+
+// Test filters for queries.
+const Filters = {
+  containsPass: function (map) {
+    return map.has("PASS") || map.has("SLOW");
+  },
+  containsNoPass: function(map) {
+    return map.has("FAIL")
+        || map.has("NEEDSMANUALREBASELINE")
+        || map.has("WONTFIX")
+        || map.has("SKIP")
+        || map.has("CRASH");
+  },
+  unexpectedPass: test => {
+    return !Filters.containsPass(test.expectedMap) && Filters.containsPass(test.actualMap);
+  },
+  unexpectedFailure: test => {
+    if (Filters.containsPass(test.actualMap))
+      return false;
+    if (test.expectedMap.has("NEEDSMANUALREBASELINE")
+        || test.expectedMap.has("NEEDSREBASELINE")
+        || test.expectedMap.has("WONTFIX"))
+      return false;
+    switch (test.actualFinal) {
+      case "SKIP":
+        return false;
+      case "CRASH":
+      case "TIMEOUT":
+        if (test.expected.indexOf(test.actualFinal) != -1)
+          return false;
+        break;
+      case "TEXT":
+      case "IMAGE":
+      case "IMAGE+TEXT":
+        if (Filters.containsNoPass(test.expectedMap))
+          return false;
+        break;
+      case "MISSING":
+        return false;
+      default:
+        console.error("Unexpected test result", est.actualMap.keys().next().value);
+      }
+    return true;
+  },
+  notpass: test => test.actualFinal != "PASS" && test.expected != "WONTFIX",
+  actual: tag => {  // Returns comparator for tag.
+    return function(test) {
+      return test.actualMap.has(tag);
+    };
+  },
+  wontfix: test => test.expected == "WONTFIX",
+  all: _ => true,
+  flaky: test => test.actualMap.size > 1,
+  flagged: test => test.flagged
+}; // Filters
+
+// Event handling, initialization.
+const GUI = {
+  initPage: function(results) {
+    results.tests = GUI.convertToMap(results.tests);
+    globalResults = results;
+    if (window.localStorage.getItem("reportFormat")) {
+      document.querySelector("#report_format").value = window.localStorage.getItem("reportFormat");
+    }
+    GUI.optimizeResults(globalResults);
+    GUI.printSummary(globalResults);
+    GUI.initEvents();
+    PathParser.initGlobals(results);
+    // Show unexpected failures on startup.
+    document.querySelector("#button_unexpected_fail").click();
+  },
+
+  convertToMap: function(o) {
+    if ("actual" in o)
+      return o;
+    else {
+      let map = new Map();
+      var keys = Object.keys(o).sort((a, b) => {
+        let a_isTest = "actual" in o[a];
+        let b_isTest = "actual" in o[b];
+        if (a_isTest == b_isTest)
+          return a < b ? -1 : +(a > b);
+        return a_isTest ? -1 : 1;
+      });
+      for (let p of keys)
+        map.set(p, GUI.convertToMap(o[p]));
+      return map;
+    }
+  },
+
+  optimizeResults: function(fullResults) {
+    // Optimizes fullResults for querying.
+    let t = new Traversal(fullResults.tests);
+    // To all tests add:
+    // - test.expectId, a unique id
+    // - test.expectPath, full path to test
+    // - test.actualMap, map of actual results
+    // - test.actualFinal, last result
+    // - test.expectedMap, maps of expected results
+    // For all crashing tests without crash_site, set crash_site to "Can't identify".
+    let nextId = 1;
+    t.traverse(
+      test => true,
+      (test, path) => {
+        test.expectId = nextId++;
+        globalTestMap.set(test.expectId, test);
+        test.expectPath = path;
+        test.actualMap = new Map();
+        for (let result of test.actual.split(" ")) {
+          test.actualFinal = result;  // last result count as definite.
+          test.actualMap.set(result, true);
+        }
+        test.expectedMap = new Map();
+        for (let result of test.expected.split(" ")) {
+          test.expectedMap.set(result, true);
+        }
+        if (test.actualMap.has("CRASH") && !test["crash_site"]) {
+          test["crash_site"] = "Can't identify";
+        }
+      }
+    );
+  },
+
+  nextExpectation: function(expectation) {
+    let nextSiblingWithKeyedParentSkip = function(el) {
+      let sibling = el.nextElementSibling;
+      if (sibling == null && el.parentNode.parentNode.id == "report") {
+        let nextContainer = el.parentNode.nextElementSibling;
+        while (nextContainer != null && nextContainer.firstElementChild == null)
+          nextContainer = nextContainer.nextElementSibling;
+        if (nextContainer)
+          sibling = nextContainer.firstElementChild;
+      }
+      return sibling;
+    };
+    if (expectation == null)
+      return null;
+    let sibling = nextSiblingWithKeyedParentSkip(expectation);
+    while (sibling) {
+      if (sibling.classList.contains("expect"))
+        return sibling;
+      else
+        sibling = nextSiblingWithKeyedParentSkip(sibling);
+    }
+  },
+
+  previousExpectation: function(expectation) {
+    let previousSiblingWithKeyedParentSkip = function(el) {
+      let sibling = el.previousElementSibling;
+      if (sibling == null && el.parentNode.parentNode.id == "report") {
+        let previousContainer = el.parentNode.previousElementSibling;
+        while (previousContainer != null && previousContainer.firstElementChild == null)
+          previousContainer = previousContainer.previousElementSibling;
+        if (previousContainer)
+          sibling = previousContainer.lastElementChild;
+      }
+      return sibling;
+    };
+    if (expectation == null)
+      return null;
+    let sibling = previousSiblingWithKeyedParentSkip(expectation);
+    while (sibling) {
+      if (sibling.classList.contains("expect"))
+        return sibling;
+      else
+        sibling = previousSiblingWithKeyedParentSkip(sibling);
+    }
+  },
+
+  showNextExpectation: function(backward) {
+    let nextExpectation;
+    let openDetails = document.querySelector(".details.open");
+    if (openDetails) {
+      let openExpectation = GUI.getExpectation(openDetails, "expect");
+      nextExpectation = backward ?
+        GUI.previousExpectation(openExpectation) :
+        GUI.nextExpectation(openExpectation);
+      GUI.hideResults(openExpectation);
     } else {
-        forEach(document.querySelectorAll('a[href$="-diffs.html"]'), convertToNonTogglingHandler(resultLink));
-        forEach(document.querySelectorAll('.animatedImage'), convertToNonTogglingHandler(function (absolutePrefix, suffix) {
-            return resultIframe(absolutePrefix + suffix);
-        }));
+      if (document.activeElement && document.activeElement.classList.contains("expect"))
+        nextExpectation = document.activeElement;
+      else
+        nextExpectation = document.querySelector(".expect");
     }
+    if (nextExpectation) {
+      nextExpectation.focus();
+      GUI.showResults(nextExpectation);
+      return true;
+    }
+  },
 
-    updateImageTogglingTimer();
-}
+  activeExpectation: function() {
+    return GUI.closest(document.activeElement, "expect");
+  },
 
-function getResultContainer(node) {
-    return (node.tagName == 'IMG') ? parentOfType(node, '.result-container') : node;
-}
-
-function convertToTogglingHandler(togglingImageFunction) {
-    return function(node) {
-        var url = (node.tagName == 'IMG') ? node.src : node.href;
-        if (url.match('-expected.png$')) {
-            remove(getResultContainer(node));
-        } else if (url.match('-actual.png$')) {
-            var name = parentOfType(node, 'tbody').querySelector('.test-link').textContent;
-            getResultContainer(node).outerHTML = togglingImageFunction(stripExtension(name));
+  initEvents: function() {
+    document.querySelector("#report").addEventListener("mousedown",
+      (ev) => { if (GUI.isFlag(ev.target)) ev.preventDefault() }
+    );
+    document.querySelector("#report").addEventListener("click", function(ev) {
+      let expectation = GUI.getExpectation(ev.target);
+      if (ev.target.nodeName == "A" || ev.target.nodeName == "INPUT")
+        ; // anchor clicks should perform default action
+      else if (GUI.isFlag(ev.target)) {
+        GUI.toggleFlag(ev.target, ev);
+      } else if (expectation) {
+        GUI.toggleResults(expectation, ev);
+        ev.preventDefault();
+        ev.stopPropagation();
+      }
+    });
+    document.addEventListener("keydown", ev => {
+      {
+        if (ev.target.nodeName == "INPUT")
+          return;
+        switch(ev.key) {
+          case "Escape": {
+              // Close/hide divs.
+              for (let el of Array.from(document.querySelectorAll(".close-on-esc")))
+                el.remove();
+              for (let el of Array.from(document.querySelectorAll(".hide-on-esc")))
+                el.classList.add("hidden");
+              if (document.activeElement && document.activeElement.classList.contains("expect"))
+                GUI.hideResults(document.activeElement);
+              document.getSelection().removeAllRanges();
+            }
+            break;
+          case " ": // Scroll to next expectation.
+            if (GUI.showNextExpectation(ev.shiftKey))
+              ev.preventDefault();
+            break;
+          case "j":
+          case "J": {
+            let current = GUI.activeExpectation();
+            let nextExpectation = current ? GUI.nextExpectation(current) : document.querySelector(".expect");
+            if (nextExpectation)
+              nextExpectation.focus();
+            }
+            break;
+          case "k":
+          case "K": {
+            let current = GUI.activeExpectation();
+            let nextExpectation = current ? GUI.previousExpectation(current) : document.querySelector(".expect");
+            if (nextExpectation)
+              nextExpectation.focus();
+            }
+            break;
+          case "Enter":
+            let expectation = GUI.getExpectation(ev.target);
+            if (expectation)
+              GUI.toggleResults(expectation, ev);
+            break;
+          case "a":
+          case "A":
+            if (ev.ctrlKey) {
+              GUI.selectText(document.querySelector("#report"));
+              ev.preventDefault();
+            }
+            break;
+          case "f":
+          case "F": {
+              let expectation = GUI.getExpectation(ev.target);
+              if (expectation)
+                GUI.toggleFlag(expectation.querySelector(".flag"), ev);
+            }
+            break;
         }
+      }
+    });
+    for (let checkbox of Array.from(document.querySelectorAll("#filters input[type=checkbox]"))) {
+      checkbox.addEventListener("change", ev => Query.filterChanged(ev));
+    }
+  },
+
+  selectText: function(el) {
+    let range = document.createRange();
+    range.setStart(el, 0);
+    range.setEnd(el, el.childNodes.length);
+    let selection = document.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+  },
+
+  printSummary: function (fullResults) {
+    if (fullResults.builder_name)
+      document.querySelector("#builder_name").innerText = fullResults.builder_name;
+    document.querySelector("#summary_total").innerText = fullResults.num_passes + fullResults.num_regressions;
+    document.querySelector("#summary_passed").innerText = fullResults.num_passes;
+    document.querySelector("#summary_regressions").innerText = fullResults.num_regressions;
+    let failures = fullResults["num_failures_by_type"];
+    var totalFailures = 0;
+
+    let resultsText = "";
+    for (let p in failures) {
+      if (failures[p])
+        resultsText += p.toLowerCase() + ": " + failures[p] + " ";
+    }
+    document.querySelector("#summary_details").innerText = resultsText;
+
+    // Initialize query counts.
+    let counts = {
+      "count_unexpected_pass": 0,
+      "count_unexpected_fail": 0,
+      "count_testexpectations": 0,
+      "count_flaky": 0
     };
-}
+    var t = new Traversal(fullResults.tests);
+    t.traverse( test => {
+      if (Filters.unexpectedPass(test))
+        counts.count_unexpected_pass++;
+      if (Filters.unexpectedFailure(test))
+        counts.count_unexpected_fail++;
+      if (Filters.notpass(test))
+        counts.count_testexpectations++;
+      if (Filters.flaky(test))
+        counts.count_flaky++;
+    });
+    for (let p in counts)
+      document.querySelector("#" + p).innerText = counts[p];
+    document.querySelector("#count_all").innerText = fullResults.num_passes + fullResults.num_regressions;
+  },
 
-function convertToNonTogglingHandler(resultFunction) {
-    return function(node) {
-        var prefix = node.getAttribute('data-prefix');
-        getResultContainer(node).outerHTML = resultFunction(prefix, '-expected.png', 'expected') + resultFunction(prefix, '-actual.png', 'actual');
-    };
-}
+  getExpectation: function(el) {
+    return GUI.closest(el, "expect");
+  },
 
-// Returns HTML for a table listing failing tests from the test run.
-function failingTestsTable(tests, title, id) {
-    if (!tests.length) {
-        return '';
-    }
+  isFlag: function(el) {
+    return el.classList.contains("flag");
+  },
 
-    var numberOfUnexpectedFailures = 0;
-    var tableRowHtml = '';
-    for (var i = 0; i < tests.length; i++) {
-        tableRowHtml += tableRow(tests[i]);
-        if (tests[i].is_unexpected) {
-            numberOfUnexpectedFailures++;
+  toggleVisibility: function(id) {
+    document.querySelector("#" + id).classList.toggle("hidden");
+  },
+
+  toggleFlag: function(el, ev) {
+    let expectation = GUI.getExpectation(el);
+    let test = Report.getTestById(expectation.getAttribute("data-id"));
+    if (!test)
+      throw "could not find test by id";
+    el.classList.toggle("flagged");
+    if (el.classList.contains("flagged"))
+      test.flagged = true;
+    else
+      test.flagged = false;
+    if (ev.metaKey) { // apply to all
+      for (let expectation of Array.from(document.querySelectorAll(".expect"))) {
+        let newTest = Report.getTestById(expectation.getAttribute("data-id"));
+        let toggleEl = expectation.querySelector(".flag");
+        if (test.flagged) {
+          toggleEl.classList.add("flagged");
+          newTest.flagged = true;
+        } else {
+          toggleEl.classList.remove("flagged");
+          newTest.flagged = false;
         }
+      }
     }
+  },
 
-    var className = '';
-    if (id) {
-        className += id.split('-')[0];
+  toggleResults: function(expectation, event) {
+    let applyToAll = event && event.metaKey;
+    let closeOthers = !applyToAll && event && !event.shiftKey;
+    let details = expectation.querySelector(".details");
+    let isOpen = details.classList.contains("open");
+    if (applyToAll) {
+      let allExpectations = Array.from(document.querySelectorAll(".expect"));
+      if (allExpectations.length > 100) {
+        console.error("Too many details to be shown at once");
+      } else {
+        for (let e of allExpectations)
+          if (e != expectation)
+            isOpen ? GUI.hideResults(e) : GUI.showResults(e, true);
+      }
     }
-    if (!hasUnexpected(tests)) {
-        className += ' expected';
+    if (closeOthers) {
+      for (let el of Array.from(document.querySelectorAll(".details.open")))
+        GUI.hideResults(el.parentNode);
     }
-
-    var header = '<div';
-    if (className) {
-        header += ' class="' + className + '"';
+    if (isOpen) {
+      GUI.hideResults(expectation);
     }
-
-    header += '>' + testListHeaderHtml(title) +
-        '<table id="' + id + '"><thead><tr>' +
-        '<th>test</th>' +
-        '<th id="text-results-header">results</th>' +
-        '<th id="image-results-header">image results</th>' +
-        '<th>actual</th>' +
-        '<th>expected</th>';
-
-    if (id == 'flaky-tests-table') {
-        header += '<th>failures</th>';
+    else {
+      GUI.showResults(expectation);
     }
+  },
 
-    header += '</tr></thead>';
+  getResultViewer: function(toolbar) {
+    let output = GUI.closest(toolbar, "result-frame").querySelector(".result-output");
+    if (output && output.children.length > 0)
+      return output.children[0];
+  },
 
-    return header + tableRowHtml + '</table></div>';
-}
+  setResultViewer: function(toolbar, viewer) {
+    let output = GUI.closest(toolbar, "result-frame").querySelector(".result-output");
+    output.innerHTML = "";
+    output.appendChild(viewer);
+  },
 
-// Initializes the results page.
-// This includes adding HTML for the toolbar and the tables with test results,
-// and setting the state of TestNavigator and OptionWriter.
-// This function requires that globalState().results is already populated.
-function generatePage() {
-    forEachTest(processGlobalStateFor);
-
-    var html = '<div class=content-container><div id=toolbar>' +
-        '<div class="note">Use the i, j, k and l keys to navigate, e, c to expand and collapse, and f to flag</div>' +
-        '<a href="dashboard.html" >Archived results&nbsp;</a>' +
-        '<a href="javascript:void()" onclick="expandAllExpectations()">expand all</a> ' +
-        '<a href="javascript:void()" onclick="collapseAllExpectations()">collapse all</a> ' +
-        '<label><input id="toggle-images" type=checkbox checked onchange="handleToggleImagesChange()">Toggle images</label>' +
-        ' <a href="test-expectations.html">Expectations</a>' +
-        '<div id=container>Show: '+
-        '<label><input id="show-expected-failures" type=checkbox onchange="handleUnexpectedResultsChange()">expected failures</label>' +
-        '<label><input id="show-flaky-failures" type=checkbox onchange="handleFlakyFailuresChange()">flaky failures</label>' +
-        '<label><input id="show-unexpected-passes" type=checkbox onchange="handleUnexpectedPassesChange()">unexpected passes</label>' +
-        '<label><input id="show-stderr" type=checkbox onchange="handleStderrChange()">stderr</label>' +
-        '</div></div>';
-
-    if (globalState().results.interrupted) {
-        html += "<p class='stopped-running-early-message'>Testing exited early.</p>";
+  closest: function (el, className) {
+    while (el && el.classList) {
+      if (el.classList.contains(className))
+        return el;
+      else
+        el = el.parentNode;
     }
+  },
 
-    if (globalState().crashTests.length) {
-        html += testList(globalState().crashTests, 'Tests that crashed', 'crash-tests-table');
+  showResults: function(expectation, doNotScroll) {
+    let details = expectation.querySelector(".details");
+    if (details.classList.contains("open"))
+      return;
+    details.classList.add("open");
+    let testId = parseInt(expectation.getAttribute("data-id"));
+    let test = Report.getTestById(testId);
+    if (!test)
+      console.error("could not find test by id");
+    let results = Report.getResultsDiv(test);
+    results.classList.add("results");
+    expectation.parentNode.insertBefore(results, expectation.nextSibling);
+    for (let toolbar of Array.from(results.querySelectorAll(".tx-toolbar"))) {
+      if (toolbar.showDefault) {
+        toolbar.showDefault();
+        break;
+      }
     }
-
-    if (globalState().leakTests.length) {
-        html += testList(globalState().leakTests, 'Tests that leaked', 'leak-tests-table');
+    if (doNotScroll) {
+      return;
     }
+    // Scroll result into view, leaving space for image zoom, and
+    // test title on top.
+    let zoomHeight = window.innerWidth / 3 + 10;
+    let resultHeight = Math.min(window.innerHeight - 80, 630) + 34;
+    let overflow = zoomHeight + resultHeight + expectation.offsetHeight - window.innerHeight;
+    if (overflow > 0)
+      zoomHeight = Math.max(0, zoomHeight - overflow);
+    window.scrollTo(0, expectation.offsetTop - zoomHeight);
+  },
 
-    html += failingTestsTable(globalState().failingTests,
-        'Tests that failed text/pixel/audio diff', 'results-table');
+  hideResults: function(expectation) {
+    let details = expectation.querySelector(".details");
+    if (!details.classList.contains("open"))
+      return;
+    expectation.querySelector(".details").classList.remove("open");
+    expectation.nextSibling.remove();
+  }
+}; // GUI
 
-    html += failingTestsTable(globalState().missingResults,
-        'Tests that had no expected results (probably new)', 'missing-table');
+</script>
 
-    if (globalState().timeoutTests.length) {
-        html += testList(globalState().timeoutTests, 'Tests that timed out', 'timeout-tests-table');
+<script>
+// test-expectation components
+// These components are in a separate script tag.
+// They are independent of the rest of the page so they can be reused
+// in different pages in the future.
+//
+// Current components include toolbars, and viewers.
+// Toolbars control viewers.
+// Viewers present different views into test results.
+class TXToolbar {
+  importStyle() {
+    if (document.querySelector("#TXToolbarCSS"))
+      return;
+    let style = document.createElement("style");
+    style.setAttribute("type", "text/css");
+    style.setAttribute("id", "TXToolbarCSS");
+    style.innerText =
+    `.tx-toolbar a[data-selected] {
+      background-color: #DDD;
+      text-decoration-color: aquamarine;
     }
-
-    if (globalState().testsWithStderr.length) {
-        html += testList(globalState().testsWithStderr, 'Tests that had stderr output', 'stderr-table');
+    .tx-toolbar a {
+      padding-left: 4px;
+      padding-right: 4px;
     }
+    `;
+    document.head.appendChild(style);
+  }
 
-    html += failingTestsTable(globalState().flakyPassTests,
-        'Flaky tests (failed the first run and passed on retry)', 'flaky-tests-table');
+  getViewer() {
+    let viewer = GUI.getResultViewer(this.toolbar);
+    return (viewer && viewer.owner == this) ? viewer : null;
+  }
 
-    if (globalState().unexpectedPassTests.length) {
-        html += testList(globalState().unexpectedPassTests, 'Tests expected to fail but passed', 'passes-table');
+  get defaultExtendSelection() {
+    return false;
+  }
+
+  selectAnchor(target, extendSelection) {
+    let toggle = false;
+    if (extendSelection === undefined) {
+      toggle = true;
+      extendSelection = this.defaultExtendSelection;
     }
-
-    if (globalState().hasHttpTests) {
-        html += '<p>httpd access log: <a href="access_log.txt">access_log.txt</a></p>' +
-            '<p>httpd error log: <a href="error_log.txt">error_log.txt</a></p>';
-    }
-
-    html += '</div>';
-
-    document.body.innerHTML = html;
-
-    if (document.getElementById('results-table')) {
-        document.getElementById('results-table').addEventListener('click', TableSorter.handleClick, false);
-        TableSorter.sortColumn(0);
-        if (!globalState().hasTextFailures) {
-            document.getElementById('text-results-header').textContent = '';
+    for (let anchor of Array.from(this.toolbar.querySelectorAll("a"))) {
+      if (anchor == target) {
+        if (toggle) {
+          if (anchor.hasAttribute("data-selected"))
+            anchor.removeAttribute("data-selected");
+          else
+            anchor.setAttribute("data-selected", "");
+        } else {
+          anchor.setAttribute("data-selected", "");
         }
-        if (!globalState().hasImageFailures) {
-            document.getElementById('image-results-header').textContent = '';
-            parentOfType(document.getElementById('toggle-images'), 'label').style.display = 'none';
-        }
+      }
+      else if (!extendSelection)
+        anchor.removeAttribute("data-selected");
     }
+    this.updateViewer(target);
+  }
+} // class TXToolbar
 
-    updateTestListCounts();
+class ImageResultsToolbar extends TXToolbar {
+  constructor() {
+    super();
+    this.boundViewOptionsChangeHandler = this.viewOptionsChangeHandler.bind(this);
+  }
 
-    TestNavigator.reset();
-    OptionWriter.apply();
+  createDom(test) {
+    this.importStyle();
+    let pathParser = new PathParser(test.expectPath);
+    this.toolbar = document.createElement("li");
+    this.toolbar.showDefault = _ => this.viewOptionsChangeHandler({target: this.toolbar.querySelector(".view-options")});
+    this.toolbar.classList.add("image-toolbar");
+    this.toolbar.classList.add("tx-toolbar");
+    this.toolbar.innerHTML = `
+      image:
+      <a class="actual" href="${pathParser.resultLink("-actual.png")}" title="Actual result">actual</a>
+      <a class="expected" href="${pathParser.resultLink("-expected.png")}" title="Expected result">expected</a>
+      <a class="diff" href="${pathParser.resultLink("-diff.png")}" title="Difference">diff</a>
+      <label><select class="view-options">
+        <option value="single">Single view</option>
+        <option value="animated">Animated view</option>
+        <option value="multiple">Side by side view</option>
+      </label>
+    `;
+    this.toolbar.addEventListener("click", ev => {
+      if (ev.target.tagName == "A") {
+        this.selectAnchor(ev.target);
+        ev.preventDefault();
+      }
+    });
+
+    let viewOptions = this.toolbar.querySelector(".view-options");
+    viewOptions.addEventListener("change", this.boundViewOptionsChangeHandler);
+    if (window.localStorage.getItem("ImageToolbarView"))
+      viewOptions.value = window.localStorage.getItem("ImageToolbarView");
+    else
+      viewOptions.value = "animated";
+    return this.toolbar;
+  }
+
+  viewOptionsChangeHandler(ev) {
+    let viewOptions = ev.target;
+    try {
+      window.localStorage.setItem("ImageToolbarView", viewOptions.value);
+    } catch(ex) {}
+
+    switch(viewOptions.value) {
+    case "animated": {
+      let selectedAnchors = Array.from(this.toolbar.querySelectorAll("a[data-selected]"));
+      if (selectedAnchors.length == 0)
+        this.selectAnchor(this.toolbar.querySelector("a"));
+      this.setAnimation(true);
+      }
+      break;
+    case "single": {
+      this.setAnimation(false);
+      // Make sure only one is selected.
+      let selectedAnchors = Array.from(this.toolbar.querySelectorAll("a[data-selected]"));
+      if (selectedAnchors.length == 0)
+        this.selectAnchor(this.toolbar.querySelector("a"));
+      else
+        this.selectAnchor(selectedAnchors[0]);
+      }
+      break;
+    case "multiple": {
+      this.setAnimation(false);
+      for (let anchor of Array.from(this.toolbar.querySelectorAll("a")))
+        this.selectAnchor(anchor, true);
+      }
+      break;
+    default:
+      console.error("unknown view option");
+    }
+  }
+
+  get defaultExtendSelection() {
+    return this.toolbar.querySelector(".view-options").value == "multiple";
+  }
+
+  updateViewer(element) {
+    // Find currently selected anchor.
+    let selectedAnchors = Array.from(this.toolbar.querySelectorAll("a[data-selected]"));
+    if (selectedAnchors.length == 0) {
+      selectedAnchors.push(this.toolbar.querySelector("a"));
+      selectedAnchors[0].setAttribute("data-selected", "");
+    }
+    let viewer = this.getViewer();
+    if (!viewer) {
+      let imgInfo = Array.from(this.toolbar.querySelectorAll("a")).map(
+        anchor => { return {src: anchor.href, title: anchor.title}; });
+      viewer = (new ImageResultsViewer()).createDom(imgInfo, this);
+      this.setAnimation(this.toolbar.querySelector(".view-options").value == "animated");
+      GUI.setResultViewer(element, viewer);
+    }
+    viewer.showImages(selectedAnchors.map(anchor => anchor.href));
+  }
+
+  setAnimation(animate) {
+    if (animate) {
+      if (!this.animationIntervalId)
+        this.animationIntervalId = window.setInterval(_ => {
+          if (!this.getViewer()) {
+            console.log("element is gone");
+            window.clearInterval(this.animationIntervalId);
+            this.animationIntervalId = null;
+            return;
+          }
+          // Find next anchor.
+          let allAnchors = Array.from(this.toolbar.querySelectorAll("a"));
+          let nextAnchor = allAnchors[0];
+          for (let i = 0; i < allAnchors.length; i++) {
+            if (allAnchors[i].hasAttribute("data-selected")) {
+              nextAnchor = allAnchors[(i + 1) % (allAnchors.length - 1)];
+              break;
+            }
+          }
+          this.selectAnchor(nextAnchor, false);
+        }, 400);
+    } else {
+      if (this.animationIntervalId) {
+        window.clearInterval(this.animationIntervalId);
+        this.animationIntervalId = null;
+      }
+    }
+  }
+} // class ImageResultsToolbar
+
+class ImageResultsViewer {
+  constructor() {
+    this.boundEventMoveHandler = this.eventMoveHandler.bind(this);
+    this.boundTileScrollHandler = this.tileScrollHandler.bind(this);
+    this.boundWheelHandler = this.tileWheelHandler.bind(this);
+  }
+
+  importStyle() {
+    if (document.querySelector("#ImageViewerCSS"))
+      return;
+    let style = document.createElement("style");
+    style.setAttribute("type", "text/css");
+    style.setAttribute("id", "ImageViewerCSS");
+    style.innerText =
+    ` .image-viewer {
+      position: relative;
+      display: flex;
+    }
+    .image-viewer-tile {
+      flex-shrink: 1;
+      border: 1px solid #EEE;
+      overflow: auto;
+      max-height: calc(100vh - 80px);
+      margin-right: 8px;
+    }
+    .image-viewer-highlight {
+      position: absolute;
+      background-color: red;
+      opacity: 0.5;
+      box-shadow: 0px 0px 8px 2px rgba(255,0,0,1);
+    }
+    .image-viewer-highlight.animate {
+      animation-name: highlight-animation;
+      animation-duration: 0.15s;
+      animation-timing-function: ease-out;
+      animation-delay: 0s;
+      animation-direction: alternate;
+      animation-iteration-count: 2;
+    }
+    .image-viewer-highlight.animate-long {
+      animation-iteration-count: 4;
+    }
+    @keyframes highlight-animation {
+      0% {
+        display: block;
+        opacity: 0;
+        transform: scale(1.0);
+      }
+      100% {
+        display: block;
+        opacity: 0.5;
+        transform: scale(1.1);
+      }
+    }`;
+    document.head.appendChild(style);
+  }
+
+  /* ImageResultsViewer dom
+    <div class="image-viewer">
+      <div class="image-viewer-tile">
+        <img src="...-actual" title="Actual result">
+      </div>
+      <div class="image-viewer-tile">
+        <img src="...-expected" title="Expected result">
+      </div>
+      <div class="image-viewer-tile">
+        <img src="...-diff" title="Difference">
+      </div>
+    </div>
+  */
+  createDom(imgInfo, owner) {
+    this.importStyle();
+    this.viewer = document.createElement("div");
+    // Viewer DOM API
+    this.viewer.showImages = this.showImages.bind(this);
+    this.viewer.owner = owner;
+
+    this.viewer.classList.add("image-viewer");
+    this.viewer.addEventListener("click", (ev) => {
+      this.toggleZoom({x: ev.offsetX, y: ev.offsetY}, ev.target);
+    });
+    for (let info of imgInfo) {
+      let imgTile = document.createElement("div");
+      imgTile.classList.add("image-viewer-tile");
+      imgTile.classList.add("hidden");
+      imgTile.innerHTML = `<img src="${info.src}" title="${info.title}">`;
+      imgTile.addEventListener("scroll", this.boundTileScrollHandler, {passive: true});
+      imgTile.addEventListener("wheel", this.boundWheelHandler);
+      this.viewer.appendChild(imgTile);
+      if (info.title == "Difference") {
+        let diffImage = new Image();
+        diffImage.addEventListener("load", function(ev) {
+          this.computeDiffRect(ev.target);
+        }.bind(this), false);
+        diffImage.src = info.src;
+      }
+    }
+    return this.viewer;
+  }
+
+  // public API
+  showImages(sources) {
+    let tiles = Array.from(this.viewer.querySelectorAll(".image-viewer-tile"));
+    // Newly shown tiles should have the same scroll position as existing tiles.
+    let scrollPosition;
+    for (let tile of tiles) {
+      if (!tile.classList.contains("hidden")) {
+        scrollPosition = {top: tile.scrollTop, left: tile.scrollLeft};
+        break;
+      }
+    }
+    for (let tile of tiles) {
+      let tileImage = tile.querySelector("img");
+      let visible = sources.includes(tileImage.src);
+      if (visible) {
+        tile.classList.remove("hidden");
+        if (scrollPosition) {
+          tile.scrollTop = scrollPosition.top;
+          tile.scrollLeft = scrollPosition.left;
+        }
+      }
+      else
+        tile.classList.add("hidden");
+    }
+  }
+
+  findVisibleImage(preferredImage) {
+    if (preferredImage && !preferredImage.parentNode.classList.contains("hidden"))
+      return preferredImage;
+    for (let image of Array.from(this.viewer.querySelectorAll("img")))
+      if (!image.parentNode.classList.contains("hidden") && image)
+        return image;
+  }
+
+  tileScrollHandler(ev) {
+    let sourceTile = ev.target;
+    if (sourceTile.classList.contains("hidden"))
+      return;
+    for (let tile of Array.from(this.viewer.querySelectorAll(".image-viewer-tile"))) {
+      if (tile != sourceTile) {
+        tile.scrollTop = sourceTile.scrollTop;
+        tile.scrollLeft = sourceTile.scrollLeft;
+      }
+    }
+  }
+
+  tileWheelHandler(ev) {
+    // Prevent page back/forward gestures when scrolling inside tiles.
+    if (Math.abs(ev.deltaY) > Math.abs(ev.deltaX))
+      return;
+    let target = ev.currentTarget;
+    let blockScrollRight = (target.scrollLeft + target.clientWidth) == target.scrollWidth;
+    let blockScrollLeft = target.scrollLeft == 0;
+    if (blockScrollRight && ev.deltaX > 0) {
+      ev.preventDefault();
+    }
+    if (blockScrollLeft && ev.deltaX < 0) {
+      ev.preventDefault();
+    }
+  }
+
+  eventMoveHandler(ev) {
+    let imageRect = this.findVisibleImage(this.zoomTarget).getBoundingClientRect();
+    let zoom = this.viewer.querySelector(".image-viewer-zoom");
+    if (zoom)
+      zoom.showLocation({
+      x: ev.pageX - (imageRect.left +  window.scrollX),
+      y: ev.pageY - (imageRect.top + window.scrollY)
+    });
+  }
+
+  toggleZoom(location, zoomTarget) {
+    let zoom = this.viewer.querySelector(".image-viewer-zoom");
+    if (zoom) {
+      zoom.remove();
+      delete this.zoomTarget;
+      this.viewer.removeEventListener("mousemove", this.boundEventMoveHandler);
+      this.viewer.removeEventListener("touchmove", this.boundEventMoveHandler);
+    } else {
+      this.zoomTarget = zoomTarget;
+      let zoomElement = (new ImageViewerZoom()).createDom(this.viewer, this.viewer.querySelectorAll("img"));
+      this.viewer.addEventListener("mousemove", this.boundEventMoveHandler);
+      this.viewer.addEventListener("touchmove", this.boundEventMoveHandler);
+      zoomElement.showLocation(location);
+    }
+  }
+
+  computeDiffRect(image) {
+    let canvas = document.createElement("canvas");
+    canvas.width = image.naturalWidth;
+    canvas.height = image.naturalHeight;
+    let ctx = canvas.getContext("2d");
+    ctx.drawImage(image, 0, 0);
+    let top = image.naturalHeight;
+    let bottom = 0;
+    let left = image.naturalWidth;
+    let right = 0;
+    try {
+      let imageData = ctx.getImageData(0, 0, image.naturalWidth, image.naturalHeight);
+      for (let x = 0; x < imageData.width; x++)
+        for (let y = 0; y < imageData.height; y++) {
+          let offset  = y * imageData.width * 4 + x * 4;
+          if (imageData.data[offset] == 255 && imageData.data[offset+1] == 0 && imageData.data[offset+2] == 0) {
+            if (x < left) left = x;
+            if (x > right) right = x;
+            if (y < top) top = y;
+            if (y > bottom) bottom = y;
+          }
+        }
+      if (bottom != 0 && right != 0)
+        this.animateDiffRect({top: top, left: left, width: Math.max(0, right - left), height: Math.max(0, bottom - top)}, image);
+    } catch(ex) {
+      console.error("cannot show error rect on local files because of cross origin taint");
+    }
+  }
+
+  animateDiffRect(diffRect, image) {
+    if (!image)
+      return;
+    if (!image.complete) {
+      image.addEventListener("load", _ => this.animateDiffRect(diffRect, image));
+      return;
+    }
+    let highlight = document.createElement("div");
+    highlight.classList.add("image-viewer-highlight");
+    highlight.style.top = image.offsetTop + diffRect.top + "px";
+    highlight.style.left = image.offsetLeft + diffRect.left  + "px";
+    highlight.style.width = Math.max(5, diffRect.width) + "px";
+    highlight.style.height = Math.max(5, diffRect.height) + "px";
+    this.viewer.appendChild(highlight);
+    highlight.addEventListener("animationend", _ => highlight.remove());
+    if (diffRect.width < 100 || diffRect.height < 100) {
+      highlight.classList.add("animate-long");
+    }
+    highlight.classList.add("animate");
+  }
+} // class ImageResultsViewer
+
+class ImageViewerZoom {
+  constructor(zoomFactor = 6) {
+    this.zoomFactor = zoomFactor;
+  }
+
+  importStyle() {
+    if (document.querySelector("#ImageViewerZoomCSS"))
+      return;
+    let style = document.createElement("style");
+    style.setAttribute("type", "text/css");
+    style.setAttribute("id", "ImageViewerZoomCSS");
+    style.innerText = `
+    .image-viewer-zoom {
+      display: flex;
+      background-color: #555;
+      position: fixed;
+      padding-left: 4px;
+      padding-right: 4px;
+      top: 20px;
+      left: 16px;
+      bottom: 16px;
+      right: 16px;
+      height: calc((100vw - 32px) / 3);
+      max-height: 50vh;
+      box-shadow: 0px 0px 10px 2px rgba(0,0,0,0.68);
+    }
+    .image-viewer-zoom-tile {
+      position: relative;
+      flex-grow: 1;
+      flex-shrink: 1;
+      margin: 16px 8px 16px 8px;
+    }
+    .image-viewer-zoom-tile > canvas {
+      width: 100%;
+      height: 100%;
+    }
+    .image-viewer-zoom-tile > .title {
+      position: absolute;
+      top: -36px;
+      left: -px;
+      background-color: white;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+    .image-viewer-zoom-color {
+      font-size: smaller;
+    }
+    `;
+    document.head.appendChild(style);
+  }
+  /*
+    <div class="image-viewer-zoom">
+      <div class="image-viewer-zoom-tile"> // repeat for each image
+        <canvas></canvas>
+        <div class="title"><span class="color"></span></div>
+      </div>
+  */
+  createDom(container, images) {
+    this.importStyle();
+    this.images = Array.from(images);
+    this.zoomElement = document.createElement("div");
+    // ImageViewer DOM API
+    this.zoomElement.showLocation = this.showLocation.bind(this);
+
+    this.zoomElement.classList.add("image-viewer-zoom");
+    this.zoomElement.classList.add("close-on-esc");
+    container.appendChild(this.zoomElement);
+    // Add canvas for each image.
+    for (let img of this.images) {
+      let tile = document.createElement("div");
+      tile.classList.add("image-viewer-zoom-tile");
+      tile.innerHTML = `<canvas></canvas><div class="title">${img.title} <span class="image-viewer-zoom-color"></span></div>`;
+      this.zoomElement.appendChild(tile);
+    }
+    return this.zoomElement;
+  }
+
+  showLocation(location) {
+    let canvases = Array.from(this.zoomElement.querySelectorAll("canvas"));
+    let naturalSize;
+    // Find non-hidden image to determine size.
+    for (let image of this.images) {
+      if (image.complete && !image.classList.contains("hidden")) {
+        naturalSize = {width: image.naturalWidth, height: image.naturalHeight};
+        break;
+      }
+    }
+    if (!naturalSize) {
+      console.warn("image not loaded");
+      return;
+    }
+    for (let i = 0; i < canvases.length; i++) {
+      // Set canvas to right size if window resized.
+      let canvasWidth = canvases[i].clientWidth;
+      let canvasHeight = canvases[i].clientHeight;
+      canvases[i].width = canvasWidth;
+      canvases[i].height = canvasHeight;
+      let ctx = canvases[i].getContext("2d");
+      ctx.imageSmoothingEnabled = false;
+      // Copy over zoomed image.
+      let sWidth = canvasWidth / this.zoomFactor;
+      let sHeight = canvasHeight / this.zoomFactor;
+      let pad = 20;
+      let sx = Math.floor(Math.min(Math.max(-pad, location.x - sWidth / 2), naturalSize.width + pad - sWidth));
+      let sy = Math.floor(Math.min(Math.max(-pad, location.y - sHeight / 2), naturalSize.height + pad - sHeight));
+
+      ctx.drawImage(this.images[i], sx, sy, sWidth, sHeight, 0, 0, canvasWidth, canvasHeight);
+      // Draw grid.
+      ctx.strokeStyle = "rgba(0,0,0,0.05)";
+      let pixelSize = canvasWidth / sWidth;
+      ctx.beginPath();
+      for (let y = 1; y < sHeight; y++) {
+        ctx.moveTo(0, y * pixelSize);
+        ctx.lineTo(canvasWidth, y * pixelSize);
+      }
+      for (let x = 1; x < sWidth; x++) {
+        ctx.moveTo(x*pixelSize, 0);
+        ctx.lineTo(x*pixelSize, canvasHeight);
+      }
+      ctx.closePath();
+      ctx.stroke();
+
+      // Highlight middle pixel whose color is measured.
+
+      try { // getImageData throws on local file system.
+        let middleX = Math.floor(sWidth / 2);
+        let middleY = Math.floor(sHeight / 2);
+        let imageData = ctx.getImageData(middleX * pixelSize + 2, middleY * pixelSize + 2, 1, 1);
+        let r = imageData.data[0];
+        let g = imageData.data[1];
+        let b = imageData.data[2];
+        let a = imageData.data[3];
+        let colorSpan = canvases[i].parentNode.querySelector(".image-viewer-zoom-color");
+        let color = `rgba(${r}, ${g}, ${b}, ${a})`;
+        colorSpan.innerText = `(${sx + middleX}, ${sy + middleY}) ${color}`;
+        colorSpan.style.backgroundColor = color;
+        colorSpan.style.color =  ((r + g + b) > 300 ) ? "black" : "white";
+        ctx.beginPath();
+        ctx.moveTo(middleX * pixelSize, middleY * pixelSize);
+        ctx.lineTo((middleX + 1) * pixelSize, middleY * pixelSize);
+        ctx.lineTo((middleX + 1) * pixelSize, (middleY + 1) * pixelSize);
+        ctx.lineTo(middleX * pixelSize, (middleY + 1) * pixelSize);
+        ctx.lineTo(middleX * pixelSize, middleY * pixelSize);
+        ctx.strokeStyle = "rgba(0,0,0,0.2)";
+        ctx.closePath();
+        ctx.stroke();
+      } catch(ex) {}
+    }
+  }
+} // class ImageViewerZoom
+
+class TextResultsToolbar extends TXToolbar {
+  constructor() {
+    super();
+  }
+
+  createDom(test) {
+    this.importStyle();
+    let pathParser = new PathParser(test.expectPath);
+    this.toolbar = document.createElement("li");
+    this.toolbar.showDefault = (_ => {
+      this.selectAnchor(
+        this.toolbar.querySelector("a.pretty")  || this.toolbar.querySelector("a.actual"));
+    }).bind(this);
+    this.toolbar.classList.add("text-results-toolbar");
+    this.toolbar.classList.add("tx-toolbar");
+    let html = "text:";
+    if (!test.is_testharness_test)
+      html += `<a class="pretty" href="${pathParser.resultLink("-pretty-diff.html")}" title="Pretty difference">pretty</a>`;
+    html += `<a class="actual" href="${pathParser.resultLink("-actual.txt")}" title="Actual text">actual</a>`;
+    if (!test.is_testharness_test) {
+      html += `<a class="expected" href="${pathParser.resultLink("-expected.txt")}" title="Expected result">expected</a><a
+        class="diff" href="${pathParser.resultLink("-diff.txt")}" title="Difference">diff</a>
+      `;
+    }
+    this.toolbar.innerHTML = html;
+    this.toolbar.addEventListener("click", ev => {
+      if (ev.target.tagName == "A") {
+        this.selectAnchor(ev.target);
+        ev.preventDefault();
+      }
+    });
+    return this.toolbar;
+  }
+
+  updateViewer() {
+    // Find currently selected anchor.
+    let selectedAnchors = Array.from(this.toolbar.querySelectorAll("a[data-selected]"));
+    if (selectedAnchors.length == 0) {
+      selectedAnchors.push(this.toolbar.querySelector("a"));
+      selectedAnchors[0].setAttribute("data-selected", "");
+    }
+    let viewer = this.getViewer();
+    if (!viewer) {
+      let fileInfo = Array.from(this.toolbar.querySelectorAll("a")).map(
+        anchor => { return {src: anchor.href, title: anchor.title}; });
+      viewer = (new TextFileViewer()).createDom(fileInfo, this);
+      GUI.setResultViewer(this.toolbar, viewer);
+    }
+    viewer.showFile(selectedAnchors.map( anchor => anchor.href));
+  }
+} // class TextResultsToolbar
+
+class TextFileViewer {
+  importStyle() {
+    if (document.querySelector("#TextFileViewerCSS"))
+      return;
+    let style = document.createElement("style");
+    style.setAttribute("type", "text/css");
+    style.setAttribute("id", "TextFileViewerCSS");
+    style.innerText =
+    ` .text-file-viewer {
+      position: relative;
+      display: flex;
+    }
+    .text-file-viewer > iframe {
+      flex-shrink: 1;
+      flex-grow: 1;
+      border: 1px solid #888;
+      overflow: scroll;
+      max-height: calc(100vh - 80px);
+      margin-right: 8px;
+      height: 600px;
+    }
+    `;
+    document.head.appendChild(style);
+  }
+
+  /* TextFileViewer dom
+    <div class="text-file-viewer">
+      <iframe class="text-file-viewer-iframe" src="file..">
+      <iframe class="text-file-viewer-iframe" src="file..">
+      <iframe class="text-file-viewer-iframe" src="file..">
+    </div>
+  */
+  createDom(fileInfo, owner) {
+    this.importStyle();
+    this.viewer = document.createElement("div");
+    // TextFileViewer DOM API
+    this.viewer.owner = owner;
+    this.viewer.showFile = this.showFile.bind(this);
+
+    this.viewer.classList.add("text-file-viewer");
+    for (let info of fileInfo) {
+      let iframe = document.createElement("iframe");
+      iframe.classList.add("text-file-viewer-iframe");
+      iframe.classList.add("hidden");
+      iframe.src = info.src;
+      iframe.setAttribute("tabindex", -1);
+      this.viewer.appendChild(iframe);
+    }
+    return this.viewer;
+  }
+
+  showFile(sources) {
+    let iframes = Array.from(this.viewer.querySelectorAll(".text-file-viewer-iframe"));
+    for (let iframe of iframes) {
+      let visible = sources.includes(iframe.src);
+      if (visible) {
+        iframe.classList.remove("hidden");
+      } else {
+        iframe.classList.add("hidden");
+      }
+    }
+  }
+} // class TextFileViewer
+
+class PlainHtmlToolbar extends TXToolbar {
+  createDom(html) {
+    super.importStyle();
+    let dom = document.createElement("li");
+    dom.classList.add("tx-toolbar");
+    dom.innerHTML = html;
+    return dom;
+  }
+} // class PlainHtmlToolbar
+
+class SimpleLinkToolbar extends TXToolbar {
+  createDom(href, title, text) {
+    super.importStyle();
+    this.toolbar = document.createElement("li");
+    // Toolbar DOM API
+    this.toolbar.showDefault = (_ => {this.selectAnchor(this.toolbar.querySelector("a"));}).bind(this);
+
+    this.toolbar.classList.add("tx-toolbar");
+    this.toolbar.innerHTML = `<a href="${href}" title="${title}">${text}</a>`;
+    this.toolbar.addEventListener("click", ev => {
+      if (ev.target.tagName == "A") {
+        this.selectAnchor(ev.target);
+        ev.preventDefault();
+      }
+    });
+    return this.toolbar;
+  }
+
+  updateViewer() {
+    // Find currently selected anchor.
+    let selectedAnchors = Array.from(this.toolbar.querySelectorAll("a[data-selected]"));
+    if (selectedAnchors.length == 0) {
+      selectedAnchors.push(this.toolbar.querySelector("a"));
+      selectedAnchors[0].setAttribute("data-selected", "");
+    }
+    let viewer = this.getViewer();
+    if (!viewer) {
+      let fileInfo = Array.from(this.toolbar.querySelectorAll("a")).map(
+        anchor => { return {src: anchor.href, title: anchor.title};});
+      viewer = (new TextFileViewer()).createDom(fileInfo, this);
+      GUI.setResultViewer(this.toolbar, viewer);
+    }
+    viewer.showFile(selectedAnchors.map( anchor => anchor.href));
+  }
+} // class SimpleLinkToolbar
+
+</script>
+<script>
+// jsonp callback
+function ADD_FULL_RESULTS(results) {
+  GUI.initPage(results);
 }
 </script>
-<!-- HACK: when json_results_test.js is included, loading this page runs the tests.
-It is not copied to the layout-test-results output directory. -->
-<script src="resources/results-test.js"></script>
-</head>
-<body onload="generatePage()"></body>
-</html>
+<script src="full_results_jsonp.js"></script>
