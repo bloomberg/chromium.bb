@@ -13,6 +13,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "ui/display/manager/managed_display_info.h"
+#include "ui/events/devices/input_device.h"
+#include "ui/events/devices/input_device_manager.h"
 #include "ui/events/devices/touchscreen_device.h"
 
 namespace display {
@@ -552,6 +554,26 @@ void TouchDeviceManager::RegisterTouchAssociations(
 std::ostream& operator<<(std::ostream& os,
                          const TouchDeviceIdentifier& identifier) {
   return os << identifier.ToString();
+}
+
+bool HasExternalTouchscreenDevice() {
+  for (const auto& device :
+       ui::InputDeviceManager::GetInstance()->GetTouchscreenDevices()) {
+    if (device.type == ui::InputDeviceType::INPUT_DEVICE_EXTERNAL)
+      return true;
+  }
+  return false;
+}
+
+bool IsInternalTouchscreenDevice(const TouchDeviceIdentifier& identifier) {
+  for (const auto& device :
+       ui::InputDeviceManager::GetInstance()->GetTouchscreenDevices()) {
+    if (TouchDeviceIdentifier::FromDevice(device) == identifier)
+      return device.type == ui::InputDeviceType::INPUT_DEVICE_INTERNAL;
+  }
+  VLOG(1) << "Touch device identified by " << identifier << " is currently"
+          << " not connected to the device or is an invalid device.";
+  return false;
 }
 
 }  // namespace display

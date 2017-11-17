@@ -22,6 +22,7 @@
 #include "ui/display/display.h"
 #include "ui/display/display_layout.h"
 #include "ui/display/display_layout_builder.h"
+#include "ui/display/manager/chromeos/touch_device_manager.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/display/unified_desktop_utils.h"
@@ -455,11 +456,9 @@ display::TouchCalibrationData::CalibrationPointPair GetCalibrationPair(
                         gfx::Point(pair.touch_point.x, pair.touch_point.y));
 }
 
-bool ValidateParamsForTouchCalibration(
-    const std::string& id,
-    const display::Display& display,
-    ash::TouchCalibratorController* const touch_calibrator_controller,
-    std::string* error) {
+bool ValidateParamsForTouchCalibration(const std::string& id,
+                                       const display::Display& display,
+                                       std::string* error) {
   if (display.id() == display::kInvalidDisplayId) {
     *error = "Display Id(" + id + ") is an invalid display ID";
     return false;
@@ -468,11 +467,6 @@ bool ValidateParamsForTouchCalibration(
   if (display.IsInternal()) {
     *error = "Display Id(" + id + ") is an internal display. Internal " +
              "displays cannot be calibrated for touch.";
-    return false;
-  }
-
-  if (display.touch_support() != display::Display::TOUCH_SUPPORT_AVAILABLE) {
-    *error = "Display Id(" + id + ") does not support touch.";
     return false;
   }
 
@@ -511,6 +505,10 @@ const char DisplayInfoProviderChromeOS::kTouchCalibrationPointsTooLargeError[] =
 // static
 const char DisplayInfoProviderChromeOS::kNativeTouchCalibrationActiveError[] =
     "Another touch calibration is already active.";
+
+// static
+const char DisplayInfoProviderChromeOS::kNoExternalTouchDevicePresent[] =
+    "No external touch device present.";
 
 DisplayInfoProviderChromeOS::DisplayInfoProviderChromeOS() {}
 
@@ -884,6 +882,11 @@ bool DisplayInfoProviderChromeOS::ShowNativeTouchCalibration(
   }
   VLOG(1) << "StartNativeTouchCalibration: " << id;
 
+  if (!display::HasExternalTouchscreenDevice()) {
+    *error = kNoExternalTouchDevicePresent;
+    return false;
+  }
+
   // If a custom calibration is already running, then throw an error.
   if (custom_touch_calibration_active_) {
     *error = kCustomTouchCalibrationInProgressError;
@@ -891,10 +894,8 @@ bool DisplayInfoProviderChromeOS::ShowNativeTouchCalibration(
   }
 
   const display::Display display = GetDisplay(id);
-  if (!ValidateParamsForTouchCalibration(id, display, GetTouchCalibrator(),
-                                         error)) {
+  if (!ValidateParamsForTouchCalibration(id, display, error))
     return false;
-  }
 
   GetTouchCalibrator()->StartCalibration(
       display, false /* is_custom_calibration */, std::move(callback));
@@ -910,11 +911,14 @@ bool DisplayInfoProviderChromeOS::StartCustomTouchCalibration(
     return false;
   }
   VLOG(1) << "StartCustomTouchCalibration: " << id;
-  const display::Display display = GetDisplay(id);
-  if (!ValidateParamsForTouchCalibration(id, display, GetTouchCalibrator(),
-                                         error)) {
+  if (!display::HasExternalTouchscreenDevice()) {
+    *error = kNoExternalTouchDevicePresent;
     return false;
   }
+
+  const display::Display display = GetDisplay(id);
+  if (!ValidateParamsForTouchCalibration(id, display, error))
+    return false;
 
   touch_calibration_target_id_ = id;
   custom_touch_calibration_active_ = true;
@@ -949,7 +953,7 @@ bool DisplayInfoProviderChromeOS::CompleteCustomTouchCalibration(
   custom_touch_calibration_active_ = false;
 
   if (!ValidateParamsForTouchCalibration(touch_calibration_target_id_, display,
-                                         GetTouchCalibrator(), error)) {
+                                         error)) {
     return false;
   }
 
@@ -997,10 +1001,8 @@ bool DisplayInfoProviderChromeOS::ClearTouchCalibration(const std::string& id,
   }
   const display::Display display = GetDisplay(id);
 
-  if (!ValidateParamsForTouchCalibration(id, display, GetTouchCalibrator(),
-                                         error)) {
+  if (!ValidateParamsForTouchCalibration(id, display, error))
     return false;
-  }
 
   ash::Shell::Get()->display_manager()->ClearTouchCalibrationData(
       display.id(), base::nullopt);

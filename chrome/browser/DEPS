@@ -199,5 +199,8 @@ specific_include_rules = {
   ],
   "mash_service_registry.cc": [
     "+mash/quick_launch/quick_launch.h",
+  ],
+  "display_info_provider_chromeos_unittest.cc": [
+    "+ui/events/devices/touch_device_transform.h"
   ]
 }
