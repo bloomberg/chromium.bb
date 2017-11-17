@@ -17,10 +17,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "cc/cc_export.h"
-#include "components/viz/common/quads/texture_mailbox.h"
 #include "components/viz/common/resources/release_callback.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "components/viz/common/resources/resource_id.h"
+#include "components/viz/common/resources/transferable_resource.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -48,30 +48,26 @@ class CC_EXPORT VideoFrameExternalResources {
     RGBA_RESOURCE,
     STREAM_TEXTURE_RESOURCE,
 
-    // TODO(danakj): Remove this and abstract TextureMailbox into
-    // "ExternalResource" that can hold a hardware or software backing.
     SOFTWARE_RESOURCE
   };
 
-  ResourceType type;
-  std::vector<viz::TextureMailbox> mailboxes;
+  ResourceType type = NONE;
+  std::vector<viz::TransferableResource> resources;
   std::vector<viz::ReleaseCallback> release_callbacks;
-  bool read_lock_fences_enabled;
-  // Format of the storage of the resource, if known.
-  gfx::BufferFormat buffer_format;
 
-  // TODO(danakj): Remove these too.
   using SoftwareReleaseCallback =
       base::RepeatingCallback<void(const gpu::SyncToken& sync_token,
                                    bool is_lost)>;
+  // TODO(danakj): Remove these and use TransferableResources to send
+  // software things too.
   unsigned software_resource = viz::kInvalidResourceId;
   SoftwareReleaseCallback software_release_callback;
 
   // Used by hardware textures which do not return values in the 0-1 range.
   // After a lookup, subtract offset and multiply by multiplier.
-  float offset;
-  float multiplier;
-  uint32_t bits_per_channel;
+  float offset = 0.f;
+  float multiplier = 1.f;
+  uint32_t bits_per_channel = 8;
 
   VideoFrameExternalResources();
   VideoFrameExternalResources(VideoFrameExternalResources&& other);
@@ -166,10 +162,10 @@ class CC_EXPORT VideoResourceUpdater {
                                           const gfx::ColorSpace& color_space,
                                           bool has_mailbox);
   void DeleteResource(ResourceList::iterator resource_it);
-  void CopyPlaneTexture(media::VideoFrame* video_frame,
-                        const gfx::ColorSpace& resource_color_space,
-                        const gpu::MailboxHolder& mailbox_holder,
-                        VideoFrameExternalResources* external_resources);
+  void CopyHardwarePlane(media::VideoFrame* video_frame,
+                         const gfx::ColorSpace& resource_color_space,
+                         const gpu::MailboxHolder& mailbox_holder,
+                         VideoFrameExternalResources* external_resources);
   VideoFrameExternalResources CreateForHardwarePlanes(
       scoped_refptr<media::VideoFrame> video_frame);
   VideoFrameExternalResources CreateForSoftwarePlanes(

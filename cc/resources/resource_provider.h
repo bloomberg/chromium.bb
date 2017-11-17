@@ -312,7 +312,7 @@ class CC_EXPORT ResourceProvider
   bool IsBackedBySurfaceTexture(viz::ResourceId id);
 
   // Indicates if this resource wants to receive promotion hints.
-  bool WantsPromotionHint(viz::ResourceId id);
+  bool WantsPromotionHintForTesting(viz::ResourceId id);
 
   // Return the number of resources that request promotion hints.
   size_t CountPromotionHintRequestsForTesting();

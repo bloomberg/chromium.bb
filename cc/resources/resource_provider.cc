@@ -654,7 +654,7 @@ bool ResourceProvider::IsBackedBySurfaceTexture(viz::ResourceId id) {
   return resource->is_backed_by_surface_texture;
 }
 
-bool ResourceProvider::WantsPromotionHint(viz::ResourceId id) {
+bool ResourceProvider::WantsPromotionHintForTesting(viz::ResourceId id) {
   return wants_promotion_hints_set_.count(id) > 0;
 }
 
