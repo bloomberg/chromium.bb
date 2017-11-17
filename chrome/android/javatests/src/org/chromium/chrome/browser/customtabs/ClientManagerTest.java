@@ -224,37 +224,30 @@ public class ClientManagerTest {
         // Should always start with no origin.
         Assert.assertNull(cm.getPostMessageOriginForSessionForTesting(mSession));
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                // With no prepopulated origins, this verification should fail.
-                cm.verifyAndInitializeWithPostMessageOriginForSession(
-                        mSession, Uri.parse(URL), CustomTabsService.RELATION_USE_AS_ORIGIN);
-                Assert.assertNull(cm.getPostMessageOriginForSessionForTesting(mSession));
-
-                // Prepopulated origins should depend on the relation used.
-                OriginVerifier.addVerifiedOriginForPackage(
-                        ContextUtils.getApplicationContext().getPackageName(), Uri.parse(URL),
-                        CustomTabsService.RELATION_HANDLE_ALL_URLS);
-                // This uses CustomTabsService.RELATION_USE_AS_ORIGIN by default.
-                Assert.assertFalse(cm.isFirstPartyOriginForSession(mSession, Uri.parse(URL)));
-                cm.verifyAndInitializeWithPostMessageOriginForSession(
-                        mSession, Uri.parse(URL), CustomTabsService.RELATION_HANDLE_ALL_URLS);
-            }
+        // With no prepopulated origins, this verification should fail.
+        cm.verifyAndInitializeWithPostMessageOriginForSession(
+                mSession, Uri.parse(URL), CustomTabsService.RELATION_USE_AS_ORIGIN);
+        Assert.assertNull(cm.getPostMessageOriginForSessionForTesting(mSession));
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            // Prepopulated origins should depend on the relation used.
+            OriginVerifier.addVerifiedOriginForPackage(
+                    ContextUtils.getApplicationContext().getPackageName(), Uri.parse(URL),
+                    CustomTabsService.RELATION_HANDLE_ALL_URLS);
+            // This uses CustomTabsService.RELATION_USE_AS_ORIGIN by default.
+            Assert.assertFalse(cm.isFirstPartyOriginForSession(mSession, Uri.parse(URL)));
         });
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                Uri verifiedOrigin = cm.getPostMessageOriginForSessionForTesting(mSession);
-                Assert.assertEquals(
-                        IntentHandler.ANDROID_APP_REFERRER_SCHEME, verifiedOrigin.getScheme());
+        cm.verifyAndInitializeWithPostMessageOriginForSession(
+                mSession, Uri.parse(URL), CustomTabsService.RELATION_HANDLE_ALL_URLS);
 
-                // initializeWithPostMessageOriginForSession should override without checking
-                // origin.
-                cm.initializeWithPostMessageOriginForSession(mSession, null);
-                Assert.assertNull(cm.getPostMessageOriginForSessionForTesting(mSession));
-            }
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            Uri verifiedOrigin = cm.getPostMessageOriginForSessionForTesting(mSession);
+            Assert.assertEquals(
+                    IntentHandler.ANDROID_APP_REFERRER_SCHEME, verifiedOrigin.getScheme());
+            // initializeWithPostMessageOriginForSession should override without checking
+            // origin.
+            cm.initializeWithPostMessageOriginForSession(mSession, null);
+            Assert.assertNull(cm.getPostMessageOriginForSessionForTesting(mSession));
         });
     }
 

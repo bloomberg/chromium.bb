@@ -712,6 +712,9 @@ public class CustomTabsConnection {
 
     public boolean validateRelationship(
             CustomTabsSessionToken sessionToken, int relation, Uri origin, Bundle extras) {
+        // Essential parts of the verification will depend on native code and will be run sync on UI
+        // thread. Make sure the client has called warmup() beforehand.
+        if (!mWarmupHasBeenCalled.get()) return false;
         return mClientManager.validateRelationship(sessionToken, relation, origin, extras);
     }
 
