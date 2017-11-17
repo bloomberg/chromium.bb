@@ -1001,26 +1001,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@example.com</
         </message>
       </if>
 
-      <!-- Contextual Search -->
-      <message name="IDS_CONTEXTUAL_SEARCH_HEADER" desc="Header shown at the top of the first run experience, to describe the Contextual Search feature.">
-        Search with one touch
-      </message>
-      <message name="IDS_CONTEXTUAL_SEARCH_PROMO_DESCRIPTION_1" desc="Part 1 of the description of the Contextual Search feature. Combined with FEATURE_NAME and DESCRIPTION_2 below, the whole should be a paragraph describing the feature. This line can be empty if it makes sense to start the sentence with FEATURE_NAME.">
-        Learn about topics on websites without leaving the page.
-      </message>
-      <message name="IDS_CONTEXTUAL_SEARCH_PROMO_FEATURE_NAME" desc="Name of the Contextual Search feature. See explanation in DESCRIPTION_1.">
-        Touch to Search
-      </message>
-      <message name="IDS_CONTEXTUAL_SEARCH_PROMO_DESCRIPTION_2" desc="Part 2 of the description of the Contextual Search feature. See explanation in DESCRIPTION_1.">
-        sends a word and its surrounding context to Google Search, returning definitions, pictures, and other search results.
-      </message>
-      <message name="IDS_CONTEXTUAL_SEARCH_PROMO_OPTIN" desc="Text for the button the user clicks to opt in.">
-        Accept &amp; Search
-      </message>
-      <message name="IDS_CONTEXTUAL_SEARCH_PROMO_OPTOUT" desc="Text for the button the user clicks to opt out.">
-        No Thanks
-      </message>
-
       <!-- Update Recommended dialog -->
       <if expr="not chromeos">
         <message name="IDS_UPDATE_RECOMMENDED_DIALOG_TITLE" desc="The window title for the Update Recommended dialog.">
