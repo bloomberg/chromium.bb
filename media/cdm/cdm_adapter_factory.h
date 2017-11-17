@@ -5,6 +5,9 @@
 #ifndef MEDIA_CDM_CDM_ADAPTER_FACTORY_H_
 #define MEDIA_CDM_CDM_ADAPTER_FACTORY_H_
 
+#include <memory>
+
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "media/base/cdm_factory.h"
 #include "media/base/media_export.h"
@@ -14,7 +17,11 @@ namespace media {
 
 class MEDIA_EXPORT CdmAdapterFactory final : public CdmFactory {
  public:
-  explicit CdmAdapterFactory(CdmAuxiliaryHelper::CreationCB helper_creation_cb);
+  // Callback to create CdmAllocator for the created CDM.
+  using HelperCreationCB =
+      base::RepeatingCallback<std::unique_ptr<CdmAuxiliaryHelper>()>;
+
+  explicit CdmAdapterFactory(HelperCreationCB helper_creation_cb);
   ~CdmAdapterFactory() override;
 
   // CdmFactory implementation.
@@ -29,7 +36,7 @@ class MEDIA_EXPORT CdmAdapterFactory final : public CdmFactory {
 
  private:
   // Callback to create CdmAuxiliaryHelper for the created CDM.
-  CdmAuxiliaryHelper::CreationCB helper_creation_cb_;
+  HelperCreationCB helper_creation_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(CdmAdapterFactory);
 };

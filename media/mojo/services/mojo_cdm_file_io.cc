@@ -48,21 +48,24 @@ bool IsValidFileName(const std::string& name) {
 
 }  // namespace
 
-MojoCdmFileIO::MojoCdmFileIO(cdm::FileIOClient* client,
+MojoCdmFileIO::MojoCdmFileIO(Delegate* delegate,
+                             cdm::FileIOClient* client,
                              mojom::CdmStorage* cdm_storage,
                              FileReadCB file_read_cb)
-    : client_(client),
+    : delegate_(delegate),
+      client_(client),
       cdm_storage_(cdm_storage),
       file_read_cb_(std::move(file_read_cb)),
       weak_factory_(this) {
-  DVLOG(3) << __func__;
+  DVLOG(1) << __func__;
+  DCHECK(delegate_);
   DCHECK(client_);
   DCHECK(cdm_storage_);
   // |file_read_cb_| may be null in tests.
 }
 
 MojoCdmFileIO::~MojoCdmFileIO() {
-  // The destructor is private. |this| can only be destructed through Close().
+  DVLOG(1) << __func__;
 }
 
 void MojoCdmFileIO::Open(const char* file_name, uint32_t file_name_size) {
@@ -308,7 +311,9 @@ void MojoCdmFileIO::OnWriteCommitted(base::File reopened_file) {
 
 void MojoCdmFileIO::Close() {
   DVLOG(3) << __func__ << " file: " << file_name_;
-  delete this;
+
+  // Note: |this| could be deleted as part of this call.
+  delegate_->CloseCdmFileIO(this);
 }
 
 void MojoCdmFileIO::OnError(ErrorType error) {

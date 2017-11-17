@@ -12,9 +12,8 @@ MockCdmAuxiliaryHelper::MockCdmAuxiliaryHelper(
 
 MockCdmAuxiliaryHelper::~MockCdmAuxiliaryHelper() {}
 
-std::unique_ptr<CdmFileIO> MockCdmAuxiliaryHelper::CreateCdmFileIO(
-    cdm::FileIOClient* client,
-    CdmFileIO::FileReadCB) {
+cdm::FileIO* MockCdmAuxiliaryHelper::CreateCdmFileIO(cdm::FileIOClient* client,
+                                                     FileReadCB file_read_cb) {
   NOTREACHED();
   return nullptr;
 }

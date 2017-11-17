@@ -6,6 +6,7 @@
 #define MEDIA_MOJO_SERVICES_MOJO_CDM_HELPER_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -15,6 +16,7 @@
 #include "media/mojo/interfaces/output_protection.mojom.h"
 #include "media/mojo/interfaces/platform_verification.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
+#include "media/mojo/services/mojo_cdm_file_io.h"
 
 namespace service_manager {
 namespace mojom {
@@ -27,16 +29,16 @@ namespace media {
 // Helper class that connects the CDM to various auxiliary services. All
 // additional services (FileIO, memory allocation, output protection, and
 // platform verification) are lazily created.
-class MEDIA_MOJO_EXPORT MojoCdmHelper final : public CdmAuxiliaryHelper {
+class MEDIA_MOJO_EXPORT MojoCdmHelper final : public CdmAuxiliaryHelper,
+                                              public MojoCdmFileIO::Delegate {
  public:
   explicit MojoCdmHelper(
       service_manager::mojom::InterfaceProvider* interface_provider);
   ~MojoCdmHelper() final;
 
   // CdmAuxiliaryHelper implementation.
-  std::unique_ptr<CdmFileIO> CreateCdmFileIO(
-      cdm::FileIOClient* client,
-      CdmFileIO::FileReadCB file_read_cb) final;
+  cdm::FileIO* CreateCdmFileIO(cdm::FileIOClient* client,
+                               FileReadCB file_read_cb) final;
   cdm::Buffer* CreateCdmBuffer(size_t capacity) final;
   std::unique_ptr<VideoFrameImpl> CreateCdmVideoFrame() final;
   void QueryStatus(QueryStatusCB callback) final;
@@ -46,6 +48,9 @@ class MEDIA_MOJO_EXPORT MojoCdmHelper final : public CdmAuxiliaryHelper {
                          const std::string& challenge,
                          ChallengePlatformCB callback) final;
   void GetStorageId(uint32_t version, StorageIdCB callback) final;
+
+  // MojoCdmFileIO::Delegate implementation.
+  void CloseCdmFileIO(MojoCdmFileIO* cdm_file_io) final;
 
  private:
   // All services are created lazily.
@@ -65,6 +70,9 @@ class MEDIA_MOJO_EXPORT MojoCdmHelper final : public CdmAuxiliaryHelper {
   std::unique_ptr<CdmAllocator> allocator_;
   mojom::OutputProtectionPtr output_protection_ptr_;
   mojom::PlatformVerificationPtr platform_verification_ptr_;
+
+  // A list of open cdm::FileIO objects.
+  std::vector<std::unique_ptr<MojoCdmFileIO>> cdm_file_io_set_;
 
   base::WeakPtrFactory<MojoCdmHelper> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(MojoCdmHelper);
