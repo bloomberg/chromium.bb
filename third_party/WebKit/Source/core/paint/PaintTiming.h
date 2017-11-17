@@ -29,7 +29,7 @@ class CORE_EXPORT PaintTiming final
   USING_GARBAGE_COLLECTED_MIXIN(PaintTiming);
   friend class FirstMeaningfulPaintDetector;
   using ReportTimeCallback =
-      WTF::Function<void(WebLayerTreeView::SwapResult, double)>;
+      WTF::CrossThreadFunction<void(WebLayerTreeView::SwapResult, double)>;
 
  public:
   virtual ~PaintTiming() {}
