@@ -569,14 +569,14 @@ void EncryptionMigrationScreenHandler::StartMigration() {
     mount.set_public_mount(true);
     cryptohome::HomedirMethods::GetInstance()->MountEx(
         cryptohome::Identification(user_context_.GetAccountId()),
-        cryptohome::Authorization(cryptohome::KeyDefinition()), mount,
+        cryptohome::AuthorizationRequest(), mount,
         base::Bind(&EncryptionMigrationScreenHandler::OnMountExistingVault,
                    weak_ptr_factory_.GetWeakPtr()));
 
   } else {
     cryptohome::HomedirMethods::GetInstance()->MountEx(
         cryptohome::Identification(user_context_.GetAccountId()),
-        cryptohome::Authorization(GetAuthKey()), mount,
+        CreateAuthorizationRequest(), mount,
         base::Bind(&EncryptionMigrationScreenHandler::OnMountExistingVault,
                    weak_ptr_factory_.GetWeakPtr()));
   }
@@ -660,19 +660,22 @@ void EncryptionMigrationScreenHandler::OnRemoveCryptohome(
   UpdateUIState(UIState::MIGRATION_FAILED);
 }
 
-cryptohome::KeyDefinition EncryptionMigrationScreenHandler::GetAuthKey() {
-  // |auth_key| is created in the same manner as CryptohomeAuthenticator.
+cryptohome::AuthorizationRequest
+EncryptionMigrationScreenHandler::CreateAuthorizationRequest() {
+  // |key| is created in the same manner as CryptohomeAuthenticator.
   const Key* key = user_context_.GetKey();
   // If the |key| is a plain text password, crash rather than attempting to
   // mount the cryptohome with a plain text password.
   CHECK_NE(Key::KEY_TYPE_PASSWORD_PLAIN, key->GetKeyType());
-  // Set the authentication's key label to an empty string, which is a wildcard
-  // allowing any key to match. This is necessary because cryptohomes created by
-  // Chrome OS M38 and older will have a legacy key with no label while those
-  // created by Chrome OS M39 and newer will have a key with the label
-  // kCryptohomeGAIAKeyLabel.
-  return cryptohome::KeyDefinition(key->GetSecret(), std::string(),
-                                   cryptohome::PRIV_DEFAULT);
+  cryptohome::AuthorizationRequest auth;
+  cryptohome::Key* auth_key = auth.mutable_key();
+  // Don't set the authorization's key label, implicitly setting it to an
+  // empty string, which is a wildcard allowing any key to match. This is
+  // necessary because cryptohomes created by Chrome OS M38 and older will have
+  // a legacy key with no label while those created by Chrome OS M39 and newer
+  // will have a key with the label kCryptohomeGAIAKeyLabel.
+  auth_key->set_secret(key->GetSecret());
+  return auth;
 }
 
 bool EncryptionMigrationScreenHandler::IsArcKiosk() const {

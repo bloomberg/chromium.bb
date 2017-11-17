@@ -126,8 +126,7 @@ class PreSigninPolicyFetcherTestBase : public testing::Test {
   // the passed |mount_error|.
   void ExpectTemporaryCryptohomeMount(cryptohome::MountError mount_error) {
     EXPECT_CALL(*mock_homedir_methods_,
-                MountEx(GetCryptohomeIdentification(),
-                        cryptohome::Authorization(cryptohome_key_), _, _))
+                MountEx(GetCryptohomeIdentification(), _, _, _))
         .WillOnce(WithArgs<2, 3>(Invoke(
             [mount_error](const cryptohome::MountRequest& mount_request,
                           cryptohome::HomedirMethods::MountCallback callback) {
