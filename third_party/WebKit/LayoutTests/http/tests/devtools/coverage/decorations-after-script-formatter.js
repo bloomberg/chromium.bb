@@ -1,14 +1,16 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/debugger-test.js"></script>
-<script src="../../inspector/sources-test.js"></script>
-<script src="../resources/coverage-test.js"></script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-<script src="resources/coverage.js"></script>
+(async function() {
+  TestRunner.addResult(`Tests the gutter decorations in target source code after ScriptFormatterEditorAction\n`);
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.loadModule('coverage_test_runner');
+  await TestRunner.loadHTML(`
+      <p id="id">PASS</p>
+    `);
+  await TestRunner.addScriptTag('resources/coverage.js');
 
-<script>
-async function test() {
   CoverageTestRunner.startCoverage();
   await TestRunner.evaluateInPagePromise('performActions()');
   await CoverageTestRunner.stopCoverage();
@@ -26,11 +28,4 @@ async function test() {
   await decoratorPromise;
   CoverageTestRunner.dumpDecorationsInSourceFrame(UI.panels.sources.visibleView);
   TestRunner.completeTest();
-}
-</script>
-</head>
-<p id="id">PASS</p>
-<body onload="runTest()">
-<p>Tests the gutter decorations in target source code after ScriptFormatterEditorAction</p>
-</body>
-</html>
+})();

@@ -1,5 +1,3 @@
-PASS
-
 Tests the gutter decorations in target source code after ScriptFormatterEditorAction
 
 0: + function outer(index) {

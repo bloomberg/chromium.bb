@@ -1,15 +1,17 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/debugger-test.js"></script>
-<script src="../../inspector/sources-test.js"></script>
-<script src="../resources/coverage-test.js"></script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-<link rel="stylesheet" type="text/css" href="resources/decorations-after-inplace-formatter.css">
-<link rel="stylesheet" type="text/css" href="resources/long-mangled.css">
+(async function() {
+  TestRunner.addResult(`Tests the CSS highlight in sources after the Pretty print formatting.\n`);
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.loadModule('coverage_test_runner');
+  await TestRunner.loadHTML(`
+      <p id="id">PASS</p>
+    `);
+  await TestRunner.addStylesheetTag('resources/decorations-after-inplace-formatter.css');
+  await TestRunner.addStylesheetTag('resources/long-mangled.css');
 
-<script>
-async function test() {
   CoverageTestRunner.startCoverage();
   await TestRunner.evaluateInPagePromise('performActions()');
   await CoverageTestRunner.stopCoverage();
@@ -32,11 +34,4 @@ async function test() {
   CoverageTestRunner.dumpDecorationsInSourceFrame(UI.panels.sources.visibleView);
 
   TestRunner.completeTest();
-}
-</script>
-</head>
-<p id="id">PASS</p>
-<body onload="runTest()">
-<p>Tests the CSS highlight in sources after the Pretty print formatting.</p>
-</body>
-</html>
+})();

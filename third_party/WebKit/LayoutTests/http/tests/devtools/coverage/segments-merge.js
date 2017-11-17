@@ -1,14 +1,11 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script>
-function initialize_SegmentsMerge() {
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-InspectorTest.preloadModule("coverage");
+(async function() {
+  TestRunner.addResult(`Tests the merge of disjoint segment lists in CoverageModel.\n`);
+  await TestRunner.loadModule('coverage');
 
-}
-
-function test() {
   testAndDump([], []);
   testAndDump([{end: 10, count: 1}], []);
   testAndDump([{end: 10, count: 1}], [{end: 10, count: 1}]);
@@ -46,13 +43,4 @@ function test() {
     }
     return true;
   }
-}
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>Tests the merge of disjoint segment lists in CoverageModel.</p>
-
-</body>
-</html>
+})();
