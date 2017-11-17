@@ -27,6 +27,10 @@ class DISPLAY_MANAGER_EXPORT TouchDeviceManagerTestApi {
   void Associate(ManagedDisplayInfo* display_info,
                  const ui::TouchscreenDevice& device);
 
+  // Associate the given display identified by |display_id| with the touch
+  // device |device|.
+  void Associate(int64_t display_id, const ui::TouchscreenDevice& device);
+
   // Returns the count of touch devices currently asosicated with the display
   // |info|.
   std::size_t GetTouchDeviceCount(const ManagedDisplayInfo& info) const;

@@ -1255,16 +1255,12 @@ void DisplayManager::SetTouchCalibrationData(
     const TouchCalibrationData::CalibrationPointPairQuad& point_pair_quad,
     const gfx::Size& display_bounds,
     const TouchDeviceIdentifier& touch_device_identifier) {
-  // If the touch device identifier is associated with a touch device for the
-  // then do not perform any calibration. We do not want to modify any
-  // calibration information related to the internal display.
-  if (Display::HasInternalDisplay()) {
-    int64_t intenral_display_id = Display::InternalDisplayId();
-    if (touch_device_manager_->DisplayHasTouchDevice(intenral_display_id,
-                                                     touch_device_identifier)) {
-      return;
-    }
-  }
+  // We do not proceed with setting the calibration and association if the
+  // touch device identified by |touch_device_identifier| is an internal touch
+  // device.
+  if (IsInternalTouchscreenDevice(touch_device_identifier))
+    return;
+
   // Id of the display the touch device in context is currently associated
   // with. This display id will be equal to |display_id| if no reassociation is
   // being performed.

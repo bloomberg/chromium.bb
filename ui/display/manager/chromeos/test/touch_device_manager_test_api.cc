@@ -23,6 +23,13 @@ void TouchDeviceManagerTestApi::Associate(ManagedDisplayInfo* display_info,
   touch_device_manager_->Associate(display_info, device);
 }
 
+void TouchDeviceManagerTestApi::Associate(int64_t display_id,
+                                          const ui::TouchscreenDevice& device) {
+  touch_device_manager_
+      ->active_touch_associations_[TouchDeviceIdentifier::FromDevice(device)] =
+      display_id;
+}
+
 std::size_t TouchDeviceManagerTestApi::GetTouchDeviceCount(
     const ManagedDisplayInfo& info) const {
   return touch_device_manager_->GetAssociatedTouchDevicesForDisplay(info.id())
