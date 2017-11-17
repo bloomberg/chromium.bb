@@ -4,9 +4,10 @@ if [ ! -x "$XDG_ICON_RESOURCE" ]; then
   echo "Error: Could not find xdg-icon-resource" >&2
   exit 1
 fi
-for icon in "@@INSTALLDIR@@/product_logo_"*.png; do
-  size="${icon##*/product_logo_}"
-  "$XDG_ICON_RESOURCE" install --size "${size%.png}" "$icon" "@@PACKAGE@@"
+for icon in @@LOGO_RESOURCES_PNG@@; do
+  size="$(echo ${icon} | sed 's/[^0-9]//g')"
+  "$XDG_ICON_RESOURCE" install --size "${size}" "@@INSTALLDIR@@/${icon}" \
+    "@@PACKAGE@@"
 done
 
 UPDATE_MENUS="`which update-menus 2> /dev/null || true`"
