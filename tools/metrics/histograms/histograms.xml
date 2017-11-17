@@ -12056,6 +12056,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram base="true" name="CustomTab.SessionDuration" units="ms">
+  <owner>ranj@chromium.org</owner>
+  <owner>yfriedman@chromium.org</owner>
+<!-- Name completed by histogram_suffixes name="CustomTabOpenSource" -->
+
+  <summary>
+    Records the time duration in CustomTab Activity from onStart/onResume to
+    onStop/onPause, if that activity is opened by Webapp/WebApk/Trusted Web
+    Activity.
+  </summary>
+</histogram>
+
 <histogram name="CustomTabs.ClientAppId" enum="ClientAppId">
   <owner>yusufo@chromium.org</owner>
   <summary>
@@ -99007,6 +99019,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
              browser window."/>
   <affected-histogram name="Tabs.StateTransfer.Target"/>
   <affected-histogram name="Tabs.StateTransfer.Time"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="CustomTabOpenSource" separator=".">
+  <affected-histogram name="CustomTab.SessionDuration"/>
+  <suffix name="TWA" label="CustomTab opened by Trusted Web Activity."/>
+  <suffix name="Webapp" label="CustomTab opened by Webapp."/>
+  <suffix name="WebApk" label="CustomTab opened by WebApk."/>
+  <suffix name="Other" label="CustomTab opened by other apps."/>
 </histogram_suffixes>
 
 <histogram_suffixes name="DataReductionProxy" separator="_">
