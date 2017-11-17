@@ -17,24 +17,25 @@ the
 To build Cronet for development and debugging purposes:
 
 ```shell
-$ ./components/cronet/tools/cr_cronet.py gn
-$ ninja -C out/Debug cronet_package
+$ ./components/cronet/tools/cr_cronet.py gn --out_dir=out/Cronet
+$ ninja -C out/Cronet cronet_package
 ```
 
 Note: these commands clobber output of previously executed gn commands in
-out/Debug.
+`out/Cronet`. If `--out_dir` is left out, the output directory defaults to
+`out/Debug`.
 
 ### Building Cronet for releases
 
 To build Cronet with optimizations and with debug information stripped out:
 
 ```shell
-$ ./components/cronet/tools/cr_cronet.py -r gn 
+$ ./components/cronet/tools/cr_cronet.py gn --release
 $ ninja -C out/Release cronet_package
 ```
 
 Note: these commands clobber output of previously executed gn commands in
-out/Release.
+`out/Release`.
 
 ### Building for other architectures
 
@@ -119,13 +120,13 @@ enable more verbosity:
 $ adb shell setprop log.tag.CronetUrlRequestContext VERBOSE
 ```
 
-#### See VLOG(1) logging: 
+#### See VLOG(1) logging:
 
 ```shell
-$ adb shell setprop log.tag.CronetUrlRequestContext DEBUG 
+$ adb shell setprop log.tag.CronetUrlRequestContext DEBUG
 ```
 
-#### See NO (only FATAL) logging: 
+#### See NO (only FATAL) logging:
 
 ```shell
 $ adb shell setprop log.tag.CronetUrlRequestContext NONE
@@ -143,7 +144,7 @@ CronetEngine.stopNetLog()
 
 Unlike the Android system log which is line-based, the Chromium log is formatted
 in JSON.  As such, it will probably not be well-formed until you have called the
-`stopNetLog()` method, as filesystem buffers will not have been flushed. 
+`stopNetLog()` method, as filesystem buffers will not have been flushed.
 
 Retrieve the file from your device's file system, and import it to chrome
 browser at chrome://net-internals/#import, or
