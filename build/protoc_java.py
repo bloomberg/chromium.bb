@@ -33,6 +33,8 @@ def main(argv):
       help="Path to output directory for java files.")
   parser.add_option("--srcjar", help="Path to output srcjar.")
   parser.add_option("--stamp", help="File to touch on success.")
+  parser.add_option("--lite",
+      help="Use to generate lite protos.", action='store_true')
   options, args = parser.parse_args(argv)
 
   build_utils.CheckOptions(options, parser, ['protoc', 'proto_path'])
@@ -41,10 +43,22 @@ def main(argv):
     return 1
 
   with build_utils.TempDir() as temp_dir:
-    # Specify arguments to the generator.
-    generator_args = ['optional_field_style=reftypes',
-                      'store_unknown_fields=true']
-    out_arg = '--javanano_out=' + ','.join(generator_args) + ':' + temp_dir
+    if options.lite:
+      out_arg = '--java_out=' + temp_dir
+
+      # Check if all proto files (which are listed in the args) are opting to
+      # use the lite runtime, otherwise we'd have to include the much heavier
+      # regular proto runtime in Chrome.
+      for proto_file in args:
+        if not 'LITE_RUNTIME' in open(proto_file).read():
+          raise Exception(
+              'Chrome only supports lite protos. Please add "optimize_for = '
+              'LITE_RUNTIME" to your proto file to enable the lite runtime.')
+    else:
+      # Specify arguments to the generator.
+      generator_args = ['optional_field_style=reftypes',
+                        'store_unknown_fields=true']
+      out_arg = '--javanano_out=' + ','.join(generator_args) + ':' + temp_dir
     # Generate Java files using protoc.
     build_utils.CheckOutput(
         [options.protoc, '--proto_path', options.proto_path, out_arg]

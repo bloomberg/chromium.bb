@@ -3131,23 +3131,43 @@ if (enable_java_templates) {
   # containing the classes.
   #
   # Variables
-  #   sources: Paths to .proto files to compile.
-  #   proto_path: Root directory of .proto files.
+  #   sources (required)
+  #       Paths to .proto files to compile.
+  #
+  #   proto_path (required)
+  #       Root directory of .proto files.
+  #
+  #   generate_lite (optional, default false)
+  #       Whether to generate lite protos. If false, this will use the nano proto generator.
+  #       Nano protos are deprecated, so please use lite new proto libraries.
   #
   # Example:
   #  proto_java_library("foo_proto_java") {
   #    proto_path = "src/foo"
   #    sources = [ "$proto_path/foo.proto" ]
+  #    generate_lite = true
   #  }
   template("proto_java_library") {
     set_sources_assignment_filter([])
     forward_variables_from(invoker, [ "testonly" ])
-    _protoc_dep =
-        "//third_party/android_protobuf:android_protoc($host_toolchain)"
-    _protoc_out_dir = get_label_info(_protoc_dep, "root_out_dir")
-    _protoc_bin = "$_protoc_out_dir/android_protoc"
-    _proto_path = invoker.proto_path
+    _generate_lite =
+        defined(invoker.generate_lite) && invoker.generate_lite == true
 
+    if (_generate_lite) {
+      # Use the regular proto library to generate lite protos.
+      _protoc_dep = "//third_party/protobuf:protoc($host_toolchain)"
+      _protoc_out_dir = get_label_info(_protoc_dep, "root_out_dir")
+      _protoc_bin = "$_protoc_out_dir/protoc"
+      _proto_runtime = "//third_party/protobuf:protobuf_lite_javalib"
+    } else {
+      # Use the legacy Android nano proto generator.
+      _protoc_dep =
+          "//third_party/android_protobuf:android_protoc($host_toolchain)"
+      _protoc_out_dir = get_label_info(_protoc_dep, "root_out_dir")
+      _protoc_bin = "$_protoc_out_dir/android_protoc"
+      _proto_runtime = "//third_party/android_protobuf:protobuf_nano_javalib"
+    }
+    _proto_path = invoker.proto_path
     _template_name = target_name
 
     action("${_template_name}__protoc_java") {
@@ -3176,6 +3196,9 @@ if (enable_java_templates) {
                "--srcjar",
                rebase_path(srcjar_path, root_build_dir),
              ] + rebase_path(sources, root_build_dir)
+      if (_generate_lite) {
+        args += [ "--lite" ]
+      }
     }
 
     android_library(target_name) {
@@ -3183,7 +3206,7 @@ if (enable_java_templates) {
       java_files = []
       srcjar_deps = [ ":${_template_name}__protoc_java" ]
       deps = [
-        "//third_party/android_protobuf:protobuf_nano_javalib",
+        _proto_runtime,
       ]
     }
   }
