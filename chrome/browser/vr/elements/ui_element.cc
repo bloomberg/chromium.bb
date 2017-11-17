@@ -72,7 +72,7 @@ void UiElement::Initialize(SkiaSurfaceProvider* provider) {}
 void UiElement::OnHoverEnter(const gfx::PointF& position) {
   if (event_handlers_.hover_enter) {
     event_handlers_.hover_enter.Run();
-  } else if (parent()) {
+  } else if (parent() && bubble_events()) {
     parent()->OnHoverEnter(position);
   }
 }
@@ -80,7 +80,7 @@ void UiElement::OnHoverEnter(const gfx::PointF& position) {
 void UiElement::OnHoverLeave() {
   if (event_handlers_.hover_leave) {
     event_handlers_.hover_leave.Run();
-  } else if (parent()) {
+  } else if (parent() && bubble_events()) {
     parent()->OnHoverLeave();
   }
 }
@@ -88,7 +88,7 @@ void UiElement::OnHoverLeave() {
 void UiElement::OnMove(const gfx::PointF& position) {
   if (event_handlers_.hover_move) {
     event_handlers_.hover_move.Run(position);
-  } else if (parent()) {
+  } else if (parent() && bubble_events()) {
     parent()->OnMove(position);
   }
 }
@@ -96,7 +96,7 @@ void UiElement::OnMove(const gfx::PointF& position) {
 void UiElement::OnButtonDown(const gfx::PointF& position) {
   if (event_handlers_.button_down) {
     event_handlers_.button_down.Run();
-  } else if (parent()) {
+  } else if (parent() && bubble_events()) {
     parent()->OnButtonDown(position);
   }
 }
@@ -104,7 +104,7 @@ void UiElement::OnButtonDown(const gfx::PointF& position) {
 void UiElement::OnButtonUp(const gfx::PointF& position) {
   if (event_handlers_.button_up) {
     event_handlers_.button_up.Run();
-  } else if (parent()) {
+  } else if (parent() && bubble_events()) {
     parent()->OnButtonUp(position);
   }
 }

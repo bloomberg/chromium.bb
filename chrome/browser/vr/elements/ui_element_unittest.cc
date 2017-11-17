@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "cc/animation/animation.h"
@@ -166,6 +167,91 @@ TEST(UiElements, HitTest) {
     EXPECT_EQ(test_cases[i].expected_rounded_rect,
               rounded_rect.LocalHitTest(test_cases[i].location));
   }
+}
+
+class ElementEventHandlers {
+ public:
+  explicit ElementEventHandlers(UiElement* element) {
+    DCHECK(element);
+    EventHandlers event_handlers;
+    event_handlers.hover_enter = base::Bind(
+        &ElementEventHandlers::HandleHoverEnter, base::Unretained(this));
+    event_handlers.hover_move = base::Bind(
+        &ElementEventHandlers::HandleHoverMove, base::Unretained(this));
+    event_handlers.hover_leave = base::Bind(
+        &ElementEventHandlers::HandleHoverLeave, base::Unretained(this));
+    event_handlers.button_down = base::Bind(
+        &ElementEventHandlers::HandleButtonDown, base::Unretained(this));
+    event_handlers.button_up = base::Bind(&ElementEventHandlers::HandleButtonUp,
+                                          base::Unretained(this));
+    element->set_event_handlers(event_handlers);
+  }
+  void HandleHoverEnter() { hover_enter_ = true; }
+  bool hover_enter_called() { return hover_enter_; }
+
+  void HandleHoverMove(const gfx::PointF& position) { hover_move_ = true; }
+  bool hover_move_called() { return hover_move_; }
+
+  void HandleHoverLeave() { hover_leave_ = true; }
+  bool hover_leave_called() { return hover_leave_; }
+
+  void HandleButtonDown() { button_down_ = true; }
+  bool button_down_called() { return button_down_; }
+
+  void HandleButtonUp() { button_up_ = true; }
+  bool button_up_called() { return button_up_; }
+
+  void ExpectCalled(bool called) {
+    EXPECT_EQ(hover_enter_called(), called);
+    EXPECT_EQ(hover_move_called(), called);
+    EXPECT_EQ(hover_leave_called(), called);
+    EXPECT_EQ(button_down_called(), called);
+    EXPECT_EQ(button_up_called(), called);
+  }
+
+ private:
+  bool hover_enter_ = false;
+  bool hover_move_ = false;
+  bool hover_leave_ = false;
+  bool button_up_ = false;
+  bool button_down_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(ElementEventHandlers);
+};
+
+TEST(UiElement, EventBubbling) {
+  auto element = base::MakeUnique<UiElement>();
+  auto child = base::MakeUnique<UiElement>();
+  auto grand_child = base::MakeUnique<UiElement>();
+  auto* child_ptr = child.get();
+  auto* grand_child_ptr = grand_child.get();
+  child->AddChild(std::move(grand_child));
+  element->AddChild(std::move(child));
+
+  // Add event handlers to element and child.
+  ElementEventHandlers element_handlers(element.get());
+  ElementEventHandlers child_handlers(child_ptr);
+
+  // Events on grand_child don't bubble up the parent chain.
+  grand_child_ptr->OnHoverEnter(gfx::PointF());
+  grand_child_ptr->OnMove(gfx::PointF());
+  grand_child_ptr->OnHoverLeave();
+  grand_child_ptr->OnButtonDown(gfx::PointF());
+  grand_child_ptr->OnButtonUp(gfx::PointF());
+  child_handlers.ExpectCalled(false);
+  element_handlers.ExpectCalled(false);
+
+  // Events on grand_child bubble up the parent chain.
+  grand_child_ptr->set_bubble_events(true);
+  grand_child_ptr->OnHoverEnter(gfx::PointF());
+  grand_child_ptr->OnMove(gfx::PointF());
+  grand_child_ptr->OnHoverLeave();
+  grand_child_ptr->OnButtonDown(gfx::PointF());
+  grand_child_ptr->OnButtonUp(gfx::PointF());
+  child_handlers.ExpectCalled(true);
+  // Events don't bubble to element since it doesn't have the bubble_events bit
+  // set.
+  element_handlers.ExpectCalled(false);
 }
 
 }  // namespace vr

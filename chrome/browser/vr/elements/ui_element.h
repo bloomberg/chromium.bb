@@ -181,6 +181,9 @@ class UiElement : public cc::AnimationTarget {
   bool scrollable() const { return scrollable_; }
   void set_scrollable(bool scrollable) { scrollable_ = scrollable; }
 
+  bool bubble_events() const { return bubble_events_; }
+  void set_bubble_events(bool bubble_events) { bubble_events_ = bubble_events; }
+
   void set_event_handlers(const EventHandlers& event_handlers) {
     event_handlers_ = event_handlers;
   }
@@ -398,6 +401,10 @@ class UiElement : public cc::AnimationTarget {
 
   // A signal to the input routing machinery that this element accepts scrolls.
   bool scrollable_ = false;
+
+  // If true, events such as OnButtonDown, OnBubbleUp, etc, get bubbled up the
+  // parent chain.
+  bool bubble_events_ = false;
 
   // The size of the object.  This does not affect children.
   gfx::SizeF size_ = {1.0f, 1.0f};

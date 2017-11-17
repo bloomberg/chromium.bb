@@ -40,6 +40,7 @@ Button::Button(base::Callback<void()> click_handler,
   auto background = base::MakeUnique<Rect>();
   background->set_name(kNone);
   background->set_draw_phase(draw_phase);
+  background->set_bubble_events(true);
   background->SetSize(width, height);
   background->SetTransitionedProperties({TRANSFORM});
   background->set_corner_radius(width / 2);
@@ -52,6 +53,7 @@ Button::Button(base::Callback<void()> click_handler,
   vector_icon->set_name(kNone);
   vector_icon->SetIcon(icon);
   vector_icon->set_draw_phase(draw_phase);
+  vector_icon->set_bubble_events(true);
   vector_icon->SetSize(width * kIconScaleFactor, height * kIconScaleFactor);
   vector_icon->SetTransitionedProperties({TRANSFORM});
   vector_icon->set_hit_testable(false);
@@ -62,6 +64,7 @@ Button::Button(base::Callback<void()> click_handler,
   auto hit_plane = base::MakeUnique<InvisibleHitTarget>();
   hit_plane->set_name(kNone);
   hit_plane->set_draw_phase(draw_phase);
+  hit_plane->set_bubble_events(true);
   hit_plane->SetSize(width, height);
   hit_plane->set_corner_radius(width / 2);
   hit_plane_ = hit_plane.get();
