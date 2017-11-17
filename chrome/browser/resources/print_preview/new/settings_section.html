@@ -20,7 +20,11 @@
         font-size: 1em;
         width: 70px;
         word-break: break-word;
-        @apply --settings-section-title-style;
+      }
+
+      :host(.multirow-controls) ::slotted([slot=title]) {
+        align-self: flex-start;
+        padding-top: 7px;
       }
     </style>
     <slot name="title"></slot>

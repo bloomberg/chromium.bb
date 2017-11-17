@@ -35,6 +35,12 @@
       <structure name="IDR_PRINT_PREVIEW_NEW_SETTINGS_SECTION_JS"
                  file="new/settings_section.js"
                  type="chrome_html" />
+      <structure name="IDR_PRINT_PREVIEW_NEW_DESTINATION_SETTINGS_HTML"
+                 file="new/destination_settings.html"
+                 type="chrome_html" />
+      <structure name="IDR_PRINT_PREVIEW_NEW_DESTINATION_SETTINGS_JS"
+                 file="new/destination_settings.js"
+                 type="chrome_html" />
       <structure name="IDR_PRINT_PREVIEW_NEW_PAGES_SETTINGS_HTML"
                  file="new/pages_settings.html"
                  type="chrome_html" />
@@ -89,6 +95,12 @@
       <structure name="IDR_PRINT_PREVIEW_NEW_OTHER_OPTIONS_SETTINGS_JS"
                  file="new/other_options_settings.js"
                  type="chrome_html" />
+      <structure name="IDR_PRINT_PREVIEW_NEW_ADVANCED_OPTIONS_SETTINGS_HTML"
+                 file="new/advanced_options_settings.html"
+                 type="chrome_html" />
+      <structure name="IDR_PRINT_PREVIEW_NEW_ADVANCED_OPTIONS_SETTINGS_JS"
+                 file="new/advanced_options_settings.js"
+                 type="chrome_html" />
       <structure name="IDR_PRINT_PREVIEW_NEW_NUMBER_SETTINGS_SECTION_HTML"
                  file="new/number_settings_section.html"
                  type="chrome_html" />
@@ -113,6 +125,9 @@
                  preprocess="true"/>
       <structure name="IDR_PRINT_PREVIEW_NEW_INPUT_CSS_HTML"
                  file="new/input_css.html"
+                 type="chrome_html"/>
+      <structure name="IDR_PRINT_PREVIEW_NEW_THROBBER_CSS_HTML"
+                 file="new/throbber_css.html"
                  type="chrome_html"/>
       <structure name="IDR_PRINT_PREVIEW_NEW_STRINGS_HTML"
                  file="new/strings.html"

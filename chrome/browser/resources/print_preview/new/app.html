@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="header.html">
+<link rel="import" href="destination_settings.html">
 <link rel="import" href="pages_settings.html">
 <link rel="import" href="copies_settings.html">
 <link rel="import" href="layout_settings.html">
@@ -10,6 +11,7 @@
 <link rel="import" href="dpi_settings.html">
 <link rel="import" href="scaling_settings.html">
 <link rel="import" href="other_options_settings.html">
+<link rel="import" href="advanced_options_settings.html">
 
 <dom-module id="print-preview-app">
   <template>
@@ -24,7 +26,8 @@
         background-color: white;
         display: flex;
         flex-direction: column;
-        width: 310px;
+        max-width: 310px;
+        min-width: 310px;
       }
 
       #settings {
@@ -46,7 +49,8 @@
     <div id="sidebar">
       <print-preview-header model="[[model_]]"></print-preview-header>
       <div id="settings">
-        <div>Destination</div>
+        <print-preview-destination-settings model="{{model_}}">
+        </print-preview-destination-settings>
         <print-preview-pages-settings model="{{model_}}">
         </print-preview-pages-settings>
         <print-preview-copies-settings model="{{model_}}">
@@ -60,7 +64,8 @@
         </print-preview-scaling-settings>
         <print-preview-other-options-settings model="{{model_}}">
         </print-preview-other-options-settings>
-        <div>Advanced</div>
+        <print-preview-advanced-options-settings>
+        </print-preview-advanced-options-settings>
       </div>
     </div>
     <div id="previewArea">preview area</div>
