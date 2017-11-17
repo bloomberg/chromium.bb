@@ -10,6 +10,8 @@
 #include "platform/WaitableEvent.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/audio/AudioUtilities.h"
+#include "platform/testing/TestingPlatformSupport.h"
+#include "platform/testing/TestingPlatformSupportWithMockScheduler.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/wtf/Functional.h"
 #include "public/platform/Platform.h"
@@ -66,6 +68,11 @@ class FIFOClient {
       done_event_->Signal();
     }
   }
+
+  // Should be instantiated before calling Platform::Current()->CreateThread().
+  // Do not place this after the |client_thread_| below.
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform_;
 
   PushPullFIFO* fifo_;
   scoped_refptr<AudioBus> bus_;
