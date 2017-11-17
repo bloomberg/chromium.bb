@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/frame_connector_delegate.h"
 
+#include "content/common/content_switches_internal.h"
+
 namespace content {
 
 RenderWidgetHostViewBase*
@@ -14,10 +16,6 @@ FrameConnectorDelegate::GetParentRenderWidgetHostView() {
 RenderWidgetHostViewBase*
 FrameConnectorDelegate::GetRootRenderWidgetHostView() {
   return nullptr;
-}
-
-gfx::Rect FrameConnectorDelegate::ChildFrameRect() {
-  return gfx::Rect();
 }
 
 gfx::PointF FrameConnectorDelegate::TransformPointToRootCoordSpace(
@@ -65,5 +63,21 @@ bool FrameConnectorDelegate::IsThrottled() const {
 bool FrameConnectorDelegate::IsSubtreeThrottled() const {
   return false;
 }
+
+void FrameConnectorDelegate::SetRect(const gfx::Rect& frame_rect) {
+  if (use_zoom_for_device_scale_factor_) {
+    frame_rect_in_pixels_ = frame_rect;
+    frame_rect_in_dip_ = gfx::ScaleToEnclosingRect(
+        frame_rect, 1.f / screen_info_.device_scale_factor);
+  } else {
+    frame_rect_in_dip_ = frame_rect;
+    frame_rect_in_pixels_ =
+        gfx::ScaleToEnclosingRect(frame_rect, screen_info_.device_scale_factor);
+  }
+}
+
+FrameConnectorDelegate::FrameConnectorDelegate(
+    bool use_zoom_for_device_scale_factor)
+    : use_zoom_for_device_scale_factor_(use_zoom_for_device_scale_factor) {}
 
 }  // namespace content
