@@ -53,6 +53,8 @@
 @synthesize stopButton = _stopButton;
 @synthesize progressBar = _progressBar;
 
+#pragma mark - Public
+
 - (instancetype)initWithDispatcher:
                     (id<ApplicationCommands, BrowserCommands>)dispatcher
                      buttonFactory:(ToolbarButtonFactory*)buttonFactory {
@@ -65,6 +67,14 @@
     [self setUpProgressBar];
   }
   return self;
+}
+
+- (void)contractOmnibox {
+  // TODO(crbug.com/785210): Implement this.
+}
+
+- (void)expandOmnibox {
+  // TODO(crbug.com/785210): Implement this.
 }
 
 #pragma mark - View lifecyle

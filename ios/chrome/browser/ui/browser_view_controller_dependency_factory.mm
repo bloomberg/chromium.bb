@@ -20,6 +20,7 @@
 #include "ios/chrome/browser/ui/toolbar/toolbar_model_delegate_ios.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_model_impl_ios.h"
 #import "ios/chrome/browser/ui/toolbar/web_toolbar_controller.h"
+#import "ios/chrome/browser/ui/toolbar/web_toolbar_delegate.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -68,10 +69,13 @@ newToolbarControllerWithDelegate:(id<WebToolbarDelegate>)delegate
                           (id<ApplicationCommands, BrowserCommands>)dispatcher {
   id<Toolbar> toolbarController;
   if (base::FeatureList::IsEnabled(kPropertyAnimationsToolbar)) {
-    toolbarController = static_cast<id<Toolbar>>([[ToolbarAdapter alloc]
-        initWithDispatcher:dispatcher
-              browserState:browserState_
-              webStateList:webStateList_]);
+    ToolbarAdapter* adapter =
+        [[ToolbarAdapter alloc] initWithDispatcher:dispatcher
+                                      browserState:browserState_
+                                      webStateList:webStateList_];
+    adapter.delegate = delegate;
+    adapter.URLLoader = urlLoader;
+    toolbarController = static_cast<id<Toolbar>>(adapter);
 
   } else {
     toolbarController = static_cast<id<Toolbar>>([[WebToolbarController alloc]

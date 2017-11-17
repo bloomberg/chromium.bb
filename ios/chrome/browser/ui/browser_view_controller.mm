@@ -4120,7 +4120,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
 
 #pragma mark - WebToolbarDelegate methods
 
-- (IBAction)locationBarDidBecomeFirstResponder:(id)sender {
+- (void)locationBarDidBecomeFirstResponder {
   if (_locationBarHasFocus)
     return;  // TODO(crbug.com/244366): This should not be necessary.
   _locationBarHasFocus = YES;
@@ -4141,7 +4141,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
       locationBarDidBecomeFirstResponder:_browserState];
 }
 
-- (IBAction)locationBarDidResignFirstResponder:(id)sender {
+- (void)locationBarDidResignFirstResponder {
   if (!_locationBarHasFocus)
     return;  // TODO(crbug.com/244366): This should not be necessary.
   _locationBarHasFocus = NO;
@@ -4177,7 +4177,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
   }
 }
 
-- (IBAction)locationBarBeganEdit:(id)sender {
+- (void)locationBarBeganEdit {
   // On handsets, if a page is currently loading it should be stopped.
   if (!IsIPadIdiom() && _toolbarModelIOS->IsLoading()) {
     [self.dispatcher stopLoading];
