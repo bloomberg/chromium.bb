@@ -219,16 +219,16 @@ void ExtendedAuthenticatorImpl::DoAuthenticateToCheck(
 
   cryptohome::Identification id(user_context.GetAccountId());
   const Key* const key = user_context.GetKey();
-  cryptohome::Authorization auth(key->GetSecret(), key->GetLabel());
-
+  cryptohome::AuthorizationRequest auth;
+  cryptohome::Key* auth_key = auth.mutable_key();
+  if (!key->GetLabel().empty()) {
+    auth_key->mutable_data()->set_label(key->GetLabel());
+  }
+  auth_key->set_secret(key->GetSecret());
   cryptohome::HomedirMethods::GetInstance()->CheckKeyEx(
-      id,
-      auth,
-      base::Bind(&ExtendedAuthenticatorImpl::OnOperationComplete,
-                 this,
-                 "CheckKeyEx",
-                 user_context,
-                 success_callback));
+      id, auth, cryptohome::CheckKeyRequest(),
+      base::Bind(&ExtendedAuthenticatorImpl::OnOperationComplete, this,
+                 "CheckKeyEx", user_context, success_callback));
 }
 
 void ExtendedAuthenticatorImpl::DoAddKey(const cryptohome::KeyDefinition& key,

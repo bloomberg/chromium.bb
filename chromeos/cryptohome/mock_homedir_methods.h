@@ -24,12 +24,13 @@ class CHROMEOS_EXPORT MockHomedirMethods : public HomedirMethods {
 
   MOCK_METHOD4(GetKeyDataEx,
                void(const Identification& id,
-                    const AuthorizationRequest& auth_proto,
+                    const AuthorizationRequest& auth,
                     const GetKeyDataRequest& request,
                     const GetKeyDataCallback& callback));
-  MOCK_METHOD3(CheckKeyEx,
+  MOCK_METHOD4(CheckKeyEx,
                void(const Identification& id,
-                    const Authorization& key,
+                    const AuthorizationRequest& auth,
+                    const CheckKeyRequest& request,
                     const Callback& callback));
   MOCK_METHOD4(MountEx,
                void(const Identification& id,
