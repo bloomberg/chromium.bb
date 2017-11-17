@@ -27,9 +27,35 @@ class ScreenshotSyncIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     """The name by which this test is invoked on the command line."""
     return 'screenshot_sync'
 
+  # The command line options (which are passed to subclasses'
+  # GenerateGpuTests) *must* be configured here, via a call to
+  # SetParsedCommandLineOptions. If they are not, an error will be
+  # raised when running the tests.
+  _parsed_command_line_options = None
+
+  @classmethod
+  def SetParsedCommandLineOptions(cls, options):
+    cls._parsed_command_line_options = options
+
+  @classmethod
+  def GetParsedCommandLineOptions(cls):
+    return cls._parsed_command_line_options
+
+  @classmethod
+  def AddCommandlineArgs(cls, parser):
+    parser.add_option(
+      '--dont-restore-color-profile-after-test',
+      dest='dont_restore_color_profile_after_test',
+      action='store_true', default=False,
+      help='(Mainly on Mac) don\'t restore the system\'s original color '
+      'profile after the test completes; leave the system using the sRGB color '
+      'profile. See http://crbug.com/784456.')
+
   @classmethod
   def SetUpProcess(cls):
-    color_profile_manager.ForceUntilExitSRGB()
+    options = cls.GetParsedCommandLineOptions()
+    color_profile_manager.ForceUntilExitSRGB(
+      options.dont_restore_color_profile_after_test)
     super(cls, ScreenshotSyncIntegrationTest).SetUpProcess()
     cls.CustomizeBrowserArgs(cls._AddDefaultArgs([]))
     cls.StartBrowser()
@@ -50,6 +76,7 @@ class ScreenshotSyncIntegrationTest(gpu_integration_test.GpuIntegrationTest):
 
   @classmethod
   def GenerateGpuTests(cls, options):
+    cls.SetParsedCommandLineOptions(options)
     yield('ScreenshotSync_SWRasterWithCanvas',
           'screenshot_sync_canvas.html',
           ('--disable-gpu-rasterization'))

@@ -39,7 +39,9 @@ class MapsIntegrationTest(
 
   @classmethod
   def SetUpProcess(cls):
-    color_profile_manager.ForceUntilExitSRGB()
+    options = cls.GetParsedCommandLineOptions()
+    color_profile_manager.ForceUntilExitSRGB(
+      options.dont_restore_color_profile_after_test)
     super(MapsIntegrationTest, cls).SetUpProcess()
     browser_args = [
         '--force-color-profile=srgb',
