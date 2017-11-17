@@ -795,12 +795,14 @@ void AudioVideoPipelineDeviceTest::MonitorLoop() {
     if (audio_feeder_ &&
         audio_feeder_->last_pushed_pts() !=
             std::numeric_limits<int64_t>::min()) {
-      EXPECT_LE(pts, audio_feeder_->last_pushed_pts() + 100 * 1000);
+      EXPECT_LE(pts, std::max(kStartPts,
+                              audio_feeder_->last_pushed_pts() + 100 * 1000));
     }
     if (video_feeder_ &&
         video_feeder_->last_pushed_pts() !=
             std::numeric_limits<int64_t>::min()) {
-      EXPECT_LE(pts, video_feeder_->last_pushed_pts() + 100 * 1000);
+      EXPECT_LE(pts, std::max(kStartPts,
+                              video_feeder_->last_pushed_pts() + 100 * 1000));
     }
     // PTS is allowed to move backwards once to allow for updates when the first
     // buffers are pushed.
