@@ -2243,6 +2243,12 @@ void WebGLRenderingContextBase::deleteBuffer(WebGLBuffer* buffer) {
 
 void WebGLRenderingContextBase::deleteFramebuffer(
     WebGLFramebuffer* framebuffer) {
+  // Don't allow the application to delete an opaque framebuffer.
+  if (framebuffer && framebuffer->Opaque()) {
+    SynthesizeGLError(GL_INVALID_OPERATION, "deleteFramebuffer",
+                      "cannot delete an opaque framebuffer");
+    return;
+  }
   if (!DeleteObject(framebuffer))
     return;
   if (framebuffer == framebuffer_binding_) {
@@ -2560,6 +2566,12 @@ void WebGLRenderingContextBase::framebufferRenderbuffer(
                       "no framebuffer bound");
     return;
   }
+  // Don't allow modifications to opaque framebuffer attachements.
+  if (framebuffer_binding && framebuffer_binding->Opaque()) {
+    SynthesizeGLError(GL_INVALID_OPERATION, "framebufferRenderbuffer",
+                      "opaque framebuffer bound");
+    return;
+  }
   framebuffer_binding->SetAttachmentForBoundFramebuffer(target, attachment,
                                                         buffer);
   ApplyStencilTest();
@@ -2585,6 +2597,12 @@ void WebGLRenderingContextBase::framebufferTexture2D(GLenum target,
   if (!framebuffer_binding || !framebuffer_binding->Object()) {
     SynthesizeGLError(GL_INVALID_OPERATION, "framebufferTexture2D",
                       "no framebuffer bound");
+    return;
+  }
+  // Don't allow modifications to opaque framebuffer attachements.
+  if (framebuffer_binding && framebuffer_binding->Opaque()) {
+    SynthesizeGLError(GL_INVALID_OPERATION, "framebufferTexture2D",
+                      "opaque framebuffer bound");
     return;
   }
   framebuffer_binding->SetAttachmentForBoundFramebuffer(
@@ -2843,6 +2861,12 @@ ScriptValue WebGLRenderingContextBase::getFramebufferAttachmentParameter(
   if (!framebuffer_binding_ || !framebuffer_binding_->Object()) {
     SynthesizeGLError(GL_INVALID_OPERATION, "getFramebufferAttachmentParameter",
                       "no framebuffer bound");
+    return ScriptValue::CreateNull(script_state);
+  }
+
+  if (framebuffer_binding_ && framebuffer_binding_->Opaque()) {
+    SynthesizeGLError(GL_INVALID_OPERATION, "getFramebufferAttachmentParameter",
+                      "cannot query parameters of an opaque framebuffer");
     return ScriptValue::CreateNull(script_state);
   }
 

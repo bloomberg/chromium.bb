@@ -56,6 +56,8 @@ blink_modules_sources("vr") {
     "latest/VRView.cpp",
     "latest/VRView.h",
     "latest/VRViewport.h",
+    "latest/VRWebGLDrawingBuffer.cpp",
+    "latest/VRWebGLDrawingBuffer.h",
     "latest/VRWebGLLayer.cpp",
     "latest/VRWebGLLayer.h",
   ]

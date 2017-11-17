@@ -7,12 +7,13 @@
 
 #include "bindings/modules/v8/webgl_rendering_context_or_webgl2_rendering_context.h"
 #include "modules/vr/latest/VRLayer.h"
+#include "modules/vr/latest/VRWebGLDrawingBuffer.h"
 #include "modules/vr/latest/VRWebGLLayerInit.h"
-#include "modules/webgl/WebGLRenderingContextBase.h"
-#include "platform/geometry/IntSize.h"
 
 namespace blink {
 
+class WebGLFramebuffer;
+class WebGLRenderingContextBase;
 class VRSession;
 
 class VRWebGLLayer final : public VRLayer {
@@ -24,18 +25,27 @@ class VRWebGLLayer final : public VRLayer {
       const WebGLRenderingContextOrWebGL2RenderingContext&,
       const VRWebGLLayerInit&);
 
-  WebGLRenderingContextBase* context() const { return webgl_context_; }
+  WebGLRenderingContextBase* context() const {
+    return drawing_buffer_->webgl_context();
+  }
   void getVRWebGLRenderingContext(
       WebGLRenderingContextOrWebGL2RenderingContext&) const;
 
-  bool antialias() const { return antialias_; }
-  bool depth() const { return depth_; }
-  bool stencil() const { return stencil_; }
-  bool alpha() const { return alpha_; }
-  bool multiview() const { return multiview_; }
+  WebGLFramebuffer* framebuffer() const {
+    return drawing_buffer_->framebuffer();
+  }
+  unsigned long framebufferWidth() const {
+    return drawing_buffer_->size().Width();
+  }
+  unsigned long framebufferHeight() const {
+    return drawing_buffer_->size().Height();
+  }
 
-  unsigned long framebufferWidth() const { return framebuffer_size_.Width(); }
-  unsigned long framebufferHeight() const { return framebuffer_size_.Height(); }
+  bool antialias() const { return drawing_buffer_->antialias(); }
+  bool depth() const { return drawing_buffer_->depth(); }
+  bool stencil() const { return drawing_buffer_->stencil(); }
+  bool alpha() const { return drawing_buffer_->alpha(); }
+  bool multiview() const { return drawing_buffer_->multiview(); }
 
   void requestViewportScaling(double scale_factor);
 
@@ -43,24 +53,18 @@ class VRWebGLLayer final : public VRLayer {
 
   void UpdateViewports();
 
+  virtual void OnFrameStart();
+  virtual void OnFrameEnd();
+
   virtual void Trace(blink::Visitor*);
 
  private:
-  VRWebGLLayer(VRSession*, WebGLRenderingContextBase*, const VRWebGLLayerInit&);
+  VRWebGLLayer(VRSession*, VRWebGLDrawingBuffer*);
 
   Member<VRViewport> left_viewport_;
   Member<VRViewport> right_viewport_;
+  Member<VRWebGLDrawingBuffer> drawing_buffer_;
 
-  Member<WebGLRenderingContextBase> webgl_context_;
-
-  bool antialias_;
-  bool depth_;
-  bool stencil_;
-  bool alpha_;
-  bool multiview_;
-
-  IntSize framebuffer_size_;
-  double framebuffer_scale_;
   double viewport_scale_ = 1.0;
   bool viewports_dirty_ = true;
 };

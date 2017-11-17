@@ -69,6 +69,11 @@ class WebGLFramebuffer final : public WebGLContextObject {
 
   static WebGLFramebuffer* Create(WebGLRenderingContextBase*);
 
+  // An opaque framebuffer is one whose attachments are created and managed by
+  // the browser and not inspectable or alterable via Javascript. This is
+  // primarily used by the VRWebGLLayer interface.
+  static WebGLFramebuffer* CreateOpaque(WebGLRenderingContextBase*);
+
   GLuint Object() const { return object_; }
 
   void SetAttachmentForBoundFramebuffer(GLenum target,
@@ -96,6 +101,9 @@ class WebGLFramebuffer final : public WebGLContextObject {
 
   bool HasStencilBuffer() const;
 
+  bool Opaque() const { return opaque_; }
+  void MarkOpaqueBufferComplete(bool complete) { opaque_complete_ = complete; }
+
   // Wrapper for drawBuffersEXT/drawBuffersARB to work around a driver bug.
   void DrawBuffers(const Vector<GLenum>& bufs);
 
@@ -109,7 +117,7 @@ class WebGLFramebuffer final : public WebGLContextObject {
   virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
 
  protected:
-  explicit WebGLFramebuffer(WebGLRenderingContextBase*);
+  explicit WebGLFramebuffer(WebGLRenderingContextBase*, bool opaque);
 
   bool HasObject() const override { return object_ != 0; }
   void DeleteObjectImpl(gpu::gles2::GLES2Interface*) override;
@@ -148,6 +156,8 @@ class WebGLFramebuffer final : public WebGLContextObject {
 
   bool has_ever_been_bound_;
   bool web_gl1_depth_stencil_consistent_;
+  const bool opaque_;
+  bool opaque_complete_ = false;
 
   Vector<GLenum> draw_buffers_;
   Vector<GLenum> filtered_draw_buffers_;

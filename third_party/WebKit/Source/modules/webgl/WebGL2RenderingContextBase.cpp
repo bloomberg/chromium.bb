@@ -464,6 +464,12 @@ void WebGL2RenderingContextBase::framebufferTextureLayer(GLenum target,
                       "no framebuffer bound");
     return;
   }
+  // Don't allow modifications to opaque framebuffer attachements.
+  if (framebuffer_binding && framebuffer_binding->Opaque()) {
+    SynthesizeGLError(GL_INVALID_OPERATION, "framebufferTextureLayer",
+                      "opaque framebuffer bound");
+    return;
+  }
   framebuffer_binding->SetAttachmentForBoundFramebuffer(
       target, attachment, textarget, texture, level, layer);
   ApplyStencilTest();
@@ -4764,6 +4770,12 @@ void WebGL2RenderingContextBase::bindFramebuffer(GLenum target,
 
 void WebGL2RenderingContextBase::deleteFramebuffer(
     WebGLFramebuffer* framebuffer) {
+  // Don't allow the application to delete an opaque framebuffer.
+  if (framebuffer && framebuffer->Opaque()) {
+    SynthesizeGLError(GL_INVALID_OPERATION, "deleteFramebuffer",
+                      "cannot delete an opaque framebuffer");
+    return;
+  }
   if (!DeleteObject(framebuffer))
     return;
   GLenum target = 0;

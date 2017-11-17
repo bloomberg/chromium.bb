@@ -19,6 +19,7 @@ typedef (WebGLRenderingContext or WebGL2RenderingContext) VRWebGLRenderingContex
 
   readonly attribute unsigned long framebufferWidth;
   readonly attribute unsigned long framebufferHeight;
+  readonly attribute WebGLFramebuffer framebuffer;
 
   void requestViewportScaling(double viewportScaleFactor);
 };
