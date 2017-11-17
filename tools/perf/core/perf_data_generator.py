@@ -811,7 +811,7 @@ def generate_telemetry_tests(name, tester_config, benchmarks,
                          'add the benchmark to '
                          '_UNSCHEDULED_TELEMETRY_BENCHMARKS list, '
                          'then file a bug with Speed>Benchmarks>Waterfall '
-                         'component and assign to eyaich@ or martiniss@ to '
+                         'component and assign to eyaich@ or ashleymarie@ to '
                          'schedule the benchmark on the perf waterfall.' % (
                              benchmark.Name()))
       swarming_dimensions.append(get_swarming_dimension(
