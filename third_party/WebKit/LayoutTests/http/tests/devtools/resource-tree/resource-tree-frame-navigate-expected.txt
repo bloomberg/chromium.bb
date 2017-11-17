@@ -1,30 +1,20 @@
-CONSOLE MESSAGE: line 4: iframe loaded
 Tests resource tree model on iframe navigation, compares resource tree against golden. Every line is important.
-
 
 Before navigation
 ====================================
 Resources:
-document http://127.0.0.1:8000/devtools/resource-tree/resource-tree-frame-navigate.html
 document http://127.0.0.1:8000/devtools/resource-tree/resources/resource-tree-frame-navigate-iframe-before.html
 script http://127.0.0.1:8000/devtools/resource-tree/resources/script-initial.js
 stylesheet http://127.0.0.1:8000/devtools/resource-tree/resources/styles-initial-2.css
 stylesheet http://127.0.0.1:8000/devtools/resource-tree/resources/styles-initial.css
-script http://127.0.0.1:8000/inspector/debugger-test.js
-script http://127.0.0.1:8000/inspector/inspector-test.js
-script http://127.0.0.1:8000/inspector/resource-tree/resource-tree-test.js
-script http://127.0.0.1:8000/inspector/resources-test.js
+document http://127.0.0.1:8000/devtools/resources/inspected-page.html
 
 Resources URL Map:
-http://127.0.0.1:8000/devtools/resource-tree/resource-tree-frame-navigate.html == http://127.0.0.1:8000/devtools/resource-tree/resource-tree-frame-navigate.html
 http://127.0.0.1:8000/devtools/resource-tree/resources/resource-tree-frame-navigate-iframe-before.html == http://127.0.0.1:8000/devtools/resource-tree/resources/resource-tree-frame-navigate-iframe-before.html
 http://127.0.0.1:8000/devtools/resource-tree/resources/script-initial.js == http://127.0.0.1:8000/devtools/resource-tree/resources/script-initial.js
 http://127.0.0.1:8000/devtools/resource-tree/resources/styles-initial-2.css == http://127.0.0.1:8000/devtools/resource-tree/resources/styles-initial-2.css
 http://127.0.0.1:8000/devtools/resource-tree/resources/styles-initial.css == http://127.0.0.1:8000/devtools/resource-tree/resources/styles-initial.css
-http://127.0.0.1:8000/inspector/debugger-test.js == http://127.0.0.1:8000/inspector/debugger-test.js
-http://127.0.0.1:8000/inspector/inspector-test.js == http://127.0.0.1:8000/inspector/inspector-test.js
-http://127.0.0.1:8000/inspector/resource-tree/resource-tree-test.js == http://127.0.0.1:8000/inspector/resource-tree/resource-tree-test.js
-http://127.0.0.1:8000/inspector/resources-test.js == http://127.0.0.1:8000/inspector/resources-test.js
+http://127.0.0.1:8000/devtools/resources/inspected-page.html == http://127.0.0.1:8000/devtools/resources/inspected-page.html
 
 Resources Tree:
 Frames
@@ -35,22 +25,13 @@ Frames
             Stylesheets
                 styles-initial-2.css
             resource-tree-frame-navigate-iframe-before.html
-        Scripts
-            debugger-test.js
-            inspector-test.js
-            resource-tree-test.js
-            resources-test.js
         Stylesheets
             styles-initial.css
-        resource-tree-frame-navigate.html
+        inspected-page.html
 Sources:
 -------- Setting mode: [frame]
 top
-  resource-tree-frame-navigate.html
-  debugger-test.js
-  inspector-test.js
-  resource-tree-test.js
-  resources-test.js
+  inspected-page.html
   styles-initial.css
   iframe (resource-tree-frame-navigate-iframe-before.html)
     resource-tree-frame-navigate-iframe-before.html
@@ -60,11 +41,7 @@ Sources:
 -------- Setting mode: [frame/domain]
 top
   127.0.0.1:8000
-    resource-tree-frame-navigate.html
-    debugger-test.js
-    inspector-test.js
-    resource-tree-test.js
-    resources-test.js
+    inspected-page.html
     styles-initial.css
   iframe (resource-tree-frame-navigate-iframe-before.html)
     127.0.0.1:8000
@@ -75,16 +52,11 @@ Sources:
 -------- Setting mode: [frame/domain/folder]
 top
   127.0.0.1:8000
-    devtools/resource-tree
-      resources
+    devtools
+      resource-tree/resources
         styles-initial.css
-      resource-tree-frame-navigate.html
-    inspector
-      resource-tree
-        resource-tree-test.js
-      debugger-test.js
-      inspector-test.js
-      resources-test.js
+      resources
+        inspected-page.html
   iframe (resource-tree-frame-navigate-iframe-before.html)
     127.0.0.1:8000
       devtools/resource-tree/resources
@@ -94,55 +66,38 @@ top
 Sources:
 -------- Setting mode: [domain]
 127.0.0.1:8000
+  inspected-page.html
   resource-tree-frame-navigate-iframe-before.html
-  resource-tree-frame-navigate.html
-  debugger-test.js
-  inspector-test.js
-  resource-tree-test.js
-  resources-test.js
   script-initial.js
   styles-initial-2.css
   styles-initial.css
 Sources:
 -------- Setting mode: [domain/folder]
 127.0.0.1:8000
-  devtools/resource-tree
-    resources
+  devtools
+    resource-tree/resources
       resource-tree-frame-navigate-iframe-before.html
       script-initial.js
       styles-initial-2.css
       styles-initial.css
-    resource-tree-frame-navigate.html
-  inspector
-    resource-tree
-      resource-tree-test.js
-    debugger-test.js
-    inspector-test.js
-    resources-test.js
+    resources
+      inspected-page.html
 
 After navigation
 ====================================
 Resources:
-document http://127.0.0.1:8000/devtools/resource-tree/resource-tree-frame-navigate.html
 document http://127.0.0.1:8000/devtools/resource-tree/resources/resource-tree-frame-navigate-iframe-after.html
 script http://127.0.0.1:8000/devtools/resource-tree/resources/script-navigated.js
 stylesheet http://127.0.0.1:8000/devtools/resource-tree/resources/styles-initial.css
 stylesheet http://127.0.0.1:8000/devtools/resource-tree/resources/styles-navigated.css
-script http://127.0.0.1:8000/inspector/debugger-test.js
-script http://127.0.0.1:8000/inspector/inspector-test.js
-script http://127.0.0.1:8000/inspector/resource-tree/resource-tree-test.js
-script http://127.0.0.1:8000/inspector/resources-test.js
+document http://127.0.0.1:8000/devtools/resources/inspected-page.html
 
 Resources URL Map:
-http://127.0.0.1:8000/devtools/resource-tree/resource-tree-frame-navigate.html == http://127.0.0.1:8000/devtools/resource-tree/resource-tree-frame-navigate.html
 http://127.0.0.1:8000/devtools/resource-tree/resources/resource-tree-frame-navigate-iframe-after.html == http://127.0.0.1:8000/devtools/resource-tree/resources/resource-tree-frame-navigate-iframe-after.html
 http://127.0.0.1:8000/devtools/resource-tree/resources/script-navigated.js == http://127.0.0.1:8000/devtools/resource-tree/resources/script-navigated.js
 http://127.0.0.1:8000/devtools/resource-tree/resources/styles-initial.css == http://127.0.0.1:8000/devtools/resource-tree/resources/styles-initial.css
 http://127.0.0.1:8000/devtools/resource-tree/resources/styles-navigated.css == http://127.0.0.1:8000/devtools/resource-tree/resources/styles-navigated.css
-http://127.0.0.1:8000/inspector/debugger-test.js == http://127.0.0.1:8000/inspector/debugger-test.js
-http://127.0.0.1:8000/inspector/inspector-test.js == http://127.0.0.1:8000/inspector/inspector-test.js
-http://127.0.0.1:8000/inspector/resource-tree/resource-tree-test.js == http://127.0.0.1:8000/inspector/resource-tree/resource-tree-test.js
-http://127.0.0.1:8000/inspector/resources-test.js == http://127.0.0.1:8000/inspector/resources-test.js
+http://127.0.0.1:8000/devtools/resources/inspected-page.html == http://127.0.0.1:8000/devtools/resources/inspected-page.html
 
 Resources Tree:
 Frames
@@ -153,22 +108,13 @@ Frames
             Stylesheets
                 styles-navigated.css
             resource-tree-frame-navigate-iframe-after.html
-        Scripts
-            debugger-test.js
-            inspector-test.js
-            resource-tree-test.js
-            resources-test.js
         Stylesheets
             styles-initial.css
-        resource-tree-frame-navigate.html
+        inspected-page.html
 Sources:
 -------- Setting mode: [frame]
 top
-  resource-tree-frame-navigate.html
-  debugger-test.js
-  inspector-test.js
-  resource-tree-test.js
-  resources-test.js
+  inspected-page.html
   styles-initial.css
   iframe (resource-tree-frame-navigate-iframe-after.html)
     resource-tree-frame-navigate-iframe-after.html
@@ -178,11 +124,7 @@ Sources:
 -------- Setting mode: [frame/domain]
 top
   127.0.0.1:8000
-    resource-tree-frame-navigate.html
-    debugger-test.js
-    inspector-test.js
-    resource-tree-test.js
-    resources-test.js
+    inspected-page.html
     styles-initial.css
   iframe (resource-tree-frame-navigate-iframe-after.html)
     127.0.0.1:8000
@@ -193,16 +135,11 @@ Sources:
 -------- Setting mode: [frame/domain/folder]
 top
   127.0.0.1:8000
-    devtools/resource-tree
-      resources
+    devtools
+      resource-tree/resources
         styles-initial.css
-      resource-tree-frame-navigate.html
-    inspector
-      resource-tree
-        resource-tree-test.js
-      debugger-test.js
-      inspector-test.js
-      resources-test.js
+      resources
+        inspected-page.html
   iframe (resource-tree-frame-navigate-iframe-after.html)
     127.0.0.1:8000
       devtools/resource-tree/resources
@@ -212,29 +149,20 @@ top
 Sources:
 -------- Setting mode: [domain]
 127.0.0.1:8000
+  inspected-page.html
   resource-tree-frame-navigate-iframe-after.html
-  resource-tree-frame-navigate.html
-  debugger-test.js
-  inspector-test.js
-  resource-tree-test.js
-  resources-test.js
   script-navigated.js
   styles-initial.css
   styles-navigated.css
 Sources:
 -------- Setting mode: [domain/folder]
 127.0.0.1:8000
-  devtools/resource-tree
-    resources
+  devtools
+    resource-tree/resources
       resource-tree-frame-navigate-iframe-after.html
       script-navigated.js
       styles-initial.css
       styles-navigated.css
-    resource-tree-frame-navigate.html
-  inspector
-    resource-tree
-      resource-tree-test.js
-    debugger-test.js
-    inspector-test.js
-    resources-test.js
+    resources
+      inspected-page.html
 

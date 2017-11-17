@@ -2988,8 +2988,6 @@ crbug.com/678346 [ Win7 Mac Debug ] storage/indexeddb/index-cursor.html [ Pass T
 crbug.com/678346 [ Win7 Debug ] storage/indexeddb/mozilla/test_objectStore_openKeyCursor.html [ Pass Timeout ]
 crbug.com/678346 [ Win7 Debug ] storage/indexeddb/structured-clone.html [ Pass Timeout ]
 
-crbug.com/678487 http/tests/devtools/resource-tree/resource-tree-reload.html [ Failure Timeout Pass ]
-crbug.com/678487 virtual/mojo-loading/http/tests/devtools/resource-tree/resource-tree-reload.html [ Failure Timeout Pass ]
 crbug.com/678492 http/tests/misc/webtiming-ssl.php [ Failure Pass ]
 crbug.com/678492 virtual/mojo-loading/http/tests/misc/webtiming-ssl.php [ Failure Pass ]
 crbug.com/678493 http/tests/permissions/chromium/test-request-window.html [ Timeout Pass ]

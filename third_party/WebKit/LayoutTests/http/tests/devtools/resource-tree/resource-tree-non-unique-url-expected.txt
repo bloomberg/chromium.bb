@@ -1,6 +1,5 @@
 Tests resources panel shows several resources with the same url if they were loaded with inspector already opened.
 
-
 Resources Tree:
 Frames
     top
@@ -10,20 +9,11 @@ Frames
             Stylesheets
                 styles-non-unique-url.css
             resource-tree-non-unique-url-iframe.html
-        Scripts
-            debugger-test.js
-            inspector-test.js
-            resource-tree-test.js
-            resources-test.js
-        resource-tree-non-unique-url.html
+        inspected-page.html
 Sources:
 -------- Setting mode: [frame]
 top
-  resource-tree-non-unique-url.html
-  debugger-test.js
-  inspector-test.js
-  resource-tree-test.js
-  resources-test.js
+  inspected-page.html
   resource-tree-non-unique-url-iframe.html
     resource-tree-non-unique-url-iframe.html
     styles-non-unique-url.css
@@ -31,11 +21,7 @@ Sources:
 -------- Setting mode: [frame/domain]
 top
   127.0.0.1:8000
-    resource-tree-non-unique-url.html
-    debugger-test.js
-    inspector-test.js
-    resource-tree-test.js
-    resources-test.js
+    inspected-page.html
   resource-tree-non-unique-url-iframe.html
     127.0.0.1:8000
       resource-tree-non-unique-url-iframe.html
@@ -44,14 +30,8 @@ Sources:
 -------- Setting mode: [frame/domain/folder]
 top
   127.0.0.1:8000
-    devtools/resource-tree
-      resource-tree-non-unique-url.html
-    inspector
-      resource-tree
-        resource-tree-test.js
-      debugger-test.js
-      inspector-test.js
-      resources-test.js
+    devtools/resources
+      inspected-page.html
   resource-tree-non-unique-url-iframe.html
     127.0.0.1:8000
       devtools/resource-tree/resources
@@ -60,25 +40,16 @@ top
 Sources:
 -------- Setting mode: [domain]
 127.0.0.1:8000
+  inspected-page.html
   resource-tree-non-unique-url-iframe.html
-  resource-tree-non-unique-url.html
-  debugger-test.js
-  inspector-test.js
-  resource-tree-test.js
-  resources-test.js
   styles-non-unique-url.css
 Sources:
 -------- Setting mode: [domain/folder]
 127.0.0.1:8000
-  devtools/resource-tree
-    resources
+  devtools
+    resource-tree/resources
       resource-tree-non-unique-url-iframe.html
       styles-non-unique-url.css
-    resource-tree-non-unique-url.html
-  inspector
-    resource-tree
-      resource-tree-test.js
-    debugger-test.js
-    inspector-test.js
-    resources-test.js
+    resources
+      inspected-page.html
 
