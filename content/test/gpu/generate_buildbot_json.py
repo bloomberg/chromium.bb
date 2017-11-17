@@ -2311,36 +2311,23 @@ NON_TELEMETRY_ISOLATED_SCRIPT_TESTS = {
   'angle_perftests': {
     'tester_configs': [
       {
-        'predicate': Predicates.FYI_AND_OPTIONAL_AND_WIN_ANGLE_AMD,
+        'predicate': Predicates.FYI_AND_OPTIONAL,
+        # Run on the Win/Linux Release NVIDIA bots and Nexus 5X and 6P
         'build_configs': ['Release', 'android-chromium'],
         'swarming_dimension_sets': [
-          # Windows NVIDIA
           {
             'gpu': NVIDIA_QUADRO_P400_ALL_DRIVERS,
             'os': 'Windows-2008ServerR2-SP1'
           },
-          # Windows AMD
-          {
-            'gpu': '1002:6613',
-            'os': 'Windows-2008ServerR2-SP1'
-          },
-          # Windows Intel
-          {
-            'gpu': '8086:5912',
-            'os': 'Windows-10',
-          },
-          # Linux NVIDIA
           {
             'gpu': LINUX_QUADRO_P400_STABLE_DRIVER,
             'os': 'Ubuntu'
           },
-          # Android bullhead
           {
             'device_type': 'bullhead',
             'device_os': 'M',
             'os': 'Android'
           },
-          # Android angler
           {
             'device_type': 'angler',
             'device_os': 'M',
