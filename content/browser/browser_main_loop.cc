@@ -1452,9 +1452,8 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   // so this cannot happen any earlier than now.
   InitializeMojo();
 
-  const bool is_mus = IsUsingMus();
 #if defined(USE_AURA)
-  if (is_mus) {
+  if (IsUsingMus()) {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kIsRunningInMash);
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -1479,6 +1478,9 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   InitShaderCacheFactorySingleton(
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
 
+  // If mus is not hosting viz, then the browser must.
+  bool browser_is_viz_host = !IsMusHostingViz();
+
   bool always_uses_gpu = true;
   bool established_gpu_channel = false;
 #if defined(OS_ANDROID)
@@ -1491,15 +1493,13 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   if (parsed_command_line_.HasSwitch(switches::kDisableGpu) ||
       parsed_command_line_.HasSwitch(switches::kDisableGpuCompositing) ||
       parsed_command_line_.HasSwitch(switches::kDisableGpuEarlyInit) ||
-      is_mus) {
+      !browser_is_viz_host) {
     established_gpu_channel = always_uses_gpu = false;
   }
 
-  if (!is_mus) {
+  if (browser_is_viz_host) {
     host_frame_sink_manager_ = std::make_unique<viz::HostFrameSinkManager>();
-
     BrowserGpuChannelHostFactory::Initialize(established_gpu_channel);
-
     if (parsed_command_line_.HasSwitch(switches::kEnableViz)) {
       auto transport_factory = std::make_unique<VizProcessTransportFactory>(
           BrowserGpuChannelHostFactory::instance(), GetResizeTaskRunner());
@@ -1528,7 +1528,7 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   }
 
 #if defined(USE_AURA)
-  if (env_->mode() == aura::Env::Mode::LOCAL) {
+  if (browser_is_viz_host) {
     env_->set_context_factory(GetContextFactory());
     env_->set_context_factory_private(GetContextFactoryPrivate());
   }
@@ -1631,7 +1631,7 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   // ChildProcess instance which is created by the renderer thread.
   if (GpuDataManagerImpl::GetInstance()->GpuAccessAllowed(nullptr) &&
       !established_gpu_channel && always_uses_gpu && !UsingInProcessGpu() &&
-      !is_mus) {
+      browser_is_viz_host) {
     TRACE_EVENT_INSTANT0("gpu", "Post task to launch GPU process",
                          TRACE_EVENT_SCOPE_THREAD);
     BrowserThread::PostTask(
@@ -1651,15 +1651,6 @@ int BrowserMainLoop::BrowserThreadsStarted() {
 #endif
 
   return result_code_;
-}
-
-// static
-bool BrowserMainLoop::IsUsingMus() {
-#if defined(USE_AURA)
-  return aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS;
-#else
-  return false;
-#endif
 }
 
 bool BrowserMainLoop::UsingInProcessGpu() const {

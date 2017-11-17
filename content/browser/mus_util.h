@@ -11,6 +11,8 @@ namespace content {
 
 CONTENT_EXPORT bool IsUsingMus();
 
+bool IsMusHostingViz();
+
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_MUS_UTIL_H_
