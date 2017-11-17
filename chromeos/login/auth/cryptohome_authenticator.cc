@@ -168,14 +168,6 @@ void DoMount(const base::WeakPtr<AuthAttemptState>& attempt,
   // that returns directly would not generate 2 OnLoginSucces() calls.
   attempt->UsernameHashRequested();
 
-  // Set the authentication's key label to an empty string, which is a wildcard
-  // allowing any key to match. This is necessary because cryptohomes created by
-  // Chrome OS M38 and older will have a legacy key with no label while those
-  // created by Chrome OS M39 and newer will have a key with the label
-  // kCryptohomeGAIAKeyLabel.
-  const cryptohome::KeyDefinition auth_key(key->GetSecret(),
-                                           std::string(),
-                                           cryptohome::PRIV_DEFAULT);
   cryptohome::MountRequest mount;
   if (ephemeral)
     mount.set_require_ephemeral(true);
@@ -187,11 +179,17 @@ void DoMount(const base::WeakPtr<AuthAttemptState>& attempt,
   }
   if (attempt->user_context.IsForcingDircrypto())
     mount.set_force_dircrypto_if_available(true);
-
+  cryptohome::AuthorizationRequest auth;
+  cryptohome::Key* auth_key = auth.mutable_key();
+  // Don't set the authorization's key label, implicitly setting it to an
+  // empty string, which is a wildcard allowing any key to match. This is
+  // necessary because cryptohomes created by Chrome OS M38 and older will have
+  // a legacy key with no label while those created by Chrome OS M39 and newer
+  // will have a key with the label kCryptohomeGAIAKeyLabel.
+  auth_key->set_secret(key->GetSecret());
   cryptohome::HomedirMethods::GetInstance()->MountEx(
-      cryptohome::Identification(attempt->user_context.GetAccountId()),
-      cryptohome::Authorization(auth_key), mount,
-      base::Bind(&OnMount, attempt, resolver));
+      cryptohome::Identification(attempt->user_context.GetAccountId()), auth,
+      mount, base::Bind(&OnMount, attempt, resolver));
 }
 
 // Handle cryptohome migration status.
@@ -437,7 +435,7 @@ void MountPublic(const base::WeakPtr<AuthAttemptState>& attempt,
   // in a legacy way. (See comments in DoMount.)
   cryptohome::HomedirMethods::GetInstance()->MountEx(
       cryptohome::Identification(attempt->user_context.GetAccountId()),
-      cryptohome::Authorization(cryptohome::KeyDefinition()), mount,
+      cryptohome::AuthorizationRequest(), mount,
       base::Bind(&OnMount, attempt, resolver));
 }
 

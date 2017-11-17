@@ -133,14 +133,11 @@ class HomedirMethodsImpl : public HomedirMethods {
   }
 
   void MountEx(const Identification& id,
-               const Authorization& auth,
+               const AuthorizationRequest& auth,
                const MountRequest& request,
                const MountCallback& callback) override {
-    cryptohome::AuthorizationRequest auth_proto;
-
-    FillAuthorizationProtobuf(auth, &auth_proto);
     DBusThreadManager::Get()->GetCryptohomeClient()->MountEx(
-        id, auth_proto, request,
+        id, auth, request,
         base::BindOnce(&HomedirMethodsImpl::OnMountExCallback,
                        weak_ptr_factory_.GetWeakPtr(), callback));
   }

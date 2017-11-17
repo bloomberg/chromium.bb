@@ -88,7 +88,6 @@ void ExtendedAuthenticatorImpl::CreateMount(
   RecordStartMarker("MountEx");
 
   cryptohome::Identification id(account_id);
-  cryptohome::Authorization auth(keys.front());
   cryptohome::MountRequest mount;
   for (size_t i = 0; i < keys.size(); i++) {
     KeyDefinitionToKey(keys[i], mount.mutable_create()->add_keys());
@@ -97,7 +96,12 @@ void ExtendedAuthenticatorImpl::CreateMount(
   Key key(keys.front().secret);
   key.SetLabel(keys.front().label);
   context.SetKey(key);
-
+  cryptohome::AuthorizationRequest auth;
+  cryptohome::Key* auth_key = auth.mutable_key();
+  if (!key.GetLabel().empty()) {
+    auth_key->mutable_data()->set_label(key.GetLabel());
+  }
+  auth_key->set_secret(key.GetSecret());
   cryptohome::HomedirMethods::GetInstance()->MountEx(
       id,
       auth,
@@ -190,9 +194,13 @@ void ExtendedAuthenticatorImpl::DoAuthenticateToMount(
 
   cryptohome::Identification id(user_context.GetAccountId());
   const Key* const key = user_context.GetKey();
-  cryptohome::Authorization auth(key->GetSecret(), key->GetLabel());
   cryptohome::MountRequest mount;
-
+  cryptohome::AuthorizationRequest auth;
+  cryptohome::Key* auth_key = auth.mutable_key();
+  if (!key->GetLabel().empty()) {
+    auth_key->mutable_data()->set_label(key->GetLabel());
+  }
+  auth_key->set_secret(key->GetSecret());
   cryptohome::HomedirMethods::GetInstance()->MountEx(
       id,
       auth,

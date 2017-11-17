@@ -109,8 +109,8 @@ class EncryptionMigrationScreenHandler : public EncryptionMigrationScreenView,
   void RemoveCryptohome();
   void OnRemoveCryptohome(bool success, cryptohome::MountError return_code);
 
-  // Creates authorization key for MountEx method using |user_context_|.
-  cryptohome::KeyDefinition GetAuthKey();
+  // Creates authorization request for MountEx method using |user_context_|.
+  cryptohome::AuthorizationRequest CreateAuthorizationRequest();
 
   // True if the session is in ARC kiosk mode.
   bool IsArcKiosk() const;
