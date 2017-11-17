@@ -1,5 +1,3 @@
-PASS
-
 Tests the CSS highlight in sources after the Pretty print formatting.
 
 The below should be formatted

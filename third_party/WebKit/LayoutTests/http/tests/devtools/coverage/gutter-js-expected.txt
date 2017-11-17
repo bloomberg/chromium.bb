@@ -1,5 +1,3 @@
-PASS
-
 Tests the coverage highlight in sources after the recording finishes.
 
 0: + function outer(index) {
