@@ -647,7 +647,7 @@ TEST_P(BoxPaintInvalidatorTest, NonCompositedLayoutViewGradientResize) {
   EXPECT_EQ(static_cast<const DisplayItemClient*>(frame_layout_view),
             (*raster_invalidations)[1].client);
   EXPECT_EQ(IntRect(0, 0, 100, 200), (*raster_invalidations)[1].rect);
-  EXPECT_EQ(PaintInvalidationReason::kBackground,
+  EXPECT_EQ(PaintInvalidationReason::kGeometry,
             (*raster_invalidations)[1].reason);
   GetDocument().View()->SetTracksPaintInvalidations(false);
 }

@@ -45,8 +45,8 @@
       "paintInvalidations": [
         {
           "object": "LayoutView #document",
-          "rect": [400, 0, 200, 250],
-          "reason": "incremental"
+          "rect": [0, 0, 600, 250],
+          "reason": "background"
         }
       ]
     }
@@ -54,7 +54,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutView #document",
-      "reason": "incremental"
+      "reason": "background"
     }
   ]
 }
@@ -105,8 +105,8 @@
       "paintInvalidations": [
         {
           "object": "LayoutView #document",
-          "rect": [400, 0, 400, 600],
-          "reason": "incremental"
+          "rect": [0, 0, 800, 600],
+          "reason": "background"
         }
       ]
     }
@@ -114,7 +114,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutView #document",
-      "reason": "incremental"
+      "reason": "background"
     }
   ]
 }

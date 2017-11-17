@@ -3,7 +3,14 @@
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
-      "backgroundColor": "#FFFFFF"
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 0, 800, 600],
+          "reason": "style change"
+        }
+      ]
     },
     {
       "name": "Scrolling Layer",
@@ -22,19 +29,9 @@
           "reason": "background on scrolling contents layer"
         },
         {
-          "object": "LayoutBlockFlow (positioned) DIV id='child'",
-          "rect": [135, 127, 400, 50],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='child'",
-          "rect": [124, 116, 340, 297],
-          "reason": "subtree"
-        },
-        {
-          "object": "LayoutBlockFlow (relative positioned) DIV id='box' class='rotated'",
-          "rect": [16, 8, 288, 288],
-          "reason": "subtree"
+          "object": "LayoutBlockFlow HTML",
+          "rect": [0, 0, 800, 200],
+          "reason": "style change"
         }
       ]
     }
@@ -45,12 +42,12 @@
       "reason": "background on scrolling contents layer"
     },
     {
-      "object": "LayoutBlockFlow (relative positioned) DIV id='box' class='rotated'",
-      "reason": "subtree"
+      "object": "LayoutView #document",
+      "reason": "style change"
     },
     {
-      "object": "LayoutBlockFlow (positioned) DIV id='child'",
-      "reason": "subtree"
+      "object": "LayoutBlockFlow HTML",
+      "reason": "style change"
     }
   ]
 }
