@@ -54,7 +54,12 @@ class RendererMetricsHelperTest : public ::testing::Test {
     clock_->SetNowTicks(start + duration);
     scoped_refptr<MainThreadTaskQueueForTest> queue(
         new MainThreadTaskQueueForTest(queue_type));
-    metrics_helper_->RecordTaskMetrics(queue.get(), start, start + duration);
+
+    // Pass an empty task for recording.
+    TaskQueue::PostedTask posted_task(base::Closure(), FROM_HERE);
+    TaskQueue::Task task(std::move(posted_task), base::TimeTicks());
+    metrics_helper_->RecordTaskMetrics(queue.get(), task, start,
+                                       start + duration);
   }
 
   base::TimeTicks Microseconds(int microseconds) {

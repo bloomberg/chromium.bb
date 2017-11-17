@@ -34627,6 +34627,35 @@ Called by update_net_error_codes.py.-->
   <int value="17" label="IPC"/>
 </enum>
 
+<enum name="RendererSchedulerTaskType">
+  <int value="0" label="None"/>
+  <int value="1" label="DOMManipulation"/>
+  <int value="2" label="UserInteraction"/>
+  <int value="3" label="Networking"/>
+  <int value="4" label="NetworkingControl"/>
+  <int value="5" label="HistoryTraversal"/>
+  <int value="6" label="Embed"/>
+  <int value="7" label="MediaElementEvent"/>
+  <int value="8" label="CanvasBlobSerialization"/>
+  <int value="9" label="Microtask"/>
+  <int value="10" label="JavascriptTimer"/>
+  <int value="11" label="RemoteEvent"/>
+  <int value="12" label="WebSocket"/>
+  <int value="13" label="PostedMessage"/>
+  <int value="14" label="UnshippedPortMessage"/>
+  <int value="15" label="FileReading"/>
+  <int value="16" label="DatabaseAccess"/>
+  <int value="17" label="Presentation"/>
+  <int value="18" label="Sensor"/>
+  <int value="19" label="PerformanceTimeline"/>
+  <int value="20" label="WebGL"/>
+  <int value="21" label="IdleTask"/>
+  <int value="22" label="MiscPlatformAPI"/>
+  <int value="23" label="UnspecedTimer"/>
+  <int value="24" label="UnspecedLoading"/>
+  <int value="25" label="Unthrottled"/>
+</enum>
+
 <enum name="RendererType">
   <int value="1" label="Normal renderer"/>
   <int value="2" label="Extension renderer"/>

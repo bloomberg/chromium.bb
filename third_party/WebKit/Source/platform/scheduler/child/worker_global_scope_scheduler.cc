@@ -61,6 +61,9 @@ scoped_refptr<WebTaskRunner> WorkerGlobalScopeScheduler::GetTaskRunner(
       // move them into other task runners. See also comments in
       // Get(LocalFrame). (https://crbug.com/670534)
       return WebTaskRunnerImpl::Create(task_queue_, type);
+    case TaskType::kCount:
+      NOTREACHED();
+      break;
   }
   NOTREACHED();
   return nullptr;

@@ -120,6 +120,7 @@ class PLATFORM_EXPORT RendererMetricsHelper {
   ~RendererMetricsHelper();
 
   void RecordTaskMetrics(MainThreadTaskQueue* queue,
+                         const TaskQueue::Task& task,
                          base::TimeTicks start_time,
                          base::TimeTicks end_time);
 
@@ -143,34 +144,44 @@ class PLATFORM_EXPORT RendererMetricsHelper {
   using TaskDurationPerQueueTypeMetricReporter =
       TaskDurationMetricReporter<MainThreadTaskQueue::QueueType>;
 
-  TaskDurationPerQueueTypeMetricReporter task_duration_reporter;
-  TaskDurationPerQueueTypeMetricReporter foreground_task_duration_reporter;
+  TaskDurationPerQueueTypeMetricReporter per_queue_type_task_duration_reporter;
   TaskDurationPerQueueTypeMetricReporter
-      foreground_first_minute_task_duration_reporter;
+      foreground_per_queue_type_task_duration_reporter;
   TaskDurationPerQueueTypeMetricReporter
-      foreground_second_minute_task_duration_reporter;
+      foreground_first_minute_per_queue_type_task_duration_reporter;
   TaskDurationPerQueueTypeMetricReporter
-      foreground_third_minute_task_duration_reporter;
+      foreground_second_minute_per_queue_type_task_duration_reporter;
   TaskDurationPerQueueTypeMetricReporter
-      foreground_after_third_minute_task_duration_reporter;
-  TaskDurationPerQueueTypeMetricReporter background_task_duration_reporter;
+      foreground_third_minute_per_queue_type_task_duration_reporter;
   TaskDurationPerQueueTypeMetricReporter
-      background_first_minute_task_duration_reporter;
+      foreground_after_third_minute_per_queue_type_task_duration_reporter;
   TaskDurationPerQueueTypeMetricReporter
-      background_second_minute_task_duration_reporter;
+      background_per_queue_type_task_duration_reporter;
   TaskDurationPerQueueTypeMetricReporter
-      background_third_minute_task_duration_reporter;
+      background_first_minute_per_queue_type_task_duration_reporter;
   TaskDurationPerQueueTypeMetricReporter
-      background_fourth_minute_task_duration_reporter;
+      background_second_minute_per_queue_type_task_duration_reporter;
   TaskDurationPerQueueTypeMetricReporter
-      background_fifth_minute_task_duration_reporter;
+      background_third_minute_per_queue_type_task_duration_reporter;
   TaskDurationPerQueueTypeMetricReporter
-      background_after_fifth_minute_task_duration_reporter;
-  TaskDurationPerQueueTypeMetricReporter hidden_task_duration_reporter;
-  TaskDurationPerQueueTypeMetricReporter visible_task_duration_reporter;
-  TaskDurationPerQueueTypeMetricReporter hidden_music_task_duration_reporter;
+      background_fourth_minute_per_queue_type_task_duration_reporter;
+  TaskDurationPerQueueTypeMetricReporter
+      background_fifth_minute_per_queue_type_task_duration_reporter;
+  TaskDurationPerQueueTypeMetricReporter
+      background_after_fifth_minute_per_queue_type_task_duration_reporter;
+  TaskDurationPerQueueTypeMetricReporter
+      hidden_per_queue_type_task_duration_reporter;
+  TaskDurationPerQueueTypeMetricReporter
+      visible_per_queue_type_task_duration_reporter;
+  TaskDurationPerQueueTypeMetricReporter
+      hidden_music_per_queue_type_task_duration_reporter;
 
-  TaskDurationMetricReporter<FrameType> frame_type_duration_reporter;
+  TaskDurationMetricReporter<FrameType> per_frame_type_duration_reporter;
+
+  using TaskDurationPerTaskTypeMetricReporter =
+      TaskDurationMetricReporter<TaskType>;
+  TaskDurationPerTaskTypeMetricReporter per_task_type_duration_reporter;
+
   MainThreadTaskLoadState main_thread_task_load_state;
 
   DISALLOW_COPY_AND_ASSIGN(RendererMetricsHelper);

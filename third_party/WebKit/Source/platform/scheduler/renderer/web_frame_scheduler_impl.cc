@@ -258,6 +258,9 @@ scoped_refptr<blink::WebTaskRunner> WebFrameSchedulerImpl::GetTaskRunner(
       return WebTaskRunnerImpl::Create(PausableTaskQueue(), type);
     case TaskType::kUnthrottled:
       return WebTaskRunnerImpl::Create(UnpausableTaskQueue(), type);
+    case TaskType::kCount:
+      NOTREACHED();
+      break;
   }
   NOTREACHED();
   return nullptr;
