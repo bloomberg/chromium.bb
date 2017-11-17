@@ -35,7 +35,7 @@ sessions::LiveTabContext* FindLiveTabContextWithCondition(
     DCHECK(!browser_state->IsOffTheRecord());
     NSArray<TabModel*>* tab_models;
 
-    tab_models = GetTabModelsForChromeBrowserState(browser_state);
+    tab_models = TabModelList::GetTabModelsForChromeBrowserState(browser_state);
     for (TabModel* tab_model : tab_models) {
       if (condition.Run(tab_model)) {
         return TabRestoreServiceDelegateImplIOSFactory::GetForBrowserState(
@@ -49,7 +49,8 @@ sessions::LiveTabContext* FindLiveTabContextWithCondition(
     ios::ChromeBrowserState* otr_browser_state =
         browser_state->GetOffTheRecordChromeBrowserState();
 
-    tab_models = GetTabModelsForChromeBrowserState(otr_browser_state);
+    tab_models =
+        TabModelList::GetTabModelsForChromeBrowserState(otr_browser_state);
     for (TabModel* tab_model : tab_models) {
       if (condition.Run(tab_model)) {
         return TabRestoreServiceDelegateImplIOSFactory::GetForBrowserState(

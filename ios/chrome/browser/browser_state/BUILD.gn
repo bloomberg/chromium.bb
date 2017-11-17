@@ -127,6 +127,20 @@ source_set("browser_state_impl") {
   ]
 }
 
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "test_chrome_browser_state_manager_unittest.cc",
+  ]
+  deps = [
+    ":test_support",
+    "//base",
+    "//ios/web/public/test",
+    "//testing/gtest",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
 source_set("test_support") {
   testonly = true
   sources = [

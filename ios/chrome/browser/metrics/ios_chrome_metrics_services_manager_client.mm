@@ -63,7 +63,7 @@ std::unique_ptr<rappor::RapporServiceImpl>
 IOSChromeMetricsServicesManagerClient::CreateRapporServiceImpl() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return base::MakeUnique<rappor::RapporServiceImpl>(
-      local_state_, base::Bind(&::IsOffTheRecordSessionActive));
+      local_state_, base::Bind(&TabModelList::IsOffTheRecordSessionActive));
 }
 
 std::unique_ptr<variations::VariationsService>
