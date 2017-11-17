@@ -428,23 +428,21 @@ std::string AboutDiscards(const std::string& path) {
   std::vector<std::string> url_split =
       base::SplitString(path, "?", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   if (!url_split.empty()) {
-    resource_coordinator::TabManager::DiscardTabCondition discard_condition;
-    if ((url_split.size() > 1 &&
-         url_split[1] == kAboutDiscardsSkipUnloadHandlersCommand)) {
-      discard_condition = resource_coordinator::TabManager::kUrgentShutdown;
-    } else {
-      discard_condition = resource_coordinator::TabManager::kProactiveShutdown;
-    }
+    resource_coordinator::DiscardCondition condition =
+        (url_split.size() > 1 &&
+         url_split[1] == kAboutDiscardsSkipUnloadHandlersCommand)
+            ? resource_coordinator::DiscardCondition::kUrgent
+            : resource_coordinator::DiscardCondition::kProactive;
 
     std::vector<std::string> path_split = base::SplitString(
         url_split[0], "/", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     if (path_split.size() == 2 && path_split[0] == kAboutDiscardsRunCommand &&
         base::StringToInt64(path_split[1], &web_content_id)) {
-      tab_manager->DiscardTabById(web_content_id, discard_condition);
+      tab_manager->DiscardTabById(web_content_id, condition);
       return BuildAboutDiscardsRunPage();
     } else if (path_split.size() == 1 &&
                path_split[0] == kAboutDiscardsRunCommand) {
-      tab_manager->DiscardTab(discard_condition);
+      tab_manager->DiscardTab(condition);
       return BuildAboutDiscardsRunPage();
     }
   }
