@@ -265,6 +265,7 @@
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "services/metrics/public/interfaces/ukm_interface.mojom-shared.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/WebKit/common/page/page_visibility_state.mojom-blink.h"
 
 #ifndef NDEBUG
 using WeakDocumentSet =
@@ -1732,18 +1733,18 @@ void Document::setDir(const AtomicString& value) {
     html->setDir(value);
 }
 
-PageVisibilityState Document::GetPageVisibilityState() const {
+mojom::PageVisibilityState Document::GetPageVisibilityState() const {
   // The visibility of the document is inherited from the visibility of the
   // page. If there is no page associated with the document, we will assume
   // that the page is hidden, as specified by the spec:
   // https://w3c.github.io/page-visibility/#hidden-attribute
   if (!frame_ || !frame_->GetPage())
-    return kPageVisibilityStateHidden;
+    return mojom::PageVisibilityState::kHidden;
   // While visibilitychange is being dispatched during unloading it is
   // expected that the visibility is hidden regardless of the page's
   // visibility.
   if (load_event_progress_ >= kUnloadVisibilityChangeInProgress)
-    return kPageVisibilityStateHidden;
+    return mojom::PageVisibilityState::kHidden;
   return frame_->GetPage()->VisibilityState();
 }
 
@@ -1761,7 +1762,7 @@ String Document::visibilityState() const {
 }
 
 bool Document::hidden() const {
-  return GetPageVisibilityState() != kPageVisibilityStateVisible;
+  return GetPageVisibilityState() != mojom::PageVisibilityState::kVisible;
 }
 
 void Document::DidChangeVisibilityState() {
@@ -1769,7 +1770,7 @@ void Document::DidChangeVisibilityState() {
   // Also send out the deprecated version until it can be removed.
   DispatchEvent(Event::CreateBubble(EventTypeNames::webkitvisibilitychange));
 
-  if (GetPageVisibilityState() == kPageVisibilityStateVisible)
+  if (GetPageVisibilityState() == mojom::PageVisibilityState::kVisible)
     Timeline().SetAllCompositorPending();
 
   if (hidden() && canvas_font_cache_)
@@ -3414,9 +3415,9 @@ void Document::DispatchUnloadEvents() {
       if (!frame_)
         return;
 
-      PageVisibilityState visibility_state = GetPageVisibilityState();
+      mojom::PageVisibilityState visibility_state = GetPageVisibilityState();
       load_event_progress_ = kUnloadVisibilityChangeInProgress;
-      if (visibility_state != kPageVisibilityStateHidden) {
+      if (visibility_state != mojom::PageVisibilityState::kHidden) {
         // Dispatch visibilitychange event, but don't bother doing
         // other notifications as we're about to be unloaded.
         const double pagevisibility_hidden_event_start =

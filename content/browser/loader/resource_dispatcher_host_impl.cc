@@ -121,6 +121,7 @@
 #include "storage/browser/blob/shareable_file_reference.h"
 #include "storage/browser/fileapi/file_permission_policy.h"
 #include "storage/browser/fileapi/file_system_context.h"
+#include "third_party/WebKit/common/page/page_visibility_state.mojom.h"
 #include "url/third_party/mozilla/url_parse.h"
 #include "url/url_constants.h"
 
@@ -1683,8 +1684,8 @@ ResourceRequestInfoImpl* ResourceDispatcherHostImpl::CreateRequestInfo(
       false,     // enable_upload_progress
       false,     // do_not_prompt_for_login
       false,     // keepalive
-      blink::kWebReferrerPolicyDefault, blink::kWebPageVisibilityStateVisible,
-      context,
+      blink::kWebReferrerPolicyDefault,
+      blink::mojom::PageVisibilityState::kVisible, context,
       false,           // report_raw_headers
       true,            // is_async
       previews_state,  // previews_state

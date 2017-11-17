@@ -28,6 +28,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
+#include "third_party/WebKit/common/page/page_visibility_state.mojom.h"
 
 namespace content {
 
@@ -39,25 +40,25 @@ class PrerenderTestContentBrowserClient : public TestContentBrowserClient {
  public:
   PrerenderTestContentBrowserClient()
       : override_enabled_(false),
-        visibility_override_(blink::kWebPageVisibilityStateVisible) {}
+        visibility_override_(blink::mojom::PageVisibilityState::kVisible) {}
   ~PrerenderTestContentBrowserClient() override {}
 
   void EnableVisibilityOverride(
-      blink::WebPageVisibilityState visibility_override) {
+      blink::mojom::PageVisibilityState visibility_override) {
     override_enabled_ = true;
     visibility_override_ = visibility_override;
   }
 
   void OverridePageVisibilityState(
       RenderFrameHost* render_frame_host,
-      blink::WebPageVisibilityState* visibility_state) override {
+      blink::mojom::PageVisibilityState* visibility_state) override {
     if (override_enabled_)
       *visibility_state = visibility_override_;
   }
 
  private:
   bool override_enabled_;
-  blink::WebPageVisibilityState visibility_override_;
+  blink::mojom::PageVisibilityState visibility_override_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderTestContentBrowserClient);
 };
@@ -148,11 +149,11 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   WebContents* web_contents = shell()->web_contents();
 
   web_contents->WasShown();
-  EXPECT_EQ(blink::kWebPageVisibilityStateVisible,
+  EXPECT_EQ(blink::mojom::PageVisibilityState::kVisible,
             web_contents->GetMainFrame()->GetVisibilityState());
 
   web_contents->WasHidden();
-  EXPECT_EQ(blink::kWebPageVisibilityStateHidden,
+  EXPECT_EQ(blink::mojom::PageVisibilityState::kHidden,
             web_contents->GetMainFrame()->GetVisibilityState());
 }
 
@@ -166,11 +167,12 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   ContentBrowserClient* old_client = SetBrowserClientForTesting(&new_client);
 
   web_contents->WasShown();
-  EXPECT_EQ(blink::kWebPageVisibilityStateVisible,
+  EXPECT_EQ(blink::mojom::PageVisibilityState::kVisible,
             web_contents->GetMainFrame()->GetVisibilityState());
 
-  new_client.EnableVisibilityOverride(blink::kWebPageVisibilityStatePrerender);
-  EXPECT_EQ(blink::kWebPageVisibilityStatePrerender,
+  new_client.EnableVisibilityOverride(
+      blink::mojom::PageVisibilityState::kPrerender);
+  EXPECT_EQ(blink::mojom::PageVisibilityState::kPrerender,
             web_contents->GetMainFrame()->GetVisibilityState());
 
   SetBrowserClientForTesting(old_client);

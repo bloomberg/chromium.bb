@@ -86,6 +86,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/ssl/client_cert_store.h"
 #include "net/url_request/url_request.h"
+#include "third_party/WebKit/common/page/page_visibility_state.mojom.h"
 #include "third_party/protobuf/src/google/protobuf/repeated_field.h"
 
 #if BUILDFLAG(ENABLE_NACL)
@@ -268,8 +269,8 @@ void AppendComponentUpdaterThrottles(
     content::ResourceContext* resource_context,
     ResourceType resource_type,
     std::vector<std::unique_ptr<content::ResourceThrottle>>* throttles) {
-  bool is_prerendering =
-      info.GetVisibilityState() == blink::kWebPageVisibilityStatePrerender;
+  bool is_prerendering = info.GetVisibilityState() ==
+                         blink::mojom::PageVisibilityState::kPrerender;
   if (is_prerendering)
     return;
 
@@ -674,7 +675,8 @@ void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(
 #endif
 
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
-  if (info->GetVisibilityState() == blink::kWebPageVisibilityStatePrerender) {
+  if (info->GetVisibilityState() ==
+      blink::mojom::PageVisibilityState::kPrerender) {
     throttles->push_back(
         base::MakeUnique<prerender::PrerenderResourceThrottle>(request));
   }

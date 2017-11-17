@@ -15,6 +15,7 @@
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/Vector.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/common/page/page_visibility_state.mojom-blink.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -35,7 +36,8 @@ TEST(PresentationAvailabilityTest, NoPageVisibilityChangeAfterDetach) {
 
   // These two calls should not crash.
   scope.GetFrame().Detach(FrameDetachType::kRemove);
-  scope.GetPage().SetVisibilityState(kPageVisibilityStateHidden, false);
+  scope.GetPage().SetVisibilityState(mojom::PageVisibilityState::kHidden,
+                                     false);
 }
 
 }  // anonymous namespace

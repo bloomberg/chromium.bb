@@ -12,6 +12,7 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/timing/PerformanceBase.h"
 #include "platform/loader/fetch/ResourceTimingInfo.h"
+#include "third_party/WebKit/common/page/page_visibility_state.mojom-blink.h"
 
 namespace blink {
 
@@ -90,8 +91,8 @@ unsigned long long PerformanceNavigationTiming::GetDecodedBodySize() const {
 AtomicString PerformanceNavigationTiming::GetNavigationType(
     NavigationType type,
     const Document* document) {
-  if (document &&
-      document->GetPageVisibilityState() == kPageVisibilityStatePrerender) {
+  if (document && document->GetPageVisibilityState() ==
+                      mojom::PageVisibilityState::kPrerender) {
     return "prerender";
   }
   switch (type) {

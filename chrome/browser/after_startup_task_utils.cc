@@ -25,6 +25,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "third_party/WebKit/common/page/page_visibility_state.mojom.h"
 
 using content::BrowserThread;
 using content::WebContents;
@@ -178,7 +179,7 @@ void StartupObserver::Start() {
     contents = browser->tab_strip_model()->GetActiveWebContents();
     if (contents && contents->GetMainFrame() &&
         contents->GetMainFrame()->GetVisibilityState() ==
-            blink::kWebPageVisibilityStateVisible) {
+            blink::mojom::PageVisibilityState::kVisible) {
       break;
     }
   }

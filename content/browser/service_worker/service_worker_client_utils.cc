@@ -31,6 +31,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/child_process_host.h"
+#include "third_party/WebKit/common/page/page_visibility_state.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -318,7 +319,7 @@ void AddNonWindowClient(ServiceWorkerProviderHost* host,
     return;
 
   ServiceWorkerClientInfo client_info(
-      host->client_uuid(), blink::kWebPageVisibilityStateHidden,
+      host->client_uuid(), blink::mojom::PageVisibilityState::kHidden,
       false,  // is_focused
       host->document_url(), REQUEST_CONTEXT_FRAME_TYPE_NONE, base::TimeTicks(),
       host->create_time(), host_client_type);
@@ -517,7 +518,7 @@ void GetClient(ServiceWorkerProviderHost* provider_host,
   }
 
   ServiceWorkerClientInfo client_info(
-      provider_host->client_uuid(), blink::kWebPageVisibilityStateHidden,
+      provider_host->client_uuid(), blink::mojom::PageVisibilityState::kHidden,
       false,  // is_focused
       provider_host->document_url(), REQUEST_CONTEXT_FRAME_TYPE_NONE,
       base::TimeTicks(), provider_host->create_time(),

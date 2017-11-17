@@ -20,6 +20,7 @@
 #include "platform/mojo/MojoHelper.h"
 #include "public/platform/Platform.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/WebKit/common/page/page_visibility_state.mojom-blink.h"
 
 namespace {
 const char kJsonMimePostfix[] = "+json";
@@ -814,7 +815,7 @@ void NFC::PageVisibilityChanged() {
 
   // NFC operations should be suspended.
   // https://w3c.github.io/web-nfc/#nfc-suspended
-  if (GetPage()->VisibilityState() == kPageVisibilityStateVisible)
+  if (GetPage()->VisibilityState() == mojom::PageVisibilityState::kVisible)
     nfc_->ResumeNFCOperations();
   else
     nfc_->SuspendNFCOperations();

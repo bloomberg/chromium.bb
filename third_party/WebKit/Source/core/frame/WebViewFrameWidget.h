@@ -84,7 +84,7 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   void UpdateBrowserControlsState(WebBrowserControlsState constraints,
                                   WebBrowserControlsState current,
                                   bool animate) override;
-  void SetVisibilityState(WebPageVisibilityState) override;
+  void SetVisibilityState(mojom::PageVisibilityState) override;
   void SetBackgroundColorOverride(WebColor) override;
   void ClearBackgroundColorOverride() override;
   void SetBaseBackgroundColorOverride(WebColor) override;

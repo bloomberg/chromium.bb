@@ -167,7 +167,7 @@ class ChromeContentRendererClient
   blink::WebPrescientNetworking* GetPrescientNetworking() override;
   bool ShouldOverridePageVisibilityState(
       const content::RenderFrame* render_frame,
-      blink::WebPageVisibilityState* override_state) override;
+      blink::mojom::PageVisibilityState* override_state) override;
   bool IsExternalPepperPlugin(const std::string& module_name) override;
   std::unique_ptr<blink::WebSocketHandshakeThrottle>
   CreateWebSocketHandshakeThrottle() override;

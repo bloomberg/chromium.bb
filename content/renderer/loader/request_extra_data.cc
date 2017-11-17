@@ -8,13 +8,14 @@
 #include "content/public/common/resource_request.h"
 #include "content/public/common/service_worker_modes.h"
 #include "ipc/ipc_message.h"
+#include "third_party/WebKit/common/page/page_visibility_state.mojom.h"
 
 using blink::WebString;
 
 namespace content {
 
 RequestExtraData::RequestExtraData()
-    : visibility_state_(blink::kWebPageVisibilityStateVisible),
+    : visibility_state_(blink::mojom::PageVisibilityState::kVisible),
       render_frame_id_(MSG_ROUTING_NONE),
       is_main_frame_(false),
       allow_download_(true),

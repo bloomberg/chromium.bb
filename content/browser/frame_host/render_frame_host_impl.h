@@ -193,7 +193,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   RenderViewHost* GetRenderViewHost() override;
   service_manager::InterfaceProvider* GetRemoteInterfaces() override;
   AssociatedInterfaceProvider* GetRemoteAssociatedInterfaces() override;
-  blink::WebPageVisibilityState GetVisibilityState() override;
+  blink::mojom::PageVisibilityState GetVisibilityState() override;
   bool IsRenderFrameLive() override;
   bool IsCurrent() override;
   int GetProxyCount() override;

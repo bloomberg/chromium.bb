@@ -43,7 +43,7 @@ class MODULES_EXPORT ServiceWorkerWindowClient final
  private:
   explicit ServiceWorkerWindowClient(const WebServiceWorkerClientInfo&);
 
-  WebPageVisibilityState page_visibility_state_;
+  mojom::PageVisibilityState page_visibility_state_;
   bool is_focused_;
 };
 

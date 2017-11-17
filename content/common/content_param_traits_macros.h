@@ -17,10 +17,10 @@
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_type.h"
 #include "ipc/ipc_message_macros.h"
+#include "third_party/WebKit/common/page/page_visibility_state.mojom.h"
 #include "third_party/WebKit/public/platform/WebAddressSpace.h"
 #include "third_party/WebKit/public/platform/WebContentSecurityPolicy.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
-#include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
 #include "third_party/WebKit/public/web/WebImeTextSpan.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/ipc/geometry/gfx_param_traits.h"
@@ -46,8 +46,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::WebAddressSpace, blink::kWebAddressSpaceLast)
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebInputEvent::Type,
                               blink::WebInputEvent::kTypeFirst,
                               blink::WebInputEvent::kTypeLast)
-IPC_ENUM_TRAITS_MAX_VALUE(blink::WebPageVisibilityState,
-                          blink::kWebPageVisibilityStateLast)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::PageVisibilityState,
+                          blink::mojom::PageVisibilityState::kLast)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebImeTextSpan::Type,
                           blink::WebImeTextSpan::Type::kMisspellingSuggestion)
 

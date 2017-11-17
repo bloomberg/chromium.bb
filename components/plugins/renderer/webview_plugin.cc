@@ -17,6 +17,7 @@
 #include "content/public/renderer/render_view.h"
 #include "gin/converter.h"
 #include "skia/ext/platform_canvas.h"
+#include "third_party/WebKit/common/page/page_visibility_state.mojom.h"
 #include "third_party/WebKit/public/platform/WebCoalescedInputEvent.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
@@ -255,7 +256,8 @@ void WebViewPlugin::DidFailLoading(const WebURLError& error) {
 WebViewPlugin::WebViewHelper::WebViewHelper(WebViewPlugin* plugin,
                                             const WebPreferences& preferences)
     : plugin_(plugin) {
-  web_view_ = WebView::Create(this, blink::kWebPageVisibilityStateVisible);
+  web_view_ =
+      WebView::Create(this, blink::mojom::PageVisibilityState::kVisible);
   // ApplyWebPreferences before making a WebLocalFrame so that the frame sees a
   // consistent view of our preferences.
   content::RenderView::ApplyWebPreferences(preferences, web_view_);

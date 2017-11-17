@@ -117,6 +117,7 @@
 #include "public/web/WebWidget.h"
 #include "public/web/WebWidgetClient.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/common/page/page_visibility_state.mojom-blink.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 
@@ -467,7 +468,7 @@ TEST_P(WebViewTest, SetBaseBackgroundColorBeforeMainFrame) {
   const WebColor kBlue = 0xFF0000FF;
   FrameTestHelpers::TestWebViewClient web_view_client;
   WebViewImpl* web_view = static_cast<WebViewImpl*>(
-      WebView::Create(&web_view_client, kWebPageVisibilityStateVisible));
+      WebView::Create(&web_view_client, mojom::PageVisibilityState::kVisible));
   EXPECT_NE(kBlue, web_view->BackgroundColor());
   // webView does not have a frame yet, but we should still be able to set the
   // background color.
@@ -2559,7 +2560,7 @@ TEST_P(WebViewTest, ClientTapHandlingNullWebViewClient) {
   // Note: this test doesn't use WebViewHelper since WebViewHelper creates an
   // internal WebViewClient on demand if the supplied WebViewClient is null.
   WebViewImpl* web_view = static_cast<WebViewImpl*>(
-      WebView::Create(nullptr, kWebPageVisibilityStateVisible));
+      WebView::Create(nullptr, mojom::PageVisibilityState::kVisible));
   FrameTestHelpers::TestWebFrameClient web_frame_client;
   FrameTestHelpers::TestWebWidgetClient web_widget_client;
   WebLocalFrame* local_frame = WebLocalFrame::CreateMainFrame(

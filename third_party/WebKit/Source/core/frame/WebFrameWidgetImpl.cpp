@@ -78,6 +78,7 @@
 #include "public/web/WebPlugin.h"
 #include "public/web/WebRange.h"
 #include "public/web/WebWidgetClient.h"
+#include "third_party/WebKit/common/page/page_visibility_state.mojom-blink.h"
 
 namespace blink {
 
@@ -1180,10 +1181,10 @@ HitTestResult WebFrameWidgetImpl::CoreHitTestResultAt(
 }
 
 void WebFrameWidgetImpl::SetVisibilityState(
-    WebPageVisibilityState visibility_state) {
+    mojom::PageVisibilityState visibility_state) {
   if (layer_tree_view_) {
     layer_tree_view_->SetVisible(visibility_state ==
-                                 kWebPageVisibilityStateVisible);
+                                 mojom::PageVisibilityState::kVisible);
   }
 }
 

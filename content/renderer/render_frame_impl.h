@@ -67,11 +67,11 @@
 #include "services/service_manager/public/interfaces/connector.mojom.h"
 #include "services/service_manager/public/interfaces/interface_provider.mojom.h"
 #include "third_party/WebKit/common/feature_policy/feature_policy.h"
+#include "third_party/WebKit/common/page/page_visibility_state.mojom.h"
 #include "third_party/WebKit/public/platform/WebEffectiveConnectionType.h"
 #include "third_party/WebKit/public/platform/WebFocusType.h"
 #include "third_party/WebKit/public/platform/WebLoadingBehaviorFlag.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
-#include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
 #include "third_party/WebKit/public/platform/media_engagement.mojom.h"
 #include "third_party/WebKit/public/platform/site_engagement.mojom.h"
 #include "third_party/WebKit/public/web/WebAXObject.h"
@@ -490,7 +490,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void SetPreviewsState(PreviewsState previews_state) override;
   PreviewsState GetPreviewsState() const override;
   bool IsPasting() const override;
-  blink::WebPageVisibilityState GetVisibilityState() const override;
+  blink::mojom::PageVisibilityState GetVisibilityState() const override;
   bool IsBrowserSideNavigationPending() override;
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(
       blink::TaskType task_type) override;
@@ -724,7 +724,7 @@ class CONTENT_EXPORT RenderFrameImpl
       const blink::WebString& sink_id,
       const blink::WebSecurityOrigin& security_origin,
       blink::WebSetSinkIdCallbacks* web_callbacks) override;
-  blink::WebPageVisibilityState VisibilityState() const override;
+  blink::mojom::PageVisibilityState VisibilityState() const override;
   std::unique_ptr<blink::WebURLLoaderFactory> CreateURLLoaderFactory() override;
   void DraggableRegionsChanged() override;
   // |rect_to_scroll| is with respect to this frame's origin. |rect_to_scroll|

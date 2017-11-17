@@ -10,12 +10,14 @@
 #include "platform/loader/fetch/SubstituteData.h"
 #include "public/platform/Platform.h"
 #include "public/web/WebSettings.h"
+#include "third_party/WebKit/common/page/page_visibility_state.mojom-blink.h"
 
 namespace blink {
 
 WorkerShadowPage::WorkerShadowPage(Client* client)
     : client_(client),
-      web_view_(WebViewImpl::Create(nullptr, kWebPageVisibilityStateVisible)),
+      web_view_(
+          WebViewImpl::Create(nullptr, mojom::PageVisibilityState::kVisible)),
       main_frame_(WebLocalFrameImpl::CreateMainFrame(web_view_,
                                                      this,
                                                      nullptr,

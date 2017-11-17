@@ -19,8 +19,8 @@
 #include "build/build_config.h"
 #include "content/public/common/content_client.h"
 #include "media/base/decode_capabilities.h"
+#include "third_party/WebKit/common/page/page_visibility_state.mojom.h"
 #include "third_party/WebKit/public/platform/WebContentSettingsClient.h"
-#include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
 #include "third_party/WebKit/public/web/WebNavigationPolicy.h"
 #include "third_party/WebKit/public/web/WebNavigationType.h"
 #include "ui/base/page_transition_types.h"
@@ -241,7 +241,7 @@ class CONTENT_EXPORT ContentRendererClient {
   virtual blink::WebPrescientNetworking* GetPrescientNetworking();
   virtual bool ShouldOverridePageVisibilityState(
       const RenderFrame* render_frame,
-      blink::WebPageVisibilityState* override_state);
+      blink::mojom::PageVisibilityState* override_state);
 
   // Returns true if the given Pepper plugin is external (requiring special
   // startup steps).

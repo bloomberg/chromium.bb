@@ -11,6 +11,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/TaskType.h"
 #include "services/device/public/cpp/generic_sensor/sensor_traits.h"
+#include "third_party/WebKit/common/page/page_visibility_state.mojom-blink.h"
 
 namespace blink {
 
@@ -246,7 +247,7 @@ void SensorProxy::UpdateSuspendedStatus() {
     return;
 
   bool page_visible =
-      GetPage()->VisibilityState() == kPageVisibilityStateVisible;
+      GetPage()->VisibilityState() == mojom::PageVisibilityState::kVisible;
 
   LocalFrame* focused_frame = GetPage()->GetFocusController().FocusedFrame();
   bool main_frame_focused =

@@ -111,7 +111,7 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
 
   // WebFrameWidget implementation.
   WebLocalFrameImpl* LocalRoot() const override { return local_root_; }
-  void SetVisibilityState(WebPageVisibilityState) override;
+  void SetVisibilityState(mojom::PageVisibilityState) override;
   void SetBackgroundColorOverride(WebColor) override;
   void ClearBackgroundColorOverride() override;
   void SetBaseBackgroundColorOverride(WebColor) override;

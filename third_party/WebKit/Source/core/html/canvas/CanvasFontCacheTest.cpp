@@ -14,6 +14,7 @@
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/common/page/page_visibility_state.mojom-blink.h"
 
 using ::testing::Mock;
 
@@ -81,7 +82,8 @@ TEST_F(CanvasFontCacheTest, CacheHardLimit) {
 TEST_F(CanvasFontCacheTest, PageVisibilityChange) {
   Context2d()->setFont("10px sans-serif");
   EXPECT_TRUE(Cache()->IsInCache("10px sans-serif"));
-  Page().GetPage().SetVisibilityState(kPageVisibilityStateHidden, false);
+  Page().GetPage().SetVisibilityState(mojom::PageVisibilityState::kHidden,
+                                      false);
   EXPECT_FALSE(Cache()->IsInCache("10px sans-serif"));
 
   Context2d()->setFont("15px sans-serif");
@@ -92,7 +94,8 @@ TEST_F(CanvasFontCacheTest, PageVisibilityChange) {
   EXPECT_TRUE(Cache()->IsInCache("10px sans-serif"));
   EXPECT_FALSE(Cache()->IsInCache("15px sans-serif"));
 
-  Page().GetPage().SetVisibilityState(kPageVisibilityStateVisible, false);
+  Page().GetPage().SetVisibilityState(mojom::PageVisibilityState::kVisible,
+                                      false);
   Context2d()->setFont("15px sans-serif");
   Context2d()->setFont("10px sans-serif");
   EXPECT_TRUE(Cache()->IsInCache("10px sans-serif"));

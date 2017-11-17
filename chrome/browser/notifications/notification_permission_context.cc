@@ -21,6 +21,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "third_party/WebKit/common/page/page_visibility_state.mojom.h"
 #include "url/gurl.h"
 
 namespace {
@@ -86,11 +87,11 @@ VisibilityTimerTabHelper::VisibilityTimerTabHelper(
     is_visible_ = false;
   } else {
     switch (contents->GetMainFrame()->GetVisibilityState()) {
-      case blink::kWebPageVisibilityStateHidden:
-      case blink::kWebPageVisibilityStatePrerender:
+      case blink::mojom::PageVisibilityState::kHidden:
+      case blink::mojom::PageVisibilityState::kPrerender:
         is_visible_ = false;
         break;
-      case blink::kWebPageVisibilityStateVisible:
+      case blink::mojom::PageVisibilityState::kVisible:
         is_visible_ = true;
         break;
     }

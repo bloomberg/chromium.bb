@@ -400,7 +400,7 @@ class CORE_EXPORT Document : public ContainerNode,
   String suborigin() const;
 
   String visibilityState() const;
-  PageVisibilityState GetPageVisibilityState() const;
+  mojom::PageVisibilityState GetPageVisibilityState() const;
   bool hidden() const;
   void DidChangeVisibilityState();
 

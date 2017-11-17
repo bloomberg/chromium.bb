@@ -33,8 +33,9 @@
 
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebDragOperation.h"
-#include "public/platform/WebPageVisibilityState.h"
 #include "public/web/WebWidget.h"
+#include "third_party/WebKit/common/page/page_visibility_state.mojom-shared.h"
+
 namespace blink {
 
 class WebDragData;
@@ -52,7 +53,8 @@ class WebFrameWidget : public WebWidget {
   // We still track page-level visibility, but additionally we need to notify a
   // WebFrameWidget when its owning RenderWidget receives a Show or Hide
   // directive, so that it knows whether it needs to draw or not.
-  virtual void SetVisibilityState(WebPageVisibilityState visibility_state) {}
+  virtual void SetVisibilityState(mojom::PageVisibilityState visibility_state) {
+  }
 
   // Overrides the WebFrameWidget's background and base background color. You
   // can use this to enforce a transparent background, which is useful if you
