@@ -24670,6 +24670,7 @@ from previous Chrome versions.
   <int value="-933316841" label="enable-permissions-blacklist"/>
   <int value="-928138978" label="IPH_DemoMode:disabled"/>
   <int value="-926422468" label="disable-embedded-shared-worker"/>
+  <int value="-923744156" label="RendererSideResourceSchduler:enabled"/>
   <int value="-918900957" label="AutofillCreditCardAssist:disabled"/>
   <int value="-918618075" label="enable-service-worker"/>
   <int value="-914210146" label="enable-web-based-signin"/>
@@ -25315,6 +25316,7 @@ from previous Chrome versions.
   <int value="909439558" label="disable-device-discovery"/>
   <int value="916316159" label="disable-new-app-list-mixer"/>
   <int value="918046854" label="NtlmV2Enabled:disabled"/>
+  <int value="919593572" label="RendererSideResourceSchduler:disabled"/>
   <int value="926852901" label="DataReductionProxyMainMenu:disabled"/>
   <int value="929462705" label="disable-link-disambiguation-popup"/>
   <int value="935655516" label="password-import-export:disabled"/>

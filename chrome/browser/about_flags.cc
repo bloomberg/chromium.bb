@@ -3042,6 +3042,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kFetchKeepaliveTimeoutSettingDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kFetchKeepaliveTimeoutSetting)},
 
+    {"enable-renderer-side-resource-scheduler",
+     flag_descriptions::kRendererSideResourceSchedulerName,
+     flag_descriptions::kRendererSideResourceSchedulerDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kRendererSideResourceScheduler)},
+
 #if defined(OS_CHROMEOS)
     {"force-tablet-mode", flag_descriptions::kUiModeName,
      flag_descriptions::kUiModeDescription, kOsCrOS,

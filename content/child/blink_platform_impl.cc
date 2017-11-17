@@ -40,6 +40,7 @@
 #include "content/child/child_thread_impl.h"
 #include "content/child/content_child_helpers.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "net/base/net_errors.h"
@@ -590,6 +591,10 @@ WebString BlinkPlatformImpl::QueryLocalizedString(WebLocalizedString::Name name,
   values.push_back(value2.Utf16());
   return WebString::FromUTF16(base::ReplaceStringPlaceholders(
       GetContentClient()->GetLocalizedString(message_id), values, nullptr));
+}
+
+bool BlinkPlatformImpl::IsRendererSideResourceSchedulerEnabled() const {
+  return base::FeatureList::IsEnabled(features::kRendererSideResourceScheduler);
 }
 
 std::unique_ptr<blink::WebGestureCurve>

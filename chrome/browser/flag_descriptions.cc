@@ -1147,6 +1147,11 @@ const char kRemoveUsageOfDeprecatedGaiaSigninEndpointDescription[] =
     "This flags controls wheter it should no longer be used during a sign-in "
     " flow.";
 
+const char kRendererSideResourceSchedulerName[] =
+    "Renderer side ResourceScheduler";
+const char kRendererSideResourceSchedulerDescription[] =
+    "Migrate some ResourceScheduler functionalities to renderer";
+
 const char kRequestTabletSiteName[] =
     "Request tablet site option in the settings menu";
 const char kRequestTabletSiteDescription[] =
