@@ -465,6 +465,7 @@ CrSettingsResetPageTest.prototype = {
     '../test_browser_proxy.js',
     'test_lifetime_browser_proxy.js',
     'test_reset_browser_proxy.js',
+    'test_util.js',
     'reset_page_test.js',
   ]),
 };
