@@ -18,12 +18,9 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/sys_byteorder.h"
 #include "base/sys_info.h"
-#include "base/task_scheduler/post_task.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/decoder_buffer.h"
@@ -104,18 +101,6 @@ static std::unique_ptr<vpx_codec_ctx> InitializeVpxContext(
   return nullptr;
 }
 
-static void DestroyHelper(std::unique_ptr<vpx_codec_ctx> vpx_codec,
-                          std::unique_ptr<vpx_codec_ctx> vpx_codec_alpha) {
-  // Note: The vpx_codec_destroy() calls below don't release the memory
-  // allocated for vpx_codec_ctx, they just release internal allocations, so we
-  // still need std::unique_ptr to release the structure memory.
-  if (vpx_codec)
-    vpx_codec_destroy(vpx_codec.get());
-
-  if (vpx_codec_alpha)
-    vpx_codec_destroy(vpx_codec_alpha.get());
-}
-
 static int32_t GetVP9FrameBuffer(void* user_priv,
                                  size_t min_size,
                                  vpx_codec_frame_buffer* fb) {
@@ -139,16 +124,13 @@ static int32_t ReleaseVP9FrameBuffer(void* user_priv,
   return 0;
 }
 
-VpxVideoDecoder::VpxVideoDecoder()
-    : state_(kUninitialized),
-      vpx_codec_(nullptr),
-      vpx_codec_alpha_(nullptr),
-      weak_factory_(this) {
-  thread_checker_.DetachFromThread();
+VpxVideoDecoder::VpxVideoDecoder(OffloadState offload_state)
+    : bind_callbacks_(offload_state == OffloadState::kNormal) {
+  DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
 VpxVideoDecoder::~VpxVideoDecoder() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CloseDecoder();
 }
 
@@ -161,11 +143,12 @@ void VpxVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                  CdmContext* /* cdm_context */,
                                  const InitCB& init_cb,
                                  const OutputCB& output_cb) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(config.IsValidConfig());
 
-  InitCB bound_init_cb = BindToCurrentLoop(init_cb);
+  CloseDecoder();
 
+  InitCB bound_init_cb = bind_callbacks_ ? BindToCurrentLoop(init_cb) : init_cb;
   if (config.is_encrypted() || !ConfigureDecoder(config)) {
     bound_init_cb.Run(false);
     return;
@@ -174,14 +157,20 @@ void VpxVideoDecoder::Initialize(const VideoDecoderConfig& config,
   // Success!
   config_ = config;
   state_ = kNormal;
-  output_cb_ = offload_task_runner_ ? BindToCurrentLoop(output_cb) : output_cb;
+  output_cb_ = output_cb;
   bound_init_cb.Run(true);
 }
 
-void VpxVideoDecoder::DecodeBuffer(const scoped_refptr<DecoderBuffer>& buffer,
-                                   const DecodeCB& bound_decode_cb) {
+void VpxVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
+                             const DecodeCB& decode_cb) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(buffer);
+  DCHECK(!decode_cb.is_null());
   DCHECK_NE(state_, kUninitialized)
       << "Called Decode() before successful Initialize()";
+
+  DecodeCB bound_decode_cb =
+      bind_callbacks_ ? BindToCurrentLoop(decode_cb) : decode_cb;
 
   if (state_ == kError) {
     bound_decode_cb.Run(DecodeStatus::DECODE_ERROR);
@@ -203,9 +192,9 @@ void VpxVideoDecoder::DecodeBuffer(const scoped_refptr<DecoderBuffer>& buffer,
   scoped_refptr<VideoFrame> video_frame;
   if (config_.codec() == kCodecVP9) {
     SCOPED_UMA_HISTOGRAM_TIMER("Media.VpxVideoDecoder.Vp9DecodeTime");
-    decode_okay = VpxDecode(buffer, &video_frame);
+    decode_okay = VpxDecode(buffer.get(), &video_frame);
   } else {
-    decode_okay = VpxDecode(buffer, &video_frame);
+    decode_okay = VpxDecode(buffer.get(), &video_frame);
   }
 
   if (!decode_okay) {
@@ -228,52 +217,21 @@ void VpxVideoDecoder::DecodeBuffer(const scoped_refptr<DecoderBuffer>& buffer,
   bound_decode_cb.Run(DecodeStatus::OK);
 }
 
-void VpxVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
-                             const DecodeCB& decode_cb) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(buffer.get());
-  DCHECK(!decode_cb.is_null());
-
-  DecodeCB bound_decode_cb = BindToCurrentLoop(decode_cb);
-
-  if (offload_task_runner_) {
-    offload_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&VpxVideoDecoder::DecodeBuffer,
-                              base::Unretained(this), buffer, bound_decode_cb));
-  } else {
-    DecodeBuffer(buffer, bound_decode_cb);
-  }
-}
-
-void VpxVideoDecoder::Reset(const base::Closure& closure) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (offload_task_runner_) {
-    offload_task_runner_->PostTask(
-        FROM_HERE,
-        BindToCurrentLoop(base::Bind(&VpxVideoDecoder::ResetHelper,
-                                     weak_factory_.GetWeakPtr(), closure)));
-    return;
-  }
-
-  // BindToCurrentLoop() to avoid calling |closure| inmediately.
-  ResetHelper(BindToCurrentLoop(closure));
-}
-
-size_t VpxVideoDecoder::GetPoolSizeForTesting() const {
-  return memory_pool_->get_pool_size_for_testing();
-}
-
-void VpxVideoDecoder::SetTickClockForTesting(base::TickClock* tick_clock) {
-  memory_pool_->set_tick_clock_for_testing(tick_clock);
-}
-
-void VpxVideoDecoder::ResetHelper(const base::Closure& closure) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+void VpxVideoDecoder::Reset(const base::Closure& reset_cb) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   state_ = kNormal;
-  closure.Run();
+
+  if (bind_callbacks_)
+    BindToCurrentLoop(reset_cb).Run();
+  else
+    reset_cb.Run();
+
+  // Allow Initialize() to be called on another thread now.
+  DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
 bool VpxVideoDecoder::ConfigureDecoder(const VideoDecoderConfig& config) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (config.codec() != kCodecVP8 && config.codec() != kCodecVP9)
     return false;
 
@@ -292,8 +250,7 @@ bool VpxVideoDecoder::ConfigureDecoder(const VideoDecoderConfig& config) {
     return false;
 #endif
 
-  CloseDecoder();
-
+  DCHECK(!vpx_codec_);
   vpx_codec_ = InitializeVpxContext(config);
   if (!vpx_codec_)
     return false;
@@ -305,19 +262,9 @@ bool VpxVideoDecoder::ConfigureDecoder(const VideoDecoderConfig& config) {
     DCHECK(vpx_codec_get_caps(vpx_codec_->iface) &
            VPX_CODEC_CAP_EXTERNAL_FRAME_BUFFER);
 
-    // Move high resolution vp9 decodes off of the main media thread (otherwise
-    // decode may block audio decoding, demuxing, and other control activities).
-    if (config.coded_size().width() >= 1024) {
-      if (!offload_task_runner_) {
-        offload_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
-            {base::TaskPriority::USER_BLOCKING});
-      }
-    } else {
-      offload_task_runner_ = nullptr;
-    }
-
     DCHECK(!memory_pool_);
     memory_pool_ = new FrameBufferPool();
+
     if (vpx_codec_set_frame_buffer_functions(
             vpx_codec_.get(), &GetVP9FrameBuffer, &ReleaseVP9FrameBuffer,
             memory_pool_.get())) {
@@ -330,47 +277,43 @@ bool VpxVideoDecoder::ConfigureDecoder(const VideoDecoderConfig& config) {
   if (config.format() != PIXEL_FORMAT_YV12A)
     return true;
 
+  DCHECK(!vpx_codec_alpha_);
   vpx_codec_alpha_ = InitializeVpxContext(config);
   return !!vpx_codec_alpha_;
 }
 
 void VpxVideoDecoder::CloseDecoder() {
-  if (offload_task_runner_) {
-    offload_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&DestroyHelper, base::Passed(&vpx_codec_),
-                              base::Passed(&vpx_codec_alpha_)));
-  } else {
-    DestroyHelper(std::move(vpx_codec_), std::move(vpx_codec_alpha_));
-  }
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Note: The vpx_codec_destroy() calls below don't release the memory
+  // allocated for vpx_codec_ctx, they just release internal allocations, so we
+  // still need std::unique_ptr to release the structure memory.
+  if (vpx_codec_)
+    vpx_codec_destroy(vpx_codec_.get());
+
+  if (vpx_codec_alpha_)
+    vpx_codec_destroy(vpx_codec_alpha_.get());
+
+  vpx_codec_.reset();
+  vpx_codec_alpha_.reset();
 
   if (memory_pool_) {
-    if (offload_task_runner_) {
-      // Shutdown must be called on the same thread as buffers are created.
-      offload_task_runner_->PostTask(
-          FROM_HERE, base::Bind(&FrameBufferPool::Shutdown, memory_pool_));
-    } else {
-      memory_pool_->Shutdown();
-    }
-
+    memory_pool_->Shutdown();
     memory_pool_ = nullptr;
-  }
-
-  if (offload_task_runner_) {
-    // We must wait for the offload task runner here because it's still active
-    // it may be writing to |state_| and reading from |config_|.
-    // TODO(dalecurtis): This could be avoided by creating an inner class for
-    // decoding that has copies of state and config.
-    base::WaitableEvent waiter(base::WaitableEvent::ResetPolicy::AUTOMATIC,
-                               base::WaitableEvent::InitialState::NOT_SIGNALED);
-    offload_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&base::WaitableEvent::Signal, base::Unretained(&waiter)));
-    waiter.Wait();
   }
 }
 
-bool VpxVideoDecoder::VpxDecode(const scoped_refptr<DecoderBuffer>& buffer,
+void VpxVideoDecoder::Detach() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!bind_callbacks_);
+
+  CloseDecoder();
+  DETACH_FROM_SEQUENCE(sequence_checker_);
+}
+
+bool VpxVideoDecoder::VpxDecode(const DecoderBuffer* buffer,
                                 scoped_refptr<VideoFrame>* video_frame) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(video_frame);
   DCHECK(!buffer->end_of_stream());
 
@@ -501,7 +444,8 @@ bool VpxVideoDecoder::VpxDecode(const scoped_refptr<DecoderBuffer>& buffer,
 VpxVideoDecoder::AlphaDecodeStatus VpxVideoDecoder::DecodeAlphaPlane(
     const struct vpx_image* vpx_image,
     const struct vpx_image** vpx_image_alpha,
-    const scoped_refptr<DecoderBuffer>& buffer) {
+    const DecoderBuffer* buffer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!vpx_codec_alpha_ || buffer->side_data_size() < 8) {
     return kAlphaPlaneProcessed;
   }
@@ -555,6 +499,7 @@ bool VpxVideoDecoder::CopyVpxImageToVideoFrame(
     const struct vpx_image* vpx_image,
     const struct vpx_image* vpx_image_alpha,
     scoped_refptr<VideoFrame>* video_frame) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(vpx_image);
 
   VideoPixelFormat codec_format;
