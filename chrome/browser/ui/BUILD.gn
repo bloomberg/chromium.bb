@@ -411,6 +411,7 @@ split_static_library("ui") {
     "//components/invalidation/impl",
     "//components/keyed_service/content",
     "//components/keyed_service/core",
+    "//components/navigation_metrics",
     "//components/net_log",
     "//components/ntp_snippets",
     "//components/ntp_tiles",

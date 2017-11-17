@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "components/app_modal/javascript_dialog_manager.h"
+#include "components/navigation_metrics/navigation_metrics.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "ui/gfx/text_elider.h"
@@ -87,15 +88,23 @@ void JavaScriptDialogTabHelper::RunJavaScriptDialog(
   content::WebContents* parent_web_contents =
       WebContentsObserver::web_contents();
   bool foremost = IsWebContentsForemost(parent_web_contents);
+  navigation_metrics::Scheme scheme =
+      navigation_metrics::GetScheme(alerting_frame_url);
   switch (dialog_type) {
     case content::JAVASCRIPT_DIALOG_TYPE_ALERT:
       UMA_HISTOGRAM_BOOLEAN("JSDialogs.IsForemost.Alert", foremost);
+      UMA_HISTOGRAM_ENUMERATION("JSDialogs.Scheme.Alert", scheme,
+                                navigation_metrics::Scheme::COUNT);
       break;
     case content::JAVASCRIPT_DIALOG_TYPE_CONFIRM:
       UMA_HISTOGRAM_BOOLEAN("JSDialogs.IsForemost.Confirm", foremost);
+      UMA_HISTOGRAM_ENUMERATION("JSDialogs.Scheme.Confirm", scheme,
+                                navigation_metrics::Scheme::COUNT);
       break;
     case content::JAVASCRIPT_DIALOG_TYPE_PROMPT:
       UMA_HISTOGRAM_BOOLEAN("JSDialogs.IsForemost.Prompt", foremost);
+      UMA_HISTOGRAM_ENUMERATION("JSDialogs.Scheme.Prompt", scheme,
+                                navigation_metrics::Scheme::COUNT);
       break;
   }
 
