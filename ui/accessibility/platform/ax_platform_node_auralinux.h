@@ -49,6 +49,24 @@ class AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
  private:
   ~AXPlatformNodeAuraLinux() override;
 
+  enum AtkInterfaces {
+    ATK_ACTION_INTERFACE,
+    ATK_COMPONENT_INTERFACE,
+    ATK_DOCUMENT_INTERFACE,
+    ATK_EDITABLE_TEXT_INTERFACE,
+    ATK_HYPERLINK_INTERFACE,
+    ATK_HYPERTEXT_INTERFACE,
+    ATK_IMAGE_INTERFACE,
+    ATK_SELECTION_INTERFACE,
+    ATK_TABLE_INTERFACE,
+    ATK_TEXT_INTERFACE,
+    ATK_VALUE_INTERFACE,
+  };
+  static const char* GetUniqueAccessibilityGTypeName(int interface_mask);
+  int GetGTypeInterfaceMask();
+  GType GetAccessibilityGType();
+  AtkObject* CreateAtkObject();
+
   // We own a reference to this ref-counted object.
   AtkObject* atk_object_;
 
