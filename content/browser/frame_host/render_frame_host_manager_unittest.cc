@@ -15,6 +15,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
@@ -40,6 +41,7 @@
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/browser_side_navigation_policy.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/javascript_dialog_type.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/url_constants.h"
@@ -49,10 +51,12 @@
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_notification_tracker.h"
 #include "content/public/test/test_utils.h"
+#include "content/test/mock_widget_input_handler.h"
 #include "content/test/test_content_browser_client.h"
 #include "content/test/test_content_client.h"
 #include "content/test/test_render_frame_host.h"
 #include "content/test/test_render_view_host.h"
+#include "content/test/test_render_widget_host.h"
 #include "content/test/test_web_contents.h"
 #include "net/base/load_flags.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -75,6 +79,17 @@ void VerifyPageFocusMessage(MockRenderProcessHost* rph,
   InputMsg_SetFocus::Param params;
   EXPECT_TRUE(InputMsg_SetFocus::Read(message, &params));
   EXPECT_EQ(expected_focus, std::get<0>(params));
+}
+
+// VerifyPageFocusMessage from the mojo input handler.
+void VerifyPageFocusMessage(TestRenderWidgetHost* twh, bool expected_focus) {
+  MockWidgetInputHandler::MessageVector events =
+      twh->GetMockWidgetInputHandler()->GetAndResetDispatchedMessages();
+  EXPECT_EQ(1u, events.size());
+  MockWidgetInputHandler::DispatchedFocusMessage* focus_message =
+      events.at(0)->ToFocus();
+  EXPECT_TRUE(focus_message);
+  EXPECT_EQ(expected_focus, focus_message->focused());
 }
 
 // Helper function for strict mixed content checking tests.
@@ -304,6 +319,7 @@ class PluginFaviconMessageObserver : public WebContentsObserver {
 class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
  public:
   void SetUp() override {
+    mojo_feature_list_.InitAndEnableFeature(features::kMojoInputMessages);
     RenderViewHostImplTestHarness::SetUp();
     WebUIControllerFactory::RegisterFactory(&factory_);
   }
@@ -492,6 +508,7 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
                                RenderFrameHostManager*)>& commit_lambda);
 
  private:
+  base::test::ScopedFeatureList mojo_feature_list_;
   RenderFrameHostManagerTestWebUIControllerFactory factory_;
 };
 
@@ -2446,6 +2463,7 @@ TEST_F(RenderFrameHostManagerTest, PageFocusPropagatesToSubframeProcesses) {
   RenderFrameProxyHost* proxyC =
       root->render_manager()->GetRenderFrameProxyHost(host3->GetSiteInstance());
   EXPECT_TRUE(proxyC);
+  base::RunLoop().RunUntilIdle();
 
   // Focus the main page, and verify that the focus message was sent to all
   // processes.  The message to A should be sent through the main frame's
@@ -2455,8 +2473,8 @@ TEST_F(RenderFrameHostManagerTest, PageFocusPropagatesToSubframeProcesses) {
   host1->GetProcess()->sink().ClearMessages();
   host3->GetProcess()->sink().ClearMessages();
   main_test_rfh()->GetRenderWidgetHost()->Focus();
-  VerifyPageFocusMessage(main_test_rfh()->GetProcess(), true,
-                         main_test_rfh()->GetRenderViewHost()->GetRoutingID());
+  base::RunLoop().RunUntilIdle();
+  VerifyPageFocusMessage(main_test_rfh()->GetRenderWidgetHost(), true);
   VerifyPageFocusMessage(host1->GetProcess(), true, proxyB->GetRoutingID());
   VerifyPageFocusMessage(host3->GetProcess(), true, proxyC->GetRoutingID());
 
@@ -2466,8 +2484,8 @@ TEST_F(RenderFrameHostManagerTest, PageFocusPropagatesToSubframeProcesses) {
   host1->GetProcess()->sink().ClearMessages();
   host3->GetProcess()->sink().ClearMessages();
   main_test_rfh()->GetRenderWidgetHost()->Blur();
-  VerifyPageFocusMessage(main_test_rfh()->GetProcess(), false,
-                         main_test_rfh()->GetRenderViewHost()->GetRoutingID());
+  base::RunLoop().RunUntilIdle();
+  VerifyPageFocusMessage(main_test_rfh()->GetRenderWidgetHost(), false);
   VerifyPageFocusMessage(host1->GetProcess(), false, proxyB->GetRoutingID());
   VerifyPageFocusMessage(host3->GetProcess(), false, proxyC->GetRoutingID());
 }
