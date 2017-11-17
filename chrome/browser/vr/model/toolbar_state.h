@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VR_TOOLBAR_STATE_H_
-#define CHROME_BROWSER_VR_TOOLBAR_STATE_H_
+#ifndef CHROME_BROWSER_VR_MODEL_TOOLBAR_STATE_H_
+#define CHROME_BROWSER_VR_MODEL_TOOLBAR_STATE_H_
 
 #include "components/security_state/core/security_state.h"
 #include "url/gurl.h"
@@ -39,4 +39,4 @@ struct ToolbarState {
 
 }  // namespace vr
 
-#endif  // CHROME_BROWSER_VR_TOOLBAR_STATE_H_
+#endif  // CHROME_BROWSER_VR_MODEL_TOOLBAR_STATE_H_

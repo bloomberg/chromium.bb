@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_VR_TOOLBAR_HELPER_H_
 
 #include "chrome/browser/vr/browser_ui_interface.h"
-#include "chrome/browser/vr/toolbar_state.h"
+#include "chrome/browser/vr/model/toolbar_state.h"
 
 class ToolbarModel;
 class ToolbarModelDelegate;

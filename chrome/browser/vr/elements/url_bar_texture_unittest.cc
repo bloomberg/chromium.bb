@@ -10,7 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/vr/elements/render_text_wrapper.h"
-#include "chrome/browser/vr/toolbar_state.h"
+#include "chrome/browser/vr/model/toolbar_state.h"
 #include "components/security_state/core/security_state.h"
 #include "components/toolbar/vector_icons.h"
 #include "components/url_formatter/url_formatter.h"

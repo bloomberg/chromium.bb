@@ -43,6 +43,9 @@ class VrTestContext : public vr::UiBrowserInterface {
                             vr::ExitVrPromptChoice choice) override;
   void OnContentScreenBoundsChanged(const gfx::SizeF& bounds) override;
   void SetVoiceSearchActive(bool active) override;
+  void StartAutocomplete(const base::string16& string) override;
+  void StopAutocomplete() override;
+  void Navigate(GURL gurl) override;
 
  private:
   unsigned int CreateFakeContentTexture();

@@ -170,7 +170,7 @@ UiSceneManager::UiSceneManager(UiBrowserInterface* browser,
   CreateSystemIndicators();
   CreateUrlBar(model);
   CreateSuggestionList(model);
-  CreateWebVrUrlToast();
+  CreateWebVrUrlToast(model);
   CreateCloseButton();
   CreateScreenDimmer();
   CreateToasts(model);
@@ -847,6 +847,8 @@ void UiSceneManager::CreateUrlBar(Model* model) {
   url_bar->SetSize(kUrlBarWidth, kUrlBarHeight);
   url_bar->AddBinding(VR_BIND(bool, UiSceneManager, this, fullscreen(),
                               UiElement, url_bar.get(), SetVisible(!value)));
+  url_bar->AddBinding(VR_BIND_FUNC(ToolbarState, Model, model, toolbar_state,
+                                   UrlBar, url_bar.get(), SetToolbarState));
   url_bar_ = url_bar.get();
   scene_->AddUiElement(k2dBrowsingForeground, std::move(url_bar));
 
@@ -925,24 +927,27 @@ TransientElement* UiSceneManager::AddTransientParent(UiElementName name,
   return to_return;
 }
 
-void UiSceneManager::CreateWebVrUrlToast() {
+void UiSceneManager::CreateWebVrUrlToast(Model* model) {
   webvr_url_toast_transient_parent_ =
       AddTransientParent(kWebVrUrlToastTransientParent, kWebVrViewportAwareRoot,
                          kWebVrUrlToastTimeoutSeconds, true);
-  auto url_bar = base::MakeUnique<WebVrUrlToast>(
+  auto element = base::MakeUnique<WebVrUrlToast>(
       512,
       base::Bind(&UiSceneManager::OnUnsupportedMode, base::Unretained(this)));
-  url_bar->set_name(kWebVrUrlToast);
-  url_bar->set_opacity_when_visible(0.8f);
-  url_bar->set_draw_phase(kPhaseOverlayForeground);
-  url_bar->SetVisible(true);
-  url_bar->set_hit_testable(false);
-  url_bar->SetTranslate(0, kWebVrToastDistance * sin(kWebVrUrlToastRotationRad),
+  element->set_name(kWebVrUrlToast);
+  element->set_opacity_when_visible(0.8f);
+  element->set_draw_phase(kPhaseOverlayForeground);
+  element->SetVisible(true);
+  element->set_hit_testable(false);
+  element->SetTranslate(0, kWebVrToastDistance * sin(kWebVrUrlToastRotationRad),
                         -kWebVrToastDistance * cos(kWebVrUrlToastRotationRad));
-  url_bar->SetRotate(1, 0, 0, kWebVrUrlToastRotationRad);
-  url_bar->SetSize(kWebVrUrlToastWidth, kWebVrUrlToastHeight);
-  webvr_url_toast_ = url_bar.get();
-  scene_->AddUiElement(kWebVrUrlToastTransientParent, std::move(url_bar));
+  element->SetRotate(1, 0, 0, kWebVrUrlToastRotationRad);
+  element->SetSize(kWebVrUrlToastWidth, kWebVrUrlToastHeight);
+  element->AddBinding(VR_BIND_FUNC(ToolbarState, Model, model, toolbar_state,
+                                   WebVrUrlToast, element.get(),
+                                   SetToolbarState));
+  webvr_url_toast_ = element.get();
+  scene_->AddUiElement(kWebVrUrlToastTransientParent, std::move(element));
 }
 
 void UiSceneManager::CreateCloseButton() {
@@ -1415,11 +1420,6 @@ void UiSceneManager::OnExitPromptChoice(bool chose_exit,
   browser_->OnExitVrPromptResult(reason, chose_exit
                                              ? ExitVrPromptChoice::CHOICE_EXIT
                                              : ExitVrPromptChoice::CHOICE_STAY);
-}
-
-void UiSceneManager::SetToolbarState(const ToolbarState& state) {
-  url_bar_->SetToolbarState(state);
-  webvr_url_toast_->SetToolbarState(state);
 }
 
 void UiSceneManager::SetIsExiting() {

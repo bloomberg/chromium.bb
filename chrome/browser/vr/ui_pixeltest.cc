@@ -4,9 +4,9 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/browser/vr/model/toolbar_state.h"
 #include "chrome/browser/vr/test/constants.h"
 #include "chrome/browser/vr/test/ui_pixel_test.h"
-#include "chrome/browser/vr/toolbar_state.h"
 #include "components/toolbar/vector_icons.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

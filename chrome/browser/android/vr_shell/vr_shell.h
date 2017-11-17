@@ -121,6 +121,7 @@ class VrShell : device::GvrGamepadDataProvider,
                     jboolean incognito,
                     jint id);
   void OnContentPaused(bool paused);
+  void Navigate(GURL url);
   void NavigateBack();
   void ExitCct();
   void ToggleCardboardGamepad(bool enabled);
@@ -182,6 +183,8 @@ class VrShell : device::GvrGamepadDataProvider,
                             vr::ExitVrPromptChoice choice);
   void OnContentScreenBoundsChanged(const gfx::SizeF& bounds);
   void SetVoiceSearchActive(bool active);
+  void StartAutocomplete(const base::string16& string);
+  void StopAutocomplete();
   bool HasAudioPermission();
 
   void ProcessContentGesture(std::unique_ptr<blink::WebInputEvent> event,
