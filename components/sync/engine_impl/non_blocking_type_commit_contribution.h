@@ -11,12 +11,14 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "components/sync/engine/non_blocking_sync_common.h"
 #include "components/sync/engine_impl/commit_contribution.h"
 #include "components/sync/engine_impl/cycle/data_type_debug_info_emitter.h"
 #include "components/sync/protocol/sync.pb.h"
 
 namespace syncer {
 
+class Cryptographer;
 class ModelTypeWorker;
 
 // A non-blocking sync type's contribution to an outgoing commit message.
@@ -26,11 +28,13 @@ class ModelTypeWorker;
 class NonBlockingTypeCommitContribution : public CommitContribution {
  public:
   NonBlockingTypeCommitContribution(
+      ModelType type,
       const sync_pb::DataTypeContext& context,
-      const google::protobuf::RepeatedPtrField<sync_pb::SyncEntity>& entities,
+      const CommitRequestDataList& commit_requests,
       ModelTypeWorker* worker,
+      Cryptographer* cryptographer,
       DataTypeDebugInfoEmitter* debug_info_emitter,
-      bool clear_client_defined_unique_tags);
+      bool only_commit_specifics);
   ~NonBlockingTypeCommitContribution() override;
 
   // Implementation of CommitContribution
@@ -42,14 +46,26 @@ class NonBlockingTypeCommitContribution : public CommitContribution {
   size_t GetNumEntries() const override;
 
  private:
+  // Copies data to be committed from CommitRequestData into SyncEntity proto.
+  static void PopulateCommitProto(const CommitRequestData& commit_entity,
+                                  sync_pb::SyncEntity* commit_proto);
+
+  // Generates id for new entites and encrypts entity if needed.
+  void AdjustCommitProto(sync_pb::SyncEntity* commit_proto);
+
+  const ModelType type_;
+
   // A non-owned pointer back to the object that created this contribution.
   ModelTypeWorker* const worker_;
+
+  // A non-owned pointer to cryptographer to encrypt entities.
+  Cryptographer* const cryptographer_;
 
   // The type-global context information.
   const sync_pb::DataTypeContext context_;
 
-  // The set of entities to be committed, serialized as SyncEntities.
-  const google::protobuf::RepeatedPtrField<sync_pb::SyncEntity> entities_;
+  // The list of entities to be committed.
+  CommitRequestDataList commit_requests_;
 
   // The index in the commit message where this contribution's entities are
   // added.  Used to correlate per-item requests with per-item responses.
@@ -61,12 +77,9 @@ class NonBlockingTypeCommitContribution : public CommitContribution {
 
   DataTypeDebugInfoEmitter* debug_info_emitter_;
 
-  // If we should remove all the tag hashes from the commit data that actually
-  // gets sent over the wire. This is used to save bandwidth when we do not need
-  // these entities to have consistent client ids, such as with commit only
-  // types. These ids are still passed into this contribution object so that
-  // they can be set on response before handing back to the |worker_|.
-  bool clear_client_defined_unique_tags_;
+  // Don't send any metadata to server, only specifics. This is needed for
+  // commit only types to save bandwidth.
+  bool only_commit_specifics_;
 
   DISALLOW_COPY_AND_ASSIGN(NonBlockingTypeCommitContribution);
 };
