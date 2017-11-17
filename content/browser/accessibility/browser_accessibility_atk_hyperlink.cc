@@ -101,12 +101,22 @@ static void browser_accessibility_atk_hyperlink_class_init(
 // AtkAction interface.
 //
 
+static BrowserAccessibilityAuraLinux*
+ToBrowserAccessibilityAuraLinuxFromHyperlinkAction(AtkAction* atk_action) {
+  if (!IS_BROWSER_ACCESSIBILITY_ATK_HYPERLINK(atk_action))
+    return nullptr;
+
+  return ToBrowserAccessibilityAuraLinux(
+      BROWSER_ACCESSIBILITY_ATK_HYPERLINK(atk_action));
+}
+
 static gboolean browser_accessibility_atk_hyperlink_do_action(AtkAction* action,
                                                               gint index) {
   g_return_val_if_fail(ATK_IS_ACTION(action), FALSE);
   g_return_val_if_fail(!index, FALSE);
 
-  BrowserAccessibilityAuraLinux* obj = ToBrowserAccessibilityAuraLinux(action);
+  BrowserAccessibilityAuraLinux* obj =
+      ToBrowserAccessibilityAuraLinuxFromHyperlinkAction(action);
   if (!obj)
     return FALSE;
 
@@ -119,7 +129,8 @@ static gint browser_accessibility_atk_hyperlink_get_n_actions(
     AtkAction* action) {
   g_return_val_if_fail(ATK_IS_ACTION(action), FALSE);
 
-  BrowserAccessibilityAuraLinux* obj = ToBrowserAccessibilityAuraLinux(action);
+  BrowserAccessibilityAuraLinux* obj =
+      ToBrowserAccessibilityAuraLinuxFromHyperlinkAction(action);
   if (!obj)
     return 0;
 
@@ -132,7 +143,8 @@ static const gchar* browser_accessibility_atk_hyperlink_get_description(
   g_return_val_if_fail(ATK_IS_ACTION(action), FALSE);
   g_return_val_if_fail(!index, FALSE);
 
-  BrowserAccessibilityAuraLinux* obj = ToBrowserAccessibilityAuraLinux(action);
+  BrowserAccessibilityAuraLinux* obj =
+      ToBrowserAccessibilityAuraLinuxFromHyperlinkAction(action);
   if (!obj)
     return nullptr;
 
@@ -146,7 +158,8 @@ static const gchar* browser_accessibility_atk_hyperlink_get_keybinding(
   g_return_val_if_fail(ATK_IS_ACTION(action), FALSE);
   g_return_val_if_fail(!index, FALSE);
 
-  BrowserAccessibilityAuraLinux* obj = ToBrowserAccessibilityAuraLinux(action);
+  BrowserAccessibilityAuraLinux* obj =
+      ToBrowserAccessibilityAuraLinuxFromHyperlinkAction(action);
   if (!obj)
     return nullptr;
 
@@ -160,7 +173,7 @@ static const gchar* browser_accessibility_atk_hyperlink_get_name(
   g_return_val_if_fail(!index, FALSE);
 
   BrowserAccessibilityAuraLinux* obj =
-      ToBrowserAccessibilityAuraLinux(atk_action);
+      ToBrowserAccessibilityAuraLinuxFromHyperlinkAction(atk_action);
   if (!obj)
     return nullptr;
 
@@ -179,7 +192,7 @@ static const gchar* browser_accessibility_atk_hyperlink_get_localized_name(
   g_return_val_if_fail(!index, FALSE);
 
   BrowserAccessibilityAuraLinux* obj =
-      ToBrowserAccessibilityAuraLinux(atk_action);
+      ToBrowserAccessibilityAuraLinuxFromHyperlinkAction(atk_action);
   if (!obj)
     return nullptr;
 
