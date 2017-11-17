@@ -86,6 +86,7 @@ public class AppIndexingUtilTest {
     public void testCacheHit() {
         mUtil.extractCopylessPasteMetadata(mTab);
         verify(mCopylessPaste).getEntities(any(CopylessPaste.GetEntitiesResponse.class));
+        verify(mCopylessPaste).close();
         verify(mReporter).reportWebPage(any(WebPage.class));
         verify(mReporter, never()).reportWebPageView(any(String.class), any(String.class));
 
