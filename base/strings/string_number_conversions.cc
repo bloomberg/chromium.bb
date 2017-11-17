@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/numerics/safe_math.h"
 #include "base/scoped_clear_errno.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/third_party/dmg_fp/dmg_fp.h"
 
 namespace base {
@@ -328,51 +329,63 @@ bool String16ToIntImpl(const StringPiece16& input, VALUE* output) {
 
 }  // namespace
 
-std::string IntToString(int value) {
-  return IntToStringT<std::string, int>::IntToString(value);
+std::string NumberToString(int32_t value) {
+  return IntToStringT<std::string, int32_t>::IntToString(value);
 }
 
-string16 IntToString16(int value) {
-  return IntToStringT<string16, int>::IntToString(value);
+string16 NumberToString16(int32_t value) {
+  return IntToStringT<string16, int32_t>::IntToString(value);
 }
 
-std::string UintToString(unsigned int value) {
-  return IntToStringT<std::string, unsigned int>::IntToString(value);
+std::string NumberToString(uint32_t value) {
+  return IntToStringT<std::string, uint32_t>::IntToString(value);
 }
 
-string16 UintToString16(unsigned int value) {
-  return IntToStringT<string16, unsigned int>::IntToString(value);
+string16 NumberToString16(uint32_t value) {
+  return IntToStringT<string16, uint32_t>::IntToString(value);
 }
 
-std::string Int64ToString(int64_t value) {
+std::string NumberToString(int64_t value) {
   return IntToStringT<std::string, int64_t>::IntToString(value);
 }
 
-string16 Int64ToString16(int64_t value) {
+string16 NumberToString16(int64_t value) {
   return IntToStringT<string16, int64_t>::IntToString(value);
 }
 
-std::string Uint64ToString(uint64_t value) {
+std::string NumberToString(uint64_t value) {
   return IntToStringT<std::string, uint64_t>::IntToString(value);
 }
 
-string16 Uint64ToString16(uint64_t value) {
+string16 NumberToString16(uint64_t value) {
   return IntToStringT<string16, uint64_t>::IntToString(value);
 }
 
-std::string SizeTToString(size_t value) {
+#if defined(OS_MACOSX)
+std::string NumberToString(size_t value) {
   return IntToStringT<std::string, size_t>::IntToString(value);
 }
 
-string16 SizeTToString16(size_t value) {
+string16 NumberToString16(size_t value) {
   return IntToStringT<string16, size_t>::IntToString(value);
 }
+#endif
 
-std::string DoubleToString(double value) {
+std::string NumberToString(double value) {
   // According to g_fmt.cc, it is sufficient to declare a buffer of size 32.
   char buffer[32];
   dmg_fp::g_fmt(buffer, value);
   return std::string(buffer);
+}
+
+base::string16 NumberToString16(double value) {
+  // According to g_fmt.cc, it is sufficient to declare a buffer of size 32.
+  char buffer[32];
+  dmg_fp::g_fmt(buffer, value);
+
+  // The number will be ASCII. This creates the string using the "input
+  // iterator" variant which promotes from 8-bit to 16-bit via "=".
+  return base::string16(&buffer[0], &buffer[strlen(buffer)]);
 }
 
 bool StringToInt(const StringPiece& input, int* output) {
