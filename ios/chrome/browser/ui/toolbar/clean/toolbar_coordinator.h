@@ -17,6 +17,9 @@ class WebStateList;
 namespace ios {
 class ChromeBrowserState;
 }
+namespace web {
+class WebState;
+}
 
 // Coordinator to run a toolbar -- a UI element housing controls.
 @interface ToolbarCoordinator : NSObject<OmniboxFocuser>
@@ -36,6 +39,13 @@ class ChromeBrowserState;
 - (void)start;
 // Stop this coordinator.
 - (void)stop;
+
+// Updates the toolbar so it is in a state where a snapshot for |webState| can
+// be taken.
+- (void)updateToolbarForSideSwipeSnapshot:(web::WebState*)webState;
+// Resets the toolbar after taking a side swipe snapshot. After calling this
+// method the toolbar is adapted to the current webState.
+- (void)resetToolbarAfterSideSwipeSnapshot;
 
 @end
 

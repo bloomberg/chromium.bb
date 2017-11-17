@@ -32,6 +32,9 @@ class WebStateList;
 // object and may be nil.
 @property(nonatomic, strong) id<ToolbarConsumer> consumer;
 
+// Updates the consumer to conforms to |webState|.
+- (void)updateConsumerForWebState:(web::WebState*)webState;
+
 // Stops observing all objects.
 - (void)disconnect;
 
