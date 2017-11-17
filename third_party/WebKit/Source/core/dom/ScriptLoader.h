@@ -21,6 +21,7 @@
 #ifndef ScriptLoader_h
 #define ScriptLoader_h
 
+#include "bindings/core/v8/ScriptSourceLocationType.h"
 #include "core/CoreExport.h"
 #include "core/dom/PendingScript.h"
 #include "core/dom/Script.h"

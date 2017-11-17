@@ -232,7 +232,8 @@ function createShadowRootWithin(node) {
 createShadowRootWithin(document.body);
 )";
     web_frame_->GetFrame()->GetScriptController().ExecuteScriptInMainWorld(
-        script, ScriptController::kExecuteScriptWhenScriptsDisabled);
+        script, ScriptSourceLocationType::kInternal,
+        ScriptController::kExecuteScriptWhenScriptsDisabled);
   }
 
   if (web_frame_->Client()) {

@@ -89,6 +89,7 @@ bindings_core_v8_files =
                     "core/v8/ScriptRegexp.h",
                     "core/v8/ScriptSourceCode.cpp",
                     "core/v8/ScriptSourceCode.h",
+                    "core/v8/ScriptSourceLocationType.h",
                     "core/v8/ScriptStreamer.cpp",
                     "core/v8/ScriptStreamer.h",
                     "core/v8/ScriptStreamerThread.cpp",

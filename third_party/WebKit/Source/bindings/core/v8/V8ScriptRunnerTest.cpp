@@ -61,7 +61,8 @@ class V8ScriptRunnerTest : public ::testing::Test {
   bool CompileScript(ScriptState* script_state, V8CacheOptions cache_options) {
     return !V8ScriptRunner::CompileScript(
                 script_state, V8String(script_state->GetIsolate(), Code()),
-                Filename(), String(), WTF::TextPosition(), resource_.Get(),
+                Filename(), String(), WTF::TextPosition(),
+                ScriptSourceLocationType::kExternalFile, resource_.Get(),
                 nullptr, resource_.Get() ? resource_->CacheHandler() : nullptr,
                 kNotSharableCrossOrigin, cache_options, ReferrerScriptInfo())
                 .IsEmpty();

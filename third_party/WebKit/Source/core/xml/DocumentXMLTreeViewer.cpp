@@ -21,7 +21,8 @@ void TransformDocumentToXMLTreeView(Document& document) {
   String css_string = GetDataResourceAsASCIIString("DocumentXMLTreeViewer.css");
 
   HeapVector<ScriptSourceCode> sources;
-  sources.push_back(ScriptSourceCode(script_string));
+  sources.push_back(
+      ScriptSourceCode(script_string, ScriptSourceLocationType::kInternal));
   v8::HandleScope handle_scope(V8PerIsolateData::MainThreadIsolate());
 
   document.GetFrame()->GetScriptController().ExecuteScriptInIsolatedWorld(

@@ -106,8 +106,9 @@ void WorkerGlobalScope::EvaluateClassicScript(
       source_code.length(),
       cached_meta_data.get() ? cached_meta_data->size() : 0);
   bool success = ScriptController()->Evaluate(
-      ScriptSourceCode(source_code, script_url), nullptr /* error_event */,
-      handler, v8_cache_options_);
+      ScriptSourceCode(source_code, ScriptSourceLocationType::kUnknown,
+                       script_url),
+      nullptr /* error_event */, handler, v8_cache_options_);
   ReportingProxy().DidEvaluateWorkerScript(success);
 }
 
@@ -200,8 +201,10 @@ void WorkerGlobalScope::importScripts(const Vector<String>& urls,
         complete_url, cached_meta_data.get()));
     ReportingProxy().WillEvaluateImportedScript(
         source_code.length(), cached_meta_data ? cached_meta_data->size() : 0);
-    ScriptController()->Evaluate(ScriptSourceCode(source_code, response_url),
-                                 &error_event, handler, v8_cache_options_);
+    ScriptController()->Evaluate(
+        ScriptSourceCode(source_code, ScriptSourceLocationType::kUnknown,
+                         response_url),
+        &error_event, handler, v8_cache_options_);
     if (error_event) {
       ScriptController()->RethrowExceptionFromImportedScript(error_event,
                                                              exception_state);

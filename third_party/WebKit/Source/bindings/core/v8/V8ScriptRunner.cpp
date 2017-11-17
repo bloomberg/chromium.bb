@@ -405,8 +405,8 @@ v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
                                          fetch_options.ParserState());
   return CompileScript(
       script_state, V8String(isolate, source.Source()), source.Url(),
-      source.SourceMapUrl(), source.StartPosition(), source.GetResource(),
-      source.Streamer(),
+      source.SourceMapUrl(), source.StartPosition(),
+      source.SourceLocationType(), source.GetResource(), source.Streamer(),
       source.GetResource() ? source.GetResource()->CacheHandler() : nullptr,
       access_control_status, cache_options, referrer_info);
 }
@@ -417,6 +417,7 @@ v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
     const String& file_name,
     const String& source_map_url,
     const TextPosition& text_position,
+    ScriptSourceLocationType source_location_type,
     CachedMetadataHandler* cache_metadata_handler,
     AccessControlStatus access_control_status,
     V8CacheOptions v8_cache_options,
@@ -427,9 +428,9 @@ v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
     return v8::Local<v8::Script>();
   }
   return CompileScript(script_state, V8String(isolate, code), file_name,
-                       source_map_url, text_position, nullptr, nullptr,
-                       cache_metadata_handler, access_control_status,
-                       v8_cache_options, referrer_info);
+                       source_map_url, text_position, source_location_type,
+                       nullptr, nullptr, cache_metadata_handler,
+                       access_control_status, v8_cache_options, referrer_info);
 }
 
 v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
@@ -438,6 +439,7 @@ v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
     const String& file_name,
     const String& source_map_url,
     const TextPosition& script_start_position,
+    ScriptSourceLocationType source_location_type,
     ScriptResource* resource,
     ScriptStreamer* streamer,
     CachedMetadataHandler* cache_handler,
@@ -453,6 +455,8 @@ v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
 
   DCHECK(!streamer || resource);
   DCHECK(!resource || resource->CacheHandler() == cache_handler);
+  DCHECK(!resource ||
+         source_location_type == ScriptSourceLocationType::kExternalFile);
 
   // NOTE: For compatibility with WebCore, ScriptSourceCode's line starts at
   // 1, whereas v8 starts at 0.
@@ -469,12 +473,20 @@ v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
       v8::False(isolate),  // is_module
       referrer_info.ToV8HostDefinedOptions(isolate));
 
-  // TODO(leszeks): Determine why there is no resource.
-  v8::ScriptCompiler::NoCacheReason no_handler_reason =
-      v8::ScriptCompiler::kNoCacheBecauseNoResource;
-  if (!cache_handler && (script_start_position.line_.ZeroBasedInt() != 0 ||
-                         script_start_position.column_.ZeroBasedInt() != 0))
-    no_handler_reason = v8::ScriptCompiler::kNoCacheBecauseInlineScript;
+  v8::ScriptCompiler::NoCacheReason no_handler_reason;
+  switch (source_location_type) {
+    case ScriptSourceLocationType::kInline:
+      no_handler_reason = v8::ScriptCompiler::kNoCacheBecauseInlineScript;
+      break;
+    case ScriptSourceLocationType::kInlineInsideDocumentWrite:
+      no_handler_reason = v8::ScriptCompiler::kNoCacheBecauseInDocumentWrite;
+      break;
+    default:
+      // TODO(leszeks): Possibly differentiate between the other kinds of script
+      // origin also.
+      no_handler_reason = v8::ScriptCompiler::kNoCacheBecauseNoResource;
+      break;
+  }
 
   CompileFn compile_fn =
       streamer ? SelectCompileFunction(cache_options, resource, streamer)
@@ -567,8 +579,8 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::CompileAndRunInternalScript(
   // - parser_state: always "not parser inserted" for internal scripts.
   if (!V8ScriptRunner::CompileScript(
            script_state, source, file_name, String(), script_start_position,
-           nullptr, nullptr, nullptr, kSharableCrossOrigin,
-           kV8CacheOptionsDefault, ReferrerScriptInfo())
+           ScriptSourceLocationType::kInternal, nullptr, nullptr, nullptr,
+           kSharableCrossOrigin, kV8CacheOptionsDefault, ReferrerScriptInfo())
            .ToLocal(&script))
     return v8::MaybeLocal<v8::Value>();
 

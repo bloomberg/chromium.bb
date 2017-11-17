@@ -1885,7 +1885,7 @@ void WebLocalFrameImpl::LoadJavaScriptURL(const KURL& url) {
   v8::HandleScope handle_scope(ToIsolate(GetFrame()));
   v8::Local<v8::Value> result =
       GetFrame()->GetScriptController().ExecuteScriptInMainWorldAndReturnValue(
-          ScriptSourceCode(script));
+          ScriptSourceCode(script, ScriptSourceLocationType::kJavascriptUrl));
   if (result.IsEmpty() || !result->IsString())
     return;
   String script_result = ToCoreString(v8::Local<v8::String>::Cast(result));
