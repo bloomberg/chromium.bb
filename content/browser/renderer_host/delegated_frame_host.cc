@@ -291,16 +291,11 @@ void DelegatedFrameHost::WasResized() {
   }
 
   if (enable_surface_synchronization_) {
-    ui::Layer* layer = client_->DelegatedFrameHostGetLayer();
     current_frame_size_in_dip_ = client_->DelegatedFrameHostDesiredSizeInDIP();
-    gfx::Size desired_size_in_pixels = gfx::ConvertSizeToPixel(
-        layer->device_scale_factor(), current_frame_size_in_dip_);
 
     viz::SurfaceId surface_id(frame_sink_id_, client_->GetLocalSurfaceId());
-    viz::SurfaceInfo surface_info(surface_id, layer->device_scale_factor(),
-                                  desired_size_in_pixels);
     client_->DelegatedFrameHostGetLayer()->SetShowPrimarySurface(
-        surface_info, GetSurfaceReferenceFactory());
+        surface_id, current_frame_size_in_dip_, GetSurfaceReferenceFactory());
     has_primary_surface_ = true;
     frame_evictor_->SwappedFrame(client_->DelegatedFrameHostIsVisible());
     if (compositor_)
@@ -574,9 +569,12 @@ void DelegatedFrameHost::OnBeginFramePausedChanged(bool paused) {
 
 void DelegatedFrameHost::OnFirstSurfaceActivation(
     const viz::SurfaceInfo& surface_info) {
+  gfx::Size frame_size_in_dip = gfx::ConvertSizeToDIP(
+      surface_info.device_scale_factor(), surface_info.size_in_pixels());
+
   if (!enable_surface_synchronization_) {
     client_->DelegatedFrameHostGetLayer()->SetShowPrimarySurface(
-        surface_info, GetSurfaceReferenceFactory());
+        surface_info.id(), frame_size_in_dip, GetSurfaceReferenceFactory());
     has_primary_surface_ = true;
   }
 
@@ -594,8 +592,6 @@ void DelegatedFrameHost::OnFirstSurfaceActivation(
     return;
 
   released_front_lock_ = nullptr;
-  gfx::Size frame_size_in_dip = gfx::ConvertSizeToDIP(
-      surface_info.device_scale_factor(), surface_info.size_in_pixels());
   current_frame_size_in_dip_ = frame_size_in_dip;
   CheckResizeLock();
 

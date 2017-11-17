@@ -26,12 +26,11 @@ std::unique_ptr<LayerImpl> SurfaceLayerImpl::CreateLayerImpl(
   return SurfaceLayerImpl::Create(tree_impl, id());
 }
 
-void SurfaceLayerImpl::SetPrimarySurfaceInfo(
-    const viz::SurfaceInfo& surface_info) {
-  if (primary_surface_info_ == surface_info)
+void SurfaceLayerImpl::SetPrimarySurfaceId(const viz::SurfaceId& surface_id) {
+  if (primary_surface_id_ == surface_id)
     return;
 
-  primary_surface_info_ = surface_info;
+  primary_surface_id_ = surface_id;
   NoteLayerPropertyChanged();
 }
 
@@ -62,7 +61,7 @@ void SurfaceLayerImpl::SetDefaultBackgroundColor(SkColor background_color) {
 void SurfaceLayerImpl::PushPropertiesTo(LayerImpl* layer) {
   LayerImpl::PushPropertiesTo(layer);
   SurfaceLayerImpl* layer_impl = static_cast<SurfaceLayerImpl*>(layer);
-  layer_impl->SetPrimarySurfaceInfo(primary_surface_info_);
+  layer_impl->SetPrimarySurfaceId(primary_surface_id_);
   layer_impl->SetFallbackSurfaceId(fallback_surface_id_);
   layer_impl->SetStretchContentToFillBounds(stretch_content_to_fill_bounds_);
   layer_impl->SetDefaultBackgroundColor(default_background_color_);
@@ -71,28 +70,27 @@ void SurfaceLayerImpl::PushPropertiesTo(LayerImpl* layer) {
 void SurfaceLayerImpl::AppendQuads(viz::RenderPass* render_pass,
                                    AppendQuadsData* append_quads_data) {
   AppendRainbowDebugBorder(render_pass);
-  if (!primary_surface_info_.is_valid())
+  if (!primary_surface_id_.is_valid())
     return;
 
   auto* primary = CreateSurfaceDrawQuad(
-      render_pass, primary_surface_info_,
+      render_pass, primary_surface_id_,
       fallback_surface_id_.is_valid()
           ? base::Optional<viz::SurfaceId>(fallback_surface_id_)
           : base::nullopt);
   // Emitting a fallback viz::SurfaceDrawQuad is unnecessary if the primary and
   // fallback surface Ids match.
-  if (primary && fallback_surface_id_ != primary_surface_info_.id()) {
+  if (primary && fallback_surface_id_ != primary_surface_id_) {
     // Add the primary surface ID as a dependency.
-    append_quads_data->activation_dependencies.push_back(
-        primary_surface_info_.id());
+    append_quads_data->activation_dependencies.push_back(primary_surface_id_);
   }
 }
 
 viz::SurfaceDrawQuad* SurfaceLayerImpl::CreateSurfaceDrawQuad(
     viz::RenderPass* render_pass,
-    const viz::SurfaceInfo& surface_info,
+    const viz::SurfaceId& primary_surface_id,
     const base::Optional<viz::SurfaceId>& fallback_surface_id) {
-  DCHECK(surface_info.is_valid());
+  DCHECK(primary_surface_id.is_valid());
 
   float device_scale_factor = layer_tree_impl()->device_scale_factor();
 
@@ -122,7 +120,7 @@ viz::SurfaceDrawQuad* SurfaceLayerImpl::CreateSurfaceDrawQuad(
   auto* surface_draw_quad =
       render_pass->CreateAndAppendDrawQuad<viz::SurfaceDrawQuad>();
   surface_draw_quad->SetNew(shared_quad_state, quad_rect, visible_quad_rect,
-                            surface_info.id(), fallback_surface_id,
+                            primary_surface_id, fallback_surface_id,
                             default_background_color_,
                             stretch_content_to_fill_bounds_);
 
@@ -225,7 +223,7 @@ void SurfaceLayerImpl::AppendRainbowDebugBorder(viz::RenderPass* render_pass) {
 
 void SurfaceLayerImpl::AsValueInto(base::trace_event::TracedValue* dict) const {
   LayerImpl::AsValueInto(dict);
-  dict->SetString("surface_id", primary_surface_info_.id().ToString());
+  dict->SetString("primar_surface_id", primary_surface_id_.ToString());
   dict->SetString("fallback_surface_id", fallback_surface_id_.ToString());
 }
 

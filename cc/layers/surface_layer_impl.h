@@ -25,9 +25,9 @@ class CC_EXPORT SurfaceLayerImpl : public LayerImpl {
   }
   ~SurfaceLayerImpl() override;
 
-  void SetPrimarySurfaceInfo(const viz::SurfaceInfo& surface_info);
-  const viz::SurfaceInfo& primary_surface_info() const {
-    return primary_surface_info_;
+  void SetPrimarySurfaceId(const viz::SurfaceId& surface_id);
+  const viz::SurfaceId& primary_surface_id() const {
+    return primary_surface_id_;
   }
 
   // A fallback Surface is a Surface that is already known to exist in the
@@ -60,7 +60,7 @@ class CC_EXPORT SurfaceLayerImpl : public LayerImpl {
  private:
   viz::SurfaceDrawQuad* CreateSurfaceDrawQuad(
       viz::RenderPass* render_pass,
-      const viz::SurfaceInfo& surface_info,
+      const viz::SurfaceId& surface_id,
       const base::Optional<viz::SurfaceId>& fallback_surface_id);
 
   void GetDebugBorderProperties(SkColor* color, float* width) const override;
@@ -68,7 +68,7 @@ class CC_EXPORT SurfaceLayerImpl : public LayerImpl {
   void AsValueInto(base::trace_event::TracedValue* dict) const override;
   const char* LayerTypeAsString() const override;
 
-  viz::SurfaceInfo primary_surface_info_;
+  viz::SurfaceId primary_surface_id_;
   viz::SurfaceId fallback_surface_id_;
 
   bool stretch_content_to_fill_bounds_ = false;

@@ -32,8 +32,7 @@ TEST(SurfaceLayerImplTest, Occlusion) {
   surface_layer_impl->SetBounds(layer_size);
   surface_layer_impl->SetDrawsContent(true);
   viz::SurfaceId surface_id(kArbitraryFrameSinkId, kArbitraryLocalSurfaceId);
-  surface_layer_impl->SetPrimarySurfaceInfo(
-      viz::SurfaceInfo(surface_id, 1.f, layer_size));
+  surface_layer_impl->SetPrimarySurfaceId(surface_id);
 
   impl.CalcDrawProps(viewport_size);
 
@@ -81,10 +80,6 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplWithTwoDifferentSurfaces) {
   const viz::LocalSurfaceId kArbitraryLocalSurfaceId1(
       9, base::UnguessableToken::Create());
   viz::SurfaceId surface_id1(kArbitraryFrameSinkId, kArbitraryLocalSurfaceId1);
-  float surface_scale1 = 1.f;
-  gfx::Size surface_size1(300, 300);
-  viz::SurfaceInfo primary_surface_info(surface_id1, surface_scale1,
-                                        surface_size1);
 
   // Populate the fallback viz::SurfaceId.
   const viz::LocalSurfaceId kArbitraryLocalSurfaceId2(
@@ -97,7 +92,7 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplWithTwoDifferentSurfaces) {
   // SurfaceInfos are different.
   surface_layer_impl->SetBounds(layer_size);
   surface_layer_impl->SetDrawsContent(true);
-  surface_layer_impl->SetPrimarySurfaceInfo(primary_surface_info);
+  surface_layer_impl->SetPrimarySurfaceId(surface_id1);
   surface_layer_impl->SetFallbackSurfaceId(surface_id2);
   surface_layer_impl->SetDefaultBackgroundColor(SK_ColorBLUE);
 
@@ -174,10 +169,6 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplWithMatchingPrimaryAndFallback) {
   const viz::LocalSurfaceId kArbitraryLocalSurfaceId1(
       9, base::UnguessableToken::Create());
   viz::SurfaceId surface_id1(kArbitraryFrameSinkId, kArbitraryLocalSurfaceId1);
-  float surface_scale1 = 1.f;
-  gfx::Size surface_size1(300, 300);
-  viz::SurfaceInfo primary_surface_info(surface_id1, surface_scale1,
-                                        surface_size1);
 
   gfx::Size layer_size(400, 100);
 
@@ -185,8 +176,8 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplWithMatchingPrimaryAndFallback) {
   // SurfaceInfos are the same.
   surface_layer_impl->SetBounds(layer_size);
   surface_layer_impl->SetDrawsContent(true);
-  surface_layer_impl->SetPrimarySurfaceInfo(primary_surface_info);
-  surface_layer_impl->SetFallbackSurfaceId(primary_surface_info.id());
+  surface_layer_impl->SetPrimarySurfaceId(surface_id1);
+  surface_layer_impl->SetFallbackSurfaceId(surface_id1);
   surface_layer_impl->SetDefaultBackgroundColor(SK_ColorBLUE);
 
   gfx::Size viewport_size(1000, 1000);

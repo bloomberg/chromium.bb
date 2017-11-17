@@ -22,8 +22,6 @@
 
 namespace cc {
 struct SurfaceSequence;
-
-class Layer;
 }
 
 namespace blink {
@@ -37,7 +35,7 @@ class Size;
 }
 
 namespace viz {
-class SurfaceInfo;
+class SurfaceId;
 }
 
 namespace content {
@@ -55,9 +53,11 @@ class CONTENT_EXPORT ChildFrameCompositingHelper {
       RenderFrameProxy* render_frame_proxy);
 
   void OnContainerDestroy();
-  void SetPrimarySurfaceInfo(const viz::SurfaceInfo& surface_info);
-  void SetFallbackSurfaceInfo(const viz::SurfaceInfo& surface_info,
-                              const viz::SurfaceSequence& sequence);
+  void SetPrimarySurfaceId(const viz::SurfaceId& surface_id,
+                           const gfx::Size& frame_size_in_dip);
+  void SetFallbackSurfaceId(const viz::SurfaceId& surface_id,
+                            const gfx::Size& frame_size_in_dip,
+                            const viz::SurfaceSequence& sequence);
   void UpdateVisibility(bool);
   void ChildFrameGone();
 
@@ -76,14 +76,11 @@ class CONTENT_EXPORT ChildFrameCompositingHelper {
 
   blink::WebPluginContainer* GetContainer();
 
-  void CheckSizeAndAdjustLayerProperties(const viz::SurfaceInfo& surface_info,
-                                         cc::Layer* layer);
   void UpdateWebLayer(std::unique_ptr<blink::WebLayer> layer);
 
   const int host_routing_id_;
 
   viz::SurfaceId last_primary_surface_id_;
-  gfx::Size last_surface_size_in_pixels_;
 
   viz::SurfaceId fallback_surface_id_;
 

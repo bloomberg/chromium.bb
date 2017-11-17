@@ -1864,9 +1864,8 @@ TEST_F(LayerWithDelegateTest, ExternalContent) {
 
   // Showing surface content changes the underlying cc layer.
   before = child->cc_layer_for_testing();
-  child->SetShowPrimarySurface(
-      viz::SurfaceInfo(viz::SurfaceId(), 1.0, gfx::Size(10, 10)),
-      new TestSurfaceReferenceFactory());
+  child->SetShowPrimarySurface(viz::SurfaceId(), gfx::Size(10, 10),
+                               new TestSurfaceReferenceFactory());
   EXPECT_TRUE(child->cc_layer_for_testing());
   EXPECT_NE(before.get(), child->cc_layer_for_testing());
 
@@ -1885,43 +1884,29 @@ TEST_F(LayerWithDelegateTest, ExternalContentMirroring) {
   viz::SurfaceId surface_id(
       viz::FrameSinkId(0, 1),
       viz::LocalSurfaceId(2, base::UnguessableToken::Create()));
-  viz::SurfaceInfo surface_info(surface_id, 1.0f, gfx::Size(10, 10));
-  layer->SetShowPrimarySurface(surface_info, reference_factory);
+  layer->SetShowPrimarySurface(surface_id, gfx::Size(10, 10),
+                               reference_factory);
 
   const auto mirror = layer->Mirror();
   auto* const cc_layer = mirror->cc_layer_for_testing();
   const auto* surface = static_cast<cc::SurfaceLayer*>(cc_layer);
 
   // Mirroring preserves surface state.
-  EXPECT_EQ(surface_info, surface->primary_surface_info());
+  EXPECT_EQ(surface_id, surface->primary_surface_id());
 
   surface_id =
       viz::SurfaceId(viz::FrameSinkId(1, 2),
                      viz::LocalSurfaceId(3, base::UnguessableToken::Create()));
-  viz::SurfaceInfo surface_info_2(surface_id, 2.0f, gfx::Size(20, 20));
-  layer->SetShowPrimarySurface(surface_info_2, reference_factory);
+  layer->SetShowPrimarySurface(surface_id, gfx::Size(20, 20),
+                               reference_factory);
 
   // The mirror should continue to use the same cc_layer.
   EXPECT_EQ(cc_layer, mirror->cc_layer_for_testing());
-  layer->SetShowPrimarySurface(surface_info_2, reference_factory);
+  layer->SetShowPrimarySurface(surface_id, gfx::Size(20, 20),
+                               reference_factory);
 
   // Surface updates propagate to the mirror.
-  EXPECT_EQ(surface_info_2, surface->primary_surface_info());
-}
-
-// Test if frame size in dip is properly calculated in SetShowPrimarySurface.
-TEST_F(LayerWithDelegateTest, FrameSizeInDip) {
-  std::unique_ptr<Layer> layer(CreateLayer(LAYER_SOLID_COLOR));
-
-  viz::SurfaceId surface_id(
-      viz::FrameSinkId(0, 1),
-      viz::LocalSurfaceId(2, base::UnguessableToken::Create()));
-
-  layer->SetShowPrimarySurface(
-      viz::SurfaceInfo(surface_id, 2.0f, gfx::Size(30, 40)),
-      new TestSurfaceReferenceFactory());
-
-  EXPECT_EQ(layer->frame_size_in_dip_for_testing(), gfx::Size(15, 20));
+  EXPECT_EQ(surface_id, surface->primary_surface_id());
 }
 
 // Verifies that layer filters still attached after changing implementation
@@ -1938,9 +1923,8 @@ TEST_F(LayerWithDelegateTest, LayerFiltersSurvival) {
 
   // Showing surface content changes the underlying cc layer.
   scoped_refptr<cc::Layer> before = layer->cc_layer_for_testing();
-  layer->SetShowPrimarySurface(
-      viz::SurfaceInfo(viz::SurfaceId(), 1.0, gfx::Size(10, 10)),
-      new TestSurfaceReferenceFactory());
+  layer->SetShowPrimarySurface(viz::SurfaceId(), gfx::Size(10, 10),
+                               new TestSurfaceReferenceFactory());
   EXPECT_EQ(layer->layer_grayscale(), 0.5f);
   EXPECT_TRUE(layer->cc_layer_for_testing());
   EXPECT_NE(before.get(), layer->cc_layer_for_testing());
@@ -2296,9 +2280,8 @@ TEST(LayerDelegateTest, DelegatedFrameDamage) {
 
   FrameDamageCheckingDelegate delegate;
   layer->set_delegate(&delegate);
-  layer->SetShowPrimarySurface(
-      viz::SurfaceInfo(viz::SurfaceId(), 1.0, gfx::Size(10, 10)),
-      new TestSurfaceReferenceFactory());
+  layer->SetShowPrimarySurface(viz::SurfaceId(), gfx::Size(10, 10),
+                               new TestSurfaceReferenceFactory());
 
   EXPECT_FALSE(delegate.delegated_frame_damage_called());
   layer->OnDelegatedFrameDamage(damage_rect);

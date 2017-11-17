@@ -35,10 +35,10 @@ ClientSurfaceEmbedder::ClientSurfaceEmbedder(
 
 ClientSurfaceEmbedder::~ClientSurfaceEmbedder() = default;
 
-void ClientSurfaceEmbedder::SetPrimarySurfaceInfo(
-    const viz::SurfaceInfo& surface_info) {
-  surface_layer_->SetShowPrimarySurface(surface_info, ref_factory_);
-  surface_layer_->SetBounds(gfx::Rect(window_->bounds().size()));
+void ClientSurfaceEmbedder::SetPrimarySurfaceId(
+    const viz::SurfaceId& surface_id) {
+  surface_layer_->SetShowPrimarySurface(surface_id, window_->bounds().size(),
+                                        ref_factory_);
 }
 
 void ClientSurfaceEmbedder::SetFallbackSurfaceInfo(

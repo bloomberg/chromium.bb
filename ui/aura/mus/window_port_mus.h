@@ -62,8 +62,8 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
     return client_surface_embedder_.get();
   }
 
-  const viz::SurfaceInfo& PrimarySurfaceInfoForTesting() const {
-    return primary_surface_info_;
+  const viz::SurfaceId& PrimarySurfaceIdForTesting() const {
+    return primary_surface_id_;
   }
 
   void SetTextInputState(ui::mojom::TextInputStatePtr state);
@@ -277,7 +277,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   void OnEventTargetingPolicyChanged() override;
   bool ShouldRestackTransientChildren() override;
 
-  void UpdatePrimarySurfaceInfo();
+  void UpdatePrimarySurfaceId();
   void UpdateClientSurfaceEmbedder();
 
   WindowTreeClient* window_tree_client_;
@@ -290,7 +290,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   ServerChangeIdType next_server_change_id_ = 0;
   ServerChanges server_changes_;
 
-  viz::SurfaceInfo primary_surface_info_;
+  viz::SurfaceId primary_surface_id_;
   viz::SurfaceInfo fallback_surface_info_;
 
   viz::LocalSurfaceId local_surface_id_;
