@@ -1,13 +1,18 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="checkbox_radio_css.html">
-<link rel="import" href="input_css.html">
 <link rel="import" href="print_preview_shared_css.html">
 <link rel="import" href="settings_section.html">
 
 <dom-module id="print-preview-other-options-settings">
   <template>
-    <style include="print-preview-shared checkbox-radio input">
+    <style include="print-preview-shared checkbox-radio">
+      [slot='title'] {
+        --settings-section-title-style: {
+          padding-top: 7px;
+          align-self: flex-start;
+        }
+      }
     </style>
     <print-preview-settings-section class="input-settings-section">
       <span slot="title" id="options-label">$i18n{optionsLabel}</span>
