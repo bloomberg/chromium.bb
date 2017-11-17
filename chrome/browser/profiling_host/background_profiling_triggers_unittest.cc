@@ -10,7 +10,11 @@
 
 #include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
+#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/profiling_host/profiling_process_host.h"
+#include "chrome/test/base/testing_browser_process.h"
+#include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/coordinator.h"
 #include "services/resource_coordinator/public/interfaces/memory_instrumentation/memory_instrumentation.mojom.h"
@@ -94,18 +98,34 @@ class FakeBackgroundProfilingTriggers : public BackgroundProfilingTriggers {
 class BackgroundProfilingTriggersTest : public testing::Test {
  public:
   BackgroundProfilingTriggersTest()
-      : scoped_task_environment_(
+      : scoped_task_envrionment_(
             base::test::ScopedTaskEnvironment::MainThreadType::UI),
-        triggers_(&host_) {}
+        testing_profile_manager_(TestingBrowserProcess::GetGlobal()),
+        triggers_(&host_),
+        is_metrics_enabled_(true) {}
+
+  void SetUp() override {
+    ASSERT_TRUE(testing_profile_manager_.SetUp());
+    ChromeMetricsServiceAccessor::SetMetricsAndCrashReportingForTesting(
+        &is_metrics_enabled_);
+  }
+
+  void TearDown() override {
+    ChromeMetricsServiceAccessor::SetMetricsAndCrashReportingForTesting(
+        nullptr);
+  }
 
   void SetMode(ProfilingProcessHost::Mode mode) { host_.SetMode(mode); }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::ScopedTaskEnvironment scoped_task_envrionment_;
   content::TestBrowserThreadBundle thread_bundle;
+  TestingProfileManager testing_profile_manager_;
 
   ProfilingProcessHost host_;
   FakeBackgroundProfilingTriggers triggers_;
+
+  bool is_metrics_enabled_;
 };
 
 // Ensures:
@@ -200,6 +220,61 @@ TEST_F(BackgroundProfilingTriggersTest,
   // logic. This is a placeholder test.
   //
   //  http://crbug.com/780955
+}
+
+// Ensure IsAllowedToUpload() respects metrics collection settings.
+TEST_F(BackgroundProfilingTriggersTest, IsAllowedToUpload_Metrics) {
+  EXPECT_TRUE(triggers_.IsAllowedToUpload());
+
+  is_metrics_enabled_ = false;
+  EXPECT_FALSE(triggers_.IsAllowedToUpload());
+}
+
+// Ensure IsAllowedToUpload() respects incognito sessions. Checke that behavior
+//   * respsects incognito sessions in primary profile.
+//   * respsects incognito sessions in non-primary profiles.
+//   * handles overlapping incognito sessions.
+//
+// NOTE: As of this test writing, TestingProfile::DestroyOffTheRecordProfile()
+// is mocked out to do nothing. Currently, using
+// TestingProfile::SetOffTheRecordProfile(nullptr) to fake destruction.
+TEST_F(BackgroundProfilingTriggersTest, IsAllowedToUpload_Incognito) {
+  // Create 2 profiles. The first is considered the primary.
+  TestingProfile* primary_profile =
+      testing_profile_manager_.CreateTestingProfile("primary");
+  TestingProfile* secondary_profile =
+      testing_profile_manager_.CreateTestingProfile("secondary");
+  ASSERT_FALSE(primary_profile->HasOffTheRecordProfile());
+
+  // Test IsAllowedToUpload() maps to incognito session in primary profile.
+  EXPECT_TRUE(triggers_.IsAllowedToUpload());
+
+  primary_profile->GetOffTheRecordProfile();
+  EXPECT_FALSE(triggers_.IsAllowedToUpload());
+
+  primary_profile->SetOffTheRecordProfile(nullptr);
+  EXPECT_TRUE(triggers_.IsAllowedToUpload());
+
+  // Test IsAllowedToUpload() maps to incognito session in secondary profile.
+  secondary_profile->GetOffTheRecordProfile();
+  EXPECT_FALSE(triggers_.IsAllowedToUpload());
+  secondary_profile->SetOffTheRecordProfile(nullptr);
+  EXPECT_TRUE(triggers_.IsAllowedToUpload());
+
+  // Test overlapping incognitos sessions.
+  primary_profile->GetOffTheRecordProfile();
+  secondary_profile->GetOffTheRecordProfile();
+  EXPECT_FALSE(triggers_.IsAllowedToUpload());
+
+  secondary_profile->SetOffTheRecordProfile(nullptr);
+  EXPECT_FALSE(triggers_.IsAllowedToUpload());
+
+  secondary_profile->GetOffTheRecordProfile();
+  primary_profile->SetOffTheRecordProfile(nullptr);
+  EXPECT_FALSE(triggers_.IsAllowedToUpload());
+
+  secondary_profile->SetOffTheRecordProfile(nullptr);
+  EXPECT_TRUE(triggers_.IsAllowedToUpload());
 }
 
 }  // namespace profiling
