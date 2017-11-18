@@ -17,12 +17,10 @@
   text-align: end;
 }
 
-#route-information {
+#route-description {
   -webkit-padding-end: var(--dialog-padding-end);
   -webkit-padding-start: 44px;
-  background-color: white;
   font-size: 1.2em;
   line-height: 1.5em;
   margin-top: 16px;
-  overflow: hidden;
 }

@@ -7,9 +7,9 @@
   <link rel="import" type="css" href="../../media_router_common.css">
   <link rel="import" type="css" href="route_details.css">
   <template>
-    <div id="route-information"
-        hidden$="[[!shouldShowRouteInfoOnly_(controllerType_)]]">
-      <span>[[activityStatus_]]</span>
+    <div class="ellipsis" id="route-description" title="[[routeDescription_]]"
+        hidden$="[[!shouldShowRouteDescription_(controllerType_)]]">
+      [[routeDescription_]]
     </div>
     <template is="dom-if" if="[[shouldAttemptLoadingExtensionView_(route)]]">
       <extension-view-wrapper id="extension-view-wrapper" route="[[route]]"

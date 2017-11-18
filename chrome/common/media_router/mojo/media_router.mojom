@@ -30,6 +30,11 @@ struct MediaSink {
   // The human-readable name, e.g. "Janet's Chromecast".
   string name;
   // Optional description of the sink.
+  //
+  // DEPRECATED.  This is currently used in the Media Router UX to relay a
+  // Hangouts meeting name.  It should not be used for other purposes.
+  // TODO(crbug.com/786208): Remove this at a future date when Hangouts names
+  // are no longer required.
   string? description;
   // Optional domain of the sink if this sink is associated with an identity.
   string? domain;
@@ -93,7 +98,11 @@ struct MediaRoute {
   string? media_source;
   // The ID of sink that is rendering the media content.
   string media_sink_id;
-  // Human readable description of this route, e.g. "Tab casting".
+  // Human readable description of the casting activity.  Examples:
+  // "Mirroring tab (www.example.com)", "Casting media", "Casting YouTube"
+  //
+  // TODO(crbug.com/786208): Localize this properly by passing it in a way that
+  // permits use of template strings and placeholders.
   string description;
   // Specifies that the route is requested locally.
   bool is_local;

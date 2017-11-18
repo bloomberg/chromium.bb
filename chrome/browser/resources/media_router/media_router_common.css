@@ -19,3 +19,14 @@
 [hidden] {
   display: none !important;
 }
+
+.ellipsis {
+  padding: 0 1%;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#route-description {
+  background-color: white;
+  overflow: hidden;
+}

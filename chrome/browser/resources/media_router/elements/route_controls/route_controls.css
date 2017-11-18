@@ -16,13 +16,6 @@
   right: 20px;
 }
 
-.ellipsis {
-  padding: 0 1%;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  width: 90%;
-}
-
 :host-context([dir='rtl']) #play-pause-volume-hangouts-controls {
   transform: scaleX(-1);
 }
@@ -48,7 +41,7 @@
 
 #route-description {
   margin: 15px 8px 3px 8px;
-  overflow: hidden;
+  width: 90%;
 }
 
 #route-time-controls {
