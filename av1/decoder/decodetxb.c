@@ -276,7 +276,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
     } else {
       *sign = av1_read_record_bit(counts, r, ACCT_STR);
     }
-    if (*sign) tcoeffs[pos] = -tcoeffs[scan[c]];
+    if (*sign) tcoeffs[pos] = -tcoeffs[pos];
   }
 
   if (update_eob >= 0) {
