@@ -161,11 +161,13 @@ DocumentLoader* EmptyLocalFrameClient::CreateDocumentLoader(
     LocalFrame* frame,
     const ResourceRequest& request,
     const SubstituteData& substitute_data,
-    ClientRedirectPolicy client_redirect_policy) {
+    ClientRedirectPolicy client_redirect_policy,
+    const base::UnguessableToken& devtools_navigation_token) {
   DCHECK(frame);
 
   return DocumentLoader::Create(frame, request, substitute_data,
-                                client_redirect_policy);
+                                client_redirect_policy,
+                                devtools_navigation_token);
 }
 
 LocalFrame* EmptyLocalFrameClient::CreateFrame(const AtomicString&,

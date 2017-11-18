@@ -279,7 +279,8 @@ void FrameLoader::Init() {
 
   provisional_document_loader_ =
       Client()->CreateDocumentLoader(frame_, initial_request, SubstituteData(),
-                                     ClientRedirectPolicy::kNotClientRedirect);
+                                     ClientRedirectPolicy::kNotClientRedirect,
+                                     base::UnguessableToken::Create());
   provisional_document_loader_->StartLoading();
 
   frame_->GetDocument()->CancelParsing();
@@ -1543,8 +1544,9 @@ void FrameLoader::StartLoad(FrameLoadRequest& frame_load_request,
   DCHECK(navigation_policy == kNavigationPolicyCurrentTab ||
          navigation_policy == kNavigationPolicyHandledByClient);
 
-  provisional_document_loader_ = CreateDocumentLoader(
-      resource_request, frame_load_request, type, navigation_type);
+  provisional_document_loader_ =
+      CreateDocumentLoader(resource_request, frame_load_request, type,
+                           navigation_type, base::UnguessableToken::Create());
 
   // PlzNavigate: We need to ensure that script initiated navigations are
   // honored.
@@ -1786,16 +1788,15 @@ DocumentLoader* FrameLoader::CreateDocumentLoader(
     const ResourceRequest& request,
     const FrameLoadRequest& frame_load_request,
     FrameLoadType load_type,
-    NavigationType navigation_type) {
+    NavigationType navigation_type,
+    const base::UnguessableToken& devtools_navigation_token) {
   DocumentLoader* loader = Client()->CreateDocumentLoader(
       frame_, request,
       frame_load_request.GetSubstituteData().IsValid()
           ? frame_load_request.GetSubstituteData()
           : DefaultSubstituteDataForURL(request.Url()),
-      frame_load_request.ClientRedirect());
+      frame_load_request.ClientRedirect(), devtools_navigation_token);
 
-  loader->SetDevToolsNavigationToken(
-      frame_load_request.GetDevToolsNavigationToken());
   loader->SetLoadType(load_type);
   loader->SetNavigationType(navigation_type);
   // TODO(japhet): This is needed because the browser process DCHECKs if the

@@ -101,10 +101,12 @@ static bool IsArchiveMIMEType(const String& mime_type) {
   return DeprecatedEqualIgnoringCase("multipart/related", mime_type);
 }
 
-DocumentLoader::DocumentLoader(LocalFrame* frame,
-                               const ResourceRequest& req,
-                               const SubstituteData& substitute_data,
-                               ClientRedirectPolicy client_redirect_policy)
+DocumentLoader::DocumentLoader(
+    LocalFrame* frame,
+    const ResourceRequest& req,
+    const SubstituteData& substitute_data,
+    ClientRedirectPolicy client_redirect_policy,
+    const base::UnguessableToken& devtools_navigation_token)
     : frame_(frame),
       fetcher_(FrameFetchContext::CreateFetcherFromDocumentLoader(this)),
       original_request_(req),
@@ -123,7 +125,7 @@ DocumentLoader::DocumentLoader(LocalFrame* frame,
       state_(kNotStarted),
       in_data_received_(false),
       data_buffer_(SharedBuffer::Create()),
-      devtools_navigation_token_(base::UnguessableToken::Create()) {
+      devtools_navigation_token_(devtools_navigation_token) {
   DCHECK(frame_);
 
   // The document URL needs to be added to the head of the list as that is

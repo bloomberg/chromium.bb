@@ -204,10 +204,12 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
       const Vector<String>& added_selectors,
       const Vector<String>& removed_selectors) = 0;
 
-  virtual DocumentLoader* CreateDocumentLoader(LocalFrame*,
-                                               const ResourceRequest&,
-                                               const SubstituteData&,
-                                               ClientRedirectPolicy) = 0;
+  virtual DocumentLoader* CreateDocumentLoader(
+      LocalFrame*,
+      const ResourceRequest&,
+      const SubstituteData&,
+      ClientRedirectPolicy,
+      const base::UnguessableToken& devtools_navigation_token) = 0;
 
   virtual String UserAgent() = 0;
 

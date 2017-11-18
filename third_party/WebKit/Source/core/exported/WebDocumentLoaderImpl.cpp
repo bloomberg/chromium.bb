@@ -47,11 +47,12 @@ WebDocumentLoaderImpl* WebDocumentLoaderImpl::Create(
     LocalFrame* frame,
     const ResourceRequest& request,
     const SubstituteData& data,
-    ClientRedirectPolicy client_redirect_policy) {
+    ClientRedirectPolicy client_redirect_policy,
+    const base::UnguessableToken& devtools_navigation_token) {
   DCHECK(frame);
 
-  return new WebDocumentLoaderImpl(frame, request, data,
-                                   client_redirect_policy);
+  return new WebDocumentLoaderImpl(frame, request, data, client_redirect_policy,
+                                   devtools_navigation_token);
 }
 
 const WebURLRequest& WebDocumentLoaderImpl::OriginalRequest() const {
@@ -144,8 +145,13 @@ WebDocumentLoaderImpl::WebDocumentLoaderImpl(
     LocalFrame* frame,
     const ResourceRequest& request,
     const SubstituteData& data,
-    ClientRedirectPolicy client_redirect_policy)
-    : DocumentLoader(frame, request, data, client_redirect_policy),
+    ClientRedirectPolicy client_redirect_policy,
+    const base::UnguessableToken& devtools_navigation_token)
+    : DocumentLoader(frame,
+                     request,
+                     data,
+                     client_redirect_policy,
+                     devtools_navigation_token),
       original_request_wrapper_(DocumentLoader::OriginalRequest()),
       request_wrapper_(DocumentLoader::GetRequest()),
       response_wrapper_(DocumentLoader::GetResponse()) {}
