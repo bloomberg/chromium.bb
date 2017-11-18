@@ -292,15 +292,7 @@ TEST_F(RTCVideoEncoderTest, EncodeScaledFrame) {
             rtc_encoder_->Encode(rtc_frame, nullptr, &frame_types));
 }
 
-// We cannot run this test on Android because AndroidVideoEncodeAccelerator does
-// not preserve timestamps.
-#if defined(OS_ANDROID)
-#define MAYBE_PreserveTimestamps DISABLED_PreserveTimestamps
-#else
-#define MAYBE_PreserveTimestamps PreserveTimestamps
-#endif  // defined(OS_ANDROID)
-
-TEST_F(RTCVideoEncoderTest, MAYBE_PreserveTimestamps) {
+TEST_F(RTCVideoEncoderTest, PreserveTimestamps) {
   const webrtc::VideoCodecType codec_type = webrtc::kVideoCodecVP8;
   CreateEncoder(codec_type);
   webrtc::VideoCodec codec = GetDefaultCodec();
