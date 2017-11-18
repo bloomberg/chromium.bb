@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
-<title>Upload files in Windows-1252 form</title>
+<title>Upload files in UTF-8 form</title>
 <link rel="help"
       href="https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#multipart-form-data">
 <link rel="author" title="Benjamin C. Wiley Sittler"
       href="mailto:bsittler@chromium.org">
-<script src="../../../../resources/testharness.js"></script>
-<script src="../../../../resources/testharnessreport.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
 <script src="resources/send-dragged-file-form-helper.js"></script>
 <!--
 
@@ -30,46 +30,44 @@
 formPostFileUploadTest({
   fileNameSource: 'ASCII',
   fileBaseName: 'file-for-drag-to-send3.txt',
-  formEncoding: 'windows-1252',
+  formEncoding: 'UTF-8',
   expectedEncodedBaseName: 'file-for-drag-to-send3.txt',
 });
 
 formPostFileUploadTest({
   fileNameSource: 'x-user-defined',
   fileBaseName: 'file-for-drag-to-send3-\uF7F0\uF793\uF783\uF7A0.txt',
-  formEncoding: 'windows-1252',
+  formEncoding: 'UTF-8',
   expectedEncodedBaseName: (
-      'file-for-drag-to-send3-&#63472;&#63379;&#63363;&#63392;.txt'),
+      'file-for-drag-to-send3-\uF7F0\uF793\uF783\uF7A0.txt'),
 });
 
 formPostFileUploadTest({
   fileNameSource: 'windows-1252',
   fileBaseName: 'file-for-drag-to-send3-â˜ºðŸ˜‚.txt',
-  formEncoding: 'windows-1252',
-  expectedEncodedBaseName: 'file-for-drag-to-send3-☺😂.txt',
+  formEncoding: 'UTF-8',
+  expectedEncodedBaseName: 'file-for-drag-to-send3-â˜ºðŸ˜‚.txt',
 });
 
 formPostFileUploadTest({
   fileNameSource: 'JIS X 0201 and JIS X 0208',
   fileBaseName: 'file-for-drag-to-send3-★星★.txt',
-  formEncoding: 'windows-1252',
-  expectedEncodedBaseName: 'file-for-drag-to-send3-&#9733;&#26143;&#9733;.txt',
+  formEncoding: 'UTF-8',
+  expectedEncodedBaseName: 'file-for-drag-to-send3-★星★.txt',
 });
 
 formPostFileUploadTest({
   fileNameSource: 'Unicode',
   fileBaseName: 'file-for-drag-to-send3-☺😂.txt',
-  formEncoding: 'windows-1252',
-  expectedEncodedBaseName: 'file-for-drag-to-send3-&#9786;&#128514;.txt',
+  formEncoding: 'UTF-8',
+  expectedEncodedBaseName: 'file-for-drag-to-send3-☺😂.txt',
 });
 
 formPostFileUploadTest({
   fileNameSource: 'Unicode',
   fileBaseName: `file-for-drag-to-send3-${kTestChars}.txt`,
-  formEncoding: 'windows-1252',
-  expectedEncodedBaseName: `file-for-drag-to-send3-${
-      kTestFallbackWindows1252
-  }.txt`,
+  formEncoding: 'UTF-8',
+  expectedEncodedBaseName: `file-for-drag-to-send3-${kTestChars}.txt`,
 });
 
 </script>
