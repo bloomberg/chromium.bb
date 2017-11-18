@@ -1,234 +1,27 @@
 # These tests fail when running browser_tests --mash
 # http://crbug.com/678687
 
-# Uncategorized timeouts, crashes and failures.
+# Unknown failure.
 -BrowserTabRestoreTest.*
--GalleryBrowserTest.*
--GalleryBrowserTestInGuestMode.*
--GoodiesDisplayerBrowserTest.*
--HostedAppNonClientFrameViewAshTest.*
--IdentityGetProfileUserInfoFunctionTest.*
--IdentityOldProfilesGetAccountsFunctionTest.*
--ImageDecoderBrowserTest.*
--ImageLoaderJsTest.*
--ImageWriterPrivateApiTest.*
--ImmersiveModeBrowserViewTest.*
--ImmersiveModeControllerAshHostedAppBrowserTest.*
--IncognitoProfileMainNetworkContext/NetworkContextConfigurationBrowserTest.*
--InfoBarsTest.*
+
+# Extensive use of ash::WindowState.
+-AcceleratorCommandsBrowserTest.*
 -InitiallyMaximized/AcceleratorCommandsFullscreenBrowserTest.*
 -InitiallyMaximized/AcceleratorCommandsPlatformAppFullscreenBrowserTest.*
 -InitiallyRestored/AcceleratorCommandsFullscreenBrowserTest.*
 -InitiallyRestored/AcceleratorCommandsPlatformAppFullscreenBrowserTest.*
--InProcessAccessibilityBrowserTest.*
--InputMethodEngineBrowserTest/InputMethodEngineBrowserTest.*
--InputMethodEngineComponentExtensionBrowserTest/InputMethodEngineBrowserTest.*
--InputMethodEngineIncognitoBrowserTest/InputMethodEngineBrowserTest.*
--InspectUITest.*
--InstallableManagerBrowserTest.*
--InstantThemeTest.*
--InterstitialUITest.*
--InvalidationsWebUITest.*
--JavaScript/ExtensionBindingsApiTest.*
--JavaScriptBindings/ExternallyConnectableMessagingTest.*
--JavaScriptBindings/MessagingApiTest.*
--KeyboardEndToEndTest.*
--KeyboardOperations/FileManagerBrowserTest.*
--KeyboardOverlayUIBrowserTest.*
-# Works, but flaky timeouts. http://crbug.*
--KioskAppManagerTest.*
--KioskAppSettingsWebUITest.*
--KioskCrashRestoreTest.*
--KioskEnterpriseTest.*
--KioskHiddenWebUITest.*
--KioskTest.*
--KioskUpdateTest.*
--KioskVirtualKeyboardTest.*
--LauncherPlatformAppBrowserTest.*
--LazyBackgroundPageApiTest.*
--LoadImageBrowserTest.*
--LocalFileSystemExtensionApiTest.*
--LocalNTPDoodleTest.*
--LocalNTPOneGoogleBarSmokeTest.*
--LocalNTPTest.*
--LockScreenNoteTakingTest.*
--LoginFeedbackTest.*
--LoginPromptBrowserTest.*
--LoginScreenDefaultPolicyInSessionBrowsertest.*
--LoginScreenDefaultPolicyLoginScreenBrowsertest.*
--LoginScreenLocalePolicyTest.*
--LoginScreenPolicyTest.*
--LoginUIKeyboardTest.*
--LoginUIKeyboardTestWithUsersAndOwner.*
--LoginUtilsTest.*
--LoginWebDialogTest.*
--LogWebUIUrlTest.*
--MagnificationManagerTest.*
--ManagedWithoutPermission/ManagedWithoutPermissionPlatformKeysTest.*
--ManagedWithPermission/ManagedWithPermissionPlatformKeysTest.*
--MaterialBookmarksCommandManagerTest.*
--MaterialBookmarksDNDManagerTest.*
--MaterialBookmarksFolderNodeTest.*
--MaterialBookmarksPolicyTest.*
--MaterialHistoryListTest.*
--MaterialHistorySyncedTabsTest.*
--MaterialHistoryToolbarTest.*
--MaybeSetMetadata/SafeBrowsingServiceMetadataTest.*
--MaybeSetMetadata/V4SafeBrowsingServiceMetadataTest.*
--MdSettingsUITest.*
--MediaEngagementAutoplayBrowserTest.*
--MediaEngagementBrowserTest.*
--MediaFileValidatorTest.*
--MediaRouterElementsBrowserTest.*
--MediaStreamDevicesControllerBrowserTestInstance/MediaStreamDevicesControllerBrowserTest.*
--MediaStreamDevicesControllerTest.*
--MergeSessionTest.*
--MimeHandlerViewTests/MimeHandlerViewTest.*
--Minimal/MemlogBrowserTest.*
--Mojo/ECKEncryptedMediaTest.*
--MSE_ClearKey/EncryptedMediaTest.*
--MSE_ExternalClearKey_Mojo/EncryptedMediaTest.*
--MSE_ExternalClearKey/EncryptedMediaTest.*
--MultiAuthEnrollmentScreenTest.*
--MultiProfileFileManagerBrowserTest.*
--Native/ExtensionBindingsApiTest.*
--NativeBindings/ExternallyConnectableMessagingTest.*
--NativeBindings/MessagingApiTest.*
--NativeWindowTrackerTest.*
--NavigatingExtensionPopupBrowserTest.*
--NavigationConsumingTest.*
--NetInternalsTest.*
--NetworkConfigViewTest.*
--NetworkingConfigDelegateChromeosTest.*
--NetworkingConfigTest.*
--NetworkingPrivateApiTest.*
--NetworkingPrivateChromeOSApiTest.*
--NetworkPortalDetectorImplBrowserTest.*
--NoSessionRestoreTest.*
--NoStatePrefetchBrowserTest/NoStatePrefetchBrowserTest.*
--NtpExtensionBubbleViewBrowserTest.*
--NTPTilesTest.*
--OAuth2Test.*
--OnStartupSettingsBrowserTest.*
--OpenAudioFiles/FileManagerBrowserTest.*
--OpenFileDialog/FileManagerBrowserTest.*
--OutOfProcessPPAPIPrivateTest.*
--OutOfProcessPPAPITest.*
--PageLoadMetricsBrowserTest.*
--PatchTest.*
--PaymentManifestParserTest.*
--PaymentMethodViewControllerTest.*
--PaymentRequestCanMakePaymentMetricsTest.*
--PaymentRequestCanMakePaymentQueryTest.*
--PaymentRequestContactInfoEditorTest.*
--PaymentRequestCreditCardEditorTest.*
--PaymentRequestDebitTest.*
--PaymentRequestEmptyUpdateTest.*
--PaymentRequestIframeTest.*
--PaymentRequestJourneyLoggerNoSupportedPaymentMethodTest.*
--PaymentRequestNoUpdateWithTest.*
--PaymentRequestOrderSummaryViewControllerTest.*
--PaymentRequestSettingsLinkTest.*
--PaymentRequestShippingAddressEditorTest.*
--PaymentSheetViewControllerContactDetailsTest.*
--PaymentSheetViewControllerNoShippingTest.*
--PDFExtensionClipboardTest.*
--PDFExtensionLinkClickTest.*
--PDFExtensionTest.*
--PDFTestFiles/PDFExtensionTest.*
--Pepper/ECKEncryptedMediaTest.*
--PepperContentSettingsSpecialCasesTest.*
--PlatformAppBrowserTest.*
--PlatformAppNavigationRedirectorBrowserTest.*
--PluginPowerSaverBrowserTest.*
--PolicyDisplayRotationDefault/DisplayRotationBootTest.*
--PolicyDisplayRotationDefault/DisplayRotationDefaultTest.*
--PolicyPrefsTest.*
--PolicyProvidedTrustRootsPublicSessionTest.*
--PolicyTest.*
--PolicyToolUITest.*
--PolicyUITest.*
--PPAPIBrokerInfoBarTest.*
--PPAPIFileChooserTestWithSBService.*
--PPAPINaClGLibcTest.*
--PPAPINaClPNaClNonSfiTest.*
--PredictorBrowserTest.*
--PreferencesTest.*
--PrefHashBrowserTestChangedAtomicInstance/PrefHashBrowserTestChangedAtomic.*
--PrefHashBrowserTestClearedAtomicInstance/PrefHashBrowserTestClearedAtomic.*
--PrefHashBrowserTestUnchangedCustomInstance/PrefHashBrowserTestUnchangedCustom.*
--PrefHashBrowserTestUnchangedDefaultInstance/PrefHashBrowserTestUnchangedDefault.*
--PrefsTabHelperBrowserTest.*
--PreinstalledSigninExtensionsDeviceCloudPolicyBrowserTest.*
--PrerenderBrowserTest.*
--PrintBrowserTest.*
--PrintPreviewBrowserTest.*
--PrintPreviewDestinationSearchTest.*
--PrintPreviewDialogControllerBrowserTest.*
--PrintPreviewUIBrowserTest.*
--ProcessesApiTest.*
--ProcessManagementTest.*
--ProcessManagerBrowserTest.*
--ProcessMemoryMetricsEmitterTest.*
--ProfileMainNetworkContext/NetworkContextConfigurationBrowserTest.*
--ProfilingBrowserTest.*
--Providers/FileManagerBrowserTest.*
--ProvisionedEnrollmentScreenTest.*
--ProxySettingsApiTest.*
--PushMessagingBrowserTest.*
--RequestFileSystemDialogTest.*
--ResetFirstAfterBootTest.*
--SafeBrowsingBlockingPageBrowserTestWithThreatTypeAndIsolationSetting/SafeBrowsingBlockingPageBrowserTest.*
--SaveCardBubbleControllerImplTest.*
--SessionRestoreTest.*
--SessionRestoreTestChromeOS.*
--SettingsA11yManagePasswords.*
--SettingsAccessibilityTest.*
--ShelfAppBrowserTest.*
--ShelfAppBrowserTestNoDefaultBrowser.*
--ShutdownPolicyInSessionTest.*
--SigninExtensionsDeviceCloudPolicyBrowserTest.*
--SigninProfileAppsPolicyPerChannelTest.*
--SigninProfileAppsPolicyTest.*
--SimpleWebViewDialogTest.*
--SitePerProcess/TaskManagerOOPIFBrowserTest.*
--SmartSessionRestoreTest.*
--SortWindowsByZIndexBrowserTest.*
--StartupMetricsTest.*
--SupervisedUserCreationTest.*
--SystemTrayTrayCastMediaRouterChromeOSTest.*
--SystemUse24HourClockPolicyTest.*
--TabCaptureApiPixelTest.*
--TabManagerTest.*
--TabRestoreTest.*
--TaskManagerUtilityProcessBrowserTest.*
--TrayAccessibilityLoginScreenTest.*
--TrayAccessibilityTestInstance/TrayAccessibilityTest.*
--UserAddingScreenTest.*
--UserTypeInstantiation/AccessibilityManagerUserTypeTest.*
--VirtualKeyboardAppWindowTest.*
--VirtualKeyboardStateTest.*
--VirtualKeyboardWebContentTest.*
--VolumeControllerSoundsTest.*
--WallpaperManagerPolicyTest.*
--WebstoreInlineInstallerTest.*
--WebViewScrollBubbling/WebViewGuestScrollTouchTest.*
--WebViewTests/WebViewFocusTest.*
--WebViewTests/WebViewSizeTest.*
--WebViewTests/WebViewTest.*
-# Fails (assertion in JS side of code).
--WindowOpenApiTest.*
--WizardControllerKioskFlowTest.*
--WizardControllerTest.*
--ZoomBubbleBrowserTest.*
-
-# Extensive use of ash::WindowState.
--AcceleratorCommandsBrowserTest.*
 
 # ChromeVoxPanel directly calls into ash to set panel height.
 -AccessibilityFeatureaApiTestInstantiatePermission/AccessibilityFeaturesApiTest.*
 -AccessibilityManagerTest.*
 -ChromeOSInfoPrivateTest.*
+-PolicyPrefsTest.*
+-PolicyProvidedTrustRootsPublicSessionTest.*
+-PolicyTest.*
+-UserTypeInstantiation/AccessibilityManagerUserTypeTest.*
+-VolumeControllerSoundsTest.*
+-WizardControllerKioskFlowTest.*
+-WizardControllerTest.*
 
 # Crashes in net::URLRequestContext::CreateRequest.
 -AffiliationCheck/EnterpriseDeviceAttributesTest.*
@@ -237,6 +30,10 @@
 -ExistingUserControllerActiveDirectoryTest.*
 -ExistingUserControllerPublicSessionTest.*
 -ExistingUserControllerUntrustedTest.*
+-PreinstalledSigninExtensionsDeviceCloudPolicyBrowserTest.*
+-SigninExtensionsDeviceCloudPolicyBrowserTest.*
+-SigninProfileAppsPolicyPerChannelTest.*
+-SigninProfileAppsPolicyTest.*
 
 # Uses ash::Shell::GetRootWindowForNewWindows to choose a display for the app list.
 # More generally, app list needs to move into ash.
@@ -262,53 +59,64 @@
 # profile_destroyer.cc(57) Check failed: hosts.empty() || profile->IsOffTheRecord() || profile->HasOffTheRecordProfile() || content::RenderProcessHost::run_renderer_in_process(). Profile still has 1 hosts
 -BluetoothPairingUITest.*
 -DemoAppLauncherTest.*
+-LoginWebDialogTest.*
 
 # Direct access to ash window frames, tablet mode, overview mode, etc.
 -BrowserNonClientFrameViewAshBackButtonTest.*
 -BrowserNonClientFrameViewAshTest.*
+-HostedAppNonClientFrameViewAshTest.*
+-ImmersiveModeControllerAshHostedAppBrowserTest.*
 
 # Incorrect window bounds. Probably WindowSizerAsh problem.
 -BrowserTestTabbedOrApp/BrowserTestParam.*
+-TabRestoreTest.*
 
 # Timeout waiting for notification.
 -CaptivePortalAuthenticationIgnoresProxy/NetworkPortalDetectorImplBrowserTestIgnoreProxy.*
 
 # ash::Shell access from ChromeViewsDelegate::CreateDefaultNonClientFrameView()
-# from chromeos::CaptivePortalWindowProxy::Show().
+# e.g. from chromeos::CaptivePortalWindowProxy::Show().
 -CaptivePortalWindowCtorDtorTest.*
 -CaptivePortalWindowTest.*
+-SimpleWebViewDialogTest.*
 
 # Need pixel copy support. http://crbug.com/754864
 -CastStreamingApiTestWithPixelOutput.*
+-TabCaptureApiPixelTest.*
 
 # RefCounted check failed: CalledOnValidSequence() from SchedulerWorkerDelegate::OnMainExit
 -CheckSystemTokenAvailability/EnterprisePlatformKeysTest.*
 
 # aura::CrashInFlightChange::ChangeFailed() when searching PDF.
 -ChromeFindRequestManagerTest.*
+-PDFExtensionTest.*
 
 # Need screenshot support. http://crbug.com/754899
 -ChromeScreenshotGrabberBrowserTest.*
 
 # ChromeBrowserMainExtraPartsAsh: Check failed: views::MusClient::Exists().
 -ChromeMainTest.*
+-ProfilingBrowserTest.*
 
 # Null immersive_fullscreen_controller_.
 -ChromeNativeAppWindowViewsAuraAshBrowserTest.*
 
+# Flaky. SessionRestoreStatsCollector::Observe failure. crbug.com/785298
 # session_restore_stats_collector.cc(210) Check failed: 0u < loading_tab_count_ (0 vs. 0)
 -ContinueWhereILeftOffTest.*
 -DeviceIDTest.*
+-SessionRestoreTest.*
+-SessionRestoreTestChromeOS.*
+-SAMLPolicyTest.TransferCookiesAffiliated
+-SmartSessionRestoreTest.*
 
 # ash::Shell access in test for wallpaper images.
 -CustomizationWallpaperDownloaderBrowserTest.*
+-WallpaperManagerPolicyTest.*
 
 # Flaky: private_api_file_system.cc(811) Check failed: external_backend->CanHandleType(file_system_url.type()).
 -DefaultTaskDialog/FileManagerBrowserTest.*
 -QuickView/FileManagerBrowserTest.*
-
-# Need virtual keyboard support.
--DefaultKeyboardExtensionBrowserTest.*
 
 # ash::Shell access for LogoutConfirmationController
 -DeviceLocalAccountTest.*
@@ -318,7 +126,11 @@
 
 # WindowPortMus check failed in fullscreen test:
 # window_mus_type() == WindowMusType::TOP_LEVEL_IN_WM || window_mus_type() == WindowMusType::EMBED_IN_OWNER.
+# http://crbug.com/786544
 -ExtensionInstallUIBrowserTest.*
+-ImmersiveModeBrowserViewTest.*
+-WebstoreInlineInstallerTest.*
+-ZoomBubbleBrowserTest.*
 
 # ozone_platform.cc(61) Check failed: instance_. OzonePlatform is not initialized
 -ExtensionWebstoreGetWebGLStatusTest.*
@@ -332,13 +144,128 @@
 # ash::Shell::display_manager() to update displays.
 -ForceMaximizeOnFirstRunTest.*
 -ForceMaximizePolicyFalseTest.*
+-PolicyDisplayRotationDefault/DisplayRotationBootTest.*
+-PolicyDisplayRotationDefault/DisplayRotationDefaultTest.*
 
-# Flaky. SessionRestoreStatsCollector::Observe failure. crbug.com/785298
--SAMLPolicyTest.TransferCookiesAffiliated
+# Failures JS-side.
+-GalleryBrowserTest.*
+-GalleryBrowserTestInGuestMode.*
+
+# IME accesses ash::Shell for root window.
+-InputMethodEngineBrowserTest/InputMethodEngineBrowserTest.*
+-InputMethodEngineComponentExtensionBrowserTest/InputMethodEngineBrowserTest.*
+-InputMethodEngineIncognitoBrowserTest/InputMethodEngineBrowserTest.*
+
+# KeyboardOverlayUI uses ash::Shell.
+-KeyboardOverlayUIBrowserTest.*
+
+# Kiosk mode has a variety of failures:
+# termination_observer_->terminated() is false.
+# Value of: login_display_host == NULL || login_display_host->GetNativeWindow()->layer()->GetTargetOpacity() == 0.0f
+# Check failed: !browser_client || browser_client->IsShuttingDown() || did_respond() || ignore_all_did_respond_for_testing_do_not_use. app.window.create
+# chromeos::KioskExternalUpdateNotification::CreateAndShowNotificationView() uses ash::Shell.
+-KioskAppManagerTest.*
+-KioskAppSettingsWebUITest.*
+-KioskCrashRestoreTest.*
+-KioskEnterpriseTest.*
+-KioskHiddenWebUITest.*
+-KioskTest.*
+-KioskUpdateTest.*
+
+# Window state lookup failures for minimized, active, etc.
+-LauncherPlatformAppBrowserTest.*
+
+# JS failure: hasAccessToCurrentWindow: FAIL (no message)
+-LockScreenNoteTakingTest.*
+
+# desktop_window_tree_host_mus.cc(796) Check failed: !window->GetRootWindow() || this->window() == window->GetRootWindow().
+-LoginFeedbackTest.*
+
+# Missing magnification manager and ChromeVoxPanel crashes.
+-LoginScreenDefaultPolicyInSessionBrowsertest.*
+-LoginScreenDefaultPolicyLoginScreenBrowsertest.*
+
+# Test shutdown crashes.
+-LoginScreenLocalePolicyTest.*
+-LoginScreenPolicyTest.*
+
+# Crashes in pre-login phase, probably MagnificationManager not created.
+-MagnificationManagerTest.*
+
+# OutputProtection problems:
+# interface_endpoint_client.cc(32) Check failed: !is_valid. The callback passed to OutputProtection::QueryStatus() was never run.
+# binder_registry.h(89) Failed to locate a binder for interface: display::mojom::OutputProtection
+-Mojo/ECKEncryptedMediaTest.*
+-OutOfProcessPPAPITest.*
+-Pepper/ECKEncryptedMediaTest.*
+
+# ash::FocusRingController::SetVisible() from LoginDisplayHostWebUI.
+-MultiAuthEnrollmentScreenTest.*
+-ProvisionedEnrollmentScreenTest.*
+
+# VPN item not in system tray.
+-NetworkingConfigDelegateChromeosTest.*
+
+# Timeout device_event_log_impl.cc(156) Network: network_portal_detector_impl.cc:486 Portal detection timeout:  name= id=
+-NetworkingConfigTest.*
+-NetworkPortalDetectorImplBrowserTest.*
+
+# Crash in autofill::SaveCardBubbleViews::ShouldShowCloseButton().
+-SaveCardBubbleControllerImplTest.*
+
+# ash::Shell access in test.
+-ShelfAppBrowserTest.*
+-ShelfAppBrowserTestNoDefaultBrowser.*
+
+# ash::Shell access in test.
+-ShutdownPolicyInSessionTest.*
+
+# Function under test uses ash::Shell for window list.
+-SortWindowsByZIndexBrowserTest.*
+
+# Timeout.
+-StartupMetricsTest.*
+
+# ash::Shell access in test for StatusAreaWidget.
+-SupervisedUserCreationTest.*
+# Crash. Database is locked.
+-SyncAwareCounterTest.*
+
+# ash::Shell access in test.
+-SystemTrayTrayCastMediaRouterChromeOSTest.*
+
+# ash::Shell access in test.
+-SystemUse24HourClockPolicyTest.*
 
 # Flaky shutdown crashes in ~MusClient http://crbug.com/786234 and AtExit
 # crashes in ~WebContentsTaskProvider http://crbug.com/786230
 -AppBackgroundPageApiTest.*
 -DefaultIsolation/TaskManagerOOPIFBrowserTest.*
+-PrerenderBrowserTest.*
+-SitePerProcess/TaskManagerOOPIFBrowserTest.*
 -TaskManagerBrowserTest.*
 -TaskManagerMemoryCoordinatorBrowserTest.*
+-TaskManagerUtilityProcessBrowserTest.*
+
+# ash::Shell access in test.
+-TrayAccessibilityLoginScreenTest.*
+-TrayAccessibilityTestInstance/TrayAccessibilityTest.*
+
+# chromeos::UserAddingScreenImpl::Cancel() uses ash::Shell to enable system tray.
+-UserAddingScreenTest.*
+
+# Virtual keyboard not supported.
+-DefaultKeyboardExtensionBrowserTest.*
+-KeyboardEndToEndTest.*
+-KioskVirtualKeyboardTest.*
+-VirtualKeyboardAppWindowTest.*
+-VirtualKeyboardStateTest.*
+-VirtualKeyboardWebContentTest.*
+
+# Also fails in --mus. http://crbug.com/755318.
+-WebViewScrollBubbling/WebViewGuestScrollTouchTest.*
+
+# Also fails in --mus. http://crbug.com/755328
+-WebViewTests/WebViewFocusTest.*
+-WebViewTests/WebViewSizeTest.*
+-WebViewTests/WebViewTest.*
