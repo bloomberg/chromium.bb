@@ -1467,15 +1467,16 @@ void TransportSecurityState::ProcessExpectCTHeader(
   if (value == "preload") {
     if (!expect_ct_reporter_)
       return;
-    if (!IsBuildTimely())
-      return;
     if (!ssl_info.is_issued_by_known_root)
       return;
     if (!ssl_info.ct_compliance_details_available)
       return;
     if (ssl_info.ct_cert_policy_compliance ==
-        ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS)
+            ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS ||
+        ssl_info.ct_cert_policy_compliance ==
+            ct::CertPolicyCompliance::CERT_POLICY_BUILD_NOT_TIMELY) {
       return;
+    }
     ExpectCTState state;
     if (GetStaticExpectCTState(host_port_pair.host(), &state)) {
       MaybeNotifyExpectCTFailed(host_port_pair, state.report_uri, base::Time(),
@@ -1506,7 +1507,6 @@ void TransportSecurityState::ProcessExpectCTHeader(
     return;
   if (ssl_info.ct_cert_policy_compliance !=
       ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS) {
-    ExpectCTState state;
     // If an Expect-CT header is observed over a non-compliant connection, the
     // site owner should be notified about the misconfiguration. If the site was
     // already opted in to Expect-CT, this report would have been sent at
@@ -1514,6 +1514,13 @@ void TransportSecurityState::ProcessExpectCTHeader(
     // however, the lack of CT compliance would not have been evaluated/reported
     // at connection setup time, so it needs to be reported here while
     // processing the header.
+    if (ssl_info.ct_cert_policy_compliance ==
+        ct::CertPolicyCompliance::CERT_POLICY_BUILD_NOT_TIMELY) {
+      // Only send reports for truly non-compliant connections, not those for
+      // which compliance wasn't checked due to an out-of-date build.
+      return;
+    }
+    ExpectCTState state;
     if (expect_ct_reporter_ && !report_uri.is_empty() &&
         !GetDynamicExpectCTState(host_port_pair.host(), &state)) {
       MaybeNotifyExpectCTFailed(host_port_pair, report_uri, base::Time(),
