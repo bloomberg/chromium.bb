@@ -28,10 +28,11 @@ namespace device {
 
 // Takes wifi data and sends it to a server to get a position fix.
 // It performs formatting of the request and interpretation of the response.
-class NetworkLocationRequest : private net::URLFetcherDelegate {
+class DEVICE_GEOLOCATION_EXPORT NetworkLocationRequest
+    : private net::URLFetcherDelegate {
  public:
   // ID passed to URLFetcher::Create(). Used for testing.
-  DEVICE_GEOLOCATION_EXPORT static int url_fetcher_id_for_tests;
+  static int url_fetcher_id_for_tests;
 
   // Called when a new geo position is available. The second argument indicates
   // whether there was a server error or not. It is true when there was a

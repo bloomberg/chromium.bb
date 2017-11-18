@@ -74,8 +74,6 @@ component("geolocation") {
     sources -= [
       "network_location_provider.cc",
       "network_location_provider.h",
-      "network_location_request.cc",
-      "network_location_request.h",
     ]
     deps += [ ":geolocation_jni_headers" ]
   }
