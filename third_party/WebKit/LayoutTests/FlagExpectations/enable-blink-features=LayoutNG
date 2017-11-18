@@ -2328,7 +2328,6 @@ crbug.com/591099 external/wpt/WebCryptoAPI/generateKey/failures_RSA-OAEP.worker.
 crbug.com/591099 external/wpt/WebCryptoAPI/generateKey/failures_RSA-PSS.worker.html [ Timeout ]
 crbug.com/591099 external/wpt/WebCryptoAPI/generateKey/failures_RSASSA-PKCS1-v1_5.worker.html [ Timeout ]
 crbug.com/591099 external/wpt/WebCryptoAPI/generateKey/successes.worker.html [ Timeout ]
-crbug.com/591099 external/wpt/WebCryptoAPI/generateKey/test_failures.https.html [ Crash Pass Timeout ]
 crbug.com/591099 external/wpt/WebCryptoAPI/generateKey/test_failures_AES-CBC.https.html [ Pass Timeout ]
 crbug.com/591099 external/wpt/WebCryptoAPI/generateKey/test_failures_AES-CTR.https.html [ Pass Timeout ]
 crbug.com/591099 external/wpt/WebCryptoAPI/generateKey/test_failures_AES-GCM.https.html [ Pass Timeout ]
