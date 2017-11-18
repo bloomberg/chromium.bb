@@ -13,6 +13,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "content/browser/dom_storage/dom_storage_area.h"
 #include "content/browser/dom_storage/dom_storage_namespace.h"
 #include "content/browser/dom_storage/dom_storage_task_runner.h"
@@ -204,7 +205,14 @@ TEST_F(DOMStorageContextImplTest, PersistentIds) {
   EXPECT_EQ(kClonedPersistentId, cloned_area->persistent_namespace_id_);
 }
 
+// Disable this test on Android as on Android we always delete our old session
+// storage on startup. This is because we don't do any session restoration for
+// the android system. See crbug.com/770307.
+#if defined(OS_ANDROID)
+TEST_F(DOMStorageContextImplTest, DISABLED_DeleteSessionStorage) {
+#else
 TEST_F(DOMStorageContextImplTest, DeleteSessionStorage) {
+#endif
   // Create a DOMStorageContextImpl which will save sessionStorage on disk.
   context_->Shutdown();
   context_ =

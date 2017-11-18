@@ -17,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/process_memory_dump.h"
+#include "build/build_config.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
@@ -458,7 +459,15 @@ leveldb::Status SessionStorageDatabase::TryToOpen(
   // memory allocation in RAM from a log file recovery.
   options.write_buffer_size = 64 * 1024;
   options.block_cache = leveldb_chrome::GetSharedWebBlockCache();
-  return leveldb_env::OpenDB(options, file_path_.AsUTF8Unsafe(), db);
+
+  std::string db_name = file_path_.AsUTF8Unsafe();
+#if defined(OS_ANDROID)
+  // On Android there is no support for session storage restoring, and since
+  // the restoring code is responsible for database cleanup, we must manually
+  // delete the old database here before we open it.
+  leveldb::DestroyDB(db_name, options);
+#endif
+  return leveldb_env::OpenDB(options, db_name, db);
 }
 
 bool SessionStorageDatabase::IsOpen() const {
