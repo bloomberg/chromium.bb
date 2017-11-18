@@ -6,6 +6,8 @@
 
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/ScriptValue.h"
+#include "bindings/core/v8/V8ObjectBuilder.h"
 #include "bindings/core/v8/unrestricted_double_or_keyframe_effect_options.h"
 #include "core/animation/Animation.h"
 #include "core/animation/EffectInput.h"
@@ -21,6 +23,7 @@
 #include "core/frame/UseCounter.h"
 #include "core/paint/PaintLayer.h"
 #include "core/svg/SVGElement.h"
+#include "platform/bindings/ScriptState.h"
 
 namespace blink {
 
@@ -82,7 +85,9 @@ KeyframeEffectReadOnly::KeyframeEffectReadOnly(Element* target,
       target_(target),
       model_(model),
       sampled_effect_(nullptr),
-      priority_(priority) {}
+      priority_(priority) {
+  DCHECK(!model_ || model_->IsKeyframeEffectModel());
+}
 
 void KeyframeEffectReadOnly::Attach(Animation* animation) {
   if (target_) {
@@ -309,6 +314,33 @@ void KeyframeEffectReadOnly::StartAnimationOnCompositor(
       GetAnimation(), *compositor_player, *Model(), compositor_animation_ids_,
       animation_playback_rate);
   DCHECK(!compositor_animation_ids_.IsEmpty());
+}
+
+Vector<ScriptValue> KeyframeEffectReadOnly::getKeyframes(
+    ScriptState* script_state) {
+  Vector<ScriptValue> computed_keyframes;
+  if (!model_)
+    return computed_keyframes;
+
+  // getKeyframes() returns a list of 'ComputedKeyframes'. A ComputedKeyframe
+  // consists of the normal keyframe data combined with the computed offset for
+  // the given keyframe.
+  //
+  // https://w3c.github.io/web-animations/#dom-keyframeeffectreadonly-getkeyframes
+  const KeyframeVector& keyframes =
+      ToKeyframeEffectModelBase(model_)->GetFrames();
+  Vector<double> computed_offsets =
+      KeyframeEffectModelBase::GetComputedOffsets(keyframes);
+  computed_keyframes.ReserveInitialCapacity(keyframes.size());
+  ScriptState::Scope scope(script_state);
+  for (size_t i = 0; i < keyframes.size(); i++) {
+    V8ObjectBuilder object_builder(script_state);
+    keyframes[i]->AddKeyframePropertiesToV8Object(object_builder);
+    object_builder.Add("computedOffset", computed_offsets[i]);
+    computed_keyframes.push_back(object_builder.GetScriptValue());
+  }
+
+  return computed_keyframes;
 }
 
 bool KeyframeEffectReadOnly::HasActiveAnimationsOnCompositor() const {

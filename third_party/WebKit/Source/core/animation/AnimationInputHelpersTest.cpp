@@ -4,12 +4,13 @@
 
 #include "core/animation/AnimationInputHelpers.h"
 
+#include <memory>
+#include "core/animation/PropertyHandle.h"
 #include "core/dom/Element.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/animation/TimingFunction.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 namespace blink {
 
@@ -18,6 +19,23 @@ class AnimationAnimationInputHelpersTest : public ::testing::Test {
   CSSPropertyID KeyframeAttributeToCSSProperty(const String& property) {
     return AnimationInputHelpers::KeyframeAttributeToCSSProperty(property,
                                                                  *document);
+  }
+
+  String PropertyHandleToKeyframeAttribute(
+      CSSPropertyID property,
+      bool is_presentation_attribute = false) {
+    PropertyHandle handle(property, is_presentation_attribute);
+    return AnimationInputHelpers::PropertyHandleToKeyframeAttribute(handle);
+  }
+
+  String PropertyHandleToKeyframeAttribute(AtomicString property) {
+    PropertyHandle handle(property);
+    return AnimationInputHelpers::PropertyHandleToKeyframeAttribute(handle);
+  }
+
+  String PropertyHandleToKeyframeAttribute(QualifiedName property) {
+    PropertyHandle handle(property);
+    return AnimationInputHelpers::PropertyHandleToKeyframeAttribute(handle);
   }
 
   scoped_refptr<TimingFunction> ParseTimingFunction(
@@ -138,6 +156,35 @@ TEST_F(AnimationAnimationInputHelpersTest, ParseAnimationTimingFunction) {
   TimingFunctionThrows("frames(3, end)", exception_state);
   TimingFunctionThrows("frames(1)", exception_state);
   TimingFunctionThrows("cubic-bezier(0.1, 0, 4, 0.4)", exception_state);
+}
+
+TEST_F(AnimationAnimationInputHelpersTest, PropertyHandleToKeyframeAttribute) {
+  // CSS properties.
+  EXPECT_EQ("top", PropertyHandleToKeyframeAttribute(CSSPropertyTop));
+  EXPECT_EQ("lineHeight",
+            PropertyHandleToKeyframeAttribute(CSSPropertyLineHeight));
+  EXPECT_EQ("cssFloat", PropertyHandleToKeyframeAttribute(CSSPropertyFloat));
+  EXPECT_EQ("cssOffset", PropertyHandleToKeyframeAttribute(CSSPropertyOffset));
+
+  // CSS custom properties.
+  EXPECT_EQ("--x", PropertyHandleToKeyframeAttribute("--x"));
+  EXPECT_EQ("--test-prop", PropertyHandleToKeyframeAttribute("--test-prop"));
+
+  // Presentation attributes.
+  EXPECT_EQ("svg-top", PropertyHandleToKeyframeAttribute(CSSPropertyTop, true));
+  EXPECT_EQ("svg-line-height",
+            PropertyHandleToKeyframeAttribute(CSSPropertyLineHeight, true));
+  EXPECT_EQ("svg-float",
+            PropertyHandleToKeyframeAttribute(CSSPropertyFloat, true));
+  EXPECT_EQ("svg-offset",
+            PropertyHandleToKeyframeAttribute(CSSPropertyOffset, true));
+
+  // SVG attributes.
+  EXPECT_EQ("calcMode", PropertyHandleToKeyframeAttribute(QualifiedName(
+                            g_null_atom, "calcMode", g_null_atom)));
+  EXPECT_EQ("overline-position",
+            PropertyHandleToKeyframeAttribute(
+                QualifiedName(g_null_atom, "overline-position", g_null_atom)));
 }
 
 }  // namespace blink
