@@ -1034,6 +1034,9 @@ def parse_args():
     with open(options.spec_path, 'r') as fd:
       options.specs = fd.read()
 
+  if not options.output_json:
+    parse.error('--output_json is required')
+
   if not options.git_cache_dir:
     parse.error('--git-cache-dir is required')
 
@@ -1086,8 +1089,6 @@ def prepare(options, git_slns, active):
   step_text = '[%dGB/%dGB used (%d%%)]' % (used_disk_space_gb,
                                            total_disk_space_gb,
                                            percent_used)
-  if not options.output_json:
-    print '@@@STEP_TEXT@%s@@@' % step_text
   shallow = (total_disk_space < SHALLOW_CLONE_THRESHOLD
              and not options.no_shallow)
 
@@ -1149,17 +1150,16 @@ def checkout(options, git_slns, specs, revisions, step_text, shallow):
       ensure_no_checkout(dir_names, options.cleanup_dir)
       gclient_output = ensure_checkout(**checkout_parameters)
   except PatchFailed as e:
-    if options.output_json:
-      # Tell recipes information such as root, got_revision, etc.
-      emit_json(options.output_json,
-                did_run=True,
-                root=first_sln,
-                patch_apply_return_code=e.code,
-                patch_root=options.patch_root,
-                patch_failure=True,
-                failed_patch_body=e.output,
-                step_text='%s PATCH FAILED' % step_text,
-                fixed_revisions=revisions)
+    # Tell recipes information such as root, got_revision, etc.
+    emit_json(options.output_json,
+              did_run=True,
+              root=first_sln,
+              patch_apply_return_code=e.code,
+              patch_root=options.patch_root,
+              patch_failure=True,
+              failed_patch_body=e.output,
+              step_text='%s PATCH FAILED' % step_text,
+              fixed_revisions=revisions)
     raise
 
   # Take care of got_revisions outputs.
@@ -1182,18 +1182,17 @@ def checkout(options, git_slns, specs, revisions, step_text, shallow):
     got_revisions = { 'got_revision': 'BOT_UPDATE_NO_REV_FOUND' }
     #raise Exception('No got_revision(s) found in gclient output')
 
-  if options.output_json:
-    # Tell recipes information such as root, got_revision, etc.
-    emit_json(options.output_json,
-              did_run=True,
-              root=first_sln,
-              patch_root=options.patch_root,
-              step_text=step_text,
-              fixed_revisions=revisions,
-              properties=got_revisions,
-              manifest=create_manifest_old(),
-              source_manifest=create_manifest(
-                  gclient_output, options.patch_root, options.gerrit_ref))
+  # Tell recipes information such as root, got_revision, etc.
+  emit_json(options.output_json,
+            did_run=True,
+            root=first_sln,
+            patch_root=options.patch_root,
+            step_text=step_text,
+            fixed_revisions=revisions,
+            properties=got_revisions,
+            manifest=create_manifest_old(),
+            source_manifest=create_manifest(
+                gclient_output, options.patch_root, options.gerrit_ref))
 
 
 def print_debug_info():
