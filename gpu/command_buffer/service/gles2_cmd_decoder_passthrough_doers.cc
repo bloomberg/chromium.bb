@@ -4620,6 +4620,18 @@ error::Error GLES2DecoderPassthroughImpl::DoEndRasterCHROMIUM() {
   return error::kNoError;
 }
 
+error::Error GLES2DecoderPassthroughImpl::DoUnlockTransferCacheEntryCHROMIUM(
+    GLuint64 handle_id) {
+  NOTIMPLEMENTED();
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderPassthroughImpl::DoDeleteTransferCacheEntryCHROMIUM(
+    GLuint64 handle_id) {
+  NOTIMPLEMENTED();
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderPassthroughImpl::DoWindowRectanglesEXT(
     GLenum mode,
     GLsizei n,

@@ -3298,6 +3298,37 @@ void EndRasterCHROMIUM() {
   }
 }
 
+void CreateTransferCacheEntryCHROMIUM(GLuint64 handle_id,
+                                      GLuint handle_shm_id,
+                                      GLuint handle_shm_offset,
+                                      GLuint type,
+                                      GLuint data_shm_id,
+                                      GLuint data_shm_offset,
+                                      GLuint data_size) {
+  gles2::cmds::CreateTransferCacheEntryCHROMIUM* c =
+      GetCmdSpace<gles2::cmds::CreateTransferCacheEntryCHROMIUM>();
+  if (c) {
+    c->Init(handle_id, handle_shm_id, handle_shm_offset, type, data_shm_id,
+            data_shm_offset, data_size);
+  }
+}
+
+void DeleteTransferCacheEntryCHROMIUM(GLuint64 handle_id) {
+  gles2::cmds::DeleteTransferCacheEntryCHROMIUM* c =
+      GetCmdSpace<gles2::cmds::DeleteTransferCacheEntryCHROMIUM>();
+  if (c) {
+    c->Init(handle_id);
+  }
+}
+
+void UnlockTransferCacheEntryCHROMIUM(GLuint64 handle_id) {
+  gles2::cmds::UnlockTransferCacheEntryCHROMIUM* c =
+      GetCmdSpace<gles2::cmds::UnlockTransferCacheEntryCHROMIUM>();
+  if (c) {
+    c->Init(handle_id);
+  }
+}
+
 void TexStorage2DImageCHROMIUM(GLenum target,
                                GLenum internalFormat,
                                GLsizei width,

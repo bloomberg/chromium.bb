@@ -52,6 +52,7 @@
 #if !defined(OS_NACL)
 #include "cc/paint/display_item_list.h"  // nogncheck
 #include "cc/paint/paint_op_buffer_serializer.h"
+#include "cc/paint/transfer_cache_entry.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
 #endif
@@ -7106,6 +7107,28 @@ bool GLES2Implementation::LockDiscardableTextureCHROMIUM(GLuint texture_id) {
   }
   helper_->LockDiscardableTextureCHROMIUM(texture_id);
   return true;
+}
+
+void GLES2Implementation::CreateTransferCacheEntryCHROMIUM(
+    GLuint64 handle_id,
+    GLuint handle_shm_id,
+    GLuint handle_shm_offset,
+    const cc::ClientTransferCacheEntry& entry) {
+#if defined(OS_NACL)
+  NOTREACHED();
+#else
+  ScopedMappedMemoryPtr mapped_alloc(entry.SerializedSize(), helper_,
+                                     mapped_memory_.get());
+  DCHECK(mapped_alloc.valid());
+  bool succeeded = entry.Serialize(
+      mapped_alloc.size(), reinterpret_cast<uint8_t*>(mapped_alloc.address()));
+  DCHECK(succeeded);
+
+  helper_->CreateTransferCacheEntryCHROMIUM(
+      handle_id, handle_shm_id, handle_shm_offset,
+      static_cast<uint32_t>(entry.Type()), mapped_alloc.shm_id(),
+      mapped_alloc.offset(), mapped_alloc.size());
+#endif
 }
 
 void GLES2Implementation::UpdateCachedExtensionsIfNeeded() {

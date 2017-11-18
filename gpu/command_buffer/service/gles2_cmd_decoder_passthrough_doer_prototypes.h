@@ -1012,6 +1012,8 @@ error::Error DoBeginRasterCHROMIUM(GLuint texture_id,
                                    GLboolean use_distance_field_text,
                                    GLint pixel_config);
 error::Error DoEndRasterCHROMIUM();
+error::Error DoUnlockTransferCacheEntryCHROMIUM(GLuint64 id);
+error::Error DoDeleteTransferCacheEntryCHROMIUM(GLuint64 id);
 error::Error DoWindowRectanglesEXT(GLenum mode,
                                    GLsizei n,
                                    const volatile GLint* box);

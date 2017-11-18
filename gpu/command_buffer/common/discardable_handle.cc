@@ -50,6 +50,10 @@ bool DiscardableHandleBase::IsDeletedForTesting() const {
   return kHandleDeleted == base::subtle::NoBarrier_Load(AsAtomic());
 }
 
+scoped_refptr<Buffer> DiscardableHandleBase::BufferForTesting() const {
+  return buffer_;
+}
+
 volatile base::subtle::Atomic32* DiscardableHandleBase::AsAtomic() const {
   return reinterpret_cast<volatile base::subtle::Atomic32*>(
       buffer_->GetDataAddress(byte_offset_, sizeof(base::subtle::Atomic32)));
@@ -125,6 +129,11 @@ void ServiceDiscardableHandle::Unlock() {
   // No barrier is needed as all GPU process access happens on a single thread,
   // and communication of dependent data between the GPU process and the
   // renderer process happens across the command buffer and includes barriers.
+
+  // This check notifies a non-malicious caller that they've issued unbalanced
+  // lock/unlock calls.
+  DLOG_IF(ERROR, kHandleLockedStart > base::subtle::NoBarrier_Load(AsAtomic()));
+
   base::subtle::NoBarrier_AtomicIncrement(AsAtomic(), -1);
 }
 

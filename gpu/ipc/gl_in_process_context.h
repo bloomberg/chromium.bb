@@ -71,6 +71,9 @@ class GL_IN_PROCESS_CONTEXT_EXPORT GLInProcessContext {
   virtual void SetUpdateVSyncParametersCallback(
       const gpu::InProcessCommandBuffer::UpdateVSyncParametersCallback&
           callback) = 0;
+
+  // Test only functions.
+  virtual gpu::gles2::ContextGroup* ContextGroupForTesting() const = 0;
 };
 
 }  // namespace gpu

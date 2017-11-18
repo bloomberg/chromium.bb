@@ -74,6 +74,7 @@ class GLInProcessContextImpl
       const gpu::InProcessCommandBuffer::UpdateVSyncParametersCallback&
           callback) override;
   void SetLock(base::Lock* lock) override;
+  gpu::gles2::ContextGroup* ContextGroupForTesting() const override;
 
  private:
   void OnSignalSyncPoint(const base::Closure& callback);
@@ -131,6 +132,11 @@ void GLInProcessContextImpl::SetUpdateVSyncParametersCallback(
 
 void GLInProcessContextImpl::SetLock(base::Lock* lock) {
   NOTREACHED();
+}
+
+gpu::gles2::ContextGroup* GLInProcessContextImpl::ContextGroupForTesting()
+    const {
+  return command_buffer_->ContextGroupForTesting();
 }
 
 gpu::ContextResult GLInProcessContextImpl::Initialize(
