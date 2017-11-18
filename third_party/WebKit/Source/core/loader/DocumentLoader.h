@@ -79,13 +79,16 @@ class CORE_EXPORT DocumentLoader
   USING_GARBAGE_COLLECTED_MIXIN(DocumentLoader);
 
  public:
-  static DocumentLoader* Create(LocalFrame* frame,
-                                const ResourceRequest& request,
-                                const SubstituteData& data,
-                                ClientRedirectPolicy client_redirect_policy) {
+  static DocumentLoader* Create(
+      LocalFrame* frame,
+      const ResourceRequest& request,
+      const SubstituteData& data,
+      ClientRedirectPolicy client_redirect_policy,
+      const base::UnguessableToken& devtools_navigation_token) {
     DCHECK(frame);
 
-    return new DocumentLoader(frame, request, data, client_redirect_policy);
+    return new DocumentLoader(frame, request, data, client_redirect_policy,
+                              devtools_navigation_token);
   }
   ~DocumentLoader() override;
 
@@ -232,15 +235,12 @@ class CORE_EXPORT DocumentLoader
     return devtools_navigation_token_;
   }
 
-  void SetDevToolsNavigationToken(const base::UnguessableToken& token) {
-    devtools_navigation_token_ = token;
-  }
-
  protected:
   DocumentLoader(LocalFrame*,
                  const ResourceRequest&,
                  const SubstituteData&,
-                 ClientRedirectPolicy);
+                 ClientRedirectPolicy,
+                 const base::UnguessableToken& devtools_navigation_token);
 
   static bool ShouldClearWindowName(const LocalFrame&,
                                     SecurityOrigin* previous_security_origin,

@@ -149,10 +149,12 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   // - storage to store an extra data that can be used by the content layer
   // - wrapper methods to expose DocumentLoader's variables to the content
   //   layer
-  DocumentLoader* CreateDocumentLoader(LocalFrame*,
-                                       const ResourceRequest&,
-                                       const SubstituteData&,
-                                       ClientRedirectPolicy) override;
+  DocumentLoader* CreateDocumentLoader(
+      LocalFrame*,
+      const ResourceRequest&,
+      const SubstituteData&,
+      ClientRedirectPolicy,
+      const base::UnguessableToken& devtools_navigation_token) override;
   WTF::String UserAgent() override;
   WTF::String DoNotTrackValue() override;
   void TransitionToCommittedForNewPage() override;
