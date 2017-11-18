@@ -92,3 +92,7 @@ Current patches:
   libavformat/oggdec.c
     Removes CELT, DIRAC, DAALA, and SPEEX support form the ogg parser. We don't
     support these codecs and the parsers have bugs. http://crbug.com/654612
+
+  libavcodec/mpeg4videodec.c:
+    decode_user_data() : Fix undefined shift in version string. Pushed upstream,
+    so should be upstream by M65 roll. http://crbug.com/779924
