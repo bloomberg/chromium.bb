@@ -196,8 +196,11 @@ void BluetoothTestWin::SimulateGattConnection(BluetoothDevice* device) {
 void BluetoothTestWin::SimulateGattServicesDiscovered(
     BluetoothDevice* device,
     const std::vector<std::string>& uuids) {
+  std::string address =
+      device ? device->GetAddress() : remembered_device_address_;
+
   win::BLEDevice* simulated_device =
-      fake_bt_le_wrapper_->GetSimulatedBLEDevice(device->GetAddress());
+      fake_bt_le_wrapper_->GetSimulatedBLEDevice(address);
   CHECK(simulated_device);
 
   for (auto uuid : uuids) {
@@ -361,6 +364,11 @@ void BluetoothTestWin::SimulateGattCharacteristicWriteError(
       target_characteristic, hr);
 
   FinishPendingTasks();
+}
+
+void BluetoothTestWin::RememberDeviceForSubsequentAction(
+    BluetoothDevice* device) {
+  remembered_device_address_ = device->GetAddress();
 }
 
 void BluetoothTestWin::DeleteDevice(BluetoothDevice* device) {
