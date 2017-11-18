@@ -30,11 +30,12 @@ class IOBuffer;
 
 class NET_EXPORT FileStream {
  public:
-  // Creates a FileStream.
   // Uses |task_runner| for asynchronous operations.
   explicit FileStream(const scoped_refptr<base::TaskRunner>& task_runner);
 
-  // Construct a FileStream with an existing valid |file|.
+  // Construct a FileStream with an already opened file. |file| must be opened
+  // for async reading on Windows, and sync reading everywehere else.
+  //
   // Uses |task_runner| for asynchronous operations.
   FileStream(base::File file,
              const scoped_refptr<base::TaskRunner>& task_runner);
@@ -122,6 +123,16 @@ class NET_EXPORT FileStream {
   // Zero byte writes are not allowed.
   virtual int Write(IOBuffer* buf, int buf_len,
                     const CompletionCallback& callback);
+
+  // Gets status information about File. May fail synchronously, but never
+  // succeeds synchronously.
+  //
+  // It is invalid to request any asynchronous operations while there is an
+  // in-flight asynchronous operation.
+  //
+  // |file_info| must remain valid until |callback| is invoked.
+  virtual int GetFileInfo(base::File::Info* file_info,
+                          const CompletionCallback& callback);
 
   // Forces out a filesystem sync on this file to make sure that the file was
   // written out to disk and is not currently sitting in the buffer. This does

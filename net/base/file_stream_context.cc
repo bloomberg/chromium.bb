@@ -126,6 +126,20 @@ void FileStream::Context::Seek(int64_t offset,
   async_in_progress_ = true;
 }
 
+void FileStream::Context::GetFileInfo(base::File::Info* file_info,
+                                      const CompletionCallback& callback) {
+  CheckNoAsyncInProgress();
+
+  base::PostTaskAndReplyWithResult(
+      task_runner_.get(), FROM_HERE,
+      base::Bind(&Context::GetFileInfoImpl, base::Unretained(this),
+                 base::Unretained(file_info)),
+      base::Bind(&Context::OnAsyncCompleted, base::Unretained(this),
+                 IntToInt64(callback)));
+
+  async_in_progress_ = true;
+}
+
 void FileStream::Context::Flush(const CompletionCallback& callback) {
   CheckNoAsyncInProgress();
 
@@ -182,11 +196,20 @@ FileStream::Context::OpenResult FileStream::Context::OpenFileImpl(
 #if defined(OS_ANDROID)
   }
 #endif  // defined(OS_ANDROID)
-  if (!file.IsValid())
+  if (!file.IsValid()) {
     return OpenResult(base::File(),
                       IOResult::FromOSError(logging::GetLastSystemErrorCode()));
+  }
 
   return OpenResult(std::move(file), IOResult(OK, 0));
+}
+
+FileStream::Context::IOResult FileStream::Context::GetFileInfoImpl(
+    base::File::Info* file_info) {
+  bool result = file_.GetInfo(file_info);
+  if (!result)
+    return IOResult::FromOSError(logging::GetLastSystemErrorCode());
+  return IOResult(OK, 0);
 }
 
 FileStream::Context::IOResult FileStream::Context::CloseFileImpl() {
