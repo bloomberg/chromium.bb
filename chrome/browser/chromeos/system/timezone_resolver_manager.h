@@ -50,6 +50,11 @@ class TimeZoneResolverManager : public TimeZoneResolver::Delegate {
   // all configuration data.
   bool TimeZoneResolverShouldBeRunning();
 
+  // Convert kResolveTimezoneByGeolocationMethod /
+  // kResolveDeviceTimezoneByGeolocationMethod preference value to
+  // TimeZoneResolveMethod. Defaults to DISABLED for unknown values.
+  static TimeZoneResolveMethod TimeZoneResolveMethodFromInt(int value);
+
   // Returns user preference value if time zone is not managed.
   // Otherwise returns effective time zone resolve method.
   // If |check_policy| is true, effective method calculation will also

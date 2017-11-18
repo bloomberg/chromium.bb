@@ -25,6 +25,7 @@
  *   CLOUD_PRINTERS: (undefined|!settings.Route),
  *   CUPS_PRINTERS: (undefined|!settings.Route),
  *   DATETIME: (undefined|!settings.Route),
+ *   DATETIME_TIMEZONE_SUBPAGE: (undefined|!settings.Route),
  *   DEFAULT_BROWSER: (undefined|!settings.Route),
  *   DETAILED_BUILD_INFO: (undefined|!settings.Route),
  *   DEVICE: (undefined|!settings.Route),
@@ -333,6 +334,8 @@ cr.define('settings', function() {
       // <if expr="chromeos">
       if (pageVisibility.dateTime !== false) {
         r.DATETIME = r.ADVANCED.createSection('/dateTime', 'dateTime');
+        r.DATETIME_TIMEZONE_SUBPAGE =
+            r.DATETIME.createChild('/dateTime/timeZone');
       }
       // </if>
 

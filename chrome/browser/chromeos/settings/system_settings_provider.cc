@@ -23,6 +23,8 @@ SystemSettingsProvider::SystemSettingsProvider(
       new base::Value(timezone_settings->GetCurrentTimezoneID()));
   per_user_timezone_enabled_value_.reset(
       new base::Value(system::PerUserTimezoneEnabled()));
+  fine_grained_time_zone_enabled_value_.reset(
+      new base::Value(system::FineGrainedTimeZoneDetectionEnabled()));
 }
 
 SystemSettingsProvider::~SystemSettingsProvider() {
@@ -45,6 +47,7 @@ void SystemSettingsProvider::DoSet(const std::string& path,
     system::TimezoneSettings::GetInstance()->SetTimezoneFromID(timezone_id);
   }
   // kPerUserTimezoneEnabled is read-only.
+  // kFineGrainedTimeZoneResolveEnabled is read-only.
 }
 
 const base::Value* SystemSettingsProvider::Get(const std::string& path) const {
@@ -53,6 +56,9 @@ const base::Value* SystemSettingsProvider::Get(const std::string& path) const {
 
   if (path == kPerUserTimezoneEnabled)
     return per_user_timezone_enabled_value_.get();
+
+  if (path == kFineGrainedTimeZoneResolveEnabled)
+    return fine_grained_time_zone_enabled_value_.get();
 
   return NULL;
 }
@@ -64,7 +70,8 @@ CrosSettingsProvider::TrustedStatus
 }
 
 bool SystemSettingsProvider::HandlesSetting(const std::string& path) const {
-  return path == kSystemTimezone || path == kPerUserTimezoneEnabled;
+  return path == kSystemTimezone || path == kPerUserTimezoneEnabled ||
+         path == kFineGrainedTimeZoneResolveEnabled;
 }
 
 void SystemSettingsProvider::TimezoneChanged(const icu::TimeZone& timezone) {
