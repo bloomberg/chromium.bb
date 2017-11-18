@@ -25,10 +25,11 @@
    * @return {!Promise}
    */
   async function checkPattern(pattern) {
+    TestRunner.addResult("Setting Pattern: " + cleanURLOrPattern(pattern));
     await SDK.multitargetNetworkManager.setInterceptionHandlerForPatterns([pattern], interceptionHandler);
-    TestRunner.addResult("Requesting: bar.js");
+    TestRunner.addResult("Requesting: " + cleanURLOrPattern(resourceURL));
     await TestRunner.evaluateInPageAsync(`fetch('` + resourceURL + `')`);
-    TestRunner.addResult("Received: bar.js");
+    TestRunner.addResult("Response Received: " + cleanURLOrPattern(resourceURL));
     await SDK.multitargetNetworkManager.setInterceptionHandlerForPatterns([], interceptionHandler);
     TestRunner.addResult("");
 
@@ -37,8 +38,7 @@
      * @return {!Promise}
      */
     function interceptionHandler(interceptedRequest) {
-      TestRunner.addResult("Received File: " + cleanURL(interceptedRequest.request.url));
-      TestRunner.addResult("Pattern: " + cleanURL(pattern));
+      TestRunner.addResult("Intercepted Request: " + cleanURLOrPattern(interceptedRequest.request.url));
       return Promise.resolve();
     }
   }
@@ -47,8 +47,9 @@
    * @param {string} url
    * @return {string}
    */
-  function cleanURL(url) {
-    console.assert(url.startsWith(urlPrefix));
-    return '(MASKED_URL_PATH)' + url.substr(urlPrefix.length);
+  function cleanURLOrPattern(urlOrPattern) {
+    if (urlOrPattern.startsWith(urlPrefix))
+      return '(MASKED_URL_PATH)' + urlOrPattern.substr(urlPrefix.length);
+    return urlOrPattern;
   }
 })();
