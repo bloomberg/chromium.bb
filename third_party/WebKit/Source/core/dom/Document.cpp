@@ -1959,12 +1959,6 @@ void Document::PropagateStyleToViewport() {
       !background_style->HasBackground())
     background_style = body_style;
 
-  // If the page set a rootScroller, we should use its background for painting
-  // the document background.
-  Node& root_scroller = GetRootScrollerController().EffectiveRootScroller();
-  if (this != &root_scroller)
-    background_style = ToElement(root_scroller).EnsureComputedStyle();
-
   Color background_color =
       background_style->VisitedDependentColor(CSSPropertyBackgroundColor);
   FillLayer background_layers = background_style->BackgroundLayers();
