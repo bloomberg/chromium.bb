@@ -1237,7 +1237,8 @@ TEST_F(FFmpegDemuxerTest, Mp3WithVideoStreamID3TagData) {
 #endif
 
 // Ensure a video with an unsupported audio track still results in the video
-// stream being demuxed.
+// stream being demuxed. Because we disable the speex parser for ogg, the audio
+// track won't even show up to the demuxer.
 //
 // Android has no Theora support, so this test doesn't work.
 #if !defined(OS_ANDROID)
@@ -1245,8 +1246,6 @@ TEST_F(FFmpegDemuxerTest, UnsupportedAudioSupportedVideoDemux) {
   CreateDemuxerWithStrictMediaLog("speex_audio_vorbis_video.ogv");
 
   EXPECT_MEDIA_LOG(SimpleCreatedFFmpegDemuxerStream("video"));
-  EXPECT_MEDIA_LOG(FailedToCreateValidDecoderConfigFromStream("audio"));
-  EXPECT_MEDIA_LOG(SkippingUnsupportedStream("audio"));
 
   // TODO(wolenetz): Use a matcher that verifies more of the event parameters
   // than FoundStream. See https://crbug.com/749178.
