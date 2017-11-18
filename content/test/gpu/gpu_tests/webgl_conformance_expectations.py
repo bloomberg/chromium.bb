@@ -616,6 +616,9 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         bug=609883)
     self.Fail('conformance/extensions/webgl-compressed-texture-atc.html',
         ['android', ('qualcomm', 'Adreno (TM) 418')], bug=609883)
+    # This test is skipped because it is crashing the GPU process.
+    self.Skip('conformance/glsl/bugs/init-array-with-loop.html',
+        ['android', ('qualcomm', 'Adreno (TM) 418')], bug=784817)
     self.Fail('conformance/glsl/bugs/sampler-struct-function-arg.html',
         ['android', ('qualcomm', 'Adreno (TM) 418')], bug=609883)
     # This test is skipped because it is crashing the GPU process.
