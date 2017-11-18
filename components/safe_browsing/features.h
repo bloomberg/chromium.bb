@@ -24,7 +24,6 @@ extern const base::Feature kAdSamplerTriggerFeature;
 // Gates logging of GaiaPasswordReuse user events.
 extern const base::Feature kGaiaPasswordReuseReporting;
 extern const base::Feature kGoogleBrandedPhishingWarning;
-extern const base::Feature kLocalDatabaseManagerEnabled;
 extern const base::Feature kParallelUrlCheck;
 
 // Specifies which non-resource HTML Elements to collect based on their tag and
@@ -40,8 +39,6 @@ extern const base::Feature kThreatDomDetailsTagAndAttributeFeature;
 // "T1,Q1,T2,Q2,...Tn,Qn", where Tx is a TriggerType and Qx is how many reports
 // that trigger is allowed to send per day.
 extern const base::Feature kTriggerThrottlerDailyQuotaFeature;
-
-extern const base::Feature kV4OnlyEnabled;
 
 base::ListValue GetFeatureStatusList();
 
