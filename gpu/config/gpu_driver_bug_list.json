@@ -77,8 +77,13 @@
     {
       "id": 20,
       "description": "Disable EXT_draw_buffers on GeForce GT 650M on Mac OS X due to driver bugs",
+      "cr_bugs": [180397, 779991],
       "os": {
-        "type": "macosx"
+        "type": "macosx",
+        "version": {
+          "op": "<",
+          "value": "10.12"
+        }
       },
       "vendor_id": "0x10de",
       "device_id": ["0x0fd5"],
