@@ -5,6 +5,7 @@
 #include "core/animation/AnimationInputHelpers.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "core/animation/PropertyHandle.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/css/parser/CSSVariableParser.h"
@@ -27,6 +28,28 @@ static bool IsSVGPrefixed(const String& property) {
 static String RemoveSVGPrefix(const String& property) {
   DCHECK(IsSVGPrefixed(property));
   return property.Substring(kSVGPrefixLength);
+}
+
+static String CSSPropertyToKeyframeAttribute(CSSPropertyID property) {
+  DCHECK_NE(property, CSSPropertyInvalid);
+  DCHECK_NE(property, CSSPropertyVariable);
+
+  switch (property) {
+    case CSSPropertyFloat:
+      return "cssFloat";
+    case CSSPropertyOffset:
+      return "cssOffset";
+    default:
+      return getJSPropertyName(property);
+  }
+}
+
+static String PresentationAttributeToKeyframeAttribute(
+    CSSPropertyID presentation_attribute) {
+  StringBuilder builder;
+  builder.Append(kSVGPrefix, kSVGPrefixLength);
+  builder.Append(getPropertyName(presentation_attribute));
+  return builder.ToString();
 }
 
 CSSPropertyID AnimationInputHelpers::KeyframeAttributeToCSSProperty(
@@ -235,6 +258,23 @@ scoped_refptr<TimingFunction> AnimationInputHelpers::ParseTimingFunction(
   }
   return CSSToStyleMap::MapAnimationTimingFunction(value_list->Item(0), true,
                                                    document);
+}
+
+String AnimationInputHelpers::PropertyHandleToKeyframeAttribute(
+    PropertyHandle property) {
+  if (property.IsCSSProperty()) {
+    return property.IsCSSCustomProperty()
+               ? property.CustomPropertyName()
+               : CSSPropertyToKeyframeAttribute(property.CssProperty());
+  }
+
+  if (property.IsPresentationAttribute()) {
+    return PresentationAttributeToKeyframeAttribute(
+        property.PresentationAttribute());
+  }
+
+  DCHECK(property.IsSVGAttribute());
+  return property.SvgAttribute().LocalName();
 }
 
 }  // namespace blink

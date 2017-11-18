@@ -175,6 +175,7 @@ EffectModel* EffectInput::Convert(
     const DictionarySequenceOrDictionary& effect_input,
     ExecutionContext* execution_context,
     ExceptionState& exception_state) {
+  // TODO(crbug.com/772014): The element is allowed to be null; remove check.
   if (effect_input.IsNull() || !element)
     return nullptr;
 

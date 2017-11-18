@@ -68,6 +68,8 @@ class CORE_EXPORT StringKeyframe : public Keyframe {
 
   PropertyHandleSet Properties() const override;
 
+  void AddKeyframePropertiesToV8Object(V8ObjectBuilder&) const override;
+
   class CSSPropertySpecificKeyframe
       : public Keyframe::PropertySpecificKeyframe {
    public:

@@ -4,6 +4,7 @@
 
 #include "core/animation/TransitionKeyframe.h"
 
+#include "bindings/core/v8/V8ObjectBuilder.h"
 #include "core/animation/CompositorAnimations.h"
 #include "core/animation/InterpolationType.h"
 #include "core/animation/PairwiseInterpolationValue.h"
@@ -23,6 +24,12 @@ PropertyHandleSet TransitionKeyframe::Properties() const {
   PropertyHandleSet result;
   result.insert(property_);
   return result;
+}
+
+void TransitionKeyframe::AddKeyframePropertiesToV8Object(
+    V8ObjectBuilder& object_builder) const {
+  Keyframe::AddKeyframePropertiesToV8Object(object_builder);
+  // TODO(crbug.com/777971): Add in the property/value for TransitionKeyframe.
 }
 
 scoped_refptr<Keyframe::PropertySpecificKeyframe>

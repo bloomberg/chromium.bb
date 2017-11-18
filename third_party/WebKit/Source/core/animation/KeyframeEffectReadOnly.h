@@ -5,6 +5,7 @@
 #ifndef KeyframeEffectReadOnly_h
 #define KeyframeEffectReadOnly_h
 
+#include "bindings/core/v8/ScriptValue.h"
 #include "core/CoreExport.h"
 #include "core/animation/AnimationEffectReadOnly.h"
 #include "core/animation/CompositorAnimations.h"
@@ -18,6 +19,7 @@ class ExceptionState;
 class ExecutionContext;
 class PropertyHandle;
 class SampledEffect;
+class ScriptState;
 class UnrestrictedDoubleOrKeyframeEffectOptions;
 
 // Represents the effect of an Animation on an Element's properties.
@@ -49,6 +51,9 @@ class CORE_EXPORT KeyframeEffectReadOnly : public AnimationEffectReadOnly {
   ~KeyframeEffectReadOnly() override {}
 
   bool IsKeyframeEffectReadOnly() const override { return true; }
+
+  // IDL implementation.
+  Vector<ScriptValue> getKeyframes(ScriptState*);
 
   bool Affects(const PropertyHandle&) const;
   const EffectModel* Model() const { return model_.Get(); }

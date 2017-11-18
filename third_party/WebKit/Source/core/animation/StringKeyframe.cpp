@@ -4,7 +4,9 @@
 
 #include "core/animation/StringKeyframe.h"
 
+#include "bindings/core/v8/V8ObjectBuilder.h"
 #include "core/StylePropertyShorthand.h"
+#include "core/animation/AnimationInputHelpers.h"
 #include "core/animation/css/CSSAnimations.h"
 #include "core/css/CSSCustomPropertyDeclaration.h"
 #include "core/css/resolver/StyleResolver.h"
@@ -92,6 +94,27 @@ PropertyHandleSet StringKeyframe::Properties() const {
     properties.insert(PropertyHandle(*key));
 
   return properties;
+}
+
+void StringKeyframe::AddKeyframePropertiesToV8Object(
+    V8ObjectBuilder& object_builder) const {
+  Keyframe::AddKeyframePropertiesToV8Object(object_builder);
+  for (const PropertyHandle& property : Properties()) {
+    String property_name =
+        AnimationInputHelpers::PropertyHandleToKeyframeAttribute(property);
+    String value;
+    if (property.IsCSSProperty()) {
+      value = CssPropertyValue(property).CssText();
+    } else if (property.IsPresentationAttribute()) {
+      const auto& attribute = property.PresentationAttribute();
+      value = PresentationAttributeValue(attribute).CssText();
+    } else {
+      DCHECK(property.IsSVGAttribute());
+      value = SvgPropertyValue(property.SvgAttribute());
+    }
+
+    object_builder.Add(property_name, value);
+  }
 }
 
 scoped_refptr<Keyframe> StringKeyframe::Clone() const {
