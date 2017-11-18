@@ -24,6 +24,7 @@
 #include "chrome/browser/vr/ui_renderer.h"
 #include "device/vr/vr_service.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "third_party/gvr-android-keyboard/src/libraries/headers/vr/gvr/capi/include/gvr_keyboard.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
 #include "ui/gfx/geometry/quaternion.h"
@@ -85,6 +86,8 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   void OnTriggerEvent();
   void OnPause();
   void OnResume();
+  void DrawKeyboard();
+  void CreateKeyboard();
 
   base::WeakPtr<vr::BrowserUiInterface> GetBrowserUiWeakPtr();
 
@@ -221,6 +224,7 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   bool is_exiting_ = false;
 
   std::unique_ptr<VrController> controller_;
+  gvr_keyboard_context* gvr_keyboard_ = nullptr;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
@@ -263,6 +267,10 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   bool content_frame_available_ = false;
   bool skips_redraw_when_not_dirty_;
   gfx::Transform last_used_head_pose_;
+
+  bool keyboard_enabled_ = false;
+  bool show_keyboard_ = false;
+  vr::ControllerModel controller_model_;
 
   base::WeakPtrFactory<VrShellGl> weak_ptr_factory_;
 

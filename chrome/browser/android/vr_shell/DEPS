@@ -2,5 +2,6 @@ include_rules = [
   "+cc/base",
   "+cc/layers",
   "+device/vr",
+  "+third_party/gvr-android-keyboard/src",
   "+third_party/gvr-android-sdk/src",
 ]

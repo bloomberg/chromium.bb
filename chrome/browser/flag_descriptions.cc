@@ -2718,6 +2718,10 @@ const char kVrBrowsingName[] = "VR browsing";
 const char kVrBrowsingDescription[] =
     "Browsing within a VR headset if available for this device.";
 
+const char kVrBrowserKeyboardName[] = "Chrome VR virtual keyboard.";
+const char kVrBrowserKeyboardDescription[] =
+    "Enable a virtual keyboard for Chrome VR.";
+
 const char kVrBrowsingExperimentalFeaturesName[] =
     "VR browsing experimental features";
 const char kVrBrowsingExperimentalFeaturesDescription[] =

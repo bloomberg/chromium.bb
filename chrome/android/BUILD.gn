@@ -312,6 +312,7 @@ android_library("chrome_java") {
     java_files += chrome_vr_java_sources
     deps += [
       "//device/vr:java",
+      "//third_party/gvr-android-keyboard:kb_java",
       "//third_party/gvr-android-sdk:gvr_common_java",
     ]
   }
