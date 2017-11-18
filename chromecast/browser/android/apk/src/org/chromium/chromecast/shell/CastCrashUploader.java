@@ -149,9 +149,6 @@ public final class CastCrashUploader {
 
         try {
             InputStream uploadCrashDumpStream = new FileInputStream(dumpFile);
-            InputStream logFileStream = null;
-            InputStream feedbackStream = null;
-
             // Dump file is already in multipart MIME format and has a boundary throughout.
             // Scrape the first line, remove two dashes, call that the "boundary" and add it
             // to the content-type.
@@ -167,13 +164,13 @@ public final class CastCrashUploader {
                 logHeader.append(
                         "Content-Disposition: form-data; name=\"log.txt\"; filename=\"log.txt\"\n");
                 logHeader.append("Content-Type: text/plain\n\n");
+                logHeader.append(log);
+                logHeader.append("\n");
                 InputStream logHeaderStream =
                         new ByteArrayInputStream(logHeader.toString().getBytes());
-                logFileStream = new ByteArrayInputStream(log.getBytes());
                 // Upload: prepend the log file for uploading
-                uploadCrashDumpStream = new SequenceInputStream(
-                        new SequenceInputStream(logHeaderStream, logFileStream),
-                        uploadCrashDumpStream);
+                uploadCrashDumpStream =
+                        new SequenceInputStream(logHeaderStream, uploadCrashDumpStream);
             }
 
             Log.d(TAG, "UUID: " + mUuid);
@@ -183,10 +180,13 @@ public final class CastCrashUploader {
                 uuidBuilder.append("\n");
                 uuidBuilder.append("Content-Disposition: form-data; name=\"comments\"\n");
                 uuidBuilder.append("Content-Type: text/plain\n\n");
-                uuidBuilder.append(mUuid + "\n");
+                uuidBuilder.append(mUuid);
+                uuidBuilder.append("\n");
                 uploadCrashDumpStream = new SequenceInputStream(
                         new ByteArrayInputStream(uuidBuilder.toString().getBytes()),
                         uploadCrashDumpStream);
+            } else {
+                Log.d(TAG, "No UUID");
             }
 
             if (!mApplicationFeedback.equals("")) {
@@ -197,13 +197,15 @@ public final class CastCrashUploader {
                 feedbackHeader.append(
                         "Content-Disposition: form-data; name=\"application_feedback.txt\"; filename=\"application.txt\"\n");
                 feedbackHeader.append("Content-Type: text/plain\n\n");
+                feedbackHeader.append(mApplicationFeedback);
+                feedbackHeader.append("\n");
                 InputStream feedbackHeaderStream =
                         new ByteArrayInputStream(feedbackHeader.toString().getBytes());
-                feedbackStream = new ByteArrayInputStream(mApplicationFeedback.getBytes());
                 // Upload: prepend the log file for uploading
-                uploadCrashDumpStream = new SequenceInputStream(
-                        new SequenceInputStream(feedbackHeaderStream, feedbackStream),
-                        uploadCrashDumpStream);
+                uploadCrashDumpStream =
+                        new SequenceInputStream(feedbackHeaderStream, uploadCrashDumpStream);
+            } else {
+                Log.d(TAG, "No Feedback");
             }
 
             HttpURLConnection connection =
@@ -242,12 +244,6 @@ public final class CastCrashUploader {
             } finally {
                 connection.disconnect();
                 dumpFileStream.close();
-                if (logFileStream != null) {
-                    logFileStream.close();
-                }
-                if (feedbackStream != null) {
-                    feedbackStream.close();
-                }
             }
 
             // Delete the file so we don't re-upload it next time.
