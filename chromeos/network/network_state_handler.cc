@@ -310,10 +310,11 @@ const NetworkState* NetworkStateHandler::DefaultNetwork() const {
 }
 
 const NetworkState* NetworkStateHandler::ConnectedNetworkByType(
-    const NetworkTypePattern& type) const {
-  const NetworkState* connected_network = nullptr;
+    const NetworkTypePattern& type) {
+  if (!network_list_sorted_)
+    SortNetworkList();  // Sort to ensure visible networks are listed first.
 
-  // Active networks are always listed first by Shill so no need to sort.
+  const NetworkState* connected_network = nullptr;
   for (auto iter = network_list_.begin(); iter != network_list_.end(); ++iter) {
     const NetworkState* network = (*iter)->AsNetworkState();
     DCHECK(network);
@@ -430,7 +431,7 @@ const NetworkState* NetworkStateHandler::FirstNetworkByType(
 }
 
 std::string NetworkStateHandler::FormattedHardwareAddressForType(
-    const NetworkTypePattern& type) const {
+    const NetworkTypePattern& type) {
   const NetworkState* network = ConnectedNetworkByType(type);
   if (network && network->type() == kTypeTether) {
     // If this is a Tether network, get the MAC address corresponding to that
@@ -1303,9 +1304,7 @@ void NetworkStateHandler::SortNetworkList() {
       cellular.push_back(std::move(*iter));
       continue;
     }
-    // Ethernet networks are always considered active.
-    if (network->IsConnectingOrConnected() ||
-        NetworkTypePattern::Ethernet().MatchesType(network->type())) {
+    if (network->IsConnectingOrConnected()) {
       active.push_back(std::move(*iter));
       continue;
     }

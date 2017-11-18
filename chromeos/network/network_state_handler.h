@@ -161,8 +161,7 @@ class CHROMEOS_EXPORT NetworkStateHandler
   const NetworkState* DefaultNetwork() const;
 
   // Returns the primary connected network of matching |type|, otherwise NULL.
-  const NetworkState* ConnectedNetworkByType(
-      const NetworkTypePattern& type) const;
+  const NetworkState* ConnectedNetworkByType(const NetworkTypePattern& type);
 
   // Like ConnectedNetworkByType() but returns a connecting network or NULL.
   const NetworkState* ConnectingNetworkByType(
@@ -175,8 +174,7 @@ class CHROMEOS_EXPORT NetworkStateHandler
 
   // Returns the aa:bb formatted hardware (MAC) address for the first connected
   // network matching |type|, or an empty string if none is connected.
-  std::string FormattedHardwareAddressForType(
-      const NetworkTypePattern& type) const;
+  std::string FormattedHardwareAddressForType(const NetworkTypePattern& type);
 
   // Convenience method to call GetNetworkListByType(visible=true).
   void GetVisibleNetworkListByType(const NetworkTypePattern& type,
