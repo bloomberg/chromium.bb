@@ -1259,6 +1259,16 @@ void RasterCHROMIUM(const cc::DisplayItemList* list,
 
 void EndRasterCHROMIUM() override;
 
+void CreateTransferCacheEntryCHROMIUM(
+    GLuint64 handle_id,
+    GLuint handle_shm_id,
+    GLuint handle_shm_offset,
+    const cc::ClientTransferCacheEntry& entry) override;
+
+void DeleteTransferCacheEntryCHROMIUM(GLuint64 handle_id) override;
+
+void UnlockTransferCacheEntryCHROMIUM(GLuint64 handle_id) override;
+
 void TexStorage2DImageCHROMIUM(GLenum target,
                                GLenum internalFormat,
                                GLenum bufferUsage,

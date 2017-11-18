@@ -62,6 +62,7 @@ source_set("common_sources") {
     "texture_in_use_response.h",
     "thread_local.h",
     "time.h",
+    "transfer_cache_entry_id.h",
   ]
 
   configs += [ "//gpu:gpu_implementation" ]

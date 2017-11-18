@@ -377,6 +377,7 @@ test("gpu_unittests") {
     "//base",
     "//base/test:test_support",
     "//base/third_party/dynamic_annotations",
+    "//cc/paint",
     "//gpu/command_buffer/client:gles2_c_lib",
     "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/command_buffer/common:gles2_utils",

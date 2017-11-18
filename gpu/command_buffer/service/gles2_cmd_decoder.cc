@@ -27,6 +27,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "cc/paint/paint_op_buffer.h"
+#include "cc/paint/transfer_cache_entry.h"
 #include "gpu/command_buffer/common/debug_marker_manager.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
@@ -62,6 +63,7 @@
 #include "gpu/command_buffer/service/renderbuffer_manager.h"
 #include "gpu/command_buffer/service/sampler_manager.h"
 #include "gpu/command_buffer/service/service_discardable_manager.h"
+#include "gpu/command_buffer/service/service_transfer_cache.h"
 #include "gpu/command_buffer/service/shader_manager.h"
 #include "gpu/command_buffer/service/shader_translator.h"
 #include "gpu/command_buffer/service/texture_manager.h"
@@ -1970,6 +1972,9 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
                              GLboolean use_distance_field_text,
                              GLint pixel_config);
   void DoEndRasterCHROMIUM();
+
+  void DoUnlockTransferCacheEntryCHROMIUM(GLuint64 id);
+  void DoDeleteTransferCacheEntryCHROMIUM(GLuint64 id);
 
   void DoWindowRectanglesEXT(GLenum mode, GLsizei n, const volatile GLint* box);
 
@@ -20403,6 +20408,66 @@ void GLES2DecoderImpl::DoWindowRectanglesEXT(GLenum mode,
   }
   state_.SetWindowRectangles(mode, n, box_copy.data());
   state_.UpdateWindowRectangles();
+}
+
+error::Error GLES2DecoderImpl::HandleCreateTransferCacheEntryCHROMIUM(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile gles2::cmds::CreateTransferCacheEntryCHROMIUM& c =
+      *static_cast<
+          const volatile gles2::cmds::CreateTransferCacheEntryCHROMIUM*>(
+          cmd_data);
+  TransferCacheEntryId handle_id =
+      TransferCacheEntryId::FromUnsafeValue(c.handle_id());
+  GLuint handle_shm_id = c.handle_shm_id;
+  GLuint handle_shm_offset = c.handle_shm_offset;
+  GLuint data_shm_id = c.data_shm_id;
+  GLuint data_shm_offset = c.data_shm_offset;
+  GLuint data_size = c.data_size;
+
+  // Validate the type we are about to create.
+  cc::TransferCacheEntryType type;
+  if (!cc::ServiceTransferCacheEntry::SafeConvertToType(c.type, &type))
+    return error::kInvalidArguments;
+
+  uint8_t* data_memory =
+      GetSharedMemoryAs<uint8_t*>(data_shm_id, data_shm_offset, data_size);
+  if (!data_memory)
+    return error::kInvalidArguments;
+
+  scoped_refptr<gpu::Buffer> handle_buffer =
+      GetSharedMemoryBuffer(handle_shm_id);
+  if (!DiscardableHandleBase::ValidateParameters(handle_buffer.get(),
+                                                 handle_shm_offset))
+    return error::kInvalidArguments;
+  ServiceDiscardableHandle handle(std::move(handle_buffer), handle_shm_offset,
+                                  handle_shm_id);
+
+  if (!GetContextGroup()->transfer_cache()->CreateLockedEntry(
+          handle_id, handle, type, data_memory, data_size))
+    return error::kInvalidArguments;
+
+  return error::kNoError;
+}
+
+void GLES2DecoderImpl::DoUnlockTransferCacheEntryCHROMIUM(
+    GLuint64 raw_handle_id) {
+  TransferCacheEntryId handle_id =
+      TransferCacheEntryId::FromUnsafeValue(raw_handle_id);
+  if (!GetContextGroup()->transfer_cache()->UnlockEntry(handle_id)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glUnlockTransferCacheEntryCHROMIUM",
+                       "Attempt to unlock an invalid ID");
+  }
+}
+
+void GLES2DecoderImpl::DoDeleteTransferCacheEntryCHROMIUM(
+    GLuint64 raw_handle_id) {
+  TransferCacheEntryId handle_id =
+      TransferCacheEntryId::FromUnsafeValue(raw_handle_id);
+  if (!GetContextGroup()->transfer_cache()->DeleteEntry(handle_id)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glDeleteTransferCacheEntryCHROMIUM",
+                       "Attempt to delete an invalid ID");
+  }
 }
 
 // Include the auto-generated part of this file. We split this because it means

@@ -42,4 +42,22 @@ TEST_P(GLES2DecoderTest4, SetEnableDCLayersCHROMIUMValidArgs) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
+
+TEST_P(GLES2DecoderTest4, DeleteTransferCacheEntryCHROMIUMValidArgs) {
+  EXPECT_CALL(*gl_, DeleteTransferCacheEntryCHROMIUM(1));
+  SpecializedSetup<cmds::DeleteTransferCacheEntryCHROMIUM, 0>(true);
+  cmds::DeleteTransferCacheEntryCHROMIUM cmd;
+  cmd.Init(1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_P(GLES2DecoderTest4, UnlockTransferCacheEntryCHROMIUMValidArgs) {
+  EXPECT_CALL(*gl_, UnlockTransferCacheEntryCHROMIUM(1));
+  SpecializedSetup<cmds::UnlockTransferCacheEntryCHROMIUM, 0>(true);
+  cmds::UnlockTransferCacheEntryCHROMIUM cmd;
+  cmd.Init(1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_4_AUTOGEN_H_

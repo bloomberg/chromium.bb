@@ -5207,6 +5207,30 @@ error::Error GLES2DecoderImpl::HandleEndRasterCHROMIUM(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleDeleteTransferCacheEntryCHROMIUM(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile gles2::cmds::DeleteTransferCacheEntryCHROMIUM& c =
+      *static_cast<
+          const volatile gles2::cmds::DeleteTransferCacheEntryCHROMIUM*>(
+          cmd_data);
+  GLuint64 handle_id = c.handle_id();
+  DoDeleteTransferCacheEntryCHROMIUM(handle_id);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleUnlockTransferCacheEntryCHROMIUM(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile gles2::cmds::UnlockTransferCacheEntryCHROMIUM& c =
+      *static_cast<
+          const volatile gles2::cmds::UnlockTransferCacheEntryCHROMIUM*>(
+          cmd_data);
+  GLuint64 handle_id = c.handle_id();
+  DoUnlockTransferCacheEntryCHROMIUM(handle_id);
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderImpl::HandleTexStorage2DImageCHROMIUM(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {

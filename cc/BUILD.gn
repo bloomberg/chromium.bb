@@ -624,6 +624,7 @@ cc_test("cc_unittests") {
     "paint/paint_shader_unittest.cc",
     "paint/scoped_image_flags_unittest.cc",
     "paint/solid_color_analyzer_unittest.cc",
+    "paint/transfer_cache_unittest.cc",
     "raster/playback_image_provider_unittest.cc",
     "raster/raster_buffer_provider_unittest.cc",
     "raster/raster_source_unittest.cc",

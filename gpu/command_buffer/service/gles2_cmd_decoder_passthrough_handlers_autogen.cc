@@ -4592,6 +4592,38 @@ error::Error GLES2DecoderPassthroughImpl::HandleEndRasterCHROMIUM(
   return error::kNoError;
 }
 
+error::Error
+GLES2DecoderPassthroughImpl::HandleDeleteTransferCacheEntryCHROMIUM(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile gles2::cmds::DeleteTransferCacheEntryCHROMIUM& c =
+      *static_cast<
+          const volatile gles2::cmds::DeleteTransferCacheEntryCHROMIUM*>(
+          cmd_data);
+  GLuint64 handle_id = c.handle_id();
+  error::Error error = DoDeleteTransferCacheEntryCHROMIUM(handle_id);
+  if (error != error::kNoError) {
+    return error;
+  }
+  return error::kNoError;
+}
+
+error::Error
+GLES2DecoderPassthroughImpl::HandleUnlockTransferCacheEntryCHROMIUM(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile gles2::cmds::UnlockTransferCacheEntryCHROMIUM& c =
+      *static_cast<
+          const volatile gles2::cmds::UnlockTransferCacheEntryCHROMIUM*>(
+          cmd_data);
+  GLuint64 handle_id = c.handle_id();
+  error::Error error = DoUnlockTransferCacheEntryCHROMIUM(handle_id);
+  if (error != error::kNoError) {
+    return error;
+  }
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderPassthroughImpl::HandleTexStorage2DImageCHROMIUM(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
