@@ -2554,9 +2554,9 @@ const char kMultideviceName[] = "Enable multidevice features";
 const char kMultideviceDescription[] =
     "Enables UI for controlling multidevice features.";
 
-const char kNativeSambaName[] = "Native Samba Client";
-const char kNativeSambaDescription[] =
-    "If enabled, allows connections to a Samba share via Files app";
+const char kNativeSmbName[] = "Native Smb Client";
+const char kNativeSmbDescription[] =
+    "If enabled, allows connections to an smb filesystem via Files app";
 
 const char kNetworkPortalNotificationName[] =
     "Notifications about captive portals";

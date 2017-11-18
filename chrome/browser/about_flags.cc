@@ -3575,9 +3575,9 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kClipboardContentSetting)},
 
 #if defined(OS_CHROMEOS)
-    {"native-samba", flag_descriptions::kNativeSambaName,
-     flag_descriptions::kNativeSambaDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kNativeSamba)},
+    {"native-smb", flag_descriptions::kNativeSmbName,
+     flag_descriptions::kNativeSmbDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kNativeSmb)},
 #endif  // defined(OS_CHROMEOS)
 
     {"enable-modern-media-controls",
