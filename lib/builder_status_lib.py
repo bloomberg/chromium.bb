@@ -312,7 +312,7 @@ class SlaveBuilderStatus(object):
   """
 
   def __init__(self, master_build_id, db, config, metadata, buildbucket_client,
-               builders_array, dry_run):
+               builders_array, dry_run, exclude_experimental=True):
     """Create an instance of SlaveBuilderStatus for a given master build.
 
     Args:
@@ -324,6 +324,9 @@ class SlaveBuilderStatus(object):
       buildbucket_client: Instance of buildbucket_lib.buildbucket_client.
       builders_array: List of the expected and important slave builds.
       dry_run: Boolean indicating whether it's a dry run. Default to True.
+      exclude_experimental: Whether to exclude the builds which are important in
+        the config but are marked as experimental in the tree status. Default to
+        True.
     """
     self.master_build_id = master_build_id
     self.db = db
@@ -332,6 +335,7 @@ class SlaveBuilderStatus(object):
     self.buildbucket_client = buildbucket_client
     self.builders_array = builders_array
     self.dry_run = dry_run
+    self.exclude_experimental = exclude_experimental
 
     self.buildbucket_info_dict = None
     self.cidb_info_dict = None
@@ -389,7 +393,7 @@ class SlaveBuilderStatus(object):
     """Init slave info including buildbucket info, cidb info and failures."""
     if config_lib.UseBuildbucketScheduler(self.config):
       scheduled_buildbucket_info_dict = buildbucket_lib.GetBuildInfoDict(
-          self.metadata)
+          self.metadata, exclude_experimental=self.exclude_experimental)
       self.buildbucket_info_dict = self.GetAllSlaveBuildbucketInfo(
           self.buildbucket_client, scheduled_buildbucket_info_dict,
           dry_run=self.dry_run)
@@ -591,7 +595,8 @@ class BuilderStatusesFetcher(object):
   """Class to fetch BuilderStatus of a build and its slave builds(if any)."""
 
   def __init__(self, build_id, db, success, message, config, metadata,
-               buildbucket_client, builders_array=None, dry_run=True):
+               buildbucket_client, builders_array=None,
+               exclude_experimental=True, dry_run=True):
     """Initialize BuilderStatusesFetcher.
 
     Args:
@@ -606,6 +611,9 @@ class BuilderStatusesFetcher(object):
       buildbucket_client: Instance of buildbucket_lib.buildbucket_client.
       builders_array: List of the expected and slave builds, it also contains
         the builds marked as experimental in the tree status. Default to None.
+      exclude_experimental: Whether to exclude the builds which are important in
+        the config but are marked as experimental in the tree status. Default to
+        True.
       dry_run: Boolean indicating whether it's a dry run. Default to True.
     """
     self.build_id = build_id
@@ -616,9 +624,11 @@ class BuilderStatusesFetcher(object):
     self.metadata = metadata
     self.buildbucket_client = buildbucket_client
     self.dry_run = dry_run
+    self.exclude_experimental = exclude_experimental
 
     self.builders_array = buildbucket_lib.FetchCurrentSlaveBuilders(
-        self.config, self.metadata, builders_array, exclude_experimental=False)
+        self.config, self.metadata, builders_array,
+        exclude_experimental=self.exclude_experimental)
 
   def _FetchLocalBuilderStatus(self):
     """Fetch the BuilderStatus of the local build.
@@ -643,7 +653,8 @@ class BuilderStatusesFetcher(object):
 
     slave_builder_statuses = SlaveBuilderStatus(
         self.build_id, self.db, self.config, self.metadata,
-        self.buildbucket_client, self.builders_array, self.dry_run)
+        self.buildbucket_client, self.builders_array, self.dry_run,
+        exclude_experimental=self.exclude_experimental)
 
     slave_builder_status_dict = {}
     for builder in self.builders_array:

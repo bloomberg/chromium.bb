@@ -158,10 +158,14 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
       self._WaitForSlavesToComplete(
           manager, build_id, db, builders_array, timeout)
 
+    # Set exclude_experimental to False to fetch the BuilderStatus for
+    # builds which are important in config but marked as experimental in
+    # the tree status.
     builder_statuses_fetcher = builder_status_lib.BuilderStatusesFetcher(
         build_id, db, self.success, self.message, self._run.config,
         self._run.attrs.metadata, self.buildbucket_client,
-        builders_array=builders_array, dry_run=self._run.options.debug)
+        builders_array=builders_array, exclude_experimental=False,
+        dry_run=self._run.options.debug)
 
     return builder_statuses_fetcher
 

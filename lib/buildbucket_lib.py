@@ -161,16 +161,20 @@ def GetBuildInfoDict(metadata, exclude_experimental=True):
   return GetScheduledBuildDict(scheduled_slaves_list)
 
 
-def GetBuildbucketIds(metadata):
+def GetBuildbucketIds(metadata, exclude_experimental=True):
   """Get buildbucket_ids of scheduled slave builds from metadata.
 
   Args:
     metadata: Instance of metadata_lib.CBuildbotMetadata.
+    exclude_experimental: Whether to exclude the builds which are important in
+      the config but are marked as experimental in the tree status. Default to
+      True.
 
   Returns:
     A list of buildbucket_ids (string) of slave builds.
   """
-  buildbucket_info_dict = GetBuildInfoDict(metadata)
+  buildbucket_info_dict = GetBuildInfoDict(
+      metadata, exclude_experimental=exclude_experimental)
   return [info_dict.buildbucket_id
           for info_dict in buildbucket_info_dict.values()]
 
