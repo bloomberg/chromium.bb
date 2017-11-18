@@ -1355,6 +1355,23 @@ class GitRepoPatch(PatchQuery):
     elif len(output) > 1:
       raise BrokenChangeID(self, 'Duplicate change ID')
 
+  def _GetParents(self, git_repo):
+    """Get the parent sha1s of this patch.
+
+    Args:
+      git_repo: The path to the repo.
+
+    Returns:
+      A list of sha1s. For normal commits, this will be a length=1 list. For
+      merge commits, this will be a length=2 list. For commits with no parent
+      (i.e. the initial commit of a repo) this will be an empty list.
+    """
+    self.Fetch(git_repo)
+
+    cmd = ['show', '--format=%P', '-s', self.sha1]
+    parents = git.RunGit(git_repo, cmd).output.split()
+    return parents
+
 
 class LocalPatch(GitRepoPatch):
   """Represents patch coming from an on-disk git repo."""

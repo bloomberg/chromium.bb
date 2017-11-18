@@ -252,6 +252,9 @@ I am the first commit.
       os.chdir(self.original_cwd)
 
   def _MkPatch(self, source, sha1, ref='refs/heads/master', **kwargs):
+    # This arg is used by inherited versions of _MkPatch. Pop it to make this
+    # _MkPatch compatible with them.
+    kwargs.pop('suppress_branch', None)
     return self.patch_kls(source, 'chromiumos/chromite', ref,
                           '%s/master' % site_config.params.EXTERNAL_REMOTE,
                           kwargs.pop('remote',
@@ -374,6 +377,39 @@ class TestGitRepoPatch(GitRepoPatchTestCase):
     patch2 = self.CommitFile(git1, 'monkeys', 'rule')
     self.assertRaises2(cros_patch.PatchIsEmpty, patch2.Apply, git1,
                        self.DEFAULT_TRACKING, check_attrs={'inflight': True})
+
+  # pylint: disable=protected-access
+  def testGetNoParents(self):
+    git1 = self._MakeRepo('git1', self.source)
+    sha1 = self._GetSha1(git1, 'HEAD')
+    patch = self._MkPatch(self.source, sha1)
+    self.assertEquals(patch._GetParents(git1), [])
+
+  # pylint: disable=protected-access
+  def testGet1Parent(self):
+    git1 = self._MakeRepo('git1', self.source)
+    patch1 = self.CommitFile(git1, 'foo', 'foo')
+    patch2 = self.CommitFile(git1, 'bar', 'bar')
+    self.assertEquals(patch2._GetParents(git1), [patch1.sha1])
+
+  # pylint: disable=protected-access
+  def testGet2Parents(self):
+    # Prepare a merge commit, then test that its two parents are correctly
+    # calculated.
+    git1 = self._MakeRepo('git1', self.source)
+    patch_common = self.CommitFile(git1, 'foo', 'foo')
+
+    patch_right = self.CommitFile(git1, 'bar', 'bar')
+
+    git.RunGit(git1, ['reset', '--hard', patch_common.sha1])
+    patch_left = self.CommitFile(git1, 'baz', 'baz')
+
+    git.RunGit(git1, ['merge', patch_right.sha1])
+    sha1 = self._GetSha1(git1, 'HEAD')
+    patch_merge = self._MkPatch(self.source, sha1, suppress_branch=True)
+
+    self.assertEquals(patch_merge._GetParents(git1),
+                      [patch_left.sha1, patch_right.sha1])
 
   def testDeleteEbuildTwice(self):
     """Test that double-deletes of ebuilds are flagged as conflicts."""
