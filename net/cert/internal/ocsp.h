@@ -314,7 +314,7 @@ NET_EXPORT bool CreateOCSPRequest(const ParsedCertificate* cert,
 // Creates a URL to issue a GET request for OCSP information for |cert|.
 NET_EXPORT GURL CreateOCSPGetURL(const ParsedCertificate* cert,
                                  const ParsedCertificate* issuer,
-                                 const GURL& ocsp_responder_url);
+                                 base::StringPiece ocsp_responder_url);
 
 }  // namespace net
 

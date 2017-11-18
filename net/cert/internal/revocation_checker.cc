@@ -76,9 +76,9 @@ bool CheckCertRevocation(const ParsedCertificate* cert,
     for (const auto& ocsp_uri : cert->ocsp_uris()) {
       // Only consider http:// URLs (https:// could create a circular
       // dependency).
-      GURL responder_url(ocsp_uri);
-      if (!responder_url.is_valid() ||
-          !responder_url.SchemeIs(url::kHttpScheme)) {
+      GURL parsed_ocsp_url(ocsp_uri);
+      if (!parsed_ocsp_url.is_valid() ||
+          !parsed_ocsp_url.SchemeIs(url::kHttpScheme)) {
         continue;
       }
 
@@ -94,9 +94,10 @@ bool CheckCertRevocation(const ParsedCertificate* cert,
 
       // TODO(eroman): Duplication of work if there are multiple URLs to try.
       // TODO(eroman): Are there cases where we would need to POST instead?
-      GURL get_url = CreateOCSPGetURL(cert, issuer_cert, responder_url);
+      GURL get_url = CreateOCSPGetURL(cert, issuer_cert, ocsp_uri);
       if (!get_url.is_valid()) {
-        // A failure here is unexpected, but could happen from BoringSSL.
+        // A failure here could mean an unexpected failure from BoringSSL, or a
+        // problem concatenating the URL.
         continue;
       }
 
