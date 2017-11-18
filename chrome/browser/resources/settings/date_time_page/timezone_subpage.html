@@ -1,0 +1,54 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="../controls/controlled_radio_button.html">
+<link rel="import" href="../controls/settings_radio_group.html">
+<link rel="import" href="../prefs/prefs.html">
+<link rel="import" href="../prefs/prefs_behavior.html">
+<link rel="import" href="../settings_shared_css.html">
+<link rel="import" href="date_time_types.html">
+
+<dom-module id="timezone-subpage">
+  <template>
+    <style include="settings-shared">
+      .block {
+        display: block;
+      }
+    </style>
+    <div class="settings-box block first">
+      <settings-radio-group id="timeZoneRadioGroup"
+          pref="{{prefs.settings.resolve_timezone_by_geolocation_method}}">
+        <controlled-radio-button
+            name="[[timezoneAutodetectMethodValues_.IP_ONLY]]"
+            pref="[[prefs.settings.resolve_timezone_by_geolocation_method]]"
+            label="$i18n{setTimeZoneAutomaticallyIpOnlyDefault}"
+            no-extension-indicator>
+          <div class="secondary">
+            $i18n{setTimeZoneAutomaticallyIpOnlyDefaultDescription}
+          </div>
+        </controlled-radio-button>
+        <controlled-radio-button
+            name="[[timezoneAutodetectMethodValues_.SEND_ALL_LOCATION_INFO]]"
+            pref="[[prefs.settings.resolve_timezone_by_geolocation_method]]"
+            label="$i18n{setTimeZoneAutomaticallyWithAllLocationInfo}"
+            no-extension-indicator>
+          <div class="secondary">
+            $i18n{setTimeZoneAutomaticallyWithAllLocationInfoDescription}
+          </div>
+        </controlled-radio-button>
+        <controlled-radio-button
+            name="[[timezoneAutodetectMethodValues_.DISABLED]]"
+            pref="[[prefs.settings.resolve_timezone_by_geolocation_method]]"
+            label="$i18n{selectYourTimeZone}"
+            no-extension-indicator>
+        </controlled-radio-button>
+      </settings-radio-group>
+    </div>
+    <div class="settings-box block">
+      <timezone-selector prefs="{{prefs}}"
+          time-zone-auto-detect="[[timeZoneAutoDetect]]"
+          active-time-zone-display-name="{{activeTimeZoneDisplayName}}">
+      </timezone-selector>
+    </div>
+  </template>
+  <script src="timezone_subpage.js"></script>
+</dom-module>

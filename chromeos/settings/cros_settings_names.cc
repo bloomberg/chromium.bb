@@ -248,6 +248,11 @@ const char kDeviceLoginScreenInputMethods[] =
 // A boolean pref that matches enable-per-user-time-zone chrome://flags value.
 const char kPerUserTimezoneEnabled[] = "cros.flags.per_user_timezone_enabled";
 
+// A boolean pref that matches enable-fine-graned-time-zone-detection
+// chrome://flags value.
+const char kFineGrainedTimeZoneResolveEnabled[] =
+    "cros.flags.fine_grained_time_zone_detection_enabled";
+
 // A dictionary pref containing time intervals and ignored policies.
 // It's used to allow less restricted usage of Chrome OS during off-hours.
 // This pref is set by an admin policy.

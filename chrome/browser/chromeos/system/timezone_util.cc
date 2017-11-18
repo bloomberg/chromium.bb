@@ -188,7 +188,8 @@ bool HasSystemTimezonePolicy() {
 }
 
 bool IsTimezonePrefsManaged(const std::string& pref_name) {
-  DCHECK(pref_name == prefs::kUserTimezone ||
+  DCHECK(pref_name == chromeos::kSystemTimezone ||
+         pref_name == prefs::kUserTimezone ||
          pref_name == prefs::kResolveTimezoneByGeolocationMethod);
 
   std::string policy_timezone;
@@ -196,6 +197,14 @@ bool IsTimezonePrefsManaged(const std::string& pref_name) {
       !policy_timezone.empty()) {
     return true;
   }
+
+  // System time zone preference is managed only if kSystemTimezonePolicy
+  // present, which we checked above.
+  //
+  // kSystemTimezoneAutomaticDetectionPolicy (see below) controls only user
+  // time zone preference, and user time zone resolve preference.
+  if (pref_name == chromeos::kSystemTimezone)
+    return false;
 
   const PrefService* local_state = g_browser_process->local_state();
   if (!local_state->IsManagedPreference(
@@ -335,6 +344,11 @@ void SetTimezoneFromUI(Profile* profile, const std::string& timezone_id) {
   }
   // Time zone UI should be blocked for non-primary users.
   NOTREACHED();
+}
+
+bool FineGrainedTimeZoneDetectionEnabled() {
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableFineGrainedTimeZoneDetection);
 }
 
 }  // namespace system

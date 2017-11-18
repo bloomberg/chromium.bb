@@ -528,6 +528,10 @@ const char kEnterpriseDisableLicenseTypeSelection[] =
 // Disables per-user timezone.
 const char kDisablePerUserTimezone[] = "disable-per-user-timezone";
 
+// Disables fine grained time zone detection.
+const char kDisableFineGrainedTimeZoneDetection[] =
+    "disable-fine-grained-time-zone-detection";
+
 bool WakeOnWifiEnabled() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(kDisableWakeOnWifi);
 }

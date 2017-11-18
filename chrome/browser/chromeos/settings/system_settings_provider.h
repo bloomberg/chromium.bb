@@ -40,6 +40,7 @@ class SystemSettingsProvider : public CrosSettingsProvider,
 
   std::unique_ptr<base::Value> timezone_value_;
   std::unique_ptr<base::Value> per_user_timezone_enabled_value_;
+  std::unique_ptr<base::Value> fine_grained_time_zone_enabled_value_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemSettingsProvider);
 };

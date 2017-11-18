@@ -98,6 +98,7 @@ CHROMEOS_EXPORT extern const char kEnableTouchCalibrationSetting[];
 CHROMEOS_EXPORT extern const char kEnableTouchpadThreeFingerClick[];
 CHROMEOS_EXPORT extern const char kEnableFileManagerTouchMode[];
 CHROMEOS_EXPORT extern const char kDisableFileManagerTouchMode[];
+CHROMEOS_EXPORT extern const char kDisableFineGrainedTimeZoneDetection[];
 CHROMEOS_EXPORT extern const char kEnableVideoPlayerChromecastSupport[];
 CHROMEOS_EXPORT extern const char kEnableVoiceInteraction[];
 CHROMEOS_EXPORT extern const char kEnableZipArchiverPacker[];
