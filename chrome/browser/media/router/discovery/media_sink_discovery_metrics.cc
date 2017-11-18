@@ -114,4 +114,16 @@ void CastAnalytics::RecordDeviceChannelOpenDuration(
   }
 }
 
+void WiredDisplayDeviceCountMetrics::RecordDeviceCounts(
+    size_t available_device_count,
+    size_t known_device_count) {
+  // Record just the available device count, because for wired displays, all
+  // the known displays are available.
+  UMA_HISTOGRAM_COUNTS_100(kHistogramWiredDisplayDeviceCount,
+                           available_device_count);
+}
+
+const char WiredDisplayDeviceCountMetrics::kHistogramWiredDisplayDeviceCount[] =
+    "MediaRouter.WiredDisplay.AvailableDevicesCount";
+
 }  // namespace media_router

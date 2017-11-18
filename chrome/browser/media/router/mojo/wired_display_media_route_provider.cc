@@ -263,8 +263,9 @@ void WiredDisplayMediaRouteProvider::NotifyRouteObservers() const {
     media_router_->OnRoutesUpdated(kProviderId, route_list, route_query, {});
 }
 
-void WiredDisplayMediaRouteProvider::NotifySinkObservers() const {
+void WiredDisplayMediaRouteProvider::NotifySinkObservers() {
   std::vector<MediaSinkInternal> sinks = GetSinks();
+  device_count_metrics_.RecordDeviceCountsIfNeeded(sinks.size(), sinks.size());
   for (const auto& sink_query : sink_queries_)
     media_router_->OnSinksReceived(kProviderId, sink_query, sinks, {});
 }

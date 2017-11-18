@@ -148,4 +148,27 @@ TEST(CastAnalyticsTest, RecordDeviceChannelOpenDuration) {
                             delta.InMilliseconds(), 1);
 }
 
+TEST(WiredDisplayDeviceCountMetricsTest, RecordWiredDisplaySinkCount) {
+  base::HistogramTester tester;
+  WiredDisplayDeviceCountMetrics metrics;
+  tester.ExpectTotalCount(
+      WiredDisplayDeviceCountMetrics::kHistogramWiredDisplayDeviceCount, 0);
+
+  // Only the first argument, the available sink count, is recorded.
+  metrics.RecordDeviceCounts(1, 1);
+  metrics.RecordDeviceCounts(200, 200);
+  metrics.RecordDeviceCounts(0, 0);
+  metrics.RecordDeviceCounts(25, 30);
+  metrics.RecordDeviceCounts(1, 0);
+
+  tester.ExpectTotalCount(
+      WiredDisplayDeviceCountMetrics::kHistogramWiredDisplayDeviceCount, 5);
+  EXPECT_THAT(
+      tester.GetAllSamples(
+          WiredDisplayDeviceCountMetrics::kHistogramWiredDisplayDeviceCount),
+      ElementsAre(
+          Bucket(0, 1), Bucket(1, 2), Bucket(25, 1),
+          Bucket(100, 1)));  // Counts over 100 are all put in the 100 bucket.
+}
+
 }  // namespace media_router
