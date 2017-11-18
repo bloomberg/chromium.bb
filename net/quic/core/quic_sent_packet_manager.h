@@ -235,6 +235,8 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
     return largest_packet_peer_knows_is_acked_;
   }
 
+  bool handshake_confirmed() const { return handshake_confirmed_; }
+
  private:
   friend class test::QuicConnectionPeer;
   friend class test::QuicSentPacketManagerPeer;

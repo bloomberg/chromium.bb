@@ -45,9 +45,11 @@ using testing::_;
 using testing::AnyNumber;
 using testing::AtLeast;
 using testing::DoAll;
+using testing::Ge;
 using testing::InSequence;
 using testing::Invoke;
 using testing::InvokeWithoutArgs;
+using testing::Lt;
 using testing::Ref;
 using testing::Return;
 using testing::SaveArg;
@@ -5487,6 +5489,48 @@ TEST_P(QuicConnectionTest, NotBecomeApplicationLimitedDueToWriteBlock) {
   BlockOnNextWrite();
 
   connection_.SendStreamData3();
+}
+
+// Test the mode in which the link is filled up with probing retransmissions if
+// the connection becomes application-limited.
+TEST_P(QuicConnectionTest, SendDataWhenApplicationLimited) {
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+  EXPECT_CALL(*send_algorithm_, IsProbingForMoreBandwidth())
+      .WillRepeatedly(Return(true));
+  {
+    InSequence seq;
+    EXPECT_CALL(visitor_, WillingAndAbleToWrite()).WillRepeatedly(Return(true));
+    EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _));
+    EXPECT_CALL(visitor_, WillingAndAbleToWrite())
+        .WillRepeatedly(Return(false));
+  }
+  // Fix congestion window to be 2000 bytes.
+  EXPECT_CALL(*send_algorithm_, CanSend(Ge(2000u)))
+      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*send_algorithm_, CanSend(Lt(2000u)))
+      .WillRepeatedly(Return(true));
+
+  EXPECT_CALL(*send_algorithm_, OnApplicationLimited(_)).Times(0);
+  ASSERT_EQ(0u, connection_.GetStats().packets_sent);
+  connection_.set_fill_up_link_during_probing(true);
+  connection_.OnHandshakeComplete();
+  connection_.SendStreamData3();
+
+  // Since the frame data we send is small, we expect a lot of packets from a
+  // 2000 byte window.
+  EXPECT_GT(connection_.GetStats().packets_sent, 10u);
+
+  // Acknowledge all packets sent, except for the last one.
+  QuicAckFrame ack = InitAckFrame(
+      connection_.sent_packet_manager().GetLargestSentPacket() - 1);
+  EXPECT_CALL(*loss_algorithm_, DetectLosses(_, _, _, _, _));
+  EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _, _));
+
+  // Ensure that since we no longer have retransmittable bytes in flight, this
+  // will not cause any responses to be sent.
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(0);
+  EXPECT_CALL(*send_algorithm_, OnApplicationLimited(_)).Times(1);
+  ProcessAckPacket(&ack);
 }
 
 TEST_P(QuicConnectionTest, DonotForceSendingAckOnPacketTooLarge) {

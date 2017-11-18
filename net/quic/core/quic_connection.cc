@@ -273,7 +273,9 @@ QuicConnection::QuicConnection(
       goaway_received_(false),
       write_error_occurred_(false),
       no_stop_waiting_frames_(false),
-      consecutive_num_packets_with_no_retransmittable_frames_(0) {
+      consecutive_num_packets_with_no_retransmittable_frames_(0),
+      fill_up_link_during_probing_(false),
+      probing_retransmission_pending_(false) {
   QUIC_DLOG(INFO) << ENDPOINT
                   << "Created connection with connection_id: " << connection_id;
   framer_.set_visitor(this);
@@ -2638,12 +2640,46 @@ const QuicTime::Delta QuicConnection::DelayedAckTime() {
       std::min(kMaxDelayedAckTimeMs, kMinRetransmissionTimeMs / 2));
 }
 
-void QuicConnection::CheckIfApplicationLimited() {
-  if (queued_packets_.empty() &&
-      !sent_packet_manager_.HasPendingRetransmissions() &&
-      !visitor_->WillingAndAbleToWrite()) {
-    sent_packet_manager_.OnApplicationLimited();
+void QuicConnection::MaybeSendProbingRetransmissions() {
+  DCHECK(fill_up_link_during_probing_);
+
+  if (!sent_packet_manager_.handshake_confirmed()) {
+    return;
   }
+
+  if (!sent_packet_manager_.GetSendAlgorithm()->IsProbingForMoreBandwidth()) {
+    return;
+  }
+
+  if (probing_retransmission_pending_) {
+    QUIC_BUG << "MaybeSendProbingRetransmissions is called while another call "
+                "to it is already in progress";
+    return;
+  }
+
+  probing_retransmission_pending_ = true;
+  SendProbingRetransmissions();
+  probing_retransmission_pending_ = false;
+}
+
+void QuicConnection::CheckIfApplicationLimited() {
+  bool application_limited =
+      queued_packets_.empty() &&
+      !sent_packet_manager_.HasPendingRetransmissions() &&
+      !visitor_->WillingAndAbleToWrite();
+
+  if (!application_limited) {
+    return;
+  }
+
+  if (fill_up_link_during_probing_) {
+    MaybeSendProbingRetransmissions();
+    if (!CanWrite(HAS_RETRANSMITTABLE_DATA)) {
+      return;
+    }
+  }
+
+  sent_packet_manager_.OnApplicationLimited();
 }
 
 void QuicConnection::UpdatePacketContent(PacketContent type) {
