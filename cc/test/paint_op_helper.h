@@ -19,7 +19,7 @@ namespace cc {
 // implementation should be limited ot the header.
 class PaintOpHelper {
  public:
-  static std::string ToString(PaintOp* base_op) {
+  static std::string ToString(const PaintOp* base_op) {
     std::ostringstream str;
     str << std::boolalpha;
     switch (base_op->GetType()) {
@@ -377,5 +377,9 @@ class PaintOpHelper {
 };
 
 }  // namespace cc
+
+inline ::std::ostream& operator<<(::std::ostream& os, const cc::PaintOp& op) {
+  return os << cc::PaintOpHelper::ToString(&op);
+}
 
 #endif  // CC_TEST_PAINT_OP_HELPER_H_

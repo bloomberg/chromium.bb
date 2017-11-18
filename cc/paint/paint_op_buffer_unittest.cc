@@ -13,6 +13,7 @@
 #include "cc/paint/paint_op_reader.h"
 #include "cc/paint/paint_op_writer.h"
 #include "cc/test/geometry_test_utils.h"
+#include "cc/test/paint_op_helper.h"
 #include "cc/test/skia_common.h"
 #include "cc/test/test_skcanvas.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -46,80 +47,6 @@ void ValidateOps(PaintOpBuffer* buffer) {
 
 class PaintOpSerializationTestUtils {
  public:
-  static void ExpectFlattenableEqual(SkFlattenable* expected,
-                                     SkFlattenable* actual) {
-    sk_sp<SkData> expected_data(SkValidatingSerializeFlattenable(expected));
-    sk_sp<SkData> actual_data(SkValidatingSerializeFlattenable(actual));
-    ASSERT_EQ(expected_data->size(), actual_data->size());
-    EXPECT_TRUE(expected_data->equals(actual_data.get()));
-  }
-
-  static void ExpectPaintShadersEqual(const PaintShader* one,
-                                      const PaintShader* two) {
-    if (!one) {
-      EXPECT_FALSE(two);
-      return;
-    }
-
-    ASSERT_TRUE(one);
-    ASSERT_TRUE(two);
-
-    EXPECT_EQ(one->shader_type_, two->shader_type_);
-    EXPECT_EQ(one->flags_, two->flags_);
-    EXPECT_EQ(one->end_radius_, two->end_radius_);
-    EXPECT_EQ(one->start_radius_, two->start_radius_);
-    EXPECT_EQ(one->tx_, two->tx_);
-    EXPECT_EQ(one->ty_, two->ty_);
-    EXPECT_EQ(one->fallback_color_, two->fallback_color_);
-    EXPECT_EQ(one->scaling_behavior_, two->scaling_behavior_);
-    if (one->local_matrix_) {
-      EXPECT_TRUE(two->local_matrix_.has_value());
-      EXPECT_TRUE(*one->local_matrix_ == *two->local_matrix_);
-    } else {
-      EXPECT_FALSE(two->local_matrix_.has_value());
-    }
-    EXPECT_EQ(one->center_, two->center_);
-    EXPECT_EQ(one->tile_, two->tile_);
-    EXPECT_EQ(one->start_point_, two->start_point_);
-    EXPECT_EQ(one->end_point_, two->end_point_);
-    EXPECT_EQ(one->start_degrees_, two->start_degrees_);
-    EXPECT_EQ(one->end_degrees_, two->end_degrees_);
-    EXPECT_THAT(one->colors_, testing::ElementsAreArray(two->colors_));
-    EXPECT_THAT(one->positions_, testing::ElementsAreArray(two->positions_));
-  }
-
-  static void ExpectPaintFlagsEqual(const PaintFlags& expected,
-                                    const PaintFlags& actual) {
-    // Can't just ToSkPaint and operator== here as SkPaint does pointer
-    // comparisons on all the ref'd skia objects on the SkPaint, which
-    // is not true after serialization.
-    EXPECT_EQ(expected.getTextSize(), actual.getTextSize());
-    EXPECT_EQ(expected.getColor(), actual.getColor());
-    EXPECT_EQ(expected.getStrokeWidth(), actual.getStrokeWidth());
-    EXPECT_EQ(expected.getStrokeMiter(), actual.getStrokeMiter());
-    EXPECT_EQ(expected.getBlendMode(), actual.getBlendMode());
-    EXPECT_EQ(expected.getStrokeCap(), actual.getStrokeCap());
-    EXPECT_EQ(expected.getStrokeJoin(), actual.getStrokeJoin());
-    EXPECT_EQ(expected.getStyle(), actual.getStyle());
-    EXPECT_EQ(expected.getTextEncoding(), actual.getTextEncoding());
-    EXPECT_EQ(expected.getHinting(), actual.getHinting());
-    EXPECT_EQ(expected.getFilterQuality(), actual.getFilterQuality());
-
-    // TODO(enne): compare typeface too
-    ExpectFlattenableEqual(expected.getPathEffect().get(),
-                           actual.getPathEffect().get());
-    ExpectFlattenableEqual(expected.getMaskFilter().get(),
-                           actual.getMaskFilter().get());
-    ExpectFlattenableEqual(expected.getColorFilter().get(),
-                           actual.getColorFilter().get());
-    ExpectFlattenableEqual(expected.getLooper().get(),
-                           actual.getLooper().get());
-    ExpectFlattenableEqual(expected.getImageFilter().get(),
-                           actual.getImageFilter().get());
-
-    ExpectPaintShadersEqual(expected.getShader(), actual.getShader());
-  }
-
   static void FillArbitraryShaderValues(PaintShader* shader, bool use_matrix) {
     shader->shader_type_ = PaintShader::Type::kTwoPointConicalGradient;
     shader->flags_ = 12345;
@@ -190,8 +117,7 @@ class PaintOpAppendTest : public ::testing::Test {
     ASSERT_EQ(iter->GetType(), PaintOpType::SaveLayer);
     SaveLayerOp* save_op = static_cast<SaveLayerOp*>(*iter);
     EXPECT_EQ(save_op->bounds, rect_);
-    PaintOpSerializationTestUtils::ExpectPaintFlagsEqual(save_op->flags,
-                                                         flags_);
+    EXPECT_EQ(save_op->flags, flags_);
     ++iter;
 
     ASSERT_EQ(iter->GetType(), PaintOpType::Save);
@@ -237,7 +163,6 @@ TEST_F(PaintOpAppendTest, MoveThenDestruct) {
   // Original should be empty, and safe to destruct.
   EXPECT_EQ(original.size(), 0u);
   EXPECT_EQ(original.bytes_used(), sizeof(PaintOpBuffer));
-  EXPECT_EQ(PaintOpBuffer::Iterator(&original), false);
 }
 
 TEST_F(PaintOpAppendTest, MoveThenDestructOperatorEq) {
@@ -264,6 +189,7 @@ TEST_F(PaintOpAppendTest, MoveThenReappend) {
   // Should be possible to reappend to the original and get the same result.
   PushOps(&original);
   VerifyOps(&original);
+  EXPECT_EQ(original, destination);
 }
 
 TEST_F(PaintOpAppendTest, MoveThenReappendOperatorEq) {
@@ -276,6 +202,7 @@ TEST_F(PaintOpAppendTest, MoveThenReappendOperatorEq) {
   // Should be possible to reappend to the original and get the same result.
   PushOps(&original);
   VerifyOps(&original);
+  EXPECT_EQ(original, destination);
 }
 
 // Verify that a SaveLayerAlpha / Draw / Restore can be optimized to just
@@ -1628,242 +1555,6 @@ void PushTranslateOps(PaintOpBuffer* buffer) {
   ValidateOps<TranslateOp>(buffer);
 }
 
-void CompareFlags(const PaintFlags& original, const PaintFlags& written) {
-  PaintOpSerializationTestUtils::ExpectPaintFlagsEqual(original, written);
-}
-
-void CompareImages(const PaintImage& original, const PaintImage& written) {}
-
-void CompareMatrices(const SkMatrix& original, const SkMatrix& written) {
-  // Compare the 3x3 matrix values.
-  EXPECT_EQ(original, written);
-
-  // If a serialized matrix says it is identity, then the original must have
-  // those values, as the serialization process clobbers the matrix values.
-  if (original.isIdentity()) {
-    EXPECT_EQ(SkMatrix::I(), original);
-    EXPECT_EQ(SkMatrix::I(), written);
-  }
-
-  EXPECT_EQ(original.getType(), written.getType());
-}
-
-void CompareAnnotateOp(const AnnotateOp* original, const AnnotateOp* written) {
-  EXPECT_TRUE(original->IsValid());
-  EXPECT_TRUE(written->IsValid());
-  EXPECT_EQ(original->annotation_type, written->annotation_type);
-  EXPECT_EQ(original->rect, written->rect);
-  EXPECT_EQ(!!original->data, !!written->data);
-  if (original->data) {
-    EXPECT_EQ(original->data->size(), written->data->size());
-    EXPECT_EQ(0, memcmp(original->data->data(), written->data->data(),
-                        written->data->size()));
-  }
-}
-
-void CompareClipPathOp(const ClipPathOp* original, const ClipPathOp* written) {
-  EXPECT_TRUE(original->IsValid());
-  EXPECT_TRUE(written->IsValid());
-  EXPECT_TRUE(original->path == written->path);
-  EXPECT_EQ(original->op, written->op);
-  EXPECT_EQ(original->antialias, written->antialias);
-}
-
-void CompareClipRectOp(const ClipRectOp* original, const ClipRectOp* written) {
-  EXPECT_TRUE(original->IsValid());
-  EXPECT_TRUE(written->IsValid());
-  EXPECT_EQ(original->rect, written->rect);
-  EXPECT_EQ(original->op, written->op);
-  EXPECT_EQ(original->antialias, written->antialias);
-}
-
-void CompareClipRRectOp(const ClipRRectOp* original,
-                        const ClipRRectOp* written) {
-  EXPECT_TRUE(original->IsValid());
-  EXPECT_TRUE(written->IsValid());
-  EXPECT_EQ(original->rrect, written->rrect);
-  EXPECT_EQ(original->op, written->op);
-  EXPECT_EQ(original->antialias, written->antialias);
-}
-
-void CompareConcatOp(const ConcatOp* original, const ConcatOp* written) {
-  EXPECT_TRUE(original->IsValid());
-  EXPECT_TRUE(written->IsValid());
-  CompareMatrices(original->matrix, written->matrix);
-}
-
-void CompareDrawColorOp(const DrawColorOp* original,
-                        const DrawColorOp* written) {
-  EXPECT_TRUE(original->IsValid());
-  EXPECT_TRUE(written->IsValid());
-  EXPECT_EQ(original->color, written->color);
-}
-
-void CompareDrawDRRectOp(const DrawDRRectOp* original,
-                         const DrawDRRectOp* written) {
-  EXPECT_TRUE(original->IsValid());
-  EXPECT_TRUE(written->IsValid());
-  CompareFlags(original->flags, written->flags);
-  EXPECT_EQ(original->outer, written->outer);
-  EXPECT_EQ(original->inner, written->inner);
-}
-
-void CompareDrawImageOp(const DrawImageOp* original,
-                        const DrawImageOp* written) {
-  EXPECT_TRUE(original->IsValid());
-  EXPECT_TRUE(written->IsValid());
-  CompareFlags(original->flags, written->flags);
-  CompareImages(original->image, written->image);
-  EXPECT_EQ(original->left, written->left);
-  EXPECT_EQ(original->top, written->top);
-}
-
-void CompareDrawImageRectOp(const DrawImageRectOp* original,
-                            const DrawImageRectOp* written) {
-  EXPECT_TRUE(original->IsValid());
-  EXPECT_TRUE(written->IsValid());
-  CompareFlags(original->flags, written->flags);
-  CompareImages(original->image, written->image);
-  EXPECT_EQ(original->src, written->src);
-  EXPECT_EQ(original->dst, written->dst);
-}
-
-void CompareDrawIRectOp(const DrawIRectOp* original,
-                        const DrawIRectOp* written) {
-  EXPECT_TRUE(original->IsValid());
-  EXPECT_TRUE(written->IsValid());
-  CompareFlags(original->flags, written->flags);
-  EXPECT_EQ(original->rect, written->rect);
-}
-
-void CompareDrawLineOp(const DrawLineOp* original, const DrawLineOp* written) {
-  EXPECT_TRUE(original->IsValid());
-  EXPECT_TRUE(written->IsValid());
-  CompareFlags(original->flags, written->flags);
-  EXPECT_EQ(original->x0, written->x0);
-  EXPECT_EQ(original->y0, written->y0);
-  EXPECT_EQ(original->x1, written->x1);
-  EXPECT_EQ(original->y1, written->y1);
-}
-
-void CompareDrawOvalOp(const DrawOvalOp* original, const DrawOvalOp* written) {
-  EXPECT_TRUE(original->IsValid());
-  EXPECT_TRUE(written->IsValid());
-  CompareFlags(original->flags, written->flags);
-  EXPECT_EQ(original->oval, written->oval);
-}
-
-void CompareDrawPathOp(const DrawPathOp* original, const DrawPathOp* written) {
-  EXPECT_TRUE(original->IsValid());
-  EXPECT_TRUE(written->IsValid());
-  CompareFlags(original->flags, written->flags);
-  EXPECT_TRUE(original->path == written->path);
-}
-
-void CompareDrawRectOp(const DrawRectOp* original, const DrawRectOp* written) {
-  EXPECT_TRUE(original->IsValid());
-  EXPECT_TRUE(written->IsValid());
-  CompareFlags(original->flags, written->flags);
-  EXPECT_EQ(original->rect, written->rect);
-}
-
-void CompareDrawRRectOp(const DrawRRectOp* original,
-                        const DrawRRectOp* written) {
-  EXPECT_TRUE(original->IsValid());
-  EXPECT_TRUE(written->IsValid());
-  CompareFlags(original->flags, written->flags);
-  EXPECT_EQ(original->rrect, written->rrect);
-}
-
-void CompareDrawTextBlobOp(const DrawTextBlobOp* original,
-                           const DrawTextBlobOp* written) {
-  EXPECT_TRUE(original->IsValid());
-  EXPECT_TRUE(written->IsValid());
-  CompareFlags(original->flags, written->flags);
-  EXPECT_EQ(original->x, written->x);
-  EXPECT_EQ(original->y, written->y);
-
-  ASSERT_TRUE(*original->blob);
-  ASSERT_TRUE(*written->blob);
-
-  SkBinaryWriteBuffer original_flattened;
-  original->blob->ToSkTextBlob()->flatten(original_flattened);
-  std::vector<char> original_mem(original_flattened.bytesWritten());
-  original_flattened.writeToMemory(original_mem.data());
-
-  SkBinaryWriteBuffer written_flattened;
-  written->blob->ToSkTextBlob()->flatten(written_flattened);
-  std::vector<char> written_mem(written_flattened.bytesWritten());
-  written_flattened.writeToMemory(written_mem.data());
-
-  ASSERT_EQ(original_mem.size(), written_mem.size());
-  EXPECT_EQ(original_mem, written_mem);
-}
-
-void CompareNoopOp(const NoopOp* original, const NoopOp* written) {
-  // Nothing to compare.
-  EXPECT_TRUE(original->IsValid());
-  EXPECT_TRUE(written->IsValid());
-}
-
-void CompareRestoreOp(const RestoreOp* original, const RestoreOp* written) {
-  // Nothing to compare.
-  EXPECT_TRUE(original->IsValid());
-  EXPECT_TRUE(written->IsValid());
-}
-
-void CompareRotateOp(const RotateOp* original, const RotateOp* written) {
-  EXPECT_TRUE(original->IsValid());
-  EXPECT_TRUE(written->IsValid());
-  EXPECT_EQ(original->degrees, written->degrees);
-}
-
-void CompareSaveOp(const SaveOp* original, const SaveOp* written) {
-  // Nothing to compare.
-  EXPECT_TRUE(original->IsValid());
-  EXPECT_TRUE(written->IsValid());
-}
-
-void CompareSaveLayerOp(const SaveLayerOp* original,
-                        const SaveLayerOp* written) {
-  EXPECT_TRUE(original->IsValid());
-  EXPECT_TRUE(written->IsValid());
-  CompareFlags(original->flags, written->flags);
-  EXPECT_EQ(original->bounds, written->bounds);
-}
-
-void CompareSaveLayerAlphaOp(const SaveLayerAlphaOp* original,
-                             const SaveLayerAlphaOp* written) {
-  EXPECT_TRUE(original->IsValid());
-  EXPECT_TRUE(written->IsValid());
-  EXPECT_EQ(original->bounds, written->bounds);
-  EXPECT_EQ(original->alpha, written->alpha);
-  EXPECT_EQ(original->preserve_lcd_text_requests,
-            written->preserve_lcd_text_requests);
-}
-
-void CompareScaleOp(const ScaleOp* original, const ScaleOp* written) {
-  EXPECT_TRUE(original->IsValid());
-  EXPECT_TRUE(written->IsValid());
-  EXPECT_EQ(original->sx, written->sx);
-  EXPECT_EQ(original->sy, written->sy);
-}
-
-void CompareSetMatrixOp(const SetMatrixOp* original,
-                        const SetMatrixOp* written) {
-  EXPECT_TRUE(original->IsValid());
-  EXPECT_TRUE(written->IsValid());
-  CompareMatrices(original->matrix, written->matrix);
-}
-
-void CompareTranslateOp(const TranslateOp* original,
-                        const TranslateOp* written) {
-  EXPECT_TRUE(original->IsValid());
-  EXPECT_TRUE(written->IsValid());
-  EXPECT_EQ(original->dx, written->dx);
-  EXPECT_EQ(original->dy, written->dy);
-}
-
 class PaintOpSerializationTest : public ::testing::TestWithParam<uint8_t> {
  public:
   PaintOpType GetParamType() const {
@@ -1953,119 +1644,6 @@ class PaintOpSerializationTest : public ::testing::TestWithParam<uint8_t> {
     }
   }
 
-  static void ExpectOpsEqual(const PaintOp* original, const PaintOp* written) {
-    ASSERT_TRUE(original);
-    ASSERT_TRUE(written);
-    ASSERT_EQ(original->GetType(), written->GetType());
-    EXPECT_EQ(original->skip, written->skip);
-
-    switch (original->GetType()) {
-      case PaintOpType::Annotate:
-        CompareAnnotateOp(static_cast<const AnnotateOp*>(original),
-                          static_cast<const AnnotateOp*>(written));
-        break;
-      case PaintOpType::ClipPath:
-        CompareClipPathOp(static_cast<const ClipPathOp*>(original),
-                          static_cast<const ClipPathOp*>(written));
-        break;
-      case PaintOpType::ClipRect:
-        CompareClipRectOp(static_cast<const ClipRectOp*>(original),
-                          static_cast<const ClipRectOp*>(written));
-        break;
-      case PaintOpType::ClipRRect:
-        CompareClipRRectOp(static_cast<const ClipRRectOp*>(original),
-                           static_cast<const ClipRRectOp*>(written));
-        break;
-      case PaintOpType::Concat:
-        CompareConcatOp(static_cast<const ConcatOp*>(original),
-                        static_cast<const ConcatOp*>(written));
-        break;
-      case PaintOpType::DrawColor:
-        CompareDrawColorOp(static_cast<const DrawColorOp*>(original),
-                           static_cast<const DrawColorOp*>(written));
-        break;
-      case PaintOpType::DrawDRRect:
-        CompareDrawDRRectOp(static_cast<const DrawDRRectOp*>(original),
-                            static_cast<const DrawDRRectOp*>(written));
-        break;
-      case PaintOpType::DrawImage:
-        CompareDrawImageOp(static_cast<const DrawImageOp*>(original),
-                           static_cast<const DrawImageOp*>(written));
-        break;
-      case PaintOpType::DrawImageRect:
-        CompareDrawImageRectOp(static_cast<const DrawImageRectOp*>(original),
-                               static_cast<const DrawImageRectOp*>(written));
-        break;
-      case PaintOpType::DrawIRect:
-        CompareDrawIRectOp(static_cast<const DrawIRectOp*>(original),
-                           static_cast<const DrawIRectOp*>(written));
-        break;
-      case PaintOpType::DrawLine:
-        CompareDrawLineOp(static_cast<const DrawLineOp*>(original),
-                          static_cast<const DrawLineOp*>(written));
-        break;
-      case PaintOpType::DrawOval:
-        CompareDrawOvalOp(static_cast<const DrawOvalOp*>(original),
-                          static_cast<const DrawOvalOp*>(written));
-        break;
-      case PaintOpType::DrawPath:
-        CompareDrawPathOp(static_cast<const DrawPathOp*>(original),
-                          static_cast<const DrawPathOp*>(written));
-        break;
-      case PaintOpType::DrawRecord:
-        // Not supported.
-        break;
-      case PaintOpType::DrawRect:
-        CompareDrawRectOp(static_cast<const DrawRectOp*>(original),
-                          static_cast<const DrawRectOp*>(written));
-        break;
-      case PaintOpType::DrawRRect:
-        CompareDrawRRectOp(static_cast<const DrawRRectOp*>(original),
-                           static_cast<const DrawRRectOp*>(written));
-        break;
-      case PaintOpType::DrawTextBlob:
-        CompareDrawTextBlobOp(static_cast<const DrawTextBlobOp*>(original),
-                              static_cast<const DrawTextBlobOp*>(written));
-        break;
-      case PaintOpType::Noop:
-        CompareNoopOp(static_cast<const NoopOp*>(original),
-                      static_cast<const NoopOp*>(written));
-        break;
-      case PaintOpType::Restore:
-        CompareRestoreOp(static_cast<const RestoreOp*>(original),
-                         static_cast<const RestoreOp*>(written));
-        break;
-      case PaintOpType::Rotate:
-        CompareRotateOp(static_cast<const RotateOp*>(original),
-                        static_cast<const RotateOp*>(written));
-        break;
-      case PaintOpType::Save:
-        CompareSaveOp(static_cast<const SaveOp*>(original),
-                      static_cast<const SaveOp*>(written));
-        break;
-      case PaintOpType::SaveLayer:
-        CompareSaveLayerOp(static_cast<const SaveLayerOp*>(original),
-                           static_cast<const SaveLayerOp*>(written));
-        break;
-      case PaintOpType::SaveLayerAlpha:
-        CompareSaveLayerAlphaOp(static_cast<const SaveLayerAlphaOp*>(original),
-                                static_cast<const SaveLayerAlphaOp*>(written));
-        break;
-      case PaintOpType::Scale:
-        CompareScaleOp(static_cast<const ScaleOp*>(original),
-                       static_cast<const ScaleOp*>(written));
-        break;
-      case PaintOpType::SetMatrix:
-        CompareSetMatrixOp(static_cast<const SetMatrixOp*>(original),
-                           static_cast<const SetMatrixOp*>(written));
-        break;
-      case PaintOpType::Translate:
-        CompareTranslateOp(static_cast<const TranslateOp*>(original),
-                           static_cast<const TranslateOp*>(written));
-        break;
-    }
-  }
-
   void ResizeOutputBuffer() {
     // An arbitrary deserialization buffer size that should fit all the ops
     // in the buffer_.
@@ -2118,7 +1696,7 @@ TEST_P(PaintOpSerializationTest, SmokeTest) {
        DeserializerIterator(output_.get(), serializer.TotalBytesWritten())) {
     SCOPED_TRACE(base::StringPrintf(
         "%s #%zu", PaintOpTypeToString(GetParamType()).c_str(), i));
-    ExpectOpsEqual(*iter, base_written);
+    EXPECT_EQ(**iter, *base_written);
     ++iter;
     ++i;
   }
@@ -2296,7 +1874,7 @@ TEST(PaintOpSerializationTest, CompleteBufferSerialization) {
       // Root buffer.
       ASSERT_EQ(op->GetType(), (*serialized_iter)->GetType())
           << PaintOpTypeToString(op->GetType());
-      PaintOpSerializationTest::ExpectOpsEqual(op, *serialized_iter);
+      EXPECT_EQ(*op, **serialized_iter);
       ++serialized_iter;
       continue;
     }
@@ -2384,7 +1962,7 @@ TEST(PaintOpSerializationTest, Preamble) {
 
     if (i == 6) {
       // Buffer.
-      PaintOpSerializationTest::ExpectOpsEqual(op, buffer.GetFirstOp());
+      EXPECT_EQ(*op, *buffer.GetFirstOp());
       continue;
     }
 
@@ -2431,7 +2009,7 @@ TEST(PaintOpSerializationTest, SerializesNestedRecords) {
       // Nested buffer.
       ASSERT_EQ(op->GetType(), (*serialized_iter)->GetType())
           << PaintOpTypeToString(op->GetType());
-      PaintOpSerializationTest::ExpectOpsEqual(op, *serialized_iter);
+      EXPECT_EQ(*op, **serialized_iter);
       ++serialized_iter;
       continue;
     }
@@ -2481,7 +2059,7 @@ TEST(PaintOpBufferTest, ClipsImagesDuringSerialization) {
       // Root buffer.
       ASSERT_EQ(op->GetType(), (*serialized_iter)->GetType())
           << PaintOpTypeToString(op->GetType());
-      PaintOpSerializationTest::ExpectOpsEqual(op, *serialized_iter);
+      EXPECT_EQ(*op, **serialized_iter);
       ++serialized_iter;
       continue;
     }

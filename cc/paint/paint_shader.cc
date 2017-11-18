@@ -394,4 +394,53 @@ bool PaintShader::IsValid() const {
   return false;
 }
 
+bool PaintShader::operator==(const PaintShader& other) const {
+  if (shader_type_ != other.shader_type_)
+    return false;
+  if (flags_ != other.flags_)
+    return false;
+  if (end_radius_ != other.end_radius_)
+    return false;
+  if (start_radius_ != other.start_radius_)
+    return false;
+  if (tx_ != other.tx_)
+    return false;
+  if (ty_ != other.ty_)
+    return false;
+  if (fallback_color_ != other.fallback_color_)
+    return false;
+  if (scaling_behavior_ != other.scaling_behavior_)
+    return false;
+  if (local_matrix_) {
+    if (!other.local_matrix_.has_value())
+      return false;
+    if (*local_matrix_ != *other.local_matrix_)
+      return false;
+  } else {
+    if (other.local_matrix_.has_value())
+      return false;
+  }
+  if (center_ != other.center_)
+    return false;
+  if (tile_ != other.tile_)
+    return false;
+  if (start_point_ != other.start_point_)
+    return false;
+  if (end_point_ != other.end_point_)
+    return false;
+  if (start_degrees_ != other.start_degrees_)
+    return false;
+  if (end_degrees_ != other.end_degrees_)
+    return false;
+
+  // TODO(enne): add comparison of records once those are serialized.
+  // TODO(enne): add comparison of images once those are serialized.
+
+  if (colors_ != other.colors_)
+    return false;
+  if (positions_ != other.positions_)
+    return false;
+  return true;
+}
+
 }  // namespace cc

@@ -5,6 +5,7 @@
 #include "cc/paint/paint_flags.h"
 
 #include "cc/paint/paint_op_buffer.h"
+#include "third_party/skia/include/core/SkFlattenableSerialization.h"
 
 namespace {
 
@@ -126,6 +127,64 @@ SkPaint PaintFlags::ToSkPaint() const {
 
 bool PaintFlags::IsValid() const {
   return PaintOp::IsValidPaintFlagsSkBlendMode(getBlendMode());
+}
+
+static bool AreFlattenablesEqual(SkFlattenable* left, SkFlattenable* right) {
+  sk_sp<SkData> left_data(SkValidatingSerializeFlattenable(left));
+  sk_sp<SkData> right_data(SkValidatingSerializeFlattenable(right));
+  if (left_data->size() != right_data->size())
+    return false;
+  if (!left_data->equals(right_data.get()))
+    return false;
+  return true;
+}
+
+bool PaintFlags::operator==(const PaintFlags& other) const {
+  // Can't just ToSkPaint and operator== here as SkPaint does pointer
+  // comparisons on all the ref'd skia objects on the SkPaint, which
+  // is not true after serialization.
+  if (getTextSize() != other.getTextSize())
+    return false;
+  if (getColor() != other.getColor())
+    return false;
+  if (getStrokeWidth() != other.getStrokeWidth())
+    return false;
+  if (getStrokeMiter() != other.getStrokeMiter())
+    return false;
+  if (getBlendMode() != other.getBlendMode())
+    return false;
+  if (getStrokeCap() != other.getStrokeCap())
+    return false;
+  if (getStrokeJoin() != other.getStrokeJoin())
+    return false;
+  if (getStyle() != other.getStyle())
+    return false;
+  if (getTextEncoding() != other.getTextEncoding())
+    return false;
+  if (getHinting() != other.getHinting())
+    return false;
+  if (getFilterQuality() != other.getFilterQuality())
+    return false;
+
+  // TODO(enne): compare typeface too
+  if (!AreFlattenablesEqual(getPathEffect().get(), other.getPathEffect().get()))
+    return false;
+  if (!AreFlattenablesEqual(getMaskFilter().get(), other.getMaskFilter().get()))
+    return false;
+  if (!AreFlattenablesEqual(getColorFilter().get(),
+                            other.getColorFilter().get()))
+    return false;
+  if (!AreFlattenablesEqual(getLooper().get(), other.getLooper().get()))
+    return false;
+  if (!AreFlattenablesEqual(getImageFilter().get(),
+                            other.getImageFilter().get()))
+    return false;
+
+  if (!getShader() != !other.getShader())
+    return false;
+  if (getShader() && *getShader() != *other.getShader())
+    return false;
+  return true;
 }
 
 bool PaintFlags::HasDiscardableImages() const {
