@@ -75,21 +75,26 @@ TEST_F('PasswordsAndFormsBrowserTest', 'uiTests', function() {
       CrSettingsPrefs.deferInitialization = true;
       var prefs = document.createElement('settings-prefs');
       prefs.initialize(new settings.FakeSettingsPrivate([
-            {
-              key: 'autofill.enabled',
-              type: chrome.settingsPrivate.PrefType.BOOLEAN,
-              value: autofill,
-            },
-            {
-              key: 'credentials_enable_service',
-              type: chrome.settingsPrivate.PrefType.BOOLEAN,
-              value: passwords,
-            },
-            {
-              key: 'credentials_enable_autosignin',
-              type: chrome.settingsPrivate.PrefType.BOOLEAN,
-              value: true,
-            },
+        {
+          key: 'autofill.enabled',
+          type: chrome.settingsPrivate.PrefType.BOOLEAN,
+          value: autofill,
+        },
+        {
+          key: 'autofill.credit_card_enabled',
+          type: chrome.settingsPrivate.PrefType.BOOLEAN,
+          value: true,
+        },
+        {
+          key: 'credentials_enable_service',
+          type: chrome.settingsPrivate.PrefType.BOOLEAN,
+          value: passwords,
+        },
+        {
+          key: 'credentials_enable_autosignin',
+          type: chrome.settingsPrivate.PrefType.BOOLEAN,
+          value: true,
+        },
       ]));
 
       CrSettingsPrefs.initialized.then(function() {

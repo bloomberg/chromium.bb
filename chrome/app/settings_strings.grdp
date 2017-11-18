@@ -599,6 +599,9 @@
   <message name="IDS_SETTINGS_CREDIT_CARD_NONE" desc="Placeholder that is shown when there are no credit cards in the list of saved credit cards.">
     Saved cards will appear here
   </message>
+  <message name="IDS_SETTINGS_CREDIT_CARD_DISABLED" desc="Placeholder that is shown when credit card autofill has been disabled by policy.">
+    Saved cards are disabled by your administrator
+  </message>
   <message name="IDS_SETTINGS_PASSWORDS_NONE" desc="Placeholder that is shown when there are no passwords in the list of saved passwords.">
     Saved passwords will appear here
   </message>
