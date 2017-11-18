@@ -45,6 +45,7 @@ class OpenVRRenderLoop : public base::Thread, mojom::VRPresentationProvider {
  private:
   // base::Thread overrides:
   void Init() override;
+  void CleanUp() override;
 
   mojom::VRPosePtr GetPose();
 
