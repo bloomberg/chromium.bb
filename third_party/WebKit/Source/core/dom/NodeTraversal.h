@@ -244,7 +244,7 @@ class TraversalChildrenIterator : public TraversalIteratorBase<TraversalNext> {
   using TraversalIteratorBase<TraversalNext>::current_;
   explicit TraversalChildrenIterator(const StartNodeType* start)
       : TraversalIteratorBase<TraversalNext>(
-            TraversalNext::FirstWithin(*start)) {}
+            TraversalNext::FirstChild(*start)) {}
   void operator++() { current_ = TraversalNext::NextSibling(*current_); }
   static TraversalChildrenIterator End() { return TraversalChildrenIterator(); }
 
