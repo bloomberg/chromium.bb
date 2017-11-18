@@ -17,6 +17,7 @@
 class NightLightClient;
 class NotificationPlatformBridge;
 class TabletModeClient;
+class WallpaperControllerClient;
 
 namespace lock_screen_apps {
 class StateController;
@@ -115,6 +116,7 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
       lock_screen_apps_state_controller_;
 
   std::unique_ptr<NightLightClient> night_light_client_;
+  std::unique_ptr<WallpaperControllerClient> wallpaper_controller_client_;
 
   // TODO(estade): Remove this when Chrome OS uses native notifications by
   // default (as it will be instantiated elsewhere). For now it's necessary to
