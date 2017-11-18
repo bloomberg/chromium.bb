@@ -172,6 +172,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/textures/canvas_sub_rectangle/' +
         'tex-2d-r8-red-unsigned_byte.html',
         ['win', 'nvidia', 'opengl'], bug=784849)
+    self.Fail('conformance2/textures/canvas_sub_rectangle/' +
+        'tex-2d-r16f-red-float.html',
+        ['win', 'nvidia', 'opengl'], bug=786716)
 
     # Win / AMD
     self.Fail('conformance2/rendering/blitframebuffer-stencil-only.html',
@@ -389,6 +392,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('conformance2/textures/image_bitmap_from_video/' +
         'tex-2d-rgba16f-rgba-half_float.html',
         ['mac', ('nvidia', 0xfe9)], bug=682834)
+    self.Fail('conformance/canvas/render-after-resize-test.html',
+        ['mac', ('nvidia', 0xfe9)], bug=786717)
+    self.Fail('conformance/glsl/bugs/init-array-with-loop.html',
+        ['mac', ('nvidia', 0xfe9)], bug=786717)
 
     self.Fail('deqp/functional/gles3/draw/random.html',
         ['sierra', ('nvidia', 0xfe9)], bug=716652)
