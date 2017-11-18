@@ -328,6 +328,7 @@ EXPERIMENT_LIST="
     simple_bwd_adapt
     eob_first
     eighth_pel_mv_only
+    fwd_kf
     mono_video
     spatial_segmentation
     segment_pred_last
