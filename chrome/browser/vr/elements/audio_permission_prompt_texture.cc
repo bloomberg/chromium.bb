@@ -4,6 +4,7 @@
 
 #include "chrome/browser/vr/elements/audio_permission_prompt_texture.h"
 
+#include "base/i18n/case_conversion.h"
 #include "cc/paint/skia_paint_canvas.h"
 #include "chrome/browser/vr/color_scheme.h"
 #include "chrome/browser/vr/elements/vector_icon.h"
@@ -90,8 +91,8 @@ void AudioPermissionPromptTexture::Draw(SkCanvas* sk_canvas,
   GetFontList(ToPixels(kFontSizePromptButtonText), text, &fonts);
 
   // Secondary button area.
-  text = l10n_util::GetStringUTF16(
-      IDS_VR_SHELL_AUDIO_PERMISSION_PROMPT_ABORT_BUTTON);
+  text = base::i18n::ToUpper(l10n_util::GetStringUTF16(
+      IDS_VR_SHELL_AUDIO_PERMISSION_PROMPT_ABORT_BUTTON));
   lines = PrepareDrawStringRect(
       text, fonts,
       color_scheme().audio_permission_prompt_secondary_button_forground,
@@ -114,8 +115,8 @@ void AudioPermissionPromptTexture::Draw(SkCanvas* sk_canvas,
   canvas->Restore();
 
   // Primary button area.
-  text = l10n_util::GetStringUTF16(
-      IDS_VR_SHELL_AUDIO_PERMISSION_PROMPT_CONTINUE_BUTTON);
+  text = base::i18n::ToUpper(l10n_util::GetStringUTF16(
+      IDS_VR_SHELL_AUDIO_PERMISSION_PROMPT_CONTINUE_BUTTON));
   button_text_size.set_size(gfx::Size(ToPixels(kButtonWidth), 0));
   lines = PrepareDrawStringRect(
       text, fonts, color_scheme().audio_permission_prompt_background,
