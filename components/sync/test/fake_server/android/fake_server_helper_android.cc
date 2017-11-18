@@ -145,7 +145,8 @@ void FakeServerHelperAndroid::InjectUniqueClientEntity(
 
   fake_server_ptr->InjectEntity(
       syncer::PersistentUniqueClientEntity::CreateFromEntitySpecifics(
-          base::android::ConvertJavaStringToUTF8(env, name), entity_specifics));
+          base::android::ConvertJavaStringToUTF8(env, name), entity_specifics,
+          12345, 12345));
 }
 
 void FakeServerHelperAndroid::ModifyEntitySpecifics(

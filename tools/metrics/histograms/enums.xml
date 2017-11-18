@@ -39341,6 +39341,15 @@ would be helpful to identify which type is being sent.
   <int value="1" label="The user clicked the promo to sign in"/>
 </enum>
 
+<enum name="SyncRequestType">
+  <summary>Maps to values in sync_pb::ClientToServerMessage_Contents.</summary>
+  <int value="1" label="COMMIT"/>
+  <int value="2" label="GET_UPDATES"/>
+  <int value="3" label="AUTHENTICATE"/>
+  <int value="4" label="DEPRECATED_4"/>
+  <int value="5" label="CLEAR_SERVER_DATA"/>
+</enum>
+
 <enum name="SyncSimpleConflictResolutions">
   <summary>
     Sync simple conflict resolutions. The codes are listed in

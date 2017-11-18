@@ -36,6 +36,11 @@ class PersistentTombstoneEntity : public LoopbackServerEntity {
       const override;
 
  private:
+  static std::unique_ptr<LoopbackServerEntity> CreateNewInternal(
+      const std::string& id,
+      int64_t version,
+      const std::string& client_defined_unique_tag);
+
   PersistentTombstoneEntity(const std::string& id,
                             int64_t version,
                             const syncer::ModelType& model_type,

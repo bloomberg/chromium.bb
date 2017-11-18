@@ -12,9 +12,11 @@ using std::string;
 using syncer::ModelType;
 
 namespace {
+
 // The parent tag for children of the root entity. Entities with this parent are
 // referred to as top level enities.
 static const char kRootParentTag[] = "0";
+
 }  // namespace
 
 namespace syncer {
@@ -27,38 +29,52 @@ std::unique_ptr<LoopbackServerEntity> PersistentPermanentEntity::CreateNew(
     const string& server_tag,
     const string& name,
     const string& parent_server_tag) {
-  DCHECK(model_type != syncer::UNSPECIFIED) << "The entity's ModelType is "
-                                            << "invalid.";
-  DCHECK(!server_tag.empty())
-      << "A PersistentPermanentEntity must have a server tag.";
-  DCHECK(!name.empty()) << "The entity must have a non-empty name.";
-  DCHECK(!parent_server_tag.empty())
-      << "A PersistentPermanentEntity must have a parent "
-      << "server tag.";
-  DCHECK(parent_server_tag != kRootParentTag)
-      << "Top-level entities should not "
-      << "be created with this factory.";
+  if (model_type == syncer::UNSPECIFIED) {
+    DLOG(WARNING) << "The entity's ModelType is invalid.";
+    return nullptr;
+  }
+  if (server_tag.empty()) {
+    DLOG(WARNING) << "A PersistentPermanentEntity must have a server tag.";
+    return nullptr;
+  }
+  if (name.empty()) {
+    DLOG(WARNING) << "The entity must have a non-empty name.";
+    return nullptr;
+  }
+  if (parent_server_tag.empty()) {
+    DLOG(WARNING)
+        << "A PersistentPermanentEntity must have a parent server tag.";
+    return nullptr;
+  }
+  if (parent_server_tag == kRootParentTag) {
+    DLOG(WARNING)
+        << "Top-level entities should not be created with this factory.";
+    return nullptr;
+  }
 
   string id = LoopbackServerEntity::CreateId(model_type, server_tag);
   string parent_id =
       LoopbackServerEntity::CreateId(model_type, parent_server_tag);
   sync_pb::EntitySpecifics entity_specifics;
   AddDefaultFieldValue(model_type, &entity_specifics);
-  return std::unique_ptr<LoopbackServerEntity>(new PersistentPermanentEntity(
+  return base::WrapUnique(new PersistentPermanentEntity(
       id, 0, model_type, name, parent_id, server_tag, entity_specifics));
 }
 
 // static
 std::unique_ptr<LoopbackServerEntity> PersistentPermanentEntity::CreateTopLevel(
     const ModelType& model_type) {
-  DCHECK(model_type != syncer::UNSPECIFIED) << "The entity's ModelType is "
-                                            << "invalid.";
+  if (model_type == syncer::UNSPECIFIED) {
+    DLOG(WARNING) << "The entity's ModelType is invalid.";
+    return nullptr;
+  }
+
   string server_tag = syncer::ModelTypeToRootTag(model_type);
   string name = syncer::ModelTypeToString(model_type);
   string id = LoopbackServerEntity::GetTopLevelId(model_type);
   sync_pb::EntitySpecifics entity_specifics;
   AddDefaultFieldValue(model_type, &entity_specifics);
-  return std::unique_ptr<LoopbackServerEntity>(new PersistentPermanentEntity(
+  return base::WrapUnique(new PersistentPermanentEntity(
       id, 0, model_type, name, kRootParentTag, server_tag, entity_specifics));
 }
 
@@ -68,10 +84,12 @@ PersistentPermanentEntity::CreateUpdatedNigoriEntity(
     const sync_pb::SyncEntity& client_entity,
     const LoopbackServerEntity& current_server_entity) {
   ModelType model_type = current_server_entity.GetModelType();
-  DCHECK(model_type == syncer::NIGORI) << "This factory only supports NIGORI "
-                                       << "entities.";
+  if (model_type != syncer::NIGORI) {
+    DLOG(WARNING) << "This factory only supports NIGORI entities.";
+    return nullptr;
+  }
 
-  return base::WrapUnique<LoopbackServerEntity>(new PersistentPermanentEntity(
+  return base::WrapUnique(new PersistentPermanentEntity(
       current_server_entity.GetId(), current_server_entity.GetVersion(),
       model_type, current_server_entity.GetName(),
       current_server_entity.GetParentId(),

@@ -61,11 +61,11 @@ class LoopbackServerEntity {
   virtual void SerializeAsLoopbackServerEntity(
       sync_pb::LoopbackServerEntity* entity) const;
 
- protected:
   // Extracts the ModelType from |id|. If |id| is malformed or does not contain
   // a valid ModelType, UNSPECIFIED is returned.
   static syncer::ModelType GetModelTypeFromId(const std::string& id);
 
+ protected:
   LoopbackServerEntity(const std::string& id,
                        const syncer::ModelType& model_type,
                        int64_t version,

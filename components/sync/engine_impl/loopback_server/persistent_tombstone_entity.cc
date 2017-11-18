@@ -4,6 +4,8 @@
 
 #include "components/sync/engine_impl/loopback_server/persistent_tombstone_entity.h"
 
+#include "base/memory/ptr_util.h"
+
 using std::string;
 
 using syncer::ModelType;
@@ -15,22 +17,31 @@ PersistentTombstoneEntity::~PersistentTombstoneEntity() {}
 // static
 std::unique_ptr<LoopbackServerEntity>
 PersistentTombstoneEntity::CreateFromEntity(const sync_pb::SyncEntity& entity) {
-  const ModelType model_type = GetModelTypeFromId(entity.id_string());
-  DCHECK_NE(model_type, syncer::UNSPECIFIED)
-      << "Invalid ID was given: " << entity.id_string();
-  return std::unique_ptr<LoopbackServerEntity>(new PersistentTombstoneEntity(
-      entity.id_string(), entity.version(), model_type,
-      entity.client_defined_unique_tag()));
+  return CreateNewInternal(entity.id_string(), entity.version(),
+                           entity.client_defined_unique_tag());
 }
 
 // static
 std::unique_ptr<LoopbackServerEntity> PersistentTombstoneEntity::CreateNew(
     const std::string& id,
     const std::string& client_defined_unique_tag) {
-  const ModelType model_type = GetModelTypeFromId(id);
-  DCHECK_NE(model_type, syncer::UNSPECIFIED) << "Invalid ID was given: " << id;
-  return std::unique_ptr<LoopbackServerEntity>(new PersistentTombstoneEntity(
-      id, 0, model_type, client_defined_unique_tag));
+  return CreateNewInternal(id, 0, client_defined_unique_tag);
+}
+
+// static
+std::unique_ptr<LoopbackServerEntity>
+PersistentTombstoneEntity::CreateNewInternal(
+    const std::string& id,
+    int64_t version,
+    const std::string& client_defined_unique_tag) {
+  const ModelType model_type = LoopbackServerEntity::GetModelTypeFromId(id);
+  if (model_type == syncer::UNSPECIFIED) {
+    DLOG(WARNING) << "Invalid ID was given: " << id;
+    return nullptr;
+  }
+
+  return base::WrapUnique(new PersistentTombstoneEntity(
+      id, version, model_type, client_defined_unique_tag));
 }
 
 PersistentTombstoneEntity::PersistentTombstoneEntity(
