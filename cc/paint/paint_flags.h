@@ -218,6 +218,8 @@ class CC_PAINT_EXPORT PaintFlags {
   SkPaint ToSkPaint() const;
 
   bool IsValid() const;
+  bool operator==(const PaintFlags& other) const;
+  bool operator!=(const PaintFlags& other) const { return !(*this == other); }
 
   bool HasDiscardableImages() const;
 

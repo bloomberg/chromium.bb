@@ -106,6 +106,7 @@ class CC_PAINT_EXPORT PaintImage {
   PaintImage& operator=(PaintImage&& other);
 
   bool operator==(const PaintImage& other) const;
+  bool operator!=(const PaintImage& other) const { return !(*this == other); }
 
   // Returns the smallest size that is at least as big as the requested_size
   // such that we can decode to exactly that scale. If the requested size is
