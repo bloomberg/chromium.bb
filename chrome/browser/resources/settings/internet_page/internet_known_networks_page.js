@@ -54,40 +54,13 @@ Polymer({
     enableForget_: Boolean,
   },
 
+  listeners: {'network-list-changed': 'refreshNetworks_'},
+
   /** @private {string} */
   selectedGuid_: '',
 
-  /**
-   * Listener function for chrome.networkingPrivate.onNetworksChanged event.
-   * @type {function(!Array<string>)}
-   * @private
-   */
-  networksChangedListener_: function() {},
-
-  /** @override */
-  attached: function() {
-    this.networksChangedListener_ = this.onNetworksChangedEvent_.bind(this);
-    this.networkingPrivate.onNetworksChanged.addListener(
-        this.networksChangedListener_);
-  },
-
-  /** @override */
-  detached: function() {
-    this.networkingPrivate.onNetworksChanged.removeListener(
-        this.networksChangedListener_);
-  },
-
   /** @private */
   networkTypeChanged_: function() {
-    this.refreshNetworks_();
-  },
-
-  /**
-   * networkingPrivate.onNetworksChanged event callback.
-   * @param {!Array<string>} networkIds The list of changed network GUIDs.
-   * @private
-   */
-  onNetworksChangedEvent_: function(networkIds) {
     this.refreshNetworks_();
   },
 
