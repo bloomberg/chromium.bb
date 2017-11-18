@@ -662,8 +662,6 @@ jumbo_source_set("browser") {
     "dom_storage/local_storage_context_mojo.h",
     "dom_storage/local_storage_database_adapter.cc",
     "dom_storage/local_storage_database_adapter.h",
-    "dom_storage/session_storage_context_mojo.cc",
-    "dom_storage/session_storage_context_mojo.h",
     "dom_storage/session_storage_database.cc",
     "dom_storage/session_storage_database.h",
     "dom_storage/session_storage_database_adapter.cc",

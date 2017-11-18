@@ -112,8 +112,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   blink::WebThread* CompositorThread() const override;
   std::unique_ptr<blink::WebStorageNamespace> CreateLocalStorageNamespace()
       override;
-  std::unique_ptr<blink::WebStorageNamespace> CreateSessionStorageNamespace(
-      int64_t namespace_id) override;
   blink::Platform::FileHandle DatabaseOpenFile(
       const blink::WebString& vfs_file_name,
       int desired_flags) override;

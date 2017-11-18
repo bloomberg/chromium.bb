@@ -130,10 +130,6 @@ class CONTENT_EXPORT StoragePartitionImpl
   void OpenLocalStorage(
       const url::Origin& origin,
       mojo::InterfaceRequest<mojom::LevelDBWrapper> request) override;
-  void OpenSessionStorage(
-      int64_t namespace_id,
-      const url::Origin& origin,
-      mojo::InterfaceRequest<mojom::LevelDBWrapper> request) override;
 
   scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter() {
     return url_loader_factory_getter_;

@@ -67,32 +67,11 @@ void UnpackSource(const std::string& source,
 }
 
 LocalStorageCachedArea::LocalStorageCachedArea(
-    int64_t namespace_id,
     const url::Origin& origin,
     mojom::StoragePartitionService* storage_partition_service,
     LocalStorageCachedAreas* cached_areas)
-    : namespace_id_(namespace_id),
-      origin_(origin),
-      binding_(this),
-      cached_areas_(cached_areas),
-      weak_factory_(this) {
-  DCHECK_NE(namespace_id, kInvalidSessionStorageNamespaceId);
-  storage_partition_service->OpenSessionStorage(namespace_id, origin_,
-                                                mojo::MakeRequest(&leveldb_));
-  mojom::LevelDBObserverAssociatedPtrInfo ptr_info;
-  binding_.Bind(mojo::MakeRequest(&ptr_info));
-  leveldb_->AddObserver(std::move(ptr_info));
-}
-
-LocalStorageCachedArea::LocalStorageCachedArea(
-    const url::Origin& origin,
-    mojom::StoragePartitionService* storage_partition_service,
-    LocalStorageCachedAreas* cached_areas)
-    : namespace_id_(kLocalStorageNamespaceId),
-      origin_(origin),
-      binding_(this),
-      cached_areas_(cached_areas),
-      weak_factory_(this) {
+    : origin_(origin), binding_(this),
+      cached_areas_(cached_areas), weak_factory_(this) {
   storage_partition_service->OpenLocalStorage(origin_,
                                               mojo::MakeRequest(&leveldb_));
   mojom::LevelDBObserverAssociatedPtrInfo ptr_info;

@@ -45,6 +45,7 @@ class WebDateTimeChooserCompletion;
 class WebFileChooserCompletion;
 class WebNode;
 class WebSpeechRecognizer;
+class WebStorageNamespace;
 class WebURL;
 class WebURLRequest;
 class WebView;
@@ -83,8 +84,8 @@ class WebViewClient : protected WebWidgetClient {
   // Create a new popup WebWidget.
   virtual WebWidget* CreatePopupMenu(WebPopupType) { return 0; }
 
-  // Returns the session storage namespace id associated with this WebView.
-  virtual int64_t GetSessionStorageNamespaceId() { return 0; }
+  // Create a session storage namespace object associated with this WebView.
+  virtual WebStorageNamespace* CreateSessionStorageNamespace() { return 0; }
 
   // Misc ----------------------------------------------------------------
 

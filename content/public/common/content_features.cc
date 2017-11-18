@@ -168,10 +168,6 @@ const base::Feature kMojoBlobs{"MojoBlobs", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kMojoInputMessages{"MojoInputMessages",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Mojo-based Session Storage.
-const base::Feature kMojoSessionStorage{"MojoSessionStorage",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables/disables hardware video encode acceleration using Mojo (falls back).
 const base::Feature kMojoVideoEncodeAccelerator{
     "MojoVideoEncodeAccelerator", base::FEATURE_ENABLED_BY_DEFAULT};

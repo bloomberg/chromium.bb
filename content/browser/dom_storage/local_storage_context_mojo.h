@@ -5,15 +5,9 @@
 #ifndef CONTENT_BROWSER_DOM_STORAGE_LOCAL_STORAGE_CONTEXT_MOJO_H_
 #define CONTENT_BROWSER_DOM_STORAGE_LOCAL_STORAGE_CONTEXT_MOJO_H_
 
-#include <stdint.h>
-#include <map>
 #include <memory>
-#include <string>
-#include <vector>
 
-#include "base/callback_forward.h"
 #include "base/files/file_path.h"
-#include "base/memory/ref_counted.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "content/common/content_export.h"
 #include "content/common/leveldb_wrapper.mojom.h"

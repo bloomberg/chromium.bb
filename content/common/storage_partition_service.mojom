@@ -11,7 +11,4 @@ import "url/mojo/origin.mojom";
 interface StoragePartitionService {
   OpenLocalStorage(url.mojom.Origin origin,
                    LevelDBWrapper& database);
-  OpenSessionStorage(int64 namespace_id,
-                     url.mojom.Origin origin,
-                     LevelDBWrapper& database);
 };

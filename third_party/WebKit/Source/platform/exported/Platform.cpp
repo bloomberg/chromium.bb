@@ -210,11 +210,6 @@ std::unique_ptr<WebStorageNamespace> Platform::CreateLocalStorageNamespace() {
   return nullptr;
 }
 
-std::unique_ptr<WebStorageNamespace> Platform::CreateSessionStorageNamespace(
-    int64_t namespace_id) {
-  return nullptr;
-}
-
 std::unique_ptr<WebServiceWorkerCacheStorage> Platform::CreateCacheStorage(
     const WebSecurityOrigin&) {
   return nullptr;
