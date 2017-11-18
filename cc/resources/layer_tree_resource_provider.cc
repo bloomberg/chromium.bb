@@ -60,7 +60,10 @@ LayerTreeResourceProvider::LayerTreeResourceProvider(
 LayerTreeResourceProvider::~LayerTreeResourceProvider() {
   for (auto& pair : imported_resources_) {
     ImportedResource& imported = pair.second;
-    imported.release_callback->Run(gpu::SyncToken(), true /* is_lost */);
+    // If the resource is exported we can't report when it can be used again
+    // once this class is destroyed, so consider the resource lost.
+    bool is_lost = imported.exported_count || imported.returned_lost;
+    imported.release_callback->Run(imported.returned_sync_token, is_lost);
   }
 }
 
