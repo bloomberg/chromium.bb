@@ -119,8 +119,6 @@ target(link_target_type, "renderer") {
     "dom_storage/local_storage_cached_areas.h",
     "dom_storage/local_storage_namespace.cc",
     "dom_storage/local_storage_namespace.h",
-    "dom_storage/session_storage_namespace.cc",
-    "dom_storage/session_storage_namespace.h",
     "dom_storage/webstoragearea_impl.cc",
     "dom_storage/webstoragearea_impl.h",
     "dom_storage/webstoragenamespace_impl.cc",

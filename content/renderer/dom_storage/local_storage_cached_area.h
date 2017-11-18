@@ -33,16 +33,10 @@ class StoragePartitionService;
 // callbacks.
 // There is one LocalStorageCachedArea for potentially many LocalStorageArea
 // objects.
-// TODO(dmurph): Rename to remove LocalStorage.
 class CONTENT_EXPORT LocalStorageCachedArea
     : public mojom::LevelDBObserver,
       public base::RefCounted<LocalStorageCachedArea> {
  public:
-  LocalStorageCachedArea(
-      int64_t namespace_id,
-      const url::Origin& origin,
-      mojom::StoragePartitionService* storage_partition_service,
-      LocalStorageCachedAreas* cached_areas);
   LocalStorageCachedArea(
       const url::Origin& origin,
       mojom::StoragePartitionService* storage_partition_service,
@@ -66,7 +60,6 @@ class CONTENT_EXPORT LocalStorageCachedArea
   void AreaCreated(LocalStorageArea* area);
   void AreaDestroyed(LocalStorageArea* area);
 
-  int64_t namespace_id() { return namespace_id_; }
   const url::Origin& origin() { return origin_; }
 
   size_t memory_used() const { return map_ ? map_->memory_used() : 0; }
@@ -114,7 +107,6 @@ class CONTENT_EXPORT LocalStorageCachedArea
   // Resets the object back to its newly constructed state.
   void Reset();
 
-  int64_t namespace_id_;
   url::Origin origin_;
   scoped_refptr<DOMStorageMap> map_;
   std::map<base::string16, int> ignore_key_mutations_;

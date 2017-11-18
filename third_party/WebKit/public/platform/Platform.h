@@ -262,10 +262,6 @@ class BLINK_PLATFORM_EXPORT Platform {
   // Return a LocalStorage namespace
   virtual std::unique_ptr<WebStorageNamespace> CreateLocalStorageNamespace();
 
-  // Return a SessionStorage namespace
-  virtual std::unique_ptr<WebStorageNamespace> CreateSessionStorageNamespace(
-      int64_t namespace_id);
-
   // FileSystem ----------------------------------------------------------
 
   // Must return non-null.

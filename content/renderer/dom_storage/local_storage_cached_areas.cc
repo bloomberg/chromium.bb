@@ -6,7 +6,6 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/sys_info.h"
-#include "content/common/dom_storage/dom_storage_types.h"
 #include "content/renderer/dom_storage/local_storage_cached_area.h"
 
 namespace content {
@@ -26,14 +25,37 @@ LocalStorageCachedAreas::~LocalStorageCachedAreas() {}
 
 scoped_refptr<LocalStorageCachedArea> LocalStorageCachedAreas::GetCachedArea(
     const url::Origin& origin) {
-  return GetCachedArea(kLocalStorageNamespaceId, origin);
-}
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class CacheMetrics {
+    kMiss = 0,    // Area not in cache.
+    kHit = 1,     // Area with refcount = 0 loaded from cache.
+    kUnused = 2,  // Cache was not used. Area had refcount > 0.
+    kMaxValue
+  };
 
-scoped_refptr<LocalStorageCachedArea>
-LocalStorageCachedAreas::GetSessionStorageArea(int64_t namespace_id,
-                                               const url::Origin& origin) {
-  DCHECK_NE(kLocalStorageNamespaceId, kInvalidSessionStorageNamespaceId);
-  return GetCachedArea(namespace_id, origin);
+  auto it = cached_areas_.find(origin);
+  if (it != cached_areas_.end()) {
+    if (it->second->HasOneRef()) {
+      UMA_HISTOGRAM_ENUMERATION("LocalStorage.RendererAreaCacheHit",
+                                CacheMetrics::kHit, CacheMetrics::kMaxValue);
+    } else {
+      UMA_HISTOGRAM_ENUMERATION("LocalStorage.RendererAreaCacheHit",
+                                CacheMetrics::kUnused, CacheMetrics::kMaxValue);
+    }
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("LocalStorage.RendererAreaCacheHit",
+                              CacheMetrics::kMiss, CacheMetrics::kMaxValue);
+  }
+
+  if (it == cached_areas_.end()) {
+    ClearAreasIfNeeded();
+    it = cached_areas_
+             .emplace(origin, new LocalStorageCachedArea(
+                                  origin, storage_partition_service_, this))
+             .first;
+  }
+  return it->second;
 }
 
 size_t LocalStorageCachedAreas::TotalCacheSize() const {
@@ -53,54 +75,6 @@ void LocalStorageCachedAreas::ClearAreasIfNeeded() {
     else
       ++it;
   }
-}
-
-scoped_refptr<LocalStorageCachedArea> LocalStorageCachedAreas::GetCachedArea(
-    int64_t namespace_id,
-    const url::Origin& origin) {
-  AreaKey key(namespace_id, origin);
-
-  // These values are persisted to logs. Entries should not be renumbered and
-  // numeric values should never be reused.
-  enum class CacheMetrics {
-    kMiss = 0,    // Area not in cache.
-    kHit = 1,     // Area with refcount = 0 loaded from cache.
-    kUnused = 2,  // Cache was not used. Area had refcount > 0.
-    kMaxValue
-  };
-
-  auto it = cached_areas_.find(key);
-  CacheMetrics metric;
-  if (it != cached_areas_.end()) {
-    if (it->second->HasOneRef()) {
-      metric = CacheMetrics::kHit;
-    } else {
-      metric = CacheMetrics::kUnused;
-    }
-  } else {
-    metric = CacheMetrics::kMiss;
-  }
-  if (namespace_id == kLocalStorageNamespaceId) {
-    UMA_HISTOGRAM_ENUMERATION("LocalStorage.RendererAreaCacheHit", metric,
-                              CacheMetrics::kMaxValue);
-  } else {
-    LOCAL_HISTOGRAM_ENUMERATION("SessionStorage.RendererAreaCacheHit", metric,
-                                CacheMetrics::kMaxValue);
-  }
-
-  if (it == cached_areas_.end()) {
-    ClearAreasIfNeeded();
-    scoped_refptr<LocalStorageCachedArea> area;
-    if (namespace_id == kLocalStorageNamespaceId) {
-      area = base::MakeRefCounted<LocalStorageCachedArea>(
-          origin, storage_partition_service_, this);
-    } else {
-      area = base::MakeRefCounted<LocalStorageCachedArea>(
-          namespace_id, origin, storage_partition_service_, this);
-    }
-    it = cached_areas_.emplace(key, std::move(area)).first;
-  }
-  return it->second;
 }
 
 }  // namespace content

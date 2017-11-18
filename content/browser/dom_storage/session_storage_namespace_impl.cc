@@ -6,29 +6,24 @@
 
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/dom_storage/dom_storage_session.h"
-#include "content/browser/dom_storage/session_storage_context_mojo.h"
 
 namespace content {
 
 SessionStorageNamespaceImpl::SessionStorageNamespaceImpl(
     DOMStorageContextWrapper* context)
-    : session_(new DOMStorageSession(context->context(),
-                                     context->GetMojoSessionStateWeakPtr())) {}
+    : session_(new DOMStorageSession(context->context())) {
+}
 
 SessionStorageNamespaceImpl::SessionStorageNamespaceImpl(
     DOMStorageContextWrapper* context,
     int64_t namepace_id_to_clone)
-    : session_(
-          DOMStorageSession::CloneFrom(context->context(),
-                                       context->GetMojoSessionStateWeakPtr(),
-                                       namepace_id_to_clone)) {}
+    : session_(DOMStorageSession::CloneFrom(context->context(),
+                                            namepace_id_to_clone)) {}
 
 SessionStorageNamespaceImpl::SessionStorageNamespaceImpl(
-    DOMStorageContextWrapper* context,
-    const std::string& persistent_id)
-    : session_(new DOMStorageSession(context->context(),
-                                     context->GetMojoSessionStateWeakPtr(),
-                                     persistent_id)) {}
+    DOMStorageContextWrapper* context, const std::string& persistent_id)
+    : session_(new DOMStorageSession(context->context(), persistent_id)) {
+}
 
 int64_t SessionStorageNamespaceImpl::id() const {
   return session_->namespace_id();

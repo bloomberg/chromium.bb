@@ -53,7 +53,6 @@ CONTENT_EXPORT extern const base::Feature kNotificationContentImage;
 CONTENT_EXPORT extern const base::Feature kMainThreadBusyScrollIntervention;
 CONTENT_EXPORT extern const base::Feature kMojoBlobs;
 CONTENT_EXPORT extern const base::Feature kMojoInputMessages;
-CONTENT_EXPORT extern const base::Feature kMojoSessionStorage;
 CONTENT_EXPORT extern const base::Feature kMojoVideoEncodeAccelerator;
 CONTENT_EXPORT extern const base::Feature kModuleScriptsDynamicImport;
 CONTENT_EXPORT extern const base::Feature kModuleScriptsImportMetaUrl;

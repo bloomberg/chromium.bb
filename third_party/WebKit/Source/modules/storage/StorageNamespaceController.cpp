@@ -4,13 +4,10 @@
 
 #include "modules/storage/StorageNamespaceController.h"
 
-#include <memory>
-
 #include "core/frame/ContentSettingsClient.h"
 #include "modules/storage/InspectorDOMStorageAgent.h"
 #include "modules/storage/StorageNamespace.h"
 #include "platform/wtf/PtrUtil.h"
-#include "public/platform/Platform.h"
 #include "public/platform/WebStorageNamespace.h"
 #include "public/web/WebViewClient.h"
 
@@ -57,9 +54,8 @@ StorageNamespaceController::CreateSessionStorageNamespace() {
   if (!web_view_client_)
     return nullptr;
 
-  return std::make_unique<StorageNamespace>(
-      Platform::Current()->CreateSessionStorageNamespace(
-          web_view_client_->GetSessionStorageNamespaceId()));
+  return WTF::WrapUnique(new StorageNamespace(
+      WTF::WrapUnique(web_view_client_->CreateSessionStorageNamespace())));
 }
 
 bool StorageNamespaceController::CanAccessStorage(LocalFrame* frame,
