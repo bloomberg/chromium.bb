@@ -356,16 +356,30 @@ void AndroidVideoEncodeAccelerator::QueueInput() {
       frame->coded_size().height());
   RETURN_ON_FAILURE(converted, "Failed to I420ToNV12!", kPlatformFailureError);
 
-  input_timestamp_ += base::TimeDelta::FromMicroseconds(
+  // MediaCodec encoder assumes the presentation timestamps to be monotonically
+  // increasing at initialized framerate. But in Chromium, the video capture
+  // may be paused for a while or drop some frames, so the timestamp in input
+  // frames won't be continious. Here we cache the timestamps of input frames,
+  // mapping to the generated |presentation_timestamp_|, and will read them out
+  // after encoding. Then encoder can work happily always and we can preserve
+  // the timestamps in captured frames for other purpose.
+  presentation_timestamp_ += base::TimeDelta::FromMicroseconds(
       base::Time::kMicrosecondsPerSecond / INITIAL_FRAMERATE);
+  DCHECK(frame_timestamp_map_.find(presentation_timestamp_) ==
+         frame_timestamp_map_.end());
+  frame_timestamp_map_[presentation_timestamp_] = frame->timestamp();
+
   status = media_codec_->QueueInputBuffer(input_buf_index, nullptr, queued_size,
-                                          input_timestamp_);
+                                          presentation_timestamp_);
   UMA_HISTOGRAM_TIMES("Media.AVDA.InputQueueTime",
                       base::Time::Now() - std::get<2>(input));
   RETURN_ON_FAILURE(status == MEDIA_CODEC_OK,
                     "Failed to QueueInputBuffer: " << status,
                     kPlatformFailureError);
   ++num_buffers_at_codec_;
+  DCHECK(static_cast<int32_t>(frame_timestamp_map_.size()) ==
+         num_buffers_at_codec_);
+
   pending_frames_.pop();
 }
 
@@ -380,9 +394,10 @@ void AndroidVideoEncodeAccelerator::DequeueOutput() {
   size_t size = 0;
   bool key_frame = false;
 
-  MediaCodecStatus status =
-      media_codec_->DequeueOutputBuffer(NoWaitTimeOut(), &buf_index, &offset,
-                                        &size, nullptr, nullptr, &key_frame);
+  base::TimeDelta presentaion_timestamp;
+  MediaCodecStatus status = media_codec_->DequeueOutputBuffer(
+      NoWaitTimeOut(), &buf_index, &offset, &size, &presentaion_timestamp,
+      nullptr, &key_frame);
   switch (status) {
     case MEDIA_CODEC_TRY_AGAIN_LATER:
       return;
@@ -407,6 +422,11 @@ void AndroidVideoEncodeAccelerator::DequeueOutput() {
       break;
   }
 
+  const auto it = frame_timestamp_map_.find(presentaion_timestamp);
+  DCHECK(it != frame_timestamp_map_.end());
+  const base::TimeDelta frame_timestamp = it->second;
+  frame_timestamp_map_.erase(it);
+
   BitstreamBuffer bitstream_buffer = available_bitstream_buffers_.back();
   available_bitstream_buffers_.pop_back();
   std::unique_ptr<SharedMemoryRegion> shm(
@@ -427,7 +447,7 @@ void AndroidVideoEncodeAccelerator::DequeueOutput() {
       FROM_HERE,
       base::Bind(&VideoEncodeAccelerator::Client::BitstreamBufferReady,
                  client_ptr_factory_->GetWeakPtr(), bitstream_buffer.id(), size,
-                 key_frame, base::TimeDelta()));
+                 key_frame, frame_timestamp));
 }
 
 }  // namespace media
