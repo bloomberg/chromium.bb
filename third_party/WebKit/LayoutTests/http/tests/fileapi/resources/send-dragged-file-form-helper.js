@@ -100,8 +100,8 @@ const kWebServer = 'http://127.0.0.1:8000';
 // numeric character reference replacement for filenames, field names,
 // and field values.
 //
-// Uses /local/fileapi/resources/write-temp-file.cgi to create the
-// test file and /local/fileapi/resources/delete-temp-file.cgi to
+// Uses /fileapi/resources/write-temp-file.cgi to create the
+// test file and /fileapi/resources/delete-temp-file.cgi to
 // remove it at the end of the test.
 //
 // Uses /xmlhttprequest/resources/post-echo.cgi to echo the upload
@@ -212,7 +212,7 @@ const formPostFileUploadTest = ({
     form.appendChild(fileInput);
 
     const fileToDropLines = (await (await fetch(
-        `${kWebServer}/local/fileapi/resources/write-temp-file.cgi` +
+        `${kWebServer}/fileapi/resources/write-temp-file.cgi` +
           `?filename=${
                encodeURIComponent(fileBaseName)
              }&data=${encodeURIComponent(kTestChars)}`,
@@ -260,13 +260,13 @@ const formPostFileUploadTest = ({
       });
     } finally {
       const cleanupErrors = await (await fetch(
-          `${kWebServer}/local/fileapi/resources/delete-temp-file.cgi` +
+          `${kWebServer}/fileapi/resources/delete-temp-file.cgi` +
             `?filename=${encodeURIComponent(fileToDrop)}`,
           { method: 'post' })).text();
       assert_equals(cleanupErrors, 'OK', 'Temp file cleanup should not fail');
     }
 
-    const formDataText = formTargetFrame.contentDocument.body.innerText;
+    const formDataText = formTargetFrame.contentDocument.body.textContent;
     const formDataLines = formDataText.split('\n');
     if (formDataLines.length && !formDataLines[formDataLines.length - 1]) {
       --formDataLines.length;

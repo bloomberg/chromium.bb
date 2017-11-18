@@ -153,18 +153,6 @@ crbug.com/778696 virtual/threaded/fast/scroll-behavior/first-scroll-runs-on-comp
 # https://crbug.com/778372: Unique name conflict with old entries?
 crbug.com/778372 external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Crash ]
 
-# https://crbug.com/786539: possible file drag-and-drop issue with OOPIFs?
-crbug.com/786539 http/tests/local/fileapi/send-dragged-file-form-iso-2022-jp.html [ Failure ]
-crbug.com/786539 http/tests/local/fileapi/send-dragged-file-form-utf-8.html [ Failure ]
-crbug.com/786539 http/tests/local/fileapi/send-dragged-file-form-windows-1252.html [ Failure ]
-crbug.com/786539 http/tests/local/fileapi/send-dragged-file-form-x-user-defined.html [ Failure ]
-crbug.com/786539 http/tests/local/fileapi/send-dragged-file-form.html [ Failure ]
-crbug.com/786539 virtual/mojo-loading/http/tests/local/fileapi/send-dragged-file-form-iso-2022-jp.html [ Failure ]
-crbug.com/786539 virtual/mojo-loading/http/tests/local/fileapi/send-dragged-file-form-utf-8.html [ Failure ]
-crbug.com/786539 virtual/mojo-loading/http/tests/local/fileapi/send-dragged-file-form-windows-1252.html [ Failure ]
-crbug.com/786539 virtual/mojo-loading/http/tests/local/fileapi/send-dragged-file-form-x-user-defined.html [ Failure ]
-crbug.com/786539 virtual/mojo-loading/http/tests/local/fileapi/send-dragged-file-form.html [ Failure ]
-
 # The tests below are inherently incompatible with isolating same-site, cross-origin
 # frames into separate processes (which is how Site Isolation bots treat
 # www1.web-platform.test, www2.web-platform.test, etc).
