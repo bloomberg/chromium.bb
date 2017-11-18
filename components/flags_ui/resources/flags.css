@@ -363,7 +363,10 @@ h2 {
   /* Bottom padding should be greater than evaluated height of needs-restart */
   padding-bottom: 200px;
   position: relative;
+  /* iOS does not show unsupported experiments. */
+<if expr="not is_ios">
   width: 200%;
+</if>
 }
 
 .tabs li:nth-child(2) .tab-content {
