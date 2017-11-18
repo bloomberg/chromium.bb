@@ -589,9 +589,6 @@ const char kIPCConnectionTimeout[]          = "ipc-connection-timeout";
 //   --isolate-origins=https://www.foo.com,https://www.bar.com
 const char kIsolateOrigins[] = "isolate-origins";
 
-// Chrome is running in Mash.
-const char kIsRunningInMash[] = "is-running-in-mash";
-
 // Disable latest shipping ECMAScript 6 features.
 const char kDisableJavaScriptHarmonyShipping[] =
     "disable-javascript-harmony-shipping";

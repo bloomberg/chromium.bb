@@ -1452,10 +1452,11 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   // so this cannot happen any earlier than now.
   InitializeMojo();
 
-#if defined(USE_AURA)
+#if BUILDFLAG(ENABLE_MUS)
   if (IsUsingMus()) {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kIsRunningInMash);
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kMus,
+        IsMusHostingViz() ? switches::kMusHostVizValue : std::string());
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableSurfaceSynchronization);
   }
