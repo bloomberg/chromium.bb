@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/cr_action_menu/cr_action_menu.html">
+<link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_indicator.html">
 <link rel="import" href="chrome://resources/html/action_link.html">
 <link rel="import" href="chrome://resources/html/action_link_css.html">
 <link rel="import" href="chrome://resources/html/assert.html">
@@ -56,6 +57,11 @@
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+      }
+
+      cr-policy-indicator {
+        padding-right: 20px;
+        width: 20px;
       }
     </style>
     <settings-toggle-button id="autofillToggle"
@@ -133,51 +139,62 @@
       <h2 class="start">$i18n{creditCards}</h2>
       <paper-button id="addCreditCard"
           class="secondary-button header-aligned-button"
-          on-tap="onAddCreditCardTap_">
+          on-tap="onAddCreditCardTap_"
+          hidden$="[[isDisabled_(prefs.autofill.credit_card_enabled)]]">
         $i18n{add}
       </paper-button>
     </div>
     <div class="list-frame">
-      <div id="creditCardsHeading" class="list-item column-header"
-          hidden$="[[!hasSome_(creditCards)]]">
-        <div class="type-column">$i18n{creditCardType}</div>
-        <div class="expiration-column">$i18n{creditCardExpiration}</div>
-      </div>
-      <div id="creditCardList" class="vertical-list list-with-header">
-        <template is="dom-repeat" items="[[creditCards]]">
-          <div class="list-item">
-            <div class="type-column">
-              <span id="creditCardLabel">[[item.metadata.summaryLabel]]</span>
-              <span class="payments-label" hidden$="[[item.metadata.isLocal]]">
-                <span hidden$="[[item.metadata.isCached]]">
-                  $i18n{googlePayments}
+      <template is="dom-if"
+          if="[[!isDisabled_(prefs.autofill.credit_card_enabled)]]">
+        <div id="creditCardsHeading" class="list-item column-header"
+            hidden$="[[!hasSome_(creditCards)]]">
+          <div class="type-column">$i18n{creditCardType}</div>
+          <div class="expiration-column">$i18n{creditCardExpiration}</div>
+        </div>
+        <div id="creditCardList" class="vertical-list list-with-header">
+          <template is="dom-repeat" items="[[creditCards]]">
+            <div class="list-item">
+              <div class="type-column">
+                <span id="creditCardLabel">[[item.metadata.summaryLabel]]</span>
+                <span class="payments-label"
+                    hidden$="[[item.metadata.isLocal]]">
+                  <span hidden$="[[item.metadata.isCached]]">
+                    $i18n{googlePayments}
+                  </span>
+                  <span hidden$="[[!item.metadata.isCached]]">
+                    $i18n{googlePaymentsCached}
+                  </span>
                 </span>
-                <span hidden$="[[!item.metadata.isCached]]">
-                  $i18n{googlePaymentsCached}
-                </span>
-              </span>
+              </div>
+              <div class="expiration-column">
+                <div id="creditCardExpiration"
+                    class="expiration-date">[[expiration_(item)]]</div>
+                <template is="dom-if" if="[[showDots_(item.metadata)]]">
+                  <button is="paper-icon-button-light" id="creditCardMenu"
+                      class="icon-more-vert" title="$i18n{moreActions}"
+                      on-tap="onCreditCardMenuTap_">
+                  </button>
+                </template>
+                <template is="dom-if" if="[[!showDots_(item.metadata)]]">
+                  <button is="paper-icon-button-light" id="remoteCreditCardLink"
+                      class="icon-external"
+                      on-tap="onRemoteEditCreditCardTap_" actionable></button>
+                </template>
+              </div>
             </div>
-            <div class="expiration-column">
-              <div id="creditCardExpiration"
-                  class="expiration-date">[[expiration_(item)]]</div>
-              <template is="dom-if" if="[[showDots_(item.metadata)]]">
-                <button is="paper-icon-button-light" id="creditCardMenu"
-                    class="icon-more-vert" title="$i18n{moreActions}"
-                    on-tap="onCreditCardMenuTap_">
-                </button>
-              </template>
-              <template is="dom-if" if="[[!showDots_(item.metadata)]]">
-                <button is="paper-icon-button-light" id="remoteCreditCardLink"
-                    class="icon-external"
-                    on-tap="onRemoteEditCreditCardTap_" actionable></button>
-              </template>
-            </div>
-          </div>
-        </template>
-      </div>
-      <div id="noCreditCardsLabel" class="list-item"
-          hidden$="[[hasSome_(creditCards)]]">
-        $i18n{noCreditCardsFound}
+          </template>
+        </div>
+        <div id="noCreditCardsLabel" class="list-item"
+            hidden$="[[hasSome_(creditCards)]]">
+          $i18n{noCreditCardsFound}
+        </div>
+      </template>
+      <div id="CreditCardsDisabledLabel" class="list-item"
+          hidden$="[[!isDisabled_(prefs.autofill.credit_card_enabled)]]">
+        <cr-policy-indicator indicator-type="userPolicy"
+            icon-aria-label="$i18n{noCreditCardsPolicy}"></cr-policy-indicator>
+        $i18n{noCreditCardsPolicy}
       </div>
     </div>
     <dialog is="cr-action-menu" id="creditCardSharedMenu">

@@ -1169,6 +1169,7 @@ void AddPasswordsAndFormsStrings(content::WebUIDataSource* html_source) {
       {"editPasswordPasswordLabel", IDS_SETTINGS_PASSWORDS_PASSWORD},
       {"noAddressesFound", IDS_SETTINGS_ADDRESS_NONE},
       {"noCreditCardsFound", IDS_SETTINGS_CREDIT_CARD_NONE},
+      {"noCreditCardsPolicy", IDS_SETTINGS_CREDIT_CARD_DISABLED},
       {"noPasswordsFound", IDS_SETTINGS_PASSWORDS_NONE},
       {"noExceptionsFound", IDS_SETTINGS_PASSWORDS_EXCEPTIONS_NONE},
       {"import", IDS_PASSWORD_MANAGER_IMPORT_BUTTON},
