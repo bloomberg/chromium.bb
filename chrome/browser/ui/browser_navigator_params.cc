@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/browser_navigator_params.h"
 
 #include "build/build_config.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/page_navigator.h"
 
@@ -21,102 +20,26 @@ namespace chrome {
 
 #if defined(OS_ANDROID)
 NavigateParams::NavigateParams(WebContents* a_target_contents)
-    : frame_tree_node_id(-1),
-      uses_post(false),
-      target_contents(a_target_contents),
-      source_contents(nullptr),
-      disposition(WindowOpenDisposition::CURRENT_TAB),
-      opener(nullptr),
-      trusted_source(false),
-      transition(ui::PAGE_TRANSITION_LINK),
-      is_renderer_initiated(false),
-      tabstrip_index(-1),
-      tabstrip_add_types(TabStripModel::ADD_ACTIVE),
-      window_action(NO_ACTION),
-      user_gesture(true),
-      path_behavior(RESPECT),
-      ref_behavior(IGNORE_REF),
-      initiating_profile(nullptr),
-      should_replace_current_entry(false),
-      created_with_opener(false),
-      started_from_context_menu(false) {}
+    : target_contents(a_target_contents) {}
 #else
 NavigateParams::NavigateParams(Browser* a_browser,
                                const GURL& a_url,
                                ui::PageTransition a_transition)
-    : url(a_url),
-      frame_tree_node_id(-1),
-      uses_post(false),
-      target_contents(NULL),
-      source_contents(NULL),
-      disposition(WindowOpenDisposition::CURRENT_TAB),
-      opener(nullptr),
-      trusted_source(false),
-      transition(a_transition),
-      is_renderer_initiated(false),
-      tabstrip_index(-1),
-      tabstrip_add_types(TabStripModel::ADD_ACTIVE),
-      window_action(NO_ACTION),
-      user_gesture(true),
-      path_behavior(RESPECT),
-      ref_behavior(IGNORE_REF),
-      browser(a_browser),
-      initiating_profile(NULL),
-      should_replace_current_entry(false),
-      created_with_opener(false),
-      started_from_context_menu(false) {}
+    : url(a_url), transition(a_transition), browser(a_browser) {}
 
 NavigateParams::NavigateParams(Browser* a_browser,
                                WebContents* a_target_contents)
-    : frame_tree_node_id(-1),
-      uses_post(false),
-      target_contents(a_target_contents),
-      source_contents(NULL),
-      disposition(WindowOpenDisposition::CURRENT_TAB),
-      opener(nullptr),
-      trusted_source(false),
-      transition(ui::PAGE_TRANSITION_LINK),
-      is_renderer_initiated(false),
-      tabstrip_index(-1),
-      tabstrip_add_types(TabStripModel::ADD_ACTIVE),
-      window_action(NO_ACTION),
-      user_gesture(true),
-      path_behavior(RESPECT),
-      ref_behavior(IGNORE_REF),
-      browser(a_browser),
-      initiating_profile(NULL),
-      should_replace_current_entry(false),
-      created_with_opener(false),
-      started_from_context_menu(false) {}
+    : target_contents(a_target_contents), browser(a_browser) {}
 #endif  // !defined(OS_ANDROID)
 
 NavigateParams::NavigateParams(Profile* a_profile,
                                const GURL& a_url,
                                ui::PageTransition a_transition)
     : url(a_url),
-      frame_tree_node_id(-1),
-      uses_post(false),
-      target_contents(NULL),
-      source_contents(NULL),
       disposition(WindowOpenDisposition::NEW_FOREGROUND_TAB),
-      opener(nullptr),
-      trusted_source(false),
       transition(a_transition),
-      is_renderer_initiated(false),
-      tabstrip_index(-1),
-      tabstrip_add_types(TabStripModel::ADD_ACTIVE),
       window_action(SHOW_WINDOW),
-      user_gesture(true),
-      path_behavior(RESPECT),
-      ref_behavior(IGNORE_REF),
-#if !defined(OS_ANDROID)
-      browser(NULL),
-#endif
-      initiating_profile(a_profile),
-      should_replace_current_entry(false),
-      created_with_opener(false),
-      started_from_context_menu(false) {
-}
+      initiating_profile(a_profile) {}
 
 NavigateParams::NavigateParams(const NavigateParams& other) = default;
 
