@@ -19,9 +19,9 @@
 
 namespace viz {
 
-class BeginFrameSource;
 class Display;
 class FrameSinkManagerImpl;
+class SyntheticBeginFrameSource;
 
 // The viz portion of a root CompositorFrameSink. Holds the Binding/InterfacePtr
 // for the mojom::CompositorFrameSink interface and owns the Display.
@@ -34,18 +34,21 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
       FrameSinkManagerImpl* frame_sink_manager,
       const FrameSinkId& frame_sink_id,
       std::unique_ptr<Display> display,
-      std::unique_ptr<BeginFrameSource> begin_frame_source,
+      std::unique_ptr<SyntheticBeginFrameSource> begin_frame_source,
       mojom::CompositorFrameSinkAssociatedRequest request,
       mojom::CompositorFrameSinkClientPtr client,
       mojom::DisplayPrivateAssociatedRequest display_private_request);
 
   ~RootCompositorFrameSinkImpl() override;
 
+  CompositorFrameSinkSupport* support() const { return support_.get(); }
+
   // mojom::DisplayPrivate:
   void SetDisplayVisible(bool visible) override;
   void SetDisplayColorSpace(const gfx::ColorSpace& blending_color_space,
                             const gfx::ColorSpace& device_color_space) override;
   void SetOutputIsSecure(bool secure) override;
+  void SetAuthoritativeVSyncInterval(base::TimeDelta interval) override;
 
   // mojom::CompositorFrameSink:
   void SetNeedsBeginFrame(bool needs_begin_frame) override;
@@ -54,8 +57,6 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
                              mojom::HitTestRegionListPtr hit_test_region_list,
                              uint64_t submit_time) override;
   void DidNotProduceFrame(const BeginFrameAck& begin_frame_ack) override;
-
-  CompositorFrameSinkSupport* support() const { return support_.get(); }
 
   // HitTestAggregatorDelegate:
   void OnAggregatedHitTestRegionListUpdated(
@@ -86,7 +87,7 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
 
   // RootCompositorFrameSinkImpl holds a Display and its BeginFrameSource if
   // it was created with a non-null gpu::SurfaceHandle.
-  std::unique_ptr<BeginFrameSource> display_begin_frame_source_;
+  std::unique_ptr<SyntheticBeginFrameSource> synthetic_begin_frame_source_;
   std::unique_ptr<Display> display_;
 
   HitTestAggregator hit_test_aggregator_;

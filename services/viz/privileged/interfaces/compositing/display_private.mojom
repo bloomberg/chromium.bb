@@ -4,6 +4,7 @@
 
 module viz.mojom;
 
+import "mojo/common/time.mojom";
 import "ui/gfx/mojo/color_space.mojom";
 
 // See ui/compositor/compositor.h: ContextFactoryPrivate.
@@ -14,4 +15,9 @@ interface DisplayPrivate {
   SetDisplayColorSpace(gfx.mojom.ColorSpace blending_color_space,
                        gfx.mojom.ColorSpace device_color_space);
   SetOutputIsSecure(bool secure);
+
+  // Locks the BeginFrame vsync interval for this display to |interval| and
+  // ignores vsync interval information from other sources. This will do nothing
+  // if the display is using an external BeginFrame source.
+  SetAuthoritativeVSyncInterval(mojo.common.mojom.TimeDelta interval);
 };

@@ -112,7 +112,7 @@ void FrameSinkManagerImpl::CreateRootCompositorFrameSink(
   DCHECK_EQ(0u, compositor_frame_sinks_.count(frame_sink_id));
   DCHECK(display_provider_);
 
-  std::unique_ptr<BeginFrameSource> begin_frame_source;
+  std::unique_ptr<SyntheticBeginFrameSource> begin_frame_source;
   auto display = display_provider_->CreateDisplay(
       frame_sink_id, surface_handle, renderer_settings, &begin_frame_source);
 
