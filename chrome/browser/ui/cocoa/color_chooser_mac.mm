@@ -2,60 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <Cocoa/Cocoa.h>
+#import "chrome/browser/ui/cocoa/color_chooser_mac.h"
 
 #include "base/logging.h"
-#import "base/mac/scoped_nsobject.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "content/public/browser/color_chooser.h"
-#include "content/public/browser/web_contents.h"
 #include "skia/ext/skia_utils_mac.h"
-
-class ColorChooserMac;
-
-// A Listener class to act as a event target for NSColorPanel and send
-// the results to the C++ class, ColorChooserMac.
-@interface ColorPanelCocoa : NSObject<NSWindowDelegate> {
- @private
-  // We don't call DidChooseColor if the change wasn't caused by the user
-  // interacting with the panel.
-  BOOL nonUserChange_;
-  ColorChooserMac* chooser_;  // weak, owns this
-}
-
-- (id)initWithChooser:(ColorChooserMac*)chooser;
-
-// Called from NSColorPanel.
-- (void)didChooseColor:(NSColorPanel*)panel;
-
-// Sets color to the NSColorPanel as a non user change.
-- (void)setColor:(NSColor*)color;
-
-@end
-
-class ColorChooserMac : public content::ColorChooser {
- public:
-  static ColorChooserMac* Open(content::WebContents* web_contents,
-                               SkColor initial_color);
-
-  ColorChooserMac(content::WebContents* tab, SkColor initial_color);
-  ~ColorChooserMac() override;
-
-  // Called from ColorPanelCocoa.
-  void DidChooseColorInColorPanel(SkColor color);
-  void DidCloseColorPabel();
-
-  void End() override;
-  void SetSelectedColor(SkColor color) override;
-
- private:
-  static ColorChooserMac* current_color_chooser_;
-
-  // The web contents invoking the color chooser.  No ownership because it will
-  // outlive this class.
-  content::WebContents* web_contents_;
-  base::scoped_nsobject<ColorPanelCocoa> panel_;
-};
 
 ColorChooserMac* ColorChooserMac::current_color_chooser_ = NULL;
 
@@ -104,6 +55,11 @@ void ColorChooserMac::SetSelectedColor(SkColor color) {
   [panel_ setColor:skia::SkColorToDeviceNSColor(color)];
 }
 
+@interface NSColorPanel (Private)
+// Private method returning the NSColorPanel's target.
+- (id)__target;
+@end
+
 @implementation ColorPanelCocoa
 
 - (id)initWithChooser:(ColorChooserMac*)chooser {
@@ -120,10 +76,18 @@ void ColorChooserMac::SetSelectedColor(SkColor color) {
 
 - (void)dealloc {
   NSColorPanel* panel = [NSColorPanel sharedColorPanel];
-  if ([panel delegate] == self) {
+
+  // On macOS 10.13 the NSColorPanel delegate can apparently get reset to nil
+  // with the target left unchanged. Use the private __target method to see if
+  // the ColorPanelCocoa is still the target.
+  BOOL respondsToPrivateTargetMethod =
+      [panel respondsToSelector:@selector(__target)];
+
+  if ([panel delegate] == self ||
+      (respondsToPrivateTargetMethod && [panel __target] == self)) {
     [panel setDelegate:nil];
     [panel setTarget:nil];
-    [panel setAction:nil];
+    [panel setAction:nullptr];
   }
 
   [super dealloc];
