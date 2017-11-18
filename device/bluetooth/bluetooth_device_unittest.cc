@@ -1392,7 +1392,7 @@ TEST_F(BluetoothTest, GattServices_ObserversCalls) {
 }
 #endif  // defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_MACOSX)
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_WIN)
 // macOS: Not applicable: This can never happen because when
 // the device gets destroyed the CBPeripheralDelegate is also destroyed
 // and no more events are dispatched.
@@ -1421,9 +1421,9 @@ TEST_F(BluetoothTest, GattServicesDiscovered_AfterDeleted) {
       std::vector<std::string>({kTestUUIDGenericAccess, kTestUUIDHeartRate}));
   base::RunLoop().RunUntilIdle();
 }
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) || defined(OS_WIN)
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_WIN)
 // macOS: Not applicable: This can never happen because when
 // the device gets destroyed the CBPeripheralDelegate is also destroyed
 // and no more events are dispatched.
@@ -1450,9 +1450,10 @@ TEST_F(BluetoothTest, GattServicesDiscoveredError_AfterDeleted) {
   SimulateGattServicesDiscoveryError(nullptr /* use remembered device */);
   base::RunLoop().RunUntilIdle();
 }
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) || defined(OS_WIN)
 
 #if defined(OS_ANDROID) || defined(OS_MACOSX)
+// Windows does not support disconnection.
 TEST_F(BluetoothTest, GattServicesDiscovered_AfterDisconnection) {
   // Tests that we don't crash there was an error discovering services after
   // the device disconnects.

@@ -56,6 +56,7 @@ class BluetoothTestWin : public BluetoothTestBase,
   void SimulateGattCharacteristicWriteError(
       BluetoothRemoteGattCharacteristic* characteristic,
       BluetoothRemoteGattService::GattErrorCode error_code) override;
+  void RememberDeviceForSubsequentAction(BluetoothDevice* device) override;
   void DeleteDevice(BluetoothDevice* device) override;
   void SimulateGattDescriptor(BluetoothRemoteGattCharacteristic* characteristic,
                               const std::string& uuid) override;
@@ -82,6 +83,9 @@ class BluetoothTestWin : public BluetoothTestBase,
 
   win::BluetoothClassicWrapperFake* fake_bt_classic_wrapper_;
   win::BluetoothLowEnergyWrapperFake* fake_bt_le_wrapper_;
+
+  // This is used for retaining access to a single deleted device.
+  std::string remembered_device_address_;
 
   void AdapterInitCallback();
   win::GattService* GetSimulatedService(win::BLEDevice* device,
