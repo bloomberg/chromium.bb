@@ -1089,6 +1089,42 @@ static bool add_property_optional(struct device *dev, uint32_t obj_id,
 	return set_property(dev, &p);
 }
 
+static void set_gamma(struct device *dev, unsigned crtc_id, unsigned fourcc)
+{
+	unsigned blob_id = 0;
+	/* TODO: support 1024-sized LUTs, when the use-case arises */
+	struct drm_color_lut gamma_lut[256];
+	int i, ret;
+
+	if (fourcc == DRM_FORMAT_C8) {
+		/* TODO: Add C8 support for more patterns */
+		util_smpte_c8_gamma(256, gamma_lut);
+		drmModeCreatePropertyBlob(dev->fd, gamma_lut, sizeof(gamma_lut), &blob_id);
+	} else {
+		for (i = 0; i < 256; i++) {
+			gamma_lut[i].red =
+			gamma_lut[i].green =
+			gamma_lut[i].blue = i << 8;
+		}
+	}
+
+	add_property_optional(dev, crtc_id, "DEGAMMA_LUT", 0);
+	add_property_optional(dev, crtc_id, "CTM", 0);
+	if (!add_property_optional(dev, crtc_id, "GAMMA_LUT", blob_id)) {
+		uint16_t r[256], g[256], b[256];
+
+		for (i = 0; i < 256; i++) {
+			r[i] = gamma_lut[i].red;
+			g[i] = gamma_lut[i].green;
+			b[i] = gamma_lut[i].blue;
+		}
+
+		ret = drmModeCrtcSetGamma(dev->fd, crtc_id, 256, r, g, b);
+		if (ret)
+			fprintf(stderr, "failed to set gamma: %s\n", strerror(errno));
+	}
+}
+
 static int atomic_set_plane(struct device *dev, struct plane_arg *p,
 							int pattern, bool update)
 {
@@ -1270,6 +1306,8 @@ static void atomic_set_planes(struct device *dev, struct plane_arg *p,
 	for (i = 0; i < count; i++) {
 		if (i > 0)
 			pattern = UTIL_PATTERN_TILES;
+		else
+			set_gamma(dev, p[i].crtc_id, p[i].fourcc);
 
 		if (atomic_set_plane(dev, &p[i], pattern, update))
 			return;
@@ -1454,6 +1492,8 @@ static void set_mode(struct device *dev, struct pipe_arg *pipes, unsigned int co
 			fprintf(stderr, "failed to set mode: %s\n", strerror(errno));
 			return;
 		}
+
+		set_gamma(dev, pipe->crtc->crtc->crtc_id, pipe->fourcc);
 	}
 }
 
@@ -1728,11 +1768,8 @@ static int parse_plane(struct plane_arg *plane, const char *p)
 	}
 
 	if (*end == '@') {
-		p = end + 1;
-		if (strlen(p) != 4)
-			return -EINVAL;
-
-		strcpy(plane->format_str, p);
+		strncpy(plane->format_str, end + 1, 4);
+		plane->format_str[4] = '\0';
 	} else {
 		strcpy(plane->format_str, "XR24");
 	}
