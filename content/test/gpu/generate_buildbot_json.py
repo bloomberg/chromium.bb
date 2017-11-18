@@ -227,6 +227,18 @@ WATERFALL = {
       'swarming': True,
       'os_type': 'linux',
     },
+    'Android Release (Nexus 5X)': {
+      'swarming_dimensions': [
+        {
+          'device_type': 'bullhead',
+          'device_os': 'M',
+          'os': 'Android'
+        },
+      ],
+      'build_config': 'android-chromium',
+      'swarming': True,
+      'os_type': 'android',
+    },
   }
 }
 
