@@ -277,6 +277,21 @@ void BluetoothDeviceWin::Update(
   UpdateServices(device_state);
 }
 
+void BluetoothDeviceWin::GattServiceDiscoveryComplete(
+    BluetoothRemoteGattServiceWin* service) {
+  DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(BluetoothDeviceWin::IsGattServiceDiscovered(
+      service->GetUUID(), service->GetAttributeHandle()));
+
+  discovery_completed_included_services_.insert(
+      {service->GetUUID(), service->GetAttributeHandle()});
+  if (discovery_completed_included_services_.size() != gatt_services_.size())
+    return;
+
+  SetGattServicesDiscoveryComplete(true);
+  adapter_->NotifyGattServicesDiscovered(this);
+}
+
 void BluetoothDeviceWin::CreateGattConnectionImpl() {
   // Windows implementation does not use the default CreateGattConnection
   // implementation.
@@ -310,7 +325,7 @@ void BluetoothDeviceWin::UpdateServices(
     UpdateGattServices(device_state.service_record_states);
 }
 
-bool BluetoothDeviceWin::IsGattServiceDiscovered(BluetoothUUID& uuid,
+bool BluetoothDeviceWin::IsGattServiceDiscovered(const BluetoothUUID& uuid,
                                                  uint16_t attribute_handle) {
   for (const auto& gatt_service : gatt_services_) {
     uint16_t it_att_handle =
@@ -382,8 +397,6 @@ void BluetoothDeviceWin::UpdateGattServices(
       adapter_->NotifyGattServiceAdded(primary_service);
     }
   }
-
-  adapter_->NotifyGattServicesDiscovered(this);
 }
 
 }  // namespace device

@@ -115,6 +115,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattServiceWin
   // avoid duplicate notification.
   bool discovery_complete_notified_;
 
+  // Counts the number of asynchronous operations that are discovering
+  // characteristics.
+  int discovery_pending_count_;
+
   base::WeakPtrFactory<BluetoothRemoteGattServiceWin> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(BluetoothRemoteGattServiceWin);
 };

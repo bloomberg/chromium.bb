@@ -82,13 +82,7 @@ class BluetoothGetServiceTest : public BluetoothTest {
     service_uuids.push_back(duplicate_service_uuid_.canonical_value());
     SimulateGattServicesDiscovered(device_, service_uuids);
     base::RunLoop().RunUntilIdle();
-#if defined(OS_WIN)
-    // TODO(crbug.com/507419): Check connection once CreateGattConnection is
-    // implemented on Windows.
-    EXPECT_FALSE(device_->IsGattServicesDiscoveryComplete());
-#else
     EXPECT_TRUE(device_->IsGattServicesDiscoveryComplete());
-#endif  // defined(OS_WIN)
   }
 
  protected:
@@ -1388,7 +1382,35 @@ TEST_F(BluetoothTest, GattServices_ObserversCalls) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(1, observer.gatt_services_discovered_count());
-  EXPECT_EQ(2, observer.gatt_service_added_count());
+}
+#endif  // defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_MACOSX)
+
+#if defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_MACOSX)
+TEST_F(BluetoothTest, GattServicesDiscovered_Success) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+  InitWithFakeAdapter();
+  StartLowEnergyDiscoverySession();
+  TestBluetoothAdapterObserver observer(adapter_);
+  BluetoothDevice* device = SimulateLowEnergyDevice(3);
+  device->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
+                               GetConnectErrorCallback(Call::NOT_EXPECTED));
+  ResetEventCounts();
+  SimulateGattConnection(device);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, gatt_discovery_attempts_);
+  EXPECT_EQ(0, observer.gatt_services_discovered_count());
+
+  SimulateGattServicesDiscovered(
+      device,
+      std::vector<std::string>({kTestUUIDGenericAccess, kTestUUIDHeartRate}));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(device->IsGattServicesDiscoveryComplete());
+  EXPECT_EQ(1, observer.gatt_services_discovered_count());
+  EXPECT_EQ(2u, device->GetGattServices().size());
 }
 #endif  // defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_MACOSX)
 
@@ -1455,7 +1477,7 @@ TEST_F(BluetoothTest, GattServicesDiscoveredError_AfterDeleted) {
 #if defined(OS_ANDROID) || defined(OS_MACOSX)
 // Windows does not support disconnection.
 TEST_F(BluetoothTest, GattServicesDiscovered_AfterDisconnection) {
-  // Tests that we don't crash there was an error discovering services after
+  // Tests that we don't crash if there was an error discovering services after
   // the device disconnects.
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
@@ -1485,6 +1507,7 @@ TEST_F(BluetoothTest, GattServicesDiscovered_AfterDisconnection) {
 #endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
 
 #if defined(OS_ANDROID) || defined(OS_MACOSX)
+// Windows does not support disconnecting.
 TEST_F(BluetoothTest, GattServicesDiscoveredError_AfterDisconnection) {
   // Tests that we don't crash if services are discovered after
   // the device disconnects.
@@ -1510,7 +1533,7 @@ TEST_F(BluetoothTest, GattServicesDiscoveredError_AfterDisconnection) {
   EXPECT_FALSE(device->IsGattServicesDiscoveryComplete());
   EXPECT_EQ(0u, device->GetGattServices().size());
 }
-#endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
+#endif  // defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_MACOSX)
 
 #if defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_MACOSX)
 TEST_F(BluetoothTest, GetGattServices_and_GetGattService) {
