@@ -115,7 +115,7 @@ class Traversal {
   }
 
   // First or last ElementType descendant of the node.
-  // For Elements firstWithin() is always the same as firstChild().
+  // For pure Elements firstWithin() is always the same as firstChild().
   static ElementType* FirstWithin(const ContainerNode& current) {
     return FirstWithinTemplate(current);
   }
