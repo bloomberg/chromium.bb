@@ -16,7 +16,7 @@ RootCompositorFrameSinkImpl::RootCompositorFrameSinkImpl(
     FrameSinkManagerImpl* frame_sink_manager,
     const FrameSinkId& frame_sink_id,
     std::unique_ptr<Display> display,
-    std::unique_ptr<BeginFrameSource> begin_frame_source,
+    std::unique_ptr<SyntheticBeginFrameSource> synthetic_begin_frame_source,
     mojom::CompositorFrameSinkAssociatedRequest request,
     mojom::CompositorFrameSinkClientPtr client,
     mojom::DisplayPrivateAssociatedRequest display_private_request)
@@ -29,23 +29,23 @@ RootCompositorFrameSinkImpl::RootCompositorFrameSinkImpl(
           frame_sink_id,
           true /* is_root */,
           true /* needs_sync_points */)),
-      display_begin_frame_source_(std::move(begin_frame_source)),
+      synthetic_begin_frame_source_(std::move(synthetic_begin_frame_source)),
       display_(std::move(display)),
       hit_test_aggregator_(frame_sink_manager->hit_test_manager(), this) {
-  DCHECK(display_begin_frame_source_);
+  DCHECK(synthetic_begin_frame_source_);
   DCHECK(display_);
 
   compositor_frame_sink_binding_.set_connection_error_handler(
       base::Bind(&RootCompositorFrameSinkImpl::OnClientConnectionLost,
                  base::Unretained(this)));
   frame_sink_manager->RegisterBeginFrameSource(
-      display_begin_frame_source_.get(), frame_sink_id);
+      synthetic_begin_frame_source_.get(), frame_sink_id);
   display_->Initialize(this, frame_sink_manager->surface_manager());
 }
 
 RootCompositorFrameSinkImpl::~RootCompositorFrameSinkImpl() {
   support_->frame_sink_manager()->UnregisterBeginFrameSource(
-      display_begin_frame_source_.get());
+      synthetic_begin_frame_source_.get());
 }
 
 void RootCompositorFrameSinkImpl::SetDisplayVisible(bool visible) {
@@ -62,6 +62,12 @@ void RootCompositorFrameSinkImpl::SetOutputIsSecure(bool secure) {
   display_->SetOutputIsSecure(secure);
 }
 
+void RootCompositorFrameSinkImpl::SetAuthoritativeVSyncInterval(
+    base::TimeDelta interval) {
+  if (synthetic_begin_frame_source_)
+    synthetic_begin_frame_source_->SetAuthoritativeVSyncInterval(interval);
+}
+
 void RootCompositorFrameSinkImpl::SetNeedsBeginFrame(bool needs_begin_frame) {
   support_->SetNeedsBeginFrame(needs_begin_frame);
 }
@@ -71,7 +77,7 @@ void RootCompositorFrameSinkImpl::SubmitCompositorFrame(
     CompositorFrame frame,
     mojom::HitTestRegionListPtr hit_test_region_list,
     uint64_t submit_time) {
-  // Update |display_| when size or local surface id changes.
+  // Update display when size or local surface id changes.
   if (support_->local_surface_id() != local_surface_id) {
     display_->Resize(frame.size_in_pixels());
     display_->SetLocalSurfaceId(local_surface_id, frame.device_scale_factor());

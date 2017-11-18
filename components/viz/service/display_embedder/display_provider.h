@@ -11,10 +11,10 @@
 
 namespace viz {
 
-class BeginFrameSource;
 class Display;
 class FrameSinkId;
 class RendererSettings;
+class SyntheticBeginFrameSource;
 
 // Handles creating Display and related classes for FrameSinkManagerImpl.
 class DisplayProvider {
@@ -27,7 +27,7 @@ class DisplayProvider {
       const FrameSinkId& frame_sink_id,
       gpu::SurfaceHandle surface_handle,
       const RendererSettings& renderer_settings,
-      std::unique_ptr<BeginFrameSource>* begin_frame_source) = 0;
+      std::unique_ptr<SyntheticBeginFrameSource>* out_begin_frame_source) = 0;
 };
 
 }  // namespace viz
