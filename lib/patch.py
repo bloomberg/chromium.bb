@@ -1094,7 +1094,7 @@ class GitRepoPatch(PatchQuery):
 
     self.Fetch(git_repo)
 
-    logging.info('Attempting to cherry-pick change %s', self)
+    logging.info('Attempting to apply change %s', self)
 
     # If the patch branch exists use it, otherwise create it and switch to it.
     if git.DoesCommitExistInRepo(git_repo, constants.PATCH_BRANCH):
@@ -1115,6 +1115,10 @@ class GitRepoPatch(PatchQuery):
 
     self._FindEbuildConflicts(git_repo, upstream, inflight=inflight)
 
+    return self._ApplyByCherrypick(git_repo, upstream, trivial, inflight)
+
+  def _ApplyByCherrypick(self, git_repo, upstream, trivial, inflight):
+    logging.info('Applying via cherry-pick.')
     do_checkout = True
     try:
       self.CherryPick(git_repo, trivial=trivial, inflight=inflight)
