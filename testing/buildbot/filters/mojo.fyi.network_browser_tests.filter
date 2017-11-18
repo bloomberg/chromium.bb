@@ -197,6 +197,7 @@
 -PPAPINaClPNaClNonSfiTest.FileRef2
 -PPAPINaClPNaClNonSfiTest.URLLoader1
 -PrefetchBrowserTestPredictionDisabled.ExperimentDisabled
+-PreviewsOptimizationGuideBrowserTest.NoScriptPreviewsEnabledByWhitelist
 -ProcessManagementTest.ProcessOverflow
 -ProcessManagerBrowserTest.ExtensionProcessReuse
 -ProcessManagerBrowserTest.NestedURLNavigationsToExtensionAllowed
