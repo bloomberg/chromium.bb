@@ -254,13 +254,6 @@ const base::FilePath& OfflinePageModelTaskified::GetArchiveDirectory(
   return archive_manager_->GetPersistentArchivesDir();
 }
 
-bool OfflinePageModelTaskified::is_loaded() const {
-  NOTIMPLEMENTED();
-  // TODO(romax): Remove the method after switch. No longer needed with
-  // DB.Execute pattern.
-  return false;
-}
-
 ClientPolicyController* OfflinePageModelTaskified::GetPolicyController() {
   return policy_controller_.get();
 }

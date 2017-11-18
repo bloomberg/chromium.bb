@@ -21,10 +21,7 @@ using offline_pages::StubOfflinePageModel;
 namespace ntp_snippets {
 namespace test {
 
-FakeOfflinePageModel::FakeOfflinePageModel() {
-  // This is to match StubOfflinePageModel behavior.
-  is_loaded_ = true;
-}
+FakeOfflinePageModel::FakeOfflinePageModel() = default;
 
 FakeOfflinePageModel::~FakeOfflinePageModel() = default;
 
@@ -63,14 +60,6 @@ const std::vector<OfflinePageItem>& FakeOfflinePageModel::items() {
 
 std::vector<OfflinePageItem>* FakeOfflinePageModel::mutable_items() {
   return &items_;
-}
-
-bool FakeOfflinePageModel::is_loaded() const {
-  return is_loaded_;
-}
-
-void FakeOfflinePageModel::set_is_loaded(bool value) {
-  is_loaded_ = value;
 }
 
 OfflinePageItem CreateDummyOfflinePageItem(

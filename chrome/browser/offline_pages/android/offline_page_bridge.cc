@@ -740,8 +740,6 @@ void OfflinePageBridge::CheckForNewOfflineContent(
 }
 
 void OfflinePageBridge::NotifyIfDoneLoading() const {
-  if (!offline_page_model_->is_loaded())
-    return;
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_OfflinePageBridge_offlinePageModelLoaded(env, java_ref_);
 }

@@ -709,10 +709,6 @@ OfflinePageStorageManager* OfflinePageModelImpl::GetStorageManager() {
   return storage_manager_.get();
 }
 
-bool OfflinePageModelImpl::is_loaded() const {
-  return is_loaded_;
-}
-
 OfflineEventLogger* OfflinePageModelImpl::GetLogger() {
   return &offline_event_logger_;
 }

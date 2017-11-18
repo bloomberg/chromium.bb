@@ -364,8 +364,6 @@ void OfflinePageEvaluationBridge::RemoveRequestsFromQueue(
 }
 
 void OfflinePageEvaluationBridge::NotifyIfDoneLoading() const {
-  if (!offline_page_model_->is_loaded())
-    return;
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = weak_java_ref_.get(env);
   if (obj.is_null())

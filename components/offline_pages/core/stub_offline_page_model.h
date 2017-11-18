@@ -65,7 +65,6 @@ class StubOfflinePageModel : public OfflinePageModel, public KeyedService {
   const base::FilePath& GetArchiveDirectory(
       const std::string& name_space) const override;
   ClientPolicyController* GetPolicyController() override;
-  bool is_loaded() const override;
   OfflineEventLogger* GetLogger() override;
 
  private:
