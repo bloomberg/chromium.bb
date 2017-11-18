@@ -7,6 +7,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
+#include "chrome/browser/media/router/discovery/media_sink_discovery_metrics.h"
 #include "chrome/common/media_router/mojo/media_router.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/display/display_observer.h"
@@ -102,7 +103,7 @@ class WiredDisplayMediaRouteProvider : public mojom::MediaRouteProvider,
   void NotifyRouteObservers() const;
 
   // Sends the current list of sinks to each query in |sink_queries_|.
-  void NotifySinkObservers() const;
+  void NotifySinkObservers();
 
   // Returns a list of available sinks. A display can be a sink if it is
   // secondary and does not mirror a primary display.
@@ -125,6 +126,9 @@ class WiredDisplayMediaRouteProvider : public mojom::MediaRouteProvider,
 
   // A set of MediaSource IDs associated with queries for MediaSink updates.
   base::flat_set<std::string> sink_queries_;
+
+  // Used for recording UMA metrics for the number of sinks available.
+  WiredDisplayDeviceCountMetrics device_count_metrics_;
 };
 
 }  // namespace media_router

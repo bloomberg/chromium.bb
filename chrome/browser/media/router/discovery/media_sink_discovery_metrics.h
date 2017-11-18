@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/gtest_prod_util.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
 
@@ -109,6 +110,21 @@ class CastAnalytics {
   static void RecordDeviceChannelError(MediaRouterChannelError channel_error);
   static void RecordDeviceChannelOpenDuration(bool success,
                                               const base::TimeDelta& duration);
+};
+
+// Metrics for wired display (local screen) sink counts.
+class WiredDisplayDeviceCountMetrics : public DeviceCountMetrics {
+ protected:
+  // |known_device_count| is not recorded, since it should be the same as
+  // |available_device_count|.
+  void RecordDeviceCounts(size_t available_device_count,
+                          size_t known_device_count) override;
+
+ private:
+  FRIEND_TEST_ALL_PREFIXES(WiredDisplayDeviceCountMetricsTest,
+                           RecordWiredDisplaySinkCount);
+
+  static const char kHistogramWiredDisplayDeviceCount[];
 };
 
 }  // namespace media_router
