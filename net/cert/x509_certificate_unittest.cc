@@ -590,26 +590,6 @@ TEST(X509CertificateTest, ExtractSPKIFromDERCert) {
   EXPECT_EQ(0, memcmp(hash, kNistSPKIHash, sizeof(hash)));
 }
 
-TEST(X509CertificateTest, ExtractCRLURLsFromDERCert) {
-  base::FilePath certs_dir = GetTestCertsDirectory();
-  scoped_refptr<X509Certificate> cert =
-      ImportCertFromFile(certs_dir, "nist.der");
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), cert.get());
-
-  std::string derBytes;
-  EXPECT_TRUE(X509Certificate::GetDEREncoded(cert->os_cert_handle(),
-                                             &derBytes));
-
-  std::vector<base::StringPiece> crl_urls;
-  EXPECT_TRUE(asn1::ExtractCRLURLsFromDERCert(derBytes, &crl_urls));
-
-  EXPECT_EQ(1u, crl_urls.size());
-  if (crl_urls.size() > 0) {
-    EXPECT_EQ("http://SVRSecure-G3-crl.verisign.com/SVRSecureG3.crl",
-              crl_urls[0].as_string());
-  }
-}
-
 TEST(X509CertificateTest, HasTLSFeatureExtension) {
   base::FilePath certs_dir = GetTestCertsDirectory();
   scoped_refptr<X509Certificate> cert =
