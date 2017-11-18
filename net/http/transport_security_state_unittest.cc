@@ -1565,6 +1565,76 @@ TEST_F(TransportSecurityStateTest, ExpectCTCompliantCert) {
   EXPECT_EQ(1u, reporter.num_failures());
 }
 
+// Tests that the Expect CT reporter is not notified for preloaded Expect-CT
+// when the build is not timely.
+TEST_F(TransportSecurityStateTest, PreloadedExpectCTBuildNotTimely) {
+  HostPortPair host_port(kExpectCTStaticHostname, 443);
+  SSLInfo ssl_info;
+  ssl_info.ct_compliance_details_available = true;
+  ssl_info.ct_cert_policy_compliance =
+      ct::CertPolicyCompliance::CERT_POLICY_BUILD_NOT_TIMELY;
+  ssl_info.is_issued_by_known_root = true;
+  scoped_refptr<X509Certificate> cert1 =
+      ImportCertFromFile(GetTestCertsDirectory(), "ok_cert.pem");
+  ASSERT_TRUE(cert1);
+  scoped_refptr<X509Certificate> cert2 =
+      ImportCertFromFile(GetTestCertsDirectory(), "expired_cert.pem");
+  ASSERT_TRUE(cert2);
+  ssl_info.unverified_cert = cert1;
+  ssl_info.cert = cert2;
+
+  TransportSecurityState state;
+  TransportSecurityStateTest::EnableStaticExpectCT(&state);
+  MockExpectCTReporter reporter;
+  state.SetExpectCTReporter(&reporter);
+  state.ProcessExpectCTHeader("preload", host_port, ssl_info);
+  EXPECT_EQ(0u, reporter.num_failures());
+
+  // Sanity-check that the reporter is notified if the build is timely and the
+  // connection is not compliant.
+  ssl_info.ct_cert_policy_compliance =
+      ct::CertPolicyCompliance::CERT_POLICY_NOT_DIVERSE_SCTS;
+  state.ProcessExpectCTHeader("preload", host_port, ssl_info);
+  EXPECT_EQ(1u, reporter.num_failures());
+}
+
+// Tests that the Expect CT reporter is not notified for dynamic Expect-CT when
+// the build is not timely.
+TEST_F(TransportSecurityStateTest, DynamicExpectCTBuildNotTimely) {
+  HostPortPair host_port("example.test", 443);
+  SSLInfo ssl_info;
+  ssl_info.ct_compliance_details_available = true;
+  ssl_info.ct_cert_policy_compliance =
+      ct::CertPolicyCompliance::CERT_POLICY_BUILD_NOT_TIMELY;
+  ssl_info.is_issued_by_known_root = true;
+  scoped_refptr<X509Certificate> cert1 =
+      ImportCertFromFile(GetTestCertsDirectory(), "ok_cert.pem");
+  ASSERT_TRUE(cert1);
+  scoped_refptr<X509Certificate> cert2 =
+      ImportCertFromFile(GetTestCertsDirectory(), "expired_cert.pem");
+  ASSERT_TRUE(cert2);
+  ssl_info.unverified_cert = cert1;
+  ssl_info.cert = cert2;
+
+  TransportSecurityState state;
+  MockExpectCTReporter reporter;
+  state.SetExpectCTReporter(&reporter);
+  const char kHeader[] = "max-age=10, report-uri=http://report.test";
+  state.ProcessExpectCTHeader(kHeader, host_port, ssl_info);
+
+  // No report should have been sent and the state should not have been saved.
+  EXPECT_EQ(0u, reporter.num_failures());
+  TransportSecurityState::ExpectCTState expect_ct_state;
+  EXPECT_FALSE(state.GetDynamicExpectCTState("example.test", &expect_ct_state));
+
+  // Sanity-check that the reporter is notified if the build is timely and the
+  // connection is not compliant.
+  ssl_info.ct_cert_policy_compliance =
+      ct::CertPolicyCompliance::CERT_POLICY_NOT_DIVERSE_SCTS;
+  state.ProcessExpectCTHeader(kHeader, host_port, ssl_info);
+  EXPECT_EQ(1u, reporter.num_failures());
+}
+
 // Tests that the Expect CT reporter is not notified for a site that
 // isn't preloaded.
 TEST_F(TransportSecurityStateTest, ExpectCTNotPreloaded) {
