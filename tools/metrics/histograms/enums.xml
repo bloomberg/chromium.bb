@@ -16973,6 +16973,8 @@ Called by update_net_error_codes.py.-->
   <int value="2230" label="ReplaceCharsetInXHR"/>
   <int value="2231" label="RespondToSameOriginRequestWithCrossOriginResponse"/>
   <int value="2232" label="LinkRelModulePreload"/>
+  <int value="2233" label="PerformanceMeasurePassedInObject"/>
+  <int value="2234" label="PerformanceMeasurePassedInNavigationTiming"/>
 </enum>
 
 <enum name="FeedbackSource">
@@ -32047,6 +32049,19 @@ Called by update_net_error_codes.py.-->
   <int value="2098849894" label="PPB_ContentDecryptor_Private;0.10"/>
   <int value="2123225074" label="PPB_HostResolver_Private;0.1"/>
   <int value="2126196629" label="PPB_UDPSocket_Private;0.4"/>
+</enum>
+
+<enum name="PerformanceMeasurePassedInParameterType">
+  <int value="0" label="OBJECT_OBJECT"/>
+  <int value="1" label="UNLOAD_EVENT_START"/>
+  <int value="2" label="UNLOAD_EVENT_END"/>
+  <int value="3" label="DOM_INTERACTIVE"/>
+  <int value="4" label="DOM_CONTENT_LOADED_EVENT_START"/>
+  <int value="5" label="DOM_CONTENT_LOADED_EVENT_END"/>
+  <int value="6" label="DOM_COMPLETE"/>
+  <int value="7" label="LOAD_EVENT_START"/>
+  <int value="8" label="LOAD_EVENT_END"/>
+  <int value="9" label="OTHER"/>
 </enum>
 
 <enum name="PermissionAction">

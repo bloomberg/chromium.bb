@@ -10,6 +10,7 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/testing/DummyPageHolder.h"
 #include "core/timing/DOMWindowPerformance.h"
+#include "platform/testing/HistogramTester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -17,6 +18,11 @@ namespace blink {
 static const int kTimeOrigin = 500;
 
 namespace {
+
+const char kStartMarkForMeasureHistogram[] =
+    "Performance.PerformanceMeasurePassedInParameter.StartMark";
+const char kEndMarkForMeasureHistogram[] =
+    "Performance.PerformanceMeasurePassedInParameter.EndMark";
 
 class FakeTimer {
  public:
@@ -215,4 +221,43 @@ TEST_F(PerformanceTest, EnsureEntryListOrder) {
     EXPECT_NEAR(4000, entries[i]->startTime(), 0.005);
   }
 }
+
+TEST_F(PerformanceTest, ParameterHistogramForMeasure) {
+  HistogramTester histogram_tester;
+  DummyExceptionStateForTesting exception_state;
+
+  histogram_tester.ExpectTotalCount(kStartMarkForMeasureHistogram, 0);
+  histogram_tester.ExpectTotalCount(kEndMarkForMeasureHistogram, 0);
+
+  performance_->measure("testMark", "unloadEventStart", "unloadEventEnd",
+                        exception_state);
+
+  histogram_tester.ExpectBucketCount(
+      kStartMarkForMeasureHistogram,
+      static_cast<int>(PerformanceBase::kUnloadEventStart), 1);
+  histogram_tester.ExpectBucketCount(
+      kEndMarkForMeasureHistogram,
+      static_cast<int>(PerformanceBase::kUnloadEventEnd), 1);
+
+  performance_->measure("testMark", "domInteractive", "[object Object]",
+                        exception_state);
+
+  histogram_tester.ExpectBucketCount(
+      kStartMarkForMeasureHistogram,
+      static_cast<int>(PerformanceBase::kDomInteractive), 1);
+  histogram_tester.ExpectBucketCount(
+      kEndMarkForMeasureHistogram,
+      static_cast<int>(PerformanceBase::kObjectObject), 1);
+
+  performance_->measure("testMark", "[object Object]", "[object Object]",
+                        exception_state);
+
+  histogram_tester.ExpectBucketCount(
+      kStartMarkForMeasureHistogram,
+      static_cast<int>(PerformanceBase::kObjectObject), 1);
+  histogram_tester.ExpectBucketCount(
+      kEndMarkForMeasureHistogram,
+      static_cast<int>(PerformanceBase::kObjectObject), 2);
+}
+
 }  // namespace blink
