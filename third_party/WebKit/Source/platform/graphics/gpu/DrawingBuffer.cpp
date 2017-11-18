@@ -1408,6 +1408,13 @@ DrawingBuffer::ScopedStateRestorer::~ScopedStateRestorer() {
 bool DrawingBuffer::ShouldUseChromiumImage() {
   return RuntimeEnabledFeatures::WebGLImageChromiumEnabled() &&
          chromium_image_usage_ == kAllowChromiumImage &&
+#if defined(OS_MACOSX)
+         // Core Animation assumes that the incoming alpha channel is
+         // premultiplied into the color channels. Fall back to
+         // regular compositing if the user wants the alpha channel
+         // interpreted as separate.
+         premultiplied_alpha_ &&
+#endif
          Platform::Current()->GetGpuMemoryBufferManager();
 }
 
