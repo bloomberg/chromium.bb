@@ -718,6 +718,13 @@ class QUIC_EXPORT_PRIVATE QuicConnection
     return last_packet_source_address_;
   }
 
+  bool fill_up_link_during_probing() const {
+    return fill_up_link_during_probing_;
+  }
+  void set_fill_up_link_during_probing(bool new_value) {
+    fill_up_link_during_probing_ = new_value;
+  }
+
  protected:
   // Calls cancel() on all the alarms owned by this connection.
   void CancelAllAlarms();
@@ -771,6 +778,9 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Retransmits packets continuously until blocked by the congestion control.
   // If there are no packets to retransmit, does not do anything.
   void SendProbingRetransmissions();
+
+  // Decides whether to send probing retransmissions, and does so if required.
+  void MaybeSendProbingRetransmissions();
 
  private:
   friend class test::QuicConnectionPeer;
@@ -1142,6 +1152,18 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   // Consecutive number of sent packets which have no retransmittable frames.
   size_t consecutive_num_packets_with_no_retransmittable_frames_;
+
+  // If true, the connection will fill up the pipe with extra data whenever the
+  // congestion controller needs it in order to make a bandwidth estimate.  This
+  // is useful if the application pesistently underutilizes the link, but still
+  // relies on having a reasonable bandwidth estimate from the connection, e.g.
+  // for real time applications.
+  bool fill_up_link_during_probing_;
+
+  // If true, the probing retransmission will not be started again.  This is
+  // used to safeguard against an accidental tail recursion in probing
+  // retransmission code.
+  bool probing_retransmission_pending_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicConnection);
 };

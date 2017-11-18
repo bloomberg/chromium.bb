@@ -601,7 +601,7 @@ bool QuicSentPacketManager::MaybeRetransmitOldestPacket(TransmissionType type) {
     MarkForRetransmission(packet_number, type);
     return true;
   }
-  QUIC_DLOG(ERROR)
+  QUIC_DVLOG(1)
       << "No retransmittable packets, so RetransmitOldestPacket failed.";
   return false;
 }

@@ -197,7 +197,7 @@ bool BbrSender::InRecovery() const {
 }
 
 bool BbrSender::IsProbingForMoreBandwidth() const {
-  return mode_ == PROBE_BW && pacing_gain_ > 1;
+  return (mode_ == PROBE_BW && pacing_gain_ > 1) || mode_ == STARTUP;
 }
 
 void BbrSender::SetFromConfig(const QuicConfig& config,
