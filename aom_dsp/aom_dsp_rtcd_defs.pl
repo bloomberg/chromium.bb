@@ -1208,6 +1208,42 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
     specialize qw/aom_sub_pixel_avg_variance64x16 sse2 ssse3/;
   }
 
+  if (aom_config("CONFIG_JNT_COMP") eq "yes") {
+    specialize qw/aom_jnt_sub_pixel_avg_variance64x64 ssse3/;
+    specialize qw/aom_jnt_sub_pixel_avg_variance64x32 ssse3/;
+    specialize qw/aom_jnt_sub_pixel_avg_variance32x64 ssse3/;
+    specialize qw/aom_jnt_sub_pixel_avg_variance32x32 ssse3/;
+    specialize qw/aom_jnt_sub_pixel_avg_variance32x16 ssse3/;
+    specialize qw/aom_jnt_sub_pixel_avg_variance16x32 ssse3/;
+    specialize qw/aom_jnt_sub_pixel_avg_variance16x16 ssse3/;
+    specialize qw/aom_jnt_sub_pixel_avg_variance16x8  ssse3/;
+    specialize qw/aom_jnt_sub_pixel_avg_variance8x16  ssse3/;
+    specialize qw/aom_jnt_sub_pixel_avg_variance8x8   ssse3/;
+    specialize qw/aom_jnt_sub_pixel_avg_variance8x4   ssse3/;
+    specialize qw/aom_jnt_sub_pixel_avg_variance4x8   ssse3/;
+    specialize qw/aom_jnt_sub_pixel_avg_variance4x4   ssse3/;
+
+    if (aom_config("CONFIG_EXT_PARTITION_TYPES") eq "yes") {
+      specialize qw/aom_jnt_sub_pixel_avg_variance4x16  ssse3/;
+      specialize qw/aom_jnt_sub_pixel_avg_variance16x4  ssse3/;
+      specialize qw/aom_jnt_sub_pixel_avg_variance8x32  ssse3/;
+      specialize qw/aom_jnt_sub_pixel_avg_variance32x8  ssse3/;
+      specialize qw/aom_jnt_sub_pixel_avg_variance16x64 ssse3/;
+      specialize qw/aom_jnt_sub_pixel_avg_variance64x16 ssse3/;
+
+      if (aom_config("CONFIG_EXT_PARTITION") eq "yes") {
+        specialize qw/aom_jnt_sub_pixel_avg_variance128x32   ssse3/;
+        specialize qw/aom_jnt_sub_pixel_avg_variance32x128   ssse3/;
+      }
+    }
+
+    if (aom_config("CONFIG_EXT_PARTITION") eq "yes") {
+      specialize qw/aom_jnt_sub_pixel_avg_variance128x128  ssse3/;
+      specialize qw/aom_jnt_sub_pixel_avg_variance128x64   ssse3/;
+      specialize qw/aom_jnt_sub_pixel_avg_variance64x128   ssse3/;
+    }
+  }
+
   if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
     foreach $bd (8, 10, 12) {
       add_proto qw/unsigned int/, "aom_highbd_${bd}_variance2x2", "const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse";
