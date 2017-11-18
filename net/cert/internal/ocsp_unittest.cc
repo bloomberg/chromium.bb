@@ -297,23 +297,15 @@ TEST(OCSPDateTest, VerifyTimeMinusAgeFromBeforeWindowsEpoch) {
 #endif
 }
 
-struct GetURLTestParams {
-  const char* responder_url;
-  int index_start_data;
-  int index_end_data;
+base::StringPiece kGetURLTestParams[] = {
+    "http://www.example.com/", "http://www.example.com/path/",
+    "http://www.example.com/path",
+    "http://www.example.com/path?query"
+    "http://user:pass@www.example.com/path?query",
 };
 
-const GetURLTestParams kGetURLTestParams[] = {
-    {"http://www.example.com/", 23, -1},
-    {"http://www.example.com/path/", 28, -1},
-    {"http://www.example.com/path", 28, -1},
-    // The data will be appended to the path (before the ?query).
-    {"http://www.example.com/path?query", 28, -7},
-    {"http://user:pass@www.example.com/path?query", 38, -7},
-};
-
-class CreateOCSPGetURLTest : public ::testing::TestWithParam<GetURLTestParams> {
-};
+class CreateOCSPGetURLTest
+    : public ::testing::TestWithParam<base::StringPiece> {};
 
 INSTANTIATE_TEST_CASE_P(,
                         CreateOCSPGetURLTest,
@@ -340,20 +332,13 @@ TEST_P(CreateOCSPGetURLTest, Basic) {
   scoped_refptr<ParsedCertificate> issuer = ParseCertificate(ca_data);
   ASSERT_TRUE(issuer);
 
-  // Try using a URL that doesn't end with a slash.
-  GURL url = CreateOCSPGetURL(cert.get(), issuer.get(),
-                              GURL(GetParam().responder_url));
+  GURL url = CreateOCSPGetURL(cert.get(), issuer.get(), GetParam());
 
   // Try to extract the encoded data and compare against |request_data|.
   //
   // A known answer output test would be better as this just reverses the logic
   // from the implementaiton file.
-  int begin_index = GetParam().index_start_data;
-  int end_index = GetParam().index_end_data;
-  if (end_index < 0)
-    end_index += url.spec().size();
-
-  std::string b64 = url.spec().substr(begin_index, end_index - begin_index + 1);
+  std::string b64 = url.spec().substr(GetParam().size() + 1);
 
   // Hex un-escape the data.
   base::ReplaceSubstringsAfterOffset(&b64, 0, "%2B", "+");

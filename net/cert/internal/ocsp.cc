@@ -934,7 +934,7 @@ bool CreateOCSPRequest(const ParsedCertificate* cert,
 //    the OCSPRequest}
 GURL CreateOCSPGetURL(const ParsedCertificate* cert,
                       const ParsedCertificate* issuer,
-                      const GURL& ocsp_responder_url) {
+                      base::StringPiece ocsp_responder_url) {
   std::vector<uint8_t> ocsp_request_der;
   if (!CreateOCSPRequest(cert, issuer, &ocsp_request_der)) {
     // Unexpected (means BoringSSL failed an operation).
@@ -956,24 +956,9 @@ GURL CreateOCSPGetURL(const ParsedCertificate* cert,
   base::ReplaceSubstringsAfterOffset(&b64_encoded, 0, "/", "%2F");
   base::ReplaceSubstringsAfterOffset(&b64_encoded, 0, "=", "%3D");
 
-  // RFC 2560 and RFC 5019 are vague on what is intended for URL concatenation.
-  //
-  //   * If the path doesn't end in a slash, is one implicitly added?
-  //   * Is a straight up string concatenation expected, or only a concatenation
-  //     to the path?
-  //
-  // This code contenates the data to the path portion of the URL, and leaves
-  // the other URL components unmodified.
-  //
-  // TODO(eroman): Confirm whether OCSP responders use query parameters.
-  std::string path = ocsp_responder_url.path();
-  if (!base::StringPiece(path).ends_with("/"))
-    path += "/";
-  path += b64_encoded;
-
-  GURL::Replacements replacements;
-  replacements.SetPath(path.data(), url::Component(0, path.size()));
-  return ocsp_responder_url.ReplaceComponents(replacements);
+  // No attempt is made to collapse double slashes for URLs that end in slash,
+  // since the spec doesn't do that.
+  return GURL(std::string(ocsp_responder_url) + "/" + b64_encoded);
 }
 
 }  // namespace net
