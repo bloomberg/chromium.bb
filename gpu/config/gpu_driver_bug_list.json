@@ -2697,6 +2697,20 @@
       "features": [
         "dont_use_loops_to_initialize_variables"
       ]
+    },
+    {
+      "id": 247,
+      "description": "EXT_disjoint_timer_query is broken on Samsung Galaxy S6",
+      "cr_bugs": [702980],
+      "os": {
+        "type": "android"
+      },
+      "machine_model_name": ["SM-G930F"],
+      "gl_vendor": "ARM.*",
+      "gl_renderer": "Mali-T880",
+      "disabled_extensions": [
+        "GL_EXT_disjoint_timer_query"
+      ]
     }
   ]
 }
