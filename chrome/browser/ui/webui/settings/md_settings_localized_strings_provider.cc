@@ -35,8 +35,10 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/sys_info.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -1594,17 +1596,15 @@ void AddSearchInSettingsStrings(content::WebUIDataSource* html_source) {
 
 void AddSearchStrings(content::WebUIDataSource* html_source, Profile* profile) {
 #if defined(OS_CHROMEOS)
-  const bool is_user_primary =
-      chromeos::ProfileHelper::Get()->GetUserByProfile(profile) ==
-      user_manager::UserManager::Get()->GetPrimaryUser();
+  const bool is_assistant_allowed =
+      arc::IsAssistantAllowedForProfile(profile) ==
+      ash::mojom::AssistantAllowedState::ALLOWED;
 #endif
 
   LocalizedString localized_strings[] = {
 #if defined(OS_CHROMEOS)
-    {"searchPageTitle", !profile->IsSupervised() && is_user_primary &&
-                                chromeos::switches::IsVoiceInteractionEnabled()
-                            ? IDS_SETTINGS_SEARCH_AND_ASSISTANT
-                            : IDS_SETTINGS_SEARCH},
+    {"searchPageTitle", is_assistant_allowed ? IDS_SETTINGS_SEARCH_AND_ASSISTANT
+                                             : IDS_SETTINGS_SEARCH},
 #else
     {"searchPageTitle", IDS_SETTINGS_SEARCH},
 #endif
@@ -1642,9 +1642,7 @@ void AddSearchStrings(content::WebUIDataSource* html_source, Profile* profile) {
       base::ASCIIToUTF16(chrome::kOmniboxLearnMoreURL));
   html_source->AddString("searchExplanation", search_explanation_text);
 #if defined(OS_CHROMEOS)
-  html_source->AddBoolean(
-      "enableVoiceInteraction",
-      chromeos::switches::IsVoiceInteractionEnabled() && is_user_primary);
+  html_source->AddBoolean("enableVoiceInteraction", is_assistant_allowed);
 #endif
 }
 
