@@ -6,6 +6,7 @@ DEPS = [
   'bot_update',
   'gclient',
   'gerrit',
+  'recipe_engine/json',
   'recipe_engine/path',
   'recipe_engine/platform',
   'recipe_engine/properties',
@@ -151,7 +152,7 @@ def GenTests(api):
       issue=12345,
       patchset=654321,
       rietveld='https://rietveld.example.com/',
-  ) + api.step_data('bot_update', retcode=1)
+  ) + api.step_data('bot_update', api.json.invalid(None), retcode=1)
   yield api.test('tryjob_fail_patch') + api.properties(
       issue=12345,
       patchset=654321,

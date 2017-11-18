@@ -283,7 +283,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
       step_result = f.result
       raise
     finally:
-      if step_result:
+      if step_result and step_result.json.output:
         result = step_result.json.output
         self._last_returned_properties = step_result.json.output.get(
             'properties', {})

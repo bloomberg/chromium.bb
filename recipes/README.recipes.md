@@ -752,9 +752,9 @@ like checkout or compile), and some of these tests have failed.
 
 ### *recipes* / [bot\_update:examples/full](/recipes/recipe_modules/bot_update/examples/full.py)
 
-[DEPS](/recipes/recipe_modules/bot_update/examples/full.py#5): [bot\_update](#recipe_modules-bot_update), [gclient](#recipe_modules-gclient), [gerrit](#recipe_modules-gerrit), [recipe\_engine/path][recipe_engine/recipe_modules/path], [recipe\_engine/platform][recipe_engine/recipe_modules/platform], [recipe\_engine/properties][recipe_engine/recipe_modules/properties]
+[DEPS](/recipes/recipe_modules/bot_update/examples/full.py#5): [bot\_update](#recipe_modules-bot_update), [gclient](#recipe_modules-gclient), [gerrit](#recipe_modules-gerrit), [recipe\_engine/json][recipe_engine/recipe_modules/json], [recipe\_engine/path][recipe_engine/recipe_modules/path], [recipe\_engine/platform][recipe_engine/recipe_modules/platform], [recipe\_engine/properties][recipe_engine/recipe_modules/properties]
 
-&mdash; **def [RunSteps](/recipes/recipe_modules/bot_update/examples/full.py#14)(api):**
+&mdash; **def [RunSteps](/recipes/recipe_modules/bot_update/examples/full.py#15)(api):**
 ### *recipes* / [cipd:examples/full](/recipes/recipe_modules/cipd/examples/full.py)
 
 [DEPS](/recipes/recipe_modules/cipd/examples/full.py#8): [cipd](#recipe_modules-cipd), [recipe\_engine/path][recipe_engine/recipe_modules/path], [recipe\_engine/platform][recipe_engine/recipe_modules/platform], [recipe\_engine/properties][recipe_engine/recipe_modules/properties], [recipe\_engine/step][recipe_engine/recipe_modules/step]
