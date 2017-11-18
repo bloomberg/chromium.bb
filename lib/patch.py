@@ -360,8 +360,8 @@ class ChangeNotInManifest(PatchException):
     return 'could not be found in the repo manifest.'
 
 
-class PatchNotMergeable(PatchException):
-  """Raised if a patch is not mergeable."""
+class PatchNotSubmittable(PatchException):
+  """Raised if a patch is not submittable."""
 
   def __init__(self, patch, reason):
     PatchException.__init__(self, patch)
@@ -1910,7 +1910,7 @@ class GerritPatch(GerritFetchOnlyPatch):
     If the change is in fact mergeable, return None.
     """
     if self.IsDraft():
-      return PatchNotMergeable(self, 'is a draft.')
+      return PatchNotSubmittable(self, 'is a draft.')
 
     if self.status != 'NEW':
       statuses = {
@@ -1919,18 +1919,18 @@ class GerritPatch(GerritFetchOnlyPatch):
           'ABANDONED': 'is abandoned.',
       }
       message = statuses.get(self.status, 'has status %s.' % self.status)
-      return PatchNotMergeable(self, message)
+      return PatchNotSubmittable(self, message)
 
     if self.HasApproval('VRIF', '-1'):
-      return PatchNotMergeable(self, 'is marked as Verified=-1.')
+      return PatchNotSubmittable(self, 'is marked as Verified=-1.')
     elif self.HasApproval('CRVW', '-2'):
-      return PatchNotMergeable(self, 'is marked as Code-Review=-2.')
+      return PatchNotSubmittable(self, 'is marked as Code-Review=-2.')
     elif not self.HasApproval('CRVW', '2'):
-      return PatchNotMergeable(self, 'is not marked Code-Review=+2.')
+      return PatchNotSubmittable(self, 'is not marked Code-Review=+2.')
     elif not self.HasApproval('VRIF', '1'):
-      return PatchNotMergeable(self, 'is not marked Verified=+1.')
+      return PatchNotSubmittable(self, 'is not marked Verified=+1.')
     elif not self.HasApproval('COMR', ('1', '2')):
-      return PatchNotMergeable(self, 'is not marked Commit-Queue>=+1.')
+      return PatchNotSubmittable(self, 'is not marked Commit-Queue>=+1.')
 
   def GetLatestApproval(self, field):
     """Return most recent value of specific field on the current patchset.
