@@ -136,13 +136,6 @@ void IOSChromeMainParts::PreCreateThreads() {
 }
 
 void IOSChromeMainParts::PreMainMessageLoopRun() {
-  // This must occur at PreMainMessageLoopRun because |SetupMetrics()| uses the
-  // blocking pool, which is disabled until the CreateThreads phase of startup.
-  SetupMetrics();
-
-  // Now that the file thread has been started, start recording.
-  StartMetricsRecording();
-
   application_context_->PreMainMessageLoopRun();
 
   // ContentSettingsPattern need to be initialized before creating the
@@ -158,6 +151,15 @@ void IOSChromeMainParts::PreMainMessageLoopRun() {
       application_context_->GetChromeBrowserStateManager();
   ios::ChromeBrowserState* last_used_browser_state =
       browser_state_manager->GetLastUsedBrowserState();
+
+  // This must occur at PreMainMessageLoopRun because |SetupMetrics()| uses the
+  // blocking pool, which is disabled until the CreateThreads phase of startup.
+  // TODO(crbug.com/786494): Investigate whether metrics recording can be
+  // initialized consistently across iOS and non-iOS platforms
+  SetupMetrics();
+
+  // Now that the file thread has been started, start recording.
+  StartMetricsRecording();
 
 #if BUILDFLAG(ENABLE_RLZ)
   // Init the RLZ library. This just schedules a task on the file thread to be

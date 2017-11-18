@@ -57,7 +57,7 @@
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/ios_chrome_sync_client.h"
 #include "ios/chrome/browser/tab_parenting_global_observer.h"
-#include "ios/chrome/browser/tabs/tab_model_list.h"
+#import "ios/chrome/browser/tabs/tab_model_list.h"
 #include "ios/chrome/browser/translate/translate_ranker_metrics_provider.h"
 #include "ios/chrome/common/channel_info.h"
 #include "ios/web/public/web_thread.h"
@@ -298,6 +298,16 @@ void IOSChromeMetricsServiceClient::OnSyncPrefsChanged(bool must_purge) {
     ukm_service_->Purge();
     ukm_service_->ResetClientId();
   }
+  // Signal service manager to enable/disable UKM based on new state.
+  UpdateRunningServices();
+}
+
+void IOSChromeMetricsServiceClient::OnIncognitoWebStateAdded() {
+  // Signal service manager to enable/disable UKM based on new state.
+  UpdateRunningServices();
+}
+
+void IOSChromeMetricsServiceClient::OnIncognitoWebStateRemoved() {
   // Signal service manager to enable/disable UKM based on new state.
   UpdateRunningServices();
 }

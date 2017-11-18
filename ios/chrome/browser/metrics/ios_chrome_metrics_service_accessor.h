@@ -22,6 +22,12 @@ class CrashesDOMHandler;
 // Since these methods are private, each user has to be explicitly declared
 // as a 'friend' below.
 class IOSChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
+ public:
+  // If arg is non-null, the value will be returned from future calls to
+  // IsMetricsAndCrashReportingEnabled(). Pointer must be valid until it is
+  // reset to null here.
+  static void SetMetricsAndCrashReportingForTesting(const bool* value);
+
  private:
   friend class IOSChromeMetricsServicesManagerClient;
 

@@ -24,6 +24,9 @@ id<GREYAction> LongPressElementForContextMenu(const std::string& element_id,
 // state.
 id<GREYAction> TurnCollectionViewSwitchOn(BOOL on);
 
+// Action to turn the switch of a SyncSwitchCell to the given |on| state.
+id<GREYAction> TurnSyncSwitchOn(BOOL on);
+
 }  // namespace chrome_test_util
 
 #endif  // IOS_CHROME_TEST_EARL_GREY_CHROME_ACTIONS_H_

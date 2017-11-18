@@ -25,6 +25,7 @@ class PrefService;
 namespace metrics {
 class MetricsServiceClient;
 class UkmBrowserTest;
+class UkmEGTestHelper;
 }
 
 namespace ukm {
@@ -76,8 +77,9 @@ class UkmService : public UkmRecorderImpl {
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
  private:
-  friend ::ukm::debug::DebugPage;
   friend ::metrics::UkmBrowserTest;
+  friend ::metrics::UkmEGTestHelper;
+  friend ::ukm::debug::DebugPage;
 
   FRIEND_TEST_ALL_PREFIXES(UkmServiceTest, AddEntryWithEmptyMetrics);
   FRIEND_TEST_ALL_PREFIXES(UkmServiceTest, EntryBuilderAndSerialization);
