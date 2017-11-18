@@ -282,8 +282,9 @@ void BluetoothAdapterWin::DevicesPolled(
       // (primary services of BLE device) are the same. However, in BLE tests,
       // we may simulate characteristic, descriptor and secondary GATT service
       // after device has been initialized.
-      if (force_update_device_for_test_)
+      if (force_update_device_for_test_) {
         device_win->Update(*device_state);
+      }
     }
   }
 }

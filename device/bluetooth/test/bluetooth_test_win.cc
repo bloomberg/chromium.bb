@@ -209,6 +209,11 @@ void BluetoothTestWin::SimulateGattServicesDiscovered(
   }
 
   FinishPendingTasks();
+
+  // We still need to discover characteristics.  Wait for the appropriate method
+  // to be posted and then finish the pending tasks.
+  base::RunLoop().RunUntilIdle();
+  FinishPendingTasks();
 }
 
 void BluetoothTestWin::SimulateGattServiceRemoved(
@@ -513,6 +518,11 @@ void BluetoothTestWin::RunPendingTasksUntilCallback() {
 
 void BluetoothTestWin::ForceRefreshDevice() {
   adapter_win_->force_update_device_for_test_ = true;
+  FinishPendingTasks();
+  adapter_win_->force_update_device_for_test_ = false;
+
+  // The characteristics still need to be discovered.
+  base::RunLoop().RunUntilIdle();
   FinishPendingTasks();
 }
 
