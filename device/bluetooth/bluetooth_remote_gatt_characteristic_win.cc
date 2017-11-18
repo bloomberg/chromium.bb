@@ -27,6 +27,7 @@ BluetoothRemoteGattCharacteristicWin::BluetoothRemoteGattCharacteristicWin(
       characteristic_added_notified_(false),
       characteristic_value_read_or_write_in_progress_(false),
       gatt_event_handle_(nullptr),
+      discovery_pending_count_(0),
       weak_ptr_factory_(this) {
   DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(parent_service_);
@@ -205,6 +206,7 @@ void BluetoothRemoteGattCharacteristicWin::WriteRemoteCharacteristic(
 void BluetoothRemoteGattCharacteristicWin::Update() {
   DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
 
+  ++discovery_pending_count_;
   task_manager_->PostGetGattIncludedDescriptors(
       parent_service_->GetServicePath(), characteristic_info_.get(),
       base::Bind(&BluetoothRemoteGattCharacteristicWin::
@@ -251,6 +253,10 @@ void BluetoothRemoteGattCharacteristicWin::OnGetIncludedDescriptorsCallback(
     characteristic_added_notified_ = true;
     parent_service_->GetWinAdapter()->NotifyGattCharacteristicAdded(this);
   }
+
+  // Report discovery complete.
+  if (--discovery_pending_count_ == 0)
+    parent_service_->GattCharacteristicDiscoveryComplete(this);
 }
 
 void BluetoothRemoteGattCharacteristicWin::UpdateIncludedDescriptors(
