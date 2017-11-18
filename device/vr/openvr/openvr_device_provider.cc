@@ -14,14 +14,24 @@ namespace device {
 OpenVRDeviceProvider::OpenVRDeviceProvider()
     : initialized_(false), vr_system_(nullptr) {}
 
-OpenVRDeviceProvider::~OpenVRDeviceProvider() {}
+OpenVRDeviceProvider::~OpenVRDeviceProvider() {
+  device::GamepadDataFetcherManager::GetInstance()->RemoveSourceFactory(
+      device::GAMEPAD_SOURCE_OPENVR);
+  device_ = nullptr;
+  vr::VR_Shutdown();
+}
 
 void OpenVRDeviceProvider::GetDevices(std::vector<VRDevice*>* devices) {
   if (initialized_) {
-    VRDevice* device = new OpenVRDevice(vr_system_);
-    devices->push_back(device);
-    GamepadDataFetcherManager::GetInstance()->AddFactory(
-        new OpenVRGamepadDataFetcher::Factory(device->GetId(), vr_system_));
+    if (!device_) {
+      device_ = std::make_unique<OpenVRDevice>(vr_system_);
+      GamepadDataFetcherManager::GetInstance()->AddFactory(
+          new OpenVRGamepadDataFetcher::Factory(device_->GetId(), vr_system_));
+    }
+
+    if (device_) {
+      devices->push_back(device_.get());
+    }
   }
 }
 
