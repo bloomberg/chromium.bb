@@ -21,7 +21,7 @@ namespace device {
 
 #if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 class BluetoothRemoteGattServiceTest : public BluetoothTest {};
-#endif
+#endif  // defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 
 // Android is excluded because it fires a single discovery event per device.
 #if defined(OS_WIN) || defined(OS_MACOSX)

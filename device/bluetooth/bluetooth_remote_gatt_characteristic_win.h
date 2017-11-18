@@ -130,6 +130,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicWin
   // GATT event handle returned by GattEventRegistrationCallback.
   PVOID gatt_event_handle_;
 
+  // Counts the number of asynchronous operations that are discovering
+  // descriptors.
+  int discovery_pending_count_;
+
   base::WeakPtrFactory<BluetoothRemoteGattCharacteristicWin> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(BluetoothRemoteGattCharacteristicWin);
 };
