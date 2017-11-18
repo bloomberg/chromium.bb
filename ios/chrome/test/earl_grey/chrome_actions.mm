@@ -6,6 +6,7 @@
 
 #import "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_switch_item.h"
+#import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/web/public/test/earl_grey/web_view_actions.h"
 
@@ -36,7 +37,27 @@ id<GREYAction> TurnCollectionViewSwitchOn(BOOL on) {
               base::mac::ObjCCastStrict<CollectionViewSwitchCell>(
                   collectionViewCell);
           UISwitch* switchView = switchCell.switchView;
-          if (switchView.on ^ on) {
+          if (switchView.on != on) {
+            id<GREYAction> longPressAction = [GREYActions
+                actionForLongPressWithDuration:kGREYLongPressDefaultDuration];
+            return [longPressAction perform:switchView error:errorOrNil];
+          }
+          return YES;
+        }];
+}
+
+id<GREYAction> TurnSyncSwitchOn(BOOL on) {
+  id<GREYMatcher> constraints = grey_not(grey_systemAlertViewShown());
+  NSString* actionName = [NSString
+      stringWithFormat:@"Turn sync switch to %@ state", on ? @"ON" : @"OFF"];
+  return [GREYActionBlock
+      actionWithName:actionName
+         constraints:constraints
+        performBlock:^BOOL(id syncSwitchCell, __strong NSError** errorOrNil) {
+          SyncSwitchCell* switchCell =
+              base::mac::ObjCCastStrict<SyncSwitchCell>(syncSwitchCell);
+          UISwitch* switchView = switchCell.switchView;
+          if (switchView.on != on) {
             id<GREYAction> longPressAction = [GREYActions
                 actionForLongPressWithDuration:kGREYLongPressDefaultDuration];
             return [longPressAction perform:switchView error:errorOrNil];

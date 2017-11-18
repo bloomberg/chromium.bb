@@ -74,6 +74,11 @@ id<GREYMatcher> ShowTabsButton();
 id<GREYMatcher> CollectionViewSwitchCell(NSString* accessibilityIdentifier,
                                          BOOL isOn);
 
+// Matcher for SyncSwitchCell.
+// TODO(crbug.com/684139): Update |is_on| to something more obvious from
+// callsites.
+id<GREYMatcher> SyncSwitchCell(NSString* accessibilityLabel, BOOL is_on);
+
 // Matcher for the Open in New Tab option in the context menu when long pressing
 // a link.
 id<GREYMatcher> OpenLinkInNewTabButton();

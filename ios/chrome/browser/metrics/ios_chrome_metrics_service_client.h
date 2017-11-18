@@ -20,6 +20,7 @@
 #include "components/omnibox/browser/omnibox_event_global_tracker.h"
 #include "components/ukm/observers/history_delete_observer.h"
 #include "components/ukm/observers/sync_disable_observer.h"
+#import "ios/chrome/browser/metrics/incognito_web_state_observer.h"
 #include "ios/web/public/web_state/global_web_state_observer.h"
 
 class IOSChromeStabilityMetricsProvider;
@@ -40,11 +41,11 @@ class UkmService;
 
 // IOSChromeMetricsServiceClient provides an implementation of
 // MetricsServiceClient that depends on //ios/chrome/.
-class IOSChromeMetricsServiceClient
-    : public metrics::MetricsServiceClient,
-      public ukm::HistoryDeleteObserver,
-      public ukm::SyncDisableObserver,
-      public web::GlobalWebStateObserver {
+class IOSChromeMetricsServiceClient : public IncognitoWebStateObserver,
+                                      public metrics::MetricsServiceClient,
+                                      public ukm::HistoryDeleteObserver,
+                                      public ukm::SyncDisableObserver,
+                                      public web::GlobalWebStateObserver {
  public:
   ~IOSChromeMetricsServiceClient() override;
 
@@ -85,6 +86,10 @@ class IOSChromeMetricsServiceClient
   // web::GlobalWebStateObserver:
   void WebStateDidStartLoading(web::WebState* web_state) override;
   void WebStateDidStopLoading(web::WebState* web_state) override;
+
+  // IncognitoWebStateObserver:
+  void OnIncognitoWebStateAdded() override;
+  void OnIncognitoWebStateRemoved() override;
 
   metrics::EnableMetricsDefault GetMetricsReportingDefaultState() override;
 

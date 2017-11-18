@@ -208,6 +208,7 @@ source_set("test_support") {
     "//ios/chrome/browser/ui/omnibox:omnibox_internal",
     "//ios/chrome/browser/ui/payments:payments_ui",
     "//ios/chrome/browser/ui/settings:settings",
+    "//ios/chrome/browser/ui/settings/cells",
     "//ios/chrome/browser/ui/static_content",
     "//ios/chrome/browser/ui/toolbar/public",
     "//ios/chrome/browser/ui/tools_menu",
