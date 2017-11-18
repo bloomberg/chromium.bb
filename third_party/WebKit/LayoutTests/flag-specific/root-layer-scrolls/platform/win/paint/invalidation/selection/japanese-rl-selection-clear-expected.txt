@@ -18,7 +18,7 @@
       "paintInvalidations": [
         {
           "object": "LayoutText #text",
-          "rect": [230, 123, 542, 394],
+          "rect": [230, 123, 499, 394],
           "reason": "geometry"
         }
       ]
