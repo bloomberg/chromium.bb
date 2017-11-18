@@ -53,7 +53,7 @@ void AddDefaultCard(fake_server::FakeServer* server) {
 
   server->InjectEntity(
       syncer::PersistentUniqueClientEntity::CreateFromEntitySpecifics(
-          kDefaultCardID, specifics));
+          kDefaultCardID, specifics, 12345, 12345));
 }
 
 }  // namespace

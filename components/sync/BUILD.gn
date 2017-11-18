@@ -895,6 +895,11 @@ source_set("unit_tests") {
     "engine_impl/js_mutation_event_observer_unittest.cc",
     "engine_impl/js_sync_encryption_handler_observer_unittest.cc",
     "engine_impl/js_sync_manager_observer_unittest.cc",
+    "engine_impl/loopback_server/loopback_server_unittest.cc",
+    "engine_impl/loopback_server/persistent_bookmark_entity_unittest.cc",
+    "engine_impl/loopback_server/persistent_permanent_entity_unittest.cc",
+    "engine_impl/loopback_server/persistent_tombstone_entity_unittest.cc",
+    "engine_impl/loopback_server/persistent_unique_client_entity_unittest.cc",
     "engine_impl/model_type_registry_unittest.cc",
     "engine_impl/model_type_worker_unittest.cc",
     "engine_impl/net/sync_server_connection_manager_unittest.cc",
@@ -995,10 +1000,6 @@ source_set("unit_tests") {
 
   if (is_ios) {
     sources -= [ "engine/net/http_bridge_unittest.cc" ]
-  }
-
-  if (is_win) {
-    sources += [ "engine_impl/loopback_server/loopback_server_unittest.cc" ]
   }
 
   if (!is_ios) {

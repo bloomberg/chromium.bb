@@ -84878,6 +84878,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Tracks the size of the local sync backend database file.</summary>
 </histogram>
 
+<histogram name="Sync.Local.RequestTypeOnError" enum="SyncRequestType">
+  <owner>skym@chromium.org</owner>
+  <summary>
+    Tracks the types of requests that caused errors inside of the local server.
+  </summary>
+</histogram>
+
 <histogram name="Sync.Local.RoamingProfileUnavailable" enum="BooleanError">
   <owner>pastarmovj@chromium.org</owner>
   <summary>

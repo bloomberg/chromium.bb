@@ -13,8 +13,60 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using sync_pb::ClientToServerMessage;
+using sync_pb::ClientToServerResponse;
+using sync_pb::EntitySpecifics;
+using sync_pb::SyncEnums;
+using sync_pb::SyncEntity;
 
 namespace syncer {
+
+namespace {
+
+const char kUrl1[] = "http://www.one.com";
+const char kUrl2[] = "http://www.two.com";
+const char kUrl3[] = "http://www.three.com";
+const char kBookmarkBar[] = "bookmark_bar";
+
+SyncEntity NewBookmarkEntity(const std::string& url,
+                             const std::string& parent_id) {
+  SyncEntity entity;
+  entity.mutable_specifics()->mutable_bookmark()->set_url(url);
+  entity.set_parent_id_string(parent_id);
+  return entity;
+}
+
+SyncEntity UpdatedBookmarkEntity(const std::string& url,
+                                 const std::string& id,
+                                 const std::string& parent_id,
+                                 int version) {
+  SyncEntity entity;
+  entity.mutable_specifics()->mutable_bookmark()->set_url(url);
+  entity.set_id_string(id);
+  entity.set_parent_id_string(parent_id);
+  entity.set_version(version);
+  return entity;
+}
+
+SyncEntity DeletedBookmarkEntity(const std::string& id, int version) {
+  SyncEntity entity;
+  entity.mutable_specifics()->mutable_bookmark();
+  entity.set_id_string(id);
+  entity.set_deleted(true);
+  entity.set_version(version);
+  return entity;
+}
+
+std::map<std::string, SyncEntity> ResponseToMap(
+    const ClientToServerResponse& response) {
+  EXPECT_TRUE(response.has_get_updates());
+  std::map<std::string, SyncEntity> results;
+  for (const SyncEntity& entity : response.get_updates().entries()) {
+    results[entity.id_string()] = entity;
+  }
+  return results;
+}
+
+}  // namespace
 
 class LoopbackServerTest : public testing::Test {
  public:
@@ -24,31 +76,61 @@ class LoopbackServerTest : public testing::Test {
         std::make_unique<LoopbackConnectionManager>(&signal_, persistent_file_);
   }
 
-  static bool CallPostAndProcessHeaders(
-      ServerConnectionManager* scm,
-      SyncCycle* cycle,
-      const sync_pb::ClientToServerMessage& msg,
-      sync_pb::ClientToServerResponse* response) {
+  static bool CallPostAndProcessHeaders(ServerConnectionManager* scm,
+                                        SyncCycle* cycle,
+                                        const ClientToServerMessage& msg,
+                                        ClientToServerResponse* response) {
     return SyncerProtoUtil::PostAndProcessHeaders(scm, cycle, msg, response);
   }
 
  protected:
-  ClientToServerMessage CreateCommitMessage() {
-    ClientToServerMessage msg;
-    SyncerProtoUtil::SetProtocolVersion(&msg);
-    msg.set_share("required");
-    msg.set_message_contents(ClientToServerMessage::COMMIT);
-    msg.set_invalidator_client_id("client_id");
-    auto* commit = msg.mutable_commit();
+  ClientToServerResponse GetUpdatesForType(int field_number) {
+    ClientToServerMessage request;
+    SyncerProtoUtil::SetProtocolVersion(&request);
+    request.set_share("required");
+    request.set_message_contents(ClientToServerMessage::GET_UPDATES);
+    request.mutable_get_updates()->add_from_progress_marker()->set_data_type_id(
+        field_number);
+
+    ClientToServerResponse response;
+    EXPECT_TRUE(
+        CallPostAndProcessHeaders(lcm_.get(), nullptr, request, &response));
+    EXPECT_EQ(SyncEnums::SUCCESS, response.error_code());
+    return response;
+  }
+
+  ClientToServerMessage SingleEntryCommit(
+      const std::vector<SyncEntity>& entity_vector) {
+    ClientToServerMessage request;
+    SyncerProtoUtil::SetProtocolVersion(&request);
+    request.set_share("required");
+    request.set_message_contents(ClientToServerMessage::COMMIT);
+    request.set_invalidator_client_id("client_id");
+    auto* commit = request.mutable_commit();
     commit->set_cache_guid("cache_guid");
-    auto* entry = commit->add_entries();
-    // Not quite well formed but enough to fool the server.
-    entry->set_parent_id_string("bookmark_bar");
-    entry->set_id_string("id_string");
-    entry->set_version(0);
-    entry->set_name("google");
-    entry->mutable_specifics()->mutable_bookmark()->set_url("http://google.de");
-    return msg;
+    for (const SyncEntity& entity : entity_vector) {
+      *commit->add_entries() = entity;
+    }
+    return request;
+  }
+
+  std::string CommitVerifySuccess(const SyncEntity& entity) {
+    ClientToServerMessage request = SingleEntryCommit({entity});
+    ClientToServerResponse response;
+    EXPECT_TRUE(
+        CallPostAndProcessHeaders(lcm_.get(), nullptr, request, &response));
+    EXPECT_EQ(SyncEnums::SUCCESS, response.error_code());
+    EXPECT_TRUE(response.has_commit());
+    return response.commit().entryresponse(0).id_string();
+  }
+
+  void CommitVerifyFailure(const SyncEntity& entity) {
+    ClientToServerMessage request = SingleEntryCommit({entity});
+    ClientToServerResponse response;
+    EXPECT_FALSE(
+        CallPostAndProcessHeaders(lcm_.get(), nullptr, request, &response));
+    EXPECT_NE(SyncEnums::SUCCESS, response.error_code());
+    EXPECT_FALSE(response.has_commit());
   }
 
   CancelationSignal signal_;
@@ -63,25 +145,16 @@ TEST_F(LoopbackServerTest, WrongBirthday) {
   msg.set_store_birthday("not_your_birthday");
   msg.set_message_contents(ClientToServerMessage::GET_UPDATES);
   msg.mutable_get_updates()->add_from_progress_marker()->set_data_type_id(
-      sync_pb::EntitySpecifics::kBookmarkFieldNumber);
-  sync_pb::ClientToServerResponse response;
+      EntitySpecifics::kBookmarkFieldNumber);
+  ClientToServerResponse response;
 
-  EXPECT_TRUE(CallPostAndProcessHeaders(lcm_.get(), NULL, msg, &response));
-  EXPECT_EQ(sync_pb::SyncEnums::NOT_MY_BIRTHDAY, response.error_code());
+  EXPECT_TRUE(CallPostAndProcessHeaders(lcm_.get(), nullptr, msg, &response));
+  EXPECT_EQ(SyncEnums::NOT_MY_BIRTHDAY, response.error_code());
 }
 
 TEST_F(LoopbackServerTest, GetUpdateCommand) {
-  ClientToServerMessage msg;
-  SyncerProtoUtil::SetProtocolVersion(&msg);
-  msg.set_share("required");
-  msg.set_message_contents(ClientToServerMessage::GET_UPDATES);
-  msg.mutable_get_updates()->add_from_progress_marker()->set_data_type_id(
-      sync_pb::EntitySpecifics::kBookmarkFieldNumber);
-  sync_pb::ClientToServerResponse response;
-
-  EXPECT_TRUE(CallPostAndProcessHeaders(lcm_.get(), NULL, msg, &response));
-  EXPECT_EQ(sync_pb::SyncEnums::SUCCESS, response.error_code());
-  ASSERT_TRUE(response.has_get_updates());
+  ClientToServerResponse response =
+      GetUpdatesForType(EntitySpecifics::kBookmarkFieldNumber);
   // Expect to see the three top-level folders in this update already.
   EXPECT_EQ(3, response.get_updates().entries_size());
 }
@@ -91,31 +164,58 @@ TEST_F(LoopbackServerTest, ClearServerDataCommand) {
   SyncerProtoUtil::SetProtocolVersion(&msg);
   msg.set_share("required");
   msg.set_message_contents(ClientToServerMessage::CLEAR_SERVER_DATA);
-  sync_pb::ClientToServerResponse response;
+  ClientToServerResponse response;
 
-  EXPECT_TRUE(CallPostAndProcessHeaders(lcm_.get(), NULL, msg, &response));
-  EXPECT_EQ(sync_pb::SyncEnums::SUCCESS, response.error_code());
+  EXPECT_TRUE(CallPostAndProcessHeaders(lcm_.get(), nullptr, msg, &response));
+  EXPECT_EQ(SyncEnums::SUCCESS, response.error_code());
   EXPECT_TRUE(response.has_clear_server_data());
 }
 
 TEST_F(LoopbackServerTest, CommitCommand) {
-  ClientToServerMessage msg = CreateCommitMessage();
-  sync_pb::ClientToServerResponse response;
+  CommitVerifySuccess(NewBookmarkEntity(kUrl1, kBookmarkBar));
+}
 
-  EXPECT_TRUE(CallPostAndProcessHeaders(lcm_.get(), NULL, msg, &response));
-  EXPECT_EQ(sync_pb::SyncEnums::SUCCESS, response.error_code());
-  EXPECT_TRUE(response.has_commit());
+TEST_F(LoopbackServerTest, CommitFailureNoTag) {
+  // Non-bookmarks and non-commit only types must have a
+  // client_defined_unique_tag, which we don't set.
+  SyncEntity entity;
+  entity.mutable_specifics()->mutable_preference();
+  CommitVerifyFailure(entity);
+}
+
+TEST_F(LoopbackServerTest, CommitBookmarkTombstoneSuccess) {
+  std::string id1 = CommitVerifySuccess(NewBookmarkEntity(kUrl1, kBookmarkBar));
+  std::string id2 = CommitVerifySuccess(NewBookmarkEntity(kUrl2, id1));
+  std::string id3 = CommitVerifySuccess(NewBookmarkEntity(kUrl3, kBookmarkBar));
+
+  // Because 2 is a child of 1, deleting 1 will also delete 2.
+  CommitVerifySuccess(DeletedBookmarkEntity(id1, 10));
+
+  std::map<std::string, SyncEntity> bookmarks =
+      ResponseToMap(GetUpdatesForType(EntitySpecifics::kBookmarkFieldNumber));
+  EXPECT_TRUE(bookmarks[id1].deleted());
+  EXPECT_TRUE(bookmarks[id2].deleted());
+  EXPECT_FALSE(bookmarks[id3].deleted());
+}
+
+TEST_F(LoopbackServerTest, CommitBookmarkTombstoneFailure) {
+  std::string id1 = CommitVerifySuccess(NewBookmarkEntity(kUrl1, kBookmarkBar));
+  std::string id2 = CommitVerifySuccess(NewBookmarkEntity(kUrl2, "9" + id1));
+
+  // This write is going to fail, the id is supposed to encode the model type as
+  // as prefix, by adding 9 we're creating a fake model type.
+  SyncEntity entity = DeletedBookmarkEntity("9" + id1, 1);
+  CommitVerifyFailure(entity);
+
+  std::map<std::string, SyncEntity> bookmarks =
+      ResponseToMap(GetUpdatesForType(EntitySpecifics::kBookmarkFieldNumber));
+  EXPECT_FALSE(bookmarks[id1].deleted());
+  // This is the point of this test, making sure the child doesn't get deleted.
+  EXPECT_FALSE(bookmarks[id2].deleted());
 }
 
 TEST_F(LoopbackServerTest, LoadSavedState) {
-  ClientToServerMessage commit_msg = CreateCommitMessage();
-
-  sync_pb::ClientToServerResponse response;
-
-  EXPECT_TRUE(
-      CallPostAndProcessHeaders(lcm_.get(), NULL, commit_msg, &response));
-  EXPECT_EQ(sync_pb::SyncEnums::SUCCESS, response.error_code());
-  EXPECT_TRUE(response.has_commit());
+  std::string id = CommitVerifySuccess(NewBookmarkEntity(kUrl1, kBookmarkBar));
 
   CancelationSignal signal;
   LoopbackConnectionManager second_user(&signal, persistent_file_);
@@ -126,59 +226,31 @@ TEST_F(LoopbackServerTest, LoadSavedState) {
   get_updates_msg.set_message_contents(ClientToServerMessage::GET_UPDATES);
   get_updates_msg.mutable_get_updates()
       ->add_from_progress_marker()
-      ->set_data_type_id(sync_pb::EntitySpecifics::kBookmarkFieldNumber);
+      ->set_data_type_id(EntitySpecifics::kBookmarkFieldNumber);
 
-  EXPECT_TRUE(CallPostAndProcessHeaders(&second_user, NULL, get_updates_msg,
+  ClientToServerResponse response;
+  EXPECT_TRUE(CallPostAndProcessHeaders(&second_user, nullptr, get_updates_msg,
                                         &response));
-  EXPECT_EQ(sync_pb::SyncEnums::SUCCESS, response.error_code());
+  EXPECT_EQ(SyncEnums::SUCCESS, response.error_code());
   ASSERT_TRUE(response.has_get_updates());
   // Expect to see the three top-level folders and the newly added bookmark!
   EXPECT_EQ(4, response.get_updates().entries_size());
+  EXPECT_EQ(1U, ResponseToMap(response).count(id));
 }
 
 TEST_F(LoopbackServerTest, CommitCommandUpdate) {
-  ClientToServerMessage commit_msg_1 = CreateCommitMessage();
-  sync_pb::ClientToServerResponse response;
+  std::string id = CommitVerifySuccess(NewBookmarkEntity(kUrl1, kBookmarkBar));
+  EXPECT_EQ(1U, ResponseToMap(
+                    GetUpdatesForType(EntitySpecifics::kBookmarkFieldNumber))
+                    .count(id));
+  CommitVerifySuccess(UpdatedBookmarkEntity(kUrl2, id, "other_bookmarks", 1));
 
-  EXPECT_TRUE(
-      CallPostAndProcessHeaders(lcm_.get(), NULL, commit_msg_1, &response));
-  EXPECT_EQ(sync_pb::SyncEnums::SUCCESS, response.error_code());
-  EXPECT_TRUE(response.has_commit());
-  const std::string server_id = response.commit().entryresponse(0).id_string();
-
-  ClientToServerMessage get_updates_msg;
-  SyncerProtoUtil::SetProtocolVersion(&get_updates_msg);
-  get_updates_msg.set_share("required");
-  get_updates_msg.set_message_contents(ClientToServerMessage::GET_UPDATES);
-  get_updates_msg.mutable_get_updates()
-      ->add_from_progress_marker()
-      ->set_data_type_id(sync_pb::EntitySpecifics::kBookmarkFieldNumber);
-
-  EXPECT_TRUE(
-      CallPostAndProcessHeaders(lcm_.get(), NULL, get_updates_msg, &response));
-  EXPECT_EQ(sync_pb::SyncEnums::SUCCESS, response.error_code());
-  ASSERT_TRUE(response.has_get_updates());
-  // Expect to see the three top-level folders and the newly added bookmark!
-  EXPECT_EQ(4, response.get_updates().entries_size());
-
-  ClientToServerMessage commit_msg_2 = CreateCommitMessage();
-  auto* entry = commit_msg_2.mutable_commit()->mutable_entries()->Mutable(0);
-  entry->set_id_string(server_id);
-  entry->set_version(1);
-  entry->set_parent_id_string("other_bookmarks");
-  entry->mutable_specifics()->mutable_bookmark()->set_url("http://google.bg");
-
-  EXPECT_TRUE(
-      CallPostAndProcessHeaders(lcm_.get(), NULL, commit_msg_2, &response));
-  EXPECT_EQ(sync_pb::SyncEnums::SUCCESS, response.error_code());
-  EXPECT_TRUE(response.has_commit());
-
-  EXPECT_TRUE(
-      CallPostAndProcessHeaders(lcm_.get(), NULL, get_updates_msg, &response));
-  EXPECT_EQ(sync_pb::SyncEnums::SUCCESS, response.error_code());
+  ClientToServerResponse response =
+      GetUpdatesForType(EntitySpecifics::kBookmarkFieldNumber);
   ASSERT_TRUE(response.has_get_updates());
   // Expect to see no fifth bookmark!
   EXPECT_EQ(4, response.get_updates().entries_size());
+  EXPECT_EQ(kUrl2, ResponseToMap(response)[id].specifics().bookmark().url());
 }
 
 }  // namespace syncer

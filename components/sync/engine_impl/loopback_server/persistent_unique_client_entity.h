@@ -46,7 +46,9 @@ class PersistentUniqueClientEntity : public LoopbackServerEntity {
   // FakeServer injection API.
   static std::unique_ptr<LoopbackServerEntity> CreateFromEntitySpecifics(
       const std::string& name,
-      const sync_pb::EntitySpecifics& entity_specifics);
+      const sync_pb::EntitySpecifics& entity_specifics,
+      int64_t creation_time,
+      int64_t last_modified_time);
 
   // LoopbackServerEntity implementation.
   bool RequiresParentId() const override;
