@@ -150,6 +150,57 @@ def DefaultPages(base_name):
       revision=7),
 
     PixelTestPage(
+      'pixel_webgl_premultiplied_alpha_false.html',
+      base_name + '_WebGL_PremultipliedAlpha_False',
+      test_rect=[0, 0, 150, 150],
+      revision=0, # This is not used.
+      expected_colors=[
+        # TODO(kbr): if this works, then factor it out so it applies
+        # to all pixel tests that use programmatic expectations.
+        {
+          "comment": "scale factor overrides",
+          "scale_factor_overrides": [
+            {
+              "device_type": "Nexus 5",
+              "scale_factor": 1.105
+            },
+            {
+              "device_type": "Nexus 5X",
+              "scale_factor": 1.105
+            },
+            {
+              "device_type": "Nexus 6",
+              "scale_factor": 1.47436
+            },
+            {
+              "device_type": "Nexus 6P",
+              "scale_factor": 1.472
+            },
+            {
+              "device_type": "Nexus 9",
+              "scale_factor": 1.566
+            },
+            {
+              "comment": "NVIDIA Shield",
+              "device_type": "sb_na_wf",
+              "scale_factor": 1.226
+            }
+          ]
+        },
+        {
+          'comment': 'brown',
+          'location': [1, 1],
+          'size': [148, 148],
+          # This is the color on an NVIDIA based MacBook Pro if the
+          # sRGB profile's applied correctly.
+          'color': [102, 77, 0],
+          # This is the color if it isn't.
+          # 'color': [101, 76, 12],
+          'tolerance': 3
+        },
+      ]),
+
+    PixelTestPage(
       'pixel_webgl2_blitframebuffer_result_displayed.html',
       base_name + '_WebGL2_BlitFramebuffer_Result_Displayed',
       test_rect=[0, 0, 200, 200],
