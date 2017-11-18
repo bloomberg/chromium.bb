@@ -35,10 +35,6 @@ const base::Feature kGoogleBrandedPhishingWarning{
     "PasswordProtectionGoogleBrandedPhishingWarning",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kLocalDatabaseManagerEnabled{
-    "SafeBrowsingV4LocalDatabaseManagerEnabled",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
 // If enabled, SafeBrowsing URL checks don't defer starting requests or
 // following redirects, no matter on desktop or mobile. Instead they only defer
 // response processing.
@@ -55,9 +51,6 @@ const base::Feature kTriggerThrottlerDailyQuotaFeature{
     "SafeBrowsingTriggerThrottlerDailyQuota",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kV4OnlyEnabled{"SafeBrowsingV4OnlyEnabled",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
-
 namespace {
 // List of experimental features. Boolean value for each list member should be
 // set to true if the experiment is currently running at a probability other
@@ -71,11 +64,9 @@ constexpr struct {
     {&kAdSamplerTriggerFeature, false},
     {&kGaiaPasswordReuseReporting, true},
     {&kGoogleBrandedPhishingWarning, true},
-    {&kLocalDatabaseManagerEnabled, true},
     {&kParallelUrlCheck, true},
     {&kThreatDomDetailsTagAndAttributeFeature, false},
     {&kTriggerThrottlerDailyQuotaFeature, false},
-    {&kV4OnlyEnabled, true},
 };
 
 // Adds the name and the enabled/disabled status of a given feature.
