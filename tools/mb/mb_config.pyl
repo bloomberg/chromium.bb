@@ -271,6 +271,7 @@
       'GPU Linux Builder (dbg)': 'gpu_tests_debug_trybot',
       'GPU Win Builder': 'gpu_tests_release_trybot_x86_minimal_symbols',
       'GPU Win Builder (dbg)': 'gpu_tests_debug_trybot_x86_minimal_symbols',
+      'Android Release (Nexus 5X)': 'gpu_tests_android_release_trybot_arm64',
     },
 
     'chromium.gpu.fyi': {
