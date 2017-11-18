@@ -368,9 +368,9 @@ bool WallpaperController::WallpaperIsAlreadyLoaded(
 }
 
 void WallpaperController::OpenSetWallpaperPage() {
-  if (wallpaper_picker_ &&
+  if (wallpaper_controller_client_ &&
       Shell::Get()->wallpaper_delegate()->CanOpenSetWallpaperPage()) {
-    wallpaper_picker_->Open();
+    wallpaper_controller_client_->OpenWallpaperPicker();
   }
 }
 
@@ -387,24 +387,71 @@ bool WallpaperController::ShouldApplyBlur() const {
              switches::kAshDisableLoginDimAndBlur);
 }
 
-void WallpaperController::AddObserver(
-    mojom::WallpaperObserverAssociatedPtrInfo observer) {
-  mojom::WallpaperObserverAssociatedPtr observer_ptr;
-  observer_ptr.Bind(std::move(observer));
-  observer_ptr->OnWallpaperColorsChanged(prominent_colors_);
-  mojo_observers_.AddPtr(std::move(observer_ptr));
+void WallpaperController::SetClient(
+    mojom::WallpaperControllerClientPtr client) {
+  wallpaper_controller_client_ = std::move(client);
 }
 
-void WallpaperController::SetWallpaperPicker(mojom::WallpaperPickerPtr picker) {
-  wallpaper_picker_ = std::move(picker);
+void WallpaperController::SetCustomWallpaper(
+    mojom::WallpaperUserInfoPtr user_info,
+    const std::string& wallpaper_files_id,
+    const std::string& file_name,
+    wallpaper::WallpaperLayout layout,
+    wallpaper::WallpaperType type,
+    const SkBitmap& image,
+    bool show_wallpaper) {
+  NOTIMPLEMENTED();
+}
+
+void WallpaperController::SetOnlineWallpaper(
+    mojom::WallpaperUserInfoPtr user_info,
+    const SkBitmap& image,
+    const std::string& url,
+    wallpaper::WallpaperLayout layout,
+    bool show_wallpaper) {
+  NOTIMPLEMENTED();
+}
+
+void WallpaperController::SetDefaultWallpaper(
+    mojom::WallpaperUserInfoPtr user_info,
+    bool show_wallpaper) {
+  NOTIMPLEMENTED();
+}
+
+void WallpaperController::SetCustomizedDefaultWallpaper(
+    const GURL& wallpaper_url,
+    const base::FilePath& file_path,
+    const base::FilePath& resized_directory) {
+  NOTIMPLEMENTED();
+}
+
+void WallpaperController::ShowUserWallpaper(
+    mojom::WallpaperUserInfoPtr user_info) {
+  NOTIMPLEMENTED();
+}
+
+void WallpaperController::ShowSigninWallpaper() {
+  NOTIMPLEMENTED();
+}
+
+void WallpaperController::RemoveUserWallpaper(
+    mojom::WallpaperUserInfoPtr user_info) {
+  NOTIMPLEMENTED();
 }
 
 void WallpaperController::SetWallpaper(const SkBitmap& wallpaper,
                                        const wallpaper::WallpaperInfo& info) {
   if (wallpaper.isNull())
     return;
-
   SetWallpaperImage(gfx::ImageSkia::CreateFrom1xBitmap(wallpaper), info);
+}
+
+void WallpaperController::AddObserver(
+    mojom::WallpaperObserverAssociatedPtrInfo observer) {
+  mojom::WallpaperObserverAssociatedPtr observer_ptr;
+  observer_ptr.Bind(std::move(observer));
+  observer_ptr->OnWallpaperColorsChanged(prominent_colors_);
+  mojo_observers_.AddPtr(std::move(observer_ptr));
 }
 
 void WallpaperController::GetWallpaperColors(
@@ -423,6 +470,10 @@ void WallpaperController::OnColorCalculationComplete() {
   if (!current_location_.empty())
     CacheProminentColors(colors, current_location_);
   SetProminentColors(colors);
+}
+
+void WallpaperController::FlushForTesting() {
+  wallpaper_controller_client_.FlushForTesting();
 }
 
 void WallpaperController::InstallDesktopController(aura::Window* root_window) {

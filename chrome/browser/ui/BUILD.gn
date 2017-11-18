@@ -1274,6 +1274,8 @@ split_static_library("ui") {
       "ash/volume_controller.h",
       "ash/vpn_list_forwarder.cc",
       "ash/vpn_list_forwarder.h",
+      "ash/wallpaper_controller_client.cc",
+      "ash/wallpaper_controller_client.h",
       "browser_commands_chromeos.cc",
       "browser_commands_chromeos.h",
       "extensions/extension_installed_notification.cc",
@@ -3725,6 +3727,8 @@ static_library("test_support") {
     sources += [
       "ash/fake_tablet_mode_controller.cc",
       "ash/fake_tablet_mode_controller.h",
+      "ash/test_wallpaper_controller.cc",
+      "ash/test_wallpaper_controller.h",
     ]
     deps += [ "//ash/public/cpp:ash_public_cpp" ]
   }

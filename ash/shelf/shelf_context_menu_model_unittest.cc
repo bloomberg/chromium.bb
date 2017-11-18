@@ -41,28 +41,28 @@ class ShelfContextMenuModelTest : public AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(ShelfContextMenuModelTest);
 };
 
-// A test wallpaper picker class that counts the number of times it is opened.
-class TestWallpaperPicker : public mojom::WallpaperPicker {
+// A test wallpaper controller client class.
+class TestWallpaperControllerClient : public mojom::WallpaperControllerClient {
  public:
-  TestWallpaperPicker() : binding_(this) {}
-  ~TestWallpaperPicker() override = default;
+  TestWallpaperControllerClient() : binding_(this) {}
+  ~TestWallpaperControllerClient() override = default;
 
   size_t open_count() const { return open_count_; }
 
-  mojom::WallpaperPickerPtr CreateInterfacePtr() {
-    mojom::WallpaperPickerPtr ptr;
+  mojom::WallpaperControllerClientPtr CreateInterfacePtr() {
+    mojom::WallpaperControllerClientPtr ptr;
     binding_.Bind(mojo::MakeRequest(&ptr));
     return ptr;
   }
 
-  // mojom::WallpaperPicker:
-  void Open() override { open_count_++; }
+  // mojom::WallpaperControllerClient:
+  void OpenWallpaperPicker() override { open_count_++; }
 
  private:
   size_t open_count_ = 0;
-  mojo::Binding<mojom::WallpaperPicker> binding_;
+  mojo::Binding<mojom::WallpaperControllerClient> binding_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestWallpaperPicker);
+  DISALLOW_COPY_AND_ASSIGN(TestWallpaperControllerClient);
 };
 
 // A test shelf item delegate that records the commands sent for execution.
@@ -141,13 +141,12 @@ TEST_F(ShelfContextMenuModelTest, Invocation) {
   ShelfContextMenuModel menu3(MenuItemList(), nullptr, primary_id);
   submenu = menu3.GetSubmenuModelAt(1);
   EXPECT_TRUE(submenu->IsItemCheckedAt(0));
-  TestWallpaperPicker picker;
-  Shell::Get()->wallpaper_controller()->SetWallpaperPicker(
-      picker.CreateInterfacePtr());
-  EXPECT_EQ(0u, picker.open_count());
+  TestWallpaperControllerClient client;
+  Shell::Get()->wallpaper_controller()->SetClient(client.CreateInterfacePtr());
+  EXPECT_EQ(0u, client.open_count());
   menu3.ActivatedAt(2);
-  RunAllPendingInMessageLoop();
-  EXPECT_EQ(1u, picker.open_count());
+  Shell::Get()->wallpaper_controller()->FlushForTesting();
+  EXPECT_EQ(1u, client.open_count());
 }
 
 // Tests the prepending of custom items in a shelf context menu.

@@ -109,6 +109,7 @@
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
+#include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
@@ -807,6 +808,8 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
     MagnificationManager::Initialize();
   }
 
+  // TODO(crbug.com/776464): Remove WallpaperManager after everything is
+  // migrated to WallpaperController.
   WallpaperManager::SetPathIds(chrome::DIR_USER_DATA,
                                chrome::DIR_CHROMEOS_WALLPAPERS,
                                chrome::DIR_CHROMEOS_CUSTOM_WALLPAPERS);
@@ -839,6 +842,9 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   // Makes mojo request to TabletModeController in ash.
   tablet_mode_client_ = std::make_unique<TabletModeClient>();
   tablet_mode_client_->Init();
+
+  wallpaper_controller_client_ = std::make_unique<WallpaperControllerClient>();
+  wallpaper_controller_client_->Init();
 
   if (lock_screen_apps::StateController::IsEnabled()) {
     lock_screen_apps_state_controller_ =
@@ -1164,6 +1170,8 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // http://crbug.com/276659).
   g_browser_process->platform_part()->user_manager()->Shutdown();
   WallpaperManager::Shutdown();
+
+  wallpaper_controller_client_.reset();
 
   // Let the DeviceDisablingManager unregister itself as an observer of the
   // CrosSettings singleton before it is destroyed.
