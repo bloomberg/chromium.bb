@@ -142,6 +142,8 @@
 (allow mach-lookup 
   (global-name "com.apple.distributed_notifications@Uv3")
   (global-name "com.apple.fonts")
+  ; crbug.com/756145, crbug.com/786615
+  (global-name "com.apple.FontObjectsServer")
   (global-name "com.apple.logd")
   (global-name "com.apple.lsd.mapdb")
   (global-name "com.apple.system.logger")
@@ -153,10 +155,6 @@
 ; but 10.9 through 10.11 use FontServer.
 (if (< os-version 1012)
   (allow mach-lookup (global-name "com.apple.FontServer")))
-
-; crbug.com/756145
-(if (= os-version 1011)
-  (allow mach-lookup (global-name "com.apple.FontObjectsServer")))
 
 ; sysctl
 (if (= os-version 1009)
