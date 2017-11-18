@@ -27,24 +27,6 @@ NET_EXPORT_PRIVATE bool ExtractSubjectPublicKeyFromSPKI(
     base::StringPiece spki,
     base::StringPiece* spk_out);
 
-// ExtractCRLURLsFromDERCert parses the DER encoded certificate in |cert| and
-// extracts the URL of each CRL. On successful return, the elements of
-// |urls_out| point into |cert|.
-//
-// CRLs that only cover a subset of the reasons are omitted as the spec
-// requires that at least one CRL be included that covers all reasons.
-//
-// CRLs that use an alternative issuer are also omitted.
-//
-// The nested set of GeneralNames is flattened into a single list because
-// having several CRLs with one location is equivalent to having one CRL with
-// several locations as far as a CRL filter is concerned.
-//
-// TODO(eroman): This appears to be unused, can it be deleted?
-NET_EXPORT_PRIVATE bool ExtractCRLURLsFromDERCert(
-    base::StringPiece cert,
-    std::vector<base::StringPiece>* urls_out);
-
 // HasTLSFeatureExtension parses the DER encoded certificate in |cert|
 // and extracts the TLS feature extension
 // (https://tools.ietf.org/html/rfc7633) if present. Returns true if the

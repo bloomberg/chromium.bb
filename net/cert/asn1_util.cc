@@ -183,59 +183,6 @@ bool ExtractSubjectPublicKeyFromSPKI(base::StringPiece spki,
   return true;
 }
 
-bool ExtractCRLURLsFromDERCert(base::StringPiece cert,
-                               std::vector<base::StringPiece>* urls_out) {
-  urls_out->clear();
-  std::vector<base::StringPiece> tmp_urls_out;
-  bool present;
-  der::Parser extensions_parser;
-  if (!SeekToExtensions(der::Input(cert), &present, &extensions_parser))
-    return false;
-
-  if (!present)
-    return true;
-
-  while (extensions_parser.HasMore()) {
-    der::Parser extension_parser;
-    if (!extensions_parser.ReadSequence(&extension_parser))
-      return false;
-
-    der::Input oid;
-    if (!extension_parser.ReadTag(der::kOid, &oid))
-      return false;
-
-    // CRL Distribution Points extension.
-    if (oid != CrlDistributionPointsOid())
-      continue;
-
-    // critical
-    if (!extension_parser.SkipOptionalTag(der::kBool, &present))
-      return false;
-
-    // extnValue
-    der::Input extension_value;
-    if (!extension_parser.ReadTag(der::kOctetString, &extension_value))
-      return false;
-
-    std::vector<ParsedDistributionPoint> distribution_points;
-
-    if (!ParseCrlDistributionPoints(extension_value, &distribution_points))
-      return false;
-
-    for (const auto& dp : distribution_points) {
-      // If the distribution point contains a alternative issuer, skip it.
-      if (dp.has_crl_issuer)
-        continue;
-
-      for (const auto& uri : dp.uris)
-        tmp_urls_out.push_back(uri);
-    }
-  }
-
-  urls_out->swap(tmp_urls_out);
-  return true;
-}
-
 bool HasTLSFeatureExtension(base::StringPiece cert) {
   bool present;
   der::Parser extensions_parser;
