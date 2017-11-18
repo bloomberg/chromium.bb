@@ -176,11 +176,19 @@ gfx::RectF AXTree::RelativeToTreeBounds(const AXNode* node,
     // If the node bounds is empty (either width or height is zero),
     // try to compute good bounds from the children.
     if (bounds.IsEmpty()) {
+      bool all_children_offscreen = true;
       for (size_t i = 0; i < node->children().size(); i++) {
         ui::AXNode* child = node->children()[i];
-        bounds.Union(GetTreeBounds(child));
+        bool temp_offscreen = false;
+        bounds.Union(GetTreeBounds(child, &temp_offscreen));
+        if (!temp_offscreen)
+          // At least one child is on screen.
+          all_children_offscreen = false;
       }
       if (bounds.width() > 0 && bounds.height() > 0) {
+        // If all the children are offscreen, the node itself is offscreen.
+        if (offscreen != nullptr && all_children_offscreen)
+          *offscreen |= true;
         return bounds;
       }
     }
@@ -218,7 +226,7 @@ gfx::RectF AXTree::RelativeToTreeBounds(const AXNode* node,
     if (bounds.width() == 0 && bounds.height() == 0) {
       bounds.set_size(container_bounds.size());
       if (offscreen != nullptr)
-        *offscreen |= true;
+        *offscreen = true;
     }
 
     int scroll_x = 0;
@@ -230,6 +238,17 @@ gfx::RectF AXTree::RelativeToTreeBounds(const AXNode* node,
 
     gfx::RectF clipped = bounds;
     clipped.Intersect(container_bounds);
+    if (container->data().role != ui::AX_ROLE_DESKTOP && clipped.IsEmpty()) {
+      // If it is offscreen with respect to its parent, label it offscreen.
+      // Here we are extending the definition of offscreen to include elements
+      // that are clipped by their parents in addition to those clipped by
+      // the rootWebArea.
+      // No need to update |offscreen| if |clipped| is not empty, because it
+      // should be false by default.
+      if (offscreen != nullptr)
+        *offscreen |= true;
+    }
+
     // If this is the root web area, make sure we clip the node to fit.
     // This is disabled as a bugfix for Chrome 63, see crbug.com/786164
     if (false) {
@@ -254,19 +273,6 @@ gfx::RectF AXTree::RelativeToTreeBounds(const AXNode* node,
           bounds.set_height(1);
         }
       }
-    }
-
-    if (container->data().role != ui::AX_ROLE_DESKTOP && clipped.IsEmpty() &&
-        !bounds.IsEmpty()) {
-      // If it is offscreen with respect to its parent, and the node itself is
-      // not empty, label it offscreen.
-      // Here we are extending the definition of offscreen to include elements
-      // that are clipped by their parents in addition to those clipped by
-      // the rootWebArea.
-      // No need to update |offscreen| if |clipped| is not empty, because it
-      // should be false by default.
-      if (offscreen != nullptr)
-        *offscreen |= true;
     }
 
     node = container;
