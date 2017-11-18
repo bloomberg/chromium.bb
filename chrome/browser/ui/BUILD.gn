@@ -1704,6 +1704,7 @@ split_static_library("ui") {
       "cocoa/chrome_command_dispatcher_delegate.mm",
       "cocoa/chrome_style.cc",
       "cocoa/chrome_style.h",
+      "cocoa/color_chooser_mac.h",
       "cocoa/color_chooser_mac.mm",
       "cocoa/confirm_quit.h",
       "cocoa/confirm_quit_panel_controller.h",
