@@ -1744,4 +1744,27 @@ public class ImeTest {
                                 + "  document.getElementById('div').firstChild, "
                                 + "  'composition', 1).endOffset"));
     }
+
+    @Test
+    @SmallTest
+    @Feature({"TextInput"})
+    public void testAutocorrectAttribute() throws Exception {
+        // Autocorrect should be on for a text field that doesn't have an autocorrect attribute.
+        mRule.focusElement("input_text");
+        Assert.assertEquals(EditorInfo.TYPE_TEXT_FLAG_AUTO_CORRECT,
+                mRule.getConnectionFactory().getOutAttrs().inputType
+                        & EditorInfo.TYPE_TEXT_FLAG_AUTO_CORRECT);
+
+        // Autocorrect should be on for a text field that has autocorrect="on" set.
+        mRule.focusElement("autocorrect_on");
+        Assert.assertEquals(EditorInfo.TYPE_TEXT_FLAG_AUTO_CORRECT,
+                mRule.getConnectionFactory().getOutAttrs().inputType
+                        & EditorInfo.TYPE_TEXT_FLAG_AUTO_CORRECT);
+
+        // Autocorrect should be off for a text field that has autocorrect="off" set.
+        mRule.focusElement("autocorrect_off");
+        Assert.assertEquals(0,
+                mRule.getConnectionFactory().getOutAttrs().inputType
+                        & EditorInfo.TYPE_TEXT_FLAG_AUTO_CORRECT);
+    }
 }
