@@ -58,7 +58,7 @@ PACKAGE_FILTER = [
     "libxcb.so",
 ]
 
-SUPPORTED_FEDORA_RELEASES = ['25', '26']
+SUPPORTED_FEDORA_RELEASES = ['25', '26', '27']
 SUPPORTED_OPENSUSE_LEAP_RELEASES = ['42.2', '42.3']
 
 COMMON_NS = "http://linux.duke.edu/metadata/common"
