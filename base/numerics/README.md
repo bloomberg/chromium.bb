@@ -64,7 +64,7 @@ represent the full range of the source type:
 
 ```cpp
 // Throw a compiler error if byte_value is changed to an out-of-range-type.
-int int_value = saturated_cast<int>(byte_value);
+int int_value = strict_cast<int>(byte_value);
 ```
 
 You can also enforce these compile-time restrictions on function parameters by
