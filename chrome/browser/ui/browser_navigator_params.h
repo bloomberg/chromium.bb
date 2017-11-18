@@ -10,6 +10,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/common/referrer.h"
@@ -77,14 +78,14 @@ struct NavigateParams {
   std::string frame_name;
 
   // The browser-global ID of the frame to navigate, or -1 for the main frame.
-  int frame_tree_node_id;
+  int frame_tree_node_id = -1;
 
   // Any redirect URLs that occurred for this navigation before |url|.
   // Usually empty.
   std::vector<GURL> redirect_chain;
 
   // Indicates whether this navigation will be sent using POST.
-  bool uses_post;
+  bool uses_post = false;
 
   // The post data when the navigation uses POST.
   scoped_refptr<content::ResourceRequestBody> post_data;
@@ -106,7 +107,7 @@ struct NavigateParams {
   //       a new WebContents, this field will remain NULL and the
   //       WebContents deleted if the WebContents it created is
   //       not added to a TabStripModel before Navigate() returns.
-  content::WebContents* target_contents;
+  content::WebContents* target_contents = nullptr;
 
   // [in]  The WebContents that initiated the Navigate() request if such
   //       context is necessary. Default is NULL, i.e. no context.
@@ -115,7 +116,7 @@ struct NavigateParams {
   //       Navigate(). However, if the originating page is from a different
   //       profile (e.g. an OFF_THE_RECORD page originating from a non-OTR
   //       window), then |source_contents| is reset to NULL.
-  content::WebContents* source_contents;
+  content::WebContents* source_contents = nullptr;
 
   // The disposition requested by the navigation source. Default is
   // CURRENT_TAB. What follows is a set of coercions that happen to this value
@@ -132,34 +133,30 @@ struct NavigateParams {
   // If disposition is one of NEW_WINDOW, NEW_POPUP, NEW_FOREGROUND_TAB or
   // SINGLETON_TAB, then TabStripModel::ADD_ACTIVE is automatically added to
   // |tabstrip_add_types|.
-  WindowOpenDisposition disposition;
+  WindowOpenDisposition disposition = WindowOpenDisposition::CURRENT_TAB;
 
   // Allows setting the opener for the case when new WebContents are created
   // (i.e. when |disposition| asks for a new tab or window).
-  content::RenderFrameHost* opener;
+  content::RenderFrameHost* opener = nullptr;
 
-  // Sets browser->is_trusted_source. Default is false.
-  bool trusted_source;
+  // Sets browser->is_trusted_source.
+  bool trusted_source = false;
 
-  // The transition type of the navigation. Default is
-  // ui::PAGE_TRANSITION_LINK when target_contents is specified in the
-  // constructor.
-  ui::PageTransition transition;
+  // The transition type of the navigation.
+  ui::PageTransition transition = ui::PAGE_TRANSITION_LINK;
 
-  // Whether this navigation was initiated by the renderer process. Default is
-  // false.
-  bool is_renderer_initiated;
+  // Whether this navigation was initiated by the renderer process.
+  bool is_renderer_initiated = false;
 
   // The index the caller would like the tab to be positioned at in the
   // TabStrip. The actual index will be determined by the TabHandler in
-  // accordance with |add_types|. Defaults to -1 (allows the TabHandler to
-  // decide).
-  int tabstrip_index;
+  // accordance with |add_types|. The default allows the TabHandler to decide.
+  int tabstrip_index = -1;
 
   // A bitmask of values defined in TabStripModel::AddTabTypes. Helps
   // determine where to insert a new tab and whether or not it should be
-  // selected, among other properties. Default is ADD_ACTIVE.
-  int tabstrip_add_types;
+  // selected, among other properties.
+  int tabstrip_add_types = TabStripModel::ADD_ACTIVE;
 
   // If non-empty, the new tab is an app tab.
   std::string extension_app_id;
@@ -184,11 +181,10 @@ struct NavigateParams {
   // Default is NO_ACTION (don't show or activate the window).
   // If disposition is NEW_WINDOW or NEW_POPUP, and |window_action| is set to
   // NO_ACTION, |window_action| will be set to SHOW_WINDOW.
-  WindowAction window_action;
+  WindowAction window_action = NO_ACTION;
 
   // If false then the navigation was not initiated by a user gesture.
-  // Default is true.
-  bool user_gesture;
+  bool user_gesture = true;
 
   // What to do with the path component of the URL for singleton navigations.
   enum PathBehavior {
@@ -199,8 +195,7 @@ struct NavigateParams {
     // Ignore path when finding existing tab, don't navigate tab.
     IGNORE_AND_STAY_PUT,
   };
-  // Default is RESPECT.
-  PathBehavior path_behavior;
+  PathBehavior path_behavior = RESPECT;
 
   // What to do with the ref component of the URL for singleton navigations.
   enum RefBehavior {
@@ -209,8 +204,7 @@ struct NavigateParams {
     // Two URLs with differing refs are different.
     RESPECT_REF,
   };
-  // Default is IGNORE.
-  RefBehavior ref_behavior;
+  RefBehavior ref_behavior = IGNORE_REF;
 
 #if !defined(OS_ANDROID)
   // [in]  Specifies a Browser object where the navigation could occur or the
@@ -225,22 +219,22 @@ struct NavigateParams {
   //       Navigate(), the caller is responsible for showing it so that its
   //       window can assume responsibility for the Browser's lifetime (Browser
   //       objects are deleted when the user closes a visible browser window).
-  Browser* browser;
+  Browser* browser = nullptr;
 #endif
 
   // The profile that is initiating the navigation. If there is a non-NULL
   // browser passed in via |browser|, it's profile will be used instead.
-  Profile* initiating_profile;
+  Profile* initiating_profile = nullptr;
 
   // Indicates whether this navigation  should replace the current
   // navigation entry.
-  bool should_replace_current_entry;
+  bool should_replace_current_entry = false;
 
   // Indicates whether |target_contents| is being created with a window.opener.
-  bool created_with_opener;
+  bool created_with_opener = false;
 
   // Whether or not the related navigation was started in the context menu.
-  bool started_from_context_menu;
+  bool started_from_context_menu = false;
 
   // SiteInstance of the frame that initiated the navigation or null if we
   // don't know it. This should be assigned from the OpenURLParams of the
