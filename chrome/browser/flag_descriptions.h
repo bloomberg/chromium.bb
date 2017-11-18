@@ -1679,6 +1679,9 @@ extern const char kWebVrVsyncAlignDescription[];
 extern const char kVrBrowsingName[];
 extern const char kVrBrowsingDescription[];
 
+extern const char kVrBrowserKeyboardName[];
+extern const char kVrBrowserKeyboardDescription[];
+
 extern const char kVrBrowsingExperimentalFeaturesName[];
 extern const char kVrBrowsingExperimentalFeaturesDescription[];
 
