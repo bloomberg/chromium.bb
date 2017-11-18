@@ -159,7 +159,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
      */
     public SelectionPopupController(
             Context context, WindowAndroid window, WebContents webContents, View view) {
-        this(context, window, webContents, view, /* initialNative = */ true);
+        this(context, window, webContents, view, /* initializeNative = */ true);
     }
 
     /**
@@ -173,7 +173,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
     public static SelectionPopupController createForTesting(
             Context context, WindowAndroid window, WebContents webContents, View view) {
         return new SelectionPopupController(
-                context, window, webContents, view, /* initialNative = */ false);
+                context, window, webContents, view, /* initializeNative = */ false);
     }
 
     private SelectionPopupController(Context context, WindowAndroid window, WebContents webContents,
@@ -1265,7 +1265,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
             if (!(result.startAdjust == 0 && result.endAdjust == 0)) {
                 // This call will cause showSelectionMenu again.
                 mWebContents.adjustSelectionByCharacterOffset(
-                        result.startAdjust, result.endAdjust, /* show_selection_menu = */ true);
+                        result.startAdjust, result.endAdjust, /* showSelectionMenu = */ true);
                 return;
             }
 
