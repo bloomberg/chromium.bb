@@ -1468,7 +1468,7 @@ TEST_F(OfflinePageModelImplTest, StoreLoadFailurePersists) {
 
   // Model will 'load' but the store underneath it is not functional and
   // will silently fail all sql operations.
-  EXPECT_TRUE(model()->is_loaded());
+  EXPECT_TRUE(model()->is_loaded_);
   EXPECT_EQ(StoreState::FAILED_LOADING, GetStore()->state());
   EXPECT_EQ(0UL, offline_pages.size());
 

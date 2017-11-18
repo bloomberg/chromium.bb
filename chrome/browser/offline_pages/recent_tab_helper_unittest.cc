@@ -293,14 +293,12 @@ TEST_F(RecentTabHelperTest, LastNCaptureAfterLoad) {
   recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
   // Move the snapshot controller's time forward so it gets past timeouts.
   FastForwardSnapshotController();
-  EXPECT_TRUE(model()->is_loaded());
   EXPECT_EQ(0U, page_added_count());
   ASSERT_EQ(0U, GetAllPages().size());
 
   // Tab is hidden with a fully loaded page. A snapshot save should happen.
   recent_tab_helper()->WasHidden();
   RunUntilIdle();
-  EXPECT_TRUE(model()->is_loaded());
   EXPECT_EQ(1U, page_added_count());
   ASSERT_EQ(1U, GetAllPages().size());
   EXPECT_EQ(kTestPageUrl, GetAllPages()[0].url);
@@ -314,7 +312,6 @@ TEST_F(RecentTabHelperTest, NoLastNCaptureIfTabHiddenTooEarlyInPageLoad) {
   NavigateAndCommit(kTestPageUrl);
   recent_tab_helper()->WasHidden();
   RunUntilIdle();
-  EXPECT_TRUE(model()->is_loaded());
   EXPECT_EQ(0U, page_added_count());
   ASSERT_EQ(0U, GetAllPages().size());
 
@@ -340,7 +337,6 @@ TEST_F(RecentTabHelperTest, NoTabIdNoCapture) {
   recent_tab_helper()->ObserveAndDownloadCurrentPage(NewDownloadClientId(),
                                                      123L, "");
   RunUntilIdle();
-  EXPECT_TRUE(model()->is_loaded());
   // No page should be captured.
   EXPECT_EQ(0U, page_added_count());
   ASSERT_EQ(0U, GetAllPages().size());
@@ -358,7 +354,6 @@ TEST_F(RecentTabHelperTest, LastNDisabledOnSvelte) {
   FastForwardSnapshotController();
   recent_tab_helper()->WasHidden();
   RunUntilIdle();
-  EXPECT_TRUE(model()->is_loaded());
   EXPECT_EQ(0U, page_added_count());
   ASSERT_EQ(0U, GetAllPages().size());
 
@@ -382,7 +377,6 @@ TEST_F(RecentTabHelperTest, LastNWontSaveCustomTab) {
   FastForwardSnapshotController();
   recent_tab_helper()->WasHidden();
   RunUntilIdle();
-  EXPECT_TRUE(model()->is_loaded());
   EXPECT_EQ(0U, page_added_count());
   ASSERT_EQ(0U, GetAllPages().size());
 
@@ -400,7 +394,6 @@ TEST_F(RecentTabHelperTest, LastNWontSaveCustomTab) {
   // Upon the next hide a last_n snapshot should be saved.
   recent_tab_helper()->WasHidden();
   RunUntilIdle();
-  EXPECT_TRUE(model()->is_loaded());
   EXPECT_EQ(2U, page_added_count());
   ASSERT_EQ(2U, GetAllPages().size());
 }
@@ -412,7 +405,6 @@ TEST_F(RecentTabHelperTest, TwoCapturesSamePageLoad) {
   // Set page loading state to the 1st snapshot-able stage. No capture so far.
   recent_tab_helper()->DocumentAvailableInMainFrame();
   FastForwardSnapshotController();
-  EXPECT_TRUE(model()->is_loaded());
   EXPECT_EQ(0U, page_added_count());
 
   // Tab is hidden and a snapshot should be saved.
@@ -642,7 +634,6 @@ TEST_F(RecentTabHelperTest, NoCaptureOnErrorPage) {
   recent_tab_helper()->ObserveAndDownloadCurrentPage(NewDownloadClientId(),
                                                      123L, "");
   RunUntilIdle();
-  EXPECT_TRUE(model()->is_loaded());
   ASSERT_EQ(0U, GetAllPages().size());
 }
 
@@ -656,7 +647,6 @@ TEST_F(RecentTabHelperTest, LastNFeatureNotEnabled) {
   FastForwardSnapshotController();
   recent_tab_helper()->WasHidden();
   RunUntilIdle();
-  EXPECT_TRUE(model()->is_loaded());
   // No page should be captured.
   ASSERT_EQ(0U, GetAllPages().size());
 
@@ -676,7 +666,6 @@ TEST_F(RecentTabHelperTest, DownloadRequestEarlyInLoad) {
   const ClientId client_id = NewDownloadClientId();
   recent_tab_helper()->ObserveAndDownloadCurrentPage(client_id, 153L, "");
   FastForwardSnapshotController();
-  EXPECT_TRUE(model()->is_loaded());
   ASSERT_EQ(0U, GetAllPages().size());
 
   // Minimally load the page. First capture should occur.
@@ -707,7 +696,6 @@ TEST_F(RecentTabHelperTest, DownloadRequestLaterInLoad) {
   NavigateAndCommit(kTestPageUrl);
   recent_tab_helper()->DocumentAvailableInMainFrame();
   FastForwardSnapshotController();
-  EXPECT_TRUE(model()->is_loaded());
   ASSERT_EQ(0U, GetAllPages().size());
 
   const ClientId client_id = NewDownloadClientId();
@@ -732,7 +720,6 @@ TEST_F(RecentTabHelperTest, DownloadRequestAfterFullyLoad) {
   NavigateAndCommit(kTestPageUrl);
   recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
   FastForwardSnapshotController();
-  EXPECT_TRUE(model()->is_loaded());
   ASSERT_EQ(0U, GetAllPages().size());
 
   const ClientId client_id = NewDownloadClientId();
@@ -752,7 +739,6 @@ TEST_F(RecentTabHelperTest, DownloadRequestAfterFullyLoadWithOrigin) {
   NavigateAndCommit(kTestPageUrl);
   recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
   FastForwardSnapshotController();
-  EXPECT_TRUE(model()->is_loaded());
   ASSERT_EQ(0U, GetAllPages().size());
 
   const ClientId client_id = NewDownloadClientId();

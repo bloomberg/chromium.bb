@@ -63,9 +63,6 @@ const base::FilePath& StubOfflinePageModel::GetArchiveDirectory(
 ClientPolicyController* StubOfflinePageModel::GetPolicyController() {
   return &policy_controller_;
 }
-bool StubOfflinePageModel::is_loaded() const {
-  return true;
-}
 OfflineEventLogger* StubOfflinePageModel::GetLogger() {
   return nullptr;
 }

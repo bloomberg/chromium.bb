@@ -722,7 +722,6 @@ void DownloadSuggestionsProvider::UpdateOfflinePagesCache(
     bool notify,
     const std::vector<offline_pages::OfflinePageItem>&
         all_download_offline_pages) {
-  DCHECK(!offline_page_model_ || offline_page_model_->is_loaded());
 
   std::set<std::string> old_dismissed_ids =
       ReadOfflinePageDismissedIDsFromPrefs();
