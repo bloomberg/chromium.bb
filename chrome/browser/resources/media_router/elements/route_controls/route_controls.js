@@ -21,11 +21,11 @@ Polymer({
     },
 
     /**
-     * The media description to display. Uses route description if none is
-     * provided by the route status object.
+     * The route description to display. Uses the media route description if
+     * none is provided by the media route status object.
      * @private {string}
      */
-    displayedDescription_: {
+    routeDescription_: {
       type: String,
       value: '',
     },
@@ -357,7 +357,7 @@ Polymer({
       this.displayedVolume_ = Math.round(newRouteStatus.volume * 100) / 100;
     }
     if (newRouteStatus.description !== '') {
-      this.displayedDescription_ = newRouteStatus.description;
+      this.routeDescription_ = newRouteStatus.description;
     }
     if (!this.initialLoadTime_) {
       this.initialLoadTime_ = Date.now();
@@ -386,8 +386,7 @@ Polymer({
       this.stopIncrementingCurrentTime_();
     }
     if (route && this.routeStatus.description === '') {
-      this.displayedDescription_ =
-          loadTimeData.getStringF('castingActivityStatus', route.description);
+      this.routeDescription_ = route.description;
     }
   },
 

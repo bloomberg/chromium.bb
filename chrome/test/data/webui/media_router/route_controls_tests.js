@@ -82,17 +82,11 @@ cr.define('route_controls', function() {
       test('initial text setting', function() {
         // Set |route|.
         controls.onRouteUpdated_(fakeRouteOne);
-        assertElementText(
-            loadTimeData.getStringF(
-                'castingActivityStatus', fakeRouteOne.description),
-            'route-description');
+        assertElementText(fakeRouteOne.description, 'route-description');
 
         // Set |route| to a different route.
         controls.onRouteUpdated_(fakeRouteTwo);
-        assertElementText(
-            loadTimeData.getStringF(
-                'castingActivityStatus', fakeRouteTwo.description),
-            'route-description');
+        assertElementText(fakeRouteTwo.description, 'route-description');
       });
 
       // Tests that the route title and status are shown when RouteStatus is

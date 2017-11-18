@@ -36,6 +36,8 @@ struct MediaStatus {
 
   // Text describing the media, or a secondary title. For example, in a
   // MediaStatus representing a YouTube Cast session, this could be "YouTube".
+  //
+  // DEPRECATED.  TODO(crbug.com/786208): Remove this when no longer used.
   std::string description;
 
   // If this is true, the media can be played and paused.
