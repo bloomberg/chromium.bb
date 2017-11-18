@@ -174,6 +174,8 @@ NSString* RenderWidgetHostViewMacEditCommandHelper::CommandNameForSelector(
     return @"MovePageUp";
   if (selector == @selector(pageUpAndModifySelection:))
     return @"MovePageUpAndModifySelection";
+  if (selector == @selector(showGuessPanel:))
+    return @"ToggleSpellPanel";
 
   // Remove the trailing colon.
   NSString* selector_str = NSStringFromSelector(selector);
