@@ -230,7 +230,7 @@ void RenderFrameProxy::Init(blink::WebRemoteFrame* web_frame,
   pending_resize_params_.screen_info = render_widget_->screen_info();
 
 #if defined(USE_AURA)
-  if (IsRunningInMash()) {
+  if (IsRunningWithMus()) {
     RendererWindowTreeClient* renderer_window_tree_client =
         RendererWindowTreeClient::Get(render_widget_->routing_id());
     // It's possible a MusEmbeddedFrame has already been scheduled for creation
@@ -400,7 +400,7 @@ void RenderFrameProxy::OnDidStartLoading() {
 
 void RenderFrameProxy::OnViewChanged(const viz::FrameSinkId& frame_sink_id) {
   // In mash the FrameSinkId comes from RendererWindowTreeClient.
-  if (!IsRunningInMash())
+  if (!IsRunningWithMus())
     frame_sink_id_ = frame_sink_id;
 
   // Resend the FrameRects and allocate a new viz::LocalSurfaceId when the view

@@ -30,7 +30,7 @@ base::LazyInstance<ConnectionMap>::Leaky g_connections =
 
 // static
 void RendererWindowTreeClient::CreateIfNecessary(int routing_id) {
-  if (!IsRunningInMash() || Get(routing_id))
+  if (!IsRunningWithMus() || Get(routing_id))
     return;
   RendererWindowTreeClient* connection =
       new RendererWindowTreeClient(routing_id);

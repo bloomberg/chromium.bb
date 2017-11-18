@@ -92,9 +92,13 @@ static void WarmupWindowsLocales(const ppapi::PpapiPermissions& permissions) {
 
 #endif
 
-static bool IsRunningInMash() {
+static bool IsRunningWithMus() {
+#if BUILDFLAG(ENABLE_MUS)
   const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
-  return cmdline->HasSwitch(switches::kIsRunningInMash);
+  return cmdline->HasSwitch(switches::kMus);
+#else
+  return false;
+#endif
 }
 
 namespace content {
@@ -127,7 +131,7 @@ PpapiThread::PpapiThread(const base::CommandLine& command_line, bool is_broker)
   // allocator.
   if (!command_line.HasSwitch(switches::kSingleProcess)) {
     discardable_memory::mojom::DiscardableSharedMemoryManagerPtr manager_ptr;
-    if (IsRunningInMash()) {
+    if (IsRunningWithMus()) {
 #if defined(USE_AURA)
       GetServiceManagerConnection()->GetConnector()->BindInterface(
           ui::mojom::kServiceName, &manager_ptr);

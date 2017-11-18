@@ -144,7 +144,7 @@ void BrowserPlugin::OnSetChildFrameSurface(
     int browser_plugin_instance_id,
     const viz::SurfaceInfo& surface_info,
     const viz::SurfaceSequence& sequence) {
-  if (!attached() || IsRunningInMash())
+  if (!attached() || IsRunningWithMus())
     return;
 
   if (!enable_surface_synchronization_) {
@@ -296,7 +296,7 @@ void BrowserPlugin::WasResized() {
     sent_resize_params_ = pending_resize_params_;
 
 #if defined(USE_AURA)
-  if (IsRunningInMash() && mus_embedded_frame_) {
+  if (IsRunningWithMus() && mus_embedded_frame_) {
     mus_embedded_frame_->SetWindowBounds(local_surface_id_,
                                          FrameRectInPixels());
   }
@@ -362,7 +362,7 @@ void BrowserPlugin::OnSetMouseLock(int browser_plugin_instance_id,
 void BrowserPlugin::OnSetMusEmbedToken(
     int instance_id,
     const base::UnguessableToken& embed_token) {
-  DCHECK(IsRunningInMash());
+  DCHECK(IsRunningWithMus());
   if (!attached_) {
     pending_embed_token_ = embed_token;
   } else {

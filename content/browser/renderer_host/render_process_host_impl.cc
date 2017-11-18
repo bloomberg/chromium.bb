@@ -100,6 +100,7 @@
 #include "content/browser/media/midi_host.h"
 #include "content/browser/memory/memory_coordinator_impl.h"
 #include "content/browser/mime_registry_impl.h"
+#include "content/browser/mus_util.h"
 #include "content/browser/net/reporting_service_proxy.h"
 #include "content/browser/notifications/notification_message_filter.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
@@ -2609,7 +2610,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kIgnoreAutoplayRestrictionsForTests,
     switches::kIPCConnectionTimeout,
     switches::kIsolateOrigins,
-    switches::kIsRunningInMash,
     switches::kJavaScriptFlags,
     switches::kLoggingLevel,
     switches::kMainFrameResizesAreOrientationChanges,
@@ -2707,6 +2707,9 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kIpcDumpDirectory,
     switches::kIpcFuzzerTestcase,
 #endif
+#if BUILDFLAG(ENABLE_MUS)
+    switches::kMus,
+#endif
   };
   renderer_cmd->CopySwitchesFrom(browser_cmd, kSwitchNames,
                                  arraysize(kSwitchNames));
@@ -2747,8 +2750,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
   // optimizes the common case to avoid wasted work.
   // Note: There is no ImageTransportFactory with Mash or Viz.
   // TODO(danakj): Get this info somewhere for viz mode.
-  if (!browser_cmd.HasSwitch(switches::kIsRunningInMash) &&
-      !browser_cmd.HasSwitch(switches::kEnableViz) &&
+  if (!IsUsingMus() && !browser_cmd.HasSwitch(switches::kEnableViz) &&
       ImageTransportFactory::GetInstance()->IsGpuCompositingDisabled())
     renderer_cmd->AppendSwitch(switches::kDisableGpuCompositing);
 #endif

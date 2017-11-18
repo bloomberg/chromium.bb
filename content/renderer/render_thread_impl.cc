@@ -690,7 +690,7 @@ void RenderThreadImpl::Init(
 
   gpu_ = ui::Gpu::Create(
       GetConnector(),
-      IsRunningInMash() ? ui::mojom::kServiceName : mojom::kBrowserServiceName,
+      IsRunningWithMus() ? ui::mojom::kServiceName : mojom::kBrowserServiceName,
       GetIOTaskRunner());
 
   viz::mojom::SharedBitmapAllocationNotifierPtr
@@ -799,7 +799,7 @@ void RenderThreadImpl::Init(
 // Register exported services:
 
 #if defined(USE_AURA)
-  if (IsRunningInMash()) {
+  if (IsRunningWithMus()) {
     CreateRenderWidgetWindowTreeClientFactory(GetServiceManagerConnection());
   }
 #endif
@@ -952,7 +952,7 @@ void RenderThreadImpl::Init(
   categorized_worker_pool_->Start(num_raster_threads);
 
   discardable_memory::mojom::DiscardableSharedMemoryManagerPtr manager_ptr;
-  if (IsRunningInMash()) {
+  if (IsRunningWithMus()) {
 #if defined(USE_AURA)
     GetServiceManagerConnection()->GetConnector()->BindInterface(
         ui::mojom::kServiceName, &manager_ptr);
@@ -2043,7 +2043,7 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
   }
 
 #if defined(USE_AURA)
-  if (IsRunningInMash()) {
+  if (IsRunningWithMus()) {
     if (!RendererWindowTreeClient::Get(routing_id)) {
       callback.Run(nullptr);
       return;
