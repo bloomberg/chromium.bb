@@ -59505,6 +59505,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Performance.PerformanceMeasurePassedInParameter.EndMark"
+    enum="PerformanceMeasurePassedInParameterType">
+  <owner>maxlg@chromium.org</owner>
+  <summary>
+    The count of possible string of the endMark parameter in
+    performance.measure().
+  </summary>
+</histogram>
+
+<histogram name="Performance.PerformanceMeasurePassedInParameter.StartMark"
+    enum="PerformanceMeasurePassedInParameterType">
+  <owner>maxlg@chromium.org</owner>
+  <summary>
+    The count of possible string of the startMark parameter in
+    performance.measure().
+  </summary>
+</histogram>
+
 <histogram name="PerformanceMonitor.AverageCPU" units="PercentCPUUsage">
   <owner>oysteine@chromium.org</owner>
   <summary>

@@ -1758,6 +1758,8 @@ enum WebFeature {
   kReplaceCharsetInXHR = 2230,
   kRespondToSameOriginRequestWithCrossOriginResponse = 2231,
   kLinkRelModulePreload = 2232,
+  kPerformanceMeasurePassedInObject = 2233,
+  kPerformanceMeasurePassedInNavigationTiming = 2234,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
