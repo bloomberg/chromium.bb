@@ -287,7 +287,7 @@ void PPAPIDownloadRequest::Finish(RequestOutcome reason,
   UMA_HISTOGRAM_SPARSE_SLOWLY("SBClientDownload.PPAPIDownloadRequest.Result",
                               static_cast<int>(response));
   UMA_HISTOGRAM_TIMES("SBClientDownload.PPAPIDownloadRequest.RequestDuration",
-                      start_time_ - base::TimeTicks::Now());
+                      base::TimeTicks::Now() - start_time_);
   if (!callback_.is_null())
     base::ResetAndReturn(&callback_).Run(response);
   fetcher_.reset();
