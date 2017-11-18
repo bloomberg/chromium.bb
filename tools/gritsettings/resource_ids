@@ -103,28 +103,28 @@
     "structures": [12010],
   },
   "chrome/browser/resources/quota_internals_resources.grd": {
-    "includes": [12050],
+    "includes": [12110],
   },
   "chrome/browser/resources/settings/settings_resources_vulcanized.grd": {
-    "includes": [12070],
+    "includes": [12130],
   },
   "chrome/browser/resources/settings/settings_resources.grd": {
-    "structures": [12080],
+    "structures": [12140],
   },
   "chrome/browser/resources/sync_file_system_internals_resources.grd": {
-    "includes": [12580],
+    "includes": [12640],
   },
   "chrome/browser/resources/task_scheduler_internals/resources.grd": {
-    "includes": [12610],
+    "includes": [12670],
   },
   "chrome/browser/resources/translate_internals_resources.grd": {
-    "includes": [12620],
+    "includes": [12680],
   },
   "chrome/browser/resources/vr_shell_resources.grd": {
-    "includes": [12630],
+    "includes": [12690],
   },
   "chrome/browser/resources/webapks_ui_resources.grd": {
-    "includes": [12640],
+    "includes": [12700],
   },
   # END chrome/browser section.
 
