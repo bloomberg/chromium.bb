@@ -451,8 +451,9 @@ static INLINE void av1_find_ref_dv(int_mv *ref_dv, int mi_row, int mi_col) {
   }
 }
 
-#define INTRABC_DELAY 0   // Writing back delay in units of super-block.
-#define USE_WAVE_FRONT 0  // Use only top left area of frame for reference.
+#define INTRABC_DELAY_PIXELS 256  //  Delay of 256 pixels
+#define INTRABC_DELAY_SB64 (INTRABC_DELAY_PIXELS / 64)
+#define USE_WAVE_FRONT 1  // Use only top left area of frame for reference.
 static INLINE int av1_is_dv_valid(const MV dv, const TileInfo *const tile,
                                   int mi_row, int mi_col, BLOCK_SIZE bsize,
                                   int mib_size_log2) {
@@ -482,19 +483,20 @@ static INLINE int av1_is_dv_valid(const MV dv, const TileInfo *const tile,
   // constraints to facilitate HW decoder.
   const int max_mib_size = 1 << mib_size_log2;
   const int active_sb_row = mi_row >> mib_size_log2;
-  const int active_sb_col = mi_col >> mib_size_log2;
+  const int active_64_col = (mi_col * MI_SIZE) >> 6;
   const int sb_size = max_mib_size * MI_SIZE;
   const int src_sb_row = ((src_bottom_edge >> 3) - 1) / sb_size;
-  const int src_sb_col = ((src_right_edge >> 3) - 1) / sb_size;
+  const int src_64_col = ((src_right_edge >> 3) - 1) >> 6;
 #if USE_WAVE_FRONT
+  const int gradient = 1 + INTRABC_DELAY_SB64 + (sb_size > 64);
+  const int wf_offset = gradient * (active_sb_row - src_sb_row);
   if (src_sb_row > active_sb_row ||
-      src_sb_col >=
-          active_sb_col - INTRABC_DELAY + 2 * (active_sb_row - src_sb_row))
+      src_64_col >= active_64_col - INTRABC_DELAY_SB64 + wf_offset)
     return 0;
 #else
   if (src_sb_row > active_sb_row ||
       (src_sb_row == active_sb_row &&
-       src_sb_col >= active_sb_col - INTRABC_DELAY))
+       src_64_col >= active_64_col - INTRABC_DELAY_SB64))
     return 0;
 #endif
   return 1;
