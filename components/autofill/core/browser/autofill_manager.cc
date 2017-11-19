@@ -192,60 +192,11 @@ AutofillManager::AutofillManager(
     AutofillClient* client,
     const std::string& app_locale,
     AutofillDownloadManagerState enable_download_manager)
-    : AutofillHandler(driver),
-      client_(client),
-      payments_client_(std::make_unique<payments::PaymentsClient>(
-          driver->GetURLRequestContext(),
-          client->GetPrefs(),
-          client->GetIdentityProvider(),
-          /*unmask_delegate=*/this,
-          // save_delegate starts out as nullptr and is set up by the
-          // CreditCardSaveManager owned by form_data_importer_.
-          /*save_delegate=*/nullptr)),
-      app_locale_(app_locale),
-      personal_data_(client->GetPersonalDataManager()),
-      form_data_importer_(
-          std::make_unique<FormDataImporter>(client,
-                                             payments_client_.get(),
-                                             client->GetPersonalDataManager(),
-                                             app_locale)),
-      field_filler_(app_locale),
-      autocomplete_history_manager_(
-          std::make_unique<AutocompleteHistoryManager>(driver, client)),
-      form_interactions_ukm_logger_(
-          std::make_unique<AutofillMetrics::FormInteractionsUkmLogger>(
-              client->GetUkmRecorder())),
-      address_form_event_logger_(
-          std::make_unique<AutofillMetrics::FormEventLogger>(
-              false /* is_for_credit_card */,
-              form_interactions_ukm_logger_.get())),
-      credit_card_form_event_logger_(
-          std::make_unique<AutofillMetrics::FormEventLogger>(
-              true /* is_for_credit_card */,
-              form_interactions_ukm_logger_.get())),
-      has_logged_autofill_enabled_(false),
-      has_logged_address_suggestions_count_(false),
-      did_show_suggestions_(false),
-      user_did_type_(false),
-      user_did_autofill_(false),
-      user_did_edit_autofilled_field_(false),
-      enable_ablation_logging_(false),
-      external_delegate_(nullptr),
-      test_delegate_(nullptr),
-#if defined(OS_ANDROID) || defined(OS_IOS)
-      autofill_assistant_(this),
-#endif
-      weak_ptr_factory_(this) {
-  if (enable_download_manager == ENABLE_AUTOFILL_DOWNLOAD_MANAGER) {
-    download_manager_.reset(new AutofillDownloadManager(driver, this));
-  }
-  CountryNames::SetLocaleString(app_locale_);
-  if (personal_data_ && client_)
-    personal_data_->OnSyncServiceInitialized(client_->GetSyncService());
-
-  if (personal_data_ && driver)
-    personal_data_->SetURLRequestContextGetter(driver->GetURLRequestContext());
-}
+    : AutofillManager(driver,
+                      client,
+                      client->GetPersonalDataManager(),
+                      app_locale,
+                      enable_download_manager) {}
 
 AutofillManager::~AutofillManager() {}
 
@@ -1208,9 +1159,12 @@ void AutofillManager::Reset() {
   external_delegate_->Reset();
 }
 
-AutofillManager::AutofillManager(AutofillDriver* driver,
-                                 AutofillClient* client,
-                                 PersonalDataManager* personal_data)
+AutofillManager::AutofillManager(
+    AutofillDriver* driver,
+    AutofillClient* client,
+    PersonalDataManager* personal_data,
+    const std::string app_locale,
+    AutofillDownloadManagerState enable_download_manager)
     : AutofillHandler(driver),
       client_(client),
       payments_client_(std::make_unique<payments::PaymentsClient>(
@@ -1221,7 +1175,7 @@ AutofillManager::AutofillManager(AutofillDriver* driver,
           // save_delegate starts out as nullptr and is set up by the
           // CreditCardSaveManager owned by form_data_importer_.
           /*save_delegate=*/nullptr)),
-      app_locale_("en-US"),
+      app_locale_(app_locale),
       personal_data_(personal_data),
       form_data_importer_(
           std::make_unique<FormDataImporter>(client,
@@ -1242,23 +1196,21 @@ AutofillManager::AutofillManager(AutofillDriver* driver,
           std::make_unique<AutofillMetrics::FormEventLogger>(
               true /* is_for_credit_card */,
               form_interactions_ukm_logger_.get())),
-      has_logged_autofill_enabled_(false),
-      has_logged_address_suggestions_count_(false),
-      did_show_suggestions_(false),
-      user_did_type_(false),
-      user_did_autofill_(false),
-      user_did_edit_autofilled_field_(false),
-      unmasking_query_id_(-1),
-      enable_ablation_logging_(false),
-      external_delegate_(nullptr),
-      test_delegate_(nullptr),
 #if defined(OS_ANDROID) || defined(OS_IOS)
       autofill_assistant_(this),
 #endif
       weak_ptr_factory_(this) {
   DCHECK(driver);
   DCHECK(client_);
+  if (enable_download_manager == ENABLE_AUTOFILL_DOWNLOAD_MANAGER) {
+    download_manager_.reset(new AutofillDownloadManager(driver, this));
+  }
   CountryNames::SetLocaleString(app_locale_);
+  if (personal_data_ && client_)
+    personal_data_->OnSyncServiceInitialized(client_->GetSyncService());
+
+  if (personal_data_ && driver)
+    personal_data_->SetURLRequestContextGetter(driver->GetURLRequestContext());
 }
 
 bool AutofillManager::RefreshDataModels() {
