@@ -2748,12 +2748,6 @@ const char kWebVrAutopresentFromIntentDescription[] =
 
 #endif  // OS_ANDROID
 
-#if BUILDFLAG(ENABLE_OPENVR)
-const char kOpenVRName[] = "OpenVR hardware support";
-const char kOpenVRDescription[] =
-    "If enabled, Chrome will use OpenVR devices for VR.";
-#endif  // ENABLE_OPENVR
-
 #endif  // ENABLE_VR
 
 #if BUILDFLAG(ENABLE_NACL)

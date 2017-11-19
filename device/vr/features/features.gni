@@ -9,12 +9,13 @@ declare_args() {
   # support arm and arm64.
   enable_gvr_services = is_android && !is_chromecast &&
                         (current_cpu == "arm" || current_cpu == "arm64")
-  enable_openvr = is_win
+  enable_openvr = false
 }
 
 declare_args() {
-  # Enable VR device support whenever VR device SDK(s) are supported.
-  enable_vr = enable_gvr_services || enable_openvr
+  # Enable VR device support whenever VR device SDK(s) are supported and
+  # on Windows for testing.
+  enable_vr = enable_gvr_services || enable_openvr || is_win
 
   # Whether to include VR extras like test APKs in non-VR-specific targets
   include_vr_data = false

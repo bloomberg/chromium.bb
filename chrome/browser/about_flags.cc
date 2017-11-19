@@ -2199,11 +2199,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWebVrAutopresentFromIntentDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kWebVrAutopresentFromIntent)},
 #endif  // OS_ANDROID
-#if BUILDFLAG(ENABLE_OPENVR)
-    {"openvr", flag_descriptions::kOpenVRName,
-     flag_descriptions::kOpenVRDescription, kOsWin,
-     FEATURE_VALUE_TYPE(features::kOpenVR)},
-#endif  // ENABLE_OPENVR
 #endif  // ENABLE_VR
 #if defined(OS_CHROMEOS)
     {"disable-accelerated-mjpeg-decode",

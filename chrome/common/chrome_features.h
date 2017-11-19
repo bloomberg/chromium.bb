@@ -121,12 +121,7 @@ extern const base::Feature kVrBrowsing;
 extern const base::Feature kVrBrowserKeyboard;
 extern const base::Feature kVrBrowsingExperimentalFeatures;
 extern const base::Feature kVrBrowsingExperimentalRendering;
-
-#if BUILDFLAG(ENABLE_OPENVR)
-extern const base::Feature kOpenVR;
-#endif  // ENABLE_OPENVR
-
-#endif  // ENABLE_VR
+#endif
 
 #if defined(OS_MACOSX)
 extern const base::Feature kFullscreenToolbarReveal;
