@@ -13,6 +13,7 @@
 #define AOM_DSP_PROB_H_
 
 #include <assert.h>
+#include <stdio.h>
 
 #include "./aom_config.h"
 #include "./aom_dsp_common.h"
@@ -221,10 +222,33 @@ static INLINE void update_cdf(aom_cdf_prob *cdf, int val, int nsymbs) {
   const int rate2 = 5;
   int i, tmp;
   int diff;
+
 #if 1
+#if CONFIG_LV_MAP_MULTI
+  rate = 3 + (cdf[nsymbs] > 15) + (cdf[nsymbs] > 31) + get_msb(nsymbs);
+  tmp = AOM_ICDF(0);
+  (void)rate2;
+  (void)diff;
+
+  // Single loop (faster)
+  for (i = 0; i < nsymbs - 1; ++i) {
+    tmp = (i == val) ? 0 : tmp;
+#if 1
+    if (tmp < cdf[i]) {
+      cdf[i] -= ((cdf[i] - tmp) >> rate);
+    } else {
+      cdf[i] += ((tmp - cdf[i]) >> rate);
+    }
+#else
+    cdf[i] += ((tmp - cdf[i]) >> rate);
+#endif
+  }
+
+#else
   const int tmp0 = 1 << rate2;
   tmp = AOM_ICDF(tmp0);
   diff = ((CDF_PROB_TOP - (nsymbs << rate2)) >> rate) << rate;
+
 // Single loop (faster)
 #if !CONFIG_ANS
   for (i = 0; i < nsymbs - 1; ++i, tmp -= tmp0) {
@@ -237,6 +261,9 @@ static INLINE void update_cdf(aom_cdf_prob *cdf, int val, int nsymbs) {
     cdf[i] -= ((cdf[i] - tmp) >> rate);
   }
 #endif
+
+#endif
+
 #else
   for (i = 0; i < nsymbs; ++i) {
     tmp = (i + 1) << rate2;
