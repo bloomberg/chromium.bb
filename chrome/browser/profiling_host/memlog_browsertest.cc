@@ -3,13 +3,17 @@
 // found in the LICENSE file.
 
 #include "base/allocator/features.h"
+#include "base/allocator/partition_allocator/partition_alloc.h"
 #include "base/json/json_reader.h"
+#include "base/memory/ref_counted_memory.h"
+#include "base/run_loop.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/trace_buffer.h"
+#include "base/trace_event/trace_config_memory_test_util.h"
 #include "base/trace_event/trace_log.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiling_host/profiling_process_host.h"
-#include "chrome/browser/profiling_host/profiling_test_driver.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
@@ -17,6 +21,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/tracing_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -403,15 +408,60 @@ IN_PROC_BROWSER_TEST_P(MemlogBrowserTest, EndToEnd) {
 // Ensure invocations via TracingController can generate a valid JSON file with
 // expected data.
 IN_PROC_BROWSER_TEST_P(MemlogBrowserTest, TracingControllerEndToEnd) {
-  profiling::ProfilingTestDriver driver;
-  profiling::ProfilingTestDriver::Options options;
-  options.mode =
-      GetParam()
-          ? profiling::ProfilingProcessHost::ConvertStringToMode(GetParam())
-          : profiling::ProfilingProcessHost::Mode::kNone;
-  options.profiling_already_started = true;
+  if (!GetParam()) {
+    // Test that nothing has been started if the flag is not passed. Then early
+    // exit.
+    ASSERT_FALSE(profiling::ProfilingProcessHost::has_started());
+    return;
+  } else {
+    ASSERT_TRUE(profiling::ProfilingProcessHost::has_started());
+  }
 
-  EXPECT_TRUE(driver.RunTest(options));
+  MakeTestAllocations();
+
+  base::RunLoop run_loop;
+  scoped_refptr<base::RefCountedString> result;
+
+  // Once the ProfilingProcessHost has dumped to the trace, stop the trace and
+  // collate the results into |result|, then quit the nested run loop.
+  auto finish_sink_callback = base::Bind(
+      [](scoped_refptr<base::RefCountedString>* result, base::Closure finished,
+         std::unique_ptr<const base::DictionaryValue> metadata,
+         base::RefCountedString* in) {
+        *result = in;
+        std::move(finished).Run();
+      },
+      &result, run_loop.QuitClosure());
+  scoped_refptr<content::TracingController::TraceDataEndpoint> sink =
+      content::TracingController::CreateStringEndpoint(
+          std::move(finish_sink_callback));
+  base::OnceClosure stop_tracing_closure = base::BindOnce(
+      base::IgnoreResult<bool (content::TracingController::*)(  // NOLINT
+          const scoped_refptr<content::TracingController::TraceDataEndpoint>&)>(
+          &content::TracingController::StopTracing),
+      base::Unretained(content::TracingController::GetInstance()), sink);
+  base::OnceClosure stop_tracing_ui_thread_closure =
+      base::BindOnce(base::IgnoreResult(&base::TaskRunner::PostTask),
+                     base::ThreadTaskRunnerHandle::Get(), FROM_HERE,
+                     std::move(stop_tracing_closure));
+  profiling::ProfilingProcessHost::GetInstance()
+      ->SetDumpProcessForTracingCallback(
+          std::move(stop_tracing_ui_thread_closure));
+
+  // Spin a nested RunLoop until the heap dump has been added to the trace.
+  content::TracingController::GetInstance()->StartTracing(
+      base::trace_event::TraceConfig(
+          base::trace_event::TraceConfigMemoryTestUtil::
+              GetTraceConfig_PeriodicTriggers(100000, 100000)),
+      base::Closure());
+  run_loop.Run();
+
+  std::unique_ptr<base::Value> dump_json =
+      base::JSONReader::Read(result->data());
+  ASSERT_TRUE(dump_json);
+  ValidateBrowserAllocations(dump_json.get());
+  ValidateRendererAllocations(dump_json.get());
+  // TODO(ajwong): Test GPU dumps  http://crbug.com/780955
 }
 
 // TODO(ajwong): Test what happens if profiling process crashes.
