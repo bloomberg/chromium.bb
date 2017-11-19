@@ -70,7 +70,6 @@ if (enable_vr) {
     if (enable_openvr) {
       deps += [
         "//device/gamepad",
-        "//device/gamepad/public/cpp:shared_with_blink",
         "//third_party/openvr:openvr",
       ]
       sources += [

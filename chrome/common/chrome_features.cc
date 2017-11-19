@@ -238,12 +238,6 @@ const base::Feature kVrBrowsingExperimentalFeatures{
 // Controls experimental rendering features for VR browsing.
 const base::Feature kVrBrowsingExperimentalRendering{
     "VrBrowsingExperimentalRendering", base::FEATURE_DISABLED_BY_DEFAULT};
-
-#if BUILDFLAG(ENABLE_OPENVR)
-// Controls OpenVR support.
-const base::Feature kOpenVR{"OpenVR", base::FEATURE_DISABLED_BY_DEFAULT};
-#endif  // ENABLE_OPENVR
-
 #endif  // BUILDFLAG(ENABLE_VR)
 
 #if defined(OS_WIN)
