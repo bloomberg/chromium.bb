@@ -11,6 +11,10 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 
+namespace syncer {
+class SyncService;
+}
+
 namespace autofill {
 
 // A simplistic PersonalDataManager used for testing.
@@ -18,6 +22,9 @@ class TestPersonalDataManager : public PersonalDataManager {
  public:
   TestPersonalDataManager();
   ~TestPersonalDataManager() override;
+
+  // PersonalDataManager:
+  void OnSyncServiceInitialized(syncer::SyncService* sync_service) override {}
 
   // Sets which PrefService to use and observe. |pref_service| is not owned by
   // this class and must outlive |this|.

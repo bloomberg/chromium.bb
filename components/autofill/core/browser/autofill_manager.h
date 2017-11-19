@@ -203,7 +203,10 @@ class AutofillManager : public AutofillHandler,
   // Test code should prefer to use this constructor.
   AutofillManager(AutofillDriver* driver,
                   AutofillClient* client,
-                  PersonalDataManager* personal_data);
+                  PersonalDataManager* personal_data,
+                  const std::string app_locale = "en-US",
+                  AutofillDownloadManagerState enable_download_manager =
+                      DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
 
   // Uploads the form data to the Autofill server. |observed_submission|
   // indicates that upload is the result of a submission event.
@@ -494,18 +497,19 @@ class AutofillManager : public AutofillHandler,
       credit_card_form_event_logger_;
 
   // Have we logged whether Autofill is enabled for this page load?
-  bool has_logged_autofill_enabled_;
+  bool has_logged_autofill_enabled_ = false;
   // Have we logged an address suggestions count metric for this page?
-  bool has_logged_address_suggestions_count_;
+  bool has_logged_address_suggestions_count_ = false;
   // Have we shown Autofill suggestions at least once?
-  bool did_show_suggestions_;
+  bool did_show_suggestions_ = false;
   // Has the user manually edited at least one form field among the autofillable
   // ones?
-  bool user_did_type_;
+  bool user_did_type_ = false;
   // Has the user autofilled a form on this page?
-  bool user_did_autofill_;
+  bool user_did_autofill_ = false;
   // Has the user edited a field that was previously autofilled?
-  bool user_did_edit_autofilled_field_;
+  bool user_did_edit_autofilled_field_ = false;
+
   // When the form finished loading.
   std::map<FormData, base::TimeTicks> forms_loaded_timestamps_;
   // When the user first interacted with a potentially fillable form on this
@@ -524,14 +528,14 @@ class AutofillManager : public AutofillHandler,
 
   // Collected information about the autofill form where unmasked card will be
   // filled.
-  int unmasking_query_id_;
+  int unmasking_query_id_ = -1;
   FormData unmasking_form_;
   FormFieldData unmasking_field_;
   CreditCard masked_card_;
 
   // Ablation experiment turns off autofill, but logging still has to be kept
   // for metrics analysis.
-  bool enable_ablation_logging_;
+  bool enable_ablation_logging_ = false;
 
   // Suggestion backend ID to ID mapping. We keep two maps to convert back and
   // forth. These should be used only by BackendIDToInt and IntToBackendID.
@@ -541,10 +545,10 @@ class AutofillManager : public AutofillHandler,
 
   // Delegate to perform external processing (display, selection) on
   // our behalf.  Weak.
-  AutofillExternalDelegate* external_delegate_;
+  AutofillExternalDelegate* external_delegate_ = nullptr;
 
   // Delegate used in test to get notifications on certain events.
-  AutofillManagerTestDelegate* test_delegate_;
+  AutofillManagerTestDelegate* test_delegate_ = nullptr;
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
   AutofillAssistant autofill_assistant_;

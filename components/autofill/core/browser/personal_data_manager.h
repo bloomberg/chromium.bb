@@ -80,7 +80,7 @@ class PersonalDataManager : public KeyedService,
 
   // Called once the sync service is known to be instantiated. Note that it may
   // not be started, but it's preferences can be queried.
-  void OnSyncServiceInitialized(syncer::SyncService* sync_service);
+  virtual void OnSyncServiceInitialized(syncer::SyncService* sync_service);
 
   // WebDataServiceConsumer:
   void OnWebDataServiceRequestDone(
