@@ -9,7 +9,7 @@
 #include <stdint.h>
 
 #include "base/macros.h"
-#include "base/task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/privacy_mode.h"
 #include "net/quic/core/quic_packets.h"
@@ -51,7 +51,7 @@ class QuicStreamFactoryPeer {
                             QuicChromiumClientSession* session);
 
   static void SetTaskRunner(QuicStreamFactory* factory,
-                            base::TaskRunner* task_runner);
+                            base::SequencedTaskRunner* task_runner);
 
   static QuicTime::Delta GetPingTimeout(QuicStreamFactory* factory);
 

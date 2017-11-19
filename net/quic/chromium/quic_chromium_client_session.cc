@@ -26,6 +26,7 @@
 #include "net/quic/chromium/crypto/proof_verifier_chromium.h"
 #include "net/quic/chromium/quic_chromium_connection_helper.h"
 #include "net/quic/chromium/quic_chromium_packet_writer.h"
+#include "net/quic/chromium/quic_connectivity_probing_manager.h"
 #include "net/quic/chromium/quic_crypto_client_stream_factory.h"
 #include "net/quic/chromium/quic_server_info.h"
 #include "net/quic/chromium/quic_stream_factory.h"
@@ -63,6 +64,10 @@ const size_t kTokenBindingSignatureMapSize = 10;
 // Time to wait (in seconds) when no networks are available and
 // migrating sessions need to wait for a new network to connect.
 const size_t kWaitTimeForNewNetworkSecs = 10;
+
+// Maximum RTT time for this session when set initial timeout for probing
+// network.
+const int kDefaultRTTMilliSecs = 300;
 
 // The maximum size of uncompressed QUIC headers that will be allowed.
 const size_t kMaxUncompressedHeaderSize = 256 * 1024;
@@ -658,7 +663,7 @@ QuicChromiumClientSession::QuicChromiumClientSession(
     base::TimeTicks dns_resolution_end_time,
     QuicClientPushPromiseIndex* push_promise_index,
     ServerPushDelegate* push_delegate,
-    base::TaskRunner* task_runner,
+    base::SequencedTaskRunner* task_runner,
     std::unique_ptr<SocketPerformanceWatcher> socket_performance_watcher,
     NetLog* net_log)
     : QuicSpdyClientSessionBase(connection, push_promise_index, config),
@@ -692,6 +697,7 @@ QuicChromiumClientSession::QuicChromiumClientSession(
       streams_pushed_and_claimed_count_(0),
       bytes_pushed_count_(0),
       bytes_pushed_and_unclaimed_count_(0),
+      probing_manager_(this, task_runner_),
       migration_pending_(false),
       weak_factory_(this) {
   sockets_.push_back(std::move(socket));
@@ -1449,6 +1455,15 @@ void QuicChromiumClientSession::OnSuccessfulVersionNegotiation(
   QuicSpdySession::OnSuccessfulVersionNegotiation(version);
 }
 
+void QuicChromiumClientSession::OnConnectivityProbeReceived(
+    const QuicSocketAddress& self_address,
+    const QuicSocketAddress& peer_address) {
+  DVLOG(1) << "Probing response from ip:port: " << peer_address.ToString()
+           << " to ip:port: " << self_address.ToString() << " is received";
+  // Notify the probing manager that a connectivity probing packet is received.
+  probing_manager_.OnConnectivityProbingReceived(self_address, peer_address);
+}
+
 int QuicChromiumClientSession::HandleWriteError(
     int error_code,
     scoped_refptr<QuicChromiumPacketWriter::ReusableIOBuffer> packet) {
@@ -1568,6 +1583,43 @@ void QuicChromiumClientSession::OnMigrationTimeout(size_t num_sockets) {
                             MIGRATION_STATUS_MAX);
   CloseSessionOnError(ERR_NETWORK_CHANGED,
                       QUIC_CONNECTION_MIGRATION_NO_NEW_NETWORK);
+}
+
+void QuicChromiumClientSession::OnProbeNetworkSucceeded(
+    NetworkChangeNotifier::NetworkHandle network,
+    const QuicSocketAddress& self_address,
+    std::unique_ptr<DatagramClientSocket> socket,
+    std::unique_ptr<QuicChromiumPacketWriter> writer,
+    std::unique_ptr<QuicChromiumPacketReader> reader) {
+  DCHECK(socket);
+  DCHECK(writer);
+  DCHECK(reader);
+
+  // Set |this| to listen on socket write events on the packet writer
+  // that was used for probing.
+  writer->set_delegate(this);
+
+  // TODO(zhongyi): check |network| to see if we want to migrate to
+  // the network immediately.
+
+  // Mark probing socket as the default socket.
+  sockets_.push_back(std::move(socket));
+  packet_readers_.push_back(std::move(reader));
+
+  connection()->SetSelfAddress(self_address);
+  connection()->SetQuicPacketWriter(writer.release(),
+                                    /*owns_writer*/ true);
+}
+
+void QuicChromiumClientSession::OnProbeNetworkFailed(
+    NetworkChangeNotifier::NetworkHandle network) {
+  DVLOG(1) << "Connectivity probing fails on NetworkHandle " << network;
+}
+
+void QuicChromiumClientSession::OnSendConnectivityProbingPacket(
+    QuicChromiumPacketWriter* writer,
+    const QuicSocketAddress& peer_address) {
+  connection()->SendConnectivityProbingPacket(writer, peer_address);
 }
 
 void QuicChromiumClientSession::OnNetworkConnected(
@@ -1795,6 +1847,84 @@ void QuicChromiumClientSession::NotifyRequestsOfConfirmation(int net_error) {
     task_runner_->PostTask(FROM_HERE, base::Bind(callback, net_error));
 
   waiting_for_confirmation_callbacks_.clear();
+}
+
+ProbingResult QuicChromiumClientSession::StartProbeNetwork(
+    NetworkChangeNotifier::NetworkHandle network,
+    IPEndPoint peer_address,
+    const NetLogWithSource& migration_net_log) {
+  if (!stream_factory_)
+    return ProbingResult::FAILURE;
+
+  CHECK_NE(NetworkChangeNotifier::kInvalidNetworkHandle, network);
+
+  // Close idle session.
+  if (GetNumActiveStreams() == 0) {
+    DVLOG(1) << "Client closes session before sends connectivity probe "
+             << "due to being idle";
+    HistogramAndLogMigrationFailure(migration_net_log,
+                                    MIGRATION_STATUS_NO_MIGRATABLE_STREAMS,
+                                    connection_id(), "Session being idle");
+    CloseSessionOnError(ERR_NETWORK_CHANGED,
+                        QUIC_CONNECTION_MIGRATION_NO_MIGRATABLE_STREAMS);
+    return ProbingResult::DISABLED_WITH_IDLE_SESSION;
+  }
+
+  // Abort probing if connection migration is disabled by config.
+  if (config()->DisableConnectionMigration()) {
+    DVLOG(1) << "Client disables probing network with connection migration "
+             << "disabled by config";
+    HistogramAndLogMigrationFailure(migration_net_log,
+                                    MIGRATION_STATUS_DISABLED, connection_id(),
+                                    "Migration disabled by config");
+    // TODO(zhongyi): do we want to close the session?
+    return ProbingResult::DISABLED_BY_CONFIG;
+  }
+
+  // TODO(zhongyi): migrate the session still, but reset non-migratable stream.
+  // TODO(zhongyi): migrate non-migrtable stream if moving from Cellular to
+  // wifi.
+  // Abort probing if there is stream marked as non-migratable.
+  if (HasNonMigratableStreams()) {
+    DVLOG(1) << "Clients disables probing network with non-migratable streams";
+    HistogramAndLogMigrationFailure(migration_net_log,
+                                    MIGRATION_STATUS_NON_MIGRATABLE_STREAM,
+                                    connection_id(), "Non-migratable stream");
+    return ProbingResult::DISABLED_BY_NON_MIGRABLE_STREAM;
+  }
+
+  // Create and configure socket on |network|.
+  std::unique_ptr<DatagramClientSocket> probing_socket =
+      stream_factory_->CreateSocket(net_log_.net_log(), net_log_.source());
+  if (stream_factory_->ConfigureSocket(probing_socket.get(), peer_address,
+                                       network) != OK) {
+    HistogramAndLogMigrationFailure(
+        migration_net_log, MIGRATION_STATUS_INTERNAL_ERROR, connection_id(),
+        "Socket configuration failed");
+    return ProbingResult::INTERNAL_ERROR;
+  }
+
+  // Create new packet writer and reader on the probing socket.
+  std::unique_ptr<QuicChromiumPacketWriter> probing_writer(
+      new QuicChromiumPacketWriter(probing_socket.get()));
+  std::unique_ptr<QuicChromiumPacketReader> probing_reader(
+      new QuicChromiumPacketReader(probing_socket.get(), clock_, this,
+                                   yield_after_packets_, yield_after_duration_,
+                                   net_log_));
+
+  int timeout_ms = connection()
+                       ->sent_packet_manager()
+                       .GetRttStats()
+                       ->smoothed_rtt()
+                       .ToMilliseconds();
+  if (timeout_ms == 0 || timeout_ms > kDefaultRTTMilliSecs)
+    timeout_ms = kDefaultRTTMilliSecs;
+
+  probing_manager_.StartProbing(
+      network, QuicSocketAddress(QuicSocketAddressImpl(peer_address)),
+      std::move(probing_socket), std::move(probing_writer),
+      std::move(probing_reader), base::TimeDelta::FromMilliseconds(timeout_ms));
+  return ProbingResult::PENDING;
 }
 
 std::unique_ptr<base::Value> QuicChromiumClientSession::GetInfoAsValue(
