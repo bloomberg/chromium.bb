@@ -32,6 +32,7 @@
 #include "net/quic/chromium/quic_chromium_packet_reader.h"
 #include "net/quic/chromium/quic_chromium_packet_writer.h"
 #include "net/quic/chromium/quic_connection_logger.h"
+#include "net/quic/chromium/quic_connectivity_probing_manager.h"
 #include "net/quic/core/quic_client_push_promise_index.h"
 #include "net/quic/core/quic_crypto_client_stream.h"
 #include "net/quic/core/quic_packets.h"
@@ -68,9 +69,20 @@ enum class MigrationResult {
   FAILURE          // Migration failed for other reasons.
 };
 
+// Result of a connectivity probing attempt.
+enum class ProbingResult {
+  PENDING,                          // Probing started, pending result.
+  DISABLED_WITH_IDLE_SESSION,       // Probing disabled with idle session.
+  DISABLED_BY_CONFIG,               // Probing disabled by config.
+  DISABLED_BY_NON_MIGRABLE_STREAM,  // Probing disabled by special stream.
+  INTERNAL_ERROR,                   // Probing failed for internal reason.
+  FAILURE,                          // Probing failed for other reason.
+};
+
 class NET_EXPORT_PRIVATE QuicChromiumClientSession
     : public QuicSpdyClientSessionBase,
       public MultiplexedSession,
+      public QuicConnectivityProbingManager::Delegate,
       public QuicChromiumPacketReader::Visitor,
       public QuicChromiumPacketWriter::Delegate {
  public:
@@ -314,7 +326,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
       base::TimeTicks dns_resolution_end_time,
       QuicClientPushPromiseIndex* push_promise_index,
       ServerPushDelegate* push_delegate,
-      base::TaskRunner* task_runner,
+      base::SequencedTaskRunner* task_runner,
       std::unique_ptr<SocketPerformanceWatcher> socket_performance_watcher,
       NetLog* net_log);
   ~QuicChromiumClientSession() override;
@@ -350,6 +362,21 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   void OnWriteError(int error_code) override;
   void OnWriteUnblocked() override;
 
+  // QuicConnectivityProbingManager::Delegate override.
+  void OnProbeNetworkSucceeded(
+      NetworkChangeNotifier::NetworkHandle network,
+      const QuicSocketAddress& self_address,
+      std::unique_ptr<DatagramClientSocket> socket,
+      std::unique_ptr<QuicChromiumPacketWriter> writer,
+      std::unique_ptr<QuicChromiumPacketReader> reader) override;
+
+  void OnProbeNetworkFailed(
+      NetworkChangeNotifier::NetworkHandle network) override;
+
+  void OnSendConnectivityProbingPacket(
+      QuicChromiumPacketWriter* writer,
+      const QuicSocketAddress& peer_address) override;
+
   // QuicSpdySession methods:
   void OnHeadersHeadOfLineBlocking(QuicTime::Delta delta) override;
 
@@ -382,6 +409,9 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
                           ConnectionCloseSource source) override;
   void OnSuccessfulVersionNegotiation(
       const QuicTransportVersion& version) override;
+  void OnConnectivityProbeReceived(
+      const QuicSocketAddress& self_address,
+      const QuicSocketAddress& peer_address) override;
   void OnPathDegrading() override;
   bool HasOpenDynamicStreams() const override;
 
@@ -569,6 +599,10 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   void CancelAllRequests(int net_error);
   void NotifyRequestsOfConfirmation(int net_error);
 
+  ProbingResult StartProbeNetwork(NetworkChangeNotifier::NetworkHandle network,
+                                  IPEndPoint peer_address,
+                                  const NetLogWithSource& migration_net_log);
+
   // Notifies the factory that this session is going away and no more streams
   // should be created from it.  This needs to be called before closing any
   // streams, because closing a stream may cause a new stream to be created.
@@ -609,7 +643,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   std::vector<CompletionCallback> waiting_for_confirmation_callbacks_;
   CompletionCallback callback_;
   size_t num_total_streams_;
-  base::TaskRunner* task_runner_;
+  base::SequencedTaskRunner* task_runner_;
   NetLogWithSource net_log_;
   std::vector<std::unique_ptr<QuicChromiumPacketReader>> packet_readers_;
   LoadTimingInfo::ConnectTiming connect_timing_;
@@ -631,6 +665,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   // Stores packet that witnesses socket write error. This packet is
   // written to a new socket after migration completes.
   scoped_refptr<QuicChromiumPacketWriter::ReusableIOBuffer> packet_;
+  QuicConnectivityProbingManager probing_manager_;
   // TODO(jri): Replace use of migration_pending_ sockets_.size().
   // When a task is posted for MigrateSessionOnError, pass in
   // sockets_.size(). Then in MigrateSessionOnError, check to see if
