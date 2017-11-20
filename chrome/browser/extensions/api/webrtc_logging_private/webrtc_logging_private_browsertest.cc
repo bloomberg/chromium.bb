@@ -7,6 +7,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/media/webrtc/webrtc_log_list.h"
+#include "chrome/common/chrome_switches.h"
 
 class WebrtcLoggingPrivateApiBrowserTest
     : public extensions::PlatformAppBrowserTest {
@@ -52,5 +53,15 @@ IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiBrowserTest,
                        TestNoGetLogsDirectoryPermissionsFromHangoutsExtension) {
   ASSERT_TRUE(RunComponentExtensionTest(
       "api_test/webrtc_logging_private/no_get_logs_directory_permissions"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiBrowserTest,
+                       TestStartAudioDebugRecordingsForWebviewFromApp) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableAudioDebugRecordingsFromExtension);
+  ASSERT_TRUE(
+      RunPlatformAppTest("api_test/webrtc_logging_private/audio_debug/"
+                         "start_audio_debug_recordings_for_webview_from_app"))
       << message_;
 }

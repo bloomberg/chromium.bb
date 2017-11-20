@@ -26,6 +26,11 @@ namespace webrtcLoggingPrivate {
     // The guest process id for the requester, if the request is from a
     // webview.
     long? guestProcessId;
+
+    // Use the render process of the webview in the current page. This allows an
+    // app to make a request for a webview it contains. If there are more or
+    // less than 1 webview, this will fail with a runtime error.
+    boolean? targetWebview;
   };
 
   // This contains information about the result of audio debug recordings or
