@@ -21,7 +21,6 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chrome {
 namespace android {
 
 using base::android::AppendJavaStringArrayToStringVector;
@@ -139,4 +138,3 @@ TEST_F(ChromeBackupAgentTest, SetBoolBackupValues) {
 }
 
 }  //  namespace android
-}  //  namespace chrome
