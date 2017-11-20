@@ -1394,8 +1394,6 @@ jumbo_source_set("browser") {
     "renderer_host/render_widget_helper.h",
     "renderer_host/render_widget_host_delegate.cc",
     "renderer_host/render_widget_host_delegate.h",
-    "renderer_host/render_widget_host_factory.cc",
-    "renderer_host/render_widget_host_factory.h",
     "renderer_host/render_widget_host_impl.cc",
     "renderer_host/render_widget_host_impl.h",
     "renderer_host/render_widget_host_input_event_router.cc",

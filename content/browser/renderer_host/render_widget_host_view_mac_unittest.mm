@@ -402,7 +402,6 @@ class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
     RenderWidgetHostImpl::From(rvh()->GetWidget())->SetView(rwhv_mac_);
 
     rwhv_cocoa_.reset([rwhv_mac_->cocoa_view() retain]);
-    base::RunLoop().RunUntilIdle();
   }
 
   void TearDown() override {

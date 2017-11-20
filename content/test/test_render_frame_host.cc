@@ -23,7 +23,6 @@
 #include "content/public/test/browser_side_navigation_test_utils.h"
 #include "content/test/test_navigation_url_loader.h"
 #include "content/test/test_render_view_host.h"
-#include "content/test/test_render_widget_host.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
@@ -110,11 +109,6 @@ TestRenderViewHost* TestRenderFrameHost::GetRenderViewHost() {
 
 MockRenderProcessHost* TestRenderFrameHost::GetProcess() {
   return static_cast<MockRenderProcessHost*>(RenderFrameHostImpl::GetProcess());
-}
-
-TestRenderWidgetHost* TestRenderFrameHost::GetRenderWidgetHost() {
-  return static_cast<TestRenderWidgetHost*>(
-      RenderFrameHostImpl::GetRenderWidgetHost());
 }
 
 void TestRenderFrameHost::AddMessageToConsole(ConsoleMessageLevel level,
