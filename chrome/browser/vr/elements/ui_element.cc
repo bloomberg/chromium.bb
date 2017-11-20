@@ -460,7 +460,7 @@ void UiElement::DoLayOutChildren() {
     if (!child->IsVisible()) {
       continue;
     }
-    gfx::Point3F child_center;
+    gfx::Point3F child_center(child->local_origin());
     child->LocalTransform().TransformPoint(&child_center);
     gfx::RectF local_rect =
         gfx::RectF(child_center.x() - 0.5 * child->size().width(),
