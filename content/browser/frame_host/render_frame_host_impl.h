@@ -350,7 +350,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // This method crashes if this RenderFrameHostImpl does not own a
   // a RenderWidgetHost and nor does any of its ancestors. That would
   // typically mean that the frame has been detached from the frame tree.
-  RenderWidgetHostImpl* GetRenderWidgetHost();
+  virtual RenderWidgetHostImpl* GetRenderWidgetHost();
 
   GlobalFrameRoutingId GetGlobalFrameRoutingId();
 
