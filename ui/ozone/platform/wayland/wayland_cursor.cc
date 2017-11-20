@@ -9,7 +9,7 @@
 
 #include "base/memory/shared_memory.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "ui/gfx/skia_util.cc"
+#include "ui/gfx/skia_util.h"
 #include "ui/ozone/platform/wayland/wayland_connection.h"
 #include "ui/ozone/platform/wayland/wayland_pointer.h"
 
