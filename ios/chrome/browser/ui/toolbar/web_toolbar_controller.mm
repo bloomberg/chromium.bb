@@ -681,10 +681,6 @@ using ios::material::TimingFunction;
   [self startProgressBar];
 }
 
-- (void)selectedTabChanged {
-  [self cancelOmniboxEdit];
-}
-
 - (CGRect)visibleOmniboxFrame {
   CGRect frame = _omniboxBackground.frame;
   frame = [self.view.superview convertRect:frame

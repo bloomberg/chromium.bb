@@ -70,7 +70,7 @@
 }
 
 - (void)selectedTabChanged {
-  [self.toolbarController selectedTabChanged];
+  [self.toolbarController cancelOmniboxEdit];
 }
 
 - (void)setTabCount:(NSInteger)tabCount {
