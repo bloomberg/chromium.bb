@@ -180,6 +180,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
     _exceptions.Remove(urlIndex, NULL);
   }
 
+  // Update the edit button appearance, in case all exceptions were removed.
+  [self updateEditButton];
+
   // Must call super at the end of the child implementation.
   [super collectionView:collectionView willDeleteItemsAtIndexPaths:indexPaths];
 }
