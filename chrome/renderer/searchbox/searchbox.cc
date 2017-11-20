@@ -230,13 +230,10 @@ SearchBox::SearchBox(content::RenderFrame* render_frame)
 SearchBox::~SearchBox() = default;
 
 void SearchBox::LogEvent(NTPLoggingEventType event) {
-  // navigation_start in ms.
-  uint64_t start =
-      1000 * (render_frame()->GetWebFrame()->Performance().NavigationStart());
-  uint64_t now =
-      (base::TimeTicks::Now() - base::TimeTicks::UnixEpoch()).InMilliseconds();
-  DCHECK(now >= start);
-  base::TimeDelta delta = base::TimeDelta::FromMilliseconds(now - start);
+  base::Time navigation_start = base::Time::FromDoubleT(
+      render_frame()->GetWebFrame()->Performance().NavigationStart());
+  base::Time now = base::Time::Now();
+  base::TimeDelta delta = now - navigation_start;
   embedded_search_service_->LogEvent(page_seq_no_, event, delta);
 }
 
