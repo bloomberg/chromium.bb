@@ -540,7 +540,7 @@ public class BottomSheet
      * @param microsPerDp The microseconds per dp being recorded.
      */
     private void recordSwipeVelocity(String name, int microsPerDp) {
-        RecordHistogram.recordCustomCountHistogram(name, microsPerDp, 0, 20000, 50);
+        RecordHistogram.recordCustomCountHistogram(name, microsPerDp, 1, 20000, 50);
     }
 
     /**
