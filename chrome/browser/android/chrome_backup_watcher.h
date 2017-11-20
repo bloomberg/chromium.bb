@@ -15,7 +15,6 @@
 
 class Profile;
 
-namespace chrome {
 namespace android {
 
 // Watch the preferences that we back up using Android Backup, so that we can
@@ -32,5 +31,4 @@ class ChromeBackupWatcher {
 };
 
 }  //  namespace android
-}  //  namespace chrome
 #endif  // CHROME_BROWSER_ANDROID_CHROME_BACKUP_WATCHER_H_

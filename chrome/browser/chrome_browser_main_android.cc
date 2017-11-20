@@ -94,7 +94,7 @@ void ChromeBrowserMainPartsAndroid::PostProfileInit() {
 
   // Start watching the preferences that need to be backed up backup using
   // Android backup, so that we create a new backup if they change.
-  backup_watcher_.reset(new chrome::android::ChromeBackupWatcher(profile()));
+  backup_watcher_.reset(new android::ChromeBackupWatcher(profile()));
 }
 
 void ChromeBrowserMainPartsAndroid::PreEarlyInitialization() {

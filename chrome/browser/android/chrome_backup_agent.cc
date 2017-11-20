@@ -46,8 +46,8 @@ const char* backed_up_preferences_[] = {
 static base::android::ScopedJavaLocalRef<jobjectArray> GetBoolBackupNames(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller) {
-  return base::android::ToJavaArrayOfStrings(
-      env, chrome::android::GetBackupPrefNames());
+  return base::android::ToJavaArrayOfStrings(env,
+                                             android::GetBackupPrefNames());
 }
 
 static base::android::ScopedJavaLocalRef<jbooleanArray> GetBoolBackupValues(
@@ -86,7 +86,6 @@ static void SetBoolBackupPrefs(
   prefs->CommitPendingWrite();
 }
 
-namespace chrome {
 namespace android {
 
 std::vector<std::string> GetBackupPrefNames() {
@@ -115,4 +114,3 @@ void SetBoolBackupPrefsForTesting(
 }
 
 }  //  namespace android
-}  //  namespace chrome
