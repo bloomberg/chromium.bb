@@ -28,6 +28,7 @@
 #include "ui/android/resources/resource_manager_impl.h"
 #include "ui/android/resources/ui_resource_provider.h"
 #include "ui/android/window_android_compositor.h"
+#include "ui/display/display_observer.h"
 
 struct ANativeWindow;
 
@@ -58,7 +59,8 @@ class CONTENT_EXPORT CompositorImpl
       public cc::LayerTreeHostSingleThreadClient,
       public ui::UIResourceProvider,
       public ui::WindowAndroidCompositor,
-      public viz::HostFrameSinkClient {
+      public viz::HostFrameSinkClient,
+      public display::DisplayObserver {
  public:
   CompositorImpl(CompositorClient* client, gfx::NativeWindow root_window);
   ~CompositorImpl() override;
@@ -80,6 +82,7 @@ class CONTENT_EXPORT CompositorImpl
   void SetSurface(jobject surface) override;
   void SetBackgroundColor(int color) override;
   void SetWindowBounds(const gfx::Size& size) override;
+  void SetDeferCommits(bool defer_commits) override;
   void SetRequiresAlphaChannel(bool flag) override;
   void SetNeedsComposite() override;
   ui::UIResourceProvider& GetUIResourceProvider() override;
@@ -125,6 +128,10 @@ class CONTENT_EXPORT CompositorImpl
   // viz::HostFrameSinkClient implementation.
   void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override;
   void OnFrameTokenChanged(uint32_t frame_token) override {}
+
+  // display::DisplayObserver implementation.
+  void OnDisplayMetricsChanged(const display::Display& display,
+                               uint32_t changed_metrics) override;
 
   void SetVisible(bool visible);
   void CreateLayerTreeHost();
