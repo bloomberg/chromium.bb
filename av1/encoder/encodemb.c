@@ -436,8 +436,8 @@ int av1_optimize_b(const AV1_COMMON *cm, MACROBLOCK *mb, int plane, int blk_row,
   struct macroblock_plane *const p = &mb->plane[plane];
   const int eob = p->eobs[block];
   assert((mb->qindex == 0) ^ (xd->lossless[xd->mi[0]->mbmi.segment_id] == 0));
-  if (eob == 0) return eob;
-  if (xd->lossless[xd->mi[0]->mbmi.segment_id]) return eob;
+  if (eob == 0 || !mb->optimize || xd->lossless[xd->mi[0]->mbmi.segment_id])
+    return eob;
 
 #if !CONFIG_LV_MAP
   (void)plane_bsize;
