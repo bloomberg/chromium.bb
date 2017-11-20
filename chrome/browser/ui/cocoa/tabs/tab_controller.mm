@@ -133,7 +133,23 @@ static const CGFloat kPinnedTabWidth = kDefaultTabHeight * 2;
 
 - (id)init {
   if ((self = [super init])) {
-    // Create the TabView.
+    BOOL isRTL = cocoa_l10n_util::ShouldDoExperimentalRTLLayout();
+
+    // Create the close button.
+    const CGFloat closeButtonXOrigin =
+        isRTL ? kTabTrailingPadding
+              : kInitialTabWidth - kCloseButtonSize - kTabTrailingPadding;
+    NSRect closeButtonFrame = NSMakeRect(closeButtonXOrigin, kTabElementYOrigin,
+                                         kCloseButtonSize, kCloseButtonSize);
+    closeButton_.reset(
+        [[HoverCloseButton alloc] initWithFrame:closeButtonFrame]);
+    [closeButton_
+        setAutoresizingMask:isRTL ? NSViewMaxXMargin : NSViewMinXMargin];
+    [closeButton_ setTarget:self];
+    [closeButton_ setAction:@selector(closeTab:)];
+
+    // Create the TabView. The TabView works directly with the closeButton so
+    // here (the TabView handles adding it as a subview).
     base::scoped_nsobject<TabView> tabView([[TabView alloc]
         initWithFrame:NSMakeRect(0, 0, kInitialTabWidth,
                                  [TabController defaultTabHeight])
@@ -144,8 +160,6 @@ static const CGFloat kPinnedTabWidth = kDefaultTabHeight * 2;
     [tabView setPostsBoundsChangedNotifications:NO];
     [super setView:tabView];
 
-    BOOL isRTL = cocoa_l10n_util::ShouldDoExperimentalRTLLayout();
-
     // Add the favicon view.
     NSRect iconViewFrame =
         NSMakeRect(0, kTabElementYOrigin, gfx::kFaviconSize, gfx::kFaviconSize);
@@ -154,6 +168,7 @@ static const CGFloat kPinnedTabWidth = kDefaultTabHeight * 2;
                                          : NSViewMaxXMargin | NSViewMinYMargin];
     [self updateIconViewFrameWithAnimation:NO];
     [tabView addSubview:iconView_];
+    isIconShowing_ = YES;
 
     // Set up the title.
     const CGFloat titleXOrigin =
@@ -164,22 +179,6 @@ static const CGFloat kPinnedTabWidth = kDefaultTabHeight * 2;
                                    kInitialTitleWidth, kTitleHeight);
     [tabView setTitleFrame:titleFrame];
 
-    // Add the close button.
-    const CGFloat closeButtonXOrigin =
-        isRTL ? kTabTrailingPadding
-              : kInitialTabWidth - kCloseButtonSize - kTabTrailingPadding;
-    NSRect closeButtonFrame = NSMakeRect(closeButtonXOrigin, kTabElementYOrigin,
-                                         kCloseButtonSize, kCloseButtonSize);
-    closeButton_.reset([[HoverCloseButton alloc] initWithFrame:
-        closeButtonFrame]);
-    [closeButton_
-        setAutoresizingMask:isRTL ? NSViewMaxXMargin : NSViewMinXMargin];
-    [closeButton_ setTarget:self];
-    [closeButton_ setAction:@selector(closeTab:)];
-
-    [tabView addSubview:closeButton_];
-
-    isIconShowing_ = YES;
     NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
     [defaultCenter addObserver:self
                       selector:@selector(themeChangedNotification:)
