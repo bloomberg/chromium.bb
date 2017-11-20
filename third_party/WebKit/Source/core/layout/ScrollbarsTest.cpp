@@ -97,11 +97,9 @@ class ScrollbarsTest : public ::testing::WithParamInterface<bool>,
 
 class ScrollbarsTestWithVirtualTimer : public ScrollbarsTest {
  public:
-  void TearDown() override {
-    // The SimTest destructor calls runPendingTasks. This is a problem because
-    // if there are any repeating tasks, advancing virtual time will cause the
-    // runloop to busy loop. Disabling virtual time here fixes that.
-    WebView().Scheduler()->DisableVirtualTimeForTesting();
+  void SetUp() override {
+    ScrollbarsTest::SetUp();
+    WebView().Scheduler()->EnableVirtualTime();
   }
 
   void TimeAdvance() {
@@ -1220,8 +1218,6 @@ TEST_P(ScrollbarsTestWithVirtualTimer,
 #else
 TEST_P(ScrollbarsTestWithVirtualTimer, TestNonCompositedOverlayScrollbarsFade) {
 #endif
-  // Will crash if move EnableVirtualTime before test body.
-  WebView().Scheduler()->EnableVirtualTime();
   TimeAdvance();
   constexpr double kMockOverlayFadeOutDelayInSeconds = 5.0;
   constexpr double kMockOverlayFadeOutDelayMS =
