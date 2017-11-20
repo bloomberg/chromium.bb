@@ -1078,12 +1078,6 @@ void Window::OnPaintLayer(const ui::PaintContext& context) {
   Paint(context);
 }
 
-void Window::OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) {
-  DCHECK(layer());
-  for (WindowObserver& observer : observers_)
-    observer.OnDelegatedFrameDamage(this, damage_rect_in_dip);
-}
-
 void Window::OnLayerBoundsChanged(const gfx::Rect& old_bounds,
                                   ui::PropertyChangeReason reason) {
   WindowOcclusionTracker::ScopedPauseOcclusionTracking pause_occlusion_tracking;

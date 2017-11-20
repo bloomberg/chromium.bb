@@ -1237,11 +1237,6 @@ void BridgedNativeWidget::OnPaintLayer(const ui::PaintContext& context) {
   native_widget_mac_->GetWidget()->OnNativeWidgetPaint(context);
 }
 
-void BridgedNativeWidget::OnDelegatedFrameDamage(
-    const gfx::Rect& damage_rect_in_dip) {
-  NOTIMPLEMENTED();
-}
-
 void BridgedNativeWidget::OnDeviceScaleFactorChanged(
     float old_device_scale_factor,
     float new_device_scale_factor) {

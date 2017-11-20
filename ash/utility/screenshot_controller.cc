@@ -132,8 +132,6 @@ class ScreenshotController::ScreenshotLayer : public ui::LayerOwner,
       recorder.canvas()->FillRect(region_, SK_ColorBLACK, SkBlendMode::kClear);
   }
 
-  void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
-
   void OnDeviceScaleFactorChanged(float old_device_scale_factor,
                                   float new_device_scale_factor) override {}
 

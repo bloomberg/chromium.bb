@@ -461,11 +461,6 @@ void DelegatedFrameHost::SubmitCompositorFrame(
   gfx::Size frame_size_in_dip =
       gfx::ConvertSizeToDIP(frame_device_scale_factor, frame_size);
 
-  gfx::Rect damage_rect = root_pass->damage_rect;
-  damage_rect.Intersect(gfx::Rect(frame_size));
-  gfx::Rect damage_rect_in_dip =
-      gfx::ConvertRectToDIP(frame_device_scale_factor, damage_rect);
-
   if (ShouldSkipFrame(frame_size_in_dip)) {
     std::vector<viz::ReturnedResource> resources =
         viz::TransferableResource::ReturnResources(frame.resource_list);
@@ -490,12 +485,10 @@ void DelegatedFrameHost::SubmitCompositorFrame(
 
   if (skipped_frames_) {
     skipped_frames_ = false;
-    damage_rect = gfx::Rect(frame_size);
-    damage_rect_in_dip = gfx::Rect(frame_size_in_dip);
 
     // Give the same damage rect to the compositor.
     viz::RenderPass* root_pass = frame.render_pass_list.back().get();
-    root_pass->damage_rect = damage_rect;
+    root_pass->damage_rect = gfx::Rect(frame_size);
   }
 
   background_color_ = frame.metadata.root_background_color;
@@ -518,13 +511,7 @@ void DelegatedFrameHost::SubmitCompositorFrame(
     DCHECK(enable_surface_synchronization_ || has_primary_surface_);
   }
 
-  // TODO(fsamuel): This is used to detect video. We need to develop an
-  // alternative mechanism to detect video in a frame for Viz.
   if (!enable_surface_synchronization_) {
-    if (!damage_rect_in_dip.IsEmpty()) {
-      client_->DelegatedFrameHostGetLayer()->OnDelegatedFrameDamage(
-          damage_rect_in_dip);
-    }
     if (has_primary_surface_)
       frame_evictor_->SwappedFrame(client_->DelegatedFrameHostIsVisible());
     // Note: the frame may have been evicted immediately.
