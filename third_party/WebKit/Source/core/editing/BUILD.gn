@@ -315,7 +315,6 @@ blink_core_sources("editing") {
 jumbo_source_set("unit_tests") {
   testonly = true
   sources = [
-    "EditingCommandTest.cpp",
     "EditingStrategyTest.cpp",
     "EditingStyleTest.cpp",
     "EditingUtilitiesTest.cpp",
@@ -343,6 +342,7 @@ jumbo_source_set("unit_tests") {
     "commands/ApplyStyleCommandTest.cpp",
     "commands/CompositeEditCommandTest.cpp",
     "commands/DeleteSelectionCommandTest.cpp",
+    "commands/EditingCommandTest.cpp",
     "commands/InsertIncrementalTextCommandTest.cpp",
     "commands/InsertListCommandTest.cpp",
     "commands/InsertTextCommandTest.cpp",
