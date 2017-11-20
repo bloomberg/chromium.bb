@@ -2,17 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/payments/payment_request_browsertest_base.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/payments/core/journey_logger.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_test_utils.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 
 namespace payments {
 
@@ -1014,9 +1020,73 @@ class PaymentRequestIframeTest : public PaymentRequestBrowserTestBase {
  protected:
   PaymentRequestIframeTest() {}
 
+  void PreRunTestOnMainThread() override {
+    InProcessBrowserTest::PreRunTestOnMainThread();
+
+    test_ukm_recorder_ = std::make_unique<ukm::TestAutoSetUkmRecorder>();
+  }
+
+  std::unique_ptr<ukm::TestAutoSetUkmRecorder> test_ukm_recorder_;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestIframeTest);
 };
+
+IN_PROC_BROWSER_TEST_F(PaymentRequestIframeTest, CrossOriginIframe) {
+  base::HistogramTester histogram_tester;
+
+  GURL main_frame_url =
+      https_server()->GetURL("a.com", "/payment_request_main.html");
+  ui_test_utils::NavigateToURL(browser(), main_frame_url);
+
+  // The iframe calls show() immediately.
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  GURL iframe_url =
+      https_server()->GetURL("b.com", "/payment_request_iframe.html");
+  ResetEventObserver(DialogEvent::DIALOG_OPENED);
+  EXPECT_TRUE(content::NavigateIframeToURL(tab, "test", iframe_url));
+  WaitForObservedEvent();
+
+  // Simulate that the user cancels the PR.
+  ClickOnCancel();
+
+  int64_t expected_step_metric =
+      JourneyLogger::EVENT_SHOWN |
+      JourneyLogger::EVENT_REQUEST_METHOD_BASIC_CARD |
+      JourneyLogger::EVENT_USER_ABORTED;
+
+  // Make sure the correct UMA events were logged.
+  std::vector<base::Bucket> buckets =
+      histogram_tester.GetAllSamples("PaymentRequest.Events");
+  ASSERT_EQ(1U, buckets.size());
+  EXPECT_EQ(expected_step_metric, buckets[0].min);
+
+  // Important: Even though the Payment Request is in the iframe, no UKM was
+  // logged for the iframe URL, only for the main frame.
+  std::vector<const ukm::UkmSource*> sources =
+      test_ukm_recorder_->GetSourcesForUrl(iframe_url.spec().c_str());
+  EXPECT_TRUE(sources.empty());
+
+  sources = test_ukm_recorder_->GetSourcesForUrl(main_frame_url.spec().c_str());
+  EXPECT_FALSE(sources.empty());
+
+  // Make sure the UKM was logged correctly.
+  auto entries = test_ukm_recorder_->GetEntriesByName(
+      ukm::builders::PaymentRequest_CheckoutEvents::kEntryName);
+  EXPECT_EQ(1u, entries.size());
+  for (const auto* const entry : entries) {
+    test_ukm_recorder_->ExpectEntrySourceHasUrl(entry, main_frame_url);
+    EXPECT_EQ(2U, entry->metrics.size());
+    test_ukm_recorder_->ExpectEntryMetric(
+        entry,
+        ukm::builders::PaymentRequest_CheckoutEvents::kCompletionStatusName,
+        JourneyLogger::COMPLETION_STATUS_USER_ABORTED);
+    test_ukm_recorder_->ExpectEntryMetric(
+        entry, ukm::builders::PaymentRequest_CheckoutEvents::kEventsName,
+        expected_step_metric);
+  }
+}
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestIframeTest, IframeNavigation_UserAborted) {
   NavigateTo("/payment_request_free_shipping_with_iframe_test.html");
