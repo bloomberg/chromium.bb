@@ -39,6 +39,7 @@
 #include "platform/loader/fetch/TextResourceDecoderOptions.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/text/SegmentedString.h"
+#include "platform/wtf/DateMath.h"
 #include "platform/wtf/text/CharacterNames.h"
 #include "platform/wtf/text/WTFString.h"
 
@@ -402,6 +403,18 @@ bool VTTParser::CollectTimeStamp(const String& line, double& time_stamp) {
   return CollectTimeStamp(input, time_stamp);
 }
 
+static String SerializeTimeStamp(double time_stamp) {
+  uint64_t value = clampTo<uint64_t>(time_stamp * 1000);
+  unsigned milliseconds = value % 1000;
+  value /= 1000;
+  unsigned seconds = value % 60;
+  value /= 60;
+  unsigned minutes = value % 60;
+  unsigned hours = value / 60;
+  return String::Format("%02u:%02u:%02u.%03u", hours, minutes, seconds,
+                        milliseconds);
+}
+
 bool VTTParser::CollectTimeStamp(VTTScanner& input, double& time_stamp) {
   // Collect a WebVTT timestamp (5.3 WebVTT cue timings and settings parsing.)
   // Steps 1 - 4 - Initial checks, let most significant units be minutes.
@@ -442,11 +455,9 @@ bool VTTParser::CollectTimeStamp(VTTScanner& input, double& time_stamp) {
     return false;
 
   // Steps 18 - 19 - Calculate result.
-  const double kSecondsPerHour = 3600;
-  const double kSecondsPerMinute = 60;
-  const double kSecondsPerMillisecond = 0.001;
-  time_stamp = (value1 * kSecondsPerHour) + (value2 * kSecondsPerMinute) +
-               value3 + (value4 * kSecondsPerMillisecond);
+  time_stamp = (value1 * kMinutesPerHour * kSecondsPerMinute) +
+               (value2 * kSecondsPerMinute) + value3 +
+               (value4 * (1 / kMsPerSecond));
   return true;
 }
 
@@ -550,11 +561,11 @@ void VTTTreeBuilder::ConstructTreeFromToken(Document& document) {
       break;
     }
     case VTTTokenTypes::kTimestampTag: {
-      String characters_string = token_.Characters();
       double parsed_time_stamp;
-      if (VTTParser::CollectTimeStamp(characters_string, parsed_time_stamp))
+      if (VTTParser::CollectTimeStamp(token_.Characters(), parsed_time_stamp)) {
         current_node_->ParserAppendChild(ProcessingInstruction::Create(
-            document, "timestamp", characters_string));
+            document, "timestamp", SerializeTimeStamp(parsed_time_stamp)));
+      }
       break;
     }
     default:
