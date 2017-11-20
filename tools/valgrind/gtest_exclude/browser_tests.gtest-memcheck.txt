@@ -54,5 +54,4 @@ SafeBrowsingInterstitialVersions/SafeBrowsingBlockingPageBrowserTest.MalwareDont
 SafeBrowsingInterstitialVersions/SafeBrowsingBlockingPageBrowserTest.ProceedDisabled*
 SocketApiTest.SocketTCPExtension
 SocketApiTest.SocketUDPExtension
-SSLUITest.TestWSSInvalidCertAndGoForward
 WebViewTest.Shim
