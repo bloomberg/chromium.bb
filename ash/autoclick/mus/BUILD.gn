@@ -16,7 +16,7 @@ source_set("lib") {
   deps = [
     "//ash/autoclick/common:autoclick",
     "//ash/autoclick/mus/public/interfaces",
-    "//ash/public/cpp:ash_public_cpp",
+    "//ash/public/cpp",
     "//base",
     "//mash/public/interfaces",
     "//mojo/common",

@@ -47,7 +47,7 @@ source_set("chromeos") {
     "//ash",
     "//ash:ash_with_content",
     "//ash/autoclick/mus/public/interfaces",
-    "//ash/public/cpp:ash_public_cpp",
+    "//ash/public/cpp",
     "//cc/paint",
     "//chrome/app:command_ids",
     "//chrome/app/vector_icons",

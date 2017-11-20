@@ -5,7 +5,7 @@
 import("//mojo/public/tools/bindings/mojom.gni")
 
 # C++ headers and sources that can be used outside ash.
-component("ash_public_cpp") {
+component("cpp") {
   sources = [
     "accessibility_types.h",
     "app_types.h",
@@ -81,6 +81,8 @@ component("ash_public_cpp") {
 
   allow_circular_includes_from =
       [ "//ash/public/interfaces:interfaces_internal" ]
+
+  output_name = "ash_public_cpp"
 }
 
 # Using a test service because the traits need to pass handles around. Revisit
@@ -105,7 +107,7 @@ source_set("unit_tests") {
   ]
 
   deps = [
-    ":ash_public_cpp",
+    ":cpp",
     ":test_interfaces",
     "//base",
     "//testing/gtest",

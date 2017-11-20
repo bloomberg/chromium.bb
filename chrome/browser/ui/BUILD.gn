@@ -1501,7 +1501,7 @@ split_static_library("ui") {
     deps += [
       "//ash",
       "//ash:ash_with_content",
-      "//ash/public/cpp:ash_public_cpp",
+      "//ash/public/cpp",
       "//ash/resources/vector_icons",
       "//ash/strings",
       "//chrome/browser/chromeos",
@@ -3734,7 +3734,7 @@ static_library("test_support") {
       "ash/test_wallpaper_controller.cc",
       "ash/test_wallpaper_controller.h",
     ]
-    deps += [ "//ash/public/cpp:ash_public_cpp" ]
+    deps += [ "//ash/public/cpp" ]
   }
 
   if (enable_extensions) {

@@ -63,7 +63,7 @@ source_set("wayland") {
 
   deps = [
     ":aura_shell_protocol",
-    "//ash/public/cpp:ash_public_cpp",
+    "//ash/public/cpp",
     "//base",
     "//components/exo",
     "//device/gamepad",
@@ -313,7 +313,7 @@ test("wayland_client_perftests") {
     ":wayland",
     "//ash",
     "//ash:test_support_without_content",
-    "//ash/public/cpp:ash_public_cpp",
+    "//ash/public/cpp",
     "//base",
     "//base/test:test_support",
     "//cc:test_support",
