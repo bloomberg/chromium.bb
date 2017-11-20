@@ -156,7 +156,6 @@ AutofillAgent::AutofillAgent(content::RenderFrame* render_frame,
       is_generation_popup_possibly_visible_(false),
       is_user_gesture_required_(true),
       is_secure_context_required_(false),
-      page_click_tracker_(new PageClickTracker(render_frame, this)),
       binding_(this),
       weak_ptr_factory_(this) {
   render_frame->GetWebFrame()->SetAutofillClient(this);
@@ -227,7 +226,14 @@ void AutofillAgent::DidChangeScrollOffset() {
 }
 
 void AutofillAgent::FocusedNodeChanged(const WebNode& node) {
-  page_click_tracker_->FocusedNodeChanged(node);
+  was_focused_before_now_ = false;
+
+  if (IsKeyboardAccessoryEnabled() &&
+      WebUserGestureIndicator::IsProcessingUserGesture(
+          node.IsNull() ? nullptr : node.GetDocument().GetFrame())) {
+    focused_node_was_last_clicked_ = true;
+    HandleFocusChangeComplete();
+  }
 
   HidePopup();
 
@@ -299,28 +305,6 @@ void AutofillAgent::FireHostSubmitEvents(const FormData& form_data,
 void AutofillAgent::Shutdown() {
   binding_.Close();
   weak_ptr_factory_.InvalidateWeakPtrs();
-}
-
-
-void AutofillAgent::FormControlElementClicked(
-    const WebFormControlElement& element,
-    bool was_focused) {
-  const WebInputElement* input_element = ToWebInputElement(&element);
-  if (!input_element && !form_util::IsTextAreaElement(element))
-    return;
-
-  ShowSuggestionsOptions options;
-  options.autofill_on_empty_values = true;
-  options.show_full_suggestion_list = element.IsAutofilled();
-
-  if (!IsSingleClickEnabled()) {
-    // Show full suggestions when clicking on an already-focused form field. On
-    // the initial click (not focused yet), only show password suggestions.
-    options.show_full_suggestion_list =
-        options.show_full_suggestion_list || was_focused;
-    options.show_password_suggestions_only = !was_focused;
-  }
-  ShowSuggestions(element, options);
 }
 
 void AutofillAgent::TextFieldDidEndEditing(const WebInputElement& element) {
@@ -806,14 +790,57 @@ void AutofillAgent::DidCompleteFocusChangeInFrame() {
   if (!focused_element.IsNull() && password_autofill_agent_)
     password_autofill_agent_->FocusedNodeHasChanged(focused_element);
 
-  // PageClickTracker needs to be notified after
-  // |is_generation_popup_possibly_visible_| has been updated.
-  page_click_tracker_->DidCompleteFocusChangeInFrame();
+  if (!IsKeyboardAccessoryEnabled())
+    HandleFocusChangeComplete();
 }
 
 void AutofillAgent::DidReceiveLeftMouseDownOrGestureTapInNode(
     const WebNode& node) {
-  page_click_tracker_->DidReceiveLeftMouseDownOrGestureTapInNode(node);
+  DCHECK(!node.IsNull());
+  focused_node_was_last_clicked_ = node.Focused();
+
+  if (IsKeyboardAccessoryEnabled())
+    HandleFocusChangeComplete();
+}
+
+void AutofillAgent::FormControlElementClicked(
+    const WebFormControlElement& element,
+    bool was_focused) {
+  last_clicked_form_control_element_for_testing_ = element;
+  last_clicked_form_control_element_was_focused_for_testing_ = was_focused;
+
+  const WebInputElement* input_element = ToWebInputElement(&element);
+  if (!input_element && !form_util::IsTextAreaElement(element))
+    return;
+
+  ShowSuggestionsOptions options;
+  options.autofill_on_empty_values = true;
+  options.show_full_suggestion_list = element.IsAutofilled();
+
+  if (!IsSingleClickEnabled()) {
+    // Show full suggestions when clicking on an already-focused form field. On
+    // the initial click (not focused yet), only show password suggestions.
+    options.show_full_suggestion_list =
+        options.show_full_suggestion_list || was_focused;
+    options.show_password_suggestions_only = !was_focused;
+  }
+  ShowSuggestions(element, options);
+}
+
+void AutofillAgent::HandleFocusChangeComplete() {
+  WebElement focused_element =
+      render_frame()->GetWebFrame()->GetDocument().FocusedElement();
+
+  if (focused_node_was_last_clicked_ && !focused_element.IsNull() &&
+      focused_element.IsFormControlElement() &&
+      (form_util::IsTextInput(blink::ToWebInputElement(&focused_element)) ||
+       focused_element.HasHTMLTagName("textarea"))) {
+    FormControlElementClicked(focused_element.ToConst<WebFormControlElement>(),
+                              was_focused_before_now_);
+  }
+
+  was_focused_before_now_ = true;
+  focused_node_was_last_clicked_ = false;
 }
 
 void AutofillAgent::AjaxSucceeded() {
