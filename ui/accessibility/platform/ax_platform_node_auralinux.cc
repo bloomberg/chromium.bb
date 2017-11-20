@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/strings/sys_string_conversions.h"
+#include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/platform/atk_util_auralinux.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
@@ -286,12 +287,25 @@ static AtkObject* ax_platform_node_auralinux_ref_accessible_at_point(
   return obj->HitTestSync(x, y, coord_type);
 }
 
+static gboolean ax_platform_node_auralinux_grab_focus(
+    AtkComponent* atk_component) {
+  g_return_val_if_fail(ATK_IS_COMPONENT(atk_component), FALSE);
+  AtkObject* atk_object = ATK_OBJECT(atk_component);
+  ui::AXPlatformNodeAuraLinux* obj =
+      AtkObjectToAXPlatformNodeAuraLinux(atk_object);
+  if (!obj)
+    return FALSE;
+
+  return obj->GrabFocus();
+}
+
 void ax_component_interface_base_init(AtkComponentIface* iface) {
   iface->get_extents = ax_platform_node_auralinux_get_extents;
   iface->get_position = ax_platform_node_auralinux_get_position;
   iface->get_size = ax_platform_node_auralinux_get_size;
   iface->ref_accessible_at_point =
       ax_platform_node_auralinux_ref_accessible_at_point;
+  iface->grab_focus = ax_platform_node_auralinux_grab_focus;
 }
 
 static const GInterfaceInfo ComponentInfo = {
@@ -775,6 +789,12 @@ AXPlatformNodeAuraLinux::HitTestSync(gint x, gint y, AtkCoordType coord_type) {
   }
 
   return delegate_->HitTestSync(x, y);
+}
+
+bool AXPlatformNodeAuraLinux::GrabFocus() {
+  AXActionData action_data;
+  action_data.action = AX_ACTION_FOCUS;
+  return delegate_->AccessibilityPerformAction(action_data);
 }
 
 }  // namespace ui
