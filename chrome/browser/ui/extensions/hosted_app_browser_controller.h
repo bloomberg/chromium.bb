@@ -19,6 +19,8 @@ class ImageSkia;
 
 namespace extensions {
 
+class Extension;
+
 // Class to encapsulate logic to control the browser UI for hosted apps.
 class HostedAppBrowserController {
  public:
@@ -52,7 +54,16 @@ class HostedAppBrowserController {
   // Returns the title to be displayed in the window title bar.
   base::string16 GetTitle() const;
 
+  // Gets the short name of the app.
+  std::string GetAppShortName() const;
+
+  // Gets the domain and registry of the app start url (e.g example.com.au).
+  std::string GetDomainAndRegistry() const;
+
  private:
+  // Gets the extension for this controller.
+  const Extension* GetExtension() const;
+
   Browser* browser_;
   const std::string extension_id_;
 

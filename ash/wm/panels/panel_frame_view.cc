@@ -48,14 +48,13 @@ const char* PanelFrameView::GetClassName() const {
 }
 
 void PanelFrameView::InitFrameHeader() {
-  frame_header_.reset(new DefaultFrameHeader);
-  GetWidgetWindow()->SetProperty(aura::client::kTopViewColor,
-                                 frame_header_->GetInactiveFrameColor());
-
   caption_button_container_ = new FrameCaptionButtonContainerView(frame_);
   AddChildView(caption_button_container_);
 
-  frame_header_->Init(frame_, this, caption_button_container_, nullptr);
+  frame_header_ = std::make_unique<DefaultFrameHeader>(
+      frame_, this, caption_button_container_, nullptr);
+  GetWidgetWindow()->SetProperty(aura::client::kTopViewColor,
+                                 frame_header_->GetInactiveFrameColor());
 
   if (frame_->widget_delegate()->ShouldShowWindowIcon()) {
     window_icon_ = new views::ImageView();

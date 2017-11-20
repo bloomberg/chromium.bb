@@ -17,9 +17,11 @@
 #include "ui/gfx/animation/animation_delegate.h"
 
 namespace gfx {
+class FontList;
 class Rect;
 class SlideAnimation;
 }  // namespace gfx
+
 namespace views {
 class View;
 class Widget;
@@ -33,15 +35,14 @@ class FrameCaptionButtonContainerView;
 class ASH_EXPORT DefaultFrameHeader : public FrameHeader,
                                       public gfx::AnimationDelegate {
  public:
-  explicit DefaultFrameHeader(
+  // DefaultFrameHeader does not take ownership of any of the parameters.
+  DefaultFrameHeader(
+      views::Widget* frame,
+      views::View* header_view,
+      FrameCaptionButtonContainerView* caption_button_container,
+      FrameCaptionButton* back_button,
       mojom::WindowStyle window_style = mojom::WindowStyle::DEFAULT);
   ~DefaultFrameHeader() override;
-
-  // DefaultFrameHeader does not take ownership of any of the parameters.
-  void Init(views::Widget* frame,
-            views::View* header_view,
-            FrameCaptionButtonContainerView* caption_button_container,
-            FrameCaptionButton* back_button);
 
   // FrameHeader overrides:
   int GetMinimumHeaderWidth() const override;
@@ -73,6 +74,18 @@ class ASH_EXPORT DefaultFrameHeader : public FrameHeader,
   // background of the frame is dark.
   bool ShouldUseLightImages() const;
 
+ protected:
+  // Returns the FontList to use for the title.
+  static const gfx::FontList& GetTitleFontList();
+
+  // Paints the title bar, primarily the title string.
+  virtual void PaintTitleBar(gfx::Canvas* canvas);
+
+  // Returns the bounds for the title.
+  gfx::Rect GetAvailableTitleBounds() const;
+
+  views::View* view() { return view_; }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(DefaultFrameHeaderTest, BackButtonAlignment);
   FRIEND_TEST_ALL_PREFIXES(DefaultFrameHeaderTest, TitleIconAlignment);
@@ -84,9 +97,6 @@ class ASH_EXPORT DefaultFrameHeader : public FrameHeader,
   // Paints highlight around the edge of the header for inactive restored
   // windows.
   void PaintHighlightForInactiveRestoredWindow(gfx::Canvas* canvas);
-
-  // Paints the title bar, primarily the title string.
-  void PaintTitleBar(gfx::Canvas* canvas);
 
   // Paints the header/content separator.
   void PaintHeaderContentSeparator(gfx::Canvas* canvas);
@@ -101,9 +111,6 @@ class ASH_EXPORT DefaultFrameHeader : public FrameHeader,
   // assumed to be positioned at the top left corner of |view_| and to have the
   // same width as |view_|.
   gfx::Rect GetLocalBounds() const;
-
-  // Returns the bounds for the title.
-  gfx::Rect GetTitleBounds() const;
 
   // Returns whether the frame uses custom frame coloring.
   bool UsesCustomFrameColors() const;

@@ -7,7 +7,6 @@
 #include "ash/ash_constants.h"
 #include "ash/frame/caption_buttons/frame_caption_button.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
-#include "ash/frame/default_frame_header.h"
 #include "ash/frame/frame_header.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
@@ -35,6 +34,7 @@
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
+#include "chrome/browser/ui/views/frame/hosted_app_frame_header_ash.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
 #include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
@@ -480,22 +480,45 @@ IN_PROC_BROWSER_TEST_F(HostedAppNonClientFrameViewAshTest, HostedAppFrame) {
       static_cast<BrowserNonClientFrameViewAsh*>(
           browser_view->frame()->GetFrameView());
 
-  EXPECT_TRUE(frame_view->hosted_app_button_container_->visible());
+  HostedAppButtonContainer* button_container =
+      frame_view->hosted_app_button_container_;
+  EXPECT_TRUE(button_container->visible());
 
   // Ensure the theme color is set.
   auto* frame_header =
-      static_cast<ash::DefaultFrameHeader*>(frame_view->frame_header_.get());
+      static_cast<HostedAppFrameHeaderAsh*>(frame_view->frame_header_.get());
   EXPECT_EQ(SK_ColorBLUE, frame_header->GetActiveFrameColor());
   EXPECT_EQ(SK_ColorBLUE, frame_header->GetInactiveFrameColor());
+  EXPECT_EQ(SK_ColorWHITE, button_container->active_icon_color_);
 
   // Show the menu.
   HostedAppButtonContainer::AppMenuButton* menu_button =
-      frame_view->hosted_app_button_container_->app_menu_button_;
+      button_container->app_menu_button_;
 
   ui::MouseEvent e(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                    ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0);
   menu_button->OnMousePressed(e);
   EXPECT_TRUE(menu_button->menu()->IsShowing());
+
+  // The app and domain should render next to the window title.
+  frame_header->LayoutRenderTexts(gfx::Rect(300, 30), 100, 100);
+  EXPECT_EQ(gfx::Rect(100, 30),
+            frame_header->title_render_text_->display_rect());
+  EXPECT_EQ(gfx::Rect(100, 0, 100, 30),
+            frame_header->app_and_domain_render_text_->display_rect());
+
+  // The title should prefer truncating the window title.
+  frame_header->LayoutRenderTexts(gfx::Rect(300, 30), 250, 100);
+  EXPECT_EQ(gfx::Rect(200, 30),
+            frame_header->title_render_text_->display_rect());
+  EXPECT_EQ(gfx::Rect(200, 0, 100, 30),
+            frame_header->app_and_domain_render_text_->display_rect());
+
+  // The app and domain should be clipped to the available title bounds.
+  frame_header->LayoutRenderTexts(gfx::Rect(60, 30), 250, 100);
+  EXPECT_EQ(gfx::Rect(0, 30), frame_header->title_render_text_->display_rect());
+  EXPECT_EQ(gfx::Rect(60, 30),
+            frame_header->app_and_domain_render_text_->display_rect());
 }
 
 namespace {

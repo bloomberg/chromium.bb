@@ -4571,6 +4571,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
 
+      <message name="IDS_HOSTED_APP_NAME_AND_DOMAIN" desc="The string that is always displayed in the window title in Hosted App app windows.">
+        <ph name="APP_NAME">$1<ex>GMail</ex></ph> by <ph name="SITE_ORIGIN">$2<ex>google.com</ex></ph>
+      </message>
+
       <!-- Components -->
       <message name="IDS_COMPONENTS_TITLE" desc="Title for the chrome://components page.">
         Components
