@@ -5,5 +5,6 @@ PASS Resolution of nonexistent pseudo-element styles
 PASS Resolution of pseudo-element styles in display: none elements
 PASS Item-based blockification of pseudo-elements
 FAIL Item-based blockification of nonexistent pseudo-elements assert_equals: Pseudo-styles of display: flex elements should get blockified expected "block" but got "inline"
+PASS display: contents on pseudo-elements
 Harness: the test ran to completion.
 
