@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
-<title>Upload files in UTF-8 form</title>
+<title>Upload files in UTF-8 form (part 2)</title>
 <link rel="help"
       href="https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#multipart-form-data">
 <link rel="author" title="Benjamin C. Wiley Sittler"
@@ -26,28 +26,6 @@
   -->
 <script>
 'use strict';
-
-formPostFileUploadTest({
-  fileNameSource: 'ASCII',
-  fileBaseName: 'file-for-drag-to-send3.txt',
-  formEncoding: 'UTF-8',
-  expectedEncodedBaseName: 'file-for-drag-to-send3.txt',
-});
-
-formPostFileUploadTest({
-  fileNameSource: 'x-user-defined',
-  fileBaseName: 'file-for-drag-to-send3-\uF7F0\uF793\uF783\uF7A0.txt',
-  formEncoding: 'UTF-8',
-  expectedEncodedBaseName: (
-      'file-for-drag-to-send3-\uF7F0\uF793\uF783\uF7A0.txt'),
-});
-
-formPostFileUploadTest({
-  fileNameSource: 'windows-1252',
-  fileBaseName: 'file-for-drag-to-send3-â˜ºðŸ˜‚.txt',
-  formEncoding: 'UTF-8',
-  expectedEncodedBaseName: 'file-for-drag-to-send3-â˜ºðŸ˜‚.txt',
-});
 
 formPostFileUploadTest({
   fileNameSource: 'JIS X 0201 and JIS X 0208',
