@@ -17,6 +17,8 @@ struct DownloadEntry {
   DownloadEntry(const std::string& guid, const std::string& request_origin);
   ~DownloadEntry();
 
+  bool operator==(const DownloadEntry& other) const;
+
   // A unique GUID that represents this download.
   std::string guid;
 

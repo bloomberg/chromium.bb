@@ -16,4 +16,8 @@ DownloadEntry::DownloadEntry(const std::string& guid,
 
 DownloadEntry::~DownloadEntry() = default;
 
+bool DownloadEntry::operator==(const DownloadEntry& other) const {
+  return guid == other.guid && request_origin == other.request_origin;
+}
+
 }  // namespace download

@@ -13,6 +13,7 @@ group("unit_tests") {
     deps += [
       "//components/download/content/internal:unit_tests",
       "//components/download/content/public:unit_tests",
+      "//components/download/downloader/in_progress:unit_tests",
     ]
   }
 

@@ -22,3 +22,19 @@ static_library("in_progress") {
     "//components/download/downloader/in_progress/proto",
   ]
 }
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [
+    "in_progress_conversions_unittest.cc",
+  ]
+
+  deps = [
+    ":in_progress",
+    "//base/test:test_support",
+    "//components/download/downloader/in_progress/proto",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+}
