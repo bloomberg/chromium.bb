@@ -29,8 +29,6 @@ class CookieSettings;
 
 class GURL;
 
-namespace chrome {
-
 class PepperFlashBrowserHost : public ppapi::host::ResourceHost {
  public:
   PepperFlashBrowserHost(content::BrowserPpapiHost* host,
@@ -73,7 +71,5 @@ class PepperFlashBrowserHost : public ppapi::host::ResourceHost {
 
   DISALLOW_COPY_AND_ASSIGN(PepperFlashBrowserHost);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_RENDERER_HOST_PEPPER_PEPPER_FLASH_BROWSER_HOST_H_

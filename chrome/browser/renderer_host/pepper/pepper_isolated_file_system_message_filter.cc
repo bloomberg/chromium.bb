@@ -32,8 +32,6 @@
 #include "extensions/common/extension_set.h"
 #endif
 
-namespace chrome {
-
 namespace {
 
 const char* kPredefinedAllowedCrxFsOrigins[] = {
@@ -200,5 +198,3 @@ int32_t PepperIsolatedFileSystemMessageFilter::OpenPluginPrivateFileSystem(
   context->reply_msg = PpapiPluginMsg_IsolatedFileSystem_BrowserOpenReply(fsid);
   return PP_OK;
 }
-
-}  // namespace chrome

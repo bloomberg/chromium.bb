@@ -23,8 +23,6 @@
 
 using content::BrowserThread;
 
-namespace chrome {
-
 namespace {
 
 const size_t kMaxClipboardWriteSize = 1000000;
@@ -370,5 +368,3 @@ int32_t PepperFlashClipboardMessageFilter::OnMsgGetSequenceNumber(
       PpapiPluginMsg_FlashClipboard_GetSequenceNumberReply(sequence_number);
   return PP_OK;
 }
-
-}  // namespace chrome

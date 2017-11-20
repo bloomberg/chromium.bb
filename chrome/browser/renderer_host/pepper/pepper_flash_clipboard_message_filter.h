@@ -25,8 +25,6 @@ namespace ui {
 class ScopedClipboardWriter;
 }
 
-namespace chrome {
-
 // Resource message filter for accessing the clipboard in Pepper. Pepper
 // supports reading/writing custom formats from the clipboard. Currently, all
 // custom formats that are read/written from the clipboard through pepper are
@@ -74,7 +72,5 @@ class PepperFlashClipboardMessageFilter
 
   DISALLOW_COPY_AND_ASSIGN(PepperFlashClipboardMessageFilter);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_RENDERER_HOST_PEPPER_PEPPER_FLASH_CLIPBOARD_MESSAGE_FILTER_H_

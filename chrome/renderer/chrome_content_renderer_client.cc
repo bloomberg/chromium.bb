@@ -1395,11 +1395,11 @@ bool ChromeContentRendererClient::IsExternalPepperPlugin(
 
 #if BUILDFLAG(ENABLE_PLUGINS) && BUILDFLAG(ENABLE_EXTENSIONS)
 bool ChromeContentRendererClient::IsExtensionOrSharedModuleWhitelisted(
-    const GURL& url, const std::set<std::string>& whitelist) {
+    const GURL& url,
+    const std::set<std::string>& whitelist) {
   const extensions::ExtensionSet* extension_set =
       extensions::RendererExtensionRegistry::Get()->GetMainThreadExtensionSet();
-  return chrome::IsExtensionOrSharedModuleWhitelisted(url, extension_set,
-      whitelist);
+  return ::IsExtensionOrSharedModuleWhitelisted(url, extension_set, whitelist);
 }
 #endif
 

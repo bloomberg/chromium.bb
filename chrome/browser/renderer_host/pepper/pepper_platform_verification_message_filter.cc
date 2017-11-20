@@ -23,8 +23,6 @@
 #include "chrome/browser/profiles/profile.h"
 #endif
 
-namespace chrome {
-
 namespace {
 
 #if BUILDFLAG(ENABLE_CDM_STORAGE_ID)
@@ -165,5 +163,3 @@ void PepperPlatformVerificationMessageFilter::GetStorageIdCallback(
   SendReply(reply_context,
             PpapiHostMsg_PlatformVerification_GetStorageIdReply(storage_id));
 }
-
-}  // namespace chrome

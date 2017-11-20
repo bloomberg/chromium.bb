@@ -183,8 +183,8 @@ bool NaClBrowserDelegateImpl::IsNonSfiModeAllowed(
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   const extensions::ExtensionSet* extension_set =
       &GetExtensionInfoMap(profile_directory)->extensions();
-  return chrome::IsExtensionOrSharedModuleWhitelisted(
-      manifest_url, extension_set, allowed_nonsfi_origins_);
+  return IsExtensionOrSharedModuleWhitelisted(manifest_url, extension_set,
+                                              allowed_nonsfi_origins_);
 #else
   return false;
 #endif

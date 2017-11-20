@@ -12,8 +12,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 
-namespace chrome {
-
 // MonitorFinder maps a RenderFrameHost to the display ID on which the widget
 // is painting. This class operates on the IO thread while the RenderFrameHost
 // is on the UI thread, so the value returned by GetMonitor() may be 0 until
@@ -46,7 +44,5 @@ class MonitorFinder : public base::RefCountedThreadSafe<MonitorFinder> {
 
   DISALLOW_COPY_AND_ASSIGN(MonitorFinder);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_RENDERER_HOST_PEPPER_MONITOR_FINDER_MAC_H_

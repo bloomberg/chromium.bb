@@ -20,8 +20,6 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
-namespace chrome {
-
 // This class allows asynchronously fetching a unique device ID. The callback
 // passed in when calling Start() will be called when the ID has been fetched
 // or on error.
@@ -73,7 +71,5 @@ class DeviceIDFetcher : public base::RefCountedThreadSafe<DeviceIDFetcher> {
 
   DISALLOW_COPY_AND_ASSIGN(DeviceIDFetcher);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_RENDERER_HOST_PEPPER_DEVICE_ID_FETCHER_H_
