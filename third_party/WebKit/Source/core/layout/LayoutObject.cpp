@@ -699,6 +699,8 @@ LayoutBoxModelObject* LayoutObject::EnclosingBoxModelObject() const {
 }
 
 LayoutBlockFlow* LayoutObject::EnclosingNGBlockFlow() const {
+  if (!RuntimeEnabledFeatures::LayoutNGEnabled())
+    return nullptr;
   LayoutBox* box = EnclosingBox();
   DCHECK(box);
   return box->IsLayoutNGMixin() ? ToLayoutBlockFlow(box) : nullptr;
