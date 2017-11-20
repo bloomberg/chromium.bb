@@ -13,6 +13,18 @@ struct PreviewsStatus {
   bool enabled;
 };
 
+struct PreviewsFlag {
+  // The human readable description of the flag that will be displayed on
+  // chrome://interventions-internals.
+  string description;
+
+  // The link to this flag in chrome://flags.
+  string link;
+
+  // The string representation of the flag value.
+  string value;
+};
+
 struct MessageLog {
   // The tye of event message (E.g. "Navigation").
   string type;
@@ -30,7 +42,12 @@ struct MessageLog {
 
 interface InterventionsInternalsPageHandler {
   // Returns a map of previews modes statuses.
+  // TODO(thanhdle): Change this to array type. crbug.com/786996.
   GetPreviewsEnabled() => (map<string, PreviewsStatus> statuses);
+
+  // Returns a map of previews related flags details.
+  // TODO(thanhdle): Change this to array type. crbug.com/786996.
+  GetPreviewsFlagsDetails() => (map<string, PreviewsFlag> flags);
 
   // Inject the client side page object.
   SetClientPage(InterventionsInternalsPage page);

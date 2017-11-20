@@ -44,25 +44,38 @@ InterventionsInternalsUITest.prototype = {
      */
     class TestPageHandler extends TestBrowserProxy {
       constructor() {
-        super(['getPreviewsEnabled']);
+        super(['getPreviewsEnabled', 'getPreviewsFlagsDetails']);
 
         /** @private {!Map} */
-        this.statuses_ = new Map();
+        this.previewsModeStatuses_ = new Map();
+        this.previewsFlagsStatuses_ = new Map();
       }
 
       /**
-       * Setup testing map.
+       * Setup testing map for getPreviewsEnabled.
        * @param {!Map} map The testing status map.
        */
-      setTestingMap(map) {
-        this.statuses_ = map;
+      setTestingPreviewsModeMap(map) {
+        this.previewsModeStatuses_ = map;
+      }
+
+      setTestingPreviewsFlagsMap(map) {
+        this.previewsFlagsStatuses_ = map;
       }
 
       /** @override **/
       getPreviewsEnabled() {
         this.methodCalled('getPreviewsEnabled');
         return Promise.resolve({
-          statuses: this.statuses_,
+          statuses: this.previewsModeStatuses_,
+        });
+      }
+
+      /** @override **/
+      getPreviewsFlagsDetails() {
+        this.methodCalled('getPreviewsFlagsDetails');
+        return Promise.resolve({
+          flags: this.previewsFlagsStatuses_,
         });
       }
     }
@@ -98,7 +111,7 @@ InterventionsInternalsUITest.prototype = {
   },
 };
 
-TEST_F('InterventionsInternalsUITest', 'DisplayCorrectStatuses', function() {
+TEST_F('InterventionsInternalsUITest', 'GetPreviewsEnabled', function() {
   let setupFnResolver = this.setupFnResolver;
 
   test('DisplayCorrectStatuses', () => {
@@ -117,7 +130,7 @@ TEST_F('InterventionsInternalsUITest', 'DisplayCorrectStatuses', function() {
       enabled: true,
     });
 
-    window.testPageHandler.setTestingMap(testMap);
+    window.testPageHandler.setTestingPreviewsModeMap(testMap);
     this.setupFnResolver.resolve();
 
     return setupFnResolver.promise
@@ -136,6 +149,56 @@ TEST_F('InterventionsInternalsUITest', 'DisplayCorrectStatuses', function() {
           let statuses = document.querySelectorAll('.previews-status-value');
           for (let i = 1; i < statuses.length; i++) {
             expectGE(statuses[i].textContent, statuses[i - 1].textContent);
+          }
+        });
+  });
+
+  mocha.run();
+});
+
+TEST_F('InterventionsInternalsUITest', 'GetPreviewsFlagsDetails', function() {
+  let setupFnResolver = this.setupFnResolver;
+
+  test('DisplayCorrectStatuses', () => {
+    // Setup testPageHandler behavior.
+    let testMap = new Map();
+    testMap.set('params2', {
+      description: 'Params 2',
+      link: 'Link 2',
+      value: 'Value 2',
+    });
+    testMap.set('params3', {
+      description: 'Param 3',
+      link: 'Link 3',
+      value: 'Value 3',
+    });
+    testMap.set('params1', {
+      description: 'Params 1',
+      link: 'Link 1',
+      value: 'Value 1',
+    });
+
+    window.testPageHandler.setTestingPreviewsFlagsMap(testMap);
+    this.setupFnResolver.resolve();
+
+    return setupFnResolver.promise
+        .then(() => {
+          return window.testPageHandler.whenCalled('getPreviewsFlagsDetails');
+        })
+        .then(() => {
+          testMap.forEach((value, key) => {
+            let actualDescription =
+                document.querySelector('#' + key + 'Description');
+            let actualValue = document.querySelector('#' + key + 'Value');
+            expectEquals(value.description, actualDescription.textContent);
+            expectEquals(value.link, actualDescription.getAttribute('href'));
+            expectEquals(value.value, actualValue.textContent);
+          });
+
+          // Test correct order of flags displayed on page.
+          let flags = document.querySelectorAll('.previews-status-value');
+          for (let i = 1; i < flags.length; i++) {
+            expectGE(flags[i].textContent, flags[i - 1].textContent);
           }
         });
   });

@@ -10,6 +10,25 @@ body {
   user-select: none;
 }
 
+.section-header {
+  color: rgb(43, 96, 222);
+  font-size: 120%;
+  font-weight: bold;
+  margin-top: 20px;
+}
+
+.previews-status-value {
+  margin-top: 5px;
+}
+
+.previews-flag-container {
+  margin-top: 5px;
+}
+
+.previews-flag-value {
+  margin-left: 10px;
+}
+
 button {
   background: rgb(53, 106, 222);
   border-radius: 5px;
@@ -194,6 +213,10 @@ td.log-url .url-tooltip::after {
     width: 60%;
   }
 
+  #previews-flags-table {
+    width: 30%;
+  }
+
   .log-time {
     width: 15%;
   }
@@ -229,7 +252,7 @@ td.log-url .url-tooltip::after {
     width: 30%;
   }
 
-  #blacklisted-hosts-table {
+  #previews-flags-table {
     width: 30%;
   }
 

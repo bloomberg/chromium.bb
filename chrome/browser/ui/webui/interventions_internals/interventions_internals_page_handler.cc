@@ -6,21 +6,63 @@
 
 #include <unordered_map>
 
+#include "base/base_switches.h"
+#include "base/command_line.h"
+#include "build/build_config.h"
+#include "chrome/browser/flag_descriptions.h"
+#include "chrome/common/chrome_switches.h"
 #include "components/previews/core/previews_experiments.h"
 
 namespace {
 
-// Key for status mapping.
+// Keys for status mapping. These value will be used as HTML DOM ID in the
+// JavaScript code.
 const char kAmpRedirectionPreviews[] = "ampPreviews";
 const char kClientLoFiPreviews[] = "clientLoFiPreviews";
 const char kNoScriptPreviews[] = "noScriptPreviews";
 const char kOfflinePreviews[] = "offlinePreviews";
 
-// Description for statuses.
+// Descriptions for previews.
 const char kAmpRedirectionDescription[] = "AMP Previews";
 const char kClientLoFiDescription[] = "Client LoFi Previews";
 const char kNoScriptDescription[] = "NoScript Previews";
 const char kOfflineDesciption[] = "Offline Previews";
+
+// Flag feature name.
+const char kNoScriptFeatureName[] = "NoScriptPreviews";
+#if defined(OS_ANDROID)
+const char kOfflinePageFeatureName[] = "OfflinePreviews";
+#endif  // OS_ANDROID
+
+// Keys for flags mapping.
+const char kEctFlag[] = "ectFlag";
+const char kNoScriptFlag[] = "noScriptFlag";
+const char kOfflinePageFlag[] = "offlinePageFlag";
+
+// Links to flags in chrome://flags.
+// TODO(thanhdle): Refactor into vector of structs. crbug.com/787010.
+const char kEctFlagLink[] = "chrome://flags/#force-effective-connection-type";
+const char kNoScriptFlagLink[] = "chrome://flags/#enable-noscript-previews";
+const char kOfflinePageFlagLink[] = "chrome://flags/#enable-offline-previews";
+
+const char kDefaultFlagValue[] = "Not Forced";
+
+// Check if the flag status of the flag is a forced value or not.
+std::string GetFeatureFlagStatus(const std::string& feature_name) {
+  std::string enabled_features =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kEnableFeatures);
+  if (enabled_features.find(feature_name) != std::string::npos) {
+    return "Forced Enabled";
+  }
+  std::string disabled_features =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kDisableFeatures);
+  if (disabled_features.find(feature_name) != std::string::npos) {
+    return "Forced Disabled";
+  }
+  return kDefaultFlagValue;
+}
 
 }  // namespace
 
@@ -125,4 +167,39 @@ void InterventionsInternalsPageHandler::GetPreviewsEnabled(
   statuses[kOfflinePreviews] = std::move(offline_status);
 
   std::move(callback).Run(std::move(statuses));
+}
+
+void InterventionsInternalsPageHandler::GetPreviewsFlagsDetails(
+    GetPreviewsFlagsDetailsCallback callback) {
+  std::unordered_map<std::string, mojom::PreviewsFlagPtr> flags;
+
+  auto ect_status = mojom::PreviewsFlag::New();
+  ect_status->description =
+      flag_descriptions::kForceEffectiveConnectionTypeName;
+  ect_status->link = kEctFlagLink;
+  std::string ect_value =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kForceEffectiveConnectionType);
+  ect_status->value = ect_value.empty() ? kDefaultFlagValue : ect_value;
+  flags[kEctFlag] = std::move(ect_status);
+
+  auto noscript_status = mojom::PreviewsFlag::New();
+  noscript_status->description = flag_descriptions::kEnableNoScriptPreviewsName;
+  noscript_status->link = kNoScriptFlagLink;
+  noscript_status->value = GetFeatureFlagStatus(kNoScriptFeatureName);
+  flags[kNoScriptFlag] = std::move(noscript_status);
+
+  auto offline_page_status = mojom::PreviewsFlag::New();
+#if defined(OS_ANDROID)
+  offline_page_status->description =
+      flag_descriptions::kEnableOfflinePreviewsName;
+  offline_page_status->value = GetFeatureFlagStatus(kOfflinePageFeatureName);
+#else
+  offline_page_status->description = "Offline Page Previews";
+  offline_page_status->value = "Only support on Android";
+#endif  // OS_ANDROID
+  offline_page_status->link = kOfflinePageFlagLink;
+  flags[kOfflinePageFlag] = std::move(offline_page_status);
+
+  std::move(callback).Run(std::move(flags));
 }

@@ -322,6 +322,7 @@ cr.define('interventions_internals', () => {
   function init(handler) {
     pageHandler = handler;
     getPreviewsEnabled();
+    getPreviewsFlagsDetails();
 
     let ignoreButton = $('ignore-blacklist-button');
     ignoreButton.addEventListener('click', () => {
@@ -333,33 +334,77 @@ cr.define('interventions_internals', () => {
   }
 
   /**
+   * Sort keys by the value of each value by its description attribute of a
+   * |mapObject|.
+   *
+   * @param mapObject {!Map<string, Object} A map where all values have a
+   * description attribute.
+   * @return A list of keys sorted by their descriptions.
+   */
+  function getSortedKeysByDescription(mapObject) {
+    let sortedKeys = Array.from(mapObject.keys());
+    sortedKeys.sort((a, b) => {
+      return mapObject.get(a).description > mapObject.get(b).description;
+    });
+    return sortedKeys;
+  }
+
+  /**
    * Retrieves the statuses of previews (i.e. Offline, LoFi, AMP Redirection),
    * and posts them on chrome://intervention-internals.
    */
   function getPreviewsEnabled() {
     pageHandler.getPreviewsEnabled()
         .then((response) => {
-          let statuses = $('previews-statuses');
+          let statuses = $('previews-enabled-status');
 
-          // Sorting the keys by the status's description.
-          let sortedKeys = Array.from(response.statuses.keys());
-          sortedKeys.sort((a, b) => {
-            return response.statuses.get(a).description >
-                response.statuses.get(b).description;
-          });
-
-          sortedKeys.forEach((key) => {
+          getSortedKeysByDescription(response.statuses).forEach((key) => {
             let value = response.statuses.get(key);
             let message = value.description + ': ';
             message += value.enabled ? 'Enabled' : 'Disabled';
 
             assert(!$(key), 'Component ' + key + ' already existed!');
 
-            let node = document.createElement('p');
+            let node = document.createElement('div');
             node.setAttribute('class', 'previews-status-value');
             node.setAttribute('id', key);
             node.textContent = message;
             statuses.appendChild(node);
+          });
+        })
+        .catch((error) => {
+          console.error(error.message);
+        });
+  }
+
+  function getPreviewsFlagsDetails() {
+    pageHandler.getPreviewsFlagsDetails()
+        .then((response) => {
+          let flags = $('previews-flags-table');
+
+          getSortedKeysByDescription(response.flags).forEach((key) => {
+            let value = response.flags.get(key);
+            assert(!$(key), 'Component ' + key + ' already existed!');
+
+            let flagDescription = document.createElement('a');
+            flagDescription.setAttribute('class', 'previews-flag-description');
+            flagDescription.setAttribute('id', key + 'Description');
+            flagDescription.setAttribute('href', value.link);
+            flagDescription.textContent = value.description;
+
+            let flagNameTd = document.createElement('td');
+            flagNameTd.appendChild(flagDescription);
+
+            let flagValueTd = document.createElement('td');
+            flagValueTd.setAttribute('class', 'previews-flag-value');
+            flagValueTd.setAttribute('id', key + 'Value');
+            flagValueTd.textContent = value.value;
+
+            let node = document.createElement('tr');
+            node.setAttribute('class', 'previews-flag-container');
+            node.appendChild(flagNameTd);
+            node.appendChild(flagValueTd);
+            flags.appendChild(node);
           });
         })
         .catch((error) => {
