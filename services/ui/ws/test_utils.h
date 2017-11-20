@@ -394,6 +394,9 @@ class TestWindowManager : public mojom::WindowManager {
  private:
   // WindowManager:
   void OnConnect() override;
+  void WmOnAcceleratedWidgetForDisplay(
+      int64_t display,
+      gpu::SurfaceHandle surface_handle) override;
   void WmNewDisplayAdded(
       const display::Display& display,
       ui::mojom::WindowDataPtr root,

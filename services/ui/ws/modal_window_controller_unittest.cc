@@ -17,8 +17,8 @@ class ModalWindowControllerTest : public testing::Test {
   ModalWindowControllerTest() {}
   ~ModalWindowControllerTest() override {}
 
-  viz::HostFrameSinkManager* host_frame_sink_manager() {
-    return ws_test_helper_.window_server()->GetHostFrameSinkManager();
+  VizHostProxy* viz_host_proxy() {
+    return ws_test_helper_.window_server()->GetVizHostProxy();
   }
 
  private:
@@ -28,7 +28,7 @@ class ModalWindowControllerTest : public testing::Test {
 };
 
 TEST_F(ModalWindowControllerTest, MinContainer) {
-  TestServerWindowDelegate window_delegate(host_frame_sink_manager());
+  TestServerWindowDelegate window_delegate(viz_host_proxy());
   ServerWindow root_window(&window_delegate, WindowId(1, 1));
   window_delegate.set_root_window(&root_window);
   ServerWindow container1(&window_delegate, WindowId(1, 2));
@@ -74,7 +74,7 @@ TEST_F(ModalWindowControllerTest, MinContainer) {
 }
 
 TEST_F(ModalWindowControllerTest, SystemModalContainer) {
-  TestServerWindowDelegate window_delegate(host_frame_sink_manager());
+  TestServerWindowDelegate window_delegate(viz_host_proxy());
   ServerWindow root_window(&window_delegate, WindowId(1, 1));
   window_delegate.set_root_window(&root_window);
   ServerWindow container1(&window_delegate, WindowId(1, 2));

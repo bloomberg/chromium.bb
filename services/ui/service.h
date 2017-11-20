@@ -90,6 +90,10 @@ class Service : public service_manager::Service,
     discardable_memory::DiscardableSharedMemoryManager* memory_manager =
         nullptr;
 
+    // Whether mus should host viz, or whether an external client (e.g. the
+    // window manager) would be responsible for hosting viz.
+    bool should_host_viz = true;
+
    private:
     DISALLOW_COPY_AND_ASSIGN(InProcessConfig);
   };
@@ -231,6 +235,8 @@ class Service : public service_manager::Service,
   // running in-process.
   std::unique_ptr<discardable_memory::DiscardableSharedMemoryManager>
       owned_discardable_shared_memory_manager_;
+
+  const bool should_host_viz_;
 
   service_manager::BinderRegistryWithArgs<
       const service_manager::BindSourceInfo&>

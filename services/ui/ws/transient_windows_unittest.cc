@@ -72,8 +72,8 @@ class TransientWindowsTest : public testing::Test {
   TransientWindowsTest() {}
   ~TransientWindowsTest() override {}
 
-  viz::HostFrameSinkManager* host_frame_sink_manager() {
-    return ws_test_helper_.window_server()->GetHostFrameSinkManager();
+  VizHostProxy* viz_host_proxy() {
+    return ws_test_helper_.window_server()->GetVizHostProxy();
   }
 
  private:
@@ -83,7 +83,7 @@ class TransientWindowsTest : public testing::Test {
 };
 
 TEST_F(TransientWindowsTest, TransientChildren) {
-  TestServerWindowDelegate server_window_delegate(host_frame_sink_manager());
+  TestServerWindowDelegate server_window_delegate(viz_host_proxy());
 
   std::unique_ptr<ServerWindow> parent(
       CreateTestWindow(&server_window_delegate, WindowId(1, 0), nullptr));
@@ -109,7 +109,7 @@ TEST_F(TransientWindowsTest, TransientChildren) {
 
 // Verifies adding doesn't restack at all.
 TEST_F(TransientWindowsTest, DontStackUponCreation) {
-  TestServerWindowDelegate delegate(host_frame_sink_manager());
+  TestServerWindowDelegate delegate(viz_host_proxy());
   std::unique_ptr<ServerWindow> parent(
       CreateTestWindow(&delegate, WindowId(0, 1), nullptr));
   std::unique_ptr<ServerWindow> window0(
@@ -126,7 +126,7 @@ TEST_F(TransientWindowsTest, DontStackUponCreation) {
 // More variations around verifying ordering doesn't change when
 // adding/removing transients.
 TEST_F(TransientWindowsTest, RestackUponAddOrRemoveTransientWindow) {
-  TestServerWindowDelegate delegate(host_frame_sink_manager());
+  TestServerWindowDelegate delegate(viz_host_proxy());
   std::unique_ptr<ServerWindow> parent(
       CreateTestWindow(&delegate, WindowId(0, 1), nullptr));
   std::unique_ptr<ServerWindow> windows[4];
@@ -163,7 +163,7 @@ TEST_F(TransientWindowsTest, RestackUponAddOrRemoveTransientWindow) {
 
 // Verifies TransientWindowObserver is notified appropriately.
 TEST_F(TransientWindowsTest, TransientWindowObserverNotified) {
-  TestServerWindowDelegate delegate(host_frame_sink_manager());
+  TestServerWindowDelegate delegate(viz_host_proxy());
   std::unique_ptr<ServerWindow> parent(
       CreateTestWindow(&delegate, WindowId(0, 1), nullptr));
   std::unique_ptr<ServerWindow> w1(

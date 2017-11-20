@@ -295,8 +295,8 @@ class EventDispatcherTest : public testing::TestWithParam<bool>,
     return test_event_dispatcher_delegate_.get();
   }
   EventDispatcher* event_dispatcher() { return event_dispatcher_.get(); }
-  viz::HostFrameSinkManager* host_frame_sink_manager() {
-    return ws_test_helper_.window_server()->GetHostFrameSinkManager();
+  VizHostProxy* viz_host_proxy() {
+    return ws_test_helper_.window_server()->GetVizHostProxy();
   }
   TestServerWindowDelegate* window_delegate() { return window_delegate_.get(); }
 
@@ -445,7 +445,7 @@ void EventDispatcherTest::SetUp() {
   testing::TestWithParam<bool>::SetUp();
 
   window_delegate_ =
-      std::make_unique<TestServerWindowDelegate>(host_frame_sink_manager());
+      std::make_unique<TestServerWindowDelegate>(viz_host_proxy());
   root_window_ =
       std::make_unique<ServerWindow>(window_delegate_.get(), WindowId(1, 2));
   root_window_->set_is_activation_parent(true);
@@ -471,8 +471,8 @@ class EventDispatcherVizTargeterTest
     return test_event_dispatcher_delegate_.get();
   }
   EventDispatcher* event_dispatcher() { return event_dispatcher_.get(); }
-  viz::HostFrameSinkManager* host_frame_sink_manager() {
-    return ws_test_helper_.window_server()->GetHostFrameSinkManager();
+  VizHostProxy* viz_host_proxy() {
+    return ws_test_helper_.window_server()->GetVizHostProxy();
   }
   viz::AggregatedHitTestRegion* aggregated_hit_test_region() {
     return static_cast<viz::AggregatedHitTestRegion*>(active_buffer_.get());
@@ -531,7 +531,7 @@ void EventDispatcherVizTargeterTest::SetUp() {
   testing::Test::SetUp();
 
   window_delegate_ =
-      std::make_unique<TestServerWindowDelegate>(host_frame_sink_manager());
+      std::make_unique<TestServerWindowDelegate>(viz_host_proxy());
   root_window_ =
       std::make_unique<ServerWindow>(window_delegate_.get(), WindowId(1, 2));
   root_window_->set_is_activation_parent(true);
@@ -2322,7 +2322,7 @@ TEST_P(EventDispatcherTest, ChildModal) {
 }
 
 TEST_P(EventDispatcherTest, DontCancelWhenMovedToSeparateDisplay) {
-  TestServerWindowDelegate window_delegate2(host_frame_sink_manager());
+  TestServerWindowDelegate window_delegate2(viz_host_proxy());
   ServerWindow root2(&window_delegate2, WindowId(1, 100));
   root2.set_is_activation_parent(true);
   window_delegate2.set_root_window(&root2);

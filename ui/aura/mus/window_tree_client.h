@@ -456,6 +456,9 @@ class AURA_EXPORT WindowTreeClient
 
   // Overridden from WindowManager:
   void OnConnect() override;
+  void WmOnAcceleratedWidgetForDisplay(
+      int64_t display,
+      gpu::SurfaceHandle surface_handle) override;
   void WmNewDisplayAdded(
       const display::Display& display,
       ui::mojom::WindowDataPtr root_data,
