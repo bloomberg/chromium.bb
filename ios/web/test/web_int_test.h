@@ -8,6 +8,7 @@
 #import <WebKit/WebKit.h>
 
 #import "base/ios/block_types.h"
+#include "base/macros.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state_delegate.h"
 #include "ios/web/public/test/web_test.h"
@@ -16,8 +17,6 @@
 class GURL;
 
 namespace web {
-
-class IntTestWebStateObserver;
 
 // A test fixture for integration tests that need to bring up the HttpServer.
 class WebIntTest : public WebTest {
@@ -69,8 +68,8 @@ class WebIntTest : public WebTest {
  private:
   // WebState used to load pages.
   std::unique_ptr<WebState> web_state_;
-  // WebStateObserver used to wait for page loads.
-  std::unique_ptr<IntTestWebStateObserver> observer_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebIntTest);
 };
 
 }  // namespace web
