@@ -6,6 +6,7 @@
 
 #include "cc/paint/skia_paint_canvas.h"
 #include "components/viz/common/resources/single_release_callback.h"
+#include "components/viz/common/resources/transferable_resource.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
@@ -45,19 +46,20 @@ class CanvasResourceProvider_Texture : public CanvasResourceProvider {
   bool IsValid() const final { return GetSkSurface() && !IsGpuContextLost(); }
   bool IsAccelerated() const final { return true; }
 
-  bool CanPrepareTextureMailbox() const final { return true; }
+  bool CanPrepareTransferableResource() const final { return true; }
 
  protected:
   virtual bool isOverlayCandidate() { return false; }
 
-  void ResourceToMailbox(CanvasResource* resource,
-                         GLenum target,
-                         viz::TextureMailbox* out_mailbox) {
+  void TransferResource(CanvasResource* resource,
+                        GLenum target,
+                        viz::TransferableResource* out_resource) {
     auto gl = ContextGL();
     auto gr = GetGrContext();
     DCHECK(gl && gr);
 
     GLuint texture_id = resource->TextureId();
+    GLuint filter = UseNearestNeighbor() ? GL_NEAREST : GL_LINEAR;
 
     gl->BindTexture(target, texture_id);
     gl->TexParameteri(target, GL_TEXTURE_MAG_FILTER, GetGLFilter());
@@ -72,12 +74,10 @@ class CanvasResourceProvider_Texture : public CanvasResourceProvider {
     gpu::SyncToken sync_token;
     gl->GenUnverifiedSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
 
-    *out_mailbox = viz::TextureMailbox(mailbox, sync_token, target,
-                                       gfx::Size(Size()), isOverlayCandidate());
-
-    gfx::ColorSpace color_space = ColorParams().GetStorageGfxColorSpace();
-    out_mailbox->set_color_space(color_space);
-    out_mailbox->set_nearest_neighbor(UseNearestNeighbor());
+    *out_resource = viz::TransferableResource::MakeGLOverlay(
+        mailbox, filter, target, sync_token, gfx::Size(Size()),
+        isOverlayCandidate());
+    out_resource->color_space = ColorParams().GetStorageGfxColorSpace();
 
     gl->BindTexture(target, 0);
 
@@ -94,8 +94,8 @@ class CanvasResourceProvider_Texture : public CanvasResourceProvider {
     return StaticBitmapImage::Create(image, ContextProviderWrapper());
   }
 
-  std::unique_ptr<CanvasResource> DoPrepareTextureMailbox(
-      viz::TextureMailbox* out_mailbox) override {
+  std::unique_ptr<CanvasResource> DoPrepareTransferableResource(
+      viz::TransferableResource* out_resource) override {
     DCHECK(GetSkSurface());
 
     if (IsGpuContextLost())
@@ -122,7 +122,7 @@ class CanvasResourceProvider_Texture : public CanvasResourceProvider {
     if (!resource)
       return nullptr;
 
-    ResourceToMailbox(resource.get(), GL_TEXTURE_2D, out_mailbox);
+    TransferResource(resource.get(), GL_TEXTURE_2D, out_resource);
     image->getTexture()->textureParamsModified();
 
     return resource;
@@ -175,8 +175,8 @@ class CanvasResourceProvider_Texture_GpuMemoryBuffer final
                                                   ContextProviderWrapper());
   }
 
-  std::unique_ptr<CanvasResource> DoPrepareTextureMailbox(
-      viz::TextureMailbox* out_mailbox) final {
+  std::unique_ptr<CanvasResource> DoPrepareTransferableResource(
+      viz::TransferableResource* out_resource) final {
     DCHECK(GetSkSurface());
 
     if (IsGpuContextLost())
@@ -185,8 +185,8 @@ class CanvasResourceProvider_Texture_GpuMemoryBuffer final
     std::unique_ptr<CanvasResource> output_resource = NewOrRecycledResource();
     if (!output_resource) {
       // GpuMemoryBuffer creation failed, fallback to Texture resource
-      return CanvasResourceProvider_Texture::DoPrepareTextureMailbox(
-          out_mailbox);
+      return CanvasResourceProvider_Texture::DoPrepareTransferableResource(
+          out_resource);
     }
 
     auto gl = ContextGL();
@@ -211,7 +211,7 @@ class CanvasResourceProvider_Texture_GpuMemoryBuffer final
                             false /*unpackPremultiplyAlpha*/,
                             false /*unpackUnmultiplyAlpha*/);
 
-    ResourceToMailbox(output_resource.get(), target, out_mailbox);
+    TransferResource(output_resource.get(), target, out_resource);
     return output_resource;
   }
 };
@@ -235,7 +235,7 @@ class CanvasResourceProvider_Bitmap final : public CanvasResourceProvider {
   bool IsValid() const final { return GetSkSurface(); }
   bool IsAccelerated() const final { return false; }
 
-  bool CanPrepareTextureMailbox() const final { return false; }
+  bool CanPrepareTransferableResource() const final { return false; }
 
  private:
   scoped_refptr<StaticBitmapImage> CreateSnapshot() override {
@@ -245,8 +245,8 @@ class CanvasResourceProvider_Bitmap final : public CanvasResourceProvider {
     return StaticBitmapImage::Create(image);
   }
 
-  std::unique_ptr<CanvasResource> DoPrepareTextureMailbox(
-      viz::TextureMailbox* out_mailbox) final {
+  std::unique_ptr<CanvasResource> DoPrepareTransferableResource(
+      viz::TransferableResource* out_resource) final {
     NOTREACHED();  // Not directly compositable.
     return nullptr;
   }
@@ -456,12 +456,12 @@ CanvasResourceProvider::NewOrRecycledResource() {
   return CreateResource();
 }
 
-bool CanvasResourceProvider::PrepareTextureMailbox(
-    viz::TextureMailbox* out_mailbox,
+bool CanvasResourceProvider::PrepareTransferableResource(
+    viz::TransferableResource* out_resource,
     std::unique_ptr<viz::SingleReleaseCallback>* out_callback) {
-  DCHECK(CanPrepareTextureMailbox());
+  DCHECK(CanPrepareTransferableResource());
   std::unique_ptr<CanvasResource> resource =
-      DoPrepareTextureMailbox(out_mailbox);
+      DoPrepareTransferableResource(out_resource);
   if (!resource)
     return false;
   auto func =

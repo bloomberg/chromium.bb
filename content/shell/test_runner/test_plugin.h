@@ -11,6 +11,8 @@
 #include "base/macros.h"
 #include "cc/layers/texture_layer.h"
 #include "cc/layers/texture_layer_client.h"
+#include "gpu/command_buffer/common/mailbox.h"
+#include "gpu/command_buffer/common/sync_token.h"
 #include "third_party/WebKit/public/platform/WebLayer.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
@@ -33,6 +35,10 @@ namespace gpu {
 namespace gles2 {
 class GLES2Interface;
 }
+}
+
+namespace viz {
+struct TransferableResource;
 }
 
 namespace test_runner {
@@ -93,8 +99,8 @@ class TestPlugin : public blink::WebPlugin, public cc::TextureLayerClient {
   bool IsPlaceholder() override;
 
   // cc::TextureLayerClient methods:
-  bool PrepareTextureMailbox(
-      viz::TextureMailbox* mailbox,
+  bool PrepareTransferableResource(
+      viz::TransferableResource* resource,
       std::unique_ptr<viz::SingleReleaseCallback>* release_callback) override;
 
  private:
@@ -156,9 +162,10 @@ class TestPlugin : public blink::WebPlugin, public cc::TextureLayerClient {
   std::unique_ptr<blink::WebGraphicsContext3DProvider> context_provider_;
   gpu::gles2::GLES2Interface* gl_;
   GLuint color_texture_;
-  viz::TextureMailbox texture_mailbox_;
+  gpu::Mailbox mailbox_;
+  gpu::SyncToken sync_token_;
   std::unique_ptr<viz::SharedBitmap> shared_bitmap_;
-  bool mailbox_changed_;
+  bool content_changed_;
   GLuint framebuffer_;
   Scene scene_;
   scoped_refptr<cc::TextureLayer> layer_;

@@ -35,6 +35,7 @@
 
 #include "build/build_config.h"
 #include "components/viz/common/quads/shared_bitmap.h"
+#include "components/viz/common/resources/transferable_resource.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
@@ -258,17 +259,17 @@ std::unique_ptr<viz::SharedBitmap> DrawingBuffer::CreateOrRecycleBitmap() {
   return Platform::Current()->AllocateSharedBitmap(size_);
 }
 
-bool DrawingBuffer::PrepareTextureMailbox(
-    viz::TextureMailbox* out_mailbox,
+bool DrawingBuffer::PrepareTransferableResource(
+    viz::TransferableResource* out_resource,
     std::unique_ptr<viz::SingleReleaseCallback>* out_release_callback) {
   ScopedStateRestorer scoped_state_restorer(this);
   bool force_gpu_result = false;
-  return PrepareTextureMailboxInternal(out_mailbox, out_release_callback,
-                                       force_gpu_result);
+  return PrepareTransferableResourceInternal(out_resource, out_release_callback,
+                                             force_gpu_result);
 }
 
-bool DrawingBuffer::PrepareTextureMailboxInternal(
-    viz::TextureMailbox* out_mailbox,
+bool DrawingBuffer::PrepareTransferableResourceInternal(
+    viz::TransferableResource* out_resource,
     std::unique_ptr<viz::SingleReleaseCallback>* out_release_callback,
     bool force_gpu_result) {
   DCHECK(state_restorer_);
@@ -296,15 +297,16 @@ bool DrawingBuffer::PrepareTextureMailboxInternal(
   ResolveIfNeeded();
 
   if (!using_gpu_compositing_ && !force_gpu_result) {
-    return FinishPrepareTextureMailboxSoftware(out_mailbox,
-                                               out_release_callback);
+    return FinishPrepareTransferableResourceSoftware(out_resource,
+                                                     out_release_callback);
   } else {
-    return FinishPrepareTextureMailboxGpu(out_mailbox, out_release_callback);
+    return FinishPrepareTransferableResourceGpu(out_resource,
+                                                out_release_callback);
   }
 }
 
-bool DrawingBuffer::FinishPrepareTextureMailboxSoftware(
-    viz::TextureMailbox* out_mailbox,
+bool DrawingBuffer::FinishPrepareTransferableResourceSoftware(
+    viz::TransferableResource* out_resource,
     std::unique_ptr<viz::SingleReleaseCallback>* out_release_callback) {
   DCHECK(state_restorer_);
   std::unique_ptr<viz::SharedBitmap> bitmap = CreateOrRecycleBitmap();
@@ -325,8 +327,9 @@ bool DrawingBuffer::FinishPrepareTextureMailboxSoftware(
                         op);
   }
 
-  *out_mailbox = viz::TextureMailbox(bitmap.get(), size_);
-  out_mailbox->set_color_space(storage_color_space_);
+  *out_resource = viz::TransferableResource::MakeSoftware(
+      bitmap->id(), bitmap->sequence_number(), size_);
+  out_resource->color_space = storage_color_space_;
 
   // This holds a ref on the DrawingBuffer that will keep it alive until the
   // mailbox is released (and while the release callback is running). It also
@@ -344,8 +347,8 @@ bool DrawingBuffer::FinishPrepareTextureMailboxSoftware(
   return true;
 }
 
-bool DrawingBuffer::FinishPrepareTextureMailboxGpu(
-    viz::TextureMailbox* out_mailbox,
+bool DrawingBuffer::FinishPrepareTransferableResourceGpu(
+    viz::TransferableResource* out_resource,
     std::unique_ptr<viz::SingleReleaseCallback>* out_release_callback) {
   DCHECK(state_restorer_);
   if (webgl_version_ > kWebGL1) {
@@ -410,11 +413,11 @@ bool DrawingBuffer::FinishPrepareTextureMailboxGpu(
   // Populate the output mailbox and callback.
   {
     bool is_overlay_candidate = color_buffer_for_mailbox->image_id != 0;
-    *out_mailbox = viz::TextureMailbox(
-        color_buffer_for_mailbox->mailbox,
-        color_buffer_for_mailbox->produce_sync_token, texture_target_,
-        gfx::Size(size_), is_overlay_candidate);
-    out_mailbox->set_color_space(sampler_color_space_);
+    *out_resource = viz::TransferableResource::MakeGLOverlay(
+        color_buffer_for_mailbox->mailbox, GL_LINEAR, texture_target_,
+        color_buffer_for_mailbox->produce_sync_token, gfx::Size(size_),
+        is_overlay_candidate);
+    out_resource->color_space = sampler_color_space_;
 
     // This holds a ref on the DrawingBuffer that will keep it alive until the
     // mailbox is released (and while the release callback is running).
@@ -482,13 +485,13 @@ scoped_refptr<StaticBitmapImage> DrawingBuffer::TransferToStaticBitmapImage() {
   // grContext().
   GrContext* gr_context = ContextProvider()->GetGrContext();
 
-  viz::TextureMailbox texture_mailbox;
+  viz::TransferableResource transferable_resource;
   std::unique_ptr<viz::SingleReleaseCallback> release_callback;
   bool success = false;
   if (gr_context) {
     bool force_gpu_result = true;
-    success = PrepareTextureMailboxInternal(&texture_mailbox, &release_callback,
-                                            force_gpu_result);
+    success = PrepareTransferableResourceInternal(
+        &transferable_resource, &release_callback, force_gpu_result);
   }
   if (!success) {
     // If we can't get a mailbox, return an transparent black ImageBitmap.
@@ -500,34 +503,36 @@ scoped_refptr<StaticBitmapImage> DrawingBuffer::TransferToStaticBitmapImage() {
     return StaticBitmapImage::Create(surface->makeImageSnapshot());
   }
 
-  DCHECK_EQ(size_.Width(), texture_mailbox.size_in_pixels().width());
-  DCHECK_EQ(size_.Height(), texture_mailbox.size_in_pixels().height());
+  DCHECK_EQ(size_.Width(), transferable_resource.size.width());
+  DCHECK_EQ(size_.Height(), transferable_resource.size.height());
 
   // Make our own textureId that is a reference on the same texture backing
   // being used as the front buffer (which was returned from
-  // PrepareTextureMailbox()). We do not need to wait on the sync token in
-  // |textureMailbox| since the mailbox was produced on the same |m_gl| context
-  // that we are using here. Similarly, the |releaseCallback| will run on the
-  // same context so we don't need to send a sync token for this consume action
-  // back to it.
-  // TODO(danakj): Instead of using PrepareTextureMailbox(), we could just use
-  // the actual texture id and avoid needing to produce/consume a mailbox.
+  // PrepareTransferableResourceInternal()). We do not need to wait on the sync
+  // token in |transferable_resource| since the mailbox was produced on the same
+  // |m_gl| context that we are using here. Similarly, the |release_callback|
+  // will run on the same context so we don't need to send a sync token for this
+  // consume action back to it.
+  // TODO(danakj): Instead of using PrepareTransferableResourceInternal(), we
+  // could just use the actual texture id and avoid needing to produce/consume a
+  // mailbox.
   GLuint texture_id = gl_->CreateAndConsumeTextureCHROMIUM(
-      GL_TEXTURE_2D, texture_mailbox.name());
+      GL_TEXTURE_2D, transferable_resource.mailbox_holder.mailbox.name);
   // Return the mailbox but report that the resource is lost to prevent trying
   // to use the backing for future frames. We keep it alive with our own
   // reference to the backing via our |textureId|.
-  release_callback->Run(gpu::SyncToken(), true /* lostResource */);
+  release_callback->Run(gpu::SyncToken(), true /* lost_resource */);
 
   // We reuse the same mailbox name from above since our texture id was consumed
   // from it.
-  const auto& sk_image_mailbox = texture_mailbox.mailbox();
+  const auto& sk_image_mailbox = transferable_resource.mailbox_holder.mailbox;
   // Use the sync token generated after producing the mailbox. Waiting for this
   // before trying to use the mailbox with some other context will ensure it is
   // valid. We wouldn't need to wait for the consume done in this function
   // because the texture id it generated would only be valid for the
   // DrawingBuffer's context anyways.
-  const auto& sk_image_sync_token = texture_mailbox.sync_token();
+  const auto& sk_image_sync_token =
+      transferable_resource.mailbox_holder.sync_token;
 
   // TODO(xidachen): Create a small pool of recycled textures from
   // ImageBitmapRenderingContext's transferFromImageBitmap, and try to use them

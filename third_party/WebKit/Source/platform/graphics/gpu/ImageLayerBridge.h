@@ -33,18 +33,18 @@ class PLATFORM_EXPORT ImageLayerBridge
   void Dispose();
 
   // cc::TextureLayerClient implementation.
-  bool PrepareTextureMailbox(viz::TextureMailbox* out_mailbox,
-                             std::unique_ptr<viz::SingleReleaseCallback>*
-                                 out_release_callback) override;
+  bool PrepareTransferableResource(viz::TransferableResource* out_resource,
+                                   std::unique_ptr<viz::SingleReleaseCallback>*
+                                       out_release_callback) override;
 
-  void MailboxReleasedGpu(scoped_refptr<StaticBitmapImage>,
-                          const gpu::SyncToken&,
-                          bool lost_resource);
+  void ResourceReleasedGpu(scoped_refptr<StaticBitmapImage>,
+                           const gpu::SyncToken&,
+                           bool lost_resource);
 
-  void MailboxReleasedSoftware(std::unique_ptr<viz::SharedBitmap>,
-                               const IntSize&,
-                               const gpu::SyncToken&,
-                               bool lost_resource);
+  void ResourceReleasedSoftware(std::unique_ptr<viz::SharedBitmap>,
+                                const IntSize&,
+                                const gpu::SyncToken&,
+                                bool lost_resource);
 
   scoped_refptr<StaticBitmapImage> GetImage() { return image_; }
 

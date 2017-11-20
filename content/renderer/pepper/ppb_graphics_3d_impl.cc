@@ -185,19 +185,20 @@ int32_t PPB_Graphics3D_Impl::DoSwapBuffers(const gpu::SyncToken& sync_token,
     // Don't need to check for NULL from GetPluginInstance since when we're
     // bound, we know our instance is valid.
     bool is_overlay_candidate = use_image_chromium_;
-    viz::TextureMailbox texture_mailbox(
-        taken_front_buffer_, sync_token,
-// TODO(reveman): Get texture target from browser process.
+    // TODO(reveman): Get texture target from browser process.
+    uint32_t target = GL_TEXTURE_2D;
 #if defined(OS_MACOSX)
-        use_image_chromium_ ? GL_TEXTURE_RECTANGLE_ARB : GL_TEXTURE_2D,
-#else
-        GL_TEXTURE_2D,
+    if (use_image_chromium_)
+      target = GL_TEXTURE_RECTANGLE_ARB;
 #endif
-        size, is_overlay_candidate);
+    viz::TransferableResource resource =
+        viz::TransferableResource::MakeGLOverlay(taken_front_buffer_, GL_LINEAR,
+                                                 target, sync_token, size,
+                                                 is_overlay_candidate);
     taken_front_buffer_.SetZero();
     HostGlobals::Get()
         ->GetInstance(pp_instance())
-        ->CommitTextureMailbox(texture_mailbox);
+        ->CommitTransferableResource(resource);
     commit_pending_ = true;
   } else {
     // Wait for the command to complete on the GPU to allow for throttling.

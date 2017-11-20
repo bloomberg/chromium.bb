@@ -175,9 +175,9 @@ class ReflectorImplTest : public testing::Test {
   void TearDown() override {
     if (reflector_)
       reflector_->RemoveMirroringLayer(mirroring_layer_.get());
-    viz::TextureMailbox mailbox;
+    viz::TransferableResource resource;
     std::unique_ptr<viz::SingleReleaseCallback> release;
-    if (mirroring_layer_->PrepareTextureMailbox(&mailbox, &release)) {
+    if (mirroring_layer_->PrepareTransferableResource(&resource, &release)) {
       release->Run(gpu::SyncToken(), false);
     }
     compositor_.reset();

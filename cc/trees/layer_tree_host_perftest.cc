@@ -324,10 +324,11 @@ class BrowserCompositorInvalidateLayerTreePerfTest
                                    gpu::CommandBufferId::FromUnsafeValue(1),
                                    next_fence_sync_);
     next_sync_token.SetVerifyFlush();
-    viz::TextureMailbox mailbox(gpu_mailbox, next_sync_token, GL_TEXTURE_2D);
+    viz::TransferableResource resource = viz::TransferableResource::MakeGL(
+        gpu_mailbox, GL_LINEAR, GL_TEXTURE_2D, next_sync_token);
     next_fence_sync_++;
 
-    tab_contents_->SetTextureMailbox(mailbox, std::move(callback));
+    tab_contents_->SetTransferableResource(resource, std::move(callback));
     ++sent_mailboxes_count_;
     tab_contents_->SetNeedsDisplay();
   }
@@ -348,7 +349,7 @@ class BrowserCompositorInvalidateLayerTreePerfTest
   }
 
   void CleanUpAndEndTestOnMainThread() {
-    tab_contents_->SetTextureMailbox(viz::TextureMailbox(), nullptr);
+    tab_contents_->ClearTexture();
     // ReleaseMailbox will end the test when we get the last mailbox back.
   }
 

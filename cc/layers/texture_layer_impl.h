@@ -12,7 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "cc/cc_export.h"
 #include "cc/layers/layer_impl.h"
-#include "components/viz/common/quads/texture_mailbox.h"
+#include "components/viz/common/resources/transferable_resource.h"
 
 namespace viz {
 class SingleReleaseCallback;
@@ -56,17 +56,16 @@ class CC_EXPORT TextureLayerImpl : public LayerImpl {
   // 0--3
   void SetVertexOpacity(const float vertex_opacity[4]);
 
-  void SetTextureMailbox(
-      const viz::TextureMailbox& mailbox,
+  void SetTransferableResource(
+      const viz::TransferableResource& resource,
       std::unique_ptr<viz::SingleReleaseCallback> release_callback);
 
  private:
   TextureLayerImpl(LayerTreeImpl* tree_impl, int id);
 
   const char* LayerTypeAsString() const override;
-  void FreeTextureMailbox();
+  void FreeTransferableResource();
 
-  viz::ResourceId external_texture_resource_ = 0;
   bool premultiplied_alpha_ = true;
   bool blend_background_color_ = false;
   bool flipped_ = true;
@@ -75,9 +74,18 @@ class CC_EXPORT TextureLayerImpl : public LayerImpl {
   gfx::PointF uv_bottom_right_ = gfx::PointF(1.f, 1.f);
   float vertex_opacity_[4] = {1.f, 1.f, 1.f, 1.f};
 
-  viz::TextureMailbox texture_mailbox_;
+  // True while the |transferable_resource_| is owned by this layer, and
+  // becomes false once it is passed to another layer or to the
+  // LayerTreeResourceProvider, at which point we get back a |resource_id_|.
+  bool own_resource_ = false;
+  // A TransferableResource from the layer's client that will be given
+  // to the display compositor.
+  viz::TransferableResource transferable_resource_;
+  // Local ResourceId for the TransferableResource, to be used with the
+  // compositor's LayerTreeResourceProvider in order to refer to the
+  // TransferableResource given to it.
+  viz::ResourceId resource_id_ = 0;
   std::unique_ptr<viz::SingleReleaseCallback> release_callback_;
-  bool own_mailbox_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TextureLayerImpl);
 };

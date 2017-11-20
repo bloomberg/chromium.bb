@@ -19,7 +19,7 @@
 #include "ui/gfx/geometry/size.h"
 
 namespace viz {
-
+struct TransferableResource;
 namespace mojom {
 class TextureMailboxDataView;
 }
@@ -82,6 +82,8 @@ class VIZ_COMMON_EXPORT TextureMailbox {
 
   SharedBitmap* shared_bitmap() const { return shared_bitmap_; }
   size_t SharedMemorySizeInBytes() const;
+
+  TransferableResource ToTransferableResource() const;
 
  private:
   friend struct mojo::StructTraits<mojom::TextureMailboxDataView,

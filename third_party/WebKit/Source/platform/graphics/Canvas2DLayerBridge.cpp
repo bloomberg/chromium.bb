@@ -27,6 +27,7 @@
 
 #include <memory>
 #include "base/memory/ptr_util.h"
+#include "components/viz/common/resources/transferable_resource.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "platform/Histogram.h"
 #include "platform/WebTaskRunner.h"
@@ -614,8 +615,8 @@ bool Canvas2DLayerBridge::Restore() {
   return resource_provider_.get();
 }
 
-bool Canvas2DLayerBridge::PrepareTextureMailbox(
-    viz::TextureMailbox* out_mailbox,
+bool Canvas2DLayerBridge::PrepareTransferableResource(
+    viz::TransferableResource* out_resource,
     std::unique_ptr<viz::SingleReleaseCallback>* out_release_callback) {
   if (destruction_in_progress_) {
     // It can be hit in the following sequence.
@@ -651,9 +652,9 @@ bool Canvas2DLayerBridge::PrepareTextureMailbox(
   }
 
   FlushRecording();
-  if (resource_provider_->PrepareTextureMailbox(out_mailbox,
-                                                out_release_callback)) {
-    out_mailbox->set_color_space(color_params_.GetSamplerGfxColorSpace());
+  if (resource_provider_->PrepareTransferableResource(out_resource,
+                                                      out_release_callback)) {
+    out_resource->color_space = color_params_.GetSamplerGfxColorSpace();
     return true;
   }
   return false;
