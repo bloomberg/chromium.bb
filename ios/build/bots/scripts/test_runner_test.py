@@ -96,102 +96,85 @@ class GetGTestFilterTest(TestCase):
         test_runner.get_gtest_filter(tests, invert=True), expected)
 
 
+class InstallXcodeTest(TestCase):
+  """Tests install_xcode."""
+
+  def setUp(self):
+    super(InstallXcodeTest, self).setUp()
+    self.mock(test_runner, 'xcode_select', lambda _: None)
+    self.mock(os.path, 'exists', lambda _: True)
+
+  def test_success(self):
+    self.assertTrue(test_runner.install_xcode('test_build', 'true', 'path'))
+
+  def test_failure(self):
+    self.assertFalse(test_runner.install_xcode('test_build', 'false', 'path'))
+
+
 class SimulatorTestRunnerTest(TestCase):
   """Tests for test_runner.SimulatorTestRunner."""
 
-  def test_app_not_found(self):
-    """Ensures AppNotFoundError is raised."""
-    def exists(path):
-      if path == 'fake-app':
-        return False
+  def setUp(self):
+    super(SimulatorTestRunnerTest, self).setUp()
+
+    def install_xcode(build, mac_toolchain_cmd, xcode_app_path):
       return True
 
-    def find_xcode(version):
-      return {'found': True}
+    self.mock(test_runner.find_xcode, 'find_xcode',
+              lambda _: {'found': True})
+    self.mock(test_runner, 'install_xcode', install_xcode)
+    self.mock(test_runner.subprocess, 'check_output',
+              lambda _: 'fake-bundle-id')
+    self.mock(os.path, 'abspath', lambda path: '/abs/path/to/%s' % path)
+    self.mock(os.path, 'exists', lambda _: True)
 
-    def check_output(command):
-      return 'fake-bundle-id'
+  def test_app_not_found(self):
+    """Ensures AppNotFoundError is raised."""
 
-    self.mock(test_runner.os.path, 'exists', exists)
-    self.mock(test_runner.find_xcode, 'find_xcode', find_xcode)
-    self.mock(test_runner.subprocess, 'check_output', check_output)
+    self.mock(os.path, 'exists', lambda p: not p.endswith('fake-app'))
 
-    self.assertRaises(
-        test_runner.AppNotFoundError,
-        test_runner.SimulatorTestRunner,
+    with self.assertRaises(test_runner.AppNotFoundError):
+      test_runner.SimulatorTestRunner(
         'fake-app',
         'fake-iossim',
         'platform',
         'os',
         'xcode-version',
+        '', # Empty xcode-build
         'out-dir',
-    )
+      )
 
   def test_iossim_not_found(self):
     """Ensures SimulatorNotFoundError is raised."""
-    def exists(path):
-      if path == 'fake-iossim':
-        return False
-      return True
+    self.mock(os.path, 'exists', lambda p: not p.endswith('fake-iossim'))
 
-    def find_xcode(version):
-      return {'found': True}
-
-    def check_output(command):
-      return 'fake-bundle-id'
-
-    self.mock(test_runner.os.path, 'exists', exists)
-    self.mock(test_runner.find_xcode, 'find_xcode', find_xcode)
-    self.mock(test_runner.subprocess, 'check_output', check_output)
-
-    self.assertRaises(
-        test_runner.SimulatorNotFoundError,
-        test_runner.SimulatorTestRunner,
+    with self.assertRaises(test_runner.SimulatorNotFoundError):
+      test_runner.SimulatorTestRunner(
         'fake-app',
         'fake-iossim',
         'platform',
         'os',
         'xcode-version',
+        'xcode-build',
         'out-dir',
-    )
+      )
 
   def test_init(self):
     """Ensures instance is created."""
-    def exists(path):
-      return True
-
-    def find_xcode(version):
-      return {'found': True}
-
-    def check_output(command):
-      return 'fake-bundle-id'
-
-    self.mock(test_runner.os.path, 'exists', exists)
-    self.mock(test_runner.find_xcode, 'find_xcode', find_xcode)
-    self.mock(test_runner.subprocess, 'check_output', check_output)
-
     tr = test_runner.SimulatorTestRunner(
         'fake-app',
         'fake-iossim',
         'platform',
         'os',
         'xcode-version',
+        'xcode-build',
         'out-dir',
     )
 
-    self.failUnless(tr)
+    self.assertTrue(tr)
 
   def test_startup_crash(self):
     """Ensures test is relaunched once on startup crash."""
-    def exists(path):
-      return True
-
-    def find_xcode(version):
-      return {'found': True}
-
-    def check_output(command):
-      return 'fake-bundle-id'
-
     def set_up(self):
       return
 
@@ -203,9 +186,6 @@ class SimulatorTestRunnerTest(TestCase):
     def tear_down(self):
       return
 
-    self.mock(test_runner.os.path, 'exists', exists)
-    self.mock(test_runner.find_xcode, 'find_xcode', find_xcode)
-    self.mock(test_runner.subprocess, 'check_output', check_output)
     self.mock(test_runner.SimulatorTestRunner, 'set_up', set_up)
     self.mock(test_runner.TestRunner, '_run', _run)
     self.mock(test_runner.SimulatorTestRunner, 'tear_down', tear_down)
@@ -216,21 +196,14 @@ class SimulatorTestRunnerTest(TestCase):
         'platform',
         'os',
         'xcode-version',
+        'xcode-build',
         'out-dir',
     )
-    self.assertRaises(test_runner.AppLaunchError, tr.launch)
+    with self.assertRaises(test_runner.AppLaunchError):
+      tr.launch()
 
   def test_relaunch(self):
     """Ensures test is relaunched on test crash until tests complete."""
-    def exists(path):
-      return True
-
-    def find_xcode(version):
-      return {'found': True}
-
-    def check_output(command):
-      return 'fake-bundle-id'
-
     def set_up(self):
       return
 
@@ -266,9 +239,6 @@ class SimulatorTestRunnerTest(TestCase):
     def tear_down(self):
       return
 
-    self.mock(test_runner.os.path, 'exists', exists)
-    self.mock(test_runner.find_xcode, 'find_xcode', find_xcode)
-    self.mock(test_runner.subprocess, 'check_output', check_output)
     self.mock(test_runner.SimulatorTestRunner, 'set_up', set_up)
     self.mock(test_runner.TestRunner, '_run', _run)
     self.mock(test_runner.SimulatorTestRunner, 'tear_down', tear_down)
@@ -279,10 +249,11 @@ class SimulatorTestRunnerTest(TestCase):
         'platform',
         'os',
         'xcode-version',
+        'xcode-build',
         'out-dir',
     )
     tr.launch()
-    self.failUnless(tr.logs)
+    self.assertTrue(tr.logs)
 
 
 if __name__ == '__main__':
