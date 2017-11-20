@@ -1914,6 +1914,12 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
       read_drl_idx(ec_ctx, xd, mbmi, r);
   }
 
+  if (is_compound != is_inter_compound_mode(mbmi->mode)) {
+    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                       "Prediction mode %d invalid with ref frame %d %d",
+                       mbmi->mode, mbmi->ref_frame[0], mbmi->ref_frame[1]);
+  }
+
   if (mbmi->mode != GLOBALMV && mbmi->mode != GLOBAL_GLOBALMV) {
     for (ref = 0; ref < 1 + is_compound; ++ref) {
 #if CONFIG_AMVR
