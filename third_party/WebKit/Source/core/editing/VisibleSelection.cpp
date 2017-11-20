@@ -546,6 +546,26 @@ AdjustSelectionToAvoidCrossingShadowBoundaries(
              : builder.SetAsBackwardSelection(shadow_adjusted_range).Build();
 }
 
+// TODO(editing-dev): Move this to SelectionAdjuster.
+template <typename Strategy>
+static SelectionTemplate<Strategy>
+AdjustSelectionToAvoidCrossingEditingBoundaries(
+    const SelectionTemplate<Strategy>& shadow_adjusted_selection) {
+  // TODO(editing-dev): Refactor w/o EphemeralRange.
+  const EphemeralRangeTemplate<Strategy> shadow_adjusted_range(
+      shadow_adjusted_selection.ComputeStartPosition(),
+      shadow_adjusted_selection.ComputeEndPosition());
+  const EphemeralRangeTemplate<Strategy> editing_adjusted_range =
+      AdjustSelectionToAvoidCrossingEditingBoundaries(
+          shadow_adjusted_range, shadow_adjusted_selection.Base());
+  typename SelectionTemplate<Strategy>::Builder builder;
+  if (editing_adjusted_range.IsCollapsed())
+    return builder.Collapse(editing_adjusted_range.StartPosition()).Build();
+  return shadow_adjusted_selection.IsBaseFirst()
+             ? builder.SetAsForwardSelection(editing_adjusted_range).Build()
+             : builder.SetAsBackwardSelection(editing_adjusted_range).Build();
+}
+
 template <typename Strategy>
 static SelectionTemplate<Strategy> ComputeVisibleSelection(
     const SelectionTemplate<Strategy>& passed_selection,
@@ -565,16 +585,12 @@ static SelectionTemplate<Strategy> ComputeVisibleSelection(
   const SelectionTemplate<Strategy>& shadow_adjusted_selection =
       AdjustSelectionToAvoidCrossingShadowBoundaries(
           granularity_adjusted_selection);
-
-  const EphemeralRangeTemplate<Strategy> shadow_adjusted_range(
-      shadow_adjusted_selection.ComputeStartPosition(),
-      shadow_adjusted_selection.ComputeEndPosition());
-  // TODO(editing-dev): Implement
-  // const SelectionTemplate<Strategy>& editing_adjusted_selection =
-  // AdjustSelectionEditing(shadow_adjusted_selection);
-  const EphemeralRangeTemplate<Strategy> editing_adjusted_range =
+  const SelectionTemplate<Strategy>& editing_adjusted_selection =
       AdjustSelectionToAvoidCrossingEditingBoundaries(
-          shadow_adjusted_range, canonicalized_selection.Base());
+          shadow_adjusted_selection);
+  const EphemeralRangeTemplate<Strategy> editing_adjusted_range(
+      editing_adjusted_selection.ComputeStartPosition(),
+      editing_adjusted_selection.ComputeEndPosition());
   // TODO(editing-dev): Implement
   // const SelectionTemplate<Strategy>& adjusted_selection =
   // AdjustSelectionType(editing_adjusted_range);
