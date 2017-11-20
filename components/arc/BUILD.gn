@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
 
 static_library("arc") {
@@ -150,63 +149,8 @@ static_library("arc_base") {
   ]
 
   public_deps = [
-    ":arc_bindings",
     ":prefs",
-  ]
-}
-
-mojom("arc_bindings") {
-  sources = [
-    "common/accessibility_helper.mojom",
-    "common/app.mojom",
-    "common/arc_bridge.mojom",
-    "common/audio.mojom",
-    "common/auth.mojom",
-    "common/backup_settings.mojom",
-    "common/bitmap.mojom",
-    "common/bluetooth.mojom",
-    "common/boot_phase_monitor.mojom",
-    "common/cast_receiver.mojom",
-    "common/cert_store.mojom",
-    "common/clipboard.mojom",
-    "common/crash_collector.mojom",
-    "common/enterprise_reporting.mojom",
-    "common/file_system.mojom",
-    "common/gfx.mojom",
-    "common/ime.mojom",
-    "common/intent_helper.mojom",
-    "common/kiosk.mojom",
-    "common/lock_screen.mojom",
-    "common/metrics.mojom",
-    "common/midis.mojom",
-    "common/net.mojom",
-    "common/notifications.mojom",
-    "common/obb_mounter.mojom",
-    "common/oemcrypto.mojom",
-    "common/oemcrypto_daemon.mojom",
-    "common/policy.mojom",
-    "common/power.mojom",
-    "common/print.mojom",
-    "common/process.mojom",
-    "common/protected_buffer_manager.mojom",
-    "common/rotation_lock.mojom",
-    "common/scale_factor.mojom",
-    "common/storage_manager.mojom",
-    "common/tracing.mojom",
-    "common/tts.mojom",
-    "common/video.mojom",
-    "common/video_common.mojom",
-    "common/video_decode_accelerator.mojom",
-    "common/video_encode_accelerator.mojom",
-    "common/voice_interaction_arc_home.mojom",
-    "common/voice_interaction_framework.mojom",
-    "common/volume_mounter.mojom",
-    "common/wallpaper.mojom",
-  ]
-
-  public_deps = [
-    "//mojo/common:common_custom_types",
-    "//ui/gfx/geometry/mojo",
+    "//components/arc/common",
   ]
 }
 

@@ -90,7 +90,7 @@
           "url_loader"
         ],
         "patch_service": [ "patch_file" ],
-        "ui": [ "display_output_protection", "video_detector" ],
+        "ui": [ "arc_manager", "display_output_protection", "video_detector" ],
         "service_manager": [
           "service_manager:client_process",
           "service_manager:instance_name",

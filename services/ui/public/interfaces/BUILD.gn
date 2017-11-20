@@ -51,6 +51,11 @@ mojom("interfaces") {
     "//ui/platform_window/mojo:interfaces",
   ]
 
+  if (is_chromeos) {
+    sources += [ "arc.mojom" ]
+    public_deps += [ "//components/arc/common:media" ]
+  }
+
   # TODO(crbug.com/714018): Convert the implementation to use OnceCallback.
   use_once_callback = false
 }

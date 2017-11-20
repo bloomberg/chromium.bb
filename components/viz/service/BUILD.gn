@@ -192,6 +192,10 @@ viz_component("service") {
     deps += [ "//ui/gfx/x" ]
   }
 
+  if (is_chromeos) {
+    deps += [ "//components/arc/video_accelerator" ]
+  }
+
   if (is_mac) {
     sources += [
       "display_embedder/compositor_overlay_candidate_validator_mac.h",

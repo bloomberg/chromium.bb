@@ -11,6 +11,9 @@ traits_headers = [ "//components/arc/common/video_accelerator_struct_traits.h" ]
 sources = [
   "//components/arc/common/video_accelerator_struct_traits.cc",
 ]
+deps = [
+  "//ui/gfx/geometry",
+]
 type_mappings = [
   "arc.mojom.VideoFramePlane=arc::VideoFramePlane[move_only]",
   "arc.mojom.Size=gfx::Size",

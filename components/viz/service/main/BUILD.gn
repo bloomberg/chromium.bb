@@ -35,4 +35,8 @@ source_set("main") {
   if (use_ozone) {
     deps += [ "//ui/ozone:ozone" ]
   }
+
+  if (is_chromeos) {
+    deps += [ "//media/gpu" ]
+  }
 }

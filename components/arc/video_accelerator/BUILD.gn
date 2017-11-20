@@ -18,7 +18,7 @@ static_library("video_accelerator") {
   ]
 
   deps = [
-    "//components/arc:arc_bindings",
+    "//components/arc/common:media",
     "//media/gpu",
     "//ui/ozone",
   ]

@@ -3,13 +3,15 @@
 # found in the LICENSE file.
 
 mojom = "//components/arc/common/volume_mounter.mojom"
-public_headers = [ "//chromeos/disks/disk_mount_manager.h" ]
+public_headers = [
+  "//chromeos/chromeos_export.h",
+  "//chromeos/dbus/cros_disks_client.h",
+  "//chromeos/dbus/dbus_client_implementation_type.h",
+  "//chromeos/disks/disk_mount_manager.h",
+]
 traits_headers = [ "//components/arc/volume_mounter/volume_mounter_traits.h" ]
 sources = [
   "//components/arc/volume_mounter/volume_mounter_traits.cc",
-]
-deps = [
-  "//chromeos",
 ]
 type_mappings = [
   "arc.mojom.DeviceType=chromeos::DeviceType",
