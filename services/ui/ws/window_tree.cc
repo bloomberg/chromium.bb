@@ -12,6 +12,7 @@
 #include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "build/build_config.h"
 #include "mojo/public/cpp/bindings/map.h"
 #include "services/ui/display/screen_manager.h"
 #include "services/ui/ws/cursor_location_manager.h"
@@ -178,6 +179,14 @@ void WindowTree::Init(std::unique_ptr<WindowTreeBinding> binding,
   client()->OnEmbed(WindowToWindowData(to_send.front()), std::move(tree),
                     display_id, ClientWindowIdToTransportId(focused_window_id),
                     drawn, root->current_local_surface_id());
+}
+
+void WindowTree::OnAcceleratedWidgetAvailableForDisplay(Display* display) {
+  DCHECK(window_manager_internal_);
+  // TODO(sad): Use GpuSurfaceTracker on platforms where a gpu::SurfaceHandle is
+  // not the same as a gfx::AcceleratedWidget.
+  window_manager_internal_->WmOnAcceleratedWidgetForDisplay(
+      display->GetId(), display->platform_display()->GetAcceleratedWidget());
 }
 
 void WindowTree::ConfigureWindowManager(

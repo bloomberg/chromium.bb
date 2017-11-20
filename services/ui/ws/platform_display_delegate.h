@@ -42,6 +42,8 @@ class PlatformDisplayDelegate {
   // for non-Ozone platforms.
   virtual OzonePlatform* GetOzonePlatform() = 0;
 
+  virtual bool IsHostingViz() const = 0;
+
  protected:
   virtual ~PlatformDisplayDelegate() {}
 };

@@ -307,6 +307,10 @@ OzonePlatform* Display::GetOzonePlatform() {
 #endif
 }
 
+bool Display::IsHostingViz() const {
+  return window_server_->is_hosting_viz();
+}
+
 void Display::OnViewportMetricsChanged(
     const display::ViewportMetrics& metrics) {
   platform_display_->UpdateViewportMetrics(metrics);

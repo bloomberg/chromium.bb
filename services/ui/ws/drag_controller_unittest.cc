@@ -217,7 +217,7 @@ class DragControllerTest : public testing::Test,
     testing::Test::SetUp();
 
     window_delegate_ = std::make_unique<TestServerWindowDelegate>(
-        ws_test_helper_.window_server()->GetHostFrameSinkManager());
+        ws_test_helper_.window_server()->GetVizHostProxy());
     root_window_ =
         std::make_unique<ServerWindow>(window_delegate_.get(), WindowId(1, 2));
     window_delegate_->set_root_window(root_window_.get());

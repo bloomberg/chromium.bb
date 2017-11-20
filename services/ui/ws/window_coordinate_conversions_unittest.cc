@@ -17,8 +17,8 @@ class WindowCoordinateConversions : public testing::Test {
   WindowCoordinateConversions() {}
   ~WindowCoordinateConversions() override {}
 
-  viz::HostFrameSinkManager* host_frame_sink_manager() {
-    return ws_test_helper_.window_server()->GetHostFrameSinkManager();
+  VizHostProxy* viz_host_proxy() {
+    return ws_test_helper_.window_server()->GetVizHostProxy();
   }
 
  private:
@@ -28,7 +28,7 @@ class WindowCoordinateConversions : public testing::Test {
 };
 
 TEST_F(WindowCoordinateConversions, Transform) {
-  TestServerWindowDelegate window_delegate(host_frame_sink_manager());
+  TestServerWindowDelegate window_delegate(viz_host_proxy());
   ServerWindow root(&window_delegate, WindowId(1, 2));
   root.set_event_targeting_policy(
       mojom::EventTargetingPolicy::DESCENDANTS_ONLY);

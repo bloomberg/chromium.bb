@@ -242,6 +242,9 @@ void PlatformDisplayDefault::OnAcceleratedWidgetAvailable(
   widget_ = widget;
   delegate_->OnAcceleratedWidgetAvailable();
 
+  if (!delegate_->IsHostingViz())
+    return;
+
   viz::mojom::CompositorFrameSinkAssociatedPtr compositor_frame_sink;
   viz::mojom::DisplayPrivateAssociatedPtr display_private;
   viz::mojom::CompositorFrameSinkClientPtr compositor_frame_sink_client;

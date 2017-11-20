@@ -1714,6 +1714,12 @@ void WindowTreeClient::OnConnect() {
     window_manager_delegate_->OnWmConnected();
 }
 
+void WindowTreeClient::WmOnAcceleratedWidgetForDisplay(
+    int64_t display,
+    gpu::SurfaceHandle surface_handle) {
+  // TODO(crbug.com/786453): Implement this.
+}
+
 void WindowTreeClient::WmNewDisplayAdded(
     const display::Display& display,
     ui::mojom::WindowDataPtr root_data,

@@ -83,8 +83,8 @@ class ServerWindowDrawnTrackerTest : public testing::Test {
   ServerWindowDrawnTrackerTest() {}
   ~ServerWindowDrawnTrackerTest() override {}
 
-  viz::HostFrameSinkManager* host_frame_sink_manager() {
-    return ws_test_helper_.window_server()->GetHostFrameSinkManager();
+  VizHostProxy* viz_host_proxy() {
+    return ws_test_helper_.window_server()->GetVizHostProxy();
   }
 
  private:
@@ -94,7 +94,7 @@ class ServerWindowDrawnTrackerTest : public testing::Test {
 };
 
 TEST_F(ServerWindowDrawnTrackerTest, ChangeBecauseOfDeletionAndVisibility) {
-  TestServerWindowDelegate server_window_delegate(host_frame_sink_manager());
+  TestServerWindowDelegate server_window_delegate(viz_host_proxy());
   std::unique_ptr<ServerWindow> window(
       new ServerWindow(&server_window_delegate, MakeWindowId()));
   server_window_delegate.set_root_window(window.get());
@@ -138,7 +138,7 @@ TEST_F(ServerWindowDrawnTrackerTest, ChangeBecauseOfDeletionAndVisibility) {
 }
 
 TEST_F(ServerWindowDrawnTrackerTest, ChangeBecauseOfRemovingFromRoot) {
-  TestServerWindowDelegate server_window_delegate(host_frame_sink_manager());
+  TestServerWindowDelegate server_window_delegate(viz_host_proxy());
   ServerWindow root(&server_window_delegate, MakeWindowId());
   server_window_delegate.set_root_window(&root);
   root.SetVisible(true);
@@ -167,7 +167,7 @@ TEST_F(ServerWindowDrawnTrackerTest, ChangeBecauseOfRemovingFromRoot) {
 }
 
 TEST_F(ServerWindowDrawnTrackerTest, ChangeBecauseOfRemovingAncestorFromRoot) {
-  TestServerWindowDelegate server_window_delegate(host_frame_sink_manager());
+  TestServerWindowDelegate server_window_delegate(viz_host_proxy());
   ServerWindow root(&server_window_delegate, MakeWindowId());
   server_window_delegate.set_root_window(&root);
   root.SetVisible(true);
@@ -200,7 +200,7 @@ TEST_F(ServerWindowDrawnTrackerTest, ChangeBecauseOfRemovingAncestorFromRoot) {
 }
 
 TEST_F(ServerWindowDrawnTrackerTest, VisibilityChangeFromNonParentAncestor) {
-  TestServerWindowDelegate server_window_delegate(host_frame_sink_manager());
+  TestServerWindowDelegate server_window_delegate(viz_host_proxy());
   ServerWindow root(&server_window_delegate, MakeWindowId());
   ServerWindow child1(&server_window_delegate, MakeWindowId());
   ServerWindow child2(&server_window_delegate, MakeWindowId());
@@ -243,7 +243,7 @@ TEST_F(ServerWindowDrawnTrackerTest, VisibilityChangeFromNonParentAncestor) {
 }
 
 TEST_F(ServerWindowDrawnTrackerTest, TreeHierarchyChangeFromNonParentAncestor) {
-  TestServerWindowDelegate server_window_delegate(host_frame_sink_manager());
+  TestServerWindowDelegate server_window_delegate(viz_host_proxy());
   ServerWindow root(&server_window_delegate, MakeWindowId());
   ServerWindow child1(&server_window_delegate, MakeWindowId());
   ServerWindow child2(&server_window_delegate, MakeWindowId());

@@ -221,6 +221,10 @@ void TestWindowManager::OnConnect() {
   connect_count_++;
 }
 
+void TestWindowManager::WmOnAcceleratedWidgetForDisplay(
+    int64_t display,
+    gpu::SurfaceHandle surface_handle) {}
+
 void TestWindowManager::WmNewDisplayAdded(
     const display::Display& display,
     ui::mojom::WindowDataPtr root,
@@ -580,7 +584,8 @@ WindowServerTestHelper::WindowServerTestHelper()
   if (!base::MessageLoop::current())
     message_loop_ = std::make_unique<base::MessageLoop>();
   PlatformDisplay::set_factory_for_testing(&platform_display_factory_);
-  window_server_ = std::make_unique<WindowServer>(&window_server_delegate_);
+  window_server_ = std::make_unique<WindowServer>(&window_server_delegate_,
+                                                  true /* should_host_viz */);
   std::unique_ptr<GpuHost> gpu_host = std::make_unique<TestGpuHost>();
   window_server_->SetGpuHost(std::move(gpu_host));
   window_server_delegate_.set_window_server(window_server_.get());

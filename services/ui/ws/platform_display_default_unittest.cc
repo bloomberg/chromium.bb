@@ -58,6 +58,7 @@ class TestPlatformDisplayDelegate : public PlatformDisplayDelegate {
   void OnAcceleratedWidgetAvailable() override {}
   void OnNativeCaptureLost() override {}
   OzonePlatform* GetOzonePlatform() override { return ozone_platform_; }
+  bool IsHostingViz() const override { return true; }
 
  private:
   TestEventSink* event_sink_;

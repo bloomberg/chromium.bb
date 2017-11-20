@@ -191,6 +191,7 @@ class Display : public PlatformDisplayDelegate,
   void OnAcceleratedWidgetAvailable() override;
   void OnNativeCaptureLost() override;
   OzonePlatform* GetOzonePlatform() override;
+  bool IsHostingViz() const override;
 
   // FocusControllerObserver:
   void OnActivationChanged(ServerWindow* old_active_window,

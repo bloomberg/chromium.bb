@@ -4,6 +4,7 @@
 
 module ui.mojom;
 
+import "gpu/ipc/common/surface_handle.mojom";
 import "services/ui/public/interfaces/cursor/cursor.mojom";
 import "services/ui/public/interfaces/event_matcher.mojom";
 import "services/ui/public/interfaces/window_manager_constants.mojom";
@@ -162,6 +163,12 @@ interface WindowManager {
 
   // Called immediately when the WindowManager is obtained.
   OnConnect();
+
+  // Called to notify about the real AcceleratedWidget associated with a
+  // display. This is called only when mus is not hosting viz, and requires the
+  // window manager to instead host viz.
+  WmOnAcceleratedWidgetForDisplay(int64 display_id,
+                                  gpu.mojom.SurfaceHandle surface_handle);
 
   // Called when a new display is added. |root| gives the root window specific
   // to this WindowManager for |display|. |local_surface_id| identifies the ID
