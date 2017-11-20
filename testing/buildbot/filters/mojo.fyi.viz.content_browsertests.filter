@@ -11,8 +11,7 @@
 -ScrollLatencyBrowserTest.*
 
 # Flaky timeout while waiting for scoll update http://crbug.com/786132
-WheelScrollLatchingBrowserTest.WheelScrollingRelatchWhenLatchedScrollerRemoved
-
+-WheelScrollLatchingBrowserTest.WheelScrollingRelatchWhenLatchedScrollerRemoved
 
 # Crash during shutdown on wrong thread http://crbug.com/785023
 -ContentBrowserTestSanityTest.SingleProcess
