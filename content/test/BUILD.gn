@@ -1829,6 +1829,7 @@ test("content_unittests") {
       "//third_party/webrtc/api:libjingle_peerconnection",
       "//third_party/webrtc/api:rtc_stats_api",
       "//third_party/webrtc/api:video_frame_api",
+      "//third_party/webrtc/api:video_frame_api_i420",
       "//third_party/webrtc/api/video_codecs:video_codecs_api",
       "//third_party/webrtc/media:rtc_media",
       "//third_party/webrtc/modules/desktop_capture:primitives",
