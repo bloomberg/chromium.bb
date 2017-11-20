@@ -78,9 +78,6 @@ void AccessibilityLayer::CreateOrUpdateLayer(aura::Window* root_window,
   }
 }
 
-void AccessibilityLayer::OnDelegatedFrameDamage(
-    const gfx::Rect& damage_rect_in_dip) {}
-
 void AccessibilityLayer::OnDeviceScaleFactorChanged(
     float old_device_scale_factor,
     float new_device_scale_factor) {

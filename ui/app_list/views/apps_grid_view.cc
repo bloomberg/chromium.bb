@@ -302,7 +302,6 @@ class AppsGridView::FadeoutLayerDelegate : public ui::LayerDelegate {
         SK_ColorTRANSPARENT));
     canvas->DrawRect(bottom_rect, flags);
   }
-  void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
   void OnDeviceScaleFactorChanged(float old_device_scale_factor,
                                   float new_device_scale_factor) override {}
 

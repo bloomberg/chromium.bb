@@ -52,10 +52,6 @@ void ShadowLayerDelegate::OnPaintLayer(const ui::PaintContext& context) {
   recorder.canvas()->DrawRect(paint_rect, flags);
 }
 
-void ShadowLayerDelegate::OnDelegatedFrameDamage(
-    const gfx::Rect& damage_rect_in_dip) {
-}
-
 void ShadowLayerDelegate::OnDeviceScaleFactorChanged(
     float old_device_scale_factor,
     float new_device_scale_factor) {}

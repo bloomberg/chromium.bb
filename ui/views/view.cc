@@ -1703,10 +1703,6 @@ void View::OnPaintLayer(const ui::PaintContext& context) {
   PaintFromPaintRoot(context);
 }
 
-void View::OnDelegatedFrameDamage(
-    const gfx::Rect& damage_rect_in_dip) {
-}
-
 void View::OnDeviceScaleFactorChanged(float old_device_scale_factor,
                                       float new_device_scale_factor) {
   snap_layer_to_pixel_boundary_ =

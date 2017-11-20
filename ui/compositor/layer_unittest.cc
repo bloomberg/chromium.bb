@@ -94,8 +94,6 @@ class ColoredLayer : public Layer, public LayerDelegate {
     recorder.canvas()->DrawColor(color_);
   }
 
-  void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
-
   void OnDeviceScaleFactorChanged(float old_device_scale_factor,
                                   float new_device_scale_factor) override {}
 
@@ -120,8 +118,6 @@ class DrawFadedStringLayerDelegate : public LayerDelegate {
     recorder.canvas()->DrawFadedString(text, font_list_, SK_ColorRED, bounds,
                                        0);
   }
-
-  void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
 
   void OnDeviceScaleFactorChanged(float old_device_scale_factor,
                                   float new_device_scale_factor) override {}
@@ -313,8 +309,6 @@ class TestLayerDelegate : public LayerDelegate {
     color_index_ = (color_index_ + 1) % static_cast<int>(colors_.size());
   }
 
-  void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
-
   void OnDeviceScaleFactorChanged(float old_device_scale_factor,
                                   float new_device_scale_factor) override {
     device_scale_factor_ = new_device_scale_factor;
@@ -359,7 +353,6 @@ class DrawTreeLayerDelegate : public LayerDelegate {
     ui::PaintRecorder recorder(context, layer_bounds_.size());
     recorder.canvas()->DrawColor(SK_ColorWHITE);
   }
-  void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
   void OnDeviceScaleFactorChanged(float old_device_scale_factor,
                                   float new_device_scale_factor) override {}
 
@@ -384,7 +377,6 @@ class NullLayerDelegate : public LayerDelegate {
   void OnPaintLayer(const ui::PaintContext& context) override {
     invalidation_ = context.InvalidationForTesting();
   }
-  void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
   void OnDeviceScaleFactorChanged(float old_device_scale_factor,
                                   float new_device_scale_factor) override {}
 
@@ -1642,8 +1634,6 @@ class SchedulePaintLayerDelegate : public LayerDelegate {
     last_clip_rect_ = context.InvalidationForTesting();
   }
 
-  void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
-
   void OnDeviceScaleFactorChanged(float old_device_scale_factor,
                                   float new_device_scale_factor) override {}
 
@@ -2256,44 +2246,6 @@ TEST_F(LayerWithRealCompositorTest, SnapLayerToPixels) {
   // 0.5 / 1.5 = 0.333...
   EXPECT_EQ("0.33 0.33",
             Vector2dFTo100thPercisionString(c11->subpixel_position_offset()));
-}
-
-class FrameDamageCheckingDelegate : public TestLayerDelegate {
- public:
-  FrameDamageCheckingDelegate() : delegated_frame_damage_called_(false) {}
-
-  void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {
-    delegated_frame_damage_called_ = true;
-    delegated_frame_damage_rect_ = damage_rect_in_dip;
-  }
-
-  const gfx::Rect& delegated_frame_damage_rect() const {
-    return delegated_frame_damage_rect_;
-  }
-  bool delegated_frame_damage_called() const {
-    return delegated_frame_damage_called_;
-  }
-
- private:
-  gfx::Rect delegated_frame_damage_rect_;
-  bool delegated_frame_damage_called_;
-
-  DISALLOW_COPY_AND_ASSIGN(FrameDamageCheckingDelegate);
-};
-
-TEST(LayerDelegateTest, DelegatedFrameDamage) {
-  std::unique_ptr<Layer> layer(new Layer(LAYER_TEXTURED));
-  gfx::Rect damage_rect(2, 1, 5, 3);
-
-  FrameDamageCheckingDelegate delegate;
-  layer->set_delegate(&delegate);
-  layer->SetShowPrimarySurface(viz::SurfaceId(), gfx::Size(10, 10),
-                               new TestSurfaceReferenceFactory());
-
-  EXPECT_FALSE(delegate.delegated_frame_damage_called());
-  layer->OnDelegatedFrameDamage(damage_rect);
-  EXPECT_TRUE(delegate.delegated_frame_damage_called());
-  EXPECT_EQ(damage_rect, delegate.delegated_frame_damage_rect());
 }
 
 // Verify that LayerDelegate::OnLayerBoundsChanged() is called when the bounds

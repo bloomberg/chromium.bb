@@ -73,7 +73,6 @@ class Layer::LayerMirror : public LayerDelegate, LayerObserver {
     if (auto* delegate = source_->delegate())
       delegate->OnPaintLayer(context);
   }
-  void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
   void OnDeviceScaleFactorChanged(float old_device_scale_factor,
                                   float new_device_scale_factor) override {}
 
@@ -963,12 +962,6 @@ void Layer::OnDeviceScaleFactorChanged(float device_scale_factor) {
     child->OnDeviceScaleFactorChanged(device_scale_factor);
   if (layer_mask_)
     layer_mask_->OnDeviceScaleFactorChanged(device_scale_factor);
-}
-
-void Layer::OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) {
-  DCHECK(surface_layer_.get());
-  if (delegate_)
-    delegate_->OnDelegatedFrameDamage(damage_rect_in_dip);
 }
 
 void Layer::SetDidScrollCallback(
