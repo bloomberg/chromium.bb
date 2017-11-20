@@ -653,8 +653,9 @@ def CreateSizeInfo(map_path, elf_path, tool_prefix, output_directory,
     bulk_analyzer.AnalyzePaths(missed_object_paths)
     bulk_analyzer.SortPaths()
     if track_string_literals:
-      merge_string_syms = [
-          s for s in raw_symbols if s.full_name == '** merge strings']
+      merge_string_syms = [s for s in raw_symbols if
+                           s.full_name == '** merge strings' or
+                           s.full_name == '** lld merge strings']
       # More likely for there to be a bug in supersize than an ELF to not have a
       # single string literal.
       assert merge_string_syms

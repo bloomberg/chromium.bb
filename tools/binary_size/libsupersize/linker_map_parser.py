@@ -330,7 +330,9 @@ class MapFileParserLld(object):
           # merged data. Feature request is filed under:
           # https://bugs.llvm.org/show_bug.cgi?id=35248
           if cur_obj == '<internal>':
-            sym_maker.cur_sym.full_name = '** lld merge section'
+            # Treat all literals as stirng literals.
+            # FIXME(huangs): Refine this. Checking align == 1 is insufficient.
+            sym_maker.cur_sym.full_name = '** lld merge strings'
           else:
             sym_maker.cur_sym.object_path = cur_obj
 
