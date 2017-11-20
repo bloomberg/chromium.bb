@@ -108,10 +108,12 @@ public class SelectionIndicesConverter {
         }
 
         if (end <= initialStartOffset) {
-            wordIndices[1] = -countWordsForward(end, initialStartOffset, breakIterator);
+            wordIndices[1] =
+                    -countWordsForward(/* start = */ end, initialStartOffset, breakIterator);
         } else {
             // end > initialStartOffset
-            wordIndices[1] = countWordsBackward(end, initialStartOffset, breakIterator);
+            wordIndices[1] =
+                    countWordsBackward(/* start = */ end, initialStartOffset, breakIterator);
         }
 
         return true;
