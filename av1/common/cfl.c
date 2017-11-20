@@ -443,6 +443,7 @@ static void sub8x8_set_val(CFL_CTX *cfl, int row, int col, TX_SIZE y_tx_size) {
   if (!is_first) {
     const uint16_t prev_store_counter = cfl->store_counter - 1;
     int found = 0;
+    (void)found;
     sub8x8_val = cfl->sub8x8_val;
     for (int y = 0; y < CFL_SUB8X8_VAL_MI_SIZE; y++) {
       for (int x = 0; x < CFL_SUB8X8_VAL_MI_SIZE; x++) {
