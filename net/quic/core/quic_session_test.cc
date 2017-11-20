@@ -231,6 +231,7 @@ class TestSession : public QuicSpdySession {
   }
 
   using QuicSession::closed_streams;
+  using QuicSession::next_outgoing_stream_id;
   using QuicSession::PostProcessAfterData;
   using QuicSession::zombie_streams;
 
@@ -815,6 +816,12 @@ TEST_P(QuicSessionTestServer, SendGoAway) {
               SendRstStream(kTestStreamId, QUIC_STREAM_PEER_GOING_AWAY, 0))
       .Times(0);
   EXPECT_TRUE(session_.GetOrCreateDynamicStream(kTestStreamId));
+}
+
+TEST_P(QuicSessionTestServer, InvalidGoAway) {
+  QuicGoAwayFrame go_away(QUIC_PEER_GOING_AWAY,
+                          session_.next_outgoing_stream_id(), "");
+  session_.OnGoAway(go_away);
 }
 
 // Test that server session will send a connectivity probe in response to a
