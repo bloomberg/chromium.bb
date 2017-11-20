@@ -13,8 +13,6 @@ import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.AppHooks;
-import org.chromium.chrome.browser.ChromeVersionInfo;
-import org.chromium.chrome.browser.ntp.snippets.FaviconFetchResult;
 
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -37,6 +35,9 @@ public class PartnerBookmarksReader {
 
     /** ID used to indicate an invalid bookmark node. */
     static final long INVALID_BOOKMARK_ID = -1;
+
+    /** Storage for failed favicon retrieval attempts to throttle future requests. **/
+    private PartnerBookmarksFaviconThrottle mFaviconThrottle;
 
     // JNI c++ pointer
     private long mNativePartnerBookmarksReader;
@@ -102,7 +103,11 @@ public class PartnerBookmarksReader {
         FetchFaviconCallback callback = new FetchFaviconCallback() {
             @Override
             public void onFaviconFetched(@FaviconFetchResult int result) {
+                RecordHistogram.recordEnumeratedHistogram(
+                        "PartnerBookmark.FaviconThrottleFetchResult", result,
+                        FaviconFetchResult.UMA_BOUNDARY);
                 synchronized (mProgressLock) {
+                    mFaviconThrottle.onFaviconFetched(url, result);
                     --mNumFaviconsInProgress;
                     if (mNumFaviconsInProgress == 0 && mFinishedReading) {
                         shutDown();
@@ -117,11 +122,9 @@ public class PartnerBookmarksReader {
                 }
             }
         };
-        // TODO(thildebr): Enable fetching from server once we have a cache to store failed attempts
-        // to retrieve favicons so we don't retry too often.
         return nativeAddPartnerBookmark(mNativePartnerBookmarksReader, url, title, isFolder,
                 parentId, favicon, touchicon,
-                ChromeVersionInfo.isCanaryBuild() /* fetchUncachedFaviconsFromServer */, callback);
+                mFaviconThrottle.shouldFetchFromServerIfNecessary(url), callback);
     }
 
     /**
@@ -145,6 +148,9 @@ public class PartnerBookmarksReader {
             nativePartnerBookmarksCreationComplete(mNativePartnerBookmarksReader);
             nativeDestroy(mNativePartnerBookmarksReader);
             mNativePartnerBookmarksReader = 0;
+            if (mFaviconThrottle != null) {
+                mFaviconThrottle.commit();
+            }
             mShutDown = true;
         }
     }
@@ -165,6 +171,11 @@ public class PartnerBookmarksReader {
 
         @Override
         protected Void doInBackground(Void... params) {
+            if (mFaviconThrottle == null) {
+                // Initialize the throttle here since we need to load shared preferences on the
+                // background thread as well.
+                mFaviconThrottle = new PartnerBookmarksFaviconThrottle(mContext);
+            }
             PartnerBookmark.BookmarkIterator bookmarkIterator =
                     AppHooks.get().getPartnerBookmarkIterator();
             RecordHistogram.recordBooleanHistogram(
