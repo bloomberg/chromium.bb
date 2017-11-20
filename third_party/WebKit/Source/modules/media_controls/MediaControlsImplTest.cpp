@@ -1206,4 +1206,52 @@ TEST_F(MediaControlsImplTest, OverflowMenuMetricsTimeToDismiss) {
   GetHistogramTester().ExpectTotalCount(kTimeToActionHistogramName, 0);
 }
 
+TEST_F(MediaControlsImplTest, CastOverlayDefaultHidesOnTimer) {
+  Element* cast_overlay_button = GetElementByShadowPseudoId(
+      MediaControls(), "-internal-media-controls-overlay-cast-button");
+  ASSERT_NE(nullptr, cast_overlay_button);
+
+  SimulateRouteAvailable();
+  EXPECT_TRUE(IsElementVisible(*cast_overlay_button));
+
+  // Starts playback because overlay never hides if paused.
+  MediaControls().MediaElement().SetSrc("http://example.com");
+  MediaControls().MediaElement().Play();
+  testing::RunPendingTasks();
+
+  SimulateHideMediaControlsTimerFired();
+  EXPECT_FALSE(IsElementVisible(*cast_overlay_button));
+}
+
+TEST_F(MediaControlsImplTest, CastOverlayShowsOnSomeEvents) {
+  Element* cast_overlay_button = GetElementByShadowPseudoId(
+      MediaControls(), "-internal-media-controls-overlay-cast-button");
+  ASSERT_NE(nullptr, cast_overlay_button);
+
+  Element* overlay_enclosure = GetElementByShadowPseudoId(
+      MediaControls(), "-webkit-media-controls-overlay-enclosure");
+  ASSERT_NE(nullptr, overlay_enclosure);
+
+  SimulateRouteAvailable();
+  EXPECT_TRUE(IsElementVisible(*cast_overlay_button));
+
+  // Starts playback because overlay never hides if paused.
+  MediaControls().MediaElement().SetSrc("http://example.com");
+  MediaControls().MediaElement().Play();
+  testing::RunPendingTasks();
+
+  SimulateRouteAvailable();
+  SimulateHideMediaControlsTimerFired();
+  EXPECT_FALSE(IsElementVisible(*cast_overlay_button));
+
+  for (const auto& event_name :
+       {"gesturetap", "click", "pointerover", "pointermove"}) {
+    overlay_enclosure->DispatchEvent(Event::Create(event_name));
+    EXPECT_TRUE(IsElementVisible(*cast_overlay_button));
+
+    SimulateHideMediaControlsTimerFired();
+    EXPECT_FALSE(IsElementVisible(*cast_overlay_button));
+  }
+}
+
 }  // namespace blink
