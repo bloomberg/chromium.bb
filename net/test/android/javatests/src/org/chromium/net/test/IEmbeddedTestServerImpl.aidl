@@ -50,6 +50,15 @@ interface IEmbeddedTestServerImpl {
      */
     String getURL(String relativeUrl);
 
+    /** Get the full URL for the given relative URL. Similar to the above method but uses the given
+     *  hostname instead of 127.0.0.1. The hostname should be resolved to 127.0.0.1.
+     *
+     *  @param hostName The host name which should be used.
+     *  @param relativeUrl The relative URL for which a full URL should be returned.
+     *  @return The URL as a String.
+     */
+    String getURLWithHostName(String hostName, String relativeUrl);
+
     /** Shut down the server.
      *
      *  @return Whether the server was successfully shut down.

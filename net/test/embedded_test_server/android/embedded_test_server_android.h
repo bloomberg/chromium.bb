@@ -43,6 +43,12 @@ class EmbeddedTestServerAndroid {
       const base::android::JavaParamRef<jobject>& jobj,
       const base::android::JavaParamRef<jstring>& jrelative_url) const;
 
+  base::android::ScopedJavaLocalRef<jstring> GetURLWithHostName(
+      JNIEnv* jenv,
+      const base::android::JavaParamRef<jobject>& jobj,
+      const base::android::JavaParamRef<jstring>& jhostname,
+      const base::android::JavaParamRef<jstring>& jrelative_url) const;
+
   void AddDefaultHandlers(
       JNIEnv* jenv,
       const base::android::JavaParamRef<jobject>& jobj,

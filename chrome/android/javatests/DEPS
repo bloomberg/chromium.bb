@@ -36,3 +36,9 @@ include_rules = [
 
   "+services/service_manager/public/java",
 ]
+
+specific_include_rules = {
+  "WebappNavigationTest\.java": [
+    "+content/public/android/java/src/org/chromium/content/common/ContentSwitches.java",
+  ]
+}

@@ -52,7 +52,7 @@ public class WebappActionsNotificationTest {
     @Before
     public void startWebapp() throws Exception {
         mActivityTestRule.startWebappActivity(mActivityTestRule.createIntent().putExtra(
-                ShortcutHelper.EXTRA_URL, mActivityTestRule.getUrlFromTestServer(WEB_APP_PATH)));
+                ShortcutHelper.EXTRA_URL, mActivityTestRule.getTestServer().getURL(WEB_APP_PATH)));
         mActivityTestRule.waitUntilSplashscreenHides();
     }
 
@@ -105,7 +105,7 @@ public class WebappActionsNotificationTest {
             ClipboardManager clipboard =
                     (ClipboardManager) mActivityTestRule.getActivity().getSystemService(
                             Context.CLIPBOARD_SERVICE);
-            Assert.assertEquals(mActivityTestRule.getUrlFromTestServer(WEB_APP_PATH),
+            Assert.assertEquals(mActivityTestRule.getTestServer().getURL(WEB_APP_PATH),
                     clipboard.getPrimaryClip().getItemAt(0).getText().toString());
         });
     }
