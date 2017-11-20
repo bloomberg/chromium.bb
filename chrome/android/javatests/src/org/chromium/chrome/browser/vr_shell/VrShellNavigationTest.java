@@ -323,19 +323,27 @@ public class VrShellNavigationTest {
         Assert.assertFalse("Back button isn't disabled.", VrTransitionUtils.isBackButtonEnabled());
         Assert.assertFalse(
                 "Forward button isn't disabled.", VrTransitionUtils.isForwardButtonEnabled());
+        // Opening a new tab shouldn't enable the back button
         mVrTestRule.loadUrlInNewTab(getUrl(Page.PAGE_2D), false, TabLaunchType.FROM_CHROME_UI);
         Assert.assertFalse("Back button isn't disabled.", VrTransitionUtils.isBackButtonEnabled());
         Assert.assertFalse(
                 "Forward button isn't disabled.", VrTransitionUtils.isForwardButtonEnabled());
+        // Navigating to a new page should enable the back button
         mVrTestRule.loadUrl(getUrl(Page.PAGE_WEBVR));
         Assert.assertTrue("Back button isn't enabled.", VrTransitionUtils.isBackButtonEnabled());
         Assert.assertFalse(
                 "Forward button isn't disabled.", VrTransitionUtils.isForwardButtonEnabled());
+        // Navigating back should disable the back button and enable the forward button
         VrTransitionUtils.navigateBack();
+        ChromeTabUtils.waitForTabPageLoaded(
+                mVrTestRule.getActivity().getActivityTab(), getUrl(Page.PAGE_2D));
         Assert.assertFalse("Back button isn't disabled.", VrTransitionUtils.isBackButtonEnabled());
         Assert.assertTrue(
                 "Forward button isn't enabled.", VrTransitionUtils.isForwardButtonEnabled());
+        // Navigating forward should disable the forward button and enable the back button
         VrTransitionUtils.navigateForward();
+        ChromeTabUtils.waitForTabPageLoaded(
+                mVrTestRule.getActivity().getActivityTab(), getUrl(Page.PAGE_WEBVR));
         Assert.assertTrue("Back button isn't enabled.", VrTransitionUtils.isBackButtonEnabled());
         Assert.assertFalse(
                 "Forward button isn't disabled.", VrTransitionUtils.isForwardButtonEnabled());
