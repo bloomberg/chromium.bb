@@ -475,14 +475,9 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
       identity);
 
   // Open Bookmarks and tap on Sign In promo button.
-  const CGFloat scroll_displacement = 50.0;
   [ChromeEarlGreyUI openToolsMenu];
-  [[[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(kToolsMenuBookmarksId)]
-         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown,
-                                                  scroll_displacement)
-      onElementWithMatcher:chrome_test_util::ToolsMenuView()]
-      performAction:grey_tap()];
+  [ChromeEarlGreyUI
+      tapToolsMenuButton:grey_accessibilityID(kToolsMenuBookmarksId)];
 
   if (!IsIPadIdiom()) {
     // Opens the bookmark manager sidebar on handsets.
@@ -514,12 +509,8 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
   // Re-open the sign-in screen. If it wasn't correctly dismissed previously,
   // this will fail.
   [ChromeEarlGreyUI openToolsMenu];
-  [[[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(kToolsMenuBookmarksId)]
-         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown,
-                                                  scroll_displacement)
-      onElementWithMatcher:chrome_test_util::ToolsMenuView()]
-      performAction:grey_tap()];
+  [ChromeEarlGreyUI
+      tapToolsMenuButton:grey_accessibilityID(kToolsMenuBookmarksId)];
   if (!IsIPadIdiom()) {
     [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Menu")]
         performAction:grey_tap()];

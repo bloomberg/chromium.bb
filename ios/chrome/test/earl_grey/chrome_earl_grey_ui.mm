@@ -29,6 +29,7 @@ using chrome_test_util::AccountConsistencySetupSigninButton;
 using chrome_test_util::ButtonWithAccessibilityLabel;
 using chrome_test_util::ClearBrowsingDataCollectionView;
 using chrome_test_util::SettingsMenuButton;
+using chrome_test_util::ToolsMenuView;
 using testing::WaitUntilConditionOrTimeout;
 using testing::kWaitForPageLoadTimeout;
 
@@ -71,12 +72,15 @@ id<GREYAction> ScrollDown() {
 
 + (void)openSettingsMenu {
   [ChromeEarlGreyUI openToolsMenu];
+  [ChromeEarlGreyUI tapToolsMenuButton:SettingsMenuButton()];
+}
+
++ (void)tapToolsMenuButton:(id<GREYMatcher>)buttonMatcher {
   id<GREYMatcher> interactableSettingsButton =
-      grey_allOf(SettingsMenuButton(), grey_interactable(), nil);
+      grey_allOf(buttonMatcher, grey_interactable(), nil);
   [[[EarlGrey selectElementWithMatcher:interactableSettingsButton]
          usingSearchAction:ScrollDown()
-      onElementWithMatcher:grey_accessibilityID(kToolsMenuTableViewId)]
-      performAction:grey_tap()];
+      onElementWithMatcher:ToolsMenuView()] performAction:grey_tap()];
 }
 
 + (void)tapSettingsMenuButton:(id<GREYMatcher>)buttonMatcher {

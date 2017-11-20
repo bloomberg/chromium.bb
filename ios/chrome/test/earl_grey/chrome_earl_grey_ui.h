@@ -22,6 +22,11 @@
 // calling this method.
 + (void)openSettingsMenu;
 
+// Scrolls to find the button in the Tools menu with the corresponding
+// |buttonMatcher|, and then taps it. If |buttonMatcher| is not found, or
+// the Tools menu is not open when this is called there will be a GREYAssert.
++ (void)tapToolsMenuButton:(id<GREYMatcher>)buttonMatcher;
+
 // Scrolls to find the button in the Settings menu with the corresponding
 // |buttonMatcher|, and then taps it. If |buttonMatcher| is not found, or
 // the Settings menu is not open when this is called there will be a GREYAssert.
