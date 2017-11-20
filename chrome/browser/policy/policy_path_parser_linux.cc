@@ -15,8 +15,8 @@ namespace policy {
 
 namespace path_parser {
 
-const char* kMachineNamePolicyVarName = "${machine_name}";
-const char* kUserNamePolicyVarName = "${user_name}";
+const char kMachineNamePolicyVarName[] = "${machine_name}";
+const char kUserNamePolicyVarName[] = "${user_name}";
 
 // Replaces all variable occurrences in the policy string with the respective
 // system settings values.

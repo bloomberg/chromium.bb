@@ -23,10 +23,10 @@ namespace policy {
 
 namespace path_parser {
 
-const char* kUserNamePolicyVarName = "${user_name}";
-const char* kMachineNamePolicyVarName = "${machine_name}";
-const char* kMacUsersDirectory = "${users}";
-const char* kMacDocumentsFolderVarName = "${documents}";
+const char kUserNamePolicyVarName[] = "${user_name}";
+const char kMachineNamePolicyVarName[] = "${machine_name}";
+const char kMacUsersDirectory[] = "${users}";
+const char kMacDocumentsFolderVarName[] = "${documents}";
 
 struct MacFolderNamesToSPDMaping {
   const char* name;

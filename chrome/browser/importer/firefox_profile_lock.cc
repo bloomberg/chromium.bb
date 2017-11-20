@@ -55,18 +55,18 @@
 
 // static
 #if defined(OS_MACOSX)
-const base::FilePath::CharType* FirefoxProfileLock::kLockFileName =
+const base::FilePath::CharType FirefoxProfileLock::kLockFileName[] =
     FILE_PATH_LITERAL(".parentlock");
-const base::FilePath::CharType* FirefoxProfileLock::kOldLockFileName =
+const base::FilePath::CharType FirefoxProfileLock::kOldLockFileName[] =
     FILE_PATH_LITERAL("parent.lock");
 #elif defined(OS_POSIX)
 // http://www.google.com/codesearch/p?hl=en#e_ObwTAVPyo/profile/dirserviceprovider/src/nsProfileLock.cpp&l=433
-const base::FilePath::CharType* FirefoxProfileLock::kLockFileName =
+const base::FilePath::CharType FirefoxProfileLock::kLockFileName[] =
     FILE_PATH_LITERAL(".parentlock");
-const base::FilePath::CharType* FirefoxProfileLock::kOldLockFileName =
+const base::FilePath::CharType FirefoxProfileLock::kOldLockFileName[] =
     FILE_PATH_LITERAL("lock");
 #else
-const base::FilePath::CharType* FirefoxProfileLock::kLockFileName =
+const base::FilePath::CharType FirefoxProfileLock::kLockFileName[] =
     FILE_PATH_LITERAL("parent.lock");
 #endif
 

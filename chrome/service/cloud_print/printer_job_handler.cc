@@ -57,7 +57,7 @@ enum PrinterJobHandlerEvent {
   JOB_HANDLER_MAX,
 };
 
-net::PartialNetworkTrafficAnnotationTag kPartialTrafficAnnotation =
+constexpr net::PartialNetworkTrafficAnnotationTag kPartialTrafficAnnotation =
     net::DefinePartialNetworkTrafficAnnotation("printer_job_handler",
                                                "cloud_print",
                                                R"(
