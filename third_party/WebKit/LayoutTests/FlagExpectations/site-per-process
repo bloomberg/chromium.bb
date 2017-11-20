@@ -120,8 +120,8 @@ crbug.com/623268 virtual/mojo-loading/http/tests/devtools/console-cross-origin-i
 crbug.com/645641 external/wpt/html/syntax/parsing/html5lib_tests19.html [ Crash Failure ]
 
 # http/ flaky tests w/ --site-per-process
-crbug.com/678481 http/tests/devtools/appcache/appcache-iframe-manifests.html [ Timeout Pass ]
-crbug.com/678481 virtual/mojo-loading/http/tests/devtools/appcache/appcache-iframe-manifests.html [ Timeout Pass ]
+crbug.com/678481 http/tests/devtools/appcache/appcache-iframe-manifests.js [ Timeout Pass ]
+crbug.com/678481 virtual/mojo-loading/http/tests/devtools/appcache/appcache-iframe-manifests.js [ Timeout Pass ]
 crbug.com/678482 http/tests/devtools/debugger/fetch-breakpoints.js [ Timeout Pass ]
 crbug.com/678482 virtual/mojo-loading/http/tests/devtools/debugger/fetch-breakpoints.js [ Timeout Pass ]
 crbug.com/678484 http/tests/devtools/startup/reattach-after-editing-styles.html [ Timeout Pass ]
