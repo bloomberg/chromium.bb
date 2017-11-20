@@ -123,6 +123,9 @@ class CC_PAINT_EXPORT PaintOp {
     ImageProvider* image_provider = nullptr;
     SkCanvas* canvas = nullptr;
     SkMatrix original_ctm = SkMatrix::I();
+    // The flags to use when serializing this op. This can be used to override
+    // the flags serialized with the op. Valid only for PaintOpWithFlags.
+    const PaintFlags* flags_to_serialize = nullptr;
   };
 
   struct DeserializeOptions {};
@@ -159,6 +162,9 @@ class CC_PAINT_EXPORT PaintOp {
   // Returns true if executing this op will require decoding of any lazy
   // generated images.
   static bool OpHasDiscardableImages(const PaintOp* op);
+
+  // Returns true if the given op type has PaintFlags.
+  static bool TypeHasFlags(PaintOpType type);
 
   int CountSlowPaths() const { return 0; }
   int CountSlowPathsFromFlags() const { return 0; }

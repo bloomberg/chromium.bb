@@ -5,9 +5,26 @@
 #include "cc/paint/paint_op_buffer_serializer.h"
 
 #include "base/bind.h"
+#include "cc/paint/scoped_image_flags.h"
 #include "ui/gfx/skia_util.h"
 
 namespace cc {
+namespace {
+
+class ScopedFlagsOverride {
+ public:
+  ScopedFlagsOverride(PaintOp::SerializeOptions* options,
+                      const PaintFlags* flags)
+      : options_(options) {
+    options_->flags_to_serialize = flags;
+  }
+  ~ScopedFlagsOverride() { options_->flags_to_serialize = nullptr; }
+
+ private:
+  PaintOp::SerializeOptions* options_;
+};
+
+}  // namespace
 
 PaintOpBufferSerializer::PaintOpBufferSerializer(SerializeCallback serialize_cb,
                                                  ImageProvider* image_provider)
@@ -69,9 +86,8 @@ void PaintOpBufferSerializer::SerializeBuffer(
                                     canvas_.getTotalMatrix());
   PlaybackParams params(image_provider_, canvas_.getTotalMatrix());
 
-  // TODO(khushalsagar): Use PlaybackFoldingIterator so we do alpha folding
-  // at serialization.
-  for (PaintOpBuffer::CompositeIterator iter(buffer, offsets); iter; ++iter) {
+  for (PaintOpBuffer::PlaybackFoldingIterator iter(buffer, offsets); iter;
+       ++iter) {
     const PaintOp* op = *iter;
 
     // Skip ops outside the current clip if they have images. This saves
@@ -82,7 +98,15 @@ void PaintOpBufferSerializer::SerializeBuffer(
       continue;
 
     if (op->GetType() != PaintOpType::DrawRecord) {
-      if (!SerializeOp(op, options, params))
+      bool success = false;
+      if (op->IsPaintOpWithFlags()) {
+        success = SerializeOpWithFlags(static_cast<const PaintOpWithFlags*>(op),
+                                       &options, params, iter.alpha());
+      } else {
+        success = SerializeOp(op, options, params);
+      }
+
+      if (!success)
         return;
       continue;
     }
@@ -93,6 +117,30 @@ void PaintOpBufferSerializer::SerializeBuffer(
                     nullptr);
     RestoreToCount(save_count, options, params);
   }
+}
+
+bool PaintOpBufferSerializer::SerializeOpWithFlags(
+    const PaintOpWithFlags* flags_op,
+    PaintOp::SerializeOptions* options,
+    const PlaybackParams& params,
+    uint8_t alpha) {
+  const bool needs_flag_override =
+      alpha != 255 ||
+      (flags_op->flags.HasDiscardableImages() && options->image_provider);
+
+  base::Optional<ScopedImageFlags> scoped_flags;
+  if (needs_flag_override) {
+    scoped_flags.emplace(options->image_provider, &flags_op->flags,
+                         options->canvas->getTotalMatrix(), alpha);
+  }
+
+  const PaintFlags* flags_to_serialize =
+      scoped_flags ? scoped_flags->flags() : &flags_op->flags;
+  if (!flags_to_serialize)
+    return true;
+
+  ScopedFlagsOverride override_flags(options, flags_to_serialize);
+  return SerializeOp(flags_op, *options, params);
 }
 
 bool PaintOpBufferSerializer::SerializeOp(
@@ -112,8 +160,11 @@ bool PaintOpBufferSerializer::SerializeOp(
   DCHECK_EQ(bytes % PaintOpBuffer::PaintOpAlign, 0u);
 
   // Only pass state-changing operations to the canvas.
-  if (!op->IsDrawOp())
+  if (!op->IsDrawOp()) {
+    // Note that we don't need to use overridden flags during raster here since
+    // the override must not affect any state being tracked by this canvas.
     op->Raster(&canvas_, params);
+  }
   return true;
 }
 
