@@ -191,6 +191,10 @@ struct StructTraits<autofill::mojom::FormDataDataView, autofill::FormData> {
 
   static const GURL& action(const autofill::FormData& r) { return r.action; }
 
+  static const GURL& main_frame_origin(const autofill::FormData& r) {
+    return r.main_frame_origin;
+  }
+
   static bool is_form_tag(const autofill::FormData& r) { return r.is_form_tag; }
 
   static bool is_formless_checkout(const autofill::FormData& r) {

@@ -1602,7 +1602,7 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
     return;
 
   // Setup the url for metrics that we will collect for this form.
-  form_interactions_ukm_logger_->OnFormsParsed(forms[0].origin);
+  form_interactions_ukm_logger_->OnFormsParsed(forms[0].main_frame_origin);
 
   std::vector<FormStructure*> non_queryable_forms;
   std::vector<FormStructure*> queryable_forms;
