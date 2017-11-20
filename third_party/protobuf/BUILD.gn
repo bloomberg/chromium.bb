@@ -619,6 +619,13 @@ if (current_toolchain == host_toolchain) {
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [ "//build/config/compiler:no_chromium_code" ]
 
+    if (is_win) {
+      # Work around incremental linking randomly creating corrupt binaries,
+      # crbug.com/644525.
+      configs -= [ "//build/config/win:default_incremental_linking" ]
+      configs += [ "//build/config/win:no_incremental_linking" ]
+    }
+
     cflags = protobuf_lite_cflags
 
     deps = [
@@ -639,6 +646,13 @@ if (current_toolchain == host_toolchain) {
 
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [ "//build/config/compiler:no_chromium_code" ]
+
+    if (is_win) {
+      # Work around incremental linking randomly creating corrupt binaries,
+      # crbug.com/644525.
+      configs -= [ "//build/config/win:default_incremental_linking" ]
+      configs += [ "//build/config/win:no_incremental_linking" ]
+    }
   }
 }
 
