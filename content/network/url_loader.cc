@@ -332,6 +332,8 @@ URLLoader::URLLoader(NetworkContext* context,
     }
   }
 
+  url_request_->set_initiator(request.request_initiator);
+
   int load_flags = BuildLoadFlagsForRequest(request, false);
   url_request_->SetLoadFlags(load_flags);
   if (report_raw_headers_) {
