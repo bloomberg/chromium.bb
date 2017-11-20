@@ -262,7 +262,7 @@ void OmniboxViewIOS::UpdatePopup() {
 
 void OmniboxViewIOS::OnTemporaryTextMaybeChanged(
     const base::string16& display_text,
-    const AutocompleteMatch& match,
+    AutocompleteMatch::Type match_type,
     bool save_original_selection,
     bool notify_text_changed) {
   SetWindowTextAndCaretPos(display_text, display_text.size(), false, false);

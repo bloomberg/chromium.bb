@@ -57,21 +57,21 @@
        These are parameterized on the text being completed into the omnibox.
   -->
   <message name="IDS_ACC_AUTOCOMPLETE_HISTORY" desc="Text for screenreaders describing a URL from history.">
-    <ph name="LOCATION_TITLE">$2<ex>The Chromium Projects</ex></ph> <ph name="SHORT_URL">$1<ex>www.chromium.org</ex> location from history</ph>
+    URL from history: <ph name="TEXT">$1<ex>https://www.chromium.org</ex></ph>
   </message>
   <message name="IDS_ACC_AUTOCOMPLETE_SEARCH_HISTORY" desc="Text for screenreaders describing a search from history.">
-    <ph name="TEXT">$1<ex>dogs</ex> search from history</ph>
+    Search from history for <ph name="TEXT">$1<ex>dogs</ex></ph>
   </message>
   <message name="IDS_ACC_AUTOCOMPLETE_SEARCH" desc="Text for screenreaders describing a generic search.">
-    <ph name="TEXT">$1<ex>dogs</ex> search</ph>
+    Search for <ph name="TEXT">$1<ex>dogs</ex></ph>
   </message>
   <message name="IDS_ACC_AUTOCOMPLETE_SUGGESTED_SEARCH" desc="Text for screenreaders describing a suggested search.">
-    <ph name="TEXT">$1<ex>dogs</ex> search suggestion</ph>
+    Suggested search for <ph name="TEXT">$1<ex>dogs</ex></ph>
   </message>
   <message name="IDS_ACC_AUTOCOMPLETE_BOOKMARK" desc="Text for screenreaders describing a URL from a bookmark.">
-    <ph name="LOCATION_TITLE">$2<ex>The Chromium Projects</ex></ph> <ph name="SHORT_URL">$1<ex>www.chromium.org</ex> bookmark</ph>
+    URL from bookmark: <ph name="TEXT">$1<ex>https://www.chromium.org</ex></ph>
   </message>
   <message name="IDS_ACC_AUTOCOMPLETE_CLIPBOARD" desc="Text for screenreaders describing a URL from a clipboard.">
-    <ph name="LOCATION_TITLE">$2<ex>The Chromium Projects</ex></ph> <ph name="SHORT_URL">$1<ex>www.chromium.org</ex> location from clipboard</ph>
+    URL from clipboard: <ph name="TEXT">$1<ex>https://www.chromium.org</ex></ph>
   </message>
 </grit-part>
