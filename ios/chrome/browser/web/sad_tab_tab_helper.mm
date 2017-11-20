@@ -7,6 +7,7 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
@@ -38,14 +39,16 @@ SadTabTabHelper::SadTabTabHelper(web::WebState* web_state,
 SadTabTabHelper::SadTabTabHelper(web::WebState* web_state,
                                  double repeat_failure_interval,
                                  id<SadTabTabHelperDelegate> delegate)
-    : web::WebStateObserver(web_state),
+    : web_state_(web_state),
       repeat_failure_interval_(repeat_failure_interval),
       delegate_(delegate) {
+  web_state_->AddObserver(this);
   AddApplicationDidBecomeActiveObserver();
 }
 
 SadTabTabHelper::~SadTabTabHelper() {
   DCHECK(!application_did_become_active_observer_);
+  DCHECK(!web_state_);
 }
 
 void SadTabTabHelper::CreateForWebState(web::WebState* web_state,
@@ -73,6 +76,7 @@ void SadTabTabHelper::SetDelegate(id<SadTabTabHelperDelegate> delegate) {
 }
 
 void SadTabTabHelper::WasShown(web::WebState* web_state) {
+  DCHECK_EQ(web_state_, web_state);
   if (requires_reload_on_becoming_visible_) {
     ReloadTab();
     requires_reload_on_becoming_visible_ = false;
@@ -80,6 +84,7 @@ void SadTabTabHelper::WasShown(web::WebState* web_state) {
 }
 
 void SadTabTabHelper::RenderProcessGone(web::WebState* web_state) {
+  DCHECK_EQ(web_state_, web_state);
   if (!web_state->IsVisible()) {
     requires_reload_on_becoming_visible_ = true;
     return;
@@ -99,6 +104,7 @@ void SadTabTabHelper::RenderProcessGone(web::WebState* web_state) {
 void SadTabTabHelper::DidFinishNavigation(
     web::WebState* web_state,
     web::NavigationContext* navigation_context) {
+  DCHECK_EQ(web_state_, web_state);
   if (navigation_context->GetUrl().host() == kChromeUICrashHost &&
       navigation_context->GetUrl().scheme() == kChromeUIScheme) {
     PresentSadTab(navigation_context->GetUrl());
@@ -106,6 +112,9 @@ void SadTabTabHelper::DidFinishNavigation(
 }
 
 void SadTabTabHelper::WebStateDestroyed(web::WebState* web_state) {
+  DCHECK_EQ(web_state_, web_state);
+  web_state_->RemoveObserver(this);
+  web_state_ = nullptr;
   RemoveApplicationDidBecomeActiveObserver();
 }
 
@@ -120,22 +129,23 @@ void SadTabTabHelper::PresentSadTab(const GURL& url_causing_failure) {
        seconds_since_last_failure < repeat_failure_interval_);
 
   [delegate_ sadTabTabHelper:this
-      presentSadTabForRepeatedFailure:repeated_failure];
+      presentSadTabForWebState:web_state_
+               repeatedFailure:repeated_failure];
 
   last_failed_url_ = url_causing_failure;
   last_failed_timer_ = base::MakeUnique<base::ElapsedTimer>();
 }
 
 void SadTabTabHelper::ReloadTab() {
-  PagePlaceholderTabHelper::FromWebState(web_state())
+  PagePlaceholderTabHelper::FromWebState(web_state_)
       ->AddPlaceholderForNextNavigation();
-  web_state()->GetNavigationManager()->LoadIfNecessary();
+  web_state_->GetNavigationManager()->LoadIfNecessary();
 }
 
 void SadTabTabHelper::OnAppDidBecomeActive() {
   if (!requires_reload_on_becoming_active_)
     return;
-  if (web_state()->IsVisible()) {
+  if (web_state_->IsVisible()) {
     ReloadTab();
   } else {
     requires_reload_on_becoming_visible_ = true;

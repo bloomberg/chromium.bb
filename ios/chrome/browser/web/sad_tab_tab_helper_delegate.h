@@ -9,12 +9,17 @@
 
 class SadTabTabHelper;
 
+namespace web {
+class WebState;
+}
+
 // Delegate for SadTabTabHelper.
 @protocol SadTabTabHelperDelegate<NSObject>
 
 // Asks the delegate to present a SadTabView.
 - (void)sadTabTabHelper:(SadTabTabHelper*)tabHelper
-    presentSadTabForRepeatedFailure:(BOOL)repeatedFailure;
+    presentSadTabForWebState:(web::WebState*)webState
+             repeatedFailure:(BOOL)repeatedFailure;
 
 @end
 
