@@ -266,12 +266,7 @@ config("common_sanitizer_flags") {
       "-gcolumn-info",
     ]
 
-    # Disable frame pointer elimination for better stack traces.
-    if (is_posix) {
-      cflags += [ "-fno-omit-frame-pointer" ]
-    } else {
-      cflags += [ "/Oy-" ]
-    }
+    # Frame pointers are controlled in //build/config/compiler:default_stack_frames
   }
 }
 
