@@ -1823,6 +1823,49 @@ TEST_P(PaintOpSerializationTest, DeserializationFailures) {
   }
 }
 
+TEST_P(PaintOpSerializationTest, UsesOverridenFlags) {
+  if (!PaintOp::TypeHasFlags(GetParamType()))
+    return;
+
+  PushTestOps(GetParamType());
+  ResizeOutputBuffer();
+
+  PaintOp::SerializeOptions options;
+  PaintOp::DeserializeOptions deserialize_options;
+  size_t deserialized_size = sizeof(LargestPaintOp) + PaintOp::kMaxSkip;
+  std::unique_ptr<char, base::AlignedFreeDeleter> deserialized(
+      static_cast<char*>(
+          base::AlignedAlloc(deserialized_size, PaintOpBuffer::PaintOpAlign)));
+  for (const auto* op : PaintOpBuffer::Iterator(&buffer_)) {
+    options.flags_to_serialize =
+        &static_cast<const PaintOpWithFlags*>(op)->flags;
+
+    size_t bytes_written = op->Serialize(output_.get(), output_size_, options);
+    size_t bytes_read = 0u;
+    PaintOp* written = PaintOp::Deserialize(
+        output_.get(), bytes_written, deserialized.get(), deserialized_size,
+        &bytes_read, deserialize_options);
+    ASSERT_TRUE(written);
+    EXPECT_EQ(*op, *written);
+    written->DestroyThis();
+    written = nullptr;
+
+    PaintFlags override_flags = static_cast<const PaintOpWithFlags*>(op)->flags;
+    override_flags.setAlpha(override_flags.getAlpha() * 0.5);
+    options.flags_to_serialize = &override_flags;
+    bytes_written = op->Serialize(output_.get(), output_size_, options);
+    written = PaintOp::Deserialize(output_.get(), bytes_written,
+                                   deserialized.get(), deserialized_size,
+                                   &bytes_read, deserialize_options);
+    ASSERT_TRUE(written);
+    ASSERT_TRUE(written->IsPaintOpWithFlags());
+    EXPECT_EQ(static_cast<const PaintOpWithFlags*>(written)->flags.getAlpha(),
+              override_flags.getAlpha());
+    written->DestroyThis();
+    written = nullptr;
+  }
+}
+
 TEST(PaintOpSerializationTest, CompleteBufferSerialization) {
   PaintOpBuffer buffer;
   PushDrawIRectOps(&buffer);
@@ -2074,6 +2117,65 @@ TEST(PaintOpBufferTest, ClipsImagesDuringSerialization) {
     // End restores.
     ASSERT_EQ(op->GetType(), PaintOpType::Restore)
         << PaintOpTypeToString(op->GetType());
+  }
+}
+
+TEST(PaintOpBufferSerializationTest, AlphaFoldingDuringSerialization) {
+  PaintOpBuffer buffer;
+
+  uint8_t alpha = 100;
+  buffer.push<SaveLayerAlphaOp>(nullptr, alpha, false);
+
+  PaintFlags draw_flags;
+  draw_flags.setColor(SK_ColorMAGENTA);
+  draw_flags.setAlpha(50);
+  SkRect rect = SkRect::MakeXYWH(1, 2, 3, 4);
+  buffer.push<DrawRectOp>(rect, draw_flags);
+  buffer.push<RestoreOp>();
+
+  PaintOpBufferSerializer::Preamble preamble;
+  preamble.playback_rect = gfx::Rect(1000.f, 1000.f);
+
+  std::unique_ptr<char, base::AlignedFreeDeleter> memory(
+      static_cast<char*>(base::AlignedAlloc(PaintOpBuffer::kInitialBufferSize,
+                                            PaintOpBuffer::PaintOpAlign)));
+  SimpleBufferSerializer serializer(memory.get(),
+                                    PaintOpBuffer::kInitialBufferSize, nullptr);
+  serializer.Serialize(&buffer, nullptr, preamble);
+  ASSERT_NE(serializer.written(), 0u);
+
+  PaintOp::DeserializeOptions deserialized_options;
+  auto deserialized_buffer = PaintOpBuffer::MakeFromMemory(
+      memory.get(), serializer.written(), deserialized_options);
+  ASSERT_TRUE(deserialized_buffer);
+
+  // 3 additional ops for save, clip and restore.
+  ASSERT_EQ(deserialized_buffer->size(), 4u);
+  size_t i = 0;
+  for (const auto* op : PaintOpBuffer::Iterator(deserialized_buffer.get())) {
+    ++i;
+    if (i == 1) {
+      EXPECT_EQ(op->GetType(), PaintOpType::Save);
+      continue;
+    }
+
+    if (i == 2) {
+      EXPECT_EQ(op->GetType(), PaintOpType::ClipRect);
+      continue;
+    }
+
+    if (i == 4) {
+      EXPECT_EQ(op->GetType(), PaintOpType::Restore);
+      continue;
+    }
+
+    ASSERT_EQ(op->GetType(), PaintOpType::DrawRect);
+    // Expect the alpha from the draw and the save layer to be folded together.
+    // Since alpha is stored in a uint8_t and gets rounded, so use tolerance.
+    float expected_alpha = alpha * 50 / 255.f;
+    EXPECT_LE(std::abs(expected_alpha -
+                       static_cast<const DrawRectOp*>(op)->flags.getAlpha()),
+              1.f);
   }
 }
 

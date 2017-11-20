@@ -38,6 +38,10 @@ class CC_PAINT_EXPORT PaintOpBufferSerializer {
                          const PlaybackParams& params);
   void SerializeBuffer(const PaintOpBuffer* buffer,
                        const std::vector<size_t>* offsets);
+  bool SerializeOpWithFlags(const PaintOpWithFlags* flags_op,
+                            PaintOp::SerializeOptions* options,
+                            const PlaybackParams& params,
+                            uint8_t alpha);
   bool SerializeOp(const PaintOp* op,
                    const PaintOp::SerializeOptions& options,
                    const PlaybackParams& params);
