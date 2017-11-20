@@ -98,13 +98,13 @@ bool FakeCrasAudioClient::HasObserver(const Observer* observer) const {
 }
 
 void FakeCrasAudioClient::GetVolumeState(
-    const GetVolumeStateCallback& callback) {
-  callback.Run(volume_state_, true);
+    DBusMethodCallback<VolumeState> callback) {
+  std::move(callback).Run(volume_state_);
 }
 
 void FakeCrasAudioClient::GetDefaultOutputBufferSize(
-    const GetDefaultOutputBufferSizeCallback& callback) {
-  callback.Run(512, true);
+    DBusMethodCallback<int> callback) {
+  std::move(callback).Run(512);
 }
 
 void FakeCrasAudioClient::GetNodes(DBusMethodCallback<AudioNodeList> callback) {
