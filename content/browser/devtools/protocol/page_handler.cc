@@ -359,7 +359,7 @@ void PageHandler::Navigate(const std::string& url,
       std::string frame_id =
           web_contents->GetMainFrame()->GetDevToolsFrameToken().ToString();
       std::string error_string = net::ErrorToString(net::ERR_ABORTED);
-      navigate_callback_->sendSuccess(frame_id,
+      navigate_callback_->sendSuccess(frame_id, Maybe<std::string>(),
                                       Maybe<std::string>(error_string));
     }
     navigate_callback_ = std::move(callback);
@@ -384,6 +384,8 @@ void PageHandler::NavigationReset(NavigationRequest* navigation_request) {
       net::ErrorToString(navigation_request->net_error());
   navigate_callback_->sendSuccess(
       frame_id,
+      Maybe<std::string>(
+          navigation_request->devtools_navigation_token().ToString()),
       success ? Maybe<std::string>(error_string) : Maybe<std::string>());
   navigate_callback_.reset();
 }
