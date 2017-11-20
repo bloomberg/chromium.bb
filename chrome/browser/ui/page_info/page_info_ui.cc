@@ -474,6 +474,11 @@ int PageInfoUI::GetConnectionIconID(PageInfo::SiteConnectionStatus status) {
 const gfx::ImageSkia PageInfoUI::GetCertificateIcon() {
   return gfx::CreateVectorIcon(kCertificateIcon, 16, gfx::kChromeIconGrey);
 }
+
+// static
+const gfx::ImageSkia PageInfoUI::GetSiteSettingsIcon() {
+  return gfx::CreateVectorIcon(kSettingsIcon, 16, gfx::kChromeIconGrey);
+}
 #endif
 
 // static

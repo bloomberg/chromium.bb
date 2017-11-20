@@ -13,6 +13,7 @@
 #include "ui/views/animation/ink_drop_ripple.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/styled_label.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/grid_layout.h"
 
@@ -24,6 +25,34 @@ std::unique_ptr<views::Border> CreateBorderWithVerticalSpacing(
       views::DISTANCE_BUTTON_HORIZONTAL_PADDING);
   return views::CreateEmptyBorder(vert_spacing, horz_spacing, vert_spacing,
                                   horz_spacing);
+}
+
+// Sets the accessible name of |parent| to the text from |first| and |second|.
+// Also set the combined text as the tooltip for |parent| if either |first| or
+// |second|'s text is cut off or elided.
+void SetTooltipAndAccessibleName(views::Button* parent,
+                                 views::StyledLabel* first,
+                                 views::Label* second,
+                                 const gfx::Rect& available_space,
+                                 int taken_width) {
+  const base::string16 accessible_name =
+      second == nullptr ? first->text()
+                        : base::JoinString({first->text(), second->text()},
+                                           base::ASCIIToUTF16("\n"));
+
+  // |views::StyledLabel|s only add tooltips for any links they may have.
+  // However, since |HoverButton| will never insert a link inside its child
+  // |StyledLabel|, decide whether it needs a tooltip by checking whether the
+  // available space is smaller than its preferred size.
+  bool first_truncated = first->GetPreferredSize().width() >
+                         (available_space.width() - taken_width);
+  base::string16 second_tooltip;
+  if (second != nullptr)
+    second->GetTooltipText(gfx::Point(), &second_tooltip);
+  parent->SetTooltipText(first_truncated || !second_tooltip.empty()
+                             ? accessible_name
+                             : base::string16());
+  parent->SetAccessibleName(accessible_name);
 }
 
 }  // namespace
@@ -102,9 +131,14 @@ HoverButton::HoverButton(views::ButtonListener* button_listener,
   columns->AddColumn(views::GridLayout::CENTER, views::GridLayout::CENTER,
                      kFixed, views::GridLayout::USE_PREF, 0, 0);
   columns->AddPaddingColumn(kFixed, icon_label_spacing);
-  columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
+  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
                      kStretchy, views::GridLayout::USE_PREF, 0, 0);
 
+  taken_width_ = GetInsets().width() + icon_view->GetPreferredSize().width() +
+                 icon_label_spacing;
+
+  // Make sure hovering over the icon also hovers the |HoverButton|.
+  icon_view->set_can_process_events_within_subtree(false);
   // Don't cover |icon_view| when the ink drops are being painted. |LabelButton|
   // already does this with its own image.
   icon_view->SetPaintToLayer();
@@ -112,36 +146,36 @@ HoverButton::HoverButton(views::ButtonListener* button_listener,
   // Split the two rows evenly between the total height minus the padding.
   const int row_height =
       (total_height - remaining_vert_spacing * 2) / num_labels;
-  grid_layout->StartRow(0, 0, row_height);
+  grid_layout->StartRow(0, kColumnSetId, row_height);
   grid_layout->AddView(icon_view.release(), 1, num_labels);
 
-  title_ = new views::Label(title);
-  grid_layout->AddView(title_);
+  title_ = new views::StyledLabel(title, nullptr);
+  // Size without a maximum width to get a single line label.
+  title_->SizeToFit(0);
+  // |views::StyledLabel|s are all multi-line. With a layout manager,
+  // |StyledLabel| will try use the available space to size itself, and long
+  // titles will wrap to the next line (for smaller |HoverButton|s, this will
+  // also cover up |subtitle_|). Wrap it in a parent view with no layout manager
+  // to ensure it keeps its original size set by SizeToFit() above. Long titles
+  // will then be truncated.
+  views::View* title_wrapper = new views::View;
+  title_wrapper->AddChildView(title_);
+  // Hover the whole button when hovering |title_|. This is OK because |title_|
+  // will never have a link in it.
+  title_wrapper->set_can_process_events_within_subtree(false);
+  grid_layout->AddView(title_wrapper);
 
   if (!subtitle.empty()) {
-    grid_layout->StartRow(0, 0, row_height);
+    grid_layout->StartRow(0, kColumnSetId, row_height);
     subtitle_ = new views::Label(subtitle, views::style::CONTEXT_BUTTON,
                                  STYLE_SECONDARY);
     subtitle_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     subtitle_->SetAutoColorReadabilityEnabled(false);
     grid_layout->SkipColumns(1);
     grid_layout->AddView(subtitle_);
-
-    const base::string16 accessible_name =
-        base::JoinString({title, subtitle}, base::ASCIIToUTF16("\n"));
-    // Only set a tooltip if either |title_| or |subtitle_| are too long.
-    base::string16 title_tooltip, subtitle_tooltip;
-    title_->GetTooltipText(gfx::Point(), &title_tooltip);
-    subtitle_->GetTooltipText(gfx::Point(), &subtitle_tooltip);
-    if (!title_tooltip.empty() || !subtitle_tooltip.empty()) {
-      // Setting the tooltip text also happens to set the accessible name.
-      SetTooltipText(accessible_name);
-    } else {
-      SetAccessibleName(accessible_name);
-    }
-  } else {
-    SetAccessibleName(title);
   }
+  SetTooltipAndAccessibleName(this, title_, subtitle_, GetLocalBounds(),
+                              taken_width_);
 
   // Since this constructor doesn't use the |LabelButton|'s image / label Views,
   // make sure the minimum size is correct according to the |grid_layout|.
@@ -154,6 +188,21 @@ void HoverButton::SetSubtitleElideBehavior(gfx::ElideBehavior elide_behavior) {
   DCHECK(subtitle_);
   if (!subtitle_->text().empty())
     subtitle_->SetElideBehavior(elide_behavior);
+}
+
+void HoverButton::SetTitleTextWithHintRange(const base::string16& title_text,
+                                            const gfx::Range& range) {
+  DCHECK(title_);
+  title_->SetText(title_text);
+
+  if (range.IsValid()) {
+    views::StyledLabel::RangeStyleInfo style_info;
+    style_info.text_style = STYLE_SECONDARY;
+    title_->AddStyleRange(range, style_info);
+  }
+  title_->SizeToFit(0);
+  SetTooltipAndAccessibleName(this, title_, subtitle_, GetLocalBounds(),
+                              taken_width_);
 }
 
 void HoverButton::StateChanged(ButtonState old_state) {
@@ -190,13 +239,31 @@ std::unique_ptr<views::InkDropHighlight> HoverButton::CreateInkDropHighlight()
   return highlight;
 }
 
+void HoverButton::Layout() {
+  LabelButton::Layout();
+
+  // Vertically center |title_| manually since it doesn't have a LayoutManager.
+  if (title_) {
+    DCHECK(title_->parent());
+    int y_center = title_->parent()->height() / 2 - title_->size().height() / 2;
+    title_->SetPosition(gfx::Point(title_->x(), y_center));
+  }
+}
+
 views::View* HoverButton::GetTooltipHandlerForPoint(const gfx::Point& point) {
   if (!HitTestPoint(point))
     return nullptr;
 
   // If possible, take advantage of the |views::Label| tooltip behavior, which
   // only sets the tooltip when the text is too long.
-  if (title_ && subtitle_)
+  if (title_)
     return this;
-  return title_ ? title_ : label();
+  return label();
+}
+
+void HoverButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  if (title_) {
+    SetTooltipAndAccessibleName(this, title_, subtitle_, GetLocalBounds(),
+                                taken_width_);
+  }
 }

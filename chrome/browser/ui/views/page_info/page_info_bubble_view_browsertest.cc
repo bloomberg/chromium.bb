@@ -92,7 +92,8 @@ const GURL OpenSiteSettingsForUrl(Browser* browser, const GURL& url) {
   OpenPageInfoBubble(browser);
   // Get site settings button.
   views::View* site_settings_button = GetView(
-      browser, PageInfoBubbleView::VIEW_ID_PAGE_INFO_LINK_SITE_SETTINGS);
+      browser,
+      PageInfoBubbleView::VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_SITE_SETTINGS);
   ClickAndWaitForSettingsPageToOpen(site_settings_button);
 
   return browser->tab_strip_model()
