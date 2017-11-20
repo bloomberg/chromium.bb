@@ -26,11 +26,15 @@ class TimeDelta;
 namespace net {
 
 namespace {
+
 typedef base::Callback<void(SocketPerformanceWatcherFactory::Protocol protocol,
                             const base::TimeDelta& rtt,
                             const base::Optional<nqe::internal::IPHash>& host)>
     OnUpdatedRTTAvailableCallback;
-}
+
+typedef base::Callback<bool(base::TimeTicks)> ShouldNotifyRTTCallback;
+
+}  // namespace
 
 namespace nqe {
 
@@ -45,11 +49,14 @@ class SocketWatcherFactory : public SocketPerformanceWatcherFactory {
   // |task_runner| every time a new RTT observation is available.
   // |min_notification_interval| is the minimum interval betweeen consecutive
   // notifications to the socket watchers created by this factory. |tick_clock|
-  // is guaranteed to be non-null.
+  // is guaranteed to be non-null. |should_notify_rtt_callback| is the callback
+  // that should be called back on |task_runner| to check if RTT observation
+  // should be taken and notified.
   SocketWatcherFactory(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       base::TimeDelta min_notification_interval,
       OnUpdatedRTTAvailableCallback updated_rtt_observation_callback,
+      ShouldNotifyRTTCallback should_notify_rtt_callback,
       base::TickClock* tick_clock);
 
   ~SocketWatcherFactory() override;
@@ -62,6 +69,9 @@ class SocketWatcherFactory : public SocketPerformanceWatcherFactory {
   void SetUseLocalHostRequestsForTesting(bool use_localhost_requests) {
     allow_rtt_private_address_ = use_localhost_requests;
   }
+
+  // Overrides the tick clock used by |this| for testing.
+  void SetTickClockForTesting(base::TickClock* tick_clock);
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
@@ -76,6 +86,10 @@ class SocketWatcherFactory : public SocketPerformanceWatcherFactory {
 
   // Called every time a new RTT observation is available.
   OnUpdatedRTTAvailableCallback updated_rtt_observation_callback_;
+
+  // Callback that should be called by socket watchers to determine if the RTT
+  // notification should be notified using |updated_rtt_observation_callback_|.
+  ShouldNotifyRTTCallback should_notify_rtt_callback_;
 
   base::TickClock* tick_clock_;
 

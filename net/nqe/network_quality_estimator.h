@@ -551,6 +551,10 @@ class NET_EXPORT NetworkQualityEstimator
   // Returns true if |observation| should be added to the observation buffer.
   bool ShouldAddObservation(const Observation& observation) const;
 
+  // Returns true if the socket watcher can run the callback to notify the RTT
+  // observations.
+  bool ShouldSocketWatcherNotifyRTT(base::TimeTicks now);
+
   // Determines if the requests to local host can be used in estimating the
   // network quality. Set to true only for tests.
   bool use_localhost_requests_;
@@ -677,6 +681,9 @@ class NET_EXPORT NetworkQualityEstimator
 
   // Manages the writing of events to the net log.
   nqe::internal::EventCreator event_creator_;
+
+  // Time when the last RTT observation from a socket watcher was received.
+  base::TimeTicks last_socket_watcher_rtt_notification_;
 
   base::WeakPtrFactory<NetworkQualityEstimator> weak_ptr_factory_;
 
