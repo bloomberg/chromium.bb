@@ -940,7 +940,8 @@ void InspectorPageAgent::WindowOpen(Document* document,
                                     const AtomicString& window_name,
                                     const WebWindowFeatures& window_features,
                                     bool user_gesture) {
-  GetFrontend()->windowOpen(document->CompleteURL(url).GetString(), window_name,
+  KURL completed_url = url.IsEmpty() ? BlankURL() : document->CompleteURL(url);
+  GetFrontend()->windowOpen(completed_url.GetString(), window_name,
                             GetEnabledWindowFeatures(window_features),
                             user_gesture);
 }
