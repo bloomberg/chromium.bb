@@ -598,7 +598,7 @@ void OmniboxViewMac::ApplyTextAttributes(
 
 void OmniboxViewMac::OnTemporaryTextMaybeChanged(
     const base::string16& display_text,
-    AutocompleteMatch::Type match_type,
+    const AutocompleteMatch& match,
     bool save_original_selection,
     bool notify_text_changed) {
   if (save_original_selection)
@@ -610,7 +610,8 @@ void OmniboxViewMac::OnTemporaryTextMaybeChanged(
   [field_ clearUndoChain];
 
   AnnounceAutocompleteForScreenReader(
-      AutocompleteMatchType::ToAccessibilityLabel(match_type, display_text));
+      AutocompleteMatchType::ToAccessibilityLabel(match.type, display_text,
+                                                  match.description));
 }
 
 bool OmniboxViewMac::OnInlineAutocompleteTextMaybeChanged(
@@ -1082,13 +1083,11 @@ bool OmniboxViewMac::IsCaretAtEnd() const {
 
 void OmniboxViewMac::AnnounceAutocompleteForScreenReader(
     const base::string16& display_text) {
-  NSString* announcement =
-      l10n_util::GetNSStringF(IDS_ANNOUNCEMENT_COMPLETION_AVAILABLE_MAC,
-                              display_text);
   NSDictionary* notification_info = @{
-      NSAccessibilityAnnouncementKey : announcement,
-      NSAccessibilityPriorityKey :     @(NSAccessibilityPriorityHigh)
+    NSAccessibilityAnnouncementKey : base::SysUTF16ToNSString(display_text),
+    NSAccessibilityPriorityKey : @(NSAccessibilityPriorityHigh)
   };
+  // We direct the screen reader to announce the friendly text.
   NSAccessibilityPostNotificationWithUserInfo(
       [field_ window],
       NSAccessibilityAnnouncementRequestedNotification,
