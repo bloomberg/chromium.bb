@@ -300,12 +300,15 @@ bool BrokerProcessPreSandboxHook(
 
 bool GpuProcessPreSandboxHook(service_manager::BPFBasePolicy* policy,
                               service_manager::SandboxLinux::Options options) {
-  service_manager::SandboxLinux::GetInstance()->StartBrokerProcess(
-      policy, FilePermissionsForGpu(options),
-      base::BindOnce(BrokerProcessPreSandboxHook), options);
+  auto* instance = service_manager::SandboxLinux::GetInstance();
+  instance->StartBrokerProcess(policy, FilePermissionsForGpu(options),
+                               base::BindOnce(BrokerProcessPreSandboxHook),
+                               options);
 
   if (!LoadLibrariesForGpu(options))
     return false;
+
+  instance->EngageNamespaceSandbox(false /* from_zygote */);
 
   errno = 0;
   return true;

@@ -512,8 +512,7 @@ static void DropAllCapabilities(int proc_fd) {
 
 static void EnterNamespaceSandbox(service_manager::SandboxLinux* linux_sandbox,
                                   base::Closure* post_fork_parent_callback) {
-  linux_sandbox->EngageNamespaceSandbox();
-
+  linux_sandbox->EngageNamespaceSandbox(true /* from_zygote */);
   if (getpid() == 1) {
     base::Closure drop_all_caps_callback =
         base::Bind(&DropAllCapabilities, linux_sandbox->proc_fd());

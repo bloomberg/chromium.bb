@@ -198,15 +198,18 @@ void SandboxLinux::PreinitializeSandbox() {
   pre_initialized_ = true;
 }
 
-void SandboxLinux::EngageNamespaceSandbox() {
+void SandboxLinux::EngageNamespaceSandbox(bool from_zygote) {
   CHECK(pre_initialized_);
-  // Check being in a new PID namespace created by the namespace sandbox and
-  // being the init process.
-  CHECK(sandbox::NamespaceSandbox::InNewPidNamespace());
-  const pid_t pid = getpid();
-  CHECK_EQ(1, pid);
+  if (from_zygote) {
+    // Check being in a new PID namespace created by the namespace sandbox and
+    // being the init process.
+    CHECK(sandbox::NamespaceSandbox::InNewPidNamespace());
+    const pid_t pid = getpid();
+    CHECK_EQ(1, pid);
+  }
 
   CHECK(sandbox::Credentials::MoveToNewUserNS());
+
   // Note: this requires SealSandbox() to be called later in this process to be
   // safe, as this class is keeping a file descriptor to /proc/.
   CHECK(sandbox::Credentials::DropFileSystemAccess(proc_fd_));
@@ -387,7 +390,7 @@ bool SandboxLinux::InitializeSandbox(SandboxType sandbox_type,
 
   // Turn on the namespace sandbox if the zygote hasn't done so already.
   if (options.engage_namespace_sandbox)
-    EngageNamespaceSandbox();
+    EngageNamespaceSandbox(false /* from_zygote */);
 
   DCHECK(!HasOpenDirectories())
       << "InitializeSandbox() called after unexpected directories have been "
