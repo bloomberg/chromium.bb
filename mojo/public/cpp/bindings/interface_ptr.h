@@ -127,8 +127,7 @@ class InterfacePtr {
   // stimulus.
   void FlushForTesting() { internal_state_.FlushForTesting(); }
 
-  // Closes the bound message pipe (if any) and returns the pointer to the
-  // unbound state.
+  // Closes the bound message pipe, if any.
   void reset() {
     State doomed;
     internal_state_.Swap(&doomed);
