@@ -802,7 +802,7 @@ void HTMLDocumentParser::StartBackgroundParser() {
     virtual_time_pauser_ = GetDocument()
                                ->GetFrame()
                                ->FrameScheduler()
-                               ->CreateScopedVirtualTimePauser();
+                               ->CreateWebScopedVirtualTimePauser();
     virtual_time_pauser_.PauseVirtualTime(true);
   }
 

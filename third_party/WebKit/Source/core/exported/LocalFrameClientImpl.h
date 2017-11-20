@@ -35,10 +35,11 @@
 #include "base/memory/scoped_refptr.h"
 #include "core/frame/LocalFrameClient.h"
 #include "core/frame/WebLocalFrameImpl.h"
-#include "platform/ScopedVirtualTimePauser.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
+#include "platform/wtf/RefPtr.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
+#include "public/platform/WebScopedVirtualTimePauser.h"
 
 #include <memory>
 
@@ -252,7 +253,7 @@ class LocalFrameClientImpl final : public LocalFrameClient {
       const WebRect&,
       const WebRemoteScrollProperties&) override;
 
-  void SetVirtualTimePauser(ScopedVirtualTimePauser) override;
+  void SetVirtualTimePauser(WebScopedVirtualTimePauser) override;
 
  private:
   explicit LocalFrameClientImpl(WebLocalFrameImpl*);
@@ -272,7 +273,7 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   // The hosts for which a legacy certificate warning has been printed.
   HashSet<String> certificate_warning_hosts_;
 
-  mutable ScopedVirtualTimePauser virtual_time_pauser_;
+  mutable WebScopedVirtualTimePauser virtual_time_pauser_;
 };
 
 DEFINE_TYPE_CASTS(LocalFrameClientImpl,

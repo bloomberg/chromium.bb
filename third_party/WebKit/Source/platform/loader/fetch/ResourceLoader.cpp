@@ -375,8 +375,8 @@ bool ResourceLoader::WillFollowRedirect(
   Context().PrepareRequest(new_request,
                            FetchContext::RedirectType::kForRedirect);
   if (Context().GetFrameScheduler()) {
-    ScopedVirtualTimePauser virtual_time_pauser =
-        Context().GetFrameScheduler()->CreateScopedVirtualTimePauser();
+    WebScopedVirtualTimePauser virtual_time_pauser =
+        Context().GetFrameScheduler()->CreateWebScopedVirtualTimePauser();
     virtual_time_pauser.PauseVirtualTime(true);
     resource_->VirtualTimePauser() = std::move(virtual_time_pauser);
   }

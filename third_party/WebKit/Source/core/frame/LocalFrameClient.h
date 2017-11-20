@@ -42,7 +42,6 @@
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/loader/NavigationPolicy.h"
-#include "platform/ScopedVirtualTimePauser.h"
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/ResourceLoadPriority.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
@@ -54,6 +53,7 @@
 #include "public/platform/WebEffectiveConnectionType.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
 #include "public/platform/WebLoadingBehaviorFlag.h"
+#include "public/platform/WebScopedVirtualTimePauser.h"
 #include "public/platform/WebSuddenTerminationDisablerType.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/web/WebTriggeringEventInfo.h"
@@ -371,7 +371,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
       const WebRemoteScrollProperties&) {}
 
   virtual void SetVirtualTimePauser(
-      ScopedVirtualTimePauser virtual_time_pauser) {}
+      WebScopedVirtualTimePauser virtual_time_pauser) {}
 };
 
 }  // namespace blink

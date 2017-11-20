@@ -8,5 +8,6 @@ specific_include_rules = {
     "+content/renderer/dom_storage/local_storage_area.h",
     "+content/renderer/dom_storage/local_storage_namespace.h",
     "+content/renderer/dom_storage/mock_leveldb_wrapper.h",
+    "+content/renderer/render_thread_impl.h",
   ],
 }

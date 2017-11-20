@@ -196,8 +196,9 @@ DOMStorageCachedArea* DomStorageDispatcher::ProxyImpl::OpenCachedArea(
     ++(holder->open_count_);
     return holder->area_.get();
   }
-  scoped_refptr<DOMStorageCachedArea> area =
-      new DOMStorageCachedArea(namespace_id, origin, this);
+  scoped_refptr<DOMStorageCachedArea> area = new DOMStorageCachedArea(
+      namespace_id, origin, this,
+      content::RenderThreadImpl::current()->GetRendererScheduler());
   cached_areas_[key] = CachedAreaHolder(area.get(), 1);
   return area.get();
 }

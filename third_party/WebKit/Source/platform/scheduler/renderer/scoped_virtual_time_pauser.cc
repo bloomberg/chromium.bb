@@ -2,32 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/ScopedVirtualTimePauser.h"
+#include "public/platform/WebScopedVirtualTimePauser.h"
 
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
 
 namespace blink {
 
-ScopedVirtualTimePauser::ScopedVirtualTimePauser() : scheduler_(nullptr) {}
+WebScopedVirtualTimePauser::WebScopedVirtualTimePauser()
+    : scheduler_(nullptr) {}
 
-ScopedVirtualTimePauser::ScopedVirtualTimePauser(
+WebScopedVirtualTimePauser::WebScopedVirtualTimePauser(
     scheduler::RendererSchedulerImpl* scheduler)
     : scheduler_(scheduler) {}
 
-ScopedVirtualTimePauser::~ScopedVirtualTimePauser() {
+WebScopedVirtualTimePauser::~WebScopedVirtualTimePauser() {
   if (paused_ && scheduler_)
     scheduler_->DecrementVirtualTimePauseCount();
 }
 
-ScopedVirtualTimePauser::ScopedVirtualTimePauser(
-    ScopedVirtualTimePauser&& other) {
+WebScopedVirtualTimePauser::WebScopedVirtualTimePauser(
+    WebScopedVirtualTimePauser&& other) {
   paused_ = other.paused_;
   scheduler_ = std::move(other.scheduler_);
   other.scheduler_ = nullptr;
 }
 
-ScopedVirtualTimePauser& ScopedVirtualTimePauser::operator=(
-    ScopedVirtualTimePauser&& other) {
+WebScopedVirtualTimePauser& WebScopedVirtualTimePauser::operator=(
+    WebScopedVirtualTimePauser&& other) {
   if (scheduler_ && paused_)
     scheduler_->DecrementVirtualTimePauseCount();
   paused_ = other.paused_;
@@ -36,7 +37,7 @@ ScopedVirtualTimePauser& ScopedVirtualTimePauser::operator=(
   return *this;
 }
 
-void ScopedVirtualTimePauser::PauseVirtualTime(bool paused) {
+void WebScopedVirtualTimePauser::PauseVirtualTime(bool paused) {
   if (paused == paused_ || !scheduler_)
     return;
 

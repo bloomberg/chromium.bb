@@ -287,7 +287,7 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   bool added_pending_stylesheet_in_body_;
   bool is_waiting_for_stylesheets_;
 
-  ScopedVirtualTimePauser virtual_time_pauser_;
+  WebScopedVirtualTimePauser virtual_time_pauser_;
 };
 
 }  // namespace blink

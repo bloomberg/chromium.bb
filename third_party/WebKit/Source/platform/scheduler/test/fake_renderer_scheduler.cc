@@ -126,5 +126,10 @@ bool FakeRendererScheduler::MainThreadSeemsUnresponsive(
 
 void FakeRendererScheduler::SetRendererProcessType(RendererProcessType type) {}
 
+WebScopedVirtualTimePauser
+FakeRendererScheduler::CreateWebScopedVirtualTimePauser() {
+  return WebScopedVirtualTimePauser(nullptr);
+}
+
 }  // namespace scheduler
 }  // namespace blink
