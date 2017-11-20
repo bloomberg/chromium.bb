@@ -731,13 +731,7 @@ void ShillToONCTranslator::SetNestedOncValue(
     const std::string& onc_dictionary_name,
     const std::string& onc_field_name,
     const base::Value& value) {
-  base::DictionaryValue* nested = nullptr;
-  if (!onc_object_->GetDictionaryWithoutPathExpansion(onc_dictionary_name,
-                                                      &nested)) {
-    nested = onc_object_->SetDictionaryWithoutPathExpansion(
-        onc_dictionary_name, std::make_unique<base::DictionaryValue>());
-  }
-  nested->SetKey(onc_field_name, value.Clone());
+  onc_object_->SetPath({onc_dictionary_name, onc_field_name}, value.Clone());
 }
 
 void ShillToONCTranslator::TranslateAndAddListOfObjects(

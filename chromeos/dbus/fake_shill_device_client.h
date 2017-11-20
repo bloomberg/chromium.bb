@@ -140,7 +140,7 @@ class CHROMEOS_EXPORT FakeShillDeviceClient
 
   void NotifyObserversPropertyChanged(const dbus::ObjectPath& device_path,
                                       const std::string& property);
-  base::DictionaryValue* GetDeviceProperties(const std::string& device_path);
+  base::Value* GetDeviceProperties(const std::string& device_path);
   PropertyObserverList& GetObserverList(const dbus::ObjectPath& device_path);
 
   // Dictionary of <device_name, Dictionary>.

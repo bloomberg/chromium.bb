@@ -433,25 +433,22 @@ void LocalTranslator::TranslateWithTableAndSet(
 // results are written to |shill_dictionary|.
 void TranslateONCHierarchy(const OncValueSignature& signature,
                            const base::DictionaryValue& onc_object,
-                           base::DictionaryValue* shill_dictionary) {
-  base::DictionaryValue* target_shill_dictionary = shill_dictionary;
-  std::vector<std::string> path_to_shill_dictionary =
+                           base::Value* shill_dictionary) {
+  const std::vector<std::string> path =
       GetPathToNestedShillDictionary(signature);
-  for (std::vector<std::string>::const_iterator it =
-           path_to_shill_dictionary.begin();
-       it != path_to_shill_dictionary.end(); ++it) {
-    base::DictionaryValue* nested_shill_dict = NULL;
-    if (!target_shill_dictionary->GetDictionaryWithoutPathExpansion(
-            *it, &nested_shill_dict)) {
-      nested_shill_dict =
-          target_shill_dictionary->SetDictionaryWithoutPathExpansion(
-              *it, std::make_unique<base::DictionaryValue>());
-    }
-    target_shill_dictionary = nested_shill_dict;
+  const std::vector<base::StringPiece> path_pieces(path.begin(), path.end());
+  base::Value* target_shill_dictionary = shill_dictionary->FindPathOfType(
+      path_pieces, base::Value::Type::DICTIONARY);
+  if (!target_shill_dictionary) {
+    target_shill_dictionary = shill_dictionary->SetPath(
+        path_pieces, base::Value(base::Value::Type::DICTIONARY));
   }
+
   // Translates fields of |onc_object| and writes them to
   // |target_shill_dictionary_| nested in |shill_dictionary|.
-  LocalTranslator translator(signature, onc_object, target_shill_dictionary);
+  LocalTranslator translator(
+      signature, onc_object,
+      static_cast<base::DictionaryValue*>(target_shill_dictionary));
   translator.TranslateFields();
 
   // Recurse into nested objects.
