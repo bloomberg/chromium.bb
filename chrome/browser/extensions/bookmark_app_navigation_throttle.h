@@ -42,10 +42,6 @@ class BookmarkAppNavigationThrottle : public content::NavigationThrottle {
   // Window, or if the navigation should continue normally.
   content::NavigationThrottle::ThrottleCheckResult ProcessNavigation();
 
-  // Returns true if |target_url|'s origin is the same as the last committed
-  // origin in the current tab.
-  bool HasSameOriginAsCurrentSite(const GURL& target_url);
-
   // Opens the current target url in an App window. May post a task to do so if
   // opening the app synchronously could result in the app opening in the
   // background. Also closes the current tab if this is the first navigation.
@@ -62,6 +58,8 @@ class BookmarkAppNavigationThrottle : public content::NavigationThrottle {
   scoped_refptr<const Extension> GetAppForWindow();
   // Retrieves the target Bookmark App for the current target URL.
   scoped_refptr<const Extension> GetTargetApp();
+  // Retrieves the Bookmark App that has the current URL in its scope.
+  scoped_refptr<const Extension> GetAppForCurrentURL();
 
   base::WeakPtrFactory<BookmarkAppNavigationThrottle> weak_ptr_factory_;
 

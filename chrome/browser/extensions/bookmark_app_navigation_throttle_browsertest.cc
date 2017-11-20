@@ -783,6 +783,52 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
                  in_scope_url, LinkTarget::SELF, GetParam()));
 }
 
+// Tests that clicking a target=_self link with from a URL out of the Web App's
+// scope but with the same origin to an in-scope URL results in a new App
+// window.
+IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
+                       FromOutOfScopeUrlToInScopeUrlSelf) {
+  InstallTestBookmarkApp();
+
+  // Navigate to out-of-scope URL. Shouldn't open a new window.
+  const GURL out_of_scope_url =
+      embedded_test_server()->GetURL(kOutOfScopeUrlPath);
+  chrome::NavigateParams params(browser(), out_of_scope_url,
+                                ui::PAGE_TRANSITION_TYPED);
+  ASSERT_TRUE(TestTabActionDoesNotOpenAppWindow(
+      out_of_scope_url, base::Bind(&NavigateToURLWrapper, &params)));
+
+  const GURL in_scope_url = embedded_test_server()->GetURL(kAppUrlPath);
+  TestTabActionOpensAppWindow(
+      in_scope_url,
+      base::Bind(&ClickLinkAndWait,
+                 browser()->tab_strip_model()->GetActiveWebContents(),
+                 in_scope_url, LinkTarget::SELF, GetParam()));
+}
+
+// Tests that clicking a target=_blank link with from a URL out of the Web App's
+// scope but with the same origin to an in-scope URL results in a new App
+// window.
+IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
+                       FromOutOfScopeUrlToInScopeUrlBlank) {
+  InstallTestBookmarkApp();
+
+  // Navigate to out-of-scope URL. Shouldn't open a new window.
+  const GURL out_of_scope_url =
+      embedded_test_server()->GetURL(kOutOfScopeUrlPath);
+  chrome::NavigateParams params(browser(), out_of_scope_url,
+                                ui::PAGE_TRANSITION_TYPED);
+  ASSERT_TRUE(TestTabActionDoesNotOpenAppWindow(
+      out_of_scope_url, base::Bind(&NavigateToURLWrapper, &params)));
+
+  const GURL in_scope_url = embedded_test_server()->GetURL(kAppUrlPath);
+  TestTabActionOpensAppWindow(
+      in_scope_url,
+      base::Bind(&ClickLinkAndWait,
+                 browser()->tab_strip_model()->GetActiveWebContents(),
+                 in_scope_url, LinkTarget::BLANK, GetParam()));
+}
+
 // Tests that clicking links inside a website for an installed app doesn't open
 // a new browser window.
 IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,

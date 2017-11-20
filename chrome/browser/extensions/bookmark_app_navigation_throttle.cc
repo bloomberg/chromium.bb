@@ -34,6 +34,30 @@ using content::BrowserThread;
 
 namespace extensions {
 
+namespace {
+
+scoped_refptr<const Extension> GetAppForURL(
+    const GURL& url,
+    const content::WebContents* web_contents) {
+  content::BrowserContext* browser_context = web_contents->GetBrowserContext();
+  for (scoped_refptr<const extensions::Extension> app :
+       ExtensionRegistry::Get(browser_context)->enabled_extensions()) {
+    if (!app->from_bookmark())
+      continue;
+
+    const UrlHandlerInfo* url_handler =
+        UrlHandlers::FindMatchingUrlHandler(app.get(), url);
+    if (!url_handler)
+      continue;
+
+    return app;
+  }
+
+  return nullptr;
+}
+
+}  // namespace
+
 // static
 std::unique_ptr<content::NavigationThrottle>
 BookmarkAppNavigationThrottle::MaybeCreateThrottleFor(
@@ -103,14 +127,15 @@ BookmarkAppNavigationThrottle::ProcessNavigation() {
     return content::NavigationThrottle::PROCEED;
   }
 
-  // This results in a navigation from google.com/ to google.com/maps to just
-  // navigate the tab.
-  // TODO(crbug.com/783487): Get the app that corresponds to the current URL
-  // and, if there is none or it's not the same as the target app, then open
-  // a new app window for the target app.
-  if (!app_for_window_ref &&
-      HasSameOriginAsCurrentSite(navigation_handle()->GetURL())) {
-    DVLOG(1) << "Don't intercept: Keep same origin navigations in the browser.";
+  // If this is a browser tab, and the current and target URL are within-scope
+  // of the same app, don't intercept the navigation.
+  // This ensures that navigating from
+  // https://www.youtube.com/ to https://www.youtube.com/some_video doesn't
+  // open a new app window if the Youtube app is installed, but navigating from
+  // https://www.google.com/ to https://www.google.com/maps does open a new
+  // app window if only the Maps app is installed.
+  if (!app_for_window_ref && target_app_ref == GetAppForCurrentURL()) {
+    DVLOG(1) << "Don't intercept: Keep same-app navigations in the browser.";
     return content::NavigationThrottle::PROCEED;
   }
 
@@ -142,16 +167,6 @@ BookmarkAppNavigationThrottle::ProcessNavigation() {
   DVLOG(1) << "No matching Bookmark App for URL: "
            << navigation_handle()->GetURL();
   return content::NavigationThrottle::PROCEED;
-}
-
-bool BookmarkAppNavigationThrottle::HasSameOriginAsCurrentSite(
-    const GURL& target_url) {
-  DCHECK(navigation_handle()->IsInMainFrame());
-  return url::Origin::Create(target_url)
-      .IsSameOriginWith(navigation_handle()
-                            ->GetWebContents()
-                            ->GetMainFrame()
-                            ->GetLastCommittedOrigin());
 }
 
 content::NavigationThrottle::ThrottleCheckResult
@@ -249,24 +264,17 @@ BookmarkAppNavigationThrottle::GetAppForWindow() {
 }
 
 scoped_refptr<const Extension> BookmarkAppNavigationThrottle::GetTargetApp() {
-  const GURL& target_url = navigation_handle()->GetURL();
+  return GetAppForURL(navigation_handle()->GetURL(),
+                      navigation_handle()->GetWebContents());
+}
 
-  content::BrowserContext* browser_context =
-      navigation_handle()->GetWebContents()->GetBrowserContext();
-  for (scoped_refptr<const extensions::Extension> app :
-       ExtensionRegistry::Get(browser_context)->enabled_extensions()) {
-    if (!app->from_bookmark())
-      continue;
-
-    const UrlHandlerInfo* url_handler =
-        UrlHandlers::FindMatchingUrlHandler(app.get(), target_url);
-    if (!url_handler)
-      continue;
-
-    return app;
-  }
-
-  return nullptr;
+scoped_refptr<const Extension>
+BookmarkAppNavigationThrottle::GetAppForCurrentURL() {
+  return GetAppForURL(navigation_handle()
+                          ->GetWebContents()
+                          ->GetMainFrame()
+                          ->GetLastCommittedURL(),
+                      navigation_handle()->GetWebContents());
 }
 
 }  // namespace extensions
