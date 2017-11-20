@@ -170,7 +170,7 @@ void FrameBufferPool::OnVideoFrameDestroyed(
   if (!task_runner->RunsTasksInCurrentSequence()) {
     task_runner->PostTask(
         FROM_HERE, base::Bind(&FrameBufferPool::OnVideoFrameDestroyed, this,
-                              std::move(task_runner), frame_buffer));
+                              task_runner, frame_buffer));
     return;
   }
 
