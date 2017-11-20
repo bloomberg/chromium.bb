@@ -5,12 +5,12 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <memory>
 #include <set>
 #include <sstream>
 
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "tools/gn/commands.h"
 #include "tools/gn/config.h"
@@ -457,7 +457,7 @@ int RunDesc(const std::vector<std::string>& args) {
 
   if (json) {
     // Convert all targets/configs to JSON, serialize and print them
-    auto res = base::MakeUnique<base::DictionaryValue>();
+    auto res = std::make_unique<base::DictionaryValue>();
     if (!target_matches.empty()) {
       for (const auto* target : target_matches) {
         res->SetWithoutPathExpansion(

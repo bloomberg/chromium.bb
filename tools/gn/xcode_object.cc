@@ -5,12 +5,12 @@
 #include "tools/gn/xcode_object.h"
 
 #include <iomanip>
+#include <memory>
 #include <sstream>
 #include <utility>
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "tools/gn/filesystem_utils.h"
 
@@ -321,7 +321,7 @@ PBXTarget::PBXTarget(const std::string& name,
       name_(name) {
   if (!shell_script.empty()) {
     build_phases_.push_back(
-        base::MakeUnique<PBXShellScriptBuildPhase>(name, shell_script));
+        std::make_unique<PBXShellScriptBuildPhase>(name, shell_script));
   }
 }
 
@@ -541,7 +541,7 @@ PBXFileReference* PBXGroup::AddSourceFile(const std::string& navigator_path,
       }
     }
 
-    children_.push_back(base::MakeUnique<PBXFileReference>(
+    children_.push_back(std::make_unique<PBXFileReference>(
         navigator_path, source_path, std::string()));
     return static_cast<PBXFileReference*>(children_.back().get());
   }
@@ -560,7 +560,7 @@ PBXFileReference* PBXGroup::AddSourceFile(const std::string& navigator_path,
   }
 
   if (!group) {
-    children_.push_back(base::MakeUnique<PBXGroup>(component.as_string(),
+    children_.push_back(std::make_unique<PBXGroup>(component.as_string(),
                                                    component.as_string()));
     group = static_cast<PBXGroup*>(children_.back().get());
   }
@@ -617,11 +617,11 @@ PBXNativeTarget::PBXNativeTarget(const std::string& name,
       product_type_(product_type),
       product_name_(product_name) {
   DCHECK(product_reference_);
-  build_phases_.push_back(base::MakeUnique<PBXSourcesBuildPhase>());
+  build_phases_.push_back(std::make_unique<PBXSourcesBuildPhase>());
   source_build_phase_ =
       static_cast<PBXSourcesBuildPhase*>(build_phases_.back().get());
 
-  build_phases_.push_back(base::MakeUnique<PBXFrameworksBuildPhase>());
+  build_phases_.push_back(std::make_unique<PBXFrameworksBuildPhase>());
 }
 
 PBXNativeTarget::~PBXNativeTarget() {}
@@ -629,7 +629,7 @@ PBXNativeTarget::~PBXNativeTarget() {}
 void PBXNativeTarget::AddFileForIndexing(const PBXFileReference* file_reference,
                                          const CompilerFlags compiler_flag) {
   DCHECK(file_reference);
-  source_build_phase_->AddBuildFile(base::MakeUnique<PBXBuildFile>(
+  source_build_phase_->AddBuildFile(std::make_unique<PBXBuildFile>(
       file_reference, source_build_phase_, compiler_flag));
 }
 
@@ -664,11 +664,11 @@ PBXProject::PBXProject(const std::string& name,
 
   main_group_.reset(new PBXGroup);
   sources_ = static_cast<PBXGroup*>(
-      main_group_->AddChild(base::MakeUnique<PBXGroup>(source_path, "Source")));
+      main_group_->AddChild(std::make_unique<PBXGroup>(source_path, "Source")));
   sources_->set_is_source(true);
   products_ = static_cast<PBXGroup*>(main_group_->AddChild(
-      base::MakeUnique<PBXGroup>(std::string(), "Product")));
-  main_group_->AddChild(base::MakeUnique<PBXGroup>(std::string(), "Build"));
+      std::make_unique<PBXGroup>(std::string(), "Product")));
+  main_group_->AddChild(std::make_unique<PBXGroup>(std::string(), "Build"));
 
   configurations_.reset(new XCConfigurationList(config_name, attributes, this));
 }
@@ -707,7 +707,7 @@ void PBXProject::AddAggregateTarget(const std::string& name,
   attributes["CONFIGURATION_BUILD_DIR"] = ".";
   attributes["PRODUCT_NAME"] = name;
 
-  targets_.push_back(base::MakeUnique<PBXAggregateTarget>(
+  targets_.push_back(std::make_unique<PBXAggregateTarget>(
       name, shell_script, config_name_, attributes));
 }
 
@@ -719,11 +719,11 @@ void PBXProject::AddIndexingTarget() {
   attributes["PRODUCT_NAME"] = "sources";
 
   PBXFileReference* product_reference = static_cast<PBXFileReference*>(
-      products_->AddChild(base::MakeUnique<PBXFileReference>(
+      products_->AddChild(std::make_unique<PBXFileReference>(
           std::string(), "sources", "compiled.mach-o.executable")));
 
   const char product_type[] = "com.apple.product-type.tool";
-  targets_.push_back(base::MakeUnique<PBXNativeTarget>(
+  targets_.push_back(std::make_unique<PBXNativeTarget>(
       "sources", std::string(), config_name_, attributes, product_type,
       "sources", product_reference));
   target_for_indexing_ = static_cast<PBXNativeTarget*>(targets_.back().get());
@@ -738,7 +738,7 @@ PBXNativeTarget* PBXProject::AddNativeTarget(
     const PBXAttributes& extra_attributes) {
   base::StringPiece ext = FindExtension(&output_name);
   PBXFileReference* product = static_cast<PBXFileReference*>(
-      products_->AddChild(base::MakeUnique<PBXFileReference>(
+      products_->AddChild(std::make_unique<PBXFileReference>(
           std::string(), output_name,
           type.empty() ? GetSourceType(ext) : type)));
 
@@ -760,7 +760,7 @@ PBXNativeTarget* PBXProject::AddNativeTarget(
   attributes["CONFIGURATION_BUILD_DIR"] = ".";
   attributes["PRODUCT_NAME"] = product_name;
 
-  targets_.push_back(base::MakeUnique<PBXNativeTarget>(
+  targets_.push_back(std::make_unique<PBXNativeTarget>(
       name, shell_script, config_name_, attributes, output_type, product_name,
       product));
   return static_cast<PBXNativeTarget*>(targets_.back().get());
@@ -953,7 +953,7 @@ XCConfigurationList::XCConfigurationList(const std::string& name,
     : owner_reference_(owner_reference) {
   DCHECK(owner_reference_);
   configurations_.push_back(
-      base::MakeUnique<XCBuildConfiguration>(name, attributes));
+      std::make_unique<XCBuildConfiguration>(name, attributes));
 }
 
 XCConfigurationList::~XCConfigurationList() {}

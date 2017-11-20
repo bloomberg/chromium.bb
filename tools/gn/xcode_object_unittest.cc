@@ -4,7 +4,6 @@
 
 #include "tools/gn/xcode_object.h"
 
-#include "base/memory/ptr_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -306,22 +305,23 @@ TEST(XcodeObject, XCConfigurationListObjectToClass) {
 
 // Tests the mapping between PBXObjectClass and it's name as a string.
 TEST(XcodeObject, ClassToString) {
-  EXPECT_EQ("PBXAggregateTarget", ToString(PBXAggregateTargetClass));
-  EXPECT_EQ("PBXBuildFile", ToString(PBXBuildFileClass));
-  EXPECT_EQ("PBXAggregateTarget", ToString(PBXAggregateTargetClass));
-  EXPECT_EQ("PBXBuildFile", ToString(PBXBuildFileClass));
-  EXPECT_EQ("PBXContainerItemProxy", ToString(PBXContainerItemProxyClass));
-  EXPECT_EQ("PBXFileReference", ToString(PBXFileReferenceClass));
-  EXPECT_EQ("PBXFrameworksBuildPhase", ToString(PBXFrameworksBuildPhaseClass));
-  EXPECT_EQ("PBXGroup", ToString(PBXGroupClass));
-  EXPECT_EQ("PBXNativeTarget", ToString(PBXNativeTargetClass));
-  EXPECT_EQ("PBXProject", ToString(PBXProjectClass));
-  EXPECT_EQ("PBXSourcesBuildPhase", ToString(PBXSourcesBuildPhaseClass));
-  EXPECT_EQ("PBXTargetDependency", ToString(PBXTargetDependencyClass));
-  EXPECT_EQ("XCBuildConfiguration", ToString(XCBuildConfigurationClass));
-  EXPECT_EQ("XCConfigurationList", ToString(XCConfigurationListClass));
-  EXPECT_EQ("PBXShellScriptBuildPhase",
-            ToString(PBXShellScriptBuildPhaseClass));
+  EXPECT_STREQ("PBXAggregateTarget", ToString(PBXAggregateTargetClass));
+  EXPECT_STREQ("PBXBuildFile", ToString(PBXBuildFileClass));
+  EXPECT_STREQ("PBXAggregateTarget", ToString(PBXAggregateTargetClass));
+  EXPECT_STREQ("PBXBuildFile", ToString(PBXBuildFileClass));
+  EXPECT_STREQ("PBXContainerItemProxy", ToString(PBXContainerItemProxyClass));
+  EXPECT_STREQ("PBXFileReference", ToString(PBXFileReferenceClass));
+  EXPECT_STREQ("PBXFrameworksBuildPhase",
+               ToString(PBXFrameworksBuildPhaseClass));
+  EXPECT_STREQ("PBXGroup", ToString(PBXGroupClass));
+  EXPECT_STREQ("PBXNativeTarget", ToString(PBXNativeTargetClass));
+  EXPECT_STREQ("PBXProject", ToString(PBXProjectClass));
+  EXPECT_STREQ("PBXSourcesBuildPhase", ToString(PBXSourcesBuildPhaseClass));
+  EXPECT_STREQ("PBXTargetDependency", ToString(PBXTargetDependencyClass));
+  EXPECT_STREQ("XCBuildConfiguration", ToString(XCBuildConfigurationClass));
+  EXPECT_STREQ("XCConfigurationList", ToString(XCConfigurationListClass));
+  EXPECT_STREQ("PBXShellScriptBuildPhase",
+               ToString(PBXShellScriptBuildPhaseClass));
 }
 
 // Tests the mapping between PBXObject and it's name as a string.

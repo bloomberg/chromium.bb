@@ -4,6 +4,7 @@
 
 #include "tools/gn/input_file_manager.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -111,7 +112,8 @@ bool InputFileManager::AsyncLoadFile(const LocationRange& origin,
     InputFileMap::const_iterator found = input_files_.find(file_name);
     if (found == input_files_.end()) {
       // New file, schedule load.
-      std::unique_ptr<InputFileData> data(new InputFileData(file_name));
+      std::unique_ptr<InputFileData> data =
+          std::make_unique<InputFileData>(file_name);
       data->scheduled_callbacks.push_back(callback);
       schedule_this = base::Bind(&InputFileManager::BackgroundLoadFile,
                                  this,
@@ -162,7 +164,8 @@ const ParseNode* InputFileManager::SyncLoadFile(
   InputFileMap::iterator found = input_files_.find(file_name);
   if (found == input_files_.end()) {
     // Haven't seen this file yet, start loading right now.
-    std::unique_ptr<InputFileData> new_data(new InputFileData(file_name));
+    std::unique_ptr<InputFileData> new_data =
+        std::make_unique<InputFileData>(file_name);
     data = new_data.get();
     data->sync_invocation = true;
     input_files_[file_name] = std::move(new_data);
@@ -202,9 +205,9 @@ const ParseNode* InputFileManager::SyncLoadFile(
     if (!data->loaded) {
       // Wait for the already-pending sync load to complete.
       if (!data->completion_event) {
-        data->completion_event.reset(new base::WaitableEvent(
+        data->completion_event = std::make_unique<base::WaitableEvent>(
             base::WaitableEvent::ResetPolicy::AUTOMATIC,
-            base::WaitableEvent::InitialState::NOT_SIGNALED));
+            base::WaitableEvent::InitialState::NOT_SIGNALED);
       }
       {
         base::AutoUnlock unlock(lock_);
@@ -230,7 +233,7 @@ void InputFileManager::AddDynamicInput(
     InputFile** file,
     std::vector<Token>** tokens,
     std::unique_ptr<ParseNode>** parse_root) {
-  std::unique_ptr<InputFileData> data(new InputFileData(name));
+  std::unique_ptr<InputFileData> data = std::make_unique<InputFileData>(name);
   *file = &data->file;
   *tokens = &data->tokens;
   *parse_root = &data->parsed_root;

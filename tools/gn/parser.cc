@@ -4,10 +4,10 @@
 
 #include "tools/gn/parser.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "tools/gn/functions.h"
 #include "tools/gn/operators.h"
 #include "tools/gn/token.h"
@@ -460,7 +460,7 @@ std::unique_ptr<ParseNode> Parser::Block(const Token& token) {
 }
 
 std::unique_ptr<ParseNode> Parser::Literal(const Token& token) {
-  return base::MakeUnique<LiteralNode>(token);
+  return std::make_unique<LiteralNode>(token);
 }
 
 std::unique_ptr<ParseNode> Parser::Name(const Token& token) {
@@ -468,7 +468,8 @@ std::unique_ptr<ParseNode> Parser::Name(const Token& token) {
 }
 
 std::unique_ptr<ParseNode> Parser::BlockComment(const Token& token) {
-  std::unique_ptr<BlockCommentNode> comment(new BlockCommentNode());
+  std::unique_ptr<BlockCommentNode> comment =
+      std::make_unique<BlockCommentNode>();
   comment->set_comment(token);
   return std::move(comment);
 }
@@ -490,7 +491,7 @@ std::unique_ptr<ParseNode> Parser::Not(const Token& token) {
       *err_ = Err(token, "Expected right-hand side for '!'.");
     return std::unique_ptr<ParseNode>();
   }
-  std::unique_ptr<UnaryOpNode> unary_op(new UnaryOpNode);
+  std::unique_ptr<UnaryOpNode> unary_op = std::make_unique<UnaryOpNode>();
   unary_op->set_op(token);
   unary_op->set_operand(std::move(expr));
   return std::move(unary_op);
@@ -515,7 +516,7 @@ std::unique_ptr<ParseNode> Parser::BinaryOperator(
     }
     return std::unique_ptr<ParseNode>();
   }
-  std::unique_ptr<BinaryOpNode> binary_op(new BinaryOpNode);
+  std::unique_ptr<BinaryOpNode> binary_op = std::make_unique<BinaryOpNode>();
   binary_op->set_op(token);
   binary_op->set_left(std::move(left));
   binary_op->set_right(std::move(right));
@@ -525,9 +526,9 @@ std::unique_ptr<ParseNode> Parser::BinaryOperator(
 std::unique_ptr<ParseNode> Parser::IdentifierOrCall(
     std::unique_ptr<ParseNode> left,
     const Token& token) {
-  std::unique_ptr<ListNode> list(new ListNode);
+  std::unique_ptr<ListNode> list = std::make_unique<ListNode>();
   list->set_begin_token(token);
-  list->set_end(base::MakeUnique<EndNode>(token));
+  list->set_end(std::make_unique<EndNode>(token));
   std::unique_ptr<BlockNode> block;
   bool has_arg = false;
   if (LookAhead(Token::LEFT_PAREN)) {
@@ -552,9 +553,10 @@ std::unique_ptr<ParseNode> Parser::IdentifierOrCall(
 
   if (!left && !has_arg) {
     // Not a function call, just a standalone identifier.
-    return std::unique_ptr<ParseNode>(new IdentifierNode(token));
+    return std::make_unique<IdentifierNode>(token);
   }
-  std::unique_ptr<FunctionCallNode> func_call(new FunctionCallNode);
+  std::unique_ptr<FunctionCallNode> func_call =
+      std::make_unique<FunctionCallNode>();
   func_call->set_function(token);
   func_call->set_args(std::move(list));
   if (block)
@@ -576,7 +578,7 @@ std::unique_ptr<ParseNode> Parser::Assignment(std::unique_ptr<ParseNode> left,
       *err_ = Err(token, "Expected right-hand side for assignment.");
     return std::unique_ptr<ParseNode>();
   }
-  std::unique_ptr<BinaryOpNode> assign(new BinaryOpNode);
+  std::unique_ptr<BinaryOpNode> assign = std::make_unique<BinaryOpNode>();
   assign->set_op(token);
   assign->set_left(std::move(left));
   assign->set_right(std::move(value));
@@ -596,7 +598,7 @@ std::unique_ptr<ParseNode> Parser::Subscript(std::unique_ptr<ParseNode> left,
   }
   std::unique_ptr<ParseNode> value = ParseExpression();
   Consume(Token::RIGHT_BRACKET, "Expecting ']' after subscript.");
-  std::unique_ptr<AccessorNode> accessor(new AccessorNode);
+  std::unique_ptr<AccessorNode> accessor = std::make_unique<AccessorNode>();
   accessor->set_base(left->AsIdentifier()->value());
   accessor->set_index(std::move(value));
   return std::move(accessor);
@@ -619,7 +621,7 @@ std::unique_ptr<ParseNode> Parser::DotOperator(std::unique_ptr<ParseNode> left,
     return std::unique_ptr<ParseNode>();
   }
 
-  std::unique_ptr<AccessorNode> accessor(new AccessorNode);
+  std::unique_ptr<AccessorNode> accessor = std::make_unique<AccessorNode>();
   accessor->set_base(left->AsIdentifier()->value());
   accessor->set_member(std::unique_ptr<IdentifierNode>(
       static_cast<IdentifierNode*>(right.release())));
@@ -630,7 +632,7 @@ std::unique_ptr<ParseNode> Parser::DotOperator(std::unique_ptr<ParseNode> left,
 std::unique_ptr<ListNode> Parser::ParseList(const Token& start_token,
                                             Token::Type stop_before,
                                             bool allow_trailing_comma) {
-  std::unique_ptr<ListNode> list(new ListNode);
+  std::unique_ptr<ListNode> list = std::make_unique<ListNode>();
   list->set_begin_token(start_token);
   bool just_got_comma = false;
   bool first_time = true;
@@ -667,12 +669,13 @@ std::unique_ptr<ListNode> Parser::ParseList(const Token& start_token,
     *err_ = Err(cur_token(), "Trailing comma");
     return std::unique_ptr<ListNode>();
   }
-  list->set_end(base::MakeUnique<EndNode>(cur_token()));
+  list->set_end(std::make_unique<EndNode>(cur_token()));
   return list;
 }
 
 std::unique_ptr<ParseNode> Parser::ParseFile() {
-  std::unique_ptr<BlockNode> file(new BlockNode(BlockNode::DISCARDS_RESULT));
+  std::unique_ptr<BlockNode> file =
+      std::make_unique<BlockNode>(BlockNode::DISCARDS_RESULT);
   for (;;) {
     if (at_end())
       break;
@@ -721,12 +724,12 @@ std::unique_ptr<BlockNode> Parser::ParseBlock(
     BlockNode::ResultMode result_mode) {
   if (has_error())
     return std::unique_ptr<BlockNode>();
-  std::unique_ptr<BlockNode> block(new BlockNode(result_mode));
+  std::unique_ptr<BlockNode> block = std::make_unique<BlockNode>(result_mode);
   block->set_begin_token(begin_brace);
 
   for (;;) {
     if (LookAhead(Token::RIGHT_BRACE)) {
-      block->set_end(base::MakeUnique<EndNode>(Consume()));
+      block->set_end(std::make_unique<EndNode>(Consume()));
       break;
     }
 
@@ -739,7 +742,7 @@ std::unique_ptr<BlockNode> Parser::ParseBlock(
 }
 
 std::unique_ptr<ParseNode> Parser::ParseCondition() {
-  std::unique_ptr<ConditionNode> condition(new ConditionNode);
+  std::unique_ptr<ConditionNode> condition = std::make_unique<ConditionNode>();
   condition->set_if_token(Consume(Token::IF, "Expected 'if'"));
   Consume(Token::LEFT_PAREN, "Expected '(' after 'if'.");
   condition->set_condition(ParseExpression());

@@ -6,12 +6,12 @@
 
 #include <algorithm>
 #include <iterator>
+#include <memory>
 #include <set>
 #include <vector>
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "tools/gn/builder.h"
@@ -111,7 +111,7 @@ void WriteLabels(const Label& default_toolchain,
                  const std::string& key,
                  const LabelSet& labels) {
   std::vector<std::string> strings;
-  auto value = base::MakeUnique<base::ListValue>();
+  auto value = std::make_unique<base::ListValue>();
   for (const auto l : labels)
     strings.push_back(l.GetUserVisibleName(default_toolchain));
   std::sort(strings.begin(), strings.end());
@@ -197,7 +197,7 @@ Err JSONToInputs(const Label& default_toolchain,
 std::string OutputsToJSON(const Outputs& outputs,
                           const Label& default_toolchain, Err *err) {
   std::string output;
-  auto value = base::MakeUnique<base::DictionaryValue>();
+  auto value = std::make_unique<base::DictionaryValue>();
 
   if (outputs.error.size()) {
     WriteString(*value, "error", outputs.error);
@@ -206,7 +206,7 @@ std::string OutputsToJSON(const Outputs& outputs,
   } else {
     WriteString(*value, "status", outputs.status);
     if (outputs.compile_includes_all) {
-      auto compile_targets = base::MakeUnique<base::ListValue>();
+      auto compile_targets = std::make_unique<base::ListValue>();
       compile_targets->AppendString("all");
       value->SetWithoutPathExpansion("compile_targets",
                                      std::move(compile_targets));

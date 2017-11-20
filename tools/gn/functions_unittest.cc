@@ -4,9 +4,9 @@
 
 #include "tools/gn/functions.h"
 
+#include <memory>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "tools/gn/parse_tree.h"
 #include "tools/gn/test_with_scope.h"
@@ -22,7 +22,7 @@ TEST(Functions, Defined) {
   Token undefined_token(Location(), Token::IDENTIFIER, "undef");
   ListNode args_list_identifier_undefined;
   args_list_identifier_undefined.append_item(
-      std::unique_ptr<ParseNode>(new IdentifierNode(undefined_token)));
+      std::make_unique<IdentifierNode>(undefined_token));
   Value result = functions::RunDefined(setup.scope(), &function_call,
                                        &args_list_identifier_undefined, &err);
   ASSERT_EQ(Value::BOOLEAN, result.type());
@@ -31,14 +31,13 @@ TEST(Functions, Defined) {
   // Define a value that's itself a scope value.
   const char kDef[] = "def";  // Defined variable name.
   setup.scope()->SetValue(
-      kDef, Value(nullptr, std::unique_ptr<Scope>(new Scope(setup.scope()))),
-      nullptr);
+      kDef, Value(nullptr, std::make_unique<Scope>(setup.scope())), nullptr);
 
   // Test the defined identifier.
   Token defined_token(Location(), Token::IDENTIFIER, kDef);
   ListNode args_list_identifier_defined;
   args_list_identifier_defined.append_item(
-      std::unique_ptr<ParseNode>(new IdentifierNode(defined_token)));
+      std::make_unique<IdentifierNode>(defined_token));
   result = functions::RunDefined(setup.scope(), &function_call,
                                  &args_list_identifier_defined, &err);
   ASSERT_EQ(Value::BOOLEAN, result.type());
@@ -46,9 +45,10 @@ TEST(Functions, Defined) {
 
   // Should also work by passing an accessor node so you can do
   // "defined(def.foo)" to see if foo is defined on the def scope.
-  std::unique_ptr<AccessorNode> undef_accessor(new AccessorNode);
+  std::unique_ptr<AccessorNode> undef_accessor =
+      std::make_unique<AccessorNode>();
   undef_accessor->set_base(defined_token);
-  undef_accessor->set_member(base::MakeUnique<IdentifierNode>(undefined_token));
+  undef_accessor->set_member(std::make_unique<IdentifierNode>(undefined_token));
   ListNode args_list_accessor_defined;
   args_list_accessor_defined.append_item(std::move(undef_accessor));
   result = functions::RunDefined(setup.scope(), &function_call,
