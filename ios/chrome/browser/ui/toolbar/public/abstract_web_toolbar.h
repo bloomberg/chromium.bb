@@ -31,8 +31,6 @@
 - (BOOL)isOmniboxFirstResponder;
 // Returns whether the omnibox popup is currently displayed.
 - (BOOL)showingOmniboxPopup;
-// Called when the current tab changes or is closed.
-- (void)selectedTabChanged;
 // Update the visibility of the toolbar before making a side swipe snapshot so
 // the toolbar looks appropriate for |tab|. This includes morphing the toolbar
 // to look like the new tab page header.

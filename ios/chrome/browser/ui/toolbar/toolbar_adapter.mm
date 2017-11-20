@@ -77,10 +77,6 @@
   return NO;
 }
 
-- (void)selectedTabChanged {
-  return;
-}
-
 - (void)updateToolbarForSideSwipeSnapshot:(Tab*)tab {
   [self.toolbarCoordinator updateToolbarForSideSwipeSnapshot:tab.webState];
 }
