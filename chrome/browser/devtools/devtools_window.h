@@ -102,11 +102,6 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   // Node frontend is always undocked.
   static void OpenNodeFrontendWindow(Profile* profile);
 
-  // Worker frontend is always undocked.
-  static void OpenDevToolsWindowForWorker(
-      Profile* profile,
-      const scoped_refptr<content::DevToolsAgentHost>& worker_agent);
-
   static void InspectElement(content::RenderFrameHost* inspected_frame_host,
                              int x,
                              int y);
@@ -214,6 +209,9 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   static void OpenDevToolsWindowForFrame(
       Profile* profile,
       const scoped_refptr<content::DevToolsAgentHost>& agent_host);
+  static void OpenDevToolsWindowForWorker(
+      Profile* profile,
+      const scoped_refptr<content::DevToolsAgentHost>& worker_agent);
 
   // DevTools lifecycle typically follows this way:
   // - Toggle/Open: client call;

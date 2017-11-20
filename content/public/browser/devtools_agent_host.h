@@ -63,11 +63,6 @@ class CONTENT_EXPORT DevToolsAgentHost
   // does exist.
   static bool HasFor(WebContents* web_contents);
 
-  // Returns DevToolsAgentHost that can be used for inspecting shared worker
-  // with given worker process host id and routing id.
-  static scoped_refptr<DevToolsAgentHost> GetForWorker(int worker_process_id,
-                                                       int worker_route_id);
-
   // Creates DevToolsAgentHost that communicates to the target by means of
   // provided |delegate|. |delegate| ownership is passed to the created agent
   // host.

@@ -86,21 +86,6 @@ DevToolsAgentHost::List DevToolsAgentHost::GetOrCreateAll() {
   return result;
 }
 
-// Called on the UI thread.
-// static
-scoped_refptr<DevToolsAgentHost> DevToolsAgentHost::GetForWorker(
-    int worker_process_id,
-    int worker_route_id) {
-  if (scoped_refptr<DevToolsAgentHost> host =
-      SharedWorkerDevToolsManager::GetInstance()
-          ->GetDevToolsAgentHostForWorker(worker_process_id,
-                                          worker_route_id)) {
-    return host;
-  }
-  return ServiceWorkerDevToolsManager::GetInstance()
-      ->GetDevToolsAgentHostForWorker(worker_process_id, worker_route_id);
-}
-
 DevToolsAgentHostImpl::DevToolsAgentHostImpl(const std::string& id) : id_(id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }

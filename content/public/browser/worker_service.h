@@ -26,9 +26,6 @@ class CONTENT_EXPORT WorkerService {
   // Returns the WorkerService singleton.
   static WorkerService* GetInstance();
 
-  // Terminates the given worker. Returns true if the process was found.
-  virtual bool TerminateWorker(int process_id, int route_id) = 0;
-
   // Terminates all workers and notifies when complete. This is used for
   // testing when it is important to make sure that all shared worker activity
   // has stopped.
