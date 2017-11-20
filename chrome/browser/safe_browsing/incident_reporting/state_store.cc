@@ -40,11 +40,11 @@ void StateStore::Transaction::MarkAsReported(IncidentType type,
                                              IncidentDigest digest) {
   std::string type_string(base::IntToString(static_cast<int32_t>(type)));
   base::DictionaryValue* incidents_sent = GetPrefDict();
-  base::DictionaryValue* type_dict = nullptr;
-  if (!incidents_sent->GetDictionaryWithoutPathExpansion(type_string,
-                                                         &type_dict)) {
-    type_dict = incidents_sent->SetDictionaryWithoutPathExpansion(
-        type_string, base::MakeUnique<base::DictionaryValue>());
+  base::Value* type_dict =
+      incidents_sent->FindKeyOfType(type_string, base::Value::Type::DICTIONARY);
+  if (!type_dict) {
+    type_dict = incidents_sent->SetKey(
+        type_string, base::Value(base::Value::Type::DICTIONARY));
   }
   type_dict->SetKey(key, base::Value(base::UintToString(digest)));
 }
