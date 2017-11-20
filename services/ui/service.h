@@ -43,6 +43,10 @@
 #include "ui/ozone/public/client_native_pixmap_factory_ozone.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "services/ui/public/interfaces/arc.mojom.h"
+#endif  // defined(OS_CHROMEOS)
+
 namespace discardable_memory {
 class DiscardableSharedMemoryManager;
 }
@@ -180,6 +184,10 @@ class Service : public service_manager::Service,
       mojom::RemoteEventDispatcherRequest request);
 
   void BindVideoDetectorRequest(mojom::VideoDetectorRequest request);
+
+#if defined(OS_CHROMEOS)
+  void BindArcRequest(mojom::ArcRequest request);
+#endif  // defined(OS_CHROMEOS)
 
   std::unique_ptr<ws::WindowServer> window_server_;
   std::unique_ptr<PlatformEventSource> event_source_;

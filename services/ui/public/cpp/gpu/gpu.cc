@@ -182,7 +182,12 @@ std::unique_ptr<Gpu> Gpu::Create(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   GpuPtrFactory factory =
       base::BindRepeating(&DefaultFactory, connector, service_name);
-  return base::WrapUnique(new Gpu(std::move(factory), std::move(task_runner)));
+  auto gpu =
+      base::WrapUnique(new Gpu(std::move(factory), std::move(task_runner)));
+#if defined(OS_CHROMEOS)
+  gpu->InitializeArc(connector, service_name);
+#endif  // defined(OS_CHROMEOS)
+  return gpu;
 }
 
 scoped_refptr<viz::ContextProvider> Gpu::CreateContextProvider(
@@ -208,6 +213,26 @@ scoped_refptr<viz::ContextProvider> Gpu::CreateContextProvider(
       automatic_flushes, support_locking, gpu::SharedMemoryLimits(), attributes,
       shared_context_provider, command_buffer_metrics::MUS_CLIENT_CONTEXT);
 }
+
+#if defined(OS_CHROMEOS)
+void Gpu::CreateArcVideoDecodeAccelerator(
+    arc::mojom::VideoDecodeAcceleratorRequest vda_request) {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  arc_->CreateVideoDecodeAccelerator(std::move(vda_request));
+}
+
+void Gpu::CreateArcVideoEncodeAccelerator(
+    arc::mojom::VideoEncodeAcceleratorRequest vea_request) {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  arc_->CreateVideoEncodeAccelerator(std::move(vea_request));
+}
+
+void Gpu::CreateArcProtectedBufferManager(
+    arc::mojom::ProtectedBufferManagerRequest pbm_request) {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  arc_->CreateProtectedBufferManager(std::move(pbm_request));
+}
+#endif  // OS_CHROMEOS
 
 void Gpu::CreateJpegDecodeAccelerator(
     media::mojom::GpuJpegDecodeAcceleratorRequest jda_request) {
@@ -330,5 +355,13 @@ std::unique_ptr<base::SharedMemory> Gpu::AllocateSharedMemory(size_t size) {
 
   return std::make_unique<base::SharedMemory>(platform_handle, readonly);
 }
+
+#if defined(OS_CHROMEOS)
+void Gpu::InitializeArc(service_manager::Connector* connector,
+                        const std::string& service_name) {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  connector->BindInterface(service_name, &arc_);
+}
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace ui

@@ -23,6 +23,9 @@ class TestGpuHost : public GpuHost {
   void OnAcceleratedWidgetDestroyed(gfx::AcceleratedWidget widget) override {}
   void CreateFrameSinkManager(
       viz::mojom::FrameSinkManagerParamsPtr params) override;
+#if defined(OS_CHROMEOS)
+  void AddArc(mojom::ArcRequest request) override {}
+#endif  // defined(OS_CHROMEOS)
 
   std::unique_ptr<viz::TestFrameSinkManagerImpl> frame_sink_manager_;
 

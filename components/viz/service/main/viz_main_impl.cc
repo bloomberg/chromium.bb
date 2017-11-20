@@ -21,10 +21,15 @@
 #include "gpu/ipc/gpu_in_process_thread_service.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
+#include "media/gpu/features.h"
 #include "services/metrics/public/cpp/delegating_ukm_recorder.h"
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "services/metrics/public/interfaces/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
+
+#if defined(OS_CHROMEOS) && BUILDFLAG(USE_VAAPI)
+#include "media/gpu/vaapi_wrapper.h"
+#endif
 
 namespace {
 
@@ -94,6 +99,14 @@ VizMainImpl::VizMainImpl(Delegate* delegate,
       bool success = gpu::SwitchValueToGpuPreferences(value, &gpu_preferences);
       CHECK(success);
     }
+#if defined(OS_CHROMEOS) && BUILDFLAG(USE_VAAPI)
+    // Initialize media codec. The UI service is running in a priviliged
+    // process. We don't need care when to initialize media codec. When we have
+    // a separate GPU (or VIZ) service process, we should initialize them
+    // before sandboxing
+    media::VaapiWrapper::PreSandboxInitialization();
+#endif
+
     // Initialize GpuInit before starting the IO or compositor threads.
     gpu_init_ = std::make_unique<gpu::GpuInit>();
     gpu_init_->set_sandbox_helper(this);

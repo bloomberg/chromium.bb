@@ -327,6 +327,10 @@ void Service::OnStart() {
       &Service::BindRemoteEventDispatcherRequest, base::Unretained(this)));
   registry_.AddInterface<mojom::VideoDetector>(
       base::Bind(&Service::BindVideoDetectorRequest, base::Unretained(this)));
+#if defined(OS_CHROMEOS)
+  registry_.AddInterface<mojom::Arc>(
+      base::Bind(&Service::BindArcRequest, base::Unretained(this)));
+#endif  // defined(OS_CHROMEOS)
 
   // On non-Linux platforms there will be no DeviceDataManager instance and no
   // purpose in adding the Mojo interface to connect to.
@@ -547,5 +551,11 @@ void Service::BindRemoteEventDispatcherRequest(
 void Service::BindVideoDetectorRequest(mojom::VideoDetectorRequest request) {
   window_server_->video_detector()->AddBinding(std::move(request));
 }
+
+#if defined(OS_CHROMEOS)
+void Service::BindArcRequest(mojom::ArcRequest request) {
+  window_server_->gpu_host()->AddArc(std::move(request));
+}
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace ui

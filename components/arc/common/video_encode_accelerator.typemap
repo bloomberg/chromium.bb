@@ -5,7 +5,7 @@
 mojom = "//components/arc/common/video_encode_accelerator.mojom"
 public_headers = [ "//media/video/video_encode_accelerator.h" ]
 public_deps = [
-  "//media",
+  "//media/gpu",
 ]
 traits_headers =
     [ "//components/arc/common/video_encode_accelerator_struct_traits.h" ]

@@ -167,6 +167,10 @@ static_library("lib") {
     public_deps += [ "//ui/ozone" ]
   }
   if (is_chromeos) {
+    sources += [
+      "arc_client.cc",
+      "arc_client.h",
+    ]
     public_deps += [ "//ui/chromeos/events" ]
     if (use_ozone) {
       public_deps += [ "//ui/events/ozone:events_ozone" ]

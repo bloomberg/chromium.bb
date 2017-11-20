@@ -109,7 +109,9 @@ component("gpu") {
   # Only local test code, GPU-related IPC code in the media layer, and
   # media-related content code should access //media/gpu.
   visibility = [
+    "//components/arc/common:media",
     "//components/arc/video_accelerator",
+    "//components/viz/service/main",
     "//content/gpu:*",
     "//content/renderer:*",
     "//media/gpu/ipc/*",

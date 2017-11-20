@@ -191,6 +191,8 @@ class AURA_EXPORT WindowTreeClient
   void AddTestObserver(WindowTreeClientTestObserver* observer);
   void RemoveTestObserver(WindowTreeClientTestObserver* observer);
 
+  ui::Gpu* gpu() { return gpu_.get(); }
+
  private:
   friend class InFlightBoundsChange;
   friend class InFlightFocusChange;
