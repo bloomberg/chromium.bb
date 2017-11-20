@@ -524,6 +524,8 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
 
   AntialiasingMode anti_aliasing_mode_ = kNone;
 
+  bool use_half_float_storage_ = false;
+
   int max_texture_size_ = 0;
   int sample_count_ = 0;
   bool destruction_in_progress_ = false;
