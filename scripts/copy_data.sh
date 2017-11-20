@@ -40,6 +40,20 @@ function copy_android_ios {
   echo "Done with copying pre-built ICU data file for $1."
 }
 
+function copy_cast {
+  echo "Copying icudtl.dat for $1"
+
+  cp "data/out/tmp/icudt${VERSION}l.dat" "${TOPSRC}/$2/icudt${VERSION}l.dat"
+
+  LD_LIBRARY_PATH=lib/ bin/icupkg -r \
+    "${TOPSRC}/$2/cast-removed-resources.txt" \
+    "${TOPSRC}/$2/icudt${VERSION}l.dat"
+
+  mv "${TOPSRC}/$2/icudt${VERSION}l.dat" "${TOPSRC}/$2/icudtl.dat"
+
+  echo "Done with copying pre-built ICU data file for $1."
+}
+
 case "$1" in
   "common")
     copy_common
@@ -49,5 +63,8 @@ case "$1" in
     ;;
   "ios")
     copy_android_ios iOS ios
+    ;;
+  "cast")
+    copy_cast Cast cast
     ;;
 esac

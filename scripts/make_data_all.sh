@@ -1,12 +1,15 @@
 #!/bin/bash
 
-set -x 
+set -x
 
 ICUROOT=$HOME/cr/t/src/third_party/icu
 
 $ICUROOT/scripts/trim_data.sh
 $ICUROOT/scripts/make_data.sh
 $ICUROOT/scripts/copy_data.sh common
+$ICUROOT/cast/patch_locale.sh
+$ICUROOT/scripts/make_data.sh
+$ICUROOT/scripts/copy_data.sh cast
 $ICUROOT/android/patch_locale.sh
 $ICUROOT/scripts/make_data.sh
 $ICUROOT/scripts/copy_data.sh android
