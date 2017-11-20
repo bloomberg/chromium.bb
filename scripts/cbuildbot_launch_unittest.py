@@ -349,45 +349,6 @@ class CleanBuildRootTest(cros_test_lib.MockTempDirTestCase):
     self.assertExists(self.chroot)
     self.assertExists(self.general)
 
-  def testBuildrootBranchMatchFirmware(self):
-    """Test CleanBuildRoot with no change in branch."""
-    self.populateBuildroot('2 firmware_branchA')
-    self.mock_repo.branch = 'firmware_branchA'
-
-    cbuildbot_launch.CleanBuildRoot(
-        self.root, self.mock_repo, self.metrics)
-
-    self.assertEqual(osutils.ReadFile(self.state), '2 firmware_branchA')
-    self.assertNotExists(self.repo)
-    self.assertNotExists(self.chroot)
-    self.assertNotExists(self.general)
-
-  def testBuildrootBranchMatchFactory(self):
-    """Test CleanBuildRoot with no change in branch."""
-    self.populateBuildroot('2 factory_branchA')
-    self.mock_repo.branch = 'factory_branchA'
-
-    cbuildbot_launch.CleanBuildRoot(
-        self.root, self.mock_repo, self.metrics)
-
-    self.assertEqual(osutils.ReadFile(self.state), '2 factory_branchA')
-    self.assertNotExists(self.repo)
-    self.assertNotExists(self.chroot)
-    self.assertNotExists(self.general)
-
-  def testBuildrootBranchChangeFirmware(self):
-    """Test CleanBuildRoot with no change in branch."""
-    self.populateBuildroot('2 firmware_branchA')
-    self.mock_repo.branch = 'firmware_branchB'
-
-    cbuildbot_launch.CleanBuildRoot(
-        self.root, self.mock_repo, self.metrics)
-
-    self.assertEqual(osutils.ReadFile(self.state), '2 firmware_branchB')
-    self.assertNotExists(self.repo)
-    self.assertNotExists(self.chroot)
-    self.assertNotExists(self.general)
-
   def testBuildrootRepoCleanFailure(self):
     """Test CleanBuildRoot with repo checkout failure."""
     self.populateBuildroot('1 branchA')

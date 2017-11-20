@@ -70,7 +70,7 @@ def StageDecorator(functor):
   return wrapped_functor
 
 
-def Field(fields, **kwargs):
+def field(fields, **kwargs):
   """Helper for inserting more fields into a metrics fields dictionary.
 
   Args:
@@ -154,22 +154,6 @@ def SetState(branchname, root):
   osutils.WriteFile(state_file, new_state)
 
 
-def WipeBuildRootHelper(root, metrics_fields, reason):
-  """Helper to safely blow away the entire buildroot.
-
-  Args:
-    root: Root directory owned by cbuildbot_launch.
-    metrics_fields: Dictionary of fields to include in metrics.
-    reason: Reason for wiping the buildroot for metrics.
-  """
-  metrics.Counter(METRIC_CLOBBER).increment(
-      Field(metrics_fields, reason=reason))
-  chroot_dir = os.path.join(root, 'chroot')
-  if os.path.exists(chroot_dir) or os.path.exists(chroot_dir + '.img'):
-    cros_build_lib.CleanupChrootMount(chroot_dir, delete_image=True)
-  osutils.RmDir(root, ignore_missing=True, sudo=True)
-
-
 @StageDecorator
 def CleanBuildRoot(root, repo, metrics_fields):
   """Some kinds of branch transitions break builds.
@@ -185,22 +169,20 @@ def CleanBuildRoot(root, repo, metrics_fields):
   """
   old_buildroot_layout, old_branch = GetState(root)
 
-  # Do the cleanups, along with metrics.
   if old_buildroot_layout != BUILDROOT_BUILDROOT_LAYOUT:
     logging.PrintBuildbotStepText('Unknown layout: Wiping buildroot.')
-    WipeBuildRootHelper(root, metrics_fields, 'layout_change')
-
-  elif (repo.branch.startswith('firmware') or
-        repo.branch.startswith('factory')):
-    logging.PrintBuildbotStepText('Firmware/Factory Branch: Wiping buildroot.')
-    WipeBuildRootHelper(root, metrics_fields, 'firmware_factory')
-
+    metrics.Counter(METRIC_CLOBBER).increment(
+        field(metrics_fields, reason='layout_change'))
+    chroot_dir = os.path.join(root, 'chroot')
+    if os.path.exists(chroot_dir) or os.path.exists(chroot_dir + '.img'):
+      cros_build_lib.CleanupChrootMount(chroot_dir, delete_image=True)
+    osutils.RmDir(root, ignore_missing=True, sudo=True)
   else:
     if old_branch != repo.branch:
       logging.PrintBuildbotStepText('Branch change: Cleaning buildroot.')
       logging.info('Unmatched branch: %s -> %s', old_branch, repo.branch)
       metrics.Counter(METRIC_BRANCH_CLEANUP).increment(
-          Field(metrics_fields, old_branch=old_branch))
+          field(metrics_fields, old_branch=old_branch))
 
       logging.info('Remove Chroot.')
       chroot_dir = os.path.join(repo.directory, 'chroot')
@@ -218,7 +200,7 @@ def CleanBuildRoot(root, repo, metrics_fields):
     except Exception:
       logging.info('Checkout cleanup failed, wiping buildroot:', exc_info=True)
       metrics.Counter(METRIC_CLOBBER).increment(
-          Field(metrics_fields, reason='repo_cleanup_failure'))
+          field(metrics_fields, reason='repo_cleanup_failure'))
       repository.ClearBuildRoot(repo.directory)
 
   # Ensure buildroot exists. Save the state we are prepped for.
