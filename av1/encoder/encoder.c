@@ -3311,6 +3311,11 @@ void av1_remove_compressor(AV1_COMP *cpi) {
 #endif  // CONFIG_INTERNAL_STATS
 
   av1_remove_common(cm);
+#if CONFIG_HASH_ME
+  for (i = 0; i < FRAME_BUFFERS; ++i) {
+    av1_hash_table_destroy(&cm->buffer_pool->frame_bufs[i].hash_table);
+  }
+#endif  // CONFIG_HASH_ME
   av1_free_ref_frame_buffers(cm->buffer_pool);
   aom_free(cpi);
 

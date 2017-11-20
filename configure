@@ -586,8 +586,8 @@ post_process_cmdline() {
       soft_enable inspection
     fi
     # Enable hash_me if amvr is enabled
-    if enabled amvr; then
-      log_echo "amvr requires hash_me"
+    if enabled amvr && enabled av1_encoder; then
+      log_echo "encoder side amvr requires hash_me"
       enable_feature hash_me
     fi
     if enabled lpf_sb; then
