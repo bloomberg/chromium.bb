@@ -27,7 +27,7 @@ void InitializeColorSchemes() {
   normal_scheme.element_background = 0xCCB3B3B3;
   normal_scheme.element_background_hover = 0xFFCCCCCC;
   normal_scheme.element_background_down = 0xFFF3F3F3;
-  normal_scheme.button_colors.foreground = normal_scheme.element_foreground;
+  normal_scheme.button_colors.foreground = 0x87000000;
   normal_scheme.button_colors.background = normal_scheme.element_background;
   normal_scheme.button_colors.background_hover =
       normal_scheme.element_background_hover;
