@@ -39,3 +39,22 @@ source_set("mojo_shared_buffer_video_frame") {
     "//ui/gfx/geometry",
   ]
 }
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [
+    "media_type_converters_unittest.cc",
+    "mojo_decoder_buffer_converter_unittest.cc",
+    "mojo_shared_buffer_video_frame_unittest.cc",
+  ]
+
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//media:test_support",
+    "//media/mojo:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+}
