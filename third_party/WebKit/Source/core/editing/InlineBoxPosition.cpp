@@ -282,6 +282,30 @@ InlineBoxPosition ComputeInlineBoxPositionForAtomicInline(
 }
 
 template <typename Strategy>
+InlineBoxPosition ComputeInlineBoxPositionForBlockFlow(
+    const PositionTemplate<Strategy>& position,
+    TextDirection primary_direction) {
+  // Try a visually equivalent position with possibly opposite editability. This
+  // helps in case |position| is in an editable block but surrounded by
+  // non-editable positions. It acts to negate the logic at the beginning of
+  // |LayoutObject::CreatePositionWithAffinity()|.
+  const PositionTemplate<Strategy>& downstream_equivalent =
+      DownstreamIgnoringEditingBoundaries(position);
+  if (downstream_equivalent != position) {
+    return ComputeInlineBoxPosition(downstream_equivalent,
+                                    TextAffinity::kUpstream, primary_direction);
+  }
+  const PositionTemplate<Strategy>& upstream_equivalent =
+      UpstreamIgnoringEditingBoundaries(position);
+  if (upstream_equivalent == position ||
+      DownstreamIgnoringEditingBoundaries(upstream_equivalent) == position)
+    return InlineBoxPosition();
+
+  return ComputeInlineBoxPosition(upstream_equivalent, TextAffinity::kUpstream,
+                                  primary_direction);
+}
+
+template <typename Strategy>
 InlineBoxPosition ComputeInlineBoxPositionTemplate(
     const PositionTemplate<Strategy>& position,
     TextAffinity affinity,
@@ -305,31 +329,11 @@ InlineBoxPosition ComputeInlineBoxPositionTemplate(
                                                    primary_direction);
   }
 
-  if (!layout_object->IsLayoutBlockFlow())
-    return InlineBoxPosition();
-  // TODO(xiaochengh): Wrap the following into a function.
-  if (!CanHaveChildrenForEditing(anchor_node) ||
+  if (!layout_object->IsLayoutBlockFlow() ||
+      !CanHaveChildrenForEditing(anchor_node) ||
       !HasRenderedNonAnonymousDescendantsWithHeight(layout_object))
     return InlineBoxPosition();
-  // Try a visually equivalent position with possibly opposite
-  // editability. This helps in case |this| is in an editable block
-  // but surrounded by non-editable positions. It acts to negate the
-  // logic at the beginning of
-  // |LayoutObject::createPositionWithAffinity()|.
-  const PositionTemplate<Strategy>& downstream_equivalent =
-      DownstreamIgnoringEditingBoundaries(position);
-  if (downstream_equivalent != position) {
-    return ComputeInlineBoxPosition(downstream_equivalent,
-                                    TextAffinity::kUpstream, primary_direction);
-  }
-  const PositionTemplate<Strategy>& upstream_equivalent =
-      UpstreamIgnoringEditingBoundaries(position);
-  if (upstream_equivalent == position ||
-      DownstreamIgnoringEditingBoundaries(upstream_equivalent) == position)
-    return InlineBoxPosition();
-
-  return ComputeInlineBoxPosition(upstream_equivalent, TextAffinity::kUpstream,
-                                  primary_direction);
+  return ComputeInlineBoxPositionForBlockFlow(position, primary_direction);
 }
 
 template <typename Strategy>
