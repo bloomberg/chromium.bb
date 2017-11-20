@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "base/memory/shared_memory_handle.h"
+#include "components/exo/seat.h"
 
 #if defined(USE_OZONE)
 #include "base/files/scoped_file.h"
@@ -86,9 +87,13 @@ class Display {
   // Creates a data device for a |delegate|.
   std::unique_ptr<DataDevice> CreateDataDevice(DataDeviceDelegate* delegate);
 
+  // Obtains seat instance.
+  Seat* seat() { return &seat_; }
+
  private:
   NotificationSurfaceManager* const notification_surface_manager_;
   std::unique_ptr<FileHelper> file_helper_;
+  Seat seat_;
 
 #if defined(USE_OZONE)
   std::vector<gfx::BufferFormat> overlay_formats_;

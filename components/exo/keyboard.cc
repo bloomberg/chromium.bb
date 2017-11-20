@@ -7,7 +7,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/exo/keyboard_delegate.h"
 #include "components/exo/keyboard_device_configuration_delegate.h"
-#include "components/exo/shell_surface.h"
+#include "components/exo/seat.h"
 #include "components/exo/surface.h"
 #include "components/exo/wm_helper.h"
 #include "ui/aura/client/focus_client.h"
@@ -126,17 +126,18 @@ bool IsReservedAccelerator(const ui::KeyEvent* event) {
 ////////////////////////////////////////////////////////////////////////////////
 // Keyboard, public:
 
-Keyboard::Keyboard(KeyboardDelegate* delegate)
+Keyboard::Keyboard(KeyboardDelegate* delegate, Seat* seat)
     : delegate_(delegate),
+      seat_(seat),
       expiration_delay_for_pending_key_acks_(base::TimeDelta::FromMilliseconds(
           kExpirationDelayForPendingKeyAcksMs)),
       weak_ptr_factory_(this) {
   auto* helper = WMHelper::GetInstance();
   AddEventHandler();
-  helper->AddFocusObserver(this);
+  seat_->AddObserver(this);
   helper->AddTabletModeObserver(this);
   helper->AddInputDeviceEventObserver(this);
-  OnWindowFocused(helper->GetFocusedWindow(), nullptr);
+  OnSurfaceFocused(seat_->GetFocusedSurface());
 }
 
 Keyboard::~Keyboard() {
@@ -146,7 +147,7 @@ Keyboard::~Keyboard() {
     focus_->RemoveSurfaceObserver(this);
   auto* helper = WMHelper::GetInstance();
   RemoveEventHandler();
-  helper->RemoveFocusObserver(this);
+  seat_->RemoveObserver(this);
   helper->RemoveTabletModeObserver(this);
   helper->RemoveInputDeviceEventObserver(this);
 }
@@ -268,29 +269,6 @@ void Keyboard::OnKeyEvent(ui::KeyEvent* event) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// aura::client::FocusChangeObserver overrides:
-
-void Keyboard::OnWindowFocused(aura::Window* gained_focus,
-                               aura::Window* lost_focus) {
-  Surface* gained_focus_surface =
-      gained_focus ? GetEffectiveFocus(gained_focus) : nullptr;
-  if (gained_focus_surface != focus_) {
-    if (focus_) {
-      delegate_->OnKeyboardLeave(focus_);
-      focus_->RemoveSurfaceObserver(this);
-      focus_ = nullptr;
-      pending_key_acks_.clear();
-    }
-    if (gained_focus_surface) {
-      delegate_->OnKeyboardModifiers(modifier_flags_);
-      delegate_->OnKeyboardEnter(gained_focus_surface, pressed_keys_);
-      focus_ = gained_focus_surface;
-      focus_->AddSurfaceObserver(this);
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // SurfaceObserver overrides:
 
 void Keyboard::OnSurfaceDestroying(Surface* surface) {
@@ -323,21 +301,31 @@ void Keyboard::OnTabletModeEnded() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Keyboard, private:
+// SeatObserver overrides:
 
-Surface* Keyboard::GetEffectiveFocus(aura::Window* window) const {
-  // Use window surface as effective focus.
-  Surface* focus = Surface::AsSurface(window);
-  if (!focus) {
-    // Fallback to main surface.
-    aura::Window* top_level_window = window->GetToplevelWindow();
-    if (top_level_window)
-      focus = ShellSurface::GetMainSurface(top_level_window);
+void Keyboard::OnSurfaceFocused(Surface* gained_focus) {
+  Surface* gained_focus_surface =
+      gained_focus && delegate_->CanAcceptKeyboardEventsForSurface(gained_focus)
+          ? gained_focus
+          : nullptr;
+  if (gained_focus_surface != focus_) {
+    if (focus_) {
+      delegate_->OnKeyboardLeave(focus_);
+      focus_->RemoveSurfaceObserver(this);
+      focus_ = nullptr;
+      pending_key_acks_.clear();
+    }
+    if (gained_focus_surface) {
+      delegate_->OnKeyboardModifiers(modifier_flags_);
+      delegate_->OnKeyboardEnter(gained_focus_surface, pressed_keys_);
+      focus_ = gained_focus_surface;
+      focus_->AddSurfaceObserver(this);
+    }
   }
-
-  return focus && delegate_->CanAcceptKeyboardEventsForSurface(focus) ? focus
-                                                                      : nullptr;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// Keyboard, private:
 
 void Keyboard::ProcessExpiredPendingKeyAcks() {
   DCHECK(process_expired_pending_key_acks_pending_);
