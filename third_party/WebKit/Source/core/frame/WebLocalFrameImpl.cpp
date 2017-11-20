@@ -1686,8 +1686,8 @@ void WebLocalFrameImpl::SetCoreFrame(LocalFrame* frame) {
   frame_ = frame;
 
   local_frame_client_->SetVirtualTimePauser(
-      frame_ ? frame_->FrameScheduler()->CreateScopedVirtualTimePauser()
-             : ScopedVirtualTimePauser());
+      frame_ ? frame_->FrameScheduler()->CreateWebScopedVirtualTimePauser()
+             : WebScopedVirtualTimePauser());
 }
 
 void WebLocalFrameImpl::InitializeCoreFrame(Page& page,

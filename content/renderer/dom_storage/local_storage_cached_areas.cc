@@ -7,6 +7,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/sys_info.h"
 #include "content/renderer/dom_storage/local_storage_cached_area.h"
+#include "content/renderer/render_thread_impl.h"
 
 namespace content {
 namespace {
@@ -15,11 +16,13 @@ const size_t kTotalCacheLimitInBytes = 5 * 1024 * 1024;
 }  // namespace
 
 LocalStorageCachedAreas::LocalStorageCachedAreas(
-    mojom::StoragePartitionService* storage_partition_service)
+    mojom::StoragePartitionService* storage_partition_service,
+    blink::scheduler::RendererScheduler* renderer_scheduler)
     : storage_partition_service_(storage_partition_service),
       total_cache_limit_(base::SysInfo::IsLowEndDevice()
                              ? kTotalCacheLimitInBytesLowEnd
-                             : kTotalCacheLimitInBytes) {}
+                             : kTotalCacheLimitInBytes),
+      renderer_scheduler_(renderer_scheduler) {}
 
 LocalStorageCachedAreas::~LocalStorageCachedAreas() {}
 
@@ -52,7 +55,8 @@ scoped_refptr<LocalStorageCachedArea> LocalStorageCachedAreas::GetCachedArea(
     ClearAreasIfNeeded();
     it = cached_areas_
              .emplace(origin, new LocalStorageCachedArea(
-                                  origin, storage_partition_service_, this))
+                                  origin, storage_partition_service_, this,
+                                  renderer_scheduler_))
              .first;
   }
   return it->second;

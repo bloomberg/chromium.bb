@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebInputEventResult.h"
+#include "public/platform/WebScopedVirtualTimePauser.h"
 #include "public/platform/scheduler/child/child_scheduler.h"
 #include "public/platform/scheduler/child/single_thread_idle_task_runner.h"
 #include "public/platform/scheduler/renderer/render_widget_scheduling_state.h"
@@ -203,6 +204,14 @@ class BLINK_PLATFORM_EXPORT RendererScheduler : public ChildScheduler {
   // Sets the kind of renderer process. Should be called on the main thread
   // once.
   virtual void SetRendererProcessType(RendererProcessType type) = 0;
+
+  // Returns a WebScopedVirtualTimePauser which can be used to vote for pausing
+  // virtual time. Virtual time will be paused if any WebScopedVirtualTimePauser
+  // votes to pause it, and only unpaused only if all
+  // WebScopedVirtualTimePausers are either destroyed or vote to unpause.  Note
+  // the WebScopedVirtualTimePauser returned by this method is initially
+  // unpaused.
+  virtual WebScopedVirtualTimePauser CreateWebScopedVirtualTimePauser() = 0;
 
  protected:
   RendererScheduler();

@@ -314,6 +314,7 @@ source_set("blink_headers") {
     "platform/WebRemoteScrollProperties.h",
     "platform/WebRenderingStats.h",
     "platform/WebRuntimeFeatures.h",
+    "platform/WebScopedVirtualTimePauser.h",
     "platform/WebScreenInfo.h",
     "platform/WebScrollAnchorData.h",
     "platform/WebScrollBoundaryBehavior.h",

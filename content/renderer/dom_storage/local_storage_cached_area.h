@@ -14,8 +14,15 @@
 #include "content/common/dom_storage/dom_storage_map.h"
 #include "content/common/leveldb_wrapper.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "third_party/WebKit/public/platform/WebScopedVirtualTimePauser.h"
 #include "url/gurl.h"
 #include "url/origin.h"
+
+namespace blink {
+namespace scheduler {
+class RendererScheduler;
+}
+}  // namespace blink
 
 namespace content {
 class LocalStorageArea;
@@ -40,7 +47,8 @@ class CONTENT_EXPORT LocalStorageCachedArea
   LocalStorageCachedArea(
       const url::Origin& origin,
       mojom::StoragePartitionService* storage_partition_service,
-      LocalStorageCachedAreas* cached_areas);
+      LocalStorageCachedAreas* cached_areas,
+      blink::scheduler::RendererScheduler* renderer_schedule);
 
   // These correspond to blink::WebStorageArea.
   unsigned GetLength();
@@ -99,9 +107,15 @@ class CONTENT_EXPORT LocalStorageCachedArea
   // fetched already.
   void EnsureLoaded();
 
-  void OnSetItemComplete(const base::string16& key, bool success);
-  void OnRemoveItemComplete(const base::string16& key, bool success);
-  void OnClearComplete(bool success);
+  void OnSetItemComplete(const base::string16& key,
+                         blink::WebScopedVirtualTimePauser virtual_time_pauser,
+                         bool success);
+  void OnRemoveItemComplete(
+      const base::string16& key,
+      blink::WebScopedVirtualTimePauser virtual_time_pauser,
+      bool success);
+  void OnClearComplete(blink::WebScopedVirtualTimePauser virtual_time_pauser,
+                       bool success);
   void OnGetAllComplete(bool success);
 
   // Resets the object back to its newly constructed state.
@@ -117,6 +131,7 @@ class CONTENT_EXPORT LocalStorageCachedArea
   mojo::AssociatedBinding<mojom::LevelDBObserver> binding_;
   LocalStorageCachedAreas* cached_areas_;
   std::map<std::string, LocalStorageArea*> areas_;
+  blink::scheduler::RendererScheduler* renderer_scheduler_;  // NOT OWNED
   base::WeakPtrFactory<LocalStorageCachedArea> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalStorageCachedArea);
