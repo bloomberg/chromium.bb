@@ -4065,6 +4065,28 @@ TEST_F(SpdyNetworkTransactionTest, CloseWithActiveStream) {
   helper.VerifyDataConsumed();
 }
 
+TEST_F(SpdyNetworkTransactionTest, GoAwayImmediately) {
+  SpdySerializedFrame goaway(spdy_util_.ConstructSpdyGoAway(1));
+  MockRead reads[] = {CreateMockRead(goaway, 0, SYNCHRONOUS)};
+  SequencedSocketData data(reads, arraysize(reads), nullptr, 0);
+
+  NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_, nullptr);
+  helper.RunPreTestSetup();
+  helper.AddData(&data);
+  helper.StartDefaultTest();
+  EXPECT_THAT(helper.output().rv, IsError(ERR_IO_PENDING));
+
+  helper.WaitForCallbackToComplete();
+  EXPECT_THAT(helper.output().rv, IsError(ERR_CONNECTION_CLOSED));
+
+  const HttpResponseInfo* response = helper.trans()->GetResponseInfo();
+  EXPECT_FALSE(response->headers);
+  EXPECT_TRUE(response->was_fetched_via_spdy);
+
+  // Verify that we consumed all test data.
+  helper.VerifyDataConsumed();
+}
+
 // Retry with HTTP/1.1 when receiving HTTP_1_1_REQUIRED.  Note that no actual
 // protocol negotiation happens, instead this test forces protocols for both
 // sockets.

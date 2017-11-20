@@ -4,8 +4,6 @@
 
 #include "net/spdy/chromium/spdy_test_util_common.h"
 
-#include <stdint.h>
-
 #include <cstddef>
 #include <utility>
 
@@ -20,18 +18,14 @@
 #include "net/cert/mock_cert_verifier.h"
 #include "net/cert/signed_certificate_timestamp_and_status.h"
 #include "net/http/http_cache.h"
-#include "net/http/http_network_session.h"
 #include "net/http/http_network_transaction.h"
-#include "net/http/http_server_properties_impl.h"
 #include "net/log/net_log_with_source.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/next_proto.h"
-#include "net/socket/socket_test_util.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/transport_client_socket_pool.h"
 #include "net/spdy/chromium/buffered_spdy_framer.h"
 #include "net/spdy/chromium/spdy_http_utils.h"
-#include "net/spdy/chromium/spdy_session.h"
 #include "net/spdy/chromium/spdy_session_pool.h"
 #include "net/spdy/chromium/spdy_stream.h"
 #include "net/spdy/core/spdy_alt_svc_wire_format.h"
@@ -40,6 +34,7 @@
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+using net::test::IsError;
 using net::test::IsOk;
 
 namespace net {
@@ -89,25 +84,23 @@ std::unique_ptr<MockWrite[]> ChopWriteFrame(const SpdySerializedFrame& frame,
 void AppendToHeaderBlock(const char* const extra_headers[],
                          int extra_header_count,
                          SpdyHeaderBlock* headers) {
-  SpdyString this_header;
-  SpdyString this_value;
-
   if (!extra_header_count)
     return;
 
   // Sanity check: Non-NULL header list.
-  DCHECK(NULL != extra_headers) << "NULL header value pair list";
+  DCHECK(extra_headers) << "NULL header value pair list";
   // Sanity check: Non-NULL header map.
-  DCHECK(NULL != headers) << "NULL header map";
+  DCHECK(headers) << "NULL header map";
+
   // Copy in the headers.
   for (int i = 0; i < extra_header_count; i++) {
     // Sanity check: Non-empty header.
     DCHECK_NE('\0', *extra_headers[i * 2]) << "Empty header value pair";
-    this_header = extra_headers[i * 2];
+    SpdyString this_header = extra_headers[i * 2];
     SpdyString::size_type header_len = this_header.length();
     if (!header_len)
       continue;
-    this_value = extra_headers[1 + (i * 2)];
+    SpdyString this_value = extra_headers[1 + (i * 2)];
     SpdyString new_value;
     if (headers->find(this_header) != headers->end()) {
       // More than one entry in the header.
@@ -329,18 +322,18 @@ SpdySessionDependencies::SpdySessionDependencies()
 
 SpdySessionDependencies::SpdySessionDependencies(
     std::unique_ptr<ProxyService> proxy_service)
-    : host_resolver(new MockCachingHostResolver),
-      cert_verifier(new MockCertVerifier),
+    : host_resolver(std::make_unique<MockCachingHostResolver>()),
+      cert_verifier(std::make_unique<MockCertVerifier>()),
       channel_id_service(nullptr),
-      transport_security_state(new TransportSecurityState),
-      cert_transparency_verifier(new DoNothingCTVerifier),
-      ct_policy_enforcer(new CTPolicyEnforcer),
+      transport_security_state(std::make_unique<TransportSecurityState>()),
+      cert_transparency_verifier(std::make_unique<DoNothingCTVerifier>()),
+      ct_policy_enforcer(std::make_unique<CTPolicyEnforcer>()),
       proxy_service(std::move(proxy_service)),
-      ssl_config_service(new SSLConfigServiceDefaults),
-      socket_factory(new MockClientSocketFactory),
+      ssl_config_service(base::MakeRefCounted<SSLConfigServiceDefaults>()),
+      socket_factory(std::make_unique<MockClientSocketFactory>()),
       http_auth_handler_factory(
           HttpAuthHandlerFactory::CreateDefault(host_resolver.get())),
-      http_server_properties(new HttpServerPropertiesImpl),
+      http_server_properties(std::make_unique<HttpServerPropertiesImpl>()),
       enable_ip_pooling(true),
       enable_ping(false),
       enable_user_alternate_protocol_ports(false),
@@ -443,8 +436,7 @@ class AllowAnyCertCTPolicyEnforcer : public CTPolicyEnforcer {
 };
 
 SpdyURLRequestContext::SpdyURLRequestContext() : storage_(this) {
-  storage_.set_host_resolver(
-      std::unique_ptr<HostResolver>(new MockHostResolver));
+  storage_.set_host_resolver(std::make_unique<MockHostResolver>());
   storage_.set_cert_verifier(std::make_unique<MockCertVerifier>());
   storage_.set_transport_security_state(
       std::make_unique<TransportSecurityState>());
@@ -457,7 +449,7 @@ SpdyURLRequestContext::SpdyURLRequestContext() : storage_(this) {
   storage_.set_http_auth_handler_factory(
       HttpAuthHandlerFactory::CreateDefault(host_resolver()));
   storage_.set_http_server_properties(
-      std::unique_ptr<HttpServerProperties>(new HttpServerPropertiesImpl()));
+      std::make_unique<HttpServerPropertiesImpl>());
   storage_.set_job_factory(std::make_unique<URLRequestJobFactoryImpl>());
   HttpNetworkSession::Params session_params;
   session_params.enable_spdy_ping_based_connection_checking = false;
@@ -498,33 +490,28 @@ base::WeakPtr<SpdySession> CreateSpdySessionHelper(
     HttpNetworkSession* http_session,
     const SpdySessionKey& key,
     const NetLogWithSource& net_log,
-    Error expected_status,
     bool enable_ip_based_pooling) {
   EXPECT_FALSE(http_session->spdy_session_pool()->FindAvailableSession(
       key, enable_ip_based_pooling, NetLogWithSource()));
 
-  scoped_refptr<TransportSocketParams> transport_params(
-      new TransportSocketParams(
-          key.host_port_pair(), false, OnHostResolutionCallback(),
-          TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT));
+  auto transport_params = base::MakeRefCounted<TransportSocketParams>(
+      key.host_port_pair(), /* disable_resolver_cache = */ false,
+      OnHostResolutionCallback(),
+      TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT);
 
   auto connection = std::make_unique<ClientSocketHandle>();
   TestCompletionCallback callback;
 
-  int rv = ERR_UNEXPECTED;
   SSLConfig ssl_config;
-  scoped_refptr<SSLSocketParams> ssl_params(
-      new SSLSocketParams(transport_params, NULL, NULL, key.host_port_pair(),
-                          ssl_config, key.privacy_mode(), 0, false));
-  rv = connection->Init(
+  auto ssl_params = base::MakeRefCounted<SSLSocketParams>(
+      transport_params, nullptr, nullptr, key.host_port_pair(), ssl_config,
+      key.privacy_mode(), 0, /* expect_spdy = */ false);
+  int rv = connection->Init(
       key.host_port_pair().ToString(), ssl_params, MEDIUM,
       ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
       http_session->GetSSLSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL),
       net_log);
-
-  if (rv == ERR_IO_PENDING)
-    rv = callback.WaitForResult();
-
+  rv = callback.GetResult(rv);
   EXPECT_THAT(rv, IsOk());
 
   base::WeakPtr<SpdySession> spdy_session =
@@ -538,20 +525,10 @@ base::WeakPtr<SpdySession> CreateSpdySessionHelper(
 
 }  // namespace
 
-base::WeakPtr<SpdySession> TryCreateSpdySessionExpectingFailure(
-    HttpNetworkSession* http_session,
-    const SpdySessionKey& key,
-    Error expected_error,
-    const NetLogWithSource& net_log) {
-  DCHECK_LT(expected_error, ERR_IO_PENDING);
-  return CreateSpdySessionHelper(http_session, key, net_log, expected_error,
-                                 /* enable_ip_based_pooling = */ true);
-}
-
 base::WeakPtr<SpdySession> CreateSpdySession(HttpNetworkSession* http_session,
                                              const SpdySessionKey& key,
                                              const NetLogWithSource& net_log) {
-  return CreateSpdySessionHelper(http_session, key, net_log, OK,
+  return CreateSpdySessionHelper(http_session, key, net_log,
                                  /* enable_ip_based_pooling = */ true);
 }
 
@@ -559,7 +536,7 @@ base::WeakPtr<SpdySession> CreateSpdySessionWithIpBasedPoolingDisabled(
     HttpNetworkSession* http_session,
     const SpdySessionKey& key,
     const NetLogWithSource& net_log) {
-  return CreateSpdySessionHelper(http_session, key, net_log, OK,
+  return CreateSpdySessionHelper(http_session, key, net_log,
                                  /* enable_ip_based_pooling = */ false);
 }
 
@@ -647,9 +624,9 @@ base::WeakPtr<SpdySession> CreateFakeSpdySession(SpdySessionPool* pool,
 base::WeakPtr<SpdySession> TryCreateFakeSpdySessionExpectingFailure(
     SpdySessionPool* pool,
     const SpdySessionKey& key,
-    Error expected_error) {
-  DCHECK_LT(expected_error, ERR_IO_PENDING);
-  return CreateFakeSpdySessionHelper(pool, key, expected_error);
+    Error expected_status) {
+  DCHECK_LT(expected_status, ERR_IO_PENDING);
+  return CreateFakeSpdySessionHelper(pool, key, expected_status);
 }
 
 SpdySessionPoolPeer::SpdySessionPoolPeer(SpdySessionPool* pool) : pool_(pool) {
@@ -682,7 +659,7 @@ void SpdyTestUtil::AddUrlToHeaderBlock(SpdyStringPiece url,
 
 // static
 SpdyHeaderBlock SpdyTestUtil::ConstructGetHeaderBlock(SpdyStringPiece url) {
-  return ConstructHeaderBlock("GET", url, NULL);
+  return ConstructHeaderBlock("GET", url, nullptr);
 }
 
 // static
@@ -974,7 +951,7 @@ SpdySerializedFrame SpdyTestUtil::ConstructSpdyReplyError(
 }
 
 SpdySerializedFrame SpdyTestUtil::ConstructSpdyReplyError(int stream_id) {
-  return ConstructSpdyReplyError("500", NULL, 0, 1);
+  return ConstructSpdyReplyError("500", nullptr, 0, 1);
 }
 
 SpdySerializedFrame SpdyTestUtil::ConstructSpdyGetReply(
