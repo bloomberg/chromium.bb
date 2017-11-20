@@ -49,21 +49,6 @@
 #error "This file requires ARC support."
 #endif
 
-using base::UserMetricsAction;
-
-namespace {
-
-// The What's New promo command that shows the Bookmarks Manager.
-const char kBookmarkCommand[] = "bookmark";
-
-// The What's New promo command that launches Rate This App.
-const char kRateThisAppCommand[] = "ratethisapp";
-
-const CGFloat kFaviconMinSize = 32;
-const NSInteger kMaxNumMostVisitedFavicons = 8;
-
-}  // namespace
-
 @interface GoogleLandingMediator (UsedBySearchEngineObserver)
 // Check to see if the logo visibility should change.
 - (void)updateShowLogo;
@@ -101,14 +86,9 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 
 }  // namespace google_landing
 
-@interface GoogleLandingMediator ()<GoogleLandingDataSource,
-                                    MostVisitedSitesObserving,
-                                    WebStateListObserving> {
+@interface GoogleLandingMediator ()<WebStateListObserving> {
   // The ChromeBrowserState associated with this mediator.
   ios::ChromeBrowserState* _browserState;  // Weak.
-
-  // |YES| if impressions were logged already and shouldn't be logged again.
-  BOOL _recordedPageImpression;
 
   // Controller to fetch and show doodles or a default Google logo.
   id<LogoVendor> _doodleController;
@@ -117,32 +97,9 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
   std::unique_ptr<google_landing::SearchEngineObserver> _observer;
   TemplateURLService* _templateURLService;  // weak
 
-  // A MostVisitedSites::Observer bridge object to get notified of most visited
-  // sites changes.
-  std::unique_ptr<ntp_tiles::MostVisitedSitesObserverBridge>
-      _mostVisitedObserverBridge;
-
-  std::unique_ptr<ntp_tiles::MostVisitedSites> _mostVisitedSites;
-
-  // Most visited data from the MostVisitedSites service currently in use.
-  ntp_tiles::NTPTilesVector _mostVisitedData;
-
-  // Most visited data from the MostVisitedSites service (copied upon receiving
-  // the callback), not yet used by the collection. It will be used after a user
-  // interaction.
-  ntp_tiles::NTPTilesVector _freshMostVisitedData;
-
-  // Most visited data used for logging the tiles impression. The data are
-  // copied when receiving the first non-empty data. This copy is used to make
-  // sure only the data received the first time are logged, and only once.
-  ntp_tiles::NTPTilesVector _mostVisitedDataForLogging;
-
   // Observes the WebStateList so that this mediator can update the UI when the
   // active WebState changes.
   std::unique_ptr<WebStateListObserverBridge> _webStateListObserver;
-
-  // What's new promo.
-  std::unique_ptr<NotificationPromoWhatsNew> _notificationPromo;
 
   // Used to cancel tasks for the LargeIconService.
   base::CancelableTaskTracker _cancelable_task_tracker;
@@ -182,8 +139,6 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
   [self.consumer setVoiceSearchIsEnabled:ios::GetChromeBrowserProvider()
                                              ->GetVoiceSearchProvider()
                                              ->IsVoiceSearchEnabled()];
-  [self.consumer
-      setMaximumMostVisitedSitesShown:[GoogleLandingMediator maxSitesShown]];
   [self.consumer setTabCount:self.webStateList->count()];
   web::WebState* webState = _webStateList->GetActiveWebState();
   if (webState) {
@@ -203,16 +158,6 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
   [_consumer setLogoVendor:_doodleController];
   [self updateShowLogo];
 
-  // Set up most visited sites.  This call may have the side effect of
-  // triggering -onMostVisitedURLsAvailable immediately, which can load the
-  // view before dataSource is set.
-  _mostVisitedSites =
-      IOSMostVisitedSitesFactory::NewForBrowserState(_browserState);
-  _mostVisitedObserverBridge.reset(
-      new ntp_tiles::MostVisitedSitesObserverBridge(self));
-  _mostVisitedSites->SetMostVisitedURLsObserver(
-      _mostVisitedObserverBridge.get(), [GoogleLandingMediator maxSitesShown]);
-
   // Set up notifications;
   NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
   [defaultCenter addObserver:self.consumer
@@ -223,15 +168,6 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
                     selector:@selector(locationBarResignsFirstResponder)
                         name:kLocationBarResignsFirstResponderNotification
                       object:nil];
-
-  // Set up what's new.
-  _notificationPromo.reset(
-      new NotificationPromoWhatsNew(GetApplicationContext()->GetLocalState()));
-  _notificationPromo->Init();
-  [self.consumer setPromoText:[base::SysUTF8ToNSString(
-                                  _notificationPromo->promo_text()) copy]];
-  [self.consumer setPromoIcon:_notificationPromo->icon()];
-  [self.consumer setPromoCanShow:_notificationPromo->CanShow()];
 }
 
 - (void)updateShowLogo {
@@ -244,106 +180,6 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
         SEARCH_ENGINE_GOOGLE;
   }
   [self.consumer setLogoIsShowing:showLogo];
-}
-
-+ (NSUInteger)maxSitesShown {
-  return kMaxNumMostVisitedFavicons;
-}
-
-#pragma mark - MostVisitedSitesObserving
-
-- (void)onMostVisitedURLsAvailable:(const ntp_tiles::NTPTilesVector&)data {
-  if (_mostVisitedData.size() > 0) {
-    // If some content is already displayed to the user, do not update it to
-    // prevent updating the all the tiles without any action from the user.
-    _freshMostVisitedData = data;
-    return;
-  }
-
-  _mostVisitedData = data;
-  [self.consumer mostVisitedDataUpdated];
-
-  if (data.size() && !_recordedPageImpression) {
-    _recordedPageImpression = YES;
-    _mostVisitedDataForLogging = data;
-    ntp_tiles::metrics::RecordPageImpression(data.size());
-  }
-}
-
-- (void)onIconMadeAvailable:(const GURL&)siteUrl {
-  for (size_t i = 0; i < _mostVisitedData.size(); ++i) {
-    const ntp_tiles::NTPTile& ntpTile = _mostVisitedData[i];
-    if (ntpTile.url == siteUrl) {
-      [self.consumer mostVisitedIconMadeAvailableAtIndex:i];
-      break;
-    }
-  }
-}
-
-- (void)getFaviconForPageURL:(const GURL&)URL
-                        size:(CGFloat)size
-                    useCache:(BOOL)useCache
-                    callback:(void (^)(FaviconAttributes*))callback {
-  __weak GoogleLandingMediator* weakSelf = self;
-  GURL localURL = URL;  // Persisting for use in block below.
-  void (^faviconBlock)(const favicon_base::LargeIconResult&) = ^(
-      const favicon_base::LargeIconResult& result) {
-    // TODO(crbug.com/773627): Use FaviconAttributesProvider just like many
-    // other mediators.
-    FaviconAttributesWithPayload* attributes = nil;
-
-    if (result.bitmap.is_valid()) {
-      scoped_refptr<base::RefCountedMemory> data =
-          result.bitmap.bitmap_data.get();
-      UIImage* favicon = [UIImage
-          imageWithData:[NSData dataWithBytes:data->front() length:data->size()]
-                  scale:[UIScreen mainScreen].scale];
-      attributes = [FaviconAttributesWithPayload attributesWithImage:favicon];
-      attributes.iconType = result.bitmap.icon_type;
-      if (callback) {
-        callback(attributes);
-      }
-    } else if (result.fallback_icon_style) {
-      UIColor* backgroundColor = skia::UIColorFromSkColor(
-          result.fallback_icon_style->background_color);
-      UIColor* textColor =
-          skia::UIColorFromSkColor(result.fallback_icon_style->text_color);
-      BOOL isDefaultColor =
-          result.fallback_icon_style->is_default_background_color;
-      NSString* monogram =
-          base::SysUTF16ToNSString(favicon::GetFallbackIconText(localURL));
-      attributes =
-          [FaviconAttributesWithPayload attributesWithMonogram:monogram
-                                                     textColor:textColor
-                                               backgroundColor:backgroundColor
-                                        defaultBackgroundColor:isDefaultColor];
-      if (callback) {
-        callback(attributes);
-      }
-    }
-
-    GoogleLandingMediator* strongSelf = weakSelf;
-    if (strongSelf) {
-      if (result.bitmap.is_valid() || result.fallback_icon_style) {
-        [strongSelf largeIconCache]->SetCachedResult(localURL, result);
-      }
-      [strongSelf faviconWithAttributes:attributes fetchedForURL:localURL];
-    }
-  };
-
-  if (useCache) {
-    std::unique_ptr<favicon_base::LargeIconResult> cached_result =
-        [self largeIconCache]->GetCachedResult(URL);
-    if (cached_result) {
-      faviconBlock(*cached_result);
-    }
-  }
-
-  CGFloat faviconSize = [UIScreen mainScreen].scale * size;
-  CGFloat faviconMinSize = [UIScreen mainScreen].scale * kFaviconMinSize;
-  [self largeIconService]->GetLargeIconOrFallbackStyle(
-      URL, faviconMinSize, faviconSize, base::BindBlockArc(faviconBlock),
-      &_cancelable_task_tracker);
 }
 
 #pragma mark - WebStateListObserving
@@ -374,108 +210,6 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
     web::NavigationManager* nav = newWebState->GetNavigationManager();
     [self.consumer setCanGoForward:nav->CanGoForward()];
     [self.consumer setCanGoBack:nav->CanGoBack()];
-  }
-}
-
-#pragma mark - GoogleLandingDataSource
-
-- (void)addBlacklistedURL:(const GURL&)url {
-  _mostVisitedSites->AddOrRemoveBlacklistedUrl(url, true);
-  [self useFreshData];
-}
-
-- (void)removeBlacklistedURL:(const GURL&)url {
-  _mostVisitedSites->AddOrRemoveBlacklistedUrl(url, false);
-  [self useFreshData];
-}
-
-- (ntp_tiles::NTPTile)mostVisitedAtIndex:(NSUInteger)index {
-  return _mostVisitedData[index];
-}
-
-- (NSUInteger)mostVisitedSize {
-  return _mostVisitedData.size();
-}
-
-- (void)logMostVisitedClick:(const NSUInteger)visitedIndex
-          faviconAttributes:(FaviconAttributes*)faviconAttributes {
-  new_tab_page_uma::RecordAction(
-      _browserState, new_tab_page_uma::ACTION_OPENED_MOST_VISITED_ENTRY);
-  base::RecordAction(UserMetricsAction("MobileNTPMostVisited"));
-  const ntp_tiles::NTPTile& tile = _mostVisitedData[visitedIndex];
-  RecordNTPTileClick(visitedIndex, tile.source, tile.title_source,
-                     faviconAttributes, tile.data_generation_time, tile.url);
-}
-
-- (ReadingListModel*)readingListModel {
-  return ReadingListModelFactory::GetForBrowserState(_browserState);
-}
-
-- (LargeIconCache*)largeIconCache {
-  return IOSChromeLargeIconCacheFactory::GetForBrowserState(_browserState);
-}
-
-- (favicon::LargeIconService*)largeIconService {
-  return IOSChromeLargeIconServiceFactory::GetForBrowserState(_browserState);
-}
-
-- (void)promoViewed {
-  DCHECK(_notificationPromo);
-  _notificationPromo->HandleViewed();
-  [self.consumer setPromoCanShow:_notificationPromo->CanShow()];
-}
-
-// TODO(crbug.com/761096) : Promo handling should be DRY and tested.
-- (void)promoTapped {
-  DCHECK(_notificationPromo);
-  _notificationPromo->HandleClosed();
-  [self.consumer setPromoCanShow:_notificationPromo->CanShow()];
-
-  if (_notificationPromo->IsURLPromo()) {
-    [self.dispatcher webPageOrderedOpen:_notificationPromo->url()
-                               referrer:web::Referrer()
-                           inBackground:NO
-                               appendTo:kCurrentTab];
-    return;
-  }
-
-  if (_notificationPromo->IsChromeCommandPromo()) {
-    std::string command = _notificationPromo->command();
-    if (command == kBookmarkCommand) {
-      [self.dispatcher showBookmarksManager];
-    } else if (command == kRateThisAppCommand) {
-      [self.dispatcher showRateThisAppDialog];
-    } else {
-      NOTREACHED() << "Promo command is not valid.";
-    }
-    return;
-  }
-  NOTREACHED() << "Promo type is neither URL or command.";
-}
-
-#pragma mark - Private
-
-// If there is some fresh most visited tiles, they become the current tiles and
-// the consumer gets notified.
-- (void)useFreshData {
-  _mostVisitedData = _freshMostVisitedData;
-  [self.consumer mostVisitedDataUpdated];
-}
-
-// If it is the first time we see the favicon corresponding to |URL|, we log the
-// |attributes| impression.
-- (void)faviconWithAttributes:(FaviconAttributes*)attributes
-                fetchedForURL:(const GURL&)URL {
-  for (size_t i = 0; i < _mostVisitedDataForLogging.size(); ++i) {
-    ntp_tiles::NTPTile& ntpTile = _mostVisitedDataForLogging[i];
-    if (ntpTile.url == URL) {
-      RecordNTPTileImpression(i, ntpTile.source, ntpTile.title_source,
-                              attributes, ntpTile.data_generation_time,
-                              ntpTile.url);
-      // Reset the URL to be sure to log the impression only once.
-      ntpTile.url = GURL();
-      break;
-    }
   }
 }
 

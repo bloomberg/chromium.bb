@@ -15,7 +15,6 @@ source_set("ntp") {
 source_set("ntp_header") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "google_landing_data_source.h",
     "new_tab_page_header_view.h",
     "new_tab_page_header_view.mm",
     "new_tab_page_toolbar_controller.h",

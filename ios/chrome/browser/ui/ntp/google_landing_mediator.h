@@ -7,8 +7,6 @@
 
 #import <Foundation/Foundation.h>
 
-#import "ios/chrome/browser/ui/ntp/google_landing_data_source.h"
-
 @protocol BrowserCommands;
 @protocol GoogleLandingConsumer;
 @protocol OmniboxFocuser;
@@ -20,7 +18,7 @@ class ChromeBrowserState;
 }
 
 // A mediator object that provides various data sources for google landing.
-@interface GoogleLandingMediator : NSObject<GoogleLandingDataSource>
+@interface GoogleLandingMediator : NSObject
 
 - (nullable instancetype)
 initWithBrowserState:(nonnull ios::ChromeBrowserState*)browserState
@@ -39,9 +37,6 @@ initWithBrowserState:(nonnull ios::ChromeBrowserState*)browserState
 
 // Stop listening to any observers and other cleanup functionality.
 - (void)shutdown;
-
-// Get the maximum number of sites shown.
-+ (NSUInteger)maxSitesShown;
 
 @end
 

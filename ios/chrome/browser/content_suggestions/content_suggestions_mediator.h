@@ -73,6 +73,9 @@ initWithContentService:
 // Whitelists the URL from the Most Visited sites.
 - (void)whitelistMostVisitedURL:(GURL)URL;
 
+// Get the maximum number of sites shown.
++ (NSUInteger)maxSitesShown;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_MEDIATOR_H_
