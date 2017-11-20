@@ -21,7 +21,6 @@
 #include "ui/base/cocoa/base_view.h"
 #include "ui/gfx/geometry/size.h"
 
-@class FocusTracker;
 @class WebDragDest;
 @class WebDragSource;
 
@@ -82,6 +81,7 @@ class WebContentsViewMac : public WebContentsView,
   void SetInitialFocus() override;
   void StoreFocus() override;
   void RestoreFocus() override;
+  void FocusThroughTabTraversal(bool reverse) override;
   DropData* GetDropData() const override;
   gfx::Rect GetViewBounds() const override;
   void SetAllowOtherViews(bool allow) override;
@@ -150,10 +150,6 @@ class WebContentsViewMac : public WebContentsView,
 
   // The Cocoa NSView that lives in the view hierarchy.
   base::scoped_nsobject<WebContentsViewCocoa> cocoa_view_;
-
-  // Keeps track of which NSView has focus so we can restore the focus when
-  // focus returns.
-  base::scoped_nsobject<FocusTracker> focus_tracker_;
 
   // Our optional delegate.
   std::unique_ptr<WebContentsViewDelegate> delegate_;

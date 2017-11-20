@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/tab_contents/chrome_web_contents_view_delegate.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#import "ui/base/cocoa/focus_tracker.h"
 #include "ui/base/ui_features.h"
 
 ChromeWebContentsViewDelegateMac::ChromeWebContentsViewDelegateMac(
@@ -55,6 +56,30 @@ void ChromeWebContentsViewDelegateMac::ShowContextMenu(
   ShowMenu(
       BuildMenu(content::WebContents::FromRenderFrameHost(render_frame_host),
                 params));
+}
+
+void ChromeWebContentsViewDelegateMac::StoreFocus() {
+  // We're explicitly being asked to store focus, so don't worry if there's
+  // already a view saved.
+  focus_tracker_.reset(
+      [[FocusTracker alloc] initWithWindow:GetNSWindowForFocusTracker()]);
+}
+
+bool ChromeWebContentsViewDelegateMac::RestoreFocus() {
+  base::scoped_nsobject<FocusTracker> focus_tracker(std::move(focus_tracker_));
+
+  // TODO(avi): Could we be restoring a view that's no longer in the key view
+  // chain?
+  if ((focus_tracker.get() &&
+       [focus_tracker restoreFocusInWindow:GetNSWindowForFocusTracker()])) {
+    return true;
+  }
+
+  return false;
+}
+
+void ChromeWebContentsViewDelegateMac::ResetStoredFocus() {
+  focus_tracker_.reset();
 }
 
 void ChromeWebContentsViewDelegateMac::ShowMenu(
@@ -98,10 +123,15 @@ ChromeWebContentsViewDelegateMac::BuildMenu(
 }
 
 content::RenderWidgetHostView*
-ChromeWebContentsViewDelegateMac::GetActiveRenderWidgetHostView() {
+ChromeWebContentsViewDelegateMac::GetActiveRenderWidgetHostView() const {
   return web_contents_->GetFullscreenRenderWidgetHostView() ?
       web_contents_->GetFullscreenRenderWidgetHostView() :
       web_contents_->GetTopLevelRenderWidgetHostView();
+}
+
+NSWindow* ChromeWebContentsViewDelegateMac::GetNSWindowForFocusTracker() const {
+  content::RenderWidgetHostView* rwhv = GetActiveRenderWidgetHostView();
+  return rwhv ? [rwhv->GetNativeView() window] : nil;
 }
 
 #if !BUILDFLAG(MAC_VIEWS_BROWSER)

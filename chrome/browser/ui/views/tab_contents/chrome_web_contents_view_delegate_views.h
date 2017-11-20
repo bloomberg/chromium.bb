@@ -12,22 +12,13 @@
 #include "components/renderer_context_menu/context_menu_delegate.h"
 #include "content/public/browser/web_contents_view_delegate.h"
 
+class ChromeWebContentsViewFocusHelper;
 class RenderViewContextMenuBase;
-
-namespace aura {
-class Window;
-}
 
 namespace content {
 class WebContents;
 class WebDragDestDelegate;
 class RenderFrameHost;
-}
-
-namespace views {
-class FocusManager;
-class ViewTracker;
-class Widget;
 }
 
 // A chrome specific class that extends WebContentsViewWin with features like
@@ -44,9 +35,10 @@ class ChromeWebContentsViewDelegateViews
   gfx::NativeWindow GetNativeWindow() override;
   content::WebDragDestDelegate* GetDragDestDelegate() override;
   void StoreFocus() override;
-  void RestoreFocus() override;
+  bool RestoreFocus() override;
+  void ResetStoredFocus() override;
   bool Focus() override;
-  void TakeFocus(bool reverse) override;
+  bool TakeFocus(bool reverse) override;
   void ShowContextMenu(content::RenderFrameHost* render_frame_host,
                        const content::ContextMenuParams& params) override;
   void SizeChanged(const gfx::Size& size) override;
@@ -58,13 +50,8 @@ class ChromeWebContentsViewDelegateViews
   void ShowMenu(std::unique_ptr<RenderViewContextMenuBase> menu) override;
 
  private:
-  aura::Window* GetActiveNativeView();
-  views::Widget* GetTopLevelWidget();
-  views::FocusManager* GetFocusManager();
-  void SetInitialFocus();
-
-  // Used to store the last focused view.
-  std::unique_ptr<views::ViewTracker> last_focused_view_tracker_;
+  // Used to handle focus management.
+  std::unique_ptr<ChromeWebContentsViewFocusHelper> focus_helper_;
 
   // The context menu is reset every time we show it, but we keep a pointer to
   // between uses so that it won't go out of scope before we're done with it.

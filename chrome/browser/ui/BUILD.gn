@@ -3078,6 +3078,8 @@ split_static_library("ui") {
         "views/toolbar/toolbar_view.cc",
         "views/toolbar/toolbar_view.h",
         "views/touch_uma/touch_uma.h",
+        "views/tab_contents/chrome_web_contents_view_focus_helper.cc",
+        "views/tab_contents/chrome_web_contents_view_focus_helper.h",
         "views/translate/translate_icon_view.cc",
         "views/translate/translate_icon_view.h",
         "views/webshare/webshare_target_picker_view.cc",

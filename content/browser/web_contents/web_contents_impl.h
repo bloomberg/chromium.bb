@@ -24,6 +24,7 @@
 #include "build/build_config.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
+#include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/frame_host/navigation_controller_delegate.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigator_delegate.h"
@@ -407,7 +408,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void FocusThroughTabTraversal(bool reverse) override;
   bool ShowingInterstitialPage() const override;
   void AdjustPreviewsStateForNavigation(PreviewsState* previews_state) override;
-  InterstitialPage* GetInterstitialPage() const override;
+  InterstitialPageImpl* GetInterstitialPage() const override;
   bool IsSavable() override;
   void OnSavePage() override;
   bool SavePage(const base::FilePath& main_file,

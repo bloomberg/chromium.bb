@@ -22,13 +22,13 @@
 #import "content/browser/web_contents/web_drag_dest_mac.h"
 #import "content/browser/web_contents/web_drag_source_mac.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_view_delegate.h"
 #include "content/public/common/content_switches.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 #include "ui/base/clipboard/custom_data_helper.h"
-#import "ui/base/cocoa/focus_tracker.h"
 #include "ui/base/dragdrop/cocoa_dnd_util.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
@@ -222,6 +222,9 @@ gfx::NativeView WebContentsViewMac::GetNativeViewForFocus() const {
 }
 
 void WebContentsViewMac::Focus() {
+  if (delegate())
+    delegate()->ResetStoredFocus();
+
   gfx::NativeView native_view = GetNativeViewForFocus();
   NSWindow* window = [native_view window];
   [window makeFirstResponder:native_view];
@@ -231,6 +234,9 @@ void WebContentsViewMac::Focus() {
 }
 
 void WebContentsViewMac::SetInitialFocus() {
+  if (delegate())
+    delegate()->ResetStoredFocus();
+
   if (web_contents_->FocusLocationBarByDefault())
     web_contents_->SetFocusToLocationBar(false);
   else
@@ -238,28 +244,37 @@ void WebContentsViewMac::SetInitialFocus() {
 }
 
 void WebContentsViewMac::StoreFocus() {
-  gfx::NativeView native_view = GetNativeViewForFocus();
-  // We're explicitly being asked to store focus, so don't worry if there's
-  // already a view saved.
-  focus_tracker_.reset(
-      [[FocusTracker alloc] initWithWindow:[native_view window]]);
+  if (delegate())
+    delegate()->StoreFocus();
 }
 
 void WebContentsViewMac::RestoreFocus() {
-  gfx::NativeView native_view = GetNativeViewForFocus();
-  // TODO(avi): Could we be restoring a view that's no longer in the key view
-  // chain?
-  if (!(focus_tracker_.get() &&
-        [focus_tracker_ restoreFocusInWindow:[native_view window]])) {
-    // Fall back to the default focus behavior if we could not restore focus.
-    // TODO(shess): If location-bar gets focus by default, this will
-    // select-all in the field.  If there was a specific selection in
-    // the field when we navigated away from it, we should restore
-    // that selection.
-    SetInitialFocus();
-  }
+  if (delegate() && delegate()->RestoreFocus())
+    return;
 
-  focus_tracker_.reset(nil);
+  // Fall back to the default focus behavior if we could not restore focus.
+  // TODO(shess): If location-bar gets focus by default, this will
+  // select-all in the field.  If there was a specific selection in
+  // the field when we navigated away from it, we should restore
+  // that selection.
+  SetInitialFocus();
+}
+
+void WebContentsViewMac::FocusThroughTabTraversal(bool reverse) {
+  if (delegate())
+    delegate()->ResetStoredFocus();
+
+  if (web_contents_->ShowingInterstitialPage()) {
+    web_contents_->GetInterstitialPage()->FocusThroughTabTraversal(reverse);
+    return;
+  }
+  content::RenderWidgetHostView* fullscreen_view =
+      web_contents_->GetFullscreenRenderWidgetHostView();
+  if (fullscreen_view) {
+    fullscreen_view->Focus();
+    return;
+  }
+  web_contents_->GetRenderViewHost()->SetInitialFocus(reverse);
 }
 
 DropData* WebContentsViewMac::GetDropData() const {
@@ -277,6 +292,14 @@ void WebContentsViewMac::GotFocus(RenderWidgetHostImpl* render_widget_host) {
 // This is called when the renderer asks us to take focus back (i.e., it has
 // iterated past the last focusable element on the page).
 void WebContentsViewMac::TakeFocus(bool reverse) {
+  if (delegate())
+    delegate()->ResetStoredFocus();
+
+  if (web_contents_->GetDelegate() &&
+      web_contents_->GetDelegate()->TakeFocus(web_contents_, reverse))
+    return;
+  if (delegate() && delegate()->TakeFocus(reverse))
+    return;
   if (reverse) {
     [[cocoa_view_ window] selectPreviousKeyView:cocoa_view_.get()];
   } else {

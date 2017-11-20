@@ -341,6 +341,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, SelectionRestoreOnTabSwitch) {
 }
 
 IN_PROC_BROWSER_TEST_F(FindInPageTest, FocusRestoreOnTabSwitch) {
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // First we navigate to our test page (tab A).
