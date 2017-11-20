@@ -1239,6 +1239,14 @@ config("default_warnings") {
       # in -Wall but gcc does, and it gives false positives.
       cflags += [ "-Wno-maybe-uninitialized" ]
       cflags += [ "-Wno-deprecated-declarations" ]
+
+      # GCC assumes 'this' is never nullptr and optimizes away code
+      # like "if (this == nullptr) ...": [1].  However, some Chromium
+      # code relies on these types of null pointer checks [2], so
+      # disable this optimization.
+      # [1] https://gcc.gnu.org/gcc-6/porting_to.html#this-cannot-be-null
+      # [2] https://crbug.com/784492#c13
+      cflags += [ "-fno-delete-null-pointer-checks" ]
     }
   }
 
