@@ -8,8 +8,11 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
+#include "components/network_session_configurator/common/network_switches.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -20,6 +23,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/buffer.h"
+#include "net/dns/mock_host_resolver.h"
 #include "services/device/public/cpp/device_features.h"
 #include "services/device/public/cpp/generic_sensor/platform_sensor_configuration.h"
 #include "services/device/public/cpp/generic_sensor/sensor_reading.h"
@@ -181,6 +185,16 @@ class GenericSensorBrowserTest : public ContentBrowserTest {
   ~GenericSensorBrowserTest() override {}
 
   void SetUpOnMainThread() override {
+    https_embedded_test_server_.reset(
+        new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
+    // Serve both a.com and b.com (and any other domain).
+    host_resolver()->AddRule("*", "127.0.0.1");
+    ASSERT_TRUE(https_embedded_test_server_->InitializeAndListen());
+    content::SetupCrossSiteRedirector(https_embedded_test_server_.get());
+    https_embedded_test_server_->ServeFilesFromSourceDirectory(
+        "content/test/data/generic_sensor");
+    https_embedded_test_server_->StartAcceptingConnections();
+
     fake_sensor_provider_ = std::make_unique<FakeSensorProvider>();
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
@@ -188,6 +202,12 @@ class GenericSensorBrowserTest : public ContentBrowserTest {
                        base::Unretained(this)));
 
     io_loop_finished_event_.Wait();
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // HTTPS server only serves a valid cert for localhost, so this is needed
+    // to load pages from other hosts without an error.
+    command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
   }
 
   void SetBinderOnIOThread() {
@@ -201,6 +221,9 @@ class GenericSensorBrowserTest : public ContentBrowserTest {
 
     io_loop_finished_event_.Signal();
   }
+
+ protected:
+  std::unique_ptr<net::EmbeddedTestServer> https_embedded_test_server_;
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -217,6 +240,29 @@ IN_PROC_BROWSER_TEST_F(GenericSensorBrowserTest, AmbientLightSensorTest) {
       GetTestUrl("generic_sensor", "ambient_light_sensor_test.html");
   NavigateToURLBlockUntilNavigationsComplete(shell(), test_url, 2);
   EXPECT_EQ("pass", shell()->web_contents()->GetLastCommittedURL().ref());
+}
+
+IN_PROC_BROWSER_TEST_F(GenericSensorBrowserTest,
+                       AmbientLightSensorCrossOriginIframeTest) {
+  // Main frame is on a.com, iframe is on b.com.
+  GURL main_frame_url =
+      https_embedded_test_server_->GetURL("a.com", "/cross_origin_iframe.html");
+  GURL iframe_url = https_embedded_test_server_->GetURL(
+      "b.com", "/ambient_light_sensor_cross_origin_iframe_test.html");
+
+  // Wait for the main frame, subframe, and the #pass/#fail commits.
+  TestNavigationObserver navigation_observer(shell()->web_contents(), 3);
+
+  EXPECT_TRUE(NavigateToURL(shell(), main_frame_url));
+  EXPECT_TRUE(NavigateIframeToURL(shell()->web_contents(),
+                                  "cross_origin_iframe", iframe_url));
+
+  navigation_observer.Wait();
+
+  content::RenderFrameHost* iframe =
+      ChildFrameAt(shell()->web_contents()->GetMainFrame(), 0);
+  ASSERT_TRUE(iframe);
+  EXPECT_EQ("pass", iframe->GetLastCommittedURL().ref());
 }
 
 }  //  namespace
