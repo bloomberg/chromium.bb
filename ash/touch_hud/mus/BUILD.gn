@@ -14,7 +14,7 @@ source_set("lib") {
   ]
 
   deps = [
-    "//ash/public/cpp:ash_public_cpp",
+    "//ash/public/cpp",
     "//ash/touch_hud",
     "//base",
     "//mash/public/interfaces",

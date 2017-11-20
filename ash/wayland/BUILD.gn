@@ -11,7 +11,7 @@ source_set("wayland") {
   ]
 
   deps = [
-    "//ash/public/cpp:ash_public_cpp",
+    "//ash/public/cpp",
     "//base",
     "//components/exo",
     "//components/exo/wayland",

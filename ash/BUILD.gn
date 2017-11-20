@@ -999,7 +999,7 @@ component("ash") {
   defines = [ "ASH_IMPLEMENTATION" ]
 
   public_deps = [
-    "//ash/public/cpp:ash_public_cpp",
+    "//ash/public/cpp",
     "//ash/resources",
     "//ash/resources/vector_icons",
     "//ash/strings",
@@ -1136,7 +1136,7 @@ component("ash_with_content") {
     ":ash",
   ]
   deps = [
-    "//ash/public/cpp:ash_public_cpp",
+    "//ash/public/cpp",
     "//base",
     "//base/third_party/dynamic_annotations",
     "//content/public/browser",
@@ -1197,7 +1197,7 @@ static_library("ash_shell_lib") {
   deps = [
     ":ash",
     ":test_support_without_content",
-    "//ash/public/cpp:ash_public_cpp",
+    "//ash/public/cpp",
     "//base",
     "//base:i18n",
     "//components/user_manager",
@@ -1233,7 +1233,7 @@ static_library("ash_shell_lib_with_content") {
     ":ash_shell_lib",
     ":ash_with_content",
     ":test_support_without_content",
-    "//ash/public/cpp:ash_public_cpp",
+    "//ash/public/cpp",
     "//base:i18n",
     "//chrome:packed_resources",
     "//chromeos",
@@ -1274,7 +1274,7 @@ test("ash_content_unittests") {
     ":ash",
     ":ash_with_content",
     ":test_support_with_content",
-    "//ash/public/cpp:ash_public_cpp",
+    "//ash/public/cpp",
     "//base",
     "//base/test:test_support",
     "//chromeos",
@@ -1541,7 +1541,7 @@ test("ash_unittests") {
     ":ash",
     ":test_support_without_content",
     "//ash/autoclick/common:autoclick",
-    "//ash/public/cpp:ash_public_cpp",
+    "//ash/public/cpp",
     "//ash/public/cpp:unit_tests",
     "//ash/resources",
     "//ash/resources/vector_icons",
@@ -1625,7 +1625,7 @@ test("ash_perftests") {
 
   deps = [
     ":test_support_without_content",
-    "//ash/public/cpp:ash_public_cpp",
+    "//ash/public/cpp",
     "//base/test:test_support",
     "//cc/base",
     "//mojo/edk/embedder:headers",
@@ -1823,7 +1823,7 @@ static_library("test_support_common") {
   ]
   deps = [
     "//ash",
-    "//ash/public/cpp:ash_public_cpp",
+    "//ash/public/cpp",
     "//ash/public/interfaces:test_interfaces",
     "//ash/resources",
     "//base",
@@ -1980,7 +1980,7 @@ source_set("mash_unittests") {
     ":ash_service_resources",
     "//ash",
     "//ash:test_support_without_content",
-    "//ash/public/cpp:ash_public_cpp",
+    "//ash/public/cpp",
     "//base",
     "//base/test:test_config",
     "//base/test:test_support",
