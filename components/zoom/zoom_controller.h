@@ -39,7 +39,8 @@ class ZoomRequestClient : public base::RefCounted<ZoomRequestClient> {
   DISALLOW_COPY_AND_ASSIGN(ZoomRequestClient);
 };
 
-// Per-tab class to manage zoom changes and the Omnibox zoom icon.
+// Per-tab class to manage zoom changes and the Omnibox zoom icon. Lives on the
+// UI thread.
 class ZoomController : public content::WebContentsObserver,
                        public content::WebContentsUserData<ZoomController> {
  public:
