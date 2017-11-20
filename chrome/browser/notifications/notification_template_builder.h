@@ -91,6 +91,9 @@ class NotificationTemplateBuilder {
                          const std::string& placement,
                          const std::string& hint_crop);
 
+  // Adds a progress bar to the notification XML.
+  void WriteProgressElement(const message_center::Notification& notification);
+
   // Writes the <actions> element.
   void StartActionsElement();
   void EndActionsElement();

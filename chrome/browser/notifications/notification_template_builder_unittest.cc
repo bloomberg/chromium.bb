@@ -395,3 +395,29 @@ TEST_F(NotificationTemplateBuilderTest, Images) {
 
   ASSERT_NO_FATAL_FAILURE(VerifyXml(*notification, kExpectedXml));
 }
+
+TEST_F(NotificationTemplateBuilderTest, ProgressBar) {
+  std::unique_ptr<message_center::Notification> notification =
+      InitializeBasicNotification();
+
+  notification->set_type(message_center::NOTIFICATION_TYPE_PROGRESS);
+  notification->set_progress(30);
+
+  const wchar_t kExpectedXml[] =
+      LR"(<toast launch="notification_id" displayTimestamp="1998-09-04T01:02:03Z">
+ <visual>
+  <binding template="ToastGeneric">
+   <text>My Title</text>
+   <text>My Message</text>
+   <text placement="attribution">example.com</text>
+   <progress status="" value="0.30"/>
+  </binding>
+ </visual>
+ <actions>
+  <action content="settings" placement="contextMenu" activationType="foreground" arguments="notificationSettings"/>
+ </actions>
+</toast>
+)";
+
+  ASSERT_NO_FATAL_FAILURE(VerifyXml(*notification, kExpectedXml));
+}
