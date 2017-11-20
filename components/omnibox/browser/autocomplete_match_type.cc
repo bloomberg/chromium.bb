@@ -4,6 +4,7 @@
 
 #include "components/omnibox/browser/autocomplete_match_type.h"
 
+#include "base/logging.h"
 #include "base/macros.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -45,7 +46,8 @@ std::string AutocompleteMatchType::ToString(AutocompleteMatchType::Type type) {
 
 base::string16 AutocompleteMatchType::ToAccessibilityLabel(
     AutocompleteMatchType::Type type,
-    const base::string16& descriptive_text) {
+    const base::string16& match_text,
+    const base::string16& additional_descriptive_text) {
   // Types with a message ID of zero get |text| returned as-is.
   static constexpr int message_ids[] = {
       0,                             // URL_WHAT_YOU_TYPED
@@ -80,11 +82,30 @@ base::string16 AutocompleteMatchType::ToAccessibilityLabel(
       0,                               // VOICE_SUGGEST
       0,                               // PHYSICAL_WEB
       0,                               // PHYSICAL_WEB_OVERFLOW
-      0,                               // TAB_SEARCH
+      IDS_ACC_AUTOCOMPLETE_HISTORY,    // TAB_SEARCH
   };
   static_assert(arraysize(message_ids) == AutocompleteMatchType::NUM_TYPES,
                 "message_ids must have NUM_TYPES elements");
-  if (!message_ids[type])
-    return descriptive_text;
-  return l10n_util::GetStringFUTF16(message_ids[type], descriptive_text);
+  int message = message_ids[type];
+  if (!message)
+    return match_text;
+
+  switch (message) {
+    case IDS_ACC_AUTOCOMPLETE_SEARCH_HISTORY:
+    case IDS_ACC_AUTOCOMPLETE_SEARCH:
+    case IDS_ACC_AUTOCOMPLETE_SUGGESTED_SEARCH:
+      // Additional descriptive text NOT relevant.
+      return l10n_util::GetStringFUTF16(message_ids[type], match_text);
+
+    case IDS_ACC_AUTOCOMPLETE_HISTORY:
+    case IDS_ACC_AUTOCOMPLETE_BOOKMARK:
+    case IDS_ACC_AUTOCOMPLETE_CLIPBOARD:
+      // Additional descriptive text relevant.
+      return l10n_util::GetStringFUTF16(message_ids[type], match_text,
+                                        additional_descriptive_text);
+    default:
+      break;
+  }
+  NOTREACHED();
+  return match_text;
 }
