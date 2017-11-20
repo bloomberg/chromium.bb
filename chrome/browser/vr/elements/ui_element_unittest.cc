@@ -64,6 +64,16 @@ TEST(UiElement, BoundsContainChildren) {
   parent->DoLayOutChildren();
   EXPECT_RECT_NEAR(gfx::RectF(-0.5f, 0.5f, 9.2f, 7.4f),
                    gfx::RectF(parent->local_origin(), parent->size()), epsilon);
+
+  auto grand_parent = base::MakeUnique<UiElement>();
+  grand_parent->set_bounds_contain_children(true);
+  grand_parent->set_padding(0.1, 0.2);
+  grand_parent->AddChild(std::move(parent));
+
+  grand_parent->DoLayOutChildren();
+  EXPECT_RECT_NEAR(
+      gfx::RectF(-0.5f, 0.5f, 9.4f, 7.8f),
+      gfx::RectF(grand_parent->local_origin(), grand_parent->size()), epsilon);
 }
 
 TEST(UiElements, AnimateSize) {
