@@ -332,7 +332,7 @@
 #define HAVE_ATTRIBUTE_MAY_ALIAS 1
 #define HAVE_ATTRIBUTE_PACKED 1
 #define HAVE_BLOCKS_EXTENSION 0
-#define HAVE_EBP_AVAILABLE 1
+/* #define HAVE_EBP_AVAILABLE 1 -- ebp selection is done by the chrome build */
 #define HAVE_EBX_AVAILABLE 1
 #define HAVE_GNU_AS 0
 #define HAVE_GNU_WINDRES 0

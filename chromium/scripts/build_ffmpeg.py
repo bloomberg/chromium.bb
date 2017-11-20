@@ -267,6 +267,12 @@ def BuildFFmpeg(target_os, target_arch, host_os, host_arch, parallel_jobs,
           'Host arch : %s\n'
           'Target arch : %s\n' % (host_os, target_os, host_arch, target_arch))
 
+  # Sanitizers can't compile the h264 code when EBP is used.
+  if target_os != 'win' and target_arch == 'ia32':
+    RewriteFile(
+        os.path.join(config_dir, 'config.h'), r'(#define HAVE_EBP_AVAILABLE [01])',
+        (r'/* \1 -- ebp selection is done by the chrome build */'))
+
   if target_arch in ('arm', 'arm-neon', 'arm64'):
     RewriteFile(
         os.path.join(config_dir, 'config.h'), r'(#define HAVE_VFP_ARGS [01])',

@@ -6,6 +6,7 @@ import("ffmpeg_options.gni")
 import("ffmpeg_generated.gni")
 
 import("//build/buildflag_header.gni")
+import("//build/config/sanitizers/sanitizers.gni")
 
 # Path to platform configuration files.
 platform_config_root =
@@ -151,9 +152,7 @@ config("ffmpegsumo_warnings") {
 
 buildflag_header("ffmpeg_features") {
   header = "ffmpeg_features.h"
-  flags = [
-    "USE_SYSTEM_FFMPEG=false",
-  ]
+  flags = [ "USE_SYSTEM_FFMPEG=false" ]
 }
 
 if (is_component_ffmpeg) {
@@ -245,6 +244,14 @@ target(link_target_type, "ffmpeg_internal") {
       "-Wno-deprecated-declarations",
     ]
 
+    # On POSIX x86, sanitizers will fail to compiler the H264 CABAC code due to
+    # insufficient registers unless we disable EBP usage. crbug.com/786760
+    if (using_sanitizer && target_cpu == "x86") {
+      defines += [ "HAVE_EBP_AVAILABLE=0" ]
+    } else {
+      defines += [ "HAVE_EBP_AVAILABLE=1" ]
+    }
+
     if (!is_clang) {
       # gcc doesn't have flags for specific warnings, so disable them
       # all.
@@ -272,7 +279,6 @@ target(link_target_type, "ffmpeg_internal") {
       "-fno-math-errno",
       "-fno-signed-zeros",
       "-fno-tree-vectorize",
-      "-fomit-frame-pointer",
     ]
     ldflags = [
       "-L",
@@ -322,13 +328,9 @@ target(link_target_type, "ffmpeg_internal") {
 
     # Clang allows inline assembly where MSVC does not.
     if (is_clang) {
-      defines += [
-        "HAVE_INLINE_ASM=1"
-      ]
+      defines += [ "HAVE_INLINE_ASM=1" ]
     } else {
-      defines += [
-        "HAVE_INLINE_ASM=0"
-      ]
+      defines += [ "HAVE_INLINE_ASM=0" ]
     }
 
     if (is_component_ffmpeg) {
