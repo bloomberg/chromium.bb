@@ -642,6 +642,8 @@ public class LayoutManagerChrome
 
         @Override
         public void swipeUpdated(float x, float y, float dx, float dy, float tx, float ty) {
+            if (getActiveLayout() == null) return;
+
             // If scroll direction has been computed, send the event to super.
             if (mScrollDirection != ScrollDirection.UNKNOWN) {
                 super.swipeUpdated(x, y, dx, dy, tx, ty);
@@ -651,10 +653,11 @@ public class LayoutManagerChrome
             mScrollDirection = computeScrollDirection(dx, dy);
             if (mScrollDirection == ScrollDirection.UNKNOWN) return;
 
-            if (mScrollDirection == ScrollDirection.DOWN) {
+            if (mOverviewLayout != null && mScrollDirection == ScrollDirection.DOWN) {
                 startShowing(mOverviewLayout, true);
-            } else if (mScrollDirection == ScrollDirection.LEFT
-                    || mScrollDirection == ScrollDirection.RIGHT) {
+            } else if (mToolbarSwipeLayout != null
+                    && (mScrollDirection == ScrollDirection.LEFT
+                               || mScrollDirection == ScrollDirection.RIGHT)) {
                 startShowing(mToolbarSwipeLayout, true);
             }
 
