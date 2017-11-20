@@ -406,10 +406,15 @@ void SearchResultPageView::OnSearchResultContainerResultsChanged() {
 
 gfx::Rect SearchResultPageView::GetPageBoundsForState(
     AppListModel::State state) const {
-  return (
-      state == AppListModel::STATE_SEARCH_RESULTS
-          ? GetDefaultContentsBounds()
-          : GetAboveContentsOffscreenBounds(GetDefaultContentsBounds().size()));
+  if (state != AppListModel::STATE_SEARCH_RESULTS) {
+    // Hides this view behind the search box by using the same bounds.
+    return AppListPage::contents_view()->GetSearchBoxBoundsForState(state);
+  }
+
+  gfx::Rect onscreen_bounds(AppListPage::GetSearchBoxBounds());
+  onscreen_bounds.Offset((onscreen_bounds.width() - kWidth) / 2, 0);
+  onscreen_bounds.set_size(GetPreferredSize());
+  return onscreen_bounds;
 }
 
 void SearchResultPageView::OnAnimationUpdated(double progress,
