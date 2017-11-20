@@ -93,7 +93,7 @@ class CC_EXPORT ResourceProvider
 
   bool IsSoftware() const { return !compositor_context_provider_; }
 
-  void DidLoseVulkanContextProvider() { lost_context_provider_ = true; }
+  void DidLoseContextProvider() { lost_context_provider_ = true; }
 
   int max_texture_size() const { return settings_.max_texture_size; }
   viz::ResourceFormat best_texture_format() const {
@@ -318,6 +318,7 @@ class CC_EXPORT ResourceProvider
   size_t CountPromotionHintRequestsForTesting();
 #endif
 
+  // TODO(danakj): Move to DisplayResourceProvider.
   void WaitSyncToken(viz::ResourceId id);
 
   static GLint GetActiveTextureUnit(gpu::gles2::GLES2Interface* gl);

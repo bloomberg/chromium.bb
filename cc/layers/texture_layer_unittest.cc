@@ -39,6 +39,7 @@
 #include "cc/trees/single_thread_proxy.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/resources/returned_resource.h"
+#include "components/viz/common/resources/transferable_resource.h"
 #include "components/viz/test/test_layer_tree_frame_sink.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -908,32 +909,6 @@ TEST_F(TextureLayerImplWithResourceTest,
       DRAW_MODE_HARDWARE, host_impl_.active_tree()->resource_provider()));
   impl_layer->DidDraw(host_impl_.active_tree()->resource_provider());
   impl_layer->SetTransferableResource(viz::TransferableResource(), nullptr);
-}
-
-TEST_F(TextureLayerImplWithResourceTest, TestCallbackOnInUseResource) {
-  LayerTreeResourceProvider* provider =
-      host_impl_.active_tree()->resource_provider();
-  viz::ResourceId id = provider->CreateResourceFromTextureMailbox(
-      viz::TextureMailbox(test_data_.mailbox_name1_, test_data_.sync_token1_,
-                          GL_TEXTURE_2D),
-      viz::SingleReleaseCallback::Create(test_data_.release_callback1_));
-  provider->AllocateForTesting(id);
-
-  // Transfer some resources to the parent.
-  ResourceProvider::ResourceIdArray resource_ids_to_transfer;
-  resource_ids_to_transfer.push_back(id);
-  std::vector<viz::TransferableResource> list;
-  provider->PrepareSendToParent(resource_ids_to_transfer, &list);
-  EXPECT_TRUE(provider->InUseByConsumer(id));
-  EXPECT_CALL(test_data_.mock_callback_, Release(_, _, _)).Times(0);
-  provider->DeleteResource(id);
-  Mock::VerifyAndClearExpectations(&test_data_.mock_callback_);
-  EXPECT_CALL(test_data_.mock_callback_,
-              Release(test_data_.mailbox_name1_, _, false))
-      .Times(1);
-  std::vector<viz::ReturnedResource> returned =
-      viz::TransferableResource::ReturnResources(list);
-  provider->ReceiveReturnsFromParent(returned);
 }
 
 // Checks that TextureLayer::Update does not cause an extra commit when setting

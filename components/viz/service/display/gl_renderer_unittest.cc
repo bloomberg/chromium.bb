@@ -30,6 +30,7 @@
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
+#include "components/viz/common/resources/transferable_resource.h"
 #include "components/viz/service/display/overlay_strategy_single_on_top.h"
 #include "components/viz/service/display/overlay_strategy_underlay.h"
 #include "components/viz/service/display/texture_mailbox_deleter.h"
@@ -1958,13 +1959,13 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
       cc::FakeResourceProvider::CreateLayerTreeResourceProvider(
           child_context_provider.get(), shared_bitmap_manager.get());
 
-  TextureMailbox mailbox(gpu::Mailbox::Generate(), gpu::SyncToken(),
-                         GL_TEXTURE_2D, gfx::Size(256, 256), true);
+  auto transfer_resource = TransferableResource::MakeGLOverlay(
+      gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken(),
+      gfx::Size(256, 256), true);
   auto release_callback =
       SingleReleaseCallback::Create(base::Bind(&MailboxReleased));
-  ResourceId resource_id =
-      child_resource_provider->CreateResourceFromTextureMailbox(
-          mailbox, std::move(release_callback));
+  ResourceId resource_id = child_resource_provider->ImportResource(
+      transfer_resource, std::move(release_callback));
 
   std::vector<ReturnedResource> returned_to_child;
   int child_id = parent_resource_provider->CreateChild(
@@ -2154,13 +2155,13 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
 
   gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO, 0,
                             gpu::CommandBufferId::FromUnsafeValue(0x123), 29);
-  TextureMailbox mailbox(gpu::Mailbox::Generate(), sync_token, GL_TEXTURE_2D,
-                         gfx::Size(256, 256), true);
+  auto transfer_resource = TransferableResource::MakeGLOverlay(
+      gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, sync_token,
+      gfx::Size(256, 256), true);
   auto release_callback =
       SingleReleaseCallback::Create(base::Bind(&MailboxReleased));
-  ResourceId resource_id =
-      child_resource_provider->CreateResourceFromTextureMailbox(
-          mailbox, std::move(release_callback));
+  ResourceId resource_id = child_resource_provider->ImportResource(
+      transfer_resource, std::move(release_callback));
 
   std::vector<ReturnedResource> returned_to_child;
   int child_id = parent_resource_provider->CreateChild(
@@ -2396,13 +2397,13 @@ TEST_F(GLRendererTest, DCLayerOverlaySwitch) {
       cc::FakeResourceProvider::CreateLayerTreeResourceProvider(
           child_context_provider.get(), nullptr);
 
-  TextureMailbox mailbox(gpu::Mailbox::Generate(), gpu::SyncToken(),
-                         GL_TEXTURE_2D, gfx::Size(256, 256), true);
+  auto transfer_resource = TransferableResource::MakeGLOverlay(
+      gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken(),
+      gfx::Size(256, 256), true);
   auto release_callback =
       SingleReleaseCallback::Create(base::Bind(&MailboxReleased));
-  ResourceId resource_id =
-      child_resource_provider->CreateResourceFromTextureMailbox(
-          mailbox, std::move(release_callback));
+  ResourceId resource_id = child_resource_provider->ImportResource(
+      transfer_resource, std::move(release_callback));
 
   std::vector<ReturnedResource> returned_to_child;
   int child_id = parent_resource_provider->CreateChild(

@@ -7,25 +7,13 @@
 
 namespace viz {
 
-TransferableResource::TransferableResource()
-    : id(0),
-      format(RGBA_8888),
-      buffer_format(gfx::BufferFormat::RGBA_8888),
-      filter(0),
-      read_lock_fences_enabled(false),
-      is_software(false),
-      shared_bitmap_sequence_number(0),
-#if defined(OS_ANDROID)
-      is_backed_by_surface_texture(false),
-      wants_promotion_hint(false),
-#endif
-      is_overlay_candidate(false) {
-}
+TransferableResource::TransferableResource() = default;
+TransferableResource::~TransferableResource() = default;
 
 TransferableResource::TransferableResource(const TransferableResource& other) =
     default;
-
-TransferableResource::~TransferableResource() {}
+TransferableResource& TransferableResource::operator=(
+    const TransferableResource& other) = default;
 
 ReturnedResource TransferableResource::ToReturnedResource() const {
   ReturnedResource returned;

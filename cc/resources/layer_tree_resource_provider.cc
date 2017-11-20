@@ -67,63 +67,6 @@ LayerTreeResourceProvider::~LayerTreeResourceProvider() {
   }
 }
 
-viz::ResourceId LayerTreeResourceProvider::CreateResourceFromTextureMailbox(
-    const viz::TextureMailbox& mailbox,
-    std::unique_ptr<viz::SingleReleaseCallback> release_callback,
-    bool read_lock_fences_enabled,
-    gfx::BufferFormat buffer_format) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  // Just store the information. Mailbox will be consumed in
-  // DisplayResourceProvider::LockForRead().
-  viz::ResourceId id = next_id_++;
-  DCHECK(mailbox.IsValid());
-  viz::internal::Resource* resource = InsertResource(
-      id, viz::internal::Resource(
-              mailbox.size_in_pixels(), viz::internal::Resource::EXTERNAL,
-              viz::ResourceTextureHint::kDefault,
-              mailbox.IsTexture() ? viz::ResourceType::kTexture
-                                  : viz::ResourceType::kBitmap,
-              viz::RGBA_8888, mailbox.color_space()));
-  if (mailbox.IsTexture()) {
-    GLenum filter = mailbox.nearest_neighbor() ? GL_NEAREST : GL_LINEAR;
-    resource->filter = filter;
-    resource->original_filter = filter;
-    resource->min_filter = filter;
-    resource->target = mailbox.target();
-    resource->UpdateSyncToken(mailbox.sync_token());
-  } else {
-    DCHECK(mailbox.IsSharedMemory());
-    resource->SetSharedBitmap(mailbox.shared_bitmap());
-  }
-  resource->allocated = true;
-  resource->mailbox = mailbox.mailbox();
-  resource->release_callback =
-      base::Bind(&viz::SingleReleaseCallback::Run,
-                 base::Owned(release_callback.release()));
-  resource->read_lock_fences_enabled = read_lock_fences_enabled;
-  resource->buffer_format = buffer_format;
-  resource->is_overlay_candidate = mailbox.is_overlay_candidate();
-  resource->color_space = mailbox.color_space();
-
-  return id;
-}
-
-viz::ResourceId LayerTreeResourceProvider::CreateResourceFromTextureMailbox(
-    const viz::TextureMailbox& mailbox,
-    std::unique_ptr<viz::SingleReleaseCallback> release_callback,
-    bool read_lock_fences_enabled) {
-  return CreateResourceFromTextureMailbox(mailbox, std::move(release_callback),
-                                          read_lock_fences_enabled,
-                                          gfx::BufferFormat::RGBA_8888);
-}
-
-viz::ResourceId LayerTreeResourceProvider::CreateResourceFromTextureMailbox(
-    const viz::TextureMailbox& mailbox,
-    std::unique_ptr<viz::SingleReleaseCallback> release_callback) {
-  return CreateResourceFromTextureMailbox(mailbox, std::move(release_callback),
-                                          false);
-}
-
 gpu::SyncToken LayerTreeResourceProvider::GetSyncTokenForResources(
     const ResourceIdArray& resource_ids) {
   gpu::SyncToken latest_sync_token;
