@@ -139,7 +139,7 @@ void CreditCardSaveManager::AttemptToOfferCardUploadSave(
   int upload_decision_metrics =
       SetProfilesForCreditCardUpload(card, &upload_request_);
 
-  pending_upload_request_url_ = GURL(submitted_form.source_url());
+  pending_upload_request_url_ = GURL(submitted_form.main_frame_url());
 
   should_cvc_be_requested_ = false;
   if (upload_request_.cvc.empty()) {

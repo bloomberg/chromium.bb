@@ -476,6 +476,8 @@ bool StructTraits<autofill::mojom::FormDataDataView, autofill::FormData>::Read(
     return false;
   if (!data.ReadAction(&out->action))
     return false;
+  if (!data.ReadMainFrameOrigin(&out->main_frame_origin))
+    return false;
 
   out->is_form_tag = data.is_form_tag();
   out->is_formless_checkout = data.is_formless_checkout();

@@ -125,6 +125,7 @@ class CreditCardSaveManager : public payments::PaymentsClientSaveDelegate {
   // determined to be a CVC field via heuristics has a valid CVC |value|.
   bool found_cvc_value_in_non_cvc_field_ = false;
 
+  // The origin of the top level frame from which a form is uploaded.
   GURL pending_upload_request_url_;
 
   base::WeakPtrFactory<CreditCardSaveManager> weak_ptr_factory_;

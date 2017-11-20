@@ -428,6 +428,7 @@ test("browser_tests") {
       "../browser/apps/service_worker_browsertest.cc",
       "../browser/autocomplete/autocomplete_browsertest.cc",
       "../browser/autofill/autofill_browsertest.cc",
+      "../browser/autofill/autofill_metrics_browsertest.cc",
       "../browser/autofill/autofill_server_browsertest.cc",
       "../browser/autofill/content_autofill_driver_browsertest.cc",
       "../browser/autofill/form_structure_browsertest.cc",
