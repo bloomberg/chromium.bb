@@ -340,7 +340,8 @@ static bool ShouldIgnoreHeaderForCacheReuse(AtomicString header_name) {
 static bool IsCacheableHTTPMethod(const AtomicString& method) {
   // Per http://www.w3.org/Protocols/rfc2616/rfc2616-sec13.html#sec13.10,
   // these methods always invalidate the cache entry.
-  return method != "POST" && method != "PUT" && method != "DELETE";
+  return method != HTTPNames::POST && method != HTTPNames::PUT &&
+         method != "DELETE";
 }
 
 bool RawResource::CanReuse(const FetchParameters& new_fetch_parameters) const {
