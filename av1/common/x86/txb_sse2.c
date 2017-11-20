@@ -35,6 +35,9 @@ static INLINE void load_levels_4x4x3_sse2(const uint8_t *const s0,
   level[2] = load_8bit_4x4_sse2(s0 + 1, s1 + 1, s2 + 1, s3 + 1);
 }
 
+// This function calculates 16 pixels' level counts, and updates levels history.
+// These 16 pixels may be from different parts of input levels[] if the width is
+// less than 16.
 static INLINE __m128i get_level_counts_kernel_sse2(__m128i *const level) {
   const __m128i level_minus_1 = _mm_set1_epi8(NUM_BASE_LEVELS);
   __m128i count;
@@ -66,7 +69,6 @@ static INLINE void get_4_level_counts_sse2(const uint8_t *const levels,
                                            uint8_t *const level_counts) {
   const int stride = 4 + TX_PAD_HOR;
   const __m128i level_minus_1 = _mm_set1_epi8(NUM_BASE_LEVELS);
-  int row = height;
   __m128i count;
   __m128i level[9];
 
@@ -92,7 +94,10 @@ static INLINE void get_4_level_counts_sse2(const uint8_t *const levels,
   } else {
     const uint8_t *ls[4];
     uint8_t *lcs[4];
+    int row = height;
 
+    // levels[] are divided into 4 even parts. In each loop, totally 4 rows from
+    // different parts are processed together.
     ls[0] = levels + 0 * stride * height / 4;
     ls[1] = levels + 1 * stride * height / 4;
     ls[2] = levels + 2 * stride * height / 4;
@@ -148,6 +153,8 @@ static INLINE void get_8_level_counts_sse2(const uint8_t *const levels,
 
   assert(!(height % 2));
 
+  // levels[] are divided into 2 even parts. In each loop, totally 2 rows from
+  // different parts are processed together.
   ls[0] = levels;
   ls[1] = levels + stride * height / 2;
   lcs[0] = level_counts;
@@ -235,6 +242,7 @@ static INLINE void get_16x_level_counts_sse2(const uint8_t *levels,
   }
 }
 
+// Note: levels[] must be in the range [0, 127], inclusive.
 void av1_get_br_level_counts_sse2(const uint8_t *const levels, const int width,
                                   const int height,
                                   uint8_t *const level_counts) {

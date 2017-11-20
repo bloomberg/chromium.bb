@@ -9,6 +9,10 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
 #include "./aom_config.h"
@@ -61,7 +65,7 @@ class TxbTest : public ::testing::TestWithParam<GetLevelCountsFunc> {
       memset(levels_buf_, 0, sizeof(*levels_buf_) * MAX_TX_SQUARE);
 
       for (int i = 0; i < kNumTests && !result; ++i) {
-        InitLevels(width, height);
+        InitLevels(width, height, i);
 
         av1_get_br_level_counts_c(levels_, width, height, level_counts_ref_);
         get_br_level_counts_func_(levels_, width, height, level_counts_);
@@ -85,7 +89,7 @@ class TxbTest : public ::testing::TestWithParam<GetLevelCountsFunc> {
       const int height = tx_size_high[tx_size];
       levels_ = set_levels(levels_buf_, width);
       memset(levels_buf_, 0, sizeof(*levels_buf_) * MAX_TX_SQUARE);
-      InitLevels(width, height);
+      InitLevels(width, height, 0);
 
       aom_usec_timer_start(&timer);
       for (int i = 0; i < kNumTests; ++i) {
@@ -99,16 +103,21 @@ class TxbTest : public ::testing::TestWithParam<GetLevelCountsFunc> {
     }
   }
 
-  void InitLevels(const int width, const int height) {
+ private:
+  void InitLevels(const int width, const int height, const int idx) {
     const int stride = width + TX_PAD_HOR;
+    // levels_[] is initialized to either the whole possible range, or small
+    // values around base level.
+    const int max_value = (idx & 1) ? INT8_MAX : (NUM_BASE_LEVELS + 2);
 
     for (int i = 0; i < height; ++i) {
       for (int j = 0; j < width; ++j) {
-        levels_[i * stride + j] = rnd_.Rand8() % (NUM_BASE_LEVELS + 2);
+        levels_[i * stride + j] =
+            static_cast<uint8_t>(clamp(rnd_.Rand8(), 0, max_value));
       }
     }
     for (int i = 0; i < MAX_TX_SQUARE; ++i) {
-      level_counts_ref_[i] = level_counts_[i] = 255;
+      level_counts_ref_[i] = level_counts_[i] = rnd_.Rand8();
     }
   }
 

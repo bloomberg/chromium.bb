@@ -334,6 +334,8 @@ int16_t get_eob_pos_token(int eob, int16_t *extra) {
   return t;
 }
 
+// Note: because of the SSE2 optimization, levels[] must be in the range [0,
+// 127], inclusive.
 void av1_get_base_level_counts(const uint8_t *const levels,
                                const int level_minus_1, const int width,
                                const int height, uint8_t *const level_counts) {
@@ -348,6 +350,8 @@ void av1_get_base_level_counts(const uint8_t *const levels,
   }
 }
 
+// Note: because of the SSE2 optimization, levels[] must be in the range [0,
+// 127], inclusive.
 void av1_get_br_level_counts_c(const uint8_t *const levels, const int width,
                                const int height, uint8_t *const level_counts) {
   const int stride = width + TX_PAD_HOR;
