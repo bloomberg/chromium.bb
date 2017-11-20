@@ -228,20 +228,22 @@ template <>
 void ClearNeedsLayoutIfUpdatingLayout<NGOffsetMappingBuilder>(LayoutObject*) {}
 
 // Templated helper function for CollectInlinesInternal().
+// TODO(layout-dev): Remove this function once LayoutNGPaintFragments is enabled
+// by default.
 template <typename OffsetMappingBuilder>
 String GetTextForInlineCollection(const LayoutText& node) {
   return node.GetText();
 }
 
-// This function is a workaround of writing the whitespace-collapsed string back
-// to LayoutText after inline collection, so that we can still recover the
-// original text for building offset mapping.
-// TODO(xiaochengh): Remove this function once we can:
-// - paint inlines directly from the fragment tree, or
-// - perform inline collection directly from DOM instead of LayoutText
 template <>
 String GetTextForInlineCollection<NGOffsetMappingBuilder>(
     const LayoutText& layout_text) {
+  if (RuntimeEnabledFeatures::LayoutNGPaintFragmentsEnabled())
+    return layout_text.GetText();
+
+  // The code below is a workaround of writing the whitespace-collapsed string
+  // back to LayoutText after inline collection, so that we can still recover
+  // the original text for building offset mapping.
   if (layout_text.Style()->TextSecurity() != ETextSecurity::kNone)
     return layout_text.GetText();
 

@@ -138,9 +138,8 @@ void NGOffsetMappingBuilder::Composite(const NGOffsetMappingBuilder& other) {
 }
 
 void NGOffsetMappingBuilder::SetDestinationString(String string) {
-  // TODO(xiaochengh): Add the check below when we stop writing back to
-  // LayoutText for inline painting.
-  // DCHECK_EQ(mapping_.back(), string.length());
+  if (RuntimeEnabledFeatures::LayoutNGPaintFragmentsEnabled())
+    DCHECK_EQ(mapping_.back(), string.length());
   destination_string_ = string;
 }
 
