@@ -247,11 +247,7 @@ void ClientSession::OnConnectionAuthenticated() {
   const SessionOptions session_options(
       host_experiment_session_plugin_.configuration());
 
-  base::Optional<std::string> video_codec =
-      session_options.Get("Video-Codec");
-  if (video_codec) {
-    connection_->SetPreferredVideoCodec(*video_codec);
-  }
+  connection_->ApplySessionOptions(session_options);
 
   DesktopEnvironmentOptions options = desktop_environment_options_;
   options.ApplySessionOptions(session_options);

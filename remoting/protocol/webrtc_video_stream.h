@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
+#include "remoting/base/session_options.h"
 #include "remoting/codec/webrtc_video_encoder.h"
 #include "remoting/codec/webrtc_video_encoder_selector.h"
 #include "remoting/protocol/host_video_stats_dispatcher.h"
@@ -38,7 +39,7 @@ class WebrtcVideoStream : public VideoStream,
                           public webrtc::DesktopCapturer::Callback,
                           public HostVideoStatsDispatcher::EventHandler {
  public:
-  WebrtcVideoStream();
+  explicit WebrtcVideoStream(const SessionOptions& options);
   ~WebrtcVideoStream() override;
 
   void Start(std::unique_ptr<webrtc::DesktopCapturer> desktop_capturer,
@@ -100,6 +101,8 @@ class WebrtcVideoStream : public VideoStream,
   WebrtcVideoEncoderSelector encoder_selector_;
 
   base::ThreadChecker thread_checker_;
+
+  const SessionOptions session_options_;
 
   base::WeakPtrFactory<WebrtcVideoStream> weak_factory_;
 
