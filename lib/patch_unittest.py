@@ -328,6 +328,7 @@ I am the first commit.
                            ChangeId=changeid, **kwargs)
 
 
+# pylint: disable=protected-access
 class TestGitRepoPatch(GitRepoPatchTestCase):
   """Unittests for git patch related methods."""
 
@@ -378,21 +379,18 @@ class TestGitRepoPatch(GitRepoPatchTestCase):
     self.assertRaises2(cros_patch.PatchIsEmpty, patch2.Apply, git1,
                        self.DEFAULT_TRACKING, check_attrs={'inflight': True})
 
-  # pylint: disable=protected-access
   def testGetNoParents(self):
     git1 = self._MakeRepo('git1', self.source)
     sha1 = self._GetSha1(git1, 'HEAD')
     patch = self._MkPatch(self.source, sha1)
     self.assertEquals(patch._GetParents(git1), [])
 
-  # pylint: disable=protected-access
   def testGet1Parent(self):
     git1 = self._MakeRepo('git1', self.source)
     patch1 = self.CommitFile(git1, 'foo', 'foo')
     patch2 = self.CommitFile(git1, 'bar', 'bar')
     self.assertEquals(patch2._GetParents(git1), [patch1.sha1])
 
-  # pylint: disable=protected-access
   def testGet2Parents(self):
     # Prepare a merge commit, then test that its two parents are correctly
     # calculated.
@@ -417,6 +415,15 @@ class TestGitRepoPatch(GitRepoPatchTestCase):
     patch2 = self.CommitFile(git1, 'bar', 'bar')
     self.assertTrue(patch1._IsAncestorOf(git1, patch2))
     self.assertFalse(patch2._IsAncestorOf(git1, patch1))
+
+  def testFromSha1(self):
+    git1 = self._MakeRepo('git1', self.source)
+    patch1 = self.CommitFile(git1, 'foo', 'foo')
+    patch2 = self.CommitFile(git1, 'bar', 'bar')
+    patch2_from_sha1 = patch1._FromSha1(patch2.sha1)
+    patch2_from_sha1.Fetch(git1)
+    patch2.Fetch(git1)
+    self.assertEqual(patch2.tree_hash, patch2_from_sha1.tree_hash)
 
   def testDeleteEbuildTwice(self):
     """Test that double-deletes of ebuilds are flagged as conflicts."""

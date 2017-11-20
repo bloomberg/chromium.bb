@@ -781,6 +781,9 @@ class GitRepoPatch(PatchQuery):
     self.git_remote_url = '%s/%s' % (
         site_config.params.GIT_REMOTES.get(remote), project)
     self.project_url = project_url
+    self._project = project
+    self._tracking_branch = tracking_branch
+    self._remote = remote
     self.commit_message = None
     self._subject_line = None
     self.ref = ref
@@ -1137,6 +1140,15 @@ class GitRepoPatch(PatchQuery):
       if do_checkout:
         git.RunGit(git_repo, ['checkout', '-f', constants.PATCH_BRANCH],
                    error_code_ok=True)
+
+  def _FromSha1(self, sha1):
+    """Return a new GitRepoPatch instance with same upstream, for other sha1.
+
+    This is a useful helper method to convert sha1 values into GitRepoPatch
+    objects if needed, to make use of the GitRepoPatch methods.
+    """
+    return GitRepoPatch(self.project_url, self._project, self.ref,
+                        self._tracking_branch, self._remote, sha1=sha1)
 
   def ApplyAgainstManifest(self, manifest, trivial=False):
     """Applies the patch against the specified manifest.
