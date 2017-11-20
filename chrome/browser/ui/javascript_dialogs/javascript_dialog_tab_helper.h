@@ -18,6 +18,7 @@
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/ui/browser_list_observer.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #endif
 
 // A class, attached to WebContentses in browser windows, that is the
@@ -43,6 +44,7 @@ class JavaScriptDialogTabHelper
       public content::WebContentsObserver,
 #if !defined(OS_ANDROID)
       public chrome::BrowserListObserver,
+      public TabStripModelObserver,
 #endif
       public content::WebContentsUserData<JavaScriptDialogTabHelper> {
  public:
@@ -81,6 +83,12 @@ class JavaScriptDialogTabHelper
 #if !defined(OS_ANDROID)
   // BrowserListObserver:
   void OnBrowserSetLastActive(Browser* browser) override;
+
+  // TabStripModelObserver:
+  void TabReplacedAt(TabStripModel* tab_strip_model,
+                     content::WebContents* old_contents,
+                     content::WebContents* new_contents,
+                     int index) override;
 #endif
 
  private:
@@ -99,8 +107,16 @@ class JavaScriptDialogTabHelper
                    bool success,
                    const base::string16& user_input);
 
-  // Marks the tab as needing attention.
+  // Marks the tab as needing attention. The WebContents must be in a browser
+  // window.
   void SetTabNeedsAttention(bool attention);
+
+#if !defined(OS_ANDROID)
+  // Marks the tab as needing attention.
+  void SetTabNeedsAttentionImpl(bool attention,
+                                TabStripModel* tab_strip_model,
+                                int index);
+#endif
 
   // There can be at most one dialog (pending or not) being shown at any given
   // time on a tab. Depending on the type of the dialog, the variables

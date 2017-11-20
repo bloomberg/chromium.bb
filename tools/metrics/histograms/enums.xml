@@ -22574,6 +22574,10 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="7" label="Tab navigated">
     The user navigated the tab (e.g. back/forward, reload)
   </int>
+  <int value="8" label="Tab switched out">
+    The page displaying the dialog was switched out of its tab (e.g. tab
+    discarding)
+  </int>
 </enum>
 
 <enum name="JumplisticonsDeleteCategory">
