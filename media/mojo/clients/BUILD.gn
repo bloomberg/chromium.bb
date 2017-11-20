@@ -8,11 +8,10 @@ source_set("clients") {
     "//chromecast/*",
     "//content/renderer:*",
 
-    # TODO(xhwang): Only allow //media/mojo:media_mojo_unittests
-    "//media/mojo:*",
-
     # TODO(xhwang): Only allow //media/mojo/services:media_service_unittests
     "//media/mojo/services:*",
+
+    "//media/mojo:test_support",
 
     "//media/test/*",
 
@@ -76,6 +75,36 @@ source_set("clients") {
     deps += [
       "//gpu/ipc/common:common",
       "//ui/gl:gl",
+    ]
+  }
+}
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [
+    "mojo_audio_decoder_unittest.cc",
+    "mojo_cdm_unittest.cc",
+    "mojo_decryptor_unittest.cc",
+    "mojo_renderer_unittest.cc",
+    "mojo_video_encode_accelerator_unittest.cc",
+  ]
+
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//media:test_support",
+    "//media/mojo:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+
+  if (is_android) {
+    sources += [ "mojo_android_overlay_unittest.cc" ]
+
+    deps += [
+      "//media/mojo/interfaces:test_interfaces",
+      "//ui/gfx:test_support",
     ]
   }
 }
