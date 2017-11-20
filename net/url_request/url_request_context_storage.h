@@ -28,15 +28,18 @@ class HttpTransactionFactory;
 class HttpUserAgentSettings;
 class NetLog;
 class NetworkDelegate;
-class NetworkErrorLoggingDelegate;
 class ProxyDelegate;
 class ProxyService;
-class ReportingService;
 class SSLConfigService;
 class TransportSecurityState;
 class URLRequestContext;
 class URLRequestJobFactory;
 class URLRequestThrottlerManager;
+
+#if BUILDFLAG(ENABLE_REPORTING)
+class NetworkErrorLoggingDelegate;
+class ReportingService;
+#endif  // BUILDFLAG(ENABLE_REPORTING)
 
 // URLRequestContextStorage is a helper class that provides storage for unowned
 // member variables of URLRequestContext.
@@ -84,11 +87,11 @@ class NET_EXPORT URLRequestContextStorage {
 #if BUILDFLAG(ENABLE_REPORTING)
   void set_reporting_service(
       std::unique_ptr<ReportingService> reporting_service);
-#endif  // BUILDFLAG(ENABLE_REPORTING)
 
   void set_network_error_logging_delegate(
       std::unique_ptr<NetworkErrorLoggingDelegate>
           network_error_logging_delegate);
+#endif  // BUILDFLAG(ENABLE_REPORTING)
 
   // Everything else can be access through the URLRequestContext, but this
   // cannot.  Having an accessor for it makes usage a little cleaner.
@@ -126,10 +129,11 @@ class NET_EXPORT URLRequestContextStorage {
   std::unique_ptr<HttpTransactionFactory> http_transaction_factory_;
   std::unique_ptr<URLRequestJobFactory> job_factory_;
   std::unique_ptr<URLRequestThrottlerManager> throttler_manager_;
+
 #if BUILDFLAG(ENABLE_REPORTING)
   std::unique_ptr<ReportingService> reporting_service_;
-#endif  // BUILDFLAG(ENABLE_REPORTING)
   std::unique_ptr<NetworkErrorLoggingDelegate> network_error_logging_delegate_;
+#endif  // BUILDFLAG(ENABLE_REPORTING)
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestContextStorage);
 };
