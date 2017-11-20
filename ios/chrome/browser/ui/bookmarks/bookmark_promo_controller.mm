@@ -13,8 +13,8 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
+#import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
 #import "ios/chrome/browser/ui/signin_interaction/public/signin_presenter.h"
 #import "ios/chrome/browser/ui/ui_util.h"
@@ -99,10 +99,6 @@ class SignInObserver : public SigninManagerBase::Observer {
 @synthesize promoState = _promoState;
 @synthesize presenter = _presenter;
 
-+ (void)registerBrowserStatePrefs:(user_prefs::PrefRegistrySyncable*)registry {
-  registry->RegisterBooleanPref(prefs::kIosBookmarkPromoAlreadySeen, false);
-}
-
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
                             delegate:
                                 (id<BookmarkPromoControllerDelegate>)delegate
@@ -155,8 +151,6 @@ class SignInObserver : public SigninManagerBase::Observer {
   UMA_HISTOGRAM_ENUMERATION(kBookmarksPromoActionsHistogram,
                             BOOKMARKS_PROMO_ACTION_DISMISSED,
                             BOOKMARKS_PROMO_ACTION_COUNT);
-  PrefService* prefs = _browserState->GetPrefs();
-  prefs->SetBoolean(prefs::kIosBookmarkPromoAlreadySeen, true);
   self.promoState = NO;
 }
 
@@ -173,8 +167,10 @@ class SignInObserver : public SigninManagerBase::Observer {
     return;
 
   DCHECK(_browserState);
-  PrefService* prefs = _browserState->GetPrefs();
-  if (!prefs->GetBoolean(prefs::kIosBookmarkPromoAlreadySeen)) {
+  if ([SigninPromoViewMediator
+          shouldDisplaySigninPromoViewWithAccessPoint:
+              signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_MANAGER
+                                         browserState:_browserState]) {
     SigninManager* signinManager =
         ios::SigninManagerFactory::GetForBrowserState(_browserState);
     self.promoState = !signinManager->IsAuthenticated();

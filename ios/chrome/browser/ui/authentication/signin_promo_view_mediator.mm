@@ -237,6 +237,33 @@ const char* AlreadySeenSigninViewPreferenceKey(
 @synthesize signinPromoViewState = _signinPromoViewState;
 @synthesize presenter = _presenter;
 
++ (void)registerBrowserStatePrefs:(user_prefs::PrefRegistrySyncable*)registry {
+  registry->RegisterBooleanPref(prefs::kIosBookmarkPromoAlreadySeen, false);
+  registry->RegisterIntegerPref(prefs::kIosBookmarkSigninPromoDisplayedCount,
+                                0);
+}
+
++ (BOOL)shouldDisplaySigninPromoViewWithAccessPoint:
+            (signin_metrics::AccessPoint)accessPoint
+                                       browserState:(ios::ChromeBrowserState*)
+                                                        browserState {
+  PrefService* prefs = browserState->GetPrefs();
+  const char* displayedCountPreferenceKey =
+      DisplayedCountPreferenceKey(accessPoint);
+  if (displayedCountPreferenceKey &&
+      prefs->GetInteger(displayedCountPreferenceKey) >=
+          kAutomaticSigninPromoViewDismissCount) {
+    return NO;
+  }
+  const char* alreadySeenSigninViewPreferenceKey =
+      AlreadySeenSigninViewPreferenceKey(accessPoint);
+  if (alreadySeenSigninViewPreferenceKey &&
+      prefs->GetBoolean(alreadySeenSigninViewPreferenceKey)) {
+    return NO;
+  }
+  return YES;
+}
+
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
                          accessPoint:(signin_metrics::AccessPoint)accessPoint
                            presenter:(id<SigninPresenter>)presenter {
@@ -341,12 +368,6 @@ const char* AlreadySeenSigninViewPreferenceKey(
   int displayedCount = prefs->GetInteger(displayedCountPreferenceKey);
   ++displayedCount;
   prefs->SetInteger(displayedCountPreferenceKey, displayedCount);
-  const char* alreadySeenSigninViewPreferenceKey =
-      AlreadySeenSigninViewPreferenceKey(_accessPoint);
-  if (displayedCount >= kAutomaticSigninPromoViewDismissCount &&
-      alreadySeenSigninViewPreferenceKey) {
-    prefs->SetBoolean(alreadySeenSigninViewPreferenceKey, true);
-  }
 }
 
 - (void)signinPromoViewHidden {
@@ -357,11 +378,15 @@ const char* AlreadySeenSigninViewPreferenceKey(
 - (void)signinPromoViewClosed {
   DCHECK(_isSigninPromoViewVisible && ![self isInvalidOrClosed]);
   _signinPromoViewState = ios::SigninPromoViewState::Closed;
+  const char* alreadySeenSigninViewPreferenceKey =
+      AlreadySeenSigninViewPreferenceKey(_accessPoint);
+  DCHECK(alreadySeenSigninViewPreferenceKey);
+  PrefService* prefs = _browserState->GetPrefs();
+  prefs->SetBoolean(alreadySeenSigninViewPreferenceKey, true);
   const char* displayedCountPreferenceKey =
       DisplayedCountPreferenceKey(_accessPoint);
   if (!displayedCountPreferenceKey)
     return;
-  PrefService* prefs = _browserState->GetPrefs();
   int displayedCount = prefs->GetInteger(displayedCountPreferenceKey);
   RecordImpressionsTilXButtonHistogramForAccessPoint(_accessPoint,
                                                      displayedCount);
