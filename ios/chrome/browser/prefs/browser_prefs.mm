@@ -38,7 +38,6 @@
 #include "components/update_client/update_client.h"
 #include "components/variations/service/variations_service.h"
 #include "components/web_resource/web_resource_pref_names.h"
-#include "ios/chrome/browser/bookmarks/bookmark_new_generation_features.h"
 #include "ios/chrome/browser/browser_state/browser_state_info_cache.h"
 #include "ios/chrome/browser/desktop_promotion/desktop_promotion_sync_service.h"
 #include "ios/chrome/browser/first_run/first_run.h"
@@ -49,10 +48,8 @@
 #include "ios/chrome/browser/physical_web/physical_web_prefs_registration.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
-#import "ios/chrome/browser/ui/bookmarks/bookmark_collection_view.h"
+#import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_mediator.h"
-#import "ios/chrome/browser/ui/bookmarks/bookmark_promo_controller.h"
-#import "ios/chrome/browser/ui/bookmarks/bookmark_table_view.h"
 #include "ios/chrome/browser/voice/voice_search_prefs_registration.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -122,13 +119,8 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   DesktopPromotionSyncService::RegisterDesktopPromotionUserPrefs(registry);
   RegisterVoiceSearchBrowserStatePrefs(registry);
 
-  if (base::FeatureList::IsEnabled(kBookmarkNewGeneration)) {
-    [BookmarkTableView registerBrowserStatePrefs:registry];
-  } else {
-    [BookmarkCollectionView registerBrowserStatePrefs:registry];
-  }
   [BookmarkMediator registerBrowserStatePrefs:registry];
-  [BookmarkPromoController registerBrowserStatePrefs:registry];
+  [SigninPromoViewMediator registerBrowserStatePrefs:registry];
   [HandoffManager registerBrowserStatePrefs:registry];
   registry->RegisterIntegerPref(prefs::kIosSettingsSigninPromoDisplayedCount,
                                 0);

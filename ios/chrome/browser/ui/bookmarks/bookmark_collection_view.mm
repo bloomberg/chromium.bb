@@ -21,12 +21,10 @@
 #include "components/favicon/core/large_icon_service.h"
 #include "components/favicon_base/fallback_icon_style.h"
 #include "components/favicon_base/favicon_types.h"
-#include "components/pref_registry/pref_registry_syncable.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/bookmarks/bookmarks_utils.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
-#include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/sync/synced_sessions_bridge.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_configurator.h"
@@ -153,11 +151,6 @@ CGFloat minFaviconSizePt = 16;
 @synthesize browserState = _browserState;
 @synthesize shadow = _shadow;
 @synthesize presenter = _presenter;
-
-+ (void)registerBrowserStatePrefs:(user_prefs::PrefRegistrySyncable*)registry {
-  registry->RegisterIntegerPref(prefs::kIosBookmarkSigninPromoDisplayedCount,
-                                0);
-}
 
 #pragma mark - Initialization
 

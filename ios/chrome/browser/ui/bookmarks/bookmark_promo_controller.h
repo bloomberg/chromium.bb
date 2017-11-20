@@ -13,10 +13,6 @@ namespace ios {
 class ChromeBrowserState;
 }  // namespace ios
 
-namespace user_prefs {
-class PrefRegistrySyncable;
-}  // namespace user_prefs
-
 @protocol BookmarkPromoControllerDelegate
 
 // Controls the state of the promo.
@@ -33,9 +29,6 @@ class PrefRegistrySyncable;
 // Holds the current state of the promo. When the promo state change, it will
 // call the promoStateChanged: selector on the delegate.
 @property(nonatomic, assign) BOOL promoState;
-
-// Registers the feature preferences.
-+ (void)registerBrowserStatePrefs:(user_prefs::PrefRegistrySyncable*)registry;
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
                             delegate:
