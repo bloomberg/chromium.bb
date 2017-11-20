@@ -22,7 +22,7 @@
 #include "fcint.h"
 #include <uuid/uuid.h>
 
-#define FC_HASH_SIZE 4099
+#define FC_HASH_SIZE 227
 
 typedef struct _FcHashBucket {
     struct _FcHashBucket  *next;
