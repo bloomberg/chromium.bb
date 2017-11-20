@@ -765,11 +765,10 @@ bool OmniboxEditModel::AcceptKeyword(
     const AutocompleteMatch& match = CurrentMatch(nullptr);
     original_url_ = match.destination_url;
     view_->OnTemporaryTextMaybeChanged(MaybeStripKeyword(match.fill_into_edit),
-                                       match.type, save_original_selection,
-                                       true);
+                                       match, save_original_selection, true);
   } else {
     const AutocompleteMatch& match = CurrentMatch(nullptr);
-    view_->OnTemporaryTextMaybeChanged(user_text_, match.type, false, true);
+    view_->OnTemporaryTextMaybeChanged(user_text_, match, false, true);
   }
 
   base::RecordAction(base::UserMetricsAction("AcceptedKeywordHint"));
@@ -1066,7 +1065,7 @@ void OmniboxEditModel::OnPopupDataChanged(
       // right answer here :(
     }
     const AutocompleteMatch& match = CurrentMatch(nullptr);
-    view_->OnTemporaryTextMaybeChanged(MaybeStripKeyword(text), match.type,
+    view_->OnTemporaryTextMaybeChanged(MaybeStripKeyword(text), match,
                                        save_original_selection, true);
     return;
   }
