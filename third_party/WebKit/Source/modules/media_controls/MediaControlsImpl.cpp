@@ -154,8 +154,9 @@ bool ShouldShowCastButton(HTMLMediaElement& media_element) {
   // false to make sure the overlay does not appear.
   Document& document = media_element.GetDocument();
   if (document.GetSettings() &&
-      !document.GetSettings()->GetMediaControlsEnabled())
+      !document.GetSettings()->GetMediaControlsEnabled()) {
     return false;
+  }
 
   // The page disabled the button via the attribute.
   if (media_element.ControlsListInternal()->ShouldHideRemotePlayback()) {

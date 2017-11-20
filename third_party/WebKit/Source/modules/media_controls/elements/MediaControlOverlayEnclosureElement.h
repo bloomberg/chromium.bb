@@ -10,7 +10,6 @@
 namespace blink {
 
 class Event;
-class EventDispatchHandlingState;
 class MediaControlsImpl;
 
 class MediaControlOverlayEnclosureElement final
@@ -18,8 +17,7 @@ class MediaControlOverlayEnclosureElement final
  public:
   explicit MediaControlOverlayEnclosureElement(MediaControlsImpl&);
 
- private:
-  EventDispatchHandlingState* PreDispatchEventHandler(Event*) override;
+  void DefaultEventHandler(Event*) override;
 };
 
 }  // namespace blink
