@@ -11,9 +11,11 @@ bool ExperimentMetrics::InInitialState() const {
 }
 
 bool ExperimentMetrics::InTerminalState() const {
+  static_assert(NUM_STATES == 18,
+                "update the list of terminal states when adding a new state.");
   return state == kSelectedNoThanks || state == kSelectedOpenChromeAndCrash ||
          state == kSelectedOpenChromeAndNoCrash || state == kSelectedClose ||
-         state == kUserLogOff;
+         state == kUserLogOff || state == kOtherLaunch || state == kOtherClose;
 }
 
 bool ExperimentMetrics::operator==(const ExperimentMetrics& other) const {
