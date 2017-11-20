@@ -472,7 +472,7 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   void GetDefaultOutputBufferSizeInternal();
 
   // Handle dbus callback for GetDefaultOutputBufferSize.
-  void HandleGetDefaultOutputBufferSize(int buffer_size, bool success);
+  void HandleGetDefaultOutputBufferSize(base::Optional<int> buffer_size);
 
   void OnVideoCaptureStartedOnMainThread(media::VideoFacingMode facing);
   void OnVideoCaptureStoppedOnMainThread(media::VideoFacingMode facing);

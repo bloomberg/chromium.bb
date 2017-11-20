@@ -64,24 +64,11 @@ class CHROMEOS_EXPORT CrasAudioClient : public DBusClient {
   // Returns true if this object has the given observer.
   virtual bool HasObserver(const Observer* observer) const = 0;
 
-  // GetVolumeStateCallback is used for GetVolumeState method. It receives
-  // 2 arguments, |volume_state| which containing both input and  output volume
-  // state data, and |success| which indicates whether or not the request
-  // succeeded.
-  typedef base::Callback<void(const VolumeState&, bool)> GetVolumeStateCallback;
-
-  // Used for GetDefaultOutputBufferSize method. The first argument is the
-  // default output buffer size. The second argument indicates whether the
-  // request succeeded. The first argument is valid only when the request
-  // succeeded.
-  typedef base::Callback<void(int, bool)> GetDefaultOutputBufferSizeCallback;
-
   // Gets the volume state, asynchronously.
-  virtual void GetVolumeState(const GetVolumeStateCallback& callback) = 0;
+  virtual void GetVolumeState(DBusMethodCallback<VolumeState> callback) = 0;
 
   // Gets the default output buffer size in frames.
-  virtual void GetDefaultOutputBufferSize(
-      const GetDefaultOutputBufferSizeCallback& callback) = 0;
+  virtual void GetDefaultOutputBufferSize(DBusMethodCallback<int> callback) = 0;
 
   // Gets an array of audio input and output nodes.
   virtual void GetNodes(DBusMethodCallback<AudioNodeList> callback) = 0;

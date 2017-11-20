@@ -40,23 +40,22 @@ class CrasAudioClientImpl : public CrasAudioClient {
     return observers_.HasObserver(observer);
   }
 
-  void GetVolumeState(const GetVolumeStateCallback& callback) override {
+  void GetVolumeState(DBusMethodCallback<VolumeState> callback) override {
     dbus::MethodCall method_call(cras::kCrasControlInterface,
                                  cras::kGetVolumeState);
     cras_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&CrasAudioClientImpl::OnGetVolumeState,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
-  void GetDefaultOutputBufferSize(
-      const GetDefaultOutputBufferSizeCallback& callback) override {
+  void GetDefaultOutputBufferSize(DBusMethodCallback<int> callback) override {
     dbus::MethodCall method_call(cras::kCrasControlInterface,
                                  cras::kGetDefaultOutputBufferSize);
     cras_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&CrasAudioClientImpl::OnGetDefaultOutputBufferSize,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   void GetNodes(DBusMethodCallback<AudioNodeList> callback) override {
@@ -379,48 +378,47 @@ class CrasAudioClientImpl : public CrasAudioClient {
       observer.HotwordTriggered(tv_sec, tv_nsec);
   }
 
-  void OnGetVolumeState(const GetVolumeStateCallback& callback,
+  void OnGetVolumeState(DBusMethodCallback<VolumeState> callback,
                         dbus::Response* response) {
-    bool success = true;
-    VolumeState volume_state;
-    if (response) {
-      dbus::MessageReader reader(response);
-      if (!reader.PopInt32(&volume_state.output_volume) ||
-          !reader.PopBool(&volume_state.output_system_mute) ||
-          !reader.PopInt32(&volume_state.input_gain) ||
-          !reader.PopBool(&volume_state.input_mute) ||
-          !reader.PopBool(&volume_state.output_user_mute)) {
-        success = false;
-        LOG(ERROR) << "Error reading response from cras: "
-                   << response->ToString();
-      }
-    } else {
-      success = false;
+    if (!response) {
       LOG(ERROR) << "Error calling " << cras::kGetVolumeState;
+      std::move(callback).Run(base::nullopt);
+      return;
     }
 
-    callback.Run(volume_state, success);
+    VolumeState volume_state;
+    dbus::MessageReader reader(response);
+    if (!reader.PopInt32(&volume_state.output_volume) ||
+        !reader.PopBool(&volume_state.output_system_mute) ||
+        !reader.PopInt32(&volume_state.input_gain) ||
+        !reader.PopBool(&volume_state.input_mute) ||
+        !reader.PopBool(&volume_state.output_user_mute)) {
+      LOG(ERROR) << "Error reading response from cras: "
+                 << response->ToString();
+      std::move(callback).Run(base::nullopt);
+      return;
+    }
+
+    std::move(callback).Run(std::move(volume_state));
   }
 
-  void OnGetDefaultOutputBufferSize(
-      const GetDefaultOutputBufferSizeCallback& callback,
-      dbus::Response* response) {
-    bool success = true;
-    int32_t buffer_size = 0;
-
-    if (response) {
-      dbus::MessageReader reader(response);
-      if (!reader.PopInt32(&buffer_size)) {
-        success = false;
-        LOG(ERROR) << "Error reading response from cras: "
-                   << response->ToString();
-      }
-    } else {
-      success = false;
+  void OnGetDefaultOutputBufferSize(DBusMethodCallback<int> callback,
+                                    dbus::Response* response) {
+    if (!response) {
       LOG(ERROR) << "Error calling " << cras::kGetDefaultOutputBufferSize;
+      std::move(callback).Run(base::nullopt);
+      return;
+    }
+    int32_t buffer_size = 0;
+    dbus::MessageReader reader(response);
+    if (!reader.PopInt32(&buffer_size)) {
+      LOG(ERROR) << "Error reading response from cras: "
+                 << response->ToString();
+      std::move(callback).Run(base::nullopt);
+      return;
     }
 
-    callback.Run(buffer_size, success);
+    std::move(callback).Run(buffer_size);
   }
 
   void OnGetNodes(DBusMethodCallback<AudioNodeList> callback,
