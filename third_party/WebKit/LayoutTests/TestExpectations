@@ -2777,6 +2777,8 @@ crbug.com/664819 virtual/mojo-loading/http/tests/security/isolatedWorld/bypass-m
 crbug.com/664819 http/tests/security/isolatedWorld/events.html [ Pass Failure ]
 crbug.com/664819 virtual/mojo-loading/http/tests/security/isolatedWorld/events.html [ Pass Failure ]
 
+crbug.com/787084 http/tests/security/contentSecurityPolicy/report-blocked-data-uri.php [ Skip ]
+
 crbug.com/702837 fast/text/aat-morx.html [ Skip ]
 
 crbug.com/688670 media/track/track-cue-rendering-after-controls-removed.html [ Pass Failure ]
