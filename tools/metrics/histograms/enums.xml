@@ -16975,6 +16975,7 @@ Called by update_net_error_codes.py.-->
   <int value="2232" label="LinkRelModulePreload"/>
   <int value="2233" label="PerformanceMeasurePassedInObject"/>
   <int value="2234" label="PerformanceMeasurePassedInNavigationTiming"/>
+  <int value="2235" label="HTMLFrameSetElementNonNullAnonymousNamedGetter"/>
 </enum>
 
 <enum name="FeedbackSource">
