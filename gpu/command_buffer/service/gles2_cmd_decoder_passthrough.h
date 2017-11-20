@@ -386,6 +386,8 @@ class GPU_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
     return feature_info_->feature_flags();
   }
 
+  void ExitCommandProcessingEarly() { commands_to_process_ = 0; }
+
   GLES2DecoderClient* client_;
 
   int commands_to_process_;
