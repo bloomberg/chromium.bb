@@ -6,6 +6,8 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 static_library("cpp") {
   sources = [
+    "cors_error_status.cc",
+    "cors_error_status.h",
     "net_adapters.cc",
     "net_adapters.h",
     "url_loader_status.cc",

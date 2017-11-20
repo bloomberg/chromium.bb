@@ -93,6 +93,7 @@ jumbo_source_set("loader") {
   deps = [
     ":make_platform_loader_generated_fetch_initiator_type_names",
     "//components/link_header_util:link_header_util",
+    "//services/network/public/cpp:cpp",
   ]
 
   public_deps = [

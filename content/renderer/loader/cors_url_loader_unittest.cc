@@ -183,9 +183,9 @@ TEST_F(CORSURLLoaderTest, CrossOriginRequestFetchRequestModeSameOrigin) {
   EXPECT_FALSE(client().has_received_redirect());
   EXPECT_FALSE(client().has_received_response());
   EXPECT_EQ(net::ERR_FAILED, client().status().error_code);
-  ASSERT_TRUE(client().status().cors_error);
+  ASSERT_TRUE(client().status().cors_error_status);
   EXPECT_EQ(network::mojom::CORSError::kDisallowedByMode,
-            *client().status().cors_error);
+            client().status().cors_error_status->cors_error);
 }
 
 TEST_F(CORSURLLoaderTest, CrossOriginRequestWithCORSModeButMissingCORSHeader) {
@@ -202,9 +202,9 @@ TEST_F(CORSURLLoaderTest, CrossOriginRequestWithCORSModeButMissingCORSHeader) {
   EXPECT_FALSE(client().has_received_redirect());
   EXPECT_FALSE(client().has_received_response());
   EXPECT_EQ(net::ERR_FAILED, client().status().error_code);
-  ASSERT_TRUE(client().status().cors_error);
+  ASSERT_TRUE(client().status().cors_error_status);
   EXPECT_EQ(network::mojom::CORSError::kMissingAllowOriginHeader,
-            *client().status().cors_error);
+            client().status().cors_error_status->cors_error);
 }
 
 TEST_F(CORSURLLoaderTest, CrossOriginRequestWithCORSMode) {
@@ -241,9 +241,9 @@ TEST_F(CORSURLLoaderTest,
   EXPECT_FALSE(client().has_received_redirect());
   EXPECT_FALSE(client().has_received_response());
   EXPECT_EQ(net::ERR_FAILED, client().status().error_code);
-  ASSERT_TRUE(client().status().cors_error);
+  ASSERT_TRUE(client().status().cors_error_status);
   EXPECT_EQ(network::mojom::CORSError::kAllowOriginMismatch,
-            *client().status().cors_error);
+            client().status().cors_error_status->cors_error);
 }
 
 }  // namespace

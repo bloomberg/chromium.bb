@@ -14,9 +14,9 @@ URLLoaderStatus::URLLoaderStatus(const URLLoaderStatus& status) = default;
 URLLoaderStatus::URLLoaderStatus(int error_code)
     : error_code(error_code), completion_time(base::TimeTicks::Now()) {}
 
-URLLoaderStatus::URLLoaderStatus(network::mojom::CORSError error)
+URLLoaderStatus::URLLoaderStatus(const CORSErrorStatus& error)
     : URLLoaderStatus(net::ERR_FAILED) {
-  cors_error = error;
+  cors_error_status = error;
 }
 
 URLLoaderStatus::~URLLoaderStatus() = default;
@@ -28,7 +28,7 @@ bool URLLoaderStatus::operator==(const URLLoaderStatus& rhs) const {
          encoded_data_length == rhs.encoded_data_length &&
          encoded_body_length == rhs.encoded_body_length &&
          decoded_body_length == rhs.decoded_body_length &&
-         cors_error == rhs.cors_error;
+         cors_error_status == rhs.cors_error_status;
 }
 
 }  // namespace network
