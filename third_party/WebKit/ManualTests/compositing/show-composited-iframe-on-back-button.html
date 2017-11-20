@@ -32,26 +32,26 @@
     <script type="text/javascript" charset="utf-8">
         var dumpLayerTree = function()
         {
-            if (window.layoutTestController) {
-                document.getElementById('layers').innerHTML += "Layer Tree after\n\n"+layoutTestController.layerTreeAsText()+"\n\n";
+            if (window.testRunner) {
+                document.getElementById('layers').innerHTML += "Layer Tree after\n\n"+testRunner.layerTreeAsText()+"\n\n";
             }
         }
         
-        if (window.layoutTestController) {
-            layoutTestController.dumpAsText();
+        if (window.testRunner) {
+            testRunner.dumpAsText();
         }
         
         function onPageShow(evt)
         {
-            if (!evt.persisted && window.layoutTestController) {
+            if (!evt.persisted && window.testRunner) {
                 // this is the first time the page has been loaded, then setup the
                 // to-be-tested scenario.
-                document.getElementById('layers').innerHTML = "Layer Tree before\n\n"+layoutTestController.layerTreeAsText()+"\n\n";
-                layoutTestController.queueLoad("resources/subframe.html");
-                layoutTestController.queueBackNavigation(1);
-                layoutTestController.queueForwardNavigation(1);
-                layoutTestController.queueBackNavigation(1);
-                layoutTestController.queueNonLoadingScript("dumpLayerTree()");
+                document.getElementById('layers').innerHTML = "Layer Tree before\n\n"+testRunner.layerTreeAsText()+"\n\n";
+                testRunner.queueLoad("resources/subframe.html");
+                testRunner.queueBackNavigation(1);
+                testRunner.queueForwardNavigation(1);
+                testRunner.queueBackNavigation(1);
+                testRunner.queueNonLoadingScript("dumpLayerTree()");
             }
         }
 

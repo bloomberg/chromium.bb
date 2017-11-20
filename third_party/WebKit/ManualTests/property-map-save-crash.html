@@ -3,9 +3,9 @@
         <script>
             function test()
             {
-                if (window.layoutTestController) {
-                    layoutTestController.dumpAsText();
-                    layoutTestController.waitUntilDone();
+                if (window.testRunner) {
+                    testRunner.dumpAsText();
+                    testRunner.waitUntilDone();
                 }
                 
                 window.crash = "crash";
@@ -19,8 +19,8 @@
             {
                 print("PASS: You didn't crash");
                 
-                if (window.layoutTestController)
-                    layoutTestController.notifyDone();
+                if (window.testRunner)
+                    testRunner.notifyDone();
             }
 
             function print(message) {

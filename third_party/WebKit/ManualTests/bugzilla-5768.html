@@ -4,8 +4,8 @@
 <head>
 <title>No relayout when all frames are fixed</title>
 <script type="text/javascript">
-if (window.layoutTestController)
-    layoutTestController.waitUntilDone();
+if (window.testRunner)
+    testRunner.waitUntilDone();
 var i = 0;
 function test()
 {
@@ -28,8 +28,8 @@ function test()
             window.setTimeout(test, 100);
             break;
         case 6:
-            if (window.layoutTestController)
-                layoutTestController.notifyDone();
+            if (window.testRunner)
+                testRunner.notifyDone();
             break;
     }
 }

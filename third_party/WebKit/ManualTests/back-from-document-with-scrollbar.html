@@ -5,9 +5,9 @@
 function navigate()
 {
     if (location.hash == "") {
-        if (window.layoutTestController) {
-            layoutTestController.dumpAsText();
-            layoutTestController.waitUntilDone();
+        if (window.testRunner) {
+            testRunner.dumpAsText();
+            testRunner.waitUntilDone();
         }
 
         history.pushState({ }, "", window.location + "#1");
@@ -29,8 +29,8 @@ function navigate()
     setTimeout(function () { 
         var result = document.getElementById("result");
         result.innerHTML = "Success if the web process did not crash."
-        if (window.layoutTestController)
-            layoutTestController.notifyDone();
+        if (window.testRunner)
+            testRunner.notifyDone();
     }, 0);
 }
 

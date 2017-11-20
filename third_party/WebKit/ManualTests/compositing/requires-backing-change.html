@@ -29,8 +29,8 @@
         document.getElementById('container').className = 'transformed';
         document.getElementById('container2').className = '';
         
-        if (window.layoutTestController)
-          layoutTestController.notifyDone();
+        if (window.testRunner)
+          testRunner.notifyDone();
       }, 100);
     }
     window.addEventListener('load', doTest, false);
