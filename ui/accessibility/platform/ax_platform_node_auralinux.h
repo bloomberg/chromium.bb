@@ -36,6 +36,7 @@ class AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   gfx::NativeViewAccessible HitTestSync(gint x,
                                         gint y,
                                         AtkCoordType coord_type);
+  bool GrabFocus();
 
   void SetExtentsRelativeToAtkCoordinateType(
       gint* x, gint* y, gint* width, gint* height,
