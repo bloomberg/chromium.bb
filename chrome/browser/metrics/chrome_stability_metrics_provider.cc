@@ -143,7 +143,9 @@ void ChromeStabilityMetricsProvider::OnCrashDumpProcessed(
     const breakpad::CrashDumpManager::CrashDumpDetails& details) {
   // There is a delay for OOM flag to be removed when app goes to background, so
   // we can't just check for OOM_PROTECTED flag.
-  if (details.process_type == content::PROCESS_TYPE_RENDERER &&
+  if (details.status ==
+          breakpad::CrashDumpManager::CrashDumpStatus::kValidDump &&
+      details.process_type == content::PROCESS_TYPE_RENDERER &&
       details.termination_status == base::TERMINATION_STATUS_OOM_PROTECTED &&
       (details.app_state ==
            base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES ||
