@@ -3,7 +3,6 @@ crbug.com/417782 compositing/iframes/invisible-nested-iframe-show.html [ Failure
 crbug.com/417782 compositing/iframes/overlapped-iframe-iframe.html [ Failure ]
 crbug.com/417782 compositing/iframes/overlapped-nested-iframes.html [ Failure ]
 crbug.com/417782 compositing/layer-creation/iframe-background-attachment-fixed.html [ Failure ]
-crbug.com/417782 compositing/overflow/nested-render-surfaces-with-intervening-clip.html [ Failure ]
 crbug.com/417782 compositing/rtl/rtl-iframe-absolute.html [ Failure ]
 crbug.com/417782 compositing/rtl/rtl-iframe-fixed.html [ Failure ]
 crbug.com/417782 compositing/rtl/rtl-iframe-relative.html [ Failure ]

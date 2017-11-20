@@ -440,7 +440,7 @@ void PaintLayer::UpdateTransform(const ComputedStyle* old_style,
     // clip rects here.
     ClearClipRects();
   } else if (has_transform) {
-    ClearClipRects(kAbsoluteClipRects);
+    ClearClipRects(kAbsoluteClipRectsIgnoringViewportClip);
   }
 
   UpdateTransformationMatrix();
