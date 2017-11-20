@@ -5,6 +5,8 @@
 #ifndef IOS_CHROME_BROWSER_TRANSLATE_CHROME_IOS_TRANSLATE_CLIENT_H_
 #define IOS_CHROME_BROWSER_TRANSLATE_CHROME_IOS_TRANSLATE_CLIENT_H_
 
+#import <Foundation/Foundation.h>
+
 #include <memory>
 #include <string>
 
@@ -13,6 +15,7 @@
 #include "components/translate/core/browser/translate_step.h"
 #include "components/translate/core/common/translate_errors.h"
 #include "components/translate/ios/browser/ios_translate_driver.h"
+#include "ios/chrome/browser/translate/language_selection_handler.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 #include "ios/web/public/web_state/web_state_user_data.h"
 
@@ -40,6 +43,13 @@ class ChromeIOSTranslateClient
       public web::WebStateUserData<ChromeIOSTranslateClient> {
  public:
   ~ChromeIOSTranslateClient() override;
+
+  // Creates a translation client tab helper and attaches it to |web_state|. The
+  // |language_selection_handler| may not be nil, and is not retained by the
+  // ChromeIOSTranslateClient.
+  static void CreateForWebState(
+      web::WebState* web_state,
+      id<LanguageSelectionHandler> language_selection_handler);
 
   // Helper method to return a new TranslatePrefs instance.
   static std::unique_ptr<translate::TranslatePrefs> CreateTranslatePrefs(
@@ -70,7 +80,9 @@ class ChromeIOSTranslateClient
   void ShowReportLanguageDetectionErrorUI(const GURL& report_url) override;
 
  private:
-  explicit ChromeIOSTranslateClient(web::WebState* web_state);
+  ChromeIOSTranslateClient(
+      web::WebState* web_state,
+      id<LanguageSelectionHandler> language_selection_handler);
   friend class web::WebStateUserData<ChromeIOSTranslateClient>;
 
   // web::WebStateObserver implementation.
@@ -82,6 +94,7 @@ class ChromeIOSTranslateClient
 
   std::unique_ptr<translate::TranslateManager> translate_manager_;
   translate::IOSTranslateDriver translate_driver_;
+  __weak id<LanguageSelectionHandler> language_selection_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeIOSTranslateClient);
 };
