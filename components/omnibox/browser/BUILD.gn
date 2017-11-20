@@ -279,6 +279,7 @@ source_set("unit_tests") {
     "bookmark_provider_unittest.cc",
     "builtin_provider_unittest.cc",
     "clipboard_url_provider_unittest.cc",
+    "history_provider_unittest.cc",
     "history_quick_provider_unittest.cc",
     "history_url_provider_unittest.cc",
     "in_memory_url_index_types_unittest.cc",

@@ -28,6 +28,7 @@
 #include "components/omnibox/browser/scored_history_match.h"
 #include "components/search_engines/template_url_service.h"
 
+class FakeAutocompleteProviderClient;
 class HistoryQuickProviderTest;
 
 namespace base {
@@ -142,6 +143,7 @@ class InMemoryURLIndex : public KeyedService,
   }
 
  private:
+  friend class ::FakeAutocompleteProviderClient;
   friend class ::HistoryQuickProviderTest;
   friend class history::HQPPerfTestOnePopularURL;
   friend class InMemoryURLIndexTest;

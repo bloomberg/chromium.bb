@@ -112,7 +112,7 @@ void HistoryProvider::ConvertOpenTabMatches() {
       match.type = AutocompleteMatchType::TAB_SEARCH;
       const base::string16 switch_tab_message =
           l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_HINT) +
-          base::UTF8ToUTF16(" - ");
+          base::UTF8ToUTF16(match.description.empty() ? "" : " - ");
       match.description = switch_tab_message + match.description;
       // Add classfication for the prefix.
       if (match.description_class.empty()) {

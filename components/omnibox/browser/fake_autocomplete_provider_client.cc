@@ -5,6 +5,7 @@
 #include "components/omnibox/browser/fake_autocomplete_provider_client.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/test_bookmark_client.h"
 #include "components/history/core/browser/history_service.h"
@@ -12,7 +13,8 @@
 #include "components/omnibox/browser/in_memory_url_index.h"
 #include "components/omnibox/browser/in_memory_url_index_test_util.h"
 
-FakeAutocompleteProviderClient::FakeAutocompleteProviderClient() {
+FakeAutocompleteProviderClient::FakeAutocompleteProviderClient()
+    : is_tab_open_with_url_(false) {
   bookmark_model_ = bookmarks::TestBookmarkClient::CreateModel();
 
   CHECK(history_dir_.CreateUniqueTempDir());
@@ -25,7 +27,16 @@ FakeAutocompleteProviderClient::FakeAutocompleteProviderClient() {
   in_memory_url_index_->Init();
 }
 
-FakeAutocompleteProviderClient::~FakeAutocompleteProviderClient() = default;
+FakeAutocompleteProviderClient::~FakeAutocompleteProviderClient() {
+  // The InMemoryURLIndex must be explicitly shut down or it will DCHECK() in
+  // its destructor.
+  GetInMemoryURLIndex()->Shutdown();
+  set_in_memory_url_index(nullptr);
+  // History index rebuild task is created from main thread during SetUp,
+  // performed on DB thread and must be deleted on main thread.
+  // Run main loop to process delete task, to prevent leaks.
+  base::RunLoop().RunUntilIdle();
+}
 
 const AutocompleteSchemeClassifier&
 FakeAutocompleteProviderClient::GetSchemeClassifier() const {
@@ -47,4 +58,8 @@ bookmarks::BookmarkModel* FakeAutocompleteProviderClient::GetBookmarkModel() {
 
 InMemoryURLIndex* FakeAutocompleteProviderClient::GetInMemoryURLIndex() {
   return in_memory_url_index_.get();
+}
+
+bool FakeAutocompleteProviderClient::IsTabOpenWithURL(const GURL& url) {
+  return is_tab_open_with_url_;
 }

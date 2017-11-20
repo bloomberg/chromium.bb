@@ -179,10 +179,10 @@ struct TestShortcutData shortcut_test_db[] = {
     AutocompleteMatchType::HISTORY_URL, "", 1, 100 },
 };
 
-class FakeAutocompleteProviderClient
+class AnonFakeAutocompleteProviderClient
     : public testing::NiceMock<MockAutocompleteProviderClient> {
  public:
-  FakeAutocompleteProviderClient() : pool_owner_(3, "Background Pool") {
+  AnonFakeAutocompleteProviderClient() : pool_owner_(3, "Background Pool") {
     set_template_url_service(base::MakeUnique<TemplateURLService>(nullptr, 0));
     if (history_dir_.CreateUniqueTempDir()) {
       history_service_ =
@@ -213,7 +213,7 @@ class FakeAutocompleteProviderClient
   std::unique_ptr<history::HistoryService> history_service_;
   scoped_refptr<ShortcutsBackend> shortcuts_backend_;
 
-  DISALLOW_COPY_AND_ASSIGN(FakeAutocompleteProviderClient);
+  DISALLOW_COPY_AND_ASSIGN(AnonFakeAutocompleteProviderClient);
 };
 
 }  // namespace
@@ -266,14 +266,14 @@ class ShortcutsProviderTest : public testing::Test {
                      int max_relevance);
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  std::unique_ptr<FakeAutocompleteProviderClient> client_;
+  std::unique_ptr<AnonFakeAutocompleteProviderClient> client_;
   scoped_refptr<ShortcutsProvider> provider_;
 };
 
 ShortcutsProviderTest::ShortcutsProviderTest() {}
 
 void ShortcutsProviderTest::SetUp() {
-  client_.reset(new FakeAutocompleteProviderClient());
+  client_ = std::make_unique<AnonFakeAutocompleteProviderClient>();
 
   ASSERT_TRUE(client_->GetShortcutsBackend());
   provider_ = new ShortcutsProvider(client_.get());
