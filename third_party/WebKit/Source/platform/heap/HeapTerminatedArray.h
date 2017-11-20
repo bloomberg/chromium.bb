@@ -59,12 +59,6 @@ class HeapTerminatedArray : public TerminatedArray<T> {
   friend class WTF::TerminatedArrayBuilder;
 };
 
-template <typename T>
-class TraceEagerlyTrait<HeapTerminatedArray<T>> {
- public:
-  static const bool value = TraceEagerlyTrait<T>::value;
-};
-
 }  // namespace blink
 
 #endif  // HeapTerminatedArray_h

@@ -25,6 +25,7 @@
 
 #include <memory>
 #include "platform/heap/Handle.h"
+#include "platform/heap/HeapAllocator.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/ListHashSet.h"
@@ -91,9 +92,8 @@ class DocumentState final : public GarbageCollected<DocumentState> {
   Vector<String> ToStateVector();
 
  private:
-  using FormElementListHashSet =
-      HeapListHashSet<Member<HTMLFormControlElementWithState>, 64>;
-  FormElementListHashSet form_controls_;
+  using FormElementList = HeapDoublyLinkedList<HTMLFormControlElementWithState>;
+  FormElementList form_controls_;
 };
 
 class FormController final : public GarbageCollectedFinalized<FormController> {
