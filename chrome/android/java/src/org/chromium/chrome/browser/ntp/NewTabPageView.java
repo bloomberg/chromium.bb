@@ -94,7 +94,7 @@ public class NewTabPageView extends FrameLayout implements TileGroup.Observer {
     /**
      * Default experiment parameter value for the logo height in dp in the condensed layout.
      */
-    private static final int PARAM_DEFAULT_VALUE_CONDENSED_LAYOUT_LOGO_HEIGHT_DP = 50;
+    private static final int PARAM_DEFAULT_VALUE_CONDENSED_LAYOUT_LOGO_HEIGHT_DP = 100;
 
     private NewTabPageRecyclerView mRecyclerView;
 
