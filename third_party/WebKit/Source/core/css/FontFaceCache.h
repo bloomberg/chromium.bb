@@ -35,7 +35,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/HashMap.h"
-#include "platform/wtf/ListHashSet.h"
+#include "platform/wtf/LinkedHashSet.h"
 #include "platform/wtf/text/StringHash.h"
 
 namespace blink {
@@ -61,7 +61,7 @@ class CORE_EXPORT FontFaceCache final {
   // but this function uses FontDescription/family pair.
   CSSSegmentedFontFace* Get(const FontDescription&, const AtomicString& family);
 
-  const HeapListHashSet<Member<FontFace>>& CssConnectedFontFaces() const {
+  const HeapLinkedHashSet<Member<FontFace>>& CssConnectedFontFaces() const {
     return css_connected_font_faces_;
   }
 
@@ -109,7 +109,7 @@ class CORE_EXPORT FontFaceCache final {
   // Needed for incoming ClearCSSConnected() requests coming in from
   // StyleEngine, which clears all those faces from the FontCache which are
   // originating from CSS, as opposed to those originating from JS.
-  HeapListHashSet<Member<FontFace>> css_connected_font_faces_;
+  HeapLinkedHashSet<Member<FontFace>> css_connected_font_faces_;
 
   // FIXME: See if this could be ditched
   // Used to compare Font instances, and the usage seems suspect.

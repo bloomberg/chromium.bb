@@ -82,7 +82,7 @@ bool FontFaceSet::deleteForBinding(ScriptState*,
   DCHECK(font_face);
   if (!InActiveContext())
     return false;
-  HeapListHashSet<Member<FontFace>>::iterator it =
+  HeapLinkedHashSet<Member<FontFace>>::iterator it =
       non_css_connected_faces_.find(font_face);
   if (it != non_css_connected_faces_.end()) {
     non_css_connected_faces_.erase(it);
@@ -297,7 +297,7 @@ FontFaceSetIterable::IterationSource* FontFaceSet::StartIteration(
   // modification, take a snapshot here, and make it ordered as follows.
   HeapVector<Member<FontFace>> font_faces;
   if (InActiveContext()) {
-    const HeapListHashSet<Member<FontFace>>& css_connected_faces =
+    const HeapLinkedHashSet<Member<FontFace>>& css_connected_faces =
         CSSConnectedFontFaceList();
     font_faces.ReserveInitialCapacity(css_connected_faces.size() +
                                       non_css_connected_faces_.size());

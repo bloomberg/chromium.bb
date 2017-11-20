@@ -89,7 +89,7 @@ class CORE_EXPORT FontFaceSet : public EventTargetWithInlineData,
   virtual bool ResolveFontStyle(const String&, Font&) = 0;
   virtual bool InActiveContext() const = 0;
   virtual FontSelector* GetFontSelector() const = 0;
-  virtual const HeapListHashSet<Member<FontFace>>& CSSConnectedFontFaceList()
+  virtual const HeapLinkedHashSet<Member<FontFace>>& CSSConnectedFontFaceList()
       const = 0;
   bool IsCSSConnectedFontFace(FontFace* font_face) const {
     return CSSConnectedFontFaceList().Contains(font_face);
@@ -109,7 +109,7 @@ class CORE_EXPORT FontFaceSet : public EventTargetWithInlineData,
 
   bool is_loading_;
   bool should_fire_loading_event_;
-  HeapListHashSet<Member<FontFace>> non_css_connected_faces_;
+  HeapLinkedHashSet<Member<FontFace>> non_css_connected_faces_;
   HeapHashSet<Member<FontFace>> loading_fonts_;
   FontFaceArray loaded_fonts_;
   FontFaceArray failed_fonts_;
