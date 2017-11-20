@@ -20,7 +20,7 @@ namespace vr {
 TEST(Button, HoverTest) {
   auto button =
       base::MakeUnique<Button>(base::Callback<void()>(), kPhaseForeground, 1.0,
-                               1.0, vector_icons::kMicrophoneIcon);
+                               1.0, 0.5, vector_icons::kMicrophoneIcon);
 
   cc::TransformOperation foreground_op =
       button->foreground()->GetTargetTransform().at(UiElement::kTranslateIndex);
