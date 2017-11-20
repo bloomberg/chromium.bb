@@ -264,7 +264,8 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
 
   bool CanHaveChildren() const override;
 
-  void LayoutContent();
+  void UpdateBlockLayout(bool relayout_children) override;
+
 #if DCHECK_IS_ON()
   void CheckLayoutState();
 #endif
