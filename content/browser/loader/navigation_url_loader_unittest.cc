@@ -394,7 +394,9 @@ TEST_F(NavigationURLLoaderTest, RequestBlocked) {
   // Wait for the request to fail as expected.
   delegate.WaitForRequestFailed();
   EXPECT_EQ(net::ERR_ABORTED, delegate.net_error());
-  EXPECT_EQ(1, delegate.on_request_handled_counter());
+
+  // Failing before start means OnRequestStarted is never called.
+  EXPECT_EQ(0, delegate.on_request_handled_counter());
 
   host_.SetDelegate(nullptr);
 }

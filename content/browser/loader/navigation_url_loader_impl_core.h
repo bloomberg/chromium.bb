@@ -95,6 +95,8 @@ class NavigationURLLoaderImplCore
   base::WeakPtr<NavigationURLLoaderImpl> loader_;
   NavigationResourceHandler* resource_handler_;
 
+  base::WeakPtrFactory<NavigationURLLoaderImplCore> weak_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(NavigationURLLoaderImplCore);
 };
 
