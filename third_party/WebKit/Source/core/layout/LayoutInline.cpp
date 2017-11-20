@@ -1350,8 +1350,7 @@ void LayoutInline::DirtyLinesFromChangedChild(
     MarkingBehavior marking_behavior) {
   // During layout tree construction, we can't detect whether this node is
   // in LayoutNG or not.
-  if (RuntimeEnabledFeatures::LayoutNGEnabled() && Parent() &&
-      EnclosingNGBlockFlow()) {
+  if (Parent() && EnclosingNGBlockFlow()) {
     SetAncestorLineBoxDirty();
     return;
   }
