@@ -57,7 +57,9 @@ class TestSecurityStateHelper {
         ran_mixed_content_(false),
         malicious_content_status_(MALICIOUS_CONTENT_STATUS_NONE),
         is_incognito_(false),
-        is_error_page_(false) {}
+        is_error_page_(false),
+        is_view_source_(false) {}
+
   virtual ~TestSecurityStateHelper() {}
 
   void SetCertificate(scoped_refptr<net::X509Certificate> cert) {
@@ -71,6 +73,9 @@ class TestSecurityStateHelper {
   }
   void AddCertStatus(net::CertStatus cert_status) {
     cert_status_ |= cert_status;
+  }
+  void set_cert_status(net::CertStatus cert_status) {
+    cert_status_ = cert_status;
   }
   void set_displayed_mixed_content(bool displayed_mixed_content) {
     displayed_mixed_content_ = displayed_mixed_content;
@@ -95,6 +100,10 @@ class TestSecurityStateHelper {
 
   void set_is_error_page(bool is_error_page) { is_error_page_ = is_error_page; }
 
+  void set_is_view_source(bool is_view_source) {
+    is_view_source_ = is_view_source;
+  }
+
   void set_insecure_field_edit(bool insecure_field_edit) {
     insecure_input_events_.insecure_field_edited = insecure_field_edit;
   }
@@ -115,6 +124,7 @@ class TestSecurityStateHelper {
     state->malicious_content_status = malicious_content_status_;
     state->is_incognito = is_incognito_;
     state->is_error_page = is_error_page_;
+    state->is_view_source = is_view_source_;
     state->insecure_input_events = insecure_input_events_;
     return state;
   }
@@ -137,6 +147,7 @@ class TestSecurityStateHelper {
   MaliciousContentStatus malicious_content_status_;
   bool is_incognito_;
   bool is_error_page_;
+  bool is_view_source_;
   InsecureInputEventData insecure_input_events_;
 };
 
@@ -379,6 +390,32 @@ TEST(SecurityStateTest, PrivateUserDataNotSetOnPseudoUrls) {
     EXPECT_FALSE(security_info.insecure_input_events.credit_card_field_edited);
     EXPECT_EQ(NONE, security_info.security_level);
   }
+}
+
+// Tests that if |is_view_source| NONE is returned for a secure site.
+TEST(SecurityStateTest, ViewSourceRemovesSecure) {
+  TestSecurityStateHelper helper;
+  SecurityInfo security_info;
+  helper.set_cert_status(0);
+  helper.GetSecurityInfo(&security_info);
+  EXPECT_EQ(SECURE, security_info.security_level);
+  helper.set_is_view_source(true);
+  helper.GetSecurityInfo(&security_info);
+  EXPECT_EQ(NONE, security_info.security_level);
+}
+
+// Tests that if |is_view_source|, DANGEROUS is still returned for a site
+// flagged by SafeBrowsing.
+TEST(SecurityStateTest, ViewSourceKeepsWarning) {
+  TestSecurityStateHelper helper;
+  helper.set_malicious_content_status(
+      MALICIOUS_CONTENT_STATUS_SOCIAL_ENGINEERING);
+  helper.set_is_view_source(true);
+  SecurityInfo security_info;
+  helper.GetSecurityInfo(&security_info);
+  EXPECT_EQ(MALICIOUS_CONTENT_STATUS_SOCIAL_ENGINEERING,
+            security_info.malicious_content_status);
+  EXPECT_EQ(DANGEROUS, security_info.security_level);
 }
 
 // Tests that |incognito_downgraded_security_level| is set only when the
