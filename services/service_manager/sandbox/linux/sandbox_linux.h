@@ -128,7 +128,7 @@ class SERVICE_MANAGER_SANDBOX_EXPORT SandboxLinux {
   // a new unprivileged namespace. This is a layer-1 sandbox.
   // In order for this sandbox to be effective, it must be "sealed" by calling
   // InitializeSandbox().
-  void EngageNamespaceSandbox();
+  void EngageNamespaceSandbox(bool from_zygote);
 
   // Return a list of file descriptors to close if PreinitializeSandbox() ran
   // but InitializeSandbox() won't. Avoid using.
