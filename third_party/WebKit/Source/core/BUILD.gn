@@ -106,6 +106,7 @@ source_set("generated") {
 source_set("prerequisites") {
   public_deps = [
     "//gpu/command_buffer/client:gles2_c_lib",
+    "//services/network/public/cpp:cpp",
     "//services/service_manager/public/cpp",
     "//skia",
     "//third_party/WebKit/Source/core/inspector:generated",
