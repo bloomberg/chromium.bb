@@ -577,7 +577,8 @@ public class ChildProcessLauncherHelper {
         if (Linker.areTestsEnabled()) {
             Linker linker = Linker.getInstance();
             return new ChromiumLinkerParams(sLinkerLoadAddress, waitForSharedRelros,
-                    linker.getTestRunnerClassNameForTesting());
+                    linker.getTestRunnerClassNameForTesting(),
+                    linker.getImplementationForTesting());
         } else {
             return new ChromiumLinkerParams(sLinkerLoadAddress, waitForSharedRelros);
         }

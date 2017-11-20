@@ -124,12 +124,17 @@ class AddressList(list):
 class LinkerTestCaseBase(object):
   """Base class for linker test cases."""
 
-  def __init__(self, is_low_memory=False):
+  def __init__(self, is_modern_linker=False, is_low_memory=False):
     """Create a test case.
     Args:
+      is_modern_linker: True to test ModernLinker, False to test LegacyLinker.
       is_low_memory: True to simulate a low-memory device, False otherwise.
     """
-    test_suffix = 'ForLegacyLinker'
+    self.is_modern_linker = is_modern_linker
+    if is_modern_linker:
+      test_suffix = 'ForModernLinker'
+    else:
+      test_suffix = 'ForLegacyLinker'
     self.is_low_memory = is_low_memory
     if is_low_memory:
       test_suffix += 'LowMemoryDevice'
@@ -162,7 +167,10 @@ class LinkerTestCaseBase(object):
     logging.info('Running linker test: %s', self.tagged_name)
 
     # Create command-line file on device.
-    command_line_flags = ''
+    if self.is_modern_linker:
+      command_line_flags = '--use-linker=modern'
+    else:
+      command_line_flags = '--use-linker=legacy'
     if self.is_low_memory:
       command_line_flags += ' --low-memory-device'
     device.WriteFile(_COMMAND_LINE_FILE, command_line_flags)
