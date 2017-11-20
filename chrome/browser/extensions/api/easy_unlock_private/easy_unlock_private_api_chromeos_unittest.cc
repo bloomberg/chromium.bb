@@ -529,7 +529,7 @@ TEST_F(EasyUnlockPrivateApiTest, GetRemoteDevicesNonExperimental) {
       extensions::api_test_utils::RunFunctionAndReturnSingleResult(
           function.get(), "[]", profile()));
   ASSERT_TRUE(value.get());
-  ASSERT_EQ(base::Value::Type::LIST, value->GetType());
+  ASSERT_EQ(base::Value::Type::LIST, value->type());
 
   base::ListValue* list_value = static_cast<base::ListValue*>(value.get());
   EXPECT_EQ(0u, list_value->GetSize());
