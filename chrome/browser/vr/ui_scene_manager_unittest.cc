@@ -460,11 +460,11 @@ TEST_F(UiSceneManagerTest, SecondaryButtonClickTriggersOnExitPrompt) {
 TEST_F(UiSceneManagerTest, UiUpdatesForWebVR) {
   MakeManager(kNotInCct, kInWebVr);
 
-  manager_->SetAudioCapturingIndicator(true);
-  manager_->SetVideoCapturingIndicator(true);
-  manager_->SetScreenCapturingIndicator(true);
-  manager_->SetLocationAccessIndicator(true);
-  manager_->SetBluetoothConnectedIndicator(true);
+  model_->permissions.audio_capture_enabled = true;
+  model_->permissions.video_capture_enabled = true;
+  model_->permissions.screen_capture_enabled = true;
+  model_->permissions.location_access = true;
+  model_->permissions.bluetooth_connected = true;
 
   auto* web_vr_root = scene_->GetUiElementByName(kWebVrRoot);
   for (auto& element : *web_vr_root) {
@@ -480,11 +480,11 @@ TEST_F(UiSceneManagerTest, UiUpdatesForWebVR) {
 
 TEST_F(UiSceneManagerTest, UiUpdateTransitionToWebVR) {
   MakeManager(kNotInCct, kNotInWebVr);
-  manager_->SetAudioCapturingIndicator(true);
-  manager_->SetVideoCapturingIndicator(true);
-  manager_->SetScreenCapturingIndicator(true);
-  manager_->SetLocationAccessIndicator(true);
-  manager_->SetBluetoothConnectedIndicator(true);
+  model_->permissions.audio_capture_enabled = true;
+  model_->permissions.video_capture_enabled = true;
+  model_->permissions.screen_capture_enabled = true;
+  model_->permissions.location_access = true;
+  model_->permissions.bluetooth_connected = true;
 
   // Transition to WebVR mode
   manager_->SetWebVrMode(true, false);
@@ -504,22 +504,20 @@ TEST_F(UiSceneManagerTest, CaptureIndicatorsVisibility) {
   EXPECT_TRUE(VerifyVisibility(indicators, false));
   EXPECT_TRUE(VerifyRequiresLayout(indicators, false));
 
-  manager_->SetAudioCapturingIndicator(true);
-  manager_->SetVideoCapturingIndicator(true);
-  manager_->SetScreenCapturingIndicator(true);
-  manager_->SetLocationAccessIndicator(true);
-  manager_->SetBluetoothConnectedIndicator(true);
+  model_->permissions.audio_capture_enabled = true;
+  model_->permissions.video_capture_enabled = true;
+  model_->permissions.screen_capture_enabled = true;
+  model_->permissions.location_access = true;
+  model_->permissions.bluetooth_connected = true;
   EXPECT_TRUE(VerifyVisibility(indicators, true));
   EXPECT_TRUE(VerifyRequiresLayout(indicators, true));
 
   // Go into non-browser modes and make sure all indicators are hidden.
   manager_->SetWebVrMode(true, false);
   EXPECT_TRUE(VerifyVisibility(indicators, false));
-  EXPECT_TRUE(VerifyRequiresLayout(indicators, false));
   manager_->SetWebVrMode(false, false);
   manager_->SetFullscreen(true);
   EXPECT_TRUE(VerifyVisibility(indicators, false));
-  EXPECT_TRUE(VerifyRequiresLayout(indicators, false));
   manager_->SetFullscreen(false);
 
   // Back to browser, make sure the indicators reappear.
@@ -528,12 +526,11 @@ TEST_F(UiSceneManagerTest, CaptureIndicatorsVisibility) {
   EXPECT_TRUE(VerifyRequiresLayout(indicators, true));
 
   // Ensure they can be turned off.
-  manager_->SetAudioCapturingIndicator(false);
-  manager_->SetVideoCapturingIndicator(false);
-  manager_->SetScreenCapturingIndicator(false);
-  manager_->SetLocationAccessIndicator(false);
-  manager_->SetBluetoothConnectedIndicator(false);
-  EXPECT_TRUE(VerifyVisibility(indicators, false));
+  model_->permissions.audio_capture_enabled = false;
+  model_->permissions.video_capture_enabled = false;
+  model_->permissions.screen_capture_enabled = false;
+  model_->permissions.location_access = false;
+  model_->permissions.bluetooth_connected = false;
   EXPECT_TRUE(VerifyRequiresLayout(indicators, false));
 }
 

@@ -167,7 +167,7 @@ UiSceneManager::UiSceneManager(UiBrowserInterface* browser,
   CreateExitPrompt(model);
   CreateAudioPermissionPrompt(model);
   CreateWebVRExitWarning();
-  CreateSystemIndicators();
+  CreateSystemIndicators(model);
   CreateUrlBar(model);
   CreateSuggestionList(model);
   CreateWebVrUrlToast(model);
@@ -275,26 +275,29 @@ void UiSceneManager::CreateWebVRExitWarning() {
   scene_->AddUiElement(k2dBrowsingViewportAwareRoot, std::move(element));
 }
 
-void UiSceneManager::CreateSystemIndicators() {
+void UiSceneManager::CreateSystemIndicators(Model* model) {
   std::unique_ptr<UiElement> element;
 
   struct Indicator {
-    UiElement** element;
     UiElementName name;
     const gfx::VectorIcon& icon;
     int resource_string;
+    bool PermissionsModel::*signal;
   };
   const std::vector<Indicator> indicators = {
-      {&audio_capture_indicator_, kAudioCaptureIndicator,
-       vector_icons::kMicrophoneIcon, IDS_AUDIO_CALL_NOTIFICATION_TEXT_2},
-      {&video_capture_indicator_, kVideoCaptureIndicator,
-       vector_icons::kVideocamIcon, IDS_VIDEO_CALL_NOTIFICATION_TEXT_2},
-      {&screen_capture_indicator_, kScreenCaptureIndicator,
-       vector_icons::kScreenShareIcon, IDS_SCREEN_CAPTURE_NOTIFICATION_TEXT_2},
-      {&bluetooth_connected_indicator_, kBluetoothConnectedIndicator,
-       vector_icons::kBluetoothConnectedIcon, 0},
-      {&location_access_indicator_, kLocationAccessIndicator,
-       vector_icons::kLocationOnIcon, 0},
+      {kAudioCaptureIndicator, vector_icons::kMicrophoneIcon,
+       IDS_AUDIO_CALL_NOTIFICATION_TEXT_2,
+       &PermissionsModel::audio_capture_enabled},
+      {kVideoCaptureIndicator, vector_icons::kVideocamIcon,
+       IDS_VIDEO_CALL_NOTIFICATION_TEXT_2,
+       &PermissionsModel::video_capture_enabled},
+      {kScreenCaptureIndicator, vector_icons::kScreenShareIcon,
+       IDS_SCREEN_CAPTURE_NOTIFICATION_TEXT_2,
+       &PermissionsModel::screen_capture_enabled},
+      {kBluetoothConnectedIndicator, vector_icons::kBluetoothConnectedIcon, 0,
+       &PermissionsModel::bluetooth_connected},
+      {kLocationAccessIndicator, vector_icons::kLocationOnIcon, 0,
+       &PermissionsModel::location_access},
   };
 
   std::unique_ptr<LinearLayout> indicator_layout =
@@ -305,6 +308,9 @@ void UiSceneManager::CreateSystemIndicators() {
   indicator_layout->SetTranslate(0, kIndicatorVerticalOffset,
                                  kIndicatorDistanceOffset);
   indicator_layout->set_margin(kIndicatorGap);
+  indicator_layout->AddBinding(
+      VR_BIND_FUNC(bool, UiSceneManager, this, fullscreen() == false, UiElement,
+                   indicator_layout.get(), SetVisible));
   scene_->AddUiElement(k2dBrowsingContentGroup, std::move(indicator_layout));
 
   for (const auto& indicator : indicators) {
@@ -312,9 +318,20 @@ void UiSceneManager::CreateSystemIndicators() {
         512, kIndicatorHeight, indicator.icon, indicator.resource_string);
     element->set_name(indicator.name);
     element->set_draw_phase(kPhaseForeground);
+    element->set_requires_layout(false);
     element->SetVisible(false);
-    *(indicator.element) = element.get();
-    system_indicators_.push_back(element.get());
+    element->AddBinding(base::MakeUnique<Binding<bool>>(
+        base::Bind(
+            [](Model* m, bool PermissionsModel::*permission) {
+              return m->permissions.*permission;
+            },
+            base::Unretained(model), indicator.signal),
+        base::Bind(
+            [](UiElement* e, const bool& v) {
+              e->SetVisible(v);
+              e->set_requires_layout(v);
+            },
+            base::Unretained(element.get()))));
     scene_->AddUiElement(kIndicatorLayout, std::move(element));
   }
 }
@@ -1283,26 +1300,8 @@ void UiSceneManager::ConfigureScene() {
   scene_->set_reticle_rendering_enabled(
       !(web_vr_mode_ || exiting_ || showing_web_vr_splash_screen_));
 
-  ConfigureIndicators();
   ConfigureBackgroundColor();
   scene_->set_dirty();
-}
-
-void UiSceneManager::ConfigureIndicators() {
-  DCHECK(configuring_scene_);
-  bool allowed = !web_vr_mode_ && !fullscreen_;
-  audio_capture_indicator_->SetVisible(allowed && audio_capturing_);
-  video_capture_indicator_->SetVisible(allowed && video_capturing_);
-  screen_capture_indicator_->SetVisible(allowed && screen_capturing_);
-  location_access_indicator_->SetVisible(allowed && location_access_);
-  bluetooth_connected_indicator_->SetVisible(allowed && bluetooth_connected_);
-
-  audio_capture_indicator_->set_requires_layout(allowed && audio_capturing_);
-  video_capture_indicator_->set_requires_layout(allowed && video_capturing_);
-  screen_capture_indicator_->set_requires_layout(allowed && screen_capturing_);
-  location_access_indicator_->set_requires_layout(allowed && location_access_);
-  bluetooth_connected_indicator_->set_requires_layout(allowed &&
-                                                      bluetooth_connected_);
 }
 
 void UiSceneManager::ConfigureBackgroundColor() {
@@ -1315,31 +1314,6 @@ void UiSceneManager::ConfigureBackgroundColor() {
   floor_->SetCenterColor(color_scheme().floor);
   floor_->SetEdgeColor(color_scheme().world_background);
   floor_->SetGridColor(color_scheme().floor_grid);
-}
-
-void UiSceneManager::SetAudioCapturingIndicator(bool enabled) {
-  audio_capturing_ = enabled;
-  ConfigureScene();
-}
-
-void UiSceneManager::SetVideoCapturingIndicator(bool enabled) {
-  video_capturing_ = enabled;
-  ConfigureScene();
-}
-
-void UiSceneManager::SetScreenCapturingIndicator(bool enabled) {
-  screen_capturing_ = enabled;
-  ConfigureScene();
-}
-
-void UiSceneManager::SetLocationAccessIndicator(bool enabled) {
-  location_access_ = enabled;
-  ConfigureScene();
-}
-
-void UiSceneManager::SetBluetoothConnectedIndicator(bool enabled) {
-  bluetooth_connected_ = enabled;
-  ConfigureScene();
 }
 
 void UiSceneManager::SetIncognito(bool incognito) {

@@ -65,6 +65,7 @@ VrTestContext::VrTestContext() : view_scale_factor_(kDefaultViewScaleFactor) {
   base::i18n::InitializeICU();
 
   ui_ = base::MakeUnique<Ui>(this, nullptr, UiInitialState());
+  model_ = ui_->model_for_test();
 
   GURL gurl("https://dangerous.com/dir/file.html");
   ToolbarState state(gurl, security_state::SecurityLevel::DANGEROUS,
@@ -74,11 +75,11 @@ VrTestContext::VrTestContext() : view_scale_factor_(kDefaultViewScaleFactor) {
   ui_->SetHistoryButtonsEnabled(true, true);
   ui_->SetLoading(true);
   ui_->SetLoadProgress(0.4);
-  ui_->SetVideoCapturingIndicator(true);
-  ui_->SetScreenCapturingIndicator(true);
-  ui_->SetAudioCapturingIndicator(true);
-  ui_->SetBluetoothConnectedIndicator(true);
-  ui_->SetLocationAccessIndicator(true);
+  ui_->SetVideoCaptureEnabled(true);
+  ui_->SetScreenCaptureEnabled(true);
+  ui_->SetAudioCaptureEnabled(true);
+  ui_->SetBluetoothConnected(true);
+  ui_->SetLocationAccess(true);
 }
 
 VrTestContext::~VrTestContext() = default;
@@ -127,6 +128,10 @@ void VrTestContext::HandleInput(ui::Event* event) {
       case ui::DomCode::US_S: {
         CreateFakeOmniboxSuggestions();
         break;
+        case ui::DomCode::US_V:
+          ui_->SetVideoCaptureEnabled(
+              !model_->permissions.video_capture_enabled);
+          break;
       }
       default:
         break;

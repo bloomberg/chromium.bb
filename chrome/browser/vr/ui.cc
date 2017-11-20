@@ -86,24 +86,24 @@ void Ui::SetHistoryButtonsEnabled(bool can_go_back, bool can_go_forward) {
   scene_manager_->SetHistoryButtonsEnabled(can_go_back, can_go_forward);
 }
 
-void Ui::SetVideoCapturingIndicator(bool enabled) {
-  scene_manager_->SetVideoCapturingIndicator(enabled);
+void Ui::SetVideoCaptureEnabled(bool enabled) {
+  model_->permissions.video_capture_enabled = enabled;
 }
 
-void Ui::SetScreenCapturingIndicator(bool enabled) {
-  scene_manager_->SetScreenCapturingIndicator(enabled);
+void Ui::SetScreenCaptureEnabled(bool enabled) {
+  model_->permissions.screen_capture_enabled = enabled;
 }
 
-void Ui::SetAudioCapturingIndicator(bool enabled) {
-  scene_manager_->SetAudioCapturingIndicator(enabled);
+void Ui::SetAudioCaptureEnabled(bool enabled) {
+  model_->permissions.audio_capture_enabled = enabled;
 }
 
-void Ui::SetBluetoothConnectedIndicator(bool enabled) {
-  scene_manager_->SetBluetoothConnectedIndicator(enabled);
+void Ui::SetBluetoothConnected(bool enabled) {
+  model_->permissions.bluetooth_connected = enabled;
 }
 
-void Ui::SetLocationAccessIndicator(bool enabled) {
-  scene_manager_->SetLocationAccessIndicator(enabled);
+void Ui::SetLocationAccess(bool enabled) {
+  model_->permissions.location_access = enabled;
 }
 
 void Ui::SetExitVrPromptEnabled(bool enabled, UiUnsupportedMode reason) {

@@ -820,19 +820,19 @@ void VrShell::PollMediaAccessFlag() {
   bool is_capturing_screen = num_tabs_capturing_screen > 0;
   bool is_bluetooth_connected = num_tabs_bluetooth_connected > 0;
   if (is_capturing_audio != is_capturing_audio_) {
-    ui_->SetAudioCapturingIndicator(is_capturing_audio);
+    ui_->SetAudioCaptureEnabled(is_capturing_audio);
     is_capturing_audio_ = is_capturing_audio;
   }
   if (is_capturing_video != is_capturing_video_) {
-    ui_->SetVideoCapturingIndicator(is_capturing_video);
+    ui_->SetVideoCaptureEnabled(is_capturing_video);
     is_capturing_video_ = is_capturing_video;
   }
   if (is_capturing_screen != is_capturing_screen_) {
-    ui_->SetScreenCapturingIndicator(is_capturing_screen);
+    ui_->SetScreenCaptureEnabled(is_capturing_screen);
     is_capturing_screen_ = is_capturing_screen;
   }
   if (is_bluetooth_connected != is_bluetooth_connected_) {
-    ui_->SetBluetoothConnectedIndicator(is_bluetooth_connected);
+    ui_->SetBluetoothConnected(is_bluetooth_connected);
     is_bluetooth_connected_ = is_bluetooth_connected;
   }
 }
@@ -840,7 +840,7 @@ void VrShell::PollMediaAccessFlag() {
 void VrShell::SetHighAccuracyLocation(bool high_accuracy_location) {
   if (high_accuracy_location == high_accuracy_location_)
     return;
-  ui_->SetLocationAccessIndicator(high_accuracy_location);
+  ui_->SetLocationAccess(high_accuracy_location);
   high_accuracy_location_ = high_accuracy_location;
 }
 

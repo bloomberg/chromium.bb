@@ -126,11 +126,6 @@ class UiSceneManager {
   void SetIncognito(bool incognito);
   void SetWebVrMode(bool web_vr, bool show_toast);
   void SetIsExiting();
-  void SetVideoCapturingIndicator(bool enabled);
-  void SetScreenCapturingIndicator(bool enabled);
-  void SetAudioCapturingIndicator(bool enabled);
-  void SetLocationAccessIndicator(bool enabled);
-  void SetBluetoothConnectedIndicator(bool enabled);
   void SetHistoryButtonsEnabled(bool can_go_back, bool can_go_forward);
 
   bool ShouldRenderWebVr();
@@ -165,7 +160,7 @@ class UiSceneManager {
   void CreateWebVrRoot();
   void CreateScreenDimmer();
   void CreateWebVRExitWarning();
-  void CreateSystemIndicators();
+  void CreateSystemIndicators(Model* model);
   void CreateContentQuad(ContentInputDelegate* delegate);
   void CreateSplashScreen(Model* model);
   void CreateUnderDevelopmentNotice();
@@ -182,7 +177,6 @@ class UiSceneManager {
   void CreateController(Model* model);
 
   void ConfigureScene();
-  void ConfigureIndicators();
   void ConfigureBackgroundColor();
   void OnBackButtonClicked();
   void OnSecurityIconClicked();
@@ -209,11 +203,6 @@ class UiSceneManager {
   ShowUntilSignalTransientElement* splash_screen_transient_parent_ = nullptr;
   UiElement* exit_warning_ = nullptr;
   ContentElement* main_content_ = nullptr;
-  UiElement* audio_capture_indicator_ = nullptr;
-  UiElement* bluetooth_connected_indicator_ = nullptr;
-  UiElement* video_capture_indicator_ = nullptr;
-  UiElement* screen_capture_indicator_ = nullptr;
-  UiElement* location_access_indicator_ = nullptr;
   UiElement* screen_dimmer_ = nullptr;
   Rect* ceiling_ = nullptr;
   Grid* floor_ = nullptr;
@@ -221,8 +210,6 @@ class UiSceneManager {
   UrlBar* url_bar_ = nullptr;
   TransientElement* webvr_url_toast_transient_parent_ = nullptr;
   WebVrUrlToast* webvr_url_toast_ = nullptr;
-
-  std::vector<UiElement*> system_indicators_;
 
   bool in_cct_;
   bool web_vr_mode_;
@@ -238,11 +225,6 @@ class UiSceneManager {
 
   bool fullscreen_ = false;
   bool incognito_ = false;
-  bool audio_capturing_ = false;
-  bool video_capturing_ = false;
-  bool screen_capturing_ = false;
-  bool location_access_ = false;
-  bool bluetooth_connected_ = false;
 
   std::vector<Rect*> background_panels_;
 

@@ -27,11 +27,11 @@ class BrowserUiInterface {
   virtual void SetIsExiting() = 0;
   virtual void SetHistoryButtonsEnabled(bool can_go_back,
                                         bool can_go_forward) = 0;
-  virtual void SetVideoCapturingIndicator(bool enabled) = 0;
-  virtual void SetScreenCapturingIndicator(bool enabled) = 0;
-  virtual void SetAudioCapturingIndicator(bool enabled) = 0;
-  virtual void SetBluetoothConnectedIndicator(bool enabled) = 0;
-  virtual void SetLocationAccessIndicator(bool enabled) = 0;
+  virtual void SetVideoCaptureEnabled(bool enabled) = 0;
+  virtual void SetScreenCaptureEnabled(bool enabled) = 0;
+  virtual void SetAudioCaptureEnabled(bool enabled) = 0;
+  virtual void SetBluetoothConnected(bool enabled) = 0;
+  virtual void SetLocationAccess(bool enabled) = 0;
   virtual void SetExitVrPromptEnabled(bool enabled,
                                       UiUnsupportedMode reason) = 0;
   virtual void SetSpeechRecognitionEnabled(bool enabled) = 0;
