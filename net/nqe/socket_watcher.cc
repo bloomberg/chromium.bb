@@ -60,10 +60,12 @@ SocketWatcher::SocketWatcher(
     bool allow_rtt_private_address,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     OnUpdatedRTTAvailableCallback updated_rtt_observation_callback,
+    ShouldNotifyRTTCallback should_notify_rtt_callback,
     base::TickClock* tick_clock)
     : protocol_(protocol),
       task_runner_(std::move(task_runner)),
       updated_rtt_observation_callback_(updated_rtt_observation_callback),
+      should_notify_rtt_callback_(should_notify_rtt_callback),
       rtt_notifications_minimum_interval_(min_notification_interval),
       run_rtt_callback_(allow_rtt_private_address ||
                         (!address_list.empty() &&
@@ -80,12 +82,25 @@ SocketWatcher::~SocketWatcher() {}
 bool SocketWatcher::ShouldNotifyUpdatedRTT() const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  if (!run_rtt_callback_)
+    return false;
+
+  const base::TimeTicks now = tick_clock_->NowTicks();
+
+  if (task_runner_->RunsTasksInCurrentSequence()) {
+    // Enables socket watcher to send more frequent RTT observations when very
+    // few sockets are receiving data.
+    if (should_notify_rtt_callback_.Run(now))
+      return true;
+  }
+
   // Do not allow incoming notifications if the last notification was more
   // recent than |rtt_notifications_minimum_interval_| ago. This helps in
   // reducing the overhead of obtaining the RTT values.
-  return run_rtt_callback_ &&
-         tick_clock_->NowTicks() - last_rtt_notification_ >=
-             rtt_notifications_minimum_interval_;
+  // Enables a socket watcher to send RTT observation, helps in reducing
+  // starvation by allowing every socket watcher to notify at least one RTT
+  // notification every |rtt_notifications_minimum_interval_| duration.
+  return now - last_rtt_notification_ >= rtt_notifications_minimum_interval_;
 }
 
 void SocketWatcher::OnUpdatedRTTAvailable(const base::TimeDelta& rtt) {

@@ -223,6 +223,12 @@ class NET_EXPORT NetworkQualityEstimatorParams {
   // ObservationBuffer.
   size_t observation_buffer_size() const { return 300; }
 
+  // Minimun interval between consecutive notifications from socket
+  // watchers who live on the same thread as the network quality estimator.
+  base::TimeDelta socket_watchers_min_notification_interval() const {
+    return socket_watchers_min_notification_interval_;
+  }
+
  private:
   // Map containing all field trial parameters related to
   // NetworkQualityEstimator field trial.
@@ -245,6 +251,7 @@ class NET_EXPORT NetworkQualityEstimatorParams {
   const int hanging_request_duration_http_rtt_multiplier_;
   const base::TimeDelta hanging_request_min_duration_;
   const bool add_default_platform_observations_;
+  const base::TimeDelta socket_watchers_min_notification_interval_;
 
   bool use_small_responses_;
 

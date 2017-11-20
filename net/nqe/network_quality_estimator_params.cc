@@ -437,6 +437,11 @@ NetworkQualityEstimatorParams::NetworkQualityEstimatorParams(
               params_,
               "add_default_platform_observations",
               "true") == "true"),
+      socket_watchers_min_notification_interval_(
+          base::TimeDelta::FromMilliseconds(GetValueForVariationParam(
+              params_,
+              "socket_watchers_min_notification_interval_msec",
+              200))),
       use_small_responses_(false) {
   DCHECK_LE(0.0, correlation_uma_logging_probability_);
   DCHECK_GE(1.0, correlation_uma_logging_probability_);
