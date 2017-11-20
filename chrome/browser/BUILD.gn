@@ -3005,6 +3005,8 @@ split_static_library("browser") {
 
   if (!is_android && !is_chromeos) {
     sources += [
+      "lifetime/switch_utils.cc",
+      "lifetime/switch_utils.h",
       "metrics/desktop_session_duration/audible_contents_tracker.cc",
       "metrics/desktop_session_duration/audible_contents_tracker.h",
       "metrics/desktop_session_duration/chrome_visibility_observer.cc",

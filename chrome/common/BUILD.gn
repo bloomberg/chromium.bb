@@ -179,8 +179,6 @@ static_library("common") {
     "ssl_insecure_content.h",
     "stack_sampling_configuration.cc",
     "stack_sampling_configuration.h",
-    "switch_utils.cc",
-    "switch_utils.h",
     "trace_event_args_whitelist.cc",
     "trace_event_args_whitelist.h",
     "tts_messages.h",

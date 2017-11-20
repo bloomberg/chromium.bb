@@ -41,7 +41,6 @@
 #include "chrome/common/profiling.h"
 #include "chrome/common/profiling/memlog_allocator_shim.h"
 #include "chrome/common/profiling/memlog_stream.h"
-#include "chrome/common/switch_utils.h"
 #include "chrome/common/trace_event_args_whitelist.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/gpu/chrome_content_gpu_client.h"
