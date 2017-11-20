@@ -295,19 +295,22 @@ static INLINE int get_br_ctx(const uint8_t *const levels,
   return ctx;
 }
 
-#define SIG_REF_OFFSET_NUM 7
+#define SIG_REF_OFFSET_NUM 5
 
 // Note: TX_PAD_2D is dependent to these offset tables.
 static const int sig_ref_offset[SIG_REF_OFFSET_NUM][2] = {
-  { 0, 1 }, { 1, 0 }, { 1, 1 }, { 0, 2 }, { 2, 0 }, { 1, 2 }, { 2, 1 },
+  { 0, 1 }, { 1, 0 }, { 1, 1 }, { 0, 2 }, { 2, 0 }
+  // , { 1, 2 }, { 2, 1 },
 };
 
 static const int sig_ref_offset_vert[SIG_REF_OFFSET_NUM][2] = {
-  { 1, 0 }, { 2, 0 }, { 0, 1 }, { 3, 0 }, { 4, 0 }, { 1, 1 }, { 2, 1 },
+  { 1, 0 }, { 2, 0 }, { 0, 1 }, { 3, 0 }, { 4, 0 }
+  // , { 1, 1 }, { 2, 1 },
 };
 
 static const int sig_ref_offset_horiz[SIG_REF_OFFSET_NUM][2] = {
-  { 0, 1 }, { 0, 2 }, { 1, 0 }, { 0, 3 }, { 0, 4 }, { 1, 1 }, { 1, 2 },
+  { 0, 1 }, { 0, 2 }, { 1, 0 }, { 0, 3 }, { 0, 4 }
+  // , { 1, 1 }, { 1, 2 },
 };
 
 #if USE_CAUSAL_BASE_CTX
@@ -333,11 +336,7 @@ static INLINE int get_nz_count_mag(const uint8_t *const levels, const int bwl,
         (ref_row << bwl) + (ref_row << TX_PAD_HOR_LOG2) + ref_col;
     const int level = levels[nb_pos];
     count += (level != 0);
-#if 1
-    if (idx < 5) {
-      *mag += AOMMIN(level, 3);
-    }
-#endif
+    *mag += AOMMIN(level, 3);
   }
   return count;
 }
