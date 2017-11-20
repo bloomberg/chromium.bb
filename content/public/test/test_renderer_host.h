@@ -48,6 +48,7 @@ class NavigationController;
 class RenderProcessHostFactory;
 class TestRenderFrameHostFactory;
 class TestRenderViewHostFactory;
+class TestRenderWidgetHostFactory;
 class WebContents;
 struct WebPreferences;
 
@@ -182,6 +183,7 @@ class RenderViewHostTestEnabler {
   std::unique_ptr<MockRenderProcessHostFactory> rph_factory_;
   std::unique_ptr<TestRenderViewHostFactory> rvh_factory_;
   std::unique_ptr<TestRenderFrameHostFactory> rfh_factory_;
+  std::unique_ptr<TestRenderWidgetHostFactory> rwhi_factory_;
 };
 
 // RenderViewHostTestHarness ---------------------------------------------------

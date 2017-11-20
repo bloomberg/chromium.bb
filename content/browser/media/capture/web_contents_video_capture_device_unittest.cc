@@ -22,6 +22,7 @@
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
+#include "content/browser/renderer_host/render_widget_host_factory.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_frame_subscriber.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -32,6 +33,7 @@
 #include "content/public/test/test_utils.h"
 #include "content/test/test_render_frame_host_factory.h"
 #include "content/test/test_render_view_host.h"
+#include "content/test/test_render_widget_host_factory.h"
 #include "content/test/test_web_contents.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
@@ -187,11 +189,10 @@ class CaptureTestRenderViewHost : public TestRenderViewHost {
                             int32_t main_frame_routing_id,
                             bool swapped_out)
       : TestRenderViewHost(instance,
-                           std::make_unique<RenderWidgetHostImpl>(
+                           TestRenderWidgetHost::Create(
                                widget_delegate,
                                instance->GetProcess(),
                                routing_id,
-                               nullptr,
                                false /* This means: "Is not hidden." */),
                            delegate,
                            main_frame_routing_id,
@@ -469,11 +470,15 @@ class WebContentsVideoCaptureDeviceTest : public testing::Test {
     // CopyFromSurfaceToVideoFrame functionality into TestRenderWidgetHostView
     // itself.
 
-    render_process_host_factory_.reset(new MockRenderProcessHostFactory());
+    render_process_host_factory_ =
+        std::make_unique<MockRenderProcessHostFactory>();
     // Create our (self-registering) RVH factory, so that when we create a
     // WebContents, it in turn creates CaptureTestRenderViewHosts.
-    render_view_host_factory_.reset(new CaptureTestRenderViewHostFactory());
-    render_frame_host_factory_.reset(new TestRenderFrameHostFactory());
+    render_view_host_factory_ =
+        std::make_unique<CaptureTestRenderViewHostFactory>();
+    render_frame_host_factory_ = std::make_unique<TestRenderFrameHostFactory>();
+    render_widget_host_factory_ =
+        std::make_unique<TestRenderWidgetHostFactory>();
 
     browser_context_.reset(new TestBrowserContext());
 
@@ -631,6 +636,9 @@ class WebContentsVideoCaptureDeviceTest : public testing::Test {
 
   // Self-registering RenderFrameHostFactory.
   std::unique_ptr<TestRenderFrameHostFactory> render_frame_host_factory_;
+
+  // Self-registering RenderWidgetHostFactory.
+  std::unique_ptr<TestRenderWidgetHostFactory> render_widget_host_factory_;
 
   // A mocked-out browser and tab.
   std::unique_ptr<TestBrowserContext> browser_context_;
