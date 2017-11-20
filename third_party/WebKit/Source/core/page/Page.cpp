@@ -33,6 +33,7 @@
 #include "core/frame/DOMTimer.h"
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameConsole.h"
+#include "core/frame/LocalFrameClient.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/PageScaleConstraints.h"
 #include "core/frame/PageScaleConstraintsSet.h"
@@ -627,7 +628,8 @@ void Page::DidCommitLoad(LocalFrame* frame) {
     // TODO(rbyers): Most of this doesn't appear to take into account that each
     // SVGImage gets it's own Page instance.
     GetConsoleMessageStorage().Clear();
-    GetUseCounter().DidCommitLoad(url);
+    if (frame->Client() && frame->Client()->ShouldTrackUseCounter(url))
+      GetUseCounter().DidCommitLoad(url);
     GetDeprecation().ClearSuppression();
     GetVisualViewport().SendUMAMetrics();
 
