@@ -202,8 +202,7 @@ class SimpleBackendImpl::ActiveEntryProxy
  public:
   ~ActiveEntryProxy() override {
     if (backend_) {
-      CHECK(backend_->io_thread_checker_.CalledOnValidThread());
-      CHECK_EQ(1U, backend_->active_entries_.count(entry_hash_));
+      DCHECK_EQ(1U, backend_->active_entries_.count(entry_hash_));
       backend_->active_entries_.erase(entry_hash_);
     }
   }
@@ -243,8 +242,6 @@ SimpleBackendImpl::SimpleBackendImpl(
                                  ? SimpleEntryImpl::OPTIMISTIC_OPERATIONS
                                  : SimpleEntryImpl::NON_OPTIMISTIC_OPERATIONS),
       net_log_(net_log) {
-  io_thread_checker_.DetachFromThread();
-
   // Treat negative passed-in sizes same as SetMaxSize would here and in other
   // backends, as default (if first call).
   if (orig_max_size_ < 0)
@@ -292,13 +289,13 @@ int SimpleBackendImpl::GetMaxFileSize() const {
 }
 
 void SimpleBackendImpl::OnDoomStart(uint64_t entry_hash) {
-  CHECK_EQ(0u, entries_pending_doom_.count(entry_hash));
+  DCHECK_EQ(0u, entries_pending_doom_.count(entry_hash));
   entries_pending_doom_.insert(
       std::make_pair(entry_hash, std::vector<Closure>()));
 }
 
 void SimpleBackendImpl::OnDoomComplete(uint64_t entry_hash) {
-  CHECK_EQ(1u, entries_pending_doom_.count(entry_hash));
+  DCHECK_EQ(1u, entries_pending_doom_.count(entry_hash));
   std::unordered_map<uint64_t, std::vector<Closure>>::iterator it =
       entries_pending_doom_.find(entry_hash);
   std::vector<Closure> to_run_closures;
@@ -311,7 +308,6 @@ void SimpleBackendImpl::OnDoomComplete(uint64_t entry_hash) {
 
 void SimpleBackendImpl::DoomEntries(std::vector<uint64_t>* entry_hashes,
                                     const net::CompletionCallback& callback) {
-  CHECK(io_thread_checker_.CalledOnValidThread());
   std::unique_ptr<std::vector<uint64_t>> mass_doom_entry_hashes(
       new std::vector<uint64_t>());
   mass_doom_entry_hashes->swap(*entry_hashes);
@@ -584,7 +580,6 @@ void SimpleBackendImpl::OnExternalCacheHit(const std::string& key) {
 size_t SimpleBackendImpl::DumpMemoryStats(
     base::trace_event::ProcessMemoryDump* pmd,
     const std::string& parent_absolute_name) const {
-  CHECK(io_thread_checker_.CalledOnValidThread());
   base::trace_event::MemoryAllocatorDump* dump =
       pmd->CreateAllocatorDump(parent_absolute_name + "/simple_backend");
 
@@ -688,7 +683,6 @@ SimpleBackendImpl::CreateOrFindActiveOrDoomedEntry(
     const uint64_t entry_hash,
     const std::string& key,
     std::vector<Closure>** post_doom) {
-  CHECK(io_thread_checker_.CalledOnValidThread());
   DCHECK_EQ(entry_hash, simple_util::GetEntryHashKey(key));
 
   // If there is a doom pending, we would want to serialize after it.
@@ -715,8 +709,8 @@ SimpleBackendImpl::CreateOrFindActiveOrDoomedEntry(
   // currently active entry.
   if (key != it->second->key()) {
     it->second->Doom();
-    CHECK_EQ(0U, active_entries_.count(entry_hash));
-    CHECK_EQ(1U, entries_pending_doom_.count(entry_hash));
+    DCHECK_EQ(0U, active_entries_.count(entry_hash));
+    DCHECK_EQ(1U, entries_pending_doom_.count(entry_hash));
     // Re-run ourselves to handle the now-pending doom.
     return CreateOrFindActiveOrDoomedEntry(entry_hash, key, post_doom);
   }
@@ -726,7 +720,6 @@ SimpleBackendImpl::CreateOrFindActiveOrDoomedEntry(
 int SimpleBackendImpl::OpenEntryFromHash(uint64_t entry_hash,
                                          Entry** entry,
                                          const CompletionCallback& callback) {
-  CHECK(io_thread_checker_.CalledOnValidThread());
   std::unordered_map<uint64_t, std::vector<Closure>>::iterator it =
       entries_pending_doom_.find(entry_hash);
   if (it != entries_pending_doom_.end()) {
@@ -754,7 +747,6 @@ int SimpleBackendImpl::OpenEntryFromHash(uint64_t entry_hash,
 
 int SimpleBackendImpl::DoomEntryFromHash(uint64_t entry_hash,
                                          const CompletionCallback& callback) {
-  CHECK(io_thread_checker_.CalledOnValidThread());
   Entry** entry = new Entry*();
   std::unique_ptr<Entry*> scoped_entry(entry);
 
@@ -787,7 +779,6 @@ void SimpleBackendImpl::OnEntryOpenedFromHash(
     const scoped_refptr<SimpleEntryImpl>& simple_entry,
     const CompletionCallback& callback,
     int error_code) {
-  CHECK(io_thread_checker_.CalledOnValidThread());
   if (error_code != net::OK) {
     callback.Run(error_code);
     return;

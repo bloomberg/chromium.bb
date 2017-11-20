@@ -343,7 +343,7 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
 
   // All nonstatic SimpleEntryImpl methods should always be called on the IO
   // thread, in all cases. |io_thread_checker_| documents and enforces this.
-  base::ThreadCheckerImpl io_thread_checker_;
+  base::ThreadChecker io_thread_checker_;
 
   const base::WeakPtr<SimpleBackendImpl> backend_;
   SimpleFileTracker* const file_tracker_;
