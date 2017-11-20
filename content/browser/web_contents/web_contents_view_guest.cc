@@ -202,6 +202,10 @@ void WebContentsViewGuest::StoreFocus() {
   platform_view_->StoreFocus();
 }
 
+void WebContentsViewGuest::FocusThroughTabTraversal(bool reverse) {
+  platform_view_->FocusThroughTabTraversal(reverse);
+}
+
 DropData* WebContentsViewGuest::GetDropData() const {
   NOTIMPLEMENTED();
   return nullptr;

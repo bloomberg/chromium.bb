@@ -148,6 +148,10 @@ void WebContentsViewChildFrame::StoreFocus() {
   NOTREACHED();
 }
 
+void WebContentsViewChildFrame::FocusThroughTabTraversal(bool reverse) {
+  NOTREACHED();
+}
+
 DropData* WebContentsViewChildFrame::GetDropData() const {
   NOTREACHED();
   return nullptr;

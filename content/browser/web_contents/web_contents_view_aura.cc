@@ -772,12 +772,15 @@ void WebContentsViewAura::SizeContents(const gfx::Size& size) {
 }
 
 void WebContentsViewAura::Focus() {
+  if (delegate_)
+    delegate_->ResetStoredFocus();
+
   if (web_contents_->GetInterstitialPage()) {
     web_contents_->GetInterstitialPage()->Focus();
     return;
   }
 
-  if (delegate_.get() && delegate_->Focus())
+  if (delegate_ && delegate_->Focus())
     return;
 
   RenderWidgetHostView* rwhv =
@@ -789,6 +792,9 @@ void WebContentsViewAura::Focus() {
 }
 
 void WebContentsViewAura::SetInitialFocus() {
+  if (delegate_)
+    delegate_->ResetStoredFocus();
+
   if (web_contents_->FocusLocationBarByDefault())
     web_contents_->SetFocusToLocationBar(false);
   else
@@ -801,8 +807,26 @@ void WebContentsViewAura::StoreFocus() {
 }
 
 void WebContentsViewAura::RestoreFocus() {
+  if (delegate_ && delegate_->RestoreFocus())
+    return;
+  SetInitialFocus();
+}
+
+void WebContentsViewAura::FocusThroughTabTraversal(bool reverse) {
   if (delegate_)
-    delegate_->RestoreFocus();
+    delegate_->ResetStoredFocus();
+
+  if (web_contents_->ShowingInterstitialPage()) {
+    web_contents_->GetInterstitialPage()->FocusThroughTabTraversal(reverse);
+    return;
+  }
+  content::RenderWidgetHostView* fullscreen_view =
+      web_contents_->GetFullscreenRenderWidgetHostView();
+  if (fullscreen_view) {
+    fullscreen_view->Focus();
+    return;
+  }
+  web_contents_->GetRenderViewHost()->SetInitialFocus(reverse);
 }
 
 DropData* WebContentsViewAura::GetDropData() const {

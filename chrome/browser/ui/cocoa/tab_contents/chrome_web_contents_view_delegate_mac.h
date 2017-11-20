@@ -9,6 +9,7 @@
 
 #include <memory>
 
+#import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "components/renderer_context_menu/context_menu_delegate.h"
 #include "content/public/browser/web_contents_view_delegate.h"
@@ -20,6 +21,8 @@ namespace content {
 class RenderWidgetHostView;
 class WebContents;
 }
+
+@class FocusTracker;
 
 // A chrome/ specific class that extends WebContentsViewMac with features that
 // live in chrome/.
@@ -38,6 +41,9 @@ class ChromeWebContentsViewDelegateMac
   content::WebDragDestDelegate* GetDragDestDelegate() override;
   void ShowContextMenu(content::RenderFrameHost* render_frame_host,
                        const content::ContextMenuParams& params) override;
+  void StoreFocus() override;
+  bool RestoreFocus() override;
+  void ResetStoredFocus() override;
 
   // Overridden from ContextMenuDelegate.
   std::unique_ptr<RenderViewContextMenuBase> BuildMenu(
@@ -49,13 +55,18 @@ class ChromeWebContentsViewDelegateMac
   content::WebContents* web_contents() { return web_contents_; }
 
  private:
-  content::RenderWidgetHostView* GetActiveRenderWidgetHostView();
+  content::RenderWidgetHostView* GetActiveRenderWidgetHostView() const;
+  NSWindow* GetNSWindowForFocusTracker() const;
 
   // The context menu. Callbacks are asynchronous so we need to keep it around.
   std::unique_ptr<RenderViewContextMenuBase> context_menu_;
 
   // The chrome specific delegate that receives events from WebDragDestMac.
   std::unique_ptr<WebDragBookmarkHandlerMac> bookmark_handler_;
+
+  // Keeps track of which NSView has focus so we can restore the focus when
+  // focus returns.
+  base::scoped_nsobject<FocusTracker> focus_tracker_;
 
   // The WebContents that owns the view.
   content::WebContents* web_contents_;

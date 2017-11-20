@@ -7,17 +7,28 @@
 
 #import "chrome/browser/ui/cocoa/tab_contents/chrome_web_contents_view_delegate_mac.h"
 
+class ChromeWebContentsViewFocusHelper;
+
 // A MacViews specific class that extends ChromeWebContentsViewDelegateMac.
 class ChromeWebContentsViewDelegateViewsMac
     : public ChromeWebContentsViewDelegateMac {
  public:
   explicit ChromeWebContentsViewDelegateViewsMac(
       content::WebContents* web_contents);
+  ~ChromeWebContentsViewDelegateViewsMac() override;
 
   // ChromeWebContentsViewDelegateMac:
+  void StoreFocus() override;
+  bool RestoreFocus() override;
+  void ResetStoredFocus() override;
+  bool Focus() override;
+  bool TakeFocus(bool reverse) override;
   void SizeChanged(const gfx::Size& size) override;
 
  private:
+  // Used to handle focus management.
+  std::unique_ptr<ChromeWebContentsViewFocusHelper> focus_helper_;
+
   DISALLOW_COPY_AND_ASSIGN(ChromeWebContentsViewDelegateViewsMac);
 };
 

@@ -74,6 +74,11 @@ class WebContentsView {
   // invoked, SetInitialFocus is invoked.
   virtual void RestoreFocus() = 0;
 
+  // Focuses the first (last if |reverse| is true) element in the page.
+  // Invoked when this tab is getting the focus through tab traversal (|reverse|
+  // is true when using Shift-Tab).
+  virtual void FocusThroughTabTraversal(bool reverse) = 0;
+
   // Returns the current drop data, if any.
   virtual DropData* GetDropData() const = 0;
 
