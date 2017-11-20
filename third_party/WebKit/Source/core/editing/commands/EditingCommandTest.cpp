@@ -34,11 +34,12 @@ static_assert(
 class EditingCommandTest : public EditingTestBase {};
 
 TEST_F(EditingCommandTest, EditorCommandOrder) {
-  for (size_t i = 1; i < arraysize(kCommandNameEntries); ++i)
+  for (size_t i = 1; i < arraysize(kCommandNameEntries); ++i) {
     EXPECT_GT(0, strcasecmp(kCommandNameEntries[i - 1].name,
                             kCommandNameEntries[i].name))
         << "EDITOR_COMMAND_MAP must be case-folding ordered. Incorrect index:"
         << i;
+  }
 }
 
 TEST_F(EditingCommandTest, CreateCommandFromString) {
