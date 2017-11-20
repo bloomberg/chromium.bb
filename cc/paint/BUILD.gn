@@ -20,7 +20,6 @@ cc_component("paint") {
     "image_id.h",
     "image_provider.cc",
     "image_provider.h",
-    "paint_canvas.cc",
     "paint_canvas.h",
     "paint_export.h",
     "paint_flags.cc",

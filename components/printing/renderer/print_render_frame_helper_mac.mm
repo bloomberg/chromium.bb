@@ -28,53 +28,43 @@ bool PrintRenderFrameHelper::PrintPagesNative(blink::WebLocalFrame* frame,
   if (printed_pages.empty())
     return false;
 
-  if (delegate_->UseSingleMetafile()) {
-    PrintPagesInternal(print_params, printed_pages, page_count, frame);
-    return true;
-  }
-
-  for (int page_number : printed_pages)
-    PrintPagesInternal(print_params, std::vector<int>{page_number}, page_count,
-                       frame);
-  return true;
-}
-#endif  // BUILDFLAG(ENABLE_BASIC_PRINTING)
-
-void PrintRenderFrameHelper::PrintPagesInternal(
-    const PrintMsg_Print_Params& params,
-    const std::vector<int>& printed_pages,
-    int page_count,
-    blink::WebLocalFrame* frame) {
-  PdfMetafileSkia metafile(params.printed_doc_type);
+  PdfMetafileSkia metafile(print_params.printed_doc_type);
   CHECK(metafile.Init());
 
-  gfx::Size page_size_in_dpi;
-  gfx::Rect content_area_in_dpi;
-  for (int page_number : printed_pages) {
-    RenderPage(params, page_number, page_count, frame, false, &metafile,
-               &page_size_in_dpi, &content_area_in_dpi);
+  std::vector<gfx::Size> page_size_in_dpi(printed_pages.size());
+  std::vector<gfx::Rect> content_area_in_dpi(printed_pages.size());
+  for (size_t i = 0; i < printed_pages.size(); ++i) {
+    RenderPage(print_params, printed_pages[i], page_count, frame, &metafile,
+               &page_size_in_dpi[i], &content_area_in_dpi[i]);
   }
+
+  // blink::printEnd() for PDF should be called before metafile is closed.
+  FinishFramePrinting();
+
   metafile.FinishDocument();
 
   PrintHostMsg_DidPrintPage_Params page_params;
-  page_params.data_size = metafile.GetDataSize();
-  page_params.document_cookie = params.document_cookie;
-  page_params.page_size = page_size_in_dpi;
-  page_params.content_area = content_area_in_dpi;
-
-  // Ask the browser to create the shared memory for us.
   if (!CopyMetafileDataToSharedMem(metafile,
                                    &page_params.metafile_data_handle)) {
-    // TODO(thestig): Fail and return false instead.
-    page_params.data_size = 0;
+    return false;
   }
+  page_params.data_size = metafile.GetDataSize();
+  page_params.document_cookie = print_params.document_cookie;
 
-  for (int page_number : printed_pages) {
-    page_params.page_number = page_number;
+  for (size_t i = 0; i < printed_pages.size(); ++i) {
+    page_params.page_number = printed_pages[i];
+    page_params.page_size = page_size_in_dpi[i];
+    page_params.content_area = content_area_in_dpi[i];
     Send(new PrintHostMsg_DidPrintPage(routing_id(), page_params));
-    page_params.metafile_data_handle = base::SharedMemoryHandle();
+    // Send the rest of the pages with an invalid metafile handle of size 0.
+    if (page_params.metafile_data_handle.IsValid()) {
+      page_params.metafile_data_handle = base::SharedMemoryHandle();
+      page_params.data_size = 0;
+    }
   }
+  return true;
 }
+#endif  // BUILDFLAG(ENABLE_BASIC_PRINTING)
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 bool PrintRenderFrameHelper::RenderPreviewPage(
@@ -97,8 +87,8 @@ bool PrintRenderFrameHelper::RenderPreviewPage(
   gfx::Size page_size;
   RenderPage(print_params, page_number,
              print_preview_context_.total_page_count(),
-             print_preview_context_.prepared_frame(), true,
-             initial_render_metafile, &page_size, NULL);
+             print_preview_context_.prepared_frame(), initial_render_metafile,
+             &page_size, nullptr);
   print_preview_context_.RenderedPreviewPage(base::TimeTicks::Now() -
                                              begin_time);
 
@@ -121,7 +111,6 @@ void PrintRenderFrameHelper::RenderPage(const PrintMsg_Print_Params& params,
                                         int page_number,
                                         int page_count,
                                         blink::WebLocalFrame* frame,
-                                        bool is_preview,
                                         PdfMetafileSkia* metafile,
                                         gfx::Size* page_size,
                                         gfx::Rect* content_rect) {
@@ -151,17 +140,14 @@ void PrintRenderFrameHelper::RenderPage(const PrintMsg_Print_Params& params,
       return;
 
     MetafileSkiaWrapper::SetMetafileOnCanvas(canvas, metafile);
-    cc::SetIsPreviewMetafile(canvas, is_preview);
     if (params.display_header_footer) {
-      PrintHeaderAndFooter(static_cast<blink::WebCanvas*>(canvas),
-                           page_number + 1, page_count, *frame, scale_factor,
-                           page_layout_in_points, params);
+      PrintHeaderAndFooter(canvas, page_number + 1, page_count, *frame,
+                           scale_factor, page_layout_in_points, params);
     }
     RenderPageContent(frame, page_number, canvas_area, content_area,
-                      scale_factor, static_cast<blink::WebCanvas*>(canvas));
+                      scale_factor, canvas);
   }
 
-  // Done printing. Close the device context to retrieve the compiled metafile.
   metafile->FinishPage();
 }
 

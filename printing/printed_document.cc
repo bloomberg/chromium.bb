@@ -132,7 +132,7 @@ void PrintedDocument::SetPage(int page_number,
     base::AutoLock lock(lock_);
     mutable_.pages_[page_number] = page;
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX)
     mutable_.first_page = std::min(mutable_.first_page, page_number);
 #endif
   }
@@ -164,7 +164,7 @@ bool PrintedDocument::IsComplete() const {
     return false;
 
   for (; page != PageNumber::npos(); ++page) {
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN)
     const bool metafile_must_be_valid = true;
 #elif defined(OS_POSIX)
     const bool metafile_must_be_valid = (page.ToInt() == mutable_.first_page);

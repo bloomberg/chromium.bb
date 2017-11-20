@@ -170,10 +170,8 @@ class PrintViewManagerBase : public content::NotificationObserver,
   // print settings are being loaded.
   bool inside_inner_message_loop_;
 
-#if !defined(OS_MACOSX)
   // Set to true when OnDidPrintPage() should be expecting the first page.
   bool expecting_first_page_;
-#endif
 
   // Whether printing is enabled.
   BooleanPrefMember printing_enabled_;

@@ -80,9 +80,7 @@ PrintViewManagerBase::PrintViewManagerBase(content::WebContents* web_contents)
       printing_rfh_(nullptr),
       printing_succeeded_(false),
       inside_inner_message_loop_(false),
-#if !defined(OS_MACOSX)
       expecting_first_page_(true),
-#endif
       queue_(g_browser_process->print_job_manager()->queue()),
       weak_ptr_factory_(this) {
   DCHECK(queue_.get());
@@ -161,12 +159,8 @@ void PrintViewManagerBase::OnDidPrintPage(
     return;
   }
 
-#if defined(OS_MACOSX)
-  const bool metafile_must_be_valid = true;
-#else
   const bool metafile_must_be_valid = expecting_first_page_;
   expecting_first_page_ = false;
-#endif
 
   // Only used when |metafile_must_be_valid| is true.
   std::unique_ptr<base::SharedMemory> shared_buf;
@@ -488,9 +482,7 @@ void PrintViewManagerBase::DisconnectFromCurrentPrintJob() {
     // DO NOT wait for the job to finish.
     ReleasePrintJob();
   }
-#if !defined(OS_MACOSX)
   expecting_first_page_ = true;
-#endif
 }
 
 void PrintViewManagerBase::TerminatePrintJob(bool cancel) {
