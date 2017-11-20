@@ -271,10 +271,27 @@ static void ax_platform_node_auralinux_get_size(AtkComponent* atk_component,
   obj->GetSize(width, height);
 }
 
+static AtkObject* ax_platform_node_auralinux_ref_accessible_at_point(
+    AtkComponent* atk_component,
+    gint x,
+    gint y,
+    AtkCoordType coord_type) {
+  g_return_val_if_fail(ATK_IS_COMPONENT(atk_component), nullptr);
+  AtkObject* atk_object = ATK_OBJECT(atk_component);
+  ui::AXPlatformNodeAuraLinux* obj =
+      AtkObjectToAXPlatformNodeAuraLinux(atk_object);
+  if (!obj)
+    return nullptr;
+
+  return obj->HitTestSync(x, y, coord_type);
+}
+
 void ax_component_interface_base_init(AtkComponentIface* iface) {
   iface->get_extents = ax_platform_node_auralinux_get_extents;
   iface->get_position = ax_platform_node_auralinux_get_position;
   iface->get_size = ax_platform_node_auralinux_get_size;
+  iface->ref_accessible_at_point =
+      ax_platform_node_auralinux_ref_accessible_at_point;
 }
 
 static const GInterfaceInfo ComponentInfo = {
@@ -745,6 +762,19 @@ void AXPlatformNodeAuraLinux::GetSize(gint* width, gint* height) {
     *width = rect_size.width();
   if (height)
     *height = rect_size.height();
+}
+
+gfx::NativeViewAccessible
+AXPlatformNodeAuraLinux::HitTestSync(gint x, gint y, AtkCoordType coord_type) {
+  if (coord_type == ATK_XY_WINDOW) {
+    if (AtkObject* atk_object = GetParent()) {
+      gfx::Point window_coords = FindAtkObjectParentCoords(atk_object);
+      x += window_coords.x();
+      y += window_coords.y();
+    }
+  }
+
+  return delegate_->HitTestSync(x, y);
 }
 
 }  // namespace ui

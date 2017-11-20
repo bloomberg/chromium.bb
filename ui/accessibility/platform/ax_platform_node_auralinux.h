@@ -33,6 +33,9 @@ class AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
                   AtkCoordType coord_type);
   void GetPosition(gint* x, gint* y, AtkCoordType coord_type);
   void GetSize(gint* width, gint* height);
+  gfx::NativeViewAccessible HitTestSync(gint x,
+                                        gint y,
+                                        AtkCoordType coord_type);
 
   void SetExtentsRelativeToAtkCoordinateType(
       gint* x, gint* y, gint* width, gint* height,
