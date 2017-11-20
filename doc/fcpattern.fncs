@@ -313,16 +313,6 @@ in preference to FcPatternGet to provide compile-time typechecking.
 <function>FcPatternGetRange</function> are available since 2.11.91.
 @@
 
-@RET@		FcResult
-@FUNC@		FcPatternFindFont
-@TYPE1@		const FcPattern *		@ARG1@		p
-@TYPE3@		FcChar8 **			@ARG3@		ret
-@PURPOSE@	Find a font corresponding to a filename in a pattern
-@DESC@
-Returns a filename in <parameter>p</parameter> to the font.
-@SINCE@		2.13.0
-@@
-
 @RET@		FcPattern *
 @FUNC@		FcPatternBuild
 @TYPE1@		FcPattern *			@ARG1@		pattern
