@@ -66,8 +66,9 @@ class GCETestStageTest(generic_stages_unittest.AbstractStageTestCase,
     gce_tarball = constants.TEST_IMAGE_GCE_TAR
 
     # pylint: disable=unused-argument
-    def _MockRunTestSuite(buildroot, board, image_path, results_dir, test_type,
-                          *args, **kwargs):
+    def _MockRunTestSuite(buildroot, board, image_path, results_dir,
+                          test_config, *args, **kwargs):
+      test_type = test_config.test_type
       self.assertEndsWith(image_path, gce_tarball)
       self.assertEqual(test_type, constants.GCE_SMOKE_TEST_TYPE)
     # pylint: enable=unused-argument
@@ -162,39 +163,44 @@ class RunTestSuiteTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
   TEST_BOARD = 'betty'
   BUILD_ROOT = '/fake/root'
 
-  def _RunTestSuite(self, test_type):
+  def _RunTestSuite(self, test_config):
     vm_test_stages.RunTestSuite(self.BUILD_ROOT, self.TEST_BOARD, self.tempdir,
                                 '/tmp/taco', archive_dir='/fake/root',
                                 whitelist_chrome_crashes=False,
-                                test_type=test_type)
+                                test_config=test_config)
     self.assertCommandContains(['--no_graphics', '--verbose'])
 
   def testFull(self):
     """Test running FULL config."""
-    self._RunTestSuite(constants.FULL_AU_TEST_TYPE)
+    config = config_lib.VMTestConfig(constants.FULL_AU_TEST_TYPE)
+    self._RunTestSuite(config)
     self.assertCommandContains(['--quick'], expected=False)
     self.assertCommandContains(['--only_verify'], expected=False)
 
   def testSimple(self):
     """Test SIMPLE config."""
-    self._RunTestSuite(constants.SIMPLE_AU_TEST_TYPE)
+    config = config_lib.VMTestConfig(constants.SIMPLE_AU_TEST_TYPE)
+    self._RunTestSuite(config)
     self.assertCommandContains(['--quick_update'])
 
   def testSmoke(self):
     """Test SMOKE config."""
-    self._RunTestSuite(constants.SMOKE_SUITE_TEST_TYPE)
+    config = config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE)
+    self._RunTestSuite(config)
     self.assertCommandContains(['--only_verify'])
 
   def testGceSmokeTestType(self):
     """Test GCE_SMOKE_TEST_TYPE."""
-    self._RunTestSuite(constants.GCE_SMOKE_TEST_TYPE)
+    config = config_lib.GCETestConfig(constants.GCE_SMOKE_TEST_TYPE)
+    self._RunTestSuite(config)
     self.assertCommandContains(['--only_verify'])
     self.assertCommandContains(['--type=gce'])
     self.assertCommandContains(['--suite=gce-smoke'])
 
   def testGceSanityTestType(self):
     """Test GCE_SANITY_TEST_TYPE."""
-    self._RunTestSuite(constants.GCE_SANITY_TEST_TYPE)
+    config = config_lib.GCETestConfig(constants.GCE_SANITY_TEST_TYPE)
+    self._RunTestSuite(config)
     self.assertCommandContains(['--only_verify'])
     self.assertCommandContains(['--type=gce'])
     self.assertCommandContains(['--suite=gce-sanity'])

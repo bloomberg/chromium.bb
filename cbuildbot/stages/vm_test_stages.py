@@ -185,13 +185,15 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
           prefix = ''
         self.PrintDownloadLink(filename, prefix)
 
-  def _RunTest(self, test_type, test_results_dir):
+  def _RunTest(self, test_config, test_results_dir):
     """Run a VM test.
 
     Args:
-      test_type: Any test in constants.VALID_VM_TEST_TYPES
+      test_config: Any config_lib.VMTestConfig with test_type in
+                 constants.VALID_VM_TEST_TYPES
       test_results_dir: The base directory to store the results.
     """
+    test_type = test_config.test_type
     if test_type == constants.CROS_VM_TEST_TYPE:
       RunCrosVMTest(self._current_board, self.GetImageDirSymlink())
     elif test_type == constants.DEV_MODE_TEST_TYPE:
@@ -213,7 +215,7 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
           self._current_board,
           image_path,
           os.path.join(test_results_dir, 'test_harness'),
-          test_type=test_type,
+          test_config=test_config,
           whitelist_chrome_crashes=self._chrome_rev is None,
           archive_dir=self.bot_archive_root,
           ssh_private_key=ssh_private_key,
@@ -234,7 +236,7 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
         with cgroups.SimpleContainChildren('VMTest'):
           r = ' Reached VMTestStage test run timeout.'
           with timeout_util.Timeout(vm_test.timeout, reason_message=r):
-            self._RunTest(test_type, per_test_results_dir)
+            self._RunTest(vm_test, per_test_results_dir)
 
     except Exception:
       logging.error(_VM_TEST_ERROR_MSG % dict(vm_test_results=test_basename))
@@ -263,11 +265,12 @@ class GCETestStage(VMTestStage):
   # TODO: We should revisit whether GCE tests should have their own configs.
   TEST_TIMEOUT = 60 * 60
 
-  def _RunTest(self, test_type, test_results_dir):
+  def _RunTest(self, test_config, test_results_dir):
     """Run a GCE test.
 
     Args:
-      test_type: Any test in constants.VALID_GCE_TEST_TYPES
+      test_config: Any config_lib.GCETestConfig with valid test_type in
+                   constants.VALID_GCE_TEST_TYPES
       test_results_dir: The base directory to store the results.
     """
     image_path = os.path.join(self.GetImageDirSymlink(),
@@ -285,7 +288,7 @@ class GCETestStage(VMTestStage):
         self._current_board,
         image_path,
         os.path.join(test_results_dir, 'test_harness'),
-        test_type=test_type,
+        test_config=test_config,
         whitelist_chrome_crashes=self._chrome_rev is None,
         archive_dir=self.bot_archive_root,
         ssh_private_key=ssh_private_key,
@@ -303,7 +306,7 @@ class GCETestStage(VMTestStage):
         with cgroups.SimpleContainChildren('GCETest'):
           r = ' Reached GCETestStage test run timeout.'
           with timeout_util.Timeout(self.TEST_TIMEOUT, reason_message=r):
-            self._RunTest(gce_test.test_type, per_test_results_dir)
+            self._RunTest(gce_test, per_test_results_dir)
 
     except Exception:
       logging.error(_GCE_TEST_ERROR_MSG % dict(gce_test_results=test_basename))
@@ -472,13 +475,14 @@ def RunDevModeTest(buildroot, board, image_dir):
   cros_build_lib.RunCommand(cmd)
 
 
-def RunTestSuite(buildroot, board, image_path, results_dir, test_type,
+def RunTestSuite(buildroot, board, image_path, results_dir, test_config,
                  whitelist_chrome_crashes, archive_dir, ssh_private_key=None):
   """Runs the test harness suite."""
   results_dir_in_chroot = os.path.join(buildroot, 'chroot',
                                        results_dir.lstrip('/'))
   osutils.RmDir(results_dir_in_chroot, ignore_missing=True)
 
+  test_type = test_config.test_type
   cwd = os.path.join(buildroot, 'src', 'scripts')
   dut_type = 'gce' if test_type in constants.VALID_GCE_TEST_TYPES else 'vm'
 
