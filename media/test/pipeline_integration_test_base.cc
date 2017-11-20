@@ -13,21 +13,30 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "media/base/media_log.h"
+#include "media/base/media_switches.h"
 #include "media/base/media_tracks.h"
 #include "media/base/test_data_util.h"
+#include "media/filters/file_data_source.h"
+#include "media/filters/memory_data_source.h"
+#include "media/media_features.h"
+#include "media/renderers/audio_renderer_impl.h"
+#include "media/renderers/renderer_impl.h"
+#include "media/test/fake_encrypted_media.h"
+#include "media/test/mock_media_source.h"
+#include "third_party/libaom/av1_features.h"
+
 #if !defined(MEDIA_DISABLE_FFMPEG)
 #include "media/filters/ffmpeg_audio_decoder.h"
 #include "media/filters/ffmpeg_demuxer.h"
 #include "media/filters/ffmpeg_video_decoder.h"
 #endif
-#include "media/filters/file_data_source.h"
-#include "media/filters/memory_data_source.h"
-#include "media/renderers/audio_renderer_impl.h"
-#include "media/renderers/renderer_impl.h"
-#include "media/test/fake_encrypted_media.h"
-#include "media/test/mock_media_source.h"
+
 #if !defined(MEDIA_DISABLE_LIBVPX)
 #include "media/filters/vpx_video_decoder.h"
+#endif
+
+#if BUILDFLAG(ENABLE_AV1_DECODER)
+#include "media/filters/aom_video_decoder.h"
 #endif
 
 using ::testing::_;
@@ -54,6 +63,11 @@ static std::vector<std::unique_ptr<VideoDecoder>> CreateVideoDecodersForTest(
 
 #if !defined(MEDIA_DISABLE_LIBVPX)
   video_decoders.push_back(std::make_unique<OffloadingVpxVideoDecoder>());
+#endif  // !defined(MEDIA_DISABLE_LIBVPX)
+
+#if BUILDFLAG(ENABLE_AV1_DECODER)
+  if (base::FeatureList::IsEnabled(kAv1Decoder))
+    video_decoders.push_back(base::MakeUnique<AomVideoDecoder>(media_log));
 #endif  // !defined(MEDIA_DISABLE_LIBVPX)
 
 // Android does not have an ffmpeg video decoder.

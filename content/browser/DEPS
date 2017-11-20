@@ -51,6 +51,7 @@ include_rules = [
   "+third_party/iaccessible2",
   "+third_party/isimpledom",
   "+third_party/khronos",   # For enum definitions only
+  "+third_party/libaom/av1_features.h",
   "+third_party/re2",
   "+third_party/zlib",
 

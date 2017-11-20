@@ -7,13 +7,16 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
 #include "media/base/decoder_factory.h"
 #include "media/base/media_log.h"
+#include "media/base/media_switches.h"
 #include "media/filters/gpu_video_decoder.h"
+#include "media/media_features.h"
 #include "media/renderers/audio_renderer_impl.h"
 #include "media/renderers/renderer_impl.h"
 #include "media/renderers/video_renderer_impl.h"
@@ -99,7 +102,8 @@ DefaultRendererFactory::CreateVideoDecoders(
 #endif
 
 #if BUILDFLAG(ENABLE_AV1_DECODER)
-  video_decoders.push_back(base::MakeUnique<AomVideoDecoder>(media_log_));
+  if (base::FeatureList::IsEnabled(kAv1Decoder))
+    video_decoders.push_back(base::MakeUnique<AomVideoDecoder>(media_log_));
 #endif
 
 #if !defined(MEDIA_DISABLE_FFMPEG) && !defined(DISABLE_FFMPEG_VIDEO_DECODERS)

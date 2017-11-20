@@ -8,6 +8,7 @@
 #include <string>
 
 #include "media/media_features.h"
+#include "third_party/libaom/av1_features.h"
 
 namespace media {
 namespace mp4 {
@@ -17,6 +18,9 @@ enum FourCC {
 #if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
   FOURCC_AC3 = 0x61632d33,   // "ac-3"
   FOURCC_EAC3 = 0x65632d33,  // "ec-3"
+#endif
+#if BUILDFLAG(ENABLE_AV1_DECODER)
+  FOURCC_AV01 = 0x61763031,  // "av01"
 #endif
   FOURCC_AVC1 = 0x61766331,
   FOURCC_AVC3 = 0x61766333,

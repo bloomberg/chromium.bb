@@ -103,6 +103,7 @@ source_set("filters") {
     "//media/formats",
     "//media/video",
     "//skia",
+    "//third_party/libaom:av1_features",
     "//third_party/libyuv",
   ]
 

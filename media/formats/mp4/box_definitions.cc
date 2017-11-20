@@ -19,6 +19,7 @@
 #include "media/formats/mp4/rcheck.h"
 #include "media/media_features.h"
 #include "media/video/h264_parser.h"
+#include "third_party/libaom/av1_features.h"
 
 #if BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
 #include "media/formats/mp4/dolby_vision.h"
@@ -820,6 +821,18 @@ bool VideoSampleEntry::Parse(BoxReader* reader) {
       video_codec_profile = vp_config->profile;
       break;
     }
+#if BUILDFLAG(ENABLE_AV1_DECODER)
+    case FOURCC_AV01: {
+      DVLOG(2) << __func__ << " reading AV1 configuration.";
+      // TODO(dalecurtis): AV1 profiles are not finalized, this needs updating
+      // to read the actual profile and configuration before enabling for
+      // release. http://crbug.com/784993
+      frame_bitstream_converter = nullptr;
+      video_codec = kCodecAV1;
+      video_codec_profile = AV1PROFILE_PROFILE0;
+      break;
+    }
+#endif
     default:
       // Unknown/unsupported format
       MEDIA_LOG(ERROR, reader->media_log()) << __func__
@@ -856,6 +869,10 @@ bool VideoSampleEntry::IsFormatValid() const {
 #endif  // BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
     case FOURCC_VP09:
       return true;
+#if BUILDFLAG(ENABLE_AV1_DECODER)
+    case FOURCC_AV01:
+      return true;
+#endif
     default:
       return false;
   }

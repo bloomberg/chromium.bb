@@ -44,7 +44,8 @@ class MEDIA_EXPORT MimeUtil {
     VP9,
     THEORA,
     DOLBY_VISION,
-    LAST_CODEC = DOLBY_VISION
+    AV1,
+    LAST_CODEC = AV1
   };
 
   // Platform configuration structure.  Controls which codecs are supported at

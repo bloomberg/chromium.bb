@@ -27755,6 +27755,7 @@ Called by update_use_counter_css.py.-->
   <int value="11" label="AC3"/>
   <int value="12" label="DOLBYVISION"/>
   <int value="13" label="FLAC"/>
+  <int value="14" label="AV1"/>
 </enum>
 
 <enum name="MultiAccountUpdateBubbleUserAction">
