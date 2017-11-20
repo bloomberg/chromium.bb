@@ -41,7 +41,7 @@ class NET_EXPORT_PRIVATE URLSecurityManager {
   // If the delegate whitelist is NULL no servers can have delegated Kerberos
   // tickets.
   //
-  static URLSecurityManager* Create();
+  static std::unique_ptr<URLSecurityManager> Create();
 
   // Returns true if we can send the default credentials to the server at
   // |auth_origin| for HTTP NTLM or Negotiate authentication.
