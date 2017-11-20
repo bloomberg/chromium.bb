@@ -45,9 +45,6 @@ const CGFloat kHintLabelSidePadding = 12;
 // |YES| if this consumer is has voice search enabled.
 @property(nonatomic, assign) BOOL voiceSearchIsEnabled;
 
-// |YES| if a what's new promo can be displayed.
-@property(nonatomic, assign) BOOL promoCanShow;
-
 // Exposes view and methods to drive the doodle.
 @property(nonatomic, weak) id<LogoVendor> logoVendor;
 
@@ -58,13 +55,6 @@ const CGFloat kHintLabelSidePadding = 12;
 // |YES| if the google landing toolbar can show the back arrow, cached and
 // pushed into the header view.
 @property(nonatomic, assign) BOOL canGoBack;
-
-// Gets the icon of a what's new promo.
-// TODO(crbug.com/694750): This should not be WhatsNewIcon.
-@property(nonatomic, assign) WhatsNewIcon promoIcon;
-
-// Gets the text of a what's new promo.
-@property(nonatomic, copy) NSString* promoText;
 
 // The number of tabs to show in the google landing fake toolbar.
 @property(nonatomic, assign) int tabCount;
@@ -94,8 +84,6 @@ const CGFloat kHintLabelSidePadding = 12;
 @synthesize promoCanShow = _promoCanShow;
 @synthesize canGoForward = _canGoForward;
 @synthesize canGoBack = _canGoBack;
-@synthesize promoIcon = _promoIcon;
-@synthesize promoText = _promoText;
 @synthesize isShowing = _isShowing;
 @synthesize omniboxFocused = _omniboxFocused;
 @synthesize tabCount = _tabCount;
@@ -392,18 +380,6 @@ const CGFloat kHintLabelSidePadding = 12;
 - (void)setLogoIsShowing:(BOOL)logoIsShowing {
   _logoIsShowing = logoIsShowing;
   [self updateLogoAndFakeboxDisplay];
-}
-
-- (void)setMaximumMostVisitedSitesShown:
-    (NSUInteger)maximumMostVisitedSitesShown {
-}
-
-- (void)mostVisitedDataUpdated {
-  // Do nothing as it is handled in the ContentSuggestionsMediator.
-}
-
-- (void)mostVisitedIconMadeAvailableAtIndex:(NSUInteger)index {
-  // Do nothing as it is handled in the ContentSuggestionsMediator.
 }
 
 - (void)setTabCount:(int)tabCount {

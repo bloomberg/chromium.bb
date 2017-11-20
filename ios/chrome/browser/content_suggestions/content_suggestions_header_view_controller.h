@@ -43,6 +43,9 @@ class ReadingListModel;
 // Whether the Google logo or doodle is being shown.
 @property(nonatomic, assign) BOOL logoIsShowing;
 
+// |YES| if a what's new promo can be displayed.
+@property(nonatomic, assign) BOOL promoCanShow;
+
 // |YES| if its view is visible.  When set to |NO| various UI updates are
 // ignored.
 @property(nonatomic, assign) BOOL isShowing;
