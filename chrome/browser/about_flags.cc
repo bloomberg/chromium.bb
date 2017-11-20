@@ -1120,6 +1120,12 @@ const FeatureEntry::Choice kUseDdljsonApiChoices[] = {
      "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_desktop0.json"},
     {"(force test doodle 1)", search_provider_logos::switches::kGoogleDoodleUrl,
      "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_desktop1.json"},
+    {"(force test doodle 2)", search_provider_logos::switches::kGoogleDoodleUrl,
+     "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_desktop2.json"},
+    {"(force test doodle 3)", search_provider_logos::switches::kGoogleDoodleUrl,
+     "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_desktop3.json"},
+    {"(force test doodle 4)", search_provider_logos::switches::kGoogleDoodleUrl,
+     "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_desktop4.json"},
 #endif  // defined(OS_ANDROID)
 };
 
