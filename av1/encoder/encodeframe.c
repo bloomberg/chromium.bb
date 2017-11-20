@@ -2819,7 +2819,8 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
       const int src_stride = x->plane[0].src.stride;
       int64_t dist_8x8;
       dist_8x8 = dist_8x8_yuv(cpi, x, x->plane[0].src.buf - 4 * src_stride - 4);
-      if (x->tune_metric == AOM_TUNE_PSNR) assert(sum_rdc.dist == dist_8x8);
+      if (x->tune_metric == AOM_TUNE_PSNR && xd->bd == 8)
+        assert(sum_rdc.dist == dist_8x8);
       sum_rdc.dist = dist_8x8;
       sum_rdc.rdcost = RDCOST(x->rdmult, sum_rdc.rate, sum_rdc.dist);
     }
@@ -2907,7 +2908,8 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
         const int src_stride = x->plane[0].src.stride;
         int64_t dist_8x8;
         dist_8x8 = dist_8x8_yuv(cpi, x, x->plane[0].src.buf - 4 * src_stride);
-        if (x->tune_metric == AOM_TUNE_PSNR) assert(sum_rdc.dist == dist_8x8);
+        if (x->tune_metric == AOM_TUNE_PSNR && xd->bd == 8)
+          assert(sum_rdc.dist == dist_8x8);
         sum_rdc.dist = dist_8x8;
         sum_rdc.rdcost = RDCOST(x->rdmult, sum_rdc.rate, sum_rdc.dist);
       }
@@ -2991,7 +2993,8 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
           bsize == BLOCK_8X8) {
         int64_t dist_8x8;
         dist_8x8 = dist_8x8_yuv(cpi, x, x->plane[0].src.buf - 4);
-        if (x->tune_metric == AOM_TUNE_PSNR) assert(sum_rdc.dist == dist_8x8);
+        if (x->tune_metric == AOM_TUNE_PSNR && xd->bd == 8)
+          assert(sum_rdc.dist == dist_8x8);
         sum_rdc.dist = dist_8x8;
         sum_rdc.rdcost = RDCOST(x->rdmult, sum_rdc.rate, sum_rdc.dist);
       }
