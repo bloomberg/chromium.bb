@@ -139,12 +139,9 @@ external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/transforms [ Sk
 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/ui3 [ Skip ]
 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/values3 [ Skip ]
 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/will-change [ Skip ]
-external/wpt/css/work-in-progress [ Skip ]
 external/wpt/docs [ Skip ]
 external/wpt/dpub-aam [ Skip ]
 external/wpt/dpub-aria [ Skip ]
-external/wpt/encrypted-media/Google [ Skip ]
-external/wpt/ext-xhtml-pubid [ Skip ]
 external/wpt/fonts/math [ Skip ]
 external/wpt/html-longdesc [ Skip ]
 external/wpt/js [ Skip ]
@@ -171,7 +168,6 @@ external/wpt/webgl [ Skip ]
 # files. Having unused files would be confusing.
 external/wpt/resources/testdriver-vendor.js [ Skip ]
 external/wpt/resources/testharnessreport.js [ Skip ]
-external/wpt/common/vendor-prefix.js [ Skip ]
 
 # crbug.com/490939: The following tests are too large.  They cause time out frequently.
 # [ Slow ] didn't help the following svg-in-*.html tests.
@@ -422,7 +418,6 @@ external/wpt/touch-events/multi-touch-interfaces-manual.html [ Skip ]
 external/wpt/touch-events/single-touch-manual.html [ Skip ]
 external/wpt/uievents/order-of-events/focus-events/focus-contained-manual.html [ Skip ]
 external/wpt/uievents/order-of-events/focus-events/legacy-manual.html [ Skip ]
-external/wpt/uievents/order-of-events/mouse-events/click-cancel-manual.html [ Skip ]
 external/wpt/uievents/order-of-events/mouse-events/click-on-body-manual.html [ Skip ]
 external/wpt/uievents/order-of-events/mouse-events/click-on-div-manual.html [ Skip ]
 external/wpt/uievents/order-of-events/mouse-events/click-on-html-manual.html [ Skip ]
