@@ -7,6 +7,7 @@
 
 #include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
+#include "core/css/properties/CSSProperty.h"
 #include "core/dom/QualifiedName.h"
 #include "platform/wtf/Allocator.h"
 
@@ -17,18 +18,18 @@ class CORE_EXPORT PropertyHandle {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  explicit PropertyHandle(CSSPropertyID property,
+  explicit PropertyHandle(const CSSProperty& property,
                           bool is_presentation_attribute = false)
       : handle_type_(is_presentation_attribute ? kHandlePresentationAttribute
                                                : kHandleCSSProperty),
-        css_property_(property) {
-    DCHECK_NE(property, CSSPropertyInvalid);
-    DCHECK_NE(property, CSSPropertyVariable);
+        css_property_(&property) {
+    DCHECK_NE(property.PropertyID(), CSSPropertyInvalid);
+    DCHECK_NE(property.PropertyID(), CSSPropertyVariable);
   }
 
   explicit PropertyHandle(const AtomicString& property_name)
       : handle_type_(kHandleCSSCustomProperty),
-        svg_attribute_(nullptr),
+        css_property_(&GetCSSPropertyVariable()),
         property_name_(property_name) {}
 
   explicit PropertyHandle(const QualifiedName& attribute_name)
@@ -44,10 +45,9 @@ class CORE_EXPORT PropertyHandle {
   bool IsCSSProperty() const {
     return handle_type_ == kHandleCSSProperty || IsCSSCustomProperty();
   }
-  CSSPropertyID CssProperty() const {
+  const CSSProperty& GetCSSProperty() const {
     DCHECK(IsCSSProperty());
-    return handle_type_ == kHandleCSSProperty ? css_property_
-                                              : CSSPropertyVariable;
+    return *css_property_;
   }
 
   bool IsCSSCustomProperty() const {
@@ -61,9 +61,9 @@ class CORE_EXPORT PropertyHandle {
   bool IsPresentationAttribute() const {
     return handle_type_ == kHandlePresentationAttribute;
   }
-  CSSPropertyID PresentationAttribute() const {
+  const CSSProperty& PresentationAttribute() const {
     DCHECK(IsPresentationAttribute());
-    return css_property_;
+    return *css_property_;
   }
 
   bool IsSVGAttribute() const { return handle_type_ == kHandleSVGAttribute; }
@@ -99,7 +99,7 @@ class CORE_EXPORT PropertyHandle {
 
   HandleType handle_type_;
   union {
-    CSSPropertyID css_property_;
+    const CSSProperty* css_property_;
     const QualifiedName* svg_attribute_;
   };
   AtomicString property_name_;

@@ -65,7 +65,7 @@ void HTMLTablePartElement::CollectStyleForPresentationAttribute(
                                 Referrer(GetDocument().OutgoingReferrer(),
                                          GetDocument().GetReferrerPolicy()));
       style->SetProperty(
-          CSSPropertyValue(CSSPropertyBackgroundImage, *image_value));
+          CSSPropertyValue(GetCSSPropertyBackgroundImage(), *image_value));
     }
   } else if (name == valignAttr) {
     if (DeprecatedEqualIgnoringCase(value, "top"))

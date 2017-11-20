@@ -79,9 +79,8 @@ class CORE_EXPORT TransitionInterpolation : public Interpolation {
         compositor_end_(std::move(compositor_end)),
         cached_interpolable_value_(merge_.start_interpolable_value->Clone()) {
     DCHECK(merge_);
-    DCHECK_EQ(
-        compositor_start_ && compositor_end_,
-        CompositorAnimations::IsCompositableProperty(property_.CssProperty()));
+    DCHECK_EQ(compositor_start_ && compositor_end_,
+              property_.GetCSSProperty().IsCompositableProperty());
   }
 
  private:

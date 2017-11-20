@@ -53,11 +53,11 @@ static scoped_refptr<AnimatableValue> CreateFromTransformProperties(
 }
 
 scoped_refptr<AnimatableValue> CSSAnimatableValueFactory::Create(
-    CSSPropertyID property,
+    const CSSProperty& property,
     const ComputedStyle& style) {
-  DCHECK(CSSProperty::Get(property).IsInterpolable());
-  DCHECK(CompositorAnimations::IsCompositableProperty(property));
-  switch (property) {
+  DCHECK(property.IsInterpolable());
+  DCHECK(property.IsCompositableProperty());
+  switch (property.PropertyID()) {
     case CSSPropertyOpacity:
       return AnimatableDouble::Create(style.Opacity());
     case CSSPropertyFilter:

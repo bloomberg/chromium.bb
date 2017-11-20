@@ -118,7 +118,7 @@ void ExpectProperty(CSSPropertyID property,
       ToInvalidatableInterpolation(interpolation_value.get());
   const PropertyHandle& property_handle = interpolation->GetProperty();
   ASSERT_TRUE(property_handle.IsCSSProperty());
-  ASSERT_EQ(property, property_handle.CssProperty());
+  ASSERT_EQ(property, property_handle.GetCSSProperty().PropertyID());
 }
 
 Interpolation* FindValue(Vector<scoped_refptr<Interpolation>>& values,
@@ -126,7 +126,8 @@ Interpolation* FindValue(Vector<scoped_refptr<Interpolation>>& values,
   for (auto& value : values) {
     const PropertyHandle& property =
         ToInvalidatableInterpolation(value.get())->GetProperty();
-    if (property.IsCSSProperty() && property.CssProperty() == id)
+    if (property.IsCSSProperty() &&
+        property.GetCSSProperty().PropertyID() == id)
       return value.get();
   }
   return nullptr;
@@ -521,7 +522,8 @@ TEST_F(AnimationKeyframeEffectModel, AddSyntheticKeyframes) {
   StringKeyframeEffectModel* effect =
       StringKeyframeEffectModel::Create(keyframes);
   const StringPropertySpecificKeyframeVector& property_specific_keyframes =
-      effect->GetPropertySpecificKeyframes(PropertyHandle(CSSPropertyLeft));
+      effect->GetPropertySpecificKeyframes(
+          PropertyHandle(GetCSSPropertyLeft()));
   EXPECT_EQ(3U, property_specific_keyframes.size());
   EXPECT_DOUBLE_EQ(0.0, property_specific_keyframes[0]->Offset());
   EXPECT_DOUBLE_EQ(0.5, property_specific_keyframes[1]->Offset());

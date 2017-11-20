@@ -265,12 +265,13 @@ String AnimationInputHelpers::PropertyHandleToKeyframeAttribute(
   if (property.IsCSSProperty()) {
     return property.IsCSSCustomProperty()
                ? property.CustomPropertyName()
-               : CSSPropertyToKeyframeAttribute(property.CssProperty());
+               : CSSPropertyToKeyframeAttribute(
+                     property.GetCSSProperty().PropertyID());
   }
 
   if (property.IsPresentationAttribute()) {
     return PresentationAttributeToKeyframeAttribute(
-        property.PresentationAttribute());
+        property.PresentationAttribute().PropertyID());
   }
 
   DCHECK(property.IsSVGAttribute());

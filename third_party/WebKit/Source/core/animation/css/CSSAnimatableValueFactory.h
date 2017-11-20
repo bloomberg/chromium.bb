@@ -34,6 +34,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "core/CSSPropertyNames.h"
 #include "core/animation/animatable/AnimatableValue.h"
+#include "core/css/properties/CSSProperty.h"
 #include "platform/wtf/Allocator.h"
 
 namespace blink {
@@ -44,7 +45,7 @@ class CSSAnimatableValueFactory {
   STATIC_ONLY(CSSAnimatableValueFactory);
 
  public:
-  static scoped_refptr<AnimatableValue> Create(CSSPropertyID,
+  static scoped_refptr<AnimatableValue> Create(const CSSProperty&,
                                                const ComputedStyle&);
 };
 

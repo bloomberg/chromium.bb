@@ -132,7 +132,7 @@ class CORE_EXPORT Keyframe : public RefCounted<Keyframe> {
     // FIXME: Remove this once CompositorAnimations no longer depends on
     // AnimatableValues
     virtual bool PopulateAnimatableValue(
-        CSSPropertyID,
+        const CSSProperty&,
         Element&,
         const ComputedStyle& base_style,
         const ComputedStyle* parent_style) const {

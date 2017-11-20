@@ -52,9 +52,6 @@ class CORE_EXPORT CompositorAnimations {
   STATIC_ONLY(CompositorAnimations);
 
  public:
-  static bool IsCompositableProperty(CSSPropertyID);
-  static const CSSPropertyID kCompositableProperties[7];
-
   struct FailureCode {
     const bool can_composite;
     const bool web_developer_actionable;

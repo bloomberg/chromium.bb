@@ -419,10 +419,10 @@ MutableCSSPropertyValueSet* CSSComputedStyleDeclaration::CopyPropertiesInSet(
   HeapVector<CSSPropertyValue, 256> list;
   list.ReserveInitialCapacity(properties.size());
   for (unsigned i = 0; i < properties.size(); ++i) {
-    const CSSValue* value =
-        GetPropertyCSSValue(CSSProperty::Get(properties[i]));
+    const CSSProperty& property = CSSProperty::Get(properties[i]);
+    const CSSValue* value = GetPropertyCSSValue(property);
     if (value)
-      list.push_back(CSSPropertyValue(properties[i], *value, false));
+      list.push_back(CSSPropertyValue(property, *value, false));
   }
   return MutableCSSPropertyValueSet::Create(list.data(), list.size());
 }

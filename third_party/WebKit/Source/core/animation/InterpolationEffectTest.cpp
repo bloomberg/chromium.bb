@@ -28,7 +28,7 @@ scoped_refptr<Interpolation> CreateInterpolation(int from, int to) {
   // We require a property that maps to CSSNumberInterpolationType. 'z-index'
   // suffices for this, and also means we can ignore the AnimatableValues for
   // the compositor (as z-index isn't compositor-compatible).
-  PropertyHandle property_handle(CSSPropertyZIndex);
+  PropertyHandle property_handle(GetCSSPropertyZIndex());
   CSSNumberInterpolationType interpolation_type(property_handle);
   InterpolationValue start(InterpolableNumber::Create(from));
   InterpolationValue end(InterpolableNumber::Create(to));

@@ -50,7 +50,8 @@ class CORE_EXPORT StringKeyframe : public Keyframe {
       index =
           css_property_map_->FindPropertyIndex(property.CustomPropertyName());
     else
-      index = css_property_map_->FindPropertyIndex(property.CssProperty());
+      index = css_property_map_->FindPropertyIndex(
+          property.GetCSSProperty().PropertyID());
     CHECK_GE(index, 0);
     return css_property_map_->PropertyAt(static_cast<unsigned>(index)).Value();
   }
@@ -84,7 +85,7 @@ class CORE_EXPORT StringKeyframe : public Keyframe {
 
     const CSSValue* Value() const { return value_.Get(); }
 
-    bool PopulateAnimatableValue(CSSPropertyID,
+    bool PopulateAnimatableValue(const CSSProperty&,
                                  Element&,
                                  const ComputedStyle& base_style,
                                  const ComputedStyle* parent_style) const final;

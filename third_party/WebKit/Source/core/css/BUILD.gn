@@ -516,6 +516,7 @@ blink_core_sources("css") {
     "properties/longhands/Filter.cpp",
     "properties/longhands/FlexBasis.cpp",
     "properties/longhands/FlexGrowOrShrink.cpp",
+    "properties/longhands/FloodOrStopOpacity.cpp",
     "properties/longhands/FontFamily.cpp",
     "properties/longhands/FontFeatureSettings.cpp",
     "properties/longhands/FontSize.cpp",

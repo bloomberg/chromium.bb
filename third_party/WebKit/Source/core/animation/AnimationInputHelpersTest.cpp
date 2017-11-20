@@ -22,7 +22,7 @@ class AnimationAnimationInputHelpersTest : public ::testing::Test {
   }
 
   String PropertyHandleToKeyframeAttribute(
-      CSSPropertyID property,
+      const CSSProperty& property,
       bool is_presentation_attribute = false) {
     PropertyHandle handle(property, is_presentation_attribute);
     return AnimationInputHelpers::PropertyHandleToKeyframeAttribute(handle);
@@ -160,24 +160,27 @@ TEST_F(AnimationAnimationInputHelpersTest, ParseAnimationTimingFunction) {
 
 TEST_F(AnimationAnimationInputHelpersTest, PropertyHandleToKeyframeAttribute) {
   // CSS properties.
-  EXPECT_EQ("top", PropertyHandleToKeyframeAttribute(CSSPropertyTop));
+  EXPECT_EQ("top", PropertyHandleToKeyframeAttribute(GetCSSPropertyTop()));
   EXPECT_EQ("lineHeight",
-            PropertyHandleToKeyframeAttribute(CSSPropertyLineHeight));
-  EXPECT_EQ("cssFloat", PropertyHandleToKeyframeAttribute(CSSPropertyFloat));
-  EXPECT_EQ("cssOffset", PropertyHandleToKeyframeAttribute(CSSPropertyOffset));
+            PropertyHandleToKeyframeAttribute(GetCSSPropertyLineHeight()));
+  EXPECT_EQ("cssFloat",
+            PropertyHandleToKeyframeAttribute(GetCSSPropertyFloat()));
+  EXPECT_EQ("cssOffset",
+            PropertyHandleToKeyframeAttribute(GetCSSPropertyOffset()));
 
   // CSS custom properties.
   EXPECT_EQ("--x", PropertyHandleToKeyframeAttribute("--x"));
   EXPECT_EQ("--test-prop", PropertyHandleToKeyframeAttribute("--test-prop"));
 
   // Presentation attributes.
-  EXPECT_EQ("svg-top", PropertyHandleToKeyframeAttribute(CSSPropertyTop, true));
-  EXPECT_EQ("svg-line-height",
-            PropertyHandleToKeyframeAttribute(CSSPropertyLineHeight, true));
+  EXPECT_EQ("svg-top",
+            PropertyHandleToKeyframeAttribute(GetCSSPropertyTop(), true));
+  EXPECT_EQ("svg-line-height", PropertyHandleToKeyframeAttribute(
+                                   GetCSSPropertyLineHeight(), true));
   EXPECT_EQ("svg-float",
-            PropertyHandleToKeyframeAttribute(CSSPropertyFloat, true));
+            PropertyHandleToKeyframeAttribute(GetCSSPropertyFloat(), true));
   EXPECT_EQ("svg-offset",
-            PropertyHandleToKeyframeAttribute(CSSPropertyOffset, true));
+            PropertyHandleToKeyframeAttribute(GetCSSPropertyOffset(), true));
 
   // SVG attributes.
   EXPECT_EQ("calcMode", PropertyHandleToKeyframeAttribute(QualifiedName(

@@ -952,7 +952,7 @@ void CSSParserImpl::ConsumeVariableValue(CSSParserTokenRange range,
           CSSVariableParser::ParseDeclarationValue(variable_name, range,
                                                    is_animation_tainted)) {
     parsed_properties_.push_back(
-        CSSPropertyValue(CSSPropertyVariable, *value, important));
+        CSSPropertyValue(GetCSSPropertyVariable(), *value, important));
     context_->Count(context_->Mode(), CSSPropertyVariable);
   }
 }

@@ -79,7 +79,7 @@ class CORE_EXPORT StyleResolver final
       Element&,
       const ComputedStyle& base_style,
       const ComputedStyle* parent_style,
-      CSSPropertyID,
+      const CSSProperty&,
       const CSSValue*);
 
   scoped_refptr<ComputedStyle> PseudoStyleForElement(

@@ -69,7 +69,7 @@ class CORE_EXPORT EffectStack {
       KeyframeEffectReadOnly::Priority,
       PropertyHandleFilter = nullptr);
 
-  bool GetAnimatedBoundingBox(FloatBox&, CSSPropertyID) const;
+  bool GetAnimatedBoundingBox(FloatBox&, const CSSProperty&) const;
   void Trace(blink::Visitor*);
 
  private:

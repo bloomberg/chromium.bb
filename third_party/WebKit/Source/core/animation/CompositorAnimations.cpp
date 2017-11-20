@@ -86,30 +86,30 @@ bool ConsiderAnimationAsIncompatible(const Animation& animation,
 
 bool IsTransformRelatedCSSProperty(const PropertyHandle property) {
   return property.IsCSSProperty() &&
-         (property.CssProperty() == CSSPropertyRotate ||
-          property.CssProperty() == CSSPropertyScale ||
-          property.CssProperty() == CSSPropertyTransform ||
-          property.CssProperty() == CSSPropertyTranslate);
+         (property.GetCSSProperty().PropertyID() == CSSPropertyRotate ||
+          property.GetCSSProperty().PropertyID() == CSSPropertyScale ||
+          property.GetCSSProperty().PropertyID() == CSSPropertyTransform ||
+          property.GetCSSProperty().PropertyID() == CSSPropertyTranslate);
 }
 
 bool IsTransformRelatedAnimation(const Element& target_element,
                                  const Animation* animation) {
-  return animation->Affects(target_element, CSSPropertyTransform) ||
-         animation->Affects(target_element, CSSPropertyRotate) ||
-         animation->Affects(target_element, CSSPropertyScale) ||
-         animation->Affects(target_element, CSSPropertyTranslate);
+  return animation->Affects(target_element, GetCSSPropertyTransform()) ||
+         animation->Affects(target_element, GetCSSPropertyRotate()) ||
+         animation->Affects(target_element, GetCSSPropertyScale()) ||
+         animation->Affects(target_element, GetCSSPropertyTranslate());
 }
 
 bool HasIncompatibleAnimations(const Element& target_element,
                                const Animation& animation_to_add,
                                const EffectModel& effect_to_add) {
   const bool affects_opacity =
-      effect_to_add.Affects(PropertyHandle(CSSPropertyOpacity));
+      effect_to_add.Affects(PropertyHandle(GetCSSPropertyOpacity()));
   const bool affects_transform = effect_to_add.IsTransformRelatedEffect();
   const bool affects_filter =
-      effect_to_add.Affects(PropertyHandle(CSSPropertyFilter));
+      effect_to_add.Affects(PropertyHandle(GetCSSPropertyFilter()));
   const bool affects_backdrop_filter =
-      effect_to_add.Affects(PropertyHandle(CSSPropertyBackdropFilter));
+      effect_to_add.Affects(PropertyHandle(GetCSSPropertyBackdropFilter()));
 
   if (!target_element.HasAnimations())
     return false;
@@ -122,15 +122,15 @@ bool HasIncompatibleAnimations(const Element& target_element,
     if (!ConsiderAnimationAsIncompatible(*attached_animation, animation_to_add))
       continue;
 
-    if ((affects_opacity &&
-         attached_animation->Affects(target_element, CSSPropertyOpacity)) ||
+    if ((affects_opacity && attached_animation->Affects(
+                                target_element, GetCSSPropertyOpacity())) ||
         (affects_transform &&
          IsTransformRelatedAnimation(target_element, attached_animation)) ||
         (affects_filter &&
-         attached_animation->Affects(target_element, CSSPropertyFilter)) ||
+         attached_animation->Affects(target_element, GetCSSPropertyFilter())) ||
         (affects_backdrop_filter &&
          attached_animation->Affects(target_element,
-                                     CSSPropertyBackdropFilter)))
+                                     GetCSSPropertyBackdropFilter())))
       return true;
   }
 
@@ -138,19 +138,6 @@ bool HasIncompatibleAnimations(const Element& target_element,
 }
 
 }  // namespace
-
-bool CompositorAnimations::IsCompositableProperty(CSSPropertyID property) {
-  for (CSSPropertyID id : kCompositableProperties) {
-    if (property == id)
-      return true;
-  }
-  return false;
-}
-
-const CSSPropertyID CompositorAnimations::kCompositableProperties[7] = {
-    CSSPropertyOpacity,       CSSPropertyRotate,    CSSPropertyScale,
-    CSSPropertyTransform,     CSSPropertyTranslate, CSSPropertyFilter,
-    CSSPropertyBackdropFilter};
 
 bool CompositorAnimations::GetAnimatedBoundingBox(FloatBox& box,
                                                   const EffectModel& effect,
@@ -272,7 +259,7 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
 
       // FIXME: Determine candidacy based on the CSSValue instead of a snapshot
       // AnimatableValue.
-      switch (property.CssProperty()) {
+      switch (property.GetCSSProperty().PropertyID()) {
         case CSSPropertyOpacity:
           break;
         case CSSPropertyRotate:
@@ -305,7 +292,8 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
           if (property.IsCSSCustomProperty()) {
             builder.Append(property.CustomPropertyName());
           } else {
-            builder.Append(getPropertyName(property.CssProperty()));
+            builder.Append(
+                getPropertyName(property.GetCSSProperty().PropertyID()));
           }
           return FailureCode::Actionable(builder.ToString());
       }
@@ -409,12 +397,12 @@ void CompositorAnimations::CancelIncompatibleAnimationsOnCompositor(
     const Animation& animation_to_add,
     const EffectModel& effect_to_add) {
   const bool affects_opacity =
-      effect_to_add.Affects(PropertyHandle(CSSPropertyOpacity));
+      effect_to_add.Affects(PropertyHandle(GetCSSPropertyOpacity()));
   const bool affects_transform = effect_to_add.IsTransformRelatedEffect();
   const bool affects_filter =
-      effect_to_add.Affects(PropertyHandle(CSSPropertyFilter));
+      effect_to_add.Affects(PropertyHandle(GetCSSPropertyFilter()));
   const bool affects_backdrop_filter =
-      effect_to_add.Affects(PropertyHandle(CSSPropertyBackdropFilter));
+      effect_to_add.Affects(PropertyHandle(GetCSSPropertyBackdropFilter()));
 
   if (!target_element.HasAnimations())
     return;
@@ -427,15 +415,15 @@ void CompositorAnimations::CancelIncompatibleAnimationsOnCompositor(
     if (!ConsiderAnimationAsIncompatible(*attached_animation, animation_to_add))
       continue;
 
-    if ((affects_opacity &&
-         attached_animation->Affects(target_element, CSSPropertyOpacity)) ||
+    if ((affects_opacity && attached_animation->Affects(
+                                target_element, GetCSSPropertyOpacity())) ||
         (affects_transform &&
          IsTransformRelatedAnimation(target_element, attached_animation)) ||
         (affects_filter &&
-         attached_animation->Affects(target_element, CSSPropertyFilter)) ||
+         attached_animation->Affects(target_element, GetCSSPropertyFilter())) ||
         (affects_backdrop_filter &&
          attached_animation->Affects(target_element,
-                                     CSSPropertyBackdropFilter)))
+                                     GetCSSPropertyBackdropFilter())))
       attached_animation->CancelAnimationOnCompositor();
   }
 }
@@ -662,7 +650,7 @@ void CompositorAnimations::GetAnimationOnCompositor(
     CompositorTargetProperty::Type target_property;
     std::unique_ptr<CompositorAnimationCurve> curve;
     DCHECK(timing.timing_function);
-    switch (property.CssProperty()) {
+    switch (property.GetCSSProperty().PropertyID()) {
       case CSSPropertyOpacity: {
         target_property = CompositorTargetProperty::OPACITY;
         std::unique_ptr<CompositorFloatAnimationCurve> float_curve =

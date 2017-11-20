@@ -122,6 +122,13 @@
       valid_type: "bool",
     },
 
+    // - compositable
+    // The property can be animated by the compositor
+    compositable: {
+      default: false,
+      valid_type: "bool",
+    },
+
     // - runtime_flag
     // The name of the flag on RuntimeEnabledFeatures
     // (e.g. "CSSScrollBoundaryBehavior") that conditionally enables the
@@ -724,6 +731,7 @@
       property_class: true,
       property_methods: ["ParseSingleValue"],
       interpolable: true,
+      compositable: true,
       runtime_flag: "CSSBackdropFilter",
       field_group: "*",
       field_template: "external",
@@ -1375,6 +1383,7 @@
       property_class: true,
       property_methods: ["ParseSingleValue"],
       interpolable: true,
+      compositable: true,
       field_group: "*",
       field_template: "external",
       include_paths: ["core/style/StyleFilterData.h"],
@@ -1446,7 +1455,7 @@
     },
     {
       name: "flood-opacity",
-      property_class: "Opacity",
+      property_class: "FloodOrStopOpacity",
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       svg: true,
@@ -1991,9 +2000,10 @@
     },
     {
       name: "opacity",
-      property_class: "Opacity",
+      property_class: true,
       property_methods: ["ParseSingleValue"],
       interpolable: true,
+      compositable: true,
       field_group: "*",
       field_template: "primitive",
       default_value: "1.0",
@@ -2586,7 +2596,7 @@
     },
     {
       name: "stop-opacity",
-      property_class: "Opacity",
+      property_class: "FloodOrStopOpacity",
       property_methods: ["ParseSingleValue"],
       interpolable: true,
       svg: true,
@@ -2875,6 +2885,7 @@
       property_class: true,
       property_methods: ["ParseSingleValue", "IsLayoutDependent"],
       interpolable: true,
+      compositable: true,
       field_group: "*",
       field_template: "external",
       include_paths: ["platform/transforms/TransformOperations.h"],
@@ -2918,6 +2929,7 @@
       property_class: true,
       property_methods: ["ParseSingleValue", "IsLayoutDependent"],
       interpolable: true,
+      compositable: true,
       runtime_flag: "CSSIndependentTransformProperties",
       field_group: "*",
       field_template: "pointer",
@@ -2932,6 +2944,7 @@
       property_class: true,
       property_methods: ["ParseSingleValue"],
       interpolable: true,
+      compositable: true,
       runtime_flag: "CSSIndependentTransformProperties",
       field_group: "*",
       field_template: "pointer",
@@ -2946,6 +2959,7 @@
       property_class: true,
       property_methods: ["ParseSingleValue"],
       interpolable: true,
+      compositable: true,
       runtime_flag: "CSSIndependentTransformProperties",
       field_group: "*",
       field_template: "pointer",

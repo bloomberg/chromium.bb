@@ -121,7 +121,7 @@ void CSSVarCycleInterpolationType::Apply(
     const NonInterpolableValue*,
     InterpolationEnvironment& environment) const {
   StyleBuilder::ApplyProperty(
-      GetProperty().CssProperty(),
+      GetProperty().GetCSSProperty().PropertyID(),
       ToCSSInterpolationEnvironment(environment).GetState(),
       *CSSCustomPropertyDeclaration::Create(GetProperty().CustomPropertyName(),
                                             CSSValueUnset));
