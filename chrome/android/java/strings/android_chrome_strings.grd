@@ -2187,6 +2187,9 @@ To obtain new licenses, connect to the internet and play your downloaded content
       </message>
 
       <!-- First Run strings -->
+      <message name="IDS_FRE_ACTIVITY_LABEL" desc="Label for first run dialog in Android Recents.">
+        Chrome First Run Experience
+      </message>
       <message name="IDS_FRE_SKIP_TEXT" desc="Text for second page skip button">
         No thanks
       </message>
