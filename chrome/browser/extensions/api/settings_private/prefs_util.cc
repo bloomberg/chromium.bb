@@ -484,7 +484,7 @@ std::unique_ptr<settings_private::PrefObject> PrefsUtil::GetCrosSettingsPref(
     return nullptr;
   }
   pref_object->key = name;
-  pref_object->type = GetType(name, value->GetType());
+  pref_object->type = GetType(name, value->type());
   pref_object->value.reset(value->DeepCopy());
 #endif
 

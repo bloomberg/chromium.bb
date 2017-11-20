@@ -255,7 +255,7 @@ void KioskExternalUpdater::ProcessParsedManifest(
 
     const base::DictionaryValue* extension = nullptr;
     if (!it.value().GetAsDictionary(&extension)) {
-      LOG(ERROR) << "Found bad entry in manifest type " << it.value().GetType();
+      LOG(ERROR) << "Found bad entry in manifest type " << it.value().type();
       continue;
     }
 

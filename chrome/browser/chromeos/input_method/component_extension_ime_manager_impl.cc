@@ -222,11 +222,11 @@ bool ComponentExtensionIMEManagerImpl::ReadEngineComponent(
   std::set<std::string> languages;
   const base::Value* language_value = NULL;
   if (dict.Get(extensions::manifest_keys::kLanguage, &language_value)) {
-    if (language_value->GetType() == base::Value::Type::STRING) {
+    if (language_value->is_string()) {
       std::string language_str;
       language_value->GetAsString(&language_str);
       languages.insert(language_str);
-    } else if (language_value->GetType() == base::Value::Type::LIST) {
+    } else if (language_value->is_list()) {
       const base::ListValue* language_list = NULL;
       language_value->GetAsList(&language_list);
       for (size_t j = 0; j < language_list->GetSize(); ++j) {

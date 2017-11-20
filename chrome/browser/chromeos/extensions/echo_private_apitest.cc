@@ -55,7 +55,7 @@ class ExtensionEchoPrivateApiTest : public ExtensionApiTest {
         browser()));
 
     ASSERT_TRUE(result.get());
-    ASSERT_EQ(base::Value::Type::BOOLEAN, result->GetType());
+    ASSERT_EQ(base::Value::Type::BOOLEAN, result->type());
 
     bool result_as_boolean = false;
     ASSERT_TRUE(result->GetAsBoolean(&result_as_boolean));
