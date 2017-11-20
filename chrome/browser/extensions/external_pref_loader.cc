@@ -37,7 +37,7 @@ using content::BrowserThread;
 
 namespace {
 
-base::FilePath::CharType kExternalExtensionJson[] =
+constexpr base::FilePath::CharType kExternalExtensionJson[] =
     FILE_PATH_LITERAL("external_extensions.json");
 
 std::set<base::FilePath> GetPrefsCandidateFilesFromFolder(

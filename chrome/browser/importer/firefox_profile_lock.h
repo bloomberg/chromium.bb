@@ -81,8 +81,8 @@ class FirefoxProfileLock {
   FRIEND_TEST_ALL_PREFIXES(FirefoxProfileLockTest, ProfileLock);
   FRIEND_TEST_ALL_PREFIXES(FirefoxProfileLockTest, ProfileLockOrphaned);
 
-  static const base::FilePath::CharType* kLockFileName;
-  static const base::FilePath::CharType* kOldLockFileName;
+  static const base::FilePath::CharType kLockFileName[];
+  static const base::FilePath::CharType kOldLockFileName[];
 
   void Init();
 

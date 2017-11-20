@@ -33,7 +33,7 @@ class MITMSoftwareBlockingPage
     : public security_interstitials::SecurityInterstitialPage {
  public:
   // Interstitial type, used in tests.
-  static InterstitialPageDelegate::TypeID kTypeForTesting;
+  static const InterstitialPageDelegate::TypeID kTypeForTesting;
 
   // If the blocking page isn't shown, the caller is responsible for cleaning
   // up the blocking page. Otherwise, the interstitial takes ownership when
