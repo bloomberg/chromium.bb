@@ -31,7 +31,7 @@ class CSSProperty {
  public:
   CORE_EXPORT static const CSSProperty& Get(CSSPropertyID);
 
-  constexpr CSSProperty(CSSPropertyID id) : id_(id) {}
+  explicit constexpr CSSProperty(CSSPropertyID id) : id_(id) {}
 
   // For backwards compatibility when passing around CSSProperty references.
   // In case we need to call a function that hasn't been converted to using
@@ -40,6 +40,7 @@ class CSSProperty {
 
   virtual bool IsInterpolable() const { return false; }
   virtual bool IsInherited() const { return false; }
+  virtual bool IsCompositableProperty() const { return false; }
   virtual bool IsRepeated() const { return false; }
   virtual char RepetitionSeparator() const {
     NOTREACHED();
@@ -85,10 +86,9 @@ class CSSProperty {
   const CSSPropertyID id_;
 };
 
-const CSSProperty& GetCSSPropertyApplyAtRule();
-const CSSProperty& GetCSSPropertyVariable();
+CORE_EXPORT const CSSProperty& GetCSSPropertyVariable();
 {% for property_class_data in property_classes_by_property_id %}
-const CSSProperty& Get{{property_class_data.property_id}}();
+CORE_EXPORT const CSSProperty& Get{{property_class_data.property_id}}();
 {% endfor %}
 
 }  // namespace blink

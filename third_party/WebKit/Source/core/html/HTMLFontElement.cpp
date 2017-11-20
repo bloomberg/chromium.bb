@@ -186,7 +186,7 @@ void HTMLFontElement::CollectStyleForPresentationAttribute(
     if (const CSSValueList* font_face_value =
             CreateFontFaceValueWithPool(value)) {
       style->SetProperty(
-          CSSPropertyValue(CSSPropertyFontFamily, *font_face_value));
+          CSSPropertyValue(GetCSSPropertyFontFamily(), *font_face_value));
     }
   } else {
     HTMLElement::CollectStyleForPresentationAttribute(name, value, style);

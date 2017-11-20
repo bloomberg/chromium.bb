@@ -14,9 +14,8 @@ namespace blink {
 
 void TransitionKeyframe::SetCompositorValue(
     scoped_refptr<AnimatableValue> compositor_value) {
-  DCHECK_EQ(
-      CompositorAnimations::IsCompositableProperty(property_.CssProperty()),
-      static_cast<bool>(compositor_value.get()));
+  DCHECK_EQ(property_.GetCSSProperty().IsCompositableProperty(),
+            static_cast<bool>(compositor_value.get()));
   compositor_value_ = std::move(compositor_value);
 }
 

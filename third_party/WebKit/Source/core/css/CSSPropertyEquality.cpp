@@ -64,7 +64,7 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
     return DataEquivalent(a.GetRegisteredVariable(name),
                           b.GetRegisteredVariable(name));
   }
-  switch (property.CssProperty()) {
+  switch (property.GetCSSProperty().PropertyID()) {
     case CSSPropertyBackgroundColor:
       return a.BackgroundColor() == b.BackgroundColor() &&
              a.VisitedLinkBackgroundColor() == b.VisitedLinkBackgroundColor();

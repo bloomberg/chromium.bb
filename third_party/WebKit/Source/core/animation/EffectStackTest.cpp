@@ -76,7 +76,7 @@ class AnimationEffectStackTest : public ::testing::Test {
   double GetFontSizeValue(
       const ActiveInterpolationsMap& active_interpolations) {
     const ActiveInterpolations& interpolations =
-        active_interpolations.at(PropertyHandle(CSSPropertyFontSize));
+        active_interpolations.at(PropertyHandle(GetCSSPropertyFontSize()));
     EnsureInterpolatedValueCached(interpolations, *document, element);
 
     const TypedInterpolationValue* typed_value =
@@ -91,7 +91,7 @@ class AnimationEffectStackTest : public ::testing::Test {
 
   double GetZIndexValue(const ActiveInterpolationsMap& active_interpolations) {
     const ActiveInterpolations& interpolations =
-        active_interpolations.at(PropertyHandle(CSSPropertyZIndex));
+        active_interpolations.at(PropertyHandle(GetCSSPropertyZIndex()));
     EnsureInterpolatedValueCached(interpolations, *document, element);
 
     const TypedInterpolationValue* typed_value =

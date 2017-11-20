@@ -47,16 +47,16 @@ void ElementAnimations::UpdateAnimationFlags(ComputedStyle& style) {
     const KeyframeEffectReadOnly& effect =
         *ToKeyframeEffectReadOnly(animation.effect());
     if (effect.IsCurrent()) {
-      if (effect.Affects(PropertyHandle(CSSPropertyOpacity)))
+      if (effect.Affects(PropertyHandle(GetCSSPropertyOpacity())))
         style.SetHasCurrentOpacityAnimation(true);
-      if (effect.Affects(PropertyHandle(CSSPropertyTransform)) ||
-          effect.Affects(PropertyHandle(CSSPropertyRotate)) ||
-          effect.Affects(PropertyHandle(CSSPropertyScale)) ||
-          effect.Affects(PropertyHandle(CSSPropertyTranslate)))
+      if (effect.Affects(PropertyHandle(GetCSSPropertyTransform())) ||
+          effect.Affects(PropertyHandle(GetCSSPropertyRotate())) ||
+          effect.Affects(PropertyHandle(GetCSSPropertyScale())) ||
+          effect.Affects(PropertyHandle(GetCSSPropertyTranslate())))
         style.SetHasCurrentTransformAnimation(true);
-      if (effect.Affects(PropertyHandle(CSSPropertyFilter)))
+      if (effect.Affects(PropertyHandle(GetCSSPropertyFilter())))
         style.SetHasCurrentFilterAnimation(true);
-      if (effect.Affects(PropertyHandle(CSSPropertyBackdropFilter)))
+      if (effect.Affects(PropertyHandle(GetCSSPropertyBackdropFilter())))
         style.SetHasCurrentBackdropFilterAnimation(true);
     }
   }
@@ -64,22 +64,22 @@ void ElementAnimations::UpdateAnimationFlags(ComputedStyle& style) {
   if (style.HasCurrentOpacityAnimation()) {
     style.SetIsRunningOpacityAnimationOnCompositor(
         effect_stack_.HasActiveAnimationsOnCompositor(
-            PropertyHandle(CSSPropertyOpacity)));
+            PropertyHandle(GetCSSPropertyOpacity())));
   }
   if (style.HasCurrentTransformAnimation()) {
     style.SetIsRunningTransformAnimationOnCompositor(
         effect_stack_.HasActiveAnimationsOnCompositor(
-            PropertyHandle(CSSPropertyTransform)));
+            PropertyHandle(GetCSSPropertyTransform())));
   }
   if (style.HasCurrentFilterAnimation()) {
     style.SetIsRunningFilterAnimationOnCompositor(
         effect_stack_.HasActiveAnimationsOnCompositor(
-            PropertyHandle(CSSPropertyFilter)));
+            PropertyHandle(GetCSSPropertyFilter())));
   }
   if (style.HasCurrentBackdropFilterAnimation()) {
     style.SetIsRunningBackdropFilterAnimationOnCompositor(
         effect_stack_.HasActiveAnimationsOnCompositor(
-            PropertyHandle(CSSPropertyBackdropFilter)));
+            PropertyHandle(GetCSSPropertyBackdropFilter())));
   }
 }
 

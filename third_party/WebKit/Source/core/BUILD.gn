@@ -583,6 +583,7 @@ css_properties("make_core_generated_css_longhand_property_classes") {
     "$blink_core_output_dir/css/properties/longhands/Filter.h",
     "$blink_core_output_dir/css/properties/longhands/FlexBasis.h",
     "$blink_core_output_dir/css/properties/longhands/FlexGrowOrShrink.h",
+    "$blink_core_output_dir/css/properties/longhands/FloodOrStopOpacity.h",
     "$blink_core_output_dir/css/properties/longhands/FontDisplay.h",
     "$blink_core_output_dir/css/properties/longhands/FontFamily.h",
     "$blink_core_output_dir/css/properties/longhands/FontFeatureSettings.h",

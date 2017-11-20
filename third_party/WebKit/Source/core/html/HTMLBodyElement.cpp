@@ -70,7 +70,7 @@ void HTMLBodyElement::CollectStyleForPresentationAttribute(
                                          GetDocument().GetReferrerPolicy()));
       image_value->SetInitiator(localName());
       style->SetProperty(
-          CSSPropertyValue(CSSPropertyBackgroundImage, *image_value));
+          CSSPropertyValue(GetCSSPropertyBackgroundImage(), *image_value));
     }
   } else if (name == marginwidthAttr || name == leftmarginAttr) {
     AddHTMLLengthToStyle(style, CSSPropertyMarginRight, value);

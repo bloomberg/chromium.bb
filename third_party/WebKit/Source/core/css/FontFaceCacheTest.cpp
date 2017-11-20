@@ -65,8 +65,8 @@ void FontFaceCacheTest::AppendTestFaceForCapabilities(const CSSValue& stretch,
   CSSValueList* src_value_list = CSSValueList::CreateCommaSeparated();
   src_value_list->Append(*src);
   CSSPropertyValue properties[] = {
-      CSSPropertyValue(CSSPropertyFontFamily, *family_name),
-      CSSPropertyValue(CSSPropertySrc, *src_value_list)};
+      CSSPropertyValue(GetCSSPropertyFontFamily(), *family_name),
+      CSSPropertyValue(GetCSSPropertySrc(), *src_value_list)};
   MutableCSSPropertyValueSet* font_face_descriptor =
       MutableCSSPropertyValueSet::Create(properties, arraysize(properties));
 

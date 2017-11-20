@@ -70,6 +70,9 @@ class {{property_classname}} : public {{property.superclass}} {
   {% if property.inherited %}
   bool IsInherited() const override { return true; }
   {% endif %}
+  {% if property.compositable %}
+  bool IsCompositableProperty() const override { return true; }
+  {% endif %}
   {% if property.separator != None %}
   bool IsRepeated() const override { return true; }
   char RepetitionSeparator() const override { return '{{property.separator}}'; }

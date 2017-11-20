@@ -187,7 +187,7 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
     return compositor_player_ ? compositor_player_->Player() : nullptr;
   }
 
-  bool Affects(const Element&, CSSPropertyID) const;
+  bool Affects(const Element&, const CSSProperty&) const;
 
   // Returns whether we should continue with the commit for this animation or
   // wait until next commit.

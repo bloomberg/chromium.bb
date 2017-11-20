@@ -1363,15 +1363,15 @@ void EditingStyle::MergeStyleFromRulesForSerialization(Element* element) {
     for (unsigned i = 0; i < property_count; ++i) {
       CSSPropertyValueSet::PropertyReference property =
           mutable_style_->PropertyAt(i);
+      const CSSProperty& css_property = property.Property();
       const CSSValue& value = property.Value();
       if (!value.IsPrimitiveValue())
         continue;
       if (ToCSSPrimitiveValue(value).IsPercentage()) {
         if (const CSSValue* computed_property_value =
-                computed_style_for_element->GetPropertyCSSValue(
-                    CSSProperty::Get(property.Id()))) {
+                computed_style_for_element->GetPropertyCSSValue(css_property)) {
           from_computed_style->AddRespectingCascade(
-              CSSPropertyValue(property.Id(), *computed_property_value));
+              CSSPropertyValue(css_property, *computed_property_value));
         }
       }
     }
