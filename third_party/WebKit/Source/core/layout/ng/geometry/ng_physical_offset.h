@@ -46,6 +46,10 @@ struct CORE_EXPORT NGPhysicalOffset {
   // logical/physical distinctions.
   explicit NGPhysicalOffset(const LayoutPoint&);
 
+  // Conversions from/to existing code. New code prefers type safety for
+  // logical/physical distinctions.
+  LayoutPoint ToLayoutPoint() const;
+
   String ToString() const;
 };
 
