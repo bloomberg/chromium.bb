@@ -516,6 +516,5 @@ fuzzer_test("v8_fully_instrumented_fuzzer") {
     "//v8:v8_libplatform",
   ]
   dict = "dicts/generated/javascript.dict"
-  seed_corpus = "//v8/test/mjsunit/"
   libfuzzer_options = [ "only_ascii=1" ]
 }
