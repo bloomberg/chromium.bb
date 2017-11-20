@@ -467,6 +467,12 @@ class DevToolsAgentTest : public RenderViewImplTest {
                            base::Unretained(this), "Debugger.resume",
                            "{\"id\":100,\"method\":\"Debugger.resume\"}"));
       }
+
+      if (notification == "Page.windowOpen") {
+        window_open_notification_ =
+            base::WrapUnique(static_cast<base::DictionaryValue*>(
+                base::JSONReader::Read(message).release()));
+      }
     }
   }
 
@@ -488,6 +494,10 @@ class DevToolsAgentTest : public RenderViewImplTest {
     call_frames_count_ = call_frames_count;
   }
 
+  base::DictionaryValue* WindowOpenNotification() {
+    return window_open_notification_.get();
+  }
+
  private:
   DevToolsAgent* agent() {
     return frame()->devtools_agent();
@@ -495,6 +505,7 @@ class DevToolsAgentTest : public RenderViewImplTest {
 
   std::vector<std::string> notifications_;
   std::unique_ptr<base::DictionaryValue> last_message_;
+  std::unique_ptr<base::DictionaryValue> window_open_notification_;
   int call_frames_count_;
   bool expecting_pause_;
 };
@@ -2694,6 +2705,64 @@ TEST_F(DevToolsAgentTest, CallFramesInIsolatedWorld) {
 
   EXPECT_FALSE(IsPaused());
   Detach();
+}
+
+TEST_F(DevToolsAgentTest, WindowOpenWithEmptyURL) {
+  Attach();
+  DispatchDevToolsMessage("Page.enable",
+                          "{\"id\":1,\"method\":\"Page.enable\"}");
+  LoadHTMLWithUrlOverride("<script>window.open()</script>",
+                          "https://www.example.com");
+
+  base::DictionaryValue* notification = WindowOpenNotification();
+  EXPECT_TRUE(notification);
+  const base::Value* params_value = notification->FindKey("params");
+  EXPECT_TRUE(params_value && params_value->is_dict());
+  const base::Value* url_value = params_value->FindKey("url");
+  EXPECT_TRUE(url_value);
+  EXPECT_EQ(url::kAboutBlankURL, url_value->GetString());
+}
+
+TEST_F(DevToolsAgentTest, WindowOpenWithRelativeURL) {
+  // Enable browser side navigation to avoid actually load url for the new
+  // window.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableBrowserSideNavigation);
+  Attach();
+  DispatchDevToolsMessage("Page.enable",
+                          "{\"id\":1,\"method\":\"Page.enable\"}");
+  LoadHTMLWithUrlOverride("<script>window.open('path')</script>",
+                          "https://www.example.com");
+
+  base::DictionaryValue* notification = WindowOpenNotification();
+  EXPECT_TRUE(notification);
+  const base::Value* params_value = notification->FindKey("params");
+  EXPECT_TRUE(params_value && params_value->is_dict());
+  const base::Value* url_value = params_value->FindKey("url");
+  EXPECT_TRUE(url_value);
+  EXPECT_EQ("https://www.example.com/path", url_value->GetString());
+}
+
+TEST_F(DevToolsAgentTest, WindowOpenFromClick) {
+  // Enable browser side navigation to avoid actually load url for the new
+  // window.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableBrowserSideNavigation);
+  Attach();
+  DispatchDevToolsMessage("Page.enable",
+                          "{\"id\":1,\"method\":\"Page.enable\"}");
+  LoadHTMLWithUrlOverride(
+      "<a id='my_anchor' href='/anchor' target='_blank'> </a>\n"
+      "<script>document.getElementById('my_anchor').click();</script>",
+      "https://www.example.com");
+
+  base::DictionaryValue* notification = WindowOpenNotification();
+  EXPECT_TRUE(notification);
+  const base::Value* params_value = notification->FindKey("params");
+  EXPECT_TRUE(params_value && params_value->is_dict());
+  const base::Value* url_value = params_value->FindKey("url");
+  EXPECT_TRUE(url_value);
+  EXPECT_EQ("https://www.example.com/anchor", url_value->GetString());
 }
 
 }  // namespace content
