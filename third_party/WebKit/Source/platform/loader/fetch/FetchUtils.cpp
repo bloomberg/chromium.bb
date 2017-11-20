@@ -78,7 +78,8 @@ const ForbiddenHeaderNames& ForbiddenHeaderNames::Get() {
 bool FetchUtils::IsCORSSafelistedMethod(const String& method) {
   // https://fetch.spec.whatwg.org/#cors-safelisted-method
   // "A CORS-safelisted method is a method that is `GET`, `HEAD`, or `POST`."
-  return method == "GET" || method == "HEAD" || method == "POST";
+  return method == HTTPNames::GET || method == HTTPNames::HEAD ||
+         method == HTTPNames::POST;
 }
 
 bool FetchUtils::IsCORSSafelistedHeader(const AtomicString& name,
