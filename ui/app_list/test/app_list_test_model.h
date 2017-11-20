@@ -7,10 +7,10 @@
 
 #include <string>
 
+#include "ash/app_list/model/app_list_folder_item.h"
+#include "ash/app_list/model/app_list_item.h"
+#include "ash/app_list/model/app_list_model.h"
 #include "base/macros.h"
-#include "ui/app_list/app_list_folder_item.h"
-#include "ui/app_list/app_list_item.h"
-#include "ui/app_list/app_list_model.h"
 
 namespace app_list {
 

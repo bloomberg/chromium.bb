@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_APP_LIST_SEARCH_BOX_MODEL_OBSERVER_H_
-#define UI_APP_LIST_SEARCH_BOX_MODEL_OBSERVER_H_
+#ifndef ASH_APP_LIST_MODEL_SEARCH_BOX_MODEL_OBSERVER_H_
+#define ASH_APP_LIST_MODEL_SEARCH_BOX_MODEL_OBSERVER_H_
 
-#include "ui/app_list/app_list_export.h"
+#include "ash/app_list/model/app_list_model_export.h"
 
 namespace app_list {
 
-class APP_LIST_EXPORT SearchBoxModelObserver {
+class APP_LIST_MODEL_EXPORT SearchBoxModelObserver {
  public:
   // Invoked when the some properties of the speech recognition button is
   // changed.
@@ -30,4 +30,4 @@ class APP_LIST_EXPORT SearchBoxModelObserver {
 
 }  // namespace app_list
 
-#endif  // UI_APP_LIST_SEARCH_BOX_MODEL_OBSERVER_H_
+#endif  // ASH_APP_LIST_MODEL_SEARCH_BOX_MODEL_OBSERVER_H_

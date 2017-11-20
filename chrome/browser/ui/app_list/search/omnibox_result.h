@@ -7,9 +7,9 @@
 
 #include <memory>
 
+#include "ash/app_list/model/search_result.h"
 #include "base/macros.h"
 #include "components/omnibox/browser/autocomplete_match.h"
-#include "ui/app_list/search_result.h"
 
 class AppListControllerDelegate;
 class AutocompleteController;

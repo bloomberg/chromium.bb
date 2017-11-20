@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/app_list/search/term_break_iterator.h"
+#include "ash/app_list/model/search/term_break_iterator.h"
 
 #include "base/i18n/char_iterator.h"
 #include "base/logging.h"
@@ -16,8 +16,7 @@ TermBreakIterator::TermBreakIterator(const base::string16& word)
       prev_(npos),
       pos_(0),
       iter_(new base::i18n::UTF16CharIterator(&word)),
-      state_(STATE_START) {
-}
+      state_(STATE_START) {}
 
 TermBreakIterator::~TermBreakIterator() {}
 
@@ -26,12 +25,12 @@ bool TermBreakIterator::Advance() {
   // Each col represents new state from input char. Cells with true value
   // represents a term boundary.
   const bool kBoundary[][STATE_LAST] = {
-    // START  NUMBER UPPER  LOWER  CHAR
-    {  false, false, false, false, false },  // START
-    {  false, false, true,  true,  true },   // NUMBER
-    {  false, true,  false, false, true },   // UPPER
-    {  false, true,  true,  false, true },   // LOWER
-    {  false, true,  true,  true,  false },  // CHAR
+      // START  NUMBER UPPER  LOWER  CHAR
+      {false, false, false, false, false},  // START
+      {false, false, true, true, true},     // NUMBER
+      {false, true, false, false, true},    // UPPER
+      {false, true, true, false, true},     // LOWER
+      {false, true, true, true, false},     // CHAR
   };
 
   while (iter_->Advance()) {

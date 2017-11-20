@@ -5,9 +5,9 @@
 #ifndef UI_APP_LIST_VIEWS_APP_LIST_PAGE_H_
 #define UI_APP_LIST_VIEWS_APP_LIST_PAGE_H_
 
+#include "ash/app_list/model/app_list_model.h"
 #include "base/macros.h"
 #include "ui/app_list/app_list_export.h"
-#include "ui/app_list/app_list_model.h"
 #include "ui/views/view.h"
 
 namespace app_list {

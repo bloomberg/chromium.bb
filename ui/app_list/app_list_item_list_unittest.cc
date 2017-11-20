@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/app_list/app_list_item_list.h"
+#include "ash/app_list/model/app_list_item_list.h"
 
 #include <stddef.h>
 
 #include <memory>
 #include <utility>
 
+#include "ash/app_list/model/app_list_folder_item.h"
+#include "ash/app_list/model/app_list_item.h"
+#include "ash/app_list/model/app_list_item_list_observer.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/app_list/app_list_folder_item.h"
-#include "ui/app_list/app_list_item.h"
-#include "ui/app_list/app_list_item_list_observer.h"
 
 namespace app_list {
 

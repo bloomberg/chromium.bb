@@ -8,12 +8,12 @@
 #include <memory>
 #include <string>
 
+#include "ash/app_list/model/app_list_item_observer.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "base/timer/timer.h"
 #include "ui/app_list/app_list_export.h"
-#include "ui/app_list/app_list_item_observer.h"
 #include "ui/app_list/views/image_shadow_animator.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"

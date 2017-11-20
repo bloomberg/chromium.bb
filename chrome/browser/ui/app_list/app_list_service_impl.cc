@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 
+#include "ash/app_list/model/app_list_model.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
@@ -27,7 +28,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "ui/app_list/app_list_model.h"
 #include "ui/app_list/app_list_switches.h"
 
 namespace {

@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/app_list/search/tokenized_string_match.h"
+#include "ash/app_list/model/search/tokenized_string_match.h"
 
 #include <stddef.h>
 
 #include <cmath>
 
+#include "ash/app_list/model/search/tokenized_string_char_iterator.h"
 #include "base/i18n/string_search.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "ui/app_list/search/tokenized_string_char_iterator.h"
 
 namespace app_list {
 
@@ -49,13 +49,11 @@ const double kNoMatchScore = 0.0;
 // a given text or as prefix of the acronyms of those text tokens.
 class PrefixMatcher {
  public:
-  PrefixMatcher(const TokenizedString& query,
-                const TokenizedString& text)
+  PrefixMatcher(const TokenizedString& query, const TokenizedString& text)
       : query_iter_(query),
         text_iter_(text),
         current_match_(gfx::Range::InvalidRange()),
-        current_relevance_(kNoMatchScore) {
-  }
+        current_relevance_(kNoMatchScore) {}
 
   // Invokes RunMatch to perform prefix match. Use |states_| as a stack to
   // perform DFS (depth first search) so that all possible matches are
@@ -135,7 +133,7 @@ class PrefixMatcher {
         if (!current_match_.IsValid())
           current_match_.set_start(text_iter_.GetArrayPos());
         current_match_.set_end(text_iter_.GetArrayPos() +
-                              text_iter_.GetCharSize());
+                               text_iter_.GetCharSize());
 
         query_iter_.NextChar();
         text_iter_.NextChar();
@@ -159,11 +157,8 @@ class PrefixMatcher {
   }
 
   void PushState() {
-    states_.push_back(State(current_relevance_,
-                            current_match_,
-                            current_hits_,
-                            query_iter_,
-                            text_iter_));
+    states_.push_back(State(current_relevance_, current_match_, current_hits_,
+                            query_iter_, text_iter_));
   }
 
   void PopState() {
@@ -193,8 +188,7 @@ class PrefixMatcher {
 
 }  // namespace
 
-TokenizedStringMatch::TokenizedStringMatch()
-    : relevance_(kNoMatchScore) {}
+TokenizedStringMatch::TokenizedStringMatch() : relevance_(kNoMatchScore) {}
 
 TokenizedStringMatch::~TokenizedStringMatch() {}
 
@@ -213,10 +207,9 @@ bool TokenizedStringMatch::Calculate(const TokenizedString& query,
   if (relevance_ == kNoMatchScore) {
     size_t substr_match_start = 0;
     size_t substr_match_length = 0;
-    if (base::i18n::StringSearchIgnoringCaseAndAccents(query.text(),
-                                                       text.text(),
-                                                       &substr_match_start,
-                                                       &substr_match_length)) {
+    if (base::i18n::StringSearchIgnoringCaseAndAccents(
+            query.text(), text.text(), &substr_match_start,
+            &substr_match_length)) {
       relevance_ = kIsSubstringMultiplier * substr_match_length;
       hits_.push_back(gfx::Range(substr_match_start,
                                  substr_match_start + substr_match_length));

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/app_list/app_list_model.h"
+#include "ash/app_list/model/app_list_model.h"
 
 #include <string>
 #include <utility>
 
-#include "ui/app_list/app_list_folder_item.h"
-#include "ui/app_list/app_list_item.h"
-#include "ui/app_list/app_list_model_observer.h"
-#include "ui/app_list/search_box_model.h"
+#include "ash/app_list/model/app_list_folder_item.h"
+#include "ash/app_list/model/app_list_item.h"
+#include "ash/app_list/model/app_list_model_observer.h"
+#include "ash/app_list/model/search_box_model.h"
 
 namespace app_list {
 

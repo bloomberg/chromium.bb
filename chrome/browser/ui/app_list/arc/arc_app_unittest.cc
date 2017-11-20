@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/app_list/model/app_list_model.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
@@ -55,7 +56,6 @@
 #include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/app_list/app_list_constants.h"
-#include "ui/app_list/app_list_model.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/events/event_constants.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"

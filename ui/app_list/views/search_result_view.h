@@ -11,10 +11,11 @@
 #include <string>
 #include <vector>
 
+#include "ash/app_list/model/search_result_observer.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "ui/app_list/search_result_observer.h"
+#include "ui/app_list/app_list_export.h"
 #include "ui/app_list/views/search_result_actions_view_delegate.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"

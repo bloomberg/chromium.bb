@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_APP_LIST_APP_LIST_ITEM_LIST_OBSERVER_H_
-#define UI_APP_LIST_APP_LIST_ITEM_LIST_OBSERVER_H_
+#ifndef ASH_APP_LIST_MODEL_APP_LIST_ITEM_LIST_OBSERVER_H_
+#define ASH_APP_LIST_MODEL_APP_LIST_ITEM_LIST_OBSERVER_H_
 
 #include <stddef.h>
 
-#include "ui/app_list/app_list_export.h"
+#include "ash/app_list/model/app_list_model_export.h"
 
 namespace app_list {
 
 class AppListItem;
 
-class APP_LIST_EXPORT AppListItemListObserver {
+class APP_LIST_MODEL_EXPORT AppListItemListObserver {
  public:
   // Triggered after |item| has been added to the list at |index|.
   virtual void OnListItemAdded(size_t index, AppListItem* item) {}
@@ -38,4 +38,4 @@ class APP_LIST_EXPORT AppListItemListObserver {
 
 }  // namespace app_list
 
-#endif  // UI_APP_LIST_APP_LIST_ITEM_LIST_OBSERVER_H_
+#endif  // ASH_APP_LIST_MODEL_APP_LIST_ITEM_LIST_OBSERVER_H_

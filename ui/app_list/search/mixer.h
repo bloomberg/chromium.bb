@@ -10,10 +10,10 @@
 #include <memory>
 #include <vector>
 
+#include "ash/app_list/model/app_list_model.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "ui/app_list/app_list_export.h"
-#include "ui/app_list/app_list_model.h"
 #include "ui/app_list/search/history_types.h"
 
 namespace app_list {

@@ -7,10 +7,10 @@
 
 #include <memory>
 
+#include "ash/app_list/model/search_result.h"
 #include "base/macros.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "components/suggestions/proto/suggestions.pb.h"
-#include "ui/app_list/search_result.h"
 
 class AppListControllerDelegate;
 class GURL;

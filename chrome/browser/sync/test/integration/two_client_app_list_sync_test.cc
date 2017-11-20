@@ -4,6 +4,8 @@
 
 #include <stddef.h>
 
+#include "ash/app_list/model/app_list_item.h"
+#include "ash/app_list/model/app_list_model.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "build/build_config.h"
@@ -22,8 +24,6 @@
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
-#include "ui/app_list/app_list_item.h"
-#include "ui/app_list/app_list_model.h"
 #include "ui/app_list/app_list_switches.h"
 
 using apps_helper::DisableApp;

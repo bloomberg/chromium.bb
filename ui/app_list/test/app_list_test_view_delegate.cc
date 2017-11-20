@@ -7,9 +7,9 @@
 #include <string>
 #include <vector>
 
+#include "ash/app_list/model/app_list_model.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
-#include "ui/app_list/app_list_model.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/test/app_list_test_model.h"
 #include "ui/gfx/image/image_skia.h"

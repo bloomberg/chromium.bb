@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/app_list/model/app_list_model.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -18,7 +19,6 @@
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/search_engines/template_url_service.h"
 #include "ui/app_list/app_list_features.h"
-#include "ui/app_list/app_list_model.h"
 
 namespace app_list {
 

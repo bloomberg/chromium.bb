@@ -4,6 +4,9 @@
 
 #include "chrome/browser/sync/test/integration/sync_app_list_helper.h"
 
+#include "ash/app_list/model/app_list_folder_item.h"
+#include "ash/app_list/model/app_list_item.h"
+#include "ash/app_list/model/app_list_model.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
@@ -13,9 +16,6 @@
 #include "chrome/common/extensions/sync_helper.h"
 #include "extensions/browser/app_sorting.h"
 #include "extensions/browser/extension_system.h"
-#include "ui/app_list/app_list_folder_item.h"
-#include "ui/app_list/app_list_item.h"
-#include "ui/app_list/app_list_model.h"
 
 using app_list::AppListFolderItem;
 using app_list::AppListItem;

@@ -84,7 +84,8 @@
       'filepath': 'android_webview/',
     },
     'app_list': {
-      'filepath': 'chrome/browser/ui/app_list'\
+      'filepath': 'ash/app_list'\
+                  '|chrome/browser/ui/app_list'\
                   '|chrome/browser/ui/ash/app_list'\
                   '|chrome/browser/ui/views/app_list'\
                   '|ui/app_list/'

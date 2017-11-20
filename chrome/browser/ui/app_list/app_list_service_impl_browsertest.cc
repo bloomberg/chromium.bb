@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/app_list/app_list_service_impl.h"
 
+#include "ash/app_list/model/app_list_item.h"
+#include "ash/app_list/model/app_list_model.h"
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -16,8 +18,6 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/prefs/pref_service.h"
 #include "extensions/common/constants.h"
-#include "ui/app_list/app_list_item.h"
-#include "ui/app_list/app_list_model.h"
 #include "ui/base/models/menu_model.h"
 
 namespace test {

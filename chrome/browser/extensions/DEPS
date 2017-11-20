@@ -12,6 +12,9 @@ include_rules = [
 
   # For access to testing command line switches.
   "+ppapi/shared_impl",
+
+  # TODO(hejq): Remove this once app_list is migrated. http://crbug.com/733662
+  "+ash/app_list/model",
 ]
 specific_include_rules = {
   "bookmark_app_helper\.cc": [

@@ -7,11 +7,11 @@
 
 #include <string>
 
+#include "ash/app_list/model/app_list_model.h"
+#include "ash/app_list/model/search_box_model_observer.h"
 #include "base/macros.h"
 #include "ui/app_list/app_list_constants.h"
-#include "ui/app_list/app_list_model.h"
 #include "ui/app_list/app_list_view_delegate_observer.h"
-#include "ui/app_list/search_box_model_observer.h"
 #include "ui/app_list/speech_ui_model_observer.h"
 #include "ui/gfx/shadow_value.h"
 #include "ui/views/controls/button/image_button.h"

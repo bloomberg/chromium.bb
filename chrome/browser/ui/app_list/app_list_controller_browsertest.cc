@@ -4,6 +4,10 @@
 
 #include <stddef.h>
 
+#include "ash/app_list/model/app_list_model.h"
+#include "ash/app_list/model/search_box_model.h"
+#include "ash/app_list/model/search_result.h"
+#include "ash/app_list/model/search_result_observer.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/path_service.h"
@@ -23,11 +27,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/user_manager/user_names.h"
-#include "ui/app_list/app_list_model.h"
 #include "ui/app_list/app_list_switches.h"
-#include "ui/app_list/search_box_model.h"
-#include "ui/app_list/search_result.h"
-#include "ui/app_list/search_result_observer.h"
 #include "ui/base/models/list_model_observer.h"
 
 // Browser Test for AppListController that runs on all platforms supporting

@@ -7,8 +7,8 @@
 
 #include <string>
 
+#include "ash/app_list/model/search_result.h"
 #include "base/macros.h"
-#include "ui/app_list/search_result.h"
 #include "url/gurl.h"
 
 class AppListControllerDelegate;

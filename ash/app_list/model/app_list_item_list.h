@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_APP_LIST_APP_LIST_ITEM_LIST_H_
-#define UI_APP_LIST_APP_LIST_ITEM_LIST_H_
+#ifndef ASH_APP_LIST_MODEL_APP_LIST_ITEM_LIST_H_
+#define ASH_APP_LIST_MODEL_APP_LIST_ITEM_LIST_H_
 
 #include <stddef.h>
 
@@ -11,11 +11,11 @@
 #include <string>
 #include <vector>
 
+#include "ash/app_list/model/app_list_item_list_observer.h"
+#include "ash/app_list/model/app_list_model_export.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "components/sync/model/string_ordinal.h"
-#include "ui/app_list/app_list_export.h"
-#include "ui/app_list/app_list_item_list_observer.h"
 
 namespace app_list {
 
@@ -24,7 +24,7 @@ class AppListItem;
 // Class to manage items in the app list. Used both by AppListModel and
 // AppListFolderItem. Manages the position ordinal of items in the list, and
 // notifies observers when items in the list are added / deleted / moved.
-class APP_LIST_EXPORT AppListItemList {
+class APP_LIST_MODEL_EXPORT AppListItemList {
  public:
   AppListItemList();
   virtual ~AppListItemList();
@@ -117,4 +117,4 @@ class APP_LIST_EXPORT AppListItemList {
 
 }  // namespace app_list
 
-#endif  // UI_APP_LIST_APP_LIST_ITEM_LIST_H_
+#endif  // ASH_APP_LIST_MODEL_APP_LIST_ITEM_LIST_H_

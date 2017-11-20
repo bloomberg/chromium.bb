@@ -6,11 +6,11 @@
 
 #include <stddef.h>
 
+#include "ash/app_list/model/search/tokenized_string.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/app_list/search/history_data.h"
 #include "ui/app_list/search/history_data_store.h"
-#include "ui/app_list/search/tokenized_string.h"
 
 namespace app_list {
 

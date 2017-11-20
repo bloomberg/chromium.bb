@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/app_list/search/tokenized_string_char_iterator.h"
+#include "ash/app_list/model/search/tokenized_string_char_iterator.h"
 
 #include "base/i18n/char_iterator.h"
 #include "base/logging.h"
@@ -13,9 +13,7 @@ namespace app_list {
 TokenizedStringCharIterator::State::State() : token_index(0u), char_index(0) {}
 
 TokenizedStringCharIterator::State::State(size_t token_index, int char_index)
-    : token_index(token_index),
-      char_index(char_index) {
-}
+    : token_index(token_index), char_index(char_index) {}
 
 TokenizedStringCharIterator::TokenizedStringCharIterator(
     const TokenizedString& tokenized)
@@ -52,8 +50,7 @@ int32_t TokenizedStringCharIterator::Get() const {
 
 int32_t TokenizedStringCharIterator::GetArrayPos() const {
   DCHECK(current_token_iter_);
-  return mappings_[current_token_].start() +
-      current_token_iter_->array_pos();
+  return mappings_[current_token_].start() + current_token_iter_->array_pos();
 }
 
 size_t TokenizedStringCharIterator::GetCharSize() const {
@@ -64,8 +61,8 @@ bool TokenizedStringCharIterator::IsFirstCharOfToken() const {
   return current_token_iter_ && current_token_iter_->char_pos() == 0;
 }
 
-TokenizedStringCharIterator::State
-TokenizedStringCharIterator::GetState() const {
+TokenizedStringCharIterator::State TokenizedStringCharIterator::GetState()
+    const {
   return State(current_token_,
                current_token_iter_ ? current_token_iter_->char_pos() : 0);
 }

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/app_list/app_list_item.h"
+#include "ash/app_list/model/app_list_item.h"
 
+#include "ash/app_list/model/app_list_item_observer.h"
 #include "base/logging.h"
-#include "ui/app_list/app_list_item_observer.h"
 
 namespace app_list {
 
@@ -13,8 +13,7 @@ AppListItem::AppListItem(const std::string& id)
     : id_(id),
       highlighted_(false),
       is_installing_(false),
-      percent_downloaded_(-1) {
-}
+      percent_downloaded_(-1) {}
 
 AppListItem::~AppListItem() {
   for (auto& observer : observers_)
@@ -54,8 +53,7 @@ void AppListItem::RemoveObserver(AppListItemObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void AppListItem::Activate(int event_flags) {
-}
+void AppListItem::Activate(int event_flags) {}
 
 const char* AppListItem::GetItemType() const {
   static const char* app_type = "";
@@ -75,17 +73,15 @@ size_t AppListItem::ChildItemCount() const {
 }
 
 bool AppListItem::CompareForTest(const AppListItem* other) const {
-  return id_ == other->id_ &&
-      folder_id_ == other->folder_id_ &&
-      name_ == other->name_ &&
-      short_name_ == other->short_name_ &&
-      GetItemType() == other->GetItemType() &&
-      position_.Equals(other->position_);
+  return id_ == other->id_ && folder_id_ == other->folder_id_ &&
+         name_ == other->name_ && short_name_ == other->short_name_ &&
+         GetItemType() == other->GetItemType() &&
+         position_.Equals(other->position_);
 }
 
 std::string AppListItem::ToDebugString() const {
-  return id_.substr(0, 8) + " '" + name_ + "'"
-      + " [" + position_.ToDebugString() + "]";
+  return id_.substr(0, 8) + " '" + name_ + "'" + " [" +
+         position_.ToDebugString() + "]";
 }
 
 // Protected methods

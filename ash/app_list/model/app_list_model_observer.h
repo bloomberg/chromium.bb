@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_APP_LIST_APP_LIST_MODEL_OBSERVER_H_
-#define UI_APP_LIST_APP_LIST_MODEL_OBSERVER_H_
+#ifndef ASH_APP_LIST_MODEL_APP_LIST_MODEL_OBSERVER_H_
+#define ASH_APP_LIST_MODEL_APP_LIST_MODEL_OBSERVER_H_
 
-#include "ui/app_list/app_list_export.h"
-#include "ui/app_list/app_list_model.h"
+#include "ash/app_list/model/app_list_model.h"
+#include "ash/app_list/model/app_list_model_export.h"
 
 namespace app_list {
 
 class AppListItem;
 
-class APP_LIST_EXPORT AppListModelObserver {
+class APP_LIST_MODEL_EXPORT AppListModelObserver {
  public:
   // Triggered after AppListModel's status has changed.
   virtual void OnAppListModelStatusChanged() {}
@@ -42,4 +42,4 @@ class APP_LIST_EXPORT AppListModelObserver {
 
 }  // namespace app_list
 
-#endif  // UI_APP_LIST_APP_LIST_MODEL_OBSERVER_H_
+#endif  // ASH_APP_LIST_MODEL_APP_LIST_MODEL_OBSERVER_H_

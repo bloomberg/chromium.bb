@@ -9,10 +9,10 @@
 #include <memory>
 #include <utility>
 
+#include "ash/app_list/model/app_list_model.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "ui/app_list/app_list_export.h"
-#include "ui/app_list/app_list_model.h"
 #include "ui/app_list/pagination_model.h"
 #include "ui/app_list/pagination_model_observer.h"
 #include "ui/views/view.h"

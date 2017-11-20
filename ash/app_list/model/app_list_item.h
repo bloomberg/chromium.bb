@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_APP_LIST_APP_LIST_ITEM_H_
-#define UI_APP_LIST_APP_LIST_ITEM_H_
+#ifndef ASH_APP_LIST_MODEL_APP_LIST_ITEM_H_
+#define ASH_APP_LIST_MODEL_APP_LIST_ITEM_H_
 
 #include <stddef.h>
 
 #include <string>
 
+#include "ash/app_list/model/app_list_model_export.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "components/sync/model/string_ordinal.h"
-#include "ui/app_list/app_list_export.h"
 #include "ui/gfx/image/image_skia.h"
 
 class FastShowPickler;
@@ -30,7 +30,7 @@ class AppListModel;
 
 // AppListItem provides icon and title to be shown in a AppListItemView
 // and action to be executed when the AppListItemView is activated.
-class APP_LIST_EXPORT AppListItem {
+class APP_LIST_MODEL_EXPORT AppListItem {
  public:
   explicit AppListItem(const std::string& id);
   virtual ~AppListItem();
@@ -136,4 +136,4 @@ class APP_LIST_EXPORT AppListItem {
 
 }  // namespace app_list
 
-#endif  // UI_APP_LIST_APP_LIST_ITEM_H_
+#endif  // ASH_APP_LIST_MODEL_APP_LIST_ITEM_H_
