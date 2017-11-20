@@ -66,8 +66,10 @@ struct WebrtcVideoStream::FrameStats {
   uint32_t capturer_id = 0;
 };
 
-WebrtcVideoStream::WebrtcVideoStream()
-    : video_stats_dispatcher_(kStreamLabel), weak_factory_(this) {
+WebrtcVideoStream::WebrtcVideoStream(const SessionOptions& session_options)
+    : video_stats_dispatcher_(kStreamLabel),
+      session_options_(session_options),
+      weak_factory_(this) {
   encoder_selector_.RegisterEncoder(
       base::Bind(&WebrtcVideoEncoderVpx::IsSupportedByVP8),
       base::Bind(&WebrtcVideoEncoderVpx::CreateForVP8));
@@ -139,7 +141,7 @@ void WebrtcVideoStream::Start(
   result = peer_connection_->AddStream(stream_.get());
   DCHECK(result);
 
-  scheduler_.reset(new WebrtcFrameSchedulerSimple());
+  scheduler_.reset(new WebrtcFrameSchedulerSimple(session_options_));
   scheduler_->Start(
       webrtc_transport_->video_encoder_factory(),
       base::Bind(&WebrtcVideoStream::CaptureNextFrame, base::Unretained(this)));

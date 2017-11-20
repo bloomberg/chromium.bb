@@ -14,6 +14,7 @@
 #include "base/timer/timer.h"
 #include "remoting/base/leaky_bucket.h"
 #include "remoting/base/running_samples.h"
+#include "remoting/base/session_options.h"
 #include "remoting/codec/frame_processing_time_estimator.h"
 #include "remoting/protocol/video_channel_state_observer.h"
 
@@ -29,7 +30,7 @@ class BandwidthEstimator;
 class WebrtcFrameSchedulerSimple : public VideoChannelStateObserver,
                                    public WebrtcFrameScheduler {
  public:
-  WebrtcFrameSchedulerSimple();
+  explicit WebrtcFrameSchedulerSimple(const SessionOptions& options);
   ~WebrtcFrameSchedulerSimple() override;
 
   // VideoChannelStateObserver implementation.

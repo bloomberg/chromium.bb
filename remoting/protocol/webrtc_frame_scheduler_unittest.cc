@@ -6,6 +6,7 @@
 
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "remoting/base/session_options.h"
 #include "remoting/protocol/webrtc_dummy_video_encoder.h"
 #include "remoting/protocol/webrtc_frame_scheduler_simple.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -25,7 +26,7 @@ class WebrtcFrameSchedulerTest : public ::testing::Test {
         task_runner_handle_(task_runner_.get()),
         now_(base::TimeTicks::Now()) {
     video_encoder_factory_.reset(new WebrtcDummyVideoEncoderFactory());
-    scheduler_.reset(new WebrtcFrameSchedulerSimple());
+    scheduler_.reset(new WebrtcFrameSchedulerSimple(SessionOptions()));
     scheduler_->SetCurrentTimeForTest(now_);
     scheduler_->Start(video_encoder_factory_.get(),
                       base::Bind(&WebrtcFrameSchedulerTest::CaptureCallback,
