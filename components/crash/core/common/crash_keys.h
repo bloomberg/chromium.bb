@@ -36,7 +36,7 @@ void GetCrashKeysForCommandLineSwitches(
 // of crash keys.
 using SwitchFilterFunction = bool (*)(const std::string& flag);
 
-// Sets the kNumSwitches key and a set of keys named using kSwitchFormat based
+// Sets the "num-switches" key and a set of keys named using kSwitchFormat based
 // on the given |command_line|. If |skip_filter| is not null, ignore any switch
 // for which it returns true.
 void SetSwitchesFromCommandLine(const base::CommandLine& command_line,
@@ -103,10 +103,6 @@ const size_t kSwitchesMaxCount = 15;
 // A printf-style format string naming the set of crash keys corresponding to
 // at most |kSwitchesMaxCount| command line switches.
 extern const char kSwitchFormat[];
-
-// The total number of switches, used to report the total in case more than
-// |kSwitchesMaxCount| are present.
-extern const char kNumSwitches[];
 
 // Used to help investigate bug 464926.
 extern const char kBug464926CrashKey[];

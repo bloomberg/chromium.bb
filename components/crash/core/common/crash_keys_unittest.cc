@@ -15,11 +15,13 @@
 #include "base/format_macros.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
+#include "components/crash/core/common/crash_key.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class CrashKeysTest : public testing::Test {
  public:
   void SetUp() override {
+    crash_reporter::InitializeCrashKeys();
     self_ = this;
     base::debug::SetCrashKeyReportingFunctions(
         &SetCrashKeyValue, &ClearCrashKey);

@@ -49,6 +49,7 @@
 #include "components/component_updater/component_updater_paths.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/crash/content/app/crash_reporter_client.h"
+#include "components/crash/core/common/crash_key.h"
 #include "components/nacl/common/features.h"
 #include "components/version_info/version_info.h"
 #include "content/public/common/content_client.h"
@@ -768,6 +769,8 @@ void ChromeMainDelegate::PreSandboxStartup() {
       *base::CommandLine::ForCurrentProcess();
   std::string process_type =
       command_line.GetSwitchValueASCII(switches::kProcessType);
+
+  crash_reporter::InitializeCrashKeys();
 
 #if defined(OS_POSIX)
   crash_reporter::SetCrashReporterClient(g_chrome_crash_client.Pointer());

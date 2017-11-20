@@ -15,6 +15,7 @@
 #include "base/trace_event/trace_log.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
+#include "components/crash/core/common/crash_key.h"
 #include "content/common/content_constants_internal.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/common/content_switches.h"
@@ -292,6 +293,8 @@ void ShellMainDelegate::PreSandboxStartup() {
 #endif  // defined(OS_ANDROID)
   }
 #endif  // !defined(OS_FUCHSIA)
+
+  crash_reporter::InitializeCrashKeys();
 
   InitializeResourceBundle();
 }

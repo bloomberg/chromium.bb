@@ -25,6 +25,7 @@
 #include "chromecast/renderer/cast_content_renderer_client.h"
 #include "chromecast/utility/cast_content_utility_client.h"
 #include "components/crash/content/app/crash_reporter_client.h"
+#include "components/crash/core/common/crash_key.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/common/content_switches.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -144,6 +145,8 @@ void CastMainDelegate::PreSandboxStartup() {
     CastCrashReporterClient::InitCrashReporter(process_type);
   }
 #endif  // defined(OS_LINUX)
+
+  crash_reporter::InitializeCrashKeys();
 
   InitializeResourceBundle();
 }
