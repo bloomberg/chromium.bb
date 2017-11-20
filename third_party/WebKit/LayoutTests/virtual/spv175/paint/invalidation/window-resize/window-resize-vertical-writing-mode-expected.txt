@@ -23,12 +23,12 @@
         },
         {
           "object": "LayoutView #document",
-          "rect": [0, 0, 600, 500],
+          "rect": [0, 0, 600, 235],
           "reason": "paint property change"
         },
         {
           "object": "LayoutBlockFlow HTML",
-          "rect": [168, 8, 423, 482],
+          "rect": [168, 8, 423, 227],
           "reason": "paint property change"
         }
       ],
@@ -257,17 +257,17 @@
         },
         {
           "object": "LayoutView #document",
-          "rect": [0, 0, 939, 235],
-          "reason": "paint property change"
-        },
-        {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [10, 7, 920, 213],
+          "rect": [0, 0, 400, 600],
           "reason": "paint property change"
         },
         {
           "object": "LayoutView #document",
-          "rect": [0, 0, 400, 600],
+          "rect": [0, 0, 400, 235],
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [10, 7, 390, 213],
           "reason": "paint property change"
         },
         {

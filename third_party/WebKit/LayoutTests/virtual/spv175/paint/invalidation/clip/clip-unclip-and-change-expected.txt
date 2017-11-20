@@ -7,14 +7,9 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV",
+          "object": "LayoutBlockFlow DIV id='content'",
           "rect": [8, 120, 100, 300],
-          "reason": "paint property change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [8, 120, 100, 100],
-          "reason": "paint property change"
+          "reason": "style change"
         }
       ]
     }
