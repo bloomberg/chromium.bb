@@ -26,7 +26,7 @@ class NGOffsetMappingTest : public NGLayoutTest {
 
   void SetupHtml(const char* id, String html) {
     SetBodyInnerHTML(html);
-    layout_block_flow_ = ToLayoutNGBlockFlow(GetLayoutObjectByElementId(id));
+    layout_block_flow_ = ToLayoutBlockFlow(GetLayoutObjectByElementId(id));
     layout_object_ = layout_block_flow_->FirstChild();
     style_ = layout_object_->Style();
   }
@@ -81,7 +81,7 @@ class NGOffsetMappingTest : public NGLayoutTest {
   }
 
   scoped_refptr<const ComputedStyle> style_;
-  LayoutNGBlockFlow* layout_block_flow_ = nullptr;
+  LayoutBlockFlow* layout_block_flow_ = nullptr;
   LayoutObject* layout_object_ = nullptr;
   FontCachePurgePreventer purge_preventer_;
 };
@@ -717,6 +717,26 @@ TEST_P(ParameterizedNGOffsetMappingTest, ContainerWithGeneratedContent) {
   // Offset mapping for inline containers skips generated content.
   EXPECT_EQ(3u, *GetTextContentOffset(Position::BeforeNode(*span)));
   EXPECT_EQ(6u, *GetTextContentOffset(Position::AfterNode(*span)));
+}
+
+TEST_P(ParameterizedNGOffsetMappingTest, Table) {
+  SetupHtml("t", "<table><tr><td id=t>  foo  </td></tr></table>");
+
+  const Node* foo_node = layout_object_->GetNode();
+  const NGOffsetMapping& result = GetOffsetMapping();
+
+  EXPECT_EQ("foo", result.GetText());
+
+  ASSERT_EQ(3u, result.GetUnits().size());
+  TEST_UNIT(result.GetUnits()[0], NGOffsetMappingUnitType::kCollapsed, foo_node,
+            0u, 2u, 0u, 0u);
+  TEST_UNIT(result.GetUnits()[1], NGOffsetMappingUnitType::kIdentity, foo_node,
+            2u, 5u, 0u, 3u);
+  TEST_UNIT(result.GetUnits()[2], NGOffsetMappingUnitType::kCollapsed, foo_node,
+            5u, 7u, 3u, 3u);
+
+  ASSERT_EQ(1u, result.GetRanges().size());
+  TEST_RANGE(result.GetRanges(), foo_node, 0u, 3u);
 }
 
 }  // namespace blink
