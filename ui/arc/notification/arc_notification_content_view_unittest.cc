@@ -15,6 +15,7 @@
 #include "components/exo/keyboard.h"
 #include "components/exo/keyboard_delegate.h"
 #include "components/exo/notification_surface.h"
+#include "components/exo/seat.h"
 #include "components/exo/surface.h"
 #include "components/exo/test/exo_test_helper.h"
 #include "components/exo/wm_helper.h"
@@ -512,7 +513,8 @@ TEST_F(ArcNotificationContentViewTest, AcceptInputTextWithActivate) {
   MockKeyboardDelegate delegate;
   EXPECT_CALL(delegate, CanAcceptKeyboardEventsForSurface(surface()))
       .WillOnce(testing::Return(true));
-  auto keyboard = std::make_unique<exo::Keyboard>(&delegate);
+  exo::Seat seat;
+  auto keyboard = std::make_unique<exo::Keyboard>(&delegate, &seat);
 
   ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
   EXPECT_CALL(delegate, OnKeyboardKey(testing::_, ui::DomCode::US_A, true));
@@ -534,7 +536,8 @@ TEST_F(ArcNotificationContentViewTest, NotAcceptInputTextWithoutActivate) {
 
   MockKeyboardDelegate delegate;
   EXPECT_CALL(delegate, CanAcceptKeyboardEventsForSurface(surface())).Times(0);
-  auto keyboard = std::make_unique<exo::Keyboard>(&delegate);
+  exo::Seat seat;
+  auto keyboard = std::make_unique<exo::Keyboard>(&delegate, &seat);
 
   ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
   EXPECT_CALL(delegate, OnKeyboardKey(testing::_, testing::_, testing::_))

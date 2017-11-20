@@ -3365,7 +3365,8 @@ void seat_get_keyboard(wl_client* client, wl_resource* resource, uint32_t id) {
 
   WaylandKeyboardDelegate* delegate =
       new WaylandKeyboardDelegate(keyboard_resource);
-  std::unique_ptr<Keyboard> keyboard = std::make_unique<Keyboard>(delegate);
+  std::unique_ptr<Keyboard> keyboard =
+      std::make_unique<Keyboard>(delegate, GetUserDataAs<Seat>(resource));
   keyboard->AddObserver(delegate);
   SetImplementation(keyboard_resource, &keyboard_implementation,
                     std::move(keyboard));
@@ -4454,7 +4455,7 @@ Server::Server(Display* display)
                    data_device_manager_version, display_,
                    bind_data_device_manager);
   wl_global_create(wl_display_.get(), &wl_seat_interface, seat_version,
-                   display_, bind_seat);
+                   display_->seat(), bind_seat);
   wl_global_create(wl_display_.get(), &wp_viewporter_interface, 1, display_,
                    bind_viewporter);
   wl_global_create(wl_display_.get(), &wp_presentation_interface, 1, display_,
