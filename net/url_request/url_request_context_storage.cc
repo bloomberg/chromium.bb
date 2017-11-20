@@ -21,13 +21,13 @@
 #include "net/proxy/proxy_service.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/url_request/http_user_agent_settings.h"
-#include "net/url_request/network_error_logging_delegate.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job_factory.h"
 #include "net/url_request/url_request_throttler_manager.h"
 
 #if BUILDFLAG(ENABLE_REPORTING)
 #include "net/reporting/reporting_service.h"
+#include "net/url_request/network_error_logging_delegate.h"
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
 namespace net {
@@ -156,7 +156,6 @@ void URLRequestContextStorage::set_reporting_service(
   context_->set_reporting_service(reporting_service.get());
   reporting_service_ = std::move(reporting_service);
 }
-#endif  // BUILDFLAG(ENABLE_REPORTING)
 
 void URLRequestContextStorage::set_network_error_logging_delegate(
     std::unique_ptr<NetworkErrorLoggingDelegate>
@@ -165,5 +164,6 @@ void URLRequestContextStorage::set_network_error_logging_delegate(
       network_error_logging_delegate.get());
   network_error_logging_delegate_ = std::move(network_error_logging_delegate);
 }
+#endif  // BUILDFLAG(ENABLE_REPORTING)
 
 }  // namespace net

@@ -34,6 +34,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
 #include "net/log/net_log_with_source.h"
+#include "net/net_features.h"
 #include "net/proxy/proxy_server.h"
 #include "net/socket/connection_attempts.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -774,7 +775,9 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // cancellation.
   void OnCallToDelegateComplete();
 
+#if BUILDFLAG(ENABLE_REPORTING)
   void MaybeGenerateNetworkErrorLoggingReport();
+#endif  // BUILDFLAG(ENABLE_REPORTING)
 
   // Contextual information used for this request. Cannot be NULL. This contains
   // most of the dependencies which are shared between requests (disk cache,

@@ -60,7 +60,6 @@
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_config_service.h"
 #include "net/url_request/http_user_agent_settings.h"
-#include "net/url_request/network_error_logging_delegate.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_error_job.h"
@@ -77,6 +76,7 @@
 #if BUILDFLAG(ENABLE_REPORTING)
 #include "net/reporting/reporting_header_parser.h"
 #include "net/reporting/reporting_service.h"
+#include "net/url_request/network_error_logging_delegate.h"
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
 namespace {
@@ -370,8 +370,10 @@ void URLRequestHttpJob::NotifyHeadersComplete() {
   ProcessStrictTransportSecurityHeader();
   ProcessPublicKeyPinsHeader();
   ProcessExpectCTHeader();
+#if BUILDFLAG(ENABLE_REPORTING)
   ProcessReportToHeader();
   ProcessNetworkErrorLoggingHeader();
+#endif  // BUILDFLAG(ENABLE_REPORTING)
 
   // The HTTP transaction may be restarted several times for the purposes
   // of sending authorization information. Each time it restarts, we get
@@ -749,10 +751,10 @@ void URLRequestHttpJob::ProcessExpectCTHeader() {
   }
 }
 
+#if BUILDFLAG(ENABLE_REPORTING)
 void URLRequestHttpJob::ProcessReportToHeader() {
   DCHECK(response_info_);
 
-#if BUILDFLAG(ENABLE_REPORTING)
   HttpResponseHeaders* headers = GetResponseHeaders();
   std::string value;
   if (!headers->GetNormalizedHeader("Report-To", &value))
@@ -778,7 +780,6 @@ void URLRequestHttpJob::ProcessReportToHeader() {
   }
 
   service->ProcessHeader(request_info_.url.GetOrigin(), value);
-#endif  // BUILDFLAG(ENABLE_REPORTING)
 }
 
 void URLRequestHttpJob::ProcessNetworkErrorLoggingHeader() {
@@ -804,6 +805,7 @@ void URLRequestHttpJob::ProcessNetworkErrorLoggingHeader() {
 
   delegate->OnHeader(url::Origin::Create(request_info_.url), value);
 }
+#endif  // BUILDFLAG(ENABLE_REPORTING)
 
 void URLRequestHttpJob::OnStartCompleted(int result) {
   TRACE_EVENT0(kNetTracingCategory, "URLRequestHttpJob::OnStartCompleted");

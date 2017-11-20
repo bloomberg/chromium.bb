@@ -59,8 +59,10 @@
 #endif
 
 #if BUILDFLAG(ENABLE_REPORTING)
+#include "net/network_error_logging/network_error_logging_service.h"
 #include "net/reporting/reporting_policy.h"
 #include "net/reporting/reporting_service.h"
+#include "net/url_request/network_error_logging_delegate.h"
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
 namespace net {
@@ -205,7 +207,12 @@ URLRequestContextBuilder::URLRequestContextBuilder()
       pac_quick_check_enabled_(true),
       pac_sanitize_url_policy_(ProxyService::SanitizeUrlPolicy::SAFE),
       shared_proxy_delegate_(nullptr),
-      shared_http_auth_handler_factory_(nullptr) {
+#if BUILDFLAG(ENABLE_REPORTING)
+      shared_http_auth_handler_factory_(nullptr),
+      network_error_logging_enabled_(false) {
+#else   // !BUILDFLAG(ENABLE_REPORTING)
+      shared_http_auth_handler_factory_(nullptr){
+#endif  // !BUILDFLAG(ENABLE_REPORTING)
 }
 
 URLRequestContextBuilder::~URLRequestContextBuilder() {}
@@ -616,9 +623,26 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   storage->set_job_factory(std::move(top_job_factory));
 
 #if BUILDFLAG(ENABLE_REPORTING)
+  // Note: ReportingService::Create and NetworkErrorLoggingService::Create can
+  // both return nullptr if the corresponding base::Feature is disabled.
+
   if (reporting_policy_) {
     storage->set_reporting_service(
         ReportingService::Create(*reporting_policy_, context.get()));
+  }
+
+  if (network_error_logging_enabled_) {
+    storage->set_network_error_logging_delegate(
+        NetworkErrorLoggingService::Create());
+  }
+
+  // If both Reporting and Network Error Logging are actually enabled, then
+  // connect them so Network Error Logging can use Reporting to deliver error
+  // reports.
+  if (context->reporting_service() &&
+      context->network_error_logging_delegate()) {
+    context->network_error_logging_delegate()->SetReportingService(
+        context->reporting_service());
   }
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
