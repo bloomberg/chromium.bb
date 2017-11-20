@@ -25,7 +25,8 @@ namespace {
 uintptr_t GetMask() {
   uintptr_t mask = internal::kASLRMask;
 #if defined(ARCH_CPU_64_BITS)
-#if defined(OS_WIN)
+// Sanitizers use their own kASLRMask constant.
+#if defined(OS_WIN) && !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
   if (!IsWindows8Point1OrGreater()) {
     mask = internal::kASLRMaskBefore8_10;
   }
