@@ -654,36 +654,6 @@ TEST(SoftwareImageDecodeCacheTest, GetTaskForImageSameImage) {
   cache.UnrefImage(draw_image);
 }
 
-TEST(SoftwareImageDecodeCacheTest, GetTaskForImageProcessUnrefCancel) {
-  TestSoftwareImageDecodeCache cache;
-  PaintImage paint_image = CreatePaintImage(100, 100);
-  bool is_decomposable = true;
-  SkFilterQuality quality = kHigh_SkFilterQuality;
-
-  DrawImage draw_image(
-      paint_image, SkIRect::MakeWH(paint_image.width(), paint_image.height()),
-      quality, CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable),
-      PaintImage::kDefaultFrameIndex, DefaultColorSpace());
-  ImageDecodeCache::TaskResult result =
-      cache.GetTaskForImageAndRef(draw_image, ImageDecodeCache::TracingInfo());
-  EXPECT_TRUE(result.need_unref);
-  EXPECT_TRUE(result.task);
-
-  TestTileTaskRunner::ProcessTask(result.task.get());
-  cache.UnrefImage(draw_image);
-
-  result =
-      cache.GetTaskForImageAndRef(draw_image, ImageDecodeCache::TracingInfo());
-  EXPECT_TRUE(result.need_unref);
-  EXPECT_TRUE(result.task);
-
-  TestTileTaskRunner::CancelTask(result.task.get());
-  TestTileTaskRunner::CompleteTask(result.task.get());
-  // This is expected to pass instead of DCHECKing since we're reducing the ref
-  // for an image which isn't locked to begin with.
-  cache.UnrefImage(draw_image);
-}
-
 TEST(SoftwareImageDecodeCacheTest, GetTaskForImageSameImageDifferentQuality) {
   TestSoftwareImageDecodeCache cache;
   PaintImage paint_image = CreatePaintImage(100, 100);
@@ -1110,6 +1080,97 @@ TEST(SoftwareImageDecodeCacheTest,
 
   cache.DrawWithImageFinished(draw_image, decoded_draw_image);
   cache.DrawWithImageFinished(draw_image, another_decoded_draw_image);
+}
+
+TEST(SoftwareImageDecodeCacheTest,
+     GetDecodedImageForDrawAtRasterDecodeDoesNotPreventTasks) {
+  TestSoftwareImageDecodeCache cache;
+  bool is_decomposable = true;
+  SkFilterQuality quality = kHigh_SkFilterQuality;
+
+  PaintImage paint_image = CreatePaintImage(100, 100);
+  DrawImage draw_image(
+      paint_image, SkIRect::MakeWH(paint_image.width(), paint_image.height()),
+      quality, CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable),
+      PaintImage::kDefaultFrameIndex, DefaultColorSpace());
+
+  DecodedDrawImage decoded_draw_image =
+      cache.GetDecodedImageForDraw(draw_image);
+  EXPECT_TRUE(decoded_draw_image.image());
+  EXPECT_EQ(50, decoded_draw_image.image()->width());
+  EXPECT_EQ(50, decoded_draw_image.image()->height());
+  EXPECT_FLOAT_EQ(0.5f, decoded_draw_image.scale_adjustment().width());
+  EXPECT_FLOAT_EQ(0.5f, decoded_draw_image.scale_adjustment().height());
+  EXPECT_EQ(kLow_SkFilterQuality, decoded_draw_image.filter_quality());
+  EXPECT_FALSE(decoded_draw_image.is_scale_adjustment_identity());
+  EXPECT_TRUE(decoded_draw_image.is_at_raster_decode());
+
+  ImageDecodeCache::TaskResult result =
+      cache.GetTaskForImageAndRef(draw_image, ImageDecodeCache::TracingInfo());
+  EXPECT_TRUE(result.need_unref);
+  EXPECT_TRUE(result.task);
+
+  TestTileTaskRunner::ProcessTask(result.task.get());
+
+  DecodedDrawImage another_decoded_draw_image =
+      cache.GetDecodedImageForDraw(draw_image);
+  // This should get the new decoded/locked image, not the one we're using at
+  // raster.
+  // TODO(vmpstr): We can possibly optimize this so that the decode simply moves
+  // the image to the right spot.
+  EXPECT_NE(decoded_draw_image.image()->uniqueID(),
+            another_decoded_draw_image.image()->uniqueID());
+  EXPECT_FALSE(another_decoded_draw_image.is_at_raster_decode());
+
+  cache.DrawWithImageFinished(draw_image, decoded_draw_image);
+  cache.DrawWithImageFinished(draw_image, another_decoded_draw_image);
+  cache.UnrefImage(draw_image);
+}
+
+TEST(SoftwareImageDecodeCacheTest,
+     GetDecodedImageForDrawAtRasterDecodeIsUsedForLockedCache) {
+  TestSoftwareImageDecodeCache cache;
+  bool is_decomposable = true;
+  SkFilterQuality quality = kHigh_SkFilterQuality;
+
+  PaintImage paint_image = CreatePaintImage(100, 100);
+  DrawImage draw_image(
+      paint_image, SkIRect::MakeWH(paint_image.width(), paint_image.height()),
+      quality, CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable),
+      PaintImage::kDefaultFrameIndex, DefaultColorSpace());
+
+  DecodedDrawImage decoded_draw_image =
+      cache.GetDecodedImageForDraw(draw_image);
+  EXPECT_TRUE(decoded_draw_image.image());
+  EXPECT_EQ(50, decoded_draw_image.image()->width());
+  EXPECT_EQ(50, decoded_draw_image.image()->height());
+  EXPECT_FLOAT_EQ(0.5f, decoded_draw_image.scale_adjustment().width());
+  EXPECT_FLOAT_EQ(0.5f, decoded_draw_image.scale_adjustment().height());
+  EXPECT_EQ(kLow_SkFilterQuality, decoded_draw_image.filter_quality());
+  EXPECT_FALSE(decoded_draw_image.is_scale_adjustment_identity());
+  EXPECT_TRUE(decoded_draw_image.is_at_raster_decode());
+
+  ImageDecodeCache::TaskResult result =
+      cache.GetTaskForImageAndRef(draw_image, ImageDecodeCache::TracingInfo());
+  EXPECT_TRUE(result.need_unref);
+  EXPECT_TRUE(result.task);
+
+  // If we finish the draw here, then we will use it for the locked decode
+  // instead of decoding again.
+  cache.DrawWithImageFinished(draw_image, decoded_draw_image);
+
+  TestTileTaskRunner::ProcessTask(result.task.get());
+
+  DecodedDrawImage another_decoded_draw_image =
+      cache.GetDecodedImageForDraw(draw_image);
+  // This should get the decoded/locked image which we originally decoded at
+  // raster time, since it's now in the locked cache.
+  EXPECT_EQ(decoded_draw_image.image()->uniqueID(),
+            another_decoded_draw_image.image()->uniqueID());
+  EXPECT_FALSE(another_decoded_draw_image.is_at_raster_decode());
+
+  cache.DrawWithImageFinished(draw_image, another_decoded_draw_image);
+  cache.UnrefImage(draw_image);
 }
 
 TEST(SoftwareImageDecodeCacheTest, ZeroSizedImagesAreSkipped) {
@@ -1577,18 +1638,20 @@ TEST(SoftwareImageDecodeCacheTest, RemoveUnusedImage) {
   std::vector<PaintImage::FrameKey> frame_keys;
 
   for (int i = 0; i < 10; ++i) {
-    SCOPED_TRACE(i);
     PaintImage paint_image = CreatePaintImage(100, 100);
     DrawImage draw_image(
         paint_image, SkIRect::MakeWH(paint_image.width(), paint_image.height()),
         quality, CreateMatrix(SkSize::Make(1.0f, 1.0f), is_decomposable),
         PaintImage::kDefaultFrameIndex, DefaultColorSpace());
     frame_keys.push_back(draw_image.frame_key());
+    DecodedDrawImage decoded_draw_image =
+        cache.GetDecodedImageForDraw(draw_image);
     ImageDecodeCache::TaskResult result = cache.GetTaskForImageAndRef(
         draw_image, ImageDecodeCache::TracingInfo());
     EXPECT_TRUE(result.need_unref);
     EXPECT_TRUE(result.task);
     TestTileTaskRunner::ProcessTask(result.task.get());
+    cache.DrawWithImageFinished(draw_image, decoded_draw_image);
     cache.UnrefImage(draw_image);
   }
 
@@ -1653,315 +1716,6 @@ TEST(SoftwareImageDecodeCacheTest, CacheDecodesExpectedFrames) {
   EXPECT_EQ(generator->frames_decoded().count(3u), 1u);
   generator->reset_frames_decoded();
   cache.DrawWithImageFinished(subset_draw_image, decoded_image);
-}
-
-TEST(SoftwareImageDecodeCacheTest, UseClosestAvailableDecode) {
-  TestSoftwareImageDecodeCache cache;
-  bool is_decomposable = true;
-  SkFilterQuality quality = kMedium_SkFilterQuality;
-  PaintImage paint_image = CreatePaintImage(512, 512);
-  SkIRect src_rect = SkIRect::MakeWH(paint_image.width(), paint_image.height());
-
-  // Populate a 0.5 scale image in the cache.
-  DrawImage draw_image_50(
-      paint_image, src_rect, quality,
-      CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable),
-      PaintImage::kDefaultFrameIndex, DefaultColorSpace());
-  ImageDecodeCache::TaskResult result_50 = cache.GetTaskForImageAndRef(
-      draw_image_50, ImageDecodeCache::TracingInfo());
-  EXPECT_TRUE(result_50.task);
-  EXPECT_TRUE(result_50.need_unref);
-
-  TestTileTaskRunner::ProcessTask(result_50.task.get());
-  // Clear all (unlocked) images from the cache.
-  cache.ClearCache();
-
-  // Verify that we indeed have a cached item at that scale.
-  {
-    DecodedDrawImage decoded = cache.GetDecodedImageForDraw(draw_image_50);
-    EXPECT_EQ(256, decoded.image()->width());
-    EXPECT_EQ(256, decoded.image()->height());
-    EXPECT_FALSE(decoded.is_at_raster_decode());
-    cache.DrawWithImageFinished(draw_image_50, decoded);
-  }
-
-  // At this point we should only have one image in the cache.
-  EXPECT_EQ(1u, cache.GetNumCacheEntriesForTesting());
-
-  // Get a task for 0.125 scale, which should use the 0.5 scale decode and scale
-  // it 4x.
-  DrawImage draw_image_125(
-      paint_image, src_rect, quality,
-      CreateMatrix(SkSize::Make(0.125f, 0.125f), is_decomposable),
-      PaintImage::kDefaultFrameIndex, DefaultColorSpace());
-  ImageDecodeCache::TaskResult result_125 = cache.GetTaskForImageAndRef(
-      draw_image_125, ImageDecodeCache::TracingInfo());
-  EXPECT_TRUE(result_125.task);
-  EXPECT_TRUE(result_125.need_unref);
-
-  TestTileTaskRunner::ProcessTask(result_125.task.get());
-
-  // Note that we don't clear the cache, since there should be no transient
-  // entries, just the locked ones.
-  // Verify that the draw image is at the right scale.
-  {
-    DecodedDrawImage decoded = cache.GetDecodedImageForDraw(draw_image_125);
-    EXPECT_EQ(64, decoded.image()->width());
-    EXPECT_EQ(64, decoded.image()->height());
-    EXPECT_FALSE(decoded.is_at_raster_decode());
-    cache.DrawWithImageFinished(draw_image_125, decoded);
-  }
-
-  // Now we should only have 2 images in the cache (0.5 and 0.125 scales).
-  EXPECT_EQ(2u, cache.GetNumCacheEntriesForTesting());
-
-  // Clean up.
-  cache.UnrefImage(draw_image_50);
-  cache.UnrefImage(draw_image_125);
-}
-
-TEST(SoftwareImageDecodeCacheTest, UseClosestAvailableDecodeAtRaster) {
-  TestSoftwareImageDecodeCache cache;
-  bool is_decomposable = true;
-  SkFilterQuality quality = kMedium_SkFilterQuality;
-  PaintImage paint_image = CreatePaintImage(512, 512);
-  SkIRect src_rect = SkIRect::MakeWH(paint_image.width(), paint_image.height());
-
-  // Populate a 0.5 scale image in the cache.
-  DrawImage draw_image_50(
-      paint_image, src_rect, quality,
-      CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable),
-      PaintImage::kDefaultFrameIndex, DefaultColorSpace());
-  ImageDecodeCache::TaskResult result_50 = cache.GetTaskForImageAndRef(
-      draw_image_50, ImageDecodeCache::TracingInfo());
-  EXPECT_TRUE(result_50.task);
-  EXPECT_TRUE(result_50.need_unref);
-
-  TestTileTaskRunner::ProcessTask(result_50.task.get());
-  // Clear all (unlocked) images from the cache.
-  cache.ClearCache();
-
-  // Verify that we indeed have a cached item at that scale.
-  {
-    DecodedDrawImage decoded = cache.GetDecodedImageForDraw(draw_image_50);
-    EXPECT_EQ(256, decoded.image()->width());
-    EXPECT_EQ(256, decoded.image()->height());
-    EXPECT_FALSE(decoded.is_at_raster_decode());
-    cache.DrawWithImageFinished(draw_image_50, decoded);
-  }
-
-  // At this point we should only have one image in the cache.
-  EXPECT_EQ(1u, cache.GetNumCacheEntriesForTesting());
-
-  // Get a task for 0.125 scale, which should use the 0.5 scale decode and scale
-  // it 4x.
-  DrawImage draw_image_125(
-      paint_image, src_rect, quality,
-      CreateMatrix(SkSize::Make(0.125f, 0.125f), is_decomposable),
-      PaintImage::kDefaultFrameIndex, DefaultColorSpace());
-
-  // Verify that the draw image at raster is at the right scale.
-  {
-    DecodedDrawImage decoded = cache.GetDecodedImageForDraw(draw_image_125);
-    EXPECT_EQ(64, decoded.image()->width());
-    EXPECT_EQ(64, decoded.image()->height());
-    EXPECT_TRUE(decoded.is_at_raster_decode());
-    cache.DrawWithImageFinished(draw_image_125, decoded);
-  }
-
-  // Now we should only have 2 images in the cache (0.5 and 0.125 scales).
-  EXPECT_EQ(2u, cache.GetNumCacheEntriesForTesting());
-
-  // Clean up.
-  cache.UnrefImage(draw_image_50);
-}
-
-TEST(SoftwareImageDecodeCacheTest, UseClosestAvailableDecodeNotSmaller) {
-  TestSoftwareImageDecodeCache cache;
-  bool is_decomposable = true;
-  SkFilterQuality quality = kMedium_SkFilterQuality;
-  PaintImage paint_image = CreatePaintImage(512, 512);
-  SkIRect src_rect = SkIRect::MakeWH(paint_image.width(), paint_image.height());
-
-  // Populate a 0.25 scale image in the cache.
-  DrawImage draw_image_25(
-      paint_image, src_rect, quality,
-      CreateMatrix(SkSize::Make(0.25f, 0.25f), is_decomposable),
-      PaintImage::kDefaultFrameIndex, DefaultColorSpace());
-  ImageDecodeCache::TaskResult result_25 = cache.GetTaskForImageAndRef(
-      draw_image_25, ImageDecodeCache::TracingInfo());
-  EXPECT_TRUE(result_25.task);
-  EXPECT_TRUE(result_25.need_unref);
-
-  TestTileTaskRunner::ProcessTask(result_25.task.get());
-  // Clear all (unlocked) images from the cache.
-  cache.ClearCache();
-
-  // Verify that we indeed have a cached item at that scale.
-  {
-    DecodedDrawImage decoded = cache.GetDecodedImageForDraw(draw_image_25);
-    EXPECT_EQ(128, decoded.image()->width());
-    EXPECT_EQ(128, decoded.image()->height());
-    EXPECT_FALSE(decoded.is_at_raster_decode());
-    cache.DrawWithImageFinished(draw_image_25, decoded);
-  }
-
-  // At this point we should only have one image in the cache.
-  EXPECT_EQ(1u, cache.GetNumCacheEntriesForTesting());
-
-  // Get a task for 0.5 scale, which can't use the 0.125 scale, so it would
-  // generate a 1.0 scale first and use that.
-  DrawImage draw_image_50(
-      paint_image, src_rect, quality,
-      CreateMatrix(SkSize::Make(0.50, 0.50), is_decomposable),
-      PaintImage::kDefaultFrameIndex, DefaultColorSpace());
-  ImageDecodeCache::TaskResult result_50 = cache.GetTaskForImageAndRef(
-      draw_image_50, ImageDecodeCache::TracingInfo());
-  EXPECT_TRUE(result_50.task);
-  EXPECT_TRUE(result_50.need_unref);
-
-  TestTileTaskRunner::ProcessTask(result_50.task.get());
-
-  // Verify that the draw image at raster is at the right scale.
-  {
-    DecodedDrawImage decoded = cache.GetDecodedImageForDraw(draw_image_50);
-    EXPECT_EQ(256, decoded.image()->width());
-    EXPECT_EQ(256, decoded.image()->height());
-    EXPECT_FALSE(decoded.is_at_raster_decode());
-    cache.DrawWithImageFinished(draw_image_50, decoded);
-  }
-
-  // Now we should only have 3 images in the cache (1.0, 0.5 and 0.25 scales).
-  EXPECT_EQ(3u, cache.GetNumCacheEntriesForTesting());
-
-  // Clean up.
-  cache.UnrefImage(draw_image_25);
-  cache.UnrefImage(draw_image_50);
-}
-
-TEST(SoftwareImageDecodeCacheTest,
-     UseClosestAvailableDecodeNotSmallerAtRaster) {
-  TestSoftwareImageDecodeCache cache;
-  bool is_decomposable = true;
-  SkFilterQuality quality = kMedium_SkFilterQuality;
-  PaintImage paint_image = CreatePaintImage(512, 512);
-  SkIRect src_rect = SkIRect::MakeWH(paint_image.width(), paint_image.height());
-
-  // Populate a 0.25 scale image in the cache.
-  DrawImage draw_image_25(
-      paint_image, src_rect, quality,
-      CreateMatrix(SkSize::Make(0.25f, 0.25f), is_decomposable),
-      PaintImage::kDefaultFrameIndex, DefaultColorSpace());
-  ImageDecodeCache::TaskResult result_25 = cache.GetTaskForImageAndRef(
-      draw_image_25, ImageDecodeCache::TracingInfo());
-  EXPECT_TRUE(result_25.task);
-  EXPECT_TRUE(result_25.need_unref);
-
-  TestTileTaskRunner::ProcessTask(result_25.task.get());
-  // Clear all (unlocked) images from the cache.
-  cache.ClearCache();
-
-  // Verify that we indeed have a cached item at that scale.
-  {
-    DecodedDrawImage decoded = cache.GetDecodedImageForDraw(draw_image_25);
-    EXPECT_EQ(128, decoded.image()->width());
-    EXPECT_EQ(128, decoded.image()->height());
-    EXPECT_FALSE(decoded.is_at_raster_decode());
-    cache.DrawWithImageFinished(draw_image_25, decoded);
-  }
-
-  // At this point we should only have one image in the cache.
-  EXPECT_EQ(1u, cache.GetNumCacheEntriesForTesting());
-
-  // Get a task for 0.5 scale, which can't use the 0.125 scale, so it would
-  // generate a 1.0 scale first and use that.
-  DrawImage draw_image_50(
-      paint_image, src_rect, quality,
-      CreateMatrix(SkSize::Make(0.50, 0.50), is_decomposable),
-      PaintImage::kDefaultFrameIndex, DefaultColorSpace());
-
-  // Verify that the draw image at raster is at the right scale.
-  {
-    DecodedDrawImage decoded = cache.GetDecodedImageForDraw(draw_image_50);
-    EXPECT_EQ(256, decoded.image()->width());
-    EXPECT_EQ(256, decoded.image()->height());
-    EXPECT_TRUE(decoded.is_at_raster_decode());
-    cache.DrawWithImageFinished(draw_image_50, decoded);
-  }
-
-  // Now we should only have 3 images in the cache (1.0, 0.5 and 0.25 scales).
-  EXPECT_EQ(3u, cache.GetNumCacheEntriesForTesting());
-
-  // Clean up.
-  cache.UnrefImage(draw_image_25);
-}
-
-TEST(SoftwareImageDecodeCache, UseClosestAvailableDecodeWithTheSameSrc) {
-  TestSoftwareImageDecodeCache cache;
-  bool is_decomposable = true;
-  SkFilterQuality quality = kMedium_SkFilterQuality;
-  PaintImage paint_image = CreatePaintImage(512, 512);
-  SkIRect full_src_rect =
-      SkIRect::MakeWH(paint_image.width(), paint_image.height());
-  SkIRect decoded_src_rect = SkIRect::MakeXYWH(1, 1, paint_image.width() - 2,
-                                               paint_image.height() - 2);
-
-  // Populate a 0.5f scale image in the cache with a non-full src rect.
-  DrawImage draw_image_50(
-      paint_image, decoded_src_rect, quality,
-      CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable),
-      PaintImage::kDefaultFrameIndex, DefaultColorSpace());
-  ImageDecodeCache::TaskResult result_50 = cache.GetTaskForImageAndRef(
-      draw_image_50, ImageDecodeCache::TracingInfo());
-  EXPECT_TRUE(result_50.task);
-  EXPECT_TRUE(result_50.need_unref);
-
-  TestTileTaskRunner::ProcessTask(result_50.task.get());
-  // Clear all (unlocked) images from the cache.
-  cache.ClearCache();
-
-  // Verify that we indeed have a cached item at that scale.
-  {
-    DecodedDrawImage decoded = cache.GetDecodedImageForDraw(draw_image_50);
-    // Note the subrect is reflected in the size.
-    EXPECT_EQ(255, decoded.image()->width());
-    EXPECT_EQ(255, decoded.image()->height());
-    EXPECT_FALSE(decoded.is_at_raster_decode());
-    cache.DrawWithImageFinished(draw_image_50, decoded);
-  }
-
-  // At this point we should only have one image in the cache.
-  EXPECT_EQ(1u, cache.GetNumCacheEntriesForTesting());
-
-  // Get a task for 0.25 scale, which can't use the 0.5f scale, since it was
-  // generated a different src rect. It would generate a 1.0 scale first with a
-  // full src rect and use that.
-  DrawImage draw_image_25(
-      paint_image, full_src_rect, quality,
-      CreateMatrix(SkSize::Make(0.25, 0.25), is_decomposable),
-      PaintImage::kDefaultFrameIndex, DefaultColorSpace());
-  ImageDecodeCache::TaskResult result_25 = cache.GetTaskForImageAndRef(
-      draw_image_25, ImageDecodeCache::TracingInfo());
-  EXPECT_TRUE(result_25.task);
-  EXPECT_TRUE(result_25.need_unref);
-
-  TestTileTaskRunner::ProcessTask(result_25.task.get());
-
-  // Verify that the draw image at raster is at the right scale.
-  {
-    DecodedDrawImage decoded = cache.GetDecodedImageForDraw(draw_image_25);
-    EXPECT_EQ(128, decoded.image()->width());
-    EXPECT_EQ(128, decoded.image()->height());
-    EXPECT_FALSE(decoded.is_at_raster_decode());
-    cache.DrawWithImageFinished(draw_image_25, decoded);
-  }
-
-  // Now we should only have 3 images in the cache (1.0, 0.5, and 0.25 scales).
-  EXPECT_EQ(3u, cache.GetNumCacheEntriesForTesting());
-
-  // Clean up.
-  cache.UnrefImage(draw_image_50);
-  cache.UnrefImage(draw_image_25);
 }
 
 }  // namespace
