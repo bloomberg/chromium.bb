@@ -39,7 +39,7 @@ interface PresentationRequest : EventTarget
 # remoteplayback api not supported in webview crbug.com/521319
 interface RemotePlayback : EventTarget
 
-# web payments api not enabled in webiew, crbug.com/667069
+# web payments api not enabled in webview, crbug.com/667069
 interface HTMLIFrameElement : HTMLElement
     getter allowPaymentRequest
     setter allowPaymentRequest
@@ -53,13 +53,15 @@ interface HTMLMediaElement : HTMLElement
     getter disableRemotePlayback       # crbug.com/521319
     getter remote                      # crbug.com/521319
 
-# permissions API (crbug.com/490120), presentation API (crbug.com/521319) and
-# custom scheme handlers (crbug.com/589502) not supported in webview 
+# permissions API (crbug.com/490120), presentation API (crbug.com/521319),
+# share API (crbug.com/765923) and custom scheme handlers (crbug.com/589502)
+# not supported in webview
 interface Navigator
     getter permissions                 # crbug.com/490120
     getter presentation                # crbug.com/521319
     method registerProtocolHandler     # crbug.com/589502
     method unregisterProtocolHandler   # crbug.com/589502
+    method share                       # crbug.com/765923
 
 # notifications not yet supported in webview, crbug.com/551446
 interface ServiceWorkerRegistration : EventTarget
