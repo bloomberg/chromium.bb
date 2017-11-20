@@ -1033,12 +1033,12 @@ size_t Layer::GetApproximateUnsharedMemoryUsage() const {
   return 0;
 }
 
-bool Layer::PrepareTextureMailbox(
-    viz::TextureMailbox* mailbox,
+bool Layer::PrepareTransferableResource(
+    viz::TransferableResource* resource,
     std::unique_ptr<viz::SingleReleaseCallback>* release_callback) {
   if (!mailbox_release_callback_)
     return false;
-  *mailbox = mailbox_;
+  *resource = mailbox_.ToTransferableResource();
   *release_callback = std::move(mailbox_release_callback_);
   return true;
 }

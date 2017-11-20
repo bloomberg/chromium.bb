@@ -9,6 +9,8 @@
 
 #include "base/logging.h"
 #include "components/viz/common/quads/shared_bitmap.h"
+#include "components/viz/common/resources/transferable_resource.h"
+#include "third_party/khronos/GLES2/gl2.h"
 
 namespace viz {
 
@@ -75,6 +77,31 @@ size_t TextureMailbox::SharedMemorySizeInBytes() const {
   // UncheckedSizeInBytes is okay because we VerifySizeInBytes in the
   // constructor and the field is immutable.
   return SharedBitmap::UncheckedSizeInBytes(size_in_pixels_);
+}
+
+TransferableResource TextureMailbox::ToTransferableResource() const {
+  DCHECK(IsValid());
+
+  TransferableResource resource;
+  if (IsTexture()) {
+    GLuint filter = nearest_neighbor() ? GL_NEAREST : GL_LINEAR;
+
+    if (!is_overlay_candidate()) {
+      resource = TransferableResource::MakeGL(mailbox(), filter, target(),
+                                              sync_token());
+    } else {
+      resource = TransferableResource::MakeGLOverlay(
+          mailbox(), filter, target(), sync_token(), size_in_pixels(),
+          is_overlay_candidate());
+    }
+  } else {
+    resource = TransferableResource::MakeSoftware(
+        shared_bitmap()->id(), shared_bitmap()->sequence_number(),
+        size_in_pixels());
+  }
+  resource.color_space = color_space();
+
+  return resource;
 }
 
 }  // namespace viz

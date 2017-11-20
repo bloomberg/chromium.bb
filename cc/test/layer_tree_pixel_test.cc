@@ -139,7 +139,7 @@ void LayerTreePixelTest::EndTest() {
   // Drop TextureMailboxes on the main thread so that they can be cleaned up and
   // the pending callbacks will fire.
   for (size_t i = 0; i < texture_layers_.size(); ++i) {
-    texture_layers_[i]->SetTextureMailbox(viz::TextureMailbox(), nullptr);
+    texture_layers_[i]->ClearTexture();
   }
 
   TryEndTest();

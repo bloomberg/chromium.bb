@@ -34,7 +34,7 @@ class GLES2Interface;
 namespace viz {
 
 class SingleReleaseCallback;
-class TextureMailbox;
+struct TransferableResource;
 
 }  // namespace viz
 
@@ -82,12 +82,13 @@ class PLATFORM_EXPORT CanvasResourceProvider {
   const CanvasColorParams& ColorParams() const { return color_params_; }
   scoped_refptr<StaticBitmapImage> Snapshot();
   void SetFilterQuality(SkFilterQuality quality) { filter_quality_ = quality; }
-  bool PrepareTextureMailbox(viz::TextureMailbox*,
-                             std::unique_ptr<viz::SingleReleaseCallback>*);
+  bool PrepareTransferableResource(
+      viz::TransferableResource*,
+      std::unique_ptr<viz::SingleReleaseCallback>*);
   const IntSize& Size() const { return size_; }
   virtual bool IsValid() const = 0;
   virtual bool IsAccelerated() const = 0;
-  virtual bool CanPrepareTextureMailbox() const = 0;
+  virtual bool CanPrepareTransferableResource() const = 0;
   uint32_t ContentUniqueID() const;
   void ClearRecycledResources();
   void RecycleResource(std::unique_ptr<CanvasResource>);
@@ -119,8 +120,8 @@ class PLATFORM_EXPORT CanvasResourceProvider {
   virtual sk_sp<SkSurface> CreateSkSurface() const = 0;
   virtual scoped_refptr<StaticBitmapImage> CreateSnapshot() = 0;
   virtual std::unique_ptr<CanvasResource> CreateResource();
-  virtual std::unique_ptr<CanvasResource> DoPrepareTextureMailbox(
-      viz::TextureMailbox* out_mailbox) = 0;
+  virtual std::unique_ptr<CanvasResource> DoPrepareTransferableResource(
+      viz::TransferableResource* out_resource) = 0;
 
   WeakPtrFactory<CanvasResourceProvider> weak_ptr_factory_;
   WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper_;

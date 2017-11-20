@@ -196,9 +196,9 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
   WebGraphicsContext3DProvider* ContextProvider();
 
   // cc::TextureLayerClient implementation.
-  bool PrepareTextureMailbox(viz::TextureMailbox* out_mailbox,
-                             std::unique_ptr<viz::SingleReleaseCallback>*
-                                 out_release_callback) override;
+  bool PrepareTransferableResource(viz::TransferableResource* out_resource,
+                                   std::unique_ptr<viz::SingleReleaseCallback>*
+                                       out_release_callback) override;
 
   // Returns a StaticBitmapImage backed by a texture containing the current
   // contents of the front buffer. This is done without any pixel copies. The
@@ -361,21 +361,21 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
   // Resolves m_multisampleFBO into m_fbo, if multisampling.
   void ResolveIfNeeded();
 
-  bool PrepareTextureMailboxInternal(
-      viz::TextureMailbox* out_mailbox,
+  bool PrepareTransferableResourceInternal(
+      viz::TransferableResource* out_resource,
       std::unique_ptr<viz::SingleReleaseCallback>* out_release_callback,
       bool force_gpu_result);
 
-  // Helper functions to be called only by prepareTextureMailboxInternal.
-  bool FinishPrepareTextureMailboxGpu(
-      viz::TextureMailbox* out_mailbox,
+  // Helper functions to be called only by PrepareTransferableResourceInternal.
+  bool FinishPrepareTransferableResourceGpu(
+      viz::TransferableResource* out_resource,
       std::unique_ptr<viz::SingleReleaseCallback>* out_release_callback);
-  bool FinishPrepareTextureMailboxSoftware(
-      viz::TextureMailbox* out_mailbox,
+  bool FinishPrepareTransferableResourceSoftware(
+      viz::TransferableResource* out_resource,
       std::unique_ptr<viz::SingleReleaseCallback>* out_release_callback);
 
   // Callbacks for mailboxes given to the compositor from
-  // finishPrepareTextureMailboxGpu and finishPrepareTextureMailboxSoftware.
+  // FinishPrepareTransferableResource{Gpu,Software}.
   void MailboxReleasedGpu(scoped_refptr<ColorBuffer>,
                           const gpu::SyncToken&,
                           bool lost_resource);
@@ -494,7 +494,7 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
   scoped_refptr<ColorBuffer> back_color_buffer_;
 
   // The ColorBuffer that was most recently presented to the compositor by
-  // prepareTextureMailboxInternal.
+  // PrepareTransferableResourceInternal.
   scoped_refptr<ColorBuffer> front_color_buffer_;
 
   // True if our contents have been modified since the last presentation of this

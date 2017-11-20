@@ -4,8 +4,8 @@
 
 #include "platform/graphics/gpu/DrawingBuffer.h"
 
-#include "components/viz/common/quads/texture_mailbox.h"
 #include "components/viz/common/resources/single_release_callback.h"
+#include "components/viz/common/resources/transferable_resource.h"
 #include "gpu/command_buffer/client/gles2_interface_stub.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "platform/graphics/gpu/DrawingBufferTestHelpers.h"
@@ -41,7 +41,7 @@ class DrawingBufferSoftwareCompositingTest : public Test {
 };
 
 TEST_F(DrawingBufferSoftwareCompositingTest, BitmapRecycling) {
-  viz::TextureMailbox texture_mailbox;
+  viz::TransferableResource resource;
   std::unique_ptr<viz::SingleReleaseCallback> release_callback1;
   std::unique_ptr<viz::SingleReleaseCallback> release_callback2;
   std::unique_ptr<viz::SingleReleaseCallback> release_callback3;
@@ -50,16 +50,16 @@ TEST_F(DrawingBufferSoftwareCompositingTest, BitmapRecycling) {
 
   drawing_buffer_->Resize(initial_size);
   drawing_buffer_->MarkContentsChanged();
-  drawing_buffer_->PrepareTextureMailbox(
-      &texture_mailbox, &release_callback1);  // create a bitmap.
+  drawing_buffer_->PrepareTransferableResource(
+      &resource, &release_callback1);  // create a bitmap.
   EXPECT_EQ(0, drawing_buffer_->RecycledBitmapCount());
   release_callback1->Run(
       gpu::SyncToken(),
       false /* lostResource */);  // release bitmap to the recycling queue
   EXPECT_EQ(1, drawing_buffer_->RecycledBitmapCount());
   drawing_buffer_->MarkContentsChanged();
-  drawing_buffer_->PrepareTextureMailbox(
-      &texture_mailbox, &release_callback2);  // recycle a bitmap.
+  drawing_buffer_->PrepareTransferableResource(
+      &resource, &release_callback2);  // recycle a bitmap.
   EXPECT_EQ(0, drawing_buffer_->RecycledBitmapCount());
   release_callback2->Run(
       gpu::SyncToken(),
@@ -68,8 +68,8 @@ TEST_F(DrawingBufferSoftwareCompositingTest, BitmapRecycling) {
   drawing_buffer_->Resize(alternate_size);
   drawing_buffer_->MarkContentsChanged();
   // Regression test for crbug.com/647896 - Next line must not crash
-  drawing_buffer_->PrepareTextureMailbox(
-      &texture_mailbox,
+  drawing_buffer_->PrepareTransferableResource(
+      &resource,
       &release_callback3);  // cause recycling queue to be purged due to resize
   EXPECT_EQ(0, drawing_buffer_->RecycledBitmapCount());
   release_callback3->Run(gpu::SyncToken(), false /* lostResource */);
@@ -80,7 +80,7 @@ TEST_F(DrawingBufferSoftwareCompositingTest, BitmapRecycling) {
 
 TEST_F(DrawingBufferSoftwareCompositingTest, FramebufferBinding) {
   GLES2InterfaceForTests* gl_ = drawing_buffer_->ContextGLForTests();
-  viz::TextureMailbox texture_mailbox;
+  viz::TransferableResource resource;
   std::unique_ptr<viz::SingleReleaseCallback> release_callback;
   IntSize initial_size(kInitialWidth, kInitialHeight);
   GLint drawBinding = 0, readBinding = 0;
@@ -92,7 +92,7 @@ TEST_F(DrawingBufferSoftwareCompositingTest, FramebufferBinding) {
   gl_->SaveState();
   drawing_buffer_->Resize(initial_size);
   drawing_buffer_->MarkContentsChanged();
-  drawing_buffer_->PrepareTextureMailbox(&texture_mailbox, &release_callback);
+  drawing_buffer_->PrepareTransferableResource(&resource, &release_callback);
   gl_->GetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &drawBinding);
   gl_->GetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &readBinding);
   EXPECT_EQ(static_cast<GLint>(draw_framebuffer_binding), drawBinding);

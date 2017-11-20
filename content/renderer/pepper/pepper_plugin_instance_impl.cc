@@ -774,15 +774,16 @@ void PepperPluginInstanceImpl::ScrollRect(int dx,
   }
 }
 
-void PepperPluginInstanceImpl::CommitTextureMailbox(
-    const viz::TextureMailbox& texture_mailbox) {
-  if (committed_texture_.IsValid() && !IsTextureInUse(committed_texture_)) {
+void PepperPluginInstanceImpl::CommitTransferableResource(
+    const viz::TransferableResource& resource) {
+  if (!committed_texture_.mailbox_holder.mailbox.IsZero() &&
+      !IsTextureInUse(committed_texture_)) {
     committed_texture_graphics_3d_->ReturnFrontBuffer(
-        committed_texture_.mailbox(), committed_texture_consumed_sync_token_,
-        false);
+        committed_texture_.mailbox_holder.mailbox,
+        committed_texture_consumed_sync_token_, false);
   }
 
-  committed_texture_ = texture_mailbox;
+  committed_texture_ = resource;
   committed_texture_graphics_3d_ = bound_graphics_3d_;
   committed_texture_consumed_sync_token_ = gpu::SyncToken();
 
@@ -798,7 +799,7 @@ void PepperPluginInstanceImpl::CommitTextureMailbox(
 void PepperPluginInstanceImpl::PassCommittedTextureToTextureLayer() {
   DCHECK(bound_graphics_3d_);
 
-  if (!committed_texture_.IsValid())
+  if (committed_texture_.mailbox_holder.mailbox.IsZero())
     return;
 
   std::unique_ptr<viz::SingleReleaseCallback> callback(
@@ -808,17 +809,18 @@ void PepperPluginInstanceImpl::PassCommittedTextureToTextureLayer() {
           committed_texture_graphics_3d_)));
 
   IncrementTextureReferenceCount(committed_texture_);
-  texture_layer_->SetTextureMailbox(committed_texture_, std::move(callback));
+  texture_layer_->SetTransferableResource(committed_texture_,
+                                          std::move(callback));
 }
 
 void PepperPluginInstanceImpl::FinishedConsumingCommittedTexture(
-    const viz::TextureMailbox& texture_mailbox,
+    const viz::TransferableResource& resource,
     scoped_refptr<PPB_Graphics3D_Impl> graphics_3d,
     const gpu::SyncToken& sync_token,
     bool is_lost) {
-  bool removed = DecrementTextureReferenceCount(texture_mailbox);
-  bool is_committed_texture =
-      committed_texture_.mailbox() == texture_mailbox.mailbox();
+  bool removed = DecrementTextureReferenceCount(resource);
+  bool is_committed_texture = committed_texture_.mailbox_holder.mailbox ==
+                              resource.mailbox_holder.mailbox;
 
   if (is_committed_texture && !is_lost) {
     committed_texture_consumed_sync_token_ = sync_token;
@@ -826,7 +828,7 @@ void PepperPluginInstanceImpl::FinishedConsumingCommittedTexture(
   }
 
   if (removed && !is_committed_texture) {
-    graphics_3d->ReturnFrontBuffer(texture_mailbox.mailbox(), sync_token,
+    graphics_3d->ReturnFrontBuffer(resource.mailbox_holder.mailbox, sync_token,
                                    is_lost);
   }
 }
@@ -2192,13 +2194,13 @@ void PepperPluginInstanceImpl::UpdateLayer(bool force_creation) {
   UpdateLayerTransform();
 }
 
-bool PepperPluginInstanceImpl::PrepareTextureMailbox(
-    viz::TextureMailbox* mailbox,
+bool PepperPluginInstanceImpl::PrepareTransferableResource(
+    viz::TransferableResource* transferable_resource,
     std::unique_ptr<viz::SingleReleaseCallback>* release_callback) {
   if (!bound_graphics_2d_platform_)
     return false;
-  return bound_graphics_2d_platform_->PrepareTextureMailbox(mailbox,
-                                                            release_callback);
+  return bound_graphics_2d_platform_->PrepareTransferableResource(
+      transferable_resource, release_callback);
 }
 
 void PepperPluginInstanceImpl::AccessibilityModeChanged() {
@@ -3494,14 +3496,14 @@ void PepperPluginInstanceImpl::ConvertDIPToViewport(gfx::Rect* rect) const {
 }
 
 void PepperPluginInstanceImpl::IncrementTextureReferenceCount(
-    const viz::TextureMailbox& mailbox) {
+    const viz::TransferableResource& resource) {
   auto it =
       std::find_if(texture_ref_counts_.begin(), texture_ref_counts_.end(),
-                   [&mailbox](const TextureMailboxRefCount& ref_count) {
-                     return ref_count.first.mailbox() == mailbox.mailbox();
+                   [&resource](const TextureMailboxRefCount& ref_count) {
+                     return ref_count.first == resource.mailbox_holder.mailbox;
                    });
   if (it == texture_ref_counts_.end()) {
-    texture_ref_counts_.push_back(std::make_pair(mailbox, 1));
+    texture_ref_counts_.emplace_back(resource.mailbox_holder.mailbox, 1);
     return;
   }
 
@@ -3509,11 +3511,11 @@ void PepperPluginInstanceImpl::IncrementTextureReferenceCount(
 }
 
 bool PepperPluginInstanceImpl::DecrementTextureReferenceCount(
-    const viz::TextureMailbox& mailbox) {
+    const viz::TransferableResource& resource) {
   auto it =
       std::find_if(texture_ref_counts_.begin(), texture_ref_counts_.end(),
-                   [&mailbox](const TextureMailboxRefCount& ref_count) {
-                     return ref_count.first.mailbox() == mailbox.mailbox();
+                   [&resource](const TextureMailboxRefCount& ref_count) {
+                     return ref_count.first == resource.mailbox_holder.mailbox;
                    });
   DCHECK(it != texture_ref_counts_.end());
 
@@ -3527,11 +3529,11 @@ bool PepperPluginInstanceImpl::DecrementTextureReferenceCount(
 }
 
 bool PepperPluginInstanceImpl::IsTextureInUse(
-    const viz::TextureMailbox& mailbox) const {
+    const viz::TransferableResource& resource) const {
   auto it =
       std::find_if(texture_ref_counts_.begin(), texture_ref_counts_.end(),
-                   [&mailbox](const TextureMailboxRefCount& ref_count) {
-                     return ref_count.first.mailbox() == mailbox.mailbox();
+                   [&resource](const TextureMailboxRefCount& ref_count) {
+                     return ref_count.first == resource.mailbox_holder.mailbox;
                    });
   return it != texture_ref_counts_.end();
 }

@@ -20,7 +20,6 @@
 #include "components/viz/client/client_shared_bitmap_manager.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/quads/shared_bitmap.h"
-#include "components/viz/common/quads/texture_mailbox.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/renderer/pepper/gfx_conversion.h"
@@ -193,8 +192,7 @@ PepperGraphics2DHost::PepperGraphics2DHost(RendererPpapiHost* host,
       offscreen_flush_pending_(false),
       is_always_opaque_(false),
       scale_(1.0f),
-      is_running_in_process_(host->IsRunningInProcess()),
-      texture_mailbox_modified_(true) {}
+      is_running_in_process_(host->IsRunningInProcess()) {}
 
 PepperGraphics2DHost::~PepperGraphics2DHost() {
   // Delete textures owned by PepperGraphics2DHost, but not those sent to the
@@ -324,7 +322,7 @@ bool PepperGraphics2DHost::BindToInstance(
   }
 
   cached_bitmap_.reset();
-  texture_mailbox_modified_ = true;
+  composited_output_modified_ = true;
 
   bound_instance_ = new_instance;
   return true;
@@ -603,8 +601,8 @@ void PepperGraphics2DHost::ReleaseTextureCallback(
   context->ContextGL()->DeleteTextures(1, &id);
 }
 
-bool PepperGraphics2DHost::PrepareTextureMailbox(
-    viz::TextureMailbox* mailbox,
+bool PepperGraphics2DHost::PrepareTransferableResource(
+    viz::TransferableResource* transferable_resource,
     std::unique_ptr<viz::SingleReleaseCallback>* release_callback) {
   // Reuse the |main_thread_context_| if it is not lost. If it is lost, we
   // can't reuse the texture ids, they are invalid. If the compositing mode
@@ -625,12 +623,12 @@ bool PepperGraphics2DHost::PrepareTextureMailbox(
       } else {
         // Just switched to software compositing. Force us to send the
         // frame to the compositor again even if not changed.
-        texture_mailbox_modified_ = true;
+        composited_output_modified_ = true;
       }
     }
   }
 
-  if (!texture_mailbox_modified_)
+  if (!composited_output_modified_)
     return false;
 
   // Context creation failed, so we're unable to give this frame to the
@@ -694,7 +692,9 @@ bool PepperGraphics2DHost::PrepareTextureMailbox(
 
     gl->BindTexture(GL_TEXTURE_2D, 0);
 
-    *mailbox = viz::TextureMailbox(gpu_mailbox, sync_token, GL_TEXTURE_2D);
+    *transferable_resource =
+        viz::TransferableResource::MakeGL(std::move(gpu_mailbox), GL_LINEAR,
+                                          GL_TEXTURE_2D, std::move(sync_token));
     *release_callback = viz::SingleReleaseCallback::Create(
         base::Bind(&ReleaseTextureCallback, this->AsWeakPtr(),
                    main_thread_context_, texture_id));
@@ -721,16 +721,17 @@ bool PepperGraphics2DHost::PrepareTextureMailbox(
          viz::SharedBitmap::CheckedSizeInBytes(pixel_image_size));
   image_data_->Unmap();
 
-  *mailbox = viz::TextureMailbox(shared_bitmap.get(), pixel_image_size);
+  *transferable_resource = viz::TransferableResource::MakeSoftware(
+      shared_bitmap->id(), shared_bitmap->sequence_number(), pixel_image_size);
   *release_callback = viz::SingleReleaseCallback::Create(base::Bind(
       &PepperGraphics2DHost::ReleaseSoftwareCallback, this->AsWeakPtr(),
       base::Passed(&shared_bitmap), pixel_image_size));
-  texture_mailbox_modified_ = false;
+  composited_output_modified_ = false;
   return true;
 }
 
 void PepperGraphics2DHost::AttachedToNewLayer() {
-  texture_mailbox_modified_ = true;
+  composited_output_modified_ = true;
 }
 
 int32_t PepperGraphics2DHost::Flush(PP_Resource* old_image_data) {
@@ -809,7 +810,7 @@ int32_t PepperGraphics2DHost::Flush(PP_Resource* old_image_data) {
         if (!op_rect_in_viewport.IsEmpty())
           bound_instance_->InvalidateRect(op_rect_in_viewport);
       }
-      texture_mailbox_modified_ = true;
+      composited_output_modified_ = true;
     }
   }
   queued_operations_.clear();

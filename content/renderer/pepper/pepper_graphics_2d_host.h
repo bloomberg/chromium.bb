@@ -34,7 +34,7 @@ namespace viz {
 class ContextProvider;
 class SharedBitmap;
 class SingleReleaseCallback;
-class TextureMailbox;
+struct TransferableResource;
 }
 
 namespace content {
@@ -74,8 +74,8 @@ class CONTENT_EXPORT PepperGraphics2DHost
              const gfx::Rect& plugin_rect,
              const gfx::Rect& paint_rect);
 
-  bool PrepareTextureMailbox(
-      viz::TextureMailbox* mailbox,
+  bool PrepareTransferableResource(
+      viz::TransferableResource* transferable_resource,
       std::unique_ptr<viz::SingleReleaseCallback>* release_callback);
   void AttachedToNewLayer();
 
@@ -223,7 +223,7 @@ class CONTENT_EXPORT PepperGraphics2DHost
 
   bool is_running_in_process_;
 
-  bool texture_mailbox_modified_;
+  bool composited_output_modified_ = true;
 
   // Local cache of the compositing mode. This is sticky, once true it stays
   // that way.

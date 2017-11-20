@@ -42,6 +42,7 @@ class TextureLayer;
 
 namespace viz {
 class CopyOutputRequest;
+struct TransferableResource;
 }
 
 namespace ui {
@@ -387,7 +388,7 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   gfx::ScrollOffset CurrentScrollOffset() const;
   void SetScrollOffset(const gfx::ScrollOffset& offset);
 
-  // ContentLayerClient
+  // ContentLayerClient implementation.
   gfx::Rect PaintableRegion() override;
   scoped_refptr<cc::DisplayItemList> PaintContentsToDisplayList(
       ContentLayerClient::PaintingControlSetting painting_control) override;
@@ -396,14 +397,14 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
 
   cc::Layer* cc_layer_for_testing() { return cc_layer_; }
 
-  // TextureLayerClient
-  bool PrepareTextureMailbox(
-      viz::TextureMailbox* mailbox,
+  // TextureLayerClient implementation.
+  bool PrepareTransferableResource(
+      viz::TransferableResource* resource,
       std::unique_ptr<viz::SingleReleaseCallback>* release_callback) override;
 
   float device_scale_factor() const { return device_scale_factor_; }
 
-  // LayerClient
+  // LayerClient implementation.
   std::unique_ptr<base::trace_event::ConvertableToTraceFormat> TakeDebugInfo(
       cc::Layer* layer) override;
   void didUpdateMainThreadScrollingReasons() override;
