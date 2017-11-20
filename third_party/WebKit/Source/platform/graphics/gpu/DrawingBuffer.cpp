@@ -177,6 +177,8 @@ DrawingBuffer::DrawingBuffer(
       want_stencil_(want_stencil),
       storage_color_space_(color_params.GetStorageGfxColorSpace()),
       sampler_color_space_(color_params.GetSamplerGfxColorSpace()),
+      use_half_float_storage_(color_params.PixelFormat() ==
+                              kF16CanvasPixelFormat),
       chromium_image_usage_(chromium_image_usage) {
   // Used by browser tests to detect the use of a DrawingBuffer.
   TRACE_EVENT_INSTANT0("test_gpu", "DrawingBufferCreation",
@@ -626,7 +628,26 @@ bool DrawingBuffer::Initialize(const IntSize& size, bool use_multisampling) {
 
   if (gl_->GetGraphicsResetStatusKHR() != GL_NO_ERROR) {
     // Need to try to restore the context again later.
+    DLOG(ERROR) << "Cannot initialize with lost context.";
     return false;
+  }
+
+  // Specifying a half-float backbuffer requires and implicitly enables
+  // half-float backbuffer extensions.
+  if (use_half_float_storage_) {
+    const char* color_buffer_extension = webgl_version_ > kWebGL1
+                                             ? "GL_EXT_color_buffer_float"
+                                             : "GL_EXT_color_buffer_half_float";
+    if (!extensions_util_->EnsureExtensionEnabled(color_buffer_extension)) {
+      DLOG(ERROR) << "Half-float color buffer support is absent.";
+      return false;
+    }
+    // Support for RGB half-float renderbuffers is absent from ES3. Do not
+    // attempt to expose them.
+    if (!want_alpha_channel_) {
+      DLOG(ERROR) << "RGB half-float renderbuffers are not supported.";
+      return false;
+    }
   }
 
   gl_->GetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size_);
@@ -708,8 +729,10 @@ bool DrawingBuffer::Initialize(const IntSize& size, bool use_multisampling) {
     gl_->BindFramebuffer(GL_FRAMEBUFFER, multisample_fbo_);
     gl_->GenRenderbuffers(1, &multisample_renderbuffer_);
   }
-  if (!ResizeFramebufferInternal(size))
+  if (!ResizeFramebufferInternal(size)) {
+    DLOG(ERROR) << "Initialization failed to allocate backbuffer.";
     return false;
+  }
 
   if (depth_stencil_buffer_) {
     DCHECK(WantDepthOrStencil());
@@ -719,6 +742,7 @@ bool DrawingBuffer::Initialize(const IntSize& size, bool use_multisampling) {
   if (gl_->GetGraphicsResetStatusKHR() != GL_NO_ERROR) {
     // It's possible that the drawing buffer allocation provokes a context loss,
     // so check again just in case. http://crbug.com/512302
+    DLOG(ERROR) << "Context lost during initialization.";
     return false;
   }
 
@@ -870,10 +894,14 @@ bool DrawingBuffer::ResizeDefaultFramebuffer(const IntSize& size) {
     // Note that the multisample rendertarget will allocate an alpha channel
     // based on |have_alpha_channel_|, not |allocate_alpha_channel_|, since it
     // will resolve into the ColorBuffer.
-    gl_->RenderbufferStorageMultisampleCHROMIUM(
-        GL_RENDERBUFFER, sample_count_,
-        have_alpha_channel_ ? GL_RGBA8_OES : GL_RGB8_OES, size.Width(),
-        size.Height());
+    GLenum internal_format = have_alpha_channel_ ? GL_RGBA8_OES : GL_RGB8_OES;
+    if (use_half_float_storage_) {
+      DCHECK(want_alpha_channel_);
+      internal_format = GL_RGBA16F_EXT;
+    }
+    gl_->RenderbufferStorageMultisampleCHROMIUM(GL_RENDERBUFFER, sample_count_,
+                                                internal_format, size.Width(),
+                                                size.Height());
 
     if (gl_->GetError() == GL_OUT_OF_MEMORY)
       return false;
@@ -1201,9 +1229,11 @@ scoped_refptr<DrawingBuffer::ColorBuffer> DrawingBuffer::CreateColorBuffer(
     gfx::BufferFormat buffer_format;
     GLenum gl_format = GL_NONE;
     if (allocate_alpha_channel_) {
-      buffer_format = gfx::BufferFormat::RGBA_8888;
+      buffer_format = use_half_float_storage_ ? gfx::BufferFormat::RGBA_F16
+                                              : gfx::BufferFormat::RGBA_8888;
       gl_format = GL_RGBA;
     } else {
+      DCHECK(!use_half_float_storage_);
       buffer_format = gfx::BufferFormat::RGBX_8888;
       if (gpu::IsImageFromGpuMemoryBufferFormatSupported(
               gfx::BufferFormat::BGRX_8888,
@@ -1243,12 +1273,28 @@ scoped_refptr<DrawingBuffer::ColorBuffer> DrawingBuffer::CreateColorBuffer(
     if (storage_texture_supported_) {
       GLenum internal_storage_format =
           allocate_alpha_channel_ ? GL_RGBA8 : GL_RGB8;
+      if (use_half_float_storage_) {
+        DCHECK(want_alpha_channel_);
+        internal_storage_format = GL_RGBA16F_EXT;
+      }
       gl_->TexStorage2DEXT(GL_TEXTURE_2D, 1, internal_storage_format,
                            size.Width(), size.Height());
     } else {
-      GLenum gl_format = allocate_alpha_channel_ ? GL_RGBA : GL_RGB;
-      gl_->TexImage2D(texture_target_, 0, gl_format, size.Width(),
-                      size.Height(), 0, gl_format, GL_UNSIGNED_BYTE, nullptr);
+      GLenum internal_format = allocate_alpha_channel_ ? GL_RGBA : GL_RGB;
+      GLenum format = internal_format;
+      GLenum data_type = GL_UNSIGNED_BYTE;
+      if (use_half_float_storage_) {
+        DCHECK(want_alpha_channel_);
+        if (webgl_version_ > kWebGL1) {
+          internal_format = GL_RGBA16F;
+          data_type = GL_HALF_FLOAT;
+        } else {
+          internal_format = GL_RGBA;
+          data_type = GL_HALF_FLOAT_OES;
+        }
+      }
+      gl_->TexImage2D(texture_target_, 0, internal_format, size.Width(),
+                      size.Height(), 0, format, data_type, nullptr);
     }
   }
 
