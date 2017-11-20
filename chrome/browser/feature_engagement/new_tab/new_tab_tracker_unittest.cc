@@ -159,7 +159,7 @@ class NewTabTrackerTest : public testing::Test {
         "name:new_tab_clicked;comparator:any;window:3650;storage:3650";
     new_tab_params["session_rate"] = "<=3";
     new_tab_params["availability"] = "any";
-    new_tab_params["x_date_released_in_seconds"] = base::DoubleToString(
+    new_tab_params["x_date_released_in_seconds"] = base::Int64ToString(
         first_run::GetFirstRunSentinelCreationTime().ToDoubleT());
 
     SetFeatureParams(kIPHNewTabFeature, new_tab_params);

@@ -149,7 +149,7 @@ class BookmarkTrackerTest : public testing::Test {
         "name:bookmark_clicked;comparator:any;window:3650;storage:3650";
     bookmark_params["session_rate"] = "<=3";
     bookmark_params["availability"] = "any";
-    bookmark_params["x_date_released_in_seconds"] = base::DoubleToString(
+    bookmark_params["x_date_released_in_seconds"] = base::Int64ToString(
         first_run::GetFirstRunSentinelCreationTime().ToDoubleT());
 
     SetFeatureParams(kIPHBookmarkFeature, bookmark_params);

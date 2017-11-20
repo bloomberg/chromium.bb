@@ -93,7 +93,7 @@ IN_PROC_BROWSER_TEST_F(NewTabTrackerBrowserTest, TestShowPromo) {
       NewTabTrackerFactory::GetInstance()->GetForProfile(browser()->profile());
   new_tab_tracker->OnSessionTimeMet();
   new_tab_tracker
-      ->UseDefaultForChromeVariationConfirgurationReleaseTimeForTesting();
+      ->UseDefaultForChromeVariationConfigurationReleaseTimeForTesting();
 
   // Navigate in the omnibox.
   EXPECT_CALL(*feature_engagement_tracker_,
