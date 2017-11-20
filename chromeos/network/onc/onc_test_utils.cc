@@ -63,7 +63,7 @@ std::unique_ptr<base::DictionaryValue> ReadTestDictionary(
   dict = base::DictionaryValue::From(std::move(content));
   CHECK(dict) << "File '" << filename
               << "' does not contain a dictionary as expected, but type "
-              << content->GetType();
+              << content->type();
   return dict;
 }
 

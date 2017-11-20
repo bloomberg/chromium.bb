@@ -71,9 +71,9 @@ std::unique_ptr<base::Value> Validator::MapValue(
     const OncValueSignature& signature,
     const base::Value& onc_value,
     bool* error) {
-  if (onc_value.GetType() != signature.onc_type) {
+  if (onc_value.type() != signature.onc_type) {
     LOG(ERROR) << MessageHeader() << "Found value '" << onc_value
-               << "' of type '" << base::Value::GetTypeName(onc_value.GetType())
+               << "' of type '" << base::Value::GetTypeName(onc_value.type())
                << "', but type '"
                << base::Value::GetTypeName(signature.onc_type)
                << "' is required.";
@@ -84,7 +84,7 @@ std::unique_ptr<base::Value> Validator::MapValue(
   std::unique_ptr<base::Value> repaired =
       Mapper::MapValue(signature, onc_value, error);
   if (repaired)
-    CHECK_EQ(repaired->GetType(), signature.onc_type);
+    CHECK_EQ(repaired->type(), signature.onc_type);
   return repaired;
 }
 

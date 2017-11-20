@@ -406,7 +406,7 @@ bool FakeShillServiceClient::SetServiceProperty(const std::string& service_path,
         shill::kProviderProperty, base::Value(base::Value::Type::DICTIONARY));
     provider->SetKey(key, value.Clone());
     changed_property = shill::kProviderProperty;
-  } else if (value.GetType() == base::Value::Type::DICTIONARY) {
+  } else if (value.is_dict()) {
     const base::DictionaryValue* new_dict = NULL;
     value.GetAsDictionary(&new_dict);
     CHECK(new_dict);

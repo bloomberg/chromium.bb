@@ -208,7 +208,7 @@ bool ParseServerResponse(const GURL& server_url,
         server_url,
         "Unexpected response type : " +
             base::StringPrintf(
-                "%u", static_cast<unsigned int>(response_value->GetType())),
+                "%u", static_cast<unsigned int>(response_value->type())),
         position);
     RecordUmaEvent(SIMPLE_GEOLOCATION_REQUEST_EVENT_RESPONSE_MALFORMED);
     return false;
