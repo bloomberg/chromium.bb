@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/shelf/voice_interaction_overlay.h"
+#include "ash/shelf/assistant_overlay.h"
 
 #include <algorithm>
 #include <memory>
@@ -114,11 +114,10 @@ constexpr int kMoleculeOrder[] = {0, 2, 3, 1};
 
 }  // namespace
 
-class VoiceInteractionIcon : public ui::Layer,
-                             public ui::CompositorAnimationObserver {
+class AssistantIcon : public ui::Layer, public ui::CompositorAnimationObserver {
  public:
-  VoiceInteractionIcon() : Layer(ui::LAYER_NOT_DRAWN) {
-    set_name("VoiceInteractionOverlay:ICON_LAYER");
+  AssistantIcon() : Layer(ui::LAYER_NOT_DRAWN) {
+    set_name("AssistantOverlay:ICON_LAYER");
     SetBounds(gfx::Rect(0, 0, kIconInitSizeDip, kIconInitSizeDip));
     SetFillsBoundsOpaquely(false);
     SetMasksToBounds(false);
@@ -126,7 +125,7 @@ class VoiceInteractionIcon : public ui::Layer,
     InitMoleculeShape();
   }
 
-  ~VoiceInteractionIcon() override { StopAnimation(); }
+  ~AssistantIcon() override { StopAnimation(); }
 
   void StartAnimation() {
     ui::Compositor* compositor = GetCompositor();
@@ -225,13 +224,12 @@ class VoiceInteractionIcon : public ui::Layer,
 
   ui::Compositor* animating_compositor_ = nullptr;
 
-  DISALLOW_COPY_AND_ASSIGN(VoiceInteractionIcon);
+  DISALLOW_COPY_AND_ASSIGN(AssistantIcon);
 };
 
-class VoiceInteractionIconBackground : public ui::Layer,
-                                       public ui::LayerDelegate {
+class AssistantIconBackground : public ui::Layer, public ui::LayerDelegate {
  public:
-  VoiceInteractionIconBackground()
+  AssistantIconBackground()
       : Layer(ui::LAYER_NOT_DRAWN),
         large_size_(
             gfx::Size(kBackgroundLargeWidthDip, kBackgroundLargeHeightDip)),
@@ -244,7 +242,7 @@ class VoiceInteractionIconBackground : public ui::Layer,
         rect_layer_delegate_(std::make_unique<views::RectangleLayerDelegate>(
             SK_ColorWHITE,
             gfx::SizeF(small_size_))) {
-    set_name("VoiceInteractionOverlay:BACKGROUND_LAYER");
+    set_name("AssistantOverlay:BACKGROUND_LAYER");
     SetBounds(gfx::Rect(0, 0, kBackgroundInitSizeDip, kBackgroundInitSizeDip));
     SetFillsBoundsOpaquely(false);
     SetMasksToBounds(false);
@@ -280,7 +278,7 @@ class VoiceInteractionIconBackground : public ui::Layer,
     for (int i = 0; i < PAINTED_SHAPE_COUNT; ++i)
       AddPaintLayer(static_cast<PaintedShape>(i));
   }
-  ~VoiceInteractionIconBackground() override{};
+  ~AssistantIconBackground() override{};
 
   void MoveLargeShadow(const gfx::PointF& new_center) {
     gfx::Transform transform;
@@ -592,17 +590,17 @@ class VoiceInteractionIconBackground : public ui::Layer,
   // This layer shows the large rounded rectangle with shadow.
   std::unique_ptr<ui::Layer> large_shadow_layer_;
 
-  DISALLOW_COPY_AND_ASSIGN(VoiceInteractionIconBackground);
+  DISALLOW_COPY_AND_ASSIGN(AssistantIconBackground);
 };
 
-VoiceInteractionOverlay::VoiceInteractionOverlay(AppListButton* host_view)
+AssistantOverlay::AssistantOverlay(AppListButton* host_view)
     : ripple_layer_(std::make_unique<ui::Layer>()),
-      icon_layer_(std::make_unique<VoiceInteractionIcon>()),
-      background_layer_(std::make_unique<VoiceInteractionIconBackground>()),
+      icon_layer_(std::make_unique<AssistantIcon>()),
+      background_layer_(std::make_unique<AssistantIconBackground>()),
       host_view_(host_view),
       circle_layer_delegate_(kRippleColor, kRippleCircleInitRadiusDip) {
   SetPaintToLayer(ui::LAYER_NOT_DRAWN);
-  layer()->set_name("VoiceInteractionOverlay:ROOT_LAYER");
+  layer()->set_name("AssistantOverlay:ROOT_LAYER");
   layer()->SetMasksToBounds(false);
 
   ripple_layer_->SetBounds(gfx::Rect(0, 0, kRippleCircleInitRadiusDip * 2,
@@ -610,7 +608,7 @@ VoiceInteractionOverlay::VoiceInteractionOverlay(AppListButton* host_view)
   ripple_layer_->set_delegate(&circle_layer_delegate_);
   ripple_layer_->SetFillsBoundsOpaquely(false);
   ripple_layer_->SetMasksToBounds(true);
-  ripple_layer_->set_name("VoiceInteractionOverlay:PAINTED_LAYER");
+  ripple_layer_->set_name("AssistantOverlay:PAINTED_LAYER");
   layer()->Add(ripple_layer_.get());
 
   layer()->Add(background_layer_.get());
@@ -618,9 +616,9 @@ VoiceInteractionOverlay::VoiceInteractionOverlay(AppListButton* host_view)
   layer()->Add(icon_layer_.get());
 }
 
-VoiceInteractionOverlay::~VoiceInteractionOverlay() {}
+AssistantOverlay::~AssistantOverlay() {}
 
-void VoiceInteractionOverlay::StartAnimation(bool show_icon) {
+void AssistantOverlay::StartAnimation(bool show_icon) {
   animation_state_ = AnimationState::STARTING;
   show_icon_ = show_icon;
   SetVisible(true);
@@ -732,7 +730,7 @@ void VoiceInteractionOverlay::StartAnimation(bool show_icon) {
   }
 }
 
-void VoiceInteractionOverlay::BurstAnimation() {
+void AssistantOverlay::BurstAnimation() {
   animation_state_ = AnimationState::BURSTING;
 
   gfx::Point center = host_view_->GetAppListButtonCenterPoint();
@@ -803,7 +801,7 @@ void VoiceInteractionOverlay::BurstAnimation() {
       nullptr);
 }
 
-void VoiceInteractionOverlay::WaitingAnimation() {
+void AssistantOverlay::WaitingAnimation() {
   // If we are already playing burst animation, it will end up at waiting state
   // anyway.  No need to do anything.
   if (IsBursting())
@@ -862,7 +860,7 @@ void VoiceInteractionOverlay::WaitingAnimation() {
   }
 }
 
-void VoiceInteractionOverlay::EndAnimation() {
+void AssistantOverlay::EndAnimation() {
   if (IsBursting() || IsHidden()) {
     // Too late, user action already fired, we have to finish what's started.
     // Or the widget has already been hidden, no need to play the end animation.
@@ -941,7 +939,7 @@ void VoiceInteractionOverlay::EndAnimation() {
   }
 }
 
-void VoiceInteractionOverlay::HideAnimation() {
+void AssistantOverlay::HideAnimation() {
   animation_state_ = AnimationState::HIDDEN;
 
   // Setup ripple animations.
