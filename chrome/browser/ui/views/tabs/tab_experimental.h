@@ -6,23 +6,32 @@
 #define CHROME_BROWSER_UI_VIEWS_TABS_TAB_EXPERIMENTAL_H_
 
 #include "base/macros.h"
+#include "chrome/browser/ui/tabs/tab_data_experimental.h"
 #include "chrome/browser/ui/views/tabs/tab_experimental_paint.h"
 #include "ui/views/controls/glow_hover_controller.h"
+#include "ui/views/masked_targeter_delegate.h"
 #include "ui/views/view.h"
 
 class TabDataExperimental;
+class TabStripModelExperimental;
 
 namespace views {
 class Label;
 }
 
-class TabExperimental : public views::View {
+class TabExperimental : public views::MaskedTargeterDelegate,
+                        public views::View {
  public:
-  explicit TabExperimental(const TabDataExperimental* data);
+  explicit TabExperimental(TabStripModelExperimental* model,
+                           const TabDataExperimental* data);
   ~TabExperimental() override;
 
   // Will be null when closing.
   const TabDataExperimental* data() const { return data_; }
+
+  // Cached stuff from data_ that can be used regardless of whether the data
+  // pointer is null or not.
+  TabDataExperimental::Type type() const { return type_; }
 
   // The view order is stored on a tab for the use of TabStrip layout and
   // computatations. It is not used directly by this class. It represents this
@@ -52,16 +61,29 @@ class TabExperimental : public views::View {
   // to redraw everything.
   void DataUpdated();
 
+  // Called for group types when layout is done to set the bounds of the
+  // first tab. This is used to determine some painting parameters.
+  void SetGroupLayoutParams(int first_child_begin_x);
+
   // Returns the overlap between adjacent tabs.
   static int GetOverlap();
 
  private:
+  // views::MaskedTargeterDelegate:
+  bool GetHitTestMask(gfx::Path* mask) const override;
+
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override;
   void Layout() override;
+  bool OnMousePressed(const ui::MouseEvent& event) override;
+  void OnMouseReleased(const ui::MouseEvent& event) override;
+
+  TabStripModelExperimental* model_;
 
   // Will be null when closing.
   const TabDataExperimental* data_;
+
+  TabDataExperimental::Type type_;
 
   size_t view_order_ = static_cast<size_t>(-1);
   gfx::Rect ideal_bounds_;
@@ -71,6 +93,9 @@ class TabExperimental : public views::View {
   bool closing_ = false;
 
   views::Label* title_;  // Non-owning (owned by View hierarchy).
+
+  // Location of the first child tab. Negative indicates unused.
+  int first_child_begin_x_ = -1;
 
   views::GlowHoverController hover_controller_;
 

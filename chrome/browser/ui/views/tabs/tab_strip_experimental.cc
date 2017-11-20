@@ -97,6 +97,9 @@ const int kPinnedToNonPinnedOffset = 2;
 const int kPinnedToNonPinnedOffset = 3;
 #endif
 
+// Additional size above the tabs used for group bounds.
+const int kTopPaddingForGroups = 2;
+
 // Returns the width needed for the new tab button (and padding).
 int GetNewTabButtonWidth() {
   return GetLayoutSize(NEW_TAB_BUTTON).width() -
@@ -166,6 +169,23 @@ void ResetDraggingStateDelegate::AnimationEnded(
 void ResetDraggingStateDelegate::AnimationCanceled(
     const gfx::Animation* animation) {
   AnimationEnded(animation);
+}
+
+// Returns how much spacing should go after the tab with the given index. The
+// return value will be negative for overlapped tabs.
+int TabSpacingAfter(
+    const std::vector<std::unique_ptr<TabDataExperimental>>& tabs,
+    size_t index) {
+  if (index == tabs.size() - 1)
+    return 0;  // No space after the last tab.
+
+  // All non-single-tabs have no overlap.
+  if (tabs[index]->type() != TabDataExperimental::Type::kSingle ||
+      tabs[index + 1]->type() != TabDataExperimental::Type::kSingle)
+    return 0;
+
+  // Everything else gets the standard overlap.
+  return -TabExperimental::GetOverlap();
 }
 
 }  // namespace
@@ -502,7 +522,7 @@ void TabStripExperimental::TabInserted(const TabDataExperimental* data,
                                        bool is_active) {
   InvalidateViewOrder();
 
-  TabExperimental* tab = new TabExperimental(data);
+  TabExperimental* tab = new TabExperimental(model_, data);
   AddChildView(tab);
   tab->SetVisible(true);
   tabs_.emplace(data, tab);
@@ -546,6 +566,9 @@ void TabStripExperimental::TabClosing(const TabDataExperimental* data) {
   if (!tab)
     return;
 
+  // TODO(brettw) this uses view order to tell if it's the last tab, but this
+  // is not correct. It should look only at the tabs structure and we should
+  // be able to delte view_order() on the TabExperimental.
   if (in_tab_close_ && tab->view_order() != view_order_.size() - 1)
     StartMouseInitiatedRemoveTabAnimation(tab);
   else
@@ -583,6 +606,8 @@ void TabStripExperimental::TabChanged(const TabDataExperimental* data) {
 void TabStripExperimental::TabSelectionChanged(
     const TabDataExperimental* old_data,
     const TabDataExperimental* new_data) {
+  InvalidateViewOrder();
+
   TabExperimental* old_tab = TabForData(old_data);
   if (old_tab) {
     old_tab->SetActive(false);
@@ -623,8 +648,26 @@ void TabStripExperimental::Layout() {
 void TabStripExperimental::PaintChildren(const views::PaintInfo& paint_info) {
   EnsureViewOrderUpToDate();
 
-  // The order stored by the view itself doesn't match the paint order. The
-  // paint order is the reverse of the view_order_ vector (to paint
+  // TODO(brettw) The color should be
+  // controller_->GetToolbarTopSeparatorColor() which handles theming,
+  // activation, and incognito.
+  // TODO(brettw) only paint this where there are no tabs, as the tabs also
+  // paint their own bottom border and this will be overpainting.
+  {
+    ui::PaintRecorder recorder(paint_info.context(),
+                               paint_info.paint_recording_size(),
+                               paint_info.paint_recording_scale_x(),
+                               paint_info.paint_recording_scale_y(), nullptr);
+    gfx::Canvas* canvas = recorder.canvas();
+    BrowserView::Paint1pxHorizontalLine(
+        canvas,
+        ThemeProperties::GetDefaultColor(
+            ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR, false),
+        GetLocalBounds(), true);
+  }
+
+  // The order stored by the view::View itself doesn't match the paint order.
+  // The paint order is the reverse of the view_order_ vector (to paint
   // back-to-front).
   for (TabExperimental* tab : base::Reversed(view_order_))
     tab->Paint(paint_info);
@@ -644,10 +687,6 @@ void TabStripExperimental::PaintChildren(const views::PaintInfo& paint_info) {
         gfx::RectToSkRect(active_tab->GetMirroredBounds()),
         SkClipOp::kDifference);
   }
-  */
-  /* TODO(brettw) top of toolbar.
-  BrowserView::Paint1pxHorizontalLine(canvas, GetToolbarTopSeparatorColor(),
-                                      GetLocalBounds(), true);
   */
 }
 
@@ -684,8 +723,9 @@ gfx::Size TabStripExperimental::CalculatePreferredSize() const {
   needed_tab_width = std::min(std::max(needed_tab_width, min_selected_width),
                               largest_min_tab_width);
 
-  return gfx::Size(needed_tab_width + GetNewTabButtonWidth(),
-                   Tab::GetMinimumInactiveSize().height());
+  return gfx::Size(
+      needed_tab_width + GetNewTabButtonWidth(),
+      Tab::GetMinimumInactiveSize().height() + kTopPaddingForGroups);
 }
 
 void TabStripExperimental::OnDragEntered(const DropTargetEvent& event) {
@@ -824,14 +864,8 @@ void TabStripExperimental::StartInsertTabAnimation(
   GenerateIdealBounds();
 
   // Set the current bounds to be the correct place but 0 width.
-  DCHECK(view_order_[tab->view_order()] == tab);
-  if (tab->view_order() == 0) {
-    tab->SetBounds(0, tab->ideal_bounds().y(), 0, tab->ideal_bounds().height());
-  } else {
-    TabExperimental* prev_tab = view_order_[tab->view_order() - 1];
-    tab->SetBounds(prev_tab->bounds().right() - TabExperimental::GetOverlap(),
-                   tab->ideal_bounds().y(), 0, tab->ideal_bounds().height());
-  }
+  tab->SetBounds(tab->ideal_bounds().x(), tab->ideal_bounds().y(), 0,
+                 tab->ideal_bounds().height());
 
   // Animate in to the full width.
   AnimateToIdealBounds();
@@ -845,10 +879,10 @@ void TabStripExperimental::StartMoveTabAnimation() {
 
 void TabStripExperimental::StartRemoveTabAnimation(TabExperimental* tab) {
   PrepareForAnimation();
-  tab->SetClosing();
-
   RemoveTabFromViewModel(tab);
   ScheduleRemoveTabAnimation(tab);
+
+  tab->SetClosing();
 }
 
 void TabStripExperimental::ScheduleRemoveTabAnimation(TabExperimental* tab) {
@@ -876,7 +910,11 @@ void TabStripExperimental::ScheduleRemoveTabAnimation(TabExperimental* tab) {
 
 void TabStripExperimental::AnimateToIdealBounds() {
   EnsureViewOrderUpToDate();
-  for (TabExperimental* tab : view_order_) {
+  // Don't iterate over view_order since that will contain tabs that are
+  // in the process of being deleted. Asking them to animate again will
+  // cancel the previous animation which will cause them to be deleted.
+  for (const auto& pair : tabs_) {
+    TabExperimental* tab = pair.second;
     bounds_animator_.AnimateViewTo(tab, tab->ideal_bounds());
     bounds_animator_.SetAnimationDelegate(
         tab, std::make_unique<TabAnimationDelegate>(this, tab));
@@ -1107,10 +1145,10 @@ void TabStripExperimental::SetTabBoundsForDrag(
 
 void TabStripExperimental::AddMessageLoopObserver() {
   if (!mouse_watcher_.get()) {
-    mouse_watcher_.reset(new views::MouseWatcher(
+    mouse_watcher_ = std::make_unique<views::MouseWatcher>(
         new views::MouseWatcherViewHost(
             this, gfx::Insets(0, 0, kTabStripAnimationVSlop, 0)),
-        this));
+        this);
   }
   mouse_watcher_->Start();
 }
@@ -1286,16 +1324,70 @@ void TabStripExperimental::GenerateIdealBounds() {
                             ? GetTabAreaWidth()
                             : available_width_for_tabs_;
 
+  auto& tabs = model_->top_level_tabs();
+  int overlap = TabExperimental::GetOverlap();
+
+  // Precompute the spacing to know how much space can be distributed to
+  // the tabs. Thia is usually negative since the tabs overlap slightly.
+  int spacing_accumulator = 0;
+  for (size_t i = 0; i < tabs.size() - 1; i++) {
+    switch (tabs[i]->type()) {
+      case TabDataExperimental::Type::kSingle:
+        spacing_accumulator += TabSpacingAfter(tabs, i);
+        break;
+      case TabDataExperimental::Type::kHubAndSpoke:
+        // Hub and spoke gets overlap between the hub and first child.
+        spacing_accumulator -= overlap;
+      // Fall through to group for counting the children.
+      case TabDataExperimental::Type::kGroup:
+        for (size_t inner_i = 0; inner_i < tabs[i]->children().size();
+             inner_i++)
+          spacing_accumulator += TabSpacingAfter(tabs[i]->children(), inner_i);
+        break;
+    }
+  }
+
   gfx::Size standard_size = Tab::GetStandardSize();
-  int tab_width = available_width / view_order_.size();
+  int tab_width = (available_width - spacing_accumulator) / view_order_.size();
   if (tab_width > standard_size.width())
     tab_width = standard_size.width();
 
   int x = 0;
-  for (size_t i = 0; i < view_order_.size(); i++) {
-    view_order_[i]->set_ideal_bounds(
-        gfx::Rect(x, 0, tab_width, standard_size.height()));
-    x += tab_width;
+  for (size_t i = 0; i < tabs.size(); i++) {
+    const TabDataExperimental* top_data = tabs[i].get();
+    const auto top_found = tabs_.find(top_data);
+    if (top_found == tabs_.end())
+      continue;  // Can happen during tab close.
+
+    if (top_data->type() == TabDataExperimental::Type::kSingle) {
+      top_found->second->set_ideal_bounds(gfx::Rect(
+          x, kTopPaddingForGroups, tab_width, standard_size.height()));
+      x += tab_width + TabSpacingAfter(tabs, i);
+    } else {
+      int top_x = x;
+      x += tab_width - overlap;  // Will increment for each child.
+
+      top_found->second->SetGroupLayoutParams(x - top_x);
+
+      // Layout children inside.
+      for (size_t inner_i = 0; inner_i < top_data->children().size();
+           inner_i++) {
+        const TabDataExperimental* inner_data =
+            top_data->children()[inner_i].get();
+        const auto inner_found = tabs_.find(inner_data);
+        if (inner_found == tabs_.end()) {
+          NOTREACHED();
+        } else {
+          inner_found->second->set_ideal_bounds(gfx::Rect(
+              x, kTopPaddingForGroups, tab_width, standard_size.height()));
+        }
+        x += tab_width + TabSpacingAfter(top_data->children(), inner_i);
+      }
+
+      // Layout group.
+      top_found->second->set_ideal_bounds(gfx::Rect(
+          top_x, 0, x - top_x, standard_size.height() + kTopPaddingForGroups));
+    }
   }
 
   /* TODO(brettw) need to notify of max X.
@@ -1418,30 +1510,12 @@ int TabStripExperimental::GetStartXForNormalTabs() const {
 
 TabExperimental* TabStripExperimental::FindTabHitByPoint(
     const gfx::Point& point) {
-  /* TODO(brettw) hit testing.
   // The display order doesn't necessarily match the child order, so we iterate
   // in display order.
-  for (int i = 0; i < tab_count(); ++i) {
-    // If we don't first exclude points outside the current tab, the code below
-    // will return the wrong tab if the next tab is selected, the following tab
-    // is active, and |point| is in the overlap region between the two.
-    TabExperimental* tab = tab_at(i);
-    if (!IsPointInTab(tab, point))
-      continue;
-
-    // Selected tabs render atop unselected ones, and active tabs render atop
-    // everything.  Check whether the next tab renders atop this one and |point|
-    // is in the overlap region.
-    TabExperimental* next_tab = i < (tab_count() - 1) ? tab_at(i + 1) : nullptr;
-    if (next_tab &&
-        (next_tab->active() || (next_tab->selected() && !tab->selected())) &&
-        IsPointInTab(next_tab, point))
-      return next_tab;
-
-    // This is the topmost tab for this point.
-    return tab;
+  for (TabExperimental* tab : view_order_) {
+    if (IsPointInTab(tab, point))
+      return tab;
   }
-  */
   return nullptr;
 }
 
@@ -1632,29 +1706,9 @@ void TabStripExperimental::EnsureViewOrderUpToDate() const {
     return;
 
   view_order_.reserve(tabs_.size());
-
-  for (const auto& top_data : model_->top_level_tabs()) {
-    // Add children. This assumes a two-level hierarchy. If more nesting is
-    // required, this will need to be recursive.
-    for (const auto& inner_data : top_data->children()) {
-      const auto inner_found = tabs_.find(inner_data.get());
-      if (inner_found == tabs_.end()) {
-        NOTREACHED();
-      } else {
-        inner_found->second->set_view_order(view_order_.size());
-        view_order_.push_back(inner_found->second);
-      }
-    }
-
-    // The group itself goes below the child tabs.
-    const auto top_found = tabs_.find(top_data.get());
-    if (top_found == tabs_.end()) {
-      NOTREACHED();
-    } else {
-      top_found->second->set_view_order(view_order_.size());
-      view_order_.push_back(top_found->second);
-    }
-  }
+  const TabDataExperimental* selected_data =
+      model_->GetDataForViewIndex(model_->active_index());
+  ComputeViewOrder(model_->top_level_tabs(), selected_data, &view_order_);
 
   // Put the closing tabs at the back.
   // TODO(brettw) this isn't right, they should go in the order they were
@@ -1663,5 +1717,45 @@ void TabStripExperimental::EnsureViewOrderUpToDate() const {
   for (TabExperimental* tab : closing_tabs_) {
     tab->set_view_order(view_order_.size());
     view_order_.push_back(tab);
+  }
+}
+
+void TabStripExperimental::ComputeViewOrder(
+    base::span<const std::unique_ptr<TabDataExperimental>> tabs,
+    const TabDataExperimental* selected,
+    std::vector<TabExperimental*>* output) const {
+  // Stores the selected one if we encounter it.
+  const std::unique_ptr<TabDataExperimental>* top = nullptr;
+
+  size_t begin_index = output->size();
+
+  for (const auto& data : tabs) {
+    const auto found_tab = tabs_.find(data.get());
+    if (found_tab == tabs_.end())
+      continue;  // Can happen during tab close.
+    if (data.get() == selected) {
+      // Save the selected one for last.
+      top = &data;
+      continue;
+    }
+
+    // Recursively order children.
+    if (!data->children().empty())
+      ComputeViewOrder(data->children(), selected, output);
+
+    found_tab->second->set_view_order(output->size());
+    output->push_back(found_tab->second);
+  }
+
+  // Add the selected one (and any children) to the front.
+  if (top) {
+    // Recursively call ComputeViewOrder since the selected tab may be a group
+    // that needs its children laid out.
+    std::vector<TabExperimental*> temp_output;
+    ComputeViewOrder(
+        base::span<const std::unique_ptr<TabDataExperimental>>(top, 1), nullptr,
+        &temp_output);
+    output->insert(output->begin() + begin_index, temp_output.begin(),
+                   temp_output.end());
   }
 }

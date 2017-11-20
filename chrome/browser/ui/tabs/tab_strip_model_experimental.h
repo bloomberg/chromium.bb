@@ -196,6 +196,9 @@ class TabStripModelExperimental : public TabStripModel {
   const TabDataExperimental* GetDataForViewIndex(int view_index) const;
   TabDataExperimental* GetDataForViewIndex(int view_index);
 
+  // Returns kNoTab if there isn't a view index for this data.
+  int GetViewIndexForData(const TabDataExperimental* data) const;
+
   void AddExperimentalObserver(TabStripModelExperimentalObserver* observer);
   void RemoveExperimentalObserver(TabStripModelExperimentalObserver* observer);
 
