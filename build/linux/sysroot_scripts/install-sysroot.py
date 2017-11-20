@@ -39,7 +39,7 @@ import gyp_environment
 URL_PREFIX = 'https://commondatastorage.googleapis.com'
 URL_PATH = 'chrome-linux-sysroot/toolchain'
 
-VALID_ARCHS = ('arm', 'arm64', 'i386', 'amd64', 'mips')
+VALID_ARCHS = ('arm', 'arm64', 'i386', 'amd64', 'mips', 'mips64el')
 
 
 class Error(Exception):
@@ -72,6 +72,8 @@ def DetectHostArch():
     return 'arm64'
   if detected_host_arch == 'mips':
     return 'mips'
+  if detected_host_arch == 'mips64':
+    return 'mips64el'
   if detected_host_arch == 'ppc':
     return 'ppc'
   if detected_host_arch == 's390':
@@ -101,6 +103,8 @@ def DetectTargetArch():
     return 'arm64'
   if target_arch == 'mipsel':
     return 'mips'
+  if target_arch == 'mips64el':
+    return 'mips64el'
 
   return None
 
