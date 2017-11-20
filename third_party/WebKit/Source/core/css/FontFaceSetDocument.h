@@ -92,7 +92,7 @@ class CORE_EXPORT FontFaceSetDocument final : public FontFaceSet,
   explicit FontFaceSetDocument(Document&);
 
   void FireDoneEventIfPossible() override;
-  const HeapListHashSet<Member<FontFace>>& CSSConnectedFontFaceList()
+  const HeapLinkedHashSet<Member<FontFace>>& CSSConnectedFontFaceList()
       const override;
 
   class FontLoadHistogram {

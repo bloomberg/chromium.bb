@@ -53,7 +53,7 @@ class CORE_EXPORT FontFaceSetWorker final
     return GetWorker()->GetFontSelector();
   }
   // For workers, this is always an empty list.
-  const HeapListHashSet<Member<FontFace>>& CSSConnectedFontFaceList()
+  const HeapLinkedHashSet<Member<FontFace>>& CSSConnectedFontFaceList()
       const override {
     DCHECK(
         GetFontSelector()->GetFontFaceCache()->CssConnectedFontFaces().size() ==

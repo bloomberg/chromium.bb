@@ -109,7 +109,7 @@ ScriptPromise FontFaceSetDocument::ready(ScriptState* script_state) {
   return ready_->Promise(script_state->World());
 }
 
-const HeapListHashSet<Member<FontFace>>&
+const HeapLinkedHashSet<Member<FontFace>>&
 FontFaceSetDocument::CSSConnectedFontFaceList() const {
   Document* document = this->GetDocument();
   document->UpdateActiveStyle();
