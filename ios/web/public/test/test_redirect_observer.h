@@ -8,7 +8,9 @@
 #include <map>
 #include <set>
 
+#include "base/macros.h"
 #include "ios/web/public/web_state/web_state_observer.h"
+#import "ios/web/public/web_state/web_state_user_data.h"
 #include "url/gurl.h"
 
 namespace web {
@@ -17,12 +19,10 @@ class NavigationItem;
 
 // A utility class that is used to track redirects during tests to enable URL
 // verification for redirected page loads.
-class TestRedirectObserver : public web::WebStateObserver {
+class TestRedirectObserver
+    : public web::WebStateObserver,
+      public web::WebStateUserData<TestRedirectObserver> {
  public:
-  // Getter that lazily instantiates a TestRedirectObserver that is stored in
-  // |web_state|'s user data.
-  static TestRedirectObserver* FromWebState(WebState* web_state);
-
   // Notifies the observer that |url| is about to be loaded by the associated
   // WebState, triggering the TestRedirectObserver to start observing redirects.
   void BeginObservingRedirectsForUrl(const GURL& url);
@@ -31,15 +31,13 @@ class TestRedirectObserver : public web::WebStateObserver {
   GURL GetFinalUrlForUrl(const GURL& url);
 
  private:
-  // TestRedirectObservers must be instantiated using |FromWebState()|.
-  friend class TestRedirectObserverUserDataWrapper;
-  TestRedirectObserver();
   TestRedirectObserver(WebState* web_state);
   ~TestRedirectObserver() final;
 
   // WebStateObserver:
   void DidStartNavigation(web::WebState* web_state,
                           NavigationContext* navigation_context) override;
+  void WebStateDestroyed(web::WebState* web_state) override;
 
   // RedirectChains store the original and final redirect URLs for a given page
   // load.
@@ -55,6 +53,8 @@ class TestRedirectObserver : public web::WebStateObserver {
   // be removed and the redirect chain originating from that URL will be stored
   // in |redirect_chains_|.
   std::set<GURL> expected_urls_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestRedirectObserver);
 };
 
 }  // namespace web
