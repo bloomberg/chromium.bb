@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
-<title>Upload files in x-user-defined form</title>
+<title>Upload files in ISO-2022-JP form (part 1)</title>
 <link rel="help"
       href="https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#multipart-form-data">
 <link rel="author" title="Benjamin C. Wiley Sittler"
@@ -30,46 +30,24 @@
 formPostFileUploadTest({
   fileNameSource: 'ASCII',
   fileBaseName: 'file-for-drag-to-send3.txt',
-  formEncoding: 'x-user-defined',
+  formEncoding: 'ISO-2022-JP',
   expectedEncodedBaseName: 'file-for-drag-to-send3.txt',
 });
 
 formPostFileUploadTest({
   fileNameSource: 'x-user-defined',
   fileBaseName: 'file-for-drag-to-send3-\uF7F0\uF793\uF783\uF7A0.txt',
-  formEncoding: 'x-user-defined',
-  expectedEncodedBaseName: 'file-for-drag-to-send3-𓃠.txt',
+  formEncoding: 'ISO-2022-JP',
+  expectedEncodedBaseName: (
+      'file-for-drag-to-send3-&#63472;&#63379;&#63363;&#63392;.txt'),
 });
 
 formPostFileUploadTest({
   fileNameSource: 'windows-1252',
   fileBaseName: 'file-for-drag-to-send3-â˜ºðŸ˜‚.txt',
-  formEncoding: 'x-user-defined',
-  expectedEncodedBaseName: ('file-for-drag-to-send3-' +
-                            '&#226;&#732;&#186;&#240;&#376;&#732;&#8218;.txt'),
-});
-
-formPostFileUploadTest({
-  fileNameSource: 'JIS X 0201 and JIS X 0208',
-  fileBaseName: 'file-for-drag-to-send3-★星★.txt',
-  formEncoding: 'x-user-defined',
-  expectedEncodedBaseName: 'file-for-drag-to-send3-&#9733;&#26143;&#9733;.txt',
-});
-
-formPostFileUploadTest({
-  fileNameSource: 'Unicode',
-  fileBaseName: 'file-for-drag-to-send3-☺😂.txt',
-  formEncoding: 'x-user-defined',
-  expectedEncodedBaseName: 'file-for-drag-to-send3-&#9786;&#128514;.txt',
-});
-
-formPostFileUploadTest({
-  fileNameSource: 'Unicode',
-  fileBaseName: `file-for-drag-to-send3-${kTestChars}.txt`,
-  formEncoding: 'x-user-defined',
-  expectedEncodedBaseName: `file-for-drag-to-send3-${
-      kTestFallbackXUserDefined
-  }.txt`,
+  formEncoding: 'ISO-2022-JP',
+  expectedEncodedBaseName: (
+      'file-for-drag-to-send3-&#226;&#732;&#186;&#240;&#376;&#732;&#8218;.txt'),
 });
 
 </script>
