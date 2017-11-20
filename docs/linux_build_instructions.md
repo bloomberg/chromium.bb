@@ -176,7 +176,7 @@ See [related bug](https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=808181).
 #### ccache
 
 You can use [ccache](https://ccache.samba.org) to speed up local builds (again,
-this is not useful if you're using a Googler using Goma).
+this is not useful if you're a Googler using Goma).
 
 Increase your ccache hit rate by setting `CCACHE_BASEDIR` to a parent directory
 that the working directories all have in common (e.g.,
