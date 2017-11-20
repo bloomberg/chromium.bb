@@ -203,7 +203,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserTransactionCleanupTest,
   mock_homedir_methods_->set_mount_callback(mount_wait_loop.QuitClosure());
   mock_homedir_methods_->set_add_key_callback(add_key_wait_loop.QuitClosure());
   EXPECT_CALL(*mock_homedir_methods_, MountEx(_, _, _, _)).Times(1);
-  EXPECT_CALL(*mock_homedir_methods_, AddKeyEx(_, _, _, _, _)).Times(1);
+  EXPECT_CALL(*mock_homedir_methods_, AddKeyEx(_, _, _, _)).Times(1);
 
   JSEval("$('supervised-user-creation-next-button').click()");
 

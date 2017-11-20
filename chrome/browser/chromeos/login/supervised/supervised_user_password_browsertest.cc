@@ -134,7 +134,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserPasswordTest,
 
   SigninAsManager(1);
 
-  EXPECT_CALL(*mock_homedir_methods_, AddKeyEx(_, _, _, _, _)).Times(1);
+  EXPECT_CALL(*mock_homedir_methods_, AddKeyEx(_, _, _, _)).Times(1);
 
   std::string sync_id =
       ChromeUserManager::Get()->GetSupervisedUserManager()->GetUserSyncId(
@@ -223,7 +223,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserPasswordTest,
 
   SigninAsManager(1);
 
-  EXPECT_CALL(*mock_homedir_methods_, AddKeyEx(_, _, _, _, _)).Times(1);
+  EXPECT_CALL(*mock_homedir_methods_, AddKeyEx(_, _, _, _)).Times(1);
 
   std::string sync_id =
       ChromeUserManager::Get()->GetSupervisedUserManager()->GetUserSyncId(

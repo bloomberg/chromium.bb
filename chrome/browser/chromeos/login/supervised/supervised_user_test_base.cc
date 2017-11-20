@@ -389,7 +389,7 @@ void SupervisedUserTestBase::StartUserCreation(
   mock_homedir_methods_->set_mount_callback(mount_wait_loop.QuitClosure());
   mock_homedir_methods_->set_add_key_callback(add_key_wait_loop.QuitClosure());
   EXPECT_CALL(*mock_homedir_methods_, MountEx(_, _, _, _)).Times(1);
-  EXPECT_CALL(*mock_homedir_methods_, AddKeyEx(_, _, _, _, _)).Times(1);
+  EXPECT_CALL(*mock_homedir_methods_, AddKeyEx(_, _, _, _)).Times(1);
 
   JSEval(std::string("$('").append(button_id).append("').click()"));
 

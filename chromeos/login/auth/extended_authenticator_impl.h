@@ -39,7 +39,7 @@ class CHROMEOS_EXPORT ExtendedAuthenticatorImpl : public ExtendedAuthenticator {
                    const ResultCallback& success_callback) override;
   void AddKey(const UserContext& context,
               const cryptohome::KeyDefinition& key,
-              bool replace_existing,
+              bool clobber_if_exists,
               const base::Closure& success_callback) override;
   void UpdateKeyAuthorized(const UserContext& context,
                            const cryptohome::KeyDefinition& key,
@@ -63,7 +63,7 @@ class CHROMEOS_EXPORT ExtendedAuthenticatorImpl : public ExtendedAuthenticator {
   void DoAuthenticateToCheck(const base::Closure& success_callback,
                              const UserContext& context);
   void DoAddKey(const cryptohome::KeyDefinition& key,
-                bool replace_existing,
+                bool clobber_if_exists,
                 const base::Closure& success_callback,
                 const UserContext& context);
   void DoUpdateKeyAuthorized(const cryptohome::KeyDefinition& key,
