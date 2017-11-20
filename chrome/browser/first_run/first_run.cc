@@ -423,6 +423,19 @@ void ProcessDefaultBrowserPolicy(bool make_chrome_default_for_user) {
   }
 }
 
+// Reads the creation time of the first run sentinel file. If the first run
+// sentinel file does not exist, it will return base::Time().
+base::Time ReadFirstRunSentinelCreationTime() {
+  base::Time first_run_sentinel_creation_time = base::Time();
+  base::FilePath first_run_sentinel;
+  if (first_run::internal::GetFirstRunSentinelFilePath(&first_run_sentinel)) {
+    base::File::Info info;
+    if (base::GetFileInfo(first_run_sentinel, &info))
+      first_run_sentinel_creation_time = info.creation_time;
+  }
+  return first_run_sentinel_creation_time;
+}
+
 }  // namespace
 
 namespace first_run {
@@ -555,17 +568,15 @@ bool IsMetricsReportingOptIn() {
 void CreateSentinelIfNeeded() {
   if (IsChromeFirstRun())
     internal::CreateSentinel();
+
+  // Causes the first run sentinel creation time to be read and cached, while
+  // I/O is still allowed.
+  ignore_result(GetFirstRunSentinelCreationTime());
 }
 
 base::Time GetFirstRunSentinelCreationTime() {
-  base::FilePath first_run_sentinel;
-  base::Time first_run_sentinel_creation_time = base::Time();
-  if (first_run::internal::GetFirstRunSentinelFilePath(&first_run_sentinel)) {
-    base::File::Info info;
-    if (base::GetFileInfo(first_run_sentinel, &info))
-      first_run_sentinel_creation_time = info.creation_time;
-  }
-  return first_run_sentinel_creation_time;
+  static const base::Time cached_time = ReadFirstRunSentinelCreationTime();
+  return cached_time;
 }
 
 bool SetShowFirstRunBubblePref(FirstRunBubbleOptions show_bubble_option) {
