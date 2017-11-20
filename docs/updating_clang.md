@@ -16,6 +16,8 @@
             gs://chromium-browser-clang/$x/clang-$rev.tgz ; \
         gsutil.py cp -n -a public-read gs://chromium-browser-clang-staging/$x/llvmobjdump-$rev.tgz \
             gs://chromium-browser-clang/$x/llvmobjdump-$rev.tgz ; \
+        gsutil.py cp -n -a public-read gs://chromium-browser-clang-staging/$x/llvmcfiverify-$rev.tgz \
+            gs://chromium-browser-clang/$x/llvmcfiverify-$rev.tgz ; \
         gsutil.py cp -n -a public-read gs://chromium-browser-clang-staging/$x/translation_unit-$rev.tgz \
             gs://chromium-browser-clang/$x/translation_unit-$rev.tgz ; \
         gsutil.py cp -n -a public-read gs://chromium-browser-clang-staging/$x/llvm-code-coverage-$rev.tgz \
