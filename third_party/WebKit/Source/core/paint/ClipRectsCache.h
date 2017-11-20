@@ -22,7 +22,11 @@ enum ClipRectsCacheSlot {
   kRootRelativeClipRectsIgnoringViewportClip,
 
   // Relative to the LayoutView's layer. Used for compositing overlap testing.
-  kAbsoluteClipRects,
+  // TODO(bokan): Overlap testing currently ignores the clip on the root layer.
+  // Overlap testing has some bugs when inside non-root layers which extend to
+  // the root layer when root-layer-scrolling is turned on unless we do this.
+  // crbug.com/783532.
+  kAbsoluteClipRectsIgnoringViewportClip,
 
   // Relative to painting ancestor. Used for SPv1 compositing.
   kPaintingClipRects,
