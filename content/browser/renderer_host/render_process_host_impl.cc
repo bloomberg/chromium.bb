@@ -1602,8 +1602,9 @@ void RenderProcessHostImpl::InitializeChannelProxy() {
   mojo::MessagePipe pipe;
   BindInterface(IPC::mojom::ChannelBootstrap::Name_, std::move(pipe.handle1));
   std::unique_ptr<IPC::ChannelFactory> channel_factory =
-      IPC::ChannelMojo::CreateServerFactory(std::move(pipe.handle0),
-                                            io_task_runner);
+      IPC::ChannelMojo::CreateServerFactory(
+          std::move(pipe.handle0), io_task_runner,
+          base::ThreadTaskRunnerHandle::Get());
 
   content::BindInterface(this, &child_control_interface_);
 

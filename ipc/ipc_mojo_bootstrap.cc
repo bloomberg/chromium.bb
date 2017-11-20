@@ -44,9 +44,10 @@ class ChannelAssociatedGroupController
  public:
   ChannelAssociatedGroupController(
       bool set_interface_id_namespace_bit,
-      const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner)
+      const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner,
+      const scoped_refptr<base::SingleThreadTaskRunner>& proxy_task_runner)
       : task_runner_(ipc_task_runner),
-        proxy_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+        proxy_task_runner_(proxy_task_runner),
         set_interface_id_namespace_bit_(set_interface_id_namespace_bit),
         filters_(this),
         control_message_handler_(this),
@@ -927,10 +928,12 @@ class MojoBootstrapImpl : public MojoBootstrap {
 std::unique_ptr<MojoBootstrap> MojoBootstrap::Create(
     mojo::ScopedMessagePipeHandle handle,
     Channel::Mode mode,
-    const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner) {
+    const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner,
+    const scoped_refptr<base::SingleThreadTaskRunner>& proxy_task_runner) {
   return std::make_unique<MojoBootstrapImpl>(
-      std::move(handle), new ChannelAssociatedGroupController(
-                             mode == Channel::MODE_SERVER, ipc_task_runner));
+      std::move(handle),
+      new ChannelAssociatedGroupController(mode == Channel::MODE_SERVER,
+                                           ipc_task_runner, proxy_task_runner));
 }
 
 }  // namespace IPC

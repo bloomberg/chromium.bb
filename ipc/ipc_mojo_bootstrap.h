@@ -38,7 +38,8 @@ class IPC_EXPORT MojoBootstrap {
   static std::unique_ptr<MojoBootstrap> Create(
       mojo::ScopedMessagePipeHandle handle,
       Channel::Mode mode,
-      const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner);
+      const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner,
+      const scoped_refptr<base::SingleThreadTaskRunner>& proxy_task_runner);
 
   // Start the handshake over the underlying message pipe.
   virtual void Connect(mojom::ChannelAssociatedPtr* sender,

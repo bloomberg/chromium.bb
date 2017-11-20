@@ -79,7 +79,7 @@ TestShimClient::TestShimClient() : io_thread_("TestShimClientIO") {
               mojo::edk::TransportProtocol::kLegacy,
               mojo::edk::CreateClientHandle(
                   mojo::edk::NamedPlatformHandle(socket_path.value())))),
-          io_thread_.task_runner().get()),
+          io_thread_.task_runner().get(), base::ThreadTaskRunnerHandle::Get()),
       this, io_thread_.task_runner().get(),
       base::ThreadTaskRunnerHandle::Get());
 }
