@@ -20,7 +20,6 @@
 -DownloadContentTest.DownloadAttributeSameSiteCookie
 # This started failing when the test got added in r514724.
 -DownloadContentTest.ForceDownloadMhtml
--DragDownloadFileTest.DragDownloadFileTest_Complete
 
 # http://crbug.com/721398
 -ClearSiteDataThrottleBrowserTest.CookiesIntegrationTest
