@@ -19,7 +19,8 @@ namespace win {
 
 #if DCHECK_IS_ON() && defined(ARCH_CPU_X86_FAMILY) &&             \
     defined(ARCH_CPU_32_BITS) && !defined(GOOGLE_CHROME_BUILD) && \
-    !defined(OFFICIAL_BUILD)
+    !defined(OFFICIAL_BUILD) &&                                   \
+    !defined(COM_INIT_CHECK_HOOK_DISABLED)  // See crbug/737090 for details.
 #define COM_INIT_CHECK_HOOK_ENABLED
 #endif
 
