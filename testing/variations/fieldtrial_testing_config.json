@@ -1967,9 +1967,9 @@
             ],
             "experiments": [
                 {
-                    "name": "CondensedLayoutWithSmallLogo",
+                    "name": "CondensedLayoutWithLargeLogo",
                     "params": {
-                        "condensed_layout_logo_height": "50",
+                        "condensed_layout_logo_height": "100",
                         "condensed_layout_show_logo": "true",
                         "condensed_tile_layout_for_small_screens_enabled": "true"
                     },
