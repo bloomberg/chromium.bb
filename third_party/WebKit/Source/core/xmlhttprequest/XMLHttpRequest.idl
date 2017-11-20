@@ -37,8 +37,8 @@ enum XMLHttpRequestResponseType {
     "text",
 };
 
-// TODO(foolip): Most DOMString types in the XMLHttpRequest interface should be
-// either ByteString or USVString.
+// TODO(foolip, gyuyoung): getResponseHeader, setRequestHeader, and open should
+//                         be replaced with ByteString or USVString.
 [
     ActiveScriptWrappable,
     Constructor,
@@ -58,8 +58,8 @@ enum XMLHttpRequestResponseType {
     readonly attribute unsigned short readyState;
 
     // request
-    [RaisesException] void open(DOMString method, DOMString url);
-    [RaisesException] void open(DOMString method, DOMString url, boolean async, optional DOMString? username = null, optional DOMString? password = null);
+    [RaisesException] void open(ByteString method, USVString url);
+    [RaisesException] void open(ByteString method, USVString url, boolean async, optional DOMString? username = null, optional DOMString? password = null);
     [RaisesException] void setRequestHeader(DOMString name, DOMString value);
     [RaisesException=Setter] attribute unsigned long timeout;
     [RaisesException=Setter] attribute boolean withCredentials;
@@ -70,15 +70,15 @@ enum XMLHttpRequestResponseType {
     void abort();
 
     // response
-    readonly attribute DOMString responseURL;
+    readonly attribute USVString responseURL;
     readonly attribute unsigned short status;
-    readonly attribute DOMString statusText;
+    readonly attribute ByteString statusText;
     DOMString? getResponseHeader(DOMString name);
     DOMString getAllResponseHeaders();
     [RaisesException] void overrideMimeType(DOMString mime);
     [RaisesException=Setter] attribute XMLHttpRequestResponseType responseType;
     [Custom=Getter, RaisesException=Getter] readonly attribute any response;
-    [Custom=Getter, RaisesException=Getter] readonly attribute DOMString responseText;
+    [Custom=Getter, RaisesException=Getter] readonly attribute USVString responseText;
     // TODO(foolip): responseXML should be [Exposed=Window].
     [RaisesException=Getter] readonly attribute Document? responseXML;
 };
