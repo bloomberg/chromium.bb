@@ -194,9 +194,12 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   // propogates renderer loading behavior to the browser process for histograms.
   virtual void DidObserveLoadingBehavior(WebLoadingBehaviorFlag) {}
 
-  // Will be called when a new useCounter feature has been observed in a frame.
+  // Will be called when a new UseCounter feature has been observed in a frame.
   // This propogates feature usage to the browser process for histograms.
   virtual void DidObserveNewFeatureUsage(mojom::WebFeature) {}
+  // Will be called by a Page upon DidCommitLoad, deciding whether to track
+  // UseCounter usage or not based on its url.
+  virtual bool ShouldTrackUseCounter(const KURL&) { return true; }
 
   // Transmits the change in the set of watched CSS selectors property that
   // match any element on the frame.

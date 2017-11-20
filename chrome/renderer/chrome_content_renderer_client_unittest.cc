@@ -384,6 +384,14 @@ TEST_F(ChromeContentRendererClientTest, ShouldSuppressErrorPage) {
   SearchBouncer::GetInstance()->SetNewTabPageURL(GURL::EmptyGURL());
 }
 
+TEST_F(ChromeContentRendererClientTest, ShouldTrackUseCounter) {
+  ChromeContentRendererClient client;
+  SearchBouncer::GetInstance()->SetNewTabPageURL(GURL("http://example.com/n"));
+  EXPECT_TRUE(client.ShouldTrackUseCounter(GURL("http://example.com")));
+  EXPECT_FALSE(client.ShouldTrackUseCounter(GURL("http://example.com/n")));
+  SearchBouncer::GetInstance()->SetNewTabPageURL(GURL::EmptyGURL());
+}
+
 TEST_F(ChromeContentRendererClientTest, AddImageContextMenuPropertiesForLoFi) {
   ChromeContentRendererClient client;
   blink::WebURLResponse web_url_response;

@@ -128,6 +128,7 @@ class ChromeContentRendererClient
   bool HasErrorPage(int http_status_code) override;
   bool ShouldSuppressErrorPage(content::RenderFrame* render_frame,
                                const GURL& url) override;
+  bool ShouldTrackUseCounter(const GURL& url) override;
   void GetNavigationErrorStrings(content::RenderFrame* render_frame,
                                  const blink::WebURLRequest& failed_request,
                                  const blink::WebURLError& error,

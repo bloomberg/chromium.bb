@@ -117,6 +117,10 @@ class CONTENT_EXPORT ContentRendererClient {
   virtual bool ShouldSuppressErrorPage(RenderFrame* render_frame,
                                        const GURL& url);
 
+  // Returns false for new tab page activities, which should be filtered out in
+  // UseCounter; returns true otherwise.
+  virtual bool ShouldTrackUseCounter(const GURL& url);
+
   // Returns the information to display when a navigation error occurs.
   // If |error_html| is not null then it may be set to a HTML page containing
   // the details of the error and maybe links to more info.

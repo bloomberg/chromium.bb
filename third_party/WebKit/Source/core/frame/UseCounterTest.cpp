@@ -375,19 +375,19 @@ TEST_F(UseCounterTest, MutedDocuments) {
   ExpectHistograms(histogram_tester_, 2, WebFeature::kFetch, 3,
                    CSSPropertyFontWeight, 3);
 
-  // Or empty URLs (a main frame with no Document)
+  // Nor are empty URLs (a main frame with no Document)
   use_counter.DidCommitLoad(NullURL());
   use_counter.RecordMeasurement(WebFeature::kFetch, *GetFrame());
   use_counter.Count(kHTMLStandardMode, CSSPropertyFontWeight);
   ExpectHistograms(histogram_tester_, 2, WebFeature::kFetch, 3,
                    CSSPropertyFontWeight, 3);
 
-  // But file URLs are
+  // Or file URLs
   use_counter.DidCommitLoad(URLTestHelpers::ToKURL("file:///c/autoexec.bat"));
   use_counter.RecordMeasurement(WebFeature::kFetch, *GetFrame());
   use_counter.Count(kHTMLStandardMode, CSSPropertyFontWeight);
-  ExpectHistograms(histogram_tester_, 3, WebFeature::kFetch, 4,
-                   CSSPropertyFontWeight, 4);
+  ExpectHistograms(histogram_tester_, 2, WebFeature::kFetch, 3,
+                   CSSPropertyFontWeight, 3);
 }
 
 class DeprecationTest : public ::testing::Test {
