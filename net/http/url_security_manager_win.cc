@@ -115,8 +115,8 @@ bool URLSecurityManagerWin::EnsureSystemSecurityManager() {
 }
 
 // static
-URLSecurityManager* URLSecurityManager::Create() {
-  return new URLSecurityManagerWin;
+std::unique_ptr<URLSecurityManager> URLSecurityManager::Create() {
+  return std::make_unique<URLSecurityManagerWin>();
 }
 
 }  //  namespace net
