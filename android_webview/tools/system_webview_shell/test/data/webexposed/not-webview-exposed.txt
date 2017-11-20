@@ -78,7 +78,6 @@ interface MediaDevices : EventTarget
 
 [GLOBAL OBJECT]
     method openDatabase
-    attribute layoutTestController           # test only
     attribute eventSender                    # test only
     attribute testRunner                     # test only
     attribute internals                      # test only

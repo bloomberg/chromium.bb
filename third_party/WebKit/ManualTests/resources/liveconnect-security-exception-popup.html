@@ -8,35 +8,35 @@ catch Java errors and print out an intelligent response.
 <title>popup window</title>
 <script>
 function print(message) {
-	var paragraph = document.createElement("p");
-	paragraph.appendChild(document.createTextNode(message));
-	document.getElementById("console").appendChild(paragraph);
+  var paragraph = document.createElement("p");
+  paragraph.appendChild(document.createTextNode(message));
+  document.getElementById("console").appendChild(paragraph);
 }
 
 function test() {
-	if (window.layoutTestController) {
-		layoutTestController.dumpAsText();
-	}
+  if (window.testRunner) {
+    testRunner.dumpAsText();
+  }
 
-    print(
-        "applet.field returned " + 
+  print(
+      "applet.field returned " +
         document.getElementById('applet').field
-        );
+  );
 
-    document.getElementById('applet').field += 1;
-    print(
-        "incremented applet.field by 1"
-        );
-        
-    print(
-        "applet.field returned " + 
+  document.getElementById('applet').field += 1;
+  print(
+      "incremented applet.field by 1"
+  );
+
+  print(
+      "applet.field returned " +
         document.getElementById('applet').field
-        );
+  );
 
-    print(
-        "applet.method() returned " + 
+  print(
+      "applet.method() returned " +
         document.getElementById('applet').method()
-        );
+  );
 }
 </script>
 </head>
