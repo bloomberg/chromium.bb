@@ -70,7 +70,7 @@ public class WebappDisplayModeTest {
         Assert.assertEquals("Web App title should be displayed on the title bar",
                 WEB_APP_PAGE_TITLE, ((TextView) activity.findViewById(R.id.title_bar)).getText());
         Assert.assertEquals("URL Bar should display URL authority",
-                Uri.parse(mActivityTestRule.getUrlFromTestServer(WEB_APP_PATH)).getAuthority(),
+                Uri.parse(mActivityTestRule.getTestServer().getURL(WEB_APP_PATH)).getAuthority(),
                 ((UrlBar) activity.findViewById(R.id.url_bar)).getText().toString());
         Assert.assertEquals("CCT Close button should not be visible", View.GONE,
                 activity.findViewById(R.id.close_button).getVisibility());
@@ -80,7 +80,7 @@ public class WebappDisplayModeTest {
         mActivityTestRule.startWebappActivity(
                 mActivityTestRule.createIntent()
                         .putExtra(ShortcutHelper.EXTRA_URL,
-                                mActivityTestRule.getUrlFromTestServer(WEB_APP_PATH))
+                                mActivityTestRule.getTestServer().getURL(WEB_APP_PATH))
                         .putExtra(ShortcutHelper.EXTRA_DISPLAY_MODE, displayMode)
                         .putExtra(ShortcutHelper.EXTRA_THEME_COLOR, (long) Color.CYAN));
 

@@ -36,6 +36,7 @@ import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.Overrid
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.tab.InterceptNavigationDelegateImpl;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.chrome.test.util.browser.contextmenu.ContextMenuUtils;
 import org.chromium.components.navigation_interception.NavigationParams;
@@ -43,6 +44,7 @@ import org.chromium.content.browser.test.NativeLibraryTestRule;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
+import org.chromium.content.common.ContentSwitches;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.PageTransition;
 
@@ -50,11 +52,10 @@ import org.chromium.ui.base.PageTransition;
  * Tests web navigations originating from a WebappActivity.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ContentSwitches.HOST_RESOLVER_RULES + "=MAP * 127.0.0.1"})
 public class WebappNavigationTest {
     private static final String YOUTUBE_URL = "https://www.youtube.com/watch?v=EYmjoW4vIX8";
-    private static final String OFF_ORIGIN_URL = "https://www.google.com/";
-    private static final String OFF_ORIGIN_URL_NO_TLD = "https://www.google.";
     private static final String WEB_APP_PATH = "/chrome/test/data/banners/manifest_test_page.html";
     private static final String IN_SCOPE_PAGE_PATH =
             "/chrome/test/data/banners/manifest_no_service_worker.html";
@@ -77,7 +78,7 @@ public class WebappNavigationTest {
                         activity.getResources(), R.color.default_primary_color),
                 activity.getToolbarManager().getPrimaryColor());
 
-        addAnchor("testId", OFF_ORIGIN_URL, "_self");
+        addAnchor("testId", offOriginUrl(), "_self");
         DOMUtils.clickNode(activity.getActivityTab().getContentViewCore(), "testId");
         mActivityTestRule.waitUntilIdle();
 
@@ -96,7 +97,7 @@ public class WebappNavigationTest {
                 activity.getToolbarManager().getPrimaryColor());
 
         mActivityTestRule.runJavaScriptCodeInCurrentTab(
-                String.format("window.top.location = '%s'", OFF_ORIGIN_URL));
+                String.format("window.top.location = '%s'", offOriginUrl()));
         mActivityTestRule.waitUntilIdle();
 
         assertOffOrigin(activity);
@@ -109,7 +110,7 @@ public class WebappNavigationTest {
     public void testOffScopeNewTabLinkOpensInCct() throws Exception {
         runWebappActivityAndWaitForIdle(mActivityTestRule.createIntent().putExtra(
                 ShortcutHelper.EXTRA_THEME_COLOR, (long) Color.CYAN));
-        addAnchor("testId", OFF_ORIGIN_URL, "_blank");
+        addAnchor("testId", offOriginUrl(), "_blank");
         DOMUtils.clickNode(
                 mActivityTestRule.getActivity().getActivityTab().getContentViewCore(), "testId");
         CustomTabActivity customTab = assertCustomTabActivityLaunchedForOffOriginUrl();
@@ -127,7 +128,7 @@ public class WebappNavigationTest {
     public void testInScopeNewTabLinkOpensInCct() throws Exception {
         runWebappActivityAndWaitForIdle(mActivityTestRule.createIntent().putExtra(
                 ShortcutHelper.EXTRA_THEME_COLOR, (long) Color.CYAN));
-        addAnchor("testId", mActivityTestRule.getUrlFromTestServer(IN_SCOPE_PAGE_PATH), "_blank");
+        addAnchor("testId", mActivityTestRule.getTestServer().getURL(IN_SCOPE_PAGE_PATH), "_blank");
         DOMUtils.clickNode(
                 mActivityTestRule.getActivity().getActivityTab().getContentViewCore(), "testId");
         CustomTabActivity customTab = waitFor(CustomTabActivity.class);
@@ -154,7 +155,7 @@ public class WebappNavigationTest {
                                 + "  return false;"
                                 + "};"
                                 + "document.body.appendChild(aTag);",
-                        OFF_ORIGIN_URL));
+                        offOriginUrl()));
         DOMUtils.clickNode(
                 mActivityTestRule.getActivity().getActivityTab().getContentViewCore(), "testId");
 
@@ -172,7 +173,7 @@ public class WebappNavigationTest {
     public void testInScopeNavigationStaysInWebapp() throws Exception {
         runWebappActivityAndWaitForIdle(mActivityTestRule.createIntent());
 
-        String otherPageUrl = mActivityTestRule.getUrlFromTestServer(IN_SCOPE_PAGE_PATH);
+        String otherPageUrl = mActivityTestRule.getTestServer().getURL(IN_SCOPE_PAGE_PATH);
         mActivityTestRule.loadUrlInTab(otherPageUrl, PageTransition.LINK,
                 mActivityTestRule.getActivity().getActivityTab());
 
@@ -193,7 +194,7 @@ public class WebappNavigationTest {
         FirstRunStatus.setFirstRunFlowComplete(true);
         runWebappActivityAndWaitForIdle(mActivityTestRule.createIntent());
 
-        addAnchor("myTestAnchorId", OFF_ORIGIN_URL, "_self");
+        addAnchor("myTestAnchorId", offOriginUrl(), "_self");
 
         ContextMenuUtils.selectContextMenuItem(InstrumentationRegistry.getInstrumentation(),
                 null /* activity to check for focus after click */,
@@ -222,7 +223,7 @@ public class WebappNavigationTest {
         mActivityTestRule.waitUntilIdle(tabbedChrome);
 
         Assert.assertEquals("Tab in tabbed activity should show the Web App page",
-                mActivityTestRule.getUrlFromTestServer(WEB_APP_PATH),
+                mActivityTestRule.getTestServer().getURL(WEB_APP_PATH),
                 tabbedChrome.getActivityTab().getUrl());
     }
 
@@ -277,7 +278,7 @@ public class WebappNavigationTest {
         mActivityTestRule.waitUntilIdle(tabbedChrome);
 
         ThreadUtils.runOnUiThreadBlocking(
-                () -> tabbedChrome.getActivityTab().loadUrl(new LoadUrlParams(OFF_ORIGIN_URL)));
+                () -> tabbedChrome.getActivityTab().loadUrl(new LoadUrlParams(offOriginUrl())));
 
         mActivityTestRule.waitUntilIdle(tabbedChrome);
         assertOffOrigin(tabbedChrome);
@@ -290,13 +291,13 @@ public class WebappNavigationTest {
     public void testCloseButtonReturnsToMostRecentInScopeUrl() throws Exception {
         WebappActivity activity = runWebappActivityAndWaitForIdle(mActivityTestRule.createIntent());
 
-        String otherInScopeUrl = mActivityTestRule.getUrlFromTestServer(IN_SCOPE_PAGE_PATH);
+        String otherInScopeUrl = mActivityTestRule.getTestServer().getURL(IN_SCOPE_PAGE_PATH);
         mActivityTestRule.loadUrlInTab(
                 otherInScopeUrl, PageTransition.LINK, activity.getActivityTab());
         Assert.assertEquals(otherInScopeUrl, activity.getActivityTab().getUrl());
 
         ThreadUtils.runOnUiThreadBlocking(() -> activity.getActivityTab().loadUrl(
-                new LoadUrlParams(OFF_ORIGIN_URL, PageTransition.LINK)));
+                new LoadUrlParams(offOriginUrl(), PageTransition.LINK)));
         assertOffOrigin(activity);
         ThreadUtils.runOnUiThreadBlocking(() -> activity.getActivityTab().loadUrl(
                 new LoadUrlParams("https://www.mozilla.org/", PageTransition.LINK)));
@@ -346,13 +347,14 @@ public class WebappNavigationTest {
 
     private WebappActivity runWebappActivityAndWaitForIdle(Intent intent) throws Exception {
         mActivityTestRule.startWebappActivity(intent.putExtra(
-                ShortcutHelper.EXTRA_URL, mActivityTestRule.getUrlFromTestServer(WEB_APP_PATH)));
+                ShortcutHelper.EXTRA_URL, mActivityTestRule.getTestServer().getURL(WEB_APP_PATH)));
         mActivityTestRule.waitUntilSplashscreenHides();
         mActivityTestRule.waitUntilIdle();
         return mActivityTestRule.getActivity();
     }
 
-    private CustomTabActivity assertCustomTabActivityLaunchedForOffOriginUrl() {
+    private CustomTabActivity assertCustomTabActivityLaunchedForOffOriginUrl()
+            throws InterruptedException {
         CustomTabActivity customTab = waitFor(CustomTabActivity.class);
 
         mActivityTestRule.waitUntilIdle(customTab);
@@ -361,14 +363,12 @@ public class WebappNavigationTest {
         return customTab;
     }
 
-    private void assertOffOrigin(ChromeActivity activity) {
-        // Dropping the TLD as Google can redirect to a local site, so this could fail outside US.
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return activity.getActivityTab().getUrl().contains(OFF_ORIGIN_URL_NO_TLD);
-            }
-        });
+    private String offOriginUrl() {
+        return mActivityTestRule.getTestServer().getURLWithHostName("foo.com", "/defaultresponse");
+    }
+
+    private void assertOffOrigin(ChromeActivity activity) throws InterruptedException {
+        ChromeTabUtils.waitForTabPageLoaded(activity.getActivityTab(), offOriginUrl());
     }
 
     private void addAnchor(String id, String url, String target) throws Exception {

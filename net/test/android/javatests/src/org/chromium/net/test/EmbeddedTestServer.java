@@ -421,6 +421,25 @@ public class EmbeddedTestServer {
         }
     }
 
+    /** Get the full URL for the given relative URL. Similar to the above method but uses the given
+     *  hostname instead of 127.0.0.1. The hostname should be resolved to 127.0.0.1.
+     *
+     *  @param hostName The host name which should be used.
+     *  @param relativeUrl The relative URL for which a full URL should be returned.
+     *  @return The URL as a String.
+     */
+    public String getURLWithHostName(String hostname, String relativeUrl) {
+        try {
+            synchronized (mImplMonitor) {
+                checkServiceLocked();
+                return mImpl.getURLWithHostName(hostname, relativeUrl);
+            }
+        } catch (RemoteException e) {
+            throw new EmbeddedTestServerFailure(
+                    "Failed to get URL for " + hostname + " and " + relativeUrl, e);
+        }
+    }
+
     /** Get the full URLs for the given relative URLs.
      *
      *  @see #getURL(String)

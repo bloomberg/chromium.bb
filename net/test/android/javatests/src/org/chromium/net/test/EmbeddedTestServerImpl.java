@@ -218,6 +218,23 @@ public class EmbeddedTestServerImpl extends IEmbeddedTestServerImpl.Stub {
         });
     }
 
+    /** Get the full URL for the given relative URL. Similar to the above method but uses the given
+     *  hostname instead of 127.0.0.1. The hostname should be resolved to 127.0.0.1.
+     *
+     *  @param hostName The host name which should be used.
+     *  @param relativeUrl The relative URL for which a full URL should be returned.
+     *  @return The URL as a String.
+     */
+    @Override
+    public String getURLWithHostName(final String hostName, final String relativeUrl) {
+        return runOnHandlerThread(new Callable<String>() {
+            @Override
+            public String call() {
+                return nativeGetURLWithHostName(mNativeEmbeddedTestServer, hostName, relativeUrl);
+            }
+        });
+    }
+
     /** Shut down the server.
      *
      *  @return Whether the server was successfully shut down.
@@ -307,6 +324,8 @@ public class EmbeddedTestServerImpl extends IEmbeddedTestServerImpl.Stub {
     private native void nativeRegisterRequestHandler(
             long nativeEmbeddedTestServerAndroid, long handler);
     private native String nativeGetURL(long nativeEmbeddedTestServerAndroid, String relativeUrl);
+    private native String nativeGetURLWithHostName(
+            long nativeEmbeddedTestServerAndroid, String hostName, String relativeUrl);
     private native void nativeServeFilesFromDirectory(
             long nativeEmbeddedTestServerAndroid, String directoryPath);
 }

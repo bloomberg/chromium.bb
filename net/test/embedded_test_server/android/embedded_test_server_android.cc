@@ -82,6 +82,17 @@ ScopedJavaLocalRef<jstring> EmbeddedTestServerAndroid::GetURL(
   return base::android::ConvertUTF8ToJavaString(env, gurl.spec());
 }
 
+ScopedJavaLocalRef<jstring> EmbeddedTestServerAndroid::GetURLWithHostName(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jobj,
+    const JavaParamRef<jstring>& jhostname,
+    const JavaParamRef<jstring>& jrelative_url) const {
+  const GURL gurl(test_server_.GetURL(
+      base::android::ConvertJavaStringToUTF8(env, jhostname),
+      base::android::ConvertJavaStringToUTF8(env, jrelative_url)));
+  return base::android::ConvertUTF8ToJavaString(env, gurl.spec());
+}
+
 void EmbeddedTestServerAndroid::AddDefaultHandlers(
     JNIEnv* env,
     const JavaParamRef<jobject>& jobj,
