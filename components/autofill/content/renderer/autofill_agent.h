@@ -16,8 +16,6 @@
 #include "components/autofill/content/common/autofill_agent.mojom.h"
 #include "components/autofill/content/common/autofill_driver.mojom.h"
 #include "components/autofill/content/renderer/form_cache.h"
-#include "components/autofill/content/renderer/page_click_listener.h"
-#include "components/autofill/content/renderer/page_click_tracker.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -47,7 +45,6 @@ class PasswordGenerationAgent;
 // - entire form fill based on one field entry, referred to as Form Autofill.
 
 class AutofillAgent : public content::RenderFrameObserver,
-                      public PageClickListener,
                       public blink::WebAutofillClient,
                       public mojom::AutofillAgent {
  public:
@@ -88,16 +85,16 @@ class AutofillAgent : public content::RenderFrameObserver,
 
   void ShowNotSecureWarning(const blink::WebInputElement& element);
 
-  void set_page_click_tracker_for_testing(
-      std::unique_ptr<PageClickTracker> page_click_tracker) {
-    page_click_tracker_ = std::move(page_click_tracker);
-  }
+  void FormControlElementClicked(const blink::WebFormControlElement& element,
+                                 bool was_focused);
 
  protected:
   // blink::WebAutofillClient:
   void DidAssociateFormControlsDynamically() override;
 
  private:
+  friend class FormControlClickDetectionTest;
+
   // Functor used as a simplified comparison function for FormData. Only
   // compares forms at a high level (notably name, origin, action).
   struct FormDataCompare {
@@ -155,10 +152,6 @@ class AutofillAgent : public content::RenderFrameObserver,
   // times.
   void Shutdown();
 
-  // PageClickListener:
-  void FormControlElementClicked(const blink::WebFormControlElement& element,
-                                 bool was_focused) override;
-
   // blink::WebAutofillClient:
   void TextFieldDidEndEditing(const blink::WebInputElement& element) override;
   void TextFieldDidChange(const blink::WebFormControlElement& element) override;
@@ -172,6 +165,8 @@ class AutofillAgent : public content::RenderFrameObserver,
   void DidCompleteFocusChangeInFrame() override;
   void DidReceiveLeftMouseDownOrGestureTapInNode(
       const blink::WebNode& node) override;
+
+  void HandleFocusChangeComplete();
 
   // Called when a same-document navigation is detected.
   void OnSameDocumentNavigationCompleted();
@@ -200,10 +195,9 @@ class AutofillAgent : public content::RenderFrameObserver,
 
   // Fills |form| and |field| with the FormData and FormField corresponding to
   // |node|. Returns true if the data was found; and false otherwise.
-  bool FindFormAndFieldForNode(
-      const blink::WebNode& node,
-      FormData* form,
-      FormFieldData* field) WARN_UNUSED_RESULT;
+  bool FindFormAndFieldForNode(const blink::WebNode& node,
+                               FormData* form,
+                               FormFieldData* field) WARN_UNUSED_RESULT;
 
   // Set |node| to display the given |value|.
   void DoFillFieldWithValue(const base::string16& value,
@@ -241,7 +235,7 @@ class AutofillAgent : public content::RenderFrameObserver,
   // this frame's current load. We use a simplified comparison function.
   std::set<FormData, FormDataCompare> submitted_forms_;
 
-  PasswordAutofillAgent* password_autofill_agent_;  // Weak reference.
+  PasswordAutofillAgent* password_autofill_agent_;      // Weak reference.
   PasswordGenerationAgent* password_generation_agent_;  // Weak reference.
 
   // The ID of the last request sent for form field Autofill.  Used to ignore
@@ -288,7 +282,10 @@ class AutofillAgent : public content::RenderFrameObserver,
   // Default to false.
   bool is_secure_context_required_;
 
-  std::unique_ptr<PageClickTracker> page_click_tracker_;
+  bool focused_node_was_last_clicked_ = false;
+  bool was_focused_before_now_ = false;
+  blink::WebFormControlElement last_clicked_form_control_element_for_testing_;
+  bool last_clicked_form_control_element_was_focused_for_testing_ = false;
 
   mojo::Binding<mojom::AutofillAgent> binding_;
 
