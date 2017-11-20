@@ -598,9 +598,12 @@ Response InspectorPageAgent::navigate(const String& url,
                                       Maybe<String> referrer,
                                       Maybe<String> transitionType,
                                       String* out_frame_id,
+                                      Maybe<String>* out_loader_id,
                                       Maybe<String>* errorText) {
   LocalFrame* frame = inspected_frames_->Root();
   *out_frame_id = IdentifiersFactory::FrameId(frame);
+  DocumentLoader* loader = frame->Loader().GetDocumentLoader();
+  *out_loader_id = IdentifiersFactory::LoaderId(loader);
   return Response::OK();
 }
 
