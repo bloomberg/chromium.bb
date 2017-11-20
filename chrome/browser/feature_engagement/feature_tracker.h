@@ -57,7 +57,7 @@ class FeatureTracker : public SessionDurationUpdater::Observer,
   // Returns if a user is new, whether or not the promo should be displayed.
   bool ShouldShowPromo();
 
-  void UseDefaultForChromeVariationConfirgurationReleaseTimeForTesting() {
+  void UseDefaultForChromeVariationConfigurationReleaseTimeForTesting() {
     use_default_for_chrome_variation_configuration_release_time_for_testing_ =
         true;
   }

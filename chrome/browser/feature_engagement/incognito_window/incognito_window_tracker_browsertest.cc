@@ -87,7 +87,7 @@ IN_PROC_BROWSER_TEST_F(IncognitoWindowTrackerBrowserTest, ShowPromo) {
   incognito_window_tracker->OnSessionTimeMet();
 
   incognito_window_tracker
-      ->UseDefaultForChromeVariationConfirgurationReleaseTimeForTesting();
+      ->UseDefaultForChromeVariationConfigurationReleaseTimeForTesting();
 
   // Set up feature engagement ShouldTriggerHelpUI mock.
   EXPECT_CALL(*feature_engagement_tracker_,
