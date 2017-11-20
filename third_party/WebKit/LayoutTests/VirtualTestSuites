@@ -606,5 +606,10 @@
     "prefix": "incremental-shadow-dom",
     "base": "shadow-dom",
     "args": ["--enable-blink-features=IncrementalShadowDOM"]
+  },
+  {
+    "prefix": "modern-media-controls",
+    "base": "media/controls/modern",
+    "args": ["--enable-features=UseModernMediaControls"]
   }
 ]
