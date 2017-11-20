@@ -1457,6 +1457,7 @@ component("net") {
       "quic/quartc/quartc_clock_interface.h",
       "quic/quartc/quartc_factory.cc",
       "quic/quartc/quartc_factory.h",
+      "quic/quartc/quartc_factory_interface.cc",
       "quic/quartc/quartc_factory_interface.h",
       "quic/quartc/quartc_packet_writer.cc",
       "quic/quartc/quartc_packet_writer.h",

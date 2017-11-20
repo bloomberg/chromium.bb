@@ -23,12 +23,31 @@ enum class QuartcCongestionControl {
   kBBR,      // Use BBR.
 };
 
+// Options that control the BBR algorithm.
+enum class QuartcBbrOptions {
+  kSlowerStartup,    // Once a loss is encountered in STARTUP,
+                     // switches startup to a 1.5x pacing gain.
+  kFullyDrainQueue,  // Fully drains the queue once per cycle.
+  kReduceProbeRtt,   // Probe RTT reduces CWND to 0.75 * BDP instead of 4
+                     // packets.
+  kSkipProbeRtt,     // Skip Probe RTT and extend the existing min_rtt if a
+                     // recent min_rtt is within 12.5% of the current min_rtt.
+  kSkipProbeRttAggressively,  //  Skip ProbeRTT and extend the existing min_rtt
+                              //  as long as you've been app limited at least
+                              //  once.
+  kFillUpLinkDuringProbing,   // Sends probing retransmissions whenever we
+                              // become application limited.
+};
+
 // Used to create instances for Quartc objects such as QuartcSession.
 class QUIC_EXPORT_PRIVATE QuartcFactoryInterface {
  public:
   virtual ~QuartcFactoryInterface() {}
 
   struct QuartcSessionConfig {
+    QuartcSessionConfig();
+    ~QuartcSessionConfig();
+
     // When using Quartc, there are two endpoints. The QuartcSession on one
     // endpoint must act as a server and the one on the other side must act as a
     // client.
@@ -47,6 +66,9 @@ class QUIC_EXPORT_PRIVATE QuartcFactoryInterface {
     // congestion control algorithm chosen by QUIC.
     QuartcCongestionControl congestion_control =
         QuartcCongestionControl::kDefault;
+    // Options to control the BBR algorithm. In case the congestion control is
+    // set to anything but BBR, these options are ignored.
+    std::vector<QuartcBbrOptions> bbr_options;
     // Timeouts for the crypto handshake. Set them to higher values to
     // prevent closing the session before it started on a slow network.
     // Zero entries are ignored and QUIC defaults are used in that case.
