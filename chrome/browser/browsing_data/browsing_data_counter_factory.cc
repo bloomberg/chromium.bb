@@ -51,9 +51,6 @@ history::WebHistoryService* GetUpdatedWebHistoryService(Profile* profile) {
 std::unique_ptr<browsing_data::BrowsingDataCounter>
 BrowsingDataCounterFactory::GetForProfileAndPref(Profile* profile,
                                                  const std::string& pref_name) {
-  if (!AreCountersEnabled())
-    return nullptr;
-
   if (pref_name == browsing_data::prefs::kDeleteBrowsingHistory) {
     return base::MakeUnique<browsing_data::HistoryCounter>(
         HistoryServiceFactory::GetForProfile(

@@ -222,9 +222,6 @@ extern const char kEnableBreakingNewsPushDescription[];
 extern const char kEnableBrotliName[];
 extern const char kEnableBrotliDescription[];
 
-extern const char kEnableClearBrowsingDataCountersName[];
-extern const char kEnableClearBrowsingDataCountersDescription[];
-
 extern const char kEnableClientLoFiName[];
 extern const char kEnableClientLoFiDescription[];
 
