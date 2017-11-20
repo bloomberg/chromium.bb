@@ -1911,18 +1911,14 @@ int av1_loop_restoration_corners_in_sb(const struct AV1Common *cm, int plane,
 }
 
 #if CONFIG_STRIPED_LOOP_RESTORATION
-static void memset16(uint16_t *arr, uint16_t val, int nelts) {
-  for (int i = 0; i < nelts; ++i) arr[i] = val;
-}
-
 // Extend to left and right
 static void extend_lines(uint8_t *buf, int width, int height, int stride,
                          int extend, int use_highbitdepth) {
   for (int i = 0; i < height; ++i) {
     if (use_highbitdepth) {
       uint16_t *buf16 = (uint16_t *)buf;
-      memset16(buf16 - extend, buf16[0], extend);
-      memset16(buf16 + width, buf16[width - 1], extend);
+      aom_memset16(buf16 - extend, buf16[0], extend);
+      aom_memset16(buf16 + width, buf16[width - 1], extend);
     } else {
       memset(buf - extend, buf[0], extend);
       memset(buf + width, buf[width - 1], extend);
