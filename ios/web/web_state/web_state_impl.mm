@@ -113,8 +113,6 @@ WebStateImpl::~WebStateImpl() {
 
   for (auto& observer : observers_)
     observer.WebStateDestroyed(this);
-  for (auto& observer : observers_)
-    observer.ResetWebState();
   for (auto& observer : policy_deciders_)
     observer.WebStateDestroyed();
   for (auto& observer : policy_deciders_)
