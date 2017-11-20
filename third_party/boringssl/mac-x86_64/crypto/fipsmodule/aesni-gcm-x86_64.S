@@ -4,6 +4,7 @@
 
 .p2align	5
 _aesni_ctr32_ghash_6x:
+
 	vmovdqu	32(%r11),%xmm2
 	subq	$6,%rdx
 	vpxor	%xmm4,%xmm4,%xmm4
@@ -329,11 +330,13 @@ L$6x_done:
 
 	.byte	0xf3,0xc3
 
+
 .globl	_aesni_gcm_decrypt
 .private_extern _aesni_gcm_decrypt
 
 .p2align	5
 _aesni_gcm_decrypt:
+
 	xorq	%r10,%r10
 
 
@@ -342,12 +345,19 @@ _aesni_gcm_decrypt:
 	jb	L$gcm_dec_abort
 
 	leaq	(%rsp),%rax
+
 	pushq	%rbx
+
 	pushq	%rbp
+
 	pushq	%r12
+
 	pushq	%r13
+
 	pushq	%r14
+
 	pushq	%r15
+
 	vzeroupper
 
 	vmovdqu	(%r8),%xmm1
@@ -417,19 +427,28 @@ L$dec_no_key_aliasing:
 
 	vzeroupper
 	movq	-48(%rax),%r15
+
 	movq	-40(%rax),%r14
+
 	movq	-32(%rax),%r13
+
 	movq	-24(%rax),%r12
+
 	movq	-16(%rax),%rbp
+
 	movq	-8(%rax),%rbx
+
 	leaq	(%rax),%rsp
+
 L$gcm_dec_abort:
 	movq	%r10,%rax
 	.byte	0xf3,0xc3
 
 
+
 .p2align	5
 _aesni_ctr32_6x:
+
 	vmovdqu	0-128(%rcx),%xmm4
 	vmovdqu	32(%r11),%xmm2
 	leaq	-1(%rbp),%r13
@@ -518,11 +537,13 @@ L$handle_ctr32_2:
 	jmp	L$oop_ctr32
 
 
+
 .globl	_aesni_gcm_encrypt
 .private_extern _aesni_gcm_encrypt
 
 .p2align	5
 _aesni_gcm_encrypt:
+
 	xorq	%r10,%r10
 
 
@@ -532,12 +553,19 @@ _aesni_gcm_encrypt:
 	jb	L$gcm_enc_abort
 
 	leaq	(%rsp),%rax
+
 	pushq	%rbx
+
 	pushq	%rbp
+
 	pushq	%r12
+
 	pushq	%r13
+
 	pushq	%r14
+
 	pushq	%r15
+
 	vzeroupper
 
 	vmovdqu	(%r8),%xmm1
@@ -772,15 +800,23 @@ L$enc_no_key_aliasing:
 
 	vzeroupper
 	movq	-48(%rax),%r15
+
 	movq	-40(%rax),%r14
+
 	movq	-32(%rax),%r13
+
 	movq	-24(%rax),%r12
+
 	movq	-16(%rax),%rbp
+
 	movq	-8(%rax),%rbx
+
 	leaq	(%rax),%rsp
+
 L$gcm_enc_abort:
 	movq	%r10,%rax
 	.byte	0xf3,0xc3
+
 
 .p2align	6
 L$bswap_mask:

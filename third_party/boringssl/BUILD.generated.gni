@@ -80,8 +80,6 @@ crypto_sources = [
   "src/crypto/cpu-intel.c",
   "src/crypto/cpu-ppc64le.c",
   "src/crypto/crypto.c",
-  "src/crypto/curve25519/curve25519.c",
-  "src/crypto/curve25519/internal.h",
   "src/crypto/curve25519/spake25519.c",
   "src/crypto/curve25519/x25519-x86_64.c",
   "src/crypto/dh/check.c",
@@ -327,6 +325,8 @@ crypto_sources = [
   "src/include/openssl/x509.h",
   "src/include/openssl/x509_vfy.h",
   "src/include/openssl/x509v3.h",
+  "src/third_party/fiat/curve25519.c",
+  "src/third_party/fiat/internal.h",
 ]
 
 ssl_sources = [

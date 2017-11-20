@@ -91,7 +91,7 @@
 #endif
 .align	4
 _bsaes_decrypt8:
-	adr	r6,_bsaes_decrypt8
+	adr	r6,.
 	vldmia	r4!, {q9}		@ round 0 key
 #ifdef	__APPLE__
 	adr	r6,LM0ISR
@@ -584,7 +584,7 @@ LREVM0SR:
 #endif
 .align	4
 _bsaes_encrypt8:
-	adr	r6,_bsaes_encrypt8
+	adr	r6,.
 	vldmia	r4!, {q9}		@ round 0 key
 #ifdef	__APPLE__
 	adr	r6,LM0SR
@@ -1021,7 +1021,7 @@ Lenc_done:
 #endif
 .align	4
 _bsaes_key_convert:
-	adr	r6,_bsaes_key_convert
+	adr	r6,.
 	vld1.8	{q7},  [r4]!		@ load round 0 key
 #ifdef	__APPLE__
 	adr	r6,LM0
