@@ -123,20 +123,11 @@ bool DeviceState::PropertyChanged(const std::string& key,
   return false;
 }
 
-void DeviceState::IPConfigPropertiesChanged(
-    const std::string& ip_config_path,
-    const base::DictionaryValue& properties) {
-  base::DictionaryValue* ip_config = nullptr;
-  if (ip_configs_.GetDictionaryWithoutPathExpansion(
-          ip_config_path, &ip_config)) {
-    NET_LOG_EVENT("IPConfig Updated: " + ip_config_path, path());
-    ip_config->Clear();
-  } else {
-    NET_LOG_EVENT("IPConfig Added: " + ip_config_path, path());
-    ip_config = ip_configs_.SetDictionaryWithoutPathExpansion(
-        ip_config_path, std::make_unique<base::DictionaryValue>());
-  }
-  ip_config->MergeDictionary(&properties);
+void DeviceState::IPConfigPropertiesChanged(const std::string& ip_config_path,
+                                            const base::Value& properties) {
+  NET_LOG(EVENT) << "IPConfig for: " << path()
+                 << " Changed: " << ip_config_path;
+  ip_configs_.SetKey(ip_config_path, properties.Clone());
 }
 
 std::string DeviceState::GetName() const {

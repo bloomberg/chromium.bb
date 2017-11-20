@@ -14,6 +14,7 @@
 #include "components/onc/onc_constants.h"
 
 namespace base {
+class Value;
 class DictionaryValue;
 }
 
@@ -91,12 +92,12 @@ CHROMEOS_EXPORT void GetClientCertFromShillProperties(
 CHROMEOS_EXPORT void SetShillProperties(const ConfigType cert_config_type,
                                         const int tpm_slot,
                                         const std::string& pkcs11_id,
-                                        base::DictionaryValue* properties);
+                                        base::Value* properties);
 
 // Like SetShillProperties but instead sets the properties to empty strings.
 // This should be used to clear previously set client certificate properties.
 CHROMEOS_EXPORT void SetEmptyShillProperties(const ConfigType cert_config_type,
-                                             base::DictionaryValue* properties);
+                                             base::Value* properties);
 
 // Returns true if all required configuration properties are set and not empty.
 bool IsCertificateConfigured(const client_cert::ConfigType cert_config_type,

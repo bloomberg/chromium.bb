@@ -161,22 +161,15 @@ bool IsAutoConnectEnabledInPolicy(const base::DictionaryValue& policy) {
   return autoconnect;
 }
 
-base::DictionaryValue* GetOrCreateDictionary(const std::string& key,
-                                             base::DictionaryValue* dict) {
-  base::DictionaryValue* inner_dict = NULL;
-  if (!dict->GetDictionaryWithoutPathExpansion(key, &inner_dict)) {
-    inner_dict = dict->SetDictionaryWithoutPathExpansion(
-        key, std::make_unique<base::DictionaryValue>());
-  }
-  return inner_dict;
-}
-
-base::DictionaryValue* GetOrCreateNestedDictionary(
-    const std::string& key1,
-    const std::string& key2,
-    base::DictionaryValue* dict) {
-  base::DictionaryValue* inner_dict = GetOrCreateDictionary(key1, dict);
-  return GetOrCreateDictionary(key2, inner_dict);
+base::Value* GetOrCreateNestedDictionary(const std::string& key1,
+                                         const std::string& key2,
+                                         base::Value* dict) {
+  base::Value* inner_dict =
+      dict->FindPathOfType({key1, key2}, base::Value::Type::DICTIONARY);
+  if (inner_dict)
+    return inner_dict;
+  return dict->SetPath({key1, key2},
+                       base::Value(base::Value::Type::DICTIONARY));
 }
 
 void ApplyGlobalAutoconnectPolicy(
@@ -192,7 +185,7 @@ void ApplyGlobalAutoconnectPolicy(
 
   // Managed dictionaries don't contain empty dictionaries (see onc_merger.cc),
   // so add the Autoconnect dictionary in case Shill didn't report a value.
-  base::DictionaryValue* auto_connect_dictionary = NULL;
+  base::Value* auto_connect_dictionary = nullptr;
   if (type == ::onc::network_type::kWiFi) {
     auto_connect_dictionary =
         GetOrCreateNestedDictionary(::onc::network_config::kWiFi,
