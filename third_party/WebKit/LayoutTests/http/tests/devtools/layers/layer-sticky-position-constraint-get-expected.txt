@@ -1,5 +1,6 @@
- Sticky position constraint
-Model elements dump
+Tests sticky position constraints in Layers panel
+
+Sticky position constraint
 {
     _containingBlockRect : {
         height : 400
