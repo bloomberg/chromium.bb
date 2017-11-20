@@ -48,6 +48,8 @@ class PartnerBookmarksReader {
       const base::android::JavaParamRef<jobject>& obj);
 
  private:
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
   // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.partnerbookmarks
   enum class FaviconFetchResult {
     // Successfully fetched a favicon from cache or server.
@@ -62,6 +64,8 @@ class PartnerBookmarksReader {
     // Request sent out and a connection error occurred (no valid HTTP response
     // received).
     FAILURE_CONNECTION_ERROR = 4,
+    // Boundary value for UMA.
+    UMA_BOUNDARY,
   };
 
   using FaviconFetchedCallback = base::OnceCallback<void(FaviconFetchResult)>;

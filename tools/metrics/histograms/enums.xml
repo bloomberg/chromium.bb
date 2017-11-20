@@ -30817,6 +30817,25 @@ Called by update_net_error_codes.py.-->
   <int value="3" label="Cookie contains both control chars and is invalid"/>
 </enum>
 
+<enum name="PartnerBookmark.FaviconFetchResult">
+  <int value="0" label="SUCCESS">
+    Success - favicon found in local cache or fetched from server.
+  </int>
+  <int value="1" label="FAILURE_SERVER_ERROR">
+    Received a server error fetching the favicon.
+  </int>
+  <int value="2" label="FAILURE_ICON_SERVICE_UNAVAILABLE">
+    The icon service was unavailable.
+  </int>
+  <int value="3" label="FAILURE_NOT_IN_CACHE">
+    There was nothing in the cache, but we opted out of retrieving from server.
+  </int>
+  <int value="4" label="FAILURE_CONNECTION_ERROR">
+    Request sent out and a connection error occurred (no valid HTTP response
+    received).
+  </int>
+</enum>
+
 <enum name="PassiveForcedListenerResultType">
   <int value="0" label="PreventDefaultNotCalled"/>
   <int value="1" label="DocumentLevelTouchPreventDefaultCalled"/>
