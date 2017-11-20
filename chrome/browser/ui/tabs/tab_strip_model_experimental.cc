@@ -379,12 +379,30 @@ void TabStripModelExperimental::InsertWebContentsAt(
   delegate_->WillAddWebContents(contents);
 
   bool active = (add_types & ADD_ACTIVE) != 0;
+  TabDataExperimental* data = nullptr;
 
-  // Always insert tabs at the end for now (so parent is always null).
-  TabDataExperimental* parent = nullptr;
-  tabs_.emplace_back(std::make_unique<TabDataExperimental>(
-      parent, TabDataExperimental::Type::kSingle, contents, this));
-  const TabDataExperimental* data = tabs_.back().get();
+  if ((add_types & ADD_INHERIT_GROUP) && active_index() >= 0 &&
+      active_index() < count()) {
+    // Add as a child following opener.
+    TabDataExperimental* parent = GetDataForViewIndex(active_index());
+    if (parent->type() == TabDataExperimental::Type::kSingle) {
+      // Promote parent to hub-and-spoke.
+      parent->set_type(TabDataExperimental::Type::kHubAndSpoke);
+      for (auto& observer : exp_observers_)
+        observer.TabChanged(parent);
+    }
+
+    parent->children_.push_back(std::make_unique<TabDataExperimental>(
+        parent, TabDataExperimental::Type::kSingle, contents, this));
+    data = parent->children_.back().get();
+
+  } else {
+    // Add at toplevel.
+    tabs_.push_back(std::make_unique<TabDataExperimental>(
+        nullptr, TabDataExperimental::Type::kSingle, contents, this));
+    data = tabs_.back().get();
+  }
+
   UpdateViewCount();
   index = tab_view_count_ - 1;
 
@@ -407,7 +425,6 @@ bool TabStripModelExperimental::CloseWebContentsAt(int view_index,
                                                    uint32_t close_types) {
   ViewIterator found = FindViewIndex(view_index);
   DCHECK(found != end());
-  DCHECK(found->type() == TabDataExperimental::Type::kSingle);
   content::WebContents* closing = found->contents_;
   if (closing)
     InternalCloseTabs(base::span<content::WebContents*>(&closing, 1));
@@ -527,8 +544,21 @@ TabDataExperimental* TabStripModelExperimental::GetDataForViewIndex(
   return &*found;
 }
 
+int TabStripModelExperimental::GetViewIndexForData(
+    const TabDataExperimental* data) const {
+  int view_index = 0;
+  for (const auto& cur : *this) {
+    if (&cur == data)
+      return view_index;
+    ++view_index;
+  }
+  return kNoTab;
+}
+
 void TabStripModelExperimental::ActivateTabAt(int index, bool user_gesture) {
-  DCHECK(ContainsIndex(index));
+  if (!ContainsIndex(index))
+    return;
+
   ui::ListSelectionModel new_model = selection_model_;
   new_model.SetSelectedIndex(index);
   SetSelection(std::move(new_model),
@@ -649,7 +679,6 @@ bool TabStripModelExperimental::IsTabPinned(int index) const {
 }
 
 bool TabStripModelExperimental::IsTabBlocked(int index) const {
-  NOTIMPLEMENTED();
   return false;
 }
 
@@ -689,6 +718,10 @@ void TabStripModelExperimental::AddWebContents(content::WebContents* contents,
                                                int index,
                                                ui::PageTransition transition,
                                                int add_types) {
+  // Force group inheritance for link click transitions.
+  if (ui::PageTransitionTypeIncludingQualifiersIs(transition,
+                                                  ui::PAGE_TRANSITION_LINK))
+    add_types |= ADD_INHERIT_GROUP;
   InsertWebContentsAt(index, contents, add_types);
 }
 
@@ -769,6 +802,7 @@ void TabStripModelExperimental::DetachWebContents(
     NOTREACHED();  // WebContents not found in this model.
     return;
   }
+  TabDataExperimental* data = &*found;
 
   bool was_selected;
   if (view_index == kNoTab)
@@ -777,12 +811,31 @@ void TabStripModelExperimental::DetachWebContents(
     was_selected = IsTabSelected(view_index);
   int next_selected_index = view_index;
 
-  if (found->parent_) {
-    // Erase in parent.
-    found->parent_->children_.erase(found->parent_->children_.begin() +
-                                    found.inner_index_);
+  if (data->parent_) {
+    TabDataExperimental* parent = data->parent_;
+    // Erase out of the parent.
+    parent->children_.erase(parent->children_.begin() + found.inner_index_);
 
-    // TODO(brettw) remove the parent if it's empty!
+    if (parent->children_.empty()) {
+      if (parent->type() == TabDataExperimental::Type::kHubAndSpoke) {
+        // Erasing the last child of a hub and spoke one converts it back to
+        // a single.
+        parent->set_type(TabDataExperimental::Type::kSingle);
+        for (auto& observer : exp_observers_)
+          observer.TabChanged(parent);
+      } else {
+        DCHECK(parent->type() == TabDataExperimental::Type::kGroup);
+        // TODO(brettw) remove group. Notifications might be tricky.
+      }
+    }
+  } else if (data->type() == TabDataExperimental::Type::kHubAndSpoke) {
+    // Removing the "hub" from a hub and spoke converts to a group.
+
+    data->set_type(TabDataExperimental::Type::kGroup);
+    data->contents_ =
+        nullptr;  // TODO(brettw) does this delete things properly?
+    for (auto& observer : exp_observers_)
+      observer.TabChanged(data);
   } else {
     // Just remove from tabs.
     tabs_.erase(tabs_.begin() + found.toplevel_index_);

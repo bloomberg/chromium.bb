@@ -1934,10 +1934,10 @@ void TabStripImpl::SetTabBoundsForDrag(
 
 void TabStripImpl::AddMessageLoopObserver() {
   if (!mouse_watcher_.get()) {
-    mouse_watcher_.reset(new views::MouseWatcher(
+    mouse_watcher_ = std::make_unique<views::MouseWatcher>(
         new views::MouseWatcherViewHost(
             this, gfx::Insets(0, 0, kTabStripAnimationVSlop, 0)),
-        this));
+        this);
   }
   mouse_watcher_->Start();
 }

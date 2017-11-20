@@ -49,12 +49,13 @@ class TabDataExperimental {
   TabDataExperimental* parent() { return parent_; }
 
   Type type() const { return type_; }
+  void set_type(Type t) { type_ = t; }
+
   bool expanded() const { return expanded_; }
 
   content::WebContents* contents() { return contents_; }
 
-  // Valid when type() == kSingle or kHubAndSpoke.
-  const base::string16& GetTitle() const;
+  base::string16 GetTitle() const;
 
   // Returns true if this tab data itself is counted as a enumerable item when
   // going through the view.

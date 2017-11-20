@@ -7,6 +7,7 @@
 #include "cc/paint/paint_recorder.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "third_party/skia/include/pathops/SkPathOps.h"
@@ -52,7 +53,9 @@ float GetInverseDiagonalSlope() {
 
 // Returns a path corresponding to the tab's content region inside the outer
 // stroke.
-gfx::Path GetFillPath(float scale, const gfx::Size& size, float endcap_width) {
+gfx::Path GetTabFillPath(float scale,
+                         const gfx::Size& size,
+                         float endcap_width) {
   const float right = size.width() * scale;
   // The bottom of the tab needs to be pixel-aligned or else when we call
   // ClipPath with anti-aliasing enabled it can cause artifacts.
@@ -90,11 +93,11 @@ gfx::Path GetFillPath(float scale, const gfx::Size& size, float endcap_width) {
 // |extend_to_top| is true, the path is extended vertically to the top of the
 // tab bounds.  The caller uses this for Fitts' Law purposes in
 // maximized/fullscreen mode.
-gfx::Path GetBorderPath(float scale,
-                        bool unscale_at_end,
-                        bool extend_to_top,
-                        float endcap_width,
-                        const gfx::Size& size) {
+gfx::Path GetTabBorderPath(float scale,
+                           bool unscale_at_end,
+                           bool extend_to_top,
+                           float endcap_width,
+                           const gfx::Size& size) {
   const float top = scale - 1;
   const float right = size.width() * scale;
   const float bottom = size.height() * scale;
@@ -128,6 +131,62 @@ gfx::Path GetBorderPath(float scale,
 
   if (unscale_at_end && (scale != 1))
     path.transform(SkMatrix::MakeScale(1.f / scale));
+
+  return path;
+}
+
+// Returns a path corresponding to the tab's content region inside the outer
+// stroke.
+gfx::Path GetHubAndSpokeFillPath(float scale,
+                                 const gfx::Size& size,
+                                 float endcap_width) {
+  const float right = size.width() * scale;
+  // The bottom of the tab needs to be pixel-aligned or else when we call
+  // ClipPath with anti-aliasing enabled it can cause artifacts.
+  const float bottom = std::ceil(size.height() * scale);
+
+  gfx::Path fill;
+  fill.moveTo(right - 1, bottom);
+  fill.rCubicTo(-0.75 * scale, 0, -1.625 * scale, -0.5 * scale, -2 * scale,
+                -1.5 * scale);
+  fill.lineTo(right - 1 - (endcap_width - 2) * scale, 2.5 * scale);
+  // Prevent overdraw in the center near minimum width (only happens if
+  // scale < 2).  We could instead avoid this by increasing the tab inset
+  // values, but that would shift all the content inward as well, unless we
+  // then overlapped the content on the endcaps, by which point we'd have a
+  // huge mess.
+  const float scaled_endcap_width = 1 + endcap_width * scale;
+  const float overlap = scaled_endcap_width * 2 - right;
+  const float offset = (overlap > 0) ? (overlap / 2) : 0;
+  fill.rCubicTo(-0.375 * scale, -1 * scale, -1.25 * scale + offset,
+                -1.5 * scale, -2 * scale + offset, -1.5 * scale);
+  if (overlap < 0)
+    fill.lineTo(scaled_endcap_width, scale);
+  fill.rCubicTo(-0.75 * scale, 0, -1.625 * scale - offset, 0.5 * scale,
+                -2 * scale - offset, 1.5 * scale);
+  fill.lineTo(1 + 2 * scale, bottom - 1.5 * scale);
+  fill.rCubicTo(-0.375 * scale, scale, -1.25 * scale, 1.5 * scale, -2 * scale,
+                1.5 * scale);
+  fill.close();
+  return fill;
+}
+
+gfx::Path GetHubAndSpokeBorderPath(float scale,
+                                   float endcap_width,
+                                   const gfx::Size& size) {
+  const float top = scale - 1;
+  const float right = size.width() * scale;
+  const float bottom = size.height() * scale;
+
+  gfx::Path path;
+  path.moveTo(0, bottom);
+  path.rLineTo(0, -1);
+  path.rCubicTo(0.75 * scale, 0, 1.625 * scale, -0.5 * scale, 2 * scale,
+                -1.5 * scale);
+  path.lineTo((endcap_width - 2) * scale, top + 1.5 * scale);
+  path.rCubicTo(0.375 * scale, -scale, 1.25 * scale, -1.5 * scale, 2 * scale,
+                -1.5 * scale);
+  path.lineTo(right, top);
 
   return path;
 }
@@ -166,6 +225,48 @@ void TabExperimentalPaint::BackgroundCache::SetCacheKey(float scale,
 TabExperimentalPaint::TabExperimentalPaint(views::View* view) : view_(view) {}
 TabExperimentalPaint::~TabExperimentalPaint() {}
 
+gfx::Path TabExperimentalPaint::GetBorderPath(float scale,
+                                              bool unscale_at_end,
+                                              bool extend_to_top,
+                                              float endcap_width,
+                                              const gfx::Size& size) const {
+  const float top = scale - 1;
+  const float right = size.width() * scale;
+  const float bottom = size.height() * scale;
+
+  gfx::Path path;
+  path.moveTo(0, bottom);
+  path.rLineTo(0, -1);
+  path.rCubicTo(0.75 * scale, 0, 1.625 * scale, -0.5 * scale, 2 * scale,
+                -1.5 * scale);
+  path.lineTo((endcap_width - 2) * scale, top + 1.5 * scale);
+  if (extend_to_top) {
+    // Create the vertical extension by extending the side diagonals until
+    // they reach the top of the bounds.
+    const float dy = 2.5 * scale - 1;
+    const float dx = Tab::GetInverseDiagonalSlope() * dy;
+    path.rLineTo(dx, -dy);
+    path.lineTo(right - (endcap_width - 2) * scale - dx, 0);
+    path.rLineTo(dx, dy);
+  } else {
+    path.rCubicTo(0.375 * scale, -scale, 1.25 * scale, -1.5 * scale, 2 * scale,
+                  -1.5 * scale);
+    path.lineTo(right - endcap_width * scale, top);
+    path.rCubicTo(0.75 * scale, 0, 1.625 * scale, 0.5 * scale, 2 * scale,
+                  1.5 * scale);
+  }
+  path.lineTo(right - 2 * scale, bottom - 1 - 1.5 * scale);
+  path.rCubicTo(0.375 * scale, scale, 1.25 * scale, 1.5 * scale, 2 * scale,
+                1.5 * scale);
+  path.rLineTo(0, 1);
+  path.close();
+
+  if (unscale_at_end && (scale != 1))
+    path.transform(SkMatrix::MakeScale(1.f / scale));
+
+  return path;
+}
+
 void TabExperimentalPaint::PaintTabBackground(gfx::Canvas* canvas,
                                               bool active,
                                               int fill_id,
@@ -179,8 +280,12 @@ void TabExperimentalPaint::PaintTabBackground(gfx::Canvas* canvas,
   const SkColor active_color = tp->GetColor(ThemeProperties::COLOR_TOOLBAR);
   const SkColor inactive_color =
       tp->GetColor(ThemeProperties::COLOR_BACKGROUND_TAB);
-  const SkColor stroke_color =
-      0xFFFF;  // controller_->GetToolbarTopSeparatorColor();
+
+  // TODO(brettw) in the old code this was stroke_color =
+  // controller_->GetToolbarTopSeparatorColor() which handles theming,
+  // activation, and incognito.
+  const SkColor stroke_color = ThemeProperties::GetDefaultColor(
+      ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR, false);
   const bool paint_hover_effect =
       false;  //! active && hover_controller_.ShouldDraw();
 
@@ -193,9 +298,9 @@ void TabExperimentalPaint::PaintTabBackground(gfx::Canvas* canvas,
   // cache based on the hover states.
   if (fill_id || paint_hover_effect) {
     gfx::Path fill_path =
-        GetFillPath(canvas->image_scale(), view_->size(), endcap_width);
-    gfx::Path stroke_path = GetBorderPath(canvas->image_scale(), false, false,
-                                          endcap_width, view_->size());
+        GetTabFillPath(canvas->image_scale(), view_->size(), endcap_width);
+    gfx::Path stroke_path = GetTabBorderPath(
+        canvas->image_scale(), false, false, endcap_width, view_->size());
     PaintTabBackgroundFill(canvas, fill_path, active, paint_hover_effect,
                            active_color, inactive_color, fill_id, y_offset);
     gfx::ScopedCanvas scoped_canvas(clip ? canvas : nullptr);
@@ -211,9 +316,9 @@ void TabExperimentalPaint::PaintTabBackground(gfx::Canvas* canvas,
   if (!cache.CacheKeyMatches(canvas->image_scale(), view_->size(), active_color,
                              inactive_color, stroke_color)) {
     gfx::Path fill_path =
-        GetFillPath(canvas->image_scale(), view_->size(), endcap_width);
-    gfx::Path stroke_path = GetBorderPath(canvas->image_scale(), false, false,
-                                          endcap_width, view_->size());
+        GetTabFillPath(canvas->image_scale(), view_->size(), endcap_width);
+    gfx::Path stroke_path = GetTabBorderPath(
+        canvas->image_scale(), false, false, endcap_width, view_->size());
     cc::PaintRecorder recorder;
 
     {
@@ -243,6 +348,64 @@ void TabExperimentalPaint::PaintTabBackground(gfx::Canvas* canvas,
   if (clip)
     canvas->sk_canvas()->clipPath(*clip, SkClipOp::kDifference, true);
   canvas->sk_canvas()->drawPicture(cache.stroke_record);
+
+  // Bottom border.
+  if (!active) {
+    BrowserView::Paint1pxHorizontalLine(
+        canvas,
+        ThemeProperties::GetDefaultColor(
+            ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR, false),
+        view_->GetLocalBounds(), true);
+  }
+}
+
+void TabExperimentalPaint::PaintGroupBackground(gfx::Canvas* canvas,
+                                                bool active) {
+  // const ui::ThemeProvider* tp = view_->GetThemeProvider();
+  // const SkColor active_color = tp->GetColor(ThemeProperties::COLOR_TOOLBAR);
+  // const SkColor inactive_color =
+  //    tp->GetColor(ThemeProperties::COLOR_BACKGROUND_TAB);
+
+  // TODO(brettw) in the old code this was stroke_color =
+  // controller_->GetToolbarTopSeparatorColor() which handles theming,
+  // activation, and incognito.
+  SkColor stroke_color = ThemeProperties::GetDefaultColor(
+      ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR, false);
+
+  const ui::ThemeProvider* tp = view_->GetThemeProvider();
+  const SkColor active_color = tp->GetColor(ThemeProperties::COLOR_TOOLBAR);
+  const SkColor inactive_color =
+      tp->GetColor(ThemeProperties::COLOR_BACKGROUND_TAB);
+  float endcap_width = GetTabEndcapWidth();
+  const bool paint_hover_effect =
+      false;  //! active && hover_controller_.ShouldDraw();
+
+  gfx::Path fill_path = GetHubAndSpokeFillPath(canvas->image_scale(),
+                                               view_->size(), endcap_width);
+  PaintTabBackgroundFill(canvas, fill_path, active, paint_hover_effect,
+                         active_color, inactive_color, 0, 0);
+
+  {
+    gfx::ScopedCanvas scoped_canvas(canvas);
+    float scale = canvas->UndoDeviceScaleFactor();
+    gfx::Path path =
+        GetHubAndSpokeBorderPath(scale, endcap_width, view_->size());
+    cc::PaintFlags flags;
+    flags.setAntiAlias(true);
+    flags.setColor(stroke_color);
+    flags.setStyle(cc::PaintFlags::kStroke_Style);
+
+    canvas->DrawPath(path, flags);
+  }
+
+  // Bottom border.
+  if (!active) {
+    BrowserView::Paint1pxHorizontalLine(
+        canvas,
+        ThemeProperties::GetDefaultColor(
+            ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR, false),
+        view_->GetLocalBounds(), true);
+  }
 }
 
 void TabExperimentalPaint::PaintTabBackgroundFill(gfx::Canvas* canvas,
@@ -254,7 +417,7 @@ void TabExperimentalPaint::PaintTabBackgroundFill(gfx::Canvas* canvas,
                                                   int fill_id,
                                                   int y_offset) {
   gfx::ScopedCanvas scoped_canvas(canvas);
-  const float scale = canvas->UndoDeviceScaleFactor();
+  float scale = canvas->UndoDeviceScaleFactor();
 
   canvas->ClipPath(fill_path, true);
   if (fill_id) {
