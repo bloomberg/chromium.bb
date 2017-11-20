@@ -4112,3 +4112,14 @@ crbug.com/785980 [ Win10 ] http/tests/devtools/network/network-xhr-same-url-as-m
 crbug.com/786235 http/tests/misc/resource-timing-sizes-tags.html [ Failure Pass ]
 crbug.com/786235 virtual/mojo-loading/http/tests/misc/resource-timing-sizes-tags.html [ Failure Pass ]
 crbug.com/786348 [ Win7 ] virtual/mojo-loading/http/tests/devtools/console/console-link-to-snippet.js [ Failure Pass ]
+
+# Double tap on modern media controls is a bit more complicated on Mac but
+# since we are not targeting Mac yet we can come back and fix this later.
+crbug.com/783154 [ Mac ] virtual/modern-media-controls/media/controls/modern/doubletap-to-jump-backwards.html [ Skip ]
+crbug.com/783154 [ Mac ] virtual/modern-media-controls/media/controls/modern/doubletap-to-jump-forwards.html [ Skip ]
+crbug.com/783154 [ Mac ] virtual/modern-media-controls/media/controls/modern/doubletap-to-jump-forwards-too-short.html [ Skip ]
+crbug.com/783154 [ Mac ] virtual/modern-media-controls/media/controls/modern/doubletap-on-play-button.html [ Skip ]
+crbug.com/783154 [ Mac ] virtual/modern-media-controls/media/controls/modern/doubletap-to-toggle-fullscreen.html [ Skip ]
+crbug.com/783154 [ Mac ] virtual/modern-media-controls/media/controls/modern/singletap-on-outside.html [ Skip ]
+crbug.com/783154 [ Mac ] virtual/modern-media-controls/media/controls/modern/singletap-on-play-button.html [ Skip ]
+crbug.com/783154 [ Mac ] virtual/modern-media-controls/media/controls/modern/slow-doubletap.html [ Skip ]
