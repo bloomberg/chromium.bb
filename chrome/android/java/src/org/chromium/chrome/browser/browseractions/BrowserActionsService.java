@@ -14,7 +14,6 @@ import android.os.IBinder;
 import android.text.TextUtils;
 
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
@@ -28,20 +27,17 @@ import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
+import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
-import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
-import org.chromium.chrome.browser.tabmodel.TabPersistentStore.TabModelSelectorMetadata;
-import org.chromium.chrome.browser.tabmodel.TabPersistentStore.TabPersistentStoreObserver;
+import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.ui.widget.Toast;
 
 import java.lang.ref.WeakReference;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 /**
  * The foreground service responsible for creating notifications for Browser Actions and keep the
@@ -75,12 +71,11 @@ public class BrowserActionsService extends Service {
 
     private static int sTitleResId;
 
-    private static Set<Integer> sPendingTabIds = new HashSet<Integer>();
-    private static int sPendingCreatedUrlNum;
+    private static int sLoadingUrlNum;
 
-    private BrowserActionsTabModelSelector mBrowserActionsSelector;
-    private TabModelSelectorImpl mTabbedModeTabModelSelector;
-    private TabPersistentStoreObserver mObserver;
+    private BrowserActionsTabModelSelector mSelector;
+
+    private TabModelObserver mObserver;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -100,77 +95,74 @@ public class BrowserActionsService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (TextUtils.equals(intent.getAction(), ACTION_TAB_CREATION_START)) {
-            createNotification(false);
+            sendBrowserActionsNotification(Tab.INVALID_TAB_ID);
 
-            String url = IntentUtils.safeGetStringExtra(intent, EXTRA_LINK_URL);
+            String linkUrl = IntentUtils.safeGetStringExtra(intent, EXTRA_LINK_URL);
             String sourcePackageName =
                     IntentUtils.safeGetStringExtra(intent, EXTRA_SOURCE_PACKAGE_NAME);
-            openTabInBackground(url, sourcePackageName);
-            Toast.makeText(this, R.string.browser_actions_open_in_background_toast_message,
+            Context context = ContextUtils.getApplicationContext();
+            int tabId = openTabInBackground(linkUrl, sourcePackageName);
+            updateTabIdForNotification(tabId);
+            if (tabId != Tab.INVALID_TAB_ID) {
+                finishTabCreation();
+            }
+            Toast.makeText(context, R.string.browser_actions_open_in_background_toast_message,
                          Toast.LENGTH_SHORT)
                     .show();
             updateNumTabCreatedInBackground();
             NotificationUmaTracker.getInstance().onNotificationShown(
                     NotificationUmaTracker.BROWSER_ACTIONS, ChannelDefinitions.CHANNEL_ID_BROWSER);
         } else if (TextUtils.equals(intent.getAction(), ACTION_TAB_CREATION_CHROME_DISPLAYED)) {
-            clearPendingStatus();
-            removeObserver();
+            setLoadingUrlNum(0);
+            if (mSelector != null) {
+                mSelector.getModel(false).removeObserver(mObserver);
+            }
             stopForeground(true);
         }
         // The service will not be restarted if Chrome get killed.
         return START_NOT_STICKY;
     }
 
-    private static void clearPendingStatus() {
-        sPendingTabIds.clear();
-        sPendingCreatedUrlNum = 0;
+    private static void setLoadingUrlNum(int num) {
+        sLoadingUrlNum = num;
     }
 
-    private void createNotification(boolean isUpdate) {
-        sendBrowserActionsNotification(isUpdate);
-        if (isUpdate) {
-            ContextUtils.getAppSharedPreferences()
-                    .edit()
-                    .putBoolean(PREF_HAS_BROWSER_ACTIONS_NOTIFICATION, true)
-                    .apply();
-        }
+    private void updateTabIdForNotification(int tabId) {
+        sendBrowserActionsNotification(tabId);
+        ContextUtils.getAppSharedPreferences()
+                .edit()
+                .putBoolean(PREF_HAS_BROWSER_ACTIONS_NOTIFICATION, true)
+                .apply();
     }
 
-    private void backgroundServiceIfNecessary() {
-        if (sPendingTabIds.isEmpty() && sPendingCreatedUrlNum == 0) {
-            stopForeground(false);
-            removeObserver();
-        }
-    }
-
-    private void removeObserver() {
-        if (mObserver == null) return;
-        if (mBrowserActionsSelector != null) {
-            mBrowserActionsSelector.removeTabPersistentStoreObserver(mObserver);
-        }
-        if (mTabbedModeTabModelSelector != null) {
-            mTabbedModeTabModelSelector.removeTabPersistentStoreObserver(mObserver);
+    private void finishTabCreation() {
+        if (sLoadingUrlNum > 0) {
+            sLoadingUrlNum--;
+            if (sLoadingUrlNum == 0) {
+                stopForeground(false);
+                if (mSelector != null) {
+                    mSelector.getModel(false).removeObserver(mObserver);
+                }
+            }
         }
     }
 
     @VisibleForTesting
     static boolean isBackgroundService() {
-        return sPendingTabIds.isEmpty() && sPendingCreatedUrlNum == 0;
+        return sLoadingUrlNum == 0;
     }
 
-    private void openTabInBackground(String linkUrl, String sourcePackageName) {
+    private int openTabInBackground(String linkUrl, String sourcePackageName) {
         Referrer referrer = IntentHandler.constructValidReferrerForAuthority(sourcePackageName);
         LoadUrlParams loadUrlParams = new LoadUrlParams(linkUrl);
         loadUrlParams.setReferrer(referrer);
         Tab tab = launchTabInRunningTabbedActivity(loadUrlParams);
         if (tab != null) {
-            int tabId = tab.getId();
-            assert tabId != Tab.INVALID_TAB_ID;
-            sPendingTabIds.add(tabId);
-            createNotification(true);
-            return;
+            sLoadingUrlNum++;
+            return tab.getId();
         }
         launchTabInBrowserActionsModel(loadUrlParams);
+        return Tab.INVALID_TAB_ID;
     }
 
     private Tab launchTabInRunningTabbedActivity(LoadUrlParams loadUrlParams) {
@@ -180,61 +172,48 @@ public class BrowserActionsService extends Service {
             ChromeTabbedActivity activity = (ChromeTabbedActivity) ref.get();
             if (activity == null) continue;
             if (activity.getTabModelSelector() != null) {
-                mTabbedModeTabModelSelector = (TabModelSelectorImpl) activity.getTabModelSelector();
-                mTabbedModeTabModelSelector.addTabPersistentStoreObserver(
-                        getTabPersistentStoreObserver());
-                Tab tab = mTabbedModeTabModelSelector.openNewTab(
+                Tab tab = activity.getTabModelSelector().openNewTab(
                         loadUrlParams, TabLaunchType.FROM_BROWSER_ACTIONS, null, false);
                 assert tab != null;
+                // TODO(ltian): need to listen to the observer from PersistenceStore when TabState
+                // is saved to disk. See crbug.com/766349.
+                tab.addObserver(new EmptyTabObserver() {
+                    @Override
+                    public void onPageLoadFinished(Tab tab) {
+                        finishTabCreation();
+                        tab.removeObserver(this);
+                    }
+                });
                 return tab;
             }
         }
         return null;
     }
 
-    private TabPersistentStoreObserver getTabPersistentStoreObserver() {
+    private void launchTabInBrowserActionsModel(LoadUrlParams loadUrlParams) {
+        mSelector = BrowserActionsTabModelSelector.getInstance();
+        sLoadingUrlNum++;
         if (mObserver == null) {
-            mObserver = new TabPersistentStoreObserver() {
+            mObserver = new EmptyTabModelObserver() {
                 @Override
-                public void onMetadataSavedAsynchronously(
-                        TabModelSelectorMetadata modelSelectorMetadata) {
-                    removeSavedTabs(modelSelectorMetadata.normalModelMetadata.ids);
-                    backgroundServiceIfNecessary();
+                public void didAddTab(Tab tab, TabLaunchType type) {
+                    assert mSelector != null;
+                    if (!mSelector.isTabStateInitialized()) return;
+                    assert tab != null;
+                    finishTabCreation();
                 }
             };
         }
-        return mObserver;
+        mSelector.getModel(false).addObserver(mObserver);
+        mSelector.openNewTab(loadUrlParams);
     }
 
-    private void launchTabInBrowserActionsModel(LoadUrlParams loadUrlParams) {
-        mBrowserActionsSelector = BrowserActionsTabModelSelector.getInstance();
-        mBrowserActionsSelector.addTabPersistentStoreObserver(getTabPersistentStoreObserver());
-        Callback<Integer> tabCreatedCallback = new Callback<Integer>() {
-            @Override
-            public void onResult(Integer tabId) {
-                // Service has been changed to background by opening Chrome so nothing needs to
-                // update.
-                if (sPendingCreatedUrlNum == 0) return;
-                sPendingCreatedUrlNum--;
-                if (tabId != Tab.INVALID_TAB_ID) sPendingTabIds.add(tabId);
-                backgroundServiceIfNecessary();
-                createNotification(true);
-            }
-        };
-        sPendingCreatedUrlNum++;
-        mBrowserActionsSelector.openNewTab(loadUrlParams, tabCreatedCallback);
-    }
-
-    private void removeSavedTabs(List<Integer> savedTabIds) {
-        for (Integer tabId : savedTabIds) sPendingTabIds.remove(tabId);
-    }
-
-    private void sendBrowserActionsNotification(boolean isUpdate) {
-        ChromeNotificationBuilder builder = createNotificationBuilder(isUpdate);
+    private void sendBrowserActionsNotification(int tabId) {
+        ChromeNotificationBuilder builder = createNotificationBuilder(tabId);
         startForeground(NotificationConstants.NOTIFICATION_ID_BROWSER_ACTIONS, builder.build());
     }
 
-    private ChromeNotificationBuilder createNotificationBuilder(boolean isUpdate) {
+    private ChromeNotificationBuilder createNotificationBuilder(int tabId) {
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory
                         .createChromeNotificationBuilder(
@@ -243,38 +222,30 @@ public class BrowserActionsService extends Service {
                         .setLocalOnly(true)
                         .setAutoCancel(true)
                         .setContentText(this.getString(R.string.browser_actions_notification_text));
-        sTitleResId = getNotificationTitleId(isUpdate);
+        if (hasBrowserActionsNotification()) {
+            sTitleResId = R.string.browser_actions_multi_links_open_notification_title;
+        } else {
+            sTitleResId = R.string.browser_actions_single_link_open_notification_title;
+            RecordUserAction.record("BrowserActions.TabOpenedNotificationCreated");
+        }
         builder.setContentTitle(this.getString(sTitleResId));
-        sNotificationIntent = buildNotificationIntent(isUpdate);
+        sNotificationIntent = buildNotificationIntent(tabId);
         PendingIntent notifyPendingIntent = PendingIntent.getActivity(
                 this, 0, sNotificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         builder.setContentIntent(notifyPendingIntent);
         return builder;
     }
 
-    private int getNotificationTitleId(boolean isUpdate) {
-        if (isUpdate) {
-            assert sTitleResId != 0;
-        } else if (hasBrowserActionsNotification()) {
-            sTitleResId = R.string.browser_actions_multi_links_open_notification_title;
-        } else {
-            sTitleResId = R.string.browser_actions_single_link_open_notification_title;
-        }
-        return sTitleResId;
-    }
-
-    /**
-     * TODO(ltian:) fix ChromeTabbedActivity.processUrlViewIntent to handle Intent after browser
-     * actions tab merging and use Tab.createBringTabToFrontIntent to create Intent for single url.
-     */
-    private Intent buildNotificationIntent(boolean isUpdate) {
-        Intent intent;
+    private Intent buildNotificationIntent(int tabId) {
         boolean multipleUrls = hasBrowserActionsNotification();
-        intent = new Intent(this, ChromeLauncherActivity.class);
-        IntentHandler.addTrustedIntentExtras(intent);
-        if (isUpdate) {
-            intent.putExtra(EXTRA_IS_SINGLE_URL, !multipleUrls);
+        Intent intent;
+        if (!multipleUrls && tabId != Tab.INVALID_TAB_ID) {
+            intent = Tab.createBringTabToFrontIntent(tabId);
+        } else {
+            intent = new Intent(this, ChromeLauncherActivity.class);
+            IntentHandler.addTrustedIntentExtras(intent);
         }
+        intent.putExtra(EXTRA_IS_SINGLE_URL, !multipleUrls);
         return intent;
     }
 
@@ -300,7 +271,7 @@ public class BrowserActionsService extends Service {
     public static void onTabbedModeForegrounded() {
         // If Chrome is shown, force the foreground service to be killed so notification bound to it
         // will be dismissed.
-        if (!sPendingTabIds.isEmpty() || sPendingCreatedUrlNum > 0) {
+        if (sLoadingUrlNum != 0) {
             Context context = ContextUtils.getApplicationContext();
             Intent intent = new Intent(context, BrowserActionsService.class);
             intent.setAction(ACTION_TAB_CREATION_CHROME_DISPLAYED);
