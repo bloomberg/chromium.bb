@@ -4,15 +4,13 @@
 
 #include "ui/gl/gl_context_glx.h"
 
-extern "C" {
-#include <X11/Xlib.h>
-}
 #include <memory>
 
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/trace_event/trace_event.h"
+#include "ui/gfx/x/x11.h"
 #include "ui/gl/GL/glextchromium.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_implementation.h"
@@ -59,10 +57,10 @@ GLXContext CreateContextAttribs(Display* display,
   // errors can be generated. To prevent these errors from crashing our process,
   // we simply ignore them and only look if the GLXContext was created.
   // Sync to ensure any errors generated are processed.
-  XSync(display, False);
+  XSync(display, x11::False);
   auto old_error_handler = XSetErrorHandler(IgnoreX11Errors);
-  GLXContext context =
-      glXCreateContextAttribsARB(display, config, share, True, attribs.data());
+  GLXContext context = glXCreateContextAttribsARB(display, config, share,
+                                                  x11::True, attribs.data());
   XSetErrorHandler(old_error_handler);
 
   return context;
@@ -183,11 +181,8 @@ bool GLContextGLX::Initialize(GLSurface* compatible_surface,
   } else {
     DVLOG(1) << "GLX_ARB_create_context not supported.";
     context_ = glXCreateNewContext(
-       display_,
-       static_cast<GLXFBConfig>(compatible_surface->GetConfig()),
-       GLX_RGBA_TYPE,
-       share_handle,
-       True);
+        display_, static_cast<GLXFBConfig>(compatible_surface->GetConfig()),
+        GLX_RGBA_TYPE, share_handle, x11::True);
     if (!context_) {
       LOG(ERROR) << "Failed to create GL context with glXCreateNewContext.";
       return false;

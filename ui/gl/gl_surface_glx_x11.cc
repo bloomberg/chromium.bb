@@ -4,9 +4,8 @@
 
 #include "ui/gl/gl_surface_glx_x11.h"
 
-#include <X11/Xlib.h>
-
 #include "ui/events/platform/platform_event_source.h"
+#include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_types.h"
 
 namespace gl {

@@ -6,13 +6,12 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_error_tracker.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/gl/gl_surface_glx_x11.h"
 #include "ui/gl/init/gl_factory.h"
 #include "ui/gl/test/gl_image_test_support.h"
-
-#include <X11/Xlib.h>
 
 namespace gl {
 
@@ -25,7 +24,7 @@ TEST(GLContextGLXTest, DoNotDestroyOnFailedMakeCurrent) {
   XSetWindowAttributes swa;
   memset(&swa, 0, sizeof(swa));
   swa.background_pixmap = 0;
-  swa.override_redirect = True;
+  swa.override_redirect = x11::True;
   auto xwindow = XCreateWindow(xdisplay, DefaultRootWindow(xdisplay), 0, 0, 10,
                                10,              // x, y, width, height
                                0,               // border width
@@ -77,7 +76,7 @@ TEST(GLContextGLXTest, DoNotDestroyOnFailedMakeCurrent) {
   // not destroyed.
   ASSERT_TRUE(context->GetHandle());
   surface = nullptr;
-  XSync(xdisplay, True);
+  XSync(xdisplay, x11::True);
 }
 
 }  // namespace gl

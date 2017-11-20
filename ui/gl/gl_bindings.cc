@@ -4,6 +4,10 @@
 
 #include "build/build_config.h"
 
+#if defined(USE_X11)
+#include "ui/gfx/x/x11.h"
+#endif  // USE_X11
+
 #if defined(USE_EGL)
 #include <EGL/egl.h>
 #endif
@@ -11,7 +15,7 @@
 #include "ui/gl/gl_bindings.h"
 
 #if defined(USE_GLX)
-#include "ui/gfx/x/x11_types.h"  // nogncheck
+#include "ui/gfx/x/x11_types.h"
 #endif
 
 #if defined(OS_WIN)

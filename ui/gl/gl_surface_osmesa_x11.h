@@ -5,10 +5,9 @@
 #ifndef UI_GL_GL_SURFACE_OSMESA_X11_H_
 #define UI_GL_GL_SURFACE_OSMESA_X11_H_
 
-#include <X11/Xlib.h>
-
 #include "base/macros.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/x/x11.h"
 #include "ui/gl/gl_export.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_surface_osmesa.h"

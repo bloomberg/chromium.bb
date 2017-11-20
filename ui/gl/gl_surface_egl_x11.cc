@@ -5,11 +5,8 @@
 #include "ui/gl/gl_surface_egl_x11.h"
 
 #include "ui/events/platform/platform_event_source.h"
+#include "ui/gfx/x/x11.h"
 #include "ui/gl/egl_util.h"
-
-extern "C" {
-#include <X11/Xlib.h>
-}
 
 using ui::GetLastEGLErrorString;
 using ui::PlatformEvent;
@@ -167,7 +164,7 @@ uint32_t NativeViewGLSurfaceEGLX11::DispatchEvent(const PlatformEvent& event) {
   x_event.xexpose.window = parent_window_;
 
   Display* x11_display = GetNativeDisplay();
-  XSendEvent(x11_display, parent_window_, False, ExposureMask, &x_event);
+  XSendEvent(x11_display, parent_window_, x11::False, ExposureMask, &x_event);
   XFlush(x11_display);
   return ui::POST_DISPATCH_STOP_PROPAGATION;
 }

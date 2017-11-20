@@ -5,11 +5,10 @@
 #ifndef UI_GL_GL_VISUAL_PICKER_GLX_H_
 #define UI_GL_GL_VISUAL_PICKER_GLX_H_
 
-#include <X11/Xutil.h>
-
 #include <vector>
 
 #include "base/macros.h"
+#include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/gl/gl_export.h"
 
