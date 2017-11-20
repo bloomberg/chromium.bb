@@ -4,6 +4,8 @@
 
 #include "tools/gn/import_manager.h"
 
+#include <memory>
+
 #include "tools/gn/err.h"
 #include "tools/gn/parse_tree.h"
 #include "tools/gn/scheduler.h"
@@ -24,7 +26,8 @@ std::unique_ptr<Scope> UncachedImport(const Settings* settings,
   if (!node)
     return nullptr;
 
-  std::unique_ptr<Scope> scope(new Scope(settings->base_config()));
+  std::unique_ptr<Scope> scope =
+      std::make_unique<Scope>(settings->base_config());
   scope->set_source_dir(file.GetDir());
 
   // Don't allow ScopePerFileProvider to provide target-related variables.
@@ -80,7 +83,7 @@ bool ImportManager::DoImport(const SourceFile& file,
     base::AutoLock lock(imports_lock_);
     std::unique_ptr<ImportInfo>& info_ptr = imports_[file];
     if (!info_ptr)
-      info_ptr.reset(new ImportInfo);
+      info_ptr = std::make_unique<ImportInfo>();
 
     // Promote the ImportInfo to outside of the imports lock.
     import_info = info_ptr.get();

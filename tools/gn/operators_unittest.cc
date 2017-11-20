@@ -5,6 +5,8 @@
 #include "tools/gn/operators.h"
 
 #include <stdint.h>
+
+#include <memory>
 #include <utility>
 
 #include "testing/gtest/include/gtest/gtest.h"
@@ -62,7 +64,7 @@ class TestBinaryOpNode : public BinaryOpNode {
   }
 
   void SetLeftToValue(const Value& value) {
-    set_left(std::unique_ptr<ParseNode>(new TestParseNode(value)));
+    set_left(std::make_unique<TestParseNode>(value));
   }
 
   // Sets the left-hand side of the operator to an identifier node, this is
@@ -70,23 +72,23 @@ class TestBinaryOpNode : public BinaryOpNode {
   void SetLeftToIdentifier(const char* identifier) {
     left_identifier_token_ownership_ =
         Token(Location(), Token::IDENTIFIER, identifier);
-    set_left(std::unique_ptr<ParseNode>(
-        new IdentifierNode(left_identifier_token_ownership_)));
+    set_left(
+        std::make_unique<IdentifierNode>(left_identifier_token_ownership_));
   }
 
   void SetRightToValue(const Value& value) {
-    set_right(std::unique_ptr<ParseNode>(new TestParseNode(value)));
+    set_right(std::make_unique<TestParseNode>(value));
   }
   void SetRightToListOfValue(const Value& value) {
     Value list(nullptr, Value::LIST);
     list.list_value().push_back(value);
-    set_right(std::unique_ptr<ParseNode>(new TestParseNode(list)));
+    set_right(std::make_unique<TestParseNode>(list));
   }
   void SetRightToListOfValue(const Value& value1, const Value& value2) {
     Value list(nullptr, Value::LIST);
     list.list_value().push_back(value1);
     list.list_value().push_back(value2);
-    set_right(std::unique_ptr<ParseNode>(new TestParseNode(list)));
+    set_right(std::make_unique<TestParseNode>(list));
   }
 
  private:
@@ -113,7 +115,7 @@ TEST(Operators, SourcesAppend) {
   node.SetLeftToIdentifier(sources);
 
   // Set up the filter on the scope to remove everything ending with "rm"
-  std::unique_ptr<PatternList> pattern_list(new PatternList);
+  std::unique_ptr<PatternList> pattern_list = std::make_unique<PatternList>();
   pattern_list->Append(Pattern("*rm"));
   setup.scope()->set_sources_assignment_filter(std::move(pattern_list));
 
@@ -189,7 +191,7 @@ TEST(Operators, ListAppend) {
   // This should fail.
   const char str_str[] = "\"hi\"";
   Token str(Location(), Token::STRING, str_str);
-  node.set_right(std::unique_ptr<ParseNode>(new LiteralNode(str)));
+  node.set_right(std::make_unique<LiteralNode>(str));
   ExecuteBinaryOperator(setup.scope(), &node, node.left(), node.right(), &err);
   EXPECT_TRUE(err.has_error());
   err = Err();
@@ -276,8 +278,7 @@ TEST(Operators, ShortCircuitAnd) {
   // Set right as foo, but don't define a value for it.
   const char foo[] = "foo";
   Token identifier_token(Location(), Token::IDENTIFIER, foo);
-  node.set_right(
-      std::unique_ptr<ParseNode>(new IdentifierNode(identifier_token)));
+  node.set_right(std::make_unique<IdentifierNode>(identifier_token));
 
   Value ret = ExecuteBinaryOperator(setup.scope(), &node, node.left(),
                                     node.right(), &err);
@@ -295,8 +296,7 @@ TEST(Operators, ShortCircuitOr) {
   // Set right as foo, but don't define a value for it.
   const char foo[] = "foo";
   Token identifier_token(Location(), Token::IDENTIFIER, foo);
-  node.set_right(
-      std::unique_ptr<ParseNode>(new IdentifierNode(identifier_token)));
+  node.set_right(std::make_unique<IdentifierNode>(identifier_token));
 
   Value ret = ExecuteBinaryOperator(setup.scope(), &node, node.left(),
                                     node.right(), &err);
@@ -336,8 +336,7 @@ TEST(Operators, NonemptyOverwriting) {
 
   // Set up "foo" with a nonempty scope.
   const char bar[] = "bar";
-  old_value =
-      Value(nullptr, std::unique_ptr<Scope>(new Scope(setup.settings())));
+  old_value = Value(nullptr, std::make_unique<Scope>(setup.settings()));
   old_value.scope_value()->SetValue(bar, Value(nullptr, "bar"), nullptr);
   setup.scope()->SetValue(foo, old_value, nullptr);
 
@@ -350,7 +349,7 @@ TEST(Operators, NonemptyOverwriting) {
 
   // Assigning an empty list should succeed.
   node.SetRightToValue(
-      Value(nullptr, std::unique_ptr<Scope>(new Scope(setup.settings()))));
+      Value(nullptr, std::make_unique<Scope>(setup.settings())));
   node.Execute(setup.scope(), &err);
   ASSERT_FALSE(err.has_error());
   new_value = setup.scope()->GetValue(foo);

@@ -397,7 +397,7 @@ bool VisualStudioWriter::WriteProjectFiles(const Target* target,
   base::FilePath vcxproj_path = build_settings_->GetFullPath(target_file);
   std::string vcxproj_path_str = FilePathToUTF8(vcxproj_path);
 
-  projects_.emplace_back(new SolutionProject(
+  projects_.push_back(std::make_unique<SolutionProject>(
       project_name, vcxproj_path_str,
       MakeGuid(vcxproj_path_str, kGuidSeedProject),
       FilePathToUTF8(build_settings_->GetFullPath(target->label().dir())),
@@ -817,9 +817,9 @@ void VisualStudioWriter::ResolveSolutionFolders() {
       project->parent_folder = it->second;
     } else {
       std::string folder_path_str = folder_path.as_string();
-      std::unique_ptr<SolutionEntry> folder(new SolutionEntry(
+      std::unique_ptr<SolutionEntry> folder = std::make_unique<SolutionEntry>(
           FindLastDirComponent(SourceDir(folder_path)).as_string(),
-          folder_path_str, MakeGuid(folder_path_str, kGuidSeedFolder)));
+          folder_path_str, MakeGuid(folder_path_str, kGuidSeedFolder));
       project->parent_folder = folder.get();
       processed_paths[folder_path] = folder.get();
       folders_.push_back(std::move(folder));
@@ -862,10 +862,11 @@ void VisualStudioWriter::ResolveSolutionFolders() {
       if (it != processed_paths.end()) {
         folder = it->second;
       } else {
-        std::unique_ptr<SolutionEntry> new_folder(new SolutionEntry(
-            FindLastDirComponent(SourceDir(parent_path)).as_string(),
-            parent_path.as_string(),
-            MakeGuid(parent_path.as_string(), kGuidSeedFolder)));
+        std::unique_ptr<SolutionEntry> new_folder =
+            std::make_unique<SolutionEntry>(
+                FindLastDirComponent(SourceDir(parent_path)).as_string(),
+                parent_path.as_string(),
+                MakeGuid(parent_path.as_string(), kGuidSeedFolder));
         processed_paths[parent_path] = new_folder.get();
         folder = new_folder.get();
         additional_folders.push_back(std::move(new_folder));

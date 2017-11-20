@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <utility>
 
 #include "tools/gn/action_target_generator.h"
@@ -90,7 +91,8 @@ void TargetGenerator::GenerateTarget(Scope* scope,
   if (g_scheduler->verbose_logging())
     g_scheduler->Log("Defining target", label.GetUserVisibleName(true));
 
-  std::unique_ptr<Target> target(new Target(scope->settings(), label));
+  std::unique_ptr<Target> target =
+      std::make_unique<Target>(scope->settings(), label);
   target->set_defined_from(function_call);
 
   // Create and call out to the proper generator.

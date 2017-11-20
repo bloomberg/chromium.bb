@@ -4,7 +4,7 @@
 
 #include "tools/gn/xml_element_writer.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
 
 XmlAttributes::XmlAttributes() {}
 
@@ -64,7 +64,7 @@ std::unique_ptr<XmlElementWriter> XmlElementWriter::SubElement(
     const std::string& tag,
     const XmlAttributes& attributes) {
   StartContent(true);
-  return base::MakeUnique<XmlElementWriter>(out_, tag, attributes, indent_ + 2);
+  return std::make_unique<XmlElementWriter>(out_, tag, attributes, indent_ + 2);
 }
 
 std::ostream& XmlElementWriter::StartContent(bool start_new_line) {

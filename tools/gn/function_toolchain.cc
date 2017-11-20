@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <memory>
 #include <utility>
 
 #include "tools/gn/err.h"
@@ -453,7 +454,8 @@ Value RunToolchain(Scope* scope,
 
   // This object will actually be copied into the one owned by the toolchain
   // manager, but that has to be done in the lock.
-  std::unique_ptr<Toolchain> toolchain(new Toolchain(scope->settings(), label));
+  std::unique_ptr<Toolchain> toolchain =
+      std::make_unique<Toolchain>(scope->settings(), label);
   toolchain->set_defined_from(function);
   toolchain->visibility().SetPublic();
 
@@ -1022,7 +1024,7 @@ Value RunTool(Scope* scope,
     subst_output_validator = &IsValidToolSubstitution;
   }
 
-  std::unique_ptr<Tool> tool(new Tool);
+  std::unique_ptr<Tool> tool = std::make_unique<Tool>();
   tool->set_defined_from(function);
 
   if (!ReadPattern(&block_scope, "command", subst_validator, tool.get(),

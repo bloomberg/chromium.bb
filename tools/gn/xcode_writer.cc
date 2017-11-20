@@ -13,7 +13,6 @@
 
 #include "base/environment.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -151,8 +150,8 @@ void AddPBXTargetDependency(const PBXTarget* base_pbxtarget,
                             PBXTarget* dependent_pbxtarget,
                             const PBXProject* project) {
   auto container_item_proxy =
-      base::MakeUnique<PBXContainerItemProxy>(project, base_pbxtarget);
-  auto dependency = base::MakeUnique<PBXTargetDependency>(
+      std::make_unique<PBXContainerItemProxy>(project, base_pbxtarget);
+  auto dependency = std::make_unique<PBXTargetDependency>(
       base_pbxtarget, std::move(container_item_proxy));
 
   dependent_pbxtarget->AddDependency(std::move(dependency));

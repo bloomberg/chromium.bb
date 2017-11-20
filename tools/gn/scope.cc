@@ -4,8 +4,9 @@
 
 #include "tools/gn/scope.h"
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "tools/gn/parse_tree.h"
 #include "tools/gn/template.h"
 
@@ -346,7 +347,7 @@ bool Scope::NonRecursiveMergeTo(Scope* dest,
     }
 
     std::unique_ptr<Scope>& dest_scope = dest->target_defaults_[current_name];
-    dest_scope = base::MakeUnique<Scope>(settings_);
+    dest_scope = std::make_unique<Scope>(settings_);
     pair.second->NonRecursiveMergeTo(dest_scope.get(), options, node_for_err,
                                      "<SHOULDN'T HAPPEN>", err);
   }
@@ -363,8 +364,8 @@ bool Scope::NonRecursiveMergeTo(Scope* dest,
         return false;
       }
     }
-    dest->sources_assignment_filter_.reset(
-        new PatternList(*sources_assignment_filter_));
+    dest->sources_assignment_filter_ =
+        std::make_unique<PatternList>(*sources_assignment_filter_);
   }
 
   // Templates.
@@ -412,14 +413,14 @@ std::unique_ptr<Scope> Scope::MakeClosure() const {
   if (const_containing_) {
     // We reached the top of the mutable scope stack. The result scope just
     // references the const scope (which will never change).
-    result.reset(new Scope(const_containing_));
+    result = std::make_unique<Scope>(const_containing_);
   } else if (mutable_containing_) {
     // There are more nested mutable scopes. Recursively go up the stack to
     // get the closure.
     result = mutable_containing_->MakeClosure();
   } else {
     // This is a standalone scope, just copy it.
-    result.reset(new Scope(settings_));
+    result = std::make_unique<Scope>(settings_);
   }
 
   // Want to clobber since we've flattened some nested scopes, and our parent
@@ -437,7 +438,7 @@ std::unique_ptr<Scope> Scope::MakeClosure() const {
 
 Scope* Scope::MakeTargetDefaults(const std::string& target_type) {
   std::unique_ptr<Scope>& dest = target_defaults_[target_type];
-  dest = base::MakeUnique<Scope>(settings_);
+  dest = std::make_unique<Scope>(settings_);
   return dest.get();
 }
 
