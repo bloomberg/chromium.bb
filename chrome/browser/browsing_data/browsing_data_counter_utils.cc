@@ -28,21 +28,6 @@
 #endif
 
 
-bool AreCountersEnabled() {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableClearBrowsingDataCounters)) {
-    return true;
-  }
-
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableClearBrowsingDataCounters)) {
-    return false;
-  }
-
-  // Enabled by default.
-  return true;
-}
-
 bool IsSiteDataCounterEnabled() {
   // Only use the site data counter for the new CBD ui.
   return base::FeatureList::IsEnabled(features::kTabsInCbd);

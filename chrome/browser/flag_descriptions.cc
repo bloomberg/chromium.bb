@@ -326,11 +326,6 @@ const char kEnableBrotliName[] = "Brotli Content-Encoding.";
 const char kEnableBrotliDescription[] =
     "Enable Brotli Content-Encoding support.";
 
-const char kEnableClearBrowsingDataCountersName[] =
-    "Enable Clear browsing data counters.";
-const char kEnableClearBrowsingDataCountersDescription[] =
-    "Shows data volume counters in the Clear browsing data dialog.";
-
 const char kEnableClientLoFiName[] = "Client-side Lo-Fi previews";
 
 const char kEnableClientLoFiDescription[] =
