@@ -44,6 +44,7 @@ source_set("pipeline_integration_test_base") {
       "//media:test_support",
       "//testing/gmock",
       "//testing/gtest",
+      "//third_party/libaom:av1_features",
       "//url",
     ]
   }
@@ -68,6 +69,7 @@ source_set("pipeline_integration_tests") {
       "//media:test_support",
       "//media/mojo/clients",
       "//services/service_manager/public/cpp:service_test_support",
+      "//third_party/libaom:av1_features",
 
       # Needed for the opus_config
       "//third_party/opus",
@@ -125,6 +127,7 @@ source_set("mojo_pipeline_integration_tests") {
       "//media/mojo/services",
       "//services/service_manager/public/cpp:service_test_support",
       "//testing/gtest",
+      "//third_party/libaom:av1_features",
       "//ui/gfx:test_support",
       "//ui/gfx/geometry",
 

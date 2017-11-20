@@ -51,6 +51,7 @@ source_set("formats") {
   deps = [
     "//media/base",
     "//skia",
+    "//third_party/libaom:av1_features",
   ]
 
   configs += [
