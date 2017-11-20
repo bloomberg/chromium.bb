@@ -710,12 +710,10 @@ def _PostParseCheck(parser, options, site_config):
   if build_config.debug:
     options.debug = True
 
-  if not (config_lib.isTryjobConfig(build_config) or
-          options.buildbot or
-          options.debug):
+  if not (config_lib.isTryjobConfig(build_config) or options.buildbot):
     cros_build_lib.Die(
         'Refusing to run non-tryjob config as a tryjob.\n'
-        'Please see "repo sync && cros tryjob --list %s" for alternatives.\n'
+        'Please "repo sync && cros tryjob --list %s" for alternatives.\n'
         'See go/cros-explicit-tryjob-build-configs-psa.',
         build_config.name)
 
