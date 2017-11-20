@@ -27,34 +27,24 @@
       "bounds": [700, 525],
       "paintInvalidations": [
         {
-          "object": "LayoutFlexibleBox (relative positioned) DIV",
-          "rect": [0, 493, 700, 32],
-          "reason": "paint property change"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV",
-          "rect": [108, 508, 404, 2],
-          "reason": "paint property change"
-        },
-        {
           "object": "LayoutBlockFlow (positioned) DIV id='thumb'",
           "rect": [597, 493, 36, 32],
-          "reason": "paint property change"
+          "reason": "full"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='thumb'",
           "rect": [562, 493, 36, 32],
-          "reason": "paint property change"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='thumb'",
-          "rect": [90, 493, 36, 32],
-          "reason": "paint property change"
+          "reason": "full"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV",
           "rect": [580, 508, 35, 2],
           "reason": "appeared"
+        },
+        {
+          "object": "LayoutButton INPUT",
+          "rect": [530, 493, 32, 32],
+          "reason": "full"
         }
       ]
     }

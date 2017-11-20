@@ -5,6 +5,7 @@
 #ifndef CompositedLayerRasterInvalidator_h
 #define CompositedLayerRasterInvalidator_h
 
+#include "platform/graphics/paint/FloatClipRect.h"
 #include "platform/graphics/paint/PaintChunk.h"
 #include "platform/graphics/paint/RasterInvalidationTracking.h"
 #include "platform/wtf/HashMap.h"
@@ -46,12 +47,16 @@ class PLATFORM_EXPORT CompositedLayerRasterInvalidator {
   const gfx::Rect& LayerBounds() const { return layer_bounds_; }
 
  private:
+  friend class CompositedLayerRasterInvalidatorTest;
+
   struct PaintChunkInfo {
     PaintChunkInfo(const IntRect& bounds,
                    const TransformationMatrix& chunk_to_layer_transform,
+                   const FloatClipRect& chunk_to_layer_clip,
                    const PaintChunk& chunk)
         : bounds_in_layer(bounds),
           chunk_to_layer_transform(chunk_to_layer_transform),
+          chunk_to_layer_clip(chunk_to_layer_clip),
           id(chunk.id),
           is_cacheable(chunk.is_cacheable),
           properties(chunk.properties) {}
@@ -62,6 +67,7 @@ class PLATFORM_EXPORT CompositedLayerRasterInvalidator {
 
     IntRect bounds_in_layer;
     TransformationMatrix chunk_to_layer_transform;
+    FloatClipRect chunk_to_layer_clip;
     PaintChunk::Id id;
     bool is_cacheable;
     PaintChunkProperties properties;
@@ -69,18 +75,36 @@ class PLATFORM_EXPORT CompositedLayerRasterInvalidator {
 
   IntRect MapRectFromChunkToLayer(const FloatRect&, const PaintChunk&) const;
   TransformationMatrix ChunkToLayerTransform(const PaintChunk&) const;
+  FloatClipRect ChunkToLayerClip(const PaintChunk&) const;
 
   void GenerateRasterInvalidations(
       const Vector<const PaintChunk*>& new_chunks,
       const Vector<PaintChunkInfo>& new_chunks_info);
   size_t MatchNewChunkToOldChunk(const PaintChunk& new_chunk, size_t old_index);
   void AddDisplayItemRasterInvalidations(const PaintChunk&);
-  void InvalidateRasterForNewChunk(const PaintChunkInfo&,
-                                   PaintInvalidationReason);
-  void InvalidateRasterForOldChunk(const PaintChunkInfo&,
-                                   PaintInvalidationReason);
-  bool ChunkPropertiesChanged(const PaintChunkInfo& new_chunk,
-                              const PaintChunkInfo& old_chunk) const;
+  void IncrementallyInvalidateChunk(const PaintChunkInfo& old_chunk,
+                                    const PaintChunkInfo& new_chunk);
+  void FullyInvalidateChunk(const PaintChunkInfo& old_chunk,
+                            const PaintChunkInfo& new_chunk,
+                            PaintInvalidationReason);
+  ALWAYS_INLINE void FullyInvalidateNewChunk(const PaintChunkInfo&,
+                                             PaintInvalidationReason);
+  ALWAYS_INLINE void FullyInvalidateOldChunk(const PaintChunkInfo&,
+                                             PaintInvalidationReason);
+  ALWAYS_INLINE void AddRasterInvalidation(const IntRect&,
+                                           const DisplayItemClient*,
+                                           PaintInvalidationReason,
+                                           const String* debug_name = nullptr);
+  PaintInvalidationReason ChunkPropertiesChanged(
+      const PaintChunkInfo& new_chunk,
+      const PaintChunkInfo& old_chunk) const;
+
+  // Clip a rect in the layer space by the layer bounds.
+  template <typename Rect>
+  Rect ClipByLayerBounds(const Rect& r) const {
+    return Intersection(
+        r, Rect(0, 0, layer_bounds_.width(), layer_bounds_.height()));
+  }
 
   RasterInvalidationFunction raster_invalidation_function_;
   gfx::Rect layer_bounds_;

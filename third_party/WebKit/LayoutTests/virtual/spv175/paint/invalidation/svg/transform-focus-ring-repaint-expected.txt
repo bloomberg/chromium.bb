@@ -15,8 +15,18 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (positioned) DIV id='target'",
+          "rect": [0, 0, 402, 542],
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='target'",
           "rect": [0, 0, 200, 200],
           "reason": "full"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='target'",
+          "rect": [0, 0, 200, 200],
+          "reason": "paint property change"
         }
       ]
     },
