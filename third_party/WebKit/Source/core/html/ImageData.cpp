@@ -744,7 +744,7 @@ void ImageData::SwizzleIfNeeded(DataU8ColorType u8_color_type,
 bool ImageData::ImageDataInCanvasColorSettings(
     CanvasColorSpace canvas_color_space,
     CanvasPixelFormat canvas_pixel_format,
-    std::unique_ptr<uint8_t[]>& converted_pixels,
+    unsigned char* converted_pixels,
     DataU8ColorType u8_color_type,
     const IntRect* src_rect) {
   if (!data_ && !data_u16_ && !data_f32_)
@@ -768,8 +768,7 @@ bool ImageData::ImageDataInCanvasColorSettings(
     if (crop_rect) {
       unsigned char* src_data =
           static_cast<unsigned char*>(BufferBase()->Data());
-      unsigned char* dst_data =
-          static_cast<unsigned char*>(converted_pixels.get());
+      unsigned char* dst_data = static_cast<unsigned char*>(converted_pixels);
       int src_index = (crop_rect->X() + crop_rect->Y() * width()) * 4;
       int dst_index = 0;
       int src_row_stride = width() * 4;
@@ -780,7 +779,7 @@ bool ImageData::ImageDataInCanvasColorSettings(
         dst_index += dst_row_stride;
       }
     } else {
-      memcpy(converted_pixels.get(), data_->Data(), data_->length());
+      memcpy(converted_pixels, data_->Data(), data_->length());
     }
     SwizzleIfNeeded(u8_color_type, crop_rect);
     return true;
@@ -815,8 +814,7 @@ bool ImageData::ImageDataInCanvasColorSettings(
 
   if (crop_rect) {
     unsigned char* src_data = static_cast<unsigned char*>(BufferBase()->Data());
-    unsigned char* dst_data =
-        static_cast<unsigned char*>(converted_pixels.get());
+    unsigned char* dst_data = static_cast<unsigned char*>(converted_pixels);
     int src_data_type_size =
         ImageData::StorageFormatDataSize(color_settings_.storageFormat());
     int dst_pixel_size = dst_color_params.BytesPerPixel();
@@ -837,7 +835,7 @@ bool ImageData::ImageDataInCanvasColorSettings(
       dst_index += dst_row_stride;
     }
   } else {
-    conversion_result = xform->apply(dst_color_format, converted_pixels.get(),
+    conversion_result = xform->apply(dst_color_format, converted_pixels,
                                      src_color_format, src_data, size_.Area(),
                                      SkAlphaType::kUnpremul_SkAlphaType);
   }
