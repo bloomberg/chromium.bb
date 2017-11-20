@@ -148,8 +148,6 @@ base::LazyInstance<MicrodumpInfo>::DestructorAtExit g_microdump_info =
 
 #endif
 
-CrashKeyStorage* g_crash_keys = nullptr;
-
 // Writes the value |v| as 16 hex characters to the memory pointed at by
 // |output|.
 void write_uint64_hex(char* output, uint64_t v) {
@@ -692,7 +690,7 @@ bool CrashDone(const MinidumpDescriptor& minidump,
   info.process_start_time = g_process_start_time;
   info.oom_size = base::g_oom_size;
   info.pid = g_pid;
-  info.crash_keys = g_crash_keys;
+  info.crash_keys = crash_reporter::internal::GetCrashKeyStorage();
   HandleCrashDump(info);
 #if defined(OS_ANDROID)
   return !should_finalize ||
@@ -871,7 +869,7 @@ bool CrashDoneInProcessNoUpload(
   info.upload = false;
   info.process_start_time = g_process_start_time;
   info.pid = g_pid;
-  info.crash_keys = g_crash_keys;
+  info.crash_keys = crash_reporter::internal::GetCrashKeyStorage();
   HandleCrashDump(info);
   return FinalizeCrashDoneAndroid(false /* is_browser_process */);
 }
@@ -1033,7 +1031,7 @@ class NonBrowserCrashHandler : public google_breakpad::CrashGenerationClient {
     iov[4].iov_base = &base::g_oom_size;
     iov[4].iov_len = sizeof(base::g_oom_size);
     google_breakpad::SerializedNonAllocatingMap* serialized_map;
-    iov[5].iov_len = g_crash_keys->Serialize(
+    iov[5].iov_len = crash_reporter::internal::GetCrashKeyStorage()->Serialize(
         const_cast<const google_breakpad::SerializedNonAllocatingMap**>(
             &serialized_map));
     iov[5].iov_base = serialized_map;
@@ -1112,18 +1110,19 @@ bool IsInWhiteList(const base::StringPiece& key) {
 void SetCrashKeyValue(const base::StringPiece& key,
                       const base::StringPiece& value) {
   if (!g_use_crash_key_white_list || IsInWhiteList(key)) {
-    g_crash_keys->SetKeyValue(key.data(), value.data());
+    crash_reporter::internal::GetCrashKeyStorage()->SetKeyValue(key.data(),
+                                                                value.data());
   }
 }
 
 void ClearCrashKey(const base::StringPiece& key) {
-  g_crash_keys->RemoveKey(key.data());
+  crash_reporter::internal::GetCrashKeyStorage()->RemoveKey(key.data());
 }
 
 // GetCrashReporterClient() cannot call any Set methods until after
 // InitCrashKeys().
 void InitCrashKeys() {
-  g_crash_keys = new CrashKeyStorage;
+  crash_reporter::InitializeCrashKeys();
   GetCrashReporterClient()->RegisterCrashKeys();
   g_use_crash_key_white_list =
       GetCrashReporterClient()->UseCrashKeysWhiteList();
@@ -1800,9 +1799,13 @@ void HandleCrashDump(const BreakpadInfo& info) {
   }
 
   if (info.crash_keys) {
+    using CrashKeyStorage =
+        crash_reporter::internal::TransitionalCrashKeyStorage;
     CrashKeyStorage::Iterator crash_key_iterator(*info.crash_keys);
     const CrashKeyStorage::Entry* entry;
     while ((entry = crash_key_iterator.Next())) {
+      if (g_use_crash_key_white_list && !IsInWhiteList(entry->key))
+        continue;
       writer.AddPairString(entry->key, entry->value);
       writer.AddBoundary();
       writer.Flush();

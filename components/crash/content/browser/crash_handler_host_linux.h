@@ -72,17 +72,19 @@ class CrashHandlerHostLinux : public base::MessageLoopForIO::Watcher,
   void QueueCrashDumpTask(std::unique_ptr<BreakpadInfo> info, int signal_fd);
 
   // Find crashing thread (may delay and retry) and dump on IPC thread.
-  void FindCrashingThreadAndDump(pid_t crashing_pid,
-                                 const std::string& expected_syscall_data,
-                                 std::unique_ptr<char[]> crash_context,
-                                 std::unique_ptr<CrashKeyStorage> crash_keys,
+  void FindCrashingThreadAndDump(
+      pid_t crashing_pid,
+      const std::string& expected_syscall_data,
+      std::unique_ptr<char[]> crash_context,
+      std::unique_ptr<crash_reporter::internal::TransitionalCrashKeyStorage>
+          crash_keys,
 #if defined(ADDRESS_SANITIZER)
-                                 std::unique_ptr<char[]> asan_report,
+      std::unique_ptr<char[]> asan_report,
 #endif
-                                 uint64_t uptime,
-                                 size_t oom_size,
-                                 int signal_fd,
-                                 int attempt);
+      uint64_t uptime,
+      size_t oom_size,
+      int signal_fd,
+      int attempt);
 
   const std::string process_type_;
   const base::FilePath dumps_path_;

@@ -13,11 +13,9 @@
 #include <sys/types.h>
 
 #include "components/crash/content/app/breakpad_linux.h"
-#include "third_party/breakpad/breakpad/src/common/simple_string_dictionary.h"
+#include "components/crash/core/common/crash_key_internal.h"
 
 namespace breakpad {
-
-typedef google_breakpad::NonAllocatingMap<256, 256, 64> CrashKeyStorage;
 
 #if defined(ADDRESS_SANITIZER)
 static const size_t kMaxAsanReportSize = 1 << 16;
@@ -55,7 +53,7 @@ struct BreakpadInfo {
   uint64_t process_start_time;     // Uptime of the crashing process.
   size_t oom_size;                 // Amount of memory requested if OOM.
   uint64_t pid;                    // PID where applicable.
-  CrashKeyStorage* crash_keys;
+  crash_reporter::internal::TransitionalCrashKeyStorage* crash_keys;
 };
 
 extern void HandleCrashDump(const BreakpadInfo& info);

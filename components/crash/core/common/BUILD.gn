@@ -4,7 +4,8 @@
 
 group("common") {
   public_deps = [
-    ":crash_keys",
+    ":crash_key",
+    ":crash_key_utils",
   ]
 
   if (is_mac || is_ios) {
@@ -12,7 +13,33 @@ group("common") {
   }
 }
 
-static_library("crash_keys") {
+static_library("crash_key") {
+  sources = [
+    "crash_key.h",
+  ]
+
+  deps = [
+    "//base",
+  ]
+
+  if (is_mac || is_win) {
+    sources += [ "crash_key_crashpad.cc" ]
+    deps += [ "//third_party/crashpad/crashpad/client" ]
+  } else if (is_fuchsia) {
+    sources += [ "crash_key_stubs.cc" ]
+  } else {
+    include_dirs = [ "//third_party/breakpad/breakpad/src/" ]
+
+    sources += [
+      "crash_key_breakpad.cc",
+      "crash_key_internal.h",
+    ]
+
+    deps += [ "//third_party/breakpad:client" ]
+  }
+}
+
+static_library("crash_key_utils") {
   visibility = [ ":*" ]
 
   sources = [
@@ -21,6 +48,7 @@ static_library("crash_keys") {
   ]
 
   deps = [
+    ":crash_key",
     "//base",
   ]
 }
@@ -38,7 +66,7 @@ if (is_mac || is_ios) {
     defines = [ "CRASH_CORE_COMMON_IMPLEMENTATION" ]
 
     deps = [
-      ":crash_keys",
+      ":crash_key_utils",
       "//base",
     ]
 
@@ -49,6 +77,7 @@ if (is_mac || is_ios) {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "crash_key_unittest.cc",
     "crash_keys_unittest.cc",
   ]
 
@@ -60,5 +89,14 @@ source_set("unit_tests") {
 
   if (is_mac || is_ios) {
     sources += [ "objc_zombie_unittest.mm" ]
+  }
+
+  if (!is_mac && !is_win && !is_fuchsia) {
+    include_dirs = [ "//third_party/breakpad/breakpad/src/" ]
+    sources += [ "crash_key_breakpad_unittest.cc" ]
+  }
+
+  if (is_fuchsia) {
+    sources -= [ "crash_key_unittest.cc" ]
   }
 }
