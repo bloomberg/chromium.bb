@@ -46,23 +46,27 @@ class IPC_EXPORT ChannelMojo : public Channel,
                                public internal::MessagePipeReader::Delegate {
  public:
   // Creates a ChannelMojo.
-  static std::unique_ptr<ChannelMojo>
-  Create(mojo::ScopedMessagePipeHandle handle,
-         Mode mode,
-         Listener* listener,
-         const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner =
-            base::ThreadTaskRunnerHandle::Get());
+  static std::unique_ptr<ChannelMojo> Create(
+      mojo::ScopedMessagePipeHandle handle,
+      Mode mode,
+      Listener* listener,
+      const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner =
+          base::ThreadTaskRunnerHandle::Get(),
+      const scoped_refptr<base::SingleThreadTaskRunner>& proxy_task_runner =
+          base::ThreadTaskRunnerHandle::Get());
 
   // Create a factory object for ChannelMojo.
   // The factory is used to create Mojo-based ChannelProxy family.
   // |host| must not be null.
   static std::unique_ptr<ChannelFactory> CreateServerFactory(
       mojo::ScopedMessagePipeHandle handle,
-      const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner);
+      const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner,
+      const scoped_refptr<base::SingleThreadTaskRunner>& proxy_task_runner);
 
   static std::unique_ptr<ChannelFactory> CreateClientFactory(
       mojo::ScopedMessagePipeHandle handle,
-      const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner);
+      const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner,
+      const scoped_refptr<base::SingleThreadTaskRunner>& proxy_task_runner);
 
   ~ChannelMojo() override;
 
@@ -97,7 +101,8 @@ class IPC_EXPORT ChannelMojo : public Channel,
       mojo::ScopedMessagePipeHandle handle,
       Mode mode,
       Listener* listener,
-      const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner);
+      const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner,
+      const scoped_refptr<base::SingleThreadTaskRunner>& proxy_task_runner);
 
   void ForwardMessageFromThreadSafePtr(mojo::Message message);
   void ForwardMessageWithResponderFromThreadSafePtr(
