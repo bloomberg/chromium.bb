@@ -74,6 +74,10 @@ bool NGPhysicalOffset::operator==(const NGPhysicalOffset& other) const {
 NGPhysicalOffset::NGPhysicalOffset(const LayoutPoint& source)
     : left(source.X()), top(source.Y()) {}
 
+LayoutPoint NGPhysicalOffset::ToLayoutPoint() const {
+  return {left, top};
+}
+
 String NGPhysicalOffset::ToString() const {
   return String::Format("%d,%d", left.ToInt(), top.ToInt());
 }
