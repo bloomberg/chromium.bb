@@ -60,6 +60,24 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
   option_name = 'tests'
   config_name = 'vm_tests'
 
+  def __init__(self, builder_run, board, vm_tests=None, ssh_port=9228,
+               test_basename=None, **kwargs):
+    """Initiailization of the VMTestStage.
+
+    Args:
+      builder_run: BoardRunAttributes object for this stage.
+      board: The active board for this stage.
+      vm_tests: vm_tests to run at this stage. If None is specified, use
+                builder_run.config.vm_tests instead.
+      ssh_port: ssh port to access the VM. Default: 9228.
+      test_basename: The basename that the tests are archived to. If None is
+                     specified, use constants.VM_TEST_RESULTS instead.
+    """
+    self._vm_tests = vm_tests
+    self._ssh_port = ssh_port
+    self._test_basename = test_basename
+    super(VMTestStage, self).__init__(builder_run, board, **kwargs)
+
   def _PrintFailedTests(self, results_path, test_basename):
     """Print links to failed tests.
 
@@ -213,6 +231,7 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
           whitelist_chrome_crashes=self._chrome_rev is None,
           archive_dir=self.bot_archive_root,
           ssh_private_key=ssh_private_key,
+          ssh_port=self._ssh_port
       )
 
   def PerformStage(self):
@@ -222,8 +241,13 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
 
     test_results_root = commands.CreateTestRoot(self._build_root)
     test_basename = _VM_TEST_RESULTS % dict(attempt=self._attempt)
+    if self._test_basename:
+      test_basename = self._test_basename
     try:
-      for vm_test in self._run.config.vm_tests:
+      if not self._vm_tests:
+        self._vm_tests = self._run.config.vm_tests
+
+      for vm_test in self._vm_tests:
         logging.info('Running VM test %s.', vm_test.test_type)
         if vm_test.test_type == constants.VM_SUITE_TEST_TYPE:
           per_test_results_dir = os.path.join(test_results_root,
@@ -264,6 +288,18 @@ class GCETestStage(VMTestStage):
   # TODO: We should revisit whether GCE tests should have their own configs.
   TEST_TIMEOUT = 60 * 60
 
+  def __init__(self, builder_run, board, gce_tests=None, **kwargs):
+    """Initiailization of the VMTestStage.
+
+    Args:
+      builder_run: BoardRunAttributes object for this stage.
+      board: The active board for this stage.
+      gce_tests: gce_tests to run at this stage. If None is specified, use
+                builder_run.config.gce_tests instead.
+    """
+    self._gce_tests = gce_tests
+    super(GCETestStage, self).__init__(builder_run, board, **kwargs)
+
   def _RunTest(self, test_config, test_results_dir):
     """Run a GCE test.
 
@@ -291,14 +327,19 @@ class GCETestStage(VMTestStage):
         whitelist_chrome_crashes=self._chrome_rev is None,
         archive_dir=self.bot_archive_root,
         ssh_private_key=ssh_private_key,
+        ssh_port=self._ssh_port
     )
 
   def PerformStage(self):
     # These directories are used later to archive test artifacts.
     test_results_root = commands.CreateTestRoot(self._build_root)
     test_basename = _GCE_TEST_RESULTS % dict(attempt=self._attempt)
+    if self._test_basename:
+      test_basename = self._test_basename
     try:
-      for gce_test in self._run.config.gce_tests:
+      if not self._gce_tests:
+        self._gce_tests = self._run.config.gce_tests
+      for gce_test in self._gce_tests:
         logging.info('Running GCE test %s.', gce_test.test_type)
         if gce_test.test_type == constants.GCE_SUITE_TEST_TYPE:
           per_test_results_dir = os.path.join(test_results_root,
@@ -668,7 +709,8 @@ def RunDevModeTest(buildroot, board, image_dir):
 
 
 def RunTestSuite(buildroot, board, image_path, results_dir, test_config,
-                 whitelist_chrome_crashes, archive_dir, ssh_private_key=None):
+                 whitelist_chrome_crashes, archive_dir, ssh_private_key=None,
+                 ssh_port=9228):
   """Runs the test harness suite."""
   results_dir_in_chroot = os.path.join(buildroot, 'chroot',
                                        results_dir.lstrip('/'))
@@ -694,6 +736,7 @@ def RunTestSuite(buildroot, board, image_path, results_dir, test_config,
     cmd.append('--archive_dir=%s' % archive_dir)
   elif test_type in [constants.VM_SUITE_TEST_TYPE,
                      constants.GCE_SUITE_TEST_TYPE]:
+    cmd.append('--ssh_port=%s' % ssh_port)
     cmd.append('--only_verify')
     cmd.append('--suite=%s' % test_config.test_suite)
   else:
