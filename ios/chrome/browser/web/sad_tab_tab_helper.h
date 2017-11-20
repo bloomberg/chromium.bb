@@ -78,6 +78,10 @@ class SadTabTabHelper : public web::WebStateUserData<SadTabTabHelper>,
   // to be considered a repeat failure.
   static const double kDefaultRepeatFailureInterval;
 
+  // The WebState this instance is observing. Will be null after
+  // WebStateDestroyed has been called.
+  web::WebState* web_state_ = nullptr;
+
   // Stores the last URL that caused a renderer crash,
   // used to detect repeated crashes.
   GURL last_failed_url_;
