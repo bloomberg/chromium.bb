@@ -3309,8 +3309,6 @@ split_static_library("browser") {
       "autocomplete/shortcuts_extensions_manager.h",
       "browsing_data/hosted_apps_counter.cc",
       "browsing_data/hosted_apps_counter.h",
-      "content_settings/content_settings_internal_extension_provider.cc",
-      "content_settings/content_settings_internal_extension_provider.h",
       "drive/drive_notification_manager_factory.cc",
       "drive/drive_notification_manager_factory.h",
       "guest_view/app_view/chrome_app_view_guest_delegate.cc",

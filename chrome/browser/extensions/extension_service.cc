@@ -30,7 +30,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/content_settings/content_settings_internal_extension_provider.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_custom_extension_provider.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_service.h"
 #include "chrome/browser/extensions/app_data_migrator.h"
@@ -1846,11 +1845,6 @@ void ExtensionService::RegisterContentSettings(
 
   TRACE_EVENT0("browser,startup", "ExtensionService::RegisterContentSettings");
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  host_content_settings_map->RegisterProvider(
-      HostContentSettingsMap::INTERNAL_EXTENSION_PROVIDER,
-      std::unique_ptr<content_settings::ObservableProvider>(
-          new content_settings::InternalExtensionProvider(original_profile)));
-
   host_content_settings_map->RegisterProvider(
       HostContentSettingsMap::CUSTOM_EXTENSION_PROVIDER,
       std::unique_ptr<content_settings::ObservableProvider>(
