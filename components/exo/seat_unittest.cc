@@ -19,11 +19,17 @@ class MockSeatObserver : public SeatObserver {
   int on_surface_focused_count() { return on_surface_focused_count_; }
 
   // Overridden from SeatObserver:
-  void OnSurfaceFocused(Surface* surface) override {
+  void OnSurfaceFocusing(Surface* gaining_focus) override {
+    ASSERT_EQ(on_surface_focused_count_, on_surface_pre_focused_count_);
+    on_surface_pre_focused_count_++;
+  }
+  void OnSurfaceFocused(Surface* gained_focus) override {
     on_surface_focused_count_++;
+    ASSERT_EQ(on_surface_focused_count_, on_surface_pre_focused_count_);
   }
 
  private:
+  int on_surface_pre_focused_count_ = 0;
   int on_surface_focused_count_ = 0;
 };
 

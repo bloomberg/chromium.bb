@@ -303,6 +303,8 @@ void Keyboard::OnTabletModeEnded() {
 ////////////////////////////////////////////////////////////////////////////////
 // SeatObserver overrides:
 
+void Keyboard::OnSurfaceFocusing(Surface* gaining_focus) {}
+
 void Keyboard::OnSurfaceFocused(Surface* gained_focus) {
   Surface* gained_focus_surface =
       gained_focus && delegate_->CanAcceptKeyboardEventsForSurface(gained_focus)

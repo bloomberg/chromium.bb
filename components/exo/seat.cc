@@ -54,6 +54,9 @@ void Seat::OnWindowFocused(aura::Window* gained_focus,
                            aura::Window* lost_focus) {
   Surface* const surface = GetEffectiveFocus(gained_focus);
   for (auto& observer : observers_) {
+    observer.OnSurfaceFocusing(surface);
+  }
+  for (auto& observer : observers_) {
     observer.OnSurfaceFocused(surface);
   }
 }
