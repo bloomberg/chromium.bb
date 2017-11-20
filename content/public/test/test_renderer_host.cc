@@ -26,7 +26,6 @@
 #include "content/test/test_render_frame_host_factory.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_render_view_host_factory.h"
-#include "content/test/test_render_widget_host_factory.h"
 #include "content/test/test_web_contents.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/test/material_design_controller_test_api.h"
@@ -135,8 +134,7 @@ bool RenderViewHostTester::HasTouchEventHandler(RenderViewHost* rvh) {
 RenderViewHostTestEnabler::RenderViewHostTestEnabler()
     : rph_factory_(new MockRenderProcessHostFactory()),
       rvh_factory_(new TestRenderViewHostFactory(rph_factory_.get())),
-      rfh_factory_(new TestRenderFrameHostFactory()),
-      rwhi_factory_(new TestRenderWidgetHostFactory()) {
+      rfh_factory_(new TestRenderFrameHostFactory()) {
   // A MessageLoop is needed for Mojo bindings to graphics services. Some
   // tests have their own, so this only creates one when none exists. This
   // means tests must ensure any MessageLoop they make is created before
