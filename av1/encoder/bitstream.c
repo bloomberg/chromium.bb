@@ -3298,30 +3298,36 @@ static void write_superres_scale(const AV1_COMMON *const cm,
 
 #if CONFIG_FRAME_SIZE
 static void write_frame_size(const AV1_COMMON *cm, int frame_size_override,
-                             struct aom_write_bit_buffer *wb) {
+                             struct aom_write_bit_buffer *wb)
 #else
 static void write_frame_size(const AV1_COMMON *cm,
-                             struct aom_write_bit_buffer *wb) {
+                             struct aom_write_bit_buffer *wb)
 #endif
+{
 #if CONFIG_FRAME_SUPERRES
-  (void)frame_size_override;
-  aom_wb_write_literal(wb, cm->superres_upscaled_width - 1, 16);
-  aom_wb_write_literal(wb, cm->superres_upscaled_height - 1, 16);
-  write_superres_scale(cm, wb);
+  const int coded_width = cm->superres_upscaled_width - 1;
+  const int coded_height = cm->superres_upscaled_height - 1;
 #else
+  const int coded_width = cm->width - 1;
+  const int coded_height = cm->height - 1;
+#endif
+
 #if CONFIG_FRAME_SIZE
   if (frame_size_override) {
     const SequenceHeader *seq_params = &cm->seq_params;
     int num_bits_width = seq_params->num_bits_width;
     int num_bits_height = seq_params->num_bits_height;
-    aom_wb_write_literal(wb, cm->width - 1, num_bits_width);
-    aom_wb_write_literal(wb, cm->height - 1, num_bits_height);
+    aom_wb_write_literal(wb, coded_width, num_bits_width);
+    aom_wb_write_literal(wb, coded_height, num_bits_height);
   }
 #else
-  aom_wb_write_literal(wb, cm->width - 1, 16);
-  aom_wb_write_literal(wb, cm->height - 1, 16);
+  aom_wb_write_literal(wb, coded_width, 16);
+  aom_wb_write_literal(wb, coded_height, 16);
 #endif
-#endif  // CONFIG_FRAME_SUPERRES
+
+#if CONFIG_FRAME_SUPERRES
+  write_superres_scale(cm, wb);
+#endif
   write_render_size(cm, wb);
 }
 
@@ -3651,9 +3657,16 @@ static void write_uncompressed_header_frame(AV1_COMP *cpi,
     aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
                        "Frame dimensions are larger than the maximum values");
   }
+#if CONFIG_FRAME_SUPERRES
+  const int coded_width = cm->superres_upscaled_width;
+  const int coded_height = cm->superres_upscaled_height;
+#else
+  const int coded_width = cm->width;
+  const int coded_height = cm->height;
+#endif
   int frame_size_override_flag =
-      (cm->width != cm->seq_params.max_frame_width ||
-       cm->height != cm->seq_params.max_frame_height);
+      (coded_width != cm->seq_params.max_frame_width ||
+       coded_height != cm->seq_params.max_frame_height);
   aom_wb_write_bit(wb, frame_size_override_flag);
 #endif
 
