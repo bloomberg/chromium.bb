@@ -2882,6 +2882,64 @@ TEST_P(ResourceProviderTest, TextureMailbox_GLTextureExternalOES) {
   child_resource_provider->DeleteResource(resource_id);
 }
 
+TEST_P(ResourceProviderTest, WaitSyncTokenIfNeeded_ResourceFromChild) {
+  // Mailboxing is only supported for GL textures.
+  if (GetParam() != viz::ResourceType::kTexture)
+    return;
+
+  auto context_owned(std::make_unique<TextureStateTrackingContext>());
+  TextureStateTrackingContext* context = context_owned.get();
+  auto context_provider = TestContextProvider::Create(std::move(context_owned));
+  context_provider->BindToCurrentThread();
+
+  auto resource_provider = std::make_unique<DisplayResourceProvider>(
+      context_provider.get(), shared_bitmap_manager_.get(),
+      gpu_memory_buffer_manager_.get(), CreateResourceSettings());
+
+  gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO, 0,
+                            gpu::CommandBufferId::FromUnsafeValue(0x12), 0x34);
+  const GLuint64 current_fence_sync = context->GetNextFenceSync();
+  unsigned target = GL_TEXTURE_2D;
+
+  EXPECT_CALL(*context, bindTexture(_, _)).Times(0);
+  EXPECT_CALL(*context, waitSyncToken(_)).Times(0);
+  EXPECT_CALL(*context, produceTextureDirectCHROMIUM(_, _, _)).Times(0);
+  EXPECT_CALL(*context, createAndConsumeTextureCHROMIUM(_, _)).Times(0);
+
+  // Receive a resource from the child.
+  std::vector<viz::ReturnedResource> returned;
+  ReturnCallback return_callback = base::Bind(
+      [](std::vector<viz::ReturnedResource>* out,
+         const std::vector<viz::ReturnedResource>& in) {
+        *out = std::move(in);
+      },
+      &returned);
+  int child = resource_provider->CreateChild(return_callback);
+
+  // Send a bunch of resources, to make sure things work when there's more than
+  // one resource, and to make vectors reallocate and such.
+  for (int i = 0; i < 100; ++i) {
+    gpu::Mailbox gpu_mailbox;
+    memcpy(gpu_mailbox.name, "Hello world", strlen("Hello world") + 1);
+    auto resource = viz::TransferableResource::MakeGL(gpu_mailbox, GL_LINEAR,
+                                                      target, sync_token);
+    resource.id = i;
+    resource_provider->ReceiveFromChild(child, {resource});
+    auto& map = resource_provider->GetChildToParentMap(child);
+    EXPECT_EQ(i + 1u, map.size());
+  }
+
+  EXPECT_EQ(current_fence_sync, context->GetNextFenceSync());
+  resource_provider.reset();
+  // Returned resources don't have InsertFenceSyncCHROMIUM() called.
+  EXPECT_EQ(current_fence_sync, context->GetNextFenceSync());
+
+  // The returned resource has a verified sync token.
+  ASSERT_EQ(returned.size(), 100u);
+  for (viz::ReturnedResource& r : returned)
+    EXPECT_TRUE(r.sync_token.verified_flush());
+}
+
 TEST_P(ResourceProviderTest,
        TextureMailbox_WaitSyncTokenIfNeeded_WithSyncToken) {
   // Mailboxing is only supported for GL textures.
