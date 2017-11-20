@@ -43,6 +43,20 @@
 namespace blink {
 namespace {
 
+bool IsSameOriginWithAncestors(Frame* frame) {
+  if (!frame)
+    return true;
+
+  Frame* current = frame;
+  SecurityOrigin* origin = frame->GetSecurityContext()->GetSecurityOrigin();
+  while (current->Tree().Parent()) {
+    current = current->Tree().Parent();
+    if (!origin->CanAccess(current->GetSecurityContext()->GetSecurityOrigin()))
+      return false;
+  }
+  return true;
+}
+
 void RejectDueToCredentialManagerError(ScriptPromiseResolver* resolver,
                                        WebCredentialManagerError reason) {
   switch (reason) {
@@ -87,16 +101,6 @@ void RejectDueToCredentialManagerError(ScriptPromiseResolver* resolver,
 }
 
 bool CheckBoilerplate(ScriptPromiseResolver* resolver) {
-  Frame* frame = ToDocument(ExecutionContext::From(resolver->GetScriptState()))
-                     ->GetFrame();
-  if (!frame || frame != frame->Tree().Top()) {
-    resolver->Reject(DOMException::Create(kSecurityError,
-                                          "CredentialContainer methods may "
-                                          "only be executed in a top-level "
-                                          "document."));
-    return false;
-  }
-
   String error_message;
   if (!ExecutionContext::From(resolver->GetScriptState())
            ->IsSecureContext(error_message)) {
@@ -141,15 +145,22 @@ class NotificationCallbacks
   WTF_MAKE_NONCOPYABLE(NotificationCallbacks);
 
  public:
-  explicit NotificationCallbacks(ScriptPromiseResolver* resolver)
-      : resolver_(resolver) {}
+  enum class SameOriginRequirement { kMustBeSameOrigin, kCanBeCrossOrigin };
+
+  explicit NotificationCallbacks(ScriptPromiseResolver* resolver,
+                                 SameOriginRequirement same_origin_requirement)
+      : resolver_(resolver),
+        same_origin_requirement_(same_origin_requirement) {}
   ~NotificationCallbacks() override {}
 
   void OnSuccess() override {
     Frame* frame =
         ToDocument(ExecutionContext::From(resolver_->GetScriptState()))
             ->GetFrame();
-    SECURITY_CHECK(!frame || frame == frame->Tree().Top());
+    SECURITY_CHECK(!frame ||
+                   same_origin_requirement_ ==
+                       SameOriginRequirement::kCanBeCrossOrigin ||
+                   IsSameOriginWithAncestors(frame));
 
     resolver_->Resolve();
   }
@@ -160,6 +171,7 @@ class NotificationCallbacks
 
  private:
   const Persistent<ScriptPromiseResolver> resolver_;
+  const SameOriginRequirement same_origin_requirement_;
 };
 
 class RequestCallbacks : public WebCredentialManagerClient::RequestCallbacks {
@@ -176,7 +188,7 @@ class RequestCallbacks : public WebCredentialManagerClient::RequestCallbacks {
     if (!context)
       return;
     Frame* frame = ToDocument(context)->GetFrame();
-    SECURITY_CHECK(!frame || frame == frame->Tree().Top());
+    SECURITY_CHECK(!frame || IsSameOriginWithAncestors(frame));
 
     std::unique_ptr<WebCredential> credential =
         WTF::WrapUnique(web_credential.release());
@@ -272,10 +284,22 @@ ScriptPromise CredentialsContainer::get(
     const CredentialRequestOptions& options) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
+  ExecutionContext* context = ExecutionContext::From(script_state);
+
+  Frame* frame = ToDocument(context)->GetFrame();
+  if ((options.hasPassword() || options.hasFederated()) &&
+      !IsSameOriginWithAncestors(frame)) {
+    resolver->Reject(DOMException::Create(
+        kNotAllowedError,
+        "`PasswordCredential` and `FederatedCredential` objects may only be "
+        "retrieved in a document which is same-origin with all of its "
+        "ancestors."));
+    return promise;
+  }
+
   if (!CheckBoilerplate(resolver))
     return promise;
 
-  ExecutionContext* context = ExecutionContext::From(script_state);
   // Set the default mediation option if none is provided.
   // If both 'unmediated' and 'mediation' are set log a warning if they are
   // contradicting.
@@ -335,6 +359,18 @@ ScriptPromise CredentialsContainer::store(ScriptState* script_state,
                                           Credential* credential) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
+
+  Frame* frame = ToDocument(ExecutionContext::From(script_state))->GetFrame();
+  if ((credential->type() == "password" || credential->type() == "federated") &&
+      !IsSameOriginWithAncestors(frame)) {
+    resolver->Reject(
+        DOMException::Create(kNotAllowedError,
+                             "`PasswordCredential` and `FederatedCredential` "
+                             "objects may only be stored in a document which "
+                             "is same-origin with all of its ancestors."));
+    return promise;
+  }
+
   if (!CheckBoilerplate(resolver))
     return promise;
 
@@ -347,7 +383,11 @@ ScriptPromise CredentialsContainer::store(ScriptState* script_state,
   auto web_credential =
       WebCredential::Create(credential->GetPlatformCredential());
   CredentialManagerClient::From(ExecutionContext::From(script_state))
-      ->DispatchStore(*web_credential, new NotificationCallbacks(resolver));
+      ->DispatchStore(
+          *web_credential,
+          new NotificationCallbacks(
+              resolver,
+              NotificationCallbacks::SameOriginRequirement::kMustBeSameOrigin));
   return promise;
 }
 
@@ -404,7 +444,9 @@ ScriptPromise CredentialsContainer::preventSilentAccess(
     return promise;
 
   CredentialManagerClient::From(ExecutionContext::From(script_state))
-      ->DispatchPreventSilentAccess(new NotificationCallbacks(resolver));
+      ->DispatchPreventSilentAccess(new NotificationCallbacks(
+          resolver,
+          NotificationCallbacks::SameOriginRequirement::kCanBeCrossOrigin));
   return promise;
 }
 
