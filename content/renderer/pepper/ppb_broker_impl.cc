@@ -5,6 +5,7 @@
 #include "content/renderer/pepper/ppb_broker_impl.h"
 
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "content/common/frame_messages.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/pepper/host_globals.h"
@@ -24,6 +25,8 @@ using ppapi::TrackedCallback;
 
 namespace content {
 
+enum class PepperBrokerAction { CREATE = 0, CONNECT = 1, NUM };
+
 // PPB_Broker_Impl ------------------------------------------------------
 
 PPB_Broker_Impl::PPB_Broker_Impl(PP_Instance instance)
@@ -33,6 +36,9 @@ PPB_Broker_Impl::PPB_Broker_Impl(PP_Instance instance)
       pipe_handle_(PlatformFileToInt(base::SyncSocket::kInvalidHandle)),
       routing_id_(RenderThreadImpl::current()->GenerateRoutingID()) {
   ChildThreadImpl::current()->GetRouter()->AddRoute(routing_id_, this);
+
+  UMA_HISTOGRAM_ENUMERATION("Pepper.BrokerAction", PepperBrokerAction::CREATE,
+                            PepperBrokerAction::NUM);
 }
 
 PPB_Broker_Impl::~PPB_Broker_Impl() {
@@ -51,6 +57,9 @@ PPB_Broker_API* PPB_Broker_Impl::AsPPB_Broker_API() { return this; }
 int32_t PPB_Broker_Impl::Connect(
     scoped_refptr<TrackedCallback> connect_callback) {
   // TODO(ddorwin): Return PP_ERROR_FAILED if plugin is in-process.
+
+  UMA_HISTOGRAM_ENUMERATION("Pepper.BrokerAction", PepperBrokerAction::CONNECT,
+                            PepperBrokerAction::NUM);
 
   if (broker_) {
     // May only be called once.
