@@ -245,7 +245,7 @@ TEST_F(ImageDataTest, TestGetImageDataInCanvasColorSettings) {
         // Convert the image data to the color settings of the canvas.
         EXPECT_TRUE(image_data->ImageDataInCanvasColorSettings(
             canvas_color_spaces[k], canvas_pixel_formats[k],
-            pixels_converted_in_image_data, kRGBAColorType));
+            pixels_converted_in_image_data.get(), kRGBAColorType));
 
         // Compare the converted pixels
         ColorCorrectionTestUtils::CompareColorCorrectedPixels(
