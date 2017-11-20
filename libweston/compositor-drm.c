@@ -85,7 +85,7 @@
 #define GBM_BO_USE_CURSOR GBM_BO_USE_CURSOR_64X64
 #endif
 
-#define MAX_CLONED_CONNECTORS 1
+#define MAX_CLONED_CONNECTORS 4
 
 /**
  * Represents the values of an enum-type KMS property
