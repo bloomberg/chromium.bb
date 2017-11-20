@@ -202,6 +202,7 @@ class QuicStreamFactoryTestBase {
             kMaxTimeForCryptoHandshakeSecs),
         max_idle_time_before_crypto_handshake_seconds_(kInitialIdleTimeoutSecs),
         migrate_sessions_on_network_change_(false),
+        migrate_sessions_on_network_change_v2_(false),
         migrate_sessions_early_(false),
         allow_server_migration_(false),
         race_cert_verification_(false),
@@ -224,7 +225,8 @@ class QuicStreamFactoryTestBase {
         max_time_before_crypto_handshake_seconds_,
         max_idle_time_before_crypto_handshake_seconds_,
         /*connect_using_default_network*/ true,
-        migrate_sessions_on_network_change_, migrate_sessions_early_,
+        migrate_sessions_on_network_change_,
+        migrate_sessions_on_network_change_v2_, migrate_sessions_early_,
         allow_server_migration_, race_cert_verification_, estimate_initial_rtt_,
         connection_options_, client_connection_options_,
         /*enable_token_binding*/ false));
@@ -744,6 +746,7 @@ class QuicStreamFactoryTestBase {
   int max_time_before_crypto_handshake_seconds_;
   int max_idle_time_before_crypto_handshake_seconds_;
   bool migrate_sessions_on_network_change_;
+  bool migrate_sessions_on_network_change_v2_;
   bool migrate_sessions_early_;
   bool allow_server_migration_;
   bool race_cert_verification_;

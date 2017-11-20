@@ -162,6 +162,10 @@ class NET_EXPORT HttpNetworkSession : public base::MemoryCoordinatorClient {
     // If true, active QUIC sessions may be migrated onto a new network when
     // the platform indicates that the default network is changing.
     bool quic_migrate_sessions_on_network_change;
+    // If true, connection migration v2 will be used to migrate existing
+    // sessions to network when the platform indicates that the default network
+    // is changing.
+    bool quic_migrate_sessions_on_network_change_v2;
     // If true, active QUIC sessions experiencing poor connectivity may be
     // migrated onto a new network.
     bool quic_migrate_sessions_early;
