@@ -231,6 +231,7 @@ static_library("content_shell_lib") {
     "//components/crash/content/app",
     "//components/crash/content/app:test_support",
     "//components/crash/content/browser",
+    "//components/crash/core/common:crash_key",
     "//components/keyed_service/content",
     "//components/network_session_configurator/browser",
     "//components/plugins/renderer",

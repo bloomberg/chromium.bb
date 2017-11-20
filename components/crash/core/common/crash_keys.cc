@@ -13,6 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "components/crash/core/common/crash_key.h"
 
 namespace crash_keys {
 
@@ -38,7 +39,6 @@ const char kNumVariations[] = "num-experiments";
 const char kVariations[] = "variations";
 
 const char kSwitchFormat[] = "switch-%" PRIuS;
-const char kNumSwitches[] = "num-switches";
 
 const char kBug464926CrashKey[] = "bug-464926-info";
 
@@ -110,8 +110,6 @@ void SetVariationsList(const std::vector<std::string>& variations) {
 void GetCrashKeysForCommandLineSwitches(
     std::vector<base::debug::CrashKey>* keys) {
   DCHECK(keys);
-  base::debug::CrashKey crash_key = { kNumSwitches, kSmallSize };
-  keys->push_back(crash_key);
 
   // Use static storage for formatted key names, since they will persist for
   // the duration of the program.
@@ -139,8 +137,9 @@ void SetSwitchesFromCommandLine(const base::CommandLine& command_line,
   const base::CommandLine::StringVector& argv = command_line.argv();
 
   // Set the number of switches in case size > kNumSwitches.
-  base::debug::SetCrashKeyValue(kNumSwitches,
-      base::StringPrintf("%" PRIuS, argv.size() - 1));
+  // num-switches is capped at 15 entries, so only two digits are stored.
+  static crash_reporter::CrashKeyString<2> num_switches_key("num-switches");
+  num_switches_key.Set(base::StringPrintf("%" PRIuS, argv.size() - 1));
 
   size_t key_i = 1;  // Key names are 1-indexed.
 
