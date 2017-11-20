@@ -190,7 +190,7 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
 
     Args:
       test_config: Any config_lib.VMTestConfig with test_type in
-                 constants.VALID_VM_TEST_TYPES
+                   constants.VALID_VM_TEST_TYPES.
       test_results_dir: The base directory to store the results.
     """
     test_type = test_config.test_type
@@ -230,9 +230,13 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
     test_basename = constants.VM_TEST_RESULTS % dict(attempt=self._attempt)
     try:
       for vm_test in self._run.config.vm_tests:
-        test_type = vm_test.test_type
-        logging.info('Running VM test %s.', test_type)
-        per_test_results_dir = os.path.join(test_results_root, test_type)
+        logging.info('Running VM test %s.', vm_test.test_type)
+        if vm_test.test_type == constants.VM_SUITE_TEST_TYPE:
+          per_test_results_dir = os.path.join(test_results_root,
+                                              vm_test.test_suite)
+        else:
+          per_test_results_dir = os.path.join(test_results_root,
+                                              vm_test.test_type)
         with cgroups.SimpleContainChildren('VMTest'):
           r = ' Reached VMTestStage test run timeout.'
           with timeout_util.Timeout(vm_test.timeout, reason_message=r):
@@ -269,8 +273,8 @@ class GCETestStage(VMTestStage):
     """Run a GCE test.
 
     Args:
-      test_config: Any config_lib.GCETestConfig with valid test_type in
-                   constants.VALID_GCE_TEST_TYPES
+      test_config: Any config_lib.GCETestConfig with valid test_suite in
+                   constants.VALID_GCE_TEST_SUITES.
       test_results_dir: The base directory to store the results.
     """
     image_path = os.path.join(self.GetImageDirSymlink(),
@@ -300,9 +304,13 @@ class GCETestStage(VMTestStage):
     test_basename = constants.GCE_TEST_RESULTS % dict(attempt=self._attempt)
     try:
       for gce_test in self._run.config.gce_tests:
-        test_type = gce_test.test_type
-        logging.info('Running GCE test %s.', test_type)
-        per_test_results_dir = os.path.join(test_results_root, test_type)
+        logging.info('Running GCE test %s.', gce_test.test_type)
+        if gce_test.test_type == constants.GCE_SUITE_TEST_TYPE:
+          per_test_results_dir = os.path.join(test_results_root,
+                                              gce_test.test_suite)
+        else:
+          per_test_results_dir = os.path.join(test_results_root,
+                                              gce_test.test_type)
         with cgroups.SimpleContainChildren('GCETest'):
           r = ' Reached GCETestStage test run timeout.'
           with timeout_util.Timeout(self.TEST_TIMEOUT, reason_message=r):
@@ -484,7 +492,7 @@ def RunTestSuite(buildroot, board, image_path, results_dir, test_config,
 
   test_type = test_config.test_type
   cwd = os.path.join(buildroot, 'src', 'scripts')
-  dut_type = 'gce' if test_type in constants.VALID_GCE_TEST_TYPES else 'vm'
+  dut_type = 'gce' if test_type == constants.GCE_SUITE_TEST_TYPE else 'vm'
 
   cmd = ['bin/ctest',
          '--board=%s' % board,
@@ -495,30 +503,17 @@ def RunTestSuite(buildroot, board, image_path, results_dir, test_config,
          '--test_results_root=%s' % results_dir_in_chroot
         ]
 
-  if test_type not in (constants.VALID_VM_TEST_TYPES +
-                       constants.VALID_GCE_TEST_TYPES):
+  if test_type not in constants.VALID_VM_TEST_TYPES:
     raise AssertionError('Unrecognized test type %r' % test_type)
 
   if test_type == constants.FULL_AU_TEST_TYPE:
     cmd.append('--archive_dir=%s' % archive_dir)
+  elif test_type in [constants.VM_SUITE_TEST_TYPE,
+                     constants.GCE_SUITE_TEST_TYPE]:
+    cmd.append('--only_verify')
+    cmd.append('--suite=%s' % test_config.test_suite)
   else:
-    if test_type == constants.SMOKE_SUITE_TEST_TYPE:
-      cmd.append('--only_verify')
-      cmd.append('--suite=smoke')
-    elif test_type == constants.VMTEST_INFORMATIONAL_TEST_TYPE:
-      cmd.append('--only_verify')
-      cmd.append('--suite=vmtest-informational')
-    elif test_type == constants.GCE_SMOKE_TEST_TYPE:
-      cmd.append('--only_verify')
-      cmd.append('--suite=gce-smoke')
-    elif test_type == constants.GCE_SANITY_TEST_TYPE:
-      cmd.append('--only_verify')
-      cmd.append('--suite=gce-sanity')
-    elif test_type == constants.TELEMETRY_SUITE_TEST_TYPE:
-      cmd.append('--only_verify')
-      cmd.append('--suite=telemetry_unit_server')
-    else:
-      cmd.append('--quick_update')
+    cmd.append('--quick_update')
 
   if whitelist_chrome_crashes:
     cmd.append('--whitelist_chrome_crashes')

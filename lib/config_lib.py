@@ -428,15 +428,19 @@ class VMTestConfig(object):
 
   Members:
     test_type: Test type to be run.
+    test_suite: Test suite to be run in VMTest.
     timeout: Number of seconds to wait before timing out waiting for
              results.
   """
   DEFAULT_TEST_TIMEOUT = 60 * 60
 
-  def __init__(self, test_type, timeout=DEFAULT_TEST_TIMEOUT):
+  def __init__(self, test_type, test_suite=None,
+               timeout=DEFAULT_TEST_TIMEOUT):
     """Constructor -- see members above."""
     self.test_type = test_type
+    self.test_suite = test_suite
     self.timeout = timeout
+
 
   def __eq__(self, other):
     return self.__dict__ == other.__dict__
@@ -447,14 +451,17 @@ class GCETestConfig(object):
 
   Members:
     test_type: Test type to be run.
+    test_suite: Test suite to be run in GCETest.
     timeout: Number of seconds to wait before timing out waiting for
              results.
   """
   DEFAULT_TEST_TIMEOUT = 60 * 60
 
-  def __init__(self, test_type, timeout=DEFAULT_TEST_TIMEOUT):
+  def __init__(self, test_type, test_suite=None,
+               timeout=DEFAULT_TEST_TIMEOUT):
     """Constructor -- see members above."""
     self.test_type = test_type
+    self.test_suite = test_suite
     self.timeout = timeout
 
   def __eq__(self, other):
@@ -847,7 +854,7 @@ def DefaultSettings():
       afdo_use=False,
 
       # A list of VMTestConfig objects to run by default.
-      vm_tests=[VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE),
+      vm_tests=[VMTestConfig(constants.VM_SUITE_TEST_TYPE, test_suite='smoke'),
                 VMTestConfig(constants.SIMPLE_AU_TEST_TYPE)],
 
       # A list of all VMTestConfig objects to use if VM Tests are forced on

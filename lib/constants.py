@@ -742,19 +742,14 @@ JOB_KEYVAL_CIDB_BUILD_STAGE_ID = 'cidb_build_stage_id'
 # Defines VM Test types.
 FULL_AU_TEST_TYPE = 'full_suite'
 SIMPLE_AU_TEST_TYPE = 'pfq_suite'
-SMOKE_SUITE_TEST_TYPE = 'smoke_suite'
-TELEMETRY_SUITE_TEST_TYPE = 'telemetry_suite'
-VMTEST_INFORMATIONAL_TEST_TYPE = 'vmtest_informational_suite'
+VM_SUITE_TEST_TYPE = 'vm_suite'
+GCE_SUITE_TEST_TYPE = 'gce_suite'
 CROS_VM_TEST_TYPE = 'cros_vm_test'
 DEV_MODE_TEST_TYPE = 'dev_mode_test'
 VALID_VM_TEST_TYPES = [FULL_AU_TEST_TYPE, SIMPLE_AU_TEST_TYPE,
-                       SMOKE_SUITE_TEST_TYPE, TELEMETRY_SUITE_TEST_TYPE,
-                       CROS_VM_TEST_TYPE, DEV_MODE_TEST_TYPE,
-                       VMTEST_INFORMATIONAL_TEST_TYPE]
-# GCE tests are suites of tests that run on GCE instances.
-GCE_SMOKE_TEST_TYPE = 'gce_smoke_test'  # suite:gce-smoke
-GCE_SANITY_TEST_TYPE = 'gce_sanity_test'  # suite:gce-sanity
-VALID_GCE_TEST_TYPES = [GCE_SMOKE_TEST_TYPE, GCE_SANITY_TEST_TYPE]
+                       VM_SUITE_TEST_TYPE, GCE_SUITE_TEST_TYPE,
+                       CROS_VM_TEST_TYPE, DEV_MODE_TEST_TYPE]
+VALID_GCE_TEST_SUITES = ['gce-smoke', 'gce-sanity']
 
 CHROMIUMOS_OVERLAY_DIR = 'src/third_party/chromiumos-overlay'
 VERSION_FILE = os.path.join(CHROMIUMOS_OVERLAY_DIR,

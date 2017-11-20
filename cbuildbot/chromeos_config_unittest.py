@@ -479,6 +479,10 @@ class CBuildBotTest(ChromeosConfigTestBase):
         self.assertTrue(
             vm_test.test_type in constants.VALID_VM_TEST_TYPES,
             'Config %s: has unexpected vm test type value.' % build_name)
+        if vm_test.test_type == constants.VM_SUITE_TEST_TYPE:
+          self.assertTrue(
+              vm_test.test_suite is not None,
+              'Config %s: has unexpected vm test suite value.' % build_name)
 
   def testValidGCETestType(self):
     """Verify gce_tests has an expected value"""
@@ -487,8 +491,11 @@ class CBuildBotTest(ChromeosConfigTestBase):
         continue
       for gce_test in config['gce_tests']:
         self.assertTrue(
-            gce_test.test_type in constants.VALID_GCE_TEST_TYPES,
+            gce_test.test_type == constants.GCE_SUITE_TEST_TYPE,
             'Config %s: has unexpected gce test type value.' % build_name)
+        self.assertTrue(
+            gce_test.test_suite in constants.VALID_GCE_TEST_SUITES,
+            'Config %s: has unexpected gce test suite value.' % build_name)
 
   def testImageTestMustHaveBaseImage(self):
     """Verify image_test build is only enabled with 'base' in images."""
@@ -1127,7 +1134,8 @@ class OverrideForTrybotTest(ChromeosConfigTestBase):
     old = self.site_config['betty-paladin']
     new = config_lib.OverrideConfigForTrybot(old, mock_options)
     self.assertEquals(new['vm_tests'], [
-        config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE),
+        config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
+                                test_suite='smoke'),
         config_lib.VMTestConfig(constants.SIMPLE_AU_TEST_TYPE),
         config_lib.VMTestConfig(constants.CROS_VM_TEST_TYPE)])
 

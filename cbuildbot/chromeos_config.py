@@ -465,7 +465,7 @@ def remove_images(unsupported_images):
 
 
 TRADITIONAL_VM_TESTS_SUPPORTED = [
-    config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE),
+    config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE, test_suite='smoke'),
     config_lib.VMTestConfig(constants.SIMPLE_AU_TEST_TYPE),
     config_lib.VMTestConfig(constants.CROS_VM_TEST_TYPE)]
 
@@ -1103,7 +1103,8 @@ def GeneralTemplates(site_config, ge_build_config):
       chrome_sdk_build_chrome=False,
       doc='http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ',
       # This only applies to vmtest enabled boards like betty and novato.
-      vm_tests=[config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE)],
+      vm_tests=[config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
+                                        test_suite='smoke')],
       vm_tests_override=TRADITIONAL_VM_TESTS_SUPPORTED,
   )
 
@@ -1222,25 +1223,31 @@ def GeneralTemplates(site_config, ge_build_config):
   # TODO: renable SIMPLE_AU_TEST_TYPE once b/67510964 is fixed.
   site_config.AddTemplate(
       'lakitu_test_customizations',
-      vm_tests=[config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE)],
+      vm_tests=[config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
+                                        test_suite='smoke')],
       vm_tests_override=None,
-      gce_tests=[config_lib.GCETestConfig(constants.GCE_SANITY_TEST_TYPE),
-                 config_lib.GCETestConfig(constants.GCE_SMOKE_TEST_TYPE)],
+      gce_tests=[config_lib.GCETestConfig(constants.GCE_SUITE_TEST_TYPE,
+                                          test_suite='gce-sanity'),
+                 config_lib.GCETestConfig(constants.GCE_SUITE_TEST_TYPE,
+                                          test_suite='gce-smoke')],
   )
 
   # No GCE tests for lakitu-nc.
   site_config.AddTemplate(
       'lakitu_nc_test_customizations',
-      vm_tests=[config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE)],
+      vm_tests=[config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
+                                        test_suite='smoke')],
       vm_tests_override=None,
   )
 
   # Test customizations for lakitu boards' paladin builders.
   site_config.AddTemplate(
       'lakitu_paladin_test_customizations',
-      vm_tests=[config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE)],
+      vm_tests=[config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
+                                        test_suite='smoke')],
       vm_tests_override=None,
-      gce_tests=[config_lib.GCETestConfig(constants.GCE_SANITY_TEST_TYPE)],
+      gce_tests=[config_lib.GCETestConfig(constants.GCE_SUITE_TEST_TYPE,
+                                          test_suite='gce-sanity')],
   )
 
   # An anchor of Laktiu' notification email settings.
@@ -1289,7 +1296,8 @@ def GeneralTemplates(site_config, ge_build_config):
       # Chrome binary, that update_engine can't handle in delta payloads due to
       # memory limits. Remove the following lines once crbug.com/329248 is
       # fixed.
-      vm_tests=[config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE)],
+      vm_tests=[config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
+                                        test_suite='smoke')],
       vm_tests_override=None,
       doc='http://www.chromium.org/chromium-os/build/builder-overview#'
           'TOC-ASAN',
@@ -1302,7 +1310,8 @@ def GeneralTemplates(site_config, ge_build_config):
       build_type=constants.INCREMENTAL_TYPE,
       uprev=False,
       overlays=constants.PUBLIC_OVERLAYS,
-      vm_tests=[config_lib.VMTestConfig(constants.TELEMETRY_SUITE_TEST_TYPE,
+      vm_tests=[config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
+                                        test_suite='telemetry_unit_server',
                                         # Add an extra 60 minutes.
                                         timeout=120 * 60)],
       description='Telemetry Builds',
@@ -1517,13 +1526,15 @@ def GeneralTemplates(site_config, ge_build_config):
       dev_installer_prebuilts=True,
       git_sync=False,
       vm_tests=[
-          config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE),
+          config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
+                                  test_suite='smoke'),
           config_lib.VMTestConfig(constants.DEV_MODE_TEST_TYPE),
           config_lib.VMTestConfig(constants.CROS_VM_TEST_TYPE)],
       # Some release builders disable VMTests to be able to build on GCE, but
       # still want VMTests enabled on trybot builders.
       vm_tests_override=[
-          config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE),
+          config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
+                                  test_suite='smoke'),
           config_lib.VMTestConfig(constants.DEV_MODE_TEST_TYPE),
           config_lib.VMTestConfig(constants.CROS_VM_TEST_TYPE)],
       hw_tests=(hw_test_list.CtsGtsQualTests() +
@@ -1951,7 +1962,8 @@ def PreCqBuilders(site_config, boards_dict, ge_build_config):
       debug_symbols=False,
       prebuilts=False,
       cpe_export=False,
-      vm_tests=[config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE)],
+      vm_tests=[config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
+                                        test_suite='smoke')],
       vm_tests_override=None,
       description='Verifies compilation, building an image, and vm/unit tests '
                   'if supported.',
@@ -2237,7 +2249,8 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
           _nyc_vmtest_boards,
           board_configs,
           site_config.templates.nyc_android_pfq,
-          vm_tests=[config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE),
+          vm_tests=[config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
+                                            test_suite='smoke'),
                     config_lib.VMTestConfig(constants.SIMPLE_AU_TEST_TYPE)],
       )
   )
@@ -2538,7 +2551,8 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
         vm_tests.append(config_lib.VMTestConfig(constants.DEV_MODE_TEST_TYPE))
       if board in _paladin_smoke_vmtest_boards:
         vm_tests.append(
-            config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE))
+            config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
+                                    test_suite='smoke'))
 
       customizations.update(vm_tests=vm_tests)
 
@@ -2772,10 +2786,12 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
       boards=['betty'],
       active_waterfall=waterfall.WATERFALL_INTERNAL,
       vm_tests=[config_lib.VMTestConfig(
-          constants.VMTEST_INFORMATIONAL_TEST_TYPE,
+          constants.VM_SUITE_TEST_TYPE,
+          test_suite='vmtest-informational',
           timeout=12*60*60)],
       vm_tests_override=[config_lib.VMTestConfig(
-          constants.VMTEST_INFORMATIONAL_TEST_TYPE,
+          constants.VM_SUITE_TEST_TYPE,
+          test_suite='vmtest-informational',
           timeout=12*60*60)],
   )
 
@@ -3747,15 +3763,17 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.internal,
       site_config.templates.no_hwtest_builder,
       display_label=config_lib.DISPLAY_LABEL_INFORMATIONAL,
-      description='VMTest Informational Builder for running deqp on betty.',
+      description='VMTest Informational Builder for running long run tests.',
       build_type=constants.GENERIC_TYPE,
       boards=['betty'],
       builder_class_name='test_builders.VMInformationalBuilder',
       vm_tests=[config_lib.VMTestConfig(
-          constants.VMTEST_INFORMATIONAL_TEST_TYPE,
+          constants.VM_SUITE_TEST_TYPE,
+          test_suite='vmtest-informational',
           timeout=23*60*60)],
       vm_tests_override=[config_lib.VMTestConfig(
-          constants.VMTEST_INFORMATIONAL_TEST_TYPE,
+          constants.VM_SUITE_TEST_TYPE,
+          test_suite='vmtest-informational',
           timeout=23*60*60)],
       active_waterfall=constants.WATERFALL_INTERNAL,
       vm_test_report_to_dashboards=True,
