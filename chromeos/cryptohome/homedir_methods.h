@@ -23,6 +23,10 @@ namespace cryptohome {
 // Converts the given KeyDefinition to a Key.
 void CHROMEOS_EXPORT KeyDefinitionToKey(const KeyDefinition& key_def, Key* key);
 
+// Creates an AuthorizationRequest from the given secret and label.
+AuthorizationRequest CHROMEOS_EXPORT
+CreateAuthorizationRequest(const std::string& secret, const std::string& label);
+
 // This class manages calls to Cryptohome service's home directory methods:
 // Mount, CheckKey, Add/UpdateKey.
 class CHROMEOS_EXPORT HomedirMethods {

@@ -191,42 +191,24 @@ void ExtendedAuthenticatorImpl::DoAuthenticateToMount(
     const ResultCallback& success_callback,
     const UserContext& user_context) {
   RecordStartMarker("MountEx");
-
-  cryptohome::Identification id(user_context.GetAccountId());
   const Key* const key = user_context.GetKey();
-  cryptohome::MountRequest mount;
-  cryptohome::AuthorizationRequest auth;
-  cryptohome::Key* auth_key = auth.mutable_key();
-  if (!key->GetLabel().empty()) {
-    auth_key->mutable_data()->set_label(key->GetLabel());
-  }
-  auth_key->set_secret(key->GetSecret());
   cryptohome::HomedirMethods::GetInstance()->MountEx(
-      id,
-      auth,
-      mount,
-      base::Bind(&ExtendedAuthenticatorImpl::OnMountComplete,
-                 this,
-                 "MountEx",
-                 user_context,
-                 success_callback));
+      cryptohome::Identification(user_context.GetAccountId()),
+      cryptohome::CreateAuthorizationRequest(key->GetLabel(), key->GetSecret()),
+      cryptohome::MountRequest(),
+      base::Bind(&ExtendedAuthenticatorImpl::OnMountComplete, this, "MountEx",
+                 user_context, success_callback));
 }
 
 void ExtendedAuthenticatorImpl::DoAuthenticateToCheck(
     const base::Closure& success_callback,
     const UserContext& user_context) {
   RecordStartMarker("CheckKeyEx");
-
-  cryptohome::Identification id(user_context.GetAccountId());
   const Key* const key = user_context.GetKey();
-  cryptohome::AuthorizationRequest auth;
-  cryptohome::Key* auth_key = auth.mutable_key();
-  if (!key->GetLabel().empty()) {
-    auth_key->mutable_data()->set_label(key->GetLabel());
-  }
-  auth_key->set_secret(key->GetSecret());
   cryptohome::HomedirMethods::GetInstance()->CheckKeyEx(
-      id, auth, cryptohome::CheckKeyRequest(),
+      cryptohome::Identification(user_context.GetAccountId()),
+      cryptohome::CreateAuthorizationRequest(key->GetLabel(), key->GetSecret()),
+      cryptohome::CheckKeyRequest(),
       base::Bind(&ExtendedAuthenticatorImpl::OnOperationComplete, this,
                  "CheckKeyEx", user_context, success_callback));
 }
