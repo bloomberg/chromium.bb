@@ -23,7 +23,7 @@ class URLRequest;
 }  // namespace net
 
 namespace network {
-struct URLLoaderStatus;
+struct URLLoaderCompletionStatus;
 }  // namespace network
 
 namespace content {
@@ -125,7 +125,7 @@ class NetworkHandler : public DevToolsDomainHandler,
                                          const ResourceResponseHead& head);
   void NavigationPreloadCompleted(
       const std::string& request_id,
-      const network::URLLoaderStatus& completion_status);
+      const network::URLLoaderCompletionStatus& completion_status);
   void NavigationFailed(NavigationRequest* navigation_request);
 
   bool enabled() const { return enabled_; }

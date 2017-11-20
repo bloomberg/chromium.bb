@@ -117,7 +117,7 @@ void NotifyNavigationPreloadResponseReceivedOnUI(
 }
 
 void NotifyNavigationPreloadCompletedOnUI(
-    const network::URLLoaderStatus& status,
+    const network::URLLoaderCompletionStatus& status,
     const std::pair<int, int>& worker_id,
     const std::string& request_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -145,7 +145,7 @@ class DelegatingURLLoaderClient final : public mojom::URLLoaderClient {
   ~DelegatingURLLoaderClient() override {
     if (!completed_) {
       // Let the service worker know that the request has been canceled.
-      network::URLLoaderStatus status;
+      network::URLLoaderCompletionStatus status;
       status.error_code = net::ERR_ABORTED;
       client_->OnComplete(status);
       AddDevToolsCallback(
@@ -193,7 +193,7 @@ class DelegatingURLLoaderClient final : public mojom::URLLoaderClient {
     client_->OnReceiveRedirect(redirect_info, head);
     AddDevToolsCallback(
         base::Bind(&NotifyNavigationPreloadResponseReceivedOnUI, url_, head));
-    network::URLLoaderStatus status;
+    network::URLLoaderCompletionStatus status;
     AddDevToolsCallback(
         base::Bind(&NotifyNavigationPreloadCompletedOnUI, status));
   }
@@ -201,7 +201,7 @@ class DelegatingURLLoaderClient final : public mojom::URLLoaderClient {
       mojo::ScopedDataPipeConsumerHandle body) override {
     client_->OnStartLoadingResponseBody(std::move(body));
   }
-  void OnComplete(const network::URLLoaderStatus& status) override {
+  void OnComplete(const network::URLLoaderCompletionStatus& status) override {
     if (completed_)
       return;
     completed_ = true;

@@ -17,7 +17,7 @@
 #include "ipc/ipc_sender.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
-#include "services/network/public/cpp/url_loader_status.h"
+#include "services/network/public/cpp/url_loader_completion_status.h"
 
 namespace {
 
@@ -91,12 +91,12 @@ void ExtensionLocalizationPeer::OnTransferSizeUpdated(int transfer_size_diff) {
 }
 
 void ExtensionLocalizationPeer::OnCompletedRequest(
-    const network::URLLoaderStatus& status) {
+    const network::URLLoaderCompletionStatus& status) {
   // Give sub-classes a chance at altering the data.
   if (status.error_code != net::OK) {
     // We failed to load the resource.
     original_peer_->OnReceivedResponse(response_info_);
-    network::URLLoaderStatus aborted_status(status);
+    network::URLLoaderCompletionStatus aborted_status(status);
     aborted_status.error_code = net::ERR_ABORTED;
     original_peer_->OnCompletedRequest(aborted_status);
     return;

@@ -66,7 +66,8 @@ class ReplaceContentPeer : public SecurityFilterPeer {
   // content::RequestPeer Implementation.
   void OnReceivedResponse(const content::ResourceResponseInfo& info) override;
   void OnReceivedData(std::unique_ptr<ReceivedData> data) override;
-  void OnCompletedRequest(const network::URLLoaderStatus& status) override;
+  void OnCompletedRequest(
+      const network::URLLoaderCompletionStatus& status) override;
 
  private:
   content::ResourceResponseInfo response_info_;

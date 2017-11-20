@@ -10,8 +10,8 @@ static_library("cpp") {
     "cors_error_status.h",
     "net_adapters.cc",
     "net_adapters.h",
-    "url_loader_status.cc",
-    "url_loader_status.h",
+    "url_loader_completion_status.cc",
+    "url_loader_completion_status.h",
   ]
 
   deps = [

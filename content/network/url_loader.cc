@@ -632,7 +632,7 @@ void URLLoader::NotifyCompleted(int error_code) {
   if (consumer_handle_.is_valid())
     SendResponseToClient();
 
-  network::URLLoaderStatus status;
+  network::URLLoaderCompletionStatus status;
   status.error_code = error_code;
   status.exists_in_cache = url_request_->response_info().was_cached;
   status.completion_time = base::TimeTicks::Now();

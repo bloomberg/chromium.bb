@@ -29,7 +29,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/upload_progress.h"
 #include "net/url_request/redirect_info.h"
-#include "services/network/public/cpp/url_loader_status.h"
+#include "services/network/public/cpp/url_loader_completion_status.h"
 
 using base::TimeDelta;
 using base::TimeTicks;
@@ -348,7 +348,7 @@ void AsyncResourceHandler::OnResponseCompleted(
 
   DCHECK(request_status.status() != net::URLRequestStatus::IO_PENDING);
 
-  network::URLLoaderStatus loader_status;
+  network::URLLoaderCompletionStatus loader_status;
   loader_status.error_code = error_code;
   loader_status.exists_in_cache = request()->response_info().was_cached;
   loader_status.completion_time = TimeTicks::Now();

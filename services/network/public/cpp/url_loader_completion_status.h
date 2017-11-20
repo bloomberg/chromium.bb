@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_NETWORK_PUBLIC_CPP_URL_LOADER_STATUS_H_
-#define SERVICES_NETWORK_PUBLIC_CPP_URL_LOADER_STATUS_H_
+#ifndef SERVICES_NETWORK_PUBLIC_CPP_URL_LOADER_COMPLETION_STATUS_H_
+#define SERVICES_NETWORK_PUBLIC_CPP_URL_LOADER_COMPLETION_STATUS_H_
 
 #include <stdint.h>
 
@@ -15,21 +15,21 @@
 
 namespace network {
 
-struct URLLoaderStatus {
-  URLLoaderStatus();
-  URLLoaderStatus(const URLLoaderStatus& status);
+struct URLLoaderCompletionStatus {
+  URLLoaderCompletionStatus();
+  URLLoaderCompletionStatus(const URLLoaderCompletionStatus& status);
 
   // Sets |error_code| to |error_code| and base::TimeTicks::Now() to
   // |completion_time|.
-  explicit URLLoaderStatus(int error_code);
+  explicit URLLoaderCompletionStatus(int error_code);
 
   // Sets ERR_FAILED to |error_code|, |error| to |cors_error_status|, and
   // base::TimeTicks::Now() to |completion_time|.
-  explicit URLLoaderStatus(const CORSErrorStatus& error);
+  explicit URLLoaderCompletionStatus(const CORSErrorStatus& error);
 
-  ~URLLoaderStatus();
+  ~URLLoaderCompletionStatus();
 
-  bool operator==(const URLLoaderStatus& rhs) const;
+  bool operator==(const URLLoaderCompletionStatus& rhs) const;
 
   // The error code. ERR_FAILED is set for CORS errors.
   int error_code = 0;
@@ -55,4 +55,4 @@ struct URLLoaderStatus {
 
 }  // namespace network
 
-#endif  // SERVICES_NETWORK_PUBLIC_CPP_URL_LOADER_STATUS_H_
+#endif  // SERVICES_NETWORK_PUBLIC_CPP_URL_LOADER_COMPLETION_STATUS_H_

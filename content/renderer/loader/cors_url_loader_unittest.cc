@@ -41,7 +41,7 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory {
 
   void NotifyClientOnComplete(int error_code) {
     DCHECK(client_ptr_);
-    client_ptr_->OnComplete(network::URLLoaderStatus(error_code));
+    client_ptr_->OnComplete(network::URLLoaderCompletionStatus(error_code));
   }
 
   bool IsCreateLoaderAndStartCalled() { return !!client_ptr_; }
@@ -149,7 +149,7 @@ TEST_F(CORSURLLoaderTest, SameOriginRequest) {
   EXPECT_FALSE(client().has_received_redirect());
   EXPECT_TRUE(client().has_received_response());
   EXPECT_TRUE(client().has_received_completion());
-  EXPECT_EQ(net::OK, client().status().error_code);
+  EXPECT_EQ(net::OK, client().completion_status().error_code);
 }
 
 TEST_F(CORSURLLoaderTest, CrossOriginRequestWithNoCORSMode) {
@@ -166,7 +166,7 @@ TEST_F(CORSURLLoaderTest, CrossOriginRequestWithNoCORSMode) {
   EXPECT_FALSE(client().has_received_redirect());
   EXPECT_TRUE(client().has_received_response());
   EXPECT_TRUE(client().has_received_completion());
-  EXPECT_EQ(net::OK, client().status().error_code);
+  EXPECT_EQ(net::OK, client().completion_status().error_code);
 }
 
 TEST_F(CORSURLLoaderTest, CrossOriginRequestFetchRequestModeSameOrigin) {
@@ -182,10 +182,10 @@ TEST_F(CORSURLLoaderTest, CrossOriginRequestFetchRequestModeSameOrigin) {
   EXPECT_FALSE(IsNetworkLoaderStarted());
   EXPECT_FALSE(client().has_received_redirect());
   EXPECT_FALSE(client().has_received_response());
-  EXPECT_EQ(net::ERR_FAILED, client().status().error_code);
-  ASSERT_TRUE(client().status().cors_error_status);
+  EXPECT_EQ(net::ERR_FAILED, client().completion_status().error_code);
+  ASSERT_TRUE(client().completion_status().cors_error_status);
   EXPECT_EQ(network::mojom::CORSError::kDisallowedByMode,
-            client().status().cors_error_status->cors_error);
+            client().completion_status().cors_error_status->cors_error);
 }
 
 TEST_F(CORSURLLoaderTest, CrossOriginRequestWithCORSModeButMissingCORSHeader) {
@@ -201,10 +201,10 @@ TEST_F(CORSURLLoaderTest, CrossOriginRequestWithCORSModeButMissingCORSHeader) {
   EXPECT_TRUE(IsNetworkLoaderStarted());
   EXPECT_FALSE(client().has_received_redirect());
   EXPECT_FALSE(client().has_received_response());
-  EXPECT_EQ(net::ERR_FAILED, client().status().error_code);
-  ASSERT_TRUE(client().status().cors_error_status);
+  EXPECT_EQ(net::ERR_FAILED, client().completion_status().error_code);
+  ASSERT_TRUE(client().completion_status().cors_error_status);
   EXPECT_EQ(network::mojom::CORSError::kMissingAllowOriginHeader,
-            client().status().cors_error_status->cors_error);
+            client().completion_status().cors_error_status->cors_error);
 }
 
 TEST_F(CORSURLLoaderTest, CrossOriginRequestWithCORSMode) {
@@ -222,7 +222,7 @@ TEST_F(CORSURLLoaderTest, CrossOriginRequestWithCORSMode) {
   EXPECT_FALSE(client().has_received_redirect());
   EXPECT_TRUE(client().has_received_response());
   EXPECT_TRUE(client().has_received_completion());
-  EXPECT_EQ(net::OK, client().status().error_code);
+  EXPECT_EQ(net::OK, client().completion_status().error_code);
 }
 
 TEST_F(CORSURLLoaderTest,
@@ -240,10 +240,10 @@ TEST_F(CORSURLLoaderTest,
   EXPECT_TRUE(IsNetworkLoaderStarted());
   EXPECT_FALSE(client().has_received_redirect());
   EXPECT_FALSE(client().has_received_response());
-  EXPECT_EQ(net::ERR_FAILED, client().status().error_code);
-  ASSERT_TRUE(client().status().cors_error_status);
+  EXPECT_EQ(net::ERR_FAILED, client().completion_status().error_code);
+  ASSERT_TRUE(client().completion_status().cors_error_status);
   EXPECT_EQ(network::mojom::CORSError::kAllowOriginMismatch,
-            client().status().cors_error_status->cors_error);
+            client().completion_status().cors_error_status->cors_error);
 }
 
 }  // namespace

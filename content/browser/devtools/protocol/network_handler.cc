@@ -49,7 +49,7 @@
 #include "net/http/http_util.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "services/network/public/cpp/url_loader_status.h"
+#include "services/network/public/cpp/url_loader_completion_status.h"
 
 namespace content {
 namespace protocol {
@@ -1053,7 +1053,7 @@ void NetworkHandler::NavigationPreloadResponseReceived(
 
 void NetworkHandler::NavigationPreloadCompleted(
     const std::string& request_id,
-    const network::URLLoaderStatus& status) {
+    const network::URLLoaderCompletionStatus& status) {
   if (!enabled_)
     return;
   if (status.error_code != net::OK) {

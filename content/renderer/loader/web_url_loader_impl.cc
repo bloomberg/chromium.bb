@@ -410,7 +410,7 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
   void OnReceivedData(std::unique_ptr<ReceivedData> data);
   void OnTransferSizeUpdated(int transfer_size_diff);
   void OnReceivedCachedMetadata(const char* data, int len);
-  void OnCompletedRequest(const network::URLLoaderStatus& status);
+  void OnCompletedRequest(const network::URLLoaderCompletionStatus& status);
 
  private:
   friend class base::RefCounted<Context>;
@@ -468,7 +468,8 @@ class WebURLLoaderImpl::RequestPeerImpl : public RequestPeer {
   void OnReceivedData(std::unique_ptr<ReceivedData> data) override;
   void OnTransferSizeUpdated(int transfer_size_diff) override;
   void OnReceivedCachedMetadata(const char* data, int len) override;
-  void OnCompletedRequest(const network::URLLoaderStatus& status) override;
+  void OnCompletedRequest(
+      const network::URLLoaderCompletionStatus& status) override;
 
  private:
   scoped_refptr<Context> context_;
@@ -881,7 +882,7 @@ void WebURLLoaderImpl::Context::OnReceivedCachedMetadata(
 }
 
 void WebURLLoaderImpl::Context::OnCompletedRequest(
-    const network::URLLoaderStatus& status) {
+    const network::URLLoaderCompletionStatus& status) {
   int64_t total_transfer_size = status.encoded_data_length;
   int64_t encoded_body_size = status.encoded_body_length;
 
@@ -1017,7 +1018,7 @@ void WebURLLoaderImpl::Context::HandleDataURL() {
       OnReceivedData(std::make_unique<FixedReceivedData>(data.data(), size));
   }
 
-  network::URLLoaderStatus status(error_code);
+  network::URLLoaderCompletionStatus status(error_code);
   status.encoded_body_length = data.size();
   status.decoded_body_length = data.size();
   OnCompletedRequest(status);
@@ -1067,7 +1068,7 @@ void WebURLLoaderImpl::RequestPeerImpl::OnReceivedCachedMetadata(
 }
 
 void WebURLLoaderImpl::RequestPeerImpl::OnCompletedRequest(
-    const network::URLLoaderStatus& status) {
+    const network::URLLoaderCompletionStatus& status) {
   context_->OnCompletedRequest(status);
 }
 

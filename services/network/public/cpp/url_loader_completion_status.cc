@@ -2,26 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/network/public/cpp/url_loader_status.h"
+#include "services/network/public/cpp/url_loader_completion_status.h"
 
 #include "net/base/net_errors.h"
 
 namespace network {
 
-URLLoaderStatus::URLLoaderStatus() = default;
-URLLoaderStatus::URLLoaderStatus(const URLLoaderStatus& status) = default;
+URLLoaderCompletionStatus::URLLoaderCompletionStatus() = default;
+URLLoaderCompletionStatus::URLLoaderCompletionStatus(
+    const URLLoaderCompletionStatus& status) = default;
 
-URLLoaderStatus::URLLoaderStatus(int error_code)
+URLLoaderCompletionStatus::URLLoaderCompletionStatus(int error_code)
     : error_code(error_code), completion_time(base::TimeTicks::Now()) {}
 
-URLLoaderStatus::URLLoaderStatus(const CORSErrorStatus& error)
-    : URLLoaderStatus(net::ERR_FAILED) {
+URLLoaderCompletionStatus::URLLoaderCompletionStatus(
+    const CORSErrorStatus& error)
+    : URLLoaderCompletionStatus(net::ERR_FAILED) {
   cors_error_status = error;
 }
 
-URLLoaderStatus::~URLLoaderStatus() = default;
+URLLoaderCompletionStatus::~URLLoaderCompletionStatus() = default;
 
-bool URLLoaderStatus::operator==(const URLLoaderStatus& rhs) const {
+bool URLLoaderCompletionStatus::operator==(
+    const URLLoaderCompletionStatus& rhs) const {
   return error_code == rhs.error_code &&
          exists_in_cache == rhs.exists_in_cache &&
          completion_time == rhs.completion_time &&

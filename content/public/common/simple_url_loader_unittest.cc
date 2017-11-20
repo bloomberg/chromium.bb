@@ -42,7 +42,7 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/redirect_info.h"
-#include "services/network/public/cpp/url_loader_status.h"
+#include "services/network/public/cpp/url_loader_completion_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -913,14 +913,14 @@ class MockURLLoader : public mojom::URLLoader {
           break;
         }
         case TestLoaderEvent::kResponseComplete: {
-          network::URLLoaderStatus status;
+          network::URLLoaderCompletionStatus status;
           status.error_code = net::OK;
           status.decoded_body_length = CountBytesToSend();
           client_->OnComplete(status);
           break;
         }
         case TestLoaderEvent::kResponseCompleteFailed: {
-          network::URLLoaderStatus status;
+          network::URLLoaderCompletionStatus status;
           // Use an error that SimpleURLLoader doesn't create itself, so clear
           // when this is the source of the error code.
           status.error_code = net::ERR_TIMED_OUT;
@@ -929,14 +929,14 @@ class MockURLLoader : public mojom::URLLoader {
           break;
         }
         case TestLoaderEvent::kResponseCompleteNetworkChanged: {
-          network::URLLoaderStatus status;
+          network::URLLoaderCompletionStatus status;
           status.error_code = net::ERR_NETWORK_CHANGED;
           status.decoded_body_length = CountBytesToSend();
           client_->OnComplete(status);
           break;
         }
         case TestLoaderEvent::kResponseCompleteTruncated: {
-          network::URLLoaderStatus status;
+          network::URLLoaderCompletionStatus status;
           status.error_code = net::OK;
           status.decoded_body_length = CountBytesToSend() + 1;
           client_->OnComplete(status);
@@ -945,7 +945,7 @@ class MockURLLoader : public mojom::URLLoader {
         case TestLoaderEvent::kResponseCompleteWithExtraData: {
           // Make sure |decoded_body_length| doesn't underflow.
           DCHECK_GT(CountBytesToSend(), 0u);
-          network::URLLoaderStatus status;
+          network::URLLoaderCompletionStatus status;
           status.error_code = net::OK;
           status.decoded_body_length = CountBytesToSend() - 1;
           client_->OnComplete(status);

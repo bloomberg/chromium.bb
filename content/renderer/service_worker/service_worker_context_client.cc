@@ -556,7 +556,7 @@ class ServiceWorkerContextClient::NavigationPreloadRequest final
     MaybeReportResponseToClient();
   }
 
-  void OnComplete(const network::URLLoaderStatus& status) override {
+  void OnComplete(const network::URLLoaderCompletionStatus& status) override {
     if (status.error_code != net::OK) {
       std::string message;
       std::string unsanitized_message;

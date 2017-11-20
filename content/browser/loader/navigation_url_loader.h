@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "content/common/content_export.h"
-#include "services/network/public/cpp/url_loader_status.h"
+#include "services/network/public/cpp/url_loader_completion_status.h"
 
 class GURL;
 
@@ -68,11 +68,11 @@ class CONTENT_EXPORT NavigationURLLoader {
   // network service is enabled. Args: the initial resource request,
   // the URLLoader for sending the request, url chain, optional completion
   // status if it has already been received.
-  using NavigationInterceptionCB =
-      base::OnceCallback<void(std::unique_ptr<ResourceRequest>,
-                              std::unique_ptr<ThrottlingURLLoader>,
-                              std::vector<GURL>,
-                              base::Optional<network::URLLoaderStatus>)>;
+  using NavigationInterceptionCB = base::OnceCallback<void(
+      std::unique_ptr<ResourceRequest>,
+      std::unique_ptr<ThrottlingURLLoader>,
+      std::vector<GURL>,
+      base::Optional<network::URLLoaderCompletionStatus>)>;
 
   // This method is called to intercept the url response. Caller is responsible
   // for handling the URLLoader later on. The callback should be called on the

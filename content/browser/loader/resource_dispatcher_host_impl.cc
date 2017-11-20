@@ -114,7 +114,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_job_factory.h"
 #include "ppapi/features/features.h"
-#include "services/network/public/cpp/url_loader_status.h"
+#include "services/network/public/cpp/url_loader_completion_status.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/blob/blob_url_request_job_factory.h"
@@ -182,7 +182,7 @@ void AbortRequestBeforeItStarts(
     sync_result_handler.Run(&result);
   } else {
     // Tell the renderer that this request was disallowed.
-    network::URLLoaderStatus status;
+    network::URLLoaderCompletionStatus status;
     status.error_code = net::ERR_ABORTED;
     status.exists_in_cache = false;
     // No security info needed, connection not established.
