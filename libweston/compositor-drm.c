@@ -417,6 +417,7 @@ struct drm_head {
 	struct backlight *backlight;
 
 	drmModeModeInfo inherited_mode;	/**< Original mode on the connector */
+	uint32_t inherited_crtc_id;	/**< Original CRTC assignment */
 };
 
 struct drm_output {
@@ -3975,51 +3976,6 @@ make_connector_name(const drmModeConnector *con)
 	return name;
 }
 
-static int
-find_crtc_for_connector(struct drm_backend *b,
-			drmModeRes *resources, drmModeConnector *connector)
-{
-	drmModeEncoder *encoder;
-	int i, j;
-	int ret = -1;
-
-	for (j = 0; j < connector->count_encoders; j++) {
-		uint32_t possible_crtcs, encoder_id, crtc_id;
-
-		encoder = drmModeGetEncoder(b->drm.fd, connector->encoders[j]);
-		if (encoder == NULL) {
-			weston_log("Failed to get encoder.\n");
-			continue;
-		}
-		encoder_id = encoder->encoder_id;
-		possible_crtcs = encoder->possible_crtcs;
-		crtc_id = encoder->crtc_id;
-		drmModeFreeEncoder(encoder);
-
-		for (i = 0; i < resources->count_crtcs; i++) {
-			if (!(possible_crtcs & (1 << i)))
-				continue;
-
-			if (drm_output_find_by_crtc(b, resources->crtcs[i]))
-				continue;
-
-			/* Try to preserve the existing
-			 * CRTC -> encoder -> connector routing; it makes
-			 * initialisation faster, and also since we have a
-			 * very dumb picking algorithm, may preserve a better
-			 * choice. */
-			if (!connector->encoder_id ||
-			    (encoder_id == connector->encoder_id &&
-			     crtc_id == resources->crtcs[i]))
-				return i;
-
-			ret = i;
-		}
-	}
-
-	return ret;
-}
-
 static void drm_output_fini_cursor_egl(struct drm_output *output)
 {
 	unsigned int i;
@@ -4690,8 +4646,11 @@ drm_head_read_current_setup(struct drm_head *head, struct drm_backend *backend)
 	 * this connector. */
 	encoder = drmModeGetEncoder(drm_fd, head->connector->encoder_id);
 	if (encoder != NULL) {
+		head->inherited_crtc_id = encoder->crtc_id;
+
 		crtc = drmModeGetCrtc(drm_fd, encoder->crtc_id);
 		drmModeFreeEncoder(encoder);
+
 		if (crtc == NULL)
 			return -1;
 		if (crtc->mode_valid)
@@ -4778,14 +4737,134 @@ drm_output_init_gamma_size(struct drm_output *output)
 	return 0;
 }
 
+static uint32_t
+drm_head_get_possible_crtcs_mask(struct drm_head *head)
+{
+	uint32_t possible_crtcs = 0;
+	drmModeEncoder *encoder;
+	int i;
+
+	for (i = 0; i < head->connector->count_encoders; i++) {
+		encoder = drmModeGetEncoder(head->backend->drm.fd,
+					    head->connector->encoders[i]);
+		if (!encoder)
+			continue;
+
+		possible_crtcs |= encoder->possible_crtcs;
+		drmModeFreeEncoder(encoder);
+	}
+
+	return possible_crtcs;
+}
+
+static int
+drm_crtc_get_index(drmModeRes *resources, uint32_t crtc_id)
+{
+	int i;
+
+	for (i = 0; i < resources->count_crtcs; i++) {
+		if (resources->crtcs[i] == crtc_id)
+			return i;
+	}
+
+	assert(0 && "unknown crtc id");
+	return -1;
+}
+
+/** Pick a CRTC that might be able to drive all attached connectors
+ *
+ * @param output The output whose attached heads to include.
+ * @param resources The DRM KMS resources.
+ * @return CRTC index, or -1 on failure or not found.
+ */
+static int
+drm_output_pick_crtc(struct drm_output *output, drmModeRes *resources)
+{
+	struct drm_backend *backend;
+	struct weston_head *base;
+	struct drm_head *head;
+	uint32_t possible_crtcs = 0xffffffff;
+	int existing_crtc[32];
+	unsigned j, n = 0;
+	uint32_t crtc_id;
+	int best_crtc_index = -1;
+	int i;
+
+	backend = to_drm_backend(output->base.compositor);
+
+	/* This algorithm ignores drmModeEncoder::possible_clones restriction,
+	 * because it is more often set wrong than not in the kernel. */
+
+	/* Accumulate a mask of possible crtcs and find existing routings. */
+	wl_list_for_each(base, &output->base.head_list, output_link) {
+		head = to_drm_head(base);
+
+		possible_crtcs &= drm_head_get_possible_crtcs_mask(head);
+
+		crtc_id = head->inherited_crtc_id;
+		if (crtc_id > 0 && n < ARRAY_LENGTH(existing_crtc))
+			existing_crtc[n++] = drm_crtc_get_index(resources,
+								crtc_id);
+	}
+
+	/* Find a crtc that could drive each connector individually at least,
+	 * and prefer existing routings. */
+	for (i = 0; i < resources->count_crtcs; i++) {
+		crtc_id = resources->crtcs[i];
+
+		/* Could the crtc not drive each connector? */
+		if (!(possible_crtcs & (1 << i)))
+			continue;
+
+		/* Is the crtc already in use? */
+		if (drm_output_find_by_crtc(backend, crtc_id))
+			continue;
+
+		/* Try to preserve the existing CRTC -> connector routing;
+		 * it makes initialisation faster, and also since we have a
+		 * very dumb picking algorithm, may preserve a better
+		 * choice. */
+		for (j = 0; j < n; j++) {
+			if (existing_crtc[j] == i)
+				return i;
+		}
+
+		best_crtc_index = i;
+	}
+
+	if (best_crtc_index != -1)
+		return best_crtc_index;
+
+	/* Likely possible_crtcs was empty due to asking for clones,
+	 * but since the DRM documentation says the kernel lies, let's
+	 * pick one crtc anyway. Trial and error is the only way to
+	 * be sure if something doesn't work. */
+
+	/* First pick any existing assignment. */
+	for (j = 0; j < n; j++) {
+		crtc_id = resources->crtcs[existing_crtc[j]];
+		if (!drm_output_find_by_crtc(backend, crtc_id))
+			return existing_crtc[j];
+	}
+
+	/* Otherwise pick any available crtc. */
+	for (i = 0; i < resources->count_crtcs; i++) {
+		crtc_id = resources->crtcs[i];
+
+		if (!drm_output_find_by_crtc(backend, crtc_id))
+			return i;
+	}
+
+	return -1;
+}
+
 /** Allocate a CRTC for the output
  *
  * @param output The output with no allocated CRTC.
  * @param resources DRM KMS resources.
- * @param connector The DRM KMS connector data.
  * @return 0 on success, -1 on failure.
  *
- * Finds a free CRTC that can drive the given connector, reserves the CRTC
+ * Finds a free CRTC that might drive the attached connectors, reserves the CRTC
  * for the output, and loads the CRTC properties.
  *
  * Populates the cursor and scanout planes.
@@ -4793,8 +4872,7 @@ drm_output_init_gamma_size(struct drm_output *output)
  * On failure, the output remains without a CRTC.
  */
 static int
-drm_output_init_crtc(struct drm_output *output,
-		     drmModeRes *resources, drmModeConnector *connector)
+drm_output_init_crtc(struct drm_output *output, drmModeRes *resources)
 {
 	struct drm_backend *b = to_drm_backend(output->base.compositor);
 	drmModeObjectPropertiesPtr props;
@@ -4802,9 +4880,10 @@ drm_output_init_crtc(struct drm_output *output,
 
 	assert(output->crtc_id == 0);
 
-	i = find_crtc_for_connector(b, resources, connector);
+	i = drm_output_pick_crtc(output, resources);
 	if (i < 0) {
-		weston_log("No usable crtc/encoder pair for connector.\n");
+		weston_log("Output '%s': No available CRTCs.\n",
+			   output->base.name);
 		return -1;
 	}
 
@@ -4917,7 +4996,6 @@ drm_output_enable(struct weston_output *base)
 {
 	struct drm_output *output = to_drm_output(base);
 	struct drm_backend *b = to_drm_backend(base->compositor);
-	struct drm_head *head = to_drm_head(weston_output_get_first_head(base));
 	drmModeRes *resources;
 	int ret;
 
@@ -4926,7 +5004,7 @@ drm_output_enable(struct weston_output *base)
 		weston_log("drmModeGetResources failed\n");
 		return -1;
 	}
-	ret = drm_output_init_crtc(output, resources, head->connector);
+	ret = drm_output_init_crtc(output, resources);
 	drmModeFreeResources(resources);
 	if (ret < 0)
 		return -1;
