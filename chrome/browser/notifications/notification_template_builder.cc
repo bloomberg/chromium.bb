@@ -44,10 +44,12 @@ const char kImageUri[] = "imageUri";
 const char kInputElement[] = "input";
 const char kInputId[] = "id";
 const char kInputType[] = "type";
+const char kStatus[] = "status";
 const char kNotificationSettings[] = "notificationSettings";
 const char kPlaceholderContent[] = "placeHolderContent";
 const char kPlacement[] = "placement";
 const char kPlacementAppLogoOverride[] = "appLogoOverride";
+const char kProgress[] = "progress";
 const char kReminder[] = "reminder";
 const char kScenario[] = "scenario";
 const char kSilent[] = "silent";
@@ -59,6 +61,7 @@ const char kToastElementDisplayTimestamp[] = "displayTimestamp";
 const char kToastElementLaunchAttribute[] = "launch";
 const char kTrue[] = "true";
 const char kUserResponse[] = "userResponse";
+const char kValue[] = "value";
 const char kVisualElement[] = "visual";
 
 // Name of the template used for default Chrome notifications.
@@ -98,6 +101,9 @@ std::unique_ptr<NotificationTemplateBuilder> NotificationTemplateBuilder::Build(
 
   if (!notification.image().IsEmpty())
     builder->WriteLargeImageElement(notification);
+
+  if (notification.type() == message_center::NOTIFICATION_TYPE_PROGRESS)
+    builder->WriteProgressElement(notification);
 
   builder->EndBindingElement();
   builder->EndVisualElement();
@@ -228,6 +234,19 @@ void NotificationTemplateBuilder::WriteImageElement(
       xml_writer_->AddAttribute(kHintCrop, hint_crop);
     xml_writer_->EndElement();
   }
+}
+
+void NotificationTemplateBuilder::WriteProgressElement(
+    const message_center::Notification& notification) {
+  // Two other attributes are supported by Microsoft:
+  // title: A string shown on the left side of the toast, just above the bar.
+  // valueStringOverride: A string that replaces the percentage on the right.
+  xml_writer_->StartElement(kProgress);
+  // Status is mandatory, without it the progress bar is not shown.
+  xml_writer_->AddAttribute(kStatus, std::string());
+  xml_writer_->AddAttribute(
+      kValue, base::StringPrintf("%3.2f", 1.0 * notification.progress() / 100));
+  xml_writer_->EndElement();
 }
 
 void NotificationTemplateBuilder::AddActions(
