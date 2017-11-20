@@ -126,7 +126,7 @@ ScriptPromise ServiceWorkerRegistrationNotifications::getNotifications(
           resolver);
 
   WebNotificationManager* notification_manager =
-      Platform::Current()->GetNotificationManager();
+      Platform::Current()->GetWebNotificationManager();
   DCHECK(notification_manager);
 
   notification_manager->GetNotifications(
@@ -188,7 +188,7 @@ void ServiceWorkerRegistrationNotifications::DidLoadResources(
   DCHECK(loaders_.Contains(loader));
 
   WebNotificationManager* notification_manager =
-      Platform::Current()->GetNotificationManager();
+      Platform::Current()->GetWebNotificationManager();
   DCHECK(notification_manager);
 
   notification_manager->ShowPersistent(

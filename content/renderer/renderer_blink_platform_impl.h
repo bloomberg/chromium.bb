@@ -217,7 +217,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   blink::WebPushProvider* PushProvider() override;
   std::unique_ptr<blink::WebTrialTokenValidator> CreateTrialTokenValidator()
       override;
-  blink::WebNotificationManager* GetNotificationManager() override;
+  blink::WebNotificationManager* GetWebNotificationManager() override;
   void DidStartWorkerThread() override;
   void WillStopWorkerThread() override;
   void WorkerContextCreated(const v8::Local<v8::Context>& worker) override;

@@ -691,7 +691,9 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // Web Notifications --------------------------------------------------
 
-  virtual WebNotificationManager* GetNotificationManager() { return nullptr; }
+  virtual WebNotificationManager* GetWebNotificationManager() {
+    return nullptr;
+  }
 
   // Push API------------------------------------------------------------
 
