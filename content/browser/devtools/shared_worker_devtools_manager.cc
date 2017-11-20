@@ -16,15 +16,6 @@ SharedWorkerDevToolsManager* SharedWorkerDevToolsManager::GetInstance() {
   return base::Singleton<SharedWorkerDevToolsManager>::get();
 }
 
-DevToolsAgentHostImpl*
-SharedWorkerDevToolsManager::GetDevToolsAgentHostForWorker(
-    int worker_process_id,
-    int worker_route_id) {
-  AgentHostMap::iterator it = workers_.find(
-      WorkerId(worker_process_id, worker_route_id));
-  return it == workers_.end() ? NULL : it->second;
-}
-
 void SharedWorkerDevToolsManager::AddAllAgentHosts(
     SharedWorkerDevToolsAgentHost::List* result) {
   for (auto& worker : workers_) {
