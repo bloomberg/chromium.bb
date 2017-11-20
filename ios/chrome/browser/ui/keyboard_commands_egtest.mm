@@ -30,8 +30,6 @@
 
 using chrome_test_util::NavigationBarDoneButton;
 
-const CGFloat kScrollDisplacement = 50.0;
-
 // Test cases to verify that keyboard commands are and are not registered when
 // expected.
 @interface KeyboardCommandsTestCase : ChromeTestCase
@@ -95,18 +93,6 @@ const CGFloat kScrollDisplacement = 50.0;
   GREYAssert(success, @"The bookmark editor was not displayed.");
 }
 
-// Open tools menu, find and tap on item specified by |toolsMenuItem| matcher.
-// TODO(crbug.com/638674): Evaluate if this can move to shared code.
-- (void)selectToolsMenuItem:(id<GREYMatcher>)toolsMenuItem {
-  [ChromeEarlGreyUI openToolsMenu];
-
-  id<GREYMatcher> toolsMenuTableView = chrome_test_util::ToolsMenuView();
-  [[[EarlGrey selectElementWithMatcher:toolsMenuItem]
-         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown,
-                                                  kScrollDisplacement)
-      onElementWithMatcher:toolsMenuTableView] performAction:grey_tap()];
-}
-
 #pragma mark - Tests
 
 // Tests that keyboard commands are registered when the BVC is showing without
@@ -166,7 +152,9 @@ const CGFloat kScrollDisplacement = 50.0;
   scoped_feature_list.InitAndDisableFeature(kBookmarkNewGeneration);
 
   // Open Bookmarks
-  [self selectToolsMenuItem:grey_accessibilityID(kToolsMenuBookmarksId)];
+  [ChromeEarlGreyUI openToolsMenu];
+  [ChromeEarlGreyUI
+      tapToolsMenuButton:grey_accessibilityID(kToolsMenuBookmarksId)];
 
   if (IsIPadIdiom()) {
     [self verifyKeyboardCommandsAreRegistered];
@@ -183,7 +171,8 @@ const CGFloat kScrollDisplacement = 50.0;
 - (void)testKeyboardCommands_RecentTabsPresented {
   // Open Recent Tabs
   id<GREYMatcher> recentTabs = grey_accessibilityID(kToolsMenuOtherDevicesId);
-  [self selectToolsMenuItem:recentTabs];
+  [ChromeEarlGreyUI openToolsMenu];
+  [ChromeEarlGreyUI tapToolsMenuButton:recentTabs];
 
   if (IsIPadIdiom()) {
     [self verifyKeyboardCommandsAreRegistered];
