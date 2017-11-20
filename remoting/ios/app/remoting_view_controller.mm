@@ -57,12 +57,11 @@ ConnectionType GetConnectionType() {
   struct sockaddr_in addr = {0};
   addr.sin_len = sizeof(addr);
   addr.sin_family = AF_INET;
-  SCNetworkReachabilityRef reachability =
+  base::ScopedCFTypeRef<SCNetworkReachabilityRef> reachability(
       SCNetworkReachabilityCreateWithAddress(
-          kCFAllocatorDefault, reinterpret_cast<struct sockaddr*>(&addr));
+          kCFAllocatorDefault, reinterpret_cast<struct sockaddr*>(&addr)));
   SCNetworkReachabilityFlags flags;
   BOOL success = SCNetworkReachabilityGetFlags(reachability, &flags);
-  CFRelease(reachability);
   if (!success) {
     return ConnectionType::UNKNOWN;
   }
