@@ -131,7 +131,7 @@ ls -l $CACHEDIR > out1
 TESTTMPDIR=`mktemp -d /tmp/fontconfig.XXXXXXXX`
 sed "s!@FONTDIR@!$TESTTMPDIR/fonts!
 s!@CACHEDIR@!$TESTTMPDIR/cache.dir!" < $TESTDIR/fonts.conf.in > bind-fonts.conf
-$BWRAP --bind / / --bind $CACHEDIR $TESTTMPDIR/cache.dir --bind $FONTDIR $TESTTMPDIR/fonts --bind .. $TESTTMPDIR/build --dev-bind /dev /dev --setenv FONTCONFIG_FILE $TESTTMPDIR/build/test/bind-fonts.conf $TESTTMPDIR/build/fc-match/fc-match$EXEEXT -f "%{file}\n" "Misc Fixed" > xxx
+$BWRAP --bind / / --bind $CACHEDIR $TESTTMPDIR/cache.dir --bind $FONTDIR $TESTTMPDIR/fonts --bind .. $TESTTMPDIR/build --dev-bind /dev /dev --setenv FONTCONFIG_FILE $TESTTMPDIR/build/test/bind-fonts.conf $TESTTMPDIR/build/fc-match/fc-match$EXEEXT -f "%{file}\n" ":foundry=Misc" > xxx
 ls -l $CACHEDIR > out2
 if cmp out1 out2 > /dev/null ; then : ; else
   echo "*** Test failed: $TEST"
@@ -140,7 +140,7 @@ if cmp out1 out2 > /dev/null ; then : ; else
 fi
 if [ x`cat xxx` != "x$TESTTMPDIR/fonts/4x6.pcf" ]; then
   echo "*** Test failed: $TEST"
-  echo "file property doesn't points to the new place"
+  echo "file property doesn't points to the new place: $TESTTMPDIR/fonts/4x6.pcf"
   exit 1
 fi
 rm -rf $TESTTMPDIR out1 out2 xxx bind-fonts.conf
