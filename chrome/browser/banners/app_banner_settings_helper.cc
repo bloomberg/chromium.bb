@@ -51,7 +51,7 @@ const unsigned int kRecentLastLaunchInDays = 10;
 
 // Dictionary keys to use for the events. Must be kept in sync with
 // AppBannerEvent.
-const char* kBannerEventKeys[] = {
+constexpr const char* kBannerEventKeys[] = {
     "couldShowBannerEvents",
     "didShowBannerEvent",
     "didBlockBannerEvent",
@@ -87,14 +87,15 @@ std::unique_ptr<base::DictionaryValue> GetOriginDict(
   return dict;
 }
 
-base::DictionaryValue* GetAppDict(base::DictionaryValue* origin_dict,
-                                  const std::string& key_name) {
-  base::DictionaryValue* app_dict = nullptr;
-  if (!origin_dict->GetDictionaryWithoutPathExpansion(key_name, &app_dict)) {
+base::Value* GetAppDict(base::DictionaryValue* origin_dict,
+                        const std::string& key_name) {
+  base::Value* app_dict =
+      origin_dict->FindKeyOfType(key_name, base::Value::Type::DICTIONARY);
+  if (!app_dict) {
     // Don't allow more than kMaxAppsPerSite dictionaries.
     if (origin_dict->size() < kMaxAppsPerSite) {
-      app_dict = origin_dict->SetDictionaryWithoutPathExpansion(
-          key_name, base::MakeUnique<base::DictionaryValue>());
+      app_dict = origin_dict->SetKey(
+          key_name, base::Value(base::Value::Type::DICTIONARY));
     }
   }
 
@@ -211,22 +212,22 @@ void AppBannerSettingsHelper::RecordBannerEvent(
   if (!origin_dict)
     return;
 
-  base::DictionaryValue* app_dict =
+  base::Value* app_dict =
       GetAppDict(origin_dict.get(), package_name_or_start_url);
   if (!app_dict)
     return;
 
   // Dates are stored in their raw form (i.e. not local dates) to be resilient
   // to time zone changes.
-  std::string event_key(kBannerEventKeys[event]);
+  const char* event_key = kBannerEventKeys[event];
 
   if (event == APP_BANNER_EVENT_COULD_SHOW) {
     // Do not overwrite a could show event, as this is used for metrics.
-    double internal_date;
-    if (app_dict->GetDouble(event_key, &internal_date))
+    if (app_dict->FindKeyOfType(event_key, base::Value::Type::DOUBLE))
       return;
   }
-  app_dict->SetDouble(event_key, time.ToInternalValue());
+  app_dict->SetKey(event_key,
+                   base::Value(static_cast<double>(time.ToInternalValue())));
 
   settings->SetWebsiteSettingDefaultScope(
       origin_url, GURL(), CONTENT_SETTINGS_TYPE_APP_BANNER, std::string(),
@@ -300,17 +301,17 @@ base::Time AppBannerSettingsHelper::GetSingleBannerEvent(
   if (!origin_dict)
     return base::Time();
 
-  base::DictionaryValue* app_dict =
+  base::Value* app_dict =
       GetAppDict(origin_dict.get(), package_name_or_start_url);
   if (!app_dict)
     return base::Time();
 
-  std::string event_key(kBannerEventKeys[event]);
-  double internal_time;
-  if (!app_dict->GetDouble(event_key, &internal_time))
+  base::Value* internal_time = app_dict->FindKeyOfType(
+      kBannerEventKeys[event], base::Value::Type::DOUBLE);
+  if (!internal_time)
     return base::Time();
 
-  return base::Time::FromInternalValue(internal_time);
+  return base::Time::FromInternalValue(internal_time->GetDouble());
 }
 
 bool AppBannerSettingsHelper::HasSufficientEngagement(double total_engagement) {
@@ -357,11 +358,11 @@ bool AppBannerSettingsHelper::WasLaunchedRecently(Profile* profile,
       const base::DictionaryValue* value;
       it.value().GetAsDictionary(&value);
 
-      std::string event_key(
-          kBannerEventKeys[APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN]);
       double internal_time;
       if (it.key() == kInstantAppsKey ||
-          !value->GetDouble(event_key, &internal_time)) {
+          !value->GetDouble(
+              kBannerEventKeys[APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN],
+              &internal_time)) {
         continue;
       }
 

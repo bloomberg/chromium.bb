@@ -41,14 +41,11 @@ namespace {
 const char kAcknowledged[] = "acknowledged";
 const char kValue[] = "value";
 
-DictionaryValue* FindOrCreateDictionary(DictionaryValue* parent,
-                                        const std::string& key) {
-  DictionaryValue* dict = nullptr;
-  if (!parent->GetDictionaryWithoutPathExpansion(key, &dict)) {
-    dict = parent->SetDictionaryWithoutPathExpansion(
-        key, base::MakeUnique<base::DictionaryValue>());
-  }
-  return dict;
+Value* FindOrCreateDictionary(Value* parent, const std::string& key) {
+  Value* dict = parent->FindKeyOfType(key, base::Value::Type::DICTIONARY);
+  if (dict)
+    return dict;
+  return parent->SetKey(key, base::Value(base::Value::Type::DICTIONARY));
 }
 
 class ScopedSupervisedUserSharedSettingsUpdate {
@@ -63,9 +60,7 @@ class ScopedSupervisedUserSharedSettingsUpdate {
     DCHECK(id.empty() || id == su_id);
   }
 
-  DictionaryValue* Get() {
-    return FindOrCreateDictionary(update_.Get(), su_id_);
-  }
+  Value* Get() { return FindOrCreateDictionary(update_.Get(), su_id_); }
 
  private:
   DictionaryPrefUpdate update_;
@@ -106,13 +101,12 @@ void SupervisedUserSharedSettingsService::SetValueInternal(
     const Value& value,
     bool acknowledged) {
   ScopedSupervisedUserSharedSettingsUpdate update(prefs_, su_id);
-  DictionaryValue* update_dict = update.Get();
+  Value* update_dict = update.Get();
 
-  DictionaryValue* dict = nullptr;
-  bool has_key = update_dict->GetDictionaryWithoutPathExpansion(key, &dict);
+  Value* dict = update_dict->FindKeyOfType(key, base::Value::Type::DICTIONARY);
+  bool has_key = static_cast<bool>(dict);
   if (!has_key) {
-    dict = update_dict->SetDictionaryWithoutPathExpansion(
-        key, base::MakeUnique<base::DictionaryValue>());
+    dict = update_dict->SetKey(key, base::Value(base::Value::Type::DICTIONARY));
   }
   dict->SetKey(kValue, value.Clone());
   dict->SetKey(kAcknowledged, base::Value(acknowledged));
@@ -230,8 +224,8 @@ SupervisedUserSharedSettingsService::MergeDataAndStartSyncing(
     const std::string& su_id = supervised_user_shared_setting.mu_id();
     ScopedSupervisedUserSharedSettingsUpdate update(prefs_, su_id);
     const std::string& key = supervised_user_shared_setting.key();
-    DictionaryValue* dict = FindOrCreateDictionary(update.Get(), key);
-    dict->SetWithoutPathExpansion(kValue, std::move(value));
+    Value* dict = FindOrCreateDictionary(update.Get(), key);
+    dict->SetKey(kValue, base::Value::FromUniquePtrValue(std::move(value)));
 
     // Every setting we get from the server should have the acknowledged flag
     // set.
@@ -325,9 +319,9 @@ syncer::SyncError SupervisedUserSharedSettingsService::ProcessSyncChanges(
     const std::string& key = supervised_user_shared_setting.key();
     const std::string& su_id = supervised_user_shared_setting.mu_id();
     ScopedSupervisedUserSharedSettingsUpdate update(prefs_, su_id);
-    DictionaryValue* update_dict = update.Get();
-    DictionaryValue* dict = nullptr;
-    bool has_key = update_dict->GetDictionaryWithoutPathExpansion(key, &dict);
+    Value* update_dict = update.Get();
+    Value* dict =
+        update_dict->FindKeyOfType(key, base::Value::Type::DICTIONARY);
     switch (sync_change.change_type()) {
       case SyncChange::ACTION_ADD:
       case SyncChange::ACTION_UPDATE: {
@@ -335,29 +329,28 @@ syncer::SyncError SupervisedUserSharedSettingsService::ProcessSyncChanges(
         // flag set.
         DCHECK(supervised_user_shared_setting.acknowledged());
 
-        if (has_key) {
+        if (dict) {
           // If the supervised user already exists, it should be an update
           // action.
           DCHECK_EQ(SyncChange::ACTION_UPDATE, sync_change.change_type());
         } else {
           // Otherwise, it should be an add action.
           DCHECK_EQ(SyncChange::ACTION_ADD, sync_change.change_type());
-          dict = update_dict->SetDictionaryWithoutPathExpansion(
-              key, base::MakeUnique<base::DictionaryValue>());
+          dict = update_dict->SetKey(
+              key, base::Value(base::Value::Type::DICTIONARY));
         }
-        std::unique_ptr<Value> value =
-            base::JSONReader::Read(supervised_user_shared_setting.value());
-        dict->SetWithoutPathExpansion(kValue, std::move(value));
+        dict->SetKey(kValue,
+                     base::Value::FromUniquePtrValue(base::JSONReader::Read(
+                         supervised_user_shared_setting.value())));
         dict->SetKey(
             kAcknowledged,
             base::Value(supervised_user_shared_setting.acknowledged()));
         break;
       }
       case SyncChange::ACTION_DELETE: {
-        if (has_key)
-          update_dict->RemoveWithoutPathExpansion(key, nullptr);
-        else
+        if (!update_dict->RemoveKey(key)) {
           NOTREACHED() << "Trying to delete nonexistent key " << key;
+        }
         break;
       }
       case SyncChange::ACTION_INVALID: {

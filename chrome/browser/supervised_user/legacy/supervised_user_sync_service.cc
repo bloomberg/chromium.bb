@@ -207,17 +207,17 @@ void SupervisedUserSyncService::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
-std::unique_ptr<base::DictionaryValue>
-SupervisedUserSyncService::CreateDictionary(const std::string& name,
-                                            const std::string& master_key,
-                                            const std::string& signature_key,
-                                            const std::string& encryption_key,
-                                            int avatar_index) {
-  std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
-  result->SetString(kName, name);
-  result->SetString(kMasterKey, master_key);
-  result->SetString(kPasswordSignatureKey, signature_key);
-  result->SetString(kPasswordEncryptionKey, encryption_key);
+base::Value SupervisedUserSyncService::CreateDictionary(
+    const std::string& name,
+    const std::string& master_key,
+    const std::string& signature_key,
+    const std::string& encryption_key,
+    int avatar_index) {
+  base::Value result(base::Value::Type::DICTIONARY);
+  result.SetKey(kName, base::Value(name));
+  result.SetKey(kMasterKey, base::Value(master_key));
+  result.SetKey(kPasswordSignatureKey, base::Value(signature_key));
+  result.SetKey(kPasswordEncryptionKey, base::Value(encryption_key));
   // TODO(akuegel): Get rid of the avatar stuff here when Chrome OS switches
   // to the avatar index that is stored as a shared setting.
   std::string chrome_avatar;
@@ -227,8 +227,8 @@ SupervisedUserSyncService::CreateDictionary(const std::string& name,
 #else
   chrome_avatar = BuildAvatarString(avatar_index);
 #endif
-  result->SetString(kChromeAvatar, chrome_avatar);
-  result->SetString(kChromeOsAvatar, chromeos_avatar);
+  result.SetKey(kChromeAvatar, base::Value(std::move(chrome_avatar)));
+  result.SetKey(kChromeOsAvatar, base::Value(std::move(chromeos_avatar)));
   return result;
 }
 
@@ -274,12 +274,11 @@ void SupervisedUserSyncService::UpdateSupervisedUserImpl(
     bool add_user) {
   DictionaryPrefUpdate update(prefs_, prefs::kSupervisedUsers);
   base::DictionaryValue* dict = update.Get();
-  std::unique_ptr<base::DictionaryValue> value = CreateDictionary(
-      name, master_key, signature_key, encryption_key, avatar_index);
-
   DCHECK_EQ(add_user, !dict->HasKey(id));
-  base::DictionaryValue* entry =
-      dict->SetDictionaryWithoutPathExpansion(id, std::move(value));
+
+  base::Value* entry =
+      dict->SetKey(id, CreateDictionary(name, master_key, signature_key,
+                                        encryption_key, avatar_index));
 
   if (!sync_processor_)
     return;
