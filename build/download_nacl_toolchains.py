@@ -52,9 +52,7 @@ def Main(args):
   if 'target_arch=arm' not in os.environ.get('GYP_DEFINES', ''):
       args = ['--exclude', 'nacl_arm_newlib'] + args
 
-  package_version.main(args)
-
-  return 0
+  return package_version.main(args)
 
 
 if __name__ == '__main__':
