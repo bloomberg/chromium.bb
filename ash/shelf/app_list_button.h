@@ -23,7 +23,7 @@ namespace ash {
 class InkDropButtonListener;
 class Shelf;
 class ShelfView;
-class VoiceInteractionOverlay;
+class AssistantOverlay;
 
 // Button used for the AppList icon on the shelf.
 class ASH_EXPORT AppListButton : public views::ImageButton,
@@ -117,10 +117,9 @@ class ASH_EXPORT AppListButton : public views::ImageButton,
   Shelf* shelf_;
 
   // Owned by the view hierarchy. Null if the voice interaction is not enabled.
-  VoiceInteractionOverlay* voice_interaction_overlay_ = nullptr;
-  std::unique_ptr<base::OneShotTimer> voice_interaction_animation_delay_timer_;
-  std::unique_ptr<base::OneShotTimer>
-      voice_interaction_animation_hide_delay_timer_;
+  AssistantOverlay* assistant_overlay_ = nullptr;
+  std::unique_ptr<base::OneShotTimer> assistant_animation_delay_timer_;
+  std::unique_ptr<base::OneShotTimer> assistant_animation_hide_delay_timer_;
   base::TimeTicks voice_interaction_start_timestamp_;
 
   // Flag that gets set each time we receive a mouse or gesture event. It is

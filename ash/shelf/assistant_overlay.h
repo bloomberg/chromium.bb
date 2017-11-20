@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SHELF_VOICE_INTERACTION_OVERLAY_H_
-#define ASH_SHELF_VOICE_INTERACTION_OVERLAY_H_
+#ifndef ASH_SHELF_ASSISTANT_OVERLAY_H_
+#define ASH_SHELF_ASSISTANT_OVERLAY_H_
 
 #include <memory>
 
@@ -16,13 +16,13 @@
 namespace ash {
 
 class AppListButton;
-class VoiceInteractionIconBackground;
-class VoiceInteractionIcon;
+class AssistantIconBackground;
+class AssistantIcon;
 
-class ASH_EXPORT VoiceInteractionOverlay : public views::View {
+class ASH_EXPORT AssistantOverlay : public views::View {
  public:
-  explicit VoiceInteractionOverlay(AppListButton* host_view);
-  ~VoiceInteractionOverlay() override;
+  explicit AssistantOverlay(AppListButton* host_view);
+  ~AssistantOverlay() override;
 
   void StartAnimation(bool show_icon);
   void EndAnimation();
@@ -41,7 +41,7 @@ class ASH_EXPORT VoiceInteractionOverlay : public views::View {
     HIDDEN = 0,
     // Indicates currently playing the starting animation.
     STARTING,
-    // Indiates the current animation is in the bursting phase, which means no
+    // Indicates the current animation is in the bursting phase, which means no
     // turning back.
     BURSTING,
     // Indicates currently playing the waiting animation.
@@ -49,8 +49,8 @@ class ASH_EXPORT VoiceInteractionOverlay : public views::View {
   };
 
   std::unique_ptr<ui::Layer> ripple_layer_;
-  std::unique_ptr<VoiceInteractionIcon> icon_layer_;
-  std::unique_ptr<VoiceInteractionIconBackground> background_layer_;
+  std::unique_ptr<AssistantIcon> icon_layer_;
+  std::unique_ptr<AssistantIconBackground> background_layer_;
 
   AppListButton* host_view_;
 
@@ -61,8 +61,8 @@ class ASH_EXPORT VoiceInteractionOverlay : public views::View {
 
   views::CircleLayerDelegate circle_layer_delegate_;
 
-  DISALLOW_COPY_AND_ASSIGN(VoiceInteractionOverlay);
+  DISALLOW_COPY_AND_ASSIGN(AssistantOverlay);
 };
 
 }  // namespace ash
-#endif  // ASH_SHELF_VOICE_INTERACTION_OVERLAY_H_
+#endif  // ASH_SHELF_ASSISTANT_OVERLAY_H_
