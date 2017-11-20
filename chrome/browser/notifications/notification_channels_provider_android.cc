@@ -388,8 +388,6 @@ void NotificationChannelsProviderAndroid::CreateChannelIfRequired(
   } else {
     auto old_channel_status =
         bridge_->GetChannelStatus(channel_entry->second.id);
-    // TODO(awdf): Maybe remove this DCHECK - channel status could change any
-    // time so this may be vulnerable to a race condition.
     DCHECK_EQ(old_channel_status, new_channel_status);
   }
 }
