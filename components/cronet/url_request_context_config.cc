@@ -50,6 +50,8 @@ const char kQuicIdleConnectionTimeoutSeconds[] =
     "idle_connection_timeout_seconds";
 const char kQuicMigrateSessionsOnNetworkChange[] =
     "migrate_sessions_on_network_change";
+const char kQuicMigrateSessionsOnNetworkChangeV2[] =
+    "migrate_sessions_on_network_change_v2";
 const char kQuicUserAgentId[] = "user_agent_id";
 const char kQuicMigrateSessionsEarly[] = "migrate_sessions_early";
 const char kQuicDisableBidirectionalStreams[] =
@@ -247,6 +249,13 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
                                 &quic_migrate_sessions_on_network_change)) {
         session_params->quic_migrate_sessions_on_network_change =
             quic_migrate_sessions_on_network_change;
+      }
+
+      bool quic_migrate_sessions_on_network_change_v2 = false;
+      if (quic_args->GetBoolean(kQuicMigrateSessionsOnNetworkChangeV2,
+                                &quic_migrate_sessions_on_network_change_v2)) {
+        session_params->quic_migrate_sessions_on_network_change_v2 =
+            quic_migrate_sessions_on_network_change_v2;
       }
 
       std::string quic_user_agent_id;
