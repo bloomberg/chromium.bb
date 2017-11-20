@@ -21,6 +21,7 @@ class Event;
 namespace vr {
 
 class Ui;
+struct Model;
 
 // This class provides a home for the VR UI in a testapp context, and
 // manipulates the UI according to user input.
@@ -66,6 +67,9 @@ class VrTestContext : public vr::UiBrowserInterface {
   bool touchpad_pressed_ = false;
 
   float view_scale_factor_ = 1.f;
+
+  // This avoids storing a duplicate of the model state here.
+  Model* model_;
 
   bool fullscreen_ = false;
   bool incognito_ = false;

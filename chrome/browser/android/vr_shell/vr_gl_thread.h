@@ -76,11 +76,11 @@ class VrGLThread : public base::android::JavaHandlerThread,
   void SetLoadProgress(float progress) override;
   void SetIsExiting() override;
   void SetHistoryButtonsEnabled(bool can_go_back, bool can_go_forward) override;
-  void SetVideoCapturingIndicator(bool enabled) override;
-  void SetScreenCapturingIndicator(bool enabled) override;
-  void SetAudioCapturingIndicator(bool enabled) override;
-  void SetBluetoothConnectedIndicator(bool enabled) override;
-  void SetLocationAccessIndicator(bool enabled) override;
+  void SetVideoCaptureEnabled(bool enabled) override;
+  void SetScreenCaptureEnabled(bool enabled) override;
+  void SetAudioCaptureEnabled(bool enabled) override;
+  void SetBluetoothConnected(bool enabled) override;
+  void SetLocationAccess(bool enabled) override;
   void SetExitVrPromptEnabled(bool enabled,
                               vr::UiUnsupportedMode reason) override;
   void SetSpeechRecognitionEnabled(bool enabled) override;

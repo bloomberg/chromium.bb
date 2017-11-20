@@ -122,6 +122,7 @@ static_library("vr_common") {
     "model/model.h",
     "model/omnibox_suggestions.cc",
     "model/omnibox_suggestions.h",
+    "model/permissions_model.h",
     "model/reticle_model.h",
     "model/speech_recognition_model.h",
     "model/toolbar_state.cc",
