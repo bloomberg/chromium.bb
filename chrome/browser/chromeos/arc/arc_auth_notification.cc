@@ -14,6 +14,7 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/grit/generated_resources.h"
@@ -23,8 +24,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/chromeos/devicetype_utils.h"
-#include "ui/message_center/message_center.h"
-#include "ui/message_center/message_center_observer.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_delegate.h"
 #include "ui/message_center/public/cpp/message_center_switches.h"
@@ -39,74 +38,45 @@ const char kNotifierId[] = "arc_auth";
 const char kFirstRunNotificationId[] = "arc_auth/first_run";
 
 class ArcAuthNotificationDelegate
-    : public message_center::NotificationDelegate,
-      public message_center::MessageCenterObserver {
+    : public message_center::NotificationDelegate {
  public:
   explicit ArcAuthNotificationDelegate(Profile* profile) : profile_(profile) {}
 
-  // message_center::MessageCenterObserver
-  void OnNotificationUpdated(const std::string& notification_id) override {
-    if (notification_id != kFirstRunNotificationId)
-      return;
-
-    StopObserving();
-    message_center::Notification* notification =
-        message_center::MessageCenter::Get()->FindVisibleNotificationById(
-            notification_id);
-    if (!notification) {
-      NOTREACHED();
-      return;
-    }
-
-    if (!notification->IsRead())
-      UpdateOptInActionUMA(arc::OptInActionType::NOTIFICATION_TIMED_OUT);
-  }
-
   // message_center::NotificationDelegate
-  void Display() override { StartObserving(); }
-
   // TODO(tetsui): Remove this method when IsNewStyleNotificationEnabled() flag
   // is removed.
   void ButtonClick(int button_index) override {
-    StopObserving();
     if (button_index == 0) {
-      UpdateOptInActionUMA(arc::OptInActionType::NOTIFICATION_ACCEPTED);
+      LogUma(arc::OptInActionType::NOTIFICATION_ACCEPTED);
       arc::SetArcPlayStoreEnabledForProfile(profile_, true);
     } else {
-      UpdateOptInActionUMA(arc::OptInActionType::NOTIFICATION_DECLINED);
+      LogUma(arc::OptInActionType::NOTIFICATION_DECLINED);
       arc::SetArcPlayStoreEnabledForProfile(profile_, false);
     }
   }
 
   void Click() override {
-    StopObserving();
-    UpdateOptInActionUMA(arc::OptInActionType::NOTIFICATION_ACCEPTED);
+    LogUma(arc::OptInActionType::NOTIFICATION_ACCEPTED);
     arc::SetArcPlayStoreEnabledForProfile(profile_, true);
   }
 
-  void Close(bool by_user) override { StopObserving(); }
+  void Close(bool by_user) override {
+    LogUma(arc::OptInActionType::NOTIFICATION_TIMED_OUT);
+  }
 
  private:
-  ~ArcAuthNotificationDelegate() override { StopObserving(); }
+  ~ArcAuthNotificationDelegate() override {}
 
-  void StartObserving() {
-    if (observing_message_center_)
-      return;
-    message_center::MessageCenter::Get()->AddObserver(this);
-    observing_message_center_ = true;
+  void LogUma(arc::OptInActionType action) {
+    if (!uma_logged_)
+      UpdateOptInActionUMA(action);
+    uma_logged_ = true;
   }
 
-  void StopObserving() {
-    if (!observing_message_center_)
-      return;
-    message_center::MessageCenter::Get()->RemoveObserver(this);
-    observing_message_center_ = false;
-  }
-
-  // Unowned pointer.
   Profile* const profile_;
-  // To prevent double observing.
-  bool observing_message_center_ = false;
+
+  // Whether a UMA action has been logged.
+  bool uma_logged_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ArcAuthNotificationDelegate);
 };
@@ -181,15 +151,13 @@ void ArcAuthNotification::Show() {
         l10n_util::GetStringUTF16(IDS_ARC_NOTIFICATION_DISPLAY_SOURCE), GURL(),
         notifier_id, data, new ArcAuthNotificationDelegate(profile_));
   }
-  message_center::MessageCenter::Get()->AddNotification(
-      std::move(notification));
+  NotificationDisplayService::GetForProfile(profile_)->Display(
+      NotificationCommon::TRANSIENT, *notification);
 }
 
 void ArcAuthNotification::Hide() {
-  message_center::MessageCenter* message_center =
-      message_center::MessageCenter::Get();
-  if (message_center)
-    message_center->RemoveNotification(kFirstRunNotificationId, false);
+  NotificationDisplayService::GetForProfile(profile_)->Close(
+      NotificationCommon::TRANSIENT, kFirstRunNotificationId);
 
   session_manager::SessionManager* session_manager =
       session_manager::SessionManager::Get();
