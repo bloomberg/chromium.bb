@@ -2894,7 +2894,13 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
 }
 
 // Verify parallel download in normal case.
-IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, ParallelDownloadComplete) {
+// Flaky. See http://crbug.com/786626.
+#if defined(OS_ANDROID) || defined(OS_LINUX)
+#define MAYBE_ParallelDownloadComplete DISABLED_ParallelDownloadComplete
+#else
+#define MAYBE_ParallelDownloadComplete ParallelDownloadComplete
+#endif
+IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, MAYBE_ParallelDownloadComplete) {
   InitParallelDownloadFeature();
   EXPECT_TRUE(base::FeatureList::IsEnabled(features::kParallelDownloading));
 
