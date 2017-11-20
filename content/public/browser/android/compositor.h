@@ -68,6 +68,9 @@ class CONTENT_EXPORT Compositor {
   // Set the output surface bounds.
   virtual void SetWindowBounds(const gfx::Size& size) = 0;
 
+  // Defer commits on the layer tree host.
+  virtual void SetDeferCommits(bool defer_commits) = 0;
+
   // Set the output surface which the compositor renders into.
   virtual void SetSurface(jobject surface) = 0;
 
