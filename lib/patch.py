@@ -1372,6 +1372,31 @@ class GitRepoPatch(PatchQuery):
     parents = git.RunGit(git_repo, cmd).output.split()
     return parents
 
+  def _IsAncestorOf(self, git_repo, other_patch):
+    """Determine whether this patch is ancestor of |other_patch|.
+
+    Args:
+      git_repo: The git repository to fetch into.
+      other_patch: A GitRepoPatch representing the other patch.
+
+    Returns:
+      True if this patch is ancestor of |other_patch|. False otherwise.
+    """
+    self.Fetch(git_repo)
+    other_patch.Fetch(git_repo)
+
+    cmd = ['merge-base', '--is-ancestor', self.sha1, other_patch.sha1]
+    try:
+      git.RunGit(git_repo, cmd)
+      # Exit code 0 means yes.
+      return True
+    except cros_build_lib.RunCommandError as e:
+      if e.result.returncode == 1:
+        # Exit code 1 means no.
+        return False
+      # Other return codes are exceptions
+      raise
+
 
 class LocalPatch(GitRepoPatch):
   """Represents patch coming from an on-disk git repo."""

@@ -411,6 +411,13 @@ class TestGitRepoPatch(GitRepoPatchTestCase):
     self.assertEquals(patch_merge._GetParents(git1),
                       [patch_left.sha1, patch_right.sha1])
 
+  def testIsAncestor(self):
+    git1 = self._MakeRepo('git1', self.source)
+    patch1 = self.CommitFile(git1, 'foo', 'foo')
+    patch2 = self.CommitFile(git1, 'bar', 'bar')
+    self.assertTrue(patch1._IsAncestorOf(git1, patch2))
+    self.assertFalse(patch2._IsAncestorOf(git1, patch1))
+
   def testDeleteEbuildTwice(self):
     """Test that double-deletes of ebuilds are flagged as conflicts."""
     # Create monkeys.ebuild for testing.
