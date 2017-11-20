@@ -329,7 +329,7 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   const int16_t *scan = scan_order->scan;
   const int seg_eob = tx_size_2d[tx_size];
   int c;
-  const int bwl = b_width_log2_lookup[txsize_to_bsize[tx_size]] + 2;
+  const int bwl = tx_size_wide_log2[tx_size];
   const int width = tx_size_wide[tx_size];
   const int height = tx_size_high[tx_size];
   int update_eob = -1;
@@ -657,7 +657,7 @@ int av1_cost_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
   int c, cost;
   int txb_skip_ctx = txb_ctx->txb_skip_ctx;
 
-  const int bwl = b_width_log2_lookup[txsize_to_bsize[tx_size]] + 2;
+  const int bwl = tx_size_wide_log2[tx_size];
   const int width = tx_size_wide[tx_size];
   const int height = tx_size_high[tx_size];
 
@@ -2096,7 +2096,7 @@ int av1_optimize_txb(const AV1_COMMON *cm, MACROBLOCK *x, int plane,
   const tran_low_t *tcoeff = BLOCK_OFFSET(p->coeff, block);
   const int16_t *dequant = p->dequant_QTX;
   const int seg_eob = tx_size_2d[tx_size];
-  const int bwl = b_width_log2_lookup[txsize_to_bsize[tx_size]] + 2;
+  const int bwl = tx_size_wide_log2[tx_size];
   const int width = tx_size_wide[tx_size];
   const int height = tx_size_high[tx_size];
   const int is_inter = is_inter_block(mbmi);
@@ -2192,7 +2192,7 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
   TXB_CTX txb_ctx;
   get_txb_ctx(plane_bsize, tx_size, plane, pd->above_context + blk_col,
               pd->left_context + blk_row, &txb_ctx);
-  const int bwl = b_width_log2_lookup[txsize_to_bsize[tx_size]] + 2;
+  const int bwl = tx_size_wide_log2[tx_size];
   const int width = tx_size_wide[tx_size];
   const int height = tx_size_high[tx_size];
   uint8_t levels_buf[TX_PAD_2D];
