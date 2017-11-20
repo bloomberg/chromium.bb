@@ -303,7 +303,7 @@ static bool ExecuteToggleStyleInList(LocalFrame& frame,
                                      CSSValue* value) {
   EditingStyle* selection_style =
       EditingStyleUtilities::CreateStyleAtSelectionStart(
-          frame.Selection().ComputeVisibleSelectionInDOMTreeDeprecated());
+          frame.Selection().ComputeVisibleSelectionInDOMTree());
   if (!selection_style || !selection_style->Style())
     return false;
 
@@ -399,12 +399,9 @@ static bool ExpandSelectionToGranularity(LocalFrame& frame,
                                          TextGranularity granularity) {
   const VisibleSelection& selection = CreateVisibleSelectionWithGranularity(
       SelectionInDOMTree::Builder()
-          .SetBaseAndExtent(frame.Selection()
-                                .ComputeVisibleSelectionInDOMTreeDeprecated()
-                                .Base(),
-                            frame.Selection()
-                                .ComputeVisibleSelectionInDOMTreeDeprecated()
-                                .Extent())
+          .SetBaseAndExtent(
+              frame.Selection().ComputeVisibleSelectionInDOMTree().Base(),
+              frame.Selection().ComputeVisibleSelectionInDOMTree().Extent())
           .Build(),
       granularity);
   const EphemeralRange new_range = selection.ToNormalizedEphemeralRange();
