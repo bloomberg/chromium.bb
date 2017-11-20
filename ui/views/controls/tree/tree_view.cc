@@ -890,8 +890,7 @@ TreeView::InternalNode* TreeView::GetInternalNodeForModelNode(
 gfx::Rect TreeView::GetBoundsForNode(InternalNode* node) {
   int row, ignored_depth;
   row = GetRowForInternalNode(node, &ignored_depth);
-  return gfx::Rect(bounds().x(), row * row_height_, bounds().width(),
-                   row_height_);
+  return gfx::Rect(0, row * row_height_, width(), row_height_);
 }
 
 gfx::Rect TreeView::GetBackgroundBoundsForNode(InternalNode* node) {
@@ -927,7 +926,7 @@ gfx::Rect TreeView::GetAuxiliaryTextBoundsForNode(InternalNode* node) {
   if (width < 0)
     return gfx::Rect();
   int x = base::i18n::IsRTL()
-              ? bounds().x() + kTextHorizontalPadding
+              ? kTextHorizontalPadding
               : bounds().right() - width - kTextHorizontalPadding;
   return gfx::Rect(x, text_bounds.y(), width, text_bounds.height());
 }
@@ -1094,10 +1093,10 @@ bool TreeView::IsPointInExpandControl(InternalNode* node,
   int row = GetRowForInternalNode(node, &depth);
 
   int arrow_dx = depth * kIndent + kHorizontalInset;
-  gfx::Rect arrow_bounds(bounds().x() + arrow_dx, row * row_height_,
-                         kArrowRegionSize, row_height_);
+  gfx::Rect arrow_bounds(arrow_dx, row * row_height_, kArrowRegionSize,
+                         row_height_);
   if (base::i18n::IsRTL())
-    arrow_bounds.set_x(bounds().width() - arrow_dx - kArrowRegionSize);
+    arrow_bounds.set_x(width() - arrow_dx - kArrowRegionSize);
   return arrow_bounds.Contains(point);
 }
 
