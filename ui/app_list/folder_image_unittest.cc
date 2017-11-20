@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/app_list/folder_image.h"
+#include "ash/app_list/model/folder_image.h"
 
 #include <string>
 #include <utility>
 
+#include "ash/app_list/model/app_list_item.h"
+#include "ash/app_list/model/app_list_item_list.h"
+#include "ash/app_list/model/app_list_model.h"
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/app_list/app_list_constants.h"
-#include "ui/app_list/app_list_item.h"
-#include "ui/app_list/app_list_item_list.h"
-#include "ui/app_list/app_list_model.h"
 #include "ui/gfx/skia_util.h"
 
 namespace app_list {

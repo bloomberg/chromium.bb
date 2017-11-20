@@ -2,28 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/app_list/search/tokenized_string.h"
+#include "ash/app_list/model/search/tokenized_string.h"
 
 #include <stddef.h>
 
+#include "ash/app_list/model/search/term_break_iterator.h"
 #include "base/i18n/break_iterator.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
-#include "ui/app_list/search/term_break_iterator.h"
 
 using base::i18n::BreakIterator;
 
 namespace app_list {
 
-TokenizedString::TokenizedString(const base::string16& text)
-    : text_(text) {
+TokenizedString::TokenizedString(const base::string16& text) : text_(text) {
   Tokenize();
 }
 
 TokenizedString::~TokenizedString() {}
 
 void TokenizedString::Tokenize() {
-  BreakIterator break_iter(text_,  BreakIterator::BREAK_WORD);
+  BreakIterator break_iter(text_, BreakIterator::BREAK_WORD);
   if (!break_iter.Init()) {
     NOTREACHED() << "BreakIterator init failed"
                  << ", text=\"" << text_ << "\"";

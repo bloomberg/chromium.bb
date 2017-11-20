@@ -7,13 +7,13 @@
 
 #include <string>
 
+#include "ash/app_list/model/search_result.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/install_observer.h"
 #include "chrome/common/extensions/webstore_install_result.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/manifest.h"
-#include "ui/app_list/search_result.h"
 #include "url/gurl.h"
 
 class AppListControllerDelegate;

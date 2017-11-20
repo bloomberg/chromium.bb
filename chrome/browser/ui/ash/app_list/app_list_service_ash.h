@@ -7,9 +7,9 @@
 
 #include <memory>
 
+#include "ash/app_list/model/app_list_model.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/app_list/app_list_service_impl.h"
-#include "ui/app_list/app_list_model.h"
 
 class AppListPresenterService;
 

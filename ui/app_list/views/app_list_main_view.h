@@ -7,11 +7,11 @@
 
 #include <string>
 
+#include "ash/app_list/model/app_list_model_observer.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "ui/app_list/app_list_export.h"
-#include "ui/app_list/app_list_model_observer.h"
 #include "ui/app_list/views/search_box_view_delegate.h"
 #include "ui/views/view.h"
 

@@ -7,6 +7,11 @@
 #include <utility>
 #include <vector>
 
+#include "ash/app_list/model/app_list_item.h"
+#include "ash/app_list/model/app_list_item_list.h"
+#include "ash/app_list/model/app_list_model.h"
+#include "ash/app_list/model/search_box_model.h"
+#include "ash/app_list/model/search_result.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/shell/example_factory.h"
@@ -19,13 +24,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "ui/app_list/app_list_item.h"
-#include "ui/app_list/app_list_item_list.h"
-#include "ui/app_list/app_list_model.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/presenter/app_list.h"
-#include "ui/app_list/search_box_model.h"
-#include "ui/app_list/search_result.h"
 #include "ui/app_list/speech_ui_model.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"

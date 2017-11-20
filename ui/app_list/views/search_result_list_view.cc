@@ -7,13 +7,13 @@
 #include <algorithm>
 #include <vector>
 
+#include "ash/app_list/model/search_result.h"
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_view_delegate.h"
-#include "ui/app_list/search_result.h"
 #include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/search_result_view.h"
 #include "ui/events/event.h"

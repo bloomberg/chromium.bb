@@ -9,6 +9,8 @@
 #include <utility>
 #include <vector>
 
+#include "ash/app_list/model/search_box_model.h"
+#include "ash/app_list/model/search_result.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -16,9 +18,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/search/history.h"
-#include "ui/app_list/search_box_model.h"
 #include "ui/app_list/search_provider.h"
-#include "ui/app_list/search_result.h"
 
 namespace app_list {
 

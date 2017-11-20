@@ -8,6 +8,9 @@
 
 #include <vector>
 
+#include "ash/app_list/model/app_list_model.h"
+#include "ash/app_list/model/app_list_view_state.h"
+#include "ash/app_list/model/search_box_model.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
@@ -44,11 +47,8 @@
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/launcher_page_info.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "ui/app_list/app_list_model.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/app_list_view_delegate_observer.h"
-#include "ui/app_list/app_list_view_state.h"
-#include "ui/app_list/search_box_model.h"
 #include "ui/app_list/search_controller.h"
 #include "ui/app_list/speech_ui_model.h"
 #include "ui/base/resource/resource_bundle.h"

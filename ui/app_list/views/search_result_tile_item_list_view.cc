@@ -6,12 +6,12 @@
 
 #include <stddef.h>
 
+#include "ash/app_list/model/search_result.h"
 #include "base/i18n/rtl.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_util.h"
 #include "ui/app_list/app_list_view_delegate.h"
-#include "ui/app_list/search_result.h"
 #include "ui/app_list/views/search_result_page_view.h"
 #include "ui/app_list/views/search_result_tile_item_view.h"
 #include "ui/gfx/geometry/insets.h"

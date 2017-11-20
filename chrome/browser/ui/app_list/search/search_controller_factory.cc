@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "ash/app_list/model/app_list_model.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
@@ -24,7 +25,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/arc/arc_util.h"
 #include "ui/app_list/app_list_features.h"
-#include "ui/app_list/app_list_model.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/search/mixer.h"
 #include "ui/app_list/search_controller.h"

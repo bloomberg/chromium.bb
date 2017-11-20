@@ -9,10 +9,10 @@
 #include <string>
 #include <vector>
 
+#include "ash/app_list/model/search_result.h"
 #include "base/optional.h"
 #include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
 #include "components/arc/common/app.mojom.h"
-#include "ui/app_list/search_result.h"
 
 class AppListControllerDelegate;
 class ArcPlayStoreAppContextMenu;

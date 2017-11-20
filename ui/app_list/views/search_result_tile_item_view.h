@@ -7,8 +7,8 @@
 
 #include <memory>
 
+#include "ash/app_list/model/search_result_observer.h"
 #include "base/macros.h"
-#include "ui/app_list/search_result_observer.h"
 #include "ui/app_list/views/tile_item_view.h"
 #include "ui/views/context_menu_controller.h"
 

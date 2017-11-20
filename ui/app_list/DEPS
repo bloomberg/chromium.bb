@@ -19,4 +19,7 @@ include_rules = [
   "+ui/strings/grit/ui_strings.h",
   "+ui/views",
   "+ui/wm/core",
+
+  # TODO(hejq): Remove this once app_list is migrated. http://crbug.com/733662
+  "+ash/app_list",
 ]

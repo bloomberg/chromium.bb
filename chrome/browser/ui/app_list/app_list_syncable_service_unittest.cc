@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
+#include "ash/app_list/model/app_list_item.h"
+#include "ash/app_list/model/app_list_model.h"
 #include "base/files/scoped_temp_dir.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -17,8 +19,6 @@
 #include "components/sync/protocol/sync.pb.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
-#include "ui/app_list/app_list_item.h"
-#include "ui/app_list/app_list_model.h"
 
 using namespace crx_file::id_util;
 

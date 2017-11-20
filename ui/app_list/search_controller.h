@@ -9,9 +9,9 @@
 
 #include <memory>
 
+#include "ash/app_list/model/app_list_model.h"
 #include "base/macros.h"
 #include "ui/app_list/app_list_export.h"
-#include "ui/app_list/app_list_model.h"
 #include "ui/app_list/search/mixer.h"
 #include "ui/app_list/speech_ui_model_observer.h"
 

@@ -2,18 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/app_list/app_list_item_list.h"
+#include "ash/app_list/model/app_list_item_list.h"
 
+#include "ash/app_list/model/app_list_item.h"
 #include "base/memory/ptr_util.h"
-#include "ui/app_list/app_list_item.h"
 
 namespace app_list {
 
-AppListItemList::AppListItemList() {
-}
+AppListItemList::AppListItemList() {}
 
-AppListItemList::~AppListItemList() {
-}
+AppListItemList::~AppListItemList() {}
 
 void AppListItemList::AddObserver(AppListItemListObserver* observer) {
   observers_.AddObserver(observer);

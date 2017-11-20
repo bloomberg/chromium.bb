@@ -11,14 +11,14 @@
 #include <string>
 #include <tuple>
 
+#include "ash/app_list/model/app_list_model.h"
+#include "ash/app_list/model/app_list_model_observer.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "ui/app_list/app_list_export.h"
-#include "ui/app_list/app_list_model.h"
-#include "ui/app_list/app_list_model_observer.h"
 #include "ui/app_list/pagination_model.h"
 #include "ui/app_list/pagination_model_observer.h"
 #include "ui/app_list/views/app_list_view.h"

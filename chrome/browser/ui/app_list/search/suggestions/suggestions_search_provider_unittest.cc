@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/app_list/model/search_result.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
@@ -20,7 +21,6 @@
 #include "components/suggestions/suggestions_store.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/app_list/search_result.h"
 
 using suggestions::ChromeSuggestion;
 using suggestions::SuggestionsProfile;

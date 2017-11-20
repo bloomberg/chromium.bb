@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/app_list/folder_image.h"
+#include "ash/app_list/model/folder_image.h"
 
 #include <vector>
 
+#include "ash/app_list/model/app_list_item.h"
+#include "ash/app_list/model/app_list_item_list.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "ui/app_list/app_list_item.h"
-#include "ui/app_list/app_list_item_list.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/point.h"
@@ -65,8 +65,7 @@ FolderImageSource::FolderImageSource(const Icons& icons, const gfx::Size& size)
   DCHECK(icons.size() <= FolderImage::kNumFolderTopItems);
 }
 
-FolderImageSource::~FolderImageSource() {
-}
+FolderImageSource::~FolderImageSource() {}
 
 void FolderImageSource::DrawIcon(gfx::Canvas* canvas,
                                  const gfx::ImageSkia& icon,

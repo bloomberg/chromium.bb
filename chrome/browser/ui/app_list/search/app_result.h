@@ -8,9 +8,9 @@
 #include <memory>
 #include <string>
 
+#include "ash/app_list/model/search_result.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
-#include "ui/app_list/search_result.h"
 
 class AppListControllerDelegate;
 class Profile;

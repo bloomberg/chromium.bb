@@ -7,6 +7,8 @@
 #include <string>
 #include <utility>
 
+#include "ash/app_list/model/search/tokenized_string.h"
+#include "ash/app_list/model/search/tokenized_string_match.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/strings/string_util.h"
@@ -20,8 +22,6 @@
 #include "chrome/browser/ui/app_list/search/search_webstore_result.h"
 #include "chrome/browser/ui/app_list/search/webstore/webstore_result.h"
 #include "extensions/common/extension_urls.h"
-#include "ui/app_list/search/tokenized_string.h"
-#include "ui/app_list/search/tokenized_string_match.h"
 #include "url/gurl.h"
 
 namespace app_list {

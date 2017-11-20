@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "ash/app_list/model/search_result.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -18,7 +19,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/value_builder.h"
-#include "ui/app_list/search_result.h"
 
 namespace app_list {
 

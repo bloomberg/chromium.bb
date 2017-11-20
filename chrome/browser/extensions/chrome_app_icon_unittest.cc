@@ -4,6 +4,7 @@
 
 #include <memory>
 
+#include "ash/app_list/model/app_list_item.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "chrome/browser/extensions/chrome_app_icon.h"
@@ -17,7 +18,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/test/base/testing_profile.h"
 #include "extensions/common/constants.h"
-#include "ui/app_list/app_list_item.h"
 #include "ui/gfx/image/image_unittest_util.h"
 
 #if defined(OS_CHROMEOS)

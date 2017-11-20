@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/ash/app_list/app_sync_ui_state_watcher.h"
 
+#include "ash/app_list/model/app_list_model.h"
 #include "chrome/browser/ui/ash/app_sync_ui_state.h"
-#include "ui/app_list/app_list_model.h"
 
 AppSyncUIStateWatcher::AppSyncUIStateWatcher(Profile* profile,
                                              app_list::AppListModel* model)

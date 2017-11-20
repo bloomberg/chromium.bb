@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/app_list/app_list_folder_item.h"
+#include "ash/app_list/model/app_list_folder_item.h"
 
+#include "ash/app_list/model/app_list_item_list.h"
 #include "base/guid.h"
-#include "ui/app_list/app_list_item_list.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia.h"
 
