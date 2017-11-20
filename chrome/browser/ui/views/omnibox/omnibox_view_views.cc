@@ -471,7 +471,7 @@ void OmniboxViewViews::ApplyCaretVisibility() {
 
 void OmniboxViewViews::OnTemporaryTextMaybeChanged(
     const base::string16& display_text,
-    const AutocompleteMatch& match,
+    AutocompleteMatch::Type match_type,
     bool save_original_selection,
     bool notify_text_changed) {
   if (save_original_selection)

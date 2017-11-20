@@ -10,13 +10,9 @@
 TEST(AutocompleteMatchTypeTest, AccessibilityLabels) {
   const base::string16& kTestUrl =
       base::UTF8ToUTF16("https://www.chromium.org");
-  const base::string16& kTestTitle = base::UTF8ToUTF16("The Chromium Projects");
-
   EXPECT_EQ(kTestUrl, AutocompleteMatchType::ToAccessibilityLabel(
-                          AutocompleteMatchType::URL_WHAT_YOU_TYPED, kTestUrl,
-                          kTestTitle));
-  EXPECT_EQ(kTestTitle + base::UTF8ToUTF16(" ") + kTestUrl +
-                base::UTF8ToUTF16(" location from history"),
+                          AutocompleteMatchType::URL_WHAT_YOU_TYPED, kTestUrl));
+  EXPECT_EQ(base::UTF8ToUTF16("URL from history: ") + kTestUrl,
             AutocompleteMatchType::ToAccessibilityLabel(
-                AutocompleteMatchType::HISTORY_URL, kTestUrl, kTestTitle));
+                AutocompleteMatchType::HISTORY_URL, kTestUrl));
 }

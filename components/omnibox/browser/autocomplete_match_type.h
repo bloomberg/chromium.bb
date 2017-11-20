@@ -67,13 +67,11 @@ struct AutocompleteMatchType {
   static std::string ToString(AutocompleteMatchType::Type type);
 
   // Returns the accessibility label for an AutocompleteMatch of type |type|
-  // whose text is |match_text| and which may have friendly descriptive text in
-  // |additional_descriptive_text_|. The accessibility label describes the
+  // whose text is |descriptive_text|. The accessibility label describes the
   // match for use in a screenreader or other assistive technology.
   static base::string16 ToAccessibilityLabel(
       AutocompleteMatchType::Type type,
-      const base::string16& match_text,
-      const base::string16& additional_descriptive_text);
+      const base::string16& descriptive_text);
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_AUTOCOMPLETE_MATCH_TYPE_H_
