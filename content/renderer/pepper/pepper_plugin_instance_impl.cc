@@ -1918,44 +1918,25 @@ void PepperPluginInstanceImpl::PrintPage(int page_number,
                                          blink::WebCanvas* canvas) {
 #if BUILDFLAG(ENABLE_PRINTING)
   DCHECK(plugin_print_interface_);
-  PP_PrintPageNumberRange_Dev page_range;
-  page_range.first_page_number = page_range.last_page_number = page_number;
-  // The canvas only has a metafile on it for print preview.
+
+  // |canvas| should always have an associated metafile.
   printing::PdfMetafileSkia* metafile =
       printing::MetafileSkiaWrapper::GetMetafileFromCanvas(canvas);
-  bool save_for_later = (metafile != nullptr);
-#if defined(OS_MACOSX)
-  save_for_later = save_for_later && cc::IsPreviewMetafile(canvas);
-#endif  // defined(OS_MACOSX)
-  if (save_for_later) {
-    ranges_.push_back(page_range);
-    metafile_ = metafile;
+  DCHECK(metafile);
+
+  // |ranges_| should be empty IFF |metafile_| is not set.
+  DCHECK_EQ(ranges_.empty(), !metafile_);
+  if (metafile_) {
+    // The metafile should be the same across all calls for a given print job.
+    DCHECK_EQ(metafile_, metafile);
   } else {
-    PrintPageHelper(&page_range, 1, metafile);
+    // Store |metafile| on the first call.
+    metafile_ = metafile;
   }
+
+  PP_PrintPageNumberRange_Dev page_range = {page_number, page_number};
+  ranges_.push_back(page_range);
 #endif
-}
-
-void PepperPluginInstanceImpl::PrintPageHelper(
-    PP_PrintPageNumberRange_Dev* page_ranges,
-    int num_ranges,
-    printing::PdfMetafileSkia* metafile) {
-  // Keep a reference on the stack. See NOTE above.
-  scoped_refptr<PepperPluginInstanceImpl> ref(this);
-  DCHECK(plugin_print_interface_);
-  if (!plugin_print_interface_)
-    return;
-  PP_Resource print_output = plugin_print_interface_->PrintPages(
-      pp_instance(), page_ranges, num_ranges);
-  if (!print_output)
-    return;
-
-  if (current_print_settings_.format == PP_PRINTOUTPUTFORMAT_PDF ||
-      current_print_settings_.format == PP_PRINTOUTPUTFORMAT_RASTER)
-    PrintPDFOutput(print_output, metafile);
-
-  // Now we need to release the print output resource.
-  PluginModule::GetCore()->ReleaseResource(print_output);
 }
 
 void PepperPluginInstanceImpl::PrintEnd() {
@@ -1964,13 +1945,23 @@ void PepperPluginInstanceImpl::PrintEnd() {
   DCHECK(plugin_print_interface_);
 
   if (!ranges_.empty()) {
-    PrintPageHelper(&(ranges_.front()), ranges_.size(), metafile_);
+    PP_Resource print_output = plugin_print_interface_->PrintPages(
+        pp_instance(), ranges_.data(), ranges_.size());
+    if (print_output) {
+      if (current_print_settings_.format == PP_PRINTOUTPUTFORMAT_PDF ||
+          current_print_settings_.format == PP_PRINTOUTPUTFORMAT_RASTER) {
+        PrintPDFOutput(print_output, metafile_);
+      }
+
+      // Now release the print output resource.
+      PluginModule::GetCore()->ReleaseResource(print_output);
+    }
+
     ranges_.clear();
     metafile_ = nullptr;
   }
 
   plugin_print_interface_->End(pp_instance());
-
   memset(&current_print_settings_, 0, sizeof(current_print_settings_));
 }
 

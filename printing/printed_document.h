@@ -132,7 +132,7 @@ class PRINTING_EXPORT PrintedDocument
     // The total number of pages in the document.
     int page_count_ = 0;
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX)
     // Page number of the first page.
     int first_page = INT_MAX;
 #endif

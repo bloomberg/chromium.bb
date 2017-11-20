@@ -22,13 +22,12 @@ bool PrintRenderFrameHelper::PrintPagesNative(blink::WebLocalFrame* frame,
   if (printed_pages.empty())
     return false;
 
-  std::vector<gfx::Size> page_size_in_dpi(printed_pages.size());
-  std::vector<gfx::Rect> content_area_in_dpi(printed_pages.size());
-  std::vector<gfx::Rect> printable_area_in_dpi(printed_pages.size());
-
   PdfMetafileSkia metafile(params.params.printed_doc_type);
   CHECK(metafile.Init());
 
+  std::vector<gfx::Size> page_size_in_dpi(printed_pages.size());
+  std::vector<gfx::Rect> content_area_in_dpi(printed_pages.size());
+  std::vector<gfx::Rect> printable_area_in_dpi(printed_pages.size());
   for (size_t i = 0; i < printed_pages.size(); ++i) {
     PrintPageInternal(params.params, printed_pages[i], page_count, frame,
                       &metafile, &page_size_in_dpi[i], &content_area_in_dpi[i],
@@ -40,28 +39,27 @@ bool PrintRenderFrameHelper::PrintPagesNative(blink::WebLocalFrame* frame,
 
   metafile.FinishDocument();
 
-  PrintHostMsg_DidPrintPage_Params printed_page_params;
+  PrintHostMsg_DidPrintPage_Params page_params;
   if (!CopyMetafileDataToSharedMem(metafile,
-                                   &printed_page_params.metafile_data_handle)) {
+                                   &page_params.metafile_data_handle)) {
     return false;
   }
-
-  printed_page_params.content_area = params.params.printable_area;
-  printed_page_params.data_size = metafile.GetDataSize();
-  printed_page_params.document_cookie = params.params.document_cookie;
-  printed_page_params.page_size = params.params.page_size;
+  page_params.data_size = metafile.GetDataSize();
+  page_params.document_cookie = params.params.document_cookie;
 
   for (size_t i = 0; i < printed_pages.size(); ++i) {
-    printed_page_params.page_number = printed_pages[i];
-    printed_page_params.page_size = page_size_in_dpi[i];
-    printed_page_params.content_area = content_area_in_dpi[i];
-    printed_page_params.physical_offsets =
+    page_params.page_number = printed_pages[i];
+    page_params.page_size = page_size_in_dpi[i];
+    page_params.content_area = content_area_in_dpi[i];
+    page_params.physical_offsets =
         gfx::Point(printable_area_in_dpi[i].x(), printable_area_in_dpi[i].y());
-    Send(new PrintHostMsg_DidPrintPage(routing_id(), printed_page_params));
+    Send(new PrintHostMsg_DidPrintPage(routing_id(), page_params));
     // Send the rest of the pages with an invalid metafile handle.
     // TODO(erikchen): Fix semantics. See https://crbug.com/640840
-    if (printed_page_params.metafile_data_handle.IsValid())
-      printed_page_params.metafile_data_handle = base::SharedMemoryHandle();
+    if (page_params.metafile_data_handle.IsValid()) {
+      page_params.metafile_data_handle = base::SharedMemoryHandle();
+      page_params.data_size = 0;
+    }
   }
   return true;
 }

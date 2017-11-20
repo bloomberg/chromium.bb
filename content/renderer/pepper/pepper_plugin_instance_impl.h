@@ -675,11 +675,6 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   //   to the container. Set to true if the bound device has been changed.
   void UpdateLayer(bool force_creation);
 
-  // Internal helper function for PrintPage().
-  void PrintPageHelper(PP_PrintPageNumberRange_Dev* page_ranges,
-                       int num_ranges,
-                       printing::PdfMetafileSkia* metafile);
-
   void DoSetCursor(std::unique_ptr<blink::WebCursorInfo> cursor);
 
   // Internal helper functions for HandleCompositionXXX().
@@ -841,13 +836,11 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   // call.
   PP_PrintSettings_Dev current_print_settings_;
 
-  // Always when printing to PDF on Linux and when printing for preview on Mac
-  // and Win, the entire document goes into one metafile.  However, when users
-  // print only a subset of all the pages, it is impossible to know if a call
-  // to PrintPage() is the last call. Thus in PrintPage(), just store the page
-  // number in |ranges_|. The hack is in PrintEnd(), where a valid |metafile_|
-  // is preserved in PrintWebFrameHelper::PrintPages. This makes it possible
-  // to generate the entire PDF given the variables below:
+  // The entire document goes into one metafile. However, it is impossible to
+  // know if a call to PrintPage() is the last call. Thus in PrintPage(), just
+  // store the page number in |ranges_|. The hack is in PrintEnd(), where a
+  // valid |metafile_| is preserved in PrintWebFrameHelper::PrintPages(). This
+  // makes it possible to generate the entire PDF given the variables below:
   //
   // The metafile to save into, which is guaranteed to be valid between a
   // successful PrintBegin call and a PrintEnd call.

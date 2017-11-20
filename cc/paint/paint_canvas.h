@@ -195,13 +195,6 @@ class CC_PAINT_EXPORT PaintCanvasAutoRestore {
   int save_count_ = 0;
 };
 
-// Following routines are used in print preview workflow to mark the
-// preview metafile.
-#if defined(OS_MACOSX)
-CC_PAINT_EXPORT void SetIsPreviewMetafile(PaintCanvas* canvas, bool is_preview);
-CC_PAINT_EXPORT bool IsPreviewMetafile(PaintCanvas* canvas);
-#endif
-
 }  // namespace cc
 
 #endif  // CC_PAINT_PAINT_CANVAS_H_

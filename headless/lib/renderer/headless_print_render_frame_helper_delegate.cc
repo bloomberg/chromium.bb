@@ -37,10 +37,4 @@ bool HeadlessPrintRenderFrameHelperDelegate::IsAskPrintSettingsEnabled() {
   return true;
 }
 
-#if defined(OS_MACOSX)
-bool HeadlessPrintRenderFrameHelperDelegate::UseSingleMetafile() {
-  return true;
-}
-#endif
-
 }  // namespace headless

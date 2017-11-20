@@ -5,7 +5,7 @@
 #ifndef HEADLESS_LIB_RENDERER_HEADLESS_PRINT_RENDER_FRAME_HELPER_DELEGATE_H_
 #define HEADLESS_LIB_RENDERER_HEADLESS_PRINT_RENDER_FRAME_HELPER_DELEGATE_H_
 
-#include "build/build_config.h"
+#include "base/macros.h"
 #include "components/printing/renderer/print_render_frame_helper.h"
 
 namespace headless {
@@ -23,9 +23,7 @@ class HeadlessPrintRenderFrameHelperDelegate
   bool IsAskPrintSettingsEnabled() override;
   blink::WebElement GetPdfElement(blink::WebLocalFrame* frame) override;
 
-#if defined(OS_MACOSX)
-  bool UseSingleMetafile() override;
-#endif
+  DISALLOW_COPY_AND_ASSIGN(HeadlessPrintRenderFrameHelperDelegate);
 };
 
 }  // namespace headless
