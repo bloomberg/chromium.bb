@@ -1055,11 +1055,11 @@ bool URLRequest::CanGetCookies(const CookieList& cookie_list) const {
   return g_default_can_use_cookies;
 }
 
-bool URLRequest::CanSetCookie(const std::string& cookie_line,
+bool URLRequest::CanSetCookie(const net::CanonicalCookie& cookie,
                               CookieOptions* options) const {
   DCHECK(!(load_flags_ & LOAD_DO_NOT_SAVE_COOKIES));
   if (network_delegate_) {
-    return network_delegate_->CanSetCookie(*this, cookie_line, options);
+    return network_delegate_->CanSetCookie(*this, cookie, options);
   }
   return g_default_can_use_cookies;
 }

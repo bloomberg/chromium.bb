@@ -764,7 +764,7 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // If |network_delegate_| is NULL, cookies can be used unless
   // SetDefaultCookiePolicyToBlock() has been called.
   bool CanGetCookies(const CookieList& cookie_list) const;
-  bool CanSetCookie(const std::string& cookie_line,
+  bool CanSetCookie(const net::CanonicalCookie& cookie,
                     CookieOptions* options) const;
   bool CanEnablePrivacyMode() const;
 

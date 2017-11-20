@@ -82,7 +82,7 @@ bool NetworkDelegateImpl::OnCanGetCookies(const URLRequest& request,
 }
 
 bool NetworkDelegateImpl::OnCanSetCookie(const URLRequest& request,
-                                         const std::string& cookie_line,
+                                         const net::CanonicalCookie& cookie,
                                          CookieOptions* options) {
   return true;
 }

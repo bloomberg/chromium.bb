@@ -75,7 +75,7 @@ class NET_EXPORT LayeredNetworkDelegate : public NetworkDelegate {
   bool OnCanGetCookies(const URLRequest& request,
                        const CookieList& cookie_list) final;
   bool OnCanSetCookie(const URLRequest& request,
-                      const std::string& cookie_line,
+                      const net::CanonicalCookie& cookie,
                       CookieOptions* options) final;
   bool OnCanAccessFile(const URLRequest& request,
                        const base::FilePath& original_path,
@@ -146,7 +146,7 @@ class NET_EXPORT LayeredNetworkDelegate : public NetworkDelegate {
                                        const CookieList& cookie_list);
 
   virtual void OnCanSetCookieInternal(const URLRequest& request,
-                                      const std::string& cookie_line,
+                                      const net::CanonicalCookie& cookie,
                                       CookieOptions* options);
 
   virtual void OnAuthRequiredInternal(URLRequest* request,

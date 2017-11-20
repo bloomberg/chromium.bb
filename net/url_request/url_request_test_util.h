@@ -354,7 +354,7 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
   bool OnCanGetCookies(const URLRequest& request,
                        const CookieList& cookie_list) override;
   bool OnCanSetCookie(const URLRequest& request,
-                      const std::string& cookie_line,
+                      const net::CanonicalCookie& cookie,
                       CookieOptions* options) override;
   bool OnCanAccessFile(const URLRequest& request,
                        const base::FilePath& original_path,

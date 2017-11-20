@@ -195,7 +195,7 @@ class BasicNetworkDelegate : public NetworkDelegateImpl {
   }
 
   bool OnCanSetCookie(const URLRequest& request,
-                      const std::string& cookie_line,
+                      const net::CanonicalCookie& cookie,
                       CookieOptions* options) override {
     return true;
   }

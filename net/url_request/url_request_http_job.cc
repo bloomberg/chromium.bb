@@ -648,14 +648,17 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
     // Set all cookies, without waiting for them to be set. Any subsequent read
     // will see the combined result of all cookie operation.
     const base::StringPiece name("Set-Cookie");
-    std::string cookie;
+    std::string cookie_line;
     size_t iter = 0;
     HttpResponseHeaders* headers = GetResponseHeaders();
-    while (headers->EnumerateHeader(&iter, name, &cookie)) {
-      if (cookie.empty() || !CanSetCookie(cookie, &options))
+    while (headers->EnumerateHeader(&iter, name, &cookie_line)) {
+      std::unique_ptr<CanonicalCookie> cookie = net::CanonicalCookie::Create(
+          request_->url(), cookie_line, base::Time::Now(), options);
+      if (!cookie || !CanSetCookie(*cookie, &options))
         continue;
-      request_->context()->cookie_store()->SetCookieWithOptionsAsync(
-          request_->url(), cookie, options, CookieStore::SetCookiesCallback());
+      request_->context()->cookie_store()->SetCanonicalCookieAsync(
+          std::move(cookie), request_->url().SchemeIsCryptographic(),
+          !options.exclude_httponly(), net::CookieStore::SetCookiesCallback());
     }
   }
 
