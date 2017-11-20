@@ -132,11 +132,11 @@ DevToolsWindow* DevToolsWindowTesting::OpenDevToolsWindowSync(
 }
 
 // static
-DevToolsWindow* DevToolsWindowTesting::OpenDevToolsWindowForWorkerSync(
-    Profile* profile, content::DevToolsAgentHost* worker_agent) {
-  DevToolsWindow::OpenDevToolsWindowForWorker(
-      profile, worker_agent);
-  DevToolsWindow* window = DevToolsWindow::FindDevToolsWindow(worker_agent);
+DevToolsWindow* DevToolsWindowTesting::OpenDevToolsWindowSync(
+    Profile* profile,
+    scoped_refptr<content::DevToolsAgentHost> agent_host) {
+  DevToolsWindow::OpenDevToolsWindow(agent_host, profile);
+  DevToolsWindow* window = DevToolsWindow::FindDevToolsWindow(agent_host.get());
   WaitForDevToolsWindowLoad(window);
   return window;
 }

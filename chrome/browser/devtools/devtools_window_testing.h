@@ -29,8 +29,9 @@ class DevToolsWindowTesting {
       bool is_docked);
   static DevToolsWindow* OpenDevToolsWindowSync(
       Browser* browser, bool is_docked);
-  static DevToolsWindow* OpenDevToolsWindowForWorkerSync(
-      Profile* profile, content::DevToolsAgentHost* worker_agent);
+  static DevToolsWindow* OpenDevToolsWindowSync(
+      Profile* profile,
+      scoped_refptr<content::DevToolsAgentHost> agent_host);
 
   // Closes the window like it was user-initiated.
   static void CloseDevToolsWindow(DevToolsWindow* window);
