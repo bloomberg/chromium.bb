@@ -438,7 +438,7 @@ void TemplateURLParsingContext::ProcessURLParams() {
     return;
 
   GURL url(is_suggest_url_ ? data_.suggestions_url : data_.url());
-  if (url.is_empty())
+  if (!url.is_valid())
     return;
 
   // If there is a parameter filter, parse the existing URL and remove any
