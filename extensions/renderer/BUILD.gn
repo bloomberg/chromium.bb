@@ -396,7 +396,6 @@ source_set("unit_tests") {
     "module_system_test.cc",
     "module_system_test.h",
     "module_system_unittest.cc",
-    "mojo/keep_alive_client_unittest.cc",
     "native_extension_bindings_system_unittest.cc",
     "native_renderer_messaging_service_unittest.cc",
     "one_time_message_handler_unittest.cc",

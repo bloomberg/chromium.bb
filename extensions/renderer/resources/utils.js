@@ -197,9 +197,7 @@ function handleRequestWithPromiseDoNotUse(
     var stack = exceptionHandler.getExtensionStackTrace();
     var callback = arguments[arguments.length - 1];
     var args = $Array.slice(arguments, 0, arguments.length - 1);
-    var keepAlivePromise = requireAsync('keep_alive').then(function(module) {
-      return module.createKeepAlive();
-    });
+    var keepAlive = require('keep_alive').createKeepAlive();
     $Function.apply(customizedFunction, this, args).then(function(result) {
       if (callback) {
         exceptionHandler.safeCallbackApply(
@@ -211,9 +209,7 @@ function handleRequestWithPromiseDoNotUse(
         runCallbackWithLastError(fullName, message, stack, callback);
       }
     }).then(function() {
-      keepAlivePromise.then(function(keepAlive) {
-        keepAlive.close();
-      });
+      keepAlive.close();
     });
   });
 };
