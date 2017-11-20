@@ -99,7 +99,7 @@ void SyncLoadContext::OnReceivedData(std::unique_ptr<ReceivedData> data) {
 void SyncLoadContext::OnTransferSizeUpdated(int transfer_size_diff) {}
 
 void SyncLoadContext::OnCompletedRequest(
-    const network::URLLoaderStatus& status) {
+    const network::URLLoaderCompletionStatus& status) {
   response_->error_code = status.error_code;
   if (status.cors_error_status)
     response_->cors_error = status.cors_error_status->cors_error;

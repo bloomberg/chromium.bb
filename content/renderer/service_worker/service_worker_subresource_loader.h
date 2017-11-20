@@ -115,7 +115,7 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override;
   void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) override;
-  void OnComplete(const network::URLLoaderStatus& status) override;
+  void OnComplete(const network::URLLoaderCompletionStatus& status) override;
 
   ResourceResponseHead response_head_;
   base::Optional<net::RedirectInfo> redirect_info_;

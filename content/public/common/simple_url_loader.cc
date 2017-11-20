@@ -98,8 +98,8 @@ class SimpleURLLoaderImpl : public SimpleURLLoader,
   // net::OK, the pipe was closed and all data received was successfully
   // handled. This could indicate an error, concellation, or completion. To
   // determine which case this is, the size will also be compared to the size
-  // reported in network::URLLoaderStatus(), if network::URLLoaderStatus
-  // indicates a success.
+  // reported in network::URLLoaderCompletionStatus(), if
+  // network::URLLoaderCompletionStatus indicates a success.
   void OnBodyHandlerDone(net::Error error, int64_t received_body_size);
 
   // Finished the request with the provided error code, after freeing Mojo
@@ -115,7 +115,8 @@ class SimpleURLLoaderImpl : public SimpleURLLoader,
     ~RequestState() = default;
 
     bool request_completed = false;
-    // The expected total size of the body, taken from network::URLLoaderStatus.
+    // The expected total size of the body, taken from
+    // network::URLLoaderCompletionStatus.
     int64_t expected_body_size = 0;
 
     bool body_started = false;
@@ -162,7 +163,7 @@ class SimpleURLLoaderImpl : public SimpleURLLoader,
                         OnUploadProgressCallback ack_callback) override;
   void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) override;
-  void OnComplete(const network::URLLoaderStatus& status) override;
+  void OnComplete(const network::URLLoaderCompletionStatus& status) override;
 
   // Bound to the URLLoaderClient message pipe (|client_binding_|) via
   // set_connection_error_handler.
@@ -783,8 +784,8 @@ void SimpleURLLoaderImpl::DownloadToStringOfUnboundedSizeUntilCrashAndDie(
     BodyAsStringCallback body_as_string_callback) {
   body_handler_ = std::make_unique<SaveToStringBodyHandler>(
       this, std::move(body_as_string_callback),
-      // int64_t because network::URLLoaderStatus::decoded_body_length is an
-      // int64_t, not a size_t.
+      // int64_t because network::URLLoaderCompletionStatus::decoded_body_length
+      // is an int64_t, not a size_t.
       std::numeric_limits<int64_t>::max());
   Start(resource_request, url_loader_factory, annotation_tag);
 }
@@ -1037,7 +1038,8 @@ void SimpleURLLoaderImpl::OnStartLoadingResponseBody(
   body_handler_->OnStartLoadingResponseBody(std::move(body));
 }
 
-void SimpleURLLoaderImpl::OnComplete(const network::URLLoaderStatus& status) {
+void SimpleURLLoaderImpl::OnComplete(
+    const network::URLLoaderCompletionStatus& status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Request should not have been completed yet.
   DCHECK(!request_state_->finished);
@@ -1111,8 +1113,8 @@ void SimpleURLLoaderImpl::MaybeComplete() {
       request_state_->net_error = net::ERR_FAILED;
     } else {
       // The caller provided more data through the pipe than it reported in
-      // network::URLLoaderStatus, so the URLLoader is violating the API
-      // contract. Just fail the request.
+      // network::URLLoaderCompletionStatus, so the URLLoader is violating the
+      // API contract. Just fail the request.
       request_state_->net_error = net::ERR_UNEXPECTED;
     }
   }

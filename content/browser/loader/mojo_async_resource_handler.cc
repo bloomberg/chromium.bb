@@ -26,7 +26,7 @@
 #include "net/base/mime_sniffer.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/redirect_info.h"
-#include "services/network/public/cpp/url_loader_status.h"
+#include "services/network/public/cpp/url_loader_completion_status.h"
 
 namespace content {
 namespace {
@@ -440,7 +440,7 @@ void MojoAsyncResourceHandler::OnResponseCompleted(
 
   DCHECK_NE(request_status.status(), net::URLRequestStatus::IO_PENDING);
 
-  network::URLLoaderStatus loader_status;
+  network::URLLoaderCompletionStatus loader_status;
   loader_status.error_code = error_code;
   loader_status.exists_in_cache = request()->response_info().was_cached;
   loader_status.completion_time = base::TimeTicks::Now();

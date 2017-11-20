@@ -30,7 +30,7 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/cors_error_status.h"
-#include "services/network/public/cpp/url_loader_status.h"
+#include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/interfaces/fetch_api.mojom.h"
 #include "third_party/WebKit/public/platform/WebMixedContentContextType.h"
 
@@ -300,7 +300,7 @@ IPC_STRUCT_TRAITS_BEGIN(network::CORSErrorStatus)
   IPC_STRUCT_TRAITS_MEMBER(related_response_headers)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(network::URLLoaderStatus)
+IPC_STRUCT_TRAITS_BEGIN(network::URLLoaderCompletionStatus)
   IPC_STRUCT_TRAITS_MEMBER(error_code)
   IPC_STRUCT_TRAITS_MEMBER(exists_in_cache)
   IPC_STRUCT_TRAITS_MEMBER(completion_time)
@@ -373,7 +373,7 @@ IPC_MESSAGE_CONTROL3(ResourceMsg_DataDownloaded,
 // Sent when the request has been completed.
 IPC_MESSAGE_CONTROL2(ResourceMsg_RequestComplete,
                      int /* request_id */,
-                     network::URLLoaderStatus)
+                     network::URLLoaderCompletionStatus)
 
 // Resource messages sent from the renderer to the browser.
 

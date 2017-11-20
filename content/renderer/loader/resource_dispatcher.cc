@@ -43,7 +43,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_response_headers.h"
-#include "services/network/public/cpp/url_loader_status.h"
+#include "services/network/public/cpp/url_loader_completion_status.h"
 
 namespace content {
 
@@ -340,7 +340,7 @@ void ResourceDispatcher::FollowPendingRedirect(
 
 void ResourceDispatcher::OnRequestComplete(
     int request_id,
-    const network::URLLoaderStatus& status) {
+    const network::URLLoaderCompletionStatus& status) {
   TRACE_EVENT0("loader", "ResourceDispatcher::OnRequestComplete");
 
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
@@ -369,7 +369,7 @@ void ResourceDispatcher::OnRequestComplete(
   // TODO(kinuko): Revisit here. This probably needs to call request_info->peer
   // but the past attempt to change it seems to have caused crashes.
   // (crbug.com/547047)
-  network::URLLoaderStatus renderer_status(status);
+  network::URLLoaderCompletionStatus renderer_status(status);
   renderer_status.completion_time =
       ToRendererCompletionTime(*request_info, status.completion_time);
   peer->OnCompletedRequest(renderer_status);
@@ -775,7 +775,7 @@ void ResourceDispatcher::ContinueForNavigation(
 
   // Call OnComplete now too, as it won't get called on the client.
   // TODO(kinuko): Fill this properly.
-  network::URLLoaderStatus status;
+  network::URLLoaderCompletionStatus status;
   status.error_code = net::OK;
   status.exists_in_cache = false;
   status.completion_time = base::TimeTicks::Now();

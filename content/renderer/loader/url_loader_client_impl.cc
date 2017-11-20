@@ -173,7 +173,8 @@ void URLLoaderClientImpl::OnStartLoadingResponseBody(
   body_consumer_->OnReadable(MOJO_RESULT_OK);
 }
 
-void URLLoaderClientImpl::OnComplete(const network::URLLoaderStatus& status) {
+void URLLoaderClientImpl::OnComplete(
+    const network::URLLoaderCompletionStatus& status) {
   if (!body_consumer_) {
     if (NeedsStoringMessage()) {
       StoreAndDispatch(ResourceMsg_RequestComplete(request_id_, status));

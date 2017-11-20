@@ -9,7 +9,7 @@ typemaps = [
   "//content/public/common/referrer.typemap",
   "//content/public/common/resource_type.typemap",
   "//content/public/common/ssl_info.typemap",
-  "//content/public/common/url_loader_status.typemap",
+  "//content/public/common/url_loader_completion_status.typemap",
   "//content/public/common/url_request.typemap",
   "//content/public/common/url_request_redirect_info.typemap",
   "//content/public/common/url_response_head.typemap",

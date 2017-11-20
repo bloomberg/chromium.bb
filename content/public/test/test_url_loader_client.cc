@@ -100,10 +100,11 @@ void TestURLLoaderClient::OnStartLoadingResponseBody(
     quit_closure_for_on_start_loading_response_body_.Run();
 }
 
-void TestURLLoaderClient::OnComplete(const network::URLLoaderStatus& status) {
+void TestURLLoaderClient::OnComplete(
+    const network::URLLoaderCompletionStatus& status) {
   EXPECT_FALSE(has_received_completion_);
   has_received_completion_ = true;
-  status_ = status;
+  completion_status_ = status;
   if (quit_closure_for_on_complete_)
     quit_closure_for_on_complete_.Run();
 }

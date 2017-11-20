@@ -54,7 +54,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_test_util.h"
-#include "services/network/public/cpp/url_loader_status.h"
+#include "services/network/public/cpp/url_loader_completion_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/page_transition_types.h"
 
@@ -617,11 +617,11 @@ TEST_F(MojoAsyncResourceHandlerTest, OnResponseCompleted) {
 
   url_loader_client_.RunUntilComplete();
   EXPECT_TRUE(url_loader_client_.has_received_completion());
-  EXPECT_EQ(net::OK, url_loader_client_.status().error_code);
-  EXPECT_LE(now1, url_loader_client_.status().completion_time);
-  EXPECT_LE(url_loader_client_.status().completion_time, now2);
+  EXPECT_EQ(net::OK, url_loader_client_.completion_status().error_code);
+  EXPECT_LE(now1, url_loader_client_.completion_status().completion_time);
+  EXPECT_LE(url_loader_client_.completion_status().completion_time, now2);
   EXPECT_EQ(request_->GetTotalReceivedBytes(),
-            url_loader_client_.status().encoded_data_length);
+            url_loader_client_.completion_status().encoded_data_length);
 }
 
 // This test case sets different status values from OnResponseCompleted.
@@ -647,11 +647,12 @@ TEST_F(MojoAsyncResourceHandlerTest, OnResponseCompleted2) {
 
   url_loader_client_.RunUntilComplete();
   EXPECT_TRUE(url_loader_client_.has_received_completion());
-  EXPECT_EQ(net::ERR_ABORTED, url_loader_client_.status().error_code);
-  EXPECT_LE(now1, url_loader_client_.status().completion_time);
-  EXPECT_LE(url_loader_client_.status().completion_time, now2);
+  EXPECT_EQ(net::ERR_ABORTED,
+            url_loader_client_.completion_status().error_code);
+  EXPECT_LE(now1, url_loader_client_.completion_status().completion_time);
+  EXPECT_LE(url_loader_client_.completion_status().completion_time, now2);
   EXPECT_EQ(request_->GetTotalReceivedBytes(),
-            url_loader_client_.status().encoded_data_length);
+            url_loader_client_.completion_status().encoded_data_length);
 }
 
 TEST_F(MojoAsyncResourceHandlerTest, OnResponseCompletedWithCanceledTimedOut) {
@@ -664,7 +665,8 @@ TEST_F(MojoAsyncResourceHandlerTest, OnResponseCompletedWithCanceledTimedOut) {
 
   url_loader_client_.RunUntilComplete();
   EXPECT_TRUE(url_loader_client_.has_received_completion());
-  EXPECT_EQ(net::ERR_TIMED_OUT, url_loader_client_.status().error_code);
+  EXPECT_EQ(net::ERR_TIMED_OUT,
+            url_loader_client_.completion_status().error_code);
 }
 
 TEST_F(MojoAsyncResourceHandlerTest, OnResponseCompletedWithFailedTimedOut) {
@@ -677,7 +679,8 @@ TEST_F(MojoAsyncResourceHandlerTest, OnResponseCompletedWithFailedTimedOut) {
 
   url_loader_client_.RunUntilComplete();
   EXPECT_TRUE(url_loader_client_.has_received_completion());
-  EXPECT_EQ(net::ERR_TIMED_OUT, url_loader_client_.status().error_code);
+  EXPECT_EQ(net::ERR_TIMED_OUT,
+            url_loader_client_.completion_status().error_code);
 }
 
 TEST_F(MojoAsyncResourceHandlerTest, ResponseCompletionShouldCloseDataPipe) {
@@ -695,7 +698,7 @@ TEST_F(MojoAsyncResourceHandlerTest, ResponseCompletionShouldCloseDataPipe) {
 
   url_loader_client_.RunUntilComplete();
   EXPECT_TRUE(url_loader_client_.has_received_completion());
-  EXPECT_EQ(net::OK, url_loader_client_.status().error_code);
+  EXPECT_EQ(net::OK, url_loader_client_.completion_status().error_code);
 
   while (true) {
     char buffer[16];
@@ -727,7 +730,7 @@ TEST_F(MojoAsyncResourceHandlerTest, OutOfBandCancelDuringBodyTransmission) {
 
   url_loader_client_.RunUntilComplete();
   EXPECT_TRUE(url_loader_client_.has_received_completion());
-  EXPECT_EQ(net::ERR_FAILED, url_loader_client_.status().error_code);
+  EXPECT_EQ(net::ERR_FAILED, url_loader_client_.completion_status().error_code);
 
   std::string actual;
   while (true) {
@@ -1153,7 +1156,8 @@ TEST_P(MojoAsyncResourceHandlerWithAllocationSizeTest, CancelWhileWaiting) {
 
   ASSERT_FALSE(url_loader_client_.has_received_completion());
   url_loader_client_.RunUntilComplete();
-  EXPECT_EQ(net::ERR_ABORTED, url_loader_client_.status().error_code);
+  EXPECT_EQ(net::ERR_ABORTED,
+            url_loader_client_.completion_status().error_code);
 
   while (true) {
     char buffer[16];
@@ -1226,7 +1230,7 @@ TEST_P(MojoAsyncResourceHandlerWithAllocationSizeTest, RedirectHandling) {
 
   ASSERT_TRUE(url_loader_client_.has_received_response());
   ASSERT_TRUE(url_loader_client_.has_received_completion());
-  EXPECT_EQ(net::OK, url_loader_client_.status().error_code);
+  EXPECT_EQ(net::OK, url_loader_client_.completion_status().error_code);
 }
 
 // Test the case where th other process tells the ResourceHandler to follow a
@@ -1267,7 +1271,7 @@ TEST_P(
 
   ASSERT_FALSE(url_loader_client_.has_received_completion());
   url_loader_client_.RunUntilComplete();
-  EXPECT_EQ(net::OK, url_loader_client_.status().error_code);
+  EXPECT_EQ(net::OK, url_loader_client_.completion_status().error_code);
 
   std::string body;
   while (true) {
@@ -1317,7 +1321,7 @@ TEST_P(
 
   ASSERT_FALSE(url_loader_client_.has_received_completion());
   url_loader_client_.RunUntilComplete();
-  EXPECT_EQ(net::OK, url_loader_client_.status().error_code);
+  EXPECT_EQ(net::OK, url_loader_client_.completion_status().error_code);
 
   std::string body;
   while (true) {

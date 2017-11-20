@@ -71,7 +71,8 @@ class SubresourceLoader : public mojom::URLLoader,
 
   void Start() {
     if (!host_) {
-      remote_client_->OnComplete(network::URLLoaderStatus(net::ERR_FAILED));
+      remote_client_->OnComplete(
+          network::URLLoaderCompletionStatus(net::ERR_FAILED));
       return;
     }
     handler_ = host_->CreateRequestHandler(
@@ -200,7 +201,8 @@ class SubresourceLoader : public mojom::URLLoader,
                          const ResourceResponseHead& response_head) override {
     DCHECK(network_loader_) << "appcache loader does not produce redirects";
     if (!redirect_limit_--) {
-      OnComplete(network::URLLoaderStatus(net::ERR_TOO_MANY_REDIRECTS));
+      OnComplete(
+          network::URLLoaderCompletionStatus(net::ERR_TOO_MANY_REDIRECTS));
       return;
     }
     if (!handler_) {
@@ -246,7 +248,7 @@ class SubresourceLoader : public mojom::URLLoader,
     remote_client_->OnStartLoadingResponseBody(std::move(body));
   }
 
-  void OnComplete(const network::URLLoaderStatus& status) override {
+  void OnComplete(const network::URLLoaderCompletionStatus& status) override {
     if (!network_loader_ || !handler_ || did_receive_network_response_ ||
         status.error_code == net::OK) {
       remote_client_->OnComplete(status);
@@ -258,7 +260,7 @@ class SubresourceLoader : public mojom::URLLoader,
                        weak_factory_.GetWeakPtr(), status));
   }
 
-  void ContinueOnComplete(const network::URLLoaderStatus& status,
+  void ContinueOnComplete(const network::URLLoaderCompletionStatus& status,
                           StartLoaderCallback start_function) {
     if (start_function)
       CreateAndStartAppCacheLoader(std::move(start_function));

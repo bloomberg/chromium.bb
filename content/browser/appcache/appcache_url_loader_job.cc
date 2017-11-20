@@ -319,7 +319,7 @@ void AppCacheURLLoaderJob::NotifyCompleted(int error_code) {
   if (AppCacheRequestHandler::IsRunningInTests())
     return;
 
-  network::URLLoaderStatus status(error_code);
+  network::URLLoaderCompletionStatus status(error_code);
   if (!error_code) {
     const net::HttpResponseInfo* http_info =
         is_range_request() ? range_response_info_.get()

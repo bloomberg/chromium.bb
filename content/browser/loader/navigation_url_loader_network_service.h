@@ -53,7 +53,7 @@ class CONTENT_EXPORT NavigationURLLoaderNetworkService
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
                          scoped_refptr<ResourceResponse> response);
   void OnStartLoadingResponseBody(mojo::ScopedDataPipeConsumerHandle body);
-  void OnComplete(const network::URLLoaderStatus& status);
+  void OnComplete(const network::URLLoaderCompletionStatus& status);
 
  private:
   class URLLoaderRequestController;

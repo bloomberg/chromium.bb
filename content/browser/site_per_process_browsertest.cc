@@ -2881,7 +2881,7 @@ namespace {
 class FailingURLLoaderImpl : public mojom::URLLoader {
  public:
   explicit FailingURLLoaderImpl(mojom::URLLoaderClientPtr client) {
-    network::URLLoaderStatus status;
+    network::URLLoaderCompletionStatus status;
     status.error_code = net::ERR_NOT_IMPLEMENTED;
     client->OnComplete(status);
   }
