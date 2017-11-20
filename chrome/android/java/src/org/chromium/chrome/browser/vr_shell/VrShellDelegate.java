@@ -1155,6 +1155,11 @@ public class VrShellDelegate
 
         mPaused = false;
 
+        // We call resume here to be symmetric with onPause in case we get paused/resumed without
+        // being hidden/shown. However, we still don't want to resume if we're not visible to avoid
+        // doing VR rendering that won't be seen.
+        if (mInVr && mVisible) mVrShell.resume();
+
         maybeUpdateVrSupportLevel();
 
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
@@ -1221,13 +1226,13 @@ public class VrShellDelegate
 
         // Only resume VrShell once we're visible so that we don't start rendering before being
         // visible and delaying startup.
-        if (mInVr) mVrShell.resume();
+        if (mInVr && !mPaused) mVrShell.resume();
     }
 
     private void onActivityHidden() {
         mVisible = false;
-        // We defer pausing of VrShell until the app is no longer visible to keep head tracking
-        // working for as long as possible while going to daydream home.
+        // In case we're hidden before onPause is called, we pause here. Duplicate calls to pause
+        // are safe.
         if (mInVr) mVrShell.pause();
         if (mShowingDaydreamDoff || mProbablyInDon) return;
 
@@ -1257,6 +1262,7 @@ public class VrShellDelegate
         // vrdisplayactivate event should be dispatched in enterVRFromIntent.
         mListeningForWebVrActivateBeforePause = mListeningForWebVrActivate;
 
+        if (mInVr) mVrShell.pause();
         if (mNativeVrShellDelegate != 0) nativeOnPause(mNativeVrShellDelegate);
 
         mIsDaydreamCurrentViewer = null;
