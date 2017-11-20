@@ -23,7 +23,6 @@
 #include "ios/chrome/browser/history/history_tab_helper.h"
 #include "ios/chrome/browser/history/top_sites_factory.h"
 #import "ios/chrome/browser/infobars/infobar_manager_impl.h"
-#import "ios/chrome/browser/language/url_language_histogram_factory.h"
 #import "ios/chrome/browser/passwords/password_tab_helper.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/reading_list/reading_list_web_state_observer.h"
@@ -81,16 +80,6 @@ void AttachTabHelpers(web::WebState* web_state) {
   ReadingListModel* model =
       ReadingListModelFactory::GetForBrowserState(browser_state);
   ReadingListWebStateObserver::CreateForWebState(web_state, model);
-
-  // The language detection helper accepts a callback from the translate
-  // client, so must be created after it.
-  ChromeIOSTranslateClient::CreateForWebState(web_state);
-  language::IOSLanguageDetectionTabHelper::CreateForWebState(
-      web_state,
-      ChromeIOSTranslateClient::FromWebState(web_state)
-          ->GetTranslateDriver()
-          ->CreateLanguageDetectionCallback(),
-      UrlLanguageHistogramFactory::GetForBrowserState(browser_state));
 
   ios::ChromeBrowserState* original_browser_state =
       browser_state->GetOriginalChromeBrowserState();
