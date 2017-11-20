@@ -7,7 +7,7 @@
 [
     Exposed=Window,
     ImplementedAs=NavigatorMediaCapabilities,
-    RuntimeEnabled=MediaCapabilities
+    OriginTrialEnabled=MediaCapabilities
 ] partial interface Navigator {
     [SameObject] readonly attribute MediaCapabilities mediaCapabilities;
 };
