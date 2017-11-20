@@ -56,6 +56,7 @@ enum class JavaScriptDialogTabHelper::DismissalCause {
   BROWSER_SWITCHED = 5,
   DIALOG_BUTTON_CLICKED = 6,
   TAB_NAVIGATED = 7,
+  TAB_SWITCHED_OUT = 8,
   MAX,
 };
 
@@ -283,6 +284,21 @@ void JavaScriptDialogTabHelper::OnBrowserSetLastActive(Browser* browser) {
     HandleTabSwitchAway(DismissalCause::BROWSER_SWITCHED);
   }
 }
+
+void JavaScriptDialogTabHelper::TabReplacedAt(
+    TabStripModel* tab_strip_model,
+    content::WebContents* old_contents,
+    content::WebContents* new_contents,
+    int index) {
+  if (old_contents == WebContentsObserver::web_contents()) {
+    // At this point, this WebContents is no longer in the tabstrip. The usual
+    // teardown will not be able to turn off the attention indicator, so that
+    // must be done here.
+    SetTabNeedsAttentionImpl(false, tab_strip_model, index);
+
+    CloseDialog(DismissalCause::TAB_SWITCHED_OUT, false, base::string16());
+  }
+}
 #endif
 
 void JavaScriptDialogTabHelper::LogDialogDismissalCause(
@@ -347,8 +363,10 @@ void JavaScriptDialogTabHelper::CloseDialog(DismissalCause cause,
     std::move(dialog_callback_).Run(success, user_input);
 
   // If there's a pending dialog, then the tab is still in the "needs attention"
-  // state; clear it out.
-  if (pending_dialog_)
+  // state; clear it out. However, if the tab was switched out, the turning off
+  // of the "needs attention" state was done in TabReplacedAt() because
+  // SetTabNeedsAttention won't work, so don't call it.
+  if (pending_dialog_ && cause != DismissalCause::TAB_SWITCHED_OUT)
     SetTabNeedsAttention(false);
 
   dialog_.reset();
@@ -364,9 +382,23 @@ void JavaScriptDialogTabHelper::SetTabNeedsAttention(bool attention) {
 #if !defined(OS_ANDROID)
   content::WebContents* web_contents = WebContentsObserver::web_contents();
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-  DCHECK(browser);
-  browser->tab_strip_model()->SetTabNeedsAttentionAt(
-      browser->tab_strip_model()->GetIndexOfWebContents(web_contents),
-      attention);
+  TabStripModel* tab_strip_model = browser->tab_strip_model();
+
+  SetTabNeedsAttentionImpl(
+      attention, tab_strip_model,
+      tab_strip_model->GetIndexOfWebContents(web_contents));
 #endif
 }
+
+#if !defined(OS_ANDROID)
+void JavaScriptDialogTabHelper::SetTabNeedsAttentionImpl(
+    bool attention,
+    TabStripModel* tab_strip_model,
+    int index) {
+  tab_strip_model->SetTabNeedsAttentionAt(index, attention);
+  if (attention)
+    tab_strip_model->AddObserver(this);
+  else
+    tab_strip_model->RemoveObserver(this);
+}
+#endif
