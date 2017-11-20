@@ -25,7 +25,7 @@ interface HTMLTableCellElement : HTMLElement {
     [CEReactions] attribute unsigned long rowSpan;
     // TODO(foolip): headers should be a [PutForwards=value] readonly attribute
     // DOMTokenList.
-    [CEReactions, Reflect, TreatNullAs=NullString] attribute DOMString headers;
+    [CEReactions, Reflect] attribute DOMString headers;
     readonly attribute long cellIndex;
 
     // obsolete members
