@@ -16,8 +16,6 @@
 #include "extensions/common/features/feature_channel.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using chrome::IsExtensionOrSharedModuleWhitelisted;
-
 namespace extensions {
 
 namespace {

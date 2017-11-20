@@ -28,8 +28,6 @@ struct HostMessageContext;
 }  // namespace host
 }  // namespace ppapi
 
-namespace chrome {
-
 // This filter handles messages for platform verification on the UI thread.
 class PepperPlatformVerificationMessageFilter
     : public ppapi::host::ResourceMessageFilter {
@@ -75,7 +73,5 @@ class PepperPlatformVerificationMessageFilter
 
   DISALLOW_COPY_AND_ASSIGN(PepperPlatformVerificationMessageFilter);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_RENDERER_HOST_PEPPER_PEPPER_PLATFORM_VERIFICATION_MESSAGE_FILTER_H_

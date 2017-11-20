@@ -238,7 +238,8 @@ class ChromeContentRendererClient
 
 #if BUILDFLAG(ENABLE_PLUGINS) && BUILDFLAG(ENABLE_EXTENSIONS)
   static bool IsExtensionOrSharedModuleWhitelisted(
-      const GURL& url, const std::set<std::string>& whitelist);
+      const GURL& url,
+      const std::set<std::string>& whitelist);
 #endif
 
  private:

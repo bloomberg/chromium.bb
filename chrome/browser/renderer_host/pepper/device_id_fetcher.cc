@@ -35,8 +35,6 @@ using content::BrowserPpapiHost;
 using content::BrowserThread;
 using content::RenderProcessHost;
 
-namespace chrome {
-
 namespace {
 
 const char kDRMIdentifierFile[] = "Pepper DRM ID.0";
@@ -211,5 +209,3 @@ void DeviceIDFetcher::RunCallbackOnIOThread(const std::string& id,
   in_progress_ = false;
   callback_.Run(id, result);
 }
-
-}  // namespace chrome

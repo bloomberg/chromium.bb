@@ -9,8 +9,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 
-namespace chrome {
-
 MonitorFinder::MonitorFinder(int process_id, int render_frame_id)
     : process_id_(process_id),
       render_frame_id_(render_frame_id),
@@ -58,5 +56,3 @@ void MonitorFinder::FetchMonitorFromWidget() {
   request_sent_ = false;
   display_id_ = display_id;
 }
-
-}  // namespace chrome
