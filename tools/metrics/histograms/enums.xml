@@ -34920,6 +34920,8 @@ Called by update_net_error_codes.py.-->
   <int value="1" label="RESOLVE_FAIL"/>
   <int value="2" label="RESOLVE_SPECULATIVE_SUCCESS"/>
   <int value="3" label="RESOLVE_SPECULATIVE_FAIL"/>
+  <int value="4" label="RESOLVE_ABORT"/>
+  <int value="5" label="RESOLVE_SPECULATIVE_ABORT"/>
 </enum>
 
 <enum name="ResolutionUnspecWasteCategory">
