@@ -11,6 +11,7 @@ For a detailed list of all the changes refer to [[https://github.com/liblouis/li
   (zh-tw.ctb) thanks to Bo-Cheng Jhan and 黃偉豪.
 - New Norwegian 6-dot display braille table for Braillo embossers
   thanks to Lars Bjørndal
+- Improvements to the Hungarian tables thanks to Attila Hammer
 
 ** New, renamed or removed tables
 *** New
