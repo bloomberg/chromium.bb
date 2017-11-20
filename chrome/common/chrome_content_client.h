@@ -38,7 +38,6 @@ class ChromeContentClient : public content::ContentClient {
   static const char kPDFExtensionPluginName[];
   static const char kPDFInternalPluginName[];
   static const char kPDFPluginPath[];
-  static const char kRemotingViewerPluginPath[];
 
   ChromeContentClient();
   ~ChromeContentClient() override;
