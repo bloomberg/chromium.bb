@@ -185,6 +185,10 @@ SecurityLevel GetSecurityLevelForRequest(
     return NONE;
   }
 
+  if (visible_security_state.is_view_source) {
+    return NONE;
+  }
+
   if ((visible_security_state.cert_status & net::CERT_STATUS_IS_EV) &&
       visible_security_state.certificate) {
     return EV_SECURE;
@@ -320,7 +324,8 @@ VisibleSecurityState::VisibleSecurityState()
       ran_content_with_cert_errors(false),
       pkp_bypassed(false),
       is_incognito(false),
-      is_error_page(false) {}
+      is_error_page(false),
+      is_view_source(false) {}
 
 VisibleSecurityState::~VisibleSecurityState() {}
 

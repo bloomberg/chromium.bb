@@ -20,6 +20,7 @@
 #include "content/public/browser/security_style_explanations.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/url_constants.h"
 #include "net/base/net_errors.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
@@ -362,13 +363,17 @@ std::unique_ptr<security_state::VisibleSecurityState> GetVisibleSecurityState(
 
   content::NavigationEntry* entry =
       web_contents->GetController().GetVisibleEntry();
-  state->is_error_page =
-      entry && (entry->GetPageType() == content::PAGE_TYPE_ERROR);
-  if (!entry || !entry->GetSSL().initialized)
+  if (!entry)
     return state;
-
-  state->connection_info_initialized = true;
+  // Set fields that are not dependent on the connection info.
+  state->is_error_page = entry->GetPageType() == content::PAGE_TYPE_ERROR;
+  state->is_view_source =
+      entry->GetVirtualURL().SchemeIs(content::kViewSourceScheme);
   state->url = entry->GetURL();
+
+  if (!entry->GetSSL().initialized)
+    return state;
+  state->connection_info_initialized = true;
   const content::SSLStatus& ssl = entry->GetSSL();
   state->certificate = ssl.certificate;
   state->cert_status = ssl.cert_status;
