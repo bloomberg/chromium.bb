@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "headless/public/devtools/domains/emulation.h"
 #include "headless/public/devtools/domains/network.h"
 #include "headless/public/devtools/domains/page.h"
 #include "headless/public/headless_browser.h"
@@ -19,6 +20,7 @@
 
 namespace headless {
 class HeadlessDevToolsClient;
+class VirtualTimeController;
 namespace dom_snapshot {
 class GetSnapshotResult;
 }  // namespace dom_snapshot
@@ -32,16 +34,39 @@ class HeadlessRenderTest : public HeadlessAsyncDevTooledBrowserTest,
   void RunDevTooledTest() override;
 
  protected:
+  // Automatically waits in destructor until callback is called.
+  class Sync {
+   public:
+    Sync() {}
+    ~Sync() {
+      base::MessageLoop::ScopedNestableTaskAllower nest_loop(
+          base::MessageLoop::current());
+      run_loop.Run();
+    }
+    operator base::Closure() { return run_loop.QuitClosure(); }
+
+   private:
+    base::RunLoop run_loop;
+    DISALLOW_COPY_AND_ASSIGN(Sync);
+  };
+
   HeadlessRenderTest();
   ~HeadlessRenderTest() override;
+
+  void SetTestCompleted() { state_ = FINISHED; }
+  GURL GetURL(const std::string& path) const {
+    return embedded_test_server()->GetURL(path);
+  }
 
   void PostRunAsynchronousTest() override;
 
   virtual GURL GetPageUrl(HeadlessDevToolsClient* client) = 0;
   virtual void VerifyDom(dom_snapshot::GetSnapshotResult* dom_snapshot) = 0;
+
+  virtual void OnPageRenderCompleted();
   virtual void OnTimeout();
+
   virtual void OverrideWebPreferences(WebPreferences* preferences);
-  void AllDone() { done_called_ = true; }
 
   void CustomizeHeadlessBrowserContext(
       HeadlessBrowserContext::Builder& builder) override;
@@ -53,6 +78,8 @@ class HeadlessRenderTest : public HeadlessAsyncDevTooledBrowserTest,
 
   // page::ExperimentalObserver implementation:
   void OnLoadEventFired(const page::LoadEventFiredParams& params) override;
+  void OnFrameStartedLoading(
+      const page::FrameStartedLoadingParams& params) override;
 
   // network::ExperimentalObserver
   void OnRequestIntercepted(
@@ -61,12 +88,23 @@ class HeadlessRenderTest : public HeadlessAsyncDevTooledBrowserTest,
   std::vector<std::unique_ptr<network::RequestInterceptedParams>> requests_;
 
  private:
+  void HandleVirtualTimeExhausted();
   void OnGetDomSnapshotDone(
       std::unique_ptr<dom_snapshot::GetSnapshotResult> result);
   void HandleTimeout();
 
-  bool navigation_requested_ = false;
-  bool done_called_ = false;
+  enum State {
+    INIT,       // Setting up the client, no navigation performed yet.
+    STARTING,   // Navigation request issued but URL not being loaded yet.
+    LOADING,    // URL was requested but resources are not fully loaded yet.
+    RENDERING,  // Main resources were loaded but page is still being rendered.
+    DONE,       // Page considered to be fully rendered.
+    FINISHED,   // Test has finished.
+  };
+  State state_ = INIT;
+
+  std::unique_ptr<VirtualTimeController> virtual_time_controller_;
+  bool navigation_performed_ = false;
 
   base::WeakPtrFactory<HeadlessRenderTest> weak_ptr_factory_;
 

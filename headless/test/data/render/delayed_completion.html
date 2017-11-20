@@ -1,0 +1,13 @@
+<html>
+  <body>
+    <script type="text/javascript">
+      setTimeout(() => {
+        var div = document.getElementById("content");
+        var p = document.createElement("p");
+        p.textContent = "delayed text";
+        div.appendChild(p);
+      }, 3000);
+    </script>
+  </body>
+  <div id="content"/>
+</html>
