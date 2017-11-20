@@ -78,10 +78,8 @@ class CC_EXPORT VideoLayerImpl : public LayerImpl {
 
   // TODO(danakj): Remove these, use TransferableResource for software path too.
   unsigned software_resource_ = viz::kInvalidResourceId;
-  using SoftwareReleaseCallback =
-      VideoFrameExternalResources::SoftwareReleaseCallback;
-  // Called once for software_resources_.
-  SoftwareReleaseCallback software_release_callback_;
+  // Called once for software_resource_.
+  viz::ReleaseCallback software_release_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoLayerImpl);
 };

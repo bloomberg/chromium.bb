@@ -469,7 +469,7 @@ TEST_F(VideoResourceUpdaterTest, ReuseResourceSoftwareCompositor) {
 
   // Simulate the ResourceProvider releasing the resource back to the video
   // updater.
-  resources.software_release_callback.Run(gpu::SyncToken(), false);
+  std::move(resources.software_release_callback).Run(gpu::SyncToken(), false);
 
   // Allocate resources for the same frame.
   shared_bitmap_manager_->ResetAllocationCount();
