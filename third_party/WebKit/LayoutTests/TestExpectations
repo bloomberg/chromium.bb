@@ -2570,9 +2570,9 @@ crbug.com/435547 virtual/mojo-loading/http/tests/cachestorage/serviceworker/igno
 
 crbug.com/697971 [ Mac10.12 ] fast/text/selection/flexbox-selection-nested.html [ Skip ]
 crbug.com/697971 [ Mac10.12 ] fast/text/selection/flexbox-selection.html [ Skip ]
-crbug.com/678481 http/tests/devtools/appcache/appcache-manifest-with-non-existing-file.html [ Timeout Failure Pass ]
-crbug.com/678481 http/tests/devtools/appcache/appcache-iframe-manifests.html [ Timeout Failure Pass ]
-crbug.com/678481 virtual/mojo-loading/http/tests/devtools/appcache/appcache-iframe-manifests.html [ Timeout Failure Pass ]
+crbug.com/678481 http/tests/devtools/appcache/appcache-manifest-with-non-existing-file.js [ Timeout Failure Pass ]
+crbug.com/678481 http/tests/devtools/appcache/appcache-iframe-manifests.js [ Timeout Failure Pass ]
+crbug.com/678481 virtual/mojo-loading/http/tests/devtools/appcache/appcache-iframe-manifests.js [ Timeout Failure Pass ]
 
 crbug.com/782858 virtual/display_list_2d_canvas/fast/canvas/canvas-filter-units-off-screen.html [ Skip ]
 crbug.com/782858 virtual/display_list_2d_canvas/fast/canvas/canvas-filter-units.html [ Skip ]

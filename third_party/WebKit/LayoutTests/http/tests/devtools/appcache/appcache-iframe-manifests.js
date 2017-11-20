@@ -1,10 +1,17 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/resources-test.js"></script>
-<script src="../../inspector/appcache/appcache-test.js"></script>
-<script>
-function test() {
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+(async function() {
+  TestRunner.addResult(
+      `Tests that application cache model keeps track of manifest urls and statuses correctly. https://bugs.webkit.org/show_bug.cgi?id=64581\n`);
+  await TestRunner.loadModule('application_test_runner');
+  await TestRunner.showPanel('resources');
+  await TestRunner.loadHTML(`
+      <p>Tests that application cache model keeps track of manifest urls and statuses correctly.</p>
+      <a href="https://bugs.webkit.org/show_bug.cgi?id=64581">Bug 64581</a>
+    `);
+
   var frameId1;
   var frameId2;
   var frameId3;
@@ -87,11 +94,4 @@ function test() {
     ApplicationTestRunner.dumpApplicationCache();
     TestRunner.completeTest();
   }
-}
-</script>
-</head>
-<body onload="runTest()">
-<p>Tests that application cache model keeps track of manifest urls and statuses correctly.</p>
-<a href="https://bugs.webkit.org/show_bug.cgi?id=64581">Bug 64581</a>
-</body>
-</html>
+})();
