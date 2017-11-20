@@ -15,13 +15,6 @@ extern "C" {
 // central X11 headers can be included.
 #include <X11/Xlib.h>
 
-// TODO(bratell): ui/gl headers sometimes indirectly include Xlib.h
-// and then undef Bool. If that has happened, then the include above
-// has no effect and Bool will be missing for the rest of the
-// includes. This will be fixed when ui/gl uses ui/gfx/x/x11.h (this
-// file) but it's not 100% trivial.
-#define Bool int
-
 // And the rest so that nobody needs to include them manually...
 #include <X11/Xatom.h>
 #include <X11/Xcursor/Xcursor.h>

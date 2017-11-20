@@ -10,6 +10,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "ui/gfx/switches.h"
+#include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_egl_api_implementation.h"

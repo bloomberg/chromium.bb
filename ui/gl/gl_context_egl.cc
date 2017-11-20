@@ -10,17 +10,19 @@
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+
+#if defined(USE_X11)
+// Must be included before khronos headers or they will pollute the
+// global scope with X11 macros.
+#include "ui/gfx/x/x11.h"
+#endif
+
 #include "third_party/khronos/EGL/egl.h"
 #include "third_party/khronos/EGL/eglext.h"
 #include "ui/gl/egl_util.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_surface_egl.h"
 
-#if defined(USE_X11)
-extern "C" {
-#include <X11/Xlib.h>
-}
-#endif
 
 #ifndef EGL_CHROMIUM_create_context_bind_generates_resource
 #define EGL_CHROMIUM_create_context_bind_generates_resource 1

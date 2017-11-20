@@ -4,9 +4,6 @@
 
 #include "ui/gl/gl_surface_glx.h"
 
-extern "C" {
-#include <X11/Xlib.h>
-}
 #include <memory>
 
 #include "base/command_line.h"
@@ -25,6 +22,7 @@ extern "C" {
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "ui/events/platform/platform_event_source.h"
+#include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_connection.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/gl/gl_bindings.h"
@@ -115,7 +113,7 @@ GLXFBConfig GetConfigForWindow(Display* display,
 bool CreateDummyWindow(Display* display) {
   DCHECK(display);
   gfx::AcceleratedWidget parent_window =
-      RootWindow(display, DefaultScreen(display));
+      XRootWindow(display, DefaultScreen(display));
   gfx::AcceleratedWidget window =
       XCreateWindow(display, parent_window, 0, 0, 1, 1, 0, CopyFromParent,
                     InputOutput, CopyFromParent, 0, nullptr);
@@ -217,7 +215,7 @@ class SGIVideoSyncProviderThreadShim {
         vsync_lock_() {
     // This ensures that creation of |parent_window_| has occured when this shim
     // is executing in the same thread as the call to create |parent_window_|.
-    XSync(g_display, False);
+    XSync(g_display, x11::False);
   }
 
   virtual ~SGIVideoSyncProviderThreadShim() {
@@ -257,8 +255,8 @@ class SGIVideoSyncProviderThreadShim {
 
     // Create the context only once for all vsync providers.
     if (!context_) {
-      context_ =
-        glXCreateNewContext(display_, config, GLX_RGBA_TYPE, nullptr, True);
+      context_ = glXCreateNewContext(display_, config, GLX_RGBA_TYPE, nullptr,
+                                     x11::True);
       if (!context_)
         LOG(ERROR) << "video_sync: glXCreateNewContext failed";
     }
@@ -687,7 +685,8 @@ NativeViewGLSurfaceGLX::~NativeViewGLSurfaceGLX() {
 void NativeViewGLSurfaceGLX::ForwardExposeEvent(XEvent* event) {
   XEvent forwarded_event = *event;
   forwarded_event.xexpose.window = parent_window_;
-  XSendEvent(g_display, parent_window_, False, ExposureMask, &forwarded_event);
+  XSendEvent(g_display, parent_window_, x11::False, ExposureMask,
+             &forwarded_event);
   XFlush(g_display);
 }
 
