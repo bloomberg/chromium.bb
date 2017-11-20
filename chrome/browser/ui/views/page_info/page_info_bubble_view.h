@@ -25,6 +25,7 @@
 class GURL;
 class Browser;
 class BubbleHeaderView;
+class HoverButton;
 class Profile;
 
 namespace content {
@@ -81,9 +82,9 @@ class PageInfoBubbleView : public content::WebContentsObserver,
     VIEW_ID_PAGE_INFO_BUTTON_WHITELIST_PASSWORD_REUSE,
     VIEW_ID_PAGE_INFO_LABEL_SECURITY_DETAILS,
     VIEW_ID_PAGE_INFO_LABEL_RESET_CERTIFICATE_DECISIONS,
-    VIEW_ID_PAGE_INFO_LINK_COOKIE_DIALOG,
-    VIEW_ID_PAGE_INFO_LINK_SITE_SETTINGS,
-    VIEW_ID_PAGE_INFO_LINK_CERTIFICATE_VIEWER,
+    VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_COOKIE_DIALOG,
+    VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_SITE_SETTINGS,
+    VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_CERTIFICATE_VIEWER,
   };
 
   // Creates the appropriate page info bubble for the given |url|.
@@ -152,12 +153,15 @@ class PageInfoBubbleView : public content::WebContentsObserver,
 
   // Creates the contents of the |site_settings_view_|. The ownership of the
   // returned view is transferred to the caller.
-  views::View* CreateSiteSettingsView(int side_margin) WARN_UNUSED_RESULT;
+  views::View* CreateSiteSettingsView() WARN_UNUSED_RESULT;
+
+  // Posts a task to HandleMoreInfoRequestAsync() below.
+  void HandleMoreInfoRequest(views::View* source);
 
   // Used to asynchronously handle clicks since these calls may cause the
   // destruction of the settings view and the base class window still needs to
   // be alive to finish handling the mouse or keyboard click.
-  void HandleLinkClickedAsync(views::Link* source);
+  void HandleMoreInfoRequestAsync(int view_id);
 
   // The presenter that controls the Page Info UI.
   std::unique_ptr<PageInfo> presenter_;
@@ -173,8 +177,10 @@ class PageInfoBubbleView : public content::WebContentsObserver,
   // The view that contains the certificate, cookie, and permissions sections.
   views::View* site_settings_view_;
 
-  // The link that opens the "Cookies" dialog.
-  views::Link* cookie_dialog_link_;
+  // The link that opens the "Cookies" dialog. Non-harmony mode only.
+  views::Link* cookie_link_legacy_;
+  // The bubble that opens the "Cookies" dialog. Harmony mode only.
+  HoverButton* cookie_button_;
 
   // The view that contains the "Permissions" table of the bubble.
   views::View* permissions_view_;

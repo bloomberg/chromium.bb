@@ -9,6 +9,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/hover_button.h"
 #include "chrome/browser/ui/views/page_info/chosen_object_row.h"
 #include "chrome/browser/ui/views/page_info/permission_selector_row.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
@@ -23,6 +24,7 @@
 #include "device/usb/mock_usb_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/events/event_utils.h"
 #include "ui/views/controls/button/menu_button.h"
@@ -66,11 +68,19 @@ class PageInfoBubbleViewTestApi {
     return view_->selector_rows_[index].get();
   }
 
-  // Returns the number of cookies shown on the link to open the collected
-  // cookies dialog. This link is always shown, so fail if it's not there.
+  // Returns the number of cookies shown on the link or button to open the
+  // collected cookies dialog. This should always be shown.
   base::string16 GetCookiesLinkText() {
-    EXPECT_TRUE(view_->cookie_dialog_link_);
-    return view_->cookie_dialog_link_->text();
+    if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+      EXPECT_TRUE(view_->cookie_button_);
+      ui::AXNodeData data;
+      view_->cookie_button_->GetAccessibleNodeData(&data);
+      std::string name;
+      data.GetStringAttribute(ui::AX_ATTR_NAME, &name);
+      return base::ASCIIToUTF16(name);
+    }
+    EXPECT_TRUE(view_->cookie_link_legacy_);
+    return view_->cookie_link_legacy_->text();
   }
 
   // Returns the permission label text of the |index|th permission selector row.
@@ -334,5 +344,6 @@ TEST_F(PageInfoBubbleViewTest, UpdatingSiteDataRetainsLayout) {
   base::string16 expected = l10n_util::GetPluralStringFUTF16(
       IDS_PAGE_INFO_NUM_COOKIES,
       first_party_cookies.allowed + third_party_cookies.allowed);
-  EXPECT_EQ(expected, api_->GetCookiesLinkText());
+  size_t index = api_->GetCookiesLinkText().find(expected);
+  EXPECT_NE(std::string::npos, index);
 }

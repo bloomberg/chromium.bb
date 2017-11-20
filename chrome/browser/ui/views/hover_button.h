@@ -16,6 +16,7 @@ class ImageSkia;
 namespace views {
 class ButtonListener;
 class Label;
+class StyledLabel;
 class View;
 }  // namespace views
 
@@ -42,6 +43,15 @@ class HoverButton : public views::LabelButton {
 
   ~HoverButton() override;
 
+  // Updates the title text, and applies the secondary style to the text
+  // specified by |range|. If |range| is invalid, no style is applied. This
+  // method is only supported for |HoverButton|s created with a title and
+  // subtitle.
+  void SetTitleTextWithHintRange(const base::string16& title_text,
+                                 const gfx::Range& range);
+
+  // This method is only supported for |HoverButton|s created with a title and
+  // non-empty subtitle.
   void SetSubtitleElideBehavior(gfx::ElideBehavior elide_behavior);
 
  protected:
@@ -55,11 +65,17 @@ class HoverButton : public views::LabelButton {
       const override;
 
   // views::View:
+  void Layout() override;
   views::View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
 
  private:
-  views::Label* title_;
+  views::StyledLabel* title_;
   views::Label* subtitle_;
+
+  // The horizontal space the padding and icon take up. Used for calculating the
+  // available space for |title_|, if it exists.
+  int taken_width_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(HoverButton);
 };

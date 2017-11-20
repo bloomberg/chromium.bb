@@ -196,8 +196,11 @@ class PageInfoUI {
   // Returns the connection icon ID for the given connection |status|.
   static int GetConnectionIconID(PageInfo::SiteConnectionStatus status);
 #else
-  // Returns the icon for the Certificate area.
+  // Returns the icon for the page Certificate.
   static const gfx::ImageSkia GetCertificateIcon();
+
+  // Returns the icon for the button / link to Site settings.
+  static const gfx::ImageSkia GetSiteSettingsIcon();
 #endif
 
   // Return true if the given ContentSettingsType is in PageInfoUI.
