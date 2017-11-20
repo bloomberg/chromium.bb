@@ -212,6 +212,11 @@ void ContentSecurityPolicy::ApplyPolicySideEffectsToExecutionContext() {
                       GetUseCounterType(policy->HeaderType()));
     if (policy->AllowDynamic())
       UseCounter::Count(execution_context_, WebFeature::kCSPWithStrictDynamic);
+    if (policy->AllowEval(nullptr,
+                          SecurityViolationReportingPolicy::kSuppressReporting,
+                          kWillNotThrowException, g_empty_string)) {
+      UseCounter::Count(execution_context_, WebFeature::kCSPWithUnsafeEval);
+    }
   }
 
   // We disable 'eval()' even in the case of report-only policies, and rely on
