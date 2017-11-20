@@ -398,7 +398,7 @@ void AppendValueDataAsVariantInternal(dbus::MessageWriter* writer,
                                       const base::Value& value,
                                       DictionaryType dictionary_type) {
   // Support basic types and string-to-string dictionary.
-  switch (value.GetType()) {
+  switch (value.type()) {
     case base::Value::Type::DICTIONARY: {
       const base::DictionaryValue* dictionary = NULL;
       value.GetAsDictionary(&dictionary);
@@ -439,7 +439,7 @@ void AppendValueDataAsVariantInternal(dbus::MessageWriter* writer,
       dbus::AppendBasicTypeValueDataAsVariant(writer, value);
       break;
     default:
-      NET_LOG(ERROR) << "Unexpected value type: " << value.GetType();
+      NET_LOG(ERROR) << "Unexpected value type: " << value.type();
   }
 }
 

@@ -383,9 +383,9 @@ void LocalTranslator::CopyFieldFromONCToShill(
   if (field_signature) {
     base::Value::Type expected_type =
         field_signature->value_signature->onc_type;
-    if (value->GetType() != expected_type) {
+    if (value->type() != expected_type) {
       LOG(ERROR) << "Found field " << onc_field_name << " of type "
-                 << value->GetType() << " but expected type " << expected_type;
+                 << value->type() << " but expected type " << expected_type;
       return;
     }
   } else {

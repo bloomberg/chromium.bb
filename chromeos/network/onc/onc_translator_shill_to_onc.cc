@@ -38,7 +38,7 @@ std::unique_ptr<base::Value> ConvertStringToValue(const std::string& str,
   } else {
     value = base::JSONReader::Read(str);
   }
-  if (value && value->GetType() != type)
+  if (value && value->type() != type)
     return nullptr;
 
   return value;
@@ -797,10 +797,10 @@ void ShillToONCTranslator::CopyProperty(
     return;
   }
 
-  if (shill_value->GetType() != field_signature->value_signature->onc_type) {
+  if (shill_value->type() != field_signature->value_signature->onc_type) {
     LOG(ERROR) << "Shill property '" << shill_property_name << "' with value "
                << *shill_value << " has base::Value::Type "
-               << shill_value->GetType() << " but ONC field '"
+               << shill_value->type() << " but ONC field '"
                << field_signature->onc_field_name << "' requires type "
                << field_signature->value_signature->onc_type << ": "
                << GetName();

@@ -406,7 +406,7 @@ void NetworkSmsHandler::ManagerPropertiesCallback(
   }
   const base::Value* value;
   if (!properties.GetWithoutPathExpansion(shill::kDevicesProperty, &value) ||
-      value->GetType() != base::Value::Type::LIST) {
+      !value->is_list()) {
     LOG(ERROR) << "NetworkSmsHandler: No list value for: "
                << shill::kDevicesProperty;
     return;
