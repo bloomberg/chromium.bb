@@ -98,11 +98,12 @@
         <span>[[title_]]</span>
         <template is="dom-if" if="[[showDetails_]]">
           <!-- Force line break to display learn-more inlined with
-               chromeCleanupExplanation or with the title_ (if showDetails_ is
-               false) despite these two elements being on different lines. -->
+               chromeCleanupExplanationRemove or with the title_ (if
+               showDetails_ is false) despite these two elements being on
+               different lines. -->
           <div></div>
           <span class="secondary">
-            $i18n{chromeCleanupExplanation}
+            $i18n{chromeCleanupExplanationRemove}
           </span>
         </template>
         <a id="learn-more" href="$i18n{chromeCleanupLearnMoreUrl}"

@@ -66,14 +66,14 @@
           <div class="settings-box two-line" id="chromeCleanupSubpageTrigger"
               on-tap="onChromeCleanupTap_" actionable>
             <div class="start">
-              $i18n{chromeCleanupPageTitle}
+              $i18n{resetCleanupComputerTrigger}
               <div class="secondary" id="chromeCleanupSecondary">
-                $i18n{chromeCleanupPageTriggerDescription}
+                $i18n{resetCleanupComputerTriggerDescription}
               </div>
             </div>
             <button id="chromeCleanupArrow" is="paper-icon-button-light"
                 class="subpage-arrow"
-                aria-label="$i18n{chromeCleanupPageTitle}"
+                aria-label="$i18n{resetCleanupComputerTrigger}"
                 aria-describedby="chromeCleanupSecondary"></button>
           </div>
         </template>
@@ -84,7 +84,7 @@
         <template is="dom-if" route-path="/cleanup">
           <settings-subpage id="chromeCleanupSubpage"
               associated-control="[[$$('#chromeCleanupSubpageTrigger')]]"
-              page-title="$i18n{chromeCleanupPageTitle}"
+              page-title="$i18n{resetCleanupComputerTrigger}"
               learn-more-url="$i18n{chromeCleanupLearnMoreUrl}">
             <settings-chrome-cleanup-page></settings-chrome-cleanup-page>
           </settings-subpage>
