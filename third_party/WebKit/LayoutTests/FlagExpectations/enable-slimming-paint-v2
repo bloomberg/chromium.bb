@@ -1447,7 +1447,6 @@ crbug.com/692310 virtual/threaded/animations/composited-animations-rotate-zero-d
 # This test uses internal call to initiate smooth scrolling on impl-thread.
 crbug.com/667946 fast/compositor-wheel-scroll-latching/touchpad-scroll-impl-to-main.html [ Failure ]
 
-Bug(none) virtual/threaded/animations/svg-attribute-composition/svg-startOffset-composition.html [ Failure ]
 
 # virtual/threaded variants of sub-directories and tests already skipped or marked as failing above.
 Bug(none) virtual/threaded/http/tests/devtools/ [ Skip ]
