@@ -39,7 +39,7 @@ namespace internal {
 // for client and service libraries and should not be used directly from
 // external client code.
 struct VIZ_COMMON_EXPORT Resource {
-  enum Origin { INTERNAL, EXTERNAL, DELEGATED };
+  enum Origin { INTERNAL, DELEGATED };
   enum SynchronizationState {
     // The LOCALLY_USED state is the state each resource defaults to when
     // constructed or modified or read. This state indicates that the
@@ -149,12 +149,10 @@ struct VIZ_COMMON_EXPORT Resource {
   ResourceId id_in_child = 0;
   // Texture id for texture-backed resources.
   GLuint gl_id = 0;
-  // The mailbox associated with resources received from an external source, or
-  // sent from the client to the service. The mailbox has the IPC-capable data
-  // for sharing the resource backing between modules/GL contexts/processes.
+  // The mailbox associated with resources received from the client to the
+  // service. The mailbox has the IPC-capable data for sharing the resource
+  // backing between modules/GL contexts/processes.
   gpu::Mailbox mailbox;
-  // Callback to run when the resource is deleted and not in use by the service.
-  ReleaseCallback release_callback;
   // Non-owning pointer to a software-backed resource when mapped.
   uint8_t* pixels = nullptr;
   // Reference-counts to know when a resource can be released through the
@@ -172,8 +170,7 @@ struct VIZ_COMMON_EXPORT Resource {
   // Size of the resource in pixels.
   gfx::Size size;
   // Where the resource was originally allocated. Either internally by the
-  // ResourceProvider instance, externally and given to the ResourceProvider
-  // via in-process methods, or in a client and given to the ResourceProvider
+  // ResourceProvider instance, or in a client and given to the ResourceProvider
   // via IPC.
   Origin origin = INTERNAL;
   // The texture target for GpuMemoryBuffer- and texture-backed resources.
@@ -228,9 +225,8 @@ struct VIZ_COMMON_EXPORT Resource {
   // Tracks if a sync token needs to be waited on before using the resource.
   SynchronizationState synchronization_state_ = SYNCHRONIZED;
   // A SyncToken associated with a texture-backed or GpuMemoryBuffer-backed
-  // resource. It can be from an external source and waited on in order to use
-  // the resource, or generated internally in order to send the resource from
-  // client to service, and this is tracked by the |synchronization_state_|.
+  // resource. It is given from a child to the service, and waited on in order
+  // to use the resource, and this is tracked by the |synchronization_state_|.
   gpu::SyncToken sync_token_;
 
   DISALLOW_COPY_AND_ASSIGN(Resource);

@@ -2127,7 +2127,7 @@ void LayerTreeHostImpl::SynchronouslyInitializeAllTiles() {
 
 void LayerTreeHostImpl::DidLoseLayerTreeFrameSink() {
   if (resource_provider_)
-    resource_provider_->DidLoseVulkanContextProvider();
+    resource_provider_->DidLoseContextProvider();
   has_valid_layer_tree_frame_sink_ = false;
   client_->DidLoseLayerTreeFrameSinkOnImplThread();
 }
