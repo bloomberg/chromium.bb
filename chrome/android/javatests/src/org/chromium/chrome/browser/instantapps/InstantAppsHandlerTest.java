@@ -247,7 +247,7 @@ public class InstantAppsHandlerTest {
 
         @Override
         protected void maybeShowInstantAppBanner(
-                Context context, String url, Uri referrer, Tab tab) {
+                Context context, String url, Uri referrer, Tab tab, boolean instantAppIsDefault) {
             mStartedAsyncCall = true;
         }
     }
