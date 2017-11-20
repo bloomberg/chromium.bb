@@ -14,7 +14,6 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
 
-using ash::FrameHeader;
 using views::NonClientFrameView;
 using views::Widget;
 
@@ -26,18 +25,17 @@ using DefaultFrameHeaderTest = AshTestBase;
 TEST_F(DefaultFrameHeaderTest, TitleIconAlignment) {
   std::unique_ptr<Widget> w = CreateTestWidget(
       nullptr, kShellWindowId_DefaultContainer, gfx::Rect(1, 2, 3, 4));
-  ash::FrameCaptionButtonContainerView container(w.get());
+  FrameCaptionButtonContainerView container(w.get());
   views::StaticSizedView window_icon(gfx::Size(16, 16));
   window_icon.SetBounds(0, 0, 16, 16);
   w->SetBounds(gfx::Rect(0, 0, 500, 500));
   w->Show();
 
-  DefaultFrameHeader frame_header;
-  frame_header.Init(w.get(), w->non_client_view()->frame_view(), &container,
-                    nullptr);
+  DefaultFrameHeader frame_header(w.get(), w->non_client_view()->frame_view(),
+                                  &container, nullptr);
   frame_header.UpdateLeftHeaderView(&window_icon);
   frame_header.LayoutHeader();
-  gfx::Rect title_bounds = frame_header.GetTitleBounds();
+  gfx::Rect title_bounds = frame_header.GetAvailableTitleBounds();
   EXPECT_EQ(window_icon.bounds().CenterPoint().y(),
             title_bounds.CenterPoint().y());
 }
@@ -45,15 +43,14 @@ TEST_F(DefaultFrameHeaderTest, TitleIconAlignment) {
 TEST_F(DefaultFrameHeaderTest, BackButtonAlignment) {
   std::unique_ptr<Widget> w = CreateTestWidget(
       nullptr, kShellWindowId_DefaultContainer, gfx::Rect(1, 2, 3, 4));
-  ash::FrameCaptionButtonContainerView container(w.get());
-  ash::FrameBackButton back;
+  FrameCaptionButtonContainerView container(w.get());
+  FrameBackButton back;
 
-  DefaultFrameHeader frame_header;
-  frame_header.Init(w.get(), w->non_client_view()->frame_view(), &container,
-                    nullptr);
+  DefaultFrameHeader frame_header(w.get(), w->non_client_view()->frame_view(),
+                                  &container, nullptr);
   frame_header.UpdateBackButton(&back);
   frame_header.LayoutHeader();
-  gfx::Rect title_bounds = frame_header.GetTitleBounds();
+  gfx::Rect title_bounds = frame_header.GetAvailableTitleBounds();
   // The back button should be positioned at the left edge, and
   // vertically centered.
   EXPECT_EQ(back.bounds().CenterPoint().y(), title_bounds.CenterPoint().y());
@@ -64,15 +61,14 @@ TEST_F(DefaultFrameHeaderTest, BackButtonAlignment) {
 TEST_F(DefaultFrameHeaderTest, LightIcons) {
   std::unique_ptr<Widget> w = CreateTestWidget(
       nullptr, kShellWindowId_DefaultContainer, gfx::Rect(1, 2, 3, 4));
-  ash::FrameCaptionButtonContainerView container(w.get());
+  FrameCaptionButtonContainerView container(w.get());
   views::StaticSizedView window_icon(gfx::Size(16, 16));
   window_icon.SetBounds(0, 0, 16, 16);
   w->SetBounds(gfx::Rect(0, 0, 500, 500));
   w->Show();
 
-  DefaultFrameHeader frame_header;
-  frame_header.Init(w.get(), w->non_client_view()->frame_view(), &container,
-                    nullptr);
+  DefaultFrameHeader frame_header(w.get(), w->non_client_view()->frame_view(),
+                                  &container, nullptr);
 
   // Check by default light icons are not used.
   frame_header.mode_ = FrameHeader::MODE_ACTIVE;

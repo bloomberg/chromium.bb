@@ -115,6 +115,9 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
   // ends.
   void OnOverviewModeChanged(bool in_overview);
 
+  // Creates the frame header for the browser window.
+  std::unique_ptr<ash::FrameHeader> CreateFrameHeader();
+
   // View which contains the window controls.
   ash::FrameCaptionButtonContainerView* caption_button_container_;
 

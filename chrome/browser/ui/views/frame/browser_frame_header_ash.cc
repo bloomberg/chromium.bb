@@ -311,6 +311,6 @@ gfx::Rect BrowserFrameHeaderAsh::GetPaintedBounds() const {
 
 gfx::Rect BrowserFrameHeaderAsh::GetTitleBounds() const {
   views::View* left_view = window_icon_ ? window_icon_ : back_button_;
-  return ash::FrameHeaderUtil::GetTitleBounds(
+  return ash::FrameHeaderUtil::GetAvailableTitleBounds(
       left_view, caption_button_container_, BrowserFrame::GetTitleFontList());
 }

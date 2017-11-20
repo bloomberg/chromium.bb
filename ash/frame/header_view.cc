@@ -21,7 +21,6 @@ namespace ash {
 HeaderView::HeaderView(views::Widget* target_widget,
                        mojom::WindowStyle window_style)
     : target_widget_(target_widget),
-      frame_header_(std::make_unique<DefaultFrameHeader>(window_style)),
       avatar_icon_(nullptr),
       caption_button_container_(nullptr),
       fullscreen_visible_fraction_(0),
@@ -31,7 +30,8 @@ HeaderView::HeaderView(views::Widget* target_widget,
   caption_button_container_->UpdateSizeButtonVisibility();
   AddChildView(caption_button_container_);
 
-  frame_header_->Init(target_widget_, this, caption_button_container_, nullptr);
+  frame_header_ = std::make_unique<DefaultFrameHeader>(
+      target_widget_, this, caption_button_container_, nullptr, window_style);
 
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
 }

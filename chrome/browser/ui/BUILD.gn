@@ -1302,6 +1302,8 @@ split_static_library("ui") {
       "views/frame/browser_frame_header_ash.h",
       "views/frame/browser_non_client_frame_view_ash.cc",
       "views/frame/browser_non_client_frame_view_ash.h",
+      "views/frame/hosted_app_frame_header_ash.cc",
+      "views/frame/hosted_app_frame_header_ash.h",
       "views/frame/immersive_context_mus.cc",
       "views/frame/immersive_context_mus.h",
       "views/frame/immersive_handler_factory_mus.cc",

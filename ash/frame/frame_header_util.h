@@ -34,12 +34,13 @@ class ASH_EXPORT FrameHeaderUtil {
   // the window.
   static int GetThemeBackgroundXInset();
 
-  // Returns the bounds for the header's title given the views to the left and
-  // right of the title, and the font used.
-  // |left_view| should be NULL if there is no view to the left of the title.
-  static gfx::Rect GetTitleBounds(const views::View* left_view,
-                                  const views::View* right_view,
-                                  const gfx::FontList& title_font_list);
+  // Returns the available bounds for the header's title given the views to the
+  // left and right of the title, and the font used. |left_view| should be null
+  // if there is no view to the left of the title.
+  static gfx::Rect GetAvailableTitleBounds(
+      const views::View* left_view,
+      const views::View* right_view,
+      const gfx::FontList& title_font_list);
 
   // Returns true if the header for |widget| can animate to new visuals when the
   // widget's activation changes. Returns false if the header should switch to
