@@ -116,9 +116,10 @@ bool IOSChromeNetworkDelegate::OnCanGetCookies(
                                                  request.site_for_cookies());
 }
 
-bool IOSChromeNetworkDelegate::OnCanSetCookie(const net::URLRequest& request,
-                                              const std::string& cookie_line,
-                                              net::CookieOptions* options) {
+bool IOSChromeNetworkDelegate::OnCanSetCookie(
+    const net::URLRequest& request,
+    const net::CanonicalCookie& cookie,
+    net::CookieOptions* options) {
   // Null during tests, or when we're running in the system context.
   if (!cookie_settings_)
     return true;

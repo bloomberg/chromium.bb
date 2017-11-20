@@ -85,7 +85,7 @@ bool AwCookieAccessPolicy::OnCanGetCookies(const net::URLRequest& request,
 }
 
 bool AwCookieAccessPolicy::OnCanSetCookie(const net::URLRequest& request,
-                                          const std::string& cookie_line,
+                                          const net::CanonicalCookie& cookie,
                                           net::CookieOptions* options) {
   bool global = GetShouldAcceptCookies();
   bool thirdParty = GetShouldAcceptThirdPartyCookies(request);

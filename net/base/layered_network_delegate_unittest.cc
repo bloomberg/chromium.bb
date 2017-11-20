@@ -121,7 +121,7 @@ class TestNetworkDelegateImpl : public NetworkDelegateImpl {
   }
 
   bool OnCanSetCookie(const URLRequest& request,
-                      const std::string& cookie_line,
+                      const net::CanonicalCookie& cookie,
                       CookieOptions* options) override {
     IncrementAndCompareCounter("on_can_set_cookie_count");
     return false;
@@ -204,7 +204,7 @@ class TestLayeredNetworkDelegate : public LayeredNetworkDelegate {
         NetworkDelegate::AUTH_REQUIRED_RESPONSE_NO_ACTION,
         OnAuthRequired(request.get(), *auth_challenge, AuthCallback(), NULL));
     EXPECT_FALSE(OnCanGetCookies(*request, CookieList()));
-    EXPECT_FALSE(OnCanSetCookie(*request, std::string(), NULL));
+    EXPECT_FALSE(OnCanSetCookie(*request, net::CanonicalCookie(), NULL));
     EXPECT_FALSE(OnCanAccessFile(*request, base::FilePath(), base::FilePath()));
     EXPECT_FALSE(OnCanEnablePrivacyMode(GURL(), GURL()));
     EXPECT_FALSE(OnCancelURLRequestWithPolicyViolatingReferrerHeader(
@@ -304,7 +304,7 @@ class TestLayeredNetworkDelegate : public LayeredNetworkDelegate {
   }
 
   void OnCanSetCookieInternal(const URLRequest& request,
-                              const std::string& cookie_line,
+                              const net::CanonicalCookie& cookie,
                               CookieOptions* options) override {
     ++(*counters_)["on_can_set_cookie_count"];
     EXPECT_EQ(1, (*counters_)["on_can_set_cookie_count"]);

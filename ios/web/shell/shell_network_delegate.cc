@@ -73,7 +73,7 @@ bool ShellNetworkDelegate::OnCanGetCookies(const net::URLRequest& request,
 }
 
 bool ShellNetworkDelegate::OnCanSetCookie(const net::URLRequest& request,
-                                          const std::string& cookie_line,
+                                          const net::CanonicalCookie& cookie,
                                           net::CookieOptions* options) {
   return true;
 }

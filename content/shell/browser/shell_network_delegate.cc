@@ -97,7 +97,7 @@ bool ShellNetworkDelegate::OnCanGetCookies(const net::URLRequest& request,
 }
 
 bool ShellNetworkDelegate::OnCanSetCookie(const net::URLRequest& request,
-                                          const std::string& cookie_line,
+                                          const net::CanonicalCookie& cookie,
                                           net::CookieOptions* options) {
   net::StaticCookiePolicy::Type policy_type = g_block_third_party_cookies ?
       net::StaticCookiePolicy::BLOCK_ALL_THIRD_PARTY_COOKIES :

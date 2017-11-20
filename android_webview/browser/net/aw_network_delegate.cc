@@ -134,10 +134,9 @@ bool AwNetworkDelegate::OnCanGetCookies(const net::URLRequest& request,
 }
 
 bool AwNetworkDelegate::OnCanSetCookie(const net::URLRequest& request,
-                                       const std::string& cookie_line,
+                                       const net::CanonicalCookie& cookie,
                                        net::CookieOptions* options) {
-  return AwCookieAccessPolicy::GetInstance()->OnCanSetCookie(request,
-                                                             cookie_line,
+  return AwCookieAccessPolicy::GetInstance()->OnCanSetCookie(request, cookie,
                                                              options);
 }
 
