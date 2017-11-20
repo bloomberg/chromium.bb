@@ -351,18 +351,6 @@ void ArcVoiceInteractionFrameworkService::SetVoiceInteractionState(
   voice_interaction_controller_client_->NotifyStatusChanged(state);
 }
 
-void ArcVoiceInteractionFrameworkService::OnMetalayerClosed() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  LOG(ERROR) << "Deprecated method called: "
-                "VoiceInteractionFrameworkHost.OnInstanceClosed";
-}
-
-void ArcVoiceInteractionFrameworkService::SetMetalayerEnabled(bool enabled) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  LOG(ERROR) << "Deprecated method called: "
-                "VoiceInteractionFrameworkHost.SetMetalayerEnabled";
-}
-
 void ArcVoiceInteractionFrameworkService::ShowMetalayer() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   NotifyMetalayerStatusChanged(true);

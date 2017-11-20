@@ -65,9 +65,6 @@ class ArcVoiceInteractionFrameworkService
 
   // mojom::VoiceInteractionFrameworkHost overrides.
   void CaptureFullscreen(CaptureFullscreenCallback callback) override;
-  // TODO(kaznacheev) remove usages of this obsolete method from the container.
-  void OnMetalayerClosed() override;
-  void SetMetalayerEnabled(bool enabled) override;
   void SetVoiceInteractionState(
       arc::mojom::VoiceInteractionState state) override;
 
