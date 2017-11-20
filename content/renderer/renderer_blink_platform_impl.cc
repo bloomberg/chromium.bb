@@ -1380,7 +1380,7 @@ RendererBlinkPlatformImpl::CreateTrialTokenValidator() {
 //------------------------------------------------------------------------------
 
 blink::WebNotificationManager*
-RendererBlinkPlatformImpl::GetNotificationManager() {
+RendererBlinkPlatformImpl::GetWebNotificationManager() {
   if (!thread_safe_sender_.get() || !notification_dispatcher_.get())
     return nullptr;
 
