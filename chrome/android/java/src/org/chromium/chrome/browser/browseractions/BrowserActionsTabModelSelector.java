@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.browseractions;
 
 import android.os.AsyncTask;
 
-import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.browseractions.BrowserActionsTabCreatorManager.BrowserActionsTabCreator;
@@ -127,12 +126,11 @@ public class BrowserActionsTabModelSelector
     /**
      * Creates a new Tab with given url in Browser Actions tab model.
      * @param loadUrlParams The url params to be opened.
-     * @param tabCreatedCallback The {@link Callback} to run when tab is created.
      */
-    public void openNewTab(LoadUrlParams loadUrlParams, Callback<Integer> tabCreatedCallback) {
+    public void openNewTab(LoadUrlParams loadUrlParams) {
         // If tab model is restored, directly create a new tab.
         if (isTabStateInitialized()) {
-            createNewTab(loadUrlParams, tabCreatedCallback);
+            createNewTab(loadUrlParams);
             return;
         }
         if (mTabCreationRunnable == null) {
@@ -140,7 +138,7 @@ public class BrowserActionsTabModelSelector
                 @Override
                 public void run() {
                     for (int i = 0; i < mPendingUrls.size(); i++) {
-                        createNewTab(mPendingUrls.get(i), tabCreatedCallback);
+                        createNewTab(mPendingUrls.get(i));
                     }
                     mPendingUrls.clear();
                 }
@@ -158,9 +156,8 @@ public class BrowserActionsTabModelSelector
         mPendingUrls.add(loadUrlParams);
     }
 
-    private void createNewTab(LoadUrlParams params, Callback<Integer> tabCreatedCallback) {
-        Tab tab = openNewTab(params, TabLaunchType.FROM_BROWSER_ACTIONS, null, false);
-        tabCreatedCallback.onResult(tab.getId());
+    private void createNewTab(LoadUrlParams params) {
+        openNewTab(params, TabLaunchType.FROM_BROWSER_ACTIONS, null, false);
     }
 
     @Override
@@ -244,13 +241,5 @@ public class BrowserActionsTabModelSelector
      */
     public void addTabPersistentStoreObserver(TabPersistentStoreObserver observer) {
         mTabSaver.addObserver(observer);
-    }
-
-    /**
-     * Remove a {@link TabPersistentStoreObserver} from {@link TabPersistentStore}.
-     * @param observer The observer to remove.
-     */
-    public void removeTabPersistentStoreObserver(TabPersistentStoreObserver observer) {
-        mTabSaver.removeObserver(observer);
     }
 }
