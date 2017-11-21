@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/arc/arc_migration_constants.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/grit/generated_resources.h"
@@ -25,7 +26,6 @@
 #include "ui/chromeos/devicetype_utils.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_delegate.h"
 #include "ui/message_center/public/cpp/message_center_switches.h"
@@ -54,33 +54,35 @@ class ArcMigrationGuideNotificationDelegate
   DISALLOW_COPY_AND_ASSIGN(ArcMigrationGuideNotificationDelegate);
 };
 
-void DoShowArcMigrationSuccessNotification(
-    const message_center::NotifierId& notifier_id) {
+void DoShowArcMigrationSuccessNotification(Profile* profile) {
+  message_center::NotifierId notifier_id(
+      message_center::NotifierId::SYSTEM_COMPONENT, kNotifierId);
+  notifier_id.profile_id =
+      multi_user_util::GetAccountIdFromProfile(profile).GetUserEmail();
+
+  std::unique_ptr<message_center::Notification> notification;
   if (message_center::IsNewStyleNotificationEnabled()) {
-    message_center::MessageCenter::Get()->AddNotification(
-        message_center::Notification::CreateSystemNotification(
-            message_center::NOTIFICATION_TYPE_SIMPLE, kSuccessNotificationId,
-            l10n_util::GetStringUTF16(IDS_ARC_MIGRATE_ENCRYPTION_SUCCESS_TITLE),
-            l10n_util::GetStringUTF16(
-                IDS_ARC_MIGRATE_ENCRYPTION_SUCCESS_MESSAGE),
-            gfx::Image(), base::string16(), GURL(), notifier_id,
-            message_center::RichNotificationData(),
-            new message_center::NotificationDelegate(),
-            ash::kNotificationSettingsIcon,
-            message_center::SystemNotificationWarningLevel::NORMAL));
+    notification = message_center::Notification::CreateSystemNotification(
+        message_center::NOTIFICATION_TYPE_SIMPLE, kSuccessNotificationId,
+        l10n_util::GetStringUTF16(IDS_ARC_MIGRATE_ENCRYPTION_SUCCESS_TITLE),
+        l10n_util::GetStringUTF16(IDS_ARC_MIGRATE_ENCRYPTION_SUCCESS_MESSAGE),
+        gfx::Image(), base::string16(), GURL(), notifier_id,
+        message_center::RichNotificationData(), nullptr,
+        ash::kNotificationSettingsIcon,
+        message_center::SystemNotificationWarningLevel::NORMAL);
   } else {
-    message_center::MessageCenter::Get()->AddNotification(
-        std::make_unique<message_center::Notification>(
-            message_center::NOTIFICATION_TYPE_SIMPLE, kSuccessNotificationId,
-            l10n_util::GetStringUTF16(IDS_ARC_MIGRATE_ENCRYPTION_SUCCESS_TITLE),
-            l10n_util::GetStringUTF16(
-                IDS_ARC_MIGRATE_ENCRYPTION_SUCCESS_MESSAGE),
-            gfx::Image(gfx::CreateVectorIcon(
-                kArcMigrateEncryptionNotificationIcon, gfx::kPlaceholderColor)),
-            base::string16(), GURL(), notifier_id,
-            message_center::RichNotificationData(),
-            new message_center::NotificationDelegate()));
+    notification = std::make_unique<message_center::Notification>(
+        message_center::NOTIFICATION_TYPE_SIMPLE, kSuccessNotificationId,
+        l10n_util::GetStringUTF16(IDS_ARC_MIGRATE_ENCRYPTION_SUCCESS_TITLE),
+        l10n_util::GetStringUTF16(IDS_ARC_MIGRATE_ENCRYPTION_SUCCESS_MESSAGE),
+        gfx::Image(gfx::CreateVectorIcon(kArcMigrateEncryptionNotificationIcon,
+                                         gfx::kPlaceholderColor)),
+        base::string16(), GURL(), notifier_id,
+        message_center::RichNotificationData(), nullptr);
   }
+
+  NotificationDisplayService::GetForProfile(profile)->Display(
+      NotificationCommon::TRANSIENT, *notification);
 }
 
 }  // namespace
@@ -89,8 +91,8 @@ void DoShowArcMigrationSuccessNotification(
 void ShowArcMigrationGuideNotification(Profile* profile) {
   // Always remove the notification to make sure the notification appears
   // as a popup in any situation.
-  message_center::MessageCenter::Get()->RemoveNotification(
-      kSuggestNotificationId, false /* by_user */);
+  NotificationDisplayService::GetForProfile(profile)->Close(
+      NotificationCommon::TRANSIENT, kSuggestNotificationId);
 
   message_center::NotifierId notifier_id(
       message_center::NotifierId::SYSTEM_COMPONENT, kNotifierId);
@@ -109,32 +111,34 @@ void ShowArcMigrationGuideNotification(Profile* profile) {
           : l10n_util::GetStringUTF16(
                 IDS_ARC_MIGRATE_ENCRYPTION_NOTIFICATION_MESSAGE);
 
+  std::unique_ptr<message_center::Notification> notification;
   if (message_center::IsNewStyleNotificationEnabled()) {
-    message_center::MessageCenter::Get()->AddNotification(
-        message_center::Notification::CreateSystemNotification(
-            message_center::NOTIFICATION_TYPE_SIMPLE, kSuggestNotificationId,
-            l10n_util::GetStringUTF16(
-                IDS_ARC_MIGRATE_ENCRYPTION_NOTIFICATION_TITLE),
-            message, gfx::Image(), base::string16(), GURL(), notifier_id,
-            message_center::RichNotificationData(),
-            new ArcMigrationGuideNotificationDelegate(),
-            ash::kNotificationSettingsIcon,
-            message_center::SystemNotificationWarningLevel::NORMAL));
+    notification = message_center::Notification::CreateSystemNotification(
+        message_center::NOTIFICATION_TYPE_SIMPLE, kSuggestNotificationId,
+        l10n_util::GetStringUTF16(
+            IDS_ARC_MIGRATE_ENCRYPTION_NOTIFICATION_TITLE),
+        message, gfx::Image(), base::string16(), GURL(), notifier_id,
+        message_center::RichNotificationData(),
+        new ArcMigrationGuideNotificationDelegate(),
+        ash::kNotificationSettingsIcon,
+        message_center::SystemNotificationWarningLevel::NORMAL);
   } else {
     message_center::RichNotificationData data;
     data.buttons.push_back(message_center::ButtonInfo(l10n_util::GetStringUTF16(
         IDS_ARC_MIGRATE_ENCRYPTION_NOTIFICATION_RESTART_BUTTON)));
-    message_center::MessageCenter::Get()->AddNotification(
-        std::make_unique<message_center::Notification>(
-            message_center::NOTIFICATION_TYPE_SIMPLE, kSuggestNotificationId,
-            l10n_util::GetStringUTF16(
-                IDS_ARC_MIGRATE_ENCRYPTION_NOTIFICATION_TITLE),
-            message,
-            gfx::Image(gfx::CreateVectorIcon(
-                kArcMigrateEncryptionNotificationIcon, gfx::kPlaceholderColor)),
-            base::string16(), GURL(), notifier_id, data,
-            new ArcMigrationGuideNotificationDelegate()));
+    notification = std::make_unique<message_center::Notification>(
+        message_center::NOTIFICATION_TYPE_SIMPLE, kSuggestNotificationId,
+        l10n_util::GetStringUTF16(
+            IDS_ARC_MIGRATE_ENCRYPTION_NOTIFICATION_TITLE),
+        message,
+        gfx::Image(gfx::CreateVectorIcon(kArcMigrateEncryptionNotificationIcon,
+                                         gfx::kPlaceholderColor)),
+        base::string16(), GURL(), notifier_id, data,
+        new ArcMigrationGuideNotificationDelegate());
   }
+
+  NotificationDisplayService::GetForProfile(profile)->Display(
+      NotificationCommon::TRANSIENT, *notification);
 }
 
 void ShowArcMigrationSuccessNotificationIfNeeded(Profile* profile) {
@@ -161,15 +165,11 @@ void ShowArcMigrationSuccessNotificationIfNeeded(Profile* profile) {
     // except for some exceptional situation or due to some bug.
     LOG(WARNING) << "Migration has happened for an ARC-disallowed user.";
   } else {
-    message_center::NotifierId notifier_id(
-        message_center::NotifierId::SYSTEM_COMPONENT, kNotifierId);
-    notifier_id.profile_id = account_id.GetUserEmail();
-
     // Delay the notification to make sure that it is not hidden behind windows
     // which are shown at the beginning of user session (e.g. Chrome).
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::BindOnce(&DoShowArcMigrationSuccessNotification, notifier_id),
+        base::BindOnce(&DoShowArcMigrationSuccessNotification, profile),
         kSuccessNotificationDelay);
   }
 
