@@ -5,25 +5,7 @@
 #include "services/video_capture/receiver_mojo_to_media_adapter.h"
 
 #include "mojo/public/cpp/bindings/strong_binding.h"
-
-namespace {
-
-class ScopedAccessPermissionMediaToMojoAdapter
-    : public video_capture::mojom::ScopedAccessPermission {
- public:
-  ScopedAccessPermissionMediaToMojoAdapter(
-      std::unique_ptr<
-          media::VideoCaptureDevice::Client::Buffer::ScopedAccessPermission>
-          access_permission)
-      : access_permission_(std::move(access_permission)) {}
-
- private:
-  std::unique_ptr<
-      media::VideoCaptureDevice::Client::Buffer::ScopedAccessPermission>
-      access_permission_;
-};
-
-}  // anonymous namespace
+#include "services/video_capture/scoped_access_permission_media_to_mojo_adapter.h"
 
 namespace video_capture {
 

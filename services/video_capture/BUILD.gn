@@ -35,10 +35,16 @@ source_set("lib") {
     "device_media_to_mojo_adapter.h",
     "receiver_mojo_to_media_adapter.cc",
     "receiver_mojo_to_media_adapter.h",
+    "scoped_access_permission_media_to_mojo_adapter.cc",
+    "scoped_access_permission_media_to_mojo_adapter.h",
     "service_impl.cc",
     "service_impl.h",
     "testing_controls_impl.cc",
     "testing_controls_impl.h",
+    "virtual_device_enabled_device_factory.cc",
+    "virtual_device_enabled_device_factory.h",
+    "virtual_device_mojo_adapter.cc",
+    "virtual_device_mojo_adapter.h",
   ]
 
   public_deps = [
@@ -75,8 +81,11 @@ source_set("tests") {
     "test/mock_device_test.cc",
     "test/mock_device_test.h",
     "test/mock_device_unittest.cc",
+    "test/mock_producer.cc",
+    "test/mock_producer.h",
     "test/mock_receiver.cc",
     "test/mock_receiver.h",
+    "test/virtual_device_unittest.cc",
   ]
 
   deps = [

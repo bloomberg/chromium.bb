@@ -16,6 +16,7 @@
 #include "build/build_config.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"
+#include "media/capture/video/scoped_buffer_pool_reservation.h"
 #include "media/capture/video/video_capture_buffer_handle.h"
 #include "media/capture/video/video_capture_buffer_pool.h"
 #include "media/capture/video/video_capture_jpeg_decoder.h"
@@ -36,39 +37,6 @@ bool IsFormatSupported(media::VideoPixelFormat pixel_format) {
 }
 
 namespace media {
-
-template <typename ReleaseTraits>
-class ScopedBufferPoolReservation
-    : public VideoCaptureDevice::Client::Buffer::ScopedAccessPermission {
- public:
-  ScopedBufferPoolReservation(scoped_refptr<VideoCaptureBufferPool> buffer_pool,
-                              int buffer_id)
-      : buffer_pool_(std::move(buffer_pool)), buffer_id_(buffer_id) {}
-
-  ~ScopedBufferPoolReservation() override {
-    ReleaseTraits::Release(buffer_pool_, buffer_id_);
-  }
-
- private:
-  const scoped_refptr<VideoCaptureBufferPool> buffer_pool_;
-  const int buffer_id_;
-};
-
-class ProducerReleaseTraits {
- public:
-  static void Release(const scoped_refptr<VideoCaptureBufferPool>& buffer_pool,
-                      int buffer_id) {
-    buffer_pool->RelinquishProducerReservation(buffer_id);
-  }
-};
-
-class ConsumerReleaseTraits {
- public:
-  static void Release(const scoped_refptr<VideoCaptureBufferPool>& buffer_pool,
-                      int buffer_id) {
-    buffer_pool->RelinquishConsumerHold(buffer_id, 1);
-  }
-};
 
 class BufferPoolBufferHandleProvider
     : public VideoCaptureDevice::Client::Buffer::HandleProvider {

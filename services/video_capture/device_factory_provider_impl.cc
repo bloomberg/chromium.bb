@@ -11,6 +11,7 @@
 #include "media/capture/video/video_capture_jpeg_decoder.h"
 #include "media/capture/video/video_capture_system_impl.h"
 #include "services/video_capture/device_factory_media_to_mojo_adapter.h"
+#include "services/video_capture/virtual_device_enabled_device_factory.h"
 
 namespace {
 
@@ -59,9 +60,11 @@ void DeviceFactoryProviderImpl::LazyInitializeDeviceFactory() {
   auto video_capture_system = std::make_unique<media::VideoCaptureSystemImpl>(
       std::move(media_device_factory));
 
-  device_factory_ = std::make_unique<DeviceFactoryMediaToMojoAdapter>(
-      service_ref_->Clone(), std::move(video_capture_system),
-      base::Bind(CreateJpegDecoder));
+  device_factory_ = std::make_unique<VirtualDeviceEnabledDeviceFactory>(
+      service_ref_->Clone(),
+      std::make_unique<DeviceFactoryMediaToMojoAdapter>(
+          service_ref_->Clone(), std::move(video_capture_system),
+          base::Bind(CreateJpegDecoder)));
 }
 
 }  // namespace video_capture
