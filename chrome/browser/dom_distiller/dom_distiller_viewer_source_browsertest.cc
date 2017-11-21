@@ -379,7 +379,7 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
   bool result;
   // Execute in isolated world; where all distiller scripts are run.
   EXPECT_TRUE(content::ExecuteScriptInIsolatedWorldAndExtractBool(
-      contents, chrome::ISOLATED_WORLD_ID_CHROME_INTERNAL, kTestDistillerObject,
+      contents, ISOLATED_WORLD_ID_CHROME_INTERNAL, kTestDistillerObject,
       &result));
   EXPECT_TRUE(result);
 }

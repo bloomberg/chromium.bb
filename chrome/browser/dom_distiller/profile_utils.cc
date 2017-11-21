@@ -44,7 +44,7 @@ void RegisterViewerSource(Profile* profile) {
 
   // Set the JavaScript world ID.
   if (!DistillerJavaScriptWorldIdIsSet()) {
-    SetDistillerJavaScriptWorldId(chrome::ISOLATED_WORLD_ID_CHROME_INTERNAL);
+    SetDistillerJavaScriptWorldId(ISOLATED_WORLD_ID_CHROME_INTERNAL);
   }
 
   content::URLDataSource::Add(

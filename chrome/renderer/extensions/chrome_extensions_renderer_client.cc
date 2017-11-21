@@ -128,7 +128,7 @@ bool ChromeExtensionsRendererClient::IsIncognitoProcess() const {
 }
 
 int ChromeExtensionsRendererClient::GetLowestIsolatedWorldId() const {
-  return chrome::ISOLATED_WORLD_ID_EXTENSIONS;
+  return ISOLATED_WORLD_ID_EXTENSIONS;
 }
 
 extensions::Dispatcher* ChromeExtensionsRendererClient::GetDispatcher() {

@@ -317,8 +317,8 @@ void ResumeAppleEventAndSendReply(NSAppleEventManagerSuspensionID suspension_id,
 
   base::string16 script = base::SysNSStringToUTF16(
       [[command evaluatedArguments] objectForKey:@"javascript"]);
-  frame->ExecuteJavaScriptInIsolatedWorld(
-      script, callback, chrome::ISOLATED_WORLD_ID_APPLESCRIPT);
+  frame->ExecuteJavaScriptInIsolatedWorld(script, callback,
+                                          ISOLATED_WORLD_ID_APPLESCRIPT);
 
   return nil;
 }

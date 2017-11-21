@@ -589,7 +589,7 @@ void ChromeContentRendererClient::RenderFrameCreated(
 
   // Set up a mojo service to test if this page is a distiller page.
   new dom_distiller::DistillerJsRenderFrameObserver(
-      render_frame, chrome::ISOLATED_WORLD_ID_CHROME_INTERNAL, registry);
+      render_frame, ISOLATED_WORLD_ID_CHROME_INTERNAL, registry);
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kEnableDistillabilityService)) {
