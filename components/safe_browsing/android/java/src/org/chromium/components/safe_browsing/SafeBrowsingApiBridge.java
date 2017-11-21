@@ -9,6 +9,8 @@ import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 
+import java.lang.reflect.InvocationTargetException;
+
 /**
  * Helper for calling GMSCore Safe Browsing API from native code.
  */
@@ -39,8 +41,9 @@ public final class SafeBrowsingApiBridge {
     private static SafeBrowsingApiHandler create() {
         SafeBrowsingApiHandler handler;
         try {
-            handler = sHandler.newInstance();
-        } catch (NullPointerException | InstantiationException | IllegalAccessException e) {
+            handler = sHandler.getDeclaredConstructor().newInstance();
+        } catch (NullPointerException | InstantiationException | IllegalAccessException
+                | NoSuchMethodException | InvocationTargetException e) {
             Log.e(TAG, "Failed to init handler: " + e.getMessage());
             return null;
         }
