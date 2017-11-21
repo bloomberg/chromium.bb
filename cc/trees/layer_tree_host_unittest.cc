@@ -8131,6 +8131,17 @@ class LayerTreeHostTestImageAnimation : public LayerTreeHostTest {
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestImageAnimation);
 
+class LayerTreeHostTestImageAnimationSynchronousScheduling
+    : public LayerTreeHostTestImageAnimation {
+ public:
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    LayerTreeHostTestImageAnimation::InitializeSettings(settings);
+    settings->using_synchronous_renderer_compositor = true;
+  }
+};
+
+MULTI_THREAD_TEST_F(LayerTreeHostTestImageAnimationSynchronousScheduling);
+
 class LayerTreeHostTestImageDecodingHints : public LayerTreeHostTest {
  public:
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
