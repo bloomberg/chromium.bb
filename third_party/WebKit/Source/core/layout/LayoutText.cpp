@@ -1962,8 +1962,7 @@ Optional<unsigned> LayoutText::CaretOffsetForPosition(
 }
 
 int LayoutText::CaretMinOffset() const {
-  // TODO(crbug.com/781698): Add the following DCHECK.
-  // DCHECK(!GetDocument().NeedsLayoutTreeUpdate());
+  DCHECK(!GetDocument().NeedsLayoutTreeUpdate());
 
   if (auto* mapping = GetNGOffsetMapping()) {
     const Position first_position = PositionForCaretOffset(0);
@@ -1987,8 +1986,7 @@ int LayoutText::CaretMinOffset() const {
 }
 
 int LayoutText::CaretMaxOffset() const {
-  // TODO(crbug.com/781698): Add the following DCHECK.
-  // DCHECK(!GetDocument().NeedsLayoutTreeUpdate());
+  DCHECK(!GetDocument().NeedsLayoutTreeUpdate());
 
   if (auto* mapping = GetNGOffsetMapping()) {
     const Position last_position = PositionForCaretOffset(TextLength());
