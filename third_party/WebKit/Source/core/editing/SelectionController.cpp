@@ -854,6 +854,9 @@ void SelectionController::SetNonDirectionalSelectionIfNeeded(
     original_base_in_flat_tree_ = PositionInFlatTreeWithAffinity();
   }
 
+  builder.SetIsDirectional(
+      frame_->GetEditor().Behavior().ShouldConsiderSelectionAsDirectional() ||
+      new_selection.IsDirectional());
   const SelectionInFlatTree& selection_in_flat_tree = builder.Build();
   const bool should_show_handle =
       handle_visibility == HandleVisibility::kVisible;
