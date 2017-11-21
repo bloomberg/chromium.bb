@@ -1914,29 +1914,27 @@ void PrintRenderFrameHelper::PrintPageInternal(
     gfx::Size* page_size_in_dpi,
     gfx::Rect* content_area_in_dpi,
     gfx::Rect* printable_area_in_dpi) {
-  PageSizeMargins page_layout_in_points;
-
-  double css_scale_factor = 1.0f;
-  if (params.scale_factor >= kEpsilon)
-    css_scale_factor = params.scale_factor;
+  double css_scale_factor =
+      params.scale_factor >= kEpsilon ? params.scale_factor : 1.0f;
 
   // Save the original page size here to avoid rounding errors incurred by
   // converting to pixels and back and by scaling the page for reflow and
   // scaling back. Windows uses |page_size_in_dpi| for the actual page size
   // so requires an accurate value.
   gfx::Size original_page_size = params.page_size;
+  PageSizeMargins page_layout_in_points;
   ComputePageLayoutInPointsForCss(frame, page_number, params,
                                   ignore_css_margins_, &css_scale_factor,
                                   &page_layout_in_points);
+
   gfx::Size page_size;
   gfx::Rect content_area;
   GetPageSizeAndContentAreaFromPageLayout(page_layout_in_points, &page_size,
                                           &content_area);
 
   // Calculate the actual page size and content area in dpi.
-  if (page_size_in_dpi) {
+  if (page_size_in_dpi)
     *page_size_in_dpi = original_page_size;
-  }
 
   if (content_area_in_dpi) {
     // Output PDF matches paper size and should be printer edge to edge.
@@ -1984,8 +1982,8 @@ void PrintRenderFrameHelper::PrintPageInternal(
   DCHECK_GT(webkit_scale_factor, 0.0f);
 
   // Done printing. Close the canvas to retrieve the compiled metafile.
-  if (!metafile->FinishPage())
-    NOTREACHED() << "metafile failed";
+  bool ret = metafile->FinishPage();
+  DCHECK(ret);
 }
 #endif  // !defined(OS_MACOSX)
 

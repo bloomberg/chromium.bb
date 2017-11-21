@@ -34,8 +34,9 @@ bool PrintRenderFrameHelper::PrintPagesNative(blink::WebLocalFrame* frame,
   std::vector<gfx::Size> page_size_in_dpi(printed_pages.size());
   std::vector<gfx::Rect> content_area_in_dpi(printed_pages.size());
   for (size_t i = 0; i < printed_pages.size(); ++i) {
-    RenderPage(print_params, printed_pages[i], page_count, frame, &metafile,
-               &page_size_in_dpi[i], &content_area_in_dpi[i]);
+    PrintPageInternal(print_params, printed_pages[i], page_count, frame,
+                      &metafile, &page_size_in_dpi[i], &content_area_in_dpi[i],
+                      nullptr);
   }
 
   // blink::printEnd() for PDF should be called before metafile is closed.
@@ -84,11 +85,10 @@ bool PrintRenderFrameHelper::RenderPreviewPage(
   }
 
   base::TimeTicks begin_time = base::TimeTicks::Now();
-  gfx::Size page_size;
-  RenderPage(print_params, page_number,
-             print_preview_context_.total_page_count(),
-             print_preview_context_.prepared_frame(), initial_render_metafile,
-             &page_size, nullptr);
+  PrintPageInternal(print_params, page_number,
+                    print_preview_context_.total_page_count(),
+                    print_preview_context_.prepared_frame(),
+                    initial_render_metafile, nullptr, nullptr, nullptr);
   print_preview_context_.RenderedPreviewPage(base::TimeTicks::Now() -
                                              begin_time);
 
@@ -107,48 +107,56 @@ bool PrintRenderFrameHelper::RenderPreviewPage(
 }
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
-void PrintRenderFrameHelper::RenderPage(const PrintMsg_Print_Params& params,
-                                        int page_number,
-                                        int page_count,
-                                        blink::WebLocalFrame* frame,
-                                        PdfMetafileSkia* metafile,
-                                        gfx::Size* page_size,
-                                        gfx::Rect* content_rect) {
-  double scale_factor =
+void PrintRenderFrameHelper::PrintPageInternal(
+    const PrintMsg_Print_Params& params,
+    int page_number,
+    int page_count,
+    blink::WebLocalFrame* frame,
+    PdfMetafileSkia* metafile,
+    gfx::Size* page_size_in_dpi,
+    gfx::Rect* content_rect_in_dpi,
+    gfx::Rect* /* printable_area_in_dpi */) {
+  double css_scale_factor =
       params.scale_factor >= kEpsilon ? params.scale_factor : 1.0f;
-  double webkit_shrink_factor = frame->GetPrintPageShrink(page_number);
+
   PageSizeMargins page_layout_in_points;
-  gfx::Rect content_area;
-
   ComputePageLayoutInPointsForCss(frame, page_number, params,
-                                  ignore_css_margins_, &scale_factor,
+                                  ignore_css_margins_, &css_scale_factor,
                                   &page_layout_in_points);
-  GetPageSizeAndContentAreaFromPageLayout(page_layout_in_points, page_size,
-                                          &content_area);
-  if (content_rect)
-    *content_rect = content_area;
 
-  scale_factor *= webkit_shrink_factor;
+  gfx::Size page_size;
+  gfx::Rect content_area;
+  GetPageSizeAndContentAreaFromPageLayout(page_layout_in_points, &page_size,
+                                          &content_area);
+
+  if (page_size_in_dpi)
+    *page_size_in_dpi = page_size;
+
+  if (content_rect_in_dpi)
+    *content_rect_in_dpi = content_area;
 
   gfx::Rect canvas_area =
-      params.display_header_footer ? gfx::Rect(*page_size) : content_area;
+      params.display_header_footer ? gfx::Rect(page_size) : content_area;
 
-  {
-    cc::PaintCanvas* canvas = metafile->GetVectorCanvasForNewPage(
-        *page_size, canvas_area, scale_factor);
-    if (!canvas)
-      return;
+  double webkit_page_shrink_factor = frame->GetPrintPageShrink(page_number);
+  float scale_factor = css_scale_factor * webkit_page_shrink_factor;
 
-    MetafileSkiaWrapper::SetMetafileOnCanvas(canvas, metafile);
-    if (params.display_header_footer) {
-      PrintHeaderAndFooter(canvas, page_number + 1, page_count, *frame,
-                           scale_factor, page_layout_in_points, params);
-    }
-    RenderPageContent(frame, page_number, canvas_area, content_area,
-                      scale_factor, canvas);
+  cc::PaintCanvas* canvas =
+      metafile->GetVectorCanvasForNewPage(page_size, canvas_area, scale_factor);
+  if (!canvas)
+    return;
+
+  MetafileSkiaWrapper::SetMetafileOnCanvas(canvas, metafile);
+  if (params.display_header_footer) {
+    PrintHeaderAndFooter(canvas, page_number + 1, page_count, *frame,
+                         scale_factor, page_layout_in_points, params);
   }
+  RenderPageContent(frame, page_number, canvas_area, content_area, scale_factor,
+                    canvas);
 
-  metafile->FinishPage();
+  // Done printing. Close the canvas to retrieve the compiled metafile.
+  bool ret = metafile->FinishPage();
+  DCHECK(ret);
 }
 
 }  // namespace printing
