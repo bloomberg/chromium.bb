@@ -2489,7 +2489,7 @@ TEST_P(ResourceProviderTest, TextureHint) {
   }
 }
 
-TEST_P(ResourceProviderTest, TextureMailbox_SharedMemory) {
+TEST_P(ResourceProviderTest, ImportedResource_SharedMemory) {
   if (GetParam() != viz::ResourceType::kBitmap)
     return;
 
@@ -2557,7 +2557,7 @@ TEST_P(ResourceProviderTest, TextureMailbox_SharedMemory) {
   EXPECT_FALSE(lost_resource);
 }
 
-class ResourceProviderTestTextureMailboxGLFilters
+class ResourceProviderTestImportedResourceGLFilters
     : public ResourceProviderTest {
  public:
   static void RunTest(
@@ -2689,55 +2689,47 @@ class ResourceProviderTestTextureMailboxGLFilters
   }
 };
 
-TEST_P(ResourceProviderTest, TextureMailbox_GLTexture2D_LinearToLinear) {
+TEST_P(ResourceProviderTest, ImportedResource_GLTexture2D_LinearToLinear) {
   // Mailboxing is only supported for GL textures.
   if (GetParam() != viz::ResourceType::kTexture)
     return;
 
-  ResourceProviderTestTextureMailboxGLFilters::RunTest(
-      shared_bitmap_manager_.get(),
-      gpu_memory_buffer_manager_.get(),
-      false,
+  ResourceProviderTestImportedResourceGLFilters::RunTest(
+      shared_bitmap_manager_.get(), gpu_memory_buffer_manager_.get(), false,
       GL_LINEAR);
 }
 
-TEST_P(ResourceProviderTest, TextureMailbox_GLTexture2D_NearestToNearest) {
+TEST_P(ResourceProviderTest, ImportedResource_GLTexture2D_NearestToNearest) {
   // Mailboxing is only supported for GL textures.
   if (GetParam() != viz::ResourceType::kTexture)
     return;
 
-  ResourceProviderTestTextureMailboxGLFilters::RunTest(
-      shared_bitmap_manager_.get(),
-      gpu_memory_buffer_manager_.get(),
-      true,
+  ResourceProviderTestImportedResourceGLFilters::RunTest(
+      shared_bitmap_manager_.get(), gpu_memory_buffer_manager_.get(), true,
       GL_NEAREST);
 }
 
-TEST_P(ResourceProviderTest, TextureMailbox_GLTexture2D_NearestToLinear) {
+TEST_P(ResourceProviderTest, ImportedResource_GLTexture2D_NearestToLinear) {
   // Mailboxing is only supported for GL textures.
   if (GetParam() != viz::ResourceType::kTexture)
     return;
 
-  ResourceProviderTestTextureMailboxGLFilters::RunTest(
-      shared_bitmap_manager_.get(),
-      gpu_memory_buffer_manager_.get(),
-      true,
+  ResourceProviderTestImportedResourceGLFilters::RunTest(
+      shared_bitmap_manager_.get(), gpu_memory_buffer_manager_.get(), true,
       GL_LINEAR);
 }
 
-TEST_P(ResourceProviderTest, TextureMailbox_GLTexture2D_LinearToNearest) {
+TEST_P(ResourceProviderTest, ImportedResource_GLTexture2D_LinearToNearest) {
   // Mailboxing is only supported for GL textures.
   if (GetParam() != viz::ResourceType::kTexture)
     return;
 
-  ResourceProviderTestTextureMailboxGLFilters::RunTest(
-      shared_bitmap_manager_.get(),
-      gpu_memory_buffer_manager_.get(),
-      false,
+  ResourceProviderTestImportedResourceGLFilters::RunTest(
+      shared_bitmap_manager_.get(), gpu_memory_buffer_manager_.get(), false,
       GL_NEAREST);
 }
 
-TEST_P(ResourceProviderTest, TextureMailbox_GLTextureExternalOES) {
+TEST_P(ResourceProviderTest, ImportedResource_GLTextureExternalOES) {
   // Mailboxing is only supported for GL textures.
   if (GetParam() != viz::ResourceType::kTexture)
     return;
@@ -2947,7 +2939,8 @@ TEST_P(ResourceProviderTest, WaitSyncTokenIfNeeded_WithSyncToken) {
   }
 }
 
-TEST_P(ResourceProviderTest, TextureMailbox_WaitSyncTokenIfNeeded_NoSyncToken) {
+TEST_P(ResourceProviderTest,
+       ImportedResource_WaitSyncTokenIfNeeded_NoSyncToken) {
   // Mailboxing is only supported for GL textures.
   if (GetParam() != viz::ResourceType::kTexture)
     return;
@@ -2985,7 +2978,7 @@ TEST_P(ResourceProviderTest, TextureMailbox_WaitSyncTokenIfNeeded_NoSyncToken) {
   }
 }
 
-TEST_P(ResourceProviderTest, TextureMailbox_PrepareSendToParent_NoSyncToken) {
+TEST_P(ResourceProviderTest, ImportedResource_PrepareSendToParent_NoSyncToken) {
   // Mailboxing is only supported for GL textures.
   if (GetParam() != viz::ResourceType::kTexture)
     return;
