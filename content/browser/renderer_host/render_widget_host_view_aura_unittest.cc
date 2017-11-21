@@ -1910,6 +1910,7 @@ TEST_F(RenderWidgetHostViewAuraWheelScrollLatchingEnabledTest,
   const WebGestureEvent* gesture_event = static_cast<const WebGestureEvent*>(
       events[0]->ToEvent()->Event()->web_event.get());
   EXPECT_EQ(WebInputEvent::kGestureScrollBegin, gesture_event->GetType());
+  EXPECT_TRUE(gesture_event->data.scroll_begin.synthetic);
   events[0]->ToEvent()->CallCallback(INPUT_EVENT_ACK_STATE_CONSUMED);
 
   gesture_event = static_cast<const WebGestureEvent*>(
@@ -1964,6 +1965,7 @@ TEST_F(RenderWidgetHostViewAuraWheelScrollLatchingEnabledTest,
   gesture_event = static_cast<const WebGestureEvent*>(
       events[1]->ToEvent()->Event()->web_event.get());
   EXPECT_EQ(WebInputEvent::kGestureScrollEnd, gesture_event->GetType());
+  EXPECT_TRUE(gesture_event->data.scroll_end.synthetic);
 }
 
 // Tests that a gesture fling start with touchpad source resets wheel phase
