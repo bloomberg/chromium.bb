@@ -106,7 +106,6 @@ source_set("tabs_internal") {
     "//ios/chrome/browser/search_engines",
     "//ios/chrome/browser/sessions",
     "//ios/chrome/browser/sessions:serialisation",
-    "//ios/chrome/browser/signin:signin_internal",
     "//ios/chrome/browser/snapshots",
     "//ios/chrome/browser/snapshots:snapshots_internal",
     "//ios/chrome/browser/ssl",

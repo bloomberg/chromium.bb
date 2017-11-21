@@ -60,7 +60,6 @@
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/sessions/ios_chrome_session_tab_helper.h"
-#include "ios/chrome/browser/signin/signin_capability.h"
 #import "ios/chrome/browser/snapshots/snapshot_manager.h"
 #import "ios/chrome/browser/snapshots/snapshot_overlay_provider.h"
 #import "ios/chrome/browser/snapshots/web_controller_snapshot_helper.h"
