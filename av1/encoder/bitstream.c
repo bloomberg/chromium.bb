@@ -1769,6 +1769,49 @@ static void write_mbmi_b(AV1_COMP *cpi, const TileInfo *const tile,
   }
 }
 
+static void write_inter_txb_coeff(AV1_COMMON *const cm, MACROBLOCK *const x,
+                                  MB_MODE_INFO *const mbmi, aom_writer *w,
+                                  const TOKENEXTRA **tok,
+                                  const TOKENEXTRA *const tok_end,
+                                  TOKEN_STATS *token_stats, const int row,
+                                  const int col, int *block, const int plane) {
+  MACROBLOCKD *const xd = &x->e_mbd;
+  const struct macroblockd_plane *const pd = &xd->plane[plane];
+
+  const BLOCK_SIZE plane_bsize =
+      AOMMAX(BLOCK_4X4, get_plane_block_size(mbmi->sb_type, pd));
+
+  const TX_SIZE max_tx_size = get_vartx_max_txsize(
+      mbmi, plane_bsize, pd->subsampling_x || pd->subsampling_y);
+  const int step =
+      tx_size_wide_unit[max_tx_size] * tx_size_high_unit[max_tx_size];
+  const int bkw = tx_size_wide_unit[max_tx_size];
+  const int bkh = tx_size_high_unit[max_tx_size];
+
+  const BLOCK_SIZE max_unit_bsize = get_plane_block_size(BLOCK_64X64, pd);
+  int mu_blocks_wide = block_size_wide[max_unit_bsize] >> tx_size_wide_log2[0];
+  int mu_blocks_high = block_size_high[max_unit_bsize] >> tx_size_high_log2[0];
+
+  int blk_row, blk_col;
+
+  const int num_4x4_w = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
+  const int num_4x4_h = block_size_high[plane_bsize] >> tx_size_wide_log2[0];
+
+  const int unit_height = AOMMIN(mu_blocks_high + row, num_4x4_h);
+  const int unit_width = AOMMIN(mu_blocks_wide + col, num_4x4_w);
+  for (blk_row = row; blk_row < unit_height; blk_row += bkh) {
+    for (blk_col = col; blk_col < unit_width; blk_col += bkw) {
+      pack_txb_tokens(w,
+#if CONFIG_LV_MAP
+                      cm, x,
+#endif
+                      tok, tok_end, xd, mbmi, plane, plane_bsize, cm->bit_depth,
+                      *block, blk_row, blk_col, max_tx_size, token_stats);
+      *block += step;
+    }
+  }
+}
+
 static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
                            aom_writer *w, const TOKENEXTRA **tok,
                            const TOKENEXTRA *const tok_end, int mi_row,
@@ -1780,8 +1823,8 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
   MB_MODE_INFO *const mbmi = &m->mbmi;
   int plane;
   int bh, bw;
-#if CONFIG_LV_MAP
   MACROBLOCK *const x = &cpi->td.mb;
+#if CONFIG_LV_MAP
   (void)tok;
   (void)tok_end;
 #endif
@@ -1859,32 +1902,11 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
       mu_blocks_high = AOMMIN(num_4x4_h, mu_blocks_high);
 
       if (is_inter_block(mbmi)) {
-        const TX_SIZE max_tx_size = get_vartx_max_txsize(
-            mbmi, plane_bsize, pd->subsampling_x || pd->subsampling_y);
         int block = 0;
-        const int step =
-            tx_size_wide_unit[max_tx_size] * tx_size_high_unit[max_tx_size];
-        const int bkw = tx_size_wide_unit[max_tx_size];
-        const int bkh = tx_size_high_unit[max_tx_size];
-        assert(bkw <= mu_blocks_wide);
-        assert(bkh <= mu_blocks_high);
         for (row = 0; row < num_4x4_h; row += mu_blocks_high) {
-          const int unit_height = AOMMIN(mu_blocks_high + row, num_4x4_h);
           for (col = 0; col < num_4x4_w; col += mu_blocks_wide) {
-            int blk_row, blk_col;
-            const int unit_width = AOMMIN(mu_blocks_wide + col, num_4x4_w);
-            for (blk_row = row; blk_row < unit_height; blk_row += bkh) {
-              for (blk_col = col; blk_col < unit_width; blk_col += bkw) {
-                pack_txb_tokens(w,
-#if CONFIG_LV_MAP
-                                cm, x,
-#endif
-                                tok, tok_end, xd, mbmi, plane, plane_bsize,
-                                cm->bit_depth, block, blk_row, blk_col,
-                                max_tx_size, &token_stats);
-                block += step;
-              }
-            }
+            write_inter_txb_coeff(cm, x, mbmi, w, tok, tok_end, &token_stats,
+                                  row, col, &block, plane);
           }
         }
 #if CONFIG_RD_DEBUG
