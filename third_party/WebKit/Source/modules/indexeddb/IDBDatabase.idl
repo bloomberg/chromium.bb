@@ -28,7 +28,6 @@
 
 [
     ActiveScriptWrappable,
-    DependentLifetime,
     Exposed=(Window,Worker)
 ] interface IDBDatabase : EventTarget {
     readonly attribute DOMString name;

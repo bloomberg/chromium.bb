@@ -44,9 +44,7 @@ typedef (CSSImageValue or
 enum CanvasFillRule { "nonzero", "evenodd" };
 enum ImageSmoothingQuality {"low", "medium", "high"};
 
-[
-    DependentLifetime
-] interface CanvasRenderingContext2D {
+interface CanvasRenderingContext2D {
     // back-reference to the canvas
     readonly attribute HTMLCanvasElement canvas;
 

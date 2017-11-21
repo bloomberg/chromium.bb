@@ -29,7 +29,6 @@
     Constructor(BaseAudioContext context, optional AudioBufferSourceOptions options),
     RaisesException=Constructor,
     ActiveScriptWrappable,
-    DependentLifetime,
     Measure
 ]
 interface AudioBufferSourceNode : AudioScheduledSourceNode {

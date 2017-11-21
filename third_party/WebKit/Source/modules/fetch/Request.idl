@@ -28,8 +28,7 @@ enum ReferrerPolicy {
     Constructor(RequestInfo input, optional Dictionary requestInitDict),
     ConstructorCallWith=ScriptState,
     Exposed=(Window,Worker),
-    RaisesException=Constructor,
-    DependentLifetime
+    RaisesException=Constructor
 ] interface Request {
     readonly attribute ByteString method;
     readonly attribute USVString url;

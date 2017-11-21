@@ -5,7 +5,6 @@
 // https://www.khronos.org/registry/webgl/extensions/EXT_color_buffer_float/
 
 [
-    DependentLifetime,
     NoInterfaceObject
 ] interface EXTColorBufferFloat {
 };

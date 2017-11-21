@@ -20,9 +20,7 @@
 
 // https://dom.spec.whatwg.org/#interface-treewalker
 
-[
-    DependentLifetime
-] interface TreeWalker {
+interface TreeWalker {
     [SameObject] readonly attribute Node root;
     readonly attribute unsigned long whatToShow;
     readonly attribute NodeFilter? filter;

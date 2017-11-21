@@ -26,7 +26,6 @@
 // https://www.khronos.org/registry/webgl/extensions/WEBGL_lose_context/
 
 [
-    DependentLifetime,
     NoInterfaceObject
 ] interface WebGLLoseContext {
     void loseContext();

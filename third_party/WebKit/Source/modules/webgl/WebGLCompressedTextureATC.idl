@@ -26,7 +26,6 @@
 // https://www.khronos.org/registry/webgl/extensions/WEBGL_compressed_texture_atc/
 
 [
-    DependentLifetime,
     NoInterfaceObject,
     DoNotCheckConstants
 ] interface WebGLCompressedTextureATC {

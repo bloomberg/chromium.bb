@@ -26,7 +26,6 @@
 // https://svgwg.org/svg2-draft/shapes.html#InterfaceSVGPointList
 
 [
-    DependentLifetime,
     ImplementedAs=SVGPointListTearOff
 ] interface SVGPointList {
     readonly attribute unsigned long length;

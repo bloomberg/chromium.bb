@@ -12,7 +12,6 @@ enum ResponseType { "basic", "cors", "default", "error", "opaque", "opaqueredire
     // recognize ReadableStream implemented with V8 extras. Fix it.
     Constructor(optional any body, optional ResponseInit init),
     ConstructorCallWith=ScriptState,
-    DependentLifetime,
     Exposed=(Window,Worker),
     RaisesException=Constructor
 ] interface Response {

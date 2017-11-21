@@ -7,7 +7,6 @@
     Constructor(BaseAudioContext context, optional ConstantSourceOptions options),
     RaisesException=Constructor,
     ActiveScriptWrappable,
-    DependentLifetime,
     Measure
 ]
 interface ConstantSourceNode : AudioScheduledSourceNode {

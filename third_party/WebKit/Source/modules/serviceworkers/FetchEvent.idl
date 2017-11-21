@@ -5,7 +5,6 @@
 // https://w3c.github.io/ServiceWorker/#fetchevent-interface
 [
     ActiveScriptWrappable,
-    DependentLifetime,
     Constructor(DOMString type, FetchEventInit eventInitDict),
     ConstructorCallWith=ScriptState,
     Exposed=ServiceWorker

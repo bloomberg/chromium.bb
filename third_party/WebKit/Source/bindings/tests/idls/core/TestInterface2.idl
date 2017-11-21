@@ -36,7 +36,6 @@
 [
     ActiveScriptWrappable, // Covered by [ActiveScriptWrappable]
     Constructor,
-    DependentLifetime, // Covered by [DependentLifetime]
     // Note that Exposed(Arguments) has no effect on bindings-tests. It is
     // processed in generate_global_constructors.py.
     Exposed(Window FeatureName) // Conflicts with Exposed=(Window,Worker)

@@ -10,7 +10,6 @@
     RaisesException=Constructor,
     Exposed=(Window,Worker),
     ActiveScriptWrappable,
-    DependentLifetime,
     Measure
 ] interface BroadcastChannel : EventTarget {
     readonly attribute DOMString name;

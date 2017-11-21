@@ -7,7 +7,6 @@
 // Implement BluetoothRemoteGATTCharacteristic interface: https://crbug.com/483344
 
 [
-    DependentLifetime,
     RuntimeEnabled=WebBluetooth
 ] interface BluetoothRemoteGATTCharacteristic : EventTarget {//: CharacteristicEventHandlers {
     [SameObject] readonly attribute BluetoothRemoteGATTService service;

@@ -14,7 +14,6 @@ enum AudioWorkletProcessorState {
 [
     ActiveScriptWrappable,
     Constructor(BaseAudioContext context, DOMString name, optional AudioWorkletNodeOptions options),
-    DependentLifetime,
     Global=(Worklet,AudioWorklet),
     RaisesException=Constructor,
     RuntimeEnabled=AudioWorklet

@@ -35,8 +35,7 @@ enum RTCDataChannelState {
 // https://w3c.github.io/webrtc-pc/#rtcdatachannel
 
 [
-    ActiveScriptWrappable,
-    DependentLifetime
+    ActiveScriptWrappable
 ] interface RTCDataChannel : EventTarget {
     readonly attribute USVString label;
     readonly attribute boolean ordered;

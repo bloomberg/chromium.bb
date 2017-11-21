@@ -29,7 +29,6 @@
     ActiveScriptWrappable,
     Constructor,
     ConstructorCallWith=ExecutionContext,
-    DependentLifetime,
     NoInterfaceObject
 ] interface SpeechRecognition : EventTarget {
     // recognition parameters

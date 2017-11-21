@@ -28,9 +28,7 @@
 enum TextTrackMode { "disabled",  "hidden",  "showing" };
 enum TextTrackKind { "subtitles",  "captions",  "descriptions",  "chapters",  "metadata" };
 
-[
-    DependentLifetime
-] interface TextTrack : EventTarget {
+interface TextTrack : EventTarget {
     readonly attribute TextTrackKind kind;
     readonly attribute DOMString label;
     readonly attribute DOMString language;

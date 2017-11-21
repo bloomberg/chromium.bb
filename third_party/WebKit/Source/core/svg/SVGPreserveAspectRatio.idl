@@ -26,7 +26,6 @@
 // https://svgwg.org/svg2-draft/coords.html#InterfaceSVGPreserveAspectRatio
 
 [
-    DependentLifetime,
     ImplementedAs=SVGPreserveAspectRatioTearOff
 ] interface SVGPreserveAspectRatio {
     // Alignment types

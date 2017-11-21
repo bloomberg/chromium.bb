@@ -95,7 +95,6 @@ from utilities import write_pickle_file
 
 INHERITED_EXTENDED_ATTRIBUTES = set([
     'ActiveScriptWrappable',
-    'DependentLifetime',
     'LegacyUnenumerableNamedProperties',
 ])
 

@@ -37,7 +37,6 @@ enum BinaryType { "blob", "arraybuffer" };
     ActiveScriptWrappable,
     Constructor(DOMString url, optional (DOMString or sequence<DOMString>) protocols),
     ConstructorCallWith=ExecutionContext,
-    DependentLifetime,
     Exposed=(Window,Worker),
     ImplementedAs=DOMWebSocket,
     RaisesException=Constructor

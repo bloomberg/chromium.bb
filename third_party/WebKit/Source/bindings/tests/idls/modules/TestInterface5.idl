@@ -36,7 +36,6 @@ callback VoidCallbackFunctionModules = void ();
 
 [
     ActiveScriptWrappable,
-    DependentLifetime,
     Custom=LegacyCallAsFunction,
     DoNotCheckConstants,
     ImplementedAs=TestInterface5Implementation,

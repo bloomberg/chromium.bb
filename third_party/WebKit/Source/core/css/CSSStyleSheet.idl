@@ -20,9 +20,7 @@
 
 // https://drafts.csswg.org/cssom/#the-cssstylesheet-interface
 
-[
-    DependentLifetime
-] interface CSSStyleSheet : StyleSheet {
+interface CSSStyleSheet : StyleSheet {
     readonly attribute CSSRule? ownerRule;
     [SameObject] readonly attribute CSSRuleList cssRules;
     [RaisesException] unsigned long insertRule(DOMString rule, optional unsigned long index = 0);

@@ -33,7 +33,6 @@
 
 [
     ActiveScriptWrappable,
-    DependentLifetime,
     Constructor(DOMString url, optional EventSourceInit eventSourceInitDict),
     ConstructorCallWith=ExecutionContext,
     Exposed=(Window,Worker),

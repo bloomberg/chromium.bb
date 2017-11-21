@@ -23,7 +23,6 @@
 // https://svgwg.org/svg2-draft/types.html#InterfaceSVGAngle
 
 [
-    DependentLifetime,
     ImplementedAs=SVGAngleTearOff
 ] interface SVGAngle {
     // Angle Unit Types

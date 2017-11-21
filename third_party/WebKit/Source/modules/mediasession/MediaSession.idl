@@ -24,8 +24,7 @@ enum MediaSessionAction {
 callback MediaSessionActionHandler = void ();
 
 [
-    RuntimeEnabled=MediaSession,
-    DependentLifetime
+    RuntimeEnabled=MediaSession
 ] interface MediaSession {
     [Measure] attribute MediaMetadata? metadata;
     [Measure] attribute MediaSessionPlaybackState playbackState;

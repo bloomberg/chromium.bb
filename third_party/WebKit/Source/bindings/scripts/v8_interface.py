@@ -243,9 +243,6 @@ def interface_context(interface, interfaces):
         includes.add('bindings/core/v8/BindingSecurity.h')
         includes.add('core/frame/LocalDOMWindow.h')
 
-    # [DependentLifetime]
-    is_dependent_lifetime = 'DependentLifetime' in extended_attributes
-
     # [PrimaryGlobal] and [Global]
     is_global = ('PrimaryGlobal' in extended_attributes or
                  'Global' in extended_attributes)
@@ -256,11 +253,6 @@ def interface_context(interface, interfaces):
     is_immutable_prototype = is_global or 'ImmutablePrototype' in extended_attributes
 
     wrapper_class_id = ('kNodeClassId' if inherits_interface(interface.name, 'Node') else 'kObjectClassId')
-
-    # [ActiveScriptWrappable] must be accompanied with [DependentLifetime].
-    if active_scriptwrappable and not is_dependent_lifetime:
-        raise Exception('[ActiveScriptWrappable] interface must also specify '
-                        '[DependentLifetime]: %s' % interface.name)
 
     # [LegacyUnenumerableNamedProperties]
     # pylint: disable=C0103
@@ -298,7 +290,6 @@ def interface_context(interface, interfaces):
         'is_node': inherits_interface(interface.name, 'Node'),
         'is_partial': interface.is_partial,
         'is_typed_array_type': is_typed_array_type,
-        'lifetime': 'kDependent' if is_dependent_lifetime else 'kIndependent',
         'measure_as': v8_utilities.measure_as(interface, None),  # [MeasureAs]
         'needs_runtime_enabled_installer': needs_runtime_enabled_installer,
         'origin_trial_enabled_function': v8_utilities.origin_trial_enabled_function_name(interface),

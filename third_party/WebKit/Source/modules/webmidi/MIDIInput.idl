@@ -30,8 +30,6 @@
 
 // https://webaudio.github.io/web-midi-api/#MIDIInput
 
-[
-    DependentLifetime
-] interface MIDIInput : MIDIPort {
+interface MIDIInput : MIDIPort {
     attribute EventHandler onmidimessage;
 };

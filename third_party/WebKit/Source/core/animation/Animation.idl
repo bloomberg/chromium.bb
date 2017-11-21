@@ -37,8 +37,7 @@ enum AnimationPlayState { "idle", "pending", "running", "paused", "finished" };
     Exposed(Window WebAnimationsAPI),
     ConstructorCallWith=ExecutionContext,
     RaisesException=Constructor,
-    ActiveScriptWrappable,
-    DependentLifetime
+    ActiveScriptWrappable
 ] interface Animation : EventTarget {
     // TODO(suzyh): Make timeline mutable.
     [RuntimeEnabled=WebAnimationsAPI] attribute AnimationEffectReadOnly? effect;

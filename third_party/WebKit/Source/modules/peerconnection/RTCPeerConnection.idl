@@ -62,7 +62,6 @@ enum RTCIceConnectionState {
 //  * VoidCallback -> VoidFunction
 [
     ActiveScriptWrappable,
-    DependentLifetime,
     // TODO(guidou): There should only be one constructor argument.
     Constructor(optional RTCConfiguration configuration, optional Dictionary mediaConstraints),
     ConstructorCallWith=ExecutionContext,
