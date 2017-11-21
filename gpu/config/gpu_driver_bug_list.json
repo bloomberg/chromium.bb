@@ -2711,6 +2711,32 @@
       "disabled_extensions": [
         "GL_EXT_disjoint_timer_query"
       ]
+    },
+    {
+      "id": 248,
+      "description": "Direct composition causes slow presents on Intel Sandybridge",
+      "cr_bugs": [775898, 785648],
+      "os": {
+        "type": "windows"
+      },
+      "vendor_id": "0x8086",
+      "device_id": ["0x0116"],
+      "features": [
+        "disable_direct_composition"
+      ]
+    },
+    {
+      "id": 249,
+      "description": "Direct composition causes slow presents on old Nvidia GPUs",
+      "cr_bugs": [775898],
+      "os": {
+        "type": "windows"
+      },
+      "vendor_id": "0x10de",
+      "device_id": ["0x10d8"],
+      "features": [
+        "disable_direct_composition"
+      ]
     }
   ]
 }
