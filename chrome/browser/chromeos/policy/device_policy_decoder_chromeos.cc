@@ -961,6 +961,16 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
                     base::MakeUnique<base::Value>(container.chrome_version()),
                     nullptr);
   }
+
+  if (policy.has_unaffiliated_arc_allowed()) {
+    const em::UnaffiliatedArcAllowedProto& container(
+        policy.unaffiliated_arc_allowed());
+    policies->Set(
+        key::kUnaffiliatedArcAllowed, POLICY_LEVEL_MANDATORY,
+        POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+        base::MakeUnique<base::Value>(container.unaffiliated_arc_allowed()),
+        nullptr);
+  }
 }
 }  // namespace
 

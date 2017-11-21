@@ -298,4 +298,8 @@ const char kCastReceiverName[] = "cros.device.cast_receiver.name";
 // which can be used for automatic forced re-enrollment.
 const char kDeviceEnrollmentIdNeeded[] = "cros.device.enrollment_id_needed";
 
+// A boolean pref that indicates whether unaffiliated users are allowed to
+// use ARC.
+const char kUnaffiliatedArcAllowed[] = "cros.device.unaffiliated_arc_allowed";
+
 }  // namespace chromeos

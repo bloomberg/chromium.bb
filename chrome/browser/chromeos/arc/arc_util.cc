@@ -25,6 +25,7 @@
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_prefs.h"
@@ -154,6 +155,32 @@ bool IsArcMigrationAllowedInternal(const Profile* profile) {
          policy_util::EcryptfsMigrationAction::kDisallowMigration;
 }
 
+bool IsUnaffiliatedArcAllowed() {
+  bool arc_allowed;
+  ArcSessionManager* arc_session_manager = ArcSessionManager::Get();
+  if (arc_session_manager) {
+    switch (arc_session_manager->state()) {
+      case ArcSessionManager::State::NOT_INITIALIZED:
+      case ArcSessionManager::State::STOPPED:
+        // Apply logic below
+        break;
+      case ArcSessionManager::State::NEGOTIATING_TERMS_OF_SERVICE:
+      case ArcSessionManager::State::CHECKING_ANDROID_MANAGEMENT:
+      case ArcSessionManager::State::REMOVING_DATA_DIR:
+      case ArcSessionManager::State::ACTIVE:
+      case ArcSessionManager::State::STOPPING:
+        // Never forbid unaffiliated ARC while ARC is running
+        return true;
+    }
+  }
+  if (chromeos::CrosSettings::Get()->GetBoolean(
+          chromeos::kUnaffiliatedArcAllowed, &arc_allowed)) {
+    return arc_allowed;
+  }
+  // If device policy is not set, allow ARC.
+  return true;
+}
+
 }  // namespace
 
 bool IsArcAllowedForProfile(const Profile* profile) {
@@ -214,6 +241,11 @@ bool IsArcAllowedForProfile(const Profile* profile) {
   if (!IsArcAllowedForUser(user)) {
     VLOG_IF(1, IsReportingFirstTimeForProfile(profile))
         << "ARC is not allowed for the user.";
+    return false;
+  }
+
+  if (!user->IsAffiliated() && !IsUnaffiliatedArcAllowed()) {
+    VLOG(1) << "Device admin disallowed ARC for unaffiliated users.";
     return false;
   }
 
