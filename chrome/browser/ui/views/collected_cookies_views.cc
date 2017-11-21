@@ -91,22 +91,17 @@ void StartNewButtonColumnSet(views::GridLayout* layout,
 // color and adding auxiliary text to them.
 class CookiesTreeViewDrawingProvider : public views::TreeViewDrawingProvider {
  public:
-  explicit CookiesTreeViewDrawingProvider(
-      const base::string16& invalidated_text)
-      : invalidated_text_(invalidated_text) {}
+  CookiesTreeViewDrawingProvider() {}
   ~CookiesTreeViewDrawingProvider() override {}
 
   void MarkNodeAsInvalidated(ui::TreeModelNode* node);
 
   SkColor GetTextColorForNode(views::TreeView* tree_view,
                               ui::TreeModelNode* node) override;
-  base::string16 GetAuxiliaryTextForNode(views::TreeView* tree_view,
-                                         ui::TreeModelNode* node) override;
   bool ShouldDrawIconForNode(views::TreeView* tree_view,
                              ui::TreeModelNode* node) override;
 
  private:
-  base::string16 invalidated_text_;
   std::set<ui::TreeModelNode*> invalidated_nodes_;
 };
 
@@ -122,14 +117,6 @@ SkColor CookiesTreeViewDrawingProvider::GetTextColorForNode(
   if (invalidated_nodes_.find(node) != invalidated_nodes_.end())
     color = SkColorSetA(color, 0x80);
   return color;
-}
-
-base::string16 CookiesTreeViewDrawingProvider::GetAuxiliaryTextForNode(
-    views::TreeView* tree_view,
-    ui::TreeModelNode* node) {
-  if (invalidated_nodes_.find(node) != invalidated_nodes_.end())
-    return invalidated_text_;
-  return TreeViewDrawingProvider::GetAuxiliaryTextForNode(tree_view, node);
 }
 
 bool CookiesTreeViewDrawingProvider::ShouldDrawIconForNode(
@@ -443,8 +430,7 @@ views::View* CollectedCookiesViews::CreateAllowedPane() {
   allowed_cookies_tree_model_ =
       content_settings->allowed_local_shared_objects().CreateCookiesTreeModel();
   std::unique_ptr<CookiesTreeViewDrawingProvider> allowed_drawing_provider =
-      base::MakeUnique<CookiesTreeViewDrawingProvider>(
-          l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_BLOCKED_AUX_TEXT));
+      base::MakeUnique<CookiesTreeViewDrawingProvider>();
   allowed_cookies_drawing_provider_ = allowed_drawing_provider.get();
   allowed_cookies_tree_ = new views::TreeView();
   allowed_cookies_tree_->SetModel(allowed_cookies_tree_model_.get());
@@ -507,8 +493,7 @@ views::View* CollectedCookiesViews::CreateBlockedPane() {
   blocked_cookies_tree_model_ =
       content_settings->blocked_local_shared_objects().CreateCookiesTreeModel();
   std::unique_ptr<CookiesTreeViewDrawingProvider> blocked_drawing_provider =
-      base::MakeUnique<CookiesTreeViewDrawingProvider>(
-          l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_ALLOWED_AUX_TEXT));
+      base::MakeUnique<CookiesTreeViewDrawingProvider>();
   blocked_cookies_drawing_provider_ = blocked_drawing_provider.get();
   blocked_cookies_tree_ = new views::TreeView();
   blocked_cookies_tree_->SetModel(blocked_cookies_tree_model_.get());
