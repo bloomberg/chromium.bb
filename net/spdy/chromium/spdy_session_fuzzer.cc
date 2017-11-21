@@ -105,9 +105,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   socket_factory.set_fuzz_connect_result(false);
 
   net::SSLSocketDataProvider ssl_provider(net::ASYNC, net::OK);
-  ssl_provider.cert =
+  ssl_provider.ssl_info.cert =
       net::X509Certificate::CreateFromBytes(kCertData, arraysize(kCertData));
-  CHECK(ssl_provider.cert);
+  CHECK(ssl_provider.ssl_info.cert);
   socket_factory.AddSSLSocketDataProvider(&ssl_provider);
 
   net::SpdySessionDependencies deps;

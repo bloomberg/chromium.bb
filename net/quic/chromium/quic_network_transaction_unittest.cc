@@ -748,9 +748,9 @@ class QuicNetworkTransactionTest
   }
 
   static void AddCertificate(SSLSocketDataProvider* ssl_data) {
-    ssl_data->cert =
+    ssl_data->ssl_info.cert =
         ImportCertFromFile(GetTestCertsDirectory(), "wildcard.pem");
-    ASSERT_TRUE(ssl_data->cert);
+    ASSERT_TRUE(ssl_data->ssl_info.cert);
   }
 
   const QuicTransportVersion version_;

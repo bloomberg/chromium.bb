@@ -57,8 +57,9 @@ class SpdySessionPoolTest : public ::testing::Test {
 
   void AddSSLSocketData() {
     auto ssl = std::make_unique<SSLSocketDataProvider>(SYNCHRONOUS, OK);
-    ssl->cert = ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
-    ASSERT_TRUE(ssl->cert);
+    ssl->ssl_info.cert =
+        ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
+    ASSERT_TRUE(ssl->ssl_info.cert);
     session_deps_.socket_factory->AddSSLSocketDataProvider(ssl.get());
     ssl_data_vector_.push_back(std::move(ssl));
   }

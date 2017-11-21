@@ -236,7 +236,8 @@ class BidirectionalStreamSpdyImplTest : public testing::TestWithParam<bool> {
         key_(host_port_pair_, ProxyServer::Direct(), PRIVACY_MODE_DISABLED),
         ssl_data_(SSLSocketDataProvider(ASYNC, OK)) {
     ssl_data_.next_proto = kProtoHTTP2;
-    ssl_data_.cert = ImportCertFromFile(GetTestCertsDirectory(), "ok_cert.pem");
+    ssl_data_.ssl_info.cert =
+        ImportCertFromFile(GetTestCertsDirectory(), "ok_cert.pem");
   }
 
  protected:
@@ -252,7 +253,7 @@ class BidirectionalStreamSpdyImplTest : public testing::TestWithParam<bool> {
                    size_t reads_count,
                    MockWrite* writes,
                    size_t writes_count) {
-    ASSERT_TRUE(ssl_data_.cert.get());
+    ASSERT_TRUE(ssl_data_.ssl_info.cert.get());
     session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data_);
     sequenced_data_ = std::make_unique<SequencedSocketData>(
         reads, reads_count, writes, writes_count);

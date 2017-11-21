@@ -51,7 +51,9 @@ TEST_F(Http2PushPromiseIndexTest, Empty) {
 TEST_F(Http2PushPromiseIndexTest, FindMultipleSessionsWithDifferentUrl) {
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
   SSLSocketDataProvider ssl(SYNCHRONOUS, OK);
-  ssl.cert = ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
+  ssl.ssl_info.cert =
+      ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
+  ASSERT_TRUE(ssl.ssl_info.cert);
   // For first session.
   SequencedSocketData data1(reads, arraysize(reads), nullptr, 0);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
@@ -105,7 +107,9 @@ TEST_F(Http2PushPromiseIndexTest, FindMultipleSessionsWithDifferentUrl) {
 TEST_F(Http2PushPromiseIndexTest, MultipleSessionsForSingleUrl) {
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
   SSLSocketDataProvider ssl(SYNCHRONOUS, OK);
-  ssl.cert = ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
+  ssl.ssl_info.cert =
+      ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
+  ASSERT_TRUE(ssl.ssl_info.cert);
   // For first session.
   SequencedSocketData data1(reads, arraysize(reads), nullptr, 0);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);

@@ -345,7 +345,7 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
         lofi_ui_service_(nullptr),
         ssl_socket_data_provider_(net::ASYNC, net::OK) {
     ssl_socket_data_provider_.next_proto = net::kProtoHTTP11;
-    ssl_socket_data_provider_.cert = net::ImportCertFromFile(
+    ssl_socket_data_provider_.ssl_info.cert = net::ImportCertFromFile(
         net::GetTestCertsDirectory(), "unittest.selfsigned.der");
   }
 

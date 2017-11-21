@@ -160,8 +160,9 @@ class SpdySessionTest : public PlatformTest {
   }
 
   void AddSSLSocketData() {
-    ssl_.cert = ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
-    ASSERT_TRUE(ssl_.cert);
+    ssl_.ssl_info.cert =
+        ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
+    ASSERT_TRUE(ssl_.ssl_info.cert);
     session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_);
   }
 
@@ -2600,7 +2601,7 @@ TEST_F(SpdySessionTest, ConnectionPooledWithTlsChannelId) {
   SequencedSocketData data(nullptr, 0, nullptr, 0);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
-  ssl_.channel_id_sent = true;
+  ssl_.ssl_info.channel_id_sent = true;
   AddSSLSocketData();
 
   CreateNetworkSession();
