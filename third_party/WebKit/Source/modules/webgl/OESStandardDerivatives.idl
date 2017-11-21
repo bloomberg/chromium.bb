@@ -26,7 +26,6 @@
 // https://www.khronos.org/registry/webgl/extensions/OES_standard_derivatives/
 
 [
-    DependentLifetime,
     NoInterfaceObject,
     DoNotCheckConstants
 ] interface OESStandardDerivatives {

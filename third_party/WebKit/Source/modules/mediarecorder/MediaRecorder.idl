@@ -10,7 +10,6 @@ enum RecordingState { "inactive", "recording", "paused" };
     ActiveScriptWrappable,
     ConstructorCallWith=ExecutionContext,
     Constructor(MediaStream stream, optional MediaRecorderOptions options),
-    DependentLifetime,
     RaisesException=Constructor
 ] interface MediaRecorder : EventTarget {
     readonly attribute MediaStream stream;

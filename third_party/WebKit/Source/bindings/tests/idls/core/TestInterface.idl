@@ -33,7 +33,6 @@
 
 [
     ActiveScriptWrappable,
-    DependentLifetime,
     Custom=LegacyCallAsFunction,
     DoNotCheckConstants,
     ImplementedAs=TestInterfaceImplementation,

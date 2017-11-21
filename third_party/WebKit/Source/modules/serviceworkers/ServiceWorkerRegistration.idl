@@ -14,7 +14,6 @@
 // https://w3c.github.io/ServiceWorker/#serviceworkerregistration-interface
 [
     ActiveScriptWrappable,
-    DependentLifetime,
     Exposed=(Window,Worker)
 ] interface ServiceWorkerRegistration : EventTarget {
     readonly attribute ServiceWorker? installing;

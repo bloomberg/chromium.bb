@@ -49,7 +49,6 @@ Custom=|Getter|Setter|LegacyCallAsFunction|PropertyGetter|PropertyEnumerator|Pro
 CustomConstructor
 CustomElementCallbacks
 Default=Undefined
-DependentLifetime
 DeprecateAs=*
 DoNotCheckConstants
 DoNotTestNewObject

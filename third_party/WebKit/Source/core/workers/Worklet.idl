@@ -5,7 +5,6 @@
 // https://drafts.css-houdini.org/worklets/#worklet
 
 [
-    DependentLifetime,
     RuntimeEnabled=Worklet,
     SecureContext
 ] interface Worklet {

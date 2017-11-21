@@ -23,7 +23,6 @@
 // https://svgwg.org/svg2-draft/types.html#InterfaceSVGNumber
 
 [
-    DependentLifetime,
     ImplementedAs=SVGNumberTearOff
 ] interface SVGNumber {
     [RaisesException=Setter] attribute float value;

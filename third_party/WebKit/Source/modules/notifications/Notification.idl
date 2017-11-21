@@ -43,7 +43,6 @@ enum NotificationPermission {
     ActiveScriptWrappable,
     ConstructorCallWith=ExecutionContext,
     Constructor(DOMString title, optional NotificationOptions options),
-    DependentLifetime,
     Exposed=(Window,Worker),
     MeasureAs=NotificationCreated,
     RaisesException=Constructor,

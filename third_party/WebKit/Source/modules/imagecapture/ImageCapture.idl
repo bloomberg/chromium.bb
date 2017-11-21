@@ -8,7 +8,6 @@
     ActiveScriptWrappable,
     ConstructorCallWith=ExecutionContext,
     Constructor(MediaStreamTrack track),
-    DependentLifetime,
     MeasureAs=ImageCaptureConstructor,
     RaisesException=Constructor
 ] interface ImageCapture {

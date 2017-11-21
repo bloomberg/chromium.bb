@@ -148,7 +148,6 @@ v8::Local<v8::String> StringCache::CreateStringAndInsertIntoCache(
   v8::UniquePersistent<v8::String> wrapper(isolate, new_string);
 
   string_impl->AddRef();
-  wrapper.MarkIndependent();
   string_cache_.Set(string_impl, std::move(wrapper), &last_v8_string_);
   last_string_impl_ = string_impl;
 

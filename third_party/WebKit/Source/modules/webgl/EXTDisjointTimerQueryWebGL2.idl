@@ -7,7 +7,6 @@
 typedef unsigned long long GLuint64EXT;
 
 [
-    DependentLifetime,
     DoNotCheckConstants,
     NoInterfaceObject
 ] interface EXTDisjointTimerQueryWebGL2 {

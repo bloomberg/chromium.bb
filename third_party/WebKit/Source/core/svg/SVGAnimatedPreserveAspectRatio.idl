@@ -25,9 +25,7 @@
 
 // https://svgwg.org/svg2-draft/coords.html#InterfaceSVGAnimatedPreserveAspectRatio
 
-[
-    DependentLifetime
-] interface SVGAnimatedPreserveAspectRatio {
+interface SVGAnimatedPreserveAspectRatio {
     readonly attribute SVGPreserveAspectRatio baseVal;
     readonly attribute SVGPreserveAspectRatio animVal;
 };

@@ -31,8 +31,7 @@
 // https://webaudio.github.io/web-midi-api/#MIDIAccess
 
 [
-    ActiveScriptWrappable,
-    DependentLifetime
+    ActiveScriptWrappable
 ] interface MIDIAccess : EventTarget {
     readonly attribute MIDIInputMap inputs;
     readonly attribute MIDIOutputMap outputs;

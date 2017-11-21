@@ -4,7 +4,5 @@
 
 // https://www.khronos.org/registry/webgl/specs/latest/2.0/#3.2
 
-[
-    DependentLifetime
-] interface WebGLQuery {
+interface WebGLQuery {
 };

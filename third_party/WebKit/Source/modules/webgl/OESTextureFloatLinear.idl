@@ -26,7 +26,6 @@
 // https://www.khronos.org/registry/webgl/extensions/OES_texture_float_linear/
 
 [
-    DependentLifetime,
     NoInterfaceObject
 ] interface OESTextureFloatLinear {
 };

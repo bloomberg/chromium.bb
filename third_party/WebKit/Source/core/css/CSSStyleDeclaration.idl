@@ -20,9 +20,7 @@
 
 // https://drafts.csswg.org/cssom/#the-cssstyledeclaration-interface
 
-[
-    DependentLifetime
-] interface CSSStyleDeclaration {
+interface CSSStyleDeclaration {
     [CEReactions, RaisesException=Setter, SetterCallWith=ExecutionContext] attribute DOMString cssText;
     readonly attribute unsigned long length;
     getter DOMString item(unsigned long index);

@@ -28,7 +28,6 @@
 
 [
     Custom=LegacyCallAsFunction,
-    DependentLifetime,
     LegacyUnenumerableNamedProperties
 ] interface HTMLAllCollection {
     readonly attribute unsigned long length;

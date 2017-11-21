@@ -25,9 +25,7 @@
 
 // https://svgwg.org/svg2-draft/types.html#InterfaceSVGAnimatedNumberList
 
-[
-    DependentLifetime
-] interface SVGAnimatedNumberList {
+interface SVGAnimatedNumberList {
     readonly attribute SVGNumberList baseVal;
     readonly attribute SVGNumberList animVal;
 };

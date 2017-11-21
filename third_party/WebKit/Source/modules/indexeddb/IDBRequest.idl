@@ -38,7 +38,6 @@ enum IDBRequestReadyState {
 
 [
     ActiveScriptWrappable,
-    DependentLifetime,
     Exposed=(Window,Worker)
 ] interface IDBRequest : EventTarget {
     [CallWith=ScriptState, RaisesException=Getter, CachedAttribute=isResultDirty] readonly attribute any result;

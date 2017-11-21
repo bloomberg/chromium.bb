@@ -26,7 +26,6 @@
 // https://www.khronos.org/registry/webgl/extensions/WEBGL_compressed_texture_s3tc/
 
 [
-    DependentLifetime,
     NoInterfaceObject,
     DoNotCheckConstants
 ] interface WebGLCompressedTextureS3TC {

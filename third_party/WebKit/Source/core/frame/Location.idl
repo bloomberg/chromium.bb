@@ -30,7 +30,6 @@
 
 [
     CheckSecurity=Receiver,
-    DependentLifetime,
     Unforgeable
 ] interface Location {
     // |assign| is *NOT* cross-origin accessible in the spec, but it needs

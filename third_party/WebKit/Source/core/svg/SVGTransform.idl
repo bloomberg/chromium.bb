@@ -22,7 +22,6 @@
 // https://svgwg.org/svg2-draft/coords.html#InterfaceSVGTransform
 
 [
-    DependentLifetime,
     ImplementedAs=SVGTransformTearOff
 ] interface SVGTransform {
     // Transform Types

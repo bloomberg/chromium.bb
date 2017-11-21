@@ -26,7 +26,6 @@
 // https://www.khronos.org/registry/webgl/extensions/EXT_texture_filter_anisotropic/
 
 [
-    DependentLifetime,
     NoInterfaceObject,
     DoNotCheckConstants
 ] interface EXTTextureFilterAnisotropic {

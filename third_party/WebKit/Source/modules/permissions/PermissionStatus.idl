@@ -13,7 +13,6 @@ enum PermissionState {
 
 [
     ActiveScriptWrappable,
-    DependentLifetime,
     Exposed=(Window,Worker),
     RuntimeEnabled=Permissions
 ] interface PermissionStatus : EventTarget {

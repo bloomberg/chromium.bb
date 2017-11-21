@@ -26,7 +26,6 @@
 // https://www.khronos.org/registry/webgl/extensions/OES_texture_half_float/
 
 [
-    DependentLifetime,
     NoInterfaceObject,
     DoNotCheckConstants
 ] interface OESTextureHalfFloat {

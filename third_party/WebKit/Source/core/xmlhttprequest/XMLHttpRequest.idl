@@ -43,7 +43,6 @@ enum XMLHttpRequestResponseType {
     ActiveScriptWrappable,
     Constructor,
     ConstructorCallWith=ScriptState,
-    DependentLifetime,
     Exposed=(Window,DedicatedWorker,SharedWorker)
 ] interface XMLHttpRequest : XMLHttpRequestEventTarget {
     // event handler

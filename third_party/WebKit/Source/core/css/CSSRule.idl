@@ -20,9 +20,7 @@
 
 // https://drafts.csswg.org/cssom/#the-cssrule-interface
 
-[
-    DependentLifetime
-] interface CSSRule {
+interface CSSRule {
     const unsigned short STYLE_RULE = 1;
     const unsigned short CHARSET_RULE = 2;
     const unsigned short IMPORT_RULE = 3;

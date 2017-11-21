@@ -26,7 +26,6 @@
 // https://www.khronos.org/registry/webgl/extensions/WEBGL_depth_texture/
 
 [
-    DependentLifetime,
     NoInterfaceObject,
     DoNotCheckConstants
 ] interface WebGLDepthTexture {

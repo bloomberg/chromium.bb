@@ -29,7 +29,6 @@
 
 [
     ActiveScriptWrappable,
-    DependentLifetime,
     Constructor(DOMString scriptUrl),
     ConstructorCallWith=ExecutionContext,
     // TODO(foolip): Exposed=(Window,Worker),

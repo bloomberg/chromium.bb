@@ -42,7 +42,6 @@ const WrapperTypeInfo V8TestInterfaceNamedConstructor::wrapperTypeInfo = {
     WrapperTypeInfo::kWrapperTypeObjectPrototype,
     WrapperTypeInfo::kObjectClassId,
     WrapperTypeInfo::kInheritFromActiveScriptWrappable,
-    WrapperTypeInfo::kDependent,
 };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && defined(__clang__)
 #pragma clang diagnostic pop
@@ -106,7 +105,6 @@ const WrapperTypeInfo V8TestInterfaceNamedConstructorConstructor::wrapperTypeInf
     WrapperTypeInfo::kWrapperTypeObjectPrototype,
     WrapperTypeInfo::kObjectClassId,
     WrapperTypeInfo::kInheritFromActiveScriptWrappable,
-    WrapperTypeInfo::kDependent,
 };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && defined(__clang__)
 #pragma clang diagnostic pop

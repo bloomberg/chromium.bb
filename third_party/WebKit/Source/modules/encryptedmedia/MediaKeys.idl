@@ -30,7 +30,6 @@ enum MediaKeySessionType {
 
 [
     ActiveScriptWrappable,
-    DependentLifetime,
     SecureContext
 ] interface MediaKeys {
     [CallWith=ScriptState, RaisesException] MediaKeySession createSession(optional MediaKeySessionType sessionType = "temporary");

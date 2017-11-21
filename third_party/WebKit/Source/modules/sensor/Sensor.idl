@@ -7,7 +7,6 @@
 
 [
     ActiveScriptWrappable,
-    DependentLifetime,
     SecureContext,
     OriginTrialEnabled=Sensor
 ] interface Sensor : EventTarget {

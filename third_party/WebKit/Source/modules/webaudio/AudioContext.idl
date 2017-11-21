@@ -35,7 +35,6 @@ enum AudioContextLatencyCategory {
     ActiveScriptWrappable,
     Constructor(optional AudioContextOptions contextOptions),
     ConstructorCallWith=Document,
-    DependentLifetime,
     RaisesException=Constructor,
     Measure
 ] interface AudioContext : BaseAudioContext {
