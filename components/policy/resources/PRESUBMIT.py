@@ -15,9 +15,9 @@ def _GetPolicyTemplates(template_path):
   # is actually maintained as a python dictionary.
   with open(template_path) as f:
     template_data = eval(f.read(), {})
-  policies = ( policy
+  policies = [ policy
                for policy in template_data['policy_definitions']
-               if policy['type'] != 'group' )
+               if policy['type'] != 'group' ]
   return policies
 
 def _CheckPolicyTemplatesSyntax(input_api, output_api):
@@ -80,18 +80,32 @@ def _CheckPolicyHistograms(input_api, output_api, policies):
                .getElementsByTagName('enum'))
   policy_enum = [e for e in enums
                  if e.getAttribute('name') == 'EnterprisePolicies'][0]
-  policy_ids = frozenset([int(e.getAttribute('value'))
-                          for e in policy_enum.getElementsByTagName('int')])
+  policy_enum_ids = frozenset(int(e.getAttribute('value'))
+                              for e in policy_enum.getElementsByTagName('int'))
+  policy_id_to_name = {policy['id']: policy['name'] for policy in policies}
+  policy_ids = frozenset(policy_id_to_name.keys())
 
-  error_missing = ('Policy \'%s\' was added to policy_templates.json but not '
-                   'to src/tools/metrics/histograms/enums.xml. '
-                   'Please update both files. To regenerate the policy part '
-                   'of enums.xml, run:\n'
+  missing_ids = policy_ids - policy_enum_ids
+  extra_ids = policy_enum_ids - policy_ids
+
+  error_missing = ('Policy \'%s\' (id %d) was added to '
+                   'policy_templates.json but not to '
+                   'src/tools/metrics/histograms/enums.xml. Please update '
+                   'both files. To regenerate the policy part of enums.xml, '
+                   'run:\n'
                    'python tools/metrics/histograms/update_policies.py')
+  error_extra = ('Policy id %d was found in '
+                 'src/tools/metrics/histograms/enums.xml, but no policy with '
+                 'this id exists in policy_templates.json. To regenerate the '
+                 'policy part of enums.xml, run:\n'
+                 'python tools/metrics/histograms/update_policies.py')
   results = []
-  for policy in policies:
-    if policy['id'] not in policy_ids:
-      results.append(output_api.PresubmitError(error_missing % policy['name']))
+  for policy_id in missing_ids:
+    results.append(
+        output_api.PresubmitError(error_missing %
+                                  (policy_id_to_name[policy_id], policy_id)))
+  for policy_id in extra_ids:
+    results.append(output_api.PresubmitError(error_extra % policy_id))
   return results
 
 
