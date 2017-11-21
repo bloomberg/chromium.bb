@@ -29,6 +29,41 @@ function getTimeFormat(time) {
 }
 
 /**
+ * Insert a log message row to the top of the log message table.
+ *
+ * @param {number!} time Millisecond since Unix Epoch representation of time.
+ * @param {string!} type The message event type.
+ * @param {string!} description The event message description.
+ * @param {string} url The URL associated with the event.
+ */
+function insertMessageRowToMessageLogTable(time, type, description, url) {
+  let tableRow =
+      $('message-logs-table').insertRow(1);  // Index 0 belongs to header row.
+  tableRow.setAttribute('class', 'log-message');
+
+  let timeTd = document.createElement('td');
+  timeTd.textContent = getTimeFormat(time);
+  timeTd.setAttribute('class', 'log-time');
+  tableRow.appendChild(timeTd);
+
+  let typeTd = document.createElement('td');
+  typeTd.setAttribute('class', 'log-type');
+  typeTd.textContent = type;
+  tableRow.appendChild(typeTd);
+
+  let descriptionTd = document.createElement('td');
+  descriptionTd.setAttribute('class', 'log-description');
+  descriptionTd.textContent = description;
+  tableRow.appendChild(descriptionTd);
+
+  if (url.length > 0) {
+    let urlTd = createUrlElement(url);
+    urlTd.setAttribute('class', 'log-url');
+    tableRow.appendChild(urlTd);
+  }
+}
+
+/**
  * Switch the selected tab to 'selected-tab' class.
  */
 function setSelectedTab() {
@@ -189,29 +224,8 @@ InterventionsInternalPageImpl.prototype = {
    * PreviewsLogger.
    */
   logNewMessage: function(log) {
-    let logsTable = $('message-logs-table');
-
-    let tableRow = logsTable.insertRow(1);  // Index 0 belongs to header row.
-    tableRow.setAttribute('class', 'log-message');
-
-    let timeTd = document.createElement('td');
-    timeTd.textContent = getTimeFormat(log.time);
-    timeTd.setAttribute('class', 'log-time');
-    tableRow.appendChild(timeTd);
-
-    let typeTd = document.createElement('td');
-    typeTd.setAttribute('class', 'log-type');
-    typeTd.textContent = log.type;
-    tableRow.appendChild(typeTd);
-
-    let descriptionTd = document.createElement('td');
-    descriptionTd.setAttribute('class', 'log-description');
-    descriptionTd.textContent = log.description;
-    tableRow.appendChild(descriptionTd);
-
-    let urlTd = createUrlElement(log.url.url);
-    urlTd.setAttribute('class', 'log-url');
-    tableRow.appendChild(urlTd);
+    insertMessageRowToMessageLogTable(
+        log.time, log.type, log.description, log.url.url);
   },
 
   /**
@@ -300,11 +314,14 @@ InterventionsInternalPageImpl.prototype = {
     let ectType = $('nqe-type');
     ectType.textContent = type;
 
-    // Log ECT changed event.
-    let nqeRow = document.createElement('tr');
+    let now = getTimeFormat(Date.now());
+
+    // Log ECT changed event to ECT change log.
+    let nqeRow =
+        $('nqe-logs-table').insertRow(1);  // Index 0 belongs to header row.
 
     let timeCol = document.createElement('td');
-    timeCol.textContent = getTimeFormat(Date.now());
+    timeCol.textContent = now;
     timeCol.setAttribute('class', 'nqe-time-column');
     nqeRow.appendChild((timeCol));
 
@@ -312,7 +329,10 @@ InterventionsInternalPageImpl.prototype = {
     nqeCol.setAttribute('class', 'nqe-value-column');
     nqeCol.textContent = type;
     nqeRow.appendChild(nqeCol);
-    $('nqe-logs-table').appendChild(nqeRow);
+
+    // Insert ECT changed message to message-logs-table.
+    insertMessageRowToMessageLogTable(
+        now, 'ECT Changed', 'Effective Connection Type changed to ' + type, '');
   },
 };
 
