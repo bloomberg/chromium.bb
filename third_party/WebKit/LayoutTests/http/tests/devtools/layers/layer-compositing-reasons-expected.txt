@@ -1,4 +1,13 @@
-Tests layer compositing reasons in Layers Panel
+translated
+translated individual
+
+backface hidden
+animated
+animated individual
+opacity
+reflected
+perspective
+preserve3d
 Compositing reasons for #document: root
 Compositing reasons for div#transform3d: assumedOverlap,inlineTransform,transform3D
 Compositing reasons for div#transform3d-individual: assumedOverlap,inlineTransform,transform3D
