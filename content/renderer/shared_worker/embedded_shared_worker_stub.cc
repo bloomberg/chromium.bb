@@ -55,8 +55,9 @@ class SharedWorkerWebApplicationCacheHostImpl
   // loaded by the worker using WorkerScriptLoader.
   // These overrides are stubbed out.
   void WillStartMainResourceRequest(
-      blink::WebURLRequest&,
-      const blink::WebApplicationCacheHost*) override {}
+      const blink::WebURL& url,
+      const blink::WebString& method,
+      const WebApplicationCacheHost* spawning_host) override {}
   void DidReceiveResponseForMainResource(
       const blink::WebURLResponse&) override {}
   void DidReceiveDataForMainResource(const char* data, unsigned len) override {}

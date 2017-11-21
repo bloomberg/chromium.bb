@@ -171,13 +171,12 @@ void WebApplicationCacheHostImpl::OnErrorEventRaised(
 }
 
 void WebApplicationCacheHostImpl::WillStartMainResourceRequest(
-    WebURLRequest& request,
+    const WebURL& url,
+    const WebString& method_webstring,
     const WebApplicationCacheHost* spawning_host) {
-  request.SetAppCacheHostID(host_id_);
+  original_main_resource_url_ = ClearUrlRef(url);
 
-  original_main_resource_url_ = ClearUrlRef(request.Url());
-
-  std::string method = request.HttpMethod().Utf8();
+  std::string method = method_webstring.Utf8();
   is_get_method_ = (method == kHttpGETMethod);
   DCHECK(method == base::ToUpperASCII(method));
 
@@ -187,11 +186,6 @@ void WebApplicationCacheHostImpl::WillStartMainResourceRequest(
       (spawning_host_impl->status_ != APPCACHE_STATUS_UNCACHED)) {
     backend_->SetSpawningHostId(host_id_, spawning_host_impl->host_id());
   }
-}
-
-void WebApplicationCacheHostImpl::WillStartSubResourceRequest(
-    WebURLRequest& request) {
-  request.SetAppCacheHostID(host_id_);
 }
 
 void WebApplicationCacheHostImpl::SelectCacheWithoutManifest() {
