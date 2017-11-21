@@ -88,11 +88,16 @@ class CONTENT_EXPORT MouseWheelEventQueue {
   std::unique_ptr<QueuedWebMouseWheelEvent> event_sent_for_gesture_ack_;
 
   // True if a non-synthetic GSB needs to be sent before a GSU is sent.
-  bool needs_scroll_begin_;
+  // This variable is used only when scroll latching is disabled.
+  bool needs_scroll_begin_when_scroll_latching_disabled_;
 
   // True if a non-synthetic GSE needs to be sent because a non-synthetic
   // GSB has been sent in the past.
-  bool needs_scroll_end_;
+  // This variable is used only when scroll latching is disabled.
+  bool needs_scroll_end_when_scroll_latching_disabled_;
+
+  // True when a GSB is sent and its corresponding GSE is not sent.
+  bool scroll_in_progress_;
 
   // True if the touchpad and wheel scroll latching flag is enabled.
   bool enable_scroll_latching_;

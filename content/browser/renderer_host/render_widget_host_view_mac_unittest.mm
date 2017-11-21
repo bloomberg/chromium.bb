@@ -349,6 +349,10 @@ NSEvent* MockScrollWheelEventWithPhase(SEL mockPhaseSelector, int32_t delta) {
   return event;
 }
 
+NSEvent* MockScrollWheelEventWithoutPhase(int32_t delta) {
+  return MockScrollWheelEventWithPhase(@selector(phaseNone), delta);
+}
+
 NSEvent* MockScrollWheelEventWithMomentumPhase(SEL mockPhaseSelector,
                                                int32_t delta) {
   // Create a dummy event with phaseNone. This is for resetting the phase info
@@ -1462,6 +1466,59 @@ TEST_F(RenderWidgetHostViewMacWithWheelScrollLatchingEnabledTest,
 TEST_F(RenderWidgetHostViewMacWithWheelScrollLatchingEnabledTest,
        ScrollWheelEndEventDelivery) {
   ScrollWheelEndEventDelivery();
+}
+
+// Scrolling with a mouse wheel device on Mac won't give phase information.
+// MouseWheelPhaseHandler adds timer based phase information to wheel events
+// generated from this type of devices.
+TEST_F(RenderWidgetHostViewMacWithWheelScrollLatchingEnabledTest,
+       TimerBasedPhaseInfo) {
+  // Initialize the view associated with a MockRenderWidgetHostImpl, rather than
+  // the MockRenderProcessHost that is set up by the test harness which mocks
+  // out |OnMessageReceived()|.
+  TestBrowserContext browser_context;
+  MockRenderProcessHost* process_host =
+      new MockRenderProcessHost(&browser_context);
+  process_host->Init();
+  MockRenderWidgetHostDelegate delegate;
+  int32_t routing_id = process_host->GetNextRoutingID();
+  MockRenderWidgetHostImpl* host =
+      MockRenderWidgetHostImpl::Create(&delegate, process_host, routing_id);
+  RenderWidgetHostViewMac* view = new RenderWidgetHostViewMac(host, false);
+  base::RunLoop().RunUntilIdle();
+
+  // Send a wheel event without phase information for scrolling by 3 lines.
+  NSEvent* wheelEvent = MockScrollWheelEventWithoutPhase(3);
+  [view->cocoa_view() scrollWheel:wheelEvent];
+  base::RunLoop().RunUntilIdle();
+  MockWidgetInputHandler::MessageVector events =
+      host->GetAndResetDispatchedMessages();
+  ASSERT_EQ("MouseWheel", GetMessageNames(events));
+
+  events.clear();
+  events = host->GetAndResetDispatchedMessages();
+  // Both GSB and GSU will be sent since GestureEventQueue allows multiple
+  // in-flight events.
+  ASSERT_EQ("GestureScrollBegin GestureScrollUpdate", GetMessageNames(events));
+  ASSERT_TRUE(static_cast<const blink::WebGestureEvent*>(
+                  events[0]->ToEvent()->Event()->web_event.get())
+                  ->data.scroll_begin.synthetic);
+  events.clear();
+
+  // Wait for the mouse_wheel_end_dispatch_timer_ to expire, the pending wheel
+  // event gets dispatched.
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, run_loop.QuitClosure(),
+      base::TimeDelta::FromMilliseconds(100));
+  run_loop.Run();
+
+  events = host->GetAndResetDispatchedMessages();
+  ASSERT_EQ("MouseWheel GestureScrollEnd", GetMessageNames(events));
+  ASSERT_TRUE(static_cast<const blink::WebGestureEvent*>(
+                  events[1]->ToEvent()->Event()->web_event.get())
+                  ->data.scroll_end.synthetic);
+  host->ShutdownAndDestroyWidget(true);
 }
 
 // When wheel scroll latching is enabled, wheel end events are not sent
