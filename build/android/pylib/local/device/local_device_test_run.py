@@ -77,6 +77,18 @@ class LocalDeviceTestRun(test_run.TestRun):
           else:
             raise Exception(
                 'Unexpected result type: %s' % type(result).__name__)
+        except device_errors.CommandTimeoutError:
+          if isinstance(test, list):
+            results.AddResults(
+                base_test_result.BaseTestResult(
+                    self._GetUniqueTestName(t),
+                    base_test_result.ResultType.TIMEOUT)
+                for t in test)
+          else:
+            results.AddResult(
+                base_test_result.BaseTestResult(
+                    self._GetUniqueTestName(test),
+                    base_test_result.ResultType.TIMEOUT))
         except Exception as e:  # pylint: disable=broad-except
           if isinstance(tests, test_collection.TestCollection):
             rerun = test

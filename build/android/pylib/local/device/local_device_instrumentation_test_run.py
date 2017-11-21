@@ -446,18 +446,20 @@ class LocalDeviceInstrumentationTestRun(
 
     with self._env.output_manager.ArchivedTempfile(
         stream_name, 'logcat') as logcat_file:
-      with logcat_monitor.LogcatMonitor(
-          device.adb,
-          filter_specs=local_device_environment.LOGCAT_FILTERS,
-          output_file=logcat_file.name,
-          transform_func=self._test_instance.MaybeDeobfuscateLines) as logmon:
-        with _LogTestEndpoints(device, test_name):
-          with contextlib_ext.Optional(
-              trace_event.trace(test_name),
-              self._env.trace_output):
-            output = device.StartInstrumentation(
-                target, raw=True, extras=extras, timeout=timeout, retries=0)
-      logmon.Close()
+      try:
+        with logcat_monitor.LogcatMonitor(
+            device.adb,
+            filter_specs=local_device_environment.LOGCAT_FILTERS,
+            output_file=logcat_file.name,
+            transform_func=self._test_instance.MaybeDeobfuscateLines) as logmon:
+          with _LogTestEndpoints(device, test_name):
+            with contextlib_ext.Optional(
+                trace_event.trace(test_name),
+                self._env.trace_output):
+              output = device.StartInstrumentation(
+                  target, raw=True, extras=extras, timeout=timeout, retries=0)
+      finally:
+        logmon.Close()
 
     if logcat_file.Link():
       logging.info('Logcat saved to %s', logcat_file.Link())
