@@ -16,14 +16,18 @@ extern "C" {
 #include <X11/Xlib.h>
 
 // And the rest so that nobody needs to include them manually...
+#include <X11/X.h>
+#include <X11/XKBlib.h>
 #include <X11/Xatom.h>
 #include <X11/Xcursor/Xcursor.h>
 #include <X11/Xlib-xcb.h>
 #include <X11/Xregion.h>
 #include <X11/Xutil.h>
 #include <X11/cursorfont.h>
+#include <X11/extensions/XI2.h>
 #include <X11/extensions/XInput.h>
 #include <X11/extensions/XInput2.h>
+#include <X11/extensions/XIproto.h>
 #include <X11/extensions/XShm.h>
 #include <X11/extensions/XTest.h>
 #include <X11/extensions/Xfixes.h>
@@ -31,6 +35,43 @@ extern "C" {
 #include <X11/extensions/Xrender.h>
 #include <X11/extensions/scrnsaver.h>
 #include <X11/extensions/shape.h>
+
+// Define XK_xxx before the #include of <X11/keysym.h> so that <X11/keysym.h>
+// defines all KeySyms we need.
+#define XK_3270  // For XK_3270_BackTab in particular.
+#define XK_MISCELLANY
+#define XK_LATIN1
+#define XK_LATIN2
+#define XK_LATIN3
+#define XK_LATIN4
+#define XK_LATIN8
+#define XK_LATIN9
+#define XK_KATAKANA
+#define XK_ARABIC
+#define XK_CYRILLIC
+#define XK_GREEK
+#define XK_TECHNICAL
+#define XK_SPECIAL
+#define XK_PUBLISHING
+#define XK_APL
+#define XK_HEBREW
+#define XK_THAI
+#define XK_KOREAN
+#define XK_ARMENIAN
+#define XK_GEORGIAN
+#define XK_CAUCASUS
+#define XK_VIETNAMESE
+#define XK_CURRENCY
+#define XK_MATHEMATICAL
+#define XK_BRAILLE
+#define XK_SINHALA
+
+#ifndef XK_dead_greek
+#define XK_dead_greek 0xfe8c
+#endif
+
+#include <X11/Sunkeysym.h>
+#include <X11/XF86keysym.h>
 #include <X11/keysym.h>
 
 // These commonly used names are undefined and if necessary recreated
@@ -65,6 +106,7 @@ static const long CurrentTime = 0L;
 static const int False = 0;
 static const int True = 1;
 static const int Success = 0;
+typedef int Bool;
 typedef int Status;
 }  // namespace x11
 

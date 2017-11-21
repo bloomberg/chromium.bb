@@ -2,10 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <X11/XKBlib.h>
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#include <X11/extensions/XInput2.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -13,10 +9,6 @@
 #include <memory>
 #include <set>
 #include <utility>
-
-// Generically-named #defines from Xlib that conflict with symbols in GTest.
-#undef Bool
-#undef None
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -31,6 +23,7 @@
 #include "ui/events/test/events_test_utils_x11.h"
 #include "ui/events/x/events_x_utils.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/x/x11.h"
 
 namespace ui {
 

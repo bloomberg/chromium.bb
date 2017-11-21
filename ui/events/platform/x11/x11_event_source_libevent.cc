@@ -4,9 +4,6 @@
 
 #include "ui/events/platform/x11/x11_event_source_libevent.h"
 
-#include <X11/Xlib.h>
-#include <X11/extensions/XInput2.h>
-
 #include <memory>
 
 #include "base/memory/ptr_util.h"
@@ -16,6 +13,7 @@
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/events/x/events_x_utils.h"
+#include "ui/gfx/x/x11.h"
 
 namespace ui {
 

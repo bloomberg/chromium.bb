@@ -20,9 +20,8 @@
 #include "ui/events/keycodes/dom/keycode_converter.h"
 
 #if defined(USE_X11)
-#include <X11/keysym.h>
-#include <X11/Xlib.h>
 #include "ui/events/test/events_test_utils_x11.h"
+#include "ui/gfx/x/x11.h"        // nogncheck
 #include "ui/gfx/x/x11_types.h"  // nogncheck
 #endif
 

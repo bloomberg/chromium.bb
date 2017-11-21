@@ -5,15 +5,6 @@
 #ifndef UI_EVENTS_DEVICES_X11_DEVICE_DATA_MANAGER_X11_H_
 #define UI_EVENTS_DEVICES_X11_DEVICE_DATA_MANAGER_X11_H_
 
-// Generically-named #defines from Xlib is conflicting with symbols in GTest.
-// So many tests .cc file #undef Bool before including device_data_manager.h,
-// which makes Bool unrecognized in XInput2.h.
-#ifndef Bool
-#define Bool int
-#endif
-
-#include <X11/extensions/XInput2.h>
-
 #include <bitset>
 #include <functional>
 #include <map>
@@ -28,6 +19,7 @@
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_types.h"
 
 namespace ui {

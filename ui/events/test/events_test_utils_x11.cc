@@ -5,10 +5,6 @@
 #include "ui/events/test/events_test_utils_x11.h"
 
 #include <stddef.h>
-#include <X11/extensions/XI2.h>
-#include <X11/keysym.h>
-#include <X11/X.h>
-#include <X11/Xlib.h>
 
 #include "base/logging.h"
 #include "base/macros.h"
@@ -16,6 +12,7 @@
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
+#include "ui/gfx/x/x11.h"
 
 namespace {
 

@@ -5,14 +5,12 @@
 #ifndef UI_EVENTS_DEVICES_X11_DEVICE_LIST_CACHE_X11_H_
 #define UI_EVENTS_DEVICES_X11_DEVICE_LIST_CACHE_X11_H_
 
-#include <X11/extensions/XInput.h>
-#include <X11/extensions/XInput2.h>
-
 #include <map>
 #include <memory>
 
 #include "base/macros.h"
 #include "ui/events/devices/x11/events_devices_x11_export.h"
+#include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_types.h"
 
 namespace base {

@@ -5,12 +5,6 @@
 #include "ui/aura/window_tree_host_x11.h"
 
 #include <strings.h>
-#include <X11/cursorfont.h>
-#include <X11/extensions/XInput2.h>
-#include <X11/extensions/Xrandr.h>
-#include <X11/Xatom.h>
-#include <X11/Xcursor/Xcursor.h>
-#include <X11/Xlib.h>
 
 #include <algorithm>
 #include <limits>
@@ -51,6 +45,7 @@
 #include "ui/events/platform/platform_event_observer.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/events/platform/x11/x11_event_source.h"
+#include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 
 using std::max;
@@ -119,7 +114,7 @@ WindowTreeHostX11::WindowTreeHostX11(const gfx::Rect& bounds)
       bounds_(bounds) {
   XSetWindowAttributes swa;
   memset(&swa, 0, sizeof(swa));
-  swa.background_pixmap = None;
+  swa.background_pixmap = x11::None;
   swa.bit_gravity = NorthWestGravity;
   swa.override_redirect = ui::UseTestConfigForPlatformWindows();
   xwindow_ = XCreateWindow(
@@ -320,9 +315,7 @@ uint32_t WindowTreeHostX11::DispatchEvent(const ui::PlatformEvent& event) {
         XEvent reply_event = *xev;
         reply_event.xclient.window = x_root_window_;
 
-        XSendEvent(xdisplay_,
-                   reply_event.xclient.window,
-                   False,
+        XSendEvent(xdisplay_, reply_event.xclient.window, x11::False,
                    SubstructureRedirectMask | SubstructureNotifyMask,
                    &reply_event);
         XFlush(xdisplay_);
@@ -456,7 +449,7 @@ void WindowTreeHostX11::SetCursorNative(gfx::NativeCursor cursor) {
 
 void WindowTreeHostX11::MoveCursorToScreenLocationInPixels(
     const gfx::Point& location_in_pixels) {
-  XWarpPointer(xdisplay_, None, x_root_window_, 0, 0, 0, 0,
+  XWarpPointer(xdisplay_, x11::None, x_root_window_, 0, 0, 0, 0,
                bounds_.x() + location_in_pixels.x(),
                bounds_.y() + location_in_pixels.y());
 }
