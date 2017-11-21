@@ -312,51 +312,9 @@ int32_t WebrtcAudioModule::StereoRecording(bool* enabled) const {
   return -1;
 }
 
-int32_t WebrtcAudioModule::SetRecordingChannel(const ChannelType channel) {
-  return 0;
-}
-
-int32_t WebrtcAudioModule::RecordingChannel(ChannelType* channel) const {
-  NOTREACHED();
-  return -1;
-}
-
 int32_t WebrtcAudioModule::PlayoutDelay(uint16_t* delay_ms) const {
   *delay_ms = 0;
   return 0;
-}
-
-int32_t WebrtcAudioModule::SetRecordingSampleRate(
-    const uint32_t samples_per_sec) {
-  NOTREACHED();
-  return -1;
-}
-
-int32_t WebrtcAudioModule::RecordingSampleRate(
-    uint32_t* samples_per_sec) const {
-  NOTREACHED();
-  return -1;
-}
-
-int32_t WebrtcAudioModule::SetPlayoutSampleRate(
-    const uint32_t samples_per_sec) {
-  NOTREACHED();
-  return -1;
-}
-
-int32_t WebrtcAudioModule::PlayoutSampleRate(uint32_t* samples_per_sec) const {
-  NOTREACHED();
-  return -1;
-}
-
-int32_t WebrtcAudioModule::SetLoudspeakerStatus(bool enable) {
-  NOTREACHED();
-  return -1;
-}
-
-int32_t WebrtcAudioModule::GetLoudspeakerStatus(bool* enabled) const {
-  NOTREACHED();
-  return -1;
 }
 
 bool WebrtcAudioModule::BuiltInAECIsAvailable() const {
