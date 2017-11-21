@@ -85,11 +85,11 @@ class Buffer : public base::SupportsWeakPtr<Buffer> {
   // client that buffer has been released.
   void Release();
 
-  // This is used by ProduceTextureMailbox() to produce a release callback
+  // This is used by ProduceTransferableResource() to produce a release callback
   // that releases a texture so it can be destroyed or reused.
   void ReleaseTexture(std::unique_ptr<Texture> texture);
 
-  // This is used by ProduceTextureMailbox() to produce a release callback
+  // This is used by ProduceTransferableResource() to produce a release callback
   // that releases the buffer contents referenced by a texture before the
   // texture is destroyed or reused.
   void ReleaseContentsTexture(std::unique_ptr<Texture> texture,

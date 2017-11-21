@@ -32,6 +32,7 @@
 #include "cc/test/pixel_test_utils.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
+#include "components/viz/common/resources/transferable_resource.h"
 #include "components/viz/common/surfaces/sequence_surface_reference_factory.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/common/surfaces/surface_reference_factory.h"
@@ -571,11 +572,12 @@ void ReturnMailbox(bool* run, const gpu::SyncToken& sync_token, bool is_lost) {
 TEST(LayerStandaloneTest, ReleaseMailboxOnDestruction) {
   std::unique_ptr<Layer> layer(new Layer(LAYER_TEXTURED));
   bool callback_run = false;
-  viz::TextureMailbox mailbox(gpu::Mailbox::Generate(), gpu::SyncToken(), 0);
-  layer->SetTextureMailbox(mailbox,
-                           viz::SingleReleaseCallback::Create(
-                               base::Bind(ReturnMailbox, &callback_run)),
-                           gfx::Size(10, 10));
+  auto resource = viz::TransferableResource::MakeGL(
+      gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken());
+  layer->SetTransferableResource(resource,
+                                 viz::SingleReleaseCallback::Create(
+                                     base::Bind(ReturnMailbox, &callback_run)),
+                                 gfx::Size(10, 10));
   EXPECT_FALSE(callback_run);
   layer.reset();
   EXPECT_TRUE(callback_run);
@@ -974,11 +976,12 @@ TEST_F(LayerWithNullDelegateTest, SwitchLayerPreservesCCLayerState) {
   cc::Layer* before_layer = l1->cc_layer_for_testing();
 
   bool callback1_run = false;
-  viz::TextureMailbox mailbox(gpu::Mailbox::Generate(), gpu::SyncToken(), 0);
-  l1->SetTextureMailbox(mailbox,
-                        viz::SingleReleaseCallback::Create(
-                            base::Bind(ReturnMailbox, &callback1_run)),
-                        gfx::Size(10, 10));
+  auto resource = viz::TransferableResource::MakeGL(
+      gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken());
+  l1->SetTransferableResource(resource,
+                              viz::SingleReleaseCallback::Create(
+                                  base::Bind(ReturnMailbox, &callback1_run)),
+                              gfx::Size(10, 10));
 
   EXPECT_NE(before_layer, l1->cc_layer_for_testing());
 
@@ -990,11 +993,12 @@ TEST_F(LayerWithNullDelegateTest, SwitchLayerPreservesCCLayerState) {
   EXPECT_FALSE(callback1_run);
 
   bool callback2_run = false;
-  mailbox = viz::TextureMailbox(gpu::Mailbox::Generate(), gpu::SyncToken(), 0);
-  l1->SetTextureMailbox(mailbox,
-                        viz::SingleReleaseCallback::Create(
-                            base::Bind(ReturnMailbox, &callback2_run)),
-                        gfx::Size(10, 10));
+  resource = viz::TransferableResource::MakeGL(
+      gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken());
+  l1->SetTransferableResource(resource,
+                              viz::SingleReleaseCallback::Create(
+                                  base::Bind(ReturnMailbox, &callback2_run)),
+                              gfx::Size(10, 10));
   EXPECT_TRUE(callback1_run);
   EXPECT_FALSE(callback2_run);
 
@@ -1011,11 +1015,12 @@ TEST_F(LayerWithNullDelegateTest, SwitchLayerPreservesCCLayerState) {
 
   // Back to a texture, without changing the bounds of the layer or the texture.
   bool callback3_run = false;
-  mailbox = viz::TextureMailbox(gpu::Mailbox::Generate(), gpu::SyncToken(), 0);
-  l1->SetTextureMailbox(mailbox,
-                        viz::SingleReleaseCallback::Create(
-                            base::Bind(ReturnMailbox, &callback3_run)),
-                        gfx::Size(10, 10));
+  resource = viz::TransferableResource::MakeGL(
+      gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken());
+  l1->SetTransferableResource(resource,
+                              viz::SingleReleaseCallback::Create(
+                                  base::Bind(ReturnMailbox, &callback3_run)),
+                              gfx::Size(10, 10));
 
   EXPECT_NE(before_layer, l1->cc_layer_for_testing());
 
@@ -1166,10 +1171,10 @@ TEST_F(LayerWithNullDelegateTest, EmptyDamagedRect) {
                  base::Unretained(&run_loop));
 
   std::unique_ptr<Layer> root(CreateLayer(LAYER_SOLID_COLOR));
-  viz::TextureMailbox mailbox(gpu::Mailbox::Generate(), gpu::SyncToken(),
-                              GL_TEXTURE_2D);
-  root->SetTextureMailbox(
-      mailbox, viz::SingleReleaseCallback::Create(std::move(callback)),
+  auto resource = viz::TransferableResource::MakeGL(
+      gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken());
+  root->SetTransferableResource(
+      resource, viz::SingleReleaseCallback::Create(std::move(callback)),
       gfx::Size(10, 10));
   compositor()->SetRootLayer(root.get());
 

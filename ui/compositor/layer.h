@@ -21,7 +21,7 @@
 #include "cc/layers/layer_client.h"
 #include "cc/layers/surface_layer.h"
 #include "cc/layers/texture_layer_client.h"
-#include "components/viz/common/quads/texture_mailbox.h"
+#include "components/viz/common/resources/transferable_resource.h"
 #include "components/viz/common/surfaces/sequence_surface_reference_factory.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/compositor/compositor.h"
@@ -298,10 +298,10 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   const std::string& name() const { return name_; }
   void set_name(const std::string& name) { name_ = name; }
 
-  // Set new TextureMailbox for this layer. Note that |mailbox| may hold a
-  // shared memory resource or an actual mailbox for a texture.
-  void SetTextureMailbox(
-      const viz::TextureMailbox& mailbox,
+  // Set new TransferableResource for this layer. Note that |resource| may hold
+  // a handle for a shared memory resource or a gpu texture.
+  void SetTransferableResource(
+      const viz::TransferableResource& resource,
       std::unique_ptr<viz::SingleReleaseCallback> release_callback,
       gfx::Size texture_size_in_dip);
   void SetTextureSize(gfx::Size texture_size_in_dip);
@@ -607,15 +607,15 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   gfx::ImageSkia nine_patch_layer_image_;
   gfx::Rect nine_patch_layer_aperture_;
 
-  // The mailbox used by texture_layer_.
-  viz::TextureMailbox mailbox_;
+  // The external resource used by texture_layer_.
+  viz::TransferableResource transfer_resource_;
 
   // The callback to release the mailbox. This is only set after
-  // SetTextureMailbox is called, before we give it to the TextureLayer.
-  std::unique_ptr<viz::SingleReleaseCallback> mailbox_release_callback_;
+  // SetTransferableResource() is called, before we give it to the TextureLayer.
+  std::unique_ptr<viz::SingleReleaseCallback> transfer_release_callback_;
 
   // The size of the frame or texture in DIP, set when SetShowDelegatedContent
-  // or SetTextureMailbox was called.
+  // or SetTransferableResource() was called.
   gfx::Size frame_size_in_dip_;
 
   // The counter to maintain how many cache render surface requests we have. If

@@ -341,19 +341,18 @@ void ScreenRotationAnimator::CreateOldLayerTreeForSlowAnimation() {
 
 std::unique_ptr<ui::LayerTreeOwner> ScreenRotationAnimator::CopyLayerTree(
     std::unique_ptr<viz::CopyOutputResult> result) {
-  viz::TextureMailbox texture_mailbox;
-  std::unique_ptr<viz::SingleReleaseCallback> release_callback;
-  if (auto* mailbox = result->GetTextureMailbox()) {
-    texture_mailbox = *mailbox;
-    release_callback = result->TakeTextureOwnership();
-  }
-  DCHECK(texture_mailbox.IsTexture());
+  DCHECK(!result->IsEmpty());
+  DCHECK_EQ(result->format(), viz::CopyOutputResult::Format::RGBA_TEXTURE);
+  viz::TransferableResource transfer_resource =
+      result->GetTextureMailbox()->ToTransferableResource();
+  std::unique_ptr<viz::SingleReleaseCallback> release_callback =
+      result->TakeTextureOwnership();
   const gfx::Rect rect(
       GetScreenRotationContainer(root_window_)->layer()->size());
   std::unique_ptr<ui::Layer> copy_layer = std::make_unique<ui::Layer>();
   copy_layer->SetBounds(rect);
-  copy_layer->SetTextureMailbox(texture_mailbox, std::move(release_callback),
-                                rect.size());
+  copy_layer->SetTransferableResource(transfer_resource,
+                                      std::move(release_callback), rect.size());
   return std::make_unique<ui::LayerTreeOwner>(std::move(copy_layer));
 }
 
