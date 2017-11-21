@@ -148,9 +148,11 @@ using web::WebStateImpl;
 - (void)selectedTabChanged;
 - (void)dismissToolsMenuPopup;
 - (void)cancelOmniboxEdit;
-- (ToolbarButtonUpdater*)buttonUpdater;
 
+- (ToolbarButtonUpdater*)buttonUpdater;
+- (void)setToolsMenuStateProvider:(id)provider;
 @property(nonatomic, readonly, weak) UIViewController* viewController;
+
 @end
 
 @implementation TestWebToolbarController
@@ -186,6 +188,9 @@ using web::WebStateImpl;
 }
 - (ToolbarButtonUpdater*)buttonUpdater {
   return nil;
+}
+- (void)setToolsMenuStateProvider:(id)provider {
+  return;
 }
 @end
 

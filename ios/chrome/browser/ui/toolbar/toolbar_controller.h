@@ -13,7 +13,8 @@
 #import "ios/chrome/browser/ui/toolbar/public/abstract_toolbar.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_constants.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_view.h"
-#import "ios/chrome/browser/ui/tools_menu/tools_popup_controller.h"
+#import "ios/chrome/browser/ui/tools_menu/public/tools_menu_presentation_provider.h"
+#import "ios/chrome/browser/ui/tools_menu/public/tools_menu_presentation_state_provider.h"
 
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
@@ -25,9 +26,9 @@ class ReadingListModel;
 // on its own, but to be subclassed by more specific toolbars that provide
 // more buttons in the empty space.
 @interface ToolbarController : UIViewController<ActivityServicePositioner,
-                                                PopupMenuDelegate,
                                                 BubbleViewAnchorPointProvider,
-                                                AbstractToolbar>
+                                                AbstractToolbar,
+                                                ToolsMenuPresentationProvider>
 
 // The top-level toolbar view.
 @property(nonatomic, strong) ToolbarView* view;
@@ -35,6 +36,11 @@ class ReadingListModel;
 // allow clients to alter the visibility of the shadow without affecting other
 // components of the toolbar.
 @property(nonatomic, readonly, strong) UIImageView* shadowView;
+
+// |toolsmenuStateProvider| provides information about the
+// presentation state of the tools menu.
+@property(nonatomic, readwrite, weak) id<ToolsMenuPresentationStateProvider>
+    toolsMenuStateProvider;
 
 // Returns the constraint controlling the height of the toolbar. If the
 // constraint does not exist, creates it but does not activate it.

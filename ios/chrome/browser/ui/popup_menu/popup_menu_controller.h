@@ -7,6 +7,8 @@
 
 #import <UIKit/UIKit.h>
 
+#include "base/ios/block_types.h"
+
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
 @class PopupMenuController;
@@ -66,11 +68,13 @@
 // Called when the user taps outside of the popup.
 - (void)tappedBehindPopup:(id)sender;
 
-// Called to display the popup with a fade in animation. |completionBlock| is
+// Called to display the popup with a fade in animation. |completion| is
 // executed once the fade animation is complete.
 - (void)fadeInPopupFromSource:(CGPoint)source
-                toDestination:(CGPoint)destination;
-- (void)dismissAnimatedWithCompletion:(void (^)(void))completion;
+                toDestination:(CGPoint)destination
+                   completion:(ProceduralBlock)completion;
+
+- (void)dismissAnimatedWithCompletion:(ProceduralBlock)completion;
 
 // Called to display the popup with a fade in animation. |completionBlock| is
 // executed once the fade animation is complete.

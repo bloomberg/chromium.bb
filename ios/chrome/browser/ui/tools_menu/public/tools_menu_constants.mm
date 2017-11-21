@@ -8,6 +8,17 @@
 #error "This file requires ARC support."
 #endif
 
+// Tools menu presentation notifications.
+NSString* const kToolsMenuWillShowNotification =
+    @"kToolsMenuWillShowNotification";
+NSString* const kToolsMenuWillHideNotification =
+    @"kToolsMenuWillHideNotification";
+NSString* const kToolsMenuDidShowNotification =
+    @"kToolsMenuDidShowNotification";
+NSString* const kToolsMenuDidHideNotification =
+    @"kToolsMenuDidHideNotification";
+
+// Tools menu item IDs.
 NSString* const kToolsMenuNewTabId = @"kToolsMenuNewTabId";
 NSString* const kToolsMenuNewIncognitoTabId = @"kToolsMenuNewIncognitoTabId";
 NSString* const kToolsMenuCloseAllTabsId = @"kToolsMenuCloseAllTabsId";

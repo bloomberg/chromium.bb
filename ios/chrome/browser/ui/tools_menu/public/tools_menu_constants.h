@@ -7,6 +7,17 @@
 
 #import <Foundation/Foundation.h>
 
+// Tools Menu Notifications.
+// Notification that the tools menu will be shown.
+extern NSString* const kToolsMenuWillShowNotification;
+// Notification that the tools menu will dismiss.
+extern NSString* const kToolsMenuWillHideNotification;
+// Notification that the tools menu did show.
+extern NSString* const kToolsMenuDidShowNotification;
+// Notification that the tools menu did dismiss.
+extern NSString* const kToolsMenuDidHideNotification;
+
+// Tools Menu item IDs.
 // New Tab item accessibility Identifier.
 extern NSString* const kToolsMenuNewTabId;
 // New incognito Tab item accessibility Identifier.

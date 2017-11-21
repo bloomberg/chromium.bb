@@ -7,13 +7,19 @@
 #import "ios/chrome/browser/ui/toolbar/omnibox_focuser.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_button_updater.h"
 #import "ios/chrome/browser/ui/toolbar/web_toolbar_controller.h"
+#import "ios/chrome/browser/ui/tools_menu/public/tools_menu_constants.h"
+#import "ios/chrome/browser/ui/tools_menu/tools_menu_coordinator.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-@interface LegacyToolbarCoordinator ()
+@interface LegacyToolbarCoordinator () {
+  // Coordinator for the tools menu UI.
+  ToolsMenuCoordinator* _toolsMenuCoordinator;
+}
+
 @property(nonatomic, strong) id<Toolbar> toolbarController;
 @end
 
@@ -22,6 +28,28 @@
 @synthesize toolbarViewController = _toolbarViewController;
 @synthesize toolbarController = _toolbarController;
 
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+            toolsMenuConfigurationProvider:
+                (id<ToolsMenuConfigurationProvider>)configurationProvider
+                                dispatcher:(CommandDispatcher*)dispatcher {
+  if (self = [super initWithBaseViewController:viewController]) {
+    _toolsMenuCoordinator = [[ToolsMenuCoordinator alloc]
+        initWithBaseViewController:viewController];
+    _toolsMenuCoordinator.dispatcher = dispatcher;
+    _toolsMenuCoordinator.configurationProvider = configurationProvider;
+
+    NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
+    [defaultCenter addObserver:self
+                      selector:@selector(toolsMenuWillShowNotification:)
+                          name:kToolsMenuWillShowNotification
+                        object:_toolsMenuCoordinator];
+    [defaultCenter addObserver:self
+                      selector:@selector(toolsMenuWillHideNotification:)
+                          name:kToolsMenuWillHideNotification
+                        object:_toolsMenuCoordinator];
+  }
+  return self;
+}
 - (void)stop {
   self.toolbarController = nil;
 }
@@ -31,14 +59,6 @@
     _toolbarViewController = self.toolbarController.viewController;
 
   return _toolbarViewController;
-}
-
-- (void)setToolbarController:(id<Toolbar>)toolbarController {
-  _toolbarController = toolbarController;
-}
-
-- (void)setToolbarDelegate:(id<WebToolbarDelegate>)delegate {
-  self.toolbarController.delegate = delegate;
 }
 
 #pragma mark - Delegates
@@ -65,6 +85,22 @@
 
 #pragma mark - WebToolbarController public interface
 
+- (void)setToolbarController:(id<Toolbar>)toolbarController {
+  _toolbarController = toolbarController;
+  // ToolbarController needs to know about whether the tools menu is presented
+  // or not, and does so by storing a reference to the coordinator to query.
+  [_toolbarController setToolsMenuStateProvider:_toolsMenuCoordinator];
+  if ([_toolbarController
+          conformsToProtocol:@protocol(ToolsMenuPresentationProvider)]) {
+    _toolsMenuCoordinator.presentationProvider =
+        (id<ToolsMenuPresentationProvider>)_toolbarController;
+  }
+}
+
+- (void)setToolbarDelegate:(id<WebToolbarDelegate>)delegate {
+  self.toolbarController.delegate = delegate;
+}
+
 - (void)adjustToolbarHeight {
   [self.toolbarController adjustToolbarHeight];
 }
@@ -84,6 +120,7 @@
 
 - (void)updateToolbarState {
   [self.toolbarController updateToolbarState];
+  [_toolsMenuCoordinator updateConfiguration];
 }
 
 - (void)setShareButtonEnabled:(BOOL)enabled {
@@ -104,19 +141,6 @@
 
 - (void)currentPageLoadStarted {
   [self.toolbarController currentPageLoadStarted];
-}
-
-- (void)showToolsMenuPopupWithConfiguration:
-    (ToolsMenuConfiguration*)configuration {
-  [self.toolbarController showToolsMenuPopupWithConfiguration:configuration];
-}
-
-- (ToolsPopupController*)toolsPopupController {
-  return [self.toolbarController toolsPopupController];
-}
-
-- (void)dismissToolsMenuPopup {
-  [self.toolbarController dismissToolsMenuPopup];
 }
 
 - (CGRect)visibleOmniboxFrame {
@@ -230,4 +254,21 @@
 - (CGPoint)anchorPointForToolsMenuButton:(BubbleArrowDirection)direction {
   return [self.toolbarController anchorPointForToolsMenuButton:direction];
 }
+
+#pragma mark - ToolsMenuPresentationStateProvider
+
+- (BOOL)isShowingToolsMenu {
+  return [_toolsMenuCoordinator isShowingToolsMenu];
+}
+
+#pragma mark - Tools Menu
+
+- (void)toolsMenuWillShowNotification:(NSNotification*)note {
+  [self.toolbarController setToolsMenuIsVisibleForToolsMenuButton:YES];
+}
+
+- (void)toolsMenuWillHideNotification:(NSNotification*)note {
+  [self.toolbarController setToolsMenuIsVisibleForToolsMenuButton:NO];
+}
+
 @end

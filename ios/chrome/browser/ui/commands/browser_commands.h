@@ -13,6 +13,7 @@
 #import "ios/chrome/browser/ui/commands/page_info_commands.h"
 #import "ios/chrome/browser/ui/commands/qr_scanner_commands.h"
 #import "ios/chrome/browser/ui/commands/snackbar_commands.h"
+#import "ios/chrome/browser/ui/commands/tools_menu_commands.h"
 
 @class OpenNewTabCommand;
 @class ReadingListAddCommand;
@@ -25,7 +26,8 @@
                           PageInfoCommands,
                           QRScannerCommands,
                           SnackbarCommands,
-                          TabHistoryPopupCommands>
+                          TabHistoryPopupCommands,
+                          ToolsMenuCommands>
 
 // Closes the current tab.
 - (void)closeCurrentTab;
@@ -44,9 +46,6 @@
 
 // Bookmarks the current page.
 - (void)bookmarkPage;
-
-// Shows the tools menu.
-- (void)showToolsMenu;
 
 // Opens a new tab as specified by |newTabCommand|.
 - (void)openNewTab:(OpenNewTabCommand*)newTabCommand;
