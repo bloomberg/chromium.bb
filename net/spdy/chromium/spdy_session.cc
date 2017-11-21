@@ -767,7 +767,7 @@ SpdySession::SpdySession(
       streams_abandoned_count_(0),
       pings_in_flight_(0),
       next_ping_id_(1),
-      last_activity_time_(time_func()),
+      last_read_time_(time_func()),
       last_compressed_frame_len_(0),
       check_ping_status_pending_(false),
       session_send_window_size_(0),
@@ -1934,7 +1934,7 @@ int SpdySession::DoReadComplete(int result) {
   }
   CHECK_LE(result, kReadBufferSize);
 
-  last_activity_time_ = time_func_();
+  last_read_time_ = time_func_();
 
   DCHECK(buffered_spdy_framer_.get());
   char* data = read_buffer_->data();
@@ -2084,8 +2084,6 @@ int SpdySession::DoWriteComplete(int result) {
   CHECK(in_io_loop_);
   DCHECK_NE(result, ERR_IO_PENDING);
   DCHECK_GT(in_flight_write_->GetRemainingSize(), 0u);
-
-  last_activity_time_ = time_func_();
 
   if (result < 0) {
     DCHECK_NE(result, ERR_IO_PENDING);
@@ -2261,7 +2259,7 @@ void SpdySession::SendPrefacePingIfNoneInFlight() {
 
   base::TimeTicks now = time_func_();
   // If there is no activity in the session, then send a preface-PING.
-  if ((now - last_activity_time_) > connection_at_risk_of_loss_time_)
+  if ((now - last_read_time_) > connection_at_risk_of_loss_time_)
     SendPrefacePing();
 }
 
@@ -2332,9 +2330,9 @@ void SpdySession::CheckPingStatus(base::TimeTicks last_check_time) {
   DCHECK(check_ping_status_pending_);
 
   base::TimeTicks now = time_func_();
-  base::TimeDelta delay = hung_interval_ - (now - last_activity_time_);
+  base::TimeDelta delay = hung_interval_ - (now - last_read_time_);
 
-  if (delay.InMilliseconds() < 0 || last_activity_time_ < last_check_time) {
+  if (delay.InMilliseconds() < 0 || last_read_time_ < last_check_time) {
     DoDrainSession(ERR_SPDY_PING_FAILED, "Failed ping.");
     return;
   }
