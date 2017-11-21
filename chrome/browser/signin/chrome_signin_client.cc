@@ -379,8 +379,8 @@ void ChromeSigninClient::OnGetTokenFailure(
 
 #if !defined(OS_CHROMEOS)
 void ChromeSigninClient::OnConnectionChanged(
-    content::mojom::ConnectionType type) {
-  if (type == content::mojom::ConnectionType::CONNECTION_NONE)
+    network::mojom::ConnectionType type) {
+  if (type == network::mojom::ConnectionType::CONNECTION_NONE)
     return;
 
   for (const base::Closure& callback : delayed_callbacks_)
@@ -398,12 +398,12 @@ void ChromeSigninClient::DelayNetworkCall(const base::Closure& callback) {
   return;
 #else
   // Don't bother if we don't have any kind of network connection.
-  content::mojom::ConnectionType type;
+  network::mojom::ConnectionType type;
   bool sync =
       g_browser_process->network_connection_tracker()->GetConnectionType(
           &type, base::BindOnce(&ChromeSigninClient::OnConnectionChanged,
                                 weak_ptr_factory_.GetWeakPtr()));
-  if (!sync || type == content::mojom::ConnectionType::CONNECTION_NONE) {
+  if (!sync || type == network::mojom::ConnectionType::CONNECTION_NONE) {
     // Connection type cannot be retrieved synchronously so delay the callback.
     delayed_callbacks_.push_back(callback);
   } else {

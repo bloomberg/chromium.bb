@@ -63,9 +63,9 @@ class MockNetworkConnectionTracker : public content::NetworkConnectionTracker {
   MockNetworkConnectionTracker() : content::NetworkConnectionTracker() {}
   ~MockNetworkConnectionTracker() override {}
 
-  bool GetConnectionType(content::mojom::ConnectionType* type,
+  bool GetConnectionType(network::mojom::ConnectionType* type,
                          ConnectionTypeCallback callback) override {
-    *type = content::mojom::ConnectionType::CONNECTION_UNKNOWN;
+    *type = network::mojom::ConnectionType::CONNECTION_UNKNOWN;
     return true;
   }
 

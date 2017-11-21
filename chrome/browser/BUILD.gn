@@ -1752,6 +1752,7 @@ split_static_library("browser") {
     "//services/identity:lib",
     "//services/metrics",
     "//services/metrics/public/cpp:ukm_builders",
+    "//services/network/public/interfaces",
     "//services/preferences/public/cpp",
     "//services/preferences/public/cpp:service_main",
     "//services/preferences/public/cpp/tracked",

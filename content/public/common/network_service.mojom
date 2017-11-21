@@ -4,7 +4,6 @@
 
 module content.mojom;
 
-import "network_change_manager.mojom";
 import "mojo/common/file_path.mojom";
 import "mojo/common/time.mojom";
 import "resource_type.mojom";
@@ -12,6 +11,7 @@ import "url_loader.mojom";
 import "url_loader_factory.mojom";
 import "url/mojo/url.mojom";
 import "services/network/public/interfaces/cookie_manager.mojom";
+import "services/network/public/interfaces/network_change_manager.mojom";
 import "services/network/public/interfaces/restricted_cookie_manager.mojom";
 
 [Native]
@@ -150,5 +150,6 @@ interface NetworkService {
   SetRawHeadersAccess(uint32 process_id, bool allow);
 
   // Gets the NetworkChangeManager.
-  GetNetworkChangeManager(NetworkChangeManager& network_change_manager);
+  GetNetworkChangeManager(
+      network.mojom.NetworkChangeManager& network_change_manager);
 };
