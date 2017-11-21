@@ -231,14 +231,21 @@ class CONTENT_EXPORT PepperGraphics2DHost
   // The shared main thread context provider, used to upload 2d pepper frames
   // if the compositor is expecting gpu content.
   scoped_refptr<viz::ContextProvider> main_thread_context_;
+  struct TextureInfo {
+    uint32_t id;
+    gpu::Mailbox mailbox;
+    gfx::Size size;
+  };
   // The ids of textures holding the copied contents of software frames to
   // give to the compositor via GL. Textures in this list are in use by the
   // compositor and are treated as owned by the compositor until the
   // ReleaseTextureCallback() informs otherwise.
-  std::vector<std::pair<uint32_t, gpu::Mailbox>> texture_copies_;
+  std::vector<TextureInfo> texture_copies_;
   // Texture ids move from |texture_copies_| to here once they are available for
   // reuse.
-  std::vector<std::pair<uint32_t, gpu::Mailbox>> recycled_texture_copies_;
+  std::vector<TextureInfo> recycled_texture_copies_;
+  uint32_t scanout_texture_target_rgba_ = 0;
+  uint32_t scanout_texture_target_bgra_ = 0;
 
   // This is a bitmap that was recently released by the compositor and may be
   // used to transfer bytes to the compositor again.
