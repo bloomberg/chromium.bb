@@ -20,15 +20,11 @@
 #include "components/payments/content/payment_response_helper.h"
 #include "components/payments/content/service_worker_payment_app_factory.h"
 #include "components/payments/content/service_worker_payment_instrument.h"
-#include "components/payments/content/utility/payment_manifest_parser.h"
 #include "components/payments/core/autofill_payment_instrument.h"
 #include "components/payments/core/journey_logger.h"
 #include "components/payments/core/payment_instrument.h"
-#include "components/payments/core/payment_manifest_downloader.h"
 #include "components/payments/core/payment_request_data_util.h"
-#include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
-#include "net/url_request/url_request_context_getter.h"
 
 namespace payments {
 
@@ -60,24 +56,18 @@ PaymentRequestState::PaymentRequestState(
       weak_ptr_factory_(this) {
   if (base::FeatureList::IsEnabled(features::kServiceWorkerPaymentApps)) {
     get_all_instruments_finished_ = false;
-    service_worker_payment_app_factory_ =
-        std::make_unique<ServiceWorkerPaymentAppFactory>();
-    service_worker_payment_app_factory_->GetAllPaymentApps(
+    ServiceWorkerPaymentAppFactory::GetInstance()->GetAllPaymentApps(
         web_contents,
-        std::make_unique<PaymentManifestDownloader>(
-            content::BrowserContext::GetDefaultStoragePartition(
-                web_contents->GetBrowserContext())
-                ->GetURLRequestContext()),
         payment_request_delegate_->GetPaymentManifestWebDataService(),
         spec_->method_data(),
         base::BindOnce(&PaymentRequestState::GetAllPaymentAppsCallback,
                        weak_ptr_factory_.GetWeakPtr(),
                        web_contents->GetBrowserContext(), top_level_origin,
                        frame_origin),
-        base::BindOnce(
-            &PaymentRequestState::
-                OnServiceWorkerPaymentAppFactoryFinishedUsingResources,
-            weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce([]() {
+          /* Nothing needs to be done after writing cache. This callback is used
+           * only in tests. */
+        }));
   } else {
     PopulateProfileCache();
     SetDefaultProfileSelections();
@@ -144,11 +134,6 @@ void PaymentRequestState::FinishedGetAllSWPaymentInstruments() {
   if (are_requested_methods_supported_callback_)
     CheckRequestedMethodsSupported(
         std::move(are_requested_methods_supported_callback_));
-}
-
-void PaymentRequestState::
-    OnServiceWorkerPaymentAppFactoryFinishedUsingResources() {
-  service_worker_payment_app_factory_.reset();
 }
 
 void PaymentRequestState::OnPaymentResponseReady(

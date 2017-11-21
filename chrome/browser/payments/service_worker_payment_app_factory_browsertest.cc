@@ -110,16 +110,16 @@ class ServiceWorkerPaymentAppFactoryBrowserTest : public InProcessBrowserTest {
                                  frankpay_.GetURL("frankpay.com", "/"));
     downloader->AddTestServerURL("https://georgepay.com/",
                                  georgepay_.GetURL("georgepay.com", "/"));
-    ServiceWorkerPaymentAppFactory factory;
-    factory.IgnorePortInAppScopeForTesting();
+    ServiceWorkerPaymentAppFactory::GetInstance()
+        ->SetDownloaderAndIgnorePortInAppScopeForTesting(std::move(downloader));
 
     std::vector<mojom::PaymentMethodDataPtr> method_data;
     method_data.emplace_back(mojom::PaymentMethodData::New());
     method_data.back()->supported_methods = payment_method_identifiers;
 
     base::RunLoop run_loop;
-    factory.GetAllPaymentApps(
-        web_contents, std::move(downloader),
+    ServiceWorkerPaymentAppFactory::GetInstance()->GetAllPaymentApps(
+        web_contents,
         WebDataServiceFactory::GetPaymentManifestWebDataForProfile(
             Profile::FromBrowserContext(context),
             ServiceAccessType::EXPLICIT_ACCESS),
