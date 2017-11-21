@@ -109,7 +109,7 @@ function addAuditFailures() {
  * a string matching '.*accessibility.*'.
  */
 function expectReportConsoleWarning() {
-  function StubConsole() {};
+  function StubConsole() {}
   StubConsole.prototype.warn = function() {};
   StubConsole.prototype.log = function() {};
   StubConsole.prototype.info = function() {};
@@ -127,7 +127,7 @@ function expectReportConsoleWarning() {
  * @return {object} a mock object with a run() method.
  */
 function createMockAudit() {
-  function StubAudit() {};
+  function StubAudit() {}
   StubAudit.prototype.run = function() {};
 
   return mock(StubAudit);

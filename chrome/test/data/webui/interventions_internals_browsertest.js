@@ -98,7 +98,7 @@ InterventionsInternalsUITest.prototype = {
         year: 'numeric',
         month: '2-digit',
         day: '2-digit',
-      }
+      };
 
       let timeString = date.toLocaleDateString('en-US', options);
       return dateString + ' ' + date.getHours() + ':' + date.getMinutes() +

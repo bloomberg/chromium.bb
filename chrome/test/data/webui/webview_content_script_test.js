@@ -15,7 +15,7 @@ function createWebview() {
 
 function onGetBackgroundExecuted(results) {
   chrome.send('testResult', [results.length == 1 && results[0] == 'red']);
-};
+}
 
 function testExecuteScriptCode(url) {
   var webview = createWebview();
@@ -479,7 +479,7 @@ function testAddContentScriptWithCode(url) {
         run_at: 'document_end'}]);
 
   webview.addEventListener('loadstop', function() {
-    console.log('Step 2: call webview.executeScript() to check result.')
+    console.log('Step 2: call webview.executeScript() to check result.');
     webview.executeScript({
       code: 'document.body.style.backgroundColor;'
     }, onGetBackgroundExecuted);

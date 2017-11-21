@@ -7,7 +7,7 @@ console.log('start guest js');
 var embedder = null;
 window.addEventListener('message', function (e) {
   var data = JSON.parse(e.data)[0];
-  window.console.log('guest gets message ' + data)
+  window.console.log('guest gets message ' + data);
   if (data == 'create-channel') {
     embedder = e.source;
     doPostMessage('connected');

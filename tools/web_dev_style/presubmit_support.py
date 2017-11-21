@@ -23,3 +23,15 @@ def CheckStyle(input_api, output_api, file_filter=lambda f: True):
   for checker in checkers:
     results.extend(checker.RunChecks())
   return results
+
+
+def CheckStyleESLint(input_api, output_api):
+  apis = input_api, output_api
+  is_js = lambda f: f.LocalPath().endswith('.js')
+  affected_js_files = input_api.AffectedFiles(file_filter=is_js,
+                                              include_deletes=False)
+  if not affected_js_files:
+    return []
+
+  checker = js_checker.JSChecker(*apis)
+  return checker.RunEsLintChecks(affected_js_files)
