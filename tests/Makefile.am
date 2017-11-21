@@ -142,6 +142,10 @@ dist_yaml_TESTS =				\
 	yaml/da-dk-g28-dictionary_harness.yaml	\
 	yaml/da-dk-g28.yaml			\
 	yaml/da-dk-g28l.yaml			\
+	yaml/de-ch-abbr.yaml			\
+	yaml/de-ch-computer.yaml		\
+	yaml/de-ch-g2.yaml			\
+	yaml/de-ch-vform.yaml			\
 	yaml/el-backward.yaml			\
 	yaml/el-forward.yaml			\
 	yaml/emphasis-full.yaml			\
