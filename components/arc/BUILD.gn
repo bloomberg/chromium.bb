@@ -162,6 +162,8 @@ static_library("arc_test_support") {
   sources = [
     "test/fake_app_instance.cc",
     "test/fake_app_instance.h",
+    "test/fake_arc_bridge_host.cc",
+    "test/fake_arc_bridge_host.h",
     "test/fake_arc_session.cc",
     "test/fake_arc_session.h",
     "test/fake_bluetooth_instance.cc",
@@ -197,6 +199,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "arc_data_remover_unittest.cc",
+    "arc_session_impl_unittest.cc",
     "arc_session_runner_unittest.cc",
     "arc_util_unittest.cc",
     "bluetooth/bluetooth_struct_traits_unittest.cc",
