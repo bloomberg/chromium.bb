@@ -312,7 +312,8 @@ cr.define('print_preview', function() {
      * @private
      */
     renderDestinations_: function() {
-      const recentDestinations = [];
+      const recentDestinations = this.destinationStore_.getRecentDestinations(
+          this.userInfo_.activeUser);
       const localDestinations = [];
       const cloudDestinations = [];
       const unregisteredCloudDestinations = [];
@@ -320,9 +321,6 @@ cr.define('print_preview', function() {
       const destinations =
           this.destinationStore_.destinations(this.userInfo_.activeUser);
       destinations.forEach(function(destination) {
-        if (destination.isRecent) {
-          recentDestinations.push(destination);
-        }
         if (destination.isLocal ||
             destination.origin == print_preview.DestinationOrigin.DEVICE) {
           localDestinations.push(destination);
@@ -652,14 +650,8 @@ cr.define('print_preview', function() {
      * @private
      */
     onDestinationStoreSelect_: function() {
-      const destinations =
-          this.destinationStore_.destinations(this.userInfo_.activeUser);
-      const recentDestinations = [];
-      destinations.forEach(function(destination) {
-        if (destination.isRecent) {
-          recentDestinations.push(destination);
-        }
-      });
+      const recentDestinations = this.destinationStore_.getRecentDestinations(
+          this.userInfo_.activeUser);
       this.recentList_.updateDestinations(recentDestinations);
       this.reflowLists_();
     },

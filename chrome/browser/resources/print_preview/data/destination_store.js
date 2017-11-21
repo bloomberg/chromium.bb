@@ -288,6 +288,26 @@ cr.define('print_preview', function() {
     }
 
     /**
+     * @param {?string} filterAccount Account to filter recent destinations by.
+     * @return {!Array<!print_preview.Destination>} List of recent destinations
+     */
+    getRecentDestinations(filterAccount) {
+      let recentDestinations = [];
+      this.appState_.recentDestinations.forEach(function(recentDestination) {
+        const origin = recentDestination.origin;
+        const id = recentDestination.id;
+        const account = recentDestination.account || '';
+        const destination =
+            this.destinationMap_[this.getDestinationKey_(origin, id, account)];
+        if (destination &&
+            (!destination.account || destination.account == filterAccount)) {
+          recentDestinations.push(destination);
+        }
+      }.bind(this));
+      return recentDestinations;
+    }
+
+    /**
      * @return {print_preview.Destination} The currently selected destination or
      *     {@code null} if none is selected.
      */
