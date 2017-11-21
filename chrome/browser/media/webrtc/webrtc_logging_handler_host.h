@@ -140,11 +140,13 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
       const WebRtcEventLogHandler::RecordingDoneCallback& callback,
       const WebRtcEventLogHandler::RecordingErrorCallback& error_callback);
 
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   // Ensures that the WebRTC Logs directory exists and then grants render
   // process access to the 'WebRTC Logs' directory, and invokes |callback| with
   // the ids necessary to create a DirectoryEntry object.
   void GetLogsDirectory(const LogsDirectoryCallback& callback,
                         const LogsDirectoryErrorCallback& error_callback);
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
  private:
   friend class content::BrowserThread;
@@ -210,6 +212,7 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
       bool success,
       const std::string& error_message);
 
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   // Grants the render process access to the 'WebRTC Logs' directory, and
   // invokes |callback| with the ids necessary to create a DirectoryEntry
   // object. If the |logs_path| couldn't be created or found, |error_callback|
@@ -218,6 +221,7 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
       const LogsDirectoryCallback& callback,
       const LogsDirectoryErrorCallback& error_callback,
       const base::FilePath& logs_path);
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
   // The render process ID this object belongs to.
   int render_process_id_;

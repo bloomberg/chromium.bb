@@ -24,6 +24,7 @@ class WebrtcLoggingPrivateApiBrowserTest
   DISALLOW_COPY_AND_ASSIGN(WebrtcLoggingPrivateApiBrowserTest);
 };
 
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiBrowserTest,
                        TestGetLogsDirectoryCreatesWebRtcLogsDirectory) {
   base::ScopedAllowBlockingForTesting allow_blocking;
@@ -49,6 +50,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiBrowserTest,
       "test_with_file_in_directory"))
       << message_;
 }
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiBrowserTest,
                        TestNoGetLogsDirectoryPermissionsFromHangoutsExtension) {

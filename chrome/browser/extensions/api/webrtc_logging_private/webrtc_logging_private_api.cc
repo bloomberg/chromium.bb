@@ -586,6 +586,7 @@ bool WebrtcLoggingPrivateStopWebRtcEventLoggingFunction::RunAsync() {
 }
 
 bool WebrtcLoggingPrivateGetLogsDirectoryFunction::RunAsync() {
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   // Unlike other WebrtcLoggingPrivate functions that take a RequestInfo object,
   // this function shouldn't be called by a component extension on behalf of
   // some web code. It returns a DirectoryEntry for use directly in the calling
@@ -609,6 +610,11 @@ bool WebrtcLoggingPrivateGetLogsDirectoryFunction::RunAsync() {
           &WebrtcLoggingPrivateGetLogsDirectoryFunction::FireErrorCallback,
           this));
   return true;
+#else   // defined(OS_LINUX) || defined(OS_CHROMEOS)
+  SetError("Not supported on the current OS");
+  SendResponse(false);
+  return false;
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 }
 
 void WebrtcLoggingPrivateGetLogsDirectoryFunction::FireCallback(
