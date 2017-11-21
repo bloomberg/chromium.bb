@@ -149,17 +149,11 @@ class HomedirMethodsImpl : public HomedirMethods {
   }
 
   void UpdateKeyEx(const Identification& id,
-                   const Authorization& auth,
-                   const KeyDefinition& new_key,
-                   const std::string& signature,
+                   const AuthorizationRequest& auth,
+                   const UpdateKeyRequest& request,
                    const Callback& callback) override {
-    cryptohome::UpdateKeyRequest pb_update_key;
-
-    KeyDefinitionToKey(new_key, pb_update_key.mutable_changes());
-    pb_update_key.set_authorization_signature(signature);
-
     DBusThreadManager::Get()->GetCryptohomeClient()->UpdateKeyEx(
-        id, CreateAuthorizationRequest(auth.label, auth.key), pb_update_key,
+        id, auth, request,
         base::BindOnce(&HomedirMethodsImpl::OnBaseReplyCallback,
                        weak_ptr_factory_.GetWeakPtr(), callback));
   }

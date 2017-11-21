@@ -236,20 +236,17 @@ void ExtendedAuthenticatorImpl::DoUpdateKeyAuthorized(
     const UserContext& user_context) {
   RecordStartMarker("UpdateKeyAuthorized");
 
-  cryptohome::Identification id(user_context.GetAccountId());
   const Key* const auth_key = user_context.GetKey();
-  cryptohome::Authorization auth(auth_key->GetSecret(), auth_key->GetLabel());
-
+  cryptohome::UpdateKeyRequest request;
+  cryptohome::KeyDefinitionToKey(key, request.mutable_changes());
+  request.set_authorization_signature(signature);
   cryptohome::HomedirMethods::GetInstance()->UpdateKeyEx(
-      id,
-      auth,
-      key,
-      signature,
-      base::Bind(&ExtendedAuthenticatorImpl::OnOperationComplete,
-                 this,
-                 "UpdateKeyAuthorized",
-                 user_context,
-                 success_callback));
+      cryptohome::Identification(user_context.GetAccountId()),
+      cryptohome::CreateAuthorizationRequest(auth_key->GetLabel(),
+                                             auth_key->GetSecret()),
+      request,
+      base::Bind(&ExtendedAuthenticatorImpl::OnOperationComplete, this,
+                 "UpdateKeyAuthorized", user_context, success_callback));
 }
 
 void ExtendedAuthenticatorImpl::DoRemoveKey(const std::string& key_to_remove,

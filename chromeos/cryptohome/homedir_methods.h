@@ -83,16 +83,13 @@ class CHROMEOS_EXPORT HomedirMethods {
                         const AddKeyRequest& request,
                         const Callback& callback) = 0;
 
-  // Asks cryptohomed to update |key| for user identified by |id| using |auth|
-  // to unlock the key.
-  // Label for |auth| and |key| have to be the same.
-  // Key used in |auth| should have PRIV_AUTHORIZED_UPDATE privilege.
-  // |signature| is used by cryptohome to verify the authentity of new key.
+  // Asks cryptohomed to update the key for the user identified by |id| using
+  // |auth| to unlock the key. Label for |auth| and the requested key have to be
+  // the same. Key used in |auth| should have PRIV_AUTHORIZED_UPDATE privilege.
   // |callback| will be called with status info on completion.
   virtual void UpdateKeyEx(const Identification& id,
-                           const Authorization& auth,
-                           const KeyDefinition& key,
-                           const std::string& signature,
+                           const AuthorizationRequest& auth,
+                           const UpdateKeyRequest& request,
                            const Callback& callback) = 0;
 
   // Asks cryptohomed to remove a specific key for the user identified by |id|
