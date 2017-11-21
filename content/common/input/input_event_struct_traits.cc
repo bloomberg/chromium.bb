@@ -154,56 +154,11 @@ bool StructTraits<content::mojom::EventDataView, InputEventUniquePtr>::Read(
           gesture_event->data.long_press.height =
               gesture_data->contact_size->height();
           break;
-
         case blink::WebInputEvent::Type::kGestureTwoFingerTap:
           gesture_event->data.two_finger_tap.first_finger_width =
               gesture_data->contact_size->width();
           gesture_event->data.two_finger_tap.first_finger_height =
               gesture_data->contact_size->height();
-          break;
-        case blink::WebInputEvent::Type::kGestureScrollBegin:
-          gesture_event->data.scroll_begin.delta_x_hint =
-              gesture_data->scroll_data->delta_x;
-          gesture_event->data.scroll_begin.delta_y_hint =
-              gesture_data->scroll_data->delta_y;
-          gesture_event->data.scroll_begin.delta_hint_units =
-              gesture_data->scroll_data->delta_units;
-          gesture_event->data.scroll_begin.target_viewport =
-              gesture_data->scroll_data->target_viewport;
-          gesture_event->data.scroll_begin.inertial_phase =
-              gesture_data->scroll_data->inertial_phase;
-          gesture_event->data.scroll_begin.synthetic =
-              gesture_data->scroll_data->synthetic;
-          gesture_event->data.scroll_begin.pointer_count =
-              gesture_data->scroll_data->pointer_count;
-          break;
-        case blink::WebInputEvent::Type::kGestureScrollEnd:
-          gesture_event->data.scroll_end.delta_units =
-              gesture_data->scroll_data->delta_units;
-          gesture_event->data.scroll_end.inertial_phase =
-              gesture_data->scroll_data->inertial_phase;
-          gesture_event->data.scroll_end.synthetic =
-              gesture_data->scroll_data->synthetic;
-          break;
-        case blink::WebInputEvent::Type::kGestureScrollUpdate:
-          gesture_event->data.scroll_update.delta_x =
-              gesture_data->scroll_data->delta_x;
-          gesture_event->data.scroll_update.delta_y =
-              gesture_data->scroll_data->delta_y;
-          gesture_event->data.scroll_update.delta_units =
-              gesture_data->scroll_data->delta_units;
-          gesture_event->data.scroll_update.inertial_phase =
-              gesture_data->scroll_data->inertial_phase;
-          if (gesture_data->scroll_data->update_details) {
-            gesture_event->data.scroll_update.velocity_x =
-                gesture_data->scroll_data->update_details->velocity_x;
-            gesture_event->data.scroll_update.velocity_y =
-                gesture_data->scroll_data->update_details->velocity_y;
-            gesture_event->data.scroll_update
-                .previous_update_in_sequence_prevented =
-                gesture_data->scroll_data->update_details
-                    ->previous_update_in_sequence_prevented;
-          }
           break;
       }
     }
@@ -259,6 +214,25 @@ bool StructTraits<content::mojom::EventDataView, InputEventUniquePtr>::Read(
       }
     }
 
+    if (gesture_data->pinch_data &&
+        type == blink::WebInputEvent::Type::kGesturePinchUpdate) {
+      gesture_event->data.pinch_update.zoom_disabled =
+          gesture_data->pinch_data->zoom_disabled;
+      gesture_event->data.pinch_update.scale = gesture_data->pinch_data->scale;
+    }
+
+    if (gesture_data->tap_data) {
+      switch (type) {
+        default:
+          break;
+        case blink::WebInputEvent::Type::kGestureTap:
+        case blink::WebInputEvent::Type::kGestureTapUnconfirmed:
+        case blink::WebInputEvent::Type::kGestureDoubleTap:
+          gesture_event->data.tap.tap_count = gesture_data->tap_data->tap_count;
+          break;
+      }
+    }
+
     if (gesture_data->fling_data) {
       switch (type) {
         default:
@@ -280,12 +254,6 @@ bool StructTraits<content::mojom::EventDataView, InputEventUniquePtr>::Read(
       }
     }
 
-    if (gesture_data->pinch_data &&
-        type == blink::WebInputEvent::Type::kGesturePinchUpdate) {
-      gesture_event->data.pinch_update.zoom_disabled =
-          gesture_data->pinch_data->zoom_disabled;
-      gesture_event->data.pinch_update.scale = gesture_data->pinch_data->scale;
-    }
   } else if (blink::WebInputEvent::IsTouchEventType(type)) {
     content::mojom::TouchDataPtr touch_data;
     if (!event.ReadTouchData<content::mojom::TouchDataPtr>(&touch_data))
