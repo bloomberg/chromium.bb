@@ -49,7 +49,6 @@ apply plugin: "com.android.application"
 android {
     compileSdkVersion "{{ compile_sdk_version }}"
     buildToolsVersion "{{ build_tools_version }}"
-    publishNonDefault true
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -80,12 +79,6 @@ android {
 }
 
 {% include 'dependencies.jinja' %}
-
-android.variantFilter { variant ->
-    if (variant.buildType.name.equals('release')) {
-        variant.setIgnore(true);
-    }
-}
 
 afterEvaluate {
     def tasksToDisable = tasks.findAll {
