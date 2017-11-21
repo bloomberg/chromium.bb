@@ -30,9 +30,10 @@ import gn_helpers
 
 COLORAMA_ROOT = os.path.join(host_paths.DIR_SOURCE_ROOT,
                              'third_party', 'colorama', 'src')
-# aapt should ignore OWNERS files in addition the default ignore pattern.
-AAPT_IGNORE_PATTERN = ('!OWNERS:!.svn:!.git:!.ds_store:!*.scc:.*:<dir>_*:' +
-                       '!CVS:!thumbs.db::!*~:!*.d.stamp')
+# aapt should ignore OWNERS and python files in addition the default ignore
+# pattern.
+AAPT_IGNORE_PATTERN = ('!OWNERS:!*.py:!*.pyc:!.svn:!.git:!.ds_store:!*.scc:' +
+                       '.*:<dir>_*:!CVS:!thumbs.db::!*~:!*.d.stamp')
 HERMETIC_TIMESTAMP = (2001, 1, 1, 0, 0, 0)
 _HERMETIC_FILE_ATTR = (0644 << 16L)
 
