@@ -107,6 +107,7 @@ component("capture_lib") {
     "video/mac/video_capture_device_factory_mac.mm",
     "video/mac/video_capture_device_mac.h",
     "video/mac/video_capture_device_mac.mm",
+    "video/scoped_buffer_pool_reservation.h",
     "video/shared_memory_buffer_tracker.cc",
     "video/shared_memory_buffer_tracker.h",
     "video/shared_memory_handle_provider.cc",

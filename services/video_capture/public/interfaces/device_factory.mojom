@@ -6,6 +6,8 @@ module video_capture.mojom;
 
 import "media/capture/mojo/video_capture_types.mojom";
 import "services/video_capture/public/interfaces/device.mojom";
+import "services/video_capture/public/interfaces/producer.mojom";
+import "services/video_capture/public/interfaces/virtual_device.mojom";
 
 enum DeviceAccessResultCode {
   NOT_INITIALIZED,
@@ -37,4 +39,15 @@ interface DeviceFactory {
   // in use.
   CreateDevice(string device_id, Device& device_request)
       => (DeviceAccessResultCode result_code);
+
+  // Creates a new virtual capture device, which will be exposed by the device
+  // factory using the given |device_info|. The returned |virtual_device| is to
+  // be used by the caller to subsequently push video frames. These frames will
+  // appear to clients of the device as if they were produced by the device.
+  // The virtual device is removed either when the caller releases
+  // |virtual_device| or the given |producer| is closed.
+  AddVirtualDevice(
+      media.mojom.VideoCaptureDeviceInfo device_info,
+      Producer producer,
+      VirtualDevice& virtual_device);
 };
