@@ -39,6 +39,8 @@
          count_all_in_varyings_packing)                      \
   GPU_OP(DECODE_ENCODE_SRGB_FOR_GENERATEMIPMAP,              \
          decode_encode_srgb_for_generatemipmap)              \
+  GPU_OP(DEPTH_STENCIL_RENDERBUFFER_RESIZE_EMULATION,        \
+         depth_stencil_renderbuffer_resize_emulation)        \
   GPU_OP(DISABLE_ACCELERATED_VPX_DECODE,                     \
          disable_accelerated_vpx_decode)                     \
   GPU_OP(DISABLE_ANGLE_INSTANCED_ARRAYS,                     \

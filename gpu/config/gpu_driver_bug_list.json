@@ -2737,6 +2737,23 @@
       "features": [
         "disable_direct_composition"
       ]
+    },
+    {
+      "id": 250,
+      "description": "Depth/stencil renderbuffers can't be resized on NVIDIA on macOS 10.13",
+      "cr_bugs": [775202],
+      "os": {
+        "type": "macosx",
+        "version": {
+          "op": ">=",
+          "value": "10.13.0"
+        }
+      },
+      "vendor_id": "0x10de",
+      "multi_gpu_category": "any",
+      "features": [
+        "depth_stencil_renderbuffer_resize_emulation"
+      ]
     }
   ]
 }

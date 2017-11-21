@@ -460,12 +460,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['mac', ('nvidia', 0xfe9), 'no_passthrough'], bug=635081)
     self.Fail('conformance/textures/misc/tex-input-validation.html',
         ['mac', ('nvidia', 0xfe9)], bug=635081)
-    self.Fail('conformance/canvas/drawingbuffer-static-canvas-test.html',
-        ['highsierra', ('nvidia', 0xfe9)], bug=775202)
-    self.Fail('conformance/canvas/render-after-resize-test.html',
-        ['mac', ('nvidia', 0xfe9)], bug=786717)
     self.Fail('conformance/glsl/bugs/init-array-with-loop.html',
-        ['mac', ('nvidia', 0xfe9)], bug=786717)
+        ['mac', ('nvidia', 0xfe9)], bug=784817)
 
     # Linux failures
     self.Fail('conformance/extensions/webgl-compressed-texture-astc.html',
