@@ -4,11 +4,15 @@
 
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 
+#include "base/memory/ptr_util.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_model.h"
+
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-FullscreenController::FullscreenController() {}
+FullscreenController::FullscreenController()
+    : model_(base::MakeUnique<FullscreenModel>()) {}
 
 FullscreenController::~FullscreenController() {}
 
@@ -24,14 +28,13 @@ void FullscreenController::RemoveObserver(
 }
 
 bool FullscreenController::IsEnabled() const {
-  // TODO(crbug.com/785665): Use FullscreenModel to track enabled state.
-  return false;
+  return model_->enabled();
 }
 
 void FullscreenController::IncrementDisabledCounter() {
-  // TODO(crbug.com/785665): Use FullscreenModel to track enabled state.
+  model_->IncrementDisabledCounter();
 }
 
 void FullscreenController::DecrementDisabledCounter() {
-  // TODO(crbug.com/785665): Use FullscreenModel to track enabled state.
+  model_->DecrementDisabledCounter();
 }

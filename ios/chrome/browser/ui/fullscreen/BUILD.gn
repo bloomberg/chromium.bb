@@ -39,6 +39,9 @@ source_set("new_fullscreen") {
 source_set("new_fullscreen_internal") {
   sources = [
     "fullscreen_controller.mm",
+    "fullscreen_model.h",
+    "fullscreen_model.mm",
+    "fullscreen_model_observer.h",
     "fullscreen_ui_updater.mm",
   ]
 
@@ -74,6 +77,7 @@ source_set("new_fullscreen_ui") {
 source_set("new_unit_tests") {
   testonly = true
   sources = [
+    "fullscreen_model_unittest.mm",
     "fullscreen_ui_updater_unittest.mm",
   ]
 
@@ -85,6 +89,7 @@ source_set("new_unit_tests") {
     ":new_fullscreen_ui",
     "//ios/chrome/browser/ui:ui_util",
     "//ios/chrome/browser/ui/broadcaster",
+    "//ios/chrome/browser/ui/fullscreen/test",
     "//ios/web",
     "//ios/web/public",
     "//ios/web/public/test/fakes",
