@@ -829,8 +829,9 @@ String StylePropertySerializer::GetLayeredShorthandValue(
         // There might not be an item for this layer for this property.
         if (layer < property_values->length())
           value = &property_values->Item(layer);
-      } else if (layer == 0 || (layer != num_layers - 1 &&
-                                property == CSSPropertyBackgroundColor)) {
+      } else if ((layer == 0 && property != CSSPropertyBackgroundColor) ||
+                 (layer == num_layers - 1 &&
+                  property == CSSPropertyBackgroundColor)) {
         // Singletons except background color belong in the 0th layer.
         // Background color belongs in the last layer.
         value = values[property_index];
