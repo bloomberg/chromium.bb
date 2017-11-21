@@ -766,17 +766,21 @@ FileTasks.prototype.mountArchivesInternal_ = function() {
             tracker.stop();
             return;
           }
-          volumeInfo.resolveDisplayRoot(function(displayRoot) {
-            if (tracker.hasChanged) {
-              tracker.stop();
-              return;
-            }
-            this.directoryModel_.changeDirectoryEntry(displayRoot);
-          }, function() {
-            console.warn('Failed to resolve the display root after mounting.');
-            tracker.stop();
-          });
-        }, function(url, error) {
+          volumeInfo.resolveDisplayRoot(
+              function(displayRoot) {
+                if (tracker.hasChanged) {
+                  tracker.stop();
+                  return;
+                }
+                this.directoryModel_.changeDirectoryEntry(displayRoot);
+              }.bind(this),
+              function() {
+                console.warn(
+                    'Failed to resolve the display root after mounting.');
+                tracker.stop();
+              });
+        }.bind(this),
+        function(url, error) {
           tracker.stop();
           var path = util.extractFilePath(url);
           var namePos = path.lastIndexOf('/');
