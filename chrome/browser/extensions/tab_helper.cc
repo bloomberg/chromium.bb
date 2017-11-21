@@ -299,27 +299,6 @@ void TabHelper::DidFinishNavigation(
   });
 
   content::BrowserContext* context = web_contents()->GetBrowserContext();
-  ExtensionRegistry* registry = ExtensionRegistry::Get(context);
-  const ExtensionSet& enabled_extensions = registry->enabled_extensions();
-
-  if (util::IsNewBookmarkAppsEnabled()) {
-    Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
-    if (browser && browser->is_app()) {
-      const Extension* extension = registry->GetExtensionById(
-          web_app::GetExtensionIdFromApplicationName(browser->app_name()),
-          ExtensionRegistry::EVERYTHING);
-      if (extension && AppLaunchInfo::GetFullLaunchURL(extension).is_valid())
-        SetExtensionApp(extension);
-    } else {
-      UpdateExtensionAppIcon(
-          enabled_extensions.GetExtensionOrAppByURL(
-              navigation_handle->GetURL()));
-    }
-  } else {
-    UpdateExtensionAppIcon(
-        enabled_extensions.GetExtensionOrAppByURL(navigation_handle->GetURL()));
-  }
-
   if (!navigation_handle->IsSameDocument())
     ExtensionActionAPI::Get(context)->ClearAllValuesForTab(web_contents());
 }
