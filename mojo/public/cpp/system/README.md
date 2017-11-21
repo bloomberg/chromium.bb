@@ -127,7 +127,7 @@ A new shared buffers can be allocated like so:
 
 ``` cpp
 mojo::ScopedSharedBufferHandle buffer =
-    mojo::ScopedSharedBufferHandle::Create(4096);
+    mojo::SharedBufferHandle::Create(4096);
 ```
 
 This new handle can be cloned arbitrarily many times by using the underlying
