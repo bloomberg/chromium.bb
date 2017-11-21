@@ -5,14 +5,16 @@
 #include "content/renderer/media/webrtc/webrtc_video_frame_adapter.h"
 
 #include "base/logging.h"
+#include "third_party/webrtc/common_video/include/video_frame_buffer.h"
 #include "third_party/webrtc/rtc_base/refcountedobject.h"
 
 namespace {
 
-class I420Adapter : public webrtc::I420BufferInterface {
+template <typename Base>
+class FrameAdapter : public Base {
  public:
-  explicit I420Adapter(const scoped_refptr<media::VideoFrame>& frame)
-      : frame_(frame) {}
+  explicit FrameAdapter(const scoped_refptr<media::VideoFrame>& frame)
+      : frame_(std::move(frame)) {}
 
  private:
   int width() const override { return frame_->visible_rect().width(); }
@@ -45,6 +47,24 @@ class I420Adapter : public webrtc::I420BufferInterface {
   scoped_refptr<media::VideoFrame> frame_;
 };
 
+template <typename BaseWithA>
+class FrameAdapterWithA : public FrameAdapter<BaseWithA> {
+ public:
+  FrameAdapterWithA(const scoped_refptr<media::VideoFrame>& frame)
+      : FrameAdapter<BaseWithA>(std::move(frame)), frame_(std::move(frame)) {}
+
+ private:
+  const uint8_t* DataA() const override {
+    return frame_->visible_data(media::VideoFrame::kAPlane);
+  }
+
+  int StrideA() const override {
+    return frame_->stride(media::VideoFrame::kAPlane);
+  }
+
+  scoped_refptr<media::VideoFrame> frame_;
+};
+
 void IsValidFrame(const scoped_refptr<media::VideoFrame>& frame) {
   // Paranoia checks.
   DCHECK(frame);
@@ -52,7 +72,8 @@ void IsValidFrame(const scoped_refptr<media::VideoFrame>& frame) {
       frame->format(), frame->storage_type(), frame->coded_size(),
       frame->visible_rect(), frame->natural_size()));
   DCHECK(media::PIXEL_FORMAT_I420 == frame->format() ||
-         media::PIXEL_FORMAT_YV12 == frame->format());
+         media::PIXEL_FORMAT_YV12 == frame->format() ||
+         media::PIXEL_FORMAT_YV12A == frame->format());
   CHECK(reinterpret_cast<void*>(frame->data(media::VideoFrame::kYPlane)));
   CHECK(reinterpret_cast<void*>(frame->data(media::VideoFrame::kUPlane)));
   CHECK(reinterpret_cast<void*>(frame->data(media::VideoFrame::kVPlane)));
@@ -101,7 +122,12 @@ WebRtcVideoFrameAdapter::ToI420() {
   }
 
   IsValidFrame(frame_);
-  return new rtc::RefCountedObject<I420Adapter>(frame_);
+  if (media::PIXEL_FORMAT_YV12A == frame_->format()) {
+    return new rtc::RefCountedObject<
+        FrameAdapterWithA<webrtc::I420ABufferInterface>>(frame_);
+  }
+  return new rtc::RefCountedObject<FrameAdapter<webrtc::I420BufferInterface>>(
+      frame_);
 }
 
 }  // namespace content
