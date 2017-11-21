@@ -428,7 +428,7 @@ cr.define('languages_page_tests', function() {
 
         // Disable spellcheck for en-US.
         var spellcheckLanguageToggle =
-            spellCheckCollapse.querySelector('paper-toggle-button[checked]');
+            spellCheckCollapse.querySelector('cr-toggle[checked]');
         assertTrue(!!spellcheckLanguageToggle);
         MockInteractions.tap(spellcheckLanguageToggle);
         assertFalse(spellcheckLanguageToggle.checked);
