@@ -2087,6 +2087,9 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
       <message name="IDS_WEBSHARE_TARGET_PICKER_COMMIT" desc="Title of the button to share content to the chosen application.">
         Share
       </message>
+      <message name="IDS_WEBSHARE_TARGET_DIALOG_ITEM_TEXT" desc="Text for a Web Share Target item in the Web Share Target dialog.">
+        <ph name="APP_NAME">$1<ex>Google Maps</ex></ph> (<ph name="APP_URL">$2<ex>https://google.com/maps</ex></ph>)
+      </message>
 
       <!-- Content blocking strings -->
       <message name="IDS_MANAGE" desc="Text for a button on permission bubbles, which opens a more detailed content settings page where users can manage that particular setting.">
