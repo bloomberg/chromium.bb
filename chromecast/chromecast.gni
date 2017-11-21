@@ -54,6 +54,9 @@ declare_args() {
   # Set to true to keep Android activities alive when they are moved to the
   # background.
   enable_background_activities = false
+
+  # Set the number of lines for LogcatExtractor to send.
+  logcat_extractor_size = 512
 }
 
 declare_args() {

@@ -32,6 +32,9 @@ java_cpp_template("cast_shell_build_config_gen") {
   if (display_web_contents_in_service) {
     defines += [ "_DISPLAY_WEB_CONTENTS_IN_SERVICE" ]
   }
+
+  # Set the logcat extractor size in lines.
+  defines += [ "_LOGCAT_EXTRACTOR_SIZE=${logcat_extractor_size}" ]
 }
 
 android_resources("cast_shell_android_resources") {
