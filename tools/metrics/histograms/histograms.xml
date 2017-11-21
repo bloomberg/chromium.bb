@@ -86634,6 +86634,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="TabManager.Discarding.DiscardedEngagementScore">
+  <obsolete>
+    Deprecated 11/2017. Analysis showed that MRU was as good as engagement score
+    to choose which tabs to discard. The new plan is to build a machine learning
+    model to choose which tabs to discard.
+  </obsolete>
   <owner>georgesak@chromium.org</owner>
   <summary>
     Site engagement score of a discarded tab. Recorded for each discard if the
@@ -86695,6 +86700,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="TabManager.Discarding.ReloadedEngagementScore">
+  <obsolete>
+    Deprecated 11/2017. Analysis showed that MRU was as good as engagement score
+    to choose which tabs to discard. The new plan is to build a machine learning
+    model to choose which tabs to discard.
+  </obsolete>
   <owner>georgesak@chromium.org</owner>
   <summary>
     Site engagement score of a reloaded tab. Recorded for each reload if the

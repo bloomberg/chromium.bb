@@ -7,8 +7,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/time/tick_clock.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/engagement/site_engagement_service.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 #include "chrome/browser/resource_coordinator/tab_manager_stats_collector.h"
 #include "chrome/browser/resource_coordinator/time.h"
@@ -139,11 +137,6 @@ void TabManager::WebContentsData::SetDiscardState(bool state) {
                                delta, base::TimeDelta::FromSeconds(1),
                                base::TimeDelta::FromDays(1), 100);
 
-    // Record the site engagement score if available.
-    if (tab_data_.engagement_score >= 0.0) {
-      UMA_HISTOGRAM_COUNTS_100("TabManager.Discarding.ReloadedEngagementScore",
-                               tab_data_.engagement_score);
-    }
     if (!tab_data_.last_inactive_time.is_null()) {
       delta = tab_data_.last_reload_time - tab_data_.last_inactive_time;
       UMA_HISTOGRAM_CUSTOM_TIMES("TabManager.Discarding.InactiveToReloadTime",
@@ -156,18 +149,6 @@ void TabManager::WebContentsData::SetDiscardState(bool state) {
     UMA_HISTOGRAM_CUSTOM_COUNTS("TabManager.Discarding.DiscardCount",
                                 ++discard_count, 1, 1000, 50);
     tab_data_.last_discard_time = NowTicks();
-    // Record the site engagement score if available.
-    if (SiteEngagementService::IsEnabled()) {
-      SiteEngagementService* service = SiteEngagementService::Get(
-          Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
-      if (service) {
-        tab_data_.engagement_score =
-            service->GetScore(web_contents()->GetLastCommittedURL());
-        UMA_HISTOGRAM_COUNTS_100(
-            "TabManager.Discarding.DiscardedEngagementScore",
-            tab_data_.engagement_score);
-      }
-    }
   }
 
   tab_data_.is_discarded = state;
@@ -243,7 +224,6 @@ TabManager::WebContentsData::Data::Data()
     : is_discarded(false),
       discard_count(0),
       is_recently_audible(false),
-      engagement_score(-1.0),
       is_auto_discardable(true),
       tab_loading_state(TAB_IS_NOT_LOADING),
       is_in_session_restore(false),
@@ -256,7 +236,6 @@ bool TabManager::WebContentsData::Data::operator==(const Data& right) const {
          last_discard_time == right.last_discard_time &&
          last_reload_time == right.last_reload_time &&
          last_inactive_time == right.last_inactive_time &&
-         engagement_score == right.engagement_score &&
          tab_loading_state == right.tab_loading_state &&
          is_in_session_restore == right.is_in_session_restore &&
          is_restored_in_foreground == right.is_restored_in_foreground;

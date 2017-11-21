@@ -174,8 +174,6 @@ class TabManager::WebContentsData
     base::TimeTicks last_reload_time;
     // The last time the tab switched from being active to inactive.
     base::TimeTicks last_inactive_time;
-    // Site Engagement score (set to -1 if not available).
-    double engagement_score;
     // Is tab eligible for auto discarding? Defaults to true.
     bool is_auto_discardable;
     // Current loading state of this tab.
