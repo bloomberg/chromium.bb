@@ -1761,6 +1761,11 @@ enum WebFeature {
   kCSPWithUnsafeEval = 2236,
   kWebAssemblyInstantiation = 2237,
   kV8IndexAccessor = 2238,
+  kV8MediaCapabilities_DecodingInfo_Method = 2239,
+  kV8MediaCapabilities_EncodingInfo_Method = 2240,
+  kV8MediaCapabilitiesInfo_Supported_AttributeGetter = 2241,
+  kV8MediaCapabilitiesInfo_Smooth_AttributeGetter = 2242,
+  kV8MediaCapabilitiesInfo_PowerEfficient_AttributeGetter = 2243,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

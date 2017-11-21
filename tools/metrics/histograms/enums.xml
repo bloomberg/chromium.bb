@@ -16996,6 +16996,12 @@ Called by update_net_error_codes.py.-->
   <int value="2236" label="CSPWithUnsafeEval"/>
   <int value="2237" label="WebAssemblyInstantiation"/>
   <int value="2238" label="V8IndexAccessor"/>
+  <int value="2239" label="V8MediaCapabilities_DecodingInfo_Method"/>
+  <int value="2240" label="V8MediaCapabilities_EncodingInfo_Method"/>
+  <int value="2241" label="V8MediaCapabilitiesInfo_Supported_AttributeGetter"/>
+  <int value="2242" label="V8MediaCapabilitiesInfo_Smooth_AttributeGetter"/>
+  <int value="2243"
+      label="V8MediaCapabilitiesInfo_PowerEfficient_AttributeGetter"/>
 </enum>
 
 <enum name="FeedbackSource">
