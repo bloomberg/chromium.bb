@@ -584,6 +584,10 @@ Position CompositeEditCommand::PositionOutsideTabSpan(const Position& pos) {
   HTMLSpanElement* tab_span = TabSpanElement(pos.ComputeContainerNode());
   DCHECK(tab_span);
 
+  // TODO(editing-dev): Hoist this UpdateStyleAndLayoutIgnorePendingStylesheets
+  // to the callers. See crbug.com/590369 for details.
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+
   if (pos.OffsetInContainerNode() <= CaretMinOffset(pos.ComputeContainerNode()))
     return Position::InParentBeforeNode(*tab_span);
 
