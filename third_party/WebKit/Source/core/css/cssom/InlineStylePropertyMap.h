@@ -5,14 +5,13 @@
 #ifndef InlineStylePropertyMap_h
 #define InlineStylePropertyMap_h
 
+#include "base/macros.h"
 #include "core/css/cssom/StylePropertyMap.h"
 #include "core/dom/Element.h"
 
 namespace blink {
 
 class CORE_EXPORT InlineStylePropertyMap final : public StylePropertyMap {
-  WTF_MAKE_NONCOPYABLE(InlineStylePropertyMap);
-
  public:
   explicit InlineStylePropertyMap(Element* owner_element)
       : owner_element_(owner_element) {}
@@ -43,6 +42,7 @@ class CORE_EXPORT InlineStylePropertyMap final : public StylePropertyMap {
 
  private:
   Member<Element> owner_element_;
+  DISALLOW_COPY_AND_ASSIGN(InlineStylePropertyMap);
 };
 
 }  // namespace blink

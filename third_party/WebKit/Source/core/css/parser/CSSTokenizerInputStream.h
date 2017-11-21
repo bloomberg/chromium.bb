@@ -5,13 +5,13 @@
 #ifndef CSSTokenizerInputStream_h
 #define CSSTokenizerInputStream_h
 
+#include "base/macros.h"
 #include "platform/wtf/text/StringView.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 
 class CSSTokenizerInputStream {
-  WTF_MAKE_NONCOPYABLE(CSSTokenizerInputStream);
   USING_FAST_MALLOC(CSSTokenizerInputStream);
 
  public:
@@ -75,6 +75,7 @@ class CSSTokenizerInputStream {
   size_t offset_;
   const size_t string_length_;
   const scoped_refptr<StringImpl> string_;
+  DISALLOW_COPY_AND_ASSIGN(CSSTokenizerInputStream);
 };
 
 }  // namespace blink

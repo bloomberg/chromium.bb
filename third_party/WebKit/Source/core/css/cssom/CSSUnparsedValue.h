@@ -5,6 +5,7 @@
 #ifndef CSSUnparsedValue_h
 #define CSSUnparsedValue_h
 
+#include "base/macros.h"
 #include "bindings/core/v8/string_or_css_variable_reference_value.h"
 #include "core/css/CSSVariableReferenceValue.h"
 #include "core/css/cssom/CSSStyleValue.h"
@@ -13,7 +14,6 @@
 namespace blink {
 
 class CORE_EXPORT CSSUnparsedValue final : public CSSStyleValue {
-  WTF_MAKE_NONCOPYABLE(CSSUnparsedValue);
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -57,6 +57,7 @@ class CORE_EXPORT CSSUnparsedValue final : public CSSStyleValue {
   FRIEND_TEST_ALL_PREFIXES(CSSVariableReferenceValueTest, MixedList);
 
   HeapVector<StringOrCSSVariableReferenceValue> tokens_;
+  DISALLOW_COPY_AND_ASSIGN(CSSUnparsedValue);
 };
 
 }  // namespace blink

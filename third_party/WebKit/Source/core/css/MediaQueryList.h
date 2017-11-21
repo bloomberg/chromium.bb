@@ -20,6 +20,7 @@
 #ifndef MediaQueryList_h
 #define MediaQueryList_h
 
+#include "base/macros.h"
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "core/dom/ContextLifecycleObserver.h"
@@ -47,7 +48,6 @@ class CORE_EXPORT MediaQueryList final
       public ContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(MediaQueryList);
-  WTF_MAKE_NONCOPYABLE(MediaQueryList);
 
  public:
   static MediaQueryList* Create(ExecutionContext*,
@@ -98,6 +98,7 @@ class CORE_EXPORT MediaQueryList final
   ListenerList listeners_;
   bool matches_dirty_;
   bool matches_;
+  DISALLOW_COPY_AND_ASSIGN(MediaQueryList);
 };
 
 }  // namespace blink

@@ -5,6 +5,7 @@
 #ifndef CSSTranslation_h
 #define CSSTranslation_h
 
+#include "base/macros.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/cssom/CSSStyleValue.h"
 #include "core/css/cssom/CSSTransformComponent.h"
@@ -20,7 +21,6 @@ class ExceptionState;
 // like "transform".
 // See CSSTranslation.idl for more information about this class.
 class CORE_EXPORT CSSTranslation final : public CSSTransformComponent {
-  WTF_MAKE_NONCOPYABLE(CSSTranslation);
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -70,6 +70,7 @@ class CORE_EXPORT CSSTranslation final : public CSSTransformComponent {
   Member<CSSNumericValue> x_;
   Member<CSSNumericValue> y_;
   Member<CSSNumericValue> z_;
+  DISALLOW_COPY_AND_ASSIGN(CSSTranslation);
 };
 
 }  // namespace blink

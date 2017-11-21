@@ -21,6 +21,7 @@
 #ifndef CSSStyleDeclaration_h
 #define CSSStyleDeclaration_h
 
+#include "base/macros.h"
 #include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
 #include "core/dom/ExecutionContext.h"
@@ -39,7 +40,6 @@ enum class SecureContextMode;
 
 class CORE_EXPORT CSSStyleDeclaration : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
-  WTF_MAKE_NONCOPYABLE(CSSStyleDeclaration);
 
  public:
   virtual ~CSSStyleDeclaration() {}
@@ -92,6 +92,9 @@ class CORE_EXPORT CSSStyleDeclaration : public ScriptWrappable {
 
  protected:
   CSSStyleDeclaration() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CSSStyleDeclaration);
 };
 
 }  // namespace blink

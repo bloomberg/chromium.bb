@@ -5,6 +5,7 @@
 #ifndef CSSMathNegate_h
 #define CSSMathNegate_h
 
+#include "base/macros.h"
 #include "core/css/cssom/CSSMathValue.h"
 
 namespace blink {
@@ -12,7 +13,6 @@ namespace blink {
 // Represents the negation of a CSSNumericValue.
 // See CSSMathNegate.idl for more information about this class.
 class CORE_EXPORT CSSMathNegate : public CSSMathValue {
-  WTF_MAKE_NONCOPYABLE(CSSMathNegate);
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -57,6 +57,7 @@ class CORE_EXPORT CSSMathNegate : public CSSMathValue {
   CSSNumericValue* Negate() final { return value_.Get(); }
 
   Member<CSSNumericValue> value_;
+  DISALLOW_COPY_AND_ASSIGN(CSSMathNegate);
 };
 
 }  // namespace blink

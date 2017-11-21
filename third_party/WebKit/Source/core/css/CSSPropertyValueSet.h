@@ -21,6 +21,7 @@
 #ifndef CSSPropertyValueSet_h
 #define CSSPropertyValueSet_h
 
+#include "base/macros.h"
 #include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
 #include "core/css/CSSPrimitiveValue.h"
@@ -43,7 +44,6 @@ enum class SecureContextMode;
 
 class CORE_EXPORT CSSPropertyValueSet
     : public GarbageCollectedFinalized<CSSPropertyValueSet> {
-  WTF_MAKE_NONCOPYABLE(CSSPropertyValueSet);
   friend class PropertyReference;
 
  public:
@@ -164,18 +164,18 @@ class CORE_EXPORT CSSPropertyValueSet
   unsigned array_size_ : 28;
 
   friend class PropertySetCSSStyleDeclaration;
+  DISALLOW_COPY_AND_ASSIGN(CSSPropertyValueSet);
 };
 
 // Used for lazily parsing properties.
 class CSSLazyPropertyParser
     : public GarbageCollectedFinalized<CSSLazyPropertyParser> {
-  WTF_MAKE_NONCOPYABLE(CSSLazyPropertyParser);
-
  public:
   CSSLazyPropertyParser() {}
   virtual ~CSSLazyPropertyParser() {}
   virtual CSSPropertyValueSet* ParseProperties() = 0;
   virtual void Trace(blink::Visitor*);
+  DISALLOW_COPY_AND_ASSIGN(CSSLazyPropertyParser);
 };
 
 class CORE_EXPORT ImmutableCSSPropertyValueSet : public CSSPropertyValueSet {

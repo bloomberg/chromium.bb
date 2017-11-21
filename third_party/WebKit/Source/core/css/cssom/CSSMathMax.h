@@ -5,6 +5,7 @@
 #ifndef CSSMathMax_h
 #define CSSMathMax_h
 
+#include "base/macros.h"
 #include "core/css/cssom/CSSMathVariadic.h"
 
 namespace blink {
@@ -12,7 +13,6 @@ namespace blink {
 // Represents the maximum of one or more CSSNumericValues.
 // See CSSMathMax.idl for more information about this class.
 class CORE_EXPORT CSSMathMax final : public CSSMathVariadic {
-  WTF_MAKE_NONCOPYABLE(CSSMathMax);
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -30,6 +30,7 @@ class CORE_EXPORT CSSMathMax final : public CSSMathVariadic {
  private:
   CSSMathMax(CSSNumericArray* values, const CSSNumericValueType& type)
       : CSSMathVariadic(values, type) {}
+  DISALLOW_COPY_AND_ASSIGN(CSSMathMax);
 };
 
 }  // namespace blink

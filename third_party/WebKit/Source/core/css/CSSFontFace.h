@@ -26,6 +26,7 @@
 #ifndef CSSFontFace_h
 #define CSSFontFace_h
 
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "core/css/CSSFontFaceSource.h"
@@ -45,7 +46,6 @@ class SimpleFontData;
 
 class CORE_EXPORT CSSFontFace final
     : public GarbageCollectedFinalized<CSSFontFace> {
-  WTF_MAKE_NONCOPYABLE(CSSFontFace);
 
  public:
   CSSFontFace(FontFace* font_face, Vector<UnicodeRange>& ranges)
@@ -92,6 +92,7 @@ class CORE_EXPORT CSSFontFace final
   Member<CSSSegmentedFontFace> segmented_font_face_;
   HeapDeque<Member<CSSFontFaceSource>> sources_;
   Member<FontFace> font_face_;
+  DISALLOW_COPY_AND_ASSIGN(CSSFontFace);
 };
 
 }  // namespace blink

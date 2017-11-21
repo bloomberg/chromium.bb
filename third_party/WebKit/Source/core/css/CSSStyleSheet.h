@@ -22,6 +22,7 @@
 #ifndef CSSStyleSheet_h
 #define CSSStyleSheet_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/css/CSSRule.h"
 #include "core/css/MediaQueryEvaluator.h"
@@ -45,7 +46,6 @@ class StyleSheetContents;
 
 class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
   DEFINE_WRAPPERTYPEINFO();
-  WTF_MAKE_NONCOPYABLE(CSSStyleSheet);
 
  public:
   static const Document* SingleOwnerDocument(const CSSStyleSheet*);
@@ -120,7 +120,6 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
       scoped_refptr<SecurityOrigin> allowed_origin);
 
   class RuleMutationScope {
-    WTF_MAKE_NONCOPYABLE(RuleMutationScope);
     STACK_ALLOCATED();
 
    public:
@@ -130,6 +129,7 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
 
    private:
     Member<CSSStyleSheet> style_sheet_;
+    DISALLOW_COPY_AND_ASSIGN(RuleMutationScope);
   };
 
   void WillMutateRules();
@@ -182,6 +182,7 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
   mutable Member<MediaList> media_cssom_wrapper_;
   mutable HeapVector<Member<CSSRule>> child_rule_cssom_wrappers_;
   mutable Member<CSSRuleList> rule_list_cssom_wrapper_;
+  DISALLOW_COPY_AND_ASSIGN(CSSStyleSheet);
 };
 
 inline CSSStyleSheet::RuleMutationScope::RuleMutationScope(CSSStyleSheet* sheet)

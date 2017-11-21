@@ -5,6 +5,7 @@
 #ifndef CSSUnitValue_h
 #define CSSUnitValue_h
 
+#include "base/macros.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/cssom/CSSNumericValue.h"
 
@@ -14,7 +15,6 @@ namespace blink {
 // unit (or a naked number or percentage).
 // See CSSUnitValue.idl for more information about this class.
 class CORE_EXPORT CSSUnitValue final : public CSSNumericValue {
-  WTF_MAKE_NONCOPYABLE(CSSUnitValue);
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -67,6 +67,7 @@ class CORE_EXPORT CSSUnitValue final : public CSSNumericValue {
 
   double value_;
   CSSPrimitiveValue::UnitType unit_;
+  DISALLOW_COPY_AND_ASSIGN(CSSUnitValue);
 };
 
 DEFINE_TYPE_CASTS(CSSUnitValue,

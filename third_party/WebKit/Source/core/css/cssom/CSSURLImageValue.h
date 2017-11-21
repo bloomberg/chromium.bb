@@ -5,13 +5,13 @@
 #ifndef CSSURLImageValue_h
 #define CSSURLImageValue_h
 
+#include "base/macros.h"
 #include "core/css/cssom/CSSStyleImageValue.h"
 #include "platform/bindings/ScriptState.h"
 
 namespace blink {
 
 class CORE_EXPORT CSSURLImageValue final : public CSSStyleImageValue {
-  WTF_MAKE_NONCOPYABLE(CSSURLImageValue);
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -39,6 +39,7 @@ class CORE_EXPORT CSSURLImageValue final : public CSSStyleImageValue {
  private:
   explicit CSSURLImageValue(const CSSImageValue* image_value)
       : CSSStyleImageValue(image_value) {}
+  DISALLOW_COPY_AND_ASSIGN(CSSURLImageValue);
 };
 
 }  // namespace blink

@@ -5,6 +5,7 @@
 #ifndef CSSStyleValue_h
 #define CSSStyleValue_h
 
+#include "base/macros.h"
 #include "bindings/core/v8/Nullable.h"
 #include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
@@ -24,7 +25,6 @@ using CSSStyleValueVector = HeapVector<Member<CSSStyleValue>>;
 // The base class for all CSS values returned by the Typed OM.
 // See CSSStyleValue.idl for additional documentation about this class.
 class CORE_EXPORT CSSStyleValue : public ScriptWrappable {
-  WTF_MAKE_NONCOPYABLE(CSSStyleValue);
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -78,6 +78,9 @@ class CORE_EXPORT CSSStyleValue : public ScriptWrappable {
   static String StyleValueTypeToString(StyleValueType);
 
   CSSStyleValue() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CSSStyleValue);
 };
 
 }  // namespace blink

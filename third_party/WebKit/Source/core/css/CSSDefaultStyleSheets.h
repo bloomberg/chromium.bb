@@ -24,6 +24,7 @@
 #ifndef CSSDefaultStyleSheets_h
 #define CSSDefaultStyleSheets_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Allocator.h"
@@ -37,7 +38,6 @@ class StyleSheetContents;
 
 class CSSDefaultStyleSheets
     : public GarbageCollectedFinalized<CSSDefaultStyleSheets> {
-  WTF_MAKE_NONCOPYABLE(CSSDefaultStyleSheets);
 
  public:
   CORE_EXPORT static CSSDefaultStyleSheets& Instance();
@@ -102,6 +102,7 @@ class CSSDefaultStyleSheets
   Member<StyleSheetContents> fullscreen_style_sheet_;
 
   std::unique_ptr<UAStyleSheetLoader> media_controls_style_sheet_loader_;
+  DISALLOW_COPY_AND_ASSIGN(CSSDefaultStyleSheets);
 };
 
 }  // namespace blink

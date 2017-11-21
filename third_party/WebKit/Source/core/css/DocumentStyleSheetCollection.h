@@ -30,6 +30,7 @@
 #ifndef DocumentStyleSheetCollection_h
 #define DocumentStyleSheetCollection_h
 
+#include "base/macros.h"
 #include "core/css/TreeScopeStyleSheetCollection.h"
 
 namespace blink {
@@ -41,8 +42,6 @@ class ViewportStyleResolver;
 
 class DocumentStyleSheetCollection final
     : public TreeScopeStyleSheetCollection {
-  WTF_MAKE_NONCOPYABLE(DocumentStyleSheetCollection);
-
  public:
   static DocumentStyleSheetCollection* Create(TreeScope& tree_scope) {
     return new DocumentStyleSheetCollection(tree_scope);
@@ -62,6 +61,7 @@ class DocumentStyleSheetCollection final
 
   void CollectStyleSheetsFromCandidates(StyleEngine& master_engine,
                                         DocumentStyleSheetCollector&);
+  DISALLOW_COPY_AND_ASSIGN(DocumentStyleSheetCollection);
 };
 
 }  // namespace blink

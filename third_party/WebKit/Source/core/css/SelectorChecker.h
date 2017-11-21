@@ -30,6 +30,7 @@
 #ifndef SelectorChecker_h
 #define SelectorChecker_h
 
+#include "base/macros.h"
 #include "core/css/CSSSelector.h"
 #include "core/dom/Element.h"
 #include "platform/scroll/ScrollTypes.h"
@@ -43,7 +44,6 @@ class LayoutScrollbar;
 class ComputedStyle;
 
 class SelectorChecker {
-  WTF_MAKE_NONCOPYABLE(SelectorChecker);
   STACK_ALLOCATED();
 
  public:
@@ -179,6 +179,7 @@ class SelectorChecker {
   ComputedStyle* element_style_;
   Member<LayoutScrollbar> scrollbar_;
   ScrollbarPart scrollbar_part_;
+  DISALLOW_COPY_AND_ASSIGN(SelectorChecker);
 };
 
 }  // namespace blink

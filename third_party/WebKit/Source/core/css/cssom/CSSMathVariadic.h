@@ -5,6 +5,7 @@
 #ifndef CSSMathVariadic_h
 #define CSSMathVariadic_h
 
+#include "base/macros.h"
 #include "core/css/cssom/CSSMathValue.h"
 #include "core/css/cssom/CSSNumericArray.h"
 
@@ -12,7 +13,6 @@ namespace blink {
 
 // Represents an arithmetic operation with one or more CSSNumericValues.
 class CORE_EXPORT CSSMathVariadic : public CSSMathValue {
-  WTF_MAKE_NONCOPYABLE(CSSMathVariadic);
 
  public:
   CSSNumericArray* values() { return values_.Get(); }
@@ -62,6 +62,7 @@ class CORE_EXPORT CSSMathVariadic : public CSSMathValue {
 
  private:
   Member<CSSNumericArray> values_;
+  DISALLOW_COPY_AND_ASSIGN(CSSMathVariadic);
 };
 
 }  // namespace blink

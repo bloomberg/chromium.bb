@@ -5,6 +5,7 @@
 #ifndef ComputedStylePropertyMap_h
 #define ComputedStylePropertyMap_h
 
+#include "base/macros.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
 #include "core/css/cssom/StylePropertyMapReadonly.h"
 #include "core/dom/Node.h"
@@ -21,8 +22,6 @@ namespace blink {
 // The computed StylePropertyMapReadOnly for an element is accessed via
 // element.computedStyleMap() (see ElementComputedStyleMap.idl/h)
 class CORE_EXPORT ComputedStylePropertyMap : public StylePropertyMapReadonly {
-  WTF_MAKE_NONCOPYABLE(ComputedStylePropertyMap);
-
  public:
   static ComputedStylePropertyMap* Create(Node* node) {
     return new ComputedStylePropertyMap(node);
@@ -58,6 +57,7 @@ class CORE_EXPORT ComputedStylePropertyMap : public StylePropertyMapReadonly {
  private:
   Node* StyledNode() const;
   const ComputedStyle* UpdateStyle();
+  DISALLOW_COPY_AND_ASSIGN(ComputedStylePropertyMap);
 };
 
 }  // namespace blink

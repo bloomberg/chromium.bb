@@ -5,6 +5,7 @@
 #ifndef CSSPaintValue_h
 #define CSSPaintValue_h
 
+#include "base/macros.h"
 #include "core/css/CSSCustomIdentValue.h"
 #include "core/css/CSSImageGeneratorValue.h"
 #include "core/css/CSSPaintImageGenerator.h"
@@ -63,8 +64,6 @@ class CSSPaintValue : public CSSImageGeneratorValue {
                 Vector<scoped_refptr<CSSVariableData>>&);
 
   class Observer final : public CSSPaintImageGenerator::Observer {
-    WTF_MAKE_NONCOPYABLE(Observer);
-
    public:
     explicit Observer(CSSPaintValue* owner_value) : owner_value_(owner_value) {}
 
@@ -78,6 +77,7 @@ class CSSPaintValue : public CSSImageGeneratorValue {
 
    private:
     Member<CSSPaintValue> owner_value_;
+    DISALLOW_COPY_AND_ASSIGN(Observer);
   };
 
   void PaintImageGeneratorReady();

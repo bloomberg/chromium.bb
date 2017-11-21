@@ -32,6 +32,8 @@
 #define InvalidationSet_h
 
 #include <memory>
+
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "platform/wtf/Allocator.h"
@@ -89,7 +91,6 @@ struct CORE_EXPORT InvalidationSetDeleter {
 // We avoid virtual functions to minimize space consumption.
 class CORE_EXPORT InvalidationSet
     : public WTF::RefCounted<InvalidationSet, InvalidationSetDeleter> {
-  WTF_MAKE_NONCOPYABLE(InvalidationSet);
   USING_FAST_MALLOC_WITH_TYPE_NAME(blink::InvalidationSet);
 
  public:
@@ -219,6 +220,7 @@ class CORE_EXPORT InvalidationSet
 
   // If true, the instance is alive and can be used.
   unsigned is_alive_ : 1;
+  DISALLOW_COPY_AND_ASSIGN(InvalidationSet);
 };
 
 class CORE_EXPORT DescendantInvalidationSet final : public InvalidationSet {

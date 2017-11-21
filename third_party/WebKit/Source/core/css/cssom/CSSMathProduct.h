@@ -5,6 +5,7 @@
 #ifndef CSSMathProduct_h
 #define CSSMathProduct_h
 
+#include "base/macros.h"
 #include "core/css/cssom/CSSMathVariadic.h"
 
 namespace blink {
@@ -12,7 +13,6 @@ namespace blink {
 // Represents the product of one or more CSSNumericValues.
 // See CSSMathProduct.idl for more information about this class.
 class CORE_EXPORT CSSMathProduct final : public CSSMathVariadic {
-  WTF_MAKE_NONCOPYABLE(CSSMathProduct);
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -30,6 +30,7 @@ class CORE_EXPORT CSSMathProduct final : public CSSMathVariadic {
  private:
   CSSMathProduct(CSSNumericArray* values, const CSSNumericValueType& type)
       : CSSMathVariadic(values, type) {}
+  DISALLOW_COPY_AND_ASSIGN(CSSMathProduct);
 };
 
 }  // namespace blink

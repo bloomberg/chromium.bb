@@ -5,6 +5,7 @@
 #ifndef StylePropertyMapReadonly_h
 #define StylePropertyMapReadonly_h
 
+#include "base/macros.h"
 #include "bindings/core/v8/Iterable.h"
 #include "bindings/core/v8/css_style_value_or_css_style_value_sequence.h"
 #include "bindings/core/v8/css_style_value_or_css_style_value_sequence_or_string.h"
@@ -19,7 +20,6 @@ class CORE_EXPORT StylePropertyMapReadonly
     : public ScriptWrappable,
       public PairIterable<String, CSSStyleValueOrCSSStyleValueSequence> {
   DEFINE_WRAPPERTYPEINFO();
-  WTF_MAKE_NONCOPYABLE(StylePropertyMapReadonly);
 
  public:
   typedef std::pair<String, CSSStyleValueOrCSSStyleValueSequence>
@@ -43,6 +43,9 @@ class CORE_EXPORT StylePropertyMapReadonly
 
   virtual HeapVector<StylePropertyMapEntry> GetIterationEntries() = 0;
   IterationSource* StartIteration(ScriptState*, ExceptionState&) override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(StylePropertyMapReadonly);
 };
 
 }  // namespace blink

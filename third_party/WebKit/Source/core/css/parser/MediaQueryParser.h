@@ -5,6 +5,7 @@
 #ifndef MediaQueryParser_h
 #define MediaQueryParser_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/css/MediaList.h"
 #include "core/css/MediaQuery.h"
@@ -20,7 +21,6 @@ class MediaQuerySet;
 
 class MediaQueryData {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(MediaQueryData);
 
  private:
   MediaQuery::RestrictorType restrictor_;
@@ -49,11 +49,11 @@ class MediaQueryData {
   }
 
   inline void SetMediaFeature(const String& str) { media_feature_ = str; }
+  DISALLOW_COPY_AND_ASSIGN(MediaQueryData);
 };
 
 class CORE_EXPORT MediaQueryParser {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(MediaQueryParser);
 
  public:
   static scoped_refptr<MediaQuerySet> ParseMediaQuerySet(const String&);
@@ -110,6 +110,7 @@ class CORE_EXPORT MediaQueryParser {
   const static State kSkipUntilComma;
   const static State kSkipUntilBlockEnd;
   const static State kDone;
+  DISALLOW_COPY_AND_ASSIGN(MediaQueryParser);
 };
 
 }  // namespace blink
