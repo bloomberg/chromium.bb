@@ -30,7 +30,6 @@
 #include "components/viz/host/renderer_settings_creation.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/display_scheduler.h"
-#include "components/viz/service/display/texture_mailbox_deleter.h"
 #include "components/viz/service/display_embedder/compositing_mode_reporter_impl.h"
 #include "components/viz/service/display_embedder/compositor_overlay_candidate_validator.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
@@ -614,8 +613,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       viz::ServerSharedBitmapManager::current(), GetGpuMemoryBufferManager(),
       renderer_settings_, compositor->frame_sink_id(),
       std::move(display_output_surface), std::move(scheduler),
-      std::make_unique<viz::TextureMailboxDeleter>(
-          compositor->task_runner().get()));
+      compositor->task_runner());
   GetFrameSinkManager()->RegisterBeginFrameSource(begin_frame_source,
                                                   compositor->frame_sink_id());
   // Note that we are careful not to destroy prior BeginFrameSource objects

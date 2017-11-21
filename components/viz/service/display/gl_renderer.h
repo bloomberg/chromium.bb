@@ -22,9 +22,14 @@
 #include "components/viz/service/display/gl_renderer_copier.h"
 #include "components/viz/service/display/gl_renderer_draw_cache.h"
 #include "components/viz/service/display/program_binding.h"
+#include "components/viz/service/display/texture_deleter.h"
 #include "components/viz/service/viz_service_export.h"
 #include "ui/gfx/geometry/quad_f.h"
 #include "ui/latency/latency_info.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}
 
 namespace cc {
 class GLRendererShaderTest;
@@ -46,7 +51,6 @@ namespace viz {
 class DynamicGeometryBinding;
 class StaticGeometryBinding;
 class TextureDrawQuad;
-class TextureMailboxDeleter;
 struct DrawRenderPassDrawQuadParams;
 
 // Class that handles drawing of composited render layers using GL.
@@ -57,7 +61,7 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   GLRenderer(const RendererSettings* settings,
              OutputSurface* output_surface,
              cc::DisplayResourceProvider* resource_provider,
-             TextureMailboxDeleter* texture_mailbox_deleter);
+             scoped_refptr<base::SingleThreadTaskRunner> current_task_runner);
   ~GLRenderer() override;
 
   bool use_swap_with_bounds() const { return use_swap_with_bounds_; }
@@ -327,6 +331,7 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   gpu::ContextSupport* context_support_;
   std::unique_ptr<ContextCacheController::ScopedVisibility> context_visibility_;
 
+  TextureDeleter texture_deleter_;
   GLRendererCopier copier_;
 
   gfx::Rect swap_buffer_rect_;
@@ -355,10 +360,6 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   bool use_occlusion_query_ = false;
   bool use_swap_with_bounds_ = false;
 
-  // Some overlays require that content is copied from a render pass into an
-  // overlay resource. This means the GLRenderer needs its own cc::ResourcePool.
-  std::unique_ptr<cc::ResourcePool> overlay_resource_pool_;
-
   // If true, draw a green border after compositing a overlay candidate quad
   // using GL.
   bool gl_composited_overlay_candidate_quad_border_;
@@ -378,6 +379,13 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
 
   unsigned num_triangles_drawn_ = 0;
 
+  // This may be null if the compositor is run on a thread without a
+  // MessageLoop.
+  scoped_refptr<base::SingleThreadTaskRunner> current_task_runner_;
+  // Some overlays require that content is copied from a render pass into an
+  // overlay resource. This means the GLRenderer needs its own cc::ResourcePool.
+  // This references the |current_task_runner_| and |resource_provider_|.
+  std::unique_ptr<cc::ResourcePool> overlay_resource_pool_;
   base::WeakPtrFactory<GLRenderer> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GLRenderer);

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/viz/service/display/texture_mailbox_deleter.h"
+#include "components/viz/service/display/texture_deleter.h"
 
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -14,9 +14,9 @@
 namespace viz {
 namespace {
 
-TEST(TextureMailboxDeleterTest, Destroy) {
-  std::unique_ptr<TextureMailboxDeleter> deleter(
-      new TextureMailboxDeleter(base::ThreadTaskRunnerHandle::Get()));
+TEST(TextureDeleterTest, Destroy) {
+  auto deleter =
+      std::make_unique<TextureDeleter>(base::ThreadTaskRunnerHandle::Get());
 
   scoped_refptr<cc::TestContextProvider> context_provider =
       cc::TestContextProvider::Create();
@@ -44,9 +44,8 @@ TEST(TextureMailboxDeleterTest, Destroy) {
   cb->Run(gpu::SyncToken(), false);
 }
 
-TEST(TextureMailboxDeleterTest, NullTaskRunner) {
-  std::unique_ptr<TextureMailboxDeleter> deleter(
-      new TextureMailboxDeleter(nullptr));
+TEST(TextureDeleterTest, NullTaskRunner) {
+  auto deleter = std::make_unique<TextureDeleter>(nullptr);
 
   scoped_refptr<cc::TestContextProvider> context_provider =
       cc::TestContextProvider::Create();

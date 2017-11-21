@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/viz/service/display/texture_mailbox_deleter.h"
+#include "components/viz/service/display/texture_deleter.h"
 
 #include <stddef.h>
 
@@ -40,17 +40,16 @@ static void PostTaskFromMainToImplThread(
       base::BindOnce(std::move(run_impl_callback), sync_token, is_lost));
 }
 
-TextureMailboxDeleter::TextureMailboxDeleter(
+TextureDeleter::TextureDeleter(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : impl_task_runner_(std::move(task_runner)), weak_ptr_factory_(this) {}
 
-TextureMailboxDeleter::~TextureMailboxDeleter() {
+TextureDeleter::~TextureDeleter() {
   for (size_t i = 0; i < impl_callbacks_.size(); ++i)
     impl_callbacks_.at(i)->Run(gpu::SyncToken(), true);
 }
 
-std::unique_ptr<SingleReleaseCallback>
-TextureMailboxDeleter::GetReleaseCallback(
+std::unique_ptr<SingleReleaseCallback> TextureDeleter::GetReleaseCallback(
     scoped_refptr<ContextProvider> context_provider,
     unsigned texture_id) {
   // This callback owns the |context_provider|. It must be destroyed on the impl
@@ -65,7 +64,7 @@ TextureMailboxDeleter::GetReleaseCallback(
   // The raw pointer to the impl-side callback is valid as long as this
   // class is alive. So we guard it with a WeakPtr.
   ReleaseCallback run_impl_callback(
-      base::Bind(&TextureMailboxDeleter::RunDeleteTextureOnImplThread,
+      base::Bind(&TextureDeleter::RunDeleteTextureOnImplThread,
                  weak_ptr_factory_.GetWeakPtr(), impl_callbacks_.back().get()));
 
   // Provide a callback for the main thread that posts back to the impl
@@ -82,7 +81,7 @@ TextureMailboxDeleter::GetReleaseCallback(
   return main_callback;
 }
 
-void TextureMailboxDeleter::RunDeleteTextureOnImplThread(
+void TextureDeleter::RunDeleteTextureOnImplThread(
     SingleReleaseCallback* impl_callback,
     const gpu::SyncToken& sync_token,
     bool is_lost) {

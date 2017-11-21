@@ -25,7 +25,6 @@
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "components/viz/service/display/display_client.h"
 #include "components/viz/service/display/display_scheduler.h"
-#include "components/viz/service/display/texture_mailbox_deleter.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/surfaces/surface.h"
@@ -139,8 +138,7 @@ class DisplayTest : public testing::Test {
     auto display = base::MakeUnique<Display>(
         &shared_bitmap_manager_, nullptr /* gpu_memory_buffer_manager */,
         settings, frame_sink_id, std::move(output_surface),
-        std::move(scheduler),
-        base::MakeUnique<TextureMailboxDeleter>(task_runner_.get()));
+        std::move(scheduler), task_runner_);
     display->SetVisible(true);
     return display;
   }

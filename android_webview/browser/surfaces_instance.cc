@@ -19,7 +19,6 @@
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/display_scheduler.h"
-#include "components/viz/service/display/texture_mailbox_deleter.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "ui/gfx/geometry/rect.h"
@@ -65,21 +64,19 @@ SurfacesInstance::SurfacesInstance()
       needs_sync_points);
 
   begin_frame_source_.reset(new viz::StubBeginFrameSource);
-  std::unique_ptr<viz::TextureMailboxDeleter> texture_mailbox_deleter(
-      new viz::TextureMailboxDeleter(nullptr));
   std::unique_ptr<ParentOutputSurface> output_surface_holder(
       new ParentOutputSurface(AwRenderThreadContextProvider::Create(
           base::WrapRefCounted(new AwGLSurface),
           DeferredGpuCommandService::GetInstance())));
   output_surface_ = output_surface_holder.get();
   auto scheduler = base::MakeUnique<viz::DisplayScheduler>(
-      begin_frame_source_.get(), nullptr,
+      begin_frame_source_.get(), nullptr /* current_task_runner */,
       output_surface_holder->capabilities().max_frames_pending);
   display_ = base::MakeUnique<viz::Display>(
       nullptr /* shared_bitmap_manager */,
       nullptr /* gpu_memory_buffer_manager */, settings, frame_sink_id_,
       std::move(output_surface_holder), std::move(scheduler),
-      std::move(texture_mailbox_deleter));
+      nullptr /* current_task_runner */);
   display_->Initialize(this, frame_sink_manager_->surface_manager());
   // TODO(ccameron): WebViews that are embedded in WCG windows will want to
   // specify gfx::ColorSpace::CreateExtendedSRGB(). This situation is not yet

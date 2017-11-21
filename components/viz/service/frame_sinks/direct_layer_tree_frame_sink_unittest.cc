@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "cc/test/fake_layer_tree_frame_sink_client.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/test_context_provider.h"
@@ -18,7 +17,6 @@
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/display_scheduler.h"
-#include "components/viz/service/display/texture_mailbox_deleter.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support_manager.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/test/begin_frame_args_test.h"
@@ -74,19 +72,18 @@ class DirectLayerTreeFrameSinkTest : public testing::Test {
     auto display_output_surface = cc::FakeOutputSurface::Create3d();
     display_output_surface_ = display_output_surface.get();
 
-    begin_frame_source_ = base::MakeUnique<BackToBackBeginFrameSource>(
-        base::MakeUnique<DelayBasedTimeSource>(task_runner_.get()));
+    begin_frame_source_ = std::make_unique<BackToBackBeginFrameSource>(
+        std::make_unique<DelayBasedTimeSource>(task_runner_.get()));
 
     int max_frames_pending = 2;
-    std::unique_ptr<DisplayScheduler> scheduler(new DisplayScheduler(
-        begin_frame_source_.get(), task_runner_.get(), max_frames_pending));
+    auto scheduler = std::make_unique<DisplayScheduler>(
+        begin_frame_source_.get(), task_runner_.get(), max_frames_pending);
 
-    display_.reset(new Display(
+    display_ = std::make_unique<Display>(
         &bitmap_manager_, &gpu_memory_buffer_manager_, RendererSettings(),
         kArbitraryFrameSinkId, std::move(display_output_surface),
-        std::move(scheduler),
-        base::MakeUnique<TextureMailboxDeleter>(task_runner_.get())));
-    layer_tree_frame_sink_ = base::MakeUnique<TestDirectLayerTreeFrameSink>(
+        std::move(scheduler), task_runner_);
+    layer_tree_frame_sink_ = std::make_unique<TestDirectLayerTreeFrameSink>(
         kArbitraryFrameSinkId, &support_manager_, &frame_sink_manager_,
         display_.get(), context_provider_, nullptr, &gpu_memory_buffer_manager_,
         &bitmap_manager_);

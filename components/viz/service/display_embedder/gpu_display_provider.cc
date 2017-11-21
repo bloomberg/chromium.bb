@@ -15,7 +15,6 @@
 #include "components/viz/common/gpu/in_process_context_provider.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/display_scheduler.h"
-#include "components/viz/service/display/texture_mailbox_deleter.h"
 #include "components/viz/service/display_embedder/display_output_surface.h"
 #include "components/viz/service/display_embedder/in_process_gpu_memory_buffer_manager.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
@@ -107,8 +106,7 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
   return base::MakeUnique<Display>(
       ServerSharedBitmapManager::current(), gpu_memory_buffer_manager_.get(),
       renderer_settings, frame_sink_id, std::move(display_output_surface),
-      std::move(scheduler),
-      base::MakeUnique<TextureMailboxDeleter>(task_runner_.get()));
+      std::move(scheduler), task_runner_);
 }
 
 }  // namespace viz
