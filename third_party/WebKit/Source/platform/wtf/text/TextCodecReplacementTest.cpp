@@ -50,7 +50,7 @@ TEST(TextCodecReplacement, EncodesToUTF8) {
   const UChar kTestCase[] = {0x6F22, 0x5B57};
   size_t test_case_size = WTF_ARRAY_LENGTH(kTestCase);
   CString result =
-      codec->Encode(kTestCase, test_case_size, kQuestionMarksForUnencodables);
+      codec->Encode(kTestCase, test_case_size, kEntitiesForUnencodables);
 
   EXPECT_STREQ("\xE6\xBC\xA2\xE5\xAD\x97", result.data());
 }

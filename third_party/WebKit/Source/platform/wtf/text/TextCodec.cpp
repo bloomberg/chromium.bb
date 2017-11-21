@@ -37,10 +37,6 @@ int TextCodec::GetUnencodableReplacement(
     UnencodableHandling handling,
     UnencodableReplacementArray replacement) {
   switch (handling) {
-    case kQuestionMarksForUnencodables:
-      replacement[0] = '?';
-      replacement[1] = 0;
-      return 1;
     case kEntitiesForUnencodables:
       snprintf(replacement, sizeof(UnencodableReplacementArray), "&#%u;",
                code_point);
