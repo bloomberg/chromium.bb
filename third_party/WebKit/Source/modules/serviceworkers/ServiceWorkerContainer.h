@@ -89,13 +89,13 @@ class MODULES_EXPORT ServiceWorkerContainer final
 
   void ContextDestroyed(ExecutionContext*) override;
 
-  // WebServiceWorkerProviderClient overrides.
+  // WebServiceWorkerProviderClient implementation.
   void SetController(std::unique_ptr<WebServiceWorker::Handle>,
                      bool should_notify_controller_change) override;
   void DispatchMessageEvent(std::unique_ptr<WebServiceWorker::Handle>,
                             const WebString& message,
                             WebVector<MessagePortChannel>) override;
-  void CountFeature(uint32_t feature) override;
+  void CountFeature(mojom::WebFeature) override;
 
   // EventTarget overrides.
   ExecutionContext* GetExecutionContext() const override {

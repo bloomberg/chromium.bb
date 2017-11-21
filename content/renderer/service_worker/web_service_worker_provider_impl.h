@@ -15,6 +15,7 @@
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerProvider.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_error_type.mojom.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
+#include "third_party/WebKit/public/platform/web_feature.mojom.h"
 
 namespace blink {
 class WebURL;
@@ -58,7 +59,7 @@ class CONTENT_EXPORT WebServiceWorkerProviderImpl
   // Sets the ServiceWorkerContainer#controller for this provider. It's not
   // used when this WebServiceWorkerProvider is for a service worker context.
   void SetController(std::unique_ptr<ServiceWorkerHandleReference> controller,
-                     const std::set<uint32_t>& features,
+                     const std::set<blink::mojom::WebFeature>& features,
                      bool should_notify_controller_change);
   // Posts a message to the ServiceWorkerContainer for this provider.
   // Corresponds to Client#postMessage().
@@ -66,11 +67,13 @@ class CONTENT_EXPORT WebServiceWorkerProviderImpl
       blink::mojom::ServiceWorkerObjectInfoPtr source,
       const base::string16& message,
       std::vector<mojo::ScopedMessagePipeHandle> message_pipes);
+  // For UseCounter purposes. Called when the controller service worker used a
+  // feature. It is counted as if it were a feature usage from the page.
+  void CountFeature(blink::mojom::WebFeature feature);
 
   int provider_id() const;
 
  private:
-  void RemoveProviderClient();
   ServiceWorkerDispatcher* GetDispatcher();
 
   void OnRegistered(
@@ -100,6 +103,11 @@ class CONTENT_EXPORT WebServiceWorkerProviderImpl
 
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
   scoped_refptr<ServiceWorkerProviderContext> context_;
+
+  // |provider_client_| is implemented by blink::SWContainer and this pointer's
+  // nullified when its execution context is destroyed. (|this| is attached to
+  // the same context, but could live longer until the context is GC'ed)
+  blink::WebServiceWorkerProviderClient* provider_client_;
 
   base::WeakPtrFactory<WebServiceWorkerProviderImpl> weak_factory_;
 
