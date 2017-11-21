@@ -39,6 +39,8 @@ crbug.com/672740 virtual/mojo-loading/http/tests/security/mixedContent/websocket
 
 crbug.com/755625 external/wpt/beacon/beacon-error.window.html [ Leak ]
 
+crbug.com/786995 virtual/threaded/http/tests/devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.js [ Leak Pass ]
+
 # -----------------------------------------------------------------
 # Flakily leaks
 # -----------------------------------------------------------------
