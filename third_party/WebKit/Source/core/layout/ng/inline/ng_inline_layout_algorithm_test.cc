@@ -6,6 +6,8 @@
 
 #include "core/dom/TagCollection.h"
 #include "core/layout/line/InlineTextBox.h"
+#include "core/layout/ng/inline/ng_inline_box_state.h"
+#include "core/layout/ng/inline/ng_inline_break_token.h"
 #include "core/layout/ng/inline/ng_inline_node.h"
 #include "core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "core/layout/ng/layout_ng_block_flow.h"
@@ -370,6 +372,37 @@ TEST_F(NGInlineLayoutAlgorithmTest, VisualRect) {
   NGPhysicalOffsetRect visual_rect = box_fragment->ContentsVisualRect();
   EXPECT_EQ(LayoutUnit(-5), visual_rect.offset.top);
   EXPECT_EQ(LayoutUnit(20), visual_rect.size.height);
+}
+
+TEST_F(NGInlineLayoutAlgorithmTest,
+       ContainingLayoutObjectForAbsolutePositionObjects) {
+  LoadAhem();
+  SetBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      #container {
+        font: 20px Ahem;
+        width: 100px;
+      }
+      #rel {
+        position: relative;
+      }
+    </style>
+    <div id="container"><span id="rel">XXXX YYYY</div>
+  )HTML");
+  Element* element = GetElementById("container");
+  scoped_refptr<NGConstraintSpace> space;
+  scoped_refptr<NGPhysicalBoxFragment> box_fragment;
+  std::tie(box_fragment, space) = RunBlockLayoutAlgorithmForElement(element);
+
+  // The StateStack in the break token of the first line should be inside of the
+  // #rel span.
+  NGPhysicalLineBoxFragment* line1 =
+      ToNGPhysicalLineBoxFragment(box_fragment->Children()[0].get());
+  NGInlineBreakToken* break_token = ToNGInlineBreakToken(line1->BreakToken());
+  const NGInlineLayoutStateStack& state_stack = break_token->StateStack();
+  EXPECT_EQ(GetLayoutObjectByElementId("rel"),
+            state_stack.ContainingLayoutObjectForAbsolutePositionObjects());
 }
 
 #undef MAYBE_VerticalAlignBottomReplaced
