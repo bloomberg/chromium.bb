@@ -59,6 +59,7 @@ DesktopAutomationHandler = function(node) {
   this.addListener_(EventType.HOVER, this.onHover);
   this.addListener_(EventType.INVALID_STATUS_CHANGED, this.onEventIfInRange);
   this.addListener_(EventType.LOAD_COMPLETE, this.onLoadComplete);
+  this.addListener_(EventType.LOCATION_CHANGED, this.onLocationChanged);
   this.addListener_(EventType.MENU_END, this.onMenuEnd);
   this.addListener_(EventType.MENU_LIST_ITEM_SELECTED, this.onEventIfSelected);
   this.addListener_(EventType.MENU_START, this.onMenuStart);
@@ -385,6 +386,19 @@ DesktopAutomationHandler.prototype = {
            ChromeVoxState.instance.currentRange, null, evt.type)
           .go();
     }.bind(this));
+  },
+
+  /**
+   * Updates the focus ring if the location of the current range, or
+   * an ancestor of the current range, changes.
+   * @param {!AutomationEvent} evt
+   */
+  onLocationChanged: function(evt) {
+    var cur = ChromeVoxState.instance.currentRange;
+    if (AutomationUtil.isDescendantOf(cur.start.node, evt.target) ||
+        AutomationUtil.isDescendantOf(cur.end.node, evt.target)) {
+      new Output().withLocation(cur, null, evt.type).go();
+    }
   },
 
   /**
