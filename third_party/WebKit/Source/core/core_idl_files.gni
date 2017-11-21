@@ -125,6 +125,7 @@ core_idl_files =
                     "dom/NodeFilter.idl",
                     "dom/NodeIterator.idl",
                     "dom/NodeList.idl",
+                    "dom/Policy.idl",
                     "dom/ProcessingInstruction.idl",
                     "dom/Range.idl",
                     "dom/ShadowRoot.idl",

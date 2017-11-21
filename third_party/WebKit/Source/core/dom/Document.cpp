@@ -87,6 +87,7 @@
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/NodeWithIndex.h"
 #include "core/dom/NthIndexCache.h"
+#include "core/dom/Policy.h"
 #include "core/dom/ProcessingInstruction.h"
 #include "core/dom/ScriptRunner.h"
 #include "core/dom/ScriptedAnimationController.h"
@@ -7187,6 +7188,10 @@ scoped_refptr<WebTaskRunner> Document::GetTaskRunner(TaskType type) {
   // passed-in document or ContextDocument() used to be attached to a Frame but
   // has since been detached).
   return Platform::Current()->CurrentThread()->GetWebTaskRunner();
+}
+
+Policy* Document::policy() {
+  return Policy::Create(this);
 }
 
 void Document::Trace(blink::Visitor* visitor) {

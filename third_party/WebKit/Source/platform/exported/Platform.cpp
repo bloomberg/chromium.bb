@@ -64,7 +64,6 @@
 #include "public/platform/modules/serviceworker/WebServiceWorkerCacheStorage.h"
 #include "public/platform/modules/webmidi/WebMIDIAccessor.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "third_party/WebKit/common/feature_policy/feature_policy.h"
 #include "third_party/WebKit/common/origin_trials/trial_policy.h"
 
 namespace blink {

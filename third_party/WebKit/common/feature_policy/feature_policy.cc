@@ -84,6 +84,14 @@ bool FeaturePolicy::Whitelist::Contains(const url::Origin& origin) const {
   return false;
 }
 
+bool FeaturePolicy::Whitelist::MatchesAll() const {
+  return matches_all_origins_;
+}
+
+const std::vector<url::Origin>& FeaturePolicy::Whitelist::Origins() const {
+  return origins_;
+}
+
 // static
 std::unique_ptr<FeaturePolicy> FeaturePolicy::CreateFromParentPolicy(
     const FeaturePolicy* parent_policy,
@@ -114,14 +122,15 @@ bool FeaturePolicy::IsFeatureEnabled(FeaturePolicyFeature feature) const {
 bool FeaturePolicy::IsFeatureEnabledForOrigin(FeaturePolicyFeature feature,
                                               const url::Origin& origin) const {
   DCHECK(base::ContainsKey(feature_list_, feature));
-  const FeaturePolicy::FeatureDefault default_policy =
-      feature_list_.at(feature);
   DCHECK(base::ContainsKey(inherited_policies_, feature));
   if (!inherited_policies_.at(feature))
     return false;
   auto whitelist = whitelists_.find(feature);
   if (whitelist != whitelists_.end())
     return whitelist->second->Contains(origin);
+
+  const FeaturePolicy::FeatureDefault default_policy =
+      feature_list_.at(feature);
   if (default_policy == FeaturePolicy::FeatureDefault::EnableForAll)
     return true;
   if (default_policy == FeaturePolicy::FeatureDefault::EnableForSelf) {
@@ -131,6 +140,30 @@ bool FeaturePolicy::IsFeatureEnabledForOrigin(FeaturePolicyFeature feature,
     return (&origin_ == &origin) || origin_.IsSameOriginWith(origin);
   }
   return false;
+}
+
+const FeaturePolicy::Whitelist FeaturePolicy::GetWhitelistForFeature(
+    FeaturePolicyFeature feature) const {
+  DCHECK(base::ContainsKey(feature_list_, feature));
+  DCHECK(base::ContainsKey(inherited_policies_, feature));
+  // Disabled through inheritance.
+  if (!inherited_policies_.at(feature))
+    return FeaturePolicy::Whitelist();
+
+  // Return defined policy if exists; otherwise return default policy.
+  auto whitelist = whitelists_.find(feature);
+  if (whitelist != whitelists_.end())
+    return FeaturePolicy::Whitelist(*(whitelist->second));
+
+  const FeaturePolicy::FeatureDefault default_policy =
+      feature_list_.at(feature);
+  FeaturePolicy::Whitelist default_whitelist;
+
+  if (default_policy == FeaturePolicy::FeatureDefault::EnableForAll)
+    default_whitelist.AddAll();
+  else if (default_policy == FeaturePolicy::FeatureDefault::EnableForSelf)
+    default_whitelist.Add(origin_);
+  return default_whitelist;
 }
 
 void FeaturePolicy::SetHeaderPolicy(const ParsedFeaturePolicy& parsed_header) {
