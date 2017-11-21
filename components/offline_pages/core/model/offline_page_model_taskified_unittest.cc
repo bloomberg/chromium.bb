@@ -57,6 +57,7 @@ const int64_t kTestFileSize = 876543LL;
 const base::string16 kTestTitle = base::UTF8ToUTF16("a title");
 const std::string kTestRequestOrigin("abc.xyz");
 const std::string kEmptyRequestOrigin("");
+const std::string kTestDigest("test digest");
 
 }  // namespace
 
@@ -265,7 +266,7 @@ std::unique_ptr<OfflinePageTestArchiver>
 OfflinePageModelTaskifiedTest::BuildArchiver(const GURL& url,
                                              ArchiverResult result) {
   return base::MakeUnique<OfflinePageTestArchiver>(
-      this, url, result, kTestTitle, kTestFileSize,
+      this, url, result, kTestTitle, kTestFileSize, kTestDigest,
       base::ThreadTaskRunnerHandle::Get());
 }
 
@@ -295,6 +296,7 @@ TEST_F(OfflinePageModelTaskifiedTest, SavePageSuccessful) {
   EXPECT_EQ(kTestTitle, saved_page_ptr->title);
   EXPECT_EQ(kTestUrl2, saved_page_ptr->original_url);
   EXPECT_EQ("", saved_page_ptr->request_origin);
+  EXPECT_EQ(kTestDigest, saved_page_ptr->digest);
 }
 
 TEST_F(OfflinePageModelTaskifiedTest, SavePageSuccessfulWithSameOriginalUrl) {
