@@ -107,7 +107,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserPasswordTest,
 // place.
 IN_PROC_BROWSER_TEST_F(SupervisedUserPasswordTest, PasswordChangeFromUserTest) {
   EXPECT_CALL(*mock_homedir_methods_, MountEx(_, _, _, _)).Times(1);
-  EXPECT_CALL(*mock_homedir_methods_, UpdateKeyEx(_, _, _, _, _)).Times(1);
+  EXPECT_CALL(*mock_homedir_methods_, UpdateKeyEx(_, _, _, _)).Times(1);
   SigninAsSupervisedUser(false, 0, kTestSupervisedUserDisplayName);
   testing::Mock::VerifyAndClearExpectations(mock_homedir_methods_);
 }
@@ -171,7 +171,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserPasswordTest,
 IN_PROC_BROWSER_TEST_F(SupervisedUserPasswordTest,
                        PasswordChangeFromManagerTest) {
   EXPECT_CALL(*mock_homedir_methods_, MountEx(_, _, _, _)).Times(1);
-  EXPECT_CALL(*mock_homedir_methods_, UpdateKeyEx(_, _, _, _, _)).Times(0);
+  EXPECT_CALL(*mock_homedir_methods_, UpdateKeyEx(_, _, _, _)).Times(0);
   SigninAsSupervisedUser(false, 1, kTestSupervisedUserDisplayName);
   testing::Mock::VerifyAndClearExpectations(mock_homedir_methods_);
 }
@@ -261,7 +261,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserPasswordTest,
 IN_PROC_BROWSER_TEST_F(SupervisedUserPasswordTest,
                        PasswordChangeUserAndManagerTest) {
   EXPECT_CALL(*mock_homedir_methods_, MountEx(_, _, _, _)).Times(1);
-  EXPECT_CALL(*mock_homedir_methods_, UpdateKeyEx(_, _, _, _, _)).Times(0);
+  EXPECT_CALL(*mock_homedir_methods_, UpdateKeyEx(_, _, _, _)).Times(0);
   SigninAsSupervisedUser(false, 1, kTestSupervisedUserDisplayName);
   testing::Mock::VerifyAndClearExpectations(mock_homedir_methods_);
 }
