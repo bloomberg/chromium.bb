@@ -498,18 +498,20 @@ void VaapiVideoDecodeAccelerator::QueueInputBuffer(
   if (bitstream_buffer.size() == 0) {
     DCHECK(!base::SharedMemory::IsHandleValid(bitstream_buffer.handle()));
     // Dummy buffer for flush.
-    input_buffers_.push(make_linked_ptr(new InputBuffer()));
-    DCHECK(input_buffers_.back()->IsFlushRequest());
+    auto flush_buffer = base::MakeUnique<InputBuffer>();
+    DCHECK(flush_buffer->IsFlushRequest());
+    input_buffers_.push(std::move(flush_buffer));
   } else {
     std::unique_ptr<SharedMemoryRegion> shm(
         new SharedMemoryRegion(bitstream_buffer, true));
     RETURN_AND_NOTIFY_ON_FAILURE(shm->Map(), "Failed to map input buffer",
                                  UNREADABLE_INPUT, );
 
-    input_buffers_.push(make_linked_ptr(
-        new InputBuffer(bitstream_buffer.id(), std::move(shm),
-                        BindToCurrentLoop(base::Bind(
-                            &Client::NotifyEndOfBitstreamBuffer, client_)))));
+    auto input_buffer = base::MakeUnique<InputBuffer>(
+        bitstream_buffer.id(), std::move(shm),
+        BindToCurrentLoop(
+            base::Bind(&Client::NotifyEndOfBitstreamBuffer, client_)));
+    input_buffers_.push(std::move(input_buffer));
 
     TRACE_COUNTER1("Video Decoder", "Input buffers", input_buffers_.size());
   }
@@ -561,7 +563,7 @@ bool VaapiVideoDecodeAccelerator::GetInputBuffer_Locked() {
     return false;
 
   DCHECK(!input_buffers_.empty());
-  curr_input_buffer_ = input_buffers_.front();
+  curr_input_buffer_ = std::move(input_buffers_.front());
   input_buffers_.pop();
 
   if (curr_input_buffer_->IsFlushRequest()) {
@@ -802,15 +804,11 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
                               ? buffers[i].service_texture_ids()[0]
                               : 0;
 
-    linked_ptr<VaapiPicture> picture(create_vaapi_picture_callback_.Run(
+    std::unique_ptr<VaapiPicture> picture(create_vaapi_picture_callback_.Run(
         vaapi_wrapper_, make_context_current_cb_, bind_image_cb_,
         buffers[i].id(), requested_pic_size_, service_id, client_id));
     RETURN_AND_NOTIFY_ON_FAILURE(
         picture.get(), "Failed creating a VaapiPicture", PLATFORM_FAILURE, );
-
-    bool inserted =
-        pictures_.insert(std::make_pair(buffers[i].id(), picture)).second;
-    DCHECK(inserted);
 
     if (output_mode_ == Config::OutputMode::ALLOCATE) {
       RETURN_AND_NOTIFY_ON_FAILURE(
@@ -818,6 +816,10 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
           "Failed to allocate memory for a VaapiPicture", PLATFORM_FAILURE, );
       output_buffers_.push(buffers[i].id());
     }
+    bool inserted =
+        pictures_.insert(std::make_pair(buffers[i].id(), std::move(picture)))
+            .second;
+    DCHECK(inserted);
 
     available_va_surfaces_.push_back(va_surface_ids[i]);
     surfaces_available_.Signal();

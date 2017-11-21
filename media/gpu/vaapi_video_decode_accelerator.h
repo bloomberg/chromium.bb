@@ -214,12 +214,12 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   Config::OutputMode output_mode_;
 
   // Queue of available InputBuffers (picture_buffer_ids).
-  base::queue<linked_ptr<InputBuffer>> input_buffers_;
+  base::queue<std::unique_ptr<InputBuffer>> input_buffers_;
   // Signalled when input buffers are queued onto |input_buffers_| queue.
   base::ConditionVariable input_ready_;
 
   // Current input buffer at decoder.
-  linked_ptr<InputBuffer> curr_input_buffer_;
+  std::unique_ptr<InputBuffer> curr_input_buffer_;
 
   // Queue for incoming output buffers (texture ids).
   using OutputBuffers = base::queue<int32_t>;
@@ -228,19 +228,20 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   scoped_refptr<VaapiWrapper> vaapi_wrapper_;
 
   // TODO(mcasas): Use a VaapiPicture factory instead, https://crbug.com/784507.
-  base::Callback<linked_ptr<VaapiPicture>(const scoped_refptr<VaapiWrapper>&,
-                                          const MakeGLContextCurrentCallback&,
-                                          const BindGLImageCallback&,
-                                          int32_t,
-                                          const gfx::Size&,
-                                          uint32_t,
-                                          uint32_t)>
+  base::Callback<std::unique_ptr<VaapiPicture>(
+      const scoped_refptr<VaapiWrapper>&,
+      const MakeGLContextCurrentCallback&,
+      const BindGLImageCallback&,
+      int32_t,
+      const gfx::Size&,
+      uint32_t,
+      uint32_t)>
       create_vaapi_picture_callback_;
   // All allocated Pictures, regardless of their current state. Pictures are
-  // allocated once using | create_vaapi_picture_callback_| and destroyed at the
+  // allocated once using |create_vaapi_picture_callback_| and destroyed at the
   // end of decode. Comes after |vaapi_wrapper_| to ensure all pictures are
   // destroyed before said |vaapi_wrapper_| is destroyed.
-  using Pictures = std::map<int32_t, linked_ptr<VaapiPicture>>;
+  using Pictures = std::map<int32_t, std::unique_ptr<VaapiPicture>>;
   Pictures pictures_;
 
   // Return a VaapiPicture associated with given client-provided id.
