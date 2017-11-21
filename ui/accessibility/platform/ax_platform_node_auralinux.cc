@@ -508,18 +508,16 @@ int AXPlatformNodeAuraLinux::GetGTypeInterfaceMask() {
 
   // Value Interface
   int role = GetAtkRole();
-  if (role == ui::AX_ROLE_PROGRESS_INDICATOR ||
-      role == ui::AX_ROLE_SCROLL_BAR || role == ui::AX_ROLE_SLIDER) {
+  if (role == ATK_ROLE_SCROLL_BAR || role == ATK_ROLE_SLIDER) {
     interface_mask |= 1 << ATK_VALUE_INTERFACE;
   }
 
   // Document Interface
-  if (role == ui::AX_ROLE_DOCUMENT || role == ui::AX_ROLE_ROOT_WEB_AREA ||
-      role == ui::AX_ROLE_WEB_AREA)
+  if (role == ATK_ROLE_DOCUMENT_WEB)
     interface_mask |= 1 << ATK_DOCUMENT_INTERFACE;
 
   // Image Interface
-  if (role == ui::AX_ROLE_IMAGE || role == ui::AX_ROLE_IMAGE_MAP)
+  if (role == ATK_ROLE_IMAGE || role == ATK_ROLE_IMAGE_MAP)
     interface_mask |= 1 << ATK_IMAGE_INTERFACE;
 
   return interface_mask;
