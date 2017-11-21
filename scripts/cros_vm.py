@@ -172,8 +172,14 @@ class VM(object):
             '-chardev', 'pipe,id=control_pipe,path=%s' % self.kvm_monitor,
             '-serial', 'file:%s' % self.kvm_serial,
             '-mon', 'chardev=control_pipe',
-            '-net', 'nic,model=virtio',
-            '-net', 'user,hostfwd=tcp:127.0.0.1:%d-:22' % self.ssh_port,
+            # Qemu-vlans are used by qemu to separate out network traffic on the
+            # slirp network bridge. qemu forwards traffic on a slirp vlan to all
+            # ports conected on that vlan. By default, slirp ports are on vlan
+            # 0. We explicitly set a vlan here so that another qemu VM using
+            # slirp doesn't conflict with our network traffic.
+            '-net', 'nic,model=virtio,vlan=%d' % self.ssh_port,
+            '-net', 'user,hostfwd=tcp:127.0.0.1:%d-:22,vlan=%d'
+            % (self.ssh_port, self.ssh_port),
             '-drive', 'file=%s,index=0,media=disk,cache=unsafe,format=raw'
             % self.image_path]
     if self.enable_kvm:
