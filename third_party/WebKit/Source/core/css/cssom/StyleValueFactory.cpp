@@ -15,6 +15,8 @@
 #include "core/css/cssom/CSSURLImageValue.h"
 #include "core/css/cssom/CSSUnparsedValue.h"
 #include "core/css/cssom/CSSUnsupportedStyleValue.h"
+#include "core/css/parser/CSSParser.h"
+#include "core/css/properties/CSSProperty.h"
 
 namespace blink {
 
@@ -64,6 +66,31 @@ CSSStyleValueVector UnsupportedCSSValue(const CSSValue& value) {
 }
 
 }  // namespace
+
+CSSStyleValueVector StyleValueFactory::FromString(
+    CSSPropertyID property_id,
+    const String& value,
+    SecureContextMode secure_context_mode) {
+  DCHECK_NE(property_id, CSSPropertyInvalid);
+  DCHECK(!CSSProperty::Get(property_id).IsShorthand());
+
+  // TODO(775804): Handle custom properties
+  if (property_id == CSSPropertyVariable) {
+    return CSSStyleValueVector();
+  }
+
+  // TODO(crbug.com/783031): This should probably use an existing parser context
+  // (e.g. from execution context) to parse relative URLs correctly.
+  const CSSValue* css_value = CSSParser::ParseSingleValue(
+      property_id, value, StrictCSSParserContext(secure_context_mode));
+  if (!css_value)
+    return CSSStyleValueVector();
+
+  CSSStyleValueVector style_value_vector =
+      StyleValueFactory::CssValueToStyleValueVector(property_id, *css_value);
+  DCHECK(!style_value_vector.IsEmpty());
+  return style_value_vector;
+}
 
 CSSStyleValueVector StyleValueFactory::CssValueToStyleValueVector(
     CSSPropertyID property_id,

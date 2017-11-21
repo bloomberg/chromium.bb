@@ -153,7 +153,7 @@ function runSequenceSetterTests(
     propertyName, validObject, invalidObject, element) {
   test(function() {
     element.style = '';
-    element.attributeStyleMap.set(propertyName, [validObject, validObject]);
+    element.attributeStyleMap.set(propertyName, validObject, validObject);
     assert_equals(
         element.style[propertyName], validObject.toString() + ', ' +
         validObject.toString());
@@ -165,9 +165,8 @@ function runSequenceSetterTests(
   }, 'Set ' + propertyName + ' to a sequence');
 
   test(function() {
-    let sequence = [validObject, invalidObject];
     assert_throws(new TypeError(), function() {
-      element.attributeStyleMap.set(propertyName, sequence);
+      element.attributeStyleMap.set(propertyName, validObject, invalidObject);
     });
   }, 'Set ' + propertyName + ' to a sequence containing an invalid type');
 }
@@ -194,7 +193,7 @@ function runAppendTests(
   test(function() {
     element.style = '';
 
-    element.attributeStyleMap.append(propertyName, [validObject, validObject]);
+    element.attributeStyleMap.append(propertyName, validObject, validObject);
     assert_equals(
         element.style[propertyName], validObject.toString() + ', ' +
         validObject.toString());
@@ -213,9 +212,8 @@ function runAppendTests(
   }, 'Appending an invalid value to ' + propertyName);
 
   test(function() {
-    let sequence = [validObject, invalidObject];
     assert_throws(new TypeError(), function() {
-      element.attributeStyleMap.append(propertyName, sequence);
+      element.attributeStyleMap.append(propertyName, validObject, invalidObject);
     });
   }, 'Append a sequence containing an invalid value to ' + propertyName);
 }
@@ -239,7 +237,7 @@ function runGetAllTests(
   if (supportsMultiple) {
     test(function() {
       element.style = '';
-      element.attributeStyleMap.set(propertyName, [validObject, validObject]);
+      element.attributeStyleMap.set(propertyName, validObject, validObject);
       let result = element.attributeStyleMap.getAll(propertyName);
       assert_equals(result.length, 2,
           'Expected getAll to return an array containing two instances ' +
@@ -285,7 +283,7 @@ function runMultipleValuesNotSupportedTests(
   test(function() {
     element.style = '';
     assert_throws(new TypeError(), function() {
-      element.attributeStyleMap.set(propertyName, [validObject, validObject]);
+      element.attributeStyleMap.set(propertyName, validObject, validObject);
     });
   }, 'Setting ' + propertyName + ' to a sequence throws');
 
