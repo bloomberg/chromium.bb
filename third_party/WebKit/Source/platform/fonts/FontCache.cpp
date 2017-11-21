@@ -51,7 +51,6 @@
 #include "platform/instrumentation/tracing/web_process_memory_dump.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/wtf/HashMap.h"
-#include "platform/wtf/ListHashSet.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/debug/Alias.h"
