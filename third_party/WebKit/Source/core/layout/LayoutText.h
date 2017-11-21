@@ -197,6 +197,10 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   InlineTextBox* FirstTextBox() const { return first_text_box_; }
   InlineTextBox* LastTextBox() const { return last_text_box_; }
 
+  // Returns upper left corner point in local coordinate if this object has
+  // rendered text.
+  Optional<FloatPoint> GetUpperLeftCorner() const;
+
   // True if we have inline text box children which implies rendered text (or
   // whitespace) output.
   bool HasTextBoxes() const { return FirstTextBox(); }

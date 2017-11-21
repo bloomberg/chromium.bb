@@ -1021,21 +1021,20 @@ bool ContainerNode::GetUpperLeftCorner(FloatPoint& point) const {
     }
 
     if (o->IsText() && !o->IsBR()) {
-      if (previous->GetNode() == this && !ToLayoutText(o)->HasTextBoxes()) {
+      const Optional<FloatPoint> maybe_point =
+          ToLayoutText(o)->GetUpperLeftCorner();
+      if (maybe_point.has_value()) {
+        point = o->LocalToAbsolute(maybe_point.value(), kUseTransforms);
+        return true;
+      }
+      if (previous->GetNode() == this) {
         // Do nothing - skip unrendered whitespace that is a child or next
         // sibling of the anchor.
         // FIXME: This fails to skip a whitespace sibling when there was also a
         // whitespace child (because |previous| has moved).
         continue;
       }
-      // TODO(xiaochengh): Move the code below to LayoutText.
-      DCHECK(CanUseInlineBox(*o));
-      point = FloatPoint();
-      if (ToLayoutText(o)->FirstTextBox()) {
-        point.Move(ToLayoutText(o)->LinesBoundingBox().X(),
-                   ToLayoutText(o)->FirstTextBox()->Root().LineTop().ToFloat());
-      }
-      point = o->LocalToAbsolute(point, kUseTransforms);
+      point = o->LocalToAbsolute(FloatPoint(), kUseTransforms);
       return true;
     }
 
