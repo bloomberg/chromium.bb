@@ -197,7 +197,7 @@ TEST_F(ArcUtilTest, IsArcAllowedForUser) {
       {user_manager::USER_TYPE_PUBLIC_ACCOUNT, false},
       {user_manager::USER_TYPE_SUPERVISED, false},
       {user_manager::USER_TYPE_KIOSK_APP, false},
-      {user_manager::USER_TYPE_CHILD, true},
+      {user_manager::USER_TYPE_CHILD, false},
       {user_manager::USER_TYPE_ARC_KIOSK_APP, true},
       {user_manager::USER_TYPE_ACTIVE_DIRECTORY, true},
   };

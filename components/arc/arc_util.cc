@@ -172,6 +172,11 @@ bool IsArcAllowedForUser(const user_manager::User* user) {
     return false;
   }
 
+  if (user->GetType() == user_manager::USER_TYPE_CHILD) {
+    VLOG(1) << "ARC usage by Child users is prohibited";
+    return false;
+  }
+
   return true;
 }
 
