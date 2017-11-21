@@ -55,9 +55,10 @@ int TargetPickerTableModel::RowCount() {
 base::string16 TargetPickerTableModel::GetText(int row, int /*column_id*/) {
   // Show "title (origin)", to disambiguate titles that are the same, and as a
   // security measure.
-  return base::UTF8ToUTF16(targets_[row].name() + " (" +
-                           targets_[row].manifest_url().GetOrigin().spec() +
-                           ")");
+  return l10n_util::GetStringFUTF16(
+      IDS_WEBSHARE_TARGET_DIALOG_ITEM_TEXT,
+      base::UTF8ToUTF16(targets_[row].name()),
+      base::UTF8ToUTF16(targets_[row].manifest_url().GetOrigin().spec()));
 }
 
 void TargetPickerTableModel::SetObserver(ui::TableModelObserver* observer) {}
