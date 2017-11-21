@@ -9,7 +9,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/android/oom_intervention/near_oom_monitor.h"
 #include "chrome/browser/metrics/oom/out_of_memory_reporter.h"
-#include "chrome/browser/ui/android/infobars/near_oom_infobar.h"
+#include "chrome/browser/ui/interventions/intervention_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -26,13 +26,13 @@ class OomInterventionTabHelper
     : public content::WebContentsObserver,
       public content::WebContentsUserData<OomInterventionTabHelper>,
       public OutOfMemoryReporter::Observer,
-      public NearOomMessageDelegate {
+      public InterventionDelegate {
  public:
   static bool IsEnabled();
 
   ~OomInterventionTabHelper() override;
 
-  // NearOomMessageDelegate:
+  // InterventionDelegate:
   void AcceptIntervention() override;
   void DeclineIntervention() override;
 
