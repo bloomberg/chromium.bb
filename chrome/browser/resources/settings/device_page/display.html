@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_toggle/cr_toggle.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
@@ -9,7 +10,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-tabs/paper-tabs.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="display_layout.html">
 <link rel="import" href="display_overscan_dialog.html">
 <link rel="import" href="night_light_slider.html">
@@ -114,10 +114,10 @@
               [[getUnifiedDesktopText_(unifiedDesktopMode_)]]
             </div>
           </div>
-          <paper-toggle-button checked="[[unifiedDesktopMode_]]"
+          <cr-toggle checked="[[unifiedDesktopMode_]]"
               on-tap="onUnifiedDesktopTap_"
               aria-labelledby="displayUnifiedDesktopCheckboxLabel">
-          </paper-toggle-button>
+          </cr-toggle>
         </div>
       </template>
 

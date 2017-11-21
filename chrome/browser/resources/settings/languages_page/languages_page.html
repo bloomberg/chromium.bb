@@ -9,10 +9,10 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_action_menu/cr_action_menu.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_expand_button/cr_expand_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_toggle/cr_toggle.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="add_languages_dialog.html">
 <link rel="import" href="languages.html">
@@ -222,11 +222,11 @@
                     actionable$="[[item.language.supportsSpellcheck]]">
                   [[item.language.displayName]]
                 </div>
-                <paper-toggle-button on-change="onSpellCheckChange_"
+                <cr-toggle on-change="onSpellCheckChange_"
                     disabled="[[!item.language.supportsSpellcheck]]"
                     checked="[[item.spellCheckEnabled]]"
                     aria-label$="[[item.language.displayName]]">
-                </paper-toggle-button>
+                </cr-toggle>
               </div>
             </template>
             <div class="list-item" on-tap="onEditDictionaryTap_" actionable>

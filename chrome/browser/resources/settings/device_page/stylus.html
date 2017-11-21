@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_toggle/cr_toggle.html">
 <link rel="import" href="chrome://resources/html/action_link.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="../controls/settings_toggle_button.html">
@@ -105,12 +106,12 @@
                 indicator-type="[[userPolicyIndicator_]]">
             </cr-policy-indicator>
           </template>
-          <paper-toggle-button id="enable-app-on-lock-screen-toggle"
+          <cr-toggle id="enable-app-on-lock-screen-toggle"
               aria-labelledby="lock-screen-toggle-label"
               disabled="[[disallowedOnLockScreenByPolicy_(selectedApp_)]]"
               checked="[[lockScreenSupportEnabled_(selectedApp_)]]"
               on-change="toggleLockScreenSupport_">
-          </paper-toggle-button>
+          </cr-toggle>
         </div>
 
         <template is="dom-if" if="[[lockScreenSupportEnabled_(selectedApp_)]]">
