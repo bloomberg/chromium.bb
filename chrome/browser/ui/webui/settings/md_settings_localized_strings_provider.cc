@@ -1243,7 +1243,10 @@ void AddPasswordsAndFormsStrings(content::WebUIDataSource* html_source) {
       {"import", IDS_PASSWORD_MANAGER_IMPORT_BUTTON},
       {"export", IDS_PASSWORD_MANAGER_EXPORT_BUTTON},
       {"undoRemovePassword", IDS_SETTINGS_PASSWORD_UNDO},
-      {"passwordDeleted", IDS_SETTINGS_PASSWORD_DELETED_PASSWORD}};
+      {"passwordDeleted", IDS_SETTINGS_PASSWORD_DELETED_PASSWORD},
+      {"exportPasswordsTitle", IDS_SETTINGS_PASSWORDS_EXPORT_TITLE},
+      {"exportPasswordsDescription", IDS_SETTINGS_PASSWORDS_EXPORT_DESCRIPTION},
+      {"exportPasswords", IDS_SETTINGS_PASSWORDS_EXPORT}};
 
   html_source->AddString(
       "managePasswordsLabel",

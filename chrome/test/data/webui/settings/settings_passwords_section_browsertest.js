@@ -165,6 +165,18 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
   }
 
   /**
+   * Helper method used to create an export passwords dialog.
+   * @return {!Object}
+   * @private
+   */
+  function createExportPasswordsDialog() {
+    var dialog = document.createElement('passwords-export-dialog');
+    document.body.appendChild(dialog);
+    Polymer.dom.flush();
+    return dialog;
+  }
+
+  /**
    * Helper method used to test for a url in a list of passwords.
    * @param {!Array<!chrome.passwordsPrivate.PasswordUiEntry>} passwordList
    * @param {string} url The URL that is being searched for.
@@ -548,6 +560,17 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
       });
 
       MockInteractions.tap(passwordListItem.$$('#showPasswordButton'));
+    });
+
+    // Test that tapping "Export passwords..." notifies the browser accordingly
+    test('startExport', function(done) {
+      var exportDialog = createExportPasswordsDialog();
+
+      passwordManager.exportPasswords = () => {
+        done();
+      };
+
+      MockInteractions.tap(exportDialog.$.exportPasswordsButton);
     });
   });
 
