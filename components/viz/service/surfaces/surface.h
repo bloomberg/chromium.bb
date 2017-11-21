@@ -99,16 +99,11 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
   bool has_deadline() const { return deadline_.has_deadline(); }
   const SurfaceDependencyDeadline& deadline() const { return deadline_; }
 
-  bool InheritActivationDeadlineFrom(
-      const SurfaceDependencyDeadline& deadline) {
-    return deadline_.InheritFrom(deadline);
-  }
+  bool InheritActivationDeadlineFrom(const SurfaceDependencyDeadline& deadline);
 
   // Sets a deadline a number of frames ahead to active the currently pending
   // CompositorFrame held by this surface.
-  void SetActivationDeadline(uint32_t number_of_frames_to_deadline) {
-    deadline_.Set(number_of_frames_to_deadline);
-  }
+  void SetActivationDeadline(uint32_t number_of_frames_to_deadline);
 
   void SetPreviousFrameSurface(Surface* surface);
 

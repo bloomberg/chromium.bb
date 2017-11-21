@@ -165,7 +165,8 @@ bool CompositorFrameSinkSupport::SubmitCompositorFrame(
     const LocalSurfaceId& local_surface_id,
     CompositorFrame frame,
     mojom::HitTestRegionListPtr hit_test_region_list) {
-  TRACE_EVENT0("cc", "CompositorFrameSinkSupport::SubmitCompositorFrame");
+  TRACE_EVENT1("viz", "CompositorFrameSinkSupport::SubmitCompositorFrame",
+               "FrameSinkId", frame_sink_id_.ToString());
   DCHECK(local_surface_id.is_valid());
   DCHECK(!frame.render_pass_list.empty());
 
