@@ -122,7 +122,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 #pragma mark - Tests
 
 // Tests that notification saying "Signing is as ..." appears on auto sign-in.
-- (void)testNotificationAppearsOnAutoSignIn {
+- (void)DISABLED_testNotificationAppearsOnAutoSignIn {
   [self setAutosigninPreferences];
   [self loadSimplePageAndStoreACredential];
 
@@ -166,7 +166,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
 // Tests that when navigator.credentials.get() was called from inactive tab, the
 // autosign-in notification appears once tab becomes active.
-- (void)testNotificationAppearsWhenTabIsActive {
+- (void)DISABLED_testNotificationAppearsWhenTabIsActive {
   [self setAutosigninPreferences];
   [self loadSimplePageAndStoreACredential];
 
