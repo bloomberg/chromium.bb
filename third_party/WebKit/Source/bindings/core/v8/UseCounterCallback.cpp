@@ -142,6 +142,9 @@ void UseCounterCallback(v8::Isolate* isolate,
     case v8::Isolate::kErrorStackTraceLimit:
       blink_feature = WebFeature::kV8ErrorStackTraceLimit;
       break;
+    case v8::Isolate::kIndexAccessor:
+      blink_feature = WebFeature::kV8IndexAccessor;
+      break;
     default:
       // This can happen if V8 has added counters that this version of Blink
       // does not know about. It's harmless.
