@@ -287,18 +287,6 @@ FYI_WATERFALL = {
       'swarming': True,
       'os_type': 'win',
     },
-    'Win7 Release (NVIDIA Quadro P400)': {
-      'swarming_dimensions': [
-        {
-          'gpu': WIN_NVIDIA_QUADRO_P400_STABLE_DRIVER,
-          'os': 'Windows-2008ServerR2-SP1',
-          'pool': 'Chrome-GPU',
-        },
-      ],
-      'build_config': 'Release',
-      'swarming': True,
-      'os_type': 'win',
-    },
     'Win7 dEQP Release (NVIDIA)': {
       'swarming_dimensions': [
         {
@@ -406,19 +394,6 @@ FYI_WATERFALL = {
         {
           'gpu': '10de:1cb3',
           'os': 'Windows-10'
-        },
-      ],
-      'build_config': 'Release',
-      # This bot is a one-off and doesn't have similar slaves in the
-      # swarming pool.
-      'swarming': False,
-      'os_type': 'win',
-    },
-    'Win7 Release (AMD R7 240)': {
-      'swarming_dimensions': [
-        {
-          'gpu': '1002:6613',
-          'os': 'Windows-2008ServerR2-SP1',
         },
       ],
       'build_config': 'Release',
@@ -650,18 +625,6 @@ FYI_WATERFALL = {
       'type': Types.DEQP,
     },
     'Linux Release (NVIDIA)': {
-      'swarming_dimensions': [
-        {
-          'gpu': LINUX_QUADRO_P400_STABLE_DRIVER,
-          'os': 'Ubuntu',
-          'pool': 'Chrome-GPU',
-        },
-      ],
-      'build_config': 'Release',
-      'swarming': True,
-      'os_type': 'linux',
-    },
-    'Linux Release (NVIDIA Quadro P400)': {
       'swarming_dimensions': [
         {
           'gpu': LINUX_QUADRO_P400_STABLE_DRIVER,
