@@ -1450,6 +1450,7 @@ jumbo_source_set("unit_tests") {
     "dom/NodeTest.cpp",
     "dom/NthIndexCacheTest.cpp",
     "dom/PausableObjectTest.cpp",
+    "dom/PolicyTest.cpp",
     "dom/RangeTest.cpp",
     "dom/ScriptModuleResolverImplTest.cpp",
     "dom/ScriptRunnerTest.cpp",

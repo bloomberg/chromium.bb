@@ -210,6 +210,13 @@ typedef (HTMLScriptElement or SVGScriptElement) HTMLOrSVGScriptElement;
     // Non-standard APIs
     [MeasureAs=DocumentCaretRangeFromPoint] Range caretRangeFromPoint([Default=Undefined] optional long x, [Default=Undefined] optional long y);
 
+
+    // https://wicg.github.io/feature-policy
+    // TODO(iclelland): add spec for JS exposure in the spec for Feature Policy.
+    // Please refer to this doc for more details for now:
+    // https://docs.google.com/a/chromium.org/document/d/1wvk3cXkblNnbkMcsKayseK-k0SMGiP9b9fQFgfpqQpc/edit?usp=sharing
+    [RuntimeEnabled=FeaturePolicyJavaScriptInterface] readonly attribute Policy policy;
+
     // Deprecated prefixed page visibility API.
     // TODO(davidben): This is a property so attaching a deprecation warning results in false positives when outputting
     // document in the console. It's possible https://crbug.com/43394 will resolve this.
