@@ -44,8 +44,8 @@ class CHROMEOS_EXPORT MockHomedirMethods : public HomedirMethods {
                     const Callback& callback));
   MOCK_METHOD4(RemoveKeyEx,
                void(const Identification& id,
-                    const Authorization& auth,
-                    const std::string& label,
+                    const AuthorizationRequest& auth,
+                    const RemoveKeyRequest& request,
                     const Callback& callback));
   MOCK_METHOD5(UpdateKeyEx,
                void(const Identification& id,
