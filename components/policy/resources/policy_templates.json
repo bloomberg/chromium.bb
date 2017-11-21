@@ -146,7 +146,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 395
+#   For your editing convenience: highest ID currently used: 396
 #   And don't forget to also update the EnterprisePolicies enum of
 #   histograms.xml (run 'python tools/metrics/histograms/update_policies.py').
 #
@@ -3780,7 +3780,7 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
-      'example_value': ["{\\\"pattern\\\":\\\"https://www.example.com\\\",\\\"filter\\\":{\\\"ISSUER\\\":{\\\"CN\\\":\\\"certificate issuer name\\\"}}}"],
+      'example_value': ['{"pattern":"https://www.example.com","filter":{"ISSUER":{"CN":"certificate issuer name"}}}'],
       'id': 102,
       'caption': '''Automatically select client certificates for these sites''',
       'tags': ['website-sharing'],
@@ -3789,6 +3789,28 @@
           The value must be an array of stringified JSON dictionaries. Each dictionary must have the form { "pattern": "$URL_PATTERN", "filter" : $FILTER }, where $URL_PATTERN is a content setting pattern. $FILTER restricts from which client certificates the browser will automatically select. Independent of the filter, only certificates will be selected that match the server's certificate request. If $FILTER has the form { "ISSUER": { "CN": "$ISSUER_CN" } }, additionally only client certificates are selected that are issued by a certificate with the CommonName $ISSUER_CN. If $FILTER is the empty dictionary {}, the selection of client certificates is not additionally restricted.
 
           If this policy is left not set, no auto-selection will be done for any site.''',
+    },
+    {
+      'name': 'DeviceLoginScreenAutoSelectCertificateForUrls',
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'supported_on': ['chrome_os:65-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'example_value': ['{"pattern":"https://www.example.com","filter":{"ISSUER":{"CN":"certificate issuer name"}}}'],
+      'id': 396,
+      'caption': '''Automatically select client certificates for these sites on the sign-in screen''',
+      'tags': ['website-sharing'],
+      'desc': '''Allows you to specify a list of url patterns that specify sites for which a client certificate is automatically selected on the sign-in screen in the frame hosting the SAML flow, if the site requests a certificate. An example usage is to configure a device-wide certificate to be presented to the SAML IdP.
+
+      The value must be an array of stringified JSON dictionaries. Each dictionary must have the form { "pattern": "$URL_PATTERN", "filter" : $FILTER }, where $URL_PATTERN is a content setting pattern. $FILTER restricts from which client certificates the browser will automatically select. Independent of the filter, only certificates will be selected that match the server's certificate request. If $FILTER has the form { "ISSUER": { "CN": "$ISSUER_CN" } }, additionally only client certificates are selected that are issued by a certificate with the CommonName $ISSUER_CN. If $FILTER is the empty dictionary {}, the selection of client certificates is not additionally restricted.
+
+      If this policy is left not set, no auto-selection will be done for any site.''',
     },
     {
       'name': 'CookiesAllowedForUrls',
