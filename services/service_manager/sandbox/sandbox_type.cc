@@ -129,10 +129,13 @@ std::string StringFromUtilitySandboxType(SandboxType sandbox_type) {
 SandboxType UtilitySandboxTypeFromString(const std::string& sandbox_string) {
   if (sandbox_string == switches::kNoneSandbox)
     return SANDBOX_TYPE_NO_SANDBOX;
+  if (sandbox_string == switches::kNoneSandboxAndElevatedPrivileges) {
 #if defined(OS_WIN)
-  if (sandbox_string == switches::kNoneSandboxAndElevatedPrivileges)
     return SANDBOX_TYPE_NO_SANDBOX_AND_ELEVATED_PRIVILEGES;
+#else
+    return SANDBOX_TYPE_NO_SANDBOX;
 #endif
+  }
   if (sandbox_string == switches::kNetworkSandbox)
     return SANDBOX_TYPE_NETWORK;
   if (sandbox_string == switches::kPpapiSandbox)
