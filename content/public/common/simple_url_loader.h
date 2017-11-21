@@ -81,13 +81,18 @@ class CONTENT_EXPORT SimpleURLLoader {
       base::RepeatingCallback<void(const net::RedirectInfo& redirect_info,
                                    const ResourceResponseHead& response_head)>;
 
-  static std::unique_ptr<SimpleURLLoader> Create();
+  // Creates a SimpleURLLoader for |resource_request|. The request can be
+  // started by calling any one of the Download methods once. The loader may not
+  // be reused.
+  static std::unique_ptr<SimpleURLLoader> Create(
+      std::unique_ptr<ResourceRequest> resource_request,
+      const net::NetworkTrafficAnnotationTag& annotation_tag);
 
   virtual ~SimpleURLLoader();
 
-  // Starts a request for |resource_request| using |network_context|. The
-  // SimpleURLLoader will accumulate all downloaded data in an in-memory string
-  // of bounded size. If |max_body_size| is exceeded, the request will fail with
+  // Starts the request using |network_context|. The SimpleURLLoader will
+  // accumulate all downloaded data in an in-memory string of bounded size. If
+  // |max_body_size| is exceeded, the request will fail with
   // net::ERR_INSUFFICIENT_RESOURCES. |max_body_size| must be no greater than 1
   // MiB. For anything larger, it's recommended to either save to a temp file,
   // or consume the data as it is received.
@@ -97,9 +102,7 @@ class CONTENT_EXPORT SimpleURLLoader {
   // SimpleURLLoader before the callback is invoked will return in cancelling
   // the request, and the callback will not be called.
   virtual void DownloadToString(
-      const ResourceRequest& resource_request,
       mojom::URLLoaderFactory* url_loader_factory,
-      const net::NetworkTrafficAnnotationTag& annotation_tag,
       BodyAsStringCallback body_as_string_callback,
       size_t max_body_size) = 0;
 
@@ -109,9 +112,7 @@ class CONTENT_EXPORT SimpleURLLoader {
   // instead (DownloadToString if the body is expected to be of reasonable
   // length, or DownloadToFile otherwise).
   virtual void DownloadToStringOfUnboundedSizeUntilCrashAndDie(
-      const ResourceRequest& resource_request,
       mojom::URLLoaderFactory* url_loader_factory,
-      const net::NetworkTrafficAnnotationTag& annotation_tag,
       BodyAsStringCallback body_as_string_callback) = 0;
 
   // SimpleURLLoader will download the entire response to a file at the
@@ -128,9 +129,7 @@ class CONTENT_EXPORT SimpleURLLoader {
   // downloaded file will be deleted asynchronously and the callback will not be
   // invoked, regardless of other settings.
   virtual void DownloadToFile(
-      const ResourceRequest& resource_request,
       mojom::URLLoaderFactory* url_loader_factory,
-      const net::NetworkTrafficAnnotationTag& annotation_tag,
       DownloadToFileCompleteCallback download_to_file_complete_callback,
       const base::FilePath& file_path,
       int64_t max_body_size = std::numeric_limits<int64_t>::max()) = 0;
@@ -138,9 +137,7 @@ class CONTENT_EXPORT SimpleURLLoader {
   // Same as DownloadToFile, but creates a temporary file instead of taking a
   // FilePath.
   virtual void DownloadToTempFile(
-      const ResourceRequest& resource_request,
       mojom::URLLoaderFactory* url_loader_factory,
-      const net::NetworkTrafficAnnotationTag& annotation_tag,
       DownloadToFileCompleteCallback download_to_file_complete_callback,
       int64_t max_body_size = std::numeric_limits<int64_t>::max()) = 0;
 

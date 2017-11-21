@@ -79,13 +79,15 @@ class BrowsingDataRemoverImplBrowserTest : public ContentBrowserTest {
   // Issues a request for kHstsPath on localhost, and expects it to enable HSTS
   // for the domain.
   void IssueRequestThatSetsHsts() {
+    std::unique_ptr<ResourceRequest> request =
+        std::make_unique<ResourceRequest>();
+    request->url = ssl_server_.GetURL("localhost", kHstsPath);
+
     SimpleURLLoaderTestHelper loader_helper;
-    std::unique_ptr<SimpleURLLoader> loader = SimpleURLLoader::Create();
-    ResourceRequest request;
-    request.url = ssl_server_.GetURL("localhost", kHstsPath);
+    std::unique_ptr<SimpleURLLoader> loader = SimpleURLLoader::Create(
+        std::move(request), TRAFFIC_ANNOTATION_FOR_TESTS);
     loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
-        request, url_loader_factory(), TRAFFIC_ANNOTATION_FOR_TESTS,
-        loader_helper.GetCallback());
+        url_loader_factory(), loader_helper.GetCallback());
     loader_helper.WaitForCallback();
     ASSERT_TRUE(loader_helper.response_body());
     EXPECT_EQ(kHstsResponseBody, *loader_helper.response_body());
@@ -99,19 +101,19 @@ class BrowsingDataRemoverImplBrowserTest : public ContentBrowserTest {
   // over HTTPS, so HSTS is enabled. If it fails, the request was send using
   // HTTP instead, so HSTS is not enabled for the domain.
   bool IsHstsSet() {
-    SimpleURLLoaderTestHelper loader_helper;
-    std::unique_ptr<SimpleURLLoader> loader = SimpleURLLoader::Create();
-    ResourceRequest request;
-
     GURL url = ssl_server_.GetURL("localhost", "/echo");
     GURL::Replacements replacements;
     replacements.SetSchemeStr("http");
     url = url.ReplaceComponents(replacements);
-    request.url = url;
+    std::unique_ptr<ResourceRequest> request =
+        std::make_unique<ResourceRequest>();
+    request->url = url;
 
+    std::unique_ptr<SimpleURLLoader> loader = SimpleURLLoader::Create(
+        std::move(request), TRAFFIC_ANNOTATION_FOR_TESTS);
+    SimpleURLLoaderTestHelper loader_helper;
     loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
-        request, url_loader_factory(), TRAFFIC_ANNOTATION_FOR_TESTS,
-        loader_helper.GetCallback());
+        url_loader_factory(), loader_helper.GetCallback());
     loader_helper.WaitForCallback();
 
     // On success, HSTS was enabled for the domain.
