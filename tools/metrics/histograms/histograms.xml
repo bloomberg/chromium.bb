@@ -24843,6 +24843,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ExtensionService.ZipUnpackerDisabledReason"
+    enum="ExtensionDisableReason">
+  <owner>yamaguchi@google.com</owner>
+  <summary>
+    Records the reason why the ZIP unpacker extension was disabled when the
+    service attempted to re-enable the extension upon startup. Each entry
+    indicates that the extension was disabled unintentionally and a fix was
+    attempted.
+  </summary>
+</histogram>
+
 <histogram name="ExtensionSettings.ShouldDoVerificationCheck" enum="Boolean">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
