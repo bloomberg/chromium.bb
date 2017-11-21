@@ -244,10 +244,6 @@ SkBitmap LayerTreePixelTest::CopyTextureMailboxToBitmap(
   if (texture_mailbox.sync_token().HasData())
     gl->WaitSyncTokenCHROMIUM(texture_mailbox.sync_token().GetConstData());
 
-  gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   GLuint texture_id = gl->CreateAndConsumeTextureCHROMIUM(
       texture_mailbox.target(), texture_mailbox.name());
 
