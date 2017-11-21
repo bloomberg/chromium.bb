@@ -538,12 +538,6 @@ String Deprecation::DeprecationMessage(WebFeature feature) {
              "https://www.chromestatus.com/feature/5735596811091968 for more "
              "details.";
 
-    case WebFeature::kCredentialManagerCredentialRequestOptionsUnmediated:
-      return replacedWillBeRemoved(
-          "The boolean flag CredentialRequestOptions.unmediated",
-          "the CredentialRequestOptions.mediation enum", M62,
-          "6076479909658624");
-
     case WebFeature::kCredentialManagerIdName:
     case WebFeature::kCredentialManagerPasswordName:
     case WebFeature::kCredentialManagerAdditionalData:

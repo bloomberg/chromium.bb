@@ -16717,7 +16717,8 @@ Called by update_net_error_codes.py.-->
   <int value="1981" label="FieldEditInSecureContext"/>
   <int value="1982" label="FieldEditInNonSecureContext"/>
   <int value="1983"
-      label="CredentialManagerCredentialRequestOptionsUnmediated"/>
+      label="CredentialManagerCredentialRequestOptionsUnmediated (obsolete as
+             of M64)"/>
   <int value="1984" label="CredentialManagerGetMediationRequired"/>
   <int value="1985" label="CredentialManagerIdName"/>
   <int value="1986" label="CredentialManagerPasswordName"/>
@@ -16729,7 +16730,8 @@ Called by update_net_error_codes.py.-->
   <int value="1992" label="ShapeDetection_FaceDetectorConstructor"/>
   <int value="1993" label="ShapeDetection_TextDetectorConstructor"/>
   <int value="1994"
-      label="CredentialManagerCredentialRequestOptionsOnlyUnmediated"/>
+      label="CredentialManagerCredentialRequestOptionsOnlyUnmediated
+             (obsolete as of M64)"/>
   <int value="1995" label="InertAttribute"/>
   <int value="1996" label="PluginInstanceAccessFromIsolatedWorld"/>
   <int value="1997" label="PluginInstanceAccessFromMainWorld"/>
