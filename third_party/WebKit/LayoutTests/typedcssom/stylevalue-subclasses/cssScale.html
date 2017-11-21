@@ -28,7 +28,7 @@ for (const attr of ['x', 'y', 'z']) {
     test(() => {
       let result = new CSSScale(0, 0, 0);
       assert_throws(new TypeError(), () => result[attr] = value);
-      assert_equals(result[attr], 0);
+      assert_style_value_equals(result[attr], CSS.number(0));
     }, 'Updating CSSScale.' + attr + ' to ' + desc + ' throws a TypeError');
   }
 }
@@ -61,7 +61,7 @@ for (const attr of ['x', 'y', 'z']) {
   test(() => {
     let result = new CSSScale(0, 0, 0);
     result[attr] = 3.14;
-    assert_equals(result[attr], CSS.number(3.14));
+    assert_style_value_equals(result[attr], CSS.number(3.14));
   }, 'CSSScale.' + attr + ' can be updated to a number');
 
   test(() => {
