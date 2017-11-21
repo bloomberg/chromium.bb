@@ -5,6 +5,7 @@
 #include "media/gpu/vaapi_video_decode_accelerator.h"
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "media/gpu/accelerated_video_decoder.h"
 #include "media/gpu/vaapi/vaapi_picture.h"
@@ -153,7 +154,7 @@ class VaapiVideoDecodeAcceleratorTest : public TestWithParam<VideoCodecProfile>,
 
   // TODO(mcasas): Use a Mock VaapiPicture factory, https://crbug.com/784507.
   MOCK_METHOD2(MockCreateVaapiPicture, void(VaapiWrapper*, const gfx::Size&));
-  linked_ptr<VaapiPicture> CreateVaapiPicture(
+  std::unique_ptr<VaapiPicture> CreateVaapiPicture(
       const scoped_refptr<VaapiWrapper>& vaapi_wrapper,
       const MakeGLContextCurrentCallback& make_context_current_cb,
       const BindGLImageCallback& bind_image_cb,
@@ -162,9 +163,9 @@ class VaapiVideoDecodeAcceleratorTest : public TestWithParam<VideoCodecProfile>,
       uint32_t texture_id,
       uint32_t client_texture_id) {
     MockCreateVaapiPicture(vaapi_wrapper.get(), size);
-    return make_linked_ptr(new MockVaapiPicture(
+    return base::MakeUnique<MockVaapiPicture>(
         vaapi_wrapper, make_context_current_cb, bind_image_cb,
-        picture_buffer_id, size, texture_id, client_texture_id));
+        picture_buffer_id, size, texture_id, client_texture_id);
   }
 
   // VideoDecodeAccelerator::Client methods.

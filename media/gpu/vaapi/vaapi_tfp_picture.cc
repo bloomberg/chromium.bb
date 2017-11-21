@@ -110,7 +110,7 @@ bool VaapiTFPPicture::DownloadFromSurface(
 }
 
 // static
-linked_ptr<VaapiPicture> VaapiPicture::CreatePicture(
+std::unique_ptr<VaapiPicture> VaapiPicture::CreatePicture(
     const scoped_refptr<VaapiWrapper>& vaapi_wrapper,
     const MakeGLContextCurrentCallback& make_context_current_cb,
     const BindGLImageCallback& bind_image_cb,
@@ -118,11 +118,9 @@ linked_ptr<VaapiPicture> VaapiPicture::CreatePicture(
     const gfx::Size& size,
     uint32_t texture_id,
     uint32_t client_texture_id) {
-  linked_ptr<VaapiPicture> picture;
-  picture.reset(new VaapiTFPPicture(vaapi_wrapper, make_context_current_cb,
-                                    bind_image_cb, picture_buffer_id, size,
-                                    texture_id, client_texture_id));
-  return picture;
+  return base::MakeUnique<VaapiTFPPicture>(
+      vaapi_wrapper, make_context_current_cb, bind_image_cb, picture_buffer_id,
+      size, texture_id, client_texture_id);
 }
 
 // static

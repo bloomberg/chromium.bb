@@ -13,7 +13,6 @@
 #include <stdint.h>
 
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
 #include "media/gpu/gpu_video_decode_accelerator_helpers.h"
@@ -32,7 +31,7 @@ class MEDIA_GPU_EXPORT VaapiPicture {
   // Create a VaapiPicture of |size| to be associated with |picture_buffer_id|.
   // If provided, bind it to |texture_id|, as well as to |client_texture_id|
   // using |bind_image_cb|.
-  static linked_ptr<VaapiPicture> CreatePicture(
+  static std::unique_ptr<VaapiPicture> CreatePicture(
       const scoped_refptr<VaapiWrapper>& vaapi_wrapper,
       const MakeGLContextCurrentCallback& make_context_current_cb,
       const BindGLImageCallback& bind_image_cb,
