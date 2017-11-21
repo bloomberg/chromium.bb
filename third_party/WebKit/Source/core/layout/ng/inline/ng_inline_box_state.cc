@@ -20,6 +20,7 @@ void NGInlineBoxState::ComputeTextMetrics(const ComputedStyle& style,
                                           bool line_height_quirk) {
   text_metrics = NGLineHeightMetrics(style, baseline_type);
   text_top = -text_metrics.ascent;
+  text_height = text_metrics.LineHeight();
   text_metrics.AddLeading(style.ComputedLineHeightAsFixed());
 
   if (!line_height_quirk)

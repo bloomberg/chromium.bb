@@ -51,6 +51,9 @@ struct NGInlineBoxState {
   // text-top does not include leadings.
   LayoutUnit text_top;
 
+  // The height of the text fragments.
+  LayoutUnit text_height;
+
   // These values are to create a box fragment. Set only when needs_box_fragment
   // is set.
   LayoutUnit line_left_position;

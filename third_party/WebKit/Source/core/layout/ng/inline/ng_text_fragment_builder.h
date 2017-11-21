@@ -26,13 +26,10 @@ class CORE_EXPORT NGTextFragmentBuilder final : public NGBaseFragmentBuilder {
 
   // NOTE: Takes ownership of the shape result within the item result.
   void SetItem(NGInlineItemResult*, LayoutUnit line_height);
-  void SetAtomicInline(scoped_refptr<const ComputedStyle>,
-                       LayoutUnit inline_size,
-                       LayoutUnit line_height);
+  void SetAtomicInline(scoped_refptr<const ComputedStyle>, NGLogicalSize size);
   void SetText(scoped_refptr<const ComputedStyle>,
                scoped_refptr<const ShapeResult>,
-               LayoutUnit inline_size,
-               LayoutUnit line_height);
+               NGLogicalSize size);
 
   // Creates the fragment. Can only be called once.
   scoped_refptr<NGPhysicalTextFragment> ToTextFragment(unsigned index,
