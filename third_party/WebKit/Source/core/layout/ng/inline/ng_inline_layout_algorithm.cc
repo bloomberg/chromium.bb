@@ -304,11 +304,14 @@ void NGInlineLayoutAlgorithm::PlaceText(
     LayoutUnit* position,
     NGInlineBoxState* box,
     NGTextFragmentBuilder* text_builder) {
+  unsigned start_offset = shape_result->StartIndexForResult();
+  unsigned end_offset = shape_result->EndIndexForResult();
   LayoutUnit inline_size = shape_result->SnappedWidth();
   text_builder->SetText(std::move(style), std::move(shape_result), inline_size,
                         box->text_metrics.LineHeight());
   scoped_refptr<NGPhysicalTextFragment> text_fragment =
-      text_builder->ToTextFragment(std::numeric_limits<unsigned>::max(), 0, 0);
+      text_builder->ToTextFragment(std::numeric_limits<unsigned>::max(),
+                                   start_offset, end_offset);
   line_box_.AddChild(std::move(text_fragment), {*position, box->text_top});
   *position += inline_size;
 }
