@@ -302,10 +302,6 @@ ExtensionSyncData ExtensionSyncService::CreateSyncData(
     if (it->second.grant_permissions_and_reenable)
       result.set_enabled(true);
   }
-  if (extension.from_bookmark()) {
-    VLOG(1) << "Created bookmark app sync data";
-    VLOG(1) << result.GetSyncData().ToString();
-  }
   return result;
 }
 
@@ -541,8 +537,6 @@ void ExtensionSyncService::ApplySyncData(
 
 void ExtensionSyncService::ApplyBookmarkAppSyncData(
     const ExtensionSyncData& extension_sync_data) {
-  VLOG(1) << "Applying bookmark app sync data";
-  VLOG(1) << extension_sync_data.GetSyncData().ToString();
   DCHECK(extension_sync_data.is_app());
 
   // Process bookmark app sync if necessary.
@@ -581,11 +575,8 @@ void ExtensionSyncService::ApplyBookmarkAppSyncData(
     icon_info.width = icon.size;
     icon_info.height = icon.size;
     web_app_info.icons.push_back(icon_info);
-    VLOG(1) << "Adding linked icon of size " << icon.size << ": "
-            << icon.url.spec();
   }
 
-  VLOG(1) << "Creating/updating bookmark app";
   CreateOrUpdateBookmarkApp(extension_service(), &web_app_info);
 }
 

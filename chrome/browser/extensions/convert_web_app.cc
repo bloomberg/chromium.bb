@@ -143,7 +143,6 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
     const WebApplicationInfo& web_app,
     const Time& create_time,
     const base::FilePath& extensions_dir) {
-  VLOG(1) << "Converting web app to extension";
   base::FilePath install_temp_dir =
       file_util::GetInstallTempDir(extensions_dir);
   if (install_temp_dir.empty()) {
@@ -156,8 +155,6 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
     LOG(ERROR) << "Could not create temporary directory.";
     return NULL;
   }
-
-  VLOG(1) << "App URL " << web_app.app_url.spec();
 
   // Create the manifest
   std::unique_ptr<base::DictionaryValue> root(new base::DictionaryValue);
@@ -190,17 +187,12 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
                                                size.c_str());
     icons->SetString(size, icon_path);
 
-    VLOG(1) << "Adding icon of size " << size << ": " << icon_path;
-
     if (icon.url.is_valid()) {
-      VLOG(1) << "Adding linked icon URL " << icon.url.spec();
       std::unique_ptr<base::DictionaryValue> linked_icon(
           new base::DictionaryValue());
       linked_icon->SetString(keys::kLinkedAppIconURL, icon.url.spec());
       linked_icon->SetInteger(keys::kLinkedAppIconSize, icon.width);
       linked_icons->Append(std::move(linked_icon));
-    } else {
-      VLOG(1) << "Icon URL wasn't valid: " << icon.url.spec();
     }
   }
   root->Set(keys::kIcons, std::move(icons));
