@@ -16,7 +16,6 @@
 #include "build/build_config.h"
 #include "components/grit/components_scaled_resources.h"
 #include "components/omnibox/browser/autocomplete_match.h"
-#include "components/omnibox/browser/omnibox_client.h"
 #include "components/omnibox/browser/omnibox_edit_controller.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/toolbar/toolbar_model.h"
