@@ -94,12 +94,6 @@ class GaiaAuthConsumer {
   virtual void OnGetCheckConnectionInfoSuccess(const std::string& data) {}
   virtual void OnGetCheckConnectionInfoError(
       const GoogleServiceAuthError& error) {}
-
-  virtual void OnListIdpSessionsSuccess(const std::string& login_hint) {}
-  virtual void OnListIdpSessionsError(const GoogleServiceAuthError& error) {}
-
-  virtual void OnGetTokenResponseSuccess(const ClientOAuthResult& result) {}
-  virtual void OnGetTokenResponseError(const GoogleServiceAuthError& error) {}
 };
 
 #endif  // GOOGLE_APIS_GAIA_GAIA_AUTH_CONSUMER_H_
