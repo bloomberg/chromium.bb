@@ -14466,6 +14466,7 @@ Called by update_net_error_codes.py.-->
   <int value="206" label="kNewTabPageOverride"/>
   <int value="207" label="kDeclarativeNetRequest"/>
   <int value="208" label="kLockWindowFullscreenPrivate"/>
+  <int value="209" label="kWebrtcLoggingPrivateAudioDebug"/>
 </enum>
 
 <enum name="ExtensionServiceVerifyAllSuccess">

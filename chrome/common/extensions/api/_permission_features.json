@@ -837,6 +837,20 @@
       "81986D4F846CEDDDB962643FA501D1780DD441BB"   // http://crbug.com/777967
     ]
   },
+  "webrtcLoggingPrivate.audioDebug": {
+    "channel": "stable",
+    "extension_types": ["platform_app"],
+    "component_extensions_auto_granted": false,
+    "whitelist": [
+      // Extension used for API test.
+      "ADFA45434ABA2F1A4647E673F53FF37F8F6047A3",
+      // These apps are for internal Google use only.
+      "4F25792AF1AA7483936DE29C07806F203C7170A0",  // http://crbug.com/777967
+      "BD8781D757D830FC2E85470A1B6E8A718B7EE0D9",  // http://crbug.com/777967
+      "4AC2B6C63C6480D150DFDA13E4A5956EB1D0DDBB",  // http://crbug.com/777967
+      "81986D4F846CEDDDB962643FA501D1780DD441BB"   // http://crbug.com/777967
+    ]
+  },
   "webstorePrivate": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app", "hosted_app"],
