@@ -71503,6 +71503,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SafeBrowsing.WebView.Viewable" enum="BooleanVisible">
+  <owner>ntfschr@chromium.org</owner>
+  <summary>
+    When encountering an unsafe resource, this indicates whether the WebView is
+    considered to be viewable or not. Currently, we define &quot;viewable&quot;
+    as getVisibility() == View.VISIBLE and attached to the Android View
+    hierarchy.
+  </summary>
+</histogram>
+
 <histogram name="SB.BloomFilter" units="ms">
   <obsolete>
     Has not been generated for years (7/8/14).
