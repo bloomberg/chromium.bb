@@ -147,9 +147,6 @@ crbug.com/650348 virtual/mojo-loading/http/tests/webaudio/autoplay-crossorigin.h
 # https://crbug.com/745881: Image diff in test due to font rendering issues.
 crbug.com/745881 [ Win ] fast/text/ellipsis-in-relative-inline.html [ Failure ]
 
-# https://crbug.com/778696: Not much info...
-crbug.com/778696 virtual/threaded/fast/scroll-behavior/first-scroll-runs-on-compositor.html [ Failure ]
-
 # https://crbug.com/778372: Unique name conflict with old entries?
 crbug.com/778372 external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Crash ]
 
