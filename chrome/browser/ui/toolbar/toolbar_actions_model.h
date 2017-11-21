@@ -13,6 +13,7 @@
 #include "base/scoped_observer.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/extension_action.h"
+#include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/ui/toolbar/component_action_delegate.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -41,6 +42,7 @@ class ExtensionRegistry;
 // actions in a particular window should check that window's instance of
 // ToolbarActionsBar, which is responsible for the per-window layout.
 class ToolbarActionsModel : public extensions::ExtensionActionAPI::Observer,
+                            public ExtensionErrorReporter::Observer,
                             public extensions::ExtensionRegistryObserver,
                             public KeyedService,
                             public ComponentActionDelegate {
@@ -92,6 +94,10 @@ class ToolbarActionsModel : public extensions::ExtensionActionAPI::Observer,
     // |index| is the desired *final* index of the action (that is, in the
     // adjusted order, action should be at |index|).
     virtual void OnToolbarActionMoved(const std::string& id, int index) = 0;
+
+    // Signals that the extension, corresponding to the toolbar action, has
+    // failed to load.
+    virtual void OnToolbarActionLoadFailed() = 0;
 
     // Signals that the browser action with |id| has been updated.
     virtual void OnToolbarActionUpdated(const std::string& id) = 0;
@@ -226,6 +232,11 @@ class ToolbarActionsModel : public extensions::ExtensionActionAPI::Observer,
       content::WebContents* web_contents,
       content::BrowserContext* browser_context) override;
 
+  // ExtensionErrorReporter::Observer:
+  void OnLoadFailure(content::BrowserContext* browser_context,
+                     const base::FilePath& extension_path,
+                     const std::string& error) override;
+
   // To be called after the extension service is ready; gets loaded extensions
   // from the ExtensionRegistry, their saved order from the pref service, and
   // the initial set of component actions from the
@@ -334,6 +345,9 @@ class ToolbarActionsModel : public extensions::ExtensionActionAPI::Observer,
   // For observing change of toolbar order preference by external entity (sync).
   PrefChangeRegistrar pref_change_registrar_;
   base::Closure pref_change_callback_;
+
+  ScopedObserver<ExtensionErrorReporter, ExtensionErrorReporter::Observer>
+      extension_error_reporter_observer_;
 
   base::WeakPtrFactory<ToolbarActionsModel> weak_ptr_factory_;
 

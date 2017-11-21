@@ -613,6 +613,17 @@ void ToolbarActionsBar::OnToolbarActionAdded(
   ResizeDelegate(gfx::Tween::LINEAR);
 }
 
+void ToolbarActionsBar::OnToolbarActionLoadFailed() {
+  // When an extension is re-uploaded, it is first unloaded from Chrome. At this
+  // point, the extension's icon is initially removed from the toolbar, leaving
+  // an empty slot in the toolbar. Then the (newer version of the) extension is
+  // loaded, and its icon populates the empty slot.
+  //
+  // If the extension failed to load, then the empty slot should be removed and
+  // hence we resize the toolbar.
+  ResizeDelegate(gfx::Tween::EASE_OUT);
+}
+
 void ToolbarActionsBar::OnToolbarActionRemoved(const std::string& action_id) {
   ToolbarActions::iterator iter = toolbar_actions_.begin();
   while (iter != toolbar_actions_.end() && (*iter)->GetId() != action_id)
