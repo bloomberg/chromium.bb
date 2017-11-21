@@ -103,16 +103,16 @@ static const TXFM_1D_CFG *inv_txfm_row_cfg_ls[TX_TYPES_1D][TX_SIZES] = {
   },
 };
 
-TXFM_2D_FLIP_CFG av1_get_inv_txfm_cfg(TX_TYPE tx_type, TX_SIZE tx_size) {
-  TXFM_2D_FLIP_CFG cfg;
-  set_flip_cfg(tx_type, &cfg);
+void av1_get_inv_txfm_cfg(TX_TYPE tx_type, TX_SIZE tx_size,
+                          TXFM_2D_FLIP_CFG *cfg) {
+  assert(cfg != NULL);
+  set_flip_cfg(tx_type, cfg);
   const TX_TYPE_1D tx_type_col = vtx_tab[tx_type];
   const TX_TYPE_1D tx_type_row = htx_tab[tx_type];
   const TX_SIZE tx_size_col = txsize_vert_map[tx_size];
   const TX_SIZE tx_size_row = txsize_horz_map[tx_size];
-  cfg.col_cfg = inv_txfm_col_cfg_ls[tx_type_col][tx_size_col];
-  cfg.row_cfg = inv_txfm_row_cfg_ls[tx_type_row][tx_size_row];
-  return cfg;
+  cfg->col_cfg = inv_txfm_col_cfg_ls[tx_type_col][tx_size_col];
+  cfg->row_cfg = inv_txfm_row_cfg_ls[tx_type_row][tx_size_row];
 }
 
 void av1_gen_inv_stage_range(int8_t *stage_range_col, int8_t *stage_range_row,
@@ -230,7 +230,8 @@ static INLINE void inv_txfm2d_add_facade(const int32_t *input, uint16_t *output,
                                          int stride, int32_t *txfm_buf,
                                          TX_TYPE tx_type, TX_SIZE tx_size,
                                          int bd) {
-  TXFM_2D_FLIP_CFG cfg = av1_get_inv_txfm_cfg(tx_type, tx_size);
+  TXFM_2D_FLIP_CFG cfg;
+  av1_get_inv_txfm_cfg(tx_type, tx_size, &cfg);
   TX_SIZE tx_size_sqr = txsize_sqr_map[tx_size];
   inv_txfm2d_add_c(input, output, stride, &cfg, txfm_buf,
                    fwd_shift_sum[tx_size_sqr], bd);

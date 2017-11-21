@@ -39,8 +39,8 @@ class AV1FwdTxfm2d : public ::testing::TestWithParam<AV1FwdTxfm2dParam> {
     max_error_ = GET_PARAM(2);
     max_avg_error_ = GET_PARAM(3);
     count_ = 500;
-    TXFM_2D_FLIP_CFG fwd_txfm_flip_cfg =
-        av1_get_fwd_txfm_cfg(tx_type_, tx_size_);
+    TXFM_2D_FLIP_CFG fwd_txfm_flip_cfg;
+    av1_get_fwd_txfm_cfg(tx_type_, tx_size_, &fwd_txfm_flip_cfg);
     // TODO(sarahparker) this test will need to be updated when these
     // functions are extended to support rectangular transforms
     int amplify_bit = fwd_txfm_flip_cfg.row_cfg->shift[0] +
@@ -186,8 +186,9 @@ TEST(AV1FwdTxfm2d, CfgTest) {
 #if CONFIG_TX64X64
         if (tx_size == TX_64X64 && tx_type != DCT_DCT) continue;
 #endif  // CONFIG_TX64X64
-        const TXFM_2D_FLIP_CFG cfg = av1_get_fwd_txfm_cfg(
-            static_cast<TX_TYPE>(tx_type), static_cast<TX_SIZE>(tx_size));
+        TXFM_2D_FLIP_CFG cfg;
+        av1_get_fwd_txfm_cfg(static_cast<TX_TYPE>(tx_type),
+                             static_cast<TX_SIZE>(tx_size), &cfg);
         int8_t stage_range_col[MAX_TXFM_STAGE_NUM];
         int8_t stage_range_row[MAX_TXFM_STAGE_NUM];
         av1_gen_fwd_stage_range(stage_range_col, stage_range_row, &cfg, bd);

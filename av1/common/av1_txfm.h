@@ -258,8 +258,10 @@ void av1_gen_inv_stage_range(int8_t *stage_range_col, int8_t *stage_range_row,
                              const TXFM_2D_FLIP_CFG *cfg, int8_t fwd_shift,
                              int bd);
 
-TXFM_2D_FLIP_CFG av1_get_fwd_txfm_cfg(TX_TYPE tx_type, TX_SIZE tx_size);
-TXFM_2D_FLIP_CFG av1_get_inv_txfm_cfg(TX_TYPE tx_type, TX_SIZE tx_size);
+void av1_get_fwd_txfm_cfg(TX_TYPE tx_type, TX_SIZE tx_size,
+                          TXFM_2D_FLIP_CFG *cfg);
+void av1_get_inv_txfm_cfg(TX_TYPE tx_type, TX_SIZE tx_size,
+                          TXFM_2D_FLIP_CFG *cfg);
 #ifdef __cplusplus
 }
 #endif  // __cplusplus
