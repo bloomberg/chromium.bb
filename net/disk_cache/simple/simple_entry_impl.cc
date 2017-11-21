@@ -74,7 +74,7 @@ void RecordWriteResult(net::CacheType cache_type, WriteResult result) {
                    "WriteResult2", cache_type, result, WRITE_RESULT_MAX);
 }
 
-// TODO(juliatuttle): Consider removing this once we have a good handle on
+// TODO(morlovich): Consider removing this once we have a good handle on
 // header size changes.
 void RecordHeaderSizeChange(net::CacheType cache_type,
                             int old_size, int new_size) {
@@ -504,7 +504,7 @@ int SimpleEntryImpl::WriteData(int stream_index,
     op_callback = callback;
     ret_value = net::ERR_IO_PENDING;
   } else {
-    // TODO(gavinp,pasko): For performance, don't use a copy of an IOBuffer
+    // TODO(morlovich,pasko): For performance, don't use a copy of an IOBuffer
     // here to avoid paying the price of the RefCountedThreadSafe atomic
     // operations.
     if (buf) {
@@ -580,7 +580,7 @@ int SimpleEntryImpl::GetAvailableRange(int64_t offset,
 
 bool SimpleEntryImpl::CouldBeSparse() const {
   DCHECK(io_thread_checker_.CalledOnValidThread());
-  // TODO(juliatuttle): Actually check.
+  // TODO(morlovich): Actually check.
   return true;
 }
 
