@@ -492,6 +492,17 @@ void V8TestInterfaceCheckSecurity::crossOriginNamedGetter(v8::Local<v8::Name> na
     }
   }
 
+  // HTML 7.2.3.3 CrossOriginGetOwnPropertyHelper ( O, P )
+  // https://html.spec.whatwg.org/multipage/browsers.html#crossorigingetownpropertyhelper-(-o,-p-)
+  // step 3. If P is "then", @@toStringTag, @@hasInstance, or
+  //   @@isConcatSpreadable, then return PropertyDescriptor{ [[Value]]:
+  //   undefined, [[Writable]]: false, [[Enumerable]]: false,
+  //   [[Configurable]]: true }.
+  if (propertyName == "then") {
+    V8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+    return;
+  }
+
   BindingSecurity::FailedAccessCheckFor(
       info.GetIsolate(),
       &V8TestInterfaceCheckSecurity::wrapperTypeInfo,
