@@ -22,6 +22,9 @@ void UseCounterCallback(v8::Isolate* isolate,
     case v8::Isolate::kUseAsm:
       blink_feature = WebFeature::kUseAsm;
       break;
+    case v8::Isolate::kWebAssemblyInstantiation:
+      blink_feature = WebFeature::kWebAssemblyInstantiation;
+      break;
     case v8::Isolate::kBreakIterator:
       blink_feature = WebFeature::kBreakIterator;
       break;

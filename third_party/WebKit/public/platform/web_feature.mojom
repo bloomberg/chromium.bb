@@ -1762,6 +1762,7 @@ enum WebFeature {
   kPerformanceMeasurePassedInNavigationTiming = 2234,
   kHTMLFrameSetElementNonNullAnonymousNamedGetter = 2235,
   kCSPWithUnsafeEval = 2236,
+  kWebAssemblyInstantiation = 2237,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
