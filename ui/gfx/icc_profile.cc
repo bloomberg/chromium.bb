@@ -221,7 +221,7 @@ ColorSpace ICCProfile::GetParametricColorSpace() const {
 // TODO(ccameron): Change this to ICCProfile::FromColorSpace.
 bool ColorSpace::GetICCProfile(ICCProfile* icc_profile) const {
   if (!IsValid()) {
-    DLOG(ERROR) << "Cannot fetch ICCProfile for invalid space.";
+    DLOG(WARNING) << "Cannot fetch ICCProfile for invalid space.";
     return false;
   }
   if (matrix_ != MatrixID::RGB) {
