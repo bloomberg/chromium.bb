@@ -246,7 +246,7 @@ void TaskTracker::Shutdown() {
 
 void TaskTracker::Flush() {
   AutoSchedulerLock auto_lock(flush_lock_);
-  while (subtle::Acquire_Load(&num_pending_undelayed_tasks_) != 0 &&
+  while (subtle::Acquire_Load(&num_incomplete_undelayed_tasks_) != 0 &&
          !IsShutdownComplete()) {
     flush_cv_->Wait();
   }
@@ -259,7 +259,7 @@ bool TaskTracker::WillPostTask(const Task* task) {
     return false;
 
   if (task->delayed_run_time.is_null())
-    subtle::NoBarrier_AtomicIncrement(&num_pending_undelayed_tasks_, 1);
+    subtle::NoBarrier_AtomicIncrement(&num_incomplete_undelayed_tasks_, 1);
 
   debug::TaskAnnotator task_annotator;
   task_annotator.DidQueueTask(kQueueFunctionName, *task);
@@ -313,9 +313,7 @@ scoped_refptr<Sequence> TaskTracker::RunNextTask(
     AfterRunTask(shutdown_behavior);
 
   if (!is_delayed)
-    DecrementNumPendingUndelayedTasks();
-
-  OnRunNextTaskCompleted();
+    DecrementNumIncompleteUndelayedTasks();
 
   const bool sequence_is_empty_after_pop = sequence->Pop();
 
@@ -476,8 +474,8 @@ bool TaskTracker::IsPostingBlockShutdownTaskAfterShutdownAllowed() {
 }
 #endif
 
-int TaskTracker::GetNumPendingUndelayedTasksForTesting() const {
-  return subtle::NoBarrier_Load(&num_pending_undelayed_tasks_);
+int TaskTracker::GetNumIncompleteUndelayedTasksForTesting() const {
+  return subtle::NoBarrier_Load(&num_incomplete_undelayed_tasks_);
 }
 
 bool TaskTracker::BeforePostTask(TaskShutdownBehavior shutdown_behavior) {
@@ -595,11 +593,11 @@ void TaskTracker::OnBlockingShutdownTasksComplete() {
   shutdown_event_->Signal();
 }
 
-void TaskTracker::DecrementNumPendingUndelayedTasks() {
-  const auto new_num_pending_undelayed_tasks =
-      subtle::Barrier_AtomicIncrement(&num_pending_undelayed_tasks_, -1);
-  DCHECK_GE(new_num_pending_undelayed_tasks, 0);
-  if (new_num_pending_undelayed_tasks == 0) {
+void TaskTracker::DecrementNumIncompleteUndelayedTasks() {
+  const auto new_num_incomplete_undelayed_tasks =
+      subtle::Barrier_AtomicIncrement(&num_incomplete_undelayed_tasks_, -1);
+  DCHECK_GE(new_num_incomplete_undelayed_tasks, 0);
+  if (new_num_incomplete_undelayed_tasks == 0) {
     AutoSchedulerLock auto_lock(flush_lock_);
     flush_cv_->Signal();
   }
