@@ -82,16 +82,16 @@ class OopPixelTest : public testing::Test {
     float post_scale = 1.f;
   };
 
-  std::vector<SkColor> Raster(scoped_refptr<DisplayItemList> display_item_list,
-                              const gfx::Size& playback_size) {
+  SkBitmap Raster(scoped_refptr<DisplayItemList> display_item_list,
+                  const gfx::Size& playback_size) {
     RasterOptions options;
     options.bitmap_rect = gfx::Rect(playback_size);
     options.playback_rect = gfx::Rect(playback_size);
     return Raster(display_item_list, options);
   }
 
-  std::vector<SkColor> Raster(scoped_refptr<DisplayItemList> display_item_list,
-                              const RasterOptions& options) {
+  SkBitmap Raster(scoped_refptr<DisplayItemList> display_item_list,
+                  const RasterOptions& options) {
     gpu::gles2::GLES2Interface* gl = context_->GetImplementation();
     GLuint texture_id;
     GLuint fbo_id;
@@ -136,19 +136,28 @@ class OopPixelTest : public testing::Test {
     gl->DeleteTextures(1, &texture_id);
     gl->DeleteFramebuffers(1, &fbo_id);
 
-    std::vector<SkColor> colors;
+    // Swizzle rgba->bgra if needed.
+    std::vector<SkPMColor> colors;
     colors.reserve(width * height);
     for (int h = 0; h < height; ++h) {
       for (int w = 0; w < width; ++w) {
         int i = (h * width + w) * 4;
-        colors.push_back(
-            SkColorSetARGB(data[i + 3], data[i + 0], data[i + 1], data[i + 2]));
+        colors.push_back(SkPreMultiplyARGB(data[i + 3], data[i + 0],
+                                           data[i + 1], data[i + 2]));
       }
     }
-    return colors;
+
+    SkBitmap bitmap;
+    bitmap.allocN32Pixels(width, height);
+    SkPixmap pixmap(SkImageInfo::MakeN32Premul(options.bitmap_rect.width(),
+                                               options.bitmap_rect.height()),
+                    colors.data(),
+                    options.bitmap_rect.width() * sizeof(SkColor));
+    bitmap.writePixels(pixmap);
+    return bitmap;
   }
 
-  std::vector<SkColor> RasterExpectedBitmap(
+  SkBitmap RasterExpectedBitmap(
       scoped_refptr<DisplayItemList> display_item_list,
       const gfx::Size& playback_size) {
     RasterOptions options;
@@ -157,7 +166,7 @@ class OopPixelTest : public testing::Test {
     return RasterExpectedBitmap(display_item_list, options);
   }
 
-  std::vector<SkColor> RasterExpectedBitmap(
+  SkBitmap RasterExpectedBitmap(
       scoped_refptr<DisplayItemList> display_item_list,
       const RasterOptions& options) {
     // Generate bitmap via the "in process" raster path.  This verifies
@@ -218,44 +227,17 @@ class OopPixelTest : public testing::Test {
     bool success = surface->readPixels(bitmap, 0, 0);
     CHECK(success);
     EXPECT_EQ(gl->GetError(), static_cast<unsigned>(GL_NO_ERROR));
-
-    int width = options.bitmap_rect.width();
-    int height = options.bitmap_rect.height();
-    EXPECT_EQ(width, bitmap.width());
-    EXPECT_EQ(height, bitmap.height());
-
-    std::vector<SkColor> colors;
-    colors.reserve(width * height);
-    for (int h = 0; h < height; ++h) {
-      for (int w = 0; w < width; ++w) {
-        colors.push_back(bitmap.getColor(w, h));
-      }
-    }
-    return colors;
+    return bitmap;
   }
 
-  void ExpectEquals(const gfx::Size& size,
-                    std::vector<SkColor>* actual,
-                    std::vector<SkColor>* expected) {
-    size_t expected_size = size.width() * size.height();
-    ASSERT_EQ(expected->size(), expected_size);
-    if (*actual == *expected)
+  void ExpectEquals(SkBitmap actual, SkBitmap expected) {
+    EXPECT_EQ(actual.dimensions(), expected.dimensions());
+    auto expected_url = GetPNGDataUrl(expected);
+    auto actual_url = GetPNGDataUrl(actual);
+    if (actual_url == expected_url)
       return;
-
-    ASSERT_EQ(actual->size(), expected_size);
-
-    SkBitmap expected_bitmap;
-    expected_bitmap.installPixels(
-        SkImageInfo::MakeN32Premul(size.width(), size.height()),
-        expected->data(), size.width() * sizeof(SkColor));
-
-    SkBitmap actual_bitmap;
-    actual_bitmap.installPixels(
-        SkImageInfo::MakeN32Premul(size.width(), size.height()), actual->data(),
-        size.width() * sizeof(SkColor));
-
-    ADD_FAILURE() << "\nExpected: " << GetPNGDataUrl(expected_bitmap)
-                  << "\nActual:   " << GetPNGDataUrl(actual_bitmap);
+    ADD_FAILURE() << "\nExpected: " << expected_url
+                  << "\nActual:   " << actual_url;
   }
 
  private:
@@ -274,9 +256,13 @@ TEST_F(OopPixelTest, DrawColor) {
   display_item_list->Finalize();
 
   auto actual = Raster(std::move(display_item_list), rect.size());
-  std::vector<SkColor> expected(rect.width() * rect.height(),
-                                SkColorSetARGB(255, 0, 0, 255));
-  ExpectEquals(rect.size(), &actual, &expected);
+  std::vector<SkPMColor> expected_pixels(rect.width() * rect.height(),
+                                         SkPreMultiplyARGB(255, 0, 0, 255));
+  SkBitmap expected;
+  expected.installPixels(
+      SkImageInfo::MakeN32Premul(rect.width(), rect.height()),
+      expected_pixels.data(), rect.width() * sizeof(SkColor));
+  ExpectEquals(actual, expected);
 }
 
 TEST_F(OopPixelTest, DrawRect) {
@@ -306,18 +292,22 @@ TEST_F(OopPixelTest, DrawRect) {
   // Expected colors are 5x5 rects of
   //  BLUE GREEN
   //  CYAN  RED
-  std::vector<SkColor> expected(rect.width() * rect.height());
+  std::vector<SkPMColor> expected_pixels(rect.width() * rect.height());
   for (int h = 0; h < rect.height(); ++h) {
-    auto start = expected.begin() + h * rect.width();
-    SkColor left_color =
-        h < 5 ? input[0].second.getColor() : input[2].second.getColor();
-    SkColor right_color =
-        h < 5 ? input[1].second.getColor() : input[3].second.getColor();
+    auto start = expected_pixels.begin() + h * rect.width();
+    SkPMColor left_color = SkPreMultiplyColor(
+        h < 5 ? input[0].second.getColor() : input[2].second.getColor());
+    SkPMColor right_color = SkPreMultiplyColor(
+        h < 5 ? input[1].second.getColor() : input[3].second.getColor());
 
     std::fill(start, start + 5, left_color);
     std::fill(start + 5, start + 10, right_color);
   }
-  ExpectEquals(rect.size(), &actual, &expected);
+  SkBitmap expected;
+  expected.installPixels(
+      SkImageInfo::MakeN32Premul(rect.width(), rect.height()),
+      expected_pixels.data(), rect.width() * sizeof(SkPMColor));
+  ExpectEquals(actual, expected);
 }
 
 // Test various bitmap and playback rects in the raster options, to verify
@@ -349,7 +339,7 @@ TEST_F(OopPixelTest, DrawRectBasicRasterOptions) {
 
     auto actual = Raster(display_item_list, options);
     auto expected = RasterExpectedBitmap(display_item_list, options);
-    ExpectEquals(options.bitmap_rect.size(), &actual, &expected);
+    ExpectEquals(actual, expected);
   }
 }
 
@@ -380,7 +370,7 @@ TEST_F(OopPixelTest, DrawRectScaleTransformOptions) {
 
   auto actual = Raster(display_item_list, options);
   auto expected = RasterExpectedBitmap(display_item_list, options);
-  ExpectEquals(options.bitmap_rect.size(), &actual, &expected);
+  ExpectEquals(actual, expected);
 }
 
 TEST_F(OopPixelTest, DrawRectQueryMiddleOfDisplayList) {
@@ -412,7 +402,7 @@ TEST_F(OopPixelTest, DrawRectQueryMiddleOfDisplayList) {
 
   auto actual = Raster(display_item_list, options);
   auto expected = RasterExpectedBitmap(display_item_list, options);
-  ExpectEquals(options.bitmap_rect.size(), &actual, &expected);
+  ExpectEquals(actual, expected);
 }
 
 }  // namespace
