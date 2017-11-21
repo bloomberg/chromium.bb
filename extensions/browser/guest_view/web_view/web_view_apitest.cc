@@ -603,6 +603,10 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestLoadProgressEvent) {
   RunTest("testLoadProgressEvent", "web_view/apitest");
 }
 
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestCanGoBack) {
+  RunTest("testCanGoBack", "web_view/apitest");
+}
+
 IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestLoadStartLoadRedirect) {
   std::string app_location = "web_view/apitest";
   StartTestServer(app_location);

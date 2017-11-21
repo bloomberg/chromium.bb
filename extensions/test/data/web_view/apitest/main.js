@@ -1053,6 +1053,23 @@ function testLoadAbortInvalidNavigation() {
   document.body.appendChild(webview);
 }
 
+// This test verifies that canGoBack is true for failed navigations.
+function testCanGoBack() {
+  var testPage = 'data:text/html,test page';
+  var badUrl = 'http://foo.bar/';
+  var webview = document.createElement('webview');
+  webview.addEventListener('loadcommit', function(evt) {
+    if (evt.url == testPage) {
+      webview.src = badUrl;
+    } else if (evt.url == badUrl) {
+      embedder.test.assertTrue(webview.canGoBack());
+      embedder.test.succeed();
+    }
+  });
+  webview.src = testPage;
+  document.body.appendChild(webview);
+}
+
 // Verifies that navigation to a URL that is valid but not web-safe or
 // pseudo-scheme fires loadabort and doesn't cause a crash.
 function testLoadAbortNonWebSafeScheme() {
@@ -1777,6 +1794,7 @@ embedder.test.testList = {
   'testAutosizeHeight': testAutosizeHeight,
   'testAutosizeRemoveAttributes': testAutosizeRemoveAttributes,
   'testAutosizeWithPartialAttributes': testAutosizeWithPartialAttributes,
+  'testCanGoBack': testCanGoBack,
   'testCannotMutateEventName': testCannotMutateEventName,
   'testChromeExtensionRelativePath': testChromeExtensionRelativePath,
   'testChromeExtensionURL': testChromeExtensionURL,
