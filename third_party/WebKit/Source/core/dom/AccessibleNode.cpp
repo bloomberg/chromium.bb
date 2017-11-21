@@ -204,7 +204,7 @@ QualifiedName GetCorrespondingARIAAttribute(AOMIntProperty property) {
 }  // namespace
 
 AccessibleNode::AccessibleNode(Element* element)
-    : element_(element), document_(element->GetDocument()) {
+    : element_(element), document_(nullptr) {
   DCHECK(RuntimeEnabledFeatures::AccessibilityObjectModelEnabled());
 }
 
@@ -218,6 +218,16 @@ AccessibleNode::~AccessibleNode() {}
 // static
 AccessibleNode* AccessibleNode::Create(Document& document) {
   return new AccessibleNode(document);
+}
+
+Document* AccessibleNode::GetDocument() const {
+  if (document_)
+    return document_;
+  if (element_)
+    return &element_->GetDocument();
+
+  NOTREACHED();
+  return nullptr;
 }
 
 const AtomicString& AccessibleNode::GetProperty(
@@ -981,7 +991,7 @@ void AccessibleNode::appendChild(AccessibleNode* child,
     return;
   }
 
-  if (!document_->GetSecurityOrigin()->CanAccess(
+  if (!GetDocument()->GetSecurityOrigin()->CanAccess(
           child->GetDocument()->GetSecurityOrigin())) {
     exception_state.ThrowDOMException(
         kInvalidAccessError,
@@ -1125,7 +1135,7 @@ void AccessibleNode::NotifyAttributeChanged(
 }
 
 AXObjectCache* AccessibleNode::GetAXObjectCache() {
-  return document_->ExistingAXObjectCache();
+  return GetDocument()->ExistingAXObjectCache();
 }
 
 void AccessibleNode::Trace(blink::Visitor* visitor) {

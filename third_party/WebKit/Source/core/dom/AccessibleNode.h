@@ -120,7 +120,7 @@ class CORE_EXPORT AccessibleNode : public EventTargetWithInlineData {
   Element* element() const { return element_; }
 
   // Gets the associated document.
-  Document* GetDocument() const { return document_.Get(); }
+  Document* GetDocument() const;
 
   // Children. These are only virtual AccessibleNodes that were added
   // explicitly, never AccessibleNodes from DOM Elements.
@@ -382,7 +382,7 @@ class CORE_EXPORT AccessibleNode : public EventTargetWithInlineData {
   // This object's owner Element, if it corresponds to an Element.
   Member<Element> element_;
 
-  // The object's owner Document.
+  // The object's owner Document. Only set if |element_| is nullptr.
   Member<Document> document_;
 
   // This object's AccessibleNode children, which must be only virtual
