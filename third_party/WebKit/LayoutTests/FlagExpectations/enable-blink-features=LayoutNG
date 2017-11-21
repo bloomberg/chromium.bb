@@ -8002,7 +8002,6 @@ crbug.com/591099 virtual/incremental-shadow-dom/fast/dom/shadow/form-in-shadow.h
 crbug.com/591099 virtual/incremental-shadow-dom/fast/dom/shadow/selection-in-nested-shadow.html [ Failure ]
 crbug.com/591099 virtual/incremental-shadow-dom/fast/dom/shadow/selections-in-shadow.html [ Timeout ]
 crbug.com/591099 virtual/incremental-shadow-dom/fast/dom/shadow/shadow-dom-event-dispatching-svg-in-shadow-subtree.html [ Failure ]
-crbug.com/591099 virtual/incremental-shadow-dom/fast/dom/shadow/shadowdom-for-button.html [ Pass ]
 crbug.com/591099 virtual/incremental-shadow-dom/shadow-dom/event-composed-ua.html [ Timeout ]
 crbug.com/591099 virtual/incremental-shadow-dom/shadow-dom/range-caret-range-from-point-left-of-shadow.html [ Crash ]
 crbug.com/591099 virtual/layout_ng/ [ Skip ]
