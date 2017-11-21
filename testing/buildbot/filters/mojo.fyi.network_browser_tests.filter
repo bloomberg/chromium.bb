@@ -242,6 +242,7 @@
 -SSLUITestTransientAndCommitted.TestHTTPSExpiredCertGoBackUsingCommand/1
 -SSLUITestTransientAndCommitted.TestHTTPSOCSPRevoked/1
 -SSLUITestTransientAndCommitted.TestHTTPSOCSPRevoked/0
+-SSLUIWorkerFetchTest.TestUnsafeContentsInWorkerWithUserException/0
 -SubresourceFilterBrowserTest.FailedProvisionalLoadInMainframe
 -SuperfishSSLUITest.NoSuperfishRecorded
 -SuperfishSSLUITest.SuperfishInterstitial
