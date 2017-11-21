@@ -1156,8 +1156,8 @@ void RenderWidgetCompositor::SetBrowserControlsShownRatio(float ratio) {
 
 void RenderWidgetCompositor::RequestDecode(
     const PaintImage& image,
-    const base::Callback<void(bool)>& callback) {
-  layer_tree_host_->QueueImageDecode(image, callback);
+    base::OnceCallback<void(bool)> callback) {
+  layer_tree_host_->QueueImageDecode(image, std::move(callback));
 
   // If we're compositing synchronously, the SetNeedsCommit call which will be
   // issued by |layer_tree_host_| is not going to cause a commit, due to the
