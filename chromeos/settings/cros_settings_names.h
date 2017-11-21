@@ -137,6 +137,8 @@ CHROMEOS_EXPORT extern const char kCastReceiverName[];
 
 CHROMEOS_EXPORT extern const char kDeviceEnrollmentIdNeeded[];
 
+CHROMEOS_EXPORT extern const char kUnaffiliatedArcAllowed[];
+
 }  // namespace chromeos
 
 #endif  // CHROMEOS_SETTINGS_CROS_SETTINGS_NAMES_H_

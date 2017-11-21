@@ -146,7 +146,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 396
+#   For your editing convenience: highest ID currently used: 397
 #   And don't forget to also update the EnterprisePolicies enum of
 #   histograms.xml (run 'python tools/metrics/histograms/update_policies.py').
 #
@@ -10626,6 +10626,25 @@
       If the policy is disabled, downloads will start immediately, and the user will not be asked where to save the file.
       If the policy is not configured, the user will be able to change this setting.
       '''
+    },
+    {
+      'name': 'UnaffiliatedArcAllowed',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:64-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': False,
+      },
+      'example_value': False,
+      'id': 397,
+      'caption': '''Allow unaffiliated users to use ARC''',
+      'tags': [],
+      'desc': '''If the policy is set to false, unaffiliated users will not be allowed to use ARC.
+
+      If the policy is unset or set to true, all users are allowed to use ARC (unless ARC is disabled by other means).
+
+      Changes to the policy will only be applied while ARC is not running, e.g. while Chrome OS is starting.''',
     },
   ],
   'messages': {

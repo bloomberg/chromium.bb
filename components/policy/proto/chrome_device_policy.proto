@@ -951,6 +951,12 @@ message DeviceLoginScreenAutoSelectCertificateForUrls {
   repeated string login_screen_auto_select_certificate_rules = 1;
 };
 
+// Setting that controls whether unaffiliated users are allowed to use ARC
+// (true by default)
+message UnaffiliatedArcAllowedProto {
+  optional bool unaffiliated_arc_allowed = 1;
+}
+
 message ChromeDeviceSettingsProto {
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
   optional UserWhitelistProto user_whitelist = 2;
@@ -1027,4 +1033,5 @@ message ChromeDeviceSettingsProto {
   optional ForcedReenrollmentProto forced_reenrollment = 61;
   optional DeviceLoginScreenAutoSelectCertificateForUrls
       device_login_screen_auto_select_certificate_for_urls = 62;
+  optional UnaffiliatedArcAllowedProto unaffiliated_arc_allowed = 63;
 }

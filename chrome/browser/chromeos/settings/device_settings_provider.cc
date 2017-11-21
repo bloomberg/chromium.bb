@@ -109,6 +109,7 @@ const char* const kKnownSettings[] = {
     kSystemUse24HourClock,
     kTargetVersionPrefix,
     kTPMFirmwareUpdateSettings,
+    kUnaffiliatedArcAllowed,
     kUpdateDisabled,
     kVariationsRestrictParameter,
 };
@@ -612,6 +613,16 @@ void DecodeGenericPolicies(
       new_values_cache->SetValue(
           kDeviceEnrollmentIdNeeded,
           base::MakeUnique<base::Value>(container.enrollment_id_needed()));
+    }
+  }
+
+  if (policy.has_unaffiliated_arc_allowed()) {
+    const em::UnaffiliatedArcAllowedProto& container(
+        policy.unaffiliated_arc_allowed());
+    if (container.has_unaffiliated_arc_allowed()) {
+      new_values_cache->SetValue(
+          kUnaffiliatedArcAllowed,
+          base::MakeUnique<base::Value>(container.unaffiliated_arc_allowed()));
     }
   }
 }

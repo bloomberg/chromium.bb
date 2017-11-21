@@ -11918,6 +11918,7 @@ Called by update_net_error_codes.py.-->
   <int value="394" label="MinimumRequiredChromeVersion"/>
   <int value="395" label="PromptForDownloadLocation"/>
   <int value="396" label="DeviceLoginScreenAutoSelectCertificateForUrls"/>
+  <int value="397" label="UnaffiliatedArcAllowed"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
