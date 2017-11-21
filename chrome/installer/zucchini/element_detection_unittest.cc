@@ -44,8 +44,8 @@ ElementVector TestElementFinder(std::vector<uint8_t> buffer) {
               offset_t length = 1;
               while (length < region.size() && region[length] == region[0])
                 ++length;
-              return Element{static_cast<ExecutableType>(region[0]), 0U,
-                             length};
+              return Element{{0, length},
+                             static_cast<ExecutableType>(region[0])};
             }
             return base::nullopt;
           },
@@ -60,16 +60,19 @@ ElementVector TestElementFinder(std::vector<uint8_t> buffer) {
 TEST(ElementDetectionTest, ElementFinder) {
   EXPECT_EQ(ElementVector(), TestElementFinder({}));
   EXPECT_EQ(ElementVector(), TestElementFinder({0, 0}));
-  EXPECT_EQ(ElementVector({{kExeTypeWin32X86, 0, 2}}),
+  EXPECT_EQ(ElementVector({{{0, 2}, kExeTypeWin32X86}}),
             TestElementFinder({1, 1}));
-  EXPECT_EQ(ElementVector({{kExeTypeWin32X86, 0, 2}, {kExeTypeWin32X64, 2, 2}}),
-            TestElementFinder({1, 1, 2, 2}));
-  EXPECT_EQ(ElementVector({{kExeTypeWin32X86, 1, 2}}),
+  EXPECT_EQ(
+      ElementVector({{{0, 2}, kExeTypeWin32X86}, {{2, 2}, kExeTypeWin32X64}}),
+      TestElementFinder({1, 1, 2, 2}));
+  EXPECT_EQ(ElementVector({{{1, 2}, kExeTypeWin32X86}}),
             TestElementFinder({0, 1, 1, 0}));
-  EXPECT_EQ(ElementVector({{kExeTypeWin32X86, 1, 2}, {kExeTypeWin32X64, 3, 3}}),
-            TestElementFinder({0, 1, 1, 2, 2, 2}));
-  EXPECT_EQ(ElementVector({{kExeTypeWin32X86, 1, 2}, {kExeTypeWin32X64, 4, 3}}),
-            TestElementFinder({0, 1, 1, 0, 2, 2, 2}));
+  EXPECT_EQ(
+      ElementVector({{{1, 2}, kExeTypeWin32X86}, {{3, 3}, kExeTypeWin32X64}}),
+      TestElementFinder({0, 1, 1, 2, 2, 2}));
+  EXPECT_EQ(
+      ElementVector({{{1, 2}, kExeTypeWin32X86}, {{4, 3}, kExeTypeWin32X64}}),
+      TestElementFinder({0, 1, 1, 0, 2, 2, 2}));
 }
 
 }  // namespace zucchini

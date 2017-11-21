@@ -38,7 +38,7 @@ enum class PatchType : uint32_t {
 // Supported by MSVC, g++, and clang++. Ensures no gaps in packing.
 #pragma pack(push, 1)
 
-// Header for a Zucchini patch, found at the begining of an ensemble patch.
+// Header for a Zucchini patch, found at the beginning of an ensemble patch.
 struct PatchHeader {
   // Magic signature at the beginning of a Zucchini patch file.
   enum : uint32_t { kMagic = 'Z' | ('u' << 8) | ('c' << 16) };
@@ -53,7 +53,7 @@ struct PatchHeader {
 // Sanity check.
 static_assert(sizeof(PatchHeader) == 20, "PatchHeader is 20 bytes");
 
-// Header for a patch element, found at the begining of every patch element.
+// Header for a patch element, found at the beginning of every patch element.
 struct PatchElementHeader {
   uint32_t old_offset;
   uint32_t new_offset;

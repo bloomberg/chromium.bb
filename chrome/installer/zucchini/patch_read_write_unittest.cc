@@ -76,9 +76,9 @@ TEST(PatchTest, ParseSerializeElementMatch) {
   EXPECT_EQ(kExeTypeDex, element_match.old_element.exe_type);
   EXPECT_EQ(kExeTypeDex, element_match.new_element.exe_type);
   EXPECT_EQ(size_t(1), element_match.old_element.offset);
-  EXPECT_EQ(size_t(2), element_match.old_element.length);
+  EXPECT_EQ(size_t(2), element_match.old_element.size);
   EXPECT_EQ(size_t(3), element_match.new_element.offset);
-  EXPECT_EQ(size_t(4), element_match.new_element.length);
+  EXPECT_EQ(size_t(4), element_match.new_element.size);
 
   size_t size = patch::SerializedElementMatchSize(element_match);
   EXPECT_EQ(data.size(), size);
@@ -99,7 +99,7 @@ TEST(PatchTest, ParseSerializeElementMatchExeMismatch) {
   ByteVector buffer(28);
   BufferSink buffer_sink(buffer.data(), buffer.size());
   EXPECT_FALSE(patch::SerializeElementMatch(
-      ElementMatch{{kExeTypeNoOp, 1, 2}, {kExeTypeWin32X86, 3, 4}},
+      ElementMatch{{{1, 2}, kExeTypeNoOp}, {{3, 4}, kExeTypeWin32X86}},
       &buffer_sink));
 }
 
@@ -107,7 +107,8 @@ TEST(PatchTest, SerializeElementMatchTooSmall) {
   ByteVector buffer(4);
   BufferSink buffer_sink(buffer.data(), buffer.size());
   EXPECT_FALSE(patch::SerializeElementMatch(
-      ElementMatch{{kExeTypeDex, 1, 2}, {kExeTypeDex, 3, 4}}, &buffer_sink));
+      ElementMatch{{{1, 2}, kExeTypeDex}, {{3, 4}, kExeTypeDex}},
+      &buffer_sink));
 }
 
 TEST(PatchTest, ParseSerializeBuffer) {
@@ -430,10 +431,10 @@ TEST(PatchElementTest, Normal) {
   ElementMatch element_match = patch_element_reader.element_match();
   EXPECT_EQ(kExeTypeWin32X86, element_match.old_element.exe_type);
   EXPECT_EQ(0x01U, element_match.old_element.offset);
-  EXPECT_EQ(0x02U, element_match.old_element.length);
+  EXPECT_EQ(0x02U, element_match.old_element.size);
   EXPECT_EQ(kExeTypeWin32X86, element_match.new_element.exe_type);
   EXPECT_EQ(0x03U, element_match.new_element.offset);
-  EXPECT_EQ(0x04U, element_match.new_element.length);
+  EXPECT_EQ(0x04U, element_match.new_element.size);
 
   EquivalenceSource equivalence_source =
       patch_element_reader.GetEquivalenceSource();

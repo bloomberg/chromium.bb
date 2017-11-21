@@ -21,10 +21,14 @@ bool SerializeElementMatch(const ElementMatch& element_match,
     return false;
 
   PatchElementHeader element_header;
-  element_header.old_offset = element_match.old_element.offset;
-  element_header.new_offset = element_match.new_element.offset;
-  element_header.old_length = element_match.old_element.length;
-  element_header.new_length = element_match.new_element.length;
+  element_header.old_offset =
+      base::checked_cast<uint32_t>(element_match.old_element.offset);
+  element_header.new_offset =
+      base::checked_cast<uint32_t>(element_match.new_element.offset);
+  element_header.old_length =
+      base::checked_cast<uint32_t>(element_match.old_element.size);
+  element_header.new_length =
+      base::checked_cast<uint32_t>(element_match.new_element.size);
   element_header.exe_type = element_match.old_element.exe_type;
 
   return sink->PutValue<PatchElementHeader>(element_header);
