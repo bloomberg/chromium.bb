@@ -8,11 +8,23 @@
 
 #include "base/command_line.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/ax_text_utils.h"
 #include "ui/accessibility/platform/atk_util_auralinux.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+
+// Some ATK interfaces require returning a (const gchar*), use
+// this macro to make it safe to return a pointer to a temporary
+// string.
+#define RETURN_STRING(str_expr) \
+  {                             \
+    static std::string result;  \
+    result = (str_expr);        \
+    return result.c_str();      \
+  }
 
 //
 // ax_platform_node_auralinux AtkObject definition and implementation.
@@ -313,7 +325,87 @@ static const GInterfaceInfo ComponentInfo = {
 };
 
 //
-// The rest of the AXPlatformNodeAuraLinux code, not specific to one
+// AtkAction interface
+//
+
+static gboolean ax_platform_node_auralinux_do_action(AtkAction* atk_action,
+                                                     gint index) {
+  g_return_val_if_fail(ATK_IS_ACTION(atk_action), FALSE);
+  g_return_val_if_fail(!index, FALSE);
+
+  AtkObject* atk_object = ATK_OBJECT(atk_action);
+  ui::AXPlatformNodeAuraLinux* obj =
+      AtkObjectToAXPlatformNodeAuraLinux(atk_object);
+  if (!obj)
+    return FALSE;
+
+  return obj->DoDefaultAction();
+}
+
+static gint ax_platform_node_auralinux_get_n_actions(AtkAction* atk_action) {
+  g_return_val_if_fail(ATK_IS_ACTION(atk_action), 0);
+
+  AtkObject* atk_object = ATK_OBJECT(atk_action);
+  ui::AXPlatformNodeAuraLinux* obj =
+      AtkObjectToAXPlatformNodeAuraLinux(atk_object);
+  if (!obj)
+    return 0;
+
+  return 1;
+}
+
+static const gchar* ax_platform_node_auralinux_get_action_description(
+    AtkAction*,
+    gint) {
+  // Not implemented. Right now Orca does not provide this and
+  // Chromium is not providing a string for the action description.
+  return nullptr;
+}
+
+static const gchar* ax_platform_node_auralinux_get_action_name(
+    AtkAction* atk_action,
+    gint index) {
+  g_return_val_if_fail(ATK_IS_ACTION(atk_action), nullptr);
+  g_return_val_if_fail(!index, nullptr);
+
+  AtkObject* atk_object = ATK_OBJECT(atk_action);
+  ui::AXPlatformNodeAuraLinux* obj =
+      AtkObjectToAXPlatformNodeAuraLinux(atk_object);
+  if (!obj)
+    return nullptr;
+
+  return obj->GetDefaultActionName();
+}
+
+static const gchar* ax_platform_node_auralinux_get_action_keybinding(
+    AtkAction* atk_action,
+    gint index) {
+  g_return_val_if_fail(ATK_IS_ACTION(atk_action), nullptr);
+  g_return_val_if_fail(!index, nullptr);
+
+  AtkObject* atk_object = ATK_OBJECT(atk_action);
+  ui::AXPlatformNodeAuraLinux* obj =
+      AtkObjectToAXPlatformNodeAuraLinux(atk_object);
+  if (!obj)
+    return nullptr;
+
+  return obj->GetStringAttribute(ui::AX_ATTR_ACCESS_KEY).c_str();
+}
+
+void ax_action_interface_base_init(AtkActionIface* iface) {
+  iface->do_action = ax_platform_node_auralinux_do_action;
+  iface->get_n_actions = ax_platform_node_auralinux_get_n_actions;
+  iface->get_description = ax_platform_node_auralinux_get_action_description;
+  iface->get_name = ax_platform_node_auralinux_get_action_name;
+  iface->get_keybinding = ax_platform_node_auralinux_get_action_keybinding;
+}
+
+static const GInterfaceInfo ActionInfo = {
+    reinterpret_cast<GInterfaceInitFunc>(ax_action_interface_base_init),
+    nullptr, nullptr};
+
+//
+// The rest of the AXPlatformNodeAtk code, not specific to one
 // of the Atk* interfaces.
 //
 
@@ -450,6 +542,8 @@ GType AXPlatformNodeAuraLinux::GetAccessibilityGType() {
                                 &type_info, GTypeFlags(0));
   if (interface_mask & (1 << ATK_COMPONENT_INTERFACE))
     g_type_add_interface_static(type, ATK_TYPE_COMPONENT, &ComponentInfo);
+  if (interface_mask & (1 << ATK_ACTION_INTERFACE))
+    g_type_add_interface_static(type, ATK_TYPE_ACTION, &ActionInfo);
 
   return type;
 }
@@ -795,6 +889,23 @@ bool AXPlatformNodeAuraLinux::GrabFocus() {
   AXActionData action_data;
   action_data.action = AX_ACTION_FOCUS;
   return delegate_->AccessibilityPerformAction(action_data);
+}
+
+bool AXPlatformNodeAuraLinux::DoDefaultAction() {
+  AXActionData action_data;
+  action_data.action = AX_ACTION_DO_DEFAULT;
+  return delegate_->AccessibilityPerformAction(action_data);
+}
+
+const gchar* AXPlatformNodeAuraLinux::GetDefaultActionName() {
+  int action;
+  if (!GetIntAttribute(ui::AX_ATTR_DEFAULT_ACTION_VERB, &action))
+    return nullptr;
+
+  base::string16 action_verb = ui::ActionVerbToUnlocalizedString(
+      static_cast<ui::AXDefaultActionVerb>(action));
+
+  RETURN_STRING(base::UTF16ToUTF8(action_verb));
 }
 
 }  // namespace ui

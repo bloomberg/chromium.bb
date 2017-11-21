@@ -8,6 +8,7 @@
 #include <atk/atk.h>
 
 #include "base/macros.h"
+#include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_export.h"
 #include "ui/accessibility/platform/ax_platform_node_base.h"
 
@@ -37,6 +38,8 @@ class AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
                                         gint y,
                                         AtkCoordType coord_type);
   bool GrabFocus();
+  bool DoDefaultAction();
+  const gchar* GetDefaultActionName();
 
   void SetExtentsRelativeToAtkCoordinateType(
       gint* x, gint* y, gint* width, gint* height,
