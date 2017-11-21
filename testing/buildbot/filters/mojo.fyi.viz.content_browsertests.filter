@@ -26,17 +26,9 @@
 
 # OOPIFs aren't supported yet http://crbug.com/778751
 -PointerLockBrowserTest.*
--SecurityExploitBrowserTest.PageStateToWrongEntry
--SitePerProcessAccessibilityBrowserTest.*
 -SitePerProcessBrowserTest.*
--SitePerProcessDevToolsBrowserTest.*
--SitePerProcessDevToolsProtocolTest.*
--SitePerProcessEmbedderCSPEnforcementBrowserTest.*
--SitePerProcessFeaturePolicyBrowserTest.*
--SitePerProcessFeaturePolicyDisabledBrowserTest.*
 -SitePerProcessGestureBrowserTest.*
 -SitePerProcessHighDPIBrowserTest.*
--SitePerProcessIgnoreCertErrorsBrowserTest.*
 -SitePerProcessMouseWheelBrowserTest.*
 -TouchSelectionForCrossProcessFramesTests/TouchSelectionControllerClientAuraSiteIsolationTest.*
 
