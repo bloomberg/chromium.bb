@@ -57,6 +57,24 @@ initial release of a M50 to Stable.
 * **CVE-####-####**: For security bugs that get assigned a CVE, we tag the
 appropriate bug(s) with the label for easy searching.
 
+### OS Labels
+
+It can be hard to know which OS(s) a bug applies to. Here are some guidelines:
+
+* Blink is used on all platforms except iOS. A (say) UAF in Blink is probably
+not particular to whatever platform it was found on; it's probably applicable
+to all.
+* The same is true of Skia, and the net/ code.
+* If the bug is in a file named `foo_{win,linux,mac,...}.cc`, it's specific to
+the named platform.
+* Java code is particular to Android.
+* Objective-C++ (`foo.mm`) is particular to macOS and iOS. (But note that most
+of our Objective-C++ is particular to macOS *or* iOS. You can usually tell by
+the pathname.)
+* Views code (e.g. `ui/message_center/views`) is used on Windows, Linux, Chrome
+OS, and perhaps Fuchsia (?). Views for macOS is increasingly a thing, but Cocoa
+code (e.g. `ui/message_center/cocoa`) is particular to macOS.
+
 ## An Example
 
 Given the importance and volume of labels, an example might be useful.
