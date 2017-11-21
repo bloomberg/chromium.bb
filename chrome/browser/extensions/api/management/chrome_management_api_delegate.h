@@ -57,7 +57,6 @@ class ChromeManagementAPIDelegate : public extensions::ManagementAPIDelegate {
   bool UninstallExtension(content::BrowserContext* context,
                           const std::string& transient_extension_id,
                           extensions::UninstallReason reason,
-                          const base::Closure& deletion_done_callback,
                           base::string16* error) const override;
   void SetLaunchType(content::BrowserContext* context,
                      const std::string& extension_id,

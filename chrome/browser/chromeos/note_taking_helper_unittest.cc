@@ -369,8 +369,7 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest,
         ->extension_service()
         ->UninstallExtension(
             extension->id(),
-            extensions::UninstallReason::UNINSTALL_REASON_FOR_TESTING,
-            base::Closure(), &error);
+            extensions::UninstallReason::UNINSTALL_REASON_FOR_TESTING, &error);
     FlushNoteTakingClientMojo();
   }
 

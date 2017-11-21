@@ -179,9 +179,8 @@ void ExtensionService::CheckExternalUninstall(const std::string& id) {
                  << "with id: " << id;
     return;
   }
-  UninstallExtension(id,
-                     extensions::UNINSTALL_REASON_ORPHANED_EXTERNAL_EXTENSION,
-                     base::Bind(&base::DoNothing), nullptr);
+  UninstallExtension(
+      id, extensions::UNINSTALL_REASON_ORPHANED_EXTERNAL_EXTENSION, nullptr);
 }
 
 void ExtensionService::ClearProvidersForTesting() {
@@ -298,8 +297,7 @@ bool ExtensionService::UninstallExtensionHelper(
   // The following call to UninstallExtension will not allow an uninstall of a
   // policy-controlled extension.
   base::string16 error;
-  if (!extensions_service->UninstallExtension(
-          extension_id, reason, base::Bind(&base::DoNothing), &error)) {
+  if (!extensions_service->UninstallExtension(extension_id, reason, &error)) {
     LOG(WARNING) << "Cannot uninstall extension with id " << extension_id
                  << ": " << error;
     return false;
@@ -787,7 +785,6 @@ bool ExtensionService::UninstallExtension(
     // to become invalid. Instead, use |extenson->id()|.
     const std::string& transient_extension_id,
     extensions::UninstallReason reason,
-    const base::Closure& deletion_done_callback,
     base::string16* error) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -847,8 +844,8 @@ bool ExtensionService::UninstallExtension(
       NOTREACHED();
   }
 
-  extensions::DataDeleter::StartDeleting(
-      profile_, extension.get(), deletion_done_callback);
+  extensions::DataDeleter::StartDeleting(profile_, extension.get(),
+                                         base::Bind(&base::DoNothing));
 
   extension_registrar_.UntrackTerminatedExtension(extension->id());
 
@@ -2420,7 +2417,7 @@ void ExtensionService::UninstallMigratedExtensions() {
   for (const std::string& extension_id : kMigratedExtensionIds) {
     if (installed_extensions->Contains(extension_id)) {
       UninstallExtension(extension_id, extensions::UNINSTALL_REASON_MIGRATED,
-                         base::Bind(&base::DoNothing), nullptr);
+                         nullptr);
     }
   }
 }

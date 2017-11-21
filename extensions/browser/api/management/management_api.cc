@@ -580,8 +580,7 @@ void ManagementUninstallFunctionBase::UninstallExtension() {
     base::string16 utf16_error;
     success = delegate->UninstallExtension(
         browser_context(), target_extension_id_,
-        extensions::UNINSTALL_REASON_MANAGEMENT_API,
-        base::Bind(&base::DoNothing), &utf16_error);
+        extensions::UNINSTALL_REASON_MANAGEMENT_API, &utf16_error);
     error = base::UTF16ToUTF8(utf16_error);
   } else {
     error = ErrorUtils::FormatErrorMessage(keys::kNoExtensionError,

@@ -348,7 +348,6 @@ void ExternalInstallError::OnInstallPromptDone(
             ->extension_service()
             ->UninstallExtension(extension_id_,
                                  extensions::UNINSTALL_REASON_INSTALL_CANCELED,
-                                 base::Bind(&base::DoNothing),
                                  nullptr);  // Ignore error.
         UMA_HISTOGRAM_BOOLEAN("Extensions.ExternalWarningUninstallationResult",
                               uninstallation_result);

@@ -195,32 +195,27 @@ TEST_F(BackgroundApplicationListModelTest, DISABLED_ExplicitTest) {
   // Remove in FIFO order.
   ASSERT_FALSE(IsBackgroundApp(*ext1.get()));
   service()->UninstallExtension(ext1->id(),
-                                extensions::UNINSTALL_REASON_FOR_TESTING,
-                                base::Bind(&base::DoNothing), NULL);
+                                extensions::UNINSTALL_REASON_FOR_TESTING, NULL);
   ASSERT_EQ(4U, registry()->enabled_extensions().size());
   ASSERT_EQ(2U, model()->size());
   ASSERT_TRUE(IsBackgroundApp(*bgapp1.get()));
   service()->UninstallExtension(bgapp1->id(),
-                                extensions::UNINSTALL_REASON_FOR_TESTING,
-                                base::Bind(&base::DoNothing), NULL);
+                                extensions::UNINSTALL_REASON_FOR_TESTING, NULL);
   ASSERT_EQ(3U, registry()->enabled_extensions().size());
   ASSERT_EQ(1U, model()->size());
   ASSERT_FALSE(IsBackgroundApp(*ext2.get()));
   service()->UninstallExtension(ext2->id(),
-                                extensions::UNINSTALL_REASON_FOR_TESTING,
-                                base::Bind(&base::DoNothing), NULL);
+                                extensions::UNINSTALL_REASON_FOR_TESTING, NULL);
   ASSERT_EQ(2U, registry()->enabled_extensions().size());
   ASSERT_EQ(1U, model()->size());
   ASSERT_TRUE(IsBackgroundApp(*bgapp2.get()));
   service()->UninstallExtension(bgapp2->id(),
-                                extensions::UNINSTALL_REASON_FOR_TESTING,
-                                base::Bind(&base::DoNothing), NULL);
+                                extensions::UNINSTALL_REASON_FOR_TESTING, NULL);
   ASSERT_EQ(1U, registry()->enabled_extensions().size());
   ASSERT_EQ(0U, model()->size());
   ASSERT_FALSE(IsBackgroundApp(*ext3.get()));
   service()->UninstallExtension(ext3->id(),
-                                extensions::UNINSTALL_REASON_FOR_TESTING,
-                                base::Bind(&base::DoNothing), NULL);
+                                extensions::UNINSTALL_REASON_FOR_TESTING, NULL);
   ASSERT_EQ(0U, registry()->enabled_extensions().size());
   ASSERT_EQ(0U, model()->size());
 }
@@ -387,8 +382,7 @@ void RemoveExtension(ExtensionService* service,
     --*count;
     ASSERT_EQ(*count, extensions->size());
     service->UninstallExtension(extension->id(),
-                                extensions::UNINSTALL_REASON_FOR_TESTING,
-                                base::Bind(&base::DoNothing), NULL);
+                                extensions::UNINSTALL_REASON_FOR_TESTING, NULL);
     ASSERT_EQ(*count, registry->enabled_extensions().size());
     ASSERT_EQ(*expected, model->size());
   }

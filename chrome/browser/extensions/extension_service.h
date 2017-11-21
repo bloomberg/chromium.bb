@@ -267,12 +267,14 @@ class ExtensionService
   // Uninstalls the specified extension. Callers should only call this method
   // with extensions that exist. |reason| lets the caller specify why the
   // extension is uninstalled.
-  //
-  // If the return value is true, |deletion_done_callback| is invoked when data
-  // deletion is done or at least is scheduled.
+  // Note: this method synchronously removes the extension from the
+  // set of installed extensions stored in the ExtensionRegistry, but will
+  // asynchronously remove site-related data and the files stored on disk.
+  // Returns true if an uninstall was successfully triggered; this can fail if
+  // the extension cannot be uninstalled (such as a policy force-installed
+  // extension).
   virtual bool UninstallExtension(const std::string& extension_id,
                                   extensions::UninstallReason reason,
-                                  const base::Closure& deletion_done_callback,
                                   base::string16* error);
 
   // Enables the extension.  If the extension is already enabled, does

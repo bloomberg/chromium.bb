@@ -181,7 +181,6 @@ TEST_F(ExtensionAppModelBuilderTest, DisableAndEnable) {
 TEST_F(ExtensionAppModelBuilderTest, Uninstall) {
   service_->UninstallExtension(kPackagedApp2Id,
                                extensions::UNINSTALL_REASON_FOR_TESTING,
-                               base::Bind(&base::DoNothing),
                                NULL);
   EXPECT_EQ(std::string("Packaged App 1,Hosted App"),
             GetModelContent(model_.get()));
@@ -197,7 +196,6 @@ TEST_F(ExtensionAppModelBuilderTest, UninstallTerminatedApp) {
 
   service_->UninstallExtension(kPackagedApp2Id,
                                extensions::UNINSTALL_REASON_FOR_TESTING,
-                               base::Bind(&base::DoNothing),
                                NULL);
   EXPECT_EQ(std::string("Packaged App 1,Hosted App"),
             GetModelContent(model_.get()));
