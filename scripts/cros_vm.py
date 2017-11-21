@@ -12,10 +12,14 @@ import distutils.version
 import os
 import re
 
+from chromite.cli.cros import cros_chrome_sdk
+from chromite.lib import cache
 from chromite.lib import commandline
+from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
+from chromite.lib import path_util
 from chromite.lib import remote_access
 from chromite.lib import retry_util
 
@@ -50,6 +54,7 @@ class VM(object):
     self.use_sudo = self.enable_kvm and not os.access('/dev/kvm', os.W_OK)
     self.display = opts.display
     self.image_path = opts.image_path
+    self.board = opts.board
     self.ssh_port = opts.ssh_port
     self.dry_run = opts.dry_run
 
@@ -123,6 +128,49 @@ class VM(object):
       raise VMError('QEMU %s is the minimum supported version. You have %s.'
                     % (min_qemu_version, self.QemuVersion()))
 
+  def _SetQemuPath(self):
+    """Find a suitable Qemu executable."""
+    if not self.qemu_path:
+      self.qemu_path = osutils.Which('qemu-system-x86_64')
+    if not self.qemu_path:
+      raise VMError('Qemu not found.')
+    logging.debug('Qemu path: %s', self.qemu_path)
+    self._CheckQemuMinVersion()
+
+  def _GetBuiltVMImagePath(self):
+    """Get path of a locally built VM image."""
+    if not cros_build_lib.IsInsideChroot():
+      return None
+    return os.path.join(constants.SOURCE_ROOT, 'src/build/images',
+                        cros_build_lib.GetBoard(self.board),
+                        'latest', constants.VM_IMAGE_BIN)
+
+  def _GetDownloadedVMImagePath(self):
+    """Get path of a downloaded VM image."""
+    tarball_cache = cache.TarballCache(os.path.join(
+        path_util.GetCacheDir(),
+        cros_chrome_sdk.COMMAND_NAME,
+        cros_chrome_sdk.SDKFetcher.TARBALL_CACHE))
+    lkgm = cros_chrome_sdk.SDKFetcher.GetChromeLKGM()
+    if not lkgm:
+      return None
+    cache_key = (self.board, lkgm, constants.VM_IMAGE_TAR)
+    with tarball_cache.Lookup(cache_key) as ref:
+      if ref.Exists():
+        return os.path.join(ref.path, constants.VM_IMAGE_BIN)
+    return None
+
+  def _SetVMImagePath(self):
+    """Detect VM image path in SDK and chroot."""
+    if not self.image_path:
+      self.image_path = (self._GetDownloadedVMImagePath() or
+                         self._GetBuiltVMImagePath())
+    if not self.image_path:
+      raise VMError('No VM image found. Use cros chrome-sdk --download-vm.')
+    if not os.path.isfile(self.image_path):
+      raise VMError('VM image does not exist: %s' % self.image_path)
+    logging.debug('VM image path: %s', self.image_path)
+
   def Run(self):
     """Performs an action, one of start, stop, or run a command in the VM.
 
@@ -145,22 +193,8 @@ class VM(object):
     self.Stop()
 
     logging.debug('Start VM')
-    if not self.qemu_path:
-      self.qemu_path = osutils.Which('qemu-system-x86_64')
-    if not self.qemu_path:
-      raise VMError('qemu not found.')
-    logging.debug('qemu path=%s', self.qemu_path)
-    qemu_args = [self.qemu_path]
-
-    if self.qemu_bios_path and os.path.isdir(self.qemu_bios_path):
-      qemu_args += ['-L', self.qemu_bios_path]
-
-    if not self.image_path:
-      self.image_path = os.environ.get('VM_IMAGE_PATH', '')
-    logging.debug('vm image path=%s', self.image_path)
-    if not self.image_path or not os.path.exists(self.image_path):
-      raise VMError('No VM image path found. '
-                    'Use cros chrome-sdk --download-vm.')
+    self._SetQemuPath()
+    self._SetVMImagePath()
 
     self._CleanupFiles(recreate=True)
     # Make sure we can read these files later on by creating them as ourselves.
@@ -169,7 +203,11 @@ class VM(object):
       os.mkfifo(pipe, 0600)
     osutils.Touch(self.pidfile)
 
-    self._CheckQemuMinVersion()
+    qemu_args = [self.qemu_path]
+    if self.qemu_bios_path:
+      if not os.path.isdir(self.qemu_bios_path):
+        raise VMError('Invalid QEMU bios path: %s' % self.qemu_bios_path)
+      qemu_args += ['-L', self.qemu_bios_path]
 
     qemu_args += [
         '-m', '2G', '-smp', '4', '-vga', 'virtio', '-daemonize',
@@ -341,6 +379,8 @@ class VM(object):
                         help='Do not display video output.')
     parser.add_argument('--ssh-port', type=int, default=VM.SSH_PORT,
                         help='ssh port to communicate with VM.')
+    sdk_board_env = os.environ.get(cros_chrome_sdk.SDKFetcher.SDK_BOARD_ENV)
+    parser.add_argument('--board', default=sdk_board_env, help='Board to use.')
     parser.add_argument('--dry-run', action='store_true', default=False,
                         help='dry run for debugging.')
     parser.add_argument('--cmd', action='store_true', default=False,
