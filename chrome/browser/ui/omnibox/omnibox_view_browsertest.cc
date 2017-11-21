@@ -1750,15 +1750,11 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, DISABLED_Paste) {
 IN_PROC_BROWSER_TEST_F(OmniboxViewTest, DISABLED_CopyURLToClipboard) {
   // Set permanent text thus making sure that omnibox treats 'google.com'
   // as URL (not as ordinary user input).
-  TestToolbarModel* test_toolbar_model = new TestToolbarModel;
-  std::unique_ptr<ToolbarModel> toolbar_model(test_toolbar_model);
-  test_toolbar_model->set_text(ASCIIToUTF16("http://www.google.com/"));
-  browser()->swap_toolbar_models(&toolbar_model);
   OmniboxView* omnibox_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
   OmniboxEditModel* edit_model = omnibox_view->model();
   ASSERT_NE(static_cast<OmniboxEditModel*>(NULL), edit_model);
-  edit_model->UpdatePermanentText();
+  edit_model->SetPermanentText(ASCIIToUTF16("http://www.google.com/"));
 
   const char* target_url = "http://www.google.com/calendar";
   omnibox_view->SetUserText(ASCIIToUTF16(target_url));
@@ -1797,15 +1793,11 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, DISABLED_CopyURLToClipboard) {
 IN_PROC_BROWSER_TEST_F(OmniboxViewTest, DISABLED_CutURLToClipboard) {
   // Set permanent text thus making sure that omnibox treats 'google.com'
   // as URL (not as ordinary user input).
-  TestToolbarModel* test_toolbar_model = new TestToolbarModel;
-  std::unique_ptr<ToolbarModel> toolbar_model(test_toolbar_model);
-  test_toolbar_model->set_text(ASCIIToUTF16("http://www.google.com/"));
-  browser()->swap_toolbar_models(&toolbar_model);
   OmniboxView* omnibox_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
   OmniboxEditModel* edit_model = omnibox_view->model();
   ASSERT_NE(static_cast<OmniboxEditModel*>(NULL), edit_model);
-  edit_model->UpdatePermanentText();
+  edit_model->SetPermanentText(ASCIIToUTF16("http://www.google.com/"));
 
   const char* target_url = "http://www.google.com/calendar";
   omnibox_view->SetUserText(ASCIIToUTF16(target_url));

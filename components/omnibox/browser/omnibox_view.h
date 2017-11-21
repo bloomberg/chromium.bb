@@ -22,12 +22,12 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/omnibox/browser/autocomplete_match.h"
+#include "components/omnibox/browser/omnibox_client.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/range/range.h"
 
 class GURL;
-class OmniboxClient;
 class OmniboxEditController;
 class OmniboxViewMacTest;
 class OmniboxEditModel;
