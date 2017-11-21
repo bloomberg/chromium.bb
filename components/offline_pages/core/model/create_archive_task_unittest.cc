@@ -32,6 +32,7 @@ const ClientId kTestClientId1(kTestClientNamespace, "1234");
 const int64_t kTestFileSize = 876543LL;
 const base::string16 kTestTitle = base::UTF8ToUTF16("a title");
 const std::string kRequestOrigin("abc.xyz");
+const std::string kTestDigest("test digest");
 }  // namespace
 
 class CreateArchiveTaskTest
@@ -82,11 +83,16 @@ class CreateArchiveTaskTest
   ArchiverResult last_create_archive_result() {
     return last_create_archive_result_;
   }
-  const base::FilePath& last_archiver_path() { return last_archiver_path_; }
-  const GURL& last_saved_url() { return last_saved_url_; }
-  const base::FilePath& last_saved_file_path() { return last_saved_file_path_; }
-  const base::string16& last_saved_title() { return last_saved_title_; }
-  int64_t last_saved_file_size() { return last_saved_file_size_; }
+  const base::FilePath& last_archiver_path() const {
+    return last_archiver_path_;
+  }
+  const GURL& last_saved_url() const { return last_saved_url_; }
+  const base::FilePath& last_saved_file_path() const {
+    return last_saved_file_path_;
+  }
+  const base::string16& last_saved_title() const { return last_saved_title_; }
+  int64_t last_saved_file_size() const { return last_saved_file_size_; }
+  const std::string& last_saved_digest() const { return last_saved_digest_; }
 
  private:
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
@@ -101,6 +107,7 @@ class CreateArchiveTaskTest
   base::FilePath last_saved_file_path_;
   base::string16 last_saved_title_;
   int64_t last_saved_file_size_;
+  std::string last_saved_digest_;
   // Owning a task to prevent it being destroyed in the heap when calling
   // CreateArchiveWithParams, which will lead to a heap-use-after-free on
   // trybots.
@@ -134,6 +141,7 @@ void CreateArchiveTaskTest::ResetResults() {
   last_saved_title_ = base::string16();
   last_saved_file_size_ = 0;
   last_archiver_path_.clear();
+  last_saved_digest_.clear();
 }
 void CreateArchiveTaskTest::OnCreateArchiveDone(OfflinePageItem offline_page,
                                                 OfflinePageArchiver* archiver,
@@ -142,7 +150,7 @@ void CreateArchiveTaskTest::OnCreateArchiveDone(OfflinePageItem offline_page,
                                                 const base::FilePath& file_path,
                                                 const base::string16& title,
                                                 int64_t file_size,
-                                                const std::string& file_hash) {
+                                                const std::string& digest) {
   last_page_of_archive_ = offline_page;
   last_saved_archiver_ = archiver;
   last_create_archive_result_ = result;
@@ -150,14 +158,15 @@ void CreateArchiveTaskTest::OnCreateArchiveDone(OfflinePageItem offline_page,
   last_saved_file_path_ = file_path;
   last_saved_title_ = title;
   last_saved_file_size_ = file_size;
+  last_saved_digest_ = digest;
 }
 
 std::unique_ptr<OfflinePageTestArchiver> CreateArchiveTaskTest::BuildArchiver(
     const GURL& url,
     ArchiverResult result) {
-  return std::unique_ptr<OfflinePageTestArchiver>(
-      new OfflinePageTestArchiver(this, url, result, kTestTitle, kTestFileSize,
-                                  base::ThreadTaskRunnerHandle::Get()));
+  return std::unique_ptr<OfflinePageTestArchiver>(new OfflinePageTestArchiver(
+      this, url, result, kTestTitle, kTestFileSize, kTestDigest,
+      base::ThreadTaskRunnerHandle::Get()));
 }
 
 void CreateArchiveTaskTest::CreateArchiveWithParams(
@@ -225,6 +234,7 @@ TEST_F(CreateArchiveTaskTest, CreateArchiveSuccessful) {
   EXPECT_EQ(last_archiver_path(), last_saved_file_path());
   EXPECT_EQ(kTestFileSize, last_saved_file_size());
   EXPECT_EQ(kTestTitle, last_saved_title());
+  EXPECT_EQ(kTestDigest, last_saved_digest());
 }
 
 TEST_F(CreateArchiveTaskTest, CreateArchiveSuccessfulWithSameOriginalURL) {
@@ -257,6 +267,7 @@ TEST_F(CreateArchiveTaskTest, CreateArchiveSuccessfulWithSameOriginalURL) {
   EXPECT_EQ(last_archiver_path(), last_saved_file_path());
   EXPECT_EQ(kTestFileSize, last_saved_file_size());
   EXPECT_EQ(kTestTitle, last_saved_title());
+  EXPECT_EQ(kTestDigest, last_saved_digest());
 }
 
 TEST_F(CreateArchiveTaskTest, CreateArchiveSuccessfulWithRequestOrigin) {
@@ -285,6 +296,7 @@ TEST_F(CreateArchiveTaskTest, CreateArchiveSuccessfulWithRequestOrigin) {
   EXPECT_EQ(last_archiver_path(), last_saved_file_path());
   EXPECT_EQ(kTestFileSize, last_saved_file_size());
   EXPECT_EQ(kTestTitle, last_saved_title());
+  EXPECT_EQ(kTestDigest, last_saved_digest());
 }
 
 TEST_F(CreateArchiveTaskTest, CreateArchiveWithArchiverCanceled) {

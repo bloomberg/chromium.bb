@@ -304,6 +304,7 @@ void OfflinePageModelTaskified::OnCreateArchiveDone(
   proposed_page.file_path = file_path;
   proposed_page.file_size = file_size;
   proposed_page.title = title;
+  proposed_page.digest = digest;
   AddPage(proposed_page,
           base::Bind(&OfflinePageModelTaskified::OnAddPageForSavePageDone,
                      weak_ptr_factory_.GetWeakPtr(), callback, proposed_page));

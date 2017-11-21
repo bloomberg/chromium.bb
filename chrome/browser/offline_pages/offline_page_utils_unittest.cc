@@ -259,7 +259,8 @@ std::unique_ptr<OfflinePageTestArchiver> OfflinePageUtilsTest::BuildArchiver(
     const base::FilePath& file_name) {
   std::unique_ptr<OfflinePageTestArchiver> archiver(new OfflinePageTestArchiver(
       this, url, OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED,
-      base::string16(), kTestFileSize, base::ThreadTaskRunnerHandle::Get()));
+      base::string16(), kTestFileSize, std::string(),
+      base::ThreadTaskRunnerHandle::Get()));
   archiver->set_filename(file_name);
   return archiver;
 }
