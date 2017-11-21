@@ -123,7 +123,8 @@ void InterfaceFactoryImpl::CreateVideoDecoder(
     mojom::VideoDecoderRequest request) {
 #if BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
   video_decoder_bindings_.AddBinding(
-      base::MakeUnique<MojoVideoDecoderService>(mojo_media_client_),
+      base::MakeUnique<MojoVideoDecoderService>(
+          mojo_media_client_, cdm_service_context_.GetWeakPtr()),
       std::move(request));
 #endif  // BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
 }

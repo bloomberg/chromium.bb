@@ -70,11 +70,22 @@ void MojoVideoDecoder::Initialize(const VideoDecoderConfig& config,
     return;
   }
 
+  // Fail immediately if the stream is encrypted but |cdm_context| is invalid.
+  int cdm_id = (config.is_encrypted() && cdm_context)
+                   ? cdm_context->GetCdmId()
+                   : CdmContext::kInvalidCdmId;
+
+  if (config.is_encrypted() && CdmContext::kInvalidCdmId == cdm_id) {
+    DVLOG(1) << __func__ << ": Invalid CdmContext.";
+    task_runner_->PostTask(FROM_HERE, base::Bind(init_cb, false));
+    return;
+  }
+
   initialized_ = false;
   init_cb_ = init_cb;
   output_cb_ = output_cb;
   remote_decoder_->Initialize(
-      config, low_delay,
+      config, low_delay, cdm_id,
       base::Bind(&MojoVideoDecoder::OnInitializeDone, base::Unretained(this)));
 }
 
