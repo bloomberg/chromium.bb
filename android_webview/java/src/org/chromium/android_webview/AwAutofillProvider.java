@@ -85,6 +85,7 @@ public class AwAutofillProvider extends AutofillProvider {
                                           .addAttribute("name", field.mName)
                                           .addAttribute("type", field.mType)
                                           .addAttribute("label", field.mLabel)
+                                          .addAttribute("id", field.mId)
                                           .build());
                 switch (field.getControlType()) {
                     case FormFieldData.TYPE_LIST:

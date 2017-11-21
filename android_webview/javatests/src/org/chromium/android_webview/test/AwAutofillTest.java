@@ -610,6 +610,7 @@ public class AwAutofillTest {
             assertEquals("name", child0.getAutofillHints()[1]);
             TestViewStructure.AwHtmlInfo htmlInfo0 = child0.getHtmlInfo();
             assertEquals("text", htmlInfo0.getAttribute("type"));
+            assertEquals("text1", htmlInfo0.getAttribute("id"));
             assertEquals("username", htmlInfo0.getAttribute("name"));
             assertEquals("User Name:", htmlInfo0.getAttribute("label"));
 
@@ -620,6 +621,7 @@ public class AwAutofillTest {
             assertNull(child1.getAutofillHints());
             TestViewStructure.AwHtmlInfo htmlInfo1 = child1.getHtmlInfo();
             assertEquals("checkbox", htmlInfo1.getAttribute("type"));
+            assertEquals("checkbox1", htmlInfo1.getAttribute("id"));
             assertEquals("showpassword", htmlInfo1.getAttribute("name"));
             assertEquals("", htmlInfo1.getAttribute("label"));
 
@@ -630,6 +632,7 @@ public class AwAutofillTest {
             assertNull(child2.getAutofillHints());
             TestViewStructure.AwHtmlInfo htmlInfo2 = child2.getHtmlInfo();
             assertEquals("month", htmlInfo2.getAttribute("name"));
+            assertEquals("select1", htmlInfo2.getAttribute("id"));
             CharSequence[] options = child2.getAutofillOptions();
             assertEquals("Jan", options[0]);
             assertEquals("Feb", options[1]);
