@@ -253,10 +253,32 @@ class EbuildConflict(ApplyPatchException):
 
   def ShortExplanation(self):
     return ('deletes an ebuild that is not present anymore. For this reason, '
-            'we refuse to merge your change.\n\n'
+            'we refuse to submit your change.\n\n'
             'When you rebase your change, please take into account that the '
             'following ebuilds have been uprevved or deleted:\n\n'
             '%s' % (self._StringifyFilenames()))
+
+
+class ForbiddenMerge(PatchException):
+  """Thrown if a merge commit doesn't meet criteria to be handled."""
+
+
+class NonMainlineMerge(ForbiddenMerge):
+  """Thrown in a merge commit has no parents that are already in mainline."""
+
+  def __init__(self, patch):
+    msg = ('Neither parent of this merge commit is already submitted in '
+           'the destination branch. The CQ can only handle merge commits '
+           'that meet this criteria.')
+    super(NonMainlineMerge, self).__init__(patch, message=msg)
+
+
+class PatchNoParents(PatchException):
+  """Thrown when attempting to handle a patch with no parents."""
+
+  def __init__(self, patch):
+    msg = 'This patch has no parents, and therefore cannot be applied.'
+    super(PatchNoParents, self).__init__(patch, message=msg)
 
 
 class PatchIsEmpty(ApplyPatchException):
@@ -1140,6 +1162,54 @@ class GitRepoPatch(PatchQuery):
       if do_checkout:
         git.RunGit(git_repo, ['checkout', '-f', constants.PATCH_BRANCH],
                    error_code_ok=True)
+
+  # pylint: disable=protected-access
+  def _ValidateMergeCommit(self, git_repo, upstream, parents):
+    """If this patch is a merge commit, validate that it meets restrictions.
+
+    Args:
+      git_repo: The git repo to work in.
+      upstream: Current sha1 of upstream branch.
+      parents: List (length 2) of the two parents of this patch.
+
+    Raises:
+      ForbiddenMerge if the merge does not meet criteria.
+    """
+    # We do not support patches with a history like this:
+    #
+    # *   E [new merge patch being handled]
+    # |\
+    # | * D [branchline commit]
+    # * | C [mainline commit, not yet submitted]
+    # |/
+    # | * B CURRENT_UPSTREAM, [mainline commit, submitted]
+    # |/
+    # *   A [common ancestor on mainline]
+    #
+    # because of potential complications if C is cherry-picked into mainline in
+    # the same CQ run as we are attempting to merge E.
+    #
+    # We prevent this by limiting ourselves to handle E only if at least 1
+    # parent is already in the history of CURRENT_UPSTREAM.
+
+    upstream_as_patch = self._FromSha1(upstream)
+    parent1 = self._FromSha1(parents[0])
+    parent2 = self._FromSha1(parents[1])
+
+    parent_is_ancestor = (parent1._IsAncestorOf(git_repo, upstream_as_patch) or
+                          parent2._IsAncestorOf(git_repo, upstream_as_patch))
+
+    if not parent_is_ancestor:
+      raise NonMainlineMerge(self)
+
+    # TODO(akeshet): We should also validate that the "branchline" commits are
+    # not in the current validation pool, otherwise we could end up with CLs.
+    # being duplicated if the CQ both cherry-picks them and brings them in via
+    # merge.
+    #
+    # The user instructions for the merge feature will make it clear that
+    # "branchline" CLs should not be reviewed or CQ'd in the same way, but it
+    # shouldn't be too hard to add a check here.
 
   def _FromSha1(self, sha1):
     """Return a new GitRepoPatch instance with same upstream, for other sha1.

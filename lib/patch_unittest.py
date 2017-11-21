@@ -413,6 +413,7 @@ class TestGitRepoPatch(GitRepoPatchTestCase):
     git1 = self._MakeRepo('git1', self.source)
     patch1 = self.CommitFile(git1, 'foo', 'foo')
     patch2 = self.CommitFile(git1, 'bar', 'bar')
+    self.assertTrue(patch1._IsAncestorOf(git1, patch1))
     self.assertTrue(patch1._IsAncestorOf(git1, patch2))
     self.assertFalse(patch2._IsAncestorOf(git1, patch1))
 
@@ -424,6 +425,57 @@ class TestGitRepoPatch(GitRepoPatchTestCase):
     patch2_from_sha1.Fetch(git1)
     patch2.Fetch(git1)
     self.assertEqual(patch2.tree_hash, patch2_from_sha1.tree_hash)
+
+  def testValidateMerge(self):
+    git1 = self._MakeRepo('git1', self.source)
+
+    # Prepare history like this:
+    #   * E (upstream)
+    # * | D (merge being handled)
+    # |\|
+    # * | C
+    # | * B
+    # |/
+    # *   A
+    #
+    # D is valid to merge into E.
+    A = self.CommitFile(git1, 'A', 'A')
+    B = self.CommitFile(git1, 'B', 'B')
+    E = self.CommitFile(git1, 'E', 'E')
+    git.RunGit(git1, ['reset', '--hard', A.sha1])
+    C = self.CommitFile(git1, 'C', 'C')
+    git.RunGit(git1, ['merge', B.sha1])
+    sha1 = self._GetSha1(git1, 'HEAD')
+    D = self._MkPatch(self.source, sha1, suppress_branch=True)
+
+    D._ValidateMergeCommit(git1, E.sha1, [C.sha1, B.sha1])
+
+  def testValidateMergeFailure(self):
+    git1 = self._MakeRepo('git1', self.source)
+    # *     F (merge being handled)
+    # |\
+    # | *   E
+    # * |   D
+    # | | * C (upstream)
+    # | |/
+    # | *   B
+    # |/
+    # *     A
+    #
+    # F is not valid to merge into E.
+    A = self.CommitFile(git1, 'A', 'A')
+    B = self.CommitFile(git1, 'B', 'B')
+    C = self.CommitFile(git1, 'C', 'C')
+    git.RunGit(git1, ['reset', '--hard', B.sha1])
+    E = self.CommitFile(git1, 'E', 'E')
+    git.RunGit(git1, ['reset', '--hard', A.sha1])
+    D = self.CommitFile(git1, 'D', 'D')
+    git.RunGit(git1, ['merge', E.sha1])
+    sha1 = self._GetSha1(git1, 'HEAD')
+    F = self._MkPatch(self.source, sha1, suppress_branch=True)
+
+    with self.assertRaises(cros_patch.NonMainlineMerge):
+      F._ValidateMergeCommit(git1, C.sha1, [D.sha1, E.sha1])
 
   def testDeleteEbuildTwice(self):
     """Test that double-deletes of ebuilds are flagged as conflicts."""
@@ -933,7 +985,6 @@ class TestUploadedLocalPatch(UploadedLocalPatchTestCase):
                       msg="Couldn't find %s in %s" % (element, str_rep))
 
 
-# pylint: disable=protected-access
 class TestGerritPatch(TestGitRepoPatch):
   """Test Gerrit patch handling."""
 
