@@ -371,7 +371,7 @@ void ArcFileSystemOperationRunner::OnStateChanged() {
   if (set_should_defer_by_events_) {
     SetShouldDefer(IsArcPlayStoreEnabledForProfile(
                        Profile::FromBrowserContext(context_)) &&
-                   !arc_bridge_service_->file_system()->has_instance());
+                   !arc_bridge_service_->file_system()->IsConnected());
   }
 }
 

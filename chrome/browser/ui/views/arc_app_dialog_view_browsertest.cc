@@ -60,7 +60,8 @@ class ArcAppUninstallDialogViewBrowserTest : public InProcessBrowserTest {
     run_loop.Run();
 
     app_instance_.reset(new arc::FakeAppInstance(arc_app_list_pref_));
-    arc_app_list_pref_->app_instance_holder()->SetInstance(app_instance_.get());
+    arc_app_list_pref_->app_connection_holder()->SetInstance(
+        app_instance_.get());
 
     // In this setup, we have one app and one shortcut which share one package.
     mojom::AppInfo app;

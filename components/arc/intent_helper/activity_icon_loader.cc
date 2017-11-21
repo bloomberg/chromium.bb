@@ -65,7 +65,7 @@ mojom::IntentHelperInstance* GetInstanceForRequestActivityIcons(
 
   auto* intent_helper_holder =
       arc_service_manager->arc_bridge_service()->intent_helper();
-  if (!intent_helper_holder->has_instance()) {
+  if (!intent_helper_holder->IsConnected()) {
     VLOG(2) << "ARC intent helper instance is not ready.";
     if (out_error_code)
       *out_error_code = ActivityIconLoader::GetResult::FAILED_ARC_NOT_READY;

@@ -15,11 +15,10 @@ class TtsPlatformImplChromeOs : public TtsPlatformImpl {
  public:
   // TtsPlatformImpl overrides:
   bool PlatformImplAvailable() override {
-    return arc::ArcServiceManager::Get() &&
-           arc::ArcServiceManager::Get()
-               ->arc_bridge_service()
-               ->tts()
-               ->has_instance();
+    return arc::ArcServiceManager::Get() && arc::ArcServiceManager::Get()
+                                                ->arc_bridge_service()
+                                                ->tts()
+                                                ->IsConnected();
   }
 
   bool LoadBuiltInTtsExtension(

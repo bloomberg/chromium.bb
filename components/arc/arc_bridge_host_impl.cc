@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "components/arc/arc_bridge_service.h"
-#include "components/arc/instance_holder.h"
 
 namespace arc {
 
@@ -33,9 +32,9 @@ namespace {
 template <typename T>
 class MojoChannelImpl : public ArcBridgeHostImpl::MojoChannel {
  public:
-  MojoChannelImpl(InstanceHolder<T>* holder, mojo::InterfacePtr<T> ptr)
+  MojoChannelImpl(ConnectionHolder<T>* holder, mojo::InterfacePtr<T> ptr)
       : holder_(holder), ptr_(std::move(ptr)) {
-    // Delay registration to the InstanceHolder until the version is ready.
+    // Delay registration to the ConnectionHolder until the version is ready.
   }
 
   ~MojoChannelImpl() override { holder_->SetInstance(nullptr, 0); }
@@ -56,7 +55,7 @@ class MojoChannelImpl : public ArcBridgeHostImpl::MojoChannel {
   }
 
   // Owned by ArcBridgeService.
-  InstanceHolder<T>* const holder_;
+  ConnectionHolder<T>* const holder_;
 
   // Put as a last member to ensure that any callback tied to the |ptr_|
   // is not invoked.
@@ -288,7 +287,7 @@ void ArcBridgeHostImpl::OnClosed() {
 }
 
 template <typename T>
-void ArcBridgeHostImpl::OnInstanceReady(InstanceHolder<T>* holder,
+void ArcBridgeHostImpl::OnInstanceReady(ConnectionHolder<T>* holder,
                                         mojo::InterfacePtr<T> ptr) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(binding_.is_bound());

@@ -222,10 +222,9 @@ ArcSettingsServiceImpl::ArcSettingsServiceImpl(
   DCHECK(ArcSessionManager::Get());
   ArcSessionManager::Get()->AddObserver(this);
 
-  if (arc_bridge_service_->app()->has_instance())
-    SyncAppTimeSettings();
-  else
-    arc_bridge_service_->app()->AddObserver(this);
+  // Note: if App connection is already established, OnConnectionReady()
+  // is synchronously called, so that initial sync is done in the method.
+  arc_bridge_service_->app()->AddObserver(this);
 }
 
 ArcSettingsServiceImpl::~ArcSettingsServiceImpl() {

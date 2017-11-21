@@ -16,7 +16,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_package_syncable_service.h"
 #include "chromeos/chromeos_switches.h"
-#include "components/arc/instance_holder.h"
+#include "components/arc/connection_holder.h"
 #include "components/arc/test/fake_app_instance.h"
 
 namespace arc {
@@ -127,8 +127,8 @@ void SyncArcPackageHelper::SetupArcService(Profile* profile) {
   instance_map_[profile] =
       std::make_unique<FakeAppInstance>(arc_app_list_prefs);
   DCHECK(instance_map_[profile].get());
-  arc_app_list_prefs->app_instance_holder()->SetInstance(nullptr);
-  arc_app_list_prefs->app_instance_holder()->SetInstance(
+  arc_app_list_prefs->app_connection_holder()->SetInstance(nullptr);
+  arc_app_list_prefs->app_connection_holder()->SetInstance(
       instance_map_[profile].get());
   // OnPackageListRefreshed will be called when AppInstance is ready.
   // For fakeAppInstance we use SendRefreshPackageList to make sure that
@@ -143,7 +143,7 @@ void SyncArcPackageHelper::InstallPackage(
   ArcAppListPrefs* arc_app_list_prefs = ArcAppListPrefs::Get(profile);
   DCHECK(arc_app_list_prefs);
   mojom::AppInstance* app_instance = ARC_GET_INSTANCE_FOR_METHOD(
-      arc_app_list_prefs->app_instance_holder(), InstallPackage);
+      arc_app_list_prefs->app_connection_holder(), InstallPackage);
 
   DCHECK(app_instance);
   // After this function, new package should be added to local sync service
@@ -156,7 +156,7 @@ void SyncArcPackageHelper::UninstallPackage(Profile* profile,
   ArcAppListPrefs* arc_app_list_prefs = ArcAppListPrefs::Get(profile);
   DCHECK(arc_app_list_prefs);
   mojom::AppInstance* app_instance = ARC_GET_INSTANCE_FOR_METHOD(
-      arc_app_list_prefs->app_instance_holder(), UninstallPackage);
+      arc_app_list_prefs->app_connection_holder(), UninstallPackage);
   DCHECK(app_instance);
   // After this function, package should be removed from local sync service
   // and uninstall event should be sent to sync server.

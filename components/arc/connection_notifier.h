@@ -15,7 +15,7 @@ namespace internal {
 class ConnectionObserverBase;
 
 // Manages events related to connection. Designed to be used only by
-// InstanceHolder.
+// ConnectionHolder.
 class ConnectionNotifier {
  public:
   ConnectionNotifier();

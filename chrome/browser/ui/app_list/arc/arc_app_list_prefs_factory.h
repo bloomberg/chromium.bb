@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "components/arc/common/app.mojom.h"
-#include "components/arc/instance_holder.h"
+#include "components/arc/connection_holder.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
 class ArcAppListPrefs;
@@ -42,8 +42,8 @@ class ArcAppListPrefsFactory : public BrowserContextKeyedServiceFactory {
 
   mutable std::unordered_map<
       content::BrowserContext*,
-      std::unique_ptr<arc::InstanceHolder<arc::mojom::AppInstance>>>
-      sync_test_app_instance_holders_;
+      std::unique_ptr<arc::ConnectionHolder<arc::mojom::AppInstance>>>
+      sync_test_app_connection_holders_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcAppListPrefsFactory);
 };

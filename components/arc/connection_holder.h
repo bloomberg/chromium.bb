@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_ARC_INSTANCE_HOLDER_H_
-#define COMPONENTS_ARC_INSTANCE_HOLDER_H_
+#ifndef COMPONENTS_ARC_CONNECTION_HOLDER_H_
+#define COMPONENTS_ARC_CONNECTION_HOLDER_H_
 
 #include <string>
 #include <type_traits>
@@ -16,10 +16,11 @@
 #include "components/arc/connection_notifier.h"
 #include "components/arc/connection_observer.h"
 
-// A macro to call InstanceHolder<T>::GetInstanceForVersionDoNotCallDirectly().
-// In order to avoid exposing method names from within the Mojo bindings, we
-// will rely on stringification and the fact that the method min versions have a
-// consistent naming scheme.
+// A macro to call
+// ConnectionHolder<T>::GetInstanceForVersionDoNotCallDirectly(). In order to
+// avoid exposing method names from within the Mojo bindings, we will rely on
+// stringification and the fact that the method min versions have a consistent
+// naming scheme.
 #define ARC_GET_INSTANCE_FOR_METHOD(holder, method_name)        \
   (holder)->GetInstanceForVersionDoNotCallDirectly(             \
       std::remove_pointer<decltype(                             \
@@ -32,17 +33,17 @@ namespace arc {
 // changes for the particular instance. T should be a Mojo interface type
 // (arc::mojom::XxxInstance).
 template <typename T>
-class InstanceHolder {
+class ConnectionHolder {
  public:
   using Observer = ConnectionObserver<T>;
   using Instance = T;
 
-  InstanceHolder() = default;
+  ConnectionHolder() = default;
 
   // Returns true if the Mojo interface is ready at least for its version 0
   // interface. Use an Observer if you want to be notified when this is ready.
   // This can only be called on the thread that this class was created on.
-  bool has_instance() const { return instance_; }
+  bool IsConnected() const { return instance_; }
 
   // Gets the Mojo interface that's intended to call for
   // |method_name_for_logging|, but only if its reported version is at least
@@ -72,7 +73,7 @@ class InstanceHolder {
   // the list.
   void AddObserver(Observer* observer) {
     connection_notifier_.AddObserver(observer);
-    if (has_instance())
+    if (IsConnected())
       connection_notifier_.NotifyConnectionReady();
   }
 
@@ -109,9 +110,9 @@ class InstanceHolder {
   THREAD_CHECKER(thread_checker_);
   internal::ConnectionNotifier connection_notifier_;
 
-  DISALLOW_COPY_AND_ASSIGN(InstanceHolder<T>);
+  DISALLOW_COPY_AND_ASSIGN(ConnectionHolder);
 };
 
 }  // namespace arc
 
-#endif  // COMPONENTS_ARC_INSTANCE_HOLDER_H_
+#endif  // COMPONENTS_ARC_CONNECTION_HOLDER_H_
