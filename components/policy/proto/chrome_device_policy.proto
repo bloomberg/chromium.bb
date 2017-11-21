@@ -936,6 +936,21 @@ message MinimumRequiredVersionProto {
   optional string chrome_version = 1;
 }
 
+// Specifies a list of rules to automatically select certificates on SAML IdP
+// pages on the sign-in screen.
+message DeviceLoginScreenAutoSelectCertificateForUrls {
+  // Each entry is one rule, which must be a stringified JSON dictionary.
+  // Each dictionary must have the form { "pattern": "$URL_PATTERN", "filter" :
+  // $FILTER }. $FILTER restricts from which client certificates the browser
+  // will automatically select. Independent of the filter, only certificates
+  // will be selected that match the server's certificate request. If $FILTER
+  // has the form { "ISSUER": { "CN": "$ISSUER_CN" } }, additionally only client
+  // certificates are selected that are issued by a certificate with the
+  // CommonName $ISSUER_CN. If $FILTER is the empty dictionary {}, the selection
+  // of client certificates is not additionally restricted.
+  repeated string login_screen_auto_select_certificate_rules = 1;
+};
+
 message ChromeDeviceSettingsProto {
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
   optional UserWhitelistProto user_whitelist = 2;
@@ -1010,4 +1025,6 @@ message ChromeDeviceSettingsProto {
   optional TPMFirmwareUpdateSettingsProto tpm_firmware_update_settings = 59;
   optional MinimumRequiredVersionProto minimum_required_version = 60;
   optional ForcedReenrollmentProto forced_reenrollment = 61;
+  optional DeviceLoginScreenAutoSelectCertificateForUrls
+      device_login_screen_auto_select_certificate_for_urls = 62;
 }
