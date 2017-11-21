@@ -1,6 +1,0 @@
-include_rules = [
-  # Allow ios/chrome/browser.
-  "+ios/chrome/browser",
-
-  "+components/omnibox/browser",
-]

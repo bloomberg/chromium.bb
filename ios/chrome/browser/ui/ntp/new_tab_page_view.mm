@@ -118,8 +118,8 @@
 
   // When using a new_tab_page_view in autolayout -setFrame is never called,
   // which means all the logic to keep the selected scroll index set is never
-  // called.  Rather than refactor away all of this to support ios/clean, just
-  // make sure -setFrame is called when loaded in autolayout.
+  // called.  Rather than refactor away all of this, just make sure -setFrame is
+  // called when loaded in autolayout.
   if (!self.translatesAutoresizingMaskIntoConstraints) {
     [self setFrame:self.frame];
   }
