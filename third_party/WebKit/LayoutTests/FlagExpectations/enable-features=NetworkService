@@ -179,6 +179,7 @@ Bug(none) http/tests/websocket/httponly-cookie.pl [ Failure ]
 Bug(none) http/tests/xmlhttprequest/xmlhttprequest-data-url.html [ Failure ]
 Bug(none) http/tests/devtools/sources/debugger-breakpoints/event-listener-breakpoints-xhr.js [ Timeout ]
 Bug(none) plugins/iframe-plugin-bgcolor.html [ Timeout ]
+Bug(none) virtual/gpu/fast/canvas/OffscreenCanvas-2d-imageSmoothing-in-worker.html [ Pass Timeout ]
 Bug(none) virtual/mouseevent_fractional/fast/events/attribute-listener-cloned-from-frameless-doc.xhtml [ Timeout ]
 
 # Plugin throttle is not implemented.
@@ -232,3 +233,6 @@ crbug.com/778721 http/tests/fetch/workers/thorough/redirect-password.html [ Pass
 crbug.com/778721 http/tests/fetch/workers/thorough/scheme-blob.html [ Pass Failure ]
 
 crbug.com/721408 http/tests/inspector-protocol/network/navigation-xfer-size.js [ Failure ]
+
+# Started flaking after test was rewritten in r517585.
+Bug(none) http/tests/devtools/service-workers/service-worker-agents.js [ Crash Pass ]
