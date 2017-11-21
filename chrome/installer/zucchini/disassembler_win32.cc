@@ -87,17 +87,6 @@ bool DisassemblerWin32<Traits>::QuickDetect(ConstBufferView image) {
   return ReadWin32Header<Traits>(image, &source);
 }
 
-// static
-template <class Traits>
-std::unique_ptr<DisassemblerWin32<Traits>> DisassemblerWin32<Traits>::Make(
-    ConstBufferView image) {
-  std::unique_ptr<DisassemblerWin32> disasm =
-      base::MakeUnique<DisassemblerWin32>();
-  if (disasm->Parse(image))
-    return disasm;
-  return nullptr;
-}
-
 template <class Traits>
 DisassemblerWin32<Traits>::DisassemblerWin32() = default;
 

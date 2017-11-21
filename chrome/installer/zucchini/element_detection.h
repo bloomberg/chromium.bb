@@ -29,9 +29,6 @@ std::unique_ptr<Disassembler> MakeDisassemblerWithoutFallback(
 std::unique_ptr<Disassembler> MakeDisassemblerOfType(ConstBufferView image,
                                                      ExecutableType exe_type);
 
-// Returns a new instance of DisassemblerNoOp.
-std::unique_ptr<Disassembler> MakeNoOpDisassembler(ConstBufferView image);
-
 // Attempts to detect an element associated with |image| and returns it, or
 // returns nullopt if no element is detected.
 using ElementDetector =

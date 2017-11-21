@@ -19,8 +19,7 @@ namespace zucchini {
 // This disassembler works on any file and does not look for reference.
 class DisassemblerNoOp : public Disassembler {
  public:
-  static std::unique_ptr<DisassemblerNoOp> Make(ConstBufferView image);
-
+  DisassemblerNoOp();
   ~DisassemblerNoOp() override;
 
   // Disassembler:
@@ -28,10 +27,9 @@ class DisassemblerNoOp : public Disassembler {
   std::string GetExeTypeString() const override;
   std::vector<ReferenceGroup> MakeReferenceGroups() const override;
 
- protected:
-  DisassemblerNoOp();
-
  private:
+  friend Disassembler;
+
   bool Parse(ConstBufferView image) override;
 
   DISALLOW_COPY_AND_ASSIGN(DisassemblerNoOp);

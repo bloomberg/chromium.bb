@@ -30,8 +30,8 @@ bool ParseElementMatch(BufferSource* source, ElementMatch* element_match) {
   }
   element_match->old_element.offset = element_header.old_offset;
   element_match->new_element.offset = element_header.new_offset;
-  element_match->old_element.length = element_header.old_length;
-  element_match->new_element.length = element_header.new_length;
+  element_match->old_element.size = element_header.old_length;
+  element_match->new_element.size = element_header.new_length;
   element_match->old_element.exe_type = exe_type;
   element_match->new_element.exe_type = exe_type;
   return true;

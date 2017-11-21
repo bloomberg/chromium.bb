@@ -60,9 +60,6 @@ class DisassemblerWin32 : public Disassembler {
   // of an executable. Returns true iff the check passes.
   static bool QuickDetect(ConstBufferView image);
 
-  // Main instantiator and initializer.
-  static std::unique_ptr<DisassemblerWin32> Make(ConstBufferView image);
-
   DisassemblerWin32();
   ~DisassemblerWin32() override;
 
@@ -80,6 +77,8 @@ class DisassemblerWin32 : public Disassembler {
   std::unique_ptr<ReferenceWriter> MakeWriteRel32(MutableBufferView image);
 
  private:
+  friend Disassembler;
+
   // Disassembler:
   bool Parse(ConstBufferView image) override;
 
