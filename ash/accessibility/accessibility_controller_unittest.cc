@@ -37,33 +37,49 @@ using AccessibilityControllerTest = AshTestBase;
 TEST_F(AccessibilityControllerTest, PrefsAreRegistered) {
   PrefService* prefs =
       Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  EXPECT_TRUE(prefs->FindPreference(prefs::kAccessibilityHighContrastEnabled));
   EXPECT_TRUE(prefs->FindPreference(prefs::kAccessibilityLargeCursorEnabled));
   EXPECT_TRUE(prefs->FindPreference(prefs::kAccessibilityLargeCursorDipSize));
-  EXPECT_TRUE(prefs->FindPreference(prefs::kAccessibilityHighContrastEnabled));
+  EXPECT_TRUE(prefs->FindPreference(prefs::kAccessibilityMonoAudioEnabled));
   EXPECT_TRUE(
       prefs->FindPreference(prefs::kAccessibilityScreenMagnifierEnabled));
+}
+
+TEST_F(AccessibilityControllerTest, SetHighContrastEnabled) {
+  AccessibilityController* controller =
+      Shell::Get()->accessibility_controller();
+  EXPECT_FALSE(controller->IsHighContrastEnabled());
+
+  TestAccessibilityObserver observer;
+  Shell::Get()->system_tray_notifier()->AddAccessibilityObserver(&observer);
+  EXPECT_EQ(0, observer.changed_);
+
+  controller->SetHighContrastEnabled(true);
+  EXPECT_TRUE(controller->IsHighContrastEnabled());
+  EXPECT_EQ(1, observer.changed_);
+
+  controller->SetHighContrastEnabled(false);
+  EXPECT_FALSE(controller->IsHighContrastEnabled());
+  EXPECT_EQ(2, observer.changed_);
+
+  Shell::Get()->system_tray_notifier()->RemoveAccessibilityObserver(&observer);
 }
 
 TEST_F(AccessibilityControllerTest, SetLargeCursorEnabled) {
   AccessibilityController* controller =
       Shell::Get()->accessibility_controller();
   EXPECT_FALSE(controller->IsLargeCursorEnabled());
-  controller->SetLargeCursorEnabled(true);
-  EXPECT_TRUE(controller->IsLargeCursorEnabled());
-  controller->SetLargeCursorEnabled(false);
-  EXPECT_FALSE(controller->IsLargeCursorEnabled());
-}
 
-TEST_F(AccessibilityControllerTest, SetLargeCursorNotifiesObservers) {
   TestAccessibilityObserver observer;
   Shell::Get()->system_tray_notifier()->AddAccessibilityObserver(&observer);
   EXPECT_EQ(0, observer.changed_);
 
-  AccessibilityController* controller =
-      Shell::Get()->accessibility_controller();
   controller->SetLargeCursorEnabled(true);
+  EXPECT_TRUE(controller->IsLargeCursorEnabled());
   EXPECT_EQ(1, observer.changed_);
+
   controller->SetLargeCursorEnabled(false);
+  EXPECT_FALSE(controller->IsLargeCursorEnabled());
   EXPECT_EQ(2, observer.changed_);
 
   Shell::Get()->system_tray_notifier()->RemoveAccessibilityObserver(&observer);
@@ -86,21 +102,21 @@ TEST_F(AccessibilityControllerTest, DisableLargeCursorResetsSize) {
             prefs->GetInteger(prefs::kAccessibilityLargeCursorDipSize));
 }
 
-TEST_F(AccessibilityControllerTest, SetHighContrastEnabled) {
+TEST_F(AccessibilityControllerTest, SetMonoAudioEnabled) {
   AccessibilityController* controller =
       Shell::Get()->accessibility_controller();
-  EXPECT_FALSE(controller->IsHighContrastEnabled());
+  EXPECT_FALSE(controller->IsMonoAudioEnabled());
 
   TestAccessibilityObserver observer;
   Shell::Get()->system_tray_notifier()->AddAccessibilityObserver(&observer);
   EXPECT_EQ(0, observer.changed_);
 
-  controller->SetHighContrastEnabled(true);
-  EXPECT_TRUE(controller->IsHighContrastEnabled());
+  controller->SetMonoAudioEnabled(true);
+  EXPECT_TRUE(controller->IsMonoAudioEnabled());
   EXPECT_EQ(1, observer.changed_);
 
-  controller->SetHighContrastEnabled(false);
-  EXPECT_FALSE(controller->IsHighContrastEnabled());
+  controller->SetMonoAudioEnabled(false);
+  EXPECT_FALSE(controller->IsMonoAudioEnabled());
   EXPECT_EQ(2, observer.changed_);
 
   Shell::Get()->system_tray_notifier()->RemoveAccessibilityObserver(&observer);

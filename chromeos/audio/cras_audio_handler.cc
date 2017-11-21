@@ -483,9 +483,11 @@ void CrasAudioHandler::SwapInternalSpeakerLeftRightChannel(bool swap) {
   }
 }
 
-void CrasAudioHandler::SetOutputMono(bool mono_on) {
-  output_mono_on_ = mono_on;
-  if (mono_on) {
+void CrasAudioHandler::SetOutputMonoEnabled(bool enabled) {
+  if (output_mono_enabled_ == enabled)
+    return;
+  output_mono_enabled_ = enabled;
+  if (enabled) {
     GetCrasAudioClient()->SetGlobalOutputChannelRemix(
         output_channels_,
         std::vector<double>(kStereoToMono, std::end(kStereoToMono)));
@@ -496,11 +498,7 @@ void CrasAudioHandler::SetOutputMono(bool mono_on) {
   }
 
   for (auto& observer : observers_)
-    observer.OnOuputChannelRemixingChanged(mono_on);
-}
-
-bool CrasAudioHandler::IsOutputMonoEnabled() const {
-  return output_mono_on_;
+    observer.OnOuputChannelRemixingChanged(enabled);
 }
 
 bool CrasAudioHandler::has_alternative_input() const {
@@ -680,7 +678,7 @@ CrasAudioHandler::CrasAudioHandler(
       has_alternative_output_(false),
       output_mute_locked_(false),
       output_channels_(2),
-      output_mono_on_(false),
+      output_mono_enabled_(false),
       hdmi_rediscover_grace_period_duration_in_ms_(
           kHDMIRediscoverGracePeriodDurationInMs),
       hdmi_rediscovering_(false),

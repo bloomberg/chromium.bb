@@ -77,7 +77,7 @@ uint32_t GetAccessibilityState() {
     state |= A11Y_VIRTUAL_KEYBOARD;
   if (delegate->IsBrailleDisplayConnected())
     state |= A11Y_BRAILLE_DISPLAY_CONNECTED;
-  if (delegate->IsMonoAudioEnabled())
+  if (controller->IsMonoAudioEnabled())
     state |= A11Y_MONO_AUDIO;
   if (delegate->IsCaretHighlightEnabled())
     state |= A11Y_CARET_HIGHLIGHT;
@@ -181,7 +181,7 @@ void AccessibilityDetailedView::OnAccessibilityStatusChanged() {
   TrayPopupUtils::UpdateCheckMarkVisibility(large_cursor_view_,
                                             large_cursor_enabled_);
 
-  mono_audio_enabled_ = delegate->IsMonoAudioEnabled();
+  mono_audio_enabled_ = controller->IsMonoAudioEnabled();
   TrayPopupUtils::UpdateCheckMarkVisibility(mono_audio_view_,
                                             mono_audio_enabled_);
 
@@ -259,7 +259,7 @@ void AccessibilityDetailedView::AppendAccessibilityList() {
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_LARGE_CURSOR),
       large_cursor_enabled_);
 
-  mono_audio_enabled_ = delegate->IsMonoAudioEnabled();
+  mono_audio_enabled_ = controller->IsMonoAudioEnabled();
   mono_audio_view_ = AddScrollListCheckableItem(
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_MONO_AUDIO),
       mono_audio_enabled_);
@@ -341,10 +341,10 @@ void AccessibilityDetailedView::HandleViewClicked(views::View* view) {
                      : UserMetricsAction("StatusArea_CaretHighlightEnabled"));
     delegate->SetCaretHighlightEnabled(!delegate->IsCaretHighlightEnabled());
   } else if (mono_audio_view_ && view == mono_audio_view_) {
-    RecordAction(delegate->IsMonoAudioEnabled()
-                     ? UserMetricsAction("StatusArea_MonoAudioDisabled")
-                     : UserMetricsAction("StatusArea_MonoAudioEnabled"));
-    delegate->SetMonoAudioEnabled(!delegate->IsMonoAudioEnabled());
+    bool new_state = !controller->IsMonoAudioEnabled();
+    RecordAction(new_state ? UserMetricsAction("StatusArea_MonoAudioEnabled")
+                           : UserMetricsAction("StatusArea_MonoAudioDisabled"));
+    controller->SetMonoAudioEnabled(new_state);
   } else if (highlight_mouse_cursor_view_ &&
              view == highlight_mouse_cursor_view_) {
     RecordAction(
