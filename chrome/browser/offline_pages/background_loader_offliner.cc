@@ -219,7 +219,7 @@ bool BackgroundLoaderOffliner::LoadAndSave(
     // Set up PageRenovator for this offlining instance.
     auto script_injector = base::MakeUnique<RenderFrameScriptInjector>(
         loader_->web_contents()->GetMainFrame(),
-        chrome::ISOLATED_WORLD_ID_CHROME_INTERNAL);
+        ISOLATED_WORLD_ID_CHROME_INTERNAL);
     page_renovator_ = base::MakeUnique<PageRenovator>(
         page_renovation_loader_.get(), std::move(script_injector),
         request.url());
