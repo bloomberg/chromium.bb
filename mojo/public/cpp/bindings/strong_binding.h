@@ -72,6 +72,21 @@ class StrongBinding {
     connection_error_handler_.Reset();
   }
 
+  // Stops processing incoming messages until
+  // ResumeIncomingMethodCallProcessing().
+  // Outgoing messages are still sent.
+  //
+  // No errors are detected on the message pipe while paused.
+  //
+  // This method may only be called if the object has been bound to a message
+  // pipe and there are no associated interfaces running.
+  void PauseIncomingMethodCallProcessing() {
+    binding_.PauseIncomingMethodCallProcessing();
+  }
+  void ResumeIncomingMethodCallProcessing() {
+    binding_.ResumeIncomingMethodCallProcessing();
+  }
+
   // Forces the binding to close. This destroys the StrongBinding instance.
   void Close() { delete this; }
 
