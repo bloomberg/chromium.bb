@@ -10,6 +10,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "components/autofill/content/renderer/form_autofill_util.h"
@@ -597,12 +598,16 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, HTMLDetectorCache) {
 
   // No signals from HTML attributes. The classifier found nothing and cached
   // it.
+  base::HistogramTester histogram_tester;
   std::unique_ptr<PasswordForm> password_form = CreatePasswordFormFromWebForm(
       form, nullptr, nullptr, &username_detector_cache);
   EXPECT_TRUE(password_form);
   ASSERT_EQ(1u, username_detector_cache.size());
   EXPECT_EQ(form, username_detector_cache.begin()->first);
   EXPECT_EQ(blink::WebInputElement(), username_detector_cache.begin()->second);
+  histogram_tester.ExpectUniqueSample("PasswordManager.UsernameDetectionMethod",
+                                      UsernameDetectionMethod::BASE_HEURISTIC,
+                                      1);
 
   // Changing attributes would change the classifier's output. But the output
   // will be the same because it was cached in |username_detector_cache|.
@@ -615,6 +620,9 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, HTMLDetectorCache) {
   ASSERT_EQ(1u, username_detector_cache.size());
   EXPECT_EQ(form, username_detector_cache.begin()->first);
   EXPECT_EQ(blink::WebInputElement(), username_detector_cache.begin()->second);
+  histogram_tester.ExpectUniqueSample("PasswordManager.UsernameDetectionMethod",
+                                      UsernameDetectionMethod::BASE_HEURISTIC,
+                                      2);
 
   // Clear the cache. The classifier will find username field and cache it.
   username_detector_cache.clear();
@@ -627,6 +635,11 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, HTMLDetectorCache) {
   ASSERT_FALSE(username_detector_cache.begin()->second.IsNull());
   EXPECT_EQ("login",
             username_detector_cache.begin()->second.NameForAutofill().Utf8());
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("PasswordManager.UsernameDetectionMethod"),
+      testing::UnorderedElementsAre(
+          base::Bucket(UsernameDetectionMethod::BASE_HEURISTIC, 2),
+          base::Bucket(UsernameDetectionMethod::HTML_BASED_CLASSIFIER, 1)));
 
   // Change the attributes again ("username" is stronger signal than "login"),
   // but keep the cache. The classifier's output should be the same.
@@ -639,6 +652,11 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, HTMLDetectorCache) {
   ASSERT_FALSE(username_detector_cache.begin()->second.IsNull());
   EXPECT_EQ("login",
             username_detector_cache.begin()->second.NameForAutofill().Utf8());
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("PasswordManager.UsernameDetectionMethod"),
+      testing::UnorderedElementsAre(
+          base::Bucket(UsernameDetectionMethod::BASE_HEURISTIC, 2),
+          base::Bucket(UsernameDetectionMethod::HTML_BASED_CLASSIFIER, 2)));
 }
 
 TEST_F(MAYBE_PasswordFormConversionUtilsTest,
@@ -1275,6 +1293,26 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest,
   }
 }
 
+TEST_F(MAYBE_PasswordFormConversionUtilsTest,
+       UsernameDetection_AutocompleteAttribute) {
+  PasswordFormBuilder builder(kTestFormActionURL);
+  builder.AddTextField("username", "JohnSmith", "username");
+  builder.AddTextField("Full name", "John A. Smith", nullptr);
+  builder.AddPasswordField("password", "secret", nullptr);
+  builder.AddSubmitButton("submit");
+  std::string html = builder.ProduceHTML();
+
+  base::HistogramTester histogram_tester;
+  std::unique_ptr<PasswordForm> password_form =
+      LoadHTMLAndConvertForm(html, nullptr, false);
+  ASSERT_TRUE(password_form);
+  EXPECT_EQ(base::UTF8ToUTF16("username"), password_form->username_element);
+  EXPECT_EQ(base::UTF8ToUTF16("JohnSmith"), password_form->username_value);
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.UsernameDetectionMethod",
+      UsernameDetectionMethod::AUTOCOMPLETE_ATTRIBUTE, 1);
+}
+
 TEST_F(MAYBE_PasswordFormConversionUtilsTest, IgnoreInvisibledTextFields) {
   PasswordFormBuilder builder(kTestFormActionURL);
 
@@ -1745,6 +1783,31 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest,
             password_form->password_value);
 }
 
+TEST_F(MAYBE_PasswordFormConversionUtilsTest, UsernamePredictionFromServer) {
+  PasswordFormBuilder builder(kTestFormActionURL);
+  builder.AddTextField("username", "JohnSmith", nullptr);
+  // 'autocomplete' attribute cannot override server's prediction.
+  builder.AddTextField("Full name", "John A. Smith", "username");
+  builder.AddPasswordField("password", "secret", nullptr);
+  builder.AddSubmitButton("submit");
+  std::string html = builder.ProduceHTML();
+
+  std::map<int, PasswordFormFieldPredictionType> predictions_positions;
+  predictions_positions[0] = PREDICTION_USERNAME;
+  FormsPredictionsMap predictions;
+  SetPredictions(html, &predictions, predictions_positions);
+
+  base::HistogramTester histogram_tester;
+  std::unique_ptr<PasswordForm> password_form =
+      LoadHTMLAndConvertForm(html, &predictions, false);
+  ASSERT_TRUE(password_form);
+  EXPECT_EQ(base::UTF8ToUTF16("username"), password_form->username_element);
+  EXPECT_EQ(base::UTF8ToUTF16("JohnSmith"), password_form->username_value);
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.UsernameDetectionMethod",
+      UsernameDetectionMethod::SERVER_SIDE_PREDICTION, 1);
+}
+
 TEST_F(MAYBE_PasswordFormConversionUtilsTest,
        CreditCardVerificationNumberWithTypePasswordForm) {
   PasswordFormBuilder builder(kTestFormActionURL);
@@ -2124,6 +2187,7 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, ResetPasswordForm) {
   builder.AddPasswordField("password", "secret", nullptr);
   builder.AddSubmitButton("submit");
   std::string html = builder.ProduceHTML();
+  base::HistogramTester histogram_tester;
 
   std::unique_ptr<PasswordForm> password_form =
       LoadHTMLAndConvertForm(html, nullptr, false);
@@ -2134,6 +2198,9 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, ResetPasswordForm) {
   EXPECT_TRUE(password_form->username_value.empty());
   EXPECT_EQ(base::UTF8ToUTF16("password"), password_form->password_element);
   EXPECT_EQ(base::UTF8ToUTF16("secret"), password_form->password_value);
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.UsernameDetectionMethod",
+      UsernameDetectionMethod::NO_USERNAME_DETECTED, 1);
 }
 
 }  // namespace autofill
