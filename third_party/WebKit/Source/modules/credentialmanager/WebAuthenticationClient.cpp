@@ -27,8 +27,6 @@ using PublicKeyCallbacks = WebAuthenticationClient::PublicKeyCallbacks;
 WebCredentialManagerError GetWebCredentialManagerErrorFromStatus(
     webauth::mojom::blink::AuthenticatorStatus status) {
   switch (status) {
-    case webauth::mojom::blink::AuthenticatorStatus::NOT_IMPLEMENTED:
-      return blink::kWebCredentialManagerNotImplementedError;
     case webauth::mojom::blink::AuthenticatorStatus::NOT_ALLOWED_ERROR:
       return WebCredentialManagerError::kWebCredentialManagerNotAllowedError;
     case webauth::mojom::blink::AuthenticatorStatus::NOT_SUPPORTED_ERROR:
@@ -39,6 +37,8 @@ WebCredentialManagerError GetWebCredentialManagerErrorFromStatus(
       return WebCredentialManagerError::kWebCredentialManagerUnknownError;
     case webauth::mojom::blink::AuthenticatorStatus::CANCELLED:
       return WebCredentialManagerError::kWebCredentialManagerCancelledError;
+    case webauth::mojom::blink::AuthenticatorStatus::NOT_IMPLEMENTED:
+      return blink::kWebCredentialManagerNotImplementedError;
     case webauth::mojom::blink::AuthenticatorStatus::SUCCESS:
       NOTREACHED();
       break;
@@ -267,6 +267,7 @@ void WebAuthenticationClient::DispatchMakeCredential(
         WebCredentialManagerError::kWebCredentialManagerNotSupportedError);
     return;
   }
+
   authenticator_->MakeCredential(
       std::move(options),
       ConvertToBaseCallback(WTF::Bind(&RespondToPublicKeyCallback,

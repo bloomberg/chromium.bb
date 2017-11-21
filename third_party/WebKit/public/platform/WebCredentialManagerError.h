@@ -18,8 +18,8 @@ enum WebCredentialManagerError {
   kWebCredentialManagerNotSupportedError,
   kWebCredentialManagerSecurityError,
   kWebCredentialManagerCancelledError,
-  kWebCredentialManagerNotImplementedError,
   kWebCredentialManagerUnknownError,
+  kWebCredentialManagerNotImplementedError,
   kWebCredentialManagerErrorLastType = kWebCredentialManagerUnknownError,
 };
 

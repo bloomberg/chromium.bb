@@ -3105,10 +3105,12 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
 
   registry_->AddInterface(base::Bind(&ImageCaptureImpl::Create));
 
+#if !defined(OS_ANDROID)
   if (base::FeatureList::IsEnabled(features::kWebAuth)) {
     registry_->AddInterface(
         base::Bind(&AuthenticatorImpl::Create, base::Unretained(this)));
   }
+#endif  // !defined(OS_ANDROID)
 
   if (permission_manager) {
     sensor_provider_proxy_.reset(
