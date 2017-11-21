@@ -6,7 +6,7 @@
 #define BASE_ALLOCATOR_PARTITION_ALLOCATOR_PARTITION_ALLOC_H_
 
 // DESCRIPTION
-// partitionAlloc() / PartitionAllocGeneric() and PartitionFree() /
+// PartitionRoot::Alloc() / PartitionAllocGeneric() and PartitionFree() /
 // PartitionFreeGeneric() are approximately analagous to malloc() and free().
 //
 // The main difference is that a PartitionRoot / PartitionRootGeneric object
@@ -225,6 +225,7 @@ static const unsigned char kCookieValue[kCookieSize] = {
     0x13, 0x37, 0xF0, 0x05, 0xBA, 0x11, 0xAB, 0x1E};
 #endif
 
+class PartitionStatsDumper;
 struct PartitionBucket;
 struct PartitionRootBase;
 
@@ -327,6 +328,16 @@ struct BASE_EXPORT PartitionRootBase {
   static void (*gOomHandlingFunction)();
 };
 
+enum PartitionPurgeFlags {
+  // Decommitting the ring list of empty pages is reasonably fast.
+  PartitionPurgeDecommitEmptyPages = 1 << 0,
+  // Discarding unused system pages is slower, because it involves walking all
+  // freelists in all active partition pages of all buckets >= system page
+  // size. It often frees a similar amount of memory to decommitting the empty
+  // pages, though.
+  PartitionPurgeDiscardUnusedSystemPages = 1 << 1,
+};
+
 // Never instantiate a PartitionRoot directly, instead use PartitionAlloc.
 struct BASE_EXPORT PartitionRoot : public PartitionRootBase {
   PartitionRoot();
@@ -341,6 +352,16 @@ struct BASE_EXPORT PartitionRoot : public PartitionRootBase {
   ALWAYS_INLINE const PartitionBucket* buckets() const {
     return reinterpret_cast<const PartitionBucket*>(this + 1);
   }
+
+  void Init(size_t num_buckets, size_t max_allocation);
+
+  ALWAYS_INLINE void* Alloc(size_t size, const char* type_name);
+
+  void PurgeMemory(int flags);
+
+  void DumpStats(const char* partition_name,
+                 bool is_light_dump,
+                 PartitionStatsDumper* dumper);
 };
 
 // Never instantiate a PartitionRootGeneric directly, instead use
@@ -415,22 +436,8 @@ class BASE_EXPORT PartitionStatsDumper {
 };
 
 BASE_EXPORT void PartitionAllocGlobalInit(void (*oom_handling_function)());
-BASE_EXPORT void PartitionAllocInit(PartitionRoot*,
-                                    size_t num_buckets,
-                                    size_t max_allocation);
 BASE_EXPORT void PartitionAllocGenericInit(PartitionRootGeneric*);
 
-enum PartitionPurgeFlags {
-  // Decommitting the ring list of empty pages is reasonably fast.
-  PartitionPurgeDecommitEmptyPages = 1 << 0,
-  // Discarding unused system pages is slower, because it involves walking all
-  // freelists in all active partition pages of all buckets >= system page
-  // size. It often frees a similar amount of memory to decommitting the empty
-  // pages, though.
-  PartitionPurgeDiscardUnusedSystemPages = 1 << 1,
-};
-
-BASE_EXPORT void PartitionPurgeMemory(PartitionRoot*, int);
 BASE_EXPORT void PartitionPurgeMemoryGeneric(PartitionRootGeneric*, int);
 
 BASE_EXPORT NOINLINE void* PartitionAllocSlowPath(PartitionRootBase*,
@@ -443,10 +450,6 @@ BASE_EXPORT NOINLINE void* PartitionReallocGeneric(PartitionRootGeneric*,
                                                    size_t,
                                                    const char* type_name);
 
-BASE_EXPORT void PartitionDumpStats(PartitionRoot*,
-                                    const char* partition_name,
-                                    bool is_light_dump,
-                                    PartitionStatsDumper*);
 BASE_EXPORT void PartitionDumpStatsGeneric(PartitionRootGeneric*,
                                            const char* partition_name,
                                            bool is_light_dump,
@@ -725,9 +728,7 @@ ALWAYS_INLINE void* PartitionBucketAlloc(PartitionRootBase* root,
   return ret;
 }
 
-ALWAYS_INLINE void* PartitionAlloc(PartitionRoot* root,
-                                   size_t size,
-                                   const char* type_name) {
+ALWAYS_INLINE void* PartitionRoot::Alloc(size_t size, const char* type_name) {
 #if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
   void* result = malloc(size);
   CHECK(result);
@@ -735,12 +736,12 @@ ALWAYS_INLINE void* PartitionAlloc(PartitionRoot* root,
 #else
   size_t requested_size = size;
   size = PartitionCookieSizeAdjustAdd(size);
-  DCHECK(root->initialized);
+  DCHECK(this->initialized);
   size_t index = size >> kBucketShift;
-  DCHECK(index < root->num_buckets);
+  DCHECK(index < this->num_buckets);
   DCHECK(size == index << kBucketShift);
-  PartitionBucket* bucket = &root->buckets()[index];
-  void* result = PartitionBucketAlloc(root, 0, size, bucket);
+  PartitionBucket* bucket = &this->buckets()[index];
+  void* result = PartitionBucketAlloc(this, 0, size, bucket);
   PartitionAllocHooks::AllocationHookIfEnabled(result, requested_size,
                                                type_name);
   return result;
@@ -919,9 +920,7 @@ class SizeSpecificPartitionAllocator {
   ~SizeSpecificPartitionAllocator() = default;
   static const size_t kMaxAllocation = N - kAllocationGranularity;
   static const size_t kNumBuckets = N / kAllocationGranularity;
-  void init() {
-    PartitionAllocInit(&partition_root_, kNumBuckets, kMaxAllocation);
-  }
+  void init() { partition_root_.Init(kNumBuckets, kMaxAllocation); }
   ALWAYS_INLINE PartitionRoot* root() { return &partition_root_; }
 
  private:

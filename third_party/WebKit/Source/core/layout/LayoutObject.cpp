@@ -158,8 +158,8 @@ bool LayoutObject::affects_parent_block_ = false;
 
 void* LayoutObject::operator new(size_t sz) {
   DCHECK(IsMainThread());
-  return WTF::PartitionAlloc(WTF::Partitions::LayoutPartition(), sz,
-                             WTF_HEAP_PROFILER_TYPE_NAME(LayoutObject));
+  return WTF::Partitions::LayoutPartition()->Alloc(
+      sz, WTF_HEAP_PROFILER_TYPE_NAME(LayoutObject));
 }
 
 void LayoutObject::operator delete(void* ptr) {
