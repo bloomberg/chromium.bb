@@ -45,44 +45,47 @@ namespace Create = app_window::Create;
 namespace extensions {
 
 namespace app_window_constants {
-const char kInvalidWindowId[] =
+constexpr char kInvalidWindowId[] =
     "The window id can not be more than 256 characters long.";
-const char kInvalidColorSpecification[] =
+constexpr char kInvalidColorSpecification[] =
     "The color specification could not be parsed.";
-const char kColorWithFrameNone[] = "Windows with no frame cannot have a color.";
-const char kInactiveColorWithoutColor[] =
+constexpr char kColorWithFrameNone[] =
+    "Windows with no frame cannot have a color.";
+constexpr char kInactiveColorWithoutColor[] =
     "frame.inactiveColor must be used with frame.color.";
-const char kConflictingBoundsOptions[] =
+constexpr char kConflictingBoundsOptions[] =
     "The $1 property cannot be specified for both inner and outer bounds.";
-const char kAlwaysOnTopPermission[] =
+constexpr char kAlwaysOnTopPermission[] =
     "The \"app.window.alwaysOnTop\" permission is required.";
-const char kInvalidUrlParameter[] =
+constexpr char kInvalidUrlParameter[] =
     "The URL used for window creation must be local for security reasons.";
-const char kAlphaEnabledWrongChannel[] =
+constexpr char kAlphaEnabledWrongChannel[] =
     "The alphaEnabled option requires dev channel or newer.";
-const char kAlphaEnabledMissingPermission[] =
+constexpr char kAlphaEnabledMissingPermission[] =
     "The alphaEnabled option requires app.window.alpha permission.";
-const char kAlphaEnabledNeedsFrameNone[] =
+constexpr char kAlphaEnabledNeedsFrameNone[] =
     "The alphaEnabled option can only be used with \"frame: 'none'\".";
-const char kImeWindowMissingPermission[] =
+constexpr char kImeWindowMissingPermission[] =
     "Extensions require the \"app.window.ime\" permission to create windows.";
-const char kImeOptionIsNotSupported[] =
+constexpr char kImeOptionIsNotSupported[] =
     "The \"ime\" option is not supported for platform app.";
 #if !defined(OS_CHROMEOS)
-const char kImeWindowUnsupportedPlatform[] =
+constexpr char kImeWindowUnsupportedPlatform[] =
     "The \"ime\" option can only be used on ChromeOS.";
 #else
-const char kImeWindowMustBeImeWindowOrPanel[] =
+constexpr char kImeWindowMustBeImeWindowOrPanel[] =
     "IME extensions must create ime window ( with \"ime: true\" and "
     "\"frame: 'none'\") or panel window (with \"type: panel\").";
 #endif
-const char kShowInShelfWindowKeyNotSet[] =
+constexpr char kShowInShelfWindowKeyNotSet[] =
     "The \"showInShelf\" option requires the \"id\" option to be set.";
-const char kLockScreenActionRequiresLockScreenContext[] =
+constexpr char kLockScreenActionRequiresLockScreenContext[] =
     "The lockScreenAction option requires lock screen app context.";
-const char kLockScreenActionRequiresLockScreenPermission[] =
+constexpr char kLockScreenActionRequiresLockScreenPermission[] =
     "The lockScreenAction option requires lockScreen permission.";
-const char kAppWindowCreationFailed[] = "Failed to create the app window.";
+constexpr char kAppWindowCreationFailed[] = "Failed to create the app window.";
+constexpr char kPrematureWindowClose[] =
+    "App window is closed before ready to commit first navigation.";
 }  // namespace app_window_constants
 
 const char kNoneFrameOption[] = "none";
@@ -432,12 +435,27 @@ ExtensionFunction::ResponseAction AppWindowCreateFunction::Run() {
   // been told to navigate, and blink has been correctly initialized in the
   // renderer.
   if (content::IsBrowserSideNavigationEnabled()) {
-    // SetOnFirstCommitCallback() will respond asynchronously.
-    app_window->SetOnFirstCommitCallback(base::Bind(
-        &AppWindowCreateFunction::Respond, this, base::Passed(&result_arg)));
+    // SetOnFirstCommitOrWindowClosedCallback() will respond asynchronously.
+    app_window->SetOnFirstCommitOrWindowClosedCallback(
+        base::Bind(&AppWindowCreateFunction::
+                       OnAppWindowReadyToCommitFirstNavigationOrClosed,
+                   this, base::Passed(&result_arg)));
     return RespondLater();
   }
   return RespondNow(std::move(result_arg));
+}
+
+void AppWindowCreateFunction::OnAppWindowReadyToCommitFirstNavigationOrClosed(
+    ResponseValue result_arg,
+    bool ready_to_commit) {
+  DCHECK(!did_respond());
+
+  if (!ready_to_commit) {
+    Respond(Error(app_window_constants::kPrematureWindowClose));
+    return;
+  }
+
+  Respond(std::move(result_arg));
 }
 
 bool AppWindowCreateFunction::GetBoundsSpec(

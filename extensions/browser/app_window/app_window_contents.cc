@@ -76,9 +76,10 @@ void AppWindowContentsImpl::NativeWindowChanged(
                                            "updateAppWindowProperties", args));
 }
 
-void AppWindowContentsImpl::NativeWindowClosed() {
+void AppWindowContentsImpl::NativeWindowClosed(bool send_onclosed) {
   content::RenderFrameHost* rfh = web_contents_->GetMainFrame();
-  rfh->Send(new ExtensionMsg_AppWindowClosed(rfh->GetRoutingID()));
+  rfh->Send(
+      new ExtensionMsg_AppWindowClosed(rfh->GetRoutingID(), send_onclosed));
 }
 
 void AppWindowContentsImpl::OnWindowReady() {

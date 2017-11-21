@@ -31,7 +31,7 @@ class TestAppWindowContents : public AppWindowContents {
                   const GURL& url) override;
   void LoadContents(int32_t creator_process_id) override;
   void NativeWindowChanged(NativeAppWindow* native_app_window) override;
-  void NativeWindowClosed() override;
+  void NativeWindowClosed(bool send_onclosed) override;
   void OnWindowReady() override;
   content::WebContents* GetWebContents() const override;
   WindowController* GetWindowController() const override;

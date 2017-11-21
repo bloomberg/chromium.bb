@@ -656,7 +656,7 @@ IPC_MESSAGE_CONTROL3(ExtensionMsg_SetSessionInfo,
                      bool /* is_lock_screen_context */)
 
 // Notify the renderer that its window has closed.
-IPC_MESSAGE_ROUTED0(ExtensionMsg_AppWindowClosed)
+IPC_MESSAGE_ROUTED1(ExtensionMsg_AppWindowClosed, bool /* send_onclosed */)
 
 // Notify the renderer that an extension wants notifications when certain
 // searches match the active page.  This message replaces the old set of
