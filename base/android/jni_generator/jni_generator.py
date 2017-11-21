@@ -580,10 +580,12 @@ RE_SCOPED_JNI_TYPES = re.compile('jobject|jclass|jstring|jthrowable|.*Array')
 # Regex to match a string like "@CalledByNative public void foo(int bar)".
 RE_CALLED_BY_NATIVE = re.compile(
     '@CalledByNative(?P<Unchecked>(Unchecked)*?)(?:\("(?P<annotation>.*)"\))?'
-    '\s+(?P<prefix>[\w ]*?)'
+    '\s+(?P<prefix>('
+    '(private|protected|public|static|abstract|final|default|synchronized)'
+    '\s*)*)'
     '(:?\s*@\w+)?'  # Ignore annotations in return types.
-    '\s*(?P<return_type>\S+?)'
-    '\s+(?P<name>\w+)'
+    '\s*(?P<return_type>\S*?)'
+    '\s*(?P<name>\w+)'
     '\s*\((?P<params>[^\)]*)\)')
 
 
@@ -608,13 +610,23 @@ def ExtractCalledByNatives(jni_params, contents):
   """
   called_by_natives = []
   for match in re.finditer(RE_CALLED_BY_NATIVE, contents):
+    return_type = match.group('return_type')
+    name = match.group('name')
+    if not return_type:
+      is_constructor = True
+      return_type = name
+      name = "Constructor"
+    else:
+      is_constructor = False
+
     called_by_natives += [CalledByNative(
         system_class=False,
         unchecked='Unchecked' in match.group('Unchecked'),
         static='static' in match.group('prefix'),
         java_class_name=match.group('annotation') or '',
-        return_type=match.group('return_type'),
-        name=match.group('name'),
+        return_type=return_type,
+        name=name,
+        is_constructor=is_constructor,
         params=JniParams.Parse(match.group('params')))]
   # Check for any @CalledByNative occurrences that weren't matched.
   unmatched_lines = re.sub(RE_CALLED_BY_NATIVE, '', contents).split('\n')
