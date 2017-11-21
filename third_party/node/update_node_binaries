@@ -15,7 +15,7 @@ set -eu
 cd "$(dirname "$0")"
 
 BASE_URL="https://nodejs.org/dist"
-NODE_VERSION="v6.9.4"
+NODE_VERSION="v8.9.1"
 
 update_unix() {
   local SUFFIX="$1"
@@ -41,6 +41,7 @@ update_unix() {
   tar xfz "${FOLDER}/${FILENAME}" -C "${FOLDER}/"
   rm "${FOLDER}/${FILENAME}"
   rm "${FOLDER}/node-${NODE_VERSION}-${SUFFIX}/bin/npm"
+  rm "${FOLDER}/node-${NODE_VERSION}-${SUFFIX}/bin/npx"
 
   # Drop the version info from the name, since it is redundant and would make
   # rolling new versions more involved.
@@ -82,8 +83,8 @@ update_win() {
 }
 
 # First download checksum file.
-rm "SHASUMS256.txt"
-wget "https://nodejs.org/dist/latest-v6.x/SHASUMS256.txt"
+rm -f "SHASUMS256.txt"
+wget "https://nodejs.org/dist/latest-v8.x/SHASUMS256.txt"
 
 update_unix "darwin-x64" "mac"
 update_unix "linux-x64" "linux"
