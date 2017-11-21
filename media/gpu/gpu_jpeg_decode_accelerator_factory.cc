@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/gpu/ipc/service/gpu_jpeg_decode_accelerator_factory_provider.h"
+#include "media/gpu/gpu_jpeg_decode_accelerator_factory.h"
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -58,8 +58,7 @@ std::unique_ptr<JpegDecodeAccelerator> CreateFakeJDA(
 }  // namespace
 
 // static
-bool GpuJpegDecodeAcceleratorFactoryProvider::
-    IsAcceleratedJpegDecodeSupported() {
+bool GpuJpegDecodeAcceleratorFactory::IsAcceleratedJpegDecodeSupported() {
   auto accelerator_factory_functions = GetAcceleratorFactories();
   for (const auto& create_jda_function : accelerator_factory_functions) {
     std::unique_ptr<JpegDecodeAccelerator> accelerator =
@@ -71,8 +70,8 @@ bool GpuJpegDecodeAcceleratorFactoryProvider::
 }
 
 // static
-std::vector<GpuJpegDecodeAcceleratorFactoryProvider::CreateAcceleratorCB>
-GpuJpegDecodeAcceleratorFactoryProvider::GetAcceleratorFactories() {
+std::vector<GpuJpegDecodeAcceleratorFactory::CreateAcceleratorCB>
+GpuJpegDecodeAcceleratorFactory::GetAcceleratorFactories() {
   // This list is ordered by priority of use.
   std::vector<CreateAcceleratorCB> result;
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
