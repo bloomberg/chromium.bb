@@ -27,6 +27,7 @@
 #include "content/renderer/pepper/plugin_instance_throttler_impl.h"
 #include "content/renderer/pepper/ppb_image_data_impl.h"
 #include "content/renderer/render_thread_impl.h"
+#include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "ppapi/c/pp_bool.h"
@@ -199,7 +200,7 @@ PepperGraphics2DHost::~PepperGraphics2DHost() {
   // compositor, since those will be deleted by ReleaseTextureCallback() when it
   // runs.
   while (main_thread_context_ && !recycled_texture_copies_.empty()) {
-    uint32_t texture_id = recycled_texture_copies_.back().first;
+    uint32_t texture_id = recycled_texture_copies_.back().id;
     main_thread_context_->ContextGL()->DeleteTextures(1, &texture_id);
     recycled_texture_copies_.pop_back();
   }
@@ -226,6 +227,22 @@ bool PepperGraphics2DHost::Init(
   }
   is_always_opaque_ = is_always_opaque;
   scale_ = 1.0f;
+
+  // Gets the texture target for RGBA and BGRA textures if we can make
+  // image-backed textures for direct scanout (for use in overlays).
+  RenderThreadImpl* rti = RenderThreadImpl::current();
+  if (rti) {
+    const auto& map = rti->GetBufferToTextureTargetMap();
+    auto target_it = map.find(viz::BufferToTextureTargetKey(
+        gfx::BufferUsage::SCANOUT, gfx::BufferFormat::BGRA_8888));
+    if (target_it != map.end())
+      scanout_texture_target_bgra_ = target_it->second;
+    target_it = map.find(viz::BufferToTextureTargetKey(
+        gfx::BufferUsage::SCANOUT, gfx::BufferFormat::RGBA_8888));
+    if (target_it != map.end())
+      scanout_texture_target_rgba_ = target_it->second;
+  }
+
   return true;
 }
 
@@ -581,7 +598,7 @@ void PepperGraphics2DHost::ReleaseTextureCallback(
     // the busy textures list to the recycled list.
     auto it = host->texture_copies_.begin();
     for (; it != host->texture_copies_.end(); ++it) {
-      if (it->first == id) {
+      if (it->id == id) {
         host->recycled_texture_copies_.push_back(*it);
         host->texture_copies_.erase(it);
         break;
@@ -593,9 +610,7 @@ void PepperGraphics2DHost::ReleaseTextureCallback(
   // The otherwise, the texture can not be reused so remove it from the busy
   // texture list and delete it.
   if (host) {
-    auto matches_id = [id](const std::pair<uint32_t, gpu::Mailbox>& element) {
-      return element.first == id;
-    };
+    auto matches_id = [id](const TextureInfo& info) { return info.id == id; };
     base::EraseIf(host->texture_copies_, matches_id);
   }
   context->ContextGL()->DeleteTextures(1, &id);
@@ -640,36 +655,77 @@ bool PepperGraphics2DHost::PrepareTransferableResource(
   // |image_data_| into a texture.
   if (main_thread_context_) {
     auto* gl = main_thread_context_->ContextGL();
-    uint32_t texture_id;
-    gpu::Mailbox gpu_mailbox;
-    if (!recycled_texture_copies_.empty()) {
-      texture_id = recycled_texture_copies_.back().first;
-      gpu_mailbox = recycled_texture_copies_.back().second;
-      recycled_texture_copies_.pop_back();
-      gl->BindTexture(GL_TEXTURE_2D, texture_id);
-    } else {
-      gl->GenTextures(1, &texture_id);
-      gl->BindTexture(GL_TEXTURE_2D, texture_id);
-      gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-      gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-      gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-      gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-      gl->GenMailboxCHROMIUM(gpu_mailbox.name);
-      gl->ProduceTextureCHROMIUM(GL_TEXTURE_2D, gpu_mailbox.name);
-    }
-
-    texture_copies_.push_back(std::make_pair(texture_id, gpu_mailbox));
-
-    void* src = image_data_->Map();
     // The bitmap in |image_data_| uses the skia N32 byte order.
     constexpr bool bitmap_is_bgra = kN32_SkColorType == kBGRA_8888_SkColorType;
-    bool texture_can_be_bgra =
+    const bool texture_can_be_bgra =
         main_thread_context_->ContextCapabilities().texture_format_bgra8888;
+    const bool upload_bgra = bitmap_is_bgra && texture_can_be_bgra;
+    const GLenum format = upload_bgra ? GL_BGRA_EXT : GL_RGBA;
+
+    bool overlay_candidate = false;
+    uint32_t texture_target = GL_TEXTURE_2D;
+    uint32_t storage_format = 0;
+    if (main_thread_context_->ContextCapabilities().texture_storage_image) {
+      if (upload_bgra && scanout_texture_target_bgra_) {
+        texture_target = scanout_texture_target_bgra_;
+        storage_format = GL_BGRA8_EXT;
+        overlay_candidate = true;
+      } else if (!upload_bgra && scanout_texture_target_rgba_) {
+        texture_target = scanout_texture_target_rgba_;
+        storage_format = GL_RGBA8_OES;
+        overlay_candidate = true;
+      }
+    }
+
+    const gfx::Size size(image_data_->width(), image_data_->height());
+
+    uint32_t texture_id = 0;
+    gpu::Mailbox gpu_mailbox;
+    while (!recycled_texture_copies_.empty()) {
+      if (recycled_texture_copies_.back().size == size) {
+        texture_id = recycled_texture_copies_.back().id;
+        gpu_mailbox = recycled_texture_copies_.back().mailbox;
+        recycled_texture_copies_.pop_back();
+        gl->BindTexture(texture_target, texture_id);
+        break;
+      }
+      uint32_t id = recycled_texture_copies_.back().id;
+      main_thread_context_->ContextGL()->DeleteTextures(1, &id);
+      recycled_texture_copies_.pop_back();
+    }
+    if (!texture_id) {
+      gl->GenTextures(1, &texture_id);
+      gl->BindTexture(texture_target, texture_id);
+      gl->TexParameteri(texture_target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+      gl->TexParameteri(texture_target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+      gl->TexParameteri(texture_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+      gl->TexParameteri(texture_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+      gl->GenMailboxCHROMIUM(gpu_mailbox.name);
+      gl->ProduceTextureCHROMIUM(texture_target, gpu_mailbox.name);
+
+      if (overlay_candidate) {
+        gl->TexStorage2DImageCHROMIUM(texture_target, storage_format,
+                                      GL_SCANOUT_CHROMIUM, size.width(),
+                                      size.height());
+      } else {
+        gl->TexImage2D(texture_target, 0, format, size.width(), size.height(),
+                       0, format, GL_UNSIGNED_BYTE, nullptr);
+      }
+    }
+
+    TextureInfo info;
+    info.id = texture_id;
+    info.mailbox = gpu_mailbox;
+    info.size = size;
+    texture_copies_.push_back(std::move(info));
+
+    void* src = image_data_->Map();
 
     // Convert to RGBA if we can't upload BGRA. This is slow sad times.
     std::unique_ptr<uint32_t[]> swizzled;
-    if (bitmap_is_bgra && !texture_can_be_bgra) {
+    if (bitmap_is_bgra != upload_bgra) {
       size_t num_pixels = (base::CheckedNumeric<size_t>(image_data_->width()) *
                            image_data_->height())
                               .ValueOrDie();
@@ -678,10 +734,8 @@ bool PepperGraphics2DHost::PrepareTransferableResource(
       src = swizzled.get();
     }
 
-    GLenum format =
-        bitmap_is_bgra && texture_can_be_bgra ? GL_BGRA_EXT : GL_RGBA;
-    gl->TexImage2D(GL_TEXTURE_2D, 0, format, image_data_->width(),
-                   image_data_->height(), 0, format, GL_UNSIGNED_BYTE, src);
+    gl->TexSubImage2D(texture_target, 0, 0, 0, size.width(), size.height(),
+                      format, GL_UNSIGNED_BYTE, src);
     image_data_->Unmap();
     swizzled.reset();
 
@@ -690,11 +744,11 @@ bool PepperGraphics2DHost::PrepareTransferableResource(
     gl->OrderingBarrierCHROMIUM();
     gl->GenUnverifiedSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
 
-    gl->BindTexture(GL_TEXTURE_2D, 0);
+    gl->BindTexture(texture_target, 0);
 
-    *transferable_resource =
-        viz::TransferableResource::MakeGL(std::move(gpu_mailbox), GL_LINEAR,
-                                          GL_TEXTURE_2D, std::move(sync_token));
+    *transferable_resource = viz::TransferableResource::MakeGLOverlay(
+        std::move(gpu_mailbox), GL_LINEAR, texture_target,
+        std::move(sync_token), size, overlay_candidate);
     *release_callback = viz::SingleReleaseCallback::Create(
         base::Bind(&ReleaseTextureCallback, this->AsWeakPtr(),
                    main_thread_context_, texture_id));
