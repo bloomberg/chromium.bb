@@ -17,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/android/resource_mapper.h"
+#include "chrome/browser/autofill/address_normalizer_factory.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/autofill/validation_rules_storage_factory.h"
 #include "chrome/browser/browser_process.h"
@@ -26,6 +27,7 @@
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/address_i18n.h"
+#include "components/autofill/core/browser/address_normalizer.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_type.h"
@@ -312,11 +314,7 @@ PersonalDataManagerAndroid::PersonalDataManagerAndroid(JNIEnv* env, jobject obj)
     : weak_java_obj_(env, obj),
       personal_data_manager_(PersonalDataManagerFactory::GetForProfile(
           ProfileManager::GetActiveUserProfile())),
-      address_normalizer_(std::unique_ptr<::i18n::addressinput::Source>(
-                              new ChromeMetadataSource(
-                                  I18N_ADDRESS_VALIDATION_DATA_URL,
-                                  g_browser_process->system_request_context())),
-                          ValidationRulesStorageFactory::CreateStorage()),
+      address_normalizer_(AddressNormalizerFactory::GetInstance()),
       subkey_requester_(base::MakeUnique<ChromeMetadataSource>(
                             I18N_ADDRESS_VALIDATION_DATA_URL,
                             g_browser_process->system_request_context()),
@@ -697,7 +695,7 @@ void PersonalDataManagerAndroid::LoadRulesForAddressNormalization(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& unused_obj,
     const base::android::JavaParamRef<jstring>& jregion_code) {
-  address_normalizer_.LoadRulesForRegion(
+  address_normalizer_->LoadRulesForRegion(
       ConvertJavaStringToUTF8(env, jregion_code));
 }
 
@@ -713,17 +711,14 @@ void PersonalDataManagerAndroid::StartAddressNormalization(
     JNIEnv* env,
     const JavaParamRef<jobject>& unused_obj,
     const JavaParamRef<jobject>& jprofile,
-    const JavaParamRef<jstring>& jregion_code,
     jint jtimeout_seconds,
     const JavaParamRef<jobject>& jdelegate) {
-  const std::string region_code = ConvertJavaStringToUTF8(env, jregion_code);
-
   AutofillProfile profile;
   PopulateNativeProfileFromJava(jprofile, env, &profile);
 
   // Start the normalization.
-  address_normalizer_.NormalizeAddressAsync(
-      profile, region_code, jtimeout_seconds,
+  address_normalizer_->NormalizeAddressAsync(
+      profile, jtimeout_seconds,
       base::BindOnce(&OnAddressNormalized,
                      ScopedJavaGlobalRef<jobject>(jdelegate)));
 }

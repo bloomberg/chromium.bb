@@ -67,12 +67,8 @@ void AutofillPaymentInstrument::InvokePaymentApp(
   is_waiting_for_card_unmask_ = true;
 
   // Start the normalization of the billing address.
-  // Use the country code from the profile if it is set, otherwise infer it
-  // from the |app_locale_|.
-  std::string country_code = autofill::data_util::GetCountryCodeWithFallback(
-      billing_address_, app_locale_);
   payment_request_delegate_->GetAddressNormalizer()->NormalizeAddressAsync(
-      billing_address_, country_code, /*timeout_seconds=*/5,
+      billing_address_, /*timeout_seconds=*/5,
       base::BindOnce(&AutofillPaymentInstrument::OnAddressNormalized,
                      weak_ptr_factory_.GetWeakPtr()));
 

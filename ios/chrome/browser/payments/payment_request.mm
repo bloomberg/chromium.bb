@@ -92,7 +92,8 @@ PaymentRequest::PaymentRequest(
       address_normalizer_(
           GetAddressInputSource(
               personal_data_manager_->GetURLRequestContextGetter()),
-          GetAddressInputStorage()),
+          GetAddressInputStorage(),
+          GetApplicationContext()->GetApplicationLocale()),
       address_normalization_manager_(
           &address_normalizer_,
           GetApplicationContext()->GetApplicationLocale()),
