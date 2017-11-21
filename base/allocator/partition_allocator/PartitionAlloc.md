@@ -52,15 +52,15 @@ bucket size is 1MB = 0x100000 which is greater than 1/2 the available space in
 a SuperPage meaning it would not be possible to pack even 2 sequential
 alloctions in a SuperPage.
 
-`PartitionAllocGeneric` acquires a lock for thread safety. (The current
+`PartitionRootGeneric::Alloc()` acquires a lock for thread safety. (The current
 implementation uses a spin lock on the assumption that thread contention will be
 rare in its callers. The original caller was Blink, where this is generally
 true. Spin locks also have the benefit of simplicity.)
 
 Callers can get thread-unsafe performance using a
 `SizeSpecificPartitionAllocator` or otherwise using `PartitionAlloc` (instead of
-`PartitionAllocGeneric`). Callers can also arrange for low contention, such as
-by using a dedicated partition for single-threaded, latency-critical
+`PartitionRootGeneric::Alloc()`). Callers can also arrange for low contention,
+such as by using a dedicated partition for single-threaded, latency-critical
 allocations.
 
 Because PartitionAlloc guarantees that address space regions used for one

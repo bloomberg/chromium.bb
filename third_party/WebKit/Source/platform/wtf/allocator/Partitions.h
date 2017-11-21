@@ -106,22 +106,19 @@ class WTF_EXPORT Partitions {
   static void DumpMemoryStats(bool is_light_dump, base::PartitionStatsDumper*);
 
   ALWAYS_INLINE static void* BufferMalloc(size_t n, const char* type_name) {
-    return base::PartitionAllocGeneric(BufferPartition(), n, type_name);
+    return BufferPartition()->Alloc(n, type_name);
   }
   ALWAYS_INLINE static void* BufferRealloc(void* p,
                                            size_t n,
                                            const char* type_name) {
-    return base::PartitionReallocGeneric(BufferPartition(), p, n, type_name);
+    return BufferPartition()->Realloc(p, n, type_name);
   }
-  ALWAYS_INLINE static void BufferFree(void* p) {
-    base::PartitionFreeGeneric(BufferPartition(), p);
-  }
+  ALWAYS_INLINE static void BufferFree(void* p) { BufferPartition()->Free(p); }
   ALWAYS_INLINE static size_t BufferActualSize(size_t n) {
-    return base::PartitionAllocActualSize(BufferPartition(), n);
+    return BufferPartition()->ActualSize(n);
   }
   static void* FastMalloc(size_t n, const char* type_name) {
-    return base::PartitionAllocGeneric(Partitions::FastMallocPartition(), n,
-                                       type_name);
+    return Partitions::FastMallocPartition()->Alloc(n, type_name);
   }
   static void* FastZeroedMalloc(size_t n, const char* type_name) {
     void* result = FastMalloc(n, type_name);
@@ -129,12 +126,9 @@ class WTF_EXPORT Partitions {
     return result;
   }
   static void* FastRealloc(void* p, size_t n, const char* type_name) {
-    return base::PartitionReallocGeneric(Partitions::FastMallocPartition(), p,
-                                         n, type_name);
+    return Partitions::FastMallocPartition()->Realloc(p, n, type_name);
   }
-  static void FastFree(void* p) {
-    base::PartitionFreeGeneric(Partitions::FastMallocPartition(), p);
-  }
+  static void FastFree(void* p) { Partitions::FastMallocPartition()->Free(p); }
 
   static void HandleOutOfMemory();
 
