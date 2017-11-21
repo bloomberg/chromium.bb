@@ -2991,13 +2991,13 @@ bool BackRenderbuffer::AllocateStorage(const gfx::Size& size,
     return false;
   }
 
-  // TODO(kainino): This path will not perform RegenerateRenderbufferIfNeeded
-  // on devices where multisample_renderbuffer_resize_emulation is needed.
-  // Thus any code using this path (nacl/ppapi?) could encounter issues on those
+  // TODO(kainino): This path will not perform RegenerateRenderbufferIfNeeded on
+  // devices where multisample_renderbuffer_resize_emulation or
+  // depth_stencil_renderbuffer_resize_emulation is needed.  Thus any code using
+  // this path (nacl/ppapi?) could encounter issues on those
   // devices. RenderbufferStorageMultisampleWithWorkaround should be used
-  // instead, but can only be used if BackRenderbuffer tracks its
-  // renderbuffers in the renderbuffer manager instead of manually.
-  // http://crbug.com/731287
+  // instead, but can only be used if BackRenderbuffer tracks its renderbuffers
+  // in the renderbuffer manager instead of manually.  http://crbug.com/731287
   decoder_->RenderbufferStorageMultisampleHelper(GL_RENDERBUFFER, samples,
                                                  format, size.width(),
                                                  size.height(), kDoNotForce);
@@ -8668,11 +8668,7 @@ void GLES2DecoderImpl::RenderbufferStorageMultisampleHelper(
 
 bool GLES2DecoderImpl::RegenerateRenderbufferIfNeeded(
     Renderbuffer* renderbuffer) {
-  if (!workarounds().multisample_renderbuffer_resize_emulation) {
-    return false;
-  }
-
-  if (!renderbuffer->RegenerateAndBindBackingObjectIfNeeded()) {
+  if (!renderbuffer->RegenerateAndBindBackingObjectIfNeeded(workarounds())) {
     return false;
   }
 

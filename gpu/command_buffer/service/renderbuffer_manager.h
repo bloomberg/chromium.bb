@@ -20,6 +20,8 @@
 #include "gpu/gpu_export.h"
 
 namespace gpu {
+class GpuDriverBugWorkarounds;
+
 namespace gles2 {
 
 class FeatureInfo;
@@ -76,7 +78,8 @@ class GPU_EXPORT Renderbuffer
 
   // Regenerates the object backing this client_id, creating a new service_id.
   // Also reattaches any framebuffers using this renderbuffer.
-  bool RegenerateAndBindBackingObjectIfNeeded();
+  bool RegenerateAndBindBackingObjectIfNeeded(
+      const GpuDriverBugWorkarounds& workarounds);
 
   void AddFramebufferAttachmentPoint(Framebuffer* framebuffer,
                                      GLenum attachment);

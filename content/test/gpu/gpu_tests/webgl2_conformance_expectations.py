@@ -375,8 +375,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', ('nvidia', 0xfe9)], bug=483282)
     self.Fail('conformance/attribs/gl-disabled-vertex-attrib.html',
         ['mac', ('nvidia', 0xfe9)], bug=483282)
-    self.Fail('conformance/canvas/drawingbuffer-static-canvas-test.html',
-        ['highsierra', ('nvidia', 0xfe9)], bug=775202)
     self.Flaky(
         'conformance/extensions/webgl-compressed-texture-size-limit.html',
         ['mac', ('nvidia', 0xfe9)], bug=483282)
@@ -392,10 +390,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('conformance2/textures/image_bitmap_from_video/' +
         'tex-2d-rgba16f-rgba-half_float.html',
         ['mac', ('nvidia', 0xfe9)], bug=682834)
-    self.Fail('conformance/canvas/render-after-resize-test.html',
-        ['mac', ('nvidia', 0xfe9)], bug=786717)
     self.Fail('conformance/glsl/bugs/init-array-with-loop.html',
-        ['mac', ('nvidia', 0xfe9)], bug=786717)
+        ['mac', ('nvidia', 0xfe9)], bug=784817)
 
     self.Fail('deqp/functional/gles3/draw/random.html',
         ['sierra', ('nvidia', 0xfe9)], bug=716652)
