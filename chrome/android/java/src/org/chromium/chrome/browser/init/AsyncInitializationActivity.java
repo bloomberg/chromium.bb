@@ -111,11 +111,10 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
         // switcher resources. Overriding the smallestScreenWidthDp in the Configuration ensures
         // Android will load the tab strip resources. See crbug.com/588838.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            int smallestDeviceWidthDp = DeviceFormFactor.getSmallestDeviceWidthDp();
-
-            if (smallestDeviceWidthDp >= DeviceFormFactor.MINIMUM_TABLET_WIDTH_DP) {
+            if (DeviceFormFactor.isTablet()) {
                 Configuration overrideConfiguration = new Configuration();
-                overrideConfiguration.smallestScreenWidthDp = smallestDeviceWidthDp;
+                overrideConfiguration.smallestScreenWidthDp =
+                        DeviceFormFactor.getSmallestDeviceWidthDp();
                 applyOverrideConfiguration(overrideConfiguration);
             }
         }
@@ -125,14 +124,7 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
     @Override
     public void preInflationStartup() {
         mHadWarmStart = LibraryLoader.isInitialized();
-        // On some devices, OEM modifications have been made to the resource loader that cause the
-        // DeviceFormFactor calculation of whether a device is using tablet resources to be
-        // incorrect. Check which resources were actually loaded and set the DeviceFormFactor
-        // values. See crbug.com/662338.
-        boolean isTablet = getResources().getBoolean(R.bool.is_tablet);
-        boolean isLargeTablet = getResources().getBoolean(R.bool.is_large_tablet);
-        DeviceFormFactor.setIsTablet(isTablet, isLargeTablet);
-        mIsTablet = isTablet;
+        mIsTablet = DeviceFormFactor.isTablet();
     }
 
     @Override
