@@ -5,6 +5,7 @@ function loadScript(url) {
     // This "done" function will be called from the script.
     done = resolve;
     let script = document.createElement("script");
+    script.charset= 'UTF-8';
     script.src = url;
     document.body.appendChild(script);
   });

@@ -76415,6 +76415,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ServiceWorker.CacheStorageInstalledScript.CachedMetadataSize"
+    units="bytes">
+  <owner>horo@chromium.org</owner>
+  <summary>
+    The length of cached metadata of scripts which are stored to the
+    CacheStorage by the installing service worker.
+  </summary>
+</histogram>
+
+<histogram
+    name="ServiceWorker.CacheStorageInstalledScript.CachedMetadataTotalSize"
+    units="bytes">
+  <owner>horo@chromium.org</owner>
+  <summary>
+    The total length of cached metadata of scripts which are stored to the
+    CacheStorage by the installing service worker.
+  </summary>
+</histogram>
+
 <histogram name="ServiceWorker.CacheStorageInstalledScript.Count" units="count">
   <owner>horo@chromium.org</owner>
   <summary>

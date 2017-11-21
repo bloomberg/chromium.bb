@@ -1073,6 +1073,12 @@ InspectorCompileScriptEvent::V8CacheResult::ConsumeResult::ConsumeResult(
          consume_options == v8::ScriptCompiler::kConsumeCodeCache);
 }
 
+InspectorCompileScriptEvent::V8CacheResult::V8CacheResult(
+    Optional<ProduceResult> produce_result,
+    Optional<ConsumeResult> consume_result)
+    : produce_result(std::move(produce_result)),
+      consume_result(std::move(consume_result)) {}
+
 std::unique_ptr<TracedValue> InspectorCompileScriptEvent::Data(
     const String& url,
     const TextPosition& text_position,
