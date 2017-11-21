@@ -117,7 +117,8 @@ class CONTENT_EXPORT StoragePartitionImpl
       const base::Closure& callback) override;
   void Flush() override;
   void ClearBluetoothAllowedDevicesMapForTesting() override;
-
+  void SetNetworkFactoryForTesting(
+      mojom::URLLoaderFactoryPtr test_factory) override;
   BackgroundFetchContext* GetBackgroundFetchContext();
   BackgroundSyncContext* GetBackgroundSyncContext();
   PaymentAppContextImpl* GetPaymentAppContext();
