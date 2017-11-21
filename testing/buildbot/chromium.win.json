@@ -524,6 +524,12 @@
   "Win Builder": {
     "additional_compile_targets": [
       "pdf_fuzzers"
+    ],
+    "scripts": [
+      {
+        "name": "check_network_annotations",
+        "script": "check_network_annotations.py"
+      }
     ]
   },
   "Win10 Tests x64": {

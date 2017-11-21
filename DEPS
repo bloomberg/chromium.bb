@@ -1168,6 +1168,22 @@ hooks = [
     ],
   },
 
+# This is used to ensure that all network operations are properly
+# annotated so we can document what they're for.
+  {
+    'name': 'tools_traffic_annotation_windows',
+    'pattern': '.',
+    'condition': 'host_os == "windows" and checkout_traffic_annotation_tools',
+    'action': [ 'vpython',
+                'src/third_party/depot_tools/download_from_google_storage.py',
+                '--no_resume',
+                '--no_auth',
+                '--num_threads=4',
+                '--bucket', 'chromium-tools-traffic_annotation',
+                '-d', 'src/tools/traffic_annotation/bin/win32',
+    ],
+  },
+
   # Pull down Zucchini test data.
   {
     'name': 'zucchini_testdata',
