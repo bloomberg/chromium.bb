@@ -33,6 +33,7 @@ PACKAGE_FILTER = [
     "libcairo.so",
     "libcups.so",
     "libdbus-1.so",
+    "libdconf.so",
     "libdl.so",
     "libexpat.so",
     "libfontconfig.so",
