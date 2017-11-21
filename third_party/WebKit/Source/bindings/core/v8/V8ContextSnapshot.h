@@ -50,9 +50,6 @@ class CORE_EXPORT V8ContextSnapshot {
 
   static void EnsureInterfaceTemplates(v8::Isolate*);
 
-  static void SetReferenceTable(const intptr_t* table);
-  static const intptr_t* GetReferenceTable();
-
   // Do not call this in production.
   static v8::StartupData TakeSnapshot();
 

@@ -27,6 +27,7 @@ namespace gin {
 
 namespace {
 v8::ArrayBuffer::Allocator* g_array_buffer_allocator = nullptr;
+const intptr_t* g_reference_table = nullptr;
 }  // namespace
 
 IsolateHolder::IsolateHolder(
@@ -39,14 +40,12 @@ IsolateHolder::IsolateHolder(
     : IsolateHolder(std::move(task_runner),
                     access_mode,
                     kAllowAtomicsWait,
-                    nullptr,
                     nullptr) {}
 
 IsolateHolder::IsolateHolder(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     AccessMode access_mode,
     AllowAtomicsWaitMode atomics_wait_mode,
-    const intptr_t* reference,
     v8::StartupData* startup_data)
     : access_mode_(access_mode) {
   v8::ArrayBuffer::Allocator* allocator = g_array_buffer_allocator;
@@ -59,10 +58,10 @@ IsolateHolder::IsolateHolder(
                                        base::SysInfo::AmountOfVirtualMemory());
   params.array_buffer_allocator = allocator;
   params.allow_atomics_wait = atomics_wait_mode == kAllowAtomicsWait;
-  params.external_references = reference;
+  params.external_references = g_reference_table;
 
   if (startup_data) {
-    CHECK(reference);
+    CHECK(g_reference_table);
     V8Initializer::GetV8ContextSnapshotData(startup_data);
     if (startup_data->data) {
       params.snapshot_blob = startup_data;
@@ -73,8 +72,7 @@ IsolateHolder::IsolateHolder(
   SetUp(std::move(task_runner));
 }
 
-IsolateHolder::IsolateHolder(const intptr_t* reference_table,
-                             v8::StartupData* existing_blob)
+IsolateHolder::IsolateHolder(v8::StartupData* existing_blob)
     : access_mode_(AccessMode::kSingleThread) {
   CHECK(existing_blob);
 
@@ -85,7 +83,7 @@ IsolateHolder::IsolateHolder(const intptr_t* reference_table,
   }
 
   snapshot_creator_.reset(
-      new v8::SnapshotCreator(reference_table, existing_blob));
+      new v8::SnapshotCreator(g_reference_table, existing_blob));
   isolate_ = snapshot_creator_->GetIsolate();
 
   SetUp(nullptr);
@@ -114,10 +112,12 @@ IsolateHolder::~IsolateHolder() {
 // static
 void IsolateHolder::Initialize(ScriptMode mode,
                                V8ExtrasMode v8_extras_mode,
-                               v8::ArrayBuffer::Allocator* allocator) {
+                               v8::ArrayBuffer::Allocator* allocator,
+                               const intptr_t* reference_table) {
   CHECK(allocator);
   V8Initializer::Initialize(mode, v8_extras_mode);
   g_array_buffer_allocator = allocator;
+  g_reference_table = reference_table;
 }
 
 void IsolateHolder::AddRunMicrotasksObserver() {

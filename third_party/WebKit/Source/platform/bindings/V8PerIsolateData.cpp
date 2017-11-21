@@ -60,7 +60,6 @@ static void MicrotasksCompletedCallback(v8::Isolate* isolate) {
 
 V8PerIsolateData::V8PerIsolateData(
     WebTaskRunner* task_runner,
-    const intptr_t* table,
     V8ContextSnapshotMode v8_context_snapshot_mode)
     : v8_context_snapshot_mode_(v8_context_snapshot_mode),
       isolate_holder_(
@@ -68,7 +67,6 @@ V8PerIsolateData::V8PerIsolateData(
           gin::IsolateHolder::kSingleThread,
           IsMainThread() ? gin::IsolateHolder::kDisallowAtomicsWait
                          : gin::IsolateHolder::kAllowAtomicsWait,
-          table,
           v8_context_snapshot_mode_ == V8ContextSnapshotMode::kUseSnapshot
               ? &startup_data_
               : nullptr),
@@ -96,9 +94,9 @@ V8PerIsolateData::V8PerIsolateData(
 
 // This constructor is used for taking a V8 context snapshot. It must run on the
 // main thread.
-V8PerIsolateData::V8PerIsolateData(const intptr_t* reference_table)
+V8PerIsolateData::V8PerIsolateData()
     : v8_context_snapshot_mode_(V8ContextSnapshotMode::kTakeSnapshot),
-      isolate_holder_(reference_table, &startup_data_),
+      isolate_holder_(&startup_data_),
       interface_template_map_for_v8_context_snapshot_(GetIsolate()),
       string_cache_(WTF::WrapUnique(new StringCache(GetIsolate()))),
       private_property_(V8PrivateProperty::Create()),
@@ -120,17 +118,12 @@ v8::Isolate* V8PerIsolateData::MainThreadIsolate() {
 }
 
 v8::Isolate* V8PerIsolateData::Initialize(WebTaskRunner* task_runner,
-                                          const intptr_t* reference_table,
                                           V8ContextSnapshotMode context_mode) {
-  DCHECK(context_mode == V8ContextSnapshotMode::kDontUseSnapshot ||
-         reference_table);
-
   V8PerIsolateData* data = nullptr;
   if (context_mode == V8ContextSnapshotMode::kTakeSnapshot) {
-    CHECK(reference_table);
-    data = new V8PerIsolateData(reference_table);
+    data = new V8PerIsolateData();
   } else {
-    data = new V8PerIsolateData(task_runner, reference_table, context_mode);
+    data = new V8PerIsolateData(task_runner, context_mode);
   }
   DCHECK(data);
 
