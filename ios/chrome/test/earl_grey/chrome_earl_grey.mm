@@ -132,12 +132,7 @@ id ExecuteJavaScript(NSString* javascript,
 }
 
 + (void)waitForPageToFinishLoading {
-  GREYCondition* condition =
-      [GREYCondition conditionWithName:@"Wait for page to complete loading."
-                                 block:^BOOL {
-                                   return !chrome_test_util::IsLoading();
-                                 }];
-  GREYAssert([condition waitWithTimeout:testing::kWaitForPageLoadTimeout],
+  GREYAssert(chrome_test_util::WaitForPageToFinishLoading(),
              @"Page did not complete loading.");
 }
 

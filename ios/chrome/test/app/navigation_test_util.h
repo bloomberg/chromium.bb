@@ -5,6 +5,7 @@
 #ifndef IOS_CHROME_TEST_APP_NAVIGATION_TEST_UTIL_H_
 #define IOS_CHROME_TEST_APP_NAVIGATION_TEST_UTIL_H_
 
+#include "base/compiler_specific.h"
 #include "url/gurl.h"
 
 namespace chrome_test_util {
@@ -15,6 +16,10 @@ void LoadUrl(const GURL& url);
 
 // Returns true if the current page in the current WebState is loading.
 bool IsLoading();
+
+// Returns true if the current page in the current WebState finishes loading
+// within a timeout.
+bool WaitForPageToFinishLoading() WARN_UNUSED_RESULT;
 
 }  // namespace chrome_test_util
 
