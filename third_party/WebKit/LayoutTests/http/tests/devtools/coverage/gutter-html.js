@@ -5,14 +5,11 @@
 (async function() {
   TestRunner.addResult(`Tests the coverage highlight in sources after the recording finishes.\n`);
   await TestRunner.loadModule('coverage_test_runner');
-  await TestRunner.loadHTML(`
-      <p id="id">PASS</p>
-    `);
-  await TestRunner.addStylesheetTag('resources/highlight-in-source.css');
+  await TestRunner.navigatePromise(TestRunner.url('resources/document.html'));
 
   CoverageTestRunner.startCoverage();
   await TestRunner.evaluateInPagePromise('performActions()');
   await CoverageTestRunner.stopCoverage();
-  await CoverageTestRunner.dumpDecorations('highlight-in-source.css');
+  await CoverageTestRunner.dumpDecorations('document.html');
   TestRunner.completeTest();
 })();

@@ -1,15 +1,19 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/debugger-test.js"></script>
-<script src="../resources/coverage-test.js"></script>
-<script src="resources/coverage.js"></script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-<link rel="stylesheet" type="text/css" href="resources/highlight-in-source.css">
+(async function() {
+  TestRunner.addResult(`Tests the coverage list view after finishing recording in the Coverage view.\n`);
+  await TestRunner.loadModule('coverage_test_runner');
 
-<script>
-async function test() {
   CoverageTestRunner.startCoverage();
+  await TestRunner.loadHTML(`
+      <iframe src="resources/subframe.html"></iframe>
+      <p class="class">
+      </p>
+    `);
+  await TestRunner.addStylesheetTag('resources/highlight-in-source.css');
+  await TestRunner.addScriptTag('resources/coverage.js');
   await TestRunner.evaluateInPagePromise('performActions(); frames[0].performActionsInFrame()');
   await CoverageTestRunner.stopCoverage();
 
@@ -18,7 +22,7 @@ async function test() {
   for (var child of dataGrid.rootNode().children) {
     var data = child._coverageInfo;
     var url = TestRunner.formatters.formatAsURL(data.url());
-    if (url.endsWith('-test.js') || url.endsWith('.html'))
+    if (url.startsWith('test://'))
       continue;
     var type = Coverage.CoverageListView._typeToString(data.type());
     TestRunner.addResult(`${url} ${type} used: ${data.usedSize()} unused: ${data.unusedSize()} total: ${data.size()}`);
@@ -28,16 +32,4 @@ async function test() {
   await CoverageTestRunner.dumpDecorations('coverage.js');
 
   TestRunner.completeTest();
-}
-
-</script>
-</head>
-
-<body onload="runTest()">
-<iframe src="resources/subframe.html"></iframe>
-<p class="class">
-Tests the coverage list view after finishing recording in the Coverage view.
-</p>
-
-</body>
-</html>
+})();

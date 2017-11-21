@@ -1,15 +1,18 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/elements-test.js"></script>
-<script src="../resources/coverage-test.js"></script>
-<script src="resources/coverage.js"></script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-<link rel="stylesheet" type="text/css" href="resources/highlight-in-source.css">
+(async function() {
+  TestRunner.addResult(`Tests the coverage list view after finishing recording in the Coverage view.\n`);
+  await TestRunner.loadModule('coverage_test_runner');
+  await TestRunner.loadHTML(`
+      <p class="class">
+      </p>
+    `);
+  await TestRunner.addStylesheetTag('resources/highlight-in-source.css');
 
-<script>
-async function test() {
   CoverageTestRunner.startCoverage();
+  await TestRunner.addScriptTag('resources/coverage.js');
   await TestRunner.evaluateInPagePromise('performActions()');
   await CoverageTestRunner.stopCoverage();
   TestRunner.addResult('Initial');
@@ -28,15 +31,4 @@ async function test() {
   CoverageTestRunner.dumpCoverageListView();
 
   TestRunner.completeTest();
-}
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p class="class">
-Tests the coverage list view after finishing recording in the Coverage view.
-</p>
-
-</body>
-</html>
+})();
