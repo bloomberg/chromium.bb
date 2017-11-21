@@ -1334,12 +1334,12 @@ static int prune_tx_2D(BLOCK_SIZE bsize, const MACROBLOCK *x, int tx_set_type,
                        int tx_type_pruning_aggressiveness,
                        int use_tx_split_prune) {
   if (bsize >= BLOCK_32X32) return 0;
+  aom_clear_system_state();
   const struct macroblock_plane *const p = &x->plane[0];
   const int bidx = AOMMAX(bsize - BLOCK_4X4, 0);
   const float score_thresh =
       av1_prune_2D_adaptive_thresholds[bidx]
                                       [tx_type_pruning_aggressiveness - 1];
-
   float hfeatures[16], vfeatures[16];
   float hscores[4], vscores[4];
   float scores_2D[16];
