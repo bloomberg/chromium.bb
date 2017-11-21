@@ -53,48 +53,6 @@ namespace blink {
 
 // HTMLDocument ----------------------------------------------------------------
 
-void V8Document::openMethodCustom(
-    const v8::FunctionCallbackInfo<v8::Value>& info) {
-  Document* document = V8Document::ToImpl(info.Holder());
-  ExceptionState exception_state(
-      info.GetIsolate(), ExceptionState::kExecutionContext, "Document", "open");
-
-  if (info.Length() > 2) {
-    if (!document->domWindow()) {
-      exception_state.ThrowDOMException(
-          kInvalidAccessError, "The document has no window associated.");
-      return;
-    }
-
-    TOSTRING_VOID(V8StringResource<kTreatNullAndUndefinedAsNullString>,
-                  url_string, info[0]);
-    AtomicString frame_name;
-    if (info[1]->IsUndefined() || info[1]->IsNull()) {
-      frame_name = "_blank";
-    } else {
-      TOSTRING_VOID(V8StringResource<>, frame_name_resource, info[1]);
-      frame_name = frame_name_resource;
-    }
-    TOSTRING_VOID(V8StringResource<kTreatNullAndUndefinedAsNullString>,
-                  window_features_string, info[2]);
-    DOMWindow* opened_window = document->domWindow()->open(
-        url_string, frame_name, window_features_string,
-        CurrentDOMWindow(info.GetIsolate()),
-        EnteredDOMWindow(info.GetIsolate()), exception_state);
-
-    if (exception_state.HadException()) {
-      return;
-    }
-    V8SetReturnValue(info, opened_window);
-    return;
-  }
-
-  document->open(EnteredDOMWindow(info.GetIsolate())->document(),
-                 exception_state);
-
-  V8SetReturnValue(info, info.Holder());
-}
-
 void V8Document::createTouchMethodPrologueCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info,
     Document*) {
