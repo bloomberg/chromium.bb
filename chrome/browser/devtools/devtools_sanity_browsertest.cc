@@ -67,8 +67,6 @@
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_controller.h"
-#include "content/public/browser/worker_service.h"
-#include "content/public/browser/worker_service_observer.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
@@ -101,8 +99,6 @@ using content::NavigationController;
 using content::RenderFrameHost;
 using content::RenderViewHost;
 using content::WebContents;
-using content::WorkerService;
-using content::WorkerServiceObserver;
 using extensions::Extension;
 
 namespace {

@@ -14,12 +14,9 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
-#include "base/observer_list.h"
 #include "content/browser/shared_worker/shared_worker_host.h"
 #include "content/common/shared_worker/shared_worker_connector.mojom.h"
 #include "content/common/shared_worker/shared_worker_factory.mojom.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/worker_service.h"
 
 namespace blink {
@@ -31,7 +28,6 @@ namespace content {
 class SharedWorkerInstance;
 class SharedWorkerHost;
 class ResourceContext;
-class WorkerServiceObserver;
 class WorkerStoragePartitionId;
 
 // The implementation of WorkerService. We try to place workers in an existing
@@ -46,9 +42,6 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public WorkerService {
 
   // WorkerService implementation:
   void TerminateAllWorkersForTesting(base::OnceClosure callback) override;
-  std::vector<WorkerInfo> GetWorkers() override;
-  void AddObserver(WorkerServiceObserver* observer) override;
-  void RemoveObserver(WorkerServiceObserver* observer) override;
 
   // Creates the worker if necessary or connects to an already existing worker.
   void ConnectToWorker(
@@ -87,7 +80,6 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public WorkerService {
       const SharedWorkerInstance& instance);
 
   WorkerHostMap worker_hosts_;
-  base::ObserverList<WorkerServiceObserver> observers_;
   base::OnceClosure terminate_all_workers_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedWorkerServiceImpl);
