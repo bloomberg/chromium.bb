@@ -1,13 +1,11 @@
-<html>
-<head>
-<script src='../inspector/inspector-test.js'></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function startWorker() {
-  window.worker = new Worker('resources/worker.js');
-}
+(async function() {
+  TestRunner.addResult(`Tests that workers are correctly detached upon navigation.\n`);
+  TestRunner.printDevToolsConsole();
 
-async function test() {
   var workerTargetId;
   var navigated = false;
   var observer = {
@@ -30,17 +28,11 @@ async function test() {
       }
     }
   };
+  await TestRunner.navigatePromise('resources/workers-on-navigation-resource.html');
 
   SDK.targetManager.observeTargets(observer);
   await TestRunner.evaluateInPagePromise('startWorker()');
-  await TestRunner.navigatePromise('http://localhost:8080/devtools/workers-on-navigation.html');
+  await TestRunner.reloadPagePromise();
   navigated = true;
   await TestRunner.evaluateInPagePromise('startWorker()');
-}
-
-</script>
-</head>
-<body onload='runTest()'>
-<p>Tests that workers are correctly detached upon navigation.</p>
-</body>
-</html>
+})();
