@@ -3128,8 +3128,8 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
     tg_params_wb = wb;
     saved_offset = wb.bit_offset;
     if (have_tiles) {
-      aom_wb_overwrite_literal(&wb, 3, n_log2_tiles);
-      aom_wb_overwrite_literal(&wb, (1 << n_log2_tiles) - 1, n_log2_tiles);
+      aom_wb_write_literal(&wb, 3, n_log2_tiles);
+      aom_wb_write_literal(&wb, (1 << n_log2_tiles) - 1, n_log2_tiles);
     }
 
     if (!use_compressed_header(cm)) {
