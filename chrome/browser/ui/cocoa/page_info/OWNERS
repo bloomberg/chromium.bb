@@ -2,8 +2,9 @@
 file://chrome/browser/ui/cocoa/OWNERS
 
 # Security team owners
-lgarron@chromium.org
-palmer@chromium.org
+estark@chromium.org
+felt@chromium.org
+meacer@chromium.org
 
 # COMPONENT: UI>Browser>Bubbles>PageInfo
 # TEAM: security-enamel@chromium.org
