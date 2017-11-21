@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/files/file.h"
 #include "base/logging.h"
+#include "base/run_loop.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/navigation_simulator.h"

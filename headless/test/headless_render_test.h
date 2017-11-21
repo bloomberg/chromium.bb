@@ -16,6 +16,8 @@
 #include "headless/public/headless_browser_context.h"
 #include "headless/test/headless_browser_test.h"
 
+#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "url/gurl.h"
 
 namespace headless {

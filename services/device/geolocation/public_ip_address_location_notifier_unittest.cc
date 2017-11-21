@@ -5,6 +5,7 @@
 #include "services/device/geolocation/public_ip_address_location_notifier.h"
 
 #include "base/bind.h"
+#include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "device/geolocation/public/cpp/geoposition.h"
