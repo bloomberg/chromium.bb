@@ -286,18 +286,7 @@ class PrintRenderFrameHelper
                            const blink::WebNode& node);
 #endif  // BUILDFLAG(ENABLE_BASIC_PRINTING)
 
-#if defined(OS_MACOSX)
   // Platform-specific helper function for rendering page(s) to |metafile|.
-  void RenderPage(const PrintMsg_Print_Params& params,
-                  int page_number,
-                  int page_count,
-                  blink::WebLocalFrame* frame,
-                  PdfMetafileSkia* metafile,
-                  gfx::Size* page_size,
-                  gfx::Rect* content_rect);
-#else
-  // Same as RenderPage() above, but for non-Mac.
-  // TODO(thestig): Try to merge this with RenderPage().
   void PrintPageInternal(const PrintMsg_Print_Params& params,
                          int page_number,
                          int page_count,
@@ -306,7 +295,6 @@ class PrintRenderFrameHelper
                          gfx::Size* page_size_in_dpi,
                          gfx::Rect* content_area_in_dpi,
                          gfx::Rect* printable_area_in_dpi);
-#endif  // defined(OS_MACOSX)
 
   // Renders page contents from |frame| to |content_area| of |canvas|.
   // |page_number| is zero-based.
