@@ -44,7 +44,7 @@ class DownloadControllerImpl : public DownloadController,
  private:
   // Set of tasks which are currently alive.
   std::set<DownloadTaskImpl*> alive_tasks_;
-  DownloadControllerDelegate* delegate_;
+  DownloadControllerDelegate* delegate_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadControllerImpl);
 };
