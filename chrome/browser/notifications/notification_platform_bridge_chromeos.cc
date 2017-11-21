@@ -33,6 +33,12 @@ NotificationPlatformBridge* NotificationPlatformBridge::Create() {
   return new NotificationPlatformBridgeChromeOs();
 }
 
+// static
+bool NotificationPlatformBridge::CanHandleType(
+    NotificationCommon::Type notification_type) {
+  return notification_type != NotificationCommon::TRANSIENT;
+}
+
 NotificationPlatformBridgeChromeOs::NotificationPlatformBridgeChromeOs()
     : impl_(std::make_unique<ChromeAshMessageCenterClient>(this)) {}
 

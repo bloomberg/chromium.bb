@@ -47,6 +47,8 @@ class NativeNotificationDisplayService : public NotificationDisplayService {
   // initializing.  |success| indicates it is ready to be used.
   void OnNotificationPlatformBridgeReady(bool success);
 
+  bool ShouldUsePlatformBridge(NotificationCommon::Type notification_type);
+
   Profile* profile_;
 
   NotificationPlatformBridge* notification_bridge_;

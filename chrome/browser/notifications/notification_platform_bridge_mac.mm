@@ -222,6 +222,12 @@ NotificationPlatformBridge* NotificationPlatformBridge::Create() {
       alert_dispatcher.get());
 }
 
+// static
+bool NotificationPlatformBridge::CanHandleType(
+    NotificationCommon::Type notification_type) {
+  return notification_type != NotificationCommon::TRANSIENT;
+}
+
 void NotificationPlatformBridgeMac::Display(
     NotificationCommon::Type notification_type,
     const std::string& profile_id,
