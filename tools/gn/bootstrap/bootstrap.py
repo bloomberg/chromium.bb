@@ -63,7 +63,9 @@ def scoped_tempdir():
 
 
 def run_build(tempdir, options):
-  if options.debug:
+  if options.build_path:
+    build_rel = options.build_path
+  elif options.debug:
     build_rel = os.path.join('out', 'Debug')
   else:
     build_rel = os.path.join('out', 'Release')
@@ -109,6 +111,8 @@ def main(argv):
                     help='Re-used build directory instead of using new '
                          'temporary location each time')
   parser.add_option('--gn-gen-args', help='Args to pass to gn gen --args')
+  parser.add_option('--build-path', help='The directory in which to build gn, '
+                    'relative to the src directory. (eg. out/Release)')
   parser.add_option('-v', '--verbose', action='store_true',
                     help='Log more details')
   options, args = parser.parse_args(argv)
