@@ -20,11 +20,11 @@ class CORE_EXPORT InlineStylePropertyMap final : public StylePropertyMap {
 
   void set(const ExecutionContext*,
            CSSPropertyID,
-           CSSStyleValueOrCSSStyleValueSequenceOrString&,
+           HeapVector<CSSStyleValueOrString>&,
            ExceptionState&) override;
   void append(const ExecutionContext*,
               CSSPropertyID,
-              CSSStyleValueOrCSSStyleValueSequenceOrString&,
+              HeapVector<CSSStyleValueOrString>&,
               ExceptionState&) override;
   void remove(CSSPropertyID, ExceptionState&) override;
 
