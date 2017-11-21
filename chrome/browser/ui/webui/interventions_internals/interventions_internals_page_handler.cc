@@ -5,11 +5,13 @@
 #include "chrome/browser/ui/webui/interventions_internals/interventions_internals_page_handler.h"
 
 #include <unordered_map>
+#include <utility>
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "build/build_config.h"
 #include "chrome/browser/flag_descriptions.h"
+#include "chrome/browser/net/nqe/ui_network_quality_estimator_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/previews/core/previews_experiments.h"
 
@@ -68,9 +70,11 @@ std::string GetFeatureFlagStatus(const std::string& feature_name) {
 
 InterventionsInternalsPageHandler::InterventionsInternalsPageHandler(
     mojom::InterventionsInternalsPageHandlerRequest request,
-    previews::PreviewsUIService* previews_ui_service)
+    previews::PreviewsUIService* previews_ui_service,
+    UINetworkQualityEstimatorService* ui_nqe_service)
     : binding_(this, std::move(request)),
       previews_ui_service_(previews_ui_service),
+      ui_nqe_service_(ui_nqe_service),
       current_estimated_ect_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {
   logger_ = previews_ui_service_->previews_logger();
   DCHECK(logger_);
@@ -79,6 +83,7 @@ InterventionsInternalsPageHandler::InterventionsInternalsPageHandler(
 InterventionsInternalsPageHandler::~InterventionsInternalsPageHandler() {
   DCHECK(logger_);
   logger_->RemoveObserver(this);
+  ui_nqe_service_->RemoveEffectiveConnectionTypeObserver(this);
 }
 
 void InterventionsInternalsPageHandler::SetClientPage(
@@ -87,6 +92,7 @@ void InterventionsInternalsPageHandler::SetClientPage(
   DCHECK(page_);
   OnEffectiveConnectionTypeChanged(current_estimated_ect_);
   logger_->AddAndNotifyObserver(this);
+  ui_nqe_service_->AddEffectiveConnectionTypeObserver(this);
 }
 
 void InterventionsInternalsPageHandler::OnEffectiveConnectionTypeChanged(
