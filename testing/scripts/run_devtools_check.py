@@ -41,7 +41,7 @@ def main():
   for arg in rest_args:
     if ('--isolated-script-test-chartjson-output' in arg or
         '--isolated-script-test-perf-output' in arg or
-        '--isolated-script-test-filter-file' in arg):
+        '--isolated-script-test-filter' in arg):
       rest_args.pop(index)
       break
     index += 1
