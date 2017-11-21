@@ -140,8 +140,8 @@ std::unique_ptr<base::Value> ConvertValue(const base::Value& value,
       break;
   }
 
-  LOG(WARNING) << "Failed to convert " << value.GetType()
-               << " to " << schema.type();
+  LOG(WARNING) << "Failed to convert " << value.type() << " to "
+               << schema.type();
   return nullptr;
 }
 #endif  // #if defined(OS_WIN)
