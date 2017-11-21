@@ -8,6 +8,7 @@
 #include "content/browser/accessibility/browser_accessibility_android.h"
 #include "content/browser/accessibility/web_contents_accessibility_android.h"
 #include "content/common/accessibility_messages.h"
+#include "ui/accessibility/ax_role_properties.h"
 
 namespace content {
 
@@ -65,9 +66,7 @@ bool BrowserAccessibilityManagerAndroid::ShouldExposePasswordText() {
 
 BrowserAccessibility* BrowserAccessibilityManagerAndroid::GetFocus() {
   BrowserAccessibility* focus = BrowserAccessibilityManager::GetFocus();
-  BrowserAccessibilityAndroid* android_focus =
-      static_cast<BrowserAccessibilityAndroid*>(focus);
-  if (!android_focus->IsEditableText())
+  if (!ui::IsEditField(focus->GetRole()))
     return GetActiveDescendant(focus);
   return focus;
 }
