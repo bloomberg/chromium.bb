@@ -189,7 +189,7 @@ void OpenVRDevice::ExitPresent() {
       base::Bind(&OpenVRRenderLoop::ExitPresent, render_loop_->GetWeakPtr()));
 }
 
-void OpenVRDevice::GetPose(
+void OpenVRDevice::OnMagicWindowPoseRequest(
     mojom::VRMagicWindowProvider::GetPoseCallback callback) {
   vr::TrackedDevicePose_t rendering_poses[vr::k_unMaxTrackedDeviceCount];
   vr_system_->GetDeviceToAbsoluteTrackingPose(vr::TrackingUniverseSeated, 0.03f,

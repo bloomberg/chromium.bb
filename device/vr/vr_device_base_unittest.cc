@@ -8,6 +8,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "device/vr/test/fake_vr_device.h"
 #include "device/vr/test/fake_vr_service_client.h"
 #include "device/vr/test/mock_vr_display_impl.h"
 #include "device/vr/vr_device_base.h"
@@ -153,6 +154,17 @@ TEST_F(VRDeviceTest, DisplayActivateRegsitered) {
 
   // Now we no longer fire the activation.
   device->FireDisplayActivate();
+}
+
+TEST_F(VRDeviceTest, NoMagicWindowPosesWhileBrowsing) {
+  auto device = std::make_unique<FakeVRDevice>();
+  device->SetPose(mojom::VRPose::New());
+
+  device->GetMagicWindowPose(
+      base::BindOnce([](mojom::VRPosePtr pose) { EXPECT_TRUE(pose); }));
+  device->SetMagicWindowEnabled(false);
+  device->GetMagicWindowPose(
+      base::BindOnce([](mojom::VRPosePtr pose) { EXPECT_FALSE(pose); }));
 }
 
 }  // namespace device
