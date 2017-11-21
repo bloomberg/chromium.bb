@@ -338,7 +338,8 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   }
 
   bool migrate_sessions_on_network_change() const {
-    return migrate_sessions_on_network_change_;
+    return migrate_sessions_on_network_change_ ||
+           migrate_sessions_on_network_change_v2_;
   }
 
   bool mark_quic_broken_when_network_blackholes() const {
@@ -493,12 +494,12 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // NetworkHandle is supported.
   const bool connect_using_default_network_;
 
+  // Set if migration should be attempted after probing.
+  const bool migrate_sessions_on_network_change_v2_;
+
   // Set if migration should be attempted on active sessions when primary
   // interface changes.
   const bool migrate_sessions_on_network_change_;
-
-  // Set if migration should be attempted after probing.
-  const bool migrate_sessions_on_network_change_v2_;
 
   // Set if early migration should be attempted when the connection
   // experiences poor connectivity.
