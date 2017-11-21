@@ -1,5 +1,3 @@
-Test screen orientation override.
-
 
 Running: initial
 

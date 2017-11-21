@@ -1,21 +1,21 @@
+CONSOLE MESSAGE: line 9: Permission granted.
+CONSOLE MESSAGE: line 44: Position unavailable
+CONSOLE MESSAGE: line 37: Latitude: 50 Longitude: 100
+CONSOLE MESSAGE: line 37: Latitude: 50 Longitude: 100
+CONSOLE MESSAGE: line 55: PASSED
 Tests that geolocation emulation with latitude and longitude works as expected.
 
 
 Running: testPermissionGranted
-geolocation-emulation-tests.js:14 Permission granted.
 
 Running: testGeolocationUnavailable
-geolocation-emulation-tests.js:49 Position unavailable
 
 Running: testOverridenGeolocation
-geolocation-emulation-tests.js:42 Latitude: 50 Longitude: 100
 
 Running: testInvalidParam
 error: Protocol Error: Invalid type of argument 'latitude' for method 'Emulation.setGeolocationOverride' call. It must be 'number' but it is 'boolean'.
 
 Running: testInvalidGeolocation
-geolocation-emulation-tests.js:42 Latitude: 50 Longitude: 100
 
 Running: testTimestampOfOverridenPosition
-geolocation-emulation-tests.js:60 PASSED
 

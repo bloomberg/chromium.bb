@@ -1,11 +1,13 @@
+CONSOLE MESSAGE: line 2: button clicked!
 Tests installing compiler source map in scripts panel.
+
 
 
 Running: testSetBreakpoint
 Script source was shown.
 Script execution paused.
 Call stack:
-    0) handleClick (add-elements.js:15)
-    1) clickButton (compiler-source-mapping-debug.js:18)
+    0) handleClick (source1.js:17)
+    1) clickButton (compiler-source-mapping-debug.html:13)
 Script execution resumed.
 

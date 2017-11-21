@@ -1,20 +1,18 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
+<html>
+<head>
+<script src="/inspector/inspector-test.js"></script>
+<script src="/js-test-resources/js-test.js"></script>
+<script>
+var ws;
+function sendMessages() {
+    ws = new WebSocket("ws://localhost:8000/does_not_exist");
+    ws.onclose = function()
+    {
+        debug("Closed.");
+    };
+}
 
-(async function() {
-  TestRunner.addResult(`Tests that WebSocketFrames errors are visible to Web Inspector.\n`);
-  await TestRunner.evaluateInPagePromise(`
-      var ws;
-      function sendMessages() {
-          ws = new WebSocket("ws://localhost:8000/does_not_exist");
-          ws.onclose = function()
-          {
-              debug("Closed.");
-          };
-      }
-  `);
-
+function test() {
   function onRequest(event) {
     var request = event.data;
     if (request.resourceType().name() === 'websocket') {
@@ -30,4 +28,10 @@
   }
   TestRunner.networkManager.addEventListener(SDK.NetworkManager.Events.RequestUpdated, onRequest);
   TestRunner.evaluateInPage('sendMessages()');
-})();
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests that WebSocketFrames errors are visible to Web Inspector.</p>
+</body>
+</html>
