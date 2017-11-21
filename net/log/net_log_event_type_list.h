@@ -2027,6 +2027,70 @@ EVENT_TYPE(QUIC_CONNECTION_MIGRATION_FAILURE)
 //  }
 EVENT_TYPE(QUIC_CONNECTION_MIGRATION_SUCCESS)
 
+// Records that QUIC connectivity probing is triggered.
+// Identified by network id.
+//  {
+//     "network": <ID of the network being probed>
+//     "initial_timeout_ms": <Initial timeout in milliseconds>
+//  }
+EVENT_TYPE(QUIC_CONNECTION_CONNECTIVITY_PROBING_TRIGGERED)
+
+// Records that QUIC connectivity probing succeeds.
+//  {
+//     "network": <ID of the network being probed>
+//  }
+EVENT_TYPE(QUIC_CONNECTION_CONNECTIVITY_PROBING_SUCCEEDED)
+
+// Records that QUIC connectivity probing fails.
+//  {
+//     "network": <ID of the network being probed>
+//  }
+EVENT_TYPE(QUIC_CONNECTION_CONNECTIVITY_PROBING_FAILED)
+
+// Records that QUIC connectivity probing fails.
+//  {
+//     "network": <ID of the network being probed>
+//  }
+EVENT_TYPE(QUIC_CONNECTION_CONNECTIVITY_PROBING_CANCELLED)
+
+// Records that a QUIC connectivity probing packet has been sent.
+//  {
+//     "network": <ID of the network being probed>
+//     "retry_count": <Number of trials>
+//  }
+EVENT_TYPE(QUIC_CONNECTION_CONNECTIVITY_PROBING_PACKET_SENT)
+
+// Records that a QUIC connectivity probing packet has been received.
+//  {
+//     "network": <ID of the network being probed>
+//     "self_address": <Self address on the probed path>
+//     "peer_address": <Peer address on the probed path>
+//  }
+EVENT_TYPE(QUIC_CONNECTION_CONNECTIVITY_PROBING_PACKET_RECEIVED)
+
+// Records that a QUIC connection migration attempt due to new network
+// being connected.
+EVENT_TYPE(QUIC_CONNECTION_MIGRATION_ON_NETWORK_CONNECTED)
+
+// Records that a QUIC connection migration attempt due to new network
+// being marked as default network.
+EVENT_TYPE(QUIC_CONNECTION_MIGRATION_ON_NETWORK_MADE_DEFAULT)
+
+// Records that a QUIC connection migration attempt due to old network
+// being disconnected.
+EVENT_TYPE(QUIC_CONNECTION_MIGRATION_ON_NETWORK_DISCONNECTED)
+
+// Records that a QUIC connection migration attempt due to encountering
+// packet write error on the current network.
+EVENT_TYPE(QUIC_CONNECTION_MIGRATION_ON_WRITE_ERROR)
+
+// Records that a QUIC connection migration attempt due to path
+// degrading on the current network.
+EVENT_TYPE(QUIC_CONNECTION_MIGRATION_ON_PATH_DEGRADING)
+
+// Records that a QUIC connection migration attempt due to efforts to
+// migrate back to the default network.
+EVENT_TYPE(QUIC_CONNECTION_MIGRATION_ON_MIGRATE_BACK)
 // ------------------------------------------------------------------------
 // HttpStreamParser
 // ------------------------------------------------------------------------

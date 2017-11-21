@@ -774,6 +774,7 @@ class QuicConnectionTest : public QuicTestWithParam<TestParams> {
     EXPECT_CALL(visitor_, HasOpenDynamicStreams())
         .WillRepeatedly(Return(false));
     EXPECT_CALL(visitor_, OnCongestionWindowChange(_)).Times(AnyNumber());
+    EXPECT_CALL(visitor_, OnConnectivityProbeReceived(_, _)).Times(AnyNumber());
 
     EXPECT_CALL(*loss_algorithm_, GetLossTimeout())
         .WillRepeatedly(Return(QuicTime::Zero()));
@@ -1406,9 +1407,10 @@ TEST_P(QuicConnectionTest, ReceivePaddedPingAtClient) {
                                   kPeerAddress);
   EXPECT_EQ(kPeerAddress, connection_.peer_address());
 
-  // Process a padded PING packet with same address on client side is ignored.
+  // Client takes all padded PING packet as speculative connectivity
+  // probing packet, and reports to visitor.
   EXPECT_CALL(visitor_, OnConnectionMigration(PORT_CHANGE)).Times(0);
-  EXPECT_CALL(visitor_, OnConnectivityProbeReceived(_, _)).Times(0);
+  EXPECT_CALL(visitor_, OnConnectivityProbeReceived(_, _)).Times(1);
 
   std::unique_ptr<QuicEncryptedPacket> probing_packet(
       QuicPacketCreatorPeer::SerializeConnectivityProbingPacket(
