@@ -819,6 +819,14 @@
                    file="printing_page/cups_add_printer_dialog_util.js"
                    type="chrome_html" />
       </if>
+      <if expr="not chromeos">
+        <structure name="IDR_SETTINGS_PRINTING_BROWSER_PROXY_HTML"
+                   file="printing_page/printing_browser_proxy.html"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_PRINTING_BROWSER_PROXY_JS"
+                   file="printing_page/printing_browser_proxy.js"
+                   type="chrome_html" />
+      </if>
       <structure name="IDR_SETTINGS_CLOUD_PRINTING_PAGE_HTML"
                  file="printing_page/cloud_printers.html"
                  type="chrome_html" />

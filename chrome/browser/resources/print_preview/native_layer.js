@@ -434,19 +434,12 @@ cr.define('print_preview', function() {
       return cr.sendWithPromise('signIn', addAccount);
     }
 
-    /** Navigates the user to the system printer settings interface. */
-    manageLocalPrinters() {
-      chrome.send('manageLocalPrinters');
-    }
-
     /**
-     * Navigates the user to the Google Cloud Print management page.
-     * @param {?string} user Email address of the user to open the management
-     *     page for (user must be currently logged in, indeed) or {@code null}
-     *     to open this page for the primary user.
+     * Navigates the user to the Chrome printing setting page to manage local
+     * printers and Google cloud printers.
      */
-    manageCloudPrinters(user) {
-      chrome.send('manageCloudPrinters', [user || '']);
+    managePrinters() {
+      chrome.send('managePrinters');
     }
 
     /** Forces browser to open a new tab with the given URL address. */

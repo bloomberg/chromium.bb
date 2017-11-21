@@ -1198,6 +1198,11 @@
       Save
     </message>
   </if>
+  <if expr="not chromeos">
+    <message name="IDS_SETTINGS_PRINTING_LOCAL_PRINTERS_TITLE" desc="In Printing Settings, the title of local printers setting section on OS other than Chrome OS.">
+      Printers
+    </message>
+  </if>
   <message name="IDS_SETTINGS_PRINTING_CLOUD_PRINTERS" desc="In Printing Settings, the title of the google cloud printers setting section.">
     Google Cloud Print
   </message>
