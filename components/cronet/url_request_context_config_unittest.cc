@@ -261,6 +261,57 @@ TEST(URLRequestContextConfigTest, SetQuicHostWhitelist) {
       base::ContainsKey(params->quic_host_whitelist, "www.example.org"));
 }
 
+TEST(URLRequestContextConfigTest, SetQuicMaxTimeBeforeCryptoHandshake) {
+  base::test::ScopedTaskEnvironment scoped_task_environment_(
+      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+
+  URLRequestContextConfig config(
+      // Enable QUIC.
+      true,
+      // QUIC User Agent ID.
+      "Default QUIC User Agent ID",
+      // Enable SPDY.
+      true,
+      // Enable Brotli.
+      false,
+      // Type of http cache.
+      URLRequestContextConfig::HttpCacheType::DISK,
+      // Max size of http cache in bytes.
+      1024000,
+      // Disable caching for HTTP responses. Other information may be stored in
+      // the cache.
+      false,
+      // Storage path for http cache and cookie storage.
+      "/data/data/org.chromium.net/app_cronet_test/test_storage",
+      // User-Agent request header field.
+      "fake agent",
+      // JSON encoded experimental options.
+      "{\"QUIC\":{\"max_time_before_crypto_handshake_seconds\":7,"
+      "\"max_idle_time_before_crypto_handshake_seconds\":11}}",
+      // MockCertVerifier to use for testing purposes.
+      std::unique_ptr<net::CertVerifier>(),
+      // Enable network quality estimator.
+      false,
+      // Enable Public Key Pinning bypass for local trust anchors.
+      true,
+      // Certificate verifier cache data.
+      "");
+
+  net::URLRequestContextBuilder builder;
+  net::NetLog net_log;
+  config.ConfigureURLRequestContextBuilder(&builder, &net_log);
+  // Set a ProxyConfigService to avoid DCHECK failure when building.
+  builder.set_proxy_config_service(
+      base::MakeUnique<net::ProxyConfigServiceFixed>(
+          net::ProxyConfig::CreateDirect()));
+  std::unique_ptr<net::URLRequestContext> context(builder.Build());
+  const net::HttpNetworkSession::Params* params =
+      context->GetNetworkSessionParams();
+
+  EXPECT_EQ(7, params->quic_max_time_before_crypto_handshake_seconds);
+  EXPECT_EQ(11, params->quic_max_idle_time_before_crypto_handshake_seconds);
+}
+
 // See stale_host_resolver_unittest.cc for test of StaleDNS options.
 
 }  // namespace cronet
