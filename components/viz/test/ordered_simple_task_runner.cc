@@ -172,7 +172,7 @@ bool OrderedSimpleTaskRunner::RunTasksWhile(
 
 bool OrderedSimpleTaskRunner::RunTasksWhile(
     const std::vector<base::Callback<bool(void)>>& conditions) {
-  TRACE_EVENT2("cc", "OrderedSimpleTaskRunner::RunPendingTasks", "this",
+  TRACE_EVENT2("viz", "OrderedSimpleTaskRunner::RunPendingTasks", "this",
                AsValue(), "nested", inside_run_tasks_until_);
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -221,7 +221,7 @@ bool OrderedSimpleTaskRunner::RunTasksWhile(
     std::set<TestOrderablePendingTask>::iterator task_to_run =
         pending_tasks_.begin();
     {
-      TRACE_EVENT1("cc", "OrderedSimpleTaskRunner::RunPendingTasks running",
+      TRACE_EVENT1("viz", "OrderedSimpleTaskRunner::RunPendingTasks running",
                    "task", task_to_run->AsValue());
       // It's safe to remove const and consume |task| here, since |task| is not
       // used for ordering the item.

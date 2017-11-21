@@ -164,7 +164,7 @@ ProgramBindingBase::~ProgramBindingBase() {
 bool ProgramBindingBase::Init(GLES2Interface* context,
                               const std::string& vertex_shader,
                               const std::string& fragment_shader) {
-  TRACE_EVENT0("cc", "ProgramBindingBase::init");
+  TRACE_EVENT0("viz", "ProgramBindingBase::init");
   vertex_shader_id_ = LoadShader(context, GL_VERTEX_SHADER, vertex_shader);
   if (!vertex_shader_id_)
     return false;
