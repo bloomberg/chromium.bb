@@ -90,7 +90,7 @@ define('media_router_bindings', [
       'description': route.description,
       'icon_url': route.iconUrl,
       'is_local': route.isLocal,
-      'custom_controller_path': route.customControllerPath,
+      'custom_controller_path': route.customControllerPath || '',
       'for_display': route.forDisplay,
       'is_incognito': route.offTheRecord,
       'is_local_presentation': route.isOffscreenPresentation,
@@ -393,10 +393,10 @@ define('media_router_bindings', [
       return issueActionToMojo_(e);
     });
     this.service_.onIssue(new mediaRouterMojom.Issue({
-      'route_id': issue.routeId,
+      'route_id': issue.routeId || '',
       'severity': issueSeverityToMojo_(issue.severity),
       'title': issue.title,
-      'message': issue.message,
+      'message': issue.message || '',
       'default_action': issueActionToMojo_(issue.defaultAction),
       'secondary_actions': secondaryActions,
       'help_page_id': issue.helpPageId,

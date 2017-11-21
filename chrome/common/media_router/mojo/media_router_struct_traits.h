@@ -206,10 +206,8 @@ struct StructTraits<media_router::mojom::IssueDataView,
   static bool Read(media_router::mojom::IssueDataView data,
                    media_router::IssueInfo* out);
 
-  static base::Optional<std::string> route_id(
-      const media_router::IssueInfo& issue) {
-    return issue.route_id.empty() ? base::Optional<std::string>()
-                                  : base::make_optional(issue.route_id);
+  static const std::string& route_id(const media_router::IssueInfo& issue) {
+    return issue.route_id;
   }
 
   static media_router::IssueInfo::Severity severity(
@@ -225,10 +223,8 @@ struct StructTraits<media_router::mojom::IssueDataView,
     return issue.title;
   }
 
-  static base::Optional<std::string> message(
-      const media_router::IssueInfo& issue) {
-    return issue.message.empty() ? base::Optional<std::string>()
-                                 : base::make_optional(issue.message);
+  static const std::string& message(const media_router::IssueInfo& issue) {
+    return issue.message;
   }
 
   static media_router::IssueInfo::Action default_action(
@@ -236,8 +232,8 @@ struct StructTraits<media_router::mojom::IssueDataView,
     return issue.default_action;
   }
 
-  static base::Optional<std::vector<media_router::IssueInfo::Action>>
-  secondary_actions(const media_router::IssueInfo& issue) {
+  static const std::vector<media_router::IssueInfo::Action>& secondary_actions(
+      const media_router::IssueInfo& issue) {
     return issue.secondary_actions;
   }
 
@@ -394,7 +390,7 @@ struct StructTraits<media_router::mojom::MediaRouteDataView,
 
   static base::Optional<std::string> media_source(
       const media_router::MediaRoute& route) {
-    // TODO(imcheng): If we ever convert from Mojo to C++ outside of unit tests,
+    // TODO(imcheng): If we ever convert from C++ to Mojo outside of unit tests,
     // it would be better to make the |media_source_| field on MediaRoute a
     // base::Optional<MediaSource::Id> instead so it can be returned directly
     // here.
@@ -416,11 +412,9 @@ struct StructTraits<media_router::mojom::MediaRouteDataView,
     return route.is_local();
   }
 
-  static base::Optional<std::string> custom_controller_path(
+  static const std::string& custom_controller_path(
       const media_router::MediaRoute& route) {
-    return route.custom_controller_path().empty()
-               ? base::Optional<std::string>()
-               : base::make_optional(route.custom_controller_path());
+    return route.custom_controller_path();
   }
 
   static bool supports_media_route_controller(

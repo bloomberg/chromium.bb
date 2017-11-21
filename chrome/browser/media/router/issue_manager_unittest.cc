@@ -31,7 +31,7 @@ IssueInfo CreateTestIssue(IssueInfo::Severity severity) {
 class IssueManagerTest : public ::testing::Test {
  protected:
   IssueManagerTest()
-      : task_runner_(new base::TestMockTimeTaskRunner()),
+      : task_runner_(base::MakeRefCounted<base::TestMockTimeTaskRunner>()),
         runner_handler_(task_runner_) {
     manager_.set_task_runner_for_test(task_runner_);
   }
