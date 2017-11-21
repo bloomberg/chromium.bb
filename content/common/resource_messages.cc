@@ -4,7 +4,10 @@
 
 #include "content/common/resource_messages.h"
 
+#include "base/files/file.h"
+#include "base/files/platform_file.h"
 #include "ipc/ipc_mojo_param_traits.h"
+#include "ipc/ipc_platform_file.h"
 #include "net/base/load_timing_info.h"
 #include "net/http/http_response_headers.h"
 
@@ -154,6 +157,16 @@ void ParamTraits<storage::DataElement>::Write(base::Pickle* m,
       WriteParam(m, p.expected_modification_time());
       break;
     }
+    case storage::DataElement::TYPE_RAW_FILE: {
+      WriteParam(
+          m, IPC::GetPlatformFileForTransit(p.file().GetPlatformFile(),
+                                            false /* close_source_handle */));
+      WriteParam(m, p.path());
+      WriteParam(m, p.offset());
+      WriteParam(m, p.length());
+      WriteParam(m, p.expected_modification_time());
+      break;
+    }
     case storage::DataElement::TYPE_FILE_FILESYSTEM: {
       WriteParam(m, p.filesystem_url());
       WriteParam(m, p.offset());
@@ -222,6 +235,27 @@ bool ParamTraits<storage::DataElement>::Read(const base::Pickle* m,
         return false;
       r->SetToFilePathRange(file_path, offset, length,
                             expected_modification_time);
+      return true;
+    }
+    case storage::DataElement::TYPE_RAW_FILE: {
+      IPC::PlatformFileForTransit platform_file_for_transit;
+      if (!ReadParam(m, iter, &platform_file_for_transit))
+        return false;
+      base::File file = PlatformFileForTransitToFile(platform_file_for_transit);
+      base::FilePath file_path;
+      if (!ReadParam(m, iter, &file_path))
+        return false;
+      uint64_t offset;
+      if (!ReadParam(m, iter, &offset))
+        return false;
+      uint64_t length;
+      if (!ReadParam(m, iter, &length))
+        return false;
+      base::Time expected_modification_time;
+      if (!ReadParam(m, iter, &expected_modification_time))
+        return false;
+      r->SetToFileRange(std::move(file), file_path, offset, length,
+                        expected_modification_time);
       return true;
     }
     case storage::DataElement::TYPE_FILE_FILESYSTEM: {

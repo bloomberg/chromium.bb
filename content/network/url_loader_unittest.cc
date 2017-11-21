@@ -2,26 +2,37 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
+#include <limits>
 #include <list>
 #include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/files/file.h"
+#include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
+#include "build/build_config.h"
 #include "content/network/network_context.h"
 #include "content/network/url_loader.h"
 #include "content/public/common/appcache_info.h"
 #include "content/public/common/content_paths.h"
+#include "content/public/common/resource_request.h"
+#include "content/public/common/resource_request_body.h"
 #include "content/public/test/controllable_http_response.h"
 #include "content/public/test/test_url_loader_client.h"
 #include "mojo/public/c/system/data_pipe.h"
 #include "mojo/public/cpp/system/wait.h"
 #include "net/base/io_buffer.h"
 #include "net/base/mime_sniffer.h"
+#include "net/base/net_errors.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/url_request/url_request_failed_job.h"
@@ -32,6 +43,7 @@
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace content {
 
@@ -177,7 +189,8 @@ class URLLoaderTest : public testing::Test {
     DCHECK(!ran_);
     mojom::URLLoaderPtr loader;
 
-    ResourceRequest request = CreateResourceRequest("GET", resource_type_, url);
+    ResourceRequest request = CreateResourceRequest(
+        !request_body_ ? "GET" : "POST", resource_type_, url);
     uint32_t options = mojom::kURLLoadOptionNone;
     if (send_ssl_)
       options |= mojom::kURLLoadOptionSendSSLInfo;
@@ -185,6 +198,9 @@ class URLLoaderTest : public testing::Test {
       options |= mojom::kURLLoadOptionSniffMimeType;
     if (add_custom_accept_header_)
       request.headers.SetHeader("accept", "custom/*");
+
+    if (request_body_)
+      request.request_body = request_body_;
 
     URLLoader loader_impl(context(), mojo::MakeRequest(&loader), options,
                           request, false, client_.CreateInterfacePtr(),
@@ -208,9 +224,7 @@ class URLLoaderTest : public testing::Test {
   }
 
   void LoadAndCompareFile(const std::string& path) {
-    base::FilePath file;
-    PathService::Get(content::DIR_TEST_DATA, &file);
-    file = file.AppendASCII(path);
+    base::FilePath file = GetTestFilePath(path);
 
     std::string expected;
     if (!base::ReadFileToString(file, &expected)) {
@@ -276,6 +290,23 @@ class URLLoaderTest : public testing::Test {
   TestURLLoaderClient* client() { return &client_; }
   void DestroyContext() { context_.reset(); }
 
+  // Returns the path of the requested file in the test data directory.
+  base::FilePath GetTestFilePath(const std::string& file_name) {
+    base::FilePath file_path;
+    PathService::Get(DIR_TEST_DATA, &file_path);
+    return file_path.AppendASCII(file_name);
+  }
+
+  base::File OpenFileForUpload(const base::FilePath& file_path) {
+    int open_flags = base::File::FLAG_OPEN | base::File::FLAG_READ;
+#if defined(OS_WIN)
+    open_flags |= base::File::FLAG_ASYNC;
+#endif  //  defined(OS_WIN)
+    base::File file(file_path, open_flags);
+    EXPECT_TRUE(file.IsValid());
+    return file;
+  }
+
   // Configure how Load() works.
   void set_sniff() {
     DCHECK(!ran_);
@@ -292,6 +323,9 @@ class URLLoaderTest : public testing::Test {
   void set_resource_type(ResourceType type) {
     DCHECK(!ran_);
     resource_type_ = type;
+  }
+  void set_request_body(scoped_refptr<ResourceRequestBody> request_body) {
+    request_body_ = request_body;
   }
 
   // Convenience methods after calling Load();
@@ -378,10 +412,14 @@ class URLLoaderTest : public testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   net::EmbeddedTestServer test_server_;
   std::unique_ptr<NetworkContext> context_;
+
+  // Options applied the created request in Load().
   bool sniff_ = false;
   bool send_ssl_ = false;
   bool add_custom_accept_header_ = false;
   ResourceType resource_type_ = RESOURCE_TYPE_MAIN_FRAME;
+  scoped_refptr<ResourceRequestBody> request_body_;
+
   // Used to ensure that methods are called either before or after a request is
   // made, since the test fixture is meant to be used only once.
   bool ran_ = false;
@@ -905,6 +943,113 @@ TEST_F(URLLoaderTest, DoNotOverrideAcceptHeader) {
   auto it = sent_request().headers.find("accept");
   ASSERT_NE(it, sent_request().headers.end());
   EXPECT_EQ(it->second, "custom/*");
+}
+
+TEST_F(URLLoaderTest, UploadBytes) {
+  const std::string kRequestBody = "Request Body";
+
+  scoped_refptr<ResourceRequestBody> request_body(new ResourceRequestBody());
+  request_body->AppendBytes(kRequestBody.c_str(), kRequestBody.length());
+  set_request_body(std::move(request_body));
+
+  std::string response_body;
+  EXPECT_EQ(net::OK, Load(test_server()->GetURL("/echo"), &response_body));
+  EXPECT_EQ(kRequestBody, response_body);
+}
+
+TEST_F(URLLoaderTest, UploadFile) {
+  base::FilePath file_path = GetTestFilePath("simple_page.html");
+
+  std::string expected_body;
+  ASSERT_TRUE(base::ReadFileToString(file_path, &expected_body))
+      << "File not found: " << file_path.value();
+
+  scoped_refptr<ResourceRequestBody> request_body(new ResourceRequestBody());
+  request_body->AppendFileRange(
+      file_path, 0, std::numeric_limits<uint64_t>::max(), base::Time());
+  set_request_body(std::move(request_body));
+
+  std::string response_body;
+  EXPECT_EQ(net::OK, Load(test_server()->GetURL("/echo"), &response_body));
+  EXPECT_EQ(expected_body, response_body);
+}
+
+TEST_F(URLLoaderTest, UploadFileWithRange) {
+  base::FilePath file_path = GetTestFilePath("simple_page.html");
+
+  std::string expected_body;
+  ASSERT_TRUE(base::ReadFileToString(file_path, &expected_body))
+      << "File not found: " << file_path.value();
+  expected_body = expected_body.substr(1, expected_body.size() - 2);
+
+  scoped_refptr<ResourceRequestBody> request_body(new ResourceRequestBody());
+  request_body->AppendFileRange(file_path, 1, expected_body.size(),
+                                base::Time());
+  set_request_body(std::move(request_body));
+
+  std::string response_body;
+  EXPECT_EQ(net::OK, Load(test_server()->GetURL("/echo"), &response_body));
+  EXPECT_EQ(expected_body, response_body);
+}
+
+TEST_F(URLLoaderTest, UploadRawFile) {
+  base::FilePath file_path = GetTestFilePath("simple_page.html");
+
+  std::string expected_body;
+  ASSERT_TRUE(base::ReadFileToString(file_path, &expected_body))
+      << "File not found: " << file_path.value();
+
+  scoped_refptr<ResourceRequestBody> request_body(new ResourceRequestBody());
+  request_body->AppendRawFileRange(
+      OpenFileForUpload(file_path), GetTestFilePath("should_be_ignored"), 0,
+      std::numeric_limits<uint64_t>::max(), base::Time());
+  set_request_body(std::move(request_body));
+
+  std::string response_body;
+  EXPECT_EQ(net::OK, Load(test_server()->GetURL("/echo"), &response_body));
+  EXPECT_EQ(expected_body, response_body);
+}
+
+TEST_F(URLLoaderTest, UploadRawFileWithRange) {
+  base::FilePath file_path = GetTestFilePath("simple_page.html");
+
+  std::string expected_body;
+  ASSERT_TRUE(base::ReadFileToString(file_path, &expected_body))
+      << "File not found: " << file_path.value();
+  expected_body = expected_body.substr(1, expected_body.size() - 2);
+
+  scoped_refptr<ResourceRequestBody> request_body(new ResourceRequestBody());
+  request_body->AppendRawFileRange(OpenFileForUpload(file_path),
+                                   GetTestFilePath("should_be_ignored"), 1,
+                                   expected_body.size(), base::Time());
+  set_request_body(std::move(request_body));
+
+  std::string response_body;
+  EXPECT_EQ(net::OK, Load(test_server()->GetURL("/echo"), &response_body));
+  EXPECT_EQ(expected_body, response_body);
+}
+
+// TODO(mmenke): Test using a data pipe to upload data.
+
+TEST_F(URLLoaderTest, UploadDoubleRawFile) {
+  base::FilePath file_path = GetTestFilePath("simple_page.html");
+
+  std::string expected_body;
+  ASSERT_TRUE(base::ReadFileToString(file_path, &expected_body))
+      << "File not found: " << file_path.value();
+
+  scoped_refptr<ResourceRequestBody> request_body(new ResourceRequestBody());
+  request_body->AppendRawFileRange(
+      OpenFileForUpload(file_path), GetTestFilePath("should_be_ignored"), 0,
+      std::numeric_limits<uint64_t>::max(), base::Time());
+  request_body->AppendRawFileRange(
+      OpenFileForUpload(file_path), GetTestFilePath("should_be_ignored"), 0,
+      std::numeric_limits<uint64_t>::max(), base::Time());
+  set_request_body(std::move(request_body));
+
+  std::string response_body;
+  EXPECT_EQ(net::OK, Load(test_server()->GetURL("/echo"), &response_body));
+  EXPECT_EQ(expected_body + expected_body, response_body);
 }
 
 }  // namespace content

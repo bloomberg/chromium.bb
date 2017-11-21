@@ -282,6 +282,7 @@ void ViewBlobInternalsJob::GenerateHTMLForBlobData(
       case DataElement::TYPE_DATA_PIPE:
         AddHTMLListItem(kType, "data pipe", out);
         break;
+      case DataElement::TYPE_RAW_FILE:
       case DataElement::TYPE_UNKNOWN:
         NOTREACHED();
         break;

@@ -453,6 +453,7 @@ void WriteResourceRequestBody(const ResourceRequestBody& request_body,
         WriteInteger(blink::WebHTTPBody::Element::kTypeBlob, obj);
         WriteStdString(element.blob_uuid(), obj);
         break;
+      case ResourceRequestBody::Element::TYPE_RAW_FILE:
       case ResourceRequestBody::Element::TYPE_BYTES_DESCRIPTION:
       case ResourceRequestBody::Element::TYPE_DISK_CACHE_ENTRY:
       default:
@@ -744,6 +745,7 @@ void WriteResourceRequestBody(const ResourceRequestBody& request_body,
       case ResourceRequestBody::Element::TYPE_BLOB:
         data_element->set_blob_uuid(element.blob_uuid());
         break;
+      case ResourceRequestBody::Element::TYPE_RAW_FILE:
       case ResourceRequestBody::Element::TYPE_BYTES_DESCRIPTION:
       case ResourceRequestBody::Element::TYPE_DISK_CACHE_ENTRY:
       case ResourceRequestBody::Element::TYPE_DATA_PIPE:

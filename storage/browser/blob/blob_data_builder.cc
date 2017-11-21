@@ -10,6 +10,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/files/file.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/numerics/safe_math.h"
 #include "base/strings/string_number_conversions.h"
@@ -83,6 +84,7 @@ void BlobDataBuilder::AppendIPCDataElement(const DataElement& ipc_data) {
       // BlobStorageContext.
       AppendBlob(ipc_data.blob_uuid(), ipc_data.offset(), ipc_data.length());
       break;
+    case DataElement::TYPE_RAW_FILE:
     case DataElement::TYPE_BYTES_DESCRIPTION:
     case DataElement::TYPE_UNKNOWN:
     case DataElement::TYPE_DISK_CACHE_ENTRY:  // This type can't be sent by IPC.
