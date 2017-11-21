@@ -312,7 +312,7 @@ TEST_F(SimpleIndexTest, Has) {
   index()->Insert(kHash1);
   EXPECT_TRUE(index()->Has(kHash1));
   index()->Remove(kHash1);
-  // TODO(rdsmith): Maybe return false on explicitly removed entries?
+  // TODO(morlovich): Maybe return false on explicitly removed entries?
   EXPECT_TRUE(index()->Has(kHash1));
 
   ReturnIndexFile();
@@ -587,7 +587,7 @@ TEST_F(SimpleIndexTest, BasicEviction) {
   EXPECT_TRUE(index()->Has(hashes_.at<3>()));
 
   // Trigger an eviction, and make sure the right things are tossed.
-  // TODO(rdsmith): This is dependent on the innards of the implementation
+  // TODO(morlovich): This is dependent on the innards of the implementation
   // as to at exactly what point we trigger eviction. Not sure how to fix
   // that.
   index()->UpdateEntrySize(hashes_.at<3>(), 475u);
@@ -621,7 +621,7 @@ TEST_F(SimpleIndexTest, EvictByLRU) {
   EXPECT_TRUE(index()->Has(hashes_.at<3>()));
 
   // Trigger an eviction, and make sure the right things are tossed.
-  // TODO(rdsmith): This is dependent on the innards of the implementation
+  // TODO(morlovich): This is dependent on the innards of the implementation
   // as to at exactly what point we trigger eviction. Not sure how to fix
   // that.
   index()->UpdateEntrySize(hashes_.at<3>(), 40000u);
@@ -652,7 +652,7 @@ TEST_F(SimpleIndexTest, EvictBySize) {
   EXPECT_TRUE(index()->Has(hashes_.at<3>()));
 
   // Trigger an eviction, and make sure the right things are tossed.
-  // TODO(rdsmith): This is dependent on the innards of the implementation
+  // TODO(morlovich): This is dependent on the innards of the implementation
   // as to at exactly what point we trigger eviction. Not sure how to fix
   // that.
   index()->UpdateEntrySize(hashes_.at<3>(), 40000u);
@@ -685,7 +685,7 @@ TEST_F(SimpleIndexTest, EvictBySize2) {
   EXPECT_TRUE(index()->Has(hashes_.at<3>()));
 
   // Trigger an eviction, and make sure the right things are tossed.
-  // TODO(rdsmith): This is dependent on the innards of the implementation
+  // TODO(morlovich): This is dependent on the innards of the implementation
   // as to at exactly what point we trigger eviction. Not sure how to fix
   // that.
   index()->UpdateEntrySize(hashes_.at<3>(), 40000u);

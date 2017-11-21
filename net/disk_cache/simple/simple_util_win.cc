@@ -24,7 +24,7 @@ bool SimpleCacheDeleteFile(const base::FilePath& path) {
   // Why a random name? Because if the name was derived from our original name,
   // then churn on a particular cache entry could cause flakey behaviour.
 
-  // TODO(gavinp): Ensure these "todelete_" files are cleaned up on periodic
+  // TODO(morlovich): Ensure these "todelete_" files are cleaned up on periodic
   // directory sweeps.
   const base::FilePath rename_target =
       path.DirName().AppendASCII(base::StringPrintf("todelete_%016" PRIx64,

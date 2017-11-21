@@ -3258,8 +3258,9 @@ TEST_F(DiskCacheBackendTest, MemoryOnlyBackendEviction) {
   BackendEviction();
 }
 
-// TODO(gavinp): Enable BackendEviction test for simple cache after performance
-// problems are addressed. See crbug.com/588184 for more information.
+// TODO(morlovich): Enable BackendEviction test for simple cache after
+// performance problems are addressed. See crbug.com/588184 for more
+// information.
 
 // This overly specific looking test is a regression test aimed at
 // crbug.com/589186.

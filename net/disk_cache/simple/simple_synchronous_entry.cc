@@ -969,9 +969,8 @@ bool SimpleSynchronousEntry::OpenFiles(SimpleEntryStat* out_entry_stat) {
   for (int i = 0; i < kSimpleEntryNormalFileCount; ++i) {
     File::Error error;
     if (!MaybeOpenFile(i, &error)) {
-      // TODO(juliatuttle,gavinp): Remove one each of these triplets of
-      // histograms. We can calculate the third as the sum or difference of the
-      // other two.
+      // TODO(morlovich): Remove one each of these triplets of histograms. We
+      // can calculate the third as the sum or difference of the other two.
       RecordSyncOpenResult(cache_type_, OPEN_ENTRY_PLATFORM_FILE_ERROR,
                            had_index_);
       SIMPLE_CACHE_UMA(ENUMERATION,
@@ -1052,9 +1051,8 @@ bool SimpleSynchronousEntry::CreateFiles(SimpleEntryStat* out_entry_stat) {
   for (int i = 0; i < kSimpleEntryNormalFileCount; ++i) {
     File::Error error;
     if (!MaybeCreateFile(i, FILE_NOT_REQUIRED, &error)) {
-      // TODO(juliatuttle,gavinp): Remove one each of these triplets of
-      // histograms. We can calculate the third as the sum or difference of the
-      // other two.
+      // TODO(morlovich): Remove one each of these triplets of histograms. We
+      // can calculate the third as the sum or difference of the other two.
       RecordSyncCreateResult(CREATE_ENTRY_PLATFORM_FILE_ERROR, had_index_);
       SIMPLE_CACHE_UMA(ENUMERATION,
                        "SyncCreatePlatformFileError", cache_type_,
@@ -1105,12 +1103,6 @@ void SimpleSynchronousEntry::CloseFiles() {
 
 bool SimpleSynchronousEntry::CheckHeaderAndKey(base::File* file,
                                                int file_index) {
-  // TODO(gavinp): Frequently we are doing this at the same time as we read from
-  // the beginning of an entry. It might improve performance to make a single
-  // read(2) call rather than two separate reads. On the other hand, it would
-  // mean an extra memory to memory copy. In the case where we are opening an
-  // entry without a key, the kInitialHeaderRead setting means that we are
-  // actually already reading stream 1 data here, and tossing it out.
   std::vector<char> header_data(key_.empty() ? kInitialHeaderRead
                                              : GetHeaderSize(key_.size()));
   int bytes_read = file->Read(0, header_data.data(), header_data.size());
@@ -1712,7 +1704,7 @@ bool SimpleSynchronousEntry::ReadSparseRange(base::File* sparse_file,
       return false;
     }
   }
-  // TODO(juliatuttle): Incremental crc32 calculation?
+  // TODO(morlovich): Incremental crc32 calculation?
 
   return true;
 }

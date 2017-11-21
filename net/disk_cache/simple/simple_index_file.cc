@@ -311,9 +311,6 @@ void SimpleIndexFile::SyncWriteToDisk(net::CacheType cache_type,
   }
 
   // Atomically rename the temporary index file to become the real one.
-  // TODO(gavinp): DCHECK when not shutting down, since that is very strange.
-  // The rename failing during shutdown is legal because it's legal to begin
-  // erasing a cache as soon as the destructor has been called.
   if (!base::ReplaceFile(temp_index_filename, index_filename, NULL))
     return;
 
