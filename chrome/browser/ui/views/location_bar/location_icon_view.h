@@ -45,8 +45,8 @@ class LocationIconView : public IconLabelBubbleView {
   // any necessary transition to this state should be animated.
   void SetTextVisibility(bool should_show, bool should_animate);
 
-  // Updates the ink drop mode.
-  void UpdateInkDropMode();
+  // Updates the icon's ink drop mode and focusable behavior.
+  void Update();
 
  protected:
   // IconLabelBubbleView:

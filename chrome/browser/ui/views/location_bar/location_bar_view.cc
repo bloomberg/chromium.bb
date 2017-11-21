@@ -693,7 +693,7 @@ void LocationBarView::RefreshLocationIcon() {
                            : GetSecureTextColor(security_level);
   location_icon_view_->SetImage(gfx::CreateVectorIcon(
       omnibox_view_->GetVectorIcon(), kIconWidth, icon_color));
-  location_icon_view_->UpdateInkDropMode();
+  location_icon_view_->Update();
 }
 
 bool LocationBarView::RefreshContentSettingViews() {
