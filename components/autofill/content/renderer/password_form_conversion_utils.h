@@ -33,6 +33,15 @@ namespace autofill {
 
 struct PasswordForm;
 
+enum UsernameDetectionMethod {
+  NO_USERNAME_DETECTED,
+  BASE_HEURISTIC,
+  HTML_BASED_CLASSIFIER,
+  AUTOCOMPLETE_ATTRIBUTE,
+  SERVER_SIDE_PREDICTION,
+  USERNAME_DETECTION_METHOD_COUNT
+};
+
 // The caller of this function is responsible for deleting the returned object.
 re2::RE2* CreateMatcher(void* instance, const char* pattern);
 

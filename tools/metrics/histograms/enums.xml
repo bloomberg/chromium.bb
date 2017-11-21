@@ -41142,6 +41142,14 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="0" label="WiFi Scan"/>
 </enum>
 
+<enum name="UsernameDetectionMethod">
+  <int value="0" label="No username detected"/>
+  <int value="1" label="Base heuristic"/>
+  <int value="2" label="HTML based classifier"/>
+  <int value="3" label="'autocomplete' attribute"/>
+  <int value="4" label="Server-side prediction"/>
+</enum>
+
 <enum name="UserPodsDisplay">
   <int value="0" label="Enabled by local settings"/>
   <int value="1" label="Enabled by domain policy"/>

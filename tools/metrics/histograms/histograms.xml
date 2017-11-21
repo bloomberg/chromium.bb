@@ -58980,6 +58980,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PasswordManager.UsernameDetectionMethod"
+    enum="UsernameDetectionMethod">
+  <owner>kolos@chromium.org</owner>
+  <summary>
+    Measures what method was used for username field detection in the renderer
+    code. The metric may be recorded several times for page visit because it is
+    recorded at every PasswordForm creation. If a site changes HTML attributes
+    of fields or server-side predictions is received, different values can be
+    recorded for the same form. If an outcome of HTML classifier or a
+    server-side prediction coincides with the outcome of base heuristic, the
+    metric points to base heuristic method.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.UserStoredPasswordWithInvalidSSLCert"
     enum="Boolean">
   <obsolete>

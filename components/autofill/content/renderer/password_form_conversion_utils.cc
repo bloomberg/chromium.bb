@@ -43,6 +43,7 @@ using blink::WebLocalFrame;
 using blink::WebString;
 
 namespace autofill {
+
 namespace {
 
 // PasswordForms can be constructed for both WebFormElements and for collections
@@ -439,6 +440,8 @@ bool GetPasswordForm(
     const FormsPredictionsMap* form_predictions,
     UsernameDetectorCache* username_detector_cache) {
   WebInputElement username_element;
+  UsernameDetectionMethod username_detection_method =
+      UsernameDetectionMethod::NO_USERNAME_DETECTED;
   password_form->username_marked_by_site = false;
 
   std::vector<WebInputElement> passwords;
@@ -457,6 +460,18 @@ bool GetPasswordForm(
   if (form_predictions) {
     FindPredictedElements(form, password_form->form_data, *form_predictions,
                           &predicted_elements);
+    WebInputElement predicted_username_element;
+    bool map_has_username_prediction = MapContainsPrediction(
+        predicted_elements, PREDICTION_USERNAME, &predicted_username_element);
+
+    // Let server predictions override the selection of the username field. This
+    // allows instant adjusting without changing Chromium code.
+    if (map_has_username_prediction) {
+      username_element = predicted_username_element;
+      password_form->was_parsed_using_autofill_predictions = true;
+      username_detection_method =
+          UsernameDetectionMethod::SERVER_SIDE_PREDICTION;
+    }
   }
 
   bool found_password_with_user_input = false;
@@ -581,8 +596,14 @@ bool GetPasswordForm(
           // we might have made before). Furthermore, drop all other possible
           // usernames we have accrued so far: they come from fields not marked
           // with the autocomplete attribute, making them unlikely alternatives.
-          username_element = *input_element;
-          password_form->username_marked_by_site = true;
+
+          // Don't override the server-side prediction if any.
+          if (username_element.IsNull()) {
+            username_element = *input_element;
+            password_form->username_marked_by_site = true;
+            username_detection_method =
+                UsernameDetectionMethod::AUTOCOMPLETE_ATTRIBUTE;
+          }
         }
       } else {
         if (password_form->username_marked_by_site) {
@@ -611,6 +632,7 @@ bool GetPasswordForm(
     passwords = passwords_without_heuristics;
     last_text_input_before_password = last_text_input_without_heuristics;
   }
+  DCHECK_EQ(passwords.size(), last_text_input_before_password.size());
 
   // |passwords| must be non-empty. Just in case the heuristics above have a
   // bug, return now.
@@ -626,6 +648,9 @@ bool GetPasswordForm(
       GetUsernameFieldBasedOnHtmlAttributes(
           all_possible_usernames, password_form->form_data, &username_element,
           username_detector_cache);
+      if (!username_element.IsNull())
+        username_detection_method =
+            UsernameDetectionMethod::HTML_BASED_CLASSIFIER;
     }
   }
 
@@ -662,28 +687,31 @@ bool GetPasswordForm(
   }
 
   // Base heuristic for username detection.
-  DCHECK_EQ(passwords.size(), last_text_input_before_password.size());
+  WebInputElement base_heuristic_prediction;
+  if (!password.IsNull())
+    base_heuristic_prediction = last_text_input_before_password[password];
+  if (base_heuristic_prediction.IsNull() && !new_password.IsNull())
+    base_heuristic_prediction = last_text_input_before_password[new_password];
+
   if (username_element.IsNull()) {
-    if (!password.IsNull())
-      username_element = last_text_input_before_password[password];
-    if (username_element.IsNull() && !new_password.IsNull())
-      username_element = last_text_input_before_password[new_password];
+    username_element = base_heuristic_prediction;
+    if (!base_heuristic_prediction.IsNull())
+      username_detection_method = UsernameDetectionMethod::BASE_HEURISTIC;
+  } else if (base_heuristic_prediction == username_element &&
+             username_detection_method !=
+                 UsernameDetectionMethod::AUTOCOMPLETE_ATTRIBUTE) {
+    // TODO(crbug.com/786404): when the bug is fixed, remove this block and
+    // calculate |base_heuristic_prediction| only if |username_element.IsNull()|
+    // This block was added to measure the impact of server-side predictions and
+    // HTML based classifier compared to "old classifiers" (the based heuristic
+    // and 'autocomplete' attribute).
+    username_detection_method = UsernameDetectionMethod::BASE_HEURISTIC;
   }
+  UMA_HISTOGRAM_ENUMERATION(
+      "PasswordManager.UsernameDetectionMethod", username_detection_method,
+      UsernameDetectionMethod::USERNAME_DETECTION_METHOD_COUNT);
+
   password_form->layout = SequenceToLayout(layout_sequence);
-
-  WebInputElement predicted_username_element;
-  bool map_has_username_prediction = MapContainsPrediction(
-      predicted_elements, PREDICTION_USERNAME, &predicted_username_element);
-
-  // Let server predictions override the selection of the username field. This
-  // allows instant adjusting without changing Chromium code.
-  auto username_element_iterator = predicted_elements.find(username_element);
-  if (map_has_username_prediction &&
-      (username_element_iterator == predicted_elements.end() ||
-       username_element_iterator->second != PREDICTION_USERNAME)) {
-    username_element = predicted_username_element;
-    password_form->was_parsed_using_autofill_predictions = true;
-  }
 
   if (!username_element.IsNull()) {
     password_form->username_element =
