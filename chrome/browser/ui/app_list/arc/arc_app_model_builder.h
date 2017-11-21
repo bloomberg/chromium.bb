@@ -37,11 +37,6 @@ class ArcAppModelBuilder : public AppListModelBuilder,
   void OnAppNameUpdated(const std::string& app_id,
                         const std::string& name) override;
 
-  // AppListItemListObserver.
-  void OnListItemMoved(size_t from_index,
-                       size_t to_index,
-                       app_list::AppListItem* item) override;
-
   std::unique_ptr<ArcAppItem> CreateApp(const std::string& app_id,
                                         const ArcAppListPrefs::AppInfo& info);
 

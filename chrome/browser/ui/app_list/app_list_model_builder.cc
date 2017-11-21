@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/app_list/app_list_model_builder.h"
 
 #include <utility>
+#include <vector>
 
 #include "ash/app_list/model/app_list_item.h"
 #include "ash/app_list/model/app_list_model.h"
@@ -17,8 +18,6 @@ AppListModelBuilder::AppListModelBuilder(AppListControllerDelegate* controller,
 }
 
 AppListModelBuilder::~AppListModelBuilder() {
-  if (!service_)
-    model_->top_level_item_list()->RemoveObserver(this);
 }
 
 void AppListModelBuilder::InitializeWithService(
@@ -36,7 +35,6 @@ void AppListModelBuilder::InitializeWithProfile(Profile* profile,
                                                 app_list::AppListModel* model) {
   DCHECK(!service_ && !profile_);
   model_ = model;
-  model_->top_level_item_list()->AddObserver(this);
   profile_ = profile;
 
   BuildModel();
