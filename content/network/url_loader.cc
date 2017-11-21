@@ -334,6 +334,13 @@ URLLoader::URLLoader(NetworkContext* context,
 
   url_request_->set_initiator(request.request_initiator);
 
+  // TODO(qinmin): network service shouldn't know about resource type, need
+  // to introduce another field to set this.
+  if (request.resource_type == RESOURCE_TYPE_MAIN_FRAME) {
+    url_request_->set_first_party_url_policy(
+        net::URLRequest::UPDATE_FIRST_PARTY_URL_ON_REDIRECT);
+  }
+
   int load_flags = BuildLoadFlagsForRequest(request, false);
   url_request_->SetLoadFlags(load_flags);
   if (report_raw_headers_) {
