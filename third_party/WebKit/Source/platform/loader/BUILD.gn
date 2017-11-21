@@ -167,6 +167,7 @@ jumbo_source_set("test_support") {
   public_deps = [
     "//net",
     "//skia",
+    "//third_party/WebKit/Source/platform",
     "//third_party/WebKit/Source/platform/blob:generator",
     "//third_party/icu",
   ]
