@@ -72,6 +72,9 @@ public class ChromeHomePromoDialog extends PromoDialog {
     /** Whether Chrome Home should be enabled or disabled after the promo is dismissed. */
     private boolean mChromeHomeShouldBeEnabled;
 
+    /** Whether Chrome Home is enabled when the promo is shown. */
+    private boolean mChromeHomeEnabledOnShow;
+
     /**
      * Default constructor.
      * @param activity The {@link Activity} showing the promo.
@@ -135,6 +138,8 @@ public class ChromeHomePromoDialog extends PromoDialog {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        mChromeHomeEnabledOnShow = FeatureUtilities.isChromeHomeEnabled();
+
         if (sTestObserver != null) sTestObserver.onDialogShown(this);
     }
 
@@ -187,6 +192,10 @@ public class ChromeHomePromoDialog extends PromoDialog {
 
     @Override
     public void onDismiss(DialogInterface dialogInterface) {
+        // If the state of Chrome Home changed while this dialog was opened, do nothing. This can
+        // happen in multi-window if this dialog is shown in both windows.
+        if (mChromeHomeEnabledOnShow != FeatureUtilities.isChromeHomeEnabled()) return;
+
         String histogramName = null;
         switch (mShowReason) {
             case ShowReason.MENU:
