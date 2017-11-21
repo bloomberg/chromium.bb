@@ -123,8 +123,8 @@ DictionaryValueUpdate::SetDictionaryWithoutPathExpansion(
     base::StringPiece path,
     std::unique_ptr<base::DictionaryValue> in_value) {
   RecordKey(path);
-  base::DictionaryValue* dictionary_value =
-      value_->SetDictionaryWithoutPathExpansion(path, std::move(in_value));
+  auto* dictionary_value = static_cast<base::DictionaryValue*>(
+      value_->SetWithoutPathExpansion(path, std::move(in_value)));
 
   std::vector<std::string> full_path = path_;
   full_path.push_back(path.as_string());

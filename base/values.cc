@@ -709,24 +709,25 @@ Value* DictionaryValue::Set(StringPiece path, std::unique_ptr<Value> in_value) {
   DCHECK(in_value);
 
   StringPiece current_path(path);
-  DictionaryValue* current_dictionary = this;
+  Value* current_dictionary = this;
   for (size_t delimiter_position = current_path.find('.');
        delimiter_position != StringPiece::npos;
        delimiter_position = current_path.find('.')) {
     // Assume that we're indexing into a dictionary.
     StringPiece key = current_path.substr(0, delimiter_position);
-    DictionaryValue* child_dictionary = nullptr;
-    if (!current_dictionary->GetDictionary(key, &child_dictionary)) {
-      child_dictionary = current_dictionary->SetDictionaryWithoutPathExpansion(
-          key, std::make_unique<DictionaryValue>());
+    Value* child_dictionary =
+        current_dictionary->FindKeyOfType(key, Type::DICTIONARY);
+    if (!child_dictionary) {
+      child_dictionary =
+          current_dictionary->SetKey(key, Value(Type::DICTIONARY));
     }
 
     current_dictionary = child_dictionary;
     current_path = current_path.substr(delimiter_position + 1);
   }
 
-  return current_dictionary->SetWithoutPathExpansion(current_path,
-                                                     std::move(in_value));
+  return static_cast<DictionaryValue*>(current_dictionary)
+      ->SetWithoutPathExpansion(current_path, std::move(in_value));
 }
 
 Value* DictionaryValue::SetBoolean(StringPiece path, bool in_value) {
@@ -771,13 +772,6 @@ Value* DictionaryValue::SetWithoutPathExpansion(
     result.first->second = std::move(in_value);
   }
   return result.first->second.get();
-}
-
-DictionaryValue* DictionaryValue::SetDictionaryWithoutPathExpansion(
-    StringPiece path,
-    std::unique_ptr<DictionaryValue> in_value) {
-  return static_cast<DictionaryValue*>(
-      SetWithoutPathExpansion(path, std::move(in_value)));
 }
 
 bool DictionaryValue::Get(StringPiece path,

@@ -67,21 +67,26 @@ std::unique_ptr<base::DictionaryValue> FilterPrefsImpl(
 
 }  // namespace
 
-void SetValue(base::DictionaryValue* dictionary_value,
+void SetValue(base::Value* dictionary_value,
               const std::vector<base::StringPiece>& path_components,
               std::unique_ptr<base::Value> value) {
   for (size_t i = 0; i < path_components.size() - 1; ++i) {
-    if (!dictionary_value->GetDictionaryWithoutPathExpansion(
-            path_components[i], &dictionary_value)) {
-      dictionary_value = dictionary_value->SetDictionaryWithoutPathExpansion(
-          path_components[i], std::make_unique<base::DictionaryValue>());
+    base::Value* found = dictionary_value->FindKeyOfType(
+        path_components[i], base::Value::Type::DICTIONARY);
+    if (found) {
+      dictionary_value = found;
+    } else {
+      dictionary_value = dictionary_value->SetKey(
+          path_components[i], base::Value(base::Value::Type::DICTIONARY));
     }
   }
   const auto& key = path_components.back();
-  if (value)
-    dictionary_value->SetWithoutPathExpansion(key, std::move(value));
-  else
-    dictionary_value->RemoveWithoutPathExpansion(key, nullptr);
+  if (value) {
+    dictionary_value->SetKey(key,
+                             base::Value::FromUniquePtrValue(std::move(value)));
+  } else {
+    dictionary_value->RemoveKey(key);
+  }
 }
 
 std::unique_ptr<base::DictionaryValue> FilterPrefs(
