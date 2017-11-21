@@ -478,10 +478,15 @@ v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
     case ScriptSourceLocationType::kInlineInsideDocumentWrite:
       no_handler_reason = v8::ScriptCompiler::kNoCacheBecauseInDocumentWrite;
       break;
+    // TODO(leszeks): Possibly differentiate between the other kinds of script
+    // origin also.
     default:
-      // TODO(leszeks): Possibly differentiate between the other kinds of script
-      // origin also.
-      no_handler_reason = v8::ScriptCompiler::kNoCacheBecauseNoResource;
+      if (resource) {
+        no_handler_reason =
+            v8::ScriptCompiler::kNoCacheBecauseResourceWithNoCacheHandler;
+      } else {
+        no_handler_reason = v8::ScriptCompiler::kNoCacheBecauseNoResource;
+      }
       break;
   }
 
