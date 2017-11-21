@@ -251,14 +251,13 @@ void AddOneOfEveryQuadType(viz::RenderPass* to_pass,
         gfx::ColorSpace::CreateREC601());
     resource_provider->AllocateForTesting(plane_resources[i]);
   }
-  auto color_space = viz::YUVVideoDrawQuad::REC_601;
 
   auto* yuv_quad = to_pass->CreateAndAppendDrawQuad<viz::YUVVideoDrawQuad>();
   yuv_quad->SetNew(shared_state2, rect, visible_rect, needs_blending,
                    gfx::RectF(.0f, .0f, 100.0f, 100.0f),
                    gfx::RectF(.0f, .0f, 50.0f, 50.0f), gfx::Size(100, 100),
                    gfx::Size(50, 50), plane_resources[0], plane_resources[1],
-                   plane_resources[2], plane_resources[3], color_space,
+                   plane_resources[2], plane_resources[3],
                    gfx::ColorSpace::CreateREC601(), 0.0, 1.0, 8);
 }
 
@@ -446,18 +445,14 @@ void AddOneOfEveryQuadTypeInDisplayResourceProvider(
                     mapped_resource4, gfx::RectF(0, 0, 100, 100),
                     gfx::Size(100, 100), false, false, false);
 
-  viz::YUVVideoDrawQuad::ColorSpace color_space =
-      viz::YUVVideoDrawQuad::REC_601;
-
   viz::YUVVideoDrawQuad* yuv_quad =
       to_pass->CreateAndAppendDrawQuad<viz::YUVVideoDrawQuad>();
-  yuv_quad->SetNew(shared_state2, rect, visible_rect, needs_blending,
-                   gfx::RectF(.0f, .0f, 100.0f, 100.0f),
-                   gfx::RectF(.0f, .0f, 50.0f, 50.0f), gfx::Size(100, 100),
-                   gfx::Size(50, 50), mapped_plane_resources[0],
-                   mapped_plane_resources[1], mapped_plane_resources[2],
-                   mapped_plane_resources[3], color_space,
-                   gfx::ColorSpace::CreateREC601(), 0.0, 1.0, 8);
+  yuv_quad->SetNew(
+      shared_state2, rect, visible_rect, needs_blending,
+      gfx::RectF(.0f, .0f, 100.0f, 100.0f), gfx::RectF(.0f, .0f, 50.0f, 50.0f),
+      gfx::Size(100, 100), gfx::Size(50, 50), mapped_plane_resources[0],
+      mapped_plane_resources[1], mapped_plane_resources[2],
+      mapped_plane_resources[3], gfx::ColorSpace::CreateREC601(), 0.0, 1.0, 8);
 }
 
 }  // namespace cc

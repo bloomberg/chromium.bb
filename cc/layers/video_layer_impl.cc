@@ -216,17 +216,6 @@ void VideoLayerImpl::AppendQuads(viz::RenderPass* render_pass,
       break;
     }
     case VideoFrameExternalResources::YUV_RESOURCE: {
-      auto color_space = viz::YUVVideoDrawQuad::REC_601;
-      int videoframe_color_space;
-      if (frame_->metadata()->GetInteger(media::VideoFrameMetadata::COLOR_SPACE,
-                                         &videoframe_color_space)) {
-        if (videoframe_color_space == media::COLOR_SPACE_JPEG) {
-          color_space = viz::YUVVideoDrawQuad::JPEG;
-        } else if (videoframe_color_space == media::COLOR_SPACE_HD_REC709) {
-          color_space = viz::YUVVideoDrawQuad::REC_709;
-        }
-      }
-
       const gfx::Size ya_tex_size = coded_size;
 
       int u_width = media::VideoFrame::Columns(
@@ -272,7 +261,7 @@ void VideoLayerImpl::AppendQuads(viz::RenderPass* render_pass,
           frame_resources_[0].id, frame_resources_[1].id,
           frame_resources_.size() > 2 ? frame_resources_[2].id
                                       : frame_resources_[1].id,
-          frame_resources_.size() > 3 ? frame_resources_[3].id : 0, color_space,
+          frame_resources_.size() > 3 ? frame_resources_[3].id : 0,
           frame_->ColorSpace(), frame_resource_offset_,
           frame_resource_multiplier_, frame_bits_per_channel_);
       yuv_video_quad->require_overlay = frame_->metadata()->IsTrue(

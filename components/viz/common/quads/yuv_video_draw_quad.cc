@@ -29,7 +29,6 @@ void YUVVideoDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                               unsigned u_plane_resource_id,
                               unsigned v_plane_resource_id,
                               unsigned a_plane_resource_id,
-                              ColorSpace color_space,
                               const gfx::ColorSpace& video_color_space,
                               float offset,
                               float multiplier,
@@ -45,7 +44,6 @@ void YUVVideoDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
   resources.ids[kVPlaneResourceIdIndex] = v_plane_resource_id;
   resources.ids[kAPlaneResourceIdIndex] = a_plane_resource_id;
   resources.count = a_plane_resource_id ? 4 : 3;
-  this->color_space = color_space;
   this->video_color_space = video_color_space;
   this->resource_offset = offset;
   this->resource_multiplier = multiplier;
@@ -64,7 +62,6 @@ void YUVVideoDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
                               unsigned u_plane_resource_id,
                               unsigned v_plane_resource_id,
                               unsigned a_plane_resource_id,
-                              ColorSpace color_space,
                               const gfx::ColorSpace& video_color_space,
                               float offset,
                               float multiplier,
@@ -81,7 +78,6 @@ void YUVVideoDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
   resources.ids[kVPlaneResourceIdIndex] = v_plane_resource_id;
   resources.ids[kAPlaneResourceIdIndex] = a_plane_resource_id;
   resources.count = resources.ids[kAPlaneResourceIdIndex] ? 4 : 3;
-  this->color_space = color_space;
   this->video_color_space = video_color_space;
   this->resource_offset = offset;
   this->resource_multiplier = multiplier;

@@ -369,15 +369,6 @@ struct StructTraits<viz::mojom::TileQuadStateDataView, viz::DrawQuad> {
 };
 
 template <>
-struct EnumTraits<viz::mojom::YUVColorSpace,
-                  viz::YUVVideoDrawQuad::ColorSpace> {
-  static viz::mojom::YUVColorSpace ToMojom(
-      viz::YUVVideoDrawQuad::ColorSpace color_space);
-  static bool FromMojom(viz::mojom::YUVColorSpace input,
-                        viz::YUVVideoDrawQuad::ColorSpace* out);
-};
-
-template <>
 struct StructTraits<viz::mojom::YUVVideoQuadStateDataView, viz::DrawQuad> {
   static const gfx::RectF& ya_tex_coord_rect(const viz::DrawQuad& input) {
     const viz::YUVVideoDrawQuad* quad =
@@ -425,13 +416,6 @@ struct StructTraits<viz::mojom::YUVVideoQuadStateDataView, viz::DrawQuad> {
     const viz::YUVVideoDrawQuad* quad =
         viz::YUVVideoDrawQuad::MaterialCast(&input);
     return quad->a_plane_resource_id();
-  }
-
-  static viz::YUVVideoDrawQuad::ColorSpace color_space(
-      const viz::DrawQuad& input) {
-    const viz::YUVVideoDrawQuad* quad =
-        viz::YUVVideoDrawQuad::MaterialCast(&input);
-    return quad->color_space;
   }
 
   static float resource_offset(const viz::DrawQuad& input) {
