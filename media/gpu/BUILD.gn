@@ -548,6 +548,7 @@ if (use_v4l2_codec || use_vaapi) {
       "//media:test_support",
       "//media/gpu",
       "//media/gpu/ipc/service",
+      "//media/mojo/services",
       "//testing/gtest",
       "//third_party/libyuv",
       "//ui/base",
@@ -594,23 +595,4 @@ source_set("unit_tests") {
       "//ui/gfx/geometry",
     ]
   }
-}
-
-test("video_decode_accelerator_service_unittest") {
-  sources = [
-    "ipc/service/gpu_jpeg_decode_accelerator_unittest.cc",
-  ]
-
-  deps = [
-    ":gpu",
-    "//base",
-    "//base/test:test_support",
-    "//gpu:test_support",
-    "//media/gpu/ipc/common",
-    "//media/gpu/ipc/service",
-    "//media/test:run_all_unittests",
-    "//testing/gtest",
-    "//ui/gfx:test_support",
-    "//ui/gfx/geometry",
-  ]
 }

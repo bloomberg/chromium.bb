@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/gpu/mojo/jpeg_decoder_typemap_traits.h"
+#include "media/mojo/interfaces/jpeg_decoder_typemap_traits.h"
 
 #include "base/logging.h"
 #include "media/base/ipc/media_param_traits_macros.h"

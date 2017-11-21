@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/gpu/ipc/client/gpu_jpeg_decode_accelerator_host.h"
+#include "media/mojo/clients/gpu_jpeg_decode_accelerator_host.h"
 
 #include <stddef.h>
 

@@ -79,6 +79,21 @@ source_set("clients") {
   }
 }
 
+source_set("jpeg_decode_accelerator") {
+  visibility = [ "//content/browser" ]
+
+  sources = [
+    "gpu_jpeg_decode_accelerator_host.cc",
+    "gpu_jpeg_decode_accelerator_host.h",
+  ]
+
+  deps = [
+    "//base",
+    "//media/mojo/interfaces",
+    "//mojo/common",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
 

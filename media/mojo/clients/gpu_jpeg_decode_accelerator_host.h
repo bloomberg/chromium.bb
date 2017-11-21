@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_GPU_IPC_CLIENT_GPU_JPEG_DECODE_ACCELERATOR_HOST_H_
-#define MEDIA_GPU_IPC_CLIENT_GPU_JPEG_DECODE_ACCELERATOR_HOST_H_
+#ifndef MEDIA_MOJO_CLIENTS_GPU_JPEG_DECODE_ACCELERATOR_HOST_H_
+#define MEDIA_MOJO_CLIENTS_GPU_JPEG_DECODE_ACCELERATOR_HOST_H_
 
 #include <stdint.h>
 
 #include <memory>
 
 #include "base/macros.h"
-#include "media/gpu/mojo/jpeg_decoder.mojom.h"
+#include "media/mojo/interfaces/jpeg_decoder.mojom.h"
 #include "media/video/jpeg_decode_accelerator.h"
 
 namespace base {
@@ -19,7 +19,7 @@ class SingleThreadTaskRunner;
 
 namespace media {
 
-// TODO(c.padhi): Move GpuJpegDecodeAcceleratorHost to media/gpu/mojo, see
+// TODO(c.padhi): Rename to MojoJpegDecodeAccelerator, see
 // http://crbug.com/699255.
 // A JpegDecodeAccelerator, for use in the browser process, that proxies to a
 // mojom::GpuJpegDecodeAccelerator. Created on the owner's thread, otherwise
@@ -65,4 +65,4 @@ class GpuJpegDecodeAcceleratorHost : public JpegDecodeAccelerator {
 
 }  // namespace media
 
-#endif  // MEDIA_GPU_IPC_CLIENT_GPU_JPEG_DECODE_ACCELERATOR_HOST_H_
+#endif  // MEDIA_MOJO_CLIENTS_GPU_JPEG_DECODE_ACCELERATOR_HOST_H_

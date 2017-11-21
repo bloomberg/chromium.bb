@@ -2,17 +2,17 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//media/gpu/mojo/jpeg_decoder.mojom"
+mojom = "//media/mojo/interfaces/jpeg_decoder.mojom"
 
 public_headers = [
   "//media/base/bitstream_buffer.h",
   "//media/video/jpeg_decode_accelerator.h",
 ]
 
-traits_headers = [ "//media/gpu/mojo/jpeg_decoder_typemap_traits.h" ]
+traits_headers = [ "//media/mojo/interfaces/jpeg_decoder_typemap_traits.h" ]
 
 sources = [
-  "//media/gpu/mojo/jpeg_decoder_typemap_traits.cc",
+  "//media/mojo/interfaces/jpeg_decoder_typemap_traits.cc",
 ]
 
 deps = [
