@@ -1121,7 +1121,13 @@ TEST_F(LocalStorageContextMojoTestWithService, MAYBE_InvalidVersionOnDisk) {
   context->ShutdownAndDelete();
 }
 
-TEST_F(LocalStorageContextMojoTestWithService, CorruptionOnDisk) {
+// Flaky on Android. http://crbug.com/787373.
+#if defined(OS_ANDROID)
+#define MAYBE_CorruptionOnDisk DISABLED_CorruptionOnDisk
+#else
+#define MAYBE_CorruptionOnDisk CorruptionOnDisk
+#endif
+TEST_F(LocalStorageContextMojoTestWithService, MAYBE_CorruptionOnDisk) {
   base::FilePath test_path(FILE_PATH_LITERAL("test_path"));
 
   // Create context and add some data to it.
