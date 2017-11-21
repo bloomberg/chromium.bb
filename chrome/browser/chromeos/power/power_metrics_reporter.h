@@ -5,7 +5,9 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POWER_POWER_METRICS_REPORTER_H_
 #define CHROME_BROWSER_CHROMEOS_POWER_POWER_METRICS_REPORTER_H_
 
+#include <map>
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "base/timer/timer.h"
@@ -27,6 +29,7 @@ class PowerMetricsReporter : public PowerManagerClient::Observer {
   static const char kIdleScreenDimCountName[];
   static const char kIdleScreenOffCountName[];
   static const char kIdleSuspendCountName[];
+  static const char kLidClosedSuspendCountName[];
 
   // Registers prefs used by PowerMetricsReporter in |registry|.
   static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
@@ -51,10 +54,9 @@ class PowerMetricsReporter : public PowerManagerClient::Observer {
   // |daily_event_|.
   void ReportDailyMetrics(metrics::DailyEvent::IntervalType type);
 
-  // Updates |*_count_| members and the corresponding prefs.
-  void SetIdleScreenDimCount(int count);
-  void SetIdleScreenOffCount(int count);
-  void SetIdleSuspendCount(int count);
+  // Adds |num| to |pref_name|'s count in |daily_counts_| and updates the
+  // corresponding pref.
+  void AddToCount(const std::string& pref_name, int num);
 
   PowerManagerClient* power_manager_client_;  // Not owned.
   PrefService* pref_service_;                 // Not owned.
@@ -67,10 +69,8 @@ class PowerMetricsReporter : public PowerManagerClient::Observer {
   // Last-received screen-idle state from powerd.
   power_manager::ScreenIdleState old_screen_idle_state_;
 
-  // Current counts of various inactivity-triggered power management events.
-  int idle_screen_dim_count_ = 0;
-  int idle_screen_off_count_ = 0;
-  int idle_suspend_count_ = 0;
+  // Map from local store pref name backing a daily count to the count itself.
+  std::map<std::string, int> daily_counts_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerMetricsReporter);
 };

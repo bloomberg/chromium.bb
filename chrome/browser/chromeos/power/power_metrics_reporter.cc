@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/power/power_metrics_reporter.h"
 
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager/suspend.pb.h"
@@ -17,6 +17,33 @@ namespace {
 // Interval for asking metrics::DailyEvent to check whether a day has passed.
 constexpr base::TimeDelta kCheckDailyEventInternal =
     base::TimeDelta::FromSeconds(60);
+
+// Information about a daily count that should be tracked and reported.
+struct DailyCountInfo {
+  // Name of the local store pref backing the count across Chrome restarts.
+  const char* pref_name;
+  // Histogram metric name used to report the count.
+  const char* metric_name;
+};
+
+// Registry of all daily counts.
+const DailyCountInfo kDailyCounts[] = {
+    {
+        prefs::kPowerMetricsIdleScreenDimCount,
+        PowerMetricsReporter::kIdleScreenDimCountName,
+    },
+    {
+        prefs::kPowerMetricsIdleScreenOffCount,
+        PowerMetricsReporter::kIdleScreenOffCountName,
+    },
+    {
+        prefs::kPowerMetricsIdleSuspendCount,
+        PowerMetricsReporter::kIdleSuspendCountName,
+    },
+    {
+        prefs::kPowerMetricsLidClosedSuspendCount,
+        PowerMetricsReporter::kLidClosedSuspendCountName,
+    }};
 
 }  // namespace
 
@@ -48,14 +75,15 @@ const char PowerMetricsReporter::kIdleScreenOffCountName[] =
     "Power.IdleScreenOffCountDaily";
 const char PowerMetricsReporter::kIdleSuspendCountName[] =
     "Power.IdleSuspendCountDaily";
+const char PowerMetricsReporter::kLidClosedSuspendCountName[] =
+    "Power.LidClosedSuspendCountDaily";
 
 // static
 void PowerMetricsReporter::RegisterLocalStatePrefs(
     PrefRegistrySimple* registry) {
   metrics::DailyEvent::RegisterPref(registry, prefs::kPowerMetricsDailySample);
-  registry->RegisterIntegerPref(prefs::kPowerMetricsIdleScreenDimCount, 0);
-  registry->RegisterIntegerPref(prefs::kPowerMetricsIdleScreenOffCount, 0);
-  registry->RegisterIntegerPref(prefs::kPowerMetricsIdleSuspendCount, 0);
+  for (size_t i = 0; i < arraysize(kDailyCounts); ++i)
+    registry->RegisterIntegerPref(kDailyCounts[i].pref_name, 0);
 }
 
 PowerMetricsReporter::PowerMetricsReporter(
@@ -66,13 +94,11 @@ PowerMetricsReporter::PowerMetricsReporter(
       daily_event_(
           std::make_unique<metrics::DailyEvent>(pref_service_,
                                                 prefs::kPowerMetricsDailySample,
-                                                kDailyEventIntervalName)),
-      idle_screen_dim_count_(
-          pref_service_->GetInteger(prefs::kPowerMetricsIdleScreenDimCount)),
-      idle_screen_off_count_(
-          pref_service_->GetInteger(prefs::kPowerMetricsIdleScreenOffCount)),
-      idle_suspend_count_(
-          pref_service_->GetInteger(prefs::kPowerMetricsIdleSuspendCount)) {
+                                                kDailyEventIntervalName)) {
+  for (size_t i = 0; i < arraysize(kDailyCounts); ++i) {
+    daily_counts_[kDailyCounts[i].pref_name] =
+        pref_service_->GetInteger(kDailyCounts[i].pref_name);
+  }
   power_manager_client_->AddObserver(this);
 
   daily_event_->AddObserver(std::make_unique<DailyEventObserver>(this));
@@ -88,17 +114,25 @@ PowerMetricsReporter::~PowerMetricsReporter() {
 void PowerMetricsReporter::ScreenIdleStateChanged(
     const power_manager::ScreenIdleState& state) {
   if (state.dimmed() && !old_screen_idle_state_.dimmed())
-    SetIdleScreenDimCount(idle_screen_dim_count_ + 1);
+    AddToCount(prefs::kPowerMetricsIdleScreenDimCount, 1);
   if (state.off() && !old_screen_idle_state_.off())
-    SetIdleScreenOffCount(idle_screen_off_count_ + 1);
+    AddToCount(prefs::kPowerMetricsIdleScreenOffCount, 1);
 
   old_screen_idle_state_ = state;
 }
 
 void PowerMetricsReporter::SuspendImminent(
     power_manager::SuspendImminent::Reason reason) {
-  if (reason == power_manager::SuspendImminent_Reason_IDLE)
-    SetIdleSuspendCount(idle_suspend_count_ + 1);
+  switch (reason) {
+    case power_manager::SuspendImminent_Reason_IDLE:
+      AddToCount(prefs::kPowerMetricsIdleSuspendCount, 1);
+      break;
+    case power_manager::SuspendImminent_Reason_LID_CLOSED:
+      AddToCount(prefs::kPowerMetricsLidClosedSuspendCount, 1);
+      break;
+    case power_manager::SuspendImminent_Reason_OTHER:
+      break;
+  }
 }
 
 void PowerMetricsReporter::SuspendDone(const base::TimeDelta& duration) {
@@ -109,29 +143,23 @@ void PowerMetricsReporter::ReportDailyMetrics(
     metrics::DailyEvent::IntervalType type) {
   // Don't send metrics on first run or if the clock is changed.
   if (type == metrics::DailyEvent::IntervalType::DAY_ELAPSED) {
-    UMA_HISTOGRAM_COUNTS_100(kIdleScreenDimCountName, idle_screen_dim_count_);
-    UMA_HISTOGRAM_COUNTS_100(kIdleScreenOffCountName, idle_screen_off_count_);
-    UMA_HISTOGRAM_COUNTS_100(kIdleSuspendCountName, idle_suspend_count_);
+    for (size_t i = 0; i < arraysize(kDailyCounts); ++i) {
+      base::UmaHistogramCounts100(kDailyCounts[i].metric_name,
+                                  daily_counts_[kDailyCounts[i].pref_name]);
+    }
   }
 
-  SetIdleScreenDimCount(0);
-  SetIdleScreenOffCount(0);
-  SetIdleSuspendCount(0);
+  // Reset all counts now that they've been reported.
+  for (size_t i = 0; i < arraysize(kDailyCounts); ++i) {
+    const char* pref_name = kDailyCounts[i].pref_name;
+    AddToCount(pref_name, -1 * daily_counts_[pref_name]);
+  }
 }
 
-void PowerMetricsReporter::SetIdleScreenDimCount(int count) {
-  idle_screen_dim_count_ = count;
-  pref_service_->SetInteger(prefs::kPowerMetricsIdleScreenDimCount, count);
-}
-
-void PowerMetricsReporter::SetIdleScreenOffCount(int count) {
-  idle_screen_off_count_ = count;
-  pref_service_->SetInteger(prefs::kPowerMetricsIdleScreenOffCount, count);
-}
-
-void PowerMetricsReporter::SetIdleSuspendCount(int count) {
-  idle_suspend_count_ = count;
-  pref_service_->SetInteger(prefs::kPowerMetricsIdleSuspendCount, count);
+void PowerMetricsReporter::AddToCount(const std::string& pref_name, int num) {
+  DCHECK(daily_counts_.count(pref_name));
+  daily_counts_[pref_name] += num;
+  pref_service_->SetInteger(pref_name, daily_counts_[pref_name]);
 }
 
 }  // namespace chromeos
