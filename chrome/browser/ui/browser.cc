@@ -2513,7 +2513,7 @@ bool Browser::MaybeCreateBackgroundContents(
   // Only allow a single background contents per app.
   bool allow_js_access = extensions::BackgroundInfo::AllowJSAccess(extension);
   BackgroundContents* existing =
-      service->GetAppBackgroundContents(base::ASCIIToUTF16(extension->id()));
+      service->GetAppBackgroundContents(extension->id());
   if (existing) {
     // For non-scriptable background contents, ignore the request altogether,
     // (returning true, so that a regular WebContents isn't created either).
@@ -2529,9 +2529,8 @@ bool Browser::MaybeCreateBackgroundContents(
   if (allow_js_access) {
     contents = service->CreateBackgroundContents(
         source_site_instance, opener, route_id, main_frame_route_id,
-        main_frame_widget_route_id, profile_, frame_name,
-        base::ASCIIToUTF16(extension->id()), partition_id,
-        session_storage_namespace);
+        main_frame_widget_route_id, profile_, frame_name, extension->id(),
+        partition_id, session_storage_namespace);
   } else {
     // If script access is not allowed, create the the background contents in a
     // new SiteInstance, so that a separate process is used. We must not use any
@@ -2541,8 +2540,7 @@ bool Browser::MaybeCreateBackgroundContents(
         content::SiteInstance::Create(
             source_site_instance->GetBrowserContext()),
         nullptr, MSG_ROUTING_NONE, MSG_ROUTING_NONE, MSG_ROUTING_NONE, profile_,
-        frame_name, base::ASCIIToUTF16(extension->id()), partition_id,
-        session_storage_namespace);
+        frame_name, extension->id(), partition_id, session_storage_namespace);
 
     // When a separate process is used, the original renderer cannot access the
     // new window later, thus we need to navigate the window now.
