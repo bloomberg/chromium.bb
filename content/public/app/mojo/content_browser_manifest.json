@@ -35,6 +35,7 @@
           "content::mojom::MemoryCoordinatorHandle",
           "content::mojom::PushMessaging",
           "content::mojom::RendererHost",
+          "content::mojom::ReportingServiceProxy",
           "content::mojom::ServiceWorkerDispatcherHost",
           "content::mojom::StoragePartitionService",
           "content::mojom::URLLoaderFactory",
