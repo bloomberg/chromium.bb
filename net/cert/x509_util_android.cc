@@ -11,13 +11,15 @@ using base::android::JavaParamRef;
 
 namespace net {
 
-void NotifyKeyChainChanged(JNIEnv* env, const JavaParamRef<jclass>& clazz) {
+void JNI_X509Util_NotifyKeyChainChanged(JNIEnv* env,
+                                        const JavaParamRef<jclass>& clazz) {
   CertDatabase::GetInstance()->OnAndroidKeyChainChanged();
 }
 
-void RecordCertVerifyCapabilitiesHistogram(JNIEnv* env,
-                                           const JavaParamRef<jclass>& clazz,
-                                           jboolean found_system_trust_roots) {
+void JNI_X509Util_RecordCertVerifyCapabilitiesHistogram(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    jboolean found_system_trust_roots) {
   // Only record the histogram for 4.2 and up. Before 4.2, the platform doesn't
   // return the certificate chain anyway.
   if (base::android::BuildInfo::GetInstance()->sdk_int() >= 17) {

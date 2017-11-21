@@ -165,9 +165,9 @@ Profile* BrowsingHistoryBridge::GetProfile() {
   return profile_;
 }
 
-static jlong Init(JNIEnv* env,
-                  const JavaParamRef<jobject>& obj,
-                  jboolean is_incognito) {
+static jlong JNI_BrowsingHistoryBridge_Init(JNIEnv* env,
+                                            const JavaParamRef<jobject>& obj,
+                                            jboolean is_incognito) {
   BrowsingHistoryBridge* bridge =
       new BrowsingHistoryBridge(env, obj, is_incognito);
   return reinterpret_cast<intptr_t>(bridge);

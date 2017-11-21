@@ -38,22 +38,25 @@ bool GetIsChromeHomeEnabled() {
 } // namespace android
 } // namespace chrome
 
-static void SetCustomTabVisible(JNIEnv* env,
-                                const JavaParamRef<jclass>& clazz,
-                                jboolean visible) {
+static void JNI_FeatureUtilities_SetCustomTabVisible(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    jboolean visible) {
   custom_tab_visible = visible;
   ukm::UkmSource::SetCustomTabVisible(visible);
 }
 
-static void SetIsInMultiWindowMode(JNIEnv* env,
-                                   const JavaParamRef<jclass>& clazz,
-                                   jboolean j_is_in_multi_window_mode) {
+static void JNI_FeatureUtilities_SetIsInMultiWindowMode(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    jboolean j_is_in_multi_window_mode) {
   is_in_multi_window_mode = j_is_in_multi_window_mode;
 }
 
-static void NotifyChromeHomeStatusChanged(JNIEnv* env,
-                                          const JavaParamRef<jclass>& clazz,
-                                          jboolean j_is_chrome_home_enabled) {
+static void JNI_FeatureUtilities_NotifyChromeHomeStatusChanged(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    jboolean j_is_chrome_home_enabled) {
   ntp_snippets::ContentSuggestionsService* content_suggestions_service =
       ContentSuggestionsServiceFactory::GetForProfileIfExists(
           ProfileManager::GetLastUsedProfile());

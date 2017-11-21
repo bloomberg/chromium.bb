@@ -114,7 +114,8 @@ bool ToolbarSceneLayer::ShouldShowBackground() {
   return should_show_background_;
 }
 
-static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& jobj) {
+static jlong JNI_ToolbarSceneLayer_Init(JNIEnv* env,
+                                        const JavaParamRef<jobject>& jobj) {
   // This will automatically bind to the Java object and pass ownership there.
   ToolbarSceneLayer* toolbar_scene_layer =
       new ToolbarSceneLayer(env, jobj);

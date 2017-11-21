@@ -101,16 +101,16 @@ namespace android {
 
 // Step 2: method stubs.
 
-static jlong Init(JNIEnv* env, const base::android::JavaParamRef<jobject>&
-    jcaller,
+static jlong JNI_SampleForTests_Init(JNIEnv* env, const
+    base::android::JavaParamRef<jobject>& jcaller,
     const base::android::JavaParamRef<jstring>& param);
 
 JNI_GENERATOR_EXPORT jlong
     Java_org_chromium_example_jni_1generator_SampleForTests_nativeInit(JNIEnv*
     env, jobject jcaller,
     jstring param) {
-  return Init(env, base::android::JavaParamRef<jobject>(env, jcaller),
-      base::android::JavaParamRef<jstring>(env, param));
+  return JNI_SampleForTests_Init(env, base::android::JavaParamRef<jobject>(env,
+      jcaller), base::android::JavaParamRef<jstring>(env, param));
 }
 
 JNI_GENERATOR_EXPORT void
@@ -123,27 +123,27 @@ JNI_GENERATOR_EXPORT void
       jcaller));
 }
 
-static jdouble GetDoubleFunction(JNIEnv* env, const
+static jdouble JNI_SampleForTests_GetDoubleFunction(JNIEnv* env, const
     base::android::JavaParamRef<jobject>& jcaller);
 
 JNI_GENERATOR_EXPORT jdouble
     Java_org_chromium_example_jni_1generator_SampleForTests_nativeGetDoubleFunction(JNIEnv*
     env, jobject jcaller) {
-  return GetDoubleFunction(env, base::android::JavaParamRef<jobject>(env,
-      jcaller));
+  return JNI_SampleForTests_GetDoubleFunction(env,
+      base::android::JavaParamRef<jobject>(env, jcaller));
 }
 
-static jfloat GetFloatFunction(JNIEnv* env, const
+static jfloat JNI_SampleForTests_GetFloatFunction(JNIEnv* env, const
     base::android::JavaParamRef<jclass>& jcaller);
 
 JNI_GENERATOR_EXPORT jfloat
     Java_org_chromium_example_jni_1generator_SampleForTests_nativeGetFloatFunction(JNIEnv*
     env, jclass jcaller) {
-  return GetFloatFunction(env, base::android::JavaParamRef<jclass>(env,
-      jcaller));
+  return JNI_SampleForTests_GetFloatFunction(env,
+      base::android::JavaParamRef<jclass>(env, jcaller));
 }
 
-static void SetNonPODDatatype(JNIEnv* env, const
+static void JNI_SampleForTests_SetNonPODDatatype(JNIEnv* env, const
     base::android::JavaParamRef<jobject>& jcaller,
     const base::android::JavaParamRef<jobject>& rect);
 
@@ -151,18 +151,20 @@ JNI_GENERATOR_EXPORT void
     Java_org_chromium_example_jni_1generator_SampleForTests_nativeSetNonPODDatatype(JNIEnv*
     env, jobject jcaller,
     jobject rect) {
-  return SetNonPODDatatype(env, base::android::JavaParamRef<jobject>(env,
-      jcaller), base::android::JavaParamRef<jobject>(env, rect));
+  return JNI_SampleForTests_SetNonPODDatatype(env,
+      base::android::JavaParamRef<jobject>(env, jcaller),
+      base::android::JavaParamRef<jobject>(env, rect));
 }
 
-static base::android::ScopedJavaLocalRef<jobject> GetNonPODDatatype(JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& jcaller);
+static base::android::ScopedJavaLocalRef<jobject>
+JNI_SampleForTests_GetNonPODDatatype(JNIEnv* env, const
+    base::android::JavaParamRef<jobject>& jcaller);
 
 JNI_GENERATOR_EXPORT jobject
     Java_org_chromium_example_jni_1generator_SampleForTests_nativeGetNonPODDatatype(JNIEnv*
     env, jobject jcaller) {
-  return GetNonPODDatatype(env, base::android::JavaParamRef<jobject>(env,
-      jcaller)).Release();
+  return JNI_SampleForTests_GetNonPODDatatype(env,
+      base::android::JavaParamRef<jobject>(env, jcaller)).Release();
 }
 
 JNI_GENERATOR_EXPORT jint
@@ -217,14 +219,14 @@ JNI_GENERATOR_EXPORT jstring
       jcaller)).Release();
 }
 
-static jint GetInnerIntFunction(JNIEnv* env, const
+static jint JNI_InnerClass_GetInnerIntFunction(JNIEnv* env, const
     base::android::JavaParamRef<jclass>& jcaller);
 
 JNI_GENERATOR_EXPORT jint
     Java_org_chromium_example_jni_1generator_SampleForTests_00024InnerClass_nativeGetInnerIntFunction(JNIEnv*
     env, jclass jcaller) {
-  return GetInnerIntFunction(env, base::android::JavaParamRef<jclass>(env,
-      jcaller));
+  return JNI_InnerClass_GetInnerIntFunction(env,
+      base::android::JavaParamRef<jclass>(env, jcaller));
 }
 
 static base::subtle::AtomicWord

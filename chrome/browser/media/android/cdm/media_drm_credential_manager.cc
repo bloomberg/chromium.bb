@@ -57,7 +57,7 @@ void MediaDrmCredentialManager::ResetCredentials(
 }
 
 // static
-void ResetCredentials(
+void JNI_MediaDrmCredentialManager_ResetCredentials(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& j_media_drm_credential_manager_callback) {

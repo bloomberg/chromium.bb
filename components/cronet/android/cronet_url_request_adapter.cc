@@ -47,14 +47,15 @@ std::string GetProxy(const net::HttpResponseInfo& info) {
 
 }  // namespace
 
-static jlong CreateRequestAdapter(JNIEnv* env,
-                                  const JavaParamRef<jobject>& jurl_request,
-                                  jlong jurl_request_context_adapter,
-                                  const JavaParamRef<jstring>& jurl_string,
-                                  jint jpriority,
-                                  jboolean jdisable_cache,
-                                  jboolean jdisable_connection_migration,
-                                  jboolean jenable_metrics) {
+static jlong JNI_CronetUrlRequest_CreateRequestAdapter(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jurl_request,
+    jlong jurl_request_context_adapter,
+    const JavaParamRef<jstring>& jurl_string,
+    jint jpriority,
+    jboolean jdisable_cache,
+    jboolean jdisable_connection_migration,
+    jboolean jenable_metrics) {
   CronetURLRequestContextAdapter* context_adapter =
       reinterpret_cast<CronetURLRequestContextAdapter*>(
           jurl_request_context_adapter);

@@ -20,9 +20,10 @@ using base::android::ScopedJavaLocalRef;
 
 namespace android_webview {
 
-static jboolean DumpWithoutCrashing(JNIEnv* env,
-                                    const JavaParamRef<jclass>& clazz,
-                                    const JavaParamRef<jstring>& dump_path) {
+static jboolean JNI_AwDebug_DumpWithoutCrashing(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jstring>& dump_path) {
   // This may be called from any thread, and we might be in a state
   // where it is impossible to post tasks, so we have to be prepared
   // to do IO from this thread.
@@ -36,15 +37,16 @@ static jboolean DumpWithoutCrashing(JNIEnv* env,
   return crash_reporter::DumpWithoutCrashingToFd(target.TakePlatformFile());
 }
 
-static void InitCrashKeysForWebViewTesting(JNIEnv* env,
-                                           const JavaParamRef<jclass>& clazz) {
+static void JNI_AwDebug_InitCrashKeysForWebViewTesting(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz) {
   crash_keys::InitCrashKeysForWebViewTesting();
 }
 
-static void SetCrashKeyValue(JNIEnv* env,
-                             const JavaParamRef<jclass>& clazz,
-                             const JavaParamRef<jstring>& key,
-                             const JavaParamRef<jstring>& value) {
+static void JNI_AwDebug_SetCrashKeyValue(JNIEnv* env,
+                                         const JavaParamRef<jclass>& clazz,
+                                         const JavaParamRef<jstring>& key,
+                                         const JavaParamRef<jstring>& value) {
   base::debug::SetCrashKeyValue(ConvertJavaStringToUTF8(env, key),
                                 ConvertJavaStringToUTF8(env, value));
 }

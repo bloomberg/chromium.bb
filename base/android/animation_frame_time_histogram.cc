@@ -9,11 +9,12 @@
 using base::android::JavaParamRef;
 
 // static
-void SaveHistogram(JNIEnv* env,
-                   const JavaParamRef<jobject>& jcaller,
-                   const JavaParamRef<jstring>& j_histogram_name,
-                   const JavaParamRef<jlongArray>& j_frame_times_ms,
-                   jint j_count) {
+void JNI_AnimationFrameTimeHistogram_SaveHistogram(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jcaller,
+    const JavaParamRef<jstring>& j_histogram_name,
+    const JavaParamRef<jlongArray>& j_frame_times_ms,
+    jint j_count) {
   jlong *frame_times_ms = env->GetLongArrayElements(j_frame_times_ms, NULL);
   std::string histogram_name = base::android::ConvertJavaStringToUTF8(
       env, j_histogram_name);

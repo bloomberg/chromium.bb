@@ -258,11 +258,13 @@ device::VRDevice* VrShellDelegate::GetDevice() {
 // Native JNI methods
 // ----------------------------------------------------------------------------
 
-jlong Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {
+jlong JNI_VrShellDelegate_Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   return reinterpret_cast<intptr_t>(new VrShellDelegate(env, obj));
 }
 
-static void OnLibraryAvailable(JNIEnv* env, const JavaParamRef<jclass>& clazz) {
+static void JNI_VrShellDelegate_OnLibraryAvailable(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz) {
   device::GvrDelegateProviderFactory::Install(
       new VrShellDelegateProviderFactory);
 }

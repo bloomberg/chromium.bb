@@ -270,15 +270,16 @@ Profile* SearchGeolocationDisclosureTabHelper::GetProfile() {
 }
 
 // static
-void SetIgnoreUrlChecksForTesting(
+void JNI_SearchGeolocationDisclosureTabHelper_SetIgnoreUrlChecksForTesting(
     JNIEnv* env,
     const base::android::JavaParamRef<jclass>& clazz) {
   gIgnoreUrlChecksForTesting = true;
 }
 
 // static
-void SetDayOffsetForTesting(JNIEnv* env,
-                            const base::android::JavaParamRef<jclass>& clazz,
-                            jint days) {
+void JNI_SearchGeolocationDisclosureTabHelper_SetDayOffsetForTesting(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jclass>& clazz,
+    jint days) {
   gDayOffsetForTesting = days;
 }

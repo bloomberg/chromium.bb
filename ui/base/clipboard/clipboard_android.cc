@@ -186,10 +186,10 @@ void ClipboardMap::SetLastModifiedTimeWithoutRunningCallback(base::Time time) {
 
 // Add a key:jstr pair to map, if jstr is null or is empty, then remove that
 // entry.
-void AddMapEntry(JNIEnv* env,
-                 std::map<std::string, std::string>* map,
-                 const char* key,
-                 const ScopedJavaLocalRef<jstring>& jstr) {
+void JNI_Clipboard_AddMapEntry(JNIEnv* env,
+                               std::map<std::string, std::string>* map,
+                               const char* key,
+                               const ScopedJavaLocalRef<jstring>& jstr) {
   if (jstr.is_null()) {
     map->erase(key);
     return;
@@ -223,8 +223,8 @@ void ClipboardMap::UpdateFromAndroidClipboard() {
   ScopedJavaLocalRef<jstring> jhtml =
       Java_Clipboard_getHTMLText(env, clipboard_manager_);
 
-  AddMapEntry(env, &map_, kPlainTextFormat, jtext);
-  AddMapEntry(env, &map_, kHTMLFormat, jhtml);
+  JNI_Clipboard_AddMapEntry(env, &map_, kPlainTextFormat, jtext);
+  JNI_Clipboard_AddMapEntry(env, &map_, kHTMLFormat, jhtml);
 
   map_state_ = MapState::kUpToDate;
 }
@@ -552,8 +552,9 @@ void ClipboardAndroid::WriteData(const Clipboard::FormatType& format,
 }
 
 // Returns a pointer to the current ClipboardAndroid object.
-static jlong Init(JNIEnv* env,
-                  const base::android::JavaParamRef<jobject>& obj) {
+static jlong JNI_Clipboard_Init(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
   return reinterpret_cast<intptr_t>(Clipboard::GetForCurrentThread());
 }
 

@@ -21,16 +21,18 @@ namespace content {
 
 namespace {
 
-ScopedJavaLocalRef<jobject> CreateJavaRect(JNIEnv* env, const gfx::Rect& rect) {
+ScopedJavaLocalRef<jobject> JNI_PopupZoomer_CreateJavaRect(
+    JNIEnv* env,
+    const gfx::Rect& rect) {
   return ScopedJavaLocalRef<jobject>(Java_PopupZoomer_createRect(
       env, rect.x(), rect.y(), rect.right(), rect.bottom()));
 }
 
 }  // namespace
 
-jlong Init(JNIEnv* env,
-           const JavaParamRef<jobject>& obj,
-           const JavaParamRef<jobject>& jweb_contents) {
+jlong JNI_PopupZoomer_Init(JNIEnv* env,
+                           const JavaParamRef<jobject>& obj,
+                           const JavaParamRef<jobject>& jweb_contents) {
   WebContents* web_contents = WebContents::FromJavaWebContents(jweb_contents);
   DCHECK(web_contents);
 
@@ -71,7 +73,8 @@ void PopupZoomer::ShowPopup(const gfx::Rect& rect_pixels,
   if (obj.is_null())
     return;
 
-  ScopedJavaLocalRef<jobject> rect_object(CreateJavaRect(env, rect_pixels));
+  ScopedJavaLocalRef<jobject> rect_object(
+      JNI_PopupZoomer_CreateJavaRect(env, rect_pixels));
 
   ScopedJavaLocalRef<jobject> java_bitmap =
       gfx::ConvertToJavaBitmap(&zoomed_bitmap);

@@ -27,7 +27,7 @@ bool ShouldStartGpuProcessOnBrowserStartup() {
       env);
 }
 
-static void SetCommandLineFlags(
+static void JNI_BrowserStartupController_SetCommandLineFlags(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,
     jboolean single_process,
@@ -39,8 +39,9 @@ static void SetCommandLineFlags(
   SetContentCommandLineFlags(static_cast<bool>(single_process), plugin_str);
 }
 
-static jboolean IsOfficialBuild(JNIEnv* env,
-                                const JavaParamRef<jclass>& clazz) {
+static jboolean JNI_BrowserStartupController_IsOfficialBuild(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz) {
 #if defined(OFFICIAL_BUILD)
   return true;
 #else
@@ -48,8 +49,9 @@ static jboolean IsOfficialBuild(JNIEnv* env,
 #endif
 }
 
-static jboolean IsPluginEnabled(JNIEnv* env,
-                                const JavaParamRef<jclass>& clazz) {
+static jboolean JNI_BrowserStartupController_IsPluginEnabled(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz) {
 #if BUILDFLAG(ENABLE_PLUGINS)
   return true;
 #else
@@ -57,7 +59,9 @@ static jboolean IsPluginEnabled(JNIEnv* env,
 #endif
 }
 
-static void FlushStartupTasks(JNIEnv* env, const JavaParamRef<jclass>& clazz) {
+static void JNI_BrowserStartupController_FlushStartupTasks(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz) {
   BrowserMainLoop::GetInstance()->SynchronouslyFlushStartupTasks();
 }
 

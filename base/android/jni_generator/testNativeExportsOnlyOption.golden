@@ -98,22 +98,24 @@ JNI_GENERATOR_EXPORT jint
       arg1);
 }
 
-static jint Init(JNIEnv* env, const base::android::JavaParamRef<jobject>&
-    jcaller);
+static jint JNI_MyInnerClass_Init(JNIEnv* env, const
+    base::android::JavaParamRef<jobject>& jcaller);
 
 JNI_GENERATOR_EXPORT jint
     Java_org_chromium_example_jni_1generator_SampleForTests_00024MyInnerClass_nativeInit(JNIEnv*
     env, jobject jcaller) {
-  return Init(env, base::android::JavaParamRef<jobject>(env, jcaller));
+  return JNI_MyInnerClass_Init(env, base::android::JavaParamRef<jobject>(env,
+      jcaller));
 }
 
-static jint Init(JNIEnv* env, const base::android::JavaParamRef<jobject>&
-    jcaller);
+static jint JNI_MyOtherInnerClass_Init(JNIEnv* env, const
+    base::android::JavaParamRef<jobject>& jcaller);
 
 JNI_GENERATOR_EXPORT jint
     Java_org_chromium_example_jni_1generator_SampleForTests_00024MyOtherInnerClass_nativeInit(JNIEnv*
     env, jobject jcaller) {
-  return Init(env, base::android::JavaParamRef<jobject>(env, jcaller));
+  return JNI_MyOtherInnerClass_Init(env,
+      base::android::JavaParamRef<jobject>(env, jcaller));
 }
 
 static base::subtle::AtomicWord

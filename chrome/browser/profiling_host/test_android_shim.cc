@@ -12,7 +12,8 @@
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 
-static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {
+static jlong JNI_TestAndroidShim_Init(JNIEnv* env,
+                                      const JavaParamRef<jobject>& obj) {
   TestAndroidShim* profiler = new TestAndroidShim(env, obj);
   return reinterpret_cast<intptr_t>(profiler);
 }

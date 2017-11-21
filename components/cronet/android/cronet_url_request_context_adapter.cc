@@ -774,7 +774,7 @@ CronetURLRequestContextAdapter::GetNetLogInfo() const {
 }
 
 // Create a URLRequestContextConfig from the given parameters.
-static jlong CreateRequestContextConfig(
+static jlong JNI_CronetUrlRequestContext_CreateRequestContextConfig(
     JNIEnv* env,
     const JavaParamRef<jclass>& jcaller,
     const JavaParamRef<jstring>& juser_agent,
@@ -809,12 +809,13 @@ static jlong CreateRequestContextConfig(
 }
 
 // Add a QUIC hint to a URLRequestContextConfig.
-static void AddQuicHint(JNIEnv* env,
-                        const JavaParamRef<jclass>& jcaller,
-                        jlong jurl_request_context_config,
-                        const JavaParamRef<jstring>& jhost,
-                        jint jport,
-                        jint jalternate_port) {
+static void JNI_CronetUrlRequestContext_AddQuicHint(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& jcaller,
+    jlong jurl_request_context_config,
+    const JavaParamRef<jstring>& jhost,
+    jint jport,
+    jint jalternate_port) {
   URLRequestContextConfig* config =
       reinterpret_cast<URLRequestContextConfig*>(jurl_request_context_config);
   config->quic_hints.push_back(
@@ -829,13 +830,14 @@ static void AddQuicHint(JNIEnv* env,
 // |jinclude_subdomains| indicates if pin should be applied to subdomains.
 // |jexpiration_time| is the time that the pin expires, in milliseconds since
 // Jan. 1, 1970, midnight GMT.
-static void AddPkp(JNIEnv* env,
-                   const JavaParamRef<jclass>& jcaller,
-                   jlong jurl_request_context_config,
-                   const JavaParamRef<jstring>& jhost,
-                   const JavaParamRef<jobjectArray>& jhashes,
-                   jboolean jinclude_subdomains,
-                   jlong jexpiration_time) {
+static void JNI_CronetUrlRequestContext_AddPkp(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& jcaller,
+    jlong jurl_request_context_config,
+    const JavaParamRef<jstring>& jhost,
+    const JavaParamRef<jobjectArray>& jhashes,
+    jboolean jinclude_subdomains,
+    jlong jexpiration_time) {
   URLRequestContextConfig* config =
       reinterpret_cast<URLRequestContextConfig*>(jurl_request_context_config);
   std::unique_ptr<URLRequestContextConfig::Pkp> pkp(
@@ -867,9 +869,10 @@ static void AddPkp(JNIEnv* env,
 
 // Creates RequestContextAdater if config is valid URLRequestContextConfig,
 // returns 0 otherwise.
-static jlong CreateRequestContextAdapter(JNIEnv* env,
-                                         const JavaParamRef<jclass>& jcaller,
-                                         jlong jconfig) {
+static jlong JNI_CronetUrlRequestContext_CreateRequestContextAdapter(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& jcaller,
+    jlong jconfig) {
   std::unique_ptr<URLRequestContextConfig> context_config(
       reinterpret_cast<URLRequestContextConfig*>(jconfig));
 
@@ -878,16 +881,18 @@ static jlong CreateRequestContextAdapter(JNIEnv* env,
   return reinterpret_cast<jlong>(context_adapter);
 }
 
-static jint SetMinLogLevel(JNIEnv* env,
-                           const JavaParamRef<jclass>& jcaller,
-                           jint jlog_level) {
+static jint JNI_CronetUrlRequestContext_SetMinLogLevel(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& jcaller,
+    jint jlog_level) {
   jint old_log_level = static_cast<jint>(logging::GetMinLogLevel());
   // MinLogLevel is global, shared by all URLRequestContexts.
   logging::SetMinLogLevel(static_cast<int>(jlog_level));
   return old_log_level;
 }
 
-static ScopedJavaLocalRef<jbyteArray> GetHistogramDeltas(
+static ScopedJavaLocalRef<jbyteArray>
+JNI_CronetUrlRequestContext_GetHistogramDeltas(
     JNIEnv* env,
     const JavaParamRef<jclass>& jcaller) {
   DCHECK(base::StatisticsRecorder::IsActive());

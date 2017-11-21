@@ -68,9 +68,13 @@ void SetFaviconCallback(Profile* profile,
     bookmark_added_event->Signal();
 }
 
-void PrepareAndSetFavicon(JNIEnv* env, jbyte* icon_bytes, int icon_len,
-                          BookmarkNode* node, Profile* profile,
-                          favicon_base::IconType icon_type) {
+void JNI_PartnerBookmarksReader_PrepareAndSetFavicon(
+    JNIEnv* env,
+    jbyte* icon_bytes,
+    int icon_len,
+    BookmarkNode* node,
+    Profile* profile,
+    favicon_base::IconType icon_type) {
   SkBitmap icon_bitmap;
   if (!gfx::PNGCodec::Decode(
       reinterpret_cast<const unsigned char*>(icon_bytes),
@@ -173,8 +177,8 @@ jlong PartnerBookmarksReader::AddPartnerBookmark(
         const int icon_len = env->GetArrayLength(icon);
         jbyte* icon_bytes = env->GetByteArrayElements(icon, nullptr);
         if (icon_bytes)
-          PrepareAndSetFavicon(env, icon_bytes, icon_len, node.get(), profile_,
-                               icon_type);
+          JNI_PartnerBookmarksReader_PrepareAndSetFavicon(
+              env, icon_bytes, icon_len, node.get(), profile_, icon_type);
         env->ReleaseByteArrayElements(icon, icon_bytes, JNI_ABORT);
       } else {
         // We should attempt to read the favicon from cache or retrieve it from
@@ -328,14 +332,16 @@ void PartnerBookmarksReader::OnFaviconFetched(
 }
 
 // static
-static void DisablePartnerBookmarksEditing(JNIEnv* env,
-                                           const JavaParamRef<jclass>& clazz) {
+static void JNI_PartnerBookmarksReader_DisablePartnerBookmarksEditing(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz) {
   PartnerBookmarksShim::DisablePartnerBookmarksEditing();
 }
 
 // ----------------------------------------------------------------
 
-static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {
+static jlong JNI_PartnerBookmarksReader_Init(JNIEnv* env,
+                                             const JavaParamRef<jobject>& obj) {
   Profile* profile = ProfileManager::GetActiveUserProfile();
   PartnerBookmarksShim* partner_bookmarks_shim =
       PartnerBookmarksShim::BuildForBrowserContext(profile);

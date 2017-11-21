@@ -305,7 +305,7 @@ base::WeakPtr<JniClient> JniClient::GetWeakPtr() {
   return weak_ptr_;
 }
 
-static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& caller) {
+static jlong JNI_Client_Init(JNIEnv* env, const JavaParamRef<jobject>& caller) {
   return reinterpret_cast<intptr_t>(
       new JniClient(base::android::ScopedJavaGlobalRef<jobject>(env, caller)));
 }

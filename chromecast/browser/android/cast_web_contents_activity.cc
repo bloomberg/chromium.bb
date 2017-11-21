@@ -22,10 +22,11 @@ const void* kCastWebContentsActivityKey =
 }  // namespace
 
 // static
-void SetContentVideoViewEmbedder(JNIEnv* env,
-                                 const JavaParamRef<jobject>& jcaller,
-                                 const JavaParamRef<jobject>& webContents,
-                                 const JavaParamRef<jobject>& embedder) {
+void JNI_CastWebContentsActivity_SetContentVideoViewEmbedder(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jcaller,
+    const JavaParamRef<jobject>& webContents,
+    const JavaParamRef<jobject>& embedder) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(webContents);
   DCHECK(web_contents);

@@ -59,16 +59,17 @@ void GamepadPlatformDataFetcherAndroid::PauseHint(bool paused) {
   Java_GamepadList_setGamepadAPIActive(env, !paused);
 }
 
-static void SetGamepadData(JNIEnv* env,
-                           const JavaParamRef<jobject>& obj,
-                           jlong data_fetcher,
-                           jint index,
-                           jboolean mapping,
-                           jboolean connected,
-                           const JavaParamRef<jstring>& devicename,
-                           jlong timestamp,
-                           const JavaParamRef<jfloatArray>& jaxes,
-                           const JavaParamRef<jfloatArray>& jbuttons) {
+static void JNI_GamepadList_SetGamepadData(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jlong data_fetcher,
+    jint index,
+    jboolean mapping,
+    jboolean connected,
+    const JavaParamRef<jstring>& devicename,
+    jlong timestamp,
+    const JavaParamRef<jfloatArray>& jaxes,
+    const JavaParamRef<jfloatArray>& jbuttons) {
   DCHECK(data_fetcher);
   GamepadPlatformDataFetcherAndroid* fetcher =
       reinterpret_cast<GamepadPlatformDataFetcherAndroid*>(data_fetcher);

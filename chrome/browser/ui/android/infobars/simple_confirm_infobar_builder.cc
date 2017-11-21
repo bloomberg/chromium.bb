@@ -126,16 +126,17 @@ bool SimpleConfirmInfoBarDelegate::Cancel() {
 
 // Native JNI methods ---------------------------------------------------------
 
-void Create(JNIEnv* env,
-            const JavaParamRef<jclass>& j_caller,
-            const JavaParamRef<jobject>& j_tab,
-            jint j_identifier,
-            const JavaParamRef<jobject>& j_icon,
-            const JavaParamRef<jstring>& j_message,
-            const JavaParamRef<jstring>& j_primary,
-            const JavaParamRef<jstring>& j_secondary,
-            jboolean auto_expire,
-            const JavaParamRef<jobject>& j_listener) {
+void JNI_SimpleConfirmInfoBarBuilder_Create(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& j_caller,
+    const JavaParamRef<jobject>& j_tab,
+    jint j_identifier,
+    const JavaParamRef<jobject>& j_icon,
+    const JavaParamRef<jstring>& j_message,
+    const JavaParamRef<jstring>& j_primary,
+    const JavaParamRef<jstring>& j_secondary,
+    jboolean auto_expire,
+    const JavaParamRef<jobject>& j_listener) {
   infobars::InfoBarDelegate::InfoBarIdentifier infobar_identifier =
       static_cast<infobars::InfoBarDelegate::InfoBarIdentifier>(j_identifier);
 

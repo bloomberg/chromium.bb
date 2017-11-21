@@ -52,8 +52,9 @@ enum NotificationActionType {
   TEXT
 };
 
-ScopedJavaLocalRef<jobject> ConvertToJavaBitmap(JNIEnv* env,
-                                                const gfx::Image& icon) {
+ScopedJavaLocalRef<jobject> JNI_NotificationPlatformBridge_ConvertToJavaBitmap(
+    JNIEnv* env,
+    const gfx::Image& icon) {
   SkBitmap skbitmap = icon.AsBitmap();
   ScopedJavaLocalRef<jobject> j_bitmap;
   if (!skbitmap.drawsNothing())
@@ -89,7 +90,8 @@ ScopedJavaLocalRef<jobjectArray> ConvertToJavaActionInfos(
     int type = GetNotificationActionType(button);
     ScopedJavaLocalRef<jstring> placeholder =
         base::android::ConvertUTF16ToJavaString(env, button.placeholder);
-    ScopedJavaLocalRef<jobject> icon = ConvertToJavaBitmap(env, button.icon);
+    ScopedJavaLocalRef<jobject> icon =
+        JNI_NotificationPlatformBridge_ConvertToJavaBitmap(env, button.icon);
     ScopedJavaLocalRef<jobject> action_info = Java_ActionInfo_createActionInfo(
         AttachCurrentThread(), title, icon, type, placeholder);
     env->SetObjectArrayElement(actions, i, action_info.obj());
@@ -129,7 +131,7 @@ void ProfileLoadedCallback(NotificationCommon::Operation operation,
 // Called by the Java side when a notification event has been received, but the
 // NotificationBridge has not been initialized yet. Enforce initialization of
 // the class.
-static void InitializeNotificationPlatformBridge(
+static void JNI_NotificationPlatformBridge_InitializeNotificationPlatformBridge(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz) {
   g_browser_process->notification_platform_bridge();

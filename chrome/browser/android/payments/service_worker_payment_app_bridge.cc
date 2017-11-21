@@ -227,11 +227,12 @@ std::vector<PaymentMethodDataPtr> ConvertPaymentMethodDataFromJavaToNative(
 
 }  // namespace
 
-static void GetAllPaymentApps(JNIEnv* env,
-                              const JavaParamRef<jclass>& jcaller,
-                              const JavaParamRef<jobject>& jweb_contents,
-                              const JavaParamRef<jobjectArray>& jmethod_data,
-                              const JavaParamRef<jobject>& jcallback) {
+static void JNI_ServiceWorkerPaymentAppBridge_GetAllPaymentApps(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& jcaller,
+    const JavaParamRef<jobject>& jweb_contents,
+    const JavaParamRef<jobjectArray>& jmethod_data,
+    const JavaParamRef<jobject>& jcallback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   content::WebContents* web_contents =
@@ -246,15 +247,16 @@ static void GetAllPaymentApps(JNIEnv* env,
                          ScopedJavaGlobalRef<jobject>(env, jcallback)));
 }
 
-static void CanMakePayment(JNIEnv* env,
-                           const JavaParamRef<jclass>& jcaller,
-                           const JavaParamRef<jobject>& jweb_contents,
-                           jlong registration_id,
-                           const JavaParamRef<jstring>& jtop_level_origin,
-                           const JavaParamRef<jstring>& jpayment_request_origin,
-                           const JavaParamRef<jobjectArray>& jmethod_data,
-                           const JavaParamRef<jobjectArray>& jmodifiers,
-                           const JavaParamRef<jobject>& jcallback) {
+static void JNI_ServiceWorkerPaymentAppBridge_CanMakePayment(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& jcaller,
+    const JavaParamRef<jobject>& jweb_contents,
+    jlong registration_id,
+    const JavaParamRef<jstring>& jtop_level_origin,
+    const JavaParamRef<jstring>& jpayment_request_origin,
+    const JavaParamRef<jobjectArray>& jmethod_data,
+    const JavaParamRef<jobjectArray>& jmodifiers,
+    const JavaParamRef<jobject>& jcallback) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(jweb_contents);
 
@@ -315,7 +317,7 @@ static void CanMakePayment(JNIEnv* env,
                      ScopedJavaGlobalRef<jobject>(env, jcallback)));
 }
 
-static void InvokePaymentApp(
+static void JNI_ServiceWorkerPaymentAppBridge_InvokePaymentApp(
     JNIEnv* env,
     const JavaParamRef<jclass>& jcaller,
     const JavaParamRef<jobject>& jweb_contents,
@@ -400,11 +402,12 @@ static void InvokePaymentApp(
                      ScopedJavaGlobalRef<jobject>(env, jcallback)));
 }
 
-static void AbortPaymentApp(JNIEnv* env,
-                            const JavaParamRef<jclass>& jcaller,
-                            const JavaParamRef<jobject>& jweb_contents,
-                            jlong registration_id,
-                            const JavaParamRef<jobject>& jcallback) {
+static void JNI_ServiceWorkerPaymentAppBridge_AbortPaymentApp(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& jcaller,
+    const JavaParamRef<jobject>& jweb_contents,
+    jlong registration_id,
+    const JavaParamRef<jobject>& jcallback) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(jweb_contents);
 

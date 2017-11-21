@@ -23,9 +23,10 @@ using ui::WindowAndroid;
 namespace chrome {
 namespace android {
 
-void SnapshotCallback(JNIEnv* env,
-                      const JavaRef<jobject>& callback,
-                      scoped_refptr<base::RefCountedMemory> png_data) {
+void JNI_ScreenshotTask_SnapshotCallback(
+    JNIEnv* env,
+    const JavaRef<jobject>& callback,
+    scoped_refptr<base::RefCountedMemory> png_data) {
   if (png_data.get()) {
     size_t size = png_data->size();
     ScopedJavaLocalRef<jbyteArray> jbytes(env, env->NewByteArray(size));
@@ -36,18 +37,19 @@ void SnapshotCallback(JNIEnv* env,
   }
 }
 
-void GrabWindowSnapshotAsync(JNIEnv* env,
-                             const JavaParamRef<jclass>& clazz,
-                             const JavaParamRef<jobject>& jcallback,
-                             jlong native_window_android,
-                             jint window_width,
-                             jint window_height) {
+void JNI_ScreenshotTask_GrabWindowSnapshotAsync(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jobject>& jcallback,
+    jlong native_window_android,
+    jint window_width,
+    jint window_height) {
   WindowAndroid* window_android = reinterpret_cast<WindowAndroid*>(
       native_window_android);
   gfx::Rect window_bounds(window_width, window_height);
   ui::GrabWindowSnapshotAsyncPNG(
       window_android, window_bounds,
-      base::Bind(&SnapshotCallback, env,
+      base::Bind(&JNI_ScreenshotTask_SnapshotCallback, env,
                  ScopedJavaGlobalRef<jobject>(env, jcallback)));
 }
 

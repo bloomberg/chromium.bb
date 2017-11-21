@@ -35,9 +35,10 @@ class UserData : public base::SupportsUserData::Data {
 };
 }
 
-jlong Init(JNIEnv* env,
-           const JavaParamRef<jobject>& obj,
-           const JavaParamRef<jobject>& jweb_contents) {
+jlong JNI_SmartSelectionClient_Init(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& jweb_contents) {
   WebContents* web_contents = WebContents::FromJavaWebContents(jweb_contents);
   CHECK(web_contents)
       << "A SmartSelectionClient should be created with a valid WebContents.";

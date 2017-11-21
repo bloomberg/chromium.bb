@@ -175,7 +175,7 @@ void TestUploadDataStreamHandler::NotifyJavaReadCompleted() {
       base::android::ConvertUTF8ToJavaString(env, data_read));
 }
 
-static jlong CreateTestUploadDataStreamHandler(
+static jlong JNI_TestUploadDataStreamHandler_CreateTestUploadDataStreamHandler(
     JNIEnv* env,
     const JavaParamRef<jobject>& jtest_upload_data_stream_handler,
     jlong jupload_data_stream,

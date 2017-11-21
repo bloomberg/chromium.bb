@@ -39,7 +39,7 @@ void InstantAppsSettings::RecordInfoBarDismissEvent(
       base::Time::Now());
 }
 
-static void SetInstantAppDefault(
+static void JNI_InstantAppsSettings_SetInstantAppDefault(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& jweb_contents,
@@ -58,7 +58,7 @@ static void SetInstantAppDefault(
       base::Time::Now());
 }
 
-static jboolean GetInstantAppDefault(
+static jboolean JNI_InstantAppsSettings_GetInstantAppDefault(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& jweb_contents,
@@ -78,10 +78,11 @@ static jboolean GetInstantAppDefault(
   return !added_time.is_null();
 }
 
-static jboolean ShouldShowBanner(JNIEnv* env,
-                                 const JavaParamRef<jclass>& clazz,
-                                 const JavaParamRef<jobject>& jweb_contents,
-                                 const JavaParamRef<jstring>& jurl) {
+static jboolean JNI_InstantAppsSettings_ShouldShowBanner(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jobject>& jweb_contents,
+    const JavaParamRef<jstring>& jurl) {
   content::WebContents* web_contents =
         content::WebContents::FromJavaWebContents(jweb_contents);
   DCHECK(web_contents);

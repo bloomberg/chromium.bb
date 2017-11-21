@@ -22,8 +22,9 @@ namespace content {
 namespace {
 
 base::android::ScopedJavaLocalRef<jbyteArray>
-ConvertResourceRequestBodyToJavaArray(JNIEnv* env,
-                                      const ResourceRequestBody& body) {
+JNI_ResourceRequestBody_ConvertResourceRequestBodyToJavaArray(
+    JNIEnv* env,
+    const ResourceRequestBody& body) {
   std::string encoded = EncodeResourceRequestBody(body);
   return base::android::ToJavaByteArray(
       env, reinterpret_cast<const uint8_t*>(encoded.data()), encoded.size());
@@ -32,7 +33,7 @@ ConvertResourceRequestBodyToJavaArray(JNIEnv* env,
 }  // namespace
 
 base::android::ScopedJavaLocalRef<jbyteArray>
-CreateResourceRequestBodyFromBytes(
+JNI_ResourceRequestBody_CreateResourceRequestBodyFromBytes(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jbyteArray>& j_post_data) {
@@ -46,7 +47,7 @@ CreateResourceRequestBodyFromBytes(
       ResourceRequestBody::CreateFromBytes(
           reinterpret_cast<const char*>(post_data.data()), post_data.size());
 
-  return ConvertResourceRequestBodyToJavaArray(
+  return JNI_ResourceRequestBody_ConvertResourceRequestBodyToJavaArray(
       env, static_cast<const ResourceRequestBody&>(*body));
 }
 
@@ -60,7 +61,7 @@ ConvertResourceRequestBodyToJavaObject(
   // TODO(lukasza): Avoid repeatedly copying the bytes.
   // See also https://goo.gl/ITiLGI.
   base::android::ScopedJavaLocalRef<jbyteArray> j_encoded =
-      ConvertResourceRequestBodyToJavaArray(env, *body);
+      JNI_ResourceRequestBody_ConvertResourceRequestBodyToJavaArray(env, *body);
 
   return Java_ResourceRequestBody_createFromEncodedNativeForm(env, j_encoded);
 }

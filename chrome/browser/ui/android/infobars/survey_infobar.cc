@@ -98,13 +98,14 @@ ScopedJavaLocalRef<jobject> SurveyInfoBar::CreateRenderInfoBar(JNIEnv* env) {
       survey_delegate->GetSurveyInfoBarDelegate());
 }
 
-void Create(JNIEnv* env,
-            const JavaParamRef<jclass>& j_caller,
-            const JavaParamRef<jobject>& j_web_contents,
-            const JavaParamRef<jstring>& j_site_id,
-            jboolean j_show_as_bottom_sheet,
-            jint j_display_logo_resource_id,
-            const JavaParamRef<jobject>& j_survey_info_bar_delegate) {
+void JNI_SurveyInfoBar_Create(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& j_caller,
+    const JavaParamRef<jobject>& j_web_contents,
+    const JavaParamRef<jstring>& j_site_id,
+    jboolean j_show_as_bottom_sheet,
+    jint j_display_logo_resource_id,
+    const JavaParamRef<jobject>& j_survey_info_bar_delegate) {
   InfoBarService* service = InfoBarService::FromWebContents(
       content::WebContents::FromJavaWebContents(j_web_contents));
 

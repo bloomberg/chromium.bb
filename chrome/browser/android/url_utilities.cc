@@ -27,7 +27,7 @@ static const char* const g_downloadable_schemes[] = {
 static const char* const g_fallback_valid_schemes[] = {
     "http", "https", nullptr };
 
-GURL ConvertJavaStringToGURL(JNIEnv* env, jstring url) {
+GURL JNI_UrlUtilities_ConvertJavaStringToGURL(JNIEnv* env, jstring url) {
   return url ? GURL(ConvertJavaStringToUTF8(env, url)) : GURL();
 }
 
@@ -35,7 +35,7 @@ bool CheckSchemeBelongsToList(
     JNIEnv* env,
     const JavaParamRef<jstring>& url,
     const char* const* scheme_list) {
-  GURL gurl = ConvertJavaStringToGURL(env, url);
+  GURL gurl = JNI_UrlUtilities_ConvertJavaStringToGURL(env, url);
   if (gurl.is_valid()) {
     for (size_t i = 0; scheme_list[i]; i++) {
       if (gurl.scheme() == scheme_list[i]) {
@@ -55,13 +55,14 @@ net::registry_controlled_domains::PrivateRegistryFilter GetRegistryFilter(
 
 }  // namespace
 
-static jboolean SameDomainOrHost(JNIEnv* env,
-                                 const JavaParamRef<jclass>& clazz,
-                                 const JavaParamRef<jstring>& url_1_str,
-                                 const JavaParamRef<jstring>& url_2_str,
-                                 jboolean include_private) {
-  GURL url_1 = ConvertJavaStringToGURL(env, url_1_str);
-  GURL url_2 = ConvertJavaStringToGURL(env, url_2_str);
+static jboolean JNI_UrlUtilities_SameDomainOrHost(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jstring>& url_1_str,
+    const JavaParamRef<jstring>& url_2_str,
+    jboolean include_private) {
+  GURL url_1 = JNI_UrlUtilities_ConvertJavaStringToGURL(env, url_1_str);
+  GURL url_2 = JNI_UrlUtilities_ConvertJavaStringToGURL(env, url_2_str);
 
   net::registry_controlled_domains::PrivateRegistryFilter filter =
       GetRegistryFilter(include_private);
@@ -71,13 +72,13 @@ static jboolean SameDomainOrHost(JNIEnv* env,
                                                             filter);
 }
 
-static ScopedJavaLocalRef<jstring> GetDomainAndRegistry(
+static ScopedJavaLocalRef<jstring> JNI_UrlUtilities_GetDomainAndRegistry(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& url,
     jboolean include_private) {
   DCHECK(url);
-  GURL gurl = ConvertJavaStringToGURL(env, url);
+  GURL gurl = JNI_UrlUtilities_ConvertJavaStringToGURL(env, url);
   if (gurl.is_empty())
     return ScopedJavaLocalRef<jstring>();
 
@@ -89,41 +90,45 @@ static ScopedJavaLocalRef<jstring> GetDomainAndRegistry(
       net::registry_controlled_domains::GetDomainAndRegistry(gurl, filter));
 }
 
-static jboolean IsGoogleSearchUrl(JNIEnv* env,
-                                  const JavaParamRef<jclass>& clazz,
-                                  const JavaParamRef<jstring>& url) {
-  GURL gurl = ConvertJavaStringToGURL(env, url);
+static jboolean JNI_UrlUtilities_IsGoogleSearchUrl(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jstring>& url) {
+  GURL gurl = JNI_UrlUtilities_ConvertJavaStringToGURL(env, url);
   if (gurl.is_empty())
     return false;
   return google_util::IsGoogleSearchUrl(gurl);
 }
 
-static jboolean IsGoogleHomePageUrl(JNIEnv* env,
-                                    const JavaParamRef<jclass>& clazz,
-                                    const JavaParamRef<jstring>& url) {
-  GURL gurl = ConvertJavaStringToGURL(env, url);
+static jboolean JNI_UrlUtilities_IsGoogleHomePageUrl(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jstring>& url) {
+  GURL gurl = JNI_UrlUtilities_ConvertJavaStringToGURL(env, url);
   if (gurl.is_empty())
     return false;
   return google_util::IsGoogleHomePageUrl(gurl);
 }
 
-static jboolean IsUrlWithinScope(JNIEnv* env,
-                                 const JavaParamRef<jclass>& clazz,
-                                 const JavaParamRef<jstring>& url,
-                                 const JavaParamRef<jstring>& scope_url) {
-  GURL gurl = ConvertJavaStringToGURL(env, url);
-  GURL gscope_url = ConvertJavaStringToGURL(env, scope_url);
+static jboolean JNI_UrlUtilities_IsUrlWithinScope(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jstring>& url,
+    const JavaParamRef<jstring>& scope_url) {
+  GURL gurl = JNI_UrlUtilities_ConvertJavaStringToGURL(env, url);
+  GURL gscope_url = JNI_UrlUtilities_ConvertJavaStringToGURL(env, scope_url);
   return gurl.GetOrigin() == gscope_url.GetOrigin() &&
          base::StartsWith(gurl.path(), gscope_url.path(),
                           base::CompareCase::SENSITIVE);
 }
 
-static jboolean UrlsMatchIgnoringFragments(JNIEnv* env,
-                                           const JavaParamRef<jclass>& clazz,
-                                           const JavaParamRef<jstring>& url,
-                                           const JavaParamRef<jstring>& url2) {
-  GURL gurl = ConvertJavaStringToGURL(env, url);
-  GURL gurl2 = ConvertJavaStringToGURL(env, url2);
+static jboolean JNI_UrlUtilities_UrlsMatchIgnoringFragments(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jstring>& url,
+    const JavaParamRef<jstring>& url2) {
+  GURL gurl = JNI_UrlUtilities_ConvertJavaStringToGURL(env, url);
+  GURL gurl2 = JNI_UrlUtilities_ConvertJavaStringToGURL(env, url2);
   if (gurl.is_empty())
     return gurl2.is_empty();
   if (!gurl.is_valid() || !gurl2.is_valid())
@@ -135,12 +140,13 @@ static jboolean UrlsMatchIgnoringFragments(JNIEnv* env,
          gurl2.ReplaceComponents(replacements);
 }
 
-static jboolean UrlsFragmentsDiffer(JNIEnv* env,
-                                    const JavaParamRef<jclass>& clazz,
-                                    const JavaParamRef<jstring>& url,
-                                    const JavaParamRef<jstring>& url2) {
-  GURL gurl = ConvertJavaStringToGURL(env, url);
-  GURL gurl2 = ConvertJavaStringToGURL(env, url2);
+static jboolean JNI_UrlUtilities_UrlsFragmentsDiffer(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jstring>& url,
+    const JavaParamRef<jstring>& url2) {
+  GURL gurl = JNI_UrlUtilities_ConvertJavaStringToGURL(env, url);
+  GURL gurl2 = JNI_UrlUtilities_ConvertJavaStringToGURL(env, url2);
   if (gurl.is_empty())
     return !gurl2.is_empty();
   if (!gurl.is_valid() || !gurl2.is_valid())
@@ -148,21 +154,23 @@ static jboolean UrlsFragmentsDiffer(JNIEnv* env,
   return gurl.ref() != gurl2.ref();
 }
 
-static jboolean IsAcceptedScheme(JNIEnv* env,
-                                 const JavaParamRef<jclass>& clazz,
-                                 const JavaParamRef<jstring>& url) {
+static jboolean JNI_UrlUtilities_IsAcceptedScheme(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jstring>& url) {
   return CheckSchemeBelongsToList(env, url, g_supported_schemes);
 }
 
-static jboolean IsValidForIntentFallbackNavigation(
+static jboolean JNI_UrlUtilities_IsValidForIntentFallbackNavigation(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& url) {
   return CheckSchemeBelongsToList(env, url, g_fallback_valid_schemes);
 }
 
-static jboolean IsDownloadable(JNIEnv* env,
-                               const JavaParamRef<jclass>& clazz,
-                               const JavaParamRef<jstring>& url) {
+static jboolean JNI_UrlUtilities_IsDownloadable(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jstring>& url) {
   return CheckSchemeBelongsToList(env, url, g_downloadable_schemes);
 }

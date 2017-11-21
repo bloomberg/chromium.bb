@@ -40,12 +40,13 @@ using base::android::JavaParamRef;
 
 namespace android {
 
-jlong Init(JNIEnv* env,
-           const JavaParamRef<jobject>& obj,
-           jboolean low_mem_device,
-           jlong native_window_android,
-           const JavaParamRef<jobject>& jlayer_title_cache,
-           const JavaParamRef<jobject>& jtab_content_manager) {
+jlong JNI_CompositorView_Init(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jboolean low_mem_device,
+    jlong native_window_android,
+    const JavaParamRef<jobject>& jlayer_title_cache,
+    const JavaParamRef<jobject>& jtab_content_manager) {
   CompositorView* view;
   ui::WindowAndroid* window_android =
       reinterpret_cast<ui::WindowAndroid*>(native_window_android);

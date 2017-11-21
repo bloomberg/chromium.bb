@@ -21,26 +21,29 @@ using base::android::ScopedJavaLocalRef;
 
 namespace android {
 
-void DistillCurrentPageAndView(JNIEnv* env,
-                               const JavaParamRef<jclass>& clazz,
-                               const JavaParamRef<jobject>& j_web_contents) {
+void JNI_DomDistillerTabUtils_DistillCurrentPageAndView(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jobject>& j_web_contents) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(j_web_contents);
   ::DistillCurrentPageAndView(web_contents);
 }
 
-void DistillCurrentPage(JNIEnv* env,
-                        const JavaParamRef<jclass>& clazz,
-                        const JavaParamRef<jobject>& j_source_web_contents) {
+void JNI_DomDistillerTabUtils_DistillCurrentPage(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jobject>& j_source_web_contents) {
   content::WebContents* source_web_contents =
       content::WebContents::FromJavaWebContents(j_source_web_contents);
   ::DistillCurrentPage(source_web_contents);
 }
 
-void DistillAndView(JNIEnv* env,
-                    const JavaParamRef<jclass>& clazz,
-                    const JavaParamRef<jobject>& j_source_web_contents,
-                    const JavaParamRef<jobject>& j_destination_web_contents) {
+void JNI_DomDistillerTabUtils_DistillAndView(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jobject>& j_source_web_contents,
+    const JavaParamRef<jobject>& j_destination_web_contents) {
   content::WebContents* source_web_contents =
       content::WebContents::FromJavaWebContents(j_source_web_contents);
   content::WebContents* destination_web_contents =
@@ -48,7 +51,8 @@ void DistillAndView(JNIEnv* env,
   ::DistillAndView(source_web_contents, destination_web_contents);
 }
 
-ScopedJavaLocalRef<jstring> GetFormattedUrlFromOriginalDistillerUrl(
+ScopedJavaLocalRef<jstring>
+JNI_DomDistillerTabUtils_GetFormattedUrlFromOriginalDistillerUrl(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& j_url) {
@@ -69,20 +73,22 @@ ScopedJavaLocalRef<jstring> GetFormattedUrlFromOriginalDistillerUrl(
 // Returns true if the distiller experiment is set to use any heuristic other
 // than "NONE". This is used to prevent the Reader Mode panel from loading
 // when it would otherwise never be shown.
-jboolean IsDistillerHeuristicsEnabled(JNIEnv* env,
-                                    const JavaParamRef<jclass>& clazz) {
+jboolean JNI_DomDistillerTabUtils_IsDistillerHeuristicsEnabled(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz) {
   return dom_distiller::GetDistillerHeuristicsType()
       != dom_distiller::DistillerHeuristicsType::NONE;
 }
 
 // Returns true if distiller is reporting every page as distillable.
-jboolean IsHeuristicAlwaysTrue(JNIEnv* env,
-                               const JavaParamRef<jclass>& clazz) {
+jboolean JNI_DomDistillerTabUtils_IsHeuristicAlwaysTrue(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz) {
   return dom_distiller::GetDistillerHeuristicsType()
       == dom_distiller::DistillerHeuristicsType::ALWAYS_TRUE;
 }
 
-void SetInterceptNavigationDelegate(
+void JNI_DomDistillerTabUtils_SetInterceptNavigationDelegate(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& delegate,

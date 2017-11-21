@@ -8,7 +8,8 @@
 #include "chrome/common/chrome_content_client.h"
 #include "jni/ContentUtils_jni.h"
 
-static base::android::ScopedJavaLocalRef<jstring> GetBrowserUserAgent(
+static base::android::ScopedJavaLocalRef<jstring>
+JNI_ContentUtils_GetBrowserUserAgent(
     JNIEnv* env,
     const base::android::JavaParamRef<jclass>& clazz) {
   return base::android::ConvertUTF8ToJavaString(env, GetUserAgent());

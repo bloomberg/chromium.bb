@@ -16,9 +16,10 @@ using base::CommandLine;
 
 namespace {
 
-void AppendJavaStringArrayToCommandLine(JNIEnv* env,
-                                        const JavaParamRef<jobjectArray>& array,
-                                        bool includes_program) {
+void JNI_CommandLine_AppendJavaStringArrayToCommandLine(
+    JNIEnv* env,
+    const JavaParamRef<jobjectArray>& array,
+    bool includes_program) {
   std::vector<std::string> vec;
   if (array)
     base::android::AppendJavaStringArrayToStringVector(env, array, &vec);
@@ -31,14 +32,15 @@ void AppendJavaStringArrayToCommandLine(JNIEnv* env,
 
 }  // namespace
 
-static jboolean HasSwitch(JNIEnv* env,
-                          const JavaParamRef<jclass>& clazz,
-                          const JavaParamRef<jstring>& jswitch) {
+static jboolean JNI_CommandLine_HasSwitch(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jstring>& jswitch) {
   std::string switch_string(ConvertJavaStringToUTF8(env, jswitch));
   return CommandLine::ForCurrentProcess()->HasSwitch(switch_string);
 }
 
-static ScopedJavaLocalRef<jstring> GetSwitchValue(
+static ScopedJavaLocalRef<jstring> JNI_CommandLine_GetSwitchValue(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& jswitch) {
@@ -50,35 +52,38 @@ static ScopedJavaLocalRef<jstring> GetSwitchValue(
   return ConvertUTF8ToJavaString(env, value);
 }
 
-static void AppendSwitch(JNIEnv* env,
-                         const JavaParamRef<jclass>& clazz,
-                         const JavaParamRef<jstring>& jswitch) {
+static void JNI_CommandLine_AppendSwitch(JNIEnv* env,
+                                         const JavaParamRef<jclass>& clazz,
+                                         const JavaParamRef<jstring>& jswitch) {
   std::string switch_string(ConvertJavaStringToUTF8(env, jswitch));
   CommandLine::ForCurrentProcess()->AppendSwitch(switch_string);
 }
 
-static void AppendSwitchWithValue(JNIEnv* env,
-                                  const JavaParamRef<jclass>& clazz,
-                                  const JavaParamRef<jstring>& jswitch,
-                                  const JavaParamRef<jstring>& jvalue) {
+static void JNI_CommandLine_AppendSwitchWithValue(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jstring>& jswitch,
+    const JavaParamRef<jstring>& jvalue) {
   std::string switch_string(ConvertJavaStringToUTF8(env, jswitch));
   std::string value_string (ConvertJavaStringToUTF8(env, jvalue));
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(switch_string,
                                                       value_string);
 }
 
-static void AppendSwitchesAndArguments(
+static void JNI_CommandLine_AppendSwitchesAndArguments(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobjectArray>& array) {
-  AppendJavaStringArrayToCommandLine(env, array, false);
+  JNI_CommandLine_AppendJavaStringArrayToCommandLine(env, array, false);
 }
 
-static void Init(JNIEnv* env,
-                 const JavaParamRef<jclass>& jclazz,
-                 const JavaParamRef<jobjectArray>& init_command_line) {
+static void JNI_CommandLine_Init(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& jclazz,
+    const JavaParamRef<jobjectArray>& init_command_line) {
   // TODO(port): Make an overload of Init() that takes StringVector rather than
   // have to round-trip via AppendArguments.
   CommandLine::Init(0, nullptr);
-  AppendJavaStringArrayToCommandLine(env, init_command_line, true);
+  JNI_CommandLine_AppendJavaStringArrayToCommandLine(env, init_command_line,
+                                                     true);
 }

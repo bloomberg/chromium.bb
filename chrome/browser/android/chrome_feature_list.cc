@@ -341,19 +341,23 @@ const base::Feature kWebVrAutopresentFromIntent{
 const base::Feature kWebVrCardboardSupport{"WebVrCardboardSupport",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
-static jboolean IsInitialized(JNIEnv* env, const JavaParamRef<jclass>& clazz) {
+static jboolean JNI_ChromeFeatureList_IsInitialized(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz) {
   return !!base::FeatureList::GetInstance();
 }
 
-static jboolean IsEnabled(JNIEnv* env,
-                          const JavaParamRef<jclass>& clazz,
-                          const JavaParamRef<jstring>& jfeature_name) {
+static jboolean JNI_ChromeFeatureList_IsEnabled(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jstring>& jfeature_name) {
   const base::Feature* feature =
       FindFeatureExposedToJava(ConvertJavaStringToUTF8(env, jfeature_name));
   return base::FeatureList::IsEnabled(*feature);
 }
 
-static ScopedJavaLocalRef<jstring> GetFieldTrialParamByFeature(
+static ScopedJavaLocalRef<jstring>
+JNI_ChromeFeatureList_GetFieldTrialParamByFeature(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& jfeature_name,
@@ -366,7 +370,7 @@ static ScopedJavaLocalRef<jstring> GetFieldTrialParamByFeature(
   return ConvertUTF8ToJavaString(env, param_value);
 }
 
-static jint GetFieldTrialParamByFeatureAsInt(
+static jint JNI_ChromeFeatureList_GetFieldTrialParamByFeatureAsInt(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& jfeature_name,
@@ -379,7 +383,7 @@ static jint GetFieldTrialParamByFeatureAsInt(
                                                 jdefault_value);
 }
 
-static jdouble GetFieldTrialParamByFeatureAsDouble(
+static jdouble JNI_ChromeFeatureList_GetFieldTrialParamByFeatureAsDouble(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& jfeature_name,
@@ -392,7 +396,7 @@ static jdouble GetFieldTrialParamByFeatureAsDouble(
                                                    jdefault_value);
 }
 
-static jboolean GetFieldTrialParamByFeatureAsBoolean(
+static jboolean JNI_ChromeFeatureList_GetFieldTrialParamByFeatureAsBoolean(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& jfeature_name,

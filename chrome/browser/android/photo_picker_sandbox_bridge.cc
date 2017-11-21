@@ -15,7 +15,7 @@
 #include "sandbox/linux/seccomp-bpf-helpers/baseline_policy_android.h"
 #endif
 
-void InitializePhotoPickerSandbox(
+void JNI_DecoderService_InitializePhotoPickerSandbox(
     JNIEnv* env,
     const base::android::JavaParamRef<jclass>& jcaller) {
   auto* info = base::android::BuildInfo::GetInstance();

@@ -115,7 +115,8 @@ void PhysicalWebDataSourceAndroid::OnDistanceChanged(
                           distance_estimate);
 }
 
-static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {
+static jlong JNI_UrlManager_Init(JNIEnv* env,
+                                 const JavaParamRef<jobject>& obj) {
   physical_web::PhysicalWebDataSource* data_source =
       g_browser_process->GetPhysicalWebDataSource();
   return reinterpret_cast<intptr_t>(data_source);

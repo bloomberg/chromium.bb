@@ -126,13 +126,13 @@ LayerTitleCache::~LayerTitleCache() {
 // Native JNI methods
 // ----------------------------------------------------------------------------
 
-jlong Init(JNIEnv* env,
-           const JavaParamRef<jobject>& obj,
-           jint fade_width,
-           jint favicon_start_padding,
-           jint favicon_end_padding,
-           jint spinner_resource_id,
-           jint spinner_incognito_resource_id) {
+jlong JNI_LayerTitleCache_Init(JNIEnv* env,
+                               const JavaParamRef<jobject>& obj,
+                               jint fade_width,
+                               jint favicon_start_padding,
+                               jint favicon_end_padding,
+                               jint spinner_resource_id,
+                               jint spinner_incognito_resource_id) {
   LayerTitleCache* cache = new LayerTitleCache(
       env, obj, fade_width, favicon_start_padding, favicon_end_padding,
       spinner_resource_id, spinner_incognito_resource_id);

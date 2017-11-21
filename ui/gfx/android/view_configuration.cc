@@ -131,13 +131,14 @@ base::LazyInstance<ViewConfigurationData>::Leaky g_view_configuration =
 
 }  // namespace
 
-static void UpdateSharedViewConfiguration(JNIEnv* env,
-                                          const JavaParamRef<jobject>& obj,
-                                          jfloat maximum_fling_velocity,
-                                          jfloat minimum_fling_velocity,
-                                          jfloat touch_slop,
-                                          jfloat double_tap_slop,
-                                          jfloat min_scaling_span) {
+static void JNI_ViewConfigurationHelper_UpdateSharedViewConfiguration(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jfloat maximum_fling_velocity,
+    jfloat minimum_fling_velocity,
+    jfloat touch_slop,
+    jfloat double_tap_slop,
+    jfloat min_scaling_span) {
   g_view_configuration.Get().SynchronizedUpdate(
       maximum_fling_velocity, minimum_fling_velocity, touch_slop,
       double_tap_slop, min_scaling_span);

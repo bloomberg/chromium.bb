@@ -16,9 +16,10 @@ using base::android::ConvertJavaStringToUTF8;
 using base::android::JavaParamRef;
 
 // static
-jint Investigate(JNIEnv* env,
-                 const JavaParamRef<jclass>& jcaller,
-                 const JavaParamRef<jstring>& current_email) {
+jint JNI_SigninInvestigator_Investigate(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& jcaller,
+    const JavaParamRef<jstring>& current_email) {
   Profile* profile = ProfileManager::GetActiveUserProfile();
   DCHECK(profile);
   InvestigatorDependencyProvider provider(profile);

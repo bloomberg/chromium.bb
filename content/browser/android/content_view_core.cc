@@ -959,12 +959,13 @@ void ContentViewCore::WebContentsDestroyed() {
 }
 
 // This is called for each ContentView.
-jlong Init(JNIEnv* env,
-           const JavaParamRef<jobject>& obj,
-           const JavaParamRef<jobject>& jweb_contents,
-           const JavaParamRef<jobject>& jview_android_delegate,
-           jlong jwindow_android,
-           jfloat dip_scale) {
+jlong JNI_ContentViewCore_Init(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& jweb_contents,
+    const JavaParamRef<jobject>& jview_android_delegate,
+    jlong jwindow_android,
+    jfloat dip_scale) {
   WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
       WebContents::FromJavaWebContents(jweb_contents));
   CHECK(web_contents)
@@ -982,7 +983,7 @@ jlong Init(JNIEnv* env,
   return reinterpret_cast<intptr_t>(view);
 }
 
-static ScopedJavaLocalRef<jobject> FromWebContentsAndroid(
+static ScopedJavaLocalRef<jobject> JNI_ContentViewCore_FromWebContentsAndroid(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& jweb_contents) {

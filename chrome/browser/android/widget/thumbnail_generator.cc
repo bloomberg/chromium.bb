@@ -191,6 +191,7 @@ void ThumbnailGenerator::RetrieveThumbnail(
 }
 
 // static
-static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& jobj) {
+static jlong JNI_ThumbnailGenerator_Init(JNIEnv* env,
+                                         const JavaParamRef<jobject>& jobj) {
   return reinterpret_cast<intptr_t>(new ThumbnailGenerator(jobj));
 }

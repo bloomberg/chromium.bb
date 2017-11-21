@@ -224,7 +224,8 @@ void ContextualSearchManager::EnableContextualSearchJsApiForOverlay(
   ContextualSearchObserver::EnsureForWebContents(overlay_web_contents, this);
 }
 
-jlong Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {
+jlong JNI_ContextualSearchManager_Init(JNIEnv* env,
+                                       const JavaParamRef<jobject>& obj) {
   ContextualSearchManager* manager = new ContextualSearchManager(env, obj);
   return reinterpret_cast<intptr_t>(manager);
 }

@@ -83,7 +83,8 @@ void StaticTabSceneLayer::UpdateTabLayer(
   }
 }
 
-static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& jobj) {
+static jlong JNI_StaticTabSceneLayer_Init(JNIEnv* env,
+                                          const JavaParamRef<jobject>& jobj) {
   // This will automatically bind to the Java object and pass ownership there.
   StaticTabSceneLayer* scene_layer = new StaticTabSceneLayer(env, jobj);
   return reinterpret_cast<intptr_t>(scene_layer);

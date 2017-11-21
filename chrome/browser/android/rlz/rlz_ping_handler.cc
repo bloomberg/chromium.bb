@@ -131,14 +131,15 @@ void RlzPingHandler::OnURLFetchComplete(const net::URLFetcher* source) {
   delete this;
 }
 
-void StartPing(JNIEnv* env,
-               const JavaParamRef<jclass>& clazz,
-               const base::android::JavaParamRef<jobject>& j_profile,
-               const base::android::JavaParamRef<jstring>& j_brand,
-               const base::android::JavaParamRef<jstring>& j_language,
-               const base::android::JavaParamRef<jstring>& j_events,
-               const base::android::JavaParamRef<jstring>& j_id,
-               const base::android::JavaParamRef<jobject>& j_callback) {
+void JNI_RlzPingHandler_StartPing(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const base::android::JavaParamRef<jobject>& j_profile,
+    const base::android::JavaParamRef<jstring>& j_brand,
+    const base::android::JavaParamRef<jstring>& j_language,
+    const base::android::JavaParamRef<jstring>& j_events,
+    const base::android::JavaParamRef<jstring>& j_id,
+    const base::android::JavaParamRef<jobject>& j_callback) {
   RlzPingHandler* handler = new RlzPingHandler(j_profile);
   handler->Ping(j_brand, j_language, j_events, j_id, j_callback);
 }
