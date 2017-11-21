@@ -15,9 +15,11 @@ namespace blink {
 
 namespace {
 
-CSSStyleValueVector ParseCSSStyleValue(const String& property_name,
-                                       const String& value,
-                                       ExceptionState& exception_state) {
+CSSStyleValueVector ParseCSSStyleValue(
+    const ExecutionContext* execution_context,
+    const String& property_name,
+    const String& value,
+    ExceptionState& exception_state) {
   const CSSPropertyID property_id = cssPropertyID(property_name);
 
   // TODO(775804): Handle custom properties
@@ -34,8 +36,10 @@ CSSStyleValueVector ParseCSSStyleValue(const String& property_name,
 
   // TODO(crbug.com/783031): This should probably use an existing parser context
   // (e.g. from execution context) to parse relative URLs correctly.
-  const CSSValue* css_value =
-      CSSParser::ParseSingleValue(property_id, value, StrictCSSParserContext());
+  const CSSValue* css_value = CSSParser::ParseSingleValue(
+      property_id, value,
+      StrictCSSParserContext(execution_context->SecureContextMode()));
+
   if (!css_value) {
     exception_state.ThrowDOMException(
         kSyntaxError, "The value provided ('" + value +
@@ -52,11 +56,12 @@ CSSStyleValueVector ParseCSSStyleValue(const String& property_name,
 
 }  // namespace
 
-CSSStyleValue* CSSStyleValue::parse(const String& property_name,
+CSSStyleValue* CSSStyleValue::parse(const ExecutionContext* execution_context,
+                                    const String& property_name,
                                     const String& value,
                                     ExceptionState& exception_state) {
-  CSSStyleValueVector style_value_vector =
-      ParseCSSStyleValue(property_name, value, exception_state);
+  CSSStyleValueVector style_value_vector = ParseCSSStyleValue(
+      execution_context, property_name, value, exception_state);
   if (style_value_vector.IsEmpty())
     return nullptr;
 
@@ -64,15 +69,24 @@ CSSStyleValue* CSSStyleValue::parse(const String& property_name,
 }
 
 Nullable<CSSStyleValueVector> CSSStyleValue::parseAll(
+    const ExecutionContext* execution_context,
     const String& property_name,
     const String& value,
     ExceptionState& exception_state) {
-  CSSStyleValueVector style_value_vector =
-      ParseCSSStyleValue(property_name, value, exception_state);
+  CSSStyleValueVector style_value_vector = ParseCSSStyleValue(
+      execution_context, property_name, value, exception_state);
   if (style_value_vector.IsEmpty())
     return nullptr;
 
   return style_value_vector;
+}
+
+String CSSStyleValue::toString(
+    const ExecutionContext* execution_context) const {
+  const CSSValue* result = ToCSSValue(execution_context->SecureContextMode());
+  // TODO(meade): Remove this once all the number and length types are
+  // rewritten.
+  return result ? result->CssText() : "";
 }
 
 String CSSStyleValue::StyleValueTypeToString(StyleValueType type) {

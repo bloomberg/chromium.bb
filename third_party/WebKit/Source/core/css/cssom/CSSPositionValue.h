@@ -33,7 +33,7 @@ class CORE_EXPORT CSSPositionValue final : public CSSStyleValue {
   // Internal methods - from CSSStyleValue.
   StyleValueType GetType() const final { return kPositionType; }
 
-  const CSSValue* ToCSSValue() const final;
+  const CSSValue* ToCSSValue(SecureContextMode) const final;
 
   virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(x_);

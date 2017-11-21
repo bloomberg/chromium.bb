@@ -57,7 +57,8 @@ StyleEngineTest::RuleSetInvalidation
 StyleEngineTest::ScheduleInvalidationsForRules(TreeScope& tree_scope,
                                                const String& css_text) {
   StyleSheetContents* sheet =
-      StyleSheetContents::Create(CSSParserContext::Create(kHTMLStandardMode));
+      StyleSheetContents::Create(CSSParserContext::Create(
+          kHTMLStandardMode, SecureContextMode::kInsecureContext));
   sheet->ParseString(css_text);
   HeapHashSet<Member<RuleSet>> rule_sets;
   RuleSet& rule_set = sheet->EnsureRuleSet(MediaQueryEvaluator(),
@@ -745,14 +746,16 @@ TEST_F(StyleEngineTest, ModifyStyleRuleMatchedPropertiesCache) {
   // Modify the CSSPropertyValueSet once to make it a mutable set. Subsequent
   // modifications will not change the CSSPropertyValueSet pointer and cache
   // hash value will be the same.
-  style_rule->style()->setProperty("color", "red", "", ASSERT_NO_EXCEPTION);
+  style_rule->style()->setProperty(&GetDocument(), "color", "red", "",
+                                   ASSERT_NO_EXCEPTION);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   ASSERT_TRUE(t1->GetComputedStyle());
   EXPECT_EQ(MakeRGB(255, 0, 0),
             t1->GetComputedStyle()->VisitedDependentColor(CSSPropertyColor));
 
-  style_rule->style()->setProperty("color", "green", "", ASSERT_NO_EXCEPTION);
+  style_rule->style()->setProperty(&GetDocument(), "color", "green", "",
+                                   ASSERT_NO_EXCEPTION);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   ASSERT_TRUE(t1->GetComputedStyle());

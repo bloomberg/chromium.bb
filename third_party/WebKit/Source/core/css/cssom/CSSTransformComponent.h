@@ -14,6 +14,8 @@ namespace blink {
 
 class DOMMatrix;
 class ExceptionState;
+class ExecutionContext;
+enum class SecureContextMode;
 
 // CSSTransformComponent is the base class used for the representations of
 // the individual CSS transforms. They are combined in a CSSTransformValue
@@ -41,16 +43,11 @@ class CORE_EXPORT CSSTransformComponent : public ScriptWrappable {
   // Getters and setters for attributes defined in the IDL.
   bool is2D() const { return is2D_; }
   virtual void setIs2D(bool is2D) { is2D_ = is2D; }
-  virtual String toString() const {
-    const CSSValue* result = ToCSSValue();
-    // TODO(meade): Remove this once all the number and length types are
-    // rewritten.
-    return result ? result->CssText() : "";
-  }
+  virtual String toString(const ExecutionContext*) const;
 
   // Internal methods.
   virtual TransformComponentType GetType() const = 0;
-  virtual const CSSFunctionValue* ToCSSValue() const = 0;
+  virtual const CSSFunctionValue* ToCSSValue(SecureContextMode) const = 0;
   virtual const DOMMatrix* AsMatrix(ExceptionState&) const = 0;
 
  protected:

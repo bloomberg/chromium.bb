@@ -85,8 +85,10 @@ MutableCSSPropertyValueSet::SetResult CSSParser::ParseValue(
     MutableCSSPropertyValueSet* declaration,
     CSSPropertyID unresolved_property,
     const String& string,
-    bool important) {
+    bool important,
+    SecureContextMode secure_context_mode) {
   return ParseValue(declaration, unresolved_property, string, important,
+                    secure_context_mode,
                     static_cast<StyleSheetContents*>(nullptr));
 }
 
@@ -95,6 +97,7 @@ MutableCSSPropertyValueSet::SetResult CSSParser::ParseValue(
     CSSPropertyID unresolved_property,
     const String& string,
     bool important,
+    SecureContextMode secure_context_mode,
     StyleSheetContents* style_sheet) {
   if (string.IsEmpty()) {
     bool did_parse = false;
@@ -117,7 +120,7 @@ MutableCSSPropertyValueSet::SetResult CSSParser::ParseValue(
     context = CSSParserContext::Create(style_sheet->ParserContext(), nullptr);
     context->SetMode(parser_mode);
   } else {
-    context = CSSParserContext::Create(parser_mode);
+    context = CSSParserContext::Create(parser_mode, secure_context_mode);
   }
   return ParseValue(declaration, unresolved_property, string, important,
                     context);
@@ -129,6 +132,7 @@ MutableCSSPropertyValueSet::SetResult CSSParser::ParseValueForCustomProperty(
     const PropertyRegistry* registry,
     const String& value,
     bool important,
+    SecureContextMode secure_context_mode,
     StyleSheetContents* style_sheet,
     bool is_animation_tainted) {
   DCHECK(CSSVariableParser::IsValidVariableName(property_name));
@@ -143,7 +147,7 @@ MutableCSSPropertyValueSet::SetResult CSSParser::ParseValueForCustomProperty(
     context = CSSParserContext::Create(style_sheet->ParserContext(), nullptr);
     context->SetMode(parser_mode);
   } else {
-    context = CSSParserContext::Create(parser_mode);
+    context = CSSParserContext::Create(parser_mode, secure_context_mode);
   }
   return CSSParserImpl::ParseVariableValue(declaration, property_name, registry,
                                            value, important, context,
@@ -192,10 +196,11 @@ StyleRuleKeyframe* CSSParser::ParseKeyframeRule(const CSSParserContext* context,
   return ToStyleRuleKeyframe(keyframe);
 }
 
-bool CSSParser::ParseSupportsCondition(const String& condition) {
+bool CSSParser::ParseSupportsCondition(const String& condition,
+                                       SecureContextMode secure_context_mode) {
   CSSTokenizer tokenizer(condition);
   const auto tokens = tokenizer.TokenizeToEOF();
-  CSSParserImpl parser(StrictCSSParserContext());
+  CSSParserImpl parser(StrictCSSParserContext(secure_context_mode));
   return CSSSupportsParser::SupportsCondition(
              CSSParserTokenRange(tokens), parser,
              CSSSupportsParser::kForWindowCSS) == CSSSupportsParser::kSupported;
@@ -216,9 +221,14 @@ bool CSSParser::ParseColor(Color& color, const String& string, bool strict) {
   const CSSValue* value = CSSParserFastPaths::ParseColor(
       string, strict ? kHTMLStandardMode : kHTMLQuirksMode);
   // TODO(timloh): Why is this always strict mode?
-  if (!value)
-    value =
-        ParseSingleValue(CSSPropertyColor, string, StrictCSSParserContext());
+  if (!value) {
+    // NOTE(ikilpatrick): We will always parse color value in the insecure
+    // context mode. If a function/unit/etc will require a secure context check
+    // in the future, plumbing will need to be added.
+    value = ParseSingleValue(
+        CSSPropertyColor, string,
+        StrictCSSParserContext(SecureContextMode::kInsecureContext));
+  }
 
   if (!value || !value->IsColorValue())
     return false;

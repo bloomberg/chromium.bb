@@ -26,7 +26,7 @@
 // spec https://drafts.csswg.org/css-page/#at-page-rule allows only
 // margin at-rules inside @page.
 interface CSSPageRule : CSSRule {
-    attribute DOMString selectorText;
+    [SetterCallWith=ExecutionContext] attribute DOMString selectorText;
     // TODO(foolip): style should have [PutForwards=cssText].
     [SameObject] readonly attribute CSSStyleDeclaration style;
 };

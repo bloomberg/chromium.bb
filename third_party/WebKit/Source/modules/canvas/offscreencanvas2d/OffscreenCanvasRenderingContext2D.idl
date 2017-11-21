@@ -28,7 +28,7 @@
     // compositing
     attribute unrestricted double globalAlpha; // (default 1.0)
     attribute DOMString globalCompositeOperation; // (default source-over)
-    [MeasureAs=Canvas2DFilter]attribute DOMString filter;
+    [MeasureAs=Canvas2DFilter, SetterCallWith=ExecutionContext] attribute DOMString filter;
 
     // image smoothing
     attribute boolean imageSmoothingEnabled; // (default True)

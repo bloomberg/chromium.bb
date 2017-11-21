@@ -99,7 +99,7 @@ class CSSKeyframesRule final : public CSSRule {
 
   CSSRuleList* cssRules() const override;
 
-  void appendRule(const String& rule);
+  void appendRule(const ExecutionContext*, const String& rule);
   void deleteRule(const String& key);
   CSSKeyframeRule* findRule(const String& key);
 

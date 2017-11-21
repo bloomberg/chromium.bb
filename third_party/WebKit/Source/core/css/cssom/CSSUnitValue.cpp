@@ -83,7 +83,7 @@ CSSStyleValue::StyleValueType CSSUnitValue::GetType() const {
   return StyleValueType::kUnknownType;
 }
 
-const CSSValue* CSSUnitValue::ToCSSValue() const {
+const CSSValue* CSSUnitValue::ToCSSValue(SecureContextMode) const {
   return CSSPrimitiveValue::Create(value_, unit_);
 }
 

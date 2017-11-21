@@ -10,6 +10,6 @@
     Exposed=(Window,PaintWorklet),
     RuntimeEnabled=CSSTypedOM
 ] interface CSSTransformComponent {
-    stringifier;
+    [CallWith=ExecutionContext] stringifier;
     attribute boolean is2D;
 };

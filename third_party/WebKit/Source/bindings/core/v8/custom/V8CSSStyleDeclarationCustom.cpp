@@ -222,6 +222,8 @@ void V8CSSStyleDeclaration::namedPropertySetterCustom(
     return;
 
   CEReactionsScope ce_reactions_scope;
+  ExecutionContext* execution_context =
+      ToExecutionContext(info.Holder()->CreationContext());
 
   TOSTRING_VOID(V8StringResource<kTreatNullAsNullString>, property_value,
                 value);
@@ -229,7 +231,8 @@ void V8CSSStyleDeclaration::namedPropertySetterCustom(
       info.GetIsolate(), ExceptionState::kSetterContext, "CSSStyleDeclaration",
       getPropertyName(resolveCSSPropertyID(unresolved_property)));
   impl->SetPropertyInternal(unresolved_property, String(), property_value,
-                            false, exception_state);
+                            false, execution_context->SecureContextMode(),
+                            exception_state);
 
   V8SetReturnValue(info, value);
 }

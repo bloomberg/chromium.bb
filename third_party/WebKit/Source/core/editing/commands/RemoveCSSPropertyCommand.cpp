@@ -57,13 +57,14 @@ void RemoveCSSPropertyCommand::DoApply(EditingState*) {
   // script. Setting to null string removes the property. We don't have internal
   // version of removeProperty.
   element_->style()->SetPropertyInternal(property_, String(), String(), false,
+                                         GetDocument().SecureContextMode(),
                                          IGNORE_EXCEPTION_FOR_TESTING);
 }
 
 void RemoveCSSPropertyCommand::DoUnapply() {
-  element_->style()->SetPropertyInternal(property_, String(), old_value_,
-                                         important_,
-                                         IGNORE_EXCEPTION_FOR_TESTING);
+  element_->style()->SetPropertyInternal(
+      property_, String(), old_value_, important_,
+      GetDocument().SecureContextMode(), IGNORE_EXCEPTION_FOR_TESTING);
 }
 
 void RemoveCSSPropertyCommand::Trace(blink::Visitor* visitor) {

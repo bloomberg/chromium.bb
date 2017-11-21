@@ -52,10 +52,12 @@ class AnimationEffectStackTest : public ::testing::Test {
     StringKeyframeVector keyframes(2);
     keyframes[0] = StringKeyframe::Create();
     keyframes[0]->SetOffset(0.0);
-    keyframes[0]->SetCSSPropertyValue(id, value, nullptr);
+    keyframes[0]->SetCSSPropertyValue(
+        id, value, SecureContextMode::kInsecureContext, nullptr);
     keyframes[1] = StringKeyframe::Create();
     keyframes[1]->SetOffset(1.0);
-    keyframes[1]->SetCSSPropertyValue(id, value, nullptr);
+    keyframes[1]->SetCSSPropertyValue(
+        id, value, SecureContextMode::kInsecureContext, nullptr);
     return StringKeyframeEffectModel::Create(keyframes);
   }
 

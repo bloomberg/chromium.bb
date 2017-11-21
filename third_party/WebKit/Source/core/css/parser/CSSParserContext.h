@@ -8,6 +8,7 @@
 #include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
 #include "core/css/parser/CSSParserMode.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/frame/WebFeatureForward.h"
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
@@ -19,7 +20,6 @@ namespace blink {
 
 class CSSStyleSheet;
 class Document;
-class ExecutionContext;
 class StyleSheetContents;
 
 class CORE_EXPORT CSSParserContext
@@ -49,6 +49,7 @@ class CORE_EXPORT CSSParserContext
 
   static CSSParserContext* Create(
       CSSParserMode,
+      SecureContextMode,
       SelectorProfile = kDynamicProfile,
       const Document* use_counter_document = nullptr);
   static CSSParserContext* Create(const Document&);
@@ -74,6 +75,10 @@ class CORE_EXPORT CSSParserContext
   bool IsHTMLDocument() const { return is_html_document_; }
   bool IsDynamicProfile() const { return profile_ == kDynamicProfile; }
   bool IsStaticProfile() const { return profile_ == kStaticProfile; }
+
+  SecureContextMode GetSecureContextMode() const {
+    return secure_context_mode_;
+  }
 
   // This quirk is to maintain compatibility with Android apps built on
   // the Android SDK prior to and including version 18. Presumably, this
@@ -110,6 +115,7 @@ class CORE_EXPORT CSSParserContext
                    const Referrer&,
                    bool is_html_document,
                    bool use_legacy_background_size_shorthand_behavior,
+                   SecureContextMode,
                    ContentSecurityPolicyDisposition,
                    const Document* use_counter_document);
 
@@ -121,12 +127,13 @@ class CORE_EXPORT CSSParserContext
   Referrer referrer_;
   bool is_html_document_;
   bool use_legacy_background_size_shorthand_behavior_;
+  SecureContextMode secure_context_mode_;
   ContentSecurityPolicyDisposition should_check_content_security_policy_;
 
   WeakMember<const Document> document_;
 };
 
-CORE_EXPORT const CSSParserContext* StrictCSSParserContext();
+CORE_EXPORT const CSSParserContext* StrictCSSParserContext(SecureContextMode);
 
 }  // namespace blink
 

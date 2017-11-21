@@ -7,7 +7,7 @@
     Exposed=(Window,PaintWorklet),
     RuntimeEnabled=CSSTypedOM
 ] interface StylePropertyMap : StylePropertyMapReadonly {
-    [RaisesException] void append(DOMString property, (CSSStyleValue or sequence<CSSStyleValue> or DOMString) value);
+    [RaisesException, CallWith=ExecutionContext] void append(DOMString property, (CSSStyleValue or sequence<CSSStyleValue> or DOMString) value);
     [RaisesException, ImplementedAs=remove] void delete(DOMString property);
-    [RaisesException] void set(DOMString property, (CSSStyleValue or sequence<CSSStyleValue> or DOMString) value);
+    [RaisesException, CallWith=ExecutionContext] void set(DOMString property, (CSSStyleValue or sequence<CSSStyleValue> or DOMString) value);
 };

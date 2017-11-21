@@ -6,6 +6,6 @@
 
 interface CSSGroupingRule : CSSRule {
     [SameObject] readonly attribute CSSRuleList cssRules;
-    [RaisesException] unsigned long insertRule(DOMString rule, unsigned long index);
+    [RaisesException, CallWith=ExecutionContext] unsigned long insertRule(DOMString rule, unsigned long index);
     [RaisesException] void deleteRule(unsigned long index);
 };

@@ -51,7 +51,7 @@ class CORE_EXPORT CSSTranslation final : public CSSTransformComponent {
   // Internal methods - from CSSTransformComponent.
   TransformComponentType GetType() const final { return kTranslationType; }
   const DOMMatrix* AsMatrix(ExceptionState&) const final;
-  const CSSFunctionValue* ToCSSValue() const final;
+  const CSSFunctionValue* ToCSSValue(SecureContextMode) const final;
 
   virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(x_);

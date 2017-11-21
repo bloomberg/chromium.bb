@@ -93,8 +93,8 @@ TEST_F(CSSStyleSheetResourceTest, DuplicateResourceNotCached) {
       ResourceResponse(css_url, "style/css", 0, g_null_atom), nullptr);
   css_resource->FinishForTest();
 
-  CSSParserContext* parser_context =
-      CSSParserContext::Create(kHTMLStandardMode);
+  CSSParserContext* parser_context = CSSParserContext::Create(
+      kHTMLStandardMode, SecureContextMode::kInsecureContext);
   StyleSheetContents* contents = StyleSheetContents::Create(parser_context);
   CSSStyleSheet* sheet = CSSStyleSheet::Create(contents, GetDocument());
   EXPECT_TRUE(sheet);
@@ -114,8 +114,8 @@ TEST_F(CSSStyleSheetResourceTest, DuplicateResourceNotCached) {
 TEST_F(CSSStyleSheetResourceTest, CreateFromCacheRestoresOriginalSheet) {
   CSSStyleSheetResource* css_resource = CreateAndSaveTestStyleSheetResource();
 
-  CSSParserContext* parser_context =
-      CSSParserContext::Create(kHTMLStandardMode);
+  CSSParserContext* parser_context = CSSParserContext::Create(
+      kHTMLStandardMode, SecureContextMode::kInsecureContext);
   StyleSheetContents* contents = StyleSheetContents::Create(parser_context);
   CSSStyleSheet* sheet = CSSStyleSheet::Create(contents, GetDocument());
   ASSERT_TRUE(sheet);
@@ -138,8 +138,8 @@ TEST_F(CSSStyleSheetResourceTest,
        CreateFromCacheWithMediaQueriesCopiesOriginalSheet) {
   CSSStyleSheetResource* css_resource = CreateAndSaveTestStyleSheetResource();
 
-  CSSParserContext* parser_context =
-      CSSParserContext::Create(kHTMLStandardMode);
+  CSSParserContext* parser_context = CSSParserContext::Create(
+      kHTMLStandardMode, SecureContextMode::kInsecureContext);
   StyleSheetContents* contents = StyleSheetContents::Create(parser_context);
   CSSStyleSheet* sheet = CSSStyleSheet::Create(contents, GetDocument());
   ASSERT_TRUE(sheet);

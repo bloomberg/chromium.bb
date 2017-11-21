@@ -29,7 +29,8 @@ DOMMatrix* DOMMatrix::Create(ExecutionContext* execution_context,
     }
 
     DOMMatrix* matrix = new DOMMatrix(TransformationMatrix());
-    matrix->SetMatrixValueFromString(init.GetAsString(), exception_state);
+    matrix->SetMatrixValueFromString(execution_context, init.GetAsString(),
+                                     exception_state);
     return matrix;
   }
 
@@ -314,9 +315,10 @@ DOMMatrix* DOMMatrix::invertSelf() {
   return this;
 }
 
-DOMMatrix* DOMMatrix::setMatrixValue(const String& input_string,
+DOMMatrix* DOMMatrix::setMatrixValue(const ExecutionContext* execution_context,
+                                     const String& input_string,
                                      ExceptionState& exception_state) {
-  SetMatrixValueFromString(input_string, exception_state);
+  SetMatrixValueFromString(execution_context, input_string, exception_state);
   return this;
 }
 

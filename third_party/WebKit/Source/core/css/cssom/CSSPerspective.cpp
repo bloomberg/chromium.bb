@@ -69,14 +69,15 @@ const DOMMatrix* CSSPerspective::AsMatrix(
   return matrix;
 }
 
-const CSSFunctionValue* CSSPerspective::ToCSSValue() const {
+const CSSFunctionValue* CSSPerspective::ToCSSValue(
+    SecureContextMode secure_context_mode) const {
   if (length_->IsUnitValue() && ToCSSUnitValue(length_)->value() < 0) {
     // Negative values are invalid.
     // https://github.com/w3c/css-houdini-drafts/issues/420
     return nullptr;
   }
   CSSFunctionValue* result = CSSFunctionValue::Create(CSSValuePerspective);
-  result->Append(*length_->ToCSSValue());
+  result->Append(*length_->ToCSSValue(secure_context_mode));
   return result;
 }
 

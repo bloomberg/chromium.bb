@@ -14,8 +14,9 @@ namespace blink {
 
 TSAN_TEST(FilterOperationResolverThreadedTest, SimpleMatrixFilter) {
   RunOnThreads([]() {
-    const CSSValue* value =
-        CSSParser::ParseSingleValue(CSSPropertyFilter, "sepia(50%)");
+    const CSSValue* value = CSSParser::ParseSingleValue(
+        CSSPropertyFilter, "sepia(50%)",
+        StrictCSSParserContext(SecureContextMode::kInsecureContext));
     ASSERT_TRUE(value);
 
     FilterOperations fo =
@@ -28,8 +29,9 @@ TSAN_TEST(FilterOperationResolverThreadedTest, SimpleMatrixFilter) {
 
 TSAN_TEST(FilterOperationResolverThreadedTest, SimpleTransferFilter) {
   RunOnThreads([]() {
-    const CSSValue* value =
-        CSSParser::ParseSingleValue(CSSPropertyFilter, "brightness(50%)");
+    const CSSValue* value = CSSParser::ParseSingleValue(
+        CSSPropertyFilter, "brightness(50%)",
+        StrictCSSParserContext(SecureContextMode::kInsecureContext));
     ASSERT_TRUE(value);
 
     FilterOperations fo =
@@ -42,8 +44,9 @@ TSAN_TEST(FilterOperationResolverThreadedTest, SimpleTransferFilter) {
 
 TSAN_TEST(FilterOperationResolverThreadedTest, SimpleBlurFilter) {
   RunOnThreads([]() {
-    const CSSValue* value =
-        CSSParser::ParseSingleValue(CSSPropertyFilter, "blur(10px)");
+    const CSSValue* value = CSSParser::ParseSingleValue(
+        CSSPropertyFilter, "blur(10px)",
+        StrictCSSParserContext(SecureContextMode::kInsecureContext));
     ASSERT_TRUE(value);
 
     FilterOperations fo =
@@ -57,7 +60,8 @@ TSAN_TEST(FilterOperationResolverThreadedTest, SimpleBlurFilter) {
 TSAN_TEST(FilterOperationResolverThreadedTest, SimpleDropShadow) {
   RunOnThreads([]() {
     const CSSValue* value = CSSParser::ParseSingleValue(
-        CSSPropertyFilter, "drop-shadow(10px 5px 1px black)");
+        CSSPropertyFilter, "drop-shadow(10px 5px 1px black)",
+        StrictCSSParserContext(SecureContextMode::kInsecureContext));
     ASSERT_TRUE(value);
 
     FilterOperations fo =
@@ -72,7 +76,8 @@ TSAN_TEST(FilterOperationResolverThreadedTest, SimpleDropShadow) {
 TSAN_TEST(FilterOperationResolverThreadedTest, CompoundFilter) {
   RunOnThreads([]() {
     const CSSValue* value = CSSParser::ParseSingleValue(
-        CSSPropertyFilter, "sepia(50%) brightness(50%)");
+        CSSPropertyFilter, "sepia(50%) brightness(50%)",
+        StrictCSSParserContext(SecureContextMode::kInsecureContext));
     ASSERT_TRUE(value);
 
     FilterOperations fo =

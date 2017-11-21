@@ -31,7 +31,8 @@ TSAN_TEST(FontObjectThreadedTest, GetFontDefinition) {
   RunOnThreads([]() {
     MutableCSSPropertyValueSet* style =
         MutableCSSPropertyValueSet::Create(kHTMLStandardMode);
-    CSSParser::ParseValue(style, CSSPropertyFont, "15px Ahem", true);
+    CSSParser::ParseValue(style, CSSPropertyFont, "15px Ahem", true,
+                          SecureContextMode::kInsecureContext);
 
     FontDescription desc = FontStyleResolver::ComputeFont(*style, nullptr);
 

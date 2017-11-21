@@ -82,7 +82,7 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
   void setGlobalCompositeOperation(const String&);
 
   String filter() const;
-  void setFilter(const String&);
+  void setFilter(const ExecutionContext*, const String&);
 
   void save();
   void restore();

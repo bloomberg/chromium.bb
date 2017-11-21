@@ -561,8 +561,8 @@ TEST_F(MediaControlsRotateToFullscreenDelegateTest, EnterFailHidden) {
   EXPECT_TRUE(ObservedVisibility());
 
   // Move video offscreen.
-  GetDocument().body()->style()->setProperty("margin-top", "-999px", "",
-                                             ASSERT_NO_EXCEPTION);
+  GetDocument().body()->style()->setProperty(&GetDocument(), "margin-top",
+                                             "-999px", "", ASSERT_NO_EXCEPTION);
 
   UpdateVisibilityObserver();
 

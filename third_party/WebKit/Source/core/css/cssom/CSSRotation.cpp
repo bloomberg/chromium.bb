@@ -137,7 +137,7 @@ const DOMMatrix* CSSRotation::AsMatrix(ExceptionState&) const {
   return matrix;
 }
 
-const CSSFunctionValue* CSSRotation::ToCSSValue() const {
+const CSSFunctionValue* CSSRotation::ToCSSValue(SecureContextMode) const {
   // TODO(meade): Handle calc angles.
   CSSUnitValue* angle = ToCSSUnitValue(angle_);
   CSSFunctionValue* result =

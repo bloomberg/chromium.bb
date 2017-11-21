@@ -62,7 +62,7 @@ CSSScale* CSSScale::FromCSSValue(const CSSFunctionValue& value) {
   }
 }
 
-const CSSFunctionValue* CSSScale::ToCSSValue() const {
+const CSSFunctionValue* CSSScale::ToCSSValue(SecureContextMode) const {
   CSSFunctionValue* result =
       CSSFunctionValue::Create(is2D() ? CSSValueScale : CSSValueScale3d);
 

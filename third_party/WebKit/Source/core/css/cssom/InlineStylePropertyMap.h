@@ -19,10 +19,12 @@ class CORE_EXPORT InlineStylePropertyMap final : public StylePropertyMap {
 
   Vector<String> getProperties() override;
 
-  void set(CSSPropertyID,
+  void set(const ExecutionContext*,
+           CSSPropertyID,
            CSSStyleValueOrCSSStyleValueSequenceOrString&,
            ExceptionState&) override;
-  void append(CSSPropertyID,
+  void append(const ExecutionContext*,
+              CSSPropertyID,
               CSSStyleValueOrCSSStyleValueSequenceOrString&,
               ExceptionState&) override;
   void remove(CSSPropertyID, ExceptionState&) override;
