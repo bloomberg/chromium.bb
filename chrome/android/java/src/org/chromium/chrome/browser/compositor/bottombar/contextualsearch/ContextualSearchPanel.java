@@ -687,6 +687,9 @@ public class ContextualSearchPanel extends OverlayPanel {
         if (getPromoControl().isVisible()) {
             getPromoControl().invalidate(true);
         }
+        if (getBarBannerControl().isVisible()) {
+            getBarBannerControl().onResized(this);
+        }
 
         // NOTE(pedrosimonetti): We cannot tell where the selection will be after the
         // orientation change, so we are setting the selection position to zero, which
