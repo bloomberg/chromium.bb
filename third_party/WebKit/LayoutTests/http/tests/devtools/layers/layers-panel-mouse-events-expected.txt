@@ -1,5 +1,3 @@
-Tests moust hover/select events handling in the Layers panel
-
 Hovering b1 in tree
 Layer b1 in tree: hovered
 Layer b3 in tree: 

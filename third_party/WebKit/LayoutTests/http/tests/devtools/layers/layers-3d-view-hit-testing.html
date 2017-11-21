@@ -1,50 +1,14 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
-(async function() {
-  TestRunner.addResult(`Tests hit testing in Layers3DView\n`);
-  await TestRunner.loadModule('layers_test_runner');
-  await TestRunner.loadHTML(`
-      <div id="a" style="transform:translateZ(0px) translateY(60px) rotateZ(45deg);width:300px;height:300px;margin-left:100px; border: 1px solid black;">
-          <div id="b" style="transform:translateX(0px) translateY(0px) translateZ(0px) rotateX(45deg) rotateY(45deg);width:300px;height:300px; border: 1px solid black;"></div>
-      </div>
-  `);
-
+<html>
+<head>
+<script src="../../inspector/inspector-test.js"></script>
+<script src="../../inspector/layers-test.js"></script>
+<script>
+function test() {
   var contentRoot;
   var layers;
   var rootOffsetXInPixels, rootOffsetYInPixels, rootHeightInPixels, rootWidthInPixels;
   var canvas;
   const ButtonByEventType = {mousemove: -1, mousedown: 0, mouseup: 0};
-
-  await LayersTestRunner.requestLayers();
-  await TestRunner.showPanel('layers');
-
-  initLayers();
-  initSizes();
-
-  TestRunner.addResult('Initial state');
-  dumpOutlinedStateForLayers();
-
-  TestRunner.addResult('\nHovering content root');
-  dispatchMouseEventOnCanvas('mousemove', 0.1237135833164431, 0.11536508236291274);
-  dumpOutlinedStateForLayers();
-
-  TestRunner.addResult('\nSelecting layer b');
-  dispatchMouseEventOnCanvas('mousedown', 0.5, 0.5);
-  dispatchMouseEventOnCanvas('mouseup', 0.5, 0.5);
-  dumpOutlinedStateForLayers();
-
-  TestRunner.addResult('\nHovering layer a');
-  dispatchMouseEventOnCanvas('mousemove', 0.4, 0.2);
-  dumpOutlinedStateForLayers();
-
-  TestRunner.addResult('\nSelecting content root');
-  dispatchMouseEventOnCanvas('mousedown', 0.5, 0.001);
-  dispatchMouseEventOnCanvas('mouseup', 0.5, 0.001);
-  dumpOutlinedStateForLayers();
-
-  TestRunner.completeTest();
 
   function initLayers() {
     layerA = LayersTestRunner.findLayerByNodeIdAttribute('a');
@@ -102,4 +66,41 @@
     dumpStateForOutlineType(LayerViewer.Layers3DView.OutlineType.Selected);
   }
 
-})();
+  function onGotLayers() {
+    initLayers();
+    initSizes();
+
+    TestRunner.addResult('Initial state');
+    dumpOutlinedStateForLayers();
+
+    TestRunner.addResult('\nHovering content root');
+    dispatchMouseEventOnCanvas('mousemove', 0.1237135833164431, 0.11536508236291274);
+    dumpOutlinedStateForLayers();
+
+    TestRunner.addResult('\nSelecting layer b');
+    dispatchMouseEventOnCanvas('mousedown', 0.5, 0.5);
+    dispatchMouseEventOnCanvas('mouseup', 0.5, 0.5);
+    dumpOutlinedStateForLayers();
+
+    TestRunner.addResult('\nHovering layer a');
+    dispatchMouseEventOnCanvas('mousemove', 0.4, 0.2);
+    dumpOutlinedStateForLayers();
+
+    TestRunner.addResult('\nSelecting content root');
+    dispatchMouseEventOnCanvas('mousedown', 0.5, 0.001);
+    dispatchMouseEventOnCanvas('mouseup', 0.5, 0.001);
+    dumpOutlinedStateForLayers();
+
+    TestRunner.completeTest();
+  }
+
+  LayersTestRunner.requestLayers(onGotLayers);
+}
+</script>
+</head>
+<body onload="runTest()" style="height:500px;width:500px;">
+<div id="a" style="transform:translateZ(0px) translateY(60px) rotateZ(45deg);width:300px;height:300px;margin-left:100px; border: 1px solid black;">
+    <div id="b" style="transform:translateX(0px) translateY(0px) translateZ(0px) rotateX(45deg) rotateY(45deg);width:300px;height:300px; border: 1px solid black;"></div>
+</div>
+</body>
+</html>

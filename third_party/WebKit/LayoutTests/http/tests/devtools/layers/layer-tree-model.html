@@ -1,0 +1,69 @@
+<html>
+<head>
+<style>
+.layer {
+    transform: translateZ(10px);
+    opacity: 0.8;
+}
+</style>
+<script src="../../inspector/inspector-test.js"></script>
+<script src="../../inspector/layers-test.js"></script>
+<script>
+
+function updateTree()
+{
+    document.getElementById("c").appendChild(document.getElementById("b1"));
+    var b3 = document.getElementById("b3");
+    b3.parentElement.removeChild(b3);
+    var b4 = document.createElement("div");
+    b4.id = "b4";
+    b4.className = "layer";
+    document.getElementById("a").appendChild(b4);
+}
+
+function updateGeometry()
+{
+    document.getElementById("c").style.width = "80px";
+}
+
+function test() {
+  function addDepthMarker(layer) {
+    layer.__extraData = layer.parent() ? layer.parent().__extraData + 1 : 0;
+  }
+
+  LayersTestRunner.requestLayers(step1);
+
+  function step1() {
+    // Assure layer objects are not re-created during updates.
+    LayersTestRunner.layerTreeModel().layerTree().forEachLayer(addDepthMarker);
+    TestRunner.addResult('Initial layer tree');
+    LayersTestRunner.dumpLayerTree();
+    LayersTestRunner.evaluateAndRunWhenTreeChanges('requestAnimationFrame(updateTree)', step2);
+  }
+
+  function step2() {
+    TestRunner.addResult('Updated layer tree');
+    LayersTestRunner.dumpLayerTree();
+    LayersTestRunner.evaluateAndRunWhenTreeChanges('requestAnimationFrame(updateGeometry)', step3);
+  }
+
+  function step3() {
+    TestRunner.addResult('Updated layer geometry');
+    LayersTestRunner.dumpLayerTree();
+    TestRunner.completeTest();
+  }
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<div id="a" style="width: 200px; height: 200px" class="layer">
+    <div class="layer" id="b1" style="width: 150px; height: 100px"></div>
+    <div id="b2" class="layer" style="width: 140px; height: 110px">
+        <div id="c" class="layer" style="width: 100px; height: 90px"></div>
+    </div>
+    <div id="b3" class="layer" style="width: 140px; height: 110px"></div>
+</div>
+<iframe id="frame" src="resources/composited-iframe.html" width="200" height="200"></div>
+</body>
+</html>
