@@ -435,7 +435,10 @@
 -ProfileBrowserTest.SendHPKPReport
 -ProfileBrowserTest.SendHPKPReportServerHangs
 -ReferrerPolicyTest.ContextMenuOrigin
+-ReferrerPolicyTest.ContextMenuRedirect
 -ReferrerPolicyTest.History
+-ReferrerPolicyTest.HttpsContextMenuOrigin
+-ReferrerPolicyTest.HttpsContextMenuRedirect
 -ReferrerPolicyTest.HttpLeftClickHTTPRedirectToHTTPSSameOrigin
 -ReferrerPolicyTest.HttpLeftClickHTTPRedirectToHTTPSameOrigin
 -ReferrerPolicyTest.HttpLeftClickHTTPRedirectToHTTPStrictOrigin
@@ -497,10 +500,6 @@
 # crbug.com/778814 Null NavigationData is given to NavigationURLLoaderDelegate::OnResponseStarted() as parameter.
 -ChromeResourceDispatcherHostDelegateBrowserTest.NavigationDataProcessed
 
-# crbug.com/778842 CHECK_EQ(num_bytes, output_size) failed in ReadData() at web_ui_url_loader_factory.cc.
--DevToolsReattachAfterCrashTest.TestReattachAfterCrashOnNetwork
--DevToolsReattachAfterCrashTest.TestReattachAfterCrashOnTimeline
-
 # crbug.com/778846 DCHECK() failed at URLDataManagerBackend::CheckURLIsValid().
 # Note: these may flake pass, but don't enable them.
 -CrSettingsPeoplePageTest.All
@@ -515,11 +514,6 @@
 # crbug.com/779217 The NetworkContext is not created when the network service is enabled.
 -HotwordInstallerBrowserTest.AbortInstallOnShutdown
 -SpellingMenuObserverTest.SuggestionsForceTopSeparator
-
-# crbug.com/779236 DCHECK(!params->url.is_empty()) fails at chrome::Navigate().
--ReferrerPolicyTest.ContextMenuRedirect
--ReferrerPolicyTest.HttpsContextMenuOrigin
--ReferrerPolicyTest.HttpsContextMenuRedirect
 
 # http://crbug.com/783990
 # Add support for http auth.
