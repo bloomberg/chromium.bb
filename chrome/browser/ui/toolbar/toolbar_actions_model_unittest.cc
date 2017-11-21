@@ -74,6 +74,8 @@ class ToolbarActionsModelTestObserver : public ToolbarActionsModel::Observer {
     ++removed_count_;
   }
 
+  void OnToolbarActionLoadFailed() override {}
+
   void OnToolbarActionMoved(const std::string& id, int index) override {
     ++moved_count_;
   }
