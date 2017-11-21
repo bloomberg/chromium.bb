@@ -61,12 +61,12 @@ INTERFACE_H_INCLUDES = frozenset([
     'platform/heap/Handle.h',
 ])
 INTERFACE_CPP_INCLUDES = frozenset([
+    'base/memory/scoped_refptr.h',
     'bindings/core/v8/ExceptionState.h',
     'bindings/core/v8/V8DOMConfiguration.h',
     'platform/bindings/V8ObjectConstructor.h',
     'core/dom/ExecutionContext.h',
     'platform/wtf/GetPtr.h',
-    'platform/wtf/RefPtr.h',
 ])
 
 

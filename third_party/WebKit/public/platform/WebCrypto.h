@@ -41,8 +41,8 @@
 #include <memory>
 
 #if INSIDE_BLINK
+#include "base/memory/scoped_refptr.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/RefPtr.h"
 #endif
 
 namespace blink {

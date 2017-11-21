@@ -31,11 +31,11 @@
 #ifndef WindowProxy_h
 #define WindowProxy_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "platform/bindings/DOMWrapperWorld.h"
 #include "platform/bindings/ScopedPersistent.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/debug/StackTrace.h"
 #include "v8/include/v8.h"
 

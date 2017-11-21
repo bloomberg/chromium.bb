@@ -5,12 +5,12 @@
 #ifndef UnpackedSerializedScriptValue_h
 #define UnpackedSerializedScriptValue_h
 
+#include "base/memory/scoped_refptr.h"
 #include "bindings/core/v8/serialization/SerializedScriptValue.h"
 #include "core/CoreExport.h"
 #include "platform/heap/GarbageCollected.h"
 #include "platform/heap/Handle.h"
 #include "platform/heap/HeapAllocator.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {

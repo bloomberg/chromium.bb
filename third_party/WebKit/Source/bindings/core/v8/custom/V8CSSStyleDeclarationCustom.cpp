@@ -31,6 +31,7 @@
 #include "bindings/core/v8/V8CSSStyleDeclaration.h"
 
 #include <algorithm>
+#include "base/memory/scoped_refptr.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "core/CSSPropertyNames.h"
@@ -43,7 +44,6 @@
 #include "core/dom/events/EventTarget.h"
 #include "core/html/custom/CEReactionsScope.h"
 #include "platform/wtf/ASCIICType.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/StringBuilder.h"

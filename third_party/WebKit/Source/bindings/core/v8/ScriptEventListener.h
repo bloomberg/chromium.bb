@@ -31,9 +31,9 @@
 #ifndef ScriptEventListener_h
 #define ScriptEventListener_h
 
+#include "base/memory/scoped_refptr.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8LazyEventListener.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

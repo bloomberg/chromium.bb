@@ -5,6 +5,7 @@
 #ifndef V8ScriptValueSerializer_h
 #define V8ScriptValueSerializer_h
 
+#include "base/memory/scoped_refptr.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/serialization/SerializationTag.h"
 #include "bindings/core/v8/serialization/SerializedColorParams.h"
@@ -13,7 +14,6 @@
 #include "platform/bindings/ScriptState.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
 #include "v8/include/v8.h"
 

@@ -27,6 +27,7 @@
 
 #include <memory>
 
+#include "base/memory/scoped_refptr.h"
 #include "bindings/core/v8/BindingSecurity.h"
 #include "bindings/core/v8/ReferrerScriptInfo.h"
 #include "bindings/core/v8/RejectedPromises.h"
@@ -66,7 +67,6 @@
 #include "platform/wtf/AddressSanitizer.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/PtrUtil.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/text/WTFString.h"
 #include "platform/wtf/typed_arrays/ArrayBufferContents.h"
 #include "public/platform/Platform.h"

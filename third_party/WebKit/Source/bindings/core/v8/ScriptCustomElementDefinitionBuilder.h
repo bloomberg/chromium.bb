@@ -5,13 +5,13 @@
 #ifndef ScriptCustomElementDefinitionBuilder_h
 #define ScriptCustomElementDefinitionBuilder_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "core/html/custom/CustomElementDefinitionBuilder.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/text/AtomicString.h"
 #include "platform/wtf/text/AtomicStringHash.h"
 #include "platform/wtf/text/StringView.h"

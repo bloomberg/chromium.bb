@@ -31,8 +31,8 @@
 #ifndef V8LazyEventListener_h
 #define V8LazyEventListener_h
 
+#include "base/memory/scoped_refptr.h"
 #include "bindings/core/v8/V8AbstractEventListener.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/text/TextPosition.h"
 #include "v8/include/v8.h"
 

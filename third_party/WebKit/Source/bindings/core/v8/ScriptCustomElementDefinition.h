@@ -5,12 +5,12 @@
 #ifndef ScriptCustomElementDefinition_h
 #define ScriptCustomElementDefinition_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "core/html/custom/CustomElementDefinition.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/bindings/TraceWrapperV8Reference.h"
 #include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/RefPtr.h"
 #include "v8.h"
 
 namespace blink {

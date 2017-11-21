@@ -5,6 +5,7 @@
 #ifndef V8ScriptValueDeserializer_h
 #define V8ScriptValueDeserializer_h
 
+#include "base/memory/scoped_refptr.h"
 #include "bindings/core/v8/serialization/SerializationTag.h"
 #include "bindings/core/v8/serialization/SerializedColorParams.h"
 #include "bindings/core/v8/serialization/SerializedScriptValue.h"
@@ -12,7 +13,6 @@
 #include "platform/bindings/ScriptState.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/RefPtr.h"
 #include "v8/include/v8.h"
 
 namespace blink {
