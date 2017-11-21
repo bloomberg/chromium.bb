@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "components/arc/common/lock_screen.mojom.h"
-#include "components/arc/instance_holder.h"
+#include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/session_manager/core/session_manager_observer.h"
 
@@ -23,7 +23,7 @@ class ArcBridgeService;
 // This class notifies the Chrome OS side lock screen state to the container.
 class ArcLockScreenBridge
     : public KeyedService,
-      public InstanceHolder<mojom::LockScreenInstance>::Observer,
+      public ConnectionObserver<mojom::LockScreenInstance>,
       public session_manager::SessionManagerObserver {
  public:
   // Returns singleton instance for the given BrowserContext,
@@ -35,8 +35,8 @@ class ArcLockScreenBridge
                       ArcBridgeService* bridge_service);
   ~ArcLockScreenBridge() override;
 
-  // InstanceHolder<mojom::LockScreenInstance>::Observer overrides:
-  void OnInstanceReady() override;
+  // ConnectionObserver<mojom::LockScreenInstance> overrides:
+  void OnConnectionReady() override;
 
   // session_manager::SessionManagerObserver overrides.
   void OnSessionStateChanged() override;

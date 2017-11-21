@@ -60,10 +60,10 @@ class MockMessageCenter : public message_center::FakeMessageCenter {
 };
 
 class NotificationsObserver
-    : public InstanceHolder<mojom::NotificationsInstance>::Observer {
+    : public ConnectionObserver<mojom::NotificationsInstance> {
  public:
   NotificationsObserver() = default;
-  void OnInstanceReady() override { ready_ = true; }
+  void OnConnectionReady() override { ready_ = true; }
 
   bool IsReady() { return ready_; }
 
@@ -177,7 +177,7 @@ TEST_F(ArcNotificationManagerTest, NotificationRemovedByConnectionClose) {
   CreateNotificationWithKey("notification3");
   EXPECT_EQ(3u, message_center()->GetVisibleNotifications().size());
 
-  arc_notification_manager()->OnInstanceClosed();
+  arc_notification_manager()->OnConnectionClosed();
 
   EXPECT_EQ(0u, message_center()->GetVisibleNotifications().size());
 }

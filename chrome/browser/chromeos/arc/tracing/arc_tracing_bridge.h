@@ -13,7 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/trace_event/trace_event.h"
 #include "components/arc/common/tracing.mojom.h"
-#include "components/arc/instance_holder.h"
+#include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/arc_tracing_agent.h"
 
@@ -26,10 +26,9 @@ namespace arc {
 class ArcBridgeService;
 
 // This class provides the interface to trigger tracing in the container.
-class ArcTracingBridge
-    : public KeyedService,
-      public content::ArcTracingAgent::Delegate,
-      public InstanceHolder<mojom::TracingInstance>::Observer {
+class ArcTracingBridge : public KeyedService,
+                         public content::ArcTracingAgent::Delegate,
+                         public ConnectionObserver<mojom::TracingInstance> {
  public:
   // Returns singleton instance for the given BrowserContext,
   // or nullptr if the browser |context| is not allowed to use ARC.
@@ -40,8 +39,8 @@ class ArcTracingBridge
                    ArcBridgeService* bridge_service);
   ~ArcTracingBridge() override;
 
-  // InstanceHolder<mojom::TracingInstance>::Observer overrides:
-  void OnInstanceReady() override;
+  // ConnectionObserver<mojom::TracingInstance> overrides:
+  void OnConnectionReady() override;
 
   // content::ArcTracingAgent::Delegate overrides:
   bool StartTracing(const base::trace_event::TraceConfig& trace_config,

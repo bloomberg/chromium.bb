@@ -23,7 +23,7 @@
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/ui/app_list/arc/arc_default_app_list.h"
 #include "components/arc/common/app.mojom.h"
-#include "components/arc/instance_holder.h"
+#include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/base/layout.h"
@@ -33,6 +33,8 @@ class Profile;
 
 namespace arc {
 class ArcPackageSyncableService;
+template <typename InstanceType>
+class InstanceHolder;
 }  // namespace arc
 
 namespace content {
@@ -48,12 +50,11 @@ class PrefRegistrySyncable;
 // information is used to pre-create non-ready app items while ARC bridge
 // service is not ready to provide information about available ARC apps.
 // NOTE: ArcAppListPrefs is only created for the primary user.
-class ArcAppListPrefs
-    : public KeyedService,
-      public arc::mojom::AppHost,
-      public arc::InstanceHolder<arc::mojom::AppInstance>::Observer,
-      public arc::ArcSessionManager::Observer,
-      public ArcDefaultAppList::Delegate {
+class ArcAppListPrefs : public KeyedService,
+                        public arc::mojom::AppHost,
+                        public arc::ConnectionObserver<arc::mojom::AppInstance>,
+                        public arc::ArcSessionManager::Observer,
+                        public ArcDefaultAppList::Delegate {
  public:
   struct AppInfo {
     AppInfo(const std::string& name,
@@ -268,9 +269,9 @@ class ArcAppListPrefs
       Profile* profile,
       arc::InstanceHolder<arc::mojom::AppInstance>* app_instance_holder);
 
-  // arc::InstanceHolder<arc::mojom::AppInstance>::Observer:
-  void OnInstanceReady() override;
-  void OnInstanceClosed() override;
+  // arc::ConnectionObserver<arc::mojom::AppInstance>:
+  void OnConnectionReady() override;
+  void OnConnectionClosed() override;
 
   // arc::mojom::AppHost:
   void OnAppListRefreshed(std::vector<arc::mojom::AppInfoPtr> apps) override;

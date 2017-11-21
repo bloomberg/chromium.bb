@@ -17,7 +17,7 @@
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/arc/fileapi/file_stream_forwarder.h"
 #include "components/arc/common/file_system.mojom.h"
-#include "components/arc/instance_holder.h"
+#include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "storage/browser/fileapi/watcher_manager.h"
@@ -38,7 +38,7 @@ class ArcBridgeService;
 class ArcFileSystemBridge
     : public KeyedService,
       public mojom::FileSystemHost,
-      public InstanceHolder<mojom::FileSystemInstance>::Observer {
+      public ConnectionObserver<mojom::FileSystemInstance> {
  public:
   class Observer {
    public:
@@ -89,8 +89,8 @@ class ArcFileSystemBridge
   void OpenFileToRead(const std::string& url,
                       OpenFileToReadCallback callback) override;
 
-  // InstanceHolder<mojom::FileSystemInstance>::Observer overrides:
-  void OnInstanceReady() override;
+  // ConnectionObserver<mojom::FileSystemInstance> overrides:
+  void OnConnectionReady() override;
 
  private:
   // Used to implement OpenFileToRead().

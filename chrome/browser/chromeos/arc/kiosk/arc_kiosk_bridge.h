@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "components/arc/common/kiosk.mojom.h"
-#include "components/arc/instance_holder.h"
+#include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
@@ -23,7 +23,7 @@ class ArcBridgeService;
 
 // TODO(hidehiko): Consider to migrate this class into ArcKioskAppService.
 class ArcKioskBridge : public KeyedService,
-                       public InstanceHolder<mojom::KioskInstance>::Observer,
+                       public ConnectionObserver<mojom::KioskInstance>,
                        public mojom::KioskHost {
  public:
   // Received IPCs are passed to this delegate.
@@ -47,8 +47,8 @@ class ArcKioskBridge : public KeyedService,
                  ArcBridgeService* bridge_service);
   ~ArcKioskBridge() override;
 
-  // InstanceHolder<mojom::KioskInstance>::Observer overrides.
-  void OnInstanceReady() override;
+  // ConnectionObserver<mojom::KioskInstance> overrides.
+  void OnConnectionReady() override;
 
   // mojom::KioskHost overrides.
   void OnMaintenanceSessionCreated(int32_t session_id) override;

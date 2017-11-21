@@ -13,7 +13,7 @@
 #include "chrome/browser/chromeos/arc/accessibility/ax_tree_source_arc.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "components/arc/common/accessibility_helper.mojom.h"
-#include "components/arc/instance_holder.h"
+#include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/accessibility/ax_host_delegate.h"
@@ -37,7 +37,7 @@ class ArcBridgeService;
 class ArcAccessibilityHelperBridge
     : public KeyedService,
       public mojom::AccessibilityHelperHost,
-      public InstanceHolder<mojom::AccessibilityHelperInstance>::Observer,
+      public ConnectionObserver<mojom::AccessibilityHelperInstance>,
       public wm::ActivationChangeObserver,
       public AXTreeSourceArc::Delegate,
       public ArcAppListPrefs::Observer,
@@ -61,8 +61,8 @@ class ArcAccessibilityHelperBridge
   // KeyedService overrides.
   void Shutdown() override;
 
-  // InstanceHolder<mojom::AccessibilityHelperInstance>::Observer overrides.
-  void OnInstanceReady() override;
+  // ConnectionObserver<mojom::AccessibilityHelperInstance> overrides.
+  void OnConnectionReady() override;
 
   // mojom::AccessibilityHelperHost overrides.
   void OnAccessibilityEventDeprecated(

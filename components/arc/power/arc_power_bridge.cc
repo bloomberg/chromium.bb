@@ -145,7 +145,7 @@ void ArcPowerBridge::FlushWakeLocksForTesting() {
     it.second->FlushForTesting();
 }
 
-void ArcPowerBridge::OnInstanceReady() {
+void ArcPowerBridge::OnConnectionReady() {
   mojom::PowerInstance* power_instance =
       ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->power(), Init);
   DCHECK(power_instance);
@@ -164,7 +164,7 @@ void ArcPowerBridge::OnInstanceReady() {
                          weak_ptr_factory_.GetWeakPtr()));
 }
 
-void ArcPowerBridge::OnInstanceClosed() {
+void ArcPowerBridge::OnConnectionClosed() {
   // TODO(mash): Support this functionality without ash::Shell access in Chrome.
   if (ash::Shell::HasInstance())
     ash::Shell::Get()->display_configurator()->RemoveObserver(this);

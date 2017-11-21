@@ -108,7 +108,7 @@ GpuArcVideoServiceHost::~GpuArcVideoServiceHost() {
   arc_bridge_service_->video()->RemoveObserver(this);
 }
 
-void GpuArcVideoServiceHost::OnInstanceReady() {
+void GpuArcVideoServiceHost::OnConnectionReady() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   auto* video_instance =
       ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->video(), Init);

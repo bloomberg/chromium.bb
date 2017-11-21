@@ -57,7 +57,7 @@ ArcLockScreenBridge::~ArcLockScreenBridge() {
   session_manager::SessionManager::Get()->RemoveObserver(this);
 }
 
-void ArcLockScreenBridge::OnInstanceReady() {
+void ArcLockScreenBridge::OnConnectionReady() {
   SendDeviceLockedState();
 }
 

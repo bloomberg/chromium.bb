@@ -375,7 +375,7 @@ ArcNetHostImpl::~ArcNetHostImpl() {
   arc_bridge_service_->net()->RemoveObserver(this);
 }
 
-void ArcNetHostImpl::OnInstanceReady() {
+void ArcNetHostImpl::OnConnectionReady() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   mojom::NetHostPtr host;
@@ -404,7 +404,7 @@ void ArcNetHostImpl::OnInstanceReady() {
   }
 }
 
-void ArcNetHostImpl::OnInstanceClosed() {
+void ArcNetHostImpl::OnConnectionClosed() {
   if (!observing_network_state_)
     return;
 

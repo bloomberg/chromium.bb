@@ -65,7 +65,7 @@ ArcRotationLockBridge::~ArcRotationLockBridge() {
   }
 }
 
-void ArcRotationLockBridge::OnInstanceReady() {
+void ArcRotationLockBridge::OnConnectionReady() {
   SendRotationLockState();
 }
 

@@ -162,7 +162,7 @@ ArcClipboardBridge::~ArcClipboardBridge() {
   arc_bridge_service_->clipboard()->RemoveObserver(this);
 }
 
-void ArcClipboardBridge::OnInstanceReady() {
+void ArcClipboardBridge::OnConnectionReady() {
   mojom::ClipboardInstance* clipboard_instance =
       ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->clipboard(), Init);
   DCHECK(clipboard_instance);

@@ -334,12 +334,12 @@ void ArcFileSystemOperationRunner::OnArcPlayStoreEnabledChanged(bool enabled) {
   OnStateChanged();
 }
 
-void ArcFileSystemOperationRunner::OnInstanceReady() {
+void ArcFileSystemOperationRunner::OnConnectionReady() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   OnStateChanged();
 }
 
-void ArcFileSystemOperationRunner::OnInstanceClosed() {
+void ArcFileSystemOperationRunner::OnConnectionClosed() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // ArcFileSystemService and watchers are gone.
   watcher_callbacks_.clear();

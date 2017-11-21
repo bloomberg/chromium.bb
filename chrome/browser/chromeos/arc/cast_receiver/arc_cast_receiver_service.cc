@@ -77,7 +77,7 @@ ArcCastReceiverService::~ArcCastReceiverService() {
   arc_bridge_service_->cast_receiver()->RemoveObserver(this);
 }
 
-void ArcCastReceiverService::OnInstanceReady() {
+void ArcCastReceiverService::OnConnectionReady() {
   // Push all existing preferences to the Cast Receiver. Always end with
   // the preference for enabling the receiver so that it does not show up
   // briefly with the wrong settings (e.g. its name).

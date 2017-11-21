@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "components/arc/common/tts.mojom.h"
-#include "components/arc/instance_holder.h"
+#include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
@@ -27,7 +27,7 @@ class ArcBridgeService;
 // Provides text to speech services and events to Chrome OS via Android's text
 // to speech API.
 class ArcTtsService : public KeyedService,
-                      public InstanceHolder<mojom::TtsInstance>::Observer,
+                      public ConnectionObserver<mojom::TtsInstance>,
                       public mojom::TtsHost {
  public:
   // Returns the factory instance for this class.
@@ -41,8 +41,8 @@ class ArcTtsService : public KeyedService,
                 ArcBridgeService* bridge_service);
   ~ArcTtsService() override;
 
-  // InstanceHolder<mojom::TtsInstance>::Observer overrides:
-  void OnInstanceReady() override;
+  // ConnectionObserver<mojom::TtsInstance> overrides:
+  void OnConnectionReady() override;
 
   // mojom::TtsHost overrides:
   void OnTtsEvent(uint32_t id,

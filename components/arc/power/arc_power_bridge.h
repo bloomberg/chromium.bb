@@ -12,7 +12,7 @@
 #include "base/optional.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "components/arc/common/power.mojom.h"
-#include "components/arc/instance_holder.h"
+#include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/device/public/interfaces/wake_lock.mojom.h"
@@ -33,7 +33,7 @@ class ArcBridgeService;
 // ARC Power Client sets power management policy based on requests from
 // ARC instances.
 class ArcPowerBridge : public KeyedService,
-                       public InstanceHolder<mojom::PowerInstance>::Observer,
+                       public ConnectionObserver<mojom::PowerInstance>,
                        public chromeos::PowerManagerClient::Observer,
                        public display::DisplayConfigurator::Observer,
                        public mojom::PowerHost {
@@ -58,9 +58,9 @@ class ArcPowerBridge : public KeyedService,
   // device service requests in |wake_lock_requestors_|.
   void FlushWakeLocksForTesting();
 
-  // InstanceHolder<mojom::PowerInstance>::Observer overrides.
-  void OnInstanceReady() override;
-  void OnInstanceClosed() override;
+  // ConnectionObserver<mojom::PowerInstance> overrides.
+  void OnConnectionReady() override;
+  void OnConnectionClosed() override;
 
   // chromeos::PowerManagerClient::Observer overrides.
   void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;

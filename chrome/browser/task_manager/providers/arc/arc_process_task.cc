@@ -141,7 +141,7 @@ void ArcProcessTask::Kill() {
   process_instance->KillProcess(nspid_, "Killed manually from Task Manager");
 }
 
-void ArcProcessTask::OnInstanceReady() {
+void ArcProcessTask::OnConnectionReady() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   VLOG(2) << "intent_helper instance is ready. Fetching the icon for "

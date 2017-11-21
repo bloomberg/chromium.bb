@@ -10,7 +10,7 @@
 #include <unordered_map>
 
 #include "components/arc/common/notifications.mojom.h"
-#include "components/arc/instance_holder.h"
+#include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -27,7 +27,7 @@ class ArcNotificationItem;
 
 class ArcNotificationManager
     : public KeyedService,
-      public InstanceHolder<mojom::NotificationsInstance>::Observer,
+      public ConnectionObserver<mojom::NotificationsInstance>,
       public mojom::NotificationsHost {
  public:
   // Returns singleton instance for the given BrowserContext,
@@ -52,9 +52,9 @@ class ArcNotificationManager
 
   ~ArcNotificationManager() override;
 
-  // InstanceHolder<mojom::NotificationsInstance>::Observer implementation:
-  void OnInstanceReady() override;
-  void OnInstanceClosed() override;
+  // ConnectionObserver<mojom::NotificationsInstance> implementation:
+  void OnConnectionReady() override;
+  void OnConnectionClosed() override;
 
   // mojom::NotificationsHost implementation:
   void OnNotificationPosted(mojom::ArcNotificationDataPtr data) override;

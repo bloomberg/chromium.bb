@@ -253,12 +253,12 @@ class ArcAppLauncherBrowserTest : public ExtensionBrowserTest {
       arc_session_manager()->SetProfile(profile());
       arc::ArcServiceLauncher::Get()->OnPrimaryUserProfilePrepared(profile());
     }
-    app_instance_observer()->OnInstanceReady();
+    app_connection_observer()->OnConnectionReady();
   }
 
   void StopInstance() {
     arc_session_manager()->Shutdown();
-    app_instance_observer()->OnInstanceClosed();
+    app_connection_observer()->OnConnectionClosed();
   }
 
   ash::ShelfItemDelegate* GetShelfItemDelegate(const std::string& id) {
@@ -274,8 +274,7 @@ class ArcAppLauncherBrowserTest : public ExtensionBrowserTest {
 
   // Returns as AppInstance observer interface in order to access to private
   // implementation of the interface.
-  arc::InstanceHolder<arc::mojom::AppInstance>::Observer*
-  app_instance_observer() {
+  arc::ConnectionObserver<arc::mojom::AppInstance>* app_connection_observer() {
     return app_prefs();
   }
 

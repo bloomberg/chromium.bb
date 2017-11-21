@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "components/arc/common/cast_receiver.mojom.h"
-#include "components/arc/instance_holder.h"
+#include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 namespace content {
@@ -26,7 +26,7 @@ class ArcBridgeService;
 // Provides control of the Android Cast Receiver.
 class ArcCastReceiverService
     : public KeyedService,
-      public InstanceHolder<mojom::CastReceiverInstance>::Observer {
+      public ConnectionObserver<mojom::CastReceiverInstance> {
  public:
   // Returns singleton instance for the given BrowserContext,
   // or nullptr if the browser |context| is not allowed to use ARC.
@@ -37,8 +37,8 @@ class ArcCastReceiverService
                          ArcBridgeService* bridge_service);
   ~ArcCastReceiverService() override;
 
-  // InstanceHolder<mojom::CastReceiverInstance>::Observer overrides:
-  void OnInstanceReady() override;
+  // ConnectionObserver<mojom::CastReceiverInstance> overrides:
+  void OnConnectionReady() override;
 
  private:
   // Callback for when the pref for enabling the Cast Receiver changes.

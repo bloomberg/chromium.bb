@@ -59,7 +59,7 @@ ArcEnterpriseReportingService::~ArcEnterpriseReportingService() {
   arc_bridge_service_->enterprise_reporting()->RemoveObserver(this);
 }
 
-void ArcEnterpriseReportingService::OnInstanceReady() {
+void ArcEnterpriseReportingService::OnConnectionReady() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
       arc_bridge_service_->enterprise_reporting(), Init);

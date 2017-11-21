@@ -11,7 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "components/arc/common/enterprise_reporting.mojom.h"
-#include "components/arc/instance_holder.h"
+#include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
@@ -26,7 +26,7 @@ class ArcBridgeService;
 // This class controls the ARC enterprise reporting.
 class ArcEnterpriseReportingService
     : public KeyedService,
-      public InstanceHolder<mojom::EnterpriseReportingInstance>::Observer,
+      public ConnectionObserver<mojom::EnterpriseReportingInstance>,
       public mojom::EnterpriseReportingHost {
  public:
   // Returns singleton instance for the given BrowserContext,
@@ -38,8 +38,8 @@ class ArcEnterpriseReportingService
                                 ArcBridgeService* arc_bridge_service);
   ~ArcEnterpriseReportingService() override;
 
-  // InstanceHolder<mojom::EnterpriseReportingInstance>::Observer overrides:
-  void OnInstanceReady() override;
+  // ConnectionObserver<mojom::EnterpriseReportingInstance> overrides:
+  void OnConnectionReady() override;
 
   // mojom::EnterpriseReportingHost overrides:
   void ReportManagementState(mojom::ManagementState state) override;

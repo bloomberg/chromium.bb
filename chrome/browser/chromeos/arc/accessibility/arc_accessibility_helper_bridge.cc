@@ -200,7 +200,7 @@ void ArcAccessibilityHelperBridge::Shutdown() {
     surface_manager->RemoveObserver(this);
 }
 
-void ArcAccessibilityHelperBridge::OnInstanceReady() {
+void ArcAccessibilityHelperBridge::OnConnectionReady() {
   auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
       arc_bridge_service_->accessibility_helper(), Init);
   DCHECK(instance);

@@ -89,7 +89,7 @@ ArcCrashCollectorBridge::~ArcCrashCollectorBridge() {
   arc_bridge_service_->crash_collector()->RemoveObserver(this);
 }
 
-void ArcCrashCollectorBridge::OnInstanceReady() {
+void ArcCrashCollectorBridge::OnConnectionReady() {
   mojom::CrashCollectorHostPtr host_ptr;
   binding_.Bind(mojo::MakeRequest(&host_ptr));
   auto* instance =
