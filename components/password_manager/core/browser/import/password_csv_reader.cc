@@ -103,6 +103,8 @@ bool PasswordCSVReader::RecordToPasswordForm(
     return false;
   }
   origin = GURL(origin_in_record->second);
+  if (!origin.is_valid())
+    return false;
 
   base::string16 username_value;
   auto username_in_record = record.find(username_field_name_);

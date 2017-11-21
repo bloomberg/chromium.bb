@@ -122,4 +122,23 @@ TEST(PasswordCSVReaderTest, DeserializePasswords_NonASCIIUrl) {
   EXPECT_EQ(base::UTF8ToUTF16("password"), passwords[0].password_value);
 }
 
+// If the URL is invalid, the record should be rejected.
+TEST(PasswordCSVReaderTest, DeserializePasswords_InvalidUrl) {
+  const char kCSVInput[] =
+      ",url,user,password\n"
+      ",:,,\n"
+      ",https://example.com/,user,password\n";
+  std::vector<autofill::PasswordForm> passwords;
+  PasswordCSVReader reader;
+  EXPECT_EQ(PasswordImporter::SUCCESS,
+            reader.DeserializePasswords(kCSVInput, &passwords));
+  // The first record should be ignored, the second imported.
+  EXPECT_EQ(1u, passwords.size());
+  GURL expected_origin("https://example.com");
+  EXPECT_EQ(expected_origin, passwords[0].origin);
+  EXPECT_EQ(expected_origin.GetOrigin().spec(), passwords[0].signon_realm);
+  EXPECT_EQ(base::UTF8ToUTF16("user"), passwords[0].username_value);
+  EXPECT_EQ(base::UTF8ToUTF16("password"), passwords[0].password_value);
+}
+
 }  // namespace password_manager
