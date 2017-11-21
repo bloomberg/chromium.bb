@@ -751,11 +751,13 @@ static const TX_TYPE_1D htx_tab[TX_TYPES] = {
 // Same as "max_txsize_lookup[bsize] - TX_8X8", except for rectangular
 // block which may use a rectangular transform, in which  case it is
 // "(max_txsize_lookup[bsize] + 1) - TX_8X8", invalid for bsize < 8X8
+#define TXSIZE_CAT_INVALID (-1)
+
 static const int32_t intra_tx_size_cat_lookup[BLOCK_SIZES_ALL] = {
   // 2X2,             2X4,                4X2,
-  INT32_MIN,          INT32_MIN,          INT32_MIN,
+  TXSIZE_CAT_INVALID, TXSIZE_CAT_INVALID, TXSIZE_CAT_INVALID,
   //                                      4X4,
-                                          INT32_MIN,
+                                          TXSIZE_CAT_INVALID,
   // 4X8,             8X4,                8X8,
   TX_8X8 - TX_8X8,    TX_8X8 - TX_8X8,    TX_8X8 - TX_8X8,
   // 8X16,            16X8,               16X16
