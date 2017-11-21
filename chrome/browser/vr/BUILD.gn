@@ -256,14 +256,11 @@ test("vr_common_unittests") {
 
   deps = [
     ":vr_test_support",
-    "//cc:test_support",
     "//mojo/common",
     "//mojo/public/cpp/bindings",
     "//testing/gmock",
-    "//ui/gfx:test_support",
     "//ui/gfx/geometry",
   ]
-
   if (is_android) {
     deps += [ "//ui/android:ui_java" ]
   }
@@ -283,6 +280,9 @@ test("vr_pixeltests") {
     ":vr_gl_test_support",
     ":vr_test_support",
   ]
+  if (is_android) {
+    deps += [ "//ui/android:ui_java" ]
+  }
 }
 
 test("vr_common_perftests") {
@@ -295,10 +295,6 @@ test("vr_common_perftests") {
     ":vr_test_support",
     "//testing/perf",
   ]
-
-  if (is_android) {
-    deps += [ "//ui/android:ui_java" ]
-  }
 
   # Needed for isolate script to execute
   data = [
@@ -334,6 +330,7 @@ source_set("vr_test_support") {
     ":vr_common",
     ":vr_test_pak",
     "//base/test:test_support",
+    "//cc:test_support",
     "//components/security_state/core",
     "//components/toolbar:vector_icons",
     "//content/test:test_support",
@@ -341,9 +338,13 @@ source_set("vr_test_support") {
     "//skia",
     "//testing/gtest",
     "//ui/accessibility:ax_gen",
+    "//ui/gfx:test_support",
 
     # TODO(mthiesse, crbug.com/769373): Remove dependency on device/vr:fakes.
     "//device/vr:fakes",
+
+    # TODO(cjgrant): Figure out why including //ui/android:ui_java here
+    # doesn't propagate to individual test executable targets.
   ]
 
   data = [
