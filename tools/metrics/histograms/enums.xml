@@ -22390,6 +22390,12 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="50" label="CRASH"/>
 </enum>
 
+<enum name="InterstitialTypeEnum">
+  <int value="0" label="Loud"/>
+  <int value="1" label="Quiet small"/>
+  <int value="2" label="Quiet giant"/>
+</enum>
+
 <enum name="InvalidationNetworkChannel">
   <int value="0" label="PushClientChannel"/>
   <int value="1" label="GCMNetworkChannel"/>
