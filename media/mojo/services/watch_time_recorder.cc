@@ -169,8 +169,13 @@ void WatchTimeRecorder::RecordUkmPlaybackData() {
   }
 
   const int32_t source_id = ukm_recorder->GetNewSourceID();
-  ukm_recorder->UpdateSourceURL(source_id, properties_->origin.GetURL());
+
+  // TODO(crbug.com/787209): Stop getting origin from the renderer.
+  ukm_recorder->UpdateSourceURL(source_id,
+                                properties_->untrusted_top_origin.GetURL());
   ukm::builders::Media_BasicPlayback builder(source_id);
+
+  builder.SetIsTopFrame(properties_->is_top_frame);
 
   bool recorded_all_metric = false;
   for (auto& kv : aggregate_watch_time_info_) {
