@@ -702,6 +702,10 @@ TEST_F(TabManagerTest, DiscardTabWithNonVisibleTabs) {
   browser_info2.browser_is_app = false;
   tab_manager.test_browser_info_list_.push_back(browser_info2);
 
+  // Fast-forward time until no tab is protected from being discarded for having
+  // recently been used.
+  task_runner_->FastForwardBy(TabManager::kDiscardProtectionTime);
+
   for (int i = 0; i < 4; ++i)
     tab_manager.DiscardTab(DiscardCondition::kProactive);
 

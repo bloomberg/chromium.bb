@@ -80,7 +80,7 @@ void TabManager::WebContentsData::DidFinishNavigation(
 }
 
 void TabManager::WebContentsData::WasShown() {
-  if (tab_data_.last_inactive_time == base::TimeTicks::UnixEpoch())
+  if (tab_data_.last_inactive_time.is_null())
     return;
   ReportUKMWhenBackgroundTabIsClosedOrForegrounded(true);
 }
@@ -103,10 +103,8 @@ void TabManager::WebContentsData::WebContentsDestroyed() {
 
   ReportUKMWhenTabIsClosed();
 
-  if (!web_contents()->IsVisible() &&
-      tab_data_.last_inactive_time != base::TimeTicks::UnixEpoch()) {
+  if (!web_contents()->IsVisible() && !tab_data_.last_inactive_time.is_null())
     ReportUKMWhenBackgroundTabIsClosedOrForegrounded(false);
-  }
 
   SetTabLoadingState(TAB_IS_NOT_LOADING);
   SetIsInSessionRestore(false);
@@ -146,7 +144,7 @@ void TabManager::WebContentsData::SetDiscardState(bool state) {
       UMA_HISTOGRAM_COUNTS_100("TabManager.Discarding.ReloadedEngagementScore",
                                tab_data_.engagement_score);
     }
-    if (tab_data_.last_inactive_time != base::TimeTicks::UnixEpoch()) {
+    if (!tab_data_.last_inactive_time.is_null()) {
       delta = tab_data_.last_reload_time - tab_data_.last_inactive_time;
       UMA_HISTOGRAM_CUSTOM_TIMES("TabManager.Discarding.InactiveToReloadTime",
                                  delta, base::TimeDelta::FromSeconds(1),
@@ -245,11 +243,6 @@ TabManager::WebContentsData::Data::Data()
     : is_discarded(false),
       discard_count(0),
       is_recently_audible(false),
-      navigation_time(TimeTicks::UnixEpoch()),
-      last_audio_change_time(TimeTicks::UnixEpoch()),
-      last_discard_time(TimeTicks::UnixEpoch()),
-      last_reload_time(TimeTicks::UnixEpoch()),
-      last_inactive_time(TimeTicks::UnixEpoch()),
       engagement_score(-1.0),
       is_auto_discardable(true),
       tab_loading_state(TAB_IS_NOT_LOADING),

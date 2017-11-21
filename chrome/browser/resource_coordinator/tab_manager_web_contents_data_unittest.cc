@@ -23,7 +23,11 @@ namespace {
 class TabManagerWebContentsDataTest : public ChromeRenderViewHostTestHarness {
  public:
   TabManagerWebContentsDataTest()
-      : scoped_set_tick_clock_for_testing_(&test_clock_) {}
+      : scoped_set_tick_clock_for_testing_(&test_clock_) {
+    // Fast-forward time to prevent the first call to NowTicks() in a test from
+    // returning a null TimeTicks.
+    test_clock_.Advance(base::TimeDelta::FromMilliseconds(1));
+  }
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
@@ -83,14 +87,14 @@ TEST_F(TabManagerWebContentsDataTest, RecentlyAudible) {
 }
 
 TEST_F(TabManagerWebContentsDataTest, LastAudioChangeTime) {
-  EXPECT_EQ(base::TimeTicks::UnixEpoch(), tab_data()->LastAudioChangeTime());
+  EXPECT_TRUE(tab_data()->LastAudioChangeTime().is_null());
   auto now = NowTicks();
   tab_data()->SetLastAudioChangeTime(now);
   EXPECT_EQ(now, tab_data()->LastAudioChangeTime());
 }
 
 TEST_F(TabManagerWebContentsDataTest, LastInactiveTime) {
-  EXPECT_EQ(base::TimeTicks::UnixEpoch(), tab_data()->LastInactiveTime());
+  EXPECT_TRUE(tab_data()->LastInactiveTime().is_null());
   auto now = NowTicks();
   tab_data()->SetLastInactiveTime(now);
   EXPECT_EQ(now, tab_data()->LastInactiveTime());
