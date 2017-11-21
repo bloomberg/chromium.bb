@@ -6,6 +6,7 @@
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/interfaces/tray_action.mojom.h"
 #include "base/command_line.h"
+#include "base/run_loop.h"
 #include "base/scoped_observer.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/lock_screen_apps/lock_screen_profile_creator.h"

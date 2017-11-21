@@ -14,6 +14,7 @@
 #include "ash/public/cpp/config.h"
 #include "ash/shell.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/widget/widget.h"

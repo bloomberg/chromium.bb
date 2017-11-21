@@ -5,6 +5,7 @@
 #include "device/u2f/u2f_ble_discovery.h"
 
 #include "base/bind.h"
+#include "base/run_loop.h"
 #include "build/build_config.h"
 #include "device/bluetooth/test/bluetooth_test.h"
 #include "device/u2f/mock_u2f_discovery.h"

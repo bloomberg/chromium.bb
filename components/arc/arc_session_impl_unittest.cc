@@ -11,6 +11,7 @@
 
 #include "base/location.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/dbus/dbus_thread_manager.h"

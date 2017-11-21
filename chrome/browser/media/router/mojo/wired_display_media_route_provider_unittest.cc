@@ -4,6 +4,7 @@
 
 #include "chrome/browser/media/router/mojo/wired_display_media_route_provider.h"
 
+#include "base/run_loop.h"
 #include "chrome/browser/media/router/mojo/mock_mojo_media_router.h"
 #include "chrome/common/media_router/mojo/media_router.mojom.h"
 #include "chrome/test/base/testing_profile.h"

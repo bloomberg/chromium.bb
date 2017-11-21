@@ -4,6 +4,7 @@
 
 #include "base/allocator/features.h"
 #include "base/json/json_reader.h"
+#include "base/run_loop.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/trace_buffer.h"
 #include "base/trace_event/trace_log.h"

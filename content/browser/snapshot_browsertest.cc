@@ -12,6 +12,7 @@
 
 #include "base/command_line.h"
 #include "base/rand_util.h"
+#include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"

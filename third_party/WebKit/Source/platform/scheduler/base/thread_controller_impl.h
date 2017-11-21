@@ -10,6 +10,7 @@
 #include "base/cancelable_callback.h"
 #include "base/debug/task_annotator.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "platform/PlatformExport.h"
 #include "platform/scheduler/base/sequence.h"

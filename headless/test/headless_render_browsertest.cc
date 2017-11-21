@@ -5,6 +5,8 @@
 #include <functional>
 #include <strstream>
 
+#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "content/public/test/browser_test.h"
 #include "headless/public/devtools/domains/dom_snapshot.h"
 #include "headless/public/devtools/domains/page.h"

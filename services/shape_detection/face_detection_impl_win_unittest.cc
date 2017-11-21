@@ -4,6 +4,7 @@
 
 #include "services/shape_detection/face_detection_impl_win.h"
 
+#include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/win/scoped_com_initializer.h"
 #include "face_detection_impl_win.h"

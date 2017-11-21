@@ -4,6 +4,7 @@
 
 #include "content/renderer/webclipboard_impl.h"
 
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
