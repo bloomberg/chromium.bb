@@ -250,10 +250,9 @@ ControllerModel VrTestContext::UpdateController() {
   return controller_model;
 }
 
-void VrTestContext::OnGlInitialized(const gfx::Size& window_size) {
+void VrTestContext::OnGlInitialized() {
   unsigned int content_texture_id = CreateFakeContentTexture();
 
-  window_size_ = window_size;
   ui_->OnGlInitialized(content_texture_id,
                        UiElementRenderer::kTextureLocationLocal, false);
 
@@ -298,8 +297,13 @@ void VrTestContext::CreateFakeOmniboxSuggestions() {
 }
 
 gfx::Transform VrTestContext::ProjectionMatrix() const {
-  return gfx::Transform(view_scale_factor_, 0, 0, 0, 0, view_scale_factor_, 0,
-                        0, 0, 0, -1, 0, 0, 0, -1, 0.5);
+  gfx::Transform transform(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1, 0, 0, 0, -1, 0.5);
+  if (window_size_.height() > 0) {
+    transform.Scale(
+        view_scale_factor_,
+        view_scale_factor_ * window_size_.width() / window_size_.height());
+  }
+  return transform;
 }
 
 gfx::Transform VrTestContext::ViewProjectionMatrix() const {

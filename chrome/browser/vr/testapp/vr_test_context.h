@@ -30,7 +30,7 @@ class VrTestContext : public vr::UiBrowserInterface {
   VrTestContext();
   ~VrTestContext() override;
 
-  void OnGlInitialized(const gfx::Size& window_size);
+  void OnGlInitialized();
   void DrawFrame();
   void HandleInput(ui::Event* event);
 
@@ -47,6 +47,8 @@ class VrTestContext : public vr::UiBrowserInterface {
   void StartAutocomplete(const base::string16& string) override;
   void StopAutocomplete() override;
   void Navigate(GURL gurl) override;
+
+  void set_window_size(const gfx::Size& size) { window_size_ = size; }
 
  private:
   unsigned int CreateFakeContentTexture();
