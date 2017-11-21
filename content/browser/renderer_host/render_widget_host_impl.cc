@@ -2849,6 +2849,11 @@ void RenderWidgetHostImpl::SetupInputRouter() {
         std::make_unique<LegacyIPCWidgetInputHandler>(
             static_cast<LegacyInputRouterImpl*>(input_router_.get()));
   }
+
+  if (IsUseZoomForDSFEnabled()) {
+    input_router_->SetDeviceScaleFactor(
+        view_.get() ? content::GetScaleFactorForView(view_.get()) : 1.0f);
+  }
 }
 
 void RenderWidgetHostImpl::SetForceEnableZoom(bool enabled) {
