@@ -595,7 +595,19 @@ class CORE_EXPORT Document : public ContainerNode,
                                     const AtomicString& encoding);
   DocumentParser* ImplicitOpen(ParserSynchronizationPolicy);
 
-  // This is the DOM API document.close()
+  // This is the DOM API document.open() implementation.
+  // document.open() opens a new window when called with three arguments.
+  Document* open(LocalDOMWindow* entered_window,
+                 const AtomicString& type,
+                 const AtomicString& replace,
+                 ExceptionState&);
+  DOMWindow* open(LocalDOMWindow* current_window,
+                  LocalDOMWindow* entered_window,
+                  const AtomicString& url,
+                  const AtomicString& name,
+                  const AtomicString& features,
+                  ExceptionState&);
+  // This is the DOM API document.close().
   void close(ExceptionState&);
   // This is used internally and does not handle exceptions.
   void close();

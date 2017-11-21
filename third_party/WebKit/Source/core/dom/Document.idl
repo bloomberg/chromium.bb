@@ -33,6 +33,7 @@ enum AddressSpace { "local", "private", "public" };
 typedef (HTMLScriptElement or SVGScriptElement) HTMLOrSVGScriptElement;
 
 // https://dom.spec.whatwg.org/#interface-document
+// https://html.spec.whatwg.org/multipage/dom.html#documents
 
 [
     Constructor(),
@@ -117,8 +118,8 @@ typedef (HTMLScriptElement or SVGScriptElement) HTMLOrSVGScriptElement;
     [ImplementedAs=currentScriptForBinding] readonly attribute HTMLOrSVGScriptElement? currentScript;
 
     // dynamic markup insertion
-    // FIXME: There are two open() methods in the spec.
-    [Custom, CEReactions, CustomElementCallbacks, RaisesException, MeasureAs=DocumentOpen] void open();
+    [CallWith=EnteredWindow, CEReactions, CustomElementCallbacks, RaisesException, MeasureAs=DocumentOpen] Document open(optional DOMString type = "text/html", optional DOMString replace = "");
+    [CallWith=(CurrentWindow,EnteredWindow), RaisesException, MeasureAs=DocumentOpen] Window open(DOMString url, DOMString name, DOMString features);
     [CEReactions, RaisesException] void close();
     [CallWith=EnteredWindow, CEReactions, CustomElementCallbacks, RaisesException] void write(DOMString... text);
     [CallWith=EnteredWindow, CEReactions, CustomElementCallbacks, RaisesException] void writeln(DOMString... text);
