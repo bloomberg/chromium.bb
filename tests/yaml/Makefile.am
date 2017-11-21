@@ -23,6 +23,8 @@ EXTRA_DIST =					\
 	da-dk-g28l.yaml				\
 	de-ch-abbr.yaml				\
 	de-ch-computer.yaml			\
+	de-ch-g1-dictionary.yaml		\
+	de-ch-g2-dictionary.yaml		\
 	de-ch-g2.yaml				\
 	de-ch-vform.yaml			\
 	el-backward.yaml			\
