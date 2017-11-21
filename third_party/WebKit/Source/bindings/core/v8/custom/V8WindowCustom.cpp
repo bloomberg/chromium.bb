@@ -346,6 +346,17 @@ void V8Window::namedPropertyGetterCustom(
   if (!BindingSecurity::ShouldAllowAccessTo(
           CurrentDOMWindow(info.GetIsolate()), window,
           BindingSecurity::ErrorReportOption::kDoNotReport)) {
+    // HTML 7.2.3.3 CrossOriginGetOwnPropertyHelper ( O, P )
+    // https://html.spec.whatwg.org/multipage/browsers.html#crossorigingetownpropertyhelper-(-o,-p-)
+    // step 3. If P is "then", @@toStringTag, @@hasInstance, or
+    //   @@isConcatSpreadable, then return PropertyDescriptor{ [[Value]]:
+    //   undefined, [[Writable]]: false, [[Enumerable]]: false,
+    //   [[Configurable]]: true }.
+    if (name == "then") {
+      V8SetReturnValueFast(info, v8::Undefined(info.GetIsolate()), window);
+      return;
+    }
+
     BindingSecurity::FailedAccessCheckFor(
         info.GetIsolate(), window->GetWrapperTypeInfo(), info.Holder());
     return;
