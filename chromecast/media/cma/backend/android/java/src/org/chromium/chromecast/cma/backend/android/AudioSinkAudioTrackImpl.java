@@ -336,7 +336,7 @@ class AudioSinkAudioTrackImpl {
                     Math.min(mTotalFramesWritten, mAudioTrack.getBufferSizeInFrames());
             playtimeLeftNsecs = SEC_IN_NSEC * most_frames_left / mSampleRateInHz;
         }
-        return playtimeLeftNsecs / 1000; // return usecs
+        return (playtimeLeftNsecs < 0) ? 0 : playtimeLeftNsecs / 1000; // return usecs
     }
 
     @CalledByNative
