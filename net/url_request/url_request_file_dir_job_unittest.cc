@@ -302,83 +302,38 @@ TEST_F(URLRequestFileDirTest, EmptyDirectory) {
   EXPECT_FALSE(HasParentDirEntry(delegate.data_received()));
 }
 
+// Android security policies prevent access to the root directory, so skip this
+// test there.
+#if !defined(OS_ANDROID)
 TEST_F(URLRequestFileDirTest, RootDirectory) {
+  for (int slashes_to_test = 1; slashes_to_test < 4; ++slashes_to_test) {
+    base::FilePath::StringType root_dir_string;
 #if defined(OS_WIN)
-  base::FilePath root_dir(L"C:\\");
-#else
-  base::FilePath root_dir("/");
+    root_dir_string = L"C:";
 #endif
-  TestJobFactory factory(root_dir);
-  context_.set_job_factory(&factory);
+    root_dir_string.append(slashes_to_test, base::FilePath::kSeparators[0]);
+    base::FilePath root_dir(root_dir_string);
+    TestJobFactory factory(root_dir);
+    context_.set_job_factory(&factory);
 
-  TestDelegate delegate;
-  std::unique_ptr<URLRequest> request(
-      context_.CreateRequest(FilePathToFileURL(root_dir), DEFAULT_PRIORITY,
-                             &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
-  request->Start();
-  EXPECT_TRUE(request->is_pending());
+    TestDelegate delegate;
+    std::unique_ptr<URLRequest> request(
+        context_.CreateRequest(FilePathToFileURL(root_dir), DEFAULT_PRIORITY,
+                               &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
+    request->Start();
+    EXPECT_TRUE(request->is_pending());
 
-  base::RunLoop().Run();
+    base::RunLoop().Run();
 
-  ASSERT_GT(delegate.bytes_received(), 0);
-  ASSERT_LE(delegate.bytes_received(), kBufferSize);
-  EXPECT_TRUE(HasHeader(delegate.data_received(), root_dir));
-  EXPECT_FALSE(HasParentDirLink(delegate.data_received()));
-  EXPECT_GT(GetEntryCount(delegate.data_received()), 0);
-  EXPECT_FALSE(HasParentDirEntry(delegate.data_received()));
+    ASSERT_GT(delegate.bytes_received(), 0);
+    ASSERT_LE(delegate.bytes_received(), kBufferSize);
+    EXPECT_TRUE(HasHeader(delegate.data_received(), root_dir));
+    EXPECT_FALSE(HasParentDirLink(delegate.data_received()));
+    EXPECT_GT(GetEntryCount(delegate.data_received()), 0);
+    EXPECT_FALSE(HasParentDirEntry(delegate.data_received()));
+  }
 }
-
-TEST_F(URLRequestFileDirTest, RootDirectoryWithTrailer) {
-#if defined(OS_WIN)
-  base::FilePath root_dir(L"C:\\\\");
-#else
-  base::FilePath root_dir("//");
-#endif
-  TestJobFactory factory(root_dir);
-  context_.set_job_factory(&factory);
-
-  TestDelegate delegate;
-  std::unique_ptr<URLRequest> request(
-      context_.CreateRequest(FilePathToFileURL(root_dir), DEFAULT_PRIORITY,
-                             &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
-  request->Start();
-  EXPECT_TRUE(request->is_pending());
-
-  base::RunLoop().Run();
-
-  ASSERT_GT(delegate.bytes_received(), 0);
-  ASSERT_LE(delegate.bytes_received(), kBufferSize);
-  EXPECT_TRUE(HasHeader(delegate.data_received(), root_dir));
-  EXPECT_FALSE(HasParentDirLink(delegate.data_received()));
-  EXPECT_GT(GetEntryCount(delegate.data_received()), 0);
-  EXPECT_FALSE(HasParentDirEntry(delegate.data_received()));
-}
-
-TEST_F(URLRequestFileDirTest, RootDirectoryWithLongerTrailer) {
-#if defined(OS_WIN)
-  base::FilePath root_dir(L"C:\\\\\\");
-#else
-  base::FilePath root_dir("///");
-#endif
-  TestJobFactory factory(root_dir);
-  context_.set_job_factory(&factory);
-
-  TestDelegate delegate;
-  std::unique_ptr<URLRequest> request(
-      context_.CreateRequest(FilePathToFileURL(root_dir), DEFAULT_PRIORITY,
-                             &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
-  request->Start();
-  EXPECT_TRUE(request->is_pending());
-
-  base::RunLoop().Run();
-
-  ASSERT_GT(delegate.bytes_received(), 0);
-  ASSERT_LE(delegate.bytes_received(), kBufferSize);
-  EXPECT_TRUE(HasHeader(delegate.data_received(), root_dir));
-  EXPECT_FALSE(HasParentDirLink(delegate.data_received()));
-  EXPECT_GT(GetEntryCount(delegate.data_received()), 0);
-  EXPECT_FALSE(HasParentDirEntry(delegate.data_received()));
-}
+#endif  // !defined(OS_ANDROID)
 
 }  // namespace
 
