@@ -28,10 +28,6 @@
 #include "services/service_manager/sandbox/linux/bpf_gpu_policy_linux.h"
 #include "services/service_manager/sandbox/linux/sandbox_linux.h"
 
-#if BUILDFLAG(USE_VAAPI)
-#include <va/va_version.h>
-#endif
-
 using sandbox::bpf_dsl::Policy;
 using sandbox::syscall_broker::BrokerFilePermission;
 using sandbox::syscall_broker::BrokerProcess;
@@ -81,14 +77,6 @@ inline bool UseV4L2Codec() {
 
 inline bool UseLibV4L2() {
 #if BUILDFLAG(USE_LIBV4L2)
-  return true;
-#else
-  return false;
-#endif
-}
-
-inline bool IsLibVAVersion2() {
-#if BUILDFLAG(USE_VAAPI) && VA_MAJOR_VERSION == 1
   return true;
 #else
   return false;
@@ -261,31 +249,23 @@ void LoadStandardLibraries(
     // inside the sandbox, so preload them now.
     if (options.vaapi_accelerated_video_encode_enabled ||
         options.accelerated_video_decode_enabled) {
-      if (IsLibVAVersion2()) {
-        if (IsArchitectureX86_64()) {
-          dlopen("/usr/lib64/va/drivers/i965_drv_video.so", dlopen_flag);
-          dlopen("/usr/lib64/va/drivers/hybrid_drv_video.so", dlopen_flag);
-        } else if (IsArchitectureI386()) {
-          dlopen("/usr/lib/va/drivers/i965_drv_video.so", dlopen_flag);
-        }
-        dlopen("libva.so.2", dlopen_flag);
-#if defined(USE_OZONE)
-        dlopen("libva-drm.so.2", dlopen_flag);
-#endif
-      } else {
-        if (IsArchitectureX86_64()) {
-          dlopen("/usr/lib64/va1/drivers/i965_drv_video.so", dlopen_flag);
-          dlopen("/usr/lib64/va1/drivers/hybrid_drv_video.so", dlopen_flag);
-        } else if (IsArchitectureI386()) {
-          dlopen("/usr/lib/va1/drivers/i965_drv_video.so", dlopen_flag);
-        }
-        dlopen("libva.so.1", dlopen_flag);
-#if defined(USE_OZONE)
-        dlopen("libva-drm.so.1", dlopen_flag);
-#elif defined(USE_X11)
-        dlopen("libva-x11.so.1", dlopen_flag);
-#endif
+      const char* I965DrvVideoPath = nullptr;
+      const char* I965HybridDrvVideoPath = nullptr;
+      if (IsArchitectureX86_64()) {
+        I965DrvVideoPath = "/usr/lib64/va/drivers/i965_drv_video.so";
+        I965HybridDrvVideoPath = "/usr/lib64/va/drivers/hybrid_drv_video.so";
+      } else if (IsArchitectureI386()) {
+        I965DrvVideoPath = "/usr/lib/va/drivers/i965_drv_video.so";
       }
+      dlopen(I965DrvVideoPath, dlopen_flag);
+      if (I965HybridDrvVideoPath)
+        dlopen(I965HybridDrvVideoPath, dlopen_flag);
+      dlopen("libva.so.1", dlopen_flag);
+#if defined(USE_OZONE)
+      dlopen("libva-drm.so.1", dlopen_flag);
+#elif defined(USE_X11)
+      dlopen("libva-x11.so.1", dlopen_flag);
+#endif
     }
   }
 }
