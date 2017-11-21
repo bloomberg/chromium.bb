@@ -74,7 +74,7 @@ function FileTasks(
    * @const
    */
   this.taskHistory_ = taskHistory;
-};
+}
 
 FileTasks.prototype = {
   /**
@@ -430,13 +430,13 @@ FileTasks.annotateTasks_ = function(tasks, entries) {
 
     // Add verb to title.
     if (task.verb) {
-      var verb_button_label = '';
+      var verbButtonLabel = '';
       switch (task.verb) {
         case chrome.fileManagerPrivate.Verb.ADD_TO:
-          verb_button_label = 'ADD_TO_VERB_BUTTON_LABEL';
+          verbButtonLabel = 'ADD_TO_VERB_BUTTON_LABEL';
           break;
         case chrome.fileManagerPrivate.Verb.PACK_WITH:
-          verb_button_label = 'PACK_WITH_VERB_BUTTON_LABEL';
+          verbButtonLabel = 'PACK_WITH_VERB_BUTTON_LABEL';
           break;
         case chrome.fileManagerPrivate.Verb.SHARE_WITH:
           // Even when the task has SHARE_WITH verb, we don't prefix the title
@@ -445,17 +445,17 @@ FileTasks.annotateTasks_ = function(tasks, entries) {
           // appropriate verb.
           if (!(taskParts[1] == 'arc' &&
                 (taskParts[2] == 'send' || taskParts[2] == 'send_multiple'))) {
-            verb_button_label = 'SHARE_WITH_VERB_BUTTON_LABEL';
+            verbButtonLabel = 'SHARE_WITH_VERB_BUTTON_LABEL';
           }
           break;
         case chrome.fileManagerPrivate.Verb.OPEN_WITH:
-          verb_button_label = 'OPEN_WITH_VERB_BUTTON_LABEL';
+          verbButtonLabel = 'OPEN_WITH_VERB_BUTTON_LABEL';
           break;
         default:
           console.error('Invalid task verb: ' + task.verb + '.');
       }
-      if (verb_button_label)
-        task.title = loadTimeData.getStringF(verb_button_label, task.title);
+      if (verbButtonLabel)
+        task.title = loadTimeData.getStringF(verbButtonLabel, task.title);
     }
 
     result.push(task);
