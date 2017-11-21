@@ -27,6 +27,7 @@ source_set("commands") {
     "qr_scanner_commands.h",
     "reading_list_add_command.h",
     "reading_list_add_command.mm",
+    "settings_main_page_commands.h",
     "show_signin_command.h",
     "show_signin_command.mm",
     "snackbar_commands.h",
