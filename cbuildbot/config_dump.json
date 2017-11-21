@@ -12980,10 +12980,6 @@
             "{\n    \"lab_board_name\": \"coral\",\n    \"name\": \"whitetip1\",\n    \"test_suites\": []\n}",
             "{\n    \"lab_board_name\": \"coral\",\n    \"name\": \"whitetip2\",\n    \"test_suites\": []\n}"
         ],
-        "sign_types": [
-            "recovery",
-            "factory"
-        ],
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -13137,10 +13133,6 @@
         ],
         "paygen": false,
         "push_image": false,
-        "sign_types": [
-            "recovery",
-            "factory"
-        ],
         "vm_tests": [],
         "vm_tests_override": null
     },

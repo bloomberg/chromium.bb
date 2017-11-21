@@ -3618,10 +3618,6 @@ def ApplyCustomOverrides(site_config, ge_build_config):
       'nautilus-release': {
           'sign_types': ['recovery', 'accessory_rwsig', 'factory'],
       },
-
-      'coral-release': {
-          'sign_types': ['recovery', 'factory'],
-      },
       # --- end from here ---
 
       'betty-release':
