@@ -4,6 +4,8 @@
 
 #include "components/crash/core/common/crash_key.h"
 
+#include "base/debug/stack_trace.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace crash_reporter {
@@ -25,6 +27,55 @@ TEST_F(CrashKeyStringTest, ScopedCrashKeyString) {
   }
 
   EXPECT_FALSE(key.is_set());
+}
+
+TEST_F(CrashKeyStringTest, FormatStackTrace) {
+  const uintptr_t addresses[] = {
+      0x0badbeef, 0x77778888, 0xabc, 0x000ddeeff, 0x12345678,
+  };
+  base::debug::StackTrace trace(reinterpret_cast<const void* const*>(addresses),
+                                arraysize(addresses));
+
+  std::string too_small = internal::FormatStackTrace(trace, 3);
+  EXPECT_EQ(0u, too_small.size());
+
+  std::string one_value = internal::FormatStackTrace(trace, 16);
+  EXPECT_EQ("0xbadbeef", one_value);
+
+  std::string three_values = internal::FormatStackTrace(trace, 30);
+  EXPECT_EQ("0xbadbeef 0x77778888 0xabc", three_values);
+
+  std::string all_values = internal::FormatStackTrace(trace, 128);
+  EXPECT_EQ("0xbadbeef 0x77778888 0xabc 0xddeeff 0x12345678", all_values);
+}
+
+#if defined(ARCH_CPU_64_BITS)
+TEST_F(CrashKeyStringTest, FormatStackTrace64) {
+  const uintptr_t addresses[] = {
+      0xbaaaabaaaaba, 0x1000000000000000,
+  };
+  base::debug::StackTrace trace(reinterpret_cast<const void* const*>(addresses),
+                                arraysize(addresses));
+
+  std::string too_small = internal::FormatStackTrace(trace, 8);
+  EXPECT_EQ(0u, too_small.size());
+
+  std::string one_value = internal::FormatStackTrace(trace, 20);
+  EXPECT_EQ("0xbaaaabaaaaba", one_value);
+
+  std::string all_values = internal::FormatStackTrace(trace, 35);
+  EXPECT_EQ("0xbaaaabaaaaba 0x1000000000000000", all_values);
+}
+#endif
+
+TEST_F(CrashKeyStringTest, SetStackTrace) {
+  static CrashKeyString<1024> key("test-trace");
+
+  EXPECT_FALSE(key.is_set());
+
+  SetCrashKeyStringToStackTrace(&key, base::debug::StackTrace());
+
+  EXPECT_TRUE(key.is_set());
 }
 
 }  // namespace
