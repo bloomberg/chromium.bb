@@ -259,12 +259,12 @@ GpuImageDecodeCache::InUseCacheEntry::~InUseCacheEntry() = default;
 
 // Task which decodes an image and stores the result in discardable memory.
 // This task does not use GPU resources and can be run on any thread.
-class ImageDecodeTaskImpl : public TileTask {
+class GpuImageDecodeTaskImpl : public TileTask {
  public:
-  ImageDecodeTaskImpl(GpuImageDecodeCache* cache,
-                      const DrawImage& draw_image,
-                      const ImageDecodeCache::TracingInfo& tracing_info,
-                      GpuImageDecodeCache::DecodeTaskType task_type)
+  GpuImageDecodeTaskImpl(GpuImageDecodeCache* cache,
+                         const DrawImage& draw_image,
+                         const ImageDecodeCache::TracingInfo& tracing_info,
+                         GpuImageDecodeCache::DecodeTaskType task_type)
       : TileTask(true),
         cache_(cache),
         image_(draw_image),
@@ -275,8 +275,9 @@ class ImageDecodeTaskImpl : public TileTask {
 
   // Overridden from Task:
   void RunOnWorkerThread() override {
-    TRACE_EVENT2("cc", "ImageDecodeTaskImpl::RunOnWorkerThread", "mode", "gpu",
-                 "source_prepare_tiles_id", tracing_info_.prepare_tiles_id);
+    TRACE_EVENT2("cc", "GpuImageDecodeTaskImpl::RunOnWorkerThread", "mode",
+                 "gpu", "source_prepare_tiles_id",
+                 tracing_info_.prepare_tiles_id);
     devtools_instrumentation::ScopedImageDecodeTask image_decode_task(
         &image_.paint_image(),
         devtools_instrumentation::ScopedImageDecodeTask::kGpu,
@@ -290,7 +291,7 @@ class ImageDecodeTaskImpl : public TileTask {
   }
 
  protected:
-  ~ImageDecodeTaskImpl() override {}
+  ~GpuImageDecodeTaskImpl() override {}
 
  private:
   GpuImageDecodeCache* cache_;
@@ -298,7 +299,7 @@ class ImageDecodeTaskImpl : public TileTask {
   const ImageDecodeCache::TracingInfo tracing_info_;
   const GpuImageDecodeCache::DecodeTaskType task_type_;
 
-  DISALLOW_COPY_AND_ASSIGN(ImageDecodeTaskImpl);
+  DISALLOW_COPY_AND_ASSIGN(GpuImageDecodeTaskImpl);
 };
 
 // Task which creates an image from decoded data. Typically this involves
@@ -960,7 +961,7 @@ scoped_refptr<TileTask> GpuImageDecodeCache::GetImageDecodeTaskAndRef(
     // Ref image decode and create a decode task. This ref will be released in
     // DecodeTaskCompleted.
     RefImageDecode(draw_image);
-    existing_task = base::MakeRefCounted<ImageDecodeTaskImpl>(
+    existing_task = base::MakeRefCounted<GpuImageDecodeTaskImpl>(
         this, draw_image, tracing_info, task_type);
   }
   return existing_task;
