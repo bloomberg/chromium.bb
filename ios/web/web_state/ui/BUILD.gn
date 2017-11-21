@@ -18,6 +18,7 @@ source_set("ui") {
     "//ios/web/navigation:core",
     "//ios/web/net:net",
     "//ios/web/public",
+    "//ios/web/public/download",
     "//ios/web/web_state:context_menu",
     "//ios/web/web_state:crw_pass_kit_downloader",
     "//ios/web/web_state:error_translation_util",
