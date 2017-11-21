@@ -11,4 +11,6 @@ public class BuildConfig {
     false;
 #endif
 
+  // Set the number of lines for LogcatExtractor to send.
+  public static final int LOGCAT_SIZE = _LOGCAT_EXTRACTOR_SIZE;
 }
