@@ -457,8 +457,16 @@ void LocalStorageContextMojo::ShutdownAndDelete() {
   connection_state_ = CONNECTION_SHUTDOWN;
 
   // Flush any uncommitted data.
-  for (const auto& it : level_db_wrappers_)
-    it.second->level_db_wrapper()->ScheduleImmediateCommit();
+  for (const auto& it : level_db_wrappers_) {
+    auto* wrapper = it.second->level_db_wrapper();
+    LOCAL_HISTOGRAM_BOOLEAN(
+        "LocalStorageContext.ShutdownAndDelete.MaybeDroppedChanges",
+        wrapper->has_pending_load_tasks());
+    wrapper->ScheduleImmediateCommit();
+    // TODO(dmurph): Monitor the above histogram, and if dropping changes is
+    // common then handle that here.
+    wrapper->CancelAllPendingRequests();
+  }
 
   // Respect the content policy settings about what to
   // keep and what to discard.
@@ -796,8 +804,10 @@ void LocalStorageContextMojo::OnConnectionFinished() {
 
 void LocalStorageContextMojo::DeleteAndRecreateDatabase(
     const char* histogram_name) {
-  // We're about to set database_ to null, so delete and LevelDBWrappers
+  // We're about to set database_ to null, so delete the LevelDBWrappers
   // that might still be using the old database.
+  for (const auto& it : level_db_wrappers_)
+    it.second->level_db_wrapper()->CancelAllPendingRequests();
   level_db_wrappers_.clear();
 
   // Reset state to be in process of connecting. This will cause requests for

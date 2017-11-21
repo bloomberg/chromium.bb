@@ -85,6 +85,17 @@ void DatabaseSyncGetPrefixed(mojom::LevelDBDatabase* database,
   run_loop.Run();
 }
 
+void DatabaseSyncCopyPrefixed(mojom::LevelDBDatabase* database,
+                              const std::string& source_key_prefix,
+                              const std::string& destination_key_prefix,
+                              mojom::DatabaseError* out_error) {
+  base::RunLoop run_loop;
+  database->CopyPrefixed(StdStringToUint8Vector(source_key_prefix),
+                         StdStringToUint8Vector(destination_key_prefix),
+                         Capture(out_error, run_loop.QuitClosure()));
+  run_loop.Run();
+}
+
 void DatabaseSyncDeletePrefixed(mojom::LevelDBDatabase* database,
                                 const std::string& key_prefix,
                                 mojom::DatabaseError* out_error) {
@@ -223,8 +234,13 @@ TEST_F(LevelDBServiceTest, WriteBatch) {
   DatabaseSyncPut(database.get(), "prefix-key2", "value", &error);
   EXPECT_EQ(mojom::DatabaseError::OK, error);
 
-  // Create a batched operation to delete them.
+  // Create batched operations to copy and then delete the 'prefix' data.
   operations.clear();
+  item = mojom::BatchedOperation::New();
+  item->type = mojom::BatchOperationType::COPY_PREFIXED_KEY;
+  item->key = StdStringToUint8Vector("prefix");
+  item->value = StdStringToUint8Vector("copy-prefix");
+  operations.push_back(std::move(item));
   item = mojom::BatchedOperation::New();
   item->type = mojom::BatchOperationType::DELETE_PREFIXED_KEY;
   item->key = StdStringToUint8Vector("prefix");
@@ -247,6 +263,71 @@ TEST_F(LevelDBServiceTest, WriteBatch) {
   DatabaseSyncGet(database.get(), "prefix-key2", &error, &value);
   EXPECT_EQ(mojom::DatabaseError::NOT_FOUND, error);
   EXPECT_EQ("", Uint8VectorToStdString(value));
+
+  // Prefix keys should have been copied to 'copy-prefix' before deletion.
+  error = mojom::DatabaseError::INVALID_ARGUMENT;
+  DatabaseSyncGet(database.get(), "copy-prefix-key1", &error, &value);
+  EXPECT_EQ(mojom::DatabaseError::OK, error);
+  EXPECT_EQ("value", Uint8VectorToStdString(value));
+  error = mojom::DatabaseError::INVALID_ARGUMENT;
+  DatabaseSyncGet(database.get(), "copy-prefix-key2", &error, &value);
+  EXPECT_EQ(mojom::DatabaseError::OK, error);
+  EXPECT_EQ("value", Uint8VectorToStdString(value));
+}
+
+TEST_F(LevelDBServiceTest, WriteBatchPrefixesAndDeletes) {
+  // This test makes sure that prefixes & deletes happen before all other batch
+  // operations.
+  mojom::DatabaseError error;
+  mojom::LevelDBDatabaseAssociatedPtr database;
+  LevelDBSyncOpenInMemory(leveldb().get(), MakeRequest(&database), &error);
+  EXPECT_EQ(mojom::DatabaseError::OK, error);
+
+  // Write a key to the database.
+  DatabaseSyncPut(database.get(), "key", "value", &error);
+  EXPECT_EQ(mojom::DatabaseError::OK, error);
+
+  // The copy applies as if it happens before this write batch.
+  // The delete applies to all keys that existed before these changes.
+  std::vector<mojom::BatchedOperationPtr> operations;
+  mojom::BatchedOperationPtr item = mojom::BatchedOperation::New();
+  item->type = mojom::BatchOperationType::PUT_KEY;
+  item->key = StdStringToUint8Vector("key");
+  item->value = StdStringToUint8Vector("new_value");
+  operations.push_back(std::move(item));
+
+  item = mojom::BatchedOperation::New();
+  item->type = mojom::BatchOperationType::PUT_KEY;
+  item->key = StdStringToUint8Vector("key2");
+  item->value = StdStringToUint8Vector("value2");
+  operations.push_back(std::move(item));
+
+  item = mojom::BatchedOperation::New();
+  item->type = mojom::BatchOperationType::DELETE_PREFIXED_KEY;
+  item->key = StdStringToUint8Vector("k");
+  operations.push_back(std::move(item));
+
+  item = mojom::BatchedOperation::New();
+  item->type = mojom::BatchOperationType::COPY_PREFIXED_KEY;
+  item->key = StdStringToUint8Vector("k");
+  item->value = StdStringToUint8Vector("f");
+  operations.push_back(std::move(item));
+  base::RunLoop run_loop;
+  database->Write(std::move(operations),
+                  Capture(&error, run_loop.QuitClosure()));
+  run_loop.Run();
+  EXPECT_EQ(mojom::DatabaseError::OK, error);
+
+  std::vector<uint8_t> value;
+  error = mojom::DatabaseError::INVALID_ARGUMENT;
+  DatabaseSyncGet(database.get(), "key", &error, &value);
+  EXPECT_EQ(mojom::DatabaseError::NOT_FOUND, error);
+  DatabaseSyncGet(database.get(), "key2", &error, &value);
+  EXPECT_EQ("value2", Uint8VectorToStdString(value));
+  error = mojom::DatabaseError::INVALID_ARGUMENT;
+  DatabaseSyncGet(database.get(), "fey", &error, &value);
+  EXPECT_EQ(mojom::DatabaseError::OK, error);
+  EXPECT_EQ("value", Uint8VectorToStdString(value));
 }
 
 TEST_F(LevelDBServiceTest, Reconnect) {
@@ -483,6 +564,7 @@ TEST_F(LevelDBServiceTest, Prefixed) {
   EXPECT_EQ(mojom::DatabaseError::OK, error);
 
   const std::string prefix("prefix");
+  const std::string copy_prefix("foo");
   std::vector<mojom::KeyValuePtr> key_values;
 
   // Completely empty database.
@@ -528,6 +610,17 @@ TEST_F(LevelDBServiceTest, Prefixed) {
   EXPECT_EQ("prefix2", Uint8VectorToStdString(key_values[1]->key));
   EXPECT_EQ("value2", Uint8VectorToStdString(key_values[1]->value));
 
+  // Copy to a different prefix
+  DatabaseSyncCopyPrefixed(database.get(), prefix, copy_prefix, &error);
+  EXPECT_EQ(mojom::DatabaseError::OK, error);
+  DatabaseSyncGetPrefixed(database.get(), copy_prefix, &error, &key_values);
+  EXPECT_EQ(mojom::DatabaseError::OK, error);
+  ASSERT_EQ(2u, key_values.size());
+  EXPECT_EQ("foo", Uint8VectorToStdString(key_values[0]->key));
+  EXPECT_EQ("value", Uint8VectorToStdString(key_values[0]->value));
+  EXPECT_EQ("foo2", Uint8VectorToStdString(key_values[1]->key));
+  EXPECT_EQ("value2", Uint8VectorToStdString(key_values[1]->value));
+
   // Delete the prefixed values.
   error = mojom::DatabaseError::INVALID_ARGUMENT;
   DatabaseSyncDeletePrefixed(database.get(), prefix, &error);
@@ -547,6 +640,9 @@ TEST_F(LevelDBServiceTest, Prefixed) {
   DatabaseSyncGet(database.get(), "z-after-prefix", &error, &value);
   EXPECT_EQ(mojom::DatabaseError::OK, error);
   EXPECT_EQ("value", Uint8VectorToStdString(value));
+  DatabaseSyncGetPrefixed(database.get(), copy_prefix, &error, &key_values);
+  EXPECT_EQ(mojom::DatabaseError::OK, error);
+  EXPECT_EQ(2u, key_values.size());
 
   // A key having our prefix, but no key matching it exactly.
   // Even thought there is no exact matching key, GetPrefixed

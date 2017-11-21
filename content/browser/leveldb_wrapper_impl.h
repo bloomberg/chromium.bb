@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "content/common/content_export.h"
 #include "content/common/leveldb_wrapper.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
@@ -37,6 +38,8 @@ namespace content {
 // 2) Enforces a max_size constraint.
 // 3) Informs observers when values scoped by prefix are modified.
 // 4) Throttles requests to avoid overwhelming the disk.
+//
+// The wrapper supports two different caching modes.
 class CONTENT_EXPORT LevelDBWrapperImpl : public mojom::LevelDBWrapper {
  public:
   using ValueMap = std::map<std::vector<uint8_t>, std::vector<uint8_t>>;
@@ -47,6 +50,7 @@ class CONTENT_EXPORT LevelDBWrapperImpl : public mojom::LevelDBWrapper {
 
   class CONTENT_EXPORT Delegate {
    public:
+    virtual ~Delegate();
     virtual void OnNoBindings() = 0;
     virtual std::vector<leveldb::mojom::BatchedOperationPtr>
     PrepareToCommit() = 0;
@@ -93,15 +97,40 @@ class CONTENT_EXPORT LevelDBWrapperImpl : public mojom::LevelDBWrapper {
 
   void Bind(mojom::LevelDBWrapperRequest request);
 
+  // Forks, or copies, all data in this prefix to another prefix.
+  // Note: this object (the parent) must stay alive until the forked wrapper
+  // has been loaded (see initialized()).
+  std::unique_ptr<LevelDBWrapperImpl> ForkToNewPrefix(
+      const std::string& new_prefix,
+      Delegate* delegate,
+      const Options& options);
+
+  // Cancels all pending load tasks. Useful for emergency destructions. If the
+  // wrapper is unloaded (initialized() returns false), this will DROP all
+  // pending changes to the database, and any uninitialized wrappers created
+  // through |ForkToNewPrefix| will stay BROKEN and unresponsive.
+  void CancelAllPendingRequests();
+
   // The total bytes used by items which counts towards the quota.
   size_t storage_used() const { return storage_used_; }
   // The physical memory used by the cache.
   size_t memory_used() const { return memory_used_; }
+
   bool empty() const { return storage_used_ == 0; }
 
+  // If this wrapper is loaded and sending changes to the database.
+  bool initialized() const { return IsMapLoaded(); }
+
+  CacheMode cache_mode() const { return cache_mode_; }
+
+  // Tasks that are waiting for the map to be loaded.
   bool has_pending_load_tasks() const {
     return !on_load_complete_tasks_.empty();
   }
+
+  bool has_changes_to_commit() const { return commit_batch_.get(); }
+
+  const std::vector<uint8_t>& prefix() { return prefix_; }
 
   // Commence aggressive flushing. This should be called early during startup,
   // before any localStorage writing. Currently scheduled writes will not be
@@ -146,11 +175,12 @@ class CONTENT_EXPORT LevelDBWrapperImpl : public mojom::LevelDBWrapper {
       GetAllCallback callback) override;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(LevelDBWrapperImplTest, SetOnlyKeysWithoutDatabase);
-  FRIEND_TEST_ALL_PREFIXES(LevelDBWrapperImplTest, CommitOnDifferentCacheModes);
-  FRIEND_TEST_ALL_PREFIXES(LevelDBWrapperImplTest, GetAllWhenCacheOnlyKeys);
   FRIEND_TEST_ALL_PREFIXES(LevelDBWrapperImplTest, GetAllAfterSetCacheMode);
+  FRIEND_TEST_ALL_PREFIXES(LevelDBWrapperImplTest,
+                           PutLoadsValuesAfterCacheModeUpgrade);
   FRIEND_TEST_ALL_PREFIXES(LevelDBWrapperImplTest, SetCacheModeConsistent);
+  FRIEND_TEST_ALL_PREFIXES(LevelDBWrapperImplParamTest,
+                           CommitOnDifferentCacheModes);
 
   // Used to rate limit commits.
   class RateLimiter {
@@ -169,57 +199,112 @@ class CONTENT_EXPORT LevelDBWrapperImpl : public mojom::LevelDBWrapper {
     base::TimeDelta ComputeDelayNeeded(
         const base::TimeDelta elapsed_time) const;
 
+    float rate() const { return rate_; }
+
    private:
     float rate_;
     float samples_;
     base::TimeDelta time_quantum_;
   };
 
-  enum class LoadState { UNLOADED = 0, KEYS_ONLY, KEYS_AND_VALUES };
-
+  // There can be only one fork operation per commit batch.
   struct CommitBatch {
     bool clear_all_first;
-    // Values in this map are only used if |keys_only_map_| is loaded.
-    std::map<std::vector<uint8_t>, base::Optional<std::vector<uint8_t>>>
-        changed_values;
+    // Prefix copying is performed before applying changes.
+    base::Optional<std::vector<uint8_t>> copy_to_prefix;
+    // Used if the map_type_ is LOADED_KEYS_ONLY.
+    std::map<std::vector<uint8_t>, std::vector<uint8_t>> changed_values;
+    // Used if the map_type_ is LOADED_KEYS_AND_VALUES.
+    std::set<std::vector<uint8_t>> changed_keys;
 
     CommitBatch();
     ~CommitBatch();
   };
 
-  // Changes the cache (a copy of map stored in memory) to contain only keys
-  // instead of keys and values. The only keys mode can be set only when there
-  // is one client binding and it automatically changes to keys and values mode
-  // when more than one binding exists. The max size constraints are still
-  // valid. Notification to the observers when an item is mutated depends on the
-  // |client_old_value| when cache contains only keys. Changing the mode and
-  // using GetAll() when only keys are stored would cause extra disk access.
+  enum class MapState {
+    UNLOADED,
+    // Loading from the database connection.
+    LOADING_FROM_DATABASE,
+    // Loading from another LevelDBWrapperImpl that we have forked from.
+    LOADING_FROM_FORK,
+    LOADED_KEYS_ONLY,
+    LOADED_KEYS_AND_VALUES
+  };
+
+  using LoadStateForForkCallback = base::OnceCallback<
+      void(bool database_enabled, const ValueMap&, const KeysOnlyMap&)>;
+  using ForkSourceEarlyDeathCallback =
+      base::OnceCallback<void(std::vector<uint8_t> source_prefix)>;
+
+  // Changes the cache mode of the wrapper. If applicable, this will change the
+  // internal storage type after the next commit. The keys-only mode can only
+  // be set only when there is one client binding. It automatically changes to
+  // keys-and-values mode when more than one binding exists.
+  // Notifications to observers when an item is mutated depends on the
+  // |client_old_value| when in keys-only mode. Using GetAll during
+  // keys-only mode will cause extra disk access.
   void SetCacheMode(CacheMode cache_mode);
 
   void OnConnectionError();
-  void LoadMap(const base::Closure& completion_callback);
+
+  // Always loads the |keys_values_map_|, sets the |map_state_| to
+  // LOADED_KEYS_AND_VALUES, and calls through all the completion callbacks.
+  //
+  // Then if the |cache_mode_| is keys-only, it unloads the map to the
+  // |keys_only_map_| and sets the |map_state_| to LOADED_KEYS_ONLY
+  void LoadMap(base::OnceClosure completion_callback);
   void OnMapLoaded(leveldb::mojom::DatabaseError status,
                    std::vector<leveldb::mojom::KeyValuePtr> data);
   void OnGotMigrationData(std::unique_ptr<ValueMap> data);
+  void CalculateStorageAndMemoryUsed();
   void OnLoadComplete();
+
   void CreateCommitBatchIfNeeded();
   void StartCommitTimer();
   base::TimeDelta ComputeCommitDelay() const;
+
   void CommitChanges();
   void OnCommitComplete(leveldb::mojom::DatabaseError error);
+
   void UnloadMapIfPossible();
-  bool IsMapReloadNeeded() const;
-  LoadState CurrentLoadState() const;
+
+  bool IsMapUpgradeNeeded() const {
+    return map_state_ == MapState::LOADED_KEYS_ONLY &&
+           cache_mode_ == CacheMode::KEYS_AND_VALUES;
+  }
+
+  bool IsMapLoaded() const {
+    return map_state_ == MapState::LOADED_KEYS_ONLY ||
+           map_state_ == MapState::LOADED_KEYS_AND_VALUES;
+  }
+
+  bool IsMapLoadedAndEmpty() const {
+    return (map_state_ == MapState::LOADED_KEYS_ONLY &&
+            keys_only_map_.empty()) ||
+           (map_state_ == MapState::LOADED_KEYS_AND_VALUES &&
+            keys_values_map_.empty());
+  }
+
+  void DoForkOperation(const base::WeakPtr<LevelDBWrapperImpl>& forked_wrapper);
+  void OnForkStateLoaded(bool database_enabled,
+                         const ValueMap& map,
+                         const KeysOnlyMap& key_only_map);
 
   std::vector<uint8_t> prefix_;
   mojo::BindingSet<mojom::LevelDBWrapper> bindings_;
   mojo::AssociatedInterfacePtrSet<mojom::LevelDBObserver> observers_;
   Delegate* delegate_;
   leveldb::mojom::LevelDBDatabase* database_;
-  std::unique_ptr<ValueMap> keys_values_map_;
-  std::unique_ptr<KeysOnlyMap> keys_only_map_;
-  LoadState desired_load_state_;
-  std::vector<base::Closure> on_load_complete_tasks_;
+
+  // For commits to work correctly the map loaded state (keys vs keys & values)
+  // must stay consistent for a given commit batch.
+  MapState map_state_ = MapState::UNLOADED;
+  CacheMode cache_mode_;
+  ValueMap keys_values_map_;
+  KeysOnlyMap keys_only_map_;
+  // These are always consumed & cleared when the map is loaded.
+  std::vector<base::OnceClosure> on_load_complete_tasks_;
+
   size_t storage_used_;
   size_t max_size_;
   size_t memory_used_;
@@ -229,6 +314,7 @@ class CONTENT_EXPORT LevelDBWrapperImpl : public mojom::LevelDBWrapper {
   RateLimiter commit_rate_limiter_;
   int commit_batches_in_flight_ = 0;
   std::unique_ptr<CommitBatch> commit_batch_;
+
   base::WeakPtrFactory<LevelDBWrapperImpl> weak_ptr_factory_;
 
   static bool s_aggressive_flushing_enabled_;
