@@ -589,7 +589,8 @@ void V8Initializer::InitializeMainThread(const intptr_t* reference_table) {
                             ? gin::IsolateHolder::kStableAndExperimentalV8Extras
                             : gin::IsolateHolder::kStableV8Extras;
   gin::IsolateHolder::Initialize(gin::IsolateHolder::kNonStrictMode,
-                                 v8_extras_mode, &array_buffer_allocator);
+                                 v8_extras_mode, &array_buffer_allocator,
+                                 reference_table);
 
   // NOTE: Some threads (namely utility threads) don't have a scheduler.
   WebScheduler* scheduler = Platform::Current()->CurrentThread()->Scheduler();
@@ -603,14 +604,12 @@ void V8Initializer::InitializeMainThread(const intptr_t* reference_table) {
       !RuntimeEnabledFeatures::V8ContextSnapshotEnabled()) {
     v8_context_snapshot_mode =
         V8PerIsolateData::V8ContextSnapshotMode::kDontUseSnapshot;
-    reference_table = nullptr;
   }
-  V8ContextSnapshot::SetReferenceTable(reference_table);
 
   v8::Isolate* isolate = V8PerIsolateData::Initialize(
       scheduler ? scheduler->V8TaskRunner()
                 : Platform::Current()->CurrentThread()->GetWebTaskRunner(),
-      reference_table, v8_context_snapshot_mode);
+      v8_context_snapshot_mode);
 
   InitializeV8Common(isolate);
 

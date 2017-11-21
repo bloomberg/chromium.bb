@@ -26,8 +26,6 @@ namespace blink {
 
 namespace {
 
-const intptr_t* g_v8_context_snapshot_reference_table = nullptr;
-
 // TODO(peria): This method is almost a copy of
 // V8PerContext::ConstructorForTypeSlowCase(), so merge with it.
 v8::Local<v8::Function> ConstructPlainType(v8::Isolate* isolate,
@@ -143,16 +141,6 @@ struct DataForDeserializer {
   STACK_ALLOCATED();
   Member<Document> document;
 };
-
-int CountExternalReferenceEntries() {
-  if (!g_v8_context_snapshot_reference_table)
-    return 0;
-
-  int count = 0;
-  for (const intptr_t* p = g_v8_context_snapshot_reference_table; *p; ++p)
-    ++count;
-  return count;
-}
 
 }  // namespace
 
@@ -297,15 +285,6 @@ void V8ContextSnapshot::EnsureInterfaceTemplates(v8::Isolate* isolate) {
   EnsureInterfaceTemplatesForWorld(isolate, *isolated_world);
 }
 
-void V8ContextSnapshot::SetReferenceTable(const intptr_t* table) {
-  DCHECK(!g_v8_context_snapshot_reference_table);
-  g_v8_context_snapshot_reference_table = table;
-}
-
-const intptr_t* V8ContextSnapshot::GetReferenceTable() {
-  return g_v8_context_snapshot_reference_table;
-}
-
 v8::StartupData V8ContextSnapshot::TakeSnapshot() {
   DCHECK_EQ(V8PerIsolateData::From(V8PerIsolateData::MainThreadIsolate())
                 ->GetV8ContextSnapshotMode(),
@@ -316,9 +295,6 @@ v8::StartupData V8ContextSnapshot::TakeSnapshot() {
           ->GetSnapshotCreator();
   v8::Isolate* isolate = creator->GetIsolate();
   CHECK_EQ(isolate, v8::Isolate::GetCurrent());
-
-  VLOG(1) << "External reference table has " << CountExternalReferenceEntries()
-          << " entries.";
 
   // Disable all runtime enabled features
   RuntimeEnabledFeatures::SetStableFeaturesEnabled(false);
