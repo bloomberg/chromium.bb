@@ -16,8 +16,8 @@ NetworkChangeManager::NetworkChangeManager(
     std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier)
     : network_change_notifier_(std::move(network_change_notifier)) {
   net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
-  connection_type_ =
-      mojom::ConnectionType(net::NetworkChangeNotifier::GetConnectionType());
+  connection_type_ = network::mojom::ConnectionType(
+      net::NetworkChangeNotifier::GetConnectionType());
 }
 
 NetworkChangeManager::~NetworkChangeManager() {
@@ -25,12 +25,12 @@ NetworkChangeManager::~NetworkChangeManager() {
 }
 
 void NetworkChangeManager::AddRequest(
-    mojom::NetworkChangeManagerRequest request) {
+    network::mojom::NetworkChangeManagerRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
 void NetworkChangeManager::RequestNotifications(
-    mojom::NetworkChangeManagerClientPtr client_ptr) {
+    network::mojom::NetworkChangeManagerClientPtr client_ptr) {
   client_ptr.set_connection_error_handler(
       base::Bind(&NetworkChangeManager::NotificationPipeBroken,
                  // base::Unretained is safe as destruction of the
@@ -48,17 +48,17 @@ size_t NetworkChangeManager::GetNumClientsForTesting() const {
 }
 
 void NetworkChangeManager::NotificationPipeBroken(
-    mojom::NetworkChangeManagerClient* client) {
-  clients_.erase(
-      std::find_if(clients_.begin(), clients_.end(),
-                   [client](mojom::NetworkChangeManagerClientPtr& ptr) {
-                     return ptr.get() == client;
-                   }));
+    network::mojom::NetworkChangeManagerClient* client) {
+  clients_.erase(std::find_if(
+      clients_.begin(), clients_.end(),
+      [client](network::mojom::NetworkChangeManagerClientPtr& ptr) {
+        return ptr.get() == client;
+      }));
 }
 
 void NetworkChangeManager::OnNetworkChanged(
     net::NetworkChangeNotifier::ConnectionType type) {
-  connection_type_ = mojom::ConnectionType(type);
+  connection_type_ = network::mojom::ConnectionType(type);
   for (const auto& client : clients_) {
     client->OnNetworkChanged(connection_type_);
   }

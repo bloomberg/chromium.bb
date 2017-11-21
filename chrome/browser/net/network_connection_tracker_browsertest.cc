@@ -31,7 +31,7 @@ class TestNetworkConnectionObserver
   explicit TestNetworkConnectionObserver(NetworkConnectionTracker* tracker)
       : num_notifications_(0),
         tracker_(tracker),
-        connection_type_(mojom::ConnectionType::CONNECTION_UNKNOWN) {
+        connection_type_(network::mojom::ConnectionType::CONNECTION_UNKNOWN) {
     tracker_->AddNetworkConnectionObserver(this);
   }
 
@@ -40,10 +40,11 @@ class TestNetworkConnectionObserver
   }
 
   // NetworkConnectionObserver implementation:
-  void OnConnectionChanged(mojom::ConnectionType type) override {
-    mojom::ConnectionType queried_type;
+  void OnConnectionChanged(network::mojom::ConnectionType type) override {
+    network::mojom::ConnectionType queried_type;
     bool sync = tracker_->GetConnectionType(
-        &queried_type, base::BindOnce([](mojom::ConnectionType type) {}));
+        &queried_type,
+        base::BindOnce([](network::mojom::ConnectionType type) {}));
     EXPECT_TRUE(sync);
     EXPECT_EQ(type, queried_type);
 
@@ -55,13 +56,15 @@ class TestNetworkConnectionObserver
   void WaitForNotification() { run_loop_.Run(); }
 
   size_t num_notifications() const { return num_notifications_; }
-  mojom::ConnectionType connection_type() const { return connection_type_; }
+  network::mojom::ConnectionType connection_type() const {
+    return connection_type_;
+  }
 
  private:
   size_t num_notifications_;
   NetworkConnectionTracker* tracker_;
   base::RunLoop run_loop_;
-  mojom::ConnectionType connection_type_;
+  network::mojom::ConnectionType connection_type_;
 
   DISALLOW_COPY_AND_ASSIGN(TestNetworkConnectionObserver);
 };
@@ -82,7 +85,7 @@ class NetworkConnectionTrackerBrowserTest
   ~NetworkConnectionTrackerBrowserTest() override {}
 
   // Simulates a network connection change.
-  void SimulateNetworkChange(mojom::ConnectionType type) {
+  void SimulateNetworkChange(network::mojom::ConnectionType type) {
     if (network_service_enabled_) {
       mojom::NetworkServiceTestPtr network_service_test;
       ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
@@ -122,18 +125,20 @@ IN_PROC_BROWSER_TEST_P(NetworkConnectionTrackerBrowserTest,
   // started up. This way, NetworkService will receive the broadcast when
   // SimulateNetworkChange() is called.
   base::RunLoop run_loop;
-  mojom::ConnectionType ignored_type;
+  network::mojom::ConnectionType ignored_type;
   bool sync = tracker->GetConnectionType(
       &ignored_type,
-      base::BindOnce([](base::RunLoop* run_loop,
-                        mojom::ConnectionType type) { run_loop->Quit(); },
-                     base::Unretained(&run_loop)));
+      base::BindOnce(
+          [](base::RunLoop* run_loop, network::mojom::ConnectionType type) {
+            run_loop->Quit();
+          },
+          base::Unretained(&run_loop)));
   if (!sync)
     run_loop.Run();
   TestNetworkConnectionObserver network_connection_observer(tracker);
-  SimulateNetworkChange(mojom::ConnectionType::CONNECTION_3G);
+  SimulateNetworkChange(network::mojom::ConnectionType::CONNECTION_3G);
   network_connection_observer.WaitForNotification();
-  EXPECT_EQ(mojom::ConnectionType::CONNECTION_3G,
+  EXPECT_EQ(network::mojom::ConnectionType::CONNECTION_3G,
             network_connection_observer.connection_type());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, network_connection_observer.num_notifications());

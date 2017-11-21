@@ -205,7 +205,7 @@ net::NetLog* NetworkServiceImpl::net_log() const {
 }
 
 void NetworkServiceImpl::GetNetworkChangeManager(
-    mojom::NetworkChangeManagerRequest request) {
+    network::mojom::NetworkChangeManagerRequest request) {
   network_change_manager_->AddRequest(std::move(request));
 }
 

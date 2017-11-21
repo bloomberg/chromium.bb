@@ -9,6 +9,7 @@
 #include "base/task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/common/network_service.mojom.h"
+#include "services/network/public/interfaces/network_change_manager.mojom.h"
 
 namespace content {
 
@@ -19,12 +20,14 @@ namespace {
 void OnGetConnectionType(
     scoped_refptr<base::TaskRunner> task_runner,
     NetworkConnectionTracker::ConnectionTypeCallback user_callback,
-    mojom::ConnectionType connection_type) {
+    network::mojom::ConnectionType connection_type) {
   task_runner->PostTask(
       FROM_HERE,
       base::BindOnce(
           [](NetworkConnectionTracker::ConnectionTypeCallback callback,
-             mojom::ConnectionType type) { std::move(callback).Run(type); },
+             network::mojom::ConnectionType type) {
+            std::move(callback).Run(type);
+          },
           std::move(user_callback), connection_type));
 }
 
@@ -46,13 +49,14 @@ void NetworkConnectionTracker::Initialize(
   DCHECK(!binding_.is_bound());
   DCHECK(network_service);
   // Get NetworkChangeManagerPtr.
-  mojom::NetworkChangeManagerPtr manager_ptr;
-  mojom::NetworkChangeManagerRequest request(mojo::MakeRequest(&manager_ptr));
+  network::mojom::NetworkChangeManagerPtr manager_ptr;
+  network::mojom::NetworkChangeManagerRequest request(
+      mojo::MakeRequest(&manager_ptr));
   network_service->GetNetworkChangeManager(std::move(request));
 
   // Request notification from NetworkChangeManagerPtr.
-  mojom::NetworkChangeManagerClientPtr client_ptr;
-  mojom::NetworkChangeManagerClientRequest client_request(
+  network::mojom::NetworkChangeManagerClientPtr client_ptr;
+  network::mojom::NetworkChangeManagerClientRequest client_request(
       mojo::MakeRequest(&client_ptr));
   binding_.Bind(std::move(client_request));
   manager_ptr->RequestNotifications(std::move(client_ptr));
@@ -63,14 +67,14 @@ NetworkConnectionTracker::~NetworkConnectionTracker() {
 }
 
 bool NetworkConnectionTracker::GetConnectionType(
-    mojom::ConnectionType* type,
+    network::mojom::ConnectionType* type,
     ConnectionTypeCallback callback) {
   // |connection_type_| is initialized when NetworkService starts up. In most
   // cases, it won't be kConnectionTypeInvalid and code will return early.
   base::subtle::Atomic32 type_value =
       base::subtle::NoBarrier_Load(&connection_type_);
   if (type_value != kConnectionTypeInvalid) {
-    *type = static_cast<mojom::ConnectionType>(type_value);
+    *type = static_cast<network::mojom::ConnectionType>(type_value);
     return true;
   }
   base::AutoLock lock(lock_);
@@ -78,7 +82,7 @@ bool NetworkConnectionTracker::GetConnectionType(
   // OnInitialConnectionType() is called after first NoBarrier_Load.
   type_value = base::subtle::NoBarrier_Load(&connection_type_);
   if (type_value != kConnectionTypeInvalid) {
-    *type = static_cast<mojom::ConnectionType>(type_value);
+    *type = static_cast<network::mojom::ConnectionType>(type_value);
     return true;
   }
   if (!task_runner_->RunsTasksInCurrentSequence()) {
@@ -93,19 +97,19 @@ bool NetworkConnectionTracker::GetConnectionType(
 
 // static
 bool NetworkConnectionTracker::IsConnectionCellular(
-    mojom::ConnectionType type) {
+    network::mojom::ConnectionType type) {
   bool is_cellular = false;
   switch (type) {
-    case mojom::ConnectionType::CONNECTION_2G:
-    case mojom::ConnectionType::CONNECTION_3G:
-    case mojom::ConnectionType::CONNECTION_4G:
+    case network::mojom::ConnectionType::CONNECTION_2G:
+    case network::mojom::ConnectionType::CONNECTION_3G:
+    case network::mojom::ConnectionType::CONNECTION_4G:
       is_cellular = true;
       break;
-    case mojom::ConnectionType::CONNECTION_UNKNOWN:
-    case mojom::ConnectionType::CONNECTION_ETHERNET:
-    case mojom::ConnectionType::CONNECTION_WIFI:
-    case mojom::ConnectionType::CONNECTION_NONE:
-    case mojom::ConnectionType::CONNECTION_BLUETOOTH:
+    case network::mojom::ConnectionType::CONNECTION_UNKNOWN:
+    case network::mojom::ConnectionType::CONNECTION_ETHERNET:
+    case network::mojom::ConnectionType::CONNECTION_WIFI:
+    case network::mojom::ConnectionType::CONNECTION_NONE:
+    case network::mojom::ConnectionType::CONNECTION_BLUETOOTH:
       is_cellular = false;
       break;
   }
@@ -123,7 +127,7 @@ void NetworkConnectionTracker::RemoveNetworkConnectionObserver(
 }
 
 void NetworkConnectionTracker::OnInitialConnectionType(
-    mojom::ConnectionType type) {
+    network::mojom::ConnectionType type) {
   base::AutoLock lock(lock_);
   base::subtle::NoBarrier_Store(&connection_type_,
                                 static_cast<base::subtle::Atomic32>(type));
@@ -133,7 +137,8 @@ void NetworkConnectionTracker::OnInitialConnectionType(
   }
 }
 
-void NetworkConnectionTracker::OnNetworkChanged(mojom::ConnectionType type) {
+void NetworkConnectionTracker::OnNetworkChanged(
+    network::mojom::ConnectionType type) {
   base::subtle::NoBarrier_Store(&connection_type_,
                                 static_cast<base::subtle::Atomic32>(type));
   network_change_observer_list_->Notify(

@@ -15,27 +15,28 @@
 #include "base/observer_list_threadsafe.h"
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
-#include "content/public/common/network_change_manager.mojom.h"
 #include "content/public/common/network_service.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "services/network/public/interfaces/network_change_manager.mojom.h"
 
 namespace content {
 
 // This class subscribes to network change events from
-// mojom::NetworkChangeManager and propogates these notifications to its
-// NetworkConnectionObservers registered through AddObserver()/RemoveObserver().
+// network::mojom::NetworkChangeManager and propogates these notifications to
+// its NetworkConnectionObservers registered through
+// AddObserver()/RemoveObserver().
 class CONTENT_EXPORT NetworkConnectionTracker
-    : public mojom::NetworkChangeManagerClient {
+    : public network::mojom::NetworkChangeManagerClient {
  public:
-  typedef base::OnceCallback<void(mojom::ConnectionType)>
+  typedef base::OnceCallback<void(network::mojom::ConnectionType)>
       ConnectionTypeCallback;
 
   class CONTENT_EXPORT NetworkConnectionObserver {
    public:
     // Please refer to NetworkChangeManagerClient::OnNetworkChanged for when
     // this method is invoked.
-    virtual void OnConnectionChanged(mojom::ConnectionType type) = 0;
+    virtual void OnConnectionChanged(network::mojom::ConnectionType type) = 0;
 
    protected:
     NetworkConnectionObserver() {}
@@ -62,7 +63,7 @@ class CONTENT_EXPORT NetworkConnectionTracker
   // which case, |callback| will be called on the calling thread when connection
   // type is ready. This method is thread safe. Please also refer to
   // net::NetworkChangeNotifier::GetConnectionType() for documentation.
-  virtual bool GetConnectionType(mojom::ConnectionType* type,
+  virtual bool GetConnectionType(network::mojom::ConnectionType* type,
                                  ConnectionTypeCallback callback);
 
   // Returns true if |type| is a cellular connection.
@@ -70,7 +71,7 @@ class CONTENT_EXPORT NetworkConnectionTracker
   // implementation of GetConnectionType(), it is possible that
   // IsConnectionCellular(GetConnectionType()) returns false even if the
   // current connection is cellular.
-  static bool IsConnectionCellular(mojom::ConnectionType type);
+  static bool IsConnectionCellular(network::mojom::ConnectionType type);
 
   // Registers |observer| to receive notifications of network changes. The
   // thread on which this is called is the thread on which |observer| will be
@@ -84,8 +85,8 @@ class CONTENT_EXPORT NetworkConnectionTracker
 
  protected:
   // NetworkChangeManagerClient implementation. Protected for testing.
-  void OnInitialConnectionType(mojom::ConnectionType type) override;
-  void OnNetworkChanged(mojom::ConnectionType type) override;
+  void OnInitialConnectionType(network::mojom::ConnectionType type) override;
+  void OnNetworkChanged(network::mojom::ConnectionType type) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(NetworkGetConnectionTest,
@@ -106,7 +107,7 @@ class CONTENT_EXPORT NetworkConnectionTracker
   const scoped_refptr<base::ObserverListThreadSafe<NetworkConnectionObserver>>
       network_change_observer_list_;
 
-  mojo::Binding<mojom::NetworkChangeManagerClient> binding_;
+  mojo::Binding<network::mojom::NetworkChangeManagerClient> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkConnectionTracker);
 };

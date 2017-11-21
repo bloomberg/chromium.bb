@@ -35,9 +35,9 @@ class MockNetworkConnectionTrackerNeverOffline
       : content::NetworkConnectionTracker() {}
   ~MockNetworkConnectionTrackerNeverOffline() override {}
 
-  bool GetConnectionType(content::mojom::ConnectionType* type,
+  bool GetConnectionType(network::mojom::ConnectionType* type,
                          ConnectionTypeCallback callback) override {
-    *type = content::mojom::ConnectionType::CONNECTION_3G;
+    *type = network::mojom::ConnectionType::CONNECTION_3G;
     return true;
   }
 };
@@ -50,7 +50,7 @@ class MockNetworkConnectionTrackerGetConnectionTypeAsync
   ~MockNetworkConnectionTrackerGetConnectionTypeAsync() override {}
 
   void CompleteCallback() {
-    OnInitialConnectionType(content::mojom::ConnectionType::CONNECTION_3G);
+    OnInitialConnectionType(network::mojom::ConnectionType::CONNECTION_3G);
   }
 };
 
@@ -61,18 +61,18 @@ class MockNetworkConnectionTrackerOfflineUntilChange
       : content::NetworkConnectionTracker(), online_(false) {}
   ~MockNetworkConnectionTrackerOfflineUntilChange() override {}
 
-  bool GetConnectionType(content::mojom::ConnectionType* type,
+  bool GetConnectionType(network::mojom::ConnectionType* type,
                          ConnectionTypeCallback callback) override {
     if (online_) {
-      *type = content::mojom::ConnectionType::CONNECTION_3G;
+      *type = network::mojom::ConnectionType::CONNECTION_3G;
     } else {
-      *type = content::mojom::ConnectionType::CONNECTION_NONE;
+      *type = network::mojom::ConnectionType::CONNECTION_NONE;
     }
     return true;
   }
   void GoOnline() {
     online_ = true;
-    OnNetworkChanged(content::mojom::ConnectionType::CONNECTION_3G);
+    OnNetworkChanged(network::mojom::ConnectionType::CONNECTION_3G);
   }
  private:
   bool online_;

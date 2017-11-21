@@ -360,7 +360,6 @@ mojom("interfaces") {
   sources = [
     "download_stream.mojom",
     "mutable_network_traffic_annotation_tag.mojom",
-    "network_change_manager.mojom",
     "network_service.mojom",
     "network_service_test.mojom",
     "push_messaging_status.mojom",
