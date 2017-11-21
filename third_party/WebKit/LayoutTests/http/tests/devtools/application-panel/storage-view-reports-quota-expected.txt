@@ -1,6 +1,3 @@
-CONSOLE MESSAGE: line 124: InspectorTest.IndexedDB_callback1
-CONSOLE MESSAGE: line 124: InspectorTest.IndexedDB_callback2
-CONSOLE MESSAGE: line 124: InspectorTest.IndexedDB_callback3
 Tests quota reporting.
 
 Tree element found: true
