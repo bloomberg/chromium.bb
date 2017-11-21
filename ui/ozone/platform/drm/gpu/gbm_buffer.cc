@@ -136,7 +136,7 @@ uint32_t GbmBuffer::GetOpaqueFramebufferId() const {
 }
 
 uint32_t GbmBuffer::GetHandle() const {
-  return gbm_bo_get_handle(bo_).u32;
+  return bo() ? gbm_bo_get_handle(bo()).u32 : 0;
 }
 
 // TODO(reveman): This should not be needed once crbug.com/597932 is fixed,
