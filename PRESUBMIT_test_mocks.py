@@ -131,6 +131,12 @@ class MockOutputApi(object):
       MockOutputApi.PresubmitResult.__init__(self, message, items, long_text)
       self.type = 'promptOrNotify'
 
+  def __init__(self):
+    self.more_cc = []
+
+  def AppendCC(self, more_cc):
+    self.more_cc.extend(more_cc)
+
 
 class MockFile(object):
   """Mock class for the File class.
