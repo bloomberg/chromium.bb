@@ -1890,7 +1890,8 @@ int av1_count_colors_highbd(const uint8_t *src8, int stride, int rows, int cols,
 #endif  // CONFIG_HIGHBITDEPTH
 
 void av1_inverse_transform_block_facade(MACROBLOCKD *xd, int plane, int block,
-                                        int blk_row, int blk_col, int eob) {
+                                        int blk_row, int blk_col, int eob,
+                                        int reduced_tx_set) {
   struct macroblockd_plane *const pd = &xd->plane[plane];
   tran_low_t *dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
 #if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
@@ -1907,7 +1908,8 @@ void av1_inverse_transform_block_facade(MACROBLOCKD *xd, int plane, int block,
 #if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
                               mrc_mask,
 #endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
-                              plane, tx_type, tx_size, dst, dst_stride, eob);
+                              plane, tx_type, tx_size, dst, dst_stride, eob,
+                              reduced_tx_set);
 }
 
 void av1_dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
@@ -2029,7 +2031,7 @@ void av1_dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
                                     mrc_mask,
 #endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
                                     plane, tx_type, tx_size, recon, MAX_TX_SIZE,
-                                    eob);
+                                    eob, cpi->common.reduced_tx_set_used);
 
 #if CONFIG_DIST_8X8
         if (x->using_dist_8x8 && plane == 0 && (bsw < 8 || bsh < 8)) {
@@ -2166,7 +2168,7 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
   if (!is_inter_block(mbmi)) {
     struct macroblock_plane *const p = &x->plane[plane];
     av1_inverse_transform_block_facade(xd, plane, block, blk_row, blk_col,
-                                       p->eobs[block]);
+                                       p->eobs[block], cm->reduced_tx_set_used);
     av1_dist_block(args->cpi, x, plane, plane_bsize, block, blk_row, blk_col,
                    tx_size, &this_rd_stats.dist, &this_rd_stats.sse,
                    OUTPUT_HAS_DECODED_PIXELS);
@@ -3799,7 +3801,7 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
                               mrc_mask,
 #endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
                               plane, tx_type, tx_size, rec_buffer, MAX_TX_SIZE,
-                              eob);
+                              eob, cm->reduced_tx_set_used);
   if (eob > 0) {
 #if CONFIG_DIST_8X8
     if (x->using_dist_8x8 && plane == 0 && (bw < 8 && bh < 8)) {

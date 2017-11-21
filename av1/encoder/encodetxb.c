@@ -2509,7 +2509,8 @@ int64_t av1_search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
                    a, l, 1);
 
     av1_inverse_transform_block_facade(xd, plane, block, blk_row, blk_col,
-                                       x->plane[plane].eobs[block]);
+                                       x->plane[plane].eobs[block],
+                                       cm->reduced_tx_set_used);
   }
   return best_rd;
 }

@@ -154,14 +154,16 @@ static REFERENCE_MODE read_frame_reference_mode(
 static void inverse_transform_block(MACROBLOCKD *xd, int plane,
                                     const TX_TYPE tx_type,
                                     const TX_SIZE tx_size, uint8_t *dst,
-                                    int stride, int16_t scan_line, int eob) {
+                                    int stride, int16_t scan_line, int eob,
+                                    int reduced_tx_set) {
   struct macroblockd_plane *const pd = &xd->plane[plane];
   tran_low_t *const dqcoeff = pd->dqcoeff;
   av1_inverse_transform_block(xd, dqcoeff,
 #if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
                               xd->mrc_mask,
 #endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
-                              plane, tx_type, tx_size, dst, stride, eob);
+                              plane, tx_type, tx_size, dst, stride, eob,
+                              reduced_tx_set);
   memset(dqcoeff, 0, (scan_line + 1) * sizeof(dqcoeff[0]));
 }
 
@@ -217,7 +219,7 @@ static void predict_and_reconstruct_intra_block(
       uint8_t *dst =
           &pd->dst.buf[(row * pd->dst.stride + col) << tx_size_wide_log2[0]];
       inverse_transform_block(xd, plane, tx_type, tx_size, dst, pd->dst.stride,
-                              max_scan_line, eob);
+                              max_scan_line, eob, cm->reduced_tx_set_used);
     }
   }
 #if CONFIG_CFL
@@ -276,10 +278,11 @@ static void decode_reconstruct_tx(AV1_COMMON *cm, MACROBLOCKD *const xd,
     ++cm->txb_count;
 #endif
 
-    inverse_transform_block(xd, plane, tx_type, plane_tx_size,
-                            &pd->dst.buf[(blk_row * pd->dst.stride + blk_col)
-                                         << tx_size_wide_log2[0]],
-                            pd->dst.stride, max_scan_line, eob);
+    inverse_transform_block(
+        xd, plane, tx_type, plane_tx_size,
+        &pd->dst
+             .buf[(blk_row * pd->dst.stride + blk_col) << tx_size_wide_log2[0]],
+        pd->dst.stride, max_scan_line, eob, cm->reduced_tx_set_used);
     *eob_total += eob;
   } else {
     const TX_SIZE sub_txs = sub_tx_size_map[tx_size];

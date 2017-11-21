@@ -2460,7 +2460,8 @@ void av1_inv_txfm_add_txmg(const tran_low_t *dqcoeff, uint8_t *dst, int stride,
 #endif
 
 static void init_txfm_param(const MACROBLOCKD *xd, int plane, TX_SIZE tx_size,
-                            TX_TYPE tx_type, int eob, TxfmParam *txfm_param) {
+                            TX_TYPE tx_type, int eob, int reduced_tx_set,
+                            TxfmParam *txfm_param) {
   txfm_param->tx_type = tx_type;
   txfm_param->tx_size = tx_size;
   txfm_param->eob = eob;
@@ -2470,11 +2471,9 @@ static void init_txfm_param(const MACROBLOCKD *xd, int plane, TX_SIZE tx_size,
   const struct macroblockd_plane *const pd = &xd->plane[plane];
   const BLOCK_SIZE plane_bsize =
       get_plane_block_size(xd->mi[0]->mbmi.sb_type, pd);
-  // TODO(sarahparker) This assumes reduced_tx_set_used == 0. I will do a
-  // follow up refactor to make the actual value of reduced_tx_set_used
-  // within this function.
-  txfm_param->tx_set_type = get_ext_tx_set_type(
-      txfm_param->tx_size, plane_bsize, is_inter_block(&xd->mi[0]->mbmi), 0);
+  txfm_param->tx_set_type =
+      get_ext_tx_set_type(txfm_param->tx_size, plane_bsize,
+                          is_inter_block(&xd->mi[0]->mbmi), reduced_tx_set);
 #if CONFIG_ADAPT_SCAN
   txfm_param->eob_threshold =
       (const int16_t *)&xd->eob_threshold_md[tx_size][tx_type][0];
@@ -2499,13 +2498,15 @@ void av1_inverse_transform_block(const MACROBLOCKD *xd,
                                  uint8_t *mrc_mask,
 #endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
                                  int plane, TX_TYPE tx_type, TX_SIZE tx_size,
-                                 uint8_t *dst, int stride, int eob) {
+                                 uint8_t *dst, int stride, int eob,
+                                 int reduced_tx_set) {
   if (!eob) return;
 
   assert(eob <= av1_get_max_eob(tx_size));
 
   TxfmParam txfm_param;
-  init_txfm_param(xd, plane, tx_size, tx_type, eob, &txfm_param);
+  init_txfm_param(xd, plane, tx_size, tx_type, eob, reduced_tx_set,
+                  &txfm_param);
 #if CONFIG_MRC_TX
   txfm_param.is_inter = is_inter_block(&xd->mi[0]->mbmi);
 #endif  // CONFIG_MRC_TX

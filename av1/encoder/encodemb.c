@@ -689,7 +689,7 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
                                 mrc_mask,
 #endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
                                 plane, tx_type, tx_size, dst, pd->dst.stride,
-                                p->eobs[block]);
+                                p->eobs[block], cm->reduced_tx_set_used);
   }
 }
 
@@ -943,7 +943,8 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
 #if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
                               mrc_mask,
 #endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
-                              plane, tx_type, tx_size, dst, dst_stride, *eob);
+                              plane, tx_type, tx_size, dst, dst_stride, *eob,
+                              cm->reduced_tx_set_used);
 
   if (*eob) *(args->skip) = 0;
 

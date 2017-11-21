@@ -127,5 +127,6 @@ int64_t get_prediction_rd_cost(const struct AV1_COMP *cpi, struct macroblock *x,
                                MB_MODE_INFO *backup_mbmi);
 
 void av1_inverse_transform_block_facade(MACROBLOCKD *xd, int plane, int block,
-                                        int blk_row, int blk_col, int eob);
+                                        int blk_row, int blk_col, int eob,
+                                        int reduced_tx_set);
 #endif  // AV1_ENCODER_RDOPT_H_
