@@ -340,8 +340,7 @@ void AwContentBrowserClient::AllowWorkerFileSystem(
     content::ResourceContext* context,
     const std::vector<std::pair<int, int> >& render_frames,
     base::Callback<void(bool)> callback) {
-  // Android WebView does not yet support web workers.
-  callback.Run(false);
+  callback.Run(true);
 }
 
 bool AwContentBrowserClient::AllowWorkerIndexedDB(
@@ -349,8 +348,7 @@ bool AwContentBrowserClient::AllowWorkerIndexedDB(
     const base::string16& name,
     content::ResourceContext* context,
     const std::vector<std::pair<int, int> >& render_frames) {
-  // Android WebView does not yet support web workers.
-  return false;
+  return true;
 }
 
 content::QuotaPermissionContext*
