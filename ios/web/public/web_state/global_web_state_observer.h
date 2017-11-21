@@ -13,6 +13,7 @@
 namespace web {
 
 struct LoadCommittedDetails;
+class NavigationContext;
 class WebState;
 
 // An observer API implemented by classes that are interested in various
@@ -54,6 +55,13 @@ class GlobalWebStateObserver {
   // DEPRECATED. Use WebStateObserver's |DidStopLoading| instead.
   // TODO(crbug.com/782269): Remove this method.
   virtual void WebStateDidStopLoading(WebState* web_state) {}
+
+  // Called when a navigation started in |web_state| for the main frame.
+  // DEPRECATED. Use WebStateObserver's |DidStartNavigation| instead.
+  // TODO(crbug.com/782269): Remove this method.
+  virtual void WebStateDidStartNavigation(
+      WebState* web_state,
+      NavigationContext* navigation_context) {}
 
   // Called when the current page is loaded in |web_state|.
   // DEPRECATED. Use WebStateObserver's |PageLoaded| instead.

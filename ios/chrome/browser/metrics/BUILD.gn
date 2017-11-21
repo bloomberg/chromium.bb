@@ -66,7 +66,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "ios_chrome_metrics_service_accessor_unittest.cc",
-    "ios_chrome_stability_metrics_provider_unittest.cc",
+    "ios_chrome_stability_metrics_provider_unittest.mm",
     "mobile_session_shutdown_metrics_provider_unittest.mm",
     "previous_session_info_unittest.mm",
   ]
@@ -80,7 +80,7 @@ source_set("unit_tests") {
     "//components/prefs:test_support",
     "//components/version_info",
     "//ios/chrome/test:test_support",
-    "//ios/web/public/test",
+    "//ios/web/public/test/fakes",
     "//testing/gtest",
   ]
 }
