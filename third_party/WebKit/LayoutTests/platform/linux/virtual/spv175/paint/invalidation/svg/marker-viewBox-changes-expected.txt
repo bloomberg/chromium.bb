@@ -7,13 +7,8 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutSVGPath polygon id='polygon'",
-          "rect": [264, 258, 165, 67],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutSVGPath polygon id='polygon'",
-          "rect": [264, 218, 164, 107],
+          "object": "LayoutSVGPath path id='go'",
+          "rect": [89, 94, 108, 108],
           "reason": "full"
         }
       ]
@@ -21,7 +16,11 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutSVGPath polygon id='polygon'",
+      "object": "LayoutSVGContainer g",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutSVGPath path id='go'",
       "reason": "full"
     }
   ]
