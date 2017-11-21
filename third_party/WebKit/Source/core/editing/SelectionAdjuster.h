@@ -7,6 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "core/editing/Forward.h"
+#include "core/editing/TextGranularity.h"
 #include "platform/wtf/Allocator.h"
 
 namespace blink {
@@ -26,6 +27,12 @@ class CORE_EXPORT SelectionAdjuster final {
       const EphemeralRangeInFlatTree&);
   static PositionInFlatTree AdjustSelectionEndToAvoidCrossingShadowBoundaries(
       const EphemeralRangeInFlatTree&);
+  static SelectionInDOMTree AdjustSelectionRespectingGranularity(
+      const SelectionInDOMTree&,
+      TextGranularity);
+  static SelectionInFlatTree AdjustSelectionRespectingGranularity(
+      const SelectionInFlatTree&,
+      TextGranularity);
 };
 
 }  // namespace blink
