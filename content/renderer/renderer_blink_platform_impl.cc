@@ -47,6 +47,7 @@
 #include "content/renderer/device_sensors/device_orientation_event_pump.h"
 #include "content/renderer/dom_storage/local_storage_cached_areas.h"
 #include "content/renderer/dom_storage/local_storage_namespace.h"
+#include "content/renderer/dom_storage/session_web_storage_namespace_impl.h"
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
 #include "content/renderer/file_info_util.h"
 #include "content/renderer/fileapi/webfilesystem_impl.h"
@@ -572,6 +573,20 @@ RendererBlinkPlatformImpl::CreateLocalStorageNamespace() {
   return std::make_unique<WebStorageNamespaceImpl>();
 }
 
+std::unique_ptr<blink::WebStorageNamespace>
+RendererBlinkPlatformImpl::CreateSessionStorageNamespace(int64_t namespace_id) {
+  if (base::FeatureList::IsEnabled(features::kMojoSessionStorage)) {
+    if (!local_storage_cached_areas_) {
+      local_storage_cached_areas_.reset(new LocalStorageCachedAreas(
+          RenderThreadImpl::current()->GetStoragePartitionService(),
+          renderer_scheduler_));
+    }
+    return std::make_unique<SessionWebStorageNamespaceImpl>(
+        namespace_id, local_storage_cached_areas_.get());
+  }
+
+  return std::make_unique<WebStorageNamespaceImpl>(namespace_id);
+}
 
 //------------------------------------------------------------------------------
 

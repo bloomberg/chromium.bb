@@ -25,6 +25,7 @@
 #include "content/browser/dom_storage/dom_storage_context_impl.h"
 #include "content/browser/dom_storage/dom_storage_task_runner.h"
 #include "content/browser/dom_storage/local_storage_context_mojo.h"
+#include "content/browser/dom_storage/session_storage_context_mojo.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/local_storage_usage_info.h"
@@ -133,6 +134,15 @@ DOMStorageContextWrapper::DOMStorageContextWrapper(
         data_path.empty() ? data_path
                           : data_path.AppendASCII(kLocalStorageDirectory),
         storage_dir, special_storage_policy);
+  }
+
+  if (base::FeatureList::IsEnabled(features::kMojoSessionStorage)) {
+    base::FilePath session_storage_dir;
+    if (!profile_path.empty())
+      session_storage_dir =
+          local_partition_path.AppendASCII(kSessionStorageDirectory);
+    mojo_session_state_ = std::make_unique<SessionStorageContextMojo>(
+        connector, session_storage_dir);
   }
 
   if (base::FeatureList::IsEnabled(features::kMemoryCoordinator)) {
@@ -332,6 +342,16 @@ void DOMStorageContextWrapper::OpenLocalStorage(
                                 std::move(request)));
 }
 
+void DOMStorageContextWrapper::OpenSessionStorage(
+    int64_t namespace_id,
+    const url::Origin& origin,
+    mojom::LevelDBWrapperRequest request) {
+  if (!mojo_session_state_)
+    return;
+  mojo_session_state_->OpenSessionStorage(namespace_id, origin,
+                                          std::move(request));
+}
+
 void DOMStorageContextWrapper::SetLocalStorageDatabaseForTesting(
     leveldb::mojom::LevelDBDatabaseAssociatedPtr database) {
   if (!mojo_state_)
@@ -344,6 +364,12 @@ void DOMStorageContextWrapper::SetLocalStorageDatabaseForTesting(
       FROM_HERE,
       base::BindOnce(&LocalStorageContextMojo::SetDatabaseForTesting,
                      base::Unretained(mojo_state_), std::move(database)));
+}
+
+base::WeakPtr<SessionStorageContextMojo>
+DOMStorageContextWrapper::GetMojoSessionStateWeakPtr() {
+  return mojo_session_state_ ? mojo_session_state_->AsWeakPtr()
+                             : base::WeakPtr<SessionStorageContextMojo>();
 }
 
 void DOMStorageContextWrapper::OnMemoryPressure(
