@@ -14,7 +14,6 @@
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/service/display/direct_renderer.h"
 #include "components/viz/service/display/output_surface.h"
-#include "components/viz/service/display/texture_mailbox_deleter.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 
 namespace viz {
@@ -97,7 +96,7 @@ bool TestLayerTreeFrameSink::BindToClient(
   display_ = base::MakeUnique<Display>(
       shared_bitmap_manager(), gpu_memory_buffer_manager(), renderer_settings_,
       frame_sink_id_, std::move(display_output_surface), std::move(scheduler),
-      base::MakeUnique<TextureMailboxDeleter>(task_runner_.get()));
+      task_runner_);
 
   constexpr bool is_root = false;
   constexpr bool needs_sync_points = true;

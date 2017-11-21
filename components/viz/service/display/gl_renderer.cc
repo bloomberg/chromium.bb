@@ -51,6 +51,7 @@
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display/output_surface_frame.h"
 #include "components/viz/service/display/static_geometry_binding.h"
+#include "components/viz/service/display/texture_deleter.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -387,16 +388,18 @@ class GLRenderer::SyncQuery {
   DISALLOW_COPY_AND_ASSIGN(SyncQuery);
 };
 
-GLRenderer::GLRenderer(const RendererSettings* settings,
-                       OutputSurface* output_surface,
-                       cc::DisplayResourceProvider* resource_provider,
-                       TextureMailboxDeleter* texture_mailbox_deleter)
+GLRenderer::GLRenderer(
+    const RendererSettings* settings,
+    OutputSurface* output_surface,
+    cc::DisplayResourceProvider* resource_provider,
+    scoped_refptr<base::SingleThreadTaskRunner> current_task_runner)
     : DirectRenderer(settings, output_surface, resource_provider),
       shared_geometry_quad_(QuadVertexRect()),
       gl_(output_surface->context_provider()->ContextGL()),
       context_support_(output_surface->context_provider()->ContextSupport()),
+      texture_deleter_(current_task_runner),
       copier_(output_surface->context_provider(),
-              texture_mailbox_deleter,
+              &texture_deleter_,
               base::BindRepeating(&GLRenderer::MoveFromDrawToWindowSpace,
                                   base::Unretained(this))),
       gl_composited_overlay_candidate_quad_border_(
@@ -406,6 +409,7 @@ GLRenderer::GLRenderer(const RendererSettings* settings,
                        output_surface_->context_provider()
                            ->ContextCapabilities()
                            .texture_half_float_linear),
+      current_task_runner_(std::move(current_task_runner)),
       weak_ptr_factory_(this) {
   DCHECK(gl_);
   DCHECK(context_support_);
@@ -3403,8 +3407,9 @@ void GLRenderer::ScheduleRenderPassDrawQuad(
   DCHECK(ca_layer_overlay->rpdq);
 
   if (!overlay_resource_pool_) {
+    DCHECK(current_task_runner_);
     overlay_resource_pool_ = cc::ResourcePool::Create(
-        resource_provider_, base::ThreadTaskRunnerHandle::Get().get(),
+        resource_provider_, current_task_runner_.get(),
         ResourceTextureHint::kOverlay, base::TimeDelta::FromSeconds(3),
         settings_->disallow_non_exact_resource_reuse);
   }

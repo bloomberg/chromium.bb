@@ -22,7 +22,6 @@
 #include "components/viz/service/display/display_scheduler.h"
 #include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/service/display/output_surface_frame.h"
-#include "components/viz/service/display/texture_mailbox_deleter.h"
 #include "components/viz/service/frame_sinks/direct_layer_tree_frame_sink.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "gpu/command_buffer/client/context_support.h"
@@ -263,9 +262,7 @@ void InProcessContextFactory::CreateLayerTreeFrameSink(
   data->display = std::make_unique<viz::Display>(
       &shared_bitmap_manager_, &gpu_memory_buffer_manager_, renderer_settings_,
       compositor->frame_sink_id(), std::move(display_output_surface),
-      std::move(scheduler),
-      std::make_unique<viz::TextureMailboxDeleter>(
-          compositor->task_runner().get()));
+      std::move(scheduler), compositor->task_runner());
   GetFrameSinkManager()->RegisterBeginFrameSource(begin_frame_source.get(),
                                                   compositor->frame_sink_id());
   // Note that we are careful not to destroy a prior |data->begin_frame_source|

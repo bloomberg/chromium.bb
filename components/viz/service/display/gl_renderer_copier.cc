@@ -15,7 +15,7 @@
 #include "components/viz/common/frame_sinks/copy_output_util.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/quads/texture_mailbox.h"
-#include "components/viz/service/display/texture_mailbox_deleter.h"
+#include "components/viz/service/display/texture_deleter.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -50,10 +50,10 @@ base::UnguessableToken SourceOf(const CopyOutputRequest& request) {
 
 GLRendererCopier::GLRendererCopier(
     scoped_refptr<ContextProvider> context_provider,
-    TextureMailboxDeleter* texture_mailbox_deleter,
+    TextureDeleter* texture_deleter,
     ComputeWindowRectCallback window_rect_callback)
     : context_provider_(std::move(context_provider)),
-      texture_mailbox_deleter_(texture_mailbox_deleter),
+      texture_deleter_(texture_deleter),
       window_rect_callback_(std::move(window_rect_callback)),
       helper_(context_provider_->ContextGL(),
               context_provider_->ContextSupport()) {}
@@ -465,8 +465,8 @@ void GLRendererCopier::SendTextureResult(
     // since only clients that are trying to re-invent video capture would see
     // any significant performance benefit. Instead, such clients should use the
     // video capture services provided by VIZ.
-    release_callback = texture_mailbox_deleter_->GetReleaseCallback(
-        context_provider_, result_texture);
+    release_callback =
+        texture_deleter_->GetReleaseCallback(context_provider_, result_texture);
   }
 
   request->SendResult(std::make_unique<CopyOutputTextureResult>(

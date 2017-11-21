@@ -47,7 +47,6 @@
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/service/display/output_surface_frame.h"
-#include "components/viz/service/display/texture_mailbox_deleter.h"
 #include "components/viz/service/display_embedder/compositor_overlay_candidate_validator_android.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "components/viz/service/frame_sinks/direct_layer_tree_frame_sink.h"
@@ -817,9 +816,10 @@ void CompositorImpl::InitializeDisplay(
   }
 
   viz::FrameSinkManagerImpl* manager = GetFrameSinkManager();
-  auto* task_runner = base::ThreadTaskRunnerHandle::Get().get();
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      base::ThreadTaskRunnerHandle::Get();
   auto scheduler = std::make_unique<viz::DisplayScheduler>(
-      root_window_->GetBeginFrameSource(), task_runner,
+      root_window_->GetBeginFrameSource(), task_runner.get(),
       display_output_surface->capabilities().max_frames_pending);
 
   viz::RendererSettings renderer_settings;
@@ -835,8 +835,7 @@ void CompositorImpl::InitializeDisplay(
   display_ = std::make_unique<viz::Display>(
       viz::ServerSharedBitmapManager::current(), gpu_memory_buffer_manager,
       renderer_settings, frame_sink_id_, std::move(display_output_surface),
-      std::move(scheduler),
-      std::make_unique<viz::TextureMailboxDeleter>(task_runner));
+      std::move(scheduler), std::move(task_runner));
 
   auto layer_tree_frame_sink =
       vulkan_context_provider

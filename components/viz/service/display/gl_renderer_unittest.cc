@@ -33,7 +33,6 @@
 #include "components/viz/common/resources/transferable_resource.h"
 #include "components/viz/service/display/overlay_strategy_single_on_top.h"
 #include "components/viz/service/display/overlay_strategy_underlay.h"
-#include "components/viz/service/display/texture_mailbox_deleter.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -379,14 +378,15 @@ class FakeRendererGL : public GLRenderer {
                  cc::DisplayResourceProvider* resource_provider)
       : GLRenderer(settings, output_surface, resource_provider, nullptr) {}
 
-  FakeRendererGL(const RendererSettings* settings,
-                 OutputSurface* output_surface,
-                 cc::DisplayResourceProvider* resource_provider,
-                 TextureMailboxDeleter* texture_mailbox_deleter)
+  FakeRendererGL(
+      const RendererSettings* settings,
+      OutputSurface* output_surface,
+      cc::DisplayResourceProvider* resource_provider,
+      scoped_refptr<base::SingleThreadTaskRunner> current_task_runner)
       : GLRenderer(settings,
                    output_surface,
                    resource_provider,
-                   texture_mailbox_deleter) {}
+                   std::move(current_task_runner)) {}
 
   void SetOverlayProcessor(OverlayProcessor* processor) {
     overlay_processor_.reset(processor);
@@ -1950,8 +1950,6 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   auto parent_resource_provider =
       cc::FakeResourceProvider::CreateDisplayResourceProvider(
           output_surface->context_provider(), shared_bitmap_manager.get());
-  std::unique_ptr<TextureMailboxDeleter> mailbox_deleter(
-      new TextureMailboxDeleter(base::ThreadTaskRunnerHandle::Get()));
 
   auto child_context_provider = cc::TestContextProvider::Create();
   child_context_provider->BindToCurrentThread();
@@ -1986,7 +1984,7 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   RendererSettings settings;
   FakeRendererGL renderer(&settings, output_surface.get(),
                           parent_resource_provider.get(),
-                          mailbox_deleter.get());
+                          base::ThreadTaskRunnerHandle::Get());
   renderer.Initialize();
   renderer.SetVisible(true);
 
@@ -2144,8 +2142,6 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
   auto parent_resource_provider =
       cc::FakeResourceProvider::CreateDisplayResourceProvider(
           output_surface->context_provider(), shared_bitmap_manager.get());
-  std::unique_ptr<TextureMailboxDeleter> mailbox_deleter(
-      new TextureMailboxDeleter(base::ThreadTaskRunnerHandle::Get()));
 
   auto child_context_provider = cc::TestContextProvider::Create();
   child_context_provider->BindToCurrentThread();
@@ -2182,7 +2178,7 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
   RendererSettings settings;
   FakeRendererGL renderer(&settings, output_surface.get(),
                           parent_resource_provider.get(),
-                          mailbox_deleter.get());
+                          base::ThreadTaskRunnerHandle::Get());
   renderer.Initialize();
   renderer.SetVisible(true);
 
@@ -2689,7 +2685,8 @@ TEST_F(GLRendererTest, CALayerOverlaysWithAllQuadsPromoted) {
 
   RendererSettings settings;
   FakeRendererGL renderer(&settings, output_surface.get(),
-                          parent_resource_provider.get());
+                          parent_resource_provider.get(),
+                          base::ThreadTaskRunnerHandle::Get());
   renderer.Initialize();
   renderer.SetVisible(true);
 
