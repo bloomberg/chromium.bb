@@ -440,6 +440,7 @@ bool DownloadItemView::OnMouseDragged(const ui::MouseEvent& event) {
       views::Widget* widget = GetWidget();
       DragDownloadItem(download(), icon,
                        widget ? widget->GetNativeView() : nullptr);
+      RecordDownloadShelfDragEvent(DownloadShelfDragEvent::STARTED);
     }
   } else if (ExceededDragThreshold(event.location() - drag_start_point_)) {
     dragging_ = true;

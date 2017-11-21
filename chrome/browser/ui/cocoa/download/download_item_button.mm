@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/download/download_item_model.h"
+#include "chrome/browser/download/download_stats.h"
 #import "chrome/browser/ui/cocoa/download/download_item_cell.h"
 #import "chrome/browser/ui/cocoa/download/download_item_controller.h"
 #import "chrome/browser/ui/cocoa/download/download_shelf_context_menu_controller.h"
@@ -39,6 +40,7 @@
   if (!downloadPath_.empty()) {
     NSString* filename = base::SysUTF8ToNSString(downloadPath_.value());
     [self dragFile:filename fromRect:[self bounds] slideBack:YES event:event];
+    RecordDownloadShelfDragEvent(DownloadShelfDragEvent::STARTED);
   }
 }
 

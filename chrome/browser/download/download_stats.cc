@@ -76,3 +76,8 @@ void RecordDownloadPathValidation(PathValidationResult result,
                               result, PathValidationResult::COUNT);
   }
 }
+
+void RecordDownloadShelfDragEvent(DownloadShelfDragEvent drag_event) {
+  UMA_HISTOGRAM_ENUMERATION("Download.Shelf.DragEvent", drag_event,
+                            DownloadShelfDragEvent::COUNT);
+}

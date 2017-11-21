@@ -7,6 +7,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/download/download_item_model.h"
+#include "chrome/browser/download/download_stats.h"
 #import "chrome/browser/themes/theme_properties.h"
 #import "chrome/browser/ui/cocoa/download/download_item_controller.h"
 #import "chrome/browser/ui/cocoa/download/download_shelf_context_menu_controller.h"
@@ -615,11 +616,20 @@ NSTextField* MakeLabel(
   [self beginDraggingSessionWithItems:@[ draggingItem ]
                                 event:event
                                source:self];
+  RecordDownloadShelfDragEvent(DownloadShelfDragEvent::STARTED);
 }
 
 - (NSDragOperation)draggingSession:(NSDraggingSession*)session
     sourceOperationMaskForDraggingContext:(NSDraggingContext)context {
   return NSDragOperationCopy;
+}
+
+- (void)draggingSession:(NSDraggingSession*)session
+           endedAtPoint:(NSPoint)screenPoint
+              operation:(NSDragOperation)operation {
+  RecordDownloadShelfDragEvent(operation == NSDragOperationNone
+                                   ? DownloadShelfDragEvent::CANCELED
+                                   : DownloadShelfDragEvent::DROPPED);
 }
 
 @end
