@@ -290,13 +290,6 @@ class GPU_EXPORT SyncPointManager {
   bool WaitOutOfOrder(const SyncToken& trusted_sync_token,
                       const base::Closure& callback);
 
-  // Like WaitOutOfOrder but runs the callback on the given task runner's
-  // thread.
-  bool WaitOutOfOrderNonThreadSafe(
-      const SyncToken& trusted_sync_token,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      const base::Closure& callback);
-
   // Used by SyncPointOrderData.
   uint32_t GenerateOrderNumber();
 
