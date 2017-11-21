@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <grit-part>
   <!-- Security summary strings -->
-  <!-- TODO(crbug.com/716305): Rename remaining IDS_PAGE_INFO_* strings to IDS_PAGE_INFO_* -->
   <message name="IDS_PAGE_INFO_SECURE_SUMMARY" desc="A short summary phrase at the top of the Page Info bubble (which shows when you click the lock icon) that indicates that the connection to the current website is secure.">
     Secure connection
   </message>
@@ -55,14 +54,15 @@
     The identity of this website has not been verified.
   </message>
 
-  <!-- Strings below are not used on iOS. -->
-  <if expr="not is_ios">
-
+  <if expr="chromeos">
     <!-- Administrator-provided certificate notifications -->
-    <!-- TODO(crbug.com/717802): Only include this on Chrome OS. -->
     <message name="IDS_CERT_POLICY_PROVIDED_CERT_MESSAGE" desc="Text that is displayed in the Page Info popup when using an administrator-provided certificate">
       You have accessed content using an administrator-provided certificate. Data you provide to <ph name="DOMAIN">$1<ex>www.google.com</ex></ph> can be intercepted by your administrator.
     </message>
+  </if>
+
+  <!-- Strings below are not used on iOS. -->
+  <if expr="not is_ios">
 
     <!-- Certificate exception decision UI (after clicking through an SSL certificate error) -->
     <!-- TODO(crbug.com/502473): Support revoking certificate overrides on iOS Page Info. -->
