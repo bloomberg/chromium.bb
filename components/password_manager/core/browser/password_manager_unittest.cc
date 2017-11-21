@@ -16,6 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "components/password_manager/core/browser/form_fetcher_impl.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/password_autofill_manager.h"
@@ -182,6 +183,20 @@ class PasswordManagerTest : public testing::Test {
     PasswordForm form = MakeSimpleForm();
     form.origin = GURL("https://accounts.google.com");
     form.signon_realm = form.origin.spec();
+    return form;
+  }
+
+  PasswordForm MakeGAIAChangePasswordForm() {
+    PasswordForm form;
+    form.origin = GURL("https://accounts.google.com");
+    form.action = GURL("http://www.google.com/a/Login");
+    form.username_element = ASCIIToUTF16("Email");
+    form.new_password_element = ASCIIToUTF16("NewPasswd");
+    form.username_value = ASCIIToUTF16("googleuser");
+    form.new_password_value = ASCIIToUTF16("n3wp4ssword");
+    form.submit_element = ASCIIToUTF16("changePassword");
+    form.signon_realm = form.origin.spec();
+    form.form_data.name = ASCIIToUTF16("the-form-name");
     return form;
   }
 
@@ -2170,6 +2185,33 @@ TEST_F(PasswordManagerTest, EntryToCheck_HTTP_auth) {
   manager()->OnPasswordFormsParsed(nullptr, {http_auth_form});
   EXPECT_EQ(PasswordManager::NavigationEntryToCheck::VISIBLE,
             manager()->entry_to_check());
+}
+
+// Sync password hash should be updated upon submission of change password page.
+TEST_F(PasswordManagerTest, SaveSyncPasswordHashOnChangePasswordPage) {
+  PasswordForm form(MakeGAIAChangePasswordForm());
+  EXPECT_CALL(*store_, GetLogins(_, _))
+      .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
+
+  std::vector<PasswordForm> observed;
+  observed.push_back(form);
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+  manager()->OnPasswordFormsRendered(&driver_, observed, true);
+
+  // Submit form and finish navigation.
+  EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(client_, GetPrefs()).WillRepeatedly(Return(nullptr));
+#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS)) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+  EXPECT_CALL(*store_, SaveSyncPasswordHash(form.new_password_value));
+#endif
+  client_.FilterAllResultsForSaving();
+  OnPasswordFormSubmitted(form);
+
+  observed.clear();
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+  manager()->OnPasswordFormsRendered(&driver_, observed, true);
 }
 
 }  // namespace password_manager

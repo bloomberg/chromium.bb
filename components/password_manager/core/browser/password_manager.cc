@@ -839,7 +839,10 @@ void PasswordManager::OnLoginSuccessful() {
                 ? metrics_util::SyncPasswordHashChange::CHANGED_IN_CONTENT_AREA
                 : metrics_util::SyncPasswordHashChange::SAVED_IN_CONTENT_AREA);
         store->SaveSyncPasswordHash(
-            provisional_save_manager_->submitted_form()->password_value);
+            is_sync_password_change
+                ? provisional_save_manager_->submitted_form()
+                      ->new_password_value
+                : provisional_save_manager_->submitted_form()->password_value);
       }
     }
 #endif
