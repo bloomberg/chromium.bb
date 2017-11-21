@@ -469,17 +469,9 @@ TEST_F(BackgroundSyncManagerTest, RegisterWithoutLiveSWRegistration) {
   ServiceWorkerProviderHost* provider_host =
       sw_registration_1_->active_version()->provider_host();
   ASSERT_TRUE(provider_host);
-  int process_id = provider_host->process_id();
-  int provider_id = provider_host->provider_id();
 
   // Remove the registration object host.
-  ServiceWorkerDispatcherHost* dispatcher_host =
-      helper_->context()->GetDispatcherHost(process_id);
-  ServiceWorkerRegistrationObjectHost* registration_object_host =
-      dispatcher_host->FindServiceWorkerRegistrationObjectHost(
-          provider_id, sw_registration_1_->id());
-  dispatcher_host->UnregisterServiceWorkerRegistrationObjectHost(
-      registration_object_host->handle_id());
+  provider_host->registration_object_hosts_.clear();
 
   // Ensure |sw_registration_1_| is the last reference to the registration.
   ASSERT_TRUE(sw_registration_1_->HasOneRef());

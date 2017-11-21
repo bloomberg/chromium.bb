@@ -47,6 +47,7 @@ namespace content {
 class ResourceRequestBody;
 class ServiceWorkerContextCore;
 class ServiceWorkerDispatcherHost;
+class ServiceWorkerRegistrationObjectHost;
 class ServiceWorkerRequestHandler;
 class ServiceWorkerVersion;
 class WebContents;
@@ -234,15 +235,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       scoped_refptr<ResourceRequestBody> body,
       bool skip_service_worker);
 
-  // Returns an object info representing |registration|. The object info holds a
-  // Mojo connection to the ServiceWorkerRegistrationObjectHost for the
-  // |registration| to ensure the host stays alive while the object info is
-  // alive. A new ServiceWorkerRegistrationObjectHost instance is created if one
-  // does not already exist.
-  blink::mojom::ServiceWorkerRegistrationObjectInfoPtr
-  CreateServiceWorkerRegistrationObjectInfo(
-      ServiceWorkerRegistration* registration);
-
   // Used to get a ServiceWorkerObjectInfo to send to the renderer. Finds an
   // existing ServiceWorkerHandle, and increments its reference count, or else
   // creates a new one (initialized to ref count 1). Returns the
@@ -320,6 +312,16 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // for current document.
   ServiceWorkerRegistration* MatchRegistration() const;
 
+  // Removes the ServiceWorkerRegistrationObjectHost corresponding to
+  // |registration_id|.
+  void RemoveServiceWorkerRegistrationObjectHost(int64_t registration_id);
+
+  // Calls ContentBrowserClient::AllowServiceWorker(). Returns true if content
+  // settings allows service workers to run at |scope|. If this provider is for
+  // a window client, the check involves the topmost frame url as well as
+  // |scope|, and may display tab-level UI.
+  bool AllowServiceWorker(const GURL& scope);
+
   // Called when our controller has been terminated and doomed due to an
   // exceptional condition like it could no longer be read from the script
   // cache.
@@ -345,6 +347,10 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDispatcherHostTest,
                            DispatchExtendableMessageEvent_Fail);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerProviderHostTest, ContextSecurity);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerJobTest, Unregister);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerJobTest, RegisterDuplicateScript);
+  FRIEND_TEST_ALL_PREFIXES(BackgroundSyncManagerTest,
+                           RegisterWithoutLiveSWRegistration);
 
   ServiceWorkerProviderHost(
       int process_id,
@@ -443,6 +449,15 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   void GetInterface(const std::string& interface_name,
                     mojo::ScopedMessagePipeHandle interface_pipe) override;
 
+  // Returns an object info representing |registration|. The object info holds a
+  // Mojo connection to the ServiceWorkerRegistrationObjectHost for the
+  // |registration| to ensure the host stays alive while the object info is
+  // alive. A new ServiceWorkerRegistrationObjectHost instance is created if one
+  // can not be found in |registration_object_hosts_|.
+  blink::mojom::ServiceWorkerRegistrationObjectInfoPtr
+  CreateServiceWorkerRegistrationObjectInfo(
+      scoped_refptr<ServiceWorkerRegistration> registration);
+
   // Perform common checks that need to run before ContainerHost methods that
   // come from a child process are handled.
   // |scope| is checked if it is allowed to run a service worker.
@@ -486,6 +501,14 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // starts with. It is empty if IsContextSecureForServiceWorker() is
   // false.
   ServiceWorkerRegistrationMap matching_registrations_;
+
+  // Contains all ServiceWorkerRegistrationObjectHost instances corresponding to
+  // the service worker registration JavaScript objects for the hosted execution
+  // context (service worker global scope or service worker client) in the
+  // renderer process.
+  std::map<int64_t /* registration_id */,
+           std::unique_ptr<ServiceWorkerRegistrationObjectHost>>
+      registration_object_hosts_;
 
   // The ready() promise is only allowed to be created once.
   // |get_ready_callback_| has three states:

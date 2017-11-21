@@ -265,7 +265,6 @@ class CONTENT_EXPORT ServiceWorkerContextCore
 
   // Returns new context-local unique ID.
   int GetNewServiceWorkerHandleId();
-  int GetNewRegistrationHandleId();
 
   void ScheduleDeleteAndStartOver() const;
 
@@ -378,7 +377,6 @@ class CONTENT_EXPORT ServiceWorkerContextCore
 
   bool force_update_on_page_load_;
   int next_handle_id_;
-  int next_registration_handle_id_;
   // Set in RegisterServiceWorker(), cleared in ClearAllServiceWorkersForTest().
   // This is used to avoid unnecessary disk read operation in tests. This value
   // is false if Chrome was relaunched after service workers were registered.

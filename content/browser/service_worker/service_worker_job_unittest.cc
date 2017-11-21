@@ -52,8 +52,7 @@ namespace content {
 
 namespace {
 
-// A dispatcher host that holds on to all registered ServiceWorkerHandles and
-// ServiceWorkerRegistrationObjectHosts.
+// A dispatcher host that holds on to all registered ServiceWorkerHandles.
 class KeepHandlesDispatcherHost : public ServiceWorkerDispatcherHost {
  public:
   KeepHandlesDispatcherHost(int render_process_id,
@@ -63,41 +62,19 @@ class KeepHandlesDispatcherHost : public ServiceWorkerDispatcherHost {
       std::unique_ptr<ServiceWorkerHandle> handle) override {
     handles_.push_back(std::move(handle));
   }
-  void RegisterServiceWorkerRegistrationObjectHost(
-      ServiceWorkerRegistrationObjectHost* registration_object_host) override {
-    registration_object_hosts_.push_back(
-        base::WrapUnique(registration_object_host));
-  }
-  void UnregisterServiceWorkerRegistrationObjectHost(int handle_id) override {
-    auto iter = registration_object_hosts_.begin();
-    for (; iter != registration_object_hosts_.end(); ++iter) {
-      if ((*iter)->handle_id() == handle_id)
-        break;
-    }
-    ASSERT_NE(registration_object_hosts_.end(), iter);
-    registration_object_hosts_.erase(iter);
-  }
 
   void Clear() {
     handles_.clear();
-    registration_object_hosts_.clear();
   }
 
   const std::vector<std::unique_ptr<ServiceWorkerHandle>>& handles() {
     return handles_;
   }
 
-  const std::vector<std::unique_ptr<ServiceWorkerRegistrationObjectHost>>&
-  registration_object_hosts() {
-    return registration_object_hosts_;
-  }
-
  private:
   ~KeepHandlesDispatcherHost() override {}
 
   std::vector<std::unique_ptr<ServiceWorkerHandle>> handles_;
-  std::vector<std::unique_ptr<ServiceWorkerRegistrationObjectHost>>
-      registration_object_hosts_;
   DISALLOW_COPY_AND_ASSIGN(KeepHandlesDispatcherHost);
 };
 
@@ -404,8 +381,10 @@ TEST_F(ServiceWorkerJobTest, Register) {
 TEST_F(ServiceWorkerJobTest, Unregister) {
   GURL pattern("http://www.example.com/");
 
-  // During registration, handles will be created for hosting the worker's
-  // context. KeepHandlesDispatcherHost will store the handles.
+  // During registration, service worker handles will be created to host the
+  // {installing,waiting,active} service worker objects for
+  // ServiceWorkerGlobalScope#registration. KeepHandlesDispatcherHost will store
+  // the handles.
   scoped_refptr<KeepHandlesDispatcherHost> dispatcher_host =
       base::MakeRefCounted<KeepHandlesDispatcherHost>(
           helper_->mock_render_process_id(),
@@ -417,22 +396,29 @@ TEST_F(ServiceWorkerJobTest, Unregister) {
   scoped_refptr<ServiceWorkerRegistration> registration =
       RunRegisterJob(pattern, GURL("http://www.example.com/service_worker.js"));
 
-  EXPECT_EQ(1UL, dispatcher_host->registration_object_hosts().size());
+  // During the above registration, a service worker registration object host
+  // for ServiceWorkerGlobalScope#registration has been created/added into
+  // |provider_host|.
+  ServiceWorkerProviderHost* provider_host =
+      registration->active_version()->provider_host();
+  ASSERT_NE(nullptr, provider_host);
+  EXPECT_EQ(1UL, provider_host->registration_object_hosts_.size());
   EXPECT_EQ(3UL, dispatcher_host->handles().size());
 
   RunUnregisterJob(pattern);
 
-  // Clear all the references. The only reference to the registration object
-  // should be |registration|.
+  // Clear all service worker handles.
   dispatcher_host->Clear();
-  EXPECT_EQ(0UL, dispatcher_host->registration_object_hosts().size());
   EXPECT_EQ(0UL, dispatcher_host->handles().size());
-  ASSERT_TRUE(registration->HasOneRef());
+  // The service worker registration object host has been destroyed together
+  // with |provider_host| by the above unregistration. Then the only reference
+  // to the registration should be |registration|.
+  EXPECT_TRUE(registration->HasOneRef());
 
   registration = FindRegistrationForPattern(pattern,
                                             SERVICE_WORKER_ERROR_NOT_FOUND);
 
-  ASSERT_EQ(scoped_refptr<ServiceWorkerRegistration>(nullptr), registration);
+  EXPECT_FALSE(registration);
 }
 
 TEST_F(ServiceWorkerJobTest, Unregister_NothingRegistered) {
@@ -486,10 +472,19 @@ TEST_F(ServiceWorkerJobTest, RegisterDuplicateScript) {
   scoped_refptr<ServiceWorkerRegistration> old_registration =
       RunRegisterJob(pattern, script_url);
 
-  // Ensure that the registration's object host doesn't have the reference.
-  EXPECT_EQ(1UL, dispatcher_host->registration_object_hosts().size());
+  // During the above registration, a service worker registration object host
+  // for ServiceWorkerGlobalScope#registration has been created/added into
+  // |provider_host|.
+  ServiceWorkerProviderHost* provider_host =
+      old_registration->active_version()->provider_host();
+  ASSERT_NE(nullptr, provider_host);
+
+  // Clear all service worker handles.
   dispatcher_host->Clear();
-  EXPECT_EQ(0UL, dispatcher_host->registration_object_hosts().size());
+  // Ensure that the registration's object host doesn't have the reference.
+  EXPECT_EQ(1UL, provider_host->registration_object_hosts_.size());
+  provider_host->registration_object_hosts_.clear();
+  EXPECT_EQ(0UL, provider_host->registration_object_hosts_.size());
   ASSERT_TRUE(old_registration->HasOneRef());
 
   scoped_refptr<ServiceWorkerRegistration> old_registration_by_pattern =

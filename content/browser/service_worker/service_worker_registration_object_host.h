@@ -11,7 +11,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/service_worker/service_worker_registration.h"
-#include "content/browser/service_worker/service_worker_version.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
@@ -20,11 +19,7 @@
 namespace content {
 
 class ServiceWorkerContextCore;
-class ServiceWorkerDispatcherHost;
 class ServiceWorkerVersion;
-
-// TODO(leonhsl): Manage instances of this class per ServiceWorkerProviderHost
-// rather than per ServiceWorkerDispatcherHost (per renderer process).
 
 // ServiceWorkerRegistrationObjectHost has a 1:1 correspondence to
 // WebServiceWorkerRegistration in the renderer process.
@@ -41,16 +36,12 @@ class CONTENT_EXPORT ServiceWorkerRegistrationObjectHost
  public:
   ServiceWorkerRegistrationObjectHost(
       base::WeakPtr<ServiceWorkerContextCore> context,
-      ServiceWorkerDispatcherHost* dispatcher_host,
-      base::WeakPtr<ServiceWorkerProviderHost> provider_host,
-      ServiceWorkerRegistration* registration);
+      ServiceWorkerProviderHost* provider_host,
+      scoped_refptr<ServiceWorkerRegistration> registration);
   ~ServiceWorkerRegistrationObjectHost() override;
 
   // Establishes a new mojo connection into |bindings_|.
   blink::mojom::ServiceWorkerRegistrationObjectInfoPtr CreateObjectInfo();
-
-  int provider_id() const { return provider_id_; }
-  int handle_id() const { return handle_id_; }
 
   ServiceWorkerRegistration* registration() { return registration_.get(); }
 
@@ -115,13 +106,10 @@ class CONTENT_EXPORT ServiceWorkerRegistrationObjectHost
                                              const char* error_prefix,
                                              Args... args);
 
-  // |dispatcher_host_| is valid throughout lifetime of |this| because it owns
+  // |provider_host_| is valid throughout lifetime of |this| because it owns
   // |this|.
-  ServiceWorkerDispatcherHost* dispatcher_host_;
-  base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
+  ServiceWorkerProviderHost* provider_host_;
   base::WeakPtr<ServiceWorkerContextCore> context_;
-  const int provider_id_;
-  const int handle_id_;
   mojo::AssociatedBindingSet<blink::mojom::ServiceWorkerRegistrationObjectHost>
       bindings_;
   // Mojo connection to the content::WebServiceWorkerRegistrationImpl in the
