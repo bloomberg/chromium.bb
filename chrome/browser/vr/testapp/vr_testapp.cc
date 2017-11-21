@@ -23,7 +23,6 @@
 #include "ui/events/ozone/layout/keyboard_layout_engine.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/init/gl_factory.h"
 #include "ui/ozone/public/ozone_gpu_test_helper.h"
@@ -44,7 +43,6 @@ class RendererFactory {
 
   bool Initialize();
   std::unique_ptr<vr::GlRenderer> CreateRenderer(gfx::AcceleratedWidget widget,
-                                                 const gfx::Size& size,
                                                  vr::VrTestContext* vr);
 
  private:
@@ -101,8 +99,8 @@ class AppWindow : public ui::PlatformWindowDelegate {
         renderer_factory_(renderer_factory),
         vr_(base::MakeUnique<vr::VrTestContext>()),
         weak_ptr_factory_(this) {
-    platform_window_ =
-        ui::OzonePlatform::GetInstance()->CreatePlatformWindow(this, bounds);
+    platform_window_ = ui::OzonePlatform::GetInstance()->CreatePlatformWindow(
+        this, {1024, 768});
     platform_window_->Show();
   }
   ~AppWindow() override {}
@@ -113,8 +111,6 @@ class AppWindow : public ui::PlatformWindowDelegate {
     return widget_;
   }
 
-  gfx::Size GetSize() { return platform_window_->GetBounds().size(); }
-
   void Start() {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
@@ -124,7 +120,9 @@ class AppWindow : public ui::PlatformWindowDelegate {
   void Quit() { window_manager_->Quit(); }
 
   // PlatformWindowDelegate:
-  void OnBoundsChanged(const gfx::Rect& new_bounds) override {}
+  void OnBoundsChanged(const gfx::Rect& new_bounds) override {
+    vr_->set_window_size(new_bounds.size());
+  }
   void OnDamageRect(const gfx::Rect& damaged_region) override {}
   void DispatchEvent(ui::Event* event) override { vr_->HandleInput(event); }
   void OnCloseRequest() override { Quit(); }
@@ -143,8 +141,8 @@ class AppWindow : public ui::PlatformWindowDelegate {
   // Since we pretend to have a GPU process, we should also pretend to
   // initialize the GPU resources via a posted task.
   void StartOnGpu() {
-    renderer_ = renderer_factory_->CreateRenderer(GetAcceleratedWidget(),
-                                                  GetSize(), vr_.get());
+    renderer_ =
+        renderer_factory_->CreateRenderer(GetAcceleratedWidget(), vr_.get());
     renderer_->Initialize();
   }
 
@@ -181,14 +179,13 @@ bool RendererFactory::Initialize() {
 
 std::unique_ptr<vr::GlRenderer> RendererFactory::CreateRenderer(
     gfx::AcceleratedWidget widget,
-    const gfx::Size& size,
     vr::VrTestContext* vr) {
   scoped_refptr<gl::GLSurface> surface = gl::init::CreateViewGLSurface(widget);
   if (!surface) {
     LOG(FATAL) << "Failed to create GL surface";
     return nullptr;
   }
-  return base::MakeUnique<vr::GlRenderer>(surface, size, vr);
+  return base::MakeUnique<vr::GlRenderer>(surface, vr);
 }
 
 WindowManager::WindowManager(const base::Closure& quit_closure)
