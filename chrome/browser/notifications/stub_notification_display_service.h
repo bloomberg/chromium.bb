@@ -46,15 +46,16 @@ class StubNotificationDisplayService : public NotificationDisplayService {
 
   // Simulates the notification identified by |notification_id| being closed due
   // to external events, such as the user dismissing it when |by_user| is set.
-  // When |silent| is set, the notification handlers won't be informed of the
-  // change to immitate behaviour of operating systems that don't inform apps
-  // about removed notifications.
+  // Will wait for the close event to complete. When |silent| is set, the
+  // notification handlers won't be informed of the change to immitate behaviour
+  // of operating systems that don't inform apps about removed notifications.
   void RemoveNotification(NotificationCommon::Type notification_type,
                           const std::string& notification_id,
                           bool by_user,
                           bool silent);
 
-  // Removes all notifications shown by this display service.
+  // Removes all notifications shown by this display service. Will wait for the
+  // close events to complete.
   void RemoveAllNotifications(NotificationCommon::Type notification_type,
                               bool by_user);
 

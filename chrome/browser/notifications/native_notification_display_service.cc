@@ -98,14 +98,6 @@ void NativeNotificationDisplayService::Close(
     const std::string& notification_id) {
   if (notification_bridge_ready_) {
     notification_bridge_->Close(GetProfileId(profile_), notification_id);
-
-    // TODO(miguelg): Figure out something better here, passing an empty
-    // origin works because only non persistent notifications care about
-    // this method for JS generated close calls and they don't require
-    // the origin.
-    NotificationHandler* handler = GetNotificationHandler(notification_type);
-    if (handler)
-      handler->OnClose(profile_, GURL(), notification_id, false /* by user */);
   } else if (message_center_display_service_) {
     message_center_display_service_->Close(notification_type, notification_id);
   } else {

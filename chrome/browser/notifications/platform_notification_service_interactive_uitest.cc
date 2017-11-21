@@ -433,15 +433,8 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
   ASSERT_EQ(0u, notifications.size());
 }
 
-// Flaky on Linux. http://crbug.com/784951
-#if defined(OS_LINUX)
-#define MAYBE_UserClosesPersistentNotification \
-  DISABLED_UserClosesPersistentNotification
-#else
-#define MAYBE_UserClosesPersistentNotification UserClosesPersistentNotification
-#endif
 IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
-                       MAYBE_UserClosesPersistentNotification) {
+                       UserClosesPersistentNotification) {
   base::UserActionTester user_action_tester;
   ASSERT_NO_FATAL_FAILURE(GrantNotificationPermissionForTest());
 
@@ -457,7 +450,9 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
       GetDisplayedNotifications(true /* is_persistent */);
   ASSERT_EQ(1u, notifications.size());
 
-  notifications[0].delegate()->Close(true /* by_user */);
+  display_service_tester_->RemoveNotification(NotificationCommon::PERSISTENT,
+                                              notifications[0].id(),
+                                              true /* by_user */);
 
   // The user closed this notification so the score should remain the same.
   EXPECT_DOUBLE_EQ(5.5, GetEngagementScore(GetLastCommittedURL()));

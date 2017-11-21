@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
@@ -150,24 +151,24 @@ TEST_F(PlatformNotificationServiceTest, DisplayPersistentThenClose) {
 
 TEST_F(PlatformNotificationServiceTest, OnPersistentNotificationClick) {
   EXPECT_CALL(*mock_logger_, LogPersistentNotificationClickWithoutPermission());
-  service()->OnPersistentNotificationClick(profile_, "jskdcjdslkcjlds",
-                                           GURL("https://example.com/"),
-                                           base::nullopt, base::nullopt);
+  service()->OnPersistentNotificationClick(
+      profile_, "jskdcjdslkcjlds", GURL("https://example.com/"), base::nullopt,
+      base::nullopt, base::BindOnce(&base::DoNothing));
 }
 
 TEST_F(PlatformNotificationServiceTest, OnPersistentNotificationClosedByUser) {
   EXPECT_CALL(*mock_logger_, LogPersistentNotificationClosedByUser());
-  service()->OnPersistentNotificationClose(profile_, "some_random_id_123",
-                                           GURL("https://example.com/"),
-                                           true /* by_user */);
+  service()->OnPersistentNotificationClose(
+      profile_, "some_random_id_123", GURL("https://example.com/"),
+      true /* by_user */, base::BindOnce(&base::DoNothing));
 }
 
 TEST_F(PlatformNotificationServiceTest,
        OnPersistentNotificationClosedProgrammatically) {
   EXPECT_CALL(*mock_logger_, LogPersistentNotificationClosedProgrammatically());
-  service()->OnPersistentNotificationClose(profile_, "some_random_id_738",
-                                           GURL("https://example.com/"),
-                                           false /* by_user */);
+  service()->OnPersistentNotificationClose(
+      profile_, "some_random_id_738", GURL("https://example.com/"),
+      false /* by_user */, base::BindOnce(&base::DoNothing));
 }
 
 TEST_F(PlatformNotificationServiceTest, DisplayNonPersistentPropertiesMatch) {
