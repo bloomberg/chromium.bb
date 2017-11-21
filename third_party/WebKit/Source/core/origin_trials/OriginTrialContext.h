@@ -37,18 +37,18 @@ class CORE_EXPORT OriginTrialContext final
       public Supplement<ExecutionContext> {
   USING_GARBAGE_COLLECTED_MIXIN(OriginTrialContext)
  public:
-  enum CreateMode { kCreateIfNotExists, kDontCreateIfNotExists };
-
   OriginTrialContext(ExecutionContext&,
                      std::unique_ptr<WebTrialTokenValidator>);
 
   static const char* SupplementName();
 
-  // Returns the OriginTrialContext for a specific ExecutionContext. If
-  // |create| is false, this returns null if no OriginTrialContext exists
-  // yet for the ExecutionContext.
-  static OriginTrialContext* From(ExecutionContext*,
-                                  CreateMode = kCreateIfNotExists);
+  // Returns the OriginTrialContext for a specific ExecutionContext, if one
+  // exists.
+  static const OriginTrialContext* From(const ExecutionContext*);
+
+  // Returns the OriginTrialContext for a specific ExecutionContext, creating
+  // one if one does not already exist.
+  static OriginTrialContext* FromOrCreate(ExecutionContext*);
 
   // Parses an Origin-Trial header as specified in
   // https://jpchase.github.io/OriginTrials/#header into individual tokens.
@@ -74,7 +74,7 @@ class CORE_EXPORT OriginTrialContext final
 
   // Returns true if the trial (and therefore the feature or features it
   // controls) should be considered enabled for the current execution context.
-  bool IsTrialEnabled(const String& trial_name);
+  bool IsTrialEnabled(const String& trial_name) const;
 
   // Installs JavaScript bindings on the relevant objects for any features which
   // should be enabled by the current set of trial tokens. This method is called

@@ -1126,7 +1126,7 @@ void DocumentLoader::InstallNewDocument(
 
   if (document->GetSettings()
           ->GetForceTouchEventFeatureDetectionForInspector()) {
-    OriginTrialContext::From(document)->AddFeature(
+    OriginTrialContext::FromOrCreate(document)->AddFeature(
         "ForceTouchEventFeatureDetectionForInspector");
   }
   OriginTrialContext::AddTokensFromHeader(

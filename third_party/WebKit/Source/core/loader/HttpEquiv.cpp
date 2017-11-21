@@ -63,7 +63,7 @@ void HttpEquiv::Process(Document& document,
             "which is disallowed. The Suborigin has been ignored."));
   } else if (EqualIgnoringASCIICase(equiv, HTTPNames::Origin_Trial)) {
     if (in_document_head_element)
-      OriginTrialContext::From(&document)->AddToken(content);
+      OriginTrialContext::FromOrCreate(&document)->AddToken(content);
   }
 }
 
