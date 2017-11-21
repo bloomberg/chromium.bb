@@ -303,7 +303,6 @@ source_set("browser_sources") {
     "webvr_service_provider.cc",
     "webvr_service_provider.h",
     "worker_service.h",
-    "worker_service_observer.h",
     "zygote_handle_linux.h",
     "zygote_host_linux.h",
   ]

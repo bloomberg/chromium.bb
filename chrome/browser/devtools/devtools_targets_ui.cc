@@ -19,19 +19,9 @@
 #include "base/version.h"
 #include "chrome/browser/devtools/device/devtools_android_bridge.h"
 #include "chrome/browser/devtools/serialize_host_descriptions.h"
-#include "content/public/browser/browser_child_process_observer.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/child_process_data.h"
 #include "content/public/browser/devtools_agent_host.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
-#include "content/public/browser/worker_service.h"
-#include "content/public/browser/worker_service_observer.h"
-#include "content/public/common/process_type.h"
-#include "net/base/escape.h"
+#include "content/public/browser/devtools_agent_host_observer.h"
 
 using content::BrowserThread;
 using content::DevToolsAgentHost;
@@ -90,56 +80,10 @@ class CancelableTimer {
   base::WeakPtrFactory<CancelableTimer> weak_factory_;
 };
 
-// WorkerObserver -------------------------------------------------------------
-
-class WorkerObserver
-    : public content::WorkerServiceObserver,
-      public base::RefCountedThreadSafe<WorkerObserver> {
- public:
-  WorkerObserver() {}
-
-  void Start(base::Closure callback) {
-    DCHECK(callback_.is_null());
-    DCHECK(!callback.is_null());
-    callback_ = callback;
-    content::WorkerService::GetInstance()->AddObserver(this);
-  }
-
-  void Stop() {
-    DCHECK(!callback_.is_null());
-    callback_ = base::Closure();
-    content::WorkerService::GetInstance()->RemoveObserver(this);
-  }
-
- private:
-  friend class base::RefCountedThreadSafe<WorkerObserver>;
-  ~WorkerObserver() override {}
-
-  // content::WorkerServiceObserver overrides:
-  void WorkerCreated(const GURL& url,
-                     const std::string& name,
-                     int process_id,
-                     int route_id) override {
-    Notify();
-  }
-
-  void WorkerDestroyed(int process_id, int route_id) override { Notify(); }
-
-  void Notify() {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    if (callback_.is_null())
-      return;
-    callback_.Run();
-  }
-
-  base::Closure callback_;
-};
-
 // LocalTargetsUIHandler ---------------------------------------------
 
-class LocalTargetsUIHandler
-    : public DevToolsTargetsUIHandler,
-      public content::NotificationObserver {
+class LocalTargetsUIHandler : public DevToolsTargetsUIHandler,
+                              public content::DevToolsAgentHostObserver {
  public:
   explicit LocalTargetsUIHandler(const Callback& callback);
   ~LocalTargetsUIHandler() override;
@@ -148,49 +92,40 @@ class LocalTargetsUIHandler
   void ForceUpdate() override;
 
 private:
-  // content::NotificationObserver overrides.
- void Observe(int type,
-              const content::NotificationSource& source,
-              const content::NotificationDetails& details) override;
+ // content::DevToolsAgentHostObserver overrides.
+ bool ShouldForceDevToolsAgentHostCreation() override;
+ void DevToolsAgentHostCreated(DevToolsAgentHost* agent_host) override;
+ void DevToolsAgentHostDestroyed(DevToolsAgentHost* agent_host) override;
 
-  void ScheduleUpdate();
-  void UpdateTargets();
-  void SendTargets(const DevToolsAgentHost::List& targets);
+ void ScheduleUpdate();
+ void UpdateTargets();
+ void SendTargets(const DevToolsAgentHost::List& targets);
 
-  content::NotificationRegistrar notification_registrar_;
-  std::unique_ptr<CancelableTimer> timer_;
-  scoped_refptr<WorkerObserver> observer_;
-  base::WeakPtrFactory<LocalTargetsUIHandler> weak_factory_;
+ std::unique_ptr<CancelableTimer> timer_;
+ base::WeakPtrFactory<LocalTargetsUIHandler> weak_factory_;
 };
 
 LocalTargetsUIHandler::LocalTargetsUIHandler(
     const Callback& callback)
     : DevToolsTargetsUIHandler(kTargetSourceLocal, callback),
-      observer_(new WorkerObserver()),
       weak_factory_(this) {
-  notification_registrar_.Add(this,
-                              content::NOTIFICATION_WEB_CONTENTS_CONNECTED,
-                              content::NotificationService::AllSources());
-  notification_registrar_.Add(this,
-                              content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
-                              content::NotificationService::AllSources());
-  notification_registrar_.Add(this,
-                              content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-                              content::NotificationService::AllSources());
-  observer_->Start(base::Bind(&LocalTargetsUIHandler::ScheduleUpdate,
-                              base::Unretained(this)));
+  DevToolsAgentHost::AddObserver(this);
   UpdateTargets();
 }
 
 LocalTargetsUIHandler::~LocalTargetsUIHandler() {
-  notification_registrar_.RemoveAll();
-  observer_->Stop();
+  DevToolsAgentHost::RemoveObserver(this);
 }
 
-void LocalTargetsUIHandler::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
+bool LocalTargetsUIHandler::ShouldForceDevToolsAgentHostCreation() {
+  return true;
+}
+
+void LocalTargetsUIHandler::DevToolsAgentHostCreated(DevToolsAgentHost*) {
+  ScheduleUpdate();
+}
+
+void LocalTargetsUIHandler::DevToolsAgentHostDestroyed(DevToolsAgentHost*) {
   ScheduleUpdate();
 }
 

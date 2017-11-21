@@ -13,8 +13,6 @@
 
 namespace content {
 
-class WorkerServiceObserver;
-
 // A singleton for managing HTML5 shared web workers. These may be run in a
 // separate process, since multiple renderer processes can be talking to a
 // single shared worker. All the methods below can only be called on the UI
@@ -30,19 +28,6 @@ class CONTENT_EXPORT WorkerService {
   // testing when it is important to make sure that all shared worker activity
   // has stopped.
   virtual void TerminateAllWorkersForTesting(base::OnceClosure callback) = 0;
-
-  struct WorkerInfo {
-    GURL url;
-    std::string name;
-    int process_id;
-    int route_id;
-  };
-
-  // Return information about all the currently running workers.
-  virtual std::vector<WorkerInfo> GetWorkers() = 0;
-
-  virtual void AddObserver(WorkerServiceObserver* observer) = 0;
-  virtual void RemoveObserver(WorkerServiceObserver* observer) = 0;
 };
 
 }  // namespace content
