@@ -234,9 +234,7 @@ static CString EncodeComplexWindowsLatin1(const CharType* characters,
           TextCodec::GetUnencodableReplacement(c, handling, replacement);
       DCHECK_GT(replacement_length, 0);
       // Only one char was initially reserved per input character, so grow if
-      // necessary. Note that the case of surrogate pairs and
-      // QuestionMarksForUnencodables the result length may be shorter than
-      // the input length.
+      // necessary.
       target_length += replacement_length - 1;
       if (target_length > result.size()) {
         result.Grow(target_length);

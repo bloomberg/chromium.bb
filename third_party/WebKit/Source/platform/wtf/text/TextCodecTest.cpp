@@ -36,15 +36,6 @@ namespace WTF {
 
 namespace {
 
-TEST(TextCodec, QuestionMarkEncoding) {
-  UnencodableReplacementArray replacement;
-  int size = TextCodec::GetUnencodableReplacement(
-      0xE003, kQuestionMarksForUnencodables, replacement);
-  EXPECT_EQ(size, 1);
-  EXPECT_EQ(replacement[0], '?');
-  EXPECT_EQ(replacement[1], 0);
-}
-
 TEST(TextCodec, HTMLEntityEncoding) {
   UnencodableReplacementArray replacement;
   int size = TextCodec::GetUnencodableReplacement(
