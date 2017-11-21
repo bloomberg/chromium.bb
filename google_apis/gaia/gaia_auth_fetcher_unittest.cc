@@ -194,9 +194,6 @@ class MockGaiaConsumer : public GaiaAuthConsumer {
   MOCK_METHOD0(OnLogOutSuccess, void());
   MOCK_METHOD1(OnLogOutFailure, void(const GoogleServiceAuthError& error));
   MOCK_METHOD1(OnGetCheckConnectionInfoSuccess, void(const std::string& data));
-  MOCK_METHOD1(OnListIdpSessionsSuccess, void(const std::string& data));
-  MOCK_METHOD1(OnGetTokenResponseSuccess,
-               void(const GaiaAuthConsumer::ClientOAuthResult& result));
 };
 
 #if defined(OS_WIN)

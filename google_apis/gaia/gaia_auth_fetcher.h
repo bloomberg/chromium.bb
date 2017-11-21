@@ -334,14 +334,6 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
                                        const net::URLRequestStatus& status,
                                        int response_code);
 
-  void OnListIdpSessionsFetched(const std::string& data,
-                                const net::URLRequestStatus& status,
-                                int response_code);
-
-  void OnGetTokenResponseFetched(const std::string& data,
-                                 const net::URLRequestStatus& status,
-                                 int response_code);
-
   // Tokenize the results of a ClientLogin fetch.
   static void ParseClientLoginResponse(const std::string& data,
                                        std::string* sid,
@@ -361,9 +353,6 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
 
   static bool ParseClientLoginToOAuth2Cookie(const std::string& cookie,
                                              std::string* auth_code);
-
-  static bool ParseListIdpSessionsResponse(const std::string& data,
-                                           std::string* login_hint);
 
   // Is this a special case Gaia error for TwoFactor auth?
   static bool IsSecondFactorSuccess(const std::string& alleged_error);
@@ -398,13 +387,6 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
   static std::string MakeOAuthLoginBody(const std::string& service,
                                         const std::string& source);
 
-  static std::string MakeListIDPSessionsBody(const std::string& scopes,
-                                             const std::string& domain);
-
-  static std::string MakeGetTokenResponseBody(const std::string& scopes,
-                                              const std::string& domain,
-                                              const std::string& login_hint);
-
   // From a URLFetcher result, generate an appropriate error.
   // From the API documentation, both IssueAuthToken and ClientLogin have
   // the same error returns.
@@ -426,13 +408,13 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
   const GURL list_accounts_gurl_;
   const GURL logout_gurl_;
   const GURL get_check_connection_info_url_;
-  const GURL oauth2_iframe_url_;
 
   // While a fetch is going on:
   std::unique_ptr<net::URLFetcher> fetcher_;
   GURL deprecated_client_login_to_oauth2_gurl_;
   std::string request_body_;
-  std::string requested_service_;
+
+  std::string requested_service_; // Currently tracked for IssueAuthToken only.
   bool fetch_pending_ = false;
   bool fetch_token_from_auth_code_ = false;
 

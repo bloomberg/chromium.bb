@@ -43,7 +43,6 @@ const char kDeprecatedClientLoginToOAuth2UrlSuffix[] =
     "o/oauth2/programmatic_auth";
 const char kOAuth2AuthUrlSuffix[] = "o/oauth2/auth";
 const char kOAuth2RevokeUrlSuffix[] = "o/oauth2/revoke";
-const char kOAuth2IFrameUrlSuffix[] = "o/oauth2/iframerpc";
 
 // API calls from www.googleapis.com
 const char kOAuth2TokenUrlSuffix[] = "oauth2/v4/token";
@@ -126,8 +125,6 @@ GaiaUrls::GaiaUrls() {
       lso_origin_url_.Resolve(kDeprecatedClientLoginToOAuth2UrlSuffix);
   oauth2_auth_url_ = lso_origin_url_.Resolve(kOAuth2AuthUrlSuffix);
   oauth2_revoke_url_ = lso_origin_url_.Resolve(kOAuth2RevokeUrlSuffix);
-  oauth2_iframe_url_ =
-      lso_origin_url_.Resolve(kOAuth2IFrameUrlSuffix);
 
   // URLs from www.googleapis.com.
   oauth2_token_url_ = google_apis_origin_url_.Resolve(kOAuth2TokenUrlSuffix);
@@ -216,10 +213,6 @@ const GURL& GaiaUrls::oauth_user_info_url() const {
 
 const GURL& GaiaUrls::oauth_revoke_token_url() const {
   return oauth_revoke_token_url_;
-}
-
-const GURL& GaiaUrls::oauth2_iframe_url() const {
-  return oauth2_iframe_url_;
 }
 
 const GURL& GaiaUrls::oauth1_login_url() const {
