@@ -12,11 +12,6 @@
           "reason": "subtree"
         },
         {
-          "object": "LayoutTableCell (relative positioned) TD id='cellToScroll' class='relative'",
-          "rect": [1112, 1312, 454, 469],
-          "reason": "subtree"
-        },
-        {
           "object": "LayoutBlockFlow (positioned) DIV class='absolute green'",
           "rect": [1114, 1314, 435, 450],
           "reason": "appeared"

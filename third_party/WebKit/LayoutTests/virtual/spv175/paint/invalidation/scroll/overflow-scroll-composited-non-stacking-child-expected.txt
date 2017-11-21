@@ -12,11 +12,6 @@
           "reason": "subtree"
         },
         {
-          "object": "LayoutBlockFlow DIV class='scroller'",
-          "rect": [18, 60, 310, 200],
-          "reason": "subtree"
-        },
-        {
           "object": "LayoutBlockFlow (positioned) DIV class='back'",
           "rect": [93, 125, 180, 100],
           "reason": "paint property change"

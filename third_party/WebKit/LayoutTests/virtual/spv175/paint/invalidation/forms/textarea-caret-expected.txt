@@ -17,11 +17,6 @@
           "reason": "appeared"
         },
         {
-          "object": "LayoutTextControl TEXTAREA id='editor'",
-          "rect": [7, 7, 183, 40],
-          "reason": "appeared"
-        },
-        {
           "object": "LayoutBlockFlow HTML",
           "rect": [8, 8, 181, 38],
           "reason": "disappeared"
@@ -29,11 +24,6 @@
         {
           "object": "LayoutTextControl TEXTAREA id='editor'",
           "rect": [9, 11, 179, 16],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutTextControl TEXTAREA id='editor'",
-          "rect": [9, 30, 164, 15],
           "reason": "appeared"
         }
       ]

@@ -196,9 +196,6 @@ class FindObjectPropertiesNeedingUpdateScope {
       DCHECK_OBJECT_PROPERTY_EQ(object_,
                                 original_properties_->ScrollTranslation(),
                                 object_properties->ScrollTranslation());
-      DCHECK_OBJECT_PROPERTY_EQ(object_,
-                                original_properties_->ScrollbarPaintOffset(),
-                                object_properties->ScrollbarPaintOffset());
     } else {
       DCHECK_EQ(!!original_properties_, !!object_properties)
           << " Object: " << object_.DebugName();

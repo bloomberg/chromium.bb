@@ -14,13 +14,7 @@
       ]
     },
     {
-      "name": "LayoutBlockFlow (relative positioned) DIV class='scroll'",
-      "position": [10, 10],
-      "bounds": [110, 110],
-      "transform": 1
-    },
-    {
-      "name": "LayoutBlockFlow (relative positioned) DIV class='scroll'",
+      "name": "HorizontalScrollbar",
       "bounds": [130, 130],
       "paintInvalidations": [
         {
@@ -32,13 +26,7 @@
       "transform": 1
     },
     {
-      "name": "LayoutBlockFlow (relative positioned) DIV class='scroll'",
-      "position": [10, 10],
-      "bounds": [110, 110],
-      "transform": 2
-    },
-    {
-      "name": "LayoutBlockFlow (relative positioned) DIV class='scroll'",
+      "name": "HorizontalScrollbar",
       "bounds": [130, 130],
       "paintInvalidations": [
         {
@@ -50,13 +38,7 @@
       "transform": 2
     },
     {
-      "name": "LayoutBlockFlow (relative positioned) DIV class='scroll'",
-      "position": [10, 10],
-      "bounds": [110, 110],
-      "transform": 3
-    },
-    {
-      "name": "LayoutBlockFlow (relative positioned) DIV class='scroll'",
+      "name": "HorizontalScrollbar",
       "bounds": [130, 130],
       "paintInvalidations": [
         {
@@ -68,13 +50,7 @@
       "transform": 3
     },
     {
-      "name": "LayoutBlockFlow (relative positioned) DIV class='scroll'",
-      "position": [10, 10],
-      "bounds": [110, 110],
-      "transform": 4
-    },
-    {
-      "name": "LayoutBlockFlow (relative positioned) DIV class='scroll'",
+      "name": "HorizontalScrollbar",
       "bounds": [130, 130],
       "paintInvalidations": [
         {
@@ -86,13 +62,7 @@
       "transform": 4
     },
     {
-      "name": "LayoutBlockFlow (relative positioned) DIV class='scroll'",
-      "position": [10, 10],
-      "bounds": [110, 110],
-      "transform": 5
-    },
-    {
-      "name": "LayoutBlockFlow (relative positioned) DIV class='scroll'",
+      "name": "HorizontalScrollbar",
       "bounds": [130, 130],
       "paintInvalidations": [
         {
