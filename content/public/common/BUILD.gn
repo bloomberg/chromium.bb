@@ -267,6 +267,7 @@ source_set("common_sources") {
     ":interfaces",
     ":service_names",
     "//content/common",
+    "//content/public/common:interfaces",
     "//ipc",
     "//mojo/edk/system",
     "//mojo/public/cpp/bindings",

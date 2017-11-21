@@ -755,9 +755,6 @@
 
 # Switch test from using a custom net::URLRequestFileJob to using a test
 # URLLoaderFactory via SetNetworkFactoryForTesting.
--ErrorPageAutoReloadTest.AutoReload
--ErrorPageAutoReloadTest.IgnoresSameDocumentNavigation
--ErrorPageAutoReloadTest.ManualReloadNotSuppressed
 -ErrorPageNavigationCorrectionsFailTest.StaleCacheStatusFailedCorrections
 -ErrorPageOfflineTestWithAllowDinosaurFalse.CheckEasterEggIsDisabled
 -ErrorPageTest.CheckEasterEggIsNotDisabled
