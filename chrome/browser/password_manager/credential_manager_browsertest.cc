@@ -80,30 +80,6 @@ class CredentialManagerBrowserTest : public PasswordManagerBrowserTestBase {
     ASSERT_EQ(expect_has_results, result);
   }
 
-  // Triggers a call to `navigator.credentials.create` to generate a
-  // publicKeyCredential, waits for rejection, and ASSERTs that
-  // |expect_has_results| is satisfied.
-  void CreatePublicKeyCredentialAndExpectNotImplemented(
-      content::WebContents* web_contents) {
-    std::string result;
-    std::string script =
-        "navigator.credentials.create({ publicKey: {"
-        "  challenge: new TextEncoder().encode('climb a mountain'),"
-        "  rp: { id: '1098237235409872', name: 'Acme' },"
-        "  user: { "
-        "    id: '1098237235409872',"
-        "    name: 'avery.a.jones@example.com',"
-        "    displayName: 'Avery A. Jones', "
-        "    icon: 'https://pics.acme.com/00/p/aBjjjpqPb.png'},"
-        "  parameters: [{ type: 'public-key', algorithm: '-7'}],"
-        "  timeout: 60000,"
-        "  excludeList: [] }"
-        "}).catch(c => window.domAutomationController.send(c.toString()));";
-    ASSERT_TRUE(
-        content::ExecuteScriptAndExtractString(web_contents, script, &result));
-    ASSERT_EQ("NotAllowedError: The operation is not implemented.", result);
-  }
-
   // Attempt to create a publicKeyCredential with an unsupported algorithm type.
   void CreatePublicKeyCredentialWithUnsupportedAlgorithmAndExpectNotSupported(
       content::WebContents* web_contents) {
@@ -695,19 +671,6 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest, CredentialsAutofilled) {
   content::SimulateMouseClickAt(
       WebContents(), 0, blink::WebMouseEvent::Button::kLeft, gfx::Point(1, 1));
   WaitForElementValue("password_field", "12345");
-}
-
-// Tests that when navigator.credentials.create() for a public key is called,
-// we get a NotAllowedError as the implementation is still unfinished.
-IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
-                       CreatePublicKeyCredentialNotImplemented) {
-  const GURL a_url1 = https_test_server().GetURL("a.com", "/title1.html");
-
-  // Navigate to a mostly empty page.
-  ui_test_utils::NavigateToURL(browser(), a_url1);
-
-  ASSERT_NO_FATAL_FAILURE(
-      CreatePublicKeyCredentialAndExpectNotImplemented(WebContents()));
 }
 
 // Tests that when navigator.credentials.create() is called with an unsupported

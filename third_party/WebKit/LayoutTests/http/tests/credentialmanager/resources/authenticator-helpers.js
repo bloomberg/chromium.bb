@@ -39,7 +39,7 @@ class MockAuthenticator {
 
   // Resets state of mock Authenticator.
   reset() {
-    this.status_ = webauth.mojom.AuthenticatorStatus.NOT_IMPLEMENTED;
+    this.status_ = webauth.mojom.AuthenticatorStatus.UNKNOWN_ERROR;
     this.id_ = null;
     this.rawId_ = new Uint8Array(0);
     this.clientDataJson_ = new Uint8Array(0);
