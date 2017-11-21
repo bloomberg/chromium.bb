@@ -22,10 +22,13 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/media/webrtc_logging_messages.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
+
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#include "content/public/browser/child_process_security_policy.h"
 #include "storage/browser/fileapi/isolated_context.h"
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 using content::BrowserThread;
 
@@ -265,6 +268,7 @@ void WebRtcLoggingHandlerHost::StopWebRtcEventLogging(
   event_log_handler_->StopWebRtcEventLogging(callback, error_callback);
 }
 
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 void WebRtcLoggingHandlerHost::GetLogsDirectory(
     const LogsDirectoryCallback& callback,
     const LogsDirectoryErrorCallback& error_callback) {
@@ -308,6 +312,7 @@ void WebRtcLoggingHandlerHost::GrantLogsDirectoryAccess(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(callback, filesystem_id, registered_name));
 }
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 void WebRtcLoggingHandlerHost::OnRtpPacket(
     std::unique_ptr<uint8_t[]> packet_header,
