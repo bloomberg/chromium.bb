@@ -72,13 +72,6 @@ const char kInvalidURL[] = "http://%3";
 const char kTestURLString[] = "http://www.google.com/";
 const char kTestAppSpecificURL[] = "testwebui://test/";
 
-// Returns true if the current device is a large iPhone (6 or 6+).
-bool IsIPhone6Or6Plus() {
-  UIUserInterfaceIdiom idiom = [[UIDevice currentDevice] userInterfaceIdiom];
-  return (idiom == UIUserInterfaceIdiomPhone &&
-          CGRectGetHeight([[UIScreen mainScreen] nativeBounds]) >= 1334.0);
-}
-
 // Returns HTML for an optionally zoomable test page with |zoom_state|.
 enum PageScalabilityType {
   PAGE_SCALABILITY_DISABLED = 0,
@@ -464,34 +457,6 @@ TEST_F(CRWWebControllerPageScrollStateTest,
       web_controller().pageDisplayState.zoom_state();
   EXPECT_FLOAT_EQ(3, final_zoom_state.zoom_scale() /
                         final_zoom_state.minimum_zoom_scale());
-};
-
-// TODO(crbug/493427): Flaky on the bots.
-TEST_F(CRWWebControllerPageScrollStateTest, DISABLED_AtTop) {
-  // This test fails on iPhone 6/6+; skip until it's fixed. crbug.com/453105
-  if (IsIPhone6Or6Plus())
-    return;
-
-  PageZoomState zoom_state = PageZoomState(1.0, 5.0, 1.0);
-  LoadHtml(GetHTMLForZoomState(zoom_state, PAGE_SCALABILITY_ENABLED));
-  WaitForZoomRendering(web_controller(), zoom_state);
-  ASSERT_TRUE(web_controller().atTop);
-
-  NavigationManager* nagivation_manager = web_state()->GetNavigationManager();
-  nagivation_manager->GetLastCommittedItem()->SetPageDisplayState(
-      CreateTestPageDisplayState(CGPointMake(0.0, 30.0),  // scroll offset
-                                 5.0,                     // relative zoom scale
-                                 1.0,    // original minimum zoom scale
-                                 5.0,    // original maximum zoom scale
-                                 1.0));  // original zoom scale
-  [web_controller() restoreStateFromHistory];
-
-  // |-restoreStateFromHistory| is async; wait for its completion.
-  base::test::ios::WaitUntilCondition(^bool() {
-    return web_controller().pageDisplayState.scroll_state().offset_y() == 30.0;
-  });
-
-  ASSERT_FALSE(web_controller().atTop);
 };
 
 // Test fixture for testing visible security state.

@@ -90,9 +90,6 @@ class WebStateImpl;
 // Returns the x, y offset the content has been scrolled.
 @property(nonatomic, readonly) CGPoint scrollPosition;
 
-// Returns whether the top of the content is visible.
-@property(nonatomic, readonly) BOOL atTop;
-
 // YES if JavaScript dialogs and window open requests should be suppressed.
 // Default is NO. When dialog is suppressed
 // |WebStateObserver::DidSuppressDialog| will be called.

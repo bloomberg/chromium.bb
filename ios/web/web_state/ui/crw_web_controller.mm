@@ -1178,13 +1178,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   return self.webScrollView.contentOffset;
 }
 
-- (BOOL)atTop {
-  if (!_webView)
-    return YES;
-  UIScrollView* scrollView = self.webScrollView;
-  return scrollView.contentOffset.y == -scrollView.contentInset.top;
-}
-
 - (GURL)currentURLWithTrustLevel:(web::URLVerificationTrustLevel*)trustLevel {
   DCHECK(trustLevel) << "Verification of the trustLevel state is mandatory";
 
