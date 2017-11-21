@@ -376,7 +376,6 @@ source_set("unit_tests") {
     "audio_output_controller_unittest.cc",
     "audio_output_device_unittest.cc",
     "audio_output_proxy_unittest.cc",
-    "audio_output_unittest.cc",
     "audio_power_monitor_unittest.cc",
     "audio_system_impl_unittest.cc",
     "power_observer_helper_unittest.cc",
