@@ -1445,6 +1445,12 @@ void LayoutFlexibleBox::LayoutLineItems(FlexLine* current_line,
       relaid_out_children_.insert(child);
     child->LayoutIfNeeded();
 
+    // This shouldn't be necessary, because we set the override size to be
+    // the flexed_content_size and so the result should in fact be that size.
+    // But it turns out that tables ignore the override size, and so we have
+    // to re-check the size so that we place the flex item correctly.
+    flex_item.flexed_content_size =
+        MainAxisExtentForChild(*child) - flex_item.main_axis_border_and_padding;
     flex_item.cross_axis_size = CrossAxisExtentForChild(*child);
     flex_item.cross_axis_intrinsic_size =
         CrossAxisIntrinsicExtentForChild(*child);
