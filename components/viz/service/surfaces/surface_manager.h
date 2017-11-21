@@ -176,6 +176,9 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   // nothing.
   void DropTemporaryReference(const SurfaceId& surface_id);
 
+  // Garbage collects all destroyed surfaces that aren't live.
+  void GarbageCollectSurfaces();
+
   // Returns all surfaces referenced by parent |surface_id|. Will return an
   // empty set if |surface_id| is unknown or has no references.
   const base::flat_set<SurfaceId>& GetSurfacesReferencedByParent(
@@ -227,9 +230,6 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
     // timer tick and will be true on second timer tick.
     bool marked_as_old = false;
   };
-
-  // Garbage collects all destroyed surfaces that aren't live.
-  void GarbageCollectSurfaces();
 
   // Returns set of live surfaces for |lifetime_manager_| is REFERENCES.
   SurfaceIdSet GetLiveSurfacesForReferences();

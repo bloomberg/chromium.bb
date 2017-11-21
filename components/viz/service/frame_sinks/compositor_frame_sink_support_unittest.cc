@@ -507,10 +507,13 @@ TEST_F(CompositorFrameSinkSupportTest, AddDuringEviction) {
   LocalSurfaceId local_surface_id(6, kArbitraryToken);
   support->SubmitCompositorFrame(local_surface_id, test::MakeCompositorFrame());
 
+  SurfaceManager* surface_manager = manager_.surface_manager();
+
   EXPECT_CALL(mock_client, DidReceiveCompositorFrameAck(_))
-      .WillOnce(testing::InvokeWithoutArgs([&support, &mock_client]() {
+      .WillOnce(testing::InvokeWithoutArgs([&]() {
         LocalSurfaceId new_id(7, base::UnguessableToken::Create());
         support->SubmitCompositorFrame(new_id, test::MakeCompositorFrame());
+        surface_manager->GarbageCollectSurfaces();
       }))
       .WillRepeatedly(testing::Return());
   support->EvictCurrentSurface();
@@ -545,6 +548,7 @@ TEST_F(CompositorFrameSinkSupportTest, EvictCurrentSurface) {
   EXPECT_CALL(mock_client, DidReceiveCompositorFrameAck(returned_resources))
       .Times(1);
   support->EvictCurrentSurface();
+  manager_.surface_manager()->GarbageCollectSurfaces();
   EXPECT_FALSE(GetSurfaceForId(id));
   manager_.InvalidateFrameSinkId(kAnotherArbitraryFrameSinkId);
 }
@@ -626,6 +630,7 @@ TEST_F(CompositorFrameSinkSupportTest, DuplicateCopyRequest) {
 
   support_->EvictCurrentSurface();
   local_surface_id_ = LocalSurfaceId();
+  manager_.surface_manager()->GarbageCollectSurfaces();
   EXPECT_TRUE(called1);
   EXPECT_TRUE(called2);
   EXPECT_TRUE(called3);
@@ -698,6 +703,7 @@ TEST_F(CompositorFrameSinkSupportTest, FrameSizeMismatch) {
   frame.render_pass_list.push_back(std::move(pass));
   EXPECT_FALSE(
       support_->SubmitCompositorFrame(local_surface_id_, std::move(frame)));
+  manager_.surface_manager()->GarbageCollectSurfaces();
   EXPECT_FALSE(GetSurfaceForId(id));
 }
 
@@ -720,6 +726,7 @@ TEST_F(CompositorFrameSinkSupportTest, DeviceScaleFactorMismatch) {
   frame.metadata.device_scale_factor = 0.4f;
   EXPECT_FALSE(
       support_->SubmitCompositorFrame(local_surface_id_, std::move(frame)));
+  manager_.surface_manager()->GarbageCollectSurfaces();
   EXPECT_FALSE(GetSurfaceForId(id));
 }
 

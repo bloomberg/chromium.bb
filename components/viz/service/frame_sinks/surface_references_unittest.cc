@@ -212,6 +212,7 @@ TEST_F(SurfaceReferencesTest, NewSurfaceFromFrameSink) {
   EXPECT_THAT(GetReferencesFor(id3), UnorderedElementsAre(id2, id2_next));
 
   RemoveSurfaceReference(id1, id2);
+  GetSurfaceManager().GarbageCollectSurfaces();
   EXPECT_THAT(GetReferencesFor(id2), IsEmpty());
   EXPECT_THAT(GetReferencesFor(id2_next), UnorderedElementsAre(id1));
   EXPECT_THAT(GetReferencesFor(id3), UnorderedElementsAre(id2_next));
@@ -240,6 +241,8 @@ TEST_F(SurfaceReferencesTest, ReferenceCycleGetsDeleted) {
 
   RemoveSurfaceReference(GetSurfaceManager().GetRootSurfaceId(), id1);
 
+  GetSurfaceManager().GarbageCollectSurfaces();
+
   // Removing the reference from the root to id1 should allow all three surfaces
   // to be deleted during GC even with a cycle between 2 and 3.
   EXPECT_EQ(nullptr, GetSurfaceManager().GetSurfaceForId(id1));
@@ -261,19 +264,23 @@ TEST_F(SurfaceReferencesTest, SurfacesAreDeletedDuringGarbageCollection) {
   // active reference on all surfaces.
   DestroySurface(id1);
   DestroySurface(id2);
+  GetSurfaceManager().GarbageCollectSurfaces();
+
   EXPECT_NE(nullptr, GetSurfaceManager().GetSurfaceForId(id1));
   EXPECT_NE(nullptr, GetSurfaceManager().GetSurfaceForId(id2));
 
   // Should delete |id2| when the only reference to it is removed.
   RemoveSurfaceReference(id1, id2);
+  GetSurfaceManager().GarbageCollectSurfaces();
   EXPECT_EQ(nullptr, GetSurfaceManager().GetSurfaceForId(id2));
 
   // Should delete |id1| when the only reference to it is removed.
   RemoveSurfaceReference(GetSurfaceManager().GetRootSurfaceId(), id1);
+  GetSurfaceManager().GarbageCollectSurfaces();
   EXPECT_EQ(nullptr, GetSurfaceManager().GetSurfaceForId(id1));
 }
 
-TEST_F(SurfaceReferencesTest, GarbageCollectionWorksRecusively) {
+TEST_F(SurfaceReferencesTest, GarbageCollectionWorksRecursively) {
   SurfaceId id1 = CreateSurface(kFrameSink1, 1);
   SurfaceId id2 = CreateSurface(kFrameSink2, 1);
   SurfaceId id3 = CreateSurface(kFrameSink3, 1);
@@ -286,6 +293,8 @@ TEST_F(SurfaceReferencesTest, GarbageCollectionWorksRecusively) {
   DestroySurface(id2);
   DestroySurface(id1);
 
+  GetSurfaceManager().GarbageCollectSurfaces();
+
   // Destroying the surfaces shouldn't delete them yet, since there is still an
   // active reference on all surfaces.
   EXPECT_NE(nullptr, GetSurfaceManager().GetSurfaceForId(id3));
@@ -293,6 +302,8 @@ TEST_F(SurfaceReferencesTest, GarbageCollectionWorksRecusively) {
   EXPECT_NE(nullptr, GetSurfaceManager().GetSurfaceForId(id1));
 
   RemoveSurfaceReference(GetSurfaceManager().GetRootSurfaceId(), id1);
+
+  GetSurfaceManager().GarbageCollectSurfaces();
 
   // Removing the reference from the root to id1 should allow all three surfaces
   // to be deleted during GC.
@@ -316,18 +327,21 @@ TEST_F(SurfaceReferencesTest, LiveSurfaceStillReachable) {
   // Marking |id3| for destruction shouldn't cause it be garbage collected
   // because |id2| is still reachable from the root.
   DestroySurface(id3);
+  GetSurfaceManager().GarbageCollectSurfaces();
   EXPECT_NE(nullptr, GetSurfaceManager().GetSurfaceForId(id3));
 
   // Removing the surface reference to |id2| makes it not reachable from the
   // root, however it's not marked as destroyed and is still live. Make sure we
   // also don't delete any dependencies, such as |id3|, as well.
   RemoveSurfaceReference(id1, id2);
+  GetSurfaceManager().GarbageCollectSurfaces();
   EXPECT_NE(nullptr, GetSurfaceManager().GetSurfaceForId(id3));
   EXPECT_NE(nullptr, GetSurfaceManager().GetSurfaceForId(id2));
 
   // |id2| is unreachable and destroyed. Garbage collection should delete both
   // |id2| and |id3| now.
   DestroySurface(id2);
+  GetSurfaceManager().GarbageCollectSurfaces();
   EXPECT_EQ(nullptr, GetSurfaceManager().GetSurfaceForId(id3));
   EXPECT_EQ(nullptr, GetSurfaceManager().GetSurfaceForId(id2));
 }
@@ -496,6 +510,8 @@ TEST_F(SurfaceReferencesTest, SurfaceWithTemporaryReferenceIsNotDeleted) {
   DestroySurface(id1);
   DestroySurface(id2);
   RemoveSurfaceReference(GetSurfaceManager().GetRootSurfaceId(), id1);
+
+  GetSurfaceManager().GarbageCollectSurfaces();
 
   // |id1| is destroyed and has no references, so it's deleted.
   EXPECT_EQ(nullptr, GetSurfaceManager().GetSurfaceForId(id1));

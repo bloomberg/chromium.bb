@@ -238,6 +238,8 @@ TEST_F(SurfaceSynchronizationTest, RootSurfaceReceivesReferences) {
                   frame_sink_manager().surface_manager()->GetRootSurfaceId()),
               UnorderedElementsAre(display_id_second));
 
+  frame_sink_manager().surface_manager()->GarbageCollectSurfaces();
+
   // Surface |display_id_first| is unreachable and should get deleted.
   EXPECT_EQ(nullptr, GetSurfaceForId(display_id_first));
 }
@@ -1028,6 +1030,8 @@ TEST_F(SurfaceSynchronizationTest, LocalSurfaceIdIsReusable) {
 
   // Destroy the surface.
   child_support1().EvictCurrentSurface();
+  frame_sink_manager().surface_manager()->GarbageCollectSurfaces();
+
   EXPECT_EQ(nullptr, GetSurfaceForId(child_id));
 
   // Submit another frame with the same local surface id. This should work fine
@@ -1630,6 +1634,8 @@ TEST_F(SurfaceSynchronizationTest, FrameActivationAfterFrameSinkDestruction) {
   // Submitting a new CompositorFrame to the display should free the parent.
   display_support().SubmitCompositorFrame(display_id.local_surface_id(),
                                           MakeCompositorFrame());
+
+  frame_sink_manager().surface_manager()->GarbageCollectSurfaces();
 
   parent_surface = GetSurfaceForId(parent_id);
   EXPECT_EQ(nullptr, parent_surface);
