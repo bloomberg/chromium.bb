@@ -650,14 +650,6 @@ crbug.com/728378 virtual/layout_ng/overflow/overflow-position-003.html [ Failure
 ### Crash site: ContainerNode.cpp
 crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-with-empty-inline-children.html [ Crash Failure ]
 
-### Crash site: DrawingRecorder.cpp
-crbug.com/714962 virtual/layout_ng_paint/fast/inline/dirtyLinesForInline.html [ Crash ]
-crbug.com/714962 virtual/layout_ng_paint/fast/inline/drawStyledEmptyInlinesWithWS.html [ Crash Failure ]
-crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-box-background-long-image.html [ Crash Failure ]
-crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-box-background-repeat-x.html [ Crash Failure ]
-crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-box-background-repeat-y.html [ Crash Failure ]
-crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-box-background.html [ Crash Failure ]
-
 ### Crash site: layout_ng_block_flow.cc
 crbug.com/714962 virtual/layout_ng_paint/fast/inline/continuation-positioned-reparenting.html [ Crash ]
 crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-offsetLeft-relpos.html [ Crash Failure ]
@@ -666,7 +658,12 @@ crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-offsetLeft-relpos.ht
 crbug.com/714962 virtual/layout_ng_paint/fast/inline/001.html [ Failure ]
 crbug.com/714962 virtual/layout_ng_paint/fast/inline/br-text-decoration.html [ Crash Failure ]
 crbug.com/714962 virtual/layout_ng_paint/fast/inline/continuation-outlines-with-layers-2.html [ Failure ]
+crbug.com/714962 [ Mac ] virtual/layout_ng_paint/fast/inline/drawStyledEmptyInlinesWithWS.html [ Failure ]
 crbug.com/714962 virtual/layout_ng_paint/fast/inline/emptyInlinesWithinLists.html [ Failure ]
+crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-box-background-long-image.html [ Failure ]
+crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-box-background-repeat-x.html [ Failure ]
+crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-box-background-repeat-y.html [ Failure ]
+crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-box-background.html [ Failure ]
 crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-continuation-borders.html [ Failure ]
 crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-focus-ring.html [ Failure ]
 crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-offsetLeft-continuation.html [ Failure ]
