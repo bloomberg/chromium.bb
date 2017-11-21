@@ -106,6 +106,7 @@ const char kWifiRoamThresholdProperty[] = "WiFi.RoamThreshold";
 const char kEapIdentityProperty[] = "EAP.Identity";
 const char kEapMethodProperty[] = "EAP.EAP";
 const char kEapPhase2AuthProperty[] = "EAP.InnerEAP";
+const char kEapTLSVersionMaxProperty[] = "EAP.TLSVersionMax";
 const char kEapAnonymousIdentityProperty[] = "EAP.AnonymousIdentity";
 const char kEapClientCertProperty[] = "EAP.ClientCert";
 const char kEapCertIdProperty[] = "EAP.CertID";
@@ -305,6 +306,11 @@ const char kEapPhase2AuthTTLSPAP[] = "auth=PAP";
 const char kEapPhase2AuthTTLSCHAP[] = "auth=CHAP";
 const char kEapPhase2AuthTTLSGTC[] = "auth=GTC";
 const char kEapPhase2AuthTTLSEAPGTC[] = "autheap=GTC";
+
+// Flimflam EAP TLS versions.
+const char kEapTLSVersion1p0[] = "1.0";
+const char kEapTLSVersion1p1[] = "1.1";
+const char kEapTLSVersion1p2[] = "1.2";
 
 // Flimflam VPN provider types.
 const char kProviderL2tpIpsec[] = "l2tpipsec";
