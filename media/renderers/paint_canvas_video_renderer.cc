@@ -845,6 +845,7 @@ void PaintCanvasVideoRenderer::CopyVideoFrameSingleTextureToGLTexture(
     DCHECK_LE(dest_rect.width(), video_frame->coded_size().width());
     DCHECK_LE(dest_rect.height(), video_frame->coded_size().height());
 #endif
+    gl->BindTexture(target, texture);
     gl->TexImage2D(target, level, internal_format, dest_rect.width(),
                    dest_rect.height(), 0, format, type, nullptr);
     gl->CopySubTextureCHROMIUM(source_texture, 0, target, texture, level, 0, 0,
