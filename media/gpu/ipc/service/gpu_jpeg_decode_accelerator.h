@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
-#include "media/gpu/ipc/service/gpu_jpeg_decode_accelerator_factory_provider.h"
+#include "media/gpu/gpu_jpeg_decode_accelerator_factory.h"
 #include "media/gpu/mojo/jpeg_decoder.mojom.h"
 #include "media/video/jpeg_decode_accelerator.h"
 
@@ -36,7 +36,7 @@ class GpuJpegDecodeAccelerator : public mojom::GpuJpegDecodeAccelerator,
 
  private:
   // This constructor internally calls
-  // GpuJpegDecodeAcceleratorFactoryProvider::GetAcceleratorFactories() to
+  // GpuJpegDecodeAcceleratorFactory::GetAcceleratorFactories() to
   // fill |accelerator_factory_functions_|.
   GpuJpegDecodeAccelerator();
 
@@ -52,8 +52,7 @@ class GpuJpegDecodeAccelerator : public mojom::GpuJpegDecodeAccelerator,
   void NotifyDecodeStatus(int32_t bitstream_buffer_id,
                           JpegDecodeAccelerator::Error error);
 
-  const std::vector<
-      GpuJpegDecodeAcceleratorFactoryProvider::CreateAcceleratorCB>
+  const std::vector<GpuJpegDecodeAcceleratorFactory::CreateAcceleratorCB>
       accelerator_factory_functions_;
 
   DecodeCallback decode_cb_;

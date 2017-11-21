@@ -64,7 +64,7 @@ void GpuJpegDecodeAccelerator::Create(
 
 GpuJpegDecodeAccelerator::GpuJpegDecodeAccelerator()
     : accelerator_factory_functions_(
-          GpuJpegDecodeAcceleratorFactoryProvider::GetAcceleratorFactories()) {}
+          GpuJpegDecodeAcceleratorFactory::GetAcceleratorFactories()) {}
 
 GpuJpegDecodeAccelerator::~GpuJpegDecodeAccelerator() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
