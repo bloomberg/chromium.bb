@@ -300,29 +300,6 @@ ScriptPromise CredentialsContainer::get(
   if (!CheckBoilerplate(resolver))
     return promise;
 
-  // Set the default mediation option if none is provided.
-  // If both 'unmediated' and 'mediation' are set log a warning if they are
-  // contradicting.
-  // Also sets 'mediation' appropriately when only 'unmediated' is set.
-  // TODO(http://crbug.com/715077): Remove this when 'unmediated' is removed.
-  String mediation = "optional";
-  if (options.hasUnmediated() && !options.hasMediation()) {
-    mediation = options.unmediated() ? "silent" : "optional";
-    UseCounter::Count(
-        context,
-        WebFeature::kCredentialManagerCredentialRequestOptionsOnlyUnmediated);
-  } else if (options.hasMediation()) {
-    mediation = options.mediation();
-    if (options.hasUnmediated() &&
-        ((options.unmediated() && options.mediation() != "silent") ||
-         (!options.unmediated() && options.mediation() != "optional"))) {
-      context->AddConsoleMessage(ConsoleMessage::Create(
-          kJSMessageSource, kWarningMessageLevel,
-          "mediation: '" + options.mediation() + "' overrides unmediated: " +
-              (options.unmediated() ? "true" : "false") + "."));
-    }
-  }
-
   Vector<KURL> providers;
   if (options.hasFederated() && options.federated().hasProviders()) {
     for (const auto& string : options.federated().providers()) {
@@ -334,16 +311,16 @@ ScriptPromise CredentialsContainer::get(
 
   WebCredentialMediationRequirement requirement;
 
-  if (mediation == "silent") {
+  if (options.mediation() == "silent") {
     UseCounter::Count(context,
                       WebFeature::kCredentialManagerGetMediationSilent);
     requirement = WebCredentialMediationRequirement::kSilent;
-  } else if (mediation == "optional") {
+  } else if (options.mediation() == "optional") {
     UseCounter::Count(context,
                       WebFeature::kCredentialManagerGetMediationOptional);
     requirement = WebCredentialMediationRequirement::kOptional;
   } else {
-    DCHECK_EQ("required", mediation);
+    DCHECK_EQ("required", options.mediation());
     UseCounter::Count(context,
                       WebFeature::kCredentialManagerGetMediationRequired);
     requirement = WebCredentialMediationRequirement::kRequired;
