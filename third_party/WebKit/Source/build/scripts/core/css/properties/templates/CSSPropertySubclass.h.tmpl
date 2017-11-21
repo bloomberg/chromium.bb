@@ -57,9 +57,6 @@ class {{property_classname}} : public {{property.superclass}} {
   {% if property.is_descriptor %}
   bool IsDescriptor() const override { return true; }
   {% endif %}
-  {% if property.should_declare_apply_functions %}
-{{style_builder_functions(property)}}
-  {%- endif %}
   {% if 'Percent' in property.typedom_types %}
   bool SupportsPercentage() const override { return true; }
   {% endif %}
@@ -104,6 +101,11 @@ class {{property_classname}} : public {{property.superclass}} {
   }
     {% endif %}
   {% endif %}
+  {% if property.should_implement_apply_functions %}
+
+  // Style builder functions
+{{style_builder_functions(property)}}
+  {%- endif %}
 };
 
 }  // namespace CSS{{property.superclass}}
