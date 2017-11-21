@@ -501,9 +501,43 @@ bool FrameSelection::ShouldPaintCaret(const LayoutBlock& block) const {
   return result;
 }
 
-IntRect FrameSelection::AbsoluteCaretBounds() {
+IntRect FrameSelection::AbsoluteCaretBounds() const {
   DCHECK(ComputeVisibleSelectionInDOMTree().IsValidFor(*frame_->GetDocument()));
   return frame_caret_->AbsoluteCaretBounds();
+}
+
+bool FrameSelection::ComputeAbsoluteBounds(IntRect& anchor,
+                                           IntRect& focus) const {
+  if (!IsAvailable() || GetSelectionInDOMTree().IsNone())
+    return false;
+
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  frame_->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  if (ComputeVisibleSelectionInDOMTree().IsNone()) {
+    // plugins/mouse-capture-inside-shadow.html reaches here.
+    return false;
+  }
+
+  DocumentLifecycle::DisallowTransitionScope disallow_transition(
+      frame_->GetDocument()->Lifecycle());
+
+  if (ComputeVisibleSelectionInDOMTree().IsCaret()) {
+    anchor = focus = AbsoluteCaretBounds();
+  } else {
+    const EphemeralRange selected_range =
+        ComputeVisibleSelectionInDOMTree().ToNormalizedEphemeralRange();
+    if (selected_range.IsNull())
+      return false;
+    anchor = frame_->GetEditor().FirstRectForRange(
+        EphemeralRange(selected_range.StartPosition()));
+    focus = frame_->GetEditor().FirstRectForRange(
+        EphemeralRange(selected_range.EndPosition()));
+  }
+
+  if (!ComputeVisibleSelectionInDOMTree().IsBaseFirst())
+    std::swap(anchor, focus);
+  return true;
 }
 
 void FrameSelection::PaintCaret(GraphicsContext& context,
