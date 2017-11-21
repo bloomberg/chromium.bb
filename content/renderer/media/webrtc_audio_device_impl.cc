@@ -341,25 +341,6 @@ int32_t WebRtcAudioDeviceImpl::PlayoutDelay(uint16_t* delay_ms) const {
   return 0;
 }
 
-int32_t WebRtcAudioDeviceImpl::RecordingSampleRate(
-    uint32_t* sample_rate) const {
-  DCHECK(signaling_thread_checker_.CalledOnValidThread());
-  // We use the default capturer as the recording sample rate.
-  base::AutoLock auto_lock(lock_);
-  if (capturers_.empty())
-    return -1;
-  const media::AudioParameters& params = capturers_.back()->GetInputFormat();
-  *sample_rate = static_cast<uint32_t>(params.sample_rate());
-  return 0;
-}
-
-int32_t WebRtcAudioDeviceImpl::PlayoutSampleRate(
-    uint32_t* sample_rate) const {
-  DCHECK(signaling_thread_checker_.CalledOnValidThread());
-  *sample_rate = renderer_ ? renderer_->sample_rate() : 0;
-  return 0;
-}
-
 bool WebRtcAudioDeviceImpl::SetAudioRenderer(WebRtcAudioRenderer* renderer) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK(renderer);

@@ -137,33 +137,6 @@ int32_t WebRtcAudioDeviceNotImpl::StereoRecording(bool* enabled) const {
   return 0;
 }
 
-int32_t WebRtcAudioDeviceNotImpl::SetRecordingChannel(
-    const ChannelType channel) {
-  return 0;
-}
-
-int32_t WebRtcAudioDeviceNotImpl::RecordingChannel(ChannelType* channel) const {
-  return 0;
-}
-
-int32_t WebRtcAudioDeviceNotImpl::SetRecordingSampleRate(
-    const uint32_t samples_per_sec) {
-  return 0;
-}
-
-int32_t WebRtcAudioDeviceNotImpl::SetPlayoutSampleRate(
-    const uint32_t samples_per_sec) {
-  return 0;
-}
-
-int32_t WebRtcAudioDeviceNotImpl::SetLoudspeakerStatus(bool enable) {
-  return 0;
-}
-
-int32_t WebRtcAudioDeviceNotImpl::GetLoudspeakerStatus(bool* enabled) const {
-  return 0;
-}
-
 int32_t WebRtcAudioDeviceNotImpl::SetAGC(bool enable) {
   return 0;
 }
