@@ -225,9 +225,9 @@ public abstract class InfoBar implements InfoBarView {
 
     /**
      * Performs some action related to the button being clicked.
-     * @param action The type of action defined as ACTION_* in this class.
+     * @param action The type of action defined in {@link ActionType} in this class.
      */
-    protected void onButtonClicked(int action) {
+    protected void onButtonClicked(@ActionType int action) {
         if (mNativeInfoBarPtr != 0) nativeOnButtonClicked(mNativeInfoBarPtr, action);
     }
 

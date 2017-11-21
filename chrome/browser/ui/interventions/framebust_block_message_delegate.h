@@ -7,8 +7,9 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "url/gurl.h"
+
+#include "chrome/browser/ui/interventions/intervention_delegate.h"
 
 namespace content {
 class WebContents;
@@ -17,18 +18,18 @@ class WebContents;
 // Defines the messages shown to the user when the browser intervenes to block
 // a framebust attempt, and provides a way to perform the blocked redirection
 // if the user decides to do so.
-class FramebustBlockMessageDelegate {
+class FramebustBlockMessageDelegate : public InterventionDelegate {
  public:
   FramebustBlockMessageDelegate(content::WebContents* web_contents,
                                 const GURL& blocked_url,
                                 base::OnceClosure click_closure);
-  virtual ~FramebustBlockMessageDelegate();
+  ~FramebustBlockMessageDelegate() override;
 
-  int GetIconId() const;
-  base::string16 GetLongMessage() const;
-  base::string16 GetShortMessage() const;
   const GURL& GetBlockedUrl() const;
-  void OnLinkClicked();
+
+  // InterventionDelegate:
+  void AcceptIntervention() override;
+  void DeclineIntervention() override;
 
  private:
   // Closure to be called when the link is clicked.
