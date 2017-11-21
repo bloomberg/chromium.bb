@@ -14,8 +14,8 @@
 #include "components/payments/content/payment_manifest_web_data_service.h"
 #include "components/payments/content/utility/payment_manifest_parser.h"
 #include "components/payments/core/payment_manifest_downloader.h"
-#include "content/public/browser/browser_context.h"
 #include "content/public/browser/stored_payment_app.h"
+#include "content/public/browser/web_contents.h"
 #include "url/url_canon.h"
 
 namespace payments {
@@ -88,7 +88,7 @@ ServiceWorkerPaymentAppFactory::ServiceWorkerPaymentAppFactory()
 ServiceWorkerPaymentAppFactory::~ServiceWorkerPaymentAppFactory() {}
 
 void ServiceWorkerPaymentAppFactory::GetAllPaymentApps(
-    content::BrowserContext* browser_context,
+    content::WebContents* web_contents,
     std::unique_ptr<PaymentMethodManifestDownloaderInterface> downloader,
     scoped_refptr<PaymentManifestWebDataService> cache,
     const std::vector<mojom::PaymentMethodDataPtr>& requested_method_data,
@@ -97,7 +97,8 @@ void ServiceWorkerPaymentAppFactory::GetAllPaymentApps(
   DCHECK(!verifier_);
 
   verifier_ = std::make_unique<ManifestVerifier>(
-      std::move(downloader), std::make_unique<PaymentManifestParser>(), cache);
+      web_contents, std::move(downloader),
+      std::make_unique<PaymentManifestParser>(), cache);
 
   // Method data cannot be copied and is passed in as a const-ref, which cannot
   // be moved, so make a manual copy for moving into the callback below.
@@ -107,7 +108,7 @@ void ServiceWorkerPaymentAppFactory::GetAllPaymentApps(
   }
 
   content::PaymentAppProvider::GetInstance()->GetAllPaymentApps(
-      browser_context,
+      web_contents->GetBrowserContext(),
       base::BindOnce(&ServiceWorkerPaymentAppFactory::OnGotAllPaymentApps,
                      weak_ptr_factory_.GetWeakPtr(),
                      std::move(requested_method_data_copy), std::move(callback),

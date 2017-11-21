@@ -15,8 +15,8 @@
 #include "components/payments/content/payment_request_spec.h"
 #include "components/payments/content/payment_response_helper.h"
 #include "components/payments/core/payments_profile_comparator.h"
-#include "content/public/browser/browser_context.h"
 #include "content/public/browser/payment_app_provider.h"
+#include "content/public/browser/web_contents.h"
 #include "third_party/WebKit/public/platform/modules/payments/payment_request.mojom.h"
 
 namespace autofill {
@@ -75,7 +75,7 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
 
   using StatusCallback = base::OnceCallback<void(bool)>;
 
-  PaymentRequestState(content::BrowserContext* context,
+  PaymentRequestState(content::WebContents* web_contents,
                       const GURL& top_level_origin,
                       const GURL& frame_origin,
                       PaymentRequestSpec* spec,

@@ -96,10 +96,9 @@ class ServiceWorkerPaymentAppFactoryBrowserTest : public InProcessBrowserTest {
   // using all resources.
   void GetAllPaymentAppsForMethods(
       const std::vector<std::string>& payment_method_identifiers) {
-    content::BrowserContext* context = browser()
-                                           ->tab_strip_model()
-                                           ->GetActiveWebContents()
-                                           ->GetBrowserContext();
+    content::WebContents* web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    content::BrowserContext* context = web_contents->GetBrowserContext();
     auto downloader = std::make_unique<TestDownloader>(
         content::BrowserContext::GetDefaultStoragePartition(context)
             ->GetURLRequestContext());
@@ -120,7 +119,7 @@ class ServiceWorkerPaymentAppFactoryBrowserTest : public InProcessBrowserTest {
 
     base::RunLoop run_loop;
     factory.GetAllPaymentApps(
-        context, std::move(downloader),
+        web_contents, std::move(downloader),
         WebDataServiceFactory::GetPaymentManifestWebDataForProfile(
             Profile::FromBrowserContext(context),
             ServiceAccessType::EXPLICIT_ACCESS),
