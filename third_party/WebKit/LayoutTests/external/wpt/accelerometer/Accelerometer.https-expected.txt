@@ -1,13 +1,13 @@
 This is a testharness.js-based test.
-FAIL Accelerometer: Test that 'onreading' is called and sensor reading is valid assert_unreached: NotReadableError: Could not connect to a sensor Reached unreachable code
-FAIL Accelerometer: sensor reading is correct assert_unreached: NotReadableError: Could not connect to a sensor Reached unreachable code
-FAIL Accelerometer: sensor timestamp is updated when time passes assert_unreached: NotReadableError: Could not connect to a sensor Reached unreachable code
-FAIL Accelerometer: Test that sensor can be successfully created and its states are correct. assert_unreached: NotReadableError: Could not connect to a sensor Reached unreachable code
-PASS Accelerometer: sensor.start() returns undefined
-PASS Accelerometer: no exception is thrown when calling start() on already started sensor
-PASS Accelerometer: sensor.stop() returns undefined
-PASS Accelerometer: no exception is thrown when calling stop() on already stopped sensor
+FAIL Accelerometer: Test that 'onreading' is called and sensor reading is valid assert_equals: Expected reading event, but got error event instead expected "reading" but got "error"
+FAIL Accelerometer: sensor reading is correct assert_equals: Expected reading event, but got error event instead expected "reading" but got "error"
+FAIL Accelerometer: sensor timestamp is updated when time passes assert_equals: Expected reading event, but got error event instead expected "reading" but got "error"
+FAIL Accelerometer: Test that sensor can be successfully created and its states are correct. assert_equals: Expected activate event, but got error event instead expected "activate" but got "error"
+FAIL Accelerometer: sensor.start() returns undefined assert_equals: Expected activate event, but got error event instead expected "activate" but got "error"
+FAIL Accelerometer: no exception is thrown when calling start() on already started sensor assert_equals: Expected activate event, but got error event instead expected "activate" but got "error"
+FAIL Accelerometer: sensor.stop() returns undefined assert_equals: Expected activate event, but got error event instead expected "activate" but got "error"
+FAIL Accelerometer: no exception is thrown when calling stop() on already stopped sensor assert_equals: Expected activate event, but got error event instead expected "activate" but got "error"
 PASS Accelerometer: throw a 'SecurityError' when constructing sensor object within iframe
-FAIL Accelerometer: sensor readings can not be fired on the background tab assert_unreached: NotReadableError: Could not connect to a sensor Reached unreachable code
+FAIL Accelerometer: sensor readings can not be fired on the background tab assert_equals: Expected reading event, but got error event instead expected "reading" but got "error"
 Harness: the test ran to completion.
 
