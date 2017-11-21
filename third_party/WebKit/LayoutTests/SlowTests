@@ -128,8 +128,8 @@ crbug.com/667560 http/tests/devtools/startup/console/console-format-startup.html
 crbug.com/667560 virtual/mojo-loading/http/tests/devtools/startup/console/console-format-startup.html [ Slow ]
 crbug.com/679833 http/tests/devtools/network/network-datareceived.js [ Slow ]
 crbug.com/679833 virtual/mojo-loading/http/tests/devtools/network/network-datareceived.js [ Slow ]
-webkit.org/b/90488 [ Release ] http/tests/devtools/compiler-source-mapping-debug.js [ Slow ]
-webkit.org/b/90488 [ Release ] virtual/mojo-loading/http/tests/devtools/compiler-source-mapping-debug.js [ Slow ]
+webkit.org/b/90488 [ Release ] http/tests/devtools/compiler-source-mapping-debug.html [ Slow ]
+webkit.org/b/90488 [ Release ] virtual/mojo-loading/http/tests/devtools/compiler-source-mapping-debug.html [ Slow ]
 crbug.com/243492 http/tests/devtools/startup/injected-script-discard.html [ Slow ]
 crbug.com/243492 virtual/mojo-loading/http/tests/devtools/startup/injected-script-discard.html [ Slow ]
 crbug.com/327078 http/tests/devtools/network/long-script-content.html [ Slow ]
@@ -272,8 +272,8 @@ crbug.com/480769 http/tests/devtools/service-workers/service-worker-agents.js [ 
 crbug.com/480769 virtual/mojo-loading/http/tests/devtools/service-workers/service-worker-agents.js [ Slow ]
 crbug.com/504703 inspector-protocol/debugger/debugger-step-into-dedicated-worker.js [ Slow ]
 crbug.com/535478 [ Win ] virtual/threaded/http/tests/devtools/tracing/decode-resize.html [ Slow ]
-crbug.com/548765 http/tests/devtools/console-fetch-logging.js [ Slow ]
-crbug.com/548765 virtual/mojo-loading/http/tests/devtools/console-fetch-logging.js [ Slow ]
+crbug.com/548765 http/tests/devtools/console-fetch-logging.html [ Slow ]
+crbug.com/548765 virtual/mojo-loading/http/tests/devtools/console-fetch-logging.html [ Slow ]
 
 crbug.com/419993 [ Debug ] fast/css/giant-stylesheet-crash.html [ Slow ]
 
