@@ -50,7 +50,7 @@
 #include "core/layout/TextAutosizer.h"
 #include "core/page/Page.h"
 #include "platform/Timer.h"
-#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/Time.h"
 #include "public/platform/TaskType.h"
 #include "public/platform/WebFloatRect.h"
 #include "public/platform/WebVector.h"

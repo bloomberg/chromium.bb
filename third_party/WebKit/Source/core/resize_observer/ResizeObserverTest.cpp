@@ -16,7 +16,7 @@
 #include "core/testing/sim/SimTest.h"
 #include "platform/loader/fetch/ScriptFetchOptions.h"
 #include "platform/testing/UnitTestHelpers.h"
-#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/Time.h"
 #include "public/web/WebHeap.h"
 
 namespace blink {

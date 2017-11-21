@@ -8,8 +8,8 @@
 #include "core/frame/LocalFrameClient.h"
 #include "platform/Histogram.h"
 #include "platform/wtf/Assertions.h"
-#include "platform/wtf/CurrentTime.h"
 #include "platform/wtf/StdLibExtras.h"
+#include "platform/wtf/Time.h"
 
 namespace blink {
 

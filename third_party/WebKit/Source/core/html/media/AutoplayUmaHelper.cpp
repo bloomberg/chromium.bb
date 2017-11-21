@@ -12,7 +12,7 @@
 #include "core/html/media/HTMLMediaElement.h"
 #include "platform/Histogram.h"
 #include "platform/network/NetworkStateNotifier.h"
-#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/Time.h"
 #include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
 #include "services/metrics/public/cpp/ukm_entry_builder.h"

@@ -54,7 +54,7 @@
 #include "platform/WaitableEvent.h"
 #include "platform/heap/SafePoint.h"
 #include "platform/wtf/Atomics.h"
-#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/Time.h"
 #include "public/platform/Platform.h"
 #include "public/platform/TaskType.h"
 #include "public/platform/WebDatabaseObserver.h"

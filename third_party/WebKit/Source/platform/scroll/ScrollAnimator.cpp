@@ -38,8 +38,8 @@
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/scroll/MainThreadScrollingReason.h"
 #include "platform/scroll/ScrollableArea.h"
-#include "platform/wtf/CurrentTime.h"
 #include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/Time.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
 

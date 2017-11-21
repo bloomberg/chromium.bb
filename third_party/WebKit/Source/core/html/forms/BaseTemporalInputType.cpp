@@ -35,9 +35,9 @@
 #include "core/html/forms/HTMLInputElement.h"
 #include "core/html/forms/MultipleFieldsTemporalInputTypeView.h"
 #include "platform/text/PlatformLocale.h"
-#include "platform/wtf/CurrentTime.h"
 #include "platform/wtf/DateMath.h"
 #include "platform/wtf/MathExtras.h"
+#include "platform/wtf/Time.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {

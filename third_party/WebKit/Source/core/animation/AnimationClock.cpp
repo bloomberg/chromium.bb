@@ -31,7 +31,7 @@
 #include "core/animation/AnimationClock.h"
 
 #include <math.h>
-#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/Time.h"
 
 namespace {
 

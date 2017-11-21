@@ -45,10 +45,10 @@
 #include "platform/instrumentation/tracing/web_memory_allocator_dump.h"
 #include "platform/instrumentation/tracing/web_process_memory_dump.h"
 #include "platform/wtf/Assertions.h"
-#include "platform/wtf/CurrentTime.h"
 #include "platform/wtf/DataLog.h"
 #include "platform/wtf/LeakAnnotations.h"
 #include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/Time.h"
 #include "platform/wtf/allocator/Partitions.h"
 #include "public/platform/Platform.h"
 

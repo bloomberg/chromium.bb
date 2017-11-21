@@ -51,7 +51,7 @@
 #include "platform/scheduler/base/task_queue_manager.h"
 #include "platform/scheduler/base/test_time_source.h"
 #include "platform/wtf/CryptographicallyRandomNumber.h"
-#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/Time.h"
 #include "platform/wtf/WTF.h"
 #include "platform/wtf/allocator/Partitions.h"
 #include "public/platform/InterfaceProvider.h"

@@ -7,7 +7,7 @@
 #include "platform/network/HTTPHeaderMap.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/weborigin/KURL.h"
-#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/Time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {

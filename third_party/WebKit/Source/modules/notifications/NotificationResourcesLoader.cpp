@@ -7,8 +7,8 @@
 #include <cmath>
 #include "platform/Histogram.h"
 #include "platform/weborigin/KURL.h"
-#include "platform/wtf/CurrentTime.h"
 #include "platform/wtf/Threading.h"
+#include "platform/wtf/Time.h"
 #include "public/platform/modules/notifications/WebNotificationData.h"
 #include "public/platform/modules/notifications/WebNotificationResources.h"
 

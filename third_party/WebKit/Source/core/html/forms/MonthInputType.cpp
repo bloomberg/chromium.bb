@@ -37,9 +37,9 @@
 #include "core/input_type_names.h"
 #include "platform/DateComponents.h"
 #include "platform/text/PlatformLocale.h"
-#include "platform/wtf/CurrentTime.h"
 #include "platform/wtf/DateMath.h"
 #include "platform/wtf/MathExtras.h"
+#include "platform/wtf/Time.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {

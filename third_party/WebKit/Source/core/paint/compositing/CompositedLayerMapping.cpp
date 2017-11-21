@@ -78,7 +78,7 @@
 #include "platform/graphics/paint/PaintController.h"
 #include "platform/graphics/paint/TransformDisplayItem.h"
 #include "platform/runtime_enabled_features.h"
-#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/Time.h"
 #include "platform/wtf/text/StringBuilder.h"
 #include "public/platform/WebLayerStickyPositionConstraint.h"
 #include "public/platform/WebScrollBoundaryBehavior.h"

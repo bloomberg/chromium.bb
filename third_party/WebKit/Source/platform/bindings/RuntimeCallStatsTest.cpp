@@ -5,7 +5,7 @@
 #include "platform/bindings/RuntimeCallStats.h"
 
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
-#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/Time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {

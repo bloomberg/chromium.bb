@@ -14,8 +14,8 @@
 #include "modules/mediarecorder/BlobEvent.h"
 #include "platform/blob/BlobData.h"
 #include "platform/network/mime/ContentType.h"
-#include "platform/wtf/CurrentTime.h"
 #include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/Time.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebMediaStream.h"
 

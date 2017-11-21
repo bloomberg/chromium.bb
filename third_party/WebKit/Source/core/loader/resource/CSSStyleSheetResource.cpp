@@ -38,7 +38,7 @@
 #include "platform/network/http_names.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/weborigin/SecurityPolicy.h"
-#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/Time.h"
 #include "platform/wtf/text/TextEncoding.h"
 
 namespace blink {

@@ -42,8 +42,8 @@
 #include "platform/runtime_enabled_features.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityViolationReportingPolicy.h"
-#include "platform/wtf/CurrentTime.h"
 #include "platform/wtf/StdLibExtras.h"
+#include "platform/wtf/Time.h"
 #include "public/platform/Platform.h"
 #include "v8/include/v8.h"
 

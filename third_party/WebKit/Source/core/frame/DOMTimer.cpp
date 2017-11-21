@@ -32,7 +32,7 @@
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/probe/CoreProbes.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
-#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/Time.h"
 #include "public/platform/TaskType.h"
 
 namespace blink {

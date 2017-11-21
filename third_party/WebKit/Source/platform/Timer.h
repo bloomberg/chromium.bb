@@ -32,9 +32,9 @@
 #include "platform/heap/Handle.h"
 #include "platform/wtf/AddressSanitizer.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/CurrentTime.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/Threading.h"
+#include "platform/wtf/Time.h"
 #include "platform/wtf/WeakPtr.h"
 #include "public/platform/WebTraceLocation.h"
 

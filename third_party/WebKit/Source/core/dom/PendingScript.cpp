@@ -26,7 +26,7 @@
 #include "core/dom/PendingScript.h"
 
 #include "core/dom/ScriptElementBase.h"
-#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/Time.h"
 
 namespace blink {
 

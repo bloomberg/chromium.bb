@@ -62,7 +62,7 @@ class DocumentParserTiming final
 
   // The getters below return monotonically-increasing seconds, or zero if the
   // given parser event has not yet occurred.  See the comments for
-  // monotonicallyIncreasingTime in wtf/CurrentTime.h for additional details.
+  // monotonicallyIncreasingTime in wtf/Time.h for additional details.
 
   double ParserStart() const { return parser_start_; }
   double ParserStop() const { return parser_stop_; }

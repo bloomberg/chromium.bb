@@ -41,8 +41,8 @@
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/CryptographicallyRandomNumber.h"
-#include "platform/wtf/CurrentTime.h"
 #include "platform/wtf/DateMath.h"
+#include "platform/wtf/Time.h"
 #include "platform/wtf/text/Base64.h"
 #include "platform/wtf/text/StringBuilder.h"
 

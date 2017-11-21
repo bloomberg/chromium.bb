@@ -20,7 +20,7 @@
 #include "platform/graphics/paint/PaintCanvas.h"
 #include "platform/text/BidiTextRun.h"
 #include "platform/wtf/Assertions.h"
-#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/Time.h"
 
 namespace blink {
 

@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <string.h>
 #include "base/test/test_suite.h"
 #include "platform/wtf/CryptographicallyRandomNumber.h"
-#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/Time.h"
 #include "platform/wtf/WTF.h"
 #include "platform/wtf/allocator/Partitions.h"
-#include <string.h>
 
 static double dummyCurrentTime() {
   return 0.0;

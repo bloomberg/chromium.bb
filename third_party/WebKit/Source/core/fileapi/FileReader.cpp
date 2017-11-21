@@ -42,9 +42,9 @@
 #include "core/typed_arrays/DOMArrayBuffer.h"
 #include "platform/Supplementable.h"
 #include "platform/wtf/AutoReset.h"
-#include "platform/wtf/CurrentTime.h"
 #include "platform/wtf/Deque.h"
 #include "platform/wtf/HashSet.h"
+#include "platform/wtf/Time.h"
 #include "platform/wtf/text/CString.h"
 #include "public/platform/TaskType.h"
 

@@ -74,7 +74,7 @@
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/ReferrerPolicy.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/Time.h"
 #include "platform/wtf/text/Base64.h"
 #include "public/platform/TaskType.h"
 #include "public/platform/WebMixedContentContextType.h"

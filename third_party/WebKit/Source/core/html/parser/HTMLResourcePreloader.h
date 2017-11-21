@@ -32,7 +32,7 @@
 #include "core/html/parser/ResourcePreloader.h"
 #include "core/loader/NetworkHintsInterface.h"
 #include "platform/heap/Heap.h"
-#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/Time.h"
 #include "platform/wtf/text/TextPosition.h"
 
 namespace blink {

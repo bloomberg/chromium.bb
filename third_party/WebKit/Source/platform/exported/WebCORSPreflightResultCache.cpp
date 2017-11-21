@@ -30,9 +30,9 @@
 #include "platform/loader/fetch/FetchUtils.h"
 #include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/network/http_names.h"
-#include "platform/wtf/CurrentTime.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/ThreadSpecific.h"
+#include "platform/wtf/Time.h"
 #include "public/platform/WebCORS.h"
 
 namespace blink {

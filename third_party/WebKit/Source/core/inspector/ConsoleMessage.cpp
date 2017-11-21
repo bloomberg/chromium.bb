@@ -8,7 +8,7 @@
 #include "core/dom/Node.h"
 #include "core/frame/LocalFrame.h"
 #include "platform/wtf/Assertions.h"
-#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/Time.h"
 #include "public/web/WebConsoleMessage.h"
 
 namespace blink {

@@ -102,17 +102,17 @@
 
 #if defined(OS_WIN)
 
-#include "platform/wtf/CurrentTime.h"
+#include <errno.h>
+#include <process.h>
+#include <windows.h>
 #include "platform/wtf/DateMath.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/MathExtras.h"
 #include "platform/wtf/ThreadSpecific.h"
 #include "platform/wtf/ThreadingPrimitives.h"
+#include "platform/wtf/Time.h"
 #include "platform/wtf/WTFThreadData.h"
 #include "platform/wtf/dtoa/double-conversion.h"
-#include <errno.h>
-#include <process.h>
-#include <windows.h>
 
 namespace WTF {
 
