@@ -474,6 +474,54 @@ org_chromium_example_jni_1generator_SampleForTests_00024InnerStructB_clazz(env),
   return base::android::ScopedJavaLocalRef<jstring>(env, ret);
 }
 
+static base::subtle::AtomicWord
+    g_org_chromium_example_jni_1generator_SampleForTests_getInnerInterface = 0;
+static base::android::ScopedJavaLocalRef<jobject>
+    Java_SampleForTests_getInnerInterface(JNIEnv* env) {
+  CHECK_CLAZZ(env,
+      org_chromium_example_jni_1generator_SampleForTests_clazz(env),
+      org_chromium_example_jni_1generator_SampleForTests_clazz(env), NULL);
+  jmethodID method_id =
+      base::android::MethodID::LazyGet<
+      base::android::MethodID::TYPE_STATIC>(
+      env, org_chromium_example_jni_1generator_SampleForTests_clazz(env),
+      "getInnerInterface",
+"("
+")"
+"Lorg/chromium/example/jni_generator/SampleForTests$InnerInterface;",
+      &g_org_chromium_example_jni_1generator_SampleForTests_getInnerInterface);
+
+  jobject ret =
+env->CallStaticObjectMethod(org_chromium_example_jni_1generator_SampleForTests_clazz(env),
+          method_id);
+  jni_generator::CheckException(env);
+  return base::android::ScopedJavaLocalRef<jobject>(env, ret);
+}
+
+static base::subtle::AtomicWord
+    g_org_chromium_example_jni_1generator_SampleForTests_getInnerEnum = 0;
+static base::android::ScopedJavaLocalRef<jobject>
+    Java_SampleForTests_getInnerEnum(JNIEnv* env) {
+  CHECK_CLAZZ(env,
+      org_chromium_example_jni_1generator_SampleForTests_clazz(env),
+      org_chromium_example_jni_1generator_SampleForTests_clazz(env), NULL);
+  jmethodID method_id =
+      base::android::MethodID::LazyGet<
+      base::android::MethodID::TYPE_STATIC>(
+      env, org_chromium_example_jni_1generator_SampleForTests_clazz(env),
+      "getInnerEnum",
+"("
+")"
+"Lorg/chromium/example/jni_generator/SampleForTests$InnerEnum;",
+      &g_org_chromium_example_jni_1generator_SampleForTests_getInnerEnum);
+
+  jobject ret =
+env->CallStaticObjectMethod(org_chromium_example_jni_1generator_SampleForTests_clazz(env),
+          method_id);
+  jni_generator::CheckException(env);
+  return base::android::ScopedJavaLocalRef<jobject>(env, ret);
+}
+
 }  // namespace android
 }  // namespace base
 

@@ -317,4 +317,17 @@ class SampleForTests {
         @NativeCall("InnerClass")
         private static native int nativeGetInnerIntFunction();
     }
+
+    interface InnerInterface {}
+    enum InnerEnum {}
+
+    @CalledByNative
+    static InnerInterface getInnerInterface() {
+        return null;
+    }
+
+    @CalledByNative
+    static InnerEnum getInnerEnum() {
+        return null;
+    }
 }

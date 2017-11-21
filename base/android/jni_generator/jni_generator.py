@@ -249,7 +249,7 @@ class JniParams(object):
     for match in re.finditer(re_import, contents):
       self._imports += ['L' + match.group('class').replace('.', '/')]
 
-    re_inner = re.compile(r'(class|interface)\s+?(?P<name>\w+?)\W')
+    re_inner = re.compile(r'(class|interface|enum)\s+?(?P<name>\w+?)\W')
     for match in re.finditer(re_inner, contents):
       inner = match.group('name')
       if not self._fully_qualified_class.endswith(inner):
