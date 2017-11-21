@@ -134,10 +134,11 @@ class PollingProxyConfigService::Core
   }
 
   void LazyInitializeOriginLoop() {
-    // TODO(eroman): Really this should be done in the constructor, but right
-    //               now chrome is constructing the ProxyConfigService on the
-    //               UI thread so we can't cache the IO thread for the purpose
-    //               of DCHECKs until the first call is made.
+    // TODO(eroman): Really this should be done in the constructor, but some
+    //               consumers constructing the ProxyConfigService on threads
+    //               other than the ProxyConfigService's main thread, so we
+    //               can't cache the main thread for the purpose of DCHECKs
+    //               until the first call is made.
     if (!have_initialized_origin_runner_) {
       origin_task_runner_ = base::ThreadTaskRunnerHandle::Get();
       have_initialized_origin_runner_ = true;

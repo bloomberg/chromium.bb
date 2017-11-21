@@ -44,7 +44,7 @@ ProxyConfigServiceWin::ProxyConfigServiceWin()
 
 ProxyConfigServiceWin::~ProxyConfigServiceWin() {
   // The registry functions below will end up going to disk.  TODO: Do this on
-  // another thread to avoid slowing the IO thread.  http://crbug.com/61453
+  // another thread to avoid slowing the current thread.  http://crbug.com/61453
   base::ThreadRestrictions::ScopedAllowIO allow_io;
   keys_to_watch_.clear();
 }
@@ -62,7 +62,7 @@ void ProxyConfigServiceWin::StartWatchingRegistryForChanges() {
     return;  // Already initialized.
 
   // The registry functions below will end up going to disk.  Do this on another
-  // thread to avoid slowing the IO thread.  http://crbug.com/61453
+  // thread to avoid slowing the current thread.  http://crbug.com/61453
   base::ThreadRestrictions::ScopedAllowIO allow_io;
 
   // There are a number of different places where proxy settings can live

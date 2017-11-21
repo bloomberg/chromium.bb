@@ -1576,21 +1576,21 @@ ProxyConfigServiceLinux::Delegate::Delegate(
 
 void ProxyConfigServiceLinux::Delegate::SetUpAndFetchInitialConfig(
     const scoped_refptr<base::SingleThreadTaskRunner>& glib_task_runner,
-    const scoped_refptr<base::SequencedTaskRunner>& io_task_runner) {
+    const scoped_refptr<base::SequencedTaskRunner>& main_task_runner) {
   // We should be running on the default glib main loop thread right
   // now. gconf can only be accessed from this thread.
   DCHECK(glib_task_runner->RunsTasksInCurrentSequence());
   glib_task_runner_ = glib_task_runner;
-  io_task_runner_ = io_task_runner;
+  main_task_runner_ = main_task_runner;
 
-  // If we are passed a NULL |io_task_runner|, then don't set up proxy
+  // If we are passed a NULL |main_task_runner|, then don't set up proxy
   // setting change notifications. This should not be the usual case but is
   // intended to/ simplify test setups.
-  if (!io_task_runner_.get())
+  if (!main_task_runner_.get())
     VLOG(1) << "Monitoring of proxy setting changes is disabled";
 
   // Fetch and cache the current proxy config. The config is left in
-  // cached_config_, where GetLatestProxyConfig() running on the IO thread
+  // cached_config_, where GetLatestProxyConfig() running on the main TaskRunner
   // will expect to find it. This is safe to do because we return
   // before this ProxyConfigServiceLinux is passed on to
   // the ProxyService.
@@ -1620,14 +1620,15 @@ void ProxyConfigServiceLinux::Delegate::SetUpAndFetchInitialConfig(
     reference_config_ = cached_config_;
     reference_config_.set_id(1);  // Mark it as valid.
 
-    // We only set up notifications if we have IO and file loops available.
-    // We do this after getting the initial configuration so that we don't have
-    // to worry about cancelling it if the initial fetch above fails. Note that
-    // setting up notifications has the side effect of simulating a change, so
-    // that we won't lose any updates that may have happened after the initial
-    // fetch and before setting up notifications. We'll detect the common case
-    // of no changes in OnCheckProxyConfigSettings() (or sooner) and ignore it.
-    if (io_task_runner.get()) {
+    // We only set up notifications if we have the main and file loops
+    // available. We do this after getting the initial configuration so that we
+    // don't have to worry about cancelling it if the initial fetch above fails.
+    // Note that setting up notifications has the side effect of simulating a
+    // change, so that we won't lose any updates that may have happened after
+    // the initial fetch and before setting up notifications. We'll detect the
+    // common case of no changes in OnCheckProxyConfigSettings() (or sooner) and
+    // ignore it.
+    if (main_task_runner.get()) {
       scoped_refptr<base::SequencedTaskRunner> required_loop =
           setting_getter_->GetNotificationTaskRunner();
       if (!required_loop.get() || required_loop->RunsTasksInCurrentSequence()) {
@@ -1675,9 +1676,9 @@ void ProxyConfigServiceLinux::Delegate::RemoveObserver(Observer* observer) {
 ProxyConfigService::ConfigAvailability
     ProxyConfigServiceLinux::Delegate::GetLatestProxyConfig(
         ProxyConfig* config) {
-  // This is called from the IO thread.
-  DCHECK(!io_task_runner_.get() ||
-         io_task_runner_->RunsTasksInCurrentSequence());
+  // This is called from the main TaskRunner.
+  DCHECK(!main_task_runner_.get() ||
+         main_task_runner_->RunsTasksInCurrentSequence());
 
   // Simply return the last proxy configuration that glib_default_loop
   // notified us of.
@@ -1710,11 +1711,12 @@ void ProxyConfigServiceLinux::Delegate::OnCheckProxyConfigSettings() {
   // See if it is different from what we had before.
   if (new_config.is_valid() != reference_config_.is_valid() ||
       !new_config.Equals(reference_config_)) {
-    // Post a task to the IO thread with the new configuration, so it can
+    // Post a task to the main TaskRunner with the new configuration, so it can
     // update |cached_config_|.
-    io_task_runner_->PostTask(FROM_HERE, base::Bind(
-        &ProxyConfigServiceLinux::Delegate::SetNewProxyConfig,
-        this, new_config));
+    main_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&ProxyConfigServiceLinux::Delegate::SetNewProxyConfig, this,
+                   new_config));
     // Update the thread-private copy in |reference_config_| as well.
     reference_config_ = new_config;
   } else {
@@ -1724,7 +1726,7 @@ void ProxyConfigServiceLinux::Delegate::OnCheckProxyConfigSettings() {
 
 void ProxyConfigServiceLinux::Delegate::SetNewProxyConfig(
     const ProxyConfig& new_config) {
-  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   VLOG(1) << "Proxy configuration changed";
   cached_config_ = new_config;
   for (auto& observer : observers_)
