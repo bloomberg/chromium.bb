@@ -4,12 +4,12 @@
 
 #include "base/bind.h"
 #include "base/test/launcher/unit_test_launcher.h"
-#include "chrome/browser/vr/test/vr_common_test_suite.h"
+#include "chrome/browser/vr/test/vr_test_suite.h"
 
 int main(int argc, char** argv) {
-  vr::VrCommonTestSuite test_suite(argc, argv);
+  vr::VrTestSuite test_suite(argc, argv);
 
   return base::LaunchUnitTestsSerially(
       argc, argv,
-      base::Bind(&vr::VrCommonTestSuite::Run, base::Unretained(&test_suite)));
+      base::Bind(&vr::VrTestSuite::Run, base::Unretained(&test_suite)));
 }

@@ -123,6 +123,12 @@
         "test": "vr_common_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
+        "test": "vr_pixeltests"
+      },
+      {
         "args": [
           "--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_ddview_skipdon_setupcomplete.json",
           "--replace-system-package=com.google.vr.vrcore,//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk",
@@ -7168,6 +7174,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "vr_common_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "vr_pixeltests"
       }
     ]
   },

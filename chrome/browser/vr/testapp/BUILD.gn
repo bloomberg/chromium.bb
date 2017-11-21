@@ -15,6 +15,7 @@ executable("vr_testapp") {
 
   deps = [
     "//build/config:exe_and_shlib_deps",
+    "//chrome/browser/vr:vr_gl_test_support",
     "//chrome/browser/vr:vr_test_support",
     "//components:components_tests_pak",
     "//components/tracing:startup_tracing",
