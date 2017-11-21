@@ -43,6 +43,7 @@ source_set("chromeos") {
     # TODO(tbarzic): Cleanup this list.
     ":attestation_proto",
     ":device_policy_remover_generated",
+    ":user_activity_event_proto",
     "//apps",
     "//ash",
     "//ash:ash_with_content",
@@ -2041,6 +2042,12 @@ proto_library("install_attributes_proto") {
 proto_library("attestation_proto") {
   sources = [
     "attestation/attestation_key_payload.proto",
+  ]
+}
+
+proto_library("user_activity_event_proto") {
+  sources = [
+    "power/ml/user_activity_event.proto",
   ]
 }
 
