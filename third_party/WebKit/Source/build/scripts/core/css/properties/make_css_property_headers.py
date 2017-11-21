@@ -57,6 +57,7 @@ class CSSPropertyHeadersWriter(CSSPropertyWriter):
             property_['superclass'] = superclass
             class_data = self.get_class(property_)
             self.calculate_apply_functions_to_declare(property_)
+            self.populate_includes(property_)
             self._outputs[class_data.classname + '.h'] = (
                 self.generate_property_h_builder(
                     class_data.classname, property_))
@@ -100,6 +101,32 @@ class CSSPropertyHeadersWriter(CSSPropertyWriter):
                   property_['custom_apply_functions_inherit'] and
                   property_['custom_apply_functions_value']) or
              'custom_apply' in property_.keys()))
+
+    def populate_includes(self, property_):
+        includes = []
+        if property_['direction_aware_options']:
+            includes.append("core/StylePropertyShorthand.h")
+        if property_['runtime_flag']:
+            includes.append("platform/runtime_enabled_features.h")
+        if property_['should_implement_apply_functions']:
+            includes.append("core/css/resolver/StyleResolverState.h")
+            if property_['converter'] == "CSSPrimitiveValue":
+                includes.append("core/css/CSSPrimitiveValue.h")
+                includes.append("core/css/CSSPrimitiveValueMappings.h")
+            elif property_['converter'] == "CSSIdentifierValue":
+                includes.append("core/css/CSSIdentifierValue.h")
+            elif property_['converter']:
+                includes.append("core/css/CSSPrimitiveValueMappings.h")
+                includes.append("core/css/resolver/StyleBuilderConverter.h")
+            if property_['font']:
+                includes.append("core/css/resolver/FontBuilder.h")
+            elif property_['svg']:
+                includes.append("core/style/ComputedStyle.h")
+                includes.append("core/style/SVGComputedStyle.h")
+            else:
+                includes.append("core/style/ComputedStyle.h")
+        includes.sort()
+        property_['includes'] = includes
 
     def validate_input(self):
         # First collect which classes correspond to which properties.
