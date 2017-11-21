@@ -449,9 +449,8 @@ void AppManagerImpl::RemoveAppFromLockScreenProfile(const std::string& app_id) {
   base::string16 error;
   extensions::ExtensionSystem::Get(lock_screen_profile_)
       ->extension_service()
-      ->UninstallExtension(app_id,
-                           extensions::UNINSTALL_REASON_INTERNAL_MANAGEMENT,
-                           base::Bind(&base::DoNothing), &error);
+      ->UninstallExtension(
+          app_id, extensions::UNINSTALL_REASON_INTERNAL_MANAGEMENT, &error);
 }
 
 }  // namespace lock_screen_apps

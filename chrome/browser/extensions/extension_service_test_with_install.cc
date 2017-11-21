@@ -345,8 +345,7 @@ void ExtensionServiceTestWithInstall::UninstallExtension(
         service(), id, extensions::UNINSTALL_REASON_FOR_TESTING));
   } else {
     EXPECT_TRUE(service()->UninstallExtension(
-        id, extensions::UNINSTALL_REASON_FOR_TESTING,
-        base::Bind(&base::DoNothing), nullptr));
+        id, extensions::UNINSTALL_REASON_FOR_TESTING, nullptr));
   }
   --expected_extensions_count_;
 

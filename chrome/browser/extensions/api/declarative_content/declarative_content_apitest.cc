@@ -935,7 +935,6 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
   ASSERT_TRUE(extension_service->UninstallExtension(
       extension->id(),
       UNINSTALL_REASON_FOR_TESTING,
-      base::Bind(&base::DoNothing),
       &error));
   ASSERT_EQ(base::ASCIIToUTF16(""), error);
 

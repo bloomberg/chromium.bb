@@ -119,7 +119,6 @@ void DriveAppProvider::UpdateMappingAndExtensionSystem(
         ->extension_service()
         ->UninstallExtension(existing_chrome_app_id,
                              extensions::UNINSTALL_REASON_SYNC,
-                             base::Bind(&base::DoNothing),
                              NULL);
   }
 }
@@ -234,7 +233,6 @@ void DriveAppProvider::ProcessRemovedDriveApp(const std::string& drive_app_id) {
       ->extension_service()
       ->UninstallExtension(chrome_app_id,
                            extensions::UNINSTALL_REASON_SYNC,
-                           base::Bind(&base::DoNothing),
                            NULL);
 }
 

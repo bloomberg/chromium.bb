@@ -206,7 +206,6 @@ TEST_F(AppSearchProviderTest, UninstallExtension) {
   EXPECT_FALSE(results().empty());
   service_->UninstallExtension(kPackagedApp1Id,
                                extensions::UNINSTALL_REASON_FOR_TESTING,
-                               base::Bind(&base::DoNothing),
                                NULL);
 
   // Allow async AppSearchProvider::UpdateResults to run.

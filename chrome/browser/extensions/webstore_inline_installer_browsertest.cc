@@ -552,8 +552,7 @@ IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallerListenerTest, BothListenersTest) {
   // Rinse and repeat: uninstall the extension, open a new tab, and install it
   // again. Regression test for crbug.com/613949.
   extension_service()->UninstallExtension(
-      kTestExtensionId, UNINSTALL_REASON_FOR_TESTING,
-      base::Bind(&base::DoNothing), nullptr);
+      kTestExtensionId, UNINSTALL_REASON_FOR_TESTING, nullptr);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(registry->enabled_extensions().GetByID(kTestExtensionId));
   int old_tab_index = browser()->tab_strip_model()->active_index();

@@ -521,7 +521,6 @@ TEST_F(ToolbarActionsModelUnitTest, ActionsToolbarUnloadDisableAndUninstall) {
   // Uninstall Extension B.
   service()->UninstallExtension(browser_action_b()->id(),
                                 extensions::UNINSTALL_REASON_FOR_TESTING,
-                                base::Bind(&base::DoNothing),
                                 NULL);  // Ignore error.
   // List contains only A and C now. Validate that.
   EXPECT_EQ(2u, num_toolbar_items());
@@ -760,7 +759,6 @@ TEST_F(ToolbarActionsModelUnitTest, ActionsToolbarHighlightModeRemove) {
   // highlight mode exiting.
   service()->UninstallExtension(browser_action_b()->id(),
                                 extensions::UNINSTALL_REASON_FOR_TESTING,
-                                base::Bind(&base::DoNothing),
                                 NULL);  // Ignore error.
   EXPECT_FALSE(toolbar_model()->is_highlighting());
   EXPECT_EQ(0, observer()->highlight_mode_count());
@@ -783,7 +781,6 @@ TEST_F(ToolbarActionsModelUnitTest, ActionsToolbarHighlightModeRemove) {
   // Uninstalling B should not have visible impact.
   service()->UninstallExtension(browser_action_b()->id(),
                                 extensions::UNINSTALL_REASON_FOR_TESTING,
-                                base::Bind(&base::DoNothing),
                                 NULL);  // Ignore error.
   EXPECT_TRUE(toolbar_model()->is_highlighting());
   EXPECT_EQ(1, observer()->highlight_mode_count());
@@ -1402,7 +1399,6 @@ TEST_F(ToolbarActionsModelUnitTest,
   service()->UninstallExtension(
       browser_action_b()->id(),
       extensions::UNINSTALL_REASON_FOR_TESTING,
-      base::Bind(&base::DoNothing),
       nullptr);
   base::RunLoop().RunUntilIdle();
 

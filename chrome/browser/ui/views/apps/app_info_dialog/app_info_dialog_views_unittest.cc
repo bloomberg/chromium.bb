@@ -150,7 +150,7 @@ class AppInfoDialogViewsTest : public BrowserWithTestWindowTest,
         ->extension_service()
         ->UninstallExtension(
             app_id, extensions::UninstallReason::UNINSTALL_REASON_FOR_TESTING,
-            base::Closure(), NULL);
+            NULL);
   }
 
  protected:

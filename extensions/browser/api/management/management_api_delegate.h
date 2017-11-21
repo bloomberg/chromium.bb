@@ -103,7 +103,6 @@ class ManagementAPIDelegate {
   virtual bool UninstallExtension(content::BrowserContext* context,
                                   const std::string& transient_extension_id,
                                   UninstallReason reason,
-                                  const base::Closure& deletion_done_callback,
                                   base::string16* error) const = 0;
 
   // Creates an app shortcut.

@@ -575,7 +575,7 @@ void AppLauncherHandler::HandleUninstallApp(const base::ListValue* args) {
     // Do the uninstall work here.
     extension_service_->UninstallExtension(
         extension_id_prompting_, extensions::UNINSTALL_REASON_USER_INITIATED,
-        base::Bind(&base::DoNothing), nullptr);
+        nullptr);
     CleanupAfterUninstall();
   } else {
     CreateExtensionUninstallDialog()->ConfirmUninstall(

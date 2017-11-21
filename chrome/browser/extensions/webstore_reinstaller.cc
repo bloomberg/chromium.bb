@@ -99,18 +99,14 @@ void WebstoreReinstaller::OnInstallPromptDone(
   if (!ExtensionSystem::Get(profile())->extension_service()->UninstallExtension(
           id(),
           UNINSTALL_REASON_REINSTALL,
-          base::Bind(&WebstoreReinstaller::OnDeletionDone, this),
           NULL)) {
     // Run the callback now, because AbortInstall() doesn't do it.
     RunCallback(
         false, kCouldNotUninstallExtension, webstore_install::OTHER_ERROR);
     AbortInstall();
+    return;
   }
-}
-
-void WebstoreReinstaller::OnDeletionDone() {
-  WebstoreStandaloneInstaller::OnInstallPromptDone(
-      ExtensionInstallPrompt::Result::ACCEPTED);
+  WebstoreStandaloneInstaller::OnInstallPromptDone(result);
 }
 
 }  // namespace extensions

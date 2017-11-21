@@ -187,8 +187,7 @@ void ExtensionMessageBubbleBrowserTest::
   CheckBubble(browser(), ANCHOR_BROWSER_ACTION, false);
 
   extension_service()->UninstallExtension(
-      extension->id(), extensions::UNINSTALL_REASON_FOR_TESTING,
-      base::Bind(&base::DoNothing), nullptr);
+      extension->id(), extensions::UNINSTALL_REASON_FOR_TESTING, nullptr);
   base::RunLoop().RunUntilIdle();
 
   // If the only relevant extension was uninstalled, the bubble should
@@ -214,8 +213,7 @@ void ExtensionMessageBubbleBrowserTest::TestUninstallDangerousExtension() {
   // Uninstall the extension before the bubble is shown. This should not crash,
   // and the bubble shouldn't be shown.
   extension_service()->UninstallExtension(
-      extension->id(), extensions::UNINSTALL_REASON_FOR_TESTING,
-      base::Bind(&base::DoNothing), nullptr);
+      extension->id(), extensions::UNINSTALL_REASON_FOR_TESTING, nullptr);
   base::RunLoop().RunUntilIdle();
   CheckBubbleIsNotPresent(second_browser, false, false);
 }
