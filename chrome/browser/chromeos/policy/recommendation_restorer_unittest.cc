@@ -110,11 +110,11 @@ void RecommendationRestorerTest::SetUp() {
 }
 
 void RecommendationRestorerTest::RegisterUserProfilePrefs() {
-  chrome::RegisterUserProfilePrefs(prefs_->registry());
+  ::RegisterUserProfilePrefs(prefs_->registry());
 }
 
 void RecommendationRestorerTest::RegisterLoginProfilePrefs() {
-  chrome::RegisterLoginProfilePrefs(prefs_->registry());
+  ::RegisterLoginProfilePrefs(prefs_->registry());
 }
 
 void RecommendationRestorerTest::SetRecommendedValues() {

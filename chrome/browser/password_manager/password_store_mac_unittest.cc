@@ -122,7 +122,7 @@ class PasswordStoreMacTest : public testing::TestWithParam<MigrationStatus> {
 
 PasswordStoreMacTest::PasswordStoreMacTest() {
   EXPECT_TRUE(db_dir_.CreateUniqueTempDir());
-  chrome::RegisterUserProfilePrefs(testing_prefs_.registry());
+  RegisterUserProfilePrefs(testing_prefs_.registry());
   testing_prefs_.SetInteger(password_manager::prefs::kKeychainMigrationStatus,
                             static_cast<int>(GetParam()));
   // Ensure that LoginDatabase will use the mock keychain if it needs to

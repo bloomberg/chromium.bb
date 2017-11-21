@@ -195,7 +195,7 @@ TEST_F(PrefProviderTest, Incognito) {
   sync_preferences::PrefServiceSyncable* regular_prefs =
       factory.CreateSyncable(registry.get()).release();
 
-  chrome::RegisterUserProfilePrefs(registry.get());
+  RegisterUserProfilePrefs(registry.get());
 
   sync_preferences::PrefServiceMockFactory otr_factory;
   otr_factory.set_user_prefs(base::WrapRefCounted(otr_user_prefs));
@@ -204,7 +204,7 @@ TEST_F(PrefProviderTest, Incognito) {
   sync_preferences::PrefServiceSyncable* otr_prefs =
       otr_factory.CreateSyncable(otr_registry.get()).release();
 
-  chrome::RegisterUserProfilePrefs(otr_registry.get());
+  RegisterUserProfilePrefs(otr_registry.get());
 
   TestingProfile::Builder profile_builder;
   profile_builder.SetPrefService(base::WrapUnique(regular_prefs));

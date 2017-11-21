@@ -11,7 +11,7 @@
 ScopedTestingLocalState::ScopedTestingLocalState(
     TestingBrowserProcess* browser_process)
     : browser_process_(browser_process) {
-  chrome::RegisterLocalState(local_state_.registry());
+  RegisterLocalState(local_state_.registry());
   EXPECT_FALSE(browser_process->local_state());
   browser_process->SetLocalState(&local_state_);
 }

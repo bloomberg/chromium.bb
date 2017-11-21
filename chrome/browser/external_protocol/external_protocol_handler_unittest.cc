@@ -115,7 +115,7 @@ class ExternalProtocolHandlerTest : public testing::Test {
   void SetUp() override {
     local_state_.reset(new TestingPrefServiceSimple);
     profile_.reset(new TestingProfile());
-    chrome::RegisterLocalState(local_state_->registry());
+    RegisterLocalState(local_state_->registry());
     TestingBrowserProcess::GetGlobal()->SetLocalState(local_state_.get());
   }
 

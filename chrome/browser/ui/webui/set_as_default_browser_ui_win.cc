@@ -316,7 +316,7 @@ void SetAsDefaultBrowserDialogImpl::OnDialogClosed(
   // *not to* make Chrome default.
   if (dialog_interaction_result_ == MAKE_CHROME_DEFAULT_REGRETTED ||
       dialog_interaction_result_ == MAKE_CHROME_DEFAULT_ACCEPTED_OTHER_MODE) {
-    chrome::DefaultBrowserPromptDeclined(profile_);
+    DefaultBrowserPromptDeclined(profile_);
   }
 
   // Carry on with a normal chrome session. For the purpose of surfacing this

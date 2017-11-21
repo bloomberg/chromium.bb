@@ -61,7 +61,7 @@ class DesktopIOSPromotionBubbleControllerTest : public testing::Test {
             new TestingPrefStore(), new TestingPrefStore(),
             new TestingPrefStore(), new TestingPrefStore(),
             new user_prefs::PrefRegistrySyncable(), new PrefNotifierImpl());
-    chrome::RegisterUserProfilePrefs(pref_service_->registry());
+    RegisterUserProfilePrefs(pref_service_->registry());
     TestingProfile::Builder builder;
     builder.SetPrefService(std::move(pref_service_));
     builder.AddTestingFactory(SMSServiceFactory::GetInstance(),

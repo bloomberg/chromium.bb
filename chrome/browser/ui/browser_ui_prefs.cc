@@ -32,8 +32,6 @@ uint32_t GetHomeButtonAndHomePageIsNewTabPageFlags() {
 
 }  // namespace
 
-namespace chrome {
-
 void RegisterBrowserPrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(prefs::kOptionsWindowLastTabIndex, 0);
   registry->RegisterBooleanPref(prefs::kAllowFileSelectionDialogs, true);
@@ -120,5 +118,3 @@ void RegisterBrowserUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(prefs::kFullscreenAllowed, true);
 #endif
 }
-
-}  // namespace chrome

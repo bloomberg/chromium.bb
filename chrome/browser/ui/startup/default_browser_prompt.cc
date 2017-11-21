@@ -30,15 +30,13 @@
 #include "components/variations/variations_associated_data.h"
 #include "components/version_info/version_info.h"
 
-namespace chrome {
-
 namespace {
 
 void ResetCheckDefaultBrowserPref(const base::FilePath& profile_path) {
   Profile* profile =
       g_browser_process->profile_manager()->GetProfileByPath(profile_path);
   if (profile)
-    chrome::ResetDefaultBrowserPrompt(profile);
+    ResetDefaultBrowserPrompt(profile);
 }
 
 void ShowPrompt() {
@@ -61,7 +59,7 @@ void ShowPrompt() {
   if (first_run::IsOnWelcomePage(web_contents))
     return;
 
-  DefaultBrowserInfoBarDelegate::Create(
+  chrome::DefaultBrowserInfoBarDelegate::Create(
       InfoBarService::FromWebContents(web_contents), browser->profile());
 }
 
@@ -163,5 +161,3 @@ bool ShowFirstRunDefaultBrowserPrompt(Profile* profile) {
   return false;
 }
 #endif
-
-}  // namespace chrome
