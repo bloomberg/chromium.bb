@@ -8,14 +8,6 @@
 #include "cc/paint/paint_image_builder.h"
 
 namespace cc {
-namespace {
-SkIRect RoundOutRect(const SkRect& rect) {
-  SkIRect result;
-  rect.roundOut(&result);
-  return result;
-}
-}  // namespace
-
 ScopedImageFlags::DecodeStashingImageProvider::DecodeStashingImageProvider(
     ImageProvider* source_provider)
     : source_provider_(source_provider) {
@@ -82,8 +74,10 @@ void ScopedImageFlags::DecodeImageShader(const PaintFlags* original,
   SkMatrix total_image_matrix = matrix;
   total_image_matrix.preConcat(ctm);
   SkRect src_rect = SkRect::MakeIWH(paint_image.width(), paint_image.height());
-  DrawImage draw_image(paint_image, RoundOutRect(src_rect),
-                       original->getFilterQuality(), total_image_matrix);
+  SkIRect int_src_rect;
+  src_rect.roundOut(&int_src_rect);
+  DrawImage draw_image(paint_image, int_src_rect, original->getFilterQuality(),
+                       total_image_matrix);
   auto decoded_draw_image =
       decode_stashing_image_provider_->GetDecodedDrawImage(draw_image);
 
