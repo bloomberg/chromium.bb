@@ -31,7 +31,6 @@ namespace payments {
 class ContentPaymentRequestDelegate;
 class JourneyLogger;
 class PaymentInstrument;
-class ServiceWorkerPaymentAppFactory;
 class ServiceWorkerPaymentInstrument;
 
 // Keeps track of the information currently selected by the user and whether the
@@ -238,7 +237,6 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
       ServiceWorkerPaymentInstrument* instrument,
       bool result);
   void FinishedGetAllSWPaymentInstruments();
-  void OnServiceWorkerPaymentAppFactoryFinishedUsingResources();
 
   // Checks whether the user has at least one instrument that satisfies the
   // specified supported payment methods and call the |callback| to return the
@@ -296,9 +294,6 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
   PaymentsProfileComparator profile_comparator_;
 
   base::ObserverList<Observer> observers_;
-
-  std::unique_ptr<ServiceWorkerPaymentAppFactory>
-      service_worker_payment_app_factory_;
 
   base::WeakPtrFactory<PaymentRequestState> weak_ptr_factory_;
 

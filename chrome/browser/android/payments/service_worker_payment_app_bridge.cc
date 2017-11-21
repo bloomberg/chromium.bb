@@ -15,14 +15,11 @@
 #include "chrome/browser/web_data_service_factory.h"
 #include "components/payments/content/payment_manifest_web_data_service.h"
 #include "components/payments/content/service_worker_payment_app_factory.h"
-#include "components/payments/core/payment_manifest_downloader.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/payment_app_provider.h"
-#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/ServiceWorkerPaymentAppBridge_jni.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "third_party/WebKit/public/platform/modules/payments/payment_app.mojom.h"
 #include "ui/gfx/android/java_bitmap.h"
 
@@ -50,44 +47,6 @@ using ::payments::mojom::PaymentMethodData;
 using ::payments::mojom::PaymentMethodDataPtr;
 using ::payments::mojom::PaymentRequestEventData;
 using ::payments::mojom::PaymentRequestEventDataPtr;
-
-// Owns the service worker payment app factory and deletes it after it finishes
-// using resources.
-class SelfDeletingServiceWorkerPaymentAppFactory {
- public:
-  SelfDeletingServiceWorkerPaymentAppFactory() {}
-
-  void GetAllPaymentApps(
-      content::WebContents* web_contents,
-      const std::vector<PaymentMethodDataPtr>& payment_method_data,
-      content::PaymentAppProvider::GetAllPaymentAppsCallback callback) {
-    impl_.GetAllPaymentApps(
-        web_contents,
-        std::make_unique<payments::PaymentManifestDownloader>(
-            content::BrowserContext::GetDefaultStoragePartition(
-                web_contents->GetBrowserContext())
-                ->GetURLRequestContext()),
-        WebDataServiceFactory::GetPaymentManifestWebDataForProfile(
-            Profile::FromBrowserContext(web_contents->GetBrowserContext()),
-            ServiceAccessType::EXPLICIT_ACCESS),
-        payment_method_data, std::move(callback),
-        base::BindOnce(&SelfDeletingServiceWorkerPaymentAppFactory::
-                           OnFinishedUsingResources,
-                       base::Owned(this)));
-  }
-
-  // The destructor needs to be public for base::Owned(this) to delete this.
-  ~SelfDeletingServiceWorkerPaymentAppFactory() {}
-
- private:
-  void OnFinishedUsingResources() {
-    // No need to self-delete here, because of using base::Owned(this).
-  }
-
-  payments::ServiceWorkerPaymentAppFactory impl_;
-
-  DISALLOW_COPY_AND_ASSIGN(SelfDeletingServiceWorkerPaymentAppFactory);
-};
 
 void OnGotAllPaymentApps(const JavaRef<jobject>& jweb_contents,
                          const JavaRef<jobject>& jcallback,
@@ -238,13 +197,19 @@ static void JNI_ServiceWorkerPaymentAppBridge_GetAllPaymentApps(
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(jweb_contents);
 
-  (new SelfDeletingServiceWorkerPaymentAppFactory())
-      ->GetAllPaymentApps(
-          web_contents,
-          ConvertPaymentMethodDataFromJavaToNative(env, jmethod_data),
-          base::BindOnce(&OnGotAllPaymentApps,
-                         ScopedJavaGlobalRef<jobject>(env, jweb_contents),
-                         ScopedJavaGlobalRef<jobject>(env, jcallback)));
+  payments::ServiceWorkerPaymentAppFactory::GetInstance()->GetAllPaymentApps(
+      web_contents,
+      WebDataServiceFactory::GetPaymentManifestWebDataForProfile(
+          Profile::FromBrowserContext(web_contents->GetBrowserContext()),
+          ServiceAccessType::EXPLICIT_ACCESS),
+      ConvertPaymentMethodDataFromJavaToNative(env, jmethod_data),
+      base::BindOnce(&OnGotAllPaymentApps,
+                     ScopedJavaGlobalRef<jobject>(env, jweb_contents),
+                     ScopedJavaGlobalRef<jobject>(env, jcallback)),
+      base::BindOnce([]() {
+        /* Nothing needs to be done after writing cache. This callback is used
+         * only in tests. */
+      }));
 }
 
 static void JNI_ServiceWorkerPaymentAppBridge_CanMakePayment(

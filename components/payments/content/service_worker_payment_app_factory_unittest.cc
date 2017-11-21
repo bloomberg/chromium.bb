@@ -14,8 +14,8 @@ class ServiceWorkerPaymentAppFactoryTest : public testing::Test {
   void RemoveAppsWithoutMatchingMethodData(
       const std::vector<mojom::PaymentMethodDataPtr>& requested_method_data,
       content::PaymentAppProvider::PaymentApps* apps) {
-    ServiceWorkerPaymentAppFactory::RemoveAppsWithoutMatchingMethodData(
-        requested_method_data, apps);
+    ServiceWorkerPaymentAppFactory::GetInstance()
+        ->RemoveAppsWithoutMatchingMethodData(requested_method_data, apps);
   }
 };
 
