@@ -99,8 +99,7 @@ void Partitions::DecommitFreeableMemory() {
   base::PartitionPurgeMemoryGeneric(
       FastMallocPartition(), base::PartitionPurgeDecommitEmptyPages |
                                  base::PartitionPurgeDiscardUnusedSystemPages);
-  base::PartitionPurgeMemory(LayoutPartition(),
-                             base::PartitionPurgeDecommitEmptyPages |
+  LayoutPartition()->PurgeMemory(base::PartitionPurgeDecommitEmptyPages |
                                  base::PartitionPurgeDiscardUnusedSystemPages);
 }
 
@@ -134,8 +133,7 @@ void Partitions::DumpMemoryStats(
                             is_light_dump, partition_stats_dumper);
   PartitionDumpStatsGeneric(BufferPartition(), "buffer", is_light_dump,
                             partition_stats_dumper);
-  PartitionDumpStats(LayoutPartition(), "layout", is_light_dump,
-                     partition_stats_dumper);
+  LayoutPartition()->DumpStats("layout", is_light_dump, partition_stats_dumper);
 }
 
 namespace {
