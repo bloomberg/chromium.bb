@@ -452,14 +452,6 @@ bool SyncPointManager::WaitOutOfOrder(const SyncToken& trusted_sync_token,
   return Wait(trusted_sync_token, SequenceId(), UINT32_MAX, callback);
 }
 
-bool SyncPointManager::WaitOutOfOrderNonThreadSafe(
-    const SyncToken& trusted_sync_token,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    const base::Closure& callback) {
-  return WaitOutOfOrder(trusted_sync_token,
-                        base::Bind(&RunOnThread, task_runner, callback));
-}
-
 uint32_t SyncPointManager::GenerateOrderNumber() {
   return order_num_generator_.GetNext();
 }
