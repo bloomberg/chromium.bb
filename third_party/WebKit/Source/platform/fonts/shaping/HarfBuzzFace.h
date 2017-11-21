@@ -56,10 +56,13 @@ class HarfBuzzFace : public RefCounted<HarfBuzzFace> {
   }
   ~HarfBuzzFace();
 
+  enum VerticalLayoutCallbacks { PrepareForVerticalLayout, NoVerticalLayout };
+
   // In order to support the restricting effect of unicode-range optionally a
   // range restriction can be passed in, which will restrict which glyphs we
   // return in the harfBuzzGetGlyph function.
-  hb_font_t* GetScaledFont(scoped_refptr<UnicodeRangeSet> = nullptr) const;
+  hb_font_t* GetScaledFont(scoped_refptr<UnicodeRangeSet>,
+                           VerticalLayoutCallbacks) const;
 
  private:
   HarfBuzzFace(FontPlatformData*, uint64_t);
