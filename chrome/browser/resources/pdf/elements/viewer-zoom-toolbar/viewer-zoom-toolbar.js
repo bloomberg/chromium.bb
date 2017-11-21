@@ -4,8 +4,8 @@
 
 (function() {
 
-var FIT_TO_PAGE = 0;
-var FIT_TO_WIDTH = 1;
+var FIT_TO_PAGE_BUTTON_STATE = 0;
+var FIT_TO_WIDTH_BUTTON_STATE = 1;
 
 Polymer({
   is: 'viewer-zoom-toolbar',
@@ -35,10 +35,10 @@ Polymer({
    * Handle clicks of the fit-button.
    */
   fitToggle: function() {
-    if (this.$['fit-button'].activeIndex == FIT_TO_WIDTH)
-      this.fire('fit-to-width');
-    else
-      this.fire('fit-to-page');
+    this.fireFitToChangedEvent_(
+        this.$['fit-button'].activeIndex == FIT_TO_WIDTH_BUTTON_STATE ?
+            FittingType.FIT_TO_WIDTH :
+            FittingType.FIT_TO_PAGE);
   },
 
   /**
@@ -49,21 +49,33 @@ Polymer({
 
     // Toggle the button state since there was no mouse click.
     var button = this.$['fit-button'];
-    if (button.activeIndex == FIT_TO_WIDTH)
-      button.activeIndex = FIT_TO_PAGE;
-    else
-      button.activeIndex = FIT_TO_WIDTH;
+    button.activeIndex =
+        (button.activeIndex == FIT_TO_WIDTH_BUTTON_STATE ?
+             FIT_TO_PAGE_BUTTON_STATE :
+             FIT_TO_WIDTH_BUTTON_STATE);
   },
 
   /**
-   * Handle forcing zoom to fit-to-page via scripting.
+   * Handle forcing zoom via scripting to a fitting type.
+   * @param {FittingType} fittingType Page fitting type to force.
    */
-  forceFitToPage: function() {
-    this.fire('fit-to-page');
+  forceFit: function(fittingType) {
+    this.fireFitToChangedEvent_(fittingType);
 
-    // Set the button state since there was no mouse click. Since the zoom is
-    // set to fit-to-page, the button should do fit-to-width on the next click.
-    this.$['fit-button'].activeIndex = FIT_TO_WIDTH;
+    // Set the button state since there was no mouse click.
+    var nextButtonState =
+        (fittingType == FittingType.FIT_TO_WIDTH ? FIT_TO_PAGE_BUTTON_STATE :
+                                                   FIT_TO_WIDTH_BUTTON_STATE);
+    this.$['fit-button'].activeIndex = nextButtonState;
+  },
+
+  /**
+   * @private
+   * Fire a 'fit-to-changed' {CustomEvent} with the given FittingType as detail.
+   * @param {FittingType} fittingType to include as payload.
+   */
+  fireFitToChangedEvent_: function(fittingType) {
+    this.fire('fit-to-changed', fittingType);
   },
 
   /**

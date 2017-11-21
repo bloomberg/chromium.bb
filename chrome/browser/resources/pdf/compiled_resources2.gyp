@@ -14,12 +14,19 @@
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
+      'target_name': 'pdf_fitting_type',
+      'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
       'target_name': 'gesture_detector',
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
       'target_name': 'open_pdf_params_parser',
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
+      'dependencies': [
+        'pdf_fitting_type',
+      ],
     },
     {
       'target_name': 'pdf_scripting_api',
