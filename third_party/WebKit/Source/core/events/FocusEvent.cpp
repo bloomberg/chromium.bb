@@ -64,28 +64,14 @@ FocusEvent::FocusEvent(const AtomicString& type,
     related_target_ = initializer.relatedTarget();
 }
 
-EventDispatchMediator* FocusEvent::CreateMediator() {
-  return FocusEventDispatchMediator::Create(this);
-}
-
 void FocusEvent::Trace(blink::Visitor* visitor) {
   visitor->Trace(related_target_);
   UIEvent::Trace(visitor);
 }
 
-FocusEventDispatchMediator* FocusEventDispatchMediator::Create(
-    FocusEvent* focus_event) {
-  return new FocusEventDispatchMediator(focus_event);
-}
-
-FocusEventDispatchMediator::FocusEventDispatchMediator(FocusEvent* focus_event)
-    : EventDispatchMediator(focus_event) {}
-
-DispatchEventResult FocusEventDispatchMediator::DispatchEvent(
-    EventDispatcher& dispatcher) const {
-  Event().GetEventPath().AdjustForRelatedTarget(dispatcher.GetNode(),
-                                                Event().relatedTarget());
-  return EventDispatchMediator::DispatchEvent(dispatcher);
+DispatchEventResult FocusEvent::DispatchEvent(EventDispatcher& dispatcher) {
+  GetEventPath().AdjustForRelatedTarget(dispatcher.GetNode(), relatedTarget());
+  return dispatcher.Dispatch();
 }
 
 }  // namespace blink

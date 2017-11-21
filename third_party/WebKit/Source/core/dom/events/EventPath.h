@@ -78,7 +78,7 @@ class CORE_EXPORT EventPath final
   size_t size() const { return node_event_contexts_.size(); }
 
   void AdjustForRelatedTarget(Node&, EventTarget* related_target);
-  void AdjustForTouchEvent(TouchEvent&);
+  void AdjustForTouchEvent(const TouchEvent&);
 
   bool DisabledFormControlExistsInPath() const;
 

@@ -54,7 +54,7 @@ class CORE_EXPORT DragEvent final : public MouseEvent {
   bool IsDragEvent() const override;
   bool IsMouseEvent() const override;
 
-  EventDispatchMediator* CreateMediator() override;
+  DispatchEventResult DispatchEvent(EventDispatcher&) override;
 
   virtual void Trace(blink::Visitor*);
 
@@ -83,16 +83,6 @@ class CORE_EXPORT DragEvent final : public MouseEvent {
   DragEvent(const AtomicString& type, const DragEventInit&);
 
   Member<DataTransfer> data_transfer_;
-};
-
-class DragEventDispatchMediator final : public EventDispatchMediator {
- public:
-  static DragEventDispatchMediator* Create(DragEvent*);
-
- private:
-  explicit DragEventDispatchMediator(DragEvent*);
-  DragEvent& Event() const;
-  DispatchEventResult DispatchEvent(EventDispatcher&) const override;
 };
 
 DEFINE_EVENT_TYPE_CASTS(DragEvent);

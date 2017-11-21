@@ -62,7 +62,7 @@ class FocusEvent final : public UIEvent {
   const AtomicString& InterfaceName() const override;
   bool IsFocusEvent() const override;
 
-  EventDispatchMediator* CreateMediator() override;
+  DispatchEventResult DispatchEvent(EventDispatcher&) override;
 
   virtual void Trace(blink::Visitor*);
 
@@ -81,18 +81,6 @@ class FocusEvent final : public UIEvent {
 };
 
 DEFINE_EVENT_TYPE_CASTS(FocusEvent);
-
-class FocusEventDispatchMediator final : public EventDispatchMediator {
- public:
-  static FocusEventDispatchMediator* Create(FocusEvent*);
-
- private:
-  explicit FocusEventDispatchMediator(FocusEvent*);
-  FocusEvent& Event() const {
-    return static_cast<FocusEvent&>(EventDispatchMediator::GetEvent());
-  }
-  DispatchEventResult DispatchEvent(EventDispatcher&) const override;
-};
 
 }  // namespace blink
 

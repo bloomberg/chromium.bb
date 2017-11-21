@@ -25,7 +25,6 @@
 #define MouseEvent_h
 
 #include "core/CoreExport.h"
-#include "core/dom/events/EventDispatchMediator.h"
 #include "core/events/MouseEventInit.h"
 #include "core/events/UIEventWithKeyState.h"
 #include "public/platform/WebMenuSourceType.h"
@@ -116,8 +115,6 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
   bool IsMouseEvent() const override;
   unsigned which() const override;
 
-  EventDispatchMediator* CreateMediator() override;
-
   int ClickCount() { return detail(); }
 
   const WebMouseEvent* NativeEvent() const { return native_event_.get(); }
@@ -189,6 +186,8 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
   // the local frame.
   const DoublePoint& AbsoluteLocation() const { return absolute_location_; }
 
+  DispatchEventResult DispatchEvent(EventDispatcher&) override;
+
   virtual void Trace(blink::Visitor*);
 
  protected:
@@ -239,7 +238,6 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
   DoublePoint page_location_;
 
  private:
-  friend class MouseEventDispatchMediator;
   void InitMouseEventInternal(const AtomicString& type,
                               bool can_bubble,
                               bool cancelable,
@@ -278,17 +276,6 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
   WebMenuSourceType menu_source_type_;
 
   std::unique_ptr<WebMouseEvent> native_event_;
-};
-
-class MouseEventDispatchMediator final : public EventDispatchMediator {
- public:
-  static MouseEventDispatchMediator* Create(MouseEvent*);
-
- private:
-  explicit MouseEventDispatchMediator(MouseEvent*);
-  MouseEvent& Event() const;
-
-  DispatchEventResult DispatchEvent(EventDispatcher&) const override;
 };
 
 DEFINE_EVENT_TYPE_CASTS(MouseEvent);

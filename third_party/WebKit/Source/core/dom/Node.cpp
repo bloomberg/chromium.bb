@@ -61,7 +61,6 @@
 #include "core/dom/UserActionElementSet.h"
 #include "core/dom/V0InsertionPoint.h"
 #include "core/dom/events/Event.h"
-#include "core/dom/events/EventDispatchMediator.h"
 #include "core/dom/events/EventDispatcher.h"
 #include "core/dom/events/EventListener.h"
 #include "core/editing/EditingUtilities.h"
@@ -2220,11 +2219,11 @@ void Node::HandleLocalEvents(Event& event) {
 
 void Node::DispatchScopedEvent(Event* event) {
   event->SetTrusted(true);
-  EventDispatcher::DispatchScopedEvent(*this, event->CreateMediator());
+  EventDispatcher::DispatchScopedEvent(*this, event);
 }
 
 DispatchEventResult Node::DispatchEventInternal(Event* event) {
-  return EventDispatcher::DispatchEvent(*this, event->CreateMediator());
+  return EventDispatcher::DispatchEvent(*this, event);
 }
 
 void Node::DispatchSubtreeModifiedEvent() {
