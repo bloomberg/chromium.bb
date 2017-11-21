@@ -58,31 +58,24 @@ class BodyHandler;
 class SimpleURLLoaderImpl : public SimpleURLLoader,
                             public mojom::URLLoaderClient {
  public:
-  SimpleURLLoaderImpl();
+  SimpleURLLoaderImpl(std::unique_ptr<ResourceRequest> resource_request,
+                      const net::NetworkTrafficAnnotationTag& annotation_tag);
   ~SimpleURLLoaderImpl() override;
 
   // SimpleURLLoader implementation.
-  void DownloadToString(const ResourceRequest& resource_request,
-                        mojom::URLLoaderFactory* url_loader_factory,
-                        const net::NetworkTrafficAnnotationTag& annotation_tag,
+  void DownloadToString(mojom::URLLoaderFactory* url_loader_factory,
                         BodyAsStringCallback body_as_string_callback,
                         size_t max_body_size) override;
   void DownloadToStringOfUnboundedSizeUntilCrashAndDie(
-      const ResourceRequest& resource_request,
       mojom::URLLoaderFactory* url_loader_factory,
-      const net::NetworkTrafficAnnotationTag& annotation_tag,
       BodyAsStringCallback body_as_string_callback) override;
   void DownloadToFile(
-      const ResourceRequest& resource_request,
       mojom::URLLoaderFactory* url_loader_factory,
-      const net::NetworkTrafficAnnotationTag& annotation_tag,
       DownloadToFileCompleteCallback download_to_file_complete_callback,
       const base::FilePath& file_path,
       int64_t max_body_size) override;
   void DownloadToTempFile(
-      const ResourceRequest& resource_request,
       mojom::URLLoaderFactory* url_loader_factory,
-      const net::NetworkTrafficAnnotationTag& annotation_tag,
       DownloadToFileCompleteCallback download_to_file_complete_callback,
       int64_t max_body_size) override;
   void SetOnRedirectCallback(
@@ -136,14 +129,10 @@ class SimpleURLLoaderImpl : public SimpleURLLoader,
 
   // Prepares internal state to start a request, and then calls StartRequest().
   // Only used for the initial request (Not retries).
-  void Start(const ResourceRequest& resource_request,
-             mojom::URLLoaderFactory* url_loader_factory,
-             const net::NetworkTrafficAnnotationTag& annotation_tag);
+  void Start(mojom::URLLoaderFactory* url_loader_factory);
 
   // Starts a request. Used for both the initial request and retries, if any.
-  void StartRequest(const ResourceRequest* resource_request,
-                    mojom::URLLoaderFactory* url_loader_factory,
-                    const net::NetworkTrafficAnnotationTag& annotation_tag);
+  void StartRequest(mojom::URLLoaderFactory* url_loader_factory);
 
   // Re-initializes state of |this| and |body_handler_| prior to retrying a
   // request.
@@ -182,13 +171,16 @@ class SimpleURLLoaderImpl : public SimpleURLLoader,
   int remaining_retries_ = 0;
   int retry_mode_ = RETRY_NEVER;
 
-  // Along with BodyHandler, these contain all the information required to
-  // restart the request, if retries are enabled. There are all null when
-  // retries are not enabled.
-  content::mojom::URLLoaderFactoryPtr url_loader_factory_ptr_;
-  std::unique_ptr<ResourceRequest> resource_request_;
-  std::unique_ptr<net::NetworkTrafficAnnotationTag> annotation_tag_;
+  // The next values contain all the information required to restart the
+  // request.
 
+  // Populated in the constructor, and cleared once no longer needed, when no
+  // more retries are possible.
+  std::unique_ptr<ResourceRequest> resource_request_;
+  const net::NetworkTrafficAnnotationTag annotation_tag_;
+  // Cloned from the input URLLoaderFactory if it may be needed to follow
+  // redirects.
+  content::mojom::URLLoaderFactoryPtr url_loader_factory_ptr_;
   std::unique_ptr<BodyHandler> body_handler_;
 
   mojo::Binding<mojom::URLLoaderClient> client_binding_;
@@ -755,8 +747,12 @@ class SaveToFileBodyHandler : public BodyHandler {
   DISALLOW_COPY_AND_ASSIGN(SaveToFileBodyHandler);
 };
 
-SimpleURLLoaderImpl::SimpleURLLoaderImpl()
-    : client_binding_(this),
+SimpleURLLoaderImpl::SimpleURLLoaderImpl(
+    std::unique_ptr<ResourceRequest> resource_request,
+    const net::NetworkTrafficAnnotationTag& annotation_tag)
+    : resource_request_(std::move(resource_request)),
+      annotation_tag_(annotation_tag),
+      client_binding_(this),
       request_state_(std::make_unique<RequestState>()),
       weak_ptr_factory_(this) {
   // Allow creation and use on different threads.
@@ -766,54 +762,46 @@ SimpleURLLoaderImpl::SimpleURLLoaderImpl()
 SimpleURLLoaderImpl::~SimpleURLLoaderImpl() {}
 
 void SimpleURLLoaderImpl::DownloadToString(
-    const ResourceRequest& resource_request,
     mojom::URLLoaderFactory* url_loader_factory,
-    const net::NetworkTrafficAnnotationTag& annotation_tag,
     BodyAsStringCallback body_as_string_callback,
     size_t max_body_size) {
   DCHECK_LE(max_body_size, kMaxBoundedStringDownloadSize);
   body_handler_ = std::make_unique<SaveToStringBodyHandler>(
       this, std::move(body_as_string_callback), max_body_size);
-  Start(resource_request, url_loader_factory, annotation_tag);
+  Start(url_loader_factory);
 }
 
 void SimpleURLLoaderImpl::DownloadToStringOfUnboundedSizeUntilCrashAndDie(
-    const ResourceRequest& resource_request,
     mojom::URLLoaderFactory* url_loader_factory,
-    const net::NetworkTrafficAnnotationTag& annotation_tag,
     BodyAsStringCallback body_as_string_callback) {
   body_handler_ = std::make_unique<SaveToStringBodyHandler>(
       this, std::move(body_as_string_callback),
       // int64_t because network::URLLoaderCompletionStatus::decoded_body_length
       // is an int64_t, not a size_t.
       std::numeric_limits<int64_t>::max());
-  Start(resource_request, url_loader_factory, annotation_tag);
+  Start(url_loader_factory);
 }
 
 void SimpleURLLoaderImpl::DownloadToFile(
-    const ResourceRequest& resource_request,
     mojom::URLLoaderFactory* url_loader_factory,
-    const net::NetworkTrafficAnnotationTag& annotation_tag,
     DownloadToFileCompleteCallback download_to_file_complete_callback,
     const base::FilePath& file_path,
     int64_t max_body_size) {
   DCHECK(!file_path.empty());
   body_handler_ = std::make_unique<SaveToFileBodyHandler>(
       this, std::move(download_to_file_complete_callback), file_path,
-      false /* create_temp_file */, max_body_size, resource_request.priority);
-  Start(resource_request, url_loader_factory, annotation_tag);
+      false /* create_temp_file */, max_body_size, resource_request_->priority);
+  Start(url_loader_factory);
 }
 
 void SimpleURLLoaderImpl::DownloadToTempFile(
-    const ResourceRequest& resource_request,
     mojom::URLLoaderFactory* url_loader_factory,
-    const net::NetworkTrafficAnnotationTag& annotation_tag,
     DownloadToFileCompleteCallback download_to_file_complete_callback,
     int64_t max_body_size) {
   body_handler_ = std::make_unique<SaveToFileBodyHandler>(
       this, std::move(download_to_file_complete_callback), base::FilePath(),
-      true /* create_temp_file */, max_body_size, resource_request.priority);
-  Start(resource_request, url_loader_factory, annotation_tag);
+      true /* create_temp_file */, max_body_size, resource_request_->priority);
+  Start(url_loader_factory);
 }
 
 void SimpleURLLoaderImpl::SetOnRedirectCallback(
@@ -892,11 +880,9 @@ void SimpleURLLoaderImpl::FinishWithResult(int net_error) {
   body_handler_->NotifyConsumerOfCompletion(destroy_results);
 }
 
-void SimpleURLLoaderImpl::Start(
-    const ResourceRequest& resource_request,
-    mojom::URLLoaderFactory* url_loader_factory,
-    const net::NetworkTrafficAnnotationTag& annotation_tag) {
+void SimpleURLLoaderImpl::Start(mojom::URLLoaderFactory* url_loader_factory) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(resource_request_);
   // It's illegal to use a single SimpleURLLoaderImpl to make multiple requests.
   DCHECK(!request_state_->finished);
   DCHECK(!url_loader_);
@@ -908,20 +894,14 @@ void SimpleURLLoaderImpl::Start(
     // Results in an easier to use API, with no shutdown ordering requirements,
     // at the cost of some resources.
     url_loader_factory->Clone(mojo::MakeRequest(&url_loader_factory_ptr_));
-    resource_request_ =
-        std::make_unique<content::ResourceRequest>(resource_request);
-    annotation_tag_ =
-        std::make_unique<net::NetworkTrafficAnnotationTag>(annotation_tag);
   }
 
-  StartRequest(&resource_request, url_loader_factory, annotation_tag);
+  StartRequest(url_loader_factory);
 }
 
 void SimpleURLLoaderImpl::StartRequest(
-    const ResourceRequest* resource_request,
-    mojom::URLLoaderFactory* url_loader_factory,
-    const net::NetworkTrafficAnnotationTag& annotation_tag) {
-  DCHECK(resource_request);
+    mojom::URLLoaderFactory* url_loader_factory) {
+  DCHECK(resource_request_);
   DCHECK(url_loader_factory);
 
   mojom::URLLoaderClientPtr client_ptr;
@@ -930,14 +910,19 @@ void SimpleURLLoaderImpl::StartRequest(
       &SimpleURLLoaderImpl::OnConnectionError, base::Unretained(this)));
   url_loader_factory->CreateLoaderAndStart(
       mojo::MakeRequest(&url_loader_), 0 /* routing_id */, 0 /* request_id */,
-      0 /* options */, *resource_request, std::move(client_ptr),
-      net::MutableNetworkTrafficAnnotationTag(annotation_tag));
+      0 /* options */, *resource_request_, std::move(client_ptr),
+      net::MutableNetworkTrafficAnnotationTag(annotation_tag_));
+
+  // If no more retries left, can clean up a little.
+  if (remaining_retries_ == 0) {
+    resource_request_.reset();
+    url_loader_factory_ptr_.reset();
+  }
 }
 
 void SimpleURLLoaderImpl::Retry() {
   DCHECK(resource_request_);
   DCHECK(url_loader_factory_ptr_);
-  DCHECK(annotation_tag_);
   DCHECK_GT(remaining_retries_, 0);
   --remaining_retries_;
 
@@ -946,10 +931,9 @@ void SimpleURLLoaderImpl::Retry() {
 
   request_state_ = std::make_unique<RequestState>();
 
-  body_handler_->PrepareToRetry(
-      base::Bind(&SimpleURLLoaderImpl::StartRequest,
-                 weak_ptr_factory_.GetWeakPtr(), resource_request_.get(),
-                 url_loader_factory_ptr_.get(), *annotation_tag_));
+  body_handler_->PrepareToRetry(base::Bind(&SimpleURLLoaderImpl::StartRequest,
+                                           weak_ptr_factory_.GetWeakPtr(),
+                                           url_loader_factory_ptr_.get()));
 }
 
 void SimpleURLLoaderImpl::OnReceiveResponse(
@@ -1124,8 +1108,12 @@ void SimpleURLLoaderImpl::MaybeComplete() {
 
 }  // namespace
 
-std::unique_ptr<SimpleURLLoader> SimpleURLLoader::Create() {
-  return std::make_unique<SimpleURLLoaderImpl>();
+std::unique_ptr<SimpleURLLoader> SimpleURLLoader::Create(
+    std::unique_ptr<ResourceRequest> resource_request,
+    const net::NetworkTrafficAnnotationTag& annotation_tag) {
+  DCHECK(resource_request);
+  return std::make_unique<SimpleURLLoaderImpl>(std::move(resource_request),
+                                               annotation_tag);
 }
 
 SimpleURLLoader::~SimpleURLLoader() {}

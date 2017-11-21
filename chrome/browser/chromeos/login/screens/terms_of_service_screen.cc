@@ -112,23 +112,24 @@ void TermsOfServiceScreen::StartDownload() {
               "Not implemented, considered not useful."
           })");
   // Start downloading the Terms of Service.
-  terms_of_service_loader_ = content::SimpleURLLoader::Create();
+
+  auto resource_request = std::make_unique<content::ResourceRequest>();
+  resource_request->url = GURL(terms_of_service_url);
+  // Request a text/plain MIME type as only plain-text Terms of Service are
+  // accepted.
+  resource_request->headers.SetHeader("Accept", "text/plain");
+  terms_of_service_loader_ = content::SimpleURLLoader::Create(
+      std::move(resource_request), traffic_annotation);
   // Retry up to three times if network changes are detected during the
   // download.
   terms_of_service_loader_->SetRetryOptions(
       3, content::SimpleURLLoader::RETRY_ON_NETWORK_CHANGE);
-  content::ResourceRequest resource_request;
-  resource_request.url = GURL(terms_of_service_url);
-  // Request a text/plain MIME type as only plain-text Terms of Service are
-  // accepted.
-  resource_request.headers.SetHeader("Accept", "text/plain");
   content::mojom::URLLoaderFactory* loader_factory =
       g_browser_process->system_network_context_manager()
           ->GetURLLoaderFactory();
   terms_of_service_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
-      resource_request, loader_factory, traffic_annotation,
-      base::BindOnce(&TermsOfServiceScreen::OnDownloaded,
-                     base::Unretained(this)));
+      loader_factory, base::BindOnce(&TermsOfServiceScreen::OnDownloaded,
+                                     base::Unretained(this)));
 
   // Abort the download attempt if it takes longer than one minute.
   download_timer_.Start(FROM_HERE, base::TimeDelta::FromMinutes(1), this,
