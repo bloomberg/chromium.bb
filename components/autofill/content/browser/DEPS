@@ -1,8 +1,10 @@
 include_rules = [
   "+content/public/browser",
   "+crypto/random.h",
-  "+device/geolocation",
+  "+device/geolocation/public",
   "+gpu/config/gpu_info.h",
+  "+services/device/public",
+  "+services/service_manager/public/interfaces",
   "+third_party/WebKit/public/platform/WebRect.h",
 ]
 
