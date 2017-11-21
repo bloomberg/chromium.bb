@@ -22,7 +22,6 @@
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_constants.h"
-#include "ios/chrome/browser/ui/tools_menu/public/tools_menu_constants.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/bookmarks_test_util.h"
@@ -47,6 +46,7 @@
 #error "This file requires ARC support."
 #endif
 
+using chrome_test_util::BookmarksMenuButton;
 using chrome_test_util::ButtonWithAccessibilityLabel;
 using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::PrimarySignInButton;
@@ -1405,16 +1405,12 @@ id<GREYMatcher> ActionSheet(Action action) {
 
 // Navigates to the bookmark manager UI.
 + (void)openBookmarks {
-  [ChromeEarlGreyUI openToolsMenu];
-
   // Opens the bookmark manager.
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(kToolsMenuBookmarksId)]
-      performAction:grey_tap()];
+  [ChromeEarlGreyUI openToolsMenu];
+  [ChromeEarlGreyUI tapToolsMenuButton:BookmarksMenuButton()];
 
-  // Wait for it to load, and the menu to go away.
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(kToolsMenuBookmarksId)]
+  // Assert the menu is gone.
+  [[EarlGrey selectElementWithMatcher:BookmarksMenuButton()]
       assertWithMatcher:grey_nil()];
 }
 

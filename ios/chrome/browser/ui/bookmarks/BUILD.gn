@@ -206,7 +206,6 @@ source_set("eg_tests") {
     "//ios/chrome/browser/ui/bookmarks:bookmarks",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/toolbar/public",
-    "//ios/chrome/browser/ui/tools_menu/public",
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
     "//ios/public/provider/chrome/browser/signin:test_support",

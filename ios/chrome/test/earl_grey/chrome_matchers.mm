@@ -322,4 +322,12 @@ id<GREYMatcher> PaymentRequestPickerSearchBar() {
   return grey_accessibilityID(kPaymentRequestPickerSearchBarAccessibilityID);
 }
 
+id<GREYMatcher> BookmarksMenuButton() {
+  return grey_accessibilityID(kToolsMenuBookmarksId);
+}
+
+id<GREYMatcher> RecentTabsMenuButton() {
+  return grey_accessibilityID(kToolsMenuOtherDevicesId);
+}
+
 }  // namespace chrome_test_util
