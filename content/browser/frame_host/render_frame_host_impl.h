@@ -1295,7 +1295,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   typedef std::pair<CommonNavigationParams, BeginNavigationParams>
       PendingNavigation;
-  std::unique_ptr<PendingNavigation> pendinging_navigate_;
+  std::unique_ptr<PendingNavigation> pending_navigate_;
 
   // A collection of non-network URLLoaderFactory implementations which are used
   // to service any supported non-network subresource requests for the currently
