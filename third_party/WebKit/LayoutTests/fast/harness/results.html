@@ -317,7 +317,8 @@ TestResult(CRASH) + TextExpectation(Failure) => [ Failure <b>Crash</b> ]</pre>
 </div>
 
 <div id="report_header" style="margin-top:8px">
-  <span class="fix-width">Tests shown</span><span id="report_title" style="font-weight:bold"></span>
+  <span class="fix-width">Tests shown</span><span id="report_count"></span>
+  <span id="report_title" style="font-weight:bold"></span>
   in format:
     <select id="report_format" onchange="Query.generateReport()">
       <option value="plain" selected>Plain text</option>
@@ -825,6 +826,7 @@ const Query = {
     };
     window.setTimeout( _ => {
       traversal.traverse(filter, report.print);
+      document.querySelector("#report_count").innerText = traversal.html.length;
       this.completeReportPromise(traversal);
       this.currentRAF = window.requestAnimationFrame(callback);
     }, 0);
@@ -1002,9 +1004,8 @@ const GUI = {
 
   showNextExpectation: function(backward) {
     let nextExpectation;
-    let openDetails = document.querySelector(".details.open");
-    let openExpectation = openDetails && GUI.getExpectation(openDetails);
     let activeExpectation = GUI.activeExpectation();
+    let openExpectation = GUI.openExpectation();
     if (openExpectation)
       GUI.hideResults(openExpectation);
     if (openExpectation && openExpectation == activeExpectation) {
@@ -1024,12 +1025,13 @@ const GUI = {
     }
   },
 
+  openExpectation: function() {
+    let openDetails = document.querySelector(".details.open");
+    return openDetails && GUI.getExpectation(openDetails);
+  },
+
   activeExpectation: function() {
-    let result = GUI.closest(document.activeElement, "expect");
-    if (result)
-      return result;
-    result = GUI.closest(document.activeElement, "result-frame");
-    return result ? result.previousElementSibling : null;
+    return GUI.getExpectation(document.activeElement) || GUI.openExpectation();
   },
 
   initEvents: function() {
@@ -1038,9 +1040,10 @@ const GUI = {
     );
     document.querySelector("#report").addEventListener("click", function(ev) {
       let expectation = GUI.getExpectation(ev.target);
-      if (ev.target.nodeName == "A" || ev.target.nodeName == "INPUT")
-        ; // anchor clicks should perform default action
-      else if (GUI.isFlag(ev.target)) {
+      if (ev.target.nodeName == "A" || ev.target.nodeName == "INPUT" ||
+          GUI.closest(ev.target, "result-frame")) {
+        ; // Clicks in anchor, input or result-frame should perform default action
+      } else if (GUI.isFlag(ev.target)) {
         GUI.toggleFlag(ev.target, ev);
       } else if (expectation) {
         GUI.toggleResults(expectation, ev);
@@ -1123,7 +1126,6 @@ const GUI = {
   printSummary: function (fullResults) {
     if (fullResults.builder_name)
       document.querySelector("#builder_name").innerText = fullResults.builder_name;
-    document.querySelector("#summary_total").innerText = fullResults.num_passes + fullResults.num_regressions;
     document.querySelector("#summary_passed").innerText = fullResults.num_passes;
     document.querySelector("#summary_regressions").innerText = fullResults.num_regressions;
     let failures = fullResults["num_failures_by_type"];
@@ -1141,10 +1143,12 @@ const GUI = {
       "count_unexpected_pass": 0,
       "count_unexpected_fail": 0,
       "count_testexpectations": 0,
-      "count_flaky": 0
+      "count_flaky": 0,
+      "count_all": 0,
     };
     var t = new Traversal(fullResults.tests);
     t.traverse( test => {
+      counts.count_all++;
       if (Filters.unexpectedPass(test))
         counts.count_unexpected_pass++;
       if (Filters.unexpectedFailure(test))
@@ -1156,11 +1160,16 @@ const GUI = {
     });
     for (let p in counts)
       document.querySelector("#" + p).innerText = counts[p];
-    document.querySelector("#count_all").innerText = fullResults.num_passes + fullResults.num_regressions;
+
+    document.querySelector("#summary_total").innerText = counts.count_all;
   },
 
   getExpectation: function(el) {
-    return GUI.closest(el, "expect");
+    let result = GUI.closest(el, "expect");
+    if (result)
+      return result;
+    result = GUI.closest(el, "result-frame");
+    return result ? result.previousElementSibling : null;
   },
 
   isFlag: function(el) {
@@ -1217,6 +1226,7 @@ const GUI = {
     }
     if (isOpen) {
       GUI.hideResults(expectation);
+      expectation.focus();
     }
     else {
       GUI.showResults(expectation);
@@ -1376,6 +1386,11 @@ class ImageResultsToolbar extends TXToolbar {
       if (ev.target.tagName == "A") {
         this.selectAnchor(ev.target);
         ev.preventDefault();
+        if (this.animationIntervalId) {
+          // Suspend animation to show the clicked view for one second.
+          this.animationPaused = true;
+          window.setTimeout(_ => { this.animationPaused = false }, 1000);
+        }
       }
     });
 
@@ -1455,6 +1470,8 @@ class ImageResultsToolbar extends TXToolbar {
             this.animationIntervalId = null;
             return;
           }
+          if (this.animationPaused)
+            return;
           // Find next anchor.
           let allAnchors = Array.from(this.toolbar.querySelectorAll("a"));
           let nextAnchor = allAnchors[0];
@@ -1467,6 +1484,7 @@ class ImageResultsToolbar extends TXToolbar {
           this.selectAnchor(nextAnchor, false);
         }, 400);
     } else {
+      this.animationPaused = false;
       if (this.animationIntervalId) {
         window.clearInterval(this.animationIntervalId);
         this.animationIntervalId = null;
