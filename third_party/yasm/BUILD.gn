@@ -66,6 +66,7 @@ if (current_toolchain == host_toolchain) {
   import("//build/compiled_action.gni")
 
   config("yasm_config") {
+    configs = [ "//build/config/sanitizers:cfi_icall_generalize_pointers" ]
     include_dirs = [
       "source/config/$host_os",
       "source/patched-yasm",

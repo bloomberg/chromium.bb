@@ -387,6 +387,14 @@ config("cfi_flags") {
   }
 }
 
+# crbug.com/785442: Fix cfi-icall failures for code that casts pointer argument
+# types in function pointer type signatures.
+config("cfi_icall_generalize_pointers") {
+  if (is_clang && is_cfi && use_cfi_icall) {
+    cflags = [ "-fsanitize-cfi-icall-generalize-pointers" ]
+  }
+}
+
 config("coverage_flags") {
   cflags = []
 

@@ -139,6 +139,7 @@ source_set("freetype_source") {
   }
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
+  configs += [ "//build/config/sanitizers:cfi_icall_generalize_pointers" ]
   configs += [ ":freetype-warnings" ]
 
   public_configs = [ ":freetype_config" ]
