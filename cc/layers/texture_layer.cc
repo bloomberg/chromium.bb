@@ -109,8 +109,8 @@ void TextureLayer::SetTransferableResourceInternal(
 
   // If we never commited the mailbox, we need to release it here.
   if (!resource.mailbox_holder.mailbox.IsZero()) {
-    holder_ref_ =
-        TextureMailboxHolder::Create(resource, std::move(release_callback));
+    holder_ref_ = TransferableResourceHolder::Create(
+        resource, std::move(release_callback));
   } else {
     holder_ref_ = nullptr;
   }
@@ -201,7 +201,7 @@ void TextureLayer::PushPropertiesTo(LayerImpl* layer) {
     viz::TransferableResource resource;
     std::unique_ptr<viz::SingleReleaseCallback> release_callback;
     if (holder_ref_) {
-      TextureMailboxHolder* holder = holder_ref_->holder();
+      TransferableResourceHolder* holder = holder_ref_->holder();
       resource = holder->resource();
       release_callback = holder->GetCallbackForImplThread(
           layer_tree_host()->GetTaskRunnerProvider()->MainThreadTaskRunner());
@@ -212,18 +212,18 @@ void TextureLayer::PushPropertiesTo(LayerImpl* layer) {
   }
 }
 
-TextureLayer::TextureMailboxHolder::MainThreadReference::MainThreadReference(
-    TextureMailboxHolder* holder)
+TextureLayer::TransferableResourceHolder::MainThreadReference::
+    MainThreadReference(TransferableResourceHolder* holder)
     : holder_(holder) {
   holder_->InternalAddRef();
 }
 
-TextureLayer::TextureMailboxHolder::MainThreadReference::
+TextureLayer::TransferableResourceHolder::MainThreadReference::
     ~MainThreadReference() {
   holder_->InternalRelease();
 }
 
-TextureLayer::TextureMailboxHolder::TextureMailboxHolder(
+TextureLayer::TransferableResourceHolder::TransferableResourceHolder(
     const viz::TransferableResource& resource,
     std::unique_ptr<viz::SingleReleaseCallback> release_callback)
     : internal_references_(0),
@@ -232,19 +232,19 @@ TextureLayer::TextureMailboxHolder::TextureMailboxHolder(
       sync_token_(resource.mailbox_holder.sync_token),
       is_lost_(false) {}
 
-TextureLayer::TextureMailboxHolder::~TextureMailboxHolder() {
+TextureLayer::TransferableResourceHolder::~TransferableResourceHolder() {
   DCHECK_EQ(0u, internal_references_);
 }
 
-std::unique_ptr<TextureLayer::TextureMailboxHolder::MainThreadReference>
-TextureLayer::TextureMailboxHolder::Create(
+std::unique_ptr<TextureLayer::TransferableResourceHolder::MainThreadReference>
+TextureLayer::TransferableResourceHolder::Create(
     const viz::TransferableResource& resource,
     std::unique_ptr<viz::SingleReleaseCallback> release_callback) {
   return std::make_unique<MainThreadReference>(
-      new TextureMailboxHolder(resource, std::move(release_callback)));
+      new TransferableResourceHolder(resource, std::move(release_callback)));
 }
 
-void TextureLayer::TextureMailboxHolder::Return(
+void TextureLayer::TransferableResourceHolder::Return(
     const gpu::SyncToken& sync_token,
     bool is_lost) {
   base::AutoLock lock(arguments_lock_);
@@ -253,22 +253,22 @@ void TextureLayer::TextureMailboxHolder::Return(
 }
 
 std::unique_ptr<viz::SingleReleaseCallback>
-TextureLayer::TextureMailboxHolder::GetCallbackForImplThread(
+TextureLayer::TransferableResourceHolder::GetCallbackForImplThread(
     scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner) {
   // We can't call GetCallbackForImplThread if we released the main thread
   // reference.
   DCHECK_GT(internal_references_, 0u);
   InternalAddRef();
   return viz::SingleReleaseCallback::Create(
-      base::Bind(&TextureMailboxHolder::ReturnAndReleaseOnImplThread, this,
-                 std::move(main_thread_task_runner)));
+      base::Bind(&TransferableResourceHolder::ReturnAndReleaseOnImplThread,
+                 this, std::move(main_thread_task_runner)));
 }
 
-void TextureLayer::TextureMailboxHolder::InternalAddRef() {
+void TextureLayer::TransferableResourceHolder::InternalAddRef() {
   ++internal_references_;
 }
 
-void TextureLayer::TextureMailboxHolder::InternalRelease() {
+void TextureLayer::TransferableResourceHolder::InternalRelease() {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   if (!--internal_references_) {
     release_callback_->Run(sync_token_, is_lost_);
@@ -277,13 +277,14 @@ void TextureLayer::TextureMailboxHolder::InternalRelease() {
   }
 }
 
-void TextureLayer::TextureMailboxHolder::ReturnAndReleaseOnImplThread(
+void TextureLayer::TransferableResourceHolder::ReturnAndReleaseOnImplThread(
     const scoped_refptr<base::SequencedTaskRunner>& main_thread_task_runner,
     const gpu::SyncToken& sync_token,
     bool is_lost) {
   Return(sync_token, is_lost);
   main_thread_task_runner->PostTask(
-      FROM_HERE, base::Bind(&TextureMailboxHolder::InternalRelease, this));
+      FROM_HERE,
+      base::Bind(&TransferableResourceHolder::InternalRelease, this));
 }
 
 }  // namespace cc
