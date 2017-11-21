@@ -29,7 +29,7 @@
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_service_manager.h"
-#include "components/arc/instance_holder.h"
+#include "components/arc/connection_holder.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/accessibility/platform/ax_snapshot_node_android_platform.h"

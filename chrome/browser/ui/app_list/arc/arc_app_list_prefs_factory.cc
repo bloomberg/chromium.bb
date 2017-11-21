@@ -59,10 +59,10 @@ KeyedService* ArcAppListPrefsFactory::BuildServiceInstanceFor(
 
   // Profiles are always treated as allowed to ARC in sync integration test.
   if (is_sync_test_) {
-    sync_test_app_instance_holders_[context] =
-        base::MakeUnique<arc::InstanceHolder<arc::mojom::AppInstance>>();
+    sync_test_app_connection_holders_[context] =
+        std::make_unique<arc::ConnectionHolder<arc::mojom::AppInstance>>();
     return ArcAppListPrefs::Create(
-        profile, sync_test_app_instance_holders_[context].get());
+        profile, sync_test_app_connection_holders_[context].get());
   }
 
   if (!arc::IsArcAllowedForProfile(profile))

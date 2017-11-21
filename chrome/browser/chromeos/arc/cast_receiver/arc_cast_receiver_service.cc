@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/arc/cast_receiver/arc_cast_receiver_service.h"
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/ptr_util.h"

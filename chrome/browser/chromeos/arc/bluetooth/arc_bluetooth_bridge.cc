@@ -317,7 +317,7 @@ class ArcBluetoothBridge::ConnectionObserverImpl
   ~ConnectionObserverImpl() override { GetHolder()->RemoveObserver(this); }
 
  protected:
-  InstanceHolder<T>* GetHolder();
+  ConnectionHolder<T>* GetHolder();
 
   ArcBridgeService* arc_bridge_service() { return arc_bridge_service_; }
 
@@ -333,13 +333,13 @@ class ArcBluetoothBridge::ConnectionObserverImpl
 };
 
 template <>
-InstanceHolder<mojom::AppInstance>*
+ConnectionHolder<mojom::AppInstance>*
 ArcBluetoothBridge::ConnectionObserverImpl<mojom::AppInstance>::GetHolder() {
   return arc_bridge_service()->app();
 }
 
 template <>
-InstanceHolder<mojom::IntentHelperInstance>* ArcBluetoothBridge::
+ConnectionHolder<mojom::IntentHelperInstance>* ArcBluetoothBridge::
     ConnectionObserverImpl<mojom::IntentHelperInstance>::GetHolder() {
   return arc_bridge_service()->intent_helper();
 }
@@ -2114,8 +2114,8 @@ void ArcBluetoothBridge::MaybeSendInitialPowerChange() {
   // after the Intent Helper instance. In case of next boot Intent Helper and
   // App instances are started at almost the same time and order of start is not
   // determined.
-  if (!arc_bridge_service_->app()->has_instance() ||
-      !arc_bridge_service_->intent_helper()->has_instance()) {
+  if (!arc_bridge_service_->app()->IsConnected() ||
+      !arc_bridge_service_->intent_helper()->IsConnected()) {
     return;
   }
 

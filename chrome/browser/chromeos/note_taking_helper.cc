@@ -395,7 +395,7 @@ NoteTakingHelper::NoteTakingHelper()
   if (play_store_enabled_ && arc::ArcServiceManager::Get()
                                  ->arc_bridge_service()
                                  ->intent_helper()
-                                 ->has_instance()) {
+                                 ->IsConnected()) {
     UpdateAndroidApps();
   }
 }

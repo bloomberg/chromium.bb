@@ -40,7 +40,7 @@
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_util.h"
-#include "components/arc/instance_holder.h"
+#include "components/arc/connection_holder.h"
 #include "components/session_manager/core/session_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -609,7 +609,7 @@ bool ArcVoiceInteractionFrameworkService::InitiateUserInteraction(
   }
 
   ArcBootPhaseMonitorBridge::RecordFirstAppLaunchDelayUMA(context_);
-  if (!arc_bridge_service_->voice_interaction_framework()->has_instance()) {
+  if (!arc_bridge_service_->voice_interaction_framework()->IsConnected()) {
     VLOG(1) << "Instance not ready.";
     SetArcCpuRestriction(false);
     is_request_pending_ = true;
