@@ -70695,6 +70695,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SafeBrowsing.Interstitial.Type" enum="InterstitialTypeEnum">
+  <owner>ntfschr@chromium.org</owner>
+  <summary>
+    Which interstitial type is being displayed to the user? This currently
+    applies only to WebView (where we show Loud vs. Quiet interstitials).
+  </summary>
+</histogram>
+
 <histogram name="SafeBrowsing.ModuleBaseRelocation" units="BaseRelocationType">
   <owner>csharp@chromium.org</owner>
   <owner>krstnmnlsn@chromium.org</owner>
