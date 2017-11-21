@@ -50,6 +50,8 @@
 -CrExtensionsServiceTest.Uninstall
 -CrExtensionsShortcutTest.Basic
 -DataProxyScriptBrowserTest.Verify
+# DeclarativeContentApiTest.EnabledForSplitIncognito is flaky.
+-DeclarativeContentApiTest.EnabledForSplitIncognito
 -DeclarativeContentApiTest.UninstallWhileActivePageAction
 -DevToolsSanityTest.TestRawHeadersWithRedirectAndHSTS
 -DiceBrowserTest.Reauth
