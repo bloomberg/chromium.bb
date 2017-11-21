@@ -43,7 +43,8 @@ LanguageDetectionController::LanguageDetectionController(
     : web_state_(web_state), js_manager_(manager), weak_method_factory_(this) {
   DCHECK(web_state_);
   DCHECK(js_manager_);
-  translate_enabled_.Init(prefs::kEnableTranslate, prefs);
+
+  translate_enabled_.Init(prefs::kOfferTranslateEnabled, prefs);
   web_state_->AddObserver(this);
   web_state_->AddScriptCommandCallback(
       base::Bind(&LanguageDetectionController::OnTextCaptured,

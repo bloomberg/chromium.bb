@@ -103,8 +103,8 @@ void TranslateManager::InitiateTranslation(const std::string& page_lang) {
     return;
 
   if (!ignore_missing_key_for_testing_ && !::google_apis::HasKeysConfigured()) {
-    // Without an API key, translate won't work, so don't offer to translate
-    // in the first place. Leave prefs::kEnableTranslate on, though, because
+    // Without an API key, translate won't work, so don't offer to translate in
+    // the first place. Leave prefs::kOfferTranslateEnabled on, though, because
     // that settings syncs and we don't want to turn off translate everywhere
     // else.
     TranslateBrowserMetrics::ReportInitiationStatus(
@@ -115,7 +115,7 @@ void TranslateManager::InitiateTranslation(const std::string& page_lang) {
   std::unique_ptr<TranslatePrefs> translate_prefs(
       translate_client_->GetTranslatePrefs());
 
-  if (!translate_prefs->IsEnabled()) {
+  if (!translate_prefs->IsOfferTranslateEnabled()) {
     TranslateBrowserMetrics::ReportInitiationStatus(
         TranslateBrowserMetrics::INITIATION_STATUS_DISABLED_BY_PREFS);
     std::string target_lang =

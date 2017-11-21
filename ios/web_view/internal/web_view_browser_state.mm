@@ -125,7 +125,7 @@ void WebViewBrowserState::RegisterPrefs(
   // the HTTP header.
   pref_registry->RegisterStringPref(prefs::kAcceptLanguages,
                                     l10n_util::GetLocaleOverride());
-  pref_registry->RegisterBooleanPref(prefs::kEnableTranslate, true);
+  pref_registry->RegisterBooleanPref(prefs::kOfferTranslateEnabled, true);
   translate::TranslatePrefs::RegisterProfilePrefs(pref_registry);
 
   // Instantiate all factories to setup dependency graph for pref registration.

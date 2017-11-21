@@ -34,7 +34,7 @@ void TranslateDownloadManager::Shutdown() {
 void TranslateDownloadManager::RequestLanguageList(PrefService* prefs) {
   // We don't want to do this when translate is disabled.
   DCHECK(prefs != nullptr);
-  if (!prefs->GetBoolean(prefs::kEnableTranslate))
+  if (!prefs->GetBoolean(prefs::kOfferTranslateEnabled))
     return;
 
   TranslateLanguageList* language_list = GetInstance()->language_list();

@@ -127,7 +127,7 @@ class TranslateManagerTest : public ::testing::Test {
     TranslatePrefs::RegisterProfilePrefs(prefs_.registry());
     // TODO(groby): Figure out RegisterProfilePrefs() should register this.
     prefs_.registry()->RegisterBooleanPref(
-        prefs::kEnableTranslate, true,
+        prefs::kOfferTranslateEnabled, true,
         user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
     manager_->ResetForTesting();
   }
@@ -294,7 +294,7 @@ TEST_F(TranslateManagerTest, DontTranslateOffline) {
   // reached after the early-out tests including IsOffline() passed.
   base::HistogramTester histogram_tester;
 
-  prefs_.SetBoolean(prefs::kEnableTranslate, false);
+  prefs_.SetBoolean(prefs::kOfferTranslateEnabled, false);
 
   translate_manager_->GetLanguageState().LanguageDetermined("de", true);
 
