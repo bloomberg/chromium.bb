@@ -38,7 +38,7 @@
 namespace blink {
 
 class DOMFileSystemBase;
-class BlobCallback;
+class FileCallback;
 class FileWriterCallback;
 
 class MODULES_EXPORT FileEntry final : public Entry {
@@ -51,7 +51,7 @@ class MODULES_EXPORT FileEntry final : public Entry {
   }
 
   void createWriter(FileWriterCallback*, ErrorCallback* = nullptr);
-  void file(BlobCallback*, ErrorCallback* = nullptr);
+  void file(FileCallback*, ErrorCallback* = nullptr);
 
   bool isFile() const override { return true; }
 

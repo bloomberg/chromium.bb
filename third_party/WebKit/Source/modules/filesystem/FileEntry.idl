@@ -33,5 +33,5 @@
     NoInterfaceObject
 ] interface FileEntry : Entry {
     void createWriter(FileWriterCallback successCallback, optional ErrorCallback errorCallback);
-    void file(BlobCallback successCallback, optional ErrorCallback errorCallback);
+    void file(FileCallback successCallback, optional ErrorCallback errorCallback);
 };
