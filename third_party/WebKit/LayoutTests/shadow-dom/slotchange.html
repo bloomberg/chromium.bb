@@ -31,9 +31,9 @@ async_test((test) => {
   removeWhiteSpaceOnlyTextNodes(n.test1);
 
   n.shadowroot.addEventListener('slotchange', test.step_func_done((e) => {
-    assert_true(event.bubbles, 'A slotchange should be a bubbling event');
-    assert_false(event.composed, 'A slotchange should be a non-composed event')
-    assert_equals(event.target, n.s1);
+    assert_true(e.bubbles, 'A slotchange should be a bubbling event');
+    assert_false(e.composed, 'A slotchange should be a non-composed event')
+    assert_equals(e.target, n.s1);
   }))
 
   let d1 = document.createElement('div');

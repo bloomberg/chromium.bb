@@ -139,9 +139,15 @@ void V8AbstractEventListener::InvokeEventHandler(
     v8::Local<v8::Value> saved_event = event_symbol.GetOrUndefined(global);
     try_catch.Reset();
 
-    // Make the event available in the global object, so LocalDOMWindow can
-    // expose it.
-    event_symbol.Set(global, js_event);
+    // Expose the event object as |window.event|, except when the event's target
+    // is in a V1 shadow tree, in which case |window.event| should be
+    // |undefined|.
+    Node* target_node = event->target()->ToNode();
+    if (target_node && target_node->IsInV1ShadowTree()) {
+      event_symbol.Set(global, v8::Undefined(GetIsolate()));
+    } else {
+      event_symbol.Set(global, js_event);
+    }
     try_catch.Reset();
 
     return_value = CallListenerFunction(script_state, js_event, event);
