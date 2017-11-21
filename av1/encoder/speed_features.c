@@ -538,4 +538,8 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
     cpi->find_fractional_mv_step = av1_return_max_sub_pixel_mv;
   else if (cpi->oxcf.motion_vector_unit_test == 2)
     cpi->find_fractional_mv_step = av1_return_min_sub_pixel_mv;
+
+#if CONFIG_DIST_8X8
+  if (sf->use_transform_domain_distortion) cpi->oxcf.using_dist_8x8 = 0;
+#endif  // CONFIG_DIST_8X8
 }
