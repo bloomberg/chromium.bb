@@ -167,7 +167,8 @@ enum class Reason : int {
   REASON_REAUTHENTICATION,
   REASON_UNLOCK,
   REASON_UNKNOWN_REASON,  // This should never have been used to get signin URL.
-  REASON_MAX,             // This must be last.
+  REASON_FORCED_SIGNIN_PRIMARY_ACCOUNT,
+  REASON_MAX,  // This must be last.
 };
 
 // Enum values used for use with the "Signin.Reauth" histogram.

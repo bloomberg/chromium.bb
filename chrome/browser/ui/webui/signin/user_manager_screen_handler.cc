@@ -478,7 +478,11 @@ void UserManagerScreenHandler::HandleAuthenticatedLaunchUser(
         l10n_util::GetStringUTF16(IDS_USER_NOT_ALLOWED_BY_POLICY), web_ui());
   } else {
     // Fresh sign in via user manager without existing email address.
-    UserManagerProfileDialog::ShowSigninDialog(browser_context, profile_path);
+    UserManagerProfileDialog::ShowSigninDialog(
+        browser_context, profile_path,
+        signin_util::IsForceSigninEnabled()
+            ? signin_metrics::Reason::REASON_FORCED_SIGNIN_PRIMARY_ACCOUNT
+            : signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT);
   }
 }
 
