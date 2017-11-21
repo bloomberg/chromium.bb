@@ -739,7 +739,6 @@ crbug.com/776656 virtual/incremental-shadow-dom/fast/dom/shadow/remove-details-i
 crbug.com/776656 virtual/incremental-shadow-dom/fast/dom/shadow/shadow-contents-event.html [ Failure Crash ]
 crbug.com/776656 virtual/incremental-shadow-dom/fast/dom/shadow/shadow-contents-select.html [ Failure Crash ]
 crbug.com/776656 virtual/incremental-shadow-dom/fast/dom/shadow/shadow-dom-event-dispatching-details-summary.html [ Failure Crash ]
-crbug.com/776656 virtual/incremental-shadow-dom/fast/dom/shadow/shadowdom-for-button.html [ Failure ]
 crbug.com/776656 virtual/incremental-shadow-dom/fast/dom/shadow/shadowdom-for-textarea-only-shadow.html [ Failure Crash ]
 crbug.com/776656 virtual/incremental-shadow-dom/fast/dom/shadow/shadowdom-for-textarea-with-attribute.html [ Failure Crash ]
 crbug.com/776656 virtual/incremental-shadow-dom/fast/dom/shadow/shadowdom-for-textarea-with-style.html [ Failure Crash ]
@@ -775,7 +774,6 @@ crbug.com/776656 virtual/incremental-shadow-dom/shadow-dom/slots-text-nodes.html
 crbug.com/776656 virtual/incremental-shadow-dom/shadow-dom/slotted-pseudo-element-dynamic-attribute-change.html [ Failure ]
 crbug.com/776656 virtual/incremental-shadow-dom/shadow-dom/slotted-pseudo-element-shared-style.html [ Failure ]
 crbug.com/776656 virtual/incremental-shadow-dom/shadow-dom/slotted-pseudo-element.html [ Failure ]
-crbug.com/776656 virtual/incremental-shadow-dom/shadow-dom/v0/get-destination-insertion-points-re-distribution.html [ Failure Crash ]
 crbug.com/776656 virtual/incremental-shadow-dom/shadow-dom/v0/v0-inert-features-in-v1-shadow-trees.html [ Failure Crash ]
 
 # ====== IncrementalShadowDOM-only failures until here ======
