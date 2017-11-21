@@ -7,7 +7,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_resource_macros.h"
-#include "ios/chrome/browser/ui/tools_menu/tools_menu_constants.h"
+#include "ios/chrome/browser/ui/tools_menu/public/tools_menu_constants.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"

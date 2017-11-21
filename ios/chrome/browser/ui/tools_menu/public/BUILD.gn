@@ -5,8 +5,11 @@
 source_set("public") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "tools_menu_configuration_provider.h",
     "tools_menu_constants.h",
     "tools_menu_constants.mm",
+    "tools_menu_presentation_provider.h",
+    "tools_menu_presentation_state_provider.h",
   ]
   deps = [
     "//base",

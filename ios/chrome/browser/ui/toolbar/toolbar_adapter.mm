@@ -115,12 +115,12 @@
   return;
 }
 
-- (void)showToolsMenuPopupWithConfiguration:
-    (ToolsMenuConfiguration*)configuration {
+- (void)setToolsMenuStateProvider:
+    (id<ToolsMenuPresentationStateProvider>)provider {
   return;
 }
 
-- (void)dismissToolsMenuPopup {
+- (void)setToolsMenuIsVisibleForToolsMenuButton:(BOOL)isVisible {
   return;
 }
 

@@ -40,6 +40,7 @@
 @property(nonatomic, readonly, strong) UIImageView* backgroundView;
 
 // Following methods will be removed shortly by CL 741466.
+@optional
 #pragma mark - ToolsMenu
 - (void)showToolsMenuPopupWithConfiguration:
     (ToolsMenuConfiguration*)configuration;

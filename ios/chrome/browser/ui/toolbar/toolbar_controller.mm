@@ -27,7 +27,6 @@
 #import "ios/chrome/browser/ui/toolbar/toolbar_tools_menu_button.h"
 #import "ios/chrome/browser/ui/toolbar/tools_menu_button_observer_bridge.h"
 #import "ios/chrome/browser/ui/tools_menu/tools_menu_configuration.h"
-#import "ios/chrome/browser/ui/tools_menu/tools_popup_controller.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 #import "ios/chrome/common/material_timing.h"
@@ -83,9 +82,6 @@ using ios::material::TimingFunction;
   ToolsMenuButtonObserverBridge* toolsMenuButtonObserverBridge_;
   ToolbarControllerStyle style_;
 
-  // The following is nil if not visible.
-  ToolsPopupController* toolsPopupController_;
-
   // Backing object for |self.omniboxExpanderAnimator|.
   API_AVAILABLE(ios(10.0)) UIViewPropertyAnimator* _omniboxExpanderAnimator;
 
@@ -115,7 +111,7 @@ using ios::material::TimingFunction;
 @synthesize contentView = contentView_;
 @synthesize backgroundView = backgroundView_;
 @synthesize shadowView = shadowView_;
-@synthesize toolsPopupController = toolsPopupController_;
+@synthesize toolsMenuStateProvider = toolsMenuStateProvider_;
 @synthesize style = style_;
 @synthesize heightConstraint = heightConstraint_;
 @synthesize dispatcher = dispatcher_;
@@ -292,33 +288,11 @@ using ios::material::TimingFunction;
     SetA11yLabelAndUiAutomationName(toolsMenuButton_, IDS_IOS_TOOLBAR_SETTINGS,
                                     kToolbarToolsMenuButtonIdentifier);
     [self updateStandardButtons];
-
-    NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
-    [defaultCenter addObserver:self
-                      selector:@selector(applicationDidEnterBackground:)
-                          name:UIApplicationDidEnterBackgroundNotification
-                        object:nil];
   }
   return self;
 }
 
-- (void)dealloc {
-  [[NSNotificationCenter defaultCenter] removeObserver:self];
-  [toolsPopupController_ setDelegate:nil];
-}
-
 #pragma mark - Public API
-
-- (void)applicationDidEnterBackground:(NSNotification*)notify {
-  if (toolsPopupController_) {
-    // Dismiss the tools popup menu without animation.
-    [toolsMenuButton_ setToolsMenuIsVisible:NO];
-    toolsPopupController_ = nil;
-    [[NSNotificationCenter defaultCenter]
-        postNotificationName:kMenuWillHideNotification
-                      object:nil];
-  }
-}
 
 - (void)setReadingListModel:(ReadingListModel*)readingListModel {
   readingListModel_ = readingListModel;
@@ -343,51 +317,8 @@ using ios::material::TimingFunction;
   self.trailingFakeSafeAreaConstraint.active = NO;
 }
 
-#pragma mark ToolsMenuPopUp
-
-- (void)showToolsMenuPopupWithConfiguration:
-    (ToolsMenuConfiguration*)configuration {
-  // Because an animation hides and shows the tools popup menu it is possible to
-  // tap the tools button multiple times before the tools menu is shown. Ignore
-  // repeated taps between animations.
-  if (toolsPopupController_)
-    return;
-
-  base::RecordAction(UserMetricsAction("ShowAppMenu"));
-
-  // Keep the button pressed.
-  [toolsMenuButton_ setToolsMenuIsVisible:YES];
-
-  [configuration setToolsMenuButton:toolsMenuButton_];
-  toolsPopupController_ =
-      [[ToolsPopupController alloc] initWithConfiguration:configuration
-                                               dispatcher:self.dispatcher];
-  [toolsPopupController_ setDelegate:self];
-
-  [[NSNotificationCenter defaultCenter]
-      postNotificationName:kMenuWillShowNotification
-                    object:nil];
-}
-
-- (void)dismissToolsMenuPopup {
-  if (!toolsPopupController_)
-    return;
-  ToolsPopupController* tempTPC = toolsPopupController_;
-  [tempTPC containerView].userInteractionEnabled = NO;
-  [tempTPC dismissAnimatedWithCompletion:^{
-    // Unpress the tools menu button by restoring the normal and
-    // highlighted images to their usual state.
-    [toolsMenuButton_ setToolsMenuIsVisible:NO];
-    // Reference tempTPC so the block retains it.
-    [tempTPC self];
-  }];
-  // reset tabHistoryPopupController_ to prevent -applicationDidEnterBackground
-  // from posting another kMenuWillHideNotification.
-  toolsPopupController_ = nil;
-
-  [[NSNotificationCenter defaultCenter]
-      postNotificationName:kMenuWillHideNotification
-                    object:nil];
+- (void)setToolsMenuIsVisibleForToolsMenuButton:(BOOL)isVisible {
+  [toolsMenuButton_ setToolsMenuIsVisible:isVisible];
 }
 
 #pragma mark Appearance
@@ -627,7 +558,7 @@ using ios::material::TimingFunction;
   // representing the tools menu button have been swapped. Factor that in by
   // adding in whether or not the tools popup menu is a valid object, rather
   // than trying to figure out which image is currently visible.
-  hash |= toolsPopupController_ ? (1 << 4) : 0;
+  hash |= [toolsMenuStateProvider_ isShowingToolsMenu] ? (1 << 4) : 0;
   // The label of the stack button changes with the number of tabs open.
   hash ^= [[stackButton_ titleForState:UIControlStateNormal] hash];
   return hash;
@@ -694,6 +625,13 @@ using ios::material::TimingFunction;
 - (void)setOmniboxContractorAnimator:
     (UIViewPropertyAnimator*)omniboxContractorAnimator {
   _omniboxContractorAnimator = omniboxContractorAnimator;
+}
+
+#pragma mark - ToolsMenuPresentationProvider
+
+- (UIButton*)presentingButtonForToolsMenuCoordinator:
+    (ToolsMenuCoordinator*)coordinator {
+  return toolsMenuButton_;
 }
 
 #pragma mark - Private Methods
@@ -856,14 +794,6 @@ using ios::material::TimingFunction;
 
 - (UIView*)shareButtonView {
   return shareButton_;
-}
-
-#pragma mark - PopupMenuDelegate methods.
-
-- (void)dismissPopupMenu:(PopupMenuController*)controller {
-  if ([controller isKindOfClass:[ToolsPopupController class]] &&
-      (ToolsPopupController*)controller == toolsPopupController_)
-    [self dismissToolsMenuPopup];
 }
 
 #pragma mark - BubbleViewAnchorPointProvider methods.

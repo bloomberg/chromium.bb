@@ -15,6 +15,7 @@
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_controller.h"
 #import "ios/chrome/browser/ui/tabs/requirements/tab_strip_constants.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_constants.h"
+#import "ios/chrome/browser/ui/tools_menu/public/tools_menu_constants.h"
 #import "ios/chrome/browser/ui/voice/voice_search_notification_names.h"
 #include "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
@@ -227,11 +228,11 @@ BOOL CGFloatEquals(CGFloat a, CGFloat b) {
                  object:nil];
     [center addObserver:self
                selector:@selector(incrementFullScreenLock)
-                   name:kMenuWillShowNotification
+                   name:kToolsMenuWillShowNotification
                  object:nil];
     [center addObserver:self
                selector:@selector(decrementFullScreenLock)
-                   name:kMenuWillHideNotification
+                   name:kToolsMenuWillHideNotification
                  object:nil];
     [center addObserver:self
                selector:@selector(triggerHeader)
