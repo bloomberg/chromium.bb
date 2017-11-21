@@ -25,36 +25,6 @@
           "object": "LayoutSVGPath polygon",
           "rect": [168, 150, 164, 164],
           "reason": "style change"
-        },
-        {
-          "object": "LayoutSVGViewportContainer svg id='poly'",
-          "rect": [168, 150, 164, 163],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutSVGViewportContainer svg id='poly'",
-          "rect": [32, 150, 163, 163],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutSVGContainer use id='t2'",
-          "rect": [181, 163, 138, 137],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutSVGContainer use",
-          "rect": [454, 163, 137, 137],
-          "reason": "SVG resource change"
-        },
-        {
-          "object": "LayoutSVGViewportContainer svg",
-          "rect": [318, 163, 137, 137],
-          "reason": "SVG resource change"
-        },
-        {
-          "object": "LayoutSVGContainer use id='t1'",
-          "rect": [45, 163, 137, 137],
-          "reason": "style change"
         }
       ]
     }
@@ -85,20 +55,8 @@
       "reason": "style change"
     },
     {
-      "object": "LayoutSVGViewportContainer svg",
-      "reason": "SVG resource change"
-    },
-    {
       "object": "LayoutSVGPath polygon id='t3'",
       "reason": "style change"
-    },
-    {
-      "object": "LayoutSVGContainer use",
-      "reason": "SVG resource change"
-    },
-    {
-      "object": "LayoutSVGViewportContainer svg id='poly2'",
-      "reason": "SVG resource change"
     },
     {
       "object": "LayoutSVGPath polygon",
