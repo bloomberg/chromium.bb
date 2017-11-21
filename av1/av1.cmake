@@ -254,8 +254,7 @@ set(AOM_AV1_ENCODER_SOURCES
 
 set(AOM_AV1_COMMON_INTRIN_SSE2
     ${AOM_AV1_COMMON_INTRIN_SSE2}
-    "${AOM_ROOT}/av1/common/cdef_block_sse2.c"
-    "${AOM_ROOT}/av1/common/x86/mem_sse2.h")
+    "${AOM_ROOT}/av1/common/cdef_block_sse2.c")
 
 set(AOM_AV1_COMMON_INTRIN_SSSE3
     ${AOM_AV1_COMMON_INTRIN_SSSE3}

@@ -13,9 +13,9 @@
 #include <emmintrin.h>  // SSE2
 
 #include "aom/aom_integer.h"
+#include "aom_dsp/x86/mem_sse2.h"
 #include "av1/common/onyxc_int.h"
 #include "av1/common/txb_common.h"
-#include "av1/common/x86/mem_sse2.h"
 
 static INLINE __m128i load_8bit_4x4_sse2(const void *const s0,
                                          const void *const s1,
