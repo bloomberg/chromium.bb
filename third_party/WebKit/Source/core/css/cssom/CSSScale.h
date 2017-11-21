@@ -7,10 +7,12 @@
 
 #include "base/macros.h"
 #include "core/css/cssom/CSSTransformComponent.h"
+#include "core/css/cssom/CSSUnitValue.h"
 #include "core/geometry/DOMMatrix.h"
 
 namespace blink {
 
+class CSSNumericValue;
 class DOMMatrix;
 
 // Represents a scale value in a CSSTransformValue used for properties like
@@ -21,39 +23,59 @@ class CORE_EXPORT CSSScale final : public CSSTransformComponent {
 
  public:
   // Constructors defined in the IDL.
-  static CSSScale* Create(double x, double y) { return new CSSScale(x, y); }
-  static CSSScale* Create(double x, double y, double z) {
-    return new CSSScale(x, y, z);
-  }
+  static CSSScale* Create(const CSSNumberish&,
+                          const CSSNumberish&,
+                          ExceptionState&);
+  static CSSScale* Create(const CSSNumberish&,
+                          const CSSNumberish&,
+                          const CSSNumberish&,
+                          ExceptionState&);
 
   // Blink-internal ways of creating CSSScales.
+  static CSSScale* Create(CSSNumericValue* x, CSSNumericValue* y) {
+    return new CSSScale(x, y);
+  }
+  static CSSScale* Create(CSSNumericValue* x,
+                          CSSNumericValue* y,
+                          CSSNumericValue* z) {
+    return new CSSScale(x, y, z);
+  }
   static CSSScale* FromCSSValue(const CSSFunctionValue&);
 
   // Getters and setters for attributes defined in the IDL.
-  double x() const { return x_; }
-  double y() const { return y_; }
-  double z() const { return z_; }
-  void setX(double x) { x_ = x; }
-  void setY(double y) { y_ = y; }
-  void setZ(double z) { z_ = z; }
+  void x(CSSNumberish& x) { x.SetCSSNumericValue(x_); }
+  void y(CSSNumberish& y) { y.SetCSSNumericValue(y_); }
+  void z(CSSNumberish& z) { z.SetCSSNumericValue(z_); }
+  void setX(const CSSNumberish&, ExceptionState&);
+  void setY(const CSSNumberish&, ExceptionState&);
+  void setZ(const CSSNumberish&, ExceptionState&);
 
   // Internal methods - from CSSTransformComponent.
   TransformComponentType GetType() const final { return kScaleType; }
-  const DOMMatrix* AsMatrix(ExceptionState&) const final {
-    DOMMatrix* result = DOMMatrix::Create();
-    return result->scaleSelf(x_, y_, z_);
-  }
+  const DOMMatrix* AsMatrix(ExceptionState&) const final;
   const CSSFunctionValue* ToCSSValue(SecureContextMode) const final;
 
+  virtual void Trace(blink::Visitor* visitor) {
+    visitor->Trace(x_);
+    visitor->Trace(y_);
+    visitor->Trace(z_);
+    CSSTransformComponent::Trace(visitor);
+  }
+
  private:
-  CSSScale(double x, double y)
-      : CSSTransformComponent(true /* is2D */), x_(x), y_(y), z_(1) {}
-  CSSScale(double x, double y, double z)
+  CSSScale(CSSNumericValue* x, CSSNumericValue* y)
+      : CSSTransformComponent(true /* is2D */),
+        x_(x),
+        y_(y),
+        z_(CSSUnitValue::Create(1)) {}
+  CSSScale(CSSNumericValue* x, CSSNumericValue* y, CSSNumericValue* z)
       : CSSTransformComponent(false /* is2D */), x_(x), y_(y), z_(z) {}
 
-  double x_;
-  double y_;
-  double z_;
+  static bool isCoordValid(CSSNumericValue*);
+
+  Member<CSSNumericValue> x_;
+  Member<CSSNumericValue> y_;
+  Member<CSSNumericValue> z_;
   DISALLOW_COPY_AND_ASSIGN(CSSScale);
 };
 

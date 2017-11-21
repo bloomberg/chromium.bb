@@ -23,7 +23,9 @@ class CORE_EXPORT CSSUnitValue final : public CSSNumericValue {
                               const String& unit,
                               ExceptionState&);
   // Blink-internal ways of creating CSSUnitValues.
-  static CSSUnitValue* Create(double value, CSSPrimitiveValue::UnitType);
+  static CSSUnitValue* Create(
+      double value,
+      CSSPrimitiveValue::UnitType = CSSPrimitiveValue::UnitType::kNumber);
   static CSSUnitValue* FromCSSValue(const CSSPrimitiveValue&);
 
   // Setters and getters for attributes defined in the IDL.

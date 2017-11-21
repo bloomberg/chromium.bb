@@ -76,7 +76,6 @@ test(() => {
   assert_throws(new TypeError(), () => { new CSSScale(0, 0, NaN); });
   assert_throws(new TypeError(), () => { new CSSScale(0, 0, Infinity); });
   assert_throws(new TypeError(), () => { new CSSScale(0, 0, -Infinity); });
-  assert_throws(new TypeError(), () => { new CSSScale(0, 0, undefined); });
   assert_throws(new TypeError(), () => {
     new CSSScale(undefined, undefined, 0);
   });
