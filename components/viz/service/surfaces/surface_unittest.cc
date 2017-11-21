@@ -27,7 +27,6 @@ constexpr bool kNeedsSyncPoints = true;
 TEST(SurfaceTest, PresentationCallback) {
   const gfx::Size kSurfaceSize(300, 300);
   const LocalSurfaceId local_surface_id(6, base::UnguessableToken::Create());
-  const SurfaceId surface_id(kArbitraryFrameSinkId, local_surface_id);
 
   FrameSinkManagerImpl frame_sink_manager;
   MockCompositorFrameSinkClient client;
@@ -73,6 +72,7 @@ TEST(SurfaceTest, PresentationCallback) {
   // The frame with token 2 will be discarded when the surface is destroyed.
   EXPECT_CALL(client, DidDiscardCompositorFrame(2)).Times(1);
   support->EvictCurrentSurface();
+  frame_sink_manager.surface_manager()->GarbageCollectSurfaces();
 }
 
 TEST(SurfaceTest, SurfaceLifetime) {
@@ -88,6 +88,7 @@ TEST(SurfaceTest, SurfaceLifetime) {
   support->SubmitCompositorFrame(local_surface_id, test::MakeCompositorFrame());
   EXPECT_TRUE(surface_manager->GetSurfaceForId(surface_id));
   support->EvictCurrentSurface();
+  frame_sink_manager.surface_manager()->GarbageCollectSurfaces();
 
   EXPECT_EQ(nullptr, surface_manager->GetSurfaceForId(surface_id));
 }

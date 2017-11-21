@@ -2545,6 +2545,7 @@ TEST_F(SurfaceAggregatorWithResourcesTest, ReturnResourcesAsSurfacesChange) {
   // associated with |surface_id1| to get garbage collected.
   SubmitCompositorFrameWithResources(nullptr, 0u, true, SurfaceId(),
                                      support.get(), surface_id2);
+  manager_.surface_manager()->GarbageCollectSurfaces();
 
   frame = aggregator_->Aggregate(surface_id2);
 

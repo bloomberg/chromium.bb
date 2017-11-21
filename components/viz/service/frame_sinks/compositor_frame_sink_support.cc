@@ -116,9 +116,19 @@ void CompositorFrameSinkSupport::SetBeginFrameSource(
 void CompositorFrameSinkSupport::EvictCurrentSurface() {
   if (!current_surface_id_.is_valid())
     return;
+
   SurfaceId to_destroy_surface_id = current_surface_id_;
   current_surface_id_ = SurfaceId();
   surface_manager_->DestroySurface(to_destroy_surface_id);
+
+  // For display root surfaces the surface is no longer going to be visible.
+  // Make it unreachable from the top-level root.
+  if (referenced_local_surface_id_.has_value()) {
+    auto reference = MakeTopLevelRootReference(
+        SurfaceId(frame_sink_id_, referenced_local_surface_id_.value()));
+    surface_manager_->RemoveSurfaceReferences({reference});
+    referenced_local_surface_id_.reset();
+  }
 }
 
 void CompositorFrameSinkSupport::SetNeedsBeginFrame(bool needs_begin_frame) {
