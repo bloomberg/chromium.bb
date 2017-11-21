@@ -828,6 +828,10 @@ void CompositorImpl::InitializeDisplay(
   auto* gpu_memory_buffer_manager = BrowserMainLoop::GetInstance()
                                         ->gpu_channel_establish_factory()
                                         ->GetGpuMemoryBufferManager();
+
+  // Don't re-register BeginFrameSource on context loss.
+  const bool should_register_begin_frame_source = !display_;
+
   display_ = std::make_unique<viz::Display>(
       viz::ServerSharedBitmapManager::current(), gpu_memory_buffer_manager,
       renderer_settings, frame_sink_id_, std::move(display_output_surface),
@@ -849,8 +853,10 @@ void CompositorImpl::InitializeDisplay(
   display_->SetVisible(true);
   display_->Resize(size_);
   display_->SetColorSpace(display_color_space_, display_color_space_);
-  GetFrameSinkManager()->RegisterBeginFrameSource(
-      root_window_->GetBeginFrameSource(), frame_sink_id_);
+  if (should_register_begin_frame_source) {
+    GetFrameSinkManager()->RegisterBeginFrameSource(
+        root_window_->GetBeginFrameSource(), frame_sink_id_);
+  }
   host_->SetLayerTreeFrameSink(std::move(layer_tree_frame_sink));
 }
 

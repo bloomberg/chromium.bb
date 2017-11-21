@@ -147,27 +147,14 @@ IN_PROC_BROWSER_TEST_P(WebRtcCaptureFromElementBrowserTest,
       kVideoAudioHtmlFile);
 }
 
-// Enable these tests once https://crbug.com/785558 is fixed.
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
-#define MAYBE_CaptureFromCanvas2DHandlesContextLoss \
-  DISABLED_CaptureFromCanvas2DHandlesContextLoss
-#define MAYBE_CaptureFromOpaqueCanvas2DHandlesContextLoss \
-  DISABLED_CaptureFromOpaqueCanvas2DHandlesContextLoss
-#else
-#define MAYBE_CaptureFromCanvas2DHandlesContextLoss \
-  CaptureFromCanvas2DHandlesContextLoss
-#define MAYBE_CaptureFromOpaqueCanvas2DHandlesContextLoss \
-  CaptureFromOpaqueCanvas2DHandlesContextLoss
-#endif
-
 IN_PROC_BROWSER_TEST_F(WebRtcCaptureFromElementBrowserTest,
-                       MAYBE_CaptureFromCanvas2DHandlesContextLoss) {
+                       CaptureFromCanvas2DHandlesContextLoss) {
   MakeTypicalCall("testCanvas2DContextLoss(true);",
                   kCanvasCaptureColorTestHtmlFile);
 }
 
 IN_PROC_BROWSER_TEST_F(WebRtcCaptureFromElementBrowserTest,
-                       MAYBE_CaptureFromOpaqueCanvas2DHandlesContextLoss) {
+                       CaptureFromOpaqueCanvas2DHandlesContextLoss) {
   MakeTypicalCall("testCanvas2DContextLoss(false);",
                   kCanvasCaptureColorTestHtmlFile);
 }
