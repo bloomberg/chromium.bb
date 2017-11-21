@@ -6140,6 +6140,8 @@ void Document::InitContentSecurityPolicy(
     const ContentSecurityPolicy* policy_to_inherit) {
   SetContentSecurityPolicy(csp ? csp : ContentSecurityPolicy::Create());
 
+  GetContentSecurityPolicy()->BindToExecutionContext(this);
+
   // We inherit the parent/opener's CSP for documents with "local" schemes:
   // 'about', 'blob', 'data', and 'filesystem'. We also inherit CSP for
   // documents with empty/invalid URLs because we treat those URLs as
@@ -6169,8 +6171,6 @@ void Document::InitContentSecurityPolicy(
   // regardless of URL.
   if (policy_to_inherit && IsPluginDocument())
     GetContentSecurityPolicy()->CopyPluginTypesFrom(policy_to_inherit);
-
-  GetContentSecurityPolicy()->BindToExecutionContext(this);
 }
 
 bool Document::IsSecureTransitionTo(const KURL& url) const {
