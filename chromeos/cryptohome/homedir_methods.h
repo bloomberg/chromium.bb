@@ -117,7 +117,7 @@ class CHROMEOS_EXPORT HomedirMethods {
   // Asks cryptohomed to migrate the cryptohome to the new encryption method
   // for the user specified by |id|.
   virtual void MigrateToDircrypto(const Identification& id,
-                                  bool minimal_migration,
+                                  const MigrateToDircryptoRequest& request,
                                   const DBusResultCallback& callback) = 0;
 
   // Creates the global HomedirMethods instance.

@@ -186,10 +186,8 @@ class HomedirMethodsImpl : public HomedirMethods {
   }
 
   void MigrateToDircrypto(const Identification& id,
-                          bool minimal_migration,
+                          const cryptohome::MigrateToDircryptoRequest& request,
                           const DBusResultCallback& callback) override {
-    cryptohome::MigrateToDircryptoRequest request;
-    request.set_minimal_migration(minimal_migration);
     DBusThreadManager::Get()->GetCryptohomeClient()->MigrateToDircrypto(
         id, request,
         base::Bind(&HomedirMethodsImpl::OnDBusResultCallback,
