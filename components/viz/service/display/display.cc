@@ -576,7 +576,7 @@ void Display::RemoveOverdrawQuads(CompositorFrame* frame) {
       }
 
       if (!current_sqs_intersects_occlusion) {
-        quad++;
+        ++quad;
         continue;
       }
 
@@ -586,7 +586,7 @@ void Display::RemoveOverdrawQuads(CompositorFrame* frame) {
               transform, quad->visible_rect)))
         quad = pass->quad_list.EraseAndInvalidateAllPointers(quad);
       else
-        quad++;
+        ++quad;
     }
   }
 }
