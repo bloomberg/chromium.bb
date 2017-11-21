@@ -454,7 +454,7 @@ void GLRenderer::DidChangeVisibility() {
   if (visible_) {
     output_surface_->EnsureBackbuffer();
   } else {
-    TRACE_EVENT0("cc", "GLRenderer::DidChangeVisibility dropping resources");
+    TRACE_EVENT0("viz", "GLRenderer::DidChangeVisibility dropping resources");
     ReleaseRenderPassTextures();
     output_surface_->DiscardBackbuffer();
     gl_->ReleaseShaderCompiler();
@@ -534,7 +534,7 @@ void GLRenderer::ClearFramebuffer() {
 }
 
 void GLRenderer::BeginDrawingFrame() {
-  TRACE_EVENT0("cc", "GLRenderer::BeginDrawingFrame");
+  TRACE_EVENT0("viz", "GLRenderer::BeginDrawingFrame");
 
   scoped_refptr<ResourceFence> read_lock_fence;
   if (use_sync_query_) {
@@ -2663,7 +2663,7 @@ void GLRenderer::EnsureScissorTestDisabled() {
 
 void GLRenderer::CopyDrawnRenderPass(
     std::unique_ptr<CopyOutputRequest> request) {
-  TRACE_EVENT0("cc", "GLRenderer::CopyDrawnRenderPass");
+  TRACE_EVENT0("viz", "GLRenderer::CopyDrawnRenderPass");
 
   if (overdraw_feedback_)
     FlushOverdrawFeedback(current_frame()->current_render_pass->output_rect);
@@ -2780,7 +2780,7 @@ void GLRenderer::DrawQuadGeometry(const gfx::Transform& projection_matrix,
 void GLRenderer::SwapBuffers(std::vector<ui::LatencyInfo> latency_info) {
   DCHECK(visible_);
 
-  TRACE_EVENT0("cc", "GLRenderer::SwapBuffers");
+  TRACE_EVENT0("viz", "GLRenderer::SwapBuffers");
   // We're done! Time to swapbuffers!
 
   gfx::Size surface_size = surface_size_for_swap_buffers();
@@ -2948,7 +2948,7 @@ void GLRenderer::SetViewport() {
 }
 
 void GLRenderer::InitializeSharedObjects() {
-  TRACE_EVENT0("cc", "GLRenderer::InitializeSharedObjects");
+  TRACE_EVENT0("viz", "GLRenderer::InitializeSharedObjects");
 
   // Create an FBO for doing offscreen rendering.
   gl_->GenFramebuffers(1, &offscreen_framebuffer_id_);

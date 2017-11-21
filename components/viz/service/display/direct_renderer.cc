@@ -201,7 +201,7 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
                                float device_scale_factor,
                                const gfx::Size& device_viewport_size) {
   DCHECK(visible_);
-  TRACE_EVENT0("cc", "DirectRenderer::DrawFrame");
+  TRACE_EVENT0("viz", "DirectRenderer::DrawFrame");
   UMA_HISTOGRAM_COUNTS(
       "Renderer4.renderPassCount",
       base::saturated_cast<int>(render_passes_in_draw_order->size()));
@@ -465,7 +465,7 @@ void DirectRenderer::DrawRenderPassAndExecuteCopyRequests(
 }
 
 void DirectRenderer::DrawRenderPass(const RenderPass* render_pass) {
-  TRACE_EVENT0("cc", "DirectRenderer::DrawRenderPass");
+  TRACE_EVENT0("viz", "DirectRenderer::DrawRenderPass");
   if (CanSkipRenderPass(render_pass))
     return;
   UseRenderPass(render_pass);

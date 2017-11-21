@@ -34,7 +34,7 @@ DelayBasedTimeSource::DelayBasedTimeSource(
 DelayBasedTimeSource::~DelayBasedTimeSource() = default;
 
 void DelayBasedTimeSource::SetActive(bool active) {
-  TRACE_EVENT1("cc", "DelayBasedTimeSource::SetActive", "active", active);
+  TRACE_EVENT1("viz", "DelayBasedTimeSource::SetActive", "active", active);
 
   if (active == active_)
     return;

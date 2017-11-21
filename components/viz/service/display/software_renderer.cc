@@ -74,12 +74,12 @@ ResourceFormat SoftwareRenderer::BackbufferFormat() const {
 }
 
 void SoftwareRenderer::BeginDrawingFrame() {
-  TRACE_EVENT0("cc", "SoftwareRenderer::BeginDrawingFrame");
+  TRACE_EVENT0("viz", "SoftwareRenderer::BeginDrawingFrame");
   root_canvas_ = output_device_->BeginPaint(current_frame()->root_damage_rect);
 }
 
 void SoftwareRenderer::FinishDrawingFrame() {
-  TRACE_EVENT0("cc", "SoftwareRenderer::FinishDrawingFrame");
+  TRACE_EVENT0("viz", "SoftwareRenderer::FinishDrawingFrame");
   current_framebuffer_lock_ = nullptr;
   current_framebuffer_canvas_.reset();
   current_canvas_ = nullptr;
@@ -90,7 +90,7 @@ void SoftwareRenderer::FinishDrawingFrame() {
 
 void SoftwareRenderer::SwapBuffers(std::vector<ui::LatencyInfo> latency_info) {
   DCHECK(visible_);
-  TRACE_EVENT0("cc", "SoftwareRenderer::SwapBuffers");
+  TRACE_EVENT0("viz", "SoftwareRenderer::SwapBuffers");
   OutputSurfaceFrame output_frame;
   output_frame.latency_info = std::move(latency_info);
   output_surface_->SwapBuffers(std::move(output_frame));
@@ -216,7 +216,7 @@ void SoftwareRenderer::DoDrawQuad(const DrawQuad* quad,
   if (!current_canvas_)
     return;
 
-  TRACE_EVENT0("cc", "SoftwareRenderer::DoDrawQuad");
+  TRACE_EVENT0("viz", "SoftwareRenderer::DoDrawQuad");
   bool do_save = draw_region || is_scissor_enabled_;
   SkAutoCanvasRestore canvas_restore(current_canvas_, do_save);
   if (is_scissor_enabled_) {
@@ -339,7 +339,7 @@ void SoftwareRenderer::DrawPictureQuad(const PictureDrawQuad* quad) {
   const bool disable_image_filtering =
       disable_picture_quad_image_filtering_ || quad->nearest_neighbor;
 
-  TRACE_EVENT0("cc", "SoftwareRenderer::DrawPictureQuad");
+  TRACE_EVENT0("viz", "SoftwareRenderer::DrawPictureQuad");
 
   SkCanvas* raster_canvas = current_canvas_;
 
