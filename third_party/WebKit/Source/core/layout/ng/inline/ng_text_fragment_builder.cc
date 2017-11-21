@@ -50,12 +50,11 @@ void NGTextFragmentBuilder::SetItem(NGInlineItemResult* item_result,
 void NGTextFragmentBuilder::SetText(
     scoped_refptr<const ComputedStyle> style,
     scoped_refptr<const ShapeResult> shape_result,
-    LayoutUnit inline_size,
-    LayoutUnit line_height) {
+    NGLogicalSize size) {
   DCHECK(style);
 
   SetStyle(style);
-  size_ = {inline_size, line_height};
+  size_ = size;
   end_effect_ = NGTextEndEffect::kNone;
   shape_result_ = shape_result;
   expansion_ = 0;
@@ -65,12 +64,11 @@ void NGTextFragmentBuilder::SetText(
 
 void NGTextFragmentBuilder::SetAtomicInline(
     scoped_refptr<const ComputedStyle> style,
-    LayoutUnit inline_size,
-    LayoutUnit line_height) {
+    NGLogicalSize size) {
   DCHECK(style);
 
   SetStyle(style);
-  size_ = {inline_size, line_height};
+  size_ = size;
   end_effect_ = NGTextEndEffect::kNone;
   shape_result_ = nullptr;
   expansion_ = 0;
