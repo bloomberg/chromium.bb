@@ -10,6 +10,7 @@
 #include "headless/lib/browser/headless_web_contents_impl.h"
 #include "headless/public/devtools/domains/network.h"
 #include "headless/public/devtools/domains/page.h"
+#include "headless/public/devtools/domains/runtime.h"
 #include "headless/public/headless_devtools_client.h"
 #include "headless/public/util/testing/test_in_memory_protocol_handler.h"
 #include "headless/test/headless_browser_test.h"
@@ -69,7 +70,8 @@ const char* kStyle3Css = R"(
 
 class FrameIdTest : public HeadlessAsyncDevTooledBrowserTest,
                     public network::ExperimentalObserver,
-                    public page::Observer {
+                    public page::Observer,
+                    public runtime::Observer {
  public:
   void RunDevTooledTest() override {
     http_handler_->SetHeadlessBrowserContext(browser_context_);
@@ -77,6 +79,17 @@ class FrameIdTest : public HeadlessAsyncDevTooledBrowserTest,
     EXPECT_TRUE(embedded_test_server()->Start());
     devtools_client_->GetNetwork()->GetExperimental()->AddObserver(this);
     devtools_client_->GetNetwork()->Enable();
+    devtools_client_->GetRuntime()->GetExperimental()->AddObserver(this);
+    devtools_client_->GetRuntime()->Enable();
+
+    // Enabling the runtime domain will send us the current context.
+    run_loop_ = base::MakeUnique<base::RunLoop>(
+        base::RunLoop::Type::kNestableTasksAllowed);
+    run_loop_->Run();
+    run_loop_ = nullptr;
+
+    EXPECT_EQ(1u, execution_context_frame_ids_.size());
+    execution_context_frame_ids_.clear();
 
     if (EnableInterception()) {
       std::unique_ptr<headless::network::RequestPattern> match_all =
@@ -93,9 +106,11 @@ class FrameIdTest : public HeadlessAsyncDevTooledBrowserTest,
 
     devtools_client_->GetPage()->AddObserver(this);
 
-    base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
-    devtools_client_->GetPage()->Enable(run_loop.QuitClosure());
-    run_loop.Run();
+    run_loop_ = base::MakeUnique<base::RunLoop>(
+        base::RunLoop::Type::kNestableTasksAllowed);
+    devtools_client_->GetPage()->Enable(run_loop_->QuitClosure());
+    run_loop_->Run();
+    run_loop_ = nullptr;
 
     devtools_client_->GetPage()->Navigate("http://foo.com/index.html");
   }
@@ -126,20 +141,37 @@ class FrameIdTest : public HeadlessAsyncDevTooledBrowserTest,
   void OnRequestWillBeSent(
       const network::RequestWillBeSentParams& params) override {
     url_to_frame_id_[params.GetRequest()->GetUrl()] = params.GetFrameId();
+    frame_ids_.insert(params.GetFrameId());
   }
 
   // page::Observer implementation:
   void OnLoadEventFired(const page::LoadEventFiredParams& params) override {
     EXPECT_THAT(url_to_frame_id_,
                 ContainerEq(http_handler_->url_to_devtools_frame_id()));
+    EXPECT_THAT(execution_context_frame_ids_, ContainerEq(frame_ids_));
     FinishAsynchronousTest();
   }
 
   virtual bool EnableInterception() const { return false; }
 
+  void OnExecutionContextCreated(
+      const runtime::ExecutionContextCreatedParams& params) override {
+    const base::Value* frameId =
+        params.GetContext()->GetAuxData()->FindKey("frameId");
+    if (frameId && frameId->is_string())
+      execution_context_frame_ids_.insert(frameId->GetString());
+
+    // If we're nested then exit.
+    if (run_loop_)
+      run_loop_->Quit();
+  }
+
  private:
+  std::set<std::string> frame_ids_;
+  std::set<std::string> execution_context_frame_ids_;
   std::map<std::string, std::string> url_to_frame_id_;
   TestInMemoryProtocolHandler* http_handler_;  // NOT OWNED
+  std::unique_ptr<base::RunLoop> run_loop_;
 };
 
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(FrameIdTest);
