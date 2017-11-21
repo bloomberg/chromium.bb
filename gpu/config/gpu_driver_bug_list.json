@@ -1729,17 +1729,6 @@
             "op": ">=",
             "value": "3.1"
           }
-        },
-        {
-          "os": {
-            "type" : "chromeos"
-          },
-          "gl_vendor": "NVIDIA.*",
-          "gl_type": "gles",
-          "gl_version": {
-            "op": ">=",
-            "value": "3.1"
-          }
         }
       ],
       "features": [
