@@ -16,9 +16,9 @@ using gpu::gles2::GLES2Interface;
 namespace cc {
 
 namespace {
-// The Resouce id in LayerTreeResourceProvider starts from 1 to avoid conflicts
-// with id from DisplayResourceProvider.
-const unsigned int kInitialResourceId = 1;
+// The resource id in LayerTreeResourceProvider starts from 1 to avoid
+// conflicts with id from DisplayResourceProvider.
+const unsigned int kLayerTreeInitialResourceId = 1;
 }  // namespace
 
 struct LayerTreeResourceProvider::ImportedResource {
@@ -55,7 +55,7 @@ LayerTreeResourceProvider::LayerTreeResourceProvider(
                        gpu_memory_buffer_manager,
                        delegated_sync_points_required,
                        resource_settings,
-                       kInitialResourceId) {}
+                       kLayerTreeInitialResourceId) {}
 
 LayerTreeResourceProvider::~LayerTreeResourceProvider() {
   for (auto& pair : imported_resources_) {

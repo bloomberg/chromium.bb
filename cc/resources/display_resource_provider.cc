@@ -15,9 +15,9 @@ using gpu::gles2::GLES2Interface;
 namespace cc {
 
 namespace {
-// The Resouce id in DisplayResourceProvider starts from 2 to avoid conflicts
-// with id from LayerTreeResourceProvider.
-const unsigned int kInitialResourceId = 2;
+// The resource id in DisplayResourceProvider starts from 2 to avoid
+// conflicts with id from LayerTreeResourceProvider.
+const unsigned int kDisplayInitialResourceId = 2;
 }  // namespace
 
 DisplayResourceProvider::DisplayResourceProvider(
@@ -30,7 +30,7 @@ DisplayResourceProvider::DisplayResourceProvider(
                        gpu_memory_buffer_manager,
                        false,
                        resource_settings,
-                       kInitialResourceId) {}
+                       kDisplayInitialResourceId) {}
 
 DisplayResourceProvider::~DisplayResourceProvider() {
   while (!children_.empty())
