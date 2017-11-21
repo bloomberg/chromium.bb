@@ -100,7 +100,7 @@ typedef ContentSettingsPattern::BuilderInterface BuilderInterface;
 class ContentSettingsPattern::Builder :
     public ContentSettingsPattern::BuilderInterface {
  public:
-  explicit Builder();
+  Builder();
   ~Builder() override;
 
   // BuilderInterface:
@@ -508,8 +508,7 @@ bool ContentSettingsPattern::MatchesAllHosts() const {
 std::string ContentSettingsPattern::ToString() const {
   if (IsValid())
     return content_settings::PatternParser::ToString(parts_);
-  else
-    return std::string();
+  return std::string();
 }
 
 ContentSettingsPattern::SchemeType ContentSettingsPattern::GetScheme() const {
@@ -625,7 +624,8 @@ ContentSettingsPattern::Relation ContentSettingsPattern::CompareHost(
     if (result < 0)
       return ContentSettingsPattern::DISJOINT_ORDER_PRE;
     return ContentSettingsPattern::DISJOINT_ORDER_POST;
-  } else if (parts.has_domain_wildcard && !other_parts.has_domain_wildcard) {
+  }
+  if (parts.has_domain_wildcard && !other_parts.has_domain_wildcard) {
     // Case 2: |host| starts with a domain wildcard and |other_host| does not
     // start with a domain wildcard.
     // Examples:
@@ -646,24 +646,22 @@ ContentSettingsPattern::Relation ContentSettingsPattern::CompareHost(
     //
     // *
     // google.de
-    if (IsSubDomainOrEqual(other_parts.host, parts.host)) {
+    if (IsSubDomainOrEqual(other_parts.host, parts.host))
       return ContentSettingsPattern::SUCCESSOR;
-    } else {
-       if (CompareDomainNames(parts.host, other_parts.host) < 0)
-         return ContentSettingsPattern::DISJOINT_ORDER_PRE;
-       return ContentSettingsPattern::DISJOINT_ORDER_POST;
-    }
-  } else if (!parts.has_domain_wildcard && other_parts.has_domain_wildcard) {
+    if (CompareDomainNames(parts.host, other_parts.host) < 0)
+      return ContentSettingsPattern::DISJOINT_ORDER_PRE;
+    return ContentSettingsPattern::DISJOINT_ORDER_POST;
+  }
+  if (!parts.has_domain_wildcard && other_parts.has_domain_wildcard) {
     // Case 3: |host| starts NOT with a domain wildcard and |other_host| starts
     // with a domain wildcard.
-    if (IsSubDomainOrEqual(parts.host, other_parts.host)) {
+    if (IsSubDomainOrEqual(parts.host, other_parts.host))
       return ContentSettingsPattern::PREDECESSOR;
-    } else {
-      if (CompareDomainNames(parts.host, other_parts.host) < 0)
-        return ContentSettingsPattern::DISJOINT_ORDER_PRE;
-      return ContentSettingsPattern::DISJOINT_ORDER_POST;
-    }
-  } else if (parts.has_domain_wildcard && other_parts.has_domain_wildcard) {
+    if (CompareDomainNames(parts.host, other_parts.host) < 0)
+      return ContentSettingsPattern::DISJOINT_ORDER_PRE;
+    return ContentSettingsPattern::DISJOINT_ORDER_POST;
+  }
+  if (parts.has_domain_wildcard && other_parts.has_domain_wildcard) {
     // Case 4: |host| and |other_host| both start with a domain wildcard.
     // Examples:
     // [*.]google.com
@@ -683,17 +681,15 @@ ContentSettingsPattern::Relation ContentSettingsPattern::CompareHost(
     //
     // *
     // [*.]youtube.com
-    if (parts.host == other_parts.host) {
+    if (parts.host == other_parts.host)
       return ContentSettingsPattern::IDENTITY;
-    } else if (IsSubDomainOrEqual(other_parts.host, parts.host)) {
+    if (IsSubDomainOrEqual(other_parts.host, parts.host))
       return ContentSettingsPattern::SUCCESSOR;
-    } else if (IsSubDomainOrEqual(parts.host, other_parts.host)) {
+    if (IsSubDomainOrEqual(parts.host, other_parts.host))
       return ContentSettingsPattern::PREDECESSOR;
-    } else {
-      if (CompareDomainNames(parts.host, other_parts.host) < 0)
-        return ContentSettingsPattern::DISJOINT_ORDER_PRE;
-      return ContentSettingsPattern::DISJOINT_ORDER_POST;
-    }
+    if (CompareDomainNames(parts.host, other_parts.host) < 0)
+      return ContentSettingsPattern::DISJOINT_ORDER_PRE;
+    return ContentSettingsPattern::DISJOINT_ORDER_POST;
   }
 
   NOTREACHED();

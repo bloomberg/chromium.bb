@@ -182,7 +182,7 @@ ItemActionStatus DeleteRequestById(sql::Connection* db, int64_t request_id) {
   statement.BindInt64(0, request_id);
   if (!statement.Run())
     return ItemActionStatus::STORE_ERROR;
-  else if (db->GetLastChangeCount() == 0)
+  if (db->GetLastChangeCount() == 0)
     return ItemActionStatus::NOT_FOUND;
   return ItemActionStatus::SUCCESS;
 }

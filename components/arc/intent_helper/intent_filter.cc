@@ -115,11 +115,10 @@ bool IntentFilter::AuthorityEntry::Match(const GURL& url) const {
   if (wild_) {
     return base::EndsWith(url.host_piece(), host_,
                           base::CompareCase::INSENSITIVE_ASCII);
-  } else {
-    // TODO(kenobi): Not i18n-friendly.  Figure out how to correctly deal with
-    // IDNs.
-    return host_ == base::ToLowerASCII(url.host_piece());
   }
+  // TODO(kenobi): Not i18n-friendly.  Figure out how to correctly deal with
+  // IDNs.
+  return host_ == base::ToLowerASCII(url.host_piece());
 }
 
 IntentFilter::PatternMatcher::PatternMatcher() = default;
