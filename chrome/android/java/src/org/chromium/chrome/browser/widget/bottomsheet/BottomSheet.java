@@ -366,11 +366,14 @@ public class BottomSheet
     private class BottomSheetSwipeDetector extends GestureDetector.SimpleOnGestureListener {
         @Override
         public boolean onDown(MotionEvent e) {
+            if (e == null) return false;
             return shouldGestureMoveSheet(e, e);
         }
 
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+            if (e1 == null) return false;
+
             if (!canMoveSheet()) {
                 // Currently it's possible to enter the tab switcher after an onScroll() event has
                 // began. If that happens, reset the sheet offset and return false to end the scroll
@@ -426,7 +429,7 @@ public class BottomSheet
 
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-            if (!shouldGestureMoveSheet(e1, e2) || !mIsScrolling) return false;
+            if (e1 == null || !shouldGestureMoveSheet(e1, e2) || !mIsScrolling) return false;
 
             cancelAnimation();
 
