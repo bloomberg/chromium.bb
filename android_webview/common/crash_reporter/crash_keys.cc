@@ -65,14 +65,10 @@ size_t RegisterWebViewCrashKeys() {
       {"subresource_url", kLargeSize},
       {"total-discardable-memory-allocated", kSmallSize},
       {kInputEventFilterSendFailure, kSmallSize},
-      {kBug464926CrashKey, kSmallSize},
       {kViewCount, kSmallSize},
 
       // media/:
       {kZeroEncodeDetails, kSmallSize},
-
-      // gin/:
-      {"v8-ignition", kSmallSize},
 
       // sandbox/:
       {"seccomp-sigsys", kMediumSize},
@@ -83,27 +79,6 @@ size_t RegisterWebViewCrashKeys() {
       {"requested_origin", kSmallSize},
       {"killed_process_origin_lock", kSmallSize},
       {"site_isolation_mode", kSmallSize},
-
-      // Temporary for http://crbug.com/575245.
-      {"swapout_frame_id", kSmallSize},
-      {"swapout_proxy_id", kSmallSize},
-      {"swapout_view_id", kSmallSize},
-      {"commit_frame_id", kSmallSize},
-      {"commit_proxy_id", kSmallSize},
-      {"commit_view_id", kSmallSize},
-      {"commit_main_render_frame_id", kSmallSize},
-      {"newproxy_proxy_id", kSmallSize},
-      {"newproxy_view_id", kSmallSize},
-      {"newproxy_opener_id", kSmallSize},
-      {"newproxy_parent_id", kSmallSize},
-      {"rvinit_view_id", kSmallSize},
-      {"rvinit_proxy_id", kSmallSize},
-      {"rvinit_main_frame_id", kSmallSize},
-      {"initrf_frame_id", kSmallSize},
-      {"initrf_proxy_id", kSmallSize},
-      {"initrf_view_id", kSmallSize},
-      {"initrf_main_frame_id", kSmallSize},
-      {"initrf_view_is_live", kSmallSize},
 
       // Temporary for https://crbug.com/626802.
       {"newframe_routing_id", kSmallSize},

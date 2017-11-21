@@ -40,8 +40,6 @@ const char kVariations[] = "variations";
 
 const char kSwitchFormat[] = "switch-%" PRIuS;
 
-const char kBug464926CrashKey[] = "bug-464926-info";
-
 #if defined(OS_MACOSX)
 namespace mac {
 
