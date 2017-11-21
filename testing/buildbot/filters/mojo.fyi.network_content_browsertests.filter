@@ -16,8 +16,6 @@
 -ServiceWorkerVersionBrowserV8CacheTest.Restart
 
 # http://crbug.com/715630
--DownloadContentTest.CookiePolicy
--DownloadContentTest.DownloadAttributeSameSiteCookie
 # This started failing when the test got added in r514724.
 -DownloadContentTest.ForceDownloadMhtml
 

@@ -74,6 +74,8 @@ struct CONTENT_EXPORT ResourceRequest {
 
   // What this resource load is for (main frame, sub-frame, sub-resource,
   // object).
+  // TODO(qinmin): this is used for legacy code path. With network service, it
+  // shouldn't know about resource type.
   ResourceType resource_type = RESOURCE_TYPE_MAIN_FRAME;
 
   // The priority of this request determined by Blink.
