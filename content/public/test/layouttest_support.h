@@ -50,6 +50,11 @@ class RenderView;
 // Turn the browser process into layout test mode.
 void EnableBrowserLayoutTestMode();
 
+// Terminates all workers and notifies when complete. This is used for
+// testing when it is important to make sure that all shared worker activity
+// has stopped.
+void TerminateAllSharedWorkersForTesting(base::OnceClosure callback);
+
 ///////////////////////////////////////////////////////////////////////////////
 // The following methods are meant to be used from a renderer.
 
