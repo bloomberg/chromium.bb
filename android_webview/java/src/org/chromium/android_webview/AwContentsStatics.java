@@ -150,8 +150,7 @@ public class AwContentsStatics {
         if (addr == null) {
             throw new NullPointerException("addr is null");
         }
-        String result = nativeFindAddress(addr);
-        return result == null || result.isEmpty() ? null : result;
+        return FindAddress.findAddress(addr);
     }
 
     //--------------------------------------------------------------------------------------------
@@ -168,5 +167,4 @@ public class AwContentsStatics {
     private static native void nativeSetSafeBrowsingWhitelist(
             String[] urls, Callback<Boolean> callback);
     private static native void nativeSetCheckClearTextPermitted(boolean permitted);
-    private static native String nativeFindAddress(String addr);
 }

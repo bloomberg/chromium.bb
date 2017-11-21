@@ -190,6 +190,7 @@ instrumentation_test_apk("webview_instrumentation_test_apk") {
     "../javatests/src/org/chromium/android_webview/test/CookieManagerStartupTest.java",
     "../javatests/src/org/chromium/android_webview/test/CookieManagerTest.java",
     "../javatests/src/org/chromium/android_webview/test/DisableHardwareAccelerationForTest.java",
+    "../javatests/src/org/chromium/android_webview/test/FindAddressTest.java",
     "../javatests/src/org/chromium/android_webview/test/FullScreenVideoTestAwContentsClient.java",
     "../javatests/src/org/chromium/android_webview/test/GeolocationTest.java",
     "../javatests/src/org/chromium/android_webview/test/GetTitleTest.java",
@@ -269,7 +270,6 @@ test("android_webview_unittests") {
   ]
 
   sources = [
-    "../browser/address_parser_unittest.cc",
     "../browser/aw_contents_client_bridge_unittest.cc",
     "../browser/aw_form_database_service_unittest.cc",
     "../browser/aw_media_url_interceptor_unittest.cc",

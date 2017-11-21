@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "android_webview/browser/address_parser.h"
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_contents.h"
 #include "android_webview/browser/aw_contents_io_thread_client.h"
@@ -135,18 +134,6 @@ void SetCheckClearTextPermitted(JNIEnv* env,
                                 const JavaParamRef<jclass>&,
                                 jboolean permitted) {
   AwURLRequestContextGetter::set_check_cleartext_permitted(permitted);
-}
-
-// static
-ScopedJavaLocalRef<jstring> FindAddress(JNIEnv* env,
-                                        const JavaParamRef<jclass>& clazz,
-                                        const JavaParamRef<jstring>& addr) {
-  base::string16 content_16 =
-      base::android::ConvertJavaStringToUTF16(env, addr);
-  base::string16 result_16;
-  if (android_webview::address_parser::FindAddress(content_16, &result_16))
-    return base::android::ConvertUTF16ToJavaString(env, result_16);
-  return ScopedJavaLocalRef<jstring>();
 }
 
 }  // namespace android_webview
