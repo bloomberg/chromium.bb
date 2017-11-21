@@ -156,9 +156,10 @@ const CGFloat kMDCloseButtonSize = 24;
 
 - (void)loadView {
   if (base::FeatureList::IsEnabled(features::kMacMaterialDesignDownloadShelf)) {
-    NSView* view = [[DownloadShelfView alloc]
+    base::scoped_nsobject<NSView> scopedView([[DownloadShelfView alloc]
         initWithFrame:NSMakeRect(0, 0, kMDShelfInitialWidth,
-                                 [DownloadShelfView shelfHeight])];
+                                 [DownloadShelfView shelfHeight])]);
+    NSView* view = scopedView.get();
     view.autoresizingMask = [NSView
         cr_localizedAutoresizingMask:NSViewWidthSizable | NSViewMaxYMargin];
     const NSRect bounds = view.bounds;
