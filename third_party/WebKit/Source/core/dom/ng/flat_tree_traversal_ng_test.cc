@@ -23,6 +23,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
+// To avoid symbol collisions in jumbo builds.
+namespace flat_tree_traversal_ng_test {
 
 class FlatTreeTraversalNgTest : public ::testing::Test,
                                 private ScopedIncrementalShadowDOMForTest {
@@ -781,4 +783,5 @@ TEST_F(FlatTreeTraversalNgTest, v1AllFallbackContent) {
   EXPECT_EQ(nullptr, FlatTreeTraversalNg::PreviousSibling(*fallback_x));
 }
 
+}  // namespace flat_tree_traversal_ng_test
 }  // namespace blink
