@@ -19,15 +19,6 @@
 #include "third_party/skia/include/core/SkWriteBuffer.h"
 
 namespace cc {
-namespace {
-SkIRect RoundOutRect(const SkRect& rect) {
-  SkIRect result;
-  rect.roundOut(&result);
-  return result;
-}
-
-}  // namespace
-
 #define TYPES(M)      \
   M(AnnotateOp)       \
   M(ClipPathOp)       \
@@ -1093,8 +1084,11 @@ void DrawImageRectOp::RasterWithFlags(const DrawImageRectOp* op,
   matrix.setRectToRect(op->src, op->dst, SkMatrix::kFill_ScaleToFit);
   matrix.postConcat(canvas->getTotalMatrix());
 
+  SkIRect int_src_rect;
+  op->src.roundOut(&int_src_rect);
+
   DrawImage draw_image(
-      op->image, RoundOutRect(op->src),
+      op->image, int_src_rect,
       flags ? flags->getFilterQuality() : kNone_SkFilterQuality, matrix);
   auto scoped_decoded_draw_image =
       params.image_provider->GetDecodedDrawImage(draw_image);
