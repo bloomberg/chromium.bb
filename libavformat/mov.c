@@ -2481,8 +2481,10 @@ int ff_mov_read_stsd_entries(MOVContext *c, AVIOContext *pb, int entries)
         }
 
         if (mov_skip_multiple_stsd(c, pb, st->codecpar->codec_tag, format,
-                                   size - (avio_tell(pb) - start_pos)))
+                                   size - (avio_tell(pb) - start_pos))) {
+            sc->stsd_count++;
             continue;
+        }
 
         sc->pseudo_stream_id = st->codecpar->codec_tag ? -1 : pseudo_stream_id;
         sc->dref_id= dref_id;
@@ -2534,6 +2536,7 @@ int ff_mov_read_stsd_entries(MOVContext *c, AVIOContext *pb, int entries)
             av_freep(&st->codecpar->extradata);
             st->codecpar->extradata_size = 0;
         }
+        sc->stsd_count++;
     }
 
     if (pb->eof_reached)
@@ -2579,8 +2582,6 @@ static int mov_read_stsd(MOVContext *c, AVIOContext *pb, MOVAtom atom)
     ret = ff_mov_read_stsd_entries(c, pb, entries);
     if (ret < 0)
         return ret;
-
-    sc->stsd_count = entries;
 
     /* Restore back the primary extradata. */
     av_freep(&st->codecpar->extradata);
