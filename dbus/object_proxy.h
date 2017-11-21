@@ -21,6 +21,10 @@
 #include "dbus/dbus_export.h"
 #include "dbus/object_path.h"
 
+namespace base {
+class TaskRunner;
+}  // namespace base
+
 namespace dbus {
 
 class Bus;
@@ -223,40 +227,50 @@ class CHROME_DBUS_EXPORT ObjectProxy
  private:
   friend class base::RefCountedThreadSafe<ObjectProxy>;
 
-  // Struct of data we'll be passing from StartAsyncMethodCall() to
-  // OnPendingCallIsCompleteThunk().
-  struct OnPendingCallIsCompleteData {
-    OnPendingCallIsCompleteData(ObjectProxy* in_object_proxy,
-                                ResponseOrErrorCallback callback,
-                                base::TimeTicks start_time);
-    ~OnPendingCallIsCompleteData();
+  // Callback passed to CallMethod and its family should be deleted on the
+  // origin thread in any cases. This class manages the work.
+  class ReplyCallbackHolder {
+   public:
+    // Designed to be created on the origin thread.
+    // Both |origin_task_runner| and |callback| must not be null.
+    ReplyCallbackHolder(scoped_refptr<base::TaskRunner> origin_task_runner,
+                        ResponseOrErrorCallback callback);
 
-    ObjectProxy* object_proxy;
-    ResponseOrErrorCallback callback;
-    base::TimeTicks start_time;
+    // This is movable to be bound to an OnceCallback.
+    ReplyCallbackHolder(ReplyCallbackHolder&& other);
+
+    // |callback_| needs to be destroyed on the origin thread.
+    // If this is not destroyed on non-origin thread, it PostTask()s the
+    // callback to the origin thread for destroying.
+    ~ReplyCallbackHolder();
+
+    // Returns |callback_| with releasing its ownership.
+    // This must be called on the origin thread.
+    ResponseOrErrorCallback ReleaseCallback();
+
+   private:
+    scoped_refptr<base::TaskRunner> origin_task_runner_;
+    ResponseOrErrorCallback callback_;
+    DISALLOW_COPY_AND_ASSIGN(ReplyCallbackHolder);
   };
 
   // Starts the async method call. This is a helper function to implement
   // CallMethod().
   void StartAsyncMethodCall(int timeout_ms,
                             DBusMessage* request_message,
-                            ResponseOrErrorCallback callback,
+                            ReplyCallbackHolder callback_holder,
                             base::TimeTicks start_time);
 
   // Called when the pending call is complete.
-  void OnPendingCallIsComplete(DBusPendingCall* pending_call,
-                               ResponseOrErrorCallback callback,
-                               base::TimeTicks start_time);
+  void OnPendingCallIsComplete(ReplyCallbackHolder callback_holder,
+                               base::TimeTicks start_time,
+                               DBusPendingCall* pending_call);
 
   // Runs the ResponseOrErrorCallback with the given response object.
-  void RunResponseOrErrorCallback(ResponseOrErrorCallback callback,
+  void RunResponseOrErrorCallback(ReplyCallbackHolder callback_holderk,
                                   base::TimeTicks start_time,
                                   Response* response,
                                   ErrorResponse* error_response);
-
-  // Redirects the function call to OnPendingCallIsComplete().
-  static void OnPendingCallIsCompleteThunk(DBusPendingCall* pending_call,
-                                           void* user_data);
 
   // Connects to NameOwnerChanged signal.
   bool ConnectToNameOwnerChangedSignal();
