@@ -63,49 +63,9 @@ void ServiceWorkerDispatcher::OnMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(ServiceWorkerDispatcher, msg)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ServiceWorkerStateChanged,
                         OnServiceWorkerStateChanged)
-    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_CountFeature, OnCountFeature)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   DCHECK(handled) << "Unhandled message:" << msg.type();
-}
-
-void ServiceWorkerDispatcher::AddProviderContext(
-    ServiceWorkerProviderContext* provider_context) {
-  DCHECK(provider_context);
-  int provider_id = provider_context->provider_id();
-  DCHECK(!base::ContainsKey(provider_contexts_, provider_id));
-  provider_contexts_[provider_id] = provider_context;
-}
-
-void ServiceWorkerDispatcher::RemoveProviderContext(
-    ServiceWorkerProviderContext* provider_context) {
-  DCHECK(provider_context);
-  DCHECK(
-      base::ContainsKey(provider_contexts_, provider_context->provider_id()));
-  provider_contexts_.erase(provider_context->provider_id());
-}
-
-void ServiceWorkerDispatcher::AddProviderClient(
-    int provider_id,
-    blink::WebServiceWorkerProviderClient* client) {
-  DCHECK(client);
-  DCHECK(!base::ContainsKey(provider_clients_, provider_id));
-  provider_clients_[provider_id] = client;
-}
-
-void ServiceWorkerDispatcher::RemoveProviderClient(int provider_id) {
-  auto iter = provider_clients_.find(provider_id);
-  // This could be possibly called multiple times to ensure termination.
-  if (iter != provider_clients_.end())
-    provider_clients_.erase(iter);
-}
-
-blink::WebServiceWorkerProviderClient*
-ServiceWorkerDispatcher::GetProviderClient(int provider_id) {
-  auto iter = provider_clients_.find(provider_id);
-  if (iter != provider_clients_.end())
-    return iter->second;
-  return nullptr;
 }
 
 ServiceWorkerDispatcher*
@@ -165,19 +125,6 @@ void ServiceWorkerDispatcher::OnServiceWorkerStateChanged(
   WorkerObjectMap::iterator worker = service_workers_.find(handle_id);
   if (worker != service_workers_.end())
     worker->second->OnStateChanged(state);
-}
-
-void ServiceWorkerDispatcher::OnCountFeature(int thread_id,
-                                             int provider_id,
-                                             uint32_t feature) {
-  ProviderContextMap::iterator provider = provider_contexts_.find(provider_id);
-  if (provider != provider_contexts_.end()) {
-    provider->second->CountFeature(feature);
-  }
-
-  ProviderClientMap::iterator found = provider_clients_.find(provider_id);
-  if (found != provider_clients_.end())
-    found->second->CountFeature(feature);
 }
 
 void ServiceWorkerDispatcher::AddServiceWorker(

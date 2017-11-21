@@ -281,21 +281,19 @@ ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
 
   // current() may be null in tests.
   if (ChildThreadImpl::current()) {
-    ServiceWorkerDispatcher* dispatcher =
-        ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(
-            ChildThreadImpl::current()->thread_safe_sender(),
-            base::ThreadTaskRunnerHandle::Get().get());
+    ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(
+        ChildThreadImpl::current()->thread_safe_sender(),
+        base::ThreadTaskRunnerHandle::Get().get());
     context_ = base::MakeRefCounted<ServiceWorkerProviderContext>(
         browser_provider_id, provider_type, std::move(client_request),
-        std::move(host_ptr_info), dispatcher, default_loader_factory_getter);
+        std::move(host_ptr_info), default_loader_factory_getter);
     ChildThreadImpl::current()->channel()->GetRemoteAssociatedInterface(
         &dispatcher_host_);
     dispatcher_host_->OnProviderCreated(std::move(host_info));
   } else {
     context_ = base::MakeRefCounted<ServiceWorkerProviderContext>(
         browser_provider_id, provider_type, std::move(client_request),
-        std::move(host_ptr_info), nullptr /* dispatcher */,
-        default_loader_factory_getter);
+        std::move(host_ptr_info), default_loader_factory_getter);
   }
 }
 
@@ -305,15 +303,14 @@ ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
   // Initialize the provider context with info for
   // ServiceWorkerGlobalScope#registration.
   ThreadSafeSender* sender = ChildThreadImpl::current()->thread_safe_sender();
-  ServiceWorkerDispatcher* dispatcher =
-      ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(
-          sender, base::ThreadTaskRunnerHandle::Get().get());
+  ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(
+      sender, base::ThreadTaskRunnerHandle::Get().get());
   // TODO(kinuko): Split ServiceWorkerProviderContext ctor for
   // controller and controllee.
   context_ = base::MakeRefCounted<ServiceWorkerProviderContext>(
       info->provider_id, SERVICE_WORKER_PROVIDER_FOR_CONTROLLER,
       std::move(info->client_request), std::move(info->host_ptr_info),
-      dispatcher, nullptr /* loader_factory_getter */);
+      nullptr /* loader_factory_getter */);
   context_->SetRegistrationForServiceWorkerGlobalScope(
       std::move(info->registration), sender);
 

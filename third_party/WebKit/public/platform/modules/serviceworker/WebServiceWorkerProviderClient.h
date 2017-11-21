@@ -34,6 +34,7 @@
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebVector.h"
 #include "public/platform/modules/serviceworker/WebServiceWorker.h"
+#include "public/platform/web_feature.mojom-shared.h"
 
 #include <memory>
 
@@ -58,7 +59,7 @@ class WebServiceWorkerProviderClient {
   virtual void DispatchMessageEvent(std::unique_ptr<WebServiceWorker::Handle>,
                                     const WebString& message,
                                     WebVector<MessagePortChannel>) = 0;
-  virtual void CountFeature(uint32_t feature) = 0;
+  virtual void CountFeature(mojom::WebFeature) = 0;
 };
 
 }  // namespace blink

@@ -30,6 +30,7 @@
 #include "storage/browser/quota/special_storage_policy.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_object.mojom.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
+#include "third_party/WebKit/public/platform/web_feature.mojom.h"
 
 using std::swap;
 
@@ -1471,7 +1472,23 @@ ServiceWorkerStorage::GetOrCreateRegistration(
     version->set_foreign_fetch_origins(data.foreign_fetch_origins);
     if (data.origin_trial_tokens)
       version->SetValidOriginTrialTokens(*data.origin_trial_tokens);
-    version->set_used_features(data.used_features);
+
+    // Some features may be outside the valid range of features, if the data on
+    // disk was written by a later version of Chrome than currently running
+    // (crbug.com/758419).
+    // TODO(falken): Maybe Chrome should have a generic mechanism to detect
+    // profile downgrade and just abort? Or we could just crash here, but that
+    // seems extreme and difficult for a user to escape.
+    std::set<uint32_t> used_features = data.used_features;
+    for (auto it = used_features.begin(); it != used_features.end();) {
+      if (*it >=
+          static_cast<uint32_t>(blink::mojom::WebFeature::kNumberOfFeatures)) {
+        it = used_features.erase(it);
+      } else {
+        ++it;
+      }
+    }
+    version->set_used_features(used_features);
   }
 
   if (version->status() == ServiceWorkerVersion::ACTIVATED)
