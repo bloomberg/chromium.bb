@@ -1241,6 +1241,10 @@ void InlineFlowBox::ComputeOverflow(
       }
       logical_layout_overflow.Unite(child_layout_overflow);
     } else {
+      if (logical_layout_overflow.IsEmpty()) {
+        logical_layout_overflow =
+            LogicalFrameRectIncludingLineHeight(line_top, line_bottom);
+      }
       AddReplacedChildOverflow(curr, logical_layout_overflow,
                                logical_visual_overflow);
     }
