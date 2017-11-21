@@ -662,6 +662,7 @@ std::unique_ptr<FileStreamReader> BlobReader::CreateFileStreamReader(
               ? storage::kMaximumLength
               : item.length() - additional_offset,
           item.expected_modification_time());
+    case DataElement::TYPE_RAW_FILE:
     case DataElement::TYPE_BLOB:
     case DataElement::TYPE_BYTES:
     case DataElement::TYPE_BYTES_DESCRIPTION:

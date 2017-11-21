@@ -111,6 +111,7 @@ std::unique_ptr<net::UploadDataStream> UploadDataStreamBuilder::Build(
       case ResourceRequestBody::Element::TYPE_FILE_FILESYSTEM:
         CHECK(false) << "Should never be reached";
         break;
+      case ResourceRequestBody::Element::TYPE_RAW_FILE:
       case ResourceRequestBody::Element::TYPE_DISK_CACHE_ENTRY:
       case ResourceRequestBody::Element::TYPE_BYTES_DESCRIPTION:
       case ResourceRequestBody::Element::TYPE_DATA_PIPE:

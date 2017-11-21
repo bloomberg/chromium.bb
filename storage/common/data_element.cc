@@ -36,6 +36,19 @@ void DataElement::SetToFilePathRange(
   expected_modification_time_ = expected_modification_time;
 }
 
+void DataElement::SetToFileRange(base::File file,
+                                 const base::FilePath& path,
+                                 uint64_t offset,
+                                 uint64_t length,
+                                 const base::Time& expected_modification_time) {
+  type_ = TYPE_RAW_FILE;
+  file_ = std::move(file);
+  path_ = path;
+  offset_ = offset;
+  length_ = length;
+  expected_modification_time_ = expected_modification_time;
+}
+
 void DataElement::SetToBlobRange(const std::string& blob_uuid,
                                  uint64_t offset,
                                  uint64_t length) {
@@ -70,6 +83,10 @@ void DataElement::SetToDataPipe(mojo::ScopedDataPipeConsumerHandle handle,
   data_pipe_size_getter_ = std::move(size_getter);
 }
 
+base::File DataElement::ReleaseFile() {
+  return std::move(file_);
+}
+
 mojo::ScopedDataPipeConsumerHandle DataElement::ReleaseDataPipe(
     blink::mojom::SizeGetterPtr* size_getter) {
   if (size_getter)
@@ -93,6 +110,10 @@ void PrintTo(const DataElement& x, std::ostream* os) {
     }
     case DataElement::TYPE_FILE:
       *os << "TYPE_FILE, path: " << x.path().AsUTF8Unsafe()
+          << ", expected_modification_time: " << x.expected_modification_time();
+      break;
+    case DataElement::TYPE_RAW_FILE:
+      *os << "TYPE_RAW_FILE, path: " << x.path().AsUTF8Unsafe()
           << ", expected_modification_time: " << x.expected_modification_time();
       break;
     case DataElement::TYPE_BLOB:
@@ -125,6 +146,9 @@ bool operator==(const DataElement& a, const DataElement& b) {
     case DataElement::TYPE_BYTES:
       return memcmp(a.bytes(), b.bytes(), b.length()) == 0;
     case DataElement::TYPE_FILE:
+      return a.path() == b.path() &&
+             a.expected_modification_time() == b.expected_modification_time();
+    case DataElement::TYPE_RAW_FILE:
       return a.path() == b.path() &&
              a.expected_modification_time() == b.expected_modification_time();
     case DataElement::TYPE_BLOB:

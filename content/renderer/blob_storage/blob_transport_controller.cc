@@ -368,6 +368,7 @@ void BlobTransportController::GetDescriptions(
             base::Time::FromDoubleT(item.expected_modification_time));
         break;
       }
+      case DataElement::TYPE_RAW_FILE:
       case DataElement::TYPE_DISK_CACHE_ENTRY:
       case DataElement::TYPE_BYTES_DESCRIPTION:
       case DataElement::TYPE_DATA_PIPE:

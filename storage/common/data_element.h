@@ -9,10 +9,12 @@
 #include <stdint.h>
 
 #include <limits>
+#include <memory>
 #include <ostream>
 #include <string>
 #include <vector>
 
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/logging.h"
@@ -32,14 +34,23 @@ class STORAGE_COMMON_EXPORT DataElement {
 
   enum Type {
     TYPE_UNKNOWN = -1,
-    TYPE_BYTES,
-    // Only used with BlobStorageMsg_StartBuildingBlob
+
+    // Only used for Upload with Network Service as of now:
+    TYPE_DATA_PIPE,
+    TYPE_RAW_FILE,
+
+    // Only used for Blob:
     TYPE_BYTES_DESCRIPTION,
-    TYPE_FILE,
-    TYPE_BLOB,  // Used in ResourceDispatcherHost path.
+    TYPE_DISK_CACHE_ENTRY,  // Only used by CacheStorage
     TYPE_FILE_FILESYSTEM,
-    TYPE_DISK_CACHE_ENTRY,
-    TYPE_DATA_PIPE,  // Used in Network Service path.
+
+    // Commonly used for Blob, and also for Upload when Network Service is
+    // disabled:
+    TYPE_BLOB,  // Used old IPC codepath only.
+    TYPE_FILE,
+
+    // Commonly used in every case:
+    TYPE_BYTES,
   };
 
   DataElement();
@@ -53,6 +64,7 @@ class STORAGE_COMMON_EXPORT DataElement {
   Type type() const { return type_; }
   const char* bytes() const { return bytes_ ? bytes_ : buf_.data(); }
   const base::FilePath& path() const { return path_; }
+  const base::File& file() const { return file_; }
   const GURL& filesystem_url() const { return filesystem_url_; }
   const std::string& blob_uuid() const { return blob_uuid_; }
   const mojo::DataPipeConsumerHandle& data_pipe() const {
@@ -137,6 +149,16 @@ class STORAGE_COMMON_EXPORT DataElement {
                           uint64_t length,
                           const base::Time& expected_modification_time);
 
+  // Sets TYPE_RAW_FILE data with range. |file| must be open for asynchronous
+  // reading on Windows. It's recommended it also be opened with
+  // File::FLAG_DELETE_ON_CLOSE, since there's often no way to wait on the
+  // consumer to close the file.
+  void SetToFileRange(base::File file,
+                      const base::FilePath& path,
+                      uint64_t offset,
+                      uint64_t length,
+                      const base::Time& expected_modification_time);
+
   // Sets TYPE_BLOB data with range.
   void SetToBlobRange(const std::string& blob_uuid,
                       uint64_t offset,
@@ -155,6 +177,10 @@ class STORAGE_COMMON_EXPORT DataElement {
   void SetToDataPipe(mojo::ScopedDataPipeConsumerHandle handle,
                      blink::mojom::SizeGetterPtr size_getter);
 
+  // Takes ownership of the File, if this is of TYPE_RAW_FILE. The file is open
+  // for reading (asynchronous reading on Windows).
+  base::File ReleaseFile();
+
   mojo::ScopedDataPipeConsumerHandle ReleaseDataPipe(
       blink::mojom::SizeGetterPtr* size_getter);
 
@@ -165,7 +191,8 @@ class STORAGE_COMMON_EXPORT DataElement {
   Type type_;
   std::vector<char> buf_;  // For TYPE_BYTES.
   const char* bytes_;  // For TYPE_BYTES.
-  base::FilePath path_;  // For TYPE_FILE.
+  base::FilePath path_;  // For TYPE_FILE and TYPE_RAW_FILE.
+  base::File file_;      // For TYPE_RAW_FILE.
   GURL filesystem_url_;  // For TYPE_FILE_FILESYSTEM.
   std::string blob_uuid_;
   mojo::ScopedDataPipeConsumerHandle data_pipe_;

@@ -170,6 +170,7 @@ void BlobDispatcherHost::OnRegisterBlob(
         // originally created by other processes? If so, is that cool?
         break;
       }
+      case storage::DataElement::TYPE_RAW_FILE:
       case storage::DataElement::TYPE_UNKNOWN:
       case storage::DataElement::TYPE_DATA_PIPE:
       case storage::DataElement::TYPE_DISK_CACHE_ENTRY: {

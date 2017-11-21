@@ -75,6 +75,7 @@ void RecordBlobItemSizeStats(const DataElement& input_element) {
       UMA_HISTOGRAM_COUNTS_1M("Storage.BlobItemSize.CacheEntry",
                               (length - input_element.offset()) / 1024);
       break;
+    case DataElement::TYPE_RAW_FILE:
     case DataElement::TYPE_DATA_PIPE:
     case DataElement::TYPE_UNKNOWN:
       NOTREACHED();
@@ -369,6 +370,7 @@ BlobStorageContext::BlobSlice::BlobSlice(const BlobEntry& source,
                              source_item->disk_cache_side_stream_index());
         break;
       }
+      case DataElement::TYPE_RAW_FILE:
       case DataElement::TYPE_BLOB:
       case DataElement::TYPE_DATA_PIPE:
       case DataElement::TYPE_UNKNOWN:
@@ -793,6 +795,7 @@ void BlobStorageContext::FinishBuilding(BlobEntry* entry) {
           copy.dest_item->set_item(std::move(new_item));
           break;
         }
+        case DataElement::TYPE_RAW_FILE:
         case DataElement::TYPE_UNKNOWN:
         case DataElement::TYPE_BLOB:
         case DataElement::TYPE_BYTES_DESCRIPTION:
