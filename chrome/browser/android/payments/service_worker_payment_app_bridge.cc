@@ -62,7 +62,7 @@ class SelfDeletingServiceWorkerPaymentAppFactory {
       const std::vector<PaymentMethodDataPtr>& payment_method_data,
       content::PaymentAppProvider::GetAllPaymentAppsCallback callback) {
     impl_.GetAllPaymentApps(
-        web_contents->GetBrowserContext(),
+        web_contents,
         std::make_unique<payments::PaymentManifestDownloader>(
             content::BrowserContext::GetDefaultStoragePartition(
                 web_contents->GetBrowserContext())

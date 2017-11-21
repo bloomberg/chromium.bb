@@ -20,7 +20,7 @@ template <class T>
 class scoped_refptr;
 
 namespace content {
-class BrowserContext;
+class WebContents;
 }  // namespace content
 
 namespace payments {
@@ -55,7 +55,7 @@ class ServiceWorkerPaymentAppFactory {
   //
   // The method should be called on the UI thread.
   void GetAllPaymentApps(
-      content::BrowserContext* browser_context,
+      content::WebContents* web_contents,
       std::unique_ptr<PaymentMethodManifestDownloaderInterface> downloader,
       scoped_refptr<PaymentManifestWebDataService> cache,
       const std::vector<mojom::PaymentMethodDataPtr>& requested_method_data,

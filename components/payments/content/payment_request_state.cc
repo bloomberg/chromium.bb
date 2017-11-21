@@ -33,7 +33,7 @@
 namespace payments {
 
 PaymentRequestState::PaymentRequestState(
-    content::BrowserContext* context,
+    content::WebContents* web_contents,
     const GURL& top_level_origin,
     const GURL& frame_origin,
     PaymentRequestSpec* spec,
@@ -63,15 +63,17 @@ PaymentRequestState::PaymentRequestState(
     service_worker_payment_app_factory_ =
         std::make_unique<ServiceWorkerPaymentAppFactory>();
     service_worker_payment_app_factory_->GetAllPaymentApps(
-        context,
+        web_contents,
         std::make_unique<PaymentManifestDownloader>(
-            content::BrowserContext::GetDefaultStoragePartition(context)
+            content::BrowserContext::GetDefaultStoragePartition(
+                web_contents->GetBrowserContext())
                 ->GetURLRequestContext()),
         payment_request_delegate_->GetPaymentManifestWebDataService(),
         spec_->method_data(),
         base::BindOnce(&PaymentRequestState::GetAllPaymentAppsCallback,
-                       weak_ptr_factory_.GetWeakPtr(), context,
-                       top_level_origin, frame_origin),
+                       weak_ptr_factory_.GetWeakPtr(),
+                       web_contents->GetBrowserContext(), top_level_origin,
+                       frame_origin),
         base::BindOnce(
             &PaymentRequestState::
                 OnServiceWorkerPaymentAppFactoryFinishedUsingResources,

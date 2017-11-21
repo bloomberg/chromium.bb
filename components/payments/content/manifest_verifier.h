@@ -18,8 +18,13 @@
 #include "components/webdata/common/web_data_service_base.h"
 #include "components/webdata/common/web_data_service_consumer.h"
 #include "content/public/browser/payment_app_provider.h"
+#include "content/public/browser/web_contents_observer.h"
 
 class GURL;
+
+namespace content {
+class WebContents;
+}
 
 namespace url {
 class Origin;
@@ -51,6 +56,7 @@ class ManifestVerifier final : public WebDataServiceConsumer {
 
   // Creates the verifier and starts up the parser utility process.
   ManifestVerifier(
+      content::WebContents* web_contents,
       std::unique_ptr<PaymentMethodManifestDownloaderInterface> downloader,
       std::unique_ptr<PaymentManifestParser> parser,
       scoped_refptr<PaymentManifestWebDataService> cache);
@@ -64,6 +70,13 @@ class ManifestVerifier final : public WebDataServiceConsumer {
               base::OnceClosure finished_using_resources);
 
  private:
+  class DevToolsHelper : public content::WebContentsObserver {
+   public:
+    explicit DevToolsHelper(content::WebContents* web_contents);
+    ~DevToolsHelper() override;
+    void WarnIfPossible(const std::string& message);
+  };
+
   // Called when a manifest is retrieved from cache.
   void OnWebDataServiceRequestDone(
       WebDataServiceBase::Handle h,
@@ -83,6 +96,9 @@ class ManifestVerifier final : public WebDataServiceConsumer {
   // Called immediately preceding the verification callback invocation.
   void RemoveInvalidPaymentApps();
 
+  // Logs messages to the DevTools console.
+  DevToolsHelper dev_tools_;
+
   // Downloads the manifests.
   std::unique_ptr<PaymentMethodManifestDownloaderInterface> downloader_;
 
@@ -94,6 +110,11 @@ class ManifestVerifier final : public WebDataServiceConsumer {
 
   // The list of payment apps being verified.
   content::PaymentAppProvider::PaymentApps apps_;
+
+  // A mapping from the payment app scope to the set of the URL-based payment
+  // methods that it claims to support, but is not allowed due to the payment
+  // manifest contents.
+  std::map<GURL, std::set<GURL>> prohibited_payment_methods_;
 
   // The callback to invoke when the verification completes.
   VerifyCallback finished_verification_callback_;
