@@ -798,8 +798,8 @@ crbug.com/778391 http/tests/devtools/elements/styles-3/styles-disable-inherited.
 crbug.com/778391 virtual/mojo-loading/http/tests/devtools/elements/styles-3/styles-add-new-rule.js [ Pass Failure ]
 crbug.com/778391 virtual/mojo-loading/http/tests/devtools/elements/styles-3/styles-disable-inherited.js [ Pass Failure ]
 
-crbug.com/773353 [ Mac ] http/tests/devtools/coverage/coverage-view.html [ Pass Failure ]
-crbug.com/773353 [ Mac ] virtual/mojo-loading/http/tests/devtools/coverage/coverage-view.html [ Pass Failure ]
+crbug.com/773353 [ Mac ] http/tests/devtools/coverage/coverage-view.js [ Pass Failure ]
+crbug.com/773353 [ Mac ] virtual/mojo-loading/http/tests/devtools/coverage/coverage-view.js [ Pass Failure ]
 
 crbug.com/767269 [ Win ] inspector-protocol/layout-fonts/cjk-ideograph-fallback-by-lang.js [ Pass Failure ]
 

@@ -1,15 +1,13 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/elements-test.js"></script>
-<script src="../resources/coverage-test.js"></script>
-<script src="resources/coverage.js"></script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-<link rel="stylesheet" type="text/css" href="resources/highlight-in-source.css">
+(async function() {
+  TestRunner.addResult(`Tests the filter is properly applied to coverage list view.\n`);
+  await TestRunner.loadModule('coverage_test_runner');
 
-<script>
-async function test() {
   CoverageTestRunner.startCoverage();
+  await TestRunner.navigatePromise(TestRunner.url('resources/basic-coverage.html'));
   await TestRunner.evaluateInPagePromise('performActions()');
   await CoverageTestRunner.stopCoverage();
 
@@ -29,15 +27,4 @@ async function test() {
     coverageView._filterInput._onChangeCallback();
     TestRunner.addResult(`Filter: ${text}`);
   }
-}
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p class="class">
-Tests the filter is properly applied to coverage list view.
-</p>
-
-</body>
-</html>
+})();
