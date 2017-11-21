@@ -50,11 +50,12 @@ ChildAccountInfoFetcherAndroid::~ChildAccountInfoFetcherAndroid() {
                                        j_child_account_info_fetcher_);
 }
 
-void SetIsChildAccount(JNIEnv* env,
-                       const JavaParamRef<jclass>& caller,
-                       jlong native_service,
-                       const JavaParamRef<jstring>& j_account_id,
-                       jboolean is_child_account) {
+void JNI_ChildAccountInfoFetcher_SetIsChildAccount(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& caller,
+    jlong native_service,
+    const JavaParamRef<jstring>& j_account_id,
+    jboolean is_child_account) {
   AccountFetcherService* service =
       reinterpret_cast<AccountFetcherService*>(native_service);
   service->SetIsChildAccount(

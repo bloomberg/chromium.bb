@@ -14,13 +14,14 @@ namespace android {
 
 const char kEarlyJavaCategory[] = "EarlyJava";
 
-static void RecordEarlyEvent(JNIEnv* env,
-                             const JavaParamRef<jclass>& clazz,
-                             const JavaParamRef<jstring>& jname,
-                             jlong begin_time_ns,
-                             jlong end_time_ns,
-                             jint thread_id,
-                             jlong thread_duration_ms) {
+static void JNI_EarlyTraceEvent_RecordEarlyEvent(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jstring>& jname,
+    jlong begin_time_ns,
+    jlong end_time_ns,
+    jint thread_id,
+    jlong thread_duration_ms) {
   std::string name = ConvertJavaStringToUTF8(env, jname);
   int64_t begin_us = begin_time_ns / 1000;
   int64_t end_us = end_time_ns / 1000;

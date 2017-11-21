@@ -213,8 +213,9 @@ bool PaymentManifestWebDataServiceAndroid::GetPaymentWebAppManifest(
   return true;
 }
 
-static jlong Init(JNIEnv* env,
-                  const base::android::JavaParamRef<jobject>& obj) {
+static jlong JNI_PaymentManifestWebDataService_Init(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
   PaymentManifestWebDataServiceAndroid* manifest_web_data_service_android =
       new PaymentManifestWebDataServiceAndroid(env, obj);
   return reinterpret_cast<intptr_t>(manifest_web_data_service_android);

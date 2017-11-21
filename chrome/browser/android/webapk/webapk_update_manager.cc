@@ -51,7 +51,7 @@ void OnUpdated(const JavaRef<jobject>& java_callback,
 }  // anonymous namespace
 
 // static JNI method.
-static void StoreWebApkUpdateRequestToFile(
+static void JNI_WebApkUpdateManager_StoreWebApkUpdateRequestToFile(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& java_update_request_path,
@@ -134,7 +134,7 @@ static void StoreWebApkUpdateRequestToFile(
 }
 
 // static JNI method.
-static void UpdateWebApkFromFile(
+static void JNI_WebApkUpdateManager_UpdateWebApkFromFile(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& java_update_request_path,

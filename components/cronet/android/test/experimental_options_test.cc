@@ -48,10 +48,11 @@ void WriteToHostCacheOnNetworkThread(jlong jcontext_adapter,
 }
 }  // namespace
 
-static void WriteToHostCache(JNIEnv* env,
-                             const JavaParamRef<jclass>& jcaller,
-                             jlong jcontext_adapter,
-                             const JavaParamRef<jstring>& jaddress) {
+static void JNI_ExperimentalOptionsTest_WriteToHostCache(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& jcaller,
+    jlong jcontext_adapter,
+    const JavaParamRef<jstring>& jaddress) {
   TestUtil::RunAfterContextInit(
       jcontext_adapter,
       base::Bind(&WriteToHostCacheOnNetworkThread, jcontext_adapter,

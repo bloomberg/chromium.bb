@@ -15,7 +15,8 @@ using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 
 // static
-ScopedJavaLocalRef<jintArray> ParseForEmphasizeComponents(
+ScopedJavaLocalRef<jintArray>
+JNI_OmniboxUrlEmphasizer_ParseForEmphasizeComponents(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& jprofile,

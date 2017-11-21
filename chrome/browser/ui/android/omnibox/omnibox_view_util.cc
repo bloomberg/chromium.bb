@@ -12,7 +12,7 @@ using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 
 // static
-ScopedJavaLocalRef<jstring> SanitizeTextForPaste(
+ScopedJavaLocalRef<jstring> JNI_OmniboxViewUtil_SanitizeTextForPaste(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& jtext) {

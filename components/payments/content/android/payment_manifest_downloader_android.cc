@@ -95,9 +95,10 @@ void PaymentManifestDownloaderAndroid::Destroy(
 
 // Static free function declared and called directly from java.
 // Caller owns the result. Returns 0 on error.
-static jlong Init(JNIEnv* env,
-                  const base::android::JavaParamRef<jclass>& jcaller,
-                  const base::android::JavaParamRef<jobject>& jweb_contents) {
+static jlong JNI_PaymentManifestDownloader_Init(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jclass>& jcaller,
+    const base::android::JavaParamRef<jobject>& jweb_contents) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(jweb_contents);
   if (!web_contents)

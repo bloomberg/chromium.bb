@@ -85,7 +85,7 @@ void RecordLibraryPreloaderRendereHistogram() {
 
 }  // namespace
 
-static void RegisterChromiumAndroidLinkerRendererHistogram(
+static void JNI_LibraryLoader_RegisterChromiumAndroidLinkerRendererHistogram(
     JNIEnv* env,
     const JavaParamRef<jobject>& jcaller,
     jboolean requested_shared_relro,
@@ -102,7 +102,7 @@ static void RegisterChromiumAndroidLinkerRendererHistogram(
   g_renderer_library_load_time_ms = library_load_time_ms;
 }
 
-static void RecordChromiumAndroidLinkerBrowserHistogram(
+static void JNI_LibraryLoader_RecordChromiumAndroidLinkerBrowserHistogram(
     JNIEnv* env,
     const JavaParamRef<jobject>& jcaller,
     jboolean is_using_browser_shared_relros,
@@ -133,7 +133,7 @@ static void RecordChromiumAndroidLinkerBrowserHistogram(
                       base::TimeDelta::FromMilliseconds(library_load_time_ms));
 }
 
-static void RecordLibraryPreloaderBrowserHistogram(
+static void JNI_LibraryLoader_RecordLibraryPreloaderBrowserHistogram(
     JNIEnv* env,
     const JavaParamRef<jobject>& jcaller,
     jint status) {
@@ -142,7 +142,7 @@ static void RecordLibraryPreloaderBrowserHistogram(
       status);
 }
 
-static void RegisterLibraryPreloaderRendererHistogram(
+static void JNI_LibraryLoader_RegisterLibraryPreloaderRendererHistogram(
     JNIEnv* env,
     const JavaParamRef<jobject>& jcaller,
     jint status) {
@@ -164,8 +164,9 @@ void SetLibraryLoadedHook(LibraryLoadedHook* func) {
   g_registration_callback = func;
 }
 
-static jboolean LibraryLoaded(JNIEnv* env,
-                              const JavaParamRef<jobject>& jcaller) {
+static jboolean JNI_LibraryLoader_LibraryLoaded(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jcaller) {
   if (g_native_initialization_hook && !g_native_initialization_hook()) {
     return false;
   }
@@ -182,20 +183,21 @@ void LibraryLoaderExitHook() {
   }
 }
 
-static jboolean ForkAndPrefetchNativeLibrary(
+static jboolean JNI_LibraryLoader_ForkAndPrefetchNativeLibrary(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz) {
   return NativeLibraryPrefetcher::ForkAndPrefetchNativeLibrary();
 }
 
-static jint PercentageOfResidentNativeLibraryCode(
+static jint JNI_LibraryLoader_PercentageOfResidentNativeLibraryCode(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz) {
   return NativeLibraryPrefetcher::PercentageOfResidentNativeLibraryCode();
 }
 
-static void PeriodicallyCollectResidency(JNIEnv* env,
-                                         const JavaParamRef<jclass>& clazz) {
+static void JNI_LibraryLoader_PeriodicallyCollectResidency(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz) {
   return NativeLibraryPrefetcher::PeriodicallyCollectResidency();
 }
 
@@ -203,7 +205,7 @@ void SetVersionNumber(const char* version_number) {
   g_library_version_number = strdup(version_number);
 }
 
-ScopedJavaLocalRef<jstring> GetVersionNumber(
+ScopedJavaLocalRef<jstring> JNI_LibraryLoader_GetVersionNumber(
     JNIEnv* env,
     const JavaParamRef<jobject>& jcaller) {
   return ConvertUTF8ToJavaString(env, g_library_version_number);

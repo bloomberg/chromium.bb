@@ -152,7 +152,7 @@ void PaymentManifestParserAndroid::DestroyPaymentManifestParserAndroid(
 }
 
 // Caller owns the result.
-jlong CreatePaymentManifestParserAndroid(
+jlong JNI_PaymentManifestParser_CreatePaymentManifestParserAndroid(
     JNIEnv* env,
     const base::android::JavaParamRef<jclass>& jcaller) {
   return reinterpret_cast<jlong>(new PaymentManifestParserAndroid);

@@ -62,9 +62,9 @@ NativeWebKeyboardEvent NativeWebKeyboardEventFromKeyEvent(
 
 }  // anonymous namespace
 
-jlong Init(JNIEnv* env,
-           const JavaParamRef<jobject>& obj,
-           const JavaParamRef<jobject>& jweb_contents) {
+jlong JNI_ImeAdapter_Init(JNIEnv* env,
+                          const JavaParamRef<jobject>& obj,
+                          const JavaParamRef<jobject>& jweb_contents) {
   WebContents* web_contents = WebContents::FromJavaWebContents(jweb_contents);
   DCHECK(web_contents);
   auto* ime_adapter = new ImeAdapterAndroid(env, obj, web_contents);
@@ -74,12 +74,12 @@ jlong Init(JNIEnv* env,
 
 // Callback from Java to convert BackgroundColorSpan data to a
 // ui::ImeTextSpan instance, and append it to |ime_text_spans_ptr|.
-void AppendBackgroundColorSpan(JNIEnv*,
-                               const JavaParamRef<jclass>&,
-                               jlong ime_text_spans_ptr,
-                               jint start,
-                               jint end,
-                               jint background_color) {
+void JNI_ImeAdapter_AppendBackgroundColorSpan(JNIEnv*,
+                                              const JavaParamRef<jclass>&,
+                                              jlong ime_text_spans_ptr,
+                                              jint start,
+                                              jint end,
+                                              jint background_color) {
   DCHECK_GE(start, 0);
   DCHECK_GE(end, 0);
   // Do not check |background_color|.
@@ -94,15 +94,16 @@ void AppendBackgroundColorSpan(JNIEnv*,
 
 // Callback from Java to convert SuggestionSpan data to a
 // ui::ImeTextSpan instance, and append it to |ime_text_spans_ptr|.
-void AppendSuggestionSpan(JNIEnv* env,
-                          const JavaParamRef<jclass>&,
-                          jlong ime_text_spans_ptr,
-                          jint start,
-                          jint end,
-                          jboolean is_misspelling,
-                          jint underline_color,
-                          jint suggestion_highlight_color,
-                          const JavaParamRef<jobjectArray>& suggestions) {
+void JNI_ImeAdapter_AppendSuggestionSpan(
+    JNIEnv* env,
+    const JavaParamRef<jclass>&,
+    jlong ime_text_spans_ptr,
+    jint start,
+    jint end,
+    jboolean is_misspelling,
+    jint underline_color,
+    jint suggestion_highlight_color,
+    const JavaParamRef<jobjectArray>& suggestions) {
   DCHECK_GE(start, 0);
   DCHECK_GE(end, 0);
 
@@ -122,11 +123,11 @@ void AppendSuggestionSpan(JNIEnv* env,
 
 // Callback from Java to convert UnderlineSpan data to a
 // ui::ImeTextSpan instance, and append it to |ime_text_spans_ptr|.
-void AppendUnderlineSpan(JNIEnv*,
-                         const JavaParamRef<jclass>&,
-                         jlong ime_text_spans_ptr,
-                         jint start,
-                         jint end) {
+void JNI_ImeAdapter_AppendUnderlineSpan(JNIEnv*,
+                                        const JavaParamRef<jclass>&,
+                                        jlong ime_text_spans_ptr,
+                                        jint start,
+                                        jint end) {
   DCHECK_GE(start, 0);
   DCHECK_GE(end, 0);
   std::vector<ui::ImeTextSpan>* ime_text_spans =

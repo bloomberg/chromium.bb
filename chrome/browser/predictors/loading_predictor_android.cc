@@ -28,9 +28,10 @@ LoadingPredictor* LoadingPredictorFromProfileAndroid(
 
 }  // namespace
 
-static jboolean StartInitialization(JNIEnv* env,
-                                    const JavaParamRef<jclass>& clazz,
-                                    const JavaParamRef<jobject>& j_profile) {
+static jboolean JNI_LoadingPredictor_StartInitialization(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jobject>& j_profile) {
   auto* loading_predictor = LoadingPredictorFromProfileAndroid(j_profile);
   if (!loading_predictor)
     return false;
@@ -38,10 +39,11 @@ static jboolean StartInitialization(JNIEnv* env,
   return true;
 }
 
-static jboolean PrepareForPageLoad(JNIEnv* env,
-                                   const JavaParamRef<jclass>& clazz,
-                                   const JavaParamRef<jobject>& j_profile,
-                                   const JavaParamRef<jstring>& j_url) {
+static jboolean JNI_LoadingPredictor_PrepareForPageLoad(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jobject>& j_profile,
+    const JavaParamRef<jstring>& j_url) {
   auto* loading_predictor = LoadingPredictorFromProfileAndroid(j_profile);
   if (!loading_predictor)
     return false;
@@ -51,10 +53,11 @@ static jboolean PrepareForPageLoad(JNIEnv* env,
   return true;
 }
 
-static jboolean CancelPageLoadHint(JNIEnv* env,
-                                   const JavaParamRef<jclass>& clazz,
-                                   const JavaParamRef<jobject>& j_profile,
-                                   const JavaParamRef<jstring>& j_url) {
+static jboolean JNI_LoadingPredictor_CancelPageLoadHint(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jobject>& j_profile,
+    const JavaParamRef<jstring>& j_url) {
   auto* loading_predictor = LoadingPredictorFromProfileAndroid(j_profile);
   if (!loading_predictor)
     return false;

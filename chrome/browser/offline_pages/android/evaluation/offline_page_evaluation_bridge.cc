@@ -54,9 +54,10 @@ const char kNativeTag[] = "OPNative";
 const base::FilePath::CharType kTestRequestQueueDirname[] =
     FILE_PATH_LITERAL("Offline Pages/test_request_queue");
 
-void ToJavaOfflinePageList(JNIEnv* env,
-                           const JavaRef<jobject>& j_result_obj,
-                           const std::vector<OfflinePageItem>& offline_pages) {
+void JNI_OfflinePageEvaluationBridge_ToJavaOfflinePageList(
+    JNIEnv* env,
+    const JavaRef<jobject>& j_result_obj,
+    const std::vector<OfflinePageItem>& offline_pages) {
   for (const OfflinePageItem& offline_page : offline_pages) {
     Java_OfflinePageEvaluationBridge_createOfflinePageAndAddToList(
         env, j_result_obj,
@@ -72,7 +73,8 @@ void ToJavaOfflinePageList(JNIEnv* env,
   }
 }
 
-ScopedJavaLocalRef<jobject> ToJavaSavePageRequest(
+ScopedJavaLocalRef<jobject>
+JNI_OfflinePageEvaluationBridge_ToJavaSavePageRequest(
     JNIEnv* env,
     const SavePageRequest& request) {
   return Java_OfflinePageEvaluationBridge_createSavePageRequest(
@@ -82,7 +84,8 @@ ScopedJavaLocalRef<jobject> ToJavaSavePageRequest(
       ConvertUTF8ToJavaString(env, request.client_id().id));
 }
 
-ScopedJavaLocalRef<jobjectArray> CreateJavaSavePageRequests(
+ScopedJavaLocalRef<jobjectArray>
+JNI_OfflinePageEvaluationBridge_CreateJavaSavePageRequests(
     JNIEnv* env,
     std::vector<std::unique_ptr<SavePageRequest>> requests) {
   ScopedJavaLocalRef<jclass> save_page_request_clazz = base::android::GetClass(
@@ -190,10 +193,11 @@ RequestCoordinator* GetRequestCoordinator(Profile* profile,
 
 }  // namespace
 
-static jlong CreateBridgeForProfile(JNIEnv* env,
-                                    const JavaParamRef<jobject>& obj,
-                                    const JavaParamRef<jobject>& j_profile,
-                                    const jboolean j_use_evaluation_scheduler) {
+static jlong JNI_OfflinePageEvaluationBridge_CreateBridgeForProfile(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& j_profile,
+    const jboolean j_use_evaluation_scheduler) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
 
   OfflinePageModel* offline_page_model =

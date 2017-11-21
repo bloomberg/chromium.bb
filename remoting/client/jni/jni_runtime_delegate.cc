@@ -32,7 +32,8 @@ namespace remoting {
 // Implementation of stubs defined in JniInterface_jni.h. These are the entry
 // points for JNI calls from Java into C++.
 
-static void LoadNative(JNIEnv* env, const JavaParamRef<jclass>& clazz) {
+static void JNI_JniInterface_LoadNative(JNIEnv* env,
+                                        const JavaParamRef<jclass>& clazz) {
   base::CommandLine::Init(0, nullptr);
 
   // Create the singleton now so that the Chromoting threads will be set up.
@@ -49,9 +50,10 @@ static void HandleAuthTokenOnNetworkThread(const std::string& token) {
   runtime->log_writer()->SetAuthToken(token);
 }
 
-static void OnAuthTokenFetched(JNIEnv* env,
-                               const JavaParamRef<jclass>& clazz,
-                               const JavaParamRef<jstring>& token) {
+static void JNI_JniInterface_OnAuthTokenFetched(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jstring>& token) {
   ChromotingClientRuntime* runtime =
       remoting::ChromotingClientRuntime::GetInstance();
   runtime->network_task_runner()->PostTask(

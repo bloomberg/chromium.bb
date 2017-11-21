@@ -105,9 +105,9 @@ void Shell::Close() {
 }
 
 // static
-void CloseShell(JNIEnv* env,
-                const JavaParamRef<jclass>& clazz,
-                jlong shellPtr) {
+void JNI_Shell_CloseShell(JNIEnv* env,
+                          const JavaParamRef<jclass>& clazz,
+                          jlong shellPtr) {
   Shell* shell = reinterpret_cast<Shell*>(shellPtr);
   shell->Close();
 }

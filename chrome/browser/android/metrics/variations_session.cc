@@ -17,7 +17,7 @@ bool g_on_app_enter_foreground_called = false;
 
 }  // namespace
 
-static void StartVariationsSession(
+static void JNI_VariationsSession_StartVariationsSession(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jstring>& jrestrict_mode) {
@@ -37,9 +37,9 @@ static void StartVariationsSession(
   }
 }
 
-static base::android::ScopedJavaLocalRef<jstring> GetLatestCountry(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
+static base::android::ScopedJavaLocalRef<jstring>
+JNI_VariationsSession_GetLatestCountry(JNIEnv* env,
+                                       const JavaParamRef<jobject>& obj) {
   variations::VariationsService* variations_service =
       g_browser_process->variations_service();
   if (!variations_service)

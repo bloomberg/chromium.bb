@@ -84,7 +84,7 @@ void SmartClipCallback(const ScopedJavaGlobalRef<jobject>& callback,
   Java_WebContentsImpl_onSmartClipDataExtracted(env, jtext, jhtml, callback);
 }
 
-ScopedJavaLocalRef<jobject> CreateJavaAXSnapshot(
+ScopedJavaLocalRef<jobject> JNI_WebContentsImpl_CreateJavaAXSnapshot(
     JNIEnv* env,
     const ui::AXSnapshotNodeAndroid* node,
     bool is_root) {
@@ -106,7 +106,8 @@ ScopedJavaLocalRef<jobject> CreateJavaAXSnapshot(
 
   for (auto& child : node->children) {
     Java_WebContentsImpl_addAccessibilityNodeAsChild(
-        env, j_node, CreateJavaAXSnapshot(env, child.get(), false));
+        env, j_node,
+        JNI_WebContentsImpl_CreateJavaAXSnapshot(env, child.get(), false));
   }
   return j_node;
 }
@@ -125,7 +126,7 @@ void AXTreeSnapshotCallback(const ScopedJavaGlobalRef<jobject>& callback,
   auto snapshot = ui::AXSnapshotNodeAndroid::Create(
       result, manager->ShouldExposePasswordText());
   ScopedJavaLocalRef<jobject> j_root =
-      CreateJavaAXSnapshot(env, snapshot.get(), true);
+      JNI_WebContentsImpl_CreateJavaAXSnapshot(env, snapshot.get(), true);
   Java_WebContentsImpl_onAccessibilitySnapshot(env, j_root, callback);
 }
 
@@ -148,9 +149,10 @@ WebContents* WebContents::FromJavaWebContents(
 }
 
 // static
-static void DestroyWebContents(JNIEnv* env,
-                               const JavaParamRef<jclass>& clazz,
-                               jlong jweb_contents_android_ptr) {
+static void JNI_WebContentsImpl_DestroyWebContents(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    jlong jweb_contents_android_ptr) {
   WebContentsAndroid* web_contents_android =
       reinterpret_cast<WebContentsAndroid*>(jweb_contents_android_ptr);
   if (!web_contents_android)
@@ -164,9 +166,10 @@ static void DestroyWebContents(JNIEnv* env,
 }
 
 // static
-ScopedJavaLocalRef<jobject> FromNativePtr(JNIEnv* env,
-                                          const JavaParamRef<jclass>& clazz,
-                                          jlong web_contents_ptr) {
+ScopedJavaLocalRef<jobject> JNI_WebContentsImpl_FromNativePtr(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    jlong web_contents_ptr) {
   WebContentsAndroid* web_contents_android =
       reinterpret_cast<WebContentsAndroid*>(web_contents_ptr);
 

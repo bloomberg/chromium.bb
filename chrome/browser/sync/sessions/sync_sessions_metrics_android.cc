@@ -14,7 +14,7 @@
 #include "jni/SyncSessionsMetrics_jni.h"
 
 // static
-void RecordYoungestForeignTabAgeOnNTP(
+void JNI_SyncSessionsMetrics_RecordYoungestForeignTabAgeOnNTP(
     JNIEnv* env,
     const base::android::JavaParamRef<jclass>& jcaller) {
   // Unlike other platforms, Android typically disables session invalidations to

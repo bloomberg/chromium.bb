@@ -22,12 +22,12 @@ VrCoreInfo::VrCoreInfo(int32_t major_version,
 // Native JNI methods
 // ----------------------------------------------------------------------------
 
-jlong Init(JNIEnv* env,
-           const JavaParamRef<jobject>& obj,
-           jint major_version,
-           jint minor_version,
-           jint patch_version,
-           jint compatibility) {
+jlong JNI_VrCoreInfo_Init(JNIEnv* env,
+                          const JavaParamRef<jobject>& obj,
+                          jint major_version,
+                          jint minor_version,
+                          jint patch_version,
+                          jint compatibility) {
   return reinterpret_cast<intptr_t>(
       new VrCoreInfo(major_version, minor_version, patch_version,
                      static_cast<VrCoreCompatibility>(compatibility)));

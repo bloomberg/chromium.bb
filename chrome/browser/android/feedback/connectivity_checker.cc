@@ -47,9 +47,10 @@ void ExecuteCallback(const base::android::JavaRef<jobject>& callback,
                                            callback, result);
 }
 
-void PostCallback(JNIEnv* env,
-                  const base::android::JavaRef<jobject>& j_callback,
-                  ConnectivityCheckResult result) {
+void JNI_ConnectivityChecker_PostCallback(
+    JNIEnv* env,
+    const base::android::JavaRef<jobject>& j_callback,
+    ConnectivityCheckResult result) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&ExecuteCallback,
@@ -161,20 +162,23 @@ void ConnectivityChecker::OnTimeout() {
 
 }  // namespace
 
-void CheckConnectivity(JNIEnv* env,
-                       const JavaParamRef<jclass>& clazz,
-                       const JavaParamRef<jobject>& j_profile,
-                       const JavaParamRef<jstring>& j_url,
-                       jlong j_timeout_ms,
-                       const JavaParamRef<jobject>& j_callback) {
+void JNI_ConnectivityChecker_CheckConnectivity(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jobject>& j_profile,
+    const JavaParamRef<jstring>& j_url,
+    jlong j_timeout_ms,
+    const JavaParamRef<jobject>& j_callback) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
   if (!profile) {
-    PostCallback(env, j_callback, CONNECTIVITY_CHECK_RESULT_ERROR);
+    JNI_ConnectivityChecker_PostCallback(env, j_callback,
+                                         CONNECTIVITY_CHECK_RESULT_ERROR);
     return;
   }
   GURL url(base::android::ConvertJavaStringToUTF8(env, j_url));
   if (!url.is_valid()) {
-    PostCallback(env, j_callback, CONNECTIVITY_CHECK_RESULT_ERROR);
+    JNI_ConnectivityChecker_PostCallback(env, j_callback,
+                                         CONNECTIVITY_CHECK_RESULT_ERROR);
     return;
   }
 
@@ -185,9 +189,10 @@ void CheckConnectivity(JNIEnv* env,
   connectivity_checker->StartAsyncCheck();
 }
 
-jboolean IsUrlValid(JNIEnv* env,
-                    const JavaParamRef<jclass>& clazz,
-                    const JavaParamRef<jstring>& j_url) {
+jboolean JNI_ConnectivityChecker_IsUrlValid(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jstring>& j_url) {
   GURL url(base::android::ConvertJavaStringToUTF8(env, j_url));
   return url.is_valid();
 }

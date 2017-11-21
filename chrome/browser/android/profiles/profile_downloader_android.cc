@@ -123,7 +123,8 @@ class AccountInfoRetriever : public ProfileDownloaderDelegate {
 }  // namespace
 
 // static
-ScopedJavaLocalRef<jstring> GetCachedFullNameForPrimaryAccount(
+ScopedJavaLocalRef<jstring>
+JNI_ProfileDownloader_GetCachedFullNameForPrimaryAccount(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& jprofile) {
@@ -140,7 +141,8 @@ ScopedJavaLocalRef<jstring> GetCachedFullNameForPrimaryAccount(
 }
 
 // static
-ScopedJavaLocalRef<jstring> GetCachedGivenNameForPrimaryAccount(
+ScopedJavaLocalRef<jstring>
+JNI_ProfileDownloader_GetCachedGivenNameForPrimaryAccount(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& jprofile) {
@@ -157,7 +159,8 @@ ScopedJavaLocalRef<jstring> GetCachedGivenNameForPrimaryAccount(
 }
 
 // static
-ScopedJavaLocalRef<jobject> GetCachedAvatarForPrimaryAccount(
+ScopedJavaLocalRef<jobject>
+JNI_ProfileDownloader_GetCachedAvatarForPrimaryAccount(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& jprofile) {
@@ -180,12 +183,13 @@ ScopedJavaLocalRef<jobject> GetCachedAvatarForPrimaryAccount(
 }
 
 // static
-void StartFetchingAccountInfoFor(JNIEnv* env,
-                                 const JavaParamRef<jclass>& clazz,
-                                 const JavaParamRef<jobject>& jprofile,
-                                 const JavaParamRef<jstring>& jemail,
-                                 jint image_side_pixels,
-                                 jboolean is_pre_signin) {
+void JNI_ProfileDownloader_StartFetchingAccountInfoFor(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jobject>& jprofile,
+    const JavaParamRef<jstring>& jemail,
+    jint image_side_pixels,
+    jboolean is_pre_signin) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
   const std::string email =
       base::android::ConvertJavaStringToUTF8(env, jemail);

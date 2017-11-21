@@ -929,21 +929,21 @@ void VrShell::OnVoiceResults(const base::string16& result) {
 // Native JNI methods
 // ----------------------------------------------------------------------------
 
-jlong Init(JNIEnv* env,
-           const JavaParamRef<jobject>& obj,
-           const JavaParamRef<jobject>& delegate,
-           jlong window_android,
-           jboolean for_web_vr,
-           jboolean web_vr_autopresentation_expected,
-           jboolean in_cct,
-           jboolean browsing_disabled,
-           jboolean has_or_can_request_audio_permission,
-           jlong gvr_api,
-           jboolean reprojected_rendering,
-           jfloat display_width_meters,
-           jfloat display_height_meters,
-           jint display_width_pixels,
-           jint display_pixel_height) {
+jlong JNI_VrShellImpl_Init(JNIEnv* env,
+                           const JavaParamRef<jobject>& obj,
+                           const JavaParamRef<jobject>& delegate,
+                           jlong window_android,
+                           jboolean for_web_vr,
+                           jboolean web_vr_autopresentation_expected,
+                           jboolean in_cct,
+                           jboolean browsing_disabled,
+                           jboolean has_or_can_request_audio_permission,
+                           jlong gvr_api,
+                           jboolean reprojected_rendering,
+                           jfloat display_width_meters,
+                           jfloat display_height_meters,
+                           jint display_width_pixels,
+                           jint display_pixel_height) {
   vr::UiInitialState ui_initial_state;
   ui_initial_state.browsing_disabled = browsing_disabled;
   ui_initial_state.in_cct = in_cct;

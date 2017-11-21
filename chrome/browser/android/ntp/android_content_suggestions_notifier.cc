@@ -94,30 +94,33 @@ void AndroidContentSuggestionsNotifier::UnregisterChannel() {
   return Java_ContentSuggestionsNotifier_unregisterChannel(env);
 }
 
-static void RecordNotificationOptOut(JNIEnv* env,
-                                     const JavaParamRef<jclass>& class_object,
-                                     jint reason) {
+static void JNI_ContentSuggestionsNotifier_RecordNotificationOptOut(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& class_object,
+    jint reason) {
   RecordContentSuggestionsNotificationOptOut(
       static_cast<ContentSuggestionsNotificationOptOut>(reason));
 }
 
-static void RecordNotificationAction(JNIEnv* env,
-                                     const JavaParamRef<jclass>& class_object,
-                                     jint action) {
+static void JNI_ContentSuggestionsNotifier_RecordNotificationAction(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& class_object,
+    jint action) {
   RecordContentSuggestionsNotificationAction(
       static_cast<ContentSuggestionsNotificationAction>(action));
 }
 
-static void ReceiveFlushedMetrics(JNIEnv* env,
-                                  const JavaParamRef<jclass>& class_object,
-                                  jint tap_count,
-                                  jint dismissal_count,
-                                  jint hide_deadline_count,
-                                  jint hide_expiry_count,
-                                  jint hide_frontmost_count,
-                                  jint hide_disabled_count,
-                                  jint hide_shutdown_count,
-                                  jint consecutive_ignored) {
+static void JNI_ContentSuggestionsNotifier_ReceiveFlushedMetrics(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& class_object,
+    jint tap_count,
+    jint dismissal_count,
+    jint hide_deadline_count,
+    jint hide_expiry_count,
+    jint hide_frontmost_count,
+    jint hide_disabled_count,
+    jint hide_shutdown_count,
+    jint consecutive_ignored) {
   DVLOG(1) << "Flushing metrics: tap_count=" << tap_count
            << "; dismissal_count=" << dismissal_count
            << "; hide_deadline_count=" << hide_deadline_count

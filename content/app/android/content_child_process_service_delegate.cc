@@ -99,10 +99,11 @@ base::LazyInstance<ChildProcessSurfaceManager>::Leaky
 
 // Chrome actually uses the renderer code path for all of its child
 // processes such as renderers, plugins, etc.
-void InternalInitChildProcess(JNIEnv* env,
-                              const JavaParamRef<jobject>& service_impl,
-                              jint cpu_count,
-                              jlong cpu_features) {
+void JNI_ContentChildProcessServiceDelegate_InternalInitChildProcess(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& service_impl,
+    jint cpu_count,
+    jlong cpu_features) {
   // Set the CPU properties.
   android_setCpu(cpu_count, cpu_features);
 
@@ -118,19 +119,24 @@ void InternalInitChildProcess(JNIEnv* env,
 
 }  // namespace
 
-void InitChildProcess(JNIEnv* env,
-                      const JavaParamRef<jobject>& obj,
-                      jint cpu_count,
-                      jlong cpu_features) {
-  InternalInitChildProcess(env, obj, cpu_count, cpu_features);
+void JNI_ContentChildProcessServiceDelegate_InitChildProcess(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jint cpu_count,
+    jlong cpu_features) {
+  JNI_ContentChildProcessServiceDelegate_InternalInitChildProcess(
+      env, obj, cpu_count, cpu_features);
 }
 
-void ShutdownMainThread(JNIEnv* env, const JavaParamRef<jobject>& obj) {
+void JNI_ContentChildProcessServiceDelegate_ShutdownMainThread(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   ChildThreadImpl::ShutdownThread();
 }
 
-void RetrieveFileDescriptorsIdsToKeys(JNIEnv* env,
-                                      const JavaParamRef<jobject>& obj) {
+void JNI_ContentChildProcessServiceDelegate_RetrieveFileDescriptorsIdsToKeys(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   std::map<int, std::string> ids_to_keys;
   std::string file_switch_value =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(

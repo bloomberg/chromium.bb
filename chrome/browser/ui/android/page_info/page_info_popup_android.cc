@@ -30,10 +30,11 @@ using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
 
 // static
-static jlong Init(JNIEnv* env,
-                  const JavaParamRef<jclass>& clazz,
-                  const JavaParamRef<jobject>& obj,
-                  const JavaParamRef<jobject>& java_web_contents) {
+static jlong JNI_PageInfoPopup_Init(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& java_web_contents) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(java_web_contents);
 

@@ -15,9 +15,10 @@ using base::android::JavaParamRef;
 
 // Takes a Java Profile and returns a Java OfflineContentAggregatorBridge.
 static base::android::ScopedJavaLocalRef<jobject>
-GetOfflineContentAggregatorForProfile(JNIEnv* env,
-                                      const JavaParamRef<jclass>& clazz,
-                                      const JavaParamRef<jobject>& jprofile) {
+JNI_OfflineContentAggregatorFactory_GetOfflineContentAggregatorForProfile(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jobject>& jprofile) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
   DCHECK(profile);
   offline_items_collection::OfflineContentAggregator* aggregator =

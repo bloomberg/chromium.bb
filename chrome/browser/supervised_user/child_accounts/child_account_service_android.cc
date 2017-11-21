@@ -22,9 +22,10 @@ using base::android::JavaRef;
 using base::android::RunCallbackAndroid;
 using base::android::ScopedJavaGlobalRef;
 
-void ListenForChildStatusReceived(JNIEnv* env,
-                                  const JavaParamRef<jclass>& jcaller,
-                                  const JavaParamRef<jobject>& callback) {
+void JNI_ChildAccountService_ListenForChildStatusReceived(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& jcaller,
+    const JavaParamRef<jobject>& callback) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   ChildAccountService* service = ChildAccountServiceFactory::GetForProfile(
       profile_manager->GetLastUsedProfile());
@@ -52,10 +53,11 @@ void ReauthenticateChildAccount(content::WebContents* web_contents,
       reinterpret_cast<jlong>(callback_copy.release()));
 }
 
-void OnReauthenticationResult(JNIEnv* env,
-                              const JavaParamRef<jclass>& jcaller,
-                              jlong jcallbackPtr,
-                              jboolean result) {
+void JNI_ChildAccountService_OnReauthenticationResult(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& jcaller,
+    jlong jcallbackPtr,
+    jboolean result) {
   // Cast the pointer value back to a Callback and take ownership of it.
   std::unique_ptr<base::Callback<void(bool)>> callback(
       reinterpret_cast<base::Callback<void(bool)>*>(jcallbackPtr));

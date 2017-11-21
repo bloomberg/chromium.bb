@@ -12,8 +12,9 @@ using base::android::JavaParamRef;
 
 namespace content {
 
-jboolean IsBrowserSideNavigationEnabled(JNIEnv* env,
-                                        const JavaParamRef<jclass>& clazz) {
+jboolean JNI_BrowserSideNavigationPolicy_IsBrowserSideNavigationEnabled(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz) {
   return IsBrowserSideNavigationEnabled();
 }
 

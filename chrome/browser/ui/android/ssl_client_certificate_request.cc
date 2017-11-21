@@ -110,7 +110,7 @@ namespace android {
 // the client certificate.
 // Note: both |encoded_chain_ref| and |private_key_ref| will be NULL if
 // the user didn't select a certificate.
-static void OnSystemRequestCompletion(
+static void JNI_SSLClientCertificateRequest_OnSystemRequestCompletion(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,
     jlong request_id,
@@ -163,7 +163,8 @@ static void NotifyClientCertificatesChanged() {
   net::CertDatabase::GetInstance()->OnAndroidKeyStoreChanged();
 }
 
-static void NotifyClientCertificatesChangedOnIOThread(
+static void
+JNI_SSLClientCertificateRequest_NotifyClientCertificatesChangedOnIOThread(
     JNIEnv* env,
     const JavaParamRef<jclass>&) {
   if (content::BrowserThread::CurrentlyOn(content::BrowserThread::IO)) {

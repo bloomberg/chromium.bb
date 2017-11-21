@@ -146,10 +146,11 @@ void EmbeddedTestServerAndroid::Destroy(JNIEnv* env,
   delete this;
 }
 
-static void Init(JNIEnv* env,
-                 const JavaParamRef<jobject>& jobj,
-                 const JavaParamRef<jstring>& jtest_data_dir,
-                 jboolean jhttps) {
+static void JNI_EmbeddedTestServerImpl_Init(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jobj,
+    const JavaParamRef<jstring>& jtest_data_dir,
+    jboolean jhttps) {
   TRACE_EVENT0("native", "EmbeddedTestServerAndroid::Init");
   base::FilePath test_data_dir(
       base::android::ConvertJavaStringToUTF8(env, jtest_data_dir));

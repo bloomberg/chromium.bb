@@ -34,9 +34,9 @@ const size_t kMaxNumberOfSuggestions = 5;
 
 }  // namespace
 
-jlong Init(JNIEnv* env,
-           const JavaParamRef<jobject>& obj,
-           const JavaParamRef<jobject>& jweb_contents) {
+jlong JNI_TextSuggestionHost_Init(JNIEnv* env,
+                                  const JavaParamRef<jobject>& obj,
+                                  const JavaParamRef<jobject>& jweb_contents) {
   WebContents* web_contents = WebContents::FromJavaWebContents(jweb_contents);
   DCHECK(web_contents);
   auto* text_suggestion_host =

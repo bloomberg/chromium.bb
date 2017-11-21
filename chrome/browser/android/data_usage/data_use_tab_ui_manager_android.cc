@@ -63,7 +63,7 @@ uint32_t data_use_ui_message_id_map[DATA_USE_UI_MESSAGE_MAX] = {
 }  // namespace
 
 // static
-jboolean CheckAndResetDataUseTrackingStarted(
+jboolean JNI_DataUseTabUIManager_CheckAndResetDataUseTrackingStarted(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,
     jint tab_id,
@@ -81,7 +81,7 @@ jboolean CheckAndResetDataUseTrackingStarted(
 }
 
 // static
-jboolean CheckAndResetDataUseTrackingEnded(
+jboolean JNI_DataUseTabUIManager_CheckAndResetDataUseTrackingEnded(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,
     jint tab_id,
@@ -99,10 +99,11 @@ jboolean CheckAndResetDataUseTrackingEnded(
 }
 
 // static
-void UserClickedContinueOnDialogBox(JNIEnv* env,
-                                    const JavaParamRef<jclass>& clazz,
-                                    jint tab_id,
-                                    const JavaParamRef<jobject>& jprofile) {
+void JNI_DataUseTabUIManager_UserClickedContinueOnDialogBox(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    jint tab_id,
+    const JavaParamRef<jobject>& jprofile) {
   DCHECK_LE(0, static_cast<SessionID::id_type>(tab_id));
 
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
@@ -116,13 +117,14 @@ void UserClickedContinueOnDialogBox(JNIEnv* env,
 }
 
 // static
-jboolean WouldDataUseTrackingEnd(JNIEnv* env,
-                                 const JavaParamRef<jclass>& clazz,
-                                 const JavaParamRef<jobject>& j_web_contents,
-                                 jint tab_id,
-                                 const JavaParamRef<jstring>& url,
-                                 jint transition_type,
-                                 const JavaParamRef<jobject>& jprofile) {
+jboolean JNI_DataUseTabUIManager_WouldDataUseTrackingEnd(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jobject>& j_web_contents,
+    jint tab_id,
+    const JavaParamRef<jstring>& url,
+    jint transition_type,
+    const JavaParamRef<jobject>& jprofile) {
   DCHECK_LE(0, static_cast<SessionID::id_type>(tab_id));
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(j_web_contents);
@@ -141,12 +143,13 @@ jboolean WouldDataUseTrackingEnd(JNIEnv* env,
 }
 
 // static
-void OnCustomTabInitialNavigation(JNIEnv* env,
-                                  const JavaParamRef<jclass>& clazz,
-                                  jint tab_id,
-                                  const JavaParamRef<jstring>& jpackage_name,
-                                  const JavaParamRef<jstring>& jurl,
-                                  const JavaParamRef<jobject>& jprofile) {
+void JNI_DataUseTabUIManager_OnCustomTabInitialNavigation(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    jint tab_id,
+    const JavaParamRef<jstring>& jpackage_name,
+    const JavaParamRef<jstring>& jurl,
+    const JavaParamRef<jobject>& jprofile) {
   DCHECK_LE(0, static_cast<SessionID::id_type>(tab_id));
 
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
@@ -168,7 +171,7 @@ void OnCustomTabInitialNavigation(JNIEnv* env,
 }
 
 // static
-ScopedJavaLocalRef<jstring> GetDataUseUIString(
+ScopedJavaLocalRef<jstring> JNI_DataUseTabUIManager_GetDataUseUIString(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,
     int message_id) {
@@ -179,8 +182,9 @@ ScopedJavaLocalRef<jstring> GetDataUseUIString(
 }
 
 // static
-jboolean IsNonRoamingCellularConnection(JNIEnv* env,
-                                        const JavaParamRef<jclass>& clazz) {
+jboolean JNI_DataUseTabUIManager_IsNonRoamingCellularConnection(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz) {
   return net::NetworkChangeNotifier::IsConnectionCellular(
              net::NetworkChangeNotifier::GetConnectionType()) &&
          !net::android::GetIsRoaming();

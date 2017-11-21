@@ -8,9 +8,10 @@
 using base::android::JavaParamRef;
 
 // static
-void RecordAppMenuTouchDuration(JNIEnv* env,
-                                const JavaParamRef<jclass>& jcaller,
-                                jlong time_ms) {
+void JNI_AppMenuDragHelper_RecordAppMenuTouchDuration(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& jcaller,
+    jlong time_ms) {
   UMA_HISTOGRAM_TIMES("WrenchMenu.TouchDuration",
                       base::TimeDelta::FromMilliseconds(time_ms));
 }

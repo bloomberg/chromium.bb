@@ -128,10 +128,11 @@ std::unique_ptr<net::test_server::HttpResponse> HandleExabyteRequest(
 
 }  // namespace
 
-jboolean StartNativeTestServer(JNIEnv* env,
-                               const JavaParamRef<jclass>& jcaller,
-                               const JavaParamRef<jstring>& jtest_files_root,
-                               const JavaParamRef<jstring>& jtest_data_dir) {
+jboolean JNI_NativeTestServer_StartNativeTestServer(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& jcaller,
+    const JavaParamRef<jstring>& jtest_files_root,
+    const JavaParamRef<jstring>& jtest_data_dir) {
   // Shouldn't happen.
   if (g_test_server)
     return false;
@@ -155,15 +156,16 @@ jboolean StartNativeTestServer(JNIEnv* env,
   return g_test_server->Start();
 }
 
-void ShutdownNativeTestServer(JNIEnv* env,
-                              const JavaParamRef<jclass>& jcaller) {
+void JNI_NativeTestServer_ShutdownNativeTestServer(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& jcaller) {
   if (!g_test_server)
     return;
   delete g_test_server;
   g_test_server = NULL;
 }
 
-ScopedJavaLocalRef<jstring> GetEchoBodyURL(
+ScopedJavaLocalRef<jstring> JNI_NativeTestServer_GetEchoBodyURL(
     JNIEnv* env,
     const JavaParamRef<jclass>& jcaller) {
   DCHECK(g_test_server);
@@ -171,7 +173,7 @@ ScopedJavaLocalRef<jstring> GetEchoBodyURL(
   return base::android::ConvertUTF8ToJavaString(env, url.spec());
 }
 
-ScopedJavaLocalRef<jstring> GetEchoHeaderURL(
+ScopedJavaLocalRef<jstring> JNI_NativeTestServer_GetEchoHeaderURL(
     JNIEnv* env,
     const JavaParamRef<jclass>& jcaller,
     const JavaParamRef<jstring>& jheader) {
@@ -184,7 +186,7 @@ ScopedJavaLocalRef<jstring> GetEchoHeaderURL(
   return base::android::ConvertUTF8ToJavaString(env, url.spec());
 }
 
-ScopedJavaLocalRef<jstring> GetEchoAllHeadersURL(
+ScopedJavaLocalRef<jstring> JNI_NativeTestServer_GetEchoAllHeadersURL(
     JNIEnv* env,
     const JavaParamRef<jclass>& jcaller) {
   DCHECK(g_test_server);
@@ -192,7 +194,7 @@ ScopedJavaLocalRef<jstring> GetEchoAllHeadersURL(
   return base::android::ConvertUTF8ToJavaString(env, url.spec());
 }
 
-ScopedJavaLocalRef<jstring> GetEchoMethodURL(
+ScopedJavaLocalRef<jstring> JNI_NativeTestServer_GetEchoMethodURL(
     JNIEnv* env,
     const JavaParamRef<jclass>& jcaller) {
   DCHECK(g_test_server);
@@ -200,7 +202,7 @@ ScopedJavaLocalRef<jstring> GetEchoMethodURL(
   return base::android::ConvertUTF8ToJavaString(env, url.spec());
 }
 
-ScopedJavaLocalRef<jstring> GetRedirectToEchoBody(
+ScopedJavaLocalRef<jstring> JNI_NativeTestServer_GetRedirectToEchoBody(
     JNIEnv* env,
     const JavaParamRef<jclass>& jcaller) {
   DCHECK(g_test_server);
@@ -208,7 +210,7 @@ ScopedJavaLocalRef<jstring> GetRedirectToEchoBody(
   return base::android::ConvertUTF8ToJavaString(env, url.spec());
 }
 
-ScopedJavaLocalRef<jstring> GetFileURL(
+ScopedJavaLocalRef<jstring> JNI_NativeTestServer_GetFileURL(
     JNIEnv* env,
     const JavaParamRef<jclass>& jcaller,
     const JavaParamRef<jstring>& jfile_path) {
@@ -218,12 +220,13 @@ ScopedJavaLocalRef<jstring> GetFileURL(
   return base::android::ConvertUTF8ToJavaString(env, url.spec());
 }
 
-int GetPort(JNIEnv* env, const JavaParamRef<jclass>& jcaller) {
+int JNI_NativeTestServer_GetPort(JNIEnv* env,
+                                 const JavaParamRef<jclass>& jcaller) {
   DCHECK(g_test_server);
   return g_test_server->port();
 }
 
-ScopedJavaLocalRef<jstring> GetExabyteResponseURL(
+ScopedJavaLocalRef<jstring> JNI_NativeTestServer_GetExabyteResponseURL(
     JNIEnv* env,
     const JavaParamRef<jclass>& jcaller) {
   DCHECK(g_test_server);
@@ -231,8 +234,9 @@ ScopedJavaLocalRef<jstring> GetExabyteResponseURL(
   return base::android::ConvertUTF8ToJavaString(env, url.spec());
 }
 
-ScopedJavaLocalRef<jstring> GetHostPort(JNIEnv* env,
-                                        const JavaParamRef<jclass>& jcaller) {
+ScopedJavaLocalRef<jstring> JNI_NativeTestServer_GetHostPort(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& jcaller) {
   DCHECK(g_test_server);
   std::string host_port =
       net::HostPortPair::FromURL(g_test_server->base_url()).ToString();

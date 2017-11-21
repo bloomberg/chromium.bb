@@ -473,16 +473,16 @@ void AwSettings::PopulateWebPreferencesLocked(JNIEnv* env,
       Java_AwSettings_getScrollTopLeftInteropEnabledLocked(env, obj);
 }
 
-static jlong Init(JNIEnv* env,
-                  const JavaParamRef<jobject>& obj,
-                  const JavaParamRef<jobject>& web_contents) {
+static jlong JNI_AwSettings_Init(JNIEnv* env,
+                                 const JavaParamRef<jobject>& obj,
+                                 const JavaParamRef<jobject>& web_contents) {
   content::WebContents* contents =
       content::WebContents::FromJavaWebContents(web_contents);
   AwSettings* settings = new AwSettings(env, obj, contents);
   return reinterpret_cast<intptr_t>(settings);
 }
 
-static ScopedJavaLocalRef<jstring> GetDefaultUserAgent(
+static ScopedJavaLocalRef<jstring> JNI_AwSettings_GetDefaultUserAgent(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz) {
   return base::android::ConvertUTF8ToJavaString(env, GetUserAgent());

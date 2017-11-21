@@ -21,7 +21,9 @@ using base::android::ScopedJavaLocalRef;
 
 namespace {
 
-std::string JavaByteArrayToString(JNIEnv* env, jbyteArray byte_array) {
+std::string JNI_VariationsSeedBridge_JavaByteArrayToString(
+    JNIEnv* env,
+    jbyteArray byte_array) {
   if (!byte_array)
     return std::string();
   std::vector<uint8_t> array_data;
@@ -29,7 +31,7 @@ std::string JavaByteArrayToString(JNIEnv* env, jbyteArray byte_array) {
   return std::string(array_data.begin(), array_data.end());
 }
 
-ScopedJavaLocalRef<jbyteArray> StringToJavaByteArray(
+ScopedJavaLocalRef<jbyteArray> JNI_VariationsSeedBridge_StringToJavaByteArray(
     JNIEnv* env,
     const std::string& str_data) {
   std::vector<uint8_t> array_data(str_data.begin(), str_data.end());
@@ -57,7 +59,8 @@ void GetVariationsFirstRunSeed(std::string* seed_data,
       Java_VariationsSeedBridge_getVariationsFirstRunSeedDate(env);
   jboolean j_is_gzip_compressed =
       Java_VariationsSeedBridge_getVariationsFirstRunSeedIsGzipCompressed(env);
-  *seed_data = JavaByteArrayToString(env, j_seed_data.obj());
+  *seed_data =
+      JNI_VariationsSeedBridge_JavaByteArrayToString(env, j_seed_data.obj());
   *seed_signature = ConvertJavaStringToUTF8(j_seed_signature);
   *seed_country = ConvertJavaStringToUTF8(j_seed_country);
   *response_date = ConvertJavaStringToUTF8(j_response_date);
@@ -81,7 +84,7 @@ void SetJavaFirstRunPrefsForTesting(const std::string& seed_data,
                                     bool is_gzip_compressed) {
   JNIEnv* env = AttachCurrentThread();
   Java_VariationsSeedBridge_setVariationsFirstRunSeed(
-      env, StringToJavaByteArray(env, seed_data),
+      env, JNI_VariationsSeedBridge_StringToJavaByteArray(env, seed_data),
       ConvertUTF8ToJavaString(env, seed_signature),
       ConvertUTF8ToJavaString(env, seed_country),
       ConvertUTF8ToJavaString(env, response_date),

@@ -14,12 +14,13 @@ using base::android::JavaParamRef;
 
 namespace remoting {
 
-static void ResolveOAuthTokenCallback(JNIEnv* env,
-                                      const JavaParamRef<jclass>& clazz,
-                                      jlong callback_ptr,
-                                      jint jni_status,
-                                      const JavaParamRef<jstring>& user_email,
-                                      const JavaParamRef<jstring>& token) {
+static void JNI_JniOAuthTokenGetter_ResolveOAuthTokenCallback(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    jlong callback_ptr,
+    jint jni_status,
+    const JavaParamRef<jstring>& user_email,
+    const JavaParamRef<jstring>& token) {
   auto* callback =
       reinterpret_cast<OAuthTokenGetter::TokenCallback*>(callback_ptr);
   OAuthTokenGetter::Status status;
