@@ -102,6 +102,8 @@ class CookiesTreeViewDrawingProvider : public views::TreeViewDrawingProvider {
                               ui::TreeModelNode* node) override;
   base::string16 GetAuxiliaryTextForNode(views::TreeView* tree_view,
                                          ui::TreeModelNode* node) override;
+  bool ShouldDrawIconForNode(views::TreeView* tree_view,
+                             ui::TreeModelNode* node) override;
 
  private:
   base::string16 invalidated_text_;
@@ -128,6 +130,14 @@ base::string16 CookiesTreeViewDrawingProvider::GetAuxiliaryTextForNode(
   if (invalidated_nodes_.find(node) != invalidated_nodes_.end())
     return invalidated_text_;
   return TreeViewDrawingProvider::GetAuxiliaryTextForNode(tree_view, node);
+}
+
+bool CookiesTreeViewDrawingProvider::ShouldDrawIconForNode(
+    views::TreeView* tree_view,
+    ui::TreeModelNode* node) {
+  CookieTreeNode* cookie_node = static_cast<CookieTreeNode*>(node);
+  return cookie_node->GetDetailedInfo().node_type !=
+         CookieTreeNode::DetailedInfo::TYPE_HOST;
 }
 
 // A custom view that conditionally displays an infobar.
