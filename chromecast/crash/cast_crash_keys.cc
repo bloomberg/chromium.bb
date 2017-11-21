@@ -51,15 +51,10 @@ size_t RegisterCastCrashKeys() {
       {"subresource_url", ::crash_keys::kLargeSize},
       {"total-discardable-memory-allocated", ::crash_keys::kSmallSize},
       {"input-event-filter-send-failure", ::crash_keys::kSmallSize},
-      // media/:
-      {::crash_keys::kBug464926CrashKey, ::crash_keys::kSmallSize},
       {"view-count", ::crash_keys::kSmallSize},
 
       // media/:
       {"zero-encode-details", ::crash_keys::kSmallSize},
-
-      // gin/:
-      {"v8-ignition", ::crash_keys::kSmallSize},
 
       // Site isolation.  These keys help debug renderer kills such as
       // https://crbug.com/773140.

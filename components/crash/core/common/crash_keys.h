@@ -104,9 +104,6 @@ const size_t kSwitchesMaxCount = 15;
 // at most |kSwitchesMaxCount| command line switches.
 extern const char kSwitchFormat[];
 
-// Used to help investigate bug 464926.
-extern const char kBug464926CrashKey[];
-
 #if defined(OS_MACOSX)
 namespace mac {
 
