@@ -205,12 +205,16 @@ void VADisplayState::PreSandboxInitialization() {
 
 // static
 bool VADisplayState::PostSandboxInitialization() {
+  const std::string va_suffix(std::to_string(VA_MAJOR_VERSION + 1));
   StubPathMap paths;
-  paths[kModuleVa].push_back("libva.so.1");
+
+  paths[kModuleVa].push_back(std::string("libva.so.") + va_suffix);
 #if defined(USE_X11)
-  paths[kModuleVa_x11].push_back("libva-x11.so.1");
+  // libva-x11 does not exist on libva >= 2
+  if (VA_MAJOR_VERSION == 0)
+    paths[kModuleVa_x11].push_back("libva-x11.so.1");
 #elif defined(USE_OZONE)
-  paths[kModuleVa_drm].push_back("libva-drm.so.1");
+  paths[kModuleVa_drm].push_back(std::string("libva-drm.so.") + va_suffix);
 #endif
 
   const bool success = InitializeStubs(paths);
