@@ -213,9 +213,9 @@ TEST_F(TextureLayerTest, CheckPropertyChangeCausesCorrectBehavior) {
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetBlendBackgroundColor(true));
 }
 
-class TestMailboxHolder : public TextureLayer::TextureMailboxHolder {
+class TestMailboxHolder : public TextureLayer::TransferableResourceHolder {
  public:
-  using TextureLayer::TextureMailboxHolder::Create;
+  using TextureLayer::TransferableResourceHolder::Create;
 
  protected:
   ~TestMailboxHolder() override {}
