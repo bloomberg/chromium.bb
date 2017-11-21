@@ -6,7 +6,7 @@
 
 #include "core/timing/PerformanceBase.h"
 #include "platform/scheduler/child/web_scheduler.h"
-#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/Time.h"
 #include "public/platform/Platform.h"
 
 namespace blink {

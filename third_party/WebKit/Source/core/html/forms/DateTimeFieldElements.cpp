@@ -28,8 +28,8 @@
 #include "core/html/forms/DateTimeFieldsState.h"
 #include "platform/DateComponents.h"
 #include "platform/text/PlatformLocale.h"
-#include "platform/wtf/CurrentTime.h"
 #include "platform/wtf/DateMath.h"
+#include "platform/wtf/Time.h"
 
 namespace blink {
 

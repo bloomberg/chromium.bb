@@ -29,8 +29,8 @@
 #include "core/frame/LocalFrameView.h"
 #include "core/html/parser/HTMLDocumentParser.h"
 #include "platform/scheduler/child/web_scheduler.h"
-#include "platform/wtf/CurrentTime.h"
 #include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/Time.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
 

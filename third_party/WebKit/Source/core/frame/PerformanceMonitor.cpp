@@ -16,7 +16,6 @@
 #include "core/html/parser/HTMLDocumentParser.h"
 #include "core/probe/CoreProbes.h"
 #include "platform/Histogram.h"
-#include "platform/wtf/CurrentTime.h"
 #include "platform/wtf/Time.h"
 #include "public/platform/Platform.h"
 

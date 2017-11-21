@@ -33,8 +33,8 @@
 
 #include "core/CoreExport.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/CurrentTime.h"
 #include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/Time.h"
 
 #include <limits>
 

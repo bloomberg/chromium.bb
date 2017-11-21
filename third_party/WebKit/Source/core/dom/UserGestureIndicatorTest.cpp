@@ -5,7 +5,7 @@
 #include "core/dom/UserGestureIndicator.h"
 
 #include "core/frame/LocalFrame.h"
-#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/Time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {

@@ -54,8 +54,8 @@
 #include "platform/SharedBuffer.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/scheduler/child/web_scheduler.h"
-#include "platform/wtf/CurrentTime.h"
 #include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/Time.h"
 #include "public/platform/Platform.h"
 #include "public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 

@@ -85,7 +85,7 @@
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/shaping/CachingWordShaper.h"
 #include "platform/text/TextRun.h"
-#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/Time.h"
 #include "platform/wtf/text/CString.h"
 #include "platform/wtf/text/StringConcatenate.h"
 

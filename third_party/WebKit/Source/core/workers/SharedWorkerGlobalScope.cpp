@@ -37,7 +37,7 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/WorkerThreadDebugger.h"
 #include "core/workers/SharedWorkerThread.h"
-#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/Time.h"
 
 namespace blink {
 

@@ -15,7 +15,7 @@
 #include "core/workers/WorkerInspectorProxy.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/runtime_enabled_features.h"
-#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/Time.h"
 #include "public/platform/TaskType.h"
 #include "public/platform/WebWorkerFetchContext.h"
 #include "public/web/WebFrameClient.h"

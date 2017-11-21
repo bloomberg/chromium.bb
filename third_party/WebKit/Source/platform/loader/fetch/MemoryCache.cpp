@@ -28,8 +28,8 @@
 #include "platform/weborigin/SecurityOriginHash.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/AutoReset.h"
-#include "platform/wtf/CurrentTime.h"
 #include "platform/wtf/MathExtras.h"
+#include "platform/wtf/Time.h"
 #include "platform/wtf/text/CString.h"
 #include "public/platform/Platform.h"
 

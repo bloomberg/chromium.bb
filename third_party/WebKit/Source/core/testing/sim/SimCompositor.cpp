@@ -14,7 +14,7 @@
 #include "core/paint/compositing/PaintLayerCompositor.h"
 #include "core/testing/sim/SimDisplayItemList.h"
 #include "platform/graphics/GraphicsLayer.h"
-#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/Time.h"
 #include "public/platform/WebRect.h"
 
 namespace blink {

@@ -34,9 +34,9 @@
 #include "platform/Histogram.h"
 #include "platform/MemoryCoordinator.h"
 #include "platform/bindings/V8PerIsolateData.h"
-#include "platform/wtf/CurrentTime.h"
 #include "platform/wtf/ProcessMetrics.h"
 #include "platform/wtf/StdLibExtras.h"
+#include "platform/wtf/Time.h"
 #include "public/platform/Platform.h"
 #include "v8/include/v8.h"
 

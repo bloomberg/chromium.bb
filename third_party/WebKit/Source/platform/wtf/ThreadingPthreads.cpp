@@ -34,18 +34,18 @@
 
 #if defined(OS_POSIX)
 
-#include "platform/wtf/CurrentTime.h"
+#include <errno.h>
+#include <limits.h>
+#include <sched.h>
+#include <sys/time.h>
 #include "platform/wtf/DateMath.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/ThreadSpecific.h"
 #include "platform/wtf/ThreadingPrimitives.h"
+#include "platform/wtf/Time.h"
 #include "platform/wtf/WTFThreadData.h"
 #include "platform/wtf/dtoa/double-conversion.h"
-#include <errno.h>
-#include <limits.h>
-#include <sched.h>
-#include <sys/time.h>
 
 #if defined(OS_MACOSX)
 #include <objc/objc-auto.h>

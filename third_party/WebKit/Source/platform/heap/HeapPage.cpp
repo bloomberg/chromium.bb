@@ -46,8 +46,8 @@
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/AutoReset.h"
 #include "platform/wtf/ContainerAnnotations.h"
-#include "platform/wtf/CurrentTime.h"
 #include "platform/wtf/LeakAnnotations.h"
+#include "platform/wtf/Time.h"
 #include "platform/wtf/allocator/Partitions.h"
 #include "public/platform/Platform.h"
 

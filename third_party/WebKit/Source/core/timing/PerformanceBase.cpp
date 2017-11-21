@@ -48,8 +48,8 @@
 #include "platform/loader/fetch/ResourceTimingInfo.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "platform/wtf/CurrentTime.h"
 #include "platform/wtf/StdLibExtras.h"
+#include "platform/wtf/Time.h"
 
 namespace blink {
 

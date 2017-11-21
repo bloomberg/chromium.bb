@@ -26,8 +26,8 @@
 #include "core/inspector/V8InspectorString.h"
 #include "core/probe/CoreProbes.h"
 #include "platform/bindings/ScriptForbiddenScope.h"
-#include "platform/wtf/CurrentTime.h"
 #include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/Time.h"
 
 namespace blink {
 

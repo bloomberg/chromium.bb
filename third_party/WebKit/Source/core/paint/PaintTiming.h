@@ -60,7 +60,7 @@ class CORE_EXPORT PaintTiming final
 
   // The getters below return monotonically-increasing seconds, or zero if the
   // given paint event has not yet occurred. See the comments for
-  // monotonicallyIncreasingTime in wtf/CurrentTime.h for additional details.
+  // monotonicallyIncreasingTime in wtf/Time.h for additional details.
 
   // FirstPaint returns the first time that anything was painted for the
   // current document.

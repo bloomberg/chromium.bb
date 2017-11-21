@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/Time.h"
 
 #include "base/time/time.h"
 
