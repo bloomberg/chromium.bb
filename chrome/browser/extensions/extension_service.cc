@@ -490,8 +490,12 @@ void ExtensionService::EnableZipUnpackerExtension() {
   // by some reason, and cannot re-enable it in any UI. crbug.com/643060
   const std::string& id = extension_misc::kZIPUnpackerExtensionId;
   const Extension* extension = registry_->disabled_extensions().GetByID(id);
-  if (extension && CanEnableExtension(extension))
+  if (extension && CanEnableExtension(extension)) {
+    UMA_HISTOGRAM_SPARSE_SLOWLY(
+        "ExtensionService.ZipUnpackerDisabledReason",
+        extension_prefs_->GetDisableReasons(extension->id()));
     EnableExtension(id);
+  }
 #endif
 }
 
