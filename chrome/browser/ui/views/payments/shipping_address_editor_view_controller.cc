@@ -480,16 +480,9 @@ void ShippingAddressEditorViewController::UpdateEditorFields() {
 void ShippingAddressEditorViewController::OnDataChanged(bool synchronous) {
   SaveFieldsToProfile(&temporary_profile_, /*ignore_errors*/ true);
 
-  // This function is called after rules are successfully loaded. Because of
-  // this, normalization is guaranteed to be synchronous. If they're not loaded,
-  // something went wrong with the network call and normalization can't happen
-  // (there's no data to go in the region combobox anyways).
-  std::string country_code = countries_[chosen_country_index_].first;
-  if (state()->GetAddressNormalizer()->AreRulesLoadedForRegion(country_code)) {
-    bool success = state()->GetAddressNormalizer()->NormalizeAddressSync(
-        &temporary_profile_, country_code);
-    DCHECK(success);
-  }
+  // Normalization is guaranteed to be synchronous and rules should have been
+  // loaded already.
+  state()->GetAddressNormalizer()->NormalizeAddressSync(&temporary_profile_);
 
   UpdateEditorFields();
   if (synchronous) {

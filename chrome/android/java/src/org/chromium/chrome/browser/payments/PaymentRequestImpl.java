@@ -1809,8 +1809,7 @@ public class PaymentRequestImpl
      * onAddressNormalized or onCouldNotNormalize which will send the result to the merchant.
      */
     private void startShippingAddressChangeNormalization(AutofillAddress address) {
-        PersonalDataManager.getInstance().normalizeAddress(
-                address.getProfile(), AutofillAddress.getCountryCode(address.getProfile()), this);
+        PersonalDataManager.getInstance().normalizeAddress(address.getProfile(), this);
     }
 
     /**

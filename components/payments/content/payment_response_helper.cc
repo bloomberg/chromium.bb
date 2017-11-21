@@ -52,13 +52,8 @@ PaymentResponseHelper::PaymentResponseHelper(
 
     is_waiting_for_shipping_address_normalization_ = true;
 
-    // Use the country code from the profile if it is set, otherwise infer it
-    // from the |app_locale_|.
-    const std::string country_code =
-        autofill::data_util::GetCountryCodeWithFallback(
-            *selected_shipping_profile, app_locale_);
     payment_request_delegate_->GetAddressNormalizer()->NormalizeAddressAsync(
-        *selected_shipping_profile, country_code,
+        *selected_shipping_profile,
         /*timeout_seconds=*/5,
         base::BindOnce(&PaymentResponseHelper::OnAddressNormalized,
                        weak_ptr_factory_.GetWeakPtr()));
