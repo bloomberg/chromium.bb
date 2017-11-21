@@ -478,6 +478,23 @@ then use the singular `mojo::Binding` and simply `Close()` the existing binding
 before reusing it.
 
 
+### Explicitly reject bad input
+
+While validation should be done inside `StructTraits` specializations when
+possible, there are situations where additional checks, e.g. overflow checks,
+are needed outside of `StructTraits` specializations. Use
+`mojo::ReportBadMessage()` or `mojo::GetBadMessageCallback()` to reject bad
+input in these situations. Under the hood, this may record UMAs, kill the
+process sending bad input, et cetera.
+
+*   `mojo::ReportBadMessage()`: use to report bad IPC input while a message is
+    being dispatched on the stack.
+*   `mojo::GetBadMessageCallback()`: use to generate a callback to report bad
+    IPC input. The callback must be generated while a message is being
+    dispatched on the stack; however, the returned callback may be invoked be
+    freely invoked in asynchronously posted callbacks.
+
+
 ## Java Best Practices
 
 Unfortunately, there are no strongly established conventions here. Most code
