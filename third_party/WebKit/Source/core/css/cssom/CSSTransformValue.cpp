@@ -47,10 +47,12 @@ DOMMatrix* CSSTransformValue::toMatrix(ExceptionState& exception_state) const {
   return matrix;
 }
 
-const CSSValue* CSSTransformValue::ToCSSValue() const {
+const CSSValue* CSSTransformValue::ToCSSValue(
+    SecureContextMode secure_context_mode) const {
   CSSValueList* transform_css_value = CSSValueList::CreateSpaceSeparated();
   for (size_t i = 0; i < transform_components_.size(); i++) {
-    const CSSValue* component = transform_components_[i]->ToCSSValue();
+    const CSSValue* component =
+        transform_components_[i]->ToCSSValue(secure_context_mode);
     // TODO(meade): Remove this check once numbers and lengths are rewritten.
     if (!component)
       return nullptr;

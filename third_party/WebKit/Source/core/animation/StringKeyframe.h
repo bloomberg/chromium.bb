@@ -35,12 +35,17 @@ class CORE_EXPORT StringKeyframe : public Keyframe {
       const AtomicString& property_name,
       const PropertyRegistry*,
       const String& value,
+      SecureContextMode,
       StyleSheetContents*);
-  MutableCSSPropertyValueSet::SetResult
-  SetCSSPropertyValue(CSSPropertyID, const String& value, StyleSheetContents*);
+  MutableCSSPropertyValueSet::SetResult SetCSSPropertyValue(
+      CSSPropertyID,
+      const String& value,
+      SecureContextMode,
+      StyleSheetContents*);
   void SetCSSPropertyValue(CSSPropertyID, const CSSValue&);
   void SetPresentationAttributeValue(CSSPropertyID,
                                      const String& value,
+                                     SecureContextMode,
                                      StyleSheetContents*);
   void SetSVGAttributeValue(const QualifiedName&, const String& value);
 

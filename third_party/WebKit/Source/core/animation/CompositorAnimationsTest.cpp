@@ -200,7 +200,8 @@ class AnimationCompositorAnimationsTest : public RenderingTest {
                                                         const String& value,
                                                         double offset = 0) {
     scoped_refptr<StringKeyframe> keyframe = StringKeyframe::Create();
-    keyframe->SetCSSPropertyValue(id, value, nullptr);
+    keyframe->SetCSSPropertyValue(id, value,
+                                  SecureContextMode::kInsecureContext, nullptr);
     keyframe->SetComposite(EffectModel::kCompositeReplace);
     keyframe->SetOffset(offset);
     keyframe->SetEasing(LinearTimingFunction::Shared());
@@ -372,15 +373,16 @@ TEST_F(AnimationCompositorAnimationsTest,
        CanStartEffectOnCompositorKeyframeMultipleCSSProperties) {
   scoped_refptr<StringKeyframe> keyframe_good_multiple =
       CreateDefaultKeyframe(CSSPropertyOpacity, EffectModel::kCompositeReplace);
-  keyframe_good_multiple->SetCSSPropertyValue(CSSPropertyTransform, "none",
-                                              nullptr);
+  keyframe_good_multiple->SetCSSPropertyValue(
+      CSSPropertyTransform, "none", SecureContextMode::kInsecureContext,
+      nullptr);
   EXPECT_TRUE(DuplicateSingleKeyframeAndTestIsCandidateOnResult(
       keyframe_good_multiple.get()));
 
   scoped_refptr<StringKeyframe> keyframe_bad_multiple_id =
       CreateDefaultKeyframe(CSSPropertyColor, EffectModel::kCompositeReplace);
-  keyframe_bad_multiple_id->SetCSSPropertyValue(CSSPropertyOpacity, "0.1",
-                                                nullptr);
+  keyframe_bad_multiple_id->SetCSSPropertyValue(
+      CSSPropertyOpacity, "0.1", SecureContextMode::kInsecureContext, nullptr);
   EXPECT_FALSE(DuplicateSingleKeyframeAndTestIsCandidateOnResult(
       keyframe_bad_multiple_id.get()));
 }
@@ -427,13 +429,17 @@ TEST_F(AnimationCompositorAnimationsTest,
   StringKeyframeVector frames_mixed_properties;
   scoped_refptr<StringKeyframe> keyframe = StringKeyframe::Create();
   keyframe->SetOffset(0);
-  keyframe->SetCSSPropertyValue(CSSPropertyColor, "red", nullptr);
-  keyframe->SetCSSPropertyValue(CSSPropertyOpacity, "0", nullptr);
+  keyframe->SetCSSPropertyValue(CSSPropertyColor, "red",
+                                SecureContextMode::kInsecureContext, nullptr);
+  keyframe->SetCSSPropertyValue(CSSPropertyOpacity, "0",
+                                SecureContextMode::kInsecureContext, nullptr);
   frames_mixed_properties.push_back(std::move(keyframe));
   keyframe = StringKeyframe::Create();
   keyframe->SetOffset(1);
-  keyframe->SetCSSPropertyValue(CSSPropertyColor, "green", nullptr);
-  keyframe->SetCSSPropertyValue(CSSPropertyOpacity, "1", nullptr);
+  keyframe->SetCSSPropertyValue(CSSPropertyColor, "green",
+                                SecureContextMode::kInsecureContext, nullptr);
+  keyframe->SetCSSPropertyValue(CSSPropertyOpacity, "1",
+                                SecureContextMode::kInsecureContext, nullptr);
   frames_mixed_properties.push_back(std::move(keyframe));
   EXPECT_FALSE(CanStartEffectOnCompositor(
       timing_, *StringKeyframeEffectModel::Create(frames_mixed_properties)));

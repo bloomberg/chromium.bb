@@ -69,5 +69,5 @@
     DOMMatrix skewYSelf(optional unrestricted double sy = 0);
     DOMMatrix invertSelf();
 
-    [Exposed=Window, RaisesException] DOMMatrix setMatrixValue(DOMString transformList);
+    [Exposed=Window, RaisesException, CallWith=ExecutionContext] DOMMatrix setMatrixValue(DOMString transformList);
 };

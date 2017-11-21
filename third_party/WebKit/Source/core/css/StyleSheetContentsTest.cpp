@@ -11,7 +11,8 @@
 namespace blink {
 
 TEST(StyleSheetContentsTest, InsertMediaRule) {
-  CSSParserContext* context = CSSParserContext::Create(kHTMLStandardMode);
+  CSSParserContext* context = CSSParserContext::Create(
+      kHTMLStandardMode, SecureContextMode::kInsecureContext);
 
   StyleSheetContents* style_sheet = StyleSheetContents::Create(context);
   style_sheet->ParseString("@namespace ns url(test);");
@@ -34,7 +35,8 @@ TEST(StyleSheetContentsTest, InsertMediaRule) {
 }
 
 TEST(StyleSheetContentsTest, InsertFontFaceRule) {
-  CSSParserContext* context = CSSParserContext::Create(kHTMLStandardMode);
+  CSSParserContext* context = CSSParserContext::Create(
+      kHTMLStandardMode, SecureContextMode::kInsecureContext);
 
   StyleSheetContents* style_sheet = StyleSheetContents::Create(context);
   style_sheet->ParseString("@namespace ns url(test);");
@@ -57,7 +59,8 @@ TEST(StyleSheetContentsTest, InsertFontFaceRule) {
 }
 
 TEST(StyleSheetContentsTest, HasViewportRule) {
-  CSSParserContext* context = CSSParserContext::Create(kHTMLStandardMode);
+  CSSParserContext* context = CSSParserContext::Create(
+      kHTMLStandardMode, SecureContextMode::kInsecureContext);
 
   StyleSheetContents* style_sheet = StyleSheetContents::Create(context);
   style_sheet->ParseString("@viewport { width: 200px}");
@@ -66,7 +69,8 @@ TEST(StyleSheetContentsTest, HasViewportRule) {
 }
 
 TEST(StyleSheetContentsTest, HasViewportRuleAfterInsertion) {
-  CSSParserContext* context = CSSParserContext::Create(kHTMLStandardMode);
+  CSSParserContext* context = CSSParserContext::Create(
+      kHTMLStandardMode, SecureContextMode::kInsecureContext);
 
   StyleSheetContents* style_sheet = StyleSheetContents::Create(context);
   style_sheet->ParseString("body { color: pink }");
@@ -82,7 +86,8 @@ TEST(StyleSheetContentsTest, HasViewportRuleAfterInsertion) {
 }
 
 TEST(StyleSheetContentsTest, HasViewportRuleAfterInsertionIntoMediaRule) {
-  CSSParserContext* context = CSSParserContext::Create(kHTMLStandardMode);
+  CSSParserContext* context = CSSParserContext::Create(
+      kHTMLStandardMode, SecureContextMode::kInsecureContext);
 
   StyleSheetContents* style_sheet = StyleSheetContents::Create(context);
   style_sheet->ParseString("@media {}");

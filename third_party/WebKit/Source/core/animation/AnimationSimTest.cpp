@@ -60,13 +60,14 @@ TEST_F(AnimationSimTest, CustomPropertyBaseComputedStyle) {
   EXPECT_FALSE(exception_state.HadException());
 
   // target.style.setProperty('--x', '100%');
-  target->style()->setProperty("--x", "100%", g_empty_string, exception_state);
+  target->style()->setProperty(&GetDocument(), "--x", "100%", g_empty_string,
+                               exception_state);
   EXPECT_FALSE(exception_state.HadException());
 
   // target.animate({'--x': '100%'}, 1000);
   scoped_refptr<StringKeyframe> keyframe = StringKeyframe::Create();
   keyframe->SetCSSPropertyValue("--x", GetDocument().GetPropertyRegistry(),
-                                "100%",
+                                "100%", GetDocument().SecureContextMode(),
                                 GetDocument().ElementSheet().Contents());
   StringKeyframeVector keyframes;
   keyframes.push_back(std::move(keyframe));
@@ -80,13 +81,14 @@ TEST_F(AnimationSimTest, CustomPropertyBaseComputedStyle) {
   Compositor().BeginFrame(1);
 
   // target.style.setProperty('--x', '0%');
-  target->style()->setProperty("--x", "0%", g_empty_string, exception_state);
+  target->style()->setProperty(&GetDocument(), "--x", "0%", g_empty_string,
+                               exception_state);
   EXPECT_FALSE(exception_state.HadException());
 
   // target.animate({'--x': '100%'}, 1000);
   keyframe = StringKeyframe::Create();
   keyframe->SetCSSPropertyValue("--x", GetDocument().GetPropertyRegistry(),
-                                "100%",
+                                "100%", GetDocument().SecureContextMode(),
                                 GetDocument().ElementSheet().Contents());
   keyframes.clear();
   keyframes.push_back(std::move(keyframe));

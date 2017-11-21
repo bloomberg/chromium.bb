@@ -53,6 +53,8 @@ class CSSTestHelper {
   CSSTestHelper();
   ~CSSTestHelper();
 
+  const Document& GetDocument() { return *document_; };
+
   void AddCSSRules(const char* rule_text);
   RuleSet& GetRuleSet();
   CSSRuleList* CssRules();

@@ -64,11 +64,12 @@ CSSVariableData::CSSVariableData(const CSSParserTokenRange& range,
 }
 
 const CSSValue* CSSVariableData::ParseForSyntax(
-    const CSSSyntaxDescriptor& syntax) const {
+    const CSSSyntaxDescriptor& syntax,
+    SecureContextMode secure_context_mode) const {
   DCHECK(!NeedsVariableResolution());
   // TODO(timloh): This probably needs a proper parser context for
   // relative URL resolution.
-  return syntax.Parse(TokenRange(), StrictCSSParserContext(),
+  return syntax.Parse(TokenRange(), StrictCSSParserContext(secure_context_mode),
                       is_animation_tainted_);
 }
 

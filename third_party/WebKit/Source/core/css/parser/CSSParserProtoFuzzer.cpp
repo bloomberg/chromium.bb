@@ -32,14 +32,21 @@ DEFINE_BINARY_PROTO_FUZZER(const Input& input) {
           {Input::kCSSFontFaceRuleMode, blink::kCSSFontFaceRuleMode},
           {Input::kUASheetMode, blink::kUASheetMode}};
 
+  static std::unordered_map<Input::SecureContextMode, blink::SecureContextMode>
+      secure_context_mode_map = {
+          {Input::kInsecureContext, blink::SecureContextMode::kInsecureContext},
+          {Input::kSecureContext, blink::SecureContextMode::kSecureContext}};
+
   blink::CSSParserMode mode = parser_mode_map[input.css_parser_mode()];
+  blink::SecureContextMode secure_context_mode =
+      secure_context_mode_map[input.secure_context_mode()];
   blink::CSSParserContext::SelectorProfile selector_profile;
   if (input.is_dynamic_profile())
     selector_profile = blink::CSSParserContext::kDynamicProfile;
   else
     selector_profile = blink::CSSParserContext::kStaticProfile;
-  blink::CSSParserContext* context =
-      blink::CSSParserContext::Create(mode, selector_profile);
+  blink::CSSParserContext* context = blink::CSSParserContext::Create(
+      mode, secure_context_mode, selector_profile);
 
   blink::StyleSheetContents* style_sheet =
       blink::StyleSheetContents::Create(context);

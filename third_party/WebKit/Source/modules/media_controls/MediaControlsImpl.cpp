@@ -1480,10 +1480,10 @@ void MediaControlsImpl::PositionPopupMenu(Element* popup_menu) {
   bottom_str_value.append(kPx);
   right_str_value.append(kPx);
 
-  popup_menu->style()->setProperty("bottom", bottom_str_value, kImportant,
-                                   ASSERT_NO_EXCEPTION);
-  popup_menu->style()->setProperty("right", right_str_value, kImportant,
-                                   ASSERT_NO_EXCEPTION);
+  popup_menu->style()->setProperty(&GetDocument(), "bottom", bottom_str_value,
+                                   kImportant, ASSERT_NO_EXCEPTION);
+  popup_menu->style()->setProperty(&GetDocument(), "right", right_str_value,
+                                   kImportant, ASSERT_NO_EXCEPTION);
 }
 
 void MediaControlsImpl::Invalidate(Element* element) {

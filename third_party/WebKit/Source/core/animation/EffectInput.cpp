@@ -92,9 +92,12 @@ void SetKeyframeValue(Element& element,
             ? keyframe.SetCSSPropertyValue(
                   AtomicString(property),
                   element.GetDocument().GetPropertyRegistry(), value,
+                  element.GetDocument().SecureContextMode(),
                   style_sheet_contents)
-            : keyframe.SetCSSPropertyValue(css_property, value,
-                                           style_sheet_contents);
+            : keyframe.SetCSSPropertyValue(
+                  css_property, value,
+                  element.GetDocument().SecureContextMode(),
+                  style_sheet_contents);
     if (!set_result.did_parse && execution_context) {
       Document& document = ToDocument(*execution_context);
       if (document.GetFrame()) {
@@ -109,8 +112,9 @@ void SetKeyframeValue(Element& element,
       AnimationInputHelpers::KeyframeAttributeToPresentationAttribute(property,
                                                                       element);
   if (css_property != CSSPropertyInvalid) {
-    keyframe.SetPresentationAttributeValue(css_property, value,
-                                           style_sheet_contents);
+    keyframe.SetPresentationAttributeValue(
+        css_property, value, element.GetDocument().SecureContextMode(),
+        style_sheet_contents);
     return;
   }
   const QualifiedName* svg_attribute =

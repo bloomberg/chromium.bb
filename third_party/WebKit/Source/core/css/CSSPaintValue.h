@@ -82,7 +82,7 @@ class CSSPaintValue : public CSSImageGeneratorValue {
 
   void PaintImageGeneratorReady();
 
-  bool ParseInputArguments();
+  bool ParseInputArguments(const Document&);
 
   bool input_arguments_invalid_ = false;
 

@@ -10,24 +10,29 @@
 namespace blink {
 
 class ExceptionState;
+class ExecutionContext;
 
 class CORE_EXPORT StylePropertyMap : public StylePropertyMapReadonly {
   DEFINE_WRAPPERTYPEINFO();
   WTF_MAKE_NONCOPYABLE(StylePropertyMap);
 
  public:
-  void set(const String& property_name,
+  void set(const ExecutionContext*,
+           const String& property_name,
            CSSStyleValueOrCSSStyleValueSequenceOrString& item,
            ExceptionState&);
-  void append(const String& property_name,
+  void append(const ExecutionContext*,
+              const String& property_name,
               CSSStyleValueOrCSSStyleValueSequenceOrString& item,
               ExceptionState&);
   void remove(const String& property_name, ExceptionState&);
 
-  virtual void set(CSSPropertyID,
+  virtual void set(const ExecutionContext*,
+                   CSSPropertyID,
                    CSSStyleValueOrCSSStyleValueSequenceOrString& item,
                    ExceptionState&) = 0;
-  virtual void append(CSSPropertyID,
+  virtual void append(const ExecutionContext*,
+                      CSSPropertyID,
                       CSSStyleValueOrCSSStyleValueSequenceOrString& item,
                       ExceptionState&) = 0;
   virtual void remove(CSSPropertyID, ExceptionState&) = 0;

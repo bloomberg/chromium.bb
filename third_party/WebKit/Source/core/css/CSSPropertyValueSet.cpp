@@ -318,6 +318,7 @@ MutableCSSPropertyValueSet::SetResult MutableCSSPropertyValueSet::SetProperty(
     CSSPropertyID unresolved_property,
     const String& value,
     bool important,
+    SecureContextMode secure_context_mode,
     StyleSheetContents* context_style_sheet) {
   DCHECK_GE(unresolved_property, firstCSSProperty);
 
@@ -334,7 +335,7 @@ MutableCSSPropertyValueSet::SetResult MutableCSSPropertyValueSet::SetProperty(
   // end of the list. Firefox preserves the position, and MSIE moves the
   // property to the beginning.
   return CSSParser::ParseValue(this, unresolved_property, value, important,
-                               context_style_sheet);
+                               secure_context_mode, context_style_sheet);
 }
 
 MutableCSSPropertyValueSet::SetResult MutableCSSPropertyValueSet::SetProperty(
@@ -342,6 +343,7 @@ MutableCSSPropertyValueSet::SetResult MutableCSSPropertyValueSet::SetProperty(
     const PropertyRegistry* registry,
     const String& value,
     bool important,
+    SecureContextMode secure_context_mode,
     StyleSheetContents* context_style_sheet,
     bool is_animation_tainted) {
   if (value.IsEmpty()) {
@@ -351,7 +353,7 @@ MutableCSSPropertyValueSet::SetResult MutableCSSPropertyValueSet::SetProperty(
   }
   return CSSParser::ParseValueForCustomProperty(
       this, custom_property_name, registry, value, important,
-      context_style_sheet, is_animation_tainted);
+      secure_context_mode, context_style_sheet, is_animation_tainted);
 }
 
 void MutableCSSPropertyValueSet::SetProperty(CSSPropertyID property_id,
@@ -401,6 +403,7 @@ bool MutableCSSPropertyValueSet::SetProperty(CSSPropertyID property_id,
 
 void MutableCSSPropertyValueSet::ParseDeclarationList(
     const String& style_declaration,
+    SecureContextMode secure_context_mode,
     StyleSheetContents* context_style_sheet) {
   property_vector_.clear();
 
@@ -410,7 +413,7 @@ void MutableCSSPropertyValueSet::ParseDeclarationList(
         context_style_sheet->ParserContext(), context_style_sheet);
     context->SetMode(CssParserMode());
   } else {
-    context = CSSParserContext::Create(CssParserMode());
+    context = CSSParserContext::Create(CssParserMode(), secure_context_mode);
   }
 
   CSSParser::ParseDeclarationList(context, this, style_declaration);

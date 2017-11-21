@@ -410,13 +410,16 @@ String BaseRenderingContext2D::filter() const {
   return GetState().UnparsedFilter();
 }
 
-void BaseRenderingContext2D::setFilter(const String& filter_string) {
+void BaseRenderingContext2D::setFilter(
+    const ExecutionContext* execution_context,
+    const String& filter_string) {
   if (filter_string == GetState().UnparsedFilter())
     return;
 
-  const CSSValue* filter_value =
-      CSSParser::ParseSingleValue(CSSPropertyFilter, filter_string,
-                                  CSSParserContext::Create(kHTMLStandardMode));
+  const CSSValue* filter_value = CSSParser::ParseSingleValue(
+      CSSPropertyFilter, filter_string,
+      CSSParserContext::Create(kHTMLStandardMode,
+                               execution_context->SecureContextMode()));
 
   if (!filter_value || filter_value->IsCSSWideKeyword())
     return;

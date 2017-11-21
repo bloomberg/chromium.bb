@@ -229,7 +229,8 @@ String CSSComputedStyleDeclaration::cssText() const {
   return result.ToString();
 }
 
-void CSSComputedStyleDeclaration::setCSSText(const String&,
+void CSSComputedStyleDeclaration::setCSSText(const ExecutionContext*,
+                                             const String&,
                                              ExceptionState& exception_state) {
   exception_state.ThrowDOMException(
       kNoModificationAllowedError,
@@ -461,7 +462,8 @@ bool CSSComputedStyleDeclaration::IsPropertyImplicit(const String&) {
   return false;
 }
 
-void CSSComputedStyleDeclaration::setProperty(const String& name,
+void CSSComputedStyleDeclaration::setProperty(const ExecutionContext*,
+                                              const String& name,
                                               const String&,
                                               const String&,
                                               ExceptionState& exception_state) {
@@ -501,6 +503,7 @@ void CSSComputedStyleDeclaration::SetPropertyInternal(
     const String&,
     const String&,
     bool,
+    SecureContextMode,
     ExceptionState& exception_state) {
   // TODO(leviw): This code is currently unreachable, but shouldn't be.
   exception_state.ThrowDOMException(

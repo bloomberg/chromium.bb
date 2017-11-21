@@ -44,7 +44,7 @@ class CORE_EXPORT CSSSkew final : public CSSTransformComponent {
   // Internal methods - from CSSTransformComponent.
   const DOMMatrix* AsMatrix(ExceptionState&) const override;
   TransformComponentType GetType() const override { return kSkewType; }
-  const CSSFunctionValue* ToCSSValue() const override;
+  const CSSFunctionValue* ToCSSValue(SecureContextMode) const override;
 
   virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(ax_);

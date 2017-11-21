@@ -39,7 +39,8 @@ const DOMMatrix* CSSMatrixComponent::AsMatrix(ExceptionState&) const {
   return matrix_.Get();
 }
 
-const CSSFunctionValue* CSSMatrixComponent::ToCSSValue() const {
+const CSSFunctionValue* CSSMatrixComponent::ToCSSValue(
+    SecureContextMode) const {
   CSSFunctionValue* result =
       CSSFunctionValue::Create(is2D() ? CSSValueMatrix : CSSValueMatrix3d);
 

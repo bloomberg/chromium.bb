@@ -30,7 +30,9 @@ class CORE_EXPORT CSSURLImageValue final : public CSSStyleImageValue {
 
   StyleValueType GetType() const override { return kURLImageType; }
 
-  const CSSValue* ToCSSValue() const override { return CssImageValue(); }
+  const CSSValue* ToCSSValue(SecureContextMode) const override {
+    return CssImageValue();
+  }
 
   const String& url() const { return CssImageValue()->RelativeUrl(); }
 

@@ -69,6 +69,8 @@ enum ReasonForCallingCanExecuteScripts {
   kNotAboutToExecuteScript
 };
 
+enum class SecureContextMode { kInsecureContext, kSecureContext };
+
 class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
                                      public Supplementable<ExecutionContext> {
   WTF_MAKE_NONCOPYABLE(ExecutionContext);
@@ -173,6 +175,11 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   // https://w3c.github.io/webappsec/specs/powerfulfeatures/#settings-privileged.
   virtual bool IsSecureContext(String& error_message) const = 0;
   virtual bool IsSecureContext() const;
+
+  SecureContextMode SecureContextMode() const {
+    return IsSecureContext() ? SecureContextMode::kSecureContext
+                             : SecureContextMode::kInsecureContext;
+  }
 
   virtual String OutgoingReferrer() const;
   // Parses a comma-separated list of referrer policy tokens, and sets

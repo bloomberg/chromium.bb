@@ -125,7 +125,8 @@ DOMMatrixReadOnly* DOMMatrixReadOnly::Create(
     }
 
     DOMMatrixReadOnly* matrix = new DOMMatrixReadOnly(TransformationMatrix());
-    matrix->SetMatrixValueFromString(init.GetAsString(), exception_state);
+    matrix->SetMatrixValueFromString(execution_context, init.GetAsString(),
+                                     exception_state);
     return matrix;
   }
 
@@ -459,6 +460,7 @@ ScriptValue DOMMatrixReadOnly::toJSONForBinding(
 }
 
 void DOMMatrixReadOnly::SetMatrixValueFromString(
+    const ExecutionContext* execution_context,
     const String& input_string,
     ExceptionState& exception_state) {
   DEFINE_STATIC_LOCAL(String, identity_matrix2d, ("matrix(1, 0, 0, 1, 0, 0)"));
@@ -466,8 +468,9 @@ void DOMMatrixReadOnly::SetMatrixValueFromString(
   if (string.IsEmpty())
     string = identity_matrix2d;
 
-  const CSSValue* value =
-      CSSParser::ParseSingleValue(CSSPropertyTransform, string);
+  const CSSValue* value = CSSParser::ParseSingleValue(
+      CSSPropertyTransform, string,
+      StrictCSSParserContext(execution_context->SecureContextMode()));
 
   if (!value || value->IsCSSWideKeyword()) {
     exception_state.ThrowDOMException(

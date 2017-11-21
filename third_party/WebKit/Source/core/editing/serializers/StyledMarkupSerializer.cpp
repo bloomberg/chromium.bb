@@ -256,11 +256,14 @@ String StyledMarkupSerializer<Strategy>::CreateMarkup() {
              !fully_selected_root_style->Style() ||
              !fully_selected_root_style->Style()->GetPropertyCSSValue(
                  CSSPropertyBackgroundImage)) &&
-            fully_selected_root->hasAttribute(backgroundAttr))
+            fully_selected_root->hasAttribute(backgroundAttr)) {
           fully_selected_root_style->Style()->SetProperty(
               CSSPropertyBackgroundImage,
               "url('" + fully_selected_root->getAttribute(backgroundAttr) +
-                  "')");
+                  "')",
+              /* important */ false,
+              fully_selected_root->GetDocument().SecureContextMode());
+        }
 
         if (fully_selected_root_style->Style()) {
           // Reset the CSS properties to avoid an assertion error in

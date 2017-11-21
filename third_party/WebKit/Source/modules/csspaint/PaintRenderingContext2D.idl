@@ -24,7 +24,7 @@
     // compositing
     attribute unrestricted double globalAlpha; // (default 1.0)
     attribute DOMString globalCompositeOperation; // (default source-over)
-    attribute DOMString filter;
+    [SetterCallWith=ExecutionContext] attribute DOMString filter;
 
     // image smoothing
     attribute boolean imageSmoothingEnabled; // (default True)

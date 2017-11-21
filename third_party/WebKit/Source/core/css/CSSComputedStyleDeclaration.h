@@ -97,7 +97,8 @@ class CORE_EXPORT CSSComputedStyleDeclaration final
   String getPropertyPriority(const String& property_name) override;
   String GetPropertyShorthand(const String& property_name) override;
   bool IsPropertyImplicit(const String& property_name) override;
-  void setProperty(const String& property_name,
+  void setProperty(const ExecutionContext*,
+                   const String& property_name,
                    const String& value,
                    const String& priority,
                    ExceptionState&) override;
@@ -105,7 +106,9 @@ class CORE_EXPORT CSSComputedStyleDeclaration final
   String CssFloat() const;
   void SetCSSFloat(const String&, ExceptionState&);
   String cssText() const override;
-  void setCSSText(const String&, ExceptionState&) override;
+  void setCSSText(const ExecutionContext*,
+                  const String&,
+                  ExceptionState&) override;
   const CSSValue* GetPropertyCSSValueInternal(CSSPropertyID) override;
   const CSSValue* GetPropertyCSSValueInternal(
       AtomicString custom_property_name) override;
@@ -114,6 +117,7 @@ class CORE_EXPORT CSSComputedStyleDeclaration final
                            const String& custom_property_name,
                            const String& value,
                            bool important,
+                           SecureContextMode,
                            ExceptionState&) override;
 
   bool CssPropertyMatches(CSSPropertyID, const CSSValue*) const override;

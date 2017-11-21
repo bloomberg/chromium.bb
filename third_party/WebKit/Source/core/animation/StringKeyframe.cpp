@@ -25,16 +25,18 @@ MutableCSSPropertyValueSet::SetResult StringKeyframe::SetCSSPropertyValue(
     const AtomicString& property_name,
     const PropertyRegistry* registry,
     const String& value,
+    SecureContextMode secure_context_mode,
     StyleSheetContents* style_sheet_contents) {
   bool is_animation_tainted = true;
-  return css_property_map_->SetProperty(property_name, registry, value, false,
-                                        style_sheet_contents,
-                                        is_animation_tainted);
+  return css_property_map_->SetProperty(
+      property_name, registry, value, false, secure_context_mode,
+      style_sheet_contents, is_animation_tainted);
 }
 
 MutableCSSPropertyValueSet::SetResult StringKeyframe::SetCSSPropertyValue(
     CSSPropertyID property,
     const String& value,
+    SecureContextMode secure_context_mode,
     StyleSheetContents* style_sheet_contents) {
   DCHECK_NE(property, CSSPropertyInvalid);
   if (CSSAnimations::IsAnimationAffectingProperty(property)) {
@@ -42,8 +44,8 @@ MutableCSSPropertyValueSet::SetResult StringKeyframe::SetCSSPropertyValue(
     bool did_change = false;
     return MutableCSSPropertyValueSet::SetResult{did_parse, did_change};
   }
-  return css_property_map_->SetProperty(property, value, false,
-                                        style_sheet_contents);
+  return css_property_map_->SetProperty(
+      property, value, false, secure_context_mode, style_sheet_contents);
 }
 
 void StringKeyframe::SetCSSPropertyValue(CSSPropertyID property,
@@ -56,11 +58,13 @@ void StringKeyframe::SetCSSPropertyValue(CSSPropertyID property,
 void StringKeyframe::SetPresentationAttributeValue(
     CSSPropertyID property,
     const String& value,
+    SecureContextMode secure_context_mode,
     StyleSheetContents* style_sheet_contents) {
   DCHECK_NE(property, CSSPropertyInvalid);
-  if (!CSSAnimations::IsAnimationAffectingProperty(property))
-    presentation_attribute_map_->SetProperty(property, value, false,
-                                             style_sheet_contents);
+  if (!CSSAnimations::IsAnimationAffectingProperty(property)) {
+    presentation_attribute_map_->SetProperty(
+        property, value, false, secure_context_mode, style_sheet_contents);
+  }
 }
 
 void StringKeyframe::SetSVGAttributeValue(const QualifiedName& attribute_name,

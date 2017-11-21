@@ -6,6 +6,7 @@
 
 #include "core/css/CSSRuleList.h"
 #include "core/css/CSSTestHelper.h"
+#include "core/dom/Document.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -37,19 +38,19 @@ TEST(CSSPageRule, selectorText) {
   EXPECT_EQ(":left", page_rule->selectorText());
 
   // set invalid page selector.
-  page_rule->setSelectorText(":hover");
+  page_rule->setSelectorText(&helper.GetDocument(), ":hover");
   EXPECT_EQ(":left", page_rule->selectorText());
 
   // set invalid page selector.
-  page_rule->setSelectorText("right { bla");
+  page_rule->setSelectorText(&helper.GetDocument(), "right { bla");
   EXPECT_EQ(":left", page_rule->selectorText());
 
   // set page pseudo class selector.
-  page_rule->setSelectorText(":right");
+  page_rule->setSelectorText(&helper.GetDocument(), ":right");
   EXPECT_EQ(":right", page_rule->selectorText());
 
   // set page type selector.
-  page_rule->setSelectorText("namedpage");
+  page_rule->setSelectorText(&helper.GetDocument(), "namedpage");
   EXPECT_EQ("namedpage", page_rule->selectorText());
 }
 

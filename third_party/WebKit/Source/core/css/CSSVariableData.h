@@ -14,6 +14,7 @@ namespace blink {
 
 class CSSParserTokenRange;
 class CSSSyntaxDescriptor;
+enum class SecureContextMode;
 
 class CORE_EXPORT CSSVariableData : public RefCounted<CSSVariableData> {
   WTF_MAKE_NONCOPYABLE(CSSVariableData);
@@ -46,7 +47,8 @@ class CORE_EXPORT CSSVariableData : public RefCounted<CSSVariableData> {
 
   bool NeedsVariableResolution() const { return needs_variable_resolution_; }
 
-  const CSSValue* ParseForSyntax(const CSSSyntaxDescriptor&) const;
+  const CSSValue* ParseForSyntax(const CSSSyntaxDescriptor&,
+                                 SecureContextMode) const;
 
  private:
   CSSVariableData(const CSSParserTokenRange&,
