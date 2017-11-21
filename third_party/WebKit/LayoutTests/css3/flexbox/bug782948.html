@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/check-layout-th.js"></script>
+<style>
+.flexbox {
+  position: relative;
+  display: flex;
+  width: 150px;
+}
+
+table, tr, td {
+  padding: 0;
+  border-spacing: 0;
+}
+
+table {
+  flex: 1;
+  min-width: 0;
+}
+</style>
+
+<body onload="checkLayout('.flexbox')">
+<p>Note that this behavior is all incorrect, but we had a regression that was
+even more incorrect, so this tests that we match our historical behavior.</p>
+<p>You should not see overlapping text.</p>
+<div class="flexbox">
+  <table data-expected-width="200" data-offset-x="0">
+    <tr><td><div style="width: 200px;">Some textual content</div></tr></td>
+  </table>
+  <table data-expected-width="200" data-offset-x="200">
+    <tr><td><div style="width: 200px;">Some textual content</div></tr></td>
+  </table>
+</div>
