@@ -13,9 +13,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/observer_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "ui/base/models/list_selection_model.h"
 #include "ui/base/page_transition_types.h"
 
@@ -37,9 +35,6 @@ class TabStripModelImpl : public TabStripModel {
 
   // TabStripModel implementation.
   TabStripModelExperimental* AsTabStripModelExperimental() override;
-  TabStripModelDelegate* delegate() const override;
-  void AddObserver(TabStripModelObserver* observer) override;
-  void RemoveObserver(TabStripModelObserver* observer) override;
   int count() const override;
   bool empty() const override;
   Profile* profile() const override;
@@ -195,22 +190,16 @@ class TabStripModelImpl : public TabStripModel {
   //
   // Returns true if the WebContentses were closed immediately, false if we
   // are waiting for the result of an onunload handler.
-  bool InternalCloseTabs(const std::vector<int>& indices, uint32_t close_types);
-
-  // Invoked from InternalCloseTabs and when an extension is removed for an app
-  // tab. Notifies observers of TabClosingAt and deletes |contents|. If
-  // |create_historical_tabs| is true, CreateHistoricalTab is invoked on the
-  // delegate.
-  //
-  // The boolean parameter create_historical_tab controls whether to
-  // record these tabs and their history for reopening recently closed
-  // tabs.
-  void InternalCloseTab(content::WebContents* contents,
-                        int index,
-                        bool create_historical_tabs);
+  bool InternalCloseTabs(const std::vector<content::WebContents*>& items,
+                         uint32_t close_types);
 
   // Gets the WebContents at an index. Does no bounds checking.
   content::WebContents* GetWebContentsAtImpl(int index) const;
+
+  // Returns the WebContentses at the specified indices. This does no checking
+  // of the indices, it is assumed they are valid.
+  std::vector<content::WebContents*> GetWebContentsesByIndices(
+      const std::vector<int>& indices);
 
   // Notifies the observers if the active tab is being deactivated.
   void NotifyIfTabDeactivated(content::WebContents* contents);
@@ -258,9 +247,6 @@ class TabStripModelImpl : public TabStripModel {
   // tab's group/opener respectively.
   void FixOpenersAndGroupsReferencing(int index);
 
-  // Our delegate.
-  TabStripModelDelegate* delegate_;
-
   // The WebContents data currently hosted within this TabStripModel.
   std::vector<std::unique_ptr<WebContentsData>> contents_data_;
 
@@ -273,9 +259,6 @@ class TabStripModelImpl : public TabStripModel {
   // An object that determines where new Tabs should be inserted and where
   // selection should move when a Tab is closed.
   std::unique_ptr<TabStripModelOrderController> order_controller_;
-
-  // Our observers.
-  base::ObserverList<TabStripModelObserver> observers_;
 
   ui::ListSelectionModel selection_model_;
 

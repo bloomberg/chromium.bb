@@ -2155,6 +2155,8 @@ TEST_F(TabStripModelTest, MoveWebContentsAtWithPinned) {
   EXPECT_EQ("2p 1p 0p 4 3 5", GetTabStripStateString(strip));
   strip.MoveWebContentsAt(2, 0, true);
   EXPECT_EQ("0p 2p 1p 4 3 5", GetTabStripStateString(strip));
+
+  strip.CloseAllTabs();
 }
 
 TEST_F(TabStripModelTest, MoveSelectedTabsTo) {

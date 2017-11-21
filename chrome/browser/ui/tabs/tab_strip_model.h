@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
+#include "chrome/browser/ui/tabs/web_contents_closer.h"
 #include "ui/base/models/list_selection_model.h"
 #include "ui/base/page_transition_types.h"
 
@@ -53,7 +54,7 @@ class WebContents;
 // its bookkeeping when such events happen.
 //
 ////////////////////////////////////////////////////////////////////////////////
-class TabStripModel {
+class TabStripModel : public WebContentsCloseDelegate {
  public:
   // Used to specify what should happen when the tab is closed.
   enum CloseTypes {
@@ -116,18 +117,18 @@ class TabStripModel {
 
   static const int kNoTab = -1;
 
-  TabStripModel() {}
-  virtual ~TabStripModel() {}
+  explicit TabStripModel(TabStripModelDelegate* delegate);
+  ~TabStripModel() override;
 
   // Returns the experimental implementation if there is one, nullptr otherwise.
   virtual TabStripModelExperimental* AsTabStripModelExperimental() = 0;
 
   // Retrieves the TabStripModelDelegate associated with this TabStripModel.
-  virtual TabStripModelDelegate* delegate() const = 0;
+  TabStripModelDelegate* delegate() const { return delegate_; }
 
   // Add and remove observers to changes within this TabStripModel.
-  virtual void AddObserver(TabStripModelObserver* observer) = 0;
-  virtual void RemoveObserver(TabStripModelObserver* observer) = 0;
+  void AddObserver(TabStripModelObserver* observer);
+  void RemoveObserver(TabStripModelObserver* observer);
 
   // Retrieve the number of WebContentses/emptiness of the TabStripModel.
   virtual int count() const = 0;
@@ -401,6 +402,21 @@ class TabStripModel {
   // Convert a ContextMenuCommand into a browser command. Returns true if a
   // corresponding browser command exists, false otherwise.
   static bool ContextMenuCommandToBrowserCommand(int cmd_id, int* browser_cmd);
+
+ protected:
+  base::ObserverList<TabStripModelObserver>& observers() { return observers_; }
+
+  // WebContentsCloseDelegate:
+  bool ContainsWebContents(content::WebContents* contents) override;
+  void OnWillDeleteWebContents(content::WebContents* contents,
+                               uint32_t close_types) override;
+  bool RunUnloadListenerBeforeClosing(content::WebContents* contents) override;
+  bool ShouldRunUnloadListenerBeforeClosing(
+      content::WebContents* contents) override;
+
+ private:
+  TabStripModelDelegate* delegate_;
+  base::ObserverList<TabStripModelObserver> observers_;
 };
 
 #endif  // CHROME_BROWSER_UI_TABS_TAB_STRIP_MODEL_H_
