@@ -1690,9 +1690,13 @@ static void extend_lines(uint8_t *buf, int width, int height, int stride,
                          int extend, int use_highbitdepth) {
   for (int i = 0; i < height; ++i) {
     if (use_highbitdepth) {
+#if CONFIG_HIGHBITDEPTH
       uint16_t *buf16 = (uint16_t *)buf;
       aom_memset16(buf16 - extend, buf16[0], extend);
       aom_memset16(buf16 + width, buf16[width - 1], extend);
+#else
+      assert(0 && "use_highbitdepth set but CONFIG_HIGHBITDEPTH not enabled");
+#endif  // CONFIG_HIGHBITDEPTH
     } else {
       memset(buf - extend, buf[0], extend);
       memset(buf + width, buf[width - 1], extend);
