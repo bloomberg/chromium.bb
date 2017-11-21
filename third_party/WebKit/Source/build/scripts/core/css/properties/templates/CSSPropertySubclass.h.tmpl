@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 {% from 'templates/macros.tmpl' import source_files_for_generated_file %}
-{% from 'core/css/properties/templates/application_macros.tmpl' import set_value, convert_and_set_value %}
+{% from 'core/css/properties/templates/style_builder_functions.tmpl' import style_builder_functions %}
 {{source_files_for_generated_file(template_file, input_files)}}
 
 #ifndef GEN_BLINK_CORE_CSS_PROPERTIES_{{property.superclass.upper()}}_{{property_classname}}_h
@@ -57,81 +57,9 @@ class {{property_classname}} : public {{property.superclass}} {
   {% if property.is_descriptor %}
   bool IsDescriptor() const override { return true; }
   {% endif %}
-  {# Style builder functions #}
-{% macro declare_initial() %}
-void ApplyInitial(StyleResolverState& state) const override {
-{%- endmacro %}
-{% macro declare_inherit() %}
-void ApplyInherit(StyleResolverState& state) const override {
-{%- endmacro %}
-{% macro declare_value() %}
-void ApplyValue(StyleResolverState& state, const CSSValue& value) const override {
-{%- endmacro %}
   {% if property.should_declare_apply_functions %}
-    {% if not property.custom_apply_functions_initial %}
-  {{declare_initial()}}
-      {% if property.svg %}
-    {{set_value(property)}}(SVGComputedStyle::{{property.initial}}());
-      {% elif property.font %}
-    {{set_value(property)}}(FontBuilder::{{property.initial}}());
-      {% else %}
-    {{set_value(property)}}(ComputedStyleInitialValues::{{property.initial}}());
-      {% endif %}
-      {% if property.independent %}
-    state.Style()->{{property.is_inherited_setter}}(false);
-      {% endif %}
-  }
-    {% endif %}
-    {# TODO(meade): else emit function declaration only #}
-    {% if not property.custom_apply_functions_inherit %}
-  {{declare_inherit()}}
-      {% if property.svg %}
-    {{set_value(property)}}(state.ParentStyle()->SvgStyle().{{property.getter}}());
-      {% elif property.font %}
-    {{set_value(property)}}(state.ParentFontDescription().{{property.getter}}());
-      {% else %}
-    {{set_value(property)}}(state.ParentStyle()->{{property.getter}}());
-      {% endif %}
-      {% if property.independent %}
-    state.Style()->{{property.is_inherited_setter}}(true);
-      {% endif %}
-  }
-    {% endif %}
-    {# TODO(meade): else emit function declaration only #}
-    {% if not property.custom_apply_functions_value %}
-  {{declare_value()}}
-    {{convert_and_set_value(property)}}
-      {% if property.independent %}
-    state.Style()->{{property.is_inherited_setter}}(false);
-      {% endif %}
-  }
-    {% endif %}
-    {# TODO(meade): else emit function declaration only #}
-    {% if property.custom_apply == "auto" %}
-    {% set auto_getter = property.custom_apply_args['auto_getter'] or
-                         'HasAuto' + property.name_for_methods %}
-    {% set auto_setter = property.custom_apply_args['auto_setter'] or
-                         'SetHasAuto' + property.name_for_methods %}
-    {% set auto_identity = property.custom_apply_args['auto_identity'] or
-                           'CSSValueAuto' %}
-  {{declare_initial()}}
-    state.Style()->{{auto_setter}}();
-  }
-  {{declare_inherit()}}
-    if (state.ParentStyle()->{{auto_getter}}())
-      state.Style()->{{auto_setter}}();
-    else
-      {{set_value(property)}}(state.ParentStyle()->{{property.getter}}());
-  }
-  {{declare_value()}}
-    if (value.IsIdentifierValue() &&
-        ToCSSIdentifierValue(value).GetValueID() == {{auto_identity}})
-      state.Style()->{{auto_setter}}();
-    else
-      {{convert_and_set_value(property)}}
-  }
-    {% endif %}
-  {% endif %}
+{{style_builder_functions(property)}}
+  {%- endif %}
   {% if 'Percent' in property.typedom_types %}
   bool SupportsPercentage() const override { return true; }
   {% endif %}

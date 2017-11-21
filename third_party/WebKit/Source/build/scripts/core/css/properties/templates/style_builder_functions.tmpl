@@ -1,0 +1,97 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+{% macro declare_initial() %}
+void ApplyInitial(StyleResolverState& state) const override {
+{%- endmacro %}
+{% macro declare_inherit() %}
+void ApplyInherit(StyleResolverState& state) const override {
+{%- endmacro %}
+{% macro declare_value() %}
+void ApplyValue(StyleResolverState& state, const CSSValue& value) const override {
+{%- endmacro %}
+
+{% macro set_value(property) %}
+  {% if property.svg %}
+state.Style()->AccessSVGStyle().{{property.setter}}
+  {%- elif property.font %}
+state.GetFontBuilder().{{property.setter}}
+  {%- else %}
+state.Style()->{{property.setter}}
+  {%- endif %}
+{% endmacro %}
+
+{% macro convert_and_set_value(property) %}
+  {% if property.converter == 'CSSPrimitiveValue' %}
+{{set_value(property)}}(ToCSSPrimitiveValue(value).ConvertTo<{{property.type_name}}>());
+  {%- elif property.converter == 'CSSIdentifierValue' %}
+{{set_value(property)}}(ToCSSIdentifierValue(value).ConvertTo<blink::{{property.type_name}}>());
+  {%- elif property.converter %}
+{{set_value(property)}}(StyleBuilderConverter::{{property.converter}}(state, value));
+  {%- endif %}
+{% endmacro %}
+
+{% macro style_builder_functions(property) %}
+  {% if not property.custom_apply_functions_initial %}
+  {{declare_initial()}}
+    {% if property.svg %}
+    {{set_value(property)}}(SVGComputedStyle::{{property.initial}}());
+    {% elif property.font %}
+    {{set_value(property)}}(FontBuilder::{{property.initial}}());
+    {% else %}
+    {{set_value(property)}}(ComputedStyleInitialValues::{{property.initial}}());
+    {% endif %}
+    {% if property.independent %}
+    state.Style()->{{property.is_inherited_setter}}(false);
+    {% endif %}
+  }
+  {% endif %}
+  {% if not property.custom_apply_functions_inherit %}
+  {{declare_inherit()}}
+    {% if property.svg %}
+    {{set_value(property)}}(state.ParentStyle()->SvgStyle().{{property.getter}}());
+    {% elif property.font %}
+    {{set_value(property)}}(state.ParentFontDescription().{{property.getter}}());
+    {% else %}
+    {{set_value(property)}}(state.ParentStyle()->{{property.getter}}());
+    {% endif %}
+    {% if property.independent %}
+    state.Style()->{{property.is_inherited_setter}}(true);
+    {% endif %}
+  }
+  {% endif %}
+  {% if not property.custom_apply_functions_value %}
+  {{declare_value()}}
+    {{convert_and_set_value(property)}}
+      {% if property.independent %}
+    state.Style()->{{property.is_inherited_setter}}(false);
+      {% endif %}
+  }
+  {% endif %}
+  {% if property.custom_apply == "auto" %}
+    {% set auto_getter = property.custom_apply_args['auto_getter'] or
+                         'HasAuto' + property.name_for_methods %}
+    {% set auto_setter = property.custom_apply_args['auto_setter'] or
+                         'SetHasAuto' + property.name_for_methods %}
+    {% set auto_identity = property.custom_apply_args['auto_identity'] or
+                           'CSSValueAuto' %}
+  {{declare_initial()}}
+    state.Style()->{{auto_setter}}();
+  }
+  {{declare_inherit()}}
+    if (state.ParentStyle()->{{auto_getter}}())
+      state.Style()->{{auto_setter}}();
+    else
+      {{set_value(property)}}(state.ParentStyle()->{{property.getter}}());
+  }
+  {{declare_value()}}
+    if (value.IsIdentifierValue() &&
+        ToCSSIdentifierValue(value).GetValueID() == {{auto_identity}})
+      state.Style()->{{auto_setter}}();
+    else
+      {{convert_and_set_value(property)}}
+  }
+  {% endif %}
+  {# TODO(crbug.com/751354): emit function declaration only for larger functions #}
+{%- endmacro %}
