@@ -29,11 +29,6 @@ constexpr float kAnimationStartOrAfterHideOpacity = 0.01f;
 // Distance the keyboard moves during the animation
 constexpr int kAnimationDistance = 30;
 
-// Temporary value designating the size of the square in the top left corner of
-// the keyboard that should be a drag handle. This will be replaced once real
-// drag handles are added to the extension.
-constexpr int kDragHandleSquareMargin = 60;
-
 ContainerFloatingBehavior::ContainerFloatingBehavior(
     KeyboardController* controller) {
   controller_ = controller;
@@ -169,8 +164,7 @@ void ContainerFloatingBehavior::SavePosition(const gfx::Point& position) {
 bool ContainerFloatingBehavior::IsDragHandle(
     const gfx::Vector2d& offset,
     const gfx::Size& keyboard_size) const {
-  return offset.x() < kDragHandleSquareMargin &&
-         offset.y() < kDragHandleSquareMargin;
+  return false;
 }
 
 void ContainerFloatingBehavior::HandlePointerEvent(
