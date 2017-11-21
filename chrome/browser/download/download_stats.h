@@ -121,4 +121,22 @@ void RecordDownloadPathGeneration(DownloadPathGenerationEvent event,
 void RecordDownloadPathValidation(PathValidationResult result,
                                   bool is_transient);
 
+// Records drags of completed downloads from the shelf. Used in UMA, do not
+// remove, change or reuse existing entries. Update histograms.xml and
+// enums.xml when adding entries.
+enum class DownloadShelfDragEvent {
+  // A download was dragged. All platforms.
+  STARTED,
+  // The download was dropped somewhere that isn't a drag target. Currently
+  // only recorded on Mac.
+  CANCELED,
+  // The download was dropped somewhere useful (a folder, an application,
+  // etc.). Currently only recorded on Mac.
+  DROPPED,
+
+  COUNT
+};
+
+void RecordDownloadShelfDragEvent(DownloadShelfDragEvent drag_event);
+
 #endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_STATS_H_

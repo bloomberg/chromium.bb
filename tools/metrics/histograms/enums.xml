@@ -9098,6 +9098,12 @@ Called by update_net_error_codes.py.-->
   <int value="4" label="FAILURE_REASON_FILE_MONITOR"/>
 </enum>
 
+<enum name="Download.Shelf.DragEvent">
+  <int value="0" label="Started"/>
+  <int value="1" label="Canceled"/>
+  <int value="2" label="Dropped"/>
+</enum>
+
 <enum name="DownloadableStrings.InstallStatus">
   <int value="0" label="NONE"/>
   <int value="1" label="UPDATE_IN_PROGRESS"/>
