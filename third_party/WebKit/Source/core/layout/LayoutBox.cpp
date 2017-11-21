@@ -694,7 +694,9 @@ void LayoutBox::ScrollRectToVisibleRecursive(
       HTMLFrameOwnerElement* owner_element = GetDocument().LocalOwner();
       if (!IsDisallowedAutoscroll(owner_element, frame_view)) {
         if (make_visible_in_visual_viewport) {
-          if (IsLayoutView() &&
+          // RootFrameViewport::ScrollIntoView expects a rect in layout
+          // viewport content coordinates.
+          if (IsLayoutView() && GetFrame()->IsMainFrame() &&
               RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
             rect_to_scroll.Move(
                 LayoutSize(GetScrollableArea()->GetScrollOffset()));
