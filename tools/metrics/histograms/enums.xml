@@ -3294,6 +3294,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Connected"/>
 </enum>
 
+<enum name="BooleanConnectionError">
+  <int value="0" label="Connected"/>
+  <int value="1" label="Connection error happened"/>
+</enum>
+
 <enum name="BooleanContainedMeCard">
   <int value="0" label="Did not contain me card."/>
   <int value="1" label="Contained me card."/>

@@ -33240,6 +33240,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.EME.MojoCdm.ConnectionError"
+    enum="BooleanConnectionError">
+  <owner>media-dev@chromium.org</owner>
+  <summary>
+    Whether connection error has happened for MojoCdm. Every time a MojoCdm
+    object is created a &quot;false&quot; value is reported to provide a
+    baseline. Every time a mojo connection error happened, a &quot;true&quot;
+    value will be reported, which typically means a remote CDM process crash.
+  </summary>
+</histogram>
+
 <histogram name="Media.EME.NeedKey">
   <obsolete>
     Renamed to Media.EME.EncryptedEvent in 10/2017.
