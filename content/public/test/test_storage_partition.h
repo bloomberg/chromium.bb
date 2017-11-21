@@ -156,9 +156,6 @@ class TestStoragePartition : public StoragePartition {
 
   void ClearBluetoothAllowedDevicesMapForTesting() override;
 
-  void SetNetworkFactoryForTesting(
-      mojom::URLLoaderFactoryPtr test_factory) override;
-
  private:
   base::FilePath file_path_;
   net::URLRequestContextGetter* url_request_context_getter_ = nullptr;
