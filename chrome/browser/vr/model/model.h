@@ -38,6 +38,7 @@ struct Model {
   PermissionsModel permissions;
 
   ToolbarState toolbar_state;
+  bool omnibox_input_active = false;
   std::vector<OmniboxSuggestion> omnibox_suggestions;
 };
 

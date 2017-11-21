@@ -824,6 +824,23 @@ TEST_F(UiSceneManagerTest, OmniboxSuggestionBindings) {
   EXPECT_EQ(NumVisibleChildren(kSuggestionLayout), initially_visible);
 }
 
+TEST_F(UiSceneManagerTest, OmniboxSuggestionNavigates) {
+  MakeManager(kNotInCct, kNotInWebVr);
+  GURL gurl("http://test.com/");
+  model_->omnibox_suggestions.emplace_back(
+      OmniboxSuggestion(base::string16(), base::string16(),
+                        AutocompleteMatch::Type::VOICE_SUGGEST, gurl));
+  OnBeginFrame();
+
+  UiElement* suggestions = scene_->GetUiElementByName(kSuggestionLayout);
+  ASSERT_NE(suggestions, nullptr);
+  UiElement* suggestion = suggestions->children().front().get();
+  ASSERT_NE(suggestion, nullptr);
+  EXPECT_CALL(*browser_, Navigate(gurl)).Times(1);
+  suggestion->OnButtonDown({0, 0});
+  suggestion->OnButtonUp({0, 0});
+}
+
 TEST_F(UiSceneManagerTest, ControllerQuiescence) {
   MakeManager(kNotInCct, kNotInWebVr);
   OnBeginFrame();

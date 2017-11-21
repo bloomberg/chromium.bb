@@ -72,6 +72,8 @@ static_library("vr_common") {
     "elements/simple_textured_element.h",
     "elements/spinner.cc",
     "elements/spinner.h",
+    "elements/suggestion.cc",
+    "elements/suggestion.h",
     "elements/system_indicator.cc",
     "elements/system_indicator.h",
     "elements/system_indicator_texture.cc",

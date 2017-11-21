@@ -67,10 +67,9 @@ VrTestContext::VrTestContext() : view_scale_factor_(kDefaultViewScaleFactor) {
   ui_ = base::MakeUnique<Ui>(this, nullptr, UiInitialState());
   model_ = ui_->model_for_test();
 
-  GURL gurl("https://dangerous.com/dir/file.html");
-  ToolbarState state(gurl, security_state::SecurityLevel::DANGEROUS,
-                     &toolbar::kHttpsInvalidIcon,
-                     base::UTF8ToUTF16("Not secure"), true, false);
+  ToolbarState state(GURL("https://dangerous.com/dir/file.html"),
+                     security_state::SecurityLevel::HTTP_SHOW_WARNING,
+                     &toolbar::kHttpIcon, base::string16(), true, false);
   ui_->SetToolbarState(state);
   ui_->SetHistoryButtonsEnabled(true, true);
   ui_->SetLoading(true);
@@ -312,23 +311,31 @@ void VrTestContext::SetVoiceSearchActive(bool active) {
 }
 void VrTestContext::ExitPresent() {}
 void VrTestContext::ExitFullscreen() {}
+
+void VrTestContext::Navigate(GURL gurl) {
+  ToolbarState state(gurl, security_state::SecurityLevel::HTTP_SHOW_WARNING,
+                     &toolbar::kHttpIcon, base::string16(), true, false);
+  ui_->SetToolbarState(state);
+}
+
 void VrTestContext::NavigateBack() {}
 void VrTestContext::ExitCct() {}
+
 void VrTestContext::OnUnsupportedMode(vr::UiUnsupportedMode mode) {
   if (mode == UiUnsupportedMode::kUnhandledPageInfo ||
       mode == UiUnsupportedMode::kAndroidPermissionNeeded) {
     ui_->SetExitVrPromptEnabled(true, mode);
   }
 }
+
 void VrTestContext::OnExitVrPromptResult(vr::UiUnsupportedMode reason,
                                          vr::ExitVrPromptChoice choice) {
   LOG(ERROR) << "exit prompt result: " << choice;
   ui_->SetExitVrPromptEnabled(false, UiUnsupportedMode::kCount);
 }
-void VrTestContext::OnContentScreenBoundsChanged(const gfx::SizeF& bounds) {}
 
+void VrTestContext::OnContentScreenBoundsChanged(const gfx::SizeF& bounds) {}
 void VrTestContext::StartAutocomplete(const base::string16& string) {}
 void VrTestContext::StopAutocomplete() {}
-void VrTestContext::Navigate(GURL gurl) {}
 
 }  // namespace vr

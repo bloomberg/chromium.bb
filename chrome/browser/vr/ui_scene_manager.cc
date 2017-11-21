@@ -26,6 +26,7 @@
 #include "chrome/browser/vr/elements/rect.h"
 #include "chrome/browser/vr/elements/reticle.h"
 #include "chrome/browser/vr/elements/spinner.h"
+#include "chrome/browser/vr/elements/suggestion.h"
 #include "chrome/browser/vr/elements/system_indicator.h"
 #include "chrome/browser/vr/elements/text.h"
 #include "chrome/browser/vr/elements/throbber.h"
@@ -83,11 +84,12 @@ void BindColor(UiSceneManager* model, Button* button, P p) {
           base::Unretained(button))));
 }
 
-typedef LinearLayout SuggestionItem;
-typedef VectorBinding<OmniboxSuggestion, SuggestionItem> SuggestionSetBinding;
+typedef VectorBinding<OmniboxSuggestion, Suggestion> SuggestionSetBinding;
 typedef typename SuggestionSetBinding::ElementBinding SuggestionBinding;
 
 void OnSuggestionModelAdded(UiScene* scene,
+                            UiBrowserInterface* browser,
+                            Model* model,
                             SuggestionBinding* element_binding) {
   auto icon = base::MakeUnique<VectorIcon>(100);
   icon->SetVisible(true);
@@ -110,20 +112,25 @@ void OnSuggestionModelAdded(UiScene* scene,
   Text* p_description_text = description_text.get();
 
   auto text_layout = base::MakeUnique<LinearLayout>(LinearLayout::kDown);
-  text_layout->set_hit_testable(false);
   text_layout->set_margin(kSuggestionLineGap);
   text_layout->AddChild(std::move(content_text));
   text_layout->AddChild(std::move(description_text));
   text_layout->SetVisible(true);
 
-  auto suggestion_layout = base::MakeUnique<LinearLayout>(LinearLayout::kRight);
-  suggestion_layout->set_hit_testable(false);
-  suggestion_layout->set_margin(kSuggestionIconGap);
-  suggestion_layout->SetVisible(true);
-  suggestion_layout->AddChild(std::move(icon));
-  suggestion_layout->AddChild(std::move(text_layout));
+  auto suggestion = base::MakeUnique<Suggestion>(base::Bind(
+      [](UiBrowserInterface* browser, Model* m, GURL gurl) {
+        browser->Navigate(gurl);
+        m->omnibox_input_active = false;
+      },
+      base::Unretained(browser), base::Unretained(model)));
 
-  element_binding->set_view(suggestion_layout.get());
+  suggestion->set_margin(kSuggestionIconGap);
+  suggestion->SetVisible(true);
+  suggestion->AddChild(std::move(icon));
+  suggestion->AddChild(std::move(text_layout));
+  Suggestion* p_suggestion = suggestion.get();
+
+  element_binding->set_view(suggestion.get());
 
   element_binding->bindings().push_back(
       VR_BIND_FUNC(base::string16, SuggestionBinding, element_binding,
@@ -135,8 +142,11 @@ void OnSuggestionModelAdded(UiScene* scene,
       VR_BIND(AutocompleteMatch::Type, SuggestionBinding, element_binding,
               model()->type, VectorIcon, p_icon,
               SetIcon(AutocompleteMatch::TypeToVectorIcon(value))));
+  element_binding->bindings().push_back(VR_BIND_FUNC(
+      GURL, SuggestionBinding, element_binding, model()->destination,
+      Suggestion, p_suggestion, set_destination));
 
-  scene->AddUiElement(kSuggestionLayout, std::move(suggestion_layout));
+  scene->AddUiElement(kSuggestionLayout, std::move(suggestion));
 }
 
 void OnSuggestionModelRemoved(UiScene* scene, SuggestionBinding* binding) {
@@ -917,7 +927,8 @@ void UiSceneManager::CreateSuggestionList(Model* model) {
   layout->SetVisible(true);
 
   SuggestionSetBinding::ModelAddedCallback added_callback =
-      base::Bind(&OnSuggestionModelAdded, base::Unretained(scene_));
+      base::Bind(&OnSuggestionModelAdded, base::Unretained(scene_),
+                 base::Unretained(browser_), base::Unretained(model));
   SuggestionSetBinding::ModelRemovedCallback removed_callback =
       base::Bind(&OnSuggestionModelRemoved, base::Unretained(scene_));
 
