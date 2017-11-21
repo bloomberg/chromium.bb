@@ -35,8 +35,7 @@ class WTF_EXPORT PartitionAllocator {
   template <typename T>
   static size_t QuantizedSize(size_t count) {
     CHECK_LE(count, MaxElementCountInBackingStore<T>());
-    return PartitionAllocActualSize(WTF::Partitions::BufferPartition(),
-                                    count * sizeof(T));
+    return WTF::Partitions::BufferPartition()->ActualSize(count * sizeof(T));
   }
   template <typename T>
   static T* AllocateVectorBacking(size_t size) {

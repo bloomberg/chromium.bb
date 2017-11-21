@@ -155,7 +155,7 @@ void* ArrayBufferContents::ReserveMemory(size_t size) {
 }
 
 void ArrayBufferContents::FreeMemory(void* data) {
-  base::PartitionFreeGeneric(Partitions::ArrayBufferPartition(), data);
+  Partitions::ArrayBufferPartition()->Free(data);
 }
 
 void ArrayBufferContents::ReleaseReservedMemory(void* data, size_t size) {

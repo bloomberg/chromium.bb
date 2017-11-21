@@ -322,9 +322,8 @@ void ProfilingTestDriver::MakeTestAllocations() {
   }
 
   for (int i = 0; i < kPartitionAllocCount; ++i) {
-    leaks_.push_back(static_cast<char*>(
-        PartitionAllocGeneric(partition_allocator_.root(), kPartitionAllocSize,
-                              kPartitionAllocTypeName)));
+    leaks_.push_back(static_cast<char*>(partition_allocator_.root()->Alloc(
+        kPartitionAllocSize, kPartitionAllocTypeName)));
   }
 
   for (int i = 0; i < kVariadicAllocCount; ++i) {
