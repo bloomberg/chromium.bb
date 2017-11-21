@@ -2816,13 +2816,6 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
     cm->use_prev_frame_mvs = 0;
 #endif
   } else {
-    if (cm->intra_only) {
-      cm->allow_screen_content_tools = aom_rb_read_bit(rb);
-#if CONFIG_INTRABC
-      if (cm->allow_screen_content_tools)
-        cm->allow_intrabc = aom_rb_read_bit(rb);
-#endif  // CONFIG_INTRABC
-    }
 #if CONFIG_TEMPMV_SIGNALING
     if (cm->intra_only || cm->error_resilient_mode) cm->use_prev_frame_mvs = 0;
 #endif
@@ -2868,6 +2861,11 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
 #if CONFIG_ANS && ANS_MAX_SYMBOLS
       cm->ans_window_size_log2 = aom_rb_read_literal(rb, 4) + 8;
 #endif
+      cm->allow_screen_content_tools = aom_rb_read_bit(rb);
+#if CONFIG_INTRABC
+      if (cm->allow_screen_content_tools)
+        cm->allow_intrabc = aom_rb_read_bit(rb);
+#endif                                  // CONFIG_INTRABC
     } else if (pbi->need_resync != 1) { /* Skip if need resync */
 #if CONFIG_OBU
       pbi->refresh_frame_flags = (cm->frame_type == S_FRAME)
