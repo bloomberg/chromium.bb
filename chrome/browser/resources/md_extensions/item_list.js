@@ -41,22 +41,6 @@ cr.define('extensions', function() {
     },
 
     /**
-     * @param {string} id
-     * @return {?Element}
-     */
-    getDetailsButton: function(id) {
-      return this.$$(`#${id} /deep/ #details-button`);
-    },
-
-    /**
-     * @param {string} id
-     * @return {?Element}
-     */
-    getErrorsButton: function(id) {
-      return this.$$(`#${id} /deep/ #errors-button`);
-    },
-
-    /**
      * Computes the filter function to be used for determining which items
      * should be shown. A |null| value indicates that everything should be
      * shown.
