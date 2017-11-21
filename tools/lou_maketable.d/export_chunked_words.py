@@ -25,30 +25,39 @@ def main():
     parser = argparse.ArgumentParser(description="Export chunked words in patgen format.")
     parser.add_argument('-d', '--dictionary', required=True, dest="DICTIONARY",
                         help="dictionary file")
-    parser.add_argument('-t', '--table', required=False, dest="TABLE",
-                        help="hyphenation patterns to be used for showing the good and bad hyphens found")
+    parser.add_argument('-t', '--table', required=True, dest="TABLE",
+                        help="translation table, possibly including hyphenation patterns to be used for showing the good and bad hyphens found")
     args = parser.parse_args()
     conn, c = open_dictionary(args.DICTIONARY)
-    c.execute("SELECT chunked_text FROM dictionary WHERE chunked_text IS NOT NULL")
-    if args.TABLE:
-        load_table(args.TABLE)
-    for chunked_text, in c.fetchall():
-        text, hyphen_string = parse_chunks(chunked_text)
+    c.execute("SELECT text,braille FROM dictionary WHERE braille IS NOT NULL")
+    load_table(args.TABLE)
+    hyphenation_enabled = liblouis.hyphenationEnabled()
+    for text, braille in c.fetchall():
         # ignore long words for now
         if len(text) > 48:
             printerrln('WARNING: word is too long to be processed, may be translated incorrectly: %s' % text)
             continue
-        if args.TABLE:
-            actual_hyphen_string = hyphenate(text)
-        else:
-            actual_hyphen_string = "".join(["0" * (len(text) - 1)])
-        println(my_zip(text,
-                       map(lambda e, a: ".0" if e == "x" and a == "1" else
-                                        "0" if e == "x" else
-                                        "*" if e == "1" and a == "1" else
-                                        "-" if e == "1" else
-                                        "." if a == "1" else None,
-                           hyphen_string, actual_hyphen_string)))
+        if not is_letter(text):
+            printerrln('WARNING: word has non-letters: %s' % text)
+            continue
+        suggested_hyphen_string = suggest_chunks(text, braille)
+        if suggested_hyphen_string:
+            if hyphenation_enabled:
+                actual_hyphen_string = hyphenate(text)
+            else:
+                actual_hyphen_string = "".join(["0" * (len(text) - 1)])
+            println(my_zip(text,
+                           # *  = correct hyphen
+                           # -  = missed hyphen
+                           # .  = bad hyphen
+                           # .0 = optional hyphen present
+                           # 0  = optional hyphen not present
+                           map(lambda e, a: ".0" if e == "x" and a == "1" else
+                                            "0" if e == "x" else
+                                            "*" if e == "1" and a == "1" else
+                                            "-" if e == "1" else
+                                            "." if a == "1" else None,
+                               suggested_hyphen_string, actual_hyphen_string)))
     conn.close()
 
 if __name__ == "__main__": main()

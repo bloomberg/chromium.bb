@@ -46,7 +46,7 @@ dictionary : $(DICTIONARY)
 suggestions : $(CONTRACTIONS_TABLE) $(PATTERNS_TABLE)
 
 suggestions :
-	python3 $(MAKEFILE_DIR)make_suggestions.py -d $(DICTIONARY) -t $(BASE_TABLE),$(CONTRACTIONS_TABLE),$(PATTERNS_TABLE) --auto-chunk true >$(WORKING_FILE)
+	python3 $(MAKEFILE_DIR)make_suggestions.py -d $(DICTIONARY) -t $(BASE_TABLE),$(CONTRACTIONS_TABLE),$(PATTERNS_TABLE) >$(WORKING_FILE)
 	$(EDITOR) $(WORKING_FILE)
 
 .INTERMEDIATE : $(WORKING_FILE)
@@ -74,8 +74,8 @@ make-patterns.mk : $(CONFIG_FILE)
 		echo "patterns.0.dic :" && \
 		echo "	echo \"UTF-8\" >\$$@" && \
 		echo "" && \
-		echo "dictionary.0 : \$$(DICTIONARY)" && \
-		echo "	python3 $(MAKEFILE_DIR)export_chunked_words.py -d \$$< >\$$@" && \
+		echo "dictionary.0 : \$$(DICTIONARY) \$$(CONTRACTIONS_TABLE)" && \
+		echo "	python3 $(MAKEFILE_DIR)export_chunked_words.py -d \$$< -t \$$(BASE_TABLE),\$$(word 2,\$$^) >\$$@" && \
 		echo "" && \
 		prev_level=0 && \
 		for level in $(HYPH_LEVELS); do \
@@ -97,9 +97,9 @@ make-patterns.mk : $(CONFIG_FILE)
 			echo "		rm -f pattmp.$$level; \\" && \
 			echo "	fi" && \
 			echo "" && \
-			echo "dictionary.$$level : \$$(DICTIONARY) patterns.$$level.dic" && \
+			echo "dictionary.$$level : \$$(DICTIONARY) \$$(CONTRACTIONS_TABLE) patterns.$$level.dic" && \
 			echo "	if [ -e pattmp.$$level ]; then \\" && \
-			echo "		python3 $(MAKEFILE_DIR)export_chunked_words.py -d \$$< -t \$$(BASE_TABLE),\$$(word 2,\$$^) >\$$@ && \\" && \
+			echo "		python3 $(MAKEFILE_DIR)export_chunked_words.py -d \$$< -t \$$(BASE_TABLE),\$$(word 2,\$$^),\$$(word 3,\$$^) >\$$@ && \\" && \
 			echo "		diff \$$@ pattmp.$$level >/dev/null; \\" && \
 			echo "	else \\" && \
 			echo "		cp dictionary.$$prev_level \$$@; \\" && \
