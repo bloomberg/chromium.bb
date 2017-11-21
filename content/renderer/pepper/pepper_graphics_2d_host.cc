@@ -839,7 +839,8 @@ void PepperGraphics2DHost::ExecuteTransform(const float& scale,
                                             const gfx::PointF& translate,
                                             gfx::Rect* invalidated_rect) {
   bound_instance_->SetGraphics2DTransform(scale, translate);
-  *invalidated_rect = PP_ToGfxRect(bound_instance_->view_data().clip_rect);
+  *invalidated_rect =
+      gfx::Rect(0, 0, image_data_->width(), image_data_->height());
 }
 
 void PepperGraphics2DHost::ExecutePaintImageData(PPB_ImageData_Impl* image,
