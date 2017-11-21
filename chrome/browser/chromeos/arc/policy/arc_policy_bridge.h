@@ -12,7 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "components/arc/common/policy.mojom.h"
-#include "components/arc/instance_holder.h"
+#include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_service.h"
@@ -40,7 +40,7 @@ enum ArcCertsSyncMode : int32_t {
 };
 
 class ArcPolicyBridge : public KeyedService,
-                        public InstanceHolder<mojom::PolicyInstance>::Observer,
+                        public ConnectionObserver<mojom::PolicyInstance>,
                         public mojom::PolicyHost,
                         public policy::PolicyService::Observer {
  public:
@@ -58,9 +58,9 @@ class ArcPolicyBridge : public KeyedService,
 
   void OverrideIsManagedForTesting(bool is_managed);
 
-  // InstanceHolder<mojom::PolicyInstance>::Observer overrides.
-  void OnInstanceReady() override;
-  void OnInstanceClosed() override;
+  // ConnectionObserver<mojom::PolicyInstance> overrides.
+  void OnConnectionReady() override;
+  void OnConnectionClosed() override;
 
   // PolicyHost overrides.
   void GetPolicies(GetPoliciesCallback callback) override;

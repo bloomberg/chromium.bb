@@ -69,7 +69,7 @@ ArcTracingBridge::~ArcTracingBridge() {
   arc_bridge_service_->tracing()->RemoveObserver(this);
 }
 
-void ArcTracingBridge::OnInstanceReady() {
+void ArcTracingBridge::OnConnectionReady() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   mojom::TracingInstance* tracing_instance = ARC_GET_INSTANCE_FOR_METHOD(
       arc_bridge_service_->tracing(), QueryAvailableCategories);

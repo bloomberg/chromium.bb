@@ -12,7 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/arc/auth/arc_active_directory_enrollment_token_fetcher.h"
 #include "components/arc/common/auth.mojom.h"
-#include "components/arc/instance_holder.h"
+#include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
@@ -30,7 +30,7 @@ class ArcBridgeService;
 // Implementation of ARC authorization.
 class ArcAuthService : public KeyedService,
                        public mojom::AuthHost,
-                       public InstanceHolder<mojom::AuthInstance>::Observer {
+                       public ConnectionObserver<mojom::AuthInstance> {
  public:
   // Returns singleton instance for the given BrowserContext,
   // or nullptr if the browser |context| is not allowed to use ARC.
@@ -43,9 +43,9 @@ class ArcAuthService : public KeyedService,
   // For supporting ArcServiceManager::GetService<T>().
   static const char kArcServiceName[];
 
-  // InstanceHolder<mojom::AuthInstance>::Observer:
-  void OnInstanceReady() override;
-  void OnInstanceClosed() override;
+  // ConnectionObserver<mojom::AuthInstance>:
+  void OnConnectionReady() override;
+  void OnConnectionClosed() override;
 
   // mojom::AuthHost:
   void OnAuthorizationComplete(mojom::ArcSignInStatus status,

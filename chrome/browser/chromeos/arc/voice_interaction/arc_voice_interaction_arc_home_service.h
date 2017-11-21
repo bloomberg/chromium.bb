@@ -11,7 +11,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "components/arc/common/voice_interaction_arc_home.mojom.h"
-#include "components/arc/instance_holder.h"
+#include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/accessibility/ax_tree_update.h"
@@ -33,7 +33,7 @@ class ArcBridgeService;
 class ArcVoiceInteractionArcHomeService
     : public KeyedService,
       public mojom::VoiceInteractionArcHomeHost,
-      public InstanceHolder<mojom::VoiceInteractionArcHomeInstance>::Observer,
+      public ConnectionObserver<mojom::VoiceInteractionArcHomeInstance>,
       public ArcAppListPrefs::Observer,
       public ArcSessionManager::Observer {
  public:
@@ -58,9 +58,9 @@ class ArcVoiceInteractionArcHomeService
   // KeyedService overrides:
   void Shutdown() override;
 
-  // InstanceHolder<mojom::VoiceInteractionArcHomeInstance> overrides;
-  void OnInstanceReady() override;
-  void OnInstanceClosed() override;
+  // ConnectionObserver<mojom::VoiceInteractionArcHomeInstance> overrides;
+  void OnConnectionReady() override;
+  void OnConnectionClosed() override;
 
   // Gets view hierarchy from current focused app and send it to ARC.
   void GetVoiceInteractionStructure(

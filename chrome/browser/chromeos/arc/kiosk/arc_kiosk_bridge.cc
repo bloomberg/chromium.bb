@@ -80,7 +80,7 @@ ArcKioskBridge::~ArcKioskBridge() {
   arc_bridge_service_->kiosk()->RemoveObserver(this);
 }
 
-void ArcKioskBridge::OnInstanceReady() {
+void ArcKioskBridge::OnConnectionReady() {
   mojom::KioskInstance* kiosk_instance =
       ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->kiosk(), Init);
   DCHECK(kiosk_instance);

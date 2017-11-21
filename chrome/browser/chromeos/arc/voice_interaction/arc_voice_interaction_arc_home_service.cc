@@ -275,7 +275,7 @@ void ArcVoiceInteractionArcHomeService::OnWizardCompleteTimeout() {
   UnlockPai();
 }
 
-void ArcVoiceInteractionArcHomeService::OnInstanceReady() {
+void ArcVoiceInteractionArcHomeService::OnConnectionReady() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   mojom::VoiceInteractionArcHomeInstance* home_instance =
       ARC_GET_INSTANCE_FOR_METHOD(
@@ -286,7 +286,7 @@ void ArcVoiceInteractionArcHomeService::OnInstanceReady() {
   home_instance->Init(std::move(host_proxy));
 }
 
-void ArcVoiceInteractionArcHomeService::OnInstanceClosed() {
+void ArcVoiceInteractionArcHomeService::OnConnectionClosed() {
   VLOG(1) << "Voice interaction instance is closed.";
   UnlockPai();
 }

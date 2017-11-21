@@ -84,7 +84,7 @@ ArcImeBridgeImpl::~ArcImeBridgeImpl() {
   bridge_service_->ime()->RemoveObserver(this);
 }
 
-void ArcImeBridgeImpl::OnInstanceReady() {
+void ArcImeBridgeImpl::OnConnectionReady() {
   auto* instance = ARC_GET_INSTANCE_FOR_METHOD(bridge_service_->ime(), Init);
   DCHECK(instance);
   mojom::ImeHostPtr host_proxy;

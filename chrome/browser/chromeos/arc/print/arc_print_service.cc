@@ -88,7 +88,7 @@ ArcPrintService::~ArcPrintService() {
   arc_bridge_service_->print()->RemoveObserver(this);
 }
 
-void ArcPrintService::OnInstanceReady() {
+void ArcPrintService::OnConnectionReady() {
   mojom::PrintInstance* print_instance =
       ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->print(), Init);
   DCHECK(print_instance);

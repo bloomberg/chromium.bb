@@ -16,7 +16,7 @@
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/chromeos/arc/process/arc_process.h"
 #include "components/arc/common/process.mojom.h"
-#include "components/arc/instance_holder.h"
+#include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 namespace content {
@@ -49,9 +49,8 @@ class ArcBridgeService;
 // Otherwise, the processes that are introduced by init would then be regarded
 // as System Process. RequestAppProcessList() is responsible for app processes
 // while RequestSystemProcessList() is responsible for System Processes.
-class ArcProcessService
-    : public KeyedService,
-      public InstanceHolder<mojom::ProcessInstance>::Observer {
+class ArcProcessService : public KeyedService,
+                          public ConnectionObserver<mojom::ProcessInstance> {
  public:
   // Returns singleton instance for the given BrowserContext,
   // or nullptr if the browser |context| is not allowed to use ARC.
@@ -107,14 +106,14 @@ class ArcProcessService
       const RequestProcessListCallback& callback,
       std::vector<mojom::RunningAppProcessInfoPtr> instance_processes);
 
-  // InstanceHolder<mojom::ProcessInstance>::Observer overrides.
-  void OnInstanceReady() override;
-  void OnInstanceClosed() override;
+  // ConnectionObserver<mojom::ProcessInstance> overrides.
+  void OnConnectionReady() override;
+  void OnConnectionClosed() override;
 
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
 
   // Whether ARC is ready to request its process list.
-  bool instance_ready_ = false;
+  bool connection_ready_ = false;
 
   // There are some expensive tasks such as traverse whole process tree that
   // we can't do it on the UI thread.

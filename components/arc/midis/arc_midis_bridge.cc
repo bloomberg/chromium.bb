@@ -57,8 +57,8 @@ ArcMidisBridge::~ArcMidisBridge() {
   arc_bridge_service_->midis()->RemoveObserver(this);
 }
 
-void ArcMidisBridge::OnInstanceReady() {
-  DVLOG(1) << "ArcMidisBridge::OnInstanceReady() called.";
+void ArcMidisBridge::OnConnectionReady() {
+  DVLOG(1) << "ArcMidisBridge::OnConnectionReady() called.";
   mojom::MidisInstance* midis_instance =
       ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->midis(), Init);
   DCHECK(midis_instance);

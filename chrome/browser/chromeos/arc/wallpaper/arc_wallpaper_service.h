@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "chrome/browser/image_decoder.h"
 #include "components/arc/common/wallpaper.mojom.h"
-#include "components/arc/instance_holder.h"
+#include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
@@ -27,11 +27,10 @@ namespace arc {
 class ArcBridgeService;
 
 // Lives on the UI thread.
-class ArcWallpaperService
-    : public KeyedService,
-      public ash::WallpaperControllerObserver,
-      public InstanceHolder<mojom::WallpaperInstance>::Observer,
-      public mojom::WallpaperHost {
+class ArcWallpaperService : public KeyedService,
+                            public ash::WallpaperControllerObserver,
+                            public ConnectionObserver<mojom::WallpaperInstance>,
+                            public mojom::WallpaperHost {
  public:
   // Returns singleton instance for the given BrowserContext,
   // or nullptr if the browser |context| is not allowed to use ARC.
@@ -42,9 +41,9 @@ class ArcWallpaperService
                       ArcBridgeService* bridge_service);
   ~ArcWallpaperService() override;
 
-  // InstanceHolder<mojom::WallpaperInstance>::Observer overrides.
-  void OnInstanceReady() override;
-  void OnInstanceClosed() override;
+  // ConnectionObserver<mojom::WallpaperInstance> overrides.
+  void OnConnectionReady() override;
+  void OnConnectionClosed() override;
 
   // mojom::WallpaperHost overrides.
   void SetWallpaper(const std::vector<uint8_t>& data,

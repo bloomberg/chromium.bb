@@ -100,7 +100,7 @@ ArcNotificationManager::~ArcNotificationManager() {
   arc_bridge_service_->notifications()->RemoveObserver(this);
 }
 
-void ArcNotificationManager::OnInstanceReady() {
+void ArcNotificationManager::OnConnectionReady() {
   DCHECK(!ready_);
 
   auto* notifications_instance =
@@ -113,7 +113,7 @@ void ArcNotificationManager::OnInstanceReady() {
   ready_ = true;
 }
 
-void ArcNotificationManager::OnInstanceClosed() {
+void ArcNotificationManager::OnConnectionClosed() {
   DCHECK(ready_);
   while (!items_.empty()) {
     auto it = items_.begin();

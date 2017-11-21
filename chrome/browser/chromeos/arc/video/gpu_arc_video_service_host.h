@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "components/arc/common/video.mojom.h"
-#include "components/arc/instance_holder.h"
+#include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
@@ -26,10 +26,9 @@ class ArcBridgeService;
 // VideoDecodeAccelerator or VideoEncodeAccelerator run in the GPU process.
 //
 // Lives on the UI thread.
-class GpuArcVideoServiceHost
-    : public KeyedService,
-      public InstanceHolder<mojom::VideoInstance>::Observer,
-      public mojom::VideoHost {
+class GpuArcVideoServiceHost : public KeyedService,
+                               public ConnectionObserver<mojom::VideoInstance>,
+                               public mojom::VideoHost {
  public:
   // Returns singleton instance for the given BrowserContext,
   // or nullptr if the browser |context| is not allowed to use ARC.
@@ -40,8 +39,8 @@ class GpuArcVideoServiceHost
                          ArcBridgeService* bridge_service);
   ~GpuArcVideoServiceHost() override;
 
-  // arc::InstanceHolder<mojom::VideoInstance>::Observer implementation.
-  void OnInstanceReady() override;
+  // ConnectionObserver<mojom::VideoInstance>::Observer implementation.
+  void OnConnectionReady() override;
 
   // arc::mojom::VideoHost implementation.
   void OnBootstrapVideoAcceleratorFactory(

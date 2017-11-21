@@ -60,8 +60,8 @@ ArcOemCryptoBridge::~ArcOemCryptoBridge() {
   arc_bridge_service_->oemcrypto()->RemoveObserver(this);
 }
 
-void ArcOemCryptoBridge::OnInstanceReady() {
-  DVLOG(1) << "ArcOemCryptoBridge::OnInstanceReady() called";
+void ArcOemCryptoBridge::OnConnectionReady() {
+  DVLOG(1) << "ArcOemCryptoBridge::OnConnectionReady() called";
   mojom::OemCryptoInstance* oemcrypto_instance =
       ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->oemcrypto(), Init);
   DCHECK(oemcrypto_instance);

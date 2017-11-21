@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "components/arc/common/volume_mounter.mojom.h"
-#include "components/arc/instance_holder.h"
+#include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
@@ -27,7 +27,7 @@ class ArcBridgeService;
 class ArcVolumeMounterBridge
     : public KeyedService,
       public chromeos::disks::DiskMountManager::Observer,
-      public InstanceHolder<mojom::VolumeMounterInstance>::Observer {
+      public ConnectionObserver<mojom::VolumeMounterInstance> {
  public:
   // Returns singleton instance for the given BrowserContext,
   // or nullptr if the browser |context| is not allowed to use ARC.
@@ -38,8 +38,8 @@ class ArcVolumeMounterBridge
                          ArcBridgeService* bridge_service);
   ~ArcVolumeMounterBridge() override;
 
-  // InstanceHolder<mojom::VolumeMounterInstance>::Observer overrides:
-  void OnInstanceReady() override;
+  // ConnectionObserver<mojom::VolumeMounterInstance> overrides:
+  void OnConnectionReady() override;
 
   // chromeos::disks::DiskMountManager::Observer overrides:
   void OnDiskEvent(

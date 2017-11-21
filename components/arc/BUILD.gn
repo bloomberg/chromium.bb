@@ -133,6 +133,9 @@ static_library("arc_base") {
     "arc_stop_reason.h",
     "arc_util.cc",
     "arc_util.h",
+    "connection_notifier.cc",
+    "connection_notifier.h",
+    "connection_observer.h",
     "instance_holder.h",
   ]
 

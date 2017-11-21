@@ -14,7 +14,7 @@
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "components/arc/common/intent_helper.mojom.h"
-#include "components/arc/instance_holder.h"
+#include "components/arc/connection_observer.h"
 #include "components/arc/intent_helper/activity_icon_loader.h"
 #include "components/arc/intent_helper/arc_intent_helper_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -35,7 +35,7 @@ class IntentFilter;
 // Receives intents from ARC.
 class ArcIntentHelperBridge
     : public KeyedService,
-      public InstanceHolder<mojom::IntentHelperInstance>::Observer,
+      public ConnectionObserver<mojom::IntentHelperInstance>,
       public mojom::IntentHelperHost {
  public:
   // Returns singleton instance for the given BrowserContext,
@@ -58,9 +58,9 @@ class ArcIntentHelperBridge
   void RemoveObserver(ArcIntentHelperObserver* observer);
   bool HasObserver(ArcIntentHelperObserver* observer) const;
 
-  // InstanceHolder<mojom::IntentHelperInstance>::Observer
-  void OnInstanceReady() override;
-  void OnInstanceClosed() override;
+  // ConnectionObserver<mojom::IntentHelperInstance>
+  void OnConnectionReady() override;
+  void OnConnectionClosed() override;
 
   // mojom::IntentHelperHost
   void OnIconInvalidated(const std::string& package_name) override;

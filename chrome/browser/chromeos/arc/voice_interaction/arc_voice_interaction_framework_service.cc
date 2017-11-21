@@ -249,7 +249,7 @@ ArcVoiceInteractionFrameworkService::~ArcVoiceInteractionFrameworkService() {
   arc_bridge_service_->voice_interaction_framework()->RemoveObserver(this);
 }
 
-void ArcVoiceInteractionFrameworkService::OnInstanceReady() {
+void ArcVoiceInteractionFrameworkService::OnConnectionReady() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   mojom::VoiceInteractionFrameworkInstance* framework_instance =
       ARC_GET_INSTANCE_FOR_METHOD(
@@ -271,7 +271,7 @@ void ArcVoiceInteractionFrameworkService::OnInstanceReady() {
   highlighter_client_->Attach();
 }
 
-void ArcVoiceInteractionFrameworkService::OnInstanceClosed() {
+void ArcVoiceInteractionFrameworkService::OnConnectionClosed() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   binding_.Close();
   highlighter_client_->Detach();

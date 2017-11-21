@@ -344,8 +344,8 @@ void ArcPolicyBridge::OverrideIsManagedForTesting(bool is_managed) {
   is_managed_ = is_managed;
 }
 
-void ArcPolicyBridge::OnInstanceReady() {
-  VLOG(1) << "ArcPolicyBridge::OnPolicyInstanceReady";
+void ArcPolicyBridge::OnConnectionReady() {
+  VLOG(1) << "ArcPolicyBridge::OnConnectionReady";
   if (policy_service_ == nullptr) {
     InitializePolicyService();
   }
@@ -360,8 +360,8 @@ void ArcPolicyBridge::OnInstanceReady() {
   policy_instance->Init(std::move(host_proxy));
 }
 
-void ArcPolicyBridge::OnInstanceClosed() {
-  VLOG(1) << "ArcPolicyBridge::OnPolicyInstanceClosed";
+void ArcPolicyBridge::OnConnectionClosed() {
+  VLOG(1) << "ArcPolicyBridge::OnConnectionClosed";
   policy_service_->RemoveObserver(policy::POLICY_DOMAIN_CHROME, this);
   policy_service_ = nullptr;
   initial_policies_hash_.clear();

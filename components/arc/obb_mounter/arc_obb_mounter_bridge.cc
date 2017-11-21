@@ -54,7 +54,7 @@ ArcObbMounterBridge::~ArcObbMounterBridge() {
   arc_bridge_service_->obb_mounter()->RemoveObserver(this);
 }
 
-void ArcObbMounterBridge::OnInstanceReady() {
+void ArcObbMounterBridge::OnConnectionReady() {
   mojom::ObbMounterInstance* obb_mounter_instance =
       ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->obb_mounter(), Init);
   DCHECK(obb_mounter_instance);

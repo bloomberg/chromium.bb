@@ -138,7 +138,7 @@ ArcAuthService::~ArcAuthService() {
   arc_bridge_service_->auth()->RemoveObserver(this);
 }
 
-void ArcAuthService::OnInstanceReady() {
+void ArcAuthService::OnConnectionReady() {
   auto* instance =
       ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->auth(), Init);
   DCHECK(instance);
@@ -147,7 +147,7 @@ void ArcAuthService::OnInstanceReady() {
   instance->Init(std::move(host_proxy));
 }
 
-void ArcAuthService::OnInstanceClosed() {
+void ArcAuthService::OnConnectionClosed() {
   fetcher_.reset();
 }
 

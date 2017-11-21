@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_package_syncable_service_factory.h"
 #include "chrome/common/pref_names.h"
+#include "components/arc/instance_holder.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/sync/model/sync_change_processor.h"
 #include "components/sync/model/sync_data.h"

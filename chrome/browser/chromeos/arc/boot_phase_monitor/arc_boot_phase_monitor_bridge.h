@@ -14,7 +14,7 @@
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/sessions/session_restore_observer.h"
 #include "components/arc/common/boot_phase_monitor.mojom.h"
-#include "components/arc/instance_holder.h"
+#include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -33,7 +33,7 @@ class ArcInstanceThrottle;
 // in response.
 class ArcBootPhaseMonitorBridge
     : public KeyedService,
-      public InstanceHolder<mojom::BootPhaseMonitorInstance>::Observer,
+      public ConnectionObserver<mojom::BootPhaseMonitorInstance>,
       public mojom::BootPhaseMonitorHost,
       public ArcSessionManager::Observer,
       public SessionRestoreObserver {
@@ -66,8 +66,8 @@ class ArcBootPhaseMonitorBridge
                             ArcBridgeService* bridge_service);
   ~ArcBootPhaseMonitorBridge() override;
 
-  // InstanceHolder<mojom::BootPhaseMonitorInstance>::Observer
-  void OnInstanceReady() override;
+  // ConnectionObserver<mojom::BootPhaseMonitorInstance>
+  void OnConnectionReady() override;
 
   // mojom::BootPhaseMonitorHost
   void OnBootCompleted() override;

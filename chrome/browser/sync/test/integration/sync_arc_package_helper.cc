@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_package_syncable_service.h"
 #include "chromeos/chromeos_switches.h"
+#include "components/arc/instance_holder.h"
 #include "components/arc/test/fake_app_instance.h"
 
 namespace arc {

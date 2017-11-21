@@ -214,7 +214,7 @@ void ArcFileSystemBridge::OpenFileToRead(const std::string& url,
                           std::move(callback)));
 }
 
-void ArcFileSystemBridge::OnInstanceReady() {
+void ArcFileSystemBridge::OnConnectionReady() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   auto* file_system_instance =
       ARC_GET_INSTANCE_FOR_METHOD(bridge_service_->file_system(), Init);

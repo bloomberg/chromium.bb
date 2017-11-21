@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "components/arc/common/intent_helper.mojom.h"
-#include "components/arc/instance_holder.h"
+#include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 namespace content {
@@ -23,7 +23,7 @@ class ArcSettingsServiceImpl;
 
 class ArcSettingsService
     : public KeyedService,
-      public InstanceHolder<mojom::IntentHelperInstance>::Observer {
+      public ConnectionObserver<mojom::IntentHelperInstance> {
  public:
   // Returns singleton instance for the given BrowserContext,
   // or nullptr if the browser |context| is not allowed to use ARC.
@@ -34,9 +34,9 @@ class ArcSettingsService
                      ArcBridgeService* bridge_service);
   ~ArcSettingsService() override;
 
-  // InstanceHolder<mojom::IntentHelperInstance>::Observer
-  void OnInstanceReady() override;
-  void OnInstanceClosed() override;
+  // ConnectionObserver<mojom::IntentHelperInstance>
+  void OnConnectionReady() override;
+  void OnConnectionClosed() override;
 
  private:
   content::BrowserContext* const context_;

@@ -381,12 +381,12 @@ ArcDownloadsWatcherService::~ArcDownloadsWatcherService() {
   arc_bridge_service_->file_system()->RemoveObserver(this);
 }
 
-void ArcDownloadsWatcherService::OnInstanceReady() {
+void ArcDownloadsWatcherService::OnConnectionReady() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   StartWatchingDownloads();
 }
 
-void ArcDownloadsWatcherService::OnInstanceClosed() {
+void ArcDownloadsWatcherService::OnConnectionClosed() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   StopWatchingDownloads();
 }

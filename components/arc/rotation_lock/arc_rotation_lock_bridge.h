@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "components/arc/common/rotation_lock.mojom.h"
-#include "components/arc/instance_holder.h"
+#include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 namespace content {
@@ -25,7 +25,7 @@ class ArcBridgeService;
 // container.
 class ArcRotationLockBridge
     : public KeyedService,
-      public InstanceHolder<mojom::RotationLockInstance>::Observer,
+      public ConnectionObserver<mojom::RotationLockInstance>,
       public ash::TabletModeObserver,
       public ash::ScreenOrientationController::Observer {
  public:
@@ -38,8 +38,8 @@ class ArcRotationLockBridge
                         ArcBridgeService* bridge_service);
   ~ArcRotationLockBridge() override;
 
-  // InstanceHolder<mojom::RotationLockInstance>::Observer:
-  void OnInstanceReady() override;
+  // ConnectionObserver<mojom::RotationLockInstance>:
+  void OnConnectionReady() override;
 
   // ash::ScreenOrientationController::Observer:
   void OnUserRotationLockChanged() override;

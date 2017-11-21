@@ -13,7 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "components/arc/common/file_system.mojom.h"
-#include "components/arc/instance_holder.h"
+#include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 namespace base {
@@ -40,7 +40,7 @@ extern const int kAndroidSupportedMediaExtensionsSize;
 // Android MediaProvider.
 class ArcDownloadsWatcherService
     : public KeyedService,
-      public InstanceHolder<mojom::FileSystemInstance>::Observer {
+      public ConnectionObserver<mojom::FileSystemInstance> {
  public:
   // Returns singleton instance for the given BrowserContext,
   // or nullptr if the browser |context| is not allowed to use ARC.
@@ -51,9 +51,9 @@ class ArcDownloadsWatcherService
                              ArcBridgeService* bridge_service);
   ~ArcDownloadsWatcherService() override;
 
-  // InstanceHolder<mojom::FileSystemInstance>::Observer
-  void OnInstanceReady() override;
-  void OnInstanceClosed() override;
+  // ConnectionObserver<mojom::FileSystemInstance> overrides.
+  void OnConnectionReady() override;
+  void OnConnectionClosed() override;
 
  private:
   class DownloadsWatcher;

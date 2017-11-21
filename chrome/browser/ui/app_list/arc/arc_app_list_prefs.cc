@@ -30,6 +30,7 @@
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
+#include "components/arc/instance_holder.h"
 #include "components/crx_file/id_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -329,7 +330,7 @@ void ArcAppListPrefs::StartPrefs() {
 
   app_instance_holder_->AddObserver(this);
   if (!app_instance_holder_->has_instance())
-    OnInstanceClosed();
+    OnConnectionClosed();
 }
 
 base::FilePath ArcAppListPrefs::GetAppPath(const std::string& app_id) const {
@@ -811,7 +812,7 @@ void ArcAppListPrefs::SimulateDefaultAppAvailabilityTimeoutForTesting() {
   DetectDefaultAppAvailability();
 }
 
-void ArcAppListPrefs::OnInstanceReady() {
+void ArcAppListPrefs::OnConnectionReady() {
   arc::mojom::AppInstance* app_instance =
       ARC_GET_INSTANCE_FOR_METHOD(app_instance_holder_, Init);
 
@@ -829,7 +830,7 @@ void ArcAppListPrefs::OnInstanceReady() {
   app_instance->Init(std::move(host_proxy));
 }
 
-void ArcAppListPrefs::OnInstanceClosed() {
+void ArcAppListPrefs::OnConnectionClosed() {
   DisableAllApps();
   installing_packages_count_ = 0;
   default_apps_installations_.clear();

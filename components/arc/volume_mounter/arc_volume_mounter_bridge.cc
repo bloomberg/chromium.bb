@@ -67,7 +67,7 @@ ArcVolumeMounterBridge::~ArcVolumeMounterBridge() {
   arc_bridge_service_->volume_mounter()->RemoveObserver(this);
 }
 
-void ArcVolumeMounterBridge::OnInstanceReady() {
+void ArcVolumeMounterBridge::OnConnectionReady() {
   base::PostTaskWithTraits(FROM_HERE,
                            {base::TaskPriority::USER_BLOCKING,
                             base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},

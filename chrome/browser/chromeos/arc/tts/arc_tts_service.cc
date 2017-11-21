@@ -59,7 +59,7 @@ ArcTtsService::~ArcTtsService() {
   arc_bridge_service_->tts()->RemoveObserver(this);
 }
 
-void ArcTtsService::OnInstanceReady() {
+void ArcTtsService::OnConnectionReady() {
   mojom::TtsInstance* tts_instance =
       ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->tts(), Init);
   DCHECK(tts_instance);

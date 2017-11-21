@@ -148,7 +148,7 @@ void ArcBootPhaseMonitorBridge::RecordFirstAppLaunchDelayUMAInternal() {
   app_launch_time_ = base::TimeTicks::Now();
 }
 
-void ArcBootPhaseMonitorBridge::OnInstanceReady() {
+void ArcBootPhaseMonitorBridge::OnConnectionReady() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
       arc_bridge_service_->boot_phase_monitor(), Init);

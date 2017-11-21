@@ -194,7 +194,7 @@ ArcWallpaperService::~ArcWallpaperService() {
   arc_bridge_service_->wallpaper()->RemoveObserver(this);
 }
 
-void ArcWallpaperService::OnInstanceReady() {
+void ArcWallpaperService::OnConnectionReady() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   mojom::WallpaperInstance* wallpaper_instance =
       ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->wallpaper(), Init);
@@ -208,7 +208,7 @@ void ArcWallpaperService::OnInstanceReady() {
     wc->AddObserver(this);
 }
 
-void ArcWallpaperService::OnInstanceClosed() {
+void ArcWallpaperService::OnConnectionClosed() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   ash::WallpaperController* wc = GetWallpaperController();
   if (wc)
