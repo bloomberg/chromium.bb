@@ -63,9 +63,6 @@ class TestSessionControllerClient : public ash::mojom::SessionControllerClient {
       bool provide_pref_service = true,
       bool is_new_profile = false);
 
-  // Creates a test PrefService and associates it with the user.
-  void ProvidePrefServiceForUser(const AccountId& account_id);
-
   // Simulates screen unlocking. It is virtual so that test cases can override
   // it. The default implementation sets the session state of SessionController
   // to be ACTIVE.

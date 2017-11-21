@@ -134,44 +134,5 @@ TEST_F(LoginStateNotificationBlockerTest, AlwaysAllowedNotifier) {
   EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));
 }
 
-TEST_F(LoginStateNotificationBlockerTest, BlockOnPrefService) {
-  // Default status: OOBE.
-  message_center::NotifierId notifier_id(
-      message_center::NotifierId::APPLICATION, "test-notifier");
-  EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id));
-
-  // Login screen.
-  GetSessionControllerClient()->SetSessionState(SessionState::LOGIN_PRIMARY);
-  EXPECT_EQ(0, GetStateChangedCountAndReset());
-  EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id));
-
-  // Simulates login event sequence in production code:
-  // - Add a user session;
-  // - User session is set as active session;
-  // - Session state changes to active;
-  // - User PrefService is initialized sometime later.
-  const AccountId kUserAccountId = AccountId::FromUserEmail("user@test.com");
-  TestSessionControllerClient* const session_controller_client =
-      GetSessionControllerClient();
-  session_controller_client->AddUserSession(kUserAccountId.GetUserEmail(),
-                                            user_manager::USER_TYPE_REGULAR,
-                                            true, /* enable_settings */
-                                            false /* provide_pref_service */);
-  EXPECT_EQ(0, GetStateChangedCountAndReset());
-  EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id));
-
-  session_controller_client->SwitchActiveUser(kUserAccountId);
-  EXPECT_EQ(0, GetStateChangedCountAndReset());
-  EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id));
-
-  session_controller_client->SetSessionState(SessionState::ACTIVE);
-  EXPECT_EQ(0, GetStateChangedCountAndReset());
-  EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id));
-
-  session_controller_client->ProvidePrefServiceForUser(kUserAccountId);
-  EXPECT_EQ(1, GetStateChangedCountAndReset());
-  EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));
-}
-
 }  // namespace
 }  // namespace ash

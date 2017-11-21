@@ -130,26 +130,23 @@ IN_PROC_BROWSER_TEST_F(LoginStateNotificationBlockerChromeOSBrowserTest,
 
   // Logged in as a normal user.
   LoginUser(kTestUsers[0]);
-
-  // Ensures that user PrefService is connected with ash.
-  content::RunAllTasksUntilIdle();
-
-  // One state change from LoginStateNotificationBloker plus one state change
-  // for the InactiveUserNotificationBlocker.
-  EXPECT_EQ(2, GetStateChangedCountAndReset());
+  // Two session state changes for login:
+  //   LOGIN_PRIMARY -> LOGGED_IN_NOT_ACTIVE -> ACTIVE.
+  // Plus one state change for the InactiveUserNotificationBlocker.
+  EXPECT_EQ(3, GetStateChangedCountAndReset());
   EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));
 
   // Multi-login user switch.
   UserAddingFinishObserver observer;
   chromeos::UserAddingScreen::Get()->Start();
-  content::RunAllTasksUntilIdle();
+  content::RunAllPendingInMessageLoop();
   EXPECT_EQ(1, GetStateChangedCountAndReset());
   EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id));
 
   // Multi-login user switch off.
   chromeos::UserAddingScreen::Get()->Cancel();
   observer.WaitUntilUserAddingFinishedOrCancelled();
-  content::RunAllTasksUntilIdle();
+  content::RunAllPendingInMessageLoop();
   EXPECT_EQ(1, GetStateChangedCountAndReset());
   EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));
 }
@@ -171,26 +168,23 @@ IN_PROC_BROWSER_TEST_F(LoginStateNotificationBlockerChromeOSBrowserTest,
 
   // Logged in as a normal user.
   LoginUser(kTestUsers[0]);
-
-  // Ensures that user PrefService is connected with ash.
-  content::RunAllTasksUntilIdle();
-
-  // One state change from LoginStateNotificationBloker plus one state change
-  // for the InactiveUserNotificationBlocker.
-  EXPECT_EQ(2, GetStateChangedCountAndReset());
+  // Two session state changes for login:
+  //   LOGIN_PRIMARY -> LOGGED_IN_NOT_ACTIVE -> ACTIVE.
+  // Plus one state change for the InactiveUserNotificationBlocker.
+  EXPECT_EQ(3, GetStateChangedCountAndReset());
   EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));
 
   // Multi-login user switch.
   UserAddingFinishObserver observer;
   chromeos::UserAddingScreen::Get()->Start();
-  content::RunAllTasksUntilIdle();
+  content::RunAllPendingInMessageLoop();
   EXPECT_EQ(1, GetStateChangedCountAndReset());
   EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));
 
   // Multi-login user switch off.
   chromeos::UserAddingScreen::Get()->Cancel();
   observer.WaitUntilUserAddingFinishedOrCancelled();
-  content::RunAllTasksUntilIdle();
+  content::RunAllPendingInMessageLoop();
   EXPECT_EQ(1, GetStateChangedCountAndReset());
   EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));
 }

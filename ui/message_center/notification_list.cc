@@ -178,7 +178,7 @@ bool NotificationList::HasPopupNotifications(
 
 NotificationList::PopupNotifications NotificationList::GetPopupNotifications(
     const NotificationBlockers& blockers,
-    std::list<const Notification*>* blocked) {
+    std::list<std::string>* blocked_ids) {
   PopupNotifications result;
   size_t default_priority_popup_count = 0;
 
@@ -194,8 +194,8 @@ NotificationList::PopupNotifications NotificationList::GetPopupNotifications(
       continue;
 
     if (!ShouldShowNotificationAsPopup(*notification, blockers)) {
-      if (blocked)
-        blocked->push_back(notification);
+      if (blocked_ids)
+        blocked_ids->push_back(notification->id());
       continue;
     }
 

@@ -134,18 +134,11 @@ void TestSessionControllerClient::AddUserSession(
 
   if (provide_pref_service &&
       !controller_->GetUserPrefServiceForUser(account_id)) {
-    ProvidePrefServiceForUser(account_id);
+    auto pref_service = std::make_unique<TestingPrefServiceSimple>();
+    Shell::RegisterProfilePrefs(pref_service->registry(), true /* for_test */);
+    controller_->ProvideUserPrefServiceForTest(account_id,
+                                               std::move(pref_service));
   }
-}
-
-void TestSessionControllerClient::ProvidePrefServiceForUser(
-    const AccountId& account_id) {
-  DCHECK(!controller_->GetUserPrefServiceForUser(account_id));
-
-  auto pref_service = std::make_unique<TestingPrefServiceSimple>();
-  Shell::RegisterProfilePrefs(pref_service->registry(), true /* for_test */);
-  controller_->ProvideUserPrefServiceForTest(account_id,
-                                             std::move(pref_service));
 }
 
 void TestSessionControllerClient::UnlockScreen() {

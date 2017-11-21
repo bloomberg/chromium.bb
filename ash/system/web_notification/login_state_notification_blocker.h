@@ -13,9 +13,8 @@
 namespace ash {
 
 // A notification blocker which suppresses notifications popups based on the
-// session state and active user PrefService readiness reported by the
-// SessionController. Only active (logged in, unlocked) sessions with
-// initialized PrefService will show notifications.
+// session state reported by the SessionController. Only active (logged in,
+// unlocked) sessions will show notifications.
 class ASH_EXPORT LoginStateNotificationBlocker
     : public message_center::NotificationBlocker,
       public SessionObserver {
@@ -33,12 +32,6 @@ class ASH_EXPORT LoginStateNotificationBlocker
 
   // SessionObserver overrides:
   void OnSessionStateChanged(session_manager::SessionState state) override;
-  void OnActiveUserPrefServiceChanged(PrefService* pref_service) override;
-
-  void CheckStateAndNotifyIfChanged();
-
-  bool should_show_notification_ = false;
-  bool should_show_popup_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(LoginStateNotificationBlocker);
 };
