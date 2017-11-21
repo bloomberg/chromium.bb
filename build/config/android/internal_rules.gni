@@ -1446,6 +1446,15 @@ if (enable_java_templates) {
         ]
       }
 
+      if (defined(invoker.all_resources_zip_path)) {
+        _all_resources_zip = invoker.all_resources_zip_path
+        outputs += [ _all_resources_zip ]
+        args += [
+          "--all-resources-zip-out",
+          rebase_path(_all_resources_zip, root_build_dir),
+        ]
+      }
+
       if (defined(invoker.r_text_out_path)) {
         outputs += [ invoker.r_text_out_path ]
         args += [
@@ -1498,15 +1507,6 @@ if (enable_java_templates) {
       if (defined(invoker.include_all_resources) &&
           invoker.include_all_resources) {
         args += [ "--include-all-resources" ]
-      }
-
-      if (defined(invoker.all_resources_zip_path)) {
-        _all_resources_zip = invoker.all_resources_zip_path
-        outputs += [ _all_resources_zip ]
-        args += [
-          "--all-resources-zip-out",
-          rebase_path(_all_resources_zip, root_build_dir),
-        ]
       }
 
       if (defined(invoker.proguard_file)) {
