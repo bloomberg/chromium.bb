@@ -1159,6 +1159,9 @@ HttpStreamFactoryImpl::JobController::GetAlternativeServiceInfoInternal(
                                                                destination))
       return alternative_service_info;
 
+    if (!IsQuicWhitelistedForHost(destination.host()))
+      continue;
+
     // Cache this entry if we don't have a non-broken Alt-Svc yet.
     if (first_alternative_service_info.protocol() == kProtoUnknown)
       first_alternative_service_info = alternative_service_info;
@@ -1320,6 +1323,17 @@ int HttpStreamFactoryImpl::JobController::ReconsiderProxyAfterError(Job* job,
     rv = error;
   }
   return rv;
+}
+
+bool HttpStreamFactoryImpl::JobController::IsQuicWhitelistedForHost(
+    const std::string& host) {
+  const base::flat_set<std::string>& host_whitelist =
+      session_->params().quic_host_whitelist;
+  if (host_whitelist.empty())
+    return true;
+
+  std::string lowered_host = base::ToLowerASCII(host);
+  return base::ContainsKey(host_whitelist, lowered_host);
 }
 
 }  // namespace net

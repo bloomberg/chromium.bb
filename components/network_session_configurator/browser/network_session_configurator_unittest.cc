@@ -106,6 +106,7 @@ TEST_F(NetworkSessionConfiguratorTest, EnableQuicFromFieldTrialGroup) {
   EXPECT_FALSE(params_.quic_migrate_sessions_on_network_change_v2);
   EXPECT_FALSE(params_.quic_migrate_sessions_early);
   EXPECT_FALSE(params_.quic_allow_server_migration);
+  EXPECT_TRUE(params_.quic_host_whitelist.empty());
 
   net::HttpNetworkSession::Params default_params;
   EXPECT_EQ(default_params.quic_supported_versions,
@@ -436,6 +437,32 @@ TEST_F(NetworkSessionConfiguratorTest,
   options.push_back(net::kTBBR);
   options.push_back(net::k1RTT);
   EXPECT_EQ(options, params_.quic_client_connection_options);
+}
+
+TEST_F(NetworkSessionConfiguratorTest, QuicHostWhitelist) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["host_whitelist"] = "www.example.org, www.example.com";
+  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
+
+  ParseFieldTrials();
+
+  EXPECT_EQ(2u, params_.quic_host_whitelist.size());
+  EXPECT_TRUE(
+      base::ContainsKey(params_.quic_host_whitelist, "www.example.com"));
+  EXPECT_TRUE(
+      base::ContainsKey(params_.quic_host_whitelist, "www.example.org"));
+}
+
+TEST_F(NetworkSessionConfiguratorTest, QuicHostWhitelistEmpty) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["host_whitelist"] = "";
+  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
+
+  ParseFieldTrials();
+
+  EXPECT_TRUE(params_.quic_host_whitelist.empty());
 }
 
 TEST_F(NetworkSessionConfiguratorTest, Http2SettingsFromFieldTrialParams) {
