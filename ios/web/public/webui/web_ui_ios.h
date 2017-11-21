@@ -47,8 +47,7 @@ class WebUIIOS {
       std::unique_ptr<WebUIIOSMessageHandler> handler) = 0;
 
   // Used by WebUIIOSMessageHandlers. If the given message is already
-  // registered, the call has no effect unless |register_callback_overwrites_|
-  // is set to true.
+  // registered, the call has no effect.
   typedef base::Callback<void(const base::ListValue*)> MessageCallback;
   virtual void RegisterMessageCallback(const std::string& message,
                                        const MessageCallback& callback) = 0;
