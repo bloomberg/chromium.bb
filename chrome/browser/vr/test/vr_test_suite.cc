@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/vr/test/vr_common_test_suite.h"
+#include "chrome/browser/vr/test/vr_test_suite.h"
 
 #include "base/files/file_util.h"
 #include "base/path_service.h"
@@ -14,12 +14,11 @@
 
 namespace vr {
 
-VrCommonTestSuite::VrCommonTestSuite(int argc, char** argv)
-    : base::TestSuite(argc, argv) {}
+VrTestSuite::VrTestSuite(int argc, char** argv) : base::TestSuite(argc, argv) {}
 
-VrCommonTestSuite::~VrCommonTestSuite() = default;
+VrTestSuite::~VrTestSuite() = default;
 
-void VrCommonTestSuite::Initialize() {
+void VrTestSuite::Initialize() {
   base::TestSuite::Initialize();
 
   scoped_task_environment_ =
@@ -39,7 +38,7 @@ void VrCommonTestSuite::Initialize() {
       pak_path.AppendASCII("vr_test.pak"));
 }
 
-void VrCommonTestSuite::Shutdown() {
+void VrTestSuite::Shutdown() {
   ui::ResourceBundle::CleanupSharedInstance();
   base::TestSuite::Shutdown();
 }

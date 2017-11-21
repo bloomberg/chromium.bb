@@ -723,6 +723,7 @@ group("gn_all") {
     deps += [
       "//chrome/browser/vr:vr_common_perftests",
       "//chrome/browser/vr:vr_common_unittests",
+      "//chrome/browser/vr:vr_pixeltests",
     ]
     if (is_linux && use_ozone) {
       deps += [ "//chrome/browser/vr/testapp:vr_testapp" ]

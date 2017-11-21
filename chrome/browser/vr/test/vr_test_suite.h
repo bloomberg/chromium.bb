@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VR_TEST_VR_COMMON_TEST_SUITE_H_
-#define CHROME_BROWSER_VR_TEST_VR_COMMON_TEST_SUITE_H_
+#ifndef CHROME_BROWSER_VR_TEST_VR_TEST_SUITE_H_
+#define CHROME_BROWSER_VR_TEST_VR_TEST_SUITE_H_
 
 #include "base/test/test_suite.h"
 
@@ -15,10 +15,10 @@ class ScopedTaskEnvironment;
 
 namespace vr {
 
-class VrCommonTestSuite : public base::TestSuite {
+class VrTestSuite : public base::TestSuite {
  public:
-  VrCommonTestSuite(int argc, char** argv);
-  ~VrCommonTestSuite() override;
+  VrTestSuite(int argc, char** argv);
+  ~VrTestSuite() override;
 
  protected:
   void Initialize() override;
@@ -27,9 +27,9 @@ class VrCommonTestSuite : public base::TestSuite {
  private:
   std::unique_ptr<base::test::ScopedTaskEnvironment> scoped_task_environment_;
 
-  DISALLOW_COPY_AND_ASSIGN(VrCommonTestSuite);
+  DISALLOW_COPY_AND_ASSIGN(VrTestSuite);
 };
 
 }  // namespace vr
 
-#endif  // CHROME_BROWSER_VR_TEST_VR_COMMON_TEST_SUITE_H_
+#endif  // CHROME_BROWSER_VR_TEST_VR_TEST_SUITE_H_
