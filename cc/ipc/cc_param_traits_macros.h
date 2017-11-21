@@ -42,8 +42,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(viz::ResourceFormat, viz::RESOURCE_FORMAT_MAX)
 
 // TODO(fsamuel): This trait belongs with skia code.
 IPC_ENUM_TRAITS_MAX_VALUE(SkBlendMode, SkBlendMode::kLastMode)
-IPC_ENUM_TRAITS_MAX_VALUE(viz::YUVVideoDrawQuad::ColorSpace,
-                          viz::YUVVideoDrawQuad::COLOR_SPACE_LAST)
 
 IPC_STRUCT_TRAITS_BEGIN(viz::SurfaceSequence)
   IPC_STRUCT_TRAITS_MEMBER(frame_sink_id)

@@ -210,7 +210,7 @@ class CCParamTraitsTest : public testing::Test {
     EXPECT_EQ(a->u_plane_resource_id(), b->u_plane_resource_id());
     EXPECT_EQ(a->v_plane_resource_id(), b->v_plane_resource_id());
     EXPECT_EQ(a->a_plane_resource_id(), b->a_plane_resource_id());
-    EXPECT_EQ(a->color_space, b->color_space);
+    EXPECT_EQ(a->video_color_space, b->video_color_space);
     EXPECT_EQ(a->bits_per_channel, b->bits_per_channel);
     EXPECT_EQ(a->require_overlay, b->require_overlay);
   }
@@ -282,8 +282,6 @@ TEST_F(CCParamTraitsTest, AllQuads) {
   ResourceId arbitrary_resourceid4 = 16;
   SkScalar arbitrary_sigma = SkFloatToScalar(2.0f);
   gfx::ColorSpace arbitrary_color_space = gfx::ColorSpace::CreateREC601();
-  YUVVideoDrawQuad::ColorSpace arbitrary_video_color_space =
-      YUVVideoDrawQuad::REC_601;
 
   int child_id = 30;
   int root_id = 14;
@@ -415,9 +413,8 @@ TEST_F(CCParamTraitsTest, AllQuads) {
       shared_state3_in, arbitrary_rect1, arbitrary_rect1_inside_rect1,
       arbitrary_bool1, arbitrary_rectf1, arbitrary_rectf2, arbitrary_size1,
       arbitrary_size2, arbitrary_resourceid1, arbitrary_resourceid2,
-      arbitrary_resourceid3, arbitrary_resourceid4, arbitrary_video_color_space,
-      arbitrary_color_space, arbitrary_float1, arbitrary_float2, arbitrary_int,
-      arbitrary_bool2);
+      arbitrary_resourceid3, arbitrary_resourceid4, arbitrary_color_space,
+      arbitrary_float1, arbitrary_float2, arbitrary_int, arbitrary_bool2);
   pass_cmp->CopyFromAndAppendDrawQuad(yuvvideo_in);
 
   // Make sure the in and cmp RenderPasses match.

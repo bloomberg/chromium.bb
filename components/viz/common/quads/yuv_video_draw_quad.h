@@ -26,13 +26,6 @@ class VIZ_COMMON_EXPORT YUVVideoDrawQuad : public DrawQuad {
 
   enum : uint32_t { kMinBitsPerChannel = 8, kMaxBitsPerChannel = 24 };
 
-  enum ColorSpace {
-    REC_601,  // SDTV standard with restricted "studio swing" color range.
-    REC_709,  // HDTV standard with restricted "studio swing" color range.
-    JPEG,     // Full color range [0, 255] JPEG color space.
-    COLOR_SPACE_LAST = JPEG
-  };
-
   ~YUVVideoDrawQuad() override;
 
   YUVVideoDrawQuad();
@@ -53,7 +46,6 @@ class VIZ_COMMON_EXPORT YUVVideoDrawQuad : public DrawQuad {
               unsigned u_plane_resource_id,
               unsigned v_plane_resource_id,
               unsigned a_plane_resource_id,
-              ColorSpace color_space,
               const gfx::ColorSpace& video_color_space,
               float offset,
               float multiplier,
@@ -74,7 +66,6 @@ class VIZ_COMMON_EXPORT YUVVideoDrawQuad : public DrawQuad {
               unsigned u_plane_resource_id,
               unsigned v_plane_resource_id,
               unsigned a_plane_resource_id,
-              ColorSpace color_space,
               const gfx::ColorSpace& video_color_space,
               float offset,
               float multiplier,
@@ -85,7 +76,6 @@ class VIZ_COMMON_EXPORT YUVVideoDrawQuad : public DrawQuad {
   gfx::RectF uv_tex_coord_rect;
   gfx::Size ya_tex_size;
   gfx::Size uv_tex_size;
-  ColorSpace color_space;
   float resource_offset = 0.0f;
   float resource_multiplier = 1.0f;
   uint32_t bits_per_channel = 8;

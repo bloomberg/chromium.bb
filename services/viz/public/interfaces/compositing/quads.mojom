@@ -83,12 +83,6 @@ struct TileQuadState {
   bool force_anti_aliasing_off;
 };
 
-enum YUVColorSpace {
-  REC_601,       // SDTV standard with restricted "studio swing" color range.
-  REC_709,       // HDTV standard with restricted "studio swing" color range.
-  JPEG,          // Full color range [0, 255] JPEG color space.
-};
-
 struct YUVVideoQuadState {
   gfx.mojom.RectF ya_tex_coord_rect;
   gfx.mojom.RectF uv_tex_coord_rect;
@@ -98,7 +92,6 @@ struct YUVVideoQuadState {
   uint32 u_plane_resource_id;
   uint32 v_plane_resource_id;
   uint32 a_plane_resource_id;
-  YUVColorSpace color_space;
   float resource_offset;
   float resource_multiplier;
   uint32 bits_per_channel;

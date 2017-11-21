@@ -417,8 +417,8 @@ YUVVideoDrawQuad* CreateFullscreenCandidateYUVVideoQuad(
   overlay_quad->SetNew(shared_quad_state, rect, rect, needs_blending,
                        tex_coord_rect, tex_coord_rect, resource_size_in_pixels,
                        resource_size_in_pixels, resource_id, resource_id,
-                       resource_id, resource_id, YUVVideoDrawQuad::REC_601,
-                       gfx::ColorSpace(), 0, 1.0, 8);
+                       resource_id, resource_id,
+                       gfx::ColorSpace::CreateREC601(), 0, 1.0, 8);
 
   return overlay_quad;
 }
