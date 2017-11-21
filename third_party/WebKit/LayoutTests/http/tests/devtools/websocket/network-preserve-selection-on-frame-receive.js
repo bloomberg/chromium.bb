@@ -1,9 +1,12 @@
-<html>
-<head>
-<script src="/inspector/inspector-test.js"></script>
-<script src="/inspector/network-test.js"></script>
-<script>
-async function test() {
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+(async function() {
+  TestRunner.addResult(`Tests that WebSocket network requests do not loose focus on frame being received.\n`);
+  await TestRunner.loadModule('network_test_runner');
+  await TestRunner.showPanel('network');
+
   NetworkTestRunner.recordNetwork();
 
   const wsUrl = 'ws://localhost:8880/echo';
@@ -29,10 +32,4 @@ async function test() {
   function logSelectedNode() {
     TestRunner.addResult('Selected Request: ' + (dataGrid.selectedNode && dataGrid.selectedNode.request().url()) || '');
   }
-}
-</script>
-</head>
-<body onload="runTest()">
-<p>Tests that WebSocket network requests do not loose focus on frame being received.</p>
-</body>
-</html>
+})();

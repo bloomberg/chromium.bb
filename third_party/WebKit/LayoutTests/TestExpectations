@@ -1843,8 +1843,8 @@ crbug.com/543369 [ Win Mac Linux ] fast/forms/select-popup/popup-menu-appearance
 
 crbug.com/546215 [ Android ] fast/inline-block/overflow-clip.html [ Failure ]
 
-crbug.com/548765 http/tests/devtools/console-fetch-logging.html [ Failure Pass ]
-crbug.com/548765 virtual/mojo-loading/http/tests/devtools/console-fetch-logging.html [ Failure Pass ]
+crbug.com/548765 http/tests/devtools/console-fetch-logging.js [ Failure Pass ]
+crbug.com/548765 virtual/mojo-loading/http/tests/devtools/console-fetch-logging.js [ Failure Pass ]
 
 crbug.com/564109 [ Win ] external/wpt/css/css-fonts/font-display/font-display.html [ Failure Pass Timeout ]
 crbug.com/564109 [ Win ]  http/tests/webfont/font-display-intervention.html [ Pass Failure Timeout ]
@@ -3055,8 +3055,8 @@ crbug.com/696407 [ Linux ] external/wpt/html/browsers/history/the-location-inter
 
 # Sheriff failures 2017-03-10
 crbug.com/741210 [ Mac ] inspector-protocol/emulation/device-emulation-restore.js [ Failure ]
-crbug.com/700374 [ Win ] virtual/mojo-loading/http/tests/devtools/workers-on-navigation.html [ Failure Pass ]
-crbug.com/700374 [ Win ] http/tests/devtools/workers-on-navigation.html [ Failure Pass ]
+crbug.com/700374 [ Win ] virtual/mojo-loading/http/tests/devtools/workers-on-navigation.js [ Failure Pass ]
+crbug.com/700374 [ Win ] http/tests/devtools/workers-on-navigation.js [ Failure Pass ]
 
 # Sheriff failures 2017-03-21
 crbug.com/703518 http/tests/devtools/tracing/worker-js-frames.js [ Failure Pass ]

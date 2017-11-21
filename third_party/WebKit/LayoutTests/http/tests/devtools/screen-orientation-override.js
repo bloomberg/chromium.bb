@@ -1,34 +1,15 @@
-<html>
-<head>
-<script src="../inspector/inspector-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-if (window.testRunner) {
-    window.testRunner.disableMockScreenOrientation();
-    window.testRunner.setDumpConsoleMessages(false);
-}
+(async function() {
+  TestRunner.addResult(`Test screen orientation override.\n`);
+  await TestRunner.loadModule('console_test_runner');
 
-var windowOrientationChangeEvent = false;
-var screenOrientationChangeEvent = false;
+  TestRunner.printDevToolsConsole();
 
-window.addEventListener("orientationchange", function() { windowOrientationChangeEvent = true; maybeLog(); });
-screen.orientation.addEventListener("change", function() { screenOrientationChangeEvent = true; maybeLog(); });
+  await TestRunner.navigatePromise('resources/screen-orientation-resource.html');
 
-function dump()
-{
-    return "angle: " + screen.orientation.angle + "; type: " + screen.orientation.type;
-}
-
-function maybeLog()
-{
-    if (windowOrientationChangeEvent && screenOrientationChangeEvent) {
-        windowOrientationChangeEvent = false;
-        screenOrientationChangeEvent = false;
-        console.log(dump());
-    }
-}
-
-function test() {
   Protocol.InspectorBackend.Options.suppressRequestErrors = false;
   function addDumpResult(next) {
     TestRunner.evaluateInPage('dump()', dumpCallback);
@@ -120,11 +101,4 @@ function test() {
       }
     }
   ]);
-}
-</script>
-</head>
-<body onload="runTest()">
-<p>
-</p>
-</body>
-</html>
+})();

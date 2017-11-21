@@ -1,19 +1,21 @@
-<html>
-<head>
-<script src="../inspector/inspector-test.js"></script>
-<script src="../inspector/debugger-test.js"></script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-<script>
-function addStyleSheet()
-{
-    var style = document.createElement("link");
-    style.setAttribute("rel", "stylesheet");
-    style.setAttribute("type", "text/css");
-    style.setAttribute("href", "http://127.0.0.1:8000/devtools/resources/example.css");
-    document.head.appendChild(style);
-}
+(async function() {
+  TestRunner.addResult(`Tests SourceMap and StyleSheetMapping.\n`);
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.evaluateInPagePromise(`
+      function addStyleSheet()
+      {
+          var style = document.createElement("link");
+          style.setAttribute("rel", "stylesheet");
+          style.setAttribute("type", "text/css");
+          style.setAttribute("href", "http://127.0.0.1:8000/devtools/resources/example.css");
+          document.head.appendChild(style);
+      }
+  `);
 
-function test() {
   var contentReceived;
   var finalMappedLocation;
   var target = TestRunner.mainTarget;
@@ -47,9 +49,8 @@ function test() {
     var uiLocation = Bindings.cssWorkspaceBinding.rawLocationToUILocation(new SDK.CSSLocation(header, line, column));
     TestRunner.assertEquals(
         uiSourceCode, uiLocation.uiSourceCode,
-        `Incorrect uiSourceCode, expected ${
-                                            uiSourceCode.url()
-                                          }, but got ${location.uiSourceCode ? location.uiSourceCode.url() : null}`);
+        `Incorrect uiSourceCode, expected ${uiSourceCode.url()}, but got ${
+            location.uiSourceCode ? location.uiSourceCode.url() : null}`);
     var reverseRaw = Bindings.cssWorkspaceBinding.uiLocationToRawLocations(uiLocation)[0];
     TestRunner.addResult(
         `${line}:${column} ${uiLocation.lineNumber}:${uiLocation.columnNumber}` +
@@ -87,13 +88,4 @@ function test() {
     TestRunner.addResult('UILocation upon LiveLocation update: ' + finalMappedLocation);
     TestRunner.completeTest();
   }
-}
-
-</script>
-
-</head>
-
-<body onload="runTest()">
-<p>Tests SourceMap and StyleSheetMapping.</p>
-</body>
-</html>
+})();
