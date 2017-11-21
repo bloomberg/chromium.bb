@@ -10,12 +10,23 @@
 #include "base/test/scoped_task_environment.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
+#ifdef OS_ANDROID
+#include "content/browser/accessibility/browser_accessibility_manager_android.h"
+#endif
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
 
 namespace {
 
+#ifdef OS_ANDROID
+class TestBrowserAccessibilityManager
+    : public BrowserAccessibilityManagerAndroid {
+ public:
+  TestBrowserAccessibilityManager(const ui::AXTreeUpdate& initial_tree)
+      : BrowserAccessibilityManagerAndroid(initial_tree, nullptr, nullptr) {}
+};
+#else
 class TestBrowserAccessibilityManager : public BrowserAccessibilityManager {
  public:
   TestBrowserAccessibilityManager(
@@ -24,6 +35,7 @@ class TestBrowserAccessibilityManager : public BrowserAccessibilityManager {
                                     nullptr,
                                     new BrowserAccessibilityFactory()) {}
 };
+#endif
 
 }  // namespace
 
