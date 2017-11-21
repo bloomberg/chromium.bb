@@ -155,14 +155,6 @@ SecurityLevel GetSecurityLevelForRequest(
     return kRanInsecureContentLevel;
   }
 
-  // Report if there is a policy cert first, before reporting any other
-  // authenticated-but-with-errors cases. A policy cert is a strong
-  // indicator of a MITM being present (the enterprise), while the
-  // other authenticated-but-with-errors indicate something may
-  // be wrong, or may be wrong in the future, but is unclear now.
-  if (used_policy_installed_certificate)
-    return SECURE_WITH_POLICY_INSTALLED_CERT;
-
   // In most cases, SHA1 use is treated as a certificate error, in which case
   // DANGEROUS will have been returned above. If SHA1 was permitted by policy,
   // downgrade the security level to Neutral.
@@ -188,6 +180,12 @@ SecurityLevel GetSecurityLevelForRequest(
   if (visible_security_state.is_view_source) {
     return NONE;
   }
+
+  // Any prior observation of a policy-installed cert is a strong indicator
+  // of a MITM being present (the enterprise), so a "secure-but-inspected"
+  // security level is returned.
+  if (used_policy_installed_certificate)
+    return SECURE_WITH_POLICY_INSTALLED_CERT;
 
   if ((visible_security_state.cert_status & net::CERT_STATUS_IS_EV) &&
       visible_security_state.certificate) {
