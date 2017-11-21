@@ -1,0 +1,11 @@
+This is a testharness.js-based test.
+PASS Setting a StylePropertyMap with an unsupported property name throws TypeError
+PASS Setting a StylePropertyMap with an null property name throws TypeError
+PASS Setting a StylePropertyMap with an invalid CSSStyleValue throws TypeError
+PASS Setting a StylePropertyMap with an invalid String throws TypeError
+FAIL Setting a property with CSSStyleValue or String updates its value Failed to execute 'set' on 'StylePropertyMap': Not implemented yet
+FAIL Setting a list-valued property with CSSStyleValue or String updates its values Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
+FAIL Setting a custom property with CSSStyleValue or String updates its value Failed to execute 'set' on 'StylePropertyMap': Invalid propertyName: --foo
+FAIL StylePropertyMap.set is case-insensitive Failed to execute 'set' on 'StylePropertyMap': Not implemented yet
+Harness: the test ran to completion.
+

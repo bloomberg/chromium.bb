@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 // https://drafts.css-houdini.org/css-typed-om/#the-stylepropertymap
+
+callback UpdateFunction = CSSStyleValue (CSSStyleValue oldValue);
+
 [
     Exposed=(Window,PaintWorklet),
     RuntimeEnabled=CSSTypedOM
@@ -10,4 +13,5 @@
     [RaisesException, CallWith=ExecutionContext] void append(DOMString property, (CSSStyleValue or sequence<CSSStyleValue> or DOMString) value);
     [RaisesException, ImplementedAs=remove] void delete(DOMString property);
     [RaisesException, CallWith=ExecutionContext] void set(DOMString property, (CSSStyleValue or sequence<CSSStyleValue> or DOMString) value);
+    void update(DOMString property, UpdateFunction updateFunction);
 };

@@ -1,0 +1,78 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>StylePropertyMap.update tests</title>
+<link rel="help" href="https://drafts.css-houdini.org/css-typed-om-1/#update-a-value-in-a-stylepropertymap">
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../resources/testhelper.js"></script>
+<script>
+'use strict';
+
+const gInvalidTestCases = [
+  { property: 'lemon', value: 'ade', desc: 'an unsupported property name' },
+  { property: null, value: 'foo', desc: 'an null property name' },
+  { property: 'width', value: CSS.deg(0), desc: 'an invalid CSSStyleValue' },
+  { property: 'width', value: '10s', desc: 'an invalid String' },
+];
+
+for (const {property, value, desc} of gInvalidTestCases) {
+  test(() => {
+    let styleMap = newDivWithStyle('').attributeStyleMap;
+    assert_throws(new TypeError(), () => styleMap.update(property, () => value));
+  }, 'Updating a StylePropertyMap with ' + desc + ' throws TypeError');
+}
+
+test(() => {
+  let styleMap = newDivWithStyle().attributeStyleMap;
+
+  styleMap.update('width', () => CSS.px(10));
+  assert_style_value_array_equals(styleMap.get('width'), CSS.px(10));
+
+  styleMap.update('width', () => CSS.px(20));
+  assert_style_value_array_equals(styleMap.get('width'), CSS.px(20));
+}, 'Updating a property with CSSStyleValue updates its value');
+
+test(() => {
+  let styleMap = newDivWithStyle().attributeStyleMap;
+
+  styleMap.update('transition-duration', () => CSS.s(1));
+  assert_style_value_array_equals(styleMap.getAll('transition-duration'), [CSS.s(1)]);
+
+  styleMap.update('transition-duration', () => CSS.s(2));
+  assert_style_value_array_equals(styleMap.getAll('transition-duration'), [CSS.s(2)]);
+}, 'Updating a list-valued property with CSSStyleValue updates its value');
+
+test(() => {
+  let styleMap = newDivWithStyle().attributeStyleMap;
+
+  styleMap.update('--foo', () => CSS.px(10));
+  assert_style_value_array_equals(styleMap.get('--foo'), CSS.px(10));
+
+  styleMap.update('--foo', () => CSS.px(20));
+  assert_style_value_array_equals(styleMap.get('--foo'), CSS.px(20));
+}, 'Updating a custom property with CSSStyleValue updates its value');
+
+test(() => {
+  let styleMap = newDivWithStyle('').attributeStyleMap;
+  styleMap.update('width', oldValue => assert_equals(oldValue, null));
+}, 'Calling StylePropertyMap.update on an empty property model calls update function with null');
+
+test(() => {
+  let styleMap = newDivWithStyle('width: 10px').attributeStyleMap;
+  styleMap.update('width', oldValue => assert_style_value_equals(oldValue, CSS.px(10)));
+}, 'Calling StylePropertyMap.update on an existing property calls update function with old value');
+
+test(() => {
+  let styleMap = newDivWithStyle('transition-duration: 1s, 2s').attributeStyleMap;
+  styleMap.update('transition-duration', oldValue => assert_style_value_equals(oldValue, CSS.s(1)));
+}, 'Calling StylePropertyMap.update on an existing list-valued property calls update function with first value');
+
+test(() => {
+  let styleMap = newDivWithStyle('width: 10px').attributeStyleMap;
+
+  styleMap.update('wIdTh', () => CSS.px(20));
+  const result = styleMap.get('width');
+  assert_style_value_equals(result, CSS.px(20));
+}, 'StylePropertyMap.update is case-insensitive');
+
+</script>
