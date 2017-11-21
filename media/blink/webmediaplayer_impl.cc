@@ -2542,6 +2542,12 @@ void WebMediaPlayerImpl::CreateWatchTimeReporter() {
   if (!HasVideo() && !HasAudio())
     return;
 
+  // URL is used for UKM reporting. Privacy requires we only report origin of
+  // the top frame. |is_top_frame| signals how to interpret the origin.
+  // TODO(crbug.com/787209): Stop getting origin from the renderer.
+  bool is_top_frame = frame_ == frame_->Top();
+  url::Origin top_origin(frame_->Top()->GetSecurityOrigin());
+
   // Create the watch time reporter and synchronize its initial state.
   watch_time_reporter_.reset(new WatchTimeReporter(
       mojom::PlaybackProperties::New(
@@ -2549,8 +2555,7 @@ void WebMediaPlayerImpl::CreateWatchTimeReporter() {
           pipeline_metadata_.video_decoder_config.codec(),
           pipeline_metadata_.has_audio, pipeline_metadata_.has_video,
           !!chunk_demuxer_, is_encrypted_, embedded_media_experience_enabled_,
-          pipeline_metadata_.natural_size,
-          url::Origin(frame_->GetSecurityOrigin())),
+          pipeline_metadata_.natural_size, top_origin, is_top_frame),
       base::BindRepeating(&WebMediaPlayerImpl::GetCurrentTimeInternal,
                           base::Unretained(this)),
       watch_time_recorder_provider_));

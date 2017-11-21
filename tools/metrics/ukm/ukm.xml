@@ -772,6 +772,14 @@ be describing additional metrics about the same event.
       means this was a SRC playback.
     </summary>
   </metric>
+  <metric name="IsTopFrame">
+    <summary>
+      Flag indicating whether the report comes from the top frame or some inner
+      frame. For privacy, metrics from inner frames are recorded with the top
+      frame's origin, so this flag helps separate top frame vs. embedded
+      playbacks.
+    </summary>
+  </metric>
   <metric name="LastPipelineStatus">
     <summary>
       media::PipelineStatus enum value. Always 0 if the playback succeeded; all

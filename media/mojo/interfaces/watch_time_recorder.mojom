@@ -20,7 +20,12 @@ struct PlaybackProperties {
   bool is_eme;
   bool is_embedded_media_experience;  // Playback from 'Downloads' on Android.
   gfx.mojom.Size natural_size;  // Size of video frame; (0, 0) if audio only.
-  url.mojom.Origin origin;
+
+  // For privacy, only record the top origin. "Untrusted" signals that this
+  // value comes from the renderer and should not be used for security checks.
+  // TODO(crbug.com/787209): Stop getting origin from the renderer.
+  url.mojom.Origin untrusted_top_origin;
+  bool is_top_frame;  // False for any inner/iframe playbacks.
 };
 
 // Interface by which the WatchTimeReporter reports watch time. This is used to
