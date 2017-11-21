@@ -5281,6 +5281,8 @@ crbug.com/591099 fast/multicol/dynamic/untransformed-becomes-transformed-has-abs
 crbug.com/591099 fast/multicol/dynamic/valid-spanner-container-becomes-invalid.html [ Crash ]
 crbug.com/591099 fast/multicol/flowthread-with-floats-destroyed-crash.html [ Crash ]
 crbug.com/591099 fast/multicol/infinite-height-causing-fractional-row-height-crash.html [ Crash ]
+# This one is really just very slow:
+crbug.com/591099 fast/multicol/infinitely-tall-content-in-outer-crash.html [ Pass Timeout ]
 crbug.com/591099 fast/multicol/input-with-overflow-second-column.html [ Failure ]
 crbug.com/591099 fast/multicol/large-padding-crash.html [ Crash ]
 crbug.com/591099 fast/multicol/layers-split-across-columns.html [ Crash ]
