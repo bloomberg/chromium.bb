@@ -16977,6 +16977,7 @@ Called by update_net_error_codes.py.-->
   <int value="2234" label="PerformanceMeasurePassedInNavigationTiming"/>
   <int value="2235" label="HTMLFrameSetElementNonNullAnonymousNamedGetter"/>
   <int value="2236" label="CSPWithUnsafeEval"/>
+  <int value="2237" label="WebAssemblyInstantiation"/>
 </enum>
 
 <enum name="FeedbackSource">
