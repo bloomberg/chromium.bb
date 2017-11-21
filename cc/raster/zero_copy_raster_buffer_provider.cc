@@ -22,10 +22,10 @@
 namespace cc {
 namespace {
 
-class RasterBufferImpl : public RasterBuffer {
+class ZeroCopyRasterBufferImpl : public RasterBuffer {
  public:
-  RasterBufferImpl(LayerTreeResourceProvider* resource_provider,
-                   const Resource* resource)
+  ZeroCopyRasterBufferImpl(LayerTreeResourceProvider* resource_provider,
+                           const Resource* resource)
       : lock_(resource_provider, resource->id()), resource_(resource) {}
 
   // Overridden from RasterBuffer:
@@ -60,7 +60,7 @@ class RasterBufferImpl : public RasterBuffer {
   LayerTreeResourceProvider::ScopedWriteLockGpuMemoryBuffer lock_;
   const Resource* resource_;
 
-  DISALLOW_COPY_AND_ASSIGN(RasterBufferImpl);
+  DISALLOW_COPY_AND_ASSIGN(ZeroCopyRasterBufferImpl);
 };
 
 }  // namespace
@@ -88,7 +88,7 @@ ZeroCopyRasterBufferProvider::AcquireBufferForRaster(
     uint64_t resource_content_id,
     uint64_t previous_content_id) {
   return base::WrapUnique<RasterBuffer>(
-      new RasterBufferImpl(resource_provider_, resource));
+      new ZeroCopyRasterBufferImpl(resource_provider_, resource));
 }
 
 void ZeroCopyRasterBufferProvider::OrderingBarrier() {

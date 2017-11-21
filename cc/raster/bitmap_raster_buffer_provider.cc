@@ -22,12 +22,12 @@
 namespace cc {
 namespace {
 
-class RasterBufferImpl : public RasterBuffer {
+class BitmapRasterBufferImpl : public RasterBuffer {
  public:
-  RasterBufferImpl(LayerTreeResourceProvider* resource_provider,
-                   const Resource* resource,
-                   uint64_t resource_content_id,
-                   uint64_t previous_content_id)
+  BitmapRasterBufferImpl(LayerTreeResourceProvider* resource_provider,
+                         const Resource* resource,
+                         uint64_t resource_content_id,
+                         uint64_t previous_content_id)
       : lock_(resource_provider, resource->id()),
         resource_(resource),
         resource_has_previous_content_(
@@ -62,7 +62,7 @@ class RasterBufferImpl : public RasterBuffer {
   const Resource* resource_;
   bool resource_has_previous_content_;
 
-  DISALLOW_COPY_AND_ASSIGN(RasterBufferImpl);
+  DISALLOW_COPY_AND_ASSIGN(BitmapRasterBufferImpl);
 };
 
 }  // namespace
@@ -85,7 +85,7 @@ BitmapRasterBufferProvider::AcquireBufferForRaster(
     const Resource* resource,
     uint64_t resource_content_id,
     uint64_t previous_content_id) {
-  return std::unique_ptr<RasterBuffer>(new RasterBufferImpl(
+  return std::unique_ptr<RasterBuffer>(new BitmapRasterBufferImpl(
       resource_provider_, resource, resource_content_id, previous_content_id));
 }
 
