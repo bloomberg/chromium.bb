@@ -220,6 +220,10 @@ static_assert(
 static_assert(!IsTriviallyDestructible<DestructorDeleted>::value,
               "DestructorDeleted must not be trivially destructible.");
 
+#define EnsurePtrConvertibleArgDecl(From, To)                              \
+  typename std::enable_if<std::is_convertible<From*, To*>::value>::type* = \
+      nullptr
+
 template <typename T>
 class Wrapper {
  public:

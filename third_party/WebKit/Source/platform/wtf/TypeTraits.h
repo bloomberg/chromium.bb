@@ -121,49 +121,6 @@ struct IsSubclassOfTemplateTypenameSizeTypename {
   static const bool value = sizeof(SubclassCheck(t_)) == sizeof(YesType);
 };
 
-template <typename T, template <class V> class OuterTemplate>
-struct RemoveTemplate {
-  typedef T Type;
-};
-
-template <typename T, template <class V> class OuterTemplate>
-struct RemoveTemplate<OuterTemplate<T>, OuterTemplate> {
-  typedef T Type;
-};
-
-#if (defined(COMPILER_MSVC) || !GCC_VERSION_AT_LEAST(4, 9, 0)) && \
-    !defined(__clang__)
-// FIXME: MSVC bug workaround. Remove once MSVC STL is fixed.
-// FIXME: GCC before 4.9.0 seems to have the same issue.
-// C++ 2011 Spec (ISO/IEC 14882:2011(E)) 20.9.6.2 Table 51 states that
-// the template parameters shall be a complete type if they are different types.
-// However, MSVC checks for type completeness even if they are the same type.
-// Here, we use a template specialization for same type case to allow incomplete
-// types.
-
-template <typename T, typename U>
-struct IsConvertible {
-  static const bool value = std::is_convertible<T, U>::value;
-};
-
-template <typename T>
-struct IsConvertible<T, T> {
-  static const bool value = true;
-};
-
-#define EnsurePtrConvertibleArgDecl(From, To)                             \
-  typename std::enable_if<WTF::IsConvertible<From*, To*>::value>::type* = \
-      nullptr
-#define EnsurePtrConvertibleArgDefn(From, To) \
-  typename std::enable_if<WTF::IsConvertible<From*, To*>::value>::type*
-#else
-#define EnsurePtrConvertibleArgDecl(From, To)                              \
-  typename std::enable_if<std::is_convertible<From*, To*>::value>::type* = \
-      nullptr
-#define EnsurePtrConvertibleArgDefn(From, To) \
-  typename std::enable_if<std::is_convertible<From*, To*>::value>::type*
-#endif
-
 }  // namespace WTF
 
 namespace blink {
