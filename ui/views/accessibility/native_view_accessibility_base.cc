@@ -37,12 +37,36 @@ bool IsViewUnfocusableChildOfFocusableAncestor(View* view) {
   return false;
 }
 
+ui::AXPlatformNode* FromNativeWindow(gfx::NativeWindow native_window) {
+  Widget* widget = Widget::GetWidgetForNativeWindow(native_window);
+  if (!widget)
+    return nullptr;
+
+  View* view = widget->GetRootView();
+  if (!view)
+    return nullptr;
+
+  gfx::NativeViewAccessible native_view_accessible =
+      view->GetNativeViewAccessible();
+  if (!native_view_accessible)
+    return nullptr;
+
+  return ui::AXPlatformNode::FromNativeViewAccessible(native_view_accessible);
+}
+
 }  // namespace
 
 NativeViewAccessibilityBase::NativeViewAccessibilityBase(View* view)
     : view_(view) {
   ax_node_ = ui::AXPlatformNode::Create(this);
   DCHECK(ax_node_);
+
+  static bool first_time = true;
+  if (first_time) {
+    ui::AXPlatformNode::RegisterNativeWindowHandler(
+        base::BindRepeating(&FromNativeWindow));
+    first_time = false;
+  }
 }
 
 NativeViewAccessibilityBase::~NativeViewAccessibilityBase() {

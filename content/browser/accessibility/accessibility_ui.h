@@ -32,7 +32,8 @@ class AccessibilityUIMessageHandler : public content::WebUIMessageHandler {
  private:
   void ToggleAccessibility(const base::ListValue* args);
   void SetGlobalFlag(const base::ListValue* args);
-  void RequestAccessibilityTree(const base::ListValue* args);
+  void RequestWebContentsTree(const base::ListValue* args);
+  void RequestNativeUITree(const base::ListValue* args);
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityUIMessageHandler);
 };
