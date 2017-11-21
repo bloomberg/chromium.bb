@@ -1182,7 +1182,7 @@ AutofillManager::AutofillManager(
                                              payments_client_.get(),
                                              personal_data,
                                              app_locale_)),
-      field_filler_("en-US"),
+      field_filler_(app_locale),
       autocomplete_history_manager_(
           std::make_unique<AutocompleteHistoryManager>(driver, client)),
       form_interactions_ukm_logger_(
