@@ -141,10 +141,6 @@ static INLINE int av1_is_interpolating_filter(
   return (ip.filter_ptr[ip.taps / 2 - 1] == 128);
 }
 
-#if CONFIG_DUAL_FILTER
-InterpFilter av1_get_plane_interp_filter(InterpFilter interp_filter, int plane);
-#endif
-
 #ifdef __cplusplus
 }  // extern "C"
 #endif
