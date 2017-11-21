@@ -249,6 +249,12 @@ NotificationPlatformBridge* NotificationPlatformBridge::Create() {
   return new NotificationPlatformBridgeLinux();
 }
 
+// static
+bool NotificationPlatformBridge::CanHandleType(
+    NotificationCommon::Type notification_type) {
+  return notification_type != NotificationCommon::TRANSIENT;
+}
+
 class NotificationPlatformBridgeLinuxImpl
     : public NotificationPlatformBridge,
       public content::NotificationObserver,
