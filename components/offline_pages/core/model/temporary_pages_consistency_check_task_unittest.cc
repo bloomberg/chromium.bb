@@ -13,25 +13,12 @@
 #include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/client_policy_controller.h"
 #include "components/offline_pages/core/model/offline_page_item_generator.h"
+#include "components/offline_pages/core/model/offline_page_test_util.h"
 #include "components/offline_pages/core/offline_page_metadata_store_test_util.h"
 #include "components/offline_pages/core/test_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {
-
-namespace {
-
-int64_t GetFileCountInDir(const base::FilePath& dir) {
-  base::FileEnumerator file_enumerator(dir, false, base::FileEnumerator::FILES);
-  int64_t count = 0;
-  for (base::FilePath path = file_enumerator.Next(); !path.empty();
-       path = file_enumerator.Next()) {
-    count++;
-  }
-  return count;
-}
-
-}  // namespace
 
 class TemporaryPagesConsistencyCheckTaskTest : public testing::Test {
  public:
@@ -44,6 +31,7 @@ class TemporaryPagesConsistencyCheckTaskTest : public testing::Test {
   OfflinePageItem AddPage(const std::string& name_space,
                           const base::FilePath& archive_dir);
   void SetRemoveDbEntryAndFile(bool remove_db_entry, bool remove_file);
+  bool IsPageRemoved(const OfflinePageItem& page);
 
   OfflinePageMetadataStoreSQL* store() { return store_test_util_.store(); }
   OfflinePageMetadataStoreTestUtil* store_test_util() {
@@ -53,10 +41,6 @@ class TemporaryPagesConsistencyCheckTaskTest : public testing::Test {
   TestTaskRunner* runner() { return &runner_; }
   ClientPolicyController* policy_controller() {
     return policy_controller_.get();
-  }
-
-  const base::FilePath& legacy_archives_dir() {
-    return legacy_archives_dir_.GetPath();
   }
   const base::FilePath& temporary_dir() { return temporary_dir_.GetPath(); }
 
@@ -69,7 +53,6 @@ class TemporaryPagesConsistencyCheckTaskTest : public testing::Test {
   TestTaskRunner runner_;
   std::unique_ptr<ClientPolicyController> policy_controller_;
 
-  base::ScopedTempDir legacy_archives_dir_;
   base::ScopedTempDir temporary_dir_;
   bool remove_db_entry_;
   bool remove_file_;
@@ -88,15 +71,12 @@ TemporaryPagesConsistencyCheckTaskTest::
 
 void TemporaryPagesConsistencyCheckTaskTest::SetUp() {
   store_test_util_.BuildStoreInMemory();
-  ASSERT_TRUE(legacy_archives_dir_.CreateUniqueTempDir());
   ASSERT_TRUE(temporary_dir_.CreateUniqueTempDir());
   policy_controller_ = base::MakeUnique<ClientPolicyController>();
 }
 
 void TemporaryPagesConsistencyCheckTaskTest::TearDown() {
   store_test_util_.DeleteStore();
-  if (!legacy_archives_dir_.Delete())
-    DVLOG(1) << "ScopedTempDir deletion failed.";
   if (!temporary_dir_.Delete())
     DVLOG(1) << "ScopedTempDir deletion failed.";
   task_runner_->RunUntilIdle();
@@ -122,86 +102,67 @@ void TemporaryPagesConsistencyCheckTaskTest::SetRemoveDbEntryAndFile(
   remove_file_ = remove_file;
 }
 
+bool TemporaryPagesConsistencyCheckTaskTest::IsPageRemoved(
+    const OfflinePageItem& page) {
+  return !base::PathExists(page.file_path) &&
+         !store_test_util()->GetPageByOfflineId(page.offline_id);
+}
+
 // This test is affected by https://crbug.com/725685, which only affects windows
 // platform.
 #if defined(OS_WIN)
-#define MAYBE_TestDeletePageInLegacyArchivesDir \
-  DISABLED_TestDeletePageInLegacyArchivesDir
+#define MAYBE_TestDeleteFileWithoutDbEntry DISABLED_TestDeleteFileWithoutDbEntry
 #else
-#define MAYBE_TestDeletePageInLegacyArchivesDir \
-  TestDeletePageInLegacyArchivesDir
+#define MAYBE_TestDeleteFileWithoutDbEntry TestDeleteFileWithoutDbEntry
 #endif
 TEST_F(TemporaryPagesConsistencyCheckTaskTest,
-       MAYBE_TestDeletePageInLegacyArchivesDir) {
-  // The temporary pages in legacy archives directory will be deleted from both
-  // DB and disk.
+       MAYBE_TestDeleteFileWithoutDbEntry) {
+  // Only the file without DB entry and in temporary directory will be deleted.
   SetRemoveDbEntryAndFile(false, false);
-  OfflinePageItem page1 = AddPage(kLastNNamespace, legacy_archives_dir());
-  OfflinePageItem page2 = AddPage(kDownloadNamespace, legacy_archives_dir());
-  OfflinePageItem page3 = AddPage(kLastNNamespace, temporary_dir());
-
-  EXPECT_EQ(3LL, store_test_util()->GetPageCount());
-  EXPECT_EQ(2LL, GetFileCountInDir(legacy_archives_dir()));
-
-  auto task = base::MakeUnique<TemporaryPagesConsistencyCheckTask>(
-      store(), policy_controller(), temporary_dir(), legacy_archives_dir());
-  runner()->RunTask(std::move(task));
-
-  EXPECT_EQ(2LL, store_test_util()->GetPageCount());
-  EXPECT_EQ(1LL, GetFileCountInDir(legacy_archives_dir()));
-  EXPECT_EQ(1LL, GetFileCountInDir(temporary_dir()));
-  EXPECT_FALSE(store_test_util()->GetPageByOfflineId(page1.offline_id));
-}
-
-TEST_F(TemporaryPagesConsistencyCheckTaskTest, TestDeleteFileWithoutDbEntry) {
-  // Since the files in legacy archives directory are missing DB entries,
-  // there's no way to know if the pages were temporary or persistent. So
-  // they'll not be removed, only the file without DB entry and in temporary
-  // directory will be deleted.
+  OfflinePageItem page1 = AddPage(kLastNNamespace, temporary_dir());
   SetRemoveDbEntryAndFile(true, false);
-  OfflinePageItem page1 = AddPage(kLastNNamespace, legacy_archives_dir());
-  OfflinePageItem page2 = AddPage(kDownloadNamespace, legacy_archives_dir());
-  OfflinePageItem page3 = AddPage(kLastNNamespace, temporary_dir());
+  OfflinePageItem page2 = AddPage(kLastNNamespace, temporary_dir());
 
-  EXPECT_EQ(0LL, store_test_util()->GetPageCount());
-  EXPECT_EQ(2LL, GetFileCountInDir(legacy_archives_dir()));
-  EXPECT_EQ(1LL, GetFileCountInDir(temporary_dir()));
+  EXPECT_EQ(1LL, store_test_util()->GetPageCount());
+  EXPECT_EQ(2UL, test_util::GetFileCountInDirectory(temporary_dir()));
 
   auto task = base::MakeUnique<TemporaryPagesConsistencyCheckTask>(
-      store(), policy_controller(), temporary_dir(), legacy_archives_dir());
-  runner()->RunTask(std::move(task));
-
-  EXPECT_EQ(0LL, store_test_util()->GetPageCount());
-  EXPECT_EQ(2LL, GetFileCountInDir(legacy_archives_dir()));
-  EXPECT_EQ(0LL, GetFileCountInDir(temporary_dir()));
-  EXPECT_TRUE(base::PathExists(page2.file_path));
-}
-
-TEST_F(TemporaryPagesConsistencyCheckTaskTest, TestDeleteDBEntryWithoutFile) {
-  // The temporary pages will be deleted from DB if their DB entries exist but
-  // files are missing.
-  // In this test case, page1 and page3 will be deleted from DB. page2 will be
-  // left behind in DB since it's a persistent page.
-  SetRemoveDbEntryAndFile(false, true);
-  OfflinePageItem page1 = AddPage(kLastNNamespace, legacy_archives_dir());
-  OfflinePageItem page2 = AddPage(kDownloadNamespace, legacy_archives_dir());
-  OfflinePageItem page3 = AddPage(kLastNNamespace, temporary_dir());
-
-  EXPECT_EQ(3LL, store_test_util()->GetPageCount());
-  EXPECT_EQ(0LL, GetFileCountInDir(legacy_archives_dir()));
-  EXPECT_EQ(0LL, GetFileCountInDir(temporary_dir()));
-
-  auto task = base::MakeUnique<TemporaryPagesConsistencyCheckTask>(
-      store(), policy_controller(), temporary_dir(), legacy_archives_dir());
+      store(), policy_controller(), temporary_dir());
   runner()->RunTask(std::move(task));
 
   EXPECT_EQ(1LL, store_test_util()->GetPageCount());
-  EXPECT_EQ(0LL, GetFileCountInDir(legacy_archives_dir()));
-  EXPECT_EQ(0LL, GetFileCountInDir(temporary_dir()));
-  EXPECT_FALSE(store_test_util()->GetPageByOfflineId(page1.offline_id));
-  EXPECT_EQ(page2.file_path,
-            store_test_util()->GetPageByOfflineId(page2.offline_id)->file_path);
-  EXPECT_FALSE(store_test_util()->GetPageByOfflineId(page3.offline_id));
+  EXPECT_EQ(1UL, test_util::GetFileCountInDirectory(temporary_dir()));
+  EXPECT_FALSE(IsPageRemoved(page1));
+  EXPECT_TRUE(IsPageRemoved(page2));
+}
+
+// This test is affected by https://crbug.com/725685, which only affects windows
+// platform.
+#if defined(OS_WIN)
+#define MAYBE_TestDeleteDbEntryWithoutFile DISABLED_TestDeleteDbEntryWithoutFile
+#else
+#define MAYBE_TestDeleteDbEntryWithoutFile TestDeleteDbEntryWithoutFile
+#endif
+TEST_F(TemporaryPagesConsistencyCheckTaskTest,
+       MAYBE_TestDeleteDbEntryWithoutFile) {
+  // The temporary pages will be deleted from DB if their DB entries exist but
+  // files are missing.
+  SetRemoveDbEntryAndFile(false, false);
+  OfflinePageItem page1 = AddPage(kLastNNamespace, temporary_dir());
+  SetRemoveDbEntryAndFile(false, true);
+  OfflinePageItem page2 = AddPage(kLastNNamespace, temporary_dir());
+
+  EXPECT_EQ(2LL, store_test_util()->GetPageCount());
+  EXPECT_EQ(1UL, test_util::GetFileCountInDirectory(temporary_dir()));
+
+  auto task = base::MakeUnique<TemporaryPagesConsistencyCheckTask>(
+      store(), policy_controller(), temporary_dir());
+  runner()->RunTask(std::move(task));
+
+  EXPECT_EQ(1LL, store_test_util()->GetPageCount());
+  EXPECT_EQ(1UL, test_util::GetFileCountInDirectory(temporary_dir()));
+  EXPECT_FALSE(IsPageRemoved(page1));
+  EXPECT_TRUE(IsPageRemoved(page2));
 }
 
 // This test is affected by https://crbug.com/725685, which only affects windows
@@ -213,32 +174,26 @@ TEST_F(TemporaryPagesConsistencyCheckTaskTest, TestDeleteDBEntryWithoutFile) {
 #endif
 TEST_F(TemporaryPagesConsistencyCheckTaskTest, MAYBE_CombinedTest) {
   // Adding a bunch of pages with different setups.
-  // After the consistency check, DB will contain page2, page3, page8.
-  // The files of page2, page3, page4, page5, page9 will still exist.
+  // After the consistency check, only page1 will exist.
   SetRemoveDbEntryAndFile(false, false);
-  OfflinePageItem page1 = AddPage(kLastNNamespace, legacy_archives_dir());
-  OfflinePageItem page2 = AddPage(kDownloadNamespace, legacy_archives_dir());
-  OfflinePageItem page3 = AddPage(kLastNNamespace, temporary_dir());
+  OfflinePageItem page1 = AddPage(kLastNNamespace, temporary_dir());
   SetRemoveDbEntryAndFile(true, false);
-  OfflinePageItem page4 = AddPage(kLastNNamespace, legacy_archives_dir());
-  OfflinePageItem page5 = AddPage(kDownloadNamespace, legacy_archives_dir());
-  OfflinePageItem page6 = AddPage(kLastNNamespace, temporary_dir());
+  OfflinePageItem page2 = AddPage(kLastNNamespace, temporary_dir());
   SetRemoveDbEntryAndFile(false, true);
-  OfflinePageItem page7 = AddPage(kLastNNamespace, legacy_archives_dir());
-  OfflinePageItem page8 = AddPage(kDownloadNamespace, legacy_archives_dir());
-  OfflinePageItem page9 = AddPage(kLastNNamespace, temporary_dir());
+  OfflinePageItem page3 = AddPage(kLastNNamespace, temporary_dir());
 
-  EXPECT_EQ(6LL, store_test_util()->GetPageCount());
-  EXPECT_EQ(4LL, GetFileCountInDir(legacy_archives_dir()));
-  EXPECT_EQ(2LL, GetFileCountInDir(temporary_dir()));
+  EXPECT_EQ(2LL, store_test_util()->GetPageCount());
+  EXPECT_EQ(2UL, test_util::GetFileCountInDirectory(temporary_dir()));
 
   auto task = base::MakeUnique<TemporaryPagesConsistencyCheckTask>(
-      store(), policy_controller(), temporary_dir(), legacy_archives_dir());
+      store(), policy_controller(), temporary_dir());
   runner()->RunTask(std::move(task));
 
-  EXPECT_EQ(3LL, store_test_util()->GetPageCount());
-  EXPECT_EQ(3LL, GetFileCountInDir(legacy_archives_dir()));
-  EXPECT_EQ(1LL, GetFileCountInDir(temporary_dir()));
+  EXPECT_EQ(1LL, store_test_util()->GetPageCount());
+  EXPECT_EQ(1UL, test_util::GetFileCountInDirectory(temporary_dir()));
+  EXPECT_FALSE(IsPageRemoved(page1));
+  EXPECT_TRUE(IsPageRemoved(page2));
+  EXPECT_TRUE(IsPageRemoved(page3));
 }
 
 }  // namespace offline_pages

@@ -17,6 +17,7 @@
 #include "build/build_config.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/model/offline_page_item_generator.h"
+#include "components/offline_pages/core/model/offline_page_test_util.h"
 #include "components/offline_pages/core/offline_page_item.h"
 #include "components/offline_pages/core/offline_page_metadata_store_sql.h"
 #include "components/offline_pages/core/offline_page_metadata_store_test_util.h"
@@ -56,16 +57,6 @@ const int64_t kTestFileSize = 876543LL;
 const base::string16 kTestTitle = base::UTF8ToUTF16("a title");
 const std::string kTestRequestOrigin("abc.xyz");
 const std::string kEmptyRequestOrigin("");
-
-int64_t GetFileCountInDir(const base::FilePath& dir) {
-  base::FileEnumerator file_enumerator(dir, false, base::FileEnumerator::FILES);
-  int64_t count = 0;
-  for (base::FilePath path = file_enumerator.Next(); !path.empty();
-       path = file_enumerator.Next()) {
-    count++;
-  }
-  return count;
-}
 
 }  // namespace
 
@@ -289,7 +280,7 @@ TEST_F(OfflinePageModelTaskifiedTest, SavePageSuccessful) {
       kTestUrl, kTestClientId1, kTestUrl2, kEmptyRequestOrigin,
       std::move(archiver), SavePageResult::SUCCESS);
 
-  EXPECT_EQ(1LL, GetFileCountInDir(temporary_dir_path()));
+  EXPECT_EQ(1UL, test_util::GetFileCountInDirectory(temporary_dir_path()));
   EXPECT_EQ(1LL, store_test_util()->GetPageCount());
   auto saved_page_ptr = store_test_util()->GetPageByOfflineId(offline_id);
   ASSERT_TRUE(saved_page_ptr);
@@ -314,7 +305,7 @@ TEST_F(OfflinePageModelTaskifiedTest, SavePageSuccessfulWithSameOriginalUrl) {
       kTestUrl, kTestClientId1, kTestUrl, kEmptyRequestOrigin,
       std::move(archiver), SavePageResult::SUCCESS);
 
-  EXPECT_EQ(1LL, GetFileCountInDir(temporary_dir_path()));
+  EXPECT_EQ(1UL, test_util::GetFileCountInDirectory(temporary_dir_path()));
   EXPECT_EQ(1LL, store_test_util()->GetPageCount());
   auto saved_page_ptr = store_test_util()->GetPageByOfflineId(offline_id);
   ASSERT_TRUE(saved_page_ptr);
@@ -330,7 +321,7 @@ TEST_F(OfflinePageModelTaskifiedTest, SavePageSuccessfulWithRequestOrigin) {
       kTestUrl, kTestClientId1, kTestUrl2, kTestRequestOrigin,
       std::move(archiver), SavePageResult::SUCCESS);
 
-  EXPECT_EQ(1LL, GetFileCountInDir(temporary_dir_path()));
+  EXPECT_EQ(1UL, test_util::GetFileCountInDirectory(temporary_dir_path()));
   EXPECT_EQ(1LL, store_test_util()->GetPageCount());
   auto saved_page_ptr = store_test_util()->GetPageByOfflineId(offline_id);
   ASSERT_TRUE(saved_page_ptr);
@@ -427,7 +418,7 @@ TEST_F(OfflinePageModelTaskifiedTest, SavePageOfflineArchiverTwoPages) {
   SavePageWithCallback(kTestUrl2, kTestClientId2, GURL(), kTestRequestOrigin,
                        std::move(archiver), callback.Get());
 
-  EXPECT_EQ(1LL, GetFileCountInDir(temporary_dir_path()));
+  EXPECT_EQ(1UL, test_util::GetFileCountInDirectory(temporary_dir_path()));
   EXPECT_EQ(1LL, store_test_util()->GetPageCount());
   base::FilePath saved_file_path1 = last_path_created_by_archiver();
 
@@ -438,7 +429,7 @@ TEST_F(OfflinePageModelTaskifiedTest, SavePageOfflineArchiverTwoPages) {
   PumpLoop();
 
   // Check that offline_id1 refers to the second save page request.
-  EXPECT_EQ(2LL, GetFileCountInDir(temporary_dir_path()));
+  EXPECT_EQ(2UL, test_util::GetFileCountInDirectory(temporary_dir_path()));
   EXPECT_EQ(2LL, store_test_util()->GetPageCount());
   base::FilePath saved_file_path2 = last_path_created_by_archiver();
 
@@ -530,7 +521,7 @@ TEST_F(OfflinePageModelTaskifiedTest, DeletePagesByOfflineId) {
   OfflinePageItem page2 = page_generator()->CreateItemWithTempFile();
   InsertPageIntoStore(page1);
   InsertPageIntoStore(page2);
-  EXPECT_EQ(2LL, GetFileCountInDir(temporary_dir_path()));
+  EXPECT_EQ(2UL, test_util::GetFileCountInDirectory(temporary_dir_path()));
   EXPECT_EQ(2LL, store_test_util()->GetPageCount());
 
   base::MockCallback<DeletePageCallback> callback;
@@ -543,7 +534,7 @@ TEST_F(OfflinePageModelTaskifiedTest, DeletePagesByOfflineId) {
   PumpLoop();
   EXPECT_TRUE(observer_delete_page_called());
   EXPECT_EQ(last_deleted_page_info().offline_id, page1.offline_id);
-  EXPECT_EQ(1LL, GetFileCountInDir(temporary_dir_path()));
+  EXPECT_EQ(1UL, test_util::GetFileCountInDirectory(temporary_dir_path()));
   EXPECT_EQ(1LL, store_test_util()->GetPageCount());
   CheckTaskQueueIdle();
 }
@@ -556,7 +547,7 @@ TEST_F(OfflinePageModelTaskifiedTest, DeletePagesByUrlPredicate) {
   OfflinePageItem page2 = page_generator()->CreateItemWithTempFile();
   InsertPageIntoStore(page1);
   InsertPageIntoStore(page2);
-  EXPECT_EQ(2LL, GetFileCountInDir(temporary_dir_path()));
+  EXPECT_EQ(2UL, test_util::GetFileCountInDirectory(temporary_dir_path()));
   EXPECT_EQ(2LL, store_test_util()->GetPageCount());
 
   base::MockCallback<DeletePageCallback> callback;
@@ -574,7 +565,7 @@ TEST_F(OfflinePageModelTaskifiedTest, DeletePagesByUrlPredicate) {
   PumpLoop();
   EXPECT_TRUE(observer_delete_page_called());
   EXPECT_EQ(last_deleted_page_info().offline_id, page1.offline_id);
-  EXPECT_EQ(1LL, GetFileCountInDir(temporary_dir_path()));
+  EXPECT_EQ(1UL, test_util::GetFileCountInDirectory(temporary_dir_path()));
   EXPECT_EQ(1LL, store_test_util()->GetPageCount());
   CheckTaskQueueIdle();
 }
@@ -738,7 +729,7 @@ TEST_F(OfflinePageModelTaskifiedTest, DeletePagesByClientIds) {
   OfflinePageItem page2 = page_generator()->CreateItemWithTempFile();
   InsertPageIntoStore(page1);
   InsertPageIntoStore(page2);
-  EXPECT_EQ(2LL, GetFileCountInDir(temporary_dir_path()));
+  EXPECT_EQ(2UL, test_util::GetFileCountInDirectory(temporary_dir_path()));
   EXPECT_EQ(2LL, store_test_util()->GetPageCount());
 
   base::MockCallback<DeletePageCallback> callback;
@@ -751,7 +742,7 @@ TEST_F(OfflinePageModelTaskifiedTest, DeletePagesByClientIds) {
   PumpLoop();
   EXPECT_TRUE(observer_delete_page_called());
   EXPECT_EQ(last_deleted_page_info().client_id, page1.client_id);
-  EXPECT_EQ(1LL, GetFileCountInDir(temporary_dir_path()));
+  EXPECT_EQ(1UL, test_util::GetFileCountInDirectory(temporary_dir_path()));
   EXPECT_EQ(1LL, store_test_util()->GetPageCount());
   CheckTaskQueueIdle();
 }
