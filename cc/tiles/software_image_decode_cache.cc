@@ -38,9 +38,9 @@ namespace {
 // if more items are locked. That is, locked items ignore this limit.
 // Depending on the memory state of the system, we limit the amount of items
 // differently.
-const size_t kNormalMaxItemsInCache = 1000;
-const size_t kThrottledMaxItemsInCache = 100;
-const size_t kSuspendedMaxItemsInCache = 0;
+const size_t kNormalMaxItemsInCacheForSoftware = 1000;
+const size_t kThrottledMaxItemsInCacheForSoftware = 100;
+const size_t kSuspendedMaxItemsInCacheForSoftware = 0;
 
 // If the size of the original sized image breaches kMemoryRatioToSubrect but we
 // don't need to scale the image, consider caching only the needed subrect.
@@ -197,7 +197,7 @@ SoftwareImageDecodeCache::SoftwareImageDecodeCache(
       at_raster_decoded_images_(ImageMRUCache::NO_AUTO_EVICT),
       locked_images_budget_(locked_memory_limit_bytes),
       color_type_(color_type),
-      max_items_in_cache_(kNormalMaxItemsInCache) {
+      max_items_in_cache_(kNormalMaxItemsInCacheForSoftware) {
   // In certain cases, ThreadTaskRunnerHandle isn't set (Android Webview).
   // Don't register a dump provider in these cases.
   if (base::ThreadTaskRunnerHandle::IsSet()) {
@@ -1221,13 +1221,13 @@ void SoftwareImageDecodeCache::OnMemoryStateChange(base::MemoryState state) {
     base::AutoLock hold(lock_);
     switch (state) {
       case base::MemoryState::NORMAL:
-        max_items_in_cache_ = kNormalMaxItemsInCache;
+        max_items_in_cache_ = kNormalMaxItemsInCacheForSoftware;
         break;
       case base::MemoryState::THROTTLED:
-        max_items_in_cache_ = kThrottledMaxItemsInCache;
+        max_items_in_cache_ = kThrottledMaxItemsInCacheForSoftware;
         break;
       case base::MemoryState::SUSPENDED:
-        max_items_in_cache_ = kSuspendedMaxItemsInCache;
+        max_items_in_cache_ = kSuspendedMaxItemsInCacheForSoftware;
         break;
       case base::MemoryState::UNKNOWN:
         NOTREACHED();
