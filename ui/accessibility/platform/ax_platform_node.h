@@ -5,6 +5,7 @@
 #ifndef UI_ACCESSIBILITY_PLATFORM_AX_PLATFORM_NODE_H_
 #define UI_ACCESSIBILITY_PLATFORM_AX_PLATFORM_NODE_H_
 
+#include "base/callback.h"
 #include "base/lazy_instance.h"
 #include "base/observer_list.h"
 #include "build/build_config.h"
@@ -24,6 +25,9 @@ class AXPlatformNodeDelegate;
 // own the AXPlatformNode instance (or otherwise manage its lifecycle).
 class AX_EXPORT AXPlatformNode {
  public:
+  using NativeWindowHandlerCallback =
+      base::RepeatingCallback<AXPlatformNode*(gfx::NativeWindow)>;
+
   // Create an appropriate platform-specific instance. The delegate owns the
   // AXPlatformNode instance (or manages its lifecycle in some other way).
   static AXPlatformNode* Create(AXPlatformNodeDelegate* delegate);
@@ -32,6 +36,13 @@ class AX_EXPORT AXPlatformNode {
   // or return NULL if it's not an instance of this class.
   static AXPlatformNode* FromNativeViewAccessible(
       gfx::NativeViewAccessible accessible);
+
+  // Return the AXPlatformNode at the root of the tree for a native window.
+  static AXPlatformNode* FromNativeWindow(gfx::NativeWindow native_window);
+
+  // Provide a function that returns the AXPlatformNode at the root of the
+  // tree for a native window.
+  static void RegisterNativeWindowHandler(NativeWindowHandlerCallback handler);
 
   // Register and unregister to receive notifications about AXMode changes
   // for this node.
@@ -66,6 +77,9 @@ class AX_EXPORT AXPlatformNode {
   // Global ObserverList for AXMode changes.
   static base::LazyInstance<base::ObserverList<AXModeObserver>>::Leaky
       ax_mode_observers_;
+
+  static base::LazyInstance<NativeWindowHandlerCallback>::Leaky
+      native_window_handler_;
 };
 
 }  // namespace ui

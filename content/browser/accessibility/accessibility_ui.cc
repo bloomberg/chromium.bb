@@ -22,6 +22,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/browser/web_contents/web_contents_view.h"
 #include "content/browser/webui/web_ui_data_source_impl.h"
 #include "content/common/view_message_enums.h"
 #include "content/grit/content_resources.h"
@@ -36,6 +37,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/escape.h"
+#include "ui/accessibility/platform/ax_platform_node.h"
 
 static const char kTargetsDataFile[] = "targets-data.json";
 
@@ -176,6 +178,20 @@ bool HandleAccessibilityRequestCallback(
   return true;
 }
 
+std::string RecursiveDumpAXPlatformNodeAsString(ui::AXPlatformNode* node,
+                                                int indent) {
+  std::string str(2 * indent, '+');
+  str += node->GetDelegate()->GetData().ToString() + "\n";
+  for (int i = 0; i < node->GetDelegate()->GetChildCount(); i++) {
+    gfx::NativeViewAccessible child = node->GetDelegate()->ChildAtIndex(i);
+    ui::AXPlatformNode* child_node =
+        ui::AXPlatformNode::FromNativeViewAccessible(child);
+    if (child_node)
+      str += RecursiveDumpAXPlatformNodeAsString(child_node, indent + 1);
+  }
+  return str;
+}
+
 }  // namespace
 
 AccessibilityUI::AccessibilityUI(WebUI* web_ui) : WebUIController(web_ui) {
@@ -218,8 +234,12 @@ void AccessibilityUIMessageHandler::RegisterMessages() {
       "setGlobalFlag", base::Bind(&AccessibilityUIMessageHandler::SetGlobalFlag,
                                   base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "requestAccessibilityTree",
-      base::Bind(&AccessibilityUIMessageHandler::RequestAccessibilityTree,
+      "requestWebContentsTree",
+      base::Bind(&AccessibilityUIMessageHandler::RequestWebContentsTree,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "requestNativeUITree",
+      base::Bind(&AccessibilityUIMessageHandler::RequestNativeUITree,
                  base::Unretained(this)));
 }
 
@@ -318,7 +338,7 @@ void AccessibilityUIMessageHandler::SetGlobalFlag(const base::ListValue* args) {
     state->RemoveAccessibilityModeFlags(new_mode);
 }
 
-void AccessibilityUIMessageHandler::RequestAccessibilityTree(
+void AccessibilityUIMessageHandler::RequestWebContentsTree(
     const base::ListValue* args) {
   std::string process_id_str;
   std::string route_id_str;
@@ -366,6 +386,22 @@ void AccessibilityUIMessageHandler::RequestAccessibilityTree(
                                      &accessibility_contents_utf16);
   result->SetString("tree", base::UTF16ToUTF8(accessibility_contents_utf16));
   CallJavascriptFunction("accessibility.showTree", *(result.get()));
+}
+
+void AccessibilityUIMessageHandler::RequestNativeUITree(
+    const base::ListValue* args) {
+  AllowJavascript();
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(web_ui()->GetWebContents());
+  gfx::NativeWindow native_window =
+      web_contents->GetView()->GetTopLevelNativeWindow();
+  ui::AXPlatformNode* node =
+      ui::AXPlatformNode::FromNativeWindow(native_window);
+  std::string str = RecursiveDumpAXPlatformNodeAsString(node, 0);
+
+  std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
+  result->SetString("tree", str);
+  CallJavascriptFunction("accessibility.showNativeUITree", *(result.get()));
 }
 
 }  // namespace content
