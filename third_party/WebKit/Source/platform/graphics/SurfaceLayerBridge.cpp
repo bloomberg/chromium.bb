@@ -13,7 +13,6 @@
 #include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/common/surfaces/surface_sequence.h"
 #include "media/base/media_switches.h"
-#include "platform/graphics/GraphicsLayer.h"
 #include "platform/mojo/MojoHelper.h"
 #include "platform/wtf/Functional.h"
 #include "public/platform/InterfaceProvider.h"
@@ -100,7 +99,8 @@ void SurfaceLayerBridge::CreateSolidColorLayer() {
   web_layer_ = Platform::Current()->CompositorSupport()->CreateLayerFromCCLayer(
       cc_layer_.get());
 
-  GraphicsLayer::RegisterContentsLayer(web_layer_.get());
+  if (observer_)
+    observer_->RegisterContentsLayer(web_layer_.get());
 }
 
 void SurfaceLayerBridge::OnFirstSurfaceActivation(
@@ -109,7 +109,8 @@ void SurfaceLayerBridge::OnFirstSurfaceActivation(
     // First time a SurfaceId is received
     current_surface_id_ = surface_info.id();
     if (web_layer_) {
-      GraphicsLayer::UnregisterContentsLayer(web_layer_.get());
+      if (observer_)
+        observer_->UnregisterContentsLayer(web_layer_.get());
       web_layer_->RemoveFromParent();
     }
 
@@ -124,7 +125,8 @@ void SurfaceLayerBridge::OnFirstSurfaceActivation(
     web_layer_ =
         Platform::Current()->CompositorSupport()->CreateLayerFromCCLayer(
             cc_layer_.get());
-    GraphicsLayer::RegisterContentsLayer(web_layer_.get());
+    if (observer_)
+      observer_->RegisterContentsLayer(web_layer_.get());
   } else if (current_surface_id_ != surface_info.id()) {
     // A different SurfaceId is received, prompting change to existing
     // SurfaceLayer

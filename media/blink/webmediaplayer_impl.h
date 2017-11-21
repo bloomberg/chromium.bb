@@ -111,6 +111,8 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   // WebSurfaceLayerBridgeObserver implementation.
   void OnWebLayerUpdated() override;
+  void RegisterContentsLayer(blink::WebLayer* web_layer) override;
+  void UnregisterContentsLayer(blink::WebLayer* web_layer) override;
 
   void Load(LoadType load_type,
             const blink::WebMediaPlayerSource& source,
