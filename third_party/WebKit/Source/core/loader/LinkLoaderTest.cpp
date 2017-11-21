@@ -134,7 +134,8 @@ TEST_P(LinkLoaderPreloadTest, Preload) {
   URLTestHelpers::RegisterMockedErrorURLLoad(href_url);
   loader->LoadLink(LinkRelAttribute("preload"), kCrossOriginAttributeNotSet,
                    test_case.type, test_case.as, test_case.media,
-                   test_case.nonce, test_case.referrer_policy, href_url,
+                   test_case.nonce, String() /* integrity */,
+                   test_case.referrer_policy, href_url,
                    dummy_page_holder->GetDocument(), NetworkHintsMock());
   if (test_case.expecting_load &&
       test_case.priority != kResourceLoadPriorityUnresolved) {
@@ -324,6 +325,7 @@ INSTANTIATE_TEST_CASE_P(LinkLoaderPreloadTest,
 struct ModulePreloadTestParams {
   const char* href;
   const char* nonce;
+  const char* integrity;
   CrossOriginAttributeValue cross_origin;
   ReferrerPolicy referrer_policy;
   bool expecting_load;
@@ -331,15 +333,20 @@ struct ModulePreloadTestParams {
 };
 
 constexpr ModulePreloadTestParams kModulePreloadTestParams[] = {
-    {"", nullptr, kCrossOriginAttributeNotSet, kReferrerPolicyDefault, false,
+    {"", nullptr, nullptr, kCrossOriginAttributeNotSet, kReferrerPolicyDefault,
+     false, network::mojom::FetchCredentialsMode::kOmit},
+    {"http://example.test/cat.js", nullptr, nullptr,
+     kCrossOriginAttributeNotSet, kReferrerPolicyDefault, true,
      network::mojom::FetchCredentialsMode::kOmit},
-    {"http://example.test/cat.js", nullptr, kCrossOriginAttributeNotSet,
-     kReferrerPolicyDefault, true, network::mojom::FetchCredentialsMode::kOmit},
-    {"http://example.test/cat.js", nullptr, kCrossOriginAttributeAnonymous,
-     kReferrerPolicyDefault, true,
+    {"http://example.test/cat.js", nullptr, nullptr,
+     kCrossOriginAttributeAnonymous, kReferrerPolicyDefault, true,
      network::mojom::FetchCredentialsMode::kSameOrigin},
-    {"http://example.test/cat.js", "nonce", kCrossOriginAttributeNotSet,
-     kReferrerPolicyNever, true, network::mojom::FetchCredentialsMode::kOmit}};
+    {"http://example.test/cat.js", "nonce", nullptr,
+     kCrossOriginAttributeNotSet, kReferrerPolicyNever, true,
+     network::mojom::FetchCredentialsMode::kOmit},
+    {"http://example.test/cat.js", nullptr, "sha384-abc",
+     kCrossOriginAttributeNotSet, kReferrerPolicyDefault, true,
+     network::mojom::FetchCredentialsMode::kOmit}};
 
 class LinkLoaderModulePreloadTest
     : public ::testing::TestWithParam<ModulePreloadTestParams> {};
@@ -361,6 +368,8 @@ class ModulePreloadTestModulator final : public DummyModulator {
               request.Options().CredentialsMode());
     EXPECT_EQ(AtomicString(), request.GetReferrer());
     EXPECT_EQ(params_->referrer_policy, request.GetReferrerPolicy());
+    EXPECT_EQ(params_->integrity,
+              request.Options().GetIntegrityAttributeValue());
   }
 
   bool fetched() const { return fetched_; }
@@ -385,7 +394,8 @@ TEST_P(LinkLoaderModulePreloadTest, ModulePreload) {
   KURL href_url = KURL(NullURL(), test_case.href);
   loader->LoadLink(LinkRelAttribute("modulepreload"), test_case.cross_origin,
                    String() /* type */, String() /* as */, String() /* media */,
-                   test_case.nonce, test_case.referrer_policy, href_url,
+                   test_case.nonce, test_case.integrity,
+                   test_case.referrer_policy, href_url,
                    dummy_page_holder->GetDocument(), NetworkHintsMock());
   ASSERT_EQ(test_case.expecting_load, modulator->fetched());
 }
@@ -426,7 +436,7 @@ TEST(LinkLoaderTest, Prefetch) {
     KURL href_url = KURL(NullURL(), test_case.href);
     URLTestHelpers::RegisterMockedErrorURLLoad(href_url);
     loader->LoadLink(LinkRelAttribute("prefetch"), kCrossOriginAttributeNotSet,
-                     test_case.type, "", test_case.media, "",
+                     test_case.type, "", test_case.media, "", "",
                      test_case.referrer_policy, href_url,
                      dummy_page_holder->GetDocument(), NetworkHintsMock());
     ASSERT_TRUE(dummy_page_holder->GetDocument().Fetcher());
@@ -472,7 +482,7 @@ TEST(LinkLoaderTest, DNSPrefetch) {
     NetworkHintsMock network_hints;
     loader->LoadLink(LinkRelAttribute("dns-prefetch"),
                      kCrossOriginAttributeNotSet, String(), String(), String(),
-                     String(), kReferrerPolicyDefault, href_url,
+                     String(), String(), kReferrerPolicyDefault, href_url,
                      dummy_page_holder->GetDocument(), network_hints);
     EXPECT_FALSE(network_hints.DidPreconnect());
     EXPECT_EQ(test_case.should_load, network_hints.DidDnsPrefetch());
@@ -505,7 +515,7 @@ TEST(LinkLoaderTest, Preconnect) {
     KURL href_url = KURL(KURL(String("http://example.com")), test_case.href);
     NetworkHintsMock network_hints;
     loader->LoadLink(LinkRelAttribute("preconnect"), test_case.cross_origin,
-                     String(), String(), String(), String(),
+                     String(), String(), String(), String(), String(),
                      kReferrerPolicyDefault, href_url,
                      dummy_page_holder->GetDocument(), network_hints);
     EXPECT_EQ(test_case.should_load, network_hints.DidPreconnect());
@@ -527,7 +537,7 @@ TEST(LinkLoaderTest, PreloadAndPrefetch) {
   URLTestHelpers::RegisterMockedErrorURLLoad(href_url);
   loader->LoadLink(LinkRelAttribute("preload prefetch"),
                    kCrossOriginAttributeNotSet, "application/javascript",
-                   "script", "", "", kReferrerPolicyDefault, href_url,
+                   "script", "", "", "", kReferrerPolicyDefault, href_url,
                    dummy_page_holder->GetDocument(), NetworkHintsMock());
   ASSERT_EQ(1, fetcher->CountPreloads());
   Resource* resource = loader->GetResourceForTesting();

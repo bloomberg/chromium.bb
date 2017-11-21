@@ -103,6 +103,8 @@ void HTMLLinkElement::ParseAttribute(
   } else if (name == scopeAttr) {
     scope_ = value;
     Process();
+  } else if (name == integrityAttr) {
+    integrity_ = value;
   } else if (name == disabledAttr) {
     UseCounter::Count(GetDocument(), WebFeature::kHTMLLinkElementDisabled);
     if (LinkStyle* link = GetLinkStyle())
@@ -128,13 +130,15 @@ bool HTMLLinkElement::LoadLink(const String& type,
                                const String& as,
                                const String& media,
                                const String& nonce,
+                               const String& integrity,
                                ReferrerPolicy referrer_policy,
                                const KURL& url) {
-  return link_loader_->LoadLink(rel_attribute_,
-                                GetCrossOriginAttributeValue(FastGetAttribute(
-                                    HTMLNames::crossoriginAttr)),
-                                type, as, media, nonce, referrer_policy, url,
-                                GetDocument(), NetworkHintsInterfaceImpl());
+  return link_loader_->LoadLink(
+      rel_attribute_,
+      GetCrossOriginAttributeValue(
+          FastGetAttribute(HTMLNames::crossoriginAttr)),
+      type, as, media, nonce, integrity, referrer_policy, url, GetDocument(),
+      NetworkHintsInterfaceImpl());
 }
 
 LinkResource* HTMLLinkElement::LinkResourceToProcess() {
