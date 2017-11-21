@@ -2198,13 +2198,31 @@ enum ApplyToGraphicsLayersModeFlags {
 };
 typedef unsigned ApplyToGraphicsLayersMode;
 
+// Flags to layers mapping matrix:
+//                  bit 0 1 2 3 4 5 6 7 8 9
+// ChildTransform       *           *
+// Main                 *         *   *
+// Clipping             *           *
+// Scrolling            *           *
+// ScrollingContents    *         * *   *
+// Foreground           *         *     *
+// Squashing              *
+// Mask                         * *   *
+// ChildClippingMask            * *   *
+// AncestorClippingMask         * *   *
+// Background                 * *     *
+// HorizontalScrollbar      *
+// VerticalScrollbar        *
+// ScrollCorner             *
+// DecorationOutline                  *   *
 template <typename Func>
 static void ApplyToGraphicsLayers(const CompositedLayerMapping* mapping,
                                   const Func& f,
                                   ApplyToGraphicsLayersMode mode) {
   DCHECK(mode);
 
-  if ((mode & kApplyToLayersAffectedByPreserve3D) &&
+  if (((mode & kApplyToLayersAffectedByPreserve3D) ||
+       (mode & kApplyToChildContainingLayers)) &&
       mapping->ChildTransformLayer())
     f(mapping->ChildTransformLayer());
   if (((mode & kApplyToLayersAffectedByPreserve3D) ||
@@ -2231,9 +2249,6 @@ static void ApplyToGraphicsLayers(const CompositedLayerMapping* mapping,
        (mode & kApplyToScrollingContentLayers)) &&
       mapping->ForegroundLayer())
     f(mapping->ForegroundLayer());
-
-  if ((mode & kApplyToChildContainingLayers) && mapping->ChildTransformLayer())
-    f(mapping->ChildTransformLayer());
 
   if ((mode & kApplyToSquashingLayer) && mapping->SquashingLayer())
     f(mapping->SquashingLayer());
