@@ -65,6 +65,14 @@ void SetStabilityDataInt(base::StringPiece name, int64_t value) {
 }
 
 void RegisterStabilityVEH() {
+#if defined(ADDRESS_SANITIZER) || defined(SYZYASAN)
+  // ASAN on windows x64 is dynamically allocating the shadow memory on a
+  // memory access violation by setting up an vector exception handler.
+  // When instrumented with ASAN, this code may trigger an exception by
+  // accessing unallocated shadow memory, which is causing an infinite
+  // recursion (i.e. infinite memory access violation).
+  (void)&VectoredExceptionHandler;
+#else
   // Register a vectored exception handler and request it be first. Note that
   // subsequent registrations may also request to be first, in which case this
   // one will be bumped.
@@ -74,6 +82,7 @@ void RegisterStabilityVEH() {
   static VehHandle veh_handler(
       ::AddVectoredExceptionHandler(1, &VectoredExceptionHandler));
   DCHECK(veh_handler);
+#endif  // ADDRESS_SANITIZER
 }
 
 }  // namespace browser_watcher
