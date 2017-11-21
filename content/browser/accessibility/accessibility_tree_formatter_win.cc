@@ -867,7 +867,7 @@ base::string16 AccessibilityTreeFormatterWin::ProcessTreeForOutput(
     if (!dict.Get(attribute_name, &value))
       continue;
 
-    switch (value->GetType()) {
+    switch (value->type()) {
       case base::Value::Type::STRING: {
         base::string16 string_value;
         value->GetAsString(&string_value);

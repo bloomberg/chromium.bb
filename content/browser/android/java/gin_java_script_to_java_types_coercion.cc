@@ -698,7 +698,7 @@ jvalue CoerceJavaScriptValueToJavaValue(JNIEnv* env,
   // Note that in all these conversions, the relevant field of the jvalue must
   // always be explicitly set, as jvalue does not initialize its fields.
 
-  switch (value->GetType()) {
+  switch (value->type()) {
     case base::Value::Type::INTEGER:
       return CoerceJavaScriptIntegerToJavaValue(
           env, value, target_type, coerce_to_string, error);

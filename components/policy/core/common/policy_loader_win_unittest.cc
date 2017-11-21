@@ -68,7 +68,7 @@ bool InstallValue(const base::Value& value,
   // KEY_ALL_ACCESS causes the ctor to create the key if it does not exist yet.
   RegKey key(hive, path.c_str(), KEY_ALL_ACCESS);
   EXPECT_TRUE(key.Valid());
-  switch (value.GetType()) {
+  switch (value.type()) {
     case base::Value::Type::NONE:
       return key.WriteValue(name.c_str(), L"") == ERROR_SUCCESS;
 
