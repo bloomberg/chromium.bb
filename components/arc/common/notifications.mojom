@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 13
+// Next MinVersion: 14
 
 module arc.mojom;
 
@@ -147,7 +147,8 @@ struct ArcToastData {
 
 interface NotificationsHost {
   // Tells the Chrome that a notification is posted (created or updated) on
-  // Android.
+  // Android. If you know that the notification exists, please consider to use
+  // OnNotificationUpdate instead.
   // |notification_data| is the data of notification (id, texts, icon and ...).
   OnNotificationPosted@0(ArcNotificationData notification_data);
 
@@ -162,6 +163,10 @@ interface NotificationsHost {
   [MinVersion=2]
   // Hides the visible toast immediately, or cancels the scheduled one.
   OnToastCancelled@3(ArcToastData data);
+
+  [MinVersion=13]
+  // Notifies that an existing notiication is updated on Android.
+  OnNotificationUpdated@5(ArcNotificationData notification_data);
 };
 
 // TODO(lhchavez): Migrate all request/response messages to Mojo.

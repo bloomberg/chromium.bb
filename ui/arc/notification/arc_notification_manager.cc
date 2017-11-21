@@ -141,6 +141,16 @@ void ArcNotificationManager::OnNotificationPosted(
   it->second->OnUpdatedFromAndroid(std::move(data));
 }
 
+void ArcNotificationManager::OnNotificationUpdated(
+    mojom::ArcNotificationDataPtr data) {
+  const std::string& key = data->key;
+  auto it = items_.find(key);
+  if (it == items_.end())
+    return;
+
+  it->second->OnUpdatedFromAndroid(std::move(data));
+}
+
 void ArcNotificationManager::OnNotificationRemoved(const std::string& key) {
   auto it = items_.find(key);
   if (it == items_.end()) {
