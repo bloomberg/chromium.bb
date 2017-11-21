@@ -24,6 +24,7 @@ source_set("web") {
     "//ios/web/navigation:core",
     "//ios/web/net",
     "//ios/web/public",
+    "//ios/web/public/download",
     "//ios/web/web_state",
     "//ios/web/web_state:error_translation_util",
     "//ios/web/web_state:navigation_context",
