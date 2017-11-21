@@ -265,12 +265,10 @@ if (internal_khronos_glcts_tests) {
     configs += [ "//build/config/compiler:no_chromium_code" ]
     configs -= [ "//build/config/compiler:no_rtti" ]
     configs += [ "//build/config/compiler:rtti" ]
+    configs -= [ "//build/config/compiler:no_exceptions" ]
+    configs += [ "//build/config/compiler:exceptions" ]
 
     public_configs = [ ":decpp_config" ]
-
-    if (is_linux) {
-      configs -= [ "//build/config/gcc:no_exceptions" ]
-    }
   }
 
   group("delibs") {
@@ -403,11 +401,12 @@ if (internal_khronos_glcts_tests) {
     configs += [ "//build/config/compiler:no_chromium_code" ]
     configs -= [ "//build/config/compiler:no_rtti" ]
     configs += [ "//build/config/compiler:rtti" ]
+    configs -= [ "//build/config/compiler:no_exceptions" ]
+    configs += [ "//build/config/compiler:exceptions" ]
 
     public_configs = [ ":tcutil_config" ]
 
     if (is_linux) {
-      configs -= [ "//build/config/gcc:no_exceptions" ]
       cflags_cc = [ "-Wno-int-to-pointer-cast" ]
     }
   }
@@ -442,12 +441,10 @@ if (internal_khronos_glcts_tests) {
     configs += [ "//build/config/compiler:no_chromium_code" ]
     configs -= [ "//build/config/compiler:no_rtti" ]
     configs += [ "//build/config/compiler:rtti" ]
+    configs -= [ "//build/config/compiler:no_exceptions" ]
+    configs += [ "//build/config/compiler:exceptions" ]
 
     public_configs = [ ":glwrapper_config" ]
-
-    if (is_linux) {
-      configs -= [ "//build/config/gcc:no_exceptions" ]
-    }
   }
 
   config("glutil_config") {
@@ -502,12 +499,10 @@ if (internal_khronos_glcts_tests) {
     configs += [ "//build/config/compiler:no_chromium_code" ]
     configs -= [ "//build/config/compiler:no_rtti" ]
     configs += [ "//build/config/compiler:rtti" ]
+    configs -= [ "//build/config/compiler:no_exceptions" ]
+    configs += [ "//build/config/compiler:exceptions" ]
 
     public_configs = [ ":glutil_config" ]
-
-    if (is_linux) {
-      configs -= [ "//build/config/gcc:no_exceptions" ]
-    }
   }
 
   config("tcutil_egl_config") {
@@ -543,6 +538,8 @@ if (internal_khronos_glcts_tests) {
     configs += [ "//build/config/compiler:no_chromium_code" ]
     configs -= [ "//build/config/compiler:no_rtti" ]
     configs += [ "//build/config/compiler:rtti" ]
+    configs -= [ "//build/config/compiler:no_exceptions" ]
+    configs += [ "//build/config/compiler:exceptions" ]
 
     public_configs = [
       ":tcutil_egl_config",
@@ -550,7 +547,6 @@ if (internal_khronos_glcts_tests) {
     ]
 
     if (is_linux) {
-      configs -= [ "//build/config/gcc:no_exceptions" ]
       cflags_cc = [ "-Wno-int-to-void-pointer-cast" ]
     }
   }
@@ -624,11 +620,12 @@ if (internal_khronos_glcts_tests) {
     configs += [ "//build/config/compiler:no_chromium_code" ]
     configs -= [ "//build/config/compiler:no_rtti" ]
     configs += [ "//build/config/compiler:rtti" ]
+    configs -= [ "//build/config/compiler:no_exceptions" ]
+    configs += [ "//build/config/compiler:exceptions" ]
 
     public_configs = [ ":glcts_common_config" ]
 
     if (is_linux) {
-      configs -= [ "//build/config/gcc:no_exceptions" ]
       cflags_cc = [ "-Wno-string-conversion" ]
     }
   }
@@ -659,12 +656,10 @@ if (internal_khronos_glcts_tests) {
     configs += [ "//build/config/compiler:no_chromium_code" ]
     configs -= [ "//build/config/compiler:no_rtti" ]
     configs += [ "//build/config/compiler:rtti" ]
+    configs -= [ "//build/config/compiler:no_exceptions" ]
+    configs += [ "//build/config/compiler:exceptions" ]
 
     public_configs = [ ":glcts_gtf_wrapper_config" ]
-
-    if (is_linux) {
-      configs -= [ "//build/config/gcc:no_exceptions" ]
-    }
   }
 
   config("gtf_es_config") {
@@ -874,12 +869,10 @@ if (internal_khronos_glcts_tests) {
     configs += [ "//build/config/compiler:no_chromium_code" ]
     configs -= [ "//build/config/compiler:no_rtti" ]
     configs += [ "//build/config/compiler:rtti" ]
+    configs -= [ "//build/config/compiler:no_exceptions" ]
+    configs += [ "//build/config/compiler:exceptions" ]
 
     public_configs = [ ":glcts_gtf_config" ]
-
-    if (is_linux) {
-      configs -= [ "//build/config/gcc:no_exceptions" ]
-    }
   }
 
   config("glcts_es2_config") {
@@ -907,12 +900,10 @@ if (internal_khronos_glcts_tests) {
     configs += [ "//build/config/compiler:no_chromium_code" ]
     configs -= [ "//build/config/compiler:no_rtti" ]
     configs += [ "//build/config/compiler:rtti" ]
+    configs -= [ "//build/config/compiler:no_exceptions" ]
+    configs += [ "//build/config/compiler:exceptions" ]
 
     public_configs = [ ":glcts_es2_config" ]
-
-    if (is_linux) {
-      configs -= [ "//build/config/gcc:no_exceptions" ]
-    }
   }
 
   source_set("tcutil_platform_windowless") {
@@ -947,10 +938,8 @@ if (internal_khronos_glcts_tests) {
     configs += [ ":defaults_config" ]
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [ "//build/config/compiler:no_chromium_code" ]
-
-    if (is_linux) {
-      configs -= [ "//build/config/gcc:no_exceptions" ]
-    }
+    configs -= [ "//build/config/compiler:no_exceptions" ]
+    configs += [ "//build/config/compiler:exceptions" ]
   }
 }
 

@@ -192,7 +192,6 @@ config("runtime_library") {
     "__STD_C",
     "_CRT_RAND_S",
     "_CRT_SECURE_NO_DEPRECATE",
-    "_HAS_EXCEPTIONS=0",
     "_SCL_SECURE_NO_DEPRECATE",
   ]
 
