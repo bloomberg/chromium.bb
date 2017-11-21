@@ -450,9 +450,4 @@ ScriptPromise CredentialsContainer::preventSilentAccess(
   return promise;
 }
 
-ScriptPromise CredentialsContainer::requireUserMediation(
-    ScriptState* script_state) {
-  return preventSilentAccess(script_state);
-}
-
 }  // namespace blink
