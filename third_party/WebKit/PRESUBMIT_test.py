@@ -73,6 +73,42 @@ class PresubmitTest(unittest.TestCase):
         # pylint: disable=E1101
         subprocess.Popen.assert_not_called()
 
+    def testCheckPublicHeaderWithBlinkMojo(self):
+        """This verifies that _CheckForWrongMojomIncludes detects -blink mojo
+        headers in public files.
+        """
+
+        mock_input_api = MockInputApi()
+        potentially_bad_content = '#include "public/platform/modules/cache_storage.mojom-blink.h"'
+        mock_input_api.files = [
+            MockAffectedFile('third_party/WebKit/public/AHeader.h',
+                             [potentially_bad_content], None)
+        ]
+        # Access to a protected member _CheckForWrongMojomIncludes
+        # pylint: disable=W0212
+        errors = PRESUBMIT._CheckForWrongMojomIncludes(mock_input_api,
+                                                       MockOutputApi())
+        self.assertEquals(
+            'Public blink headers using Blink variant mojoms found. ' +
+            'You must include .mojom-shared.h instead:',
+            errors[0].message)
+
+    def testCheckInternalHeaderWithBlinkMojo(self):
+        """This verifies that _CheckForWrongMojomIncludes accepts -blink mojo
+        headers in blink internal files.
+        """
+
+        mock_input_api = MockInputApi()
+        potentially_bad_content = '#include "public/platform/modules/cache_storage.mojom-blink.h"'
+        mock_input_api.files = [
+            MockAffectedFile('third_party/WebKit/Source/public/AHeader.h',
+                             [potentially_bad_content], None)
+        ]
+        # Access to a protected member _CheckForWrongMojomIncludes
+        # pylint: disable=W0212
+        errors = PRESUBMIT._CheckForWrongMojomIncludes(mock_input_api,
+                                                       MockOutputApi())
+        self.assertEquals([], errors)
 
 class CxxDependencyTest(unittest.TestCase):
     allow_list = [
