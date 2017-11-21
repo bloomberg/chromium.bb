@@ -39,9 +39,7 @@ OfflinePageItem OfflinePageItemGenerator::CreateItemWithTempFile() {
   OfflinePageItem item = CreateItem();
   base::FilePath path;
   base::CreateTemporaryFileInDir(archive_dir_, &path);
-  base::FilePath mhtml_path = path.AddExtension(FILE_PATH_LITERAL("mhtml"));
-  DCHECK(base::Move(path, mhtml_path));
-  item.file_path = mhtml_path;
+  item.file_path = path;
   return item;
 }
 

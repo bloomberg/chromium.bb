@@ -126,7 +126,6 @@ bool CheckConsistencySync(const base::FilePath& archives_dir,
 
   // Delete any files in the temporary archive directory that no longer have
   // associated entries in the database.
-  // TODO(romax): https://crbug.com/786240.
   std::set<base::FilePath> archive_paths = GetAllArchives(archives_dir);
   std::vector<base::FilePath> files_to_delete;
   for (const auto& archive_path : archive_paths) {
