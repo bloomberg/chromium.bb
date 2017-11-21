@@ -139,6 +139,7 @@ crbug.com/771643 virtual/spv175/paint/invalidation/compositing/resize-squashing-
 crbug.com/771643 virtual/spv175/paint/invalidation/compositing/should-not-repaint-composited-descendants-on-overflow-change.html [ Failure ]
 crbug.com/771643 virtual/spv175/paint/invalidation/compositing/subpixel-offset-scaled-transform-composited.html [ Failure ]
 crbug.com/771643 virtual/spv175/paint/invalidation/filters/filter-on-html-element-with-fixed-position-child.html [ Failure ]
+crbug.com/771643 virtual/spv175/paint/invalidation/forms/select-option-background-color.html [ Failure ]
 crbug.com/771643 virtual/spv175/paint/invalidation/multicol/column-rule-change.html [ Failure ]
 crbug.com/771643 virtual/spv175/paint/invalidation/multicol/column-rules-fixed-height.html [ Failure ]
 crbug.com/771643 virtual/spv175/paint/invalidation/multicol/multicol-as-paint-container.html [ Failure ]

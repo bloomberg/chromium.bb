@@ -948,12 +948,7 @@
       ]
     },
     {
-      "name": "LayoutBlockFlow DIV id='scroller'",
-      "bounds": [150, 150],
-      "transform": 1
-    },
-    {
-      "name": "LayoutBlockFlow DIV id='scroller'",
+      "name": "HorizontalScrollbar",
       "bounds": [150, 150],
       "paintInvalidations": [
         {

@@ -10,11 +10,6 @@
           "object": "LayoutBlockFlow (positioned) DIV",
           "rect": [0, 50, 106, 106],
           "reason": "paint property change"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV",
-          "rect": [88, 53, 15, 100],
-          "reason": "appeared"
         }
       ]
     }

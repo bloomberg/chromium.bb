@@ -50,17 +50,10 @@ class CORE_EXPORT ObjectPaintProperties {
   // +---[ transform ]                    The space created by CSS transform.
   //     |                                This is the local border box space.
   //     +---[ perspective ]              The space created by CSS perspective.
-  //     |   +---[ svgLocalToBorderBoxTransform ] Additional transform for
-  //     |                                children of the outermost root SVG.
-  //     |              OR                (SVG does not support scrolling.)
-  //     |   +---[ scrollTranslation ]    The space created by overflow clip.
-  //     +---[ scrollbarPaintOffset ]     TODO(trchen): Remove this once we bake
-  //                                      the paint offset into frameRect.  This
-  //                                      is equivalent to the local border box
-  //                                      space above, with pixel snapped paint
-  //                                      offset baked in. It is really
-  //                                      redundant, but it is a pain to teach
-  //                                      scrollbars to paint with an offset.
+  //         +---[ svgLocalToBorderBoxTransform ] Additional transform for
+  //                                      children of the outermost root SVG.
+  //                    OR                (SVG does not support scrolling.)
+  //         +---[ scrollTranslation ]    The space created by overflow clip.
   const TransformPaintPropertyNode* PaintOffsetTranslation() const {
     return paint_offset_translation_.get();
   }
@@ -76,9 +69,6 @@ class CORE_EXPORT ObjectPaintProperties {
   const ScrollPaintPropertyNode* Scroll() const { return scroll_.get(); }
   const TransformPaintPropertyNode* ScrollTranslation() const {
     return scroll_translation_.get();
-  }
-  const TransformPaintPropertyNode* ScrollbarPaintOffset() const {
-    return scrollbar_paint_offset_.get();
   }
 
   // The hierarchy of the effect subtree created by a LayoutObject is as
@@ -159,7 +149,6 @@ class CORE_EXPORT ObjectPaintProperties {
   }
   bool ClearScroll() { return Clear(scroll_); }
   bool ClearScrollTranslation() { return Clear(scroll_translation_); }
-  bool ClearScrollbarPaintOffset() { return Clear(scrollbar_paint_offset_); }
 
   class UpdateResult {
    public:
@@ -203,10 +192,6 @@ class CORE_EXPORT ObjectPaintProperties {
         << "SVG elements cannot scroll so there should never be both a scroll "
            "translation and an SVG local to border box transform.";
     return Update(scroll_translation_, std::forward<Args>(args)...);
-  }
-  template <typename... Args>
-  UpdateResult UpdateScrollbarPaintOffset(Args&&... args) {
-    return Update(scrollbar_paint_offset_, std::forward<Args>(args)...);
   }
   template <typename... Args>
   UpdateResult UpdateEffect(Args&&... args) {
@@ -281,8 +266,6 @@ class CORE_EXPORT ObjectPaintProperties {
       cloned->scroll_ = scroll_->Clone();
     if (scroll_translation_)
       cloned->scroll_translation_ = scroll_translation_->Clone();
-    if (scrollbar_paint_offset_)
-      cloned->scrollbar_paint_offset_ = scrollbar_paint_offset_->Clone();
     return cloned;
   }
 #endif
@@ -334,7 +317,6 @@ class CORE_EXPORT ObjectPaintProperties {
   scoped_refptr<TransformPaintPropertyNode> svg_local_to_border_box_transform_;
   scoped_refptr<ScrollPaintPropertyNode> scroll_;
   scoped_refptr<TransformPaintPropertyNode> scroll_translation_;
-  scoped_refptr<TransformPaintPropertyNode> scrollbar_paint_offset_;
 };
 
 }  // namespace blink
