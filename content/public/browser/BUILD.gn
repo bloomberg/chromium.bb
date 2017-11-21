@@ -302,7 +302,6 @@ source_set("browser_sources") {
     "websocket_handshake_request_info.h",
     "webvr_service_provider.cc",
     "webvr_service_provider.h",
-    "worker_service.h",
     "zygote_handle_linux.h",
     "zygote_host_linux.h",
   ]

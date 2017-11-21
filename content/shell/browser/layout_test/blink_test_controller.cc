@@ -49,11 +49,11 @@
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/worker_service.h"
 #include "content/public/common/associated_interface_provider.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/test/layouttest_support.h"
 #include "content/shell/browser/layout_test/devtools_protocol_test_bindings.h"
 #include "content/shell/browser/layout_test/layout_test_bluetooth_chooser_factory.h"
 #include "content/shell/browser/layout_test/layout_test_content_browser_client.h"
@@ -787,7 +787,7 @@ void BlinkTestController::OnTestFinished() {
 }
 
 void BlinkTestController::OnAllServiceWorkersCleared() {
-  WorkerService::GetInstance()->TerminateAllWorkersForTesting(
+  TerminateAllSharedWorkersForTesting(
       base::BindOnce(&BlinkTestController::OnAllSharedWorkersDestroyed,
                      base::Unretained(this)));
 }

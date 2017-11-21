@@ -32,10 +32,6 @@ bool IsShuttingDown(RenderProcessHost* host) {
 
 }  // namespace
 
-WorkerService* WorkerService::GetInstance() {
-  return SharedWorkerServiceImpl::GetInstance();
-}
-
 SharedWorkerServiceImpl* SharedWorkerServiceImpl::GetInstance() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // OK to just leak the instance.
