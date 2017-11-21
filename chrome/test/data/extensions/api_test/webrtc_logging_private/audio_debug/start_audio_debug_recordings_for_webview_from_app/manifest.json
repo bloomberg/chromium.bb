@@ -11,5 +11,9 @@
       "scripts": ["test.js"]
     }
   },
-  "permissions": ["webrtcLoggingPrivate", "webview"]
+  "permissions": [
+    "webrtcLoggingPrivate",
+    "webrtcLoggingPrivate.audioDebug",
+    "webview"
+  ]
 }
