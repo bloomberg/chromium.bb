@@ -70,7 +70,6 @@ class WebState;
 //       info.totalBytes,
 //       info.MIMEType);
 //   );
-//   task->Start(GetURLFetcherFileWriter(info.fileName));
 // }
 // - (void)applicationWillTerminate:(UIApplication *)application {
 //   for (DownloadTask* task : self.downloadTasks) {
@@ -96,14 +95,12 @@ class DownloadController {
   // from DownloadTask, which was suspended when the application has been
   // terminated. In order to resume the download, clients must persist all
   // DownloadTask data for each unfinished download on disk.
-  // Callers do not own the returned pointer and must not hold on it.
-  virtual DownloadTask* CreateDownloadTask(
-      const WebState* web_state,
-      NSString* identifier,
-      const GURL& original_url,
-      const std::string& content_disposition,
-      int64_t total_bytes,
-      const std::string& mime_type) = 0;
+  virtual void CreateDownloadTask(const WebState* web_state,
+                                  NSString* identifier,
+                                  const GURL& original_url,
+                                  const std::string& content_disposition,
+                                  int64_t total_bytes,
+                                  const std::string& mime_type) = 0;
 
   // Sets DownloadControllerDelegate. Clients must set the delegate to null in
   // DownloadControllerDelegate::OnDownloadControllerDestroyed().
