@@ -55,6 +55,7 @@ extern const base::Feature kUIExperimentSwapTitleAndUrl;
 extern const base::Feature kUIExperimentVerticalLayout;
 extern const base::Feature kUIExperimentVerticalMargin;
 extern const base::Feature kSpeculativeServiceWorkerStartOnQueryInput;
+extern const base::Feature kBreakWordsAtUnderscores;
 
 #if defined(OS_IOS)
 extern const base::Feature kZeroSuggestProviderIOS;

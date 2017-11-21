@@ -75,11 +75,28 @@ TEST_F(InMemoryURLIndexTypesTest, StaticFunctions) {
   EXPECT_TRUE(IntArraysEqual(expected_starts_c, arraysize(expected_starts_c),
                              actual_starts_c));
 
-  // Test String16SetFromString16
-  base::string16 string_d(base::ASCIIToUTF16(
-      "http://web.google.com/search Google Web Search"));
+  base::string16 string_d(
+      base::UTF8ToUTF16("http://www.google.com/frammy_the_brammy"));
   WordStarts actual_starts_d;
-  String16Set string_set = String16SetFromString16(string_d, &actual_starts_d);
+  string_vec =
+      String16VectorFromString16(string_d, false, true, &actual_starts_d);
+  ASSERT_EQ(7U, string_vec.size());
+  EXPECT_EQ(UTF8ToUTF16("http"), string_vec[0]);
+  EXPECT_EQ(UTF8ToUTF16("www"), string_vec[1]);
+  EXPECT_EQ(UTF8ToUTF16("google"), string_vec[2]);
+  EXPECT_EQ(UTF8ToUTF16("com"), string_vec[3]);
+  EXPECT_EQ(UTF8ToUTF16("frammy"), string_vec[4]);
+  EXPECT_EQ(UTF8ToUTF16("the"), string_vec[5]);
+  EXPECT_EQ(UTF8ToUTF16("brammy"), string_vec[6]);
+  size_t expected_starts_d[] = {0, 7, 11, 18, 22, 29, 33};
+  EXPECT_TRUE(IntArraysEqual(expected_starts_d, arraysize(expected_starts_d),
+                             actual_starts_d));
+
+  // Test String16SetFromString16
+  base::string16 string_e(base::ASCIIToUTF16(
+      "http://web.google.com/search Google Web Search"));
+  WordStarts actual_starts_e;
+  String16Set string_set = String16SetFromString16(string_e, &actual_starts_e);
   EXPECT_EQ(5U, string_set.size());
   // See if we got the words we expected.
   EXPECT_TRUE(string_set.find(UTF8ToUTF16("com")) != string_set.end());
@@ -87,9 +104,9 @@ TEST_F(InMemoryURLIndexTypesTest, StaticFunctions) {
   EXPECT_TRUE(string_set.find(UTF8ToUTF16("http")) != string_set.end());
   EXPECT_TRUE(string_set.find(UTF8ToUTF16("search")) != string_set.end());
   EXPECT_TRUE(string_set.find(UTF8ToUTF16("web")) != string_set.end());
-  size_t expected_starts_d[] = {0, 7, 11, 18, 22, 29, 36, 40};
-  EXPECT_TRUE(IntArraysEqual(expected_starts_d, arraysize(expected_starts_d),
-                             actual_starts_d));
+  size_t expected_starts_e[] = {0, 7, 11, 18, 22, 29, 36, 40};
+  EXPECT_TRUE(IntArraysEqual(expected_starts_e, arraysize(expected_starts_e),
+                             actual_starts_e));
 
   // Test SortMatches and DeoverlapMatches.
   TermMatches matches_e;

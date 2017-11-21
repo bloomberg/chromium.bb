@@ -1302,54 +1302,52 @@ TEST_F(InMemoryURLIndexTest, CalculateWordStartsOffsets) {
     size_t cursor_position;
     const size_t expected_word_starts_offsets_size;
     const size_t expected_word_starts_offsets[3];
-  } test_cases[] = {
-    /* No punctuations, only cursor position change. */
-    { "ABCD", kInvalid, 1, {0, kInvalid, kInvalid} },
-    { "abcd", 0,        1, {0, kInvalid, kInvalid} },
-    { "AbcD", 1,        2, {0, 0, kInvalid} },
-    { "abcd", 4,        1, {0, kInvalid, kInvalid} },
+  } test_cases[] = {/* No punctuations, only cursor position change. */
+                    {"ABCD", kInvalid, 1, {0, kInvalid, kInvalid}},
+                    {"abcd", 0, 1, {0, kInvalid, kInvalid}},
+                    {"AbcD", 1, 2, {0, 0, kInvalid}},
+                    {"abcd", 4, 1, {0, kInvalid, kInvalid}},
 
-    /* Starting with punctuation. */
-    { ".abcd",  kInvalid, 1, {1, kInvalid, kInvalid} },
-    { ".abcd",  0,        1, {1, kInvalid, kInvalid} },
-    { "!abcd",  1,        2, {1, 0, kInvalid} },
-    { "::abcd", 1,        2, {1, 1, kInvalid} },
-    { ":abcd",  5,        1, {1, kInvalid, kInvalid} },
+                    /* Starting with punctuation. */
+                    {".abcd", kInvalid, 1, {1, kInvalid, kInvalid}},
+                    {".abcd", 0, 1, {1, kInvalid, kInvalid}},
+                    {"!abcd", 1, 2, {1, 0, kInvalid}},
+                    {"::abcd", 1, 2, {1, 1, kInvalid}},
+                    {":abcd", 5, 1, {1, kInvalid, kInvalid}},
 
-    /* Ending with punctuation. */
-    { "abcd://", kInvalid, 1, {0, kInvalid, kInvalid} },
-    { "ABCD://", 0,        1, {0, kInvalid, kInvalid} },
-    { "abcd://", 1,        2, {0, 0, kInvalid} },
-    { "abcd://", 4,        2, {0, 3, kInvalid} },
-    { "abcd://", 7,        1, {0, kInvalid, kInvalid} },
+                    /* Ending with punctuation. */
+                    {"abcd://", kInvalid, 1, {0, kInvalid, kInvalid}},
+                    {"ABCD://", 0, 1, {0, kInvalid, kInvalid}},
+                    {"abcd://", 1, 2, {0, 0, kInvalid}},
+                    {"abcd://", 4, 2, {0, 3, kInvalid}},
+                    {"abcd://", 7, 1, {0, kInvalid, kInvalid}},
 
-    /* Punctuation in the middle. */
-    { "ab.cd", kInvalid, 1, {0, kInvalid, kInvalid} },
-    { "ab.cd", 0,        1, {0, kInvalid, kInvalid} },
-    { "ab!cd", 1,        2, {0, 0, kInvalid} },
-    { "AB.cd", 2,        2, {0, 1, kInvalid} },
-    { "AB.cd", 3,        2, {0, 0, kInvalid} },
-    { "ab:cd", 5,        1, {0, kInvalid, kInvalid} },
+                    /* Punctuation in the middle. */
+                    {"ab.cd", kInvalid, 1, {0, kInvalid, kInvalid}},
+                    {"ab.cd", 0, 1, {0, kInvalid, kInvalid}},
+                    {"ab!cd", 1, 2, {0, 0, kInvalid}},
+                    {"AB.cd", 2, 2, {0, 1, kInvalid}},
+                    {"AB.cd", 3, 2, {0, 0, kInvalid}},
+                    {"ab:cd", 5, 1, {0, kInvalid, kInvalid}},
 
-    /* Hyphenation */
-    { "Ab-cd", kInvalid, 1, {0, kInvalid, kInvalid} },
-    { "ab-cd", 0,        1, {0, kInvalid, kInvalid} },
-    { "-abcd", 0,        1, {1, kInvalid, kInvalid} },
-    { "-abcd", 1,        2, {1, 0, kInvalid} },
-    { "abcd-", 2,        2, {0, 0, kInvalid} },
-    { "abcd-", 4,        2, {0, 1, kInvalid} },
-    { "ab-cd", 5,        1, {0, kInvalid, kInvalid} },
+                    /* Hyphenation */
+                    {"Ab-cd", kInvalid, 1, {0, kInvalid, kInvalid}},
+                    {"ab-cd", 0, 1, {0, kInvalid, kInvalid}},
+                    {"-abcd", 0, 1, {1, kInvalid, kInvalid}},
+                    {"-abcd", 1, 2, {1, 0, kInvalid}},
+                    {"abcd-", 2, 2, {0, 0, kInvalid}},
+                    {"abcd-", 4, 2, {0, 1, kInvalid}},
+                    {"ab-cd", 5, 1, {0, kInvalid, kInvalid}},
 
-    /* Whitespace */
-    { "Ab cd",  kInvalid, 2, {0, 0, kInvalid} },
-    { "ab cd",  0,        2, {0, 0, kInvalid} },
-    { " abcd",  0,        1, {0, kInvalid, kInvalid} },
-    { " abcd",  1,        1, {0, kInvalid, kInvalid} },
-    { "abcd ",  2,        2, {0, 0, kInvalid} },
-    { "abcd :", 4,        2, {0, 1, kInvalid} },
-    { "abcd :", 5,        2, {0, 1, kInvalid} },
-    { "abcd :", 2,        3, {0, 0, 1} }
-  };
+                    /* Whitespace */
+                    {"Ab cd", kInvalid, 2, {0, 0, kInvalid}},
+                    {"ab cd", 0, 2, {0, 0, kInvalid}},
+                    {" abcd", 0, 1, {0, kInvalid, kInvalid}},
+                    {" abcd", 1, 1, {0, kInvalid, kInvalid}},
+                    {"abcd ", 2, 2, {0, 0, kInvalid}},
+                    {"abcd :", 4, 2, {0, 1, kInvalid}},
+                    {"abcd :", 5, 2, {0, 1, kInvalid}},
+                    {"abcd :", 2, 3, {0, 0, 1}}};
 
   for (size_t i = 0; i < arraysize(test_cases); ++i) {
     SCOPED_TRACE(testing::Message()
@@ -1363,6 +1361,46 @@ TEST_F(InMemoryURLIndexTest, CalculateWordStartsOffsets) {
     WordStarts lower_terms_to_word_starts_offsets;
     URLIndexPrivateData::CalculateWordStartsOffsets(
         lower_terms, &lower_terms_to_word_starts_offsets);
+
+    // Verify against expectations.
+    EXPECT_EQ(test_cases[i].expected_word_starts_offsets_size,
+              lower_terms_to_word_starts_offsets.size());
+    for (size_t j = 0; j < test_cases[i].expected_word_starts_offsets_size;
+         ++j) {
+      EXPECT_EQ(test_cases[i].expected_word_starts_offsets[j],
+                lower_terms_to_word_starts_offsets[j]);
+    }
+  }
+}
+
+TEST_F(InMemoryURLIndexTest, CalculateWordStartsOffsetsUnderscore) {
+  const struct {
+    const char* search_string;
+    size_t cursor_position;
+    const size_t expected_word_starts_offsets_size;
+    const size_t expected_word_starts_offsets[3];
+  } test_cases[] = {/* No punctuations, only cursor position change. */
+                    /* Underscore */
+                    {"Ab_cd", kInvalid, 1, {0, kInvalid, kInvalid}},
+                    {"ab_cd", 0, 1, {0, kInvalid, kInvalid}},
+                    {"_abcd", 0, 1, {1, kInvalid, kInvalid}},
+                    {"_abcd", 1, 2, {1, 0, kInvalid}},
+                    {"abcd_", 2, 2, {0, 0, kInvalid}},
+                    {"abcd_", 4, 2, {0, 1, kInvalid}},
+                    {"ab_cd", 5, 1, {0, kInvalid, kInvalid}}};
+
+  for (size_t i = 0; i < arraysize(test_cases); ++i) {
+    SCOPED_TRACE(testing::Message()
+                 << "search_string = " << test_cases[i].search_string
+                 << ", cursor_position = " << test_cases[i].cursor_position);
+
+    base::string16 lower_string;
+    String16Vector lower_terms;
+    StringToTerms(test_cases[i].search_string, test_cases[i].cursor_position,
+                  &lower_string, &lower_terms);
+    WordStarts lower_terms_to_word_starts_offsets;
+    URLIndexPrivateData::CalculateWordStartsOffsets(
+        lower_terms, true, &lower_terms_to_word_starts_offsets);
 
     // Verify against expectations.
     EXPECT_EQ(test_cases[i].expected_word_starts_offsets_size,
