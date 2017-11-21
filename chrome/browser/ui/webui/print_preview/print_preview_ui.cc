@@ -292,13 +292,9 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
                              IDS_PRINT_PREVIEW_DESTINATION_COUNT);
   source->AddLocalizedString("recentDestinationsTitle",
                              IDS_PRINT_PREVIEW_RECENT_DESTINATIONS_TITLE);
-  source->AddLocalizedString("localDestinationsTitle",
-                             IDS_PRINT_PREVIEW_LOCAL_DESTINATIONS_TITLE);
-  source->AddLocalizedString("cloudDestinationsTitle",
-                             IDS_PRINT_PREVIEW_CLOUD_DESTINATIONS_TITLE);
+  source->AddLocalizedString("printDestinationsTitle",
+                             IDS_PRINT_PREVIEW_PRINT_DESTINATIONS_TITLE);
   source->AddLocalizedString("manage", IDS_PRINT_PREVIEW_MANAGE);
-  source->AddLocalizedString("setupCloudPrinters",
-                             IDS_PRINT_PREVIEW_SETUP_CLOUD_PRINTERS);
   source->AddLocalizedString("changeDestination",
                              IDS_PRINT_PREVIEW_CHANGE_DESTINATION);
   source->AddLocalizedString("offlineForYear",

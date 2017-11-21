@@ -84,6 +84,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_util.h"
 #else  // !defined(OS_CHROMEOS)
+#include "chrome/browser/ui/webui/settings/printing_handler.h"
 #include "chrome/browser/ui/webui/settings/settings_default_browser_handler.h"
 #include "chrome/browser/ui/webui/settings/settings_manage_profile_handler.h"
 #include "chrome/browser/ui/webui/settings/system_handler.h"
@@ -185,6 +186,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
   AddSettingsPageUIHandler(base::MakeUnique<DefaultBrowserHandler>(web_ui));
   AddSettingsPageUIHandler(base::MakeUnique<ManageProfileHandler>(profile));
   AddSettingsPageUIHandler(base::MakeUnique<SystemHandler>());
+  AddSettingsPageUIHandler(base::MakeUnique<PrintingHandler>());
 #endif
 
   content::WebUIDataSource* html_source =

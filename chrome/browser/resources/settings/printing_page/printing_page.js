@@ -45,6 +45,12 @@ Polymer({
   },
   // </if>
 
+  // <if expr="not chromeos">
+  onTapLocalPrinters_: function() {
+    settings.PrintingBrowserProxyImpl.getInstance().openSystemPrintDialog();
+  },
+  // </if>
+
   /** @private */
   onTapCloudPrinters_: function() {
     settings.navigateTo(settings.routes.CLOUD_PRINTERS);

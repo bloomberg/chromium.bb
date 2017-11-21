@@ -4,7 +4,7 @@
 
 /**
  * @fileoverview A helper object used from the "CUPS printing" section to
- * interact with the browser.
+ * interact with the browser. Used only on Chrome OS.
  */
 
 /**

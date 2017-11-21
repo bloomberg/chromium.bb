@@ -113,7 +113,7 @@ TEST_F('PrintPreviewDestinationSearchTest', 'Select', function() {
           print_preview.DestinationConnectionStatus.ONLINE);
 
       // Add the destination to the list.
-      destinationSearch.localList_.updateDestinations([dest]);
+      destinationSearch.printList_.updateDestinations([dest]);
 
       // Select destination.
       if (cr.isChromeOS) {
@@ -218,8 +218,8 @@ TEST_F('PrintPreviewDestinationSearchTest', 'Select', function() {
       cloudDest.capabilities = getCaps();
 
       // Place destination in the local list as happens for Kiosk printers.
-      destinationSearch_.localList_.updateDestinations([cloudDest]);
-      var dest = destinationSearch_.localList_.getDestinationItem(printerId);
+      destinationSearch_.printList_.updateDestinations([cloudDest]);
+      var dest = destinationSearch_.printList_.getDestinationItem(printerId);
       // Simulate a click.
       dest.onActivate_();
 

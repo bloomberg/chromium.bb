@@ -10,6 +10,9 @@
 <if expr="chromeos">
 <link rel="import" href="cups_printers.html">
 </if>
+<if expr="not chromeos">
+<link rel="import" href="printing_browser_proxy.html">
+</if>
 
 <dom-module id="settings-printing-page">
   <template>
@@ -23,6 +26,14 @@
           <div class="start">$i18n{cupsPrintersTitle}</div>
           <button class="subpage-arrow" is="paper-icon-button-light"
               aria-label="$i18n{cupsPrintersTitle}"></button>
+        </div>
+</if>
+<if expr="not chromeos">
+        <div class="settings-box first"
+            on-tap="onTapLocalPrinters_" actionable>
+          <div class="start">$i18n{localPrintersTitle}</div>
+          <button class="subpage-arrow" is="paper-icon-button-light"
+              aria-label="$i18n{localPrintersTitle}"></button>
         </div>
 </if>
         <div id="cloudPrinters" class="settings-box"

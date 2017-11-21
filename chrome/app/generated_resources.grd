@@ -6195,17 +6195,11 @@ I don't think this site should be blocked!
         <message name="IDS_PRINT_PREVIEW_RECENT_DESTINATIONS_TITLE" desc="Title of the section of recently used print destinations.">
           Recent Destinations
         </message>
-        <message name="IDS_PRINT_PREVIEW_LOCAL_DESTINATIONS_TITLE" desc="Title of the section of local print destinations.">
-          Local Destinations
-        </message>
-        <message name="IDS_PRINT_PREVIEW_CLOUD_DESTINATIONS_TITLE" desc="Title of the section of cloud print destinations.">
-          Google Cloud Print
+        <message name="IDS_PRINT_PREVIEW_PRINT_DESTINATIONS_TITLE" desc="Title of the section of print destinations.">
+          Print Destinations
         </message>
         <message name="IDS_PRINT_PREVIEW_MANAGE" desc="Text of link to manage printers.">
           Manage...
-        </message>
-        <message name="IDS_PRINT_PREVIEW_SETUP_CLOUD_PRINTERS" desc="Text of link to set up cloud printers.">
-          Set up to add printers…
         </message>
         <message name="IDS_PRINT_PREVIEW_CHANGE_DESTINATION" desc="Label on button to change print destination." meaning="Label text">
           Change...

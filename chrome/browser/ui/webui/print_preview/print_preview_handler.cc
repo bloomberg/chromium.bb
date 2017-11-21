@@ -40,6 +40,7 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/webui/print_preview/pdf_printer_handler.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
@@ -51,6 +52,7 @@
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/webui_url_constants.h"
 #include "components/cloud_devices/common/cloud_device_description.h"
 #include "components/cloud_devices/common/cloud_devices_urls.h"
 #include "components/cloud_devices/common/printer_description.h"
@@ -76,7 +78,6 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
-#include "chrome/common/url_constants.h"
 #include "chromeos/printing/printer_configuration.h"
 #endif
 
@@ -398,6 +399,8 @@ PrintPreviewHandler::PrintPreviewHandler()
 }
 
 PrintPreviewHandler::~PrintPreviewHandler() {
+  UMA_HISTOGRAM_COUNTS("PrintPreview.ManagePrinters",
+                       manage_printers_dialog_request_count_);
   UnregisterForGaiaCookieChanges();
 }
 
@@ -429,12 +432,9 @@ void PrintPreviewHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("getAccessToken",
       base::Bind(&PrintPreviewHandler::HandleGetAccessToken,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("manageCloudPrinters",
-      base::Bind(&PrintPreviewHandler::HandleManageCloudPrint,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("manageLocalPrinters",
-      base::Bind(&PrintPreviewHandler::HandleManagePrinters,
-                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "managePrinters", base::Bind(&PrintPreviewHandler::HandleManagePrinters,
+                                   base::Unretained(this)));
   web_ui()->RegisterMessageCallback("closePrintPreviewDialog",
       base::Bind(&PrintPreviewHandler::HandleClosePreviewDialog,
                  base::Unretained(this)));
@@ -629,8 +629,6 @@ void PrintPreviewHandler::HandleGetPreview(const base::ListValue* args) {
 }
 
 void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
-  ReportStats();
-
   // Record the number of times the user requests to regenerate preview data
   // before printing.
   UMA_HISTOGRAM_COUNTS("PrintPreview.RegeneratePreviewRequest.BeforePrint",
@@ -881,16 +879,11 @@ void PrintPreviewHandler::HandleGetAccessToken(const base::ListValue* args) {
   token_service_->RequestToken(type, callback_id);
 }
 
-void PrintPreviewHandler::HandleManageCloudPrint(
-    const base::ListValue* args) {
-  GURL manage_url(cloud_devices::GetCloudPrintRelativeURL("manage.html"));
-  std::string user;
-  if (!args->GetString(0, &user))
-    return;
-  if (!user.empty())
-    manage_url = net::AppendQueryParameter(manage_url, "authuser", user);
+void PrintPreviewHandler::HandleManagePrinters(const base::ListValue* args) {
+  GURL local_printers_manage_url(
+      chrome::GetSettingsUrl(chrome::kPrintingSettingsSubPage));
   preview_web_contents()->OpenURL(
-      content::OpenURLParams(manage_url, content::Referrer(),
+      content::OpenURLParams(local_printers_manage_url, content::Referrer(),
                              WindowOpenDisposition::NEW_FOREGROUND_TAB,
                              ui::PAGE_TRANSITION_LINK, false));
 }
@@ -898,7 +891,7 @@ void PrintPreviewHandler::HandleManageCloudPrint(
 #if BUILDFLAG(ENABLE_BASIC_PRINT_DIALOG)
 void PrintPreviewHandler::HandleShowSystemDialog(
     const base::ListValue* /*args*/) {
-  ReportStats();
+  manage_printers_dialog_request_count_++;
   ReportUserActionHistogram(FALLBACK_TO_ADVANCED_SETTINGS_DIALOG);
 
   WebContents* initiator = GetInitiator();
@@ -915,34 +908,14 @@ void PrintPreviewHandler::HandleShowSystemDialog(
 }
 #endif
 
-void PrintPreviewHandler::HandleManagePrinters(
-    const base::ListValue* /*args*/) {
-  ++manage_printers_dialog_request_count_;
-#if defined(OS_CHROMEOS)
-  GURL local_printers_manage_url(chrome::kChromeUIMdCupsSettingsURL);
-  preview_web_contents()->OpenURL(
-      content::OpenURLParams(local_printers_manage_url, content::Referrer(),
-                             WindowOpenDisposition::NEW_FOREGROUND_TAB,
-                             ui::PAGE_TRANSITION_LINK, false));
-#else
-  printing::PrinterManagerDialog::ShowPrinterManagerDialog();
-#endif
-}
-
 void PrintPreviewHandler::HandleClosePreviewDialog(
     const base::ListValue* /*args*/) {
-  ReportStats();
   ReportUserActionHistogram(CANCEL);
 
   // Record the number of times the user requests to regenerate preview data
   // before cancelling.
   UMA_HISTOGRAM_COUNTS("PrintPreview.RegeneratePreviewRequest.BeforeCancel",
                        regenerate_preview_request_count_);
-}
-
-void PrintPreviewHandler::ReportStats() {
-  UMA_HISTOGRAM_COUNTS("PrintPreview.ManagePrinters",
-                       manage_printers_dialog_request_count_);
 }
 
 void PrintPreviewHandler::GetNumberFormatAndMeasurementSystem(
