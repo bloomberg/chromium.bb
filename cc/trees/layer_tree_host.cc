@@ -192,7 +192,7 @@ LayerTreeHost::~LayerTreeHost() {
 
   // Fail any pending image decodes.
   for (auto& pair : pending_image_decodes_)
-    pair.second.Run(false);
+    std::move(pair.second).Run(false);
 
   if (proxy_) {
     DCHECK(task_runner_provider_->IsMainThread());
@@ -391,7 +391,7 @@ void LayerTreeHost::ImageDecodesFinished(
   for (const auto& pair : results) {
     auto it = pending_image_decodes_.find(pair.first);
     DCHECK(it != pending_image_decodes_.end());
-    it->second.Run(pair.second);
+    std::move(it->second).Run(pair.second);
     pending_image_decodes_.erase(it);
   }
 }
@@ -1488,11 +1488,10 @@ gfx::ScrollOffset LayerTreeHost::GetScrollOffsetForAnimation(
   return property_trees()->scroll_tree.current_scroll_offset(element_id);
 }
 
-void LayerTreeHost::QueueImageDecode(
-    const PaintImage& image,
-    const base::Callback<void(bool)>& callback) {
+void LayerTreeHost::QueueImageDecode(const PaintImage& image,
+                                     base::OnceCallback<void(bool)> callback) {
   TRACE_EVENT0("cc", "LayerTreeHost::QueueImageDecode");
-  queued_image_decodes_.emplace_back(image, callback);
+  queued_image_decodes_.emplace_back(image, std::move(callback));
   SetNeedsCommit();
 }
 

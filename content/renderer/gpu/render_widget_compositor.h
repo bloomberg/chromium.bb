@@ -185,7 +185,7 @@ class CONTENT_EXPORT RenderWidgetCompositor
                                 bool shrink) override;
   void SetBrowserControlsShownRatio(float) override;
   void RequestDecode(const PaintImage& image,
-                     const base::Callback<void(bool)>& callback) override;
+                     base::OnceCallback<void(bool)> callback) override;
 
   void SetScrollBoundaryBehavior(
       const blink::WebScrollBoundaryBehavior&) override;

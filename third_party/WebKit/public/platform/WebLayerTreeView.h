@@ -223,7 +223,7 @@ class WebLayerTreeView {
   virtual void RequestBeginMainFrameNotExpected(bool new_state) {}
 
   virtual void RequestDecode(const PaintImage& image,
-                             const base::Callback<void(bool)>& callback) {}
+                             base::OnceCallback<void(bool)> callback) {}
 };
 
 }  // namespace blink
