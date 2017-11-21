@@ -1896,6 +1896,8 @@ const char kPowerMetricsIdleScreenDimCount[] =
 const char kPowerMetricsIdleScreenOffCount[] =
     "power.metrics.idle_screen_off_count";
 const char kPowerMetricsIdleSuspendCount[] = "power.metrics.idle_suspend_count";
+const char kPowerMetricsLidClosedSuspendCount[] =
+    "power.metrics.lid_closed_suspend_count";
 
 #endif  // defined(OS_CHROMEOS)
 

@@ -59,19 +59,22 @@ class PowerMetricsReporterTest : public testing::Test {
   }
 
   // Instructs |reporter_| to report daily metrics due to the passage of a day
-  // and verifies that it reports one sample for each of |dim_count|,
-  // |off_count|, and |suspend_count|.
-  void TriggerDailyEventAndVerifyHistograms(int dim_count,
-                                            int off_count,
-                                            int suspend_count) {
+  // and verifies that it reports one sample with each of the passed values.
+  void TriggerDailyEventAndVerifyHistograms(int idle_dim_count,
+                                            int idle_off_count,
+                                            int idle_suspend_count,
+                                            int lid_closed_suspend_count) {
     base::HistogramTester histogram_tester;
     TriggerDailyEvent(metrics::DailyEvent::IntervalType::DAY_ELAPSED);
     histogram_tester.ExpectUniqueSample(
-        PowerMetricsReporter::kIdleScreenDimCountName, dim_count, 1);
+        PowerMetricsReporter::kIdleScreenDimCountName, idle_dim_count, 1);
     histogram_tester.ExpectUniqueSample(
-        PowerMetricsReporter::kIdleScreenOffCountName, off_count, 1);
+        PowerMetricsReporter::kIdleScreenOffCountName, idle_off_count, 1);
     histogram_tester.ExpectUniqueSample(
-        PowerMetricsReporter::kIdleSuspendCountName, suspend_count, 1);
+        PowerMetricsReporter::kIdleSuspendCountName, idle_suspend_count, 1);
+    histogram_tester.ExpectUniqueSample(
+        PowerMetricsReporter::kLidClosedSuspendCountName,
+        lid_closed_suspend_count, 1);
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -91,7 +94,7 @@ TEST_F(PowerMetricsReporterTest, CountAndReportEvents) {
   SendNormalScreenIdleState();
   SendDimmedScreenIdleState();
   SendNormalScreenIdleState();
-  TriggerDailyEventAndVerifyHistograms(2, 1, 0);
+  TriggerDailyEventAndVerifyHistograms(2, 1, 0, 0);
 
   // The next day, report three dims, two screen-offs, and one idle suspend.
   SendDimmedScreenIdleState();
@@ -105,10 +108,16 @@ TEST_F(PowerMetricsReporterTest, CountAndReportEvents) {
   SendNormalScreenIdleState();
   SendDimmedScreenIdleState();
   SendNormalScreenIdleState();
-  TriggerDailyEventAndVerifyHistograms(3, 2, 1);
+  TriggerDailyEventAndVerifyHistograms(3, 2, 1, 0);
+
+  // The next day, report a single lid-closed suspend.
+  power_manager_client_.SendSuspendImminent(
+      power_manager::SuspendImminent_Reason_LID_CLOSED);
+  power_manager_client_.SendSuspendDone();
+  TriggerDailyEventAndVerifyHistograms(0, 0, 0, 1);
 
   // We should report zeros if a day passes without any events.
-  TriggerDailyEventAndVerifyHistograms(0, 0, 0);
+  TriggerDailyEventAndVerifyHistograms(0, 0, 0, 0);
 }
 
 TEST_F(PowerMetricsReporterTest, LoadInitialCountsFromPrefs) {
@@ -118,12 +127,12 @@ TEST_F(PowerMetricsReporterTest, LoadInitialCountsFromPrefs) {
   pref_service_.SetInteger(prefs::kPowerMetricsIdleScreenOffCount, 3);
   pref_service_.SetInteger(prefs::kPowerMetricsIdleSuspendCount, 2);
   ResetReporter();
-  TriggerDailyEventAndVerifyHistograms(5, 3, 2);
+  TriggerDailyEventAndVerifyHistograms(5, 3, 2, 0);
 
   // The previous report should've cleared the prefs, so a new reporter should
   // start out at zero.
   ResetReporter();
-  TriggerDailyEventAndVerifyHistograms(0, 0, 0);
+  TriggerDailyEventAndVerifyHistograms(0, 0, 0, 0);
 }
 
 TEST_F(PowerMetricsReporterTest, IgnoreUnchangedScreenIdleState) {
@@ -132,20 +141,15 @@ TEST_F(PowerMetricsReporterTest, IgnoreUnchangedScreenIdleState) {
   SendDimmedAndOffScreenIdleState();
   SendDimmedScreenIdleState();
   SendDimmedScreenIdleState();
-  TriggerDailyEventAndVerifyHistograms(1, 1, 0);
+  TriggerDailyEventAndVerifyHistograms(1, 1, 0, 0);
 }
 
 TEST_F(PowerMetricsReporterTest, IgnoreOtherSuspendReasons) {
-  // Non-idle-triggered suspends shouldn't be reported.
-  power_manager_client_.SendSuspendImminent(
-      power_manager::SuspendImminent_Reason_LID_CLOSED);
-  power_manager_client_.SendSuspendDone();
-  TriggerDailyEventAndVerifyHistograms(0, 0, 0);
-
+  // Suspends triggered for other reasons shouldn't be reported.
   power_manager_client_.SendSuspendImminent(
       power_manager::SuspendImminent_Reason_OTHER);
   power_manager_client_.SendSuspendDone();
-  TriggerDailyEventAndVerifyHistograms(0, 0, 0);
+  TriggerDailyEventAndVerifyHistograms(0, 0, 0, 0);
 }
 
 TEST_F(PowerMetricsReporterTest, IgnoreDailyEventFirstRun) {
@@ -156,6 +160,7 @@ TEST_F(PowerMetricsReporterTest, IgnoreDailyEventFirstRun) {
   tester.ExpectTotalCount(PowerMetricsReporter::kIdleScreenDimCountName, 0);
   tester.ExpectTotalCount(PowerMetricsReporter::kIdleScreenOffCountName, 0);
   tester.ExpectTotalCount(PowerMetricsReporter::kIdleSuspendCountName, 0);
+  tester.ExpectTotalCount(PowerMetricsReporter::kLidClosedSuspendCountName, 0);
 }
 
 TEST_F(PowerMetricsReporterTest, IgnoreDailyEventClockChanged) {
@@ -169,10 +174,11 @@ TEST_F(PowerMetricsReporterTest, IgnoreDailyEventClockChanged) {
   tester.ExpectTotalCount(PowerMetricsReporter::kIdleScreenDimCountName, 0);
   tester.ExpectTotalCount(PowerMetricsReporter::kIdleScreenOffCountName, 0);
   tester.ExpectTotalCount(PowerMetricsReporter::kIdleSuspendCountName, 0);
+  tester.ExpectTotalCount(PowerMetricsReporter::kLidClosedSuspendCountName, 0);
 
   // The existing stats should be cleared when the clock change notification is
   // received, so the next report should only contain zeros.
-  TriggerDailyEventAndVerifyHistograms(0, 0, 0);
+  TriggerDailyEventAndVerifyHistograms(0, 0, 0, 0);
 }
 
 }  // namespace chromeos
