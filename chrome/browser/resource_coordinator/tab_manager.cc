@@ -1012,7 +1012,15 @@ bool TabManager::IsMediaTab(WebContents* contents) const {
     return true;
   }
 
-  auto delta = NowTicks() - GetWebContentsData(contents)->LastAudioChangeTime();
+  auto last_audio_change_time =
+      GetWebContentsData(contents)->LastAudioChangeTime();
+
+  if (last_audio_change_time.is_null()) {
+    // The tab was never audible.
+    return false;
+  }
+
+  auto delta = NowTicks() - last_audio_change_time;
   return delta < TimeDelta::FromSeconds(kAudioProtectionTimeSeconds);
 }
 
