@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/buildflag_header.gni")
 import("//build/config/linux/pangocairo/pangocairo.gni")
 import("//build/config/linux/pkg_config.gni")
 
@@ -17,9 +16,4 @@ if (use_pangocairo) {
       "freetype",
     ]
   }
-}
-
-buildflag_header("features") {
-  header = "features.h"
-  flags = [ "USE_PANGOCAIRO=$use_pangocairo" ]
 }
