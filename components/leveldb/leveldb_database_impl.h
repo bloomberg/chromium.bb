@@ -6,6 +6,7 @@
 #define COMPONENTS_LEVELDB_LEVELDB_DATABASE_IMPL_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/trace_event/memory_dump_provider.h"
 #include "base/unguessable_token.h"
@@ -40,6 +41,9 @@ class LevelDBDatabaseImpl : public mojom::LevelDBDatabase,
   void Get(const std::vector<uint8_t>& key, GetCallback callback) override;
   void GetPrefixed(const std::vector<uint8_t>& key_prefix,
                    GetPrefixedCallback callback) override;
+  void CopyPrefixed(const std::vector<uint8_t>& source_key_prefix,
+                    const std::vector<uint8_t>& destination_key_prefix,
+                    CopyPrefixedCallback callback) override;
   void GetSnapshot(GetSnapshotCallback callback) override;
   void ReleaseSnapshot(const base::UnguessableToken& snapshot) override;
   void GetFromSnapshot(const base::UnguessableToken& snapshot,
@@ -75,6 +79,11 @@ class LevelDBDatabaseImpl : public mojom::LevelDBDatabase,
 
   leveldb::Status DeletePrefixedHelper(const leveldb::Slice& key_prefix,
                                        leveldb::WriteBatch* batch);
+
+  leveldb::Status CopyPrefixedHelper(
+      const std::vector<uint8_t>& source_key_prefix,
+      const std::vector<uint8_t>& destination_key_prefix,
+      leveldb::WriteBatch* batch);
 
   std::unique_ptr<leveldb::Env> environment_;
   std::unique_ptr<leveldb::Cache> cache_;

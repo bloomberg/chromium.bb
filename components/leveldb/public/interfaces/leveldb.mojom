@@ -20,12 +20,16 @@ enum DatabaseError {
 enum BatchOperationType {
   PUT_KEY,
   DELETE_KEY,
-  DELETE_PREFIXED_KEY
+  DELETE_PREFIXED_KEY,
+  // |key| is source prefixed key, |value| is destination prefixed key.
+  COPY_PREFIXED_KEY
 };
 
+// TODO(dmurph): change to a union type for value population.
 struct BatchedOperation {
   BatchOperationType type;
   array<uint8> key;
+  // Populated for operations of types PUT_KEY and COPY_PREFIXED_KEY.
   array<uint8>? value;
 };
 
@@ -110,12 +114,24 @@ interface LevelDBDatabase {
   DeletePrefixed(array<uint8> key_prefix) => (DatabaseError status);
 
   // Atomically performs all |operations|.
+  // The DELETE_PREFIXED_KEY applies to all keys that exist before these
+  // operations execute. If a 'put' operation precedes a delete prefix, then it
+  // will only be deleted if it was a previously-populated key in the database.
+  // The COPY_PREFIXED_KEY operations will always ignore all other changes in
+  // the operations batch. It will not copy records that were inserted earlier
+  // in the operations list.
   Write(array<BatchedOperation> operations) => (DatabaseError status);
 
   Get(array<uint8> key) => (DatabaseError status, array<uint8> value);
 
   GetPrefixed(array<uint8> key_prefix)
       => (DatabaseError status, array<KeyValue> data);
+
+  // Copies all data from the source prefix to the destination prefix. Useful
+  // for deep copies.
+  CopyPrefixed(array<uint8> source_key_prefix,
+               array<uint8> destination_key_prefix)
+      => (DatabaseError status);
 
   // Snapshots -------------------------------------------------------------
 
