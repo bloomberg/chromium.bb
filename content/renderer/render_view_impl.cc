@@ -1435,7 +1435,7 @@ WebView* RenderViewImpl::CreateView(WebLocalFrame* creator,
   return view->webview();
 }
 
-WebWidget* RenderViewImpl::CreatePopupMenu(blink::WebPopupType popup_type) {
+WebWidget* RenderViewImpl::CreatePopup(blink::WebPopupType popup_type) {
   RenderWidget* widget = RenderWidget::CreateForPopup(this, compositor_deps_,
                                                       popup_type, screen_info_);
   if (!widget)

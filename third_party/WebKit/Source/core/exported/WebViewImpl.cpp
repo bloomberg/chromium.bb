@@ -1534,8 +1534,8 @@ PagePopup* WebViewImpl::OpenPagePopup(PagePopupClient* client) {
     HidePopups();
   DCHECK(!page_popup_);
 
-  WebWidget* popup_widget = client_->CreatePopupMenu(kWebPopupTypePage);
-  // createPopupMenu returns nullptr if this renderer process is about to die.
+  WebWidget* popup_widget = client_->CreatePopup(kWebPopupTypePage);
+  // CreatePopup returns nullptr if this renderer process is about to die.
   if (!popup_widget)
     return nullptr;
   page_popup_ = ToWebPagePopupImpl(popup_widget);

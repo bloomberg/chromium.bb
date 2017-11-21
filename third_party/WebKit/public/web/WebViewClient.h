@@ -77,11 +77,11 @@ class WebViewClient : protected WebWidgetClient {
                               WebNavigationPolicy policy,
                               bool suppress_opener,
                               WebSandboxFlags) {
-    return 0;
+    return nullptr;
   }
 
   // Create a new popup WebWidget.
-  virtual WebWidget* CreatePopupMenu(WebPopupType) { return 0; }
+  virtual WebWidget* CreatePopup(WebPopupType) { return nullptr; }
 
   // Returns the session storage namespace id associated with this WebView.
   virtual int64_t GetSessionStorageNamespaceId() { return 0; }
@@ -201,7 +201,7 @@ class WebViewClient : protected WebWidgetClient {
   // Speech --------------------------------------------------------------
 
   // Access the embedder API for speech recognition services.
-  virtual WebSpeechRecognizer* SpeechRecognizer() { return 0; }
+  virtual WebSpeechRecognizer* SpeechRecognizer() { return nullptr; }
 
   // Zoom ----------------------------------------------------------------
 
