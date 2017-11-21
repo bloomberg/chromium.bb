@@ -46,13 +46,17 @@ void EasyUnlockRemoveKeysOperation::OnGetSystemSalt(
 }
 
 void EasyUnlockRemoveKeysOperation::RemoveKey() {
-  cryptohome::Identification id(user_context_.GetAccountId());
   const Key* const auth_key = user_context_.GetKey();
-  cryptohome::Authorization auth(auth_key->GetSecret(), auth_key->GetLabel());
-
-  // TODO(xiyuan): Use ListKeyEx and delete by label instead of by index.
+  cryptohome::RemoveKeyRequest request;
+  request.mutable_key()->mutable_data()->set_label(
+      EasyUnlockKeyManager::GetKeyLabel(key_index_));
+  // TODO(crbug.com/558497): Use ListKeyEx and delete by label instead of by
+  // index.
   cryptohome::HomedirMethods::GetInstance()->RemoveKeyEx(
-      id, auth, EasyUnlockKeyManager::GetKeyLabel(key_index_),
+      cryptohome::Identification((user_context_.GetAccountId())),
+      cryptohome::CreateAuthorizationRequest(auth_key->GetLabel(),
+                                             auth_key->GetSecret()),
+      request,
       base::Bind(&EasyUnlockRemoveKeysOperation::OnKeyRemoved,
                  weak_ptr_factory_.GetWeakPtr()));
 }

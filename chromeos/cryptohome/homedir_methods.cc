@@ -139,15 +139,11 @@ class HomedirMethodsImpl : public HomedirMethods {
   }
 
   void RemoveKeyEx(const Identification& id,
-                   const Authorization& auth,
-                   const std::string& label,
+                   const AuthorizationRequest& auth,
+                   const RemoveKeyRequest& request,
                    const Callback& callback) override {
-    cryptohome::RemoveKeyRequest request;
-
-    request.mutable_key()->mutable_data()->set_label(label);
-
     DBusThreadManager::Get()->GetCryptohomeClient()->RemoveKeyEx(
-        id, CreateAuthorizationRequest(auth.label, auth.key), request,
+        id, auth, request,
         base::BindOnce(&HomedirMethodsImpl::OnBaseReplyCallback,
                        weak_ptr_factory_.GetWeakPtr(), callback));
   }
