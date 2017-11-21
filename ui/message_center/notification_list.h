@@ -110,12 +110,12 @@ class MESSAGE_CENTER_EXPORT NotificationList {
   // Returns the recent notifications of the priority higher then LOW,
   // that have not been shown as a popup. kMaxVisiblePopupNotifications are
   // used to limit the number of notifications for the DEFAULT priority.
-  // It also stores the list of notifications which are blocked by |blockers|
-  // to |blocked|. |blocked| can be NULL if the caller doesn't care which
-  // notifications are blocked.
+  // It also stores the list of notification ids which is blocked by |blockers|
+  // to |blocked_ids|. |blocked_ids| can be NULL if the caller doesn't care
+  // which notifications are blocked.
   PopupNotifications GetPopupNotifications(
       const NotificationBlockers& blockers,
-      std::list<const Notification*>* blocked_ids);
+      std::list<std::string>* blocked_ids);
 
   // Marks a specific popup item as shown. Set |mark_notification_as_read| to
   // true in case marking the notification as read too.

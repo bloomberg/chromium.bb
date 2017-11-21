@@ -108,26 +108,24 @@ void MessageCenterImpl::RemoveNotificationBlocker(
 void MessageCenterImpl::OnBlockingStateChanged(NotificationBlocker* blocker) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!iterating_);
-  std::list<const Notification*> blocked;
+  std::list<std::string> blocked_ids;
   NotificationList::PopupNotifications popups =
-      notification_list_->GetPopupNotifications(blockers_, &blocked);
+      notification_list_->GetPopupNotifications(blockers_, &blocked_ids);
 
-  // Close already displayed pop-ups that are blocked now.
-  for (const auto* notification : blocked) {
+  for (const auto& id : blocked_ids) {
     // Do not call MessageCenterImpl::MarkSinglePopupAsShown() directly here
     // just for performance reason. MessageCenterImpl::MarkSinglePopupAsShown()
     // calls NotificationList::MarkSinglePopupAsShown(), but the whole cache
     // will be recreated below.
-    if (notification->IsRead())
-      notification_list_->MarkSinglePopupAsShown(notification->id(), true);
+    notification_list_->MarkSinglePopupAsShown(id, true);
   }
   visible_notifications_ =
       notification_list_->GetVisibleNotifications(blockers_);
 
-  for (const auto* notification : blocked) {
+  for (const auto& id : blocked_ids) {
     internal::ScopedNotificationsIterationLock lock(this);
     for (auto& observer : observer_list_)
-      observer.OnNotificationUpdated(notification->id());
+      observer.OnNotificationUpdated(id);
   }
   for (auto& observer : observer_list_)
     observer.OnBlockingStateChanged(blocker);
