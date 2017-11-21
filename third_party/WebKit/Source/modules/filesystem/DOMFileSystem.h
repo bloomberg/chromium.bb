@@ -45,7 +45,7 @@
 namespace blink {
 
 class DirectoryEntry;
-class BlobCallback;
+class FileCallback;
 class FileEntry;
 class FileWriterCallback;
 
@@ -81,7 +81,7 @@ class MODULES_EXPORT DOMFileSystem final
   bool HasPendingActivity() const final;
 
   void CreateWriter(const FileEntry*, FileWriterCallback*, ErrorCallbackBase*);
-  void CreateFile(const FileEntry*, BlobCallback*, ErrorCallbackBase*);
+  void CreateFile(const FileEntry*, FileCallback*, ErrorCallbackBase*);
 
   // Schedule a callback. This should not cross threads (should be called on the
   // same context thread).

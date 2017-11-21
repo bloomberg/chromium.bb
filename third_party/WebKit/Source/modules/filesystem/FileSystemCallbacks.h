@@ -43,16 +43,16 @@ namespace blink {
 
 class DOMFileSystemBase;
 class DirectoryReaderBase;
-class BlobCallback;
 class EntriesCallback;
 class EntryCallback;
 class ErrorCallback;
+class ExecutionContext;
+class FileCallback;
 class FileMetadata;
 class FileSystemCallback;
 class FileWriterBase;
 class FileWriterBaseCallback;
 class MetadataCallback;
-class ExecutionContext;
 class VoidCallback;
 
 // Passed to DOMFileSystem implementations that may report errors. Subclasses
@@ -231,7 +231,7 @@ class SnapshotFileCallback final : public FileSystemCallbacksBase {
   static std::unique_ptr<AsyncFileSystemCallbacks> Create(DOMFileSystemBase*,
                                                           const String& name,
                                                           const KURL&,
-                                                          BlobCallback*,
+                                                          FileCallback*,
                                                           ErrorCallbackBase*,
                                                           ExecutionContext*);
   void DidCreateSnapshotFile(const FileMetadata&,
@@ -241,12 +241,12 @@ class SnapshotFileCallback final : public FileSystemCallbacksBase {
   SnapshotFileCallback(DOMFileSystemBase*,
                        const String& name,
                        const KURL&,
-                       BlobCallback*,
+                       FileCallback*,
                        ErrorCallbackBase*,
                        ExecutionContext*);
   String name_;
   KURL url_;
-  Persistent<BlobCallback> success_callback_;
+  Persistent<FileCallback> success_callback_;
 };
 
 class VoidCallbacks final : public FileSystemCallbacksBase {

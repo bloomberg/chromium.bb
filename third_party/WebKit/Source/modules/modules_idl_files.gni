@@ -130,6 +130,7 @@ modules_idl_files =
           "filesystem/EntryCallback.idl",
           "filesystem/EntrySync.idl",
           "filesystem/ErrorCallback.idl",
+          "filesystem/FileCallback.idl",
           "filesystem/FileEntry.idl",
           "filesystem/FileEntrySync.idl",
           "filesystem/FileSystemCallback.idl",
