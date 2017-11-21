@@ -17,6 +17,9 @@ class CORE_EXPORT StyleValueFactory {
   STATIC_ONLY(StyleValueFactory);
 
  public:
+  static CSSStyleValueVector FromString(CSSPropertyID,
+                                        const String&,
+                                        SecureContextMode);
   static CSSStyleValueVector CssValueToStyleValueVector(CSSPropertyID,
                                                         const CSSValue&);
   // If you don't have complex CSS properties, use this one.
