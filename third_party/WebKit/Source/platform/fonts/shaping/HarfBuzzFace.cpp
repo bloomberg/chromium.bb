@@ -333,13 +333,14 @@ static_assert(
     "size.");
 
 hb_font_t* HarfBuzzFace::GetScaledFont(
-    scoped_refptr<UnicodeRangeSet> range_set) const {
+    scoped_refptr<UnicodeRangeSet> range_set,
+    VerticalLayoutCallbacks vertical_layout) const {
   PaintFont paint_font;
   platform_data_->SetupPaintFont(&paint_font);
   paint_font.SetTextEncoding(SkPaint::kGlyphID_TextEncoding);
   harf_buzz_font_data_->range_set_ = std::move(range_set);
-  harf_buzz_font_data_->UpdateFallbackMetricsAndScale(*platform_data_,
-                                                      paint_font.ToSkPaint());
+  harf_buzz_font_data_->UpdateFallbackMetricsAndScale(
+      *platform_data_, paint_font.ToSkPaint(), vertical_layout);
 
   int scale =
       SkiaTextMetrics::SkiaScalarToHarfBuzzPosition(platform_data_->size());
