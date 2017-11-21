@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -253,6 +254,18 @@ std::unique_ptr<base::DictionaryValue> ConvertLogoMetadataToDict(
   result->SetString("altText", meta.alt_text);
   result->SetString("mimeType", meta.mime_type);
   result->SetString("animatedUrl", meta.animated_url.spec());
+
+  // If support for interactive Doodles is disabled, treat them as simple
+  // Doodles instead and use the full page URL as the target URL.
+  if (meta.type == search_provider_logos::LogoType::INTERACTIVE &&
+      !base::GetFieldTrialParamByFeatureAsBool(features::kDoodlesOnLocalNtp,
+                                               "local_ntp_interactive_doodles",
+                                               /*default_value=*/true)) {
+    result->SetString(
+        "type", LogoTypeToString(search_provider_logos::LogoType::SIMPLE));
+    result->SetString("onClickUrl", meta.full_page_url.spec());
+  }
+
   return result;
 }
 
