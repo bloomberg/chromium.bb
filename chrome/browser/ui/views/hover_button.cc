@@ -63,7 +63,7 @@ HoverButton::HoverButton(views::ButtonListener* button_listener,
       title_(nullptr),
       subtitle_(nullptr) {
   DCHECK(button_listener);
-  SetFocusForPlatform();
+  SetFocusBehavior(FocusBehavior::ALWAYS);
   SetFocusPainter(nullptr);
 
   const int vert_spacing = ChromeLayoutProvider::Get()->GetDistanceMetric(
