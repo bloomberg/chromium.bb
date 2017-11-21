@@ -23,7 +23,9 @@ struct SyncToken;
 
 namespace media {
 
+class ContentDecryptionModule;
 class DecoderBuffer;
+class MojoCdmServiceContext;
 class MojoDecoderBufferReader;
 class MojoMediaClient;
 class MojoMediaLog;
@@ -33,7 +35,9 @@ class VideoFrame;
 // and wraps a media::VideoDecoder.
 class MojoVideoDecoderService : public mojom::VideoDecoder {
  public:
-  explicit MojoVideoDecoderService(MojoMediaClient* mojo_media_client);
+  explicit MojoVideoDecoderService(
+      MojoMediaClient* mojo_media_client,
+      base::WeakPtr<MojoCdmServiceContext> mojo_cdm_service_context);
   ~MojoVideoDecoderService() final;
 
   // mojom::VideoDecoder implementation
@@ -43,6 +47,7 @@ class MojoVideoDecoderService : public mojom::VideoDecoder {
                  mojom::CommandBufferIdPtr command_buffer_id) final;
   void Initialize(const VideoDecoderConfig& config,
                   bool low_delay,
+                  int32_t cdm_id,
                   InitializeCallback callback) final;
   void Decode(mojom::DecoderBufferPtr buffer, DecodeCallback callback) final;
   void Reset(ResetCallback callback) final;
@@ -55,7 +60,9 @@ class MojoVideoDecoderService : public mojom::VideoDecoder {
   // running mojom::VideoDecoder callbacks after connection error happens and
   // |this| is deleted. It's not safe to run the callbacks after a connection
   // error.
-  void OnDecoderInitialized(InitializeCallback callback, bool success);
+  void OnDecoderInitialized(InitializeCallback callback,
+                            scoped_refptr<ContentDecryptionModule> cdm,
+                            bool success);
   void OnDecoderRead(DecodeCallback callback,
                      scoped_refptr<DecoderBuffer> buffer);
   void OnDecoderDecoded(DecodeCallback callback, DecodeStatus status);
@@ -79,6 +86,13 @@ class MojoVideoDecoderService : public mojom::VideoDecoder {
   std::map<base::UnguessableToken, MojoMediaClient::ReleaseMailboxCB>
       release_mailbox_cbs_;
   ProvideOverlayInfoCB provide_overlay_info_cb_;
+
+  // A helper object required to get CDM from CDM id.
+  base::WeakPtr<MojoCdmServiceContext> mojo_cdm_service_context_;
+
+  // Hold a reference to the CDM to keep it alive for the lifetime of the
+  // |decoder_|. The |cdm_| owns the CdmContext which is passed to |decoder_|.
+  scoped_refptr<ContentDecryptionModule> cdm_;
 
   base::WeakPtr<MojoVideoDecoderService> weak_this_;
   base::WeakPtrFactory<MojoVideoDecoderService> weak_factory_;
