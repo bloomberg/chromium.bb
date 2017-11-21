@@ -272,9 +272,12 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
   std::unique_ptr<CredentialManager> credentialManager_;
 
   __weak JsPasswordManager* passwordJsManager_;
-  web::WebState* webState_;               // weak
 
   AccountSelectFillData fillData_;
+
+  // The WebState this instance is observing. Will be null after
+  // -webStateDestroyed: has been called.
+  web::WebState* webState_;
 
   // Bridge to observe WebState from Objective-C.
   std::unique_ptr<web::WebStateObserverBridge> webStateObserverBridge_;
@@ -284,7 +287,7 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
 
   // True indicates that a request for credentials has been sent to the password
   // store.
-  BOOL sent_request_to_store_;
+  BOOL sentRequestToStore_;
 
   // User credential waiting to be displayed in autosign-in snackbar, once tab
   // becomes active.
@@ -308,9 +311,9 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
 - (instancetype)initWithWebState:(web::WebState*)webState
                           client:(std::unique_ptr<PasswordManagerClient>)
                                      passwordManagerClient {
-  DCHECK(webState);
   self = [super init];
   if (self) {
+    DCHECK(webState);
     webState_ = webState;
     if (passwordManagerClient)
       passwordManagerClient_ = std::move(passwordManagerClient);
@@ -320,11 +323,12 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
     passwordManagerDriver_.reset(new IOSChromePasswordManagerDriver(self));
 
     passwordJsManager_ = base::mac::ObjCCastStrict<JsPasswordManager>(
-        [webState->GetJSInjectionReceiver()
+        [webState_->GetJSInjectionReceiver()
             instanceOfClass:[JsPasswordManager class]]);
-    webStateObserverBridge_.reset(
-        new web::WebStateObserverBridge(webState, self));
-    sent_request_to_store_ = NO;
+    webStateObserverBridge_ =
+        std::make_unique<web::WebStateObserverBridge>(self);
+    webState_->AddObserver(webStateObserverBridge_.get());
+    sentRequestToStore_ = NO;
 
     if (base::FeatureList::IsEnabled(features::kCredentialManager)) {
       credentialManager_ = base::MakeUnique<CredentialManager>(
@@ -338,7 +342,7 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
       // |originURL| and |isInteracting| aren't used.
       return [weakSelf handleScriptCommand:JSON];
     });
-    webState->AddScriptCommandCallback(callback, kCommandPrefix);
+    webState_->AddScriptCommandCallback(callback, kCommandPrefix);
   }
   return self;
 }
@@ -350,6 +354,12 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
 
 - (void)dealloc {
   [self detach];
+
+  if (webState_) {
+    webState_->RemoveObserver(webStateObserverBridge_.get());
+    webStateObserverBridge_.reset();
+    webState_ = nullptr;
+  }
 }
 
 - (ios::ChromeBrowserState*)browserState {
@@ -359,16 +369,17 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
 }
 
 - (const GURL&)lastCommittedURL {
-  if (!webStateObserverBridge_ || !webStateObserverBridge_->web_state())
-    return GURL::EmptyGURL();
-  return webStateObserverBridge_->web_state()->GetLastCommittedURL();
+  return webState_ ? webState_->GetLastCommittedURL() : GURL::EmptyGURL();
 }
 
 - (void)detach {
-  if (webState_)
+  if (webState_) {
     webState_->RemoveScriptCommandCallback(kCommandPrefix);
-  webState_ = nullptr;
-  webStateObserverBridge_.reset();
+    webState_->RemoveObserver(webStateObserverBridge_.get());
+    webStateObserverBridge_.reset();
+    webState_ = nullptr;
+  }
+
   passwordManagerDriver_.reset();
   passwordManager_.reset();
   passwordManagerClient_.reset();
@@ -413,6 +424,7 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
 // If Tab was shown, and there is a pending PasswordForm, display autosign-in
 // notification.
 - (void)webStateWasShown:(web::WebState*)webState {
+  DCHECK_EQ(webState_, webState);
   if (pendingAutoSigninPasswordForm_) {
     [self showAutosigninNotification:std::move(pendingAutoSigninPasswordForm_)];
     pendingAutoSigninPasswordForm_.reset();
@@ -421,13 +433,15 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
 
 // If Tab was hidden, hide auto sign-in notification.
 - (void)webStateWasHidden:(web::WebState*)webState {
+  DCHECK_EQ(webState_, webState);
   [self hideAutosigninNotification];
 }
 
 - (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
+  DCHECK_EQ(webState_, webState);
   // Clear per-page state.
   fillData_.Reset();
-  sent_request_to_store_ = NO;
+  sentRequestToStore_ = NO;
 
   // Retrieve the identity of the page. In case the page might be malicous,
   // returns early.
@@ -454,6 +468,7 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
 - (void)webState:(web::WebState*)webState
     didSubmitDocumentWithFormNamed:(const std::string&)formName
                      userInitiated:(BOOL)userInitiated {
+  DCHECK_EQ(webState_, webState);
   __weak PasswordController* weakSelf = self;
   // This code is racing against the new page loading and will not get the
   // password form data if the page has changed. In most cases this code wins
@@ -471,20 +486,22 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
 }
 
 - (void)webStateDestroyed:(web::WebState*)webState {
+  DCHECK_EQ(webState_, webState);
   _isWebStateDestroyed = YES;
   [self detach];
 }
+
+#pragma mark - Private methods.
 
 - (void)findPasswordFormsWithCompletionHandler:
     (void (^)(const std::vector<autofill::PasswordForm>&))completionHandler {
   DCHECK(completionHandler);
 
-  if (!webStateObserverBridge_ || !webStateObserverBridge_->web_state())
+  if (!webState_)
     return;
 
   GURL pageURL;
-  if (!GetPageURLAndCheckTrustLevel(webStateObserverBridge_->web_state(),
-                                    &pageURL)) {
+  if (!GetPageURLAndCheckTrustLevel(webState_, &pageURL)) {
     return;
   }
 
@@ -550,12 +567,11 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
                            completionHandler {
   DCHECK(completionHandler);
 
-  if (!webStateObserverBridge_ || !webStateObserverBridge_->web_state())
+  if (!webState_)
     return;
 
   GURL pageURL;
-  if (!GetPageURLAndCheckTrustLevel(webStateObserverBridge_->web_state(),
-                                    &pageURL)) {
+  if (!GetPageURLAndCheckTrustLevel(webState_, &pageURL)) {
     completionHandler(NO, autofill::PasswordForm());
     return;
   }
@@ -616,15 +632,12 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
   if (!forms.empty()) {
     // Notify web_state about password forms, so that this can be taken into
     // account for the security state.
-    if (webStateObserverBridge_) {
-      web::WebState* web_state = webStateObserverBridge_->web_state();
-      if (web_state && !web::IsOriginSecure(web_state->GetLastCommittedURL())) {
-        InsecureInputTabHelper::GetOrCreateForWebState(web_state)
-            ->DidShowPasswordFieldInInsecureContext();
-      }
+    if (webState_ && !web::IsOriginSecure(webState_->GetLastCommittedURL())) {
+      InsecureInputTabHelper::GetOrCreateForWebState(webState_)
+          ->DidShowPasswordFieldInInsecureContext();
     }
 
-    sent_request_to_store_ = YES;
+    sentRequestToStore_ = YES;
     // Invoke the password manager callback to autofill password forms
     // on the loaded page.
     passwordManager_->OnPasswordFormsParsed(passwordManagerDriver_.get(),
@@ -655,7 +668,7 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
                                   webState:(web::WebState*)webState
                          completionHandler:
                              (SuggestionsAvailableCompletion)completion {
-  if (!sent_request_to_store_ && [type isEqual:@"focus"]) {
+  if (!sentRequestToStore_ && [type isEqual:@"focus"]) {
     [self findPasswordFormsAndSendThemToPasswordStore];
     completion(NO);
     return;
@@ -730,7 +743,7 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
 // TODO(crbug.com/435048): Animate appearance.
 - (void)showAutosigninNotification:
     (std::unique_ptr<autofill::PasswordForm>)formSignedIn {
-  if (!webStateObserverBridge_ || !webStateObserverBridge_->web_state())
+  if (!webState_)
     return;
 
   // If a notification is already being displayed, hides the old one, then shows
@@ -974,7 +987,7 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
 
 - (void)showInfoBarForForm:(std::unique_ptr<PasswordFormManager>)form
                infoBarType:(PasswordInfoBarType)type {
-  if (!webStateObserverBridge_ || !webStateObserverBridge_->web_state())
+  if (!webState_)
     return;
 
   bool isSmartLockBrandingEnabled = false;
@@ -986,7 +999,7 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
         password_bubble_experiment::IsSmartLockUser(sync_service);
   }
   infobars::InfoBarManager* infoBarManager =
-      InfoBarManagerImpl::FromWebState(webStateObserverBridge_->web_state());
+      InfoBarManagerImpl::FromWebState(webState_);
 
   switch (type) {
     case PasswordInfoBarType::SAVE:
