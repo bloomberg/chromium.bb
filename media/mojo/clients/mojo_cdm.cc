@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/cdm_context.h"
@@ -24,6 +25,15 @@
 #include "url/origin.h"
 
 namespace media {
+
+namespace {
+
+void RecordConnectionError(bool connection_error_happened) {
+  UMA_HISTOGRAM_BOOLEAN("Media.EME.MojoCdm.ConnectionError",
+                        connection_error_happened);
+}
+
+}  // namespace
 
 // static
 void MojoCdm::Create(
@@ -110,6 +120,9 @@ void MojoCdm::InitializeCdm(const std::string& key_system,
     return;
   }
 
+  // Report a false event here as a baseline.
+  RecordConnectionError(false);
+
   // Otherwise, set an error handler to catch the connection error.
   remote_cdm_.set_connection_error_with_reason_handler(
       base::Bind(&MojoCdm::OnConnectionError, base::Unretained(this)));
@@ -126,6 +139,8 @@ void MojoCdm::OnConnectionError(uint32_t custom_reason,
   LOG(ERROR) << "Remote CDM connection error: custom_reason=" << custom_reason
              << ", description=\"" << description << "\"";
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  RecordConnectionError(true);
 
   remote_cdm_.reset();
 

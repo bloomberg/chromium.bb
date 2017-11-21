@@ -47,6 +47,9 @@ MojoDecryptor::MojoDecryptor(mojom::DecryptorPtr remote_decryptor)
   mojo_decoder_buffer_reader_ = MojoDecoderBufferReader::Create(
       DemuxerStream::VIDEO, &remote_producer_handle);
 
+  remote_decryptor_.set_connection_error_with_reason_handler(
+      base::Bind(&MojoDecryptor::OnConnectionError, base::Unretained(this)));
+
   // Pass the other end of each pipe to |remote_decryptor_|.
   remote_decryptor_->Initialize(std::move(remote_consumer_handle),
                                 std::move(remote_producer_handle));
@@ -242,6 +245,16 @@ void MojoDecryptor::OnVideoDecoded(VideoDecodeOnceCB video_decode_cb,
   }
 
   std::move(video_decode_cb).Run(status, video_frame);
+}
+
+void MojoDecryptor::OnConnectionError(uint32_t custom_reason,
+                                      const std::string& description) {
+  DVLOG(1) << "Remote CDM connection error: custom_reason=" << custom_reason
+           << ", description=\"" << description << "\"";
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  // All pending callbacks will be fired automatically because they are wrapped
+  // in ScopedCallbackRunner.
 }
 
 }  // namespace media
