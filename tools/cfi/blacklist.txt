@@ -188,17 +188,17 @@ src:*third_party/WebKit/Source/platform/wtf/*
 # v8/src/intl.cc
 fun:*LocaleConvertCase*
 
-src:*third_party/boringssl/*
-src:*third_party/freetype/*
-src:*third_party/harfbuzz-ng/*
+# Casts away const qualifier
+# third_party/boringssl/src/crypto/pem/pem_lib.c
+fun:*PEM_ASN1_write*
+
 src:*third_party/libsrtp/*
 src:*third_party/libvpx/*
 src:*third_party/libxml/*
 src:*third_party/pdfium/third_party/lcms/*
-src:*third_party/mesa/*
 src:*third_party/sqlite/*
 src:*third_party/webrtc/*
-src:*third_party/yasm/*
+
 src:*v8/*
 
 ######### Uncategorized

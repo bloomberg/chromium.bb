@@ -26,6 +26,7 @@ source_set("mesa_headers") {
 # dirs appear before the system ones on Windows. This is necessary so that
 # #include "GL/gl.h" means to include Mesa's, not the system's.
 config("mesa_internal_config") {
+  configs = [ "//build/config/sanitizers:cfi_icall_generalize_pointers" ]
   cflags = []
   defines = [
     "MAPI_ABI_HEADER=\"glapi_mapi_tmp_shared.h\"",
