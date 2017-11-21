@@ -45,9 +45,11 @@ void ElementIntersectionObserverData::RemoveObservation(
 void ElementIntersectionObserverData::ActivateValidIntersectionObservers(
     Node& node) {
   for (auto& observer : intersection_observers_) {
-    observer->TrackingDocument()
-        .EnsureIntersectionObserverController()
-        .AddTrackedObserver(*observer);
+    Document* document = observer->TrackingDocument();
+    if (!document)
+      continue;
+    document->EnsureIntersectionObserverController().AddTrackedObserver(
+        *observer);
   }
   for (auto& observation : intersection_observations_)
     observation.value->UpdateShouldReportRootBoundsAfterDomChange();

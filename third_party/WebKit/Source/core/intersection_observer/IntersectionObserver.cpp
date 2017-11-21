@@ -214,8 +214,8 @@ IntersectionObserver::IntersectionObserver(
   }
   if (root)
     root->EnsureIntersectionObserverData().AddObserver(*this);
-  TrackingDocument().EnsureIntersectionObserverController().AddTrackedObserver(
-      *this);
+  if (Document* document = TrackingDocument())
+    document->EnsureIntersectionObserverController().AddTrackedObserver(*this);
 }
 
 void IntersectionObserver::ClearWeakMembers(Visitor* visitor) {
@@ -230,13 +230,14 @@ bool IntersectionObserver::RootIsValid() const {
   return RootIsImplicit() || root();
 }
 
-Document& IntersectionObserver::TrackingDocument() const {
+Document* IntersectionObserver::TrackingDocument() const {
   if (RootIsImplicit()) {
-    DCHECK(delegate_->GetExecutionContext());
-    return *ToDocument(delegate_->GetExecutionContext());
+    if (!delegate_->GetExecutionContext())
+      return nullptr;
+    return ToDocument(delegate_->GetExecutionContext());
   }
   DCHECK(root());
-  return root()->GetDocument();
+  return &root()->GetDocument();
 }
 
 void IntersectionObserver::observe(Element* target,
