@@ -524,6 +524,7 @@ default_compiler_configs = [
   "//build/config/compiler:default_optimization",
   "//build/config/compiler:default_stack_frames",
   "//build/config/compiler:default_symbols",
+  "//build/config/compiler:no_exceptions",
   "//build/config/compiler:no_rtti",
   "//build/config/compiler:runtime_library",
   "//build/config/coverage:default_coverage",
@@ -545,7 +546,6 @@ if (current_os == "winrt_81" || current_os == "winrt_81_phone" ||
 }
 
 if (is_posix) {
-  default_compiler_configs += [ "//build/config/gcc:no_exceptions" ]
   if (current_os != "aix") {
     default_compiler_configs +=
         [ "//build/config/gcc:symbol_visibility_hidden" ]

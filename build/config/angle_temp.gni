@@ -5,5 +5,5 @@
 declare_args() {
   # This is a placeholder to enable a transation for ANGLE's build.
   # TOOD(jmadill): Remove this once transition is complete.
-  is_temp_angle = false
+  is_temp_angle = true
 }
