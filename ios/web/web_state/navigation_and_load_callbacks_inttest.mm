@@ -90,7 +90,7 @@ ACTION_P3(VerifyNewPageFinishedContext, web_state, url, context) {
   EXPECT_EQ(kExpectedMimeType, mime_type);
   NavigationManager* navigation_manager = web_state->GetNavigationManager();
   NavigationItem* item = navigation_manager->GetLastCommittedItem();
-  EXPECT_GT(item->GetTimestamp().ToInternalValue(), 0);
+  EXPECT_TRUE(!item->GetTimestamp().is_null());
   EXPECT_EQ(url, item->GetURL());
 }
 
@@ -174,7 +174,7 @@ ACTION_P4(VerifyPostFinishedContext,
   ASSERT_TRUE(web_state->IsLoading());
   NavigationManager* navigation_manager = web_state->GetNavigationManager();
   NavigationItem* item = navigation_manager->GetLastCommittedItem();
-  EXPECT_GT(item->GetTimestamp().ToInternalValue(), 0);
+  EXPECT_TRUE(!item->GetTimestamp().is_null());
   EXPECT_EQ(url, item->GetURL());
 }
 
@@ -222,7 +222,7 @@ ACTION_P5(VerifySameDocumentFinishedContext,
   EXPECT_FALSE((*context)->GetResponseHeaders());
   NavigationManager* navigation_manager = web_state->GetNavigationManager();
   NavigationItem* item = navigation_manager->GetLastCommittedItem();
-  EXPECT_GT(item->GetTimestamp().ToInternalValue(), 0);
+  EXPECT_TRUE(!item->GetTimestamp().is_null());
   EXPECT_EQ(url, item->GetURL());
 }
 
@@ -268,7 +268,7 @@ ACTION_P3(VerifyNewNativePageFinishedContext, web_state, url, context) {
   EXPECT_FALSE((*context)->GetResponseHeaders());
   NavigationManager* navigation_manager = web_state->GetNavigationManager();
   NavigationItem* item = navigation_manager->GetLastCommittedItem();
-  EXPECT_GT(item->GetTimestamp().ToInternalValue(), 0);
+  EXPECT_TRUE(!item->GetTimestamp().is_null());
   EXPECT_EQ(url, item->GetURL());
 }
 
@@ -325,7 +325,7 @@ ACTION_P4(VerifyReloadFinishedContext, web_state, url, context, is_web_page) {
   }
   NavigationManager* navigation_manager = web_state->GetNavigationManager();
   NavigationItem* item = navigation_manager->GetLastCommittedItem();
-  EXPECT_GT(item->GetTimestamp().ToInternalValue(), 0);
+  EXPECT_TRUE(!item->GetTimestamp().is_null());
   EXPECT_EQ(url, item->GetURL());
 }
 
@@ -366,9 +366,9 @@ using web::test::WaitForWebViewContainingText;
 // Test fixture for WebStateDelegate::ProvisionalNavigationStarted,
 // WebStateDelegate::DidFinishNavigation, WebStateDelegate::DidStartLoading and
 // WebStateDelegate::DidStopLoading integration tests.
-class NavigationCallbacksTest : public WebIntTest {
+class NavigationAndLoadCallbacksTest : public WebIntTest {
  public:
-  NavigationCallbacksTest() : scoped_observer_(&observer_) {}
+  NavigationAndLoadCallbacksTest() : scoped_observer_(&observer_) {}
 
   void SetUp() override {
     WebIntTest::SetUp();
@@ -397,11 +397,11 @@ class NavigationCallbacksTest : public WebIntTest {
   ScopedObserver<WebState, WebStateObserver> scoped_observer_;
   testing::InSequence callbacks_sequence_checker_;
 
-  DISALLOW_COPY_AND_ASSIGN(NavigationCallbacksTest);
+  DISALLOW_COPY_AND_ASSIGN(NavigationAndLoadCallbacksTest);
 };
 
 // Tests successful navigation to a new page.
-TEST_F(NavigationCallbacksTest, NewPageNavigation) {
+TEST_F(NavigationAndLoadCallbacksTest, NewPageNavigation) {
   const GURL url = HttpServer::MakeUrl("http://chromium.test");
   std::map<GURL, std::string> responses;
   responses[url] = "Chromium Test";
@@ -422,7 +422,7 @@ TEST_F(NavigationCallbacksTest, NewPageNavigation) {
 }
 
 // Tests failed navigation to a new page.
-TEST_F(NavigationCallbacksTest, FailedNavigation) {
+TEST_F(NavigationAndLoadCallbacksTest, FailedNavigation) {
   const GURL url = HttpServer::MakeUrl("unsupported://chromium.test");
 
   // Perform a navigation to url with unsupported scheme, which will fail.
@@ -442,7 +442,7 @@ TEST_F(NavigationCallbacksTest, FailedNavigation) {
 }
 
 // Tests web page reload navigation.
-TEST_F(NavigationCallbacksTest, WebPageReloadNavigation) {
+TEST_F(NavigationAndLoadCallbacksTest, WebPageReloadNavigation) {
   const GURL url = HttpServer::MakeUrl("http://chromium.test");
   std::map<GURL, std::string> responses;
   responses[url] = "Chromium Test";
@@ -482,7 +482,7 @@ TEST_F(NavigationCallbacksTest, WebPageReloadNavigation) {
 }
 
 // Tests user-initiated hash change.
-TEST_F(NavigationCallbacksTest, UserInitiatedHashChangeNavigation) {
+TEST_F(NavigationAndLoadCallbacksTest, UserInitiatedHashChangeNavigation) {
   const GURL url = HttpServer::MakeUrl("http://chromium.test");
   std::map<GURL, std::string> responses;
   responses[url] = "Chromium Test";
@@ -541,7 +541,7 @@ TEST_F(NavigationCallbacksTest, UserInitiatedHashChangeNavigation) {
 }
 
 // Tests renderer-initiated hash change.
-TEST_F(NavigationCallbacksTest, RendererInitiatedHashChangeNavigation) {
+TEST_F(NavigationAndLoadCallbacksTest, RendererInitiatedHashChangeNavigation) {
   const GURL url = HttpServer::MakeUrl("http://chromium.test");
   std::map<GURL, std::string> responses;
   responses[url] = "Chromium Test";
@@ -580,7 +580,7 @@ TEST_F(NavigationCallbacksTest, RendererInitiatedHashChangeNavigation) {
 }
 
 // Tests state change.
-TEST_F(NavigationCallbacksTest, StateNavigation) {
+TEST_F(NavigationAndLoadCallbacksTest, StateNavigation) {
   const GURL url = HttpServer::MakeUrl("http://chromium.test");
   std::map<GURL, std::string> responses;
   responses[url] = "Chromium Test";
@@ -633,7 +633,7 @@ TEST_F(NavigationCallbacksTest, StateNavigation) {
 }
 
 // Tests native content navigation.
-TEST_F(NavigationCallbacksTest, NativeContentNavigation) {
+TEST_F(NavigationAndLoadCallbacksTest, NativeContentNavigation) {
   GURL url(url::SchemeHostPort(kTestNativeContentScheme, "ui", 0).Serialize());
   NavigationContext* context = nullptr;
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
@@ -649,7 +649,7 @@ TEST_F(NavigationCallbacksTest, NativeContentNavigation) {
 }
 
 // Tests native content reload navigation.
-TEST_F(NavigationCallbacksTest, NativeContentReload) {
+TEST_F(NavigationAndLoadCallbacksTest, NativeContentReload) {
   GURL url(url::SchemeHostPort(kTestNativeContentScheme, "ui", 0).Serialize());
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _));
@@ -675,7 +675,7 @@ TEST_F(NavigationCallbacksTest, NativeContentReload) {
 }
 
 // Tests successful navigation to a new page with post HTTP method.
-TEST_F(NavigationCallbacksTest, UserInitiatedPostNavigation) {
+TEST_F(NavigationAndLoadCallbacksTest, UserInitiatedPostNavigation) {
   const GURL url = HttpServer::MakeUrl("http://chromium.test");
   std::map<GURL, std::string> responses;
   responses[url] = kTestPageText;
@@ -700,13 +700,13 @@ TEST_F(NavigationCallbacksTest, UserInitiatedPostNavigation) {
   // Load request using POST HTTP method.
   web::NavigationManager::WebLoadParams params(url);
   params.post_data.reset([@"foo" dataUsingEncoding:NSUTF8StringEncoding]);
-  params.extra_headers.reset(@{ @"Content-Type" : @"text/html" });
+  params.extra_headers.reset(@{@"Content-Type" : @"text/html"});
   LoadWithParams(params);
   ASSERT_TRUE(WaitForWebViewContainingText(web_state(), kTestPageText));
 }
 
 // Tests successful navigation to a new page with post HTTP method.
-TEST_F(NavigationCallbacksTest, RendererInitiatedPostNavigation) {
+TEST_F(NavigationAndLoadCallbacksTest, RendererInitiatedPostNavigation) {
   const GURL url = HttpServer::MakeUrl("http://chromium.test");
   const GURL action = HttpServer::MakeUrl("http://action.test");
   std::map<GURL, std::string> responses;
@@ -745,7 +745,7 @@ TEST_F(NavigationCallbacksTest, RendererInitiatedPostNavigation) {
 }
 
 // Tests successful reload of a page returned for post request.
-TEST_F(NavigationCallbacksTest, ReloadPostNavigation) {
+TEST_F(NavigationAndLoadCallbacksTest, ReloadPostNavigation) {
   const GURL url = HttpServer::MakeUrl("http://chromium.test");
   std::map<GURL, std::string> responses;
   const GURL action = HttpServer::MakeUrl("http://action.test");
@@ -802,7 +802,7 @@ TEST_F(NavigationCallbacksTest, ReloadPostNavigation) {
 }
 
 // Tests going forward to a page rendered from post response.
-TEST_F(NavigationCallbacksTest, ForwardPostNavigation) {
+TEST_F(NavigationAndLoadCallbacksTest, ForwardPostNavigation) {
   const GURL url = HttpServer::MakeUrl("http://chromium.test");
   std::map<GURL, std::string> responses;
   const GURL action = HttpServer::MakeUrl("http://action.test");
