@@ -6,69 +6,25 @@
 
 #include <windows.media.faceanalysis.h>
 
-#include "base/scoped_generic.h"
-#include "base/win/core_winrt_util.h"
-#include "base/win/scoped_hstring.h"
-#include "base/win/windows_version.h"
-#include "media/base/scoped_callback_runner.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
-#include "services/shape_detection/face_detection_provider_impl.h"
-
 namespace shape_detection {
 
-using base::win::ScopedHString;
-using base::win::GetActivationFactory;
-
-void FaceDetectionProviderImpl::CreateFaceDetection(
-    shape_detection::mojom::FaceDetectionRequest request,
-    shape_detection::mojom::FaceDetectorOptionsPtr options) {
-  auto impl = FaceDetectionImplWin::Create();
-  if (!impl)
-    return;
-
-  mojo::MakeStrongBinding(std::move(impl), std::move(request));
-}
-
-// static
-std::unique_ptr<FaceDetectionImplWin> FaceDetectionImplWin::Create() {
-  // FaceDetector class is only available in Win 10 onwards (v10.0.10240.0).
-  if (base::win::GetVersion() < base::win::VERSION_WIN10) {
-    DVLOG(1) << "FaceDetector not supported before Windows 10";
-    return nullptr;
-  }
-  // Loads functions dynamically at runtime to prevent library dependencies.
-  if (!(base::win::ResolveCoreWinRTDelayload() &&
-        ScopedHString::ResolveCoreWinRTStringDelayload())) {
-    DLOG(ERROR) << "Failed loading functions from combase.dll";
-    return nullptr;
-  }
-
-  Microsoft::WRL::ComPtr<IFaceDetectorStatics> factory;
-  const HRESULT hr = GetActivationFactory<
-      IFaceDetectorStatics,
-      RuntimeClass_Windows_Media_FaceAnalysis_FaceDetector>(&factory);
-  if (FAILED(hr)) {
-    DLOG(ERROR) << "IFaceDetectorStatics factory failed: "
-                << logging::SystemErrorCodeToString(hr);
-    return nullptr;
-  }
-
-  boolean is_supported = FALSE;
-  factory->get_IsSupported(&is_supported);
-  return (is_supported == FALSE)
-             ? nullptr
-             : std::make_unique<FaceDetectionImplWin>(std::move(factory));
-}
+base::OnceCallback<void(bool)> g_callback_for_testing;
 
 FaceDetectionImplWin::FaceDetectionImplWin(
-    Microsoft::WRL::ComPtr<IFaceDetectorStatics> factory)
-    : face_detector_factory_(std::move(factory)) {}
-
+    Microsoft::WRL::ComPtr<IFaceDetectorStatics> factory,
+    Microsoft::WRL::ComPtr<IFaceDetector> face_detector)
+    : face_detector_factory_(std::move(factory)),
+      face_detector_(std::move(face_detector)) {}
 FaceDetectionImplWin::~FaceDetectionImplWin() = default;
 
 void FaceDetectionImplWin::Detect(const SkBitmap& bitmap,
                                   DetectCallback callback) {
   DCHECK_EQ(kN32_SkColorType, bitmap.colorType());
+
+  if (g_callback_for_testing) {
+    std::move(g_callback_for_testing).Run(face_detector_ ? true : false);
+    std::move(callback).Run(std::vector<mojom::FaceDetectionResultPtr>());
+  }
 }
 
 }  // namespace shape_detection

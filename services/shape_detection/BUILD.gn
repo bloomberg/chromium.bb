@@ -28,10 +28,14 @@ source_set("lib") {
     ]
     libs = [ "QuartzCore.framework" ]
   } else if (is_win) {
+    sources -= [ "face_detection_provider_impl.h" ]
     sources += [
       "barcode_detection_impl.cc",
+      "detection_utils_win.h",
       "face_detection_impl_win.cc",
       "face_detection_impl_win.h",
+      "face_detection_provider_win.cc",
+      "face_detection_provider_win.h",
       "text_detection_impl.cc",
     ]
   } else {
@@ -124,6 +128,7 @@ source_set("tests") {
   deps = [
     ":lib",
     "//base",
+    "//base/test:test_support",
     "//skia",
     "//testing/gmock",
     "//testing/gtest",
