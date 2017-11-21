@@ -1,27 +1,27 @@
 This is a testharness.js-based test.
-FAIL Test AbsoluteOrientationSensor.quaternion return a four-element FrozenArray. assert_unreached: NotReadableError: Could not connect to a sensor Reached unreachable code
-FAIL Test RelativeOrientationSensor.quaternion return a four-element FrozenArray. assert_unreached: NotReadableError: Could not connect to a sensor Reached unreachable code
-FAIL Test AbsoluteOrientationSensor.populateMatrix() method works correctly. assert_unreached: NotReadableError: Could not connect to a sensor Reached unreachable code
-FAIL Test RelativeOrientationSensor.populateMatrix() method works correctly. assert_unreached: NotReadableError: Could not connect to a sensor Reached unreachable code
-FAIL AbsoluteOrientationSensor: Test that 'onreading' is called and sensor reading is valid assert_unreached: NotReadableError: Could not connect to a sensor Reached unreachable code
-FAIL AbsoluteOrientationSensor: sensor reading is correct assert_unreached: NotReadableError: Could not connect to a sensor Reached unreachable code
-FAIL AbsoluteOrientationSensor: sensor timestamp is updated when time passes assert_unreached: NotReadableError: Could not connect to a sensor Reached unreachable code
-FAIL AbsoluteOrientationSensor: Test that sensor can be successfully created and its states are correct. assert_unreached: NotReadableError: Could not connect to a sensor Reached unreachable code
-PASS AbsoluteOrientationSensor: sensor.start() returns undefined
-PASS AbsoluteOrientationSensor: no exception is thrown when calling start() on already started sensor
-PASS AbsoluteOrientationSensor: sensor.stop() returns undefined
-PASS AbsoluteOrientationSensor: no exception is thrown when calling stop() on already stopped sensor
+FAIL Test AbsoluteOrientationSensor.quaternion return a four-element FrozenArray. assert_equals: Expected reading event, but got error event instead expected "reading" but got "error"
+FAIL Test RelativeOrientationSensor.quaternion return a four-element FrozenArray. assert_equals: Expected reading event, but got error event instead expected "reading" but got "error"
+FAIL Test AbsoluteOrientationSensor.populateMatrix() method works correctly. assert_equals: Expected reading event, but got error event instead expected "reading" but got "error"
+FAIL Test RelativeOrientationSensor.populateMatrix() method works correctly. assert_equals: Expected reading event, but got error event instead expected "reading" but got "error"
+FAIL AbsoluteOrientationSensor: Test that 'onreading' is called and sensor reading is valid assert_equals: Expected reading event, but got error event instead expected "reading" but got "error"
+FAIL AbsoluteOrientationSensor: sensor reading is correct assert_equals: Expected reading event, but got error event instead expected "reading" but got "error"
+FAIL AbsoluteOrientationSensor: sensor timestamp is updated when time passes assert_equals: Expected reading event, but got error event instead expected "reading" but got "error"
+FAIL AbsoluteOrientationSensor: Test that sensor can be successfully created and its states are correct. assert_equals: Expected activate event, but got error event instead expected "activate" but got "error"
+FAIL AbsoluteOrientationSensor: sensor.start() returns undefined assert_equals: Expected activate event, but got error event instead expected "activate" but got "error"
+FAIL AbsoluteOrientationSensor: no exception is thrown when calling start() on already started sensor assert_equals: Expected activate event, but got error event instead expected "activate" but got "error"
+FAIL AbsoluteOrientationSensor: sensor.stop() returns undefined assert_equals: Expected activate event, but got error event instead expected "activate" but got "error"
+FAIL AbsoluteOrientationSensor: no exception is thrown when calling stop() on already stopped sensor assert_equals: Expected activate event, but got error event instead expected "activate" but got "error"
 PASS AbsoluteOrientationSensor: throw a 'SecurityError' when constructing sensor object within iframe
-FAIL AbsoluteOrientationSensor: sensor readings can not be fired on the background tab assert_unreached: NotReadableError: Could not connect to a sensor Reached unreachable code
-FAIL RelativeOrientationSensor: Test that 'onreading' is called and sensor reading is valid assert_unreached: NotReadableError: Could not connect to a sensor Reached unreachable code
-FAIL RelativeOrientationSensor: sensor reading is correct assert_unreached: NotReadableError: Could not connect to a sensor Reached unreachable code
-FAIL RelativeOrientationSensor: sensor timestamp is updated when time passes assert_unreached: NotReadableError: Could not connect to a sensor Reached unreachable code
-FAIL RelativeOrientationSensor: Test that sensor can be successfully created and its states are correct. assert_unreached: NotReadableError: Could not connect to a sensor Reached unreachable code
-PASS RelativeOrientationSensor: sensor.start() returns undefined
-PASS RelativeOrientationSensor: no exception is thrown when calling start() on already started sensor
-PASS RelativeOrientationSensor: sensor.stop() returns undefined
-PASS RelativeOrientationSensor: no exception is thrown when calling stop() on already stopped sensor
+FAIL AbsoluteOrientationSensor: sensor readings can not be fired on the background tab assert_equals: Expected reading event, but got error event instead expected "reading" but got "error"
+FAIL RelativeOrientationSensor: Test that 'onreading' is called and sensor reading is valid assert_equals: Expected reading event, but got error event instead expected "reading" but got "error"
+FAIL RelativeOrientationSensor: sensor reading is correct assert_equals: Expected reading event, but got error event instead expected "reading" but got "error"
+FAIL RelativeOrientationSensor: sensor timestamp is updated when time passes assert_equals: Expected reading event, but got error event instead expected "reading" but got "error"
+FAIL RelativeOrientationSensor: Test that sensor can be successfully created and its states are correct. assert_equals: Expected activate event, but got error event instead expected "activate" but got "error"
+FAIL RelativeOrientationSensor: sensor.start() returns undefined assert_equals: Expected activate event, but got error event instead expected "activate" but got "error"
+FAIL RelativeOrientationSensor: no exception is thrown when calling start() on already started sensor assert_equals: Expected activate event, but got error event instead expected "activate" but got "error"
+FAIL RelativeOrientationSensor: sensor.stop() returns undefined assert_equals: Expected activate event, but got error event instead expected "activate" but got "error"
+FAIL RelativeOrientationSensor: no exception is thrown when calling stop() on already stopped sensor assert_equals: Expected activate event, but got error event instead expected "activate" but got "error"
 PASS RelativeOrientationSensor: throw a 'SecurityError' when constructing sensor object within iframe
-FAIL RelativeOrientationSensor: sensor readings can not be fired on the background tab assert_unreached: NotReadableError: Could not connect to a sensor Reached unreachable code
+FAIL RelativeOrientationSensor: sensor readings can not be fired on the background tab assert_equals: Expected reading event, but got error event instead expected "reading" but got "error"
 Harness: the test ran to completion.
 
