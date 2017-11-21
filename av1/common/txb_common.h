@@ -17,13 +17,13 @@ extern const int16_t k_eob_offset_bits[12];
 int16_t get_eob_pos_token(int eob, int16_t *extra);
 int av1_get_eob_pos_ctx(TX_TYPE tx_type, int eob_token);
 
-extern const int16_t av1_coeff_band_4x4[16];
+extern const int8_t av1_coeff_band_4x4[16];
 
-extern const int16_t av1_coeff_band_8x8[64];
+extern const int8_t av1_coeff_band_8x8[64];
 
-extern const int16_t av1_coeff_band_16x16[256];
+extern const int8_t av1_coeff_band_16x16[256];
 
-extern const int16_t av1_coeff_band_32x32[1024];
+extern const int8_t av1_coeff_band_32x32[1024];
 
 typedef struct txb_ctx {
   int txb_skip_ctx;
