@@ -6,6 +6,7 @@
 #define StylePropertyMap_h
 
 #include "base/macros.h"
+#include "bindings/core/v8/css_style_value_or_string.h"
 #include "bindings/core/v8/v8_update_function.h"
 #include "core/css/cssom/StylePropertyMapReadonly.h"
 
@@ -20,22 +21,22 @@ class CORE_EXPORT StylePropertyMap : public StylePropertyMapReadonly {
  public:
   void set(const ExecutionContext*,
            const String& property_name,
-           CSSStyleValueOrCSSStyleValueSequenceOrString& item,
+           HeapVector<CSSStyleValueOrString>& values,
            ExceptionState&);
   void append(const ExecutionContext*,
               const String& property_name,
-              CSSStyleValueOrCSSStyleValueSequenceOrString& item,
+              HeapVector<CSSStyleValueOrString>& values,
               ExceptionState&);
   void remove(const String& property_name, ExceptionState&);
   void update(const String&, const V8UpdateFunction*) {}
 
   virtual void set(const ExecutionContext*,
                    CSSPropertyID,
-                   CSSStyleValueOrCSSStyleValueSequenceOrString& item,
+                   HeapVector<CSSStyleValueOrString>& values,
                    ExceptionState&) = 0;
   virtual void append(const ExecutionContext*,
                       CSSPropertyID,
-                      CSSStyleValueOrCSSStyleValueSequenceOrString& item,
+                      HeapVector<CSSStyleValueOrString>& values,
                       ExceptionState&) = 0;
   virtual void remove(CSSPropertyID, ExceptionState&) = 0;
 

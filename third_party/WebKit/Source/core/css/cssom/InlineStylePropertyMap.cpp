@@ -61,22 +61,6 @@ const CSSValue* SingleStyleValueAsCSSValue(
   return value_list;
 }
 
-const CSSValueList* AsCSSValueList(
-    CSSPropertyID property_id,
-    const CSSStyleValueVector& style_value_vector,
-    SecureContextMode secure_context_mode) {
-  CSSValueList* value_list = CssValueListForPropertyID(property_id);
-  for (const CSSStyleValue* value : style_value_vector) {
-    const CSSValue* css_value =
-        StyleValueToCSSValue(property_id, *value, secure_context_mode);
-    if (!css_value) {
-      return nullptr;
-    }
-    value_list->Append(*css_value);
-  }
-  return value_list;
-}
-
 }  // namespace
 
 CSSStyleValueVector InlineStylePropertyMap::GetAllInternal(
@@ -121,24 +105,20 @@ Vector<String> InlineStylePropertyMap::getProperties() {
   return result;
 }
 
-void InlineStylePropertyMap::set(
-    const ExecutionContext* execution_context,
-    CSSPropertyID property_id,
-    CSSStyleValueOrCSSStyleValueSequenceOrString& item,
-    ExceptionState& exception_state) {
+void InlineStylePropertyMap::set(const ExecutionContext* execution_context,
+                                 CSSPropertyID property_id,
+                                 HeapVector<CSSStyleValueOrString>& values,
+                                 ExceptionState& exception_state) {
+  if (values.IsEmpty())
+    return;
+
+  // TODO(545318): Implement correctly for both list and non-list properties
+  const auto& item = values[0];
   const CSSValue* css_value = nullptr;
   if (item.IsCSSStyleValue()) {
     css_value =
         SingleStyleValueAsCSSValue(property_id, *item.GetAsCSSStyleValue(),
                                    execution_context->SecureContextMode());
-  } else if (item.IsCSSStyleValueSequence()) {
-    if (!CSSProperty::Get(property_id).IsRepeated()) {
-      exception_state.ThrowTypeError(
-          "Property does not support multiple values");
-      return;
-    }
-    css_value = AsCSSValueList(property_id, item.GetAsCSSStyleValueSequence(),
-                               execution_context->SecureContextMode());
   } else {
     // Parse it.
     DCHECK(item.IsString());
@@ -153,11 +133,10 @@ void InlineStylePropertyMap::set(
   owner_element_->SetInlineStyleProperty(property_id, css_value);
 }
 
-void InlineStylePropertyMap::append(
-    const ExecutionContext* execution_context,
-    CSSPropertyID property_id,
-    CSSStyleValueOrCSSStyleValueSequenceOrString& item,
-    ExceptionState& exception_state) {
+void InlineStylePropertyMap::append(const ExecutionContext* execution_context,
+                                    CSSPropertyID property_id,
+                                    HeapVector<CSSStyleValueOrString>& values,
+                                    ExceptionState& exception_state) {
   if (!CSSProperty::Get(property_id).IsRepeated()) {
     exception_state.ThrowTypeError("Property does not support multiple values");
     return;
@@ -177,31 +156,23 @@ void InlineStylePropertyMap::append(
     return;
   }
 
-  if (item.IsCSSStyleValue()) {
-    const CSSValue* css_value =
-        StyleValueToCSSValue(property_id, *item.GetAsCSSStyleValue(),
-                             execution_context->SecureContextMode());
-    if (!css_value) {
-      exception_state.ThrowTypeError("Invalid type for property");
-      return;
-    }
-    css_value_list->Append(*css_value);
-  } else if (item.IsCSSStyleValueSequence()) {
-    for (CSSStyleValue* style_value : item.GetAsCSSStyleValueSequence()) {
-      const CSSValue* css_value = StyleValueToCSSValue(
-          property_id, *style_value, execution_context->SecureContextMode());
+  for (auto& item : values) {
+    if (item.IsCSSStyleValue()) {
+      const CSSValue* css_value =
+          StyleValueToCSSValue(property_id, *item.GetAsCSSStyleValue(),
+                               execution_context->SecureContextMode());
       if (!css_value) {
         exception_state.ThrowTypeError("Invalid type for property");
         return;
       }
       css_value_list->Append(*css_value);
+    } else {
+      // Parse it.
+      DCHECK(item.IsString());
+      // TODO(meade): Implement this.
+      exception_state.ThrowTypeError("Not implemented yet");
+      return;
     }
-  } else {
-    // Parse it.
-    DCHECK(item.IsString());
-    // TODO(meade): Implement this.
-    exception_state.ThrowTypeError("Not implemented yet");
-    return;
   }
 
   owner_element_->SetInlineStyleProperty(property_id, css_value_list);
