@@ -42,7 +42,8 @@ class ArcAppListPrefsFactory : public BrowserContextKeyedServiceFactory {
 
   mutable std::unordered_map<
       content::BrowserContext*,
-      std::unique_ptr<arc::ConnectionHolder<arc::mojom::AppInstance>>>
+      std::unique_ptr<
+          arc::ConnectionHolder<arc::mojom::AppInstance, arc::mojom::AppHost>>>
       sync_test_app_connection_holders_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcAppListPrefsFactory);

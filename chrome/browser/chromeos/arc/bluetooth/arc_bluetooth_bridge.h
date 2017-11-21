@@ -41,6 +41,7 @@ class BrowserContext;
 namespace arc {
 
 namespace mojom {
+class AppHost;
 class AppInstance;
 class IntentHelperInstance;
 }  // namespace mojom
@@ -309,7 +310,7 @@ class ArcBluetoothBridge
       ReleaseAdvertisementHandleCallback callback) override;
 
  private:
-  template <typename T>
+  template <typename InstanceType, typename HostType>
   class ConnectionObserverImpl;
 
   // Power state change on Bluetooth adapter.
@@ -517,8 +518,9 @@ class ArcBluetoothBridge
   bool is_bluetooth_instance_up_;
 
   // Observers to listen the start-up of App and Intent Helper.
-  std::unique_ptr<ConnectionObserverImpl<mojom::AppInstance>> app_observer_;
-  std::unique_ptr<ConnectionObserverImpl<mojom::IntentHelperInstance>>
+  std::unique_ptr<ConnectionObserverImpl<mojom::AppInstance, mojom::AppHost>>
+      app_observer_;
+  std::unique_ptr<ConnectionObserverImpl<mojom::IntentHelperInstance, void>>
       intent_helper_observer_;
   // Queue to track the powered state changes initiated by Android.
   base::queue<AdapterPowerState> remote_power_changes_;

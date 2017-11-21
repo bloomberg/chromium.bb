@@ -103,8 +103,9 @@ class ArcBridgeHostImpl : public mojom::ArcBridgeHost {
 
   // The common implementation to handle ArcBridgeHost overrides.
   // |T| is a ARC Mojo Instance type.
-  template <typename T>
-  void OnInstanceReady(ConnectionHolder<T>* holder, mojo::InterfacePtr<T> ptr);
+  template <typename InstanceType, typename HostType>
+  void OnInstanceReady(ConnectionHolder<InstanceType, HostType>* holder,
+                       mojo::InterfacePtr<InstanceType> ptr);
 
   // Called if one of the established channels is closed.
   void OnChannelClosed(MojoChannel* channel);

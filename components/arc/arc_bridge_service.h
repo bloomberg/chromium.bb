@@ -15,6 +15,7 @@ namespace mojom {
 // Instead of including components/arc/common/arc_bridge.mojom.h, list all the
 // instance classes here for faster build.
 class AccessibilityHelperInstance;
+class AppHost;
 class AppInstance;
 class AudioInstance;
 class AuthInstance;
@@ -63,7 +64,7 @@ class ArcBridgeService {
   ConnectionHolder<mojom::AccessibilityHelperInstance>* accessibility_helper() {
     return &accessibility_helper_;
   }
-  ConnectionHolder<mojom::AppInstance>* app() { return &app_; }
+  ConnectionHolder<mojom::AppInstance, mojom::AppHost>* app() { return &app_; }
   ConnectionHolder<mojom::AudioInstance>* audio() { return &audio_; }
   ConnectionHolder<mojom::AuthInstance>* auth() { return &auth_; }
   ConnectionHolder<mojom::BackupSettingsInstance>* backup_settings() {
@@ -143,7 +144,7 @@ class ArcBridgeService {
 
  private:
   ConnectionHolder<mojom::AccessibilityHelperInstance> accessibility_helper_;
-  ConnectionHolder<mojom::AppInstance> app_;
+  ConnectionHolder<mojom::AppInstance, mojom::AppHost> app_;
   ConnectionHolder<mojom::AudioInstance> audio_;
   ConnectionHolder<mojom::AuthInstance> auth_;
   ConnectionHolder<mojom::BackupSettingsInstance> backup_settings_;
