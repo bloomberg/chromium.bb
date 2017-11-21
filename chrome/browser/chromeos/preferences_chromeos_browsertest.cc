@@ -213,7 +213,8 @@ IN_PROC_BROWSER_TEST_F(PreferencesTest, PRE_MultiProfiles) {
   chromeos::StartupUtils::MarkOobeCompleted();
 }
 
-IN_PROC_BROWSER_TEST_F(PreferencesTest, MultiProfiles) {
+// This test is flaking both with and without mash. http://crbug.com/787050
+IN_PROC_BROWSER_TEST_F(PreferencesTest, DISABLED_MultiProfiles) {
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
 
   // Add first user and init its preferences. Check that corresponding

@@ -272,6 +272,3 @@
 -WebViewTests/WebViewFocusTest.*
 -WebViewTests/WebViewSizeTest.*
 -WebViewTests/WebViewTest.*
-
-# MessagePipe closing crashes http://crbug.com/787121
--PreferencesTest.MultiProfiles
