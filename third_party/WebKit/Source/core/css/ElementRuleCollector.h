@@ -23,6 +23,7 @@
 #ifndef ElementRuleCollector_h
 #define ElementRuleCollector_h
 
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "core/css/PseudoStyleRequest.h"
 #include "core/css/SelectorChecker.h"
@@ -101,7 +102,6 @@ using StyleRuleList = HeapVector<Member<StyleRule>>;
 // FIXME: Currently it modifies the ComputedStyle but should not!
 class ElementRuleCollector {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(ElementRuleCollector);
 
  public:
   ElementRuleCollector(const ElementResolveContext&,
@@ -186,6 +186,7 @@ class ElementRuleCollector {
   Member<StaticCSSRuleList> css_rule_list_;
   Member<StyleRuleList> style_rule_list_;
   MatchResult result_;
+  DISALLOW_COPY_AND_ASSIGN(ElementRuleCollector);
 };
 
 }  // namespace blink

@@ -5,6 +5,7 @@
 #ifndef CSSSkew_h
 #define CSSSkew_h
 
+#include "base/macros.h"
 #include "core/css/cssom/CSSNumericValue.h"
 #include "core/css/cssom/CSSTransformComponent.h"
 
@@ -17,7 +18,6 @@ class ExceptionState;
 // "transform".
 // See CSSSkew.idl for more information about this class.
 class CORE_EXPORT CSSSkew final : public CSSTransformComponent {
-  WTF_MAKE_NONCOPYABLE(CSSSkew);
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -58,6 +58,7 @@ class CORE_EXPORT CSSSkew final : public CSSTransformComponent {
 
   Member<CSSNumericValue> ax_;
   Member<CSSNumericValue> ay_;
+  DISALLOW_COPY_AND_ASSIGN(CSSSkew);
 };
 
 }  // namespace blink

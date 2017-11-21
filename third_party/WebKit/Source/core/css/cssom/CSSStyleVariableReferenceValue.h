@@ -5,6 +5,7 @@
 #ifndef CSSStyleVariableReferenceValue_h
 #define CSSStyleVariableReferenceValue_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/css/cssom/CSSUnparsedValue.h"
 #include "platform/bindings/ScriptWrappable.h"
@@ -15,7 +16,6 @@ namespace blink {
 // The corresponding idl file is CSSVariableReferenceValue.idl.
 class CORE_EXPORT CSSStyleVariableReferenceValue final
     : public ScriptWrappable {
-  WTF_MAKE_NONCOPYABLE(CSSStyleVariableReferenceValue);
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -45,6 +45,9 @@ class CORE_EXPORT CSSStyleVariableReferenceValue final
 
   String variable_;
   Member<const CSSUnparsedValue> fallback_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CSSStyleVariableReferenceValue);
 };
 
 }  // namespace blink

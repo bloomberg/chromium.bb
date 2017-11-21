@@ -23,6 +23,7 @@
 #ifndef RuleSet_h
 #define RuleSet_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/css/CSSKeyframesRule.h"
 #include "core/css/MediaQueryEvaluator.h"
@@ -155,8 +156,6 @@ static_assert(sizeof(RuleData) == sizeof(SameSizeAsRuleData),
               "RuleData should stay small");
 
 class CORE_EXPORT RuleSet : public GarbageCollectedFinalized<RuleSet> {
-  WTF_MAKE_NONCOPYABLE(RuleSet);
-
  public:
   static RuleSet* Create() { return new RuleSet; }
 
@@ -320,6 +319,7 @@ class CORE_EXPORT RuleSet : public GarbageCollectedFinalized<RuleSet> {
 #ifndef NDEBUG
   HeapVector<RuleData> all_rules_;
 #endif
+  DISALLOW_COPY_AND_ASSIGN(RuleSet);
 };
 
 }  // namespace blink

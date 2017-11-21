@@ -5,6 +5,7 @@
 #ifndef CSSMatrixComponent_h
 #define CSSMatrixComponent_h
 
+#include "base/macros.h"
 #include "core/css/cssom/CSSTransformComponent.h"
 #include "core/geometry/DOMMatrix.h"
 #include "core/geometry/DOMMatrixReadOnly.h"
@@ -17,7 +18,6 @@ class CSSMatrixComponentOptions;
 // "transform".
 // See CSSMatrixComponent.idl for more information about this class.
 class CORE_EXPORT CSSMatrixComponent final : public CSSTransformComponent {
-  WTF_MAKE_NONCOPYABLE(CSSMatrixComponent);
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -50,6 +50,7 @@ class CORE_EXPORT CSSMatrixComponent final : public CSSTransformComponent {
       : CSSTransformComponent(is2D), matrix_(DOMMatrix::Create(matrix)) {}
 
   Member<DOMMatrix> matrix_;
+  DISALLOW_COPY_AND_ASSIGN(CSSMatrixComponent);
 };
 
 }  // namespace blink

@@ -5,8 +5,8 @@
 #ifndef CSSStyleImageValue_h
 #define CSSStyleImageValue_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
-#include "core/css/CSSImageValue.h"
 #include "core/css/CSSImageValue.h"
 #include "core/css/cssom/CSSResourceValue.h"
 #include "core/css/cssom/CSSStyleValue.h"
@@ -21,7 +21,6 @@ namespace blink {
 // The corresponding idl file is CSSImageValue.idl.
 class CORE_EXPORT CSSStyleImageValue : public CSSResourceValue,
                                        public CanvasImageSource {
-  WTF_MAKE_NONCOPYABLE(CSSStyleImageValue);
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -78,6 +77,7 @@ class CORE_EXPORT CSSStyleImageValue : public CSSResourceValue,
   scoped_refptr<Image> GetImage() const;
 
   Member<const CSSImageValue> image_value_;
+  DISALLOW_COPY_AND_ASSIGN(CSSStyleImageValue);
 };
 
 }  // namespace blink

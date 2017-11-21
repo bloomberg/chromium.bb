@@ -24,6 +24,7 @@
 #ifndef MatchedPropertiesCache_h
 #define MatchedPropertiesCache_h
 
+#include "base/macros.h"
 #include "core/css/CSSPropertyValueSet.h"
 #include "core/css/resolver/MatchResult.h"
 #include "platform/heap/Handle.h"
@@ -92,7 +93,6 @@ struct CachedMatchedPropertiesHashTraits
 
 class MatchedPropertiesCache {
   DISALLOW_NEW();
-  WTF_MAKE_NONCOPYABLE(MatchedPropertiesCache);
 
  public:
   MatchedPropertiesCache();
@@ -121,6 +121,7 @@ class MatchedPropertiesCache {
                             HashTraits<unsigned>,
                             CachedMatchedPropertiesHashTraits>;
   Cache cache_;
+  DISALLOW_COPY_AND_ASSIGN(MatchedPropertiesCache);
 };
 
 }  // namespace blink

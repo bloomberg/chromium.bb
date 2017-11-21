@@ -22,6 +22,7 @@
 
 #include "core/css/PropertySetCSSStyleDeclaration.h"
 
+#include "base/macros.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/StylePropertyShorthand.h"
 #include "core/css/CSSCustomPropertyDeclaration.h"
@@ -52,7 +53,6 @@ static CustomElementDefinition* DefinitionIfStyleChangedCallback(
 }
 
 class StyleAttributeMutationScope {
-  WTF_MAKE_NONCOPYABLE(StyleAttributeMutationScope);
   STACK_ALLOCATED();
 
  public:
@@ -139,6 +139,7 @@ class StyleAttributeMutationScope {
   Member<MutationObserverInterestGroup> mutation_recipients_;
   Member<MutationRecord> mutation_;
   AtomicString old_value_;
+  DISALLOW_COPY_AND_ASSIGN(StyleAttributeMutationScope);
 };
 
 unsigned StyleAttributeMutationScope::scope_count_ = 0;

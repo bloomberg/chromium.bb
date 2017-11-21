@@ -5,6 +5,7 @@
 #ifndef CSSRotation_h
 #define CSSRotation_h
 
+#include "base/macros.h"
 #include "core/css/cssom/CSSNumericValue.h"
 #include "core/css/cssom/CSSTransformComponent.h"
 
@@ -17,7 +18,6 @@ class ExceptionState;
 // "transform".
 // See CSSRotation.idl for more information about this class.
 class CORE_EXPORT CSSRotation final : public CSSTransformComponent {
-  WTF_MAKE_NONCOPYABLE(CSSRotation);
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -65,6 +65,7 @@ class CORE_EXPORT CSSRotation final : public CSSTransformComponent {
   double x_;
   double y_;
   double z_;
+  DISALLOW_COPY_AND_ASSIGN(CSSRotation);
 };
 
 }  // namespace blink

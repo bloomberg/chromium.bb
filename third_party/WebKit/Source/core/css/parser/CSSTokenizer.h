@@ -5,6 +5,7 @@
 #ifndef CSSTokenizer_h
 #define CSSTokenizer_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/css/parser/CSSParserToken.h"
 #include "core/css/parser/CSSTokenizerInputStream.h"
@@ -20,7 +21,6 @@ namespace blink {
 class CSSTokenizerInputStream;
 
 class CORE_EXPORT CSSTokenizer {
-  WTF_MAKE_NONCOPYABLE(CSSTokenizer);
   DISALLOW_NEW();
 
  public:
@@ -111,6 +111,7 @@ class CORE_EXPORT CSSTokenizer {
 
   size_t prev_offset_ = 0;
   size_t token_count_ = 0;
+  DISALLOW_COPY_AND_ASSIGN(CSSTokenizer);
 };
 
 }  // namespace blink

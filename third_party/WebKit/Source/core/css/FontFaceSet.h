@@ -6,6 +6,7 @@
 #ifndef FontFaceSet_h
 #define FontFaceSet_h
 
+#include "base/macros.h"
 #include "bindings/core/v8/Iterable.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
@@ -34,7 +35,6 @@ class CORE_EXPORT FontFaceSet : public EventTargetWithInlineData,
                                 public FontFaceSetIterable,
                                 public FontFace::LoadFontCallback {
   DEFINE_WRAPPERTYPEINFO();
-  WTF_MAKE_NONCOPYABLE(FontFaceSet);
 
  public:
   FontFaceSet(ExecutionContext& context)
@@ -176,6 +176,7 @@ class CORE_EXPORT FontFaceSet : public EventTargetWithInlineData,
 
   void HandlePendingEventsAndPromises();
   void FireLoadingEvent();
+  DISALLOW_COPY_AND_ASSIGN(FontFaceSet);
 };
 
 }  // namespace blink

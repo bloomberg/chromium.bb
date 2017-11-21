@@ -25,6 +25,7 @@
 
 #include "core/css/ComputedStyleCSSValueMapping.h"
 
+#include "base/macros.h"
 #include "core/StylePropertyShorthand.h"
 #include "core/animation/css/CSSAnimationData.h"
 #include "core/animation/css/CSSTransitionData.h"
@@ -1011,7 +1012,6 @@ static CSSValue* SpecifiedValueForGridTrackSize(const GridTrackSize& track_size,
 
 class OrderedNamedLinesCollector {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(OrderedNamedLinesCollector);
 
  public:
   OrderedNamedLinesCollector(const ComputedStyle& style,
@@ -1046,6 +1046,7 @@ class OrderedNamedLinesCollector {
   size_t insertion_point_;
   size_t auto_repeat_total_tracks_;
   size_t auto_repeat_track_list_length_;
+  DISALLOW_COPY_AND_ASSIGN(OrderedNamedLinesCollector);
 };
 
 void OrderedNamedLinesCollector::AppendLines(

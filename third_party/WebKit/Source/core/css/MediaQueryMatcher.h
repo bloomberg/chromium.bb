@@ -20,6 +20,7 @@
 #ifndef MediaQueryMatcher_h
 #define MediaQueryMatcher_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"
@@ -40,7 +41,6 @@ class MediaQuerySet;
 
 class CORE_EXPORT MediaQueryMatcher final
     : public GarbageCollectedFinalized<MediaQueryMatcher> {
-  WTF_MAKE_NONCOPYABLE(MediaQueryMatcher);
 
  public:
   static MediaQueryMatcher* Create(Document&);
@@ -75,6 +75,7 @@ class CORE_EXPORT MediaQueryMatcher final
 
   using ViewportListenerSet = HeapLinkedHashSet<Member<MediaQueryListListener>>;
   ViewportListenerSet viewport_listeners_;
+  DISALLOW_COPY_AND_ASSIGN(MediaQueryMatcher);
 };
 
 }  // namespace blink

@@ -5,6 +5,7 @@
 #ifndef CSSTransformValue_h
 #define CSSTransformValue_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/css/cssom/CSSStyleValue.h"
 #include "core/css/cssom/CSSTransformComponent.h"
@@ -16,7 +17,6 @@ namespace blink {
 class DOMMatrix;
 
 class CORE_EXPORT CSSTransformValue final : public CSSStyleValue {
-  WTF_MAKE_NONCOPYABLE(CSSTransformValue);
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -55,6 +55,7 @@ class CORE_EXPORT CSSTransformValue final : public CSSStyleValue {
       : CSSStyleValue(), transform_components_(transform_components) {}
 
   HeapVector<Member<CSSTransformComponent>> transform_components_;
+  DISALLOW_COPY_AND_ASSIGN(CSSTransformValue);
 };
 
 }  // namespace blink

@@ -22,6 +22,7 @@
 #ifndef CSSValueList_h
 #define CSSValueList_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/css/CSSValue.h"
 #include "platform/wtf/Vector.h"
@@ -29,7 +30,6 @@
 namespace blink {
 
 class CORE_EXPORT CSSValueList : public CSSValue {
-  WTF_MAKE_NONCOPYABLE(CSSValueList);
 
  public:
   using iterator = HeapVector<Member<const CSSValue>, 4>::iterator;
@@ -75,6 +75,7 @@ class CORE_EXPORT CSSValueList : public CSSValue {
   explicit CSSValueList(ValueListSeparator);
 
   HeapVector<Member<const CSSValue>, 4> values_;
+  DISALLOW_COPY_AND_ASSIGN(CSSValueList);
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSValueList, IsValueList());

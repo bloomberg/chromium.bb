@@ -23,6 +23,7 @@
 #ifndef RuleFeatureSet_h
 #define RuleFeatureSet_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/css/CSSSelector.h"
 #include "core/css/MediaQueryEvaluator.h"
@@ -41,7 +42,6 @@ class RuleData;
 
 class CORE_EXPORT RuleFeatureSet {
   DISALLOW_NEW();
-  WTF_MAKE_NONCOPYABLE(RuleFeatureSet);
 
  public:
   RuleFeatureSet();
@@ -292,6 +292,7 @@ class CORE_EXPORT RuleFeatureSet {
   unsigned is_alive_ : 1;
 
   friend class RuleFeatureSetTest;
+  DISALLOW_COPY_AND_ASSIGN(RuleFeatureSet);
 };
 
 }  // namespace blink

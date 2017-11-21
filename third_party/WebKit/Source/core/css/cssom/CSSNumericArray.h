@@ -5,13 +5,13 @@
 #ifndef CSSNumericArray_h
 #define CSSNumericArray_h
 
+#include "base/macros.h"
 #include "core/css/cssom/CSSNumericValue.h"
 
 namespace blink {
 
 // See CSSNumericArray.idl for more information about this class.
 class CORE_EXPORT CSSNumericArray final : public ScriptWrappable {
-  WTF_MAKE_NONCOPYABLE(CSSNumericArray);
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -43,6 +43,7 @@ class CORE_EXPORT CSSNumericArray final : public ScriptWrappable {
       : values_(std::move(values)) {}
 
   CSSNumericValueVector values_;
+  DISALLOW_COPY_AND_ASSIGN(CSSNumericArray);
 };
 
 }  // namespace blink

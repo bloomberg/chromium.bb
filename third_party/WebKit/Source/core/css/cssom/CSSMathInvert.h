@@ -5,6 +5,7 @@
 #ifndef CSSMathInvert_h
 #define CSSMathInvert_h
 
+#include "base/macros.h"
 #include "core/css/cssom/CSSMathValue.h"
 
 namespace blink {
@@ -12,7 +13,6 @@ namespace blink {
 // Represents the inverse of a CSSNumericValue.
 // See CSSMathInvert.idl for more information about this class.
 class CORE_EXPORT CSSMathInvert : public CSSMathValue {
-  WTF_MAKE_NONCOPYABLE(CSSMathInvert);
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -58,6 +58,7 @@ class CORE_EXPORT CSSMathInvert : public CSSMathValue {
   CSSNumericValue* Invert() final { return value_.Get(); }
 
   Member<CSSNumericValue> value_;
+  DISALLOW_COPY_AND_ASSIGN(CSSMathInvert);
 };
 
 }  // namespace blink

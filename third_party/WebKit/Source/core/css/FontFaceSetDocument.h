@@ -26,6 +26,7 @@
 #ifndef FontFaceSetDocument_h
 #define FontFaceSetDocument_h
 
+#include "base/macros.h"
 #include "bindings/core/v8/Iterable.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "core/css/CSSFontSelector.h"
@@ -47,7 +48,6 @@ class Font;
 class CORE_EXPORT FontFaceSetDocument final : public FontFaceSet,
                                               public Supplement<Document> {
   USING_GARBAGE_COLLECTED_MIXIN(FontFaceSetDocument);
-  WTF_MAKE_NONCOPYABLE(FontFaceSetDocument);
 
  public:
   ~FontFaceSetDocument() override;
@@ -111,6 +111,7 @@ class CORE_EXPORT FontFaceSetDocument final : public FontFaceSet,
     bool recorded_;
   };
   FontLoadHistogram histogram_;
+  DISALLOW_COPY_AND_ASSIGN(FontFaceSetDocument);
 };
 
 }  // namespace blink

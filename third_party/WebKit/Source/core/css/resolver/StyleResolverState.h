@@ -23,6 +23,8 @@
 #ifndef StyleResolverState_h
 #define StyleResolverState_h
 
+#include <memory>
+#include "base/macros.h"
 #include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
 #include "core/animation/css/CSSAnimationUpdate.h"
@@ -35,7 +37,6 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/style/CachedUAStyle.h"
-#include <memory>
 
 namespace blink {
 
@@ -44,7 +45,6 @@ class FontDescription;
 
 class CORE_EXPORT StyleResolverState {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(StyleResolverState);
 
  public:
   StyleResolverState(Document&,
@@ -237,6 +237,7 @@ class CORE_EXPORT StyleResolverState {
       Member<const CSSPendingSubstitutionValue>,
       Member<HeapHashMap<CSSPropertyID, Member<const CSSValue>>>>
       parsed_properties_for_pending_substitution_cache_;
+  DISALLOW_COPY_AND_ASSIGN(StyleResolverState);
 };
 
 }  // namespace blink

@@ -30,6 +30,7 @@
 #ifndef StyleSheetCollection_h
 #define StyleSheetCollection_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/css/ActiveStyleSheets.h"
 #include "platform/bindings/ScriptWrappable.h"
@@ -45,8 +46,6 @@ class StyleSheet;
 class CORE_EXPORT StyleSheetCollection
     : public GarbageCollected<StyleSheetCollection>,
       public TraceWrapperBase {
-  WTF_MAKE_NONCOPYABLE(StyleSheetCollection);
-
  public:
   friend class ActiveDocumentStyleSheetCollector;
   friend class ImportedDocumentStyleSheetCollector;
@@ -78,6 +77,9 @@ class CORE_EXPORT StyleSheetCollection
   HeapVector<TraceWrapperMember<StyleSheet>> style_sheets_for_style_sheet_list_;
   ActiveStyleSheetVector active_author_style_sheets_;
   bool sheet_list_dirty_ = true;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(StyleSheetCollection);
 };
 
 }  // namespace blink

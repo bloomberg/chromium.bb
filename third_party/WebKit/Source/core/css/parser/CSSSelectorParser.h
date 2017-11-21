@@ -5,10 +5,11 @@
 #ifndef CSSSelectorParser_h
 #define CSSSelectorParser_h
 
+#include <memory>
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/css/parser/CSSParserSelector.h"
 #include "core/css/parser/CSSParserTokenRange.h"
-#include <memory>
 
 namespace blink {
 
@@ -87,7 +88,6 @@ class CORE_EXPORT CSSSelectorParser {
 
   class DisallowPseudoElementsScope {
     STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(DisallowPseudoElementsScope);
 
    public:
     DisallowPseudoElementsScope(CSSSelectorParser* parser)
@@ -102,6 +102,7 @@ class CORE_EXPORT CSSSelectorParser {
    private:
     CSSSelectorParser* parser_;
     bool was_disallowed_;
+    DISALLOW_COPY_AND_ASSIGN(DisallowPseudoElementsScope);
   };
 };
 

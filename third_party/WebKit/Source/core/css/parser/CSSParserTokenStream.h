@@ -5,6 +5,7 @@
 #ifndef CSSParserTokenStream_h
 #define CSSParserTokenStream_h
 
+#include "base/macros.h"
 #include "core/css/parser/CSSParserTokenRange.h"
 #include "core/css/parser/CSSTokenizer.h"
 #include "platform/wtf/Noncopyable.h"
@@ -35,7 +36,6 @@ bool IsTokenTypeOneOf(CSSParserTokenType t) {
 // such as a consume.
 class CORE_EXPORT CSSParserTokenStream {
   DISALLOW_NEW();
-  WTF_MAKE_NONCOPYABLE(CSSParserTokenStream);
 
  public:
   // Instantiate this to start reading from a block. When the guard is out of
@@ -216,6 +216,7 @@ class CORE_EXPORT CSSParserTokenStream {
   CSSParserToken next_;
   size_t offset_ = 0;
   bool has_look_ahead_ = false;
+  DISALLOW_COPY_AND_ASSIGN(CSSParserTokenStream);
 };
 
 }  // namespace blink

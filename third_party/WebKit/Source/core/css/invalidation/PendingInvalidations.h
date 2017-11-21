@@ -5,13 +5,12 @@
 #ifndef PendingInvalidations_h
 #define PendingInvalidations_h
 
+#include "base/macros.h"
 #include "core/css/invalidation/InvalidationSet.h"
 
 namespace blink {
 
 class CORE_EXPORT PendingInvalidations final {
-  WTF_MAKE_NONCOPYABLE(PendingInvalidations);
-
  public:
   PendingInvalidations() {}
 
@@ -23,6 +22,7 @@ class CORE_EXPORT PendingInvalidations final {
  private:
   InvalidationSetVector descendants_;
   InvalidationSetVector siblings_;
+  DISALLOW_COPY_AND_ASSIGN(PendingInvalidations);
 };
 
 }  // namespace blink

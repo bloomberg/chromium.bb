@@ -24,6 +24,7 @@
 #ifndef FontBuilder_h
 #define FontBuilder_h
 
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "core/CSSValueKeywords.h"
 #include "core/CoreExport.h"
@@ -39,7 +40,6 @@ class ComputedStyle;
 
 class CORE_EXPORT FontBuilder {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(FontBuilder);
 
  public:
   FontBuilder(const Document*);
@@ -169,6 +169,7 @@ class CORE_EXPORT FontBuilder {
   }
 
   unsigned flags_;
+  DISALLOW_COPY_AND_ASSIGN(FontBuilder);
 };
 
 }  // namespace blink
