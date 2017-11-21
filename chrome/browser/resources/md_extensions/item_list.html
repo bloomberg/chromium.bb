@@ -73,8 +73,8 @@
             filter="[[computeFilter_(filter)]]"
             rendered-item-count="{{shownExtensionsCount_::dom-change}}"
             notify-dom-change>
-          <extensions-item id="[[item.id]]" data="[[item]]"
-              delegate="[[delegate]]" in-dev-mode="[[inDevMode]]">
+          <extensions-item data="[[item]]" delegate="[[delegate]]"
+              in-dev-mode="[[inDevMode]]">
           </extensions-item>
         </template>
       </div>
@@ -87,8 +87,8 @@
               filter="[[computeFilter_(filter)]]"
               rendered-item-count="{{shownAppsCount_::dom-change}}"
               notify-dom-change>
-            <extensions-item id="[[item.id]]" data="[[item]]"
-                delegate="[[delegate]]" in-dev-mode="[[inDevMode]]">
+            <extensions-item data="[[item]]" delegate="[[delegate]]"
+                in-dev-mode="[[inDevMode]]">
             </extensions-item>
           </template>
         </div>
