@@ -1534,8 +1534,6 @@ crbug.com/665577 [ Linux Win ] virtual/threaded/fast/scroll-behavior/smooth-scro
 crbug.com/665577 [ Linux Win ] virtual/threaded/fast/scroll-behavior/smooth-scroll/mousewheel-scroll-interrupted.html [ Pass Failure ]
 crbug.com/665577 [ Linux Win ] virtual/threaded/fast/scroll-behavior/smooth-scroll/track-scroll.html [ Pass Failure ]
 
-crbug.com/778696 virtual/threaded/fast/scroll-behavior/first-scroll-runs-on-compositor.html [ Skip ]
-
 crbug.com/599670 [ Win Linux ] http/tests/devtools/resource-parameters-ipv6.html [ Timeout Failure Pass ]
 crbug.com/599670 [ Win Linux ] virtual/mojo-loading/http/tests/devtools/resource-parameters-ipv6.html [ Timeout Failure Pass ]
 crbug.com/472330 fast/borders/border-image-outset-split-inline-vertical-lr.html [ Failure ]

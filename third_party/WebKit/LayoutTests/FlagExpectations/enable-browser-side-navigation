@@ -4,7 +4,6 @@
 # These tests are flaky.
 Bug(none) http/tests/security/popup-allowed-by-sandbox-can-navigate.html [ Failure ]
 Bug(none) virtual/mojo-loading/http/tests/security/popup-allowed-by-sandbox-can-navigate.html [ Failure ]
-Bug(none) virtual/threaded/fast/scroll-behavior/first-scroll-runs-on-compositor.html [ Failure ]
 
 # Not disclosing |source_location| and/or |blocked url| between cross-origin
 # renderers when a CSP policy is violated regresses the quality of console
