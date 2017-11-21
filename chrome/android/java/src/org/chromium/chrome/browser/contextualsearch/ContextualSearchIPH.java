@@ -137,12 +137,7 @@ public class ContextualSearchIPH {
 
         assert mHelpBubble == null;
         mHelpBubble = new TextBubble(mParentView.getContext(), mParentView, stringId, stringId);
-        Rect anchorRect = mSearchPanel.getPanelRect();
-
-        int yInsetPx = mParentView.getResources().getDimensionPixelOffset(
-                R.dimen.contextual_search_bubble_y_inset);
-        anchorRect.top -= yInsetPx;
-        mHelpBubble.setAnchorRect(anchorRect);
+        mHelpBubble.setAnchorRect(getHelpBubbleAnchorRect());
 
         mHelpBubble.setDismissOnTouchInteraction(true);
         mHelpBubble.addOnDismissListener(() -> {
@@ -153,6 +148,26 @@ public class ContextualSearchIPH {
 
         mHelpBubble.show();
         mIsShowing = true;
+    }
+
+    /**
+     * Updates the position of the help bubble if it is showing.
+     */
+    void updateBubblePosition() {
+        if (!mIsShowing || mHelpBubble == null || !mHelpBubble.isShowing()) return;
+
+        mHelpBubble.setAnchorRect(getHelpBubbleAnchorRect());
+    }
+
+    /**
+     * @return A {@link Rect} object that represents the appropriate anchor for {@link TextBubble}.
+     */
+    private Rect getHelpBubbleAnchorRect() {
+        Rect anchorRect = mSearchPanel.getPanelRect();
+        int yInsetPx = mParentView.getResources().getDimensionPixelOffset(
+                R.dimen.contextual_search_bubble_y_inset);
+        anchorRect.top -= yInsetPx;
+        return anchorRect;
     }
 
     /**

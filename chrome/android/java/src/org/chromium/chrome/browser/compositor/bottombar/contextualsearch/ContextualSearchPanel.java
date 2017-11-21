@@ -696,6 +696,8 @@ public class ContextualSearchPanel extends OverlayPanel {
         updateBasePageTargetY();
 
         super.updatePanelForSizeChange();
+
+        mManagementDelegate.onPanelResized();
     }
 
     // ============================================================================================
