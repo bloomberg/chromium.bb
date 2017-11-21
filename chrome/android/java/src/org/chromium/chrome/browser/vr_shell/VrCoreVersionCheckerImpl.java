@@ -57,6 +57,9 @@ public class VrCoreVersionCheckerImpl implements VrCoreVersionChecker {
                 return new VrCoreInfo(null, VrCoreCompatibility.VR_OUT_OF_DATE);
             }
             return new VrCoreInfo(null, VrCoreCompatibility.VR_NOT_AVAILABLE);
+        } catch (SecurityException e) {
+            Log.e(TAG, "Cannot query VrCore version: " + e.toString());
+            return new VrCoreInfo(null, VrCoreCompatibility.VR_NOT_AVAILABLE);
         }
     }
 
