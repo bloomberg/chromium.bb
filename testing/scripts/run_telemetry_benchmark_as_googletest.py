@@ -16,15 +16,16 @@ https://www.chromium.org/developers/the-json-test-results-format
 
 Optional argument:
 
-  --isolated-script-test-filter-file=[FILENAME]
+  --isolated-script-test-filter=[TEST_NAMES]
 
-points to a file containing newline-separated test names, to run just
-that subset of tests. This list is parsed by this harness and sent
-down via the --story-filter argument.
+is a double-colon-separated ("::") list of test names, to run just that subset
+of tests. This list is parsed by this harness and sent down via the
+--story-filter argument.
 
 This script is intended to be the base command invoked by the isolate,
 followed by a subsequent Python script. It could be generalized to
 invoke an arbitrary executable.
+
 """
 
 import argparse
@@ -57,7 +58,7 @@ def main():
   parser.add_argument(
       '--isolated-script-test-perf-output', required=False)
   parser.add_argument(
-      '--isolated-script-test-filter-file', type=str, required=False)
+      '--isolated-script-test-filter', type=str, required=False)
   parser.add_argument('--xvfb', help='Start xvfb.', action='store_true')
   parser.add_argument('--output-format', action='append')
   args, rest_args = parser.parse_known_args()
@@ -98,10 +99,8 @@ def run_benchmark(args, rest_args):
 
   results = None
   cmd_args = rest_args
-  if args.isolated_script_test_filter_file:
-    # This test harness doesn't yet support reading the test list from
-    # a file.
-    filter_list = common.load_filter_list(args.isolated_script_test_filter_file)
+  if args.isolated_script_test_filter:
+    filter_list = common.extract_filter_list(args.isolated_script_test_filter)
     # Need to convert this to a valid regex.
     filter_regex = '(' + '|'.join(filter_list) + ')'
     cmd_args = cmd_args + [

@@ -35,7 +35,7 @@ def main(argv):
       '--isolated-script-test-perf-output', type=str,
       required=False)
   parser.add_argument(
-      '--isolated-script-test-filter-file', type=str,
+      '--isolated-script-test-filter', type=str,
       required=False)
 
   args = parser.parse_args(argv)

@@ -17,11 +17,11 @@ common.parse_common_test_results.
 
 Optional argument:
 
-  --isolated-script-test-filter-file=[FILENAME]
+  --isolated-script-test-filter=[TEST_NAMES]
 
-points to a file containing newline-separated test names, to run just
-that subset of tests. This gets remapped to the command line argument
---file-list.
+is a double-colon-separated ("::") list of test names, to run just that subset
+of tests. This list is parsed by this harness and sent down via the --test-list
+argument.
 
 This script is intended to be the base command invoked by the isolate,
 followed by a subsequent Python script. It could be generalized to
@@ -36,6 +36,7 @@ import json
 import os
 import pprint
 import sys
+import tempfile
 
 
 import common
@@ -56,19 +57,29 @@ def main():
   # This argument is ignored for now.
   parser.add_argument('--isolated-script-test-perf-output', type=str)
   # This argument is translated below.
-  parser.add_argument('--isolated-script-test-filter-file', type=str)
+  parser.add_argument('--isolated-script-test-filter', type=str)
 
   args, rest_args = parser.parse_known_args()
 
   env = os.environ
   cmd = [sys.executable] + rest_args
   cmd += ['--write-full-results-to', args.isolated_script_test_output]
-  if args.isolated_script_test_filter_file:
-    cmd += ['--file-list=' + args.isolated_script_test_filter_file]
-  if args.xvfb:
-    return xvfb.run_executable(cmd, env)
-  else:
-    return common.run_command(cmd, env=env)
+  temp_filter_file = None
+  try:
+    if args.isolated_script_test_filter:
+      filter_list = common.extract_filter_list(args.isolated_script_test_filter)
+      # Need to dump this to a file in order to use --file-list.
+      temp_filter_file = tempfile.NamedTemporaryFile(mode='w', delete=False)
+      temp_filter_file.write('\n'.join(filter_list))
+      temp_filter_file.close()
+      cmd += ['--test-list=' + temp_filter_file.name]
+    if args.xvfb:
+      return xvfb.run_executable(cmd, env)
+    else:
+      return common.run_command(cmd, env=env)
+  finally:
+    if temp_filter_file:
+      os.unlink(temp_filter_file.name)
 
 
 # This is not really a "script test" so does not need to manually add
