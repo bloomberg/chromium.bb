@@ -11,32 +11,9 @@
 
 #include "core/css/properties/{{property.superclass}}.h"
 {# conditional includes - only used in some property classes #}
-{% if property.direction_aware_options %}
-#include "core/StylePropertyShorthand.h"
-{% endif %}
-{% if property.should_implement_apply_functions %}
-#include "core/css/resolver/StyleResolverState.h"
-  {% if property.converter == "CSSPrimitiveValue" %}
-#include "core/css/CSSPrimitiveValue.h"
-#include "core/css/CSSPrimitiveValueMappings.h"
-  {% elif property.converter == "CSSIdentifierValue" %}
-#include "core/css/CSSIdentifierValue.h"
-  {% elif property.converter %}
-#include "core/css/CSSPrimitiveValueMappings.h"
-#include "core/css/resolver/StyleBuilderConverter.h"
-  {% endif %}
-  {% if property.font %}
-#include "core/css/resolver/FontBuilder.h"
-  {% elif property.svg %}
-#include "core/style/ComputedStyle.h"
-#include "core/style/SVGComputedStyle.h"
-  {% else %}
-#include "core/style/ComputedStyle.h"
-  {% endif %}
-{% endif %}
-{% if property.runtime_flag %}
-#include "platform/runtime_enabled_features.h"
-{% endif %}
+{% for include in property.includes %}
+#include "{{include}}"
+{% endfor %}
 
 namespace blink {
 
