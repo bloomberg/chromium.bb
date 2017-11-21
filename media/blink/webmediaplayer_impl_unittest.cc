@@ -1013,7 +1013,7 @@ TEST_F(WebMediaPlayerImplTest, InfiniteDuration) {
 // TODO(lethalantidote): Once |client_| is converted from a dummy to a mock,
 // test that |web_layer| is actually used by |client_|.
 // http://crbug/755880.
-TEST_F(WebMediaPlayerImplTest, OnWebLayerUpdatedGetsWebLayerFromBridge) {
+TEST_F(WebMediaPlayerImplTest, SetContentsLayerGetsWebLayerFromBridge) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitFromCommandLine("UseSurfaceLayerForVideo", "");
   surface_layer_bridge_ = new StrictMock<MockSurfaceLayerBridge>();
@@ -1027,7 +1027,7 @@ TEST_F(WebMediaPlayerImplTest, OnWebLayerUpdatedGetsWebLayerFromBridge) {
 
   EXPECT_CALL(*surface_layer_bridge_, GetWebLayer())
       .WillRepeatedly(Return(web_layer.get()));
-  wmpi_->OnWebLayerUpdated();
+  wmpi_->RegisterContentsLayer(web_layer.get());
 }
 
 TEST_F(WebMediaPlayerImplTest, PlaybackRateChangeMediaLogs) {
