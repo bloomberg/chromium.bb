@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "media/gpu/android/media_codec_video_decoder.h"
+#include "base/android/jni_android.h"
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
@@ -11,6 +12,7 @@
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "media/base/android/media_codec_util.h"
 #include "media/base/android/mock_android_overlay.h"
+#include "media/base/android/mock_media_drm_bridge_cdm_context.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/gmock_callback_support.h"
 #include "media/base/test_helpers.h"
@@ -159,6 +161,17 @@ class MediaCodecVideoDecoderTest : public testing::Test {
     destruction_observer_->ExpectDestruction();
   }
 
+  void CreateCdm(bool require_secure_video_decoder) {
+    cdm_ = base::MakeUnique<MockMediaDrmBridgeCdmContext>(cdm_id_);
+    require_secure_video_decoder_ = require_secure_video_decoder;
+
+    // We need to send an object as the media crypto, but MCVD shouldn't
+    // use it for anything.  Just send in some random java object, so that
+    // it's not null.
+    media_crypto_ = base::android::ScopedJavaGlobalRef<jobject>(
+        gl::SurfaceTexture::Create(0)->j_surface_texture());
+  }
+
   // Just call Initialize(). MCVD will be waiting for a call to Decode() before
   // continuining initialization.
   bool Initialize(
@@ -167,9 +180,21 @@ class MediaCodecVideoDecoderTest : public testing::Test {
       CreateMcvd();
     bool result = false;
     auto init_cb = [](bool* result_out, bool result) { *result_out = result; };
-    mcvd_->Initialize(config, false, nullptr, base::Bind(init_cb, &result),
+    mcvd_->Initialize(config, false, cdm_.get(), base::Bind(init_cb, &result),
                       base::Bind(&OutputCb));
     base::RunLoop().RunUntilIdle();
+
+    if (config.is_encrypted() && cdm_) {
+      // If the output is encrypted, then we expect that MCVD will be waiting
+      // for the media crypto object.
+      // TODO(liberato): why does CreateJavaObjectPtr() not link?
+      cdm_->media_crypto_ready_cb.Run(
+          base::MakeUnique<base::android::ScopedJavaGlobalRef<jobject>>(
+              media_crypto_),
+          require_secure_video_decoder_);
+      base::RunLoop().RunUntilIdle();
+    }
+
     return result;
   }
 
@@ -232,10 +257,17 @@ class MediaCodecVideoDecoderTest : public testing::Test {
   bool restart_for_transitions_;
   gpu::GpuPreferences gpu_preferences_;
 
+  const int cdm_id_ = 123;
+  // This is not an actual media crypto object.
+  base::android::ScopedJavaGlobalRef<jobject> media_crypto_;
+  bool require_secure_video_decoder_ = false;
+
   // |mcvd_raw_| lets us call PumpCodec() even after |mcvd_| is dropped, for
   // testing the teardown path.
   MediaCodecVideoDecoder* mcvd_raw_;
   std::unique_ptr<MediaCodecVideoDecoder> mcvd_;
+  // This must outlive |mcvd_| .
+  std::unique_ptr<MockMediaDrmBridgeCdmContext> cdm_;
 };
 
 TEST_F(MediaCodecVideoDecoderTest, UnknownCodecIsRejected) {
@@ -697,6 +729,75 @@ TEST_F(MediaCodecVideoDecoderTest, TeardownDrainsVp8CodecsBeforeDestruction) {
   destruction_observer_->ExpectDestruction();
   PumpCodec();
   base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(MediaCodecVideoDecoderTest, CdmInitializationWorksForL3) {
+  // Make sure that MCVD uses the cdm, and sends it along to the codec.
+  CreateCdm(false);
+  EXPECT_CALL(*cdm_, RegisterPlayer(_, _));
+  InitializeWithOverlay_OneDecodePending(
+      TestVideoConfig::NormalEncrypted(kCodecH264));
+  ASSERT_TRUE(!!cdm_->new_key_cb);
+  ASSERT_TRUE(!!cdm_->cdm_unset_cb);
+  ASSERT_TRUE(!!cdm_->media_crypto_ready_cb);
+  ASSERT_EQ(surface_chooser_->current_state_.is_secure, true);
+  ASSERT_EQ(surface_chooser_->current_state_.is_required, false);
+  ASSERT_FALSE(codec_allocator_->most_recent_config->requires_secure_codec);
+  // We can't check for equality safely, but verify that something was provided.
+  ASSERT_TRUE(codec_allocator_->most_recent_config->media_crypto->obj());
+
+  // When |mcvd_| is destroyed, expect that it will unregister itself.
+  EXPECT_CALL(*cdm_,
+              UnregisterPlayer(MockMediaDrmBridgeCdmContext::kRegistrationId));
+}
+
+TEST_F(MediaCodecVideoDecoderTest, CdmInitializationWorksForL1) {
+  // Make sure that MCVD uses the cdm, and sends it along to the codec.
+  CreateCdm(true);
+  EXPECT_CALL(*cdm_, RegisterPlayer(_, _));
+  InitializeWithOverlay_OneDecodePending(
+      TestVideoConfig::NormalEncrypted(kCodecH264));
+  ASSERT_TRUE(!!cdm_->new_key_cb);
+  ASSERT_TRUE(!!cdm_->cdm_unset_cb);
+  ASSERT_TRUE(!!cdm_->media_crypto_ready_cb);
+  ASSERT_EQ(surface_chooser_->current_state_.is_secure, true);
+  ASSERT_EQ(surface_chooser_->current_state_.is_required, true);
+  ASSERT_TRUE(codec_allocator_->most_recent_config->requires_secure_codec);
+  ASSERT_TRUE(codec_allocator_->most_recent_config->media_crypto->obj());
+
+  // When |mcvd_| is destroyed, expect that it will unregister itself.
+  EXPECT_CALL(*cdm_,
+              UnregisterPlayer(MockMediaDrmBridgeCdmContext::kRegistrationId));
+}
+
+TEST_F(MediaCodecVideoDecoderTest, CdmIsIgnoredIfNotEncrypted) {
+  CreateCdm(true);
+  // It should not register or unregister.
+  EXPECT_CALL(*cdm_, RegisterPlayer(_, _)).Times(0);
+  EXPECT_CALL(*cdm_,
+              UnregisterPlayer(MockMediaDrmBridgeCdmContext::kRegistrationId))
+      .Times(0);
+  ASSERT_TRUE(Initialize(TestVideoConfig::NormalH264()));
+  ASSERT_TRUE(!cdm_->new_key_cb);
+  ASSERT_TRUE(!cdm_->cdm_unset_cb);
+  ASSERT_TRUE(!cdm_->media_crypto_ready_cb);
+  ASSERT_EQ(surface_chooser_->current_state_.is_secure, false);
+  ASSERT_EQ(surface_chooser_->current_state_.is_required, false);
+}
+
+TEST_F(MediaCodecVideoDecoderTest, MissingMediaCryptoFailsInit) {
+  // Encrypted media that doesn't get a mediacrypto should fail to init.
+  CreateCdm(true);
+  media_crypto_ = nullptr;
+  EXPECT_CALL(*cdm_, RegisterPlayer(_, _));
+  ASSERT_FALSE(Initialize(TestVideoConfig::NormalEncrypted(kCodecH264)));
+  EXPECT_CALL(*cdm_,
+              UnregisterPlayer(MockMediaDrmBridgeCdmContext::kRegistrationId));
+}
+
+TEST_F(MediaCodecVideoDecoderTest, MissingCdmFailsInit) {
+  // MCVD should fail init if we don't provide a cdm with an encrypted config.
+  ASSERT_FALSE(Initialize(TestVideoConfig::NormalEncrypted(kCodecH264)));
 }
 
 }  // namespace media

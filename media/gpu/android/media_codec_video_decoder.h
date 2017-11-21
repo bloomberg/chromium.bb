@@ -83,6 +83,17 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder
   // Protected for testing.
   ~MediaCodecVideoDecoder() override;
 
+  // Set up |cdm_context| as part of initialization.  Guarantees that |init_cb|
+  // will be called depending on the outcome, though not necessarily before this
+  // function returns.
+  void SetCdm(CdmContext* cdm_context, const InitCB& init_cb);
+
+  // Called when the Cdm provides |media_crypto|.  Will signal |init_cb| based
+  // on the result, and set the codec config properly.
+  void OnMediaCryptoReady(const InitCB& init_cb,
+                          JavaObjectPtr media_crypto,
+                          bool requires_secure_video_codec);
+
  private:
   // The test has access for PumpCodec().
   friend class MediaCodecVideoDecoderTest;
@@ -260,6 +271,22 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder
   // recomputing it on every frame.  It changes very rarely.
   SurfaceChooserHelper::FrameInformation cached_frame_information_ =
       SurfaceChooserHelper::FrameInformation::SURFACETEXTURE_INSECURE;
+
+  // CDM related stuff.
+
+  // CDM context that knowns about MediaCrypto. Owned by CDM which is external
+  // to this decoder.
+  MediaDrmBridgeCdmContext* media_drm_bridge_cdm_context_ = nullptr;
+
+  // MediaDrmBridge requires registration/unregistration of the player, this
+  // registration id is used for this.
+  int cdm_registration_id_ = 0;
+
+  // Do we need a hw-secure codec?
+  bool requires_secure_codec_ = false;
+
+  // Optional crypto object from the Cdm.
+  base::android::ScopedJavaGlobalRef<jobject> media_crypto_;
 
   // If we're running in a service context this ref lets us keep the service
   // thread alive until destruction.

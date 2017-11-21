@@ -19,7 +19,8 @@ FakeCodecAllocator::FakeCodecAllocator(
     scoped_refptr<base::SequencedTaskRunner> task_runner)
     : testing::NiceMock<AVDACodecAllocator>(
           base::BindRepeating(&MockMediaCodecBridge::CreateVideoDecoder),
-          task_runner) {}
+          task_runner),
+      most_recent_config(new CodecConfig()) {}
 
 FakeCodecAllocator::~FakeCodecAllocator() = default;
 
@@ -29,8 +30,7 @@ void FakeCodecAllocator::StopThread(AVDACodecAllocatorClient* client) {}
 
 std::unique_ptr<MediaCodecBridge> FakeCodecAllocator::CreateMediaCodecSync(
     scoped_refptr<CodecConfig> config) {
-  most_recent_overlay = config->surface_bundle->overlay.get();
-  most_recent_surface_texture = config->surface_bundle->surface_texture.get();
+  CopyCodecConfig(config);
   MockCreateMediaCodecSync(most_recent_overlay, most_recent_surface_texture);
 
   std::unique_ptr<MockMediaCodecBridge> codec;
@@ -53,8 +53,7 @@ void FakeCodecAllocator::CreateMediaCodecAsync(
   // Clear |most_recent_codec| until somebody calls Provide*CodecAsync().
   most_recent_codec = nullptr;
   most_recent_codec_destruction_observer = nullptr;
-  most_recent_overlay = config->surface_bundle->overlay.get();
-  most_recent_surface_texture = config->surface_bundle->surface_texture.get();
+  CopyCodecConfig(config);
   pending_surface_bundle_ = config->surface_bundle;
   client_ = client;
   codec_creation_pending_ = true;
@@ -94,6 +93,24 @@ void FakeCodecAllocator::ProvideNullCodecAsync() {
   most_recent_codec = nullptr;
   if (client_)
     client_->OnCodecConfigured(nullptr, std::move(pending_surface_bundle_));
+}
+
+void FakeCodecAllocator::CopyCodecConfig(scoped_refptr<CodecConfig> config) {
+  // CodecConfig isn't copyable, since it has unique_ptrs and such.
+  most_recent_overlay = config->surface_bundle->overlay.get();
+  most_recent_surface_texture = config->surface_bundle->surface_texture.get();
+  most_recent_config->media_crypto =
+      config->media_crypto
+          ? base::MakeUnique<base::android::ScopedJavaGlobalRef<jobject>>(
+                *config->media_crypto)
+          : nullptr;
+  most_recent_config->requires_secure_codec = config->requires_secure_codec;
+  most_recent_config->initial_expected_coded_size =
+      config->initial_expected_coded_size;
+  most_recent_config->software_codec_forbidden =
+      config->software_codec_forbidden;
+  most_recent_config->csd0 = config->csd0;
+  most_recent_config->csd1 = config->csd1;
 }
 
 }  // namespace media

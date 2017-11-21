@@ -5,11 +5,8 @@
 #ifndef MEDIA_BASE_ANDROID_MEDIA_DRM_BRIDGE_CDM_CONTEXT_H_
 #define MEDIA_BASE_ANDROID_MEDIA_DRM_BRIDGE_CDM_CONTEXT_H_
 
-#include <jni.h>
-
 #include <memory>
 
-#include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "media/base/android/android_util.h"
@@ -19,16 +16,14 @@
 
 namespace media {
 
-class MediaDrmBridge;
-
 // The CdmContext implementation for MediaDrmBridge. MediaDrmBridge supports
 // neither Decryptor nor CDM ID, but uses MediaCrypto to connect to MediaCodec.
 // MediaCodec-based decoders should cast the given CdmContext to this class to
 // access APIs defined in this class.
 //
 // Methods can be called on any thread. The registered callbacks will be fired
-// on the thread |media_drm_bridge_| is running on. The caller should make sure
-// that the callbacks are posted to the correct thread.
+// on any thread. The caller should make sure that the callbacks are posted to
+// the correct thread.
 //
 // TODO(xhwang): Remove PlayerTracker interface.
 class MEDIA_EXPORT MediaDrmBridgeCdmContext : public CdmContext,
@@ -46,30 +41,11 @@ class MEDIA_EXPORT MediaDrmBridgeCdmContext : public CdmContext,
       base::Callback<void(JavaObjectPtr media_crypto,
                           bool requires_secure_video_codec)>;
 
-  // The |media_drm_bridge| owns |this| and is guaranteed to outlive |this|.
-  explicit MediaDrmBridgeCdmContext(MediaDrmBridge* media_drm_bridge);
+  MediaDrmBridgeCdmContext() {}
+  ~MediaDrmBridgeCdmContext() override {}
 
-  ~MediaDrmBridgeCdmContext() final;
-
-  // CdmContext implementation.
-  Decryptor* GetDecryptor() final;
-  int GetCdmId() const final;
-
-  // PlayerTracker implementation.
-  // Methods can be called on any thread. The registered callbacks will be fired
-  // on |task_runner_|. The caller should make sure that the callbacks are
-  // posted to the correct thread.
-  //
-  // Note: RegisterPlayer() must be called before SetMediaCryptoReadyCB() to
-  // avoid missing any new key notifications.
-  int RegisterPlayer(const base::Closure& new_key_cb,
-                     const base::Closure& cdm_unset_cb) final;
-  void UnregisterPlayer(int registration_id) final;
-
-  void SetMediaCryptoReadyCB(const MediaCryptoReadyCB& media_crypto_ready_cb);
-
- private:
-  MediaDrmBridge* const media_drm_bridge_;
+  virtual void SetMediaCryptoReadyCB(
+      const MediaCryptoReadyCB& media_crypto_ready_cb) = 0;
 
   DISALLOW_COPY_AND_ASSIGN(MediaDrmBridgeCdmContext);
 };
