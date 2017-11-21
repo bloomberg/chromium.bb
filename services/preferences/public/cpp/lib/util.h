@@ -21,7 +21,7 @@ namespace prefs {
 
 // Sets a nested value inside the dictionary, specified by |path_components|.
 // Creates nested dictionaries as needed.
-void SetValue(base::DictionaryValue* dictionary_value,
+void SetValue(base::Value* dictionary_value,
               const std::vector<base::StringPiece>& path_components,
               std::unique_ptr<base::Value> value);
 

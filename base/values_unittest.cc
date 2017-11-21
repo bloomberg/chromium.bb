@@ -943,13 +943,6 @@ TEST(ValuesTest, DictionarySetReturnsPointer) {
 
   {
     DictionaryValue dict;
-    DictionaryValue* dict_ptr = dict.SetDictionaryWithoutPathExpansion(
-        "foo.bar", std::make_unique<base::DictionaryValue>());
-    EXPECT_EQ(Value::Type::DICTIONARY, dict_ptr->type());
-  }
-
-  {
-    DictionaryValue dict;
     ListValue* list_ptr =
         dict.SetList("foo.bar", std::make_unique<base::ListValue>());
     EXPECT_EQ(Value::Type::LIST, list_ptr->type());

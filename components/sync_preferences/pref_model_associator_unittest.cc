@@ -62,14 +62,14 @@ class AbstractPreferenceMergeTest : public testing::Test {
         pref_service_->GetSyncableService(syncer::PREFERENCES));
   }
 
-  void SetContentPattern(base::DictionaryValue* patterns_dict,
+  void SetContentPattern(base::Value* patterns_dict,
                          const std::string& expression,
                          int setting) {
-    base::DictionaryValue* expression_dict = nullptr;
-    if (!patterns_dict->GetDictionaryWithoutPathExpansion(expression,
-                                                          &expression_dict)) {
-      expression_dict = patterns_dict->SetDictionaryWithoutPathExpansion(
-          expression, base::MakeUnique<base::DictionaryValue>());
+    base::Value* expression_dict =
+        patterns_dict->FindKeyOfType(expression, base::Value::Type::DICTIONARY);
+    if (!expression_dict) {
+      expression_dict = patterns_dict->SetKey(
+          expression, base::Value(base::Value::Type::DICTIONARY));
     }
     expression_dict->SetKey("setting", base::Value(setting));
   }

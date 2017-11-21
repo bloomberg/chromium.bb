@@ -287,15 +287,15 @@ void PasswordProtectionService::CacheVerdict(
   std::unique_ptr<base::DictionaryValue> verdict_entry(
       CreateDictionaryFromVerdict(verdict, receive_time));
 
-  base::DictionaryValue* verdict_dictionary = nullptr;
+  base::Value* verdict_dictionary = nullptr;
   if (trigger_type == LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE) {
     // All UNFAMILIAR_LOGIN_PAGE verdicts (a.k.a password on focus ping)
     // are cached under |kPasswordOnFocusCacheKey|.
-    if (!cache_dictionary->GetDictionaryWithoutPathExpansion(
-            base::StringPiece(kPasswordOnFocusCacheKey), &verdict_dictionary)) {
-      verdict_dictionary = cache_dictionary->SetDictionaryWithoutPathExpansion(
-          base::StringPiece(kPasswordOnFocusCacheKey),
-          base::MakeUnique<base::DictionaryValue>());
+    verdict_dictionary = cache_dictionary->FindKeyOfType(
+        kPasswordOnFocusCacheKey, base::Value::Type::DICTIONARY);
+    if (!verdict_dictionary) {
+      verdict_dictionary = cache_dictionary->SetKey(
+          kPasswordOnFocusCacheKey, base::Value(base::Value::Type::DICTIONARY));
     }
   } else {
     verdict_dictionary = cache_dictionary.get();
@@ -303,13 +303,14 @@ void PasswordProtectionService::CacheVerdict(
 
   // Increases stored verdict count if we haven't seen this cache expression
   // before.
-  if (!verdict_dictionary->HasKey(verdict->cache_expression()))
+  if (!verdict_dictionary->FindKey(verdict->cache_expression()))
     *stored_verdict_count = GetStoredVerdictCount(trigger_type) + 1;
 
   // If same cache_expression is already in this verdict_dictionary, we simply
   // override it.
-  verdict_dictionary->SetWithoutPathExpansion(verdict->cache_expression(),
-                                              std::move(verdict_entry));
+  verdict_dictionary->SetKey(
+      verdict->cache_expression(),
+      base::Value::FromUniquePtrValue(std::move(verdict_entry)));
   content_settings_->SetWebsiteSettingDefaultScope(
       hostname, GURL(), CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION,
       std::string(), std::move(cache_dictionary));

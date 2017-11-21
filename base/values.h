@@ -432,12 +432,6 @@ class BASE_EXPORT DictionaryValue : public Value {
   Value* SetWithoutPathExpansion(StringPiece key,
                                  std::unique_ptr<Value> in_value);
 
-  // Convenience forms of SetWithoutPathExpansion().
-  // DEPRECATED, use Value::SetKey(key, Value(Type::DICTIONARY)) instead.
-  DictionaryValue* SetDictionaryWithoutPathExpansion(
-      StringPiece path,
-      std::unique_ptr<DictionaryValue> in_value);
-
   // Gets the Value associated with the given path starting from this object.
   // A path has the form "<key>" or "<key>.<key>.[...]", where "." indexes
   // into the next DictionaryValue down.  If the path can be resolved

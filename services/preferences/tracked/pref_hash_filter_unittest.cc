@@ -406,13 +406,7 @@ class MockHashStoreContents : public HashStoreContents {
   void RecordSetSplitMac(const std::string& path,
                          const std::string& split_path,
                          const std::string& mac) {
-    base::DictionaryValue* mac_dict = nullptr;
-    dictionary_.GetDictionaryWithoutPathExpansion(path, &mac_dict);
-    if (!mac_dict) {
-      mac_dict = dictionary_.SetDictionaryWithoutPathExpansion(
-          path, std::make_unique<base::DictionaryValue>());
-    }
-    mac_dict->SetKey(split_path, base::Value(mac));
+    dictionary_.SetPath({path, split_path}, base::Value(mac));
   }
 
   // Records a call to this mock's RemoveEntry method.
