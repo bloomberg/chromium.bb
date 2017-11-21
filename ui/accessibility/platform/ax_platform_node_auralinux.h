@@ -24,6 +24,8 @@ class AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   AX_EXPORT static void SetApplication(AXPlatformNode* application);
   static AXPlatformNode* application() { return application_; }
 
+  static void EnsureGTypeInit();
+
   // Do asynchronous static initialization.
   AX_EXPORT static void StaticInitialize();
 

@@ -443,12 +443,9 @@ static void ax_platform_node_auralinux_class_init(AtkObjectClass* klass) {
 }
 
 GType ax_platform_node_auralinux_get_type() {
+  ui::AXPlatformNodeAuraLinux::EnsureGTypeInit();
+
   static volatile gsize type_volatile = 0;
-
-#if !GLIB_CHECK_VERSION(2, 36, 0)
-  g_type_init();
-#endif
-
   if (g_once_init_enter(&type_volatile)) {
     static const GTypeInfo tinfo = {
         sizeof(AXPlatformNodeAuraLinuxClass),
@@ -479,6 +476,16 @@ void ax_platform_node_auralinux_detach(
 G_END_DECLS
 
 namespace ui {
+
+void AXPlatformNodeAuraLinux::EnsureGTypeInit() {
+#if !GLIB_CHECK_VERSION(2, 36, 0)
+  static bool first_time = true;
+  if (UNLIKELY(first_time)) {
+    g_type_init();
+    first_time = false;
+  }
+#endif
+}
 
 const char* AXPlatformNodeAuraLinux::GetUniqueAccessibilityGTypeName(
     int interface_mask) {
@@ -549,13 +556,7 @@ GType AXPlatformNodeAuraLinux::GetAccessibilityGType() {
 }
 
 AtkObject* AXPlatformNodeAuraLinux::CreateAtkObject() {
-#if !GLIB_CHECK_VERSION(2, 36, 0)
-  static bool first_time = true;
-  if (first_time) {
-    g_type_init();
-    first_time = false;
-  }
-#endif
+  EnsureGTypeInit();
   GType type = GetAccessibilityGType();
   AtkObject* atk_object = static_cast<AtkObject*>(g_object_new(type, nullptr));
 
