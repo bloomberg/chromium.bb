@@ -712,6 +712,7 @@ TEST_F(PageInfoTest, HTTPSConnectionError) {
   EXPECT_EQ(base::string16(), page_info()->organization_name());
 }
 
+#if defined(OS_CHROMEOS)
 TEST_F(PageInfoTest, HTTPSPolicyCertConnection) {
   security_info_.security_level =
       security_state::SECURE_WITH_POLICY_INSTALLED_CERT;
@@ -732,6 +733,7 @@ TEST_F(PageInfoTest, HTTPSPolicyCertConnection) {
             page_info()->site_identity_status());
   EXPECT_EQ(base::string16(), page_info()->organization_name());
 }
+#endif
 
 TEST_F(PageInfoTest, HTTPSSHA1) {
   security_info_.security_level = security_state::NONE;
