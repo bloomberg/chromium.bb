@@ -185,7 +185,7 @@ std::array<TestVector<T>, 2u> GetSecondaryVectors(
   return vectors;
 }
 
-class VectorMathTest : public testing::Test {
+class VectorMathTest : public ::testing::Test {
  protected:
   enum {
     kDestinationCount = 4u,
@@ -279,7 +279,7 @@ TEST_F(VectorMathTest, Vmaxmgv) {
           std::accumulate(source.begin(), source.end(), 0.0f, maxmg);
       float max;
       Vmaxmgv(source.p(), source.stride(), &max, source.size());
-      EXPECT_EQ(expected_max, max) << testing::PrintToString(source);
+      EXPECT_EQ(expected_max, max) << ::testing::PrintToString(source);
     }
   }
 }
