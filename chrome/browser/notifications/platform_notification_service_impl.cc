@@ -156,7 +156,8 @@ void PlatformNotificationServiceImpl::OnPersistentNotificationClick(
     const std::string& notification_id,
     const GURL& origin,
     const base::Optional<int>& action_index,
-    const base::Optional<base::string16>& reply) {
+    const base::Optional<base::string16>& reply,
+    base::OnceClosure completed_closure) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   blink::mojom::PermissionStatus permission_status =
       CheckPermissionOnUIThread(browser_context, origin,
@@ -168,6 +169,8 @@ void PlatformNotificationServiceImpl::OnPersistentNotificationClick(
   // Also change this method to be const again.
   if (permission_status != blink::mojom::PermissionStatus::GRANTED) {
     metrics_logger->LogPersistentNotificationClickWithoutPermission();
+
+    std::move(completed_closure).Run();
     return;
   }
 
@@ -190,9 +193,9 @@ void PlatformNotificationServiceImpl::OnPersistentNotificationClick(
   content::NotificationEventDispatcher::GetInstance()
       ->DispatchNotificationClickEvent(
           browser_context, notification_id, origin, action_index, reply,
-          base::Bind(
+          base::BindOnce(
               &PlatformNotificationServiceImpl::OnClickEventDispatchComplete,
-              base::Unretained(this)));
+              base::Unretained(this), std::move(completed_closure)));
 }
 
 // TODO(miguelg): Move this to PersistentNotificationHandler
@@ -200,12 +203,15 @@ void PlatformNotificationServiceImpl::OnPersistentNotificationClose(
     BrowserContext* browser_context,
     const std::string& notification_id,
     const GURL& origin,
-    bool by_user) {
+    bool by_user,
+    base::OnceClosure completed_closure) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // If we programatically closed this notification, don't dispatch any event.
-  if (closed_notifications_.erase(notification_id) != 0)
+  if (closed_notifications_.erase(notification_id) != 0) {
+    std::move(completed_closure).Run();
     return;
+  }
 
   NotificationMetricsLogger* metrics_logger = GetMetricsLogger(browser_context);
   if (by_user)
@@ -216,9 +222,9 @@ void PlatformNotificationServiceImpl::OnPersistentNotificationClose(
   content::NotificationEventDispatcher::GetInstance()
       ->DispatchNotificationCloseEvent(
           browser_context, notification_id, origin, by_user,
-          base::Bind(
+          base::BindOnce(
               &PlatformNotificationServiceImpl::OnCloseEventDispatchComplete,
-              base::Unretained(this)));
+              base::Unretained(this), std::move(completed_closure)));
 }
 
 blink::mojom::PermissionStatus
@@ -435,6 +441,7 @@ void PlatformNotificationServiceImpl::GetDisplayedNotifications(
 }
 
 void PlatformNotificationServiceImpl::OnClickEventDispatchComplete(
+    base::OnceClosure completed_closure,
     content::PersistentNotificationStatus status) {
   UMA_HISTOGRAM_ENUMERATION(
       "Notifications.PersistentWebNotificationClickResult", status,
@@ -446,14 +453,19 @@ void PlatformNotificationServiceImpl::OnClickEventDispatchComplete(
     click_dispatch_keep_alive_.reset();
   }
 #endif
+
+  std::move(completed_closure).Run();
 }
 
 void PlatformNotificationServiceImpl::OnCloseEventDispatchComplete(
+    base::OnceClosure completed_closure,
     content::PersistentNotificationStatus status) {
   UMA_HISTOGRAM_ENUMERATION(
       "Notifications.PersistentWebNotificationCloseResult", status,
       content::PersistentNotificationStatus::
           PERSISTENT_NOTIFICATION_STATUS_MAX);
+
+  std::move(completed_closure).Run();
 }
 
 message_center::Notification

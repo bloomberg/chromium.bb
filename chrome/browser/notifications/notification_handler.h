@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
 
@@ -19,27 +20,31 @@ class Profile;
 // notification type.
 class NotificationHandler {
  public:
-  virtual ~NotificationHandler() {}
+  virtual ~NotificationHandler();
 
-  // Called after displaying a toast in case the caller needs some processing.
-  virtual void OnShow(Profile* profile, const std::string& notification_id) {}
+  // Called after a notification has been displayed.
+  virtual void OnShow(Profile* profile, const std::string& notification_id);
 
-  // Process notification close events.
+  // Process notification close events. The |completed_closure| must be invoked
+  // on the UI thread once processing of the close event has been finished.
   virtual void OnClose(Profile* profile,
                        const GURL& origin,
                        const std::string& notification_id,
-                       bool by_user) {}
+                       bool by_user,
+                       base::OnceClosure completed_closure);
 
-  // Process cliks to a notification or its buttons, depending on
-  // |action_index|.
+  // Process clicks on a notification or its buttons, depending on
+  // |action_index|. The |completed_closure| must be invoked on the UI thread
+  // once processing of the click event has been finished.
   virtual void OnClick(Profile* profile,
                        const GURL& origin,
                        const std::string& notification_id,
                        const base::Optional<int>& action_index,
-                       const base::Optional<base::string16>& reply) = 0;
+                       const base::Optional<base::string16>& reply,
+                       base::OnceClosure completed_closure);
 
   // Open notification settings.
-  virtual void OpenSettings(Profile* profile) {}
+  virtual void OpenSettings(Profile* profile);
 };
 
 #endif  // CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_HANDLER_H_

@@ -8,6 +8,8 @@
 
 #include <bitset>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -185,7 +187,8 @@ void PushMessagingNotificationManager::DidGetNotificationsFromDatabase(
           profile_, notification_database_data.notification_id);
       platform_notification_service->OnPersistentNotificationClose(
           profile_, notification_database_data.notification_id,
-          notification_database_data.origin, false /* by_user */);
+          notification_database_data.origin, false /* by_user */,
+          base::BindOnce(&base::DoNothing));
 
       break;
     }

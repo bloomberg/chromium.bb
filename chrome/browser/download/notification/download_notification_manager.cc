@@ -4,6 +4,7 @@
 
 #include "chrome/browser/download/notification/download_notification_manager.h"
 
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
@@ -30,29 +31,35 @@ class DownloadNotificationHandler : public NotificationHandler {
   explicit DownloadNotificationHandler(
       DownloadNotificationManagerForProfile* manager)
       : manager_(manager) {}
-  ~DownloadNotificationHandler() override {}
+  ~DownloadNotificationHandler() override = default;
 
   void OnClose(Profile* profile,
                const GURL& origin,
                const std::string& notification_id,
-               bool by_user) override {
+               bool by_user,
+               base::OnceClosure completed_closure) override {
     if (by_user) {
       manager_->GetNotificationItemByGuid(notification_id)
           ->OnNotificationClose();
     }
+
+    std::move(completed_closure).Run();
   }
 
   void OnClick(Profile* profile,
                const GURL& origin,
                const std::string& notification_id,
                const base::Optional<int>& action_index,
-               const base::Optional<base::string16>& reply) override {
+               const base::Optional<base::string16>& reply,
+               base::OnceClosure completed_closure) override {
     DownloadItemNotification* item =
         manager_->GetNotificationItemByGuid(notification_id);
     if (!action_index)
       item->OnNotificationClick();
     else
       item->OnNotificationButtonClick(*action_index);
+
+    std::move(completed_closure).Run();
   }
 
  private:

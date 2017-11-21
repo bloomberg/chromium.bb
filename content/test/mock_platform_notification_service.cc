@@ -74,9 +74,6 @@ void MockPlatformNotificationService::CloseNotification(
   if (non_persistent_iter == non_persistent_notifications_.end())
     return;
 
-  NotificationEventDispatcher::GetInstance()->DispatchNonPersistentCloseEvent(
-      notification_id);
-
   non_persistent_notifications_.erase(non_persistent_iter);
 }
 
@@ -124,7 +121,7 @@ void MockPlatformNotificationService::SimulateClick(
     const PersistentNotification& notification = persistent_iter->second;
     NotificationEventDispatcher::GetInstance()->DispatchNotificationClickEvent(
         notification.browser_context, notification_id, notification.origin,
-        action_index, reply, base::Bind(&OnEventDispatchComplete));
+        action_index, reply, base::BindOnce(&OnEventDispatchComplete));
   } else if (non_persistent_iter != non_persistent_notifications_.end()) {
     DCHECK(!action_index.has_value())
         << "Action buttons are only supported for "
@@ -151,7 +148,7 @@ void MockPlatformNotificationService::SimulateClose(const std::string& title,
   const PersistentNotification& notification = persistent_iter->second;
   NotificationEventDispatcher::GetInstance()->DispatchNotificationCloseEvent(
       notification.browser_context, notification_id, notification.origin,
-      by_user, base::Bind(&OnEventDispatchComplete));
+      by_user, base::BindOnce(&OnEventDispatchComplete));
 }
 
 blink::mojom::PermissionStatus

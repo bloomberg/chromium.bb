@@ -13,6 +13,7 @@
 #include <string>
 #include <unordered_set>
 
+#include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
@@ -55,7 +56,8 @@ class PlatformNotificationServiceImpl
       const std::string& notification_id,
       const GURL& origin,
       const base::Optional<int>& action_index,
-      const base::Optional<base::string16>& reply);
+      const base::Optional<base::string16>& reply,
+      base::OnceClosure completed_closure);
 
   // To be called when a persistent notification has been closed. The data
   // associated with the notification has to be pruned from the database in this
@@ -64,7 +66,8 @@ class PlatformNotificationServiceImpl
   void OnPersistentNotificationClose(content::BrowserContext* browser_context,
                                      const std::string& notification_id,
                                      const GURL& origin,
-                                     bool by_user);
+                                     bool by_user,
+                                     base::OnceClosure completed_closure);
 
   // content::PlatformNotificationService implementation.
   blink::mojom::PermissionStatus CheckPermissionOnUIThread(
@@ -109,11 +112,11 @@ class PlatformNotificationServiceImpl
   PlatformNotificationServiceImpl();
   ~PlatformNotificationServiceImpl() override;
 
-  // Persistent notifications fired through the delegate do not care about the
-  // lifetime of the Service Worker responsible for executing the event.
   void OnClickEventDispatchComplete(
+      base::OnceClosure completed_closure,
       content::PersistentNotificationStatus status);
   void OnCloseEventDispatchComplete(
+      base::OnceClosure completed_closure,
       content::PersistentNotificationStatus status);
 
   // Creates a new Web Notification-based Notification object. Should only be

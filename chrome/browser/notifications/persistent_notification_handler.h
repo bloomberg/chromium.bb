@@ -16,16 +16,17 @@ class PersistentNotificationHandler : public NotificationHandler {
   ~PersistentNotificationHandler() override;
 
   // NotificationHandler implementation.
-  void OnShow(Profile* profile, const std::string& notification_id) override;
   void OnClose(Profile* profile,
                const GURL& origin,
                const std::string& notification_id,
-               bool by_user) override;
+               bool by_user,
+               base::OnceClosure completed_closure) override;
   void OnClick(Profile* profile,
                const GURL& origin,
                const std::string& notification_id,
                const base::Optional<int>& action_index,
-               const base::Optional<base::string16>& reply) override;
+               const base::Optional<base::string16>& reply,
+               base::OnceClosure completed_closure) override;
   void OpenSettings(Profile* profile) override;
 
  private:

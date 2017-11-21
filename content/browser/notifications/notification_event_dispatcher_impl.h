@@ -27,15 +27,13 @@ class NotificationEventDispatcherImpl : public NotificationEventDispatcher {
       const GURL& origin,
       const base::Optional<int>& action_index,
       const base::Optional<base::string16>& reply,
-      const NotificationDispatchCompleteCallback& dispatch_complete_callback)
-      override;
+      NotificationDispatchCompleteCallback dispatch_complete_callback) override;
   void DispatchNotificationCloseEvent(
       BrowserContext* browser_context,
       const std::string& notification_id,
       const GURL& origin,
       bool by_user,
-      const NotificationDispatchCompleteCallback& dispatch_complete_callback)
-      override;
+      NotificationDispatchCompleteCallback dispatch_complete_callback) override;
   void DispatchNonPersistentShowEvent(
       const std::string& notification_id) override;
   void DispatchNonPersistentClickEvent(

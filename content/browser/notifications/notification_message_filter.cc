@@ -101,7 +101,7 @@ NotificationMessageFilter::~NotificationMessageFilter() = default;
 void NotificationMessageFilter::OnDestruct() const {
   if (non_persistent__notification_shown_) {
     NotificationEventDispatcherImpl* event_dispatcher =
-        content::NotificationEventDispatcherImpl::GetInstance();
+        NotificationEventDispatcherImpl::GetInstance();
     DCHECK(event_dispatcher);
     event_dispatcher->RendererGone(process_id_);
   }
@@ -129,7 +129,7 @@ bool NotificationMessageFilter::OnMessageReceived(const IPC::Message& message) {
 
 void NotificationMessageFilter::OverrideThreadForMessage(
     const IPC::Message& message,
-    content::BrowserThread::ID* thread) {
+    BrowserThread::ID* thread) {
   if (message.type() == PlatformNotificationHostMsg_Show::ID ||
       message.type() == PlatformNotificationHostMsg_Close::ID)
     *thread = BrowserThread::UI;
@@ -161,7 +161,7 @@ void NotificationMessageFilter::OnShowPlatformNotification(
           origin, notification_data.tag, non_persistent_notification_id,
           process_id_);
   NotificationEventDispatcherImpl* event_dispatcher =
-      content::NotificationEventDispatcherImpl::GetInstance();
+      NotificationEventDispatcherImpl::GetInstance();
   non_persistent__notification_shown_ = true;
   event_dispatcher->RegisterNonPersistentNotification(
       notification_id, process_id_, non_persistent_notification_id);
@@ -323,6 +323,9 @@ void NotificationMessageFilter::OnClosePlatformNotification(
   DCHECK(service);
 
   service->CloseNotification(browser_context_, notification_id);
+
+  NotificationEventDispatcherImpl::GetInstance()
+      ->DispatchNonPersistentCloseEvent(notification_id);
 }
 
 void NotificationMessageFilter::OnClosePersistentNotification(
