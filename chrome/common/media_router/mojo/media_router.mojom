@@ -170,7 +170,7 @@ struct Issue {
 
   ActionType default_action;
 
-  array<ActionType>? secondary_actions;
+  array<ActionType> secondary_actions;
 
   // The ID of the help page to be opened if users select learn_more.
   int32 help_page_id;
