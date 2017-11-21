@@ -131,7 +131,7 @@ TEST_F('GPUSandboxStatusUITest', 'DISABLED_testGPUSandboxEnabled', function() {
           testDone();
         }
       }
-    })
+    });
   });
   observer.observe(document.getElementById('basic-info'), {childList: true});
 });

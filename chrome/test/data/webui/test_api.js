@@ -45,7 +45,7 @@ var testing = {};
    * mimic the gtest's class names.
    * @constructor
    */
-  function Test() {};
+  function Test() {}
 
   /**
    * Make all transitions and animations take 0ms. NOTE: this will completely
