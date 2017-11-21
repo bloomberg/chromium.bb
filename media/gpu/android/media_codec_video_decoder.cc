@@ -134,6 +134,17 @@ MediaCodecVideoDecoder::~MediaCodecVideoDecoder() {
   DVLOG(2) << __func__;
   ReleaseCodec();
   codec_allocator_->StopThread(this);
+
+  if (!media_drm_bridge_cdm_context_)
+    return;
+
+  DCHECK(cdm_registration_id_);
+
+  // Cancel previously registered callback (if any).
+  media_drm_bridge_cdm_context_->SetMediaCryptoReadyCB(
+      MediaDrmBridgeCdmContext::MediaCryptoReadyCB());
+
+  media_drm_bridge_cdm_context_->UnregisterPlayer(cdm_registration_id_);
 }
 
 void MediaCodecVideoDecoder::Destroy() {
@@ -175,9 +186,73 @@ void MediaCodecVideoDecoder::Initialize(const VideoDecoderConfig& config,
     ExtractSpsAndPps(config.extra_data(), &csd0_, &csd1_);
 #endif
 
+  // For encrypted content, defer signalling success until the Cdm is ready.
+  if (config.is_encrypted()) {
+    SetCdm(cdm_context, init_cb);
+    return;
+  }
+
   // Do the rest of the initialization lazily on the first decode.
-  // TODO(watk): Add CDM Support.
-  DCHECK(!cdm_context);
+  init_cb.Run(true);
+}
+
+void MediaCodecVideoDecoder::SetCdm(CdmContext* cdm_context,
+                                    const InitCB& init_cb) {
+  if (!cdm_context) {
+    LOG(ERROR) << "No CDM provided";
+    EnterTerminalState(State::kError);
+    init_cb.Run(false);
+    return;
+  }
+
+  // On Android platform the CdmContext must be a MediaDrmBridgeCdmContext.
+  media_drm_bridge_cdm_context_ =
+      static_cast<media::MediaDrmBridgeCdmContext*>(cdm_context);
+
+  // Register CDM callbacks. The callbacks registered will be posted back to
+  // this thread via BindToCurrentLoop.
+
+  // Since |this| holds a reference to the |cdm_|, by the time the CDM is
+  // destructed, UnregisterPlayer() must have been called and |this| has been
+  // destructed as well. So the |cdm_unset_cb| will never have a chance to be
+  // called.
+  // TODO(xhwang): Remove |cdm_unset_cb| after it's not used on all platforms.
+  cdm_registration_id_ = media_drm_bridge_cdm_context_->RegisterPlayer(
+      media::BindToCurrentLoop(base::Bind(&MediaCodecVideoDecoder::OnKeyAdded,
+                                          weak_factory_.GetWeakPtr())),
+      base::Bind(&base::DoNothing));
+
+  media_drm_bridge_cdm_context_->SetMediaCryptoReadyCB(media::BindToCurrentLoop(
+      base::Bind(&MediaCodecVideoDecoder::OnMediaCryptoReady,
+                 weak_factory_.GetWeakPtr(), init_cb)));
+}
+
+void MediaCodecVideoDecoder::OnMediaCryptoReady(
+    const InitCB& init_cb,
+    JavaObjectPtr media_crypto,
+    bool requires_secure_video_codec) {
+  DVLOG(1) << __func__;
+
+  DCHECK(state_ == State::kInitializing);
+
+  if (!media_crypto || media_crypto->is_null()) {
+    LOG(ERROR) << "MediaCrypto is not available";
+    EnterTerminalState(State::kError);
+    init_cb.Run(false);
+    return;
+  }
+
+  media_crypto_ = *media_crypto;
+  requires_secure_codec_ = requires_secure_video_codec;
+
+  // Request a secure surface in all cases.  For L3, it's okay if we fall back
+  // to SurfaceTexture rather than fail composition.  For L1, it's required.
+  surface_chooser_helper_.SetSecureSurfaceMode(
+      requires_secure_video_codec
+          ? SurfaceChooserHelper::SecureSurfaceMode::kRequired
+          : SurfaceChooserHelper::SecureSurfaceMode::kRequested);
+
+  // Signal success, and create the codec lazily on the first decode.
   init_cb.Run(true);
 }
 
@@ -317,9 +392,11 @@ void MediaCodecVideoDecoder::CreateCodec() {
 
   scoped_refptr<CodecConfig> config = new CodecConfig();
   config->codec = decoder_config_.codec();
-  // TODO(watk): Set |requires_secure_codec| correctly using
-  // MediaDrmBridgeCdmContext::MediaCryptoReadyCB.
-  config->requires_secure_codec = decoder_config_.is_encrypted();
+  config->requires_secure_codec = requires_secure_codec_;
+  // TODO(liberato): per android_util.h, remove JavaObjectPtr.
+  config->media_crypto =
+      base::MakeUnique<base::android::ScopedJavaGlobalRef<jobject>>(
+          media_crypto_);
   config->initial_expected_coded_size = decoder_config_.coded_size();
   config->surface_bundle = target_surface_bundle_;
   // Note that this might be the same surface bundle that we've been using, if

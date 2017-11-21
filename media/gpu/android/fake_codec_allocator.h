@@ -72,7 +72,13 @@ class FakeCodecAllocator : public testing::NiceMock<AVDACodecAllocator> {
   // Whether CreateMediaCodecSync() is allowed to succeed.
   bool allow_sync_creation = true;
 
+  // Copy of most of the fields in the most recent config, except for the ptrs.
+  scoped_refptr<CodecConfig> most_recent_config;
+
  private:
+  // Copy |config| to |most_recent_config| etc.
+  void CopyCodecConfig(scoped_refptr<CodecConfig> config);
+
   // Whether CreateMediaCodecAsync() has been called but a codec hasn't been
   // provided yet.
   bool codec_creation_pending_ = false;
