@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_APP_LIST_MODEL_BUILDER_H_
 #define CHROME_BROWSER_UI_APP_LIST_APP_LIST_MODEL_BUILDER_H_
 
+#include <memory>
 #include <string>
 
-#include "ash/app_list/model/app_list_item_list_observer.h"
 #include "ash/app_list/model/app_list_model.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
@@ -17,12 +17,12 @@ class Profile;
 
 // This abstract class populates and maintains the given |model| with
 // information from |profile| for the specific item type.
-class AppListModelBuilder : public app_list::AppListItemListObserver {
+class AppListModelBuilder {
  public:
   // |controller| is owned by implementation of AppListService.
   AppListModelBuilder(AppListControllerDelegate* controller,
                       const char* item_type);
-   ~AppListModelBuilder() override;
+  virtual ~AppListModelBuilder();
 
   // Initialize to use app-list sync and sets |service_| to |service|.
   // |service| is the owner of this instance and |model|.

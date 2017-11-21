@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/app_list/arc/arc_app_model_builder.h"
 
+#include <vector>
+
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -82,12 +84,4 @@ void ArcAppModelBuilder::OnAppNameUpdated(const std::string& app_id,
   }
 
   app_item->SetName(name);
-}
-
-void ArcAppModelBuilder::OnListItemMoved(size_t from_index,
-                                         size_t to_index,
-                                         app_list::AppListItem* item) {
-  // On ChromeOS we expect that ArcAppModelBuilder is initialized with
-  // AppListSyncableService and in this case this observer is not used.
-  NOTREACHED();
 }
