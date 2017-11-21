@@ -410,6 +410,9 @@ struct V8CacheResult {
     int cache_size;
     bool rejected;
   };
+  V8CacheResult() {}
+  V8CacheResult(Optional<ProduceResult>, Optional<ConsumeResult>);
+
   Optional<ProduceResult> produce_result;
   Optional<ConsumeResult> consume_result;
 };
