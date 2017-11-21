@@ -138,7 +138,6 @@
 #include "base/sys_info.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/trace_event/trace_event.h"
-#include "chromeos/audio/audio_a11y_controller.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/system/devicemode.h"
@@ -736,7 +735,6 @@ Shell::~Shell() {
   modality_filter_.reset();
 
   touch_transformer_controller_.reset();
-  audio_a11y_controller_.reset();
   laser_pointer_controller_.reset();
   partial_magnification_controller_.reset();
   highlighter_controller_.reset();
@@ -1104,8 +1102,6 @@ void Shell::Init(const ShellInitParams& init_params) {
   // keyboard to be deployed.
   if (config != Config::MASH)
     virtual_keyboard_controller_.reset(new VirtualKeyboardController);
-
-  audio_a11y_controller_.reset(new chromeos::AudioA11yController);
 
   // Initialize the wallpaper after the RootWindowController has been created,
   // otherwise the widget will not paint when restoring after a browser crash.

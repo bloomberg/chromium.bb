@@ -145,16 +145,6 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
     return AccessibilityManager::Get()->IsVirtualKeyboardEnabled();
   }
 
-  void SetMonoAudioEnabled(bool enabled) override {
-    DCHECK(AccessibilityManager::Get());
-    return AccessibilityManager::Get()->EnableMonoAudio(enabled);
-  }
-
-  bool IsMonoAudioEnabled() const override {
-    DCHECK(AccessibilityManager::Get());
-    return AccessibilityManager::Get()->IsMonoAudioEnabled();
-  }
-
   void SetCaretHighlightEnabled(bool enabled) override {
     DCHECK(AccessibilityManager::Get());
     AccessibilityManager::Get()->SetCaretHighlightEnabled(enabled);

@@ -37,10 +37,6 @@ class WindowManagerClient;
 class WindowTreeClient;
 }  // namespace aura
 
-namespace chromeos {
-class AudioA11yController;
-}
-
 namespace app_list {
 class AppList;
 }  // namespace app_list
@@ -305,9 +301,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   app_list::AppList* app_list() { return app_list_.get(); }
   AshDisplayController* ash_display_controller() {
     return ash_display_controller_.get();
-  }
-  chromeos::AudioA11yController* audio_a11y_controller() {
-    return audio_a11y_controller_.get();
   }
   AutoclickController* autoclick_controller() {
     return autoclick_controller_.get();
@@ -735,7 +728,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<BluetoothPowerController> bluetooth_power_controller_;
   std::unique_ptr<TrayBluetoothHelper> tray_bluetooth_helper_;
   std::unique_ptr<VirtualKeyboardController> virtual_keyboard_controller_;
-  std::unique_ptr<chromeos::AudioA11yController> audio_a11y_controller_;
   // Controls video output device state.
   std::unique_ptr<display::DisplayConfigurator> display_configurator_;
   std::unique_ptr<DisplayColorManager> display_color_manager_;
