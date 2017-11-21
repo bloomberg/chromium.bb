@@ -2369,6 +2369,50 @@ TEST_F(PaintControllerUnderInvalidationTest,
   GetPaintController().CommitNewDisplayItems();
 }
 
+TEST_F(PaintControllerUnderInvalidationTest,
+       PairAfterNoopPairInCachedSubsequence) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
+    return;
+
+  FakeDisplayItemClient client("client");
+  GraphicsContext context(GetPaintController());
+
+  {
+    SubsequenceRecorder subsequence_recorder(context, client);
+    {
+      ClipRecorder clip_recorder(context, client, kClipType,
+                                 IntRect(100, 100, 50, 50));
+    }
+    {
+      ClipRecorder clip_recorder(context, client, kClipType,
+                                 IntRect(100, 100, 50, 50));
+      DrawRect(context, client, kBackgroundType, FloatRect(100, 100, 200, 200));
+    }
+  }
+  GetPaintController().CommitNewDisplayItems();
+  EXPECT_DISPLAY_LIST(
+      GetPaintController().GetDisplayItemList(), 3,
+      TestDisplayItem(client, kClipType),
+      TestDisplayItem(client, kBackgroundType),
+      TestDisplayItem(client, DisplayItem::ClipTypeToEndClipType(kClipType)));
+
+  {
+    EXPECT_FALSE(
+        SubsequenceRecorder::UseCachedSubsequenceIfPossible(context, client));
+    SubsequenceRecorder subsequence_recorder(context, client);
+    {
+      ClipRecorder clip_recorder(context, client, kClipType,
+                                 IntRect(100, 100, 50, 50));
+    }
+    {
+      ClipRecorder clip_recorder(context, client, kClipType,
+                                 IntRect(100, 100, 50, 50));
+      DrawRect(context, client, kBackgroundType, FloatRect(100, 100, 200, 200));
+    }
+  }
+  GetPaintController().CommitNewDisplayItems();
+}
+
 #endif  // defined(GTEST_HAS_DEATH_TEST) && !defined(OS_ANDROID)
 
 }  // namespace blink

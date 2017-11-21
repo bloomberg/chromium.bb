@@ -326,7 +326,8 @@ class PLATFORM_EXPORT DisplayItem {
 #endif
 
   virtual bool Equals(const DisplayItem& other) const {
-    DCHECK(!is_tombstone_);
+    // Failure of this DCHECK would cause bad casts in subclasses.
+    SECURITY_CHECK(!is_tombstone_);
     return client_ == other.client_ && type_ == other.type_ &&
            derived_size_ == other.derived_size_ &&
            skipped_cache_ == other.skipped_cache_;
