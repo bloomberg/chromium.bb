@@ -267,6 +267,7 @@ TEST_F('InterventionsInternalsUITest', 'LogNewMessageWithLongUrl', function() {
       description: 'Some description',
       time: 758675653000,  // Jan 15 1994 23:14:13 UTC
     };
+    // Creating long url.
     for (let i = 0; i <= 2 * URL_THRESHOLD; i++) {
       log.url.url += 'a';
     }
@@ -275,6 +276,27 @@ TEST_F('InterventionsInternalsUITest', 'LogNewMessageWithLongUrl', function() {
     pageImpl.logNewMessage(log);
     expectEquals(
         expectedUrl, document.querySelector('div.log-url-value').textContent);
+  });
+
+  mocha.run();
+});
+
+TEST_F('InterventionsInternalsUITest', 'LogNewMessageWithNoUrl', function() {
+  test('LogMessageIsPostedCorrectly', () => {
+    let pageImpl = new InterventionsInternalPageImpl(null);
+    let log = {
+      type: 'Some type',
+      url: {url: ''},
+      description: 'Some description',
+      time: 758675653000,  // Jan 15 1994 23:14:13 UTC
+    };
+    pageImpl.logNewMessage(log);
+    let actual = $('message-logs-table').rows[1];
+    let expectedNoColumns = 3;
+    expectEquals(expectedNoColumns, actual.querySelectorAll('td').length);
+    assert(
+        !actual.querySelector('.log-url'),
+        'There should not be a log-url column for empty URL');
   });
 
   mocha.run();
