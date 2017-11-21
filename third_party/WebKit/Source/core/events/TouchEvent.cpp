@@ -362,10 +362,6 @@ void TouchEvent::DoneDispatchingEventAtCurrentTarget() {
   default_prevented_before_current_target_ = canceled;
 }
 
-EventDispatchMediator* TouchEvent::CreateMediator() {
-  return TouchEventDispatchMediator::Create(this);
-}
-
 void TouchEvent::Trace(blink::Visitor* visitor) {
   visitor->Trace(touches_);
   visitor->Trace(target_touches_);
@@ -373,21 +369,8 @@ void TouchEvent::Trace(blink::Visitor* visitor) {
   UIEventWithKeyState::Trace(visitor);
 }
 
-TouchEventDispatchMediator* TouchEventDispatchMediator::Create(
-    TouchEvent* touch_event) {
-  return new TouchEventDispatchMediator(touch_event);
-}
-
-TouchEventDispatchMediator::TouchEventDispatchMediator(TouchEvent* touch_event)
-    : EventDispatchMediator(touch_event) {}
-
-TouchEvent& TouchEventDispatchMediator::Event() const {
-  return ToTouchEvent(EventDispatchMediator::GetEvent());
-}
-
-DispatchEventResult TouchEventDispatchMediator::DispatchEvent(
-    EventDispatcher& dispatcher) const {
-  Event().GetEventPath().AdjustForTouchEvent(Event());
+DispatchEventResult TouchEvent::DispatchEvent(EventDispatcher& dispatcher) {
+  GetEventPath().AdjustForTouchEvent(*this);
   return dispatcher.Dispatch();
 }
 

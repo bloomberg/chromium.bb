@@ -180,33 +180,13 @@ bool InputEvent::IsInputEvent() const {
   return true;
 }
 
-// TODO(chongz): We should get rid of this |EventDispatchMediator| pattern and
-// introduce simpler interface such as |beforeDispatchEvent()| and
-// |afterDispatchEvent()| virtual methods.
-EventDispatchMediator* InputEvent::CreateMediator() {
-  return InputEventDispatchMediator::Create(this);
-}
-
 void InputEvent::Trace(blink::Visitor* visitor) {
   UIEvent::Trace(visitor);
   visitor->Trace(data_transfer_);
   visitor->Trace(ranges_);
 }
 
-InputEventDispatchMediator* InputEventDispatchMediator::Create(
-    InputEvent* input_event) {
-  return new InputEventDispatchMediator(input_event);
-}
-
-InputEventDispatchMediator::InputEventDispatchMediator(InputEvent* input_event)
-    : EventDispatchMediator(input_event) {}
-
-InputEvent& InputEventDispatchMediator::Event() const {
-  return ToInputEvent(EventDispatchMediator::GetEvent());
-}
-
-DispatchEventResult InputEventDispatchMediator::DispatchEvent(
-    EventDispatcher& dispatcher) const {
+DispatchEventResult InputEvent::DispatchEvent(EventDispatcher& dispatcher) {
   DispatchEventResult result = dispatcher.Dispatch();
   // It's weird to hold and clear live |Range| objects internally, and only
   // expose |StaticRange| through |getTargetRanges()|. However there is no
@@ -220,7 +200,9 @@ DispatchEventResult InputEventDispatchMediator::DispatchEvent(
   // Authors should explicitly call |getTargetRanges()|->|toRange()| if they
   // want to keep a copy of |Range|.  See Editing TF meeting notes:
   // https://docs.google.com/document/d/1hCj6QX77NYIVY0RWrMHT1Yra6t8_Qu8PopaWLG0AM58/edit?usp=sharing
-  Event().ranges_.clear();
+  //
+  // This is the only Event::DispatchEvent() that modifies the event.
+  ranges_.clear();
   return result;
 }
 

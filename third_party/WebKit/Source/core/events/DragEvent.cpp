@@ -94,32 +94,14 @@ bool DragEvent::IsMouseEvent() const {
   return false;
 }
 
-EventDispatchMediator* DragEvent::CreateMediator() {
-  return DragEventDispatchMediator::Create(this);
-}
-
 void DragEvent::Trace(blink::Visitor* visitor) {
   visitor->Trace(data_transfer_);
   MouseEvent::Trace(visitor);
 }
 
-DragEventDispatchMediator* DragEventDispatchMediator::Create(
-    DragEvent* drag_event) {
-  return new DragEventDispatchMediator(drag_event);
-}
-
-DragEventDispatchMediator::DragEventDispatchMediator(DragEvent* drag_event)
-    : EventDispatchMediator(drag_event) {}
-
-DragEvent& DragEventDispatchMediator::Event() const {
-  return ToDragEvent(EventDispatchMediator::GetEvent());
-}
-
-DispatchEventResult DragEventDispatchMediator::DispatchEvent(
-    EventDispatcher& dispatcher) const {
-  Event().GetEventPath().AdjustForRelatedTarget(dispatcher.GetNode(),
-                                                Event().relatedTarget());
-  return EventDispatchMediator::DispatchEvent(dispatcher);
+DispatchEventResult DragEvent::DispatchEvent(EventDispatcher& dispatcher) {
+  GetEventPath().AdjustForRelatedTarget(dispatcher.GetNode(), relatedTarget());
+  return dispatcher.Dispatch();
 }
 
 }  // namespace blink

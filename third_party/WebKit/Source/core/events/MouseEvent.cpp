@@ -431,55 +431,35 @@ void MouseEvent::Trace(blink::Visitor* visitor) {
   UIEventWithKeyState::Trace(visitor);
 }
 
-EventDispatchMediator* MouseEvent::CreateMediator() {
-  return MouseEventDispatchMediator::Create(this);
-}
+DispatchEventResult MouseEvent::DispatchEvent(EventDispatcher& dispatcher) {
+  GetEventPath().AdjustForRelatedTarget(dispatcher.GetNode(), relatedTarget());
 
-MouseEventDispatchMediator* MouseEventDispatchMediator::Create(
-    MouseEvent* mouse_event) {
-  return new MouseEventDispatchMediator(mouse_event);
-}
-
-MouseEventDispatchMediator::MouseEventDispatchMediator(MouseEvent* mouse_event)
-    : EventDispatchMediator(mouse_event) {}
-
-MouseEvent& MouseEventDispatchMediator::Event() const {
-  return ToMouseEvent(EventDispatchMediator::GetEvent());
-}
-
-DispatchEventResult MouseEventDispatchMediator::DispatchEvent(
-    EventDispatcher& dispatcher) const {
-  MouseEvent& mouse_event = Event();
-  mouse_event.GetEventPath().AdjustForRelatedTarget(
-      dispatcher.GetNode(), mouse_event.relatedTarget());
-
-  bool is_click = mouse_event.type() == EventTypeNames::click;
+  bool is_click = type() == EventTypeNames::click;
   bool send_to_disabled_form_controls =
       RuntimeEnabledFeatures::SendMouseEventsDisabledFormControlsEnabled();
 
   if (send_to_disabled_form_controls && is_click &&
-      mouse_event.GetEventPath().DisabledFormControlExistsInPath()) {
+      GetEventPath().DisabledFormControlExistsInPath()) {
     return DispatchEventResult::kCanceledBeforeDispatch;
   }
 
-  if (!mouse_event.isTrusted())
+  if (!isTrusted())
     return dispatcher.Dispatch();
 
   if (!send_to_disabled_form_controls &&
       IsDisabledFormControl(&dispatcher.GetNode()))
     return DispatchEventResult::kCanceledBeforeDispatch;
 
-  if (mouse_event.type().IsEmpty())
+  if (type().IsEmpty())
     return DispatchEventResult::kNotCanceled;  // Shouldn't happen.
 
-  DCHECK(!mouse_event.target() ||
-         mouse_event.target() != mouse_event.relatedTarget());
+  DCHECK(!target() || target() != relatedTarget());
 
-  EventTarget* related_target = mouse_event.relatedTarget();
+  EventTarget* related_target = relatedTarget();
 
   DispatchEventResult dispatch_result = dispatcher.Dispatch();
 
-  if (!is_click || mouse_event.detail() != 2)
+  if (!is_click || detail() != 2)
     return dispatch_result;
 
   // Special case: If it's a double click event, we also send the dblclick
@@ -488,21 +468,17 @@ DispatchEventResult MouseEventDispatchMediator::DispatchEvent(
   // other DOM-compliant browsers like Firefox, and so we do the same.
   MouseEvent* double_click_event = MouseEvent::Create();
   double_click_event->InitMouseEventInternal(
-      EventTypeNames::dblclick, mouse_event.bubbles(), mouse_event.cancelable(),
-      mouse_event.view(), mouse_event.detail(), mouse_event.screenX(),
-      mouse_event.screenY(), mouse_event.clientX(), mouse_event.clientY(),
-      mouse_event.GetModifiers(), mouse_event.button(), related_target,
-      mouse_event.sourceCapabilities(), mouse_event.buttons());
-  double_click_event->SetComposed(mouse_event.composed());
+      EventTypeNames::dblclick, bubbles(), cancelable(), view(), detail(),
+      screenX(), screenY(), clientX(), clientY(), GetModifiers(), button(),
+      related_target, sourceCapabilities(), buttons());
+  double_click_event->SetComposed(composed());
 
   // Inherit the trusted status from the original event.
-  double_click_event->SetTrusted(mouse_event.isTrusted());
-  if (mouse_event.DefaultHandled())
+  double_click_event->SetTrusted(isTrusted());
+  if (DefaultHandled())
     double_click_event->SetDefaultHandled();
   DispatchEventResult double_click_dispatch_result =
-      EventDispatcher::DispatchEvent(
-          dispatcher.GetNode(),
-          MouseEventDispatchMediator::Create(double_click_event));
+      EventDispatcher::DispatchEvent(dispatcher.GetNode(), double_click_event);
   if (double_click_dispatch_result != DispatchEventResult::kNotCanceled)
     return double_click_dispatch_result;
   return dispatch_result;

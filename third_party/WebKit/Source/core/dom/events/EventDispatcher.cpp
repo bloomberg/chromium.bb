@@ -32,7 +32,6 @@
 #include "core/dom/ContainerNode.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
-#include "core/dom/events/EventDispatchMediator.h"
 #include "core/dom/events/ScopedEventQueue.h"
 #include "core/dom/events/WindowEventContext.h"
 #include "core/events/MouseEvent.h"
@@ -48,16 +47,14 @@
 
 namespace blink {
 
-DispatchEventResult EventDispatcher::DispatchEvent(
-    Node& node,
-    EventDispatchMediator* mediator) {
+DispatchEventResult EventDispatcher::DispatchEvent(Node& node, Event* event) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("blink.debug"),
                "EventDispatcher::dispatchEvent");
 #if DCHECK_IS_ON()
   DCHECK(!EventDispatchForbiddenScope::IsEventDispatchForbidden());
 #endif
-  EventDispatcher dispatcher(node, &mediator->GetEvent());
-  return mediator->DispatchEvent(dispatcher);
+  EventDispatcher dispatcher(node, event);
+  return event->DispatchEvent(dispatcher);
 }
 
 EventDispatcher::EventDispatcher(Node& node, Event* event)
@@ -67,13 +64,11 @@ EventDispatcher::EventDispatcher(Node& node, Event* event)
   event_->InitEventPath(*node_);
 }
 
-void EventDispatcher::DispatchScopedEvent(Node& node,
-                                          EventDispatchMediator* mediator) {
+void EventDispatcher::DispatchScopedEvent(Node& node, Event* event) {
   // We need to set the target here because it can go away by the time we
   // actually fire the event.
-  mediator->GetEvent().SetTarget(
-      EventPath::EventTargetRespectingTargetRules(node));
-  ScopedEventQueue::Instance()->EnqueueEventDispatchMediator(mediator);
+  event->SetTarget(EventPath::EventTargetRespectingTargetRules(node));
+  ScopedEventQueue::Instance()->EnqueueEvent(event);
 }
 
 void EventDispatcher::DispatchSimulatedClick(

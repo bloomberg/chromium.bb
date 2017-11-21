@@ -48,10 +48,11 @@ class CORE_EXPORT PointerEvent final : public MouseEvent {
   double pageX() const override;
   double pageY() const override;
 
-  EventDispatchMediator* CreateMediator() override;
   void ReceivedTarget() override;
 
   HeapVector<Member<PointerEvent>> getCoalescedEvents();
+
+  DispatchEventResult DispatchEvent(EventDispatcher&) override;
 
   virtual void Trace(blink::Visitor*);
 
@@ -74,16 +75,6 @@ class CORE_EXPORT PointerEvent final : public MouseEvent {
   bool coalesced_events_targets_dirty_;
 
   HeapVector<Member<PointerEvent>> coalesced_events_;
-};
-
-class PointerEventDispatchMediator final : public EventDispatchMediator {
- public:
-  static PointerEventDispatchMediator* Create(PointerEvent*);
-
- private:
-  explicit PointerEventDispatchMediator(PointerEvent*);
-  PointerEvent& Event() const;
-  DispatchEventResult DispatchEvent(EventDispatcher&) const override;
 };
 
 DEFINE_EVENT_TYPE_CASTS(PointerEvent);
