@@ -202,7 +202,7 @@ CSSNumericValue* CSSNumericValue::max(
 bool CSSNumericValue::equals(const HeapVector<CSSNumberish>& args) {
   CSSNumericValueVector values = CSSNumberishesToNumericValues(args);
   return std::all_of(values.begin(), values.end(),
-                     [this](const auto& v) { return Equals(*v); });
+                     [this](const auto& v) { return this->Equals(*v); });
 }
 
 CSSNumericValue* CSSNumericValue::Negate() {
