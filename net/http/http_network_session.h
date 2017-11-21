@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/containers/flat_set.h"
 #include "base/memory/memory_coordinator_client.h"
 #include "base/memory/memory_pressure_monitor.h"
 #include "base/memory/ref_counted.h"
@@ -180,6 +181,8 @@ class NET_EXPORT HttpNetworkSession : public base::MemoryCoordinatorClient {
     bool quic_race_cert_verification;
     // If true, estimate the initial RTT for QUIC connections based on network.
     bool quic_estimate_initial_rtt;
+    // If non-empty, QUIC will only be spoken to hosts in this list.
+    base::flat_set<std::string> quic_host_whitelist;
 
     // Enable support for Token Binding.
     bool enable_token_binding;

@@ -10,11 +10,11 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "net/base/net_export.h"
+#include "net/http/http_network_session.h"
 
 namespace net {
 
 class ClientSocketPoolManager;
-class HttpNetworkSession;
 class HttpStreamFactory;
 class NetworkThrottleManager;
 
@@ -34,6 +34,8 @@ class NET_EXPORT_PRIVATE HttpNetworkSessionPeer {
 
   void SetNetworkStreamThrottler(
       std::unique_ptr<NetworkThrottleManager> network_throttle_manager);
+
+  HttpNetworkSession::Params* params();
 
  private:
   HttpNetworkSession* const session_;

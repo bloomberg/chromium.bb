@@ -18,6 +18,7 @@
 #include "net/base/test_proxy_delegate.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_basic_stream.h"
+#include "net/http/http_network_session_peer.h"
 #include "net/http/http_stream_factory_impl.h"
 #include "net/http/http_stream_factory_impl_job.h"
 #include "net/http/http_stream_factory_impl_request.h"
@@ -2277,6 +2278,50 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, GetAlternativeServiceInfoFor) {
       job_controller_, request_info, &request_delegate_,
       HttpStreamRequest::HTTP_STREAM);
   // Verify that JobController returns no valid alternative service.
+  EXPECT_EQ(kProtoUnknown, alt_svc_info.alternative_service().protocol);
+  EXPECT_EQ(0u, alt_svc_info.advertised_versions().size());
+}
+
+// Tests that if HttpNetworkSession has a non-empty QUIC host whitelist,
+// then GetAlternativeServiceFor() will not return any QUIC alternative service
+// that's not on the whitelist.
+TEST_F(HttpStreamFactoryImplJobControllerTest, QuicHostWhitelist) {
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = GURL("https://www.google.com");
+
+  Initialize(request_info);
+
+  // Set HttpNetworkSession's QUIC host whitelist to only have www.example.com
+  HttpNetworkSessionPeer session_peer(session_.get());
+  session_peer.params()->quic_host_whitelist.insert("www.example.com");
+
+  // Set alternative service for www.google.com to be www.example.com over QUIC.
+  url::SchemeHostPort server(request_info.url);
+  base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
+  QuicTransportVersionVector supported_versions =
+      session_->params().quic_supported_versions;
+  session_->http_server_properties()->SetQuicAlternativeService(
+      server, AlternativeService(kProtoQUIC, "www.example.com", 443),
+      expiration, supported_versions);
+
+  AlternativeServiceInfo alt_svc_info =
+      JobControllerPeer::GetAlternativeServiceInfoFor(
+          job_controller_, request_info, &request_delegate_,
+          HttpStreamRequest::HTTP_STREAM);
+
+  std::sort(supported_versions.begin(), supported_versions.end());
+  EXPECT_EQ(kProtoQUIC, alt_svc_info.alternative_service().protocol);
+  EXPECT_EQ(supported_versions, alt_svc_info.advertised_versions());
+
+  session_->http_server_properties()->SetQuicAlternativeService(
+      server, AlternativeService(kProtoQUIC, "www.example.org", 443),
+      expiration, supported_versions);
+
+  alt_svc_info = JobControllerPeer::GetAlternativeServiceInfoFor(
+      job_controller_, request_info, &request_delegate_,
+      HttpStreamRequest::HTTP_STREAM);
+
   EXPECT_EQ(kProtoUnknown, alt_svc_info.alternative_service().protocol);
   EXPECT_EQ(0u, alt_svc_info.advertised_versions().size());
 }
