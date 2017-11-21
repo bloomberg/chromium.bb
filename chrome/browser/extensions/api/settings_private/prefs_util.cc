@@ -181,7 +181,7 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_private::PrefType::PREF_TYPE_LIST;
   (*s_whitelist)[spellcheck::prefs::kSpellCheckUseSpellingService] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_whitelist)[::prefs::kEnableTranslate] =
+  (*s_whitelist)[::prefs::kOfferTranslateEnabled] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[translate::TranslatePrefs::kPrefTranslateBlockedLanguages] =
       settings_private::PrefType::PREF_TYPE_LIST;

@@ -1228,7 +1228,7 @@ TEST_F(TranslateManagerRenderViewHostTest, TranslateEnabledPref) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   PrefService* prefs = profile->GetPrefs();
-  prefs->SetBoolean(prefs::kEnableTranslate, true);
+  prefs->SetBoolean(prefs::kOfferTranslateEnabled, true);
 
   SimulateNavigation(GURL("http://www.google.fr"), "fr", true);
 
@@ -1237,7 +1237,7 @@ TEST_F(TranslateManagerRenderViewHostTest, TranslateEnabledPref) {
   EXPECT_TRUE(infobar != NULL);
 
   // Disable translate.
-  prefs->SetBoolean(prefs::kEnableTranslate, false);
+  prefs->SetBoolean(prefs::kOfferTranslateEnabled, false);
 
   // Navigate to a new page, that should close the previous infobar.
   GURL url("http://www.youtube.fr");

@@ -64,8 +64,8 @@ class TranslateDownloadManager {
   }
 
   // Let the caller decide if and when we should fetch the language list from
-  // the translate server. This is a NOOP if prefs::kEnableTranslate is set to
-  // false.
+  // the translate server. This is a NOOP if prefs::kOfferTranslateEnabled is
+  // set to false.
   static void RequestLanguageList(PrefService* prefs);
 
   // Fills |languages| with the list of languages that the translate server can

@@ -1285,15 +1285,21 @@ void RenderViewContextMenu::AppendPageItems() {
   AppendMediaRouterItem();
 
   if (TranslateService::IsTranslatableURL(params_.page_url)) {
-    // TODO(crbug.com/711217): We should not allow to use the translate when the
-    // feature is disabled by the PolicyList.
-    std::string locale = GetTargetLanguage();
-    base::string16 language =
-        l10n_util::GetDisplayNameForLocale(locale, locale, true);
-    menu_model_.AddItem(
-        IDC_CONTENT_CONTEXT_TRANSLATE,
-        l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_TRANSLATE, language));
-    AddGoogleIconToLastMenuItem(&menu_model_);
+    std::unique_ptr<translate::TranslatePrefs> prefs(
+        ChromeTranslateClient::CreateTranslatePrefs(
+            GetPrefs(browser_context_)));
+    if (prefs->IsTranslateAllowedByPolicy()) {
+      language::LanguageModel* language_model =
+          LanguageModelFactory::GetForBrowserContext(browser_context_);
+      std::string locale = translate::TranslateManager::GetTargetLanguage(
+          prefs.get(), language_model);
+      base::string16 language =
+          l10n_util::GetDisplayNameForLocale(locale, locale, true);
+      menu_model_.AddItem(
+          IDC_CONTENT_CONTEXT_TRANSLATE,
+          l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_TRANSLATE, language));
+      AddGoogleIconToLastMenuItem(&menu_model_);
+    }
   }
 }
 

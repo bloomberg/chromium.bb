@@ -58,7 +58,7 @@ class TranslateCollectionViewControllerTest
 
   std::unique_ptr<PrefService> CreateLocalState() {
     scoped_refptr<PrefRegistrySyncable> registry = new PrefRegistrySyncable();
-    registry->RegisterBooleanPref(prefs::kEnableTranslate, false,
+    registry->RegisterBooleanPref(prefs::kOfferTranslateEnabled, false,
                                   PrefRegistrySyncable::SYNCABLE_PREF);
     translate::TranslatePrefs::RegisterProfilePrefs(registry.get());
     registry->RegisterStringPref(
@@ -85,7 +85,7 @@ TEST_F(TranslateCollectionViewControllerTest, TestModelTranslateOff) {
 
 TEST_F(TranslateCollectionViewControllerTest, TestModelTranslateOn) {
   BooleanPrefMember translateEnabled;
-  translateEnabled.Init(prefs::kEnableTranslate, pref_service_.get());
+  translateEnabled.Init(prefs::kOfferTranslateEnabled, pref_service_.get());
   translateEnabled.SetValue(true);
   CreateController();
   EXPECT_EQ(2, NumberOfSections());

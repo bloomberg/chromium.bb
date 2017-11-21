@@ -6,7 +6,9 @@
 
 namespace prefs {
 
-// Boolean that is true when the translate feature is enabled.
-const char kEnableTranslate[] = "translate.enabled";
+// Boolean that is true when offering translate (i.e. the automatic translate
+// bubble) is enabled. Even when this is false, the user can force translate
+// from the right-click context menu unless translate is disabled by policy.
+const char kOfferTranslateEnabled[] = "translate.enabled";
 
 }  // namespace prefs

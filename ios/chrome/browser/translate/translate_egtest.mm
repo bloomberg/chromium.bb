@@ -336,8 +336,8 @@ using translate::LanguageDetectionController;
   // TODO(crbug.com/642892): Investigate moving into test-specific teardown.
   // Re-enable translate.
   chrome_test_util::SetBooleanUserPref(
-      chrome_test_util::GetOriginalBrowserState(), prefs::kEnableTranslate,
-      YES);
+      chrome_test_util::GetOriginalBrowserState(),
+      prefs::kOfferTranslateEnabled, YES);
   // Reset translate prefs to default.
   std::unique_ptr<translate::TranslatePrefs> translatePrefs(
       ChromeIOSTranslateClient::CreateTranslatePrefs(
@@ -574,7 +574,8 @@ using translate::LanguageDetectionController;
 
   // Disable translate.
   chrome_test_util::SetBooleanUserPref(
-      chrome_test_util::GetOriginalBrowserState(), prefs::kEnableTranslate, NO);
+      chrome_test_util::GetOriginalBrowserState(),
+      prefs::kOfferTranslateEnabled, NO);
 
   // Open some webpage.
   [ChromeEarlGrey loadURL:URL];

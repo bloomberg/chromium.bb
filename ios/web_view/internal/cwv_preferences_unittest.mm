@@ -30,7 +30,7 @@ class CWVPreferencesTest : public PlatformTest {
     scoped_refptr<user_prefs::PrefRegistrySyncable> pref_registry =
         new user_prefs::PrefRegistrySyncable;
     pref_registry->RegisterBooleanPref(autofill::prefs::kAutofillEnabled, true);
-    pref_registry->RegisterBooleanPref(prefs::kEnableTranslate, true);
+    pref_registry->RegisterBooleanPref(prefs::kOfferTranslateEnabled, true);
 
     scoped_refptr<PersistentPrefStore> pref_store = new InMemoryPrefStore();
     PrefServiceFactory factory;

@@ -313,7 +313,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kCloudPrintSubmitEnabled,
     base::Value::Type::BOOLEAN },
   { key::kTranslateEnabled,
-    prefs::kEnableTranslate,
+    prefs::kOfferTranslateEnabled,
     base::Value::Type::BOOLEAN },
   { key::kAllowOutdatedPlugins,
     prefs::kPluginsAllowOutdated,
