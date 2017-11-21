@@ -37,9 +37,9 @@ class ThemeServiceWin : public ThemeService {
   // The frame color when active. If empty the default colors should be used.
   base::Optional<SkColor> dwm_frame_color_;
 
-  // True if we took dwm_inactive_frame_color_ from the registry (vs calculating
-  // it ourselves) and thus Windows will use it too.
-  bool inactive_frame_color_from_registry_;
+  // True if we took |dwm_inactive_frame_color_| from the registry (vs
+  // calculating it ourselves) and thus Windows will use it too.
+  bool inactive_frame_color_from_registry_ = false;
 
   // The frame color when inactive. If empty the default colors should be used.
   base::Optional<SkColor> dwm_inactive_frame_color_;
