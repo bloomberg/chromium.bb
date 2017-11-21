@@ -249,7 +249,6 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
       loader_factory_getter_(url_loader_factory_getter),
       force_update_on_page_load_(false),
       next_handle_id_(0),
-      next_registration_handle_id_(0),
       was_service_worker_registered_(false),
       observer_list_(observer_list),
       weak_factory_(this) {
@@ -270,7 +269,6 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
       providers_(old_context->providers_.release()),
       provider_by_uuid_(old_context->provider_by_uuid_.release()),
       next_handle_id_(old_context->next_handle_id_),
-      next_registration_handle_id_(old_context->next_registration_handle_id_),
       was_service_worker_registered_(
           old_context->was_service_worker_registered_),
       observer_list_(old_context->observer_list_),
@@ -677,10 +675,6 @@ void ServiceWorkerContextCore::UnprotectVersion(int64_t version_id) {
 
 int ServiceWorkerContextCore::GetNewServiceWorkerHandleId() {
   return next_handle_id_++;
-}
-
-int ServiceWorkerContextCore::GetNewRegistrationHandleId() {
-  return next_registration_handle_id_++;
 }
 
 void ServiceWorkerContextCore::ScheduleDeleteAndStartOver() const {

@@ -9,7 +9,6 @@ import "third_party/WebKit/public/platform/modules/serviceworker/service_worker_
 import "third_party/WebKit/public/platform/modules/serviceworker/service_worker_object.mojom";
 import "url/mojo/url.mojom";
 
-const int32 kInvalidServiceWorkerRegistrationHandleId = -1;
 const int64 kInvalidServiceWorkerRegistrationId = -1;
 
 // Represents ServiceWorkerUpdateViaCache enum for ServiceWorkerRegistrationOptions:

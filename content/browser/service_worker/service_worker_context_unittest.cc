@@ -742,10 +742,9 @@ TEST_P(ServiceWorkerContextRecoveryTest, DeleteAndStartOver) {
                  true /* expect_active */));
   content::RunAllTasksUntilIdle();
 
-  // Next handle ids should be 1 (the next call should return 2) because
+  // Next handle id should be 1 (the next call should return 2) because
   // registered worker should have taken ID 0.
   EXPECT_EQ(1, context()->GetNewServiceWorkerHandleId());
-  EXPECT_EQ(1, context()->GetNewRegistrationHandleId());
 
   context()->ScheduleDeleteAndStartOver();
 
@@ -786,10 +785,9 @@ TEST_P(ServiceWorkerContextRecoveryTest, DeleteAndStartOver) {
                  true /* expect_active */));
   content::RunAllTasksUntilIdle();
 
-  // The new context should take over next handle ids. ID 2 should have been
+  // The new context should take over next handle id. ID 2 should have been
   // taken by the running registration, so the following method calls return 3.
   EXPECT_EQ(3, context()->GetNewServiceWorkerHandleId());
-  EXPECT_EQ(3, context()->GetNewRegistrationHandleId());
 
   ASSERT_EQ(3u, notifications_.size());
   EXPECT_EQ(REGISTRATION_STORED, notifications_[0].type);

@@ -38,7 +38,6 @@ class ServiceWorkerContextCore;
 class ServiceWorkerContextWrapper;
 class ServiceWorkerHandle;
 class ServiceWorkerProviderHost;
-class ServiceWorkerRegistrationObjectHost;
 class ServiceWorkerVersion;
 
 // ServiceWorkerDispatcherHost is the browser-side endpoint for several IPC
@@ -88,18 +87,12 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
   // be destroyed.
   bool Send(IPC::Message* message) override;
 
-  // Following methods are virtual only for testing.
+  // This method is virtual only for testing.
   virtual void RegisterServiceWorkerHandle(
       std::unique_ptr<ServiceWorkerHandle> handle);
-  virtual void RegisterServiceWorkerRegistrationObjectHost(
-      ServiceWorkerRegistrationObjectHost* host);
-  virtual void UnregisterServiceWorkerRegistrationObjectHost(int handle_id);
 
   ServiceWorkerHandle* FindServiceWorkerHandle(int provider_id,
                                                int64_t version_id);
-  ServiceWorkerRegistrationObjectHost* FindServiceWorkerRegistrationObjectHost(
-      int provider_id,
-      int64_t registration_id);
 
   ResourceContext* resource_context() { return resource_context_; }
 
@@ -188,9 +181,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
   scoped_refptr<ServiceWorkerContextWrapper> context_wrapper_;
 
   base::IDMap<std::unique_ptr<ServiceWorkerHandle>> handles_;
-
-  base::IDMap<std::unique_ptr<ServiceWorkerRegistrationObjectHost>>
-      registration_object_hosts_;
 
   bool channel_ready_;  // True after BrowserMessageFilter::sender_ != NULL.
   std::vector<std::unique_ptr<IPC::Message>> pending_messages_;

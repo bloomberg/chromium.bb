@@ -4,19 +4,12 @@
 
 #include "content/browser/service_worker/service_worker_registration_object_host.h"
 
+#include "base/memory/ptr_util.h"
 #include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
-#include "content/browser/service_worker/service_worker_dispatcher_host.h"
 #include "content/browser/service_worker/service_worker_handle.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
-#include "content/browser/web_contents/web_contents_impl.h"
-#include "content/common/service_worker/service_worker_messages.h"
-#include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
-#include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/web_contents.h"
-#include "content/public/common/content_client.h"
 #include "content/public/common/service_worker_modes.h"
 #include "net/http/http_util.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
@@ -25,26 +18,18 @@ namespace content {
 
 ServiceWorkerRegistrationObjectHost::ServiceWorkerRegistrationObjectHost(
     base::WeakPtr<ServiceWorkerContextCore> context,
-    ServiceWorkerDispatcherHost* dispatcher_host,
-    base::WeakPtr<ServiceWorkerProviderHost> provider_host,
-    ServiceWorkerRegistration* registration)
-    : dispatcher_host_(dispatcher_host),
-      provider_host_(provider_host),
+    ServiceWorkerProviderHost* provider_host,
+    scoped_refptr<ServiceWorkerRegistration> registration)
+    : provider_host_(provider_host),
       context_(context),
-      provider_id_(provider_host ? provider_host->provider_id()
-                                 : kInvalidServiceWorkerProviderId),
-      handle_id_(context
-                     ? context->GetNewRegistrationHandleId()
-                     : blink::mojom::kInvalidServiceWorkerRegistrationHandleId),
       registration_(registration),
       weak_ptr_factory_(this) {
   DCHECK(registration_.get());
+  DCHECK(provider_host_);
   registration_->AddListener(this);
   bindings_.set_connection_error_handler(
       base::Bind(&ServiceWorkerRegistrationObjectHost::OnConnectionError,
                  base::Unretained(this)));
-
-  dispatcher_host_->RegisterServiceWorkerRegistrationObjectHost(this);
 }
 
 ServiceWorkerRegistrationObjectHost::~ServiceWorkerRegistrationObjectHost() {
@@ -54,7 +39,6 @@ ServiceWorkerRegistrationObjectHost::~ServiceWorkerRegistrationObjectHost() {
 
 blink::mojom::ServiceWorkerRegistrationObjectInfoPtr
 ServiceWorkerRegistrationObjectHost::CreateObjectInfo() {
-  DCHECK(provider_host_);
   auto info = blink::mojom::ServiceWorkerRegistrationObjectInfo::New();
   info->options = blink::mojom::ServiceWorkerRegistrationOptions::New(
       registration_->pattern());
@@ -116,7 +100,7 @@ void ServiceWorkerRegistrationObjectHost::Update(UpdateCallback callback) {
 
   context_->UpdateServiceWorker(
       registration_.get(), false /* force_bypass_cache */,
-      false /* skip_script_comparison */, provider_host_.get(),
+      false /* skip_script_comparison */, provider_host_,
       base::AdaptCallbackForRepeating(
           base::BindOnce(&ServiceWorkerRegistrationObjectHost::UpdateComplete,
                          weak_ptr_factory_.GetWeakPtr(), std::move(callback))));
@@ -286,8 +270,6 @@ void ServiceWorkerRegistrationObjectHost::SetVersionAttributes(
     ServiceWorkerVersion* installing_version,
     ServiceWorkerVersion* waiting_version,
     ServiceWorkerVersion* active_version) {
-  if (!provider_host_)
-    return;  // Could be nullptr in some tests.
   if (!changed_mask.changed())
     return;
 
@@ -313,7 +295,8 @@ void ServiceWorkerRegistrationObjectHost::OnConnectionError() {
   if (!bindings_.empty())
     return;
   // Will destroy |this|.
-  dispatcher_host_->UnregisterServiceWorkerRegistrationObjectHost(handle_id_);
+  provider_host_->RemoveServiceWorkerRegistrationObjectHost(
+      registration()->id());
 }
 
 template <typename CallbackType, typename... Args>
@@ -321,7 +304,7 @@ bool ServiceWorkerRegistrationObjectHost::CanServeRegistrationObjectHostMethods(
     CallbackType* callback,
     const char* error_prefix,
     Args... args) {
-  if (!provider_host_ || !context_) {
+  if (!context_) {
     std::move(*callback).Run(
         blink::mojom::ServiceWorkerErrorType::kAbort,
         std::string(error_prefix) +
@@ -348,12 +331,7 @@ bool ServiceWorkerRegistrationObjectHost::CanServeRegistrationObjectHostMethods(
     return false;
   }
 
-  if (!GetContentClient()->browser()->AllowServiceWorker(
-          registration_->pattern(), provider_host_->topmost_frame_url(),
-          dispatcher_host_->resource_context(),
-          base::Bind(&WebContentsImpl::FromRenderFrameHostID,
-                     provider_host_->process_id(),
-                     provider_host_->frame_id()))) {
+  if (!provider_host_->AllowServiceWorker(registration_->pattern())) {
     std::move(*callback).Run(
         blink::mojom::ServiceWorkerErrorType::kDisabled,
         std::string(error_prefix) +

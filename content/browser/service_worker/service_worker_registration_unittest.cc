@@ -262,12 +262,23 @@ TEST_F(ServiceWorkerRegistrationTest, FailedRegistrationNoCrash) {
   auto dispatcher_host = base::MakeRefCounted<ServiceWorkerDispatcherHost>(
       helper_->mock_render_process_id(),
       helper_->browser_context()->GetResourceContext());
-  // ServiceWorkerRegistrationObjectHost ctor will make
-  // |registration_object_host| be owned by |dispatcher_host|.
-  auto* registration_object_host = new ServiceWorkerRegistrationObjectHost(
-      context()->AsWeakPtr(), dispatcher_host.get(),
-      base::WeakPtr<ServiceWorkerProviderHost>(), registration.get());
-  ALLOW_UNUSED_LOCAL(registration_object_host);
+  // Prepare a ServiceWorkerProviderHost.
+  ServiceWorkerRemoteProviderEndpoint remote_endpoint;
+  std::unique_ptr<ServiceWorkerProviderHost> provider_host =
+      CreateProviderHostWithDispatcherHost(
+          helper_->mock_render_process_id(), 1 /* dummy provider_id */,
+          context()->AsWeakPtr(), 1 /* route_id */, dispatcher_host.get(),
+          &remote_endpoint);
+  auto registration_object_host =
+      std::make_unique<ServiceWorkerRegistrationObjectHost>(
+          context()->AsWeakPtr(), provider_host.get(), registration);
+  // To enable the caller end point
+  // |registration_object_host->remote_registration_| to make calls safely with
+  // no need to pass |object_info_->request| through a message pipe endpoint.
+  blink::mojom::ServiceWorkerRegistrationObjectInfoPtr object_info =
+      registration_object_host->CreateObjectInfo();
+  mojo::AssociateWithDisconnectedPipe(object_info->request.PassHandle());
+
   registration->NotifyRegistrationFailed();
   // Don't crash when |registration_object_host| gets destructed.
 }
