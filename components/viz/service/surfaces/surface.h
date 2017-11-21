@@ -93,6 +93,9 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
   const SurfaceId& previous_frame_surface_id() const {
     return previous_frame_surface_id_;
   }
+  const gfx::Size& size_in_pixels() const {
+    return surface_info_.size_in_pixels();
+  }
 
   base::WeakPtr<SurfaceClient> client() { return surface_client_; }
 
