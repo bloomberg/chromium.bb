@@ -100,7 +100,7 @@ bool DOMWindowEventQueue::EnqueueEvent(const WebTraceLocation& from_here,
 }
 
 bool DOMWindowEventQueue::CancelEvent(Event* event) {
-  HeapListHashSet<Member<Event>, 16>::iterator it = queued_events_.find(event);
+  auto it = queued_events_.find(event);
   bool found = it != queued_events_.end();
   if (found) {
     probe::AsyncTaskCanceled(event->target()->GetExecutionContext(), event);
@@ -133,9 +133,9 @@ void DOMWindowEventQueue::PendingEventTimerFired() {
   DCHECK(was_added);  // It should not have already been in the list.
 
   while (!queued_events_.IsEmpty()) {
-    HeapListHashSet<Member<Event>, 16>::iterator iter = queued_events_.begin();
-    Event* event = *iter;
-    queued_events_.erase(iter);
+    auto it = queued_events_.begin();
+    Event* event = *it;
+    queued_events_.erase(it);
     if (!event)
       break;
     DispatchEvent(event);
