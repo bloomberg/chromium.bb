@@ -11,7 +11,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/bookmarks/bookmark_new_generation_features.h"
-#include "ios/chrome/browser/ui/tools_menu/public/tools_menu_constants.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/tab_test_util.h"
@@ -27,6 +26,8 @@
 #error "This file requires ARC support."
 #endif
 
+using chrome_test_util::RecentTabsMenuButton;
+
 namespace {
 const char kURLOfTestPage[] = "http://testPage";
 const char kHTMLOfTestPage[] =
@@ -40,10 +41,7 @@ void OpenRecentTabsPanel() {
     chrome_test_util::OpenNewTab();
 
   [ChromeEarlGreyUI openToolsMenu];
-  id<GREYMatcher> open_recent_tabs_button_matcher =
-      grey_accessibilityID(kToolsMenuOtherDevicesId);
-  [[EarlGrey selectElementWithMatcher:open_recent_tabs_button_matcher]
-      performAction:grey_tap()];
+  [ChromeEarlGreyUI tapToolsMenuButton:RecentTabsMenuButton()];
 }
 
 // Closes the recent tabs panel, on iPhone.

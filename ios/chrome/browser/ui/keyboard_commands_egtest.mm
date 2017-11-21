@@ -10,7 +10,6 @@
 #include "ios/chrome/browser/bookmarks/bookmark_new_generation_features.h"
 #import "ios/chrome/browser/ui/browser_view_controller.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
-#include "ios/chrome/browser/ui/tools_menu/public/tools_menu_constants.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -29,6 +28,7 @@
 #endif
 
 using chrome_test_util::NavigationBarDoneButton;
+using chrome_test_util::RecentTabsMenuButton;
 
 // Test cases to verify that keyboard commands are and are not registered when
 // expected.
@@ -153,8 +153,7 @@ using chrome_test_util::NavigationBarDoneButton;
 
   // Open Bookmarks
   [ChromeEarlGreyUI openToolsMenu];
-  [ChromeEarlGreyUI
-      tapToolsMenuButton:grey_accessibilityID(kToolsMenuBookmarksId)];
+  [ChromeEarlGreyUI tapToolsMenuButton:chrome_test_util::BookmarksMenuButton()];
 
   if (IsIPadIdiom()) {
     [self verifyKeyboardCommandsAreRegistered];
@@ -170,9 +169,8 @@ using chrome_test_util::NavigationBarDoneButton;
 // shown on iPhone and registered on iPad.
 - (void)testKeyboardCommands_RecentTabsPresented {
   // Open Recent Tabs
-  id<GREYMatcher> recentTabs = grey_accessibilityID(kToolsMenuOtherDevicesId);
   [ChromeEarlGreyUI openToolsMenu];
-  [ChromeEarlGreyUI tapToolsMenuButton:recentTabs];
+  [ChromeEarlGreyUI tapToolsMenuButton:RecentTabsMenuButton()];
 
   if (IsIPadIdiom()) {
     [self verifyKeyboardCommandsAreRegistered];

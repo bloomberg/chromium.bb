@@ -188,6 +188,12 @@ id<GREYMatcher> PaymentRequestPickerRow();
 // Returns matcher for the payment request search bar.
 id<GREYMatcher> PaymentRequestPickerSearchBar();
 
+// Returns matcher for the bookmarks button on the Tools menu.
+id<GREYMatcher> BookmarksMenuButton();
+
+// Returns matcher for the recent tabs button on the Tools menu.
+id<GREYMatcher> RecentTabsMenuButton();
+
 }  // namespace chrome_test_util
 
 #endif  // IOS_CHROME_TEST_EARL_GREY_CHROME_MATCHERS_H_

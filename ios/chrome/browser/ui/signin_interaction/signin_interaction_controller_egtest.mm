@@ -18,7 +18,6 @@
 #import "ios/chrome/browser/ui/commands/open_url_command.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
-#include "ios/chrome/browser/ui/tools_menu/public/tools_menu_constants.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
@@ -476,8 +475,7 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
 
   // Open Bookmarks and tap on Sign In promo button.
   [ChromeEarlGreyUI openToolsMenu];
-  [ChromeEarlGreyUI
-      tapToolsMenuButton:grey_accessibilityID(kToolsMenuBookmarksId)];
+  [ChromeEarlGreyUI tapToolsMenuButton:chrome_test_util::BookmarksMenuButton()];
 
   if (!IsIPadIdiom()) {
     // Opens the bookmark manager sidebar on handsets.
@@ -509,8 +507,7 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
   // Re-open the sign-in screen. If it wasn't correctly dismissed previously,
   // this will fail.
   [ChromeEarlGreyUI openToolsMenu];
-  [ChromeEarlGreyUI
-      tapToolsMenuButton:grey_accessibilityID(kToolsMenuBookmarksId)];
+  [ChromeEarlGreyUI tapToolsMenuButton:chrome_test_util::BookmarksMenuButton()];
   if (!IsIPadIdiom()) {
     [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Menu")]
         performAction:grey_tap()];
