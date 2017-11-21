@@ -5,7 +5,7 @@
 #include "mojo/edk/system/platform_handle_dispatcher.h"
 
 #include "base/synchronization/lock.h"
-#include "mojo/edk/embedder/platform_handle_vector.h"
+#include "mojo/edk/embedder/scoped_platform_handle.h"
 
 namespace mojo {
 namespace edk {
@@ -43,11 +43,11 @@ void PlatformHandleDispatcher::StartSerialize(uint32_t* num_bytes,
 
 bool PlatformHandleDispatcher::EndSerialize(void* destination,
                                             ports::PortName* ports,
-                                            PlatformHandle* handles) {
+                                            ScopedPlatformHandle* handles) {
   base::AutoLock lock(lock_);
   if (is_closed_)
     return false;
-  handles[0] = platform_handle_.get();
+  handles[0] = ScopedPlatformHandle(platform_handle_.get());
   return true;
 }
 
@@ -80,15 +80,12 @@ scoped_refptr<PlatformHandleDispatcher> PlatformHandleDispatcher::Deserialize(
     size_t num_bytes,
     const ports::PortName* ports,
     size_t num_ports,
-    PlatformHandle* handles,
+    ScopedPlatformHandle* handles,
     size_t num_handles) {
   if (num_bytes || num_ports || num_handles != 1)
     return nullptr;
 
-  PlatformHandle handle;
-  std::swap(handle, handles[0]);
-
-  return PlatformHandleDispatcher::Create(ScopedPlatformHandle(handle));
+  return PlatformHandleDispatcher::Create(std::move(handles[0]));
 }
 
 PlatformHandleDispatcher::PlatformHandleDispatcher(

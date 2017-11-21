@@ -266,7 +266,7 @@ void DataPipeProducerDispatcher::StartSerialize(uint32_t* num_bytes,
 bool DataPipeProducerDispatcher::EndSerialize(
     void* destination,
     ports::PortName* ports,
-    PlatformHandle* platform_handles) {
+    ScopedPlatformHandle* platform_handles) {
   SerializedState* state = static_cast<SerializedState*>(destination);
   memcpy(&state->options, &options_, sizeof(MojoCreateDataPipeOptions));
   memset(state->padding, 0, sizeof(state->padding));
@@ -284,11 +284,10 @@ bool DataPipeProducerDispatcher::EndSerialize(
 
   ports[0] = control_port_.name();
 
-  buffer_handle_for_transit_ = shared_ring_buffer_->DuplicatePlatformHandle();
-  if (!buffer_handle_for_transit_.is_valid())
+  platform_handles[0] = shared_ring_buffer_->DuplicatePlatformHandle();
+  if (!platform_handles[0].is_valid())
     return false;
 
-  platform_handles[0] = buffer_handle_for_transit_.get();
   return true;
 }
 
@@ -307,7 +306,6 @@ void DataPipeProducerDispatcher::CompleteTransitAndClose() {
   DCHECK(in_transit_);
   transferred_ = true;
   in_transit_ = false;
-  ignore_result(buffer_handle_for_transit_.release());
   CloseNoLock();
 }
 
@@ -315,7 +313,6 @@ void DataPipeProducerDispatcher::CancelTransit() {
   base::AutoLock lock(lock_);
   DCHECK(in_transit_);
   in_transit_ = false;
-  buffer_handle_for_transit_.reset();
 
   HandleSignalsState state = GetHandleSignalsStateNoLock();
   watchers_.NotifyState(state);
@@ -327,7 +324,7 @@ DataPipeProducerDispatcher::Deserialize(const void* data,
                                         size_t num_bytes,
                                         const ports::PortName* ports,
                                         size_t num_ports,
-                                        PlatformHandle* handles,
+                                        ScopedPlatformHandle* handles,
                                         size_t num_handles) {
   if (num_ports != 1 || num_handles != 1 ||
       num_bytes != sizeof(SerializedState)) {
@@ -347,12 +344,12 @@ DataPipeProducerDispatcher::Deserialize(const void* data,
 
   base::UnguessableToken guid = base::UnguessableToken::Deserialize(
       state->buffer_guid_high, state->buffer_guid_low);
-  PlatformHandle buffer_handle;
+  ScopedPlatformHandle buffer_handle;
   std::swap(buffer_handle, handles[0]);
   scoped_refptr<PlatformSharedBuffer> ring_buffer =
       PlatformSharedBuffer::CreateFromPlatformHandle(
           state->options.capacity_num_bytes, false /* read_only */, guid,
-          ScopedPlatformHandle(buffer_handle));
+          std::move(buffer_handle));
   if (!ring_buffer) {
     DLOG(ERROR) << "Failed to deserialize shared buffer handle.";
     return nullptr;

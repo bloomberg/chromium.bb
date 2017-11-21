@@ -31,6 +31,7 @@ class MOJO_SYSTEM_IMPL_EXPORT ScopedPlatformHandle {
   }
 
   const PlatformHandle& get() const { return handle_; }
+  PlatformHandle& get() { return handle_; }
 
   void swap(ScopedPlatformHandle& other) {
     PlatformHandle temp = handle_;

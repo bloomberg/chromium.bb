@@ -106,7 +106,7 @@ const int kSendFlags = 0;
 const int kSendFlags = MSG_NOSIGNAL;
 #endif
 
-ssize_t PlatformChannelWrite(PlatformHandle h,
+ssize_t PlatformChannelWrite(const ScopedPlatformHandle& h,
                              const void* bytes,
                              size_t num_bytes) {
   DCHECK(h.is_valid());
@@ -115,13 +115,13 @@ ssize_t PlatformChannelWrite(PlatformHandle h,
 
 #if defined(OS_MACOSX) || defined(OS_NACL_NONSFI)
   // send() is not available under NaCl-nonsfi.
-  return HANDLE_EINTR(write(h.handle, bytes, num_bytes));
+  return HANDLE_EINTR(write(h.get().handle, bytes, num_bytes));
 #else
-  return send(h.handle, bytes, num_bytes, kSendFlags);
+  return send(h.get().handle, bytes, num_bytes, kSendFlags);
 #endif
 }
 
-ssize_t PlatformChannelWritev(PlatformHandle h,
+ssize_t PlatformChannelWritev(const ScopedPlatformHandle& h,
                               struct iovec* iov,
                               size_t num_iov) {
   DCHECK(h.is_valid());
@@ -129,84 +129,49 @@ ssize_t PlatformChannelWritev(PlatformHandle h,
   DCHECK_GT(num_iov, 0u);
 
 #if defined(OS_MACOSX)
-  return HANDLE_EINTR(writev(h.handle, iov, static_cast<int>(num_iov)));
+  return HANDLE_EINTR(writev(h.get().handle, iov, static_cast<int>(num_iov)));
 #else
   struct msghdr msg = {};
   msg.msg_iov = iov;
   msg.msg_iovlen = num_iov;
-  return HANDLE_EINTR(sendmsg(h.handle, &msg, kSendFlags));
+  return HANDLE_EINTR(sendmsg(h.get().handle, &msg, kSendFlags));
 #endif
 }
 
-ssize_t PlatformChannelSendmsgWithHandles(PlatformHandle h,
-                                          struct iovec* iov,
-                                          size_t num_iov,
-                                          PlatformHandle* platform_handles,
-                                          size_t num_platform_handles) {
+ssize_t PlatformChannelSendmsgWithHandles(
+    const ScopedPlatformHandle& h,
+    struct iovec* iov,
+    size_t num_iov,
+    const std::vector<ScopedPlatformHandle>& platform_handles) {
   DCHECK(iov);
   DCHECK_GT(num_iov, 0u);
-  DCHECK(platform_handles);
-  DCHECK_GT(num_platform_handles, 0u);
-  DCHECK_LE(num_platform_handles, kPlatformChannelMaxNumHandles);
+  DCHECK(!platform_handles.empty());
+  DCHECK_LE(platform_handles.size(), kPlatformChannelMaxNumHandles);
 
   char cmsg_buf[CMSG_SPACE(kPlatformChannelMaxNumHandles * sizeof(int))];
   struct msghdr msg = {};
   msg.msg_iov = iov;
   msg.msg_iovlen = num_iov;
   msg.msg_control = cmsg_buf;
-  msg.msg_controllen = CMSG_LEN(num_platform_handles * sizeof(int));
+  msg.msg_controllen = CMSG_LEN(platform_handles.size() * sizeof(int));
   struct cmsghdr* cmsg = CMSG_FIRSTHDR(&msg);
   cmsg->cmsg_level = SOL_SOCKET;
   cmsg->cmsg_type = SCM_RIGHTS;
-  cmsg->cmsg_len = CMSG_LEN(num_platform_handles * sizeof(int));
-  for (size_t i = 0; i < num_platform_handles; i++) {
+  cmsg->cmsg_len = CMSG_LEN(platform_handles.size() * sizeof(int));
+  for (size_t i = 0; i < platform_handles.size(); i++) {
     DCHECK(platform_handles[i].is_valid());
-    reinterpret_cast<int*>(CMSG_DATA(cmsg))[i] = platform_handles[i].handle;
+    reinterpret_cast<int*>(CMSG_DATA(cmsg))[i] =
+        platform_handles[i].get().handle;
   }
 
-  return HANDLE_EINTR(sendmsg(h.handle, &msg, kSendFlags));
-}
-
-bool PlatformChannelSendHandles(PlatformHandle h,
-                                PlatformHandle* handles,
-                                size_t num_handles) {
-  DCHECK(handles);
-  DCHECK_GT(num_handles, 0u);
-  DCHECK_LE(num_handles, kPlatformChannelMaxNumHandles);
-
-  // Note: |sendmsg()| fails on Mac if we don't write at least one character.
-  struct iovec iov = {const_cast<char*>(""), 1};
-  char cmsg_buf[CMSG_SPACE(kPlatformChannelMaxNumHandles * sizeof(int))];
-  struct msghdr msg = {};
-  msg.msg_iov = &iov;
-  msg.msg_iovlen = 1;
-  msg.msg_control = cmsg_buf;
-  msg.msg_controllen = CMSG_LEN(num_handles * sizeof(int));
-  struct cmsghdr* cmsg = CMSG_FIRSTHDR(&msg);
-  cmsg->cmsg_level = SOL_SOCKET;
-  cmsg->cmsg_type = SCM_RIGHTS;
-  cmsg->cmsg_len = CMSG_LEN(num_handles * sizeof(int));
-  for (size_t i = 0; i < num_handles; i++) {
-    DCHECK(handles[i].is_valid());
-    reinterpret_cast<int*>(CMSG_DATA(cmsg))[i] = handles[i].handle;
-  }
-
-  ssize_t result = HANDLE_EINTR(sendmsg(h.handle, &msg, kSendFlags));
-  if (result < 1) {
-    DCHECK_EQ(result, -1);
-    return false;
-  }
-
-  for (size_t i = 0; i < num_handles; i++)
-    handles[i].CloseIfNecessary();
-  return true;
+  return HANDLE_EINTR(sendmsg(h.get().handle, &msg, kSendFlags));
 }
 
 ssize_t PlatformChannelRecvmsg(
-    PlatformHandle h,
+    const ScopedPlatformHandle& h,
     void* buf,
     size_t num_bytes,
-    base::circular_deque<PlatformHandle>* platform_handles,
+    base::circular_deque<ScopedPlatformHandle>* platform_handles,
     bool block) {
   DCHECK(buf);
   DCHECK_GT(num_bytes, 0u);
@@ -221,7 +186,7 @@ ssize_t PlatformChannelRecvmsg(
   msg.msg_controllen = sizeof(cmsg_buf);
 
   ssize_t result =
-      HANDLE_EINTR(recvmsg(h.handle, &msg, block ? 0 : MSG_DONTWAIT));
+      HANDLE_EINTR(recvmsg(h.get().handle, &msg, block ? 0 : MSG_DONTWAIT));
   if (result < 0)
     return result;
 
@@ -239,7 +204,8 @@ ssize_t PlatformChannelRecvmsg(
       size_t num_fds = payload_length / sizeof(int);
       const int* fds = reinterpret_cast<int*>(CMSG_DATA(cmsg));
       for (size_t i = 0; i < num_fds; i++) {
-        platform_handles->push_back(PlatformHandle(fds[i]));
+        platform_handles->push_back(
+            ScopedPlatformHandle(PlatformHandle(fds[i])));
         DCHECK(platform_handles->back().is_valid());
       }
     }
@@ -248,7 +214,7 @@ ssize_t PlatformChannelRecvmsg(
   return result;
 }
 
-bool ServerAcceptConnection(PlatformHandle server_handle,
+bool ServerAcceptConnection(const ScopedPlatformHandle& server_handle,
                             ScopedPlatformHandle* connection_handle,
                             bool check_peer_user) {
   DCHECK(server_handle.is_valid());
@@ -257,8 +223,8 @@ bool ServerAcceptConnection(PlatformHandle server_handle,
   NOTREACHED();
   return false;
 #else
-  ScopedPlatformHandle accept_handle(
-      PlatformHandle(HANDLE_EINTR(accept(server_handle.handle, NULL, 0))));
+  ScopedPlatformHandle accept_handle(PlatformHandle(
+      HANDLE_EINTR(accept(server_handle.get().handle, NULL, 0))));
   if (!accept_handle.is_valid())
     return IsRecoverableError();
 

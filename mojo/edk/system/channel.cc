@@ -251,10 +251,10 @@ Channel::MessagePtr Channel::Message::Deserialize(const void* data,
   }
 
 #if defined(OS_WIN)
-  ScopedPlatformHandleVectorPtr handles(new PlatformHandleVector(num_handles));
+  std::vector<ScopedPlatformHandle> handles(num_handles);
   for (size_t i = 0; i < num_handles; i++) {
-    (*handles)[i].handle =
-        base::win::Uint32ToHandle(message->handles_[i].handle);
+    handles[i] = ScopedPlatformHandle(
+        PlatformHandle(base::win::Uint32ToHandle(message->handles_[i].handle)));
   }
   message->SetHandles(std::move(handles));
 #endif
@@ -343,9 +343,9 @@ bool Channel::Message::has_mach_ports() const {
   if (!has_handles())
     return false;
 
-  for (const auto& handle : (*handle_vector_)) {
-    if (handle.type == PlatformHandle::Type::MACH ||
-        handle.type == PlatformHandle::Type::MACH_NAME) {
+  for (const auto& handle : handle_vector_) {
+    if (handle.get().type == PlatformHandle::Type::MACH ||
+        handle.get().type == PlatformHandle::Type::MACH_NAME) {
       return true;
     }
   }
@@ -366,30 +366,32 @@ Channel::Message::Header* Channel::Message::header() const {
   return reinterpret_cast<Header*>(data_);
 }
 
-void Channel::Message::SetHandles(ScopedPlatformHandleVectorPtr new_handles) {
+void Channel::Message::SetHandles(
+    std::vector<ScopedPlatformHandle> new_handles) {
   if (is_legacy_message()) {
     // Old semantics for ChromeOS and Android
     if (legacy_header()->num_handles == 0) {
-      CHECK(!new_handles || new_handles->size() == 0);
+      CHECK(new_handles.empty());
       return;
     }
-    CHECK(new_handles && new_handles->size() == legacy_header()->num_handles);
+    CHECK_EQ(new_handles.size(), legacy_header()->num_handles);
     std::swap(handle_vector_, new_handles);
     return;
   }
 
   if (max_handles_ == 0) {
-    CHECK(!new_handles || new_handles->size() == 0);
+    CHECK(new_handles.empty());
     return;
   }
 
-  CHECK(new_handles && new_handles->size() <= max_handles_);
-  header()->num_handles = static_cast<uint16_t>(new_handles->size());
+  CHECK_LE(new_handles.size(), max_handles_);
+  header()->num_handles = static_cast<uint16_t>(new_handles.size());
   std::swap(handle_vector_, new_handles);
 #if defined(OS_WIN)
   memset(handles_, 0, extra_header_size());
-  for (size_t i = 0; i < handle_vector_->size(); i++)
-    handles_[i].handle = base::win::HandleToUint32((*handle_vector_)[i].handle);
+  for (size_t i = 0; i < handle_vector_.size(); i++)
+    handles_[i].handle =
+        base::win::HandleToUint32(handle_vector_[i].get().handle);
 #endif  // defined(OS_WIN)
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
@@ -399,10 +401,10 @@ void Channel::Message::SetHandles(ScopedPlatformHandleVectorPtr new_handles) {
       mach_ports_header_->entries[i] =
           {0, static_cast<uint32_t>(MACH_PORT_NULL)};
     }
-    for (size_t i = 0; i < handle_vector_->size(); i++) {
-      if ((*handle_vector_)[i].type == PlatformHandle::Type::MACH ||
-          (*handle_vector_)[i].type == PlatformHandle::Type::MACH_NAME) {
-        mach_port_t port = (*handle_vector_)[i].port;
+    for (size_t i = 0; i < handle_vector_.size(); i++) {
+      if (handle_vector_[i].get().type == PlatformHandle::Type::MACH ||
+          handle_vector_[i].get().type == PlatformHandle::Type::MACH_NAME) {
+        mach_port_t port = handle_vector_[i].get().port;
         mach_ports_header_->entries[mach_port_index].index = i;
         mach_ports_header_->entries[mach_port_index].mach_port = port;
         mach_port_index++;
@@ -413,7 +415,7 @@ void Channel::Message::SetHandles(ScopedPlatformHandleVectorPtr new_handles) {
 #endif
 }
 
-ScopedPlatformHandleVectorPtr Channel::Message::TakeHandles() {
+std::vector<ScopedPlatformHandle> Channel::Message::TakeHandles() {
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   if (mach_ports_header_) {
     for (size_t i = 0; i < max_handles_; ++i) {
@@ -430,23 +432,25 @@ ScopedPlatformHandleVectorPtr Channel::Message::TakeHandles() {
   return std::move(handle_vector_);
 }
 
-ScopedPlatformHandleVectorPtr Channel::Message::TakeHandlesForTransport() {
+std::vector<ScopedPlatformHandle> Channel::Message::TakeHandlesForTransport() {
 #if defined(OS_WIN)
   // Not necessary on Windows.
   NOTREACHED();
-  return nullptr;
+  return std::vector<ScopedPlatformHandle>();
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
-  if (handle_vector_) {
-    for (auto it = handle_vector_->begin(); it != handle_vector_->end(); ) {
-      if (it->type == PlatformHandle::Type::MACH ||
-          it->type == PlatformHandle::Type::MACH_NAME) {
-        // For Mach port names, we can can just leak them. They're not real
-        // ports anyways. For real ports, they're leaked because this is a child
-        // process and the remote process will take ownership.
-        it = handle_vector_->erase(it);
-      } else {
-        ++it;
-      }
+  for (auto it = handle_vector_.begin(); it != handle_vector_.end();) {
+    if (it->get().type == PlatformHandle::Type::MACH ||
+        it->get().type == PlatformHandle::Type::MACH_NAME) {
+      // For Mach port names, we can can just leak them. They're not real
+      // ports anyways. For real ports, they're leaked because this is a child
+      // process and the remote process will take ownership.
+      // TODO(wez): Removing Mach ports here because they are delivered
+      // out-of-band seems strange; could this be properly hidden inside the
+      // Mac-specific Channel impl?
+      ignore_result(it->release());
+      it = handle_vector_.erase(it);
+    } else {
+      ++it;
     }
   }
   return std::move(handle_vector_);
@@ -457,30 +461,31 @@ ScopedPlatformHandleVectorPtr Channel::Message::TakeHandlesForTransport() {
 
 #if defined(OS_WIN)
 // static
-bool Channel::Message::RewriteHandles(base::ProcessHandle from_process,
-                                      base::ProcessHandle to_process,
-                                      PlatformHandleVector* handles) {
+bool Channel::Message::RewriteHandles(
+    base::ProcessHandle from_process,
+    base::ProcessHandle to_process,
+    std::vector<ScopedPlatformHandle>* handles) {
   bool success = true;
   for (size_t i = 0; i < handles->size(); ++i) {
     if (!(*handles)[i].is_valid()) {
       DLOG(ERROR) << "Refusing to duplicate invalid handle.";
       continue;
     }
-    DCHECK_EQ((*handles)[i].owning_process, from_process);
-    BOOL result = DuplicateHandle(
-        from_process, (*handles)[i].handle, to_process,
-        &(*handles)[i].handle, 0, FALSE,
-        DUPLICATE_SAME_ACCESS | DUPLICATE_CLOSE_SOURCE);
+    DCHECK_EQ((*handles)[i].get().owning_process, from_process);
+    BOOL result =
+        DuplicateHandle(from_process, (*handles)[i].get().handle, to_process,
+                        &(*handles)[i].get().handle, 0, FALSE,
+                        DUPLICATE_SAME_ACCESS | DUPLICATE_CLOSE_SOURCE);
     if (result) {
-      (*handles)[i].owning_process = to_process;
+      (*handles)[i].get().owning_process = to_process;
     } else {
       success = false;
 
       // If handle duplication fails, the source handle will already be closed
       // due to DUPLICATE_CLOSE_SOURCE. Replace the handle in the message with
       // an invalid handle.
-      (*handles)[i].handle = INVALID_HANDLE_VALUE;
-      (*handles)[i].owning_process = base::GetCurrentProcessHandle();
+      (*handles)[i].get().handle = INVALID_HANDLE_VALUE;
+      (*handles)[i].get().owning_process = base::GetCurrentProcessHandle();
     }
   }
   return success;
@@ -695,14 +700,14 @@ bool Channel::OnReadComplete(size_t bytes_read, size_t *next_read_size_hint) {
 
     const uint16_t num_handles =
         header ? header->num_handles : legacy_header->num_handles;
-    ScopedPlatformHandleVectorPtr handles;
+    std::vector<ScopedPlatformHandle> handles;
     if (num_handles > 0) {
       if (!GetReadPlatformHandles(num_handles, extra_header, extra_header_size,
                                   &handles)) {
         return false;
       }
 
-      if (!handles) {
+      if (handles.empty()) {
         // Not enough handles available for this message.
         break;
       }
@@ -736,7 +741,7 @@ void Channel::OnError(Error error) {
 bool Channel::OnControlMessage(Message::MessageType message_type,
                                const void* payload,
                                size_t payload_size,
-                               ScopedPlatformHandleVectorPtr handles) {
+                               std::vector<ScopedPlatformHandle> handles) {
   return false;
 }
 

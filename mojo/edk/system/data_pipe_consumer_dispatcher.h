@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
-#include "mojo/edk/embedder/platform_handle_vector.h"
 #include "mojo/edk/embedder/platform_shared_buffer.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/dispatcher.h"
@@ -59,7 +58,7 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipeConsumerDispatcher final
                       uint32_t* num_handles) override;
   bool EndSerialize(void* destination,
                     ports::PortName* ports,
-                    PlatformHandle* handles) override;
+                    ScopedPlatformHandle* handles) override;
   bool BeginTransit() override;
   void CompleteTransitAndClose() override;
   void CancelTransit() override;
@@ -69,7 +68,7 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipeConsumerDispatcher final
       size_t num_bytes,
       const ports::PortName* ports,
       size_t num_ports,
-      PlatformHandle* handles,
+      ScopedPlatformHandle* handles,
       size_t num_handles);
 
  private:
@@ -103,7 +102,6 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipeConsumerDispatcher final
 
   scoped_refptr<PlatformSharedBuffer> shared_ring_buffer_;
   std::unique_ptr<PlatformSharedBufferMapping> ring_buffer_mapping_;
-  ScopedPlatformHandle buffer_handle_for_transit_;
 
   bool in_two_phase_read_ = false;
   uint32_t two_phase_max_bytes_read_ = 0;
