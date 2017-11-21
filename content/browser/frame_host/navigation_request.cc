@@ -613,8 +613,13 @@ void NavigationRequest::OnRequestRedirected(
   // destination could change.
   dest_site_instance_ = nullptr;
 
+  // For now, DevTools needs the POST data sent to the renderer process even if
+  // it is no longer a POST after the redirect.
+  // TODO(caseq): Send the requestWillBeSent from browser and remove the
+  // IsNetworkHandlerEnabled check here.
   // If the navigation is no longer a POST, the POST data should be reset.
-  if (redirect_info.new_method != "POST")
+  if (redirect_info.new_method != "POST" &&
+      !RenderFrameDevToolsAgentHost::IsNetworkHandlerEnabled(frame_tree_node_))
     common_params_.post_data = nullptr;
 
   // Mark time for the Navigation Timing API.
