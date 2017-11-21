@@ -11,6 +11,7 @@
 #include <stdint.h>
 #import <UIKit/UIKit.h>
 
+#include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -301,7 +302,7 @@ void ConvertFlagsToSwitches(flags_ui::FlagsStorage* flags_storage,
                             base::CommandLine* command_line) {
   FlagsStateSingleton::GetFlagsState()->ConvertFlagsToSwitches(
       flags_storage, command_line, flags_ui::kAddSentinels,
-      switches::kEnableIOSFeatures, switches::kDisableIOSFeatures);
+      switches::kEnableFeatures, switches::kDisableFeatures);
   AppendSwitchesFromExperimentalSettings(command_line);
 }
 

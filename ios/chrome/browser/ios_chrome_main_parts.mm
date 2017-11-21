@@ -28,17 +28,14 @@
 #include "components/variations/field_trial_config/field_trial_util.h"
 #include "components/variations/service/variations_service.h"
 #include "components/variations/variations_http_header_provider.h"
-#include "components/variations/variations_switches.h"
 #include "ios/chrome/browser/about_flags.h"
 #include "ios/chrome/browser/application_context_impl.h"
 #include "ios/chrome/browser/browser_state/browser_state_keyed_service_factories.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state_manager.h"
 #include "ios/chrome/browser/chrome_paths.h"
-#include "ios/chrome/browser/chrome_switches.h"
 #import "ios/chrome/browser/first_run/first_run.h"
 #include "ios/chrome/browser/install_time_util.h"
-#include "ios/chrome/browser/ios_chrome_field_trials.h"
 #include "ios/chrome/browser/metrics/field_trial_synchronizer.h"
 #include "ios/chrome/browser/open_from_clipboard/create_clipboard_recent_content.h"
 #include "ios/chrome/browser/pref_names.h"
@@ -218,30 +215,6 @@ void IOSChromeMainParts::SetupFieldTrials() {
       new base::FieldTrialList(application_context_->GetMetricsServicesManager()
                                    ->CreateEntropyProvider()));
 
-  const base::CommandLine* command_line =
-      base::CommandLine::ForCurrentProcess();
-
-  if (command_line->HasSwitch(variations::switches::kForceFieldTrialParams)) {
-    bool result =
-        variations::AssociateParamsFromString(command_line->GetSwitchValueASCII(
-            variations::switches::kForceFieldTrialParams));
-    CHECK(result) << "Invalid --"
-                  << variations::switches::kForceFieldTrialParams
-                  << " list specified.";
-  }
-
-  // Ensure any field trials specified on the command line are initialized.
-  // Also stop the metrics service so that we don't pollute UMA.
-  if (command_line->HasSwitch(switches::kForceFieldTrials)) {
-    // Create field trials without activating them, so that this behaves in a
-    // consistent manner with field trials created from the server.
-    bool result = base::FieldTrialList::CreateTrialsFromString(
-        command_line->GetSwitchValueASCII(switches::kForceFieldTrials),
-        std::set<std::string>());
-    CHECK(result) << "Invalid --" << switches::kForceFieldTrials
-                  << " list specified.";
-  }
-
   std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
 
   // Associate parameters chosen in about:flags and create trial/group for them.
@@ -250,37 +223,13 @@ void IOSChromeMainParts::SetupFieldTrials() {
   std::vector<std::string> variation_ids =
       RegisterAllFeatureVariationParameters(&flags_storage, feature_list.get());
 
-  variations::VariationsHttpHeaderProvider* http_header_provider =
-      variations::VariationsHttpHeaderProvider::GetInstance();
-  // Force the variation ids selected in chrome://flags and/or specified using
-  // the command-line flag.
-  bool result = http_header_provider->ForceVariationIds(
-      command_line->GetSwitchValueASCII(switches::kIOSForceVariationIds),
-      &variation_ids);
-  CHECK(result) << "Invalid list of variation ids specified (either in --"
-                << switches::kIOSForceVariationIds << " or in chrome://flags)";
-
-  feature_list->InitializeFromCommandLine(
-      command_line->GetSwitchValueASCII(switches::kEnableIOSFeatures),
-      command_line->GetSwitchValueASCII(switches::kDisableIOSFeatures));
-
-#if defined(FIELDTRIAL_TESTING_ENABLED)
-  if (!command_line->HasSwitch(
-          variations::switches::kDisableFieldTrialTestingConfig) &&
-      !command_line->HasSwitch(switches::kForceFieldTrials) &&
-      !command_line->HasSwitch(variations::switches::kVariationsServerURL)) {
-    variations::AssociateDefaultFieldTrialConfig(feature_list.get());
-  }
-#endif  // defined(FIELDTRIAL_TESTING_ENABLED)
-
-  variations::VariationsService* variations_service =
-      application_context_->GetVariationsService();
-  if (variations_service)
-    variations_service->CreateTrialsFromSeed(feature_list.get());
-
-  base::FeatureList::SetInstance(std::move(feature_list));
-
-  SetupIOSFieldTrials();
+  // On iOS, GPU benchmarking is not supported. So, pass in a dummy value for
+  // the name of the switch that enables gpu benchmarking.
+  application_context_->GetVariationsService()->SetupFieldTrials(
+      "dummy-enable-gpu-benchmarking", switches::kEnableFeatures,
+      switches::kDisableFeatures,
+      /*unforceable_field_trials=*/std::set<std::string>(),
+      std::move(feature_list), &variation_ids, &ios_field_trials_);
 }
 
 void IOSChromeMainParts::SetupMetrics() {
