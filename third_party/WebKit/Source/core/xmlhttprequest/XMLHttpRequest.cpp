@@ -179,7 +179,10 @@ void ReplaceCharsetInMediaType(String& media_type,
     FindCharsetInMediaType(media_type, pos, len);
     if (!len)
       return;
-    media_type.replace(pos, len, charset_value);
+    if (!EqualIgnoringASCIICase(StringView(media_type, pos, len),
+                                charset_value)) {
+      media_type.replace(pos, len, charset_value);
+    }
     pos += charset_value.length();
   }
 }
