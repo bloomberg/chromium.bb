@@ -742,7 +742,7 @@ void TreeView::LayoutEditor() {
 void TreeView::SchedulePaintForNode(InternalNode* node) {
   if (!node)
     return;  // Explicitly allow NULL to be passed in.
-  SchedulePaintInRect(GetBackgroundBoundsForNode(node));
+  SchedulePaintInRect(GetBoundsForNode(node));
 }
 
 void TreeView::PaintRows(gfx::Canvas* canvas,
@@ -934,8 +934,12 @@ gfx::Rect TreeView::GetAuxiliaryTextBoundsForNode(InternalNode* node) {
 gfx::Rect TreeView::GetForegroundBoundsForNodeImpl(InternalNode* node,
                                                    int row,
                                                    int depth) {
-  gfx::Rect rect(depth * kIndent + kHorizontalInset, row * row_height_,
-                 text_offset_ + node->text_width() + kTextHorizontalPadding * 2,
+  int width =
+      drawing_provider()->ShouldDrawIconForNode(this, node->model_node())
+          ? text_offset_ + node->text_width() + kTextHorizontalPadding * 2
+          : kArrowRegionSize + node->text_width() + kTextHorizontalPadding * 2;
+
+  gfx::Rect rect(depth * kIndent + kHorizontalInset, row * row_height_, width,
                  row_height_);
   rect.set_x(GetMirroredXWithWidthInView(rect.x(), rect.width()));
   return rect;
@@ -1138,7 +1142,8 @@ int TreeView::InternalNode::NumExpandedNodes() const {
 }
 
 int TreeView::InternalNode::GetMaxWidth(TreeView* tree, int indent, int depth) {
-  bool has_icon = tree->drawing_provider()->ShouldDrawIconForNode(tree, this);
+  bool has_icon =
+      tree->drawing_provider()->ShouldDrawIconForNode(tree, model_node());
   int max_width = (has_icon ? text_width_ : kArrowRegionSize) + indent * depth;
   if (!is_expanded_)
     return max_width;
