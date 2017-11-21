@@ -617,11 +617,13 @@ static unsigned VerticalScrollDistance(LocalFrame& frame) {
         style->OverflowY() == EOverflow::kAuto ||
         HasEditableStyle(*focused_element)))
     return 0;
+  ScrollableArea* scrollable_area =
+      frame.View()->LayoutViewportScrollableArea();
   int height = std::min<int>(layout_box.ClientHeight().ToInt(),
-                             frame.View()->VisibleHeight());
+                             scrollable_area->VisibleHeight());
   return static_cast<unsigned>(
       max(max<int>(height * ScrollableArea::MinFractionToStepWhenPaging(),
-                   height - frame.View()->MaxOverlapBetweenPages()),
+                   height - scrollable_area->MaxOverlapBetweenPages()),
           1));
 }
 
