@@ -1054,9 +1054,9 @@ TEST_F(WebSocketStreamCreateTest, NoResponse) {
 TEST_F(WebSocketStreamCreateTest, SelfSignedCertificateFailure) {
   ssl_data_.push_back(std::make_unique<SSLSocketDataProvider>(
       ASYNC, ERR_CERT_AUTHORITY_INVALID));
-  ssl_data_[0]->cert =
+  ssl_data_[0]->ssl_info.cert =
       ImportCertFromFile(GetTestCertsDirectory(), "unittest.selfsigned.der");
-  ASSERT_TRUE(ssl_data_[0]->cert.get());
+  ASSERT_TRUE(ssl_data_[0]->ssl_info.cert.get());
   std::unique_ptr<SequencedSocketData> raw_socket_data(BuildNullSocketData());
   CreateAndConnectRawExpectations("wss://localhost/", NoSubProtocols(),
                                   LocalhostOrigin(), LocalhostUrl(), "",
@@ -1074,9 +1074,9 @@ TEST_F(WebSocketStreamCreateTest, SelfSignedCertificateFailure) {
 TEST_F(WebSocketStreamCreateTest, SelfSignedCertificateSuccess) {
   std::unique_ptr<SSLSocketDataProvider> ssl_data(
       new SSLSocketDataProvider(ASYNC, ERR_CERT_AUTHORITY_INVALID));
-  ssl_data->cert =
+  ssl_data->ssl_info.cert =
       ImportCertFromFile(GetTestCertsDirectory(), "unittest.selfsigned.der");
-  ASSERT_TRUE(ssl_data->cert.get());
+  ASSERT_TRUE(ssl_data->ssl_info.cert.get());
   ssl_data_.push_back(std::move(ssl_data));
   ssl_data.reset(new SSLSocketDataProvider(ASYNC, OK));
   ssl_data_.push_back(std::move(ssl_data));

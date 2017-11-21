@@ -186,8 +186,9 @@ void SpdyProxyClientSocketTest::Initialize(MockRead* reads,
   session_deps_.socket_factory->AddSocketDataProvider(data_.get());
 
   SSLSocketDataProvider ssl(SYNCHRONOUS, OK);
-  ssl.cert = ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
-  ASSERT_TRUE(ssl.cert);
+  ssl.ssl_info.cert =
+      ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
+  ASSERT_TRUE(ssl.ssl_info.cert);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
 
   session_deps_.host_resolver->set_synchronous_mode(true);

@@ -149,8 +149,9 @@ class SpdyHttpStreamTest : public testing::Test {
         reads, reads_count, writes, writes_count);
     session_deps_.socket_factory->AddSocketDataProvider(sequenced_data_.get());
 
-    ssl_.cert = ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
-    ASSERT_TRUE(ssl_.cert);
+    ssl_.ssl_info.cert =
+        ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
+    ASSERT_TRUE(ssl_.ssl_info.cert);
     session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_);
 
     http_session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);

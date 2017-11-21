@@ -222,7 +222,7 @@ class SpdyNetworkTransactionTest : public ::testing::Test {
 
     void AddData(SocketDataProvider* data) {
       auto ssl_provider = std::make_unique<SSLSocketDataProvider>(ASYNC, OK);
-      ssl_provider->cert =
+      ssl_provider->ssl_info.cert =
           ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
       AddDataWithSSLSocketDataProvider(data, std::move(ssl_provider));
     }
@@ -2249,8 +2249,9 @@ TEST_F(SpdyNetworkTransactionTest, RedirectServerPush) {
 
   SSLSocketDataProvider ssl_provider0(ASYNC, OK);
   ssl_provider0.next_proto = kProtoHTTP2;
-  ssl_provider0.cert =
+  ssl_provider0.ssl_info.cert =
       ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
+  ASSERT_TRUE(ssl_provider0.ssl_info.cert);
   spdy_url_request_context.socket_factory().AddSSLSocketDataProvider(
       &ssl_provider0);
 
@@ -5076,14 +5077,16 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushValidCrossOriginWithOpenSession) {
   // "spdy_pooling.pem" is valid for www.example.org, but not for
   // docs.example.org.
   auto ssl_provider0 = std::make_unique<SSLSocketDataProvider>(ASYNC, OK);
-  ssl_provider0->cert =
+  ssl_provider0->ssl_info.cert =
       ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
+  ASSERT_TRUE(ssl_provider0->ssl_info.cert);
   helper.AddDataWithSSLSocketDataProvider(&data0, std::move(ssl_provider0));
 
   // "wildcard.pem" is valid for both www.example.org and docs.example.org.
   auto ssl_provider1 = std::make_unique<SSLSocketDataProvider>(ASYNC, OK);
-  ssl_provider1->cert =
+  ssl_provider1->ssl_info.cert =
       ImportCertFromFile(GetTestCertsDirectory(), "wildcard.pem");
+  ASSERT_TRUE(ssl_provider1->ssl_info.cert);
   helper.AddDataWithSSLSocketDataProvider(&data1, std::move(ssl_provider1));
 
   HttpNetworkTransaction* trans0 = helper.trans();
@@ -6486,7 +6489,7 @@ class SpdyNetworkTransactionTLSUsageCheckTest
 TEST_F(SpdyNetworkTransactionTLSUsageCheckTest, TLSVersionTooOld) {
   auto ssl_provider = std::make_unique<SSLSocketDataProvider>(ASYNC, OK);
   SSLConnectionStatusSetVersion(SSL_CONNECTION_VERSION_SSL3,
-                                &ssl_provider->connection_status);
+                                &ssl_provider->ssl_info.connection_status);
 
   RunTLSUsageCheckTest(std::move(ssl_provider));
 }
@@ -6494,7 +6497,8 @@ TEST_F(SpdyNetworkTransactionTLSUsageCheckTest, TLSVersionTooOld) {
 TEST_F(SpdyNetworkTransactionTLSUsageCheckTest, TLSCipherSuiteSucky) {
   auto ssl_provider = std::make_unique<SSLSocketDataProvider>(ASYNC, OK);
   // Set to TLS_RSA_WITH_NULL_MD5
-  SSLConnectionStatusSetCipherSuite(0x1, &ssl_provider->connection_status);
+  SSLConnectionStatusSetCipherSuite(0x1,
+                                    &ssl_provider->ssl_info.connection_status);
 
   RunTLSUsageCheckTest(std::move(ssl_provider));
 }
@@ -6506,7 +6510,7 @@ TEST_F(SpdyNetworkTransactionTLSUsageCheckTest, TLSCipherSuiteSucky) {
 TEST_F(SpdyNetworkTransactionTest, InsecureUrlCreatesSecureSpdySession) {
   auto ssl_provider = std::make_unique<SSLSocketDataProvider>(ASYNC, OK);
   SSLConnectionStatusSetVersion(SSL_CONNECTION_VERSION_SSL3,
-                                &ssl_provider->connection_status);
+                                &ssl_provider->ssl_info.connection_status);
 
   SpdySerializedFrame goaway(
       spdy_util_.ConstructSpdyGoAway(0, ERROR_CODE_INADEQUATE_SECURITY, ""));

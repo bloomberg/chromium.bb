@@ -1121,8 +1121,9 @@ TEST_F(URLRequestHttpJobWithBrotliSupportTest, NoBrotliAdvertisementOverHttp) {
 TEST_F(URLRequestHttpJobWithBrotliSupportTest, BrotliAdvertisement) {
   net::SSLSocketDataProvider ssl_socket_data_provider(net::ASYNC, net::OK);
   ssl_socket_data_provider.next_proto = kProtoHTTP11;
-  ssl_socket_data_provider.cert =
+  ssl_socket_data_provider.ssl_info.cert =
       ImportCertFromFile(GetTestCertsDirectory(), "unittest.selfsigned.der");
+  ASSERT_TRUE(ssl_socket_data_provider.ssl_info.cert);
   socket_factory_.AddSSLSocketDataProvider(&ssl_socket_data_provider);
 
   MockWrite writes[] = {

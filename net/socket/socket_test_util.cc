@@ -296,16 +296,12 @@ void StaticSocketDataProvider::Reset() {
 SSLSocketDataProvider::SSLSocketDataProvider(IoMode mode, int result)
     : connect(mode, result),
       next_proto(kProtoUnknown),
-      client_cert_sent(false),
       cert_request_info(NULL),
-      cert_status(0),
-      channel_id_sent(false),
-      connection_status(0),
-      token_binding_negotiated(false) {
+      channel_id_service(NULL) {
   SSLConnectionStatusSetVersion(SSL_CONNECTION_VERSION_TLS1_2,
-                                &connection_status);
+                                &ssl_info.connection_status);
   // Set to TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305
-  SSLConnectionStatusSetCipherSuite(0xcca9, &connection_status);
+  SSLConnectionStatusSetCipherSuite(0xcca9, &ssl_info.connection_status);
 }
 
 SSLSocketDataProvider::SSLSocketDataProvider(
@@ -1247,15 +1243,9 @@ NextProto MockSSLClientSocket::GetNegotiatedProtocol() const {
   return data_->next_proto;
 }
 
-bool MockSSLClientSocket::GetSSLInfo(SSLInfo* ssl_info) {
-  ssl_info->Reset();
-  ssl_info->cert = data_->cert;
-  ssl_info->cert_status = data_->cert_status;
-  ssl_info->client_cert_sent = data_->client_cert_sent;
-  ssl_info->channel_id_sent = data_->channel_id_sent;
-  ssl_info->connection_status = data_->connection_status;
-  ssl_info->token_binding_negotiated = data_->token_binding_negotiated;
-  ssl_info->token_binding_key_param = data_->token_binding_key_param;
+bool MockSSLClientSocket::GetSSLInfo(SSLInfo* requested_ssl_info) {
+  requested_ssl_info->Reset();
+  *requested_ssl_info = data_->ssl_info;
   return true;
 }
 
