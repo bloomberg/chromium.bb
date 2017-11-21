@@ -16,8 +16,6 @@ target(link_target_type, "service") {
   ]
 
   sources = [
-    "gpu_jpeg_decode_accelerator.cc",
-    "gpu_jpeg_decode_accelerator.h",
     "gpu_video_decode_accelerator.cc",
     "gpu_video_decode_accelerator.h",
     "gpu_video_encode_accelerator.cc",
@@ -42,7 +40,6 @@ target(link_target_type, "service") {
     "//media:media_features",
     "//media/gpu:features",
     "//media/gpu/ipc/common",
-    "//media/gpu/mojo:jpeg_decoder",
     "//third_party/mesa:mesa_headers",
     "//ui/gfx/ipc/color",
   ]

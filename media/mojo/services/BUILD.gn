@@ -12,6 +12,8 @@ import("//testing/test.gni")
 component("services") {
   output_name = "media_mojo_services"
   sources = [
+    "gpu_jpeg_decode_accelerator.cc",
+    "gpu_jpeg_decode_accelerator.h",
     "gpu_mojo_media_client.cc",
     "gpu_mojo_media_client.h",
     "interface_factory_impl.cc",
@@ -221,6 +223,7 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
+    "gpu_jpeg_decode_accelerator_unittest.cc",
     "mojo_audio_input_stream_unittest.cc",
     "mojo_audio_output_stream_unittest.cc",
     "mojo_video_encode_accelerator_service_unittest.cc",

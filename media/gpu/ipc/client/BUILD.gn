@@ -4,8 +4,6 @@
 
 source_set("client") {
   sources = [
-    "gpu_jpeg_decode_accelerator_host.cc",
-    "gpu_jpeg_decode_accelerator_host.h",
     "gpu_video_decode_accelerator_host.cc",
     "gpu_video_decode_accelerator_host.h",
     "gpu_video_encode_accelerator_host.cc",
@@ -22,7 +20,6 @@ source_set("client") {
     "//media:media_features",
     "//media/gpu",
     "//media/gpu/ipc/common",
-    "//media/gpu/mojo:jpeg_decoder",
     "//ui/gfx:memory_buffer",
     "//ui/gfx/geometry",
     "//ui/gfx/ipc",

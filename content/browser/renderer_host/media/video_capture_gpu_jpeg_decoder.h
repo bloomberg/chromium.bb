@@ -18,7 +18,7 @@
 #include "content/common/content_export.h"
 #include "gpu/config/gpu_info.h"
 #include "media/capture/video/video_capture_jpeg_decoder.h"
-#include "media/gpu/ipc/client/gpu_jpeg_decode_accelerator_host.h"
+#include "media/mojo/clients/gpu_jpeg_decode_accelerator_host.h"
 
 namespace base {
 class WaitableEvent;

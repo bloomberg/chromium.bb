@@ -15,6 +15,7 @@ mojom("interfaces") {
     "decryptor.mojom",
     "demuxer_stream.mojom",
     "interface_factory.mojom",
+    "jpeg_decoder.mojom",
     "media_log.mojom",
     "media_types.mojom",
     "output_protection.mojom",

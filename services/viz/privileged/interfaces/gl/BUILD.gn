@@ -14,7 +14,6 @@ mojom("gl") {
   public_deps = [
     "//components/arc/common:media",
     "//gpu/ipc/common:interfaces",
-    "//media/gpu/mojo:jpeg_decoder",
     "//media/mojo/interfaces",
     "//ui/gfx/geometry/mojo",
     "//ui/gfx/mojo",
