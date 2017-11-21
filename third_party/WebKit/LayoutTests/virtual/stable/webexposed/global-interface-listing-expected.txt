@@ -570,7 +570,6 @@ interface CredentialsContainer
     method create
     method get
     method preventSilentAccess
-    method requireUserMediation
     method store
 interface Crypto
     attribute @@toStringTag

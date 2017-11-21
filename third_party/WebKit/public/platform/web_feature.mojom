@@ -638,7 +638,6 @@ enum WebFeature {
   kCredentialManagerGetMediationOptional = 961,
   kCredentialManagerGetMediationSilent = 962,
   kCredentialManagerStore = 963,
-  kCredentialManagerRequireUserMediation = 964,
   // The above items are available in M47 branch.
 
   kBlockableMixedContentInSubframeBlocked = 966,
