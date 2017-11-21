@@ -4,8 +4,10 @@
 
 #include "chrome/browser/ui/webui/interventions_internals/interventions_internals_page_handler.h"
 
+#include <memory>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "base/base_switches.h"
@@ -17,13 +19,20 @@
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "chrome/browser/flag_descriptions.h"
+#include "chrome/browser/net/nqe/ui_network_quality_estimator_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/interventions_internals/interventions_internals.mojom.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/test/base/testing_browser_process.h"
+#include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "components/previews/content/previews_io_data.h"
 #include "components/previews/content/previews_ui_service.h"
 #include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_logger.h"
 #include "components/previews/core/previews_logger_observer.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/nqe/effective_connection_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -164,6 +173,27 @@ class TestPreviewsLogger : public previews::PreviewsLogger {
   bool remove_is_called_;
 };
 
+// Mock class to test interaction between PageHandler and the
+// UINetworkQualityEstimatorService.
+class TestUINetworkQualityEstimatorService
+    : public UINetworkQualityEstimatorService {
+ public:
+  explicit TestUINetworkQualityEstimatorService(Profile* profile)
+      : UINetworkQualityEstimatorService(profile), remove_is_called_(false) {}
+
+  // UINetworkQualityEstimatorService:
+  void RemoveEffectiveConnectionTypeObserver(
+      net::EffectiveConnectionTypeObserver* observer) override {
+    remove_is_called_ = true;
+  }
+
+  bool RemovedObserverIsCalled() const { return remove_is_called_; }
+
+ private:
+  // Check if the observer removed itself from the observer list.
+  bool remove_is_called_;
+};
+
 // A dummy class to setup PreviewsUIService.
 class TestPreviewsIOData : public previews::PreviewsIOData {
  public:
@@ -209,13 +239,11 @@ class TestPreviewsUIService : public previews::PreviewsUIService {
 class InterventionsInternalsPageHandlerTest : public testing::Test {
  public:
   InterventionsInternalsPageHandlerTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO) {}
+      : profile_manager_(TestingBrowserProcess::GetGlobal()) {}
 
   ~InterventionsInternalsPageHandlerTest() override {}
 
   void SetUp() override {
-    scoped_task_environment_.RunUntilIdle();
     TestPreviewsIOData io_data;
     std::unique_ptr<TestPreviewsLogger> logger =
         base::MakeUnique<TestPreviewsLogger>();
@@ -223,10 +251,17 @@ class InterventionsInternalsPageHandlerTest : public testing::Test {
     previews_ui_service_ =
         base::MakeUnique<TestPreviewsUIService>(&io_data, std::move(logger));
 
+    ASSERT_TRUE(profile_manager_.SetUp());
+    TestingProfile* test_profile =
+        profile_manager_.CreateTestingProfile(chrome::kInitialProfile);
+    ui_nqe_service_ =
+        base::MakeUnique<TestUINetworkQualityEstimatorService>(test_profile);
+
     mojom::InterventionsInternalsPageHandlerPtr page_handler_ptr;
     handler_request_ = mojo::MakeRequest(&page_handler_ptr);
     page_handler_ = base::MakeUnique<InterventionsInternalsPageHandler>(
-        std::move(handler_request_), previews_ui_service_.get());
+        std::move(handler_request_), previews_ui_service_.get(),
+        ui_nqe_service_.get());
 
     mojom::InterventionsInternalsPagePtr page_ptr;
     page_request_ = mojo::MakeRequest(&page_ptr);
@@ -238,11 +273,16 @@ class InterventionsInternalsPageHandlerTest : public testing::Test {
     scoped_feature_list_ = base::MakeUnique<base::test::ScopedFeatureList>();
   }
 
+  void TearDown() override { profile_manager_.DeleteAllTestingProfiles(); }
+
+  content::TestBrowserThreadBundle thread_bundle_;
+
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  TestingProfileManager profile_manager_;
 
   TestPreviewsLogger* logger_;
   std::unique_ptr<TestPreviewsUIService> previews_ui_service_;
+  std::unique_ptr<TestUINetworkQualityEstimatorService> ui_nqe_service_;
 
   // InterventionsInternalPageHandler's variables.
   mojom::InterventionsInternalsPageHandlerRequest handler_request_;
@@ -546,8 +586,10 @@ TEST_F(InterventionsInternalsPageHandlerTest, OnNewMessageLogAddedPostToPage) {
 
 TEST_F(InterventionsInternalsPageHandlerTest, ObserverIsRemovedWhenDestroyed) {
   EXPECT_FALSE(logger_->RemovedObserverIsCalled());
+  EXPECT_FALSE(ui_nqe_service_->RemovedObserverIsCalled());
   page_handler_.reset();
   EXPECT_TRUE(logger_->RemovedObserverIsCalled());
+  EXPECT_TRUE(ui_nqe_service_->RemovedObserverIsCalled());
 }
 
 TEST_F(InterventionsInternalsPageHandlerTest, OnNewBlacklistedHostPostToPage) {

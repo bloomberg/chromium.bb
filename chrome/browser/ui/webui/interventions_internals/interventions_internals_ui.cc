@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/webui/interventions_internals/interventions_internals_ui.h"
 
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "chrome/browser/net/nqe/ui_network_quality_estimator_service.h"
 #include "chrome/browser/net/nqe/ui_network_quality_estimator_service_factory.h"
@@ -60,18 +62,12 @@ InterventionsInternalsUI::InterventionsInternalsUI(content::WebUI* web_ui)
       UINetworkQualityEstimatorServiceFactory::GetForProfile(profile);
 }
 
-InterventionsInternalsUI::~InterventionsInternalsUI() {
-  if (page_handler_) {
-    // |page_handler_| was not initialized in Guest Mode or Incognito Mode.
-    ui_nqe_service_->RemoveEffectiveConnectionTypeObserver(page_handler_.get());
-  }
-}
+InterventionsInternalsUI::~InterventionsInternalsUI() {}
 
 void InterventionsInternalsUI::BindUIHandler(
     mojom::InterventionsInternalsPageHandlerRequest request) {
   DCHECK(previews_ui_service_);
   DCHECK(ui_nqe_service_);
   page_handler_.reset(new InterventionsInternalsPageHandler(
-      std::move(request), previews_ui_service_));
-  ui_nqe_service_->AddEffectiveConnectionTypeObserver(page_handler_.get());
+      std::move(request), previews_ui_service_, ui_nqe_service_));
 }
