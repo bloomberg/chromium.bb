@@ -206,10 +206,10 @@ class EncryptionMigrationScreenHandlerTest : public testing::Test {
                            _ /* 1: minimal_migration*/, _ /* 2: callback */))
         .WillOnce(WithArgs<1, 2>(
             Invoke([expect_minimal_migration](
-                       bool minimal_migration,
+                       const cryptohome::MigrateToDircryptoRequest request,
                        const cryptohome::HomedirMethods::DBusResultCallback&
                            callback) {
-              EXPECT_EQ(expect_minimal_migration, minimal_migration);
+              EXPECT_EQ(expect_minimal_migration, request.minimal_migration());
               // Call the callback immediately - actual result is sent later
               // using DircryptoMigrationProgressHandler.
               callback.Run(true /* success */);
