@@ -447,8 +447,10 @@ bool GLRenderer::CanPartialSwap() {
 }
 
 ResourceFormat GLRenderer::BackbufferFormat() const {
-  if (current_frame()->current_render_pass->color_space.IsHDR() &&
-      resource_provider_->IsRenderBufferFormatSupported(RGBA_F16)) {
+  if (current_frame()->current_render_pass->color_space.IsHDR()) {
+    // If a platform does not support half-float renderbuffers then it should
+    // not should request HDR rendering.
+    DCHECK(resource_provider_->IsRenderBufferFormatSupported(RGBA_F16));
     return RGBA_F16;
   }
   return resource_provider_->best_texture_format();
