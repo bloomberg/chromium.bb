@@ -51,7 +51,7 @@ const base::Feature kSyncUserTranslationEvents{
 
 // Enables USS implementation of Autocomplete datatype.
 const base::Feature kSyncUSSAutocomplete{"SyncUSSAutocomplete",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable USS implementation of Bookmarks datatype.
 const base::Feature kSyncUSSBookmarks{"SyncUSSBookmarks",
