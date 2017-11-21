@@ -553,6 +553,9 @@ void InlineLoginHandlerImpl::SetExtraInitParams(base::DictionaryValue& params) {
       case signin_metrics::Reason::REASON_UNLOCK:
         flow = "reauth";
         break;
+      case signin_metrics::Reason::REASON_FORCED_SIGNIN_PRIMARY_ACCOUNT:
+        flow = "enterprisefsi";
+        break;
       default:
         flow = "signin";
         break;
