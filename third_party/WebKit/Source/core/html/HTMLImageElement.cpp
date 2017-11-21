@@ -51,6 +51,7 @@
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutImage.h"
 #include "core/layout/api/LayoutImageItem.h"
+#include "core/layout/ng/layout_ng_block_flow.h"
 #include "core/loader/resource/ImageResourceContent.h"
 #include "core/media_type_names.h"
 #include "core/page/ChromeClient.h"
@@ -355,7 +356,9 @@ LayoutObject* HTMLImageElement::CreateLayoutObject(const ComputedStyle& style) {
 
   switch (layout_disposition_) {
     case LayoutDisposition::kFallbackContent:
-      return new LayoutBlockFlow(this);
+      if (!RuntimeEnabledFeatures::LayoutNGEnabled())
+        return new LayoutBlockFlow(this);
+      return new LayoutNGBlockFlow(this);
     case LayoutDisposition::kPrimaryContent: {
       LayoutImage* image = new LayoutImage(this);
       image->SetImageResource(LayoutImageResource::Create());
