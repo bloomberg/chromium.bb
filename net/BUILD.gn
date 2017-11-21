@@ -994,6 +994,7 @@ component("net") {
       "nqe/event_creator.cc",
       "nqe/event_creator.h",
       "nqe/external_estimate_provider.h",
+      "nqe/network_id.cc",
       "nqe/network_id.h",
       "nqe/network_qualities_prefs_manager.cc",
       "nqe/network_qualities_prefs_manager.h",
