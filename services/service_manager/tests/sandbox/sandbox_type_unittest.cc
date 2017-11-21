@@ -136,4 +136,16 @@ TEST(SandboxTypeTest, Nonesuch) {
   EXPECT_EQ(SANDBOX_TYPE_NO_SANDBOX, SandboxTypeFromCommandLine(command_line));
 }
 
+TEST(SandboxTypeTest, ElevatedPrivileges) {
+  // Tests that the "no sandbox and elevated privileges" which is Windows
+  // specific default to no sandbox on non Windows platforms.
+  SandboxType elevated_type =
+      UtilitySandboxTypeFromString(switches::kNoneSandboxAndElevatedPrivileges);
+#if defined(OS_WIN)
+  EXPECT_EQ(SANDBOX_TYPE_NO_SANDBOX_AND_ELEVATED_PRIVILEGES, elevated_type);
+#else
+  EXPECT_EQ(SANDBOX_TYPE_NO_SANDBOX, elevated_type);
+#endif
+}
+
 }  // namespace service_manager

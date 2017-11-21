@@ -21,9 +21,7 @@ const char kServiceSandboxType[] = "service-sandbox-type";
 // Must be in sync with "sandbox_type" values as used in service manager's
 // manifest.json catalog files.
 const char kNoneSandbox[] = "none";
-#if defined(OS_WIN)
 const char kNoneSandboxAndElevatedPrivileges[] = "none_and_elevated";
-#endif
 const char kNetworkSandbox[] = "network";
 const char kPpapiSandbox[] = "ppapi";
 const char kUtilitySandbox[] = "utility";
