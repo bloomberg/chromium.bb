@@ -4614,7 +4614,7 @@ static int find_tx_size_rd_records(MACROBLOCK *x, BLOCK_SIZE bsize, int mi_row,
             const int16_t *cur_diff_row = diff + (row + i) * diff_stride + col;
             for (int j = 0; j < cur_tx_bw; j++) {
               hash = hash ^ clip_pixel(cur_diff_row[j] + 128);
-              hash *= 16777619;
+              hash = (uint32_t)((int64_t)hash * 16777619);
             }
           }
 
