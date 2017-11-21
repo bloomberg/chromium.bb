@@ -47,16 +47,16 @@ Scheduler::Sequence::Task::~Task() = default;
 Scheduler::Sequence::Task& Scheduler::Sequence::Task::operator=(Task&& other) =
     default;
 
-Scheduler::Sequence::Fence::Fence(const SyncToken& sync_token,
-                                  uint32_t order_num,
-                                  SequenceId release_sequence_id)
+Scheduler::Sequence::WaitFence::WaitFence(const SyncToken& sync_token,
+                                          uint32_t order_num,
+                                          SequenceId release_sequence_id)
     : sync_token(sync_token),
       order_num(order_num),
       release_sequence_id(release_sequence_id) {}
-Scheduler::Sequence::Fence::Fence(Fence&& other) = default;
-Scheduler::Sequence::Fence::~Fence() = default;
-Scheduler::Sequence::Fence& Scheduler::Sequence::Fence::operator=(
-    Fence&& other) = default;
+Scheduler::Sequence::WaitFence::WaitFence(WaitFence&& other) = default;
+Scheduler::Sequence::WaitFence::~WaitFence() = default;
+Scheduler::Sequence::WaitFence& Scheduler::Sequence::WaitFence::operator=(
+    WaitFence&& other) = default;
 
 Scheduler::Sequence::Sequence(Scheduler* scheduler,
                               SequenceId sequence_id,
@@ -69,13 +69,11 @@ Scheduler::Sequence::Sequence(Scheduler* scheduler,
       order_data_(std::move(order_data)) {}
 
 Scheduler::Sequence::~Sequence() {
-  for (auto& fence : wait_fences_) {
+  for (auto& kv : wait_fences_) {
     Sequence* release_sequence =
-        scheduler_->GetSequence(fence.release_sequence_id);
-    if (!release_sequence)
-      continue;
-
-    release_sequence->RemoveWaitingPriority(current_priority());
+        scheduler_->GetSequence(kv.first.release_sequence_id);
+    if (release_sequence)
+      release_sequence->RemoveWaitingPriority(kv.second);
   }
 
   order_data_->Destroy();
@@ -99,19 +97,7 @@ void Scheduler::Sequence::UpdateSchedulingPriority() {
                  "sequence_id", sequence_id_.GetUnsafeValue(), "new_priority",
                  SchedulingPriorityToString(priority));
 
-    SchedulingPriority old_priority = current_priority_;
     current_priority_ = priority;
-
-    // Update priorities on sequences we're waiting on.
-    for (auto& wait_fence : wait_fences_) {
-      Sequence* release_sequence =
-          scheduler_->GetSequence(wait_fence.release_sequence_id);
-      if (release_sequence) {
-        release_sequence->ChangeWaitingPriority(old_priority,
-                                                current_priority_);
-      }
-    }
-
     scheduler_->TryScheduleSequence(this);
   }
 }
@@ -124,7 +110,7 @@ bool Scheduler::Sequence::NeedsRescheduling() const {
 bool Scheduler::Sequence::IsRunnable() const {
   return enabled_ && !tasks_.empty() &&
          (wait_fences_.empty() ||
-          wait_fences_.front().order_num > tasks_.front().order_num);
+          wait_fences_.begin()->first.order_num > tasks_.front().order_num);
 }
 
 bool Scheduler::Sequence::ShouldYieldTo(const Sequence* other) const {
@@ -202,27 +188,48 @@ void Scheduler::Sequence::AddWaitFence(const SyncToken& sync_token,
                                        uint32_t order_num,
                                        SequenceId release_sequence_id,
                                        Sequence* release_sequence) {
-  DCHECK(release_sequence);
-  release_sequence->AddWaitingPriority(current_priority());
+  auto it =
+      wait_fences_.find(WaitFence{sync_token, order_num, release_sequence_id});
+  if (it != wait_fences_.end())
+    return;
 
-  wait_fences_.emplace_back(sync_token, order_num, release_sequence_id);
+  DCHECK(release_sequence);
+  release_sequence->AddWaitingPriority(default_priority_);
+
+  wait_fences_.emplace(
+      std::make_pair(WaitFence(sync_token, order_num, release_sequence_id),
+                     default_priority_));
 }
 
 void Scheduler::Sequence::RemoveWaitFence(const SyncToken& sync_token,
                                           uint32_t order_num,
                                           SequenceId release_sequence_id) {
-  auto it = std::find(wait_fences_.begin(), wait_fences_.end(),
-                      Fence{sync_token, order_num, release_sequence_id});
-  DCHECK(it != wait_fences_.end());
-
+  auto it =
+      wait_fences_.find(WaitFence{sync_token, order_num, release_sequence_id});
   if (it != wait_fences_.end()) {
+    SchedulingPriority wait_priority = it->second;
     wait_fences_.erase(it);
 
     Sequence* release_sequence = scheduler_->GetSequence(release_sequence_id);
     if (release_sequence)
-      release_sequence->RemoveWaitingPriority(current_priority());
+      release_sequence->RemoveWaitingPriority(wait_priority);
 
     scheduler_->TryScheduleSequence(this);
+  }
+}
+
+void Scheduler::Sequence::PropagatePriority(SchedulingPriority priority) {
+  for (auto& kv : wait_fences_) {
+    if (kv.second > priority) {
+      SchedulingPriority old_priority = kv.second;
+      kv.second = priority;
+
+      Sequence* release_sequence =
+          scheduler_->GetSequence(kv.first.release_sequence_id);
+      if (release_sequence) {
+        release_sequence->ChangeWaitingPriority(old_priority, priority);
+      }
+    }
   }
 }
 
@@ -236,6 +243,8 @@ void Scheduler::Sequence::AddWaitingPriority(SchedulingPriority priority) {
   if (priority < current_priority_) {
     UpdateSchedulingPriority();
   }
+
+  PropagatePriority(priority);
 }
 
 void Scheduler::Sequence::RemoveWaitingPriority(SchedulingPriority priority) {
@@ -263,11 +272,14 @@ void Scheduler::Sequence::ChangeWaitingPriority(
        waiting_priority_counts_[static_cast<int>(old_priority)] == 0)) {
     UpdateSchedulingPriority();
   }
+
+  PropagatePriority(new_priority);
 }
 
 void Scheduler::Sequence::AddClientWait(CommandBufferId command_buffer_id) {
   client_waits_.insert(command_buffer_id);
   UpdateSchedulingPriority();
+  PropagatePriority(SchedulingPriority::kHigh);
 }
 
 void Scheduler::Sequence::RemoveClientWait(CommandBufferId command_buffer_id) {
