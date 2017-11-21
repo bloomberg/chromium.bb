@@ -18,10 +18,6 @@
 // decide whether the UserInfo is authenticated.
 @property(nonatomic, copy) NSString* refreshToken;
 
-// Convert a json blob into a |UserInfo| object. Most useful for test.
-// TODO(nicholss): Might move this out into a catagory.
-+ (UserInfo*)parseListFromJSON:(NSMutableData*)data;
-
 // This returns the authenticated state of the this user info object.
 - (BOOL)isAuthenticated;
 // Compare two |UserInfo| objects.

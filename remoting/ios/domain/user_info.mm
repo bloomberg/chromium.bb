@@ -15,23 +15,6 @@
 @synthesize userEmail = _userEmail;
 @synthesize refreshToken = _refreshToken;
 
-// Parse jsonData into Host list.
-+ (UserInfo*)parseListFromJSON:(NSMutableData*)data {
-  NSError* error;
-
-  NSDictionary* json = [NSJSONSerialization JSONObjectWithData:data
-                                                       options:kNilOptions
-                                                         error:&error];
-
-  UserInfo* user = [[UserInfo alloc] init];
-  user.userId = [json objectForKey:@"userId"];
-  user.userFullName = [json objectForKey:@"userFullName"];
-  user.userEmail = [json objectForKey:@"userEmail"];
-  user.refreshToken = [json objectForKey:@"refreshToken"];
-
-  return user;
-}
-
 - (BOOL)isAuthenticated {
   if (_userEmail && _userEmail.length > 0 && _refreshToken &&
       _refreshToken.length > 0) {

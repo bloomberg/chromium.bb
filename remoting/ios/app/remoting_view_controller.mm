@@ -298,14 +298,6 @@ ConnectionType GetConnectionType() {
 #pragma mark - UIViewControllerTransitioningDelegate
 
 - (nullable id<UIViewControllerAnimatedTransitioning>)
-animationControllerForPresentedController:(UIViewController*)presented
-                     presentingController:(UIViewController*)presenting
-                         sourceController:(UIViewController*)source {
-  // TODO(nicholss): Not implemented yet.
-  return nil;
-}
-
-- (nullable id<UIViewControllerAnimatedTransitioning>)
 animationControllerForDismissedController:(UIViewController*)dismissed {
   return self;
 }
