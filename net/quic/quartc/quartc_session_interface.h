@@ -9,7 +9,9 @@
 #include <stdint.h>
 #include <string>
 
+#include "net/quic/core/quic_bandwidth.h"
 #include "net/quic/core/quic_error_codes.h"
+#include "net/quic/core/quic_time.h"
 #include "net/quic/core/quic_types.h"
 #include "net/quic/platform/api/quic_export.h"
 #include "net/quic/quartc/quartc_stream_interface.h"
@@ -19,7 +21,10 @@ namespace net {
 // Structure holding stats exported by a QuartcSession.
 struct QUIC_EXPORT_PRIVATE QuartcSessionStats {
   // Bandwidth estimate in bits per second.
-  int64_t bandwidth_estimate_bits_per_second;
+  QuicBandwidth bandwidth_estimate = QuicBandwidth::Zero();
+
+  // Smoothed round-trip time.
+  QuicTime::Delta smoothed_rtt = QuicTime::Delta::Zero();
 };
 
 // Given a PacketTransport, provides a way to send and receive separate streams
