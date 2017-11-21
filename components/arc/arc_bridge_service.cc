@@ -4,6 +4,8 @@
 
 #include "components/arc/arc_bridge_service.h"
 
+#include "components/arc/common/arc_bridge.mojom.h"
+
 namespace arc {
 
 ArcBridgeService::ArcBridgeService() = default;

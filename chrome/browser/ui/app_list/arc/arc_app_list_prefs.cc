@@ -238,7 +238,8 @@ void UpdatePlayStoreDictionary(PrefService* service) {
 // static
 ArcAppListPrefs* ArcAppListPrefs::Create(
     Profile* profile,
-    arc::ConnectionHolder<arc::mojom::AppInstance>* app_connection_holder) {
+    arc::ConnectionHolder<arc::mojom::AppInstance, arc::mojom::AppHost>*
+        app_connection_holder) {
   return new ArcAppListPrefs(profile, app_connection_holder);
 }
 
@@ -271,11 +272,11 @@ std::string ArcAppListPrefs::GetAppId(const std::string& package_name,
 
 ArcAppListPrefs::ArcAppListPrefs(
     Profile* profile,
-    arc::ConnectionHolder<arc::mojom::AppInstance>* app_connection_holder)
+    arc::ConnectionHolder<arc::mojom::AppInstance, arc::mojom::AppHost>*
+        app_connection_holder)
     : profile_(profile),
       prefs_(profile->GetPrefs()),
       app_connection_holder_(app_connection_holder),
-      binding_(this),
       default_apps_(this, profile),
       weak_ptr_factory_(this) {
   DCHECK(profile);
@@ -328,6 +329,7 @@ void ArcAppListPrefs::StartPrefs() {
     arc_session_manager->AddObserver(this);
   }
 
+  app_connection_holder_->SetHost(this);
   app_connection_holder_->AddObserver(this);
   if (!app_connection_holder_->IsConnected())
     OnConnectionClosed();
@@ -813,21 +815,9 @@ void ArcAppListPrefs::SimulateDefaultAppAvailabilityTimeoutForTesting() {
 }
 
 void ArcAppListPrefs::OnConnectionReady() {
-  arc::mojom::AppInstance* app_instance =
-      ARC_GET_INSTANCE_FOR_METHOD(app_connection_holder_, Init);
-
   // Note, sync_service_ may be nullptr in testing.
   sync_service_ = arc::ArcPackageSyncableService::Get(profile_);
-
-  // In some tests app_instance may not be set.
-  if (!app_instance)
-    return;
-
   is_initialized_ = false;
-
-  arc::mojom::AppHostPtr host_proxy;
-  binding_.Bind(mojo::MakeRequest(&host_proxy));
-  app_instance->Init(std::move(host_proxy));
 }
 
 void ArcAppListPrefs::OnConnectionClosed() {
@@ -835,7 +825,6 @@ void ArcAppListPrefs::OnConnectionClosed() {
   installing_packages_count_ = 0;
   default_apps_installations_.clear();
   detect_default_app_availability_timeout_.Stop();
-  binding_.Close();
   ClearIconRequestRecord();
 
   if (sync_service_) {
