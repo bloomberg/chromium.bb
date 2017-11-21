@@ -11,7 +11,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -456,9 +455,10 @@ void AppWindow::RenderViewCreated(content::RenderViewHost* render_view_host) {
   app_delegate_->RenderViewCreated(render_view_host);
 }
 
-void AppWindow::SetOnFirstCommitCallback(const base::Closure& callback) {
-  DCHECK(on_first_commit_callback_.is_null());
-  on_first_commit_callback_ = callback;
+void AppWindow::SetOnFirstCommitOrWindowClosedCallback(
+    FirstCommitOrWindowClosedCallback callback) {
+  DCHECK(on_first_commit_or_window_closed_callback_.is_null());
+  on_first_commit_or_window_closed_callback_ = std::move(callback);
 }
 
 void AppWindow::OnReadyToCommitFirstNavigation() {
@@ -470,7 +470,7 @@ void AppWindow::OnReadyToCommitFirstNavigation() {
   // would happen before the navigation starts, but PlzNavigate must wait until
   // this point in time in the navigation.
 
-  if (on_first_commit_callback_.is_null())
+  if (on_first_commit_or_window_closed_callback_.is_null())
     return;
   // It is important that the callback executes after the calls to
   // WebContentsObserver::ReadyToCommitNavigation have been processed. The
@@ -478,18 +478,34 @@ void AppWindow::OnReadyToCommitFirstNavigation() {
   // sent after these, and it must be sent before the callback gets to run,
   // hence the use of PostTask.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::ResetAndReturn(&on_first_commit_callback_));
+      FROM_HERE,
+      base::BindOnce(std::move(on_first_commit_or_window_closed_callback_),
+                     true /* ready_to_commit */));
 }
 
 void AppWindow::OnNativeClose() {
   AppWindowRegistry::Get(browser_context_)->RemoveAppWindow(this);
+
+  // Dispatch "OnClosed" event by default.
+  bool send_onclosed = true;
+
+  // Run pending |on_first_commit_or_window_closed_callback_| so that
+  // AppWindowCreateFunction can respond with an error properly.
+  if (!on_first_commit_or_window_closed_callback_.is_null()) {
+    std::move(on_first_commit_or_window_closed_callback_)
+        .Run(false /* ready_to_commit */);
+
+    send_onclosed = false;  // No "OnClosed" event on window creation error.
+  }
+
   if (app_window_contents_) {
     WebContentsModalDialogManager* modal_dialog_manager =
         WebContentsModalDialogManager::FromWebContents(web_contents());
     if (modal_dialog_manager)  // May be null in unit tests.
       modal_dialog_manager->SetDelegate(nullptr);
-    app_window_contents_->NativeWindowClosed();
+    app_window_contents_->NativeWindowClosed(send_onclosed);
   }
+
   delete this;
 }
 
