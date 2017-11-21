@@ -5,11 +5,11 @@
 #ifndef WebGLAny_h
 #define WebGLAny_h
 
+#include "base/memory/scoped_refptr.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "core/typed_arrays/DOMTypedArray.h"
 #include "modules/webgl/WebGLObject.h"
 #include "platform/wtf/Forward.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

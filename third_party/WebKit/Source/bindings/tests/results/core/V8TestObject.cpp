@@ -10,6 +10,7 @@
 // clang-format off
 #include "V8TestObject.h"
 
+#include "base/memory/scoped_refptr.h"
 #include "bindings/core/v8/BindingSecurity.h"
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionState.h"
@@ -75,7 +76,6 @@
 #include "platform/bindings/V8PrivateProperty.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/wtf/GetPtr.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

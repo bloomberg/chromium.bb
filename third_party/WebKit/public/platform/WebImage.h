@@ -38,7 +38,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 
 #if INSIDE_BLINK
-#include "platform/wtf/RefPtr.h"
+#include "base/memory/scoped_refptr.h"
 #endif
 
 namespace blink {

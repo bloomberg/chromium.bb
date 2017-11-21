@@ -104,7 +104,6 @@ jumbo_component("wtf") {
     "ProcessMetrics.h",
     "PtrUtil.h",
     "RefCounted.h",
-    "RefPtr.h",
     "RefVector.h",
     "RetainPtr.h",
     "SaturatedArithmetic.h",

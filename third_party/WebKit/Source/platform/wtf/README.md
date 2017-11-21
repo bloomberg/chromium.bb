@@ -105,7 +105,6 @@ current location][4] Source/platform/wtf.
 [StringBuilder]: https://cs.chromium.org/chromium/src/third_party/WebKit/Source/platform/wtf/text/StringBuilder.h
 [CString]: https://cs.chromium.org/chromium/src/third_party/WebKit/Source/platform/wtf/text/CString.h
 [RefCounted]: https://cs.chromium.org/chromium/src/third_party/WebKit/Source/platform/wtf/RefCounted.h
-[RefPtr]: https://cs.chromium.org/chromium/src/third_party/WebKit/Source/platform/wtf/RefPtr.h
 [PtrUtil.h]: https://cs.chromium.org/chromium/src/third_party/WebKit/Source/platform/wtf/PtrUtil.h
 [Allocator.h]: https://cs.chromium.org/chromium/src/third_party/WebKit/Source/platform/wtf/Allocator.h
 [Functional.h]: https://cs.chromium.org/chromium/src/third_party/WebKit/Source/platform/wtf/Functional.h

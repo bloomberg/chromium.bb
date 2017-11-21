@@ -10,6 +10,7 @@
 // clang-format off
 #include "V8TestNotEnumerableNamedGetter.h"
 
+#include "base/memory/scoped_refptr.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/IDLTypes.h"
 #include "bindings/core/v8/NativeValueTraitsImpl.h"
@@ -17,7 +18,6 @@
 #include "core/dom/ExecutionContext.h"
 #include "platform/bindings/V8ObjectConstructor.h"
 #include "platform/wtf/GetPtr.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

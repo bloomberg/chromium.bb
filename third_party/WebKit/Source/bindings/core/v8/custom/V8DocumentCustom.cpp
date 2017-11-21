@@ -31,6 +31,7 @@
 #include "bindings/core/v8/V8Document.h"
 
 #include <memory>
+#include "base/memory/scoped_refptr.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8EventTarget.h"
@@ -46,7 +47,6 @@
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "platform/wtf/PtrUtil.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/StdLibExtras.h"
 
 namespace blink {

@@ -4,6 +4,7 @@
 
 #include "bindings/modules/v8/wasm/WasmResponseExtensions.h"
 
+#include "base/memory/scoped_refptr.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
@@ -13,7 +14,6 @@
 #include "modules/fetch/FetchDataLoader.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

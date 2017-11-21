@@ -35,8 +35,8 @@
 #include "base/logging.h"
 
 #if INSIDE_BLINK
+#include "base/memory/scoped_refptr.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/TypeTraits.h"
 #endif
 
