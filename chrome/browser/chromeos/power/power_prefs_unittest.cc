@@ -179,7 +179,7 @@ TEST_F(PowerPrefsTest, LoginScreen) {
   // Set up login profile.
   std::unique_ptr<sync_preferences::TestingPrefServiceSyncable>
       login_profile_prefs(new sync_preferences::TestingPrefServiceSyncable);
-  chrome::RegisterLoginProfilePrefs(login_profile_prefs->registry());
+  RegisterLoginProfilePrefs(login_profile_prefs->registry());
   TestingProfile::Builder builder;
   builder.SetPath(
       profile_manager_.profiles_dir().AppendASCII(chrome::kInitialProfile));

@@ -59,7 +59,7 @@ std::unique_ptr<TestingProfile> BuildTestingProfile(
         new user_prefs::PrefRegistrySyncable);
     std::unique_ptr<sync_preferences::PrefServiceSyncable> prefs(
         factory.CreateSyncable(registry.get()));
-    chrome::RegisterUserProfilePrefs(registry.get());
+    RegisterUserProfilePrefs(registry.get());
     profile_builder.SetPrefService(std::move(prefs));
   }
 

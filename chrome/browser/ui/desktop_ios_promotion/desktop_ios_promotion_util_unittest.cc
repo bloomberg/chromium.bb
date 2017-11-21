@@ -74,7 +74,7 @@ class DesktopIOSPromotionUtilTest : public testing::Test {
     desktop_ios_promotion::RegisterLocalPrefs(local_state_->registry());
     auto pref_service =
         base::MakeUnique<sync_preferences::TestingPrefServiceSyncable>();
-    chrome::RegisterUserProfilePrefs(pref_service->registry());
+    RegisterUserProfilePrefs(pref_service->registry());
     TestingProfile::Builder profile_builder;
     profile_builder.SetPrefService(std::move(pref_service));
     profile_builder.AddTestingFactory(ProfileSyncServiceFactory::GetInstance(),

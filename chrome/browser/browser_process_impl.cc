@@ -1047,7 +1047,7 @@ void BrowserProcessImpl::CreateLocalState() {
   auto pref_registry = base::MakeRefCounted<PrefRegistrySimple>();
 
   // Register local state preferences.
-  chrome::RegisterLocalState(pref_registry.get());
+  RegisterLocalState(pref_registry.get());
 
   auto delegate = pref_service_factory_->CreateDelegate();
   delegate->InitPrefRegistry(pref_registry.get());

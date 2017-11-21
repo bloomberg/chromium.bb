@@ -9,8 +9,6 @@
 #include "chrome/browser/ui/webui/set_as_default_browser_ui_win.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
 
-namespace chrome {
-
 bool ShowFirstRunDefaultBrowserPrompt(Profile* profile) {
   // The behavior on Windows 10 is no good at the moment, since there is no
   // known way to lead the user directly to a default browser picker.
@@ -33,5 +31,3 @@ bool ShowFirstRunDefaultBrowserPrompt(Profile* profile) {
 
   return show_status;
 }
-
-}  // namespace chrome

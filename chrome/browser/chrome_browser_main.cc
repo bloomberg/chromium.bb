@@ -1621,7 +1621,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 
     if (!master_prefs_->suppress_first_run_default_browser_prompt) {
       browser_creator_->set_show_main_browser_window(
-          !chrome::ShowFirstRunDefaultBrowserPrompt(profile_));
+          !ShowFirstRunDefaultBrowserPrompt(profile_));
     } else {
       browser_creator_->set_is_default_browser_dialog_suppressed(true);
     }

@@ -116,7 +116,7 @@ class ProxyPolicyTest : public testing::Test {
         new user_prefs::PrefRegistrySyncable);
     std::unique_ptr<sync_preferences::PrefServiceSyncable> prefs =
         factory.CreateSyncable(registry.get());
-    chrome::RegisterUserProfilePrefs(registry.get());
+    RegisterUserProfilePrefs(registry.get());
     return std::move(prefs);
   }
 

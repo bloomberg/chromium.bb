@@ -12,8 +12,6 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
-namespace chrome {
-
 // Register local state preferences specific to BrowserView.
 void RegisterBrowserViewLocalPrefs(PrefRegistrySimple* registry);
 
@@ -25,7 +23,5 @@ void RegisterBrowserViewProfilePrefs(
 // Converts deprecated int tabstrip layout type into a boolean value indicating
 // stacked layout preference.
 void MigrateBrowserTabStripPrefs(PrefService* pref);
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_BROWSER_VIEW_PREFS_H_

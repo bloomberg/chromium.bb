@@ -8,8 +8,6 @@
 class PrefRegistrySimple;
 class Profile;
 
-namespace chrome {
-
 void RegisterDefaultBrowserPromptPrefs(PrefRegistrySimple* registry);
 
 // Shows a prompt UI to set the default browser if necessary.
@@ -25,7 +23,5 @@ void ResetDefaultBrowserPrompt(Profile* profile);
 // Shows a prompt UI to set the default browser on first run
 // (if necessary and permitted). Returns true if the dialog has been launched.
 bool ShowFirstRunDefaultBrowserPrompt(Profile* profile);
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_STARTUP_DEFAULT_BROWSER_PROMPT_H_

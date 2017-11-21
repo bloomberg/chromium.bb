@@ -23,8 +23,6 @@ const char kTabStripLayoutType[] = "tab_strip_layout_type";
 
 }  // namespace
 
-namespace chrome {
-
 void RegisterBrowserViewLocalPrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(kTabStripLayoutType, 0);
   registry->RegisterBooleanPref(prefs::kTabStripStackedLayout, false);
@@ -49,5 +47,3 @@ void MigrateBrowserTabStripPrefs(PrefService* prefs) {
     prefs->ClearPref(kTabStripLayoutType);
   }
 }
-
-}  // namespace chrome

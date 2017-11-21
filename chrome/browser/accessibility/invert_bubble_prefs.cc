@@ -7,10 +7,6 @@
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 
-namespace chrome {
-
 void RegisterInvertBubbleUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(prefs::kInvertNotificationShown, false);
 }
-
-}  // namespace chrome
