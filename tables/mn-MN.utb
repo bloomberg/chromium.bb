@@ -218,7 +218,7 @@ sign \x20AE 4-2345              # mongolian currency symbol
 
 # Braille indicators
 numsign 3456  #number sign, just a dots operand
-capsletter 45
+capsletter 6
 emphclass italic
 begemphphrase italic 456
 
