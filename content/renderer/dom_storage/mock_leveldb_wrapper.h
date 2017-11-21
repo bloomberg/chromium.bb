@@ -22,6 +22,9 @@ class MockLevelDBWrapper : public mojom::StoragePartitionService,
   // StoragePartitionService implementation:
   void OpenLocalStorage(const url::Origin& origin,
                         mojom::LevelDBWrapperRequest database) override;
+  void OpenSessionStorage(int64_t namespace_id,
+                          const url::Origin& origin,
+                          mojom::LevelDBWrapperRequest database) override;
 
   // LevelDBWrapper implementation:
   void AddObserver(mojom::LevelDBObserverAssociatedPtrInfo observer) override;

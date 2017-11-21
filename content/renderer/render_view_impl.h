@@ -72,7 +72,6 @@ class WebDateTimeChooserCompletion;
 class WebGestureEvent;
 class WebMouseEvent;
 class WebSpeechRecognizer;
-class WebStorageNamespace;
 class WebTappedInfo;
 class WebURLRequest;
 struct WebDateTimeChooserParams;
@@ -281,7 +280,7 @@ class CONTENT_EXPORT RenderViewImpl : public RenderWidget,
                              bool suppress_opener,
                              blink::WebSandboxFlags sandbox_flags) override;
   blink::WebWidget* CreatePopupMenu(blink::WebPopupType popup_type) override;
-  blink::WebStorageNamespace* CreateSessionStorageNamespace() override;
+  int64_t GetSessionStorageNamespaceId() override;
   void PrintPage(blink::WebLocalFrame* frame) override;
   bool EnumerateChosenDirectory(
       const blink::WebString& path,

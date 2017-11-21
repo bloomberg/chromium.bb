@@ -29,6 +29,7 @@ class StoragePartitionService;
 // needed because we can have n LocalStorageArea objects for the same origin but
 // we want just one LocalStorageCachedArea to service them (no point in having
 // multiple caches of the same data in the same process).
+// TODO(dmurph): Rename to remove LocalStorage.
 class CONTENT_EXPORT LocalStorageCachedAreas {
  public:
   LocalStorageCachedAreas(
@@ -40,6 +41,10 @@ class CONTENT_EXPORT LocalStorageCachedAreas {
   scoped_refptr<LocalStorageCachedArea>
       GetCachedArea(const url::Origin& origin);
 
+  scoped_refptr<LocalStorageCachedArea> GetSessionStorageArea(
+      int64_t namespace_id,
+      const url::Origin& origin);
+
   size_t TotalCacheSize() const;
 
   void set_cache_limit_for_testing(size_t limit) { total_cache_limit_ = limit; }
@@ -47,11 +52,18 @@ class CONTENT_EXPORT LocalStorageCachedAreas {
  private:
   void ClearAreasIfNeeded();
 
+  scoped_refptr<LocalStorageCachedArea> GetCachedArea(
+      int64_t namespace_id,
+      const url::Origin& origin,
+      blink::scheduler::RendererScheduler* scheduler);
+
   mojom::StoragePartitionService* const storage_partition_service_;
 
-  // Maps from an origin to its LocalStorageCachedArea object. When this map is
-  // the only reference to the object, it can be deleted by the cache.
-  std::map<url::Origin, scoped_refptr<LocalStorageCachedArea>> cached_areas_;
+  // Maps from a namespace + origin to its LocalStorageCachedArea object. When
+  // this map is the only reference to the object, it can be deleted by the
+  // cache.
+  using AreaKey = std::pair<int64_t, url::Origin>;
+  std::map<AreaKey, scoped_refptr<LocalStorageCachedArea>> cached_areas_;
   size_t total_cache_limit_;
 
   blink::scheduler::RendererScheduler* renderer_scheduler_;  // NOT OWNED

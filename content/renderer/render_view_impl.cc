@@ -73,7 +73,6 @@
 #include "content/renderer/appcache/web_application_cache_host_impl.h"
 #include "content/renderer/browser_plugin/browser_plugin.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
-#include "content/renderer/dom_storage/webstoragenamespace_impl.h"
 #include "content/renderer/drop_data_builder.h"
 #include "content/renderer/gpu/render_widget_compositor.h"
 #include "content/renderer/history_serialization.h"
@@ -237,7 +236,6 @@ using blink::WebSecurityOrigin;
 using blink::WebSecurityPolicy;
 using blink::WebSettings;
 using blink::WebSize;
-using blink::WebStorageNamespace;
 using blink::WebStorageQuotaCallbacks;
 using blink::WebStorageQuotaError;
 using blink::WebStorageQuotaType;
@@ -1449,9 +1447,9 @@ WebWidget* RenderViewImpl::CreatePopupMenu(blink::WebPopupType popup_type) {
   return widget->GetWebWidget();
 }
 
-WebStorageNamespace* RenderViewImpl::CreateSessionStorageNamespace() {
+int64_t RenderViewImpl::GetSessionStorageNamespaceId() {
   CHECK(session_storage_namespace_id_ != kInvalidSessionStorageNamespaceId);
-  return new WebStorageNamespaceImpl(session_storage_namespace_id_);
+  return session_storage_namespace_id_;
 }
 
 void RenderViewImpl::PrintPage(WebLocalFrame* frame) {
