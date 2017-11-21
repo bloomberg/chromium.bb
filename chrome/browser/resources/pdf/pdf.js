@@ -187,8 +187,7 @@ function PDFViewer(browserApi) {
   // Setup the button event listeners.
   this.zoomToolbar_ = $('zoom-toolbar');
   this.zoomToolbar_.addEventListener(
-      'fit-to-width', this.viewport_.fitToWidth.bind(this.viewport_));
-  this.zoomToolbar_.addEventListener('fit-to-page', this.fitToPage_.bind(this));
+      'fit-to-changed', this.fitToChanged_.bind(this));
   this.zoomToolbar_.addEventListener(
       'zoom-in', this.viewport_.zoomIn.bind(this.viewport_));
   this.zoomToolbar_.addEventListener(
@@ -281,8 +280,8 @@ PDFViewer.prototype = {
     this.toolbarManager_.hideToolbarsAfterTimeout(e);
 
     var pageUpHandler = () => {
-      // Go to the previous page if we are fit-to-page.
-      if (this.viewport_.fittingType == Viewport.FittingType.FIT_TO_PAGE) {
+      // Go to the previous page if we are fit-to-page or fit-to-height.
+      if (this.viewport_.isPagedMode()) {
         this.viewport_.goToPage(this.viewport_.getMostVisiblePage() - 1);
         // Since we do the movement of the page.
         e.preventDefault();
@@ -292,8 +291,8 @@ PDFViewer.prototype = {
       }
     };
     var pageDownHandler = () => {
-      // Go to the next page if we are fit-to-page.
-      if (this.viewport_.fittingType == Viewport.FittingType.FIT_TO_PAGE) {
+      // Go to the next page if we are fit-to-page or fit-to-height.
+      if (this.viewport_.isPagedMode()) {
         this.viewport_.goToPage(this.viewport_.getMostVisiblePage() + 1);
         // Since we do the movement of the page.
         e.preventDefault();
@@ -441,11 +440,19 @@ PDFViewer.prototype = {
 
   /**
    * @private
-   * Set zoom to "fit to page".
+   * Request to change the viewport fitting type.
+   * @param {CustomEvent} e Event received with the new FittingType as detail.
    */
-  fitToPage_: function() {
-    this.viewport_.fitToPage();
-    this.toolbarManager_.forceHideTopToolbar();
+  fitToChanged_: function(e) {
+    if (e.detail == FittingType.FIT_TO_PAGE) {
+      this.viewport_.fitToPage();
+      this.toolbarManager_.forceHideTopToolbar();
+    } else if (e.detail == FittingType.FIT_TO_WIDTH) {
+      this.viewport_.fitToWidth();
+    } else if (e.detail == FittingType.FIT_TO_HEIGHT) {
+      this.viewport_.fitToHeight();
+      this.toolbarManager_.forceHideTopToolbar();
+    }
   },
 
   /**
@@ -499,6 +506,7 @@ PDFViewer.prototype = {
   handleURLParams_: function(viewportPosition) {
     if (viewportPosition.page != undefined)
       this.viewport_.goToPage(viewportPosition.page);
+
     if (viewportPosition.position) {
       // Make sure we don't cancel effect of page parameter.
       this.viewport_.position = {
@@ -506,8 +514,15 @@ PDFViewer.prototype = {
         y: this.viewport_.position.y + viewportPosition.position.y
       };
     }
+
     if (viewportPosition.zoom)
       this.viewport_.setZoom(viewportPosition.zoom);
+
+    if (viewportPosition.view) {
+      this.isUserInitiatedEvent_ = false;
+      this.zoomToolbar_.forceFit(viewportPosition.view);
+      this.isUserInitiatedEvent_ = true;
+    }
   },
 
   /**
@@ -894,7 +909,7 @@ PDFViewer.prototype = {
         if (!this.inPrintPreviewMode_) {
           this.inPrintPreviewMode_ = true;
           this.isUserInitiatedEvent_ = false;
-          this.zoomToolbar_.forceFitToPage();
+          this.zoomToolbar_.forceFit(FittingType.FIT_TO_PAGE);
           this.isUserInitiatedEvent_ = true;
         }
 
