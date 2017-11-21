@@ -62,4 +62,9 @@ void FakeVRDevice::ExitPresent() {
   OnExitPresent();
 }
 
+void FakeVRDevice::OnMagicWindowPoseRequest(
+    mojom::VRMagicWindowProvider::GetPoseCallback callback) {
+  std::move(callback).Run(pose_.Clone());
+}
+
 }  // namespace device

@@ -74,12 +74,13 @@ void VRDisplayImpl::ExitPresent() {
     device_->ExitPresent();
 }
 
+// Gets a pose for magic window sessions.
 void VRDisplayImpl::GetPose(GetPoseCallback callback) {
   if (!device_->IsAccessAllowed(this)) {
     std::move(callback).Run(nullptr);
     return;
   }
-  device_->GetPose(std::move(callback));
+  device_->GetMagicWindowPose(std::move(callback));
 }
 
 void VRDisplayImpl::SetListeningForActivate(bool listening) {

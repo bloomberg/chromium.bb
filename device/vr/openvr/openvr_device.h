@@ -33,7 +33,6 @@ class OpenVRDevice : public VRDeviceBase {
       mojom::VRPresentationProviderRequest request,
       mojom::VRDisplayHost::RequestPresentCallback callback) override;
   void ExitPresent() override;
-  void GetPose(mojom::VRMagicWindowProvider::GetPoseCallback callback) override;
 
   void OnPollingEvents();
 
@@ -42,6 +41,10 @@ class OpenVRDevice : public VRDeviceBase {
       bool result);
 
  private:
+  // VRDeviceBase
+  void OnMagicWindowPoseRequest(
+      mojom::VRMagicWindowProvider::GetPoseCallback callback) override;
+
   // TODO (BillOrr): This should not be a unique_ptr because the render_loop_
   // binds to VRVSyncProvider requests, so its lifetime should be tied to the
   // lifetime of that binding.
