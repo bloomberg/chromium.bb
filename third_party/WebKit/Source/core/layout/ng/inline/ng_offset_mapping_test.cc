@@ -27,6 +27,7 @@ class NGOffsetMappingTest : public NGLayoutTest {
   void SetupHtml(const char* id, String html) {
     SetBodyInnerHTML(html);
     layout_block_flow_ = ToLayoutBlockFlow(GetLayoutObjectByElementId(id));
+    DCHECK(layout_block_flow_->IsLayoutNGMixin());
     layout_object_ = layout_block_flow_->FirstChild();
     style_ = layout_object_->Style();
   }
