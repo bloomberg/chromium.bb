@@ -270,7 +270,7 @@ class MockSettingGetter : public ProxyConfigServiceLinux::SettingGetter {
 };
 
 // This helper class runs ProxyConfigServiceLinux::GetLatestProxyConfig() on
-// the IO thread and synchronously waits for the result.
+// the main TaskRunner and synchronously waits for the result.
 // Some code duplicated from proxy_script_fetcher_unittest.cc.
 class SyncConfigGetter : public ProxyConfigService::Observer {
  public:
@@ -278,25 +278,25 @@ class SyncConfigGetter : public ProxyConfigService::Observer {
   explicit SyncConfigGetter(ProxyConfigServiceLinux* config_service)
       : event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                base::WaitableEvent::InitialState::NOT_SIGNALED),
-        io_thread_("IO_Thread"),
+        main_thread_("Main_Thread"),
         config_service_(config_service),
         matches_pac_url_event_(
             base::WaitableEvent::ResetPolicy::AUTOMATIC,
             base::WaitableEvent::InitialState::NOT_SIGNALED) {
-    // Start an IO thread.
+    // Start the main IO thread.
     base::Thread::Options options;
     options.message_loop_type = base::MessageLoop::TYPE_IO;
-    io_thread_.StartWithOptions(options);
+    main_thread_.StartWithOptions(options);
 
     // Make sure the thread started.
-    io_thread_.task_runner()->PostTask(
+    main_thread_.task_runner()->PostTask(
         FROM_HERE, base::Bind(&SyncConfigGetter::Init, base::Unretained(this)));
     Wait();
   }
 
   ~SyncConfigGetter() override {
-    // Clean up the IO thread.
-    io_thread_.task_runner()->PostTask(
+    // Clean up the main thread.
+    main_thread_.task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&SyncConfigGetter::CleanUp, base::Unretained(this)));
     Wait();
@@ -304,15 +304,15 @@ class SyncConfigGetter : public ProxyConfigService::Observer {
 
   // Does gconf setup and initial fetch of the proxy config,
   // all on the calling thread (meant to be the thread with the
-  // default glib main loop, which is the UI thread).
+  // default glib main loop, which is the glib thread).
   void SetupAndInitialFetch() {
     config_service_->SetupAndFetchInitialConfig(
-        base::ThreadTaskRunnerHandle::Get(), io_thread_.task_runner());
+        base::ThreadTaskRunnerHandle::Get(), main_thread_.task_runner());
   }
   // Synchronously gets the proxy config.
   ProxyConfigService::ConfigAvailability SyncGetLatestProxyConfig(
       ProxyConfig* config) {
-    io_thread_.task_runner()->PostTask(
+    main_thread_.task_runner()->PostTask(
         FROM_HERE, base::Bind(&SyncConfigGetter::GetLatestConfigOnIOThread,
                               base::Unretained(this)));
     Wait();
@@ -354,13 +354,13 @@ class SyncConfigGetter : public ProxyConfigService::Observer {
     }
   }
 
-  // [Runs on |io_thread_|]
+  // [Runs on |main_thread_|]
   void Init() {
     config_service_->AddObserver(this);
     event_.Signal();
   }
 
-  // Calls GetLatestProxyConfig, running on |io_thread_| Signals |event_|
+  // Calls GetLatestProxyConfig, running on |main_thread_| Signals |event_|
   // on completion.
   void GetLatestConfigOnIOThread() {
     get_latest_config_result_ =
@@ -368,7 +368,7 @@ class SyncConfigGetter : public ProxyConfigService::Observer {
     event_.Signal();
   }
 
-  // [Runs on |io_thread_|] Signals |event_| on cleanup completion.
+  // [Runs on |main_thread_|] Signals |event_| on cleanup completion.
   void CleanUp() {
     config_service_->RemoveObserver(this);
     delete config_service_;
@@ -382,11 +382,11 @@ class SyncConfigGetter : public ProxyConfigService::Observer {
   }
 
   base::WaitableEvent event_;
-  base::Thread io_thread_;
+  base::Thread main_thread_;
 
   ProxyConfigServiceLinux* config_service_;
 
-  // The config obtained by |io_thread_| and read back by the main
+  // The config obtained by |main_thread_| and read back by the main
   // thread.
   ProxyConfig proxy_config_;
 

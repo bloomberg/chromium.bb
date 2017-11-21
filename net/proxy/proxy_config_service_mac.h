@@ -24,10 +24,10 @@ namespace net {
 class ProxyConfigServiceMac : public ProxyConfigService {
  public:
   // Constructs a ProxyConfigService that watches the Mac OS system settings.
-  // This instance is expected to be operated and deleted on the
-  // same sequenced task runner (however it may be constructed elsewhere).
+  // This instance is expected to be operated and deleted on
+  // |sequenced_task_runner| (however it may be constructed elsewhere).
   explicit ProxyConfigServiceMac(
-      const scoped_refptr<base::SequencedTaskRunner>& io_thread_task_runner);
+      const scoped_refptr<base::SequencedTaskRunner>& sequenced_task_runner);
   ~ProxyConfigServiceMac() override;
 
  public:
@@ -75,7 +75,7 @@ class ProxyConfigServiceMac : public ProxyConfigService {
   scoped_refptr<Helper> helper_;
 
   // The task runner that |this| will be operated on.
-  const scoped_refptr<base::SequencedTaskRunner> io_thread_task_runner_;
+  const scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyConfigServiceMac);
 };
