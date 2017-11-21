@@ -380,6 +380,11 @@ void NGBoxFragmentPainter::PaintInlineBlock(const PaintInfo& paint_info,
 void NGBoxFragmentPainter::PaintText(const NGPaintFragment& text_fragment,
                                      const PaintInfo& paint_info,
                                      const LayoutPoint& paint_offset) {
+  if (DrawingRecorder::UseCachedDrawingIfPossible(
+          paint_info.context, text_fragment,
+          DisplayItem::PaintPhaseToDrawingType(paint_info.phase)))
+    return;
+
   DrawingRecorder recorder(
       paint_info.context, text_fragment,
       DisplayItem::PaintPhaseToDrawingType(paint_info.phase));
