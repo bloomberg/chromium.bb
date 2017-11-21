@@ -6,44 +6,10 @@
 
 #include <stddef.h>
 
-// Define XK_xxx before the #include of <X11/keysym.h> so that <X11/keysym.h>
-// defines all KeySyms we need.
-#define XK_MISCELLANY
-#define XK_LATIN1
-#define XK_LATIN2
-#define XK_LATIN3
-#define XK_LATIN4
-#define XK_LATIN8
-#define XK_LATIN9
-#define XK_KATAKANA
-#define XK_ARABIC
-#define XK_CYRILLIC
-#define XK_GREEK
-#define XK_TECHNICAL
-#define XK_SPECIAL
-#define XK_PUBLISHING
-#define XK_APL
-#define XK_HEBREW
-#define XK_THAI
-#define XK_KOREAN
-#define XK_ARMENIAN
-#define XK_GEORGIAN
-#define XK_CAUCASUS
-#define XK_VIETNAMESE
-#define XK_CURRENCY
-#define XK_MATHEMATICAL
-#define XK_BRAILLE
-#define XK_SINHALA
-#include <X11/X.h>
-#include <X11/keysym.h>
-
-#ifndef XK_dead_greek
-#define XK_dead_greek 0xfe8c
-#endif
-
 #include "base/containers/hash_tables.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "ui/gfx/x/x11.h"
 
 namespace ui {
 

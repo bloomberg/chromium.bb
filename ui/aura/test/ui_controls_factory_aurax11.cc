@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <X11/keysym.h>
-#include <X11/Xlib.h>
-
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -19,6 +16,7 @@
 #include "ui/compositor/dip_util.h"
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
 #include "ui/events/test/platform_event_waiter.h"
+#include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 
 namespace aura {
@@ -127,7 +125,7 @@ class UIControlsX11 : public UIControlsAura {
       xmotion->x = root_location.x();
       xmotion->y = root_location.y();
       xmotion->state = button_down_mask;
-      xmotion->same_screen = True;
+      xmotion->same_screen = x11::True;
       // WindowTreeHost will take care of other necessary fields.
       PostEventToWindowTreeHost(xevent, host_);
     }
@@ -151,7 +149,7 @@ class UIControlsX11 : public UIControlsAura {
     }
     xbutton->x = mouse_loc.x();
     xbutton->y = mouse_loc.y();
-    xbutton->same_screen = True;
+    xbutton->same_screen = x11::True;
     switch (type) {
       case LEFT:
         xbutton->button = Button1;
@@ -192,7 +190,7 @@ class UIControlsX11 : public UIControlsAura {
       marker_event = new XEvent();
       marker_event->xclient.type = ClientMessage;
       marker_event->xclient.display = NULL;
-      marker_event->xclient.window = None;
+      marker_event->xclient.window = x11::None;
       marker_event->xclient.format = 8;
     }
     marker_event->xclient.message_type = MarkerEventAtom();

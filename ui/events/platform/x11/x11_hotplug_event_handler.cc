@@ -5,9 +5,6 @@
 #include "ui/events/platform/x11/x11_hotplug_event_handler.h"
 
 #include <stdint.h>
-#include <X11/extensions/XInput.h>
-#include <X11/extensions/XInput2.h>
-#include <X11/Xatom.h>
 
 #include <algorithm>
 #include <cmath>
@@ -30,6 +27,7 @@
 #include "ui/events/devices/device_util_linux.h"
 #include "ui/events/devices/input_device.h"
 #include "ui/events/devices/touchscreen_device.h"
+#include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/x11_types.h"
 
@@ -197,7 +195,7 @@ base::FilePath GetDevicePath(XDisplay* dpy, const XIDeviceInfo& device) {
   // Input device has a property "Device Node" pointing to its dev input node,
   // e.g.   Device Node (250): "/dev/input/event8"
   Atom device_node = gfx::GetAtom("Device Node");
-  if (device_node == None)
+  if (device_node == x11::None)
     return base::FilePath();
 
   Atom actual_type;
@@ -212,18 +210,9 @@ base::FilePath GetDevicePath(XDisplay* dpy, const XIDeviceInfo& device) {
   if (!dev || dev->device_id != base::checked_cast<XID>(device.deviceid))
     return base::FilePath();
 
-  if (XGetDeviceProperty(dpy,
-                         dev,
-                         device_node,
-                         0,
-                         1000,
-                         False,
-                         AnyPropertyType,
-                         &actual_type,
-                         &actual_format,
-                         &nitems,
-                         &bytes_after,
-                         &data) != Success) {
+  if (XGetDeviceProperty(dpy, dev, device_node, 0, 1000, x11::False,
+                         AnyPropertyType, &actual_type, &actual_format, &nitems,
+                         &bytes_after, &data) != x11::Success) {
     XCloseDevice(dpy, dev);
     return base::FilePath();
   }
@@ -308,8 +297,8 @@ void HandleTouchscreenDevicesInWorker(
     scoped_refptr<base::TaskRunner> reply_runner,
     const TouchscreenDeviceCallback& callback) {
   std::vector<TouchscreenDevice> devices;
-  if (display_state.mt_position_x == None ||
-      display_state.mt_position_y == None)
+  if (display_state.mt_position_x == x11::None ||
+      display_state.mt_position_y == x11::None)
     return;
 
   for (const DeviceInfo& device_info : device_infos) {

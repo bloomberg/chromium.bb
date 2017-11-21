@@ -8,5 +8,7 @@ include_rules = [
   "-ui",
 
   "+ui/base/ui_features.h",  # Features header doesn't bring in all of UI.
+  "+ui/gfx/x/x11.h",         # Wrapper on <X11/*>.
+  "+ui/gfx/x/x11_types.h",   # <X11/*> replacement.
   "+ui/events",
 ]

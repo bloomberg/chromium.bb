@@ -4,10 +4,6 @@
 
 #include "ui/events/platform/x11/x11_event_source.h"
 
-#include <X11/Xatom.h>
-#include <X11/XKBlib.h>
-#include <X11/Xlib.h>
-
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "ui/base/x/x11_window_event_manager.h"
@@ -16,6 +12,7 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/events/platform/x11/x11_hotplug_event_handler.h"
+#include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 
 namespace ui {
@@ -36,8 +33,8 @@ bool InitializeXkb(XDisplay* display) {
 
   // Ask the server not to send KeyRelease event when the user holds down a key.
   // crbug.com/138092
-  Bool supported_return;
-  if (!XkbSetDetectableAutoRepeat(display, True, &supported_return)) {
+  x11::Bool supported_return;
+  if (!XkbSetDetectableAutoRepeat(display, x11::True, &supported_return)) {
     DVLOG(1) << "XKB not supported in the server.";
     return false;
   }
@@ -72,7 +69,7 @@ Time ExtractTimeFromXEvent(const XEvent& xevent) {
       else
         break;
   }
-  return CurrentTime;
+  return x11::CurrentTime;
 }
 
 void UpdateDeviceList() {
@@ -82,9 +79,9 @@ void UpdateDeviceList() {
   DeviceDataManagerX11::GetInstance()->UpdateDeviceList(display);
 }
 
-Bool IsPropertyNotifyForTimestamp(Display* display,
-                                  XEvent* event,
-                                  XPointer arg) {
+x11::Bool IsPropertyNotifyForTimestamp(Display* display,
+                                       XEvent* event,
+                                       XPointer arg) {
   return event->type == PropertyNotify &&
          event->xproperty.window == *reinterpret_cast<Window*>(arg);
 }
@@ -183,7 +180,7 @@ Time X11EventSource::GetCurrentServerTime() {
 Time X11EventSource::GetTimestamp() {
   if (dispatching_event_) {
     Time timestamp = ExtractTimeFromXEvent(*dispatching_event_);
-    if (timestamp != CurrentTime)
+    if (timestamp != x11::CurrentTime)
       return timestamp;
   }
   DVLOG(1) << "Making a round trip to get a recent server timestamp.";

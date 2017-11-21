@@ -5,11 +5,6 @@
 #include "ui/events/devices/x11/touch_factory_x11.h"
 
 #include <stddef.h>
-#include <X11/Xatom.h>
-#include <X11/cursorfont.h>
-#include <X11/extensions/XInput.h>
-#include <X11/extensions/XInput2.h>
-#include <X11/extensions/XIproto.h>
 
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
@@ -24,6 +19,7 @@
 #include "ui/events/devices/x11/device_data_manager_x11.h"
 #include "ui/events/devices/x11/device_list_cache_x11.h"
 #include "ui/events/event_switches.h"
+#include "ui/gfx/x/x11.h"
 
 namespace ui {
 namespace {

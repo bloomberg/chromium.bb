@@ -51,11 +51,11 @@ dangerous macros inside the x11 namespace."""
 
   source_file_filter = lambda x: input_api.FilterSourceFile(
     x,
-    white_list=tuple([r'.*ui.(gfx|gl)..*\.(cc|h)$']))
+    white_list=tuple([r'.*ui.(aura|events|gfx|gl)..*\.(cc|h)$']))
   errors = []
   x11_include_pattern = input_api.re.compile(r'#include\s+<X11/.*\.h>')
   for f in input_api.AffectedSourceFiles(source_file_filter):
-    if f.LocalPath().endswith(input_api.os_path.normpath("ui/gfx/x11.h")):
+    if f.LocalPath().endswith(input_api.os_path.normpath("ui/gfx/x/x11.h")):
       # This is the only file that is allowed to include X11 headers.
       continue
     for line_number, line in f.ChangedContents():

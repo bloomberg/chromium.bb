@@ -8,13 +8,6 @@
 
 #include <algorithm>
 
-#define XK_3270  // for XK_3270_BackTab
-#include <X11/XF86keysym.h>
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#include <X11/extensions/XInput2.h>
-#include <X11/keysym.h>
-
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
@@ -23,6 +16,7 @@
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/keycodes/keyboard_code_conversion_xkb.h"
 #include "ui/events/keycodes/keysym_to_unicode.h"
+#include "ui/gfx/x/x11.h"
 
 #define VKEY_UNSUPPORTED VKEY_UNKNOWN
 
