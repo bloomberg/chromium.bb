@@ -22,7 +22,7 @@
 {% endmacro %}
 
 dependencies {
-{{ expand_deps(main, 'compile') }}
-{{ expand_deps(test, 'testCompile') }}
-{{ expand_deps(android_test, 'androidTestCompile') }}
+{{ expand_deps(main, 'implementation') }}
+{{ expand_deps(test, 'testImplementation') }}
+{{ expand_deps(android_test, 'androidTestImplementation') }}
 }

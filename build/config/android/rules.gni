@@ -1172,6 +1172,7 @@ if (enable_java_templates) {
 
     _java_binary_target_name = "${target_name}__java_binary"
     _test_runner_target_name = "${target_name}__test_runner_script"
+    _main_class = "org.chromium.testing.local.JunitTestMain"
 
     _build_config = "$target_gen_dir/$target_name.build_config"
     _build_config_target_name = "${target_name}__build_config"
@@ -1194,6 +1195,7 @@ if (enable_java_templates) {
     write_build_config(_build_config_target_name) {
       type = "junit_binary"
       build_config = _build_config
+      main_class = _main_class
 
       # Robolectric can handle deps that set !supports_android as well those
       # that set requires_android.
@@ -1242,7 +1244,7 @@ if (enable_java_templates) {
       if (defined(_java_sources_file)) {
         java_sources_file = _java_sources_file
       }
-      main_class = "org.chromium.testing.local.JunitTestMain"
+      main_class = _main_class
       wrapper_script_name = "helper/$target_name"
       if (!defined(srcjar_deps)) {
         srcjar_deps = []
