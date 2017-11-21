@@ -118,7 +118,7 @@ scoped_refptr<SharedBufferDispatcher> SharedBufferDispatcher::Deserialize(
     size_t num_bytes,
     const ports::PortName* ports,
     size_t num_ports,
-    PlatformHandle* platform_handles,
+    ScopedPlatformHandle* platform_handles,
     size_t num_platform_handles) {
   if (num_bytes != sizeof(SerializedState)) {
     LOG(ERROR) << "Invalid serialized shared buffer dispatcher (bad size)";
@@ -133,28 +133,20 @@ scoped_refptr<SharedBufferDispatcher> SharedBufferDispatcher::Deserialize(
     return nullptr;
   }
 
-  if (!platform_handles || num_platform_handles != 1 || num_ports) {
+  if (num_platform_handles != 1 || num_ports) {
     LOG(ERROR)
         << "Invalid serialized shared buffer dispatcher (missing handles)";
     return nullptr;
   }
 
-  // Starts off invalid, which is what we want.
-  PlatformHandle platform_handle;
-  // We take ownership of the handle, so we have to invalidate the one in
-  // |platform_handles|.
-  std::swap(platform_handle, *platform_handles);
-
   base::UnguessableToken guid = base::UnguessableToken::Deserialize(
       serialized_state->guid_high, serialized_state->guid_low);
 
-  // Wrapping |platform_handle| in a |ScopedPlatformHandle| means that it'll be
-  // closed even if creation fails.
   bool read_only = (serialized_state->flags & kSerializedStateFlagsReadOnly);
   scoped_refptr<PlatformSharedBuffer> shared_buffer(
       PlatformSharedBuffer::CreateFromPlatformHandle(
           static_cast<size_t>(serialized_state->num_bytes), read_only, guid,
-          ScopedPlatformHandle(platform_handle)));
+          std::move(platform_handles[0])));
   if (!shared_buffer) {
     LOG(ERROR)
         << "Invalid serialized shared buffer dispatcher (invalid num_bytes?)";
@@ -258,7 +250,7 @@ void SharedBufferDispatcher::StartSerialize(uint32_t* num_bytes,
 
 bool SharedBufferDispatcher::EndSerialize(void* destination,
                                           ports::PortName* ports,
-                                          PlatformHandle* handles) {
+                                          ScopedPlatformHandle* handles) {
   SerializedState* serialized_state =
       static_cast<SerializedState*>(destination);
   base::AutoLock lock(lock_);
@@ -271,12 +263,11 @@ bool SharedBufferDispatcher::EndSerialize(void* destination,
   serialized_state->guid_low = guid.GetLowForSerialization();
   serialized_state->padding = 0;
 
-  handle_for_transit_ = shared_buffer_->DuplicatePlatformHandle();
-  if (!handle_for_transit_.is_valid()) {
+  handles[0] = shared_buffer_->DuplicatePlatformHandle();
+  if (!handles[0].is_valid()) {
     shared_buffer_ = nullptr;
     return false;
   }
-  handles[0] = handle_for_transit_.get();
   return true;
 }
 

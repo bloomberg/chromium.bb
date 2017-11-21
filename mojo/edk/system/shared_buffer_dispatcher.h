@@ -11,7 +11,6 @@
 #include <utility>
 
 #include "base/macros.h"
-#include "mojo/edk/embedder/platform_handle_vector.h"
 #include "mojo/edk/embedder/platform_shared_buffer.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/dispatcher.h"
@@ -59,8 +58,8 @@ class MOJO_SYSTEM_IMPL_EXPORT SharedBufferDispatcher final : public Dispatcher {
       size_t num_bytes,
       const ports::PortName* ports,
       size_t num_ports,
-      PlatformHandle* platform_handles,
-      size_t num_platform_handles);
+      ScopedPlatformHandle* platform_handles,
+      size_t num_handles);
 
   // Passes the underlying platform shared buffer. This dispatcher must be
   // closed after calling this function.
@@ -82,7 +81,7 @@ class MOJO_SYSTEM_IMPL_EXPORT SharedBufferDispatcher final : public Dispatcher {
                       uint32_t* num_platform_handles) override;
   bool EndSerialize(void* destination,
                     ports::PortName* ports,
-                    PlatformHandle* handles) override;
+                    ScopedPlatformHandle* handles) override;
   bool BeginTransit() override;
   void CompleteTransitAndClose() override;
   void CancelTransit() override;
