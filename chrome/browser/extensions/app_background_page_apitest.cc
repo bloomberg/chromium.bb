@@ -6,7 +6,6 @@
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -46,7 +45,6 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
 
-using base::ASCIIToUTF16;
 using extensions::Extension;
 
 class AppBackgroundPageApiTest : public ExtensionApiTest {
@@ -253,7 +251,7 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, ManifestBackgroundPage) {
   const Extension* extension = GetSingleLoadedExtension();
   BackgroundContents* background_contents =
       BackgroundContentsServiceFactory::GetForProfile(browser()->profile())
-          ->GetAppBackgroundContents(ASCIIToUTF16(extension->id()));
+          ->GetAppBackgroundContents((extension->id()));
   ASSERT_TRUE(background_contents);
 
   // Verify that window.opener in the background contents is not set when
@@ -309,14 +307,14 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, NoJsBackgroundPage) {
   // There isn't a background page loaded initially.
   const Extension* extension = GetSingleLoadedExtension();
   ASSERT_FALSE(
-      BackgroundContentsServiceFactory::GetForProfile(browser()->profile())->
-          GetAppBackgroundContents(ASCIIToUTF16(extension->id())));
+      BackgroundContentsServiceFactory::GetForProfile(browser()->profile())
+          ->GetAppBackgroundContents(extension->id()));
   // The test makes sure that window.open returns null.
   ASSERT_TRUE(RunExtensionTest("app_background_page/no_js")) << message_;
   // And after it runs there should be a background page.
   BackgroundContents* background_contents =
       BackgroundContentsServiceFactory::GetForProfile(browser()->profile())
-          ->GetAppBackgroundContents(ASCIIToUTF16(extension->id()));
+          ->GetAppBackgroundContents((extension->id()));
   ASSERT_TRUE(background_contents);
 
   // Verify that window.opener in the background contents is not set when
@@ -364,7 +362,7 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, NoJsManifestBackgroundPage) {
   const Extension* extension = GetSingleLoadedExtension();
   BackgroundContents* background_contents =
       BackgroundContentsServiceFactory::GetForProfile(browser()->profile())
-          ->GetAppBackgroundContents(ASCIIToUTF16(extension->id()));
+          ->GetAppBackgroundContents((extension->id()));
   ASSERT_TRUE(background_contents);
 
   // Verify that window.opener in the background contents is not set when
@@ -504,8 +502,8 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, OpenThenClose) {
   // There isn't a background page loaded initially.
   const Extension* extension = GetSingleLoadedExtension();
   ASSERT_FALSE(
-      BackgroundContentsServiceFactory::GetForProfile(browser()->profile())->
-          GetAppBackgroundContents(ASCIIToUTF16(extension->id())));
+      BackgroundContentsServiceFactory::GetForProfile(browser()->profile())
+          ->GetAppBackgroundContents(extension->id()));
   // Background mode should not be active until a background page is created.
   ASSERT_TRUE(WaitForBackgroundMode(false));
   ASSERT_TRUE(RunExtensionTest("app_background_page/basic_open")) << message_;
@@ -515,7 +513,7 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, OpenThenClose) {
   // Verify that the background contents exist.
   BackgroundContents* background_contents =
       BackgroundContentsServiceFactory::GetForProfile(browser()->profile())
-          ->GetAppBackgroundContents(ASCIIToUTF16(extension->id()));
+          ->GetAppBackgroundContents((extension->id()));
   ASSERT_TRUE(background_contents);
 
   // Verify that window.opener in the background contents is set.
@@ -536,8 +534,8 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, OpenThenClose) {
   // Background mode should no longer be active.
   ASSERT_TRUE(WaitForBackgroundMode(false));
   ASSERT_FALSE(
-      BackgroundContentsServiceFactory::GetForProfile(browser()->profile())->
-          GetAppBackgroundContents(ASCIIToUTF16(extension->id())));
+      BackgroundContentsServiceFactory::GetForProfile(browser()->profile())
+          ->GetAppBackgroundContents(extension->id()));
 }
 
 IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, UnloadExtensionWhileHidden) {
@@ -573,8 +571,8 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, UnloadExtensionWhileHidden) {
 
   const Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(
-      BackgroundContentsServiceFactory::GetForProfile(browser()->profile())->
-          GetAppBackgroundContents(ASCIIToUTF16(extension->id())));
+      BackgroundContentsServiceFactory::GetForProfile(browser()->profile())
+          ->GetAppBackgroundContents(extension->id()));
 
   // Close all browsers - app should continue running.
   set_exit_when_last_browser_closes(false);

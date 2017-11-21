@@ -23,12 +23,12 @@ BackgroundContentsTask* BackgroundContentsTag::CreateTask() const {
       web_contents()->GetBrowserContext());
   BackgroundContentsService* background_contents_service =
       BackgroundContentsServiceFactory::GetForProfile(profile);
-  const base::string16& application_id =
+  const std::string& application_id =
       background_contents_service->GetParentApplicationId(background_contents_);
   const extensions::ExtensionSet& extensions_set =
       extensions::ExtensionRegistry::Get(profile)->enabled_extensions();
   const extensions::Extension* extension =
-      extensions_set.GetByID(base::UTF16ToUTF8(application_id));
+      extensions_set.GetByID(application_id);
   base::string16 application_name;
   if (extension)
     application_name = base::UTF8ToUTF16(extension->name());
