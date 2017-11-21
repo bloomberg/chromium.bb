@@ -38,6 +38,8 @@ static LinkHeader::LinkParameterName ParameterNameFromString(
     return LinkHeader::kLinkParameterAs;
   if (base::EqualsCaseInsensitiveASCII(name, "nonce"))
     return LinkHeader::kLinkParameterNonce;
+  if (base::EqualsCaseInsensitiveASCII(name, "integrity"))
+    return LinkHeader::kLinkParameterIntegrity;
   return LinkHeader::kLinkParameterUnknown;
 }
 
@@ -56,6 +58,8 @@ void LinkHeader::SetValue(LinkParameterName name, const String& value) {
     media_ = value.DeprecatedLower();
   else if (name == kLinkParameterNonce)
     nonce_ = value;
+  else if (name == kLinkParameterIntegrity)
+    integrity_ = value;
 }
 
 template <typename Iterator>
