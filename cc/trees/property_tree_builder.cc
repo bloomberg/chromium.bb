@@ -143,11 +143,11 @@ static LayerStickyPositionConstraint StickyPositionConstraint(
   return layer->test_properties()->sticky_position_constraint;
 }
 
-static LayerImplList& Children(LayerImpl* layer) {
+static LayerImplList& LayerChildren(LayerImpl* layer) {
   return layer->test_properties()->children;
 }
 
-static const LayerList& Children(Layer* layer) {
+static const LayerList& LayerChildren(Layer* layer) {
   return layer->children();
 }
 
@@ -895,7 +895,7 @@ bool UpdateSubtreeHasCopyRequestRecursive(LayerType* layer) {
   bool subtree_has_copy_request = false;
   if (HasCopyRequest(layer))
     subtree_has_copy_request = true;
-  for (size_t i = 0; i < Children(layer).size(); ++i) {
+  for (size_t i = 0; i < LayerChildren(layer).size(); ++i) {
     LayerType* current_child = ChildAt(layer, i);
     subtree_has_copy_request |=
         UpdateSubtreeHasCopyRequestRecursive(current_child);
@@ -1212,7 +1212,7 @@ void PropertyTreeBuilderContext<LayerType>::BuildPropertyTreesInternal(
   data_for_children.not_axis_aligned_since_last_clip =
       !has_non_axis_aligned_clip;
 
-  for (size_t i = 0; i < Children(layer).size(); ++i) {
+  for (size_t i = 0; i < LayerChildren(layer).size(); ++i) {
     LayerType* current_child = ChildAt(layer, i);
     SetLayerPropertyChangedForChild(layer, current_child);
     if (!ScrollParent(current_child)) {
