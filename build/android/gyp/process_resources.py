@@ -558,13 +558,15 @@ def main(args):
   args = build_utils.ExpandFileArgs(args)
   options = _ParseArgs(args)
 
+  # Order of these must match order specified in GN so that the correct one
+  # appears first in the depfile.
   possible_output_paths = [
     options.resource_zip_out,
     options.all_resources_zip_out,
-    options.proguard_file,
-    options.proguard_file_main_dex,
     options.r_text_out,
     options.srcjar_out,
+    options.proguard_file,
+    options.proguard_file_main_dex,
   ]
   output_paths = [x for x in possible_output_paths if x]
 
