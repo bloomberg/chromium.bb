@@ -21,7 +21,10 @@
 #include "components/metrics/metrics_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/version_info/version_info.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/service_manager_connection.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/ui/browser_finder.h"
@@ -83,11 +86,16 @@ void LoadRiskData(uint64_t obfuscated_gaia_id,
   base::Time install_time = base::Time::FromTimeT(
       g_browser_process->metrics_service()->GetInstallDate());
 
-  risk::GetFingerprint(obfuscated_gaia_id, window_bounds, web_contents,
-                       version_info::GetVersionNumber(), charset,
-                       accept_languages, install_time,
-                       g_browser_process->GetApplicationLocale(),
-                       GetUserAgent(), base::Bind(PassRiskData, callback));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(content::ServiceManagerConnection::GetForProcess());
+  service_manager::Connector* connector =
+      content::ServiceManagerConnection::GetForProcess()->GetConnector();
+
+  risk::GetFingerprint(
+      obfuscated_gaia_id, window_bounds, web_contents,
+      version_info::GetVersionNumber(), charset, accept_languages, install_time,
+      g_browser_process->GetApplicationLocale(), GetUserAgent(),
+      base::Bind(PassRiskData, callback), connector);
 }
 
 }  // namespace autofill
