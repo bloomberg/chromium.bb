@@ -20,6 +20,7 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/testing/earl_grey/disabled_test_macros.h"
 #import "ios/testing/wait_util.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
@@ -122,7 +123,10 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 #pragma mark - Tests
 
 // Tests that notification saying "Signing is as ..." appears on auto sign-in.
-- (void)DISABLED_testNotificationAppearsOnAutoSignIn {
+- (void)testNotificationAppearsOnAutoSignIn {
+  // TODO(crbug.com/786960): re-enable when fixed.
+  EARL_GREY_TEST_DISABLED(@"Fails on iOS 11.0.");
+
   [self setAutosigninPreferences];
   [self loadSimplePageAndStoreACredential];
 
@@ -166,7 +170,10 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
 // Tests that when navigator.credentials.get() was called from inactive tab, the
 // autosign-in notification appears once tab becomes active.
-- (void)DISABLED_testNotificationAppearsWhenTabIsActive {
+- (void)testNotificationAppearsWhenTabIsActive {
+  // TODO(crbug.com/786960): re-enable when fixed.
+  EARL_GREY_TEST_DISABLED(@"Fails on iOS 11.0.");
+
   [self setAutosigninPreferences];
   [self loadSimplePageAndStoreACredential];
 
