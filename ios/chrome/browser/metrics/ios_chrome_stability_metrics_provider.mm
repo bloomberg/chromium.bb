@@ -4,11 +4,18 @@
 
 #include "ios/chrome/browser/metrics/ios_chrome_stability_metrics_provider.h"
 
+#include "base/metrics/histogram_macros.h"
+#include "ios/chrome/browser/chrome_url_constants.h"
+#import "ios/web/public/web_state/navigation_context.h"
 #import "ios/web/public/web_state/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+const char
+    IOSChromeStabilityMetricsProvider::kPageLoadCountMigrationEventKey[] =
+        "IOS.PageLoadCountMigration.Counts";
 
 IOSChromeStabilityMetricsProvider::IOSChromeStabilityMetricsProvider(
     PrefService* local_state)
@@ -51,7 +58,29 @@ void IOSChromeStabilityMetricsProvider::WebStateDidStartLoading(
   if (!recording_enabled_)
     return;
 
+  UMA_HISTOGRAM_ENUMERATION(kPageLoadCountMigrationEventKey,
+                            StabilityMetricEventType::LOADING_STARTED,
+                            StabilityMetricEventType::COUNT);
   helper_.LogLoadStarted();
+}
+
+void IOSChromeStabilityMetricsProvider::WebStateDidStartNavigation(
+    web::WebState* web_state,
+    web::NavigationContext* navigation_context) {
+  if (!recording_enabled_)
+    return;
+
+  StabilityMetricEventType type =
+      StabilityMetricEventType::PAGE_LOAD_NAVIGATION;
+  if (navigation_context->GetUrl().SchemeIs(kChromeUIScheme)) {
+    type = StabilityMetricEventType::CHROME_URL_NAVIGATION;
+  } else if (navigation_context->IsSameDocument()) {
+    type = StabilityMetricEventType::SAME_DOCUMENT_WEB_NAVIGATION;
+  } else {
+    // TODO(crbug.com/786547): Move helper_.LogLoadStarted() here.
+  }
+  UMA_HISTOGRAM_ENUMERATION(kPageLoadCountMigrationEventKey, type,
+                            StabilityMetricEventType::COUNT);
 }
 
 void IOSChromeStabilityMetricsProvider::RenderProcessGone(
