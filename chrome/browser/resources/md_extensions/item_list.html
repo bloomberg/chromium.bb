@@ -14,8 +14,10 @@
       }
 
       #container {
+        box-sizing: border-box;
         height: 100%;
         overflow: overlay;
+        padding-top: 24px;
       }
 
       .empty-list-message {
@@ -29,6 +31,7 @@
       .items-container {
         --grid-gutter: 12px;
         --max-columns: 3;
+        --padding: calc(var(--grid-gutter) / 2);
         display: grid;
         grid-column-gap: var(--grid-gutter);
         grid-row-gap: var(--grid-gutter);
@@ -37,7 +40,7 @@
         margin: auto;
         max-width: calc(var(--extensions-card-width) * var(--max-columns) +
             var(--grid-gutter) * var(--max-columns));
-        padding: calc(var(--grid-gutter) / 2);
+        padding: 0 var(--padding) var(--padding);
       }
 
       extensions-item {
