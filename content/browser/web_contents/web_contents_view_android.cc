@@ -49,6 +49,22 @@ void DisplayToScreenInfo(const display::Display& display, ScreenInfo* results) {
   results->is_monochrome = display.is_monochrome();
   results->color_space = display.color_space();
 }
+
+RenderWidgetHostViewAndroid* GetRenderWidgetHostViewAndroid(
+    WebContents* web_contents) {
+  RenderWidgetHostView* rwhv = NULL;
+  if (web_contents) {
+    rwhv = web_contents->GetRenderWidgetHostView();
+    if (web_contents->ShowingInterstitialPage()) {
+      rwhv = web_contents->GetInterstitialPage()
+                 ->GetMainFrame()
+                 ->GetRenderViewHost()
+                 ->GetWidget()
+                 ->GetView();
+    }
+  }
+  return static_cast<RenderWidgetHostViewAndroid*>(rwhv);
+}
 }
 
 // static
@@ -177,8 +193,7 @@ void WebContentsViewAndroid::GetScreenInfo(ScreenInfo* result) const {
 }
 
 void WebContentsViewAndroid::GetContainerBounds(gfx::Rect* out) const {
-  *out = content_view_core_ ? gfx::Rect(content_view_core_->GetViewSize())
-                            : gfx::Rect();
+  *out = GetViewBounds();
 }
 
 void WebContentsViewAndroid::SetPageTitle(const base::string16& title) {
@@ -236,10 +251,7 @@ DropData* WebContentsViewAndroid::GetDropData() const {
 }
 
 gfx::Rect WebContentsViewAndroid::GetViewBounds() const {
-  if (content_view_core_)
-    return gfx::Rect(content_view_core_->GetViewSize());
-
-  return gfx::Rect();
+  return gfx::Rect(view_.GetSize());
 }
 
 void WebContentsViewAndroid::CreateView(
@@ -476,6 +488,21 @@ void WebContentsViewAndroid::TakeFocus(bool reverse) {
   web_contents_->GetRenderWidgetHostView()->Focus();
 }
 
+int WebContentsViewAndroid::GetTopControlsHeight() const {
+  auto* delegate = web_contents_->GetDelegate();
+  return delegate ? delegate->GetTopControlsHeight() : 0;
+}
+
+int WebContentsViewAndroid::GetBottomControlsHeight() const {
+  auto* delegate = web_contents_->GetDelegate();
+  return delegate ? delegate->GetBottomControlsHeight() : 0;
+}
+
+bool WebContentsViewAndroid::DoBrowserControlsShrinkBlinkSize() const {
+  auto* delegate = web_contents_->GetDelegate();
+  return delegate ? delegate->DoBrowserControlsShrinkBlinkSize() : false;
+}
+
 bool WebContentsViewAndroid::OnTouchEvent(const ui::MotionEventAndroid& event) {
   if (event.GetAction() == ui::MotionEventAndroid::ACTION_DOWN)
     content_view_core_->OnTouchDown(event.GetJavaObject());
@@ -493,6 +520,14 @@ bool WebContentsViewAndroid::OnMouseEvent(const ui::MotionEventAndroid& event) {
   auto* manager = static_cast<BrowserAccessibilityManagerAndroid*>(
       web_contents_->GetRootBrowserAccessibilityManager());
   return manager && manager->OnHoverEvent(event);
+}
+
+void WebContentsViewAndroid::OnSizeChanged() {
+  auto* rwhv = ::content::GetRenderWidgetHostViewAndroid(web_contents_);
+  if (rwhv) {
+    web_contents_->SendScreenRects();
+    rwhv->WasResized();
+  }
 }
 
 void WebContentsViewAndroid::OnPhysicalBackingSizeChanged() {

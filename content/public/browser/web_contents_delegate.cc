@@ -256,4 +256,16 @@ bool WebContentsDelegate::ShouldAllowRunningInsecureContent(
   return allowed_per_prefs;
 }
 
+int WebContentsDelegate::GetTopControlsHeight() const {
+  return 0;
+}
+
+int WebContentsDelegate::GetBottomControlsHeight() const {
+  return 0;
+}
+
+bool WebContentsDelegate::DoBrowserControlsShrinkBlinkSize() const {
+  return false;
+}
+
 }  // namespace content

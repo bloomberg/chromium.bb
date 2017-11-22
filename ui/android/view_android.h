@@ -136,7 +136,8 @@ class UI_ANDROID_EXPORT ViewAndroid {
   bool StartDragAndDrop(const base::android::JavaRef<jstring>& jtext,
                         const base::android::JavaRef<jobject>& jimage);
 
-  gfx::Size GetPhysicalBackingSize();
+  gfx::Size GetPhysicalBackingSize() const;
+  gfx::Size GetSize() const;
 
   void OnSizeChanged(int width, int height);
   void OnPhysicalBackingSizeChanged(const gfx::Size& size);

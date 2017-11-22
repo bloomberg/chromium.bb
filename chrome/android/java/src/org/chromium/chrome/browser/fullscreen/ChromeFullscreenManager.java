@@ -53,6 +53,7 @@ public class ChromeFullscreenManager
     private ControlContainer mControlContainer;
     private int mTopControlContainerHeight;
     private int mBottomControlContainerHeight;
+    private boolean mControlsResizeView;
     private TabModelSelectorTabModelObserver mTabModelObserver;
 
     private float mRendererTopControlOffset = Float.NaN;
@@ -99,6 +100,11 @@ public class ChromeFullscreenManager
          * Called when the height of the controls are changed.
          */
         public void onBottomControlsHeightChanged(int bottomControlsHeight);
+
+        /**
+         * Called when the viewport size of the active content is updated.
+         */
+        public default void onUpdateViewportSize() {}
     }
 
     private final Runnable mUpdateVisibilityRunnable = new Runnable() {
@@ -348,6 +354,13 @@ public class ChromeFullscreenManager
         return mBottomControlContainerHeight;
     }
 
+    /**
+     * @return The height of the bottom controls in pixels.
+     */
+    public boolean controlsResizeView() {
+        return mControlsResizeView;
+    }
+
     @Override
     public float getContentOffset() {
         return mRendererTopContentOffset;
@@ -426,12 +439,9 @@ public class ChromeFullscreenManager
     }
 
     /**
-     * Updates the content view's viewport size to have it render the content correctly.
-     *
-     * @param viewCore The ContentViewCore to update.
+     * Updates viewport size to have it render the content correctly.
      */
-    public void updateContentViewViewportSize(ContentViewCore viewCore) {
-        if (viewCore == null) return;
+    public void updateViewportSize() {
         if (mInGesture || mContentViewScrolling) return;
 
         // Update content viewport size only when the browser controls are not animating.
@@ -444,9 +454,12 @@ public class ChromeFullscreenManager
         boolean controlsResizeView =
                 topContentOffset > 0 || bottomControlOffset < getBottomControlsHeight();
         controlsResizeView &= !VrShellDelegate.isInVr();
-
-        viewCore.setTopControlsHeight(getTopControlsHeight(), controlsResizeView);
-        viewCore.setBottomControlsHeight(getBottomControlsHeight());
+        mControlsResizeView = controlsResizeView;
+        Tab tab = getTab();
+        if (tab == null) return;
+        tab.setTopControlsHeight(getTopControlsHeight(), controlsResizeView);
+        tab.setBottomControlsHeight(getBottomControlsHeight());
+        for (FullscreenListener listener : mListeners) listener.onUpdateViewportSize();
     }
 
     @Override
@@ -459,7 +472,7 @@ public class ChromeFullscreenManager
         float bottomMargin = getBottomControlsHeight() - getBottomControlOffset();
         applyTranslationToTopChildViews(view, topViewsTranslation);
         applyMarginToFullChildViews(view, topViewsTranslation, bottomMargin);
-        updateContentViewViewportSize(contentViewCore);
+        updateViewportSize();
     }
 
     /**

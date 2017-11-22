@@ -425,8 +425,12 @@ void ViewAndroid::OnPhysicalBackingSizeChanged(const gfx::Size& size) {
     child->OnPhysicalBackingSizeChanged(size);
 }
 
-gfx::Size ViewAndroid::GetPhysicalBackingSize() {
+gfx::Size ViewAndroid::GetPhysicalBackingSize() const {
   return physical_size_;
+}
+
+gfx::Size ViewAndroid::GetSize() const {
+  return view_rect_.size();
 }
 
 bool ViewAndroid::OnDragEvent(const DragEventAndroid& event) {

@@ -585,6 +585,7 @@ public class VrShellImpl
         assert mTab != null;
         if (mTab.getContentViewCore() != null) {
             View parent = mTab.getContentViewCore().getContainerView();
+            mTab.getWebContents().setSize(parent.getWidth(), parent.getHeight());
             mTab.getContentViewCore().onSizeChanged(parent.getWidth(), parent.getHeight(), 0, 0);
         }
         mTab.updateBrowserControlsState(BrowserControlsState.SHOWN, true);

@@ -69,6 +69,15 @@ class CONTENT_EXPORT RenderViewHostDelegateView {
   // retrieved by doing a Shift-Tab.
   virtual void TakeFocus(bool reverse) {}
 
+  // Returns the height of the top controls in DIP.
+  virtual int GetTopControlsHeight() const;
+
+  // Returns the height of the bottom controls in DIP.
+  virtual int GetBottomControlsHeight() const;
+
+  // Returns true if the browser controls resize Blink's view size.
+  virtual bool DoBrowserControlsShrinkBlinkSize() const;
+
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
   // Shows a popup menu with the specified items.
   // This method should call RenderFrameHost::DidSelectPopupMenuItem[s]() or
