@@ -2565,6 +2565,8 @@ split_static_library("browser") {
       "resource_coordinator/tab_manager.h",
       "resource_coordinator/tab_manager_delegate_chromeos.cc",
       "resource_coordinator/tab_manager_delegate_chromeos.h",
+      "resource_coordinator/tab_manager_features.cc",
+      "resource_coordinator/tab_manager_features.h",
       "resource_coordinator/tab_manager_resource_coordinator_signal_observer.cc",
       "resource_coordinator/tab_manager_resource_coordinator_signal_observer.h",
       "resource_coordinator/tab_manager_stats_collector.cc",

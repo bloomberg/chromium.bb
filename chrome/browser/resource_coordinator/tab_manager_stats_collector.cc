@@ -309,6 +309,10 @@ void TabManagerStatsCollector::OnDidStartMainFrameNavigation(
   foreground_contents_switched_to_times_.erase(contents);
 }
 
+void TabManagerStatsCollector::OnWillLoadNextBackgroundTab(bool timeout) {
+  UMA_HISTOGRAM_BOOLEAN(kHistogramBackgroundTabOpeningTabLoadTimeout, timeout);
+}
+
 void TabManagerStatsCollector::OnTabIsLoaded(content::WebContents* contents) {
   if (!base::ContainsKey(foreground_contents_switched_to_times_, contents))
     return;
@@ -427,6 +431,11 @@ const char TabManagerStatsCollector::
 const char TabManagerStatsCollector::
     kHistogramBackgroundTabOpeningTabLoadUserInitiatedCount[] =
         "TabManager.BackgroundTabOpening.TabLoadUserInitiatedCount";
+
+// static
+const char
+    TabManagerStatsCollector::kHistogramBackgroundTabOpeningTabLoadTimeout[] =
+        "TabManager.BackgroundTabOpening.TabLoadTimeout";
 
 // static
 const char TabManagerStatsCollector::kHistogramSessionOverlapSessionRestore[] =

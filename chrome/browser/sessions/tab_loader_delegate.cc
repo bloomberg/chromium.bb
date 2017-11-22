@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "components/variations/variations_associated_data.h"
 #include "net/base/network_change_notifier.h"
 
@@ -32,12 +33,12 @@ class TabLoaderDelegateImpl
 
   // TabLoaderDelegate:
   base::TimeDelta GetFirstTabLoadingTimeout() const override {
-    return first_timeout_;
+    return resource_coordinator::GetTabLoadTimeout(first_timeout_);
   }
 
   // TabLoaderDelegate:
   base::TimeDelta GetTimeoutBeforeLoadingNextTab() const override {
-    return timeout_;
+    return resource_coordinator::GetTabLoadTimeout(timeout_);
   }
 
   // net::NetworkChangeNotifier::NetworkChangeObserver implementation:

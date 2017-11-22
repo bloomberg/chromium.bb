@@ -176,6 +176,10 @@ void SessionRestoreStatsCollector::DeferTab(NavigationController* tab) {
   reporting_delegate_->ReportTabDeferred();
 }
 
+void SessionRestoreStatsCollector::OnWillLoadNextTab(bool timeout) {
+  UMA_HISTOGRAM_BOOLEAN("SessionRestore.TabLoadTimeout", timeout);
+}
+
 void SessionRestoreStatsCollector::Observe(
     int type,
     const content::NotificationSource& source,
