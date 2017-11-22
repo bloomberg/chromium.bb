@@ -31,6 +31,7 @@
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager_delegate.h"
+#include "content/public/browser/download_request_utils.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/web_contents.h"
@@ -56,7 +57,7 @@ class DownloadRequestData : public base::SupportsUserData::Data {
   static void Attach(net::URLRequest* request,
                      DownloadUrlParameters* download_parameters,
                      uint32_t download_id);
-  static DownloadRequestData* Get(net::URLRequest* request);
+  static DownloadRequestData* Get(const net::URLRequest* request);
   static void Detach(net::URLRequest* request);
 
   std::unique_ptr<DownloadSaveInfo> TakeSaveInfo() {
@@ -69,6 +70,7 @@ class DownloadRequestData : public base::SupportsUserData::Data {
   const DownloadUrlParameters::OnStartedCallback& callback() const {
     return on_started_callback_;
   }
+  std::string request_origin() const { return request_origin_; }
 
  private:
   static const int kKey;
@@ -79,6 +81,7 @@ class DownloadRequestData : public base::SupportsUserData::Data {
   bool fetch_error_body_ = false;
   bool transient_ = false;
   DownloadUrlParameters::OnStartedCallback on_started_callback_;
+  std::string request_origin_;
 };
 
 // static
@@ -96,11 +99,12 @@ void DownloadRequestData::Attach(net::URLRequest* request,
   request_data->fetch_error_body_ = parameters->fetch_error_body();
   request_data->transient_ = parameters->is_transient();
   request_data->on_started_callback_ = parameters->callback();
+  request_data->request_origin_ = parameters->request_origin();
   request->SetUserData(&kKey, std::move(request_data));
 }
 
 // static
-DownloadRequestData* DownloadRequestData::Get(net::URLRequest* request) {
+DownloadRequestData* DownloadRequestData::Get(const net::URLRequest* request) {
   return static_cast<DownloadRequestData*>(request->GetUserData(&kKey));
 }
 
@@ -126,6 +130,15 @@ DownloadRequestCore::CreateRequestOnIOThread(uint32_t download_id,
 
   DownloadRequestData::Attach(request.get(), params, download_id);
   return request;
+}
+
+// static impl of DownloadRequestUtils
+std::string DownloadRequestUtils::GetRequestOriginFromRequest(
+    const net::URLRequest* request) {
+  DownloadRequestData* data = DownloadRequestData::Get(request);
+  if (data)
+    return data->request_origin();
+  return std::string();  // Empty string if data does not exist.
 }
 
 DownloadRequestCore::DownloadRequestCore(net::URLRequest* request,

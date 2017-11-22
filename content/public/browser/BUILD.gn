@@ -115,6 +115,7 @@ source_set("browser_sources") {
     "download_manager.h",
     "download_manager_delegate.cc",
     "download_manager_delegate.h",
+    "download_request_utils.h",
     "download_save_info.cc",
     "download_save_info.h",
     "download_url_parameters.cc",

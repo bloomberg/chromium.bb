@@ -8,12 +8,14 @@
 #include "chrome/browser/offline_pages/offline_page_utils.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/download_request_utils.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
 
 namespace {
 void WillStartOfflineRequestOnUIThread(
     const GURL& url,
+    const std::string& request_origin,
     const content::ResourceRequestInfo::WebContentsGetter& contents_getter) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   content::WebContents* web_contents = contents_getter.Run();
@@ -21,7 +23,8 @@ void WillStartOfflineRequestOnUIThread(
     return;
   offline_pages::OfflinePageUtils::ScheduleDownload(
       web_contents, offline_pages::kDownloadNamespace, url,
-      offline_pages::OfflinePageUtils::DownloadUIActionFlags::ALL);
+      offline_pages::OfflinePageUtils::DownloadUIActionFlags::ALL,
+      request_origin);
 }
 }  // namespace
 
@@ -47,10 +50,14 @@ void ResourceThrottle::WillProcessResponse(bool* defer) {
         content::ResourceRequestInfo::ForRequest(request_);
     if (!info)
       return;
+
+    std::string request_origin =
+        content::DownloadRequestUtils::GetRequestOriginFromRequest(request_);
+
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
         base::Bind(&WillStartOfflineRequestOnUIThread, request_->url(),
-                   info->GetWebContentsGetterForRequest()));
+                   request_origin, info->GetWebContentsGetterForRequest()));
     Cancel();
   }
 }
