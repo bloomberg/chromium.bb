@@ -4,6 +4,7 @@
 
 #include "chrome/browser/vr/elements/exit_prompt_texture.h"
 
+#include "base/i18n/case_conversion.h"
 #include "cc/paint/skia_paint_canvas.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
@@ -60,7 +61,9 @@ void ExitPromptTexture::Draw(SkCanvas* sk_canvas,
   float radius = size_.width() * kButtonRadiusFactor;
 
   // Secondary button area.
-  text = l10n_util::GetStringUTF16(IDS_VR_SHELL_EXIT_PROMPT_EXIT_VR_BUTTON);
+  // TODO(https://crbug.com/787654): Uppercasing should be conditional.
+  text = base::i18n::ToUpper(
+      l10n_util::GetStringUTF16(IDS_VR_SHELL_EXIT_PROMPT_EXIT_VR_BUTTON));
   GetFontList(ToPixels(kFontSizePromptButtonText), text, &fonts);
   lines = PrepareDrawStringRect(
       text, fonts, secondary_button_colors_.foreground, &button_text_size,
@@ -84,7 +87,8 @@ void ExitPromptTexture::Draw(SkCanvas* sk_canvas,
   canvas->Restore();
 
   // Primary button area.
-  text = l10n_util::GetStringUTF16(IDS_OK);
+  // TODO(https://crbug.com/787654): Uppercasing should be conditional.
+  text = base::i18n::ToUpper(l10n_util::GetStringUTF16(IDS_OK));
   GetFontList(ToPixels(kFontSizePromptButtonText), text, &fonts);
   button_text_size.set_size(gfx::Size(ToPixels(kButtonWidth), 0));
   lines = PrepareDrawStringRect(text, fonts, primary_button_colors_.foreground,
