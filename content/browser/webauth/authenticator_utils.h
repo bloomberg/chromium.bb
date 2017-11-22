@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_WEBAUTH_AUTHENTICATOR_UTILS_H_
 #define CONTENT_BROWSER_WEBAUTH_AUTHENTICATOR_UTILS_H_
 
+#include <stddef.h>
 #include <stdint.h>
 #include <vector>
 
