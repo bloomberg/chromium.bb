@@ -2553,13 +2553,13 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
     if (has_cols) {
       // At the bottom, the two possibilities are HORZ and SPLIT
       aom_cdf_prob bot_cdf[2];
-      partition_gather_vert_alike(bot_cdf, partition_cdf);
+      partition_gather_vert_alike(bot_cdf, partition_cdf, bsize);
       static const int bot_inv_map[2] = { PARTITION_HORZ, PARTITION_SPLIT };
       av1_cost_tokens_from_cdf(tmp_partition_cost, bot_cdf, bot_inv_map);
     } else if (has_rows) {
       // At the right, the two possibilities are VERT and SPLIT
       aom_cdf_prob rhs_cdf[2];
-      partition_gather_horz_alike(rhs_cdf, partition_cdf);
+      partition_gather_horz_alike(rhs_cdf, partition_cdf, bsize);
       static const int rhs_inv_map[2] = { PARTITION_VERT, PARTITION_SPLIT };
       av1_cost_tokens_from_cdf(tmp_partition_cost, rhs_cdf, rhs_inv_map);
     } else {
@@ -3014,22 +3014,22 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
   const int ext_partition_allowed =
       do_rectangular_split && bsize > BLOCK_8X8 && partition_none_allowed;
 
-  // horz4_partition_allowed and vert4_partition_allowed encode the requirement
-  // that we don't choose a block size that wouldn't be allowed by this
-  // subsampling (stored in the xss and yss variables).
-  //
-  // We definitely can't allow (say) a 16x4 block if yss > xss because it would
-  // subsample to 16x2, which doesn't have an enum. Also, there's no BLOCK_8X2
-  // or BLOCK_2X8, so we can't do 4:1 or 1:4 partitions for BLOCK_16X16 if there
-  // is any subsampling.
-  int horz4_partition_allowed = ext_partition_allowed && partition_horz_allowed;
-  int vert4_partition_allowed = ext_partition_allowed && partition_vert_allowed;
+// partition4_allowed is 1 if we can use a PARTITION_HORZ_4 or PARTITION_VERT_4
+// for this block. This is almost the same as ext_partition_allowed, except
+// that we don't allow 128x32 or 32x128 blocks if ALLOW_128X32_BLOCKS is false,
+// so we require that bsize is not BLOCK_128X128.
+#if CONFIG_EXT_PARTITION && !ALLOW_128X32_BLOCKS
+  const int partition4_allowed =
+      ext_partition_allowed && bsize != BLOCK_128X128;
+#else
+  const int partition4_allowed = ext_partition_allowed;
+#endif
 
 #if CONFIG_EXT_PARTITION_TYPES_AB
   // The alternative AB partitions are allowed iff the corresponding 4:1
   // partitions are allowed.
-  int horzab_partition_allowed = horz4_partition_allowed;
-  int vertab_partition_allowed = vert4_partition_allowed;
+  int horzab_partition_allowed = partition4_allowed;
+  int vertab_partition_allowed = partition4_allowed;
 #else
   // The standard AB partitions are allowed whenever ext-partition-types are
   // allowed
@@ -3163,17 +3163,15 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
 #endif
 
   // PARTITION_HORZ_4
-  // TODO(david.barker): For this and PARTITION_VERT_4,
-  // * Add support for BLOCK_16X16 once we support 2x8 and 8x2 blocks for the
-  //   chroma plane
+  int partition_horz4_allowed = partition4_allowed && partition_horz_allowed;
   if (cpi->sf.prune_ext_partition_types_search) {
-    horz4_partition_allowed &= (pc_tree->partitioning == PARTITION_HORZ ||
+    partition_horz4_allowed &= (pc_tree->partitioning == PARTITION_HORZ ||
                                 pc_tree->partitioning == PARTITION_HORZ_A ||
                                 pc_tree->partitioning == PARTITION_HORZ_B ||
                                 pc_tree->partitioning == PARTITION_SPLIT ||
                                 pc_tree->partitioning == PARTITION_NONE);
   }
-  if (horz4_partition_allowed && has_rows &&
+  if (partition_horz4_allowed && has_rows &&
       (do_rectangular_split || av1_active_h_edge(cpi, mi_row, mi_step))) {
     const int quarter_step = mi_size_high[bsize] / 4;
     PICK_MODE_CONTEXT *ctx_prev = ctx_none;
@@ -3205,15 +3203,17 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
     }
     restore_context(x, &x_ctx, mi_row, mi_col, bsize);
   }
+
   // PARTITION_VERT_4
+  int partition_vert4_allowed = partition4_allowed && partition_vert_allowed;
   if (cpi->sf.prune_ext_partition_types_search) {
-    vert4_partition_allowed &= (pc_tree->partitioning == PARTITION_VERT ||
+    partition_vert4_allowed &= (pc_tree->partitioning == PARTITION_VERT ||
                                 pc_tree->partitioning == PARTITION_VERT_A ||
                                 pc_tree->partitioning == PARTITION_VERT_B ||
                                 pc_tree->partitioning == PARTITION_SPLIT ||
                                 pc_tree->partitioning == PARTITION_NONE);
   }
-  if (vert4_partition_allowed && has_cols &&
+  if (partition_vert4_allowed && has_cols &&
       (do_rectangular_split || av1_active_v_edge(cpi, mi_row, mi_step))) {
     const int quarter_step = mi_size_wide[bsize] / 4;
     PICK_MODE_CONTEXT *ctx_prev = ctx_none;

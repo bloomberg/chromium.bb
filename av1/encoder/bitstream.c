@@ -2043,41 +2043,36 @@ static void write_partition(const AV1_COMMON *const cm,
                             const MACROBLOCKD *const xd, int hbs, int mi_row,
                             int mi_col, PARTITION_TYPE p, BLOCK_SIZE bsize,
                             aom_writer *w) {
-  const int has_rows = (mi_row + hbs) < cm->mi_rows;
-  const int has_cols = (mi_col + hbs) < cm->mi_cols;
   const int is_partition_point = bsize >= BLOCK_8X8;
-  const int ctx = is_partition_point
-                      ? partition_plane_context(xd, mi_row, mi_col, bsize)
-                      : 0;
-  FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
-  (void)cm;
 
   if (!is_partition_point) return;
 
+  const int has_rows = (mi_row + hbs) < cm->mi_rows;
+  const int has_cols = (mi_col + hbs) < cm->mi_cols;
+  const int ctx = partition_plane_context(xd, mi_row, mi_col, bsize);
+  FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
+
+  if (!has_rows && !has_cols) {
+    assert(p == PARTITION_SPLIT);
+    return;
+  }
+
   if (has_rows && has_cols) {
-#if CONFIG_EXT_PARTITION_TYPES
-    const int num_partition_types =
-        (mi_width_log2_lookup[bsize] > mi_width_log2_lookup[BLOCK_8X8])
-            ? EXT_PARTITION_TYPES
-            : PARTITION_TYPES;
-#else
-    const int num_partition_types = PARTITION_TYPES;
-#endif
-    aom_write_symbol(w, p, ec_ctx->partition_cdf[ctx], num_partition_types);
+    aom_write_symbol(w, p, ec_ctx->partition_cdf[ctx],
+                     partition_cdf_length(bsize));
   } else if (!has_rows && has_cols) {
     assert(p == PARTITION_SPLIT || p == PARTITION_HORZ);
     assert(bsize > BLOCK_8X8);
     aom_cdf_prob cdf[2];
-    partition_gather_vert_alike(cdf, ec_ctx->partition_cdf[ctx]);
+    partition_gather_vert_alike(cdf, ec_ctx->partition_cdf[ctx], bsize);
     aom_write_cdf(w, p == PARTITION_SPLIT, cdf, 2);
-  } else if (has_rows && !has_cols) {
+  } else {
+    assert(has_rows && !has_cols);
     assert(p == PARTITION_SPLIT || p == PARTITION_VERT);
     assert(bsize > BLOCK_8X8);
     aom_cdf_prob cdf[2];
-    partition_gather_horz_alike(cdf, ec_ctx->partition_cdf[ctx]);
+    partition_gather_horz_alike(cdf, ec_ctx->partition_cdf[ctx], bsize);
     aom_write_cdf(w, p == PARTITION_SPLIT, cdf, 2);
-  } else {
-    assert(p == PARTITION_SPLIT);
   }
 }
 

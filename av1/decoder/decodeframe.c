@@ -658,46 +658,33 @@ static void decode_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
 #endif
 }
 
-static PARTITION_TYPE read_partition(AV1_COMMON *cm, MACROBLOCKD *xd,
-                                     int mi_row, int mi_col, aom_reader *r,
-                                     int has_rows, int has_cols,
+static PARTITION_TYPE read_partition(MACROBLOCKD *xd, int mi_row, int mi_col,
+                                     aom_reader *r, int has_rows, int has_cols,
                                      BLOCK_SIZE bsize) {
   const int ctx = partition_plane_context(xd, mi_row, mi_col, bsize);
-  PARTITION_TYPE p;
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
-  (void)cm;
 
-  aom_cdf_prob *partition_cdf = (ctx >= 0) ? ec_ctx->partition_cdf[ctx] : NULL;
+  if (!has_rows && !has_cols) return PARTITION_SPLIT;
 
+  assert(ctx >= 0);
+  aom_cdf_prob *partition_cdf = ec_ctx->partition_cdf[ctx];
   if (has_rows && has_cols) {
-#if CONFIG_EXT_PARTITION_TYPES
-    const int num_partition_types =
-        (mi_width_log2_lookup[bsize] > mi_width_log2_lookup[BLOCK_8X8])
-            ? EXT_PARTITION_TYPES
-            : PARTITION_TYPES;
-#else
-    const int num_partition_types = PARTITION_TYPES;
-#endif  // CONFIG_EXT_PARTITION_TYPES
-    p = (PARTITION_TYPE)aom_read_symbol(r, partition_cdf, num_partition_types,
-                                        ACCT_STR);
+    return (PARTITION_TYPE)aom_read_symbol(
+        r, partition_cdf, partition_cdf_length(bsize), ACCT_STR);
   } else if (!has_rows && has_cols) {
     assert(bsize > BLOCK_8X8);
     aom_cdf_prob cdf[2];
-    partition_gather_vert_alike(cdf, partition_cdf);
+    partition_gather_vert_alike(cdf, partition_cdf, bsize);
     assert(cdf[1] == AOM_ICDF(CDF_PROB_TOP));
-    p = aom_read_cdf(r, cdf, 2, ACCT_STR) ? PARTITION_SPLIT : PARTITION_HORZ;
-    // gather cols
-  } else if (has_rows && !has_cols) {
+    return aom_read_cdf(r, cdf, 2, ACCT_STR) ? PARTITION_SPLIT : PARTITION_HORZ;
+  } else {
+    assert(has_rows && !has_cols);
     assert(bsize > BLOCK_8X8);
     aom_cdf_prob cdf[2];
-    partition_gather_horz_alike(cdf, partition_cdf);
+    partition_gather_horz_alike(cdf, partition_cdf, bsize);
     assert(cdf[1] == AOM_ICDF(CDF_PROB_TOP));
-    p = aom_read_cdf(r, cdf, 2, ACCT_STR) ? PARTITION_SPLIT : PARTITION_VERT;
-  } else {
-    p = PARTITION_SPLIT;
+    return aom_read_cdf(r, cdf, 2, ACCT_STR) ? PARTITION_SPLIT : PARTITION_VERT;
   }
-
-  return p;
 }
 
 // TODO(slavarnway): eliminate bsize and subsize in future commits
@@ -725,7 +712,7 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
   if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) return;
 
   partition = (bsize < BLOCK_8X8) ? PARTITION_NONE
-                                  : read_partition(cm, xd, mi_row, mi_col, r,
+                                  : read_partition(xd, mi_row, mi_col, r,
                                                    has_rows, has_cols, bsize);
   subsize = subsize_lookup[partition][bsize];  // get_subsize(bsize, partition);
 

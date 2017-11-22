@@ -53,6 +53,11 @@ extern "C" {
 #define KF_MODE_CONTEXTS 5
 #endif
 
+// A define to configure whether 4:1 and 1:4 partitions are allowed for 128x128
+// blocks. They seem not to be giving great results (and might be expensive to
+// implement in hardware), so this is a toggle to conditionally disable them.
+#define ALLOW_128X32_BLOCKS 0
+
 struct AV1Common;
 
 typedef struct {
