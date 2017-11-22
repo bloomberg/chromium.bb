@@ -15,7 +15,6 @@ group("common") {
 
 static_library("crash_key") {
   sources = [
-    "crash_key.cc",
     "crash_key.h",
   ]
 
