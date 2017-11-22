@@ -24,10 +24,10 @@ const char* GetSandboxArch() {
   // We have to check the host architecture on Windows.
   // See sandbox_isa.h for an explanation why.
   if (base::win::OSInfo::GetInstance()->architecture() ==
-      base::win::OSInfo::X64_ARCHITECTURE)
+      base::win::OSInfo::X64_ARCHITECTURE) {
     return "x86-64";
-  else
-    return "x86-32";
+  }
+  return "x86-32";
 #elif ARCH_CPU_64_BITS
   return "x86-64";
 #else

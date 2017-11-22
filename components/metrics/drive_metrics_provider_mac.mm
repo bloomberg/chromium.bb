@@ -62,7 +62,8 @@ bool DriveMetricsProvider::HasSeekPenalty(const base::FilePath& path,
   if ([type isEqualToString:@kIOPropertyMediumTypeRotationalKey]) {
     *has_seek_penalty = true;
     return true;
-  } else if ([type isEqualToString:@kIOPropertyMediumTypeSolidStateKey]) {
+  }
+  if ([type isEqualToString:@kIOPropertyMediumTypeSolidStateKey]) {
     *has_seek_penalty = false;
     return true;
   }

@@ -26,12 +26,12 @@ const base::Feature kHttpRetryFeature{"UMAHttpRetry",
 // corresponding private key is used by the metrics server to decrypt logs.
 const char kEncryptedMessageLabel[] = "metrics log";
 
-static const uint8_t kServerPublicKey[] = {
+const uint8_t kServerPublicKey[] = {
     0x51, 0xcc, 0x52, 0x67, 0x42, 0x47, 0x3b, 0x10, 0xe8, 0x63, 0x18,
     0x3c, 0x61, 0xa7, 0x96, 0x76, 0x86, 0x91, 0x40, 0x71, 0x39, 0x5f,
     0x31, 0x1a, 0x39, 0x5b, 0x76, 0xb1, 0x6b, 0x3d, 0x6a, 0x2b};
 
-static const uint32_t kServerPublicKeyVersion = 1;
+const uint32_t kServerPublicKeyVersion = 1;
 
 net::NetworkTrafficAnnotationTag GetNetworkTrafficAnnotation(
     const metrics::MetricsLogUploader::MetricServiceType& service_type) {
@@ -70,46 +70,45 @@ net::NetworkTrafficAnnotationTag GetNetworkTrafficAnnotation(
             }
           }
         })");
-  } else {
-    DCHECK_EQ(service_type, metrics::MetricsLogUploader::UKM);
-    return net::DefineNetworkTrafficAnnotation("metrics_report_ukm", R"(
-        semantics {
-          sender: "Metrics UKM Log Uploader"
-          description:
-            "Report of usage statistics that are keyed by URLs to Chromium, "
-            "sent only if the profile has History Sync. This includes "
-            "information about the web pages you visit and your usage of them, "
-            "such as page load speed. This will also include URLs and "
-            "statistics related to downloaded files. If Extension Sync is "
-            "enabled, these statistics will also include information about "
-            "the extensions that have been installed from Chrome Web Store. "
-            "Google only stores usage statistics associated with published "
-            "extensions, and URLs that are known by Google’s search index. "
-            "Usage statistics are tied to a pseudonymous machine identifier "
-            "and not to your email address."
-          trigger:
-            "Reports are automatically generated on startup and at intervals "
-            "while Chromium is running with Sync enabled."
-          data:
-            "A protocol buffer with usage statistics and associated URLs."
-          destination: GOOGLE_OWNED_SERVICE
-        }
-        policy {
-          cookies_allowed: NO
-          setting:
-            "Users can enable or disable this feature by disabling "
-            "'Automatically send usage statistics and crash reports to Google' "
-            "in Chromium's settings under Advanced Settings, Privacy. This is "
-            "only enabled if all active profiles have History/Extension Sync "
-            "enabled without a Sync passphrase."
-          chrome_policy {
-            MetricsReportingEnabled {
-              policy_options {mode: MANDATORY}
-              MetricsReportingEnabled: false
-            }
-          }
-        })");
   }
+  DCHECK_EQ(service_type, metrics::MetricsLogUploader::UKM);
+  return net::DefineNetworkTrafficAnnotation("metrics_report_ukm", R"(
+      semantics {
+        sender: "Metrics UKM Log Uploader"
+        description:
+          "Report of usage statistics that are keyed by URLs to Chromium, "
+          "sent only if the profile has History Sync. This includes "
+          "information about the web pages you visit and your usage of them, "
+          "such as page load speed. This will also include URLs and "
+          "statistics related to downloaded files. If Extension Sync is "
+          "enabled, these statistics will also include information about "
+          "the extensions that have been installed from Chrome Web Store. "
+          "Google only stores usage statistics associated with published "
+          "extensions, and URLs that are known by Google’s search index. "
+          "Usage statistics are tied to a pseudonymous machine identifier "
+          "and not to your email address."
+        trigger:
+          "Reports are automatically generated on startup and at intervals "
+          "while Chromium is running with Sync enabled."
+        data:
+          "A protocol buffer with usage statistics and associated URLs."
+        destination: GOOGLE_OWNED_SERVICE
+      }
+      policy {
+        cookies_allowed: NO
+        setting:
+          "Users can enable or disable this feature by disabling "
+          "'Automatically send usage statistics and crash reports to Google' "
+          "in Chromium's settings under Advanced Settings, Privacy. This is "
+          "only enabled if all active profiles have History/Extension Sync "
+          "enabled without a Sync passphrase."
+        chrome_policy {
+          MetricsReportingEnabled {
+            policy_options {mode: MANDATORY}
+            MetricsReportingEnabled: false
+          }
+        }
+      })");
 }
 
 std::string SerializeReportingInfo(

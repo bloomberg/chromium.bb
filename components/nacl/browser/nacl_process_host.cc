@@ -728,9 +728,8 @@ net::SocketDescriptor NaClProcessHost::GetDebugStubSocketHandle() {
   if (s == net::kInvalidSocket) {
     LOG(ERROR) << "failed to open socket for debug stub";
     return net::kInvalidSocket;
-  } else {
-    LOG(WARNING) << "debug stub on port " << port;
   }
+  LOG(WARNING) << "debug stub on port " << port;
   if (listen(s, 1)) {
     LOG(ERROR) << "listen() failed on debug stub socket";
     if (IGNORE_EINTR(close(s)) < 0)
@@ -975,17 +974,16 @@ void NaClProcessHost::OnPpapiChannelsCreated(
 bool NaClProcessHost::StartWithLaunchedProcess() {
   NaClBrowser* nacl_browser = NaClBrowser::GetInstance();
 
-  if (nacl_browser->IsReady()) {
+  if (nacl_browser->IsReady())
     return StartNaClExecution();
-  } else if (nacl_browser->IsOk()) {
+  if (nacl_browser->IsOk()) {
     nacl_browser->WaitForResources(
         base::Bind(&NaClProcessHost::OnResourcesReady,
                    weak_factory_.GetWeakPtr()));
     return true;
-  } else {
-    SendErrorToRenderer("previously failed to acquire shared resources");
-    return false;
   }
+  SendErrorToRenderer("previously failed to acquire shared resources");
+  return false;
 }
 
 void NaClProcessHost::OnQueryKnownToValidate(const std::string& signature,
@@ -1126,13 +1124,12 @@ bool NaClProcessHost::AttachDebugExceptionHandler(const std::string& info,
     return NaClBrokerService::GetInstance()->LaunchDebugExceptionHandler(
                weak_factory_.GetWeakPtr(), nacl_pid, process.Handle(),
                info);
-  } else {
-    NaClStartDebugExceptionHandlerThread(
-        std::move(process), info, base::ThreadTaskRunnerHandle::Get(),
-        base::Bind(&NaClProcessHost::OnDebugExceptionHandlerLaunchedByBroker,
-                   weak_factory_.GetWeakPtr()));
-    return true;
   }
+  NaClStartDebugExceptionHandlerThread(
+      std::move(process), info, base::ThreadTaskRunnerHandle::Get(),
+      base::Bind(&NaClProcessHost::OnDebugExceptionHandlerLaunchedByBroker,
+                 weak_factory_.GetWeakPtr()));
+  return true;
 }
 #endif
 

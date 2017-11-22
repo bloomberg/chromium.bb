@@ -26,11 +26,11 @@ data_reduction_proxy::DataStore::Status LevelDbToDRPStoreStatus(
     leveldb::Status leveldb_status) {
   if (leveldb_status.ok())
     return data_reduction_proxy::DataStore::Status::OK;
-  else if (leveldb_status.IsNotFound())
+  if (leveldb_status.IsNotFound())
     return data_reduction_proxy::DataStore::Status::NOT_FOUND;
-  else if (leveldb_status.IsCorruption())
+  if (leveldb_status.IsCorruption())
     return data_reduction_proxy::DataStore::Status::CORRUPTED;
-  else if (leveldb_status.IsIOError())
+  if (leveldb_status.IsIOError())
     return data_reduction_proxy::DataStore::Status::IO_ERROR;
 
   return data_reduction_proxy::DataStore::Status::MISC_ERROR;
