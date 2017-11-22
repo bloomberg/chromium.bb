@@ -5797,7 +5797,6 @@ void av1_init_scan_order(AV1_COMMON *cm) {
   TX_SIZE tx_size;
   TX_TYPE tx_type;
   for (tx_size = 0; tx_size < TX_SIZES_ALL; ++tx_size) {
-    if (tx_size > TX_32X16) continue;
     for (tx_type = DCT_DCT; tx_type < TX_TYPES; ++tx_type) {
       if (do_adapt_scan(tx_size, tx_type)) {
         uint32_t *non_zero_prob = get_non_zero_prob(cm->fc, tx_size, tx_type);
@@ -5828,7 +5827,6 @@ void av1_adapt_scan_order(AV1_COMMON *cm) {
 #endif  // CACHE_SCAN_PROB
 
     for (tx_size = 0; tx_size < TX_SIZES_ALL; ++tx_size) {
-      if (tx_size > TX_32X16) continue;
       TX_TYPE tx_type;
       for (tx_type = DCT_DCT; tx_type < TX_TYPES; ++tx_type) {
         if (do_adapt_scan(tx_size, tx_type)) {
