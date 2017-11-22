@@ -41,10 +41,6 @@ subtle::AtomicWord g_chain_head = reinterpret_cast<subtle::AtomicWord>(
 
 bool g_call_new_handler_on_malloc_failure = false;
 
-#if !defined(OS_WIN)
-subtle::Atomic32 g_new_handler_lock = 0;
-#endif
-
 inline size_t GetCachedPageSize() {
   static size_t pagesize = 0;
   if (!pagesize)
@@ -58,21 +54,7 @@ bool CallNewHandler(size_t size) {
 #if defined(OS_WIN)
   return base::allocator::WinCallNewHandler(size);
 #else
-  // TODO(primiano,crbug.com/784010): C++11 has introduced
-  // std::get_new_handler() which is supposed to be thread safe and
-  // would avoid the spinlock boilerplate here.  However, it is not
-  // available in the headers in the current Debian Jessie sysroot,
-  // which has libstdc++ 4.8. The function is available in libstdc++
-  // 4.9 and newer, but it will be a few more years before a newer
-  // sysroot becomes available.
-  std::new_handler nh;
-  {
-    while (subtle::Acquire_CompareAndSwap(&g_new_handler_lock, 0, 1))
-      PlatformThread::YieldCurrentThread();
-    nh = std::set_new_handler(nullptr);
-    ignore_result(std::set_new_handler(nh));
-    subtle::Release_Store(&g_new_handler_lock, 0);
-  }
+  std::new_handler nh = std::get_new_handler();
   if (!nh)
     return false;
   (*nh)();
