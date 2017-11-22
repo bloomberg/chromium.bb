@@ -9,6 +9,7 @@ import android.graphics.Canvas;
 import android.graphics.Point;
 import android.os.StrictMode;
 import android.util.DisplayMetrics;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.SurfaceHolder;
@@ -533,6 +534,24 @@ public class VrShellImpl
             mOnDispatchTouchEventForTesting.onDispatchTouchEvent(parentConsumed);
         }
         return parentConsumed;
+    }
+
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        if (mTab.getContentViewCore() != null
+                && mTab.getContentViewCore().dispatchKeyEvent(event)) {
+            return true;
+        }
+        return super.dispatchKeyEvent(event);
+    }
+
+    @Override
+    public boolean onGenericMotionEvent(MotionEvent event) {
+        if (mTab.getContentViewCore() != null
+                && mTab.getContentViewCore().onGenericMotionEvent(event)) {
+            return true;
+        }
+        return super.onGenericMotionEvent(event);
     }
 
     @Override
