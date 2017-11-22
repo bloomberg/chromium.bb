@@ -673,6 +673,8 @@ void WebDevToolsAgent::InterruptAndDispatch(int session_id,
 }
 
 bool WebDevToolsAgent::ShouldInterruptForMethod(const WebString& method) {
+  // Keep in sync with DevToolsSession::ShouldSendOnIO.
+  // TODO(dgozman): find a way to share this.
   return method == "Debugger.pause" || method == "Debugger.setBreakpoint" ||
          method == "Debugger.setBreakpointByUrl" ||
          method == "Debugger.removeBreakpoint" ||

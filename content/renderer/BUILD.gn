@@ -95,8 +95,6 @@ target(link_target_type, "renderer") {
     "device_sensors/device_sensor_event_pump.h",
     "devtools/devtools_agent.cc",
     "devtools/devtools_agent.h",
-    "devtools/devtools_agent_filter.cc",
-    "devtools/devtools_agent_filter.h",
     "devtools/devtools_cpu_throttler.cc",
     "devtools/devtools_cpu_throttler.h",
     "devtools/devtools_frontend_impl.cc",

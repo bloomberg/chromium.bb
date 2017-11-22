@@ -256,19 +256,10 @@ TestRunner.Session = class {
   }
 
   async _navigate(url) {
-    this.protocol.Page.enable();
-    this.protocol.Page.navigate({url: url});
-
-    var callback;
-    var promise = new Promise(f => callback = f);
-    this.protocol.Page.onFrameNavigated(message => {
-      if (!message.params.frame.parentId)
-        callback();
-    });
-    await Promise.all([
-      promise,
-      this.protocol.Page.onceLoadEventFired()
-    ]);
+    await this.protocol.Page.enable();
+    await this.protocol.Page.setLifecycleEventsEnabled({enabled: true});
+    await this.protocol.Page.navigate({url: url});
+    await this.protocol.Page.onceLifecycleEvent(event => event.params.name === 'load');
   }
 
   _dispatchMessage(message) {

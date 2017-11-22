@@ -363,11 +363,12 @@ void DevToolsAgentHostImpl::NotifyDestroyed() {
 // DevToolsMessageChunkProcessor -----------------------------------------------
 
 DevToolsMessageChunkProcessor::DevToolsMessageChunkProcessor(
+    const SendMessageIPCCallback& ipc_callback,
     const SendMessageCallback& callback)
-    : callback_(callback),
+    : ipc_callback_(ipc_callback),
+      callback_(callback),
       message_buffer_size_(0),
-      last_call_id_(0) {
-}
+      last_call_id_(0) {}
 
 DevToolsMessageChunkProcessor::~DevToolsMessageChunkProcessor() {
 }
@@ -382,7 +383,7 @@ bool DevToolsMessageChunkProcessor::ProcessChunkedMessageFromAgent(
   if (chunk.is_first && chunk.is_last) {
     if (message_buffer_size_ != 0)
       return false;
-    callback_.Run(chunk.session_id, chunk.data);
+    ipc_callback_.Run(chunk.session_id, chunk.data);
     return true;
   }
 
@@ -399,7 +400,41 @@ bool DevToolsMessageChunkProcessor::ProcessChunkedMessageFromAgent(
   if (chunk.is_last) {
     if (message_buffer_.size() != message_buffer_size_)
       return false;
-    callback_.Run(chunk.session_id, message_buffer_);
+    ipc_callback_.Run(chunk.session_id, message_buffer_);
+    message_buffer_ = std::string();
+    message_buffer_size_ = 0;
+  }
+  return true;
+}
+
+bool DevToolsMessageChunkProcessor::ProcessChunkedMessageFromAgent(
+    mojom::DevToolsMessageChunkPtr chunk) {
+  if (chunk->is_last && !chunk->post_state.empty())
+    state_cookie_ = chunk->post_state;
+  if (chunk->is_last)
+    last_call_id_ = chunk->call_id;
+
+  if (chunk->is_first && chunk->is_last) {
+    if (message_buffer_size_ != 0)
+      return false;
+    callback_.Run(chunk->data);
+    return true;
+  }
+
+  if (chunk->is_first) {
+    message_buffer_ = std::string();
+    message_buffer_.reserve(chunk->message_size);
+    message_buffer_size_ = chunk->message_size;
+  }
+
+  if (message_buffer_.size() + chunk->data.size() > message_buffer_size_)
+    return false;
+  message_buffer_.append(chunk->data);
+
+  if (chunk->is_last) {
+    if (message_buffer_.size() != message_buffer_size_)
+      return false;
+    callback_.Run(message_buffer_);
     message_buffer_ = std::string();
     message_buffer_size_ = 0;
   }

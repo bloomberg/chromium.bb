@@ -46,8 +46,10 @@
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/common/associated_interface_provider.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_features.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
 
 #if defined(OS_ANDROID)
 #include "content/public/browser/render_widget_host_view.h"
@@ -109,7 +111,6 @@ class RenderFrameDevToolsAgentHost::FrameHostHolder {
                                const std::string& method,
                                const std::string& message);
   void InspectElement(int session_id, int x, int y);
-  bool ProcessChunkedMessageFromAgent(const DevToolsMessageChunk& chunk);
   void Suspend();
   void Resume();
   std::string StateCookie(int session_id) const;
@@ -120,42 +121,153 @@ class RenderFrameDevToolsAgentHost::FrameHostHolder {
     std::string method;
     std::string message;
   };
-  struct SessionInfo {
-    std::unique_ptr<DevToolsMessageChunkProcessor> chunk_processor;
-    std::vector<std::string> pending_messages;
-    using CallId = int;
-    std::map<CallId, Message> sent_messages;
-  };
 
-  void SendChunkedMessage(int session_id, const std::string& message);
-  SessionInfo& InitInfo(int session_id);
+  class SessionHost : public mojom::DevToolsSessionHost {
+   public:
+    SessionHost(FrameHostHolder* owner,
+                int session_id,
+                const base::Optional<std::string>& reattach_state)
+        : owner_(owner),
+          session_id_(session_id),
+          binding_(this),
+          chunk_processor_(
+              base::Callback<void(int, const std::string&)>(),
+              base::Bind(&RenderFrameDevToolsAgentHost::FrameHostHolder::
+                             SessionHost::SendMessageFromProcessor,
+                         base::Unretained(this))) {
+      if (reattach_state.has_value())
+        chunk_processor_.set_state_cookie(reattach_state.value());
+      mojom::DevToolsSessionHostAssociatedPtrInfo host_ptr_info;
+      binding_.Bind(mojo::MakeRequest(&host_ptr_info));
+      owner_->agent_ptr_->AttachDevToolsSession(
+          std::move(host_ptr_info), mojo::MakeRequest(&session_ptr_),
+          mojo::MakeRequest(&io_session_ptr_), reattach_state);
+    }
+
+    void RedispatchProtocolMessagesFrom(SessionHost* other) {
+      for (const auto& pair : other->sent_messages_) {
+        DispatchProtocolMessage(pair.first, pair.second.method,
+                                pair.second.message);
+      }
+    }
+
+    const std::string& state_cookie() const {
+      return chunk_processor_.state_cookie();
+    }
+
+    void DispatchProtocolMessage(int call_id,
+                                 const std::string& method,
+                                 const std::string& message) {
+      if (DevToolsSession::ShouldSendOnIO(method))
+        io_session_ptr_->DispatchProtocolMessage(call_id, method, message);
+      else
+        session_ptr_->DispatchProtocolMessage(call_id, method, message);
+      sent_messages_[call_id] = {method, message};
+    }
+
+    void InspectElement(int x, int y) {
+      session_ptr_->InspectElement(gfx::Point(x, y));
+    }
+
+    // mojom::DevToolsSessionHost implementation.
+    void DispatchProtocolMessage(
+        mojom::DevToolsMessageChunkPtr chunk) override {
+      if (chunk_processor_.ProcessChunkedMessageFromAgent(std::move(chunk)))
+        return;
+
+      binding_.Close();
+      if (owner_->host_->GetProcess()) {
+        bad_message::ReceivedBadMessage(
+            owner_->host_->GetProcess(),
+            bad_message::RFH_INCONSISTENT_DEVTOOLS_MESSAGE);
+      }
+    }
+
+    void RequestNewWindow(int32_t frame_routing_id,
+                          RequestNewWindowCallback callback) override {
+      bool success = false;
+      RenderFrameHostImpl* frame_host =
+          owner_->host_->GetProcess()
+              ? RenderFrameHostImpl::FromID(
+                    owner_->host_->GetProcess()->GetID(), frame_routing_id)
+              : nullptr;
+      if (frame_host) {
+        scoped_refptr<DevToolsAgentHost> agent =
+            RenderFrameDevToolsAgentHost::GetOrCreateFor(
+                frame_host->frame_tree_node());
+        success = static_cast<DevToolsAgentHostImpl*>(agent.get())->Inspect();
+      }
+      std::move(callback).Run(success);
+    }
+
+    void SendMessageFromProcessor(const std::string& message) {
+      int id = chunk_processor_.last_call_id();
+      Message sent_message = std::move(sent_messages_[id]);
+      sent_messages_.erase(id);
+      if (suspended_) {
+        pending_messages_.push_back(message);
+      } else {
+        DevToolsSession* session = owner_->agent_->SessionById(session_id_);
+        if (session)
+          session->SendMessageToClient(message);
+        // |this| may be deleted at this point.
+      }
+    }
+
+    void Suspend() { suspended_ = true; }
+
+    void Resume() {
+      suspended_ = false;
+      DevToolsSession* session = owner_->agent_->SessionById(session_id_);
+      std::vector<std::string> messages;
+      messages.swap(pending_messages_);
+      for (std::string& message : messages)
+        session->SendMessageToClient(message);
+    }
+
+   private:
+    FrameHostHolder* owner_;
+    int session_id_;
+    mojo::AssociatedBinding<mojom::DevToolsSessionHost> binding_;
+    mojom::DevToolsSessionAssociatedPtr session_ptr_;
+    mojom::DevToolsSessionPtr io_session_ptr_;
+    DevToolsMessageChunkProcessor chunk_processor_;
+    std::vector<std::string> pending_messages_;
+    using CallId = int;
+    std::map<CallId, Message> sent_messages_;
+    bool suspended_ = false;
+
+    DISALLOW_COPY_AND_ASSIGN(SessionHost);
+  };
 
   RenderFrameDevToolsAgentHost* agent_;
   RenderFrameHostImpl* host_;
-  bool suspended_;
-  base::flat_map<int, SessionInfo> infos_;
+  mojom::DevToolsAgentAssociatedPtr agent_ptr_;
+  base::flat_map<int, std::unique_ptr<SessionHost>> session_hosts_;
 };
 
 RenderFrameDevToolsAgentHost::FrameHostHolder::FrameHostHolder(
     RenderFrameDevToolsAgentHost* agent,
     RenderFrameHostImpl* host)
-    : agent_(agent), host_(host), suspended_(false) {
+    : agent_(agent), host_(host) {
   DCHECK(!IsBrowserSideNavigationEnabled());
   DCHECK(agent_);
   DCHECK(host_);
 }
 
 RenderFrameDevToolsAgentHost::FrameHostHolder::~FrameHostHolder() {
-  if (!infos_.empty())
+  if (!session_hosts_.empty())
     agent_->RevokePolicy(host_);
 }
 
 void RenderFrameDevToolsAgentHost::FrameHostHolder::Attach(
     DevToolsSession* session) {
-  host_->Send(new DevToolsAgentMsg_Attach(host_->GetRoutingID(),
-                                          session->session_id()));
   agent_->GrantPolicy(host_);
-  InitInfo(session->session_id());
+  // |agent_ptr_| is used by SessionHost in constructor to attach.
+  if (!agent_ptr_)
+    host_->GetRemoteAssociatedInterfaces()->GetInterface(&agent_ptr_);
+  session_hosts_[session->session_id()].reset(
+      new SessionHost(this, session->session_id(), base::nullopt));
 }
 
 void RenderFrameDevToolsAgentHost::FrameHostHolder::Reattach(
@@ -166,37 +278,35 @@ void RenderFrameDevToolsAgentHost::FrameHostHolder::Reattach(
     ReattachWithCookie(session, std::move(cookie));
     if (!old)
       continue;
-    auto it = old->infos_.find(session_id);
-    if (it == old->infos_.end())
-      continue;
-    for (const auto& pair : it->second.sent_messages) {
-      DispatchProtocolMessage(session_id, pair.first, pair.second.method,
-                              pair.second.message);
+    auto it = old->session_hosts_.find(session_id);
+    if (it != old->session_hosts_.end()) {
+      session_hosts_[session_id]->RedispatchProtocolMessagesFrom(
+          it->second.get());
     }
   }
 }
 
 std::string RenderFrameDevToolsAgentHost::FrameHostHolder::StateCookie(
     int session_id) const {
-  auto it = infos_.find(session_id);
-  if (it == infos_.end())
-    return std::string();
-  return it->second.chunk_processor->state_cookie();
+  auto it = session_hosts_.find(session_id);
+  return it == session_hosts_.end() ? std::string()
+                                    : it->second->state_cookie();
 }
 
 void RenderFrameDevToolsAgentHost::FrameHostHolder::ReattachWithCookie(
     DevToolsSession* session,
     std::string cookie) {
-  InitInfo(session->session_id()).chunk_processor->set_state_cookie(cookie);
-  host_->Send(new DevToolsAgentMsg_Reattach(host_->GetRoutingID(),
-                                            session->session_id(), cookie));
   agent_->GrantPolicy(host_);
+  // |agent_ptr_| is used by SessionHost in constructor to attach.
+  if (!agent_ptr_)
+    host_->GetRemoteAssociatedInterfaces()->GetInterface(&agent_ptr_);
+  session_hosts_[session->session_id()].reset(
+      new SessionHost(this, session->session_id(), cookie));
 }
 
 void RenderFrameDevToolsAgentHost::FrameHostHolder::Detach(int session_id) {
-  host_->Send(new DevToolsAgentMsg_Detach(host_->GetRoutingID(), session_id));
   agent_->RevokePolicy(host_);
-  infos_.erase(session_id);
+  session_hosts_.erase(session_id);
 }
 
 void RenderFrameDevToolsAgentHost::FrameHostHolder::DispatchProtocolMessage(
@@ -204,70 +314,26 @@ void RenderFrameDevToolsAgentHost::FrameHostHolder::DispatchProtocolMessage(
     int call_id,
     const std::string& method,
     const std::string& message) {
-  host_->Send(new DevToolsAgentMsg_DispatchOnInspectorBackend(
-      host_->GetRoutingID(), session_id, call_id, method, message));
-  infos_[session_id].sent_messages[call_id] = {method, message};
+  auto it = session_hosts_.find(session_id);
+  if (it != session_hosts_.end())
+    it->second->DispatchProtocolMessage(call_id, method, message);
 }
 
 void RenderFrameDevToolsAgentHost::FrameHostHolder::InspectElement(
     int session_id, int x, int y) {
-  host_->Send(new DevToolsAgentMsg_InspectElement(
-      host_->GetRoutingID(), session_id, x, y));
-}
-
-bool
-RenderFrameDevToolsAgentHost::FrameHostHolder::ProcessChunkedMessageFromAgent(
-    const DevToolsMessageChunk& chunk) {
-  auto it = infos_.find(chunk.session_id);
-  if (it != infos_.end())
-    return it->second.chunk_processor->ProcessChunkedMessageFromAgent(chunk);
-  return true;
-}
-
-void RenderFrameDevToolsAgentHost::FrameHostHolder::SendChunkedMessage(
-    int session_id,
-    const std::string& message) {
-  auto it = infos_.find(session_id);
-  if (it == infos_.end())
-    return;
-  SessionInfo& info = it->second;
-  int id = info.chunk_processor->last_call_id();
-  Message sent_message = std::move(info.sent_messages[id]);
-  info.sent_messages.erase(id);
-  if (suspended_) {
-    info.pending_messages.push_back(message);
-  } else {
-    DevToolsSession* session = agent_->SessionById(session_id);
-    if (session)
-      session->SendMessageToClient(message);
-    // |this| may be deleted at this point.
-  }
+  auto it = session_hosts_.find(session_id);
+  if (it != session_hosts_.end())
+    it->second->InspectElement(x, y);
 }
 
 void RenderFrameDevToolsAgentHost::FrameHostHolder::Suspend() {
-  suspended_ = true;
+  for (auto& pair : session_hosts_)
+    pair.second->Suspend();
 }
 
 void RenderFrameDevToolsAgentHost::FrameHostHolder::Resume() {
-  suspended_ = false;
-  for (DevToolsSession* session : agent_->sessions()) {
-    auto it = infos_.find(session->session_id());
-    if (it == infos_.end())
-      return;
-    SessionInfo& info = it->second;
-    std::vector<std::string> messages = std::move(info.pending_messages);
-    for (std::string& message : messages)
-      session->SendMessageToClient(message);
-  }
-}
-
-RenderFrameDevToolsAgentHost::FrameHostHolder::SessionInfo&
-RenderFrameDevToolsAgentHost::FrameHostHolder::InitInfo(int session_id) {
-  SessionInfo& info = infos_[session_id];
-  info.chunk_processor.reset(new DevToolsMessageChunkProcessor(base::Bind(
-      &RenderFrameDevToolsAgentHost::FrameHostHolder::SendChunkedMessage,
-      base::Unretained(this))));
-  return info;
+  for (auto& pair : session_hosts_)
+    pair.second->Resume();
 }
 
 // RenderFrameDevToolsAgentHost ------------------------------------------------
@@ -543,10 +609,8 @@ void RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session) {
   }
 
   if (IsBrowserSideNavigationEnabled()) {
-    if (frame_host_) {
-      frame_host_->Send(new DevToolsAgentMsg_Attach(frame_host_->GetRoutingID(),
-                                                    session->session_id()));
-    }
+    if (EnsureAgent())
+      session->AttachToAgent(agent_ptr_);
   } else {
     if (current_)
       current_->Attach(session);
@@ -559,10 +623,7 @@ void RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session) {
 
 void RenderFrameDevToolsAgentHost::DetachSession(int session_id) {
   if (IsBrowserSideNavigationEnabled()) {
-    if (frame_host_) {
-      frame_host_->Send(
-          new DevToolsAgentMsg_Detach(frame_host_->GetRoutingID(), session_id));
-    }
+    // Destroying session automatically detaches in renderer.
     suspended_messages_by_session_id_.erase(session_id);
   } else {
     if (current_)
@@ -591,10 +652,7 @@ bool RenderFrameDevToolsAgentHost::DispatchProtocolMessage(
           {call_id, method, message});
       return true;
     }
-    if (frame_host_) {
-      frame_host_->Send(new DevToolsAgentMsg_DispatchOnInspectorBackend(
-          frame_host_->GetRoutingID(), session_id, call_id, method, message));
-    }
+    session->DispatchProtocolMessageToAgent(call_id, method, message);
     session->waiting_messages()[call_id] = {method, message};
   } else {
     if (current_)
@@ -610,10 +668,7 @@ void RenderFrameDevToolsAgentHost::InspectElement(
     int x,
     int y) {
   if (IsBrowserSideNavigationEnabled()) {
-    if (frame_host_) {
-      frame_host_->Send(new DevToolsAgentMsg_InspectElement(
-          frame_host_->GetRoutingID(), session->session_id(), x, y));
-    }
+    session->InspectElement(gfx::Point(x, y));
   } else {
     if (current_)
       current_->InspectElement(session->session_id(), x, y);
@@ -701,11 +756,8 @@ void RenderFrameDevToolsAgentHost::DidFinishNavigation(
       int session_id = pair.first;
       DevToolsSession* session = SessionById(session_id);
       for (const Message& message : pair.second) {
-        if (frame_host_) {
-          frame_host_->Send(new DevToolsAgentMsg_DispatchOnInspectorBackend(
-              frame_host_->GetRoutingID(), session_id, message.call_id,
-              message.method, message.message));
-        }
+        session->DispatchProtocolMessageToAgent(message.call_id, message.method,
+                                                message.message);
         session->waiting_messages()[message.call_id] = {message.method,
                                                         message.message};
       }
@@ -738,6 +790,7 @@ void RenderFrameDevToolsAgentHost::UpdateFrameHost(
   }
 
   frame_host_ = frame_host;
+  agent_ptr_.reset();
   render_frame_alive_ = true;
   if (IsAttached()) {
     GrantPolicy(frame_host_);
@@ -749,18 +802,15 @@ void RenderFrameDevToolsAgentHost::UpdateFrameHost(
 
 void RenderFrameDevToolsAgentHost::MaybeReattachToRenderFrame() {
   DCHECK(IsBrowserSideNavigationEnabled());
-  if (!frame_host_)
+  if (!EnsureAgent())
     return;
   for (DevToolsSession* session : sessions()) {
-    frame_host_->Send(new DevToolsAgentMsg_Reattach(frame_host_->GetRoutingID(),
-                                                    session->session_id(),
-                                                    session->state_cookie()));
+    session->ReattachToAgent(agent_ptr_);
     for (const auto& pair : session->waiting_messages()) {
       int call_id = pair.first;
       const DevToolsSession::Message& message = pair.second;
-      frame_host_->Send(new DevToolsAgentMsg_DispatchOnInspectorBackend(
-          frame_host_->GetRoutingID(), session->session_id(), call_id,
-          message.method, message.message));
+      session->DispatchProtocolMessageToAgent(call_id, message.method,
+                                              message.message);
     }
   }
 }
@@ -925,6 +975,7 @@ void RenderFrameDevToolsAgentHost::DestroyOnRenderFrameGone() {
     OnClientsDetached();
   ForceDetachAllClients();
   frame_host_ = nullptr;
+  agent_ptr_.reset();
   pending_.reset();
   current_.reset();
   frame_tree_node_ = nullptr;
@@ -994,32 +1045,6 @@ void RenderFrameDevToolsAgentHost::RenderProcessGone(
       break;
   }
   DCHECK(CheckConsistency());
-}
-
-bool RenderFrameDevToolsAgentHost::OnMessageReceived(
-    const IPC::Message& message,
-    RenderFrameHost* render_frame_host) {
-  if (IsBrowserSideNavigationEnabled()) {
-    if (render_frame_host != frame_host_)
-      return false;
-  } else {
-    bool is_current = current_ && current_->host() == render_frame_host;
-    bool is_pending = pending_ && pending_->host() == render_frame_host;
-    if (!is_current && !is_pending)
-      return false;
-  }
-  if (!IsAttached())
-    return false;
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(RenderFrameDevToolsAgentHost, message,
-                                   render_frame_host)
-    IPC_MESSAGE_HANDLER(DevToolsClientMsg_DispatchOnInspectorFrontend,
-                        OnDispatchOnInspectorFrontend)
-    IPC_MESSAGE_HANDLER(DevToolsAgentHostMsg_RequestNewWindow,
-                        OnRequestNewWindow)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
 }
 
 void RenderFrameDevToolsAgentHost::DidAttachInterstitialPage() {
@@ -1310,46 +1335,12 @@ void RenderFrameDevToolsAgentHost::SynchronousSwapCompositorFrame(
   }
 }
 
-void RenderFrameDevToolsAgentHost::OnDispatchOnInspectorFrontend(
-    RenderFrameHost* sender,
-    const DevToolsMessageChunk& message) {
-  bool success = true;
-  if (IsBrowserSideNavigationEnabled()) {
-    if (sender == frame_host_) {
-      DevToolsSession* session = SessionById(message.session_id);
-      if (session)
-        success = session->ReceiveMessageChunk(message);
-    }
-  } else {
-    if (current_ && current_->host() == sender)
-      success = current_->ProcessChunkedMessageFromAgent(message);
-    else if (pending_ && pending_->host() == sender)
-      success = pending_->ProcessChunkedMessageFromAgent(message);
-  }
-  if (!success) {
-    bad_message::ReceivedBadMessage(
-        sender->GetProcess(),
-        bad_message::RFH_INCONSISTENT_DEVTOOLS_MESSAGE);
-  }
-}
-
-void RenderFrameDevToolsAgentHost::OnRequestNewWindow(RenderFrameHost* sender,
-                                                      int session_id,
-                                                      int new_routing_id) {
-  RenderFrameHostImpl* frame_host = RenderFrameHostImpl::FromID(
-      sender->GetProcess()->GetID(), new_routing_id);
-
-  bool success = false;
-  if (SessionById(session_id) && sender->GetRoutingID() != new_routing_id &&
-      frame_host) {
-    scoped_refptr<DevToolsAgentHost> agent =
-        RenderFrameDevToolsAgentHost::GetOrCreateFor(
-            frame_host->frame_tree_node());
-    success = static_cast<DevToolsAgentHostImpl*>(agent.get())->Inspect();
-  }
-
-  sender->Send(new DevToolsAgentMsg_RequestNewWindow_ACK(sender->GetRoutingID(),
-                                                         session_id, success));
+bool RenderFrameDevToolsAgentHost::EnsureAgent() {
+  if (!frame_host_)
+    return false;
+  if (!agent_ptr_)
+    frame_host_->GetRemoteAssociatedInterfaces()->GetInterface(&agent_ptr_);
+  return true;
 }
 
 bool RenderFrameDevToolsAgentHost::IsChildFrame() {
