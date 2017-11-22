@@ -15,15 +15,20 @@
 #include "components/signin/core/account_id/account_id.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/clipboard/clipboard.h"
+#include "ui/base/clipboard/clipboard_monitor.h"
+#include "ui/base/clipboard/clipboard_observer.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_observer.h"
 
 class ChromeScreenshotGrabberBrowserTest
     : public InProcessBrowserTest,
       public ui::ScreenshotGrabberObserver,
-      public message_center::MessageCenterObserver {
+      public message_center::MessageCenterObserver,
+      public ui::ClipboardObserver {
  public:
   ChromeScreenshotGrabberBrowserTest() : InProcessBrowserTest() {}
+  ~ChromeScreenshotGrabberBrowserTest() override = default;
 
   // Overridden from ui::ScreenshotGrabberObserver
   void OnScreenshotCompleted(
@@ -33,9 +38,26 @@ class ChromeScreenshotGrabberBrowserTest
     screenshot_path_ = screenshot_path;
   }
 
+  // Overridden from message_center::MessageCenterObserver
   void OnNotificationAdded(const std::string& notification_id) override {
     notification_added_ = true;
     message_loop_runner_->Quit();
+  }
+
+  // Overridden from ui::ClipboardObserver
+  void OnClipboardDataChanged() override {
+    clipboard_changed_ = true;
+    message_loop_runner_->Quit();
+  }
+
+  void RunLoop() {
+    message_loop_runner_ = new content::MessageLoopRunner;
+    message_loop_runner_->Run();
+  }
+
+  bool IsImageClipboardAvailable() {
+    return ui::Clipboard::GetForCurrentThread()->IsFormatAvailable(
+        ui::Clipboard::GetBitmapFormatType(), ui::CLIPBOARD_TYPE_COPY_PASTE);
   }
 
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
@@ -43,6 +65,7 @@ class ChromeScreenshotGrabberBrowserTest
   ScreenshotGrabberObserver::Result screenshot_result_;
   base::FilePath screenshot_path_;
   bool notification_added_ = false;
+  bool clipboard_changed_ = false;
 };
 
 IN_PROC_BROWSER_TEST_F(ChromeScreenshotGrabberBrowserTest, TakeScreenshot) {
@@ -62,17 +85,30 @@ IN_PROC_BROWSER_TEST_F(ChromeScreenshotGrabberBrowserTest, TakeScreenshot) {
   EXPECT_FALSE(
       chrome_screenshot_grabber->screenshot_grabber()->CanTakeScreenshot());
 
-  message_loop_runner_ = new content::MessageLoopRunner;
-  message_loop_runner_->Run();
+  RunLoop();
   chrome_screenshot_grabber->screenshot_grabber()->RemoveObserver(this);
 
   EXPECT_TRUE(notification_added_);
-  EXPECT_NE(nullptr,
-            g_browser_process->notification_ui_manager()->FindById(
-                std::string("screenshot"),
-                NotificationUIManager::GetProfileID(browser()->profile())));
-  g_browser_process->notification_ui_manager()->CancelAll();
+  const message_center::Notification* notification =
+      g_browser_process->notification_ui_manager()->FindById(
+          std::string("screenshot"),
+          NotificationUIManager::GetProfileID(browser()->profile()));
+  EXPECT_NE(nullptr, notification);
 
   EXPECT_EQ(ScreenshotGrabberObserver::SCREENSHOT_SUCCESS, screenshot_result_);
   EXPECT_TRUE(base::PathExists(screenshot_path_));
+
+  EXPECT_FALSE(IsImageClipboardAvailable());
+  ui::ClipboardMonitor::GetInstance()->AddObserver(this);
+
+  // Copy to clipboard button.
+  notification->ButtonClick(0);
+
+  RunLoop();
+  ui::ClipboardMonitor::GetInstance()->RemoveObserver(this);
+
+  EXPECT_TRUE(clipboard_changed_);
+  EXPECT_TRUE(IsImageClipboardAvailable());
+
+  g_browser_process->notification_ui_manager()->CancelAll();
 }
