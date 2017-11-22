@@ -21,74 +21,20 @@ FilteredComputedStylePropertyMap::FilteredComputedStylePropertyMap(
   }
 }
 
-CSSStyleValue* FilteredComputedStylePropertyMap::get(
-    const String& property_name,
-    ExceptionState& exception_state) {
-  CSSPropertyID property_id = cssPropertyID(property_name);
-  if (property_id == CSSPropertyInvalid) {
-    exception_state.ThrowTypeError("Invalid propertyName: " + property_name);
+const CSSValue* FilteredComputedStylePropertyMap::GetProperty(
+    CSSPropertyID property_id) {
+  if (!native_properties_.Contains(property_id))
     return nullptr;
-  }
 
-  if (property_id >= firstCSSProperty &&
-      native_properties_.Contains(property_id)) {
-    CSSStyleValueVector style_vector = GetAllInternal(property_id);
-    if (style_vector.IsEmpty())
-      return nullptr;
-
-    return style_vector[0];
-  }
-
-  if (property_id == CSSPropertyVariable &&
-      custom_properties_.Contains(AtomicString(property_name))) {
-    CSSStyleValueVector style_vector =
-        GetAllInternal(AtomicString(property_name));
-    if (style_vector.IsEmpty())
-      return nullptr;
-
-    return style_vector[0];
-  }
-
-  return nullptr;
+  return ComputedStylePropertyMap::GetProperty(property_id);
 }
 
-CSSStyleValueVector FilteredComputedStylePropertyMap::getAll(
-    const String& property_name,
-    ExceptionState& exception_state) {
-  CSSPropertyID property_id = cssPropertyID(property_name);
-  if (property_id == CSSPropertyInvalid) {
-    exception_state.ThrowTypeError("Invalid propertyName: " + property_name);
-    return CSSStyleValueVector();
-  }
+const CSSValue* FilteredComputedStylePropertyMap::GetCustomProperty(
+    AtomicString property_name) {
+  if (!custom_properties_.Contains(AtomicString(property_name)))
+    return nullptr;
 
-  if (property_id >= firstCSSProperty &&
-      native_properties_.Contains(property_id))
-    return GetAllInternal(property_id);
-
-  if (property_id == CSSPropertyVariable &&
-      custom_properties_.Contains(AtomicString(property_name)))
-    return GetAllInternal(AtomicString(property_name));
-
-  return CSSStyleValueVector();
-}
-
-bool FilteredComputedStylePropertyMap::has(const String& property_name,
-                                           ExceptionState& exception_state) {
-  CSSPropertyID property_id = cssPropertyID(property_name);
-  if (property_id == CSSPropertyInvalid) {
-    exception_state.ThrowTypeError("Invalid propertyName: " + property_name);
-    return false;
-  }
-
-  if (property_id >= firstCSSProperty &&
-      native_properties_.Contains(property_id))
-    return !GetAllInternal(property_id).IsEmpty();
-
-  if (property_id == CSSPropertyVariable &&
-      custom_properties_.Contains(AtomicString(property_name)))
-    return !GetAllInternal(AtomicString(property_name)).IsEmpty();
-
-  return false;
+  return ComputedStylePropertyMap::GetCustomProperty(property_name);
 }
 
 Vector<String> FilteredComputedStylePropertyMap::getProperties() {

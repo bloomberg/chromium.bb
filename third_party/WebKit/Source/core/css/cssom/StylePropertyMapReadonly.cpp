@@ -58,11 +58,19 @@ CSSStyleValueVector StylePropertyMapReadonly::getAll(
     const String& property_name,
     ExceptionState& exception_state) {
   CSSPropertyID property_id = cssPropertyID(property_name);
-  if (property_id == CSSPropertyInvalid)
+  if (property_id == CSSPropertyInvalid) {
     exception_state.ThrowTypeError("Invalid propertyName: " + property_name);
-  if (property_id == CSSPropertyVariable)
-    return GetAllInternal(AtomicString(property_name));
-  return GetAllInternal(property_id);
+    return CSSStyleValueVector();
+  }
+
+  DCHECK(isValidCSSPropertyID(property_id));
+  const CSSValue* value = (property_id == CSSPropertyVariable)
+                              ? GetCustomProperty(AtomicString(property_name))
+                              : GetProperty(property_id);
+  if (!value)
+    return CSSStyleValueVector();
+
+  return StyleValueFactory::CssValueToStyleValueVector(property_id, *value);
 }
 
 bool StylePropertyMapReadonly::has(const String& property_name,

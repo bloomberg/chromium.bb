@@ -26,19 +26,17 @@ class CORE_EXPORT StylePropertyMapReadonly
 
   virtual ~StylePropertyMapReadonly() {}
 
-  virtual CSSStyleValue* get(const String& property_name, ExceptionState&);
-  virtual CSSStyleValueVector getAll(const String& property_name,
-                                     ExceptionState&);
-  virtual bool has(const String& property_name, ExceptionState&);
+  CSSStyleValue* get(const String& property_name, ExceptionState&);
+  CSSStyleValueVector getAll(const String& property_name, ExceptionState&);
+  bool has(const String& property_name, ExceptionState&);
 
   virtual Vector<String> getProperties() = 0;
 
  protected:
   StylePropertyMapReadonly() = default;
 
-  virtual CSSStyleValueVector GetAllInternal(CSSPropertyID) = 0;
-  virtual CSSStyleValueVector GetAllInternal(
-      AtomicString custom_property_name) = 0;
+  virtual const CSSValue* GetProperty(CSSPropertyID) = 0;
+  virtual const CSSValue* GetCustomProperty(AtomicString) = 0;
 
   virtual HeapVector<StylePropertyMapEntry> GetIterationEntries() = 0;
   IterationSource* StartIteration(ScriptState*, ExceptionState&) override;

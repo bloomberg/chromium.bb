@@ -24,11 +24,6 @@ class CORE_EXPORT FilteredComputedStylePropertyMap
         computed_style_declaration, native_properties, custom_properties, node);
   }
 
-  CSSStyleValue* get(const String& property_name, ExceptionState&) override;
-  CSSStyleValueVector getAll(const String& property_name,
-                             ExceptionState&) override;
-  bool has(const String& property_name, ExceptionState&) override;
-
   Vector<String> getProperties() override;
 
  private:
@@ -37,6 +32,9 @@ class CORE_EXPORT FilteredComputedStylePropertyMap
       const Vector<CSSPropertyID>& native_properties,
       const Vector<AtomicString>& custom_properties,
       Node*);
+
+  const CSSValue* GetProperty(CSSPropertyID) override;
+  const CSSValue* GetCustomProperty(AtomicString) override;
 
   HashSet<CSSPropertyID> native_properties_;
   HashSet<AtomicString> custom_properties_;

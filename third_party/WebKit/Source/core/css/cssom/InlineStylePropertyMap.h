@@ -34,9 +34,8 @@ class CORE_EXPORT InlineStylePropertyMap final : public StylePropertyMap {
   }
 
  protected:
-  CSSStyleValueVector GetAllInternal(CSSPropertyID) override;
-  CSSStyleValueVector GetAllInternal(
-      AtomicString custom_property_name) override;
+  const CSSValue* GetProperty(CSSPropertyID) override;
+  const CSSValue* GetCustomProperty(AtomicString) override;
 
   HeapVector<StylePropertyMapEntry> GetIterationEntries() override;
 
