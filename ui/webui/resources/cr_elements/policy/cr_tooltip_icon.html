@@ -9,7 +9,6 @@
   <template>
     <style>
       :host {
-        @apply(--cr-icon-height-width);
         display: flex;  /* Position independently from the line-height. */
       }
 
@@ -21,6 +20,11 @@
           min-width: 200px;
           padding: 10px 8px;
         };
+      }
+
+      iron-icon {
+        --iron-icon-width: var(--cr-icon-size);
+        --iron-icon-height: var(--cr-icon-size);
       }
     </style>
     <iron-icon id="indicator" tabindex="0" aria-label$="[[iconAriaLabel]]"
