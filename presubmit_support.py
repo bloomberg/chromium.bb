@@ -1318,7 +1318,7 @@ class PresubmitExecuter(object):
         logging.debug('Running %s in %s', function_name, presubmit_path)
         result = eval(function_name + '(*__args)', context)
         logging.debug('Running %s done.', function_name)
-        self.more_cc = output_api.more_cc
+        self.more_cc.extend(output_api.more_cc)
       finally:
         map(os.remove, input_api._named_temporary_files)
       if not (isinstance(result, types.TupleType) or
