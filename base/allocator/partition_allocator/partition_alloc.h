@@ -281,6 +281,24 @@ struct PartitionBucket {
   uint32_t slot_size;
   unsigned num_system_pages_per_slot_span : 8;
   unsigned num_full_pages : 24;
+
+  // Public API.
+  BASE_EXPORT void* Alloc(PartitionRootBase* root, int flags, size_t size);
+  BASE_EXPORT NOINLINE void* SlowPathAlloc(PartitionRootBase* root,
+                                           int flags,
+                                           size_t size);
+
+  ALWAYS_INLINE bool is_direct_mapped() const {
+    return !num_system_pages_per_slot_span;
+  }
+  ALWAYS_INLINE size_t get_bytes_per_span() const {
+    // TODO(ajwong): Chagne to CheckedMul. https://crbug.com/787153
+    return num_system_pages_per_slot_span * kSystemPageSize;
+  }
+  ALWAYS_INLINE uint16_t get_slots_per_span() const {
+    // TODO(ajwong): Chagne to CheckedMul. https://crbug.com/787153
+    return static_cast<uint16_t>(get_bytes_per_span() / slot_size);
+  }
 };
 
 // An "extent" is a span of consecutive superpages. We link to the partition's
@@ -454,10 +472,6 @@ class BASE_EXPORT PartitionStatsDumper {
 
 BASE_EXPORT void PartitionAllocGlobalInit(void (*oom_handling_function)());
 
-BASE_EXPORT NOINLINE void* PartitionAllocSlowPath(PartitionRootBase*,
-                                                  int,
-                                                  size_t,
-                                                  PartitionBucket*);
 BASE_EXPORT NOINLINE void PartitionFreeSlowPath(PartitionPage*);
 
 class BASE_EXPORT PartitionAllocHooks {
@@ -637,20 +651,6 @@ ALWAYS_INLINE PartitionPage* PartitionPointerToPage(void* ptr) {
   return page;
 }
 
-ALWAYS_INLINE bool PartitionBucketIsDirectMapped(
-    const PartitionBucket* bucket) {
-  return !bucket->num_system_pages_per_slot_span;
-}
-
-ALWAYS_INLINE size_t PartitionBucketBytes(const PartitionBucket* bucket) {
-  return bucket->num_system_pages_per_slot_span * kSystemPageSize;
-}
-
-ALWAYS_INLINE uint16_t PartitionBucketSlots(const PartitionBucket* bucket) {
-  return static_cast<uint16_t>(PartitionBucketBytes(bucket) /
-                               bucket->slot_size);
-}
-
 ALWAYS_INLINE size_t* PartitionPageGetRawSizePtr(PartitionPage* page) {
   // For single-slot buckets which span more than one partition page, we
   // have some spare metadata space to store the raw allocation size. We
@@ -660,8 +660,7 @@ ALWAYS_INLINE size_t* PartitionPageGetRawSizePtr(PartitionPage* page) {
     return nullptr;
 
   DCHECK((bucket->slot_size % kSystemPageSize) == 0);
-  DCHECK(PartitionBucketIsDirectMapped(bucket) ||
-         PartitionBucketSlots(bucket) == 1);
+  DCHECK(bucket->is_direct_mapped() || bucket->get_slots_per_span() == 1);
   page++;
   return reinterpret_cast<size_t*>(&page->freelist_head);
 }
@@ -685,11 +684,10 @@ ALWAYS_INLINE bool PartitionPagePointerIsValid(PartitionPage* page) {
   return root->inverted_self == ~reinterpret_cast<uintptr_t>(root);
 }
 
-ALWAYS_INLINE void* PartitionBucketAlloc(PartitionRootBase* root,
-                                         int flags,
-                                         size_t size,
-                                         PartitionBucket* bucket) {
-  PartitionPage* page = bucket->active_pages_head;
+ALWAYS_INLINE void* PartitionBucket::Alloc(PartitionRootBase* root,
+                                           int flags,
+                                           size_t size) {
+  PartitionPage* page = this->active_pages_head;
   // Check that this page is neither full nor freed.
   DCHECK(page->num_allocated_slots >= 0);
   void* ret = page->freelist_head;
@@ -705,7 +703,7 @@ ALWAYS_INLINE void* PartitionBucketAlloc(PartitionRootBase* root,
     page->freelist_head = new_head;
     page->num_allocated_slots++;
   } else {
-    ret = PartitionAllocSlowPath(root, flags, size, bucket);
+    ret = this->SlowPathAlloc(root, flags, size);
     // TODO(palmer): See if we can afford to make this a CHECK.
     DCHECK(!ret || PartitionPagePointerIsValid(PartitionPointerToPage(ret)));
   }
@@ -714,13 +712,15 @@ ALWAYS_INLINE void* PartitionBucketAlloc(PartitionRootBase* root,
     return 0;
   // Fill the uninitialized pattern, and write the cookies.
   page = PartitionPointerToPage(ret);
-  size_t slot_size = page->bucket->slot_size;
+  // TODO(ajwong): Can |page->bucket| ever not be |this|? If not, can this just
+  // be this->slot_size?
+  size_t new_slot_size = page->bucket->slot_size;
   size_t raw_size = PartitionPageGetRawSize(page);
   if (raw_size) {
     DCHECK(raw_size == size);
-    slot_size = raw_size;
+    new_slot_size = raw_size;
   }
-  size_t no_cookie_size = PartitionCookieSizeAdjustSubtract(slot_size);
+  size_t no_cookie_size = PartitionCookieSizeAdjustSubtract(new_slot_size);
   char* char_ret = static_cast<char*>(ret);
   // The value given to the application is actually just after the cookie.
   ret = char_ret + kCookieSize;
@@ -746,7 +746,7 @@ ALWAYS_INLINE void* PartitionRoot::Alloc(size_t size, const char* type_name) {
   DCHECK(index < this->num_buckets);
   DCHECK(size == index << kBucketShift);
   PartitionBucket* bucket = &this->buckets()[index];
-  void* result = PartitionBucketAlloc(this, 0, size, bucket);
+  void* result = bucket->Alloc(this, 0, size);
   PartitionAllocHooks::AllocationHookIfEnabled(result, requested_size,
                                                type_name);
   return result;
@@ -834,7 +834,7 @@ ALWAYS_INLINE void* PartitionAllocGenericFlags(PartitionRootGeneric* root,
   void* ret = nullptr;
   {
     subtle::SpinLock::Guard guard(root->lock);
-    ret = PartitionBucketAlloc(root, flags, size, bucket);
+    ret = bucket->Alloc(root, flags, size);
   }
   PartitionAllocHooks::AllocationHookIfEnabled(ret, requested_size, type_name);
   return ret;
@@ -882,7 +882,7 @@ ALWAYS_INLINE size_t PartitionRootGeneric::ActualSize(size_t size) {
   DCHECK(this->initialized);
   size = PartitionCookieSizeAdjustAdd(size);
   PartitionBucket* bucket = PartitionGenericSizeToBucket(this, size);
-  if (LIKELY(!PartitionBucketIsDirectMapped(bucket))) {
+  if (LIKELY(!bucket->is_direct_mapped())) {
     size = bucket->slot_size;
   } else if (size > kGenericMaxDirectMapped) {
     // Too large to allocate => return the size unchanged.
