@@ -4,7 +4,6 @@
 
 (async function() {
   TestRunner.addResult(`Tests console.timeline and timelineEnd commands.\n`);
-  TestRunner.printDevToolsConsole();
   await TestRunner.loadModule('console_test_runner');
   await TestRunner.loadModule('performance_test_runner');
   await TestRunner.showPanel('timeline');

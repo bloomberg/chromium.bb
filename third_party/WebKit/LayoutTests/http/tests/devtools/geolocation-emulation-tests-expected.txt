@@ -2,20 +2,20 @@ Tests that geolocation emulation with latitude and longitude works as expected.
 
 
 Running: testPermissionGranted
-geolocation-emulation-tests.js:14 Permission granted.
+geolocation-emulation-tests.js:13 Permission granted.
 
 Running: testGeolocationUnavailable
-geolocation-emulation-tests.js:49 Position unavailable
+geolocation-emulation-tests.js:48 Position unavailable
 
 Running: testOverridenGeolocation
-geolocation-emulation-tests.js:42 Latitude: 50 Longitude: 100
+geolocation-emulation-tests.js:41 Latitude: 50 Longitude: 100
 
 Running: testInvalidParam
 error: Protocol Error: Invalid type of argument 'latitude' for method 'Emulation.setGeolocationOverride' call. It must be 'number' but it is 'boolean'.
 
 Running: testInvalidGeolocation
-geolocation-emulation-tests.js:42 Latitude: 50 Longitude: 100
+geolocation-emulation-tests.js:41 Latitude: 50 Longitude: 100
 
 Running: testTimestampOfOverridenPosition
-geolocation-emulation-tests.js:60 PASSED
+geolocation-emulation-tests.js:59 PASSED
 

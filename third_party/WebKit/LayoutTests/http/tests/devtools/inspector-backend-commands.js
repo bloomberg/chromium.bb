@@ -8,7 +8,6 @@
       <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
     `);
 
-  TestRunner.printDevToolsConsole();
   Protocol.InspectorBackend.Options.suppressRequestErrors = false;
   function dumpArgument(name, value) {
     TestRunner.addResult(name + ' result: ' + (typeof value === 'string' ? value : JSON.stringify(value)));

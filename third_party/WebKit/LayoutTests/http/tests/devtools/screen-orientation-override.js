@@ -6,8 +6,6 @@
   TestRunner.addResult(`Test screen orientation override.\n`);
   await TestRunner.loadModule('console_test_runner');
 
-  TestRunner.printDevToolsConsole();
-
   await TestRunner.navigatePromise('resources/screen-orientation-resource.html');
 
   Protocol.InspectorBackend.Options.suppressRequestErrors = false;
