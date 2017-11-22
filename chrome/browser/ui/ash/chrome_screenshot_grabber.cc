@@ -57,9 +57,6 @@ const char kNotificationId[] = "screenshot";
 
 const char kNotificationOriginUrl[] = "chrome://screenshot";
 
-const char kImageClipboardFormatPrefix[] = "<img src='data:image/png;base64,";
-const char kImageClipboardFormatSuffix[] = "'>";
-
 // User is waiting for the screenshot-taken notification, hence USER_VISIBLE.
 constexpr base::TaskTraits kBlockingTaskTraits = {
     base::MayBlock(), base::TaskPriority::USER_VISIBLE,
@@ -67,23 +64,34 @@ constexpr base::TaskTraits kBlockingTaskTraits = {
 
 ChromeScreenshotGrabber* g_instance = nullptr;
 
-void CopyScreenshotToClipboard(scoped_refptr<base::RefCountedString> png_data) {
+void CopyScreenshotToClipboard(const SkBitmap& decoded_image) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  std::string encoded;
-  base::Base64Encode(png_data->data(), &encoded);
-
-  // Only care about HTML because Chrome OS doesn't need other formats.
-  // TODO(dcheng): Why don't we take advantage of the ability to write bitmaps
-  // to the clipboard here?
   {
     ui::ScopedClipboardWriter scw(ui::CLIPBOARD_TYPE_COPY_PASTE);
-    std::string html(kImageClipboardFormatPrefix);
-    html += encoded;
-    html += kImageClipboardFormatSuffix;
-    scw.WriteHTML(base::UTF8ToUTF16(html), std::string());
+    scw.WriteImage(decoded_image);
   }
   base::RecordAction(base::UserMetricsAction("Screenshot_CopyClipboard"));
+}
+
+void DecodeFileAndCopyToClipboard(
+    scoped_refptr<base::RefCountedString> png_data) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  service_manager::mojom::ConnectorRequest connector_request;
+  std::unique_ptr<service_manager::Connector> connector =
+      service_manager::Connector::Create(&connector_request);
+  content::ServiceManagerConnection::GetForProcess()
+      ->GetConnector()
+      ->BindConnectorRequest(std::move(connector_request));
+
+  // Decode the image in sandboxed process becuase |png_data| comes from
+  // external storage.
+  data_decoder::DecodeImage(
+      connector.get(),
+      std::vector<uint8_t>(png_data->data().begin(), png_data->data().end()),
+      data_decoder::mojom::ImageCodec::DEFAULT, false,
+      data_decoder::kDefaultMaxSizeInBytes, gfx::Size(),
+      base::BindOnce(&CopyScreenshotToClipboard));
 }
 
 void ReadFileAndCopyToClipboardLocal(const base::FilePath& screenshot_path) {
@@ -97,7 +105,7 @@ void ReadFileAndCopyToClipboardLocal(const base::FilePath& screenshot_path) {
 
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&CopyScreenshotToClipboard, png_data));
+      base::BindOnce(&DecodeFileAndCopyToClipboard, png_data));
 }
 
 void ReadFileAndCopyToClipboardDrive(
