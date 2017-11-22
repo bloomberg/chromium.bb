@@ -29,7 +29,6 @@
 #include "media/gpu/vp8_decoder.h"
 #include "media/gpu/vp9_decoder.h"
 #include "media/video/picture.h"
-#include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_image.h"
 
 #define DVLOGF(level) DVLOG(level) << __func__ << "(): "
@@ -385,20 +384,6 @@ bool VaapiVideoDecodeAccelerator::Initialize(const Config& config,
   base::AutoLock auto_lock(lock_);
   DCHECK_EQ(state_, kUninitialized);
   VLOGF(2) << "Initializing VAVDA, profile: " << GetProfileName(profile);
-
-#if defined(USE_X11)
-  if (gl::GetGLImplementation() != gl::kGLImplementationDesktopGL) {
-    VLOGF(1) << "HW video decode acceleration not available without "
-                "DesktopGL (GLX).";
-    return false;
-  }
-#elif defined(USE_OZONE)
-  if (gl::GetGLImplementation() != gl::kGLImplementationEGLGLES2) {
-    VLOGF(1) << "HW video decode acceleration not available without "
-             << "EGLGLES2.";
-    return false;
-  }
-#endif  // USE_X11
 
   vaapi_wrapper_ = VaapiWrapper::CreateForVideoCodec(
       VaapiWrapper::kDecode, profile, base::Bind(&ReportToUMA, VAAPI_ERROR));

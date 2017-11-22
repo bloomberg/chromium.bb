@@ -201,7 +201,7 @@ source_set("filters") {
     deps += [ "//media/base/android" ]
   }
 
-  if (current_cpu != "arm" && is_chromeos) {
+  if (current_cpu != "arm" && is_linux) {
     sources += [
       "h264_bitstream_buffer.cc",
       "h264_bitstream_buffer.h",
@@ -348,7 +348,7 @@ source_set("unit_tests") {
     sources += [ "aom_video_decoder_unittest.cc" ]
   }
 
-  if (current_cpu != "arm" && is_chromeos) {
+  if (current_cpu != "arm" && is_linux) {
     sources += [ "h264_bitstream_buffer_unittest.cc" ]
   }
 

@@ -35,11 +35,9 @@
 #include <va/va_x11.h>
 #endif  // USE_X11
 
-#if defined(USE_OZONE)
 namespace gfx {
 class NativePixmap;
 }
-#endif
 
 namespace media {
 
@@ -113,13 +111,11 @@ class MEDIA_GPU_EXPORT VaapiWrapper
       const gfx::Size& size,
       const std::vector<VASurfaceAttrib>& va_attribs);
 
-#if defined(USE_OZONE)
   // Create a VASurface for |pixmap|. The ownership of the surface is
   // transferred to the caller. It differs from surfaces created using
   // CreateSurfaces(), where VaapiWrapper is the owner of the surfaces.
   scoped_refptr<VASurface> CreateVASurfaceForPixmap(
       const scoped_refptr<gfx::NativePixmap>& pixmap);
-#endif
 
   // Submit parameters or slice data of |va_buffer_type|, copying them from
   // |buffer| of size |size|, into HW codec. The data in |buffer| is no
