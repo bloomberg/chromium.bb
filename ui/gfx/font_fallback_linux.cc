@@ -19,14 +19,14 @@ namespace gfx {
 
 namespace {
 
+const char kFontFormatTrueType[] = "TrueType";
+const char kFontFormatCFF[] = "CFF";
+
 typedef std::map<std::string, std::vector<Font> > FallbackCache;
 base::LazyInstance<FallbackCache>::Leaky g_fallback_cache =
     LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
-
-const char* kFontFormatTrueType = "TrueType";
-const char* kFontFormatCFF = "CFF";
 
 std::vector<Font> GetFallbackFonts(const Font& font) {
   std::string font_family = font.GetFontName();
@@ -218,8 +218,9 @@ class CachedFontSet {
       // Take only supported font formats on board.
       FcChar8* font_format;
       if (FcPatternGetString(pattern, FC_FONTFORMAT, 0, &font_format) !=
-          FcResultMatch)
+          FcResultMatch) {
         continue;
+      }
       if (font_format &&
           strcmp(reinterpret_cast<char*>(font_format), kFontFormatTrueType) &&
           strcmp(reinterpret_cast<char*>(font_format), kFontFormatCFF)) {
