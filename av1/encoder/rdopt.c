@@ -5037,8 +5037,20 @@ int inter_block_uvrd(const AV1_COMP *cpi, MACROBLOCK *x, RD_STATS *rd_stats,
       const int mi_width = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
       const int mi_height =
           block_size_high[plane_bsize] >> tx_size_high_log2[0];
-      const TX_SIZE max_tx_size = get_vartx_max_txsize(
+      TX_SIZE max_tx_size = get_vartx_max_txsize(
           xd, plane_bsize, pd->subsampling_x || pd->subsampling_y);
+#if DISABLE_VARTX_FOR_CHROMA == 2
+      // If the luma transform size is split at least one level, split the
+      // chroma by one level. Otherwise use the largest possible trasnform size
+      // for chroma.
+      if (pd->subsampling_x || pd->subsampling_y) {
+        const TX_SIZE l_max_tx_size = get_vartx_max_txsize(xd, bsizec, 0);
+        const int is_split =
+            (l_max_tx_size != mbmi->inter_tx_size[0][0] && bsize == bsizec &&
+             txsize_to_bsize[l_max_tx_size] == bsizec);
+        if (is_split) max_tx_size = sub_tx_size_map[max_tx_size];
+      }
+#endif  // DISABLE_VARTX_FOR_CHROMA == 2
       const int bh = tx_size_high_unit[max_tx_size];
       const int bw = tx_size_wide_unit[max_tx_size];
       int idx, idy;

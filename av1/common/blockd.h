@@ -40,6 +40,11 @@ extern "C" {
 #define MAX_SEG_MASK_BITS 1
 
 // Disables vartx transform split for chroma
+// There are two possible options:
+// 1: Always choose chroma tx_size to be the largest allowed for the PU
+// 2: If the luma tranform size is split at least one level, split the
+// chroma by one level, otherwise use the largest allowed transform size for
+// chroma.
 #define DISABLE_VARTX_FOR_CHROMA 1
 
 // SEG_MASK_TYPES should not surpass 1 << MAX_SEG_MASK_BITS
