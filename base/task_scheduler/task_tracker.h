@@ -99,7 +99,7 @@ class BASE_EXPORT TaskTracker {
   // This can only be called once.
   void Shutdown();
 
-  // Waits until there are no incomplete undelayed tasks. May be called in tests
+  // Waits until there are no pending undelayed tasks. May be called in tests
   // to validate that a condition is met after all undelayed tasks have run.
   //
   // Does not wait for delayed tasks. Waits for undelayed tasks posted from
@@ -166,9 +166,13 @@ class BASE_EXPORT TaskTracker {
   virtual bool IsPostingBlockShutdownTaskAfterShutdownAllowed();
 #endif
 
+  // Called at the very end of RunNextTask() after the completion of all task
+  // metrics accounting.
+  virtual void OnRunNextTaskCompleted() {}
+
   // Returns the number of undelayed tasks that haven't completed their
-  // execution (still queued or in progress).
-  int GetNumIncompleteUndelayedTasksForTesting() const;
+  // execution.
+  int GetNumPendingUndelayedTasksForTesting() const;
 
  private:
   class State;
@@ -195,9 +199,9 @@ class BASE_EXPORT TaskTracker {
   // shutdown has started.
   void OnBlockingShutdownTasksComplete();
 
-  // Decrements the number of incomplete undelayed tasks and signals |flush_cv_|
-  // if it reaches zero.
-  void DecrementNumIncompleteUndelayedTasks();
+  // Decrements the number of pending undelayed tasks and signals |flush_cv_| if
+  // it reaches zero.
+  void DecrementNumPendingUndelayedTasks();
 
   // To be called after running a background task from |just_ran_sequence|.
   // Performs the following actions:
@@ -229,15 +233,15 @@ class BASE_EXPORT TaskTracker {
   // decremented with a memory barrier after a task runs. Is accessed with an
   // acquire memory barrier in Flush(). The memory barriers ensure that the
   // memory written by flushed tasks is visible when Flush() returns.
-  subtle::Atomic32 num_incomplete_undelayed_tasks_ = 0;
+  subtle::Atomic32 num_pending_undelayed_tasks_ = 0;
 
   // Lock associated with |flush_cv_|. Partially synchronizes access to
-  // |num_incomplete_undelayed_tasks_|. Full synchronization isn't needed
-  // because it's atomic, but synchronization is needed to coordinate waking and
+  // |num_pending_undelayed_tasks_|. Full synchronization isn't needed because
+  // it's atomic, but synchronization is needed to coordinate waking and
   // sleeping at the right time.
   mutable SchedulerLock flush_lock_;
 
-  // Signaled when |num_incomplete_undelayed_tasks_| is zero or when shutdown
+  // Signaled when |num_pending_undelayed_tasks_| is zero or when shutdown
   // completes.
   const std::unique_ptr<ConditionVariable> flush_cv_;
 
