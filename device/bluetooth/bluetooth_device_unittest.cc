@@ -66,13 +66,7 @@ class BluetoothGetServiceTest : public BluetoothTest {
     TestBluetoothAdapterObserver observer(adapter_);
     SimulateGattConnection(device_);
     base::RunLoop().RunUntilIdle();
-#if defined(OS_WIN)
-    // TODO(crbug.com/507419): Check connection once CreateGattConnection is
-    // implemented on Windows.
-    EXPECT_FALSE(device_->IsConnected());
-#else
-    EXPECT_TRUE(device_->IsConnected());
-#endif  // defined(OS_WIN)
+    EXPECT_TRUE(device_->IsGattConnected());
 
     // Discover services.
     std::vector<std::string> service_uuids;

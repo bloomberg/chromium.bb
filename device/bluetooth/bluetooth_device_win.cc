@@ -100,8 +100,7 @@ bool BluetoothDeviceWin::IsConnected() const {
 }
 
 bool BluetoothDeviceWin::IsGattConnected() const {
-  NOTIMPLEMENTED();
-  return false;
+  return gatt_connected_;
 }
 
 bool BluetoothDeviceWin::IsConnectable() const {
@@ -233,6 +232,7 @@ bool BluetoothDeviceWin::IsEqual(
       bluetooth_class_ != device_state.bluetooth_class ||
       visible_ != device_state.visible ||
       connected_ != device_state.connected ||
+      gatt_connected_ == device_state.is_bluetooth_classic() ||
       paired_ != device_state.authenticated) {
     return false;
   }
@@ -273,6 +273,9 @@ void BluetoothDeviceWin::Update(
   bluetooth_class_ = device_state.bluetooth_class;
   visible_ = device_state.visible;
   connected_ = device_state.connected;
+  // If a BLE device is not GATT connected, Windows will automatically
+  // reconnect.
+  gatt_connected_ = !device_state.is_bluetooth_classic();
   paired_ = device_state.authenticated;
   UpdateServices(device_state);
 }
@@ -360,7 +363,7 @@ void BluetoothDeviceWin::UpdateGattServices(
     const std::vector<
         std::unique_ptr<BluetoothTaskManagerWin::ServiceRecordState>>&
         service_state) {
-  // First, remove no longer exist GATT service.
+  // First, remove no longer existent GATT service.
   {
     std::vector<std::string> to_be_removed_services;
     for (const auto& gatt_service : gatt_services_) {
