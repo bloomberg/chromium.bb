@@ -76,7 +76,7 @@ class LayerTreeHostCommonPerfTest : public LayerTreeTest {
 
 class CalcDrawPropsTest : public LayerTreeHostCommonPerfTest {
  public:
-  void RunCalcDrawProps() { RunTest(CompositorMode::SINGLE_THREADED); }
+  void RunCalcDrawProps() { RunTest(CompositorMode::SINGLE_THREADED, false); }
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
