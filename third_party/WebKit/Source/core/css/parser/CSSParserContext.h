@@ -76,9 +76,7 @@ class CORE_EXPORT CSSParserContext
   bool IsDynamicProfile() const { return profile_ == kDynamicProfile; }
   bool IsStaticProfile() const { return profile_ == kStaticProfile; }
 
-  SecureContextMode GetSecureContextMode() const {
-    return secure_context_mode_;
-  }
+  bool IsSecureContext() const;
 
   // This quirk is to maintain compatibility with Android apps built on
   // the Android SDK prior to and including version 18. Presumably, this
