@@ -31,9 +31,22 @@ namespace {
 // TODO(jrg): ask UI dudes what a good value is.
 const NSUInteger kMaximumMenuPixelsWide = 300;
 
+// Returns the NSMenuItem in |submenu|'s supermenu that holds |submenu|.
+NSMenuItem* GetItemWithSubmenu(NSMenu* submenu) {
+  NSArray* parent_items = [[submenu supermenu] itemArray];
+  for (NSMenuItem* item in parent_items) {
+    if ([item submenu] == submenu)
+      return item;
+  }
+  return nil;
 }
 
-@implementation BookmarkMenuCocoaController
+}  // namespace
+
+@implementation BookmarkMenuCocoaController {
+ @private
+  BookmarkMenuBridge* bridge_;  // Weak. Owns |self|.
+}
 
 + (NSString*)menuTitleForNode:(const BookmarkNode*)node {
   base::string16 title = [MenuController elideMenuTitle:node->GetTitle()
@@ -50,25 +63,12 @@ const NSUInteger kMaximumMenuPixelsWide = 300;
   return cocoa_l10n_util::TooltipForURLAndTitle(url, title);
 }
 
-- (id)initWithBridge:(BookmarkMenuBridge*)bridge
-             andMenu:(NSMenu*)menu {
+- (id)initWithBridge:(BookmarkMenuBridge*)bridge {
   if ((self = [super init])) {
     bridge_ = bridge;
     DCHECK(bridge_);
-    menu_.reset([menu retain]);
-    [[self menu] setDelegate:self];
   }
   return self;
-}
-
-- (void)dealloc {
-  if ([[self menu] delegate] == self)
-    [[self menu] setDelegate:nil];
-  [super dealloc];
-}
-
-- (NSMenu*)menu {
-  return menu_;
 }
 
 - (BOOL)validateMenuItem:(NSMenuItem*)menuItem {
@@ -79,7 +79,18 @@ const NSUInteger kMaximumMenuPixelsWide = 300;
 
 // NSMenu delegate method: called just before menu is displayed.
 - (void)menuNeedsUpdate:(NSMenu*)menu {
-  bridge_->UpdateMenu(menu);
+  NSMenuItem* item = GetItemWithSubmenu(menu);
+  const BookmarkNode* node = [self nodeForIdentifier:[item tag]];
+  bridge_->UpdateMenu(menu, node);
+}
+
+- (BOOL)menuHasKeyEquivalent:(NSMenu*)menu
+                    forEvent:(NSEvent*)event
+                      target:(id*)target
+                      action:(SEL*)action {
+  // Note it is OK to return NO if there's already an item in |menu| that
+  // handles |event|.
+  return NO;
 }
 
 // Return the a BookmarkNode that has the given id (called

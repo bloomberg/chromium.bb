@@ -304,11 +304,19 @@ class ToolbarActionsBarObserverHelper : public ToolbarActionsBarObserver {
 }
 
 - (void)updateBookmarkSubMenu {
+  DCHECK(!bookmarkMenuBridge_);
   NSMenu* bookmarkMenu = [self bookmarkSubMenu];
-  DCHECK(bookmarkMenu);
+  if (!bookmarkMenu)
+    return;  // Guest profiles have no bookmarks menu.
 
-  bookmarkMenuBridge_.reset(new BookmarkMenuBridge(
-      [self appMenuModel]->browser()->profile(), bookmarkMenu));
+  // TODO(tapted): This should be cached and shared between browser windows in
+  // the same profile at least. Better would be to key it to the profile and
+  // share it with the main menu and the bookmarks toolbar as well. Sadly, it
+  // can't even be easily cached on |self|. This is because the first 5 items in
+  // the submenu are tied to a MenuController target via a raw pointer, which
+  // can't be reused across menu invocations.
+  bookmarkMenuBridge_ = std::make_unique<BookmarkMenuBridge>(
+      [self appMenuModel]->browser()->profile(), bookmarkMenu);
 }
 
 - (void)updateBrowserActionsSubmenu {
@@ -386,6 +394,9 @@ class ToolbarActionsBarObserverHelper : public ToolbarActionsBarObserver {
 
 - (void)menuDidClose:(NSMenu*)menu {
   [super menuDidClose:menu];
+
+  bookmarkMenuBridge_ = nullptr;
+
   // We don't need to observe changes to zoom or toolbar size when the menu is
   // closed, since we instantiate it with the proper value and recreate the menu
   // on each show. (We do this in -menuNeedsUpdate:, which is called when the

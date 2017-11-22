@@ -599,14 +599,17 @@ IN_PROC_BROWSER_TEST_F(AppControllerMainMenuBrowserTest,
   [ac bookmarkMenuBridge]->GetBookmarkModel()->AddURL(
       [ac bookmarkMenuBridge]->GetBookmarkModel()->bookmark_bar_node(),
       0, title1, url1);
-  [ac bookmarkMenuBridge]->BuildMenu();
+  NSMenu* profile1_submenu = [ac bookmarkMenuBridge]->BookmarkMenu();
+  [[profile1_submenu delegate] menuNeedsUpdate:profile1_submenu];
 
   // Switch to profile 2, create bookmark 2 and force the menu to build.
   [ac windowChangedToProfile:profile2];
   [ac bookmarkMenuBridge]->GetBookmarkModel()->AddURL(
       [ac bookmarkMenuBridge]->GetBookmarkModel()->bookmark_bar_node(),
       0, title2, url2);
-  [ac bookmarkMenuBridge]->BuildMenu();
+  NSMenu* profile2_submenu = [ac bookmarkMenuBridge]->BookmarkMenu();
+  [[profile2_submenu delegate] menuNeedsUpdate:profile2_submenu];
+  EXPECT_NE(profile1_submenu, profile2_submenu);
 
   // Test that only bookmark 2 is shown.
   EXPECT_FALSE([[ac bookmarkMenuBridge]->BookmarkMenu() itemWithTitle:
@@ -622,6 +625,9 @@ IN_PROC_BROWSER_TEST_F(AppControllerMainMenuBrowserTest,
       SysUTF16ToNSString(title1)]);
   EXPECT_FALSE([[ac bookmarkMenuBridge]->BookmarkMenu() itemWithTitle:
       SysUTF16ToNSString(title2)]);
+
+  // Ensure a cached menu was used.
+  EXPECT_EQ(profile1_submenu, [ac bookmarkMenuBridge]->BookmarkMenu());
 }
 
 }  // namespace
