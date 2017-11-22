@@ -24,6 +24,7 @@
 #include "components/printing/browser/print_composite_client.h"
 #include "components/printing/browser/print_manager_utils.h"
 #include "components/printing/common/print_messages.h"
+#include "components/printing/service/public/cpp/pdf_service_mojo_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -267,9 +268,8 @@ void PrintPreviewMessageHandler::OnCompositePdfPageDone(
     DLOG(ERROR) << "Compositing pdf failed with error " << status;
     return;
   }
-  NotifyUIPreviewPageReady(
-      page_number, request_id,
-      PrintCompositeClient::GetDataFromMojoHandle(std::move(handle)));
+  NotifyUIPreviewPageReady(page_number, request_id,
+                           GetDataFromMojoHandle(std::move(handle)));
 }
 
 void PrintPreviewMessageHandler::OnCompositePdfDocumentDone(
@@ -282,9 +282,8 @@ void PrintPreviewMessageHandler::OnCompositePdfDocumentDone(
     DLOG(ERROR) << "Compositing pdf failed with error " << status;
     return;
   }
-  NotifyUIPreviewDocumentReady(
-      page_count, request_id,
-      PrintCompositeClient::GetDataFromMojoHandle(std::move(handle)));
+  NotifyUIPreviewDocumentReady(page_count, request_id,
+                               GetDataFromMojoHandle(std::move(handle)));
 }
 
 bool PrintPreviewMessageHandler::OnMessageReceived(

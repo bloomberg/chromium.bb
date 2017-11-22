@@ -27,6 +27,7 @@ static_library("service") {
   ]
 
   public_deps = [
+    "//components/printing/service/public/cpp:utils",
     "//components/printing/service/public/interfaces",
     "//services/service_manager/public/cpp",
   ]

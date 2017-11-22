@@ -161,19 +161,11 @@ class PdfCompositorServiceTest : public service_manager::test::ServiceTest {
 
 // Test callback is called on error conditions in service.
 TEST_F(PdfCompositorServiceTest, InvokeCallbackOnContentError) {
-  auto handle = LoadFileInSharedMemory();
-  ASSERT_TRUE(handle.IsValid());
-  mojo::ScopedSharedBufferHandle buffer_handle =
-      mojo::WrapSharedMemoryHandle(handle, 10, true);
-  // The size of mapped area is not equal to the original buffer,
-  // so the content is invalid.
-  ASSERT_LT(10u, handle.GetSize());
-  ASSERT_TRUE(buffer_handle->is_valid());
   EXPECT_CALL(*this, CallbackOnError(
                          mojom::PdfCompositor::Status::CONTENT_FORMAT_ERROR))
       .Times(1);
   compositor_->CompositePdf(
-      std::move(buffer_handle),
+      mojo::SharedBufferHandle::Create(10),
       base::BindOnce(&PdfCompositorServiceTest::OnCallback,
                      base::Unretained(this)));
   run_loop_->Run();

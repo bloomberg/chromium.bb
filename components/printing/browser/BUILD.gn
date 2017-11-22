@@ -20,7 +20,6 @@ static_library("browser") {
     "//base",
     "//components/printing/common",
     "//components/printing/service/public/cpp:client",
-    "//mojo/public/cpp/system:system",
     "//printing",
     "//services/service_manager/public/cpp",
   ]
