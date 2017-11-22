@@ -319,6 +319,9 @@ typedef struct MB_MODE_INFO {
   int wedge_sign;
   SEG_MASK_TYPE mask_type;
   MOTION_MODE motion_mode;
+#if CONFIG_EXT_WARPED_MOTION
+  int wm_ctx;
+#endif  // CONFIG_EXT_WARPED_MOTION
   int overlappable_neighbors[2];
   int_mv mv[2];
   int_mv pred_mv[2];

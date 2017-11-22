@@ -275,7 +275,11 @@ struct macroblock {
   int interintra_cost[BLOCK_SIZE_GROUPS][2];
   int wedge_interintra_cost[BLOCK_SIZES_ALL][2];
   int interintra_mode_cost[BLOCK_SIZE_GROUPS][INTERINTRA_MODES];
+#if CONFIG_EXT_WARPED_MOTION
+  int motion_mode_cost[MOTION_MODE_CTX][BLOCK_SIZES_ALL][MOTION_MODES];
+#else
   int motion_mode_cost[BLOCK_SIZES_ALL][MOTION_MODES];
+#endif  // CONFIG_EXT_WARPED_MOTION
   int motion_mode_cost1[BLOCK_SIZES_ALL][2];
   int intra_uv_mode_cost[INTRA_MODES][UV_INTRA_MODES];
   int y_mode_costs[INTRA_MODES][INTRA_MODES][INTRA_MODES];

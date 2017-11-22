@@ -325,9 +325,22 @@ static void write_motion_mode(const AV1_COMMON *cm, MACROBLOCKD *xd,
                        xd->tile_ctx->obmc_cdf[mbmi->sb_type], 2);
       break;
     default:
+#if CONFIG_EXT_WARPED_MOTION
+    {
+      int wm_ctx = 0;
+      if (mbmi->wm_ctx != -1) {
+        wm_ctx = 1;
+        if (mbmi->mode == NEARESTMV) wm_ctx = 2;
+      }
+      aom_write_symbol(w, mbmi->motion_mode,
+                       xd->tile_ctx->motion_mode_cdf[wm_ctx][mbmi->sb_type],
+                       MOTION_MODES);
+    }
+#else
       aom_write_symbol(w, mbmi->motion_mode,
                        xd->tile_ctx->motion_mode_cdf[mbmi->sb_type],
                        MOTION_MODES);
+#endif  // CONFIG_EXT_WARPED_MOTION
   }
 }
 

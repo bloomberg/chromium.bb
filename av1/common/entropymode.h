@@ -206,8 +206,14 @@ typedef struct frame_contexts {
   aom_cdf_prob wedge_interintra_cdf[BLOCK_SIZES_ALL][CDF_SIZE(2)];
   aom_cdf_prob interintra_mode_cdf[BLOCK_SIZE_GROUPS]
                                   [CDF_SIZE(INTERINTRA_MODES)];
+#if CONFIG_EXT_WARPED_MOTION
+  aom_prob motion_mode_prob[MOTION_MODE_CTX][BLOCK_SIZES_ALL][MOTION_MODES - 1];
+  aom_cdf_prob motion_mode_cdf[MOTION_MODE_CTX][BLOCK_SIZES_ALL]
+                              [CDF_SIZE(MOTION_MODES)];
+#else
   aom_prob motion_mode_prob[BLOCK_SIZES_ALL][MOTION_MODES - 1];
   aom_cdf_prob motion_mode_cdf[BLOCK_SIZES_ALL][CDF_SIZE(MOTION_MODES)];
+#endif  // CONFIG_EXT_WARPED_MOTION
   aom_cdf_prob obmc_cdf[BLOCK_SIZES_ALL][CDF_SIZE(2)];
   aom_prob comp_inter_prob[COMP_INTER_CONTEXTS];
   aom_cdf_prob palette_y_size_cdf[PALETTE_BLOCK_SIZES][CDF_SIZE(PALETTE_SIZES)];
@@ -366,7 +372,12 @@ typedef struct FRAME_COUNTS {
   unsigned int interintra_mode[BLOCK_SIZE_GROUPS][INTERINTRA_MODES];
   unsigned int wedge_interintra[BLOCK_SIZES_ALL][2];
   unsigned int compound_interinter[BLOCK_SIZES_ALL][COMPOUND_TYPES];
+#if CONFIG_EXT_WARPED_MOTION
+  unsigned int motion_mode[MOTION_MODE_CTX][BLOCK_SIZES_ALL][MOTION_MODES];
+#else
   unsigned int motion_mode[BLOCK_SIZES_ALL][MOTION_MODES];
+#endif  // CONFIG_EXT_WARPED_MOTION
+
   unsigned int obmc[BLOCK_SIZES_ALL][2];
   unsigned int intra_inter[INTRA_INTER_CONTEXTS][2];
   unsigned int comp_inter[COMP_INTER_CONTEXTS][2];

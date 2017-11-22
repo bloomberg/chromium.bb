@@ -1233,10 +1233,23 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
             motion_mode_allowed(0, xd->global_motion, xd, mi);
         if (mbmi->ref_frame[1] != INTRA_FRAME) {
           if (motion_allowed == WARPED_CAUSAL) {
+#if CONFIG_EXT_WARPED_MOTION
+            int wm_ctx = 0;
+            if (mbmi->wm_ctx != -1) {
+              wm_ctx = 1;
+              if (mbmi->mode == NEARESTMV) wm_ctx = 2;
+            }
+
+            counts->motion_mode[wm_ctx][mbmi->sb_type][mbmi->motion_mode]++;
+            if (allow_update_cdf)
+              update_cdf(fc->motion_mode_cdf[wm_ctx][mbmi->sb_type],
+                         mbmi->motion_mode, MOTION_MODES);
+#else
             counts->motion_mode[mbmi->sb_type][mbmi->motion_mode]++;
             if (allow_update_cdf)
               update_cdf(fc->motion_mode_cdf[mbmi->sb_type], mbmi->motion_mode,
                          MOTION_MODES);
+#endif  // CONFIG_EXT_WARPED_MOTION
           } else if (motion_allowed == OBMC_CAUSAL) {
             counts->obmc[mbmi->sb_type][mbmi->motion_mode == OBMC_CAUSAL]++;
             if (allow_update_cdf)
