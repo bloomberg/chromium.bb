@@ -135,7 +135,6 @@ class CacheStorageDispatcher;
 class CategorizedWorkerPool;
 class ChildResourceMessageFilter;
 class CompositorForwardingMessageFilter;
-class DevToolsAgentFilter;
 class DomStorageDispatcher;
 class FileSystemDispatcher;
 class FrameSwapMessageQueue;
@@ -524,9 +523,6 @@ class CONTENT_EXPORT RenderThreadImpl
   void WidgetHidden();
   void WidgetRestored();
 
-  void AddEmbeddedWorkerRoute(int32_t routing_id, IPC::Listener* listener);
-  void RemoveEmbeddedWorkerRoute(int32_t routing_id);
-
   void RegisterPendingFrameCreate(
       const service_manager::BindSourceInfo& source_info,
       int routing_id,
@@ -666,7 +662,6 @@ class CONTENT_EXPORT RenderThreadImpl
   scoped_refptr<BlobMessageFilter> blob_message_filter_;
   scoped_refptr<AudioInputMessageFilter> audio_input_message_filter_;
   scoped_refptr<MidiMessageFilter> midi_message_filter_;
-  scoped_refptr<DevToolsAgentFilter> devtools_agent_message_filter_;
   scoped_refptr<ServiceWorkerMessageFilter> service_worker_message_filter_;
   scoped_refptr<ChildResourceMessageFilter> resource_message_filter_;
   scoped_refptr<QuotaMessageFilter> quota_message_filter_;

@@ -15,6 +15,7 @@
 #include "build/build_config.h"
 #include "content/browser/devtools/devtools_agent_host_impl.h"
 #include "content/common/content_export.h"
+#include "content/common/devtools.mojom.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "net/base/net_errors.h"
 
@@ -113,8 +114,6 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   void FrameDeleted(RenderFrameHost* rfh) override;
   void RenderFrameDeleted(RenderFrameHost* rfh) override;
   void RenderProcessGone(base::TerminationStatus status) override;
-  bool OnMessageReceived(const IPC::Message& message,
-                         RenderFrameHost* render_frame_host) override;
   void DidAttachInterstitialPage() override;
   void DidDetachInterstitialPage() override;
   void WasShown() override;
@@ -136,12 +135,6 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
 
   void RenderFrameCrashed();
   void OnSwapCompositorFrame(const IPC::Message& message);
-  void OnDispatchOnInspectorFrontend(
-      RenderFrameHost* sender,
-      const DevToolsMessageChunk& message);
-  void OnRequestNewWindow(RenderFrameHost* sender,
-                          int session_id,
-                          int new_routing_id);
   void DestroyOnRenderFrameGone();
 
   bool CheckConsistency();
@@ -156,6 +149,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
 
   void SynchronousSwapCompositorFrame(
       viz::CompositorFrameMetadata frame_metadata);
+  bool EnsureAgent();
 
   class FrameHostHolder;
 
@@ -176,6 +170,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
 
   // The active host we are talking to.
   RenderFrameHostImpl* frame_host_ = nullptr;
+  mojom::DevToolsAgentAssociatedPtr agent_ptr_;
   base::flat_set<NavigationHandleImpl*> navigation_handles_;
   bool render_frame_alive_ = false;
 

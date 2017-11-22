@@ -93,7 +93,6 @@
 #include "content/renderer/cache_storage/cache_storage_dispatcher.h"
 #include "content/renderer/cache_storage/cache_storage_message_filter.h"
 #include "content/renderer/categorized_worker_pool.h"
-#include "content/renderer/devtools/devtools_agent_filter.h"
 #include "content/renderer/dom_storage/dom_storage_dispatcher.h"
 #include "content/renderer/dom_storage/webstoragearea_impl.h"
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
@@ -1133,23 +1132,6 @@ void RenderThreadImpl::RemoveRoute(int32_t routing_id) {
   ChildThreadImpl::GetRouter()->RemoveRoute(routing_id);
 }
 
-void RenderThreadImpl::AddEmbeddedWorkerRoute(int32_t routing_id,
-                                              IPC::Listener* listener) {
-  AddRoute(routing_id, listener);
-  if (devtools_agent_message_filter_.get()) {
-    devtools_agent_message_filter_->AddEmbeddedWorkerRouteOnMainThread(
-        routing_id);
-  }
-}
-
-void RenderThreadImpl::RemoveEmbeddedWorkerRoute(int32_t routing_id) {
-  RemoveRoute(routing_id);
-  if (devtools_agent_message_filter_.get()) {
-    devtools_agent_message_filter_->RemoveEmbeddedWorkerRouteOnMainThread(
-        routing_id);
-  }
-}
-
 void RenderThreadImpl::RegisterPendingFrameCreate(
     const service_manager::BindSourceInfo& browser_info,
     int routing_id,
@@ -1329,9 +1311,6 @@ void RenderThreadImpl::InitializeWebKit(
   RenderThreadImpl::RegisterSchemes();
 
   RenderMediaClient::Initialize();
-
-  devtools_agent_message_filter_ = new DevToolsAgentFilter();
-  AddFilter(devtools_agent_message_filter_.get());
 
   if (GetContentClient()->renderer()->RunIdleHandlerWhenWidgetsHidden()) {
     ScheduleIdleHandler(kLongIdleHandlerDelayMs);

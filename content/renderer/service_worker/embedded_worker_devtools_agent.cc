@@ -23,11 +23,11 @@ EmbeddedWorkerDevToolsAgent::EmbeddedWorkerDevToolsAgent(
     blink::WebEmbeddedWorker* webworker,
     int route_id)
     : webworker_(webworker), route_id_(route_id) {
-  RenderThreadImpl::current()->AddEmbeddedWorkerRoute(route_id_, this);
+  RenderThreadImpl::current()->AddRoute(route_id_, this);
 }
 
 EmbeddedWorkerDevToolsAgent::~EmbeddedWorkerDevToolsAgent() {
-  RenderThreadImpl::current()->RemoveEmbeddedWorkerRoute(route_id_);
+  RenderThreadImpl::current()->RemoveRoute(route_id_);
 }
 
 void EmbeddedWorkerDevToolsAgent::SendMessage(IPC::Sender* sender,

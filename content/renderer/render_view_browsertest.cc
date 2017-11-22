@@ -70,6 +70,7 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerNetworkProvider.h"
+#include "third_party/WebKit/public/web/WebDevToolsAgent.h"
 #include "third_party/WebKit/public/web/WebDeviceEmulationParams.h"
 #include "third_party/WebKit/public/web/WebDocumentLoader.h"
 #include "third_party/WebKit/public/web/WebFrameContentDumper.h"
@@ -419,14 +420,14 @@ class DevToolsAgentTest : public RenderViewImplTest {
   void Attach() {
     notifications_ = std::vector<std::string>();
     expecting_pause_ = false;
-    agent()->OnAttach(17);
+    agent()->GetWebAgent()->Attach(17);
     agent()->send_protocol_message_callback_for_test_ = base::Bind(
        &DevToolsAgentTest::OnDevToolsMessage, base::Unretained(this));
   }
 
   void Detach() {
     agent()->send_protocol_message_callback_for_test_.Reset();
-    agent()->DetachAllSessions();
+    agent()->GetWebAgent()->Detach(17);
   }
 
   bool IsPaused() {
@@ -435,7 +436,7 @@ class DevToolsAgentTest : public RenderViewImplTest {
 
   void DispatchDevToolsMessage(const std::string& method,
                                const std::string& message) {
-    agent()->OnDispatchOnInspectorBackend(17, 1, method, message);
+    agent()->DispatchOnInspectorBackend(17, 1, method, message);
   }
 
   void CloseWhilePaused() {
@@ -443,8 +444,10 @@ class DevToolsAgentTest : public RenderViewImplTest {
     view()->NotifyOnClose();
   }
 
-  void OnDevToolsMessage(
-      int, int, const std::string& message, const std::string&) {
+  void OnDevToolsMessage(int,
+                         int,
+                         const std::string& message,
+                         const std::string&) {
     last_message_ = base::WrapUnique(static_cast<base::DictionaryValue*>(
         base::JSONReader::Read(message).release()));
     int id;

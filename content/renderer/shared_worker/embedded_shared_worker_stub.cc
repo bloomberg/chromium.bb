@@ -142,7 +142,7 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
       route_id_(route_id),
       name_(info->name),
       url_(info->url) {
-  RenderThreadImpl::current()->AddEmbeddedWorkerRoute(route_id_, this);
+  RenderThreadImpl::current()->AddRoute(route_id_, this);
   impl_ = blink::WebSharedWorker::Create(this);
   if (pause_on_start) {
     // Pause worker context when it starts and wait until either DevTools client
@@ -165,7 +165,7 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
 }
 
 EmbeddedSharedWorkerStub::~EmbeddedSharedWorkerStub() {
-  RenderThreadImpl::current()->RemoveEmbeddedWorkerRoute(route_id_);
+  RenderThreadImpl::current()->RemoveRoute(route_id_);
   DCHECK(!impl_);
 }
 
