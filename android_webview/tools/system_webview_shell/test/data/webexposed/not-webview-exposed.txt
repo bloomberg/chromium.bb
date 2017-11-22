@@ -34,6 +34,8 @@ interface PresentationAvailability : EventTarget
 interface PresentationConnection : EventTarget
 interface PresentationConnectionAvailableEvent : Event
 interface PresentationConnectionCloseEvent : Event
+interface PresentationConnectionList : EventTarget
+interface PresentationReceiver
 interface PresentationRequest : EventTarget
 
 # remoteplayback api not supported in webview crbug.com/521319
