@@ -40,8 +40,7 @@ void ExitWarningTexture::Draw(SkCanvas* sk_canvas,
   SkPaint paint;
 
   paint.setColor(background_color());
-  auto text =
-      l10n_util::GetStringUTF16(IDS_PAGE_INFO_VR_BROWSER_UNSUPPORTED_MODE);
+  auto text = l10n_util::GetStringUTF16(IDS_VR_BROWSER_UNSUPPORTED_PAGE);
   gfx::FontList fonts;
   GetFontList(size_.width() * kFontSizeFactor, text, &fonts);
   gfx::Rect text_size(size_.width() * kTextWidthFactor, 0);
