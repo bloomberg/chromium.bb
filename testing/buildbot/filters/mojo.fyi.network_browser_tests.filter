@@ -69,6 +69,7 @@
 # DnsProbeBrowserTests that are flaky.
 -DnsProbeBrowserTest.CorrectionsLoadStopped
 -DnsProbeBrowserTest.CorrectionsLoadStoppedSlowProbe
+-DnsProbeBrowserTest.NoInternetProbeResultWithSlowBrokenCorrections
 -DomainReliabilityBrowserTest.Upload
 -DoNotTrackTest.Redirect
 -DoNotTrackTest.Simple
