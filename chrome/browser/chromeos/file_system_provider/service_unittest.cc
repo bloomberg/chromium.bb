@@ -116,6 +116,10 @@ class FileSystemProviderServiceTest : public testing::Test {
     called_custom_factory_ = false;
   }
 
+  void TearDown() override {
+    service_->Shutdown();
+  }
+
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
   TestingProfile* profile_;
