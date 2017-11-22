@@ -24,6 +24,8 @@ config("config") {
 # and CrNetChromeWebView frameworks.
 ios_web_view_public_headers = [
   "public/ChromeWebView.h",
+  "public/cwv_autofill_controller.h",
+  "public/cwv_autofill_controller_delegate.h",
   "public/cwv_autofill_suggestion.h",
   "public/cwv_export.h",
   "public/cwv_html_element.h",
@@ -59,6 +61,8 @@ ios_web_view_sources = [
   "internal/app/application_context.h",
   "internal/app/web_view_io_thread.h",
   "internal/app/web_view_io_thread.mm",
+  "internal/autofill/cwv_autofill_controller.mm",
+  "internal/autofill/cwv_autofill_controller_internal.h",
   "internal/autofill/cwv_autofill_suggestion.mm",
   "internal/autofill/cwv_autofill_suggestion_internal.h",
   "internal/autofill/web_view_personal_data_manager_factory.cc",
@@ -235,6 +239,7 @@ ios_framework_bundle("web_view") {
 test("ios_web_view_unittests") {
   testonly = true
   sources = [
+    "internal/autofill/cwv_autofill_controller_unittest.mm",
     "internal/autofill/cwv_autofill_suggestion_unittest.mm",
     "internal/cwv_html_element_unittest.mm",
     "internal/cwv_preferences_unittest.mm",
@@ -245,8 +250,12 @@ test("ios_web_view_unittests") {
   deps = [
     "test:test_support",
     "//base/test:run_all_unittests",
+    "//components/autofill/ios/browser:test_support",
     "//ios/testing:ios_test_support",
+    "//ios/web/public/test",
+    "//ios/web/public/test/fakes",
     "//testing/gtest",
+    "//third_party/ocmock",
   ]
   deps += ios_web_view_deps
 
