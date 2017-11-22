@@ -21,9 +21,8 @@ bool IsAltPressed() {
   return (::GetKeyState(VK_MENU) & 0x8000) == 0x8000;
 }
 
-bool IsAltGrPressed() {
-  return (::GetKeyState(VK_MENU) & 0x8000) == 0x8000 &&
-      (::GetKeyState(VK_CONTROL) & 0x8000) == 0x8000;
+bool IsAltRightPressed() {
+  return (::GetKeyState(VK_RMENU) & 0x8000) == 0x8000;
 }
 
 bool IsWindowsKeyPressed() {

@@ -1174,10 +1174,13 @@ KeyEvent::KeyEvent(const base::NativeEvent& native_event, int event_flags)
 #endif
 #if defined(OS_WIN)
   // Only Windows has native character events.
-  if (is_char_)
+  if (is_char_) {
     key_ = DomKey::FromCharacter(native_event.wParam);
-  else
-    key_ = PlatformKeyMap::DomKeyFromKeyboardCode(key_code(), flags());
+  } else {
+    int adjusted_flags = flags();
+    key_ = PlatformKeyMap::DomKeyFromKeyboardCode(key_code(), &adjusted_flags);
+    set_flags(adjusted_flags);
+  }
 #endif
 }
 

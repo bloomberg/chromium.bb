@@ -27,7 +27,15 @@ class EVENTS_EXPORT PlatformKeyMap {
   // Returns the DOM KeyboardEvent key from |KeyboardCode|+|EventFlags| and
   // the keyboard layout of current thread.
   // Updates a per-thread key map cache whenever the layout changes.
-  static DomKey DomKeyFromKeyboardCode(KeyboardCode, int flags);
+  // If |flags| includes both Control and Alt modifiers, they will be replaced
+  // by AltGraph if the key generates a printable character with them.
+  static DomKey DomKeyFromKeyboardCode(KeyboardCode key_code, int* flags);
+
+  // Returns true if the currently-active keymap uses AltGraph shift.
+  static bool UsesAltGraph();
+
+  // TODO(crbug.com/25503): Returns true if we disambiguate AltGraph.
+  static bool IsFixAltGraphEnabled();
 
  private:
   friend class PlatformKeyMapTest;
@@ -37,7 +45,7 @@ class EVENTS_EXPORT PlatformKeyMap {
   // TODO(chongz): Expose this function when we need to access separate layout.
   // Returns the DomKey 'meaning' of |KeyboardCode| in the context of specified
   // |EventFlags| and stored keyboard layout.
-  DomKey DomKeyFromKeyboardCodeImpl(KeyboardCode, int flags) const;
+  DomKey DomKeyFromKeyboardCodeImpl(KeyboardCode, int* flags) const;
 
   // TODO(chongz): Expose this function in response to WM_INPUTLANGCHANGE.
   void UpdateLayout(HKL layout);

@@ -10,19 +10,18 @@
 namespace ui {
 namespace win {
 
-// Returns true if the shift key is currently pressed.
+// Returns true if the Shift key is currently pressed.
 EVENTS_EXPORT bool IsShiftPressed();
 
-// Returns true if the ctrl key is currently pressed.
+// Returns true if either Control key is pressed (including due to AltGraph).
 EVENTS_EXPORT bool IsCtrlPressed();
 
-// Returns true if the alt key is currently pressed.
+// Returns true if either Alt key is currently pressed.
 EVENTS_EXPORT bool IsAltPressed();
 
-// Returns true if the altgr key is currently pressed.
-// Windows does not have specific key code and modifier bit and Alt+Ctrl key is
-// used as AltGr key in Windows.
-EVENTS_EXPORT bool IsAltGrPressed();
+// Returns true if the AltRight (i.e. either Alt or AltGraph) key is pressed.
+// This is used in events_win.cc to detect the physical AltGraph key.
+EVENTS_EXPORT bool IsAltRightPressed();
 
 // Returns true if the Windows key is currently pressed.
 EVENTS_EXPORT bool IsWindowsKeyPressed();
