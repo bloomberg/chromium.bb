@@ -146,6 +146,14 @@ class AURA_EXPORT WindowObserver {
   // Called when the window title has changed.
   virtual void OnWindowTitleChanged(Window* window) {}
 
+  // Called when the window's layer is recreated. The new layer may not carry
+  // animations from the old layer and animation observers attached to the old
+  // layer won't automatically be attached to the new layer. Clients that need
+  // to know when window animations end should implement this method and call
+  // window->layer()->GetAnimator()->
+  // (is_animating|IsAnimatingProperty|IsAnimatingOnePropertyOf)() from it.
+  virtual void OnWindowLayerRecreated(Window* window) {}
+
   // Called when the app embedded in |window| disconnects (is no longer
   // embedded).
   virtual void OnEmbeddedAppDisconnected(Window* window);

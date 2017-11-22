@@ -37,6 +37,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
+#include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/compositor/test/layer_animator_test_controller.h"
@@ -1777,14 +1778,13 @@ class WindowObserverTest : public WindowTest,
         ui::PropertyChangeReason::NOT_FROM_ANIMATION;
   };
 
-  WindowObserverTest()
-      : added_count_(0),
-        removed_count_(0),
-        destroyed_count_(0),
-        old_property_value_(-3) {
-  }
+  struct LayerRecreatedInfo {
+    int count = 0;
+    Window* window = nullptr;
+  };
 
-  ~WindowObserverTest() override {}
+  WindowObserverTest() = default;
+  ~WindowObserverTest() override = default;
 
   const VisibilityInfo* GetVisibilityInfo() const {
     return visibility_info_.get();
@@ -1805,6 +1805,10 @@ class WindowObserverTest : public WindowTest,
 
   const WindowTransformedInfo& window_transformed_info() const {
     return window_transformed_info_;
+  }
+
+  const LayerRecreatedInfo& layer_recreated_info() const {
+    return layer_recreated_info_;
   }
 
   void ResetVisibilityInfo() {
@@ -1894,17 +1898,23 @@ class WindowObserverTest : public WindowTest,
     window_transformed_info_.reason = reason;
   }
 
-  int added_count_;
-  int removed_count_;
-  int destroyed_count_;
+  void OnWindowLayerRecreated(Window* window) override {
+    ++layer_recreated_info_.count;
+    layer_recreated_info_.window = window;
+  }
+
+  int added_count_ = 0;
+  int removed_count_ = 0;
+  int destroyed_count_ = 0;
   std::unique_ptr<VisibilityInfo> visibility_info_;
-  const void* property_key_;
-  intptr_t old_property_value_;
+  const void* property_key_ = nullptr;
+  intptr_t old_property_value_ = -3;
   std::vector<std::pair<int, int> > transform_notifications_;
   WindowBoundsInfo window_bounds_info_;
   WindowOpacityInfo window_opacity_info_;
   WindowTargetTransformChangingInfo window_target_transform_changing_info_;
   WindowTransformedInfo window_transformed_info_;
+  LayerRecreatedInfo layer_recreated_info_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowObserverTest);
 };
@@ -2170,6 +2180,64 @@ TEST_P(WindowObserverTest, SetTransformAnimation) {
   EXPECT_EQ(1, window_target_transform_changing_info().changed_count);
 
   ASSERT_EQ(2, window_transformed_info().changed_count);
+  EXPECT_EQ(window.get(), window_transformed_info().window);
+  EXPECT_EQ(ui::PropertyChangeReason::FROM_ANIMATION,
+            window_transformed_info().reason);
+}
+
+TEST_P(WindowObserverTest, OnWindowLayerRecreated) {
+  std::unique_ptr<Window> window(CreateTestWindowWithId(1, root_window()));
+  window->AddObserver(this);
+
+  EXPECT_EQ(0, layer_recreated_info().count);
+  std::unique_ptr<ui::Layer> old_layer = window->RecreateLayer();
+  EXPECT_EQ(1, layer_recreated_info().count);
+  EXPECT_EQ(window.get(), layer_recreated_info().window);
+}
+
+TEST_P(WindowObserverTest, OnWindowLayerRecreatedWithOpacityAnimation) {
+  std::unique_ptr<Window> window(CreateTestWindowWithId(1, root_window()));
+
+  ui::ScopedAnimationDurationScaleMode scoped_animation_duration_scale_mode(
+      ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+  ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
+  window->layer()->SetOpacity(0.5);
+  EXPECT_TRUE(window->layer()->GetAnimator()->IsAnimatingProperty(
+      ui::LayerAnimationElement::OPACITY));
+
+  window->AddObserver(this);
+
+  EXPECT_EQ(0, layer_recreated_info().count);
+  EXPECT_EQ(0, window_opacity_info().changed_count);
+  std::unique_ptr<ui::Layer> old_layer = window->RecreateLayer();
+  EXPECT_EQ(1, layer_recreated_info().count);
+  EXPECT_EQ(window.get(), layer_recreated_info().window);
+  EXPECT_EQ(1, window_opacity_info().changed_count);
+  EXPECT_EQ(window.get(), window_opacity_info().window);
+  EXPECT_EQ(ui::PropertyChangeReason::FROM_ANIMATION,
+            window_opacity_info().reason);
+}
+
+TEST_P(WindowObserverTest, OnWindowLayerRecreatedWithTransformAnimation) {
+  std::unique_ptr<Window> window(CreateTestWindowWithId(1, root_window()));
+
+  ui::ScopedAnimationDurationScaleMode scoped_animation_duration_scale_mode(
+      ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+  ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
+  gfx::Transform target_transform;
+  target_transform.Skew(10.0, 5.0);
+  window->SetTransform(target_transform);
+  EXPECT_TRUE(window->layer()->GetAnimator()->IsAnimatingProperty(
+      ui::LayerAnimationElement::TRANSFORM));
+
+  window->AddObserver(this);
+
+  EXPECT_EQ(0, layer_recreated_info().count);
+  EXPECT_EQ(0, window_transformed_info().changed_count);
+  std::unique_ptr<ui::Layer> old_layer = window->RecreateLayer();
+  EXPECT_EQ(1, layer_recreated_info().count);
+  EXPECT_EQ(window.get(), layer_recreated_info().window);
+  EXPECT_EQ(1, window_transformed_info().changed_count);
   EXPECT_EQ(window.get(), window_transformed_info().window);
   EXPECT_EQ(ui::PropertyChangeReason::FROM_ANIMATION,
             window_transformed_info().reason);
