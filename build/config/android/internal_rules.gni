@@ -330,6 +330,19 @@ template("write_build_config") {
           rebase_path(invoker.bundled_srcjars, root_build_dir)
       args += [ "--bundled-srcjars=$_rebased_bundled_srcjars" ]
     }
+    if (defined(invoker.classpath_deps)) {
+      _classpath_deps_configs = []
+      foreach(d, invoker.classpath_deps) {
+        _target_label = get_label_info(d, "label_no_toolchain")
+        deps += [ "${_target_label}__build_config" ]
+        _dep_gen_dir = get_label_info(d, "target_gen_dir")
+        _dep_name = get_label_info(d, "name")
+        _classpath_deps_configs += [ "$_dep_gen_dir/$_dep_name.build_config" ]
+      }
+      _rebased_classpath_deps_configs =
+          rebase_path(_classpath_deps_configs, root_build_dir)
+      args += [ "--classpath-deps-configs=$_rebased_classpath_deps_configs" ]
+    }
     if (defined(invoker.input_jars_paths)) {
       _rebased_input_jars_paths =
           rebase_path(invoker.input_jars_paths, root_build_dir)
@@ -2690,6 +2703,7 @@ if (enable_java_templates) {
         forward_variables_from(invoker,
                                [
                                  "alternative_android_sdk_ijar",
+                                 "classpath_deps",
                                  "gradle_treat_as_prebuilt",
                                  "input_jars_paths",
                                  "main_class",
@@ -2725,6 +2739,9 @@ if (enable_java_templates) {
         }
       }
       _accumulated_deps += [ ":$build_config_target_name" ]
+    }
+    if (defined(invoker.classpath_deps)) {
+      _accumulated_deps += invoker.classpath_deps
     }
 
     _srcjar_deps = []
