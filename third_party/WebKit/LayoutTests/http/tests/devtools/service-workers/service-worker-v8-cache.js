@@ -9,6 +9,12 @@
   await TestRunner.showPanel('resources');
   await TestRunner.showPanel('timeline');
   await TestRunner.evaluateInPagePromise(`
+      function registerServiceWorkerAndwaitForActivated() {
+        const script = 'resources/v8-cache-worker.js';
+        const scope = 'resources/v8-cache-iframe.html';
+        return registerServiceWorker(script, scope)
+          .then(() => waitForActivated(scope));
+      }
       function loadScript() {
         const url = 'v8-cache-script.js';
         const frameId = 'frame_id';
@@ -16,32 +22,15 @@
         return iframeWindow.loadScript(url)
           .then(() => iframeWindow.loadScript(url));
       }
-      function continueInstall() {
-        const scope = 'resources/v8-cache-iframe.html';
-        let reg = registrations[scope];
-        if (!reg)
-          return Promise.reject(new Error('No registration'));
-        if (!reg.installing)
-          return Promise.reject(new Error('No installing service worker'));
-        return new Promise(resolve => {
-          var channel = new MessageChannel();
-          channel.port1.onmessage = () => { resolve(); };
-          reg.installing.postMessage({port: channel.port2}, [channel.port2]);
-        });
-      }
   `);
 
-  const scriptURL = 'resources/v8-cache-worker.js';
   const scope = 'resources/v8-cache-iframe.html';
   const frameId = 'frame_id';
 
-  await ApplicationTestRunner.registerServiceWorker(scriptURL, scope)
-  // Need to suspend targets, because V8 doesn't produce the cache when the
-  // debugger is loaded.
-  await SDK.targetManager.suspendAllTargets();
   await new Promise(
         (r) =>
-        PerformanceTestRunner.invokeAsyncWithTimeline('continueInstall', r));
+        PerformanceTestRunner.invokeAsyncWithTimeline(
+            'registerServiceWorkerAndwaitForActivated', r));
   TestRunner.addResult('--- Trace events while installing -------------');
   PerformanceTestRunner.printTimelineRecordsWithDetails(
       TimelineModel.TimelineModel.RecordType.CompileScript);
