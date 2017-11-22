@@ -777,7 +777,7 @@ cr.define('device_page_tests', function() {
             expectEquals(90, displayPage.displays[1].rotation);
 
             // Mirror the displays.
-            displayPage.onMirroredTap_();
+            displayPage.onMirroredTap_({target: {blur: function(){}}});
             fakeSystemDisplay.onDisplayChanged.callListeners();
 
             return Promise.all([
