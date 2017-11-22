@@ -5,8 +5,6 @@
 #include "ui/views/widget/desktop_aura/x11_whole_screen_move_loop.h"
 
 #include <stddef.h>
-#include <X11/keysym.h>
-#include <X11/Xlib.h>
 #include <utility>
 
 #include "base/bind.h"
@@ -30,6 +28,7 @@
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/events/platform/scoped_event_dispatcher.h"
 #include "ui/events/platform/x11/x11_event_source.h"
+#include "ui/gfx/x/x11.h"
 
 namespace views {
 
@@ -50,7 +49,7 @@ X11WholeScreenMoveLoop::X11WholeScreenMoveLoop(X11MoveLoopDelegate* delegate)
       in_move_loop_(false),
       initial_cursor_(ui::CursorType::kNull),
       should_reset_mouse_flags_(false),
-      grab_input_window_(None),
+      grab_input_window_(x11::None),
       grabbed_pointer_(false),
       canceled_(false),
       weak_factory_(this) {}
@@ -232,7 +231,7 @@ void X11WholeScreenMoveLoop::EndMoveLoop() {
   delegate_->OnMoveLoopEnded();
   grab_input_window_events_.reset();
   XDestroyWindow(display, grab_input_window_);
-  grab_input_window_ = None;
+  grab_input_window_ = x11::None;
 
   in_move_loop_ = false;
   quit_closure_.Run();
@@ -257,7 +256,7 @@ void X11WholeScreenMoveLoop::GrabEscKey() {
   unsigned int esc_keycode = XKeysymToKeycode(display, XK_Escape);
   for (size_t i = 0; i < arraysize(kModifiersMasks); ++i) {
     XGrabKey(display, esc_keycode, kModifiersMasks[i], grab_input_window_,
-             False, GrabModeAsync, GrabModeAsync);
+             x11::False, GrabModeAsync, GrabModeAsync);
   }
 }
 
@@ -265,7 +264,7 @@ void X11WholeScreenMoveLoop::CreateDragInputWindow(XDisplay* display) {
   unsigned long attribute_mask = CWEventMask | CWOverrideRedirect;
   XSetWindowAttributes swa;
   memset(&swa, 0, sizeof(swa));
-  swa.override_redirect = True;
+  swa.override_redirect = x11::True;
   grab_input_window_ = XCreateWindow(display, DefaultRootWindow(display), -100,
                                      -100, 10, 10, 0, CopyFromParent, InputOnly,
                                      CopyFromParent, attribute_mask, &swa);

@@ -84,7 +84,7 @@ class VIEWS_EXPORT DesktopScreenX11 : public display::Screen,
   // factor.
   void SetDisplaysInternal(const std::vector<display::Display>& displays);
 
-  Display* xdisplay_;
+  ::Display* xdisplay_;
   ::Window x_root_window_;
 
   // Whether the x server supports the XRandR extension.

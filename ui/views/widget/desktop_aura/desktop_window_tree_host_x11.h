@@ -7,9 +7,6 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <X11/extensions/shape.h>
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
 
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
@@ -22,6 +19,7 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/x/x11.h"
 #include "ui/views/views_export.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host.h"
 

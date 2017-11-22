@@ -55,7 +55,6 @@
 #include "ui/views/controls/menu/menu_pre_target_handler.h"
 #endif
 
-using base::Time;
 using base::TimeDelta;
 using ui::OSExchangeData;
 

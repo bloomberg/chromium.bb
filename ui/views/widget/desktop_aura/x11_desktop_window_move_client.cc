@@ -4,8 +4,6 @@
 
 #include "ui/views/widget/desktop_aura/x11_desktop_window_move_client.h"
 
-#include <X11/Xlib.h>
-
 #include "base/debug/stack_trace.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -14,6 +12,7 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/events/event.h"
+#include "ui/gfx/x/x11.h"
 
 namespace views {
 

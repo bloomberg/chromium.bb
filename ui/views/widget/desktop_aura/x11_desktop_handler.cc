@@ -4,9 +4,6 @@
 
 #include "ui/views/widget/desktop_aura/x11_desktop_handler.h"
 
-#include <X11/Xatom.h>
-#include <X11/Xlib.h>
-
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "ui/aura/env.h"
@@ -14,6 +11,7 @@
 #include "ui/base/x/x11_menu_list.h"
 #include "ui/base/x/x11_window_event_manager.h"
 #include "ui/events/platform/platform_event_source.h"
+#include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/x11_error_tracker.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_x11.h"

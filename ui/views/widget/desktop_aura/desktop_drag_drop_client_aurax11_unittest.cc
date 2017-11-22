@@ -24,6 +24,7 @@
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/events/event_utils.h"
+#include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/views/widget/desktop_aura/desktop_drag_drop_client_aurax11.h"
@@ -31,8 +32,6 @@
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #include "ui/views/widget/desktop_aura/x11_move_loop.h"
 #include "ui/views/widget/widget.h"
-
-#include <X11/Xlib.h>
 
 namespace views {
 
@@ -258,9 +257,8 @@ SimpleTestDragDropClient::SimpleTestDragDropClient(
                                    cursor_manager,
                                    gfx::GetXDisplay(),
                                    window->GetHost()->GetAcceleratedWidget()),
-      target_xid_(None),
-      loop_(NULL) {
-}
+      target_xid_(x11::None),
+      loop_(NULL) {}
 
 SimpleTestDragDropClient::~SimpleTestDragDropClient() {
 }
@@ -730,7 +728,7 @@ void RejectAfterMouseReleaseStep2(TestDragDropClient* client) {
 
   client->OnMouseReleased();
   // Reject the drop.
-  client->OnStatus(toplevel, false, None);
+  client->OnStatus(toplevel, false, x11::None);
 
   events = collector.PopAllEvents();
   ASSERT_EQ(1u, events.size());
@@ -759,7 +757,7 @@ void RejectAfterMouseReleaseStep3(TestDragDropClient* client) {
   EXPECT_TRUE(client->MessageHasType(events[0], "XdndDrop"));
 
   EXPECT_TRUE(client->IsMoveLoopRunning());
-  client->OnFinished(toplevel, false, None);
+  client->OnFinished(toplevel, false, x11::None);
   EXPECT_FALSE(client->IsMoveLoopRunning());
 }
 

@@ -5,12 +5,11 @@
 #ifndef UI_VIEWS_WIDGET_DESKTOP_AURA_X11_WINDOW_EVENT_FILTER_H_
 #define UI_VIEWS_WIDGET_DESKTOP_AURA_X11_WINDOW_EVENT_FILTER_H_
 
-#include <X11/Xlib.h>
-
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "ui/events/event_handler.h"
+#include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/views/views_export.h"
 #include "ui/views/widget/desktop_aura/window_event_filter.h"
