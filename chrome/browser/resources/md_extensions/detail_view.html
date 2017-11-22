@@ -57,7 +57,7 @@
         background-color: white;
         margin: auto;
         min-height: 100%;
-        width: 640px;
+        width: 680px;
       }
 
       #top-bar {
@@ -363,11 +363,6 @@
           <button class="icon-external" is="paper-icon-button-light"
               aria-labelledby="optionLabel" actionable></button>
         </div>
-        <button class="hr" is="cr-link-row"
-            hidden="[[isControlled_(data.controlledInfo)]]"
-            icon-class="subpage-arrow" id="remove-extension"
-            label="$i18n{itemRemoveExtension}" on-tap="onRemoveTap_">
-        </button>
         <div class="section block">
           <div class="section-title">$i18n{itemSource}</div>
           <div class="section-content">
@@ -381,6 +376,11 @@
             </a>
           </div>
         </div>
+        <button class="hr" is="cr-link-row"
+            hidden="[[isControlled_(data.controlledInfo)]]"
+            icon-class="subpage-arrow" id="remove-extension"
+            label="$i18n{itemRemoveExtension}" on-tap="onRemoveTap_">
+        </button>
       </div>
     </div>
   </template>
