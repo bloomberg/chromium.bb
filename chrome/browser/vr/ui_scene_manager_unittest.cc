@@ -57,6 +57,9 @@ const std::set<UiElementName> kHitTestableElements = {
     kAudioPermissionPrompt,
     kAudioPermissionPromptBackplane,
     kUrlBar,
+    kOmniboxContainer,
+    kOmniboxTextField,
+    kOmniboxSuggestions,
     kLoadingIndicator,
     kWebVrTimeoutSpinner,
     kWebVrTimeoutMessage,
@@ -66,8 +69,9 @@ const std::set<UiElementName> kHitTestableElements = {
     kSpeechRecognitionResultBackplane,
 };
 const std::set<UiElementName> kSpecialHitTestableElements = {
-    kCloseButton, kWebVrTimeoutMessageButton, kVoiceSearchButton,
-    kSpeechRecognitionListeningCloseButton,
+    kCloseButton,        kWebVrTimeoutMessageButton,
+    kVoiceSearchButton,  kSpeechRecognitionListeningCloseButton,
+    kOmniboxCloseButton,
 };
 const std::set<UiElementName> kElementsVisibleWithExitWarning = {
     kScreenDimmer, kExitWarning,
@@ -785,24 +789,32 @@ TEST_F(UiSceneManagerTest, SpeechRecognitionUiVisibilityNoResult) {
 
 TEST_F(UiSceneManagerTest, OmniboxSuggestionBindings) {
   MakeManager(kNotInCct, kNotInWebVr);
-  UiElement* container = scene_->GetUiElementByName(kSuggestionLayout);
+  UiElement* container = scene_->GetUiElementByName(kOmniboxSuggestions);
   ASSERT_NE(container, nullptr);
 
   OnBeginFrame();
   EXPECT_EQ(container->children().size(), 0u);
-  int initially_visible = NumVisibleChildren(kSuggestionLayout);
+
+  model_->omnibox_input_active = true;
+  AnimateBy(MsToDelta(500));
+  OnBeginFrame();
+  EXPECT_EQ(container->children().size(), 0u);
+  EXPECT_EQ(NumVisibleInTree(kOmniboxSuggestions), 1);
 
   model_->omnibox_suggestions.emplace_back(
       OmniboxSuggestion(base::string16(), base::string16(),
                         AutocompleteMatch::Type::VOICE_SUGGEST, GURL()));
+  AnimateBy(MsToDelta(500));
   OnBeginFrame();
   EXPECT_EQ(container->children().size(), 1u);
-  EXPECT_GT(NumVisibleChildren(kSuggestionLayout), initially_visible);
+  EXPECT_EQ(container->children()[0]->IsVisible(), true);
+  EXPECT_GT(NumVisibleInTree(kOmniboxSuggestions), 1);
 
   model_->omnibox_suggestions.clear();
+  AnimateBy(MsToDelta(500));
   OnBeginFrame();
   EXPECT_EQ(container->children().size(), 0u);
-  EXPECT_EQ(NumVisibleChildren(kSuggestionLayout), initially_visible);
+  EXPECT_EQ(NumVisibleInTree(kOmniboxSuggestions), 1);
 }
 
 TEST_F(UiSceneManagerTest, OmniboxSuggestionNavigates) {
@@ -813,7 +825,7 @@ TEST_F(UiSceneManagerTest, OmniboxSuggestionNavigates) {
                         AutocompleteMatch::Type::VOICE_SUGGEST, gurl));
   OnBeginFrame();
 
-  UiElement* suggestions = scene_->GetUiElementByName(kSuggestionLayout);
+  UiElement* suggestions = scene_->GetUiElementByName(kOmniboxSuggestions);
   ASSERT_NE(suggestions, nullptr);
   UiElement* suggestion = suggestions->children().front().get();
   ASSERT_NE(suggestion, nullptr);

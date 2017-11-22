@@ -27,6 +27,7 @@
 #include "chrome/browser/vr/elements/spinner.h"
 #include "chrome/browser/vr/elements/suggestion.h"
 #include "chrome/browser/vr/elements/text.h"
+#include "chrome/browser/vr/elements/text_input.h"
 #include "chrome/browser/vr/elements/throbber.h"
 #include "chrome/browser/vr/elements/transient_element.h"
 #include "chrome/browser/vr/elements/ui_element.h"
@@ -133,7 +134,7 @@ void OnSuggestionModelAdded(UiScene* scene,
       GURL, SuggestionBinding, element_binding, model()->destination,
       Suggestion, p_suggestion, set_destination));
 
-  scene->AddUiElement(kSuggestionLayout, std::move(suggestion));
+  scene->AddUiElement(kOmniboxSuggestions, std::move(suggestion));
 }
 
 void OnSuggestionModelRemoved(UiScene* scene, SuggestionBinding* binding) {
@@ -181,7 +182,7 @@ void UiSceneManager::CreateScene() {
   CreateWebVRExitWarning();
   CreateSystemIndicators();
   CreateUrlBar();
-  CreateSuggestionList();
+  CreateOmnibox();
   CreateWebVrUrlToast();
   CreateCloseButton();
   CreateToasts();
@@ -207,6 +208,13 @@ void UiSceneManager::Create2dBrowsingSubtreeRoots() {
   scene_->AddUiElement(k2dBrowsingRoot, std::move(element));
 
   element = base::MakeUnique<UiElement>();
+  element->set_name(k2dBrowsingVisibiltyControlForOmnibox);
+  element->set_hit_testable(false);
+  element->AddBinding(VR_BIND(bool, Model, model_, omnibox_input_active,
+                              UiElement, element.get(), SetVisible(!value)));
+  scene_->AddUiElement(k2dBrowsingRoot, std::move(element));
+
+  element = base::MakeUnique<UiElement>();
   element->set_name(k2dBrowsingForeground);
   element->set_hit_testable(false);
   element->SetTransitionedProperties({OPACITY});
@@ -226,8 +234,8 @@ void UiSceneManager::Create2dBrowsingSubtreeRoots() {
             }
           },
           base::Unretained(element.get()))));
-
-  scene_->AddUiElement(k2dBrowsingRoot, std::move(element));
+  scene_->AddUiElement(k2dBrowsingVisibiltyControlForOmnibox,
+                       std::move(element));
 
   element = base::MakeUnique<UiElement>();
   element->set_name(k2dBrowsingContentGroup);
@@ -972,27 +980,75 @@ void UiSceneManager::CreateUrlBar() {
   scene_->AddUiElement(kLoadingIndicator, std::move(indicator_fg));
 }
 
-void UiSceneManager::CreateSuggestionList() {
-  auto layout = base::MakeUnique<LinearLayout>(LinearLayout::kDown);
+void UiSceneManager::CreateOmnibox() {
+  auto omnibox_root = base::MakeUnique<UiElement>();
+  omnibox_root->set_name(kOmniboxRoot);
+  omnibox_root->set_draw_phase(kPhaseNone);
+  omnibox_root->SetVisible(false);
+  omnibox_root->set_hit_testable(false);
+  omnibox_root->SetTranslate(0, kUrlBarVerticalOffset, -kUrlBarDistance);
+  omnibox_root->SetTransitionedProperties({OPACITY});
+  omnibox_root->AddBinding(VR_BIND_FUNC(bool, Model, model_,
+                                        omnibox_input_active, UiElement,
+                                        omnibox_root.get(), SetVisible));
+  scene_->AddUiElement(k2dBrowsingRoot, std::move(omnibox_root));
 
-  layout->set_name(kSuggestionLayout);
-  layout->set_hit_testable(false);
-  layout->set_y_anchoring(BOTTOM);
-  layout->set_y_centering(TOP);
-  layout->SetTranslate(0, -0.05f, 0);
-  layout->set_margin(kSuggestionGap);
-  layout->SetVisible(true);
+  auto omnibox_container = base::MakeUnique<Rect>();
+  omnibox_container->set_name(kOmniboxContainer);
+  omnibox_container->set_draw_phase(kPhaseForeground);
+  omnibox_container->SetSize(kOmniboxContainerWidth, kOmniboxContainerHeight);
+  omnibox_container->set_corner_radius(kOmniboxContainerCornerRadius);
+  omnibox_container->SetColor(SK_ColorWHITE);
+  omnibox_container->SetTransitionedProperties({TRANSFORM});
+  omnibox_container->AddBinding(base::MakeUnique<Binding<bool>>(
+      base::Bind([](Model* m) { return m->omnibox_input_active; },
+                 base::Unretained(model_)),
+      base::Bind(
+          [](UiElement* e, const bool& v) {
+            float y_offset = v ? kOmniboxContainerVeriticalOffset : 0;
+            e->SetTranslate(0, y_offset, 0);
+          },
+          omnibox_container.get())));
+  scene_->AddUiElement(kOmniboxRoot, std::move(omnibox_container));
 
+  auto omnibox_text_field = base::MakeUnique<TextInput>(
+      512, kOmniboxTextHeight, kSuggestionTextFieldWidth);
+  omnibox_text_field->set_name(kOmniboxTextField);
+  omnibox_text_field->set_draw_phase(kPhaseForeground);
+  omnibox_text_field->SetTextChangedCallback(base::Bind(
+      &UiBrowserInterface::StartAutocomplete, base::Unretained(browser_)));
+  scene_->AddUiElement(kOmniboxContainer, std::move(omnibox_text_field));
+
+  auto close_button = base::MakeUnique<Button>(
+      base::Bind([](Model* m) { m->omnibox_input_active = false; },
+                 base::Unretained(model_)),
+      kPhaseForeground, kCloseButtonWidth, kCloseButtonHeight,
+      kButtonZOffsetHoverDMM * kCloseButtonDistance,
+      vector_icons::kClose16Icon);
+  close_button->set_name(kOmniboxCloseButton);
+  close_button->set_draw_phase(kPhaseForeground);
+  close_button->SetTranslate(0, kOmniboxCloseButtonVerticalOffset, 0);
+  close_button->SetSize(kCloseButtonWidth, kCloseButtonHeight);
+  BindButtonColors(model_, close_button.get(), &ColorScheme::button_colors,
+                   &Button::SetButtonColors);
+  scene_->AddUiElement(kOmniboxContainer, std::move(close_button));
+
+  // Set up the vector binding to manage suggestions dynamically.
   SuggestionSetBinding::ModelAddedCallback added_callback =
       base::Bind(&OnSuggestionModelAdded, base::Unretained(scene_),
                  base::Unretained(browser_), base::Unretained(model_));
   SuggestionSetBinding::ModelRemovedCallback removed_callback =
       base::Bind(&OnSuggestionModelRemoved, base::Unretained(scene_));
 
-  auto binding = base::MakeUnique<SuggestionSetBinding>(
-      &model_->omnibox_suggestions, added_callback, removed_callback);
-  layout->AddBinding(std::move(binding));
-  scene_->AddUiElement(kUrlBar, std::move(layout));
+  auto suggestions_layout = base::MakeUnique<LinearLayout>(LinearLayout::kUp);
+  suggestions_layout->set_name(kOmniboxSuggestions);
+  suggestions_layout->set_draw_phase(kPhaseNone);
+  suggestions_layout->set_y_anchoring(TOP);
+  suggestions_layout->set_y_centering(BOTTOM);
+  suggestions_layout->set_margin(kSuggestionGap);
+  suggestions_layout->AddBinding(base::MakeUnique<SuggestionSetBinding>(
+      &model_->omnibox_suggestions, added_callback, removed_callback));
+  scene_->AddUiElement(kOmniboxContainer, std::move(suggestions_layout));
 }
 
 void UiSceneManager::CreateWebVrUrlToast() {

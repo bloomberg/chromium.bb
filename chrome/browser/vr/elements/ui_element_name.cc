@@ -30,6 +30,13 @@ static const char* g_ui_element_name_strings[] = {
     "kCeiling",
     "kFloor",
     "kUrlBar",
+    "kOmniboxRoot",
+    "kOmniboxContainer",
+    "kOmniboxTextField",
+    "kOmniboxClearTextFieldButton",
+    "kOmniboxCloseButton",
+    "kOmniboxSuggestions",
+    "k2dBrowsingVisibiltyControlForOmnibox",
     "kIndicatorLayout",
     "kAudioCaptureIndicator",
     "kVideoCaptureIndicator",
@@ -84,7 +91,6 @@ static const char* g_ui_element_name_strings[] = {
     "kSpeechRecognitionListeningInnerCircle",
     "kSpeechRecognitionListeningMicrophoneIcon",
     "kSpeechRecognitionListeningCloseButton",
-    "kSuggestionLayout",
     "kNumUiElementNames",
 };
 

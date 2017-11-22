@@ -118,7 +118,7 @@ bool UiSceneManagerTest::VerifyIsAnimating(
   return true;
 }
 
-int UiSceneManagerTest::NumVisibleChildren(UiElementName name) const {
+int UiSceneManagerTest::NumVisibleInTree(UiElementName name) const {
   auto* root = scene_->GetUiElementByName(name);
   EXPECT_NE(root, nullptr);
   if (!root) {

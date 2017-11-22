@@ -37,6 +37,7 @@ class UiSceneManager {
   void CreateBackground();
   void CreateViewportAwareRoot();
   void CreateUrlBar();
+  void CreateOmnibox();
   void CreateSuggestionList();
   void CreateWebVrUrlToast();
   void CreateCloseButton();
