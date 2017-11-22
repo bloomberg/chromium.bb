@@ -369,14 +369,8 @@ void RenderFrameDevToolsAgentHost::OnResetNavigationRequest(
 std::unique_ptr<NavigationThrottle>
 RenderFrameDevToolsAgentHost::CreateThrottleForNavigation(
     NavigationHandle* navigation_handle) {
-  FrameTreeNode* frame_tree_node =
-      static_cast<NavigationHandleImpl*>(navigation_handle)->frame_tree_node();
-  while (frame_tree_node && frame_tree_node->parent()) {
-    frame_tree_node = frame_tree_node->parent();
-  }
-  RenderFrameDevToolsAgentHost* agent_host = FindAgentHost(frame_tree_node);
-  // Note Network.setRequestInterceptionEnabled is intended to control
-  // navigations in the main frame and all child frames.
+  RenderFrameDevToolsAgentHost* agent_host = FindAgentHost(
+      static_cast<NavigationHandleImpl*>(navigation_handle)->frame_tree_node());
   if (!agent_host)
     return nullptr;
   for (auto* network_handler :
