@@ -7513,7 +7513,7 @@ static int handle_zero_mv(const AV1_COMMON *const cm, MACROBLOCK *const x,
                                            mi_col, mi_row, 0
 #if CONFIG_AMVR
                                            ,
-                                           cm->cur_frame_mv_precision_level
+                                           cm->cur_frame_force_integer_mv
 #endif
                                            )
                           .as_int;
