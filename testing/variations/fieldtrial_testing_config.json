@@ -3503,6 +3503,21 @@
             ]
         }
     ],
+    "StopLoadingInBackground": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Experiment",
+                    "enable_features": [
+                        "stop-loading-in-background"
+                    ]
+                }
+            ]
+        }
+    ],
     "SubresourceFilter": [
         {
             "platforms": [
