@@ -481,13 +481,13 @@ PASS HTMLAllCollection interface: existence and properties of interface prototyp
 PASS HTMLAllCollection interface: attribute length
 PASS HTMLAllCollection interface: operation namedItem(DOMString)
 PASS HTMLAllCollection interface: operation item(DOMString)
-FAIL HTMLAllCollection must be primary interface of document.all assert_equals: wrong typeof object expected "function" but got "undefined"
-FAIL Stringification of document.all assert_equals: wrong typeof object expected "function" but got "undefined"
-FAIL HTMLAllCollection interface: document.all must inherit property "length" with the proper type assert_equals: wrong typeof object expected "function" but got "undefined"
-FAIL HTMLAllCollection interface: document.all must inherit property "namedItem(DOMString)" with the proper type assert_equals: wrong typeof object expected "function" but got "undefined"
-FAIL HTMLAllCollection interface: calling namedItem(DOMString) on document.all with too few arguments must throw TypeError assert_equals: wrong typeof object expected "function" but got "undefined"
-FAIL HTMLAllCollection interface: document.all must inherit property "item(DOMString)" with the proper type assert_equals: wrong typeof object expected "function" but got "undefined"
-FAIL HTMLAllCollection interface: calling item(DOMString) on document.all with too few arguments must throw TypeError assert_equals: wrong typeof object expected "function" but got "undefined"
+FAIL HTMLAllCollection must be primary interface of document.all assert_equals: wrong typeof object expected "object" but got "undefined"
+FAIL Stringification of document.all assert_equals: wrong typeof object expected "object" but got "undefined"
+FAIL HTMLAllCollection interface: document.all must inherit property "length" with the proper type assert_equals: wrong typeof object expected "object" but got "undefined"
+FAIL HTMLAllCollection interface: document.all must inherit property "namedItem(DOMString)" with the proper type assert_equals: wrong typeof object expected "object" but got "undefined"
+FAIL HTMLAllCollection interface: calling namedItem(DOMString) on document.all with too few arguments must throw TypeError assert_equals: wrong typeof object expected "object" but got "undefined"
+FAIL HTMLAllCollection interface: document.all must inherit property "item(DOMString)" with the proper type assert_equals: wrong typeof object expected "object" but got "undefined"
+FAIL HTMLAllCollection interface: calling item(DOMString) on document.all with too few arguments must throw TypeError assert_equals: wrong typeof object expected "object" but got "undefined"
 PASS HTMLFormControlsCollection interface: existence and properties of interface object
 PASS HTMLFormControlsCollection interface object length
 PASS HTMLFormControlsCollection interface object name

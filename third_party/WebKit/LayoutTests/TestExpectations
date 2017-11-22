@@ -2055,6 +2055,7 @@ crbug.com/751952 virtual/mojo-loading/http/tests/devtools/unit/datagrid-editable
 crbug.com/751952 virtual/origin-trials-runtimeflags-disabled/http/tests/origin_trials/webexposed/budget-api-origin-trial-interfaces.html [ Pass Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Retina ] external/wpt/WebCryptoAPI/generateKey/test_successes_RSA-PSS.https.html [ Timeout ]
 crbug.com/626703 [ Retina ] external/wpt/WebCryptoAPI/generateKey/test_successes_RSASSA-PKCS1-v1_5.https.html [ Timeout ]
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-page/body-margin-1i.html [ Failure ]
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-page/body-margin-1j.html [ Failure ]
