@@ -199,12 +199,12 @@ class VectorMathTest : public ::testing::Test {
 
   // Get a destination buffer containing initially uninitialized floats.
   float* GetDestination(size_t i) {
-    CHECK_LT(i, kDestinationCount);
+    CHECK_LT(i, static_cast<size_t>(kDestinationCount));
     return destinations_[i];
   }
   // Get a source buffer containing random floats.
   const float* GetSource(size_t i) {
-    CHECK_LT(i, kSourceCount);
+    CHECK_LT(i, static_cast<size_t>(kSourceCount));
     return sources_[i];
   }
 
