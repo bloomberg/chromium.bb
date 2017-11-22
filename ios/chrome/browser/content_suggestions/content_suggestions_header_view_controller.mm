@@ -181,6 +181,20 @@ const CGFloat kHintLabelSidePadding = 12;
     self.logoVendor.view.translatesAutoresizingMaskIntoConstraints = NO;
     self.fakeOmnibox.translatesAutoresizingMaskIntoConstraints = NO;
 
+    // -headerForView is regularly called before self.headerView has been added
+    // to the view hierarchy, so there's no simple way to get the correct
+    // safeAreaInsets.  Since this situation is universally called for the full
+    // screen new tab animation, it's safe to check the rootViewController's
+    // view instead.
+    UIView* insetsView = self.headerView;
+    if (!self.headerView.window) {
+      insetsView =
+          [[UIApplication sharedApplication] keyWindow].rootViewController.view;
+    }
+    UIEdgeInsets safeAreaInsets = SafeAreaInsetsForView(insetsView);
+    width = std::max<CGFloat>(
+        0, width - safeAreaInsets.left - safeAreaInsets.right);
+
     self.fakeOmniboxWidthConstraint = [self.fakeOmnibox.widthAnchor
         constraintEqualToConstant:content_suggestions::searchFieldWidth(width)];
     [self addConstraintsForLogoView:self.logoVendor.view
