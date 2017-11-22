@@ -8,6 +8,8 @@ source_set("geolocation") {
   visibility = [ "//services/device:*" ]
 
   sources = [
+    "public_ip_address_geolocator.cc",
+    "public_ip_address_geolocator.h",
     "public_ip_address_location_notifier.cc",
     "public_ip_address_location_notifier.h",
   ]
@@ -15,6 +17,7 @@ source_set("geolocation") {
   deps = [
     "//base",
     "//device/geolocation",
+    "//mojo/public/cpp/bindings",
     "//net",
   ]
 }
