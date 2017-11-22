@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_BASE_FILTER_OPERATIONS_H_
-#define CC_BASE_FILTER_OPERATIONS_H_
+#ifndef CC_PAINT_FILTER_OPERATIONS_H_
+#define CC_PAINT_FILTER_OPERATIONS_H_
 
 #include <stddef.h>
 
@@ -11,13 +11,13 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "cc/base/filter_operation.h"
+#include "cc/paint/filter_operation.h"
 
 namespace base {
 namespace trace_event {
 class TracedValue;
 }
-}
+}  // namespace base
 
 namespace gfx {
 class Rect;
@@ -26,7 +26,7 @@ class Rect;
 namespace cc {
 
 // An ordered list of filter operations.
-class CC_BASE_EXPORT FilterOperations {
+class CC_PAINT_EXPORT FilterOperations {
  public:
   FilterOperations();
 
@@ -95,4 +95,4 @@ class CC_BASE_EXPORT FilterOperations {
 
 }  // namespace cc
 
-#endif  // CC_BASE_FILTER_OPERATIONS_H_
+#endif  // CC_PAINT_FILTER_OPERATIONS_H_

@@ -16,12 +16,18 @@ cc_component("paint") {
     "display_item_list.h",
     "draw_image.cc",
     "draw_image.h",
+    "filter_operation.cc",
+    "filter_operation.h",
+    "filter_operations.cc",
+    "filter_operations.h",
     "image_animation_count.h",
     "image_id.h",
     "image_provider.cc",
     "image_provider.h",
     "paint_canvas.h",
     "paint_export.h",
+    "paint_filter.cc",
+    "paint_filter.h",
     "paint_flags.cc",
     "paint_flags.h",
     "paint_font.cc",
@@ -56,6 +62,8 @@ cc_component("paint") {
     "raw_memory_transfer_cache_entry.h",
     "record_paint_canvas.cc",
     "record_paint_canvas.h",
+    "render_surface_filters.cc",
+    "render_surface_filters.h",
     "scoped_image_flags.cc",
     "scoped_image_flags.h",
     "skia_paint_canvas.cc",
@@ -84,6 +92,7 @@ cc_component("paint") {
 
   deps = [
     "//base",
+    "//ui/gfx/animation",
   ]
 }
 

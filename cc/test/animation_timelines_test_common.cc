@@ -11,8 +11,8 @@
 #include "cc/animation/animation_ticker.h"
 #include "cc/animation/animation_timeline.h"
 #include "cc/animation/element_animations.h"
-#include "cc/base/filter_operation.h"
-#include "cc/base/filter_operations.h"
+#include "cc/paint/filter_operation.h"
+#include "cc/paint/filter_operations.h"
 #include "cc/trees/property_tree.h"
 #include "ui/gfx/transform.h"
 

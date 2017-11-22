@@ -19,7 +19,7 @@
 
 namespace blink {
 
-sk_sp<SkImageFilter> FilterPainter::GetImageFilter(PaintLayer& layer) {
+sk_sp<PaintFilter> FilterPainter::GetImageFilter(PaintLayer& layer) {
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
     return nullptr;
 
@@ -30,7 +30,7 @@ sk_sp<SkImageFilter> FilterPainter::GetImageFilter(PaintLayer& layer) {
   if (!last_effect)
     return nullptr;
 
-  return SkiaImageFilterBuilder::Build(last_effect, kInterpolationSpaceSRGB);
+  return PaintFilterBuilder::Build(last_effect, kInterpolationSpaceSRGB);
 }
 
 FilterPainter::FilterPainter(PaintLayer& layer,
@@ -42,7 +42,7 @@ FilterPainter::FilterPainter(PaintLayer& layer,
     : filter_in_progress_(false),
       context_(context),
       layout_object_(layer.GetLayoutObject()) {
-  sk_sp<SkImageFilter> image_filter = GetImageFilter(layer);
+  sk_sp<PaintFilter> image_filter = GetImageFilter(layer);
   if (!image_filter)
     return;
 
@@ -61,7 +61,7 @@ FilterPainter::FilterPainter(PaintLayer& layer,
         layer.CreateCompositorFilterOperationsForFilter(
             layout_object_.StyleRef());
     // FIXME: It's possible to have empty CompositorFilterOperations here even
-    // though the SkImageFilter produced above is non-null, since the
+    // though the PaintFilter produced above is non-null, since the
     // layer's FilterEffectBuilder can have a stale representation of
     // the layer's filter. See crbug.com/502026.
     if (compositor_filter_operations.IsEmpty())

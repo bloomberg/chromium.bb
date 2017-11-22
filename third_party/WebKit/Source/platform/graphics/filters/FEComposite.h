@@ -82,9 +82,9 @@ class PLATFORM_EXPORT FEComposite final : public FilterEffect {
 
   bool AffectsTransparentPixels() const override;
 
-  sk_sp<SkImageFilter> CreateImageFilter() override;
-  sk_sp<SkImageFilter> CreateImageFilterWithoutValidation() override;
-  sk_sp<SkImageFilter> CreateImageFilterInternal(
+  sk_sp<PaintFilter> CreateImageFilter() override;
+  sk_sp<PaintFilter> CreateImageFilterWithoutValidation() override;
+  sk_sp<PaintFilter> CreateImageFilterInternal(
       bool requires_pm_color_validation);
 
   CompositeOperationType type_;

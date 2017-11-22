@@ -3,12 +3,13 @@
 // found in the LICENSE file.
 
 #include "cc/paint/solid_color_analyzer.h"
+
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "cc/paint/display_item_list.h"
+#include "cc/paint/paint_filter.h"
 #include "cc/paint/record_paint_canvas.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/skia/include/effects/SkOffsetImageFilter.h"
 #include "ui/gfx/skia_util.h"
 
 namespace cc {
@@ -262,7 +263,7 @@ TEST_F(SolidColorAnalyzerTest, DrawRectFilterPaint) {
   PaintFlags flags;
   SkColor color = SkColorSetARGB(255, 11, 22, 33);
   flags.setColor(color);
-  flags.setImageFilter(SkOffsetImageFilter::Make(10, 10, nullptr));
+  flags.setImageFilter(sk_make_sp<OffsetPaintFilter>(10, 10, nullptr));
   SkRect rect = SkRect::MakeWH(200, 200);
   canvas()->drawRect(rect, flags);
   EXPECT_FALSE(IsSolidColor());

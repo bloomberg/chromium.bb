@@ -11,12 +11,13 @@
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "base/values.h"
-#include "cc/base/filter_operation.h"
-#include "cc/base/filter_operations.h"
-#include "cc/base/render_surface_filters.h"
+#include "cc/paint/filter_operation.h"
+#include "cc/paint/filter_operations.h"
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_flags.h"
+#include "cc/paint/paint_image_builder.h"
 #include "cc/paint/paint_record.h"
+#include "cc/paint/render_surface_filters.h"
 #include "cc/paint/skia_paint_canvas.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/pixel_test_utils.h"
@@ -27,8 +28,6 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkSurface.h"
-#include "third_party/skia/include/effects/SkColorMatrixFilter.h"
-#include "third_party/skia/include/effects/SkImageSource.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
@@ -282,7 +281,10 @@ TEST(DisplayItemListTest, FilterPairedRange) {
   sk_sp<SkSurface> source_surface = SkSurface::MakeRasterN32Premul(50, 50);
   SkCanvas* source_canvas = source_surface->getCanvas();
   source_canvas->clear(SkColorSetRGB(128, 128, 128));
-  sk_sp<SkImage> source_image = source_surface->makeImageSnapshot();
+  PaintImage source_image = PaintImageBuilder::WithDefault()
+                                .set_id(PaintImage::GetNextId())
+                                .set_image(source_surface->makeImageSnapshot())
+                                .TakePaintImage();
 
   // For most SkImageFilters, the |dst| bounds computed by computeFastBounds are
   // dependent on the provided |src| bounds. This means, for example, that
@@ -295,7 +297,9 @@ TEST(DisplayItemListTest, FilterPairedRange) {
   // incorrect clipping of filter output. To test for this, we include an
   // SkImageSource filter in |filters|. Here, |src| is |filter_bounds|, defined
   // below.
-  sk_sp<SkImageFilter> image_filter = SkImageSource::Make(source_image);
+  SkRect rect = SkRect::MakeWH(source_image.width(), source_image.height());
+  sk_sp<PaintFilter> image_filter = sk_make_sp<ImagePaintFilter>(
+      source_image, rect, rect, kHigh_SkFilterQuality);
   filters.Append(FilterOperation::CreateReferenceFilter(image_filter));
   filters.Append(FilterOperation::CreateBrightnessFilter(0.5f));
   gfx::RectF filter_bounds(10.f, 10.f, 50.f, 50.f);

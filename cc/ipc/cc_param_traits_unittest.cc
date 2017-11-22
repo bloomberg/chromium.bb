@@ -16,13 +16,13 @@
 #include "components/viz/common/quads/render_pass_draw_quad.h"
 #include "ipc/ipc_message.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/skia/include/effects/SkBlurImageFilter.h"
 
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"
 #endif
 
 using viz::CompositorFrame;
+using cc::BlurPaintFilter;
 using cc::FilterOperation;
 using cc::FilterOperations;
 using cc::ResourceProvider;
@@ -60,8 +60,8 @@ class CCParamTraitsTest : public testing::Test {
         EXPECT_EQ(a->filters.at(i), b->filters.at(i));
       } else {
         EXPECT_EQ(b->filters.at(i).type(), cc::FilterOperation::REFERENCE);
-        EXPECT_EQ(a->filters.at(i).image_filter()->countInputs(),
-                  b->filters.at(i).image_filter()->countInputs());
+        EXPECT_EQ(a->filters.at(i).image_filter()->count_inputs(),
+                  b->filters.at(i).image_filter()->count_inputs());
       }
     }
     EXPECT_EQ(a->background_filters.size(), b->background_filters.size());
@@ -72,8 +72,8 @@ class CCParamTraitsTest : public testing::Test {
       } else {
         EXPECT_EQ(b->background_filters.at(i).type(),
                   cc::FilterOperation::REFERENCE);
-        EXPECT_EQ(a->background_filters.at(i).image_filter()->countInputs(),
-                  b->background_filters.at(i).image_filter()->countInputs());
+        EXPECT_EQ(a->background_filters.at(i).image_filter()->count_inputs(),
+                  b->background_filters.at(i).image_filter()->count_inputs());
       }
     }
     EXPECT_EQ(a->color_space, b->color_space);
@@ -291,8 +291,10 @@ TEST_F(CCParamTraitsTest, AllQuads) {
       FilterOperation::CreateGrayscaleFilter(arbitrary_float1));
   arbitrary_filters1.Append(
       FilterOperation::CreateBlurFilter(arbitrary_float2));
-  arbitrary_filters1.Append(cc::FilterOperation::CreateReferenceFilter(
-      SkBlurImageFilter::Make(arbitrary_sigma, arbitrary_sigma, nullptr)));
+  arbitrary_filters1.Append(
+      cc::FilterOperation::CreateReferenceFilter(sk_make_sp<BlurPaintFilter>(
+          arbitrary_sigma, arbitrary_sigma,
+          BlurPaintFilter::TileMode::kClampToBlack_TileMode, nullptr)));
 
   FilterOperations arbitrary_filters2;
   arbitrary_filters2.Append(

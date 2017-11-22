@@ -9,8 +9,9 @@
 
 #include <vector>
 
-#include "cc/base/render_surface_filters.h"
+#include "cc/paint/paint_filter.h"
 #include "cc/paint/paint_op_buffer.h"
+#include "cc/paint/render_surface_filters.h"
 #include "third_party/WebKit/public/platform/WebFloatRect.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/skia/include/core/SkColorFilter.h"

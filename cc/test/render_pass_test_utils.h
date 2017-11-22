@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include "cc/base/filter_operations.h"
+#include "cc/paint/filter_operations.h"
 #include "cc/resources/display_resource_provider.h"
 #include "cc/resources/layer_tree_resource_provider.h"
 #include "cc/resources/resource_provider.h"

@@ -578,7 +578,8 @@ bool PropertyTreeManager::BuildEffectNodesRecursively(
     DCHECK(used_blend_mode == SkBlendMode::kDstIn);
     DCHECK(next_effect->Filter().IsEmpty());
     effect_node.filters.Append(cc::FilterOperation::CreateReferenceFilter(
-        SkColorFilterImageFilter::Make(SkLumaColorFilter::Make(), nullptr)));
+        sk_make_sp<ColorFilterPaintFilter>(SkLumaColorFilter::Make(),
+                                           nullptr)));
   } else {
     effect_node.filters = next_effect->Filter().AsCcFilterOperations();
   }

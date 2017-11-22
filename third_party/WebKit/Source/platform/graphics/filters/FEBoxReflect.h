@@ -27,7 +27,7 @@ class PLATFORM_EXPORT FEBoxReflect final : public FilterEffect {
 
   FloatRect MapEffect(const FloatRect&) const final;
 
-  sk_sp<SkImageFilter> CreateImageFilter() final;
+  sk_sp<PaintFilter> CreateImageFilter() final;
 
   BoxReflection reflection_;
 };

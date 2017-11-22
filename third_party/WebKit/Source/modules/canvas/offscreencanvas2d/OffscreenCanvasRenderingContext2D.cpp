@@ -211,7 +211,7 @@ bool OffscreenCanvasRenderingContext2D::StateHasFilter() {
   return GetState().HasFilterForOffscreenCanvas(Host()->Size());
 }
 
-sk_sp<SkImageFilter> OffscreenCanvasRenderingContext2D::StateGetFilter() {
+sk_sp<PaintFilter> OffscreenCanvasRenderingContext2D::StateGetFilter() {
   return GetState().GetFilterForOffscreenCanvas(Host()->Size());
 }
 

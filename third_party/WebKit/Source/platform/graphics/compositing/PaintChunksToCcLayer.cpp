@@ -4,9 +4,9 @@
 
 #include "platform/graphics/compositing/PaintChunksToCcLayer.h"
 
-#include "cc/base/render_surface_filters.h"
 #include "cc/paint/display_item_list.h"
 #include "cc/paint/paint_op_buffer.h"
+#include "cc/paint/render_surface_filters.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/DisplayItemList.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"

@@ -5,7 +5,7 @@
 #ifndef SERVICES_VIZ_PUBLIC_CPP_COMPOSITING_FILTER_OPERATIONS_STRUCT_TRAITS_H_
 #define SERVICES_VIZ_PUBLIC_CPP_COMPOSITING_FILTER_OPERATIONS_STRUCT_TRAITS_H_
 
-#include "cc/base/filter_operations.h"
+#include "cc/paint/filter_operations.h"
 #include "services/viz/public/interfaces/compositing/filter_operations.mojom-shared.h"
 
 namespace mojo {

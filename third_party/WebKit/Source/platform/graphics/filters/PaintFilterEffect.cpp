@@ -22,9 +22,8 @@ PaintFilterEffect* PaintFilterEffect::Create(Filter* filter,
   return new PaintFilterEffect(filter, flags);
 }
 
-sk_sp<SkImageFilter> PaintFilterEffect::CreateImageFilter() {
-  SkPaint paint = flags_.ToSkPaint();
-  return SkPaintImageFilter::Make(paint, nullptr);
+sk_sp<PaintFilter> PaintFilterEffect::CreateImageFilter() {
+  return sk_make_sp<PaintFlagsPaintFilter>(flags_);
 }
 
 TextStream& PaintFilterEffect::ExternalRepresentation(TextStream& ts,

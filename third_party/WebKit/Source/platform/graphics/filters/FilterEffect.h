@@ -28,10 +28,10 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/InterpolationSpace.h"
+#include "platform/graphics/paint/PaintFilter.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/Vector.h"
-#include "third_party/skia/include/core/SkImageFilter.h"
 
 namespace blink {
 
@@ -75,8 +75,8 @@ class PLATFORM_EXPORT FilterEffect
   // given source rect would affect.
   FloatRect MapRect(const FloatRect&) const;
 
-  virtual sk_sp<SkImageFilter> CreateImageFilter();
-  virtual sk_sp<SkImageFilter> CreateImageFilterWithoutValidation();
+  virtual sk_sp<PaintFilter> CreateImageFilter();
+  virtual sk_sp<PaintFilter> CreateImageFilterWithoutValidation();
 
   virtual FilterEffectType GetFilterEffectType() const {
     return kFilterEffectTypeUnknown;
@@ -113,11 +113,11 @@ class PLATFORM_EXPORT FilterEffect
   // values, with alpha in [0,255] and each color component in [0, alpha].
   virtual bool MayProduceInvalidPreMultipliedPixels() { return false; }
 
-  SkImageFilter* GetImageFilter(InterpolationSpace,
-                                bool requires_pm_color_validation) const;
+  PaintFilter* GetImageFilter(InterpolationSpace,
+                              bool requires_pm_color_validation) const;
   void SetImageFilter(InterpolationSpace,
                       bool requires_pm_color_validation,
-                      sk_sp<SkImageFilter>);
+                      sk_sp<PaintFilter>);
 
   bool OriginTainted() const { return origin_tainted_; }
   void SetOriginTainted() { origin_tainted_ = true; }
@@ -138,11 +138,11 @@ class PLATFORM_EXPORT FilterEffect
   // affectsTransparentPixels().
   FloatRect ApplyBounds(const FloatRect&) const;
 
-  sk_sp<SkImageFilter> CreateTransparentBlack() const;
+  sk_sp<PaintFilter> CreateTransparentBlack() const;
 
   Color AdaptColorToOperatingInterpolationSpace(const Color& device_color);
 
-  SkImageFilter::CropRect GetCropRect() const;
+  PaintFilter::CropRect GetCropRect() const;
 
  private:
   FilterEffectVector input_effects_;
@@ -165,7 +165,7 @@ class PLATFORM_EXPORT FilterEffect
 
   InterpolationSpace operating_interpolation_space_;
 
-  sk_sp<SkImageFilter> image_filters_[4];
+  sk_sp<PaintFilter> image_filters_[4];
 };
 
 }  // namespace blink

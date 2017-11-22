@@ -264,7 +264,7 @@ void GraphicsContext::BeginLayer(float opacity,
                                  SkBlendMode xfermode,
                                  const FloatRect* bounds,
                                  ColorFilter color_filter,
-                                 sk_sp<SkImageFilter> image_filter) {
+                                 sk_sp<PaintFilter> image_filter) {
   if (ContextDisabled())
     return;
 

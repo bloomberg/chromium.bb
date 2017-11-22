@@ -68,7 +68,6 @@
 #include "platform/wtf/typed_arrays/ArrayBufferContents.h"
 #include "public/platform/Platform.h"
 #include "public/platform/TaskType.h"
-#include "third_party/skia/include/core/SkImageFilter.h"
 
 namespace blink {
 
@@ -384,7 +383,7 @@ bool CanvasRenderingContext2D::StateHasFilter() {
   return GetState().HasFilter(canvas(), canvas()->Size(), this);
 }
 
-sk_sp<SkImageFilter> CanvasRenderingContext2D::StateGetFilter() {
+sk_sp<PaintFilter> CanvasRenderingContext2D::StateGetFilter() {
   return GetState().GetFilter(canvas(), canvas()->Size(), this);
 }
 

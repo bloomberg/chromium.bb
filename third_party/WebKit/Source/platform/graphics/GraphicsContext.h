@@ -37,6 +37,7 @@
 #include "platform/graphics/HighContrastImageClassifier.h"
 #include "platform/graphics/HighContrastSettings.h"
 #include "platform/graphics/ImageOrientation.h"
+#include "platform/graphics/paint/PaintFilter.h"
 #include "platform/graphics/paint/PaintRecord.h"
 #include "platform/graphics/paint/PaintRecorder.h"
 #include "platform/graphics/skia/SkiaUtils.h"
@@ -44,7 +45,6 @@
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/Noncopyable.h"
 #include "third_party/skia/include/core/SkClipOp.h"
-#include "third_party/skia/include/core/SkImageFilter.h"
 #include "third_party/skia/include/core/SkMetaData.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
@@ -300,7 +300,7 @@ class PLATFORM_EXPORT GraphicsContext {
                   SkBlendMode = SkBlendMode::kSrcOver,
                   const FloatRect* = 0,
                   ColorFilter = kColorFilterNone,
-                  sk_sp<SkImageFilter> = nullptr);
+                  sk_sp<PaintFilter> = nullptr);
   void EndLayer();
 
   // Instead of being dispatched to the active canvas, draw commands following

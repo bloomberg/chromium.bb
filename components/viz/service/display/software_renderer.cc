@@ -7,7 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/base/math_util.h"
-#include "cc/base/render_surface_filters.h"
+#include "cc/paint/render_surface_filters.h"
 #include "cc/resources/scoped_resource.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
@@ -477,9 +477,10 @@ void SoftwareRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad) {
   const cc::FilterOperations* filters = FiltersForPass(quad->render_pass_id);
   if (filters) {
     DCHECK(!filters->IsEmpty());
-    sk_sp<SkImageFilter> image_filter =
-        cc::RenderSurfaceFilters::BuildImageFilter(
-            *filters, gfx::SizeF(content_texture->size()));
+    auto paint_filter = cc::RenderSurfaceFilters::BuildImageFilter(
+        *filters, gfx::SizeF(content_texture->size()));
+    auto image_filter =
+        paint_filter ? paint_filter->cached_sk_filter_ : nullptr;
     if (image_filter) {
       SkIRect result_rect;
       // TODO(ajuma): Apply the filter in the same pass as the content where
@@ -787,10 +788,12 @@ sk_sp<SkShader> SoftwareRenderer::GetBackgroundFilterShader(
   gfx::Vector2dF clipping_offset =
       (unclipped_rect.top_right() - backdrop_rect.top_right()) +
       (backdrop_rect.bottom_left() - unclipped_rect.bottom_left());
-  sk_sp<SkImageFilter> filter = cc::RenderSurfaceFilters::BuildImageFilter(
-      *background_filters,
-      gfx::SizeF(backdrop_bitmap.width(), backdrop_bitmap.height()),
-      clipping_offset);
+  sk_sp<SkImageFilter> filter =
+      cc::RenderSurfaceFilters::BuildImageFilter(
+          *background_filters,
+          gfx::SizeF(backdrop_bitmap.width(), backdrop_bitmap.height()),
+          clipping_offset)
+          ->cached_sk_filter_;
   sk_sp<SkImage> filter_backdrop_image =
       ApplyImageFilter(filter.get(), quad, backdrop_bitmap, nullptr);
 

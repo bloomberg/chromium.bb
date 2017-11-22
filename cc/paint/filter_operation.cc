@@ -6,10 +6,11 @@
 
 #include <algorithm>
 
+#include "cc/paint/filter_operation.h"
+
 #include "base/numerics/ranges.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "base/values.h"
-#include "cc/base/filter_operation.h"
 #include "cc/base/math_util.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/geometry/rect.h"
@@ -106,7 +107,7 @@ FilterOperation::FilterOperation(FilterType type, float amount, int inset)
 }
 
 FilterOperation::FilterOperation(FilterType type,
-                                 sk_sp<SkImageFilter> image_filter)
+                                 sk_sp<PaintFilter> image_filter)
     : type_(type),
       amount_(0),
       outer_threshold_(0),
@@ -309,12 +310,11 @@ void FilterOperation::AsValueInto(base::trace_event::TracedValue* value) const {
       value->SetDouble("inset", zoom_inset_);
       break;
     case FilterOperation::REFERENCE: {
-      int count_inputs = 0;
-      if (image_filter_) {
-        count_inputs = image_filter_->countInputs();
-      }
       value->SetBoolean("is_null", !image_filter_);
-      value->SetInteger("count_inputs", count_inputs);
+      if (image_filter_) {
+        value->SetString("filter_type",
+                         PaintFilter::TypeToString(image_filter_->type()));
+      }
       break;
     }
     case FilterOperation::ALPHA_THRESHOLD: {
@@ -376,7 +376,7 @@ gfx::Rect MapRectInternal(const FilterOperation& op,
     case FilterOperation::REFERENCE: {
       if (!op.image_filter())
         return rect;
-      return gfx::SkIRectToRect(op.image_filter()->filterBounds(
+      return gfx::SkIRectToRect(op.image_filter()->filter_bounds(
           gfx::RectToSkIRect(rect), matrix, direction));
     }
     default:

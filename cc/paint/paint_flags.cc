@@ -4,6 +4,7 @@
 
 #include "cc/paint/paint_flags.h"
 
+#include "cc/paint/paint_filter.h"
 #include "cc/paint/paint_op_buffer.h"
 #include "third_party/skia/include/core/SkFlattenableSerialization.h"
 
@@ -33,7 +34,17 @@ PaintFlags::PaintFlags() {
 
 PaintFlags::PaintFlags(const PaintFlags& flags) = default;
 
+PaintFlags::PaintFlags(PaintFlags&& other) = default;
+
 PaintFlags::~PaintFlags() = default;
+
+PaintFlags& PaintFlags::operator=(const PaintFlags& other) = default;
+
+PaintFlags& PaintFlags::operator=(PaintFlags&& other) = default;
+
+void PaintFlags::setImageFilter(sk_sp<PaintFilter> filter) {
+  image_filter_ = std::move(filter);
+}
 
 bool PaintFlags::nothingToDraw() const {
   // Duplicated from SkPaint to avoid having to construct an SkPaint to
@@ -109,7 +120,8 @@ SkPaint PaintFlags::ToSkPaint() const {
   paint.setMaskFilter(mask_filter_);
   paint.setColorFilter(color_filter_);
   paint.setDrawLooper(draw_looper_);
-  paint.setImageFilter(image_filter_);
+  if (image_filter_)
+    paint.setImageFilter(image_filter_->cached_sk_filter_);
   paint.setTextSize(text_size_);
   paint.setColor(color_);
   paint.setStrokeWidth(width_);
@@ -176,9 +188,8 @@ bool PaintFlags::operator==(const PaintFlags& other) const {
     return false;
   if (!AreFlattenablesEqual(getLooper().get(), other.getLooper().get()))
     return false;
-  if (!AreFlattenablesEqual(getImageFilter().get(),
-                            other.getImageFilter().get()))
-    return false;
+
+  // TODO(khushalsagar): Add filter comparison when adding serialization for it.
 
   if (!getShader() != !other.getShader())
     return false;

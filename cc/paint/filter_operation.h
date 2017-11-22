@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_BASE_FILTER_OPERATION_H_
-#define CC_BASE_FILTER_OPERATION_H_
+#ifndef CC_PAINT_FILTER_OPERATION_H_
+#define CC_PAINT_FILTER_OPERATION_H_
 
 #include <memory>
 #include <vector>
 
 #include "base/logging.h"
-#include "cc/base/base_export.h"
+#include "cc/paint/paint_export.h"
+#include "cc/paint/paint_filter.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "third_party/skia/include/core/SkImageFilter.h"
 #include "third_party/skia/include/core/SkScalar.h"
 #include "third_party/skia/include/effects/SkBlurImageFilter.h"
 #include "ui/gfx/geometry/point.h"
@@ -21,11 +21,11 @@ namespace base {
 namespace trace_event {
 class TracedValue;
 }
-}
+}  // namespace base
 
 namespace cc {
 
-class CC_BASE_EXPORT FilterOperation {
+class CC_PAINT_EXPORT FilterOperation {
  public:
   using Matrix = SkScalar[20];
   using ShapeRects = std::vector<gfx::Rect>;
@@ -77,7 +77,7 @@ class CC_BASE_EXPORT FilterOperation {
     return drop_shadow_color_;
   }
 
-  const sk_sp<SkImageFilter>& image_filter() const {
+  const sk_sp<PaintFilter>& image_filter() const {
     DCHECK_EQ(type_, REFERENCE);
     return image_filter_;
   }
@@ -156,7 +156,7 @@ class CC_BASE_EXPORT FilterOperation {
   }
 
   static FilterOperation CreateReferenceFilter(
-      sk_sp<SkImageFilter> image_filter) {
+      sk_sp<PaintFilter> image_filter) {
     return FilterOperation(REFERENCE, std::move(image_filter));
   }
 
@@ -205,7 +205,7 @@ class CC_BASE_EXPORT FilterOperation {
     drop_shadow_color_ = color;
   }
 
-  void set_image_filter(sk_sp<SkImageFilter> image_filter) {
+  void set_image_filter(sk_sp<PaintFilter> image_filter) {
     DCHECK_EQ(type_, REFERENCE);
     image_filter_ = std::move(image_filter);
   }
@@ -267,7 +267,7 @@ class CC_BASE_EXPORT FilterOperation {
 
   FilterOperation(FilterType type, float amount, int inset);
 
-  FilterOperation(FilterType type, sk_sp<SkImageFilter> image_filter);
+  FilterOperation(FilterType type, sk_sp<PaintFilter> image_filter);
 
   FilterOperation(FilterType type,
                   const ShapeRects& shape,
@@ -279,7 +279,7 @@ class CC_BASE_EXPORT FilterOperation {
   float outer_threshold_;
   gfx::Point drop_shadow_offset_;
   SkColor drop_shadow_color_;
-  sk_sp<SkImageFilter> image_filter_;
+  sk_sp<PaintFilter> image_filter_;
   Matrix matrix_;
   int zoom_inset_;
 
@@ -290,4 +290,4 @@ class CC_BASE_EXPORT FilterOperation {
 
 }  // namespace cc
 
-#endif  // CC_BASE_FILTER_OPERATION_H_
+#endif  // CC_PAINT_FILTER_OPERATION_H_

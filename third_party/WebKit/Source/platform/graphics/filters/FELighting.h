@@ -41,7 +41,7 @@ class PLATFORM_EXPORT FELighting : public FilterEffect {
  protected:
   enum LightingType { kDiffuseLighting, kSpecularLighting };
 
-  sk_sp<SkImageFilter> CreateImageFilter() override;
+  sk_sp<PaintFilter> CreateImageFilter() override;
 
   bool AffectsTransparentPixels() const override { return true; }
 
@@ -53,6 +53,9 @@ class PLATFORM_EXPORT FELighting : public FilterEffect {
              float,
              float,
              scoped_refptr<LightSource>);
+
+  PaintFilter::LightingType GetLightingType();
+  float GetFilterConstant();
 
   LightingType lighting_type_;
   scoped_refptr<LightSource> light_source_;

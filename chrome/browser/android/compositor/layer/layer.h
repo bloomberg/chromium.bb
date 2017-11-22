@@ -9,8 +9,8 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "cc/base/filter_operations.h"
 #include "cc/layers/layer.h"
+#include "cc/paint/filter_operations.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace android {

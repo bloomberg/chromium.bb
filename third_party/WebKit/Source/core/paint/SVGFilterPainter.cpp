@@ -9,7 +9,7 @@
 #include "core/svg/SVGFilterElement.h"
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"
 #include "platform/graphics/filters/Filter.h"
-#include "platform/graphics/filters/SkiaImageFilterBuilder.h"
+#include "platform/graphics/filters/PaintFilterBuilder.h"
 #include "platform/graphics/filters/SourceGraphic.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/wtf/PtrUtil.h"
@@ -63,8 +63,8 @@ static void PaintFilteredContent(GraphicsContext& context,
     return;
 
   DrawingRecorder recorder(context, object, DisplayItem::kSVGFilter);
-  sk_sp<SkImageFilter> image_filter =
-      SkiaImageFilterBuilder::Build(effect, kInterpolationSpaceSRGB);
+  sk_sp<PaintFilter> image_filter =
+      PaintFilterBuilder::Build(effect, kInterpolationSpaceSRGB);
   context.Save();
 
   // Clip drawing of filtered image to the minimum required paint rect.
@@ -149,8 +149,8 @@ void SVGFilterPainter::FinishEffect(
   if (filter_data->state_ == FilterData::kRecordingContent) {
     DCHECK(filter->GetSourceGraphic());
     sk_sp<PaintRecord> content = recording_context.EndContent(bounds);
-    SkiaImageFilterBuilder::BuildSourceGraphic(filter->GetSourceGraphic(),
-                                               std::move(content), bounds);
+    PaintFilterBuilder::BuildSourceGraphic(filter->GetSourceGraphic(),
+                                           std::move(content), bounds);
     filter_data->state_ = FilterData::kReadyToPaint;
   }
 

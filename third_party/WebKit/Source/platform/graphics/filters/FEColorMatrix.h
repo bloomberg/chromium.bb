@@ -56,7 +56,7 @@ class PLATFORM_EXPORT FEColorMatrix final : public FilterEffect {
  private:
   FEColorMatrix(Filter*, ColorMatrixType, const Vector<float>&);
 
-  sk_sp<SkImageFilter> CreateImageFilter() override;
+  sk_sp<PaintFilter> CreateImageFilter() override;
 
   bool AffectsTransparentPixels() const override;
 

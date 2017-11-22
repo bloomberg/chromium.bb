@@ -17,7 +17,7 @@ class PLATFORM_EXPORT BeginFilterDisplayItem final
     : public PairedBeginDisplayItem {
  public:
   BeginFilterDisplayItem(const DisplayItemClient& client,
-                         sk_sp<SkImageFilter> image_filter,
+                         sk_sp<PaintFilter> image_filter,
                          const FloatRect& bounds,
                          const FloatPoint& origin,
                          CompositorFilterOperations filter_operations)
@@ -40,7 +40,7 @@ class PLATFORM_EXPORT BeginFilterDisplayItem final
     if (!DisplayItem::Equals(other))
       return false;
     const auto& other_item = static_cast<const BeginFilterDisplayItem&>(other);
-    // Ignores changes of reference filters because SkImageFilter doesn't have
+    // Ignores changes of reference filters because PaintFilter doesn't have
     // an equality operator.
     return bounds_ == other_item.bounds_ && origin_ == other_item.origin_ &&
            compositor_filter_operations_.EqualsIgnoringReferenceFilters(
@@ -49,7 +49,7 @@ class PLATFORM_EXPORT BeginFilterDisplayItem final
 
   // FIXME: m_imageFilter should be replaced with m_webFilterOperations when
   // copying data to the compositor.
-  sk_sp<SkImageFilter> image_filter_;
+  sk_sp<PaintFilter> image_filter_;
   CompositorFilterOperations compositor_filter_operations_;
   const FloatRect bounds_;
   const FloatPoint origin_;

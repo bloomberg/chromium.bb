@@ -24,7 +24,6 @@
 #include "services/viz/public/interfaces/compositing/compositor_frame.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
-#include "third_party/skia/include/effects/SkBlurImageFilter.h"
 #include "ui/gfx/geometry/mojo/geometry.mojom.h"
 #include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
 #include "ui/gfx/mojo/selection_bound_struct_traits.h"
@@ -290,8 +289,10 @@ class CCSerializationPerfTest : public testing::Test {
     FilterOperations arbitrary_filters1;
     arbitrary_filters1.Append(
         FilterOperation::CreateGrayscaleFilter(arbitrary_float1));
-    arbitrary_filters1.Append(FilterOperation::CreateReferenceFilter(
-        SkBlurImageFilter::Make(arbitrary_sigma, arbitrary_sigma, nullptr)));
+    arbitrary_filters1.Append(
+        FilterOperation::CreateReferenceFilter(sk_make_sp<BlurPaintFilter>(
+            arbitrary_sigma, arbitrary_sigma,
+            BlurPaintFilter::TileMode::kClampToBlack_TileMode, nullptr)));
 
     FilterOperations arbitrary_filters2;
     arbitrary_filters2.Append(

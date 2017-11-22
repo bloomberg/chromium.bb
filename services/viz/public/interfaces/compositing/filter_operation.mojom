@@ -27,7 +27,7 @@ enum FilterType {
   FILTER_TYPE_LAST = ALPHA_THRESHOLD
 };
 
-// See cc/base/filter_operation.h.
+// See cc/paint/filter_operation.h.
 struct FilterOperation {
   FilterType type;
   float amount;

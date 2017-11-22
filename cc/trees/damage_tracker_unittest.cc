@@ -6,10 +6,10 @@
 
 #include <stddef.h>
 
-#include "cc/base/filter_operation.h"
-#include "cc/base/filter_operations.h"
 #include "cc/base/math_util.h"
 #include "cc/layers/layer_impl.h"
+#include "cc/paint/filter_operation.h"
+#include "cc/paint/filter_operations.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/geometry_test_utils.h"
@@ -19,7 +19,6 @@
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/skia/include/effects/SkBlurImageFilter.h"
 #include "ui/gfx/geometry/quad_f.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
@@ -742,8 +741,9 @@ TEST_F(DamageTrackerTest, VerifyDamageForImageFilter) {
   child->SetDrawsContent(true);
 
   FilterOperations filters;
-  filters.Append(FilterOperation::CreateReferenceFilter(
-      SkBlurImageFilter::Make(2, 2, nullptr)));
+  filters.Append(
+      FilterOperation::CreateReferenceFilter(sk_make_sp<BlurPaintFilter>(
+          2, 2, BlurPaintFilter::TileMode::kClampToBlack_TileMode, nullptr)));
 
   // Setting the filter will damage the whole surface.
   child->test_properties()->force_render_surface = true;
@@ -823,8 +823,9 @@ TEST_F(DamageTrackerTest, VerifyDamageForTransformedImageFilter) {
   child->SetDrawsContent(true);
 
   FilterOperations filters;
-  filters.Append(FilterOperation::CreateReferenceFilter(
-      SkBlurImageFilter::Make(2, 2, nullptr)));
+  filters.Append(
+      FilterOperation::CreateReferenceFilter(sk_make_sp<BlurPaintFilter>(
+          2, 2, BlurPaintFilter::TileMode::kClampToBlack_TileMode, nullptr)));
 
   // Setting the filter will damage the whole surface.
   gfx::Transform transform;

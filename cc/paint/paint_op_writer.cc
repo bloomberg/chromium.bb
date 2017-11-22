@@ -100,7 +100,6 @@ void PaintOpWriter::Write(const PaintFlags& flags) {
   WriteFlattenable(flags.mask_filter_.get());
   WriteFlattenable(flags.color_filter_.get());
   WriteFlattenable(flags.draw_looper_.get());
-  WriteFlattenable(flags.image_filter_.get());
 
   Write(flags.shader_.get());
 }

@@ -25,7 +25,7 @@
 
 #include "SkColorFilterImageFilter.h"
 #include "SkColorMatrixFilter.h"
-#include "platform/graphics/filters/SkiaImageFilterBuilder.h"
+#include "platform/graphics/filters/PaintFilterBuilder.h"
 #include "platform/text/TextStream.h"
 
 namespace blink {
@@ -152,13 +152,13 @@ bool FEColorMatrix::AffectsTransparentPixels() const {
          values_.size() >= kColorMatrixSize && values_[19] > 0;
 }
 
-sk_sp<SkImageFilter> FEColorMatrix::CreateImageFilter() {
-  sk_sp<SkImageFilter> input(SkiaImageFilterBuilder::Build(
-      InputEffect(0), OperatingInterpolationSpace()));
+sk_sp<PaintFilter> FEColorMatrix::CreateImageFilter() {
+  sk_sp<PaintFilter> input(
+      PaintFilterBuilder::Build(InputEffect(0), OperatingInterpolationSpace()));
   sk_sp<SkColorFilter> filter = CreateColorFilter(type_, values_);
-  SkImageFilter::CropRect rect = GetCropRect();
-  return SkColorFilterImageFilter::Make(std::move(filter), std::move(input),
-                                        &rect);
+  PaintFilter::CropRect rect = GetCropRect();
+  return sk_make_sp<ColorFilterPaintFilter>(std::move(filter), std::move(input),
+                                            &rect);
 }
 
 static TextStream& operator<<(TextStream& ts, const ColorMatrixType& type) {

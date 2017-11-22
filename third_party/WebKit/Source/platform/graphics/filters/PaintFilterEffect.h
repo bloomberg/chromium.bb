@@ -20,7 +20,7 @@ class PLATFORM_EXPORT PaintFilterEffect : public FilterEffect {
   }
 
   TextStream& ExternalRepresentation(TextStream&, int indention) const override;
-  sk_sp<SkImageFilter> CreateImageFilter() override;
+  sk_sp<PaintFilter> CreateImageFilter() override;
 
  private:
   PaintFilterEffect(Filter*, const PaintFlags&);

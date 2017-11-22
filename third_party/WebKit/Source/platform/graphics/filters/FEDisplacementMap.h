@@ -62,7 +62,7 @@ class PLATFORM_EXPORT FEDisplacementMap final : public FilterEffect {
   FloatRect MapInputs(const FloatRect&) const override;
   FloatRect MapEffect(const FloatRect&) const override;
 
-  sk_sp<SkImageFilter> CreateImageFilter() override;
+  sk_sp<PaintFilter> CreateImageFilter() override;
 
   ChannelSelectorType x_channel_selector_;
   ChannelSelectorType y_channel_selector_;
