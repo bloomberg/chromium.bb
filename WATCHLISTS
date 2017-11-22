@@ -860,7 +860,7 @@
     'fsp': {
       'filepath': 'chrome/browser/chromeos/extensions/file_system_provider|' \
                   'chrome/browser/chromeos/file_system_provider|' \
-                  'chrome/test/data/extensions/api_test/file_system_provider|'
+                  'chrome/test/data/extensions/api_test/file_system_provider'
     },
     'fuchsia': {
       'filepath': 'fuchsia',
