@@ -76,9 +76,9 @@ class MojoCdmTest : public ::testing::Test {
   };
 
   MojoCdmTest()
-      : mojo_cdm_service_(base::MakeUnique<MojoCdmService>(
-            mojo_cdm_service_context_.GetWeakPtr(),
-            &cdm_factory_)),
+      : mojo_cdm_service_(
+            base::MakeUnique<MojoCdmService>(&mojo_cdm_service_context_,
+                                             &cdm_factory_)),
         cdm_binding_(mojo_cdm_service_.get()) {}
 
   virtual ~MojoCdmTest() {}

@@ -42,8 +42,7 @@ class MEDIA_MOJO_EXPORT MojoCdmService : public mojom::ContentDecryptionModule {
       int cdm_id);
 
   // Constructs a MojoCdmService and strongly binds it to the |request|.
-  MojoCdmService(base::WeakPtr<MojoCdmServiceContext> context,
-                 CdmFactory* cdm_factory);
+  MojoCdmService(MojoCdmServiceContext* context, CdmFactory* cdm_factory);
 
   ~MojoCdmService() final;
 
@@ -101,7 +100,7 @@ class MEDIA_MOJO_EXPORT MojoCdmService : public mojom::ContentDecryptionModule {
   // living in the same process.
   static int next_cdm_id_;
 
-  base::WeakPtr<MojoCdmServiceContext> context_;
+  MojoCdmServiceContext* const context_ = nullptr;
 
   CdmFactory* cdm_factory_;
   scoped_refptr<::media::ContentDecryptionModule> cdm_;

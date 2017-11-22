@@ -16,11 +16,12 @@
 namespace media {
 
 MojoAudioDecoderService::MojoAudioDecoderService(
-    base::WeakPtr<MojoCdmServiceContext> mojo_cdm_service_context,
+    MojoCdmServiceContext* mojo_cdm_service_context,
     std::unique_ptr<media::AudioDecoder> decoder)
     : mojo_cdm_service_context_(mojo_cdm_service_context),
       decoder_(std::move(decoder)),
       weak_factory_(this) {
+  DCHECK(mojo_cdm_service_context_);
   weak_this_ = weak_factory_.GetWeakPtr();
 }
 
@@ -41,12 +42,6 @@ void MojoAudioDecoderService::Initialize(const AudioDecoderConfig& config,
   CdmContext* cdm_context = nullptr;
   scoped_refptr<ContentDecryptionModule> cdm;
   if (config.is_encrypted()) {
-    if (!mojo_cdm_service_context_) {
-      DVLOG(1) << "CDM service context not available.";
-      std::move(callback).Run(false, false);
-      return;
-    }
-
     cdm = mojo_cdm_service_context_->GetCdm(cdm_id);
     if (!cdm) {
       DVLOG(1) << "CDM not found for CDM id: " << cdm_id;

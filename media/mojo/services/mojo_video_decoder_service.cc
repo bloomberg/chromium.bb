@@ -27,10 +27,11 @@ namespace media {
 
 MojoVideoDecoderService::MojoVideoDecoderService(
     MojoMediaClient* mojo_media_client,
-    base::WeakPtr<MojoCdmServiceContext> mojo_cdm_service_context)
+    MojoCdmServiceContext* mojo_cdm_service_context)
     : mojo_media_client_(mojo_media_client),
       mojo_cdm_service_context_(std::move(mojo_cdm_service_context)),
       weak_factory_(this) {
+  DCHECK(mojo_cdm_service_context_);
   weak_this_ = weak_factory_.GetWeakPtr();
 }
 
@@ -83,12 +84,6 @@ void MojoVideoDecoderService::Initialize(const VideoDecoderConfig& config,
   CdmContext* cdm_context = nullptr;
   scoped_refptr<ContentDecryptionModule> cdm;
   if (config.is_encrypted()) {
-    if (!mojo_cdm_service_context_) {
-      DVLOG(1) << "CDM service context not available.";
-      std::move(callback).Run(false, false, 1);
-      return;
-    }
-
     cdm = mojo_cdm_service_context_->GetCdm(cdm_id);
     if (!cdm) {
       DVLOG(1) << "CDM not found for CDM id: " << cdm_id;

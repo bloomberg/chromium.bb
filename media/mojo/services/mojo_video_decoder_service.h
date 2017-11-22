@@ -37,7 +37,7 @@ class MojoVideoDecoderService : public mojom::VideoDecoder {
  public:
   explicit MojoVideoDecoderService(
       MojoMediaClient* mojo_media_client,
-      base::WeakPtr<MojoCdmServiceContext> mojo_cdm_service_context);
+      MojoCdmServiceContext* mojo_cdm_service_context);
   ~MojoVideoDecoderService() final;
 
   // mojom::VideoDecoder implementation
@@ -88,7 +88,7 @@ class MojoVideoDecoderService : public mojom::VideoDecoder {
   ProvideOverlayInfoCB provide_overlay_info_cb_;
 
   // A helper object required to get CDM from CDM id.
-  base::WeakPtr<MojoCdmServiceContext> mojo_cdm_service_context_;
+  MojoCdmServiceContext* const mojo_cdm_service_context_ = nullptr;
 
   // Hold a reference to the CDM to keep it alive for the lifetime of the
   // |decoder_|. The |cdm_| owns the CdmContext which is passed to |decoder_|.

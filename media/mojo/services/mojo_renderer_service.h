@@ -42,7 +42,7 @@ class MEDIA_MOJO_EXPORT MojoRendererService : public mojom::Renderer,
   // Helper function to bind MojoRendererService with a StrongBinding,
   // which is safely accessible via the returned StrongBindingPtr.
   static mojo::StrongBindingPtr<mojom::Renderer> Create(
-      base::WeakPtr<MojoCdmServiceContext> mojo_cdm_service_context,
+      MojoCdmServiceContext* mojo_cdm_service_context,
       scoped_refptr<AudioRendererSink> audio_sink,
       std::unique_ptr<VideoRendererSink> video_sink,
       std::unique_ptr<media::Renderer> renderer,
@@ -51,12 +51,11 @@ class MEDIA_MOJO_EXPORT MojoRendererService : public mojom::Renderer,
 
   // |mojo_cdm_service_context| can be used to find the CDM to support
   // encrypted media. If null, encrypted media is not supported.
-  MojoRendererService(
-      base::WeakPtr<MojoCdmServiceContext> mojo_cdm_service_context,
-      scoped_refptr<AudioRendererSink> audio_sink,
-      std::unique_ptr<VideoRendererSink> video_sink,
-      std::unique_ptr<media::Renderer> renderer,
-      InitiateSurfaceRequestCB initiate_surface_request_cb);
+  MojoRendererService(MojoCdmServiceContext* mojo_cdm_service_context,
+                      scoped_refptr<AudioRendererSink> audio_sink,
+                      std::unique_ptr<VideoRendererSink> video_sink,
+                      std::unique_ptr<media::Renderer> renderer,
+                      InitiateSurfaceRequestCB initiate_surface_request_cb);
 
   ~MojoRendererService() final;
 
@@ -124,7 +123,7 @@ class MEDIA_MOJO_EXPORT MojoRendererService : public mojom::Renderer,
                      base::OnceCallback<void(bool)> callback,
                      bool success);
 
-  base::WeakPtr<MojoCdmServiceContext> mojo_cdm_service_context_;
+  MojoCdmServiceContext* const mojo_cdm_service_context_ = nullptr;
 
   State state_;
   double playback_rate_;

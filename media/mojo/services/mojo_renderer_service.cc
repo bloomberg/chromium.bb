@@ -35,7 +35,7 @@ const int kTimeUpdateIntervalMs = 50;
 
 // static
 mojo::StrongBindingPtr<mojom::Renderer> MojoRendererService::Create(
-    base::WeakPtr<MojoCdmServiceContext> mojo_cdm_service_context,
+    MojoCdmServiceContext* mojo_cdm_service_context,
     scoped_refptr<AudioRendererSink> audio_sink,
     std::unique_ptr<VideoRendererSink> video_sink,
     std::unique_ptr<media::Renderer> renderer,
@@ -55,7 +55,7 @@ mojo::StrongBindingPtr<mojom::Renderer> MojoRendererService::Create(
 }
 
 MojoRendererService::MojoRendererService(
-    base::WeakPtr<MojoCdmServiceContext> mojo_cdm_service_context,
+    MojoCdmServiceContext* mojo_cdm_service_context,
     scoped_refptr<AudioRendererSink> audio_sink,
     std::unique_ptr<VideoRendererSink> video_sink,
     std::unique_ptr<media::Renderer> renderer,
