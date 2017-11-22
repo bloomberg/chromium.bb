@@ -180,7 +180,11 @@ video::-internal-media-remoting-interstitial {
     flex-direction: column;
     justify-content: flex-end;
     align-items: center;
-    font-size: 16px;
+    /* The font size is set to be proportional to the viewport width.
+     * Specifically, it is 15px for 400px width, and 36px for 1920px width. The
+     * full math expression is:
+     * 15px + (36 - 15) * ((100vw - 400px) / (1920 - 400)). */
+    font-size: calc(9.5px + 1.38vw);
     background-color: black;
     opacity: 0;
     transition: opacity .3s ease-in-out;
@@ -206,7 +210,7 @@ video::-internal-media-remoting-cast-icon {
     background-image: -webkit-image-set(
       url(default_100_percent/legacy/mediaremoting_cast.png) 1x,
       url(default_200_percent/legacy/mediaremoting_cast.png) 2x);
-    background-size: 32px;
+    background-size: 100% 100%;
     background-repeat: no-repeat;
     background-position: center center;
     display: flex;
@@ -214,43 +218,45 @@ video::-internal-media-remoting-cast-icon {
     margin: 0px;
     border-width: 0px;
     background-color: transparent;
-    height: 18px;
-    width: 22px;
+    height: 2.5vw;
+    width: 3vw;
     padding: 0px;
-    left: calc(50% - 11px);
-    top: calc(50% - 40px);
+    left: calc(50% - 1.5vw);
+    top: calc(50% - 3vw);
 }
 
 video::-internal-media-remoting-cast-text-message {
     display: inline;
     position: absolute;
-    top: calc(50% - 10px);
+    top: calc(50% + 1vw);
     border: none;
     color: rgba(255,255,255,.54);
     width: 100%;
     text-wrap: none;
     text-align: center;
     background-color: transparent;
-    font-size: 81.25%;
+    font-size: 90%;
     font-family: Roboto-Regular, Sans-serif, Segoe, Serif, Helvetica;
     padding: 0px;
     margin: 0px;
 }
 
+/* TODO(xjz): Remove this after the new MR dialog landed.*/
 video::-internal-media-remoting-disable-button {
     display: flex;
     position: absolute;
-    top: calc(50% + 60px);
-    left: calc(50% - 74px);
-    height: 28px;
-    border: 1pt solid rgba(255,255,255,.54);
+    top: calc(50% + 100px);
+    left: calc(50% - 170px);
+    height: 50px;
+    border: 1.5pt solid rgba(255,255,255,.54);
     border-radius: 2pt;
     background-color: transparent;
     color: rgba(255,255,255,.54);
     margin: 0px;
     padding: 5.5px 16px 0px 16px;
     text-wrap: none;
-    font-size: 75%;
+    text-align: center;
+    font-size: 90%;
     font-weight: 500;
     font-family: Roboto-Medium, Sans-serif, Segoe, Serif, Helvetica;
     box-sizing: border-box;
@@ -258,8 +264,9 @@ video::-internal-media-remoting-disable-button {
     z-index: 1;  /* Set this z-index to make the hover effect work. */
 }
 
+/* TODO(xjz): Remove this after the new MR dialog landed.*/
 video::-internal-media-remoting-disable-button:hover {
-    border: 1pt solid rgba(255,255,255,.70);
+    border: 1.5pt solid rgba(255,255,255,.70);
     color: rgba(255,255,255,.70);
     cursor: pointer;
 }
