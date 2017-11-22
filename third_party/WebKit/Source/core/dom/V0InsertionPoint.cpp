@@ -245,14 +245,12 @@ void V0InsertionPoint::RemovedFrom(ContainerNode* insertion_point) {
   if (!root)
     root = insertion_point->ContainingShadowRoot();
 
-  if (root) {
-    if (ElementShadow* root_owner = root->Owner())
-      root_owner->SetNeedsDistributionRecalc();
-  }
-
   // host can be null when removedFrom() is called from ElementShadow
   // destructor.
   ElementShadow* root_owner = root ? root->Owner() : nullptr;
+  if (root_owner && !(RuntimeEnabledFeatures::IncrementalShadowDOMEnabled() &&
+                      root_owner->IsV1()))
+    root_owner->SetNeedsDistributionRecalc();
 
   // Since this insertion point is no longer visible from the shadow subtree, it
   // need to clean itself up.
