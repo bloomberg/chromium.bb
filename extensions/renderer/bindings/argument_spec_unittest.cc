@@ -2,19 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "extensions/renderer/bindings/argument_spec.h"
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "extensions/renderer/bindings/api_binding_test_util.h"
 #include "extensions/renderer/bindings/api_invocation_errors.h"
 #include "extensions/renderer/bindings/api_type_reference_map.h"
-#include "extensions/renderer/bindings/argument_spec.h"
+#include "extensions/renderer/bindings/argument_spec_builder.h"
 #include "gin/converter.h"
+#include "gin/dictionary.h"
 #include "gin/public/isolate_holder.h"
 #include "gin/test/v8_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "v8/include/v8.h"
 
 namespace extensions {
+
+using V8Validator = base::OnceCallback<void(v8::Local<v8::Value>)>;
 
 class ArgumentSpecUnitTest : public gin::V8Test {
  protected:
@@ -41,7 +47,9 @@ class ArgumentSpecUnitTest : public gin::V8Test {
     base::StringPiece expected_error;
     base::StringPiece expected_thrown_message;
     const base::Value* expected_value = nullptr;
-    bool should_convert = true;
+    bool should_convert_to_base = true;
+    bool should_convert_to_v8 = false;
+    V8Validator validate_v8;
   };
 
   void ExpectSuccess(const ArgumentSpec& spec,
@@ -62,10 +70,20 @@ class ArgumentSpecUnitTest : public gin::V8Test {
     RunTest(params);
   }
 
+  void ExpectSuccess(const ArgumentSpec& spec,
+                     const std::string& script_source,
+                     V8Validator validate_v8) {
+    RunTestParams params(spec, script_source, TestResult::PASS);
+    params.should_convert_to_base = false;
+    params.should_convert_to_v8 = true;
+    params.validate_v8 = std::move(validate_v8);
+    RunTest(params);
+  }
+
   void ExpectSuccessWithNoConversion(const ArgumentSpec& spec,
                                      const std::string& script_source) {
     RunTestParams params(spec, script_source, TestResult::PASS);
-    params.should_convert = false;
+    params.should_convert_to_base = false;
     RunTest(params);
   }
 
@@ -81,7 +99,7 @@ class ArgumentSpecUnitTest : public gin::V8Test {
                                      const std::string& script_source,
                                      const std::string& expected_error) {
     RunTestParams params(spec, script_source, TestResult::FAIL);
-    params.should_convert = false;
+    params.should_convert_to_base = false;
     params.expected_error = expected_error;
     RunTest(params);
   }
@@ -98,15 +116,17 @@ class ArgumentSpecUnitTest : public gin::V8Test {
     type_refs_.AddSpec(id, std::move(spec));
   }
 
+  const APITypeReferenceMap& type_refs() const { return type_refs_; }
+
  private:
-  void RunTest(const RunTestParams& params);
+  void RunTest(RunTestParams& params);
 
   APITypeReferenceMap type_refs_;
 
   DISALLOW_COPY_AND_ASSIGN(ArgumentSpecUnitTest);
 };
 
-void ArgumentSpecUnitTest::RunTest(const RunTestParams& params) {
+void ArgumentSpecUnitTest::RunTest(RunTestParams& params) {
   v8::Isolate* isolate = instance_->isolate();
   v8::HandleScope handle_scope(instance_->isolate());
 
@@ -119,26 +139,38 @@ void ArgumentSpecUnitTest::RunTest(const RunTestParams& params) {
 
   std::string error;
   std::unique_ptr<base::Value> out_value;
+  v8::Local<v8::Value> v8_out_value;
   bool did_succeed = params.spec.ParseArgument(
-      context, val, type_refs_, params.should_convert ? &out_value : nullptr,
-      &error);
+      context, val, type_refs_,
+      params.should_convert_to_base ? &out_value : nullptr,
+      params.should_convert_to_v8 ? &v8_out_value : nullptr, &error);
   bool should_succeed = params.expected_result == TestResult::PASS;
   ASSERT_EQ(should_succeed, did_succeed)
       << params.script_source << ", " << error;
-  ASSERT_EQ(did_succeed && params.should_convert, !!out_value);
+  ASSERT_EQ(did_succeed && params.should_convert_to_base, !!out_value);
+  ASSERT_EQ(did_succeed && params.should_convert_to_v8,
+            !v8_out_value.IsEmpty());
   bool should_throw = params.expected_result == TestResult::THROW;
   ASSERT_EQ(should_throw, try_catch.HasCaught()) << params.script_source;
 
   if (!params.expected_error.empty())
     EXPECT_EQ(params.expected_error, error) << params.script_source;
 
-  if (should_succeed && params.should_convert) {
-    ASSERT_TRUE(out_value);
-    if (params.expected_value)
-      EXPECT_TRUE(params.expected_value->Equals(out_value.get()))
-          << params.script_source;
-    else
-      EXPECT_EQ(params.expected_json, ValueToString(*out_value));
+  if (should_succeed) {
+    if (params.should_convert_to_base) {
+      ASSERT_TRUE(out_value);
+      if (params.expected_value) {
+        EXPECT_TRUE(params.expected_value->Equals(out_value.get()))
+            << params.script_source;
+      } else {
+        EXPECT_EQ(params.expected_json, ValueToString(*out_value));
+      }
+    }
+    if (params.should_convert_to_v8) {
+      ASSERT_FALSE(v8_out_value.IsEmpty()) << params.script_source;
+      if (!params.validate_v8.is_null())
+        std::move(params.validate_v8).Run(v8_out_value);
+    }
   } else if (should_throw) {
     EXPECT_EQ(params.expected_thrown_message,
               gin::V8ToString(try_catch.Message()->Get()));
@@ -818,6 +850,130 @@ TEST_F(ArgumentSpecUnitTest, GetTypeName) {
     ArgumentSpec choices_spec(ArgumentType::CHOICES);
     choices_spec.set_choices(std::move(choices));
     EXPECT_EQ("[integer|string]", choices_spec.GetTypeName());
+  }
+}
+
+TEST_F(ArgumentSpecUnitTest, V8Conversion) {
+  {
+    // Sanity check: a simple conversion.
+    ArgumentSpec spec(ArgumentType::INTEGER);
+    ExpectSuccess(spec, "1", base::BindOnce([](v8::Local<v8::Value> value) {
+                    ASSERT_TRUE(value->IsInt32());
+                    EXPECT_EQ(1, value->Int32Value());
+                  }));
+    // The conversion should handle the -0 value (which is considered an
+    // integer but stored in v8 has a number) by converting it to a 0 integer.
+    ExpectSuccess(spec, "-0", base::BindOnce([](v8::Local<v8::Value> value) {
+                    ASSERT_TRUE(value->IsInt32());
+                    EXPECT_EQ(0, value->Int32Value());
+                  }));
+  }
+
+  {
+    std::unique_ptr<ArgumentSpec> prop =
+        ArgumentSpecBuilder(ArgumentType::STRING, "str").Build();
+    std::unique_ptr<ArgumentSpec> spec =
+        ArgumentSpecBuilder(ArgumentType::OBJECT, "obj")
+            .AddProperty("str", std::move(prop))
+            .Build();
+    // The conversion to a v8 value should handle tricky cases like this, where
+    // a subtle getter would invalidate expectations if the value was passed
+    // directly. Since the conversion creates a new object (free of any sneaky
+    // getters), we don't need to repeatedly check for types.
+    constexpr char kTrickyInterceptors[] = R"(
+        ({
+          get str() {
+            if (this.checkedOnce)
+              return 42;
+            this.checkedOnce = true;
+            return 'a string';
+          }
+         }))";
+    ExpectSuccess(*spec, kTrickyInterceptors,
+                  base::BindOnce([](v8::Local<v8::Value> value) {
+                    ASSERT_TRUE(value->IsObject());
+                    v8::Local<v8::Object> object = value.As<v8::Object>();
+                    v8::Local<v8::Context> context = object->CreationContext();
+                    gin::Dictionary dict(context->GetIsolate(), object);
+                    std::string result;
+                    ASSERT_TRUE(dict.Get("str", &result));
+                    EXPECT_EQ("a string", result);
+                    ASSERT_TRUE(dict.Get("str", &result));
+                    // The value should remain constant (even though there's a
+                    // subtle getter).
+                    EXPECT_EQ("a string", result);
+                  }));
+  }
+  {
+    std::unique_ptr<ArgumentSpec> prop =
+        ArgumentSpecBuilder(ArgumentType::STRING, "prop")
+            .MakeOptional()
+            .Build();
+    std::unique_ptr<ArgumentSpec> preserve_null_spec =
+        ArgumentSpecBuilder(ArgumentType::OBJECT, "spec")
+            .AddProperty("prop", std::move(prop))
+            .PreserveNull()
+            .Build();
+    ExpectSuccess(
+        *preserve_null_spec, "({prop: null})",
+        base::BindOnce([](v8::Local<v8::Value> value) {
+          ASSERT_TRUE(value->IsObject());
+          v8::Local<v8::Object> object = value.As<v8::Object>();
+          v8::Local<v8::Context> context = object->CreationContext();
+          v8::Local<v8::Value> prop =
+              object
+                  ->Get(context, gin::StringToV8(context->GetIsolate(), "prop"))
+                  .ToLocalChecked();
+          EXPECT_TRUE(prop->IsNull());
+        }));
+  }
+}
+
+// Certain argument types (any, binary, and function) will be passed through
+// directly to the v8 arguments because we won't be able to parse them properly.
+TEST_F(ArgumentSpecUnitTest, TestV8ValuePassedThrough) {
+  v8::Isolate* isolate = instance_->isolate();
+  v8::HandleScope handle_scope(instance_->isolate());
+
+  v8::Local<v8::Context> context =
+      v8::Local<v8::Context>::New(instance_->isolate(), context_);
+  v8::TryCatch try_catch(isolate);
+
+  auto test_is_same_value = [this, context](const ArgumentSpec& spec,
+                                            const char* value_str) {
+    SCOPED_TRACE(value_str);
+    v8::Local<v8::Value> value_in = V8ValueFromScriptSource(context, value_str);
+    v8::Local<v8::Value> value_out;
+    std::string error;
+    ASSERT_TRUE(spec.ParseArgument(context, value_in, type_refs(), nullptr,
+                                   &value_out, &error));
+    ASSERT_FALSE(value_out.IsEmpty());
+    EXPECT_EQ(value_in, value_out);
+  };
+
+  // Functions are passed directly because we reply directly to the passed-in
+  // function.
+  test_is_same_value(ArgumentSpec(ArgumentType::FUNCTION), "(function() {})");
+  // 'Any' and 'Binary' arguments are passed directly because we can't know if
+  // we can copy them safely, accurately, and efficiently.
+  test_is_same_value(ArgumentSpec(ArgumentType::ANY), "({foo: 'bar'})");
+  test_is_same_value(ArgumentSpec(ArgumentType::BINARY), "(new ArrayBuffer())");
+  // See comments in ArgumentSpec::ParseArgumentToObject() for why these are
+  // passed directly.
+  {
+    std::unique_ptr<ArgumentSpec> instance_of_spec =
+        ArgumentSpecBuilder(ArgumentType::OBJECT, "instance_of")
+            .SetInstanceOf("RegExp")
+            .Build();
+    test_is_same_value(*instance_of_spec, "(new RegExp('hi'))");
+  }
+  {
+    std::unique_ptr<ArgumentSpec> additional_properties_spec =
+        ArgumentSpecBuilder(ArgumentType::OBJECT, "additional props")
+            .SetAdditionalProperties(
+                std::make_unique<ArgumentSpec>(ArgumentType::ANY))
+            .Build();
+    test_is_same_value(*additional_properties_spec, "({foo: 'bar'})");
   }
 }
 

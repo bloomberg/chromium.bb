@@ -36,6 +36,8 @@ class ArgumentSpecBuilder {
   ArgumentSpecBuilder& SetEnums(std::set<std::string> enum_values);
   ArgumentSpecBuilder& SetAdditionalProperties(
       std::unique_ptr<ArgumentSpec> additional_properties);
+  ArgumentSpecBuilder& SetInstanceOf(std::string instance_of);
+  ArgumentSpecBuilder& PreserveNull();
   std::unique_ptr<ArgumentSpec> Build();
 
  private:

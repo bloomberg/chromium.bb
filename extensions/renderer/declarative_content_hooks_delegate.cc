@@ -135,7 +135,8 @@ bool Validate(const ArgumentSpec* spec,
     return false;
   }
 
-  if (!spec->ParseArgument(context, this_object, type_refs, nullptr, error)) {
+  if (!spec->ParseArgument(context, this_object, type_refs, nullptr, nullptr,
+                           error)) {
     return false;
   }
 

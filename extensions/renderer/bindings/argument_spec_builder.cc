@@ -66,6 +66,17 @@ ArgumentSpecBuilder& ArgumentSpecBuilder::SetAdditionalProperties(
   return *this;
 }
 
+ArgumentSpecBuilder& ArgumentSpecBuilder::SetInstanceOf(
+    std::string instance_of) {
+  spec_->set_instance_of(std::move(instance_of));
+  return *this;
+}
+
+ArgumentSpecBuilder& ArgumentSpecBuilder::PreserveNull() {
+  spec_->set_preserve_null(true);
+  return *this;
+}
+
 std::unique_ptr<ArgumentSpec> ArgumentSpecBuilder::Build() {
   spec_->set_properties(std::move(properties_));
   return std::move(spec_);

@@ -74,9 +74,11 @@ class ArgumentParser {
   virtual void AddNull() = 0;
   virtual void AddNullCallback() = 0;
   // Returns a base::Value to be populated during argument matching.
-  virtual std::unique_ptr<base::Value>* GetBuffer() = 0;
-  // Adds a new parsed argument.
-  virtual void AddParsedArgument(v8::Local<v8::Value> value) = 0;
+  virtual std::unique_ptr<base::Value>* GetBaseBuffer() = 0;
+  // Returns a v8::Value to be populated during argument matching.
+  virtual v8::Local<v8::Value>* GetV8Buffer() = 0;
+  // Adds the argument parsed into the appropriate buffer.
+  virtual void AddParsedArgument() = 0;
   // Adds the parsed callback.
   virtual void SetCallback(v8::Local<v8::Function> callback) = 0;
 
@@ -110,14 +112,18 @@ class V8ArgumentParser : public ArgumentParser {
   void AddNullCallback() override {
     values_->push_back(v8::Null(GetIsolate()));
   }
-  std::unique_ptr<base::Value>* GetBuffer() override { return nullptr; }
-  void AddParsedArgument(v8::Local<v8::Value> value) override {
-    values_->push_back(value);
+  std::unique_ptr<base::Value>* GetBaseBuffer() override { return nullptr; }
+  v8::Local<v8::Value>* GetV8Buffer() override { return &last_arg_; }
+  void AddParsedArgument() override {
+    DCHECK(!last_arg_.IsEmpty());
+    values_->push_back(last_arg_);
+    last_arg_.Clear();
   }
   void SetCallback(v8::Local<v8::Function> callback) override {
     values_->push_back(callback);
   }
 
+  v8::Local<v8::Value> last_arg_;
   std::vector<v8::Local<v8::Value>>* values_;
 
   DISALLOW_COPY_AND_ASSIGN(V8ArgumentParser);
@@ -145,8 +151,9 @@ class BaseValueArgumentParser : public ArgumentParser {
     // The base::Value conversion doesn't include the callback directly, so we
     // don't add a null parameter here.
   }
-  std::unique_ptr<base::Value>* GetBuffer() override { return &last_arg_; }
-  void AddParsedArgument(v8::Local<v8::Value> value) override {
+  std::unique_ptr<base::Value>* GetBaseBuffer() override { return &last_arg_; }
+  v8::Local<v8::Value>* GetV8Buffer() override { return nullptr; }
+  void AddParsedArgument() override {
     // The corresponding base::Value is expected to have been stored in
     // |last_arg_| already.
     DCHECK(last_arg_);
@@ -220,14 +227,14 @@ bool ArgumentParser::ParseArgument(const ArgumentSpec& spec) {
     return true;
   }
 
-  if (!spec.ParseArgument(context_, value, type_refs_, GetBuffer(),
-                          &parse_error_)) {
+  if (!spec.ParseArgument(context_, value, type_refs_, GetBaseBuffer(),
+                          GetV8Buffer(), &parse_error_)) {
     *error_ = api_errors::ArgumentError(spec.name(), parse_error_);
     return false;
   }
 
   ConsumeArgument();
-  AddParsedArgument(value);
+  AddParsedArgument();
   return true;
 }
 
@@ -243,7 +250,9 @@ bool ArgumentParser::ParseCallback(const ArgumentSpec& spec) {
     return true;
   }
 
-  if (!spec.ParseArgument(context_, value, type_refs_, nullptr,
+  // Note: callbacks are set through SetCallback() rather than through the
+  // buffered argument.
+  if (!spec.ParseArgument(context_, value, type_refs_, nullptr, nullptr,
                           &parse_error_)) {
     *error_ = api_errors::ArgumentError(spec.name(), parse_error_);
     return false;

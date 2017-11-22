@@ -89,8 +89,9 @@ void ChromeSetting::Set(gin::Arguments* arguments) {
   // per-setting. However, this is only ever for a single setting, so we can
   // enforce the types more thoroughly.
   std::string error;
-  if (!value.IsEmpty() && !argument_spec_.ParseArgument(
-                              context, value, *type_refs_, nullptr, &error)) {
+  if (!value.IsEmpty() &&
+      !argument_spec_.ParseArgument(context, value, *type_refs_, nullptr,
+                                    nullptr, &error)) {
     arguments->ThrowTypeError("Invalid invocation");
     return;
   }
