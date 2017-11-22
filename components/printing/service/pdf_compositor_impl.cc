@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/shared_memory.h"
 #include "base/memory/shared_memory_handle.h"
+#include "components/printing/service/public/cpp/pdf_service_mojo_utils.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "printing/common/pdf_metafile_utils.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -30,25 +31,10 @@ void PdfCompositorImpl::CompositePdf(
     mojom::PdfCompositor::CompositePdfCallback callback) {
   DCHECK(sk_handle.is_valid());
 
-  base::SharedMemoryHandle memory_handle;
-  size_t memory_size = 0;
-  bool read_only_flag = false;
-
-  const MojoResult result = mojo::UnwrapSharedMemoryHandle(
-      std::move(sk_handle), &memory_handle, &memory_size, &read_only_flag);
-  DCHECK_EQ(MOJO_RESULT_OK, result);
-  DCHECK_GT(memory_size, 0u);
-
   std::unique_ptr<base::SharedMemory> shm =
-      base::MakeUnique<base::SharedMemory>(memory_handle, true);
-  if (!shm->Map(memory_size)) {
-    DLOG(ERROR) << "CompositePdf: Shared memory map failed.";
-    std::move(callback).Run(mojom::PdfCompositor::Status::HANDLE_MAP_ERROR,
-                            mojo::ScopedSharedBufferHandle());
-    return;
-  }
+      GetShmFromMojoHandle(std::move(sk_handle));
 
-  SkMemoryStream stream(shm->memory(), memory_size);
+  SkMemoryStream stream(shm->memory(), shm->mapped_size());
   int page_count = SkMultiPictureDocumentReadPageCount(&stream);
   if (!page_count) {
     DLOG(ERROR) << "CompositePdf: No page is read.";

@@ -32,6 +32,7 @@
 #include "components/printing/browser/print_composite_client.h"
 #include "components/printing/browser/print_manager_utils.h"
 #include "components/printing/common/print_messages.h"
+#include "components/printing/service/public/cpp/pdf_service_mojo_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -141,9 +142,7 @@ void PrintViewManagerBase::OnComposePdfDone(
     return;
   }
 
-  UpdateForPrintedPage(
-      params, true,
-      PrintCompositeClient::GetShmFromMojoHandle(std::move(handle)));
+  UpdateForPrintedPage(params, true, GetShmFromMojoHandle(std::move(handle)));
 }
 
 void PrintViewManagerBase::OnDidPrintPage(

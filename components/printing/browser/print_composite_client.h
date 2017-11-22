@@ -5,9 +5,6 @@
 #ifndef COMPONENTS_PRINTING_BROWSER_PRINT_COMPOSITE_CLIENT_H_
 #define COMPONENTS_PRINTING_BROWSER_PRINT_COMPOSITE_CLIENT_H_
 
-#include "base/memory/ref_counted_memory.h"
-#include "base/memory/shared_memory.h"
-#include "base/memory/shared_memory_handle.h"
 #include "components/printing/service/public/cpp/pdf_compositor_client.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -27,12 +24,6 @@ class PrintCompositeClient
 
   void set_for_preview(bool for_preview) { for_preview_ = for_preview; }
   bool for_preview() const { return for_preview_; }
-
-  // Utility functions.
-  static std::unique_ptr<base::SharedMemory> GetShmFromMojoHandle(
-      mojo::ScopedSharedBufferHandle handle);
-  static scoped_refptr<base::RefCountedBytes> GetDataFromMojoHandle(
-      mojo::ScopedSharedBufferHandle handle);
 
  private:
   void CreateConnectorRequest();
