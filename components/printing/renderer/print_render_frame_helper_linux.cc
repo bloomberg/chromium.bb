@@ -48,16 +48,17 @@ bool PrintRenderFrameHelper::PrintPagesNative(blink::WebLocalFrame* frame,
                                               int page_count) {
   const PrintMsg_PrintPages_Params& params = *print_pages_params_;
   const PrintMsg_Print_Params& print_params = params.params;
-  PdfMetafileSkia metafile(print_params.printed_doc_type);
-  CHECK(metafile.Init());
 
   std::vector<int> printed_pages = GetPrintedPages(params, page_count);
   if (printed_pages.empty())
     return false;
 
+  PdfMetafileSkia metafile(print_params.printed_doc_type);
+  CHECK(metafile.Init());
+
   for (int page_number : printed_pages) {
-    PrintPageInternal(params.params, page_number, page_count, frame, &metafile,
-                      nullptr, nullptr, nullptr);
+    PrintPageInternal(print_params, page_number, page_count, frame, &metafile,
+                      nullptr, nullptr);
   }
 
   // blink::printEnd() for PDF should be called before metafile is closed.
@@ -80,21 +81,22 @@ bool PrintRenderFrameHelper::PrintPagesNative(blink::WebLocalFrame* frame,
       routing_id(), sequence_number, printed_pages.size()));
   return true;
 #else
-  PrintHostMsg_DidPrintPage_Params printed_page_params;
-
+  PrintHostMsg_DidPrintPage_Params page_params;
   if (!CopyMetafileDataToSharedMem(metafile,
-                                   &printed_page_params.metafile_data_handle)) {
+                                   &page_params.metafile_data_handle)) {
     return false;
   }
 
-  printed_page_params.data_size = metafile.GetDataSize();
-  printed_page_params.document_cookie = params.params.document_cookie;
-
+  page_params.data_size = metafile.GetDataSize();
+  page_params.document_cookie = print_params.document_cookie;
   for (size_t i = 0; i < printed_pages.size(); ++i) {
-    printed_page_params.page_number = printed_pages[i];
-    Send(new PrintHostMsg_DidPrintPage(routing_id(), printed_page_params));
+    page_params.page_number = printed_pages[i];
+    Send(new PrintHostMsg_DidPrintPage(routing_id(), page_params));
     // Send the rest of the pages with an invalid metafile handle.
-    printed_page_params.metafile_data_handle.Release();
+    if (page_params.metafile_data_handle.IsValid()) {
+      page_params.metafile_data_handle = base::SharedMemoryHandle();
+      page_params.data_size = 0;
+    }
   }
   return true;
 #endif  // defined(OS_ANDROID)

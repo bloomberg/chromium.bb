@@ -9,7 +9,6 @@ static_library("renderer") {
     "print_render_frame_helper_android.cc",
     "print_render_frame_helper_linux.cc",
     "print_render_frame_helper_mac.mm",
-    "print_render_frame_helper_pdf_win.cc",
   ]
 
   deps = [

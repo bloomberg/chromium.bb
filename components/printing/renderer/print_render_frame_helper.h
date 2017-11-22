@@ -293,8 +293,7 @@ class PrintRenderFrameHelper
                          blink::WebLocalFrame* frame,
                          PdfMetafileSkia* metafile,
                          gfx::Size* page_size_in_dpi,
-                         gfx::Rect* content_area_in_dpi,
-                         gfx::Rect* printable_area_in_dpi);
+                         gfx::Rect* content_area_in_dpi);
 
   // Renders page contents from |frame| to |content_area| of |canvas|.
   // |page_number| is zero-based.
