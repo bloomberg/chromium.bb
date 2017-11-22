@@ -468,7 +468,8 @@ Viewport.prototype = {
 
       if (top <= y && bottom > y)
         return page;
-      else if (top > y)
+
+      if (top > y)
         max = page - 1;
       else
         min = page + 1;
@@ -597,7 +598,7 @@ Viewport.prototype = {
 
     if (!fitWidth && fitHeight)
       return zoomHeight;
-    else if (fitWidth && !fitHeight)
+    if (fitWidth && !fitHeight)
       return zoomWidth;
 
     // Assume fitWidth && fitHeight
