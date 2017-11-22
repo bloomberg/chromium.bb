@@ -226,17 +226,6 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
                                     web::BuildUserAgentFromProduct(product));
   }
 
-  // Populate command line flag for fetching missing favicons for NTP tiles.
-  NSString* enableMostLikelyFaviconsFromServer =
-      [defaults stringForKey:@"EnableNtpMostLikelyFaviconsFromServer"];
-  if ([enableMostLikelyFaviconsFromServer isEqualToString:@"Enabled"]) {
-    command_line->AppendSwitch(
-        ntp_tiles::switches::kEnableNtpMostLikelyFaviconsFromServer);
-  } else if ([enableMostLikelyFaviconsFromServer isEqualToString:@"Disabled"]) {
-    command_line->AppendSwitch(
-        ntp_tiles::switches::kDisableNtpMostLikelyFaviconsFromServer);
-  }
-
   // Freeform commandline flags.  These are added last, so that any flags added
   // earlier in this function take precedence.
   if ([defaults boolForKey:@"EnableFreeformCommandLineFlags"]) {

@@ -1844,12 +1844,6 @@ const char kEnableNtpForeignSessionsSuggestionsDescription[] =
     "If enabled, the list of content suggestions on the New Tab page will "
     "contain recent foreign tabs.";
 
-const char kEnableNtpMostLikelyFaviconsFromServerName[] =
-    "Download favicons for NTP tiles from Google.";
-const char kEnableNtpMostLikelyFaviconsFromServerDescription[] =
-    "If enabled, missing favicons for NTP tiles get downloaded from Google. "
-    "This only applies to tiles that originate from synced history.";
-
 const char kEnableNtpOfflinePageDownloadSuggestionsName[] =
     "Show offline page downloads on the New Tab page";
 const char kEnableNtpOfflinePageDownloadSuggestionsDescription[] =

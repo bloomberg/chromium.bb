@@ -461,6 +461,8 @@ class MostVisitedSitesTest : public ::testing::TestWithParam<bool> {
           .Times(AtLeast(0));
     }
 
+    EXPECT_CALL(*icon_cacher, StartFetchMostLikely(_, _)).Times(AtLeast(0));
+
     most_visited_sites_ = base::MakeUnique<MostVisitedSites>(
         &pref_service_, mock_top_sites_, &mock_suggestions_service_,
         popular_sites_factory_.New(), std::move(icon_cacher),

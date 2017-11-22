@@ -2500,11 +2500,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableContentSuggestionsNewFaviconServerDescription,
      kOsAndroid,
      FEATURE_VALUE_TYPE(ntp_snippets::kPublisherFaviconsFromNewServerFeature)},
-    {"enable-ntp-tiles-favicons-from-server",
-     flag_descriptions::kEnableNtpMostLikelyFaviconsFromServerName,
-     flag_descriptions::kEnableNtpMostLikelyFaviconsFromServerDescription,
-     kOsAndroid,
-     FEATURE_VALUE_TYPE(ntp_tiles::kNtpMostLikelyFaviconsFromServerFeature)},
     {"enable-content-suggestions-thumbnail-dominant-color",
      flag_descriptions::kEnableContentSuggestionsThumbnailDominantColorName,
      flag_descriptions::

@@ -354,11 +354,9 @@ void MostVisitedSites::BuildCurrentTilesGivenSuggestionsProfile(
     tile.favicon_url = GURL(suggestion_pb.favicon_url());
     tile.data_generation_time = profile_timestamp;
 
-    if (AreNtpMostLikelyFaviconsFromServerEnabled()) {
-      icon_cacher_->StartFetchMostLikely(
-          url, base::Bind(&MostVisitedSites::OnIconMadeAvailable,
-                          base::Unretained(this), url));
-    }
+    icon_cacher_->StartFetchMostLikely(
+        url, base::Bind(&MostVisitedSites::OnIconMadeAvailable,
+                        base::Unretained(this), url));
 
     tiles.push_back(std::move(tile));
   }
