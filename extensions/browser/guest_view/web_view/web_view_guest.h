@@ -251,11 +251,11 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest> {
 
   // WebContentsObserver implementation.
   void DidStartNavigation(content::NavigationHandle* navigation_handle) final;
+  void DidRedirectNavigation(
+      content::NavigationHandle* navigation_handle) final;
   void DidFinishNavigation(content::NavigationHandle* navigation_handle) final;
   void DocumentOnLoadCompletedInMainFrame() final;
   void RenderProcessGone(base::TerminationStatus status) final;
-  void DidGetRedirectForResourceRequest(
-      const content::ResourceRedirectDetails& details) final;
   void UserAgentOverrideSet(const std::string& user_agent) final;
   void FrameNameChanged(content::RenderFrameHost* render_frame_host,
                         const std::string& name) final;

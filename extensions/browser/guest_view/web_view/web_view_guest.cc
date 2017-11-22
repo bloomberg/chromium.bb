@@ -867,6 +867,19 @@ void WebViewGuest::DidStartNavigation(
                                                        std::move(args)));
 }
 
+void WebViewGuest::DidRedirectNavigation(
+    content::NavigationHandle* navigation_handle) {
+  auto args = std::make_unique<base::DictionaryValue>();
+  args->SetBoolean(guest_view::kIsTopLevel, navigation_handle->IsInMainFrame());
+  args->SetString(webview::kNewURL, navigation_handle->GetURL().spec());
+  auto redirect_chain = navigation_handle->GetRedirectChain();
+  DCHECK_GE(redirect_chain.size(), 2u);
+  auto old_url = redirect_chain[redirect_chain.size() - 2];
+  args->SetString(webview::kOldURL, old_url.spec());
+  DispatchEventToView(std::make_unique<GuestViewEvent>(
+      webview::kEventLoadRedirect, std::move(args)));
+}
+
 void WebViewGuest::RenderProcessGone(base::TerminationStatus status) {
   // Cancel all find sessions in progress.
   find_helper_.CancelAllFindSessions();
@@ -877,18 +890,6 @@ void WebViewGuest::RenderProcessGone(base::TerminationStatus status) {
   args->SetString(webview::kReason, TerminationStatusToString(status));
   DispatchEventToView(
       std::make_unique<GuestViewEvent>(webview::kEventExit, std::move(args)));
-}
-
-void WebViewGuest::DidGetRedirectForResourceRequest(
-    const content::ResourceRedirectDetails& details) {
-  const bool is_top_level =
-      details.resource_type == content::RESOURCE_TYPE_MAIN_FRAME;
-  auto args = std::make_unique<base::DictionaryValue>();
-  args->SetBoolean(guest_view::kIsTopLevel, is_top_level);
-  args->SetString(webview::kNewURL, details.new_url.spec());
-  args->SetString(webview::kOldURL, details.url.spec());
-  DispatchEventToView(std::make_unique<GuestViewEvent>(
-      webview::kEventLoadRedirect, std::move(args)));
 }
 
 void WebViewGuest::UserAgentOverrideSet(const std::string& user_agent) {
