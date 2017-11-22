@@ -22,7 +22,7 @@
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "chrome/browser/resource_coordinator/discard_condition.h"
-#include "chrome/browser/resource_coordinator/tab_lifetime_observer.h"
+#include "chrome/browser/resource_coordinator/tab_lifecycle_observer.h"
 #include "chrome/browser/resource_coordinator/tab_stats.h"
 #include "chrome/browser/sessions/session_restore_observer.h"
 #include "chrome/browser/ui/browser_list_observer.h"
@@ -153,8 +153,8 @@ class TabManager : public TabStripModelObserver,
       const std::vector<gfx::NativeWindow>& windows_sorted_by_z_index =
           std::vector<gfx::NativeWindow>()) const;
 
-  void AddObserver(TabLifetimeObserver* observer);
-  void RemoveObserver(TabLifetimeObserver* observer);
+  void AddObserver(TabLifecycleObserver* observer);
+  void RemoveObserver(TabLifecycleObserver* observer);
 
   // Returns the auto-discardable state of the tab. When true, the tab is
   // eligible to be automatically discarded when critical memory pressure hits,
@@ -524,7 +524,7 @@ class TabManager : public TabStripModelObserver,
   std::vector<BrowserInfo> test_browser_info_list_;
 
   // List of observers that will receive notifications on state changes.
-  base::ObserverList<TabLifetimeObserver> observers_;
+  base::ObserverList<TabLifecycleObserver> observers_;
 
   bool is_session_restore_loading_tabs_;
   size_t restored_tab_count_;

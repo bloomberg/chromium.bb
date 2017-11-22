@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
-#include "chrome/browser/resource_coordinator/tab_lifetime_observer.h"
+#include "chrome/browser/resource_coordinator/tab_lifecycle_observer.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/browser_tab_strip_tracker.h"
@@ -42,7 +42,7 @@ class TabsEventRouter : public TabStripModelObserver,
                         public chrome::BrowserListObserver,
                         public favicon::FaviconDriverObserver,
                         public zoom::ZoomObserver,
-                        public resource_coordinator::TabLifetimeObserver {
+                        public resource_coordinator::TabLifecycleObserver {
  public:
   explicit TabsEventRouter(Profile* profile);
   ~TabsEventRouter() override;
@@ -93,7 +93,7 @@ class TabsEventRouter : public TabStripModelObserver,
                         bool icon_url_changed,
                         const gfx::Image& image) override;
 
-  // resource_coordinator::TabLifetimeObserver:
+  // resource_coordinator::TabLifecycleObserver:
   void OnDiscardedStateChange(content::WebContents* contents,
                               bool is_discarded) override;
   void OnAutoDiscardableStateChange(content::WebContents* contents,
