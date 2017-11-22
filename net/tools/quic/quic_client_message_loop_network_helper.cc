@@ -115,7 +115,8 @@ void QuicClientMessageLooplNetworkHelper::RunEventLoop() {
 
 QuicPacketWriter*
 QuicClientMessageLooplNetworkHelper::CreateQuicPacketWriter() {
-  return new QuicChromiumPacketWriter(socket_.get());
+  return new QuicChromiumPacketWriter(
+      socket_.get(), base::ThreadTaskRunnerHandle::Get().get());
 }
 
 void QuicClientMessageLooplNetworkHelper::OnReadError(

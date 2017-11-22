@@ -1376,7 +1376,8 @@ int QuicStreamFactory::CreateSession(const QuicSessionKey& key,
   }
   InitializeCachedStateInCryptoConfig(server_id, server_info, &connection_id);
 
-  QuicChromiumPacketWriter* writer = new QuicChromiumPacketWriter(socket.get());
+  QuicChromiumPacketWriter* writer =
+      new QuicChromiumPacketWriter(socket.get(), task_runner_);
   QuicConnection* connection = new QuicConnection(
       connection_id, QuicSocketAddress(QuicSocketAddressImpl(addr)),
       helper_.get(), alarm_factory_.get(), writer, true /* owns_writer */,

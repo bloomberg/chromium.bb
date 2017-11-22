@@ -64,8 +64,9 @@ class NET_EXPORT_PRIVATE QuicChromiumPacketWriter : public QuicPacketWriter {
   };
 
   QuicChromiumPacketWriter();
-  // |socket| must outlive writer.
-  explicit QuicChromiumPacketWriter(DatagramClientSocket* socket);
+  // |socket| and |task_runner| must outlive writer.
+  QuicChromiumPacketWriter(DatagramClientSocket* socket,
+                           base::SequencedTaskRunner* task_runner);
   ~QuicChromiumPacketWriter() override;
 
   // |delegate| must outlive writer.

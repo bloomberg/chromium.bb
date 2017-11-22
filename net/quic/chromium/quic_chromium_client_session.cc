@@ -2036,7 +2036,7 @@ ProbingResult QuicChromiumClientSession::StartProbeNetwork(
 
   // Create new packet writer and reader on the probing socket.
   std::unique_ptr<QuicChromiumPacketWriter> probing_writer(
-      new QuicChromiumPacketWriter(probing_socket.get()));
+      new QuicChromiumPacketWriter(probing_socket.get(), task_runner_));
   std::unique_ptr<QuicChromiumPacketReader> probing_reader(
       new QuicChromiumPacketReader(probing_socket.get(), clock_, this,
                                    yield_after_packets_, yield_after_duration_,
@@ -2414,7 +2414,7 @@ MigrationResult QuicChromiumClientSession::Migrate(
                                    yield_after_packets_, yield_after_duration_,
                                    net_log_));
   std::unique_ptr<QuicChromiumPacketWriter> new_writer(
-      new QuicChromiumPacketWriter(socket.get()));
+      new QuicChromiumPacketWriter(socket.get(), task_runner_));
   new_writer->set_delegate(this);
 
   // Migrate to the new socket.

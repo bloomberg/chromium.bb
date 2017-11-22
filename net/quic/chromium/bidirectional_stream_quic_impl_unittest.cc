@@ -473,8 +473,9 @@ class BidirectionalStreamQuicImplTest
     connection_ = new QuicConnection(
         connection_id_, QuicSocketAddress(QuicSocketAddressImpl(peer_addr_)),
         helper_.get(), alarm_factory_.get(),
-        new QuicChromiumPacketWriter(socket.get()), true /* owns_writer */,
-        Perspective::IS_CLIENT, SupportedTransportVersions(GetParam()));
+        new QuicChromiumPacketWriter(socket.get(), runner_.get()),
+        true /* owns_writer */, Perspective::IS_CLIENT,
+        SupportedTransportVersions(GetParam()));
     base::TimeTicks dns_end = base::TimeTicks::Now();
     base::TimeTicks dns_start = dns_end - base::TimeDelta::FromMilliseconds(1);
 
