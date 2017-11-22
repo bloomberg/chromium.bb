@@ -9154,6 +9154,43 @@ TEST_F(LayerTreeHostImplTest, CreateETC1UIResource) {
   EXPECT_NE(0u, id1);
 }
 
+TEST_F(LayerTreeHostImplTest,
+       GpuRasterizationStatusChangeDoesNotEvictUIResources) {
+  // Create a host impl with MSAA support and a forced sample count of 4.
+  LayerTreeSettings msaaSettings = DefaultSettings();
+  msaaSettings.gpu_rasterization_msaa_sample_count = 4;
+  EXPECT_TRUE(CreateHostImpl(
+      msaaSettings, FakeLayerTreeFrameSink::Create3dForGpuRasterization(
+                        msaaSettings.gpu_rasterization_msaa_sample_count)));
+
+  host_impl_->SetHasGpuRasterizationTrigger(true);
+  host_impl_->SetContentHasSlowPaths(false);
+  host_impl_->CommitComplete();
+  EXPECT_EQ(GpuRasterizationStatus::ON, host_impl_->gpu_rasterization_status());
+  EXPECT_TRUE(host_impl_->use_gpu_rasterization());
+  EXPECT_FALSE(host_impl_->use_msaa());
+
+  UIResourceId ui_resource_id = 1;
+  UIResourceBitmap bitmap(gfx::Size(1, 1), false /* is_opaque */);
+  host_impl_->CreateUIResource(ui_resource_id, bitmap);
+  viz::ResourceId resource_id =
+      host_impl_->ResourceIdForUIResource(ui_resource_id);
+  EXPECT_NE(viz::kInvalidResourceId, resource_id);
+  EXPECT_FALSE(host_impl_->EvictedUIResourcesExist());
+
+  host_impl_->SetHasGpuRasterizationTrigger(true);
+  host_impl_->SetContentHasSlowPaths(true);
+  host_impl_->CommitComplete();
+  EXPECT_EQ(GpuRasterizationStatus::MSAA_CONTENT,
+            host_impl_->gpu_rasterization_status());
+  EXPECT_TRUE(host_impl_->use_gpu_rasterization());
+  EXPECT_TRUE(host_impl_->use_msaa());
+
+  resource_id = host_impl_->ResourceIdForUIResource(ui_resource_id);
+  EXPECT_NE(viz::kInvalidResourceId, resource_id);
+  EXPECT_FALSE(host_impl_->EvictedUIResourcesExist());
+}
+
 class FrameSinkClient : public viz::TestLayerTreeFrameSinkClient {
  public:
   explicit FrameSinkClient(
