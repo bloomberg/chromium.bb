@@ -573,6 +573,17 @@ void PrerenderContents::DidStartNavigation(
   has_finished_loading_ = false;
 }
 
+void PrerenderContents::DidRedirectNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame())
+    return;
+
+  // If it's a redirect on the top-level resource, the name needs to be
+  // remembered for future matching, and if it redirects to an https resource,
+  // it needs to be canceled. If a subresource is redirected, nothing changes.
+  CheckURL(navigation_handle->GetURL());
+}
+
 void PrerenderContents::DidFinishLoad(
     content::RenderFrameHost* render_frame_host,
     const GURL& validated_url) {
@@ -625,17 +636,6 @@ void PrerenderContents::DidFinishNavigation(
     if (!AddAliasURL(redirect))
       return;
   }
-}
-
-void PrerenderContents::DidGetRedirectForResourceRequest(
-    const content::ResourceRedirectDetails& details) {
-  // DidGetRedirectForResourceRequest can come for any resource on a page.  If
-  // it's a redirect on the top-level resource, the name needs to be remembered
-  // for future matching, and if it redirects to an https resource, it needs to
-  // be canceled. If a subresource is redirected, nothing changes.
-  if (details.resource_type != content::RESOURCE_TYPE_MAIN_FRAME)
-    return;
-  CheckURL(details.new_url);
 }
 
 void PrerenderContents::Destroy(FinalStatus final_status) {
