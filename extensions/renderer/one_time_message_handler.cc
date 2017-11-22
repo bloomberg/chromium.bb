@@ -16,6 +16,7 @@
 #include "extensions/renderer/bindings/api_bindings_system.h"
 #include "extensions/renderer/bindings/api_event_handler.h"
 #include "extensions/renderer/bindings/api_request_handler.h"
+#include "extensions/renderer/gc_callback.h"
 #include "extensions/renderer/ipc_message_sender.h"
 #include "extensions/renderer/messaging_util.h"
 #include "extensions/renderer/native_extension_bindings_system.h"
@@ -234,9 +235,7 @@ bool OneTimeMessageHandler::DeliverMessageToReceiver(
   // we receive a response.
   // TODO(devlin): With chrome.runtime.sendMessage, we actually require that a
   // listener return `true` if they intend to respond asynchronously; otherwise
-  // we close the port. With both sendMessage and sendRequest, we can monitor
-  // the lifetime of the response callback and close the port if it's garbage-
-  // collected.
+  // we close the port.
   auto callback = std::make_unique<OneTimeMessageCallback>(
       base::Bind(&OneTimeMessageHandler::OnOneTimeMessageResponse,
                  weak_factory_.GetWeakPtr(), target_port_id));
@@ -248,6 +247,18 @@ bool OneTimeMessageHandler::DeliverMessageToReceiver(
     NOTREACHED();
     return handled;
   }
+
+  // We shouldn't need to monitor context invalidation here. We store the ports
+  // for the context in PerContextData (cleaned up on context destruction), and
+  // the browser watches for frame navigation or destruction, and cleans up
+  // orphaned channels.
+  base::Closure on_context_invalidated;
+
+  new GCCallback(
+      script_context, response_function,
+      base::Bind(&OneTimeMessageHandler::OnResponseCallbackCollected,
+                 weak_factory_.GetWeakPtr(), script_context, target_port_id),
+      base::Closure());
 
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Value> v8_message =
@@ -372,6 +383,36 @@ void OneTimeMessageHandler::OnOneTimeMessageResponse(
   IPCMessageSender* ipc_sender = bindings_system_->GetIPCMessageSender();
   ipc_sender->SendPostMessageToPort(routing_id, port_id, *message);
   bool close_channel = true;
+  ipc_sender->SendCloseMessagePort(routing_id, port_id, close_channel);
+}
+
+void OneTimeMessageHandler::OnResponseCallbackCollected(
+    ScriptContext* script_context,
+    const PortId& port_id) {
+  // Note: we know |script_context| is still valid because the GC callback won't
+  // be called after context invalidation.
+  v8::HandleScope handle_scope(script_context->isolate());
+  OneTimeMessageContextData* data =
+      GetPerContextData(script_context->v8_context(), false);
+  // ScriptContext invalidation and PerContextData cleanup happen "around" the
+  // same time, but there aren't strict guarantees about ordering. It's possible
+  // the data was collected.
+  if (!data)
+    return;
+
+  auto iter = data->receivers.find(port_id);
+  // The channel may already be closed (if the receiver replied before the reply
+  // callback was collected).
+  if (iter == data->receivers.end())
+    return;
+
+  int routing_id = iter->second.routing_id;
+  data->receivers.erase(iter);
+
+  // Close the message port. There's no way to send a reply anymore. Don't
+  // close the channel because another listener may reply.
+  IPCMessageSender* ipc_sender = bindings_system_->GetIPCMessageSender();
+  bool close_channel = false;
   ipc_sender->SendCloseMessagePort(routing_id, port_id, close_channel);
 }
 

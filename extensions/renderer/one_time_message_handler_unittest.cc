@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/run_loop.h"
 #include "extensions/common/api/messaging/message.h"
 #include "extensions/common/api/messaging/port_id.h"
 #include "extensions/common/extension.h"
@@ -339,6 +340,41 @@ TEST_F(OneTimeMessageHandlerTest, TryReplyingMultipleTimes) {
   // Running the reply function a second time shouldn't do anything.
   // TODO(devlin): Add an error message.
   RunFunction(reply.As<v8::Function>(), context, arraysize(args), args);
+  EXPECT_FALSE(message_handler()->HasPort(script_context(), port_id));
+}
+
+TEST_F(OneTimeMessageHandlerTest, ResponseCallbackGarbageCollected) {
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = MainContext();
+
+  constexpr char kRegisterListener[] =
+      "(function() {\n"
+      "  chrome.runtime.onMessage.addListener(\n"
+      "      function(message, sender, reply) {});\n"
+      "})";
+  v8::Local<v8::Function> add_listener =
+      FunctionFromString(context, kRegisterListener);
+  RunFunctionOnGlobal(add_listener, context, 0, nullptr);
+
+  base::UnguessableToken other_context_id = base::UnguessableToken::Create();
+  const PortId port_id(other_context_id, 0, false);
+
+  v8::Local<v8::Object> sender = v8::Object::New(isolate());
+  message_handler()->AddReceiver(script_context(), port_id, sender,
+                                 messaging_util::kOnMessageEvent);
+  const Message message("\"Hi\"", false);
+
+  EXPECT_CALL(*ipc_message_sender(),
+              SendCloseMessagePort(MSG_ROUTING_NONE, port_id, false));
+  message_handler()->DeliverMessage(script_context(), message, port_id);
+  EXPECT_TRUE(message_handler()->HasPort(script_context(), port_id));
+
+  // The listener didn't retain the reply callback, so it should be garbage
+  // collected.
+  RunGarbageCollection();
+  base::RunLoop().RunUntilIdle();
+
+  ::testing::Mock::VerifyAndClearExpectations(ipc_message_sender());
   EXPECT_FALSE(message_handler()->HasPort(script_context(), port_id));
 }
 
