@@ -70,7 +70,7 @@ class PermissionUpdateInfoBarDelegate implements WindowAndroid.PermissionCallbac
         if (canRequestAllPermissions) {
             windowAndroid.requestPermissions(mAndroidPermisisons, this);
             if (activity instanceof WebApkActivity) {
-                WebApkUma.recordAndroidRuntimePermissionPromptInWebApkAsync(mAndroidPermisisons);
+                WebApkUma.recordAndroidRuntimePermissionPromptInWebApk(mAndroidPermisisons);
             }
         } else {
             if (activity == null) {

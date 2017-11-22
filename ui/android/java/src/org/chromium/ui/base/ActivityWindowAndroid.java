@@ -249,6 +249,8 @@ public class ActivityWindowAndroid
         keyboardVisibilityPossiblyChanged(UiUtils.isKeyboardShowing(getActivity().get(), v));
     }
 
+    protected void logUMAOnRequestPermissionDenied(String permission) {}
+
     private int generateNextRequestCode() {
         int requestCode = REQUEST_CODE_PREFIX + mNextRequestCode;
         mNextRequestCode = (mNextRequestCode + 1) % REQUEST_CODE_RANGE_SIZE;
@@ -290,6 +292,7 @@ public class ActivityWindowAndroid
             SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
             if (!prefs.getBoolean(permissionQueriedKey, false)) return true;
 
+            logUMAOnRequestPermissionDenied(permission);
             return false;
         }
 
