@@ -40,6 +40,10 @@ extern const base::Feature kThreatDomDetailsTagAndAttributeFeature;
 // that trigger is allowed to send per day.
 extern const base::Feature kTriggerThrottlerDailyQuotaFeature;
 
+// Controls whether to dispatch the SafetyNet check on a worker thread. Android
+// only.
+extern const base::Feature kDispatchSafetyNetCheckOffThread;
+
 base::ListValue GetFeatureStatusList();
 
 #endif  // COMPONENTS_SAFE_BROWSING_FEATURES_H_
