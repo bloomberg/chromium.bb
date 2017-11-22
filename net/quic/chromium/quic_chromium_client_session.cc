@@ -2355,8 +2355,9 @@ void QuicChromiumClientSession::MaybeMigrateOrCloseSession(
 MigrationResult QuicChromiumClientSession::MigrateToAlternateNetwork(
     bool close_session_on_error,
     const NetLogWithSource& migration_net_log) {
-  if (!migrate_session_on_network_change_ || HasNonMigratableStreams() ||
-      config()->DisableConnectionMigration()) {
+  if ((!migrate_session_on_network_change_ &&
+       !migrate_session_on_network_change_v2_) ||
+      HasNonMigratableStreams() || config()->DisableConnectionMigration()) {
     HistogramAndLogMigrationFailure(migration_net_log,
                                     MIGRATION_STATUS_DISABLED, connection_id(),
                                     "Migration disabled");
