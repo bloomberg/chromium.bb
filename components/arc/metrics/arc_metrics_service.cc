@@ -91,12 +91,12 @@ ArcMetricsService::~ArcMetricsService() {
 
 void ArcMetricsService::OnConnectionReady() {
   VLOG(2) << "Start metrics service.";
-  // Retrieve ARC start time from session manager.
-  chromeos::SessionManagerClient* session_manager_client =
-      chromeos::DBusThreadManager::Get()->GetSessionManagerClient();
-  session_manager_client->GetArcStartTime(
-      base::BindOnce(&ArcMetricsService::OnArcStartTimeRetrieved,
-                     weak_ptr_factory_.GetWeakPtr()));
+  auto* instance =
+      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->metrics(), Init);
+  DCHECK(instance);
+  mojom::MetricsHostPtr host_ptr;
+  binding_.Bind(mojo::MakeRequest(&host_ptr));
+  instance->Init(std::move(host_ptr));
 }
 
 void ArcMetricsService::OnConnectionClosed() {
@@ -154,27 +154,34 @@ void ArcMetricsService::ParseProcessList(
 }
 
 void ArcMetricsService::OnArcStartTimeRetrieved(
+    std::vector<mojom::BootProgressEventPtr> events,
+    mojom::BootType boot_type,
     base::Optional<base::TimeTicks> arc_start_time) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!arc_start_time.has_value()) {
     LOG(ERROR) << "Failed to retrieve ARC start timeticks.";
     return;
   }
-  auto* instance =
-      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->metrics(), Init);
-  if (!instance)
-    return;
+  VLOG(2) << "ARC start @" << arc_start_time.value();
 
-  // The binding of host interface is deferred until the ARC start time is
-  // retrieved here because it prevents race condition of the ARC start
-  // time availability in ReportBootProgress().
-  if (!binding_.is_bound()) {
-    mojom::MetricsHostPtr host_ptr;
-    binding_.Bind(mojo::MakeRequest(&host_ptr));
-    instance->Init(std::move(host_ptr));
+  DCHECK_NE(mojom::BootType::UNKNOWN, boot_type);
+  const std::string suffix = BootTypeToString(boot_type);
+  for (const auto& event : events) {
+    VLOG(2) << "Report boot progress event:" << event->event << "@"
+            << event->uptimeMillis;
+    const std::string name = "Arc." + event->event + suffix;
+    const base::TimeTicks uptime =
+        base::TimeDelta::FromMilliseconds(event->uptimeMillis) +
+        base::TimeTicks();
+    const base::TimeDelta elapsed_time = uptime - arc_start_time.value();
+    base::UmaHistogramCustomTimes(name, elapsed_time, kUmaMinTime, kUmaMaxTime,
+                                  kUmaNumBuckets);
+    if (event->event.compare(kBootProgressEnableScreen) == 0) {
+      base::UmaHistogramCustomTimes("Arc.AndroidBootTime" + suffix,
+                                    elapsed_time, kUmaMinTime, kUmaMaxTime,
+                                    kUmaNumBuckets);
+    }
   }
-  arc_start_time_ = arc_start_time.value();
-  VLOG(2) << "ARC start @" << arc_start_time_;
 }
 
 void ArcMetricsService::ReportBootProgress(
@@ -185,23 +192,13 @@ void ArcMetricsService::ReportBootProgress(
     LOG(WARNING) << "boot_type is unknown. Skip recording UMA.";
     return;
   }
-  int64_t arc_start_time_in_ms =
-      (arc_start_time_ - base::TimeTicks()).InMilliseconds();
-  const std::string suffix = BootTypeToString(boot_type);
-  for (const auto& event : events) {
-    VLOG(2) << "Report boot progress event:" << event->event << "@"
-            << event->uptimeMillis;
-    const std::string name = "Arc." + event->event + suffix;
-    const base::TimeDelta elapsed_time = base::TimeDelta::FromMilliseconds(
-        event->uptimeMillis - arc_start_time_in_ms);
-    base::UmaHistogramCustomTimes(name, elapsed_time, kUmaMinTime, kUmaMaxTime,
-                                  kUmaNumBuckets);
-    if (event->event.compare(kBootProgressEnableScreen) == 0) {
-      base::UmaHistogramCustomTimes("Arc.AndroidBootTime" + suffix,
-                                    elapsed_time, kUmaMinTime, kUmaMaxTime,
-                                    kUmaNumBuckets);
-    }
-  }
+
+  // Retrieve ARC start time from session manager.
+  chromeos::SessionManagerClient* session_manager_client =
+      chromeos::DBusThreadManager::Get()->GetSessionManagerClient();
+  session_manager_client->GetArcStartTime(base::BindOnce(
+      &ArcMetricsService::OnArcStartTimeRetrieved,
+      weak_ptr_factory_.GetWeakPtr(), std::move(events), boot_type));
 }
 
 ArcMetricsService::ProcessObserver::ProcessObserver(
