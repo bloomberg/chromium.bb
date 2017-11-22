@@ -11,7 +11,7 @@
     -webkit-box-reflect: right 10px;
     opacity:0.95;
   }
-  
+
   .inner {
     margin: 10px;
     width: 100px;
@@ -22,30 +22,30 @@
     -webkit-box-reflect: below 10px;
     opacity:0.95;
   }
-  
+
   #animated {
     margin: 10px;
     width: 80px;
     height: 80px;
     background-color: green;
   }
-  
+
   #animated.animated {
-    -webkit-animation: swing 1s linear 1;
+    animation: swing 10s linear 1;
   }
-  
+
   /* for manual testing */
   #animated:hover {
-    -webkit-animation-play-state: paused;
+    animation-play-state: paused;
   }
-  
+
   .composited {
     transform: translateZ(0);
   }
-  
-  @-webkit-keyframes swing {
+
+  @keyframes swing {
     from { transform: rotate(0deg); }
-    to   { transform: rotate(90deg); }
+    to   { transform: rotate(900deg); }
   }
   </style>
   <script src="../../animations/resources/animation-test-helpers.js" type="text/javascript" charset="utf-8"></script>
@@ -54,7 +54,7 @@
       // [time, element-id, property, expected-value, tolerance]
       [0.5, "animated", "webkitTransform.0", 0.76, 0.1],
     ];
-    
+
     var pixelTest = true;
     var disablePauseAPI = false;
     runAnimationTest(expectedValues, null, null, disablePauseAPI, pixelTest);
