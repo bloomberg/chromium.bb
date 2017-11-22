@@ -366,10 +366,13 @@ GURL SiteInstance::GetSiteForURL(BrowserContext* browser_context,
   url::Origin origin = url::Origin::Create(url);
 
   // Isolated origins should use the full origin as their site URL. A subdomain
-  // of an isolated origin should also use that isolated origin's site URL.
+  // of an isolated origin should also use that isolated origin's site URL. It
+  // is important to check |url| rather than |real_url| here, since some
+  // effective URLs (such as for NTP) need to be resolved prior to the isolated
+  // origin lookup.
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
   url::Origin isolated_origin;
-  if (policy->GetMatchingIsolatedOrigin(url::Origin::Create(real_url),
+  if (policy->GetMatchingIsolatedOrigin(url::Origin::Create(url),
                                         &isolated_origin)) {
     return isolated_origin.GetURL();
   }
@@ -399,14 +402,10 @@ GURL SiteInstance::GetSiteForURL(BrowserContext* browser_context,
 // static
 GURL SiteInstanceImpl::GetEffectiveURL(BrowserContext* browser_context,
                                        const GURL& url) {
-  // Don't resolve URLs corresponding to isolated origins, as isolated origins
-  // take precedence over hosted apps.
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
-  if (policy->IsIsolatedOrigin(url::Origin::Create(url)))
-    return url;
-
-  return GetContentClient()->browser()->
-      GetEffectiveURL(browser_context, url);
+  bool is_isolated_origin = policy->IsIsolatedOrigin(url::Origin::Create(url));
+  return GetContentClient()->browser()->GetEffectiveURL(browser_context, url,
+                                                        is_isolated_origin);
 }
 
 // static

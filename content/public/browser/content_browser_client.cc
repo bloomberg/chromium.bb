@@ -64,7 +64,8 @@ WebContentsViewDelegate* ContentBrowserClient::GetWebContentsViewDelegate(
 }
 
 GURL ContentBrowserClient::GetEffectiveURL(BrowserContext* browser_context,
-                                           const GURL& url) {
+                                           const GURL& url,
+                                           bool is_isolated_origin) {
   return url;
 }
 
