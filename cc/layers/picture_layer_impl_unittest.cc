@@ -2896,6 +2896,63 @@ TEST_F(PictureLayerImplTest, HighResTilingDuringAnimation) {
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(), 11.f);
 }
 
+TEST_F(PictureLayerImplTest, HighResTilingDuringAnimationAspectRatio) {
+  gfx::Size viewport_size(2000, 1000);
+  host_impl()->SetViewportSize(viewport_size);
+
+  gfx::Size layer_bounds(100, 100);
+  SetupDefaultTrees(layer_bounds);
+
+  float contents_scale = 1.f;
+  float device_scale = 1.f;
+  float page_scale = 1.f;
+  float maximum_animation_scale = 1.f;
+  float starting_animation_scale = 0.f;
+  bool animating_transform = false;
+
+  EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(), 1.f);
+
+  // Allow rastering at maximum scale if the animation size is smaller than
+  // the square of the maximum viewporrt dimension.
+  animating_transform = true;
+  contents_scale = 2.f;
+  maximum_animation_scale = 15.f;
+
+  SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
+                               maximum_animation_scale,
+                               starting_animation_scale, animating_transform);
+  EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(), 15.f);
+}
+
+TEST_F(PictureLayerImplTest, HighResTilingDuringAnimationAspectRatioTooLarge) {
+  gfx::Size viewport_size(2000, 1000);
+  host_impl()->SetViewportSize(viewport_size);
+
+  gfx::Size layer_bounds(100, 100);
+  SetupDefaultTrees(layer_bounds);
+
+  float contents_scale = 1.f;
+  float device_scale = 1.f;
+  float page_scale = 1.f;
+  float maximum_animation_scale = 1.f;
+  float starting_animation_scale = 0.f;
+  bool animating_transform = false;
+
+  EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(), 1.f);
+
+  // The maximum animation scale exceeds the squared size of the maximum
+  // viewport dimension, so raster scale should fall back to 1.
+  animating_transform = true;
+  contents_scale = 2.f;
+  maximum_animation_scale = 21.f;
+
+  SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
+                               maximum_animation_scale,
+                               starting_animation_scale, animating_transform);
+  EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(),
+                 page_scale * device_scale);
+}
+
 TEST_F(PictureLayerImplTest, TilingSetRasterQueue) {
   host_impl()->AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
 
