@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -105,6 +106,7 @@ class VectorIconGallery : public View,
   // ButtonListener
   void ButtonPressed(Button* sender, const ui::Event& event) override {
     DCHECK_EQ(file_go_button_, sender);
+    base::ScopedAllowBlockingForTesting allow_blocking;
 #if defined(OS_POSIX)
     base::FilePath path(base::UTF16ToUTF8(file_chooser_->text()));
 #elif defined(OS_WIN)
