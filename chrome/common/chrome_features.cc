@@ -497,20 +497,6 @@ const base::Feature kNativeSmb{"NativeSmb", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kSoundContentSetting{"SoundContentSetting",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
-#if !defined(OS_ANDROID)
-// Enables delaying the navigation of background tabs in order to improve
-// foreground tab's user experience.
-const base::Feature kStaggeredBackgroundTabOpening{
-    "StaggeredBackgroundTabOpening", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// This controls whether we are running experiment with staggered background
-// tab opening feature. For control group, this should be disabled. This depends
-// on |kStaggeredBackgroundTabOpening| above.
-const base::Feature kStaggeredBackgroundTabOpeningExperiment{
-    "StaggeredBackgroundTabOpeningExperiment",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
-
 // Enables or disables the creation of (legacy) supervised users. Does not
 // affect existing supervised users.
 const base::Feature kSupervisedUserCreation{"SupervisedUserCreation",

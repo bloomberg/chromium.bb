@@ -139,6 +139,11 @@ class TabManagerStatsCollector final : public SessionRestoreObserver {
   // user navigates to a new page and |contents| is resused.
   void OnDidStartMainFrameNavigation(content::WebContents* contents);
 
+  // Called by TabManager when it decides to load the next tab. Used as the
+  // signal to record how often timeout happens. Timeout means it wants to start
+  // loading the next tab even though the previous tab is still loading.
+  void OnWillLoadNextBackgroundTab(bool timeout);
+
   // Called by TabManager when a tab is considered loaded. Used as the signal to
   // record tab switch load time metrics for |contents|.
   void OnTabIsLoaded(content::WebContents* contents);
@@ -195,6 +200,7 @@ class TabManagerStatsCollector final : public SessionRestoreObserver {
   static const char kHistogramBackgroundTabOpeningTabPausedCount[];
   static const char kHistogramBackgroundTabOpeningTabLoadAutoStartedCount[];
   static const char kHistogramBackgroundTabOpeningTabLoadUserInitiatedCount[];
+  static const char kHistogramBackgroundTabOpeningTabLoadTimeout[];
   static const char kHistogramSessionOverlapSessionRestore[];
   static const char kHistogramSessionOverlapBackgroundTabOpening[];
 

@@ -9,9 +9,9 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
+#include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/tab_ui_helper.h"
-#include "chrome/common/chrome_features.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 

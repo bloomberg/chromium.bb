@@ -34,6 +34,7 @@
 #include "chrome/browser/resource_coordinator/background_tab_navigation_throttle.h"
 #include "chrome/browser/resource_coordinator/resource_coordinator_web_contents_observer.h"
 #include "chrome/browser/resource_coordinator/tab_lifetime_observer.h"
+#include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "chrome/browser/resource_coordinator/tab_manager_resource_coordinator_signal_observer.h"
 #include "chrome/browser/resource_coordinator/tab_manager_stats_collector.h"
 #include "chrome/browser/resource_coordinator/tab_manager_web_contents_data.h"
@@ -77,10 +78,10 @@ using content::WebContents;
 namespace resource_coordinator {
 namespace {
 
-// The timeout time after which the next background tab gets loaded if the
-// previous tab has not finished loading yet. This is ignored in kPaused loading
-// mode.
-const TimeDelta kBackgroundTabLoadTimeout = TimeDelta::FromSeconds(10);
+// The default timeout time after which the next background tab gets loaded if
+// the previous tab has not finished loading yet. This is ignored in kPaused
+// loading mode.
+const TimeDelta kDefaultBackgroundTabLoadTimeout = TimeDelta::FromSeconds(10);
 
 // The number of loading slots for background tabs. TabManager will start to
 // load the next background tab when the loading slots free up.
@@ -1217,8 +1218,9 @@ void TabManager::StartForceLoadTimer() {
                        pending_navigations_.size(), loading_contents_.size()));
 
   force_load_timer_->Stop();
-  force_load_timer_->Start(FROM_HERE, kBackgroundTabLoadTimeout, this,
-                           &TabManager::LoadNextBackgroundTabIfNeeded);
+  force_load_timer_->Start(FROM_HERE,
+                           GetTabLoadTimeout(kDefaultBackgroundTabLoadTimeout),
+                           this, &TabManager::LoadNextBackgroundTabIfNeeded);
 }
 
 void TabManager::LoadNextBackgroundTabIfNeeded() {
@@ -1241,6 +1243,8 @@ void TabManager::LoadNextBackgroundTabIfNeeded() {
   if (pending_navigations_.empty())
     return;
 
+  stats_collector_->OnWillLoadNextBackgroundTab(
+      !force_load_timer_->IsRunning());
   BackgroundTabNavigationThrottle* throttle = pending_navigations_.front();
   pending_navigations_.erase(pending_navigations_.begin());
   ResumeNavigation(throttle);

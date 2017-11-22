@@ -124,6 +124,11 @@ class SessionRestoreStatsCollector
   // restore.
   void DeferTab(content::NavigationController* tab);
 
+  // Called when about to load the next tab. Used as a signal to record how
+  // often timeout happens. Timeout means we want to start loading the next tab
+  // even though the previous tab is still loading.
+  void OnWillLoadNextTab(bool timeout);
+
   // Exposed for unittesting.
   const TabLoaderStats& tab_loader_stats() const { return tab_loader_stats_; }
 
