@@ -31,15 +31,7 @@ const int kBufferSize = 16 * 1024;
 
 static const char kModelOffline[] = "Offline";
 
-static const char kHttpGetRequest[] = "GET %s HTTP/1.1\r\n\r\n";
-
-static const char kWebSocketUpgradeRequest[] = "GET %s HTTP/1.1\r\n"
-    "Upgrade: WebSocket\r\n"
-    "Connection: Upgrade\r\n"
-    "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n"
-    "Sec-WebSocket-Version: 13\r\n"
-    "%s"
-    "\r\n";
+static const char kRequestLineFormat[] = "GET %s HTTP/1.1";
 
 static void PostDeviceInfoCallback(
     scoped_refptr<base::SingleThreadTaskRunner> response_task_runner,
@@ -75,7 +67,7 @@ class HttpRequest {
   typedef AndroidDeviceManager::CommandCallback CommandCallback;
   typedef AndroidDeviceManager::HttpUpgradeCallback HttpUpgradeCallback;
 
-  static void CommandRequest(const std::string& request,
+  static void CommandRequest(const std::string& path,
                              const CommandCallback& callback,
                              int result,
                              std::unique_ptr<net::StreamSocket> socket) {
@@ -83,10 +75,11 @@ class HttpRequest {
       callback.Run(result, std::string());
       return;
     }
-    new HttpRequest(std::move(socket), request, callback);
+    new HttpRequest(std::move(socket), path, {}, callback);
   }
 
-  static void HttpUpgradeRequest(const std::string& request,
+  static void HttpUpgradeRequest(const std::string& path,
+                                 const std::string& extensions,
                                  const HttpUpgradeCallback& callback,
                                  int result,
                                  std::unique_ptr<net::StreamSocket> socket) {
@@ -95,28 +88,37 @@ class HttpRequest {
                    base::WrapUnique<net::StreamSocket>(nullptr));
       return;
     }
-    new HttpRequest(std::move(socket), request, callback);
+    std::map<std::string, std::string> headers = {
+        {"Upgrade", "WebSocket"},
+        {"Connection", "Upgrade"},
+        {"Sec-WebSocket-Key", "dGhlIHNhbXBsZSBub25jZQ=="},
+        {"Sec-WebSocket-Version", "13"}};
+    if (!extensions.empty())
+      headers["Sec-WebSocket-Extensions"] = extensions;
+    new HttpRequest(std::move(socket), path, headers, callback);
   }
 
  private:
   HttpRequest(std::unique_ptr<net::StreamSocket> socket,
-              const std::string& request,
+              const std::string& path,
+              const std::map<std::string, std::string>& headers,
               const CommandCallback& callback)
       : socket_(std::move(socket)),
         command_callback_(callback),
         expected_total_size_(0),
         header_size_(std::string::npos) {
-    SendRequest(request);
+    SendRequest(path, headers);
   }
 
   HttpRequest(std::unique_ptr<net::StreamSocket> socket,
-              const std::string& request,
+              const std::string& path,
+              const std::map<std::string, std::string>& headers,
               const HttpUpgradeCallback& callback)
       : socket_(std::move(socket)),
         http_upgrade_callback_(callback),
         expected_total_size_(0),
         header_size_(std::string::npos) {
-    SendRequest(request);
+    SendRequest(path, headers);
   }
 
   ~HttpRequest() {
@@ -143,7 +145,25 @@ class HttpRequest {
     }
   }
 
-  void SendRequest(const std::string& request) {
+  void SendRequest(const std::string& path,
+                   std::map<std::string, std::string> headers) {
+    net::IPEndPoint remote_address;
+    socket_->GetPeerAddress(&remote_address);
+    headers["Host"] = remote_address.ToString();
+
+    std::string requestLine =
+        base::StringPrintf(kRequestLineFormat, path.c_str());
+    std::string crlf = "\r\n";
+    std::string colon = ": ";
+
+    std::vector<base::StringPiece> pieces = {requestLine, crlf};
+    for (const auto& header_and_value : headers) {
+      pieces.insert(pieces.end(), {header_and_value.first, colon,
+                                   header_and_value.second, crlf});
+    }
+    pieces.insert(pieces.end(), {crlf});
+
+    std::string request = base::JoinString(pieces, "");
     scoped_refptr<net::IOBuffer> base_buffer =
         new net::IOBuffer(request.size());
     memcpy(base_buffer->data(), request.data(), request.size());
@@ -363,11 +383,8 @@ void AndroidDeviceManager::DeviceProvider::SendJsonRequest(
     const std::string& socket_name,
     const std::string& request,
     const CommandCallback& callback) {
-  OpenSocket(serial,
-             socket_name,
-             base::Bind(&HttpRequest::CommandRequest,
-                        base::StringPrintf(kHttpGetRequest, request.c_str()),
-                        callback));
+  OpenSocket(serial, socket_name,
+             base::Bind(&HttpRequest::CommandRequest, request, callback));
 }
 
 void AndroidDeviceManager::DeviceProvider::HttpUpgrade(
@@ -376,16 +393,9 @@ void AndroidDeviceManager::DeviceProvider::HttpUpgrade(
     const std::string& path,
     const std::string& extensions,
     const HttpUpgradeCallback& callback) {
-  std::string extensions_with_new_line =
-      extensions.empty() ? std::string() : extensions + "\r\n";
   OpenSocket(
-      serial,
-      socket_name,
-      base::Bind(&HttpRequest::HttpUpgradeRequest,
-                 base::StringPrintf(kWebSocketUpgradeRequest,
-                                    path.c_str(),
-                                    extensions_with_new_line.c_str()),
-                 callback));
+      serial, socket_name,
+      base::Bind(&HttpRequest::HttpUpgradeRequest, path, extensions, callback));
 }
 
 void AndroidDeviceManager::DeviceProvider::ReleaseDevice(
