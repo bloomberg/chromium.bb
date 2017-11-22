@@ -140,7 +140,7 @@ class PRINTING_EXPORT PrintingContext {
   PrintSettings settings_;
 
   // Printing context delegate.
-  Delegate* delegate_;
+  Delegate* const delegate_;
 
   // Is a print job being done.
   volatile bool in_print_job_;
