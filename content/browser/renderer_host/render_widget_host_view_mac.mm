@@ -3663,7 +3663,8 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   // NSWindow's invalidateCursorRectsForView: resets cursor rects but does not
   // update the cursor instantly. The cursor is updated when the mouse moves.
   // Update the cursor by setting the current cursor if not hidden.
-  if (!cursorHidden_)
+  WebContents* web_contents = renderWidgetHostView_->GetWebContents();
+  if (!cursorHidden_ && web_contents && !web_contents->IsShowingContextMenu())
     [currentCursor_ set];
 }
 
