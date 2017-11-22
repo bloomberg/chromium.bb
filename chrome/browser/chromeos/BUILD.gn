@@ -20,7 +20,6 @@ source_set("chromeos") {
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
   public_deps = [
-    ":install_attributes_proto",
     "//ash/resources",
     "//ash/strings",
     "//chrome:extra_resources",
@@ -2033,12 +2032,6 @@ source_set("unit_tests") {
   ]
   data = [
     "//chromeos/test/data/",
-  ]
-}
-
-proto_library("install_attributes_proto") {
-  sources = [
-    "policy/proto/install_attributes.proto",
   ]
 }
 

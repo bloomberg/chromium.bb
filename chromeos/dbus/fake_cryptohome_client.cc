@@ -24,10 +24,8 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/cryptohome/key.pb.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
+#include "components/policy/proto/install_attributes.pb.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
-#include "third_party/protobuf/src/google/protobuf/io/coded_stream.h"
-#include "third_party/protobuf/src/google/protobuf/io/zero_copy_stream.h"
-#include "third_party/protobuf/src/google/protobuf/io/zero_copy_stream_impl_lite.h"
 
 namespace chromeos {
 
@@ -40,6 +38,9 @@ constexpr char kSignature[] = "signed";
 constexpr int kDircryptoMigrationUpdateIntervalMs = 200;
 // The number of updates the MigrateToDircrypto will send before it completes.
 constexpr uint64_t kDircryptoMigrationMaxProgress = 15;
+// Buffer size for reading install attributes file. 16k should be plenty. The
+// file contains six attributes only (see InstallAttributes::LockDevice).
+constexpr size_t kInstallAttributesFileMaxSize = 16384;
 }  // namespace
 
 FakeCryptohomeClient::FakeCryptohomeClient()
@@ -51,6 +52,8 @@ FakeCryptohomeClient::FakeCryptohomeClient()
   base::FilePath cache_path;
   locked_ = PathService::Get(chromeos::FILE_INSTALL_ATTRIBUTES, &cache_path) &&
             base::PathExists(cache_path);
+  if (locked_)
+    LoadInstallAttributes();
 }
 
 FakeCryptohomeClient::~FakeCryptohomeClient() {}
@@ -281,50 +284,23 @@ bool FakeCryptohomeClient::InstallAttributesFinalize(bool* successful) {
   // Persist the install attributes so that they can be reloaded if the
   // browser is restarted. This is used for ease of development when device
   // enrollment is required.
-  // The cryptohome::SerializedInstallAttributes protobuf lives in
-  // chrome/browser/chromeos, so it can't be used directly here; use the
-  // low-level protobuf API instead to just write the name-value pairs.
-  // The cache file is read by InstallAttributes::Init.
   base::FilePath cache_path;
   if (!PathService::Get(chromeos::FILE_INSTALL_ATTRIBUTES, &cache_path))
     return false;
 
-  std::string result;
-  {
-    // |result| can be used only after the StringOutputStream goes out of
-    // scope.
-    google::protobuf::io::StringOutputStream result_stream(&result);
-    google::protobuf::io::CodedOutputStream result_output(&result_stream);
-
-    // These tags encode a variable-length value on the wire, which can be
-    // used to encode strings, bytes and messages. We only needs constants
-    // for tag numbers 1 and 2 (see install_attributes.proto).
-    const int kVarLengthTag1 = (1 << 3) | 0x2;
-    const int kVarLengthTag2 = (2 << 3) | 0x2;
-
-    typedef std::map<std::string, std::vector<uint8_t>>::const_iterator Iter;
-    for (Iter it = install_attrs_.begin(); it != install_attrs_.end(); ++it) {
-      std::string attr;
-      {
-        google::protobuf::io::StringOutputStream attr_stream(&attr);
-        google::protobuf::io::CodedOutputStream attr_output(&attr_stream);
-
-        attr_output.WriteVarint32(kVarLengthTag1);
-        attr_output.WriteVarint32(it->first.size());
-        attr_output.WriteString(it->first);
-        attr_output.WriteVarint32(kVarLengthTag2);
-        attr_output.WriteVarint32(it->second.size());
-        attr_output.WriteRaw(it->second.data(), it->second.size());
-      }
-
-      // Two CodedOutputStreams are needed because inner messages must be
-      // prefixed by their total length, which can't be easily computed before
-      // writing their tags and values.
-      result_output.WriteVarint32(kVarLengthTag2);
-      result_output.WriteVarint32(attr.size());
-      result_output.WriteRaw(attr.data(), attr.size());
-    }
+  cryptohome::SerializedInstallAttributes install_attrs_proto;
+  for (const auto& it : install_attrs_) {
+    const std::string& name = it.first;
+    const std::vector<uint8_t>& value = it.second;
+    cryptohome::SerializedInstallAttributes::Attribute* attr_entry =
+        install_attrs_proto.add_attributes();
+    attr_entry->set_name(name);
+    attr_entry->mutable_value()->assign(value.data(),
+                                        value.data() + value.size());
   }
+
+  std::string result;
+  install_attrs_proto.SerializeToString(&result);
 
   // The real implementation does a blocking wait on the dbus call; the fake
   // implementation must have this file written before returning.
@@ -802,6 +778,34 @@ void FakeCryptohomeClient::NotifyDircryptoMigrationProgress(
     uint64_t total) {
   for (auto& observer : observer_list_)
     observer.DircryptoMigrationProgress(status, current, total);
+}
+
+bool FakeCryptohomeClient::LoadInstallAttributes() {
+  base::FilePath cache_file;
+  const bool file_exists =
+      PathService::Get(FILE_INSTALL_ATTRIBUTES, &cache_file) &&
+      base::PathExists(cache_file);
+  DCHECK(file_exists);
+  // Mostly copied from chrome/browser/chromeos/settings/install_attributes.cc.
+  std::string file_blob;
+  if (!base::ReadFileToStringWithMaxSize(cache_file, &file_blob,
+                                         kInstallAttributesFileMaxSize)) {
+    PLOG(ERROR) << "Failed to read " << cache_file.value();
+    return false;
+  }
+
+  cryptohome::SerializedInstallAttributes install_attrs_proto;
+  if (!install_attrs_proto.ParseFromString(file_blob)) {
+    LOG(ERROR) << "Failed to parse install attributes cache.";
+    return false;
+  }
+
+  for (const auto& entry : install_attrs_proto.attributes()) {
+    install_attrs_[entry.name()].assign(
+        entry.value().data(), entry.value().data() + entry.value().size());
+  }
+
+  return true;
 }
 
 }  // namespace chromeos
