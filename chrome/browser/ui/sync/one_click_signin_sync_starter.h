@@ -115,10 +115,10 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
   // This is only available when DICE is enabled.
   OneClickSigninSyncStarter(Profile* profile,
                             Browser* browser,
-                            const std::string& gaia_id,
-                            const std::string& email,
+                            const std::string& account_id,
                             signin_metrics::AccessPoint signin_access_point,
                             signin_metrics::Reason signin_reason,
+                            ProfileMode profile_mode,
                             Callback callback);
 
   // chrome::BrowserListObserver override.

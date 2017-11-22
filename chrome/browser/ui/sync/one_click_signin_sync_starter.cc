@@ -18,6 +18,7 @@
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_window.h"
+#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_tracker_factory.h"
 #include "chrome/browser/signin/signin_util.h"
@@ -70,6 +71,22 @@ void SetUserChoiceHistogram(SigninChoice choice) {
                             SIGNIN_CHOICE_SIZE);
 }
 
+std::string GetEmail(Profile* profile, const std::string& account_id) {
+  AccountInfo account_info =
+      AccountTrackerServiceFactory::GetForProfile(profile)->GetAccountInfo(
+          account_id);
+  DCHECK(!account_info.email.empty());
+  return account_info.email;
+}
+
+std::string GetGaiaId(Profile* profile, const std::string& account_id) {
+  AccountInfo account_info =
+      AccountTrackerServiceFactory::GetForProfile(profile)->GetAccountInfo(
+          account_id);
+  DCHECK(!account_info.gaia.empty());
+  return account_info.gaia;
+}
+
 }  // namespace
 
 OneClickSigninSyncStarter::OneClickSigninSyncStarter(
@@ -107,21 +124,21 @@ OneClickSigninSyncStarter::OneClickSigninSyncStarter(
 OneClickSigninSyncStarter::OneClickSigninSyncStarter(
     Profile* profile,
     Browser* browser,
-    const std::string& gaia_id,
-    const std::string& email,
+    const std::string& account_id,
     signin_metrics::AccessPoint signin_access_point,
     signin_metrics::Reason signin_reason,
+    ProfileMode profile_mode,
     Callback callback)
     : OneClickSigninSyncStarter(
           profile,
           browser,
-          gaia_id,
-          email,
+          GetGaiaId(profile, account_id),
+          GetEmail(profile, account_id),
           std::string() /* password */,
           std::string() /* refresh_token */,
           signin_access_point,
           signin_reason,
-          OneClickSigninSyncStarter::CURRENT_PROFILE,
+          profile_mode,
           OneClickSigninSyncStarter::CONFIRM_SYNC_SETTINGS_FIRST,
           OneClickSigninSyncStarter::CONFIRM_AFTER_SIGNIN,
           callback) {

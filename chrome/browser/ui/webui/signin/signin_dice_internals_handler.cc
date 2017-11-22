@@ -60,7 +60,6 @@ void SigninDiceInternalsHandler::HandleEnableSync(const base::ListValue* args) {
   }
 
   std::string account_id = account_ids[0];
-  std::string gaia_id = tracker->GetAccountInfo(account_id).gaia;
   std::string email = tracker->GetAccountInfo(account_id).email;
   VLOG(1) << "[Dice] Start syncing with account " << email;
 
@@ -68,9 +67,10 @@ void SigninDiceInternalsHandler::HandleEnableSync(const base::ListValue* args) {
   // enabling sync).
   OneClickSigninSyncStarter::Callback callback;
   new OneClickSigninSyncStarter(
-      profile_, browser, gaia_id, email,
+      profile_, browser, account_id,
       signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN,
-      signin_metrics::Reason::REASON_UNKNOWN_REASON, callback);
+      signin_metrics::Reason::REASON_UNKNOWN_REASON,
+      OneClickSigninSyncStarter::CURRENT_PROFILE, callback);
 }
 
 void SigninDiceInternalsHandler::HandleDisableSync(
