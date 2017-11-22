@@ -142,7 +142,7 @@ importer.PersistentImportHistory = function(hashGenerator, storage) {
   /** @private {!Array<!importer.ImportHistory.Observer>} */
   this.observers_ = [];
 
-  /** @private {Promise.<!importer.PersistentImportHistory>} */
+  /** @private {Promise<!importer.PersistentImportHistory>} */
   this.whenReady_ = this.load_();
 };
 

@@ -395,7 +395,7 @@ FileBrowserBackgroundImpl.prototype.onContextMenuClicked_ = function(info) {
 /**
  * Looks for a focused window.
  *
- * @return {!Promise.<?string>} Promise fulfilled with a key of the focused
+ * @return {!Promise<?string>} Promise fulfilled with a key of the focused
  *     window, or null if not found.
  */
 FileBrowserBackgroundImpl.prototype.findFocusedWindow_ = function() {

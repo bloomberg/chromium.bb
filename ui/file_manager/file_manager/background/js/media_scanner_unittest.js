@@ -305,16 +305,16 @@ function testIgnoresPreviousImports(callback) {
   ];
 
   var promise = makeTestFileSystemRoot('testIgnoresPreviousImports')
-      .then(populateDir.bind(null, filenames))
-      .then(
-          /**
-           * Scans the directory.
-           * @param {!DirectoryEntry} root
-           */
-          function(root) {
-            return scanner.scanDirectory(root).whenFinal();
-          })
-      .then(assertFilesFound.bind(null, expectedFiles))
+                    .then(populateDir.bind(null, filenames))
+                    .then(
+                        /**
+                         * Scans the directory.
+                         * @param {!DirectoryEntry} root
+                         */
+                        function(root) {
+                          return scanner.scanDirectory(root).whenFinal();
+                        })
+                    .then(assertFilesFound.bind(null, expectedFiles));
 
   reportPromise(promise, callback);
 }
@@ -562,7 +562,7 @@ function makeTestFileSystemRoot(directoryName) {
  * @param {!Array<!Array|string>} filenames A (potentially nested) array of
  *     strings, reflecting a directory structure.
  * @param {!DirectoryEntry} dir The root of the directory tree.
- * @return {!Promise.<!DirectoryEntry>} The root of the newly populated
+ * @return {!Promise<!DirectoryEntry>} The root of the newly populated
  *     directory tree.
  */
 function populateDir(filenames, dir) {

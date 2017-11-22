@@ -6,7 +6,7 @@
  * The container of the VolumeInfo for each mounted volume.
  * @interface
  */
-function VolumeInfoList() {};
+function VolumeInfoList() {}
 
 /** @type {number} */
 VolumeInfoList.prototype.length;
@@ -64,7 +64,7 @@ VolumeInfoList.prototype.findByDevicePath = function(devicePath) {};
  * by {@code volumeId} is created.
  *
  * @param {string} volumeId
- * @return {!Promise.<!VolumeInfo>} The VolumeInfo. Will not resolve
+ * @return {!Promise<!VolumeInfo>} The VolumeInfo. Will not resolve
  *     if the volume is never mounted.
  */
 VolumeInfoList.prototype.whenVolumeInfoReady = function(volumeId) {};

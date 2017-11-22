@@ -91,7 +91,7 @@ NamingController.prototype.validateFileName = function(
 
 /**
  * @param {string} filename
- * @return {Promise.<string>}
+ * @return {Promise<string>}
  */
 NamingController.prototype.validateFileNameForSaving = function(filename) {
   var directory = /** @type {DirectoryEntry} */ (

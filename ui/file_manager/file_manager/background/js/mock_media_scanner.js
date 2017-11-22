@@ -160,7 +160,7 @@ function TestScanResult(fileEntries) {
   /** @private {boolean} */
   this.canceled_ = false;
 
-  /** @type {!Promise.<!importer.ScanResult>} */
+  /** @type {!Promise<!importer.ScanResult>} */
   this.whenFinal_ = new Promise(
       function(resolve, reject) {
         this.resolveResult_ = function(result) {
@@ -180,7 +180,9 @@ TestScanResult.lastId_ = 0;
 /** @struct */
 TestScanResult.prototype = {
   /** @return {string} */
-  get name() { return 'TestScanResult(' + this.scanId_ + ')' }
+  get name() {
+    return 'TestScanResult(' + this.scanId_ + ')';
+  }
 };
 
 /** @override */
@@ -243,7 +245,7 @@ function TestDirectoryWatcher(callback) {
    * @public {boolean}
    */
   this.triggered = false;
-};
+}
 
 /**
  * @override
