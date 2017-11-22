@@ -23,6 +23,7 @@ class MockExtensionSpecialStoragePolicy : public ExtensionSpecialStoragePolicy {
   bool IsStorageProtected(const GURL& origin) override;
   bool IsStorageUnlimited(const GURL& origin) override;
   bool IsStorageSessionOnly(const GURL& origin) override;
+  bool IsStorageSessionOnlyOrBlocked(const GURL& origin) override;
   bool HasSessionOnlyOrigins() override;
 
   void AddProtected(const GURL& origin) {
