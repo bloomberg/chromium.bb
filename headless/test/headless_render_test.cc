@@ -7,6 +7,7 @@
 #include "headless/public/devtools/domains/dom_snapshot.h"
 #include "headless/public/headless_devtools_client.h"
 #include "headless/public/util/virtual_time_controller.h"
+#include "net/test/embedded_test_server/http_response.h"
 #include "net/url_request/url_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -30,24 +31,13 @@ void HeadlessRenderTest::PostRunAsynchronousTest() {
 }
 
 void HeadlessRenderTest::RunDevTooledTest() {
-  EXPECT_TRUE(embedded_test_server()->Start());
+  http_handler_->SetHeadlessBrowserContext(browser_context_);
 
   virtual_time_controller_ =
       std::make_unique<VirtualTimeController>(devtools_client_.get());
 
   devtools_client_->GetPage()->GetExperimental()->AddObserver(this);
-  devtools_client_->GetNetwork()->GetExperimental()->AddObserver(this);
   devtools_client_->GetPage()->Enable(Sync());
-  devtools_client_->GetNetwork()->Enable(Sync());
-
-  std::unique_ptr<headless::network::RequestPattern> match_all =
-      headless::network::RequestPattern::Builder().SetUrlPattern("*").Build();
-  std::vector<std::unique_ptr<headless::network::RequestPattern>> patterns;
-  patterns.push_back(std::move(match_all));
-  devtools_client_->GetNetwork()->GetExperimental()->SetRequestInterception(
-      network::SetRequestInterceptionParams::Builder()
-          .SetPatterns(std::move(patterns))
-          .Build());
 
   GURL url = GetPageUrl(devtools_client_.get());
 
@@ -87,6 +77,15 @@ void HeadlessRenderTest::CustomizeHeadlessBrowserContext(
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
+ProtocolHandlerMap HeadlessRenderTest::GetProtocolHandlers() {
+  ProtocolHandlerMap protocol_handlers;
+  std::unique_ptr<TestInMemoryProtocolHandler> http_handler(
+      new TestInMemoryProtocolHandler(browser()->BrowserIOThread(), this));
+  http_handler_ = http_handler.get();
+  protocol_handlers[url::kHttpScheme] = std::move(http_handler);
+  return protocol_handlers;
+}
+
 void HeadlessRenderTest::OverrideWebPreferences(WebPreferences* preferences) {
   preferences->hide_scrollbars = true;
   preferences->javascript_enabled = true;
@@ -100,19 +99,6 @@ void HeadlessRenderTest::UrlRequestFailed(net::URLRequest* request,
     return;
   ADD_FAILURE() << "Network request failed: " << net_error << " for "
                 << request->url().spec();
-}
-
-void HeadlessRenderTest::OnRequestIntercepted(
-    const network::RequestInterceptedParams& params) {
-  CHECK_NE(INIT, state_);
-  if (params.GetIsNavigationRequest())
-    navigation_performed_ = true;
-  requests_.push_back(params.Clone());
-  // Allow the navigation to proceed.
-  devtools_client_->GetNetwork()->GetExperimental()->ContinueInterceptedRequest(
-      network::ContinueInterceptedRequestParams::Builder()
-          .SetInterceptionId(params.GetInterceptionId())
-          .Build());
 }
 
 void HeadlessRenderTest::OnLoadEventFired(const page::LoadEventFiredParams&) {
@@ -135,8 +121,12 @@ void HeadlessRenderTest::OnFrameStartedLoading(
   }
 }
 
+void HeadlessRenderTest::OnRequest(const GURL& url,
+                                   base::Closure complete_request) {
+  complete_request.Run();
+}
+
 void HeadlessRenderTest::OnPageRenderCompleted() {
-  CHECK(navigation_performed_);
   CHECK_GE(state_, LOADING);
   if (state_ >= DONE)
     return;

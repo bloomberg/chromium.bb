@@ -13,6 +13,7 @@
 #include "headless/public/devtools/domains/runtime.h"
 #include "headless/public/headless_devtools_client.h"
 #include "headless/test/headless_render_test.h"
+#include "net/test/embedded_test_server/http_response.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -23,6 +24,10 @@
 namespace headless {
 
 namespace {
+
+const std::string SOME_HOST = "http://www.example.com";
+constexpr char SOME_URL[] = "http://example.com/foobar";
+constexpr char TEXT_HTML[] = "text/html";
 
 using dom_snapshot::GetSnapshotResult;
 using dom_snapshot::DOMNode;
@@ -88,6 +93,11 @@ const DOMNode* GetAt(const GetSnapshotResult* snapshot, size_t index) {
   return snapshot->GetDomNodes()->at(index).get();
 }
 
+const DOMNode* NextNode(const GetSnapshotResult* snapshot,
+                        const DOMNode* node) {
+  return GetAt(snapshot, IndexInDOM(snapshot, node) + 1);
+}
+
 MATCHER_P(NodeName, expected, "") {
   return arg->GetNodeName() == expected;
 }
@@ -103,15 +113,29 @@ MATCHER_P(RemoteString, expected, "") {
          arg->GetValue()->GetString() == expected;
 }
 
+MATCHER_P(RequestPath, expected, "") {
+  return arg.relative_url == expected;
+}
+
 using testing::ElementsAre;
+using testing::Eq;
 using testing::StartsWith;
+using net::test_server::HttpRequest;
+using net::test_server::HttpResponse;
+using net::test_server::BasicHttpResponse;
+using net::test_server::RawHttpResponse;
 
 }  // namespace
 
 class HelloWorldTest : public HeadlessRenderTest {
  private:
   GURL GetPageUrl(HeadlessDevToolsClient* client) override {
-    return GetURL("/hello.html");
+    GetProtocolHandler()->InsertResponse(SOME_URL, {R"|(
+<!doctype html>
+<h1>Hello headless world!</h1>
+)|",
+                                                    TEXT_HTML});
+    return GURL(SOME_URL);
   }
 
   void VerifyDom(GetSnapshotResult* dom_snapshot) override {
@@ -126,14 +150,10 @@ class HelloWorldTest : public HeadlessRenderTest {
 };
 HEADLESS_RENDER_BROWSERTEST(HelloWorldTest);
 
-class TimeoutTest : public HeadlessRenderTest {
+class TimeoutTest : public HelloWorldTest {
  private:
   void OnPageRenderCompleted() override {
     // Never complete.
-  }
-
-  GURL GetPageUrl(HeadlessDevToolsClient* client) override {
-    return GetURL("/hello.html");
   }
 
   void VerifyDom(GetSnapshotResult* dom_snapshot) override {
@@ -147,35 +167,46 @@ HEADLESS_RENDER_BROWSERTEST(TimeoutTest);
 class JavaScriptOverrideTitle_JsEnabled : public HeadlessRenderTest {
  private:
   GURL GetPageUrl(HeadlessDevToolsClient* client) override {
-    return GetURL("/render/javascript_override_title.html");
+    GetProtocolHandler()->InsertResponse(SOME_URL, {R"|(
+<html>
+  <head>
+    <title>JavaScript is off</title>
+    <script language="JavaScript">
+      <!-- Begin
+        document.title = 'JavaScript is on';
+      //  End -->
+    </script>
+  </head>
+  <body onload="settitle()">
+    Hello, World!
+  </body>
+</html>
+)|",
+                                                    TEXT_HTML});
+    return GURL(SOME_URL);
   }
 
   void VerifyDom(GetSnapshotResult* dom_snapshot) override {
     auto dom = FindTags(dom_snapshot, "TITLE");
     ASSERT_THAT(dom, ElementsAre(NodeName("TITLE")));
-    size_t pos = IndexInDOM(dom_snapshot, dom[0]);
-    const DOMNode* value = GetAt(dom_snapshot, pos + 1);
+    const DOMNode* value = NextNode(dom_snapshot, dom[0]);
     EXPECT_THAT(value, NodeValue("JavaScript is on"));
   }
 };
 HEADLESS_RENDER_BROWSERTEST(JavaScriptOverrideTitle_JsEnabled);
 
-class JavaScriptOverrideTitle_JsDisabled : public HeadlessRenderTest {
+class JavaScriptOverrideTitle_JsDisabled
+    : public JavaScriptOverrideTitle_JsEnabled {
  private:
   void OverrideWebPreferences(WebPreferences* preferences) override {
-    HeadlessRenderTest::OverrideWebPreferences(preferences);
+    JavaScriptOverrideTitle_JsEnabled::OverrideWebPreferences(preferences);
     preferences->javascript_enabled = false;
-  }
-
-  GURL GetPageUrl(HeadlessDevToolsClient* client) override {
-    return GetURL("/render/javascript_override_title.html");
   }
 
   void VerifyDom(GetSnapshotResult* dom_snapshot) override {
     auto dom = FindTags(dom_snapshot, "TITLE");
     ASSERT_THAT(dom, ElementsAre(NodeName("TITLE")));
-    size_t pos = IndexInDOM(dom_snapshot, dom[0]);
-    const DOMNode* value = GetAt(dom_snapshot, pos + 1);
+    const DOMNode* value = NextNode(dom_snapshot, dom[0]);
     EXPECT_THAT(value, NodeValue("JavaScript is off"));
   }
 };
@@ -189,6 +220,31 @@ class JavaScriptConsoleErrors : public HeadlessRenderTest,
   bool log_called_ = false;
 
   GURL GetPageUrl(HeadlessDevToolsClient* client) override {
+    GetProtocolHandler()->InsertResponse(SOME_URL, {R"|(
+<html>
+  <head>
+    <script language="JavaScript">
+      <![CDATA[
+        function image() {
+          window.open('<xsl:value-of select="/IMAGE/@href" />');
+        }
+      ]]>
+    </script>
+  </head>
+  <body onload="func3()">
+    <script type="text/javascript">
+      func1()
+    </script>
+    <script type="text/javascript">
+      func2();
+    </script>
+    <script type="text/javascript">
+      console.log("Hello, Script!");
+    </script>
+  </body>
+</html>
+)|",
+                                                    TEXT_HTML});
     client_ = client;
     client_->GetRuntime()->GetExperimental()->AddObserver(this);
     base::RunLoop run_loop;
@@ -196,7 +252,7 @@ class JavaScriptConsoleErrors : public HeadlessRenderTest,
     base::MessageLoop::ScopedNestableTaskAllower nest_loop(
         base::MessageLoop::current());
     run_loop.Run();
-    return GetURL("/render/console_errors.html");
+    return GURL(SOME_URL);
   }
 
   void OnConsoleAPICalled(
@@ -230,8 +286,24 @@ class DelayedCompletion : public HeadlessRenderTest {
   base::TimeTicks start_;
 
   GURL GetPageUrl(HeadlessDevToolsClient* client) override {
+    GetProtocolHandler()->InsertResponse(SOME_URL, {R"|(
+<html>
+  <body>
+   <script type="text/javascript">
+     setTimeout(() => {
+       var div = document.getElementById('content');
+       var p = document.createElement('p');
+       p.textContent = 'delayed text';
+       div.appendChild(p);
+     }, 3000);
+   </script>
+    <div id="content"/>
+  </body>
+</html>
+)|",
+                                                    TEXT_HTML});
     start_ = base::TimeTicks::Now();
-    return GetURL("/render/delayed_completion.html");
+    return GURL(SOME_URL);
   }
 
   void VerifyDom(GetSnapshotResult* dom_snapshot) override {
@@ -242,8 +314,7 @@ class DelayedCompletion : public HeadlessRenderTest {
                     NodeName("SCRIPT"), NodeName("DIV"), NodeName("P")));
     auto dom = FindTags(dom_snapshot, "P");
     ASSERT_THAT(dom, ElementsAre(NodeName("P")));
-    size_t pos = IndexInDOM(dom_snapshot, dom[0]);
-    const DOMNode* value = GetAt(dom_snapshot, pos + 1);
+    const DOMNode* value = NextNode(dom_snapshot, dom[0]);
     EXPECT_THAT(value, NodeValue("delayed text"));
     // The page delays output for 3 seconds. Due to virtual time this should
     // take significantly less actual time.
@@ -252,5 +323,74 @@ class DelayedCompletion : public HeadlessRenderTest {
   }
 };
 HEADLESS_RENDER_BROWSERTEST(DelayedCompletion);
+
+class ClientRedirectChain : public HeadlessRenderTest {
+ private:
+  GURL GetPageUrl(HeadlessDevToolsClient* client) override {
+    GetProtocolHandler()->InsertResponse("http://www.example.com/",
+                                         {R"|(
+<html>
+  <head>
+    <meta http-equiv="refresh" content="0; url=http://www.example.com/1"/>
+    <title>Hello, World 0</title>
+  </head>
+  <body>http://www.example.com/</body>
+</html>
+)|",
+                                          TEXT_HTML});
+    GetProtocolHandler()->InsertResponse("http://www.example.com/1",
+                                         {R"|(
+<html>
+  <head>
+    <title>Hello, World 1</title>
+    <script>
+      document.location='http://www.example.com/2';
+    </script>
+  </head>
+  <body>http://www.example.com/1</body>
+</html>
+)|",
+                                          TEXT_HTML});
+    GetProtocolHandler()->InsertResponse("http://www.example.com/2",
+                                         {R"|(
+<html>
+  <head>
+    <title>Hello, World 2</title>
+    <script>
+      setTimeout("document.location='http://www.example.com/3'", 1000);
+    </script>
+  </head>
+  <body>http://www.example.com/2</body>
+</html>
+)|",
+                                          TEXT_HTML});
+    GetProtocolHandler()->InsertResponse("http://www.example.com/3",
+                                         {R"|(
+<html>
+  <head>
+    <title>Pass</title>
+  </head>
+  <body>
+    http://www.example.com/3
+    <img src="pass">
+  </body>
+</html>
+)|",
+                                          TEXT_HTML});
+
+    return GURL("http://www.example.com/");
+  }
+
+  void VerifyDom(GetSnapshotResult* dom_snapshot) override {
+    EXPECT_THAT(GetProtocolHandler()->urls_requested(),
+                ElementsAre(SOME_HOST + "/", SOME_HOST + "/1", SOME_HOST + "/2",
+                            SOME_HOST + "/3", SOME_HOST + "/pass"));
+    auto dom = FindTags(dom_snapshot, "TITLE");
+    ASSERT_THAT(dom, ElementsAre(NodeName("TITLE")));
+    const DOMNode* value = NextNode(dom_snapshot, dom[0]);
+    EXPECT_THAT(value, NodeValue("Pass"));
+  }
+};
+HEADLESS_RENDER_BROWSERTEST(ClientRedirectChain);
 
 }  // namespace headless

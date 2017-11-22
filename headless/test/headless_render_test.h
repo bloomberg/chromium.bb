@@ -10,11 +10,12 @@
 
 #include "base/macros.h"
 #include "headless/public/devtools/domains/emulation.h"
-#include "headless/public/devtools/domains/network.h"
 #include "headless/public/devtools/domains/page.h"
 #include "headless/public/headless_browser.h"
 #include "headless/public/headless_browser_context.h"
+#include "headless/public/util/testing/test_in_memory_protocol_handler.h"
 #include "headless/test/headless_browser_test.h"
+#include "net/test/embedded_test_server/http_request.h"
 
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -31,7 +32,7 @@ class GetSnapshotResult;
 class HeadlessRenderTest : public HeadlessAsyncDevTooledBrowserTest,
                            public HeadlessBrowserContext::Observer,
                            public page::ExperimentalObserver,
-                           public network::ExperimentalObserver {
+                           public TestInMemoryProtocolHandler::RequestDeferrer {
  public:
   void RunDevTooledTest() override;
 
@@ -55,23 +56,32 @@ class HeadlessRenderTest : public HeadlessAsyncDevTooledBrowserTest,
   HeadlessRenderTest();
   ~HeadlessRenderTest() override;
 
+  // Marks that the test case reached the final conclusion.
   void SetTestCompleted() { state_ = FINISHED; }
-  GURL GetURL(const std::string& path) const {
-    return embedded_test_server()->GetURL(path);
-  }
 
-  void PostRunAsynchronousTest() override;
+  // The protocol handler used to respond to requests.
+  TestInMemoryProtocolHandler* GetProtocolHandler() { return http_handler_; }
 
+  // Do necessary preparations and return a URL to render.
   virtual GURL GetPageUrl(HeadlessDevToolsClient* client) = 0;
+
+  // Check if the DOM snapshot is as expected.
   virtual void VerifyDom(dom_snapshot::GetSnapshotResult* dom_snapshot) = 0;
 
+  // Called when all steps needed to load and present page are done.
   virtual void OnPageRenderCompleted();
+
+  // Called if page rendering wasn't completed within reasonable time.
   virtual void OnTimeout();
 
+  // Override to set specific options for requests.
   virtual void OverrideWebPreferences(WebPreferences* preferences);
 
+  // Setting up the browsertest.
   void CustomizeHeadlessBrowserContext(
       HeadlessBrowserContext::Builder& builder) override;
+  void PostRunAsynchronousTest() override;
+  ProtocolHandlerMap GetProtocolHandlers() override;
 
   // HeadlessBrowserContext::Observer
   void UrlRequestFailed(net::URLRequest* request,
@@ -83,11 +93,8 @@ class HeadlessRenderTest : public HeadlessAsyncDevTooledBrowserTest,
   void OnFrameStartedLoading(
       const page::FrameStartedLoadingParams& params) override;
 
-  // network::ExperimentalObserver
-  void OnRequestIntercepted(
-      const network::RequestInterceptedParams& params) override;
-
-  std::vector<std::unique_ptr<network::RequestInterceptedParams>> requests_;
+  // TestInMemoryProtocolHandler::RequestDeferrer
+  void OnRequest(const GURL& url, base::Closure complete_request) override;
 
  private:
   void HandleVirtualTimeExhausted();
@@ -106,7 +113,7 @@ class HeadlessRenderTest : public HeadlessAsyncDevTooledBrowserTest,
   State state_ = INIT;
 
   std::unique_ptr<VirtualTimeController> virtual_time_controller_;
-  bool navigation_performed_ = false;
+  TestInMemoryProtocolHandler* http_handler_;  // NOT OWNED
 
   base::WeakPtrFactory<HeadlessRenderTest> weak_ptr_factory_;
 
