@@ -96,8 +96,7 @@ HistoryAndBookmarkRow::ColumnID HistoryAndBookmarkRow::GetColumnID(
   BookmarkIDMapping::const_iterator i = g_bookmark_id_mapping->find(name);
   if (i == g_bookmark_id_mapping->end())
     return HistoryAndBookmarkRow::COLUMN_END;
-  else
-    return i->second;
+  return i->second;
 }
 
 SearchRow::SearchRow() : id_(0), keyword_id_(0) {
@@ -119,8 +118,7 @@ SearchRow::ColumnID SearchRow::GetColumnID(const std::string& name) {
   SearchIDMapping::const_iterator i = g_search_id_mapping->find(name);
   if (i == g_search_id_mapping->end())
     return SearchRow::COLUMN_END;
-  else
-    return i->second;
+  return i->second;
 }
 
 AndroidURLRow::AndroidURLRow() : id(0), url_id(0) {

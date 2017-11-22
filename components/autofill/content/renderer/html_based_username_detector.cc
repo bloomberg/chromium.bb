@@ -506,10 +506,10 @@ bool GetUsernameFieldBasedOnHtmlAttributes(
           username_found ? *username_element : blink::WebInputElement();
     }
     return username_found;
-  } else {  // Use the cached value for |form|.
-    *username_element = (*username_detector_cache)[form];
-    return !username_element->IsNull();
   }
+  // Use the cached value for |form|.
+  *username_element = (*username_detector_cache)[form];
+  return !username_element->IsNull();
 }
 
 }  // namespace autofill

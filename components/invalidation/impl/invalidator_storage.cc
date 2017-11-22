@@ -122,11 +122,9 @@ InvalidatorStorage::GetSavedInvalidations() const {
   syncer::UnackedInvalidationsMap map;
   const base::ListValue* value =
       pref_service_->GetList(prefs::kInvalidatorSavedInvalidations);
-  if (!ValueToUnackedInvalidationStorageMap(*value, &map)) {
+  if (!ValueToUnackedInvalidationStorageMap(*value, &map))
     return syncer::UnackedInvalidationsMap();
-  } else {
-    return map;
-  }
+  return map;
 }
 
 void InvalidatorStorage::Clear() {

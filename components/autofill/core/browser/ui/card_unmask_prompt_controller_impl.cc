@@ -173,13 +173,12 @@ CardUnmaskPromptControllerImpl::GetCloseReasonEvent() {
     return unmasking_number_of_attempts_ == 1
         ? AutofillMetrics::UNMASK_PROMPT_UNMASKED_CARD_FIRST_ATTEMPT
         : AutofillMetrics::UNMASK_PROMPT_UNMASKED_CARD_AFTER_FAILED_ATTEMPTS;
-  } else {
-    return AllowsRetry(unmasking_result_)
-        ? AutofillMetrics::
-            UNMASK_PROMPT_CLOSED_FAILED_TO_UNMASK_RETRIABLE_FAILURE
-        : AutofillMetrics::
-            UNMASK_PROMPT_CLOSED_FAILED_TO_UNMASK_NON_RETRIABLE_FAILURE;
   }
+  return AllowsRetry(unmasking_result_)
+             ? AutofillMetrics::
+                   UNMASK_PROMPT_CLOSED_FAILED_TO_UNMASK_RETRIABLE_FAILURE
+             : AutofillMetrics::
+                   UNMASK_PROMPT_CLOSED_FAILED_TO_UNMASK_NON_RETRIABLE_FAILURE;
 }
 
 void CardUnmaskPromptControllerImpl::OnUnmaskResponse(

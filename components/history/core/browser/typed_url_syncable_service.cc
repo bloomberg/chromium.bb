@@ -1004,11 +1004,9 @@ bool TypedUrlSyncableService::FixupURLAndGetVisits(URLRow* url,
   size_t num_expired_visits = 0;
   for (auto& visit : *visits) {
     base::Time time = visit.visit_time;
-    if (history_backend_->IsExpiredVisitTime(time)) {
-      ++num_expired_visits;
-    } else {
+    if (!history_backend_->IsExpiredVisitTime(time))
       break;
-    }
+    ++num_expired_visits;
   }
   if (num_expired_visits != 0) {
     if (num_expired_visits == visits->size()) {

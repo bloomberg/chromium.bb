@@ -2284,10 +2284,9 @@ RedirectList HistoryBackend::GetCachedRecentRedirects(const GURL& page_url) {
     DCHECK(!iter->second.empty());
     DCHECK_EQ(iter->second.back(), page_url);
     return iter->second;
-  } else {
-    // No known redirects, construct mock redirect chain containing |page_url|.
-    return RedirectList{page_url};
   }
+  // No known redirects, construct mock redirect chain containing |page_url|.
+  return RedirectList{page_url};
 }
 
 void HistoryBackend::SendFaviconChangedNotificationForPageAndRedirects(

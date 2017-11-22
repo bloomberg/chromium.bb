@@ -13,6 +13,8 @@
 #include "base/strings/string_util.h"
 #include "third_party/fips181/fips181.h"
 
+namespace {
+
 const int kMinUpper = 65;   // First upper case letter 'A'
 const int kMaxUpper = 90;   // Last upper case letter 'Z'
 const int kMinLower = 97;   // First lower case letter 'a'
@@ -22,15 +24,12 @@ const int kMaxDigit = 57;   // Last digit '9'
 const int kMinPasswordLength = 4;
 const int kMaxPasswordLength = 15;
 
-namespace {
-
 // A helper function to get the length of the generated password from
 // |max_length| retrieved from input password field.
 int GetLengthFromHint(int max_length, int default_length) {
   if (max_length >= kMinPasswordLength && max_length <= kMaxPasswordLength)
     return max_length;
-  else
-    return default_length;
+  return default_length;
 }
 
 // We want the password to have uppercase, lowercase, and at least one number.

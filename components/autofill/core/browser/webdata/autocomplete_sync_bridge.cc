@@ -100,9 +100,8 @@ bool ParseStorageKey(const std::string& storage_key, AutofillKey* out_key) {
     *out_key = AutofillKey(base::UTF8ToUTF16(proto.name()),
                            base::UTF8ToUTF16((proto.value())));
     return true;
-  } else {
-    return false;
   }
+  return false;
 }
 
 AutofillEntry CreateAutofillEntry(const AutofillSpecifics& autofill_specifics) {
@@ -143,9 +142,10 @@ class SyncDifferenceTracker {
     DCHECK_EQ(storage_key, GetStorageKeyFromModel(remote.key()));
 
     Optional<AutofillEntry> local;
-    if (!ReadEntry(remote.key(), &local)) {
+    if (!ReadEntry(remote.key(), &local))
       return ModelError(FROM_HERE, "Failed reading from WebDatabase.");
-    } else if (!local) {
+
+    if (!local) {
       save_to_local_.push_back(remote);
     } else {
       unique_to_local_.erase(local.value());

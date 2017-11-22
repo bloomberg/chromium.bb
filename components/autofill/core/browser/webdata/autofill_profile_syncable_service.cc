@@ -556,8 +556,9 @@ AutofillProfileSyncableService::CreateOrUpdateProfile(
                << ". Profile to be deleted " << local_profile->guid();
       profile_map->erase(it);
       break;
-    } else if (!local_profile->IsVerified() && !new_profile->IsVerified() &&
-               comparator.AreMergeable(*local_profile, *new_profile)) {
+    }
+    if (!local_profile->IsVerified() && !new_profile->IsVerified() &&
+        comparator.AreMergeable(*local_profile, *new_profile)) {
       // Add it to candidates for merge - if there is no profile with this guid
       // we will merge them.
       bundle->candidates_to_merge.insert(

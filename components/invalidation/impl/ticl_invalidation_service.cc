@@ -161,10 +161,9 @@ syncer::InvalidatorState TiclInvalidationService::GetInvalidatorState() const {
     DVLOG(2) << "GetInvalidatorState returning "
         << invalidator_->GetInvalidatorState();
     return invalidator_->GetInvalidatorState();
-  } else {
-    DVLOG(2) << "Invalidator currently stopped";
-    return syncer::TRANSIENT_INVALIDATION_ERROR;
   }
+  DVLOG(2) << "Invalidator currently stopped";
+  return syncer::TRANSIENT_INVALIDATION_ERROR;
 }
 
 std::string TiclInvalidationService::GetInvalidatorClientId() const {
