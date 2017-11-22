@@ -17,20 +17,12 @@ class VectorIconTexture : public UiTexture {
   VectorIconTexture() {}
   ~VectorIconTexture() override {}
 
-  void SetColor(SkColor color) {
-    if (color == color_)
-      return;
-    color_ = color;
-    set_dirty();
-  }
+  void SetColor(SkColor color) { SetAndDirty(&color_, color); }
 
   SkColor GetColor() const { return color_; }
 
   void SetIcon(const gfx::VectorIcon& icon) {
-    if (icon_no_1x_.path == icon.path)
-      return;
-    icon_no_1x_.path = icon.path;
-    set_dirty();
+    SetAndDirty(&icon_no_1x_.path, icon.path);
   }
 
  private:

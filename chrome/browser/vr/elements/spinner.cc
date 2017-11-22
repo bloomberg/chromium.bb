@@ -34,25 +34,10 @@ class SpinnerTexture : public UiTexture {
   SpinnerTexture() {}
   ~SpinnerTexture() override {}
 
-  void SetAngleSweep(float angle) {
-    angle_sweep_ = angle;
-    set_dirty();
-  }
-
-  void SetAngleStart(float angle) {
-    angle_start_ = angle;
-    set_dirty();
-  }
-
-  void SetRotation(float angle) {
-    rotation_ = angle;
-    set_dirty();
-  }
-
-  void SetColor(SkColor color) {
-    color_ = color;
-    set_dirty();
-  }
+  void SetAngleSweep(float angle) { SetAndDirty(&angle_sweep_, angle); }
+  void SetAngleStart(float angle) { SetAndDirty(&angle_start_, angle); }
+  void SetRotation(float angle) { SetAndDirty(&rotation_, angle); }
+  void SetColor(SkColor color) { SetAndDirty(&color_, color); }
 
  private:
   gfx::Size GetPreferredTextureSize(int width) const override {

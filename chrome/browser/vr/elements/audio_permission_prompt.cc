@@ -58,6 +58,19 @@ void AudioPermissionPrompt::OnButtonUp(const gfx::PointF& position) {
   OnStateUpdated(position);
 }
 
+void AudioPermissionPrompt::SetPrimaryButtonColors(const ButtonColors& colors) {
+  texture_->SetPrimaryButtonColors(colors);
+}
+
+void AudioPermissionPrompt::SetSecondaryButtonColors(
+    const ButtonColors& colors) {
+  texture_->SetSecondaryButtonColors(colors);
+}
+
+void AudioPermissionPrompt::SetIconColor(SkColor color) {
+  texture_->SetIconColor(color);
+}
+
 void AudioPermissionPrompt::OnStateUpdated(const gfx::PointF& position) {
   const bool primary_hovered = texture_->HitsPrimaryButton(position);
   const bool secondary_hovered = texture_->HitsSecondaryButton(position);

@@ -39,16 +39,16 @@ void ExclusiveScreenToastTexture::Draw(SkCanvas* sk_canvas,
   SkPaint paint;
   float meter_to_pixel_ratio = texture_size.height() / kHeight;
 
-  paint.setColor(color_scheme().exclusive_screen_toast_background);
+  paint.setColor(background_color());
   auto text = l10n_util::GetStringUTF16(IDS_PRESS_APP_TO_EXIT);
   gfx::FontList fonts;
   int pixel_font_size = meter_to_pixel_ratio * kFontHeight;
   GetFontList(pixel_font_size, text, &fonts);
   gfx::Rect text_size(0, pixel_font_size);
 
-  std::vector<std::unique_ptr<gfx::RenderText>> lines = PrepareDrawStringRect(
-      text, fonts, color_scheme().exclusive_screen_toast_foreground, &text_size,
-      kTextAlignmentNone, kWrappingBehaviorNoWrap);
+  std::vector<std::unique_ptr<gfx::RenderText>> lines =
+      PrepareDrawStringRect(text, fonts, foreground_color(), &text_size,
+                            kTextAlignmentNone, kWrappingBehaviorNoWrap);
 
   int pixel_padding = meter_to_pixel_ratio * kWidthPadding;
   size_.set_width(2 * pixel_padding + text_size.width());

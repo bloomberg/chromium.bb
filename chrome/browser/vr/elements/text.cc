@@ -21,25 +21,12 @@ class TextTexture : public UiTexture {
       : font_height_(font_height), text_width_(text_width) {}
   ~TextTexture() override {}
 
-  void SetText(const base::string16& text) {
-    if (text_ == text)
-      return;
-    text_ = text;
-    set_dirty();
-  }
+  void SetText(const base::string16& text) { SetAndDirty(&text_, text); }
 
-  void SetColor(SkColor color) {
-    if (color_ == color)
-      return;
-    color_ = color;
-    set_dirty();
-  }
+  void SetColor(SkColor color) { SetAndDirty(&color_, color); }
 
   void SetAlignment(TextAlignment alignment) {
-    if (alignment_ == alignment)
-      return;
-    alignment_ = alignment;
-    set_dirty();
+    SetAndDirty(&alignment_, alignment);
   }
 
  private:

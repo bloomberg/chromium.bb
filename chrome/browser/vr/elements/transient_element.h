@@ -72,7 +72,7 @@ class ShowUntilSignalTransientElement : public TransientElement {
   ~ShowUntilSignalTransientElement() override;
 
   // This must be called before the set timeout to hide the element.
-  void Signal();
+  void Signal(bool value);
 
  private:
   bool OnBeginFrame(const base::TimeTicks& time,

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_VR_ELEMENTS_UI_ELEMENT_H_
 
 #include <memory>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -14,14 +15,12 @@
 #include "cc/animation/animation_target.h"
 #include "cc/animation/transform_operations.h"
 #include "chrome/browser/vr/animation_player.h"
-#include "chrome/browser/vr/color_scheme.h"
 #include "chrome/browser/vr/databinding/binding_base.h"
 #include "chrome/browser/vr/elements/draw_phase.h"
 #include "chrome/browser/vr/elements/ui_element_iterator.h"
 #include "chrome/browser/vr/elements/ui_element_name.h"
 #include "chrome/browser/vr/model/camera_model.h"
 #include "chrome/browser/vr/target_property.h"
-#include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/quaternion.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -252,8 +251,8 @@ class UiElement : public cc::AnimationTarget {
     y_padding_ = y_padding;
   }
 
-  int draw_phase() const { return draw_phase_; }
-  void set_draw_phase(int draw_phase) { draw_phase_ = draw_phase; }
+  DrawPhase draw_phase() const { return draw_phase_; }
+  void set_draw_phase(DrawPhase draw_phase) { draw_phase_ = draw_phase; }
 
   const gfx::Transform& inheritable_transform() const {
     return inheritable_transform_;
@@ -265,13 +264,12 @@ class UiElement : public cc::AnimationTarget {
   UiElementName name() const { return name_; }
   void set_name(UiElementName name) { name_ = name; }
 
-  void SetMode(ColorScheme::Mode mode);
-  ColorScheme::Mode mode() const { return mode_; }
-
   const gfx::Transform& world_space_transform() const;
   void set_world_space_transform(const gfx::Transform& transform) {
     world_space_transform_ = transform;
   }
+
+  gfx::Transform ComputeTargetWorldSpaceTransform() const;
 
   // Transformations are applied relative to the parent element, rather than
   // absolutely.
@@ -376,6 +374,13 @@ class UiElement : public cc::AnimationTarget {
 
   std::string DebugName() const;
 
+  // Writes a pretty-printed version of the UiElement subtree to |os|. The
+  // vector of counts represents where each ancestor on the ancestor chain is
+  // situated in its parent's list of children. This is used to determine
+  // whether each ancestor is the last child (which affects the lines we draw in
+  // the tree).
+  void DumpHierarchy(std::vector<size_t> counts, std::ostringstream* os) const;
+
  protected:
   AnimationPlayer& animation_player() { return animation_player_; }
 
@@ -386,7 +391,6 @@ class UiElement : public cc::AnimationTarget {
   gfx::SizeF stale_size() const;
 
  private:
-  virtual void OnSetMode();
   virtual void OnUpdatedWorldSpaceTransform();
 
   // Returns true if the element has been updated in any visible way.
@@ -457,7 +461,7 @@ class UiElement : public cc::AnimationTarget {
 
   AnimationPlayer animation_player_;
 
-  int draw_phase_ = kPhaseNone;
+  DrawPhase draw_phase_ = kPhaseNone;
 
   // This is the time as of the last call to |Animate|. It is needed when
   // reversing transitions.
@@ -482,8 +486,6 @@ class UiElement : public cc::AnimationTarget {
   // This is the combined, local to world transform. It includes
   // |inheritable_transform_|, |transform_|, and anchoring adjustments.
   gfx::Transform world_space_transform_;
-
-  ColorScheme::Mode mode_ = ColorScheme::kModeNormal;
 
   UiElement* parent_ = nullptr;
   std::vector<std::unique_ptr<UiElement>> children_;

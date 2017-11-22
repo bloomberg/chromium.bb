@@ -90,12 +90,12 @@ class UiInputManagerContentTest : public UiSceneManagerTest {
   void SetUp() override {
     UiSceneManagerTest::SetUp();
     MakeManager(kNotInCct, kNotInWebVr);
-    input_manager_ = base::MakeUnique<UiInputManager>(scene_.get());
+    input_manager_ = ui_->input_manager();
     EXPECT_TRUE(scene_->OnBeginFrame(MicrosecondsToTicks(1), kForwardVector));
   }
 
  protected:
-  std::unique_ptr<UiInputManager> input_manager_;
+  UiInputManager* input_manager_;
 };
 
 TEST_F(UiInputManagerTest, ReticleRenderTarget) {

@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/vr/elements/render_text_wrapper.h"
+#include "chrome/browser/vr/model/color_scheme.h"
 #include "chrome/browser/vr/model/toolbar_state.h"
 #include "components/security_state/core/security_state.h"
 #include "components/toolbar/vector_icons.h"
@@ -65,9 +66,8 @@ class TestUrlBarTexture : public UrlBarTexture {
                              const url::Parsed& parsed,
                              security_state::SecurityLevel security_level,
                              vr::RenderTextWrapper* render_text,
-                             const ColorScheme& color_scheme) {
-    ApplyUrlStyling(formatted_url, parsed, security_level, render_text,
-                    color_scheme);
+                             const UrlBarColors& colors) {
+    ApplyUrlStyling(formatted_url, parsed, security_level, render_text, colors);
   }
 
   void SetForceFontFallbackFailure(bool force) {
@@ -111,6 +111,7 @@ TestUrlBarTexture::TestUrlBarTexture()
     : UrlBarTexture(base::Bind(&TestUrlBarTexture::OnUnsupportedFeature,
                                base::Unretained(this))) {
   gfx::FontList::SetDefaultFontDescription("Arial, Times New Roman, 15px");
+  SetColors(ColorScheme::GetColorScheme(ColorScheme::kModeNormal).url_bar);
 }
 
 class MockRenderText : public RenderTextWrapper {
@@ -142,10 +143,10 @@ class UrlEmphasisTest : public testing::Test {
     EXPECT_EQ(formatted_url, base::UTF8ToUTF16(expected_string));
     TestUrlBarTexture::TestUrlStyling(
         formatted_url, parsed, level, &mock_,
-        ColorScheme::GetColorScheme(ColorScheme::kModeNormal));
+        ColorScheme::GetColorScheme(ColorScheme::kModeNormal).url_bar);
     TestUrlBarTexture::TestUrlStyling(
         formatted_url, parsed, level, &mock_,
-        ColorScheme::GetColorScheme(ColorScheme::kModeIncognito));
+        ColorScheme::GetColorScheme(ColorScheme::kModeIncognito).url_bar);
   }
 
   testing::InSequence in_sequence_;

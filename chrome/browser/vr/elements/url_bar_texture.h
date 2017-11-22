@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/vr/elements/ui_texture.h"
+#include "chrome/browser/vr/model/color_scheme.h"
 #include "chrome/browser/vr/model/toolbar_state.h"
 #include "chrome/browser/vr/ui_unsupported_mode.h"
 #include "components/security_state/core/security_state.h"
@@ -25,7 +26,6 @@ class RenderText;
 namespace vr {
 
 class RenderTextWrapper;
-struct ColorScheme;
 
 class UrlBarTexture : public UiTexture {
  public:
@@ -50,12 +50,14 @@ class UrlBarTexture : public UiTexture {
   void SetBackButtonHovered(bool hovered);
   void SetBackButtonPressed(bool pressed);
 
+  void SetColors(const UrlBarColors& colors);
+
  protected:
   static void ApplyUrlStyling(const base::string16& formatted_url,
                               const url::Parsed& parsed,
                               security_state::SecurityLevel security_level,
                               RenderTextWrapper* render_text,
-                              const ColorScheme& color_scheme);
+                              const UrlBarColors& colors);
 
   std::unique_ptr<gfx::RenderText> url_render_text_;
 
@@ -72,7 +74,6 @@ class UrlBarTexture : public UiTexture {
   float ToMeters(float pixels) const;
   bool HitsTransparentRegion(const gfx::PointF& meters, bool left) const;
   void RenderUrl(const gfx::Size& texture_size, const gfx::Rect& text_bounds);
-  void OnSetMode() override;
   SkColor BackButtonColor() const;
 
   gfx::SizeF size_;
@@ -83,6 +84,7 @@ class UrlBarTexture : public UiTexture {
   ToolbarState state_;
 
   bool url_dirty_ = true;
+  UrlBarColors colors_;
 
   base::Callback<void(UiUnsupportedMode)> failure_callback_;
   gfx::RectF security_hit_region_ = gfx::RectF(0, 0, 0, 0);

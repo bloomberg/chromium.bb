@@ -24,14 +24,16 @@ constexpr float kFontSizeFactor = 0.40f;
 
 }  // namespace
 
-SystemIndicatorTexture::SystemIndicatorTexture(const gfx::VectorIcon& icon,
-                                               int message_id)
-    : icon_(icon), message_id_(message_id), has_text_(true) {}
-
-SystemIndicatorTexture::SystemIndicatorTexture(const gfx::VectorIcon& icon)
-    : icon_(icon), has_text_(false) {}
-
+SystemIndicatorTexture::SystemIndicatorTexture() = default;
 SystemIndicatorTexture::~SystemIndicatorTexture() = default;
+
+void SystemIndicatorTexture::SetIcon(const gfx::VectorIcon& icon) {
+  SetAndDirty(&icon_.path, icon.path);
+}
+
+void SystemIndicatorTexture::SetMessageId(int id) {
+  SetAndDirty(&message_id_, id);
+}
 
 void SystemIndicatorTexture::Draw(SkCanvas* sk_canvas,
                                   const gfx::Size& texture_size) {
@@ -46,20 +48,19 @@ void SystemIndicatorTexture::Draw(SkCanvas* sk_canvas,
   size_.set_width(icon_pixels + 2 * border_pixels);
 
   SkPaint paint;
-  paint.setColor(color_scheme().system_indicator_background);
+  paint.setColor(background_color());
 
   std::unique_ptr<gfx::RenderText> rendered_text;
 
-  if (has_text_) {
+  if (message_id_) {
     base::string16 text = l10n_util::GetStringUTF16(message_id_);
 
     gfx::FontList fonts;
     GetFontList(size_.height() * kFontSizeFactor, text, &fonts);
     gfx::Rect text_size(0, size_.height());
     std::vector<std::unique_ptr<gfx::RenderText>> lines;
-    lines = PrepareDrawStringRect(
-        text, fonts, color_scheme().system_indicator_foreground, &text_size,
-        kTextAlignmentNone, kWrappingBehaviorNoWrap);
+    lines = PrepareDrawStringRect(text, fonts, foreground_color(), &text_size,
+                                  kTextAlignmentNone, kWrappingBehaviorNoWrap);
     DCHECK_EQ(lines.size(), 1u);
     rendered_text = std::move(lines.front());
 
@@ -74,8 +75,7 @@ void SystemIndicatorTexture::Draw(SkCanvas* sk_canvas,
       (IsRTL() ? size_.width() - border_pixels - icon_pixels : border_pixels),
       (size_.height() - icon_pixels) / 2.0);
   VectorIcon::DrawVectorIcon(canvas, icon_, size_.height() * kIconSizeFactor,
-                             icon_location,
-                             color_scheme().system_indicator_foreground);
+                             icon_location, foreground_color());
 
   if (rendered_text) {
     canvas->Save();
@@ -91,7 +91,7 @@ gfx::Size SystemIndicatorTexture::GetPreferredTextureSize(
   // All indicators need to be the same height, so compute height, and then
   // re-compute with based on whether the indicator has text or not.
   int height = maximum_width / kHeightWidthRatio;
-  return gfx::Size(has_text_ ? maximum_width : height, height);
+  return gfx::Size(message_id_ ? maximum_width : height, height);
 }
 
 gfx::SizeF SystemIndicatorTexture::GetDrawnSize() const {

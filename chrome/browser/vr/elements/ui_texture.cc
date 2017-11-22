@@ -55,21 +55,8 @@ bool UiTexture::HitTest(const gfx::PointF& point) const {
   return false;
 }
 
-void UiTexture::SetMode(ColorScheme::Mode mode) {
-  if (mode_ == mode)
-    return;
-  mode_ = mode;
-  OnSetMode();
-}
-
 void UiTexture::OnInitialized() {
   set_dirty();
-}
-
-void UiTexture::OnSetMode() {}
-
-const ColorScheme& UiTexture::color_scheme() const {
-  return ColorScheme::GetColorScheme(mode());
 }
 
 std::vector<std::unique_ptr<gfx::RenderText>> UiTexture::PrepareDrawStringRect(
@@ -214,6 +201,20 @@ bool UiTexture::GetFontList(int size,
   }
   *font_list = gfx::FontList(fonts);
   return true;
+}
+
+void UiTexture::SetForegroundColor(SkColor color) {
+  if (foreground_color_ == color)
+    return;
+  foreground_color_ = color;
+  set_dirty();
+}
+
+void UiTexture::SetBackgroundColor(SkColor color) {
+  if (background_color_ == color)
+    return;
+  background_color_ = color;
+  set_dirty();
 }
 
 void UiTexture::SetForceFontFallbackFailureForTesting(bool force) {

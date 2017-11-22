@@ -60,8 +60,8 @@ class VrGLThread : public base::android::JavaHandlerThread,
   void NavigateBack() override;
   void ExitCct() override;
   void OnUnsupportedMode(vr::UiUnsupportedMode mode) override;
-  void OnExitVrPromptResult(vr::UiUnsupportedMode reason,
-                            vr::ExitVrPromptChoice choice) override;
+  void OnExitVrPromptResult(vr::ExitVrPromptChoice choice,
+                            vr::UiUnsupportedMode reason) override;
   void OnContentScreenBoundsChanged(const gfx::SizeF& bounds) override;
   void SetVoiceSearchActive(bool active) override;
   void StartAutocomplete(const base::string16& string) override;

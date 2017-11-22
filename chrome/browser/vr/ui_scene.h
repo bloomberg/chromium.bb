@@ -10,7 +10,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/vr/color_scheme.h"
 #include "chrome/browser/vr/elements/ui_element.h"
 #include "chrome/browser/vr/elements/ui_element_iterator.h"
 #include "chrome/browser/vr/elements/ui_element_name.h"
@@ -63,14 +62,6 @@ class UiScene {
   float background_distance() const { return background_distance_; }
   void set_background_distance(float d) { background_distance_ = d; }
 
-  bool web_vr_rendering_enabled() const { return webvr_rendering_enabled_; }
-  void set_web_vr_rendering_enabled(bool enabled) {
-    webvr_rendering_enabled_ = enabled;
-  }
-  bool reticle_rendering_enabled() const { return reticle_rendering_enabled_; }
-  void set_reticle_rendering_enabled(bool enabled) {
-    reticle_rendering_enabled_ = enabled;
-  }
   int first_foreground_draw_phase() const {
     return first_foreground_draw_phase_;
   }
@@ -85,8 +76,6 @@ class UiScene {
   std::unique_ptr<UiElement> root_element_;
 
   float background_distance_ = 10.0f;
-  bool webvr_rendering_enabled_ = false;
-  bool reticle_rendering_enabled_ = true;
   bool gl_initialized_ = false;
   int first_foreground_draw_phase_ = 0;
   bool initialized_scene_ = false;

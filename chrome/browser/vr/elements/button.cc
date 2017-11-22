@@ -24,7 +24,7 @@ constexpr float kHitPlaneScaleFactorHovered = 1.2;
 }  // namespace
 
 Button::Button(base::Callback<void()> click_handler,
-               int draw_phase,
+               DrawPhase draw_phase,
                float width,
                float height,
                float hover_offset,
@@ -130,14 +130,8 @@ void Button::OnStateUpdated() {
     hit_plane_->SetScale(1.0f, 1.0f, 1.0f);
   }
 
-  if (pressed_) {
-    background_->SetColor(colors_.background_press);
-  } else if (hovered_) {
-    background_->SetColor(colors_.background_hover);
-  } else {
-    background_->SetColor(colors_.background);
-  }
-  foreground_->SetColor(colors_.foreground);
+  background_->SetColor(colors_.GetBackgroundColor(hovered_, pressed_));
+  foreground_->SetColor(colors_.GetForegroundColor(disabled_));
 }
 
 }  // namespace vr

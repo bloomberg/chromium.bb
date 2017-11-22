@@ -139,8 +139,8 @@ void VrGLThread::OnUnsupportedMode(vr::UiUnsupportedMode mode) {
       FROM_HERE, base::Bind(&VrShell::OnUnsupportedMode, weak_vr_shell_, mode));
 }
 
-void VrGLThread::OnExitVrPromptResult(vr::UiUnsupportedMode reason,
-                                      vr::ExitVrPromptChoice choice) {
+void VrGLThread::OnExitVrPromptResult(vr::ExitVrPromptChoice choice,
+                                      vr::UiUnsupportedMode reason) {
   DCHECK(OnGlThread());
   main_thread_task_runner_->PostTask(
       FROM_HERE, base::Bind(&VrShell::OnExitVrPromptResult, weak_vr_shell_,
