@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "components/omnibox/browser/omnibox_view.h"
-#include "components/toolbar/test_toolbar_model.h"
 
 struct AutocompleteMatch;
 class OmniboxEditController;
