@@ -9,6 +9,7 @@
 
 #include "base/files/file_path.h"
 #include "base/format_macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/sequence_checker.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_scheduler/post_task.h"
@@ -97,11 +98,12 @@ void VideoDecodeStatsDBImpl::OnInit(base::OnceCallback<void(bool)> init_cb,
                                     bool success) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(2) << __func__ << (success ? " succeeded" : " FAILED!");
+  UMA_HISTOGRAM_BOOLEAN("Media.VideoDecodeStatsDB.OpSuccess.Initialize",
+                        success);
 
   db_init_ = true;
 
   // Can't use DB when initialization fails.
-  // TODO(chcunningham): Record UMA.
   if (!success)
     db_.reset();
 
@@ -151,7 +153,10 @@ void VideoDecodeStatsDBImpl::WriteUpdatedEntry(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(IsInitialized());
 
-  // TODO(chcunningham): Record UMA.
+  // Note: outcome of "Write" operation logged in OnEntryUpdated().
+  UMA_HISTOGRAM_BOOLEAN("Media.VideoDecodeStatsDB.OpSuccess.Read",
+                        read_success);
+
   if (!read_success) {
     DVLOG(2) << __func__ << " FAILED DB read for " << KeyToString(key)
              << "; ignoring update!";
@@ -201,7 +206,7 @@ void VideoDecodeStatsDBImpl::WriteUpdatedEntry(
 void VideoDecodeStatsDBImpl::OnEntryUpdated(AppendDecodeStatsCB append_done_cb,
                                             bool success) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // TODO(chcunningham): record UMA.
+  UMA_HISTOGRAM_BOOLEAN("Media.VideoDecodeStatsDB.OpSuccess.Write", success);
   DVLOG(3) << __func__ << " update " << (success ? "succeeded" : "FAILED!");
   std::move(append_done_cb).Run(success);
 }
@@ -211,7 +216,7 @@ void VideoDecodeStatsDBImpl::OnGotDecodeStats(
     bool success,
     std::unique_ptr<DecodeStatsProto> stats_proto) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // TODO(chcunningham): record UMA.
+  UMA_HISTOGRAM_BOOLEAN("Media.VideoDecodeStatsDB.OpSuccess.Read", success);
 
   std::unique_ptr<DecodeStatsEntry> entry;
   if (stats_proto) {
@@ -244,6 +249,8 @@ void VideoDecodeStatsDBImpl::OnDestroyedStats(base::OnceClosure destroy_done_cb,
                                               bool success) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(2) << __func__ << (success ? " succeeded" : " FAILED!");
+
+  UMA_HISTOGRAM_BOOLEAN("Media.VideoDecodeStatsDB.OpSuccess.Destroy", success);
 
   // Allow calls to re-Intialize() now that destruction is complete.
   DCHECK(!db_init_);

@@ -121,6 +121,9 @@ class MEDIA_BLINK_EXPORT VideoDecodeStatsReporter {
   // the the timer.
   bool ShouldBeReporting() const;
 
+  // Error handler callback when IPC hits an error.
+  void OnIpcConnectionError();
+
   // TimeDelta wrappers around |kRecordingIntervalMs| and |kTimyFpsWindowMs|.
   // Defined as a class member to avoid static initialization.
   // TODO(chcunningham): convert to static constexpr when MSVC support arrives.
@@ -209,6 +212,10 @@ class MEDIA_BLINK_EXPORT VideoDecodeStatsReporter {
   // Set true by OnHidden(), false by OnVisible(). We should not run the
   // |stats_cb_timer_| when player is backgrounded.
   bool is_backgrounded_ = false;
+
+  // Set false by UpdateStats() if an IPC error is encountered. Assumed true
+  // until an error is found.
+  bool is_ipc_connected_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(VideoDecodeStatsReporter);
 };

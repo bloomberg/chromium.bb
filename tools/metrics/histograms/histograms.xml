@@ -35112,6 +35112,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.VideoDecodeStatsDB.OpSuccess" enum="BooleanSuccess">
+  <owner>chcunningham@chromium.org</owner>
+  <summary>
+    Indicates whether we were successful performing some database operation. See
+    suffix VideoDecodeStatsDBOperations.
+  </summary>
+</histogram>
+
 <histogram name="Media.VideoFormat" enum="VideoFormat">
   <obsolete>
     Replaced by Media.VideoFramePixelFormat 05/2015.
@@ -108331,6 +108339,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="Cpu" label="Adapt reason: CPU."/>
   <suffix name="Quality" label="Adapt reason: quality."/>
   <affected-histogram name="WebRTC.Video.AdaptChangesPerMinute"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="VideoDecodeStatsDBOperations" separator=".">
+  <suffix name="Initialize" label="Success status for initializing the DB."/>
+  <suffix name="Read" label="Success status for reading from the DB"/>
+  <suffix name="Write" label="Success status for writing to the DB"/>
+  <suffix name="Destroy" label="Success status for destroying the DB"/>
+  <affected-histogram name="Media.VideoDecodeStatsDB.OpSuccess"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="VideoEncodedQpStats" separator=".">
