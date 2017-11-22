@@ -8,7 +8,6 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-import random
 import time
 
 from chromite.lib import commandline
@@ -73,7 +72,7 @@ class _TimedCallback(object):
     """
     self._callback = callback
     self._interval = interval
-    self._last_called = time.time() - interval
+    self._last_called = float('-inf')
 
   def __call__(self):
     if time.time() >= self._next_call:
@@ -100,10 +99,6 @@ def main():
       help='Enable collection of prod host metrics, like roles')
   opts = parser.parse_args()
   opts.Freeze()
-
-  # Wait a random amount of time before starting the loop in case sysmon
-  # is started at exactly the same time on all machines.
-  time.sleep(random.uniform(0, opts.interval))
 
   # This call returns a context manager that doesn't do anything, so we
   # ignore the return value.
