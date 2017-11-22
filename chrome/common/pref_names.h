@@ -823,6 +823,7 @@ extern const char kLatestVersionWhenClickedUpdateMenuItem[];
 extern const char kMediaRouterCloudServicesPrefSet[];
 extern const char kMediaRouterEnableCloudServices[];
 extern const char kMediaRouterFirstRunFlowAcknowledged[];
+extern const char kMediaRouterMediaRemotingEnabled[];
 extern const char kMediaRouterTabMirroringSources[];
 
 extern const char kOriginTrialPublicKey[];

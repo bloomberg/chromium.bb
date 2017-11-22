@@ -315,11 +315,10 @@ cr.define('media_router.browserApi', function() {
   /**
    * Sends a command to change the Media Remoting enabled value associated with
    * current route.
-   *
    * @param {boolean} enabled
    */
   function setMediaRemotingEnabled(enabled) {
-    chrome.send('setMediaRemotingEnabled', [{enabled: enabled}]);
+    chrome.send('setMediaRemotingEnabled', [enabled]);
   }
 
   return {

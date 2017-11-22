@@ -368,6 +368,9 @@ scoped_refptr<MediaRouteController> MediaRouterMojoImpl::GetRouteController(
     case RouteControllerType::kHangouts:
       route_controller = new HangoutsMediaRouteController(route_id, context_);
       break;
+    case RouteControllerType::kMirroring:
+      route_controller = new MirroringMediaRouteController(route_id, context_);
+      break;
   }
   DCHECK(route_controller);
 
