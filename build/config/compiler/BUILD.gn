@@ -1474,6 +1474,7 @@ config("no_rtti") {
 # exceptions -------------------------------------------------------------------
 #
 # Allows turning Exceptions on or off.
+# Note: exceptions are disallowed in Google code.
 
 config("exceptions") {
   if (is_win) {
