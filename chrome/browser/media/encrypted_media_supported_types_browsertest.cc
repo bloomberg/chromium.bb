@@ -856,10 +856,11 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesWidevineTest, SessionType) {
       IsSupportedByKeySystem(kWidevine, kVideoWebMMimeType, video_webm_codecs(),
                              SessionType::kPersistentLicense);
 
-#if defined(OS_CHROMEOS)
-  // Persistent license session supported by Widevine key system on ChromeOS,
-  // when the protected media identifier permission is allowed. See the
-  // kUnsafelyAllowProtectedMediaIdentifierForDomain used above.
+#if defined(OS_CHROMEOS) || defined(OS_WIN) || defined(OS_MACOSX)
+  // Persistent license session supported by Widevine key system on Windows and
+  // Mac. On ChromeOS, it is supported when the protected media identifier
+  // permission is allowed. See kUnsafelyAllowProtectedMediaIdentifierForDomain
+  // used above.
   EXPECT_WV_SUCCESS(result);
 #else
   EXPECT_UNSUPPORTED(result);
