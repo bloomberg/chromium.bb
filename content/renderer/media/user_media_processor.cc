@@ -702,8 +702,7 @@ void UserMediaProcessor::OnStreamGenerationFailed(
   DeleteWebRequest(current_request_info_->web_request());
 }
 
-void UserMediaProcessor::OnDeviceStopped(const std::string& label,
-                                         const MediaStreamDevice& device) {
+void UserMediaProcessor::OnDeviceStopped(const MediaStreamDevice& device) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(1) << "UserMediaClientImpl::OnDeviceStopped("
            << "{device_id = " << device.id << "})";

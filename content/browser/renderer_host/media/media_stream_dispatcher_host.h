@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/media/media_devices_util.h"
-#include "content/browser/renderer_host/media/media_stream_requester.h"
 #include "content/common/content_export.h"
 #include "content/common/media/media_stream.mojom.h"
 #include "content/common/media/media_stream_controls.h"
@@ -30,19 +29,13 @@ class MediaStreamManager;
 // MediaStreamImpl.  There is one MediaStreamDispatcherHost per
 // RenderProcessHost, the former owned by the latter.
 class CONTENT_EXPORT MediaStreamDispatcherHost
-    : public mojom::MediaStreamDispatcherHost,
-      public MediaStreamRequester {
+    : public mojom::MediaStreamDispatcherHost {
  public:
   MediaStreamDispatcherHost(int render_process_id,
                             MediaStreamManager* media_stream_manager);
   ~MediaStreamDispatcherHost() override;
 
   void BindRequest(mojom::MediaStreamDispatcherHostRequest request);
-
-  // MediaStreamRequester implementation.
-  void DeviceStopped(int render_frame_id,
-                     const std::string& label,
-                     const MediaStreamDevice& device) override;
 
   void set_salt_and_origin_callback_for_testing(
       MediaDeviceSaltAndOriginCallback callback) {
@@ -95,6 +88,10 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
                     MediaStreamType type,
                     OpenDeviceCallback callback,
                     const std::pair<std::string, url::Origin>& salt_and_origin);
+
+  void OnDeviceStopped(int render_frame_id,
+                       const std::string& label,
+                       const MediaStreamDevice& device);
 
   const int render_process_id_;
   MediaStreamManager* media_stream_manager_;

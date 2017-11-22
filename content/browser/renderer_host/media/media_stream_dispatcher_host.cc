@@ -61,9 +61,10 @@ void MediaStreamDispatcherHost::BindRequest(
   bindings_.AddBinding(this, std::move(request));
 }
 
-void MediaStreamDispatcherHost::DeviceStopped(int render_frame_id,
-                                              const std::string& label,
-                                              const MediaStreamDevice& device) {
+void MediaStreamDispatcherHost::OnDeviceStopped(
+    int render_frame_id,
+    const std::string& label,
+    const MediaStreamDevice& device) {
   DVLOG(1) << __func__ << " label=" << label << " type=" << device.type
            << " device_id=" << device.id;
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -151,7 +152,9 @@ void MediaStreamDispatcherHost::DoGenerateStream(
   media_stream_manager_->GenerateStream(
       render_process_id_, render_frame_id, salt_and_origin.first,
       page_request_id, controls, salt_and_origin.second, user_gesture,
-      std::move(callback), weak_factory_.GetWeakPtr());
+      std::move(callback),
+      base::BindRepeating(&MediaStreamDispatcherHost::OnDeviceStopped,
+                          weak_factory_.GetWeakPtr()));
 }
 
 void MediaStreamDispatcherHost::CancelRequest(int render_frame_id,
@@ -212,7 +215,9 @@ void MediaStreamDispatcherHost::DoOpenDevice(
   media_stream_manager_->OpenDevice(
       render_process_id_, render_frame_id, salt_and_origin.first,
       page_request_id, device_id, type, salt_and_origin.second,
-      std::move(callback), weak_factory_.GetWeakPtr());
+      std::move(callback),
+      base::BindRepeating(&MediaStreamDispatcherHost::OnDeviceStopped,
+                          weak_factory_.GetWeakPtr()));
 }
 
 void MediaStreamDispatcherHost::CloseDevice(const std::string& label) {

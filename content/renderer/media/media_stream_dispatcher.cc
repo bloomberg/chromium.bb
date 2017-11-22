@@ -90,7 +90,7 @@ void MediaStreamDispatcher::OnDeviceStopped(const std::string& label,
     RemoveStreamDeviceFromArray(device, &stream->video_devices);
 
   if (stream->handler.get())
-    stream->handler->OnDeviceStopped(label, device);
+    stream->handler->OnDeviceStopped(device);
 
   // |it| could have already been invalidated in the function call above. So we
   // need to check if |label| is still in |label_stream_map_| again.

@@ -14,9 +14,8 @@ namespace content {
 
 class CONTENT_EXPORT MediaStreamDispatcherEventHandler {
  public:
-  // A device has been stopped in the browser processes.
-  virtual void OnDeviceStopped(const std::string& label,
-                               const MediaStreamDevice& device) = 0;
+  // A device has been stopped in the browser process.
+  virtual void OnDeviceStopped(const MediaStreamDevice& device) = 0;
 
  protected:
   virtual ~MediaStreamDispatcherEventHandler() {}

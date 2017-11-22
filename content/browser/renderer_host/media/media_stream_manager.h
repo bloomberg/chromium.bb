@@ -62,7 +62,6 @@ namespace content {
 
 class AudioInputDeviceManager;
 class FakeMediaStreamUIProxy;
-class MediaStreamRequester;
 class MediaStreamUIProxy;
 class VideoCaptureManager;
 class VideoCaptureProvider;
@@ -90,6 +89,11 @@ class CONTENT_EXPORT MediaStreamManager
       base::OnceCallback<void(bool success,
                               const std::string& label,
                               const MediaStreamDevice& device)>;
+
+  using DeviceStoppedCallback =
+      base::RepeatingCallback<void(int render_frame_id,
+                                   const std::string& label,
+                                   const MediaStreamDevice& device)>;
 
   // Callback for testing.
   using GenerateStreamTestCallback =
@@ -151,7 +155,8 @@ class CONTENT_EXPORT MediaStreamManager
   // GenerateStream opens new media devices according to |components|.  It
   // creates a new request which is identified by a unique string that's
   // returned to the caller.  |render_process_id| and |render_frame_id| are used
-  // to determine where the infobar will appear to the user.
+  // to determine where the infobar will appear to the user. |device_stopped_cb|
+  // is set to receive device stopped notifications.
   void GenerateStream(int render_process_id,
                       int render_frame_id,
                       const std::string& salt,
@@ -159,8 +164,8 @@ class CONTENT_EXPORT MediaStreamManager
                       const StreamControls& controls,
                       const url::Origin& security_origin,
                       bool user_gesture,
-                      GenerateStreamCallback callback,
-                      base::WeakPtr<MediaStreamRequester> requester = nullptr);
+                      GenerateStreamCallback generate_stream_cb,
+                      DeviceStoppedCallback device_stopped_cb);
 
   void CancelRequest(int render_process_id,
                      int render_frame_id,
@@ -180,9 +185,8 @@ class CONTENT_EXPORT MediaStreamManager
 
   // Open a device identified by |device_id|. |type| must be either
   // MEDIA_DEVICE_AUDIO_CAPTURE or MEDIA_DEVICE_VIDEO_CAPTURE.
-  // Providing a |requester| here is optional. It can be set to receive
-  // device stopped notifications. The request is identified using string
-  // returned to the caller.
+  // |device_stopped_cb| is set to receive device stopped notifications. The
+  // request is identified using string returned to the caller.
   void OpenDevice(int render_process_id,
                   int render_frame_id,
                   const std::string& salt,
@@ -190,8 +194,8 @@ class CONTENT_EXPORT MediaStreamManager
                   const std::string& device_id,
                   MediaStreamType type,
                   const url::Origin& security_origin,
-                  OpenDeviceCallback callback,
-                  base::WeakPtr<MediaStreamRequester> requester = nullptr);
+                  OpenDeviceCallback open_device_cb,
+                  DeviceStoppedCallback device_stopped_cb);
 
   // Finds and returns the device id corresponding to the given
   // |source_id|. Returns true if there was a raw device id that matched the
