@@ -1007,32 +1007,20 @@ TEST_P(PaintPropertyTreeUpdateTest, WillTransformChangeAboveFixed) {
   const auto* container = GetLayoutObjectByElementId("container");
   const auto* fixed = GetLayoutObjectByElementId("fixed");
   EXPECT_EQ(container->FirstFragment().PaintProperties()->Transform(),
-            fixed->FirstFragment()
-                .GetRarePaintData()
-                ->LocalBorderBoxProperties()
-                ->Transform());
+            fixed->FirstFragment().LocalBorderBoxProperties()->Transform());
 
   ToElement(container->GetNode())
       ->setAttribute(HTMLNames::styleAttr, "will-change: top");
   GetDocument().View()->UpdateAllLifecyclePhases();
-  EXPECT_EQ(GetLayoutView()
-                .FirstFragment()
-                .GetRarePaintData()
-                ->LocalBorderBoxProperties()
-                ->Transform(),
-            fixed->FirstFragment()
-                .GetRarePaintData()
-                ->LocalBorderBoxProperties()
-                ->Transform());
+  EXPECT_EQ(
+      GetLayoutView().FirstFragment().LocalBorderBoxProperties()->Transform(),
+      fixed->FirstFragment().LocalBorderBoxProperties()->Transform());
 
   ToElement(container->GetNode())
       ->setAttribute(HTMLNames::styleAttr, "will-change: transform");
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_EQ(container->FirstFragment().PaintProperties()->Transform(),
-            fixed->FirstFragment()
-                .GetRarePaintData()
-                ->LocalBorderBoxProperties()
-                ->Transform());
+            fixed->FirstFragment().LocalBorderBoxProperties()->Transform());
 }
 
 }  // namespace blink
