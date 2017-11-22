@@ -536,7 +536,8 @@ void Display::RemoveOverdrawQuads(CompositorFrame* frame) {
     if (pass != frame->render_pass_list.back())
       continue;
 
-    for (auto quad = pass->quad_list.begin(); quad != pass->quad_list.end();) {
+    auto last_quad = pass->quad_list.end();
+    for (auto quad = pass->quad_list.begin(); quad != last_quad;) {
       // RenderPassDrawQuad is a special type of DrawQuad where the visible_rect
       // of shared quad state is not entirely covered by draw quads in it.
       if (quad->material == ContentDrawQuadBase::Material::RENDER_PASS) {
