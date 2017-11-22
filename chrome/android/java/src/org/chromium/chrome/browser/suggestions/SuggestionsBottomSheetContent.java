@@ -404,6 +404,8 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
             mToolbarPullHandle.setTranslationY(0);
             mToolbarShadow.setTranslationY(0);
             ViewUtils.setAncestorsShouldClipChildren(mControlContainerView, true);
+            mRecyclerView.setAlpha(1.0f);
+            mRecyclerView.setVisibility(View.VISIBLE);
             return;
         }
 
