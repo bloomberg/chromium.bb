@@ -39,15 +39,12 @@ ServiceWorkerInstalledScriptsManager::GetScriptData(
   }
 
   // This is from WorkerScriptLoader::DidReceiveData.
-  std::unique_ptr<TextResourceDecoder> decoder;
-  if (!raw_script_data->Encoding().IsEmpty()) {
-    decoder = TextResourceDecoder::Create(TextResourceDecoderOptions(
-        TextResourceDecoderOptions::kPlainTextContent,
-        WTF::TextEncoding(raw_script_data->Encoding())));
-  } else {
-    decoder = TextResourceDecoder::Create(TextResourceDecoderOptions(
-        TextResourceDecoderOptions::kPlainTextContent));
-  }
+  std::unique_ptr<TextResourceDecoder> decoder =
+      TextResourceDecoder::Create(TextResourceDecoderOptions(
+          TextResourceDecoderOptions::kPlainTextContent,
+          raw_script_data->Encoding().IsEmpty()
+              ? UTF8Encoding()
+              : WTF::TextEncoding(raw_script_data->Encoding())));
 
   StringBuilder source_text_builder;
   for (const auto& chunk : raw_script_data->ScriptTextChunks())
