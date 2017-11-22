@@ -134,6 +134,9 @@ public class SafeBrowsingTest {
         private static final int MALWARE_CODE = 4;
         private static final int UNWANTED_SOFTWARE_CODE = 3;
 
+        // Mock time it takes for a lookup request to complete.
+        private static final long CHECK_DELTA_US = 10;
+
         @Override
         public boolean init(Context context, Observer result) {
             mObserver = result;
@@ -166,9 +169,11 @@ public class SafeBrowsingTest {
                 metadata = SAFE_METADATA;
             }
 
+            // clang-format off
             ThreadUtils.runOnUiThread(
-                    (Runnable) () -> mObserver.onUrlCheckDone(callbackId, STATUS_SUCCESS,
-                            metadata));
+                    (Runnable) () -> mObserver.onUrlCheckDone(
+                        callbackId, STATUS_SUCCESS, metadata, CHECK_DELTA_US));
+            // clang-format on
         }
     }
 

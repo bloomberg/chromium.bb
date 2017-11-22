@@ -21,6 +21,10 @@ public interface SafeBrowsingApiHandler {
      * Observer to be notified when the SafeBrowsingApiHandler determines the verdict for a url.
      */
     public interface Observer {
+        // Note: |checkDelta| is the time the remote call took in microseconds.
+        void onUrlCheckDone(long callbackId, @SafeBrowsingResult int resultStatus, String metadata,
+                long checkDelta);
+        // TODO(csharrison): Temporary to avoid breaking downstream.
         void onUrlCheckDone(long callbackId, @SafeBrowsingResult int resultStatus, String metadata);
     }
 
