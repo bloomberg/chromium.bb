@@ -8,7 +8,7 @@
 -ServiceWorkerNavigationPreloadTest.RespondWithNavigationPreloadWithMimeSniffing
 -ServiceWorkerV8CacheStrategiesAggressiveTest.V8CacheOnCacheStorage
 -ServiceWorkerV8CacheStrategiesNormalTest.V8CacheOnCacheStorage
--ServiceWorkerV8CacheStrategiesTest.V8CacheOnCacheStorage
+-ServiceWorkerV8CodeCacheForCacheStorageTest.V8CacheOnCacheStorage
 -ServiceWorkerVersionBrowserTest.ServiceWorkerScriptHeader
 
 # ServiceWorker restart needs to read installed scripts.
