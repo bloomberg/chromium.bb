@@ -457,6 +457,10 @@ class AXPosition {
 
     child_position = child_position->AsTextPosition();
     child_position->text_offset_ = adjusted_offset;
+    // Maintain affinity from parent so that we'll be able to choose the correct
+    // leaf anchor if the text offset is right on the boundary between two
+    // leaves.
+    child_position->affinity_ = affinity_;
     return child_position->AsLeafTextPosition();
   }
 
