@@ -18,6 +18,10 @@
         <include name="IDR_PRODUCT_LOGO_64" file="google_chrome/product_logo_64.png" type="BINDATA" />
         <include name="IDR_PRODUCT_LOGO_128" file="google_chrome/product_logo_128.png" type="BINDATA" />
         <include name="IDR_PRODUCT_LOGO_256" file="google_chrome/product_logo_256.png" type="BINDATA" />
+        <if expr="is_linux">
+          <include name="IDR_PRODUCT_LOGO_128_BETA" file="google_chrome/product_logo_128_beta.png" type="BINDATA" />
+          <include name="IDR_PRODUCT_LOGO_128_DEV" file="google_chrome/product_logo_128_dev.png" type="BINDATA" />
+        </if>
         <if expr="is_win">
           <!-- External company logo, displayed in the Chrome Cleanup WebUI if
                cleanup functionality is powered by an external company. -->

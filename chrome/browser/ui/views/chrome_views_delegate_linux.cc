@@ -7,7 +7,9 @@
 #include "base/environment.h"
 #include "base/nix/xdg_util.h"
 #include "chrome/browser/ui/views/native_widget_factory.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
+#include "components/version_info/channel.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/linux_ui/linux_ui.h"
 
@@ -18,6 +20,20 @@ bool IsDesktopEnvironmentUnity() {
   base::nix::DesktopEnvironment desktop_env =
       base::nix::GetDesktopEnvironment(env.get());
   return desktop_env == base::nix::DESKTOP_ENVIRONMENT_UNITY;
+}
+
+int GetWindowIconResourceId() {
+#if defined(GOOGLE_CHROME_BUILD)
+  switch (chrome::GetChannel()) {
+    case version_info::Channel::DEV:
+      return IDR_PRODUCT_LOGO_128_DEV;
+    case version_info::Channel::BETA:
+      return IDR_PRODUCT_LOGO_128_BETA;
+    default:
+      break;
+  }
+#endif
+  return IDR_PRODUCT_LOGO_128;
 }
 
 }  // namespace
@@ -35,7 +51,7 @@ views::NativeWidget* ChromeViewsDelegate::CreateNativeWidget(
 
 gfx::ImageSkia* ChromeViewsDelegate::GetDefaultWindowIcon() const {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  return rb.GetImageSkiaNamed(IDR_PRODUCT_LOGO_64);
+  return rb.GetImageSkiaNamed(GetWindowIconResourceId());
 }
 
 bool ChromeViewsDelegate::WindowManagerProvidesTitleBar(bool maximized) {
