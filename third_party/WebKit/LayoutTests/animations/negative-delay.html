@@ -9,7 +9,7 @@
       width: 20px;
       height: 20px;
       position: absolute;
-      animation-duration: 2s;
+      animation-duration: 10s;
       animation-iteration-count: 1;
       animation-timing-function: linear;
     }
@@ -24,12 +24,12 @@
 
     @keyframes square-move {
       0%    { left: 0px; }
-      100%  { left: 600px; }
+      100%  { left: 3000px; }
     }
 
     @keyframes square-translate {
       0%    { transform: translateX(0); }
-      100%  { transform: translateX(600px); }
+      100%  { transform: translateX(3000px); }
     }
 
     #square1 {
@@ -61,14 +61,14 @@
     // The delay of square1 is negative so square1 should be in ahead of square2.
     const expectedValues = [
       // [time, element-id, property, expected-value, tolerance]
-      [0, "square1", "left", 300, 15],
-      [0, "square2", "left", 0, 15],
-      [0.5, "square1", "left", 450, 15],
-      [0.5, "square2", "left", 150, 15],
-      [0, "square3", "transform.4", 300, 20],
-      [0, "square4", "transform.4", 0, 20],
-      [0.5, "square3", "transform.4", 450, 20],
-      [0.5, "square4", "transform.4", 150, 20],
+      [0, "square1", "left", 300, 0],
+      [0, "square2", "left", 0, 0],
+      [0.5, "square1", "left", 450, 0],
+      [0.5, "square2", "left", 150, 0],
+      [0, "square3", "transform.4", 300, 0],
+      [0, "square4", "transform.4", 0, 0],
+      [0.5, "square3", "transform.4", 450, 0],
+      [0.5, "square4", "transform.4", 150, 0],
     ];
 
     runAnimationTest(expectedValues);

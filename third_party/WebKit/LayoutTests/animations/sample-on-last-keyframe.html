@@ -10,7 +10,7 @@
       on the last keyframe we have to sample at the start of a reversed
       iteration.
       */
-      animation-duration: 1s;
+      animation-duration: 10s;
     }
     @keyframes test {
         from {
@@ -23,12 +23,12 @@
   </style>
   <script src="resources/animation-test-helpers.js" type="text/javascript" charset="utf-8"></script>
   <script type="text/javascript" charset="utf-8">
-    
+
     const expectedValues = [
       // [time, element-id, property, expected-value, tolerance]
-      [0, "test", "opacity", 1.0, 0.1],
+      [0, "test", "opacity", 1.0, 0],
     ];
-    
+
     runAnimationTest(expectedValues);
   </script>
 </head>
