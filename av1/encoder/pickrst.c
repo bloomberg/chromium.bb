@@ -372,26 +372,10 @@ static void sgr_filter_block(const sgr_params_type *params, const uint8_t *dat8,
                              int width, int height, int dat_stride,
                              int use_highbd, int bit_depth, int32_t *flt1,
                              int32_t *flt2, int flt_stride) {
-#if CONFIG_HIGHBITDEPTH
-  if (use_highbd) {
-    const uint16_t *dat = CONVERT_TO_SHORTPTR(dat8);
-    av1_selfguided_restoration_highbd(dat, width, height, dat_stride, flt1,
-                                      flt_stride, bit_depth, params->r1,
-                                      params->e1);
-    av1_selfguided_restoration_highbd(dat, width, height, dat_stride, flt2,
-                                      flt_stride, bit_depth, params->r2,
-                                      params->e2);
-    return;
-  }
-#else
-  (void)use_highbd;
-  (void)bit_depth;
-#endif  // CONFIG_HIGHBITDEPTH
-
   av1_selfguided_restoration(dat8, width, height, dat_stride, flt1, flt_stride,
-                             params->r1, params->e1);
+                             params->r1, params->e1, bit_depth, use_highbd);
   av1_selfguided_restoration(dat8, width, height, dat_stride, flt2, flt_stride,
-                             params->r2, params->e2);
+                             params->r2, params->e2, bit_depth, use_highbd);
 }
 
 // Apply the self-guided filter across an entire restoration unit.

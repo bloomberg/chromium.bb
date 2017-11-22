@@ -81,7 +81,7 @@ class AV1SelfguidedFilterTest
           uint8_t *input_p = input + k * stride + j;
           uint8_t *output_p = output + k * out_stride + j;
           apply_selfguided_restoration(input_p, w, h, stride, eps, xqd,
-                                       output_p, out_stride, tmpbuf);
+                                       output_p, out_stride, tmpbuf, 8, 0);
         }
     }
     std::clock_t end = std::clock();
@@ -146,9 +146,9 @@ class AV1SelfguidedFilterTest
           uint8_t *output_p = output + k * out_stride + j;
           uint8_t *output2_p = output2 + k * out_stride + j;
           apply_selfguided_restoration(input_p, w, h, stride, eps, xqd,
-                                       output_p, out_stride, tmpbuf);
+                                       output_p, out_stride, tmpbuf, 8, 0);
           apply_selfguided_restoration_c(input_p, w, h, stride, eps, xqd,
-                                         output2_p, out_stride, tmpbuf);
+                                         output2_p, out_stride, tmpbuf, 8, 0);
         }
       /*
       apply_selfguided_restoration(input, test_w, test_h, stride, eps, xqd,
@@ -234,9 +234,9 @@ class AV1HighbdSelfguidedFilterTest
           int h = AOMMIN(pu_height, height - k);
           uint16_t *input_p = input + k * stride + j;
           uint16_t *output_p = output + k * out_stride + j;
-          apply_selfguided_restoration_highbd(input_p, w, h, stride, bit_depth,
-                                              eps, xqd, output_p, out_stride,
-                                              tmpbuf);
+          apply_selfguided_restoration(
+              CONVERT_TO_BYTEPTR(input_p), w, h, stride, eps, xqd,
+              CONVERT_TO_BYTEPTR(output_p), out_stride, tmpbuf, bit_depth, 1);
         }
     }
     std::clock_t end = std::clock();
@@ -302,12 +302,12 @@ class AV1HighbdSelfguidedFilterTest
           uint16_t *input_p = input + k * stride + j;
           uint16_t *output_p = output + k * out_stride + j;
           uint16_t *output2_p = output2 + k * out_stride + j;
-          apply_selfguided_restoration_highbd(input_p, w, h, stride, bit_depth,
-                                              eps, xqd, output_p, out_stride,
-                                              tmpbuf);
-          apply_selfguided_restoration_highbd_c(input_p, w, h, stride,
-                                                bit_depth, eps, xqd, output2_p,
-                                                out_stride, tmpbuf);
+          apply_selfguided_restoration(
+              CONVERT_TO_BYTEPTR(input_p), w, h, stride, eps, xqd,
+              CONVERT_TO_BYTEPTR(output_p), out_stride, tmpbuf, bit_depth, 1);
+          apply_selfguided_restoration_c(
+              CONVERT_TO_BYTEPTR(input_p), w, h, stride, eps, xqd,
+              CONVERT_TO_BYTEPTR(output2_p), out_stride, tmpbuf, bit_depth, 1);
         }
 
       /*

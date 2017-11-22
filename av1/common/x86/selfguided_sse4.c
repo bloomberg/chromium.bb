@@ -282,9 +282,10 @@ static void final_filter(int32_t *dst, int dst_stride, const int32_t *A,
   }
 }
 
-static void selfguided_restoration(const uint8_t *dgd8, int width, int height,
-                                   int dgd_stride, int32_t *dst, int dst_stride,
-                                   int r, int eps, int bit_depth, int highbd) {
+void av1_selfguided_restoration_sse4_1(const uint8_t *dgd8, int width,
+                                       int height, int dgd_stride, int32_t *dst,
+                                       int dst_stride, int r, int eps,
+                                       int bit_depth, int highbd) {
   DECLARE_ALIGNED(16, int32_t, buf[4 * RESTORATION_PROC_UNIT_PELS]);
 
   const int width_ext = width + 2 * SGRPROJ_BORDER_HORZ;
@@ -340,42 +341,43 @@ static void selfguided_restoration(const uint8_t *dgd8, int width, int height,
                height, highbd);
 }
 
-void av1_selfguided_restoration_sse4_1(const uint8_t *dgd, int width,
-                                       int height, int dgd_stride, int32_t *dst,
-                                       int dst_stride, int r, int eps) {
-  selfguided_restoration(dgd, width, height, dgd_stride, dst, dst_stride, r,
-                         eps, 8, 0);
-}
-
-void apply_selfguided_restoration_sse4_1(const uint8_t *dat, int width,
+void apply_selfguided_restoration_sse4_1(const uint8_t *dat8, int width,
                                          int height, int stride, int eps,
-                                         const int *xqd, uint8_t *dst,
-                                         int dst_stride, int32_t *tmpbuf) {
-  int xq[2];
+                                         const int *xqd, uint8_t *dst8,
+                                         int dst_stride, int32_t *tmpbuf,
+                                         int bit_depth, int highbd) {
   int32_t *flt1 = tmpbuf;
   int32_t *flt2 = flt1 + RESTORATION_TILEPELS_MAX;
-  int i, j;
   assert(width * height <= RESTORATION_TILEPELS_MAX);
-  av1_selfguided_restoration_sse4_1(dat, width, height, stride, flt1, width,
-                                    sgr_params[eps].r1, sgr_params[eps].e1);
-  av1_selfguided_restoration_sse4_1(dat, width, height, stride, flt2, width,
-                                    sgr_params[eps].r2, sgr_params[eps].e2);
+  av1_selfguided_restoration_sse4_1(dat8, width, height, stride, flt1, width,
+                                    sgr_params[eps].r1, sgr_params[eps].e1,
+                                    bit_depth, highbd);
+  av1_selfguided_restoration_sse4_1(dat8, width, height, stride, flt2, width,
+                                    sgr_params[eps].r2, sgr_params[eps].e2,
+                                    bit_depth, highbd);
+  int xq[2];
   decode_xq(xqd, xq);
 
   __m128i xq0 = _mm_set1_epi32(xq[0]);
   __m128i xq1 = _mm_set1_epi32(xq[1]);
-  for (i = 0; i < height; ++i) {
-    // Calculate output in batches of 8 pixels
-    for (j = 0; j < width; j += 8) {
-      const int k = i * width + j;
-      const int l = i * stride + j;
-      const int m = i * dst_stride + j;
-      __m128i src =
-          _mm_slli_epi16(_mm_cvtepu8_epi16(_mm_loadl_epi64((__m128i *)&dat[l])),
-                         SGRPROJ_RST_BITS);
 
-      const __m128i u_0 = _mm_cvtepu16_epi32(src);
-      const __m128i u_1 = _mm_cvtepu16_epi32(_mm_srli_si128(src, 8));
+  for (int i = 0; i < height; ++i) {
+    // Calculate output in batches of 8 pixels
+    for (int j = 0; j < width; j += 8) {
+      const int k = i * width + j;
+      const int m = i * dst_stride + j;
+
+      const uint8_t *dat8ij = dat8 + i * stride + j;
+      __m128i src;
+      if (highbd) {
+        src = xx_load_128(CONVERT_TO_SHORTPTR(dat8ij));
+      } else {
+        src = _mm_cvtepu8_epi16(xx_loadl_64(dat8ij));
+      }
+
+      const __m128i u = _mm_slli_epi16(src, SGRPROJ_RST_BITS);
+      const __m128i u_0 = _mm_cvtepu16_epi32(u);
+      const __m128i u_1 = _mm_cvtepu16_epi32(_mm_srli_si128(u, 8));
 
       const __m128i f1_0 = _mm_sub_epi32(xx_loadu_128(&flt1[k]), u_0);
       const __m128i f2_0 = _mm_sub_epi32(xx_loadu_128(&flt2[k]), u_0);
@@ -396,83 +398,18 @@ void apply_selfguided_restoration_sse4_1(const uint8_t *dat, int width,
       const __m128i w_1 = _mm_srai_epi32(_mm_add_epi32(v_1, rounding),
                                          SGRPROJ_PRJ_BITS + SGRPROJ_RST_BITS);
 
-      const __m128i tmp = _mm_packs_epi32(w_0, w_1);
-      const __m128i res = _mm_packus_epi16(tmp, tmp /* "don't care" value */);
-      xx_storel_64(&dst[m], res);
+      if (highbd) {
+        // Pack into 16 bits and clamp to [0, 2^bit_depth)
+        const __m128i tmp = _mm_packus_epi32(w_0, w_1);
+        const __m128i max = _mm_set1_epi16((1 << bit_depth) - 1);
+        const __m128i res = _mm_min_epi16(tmp, max);
+        xx_store_128(CONVERT_TO_SHORTPTR(dst8 + m), res);
+      } else {
+        // Pack into 8 bits and clamp to [0, 256)
+        const __m128i tmp = _mm_packs_epi32(w_0, w_1);
+        const __m128i res = _mm_packus_epi16(tmp, tmp /* "don't care" value */);
+        xx_storel_64(dst8 + m, res);
+      }
     }
   }
 }
-
-#if CONFIG_HIGHBITDEPTH
-void av1_selfguided_restoration_highbd_sse4_1(const uint16_t *dgd, int width,
-                                              int height, int dgd_stride,
-                                              int32_t *dst, int dst_stride,
-                                              int bit_depth, int r, int eps) {
-  selfguided_restoration(CONVERT_TO_BYTEPTR(dgd), width, height, dgd_stride,
-                         dst, dst_stride, r, eps, bit_depth, 1);
-}
-
-void apply_selfguided_restoration_highbd_sse4_1(
-    const uint16_t *dat, int width, int height, int stride, int bit_depth,
-    int eps, const int *xqd, uint16_t *dst, int dst_stride, int32_t *tmpbuf) {
-  int xq[2];
-  int32_t *flt1 = tmpbuf;
-  int32_t *flt2 = flt1 + RESTORATION_TILEPELS_MAX;
-  int i, j;
-  assert(width * height <= RESTORATION_TILEPELS_MAX);
-  av1_selfguided_restoration_highbd_sse4_1(dat, width, height, stride, flt1,
-                                           width, bit_depth, sgr_params[eps].r1,
-                                           sgr_params[eps].e1);
-  av1_selfguided_restoration_highbd_sse4_1(dat, width, height, stride, flt2,
-                                           width, bit_depth, sgr_params[eps].r2,
-                                           sgr_params[eps].e2);
-  decode_xq(xqd, xq);
-
-  __m128i xq0 = _mm_set1_epi32(xq[0]);
-  __m128i xq1 = _mm_set1_epi32(xq[1]);
-  for (i = 0; i < height; ++i) {
-    // Calculate output in batches of 8 pixels
-    for (j = 0; j < width; j += 8) {
-      const int k = i * width + j;
-      const int l = i * stride + j;
-      const int m = i * dst_stride + j;
-      __m128i src =
-          _mm_slli_epi16(_mm_load_si128((__m128i *)&dat[l]), SGRPROJ_RST_BITS);
-
-      const __m128i u_0 = _mm_cvtepu16_epi32(src);
-      const __m128i u_1 = _mm_cvtepu16_epi32(_mm_srli_si128(src, 8));
-
-      const __m128i f1_0 =
-          _mm_sub_epi32(_mm_loadu_si128((__m128i *)&flt1[k]), u_0);
-      const __m128i f2_0 =
-          _mm_sub_epi32(_mm_loadu_si128((__m128i *)&flt2[k]), u_0);
-      const __m128i f1_1 =
-          _mm_sub_epi32(_mm_loadu_si128((__m128i *)&flt1[k + 4]), u_1);
-      const __m128i f2_1 =
-          _mm_sub_epi32(_mm_loadu_si128((__m128i *)&flt2[k + 4]), u_1);
-
-      const __m128i v_0 = _mm_add_epi32(
-          _mm_add_epi32(_mm_mullo_epi32(xq0, f1_0), _mm_mullo_epi32(xq1, f2_0)),
-          _mm_slli_epi32(u_0, SGRPROJ_PRJ_BITS));
-      const __m128i v_1 = _mm_add_epi32(
-          _mm_add_epi32(_mm_mullo_epi32(xq0, f1_1), _mm_mullo_epi32(xq1, f2_1)),
-          _mm_slli_epi32(u_1, SGRPROJ_PRJ_BITS));
-
-      const __m128i rounding =
-          round_for_shift(SGRPROJ_PRJ_BITS + SGRPROJ_RST_BITS);
-      const __m128i w_0 = _mm_srai_epi32(_mm_add_epi32(v_0, rounding),
-                                         SGRPROJ_PRJ_BITS + SGRPROJ_RST_BITS);
-      const __m128i w_1 = _mm_srai_epi32(_mm_add_epi32(v_1, rounding),
-                                         SGRPROJ_PRJ_BITS + SGRPROJ_RST_BITS);
-
-      // Pack into 16 bits and clamp to [0, 2^bit_depth)
-      const __m128i tmp = _mm_packus_epi32(w_0, w_1);
-      const __m128i max = _mm_set1_epi16((1 << bit_depth) - 1);
-      const __m128i res = _mm_min_epi16(tmp, max);
-
-      _mm_store_si128((__m128i *)&dst[m], res);
-    }
-  }
-}
-
-#endif

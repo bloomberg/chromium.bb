@@ -1085,49 +1085,68 @@ static void av1_selfguided_restoration_internal(int32_t *dgd, int width,
   }
 }
 
-void av1_selfguided_restoration_c(const uint8_t *dgd, int width, int height,
+void av1_selfguided_restoration_c(const uint8_t *dgd8, int width, int height,
                                   int stride, int32_t *dst, int dst_stride,
-                                  int r, int eps) {
+                                  int r, int eps, int bit_depth, int highbd) {
   int32_t dgd32_[RESTORATION_PROC_UNIT_PELS];
   const int dgd32_stride = width + 2 * SGRPROJ_BORDER_HORZ;
   int32_t *dgd32 =
       dgd32_ + dgd32_stride * SGRPROJ_BORDER_VERT + SGRPROJ_BORDER_HORZ;
-  int i, j;
-  for (i = -SGRPROJ_BORDER_VERT; i < height + SGRPROJ_BORDER_VERT; ++i) {
-    for (j = -SGRPROJ_BORDER_HORZ; j < width + SGRPROJ_BORDER_HORZ; ++j) {
-      dgd32[i * dgd32_stride + j] = dgd[i * stride + j];
+
+  if (highbd) {
+    const uint16_t *dgd16 = CONVERT_TO_SHORTPTR(dgd8);
+    for (int i = -SGRPROJ_BORDER_VERT; i < height + SGRPROJ_BORDER_VERT; ++i) {
+      for (int j = -SGRPROJ_BORDER_HORZ; j < width + SGRPROJ_BORDER_HORZ; ++j) {
+        dgd32[i * dgd32_stride + j] = dgd16[i * stride + j];
+      }
+    }
+  } else {
+    for (int i = -SGRPROJ_BORDER_VERT; i < height + SGRPROJ_BORDER_VERT; ++i) {
+      for (int j = -SGRPROJ_BORDER_HORZ; j < width + SGRPROJ_BORDER_HORZ; ++j) {
+        dgd32[i * dgd32_stride + j] = dgd8[i * stride + j];
+      }
     }
   }
+
   av1_selfguided_restoration_internal(dgd32, width, height, dgd32_stride, dst,
-                                      dst_stride, 8, r, eps);
+                                      dst_stride, bit_depth, r, eps);
 }
 
-void apply_selfguided_restoration_c(const uint8_t *dat, int width, int height,
+void apply_selfguided_restoration_c(const uint8_t *dat8, int width, int height,
                                     int stride, int eps, const int *xqd,
-                                    uint8_t *dst, int dst_stride,
-                                    int32_t *tmpbuf) {
+                                    uint8_t *dst8, int dst_stride,
+                                    int32_t *tmpbuf, int bit_depth,
+                                    int highbd) {
   int xq[2];
   int32_t *flt1 = tmpbuf;
   int32_t *flt2 = flt1 + RESTORATION_TILEPELS_MAX;
-  int i, j;
   assert(width * height <= RESTORATION_TILEPELS_MAX);
-  av1_selfguided_restoration_c(dat, width, height, stride, flt1, width,
-                               sgr_params[eps].r1, sgr_params[eps].e1);
-  av1_selfguided_restoration_c(dat, width, height, stride, flt2, width,
-                               sgr_params[eps].r2, sgr_params[eps].e2);
+  av1_selfguided_restoration_c(dat8, width, height, stride, flt1, width,
+                               sgr_params[eps].r1, sgr_params[eps].e1,
+                               bit_depth, highbd);
+  av1_selfguided_restoration_c(dat8, width, height, stride, flt2, width,
+                               sgr_params[eps].r2, sgr_params[eps].e2,
+                               bit_depth, highbd);
   decode_xq(xqd, xq);
-  for (i = 0; i < height; ++i) {
-    for (j = 0; j < width; ++j) {
+  for (int i = 0; i < height; ++i) {
+    for (int j = 0; j < width; ++j) {
       const int k = i * width + j;
-      const int l = i * stride + j;
-      const int m = i * dst_stride + j;
-      const int32_t u = ((int32_t)dat[l] << SGRPROJ_RST_BITS);
-      const int32_t f1 = (int32_t)flt1[k] - u;
-      const int32_t f2 = (int32_t)flt2[k] - u;
+      uint8_t *dst8ij = dst8 + i * dst_stride + j;
+      const uint8_t *dat8ij = dat8 + i * stride + j;
+
+      const uint16_t pre_u = highbd ? *CONVERT_TO_SHORTPTR(dat8ij) : *dat8ij;
+      const int32_t u = (int32_t)pre_u << SGRPROJ_RST_BITS;
+      const int32_t f1 = flt1[k] - u;
+      const int32_t f2 = flt2[k] - u;
       const int32_t v = xq[0] * f1 + xq[1] * f2 + (u << SGRPROJ_PRJ_BITS);
       const int16_t w =
           (int16_t)ROUND_POWER_OF_TWO(v, SGRPROJ_PRJ_BITS + SGRPROJ_RST_BITS);
-      dst[m] = clip_pixel(w);
+
+      const uint16_t out = clip_pixel_highbd(w, bit_depth);
+      if (highbd)
+        *CONVERT_TO_SHORTPTR(dst8ij) = out;
+      else
+        *dst8ij = out;
     }
   }
 }
@@ -1144,7 +1163,7 @@ static void sgrproj_filter_stripe(const RestorationUnitInfo *rui,
     int w = AOMMIN(procunit_width, stripe_width - j);
     apply_selfguided_restoration(src + j, w, stripe_height, src_stride,
                                  rui->sgrproj_info.ep, rui->sgrproj_info.xqd,
-                                 dst + j, dst_stride, tmpbuf);
+                                 dst + j, dst_stride, tmpbuf, bit_depth, 0);
   }
 }
 
@@ -1173,57 +1192,6 @@ static void wiener_filter_stripe_highbd(const RestorationUnitInfo *rui,
   }
 }
 
-void av1_selfguided_restoration_highbd_c(const uint16_t *dgd, int width,
-                                         int height, int stride, int32_t *dst,
-                                         int dst_stride, int bit_depth, int r,
-                                         int eps) {
-  int32_t dgd32_[RESTORATION_PROC_UNIT_PELS];
-  const int dgd32_stride = width + 2 * SGRPROJ_BORDER_HORZ;
-  int32_t *dgd32 =
-      dgd32_ + dgd32_stride * SGRPROJ_BORDER_VERT + SGRPROJ_BORDER_HORZ;
-  int i, j;
-  for (i = -SGRPROJ_BORDER_VERT; i < height + SGRPROJ_BORDER_VERT; ++i) {
-    for (j = -SGRPROJ_BORDER_HORZ; j < width + SGRPROJ_BORDER_HORZ; ++j) {
-      dgd32[i * dgd32_stride + j] = dgd[i * stride + j];
-    }
-  }
-  av1_selfguided_restoration_internal(dgd32, width, height, dgd32_stride, dst,
-                                      dst_stride, bit_depth, r, eps);
-}
-
-void apply_selfguided_restoration_highbd_c(const uint16_t *dat, int width,
-                                           int height, int stride,
-                                           int bit_depth, int eps,
-                                           const int *xqd, uint16_t *dst,
-                                           int dst_stride, int32_t *tmpbuf) {
-  int xq[2];
-  int32_t *flt1 = tmpbuf;
-  int32_t *flt2 = flt1 + RESTORATION_TILEPELS_MAX;
-  int i, j;
-  assert(width * height <= RESTORATION_TILEPELS_MAX);
-  av1_selfguided_restoration_highbd_c(dat, width, height, stride, flt1, width,
-                                      bit_depth, sgr_params[eps].r1,
-                                      sgr_params[eps].e1);
-  av1_selfguided_restoration_highbd_c(dat, width, height, stride, flt2, width,
-                                      bit_depth, sgr_params[eps].r2,
-                                      sgr_params[eps].e2);
-  decode_xq(xqd, xq);
-  for (i = 0; i < height; ++i) {
-    for (j = 0; j < width; ++j) {
-      const int k = i * width + j;
-      const int l = i * stride + j;
-      const int m = i * dst_stride + j;
-      const int32_t u = ((int32_t)dat[l] << SGRPROJ_RST_BITS);
-      const int32_t f1 = (int32_t)flt1[k] - u;
-      const int32_t f2 = (int32_t)flt2[k] - u;
-      const int32_t v = xq[0] * f1 + xq[1] * f2 + (u << SGRPROJ_PRJ_BITS);
-      const int16_t w =
-          (int16_t)ROUND_POWER_OF_TWO(v, SGRPROJ_PRJ_BITS + SGRPROJ_RST_BITS);
-      dst[m] = (uint16_t)clip_pixel_highbd(w, bit_depth);
-    }
-  }
-}
-
 static void sgrproj_filter_stripe_highbd(const RestorationUnitInfo *rui,
                                          int stripe_width, int stripe_height,
                                          int procunit_width,
@@ -1232,11 +1200,9 @@ static void sgrproj_filter_stripe_highbd(const RestorationUnitInfo *rui,
                                          int32_t *tmpbuf, int bit_depth) {
   for (int j = 0; j < stripe_width; j += procunit_width) {
     int w = AOMMIN(procunit_width, stripe_width - j);
-    const uint16_t *data_p = CONVERT_TO_SHORTPTR(src8) + j;
-    uint16_t *dst_p = CONVERT_TO_SHORTPTR(dst8) + j;
-    apply_selfguided_restoration_highbd(
-        data_p, w, stripe_height, src_stride, bit_depth, rui->sgrproj_info.ep,
-        rui->sgrproj_info.xqd, dst_p, dst_stride, tmpbuf);
+    apply_selfguided_restoration(src8 + j, w, stripe_height, src_stride,
+                                 rui->sgrproj_info.ep, rui->sgrproj_info.xqd,
+                                 dst8 + j, dst_stride, tmpbuf, bit_depth, 1);
   }
 }
 #endif  // CONFIG_HIGHBITDEPTH
