@@ -7,7 +7,7 @@
  * flush storage", or "mounted zip archive" etc.
  * @interface
  */
-function VolumeInfo() {};
+function VolumeInfo() {}
 
 /** @type {VolumeManagerCommon.VolumeType} */
 VolumeInfo.prototype.volumeType;
@@ -111,7 +111,7 @@ VolumeInfo.prototype.diskFileSystemType;
  * @param {function(!DirectoryEntry)=} opt_onSuccess Success callback with the
  *     display root directory as an argument.
  * @param {function(*)=} opt_onFailure Failure callback.
- * @return {!Promise.<!DirectoryEntry>}
+ * @return {!Promise<!DirectoryEntry>}
  */
 VolumeInfo.prototype.resolveDisplayRoot = function(
     opt_onSuccess, opt_onFailure) {};

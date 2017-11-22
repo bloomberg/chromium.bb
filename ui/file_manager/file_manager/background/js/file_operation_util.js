@@ -170,7 +170,7 @@ fileOperationUtil.resolveRecursively_ = function(
  * <p>For real-time (as you scan) results use {@code findFilesRecursively}.
  *
  * @param {!DirectoryEntry} entry The DirectoryEntry to scan.
- * @return {!Promise.<!Array<!Entry>>} Resolves when scanning is complete.
+ * @return {!Promise<!Array<!Entry>>} Resolves when scanning is complete.
  */
 fileOperationUtil.gatherEntriesRecursively = function(entry) {
   /** @type {!Array<!Entry>} */
@@ -186,7 +186,7 @@ fileOperationUtil.gatherEntriesRecursively = function(entry) {
           function() {
             return gatheredFiles;
           });
-}
+};
 
 /**
  * Recursively discovers files from the given entry, emitting individual

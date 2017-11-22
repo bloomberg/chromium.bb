@@ -63,7 +63,7 @@ function GearMenu(element) {
 
   /**
    * Volume space info.
-   * @type {Promise.<MountPointSizeStats>}
+   * @type {Promise<MountPointSizeStats>}
    * @private
    */
   this.spaceInfoPromise_ = null;
@@ -74,7 +74,7 @@ function GearMenu(element) {
 }
 
 /**
- * @param {Promise.<MountPointSizeStats>} spaceInfoPromise Promise to be
+ * @param {Promise<MountPointSizeStats>} spaceInfoPromise Promise to be
  *     fulfilled with space info.
  * @param {boolean} showLoadingCaption Whether show loading caption or not.
  */

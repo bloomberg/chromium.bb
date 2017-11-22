@@ -10,7 +10,7 @@
  * @struct
  * @implements {importer.MediaScanner}
  *
- * @param {function(!FileEntry): !Promise.<string>} hashGenerator
+ * @param {function(!FileEntry): !Promise<string>} hashGenerator
  * @param {function(!FileEntry, !importer.Destination,
  *                  !importer.ScanMode):
  *     !Promise<!importer.Disposition>} dispositionChecker
@@ -318,7 +318,7 @@ importer.DefaultMediaScanner.prototype.onDuplicateFileFound_ =
  * @implements {importer.ScanResult}
  *
  * @param {importer.ScanMode} mode The scan mode applied for finding new files.
- * @param {function(!FileEntry): !Promise.<string>} hashGenerator Hash-code
+ * @param {function(!FileEntry): !Promise<string>} hashGenerator Hash-code
  *     generator used to dedupe within the scan results itself.
  */
 importer.DefaultScanResult = function(mode, hashGenerator) {
@@ -331,7 +331,7 @@ importer.DefaultScanResult = function(mode, hashGenerator) {
   /** @private {number} */
   this.scanId_ = importer.generateId();
 
-  /** @private {function(!FileEntry): !Promise.<string>} */
+  /** @private {function(!FileEntry): !Promise<string>} */
   this.createHashcode_ = hashGenerator;
 
   /** @private {number} */
@@ -396,13 +396,19 @@ importer.DefaultScanResult = function(mode, hashGenerator) {
 /** @struct */
 importer.DefaultScanResult.prototype = {
   /** @return {string} */
-  get name() { return 'ScanResult(' + this.scanId_ + ')' },
+  get name() {
+    return 'ScanResult(' + this.scanId_ + ')';
+  },
 
   /** @return {function()} */
-  get resolve() { return this.resolver_.resolve.bind(null, this); },
+  get resolve() {
+    return this.resolver_.resolve.bind(null, this);
+  },
 
   /** @return {function(*=)} */
-  get reject() { return this.resolver_.reject; }
+  get reject() {
+    return this.resolver_.reject;
+  }
 };
 
 /** @override */
@@ -450,7 +456,7 @@ importer.DefaultScanResult.prototype.canceled = function() {
  * Adds a file to results.
  *
  * @param {!FileEntry} entry
- * @return {!Promise.<boolean>} True if the file as added, false if it was
+ * @return {!Promise<boolean>} True if the file as added, false if it was
  *     rejected as a dupe.
  */
 importer.DefaultScanResult.prototype.addFileEntry = function(entry) {

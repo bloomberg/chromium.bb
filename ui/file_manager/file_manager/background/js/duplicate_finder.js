@@ -251,7 +251,7 @@ importer.DispositionChecker.prototype.getDisposition =
 /**
  * @param {!FileEntry} entry
  * @param {!importer.Destination} destination
- * @return {!Promise.<boolean>} True if there is a history-entry-duplicate
+ * @return {!Promise<boolean>} True if there is a history-entry-duplicate
  *     for the file.
  * @private
  */

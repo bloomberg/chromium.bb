@@ -834,7 +834,7 @@ util.comparePath = function(entry1, entry2) {
  *
  * @param {Entry} entry The presumptive child.
  * @param {DirectoryEntry|FakeEntry} directory The presumptive parent.
- * @return {!Promise.<boolean>} Resolves with true if {@code directory} is
+ * @return {!Promise<boolean>} Resolves with true if {@code directory} is
  *     parent of {@code entry}.
  */
 util.isChildEntry = function(entry, directory) {
@@ -971,7 +971,7 @@ util.URLsToEntries = function(urls, opt_callback) {
  *
  * @param {string} url
  *
- * @return {!Promise.<!Entry>} Promise Resolves with the corresponding
+ * @return {!Promise<!Entry>} Promise Resolves with the corresponding
  *     {!Entry} if possible, else rejects.
  */
 util.urlToEntry = function(url) {
@@ -982,7 +982,7 @@ util.urlToEntry = function(url) {
 /**
  * Returns whether the window is teleported or not.
  * @param {Window} window Window.
- * @return {Promise.<boolean>} Whether the window is teleported or not.
+ * @return {Promise<boolean>} Whether the window is teleported or not.
  */
 util.isTeleported = function(window) {
   return new Promise(function(onFulfilled) {

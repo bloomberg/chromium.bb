@@ -219,10 +219,10 @@ VolumeInfoImpl.prototype.resolveDisplayRoot = function(opt_onSuccess,
     // remove this if logic. Call opt_onSuccess() always, instead.
     if (this.volumeType !== VolumeManagerCommon.VolumeType.DRIVE) {
       if (this.fileSystem_)
-        this.displayRootPromise_ = /** @type {Promise.<!DirectoryEntry>} */ (
+        this.displayRootPromise_ = /** @type {Promise<!DirectoryEntry>} */ (
             Promise.resolve(this.fileSystem_.root));
       else
-        this.displayRootPromise_ = /** @type {Promise.<!DirectoryEntry>} */ (
+        this.displayRootPromise_ = /** @type {Promise<!DirectoryEntry>} */ (
             Promise.reject(this.error));
     } else {
       // For Drive, we need to resolve.

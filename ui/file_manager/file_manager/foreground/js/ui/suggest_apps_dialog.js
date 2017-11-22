@@ -238,27 +238,24 @@ SuggestAppsDialog.prototype.showInternal_ =
   var tokenObtained = false;
 
   this.widget_.ready()
-      .then(
-          (/** @return {!Promise} */
-          function() {
-            tokenObtained = true;
-            return this.showDialog_(title);
-          }).bind(this))
-      .then(
-          (/** @return {!Promise.<CWSWidgetContainer.ResolveReason>} */
-          function() {
-            dialogShown = true;
-            // This is not set before so it doesn't polute state if the previous
-            // dialog hasn't finished hiding.
-            this.onDialogClosed_ = onDialogClosed;
-            return this.widget_.start(options, webStoreUrl);
-          }).bind(this))
-      .then(
-          (/** @param {CWSWidgetContainer.ResolveReason} reason */
-          function(reason) {
-            if (reason !== CWSWidgetContainer.ResolveReason.RESET)
-              this.hide();
-          }).bind(this))
+      .then((/** @return {!Promise} */
+             function() {
+               tokenObtained = true;
+               return this.showDialog_(title);
+             }).bind(this))
+      .then((/** @return {!Promise<CWSWidgetContainer.ResolveReason>} */
+             function() {
+               dialogShown = true;
+               // This is not set before so it doesn't polute state if the
+               // previous dialog hasn't finished hiding.
+               this.onDialogClosed_ = onDialogClosed;
+               return this.widget_.start(options, webStoreUrl);
+             }).bind(this))
+      .then((/** @param {CWSWidgetContainer.ResolveReason} reason */
+             function(reason) {
+               if (reason !== CWSWidgetContainer.ResolveReason.RESET)
+                 this.hide();
+             }).bind(this))
       .catch(
           function(error) {
             console.error('Failed to start CWS widget: ' + error);

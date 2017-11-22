@@ -1027,7 +1027,7 @@ FileManager.prototype = /** @struct */ {
   /**
    * Constructs table and grid (heavy operation).
    * @private
-   **/
+   */
   FileManager.prototype.initFileList_ = function() {
     var singleSelection =
         this.dialogType == DialogType.SELECT_OPEN_FILE ||
