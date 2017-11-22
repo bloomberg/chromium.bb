@@ -95,6 +95,7 @@
     _toolsMenuCoordinator.presentationProvider =
         (id<ToolsMenuPresentationProvider>)_toolbarController;
   }
+  [toolbarController start];
 }
 
 - (void)setToolbarDelegate:(id<WebToolbarDelegate>)delegate {

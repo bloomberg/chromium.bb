@@ -20,6 +20,8 @@
 #include "ios/chrome/browser/ui/omnibox/location_bar_controller.h"
 #include "ios/chrome/browser/ui/omnibox/location_bar_controller_impl.h"
 #include "ios/chrome/browser/ui/omnibox/location_bar_delegate.h"
+#import "ios/chrome/browser/ui/omnibox/omnibox_popup_positioner.h"
+#include "ios/chrome/browser/ui/omnibox/omnibox_popup_view_ios.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_button_factory.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_coordinator_delegate.h"
@@ -40,12 +42,13 @@
 #error "This file requires ARC support."
 #endif
 
-@interface ToolbarCoordinator ()<LocationBarDelegate> {
+@interface ToolbarCoordinator ()<LocationBarDelegate, OmniboxPopupPositioner> {
   std::unique_ptr<LocationBarControllerImpl> _locationBar;
+  std::unique_ptr<OmniboxPopupViewIOS> _popupView;
 }
 
 // The View Controller managed by this coordinator.
-@property(nonatomic, strong) ToolbarViewController* viewController;
+@property(nonatomic, strong) ToolbarViewController* toolbarViewController;
 // The mediator owned by this coordinator.
 @property(nonatomic, strong) ToolbarMediator* mediator;
 // LocationBarView containing the omnibox. At some point, this property and the
@@ -61,7 +64,7 @@
 @synthesize locationBarView = _locationBarView;
 @synthesize mediator = _mediator;
 @synthesize URLLoader = _URLLoader;
-@synthesize viewController = _viewController;
+@synthesize toolbarViewController = _toolbarViewController;
 @synthesize webStateList = _webStateList;
 
 - (instancetype)init {
@@ -69,6 +72,12 @@
     _mediator = [[ToolbarMediator alloc] init];
   }
   return self;
+}
+
+#pragma mark - Properties
+
+- (UIViewController*)viewController {
+  return self.toolbarViewController;
 }
 
 #pragma mark - BrowserCoordinator
@@ -89,22 +98,26 @@
                                    tintColor:tintColor];
   _locationBar = base::MakeUnique<LocationBarControllerImpl>(
       self.locationBarView, self.browserState, self, self.dispatcher);
+  _popupView = _locationBar->CreatePopupView(self);
   // End of TODO(crbug.com/785253):.
 
   ToolbarStyle style = isIncognito ? INCOGNITO : NORMAL;
   ToolbarButtonFactory* factory =
       [[ToolbarButtonFactory alloc] initWithStyle:style];
 
-  self.viewController =
+  self.toolbarViewController =
       [[ToolbarViewController alloc] initWithDispatcher:self.dispatcher
                                           buttonFactory:factory];
+  self.toolbarViewController.locationBarView = self.locationBarView;
 
-  self.mediator.consumer = self.viewController;
+  self.mediator.consumer = self.toolbarViewController;
   self.mediator.webStateList = self.webStateList;
 }
 
 - (void)stop {
   [self.mediator disconnect];
+  // The popup has to be destroyed before the location bar.
+  _popupView.reset();
   _locationBar.reset();
   self.locationBarView = nil;
 }
@@ -131,13 +144,45 @@
   self.viewController.view.hidden = NO;
   [_locationBarView setHidden:YES];
   [self.mediator updateConsumerForWebState:webState];
-  [self.viewController updateForSideSwipeSnapshotOnNTP:isNTP];
+  [self.toolbarViewController updateForSideSwipeSnapshotOnNTP:isNTP];
 }
 
 - (void)resetToolbarAfterSideSwipeSnapshot {
   [self.mediator updateConsumerForWebState:[self getWebState]];
   [_locationBarView setHidden:NO];
-  [self.viewController resetAfterSideSwipeSnapshot];
+  [self.toolbarViewController resetAfterSideSwipeSnapshot];
+}
+
+// TODO(crbug.com/786940): This protocol should move to the ViewController
+// owning the Toolbar. This can wait until the omnibox and toolbar refactoring
+// is more advanced.
+#pragma mark OmniboxPopupPositioner methods.
+
+- (UIView*)popupAnchorView {
+  return self.toolbarViewController.view;
+}
+
+- (CGRect)popupFrame:(CGFloat)height {
+  UIView* parent = [[self popupAnchorView] superview];
+  CGRect frame = [parent bounds];
+
+  if (IsIPadIdiom()) {
+    // For iPad, the omnibox is displayed between the location bar and the
+    // bottom of the toolbar.
+    CGRect fieldFrame = [parent convertRect:[_locationBarView bounds]
+                                   fromView:_locationBarView];
+    CGFloat maxY = CGRectGetMaxY(fieldFrame);
+    frame.origin.y = maxY + kiPadOmniboxPopupVerticalOffset;
+    frame.size.height = height;
+  } else {
+    // For iPhone place the popup just below the toolbar.
+    CGRect fieldFrame =
+        [parent convertRect:[self.toolbarViewController.view bounds]
+                   fromView:self.toolbarViewController.view];
+    frame.origin.y = CGRectGetMaxY(fieldFrame);
+    frame.size.height = CGRectGetMaxY([parent bounds]) - frame.origin.y;
+  }
+  return frame;
 }
 
 #pragma mark - LocationBarDelegate
@@ -175,14 +220,14 @@
 - (void)locationBarHasBecomeFirstResponder {
   [self.delegate locationBarDidBecomeFirstResponder];
   if (@available(iOS 10, *)) {
-    [self.viewController expandOmniboxAnimated:YES];
+    [self.toolbarViewController expandOmniboxAnimated:YES];
   }
 }
 
 - (void)locationBarHasResignedFirstResponder {
   [self.delegate locationBarDidResignFirstResponder];
   if (@available(iOS 10, *)) {
-    [self.viewController contractOmnibox];
+    [self.toolbarViewController contractOmnibox];
   }
 }
 
@@ -223,7 +268,7 @@
     model->OnSetFocus(false);
     model->SetCaretVisibility(false);
   } else {
-    [self.viewController expandOmniboxAnimated:NO];
+    [self.toolbarViewController expandOmniboxAnimated:NO];
   }
 
   [self focusOmnibox];

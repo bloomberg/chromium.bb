@@ -63,8 +63,9 @@ bool IsIPhoneX() {
 }
 
 bool IsSafeAreaCompatibleToolbarEnabled() {
-  return IsIPhoneX() &&
-         base::FeatureList::IsEnabled(kSafeAreaCompatibleToolbar);
+  return (IsIPhoneX() &&
+          base::FeatureList::IsEnabled(kSafeAreaCompatibleToolbar)) ||
+         base::FeatureList::IsEnabled(kCleanToolbar);
 }
 
 CGFloat StatusBarHeight() {

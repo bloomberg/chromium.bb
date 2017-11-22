@@ -38,7 +38,7 @@
 // The dispatcher for this view controller.
 @property(nonatomic, weak) id<ApplicationCommands, BrowserCommands> dispatcher;
 
-@property(nonatomic, strong) UIViewController* locationBarViewController;
+@property(nonatomic, strong) UIView* locationBarView;
 
 // Animates the toolbar so the omnibox is shrinking to its standard state.
 - (void)contractOmnibox;

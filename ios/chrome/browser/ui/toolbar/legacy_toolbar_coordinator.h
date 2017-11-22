@@ -36,9 +36,12 @@
                   ActivityServicePositioner,
                   QRScannerResultLoading,
                   BubbleViewAnchorPointProvider>
+
 - (void)setToolsMenuStateProvider:
     (id<ToolsMenuPresentationStateProvider>)provider;
 - (void)setToolsMenuIsVisibleForToolsMenuButton:(BOOL)isVisible;
+- (void)start;
+
 @end
 
 @interface LegacyToolbarCoordinator
