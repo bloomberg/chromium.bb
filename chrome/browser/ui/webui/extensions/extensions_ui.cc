@@ -144,8 +144,9 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
   source->AddLocalizedString("openInDevtool",
                              IDS_MD_EXTENSIONS_ERROR_LAUNCH_DEVTOOLS);
   source->AddLocalizedString("stackTrace", IDS_MD_EXTENSIONS_ERROR_STACK_TRACE);
-  source->AddLocalizedString("getMoreExtensions",
-                             IDS_MD_EXTENSIONS_SIDEBAR_GET_MORE_EXTENSIONS);
+  // TODO(dpapad): Unify with Settings' IDS_SETTINGS_WEB_STORE.
+  source->AddLocalizedString("openChromeWebStore",
+                             IDS_MD_EXTENSIONS_SIDEBAR_OPEN_CHROME_WEB_STORE);
   source->AddLocalizedString("keyboardShortcuts",
                              IDS_MD_EXTENSIONS_SIDEBAR_KEYBOARD_SHORTCUTS);
   source->AddLocalizedString("guestModeMessage", IDS_MD_EXTENSIONS_GUEST_MODE);

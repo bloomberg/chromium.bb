@@ -83,7 +83,7 @@
     Permissions
   </message>
   <message name="IDS_MD_EXTENSIONS_ITEM_PERMISSIONS_EMPTY" desc="The text to indicate that an extension does not have any special permissions.">
-    This extension requires no special permissions.
+    This extension requires no special permissions
   </message>
   <message name="IDS_MD_EXTENSIONS_ITEM_REMOVE" desc="The label of the button to remove an extension.">
     Remove
@@ -181,8 +181,8 @@
   <message name="IDS_MD_EXTENSIONS_SIDEBAR_EXTENSIONS" desc="The text displayed in the sidebar to go to the extensions section of the page.">
     Extensions
   </message>
-  <message name="IDS_MD_EXTENSIONS_SIDEBAR_GET_MORE_EXTENSIONS" desc="The text for the link to get more extensions in the extensions page.">
-    Get more extensions
+  <message name="IDS_MD_EXTENSIONS_SIDEBAR_OPEN_CHROME_WEB_STORE" desc="The text for the link to get more extensions in the extensions page.">
+    Open Chrome Web Store
   </message>
   <message name="IDS_MD_EXTENSIONS_SIDEBAR_KEYBOARD_SHORTCUTS" desc="The text for the link to manage keyboard shortcuts for extensions.">
     Keyboard shortcuts
