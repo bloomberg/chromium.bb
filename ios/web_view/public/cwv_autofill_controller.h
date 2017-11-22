@@ -22,6 +22,8 @@ CWV_EXPORT
 // Delegate to receive autofill callbacks.
 @property(nonatomic, weak, nullable) id<CWVAutofillControllerDelegate> delegate;
 
+- (instancetype)init NS_UNAVAILABLE;
+
 // Clears the html form element with the 'name' attribute equal to |formName|.
 // No-op if no such form is found.
 // |completionHandler| will only be called on success.
