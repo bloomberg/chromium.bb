@@ -393,8 +393,7 @@ class MediaRouterMojoImpl : public MediaRouterBase,
   base::Optional<mojom::MediaRouteProvider::Id> GetProviderIdForRoute(
       const MediaRoute::Id& route_id);
   base::Optional<mojom::MediaRouteProvider::Id> GetProviderIdForSink(
-      const MediaSink::Id& sink_id,
-      const MediaSource::Id& source_id);
+      const MediaSink::Id& sink_id);
   base::Optional<mojom::MediaRouteProvider::Id> GetProviderIdForPresentation(
       const std::string& presentation_id);
 
