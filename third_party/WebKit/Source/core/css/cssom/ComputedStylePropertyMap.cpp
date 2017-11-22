@@ -45,28 +45,22 @@ const ComputedStyle* ComputedStylePropertyMap::UpdateStyle() {
   return style;
 }
 
-CSSStyleValueVector ComputedStylePropertyMap::GetAllInternal(
+const CSSValue* ComputedStylePropertyMap::GetProperty(
     CSSPropertyID property_id) {
   const ComputedStyle* style = UpdateStyle();
   if (!style)
-    return CSSStyleValueVector();
-  const CSSValue* css_value = ComputedStyleCSSValueMapping::Get(
-      property_id, *style, nullptr /* layout_object */);
-  if (!css_value)
-    return CSSStyleValueVector();
-  return StyleValueFactory::CssValueToStyleValueVector(property_id, *css_value);
+    return nullptr;
+  return ComputedStyleCSSValueMapping::Get(property_id, *style,
+                                           nullptr /* layout_object */);
 }
 
-CSSStyleValueVector ComputedStylePropertyMap::GetAllInternal(
-    AtomicString custom_property_name) {
+const CSSValue* ComputedStylePropertyMap::GetCustomProperty(
+    AtomicString property_name) {
   const ComputedStyle* style = UpdateStyle();
   if (!style)
-    return CSSStyleValueVector();
-  const CSSValue* css_value = ComputedStyleCSSValueMapping::Get(
-      custom_property_name, *style, node_->GetDocument().GetPropertyRegistry());
-  if (!css_value)
-    return CSSStyleValueVector();
-  return StyleValueFactory::CssValueToStyleValueVector(*css_value);
+    return nullptr;
+  return ComputedStyleCSSValueMapping::Get(
+      property_name, *style, node_->GetDocument().GetPropertyRegistry());
 }
 
 Vector<String> ComputedStylePropertyMap::getProperties() {

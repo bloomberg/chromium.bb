@@ -67,27 +67,15 @@ const CSSValue* CoerceStyleValueOrStringToCSSValue(
 
 }  // namespace
 
-CSSStyleValueVector InlineStylePropertyMap::GetAllInternal(
-    CSSPropertyID property_id) {
-  const CSSValue* css_value =
-      owner_element_->EnsureMutableInlineStyle().GetPropertyCSSValue(
-          property_id);
-  if (!css_value)
-    return CSSStyleValueVector();
-
-  return StyleValueFactory::CssValueToStyleValueVector(property_id, *css_value);
+const CSSValue* InlineStylePropertyMap::GetProperty(CSSPropertyID property_id) {
+  return owner_element_->EnsureMutableInlineStyle().GetPropertyCSSValue(
+      property_id);
 }
 
-CSSStyleValueVector InlineStylePropertyMap::GetAllInternal(
-    AtomicString custom_property_name) {
-  const CSSValue* css_value =
-      owner_element_->EnsureMutableInlineStyle().GetPropertyCSSValue(
-          custom_property_name);
-  if (!css_value)
-    return CSSStyleValueVector();
-
-  return StyleValueFactory::CssValueToStyleValueVector(CSSPropertyInvalid,
-                                                       *css_value);
+const CSSValue* InlineStylePropertyMap::GetCustomProperty(
+    AtomicString property_name) {
+  return owner_element_->EnsureMutableInlineStyle().GetPropertyCSSValue(
+      property_name);
 }
 
 Vector<String> InlineStylePropertyMap::getProperties() {

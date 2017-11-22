@@ -40,9 +40,8 @@ class CORE_EXPORT ComputedStylePropertyMap : public StylePropertyMapReadonly {
         pseudo_id_(CSSSelector::ParsePseudoId(pseudo_element)),
         node_(node) {}
 
-  CSSStyleValueVector GetAllInternal(CSSPropertyID) override;
-  CSSStyleValueVector GetAllInternal(
-      AtomicString custom_property_name) override;
+  const CSSValue* GetProperty(CSSPropertyID) override;
+  const CSSValue* GetCustomProperty(AtomicString) override;
 
   HeapVector<StylePropertyMapEntry> GetIterationEntries() override {
     return HeapVector<StylePropertyMapEntry>();
