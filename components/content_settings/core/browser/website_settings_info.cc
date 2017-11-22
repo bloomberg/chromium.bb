@@ -47,8 +47,7 @@ WebsiteSettingsInfo::WebsiteSettingsInfo(
   // For legacy reasons the default value is currently restricted to be an int.
   // TODO(raymes): We should migrate the underlying pref to be a dictionary
   // rather than an int.
-  DCHECK(!initial_default_value_ ||
-         initial_default_value_->IsType(base::Value::Type::INTEGER));
+  DCHECK(!initial_default_value_ || initial_default_value_->is_int());
 }
 
 WebsiteSettingsInfo::~WebsiteSettingsInfo() {}

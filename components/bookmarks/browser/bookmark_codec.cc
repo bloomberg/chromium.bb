@@ -177,7 +177,7 @@ bool BookmarkCodec::DecodeHelper(BookmarkNode* bb_node,
 
   const base::Value* checksum_value;
   if (d_value->Get(kChecksumKey, &checksum_value)) {
-    if (checksum_value->type() != base::Value::Type::STRING)
+    if (!checksum_value->is_string())
       return false;
     if (!checksum_value->GetAsString(&stored_checksum_))
       return false;
@@ -395,7 +395,7 @@ bool BookmarkCodec::DecodeMetaInfo(const base::DictionaryValue& value,
 
   // Meta info used to be stored as a serialized dictionary, so attempt to
   // parse the value as one.
-  if (meta_info->IsType(base::Value::Type::STRING)) {
+  if (meta_info->is_string()) {
     std::string meta_info_str;
     meta_info->GetAsString(&meta_info_str);
     JSONStringValueDeserializer deserializer(meta_info_str);
@@ -438,11 +438,11 @@ void BookmarkCodec::DecodeMetaInfoHelper(
     if (base::StartsWith(it.key(), "stars.", base::CompareCase::SENSITIVE))
       continue;
 
-    if (it.value().IsType(base::Value::Type::DICTIONARY)) {
+    if (it.value().is_dict()) {
       const base::DictionaryValue* subdict;
       it.value().GetAsDictionary(&subdict);
       DecodeMetaInfoHelper(*subdict, prefix + it.key() + ".", meta_info_map);
-    } else if (it.value().IsType(base::Value::Type::STRING)) {
+    } else if (it.value().is_string()) {
       it.value().GetAsString(&(*meta_info_map)[prefix + it.key()]);
     }
   }

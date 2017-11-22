@@ -232,7 +232,7 @@ bool SpellingServiceClient::ParseResponse(
       static_cast<base::DictionaryValue*>(
           base::JSONReader::Read(data, base::JSON_ALLOW_TRAILING_COMMAS)
               .release()));
-  if (!value.get() || !value->IsType(base::Value::Type::DICTIONARY))
+  if (!value.get() || !value->is_dict())
     return false;
 
   // Check for errors from spelling service.
