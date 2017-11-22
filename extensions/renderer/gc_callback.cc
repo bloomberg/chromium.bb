@@ -16,11 +16,30 @@ GCCallback::GCCallback(ScriptContext* context,
                        const v8::Local<v8::Object>& object,
                        const v8::Local<v8::Function>& callback,
                        const base::Closure& fallback)
+    : GCCallback(context, object, callback, base::Closure(), fallback) {}
+
+GCCallback::GCCallback(ScriptContext* context,
+                       const v8::Local<v8::Object>& object,
+                       const base::Closure& callback,
+                       const base::Closure& fallback)
+    : GCCallback(context,
+                 object,
+                 v8::Local<v8::Function>(),
+                 callback,
+                 fallback) {}
+
+GCCallback::GCCallback(ScriptContext* context,
+                       const v8::Local<v8::Object>& object,
+                       const v8::Local<v8::Function> v8_callback,
+                       const base::Closure& closure_callback,
+                       const base::Closure& fallback)
     : context_(context),
       object_(context->isolate(), object),
-      callback_(context->isolate(), callback),
+      closure_callback_(closure_callback),
       fallback_(fallback),
       weak_ptr_factory_(this) {
+  if (!v8_callback.IsEmpty())
+    v8_callback_.Reset(context->isolate(), v8_callback);
   object_.SetWeak(this, OnObjectGC, v8::WeakCallbackType::kParameter);
   context->AddInvalidationObserver(base::Bind(&GCCallback::OnContextInvalidated,
                                               weak_ptr_factory_.GetWeakPtr()));
@@ -44,10 +63,14 @@ void GCCallback::OnObjectGC(const v8::WeakCallbackInfo<GCCallback>& data) {
 
 void GCCallback::RunCallback() {
   fallback_.Reset();
-  v8::Isolate* isolate = context_->isolate();
-  v8::HandleScope handle_scope(isolate);
-  context_->SafeCallFunction(v8::Local<v8::Function>::New(isolate, callback_),
-                             0, nullptr);
+  if (!v8_callback_.IsEmpty()) {
+    v8::Isolate* isolate = context_->isolate();
+    v8::HandleScope handle_scope(isolate);
+    context_->SafeCallFunction(
+        v8::Local<v8::Function>::New(isolate, v8_callback_), 0, nullptr);
+  } else if (closure_callback_) {
+    closure_callback_.Run();
+  }
   delete this;
 }
 

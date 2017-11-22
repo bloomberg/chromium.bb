@@ -112,6 +112,10 @@ class OneTimeMessageHandler {
   void OnOneTimeMessageResponse(const PortId& port_id,
                                 gin::Arguments* arguments);
 
+  // Triggered when the callback to reply is garbage collected.
+  void OnResponseCallbackCollected(ScriptContext* script_context,
+                                   const PortId& port_id);
+
   // The associated bindings system. Outlives this object.
   NativeExtensionBindingsSystem* const bindings_system_;
 

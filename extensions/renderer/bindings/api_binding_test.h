@@ -51,13 +51,14 @@ class APIBindingTest : public testing::Test {
   // Allows subclasses to perform context disposal cleanup.
   virtual void OnWillDisposeContext(v8::Local<v8::Context> context) {}
 
+  // Runs V8 garbage collection.
+  void RunGarbageCollection();
+
   // Returns the associated isolate. Defined out-of-line to avoid the include
   // for IsolateHolder in the header.
   v8::Isolate* isolate();
 
  private:
-  void RunGarbageCollection();
-
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   std::unique_ptr<gin::IsolateHolder> isolate_holder_;

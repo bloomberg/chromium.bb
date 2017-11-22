@@ -123,10 +123,6 @@ void APIBindingTest::DisposeContext(v8::Local<v8::Context> context) {
   additional_context_holders_.erase(iter);
 }
 
-v8::Isolate* APIBindingTest::isolate() {
-  return isolate_holder_->isolate();
-}
-
 void APIBindingTest::RunGarbageCollection() {
   // '5' is a magic number stolen from Blink; arbitrarily large enough to
   // hopefully clean up all the various paths.
@@ -134,6 +130,10 @@ void APIBindingTest::RunGarbageCollection() {
     isolate()->RequestGarbageCollectionForTesting(
         v8::Isolate::kFullGarbageCollection);
   }
+}
+
+v8::Isolate* APIBindingTest::isolate() {
+  return isolate_holder_->isolate();
 }
 
 }  // namespace extensions
