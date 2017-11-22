@@ -545,13 +545,12 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
 
   void InterceptCopyOfOutput(std::unique_ptr<viz::CopyOutputRequest> request) {
     last_copy_request_ = std::move(request);
-    if (last_copy_request_->has_texture_mailbox()) {
+    if (last_copy_request_->has_mailbox()) {
       // Give the resulting texture a size.
       viz::GLHelper* gl_helper =
           ImageTransportFactory::GetInstance()->GetGLHelper();
       GLuint texture = gl_helper->ConsumeMailboxToTexture(
-          last_copy_request_->texture_mailbox().mailbox(),
-          last_copy_request_->texture_mailbox().sync_token());
+          last_copy_request_->mailbox(), last_copy_request_->sync_token());
       gl_helper->ResizeTexture(texture, window()->bounds().size());
       gl_helper->DeleteTexture(texture);
     }
@@ -3729,8 +3728,8 @@ class RenderWidgetHostViewAuraCopyRequestTest
     std::unique_ptr<viz::CopyOutputRequest> request =
         std::move(view_->last_copy_request_);
     request->SendResult(std::make_unique<viz::CopyOutputTextureResult>(
-        view_rect_, request->texture_mailbox().mailbox(),
-        request->texture_mailbox().sync_token(), gfx::ColorSpace(),
+        view_rect_, request->mailbox(), request->sync_token(),
+        gfx::ColorSpace(),
         viz::SingleReleaseCallback::Create(
             base::Bind([](const gpu::SyncToken&, bool) {}))));
     RunLoopUntilCallback();
@@ -3827,7 +3826,7 @@ TEST_F(RenderWidgetHostViewAuraCopyRequestTest, DestroyedAfterCopyRequest) {
   SubmitCompositorFrame();
   EXPECT_EQ(0, callback_count_);
   EXPECT_TRUE(view_->last_copy_request_);
-  EXPECT_TRUE(view_->last_copy_request_->has_texture_mailbox());
+  EXPECT_TRUE(view_->last_copy_request_->has_mailbox());
 
   // Notify DelegatedFrameHost that the copy requests were moved to the
   // compositor thread by calling OnCompositingDidCommit().

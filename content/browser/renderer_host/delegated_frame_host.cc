@@ -420,10 +420,9 @@ void DelegatedFrameHost::AttemptFrameSubscriberCapture(
   // screenshots) since those copy requests do not specify |frame_subscriber()|
   // as a source.
   request->set_source(frame_subscriber()->GetSourceIdForCopyRequest());
-  if (subscriber_texture.get()) {
-    request->SetTextureMailbox(viz::TextureMailbox(
-        subscriber_texture->mailbox(), subscriber_texture->sync_token(),
-        subscriber_texture->target()));
+  if (subscriber_texture) {
+    request->SetMailbox(subscriber_texture->mailbox(),
+                        subscriber_texture->sync_token());
   }
 
   // To avoid unnecessary browser composites, try to go directly to the Surface

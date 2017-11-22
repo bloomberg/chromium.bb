@@ -142,7 +142,7 @@ class VIZ_SERVICE_EXPORT GLRendererCopier {
                                     const gfx::ColorSpace& color_space);
 
   // Completes a copy request by packaging-up and sending the given
-  // |result_texture| in a TextureMailbox. This method takes ownership of
+  // |result_texture| in a mailbox. This method takes ownership of
   // |result_texture|.
   void SendTextureResult(std::unique_ptr<CopyOutputRequest> request,
                          GLuint result_texture,

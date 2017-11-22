@@ -4,8 +4,9 @@
 
 module viz.mojom;
 
+import "gpu/ipc/common/mailbox.mojom";
+import "gpu/ipc/common/sync_token.mojom";
 import "services/viz/public/interfaces/compositing/copy_output_result.mojom";
-import "services/viz/public/interfaces/compositing/texture_mailbox.mojom";
 import "mojo/common/unguessable_token.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
@@ -22,7 +23,9 @@ struct CopyOutputRequest {
 
   // DEPRECATED: To be removed once tab capture is moved into VIZ.
   // http://crbug.com/754872
-  TextureMailbox? texture_mailbox;
+  // If mailbox is present, then sync_token must also be.
+  gpu.mojom.Mailbox? mailbox;
+  gpu.mojom.SyncToken? sync_token;
 
   CopyOutputResultSender result_sender;
 };

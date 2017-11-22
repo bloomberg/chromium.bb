@@ -27,7 +27,7 @@ class VIZ_COMMON_EXPORT CopyOutputResult {
     // A normal bitmap in system memory. AsSkBitmap() will return a bitmap in
     // "N32Premul" form.
     RGBA_BITMAP,
-    // A GL_RGBA texture, referenced by a TextureMailbox. Client code can
+    // A GL_RGBA texture, referred to by a gpu::Mailbox. Client code can
     // optionally take ownership of the texture (via TakeTextureOwnership()), if
     // it is needed beyond the lifetime of CopyOutputResult.
     RGBA_TEXTURE,

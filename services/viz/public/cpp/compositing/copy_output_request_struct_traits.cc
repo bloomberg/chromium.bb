@@ -97,7 +97,12 @@ bool StructTraits<viz::mojom::CopyOutputRequestDataView,
   if (!data.ReadArea(&request->area_))
     return false;
 
-  if (!data.ReadTextureMailbox(&request->texture_mailbox_))
+  if (!data.ReadMailbox(&request->mailbox_))
+    return false;
+  if (!data.ReadSyncToken(&request->sync_token_))
+    return false;
+  // Mailbox and SyncToken always come together.
+  if (!request->mailbox_ != !request->sync_token_)
     return false;
 
   *out_p = std::move(request);
