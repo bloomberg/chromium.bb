@@ -170,7 +170,7 @@ class EditAnnotationsView(generic.base.View):
     self._build_id = build_id
 
     finalize_form = ba_forms.FinalizeForm(request.POST)
-    if finalize_form.is_valid():
+    if finalize_form.is_valid() and finalize_form['finalize'].value():
       self._MaybeSaveFinalizeMessage()
 
     self._annotations_formset = ba_forms.AnnotationsFormSet(request.POST)
