@@ -9,10 +9,6 @@ MB is a wrapper script for GYP and GN that can be used to generate build files
 for sets of canned configurations and analyze them.
 """
 
-# TODO(thomasanderson): Remove this comment.  It is added to
-# workaround https://crbug.com/736215 for CL
-# https://codereview.chromium.org/2974603002/
-
 from __future__ import print_function
 
 import argparse
