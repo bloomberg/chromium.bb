@@ -73,7 +73,9 @@ class ArcMetricsService : public KeyedService,
   void ParseProcessList(std::vector<mojom::RunningAppProcessInfoPtr> processes);
 
   // DBus callbacks.
-  void OnArcStartTimeRetrieved(base::Optional<base::TimeTicks> arc_start_time);
+  void OnArcStartTimeRetrieved(std::vector<mojom::BootProgressEventPtr> events,
+                               mojom::BootType boot_type,
+                               base::Optional<base::TimeTicks> arc_start_time);
 
   THREAD_CHECKER(thread_checker_);
 
@@ -83,8 +85,6 @@ class ArcMetricsService : public KeyedService,
 
   ProcessObserver process_observer_;
   base::RepeatingTimer timer_;
-
-  base::TimeTicks arc_start_time_;
 
   // Always keep this the last member of this class to make sure it's the
   // first thing to be destructed.
