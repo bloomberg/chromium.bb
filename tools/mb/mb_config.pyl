@@ -163,7 +163,7 @@
     'chromium.fyi': {
       'Afl Upload Linux ASan': 'release_afl_asan',
       'Android Builder (dbg)': 'android_debug_static_bot_vrdata',
-      'Android Builder Goma Canary (dbg)': 'android_debug_bot',
+      'Android Builder Goma Canary (dbg)': 'android_debug_static_bot_vrdata',
       'Android deterministic': 'android_without_codecs_release_bot_minimal_symbols',
       'Android deterministic (dbg)': 'android_debug_bot',
       'Browser Side Navigation Linux': 'release_bot',
@@ -180,11 +180,11 @@
       'Chromium Mac 10.11': 'release_bot',
       'Chromium Mac 10.11 Force Mac Toolchain': 'release_bot_mac_new_sdk',
       'Chromium Mac 10.13': 'release_bot',
-      'Chromium Mac 10.9 Goma Canary': 'release_bot',
-      'Chromium Mac 10.9 Goma Canary (clobber)': 'release_bot',
-      'Chromium Mac 10.9 Goma Canary (dbg)': 'debug_bot',
-      'Chromium Mac 10.9 Goma Canary (dbg)(clobber)': 'debug_bot',
-      'Chromium Mac Goma Canary LocalOutputCache': 'release_bot',
+      'Chromium Mac 10.9 Goma Canary': 'gpu_tests_release_trybot',
+      'Chromium Mac 10.9 Goma Canary (clobber)': 'release_bot_mac_strip',
+      'Chromium Mac 10.9 Goma Canary (dbg)': 'debug_trybot',
+      'Chromium Mac 10.9 Goma Canary (dbg)(clobber)': 'debug_trybot',
+      'Chromium Mac Goma Canary LocalOutputCache': 'release_bot_mac_strip',
       'Chromium Win 10 GCE Tests': 'release_bot_minimal_symbols',
       'Chromium Win PGO Builder': {
         '1': 'official_optimize_chrome_pgo_phase_1_x86',
@@ -195,14 +195,14 @@
         '2': 'official_optimize_chrome_pgo_phase_2',
       },
       'Chromium Windows Analyze': 'windows_analyze',
-      'CrWin7Goma': 'release_bot_x86_minimal_symbols',
-      'CrWin7Goma(dbg)': 'debug_bot_x86_minimal_symbols',
-      'CrWin7Goma(dll)': 'shared_release_bot_x86',
-      'CrWinGoma': 'release_bot_x86_minimal_symbols',
-      'CrWinGoma(dll)': 'shared_release_bot_x86',
-      'CrWinGoma(loc)': 'shared_release_bot_x86',
-      'CrWinClexeGoma': 'shared_release_bot_x86_no_clang',
-      'CrWinClangGoma': 'clang_official_optimize_release_bot_minimal_symbols_x86',
+      'CrWin7Goma': 'gpu_tests_release_trybot_x86_minimal_symbols',
+      'CrWin7Goma(dbg)': 'debug_trybot_x86_minimal_symbols',
+      'CrWin7Goma(dll)': 'gpu_tests_release_trybot_x86_shared_minimal_symbols',
+      'CrWinGoma': 'gpu_tests_release_trybot_x86_minimal_symbols',
+      'CrWinGoma(dll)': 'gpu_tests_release_trybot_x86_shared_minimal_symbols',
+      'CrWinGoma(loc)': 'release_bot_x86_minimal_symbols',
+      'CrWinClexeGoma': 'release_bot_x86_minimal_symbols_no_clang',
+      'CrWinClangGoma': 'clang_official_release_bot_minimal_symbols_x86_clang',
 
       'EarlGreyiOS': 'ios',
       'Fuchsia (dbg)': 'debug_bot_fuchsia',
@@ -1155,9 +1155,12 @@
       'no_clang', 'official', 'release_bot', 'minimal_symbols', 'x86',
     ],
 
-    'clang_official_optimize_release_bot_minimal_symbols_x86': [
-      'clang', 'official_optimize', 'release_bot', 'minimal_symbols', 'x86',
+    'clang_official_release_bot_minimal_symbols_x86_clang': [
+      # force clang enabled for clang_official_release_bot_minimal_symbols_x86
+      # for CrWinClangGoma
+      'clang', 'official', 'release_bot', 'minimal_symbols', 'x86',
     ],
+
 
     'clang_official_release_trybot': [
       'clang', 'official', 'release_trybot',
@@ -1413,6 +1416,10 @@
       'gpu_tests', 'release_trybot', 'x86', 'minimal_symbols',
     ],
 
+    'gpu_tests_release_trybot_x86_shared_minimal_symbols': [
+      'gpu_tests', 'release_trybot', 'x86', 'shared', 'minimal_symbols',
+    ],
+
     'gpu_tests_release_bot': [
       'gpu_tests', 'release_bot',
     ],
@@ -1640,12 +1647,8 @@
       'release_trybot', 'x86',
     ],
 
-    'shared_release_bot_x86': [
-      'shared_release_bot', 'x86',
-    ],
-
-    'shared_release_bot_x86_no_clang': [
-      'shared_release_bot', 'x86', 'no_clang',
+    'release_bot_x86_minimal_symbols_no_clang': [
+      'release_bot', 'x86', 'minimal_symbols', 'no_clang',
     ],
 
     'syzyasan_no_pch_release_x86': [
