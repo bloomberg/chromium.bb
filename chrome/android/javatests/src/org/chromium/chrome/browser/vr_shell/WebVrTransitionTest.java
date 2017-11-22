@@ -101,6 +101,7 @@ public class WebVrTransitionTest {
     @Test
     @MediumTest
     @CommandLineFlags.Remove({"enable-webvr"})
+    @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
     public void testWebVrDisabledWithoutFlagSet() throws InterruptedException {
         // TODO(bsheedy): Remove this test once WebVR is on by default without
         // requiring an origin trial.
@@ -118,6 +119,8 @@ public class WebVrTransitionTest {
     @Test
     @MediumTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+    @VrActivityRestriction({VrActivityRestriction.SupportedActivity.CTA,
+            VrActivityRestriction.SupportedActivity.CCT})
     public void testNfcFiresVrdisplayactivate() throws InterruptedException {
         mVrTestFramework.loadUrlAndAwaitInitialization(
                 VrTestFramework.getHtmlTestFile("test_nfc_fires_vrdisplayactivate"),
@@ -136,6 +139,7 @@ public class WebVrTransitionTest {
     @Test
     @MediumTest
     @Restriction({RESTRICTION_TYPE_VIEWER_DAYDREAM, RESTRICTION_TYPE_DON_ENABLED})
+    @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
     public void testPresentationPromiseUnresolvedDuringDon() throws InterruptedException {
         mVrTestFramework.loadUrlAndAwaitInitialization(
                 VrTestFramework.getHtmlTestFile("test_presentation_promise_unresolved_during_don"),
