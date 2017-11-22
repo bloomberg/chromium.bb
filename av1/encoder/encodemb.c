@@ -714,7 +714,11 @@ static void encode_block_inter(int plane, int block, int blk_row, int blk_col,
       plane ? uv_txsize_lookup[bsize][mbmi->inter_tx_size[tx_row][tx_col]][0][0]
             : mbmi->inter_tx_size[tx_row][tx_col];
 
-  if (tx_size == plane_tx_size) {
+  if (tx_size == plane_tx_size
+#if DISABLE_VARTX_FOR_CHROMA
+      || pd->subsampling_x || pd->subsampling_y
+#endif  // DISABLE_VARTX_FOR_CHROMA
+      ) {
     encode_block(plane, block, blk_row, blk_col, plane_bsize, tx_size, arg);
   } else {
     assert(tx_size < TX_SIZES_ALL);
@@ -830,7 +834,7 @@ void av1_encode_sb(AV1_COMMON *cm, MACROBLOCK *x, BLOCK_SIZE bsize, int mi_row,
     const int mi_width = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
     const int mi_height = block_size_high[plane_bsize] >> tx_size_wide_log2[0];
     const TX_SIZE max_tx_size = get_vartx_max_txsize(
-        mbmi, plane_bsize, pd->subsampling_x || pd->subsampling_y);
+        xd, plane_bsize, pd->subsampling_x || pd->subsampling_y);
     const BLOCK_SIZE txb_size = txsize_to_bsize[max_tx_size];
     const int bw = block_size_wide[txb_size] >> tx_size_wide_log2[0];
     const int bh = block_size_high[txb_size] >> tx_size_wide_log2[0];

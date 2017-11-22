@@ -39,6 +39,9 @@ extern "C" {
 #define COMPOUND_SEGMENT_TYPE 1
 #define MAX_SEG_MASK_BITS 1
 
+// Disables vartx transform split for chroma
+#define DISABLE_VARTX_FOR_CHROMA 1
+
 // SEG_MASK_TYPES should not surpass 1 << MAX_SEG_MASK_BITS
 typedef enum {
 #if COMPOUND_SEGMENT_TYPE == 0
@@ -1213,10 +1216,12 @@ static INLINE int is_interintra_pred(const MB_MODE_INFO *mbmi) {
   return (mbmi->ref_frame[1] == INTRA_FRAME) && is_interintra_allowed(mbmi);
 }
 
-static INLINE int get_vartx_max_txsize(const MB_MODE_INFO *const mbmi,
-                                       BLOCK_SIZE bsize, int subsampled) {
-  (void)mbmi;
-  TX_SIZE max_txsize = get_max_rect_tx_size(bsize, is_inter_block(mbmi));
+static INLINE int get_vartx_max_txsize(const MACROBLOCKD *xd, BLOCK_SIZE bsize,
+                                       int subsampled) {
+  TX_SIZE max_txsize =
+      xd->lossless[xd->mi[0]->mbmi.segment_id]
+          ? TX_4X4
+          : get_max_rect_tx_size(bsize, is_inter_block(&xd->mi[0]->mbmi));
 
 #if CONFIG_EXT_PARTITION && CONFIG_TX64X64
   // The decoder is designed so that it can process 64x64 luma pixels at a

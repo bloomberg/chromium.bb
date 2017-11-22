@@ -565,7 +565,11 @@ void tokenize_vartx(ThreadData *td, TOKENEXTRA **t, RUN_TYPE dry_run,
       plane ? uv_txsize_lookup[bsize][mbmi->inter_tx_size[tx_row][tx_col]][0][0]
             : mbmi->inter_tx_size[tx_row][tx_col];
 
-  if (tx_size == plane_tx_size) {
+  if (tx_size == plane_tx_size
+#if DISABLE_VARTX_FOR_CHROMA
+      || pd->subsampling_x || pd->subsampling_y
+#endif  // DISABLE_VARTX_FOR_CHROMA
+      ) {
     plane_bsize = get_plane_block_size(mbmi->sb_type, pd);
 #if CONFIG_LV_MAP
     if (!dry_run) {
@@ -660,7 +664,7 @@ void av1_tokenize_sb_vartx(const AV1_COMP *cpi, ThreadData *td, TOKENEXTRA **t,
     const int mi_width = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
     const int mi_height = block_size_high[plane_bsize] >> tx_size_wide_log2[0];
     const TX_SIZE max_tx_size = get_vartx_max_txsize(
-        mbmi, plane_bsize, pd->subsampling_x || pd->subsampling_y);
+        xd, plane_bsize, pd->subsampling_x || pd->subsampling_y);
     const BLOCK_SIZE txb_size = txsize_to_bsize[max_tx_size];
     int bw = block_size_wide[txb_size] >> tx_size_wide_log2[0];
     int bh = block_size_high[txb_size] >> tx_size_wide_log2[0];
