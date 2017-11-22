@@ -282,12 +282,9 @@ class RequestImpl : public WebHistoryService::Request,
 // Converts a time into a string for use as a parameter in a request to the
 // history server.
 std::string ServerTimeString(base::Time time) {
-  if (time < base::Time::UnixEpoch()) {
+  if (time < base::Time::UnixEpoch())
     return base::Int64ToString(0);
-  } else {
-    return base::Int64ToString(
-        (time - base::Time::UnixEpoch()).InMicroseconds());
-  }
+  return base::Int64ToString((time - base::Time::UnixEpoch()).InMicroseconds());
 }
 
 // Returns a URL for querying the history server for a query specified by

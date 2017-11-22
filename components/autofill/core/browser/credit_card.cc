@@ -880,13 +880,13 @@ bool CreditCard::SetInfoImpl(const AutofillType& type,
                              const base::string16& value,
                              const std::string& app_locale) {
   ServerFieldType storable_type = type.GetStorableType();
+  if (storable_type == CREDIT_CARD_EXP_MONTH)
+    return SetExpirationMonthFromString(value, app_locale);
+
   if (storable_type == CREDIT_CARD_NUMBER)
     SetRawInfo(storable_type, StripSeparators(value));
-  else if (storable_type == CREDIT_CARD_EXP_MONTH)
-    return SetExpirationMonthFromString(value, app_locale);
   else
     SetRawInfo(storable_type, value);
-
   return true;
 }
 

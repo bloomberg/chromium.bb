@@ -447,11 +447,10 @@ CreditCardSaveManager::GetCVCCardUploadDecisionMetric() const {
   if (found_cvc_field_) {
     return found_value_in_cvc_field_ ? AutofillMetrics::INVALID_CVC_VALUE
                                      : AutofillMetrics::CVC_VALUE_NOT_FOUND;
-  } else {
-    return found_cvc_value_in_non_cvc_field_
-               ? AutofillMetrics::FOUND_POSSIBLE_CVC_VALUE_IN_NON_CVC_FIELD
-               : AutofillMetrics::CVC_FIELD_NOT_FOUND;
   }
+  return found_cvc_value_in_non_cvc_field_
+             ? AutofillMetrics::FOUND_POSSIBLE_CVC_VALUE_IN_NON_CVC_FIELD
+             : AutofillMetrics::CVC_FIELD_NOT_FOUND;
 }
 
 void CreditCardSaveManager::LogCardUploadDecisions(

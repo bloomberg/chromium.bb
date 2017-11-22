@@ -294,7 +294,8 @@ bool FillCreditCardTypeSelectControl(const base::string16& value,
   if (SetSelectControlValueSubstringMatch(value, /* ignore_whitespace= */ true,
                                           field)) {
     return true;
-  } else if (value == l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_AMEX)) {
+  }
+  if (value == l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_AMEX)) {
     // For American Express, also try filling as "AmEx".
     return SetSelectControlValueSubstringMatch(
         ASCIIToUTF16("AmEx"), /* ignore_whitespace= */ true, field);
@@ -356,16 +357,16 @@ bool FillSelectControl(const AutofillType& type,
     return true;
 
   // If that fails, try specific fallbacks based on the field type.
-  if (storable_type == ADDRESS_HOME_STATE) {
+  if (storable_type == ADDRESS_HOME_STATE)
     return FillStateSelectControl(value, field);
-  } else if (storable_type == ADDRESS_HOME_COUNTRY) {
+  if (storable_type == ADDRESS_HOME_COUNTRY)
     return FillCountrySelectControl(value, field);
-  } else if (storable_type == CREDIT_CARD_EXP_2_DIGIT_YEAR ||
-             storable_type == CREDIT_CARD_EXP_4_DIGIT_YEAR) {
+  if (storable_type == CREDIT_CARD_EXP_2_DIGIT_YEAR ||
+      storable_type == CREDIT_CARD_EXP_4_DIGIT_YEAR) {
     return FillYearSelectControl(value, field);
-  } else if (storable_type == CREDIT_CARD_TYPE) {
-    return FillCreditCardTypeSelectControl(value, field);
   }
+  if (storable_type == CREDIT_CARD_TYPE)
+    return FillCreditCardTypeSelectControl(value, field);
 
   return false;
 }
@@ -423,14 +424,13 @@ bool FillStateText(const base::string16& value, FormFieldData* field) {
     // Fill the state value directly.
     field->value = value;
     return true;
-  } else {
-    // Fill with the state abbreviation.
-    base::string16 abbreviation;
-    state_names::GetNameAndAbbreviation(value, nullptr, &abbreviation);
-    if (!abbreviation.empty() && field->max_length >= abbreviation.size()) {
-      field->value = base::i18n::ToUpper(abbreviation);
-      return true;
-    }
+  }
+  // Fill with the state abbreviation.
+  base::string16 abbreviation;
+  state_names::GetNameAndAbbreviation(value, nullptr, &abbreviation);
+  if (!abbreviation.empty() && field->max_length >= abbreviation.size()) {
+    field->value = base::i18n::ToUpper(abbreviation);
+    return true;
   }
   return false;
 }
@@ -552,26 +552,30 @@ bool FieldFiller::FillFormField(const AutofillField& field,
   if (type.group() == PHONE_HOME) {
     FillPhoneNumberField(field, value, field_data);
     return true;
-  } else if (field_data->form_control_type == "select-one") {
+  }
+  if (field_data->form_control_type == "select-one")
     return FillSelectControl(type, value, app_locale_, field_data);
-  } else if (field_data->form_control_type == "month") {
+  if (field_data->form_control_type == "month")
     return FillMonthControl(value, field_data);
-  } else if (type.GetStorableType() == ADDRESS_HOME_STREET_ADDRESS) {
+  if (type.GetStorableType() == ADDRESS_HOME_STREET_ADDRESS) {
     FillStreetAddress(value, address_language_code, field_data);
     return true;
-  } else if (type.GetStorableType() == CREDIT_CARD_NUMBER) {
+  }
+  if (type.GetStorableType() == CREDIT_CARD_NUMBER) {
     FillCreditCardNumberField(field, value, field_data);
     return true;
-  } else if (type.GetStorableType() == ADDRESS_HOME_STATE) {
+  }
+  if (type.GetStorableType() == ADDRESS_HOME_STATE)
     return FillStateText(value, field_data);
-  } else if (field_data->form_control_type == "text" &&
-             (type.GetStorableType() == CREDIT_CARD_EXP_2_DIGIT_YEAR ||
-              type.GetStorableType() == CREDIT_CARD_EXP_4_DIGIT_YEAR)) {
+  if (field_data->form_control_type == "text" &&
+      (type.GetStorableType() == CREDIT_CARD_EXP_2_DIGIT_YEAR ||
+       type.GetStorableType() == CREDIT_CARD_EXP_4_DIGIT_YEAR)) {
     FillExpirationYearInput(value, type.GetStorableType(), field_data);
     return true;
-  } else if (field_data->form_control_type == "text" &&
-             (type.GetStorableType() == CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR ||
-              type.GetStorableType() == CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR)) {
+  }
+  if (field_data->form_control_type == "text" &&
+      (type.GetStorableType() == CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR ||
+       type.GetStorableType() == CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR)) {
     return FillExpirationDateInput(value, field_data);
   }
 

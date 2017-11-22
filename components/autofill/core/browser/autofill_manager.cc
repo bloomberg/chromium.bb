@@ -899,7 +899,8 @@ bool AutofillManager::GetDeletionConfirmationText(const base::string16& value,
     }
 
     return true;
-  } else if (GetProfile(identifier, &profile)) {
+  }
+  if (GetProfile(identifier, &profile)) {
     if (profile->record_type() != AutofillProfile::LOCAL_PROFILE)
       return false;
 

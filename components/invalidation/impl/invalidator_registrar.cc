@@ -75,11 +75,7 @@ ObjectIdSet InvalidatorRegistrar::GetRegisteredIds(
     InvalidationHandler* handler) const {
   DCHECK(thread_checker_.CalledOnValidThread());
   HandlerIdsMap::const_iterator lookup = handler_to_ids_map_.find(handler);
-  if (lookup != handler_to_ids_map_.end()) {
-    return lookup->second;
-  } else {
-    return ObjectIdSet();
-  }
+  return lookup != handler_to_ids_map_.end() ? lookup->second : ObjectIdSet();
 }
 
 ObjectIdSet InvalidatorRegistrar::GetAllRegisteredIds() const {

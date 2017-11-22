@@ -140,8 +140,7 @@ HtmlFieldType FieldTypeFromAutocompleteAttributeValue(
   if (autocomplete_attribute_value == "additional-name") {
     if (field.max_length == 1)
       return HTML_TYPE_ADDITIONAL_NAME_INITIAL;
-    else
-      return HTML_TYPE_ADDITIONAL_NAME;
+    return HTML_TYPE_ADDITIONAL_NAME;
   }
 
   if (autocomplete_attribute_value == "family-name")
@@ -210,10 +209,9 @@ HtmlFieldType FieldTypeFromAutocompleteAttributeValue(
   if (autocomplete_attribute_value == "cc-exp") {
     if (field.max_length == 5)
       return HTML_TYPE_CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR;
-    else if (field.max_length == 7)
+    if (field.max_length == 7)
       return HTML_TYPE_CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR;
-    else
-      return HTML_TYPE_CREDIT_CARD_EXP;
+    return HTML_TYPE_CREDIT_CARD_EXP;
   }
 
   if (autocomplete_attribute_value == "cc-exp-month")
@@ -222,10 +220,9 @@ HtmlFieldType FieldTypeFromAutocompleteAttributeValue(
   if (autocomplete_attribute_value == "cc-exp-year") {
     if (field.max_length == 2)
       return HTML_TYPE_CREDIT_CARD_EXP_2_DIGIT_YEAR;
-    else if (field.max_length == 4)
+    if (field.max_length == 4)
       return HTML_TYPE_CREDIT_CARD_EXP_4_DIGIT_YEAR;
-    else
-      return HTML_TYPE_CREDIT_CARD_EXP_YEAR;
+    return HTML_TYPE_CREDIT_CARD_EXP_YEAR;
   }
 
   if (autocomplete_attribute_value == "cc-csc")

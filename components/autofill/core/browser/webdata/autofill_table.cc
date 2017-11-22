@@ -1746,12 +1746,10 @@ bool AutofillTable::GetAllSyncMetadata(syncer::ModelType model_type,
   }
 
   sync_pb::ModelTypeState model_type_state;
-  if (GetModelTypeState(model_type, &model_type_state)) {
-    metadata_batch->SetModelTypeState(model_type_state);
-  } else {
+  if (!GetModelTypeState(model_type, &model_type_state))
     return false;
-  }
 
+  metadata_batch->SetModelTypeState(model_type_state);
   return true;
 }
 

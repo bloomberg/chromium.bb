@@ -227,7 +227,8 @@ bool Address::SetInfoImpl(const AutofillType& type,
 
     country_code_ = base::ToUpperASCII(base::UTF16ToASCII(value));
     return true;
-  } else if (type.html_type() == HTML_TYPE_FULL_ADDRESS) {
+  }
+  if (type.html_type() == HTML_TYPE_FULL_ADDRESS) {
     // Parsing a full address is too hard.
     return false;
   }

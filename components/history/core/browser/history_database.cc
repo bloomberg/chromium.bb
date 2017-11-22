@@ -366,13 +366,9 @@ SegmentID HistoryDatabase::GetSegmentID(VisitID visit_id) {
       "SELECT segment_id FROM visits WHERE id = ?"));
   s.BindInt64(0, visit_id);
 
-  if (s.Step()) {
-    if (s.ColumnType(0) == sql::COLUMN_TYPE_NULL)
-      return 0;
-    else
-      return s.ColumnInt64(0);
-  }
-  return 0;
+  if (!s.Step() || s.ColumnType(0) == sql::COLUMN_TYPE_NULL)
+    return 0;
+  return s.ColumnInt64(0);
 }
 
 base::Time HistoryDatabase::GetEarlyExpirationThreshold() {
