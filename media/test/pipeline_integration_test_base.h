@@ -28,10 +28,6 @@
 
 using ::testing::NiceMock;
 
-namespace base {
-class RunLoop;
-}
-
 namespace media {
 
 class FakeEncryptedMedia;

@@ -4,8 +4,6 @@
 
 #include "remoting/host/file_proxy_wrapper.h"
 
-#include <queue>
-
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/containers/queue.h"
