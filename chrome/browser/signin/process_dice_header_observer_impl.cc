@@ -5,13 +5,32 @@
 #include "chrome/browser/signin/process_dice_header_observer_impl.h"
 
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/dice_tab_helper.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
+#include "chrome/browser/ui/webui/signin/dice_turn_sync_on_helper.h"
+#include "chrome/common/webui_url_constants.h"
+#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/signin/core/browser/signin_metrics.h"
+#include "url/gurl.h"
+
+namespace {
+
+void RedirectToNtp(content::WebContents* contents) {
+  VLOG(1) << "RedirectToNtp";
+  // Redirect to NTP page.
+  content::OpenURLParams params(GURL(chrome::kChromeUINewTabURL),
+                                content::Referrer(),
+                                WindowOpenDisposition::CURRENT_TAB,
+                                ui::PAGE_TRANSITION_AUTO_TOPLEVEL, false);
+  contents->OpenURL(params);
+}
+
+}  // namespace
 
 ProcessDiceHeaderObserverImpl::ProcessDiceHeaderObserverImpl(
     content::WebContents* web_contents)
@@ -56,10 +75,16 @@ void ProcessDiceHeaderObserverImpl::DidFinishRefreshTokenFetch(
   DiceTabHelper* tab_helper = DiceTabHelper::FromWebContents(web_contents);
   DCHECK(tab_helper);
 
-  // OneClickSigninSyncStarter is suicidal (it will kill itself once it finishes
-  // enabling sync).
+  // After signing in to Chrome, the user should be redirected to the NTP.
+  RedirectToNtp(web_contents);
+
+  // Turn on sync for an existing account.
   VLOG(1) << "Start sync after web sign-in.";
-  new OneClickSigninSyncStarter(
-      profile, browser, gaia_id, email, tab_helper->signin_access_point(),
-      tab_helper->signin_reason(), OneClickSigninSyncStarter::Callback());
+  std::string account_id = AccountTrackerServiceFactory::GetForProfile(profile)
+                               ->PickAccountIdForAccount(gaia_id, email);
+
+  // DiceTurnSyncOnHelper is suicidal (it will kill itself once it finishes
+  // enabling sync).
+  new DiceTurnSyncOnHelper(profile, browser, tab_helper->signin_access_point(),
+                           tab_helper->signin_reason(), account_id);
 }
