@@ -169,7 +169,10 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "ash/public/cpp/window_properties.h"
+#include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "chrome/browser/chromeos/arc/intent_helper/open_with_menu.h"
+#include "ui/aura/window.h"
 #endif
 
 using base::UserMetricsAction;
@@ -1545,6 +1548,20 @@ void RenderViewContextMenu::AppendPictureInPictureItem() {
 // Menu delegate functions -----------------------------------------------------
 
 bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
+#if defined(OS_CHROMEOS)
+  // Disable context menu in locked fullscreen mode (the menu is not really
+  // disabled as the user can still open it, but all the individual context menu
+  // entries are disabled / greyed out).
+  if (GetBrowser()) {
+    aura::Window* window = GetBrowser()->window()->GetNativeWindow();
+    ash::mojom::WindowPinType type =
+        window->GetProperty(ash::kWindowPinTypeKey);
+    if (type == ash::mojom::WindowPinType::TRUSTED_PINNED) {
+      return false;
+    }
+  }
+#endif
+
   {
     bool enabled = false;
     if (RenderViewContextMenuBase::IsCommandIdKnown(id, &enabled))

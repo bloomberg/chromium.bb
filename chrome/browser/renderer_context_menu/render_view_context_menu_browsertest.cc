@@ -78,6 +78,12 @@
 #include "third_party/WebKit/public/web/WebContextMenuData.h"
 #include "ui/base/models/menu_model.h"
 
+#if defined(OS_CHROMEOS)
+#include "ash/public/cpp/window_properties.h"
+#include "ash/public/interfaces/window_pin_type.mojom.h"
+#include "ui/aura/window.h"
+#endif
+
 using content::WebContents;
 using extensions::MimeHandlerViewGuest;
 using extensions::TestMimeHandlerViewGuest;
@@ -293,6 +299,31 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
 
   EXPECT_TRUE(menu3->IsCommandIdVisible(IDC_CONTENT_CONTEXT_COPYLINKTEXT));
 }
+
+#if defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
+                       ContextMenuEntriesAreDisabledInLockedFullscreen) {
+  int entries_to_test[] = {
+    IDC_VIEW_SOURCE, IDC_CONTENT_CONTEXT_OPENLINKNEWTAB,
+    IDC_CONTENT_CONTEXT_INSPECTELEMENT,
+  };
+  std::unique_ptr<TestRenderViewContextMenu> menu =
+      CreateContextMenuMediaTypeNone(GURL("http://www.google.com/"),
+                                     GURL("http://www.google.com/"));
+
+  // Entries are enabled.
+  for (auto entry : entries_to_test)
+    EXPECT_TRUE(menu->IsCommandIdEnabled(entry));
+
+  // Set locked fullscreen state.
+  browser()->window()->GetNativeWindow()->SetProperty(
+      ash::kWindowPinTypeKey, ash::mojom::WindowPinType::TRUSTED_PINNED);
+
+  // All entries are disabled in locked fullscreen (testing only a subset here).
+  for (auto entry : entries_to_test)
+    EXPECT_FALSE(menu->IsCommandIdEnabled(entry));
+}
+#endif  // defined(OS_CHROMEOS)
 
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenEntryPresentForNormalURLs) {
   std::unique_ptr<TestRenderViewContextMenu> menu =
