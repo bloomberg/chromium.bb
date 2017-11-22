@@ -113,8 +113,8 @@ void InterfaceFactoryImpl::CreateAudioDecoder(
   }
 
   audio_decoder_bindings_.AddBinding(
-      base::MakeUnique<MojoAudioDecoderService>(
-          cdm_service_context_.GetWeakPtr(), std::move(audio_decoder)),
+      base::MakeUnique<MojoAudioDecoderService>(&cdm_service_context_,
+                                                std::move(audio_decoder)),
       std::move(request));
 #endif  // BUILDFLAG(ENABLE_MOJO_AUDIO_DECODER)
 }
@@ -123,8 +123,8 @@ void InterfaceFactoryImpl::CreateVideoDecoder(
     mojom::VideoDecoderRequest request) {
 #if BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
   video_decoder_bindings_.AddBinding(
-      base::MakeUnique<MojoVideoDecoderService>(
-          mojo_media_client_, cdm_service_context_.GetWeakPtr()),
+      base::MakeUnique<MojoVideoDecoderService>(mojo_media_client_,
+                                                &cdm_service_context_),
       std::move(request));
 #endif  // BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
 }
@@ -154,9 +154,8 @@ void InterfaceFactoryImpl::CreateRenderer(
 
   std::unique_ptr<MojoRendererService> mojo_renderer_service =
       base::MakeUnique<MojoRendererService>(
-          cdm_service_context_.GetWeakPtr(), std::move(audio_sink),
-          std::move(video_sink), std::move(renderer),
-          MojoRendererService::InitiateSurfaceRequestCB());
+          &cdm_service_context_, std::move(audio_sink), std::move(video_sink),
+          std::move(renderer), MojoRendererService::InitiateSurfaceRequestCB());
 
   MojoRendererService* mojo_renderer_service_ptr = mojo_renderer_service.get();
 
@@ -180,9 +179,9 @@ void InterfaceFactoryImpl::CreateCdm(
   if (!cdm_factory)
     return;
 
-  cdm_bindings_.AddBinding(base::MakeUnique<MojoCdmService>(
-                               cdm_service_context_.GetWeakPtr(), cdm_factory),
-                           std::move(request));
+  cdm_bindings_.AddBinding(
+      base::MakeUnique<MojoCdmService>(&cdm_service_context_, cdm_factory),
+      std::move(request));
 #endif  // BUILDFLAG(ENABLE_MOJO_CDM)
 }
 

@@ -34,7 +34,7 @@ using NewSessionMojoCdmPromise =
 
 int MojoCdmService::next_cdm_id_ = CdmContext::kInvalidCdmId + 1;
 
-MojoCdmService::MojoCdmService(base::WeakPtr<MojoCdmServiceContext> context,
+MojoCdmService::MojoCdmService(MojoCdmServiceContext* context,
                                CdmFactory* cdm_factory)
     : context_(context),
       cdm_factory_(cdm_factory),
@@ -50,8 +50,7 @@ MojoCdmService::~MojoCdmService() {
 
   CdmManager::GetInstance()->UnregisterCdm(cdm_id_);
 
-  if (context_)
-    context_->UnregisterCdm(cdm_id_);
+  context_->UnregisterCdm(cdm_id_);
 }
 
 void MojoCdmService::SetClient(mojom::ContentDecryptionModuleClientPtr client) {
@@ -148,7 +147,7 @@ void MojoCdmService::OnCdmCreated(
 
   // TODO(xhwang): This should not happen when KeySystemInfo is properly
   // populated. See http://crbug.com/469366
-  if (!cdm || !context_) {
+  if (!cdm) {
     cdm_promise_result->success = false;
     cdm_promise_result->exception = CdmPromise::Exception::NOT_SUPPORTED_ERROR;
     cdm_promise_result->system_code = 0;

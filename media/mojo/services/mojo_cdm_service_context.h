@@ -11,7 +11,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
 #include "media/mojo/services/media_mojo_export.h"
 
 namespace media {
@@ -25,8 +24,6 @@ class MEDIA_MOJO_EXPORT MojoCdmServiceContext {
   MojoCdmServiceContext();
   ~MojoCdmServiceContext();
 
-  base::WeakPtr<MojoCdmServiceContext> GetWeakPtr();
-
   // Registers The |cdm_service| with |cdm_id|.
   void RegisterCdm(int cdm_id, MojoCdmService* cdm_service);
 
@@ -39,9 +36,6 @@ class MEDIA_MOJO_EXPORT MojoCdmServiceContext {
  private:
   // A map between CDM ID and MojoCdmService.
   std::map<int, MojoCdmService*> cdm_services_;
-
-  // NOTE: Weak pointers must be invalidated before all other member variables.
-  base::WeakPtrFactory<MojoCdmServiceContext> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoCdmServiceContext);
 };

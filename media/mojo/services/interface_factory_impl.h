@@ -49,6 +49,9 @@ class InterfaceFactoryImpl : public mojom::InterfaceFactory {
   CdmFactory* GetCdmFactory();
 #endif  // BUILDFLAG(ENABLE_MOJO_CDM)
 
+  // Must be declared before the bindings below because the bound objects might
+  // take a raw pointer of |cdm_service_context_| and assume it's always
+  // available.
   MojoCdmServiceContext cdm_service_context_;
 
 #if BUILDFLAG(ENABLE_MOJO_AUDIO_DECODER)

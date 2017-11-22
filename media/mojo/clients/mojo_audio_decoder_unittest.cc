@@ -117,10 +117,10 @@ class MojoAudioDecoderTest : public ::testing::Test {
     EXPECT_CALL(*mock_audio_decoder_, Reset(_))
         .WillRepeatedly(RunCallback<0>());
 
-    mojo::MakeStrongBinding(base::MakeUnique<MojoAudioDecoderService>(
-                                mojo_cdm_service_context_.GetWeakPtr(),
-                                std::move(mock_audio_decoder)),
-                            std::move(request));
+    mojo::MakeStrongBinding(
+        base::MakeUnique<MojoAudioDecoderService>(
+            &mojo_cdm_service_context_, std::move(mock_audio_decoder)),
+        std::move(request));
   }
 
   void InitializeAndExpect(bool success) {
