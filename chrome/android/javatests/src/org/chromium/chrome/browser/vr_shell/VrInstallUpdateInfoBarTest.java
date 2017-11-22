@@ -26,6 +26,7 @@ import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.vr_shell.mock.MockVrCoreVersionCheckerImpl;
+import org.chromium.chrome.browser.vr_shell.rules.VrActivityRestriction;
 import org.chromium.chrome.browser.vr_shell.util.VrInfoBarUtils;
 import org.chromium.chrome.browser.vr_shell.util.VrShellDelegateUtils;
 import org.chromium.chrome.browser.vr_shell.util.VrTestRuleUtils;
@@ -120,6 +121,7 @@ public class VrInstallUpdateInfoBarTest {
      */
     @Test
     @MediumTest
+    @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
     public void testInfoBarNotPresentWhenVrServicesCurrent() throws InterruptedException {
         infoBarTestHelper(VrCoreCompatibility.VR_READY);
     }
@@ -129,6 +131,7 @@ public class VrInstallUpdateInfoBarTest {
      */
     @Test
     @MediumTest
+    @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
     public void testInfoBarPresentWhenVrServicesOutdated() throws InterruptedException {
         infoBarTestHelper(VrCoreCompatibility.VR_OUT_OF_DATE);
     }
@@ -138,6 +141,7 @@ public class VrInstallUpdateInfoBarTest {
      */
     @Test
     @MediumTest
+    @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
     public void testInfoBarPresentWhenVrServicesMissing() throws InterruptedException {
         infoBarTestHelper(VrCoreCompatibility.VR_NOT_AVAILABLE);
     }
@@ -148,6 +152,7 @@ public class VrInstallUpdateInfoBarTest {
      */
     @Test
     @MediumTest
+    @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
     public void testInfoBarNotPresentWhenVrServicesNotSupported() throws InterruptedException {
         infoBarTestHelper(VrCoreCompatibility.VR_NOT_SUPPORTED);
     }

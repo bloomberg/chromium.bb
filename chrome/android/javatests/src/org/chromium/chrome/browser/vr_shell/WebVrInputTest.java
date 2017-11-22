@@ -37,6 +37,7 @@ import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.vr_shell.rules.VrActivityRestriction;
 import org.chromium.chrome.browser.vr_shell.util.VrShellDelegateUtils;
 import org.chromium.chrome.browser.vr_shell.util.VrTestRuleUtils;
 import org.chromium.chrome.browser.vr_shell.util.VrTransitionUtils;
@@ -87,6 +88,7 @@ public class WebVrInputTest {
     @MediumTest
     @DisableIf.Build(message = "Flaky on K/L crbug.com/762126",
             sdk_is_less_than = Build.VERSION_CODES.M)
+    @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
     public void testScreenTapsNotRegistered() throws InterruptedException {
         mVrTestFramework.loadUrlAndAwaitInitialization(
                 VrTestFramework.getHtmlTestFile("test_screen_taps_not_registered"),
@@ -121,6 +123,7 @@ public class WebVrInputTest {
     @Test
     @MediumTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+    @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
     public void testControllerClicksRegisteredOnDaydream() throws InterruptedException {
         EmulatedVrController controller = new EmulatedVrController(mVrTestRule.getActivity());
         mVrTestFramework.loadUrlAndAwaitInitialization(
@@ -168,6 +171,7 @@ public class WebVrInputTest {
     @DisableIf.Build(message = "Flaky on L crbug.com/713781",
             sdk_is_greater_than = Build.VERSION_CODES.KITKAT,
             sdk_is_less_than = Build.VERSION_CODES.M)
+    @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
     public void testScreenTapsRegisteredOnCardboard() throws InterruptedException {
         mVrTestFramework.loadUrlAndAwaitInitialization(
                 VrTestFramework.getHtmlTestFile("test_gamepad_button"), PAGE_LOAD_TIMEOUT_S);
@@ -212,6 +216,7 @@ public class WebVrInputTest {
      */
     @Test
     @MediumTest
+    @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
     public void testPresentationLocksFocus() throws InterruptedException {
         mVrTestFramework.loadUrlAndAwaitInitialization(
                 VrTestFramework.getHtmlTestFile("test_presentation_locks_focus"),
@@ -247,6 +252,7 @@ public class WebVrInputTest {
     @Test
     @MediumTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+    @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
     @CommandLineFlags.Add({"disable-features=" + ChromeFeatureList.VR_BROWSING})
     public void testAppButtonNoopsWhenBrowsingDisabled() throws InterruptedException {
         mVrTestFramework.loadUrlAndAwaitInitialization(
@@ -265,6 +271,7 @@ public class WebVrInputTest {
     @Test
     @MediumTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+    @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
     public void testFocusUpdatesSynchronously() throws InterruptedException {
         mVrTestFramework.loadUrlAndAwaitInitialization(
                 VrTestFramework.getHtmlTestFile("generic_webvr_page_with_activate_listener"),
