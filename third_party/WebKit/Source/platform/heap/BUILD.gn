@@ -96,6 +96,7 @@ jumbo_source_set("blink_heap_unittests_sources") {
     "HeapTest.cpp",
     "HeapTestUtilities.cpp",
     "HeapTestUtilities.h",
+    "ObjectStartBitmapTest.cpp",
     "PersistentTest.cpp",
     "RunAllTests.cpp",
   ]
