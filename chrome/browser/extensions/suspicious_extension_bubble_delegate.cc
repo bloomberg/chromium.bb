@@ -29,9 +29,17 @@ const char kWipeoutAcknowledged[] = "ack_wiped";
 
 namespace extensions {
 
+namespace {
+
+base::LazyInstance<std::set<Profile*>>::Leaky g_shown =
+    LAZY_INSTANCE_INITIALIZER;
+
+}  // namespace
+
 SuspiciousExtensionBubbleDelegate::SuspiciousExtensionBubbleDelegate(
     Profile* profile)
-    : extensions::ExtensionMessageBubbleController::Delegate(profile) {
+    : extensions::ExtensionMessageBubbleController::Delegate(profile),
+      profile_(profile) {
   set_acknowledged_flag_pref_name(kWipeoutAcknowledged);
 }
 
@@ -107,6 +115,31 @@ bool SuspiciousExtensionBubbleDelegate::ShouldAcknowledgeOnDeactivate() const {
   return false;
 }
 
+bool SuspiciousExtensionBubbleDelegate::ShouldShow(
+    const ExtensionIdList& extensions) const {
+  DCHECK_LE(1u, extensions.size());
+  return !g_shown.Get().count(profile_);
+}
+
+void SuspiciousExtensionBubbleDelegate::OnShown(
+    const ExtensionIdList& extensions) {
+  DCHECK_LE(1u, extensions.size());
+  DCHECK(!g_shown.Get().count(profile_));
+  g_shown.Get().insert(profile_);
+}
+
+void SuspiciousExtensionBubbleDelegate::OnAction() {
+  // We clear the profile set because the user chooses to remove or disable the
+  // extension. Thus if that extension or another takes effect, it is worth
+  // mentioning to the user (ShouldShow() would return true) because it is
+  // contrary to the user's choice.
+  g_shown.Get().clear();
+}
+
+void SuspiciousExtensionBubbleDelegate::ClearProfileSetForTesting() {
+  g_shown.Get().clear();
+}
+
 bool SuspiciousExtensionBubbleDelegate::ShouldShowExtensionList() const {
   return true;
 }
@@ -130,10 +163,6 @@ void SuspiciousExtensionBubbleDelegate::LogAction(
   UMA_HISTOGRAM_ENUMERATION(
       "ExtensionBubble.WipeoutUserSelection",
       action, ExtensionMessageBubbleController::ACTION_BOUNDARY);
-}
-
-const char* SuspiciousExtensionBubbleDelegate::GetKey() {
-  return "SuspiciousExtensionBubbleDelegate";
 }
 
 bool SuspiciousExtensionBubbleDelegate::SupportsPolicyIndicator() {

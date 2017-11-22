@@ -19,9 +19,15 @@
 
 namespace extensions {
 
+namespace {
+
+base::LazyInstance<std::set<Profile*>>::Leaky g_shown =
+    LAZY_INSTANCE_INITIALIZER;
+
+}  // namespace
+
 DevModeBubbleDelegate::DevModeBubbleDelegate(Profile* profile)
-    : ExtensionMessageBubbleController::Delegate(profile) {
-}
+    : ExtensionMessageBubbleController::Delegate(profile), profile_(profile) {}
 
 DevModeBubbleDelegate::~DevModeBubbleDelegate() {
 }
@@ -78,6 +84,24 @@ bool DevModeBubbleDelegate::ShouldAcknowledgeOnDeactivate() const {
   return false;
 }
 
+bool DevModeBubbleDelegate::ShouldShow(
+    const ExtensionIdList& extensions) const {
+  DCHECK_LE(1u, extensions.size());
+  return !g_shown.Get().count(profile_);
+}
+
+void DevModeBubbleDelegate::OnShown(const ExtensionIdList& extensions) {
+  DCHECK_LE(1u, extensions.size());
+  DCHECK(!g_shown.Get().count(profile_));
+  g_shown.Get().insert(profile_);
+}
+
+void DevModeBubbleDelegate::OnAction() {}
+
+void DevModeBubbleDelegate::ClearProfileSetForTesting() {
+  g_shown.Get().clear();
+}
+
 bool DevModeBubbleDelegate::ShouldShowExtensionList() const {
   return false;
 }
@@ -100,14 +124,6 @@ void DevModeBubbleDelegate::LogAction(
   UMA_HISTOGRAM_ENUMERATION(
       "ExtensionBubble.DevModeUserSelection",
       action, ExtensionMessageBubbleController::ACTION_BOUNDARY);
-}
-
-const char* DevModeBubbleDelegate::GetKey() {
-  return "DevModeBubbleDelegate";
-}
-
-bool DevModeBubbleDelegate::ClearProfileSetAfterAction() {
-  return false;
 }
 
 bool DevModeBubbleDelegate::SupportsPolicyIndicator() {

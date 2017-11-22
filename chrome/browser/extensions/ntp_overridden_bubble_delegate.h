@@ -50,18 +50,23 @@ class NtpOverriddenBubbleDelegate
   base::string16 GetDismissButtonLabel() const override;
   bool ShouldCloseOnDeactivate() const override;
   bool ShouldAcknowledgeOnDeactivate() const override;
+  bool ShouldShow(const ExtensionIdList& extensions) const override;
+  void OnShown(const ExtensionIdList& extensions) override;
+  void OnAction() override;
+  void ClearProfileSetForTesting() override;
   bool ShouldShowExtensionList() const override;
   bool ShouldHighlightExtensions() const override;
   bool ShouldLimitToEnabledExtensions() const override;
   void LogExtensionCount(size_t count) override;
   void LogAction(ExtensionMessageBubbleController::BubbleAction) override;
-  const char* GetKey() override;
   bool SupportsPolicyIndicator() override;
 
   static void set_acknowledge_existing_extensions_for_testing(
       bool acknowledge_existing_extensions);
 
  private:
+  Profile* profile_;
+
   // The ID of the extension we are showing the bubble for.
   std::string extension_id_;
 

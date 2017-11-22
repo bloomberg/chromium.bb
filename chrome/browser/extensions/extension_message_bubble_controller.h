@@ -74,6 +74,25 @@ class ExtensionMessageBubbleController : public chrome::BrowserListObserver,
     // widget deactivates.
     virtual bool ShouldAcknowledgeOnDeactivate() const = 0;
 
+    // Returns true if the bubble should be shown. Called if and only if there
+    // is at least one extension in |extensions|.
+    virtual bool ShouldShow(const ExtensionIdList& extensions) const = 0;
+
+    // Called when the bubble is actually shown. Because some bubbles are
+    // delayed (in order to weather the "focus storm"), they are not shown
+    // immediately.
+    virtual void OnShown(const ExtensionIdList& extensions) = 0;
+
+    // Called when the user takes an acknowledging action (e.g. Accept or
+    // Cancel) on the displayed bubble, so that the bubble can do any additional
+    // cleanup. The action, if any, will be handled separately (through e.g.
+    // AcknowledgeExtension()).
+    virtual void OnAction();
+
+    // Clears the delegate's internal set of profiles that the bubble has been
+    // shown.
+    virtual void ClearProfileSetForTesting() = 0;
+
     // Whether to show a list of extensions in the bubble.
     virtual bool ShouldShowExtensionList() const = 0;
 
@@ -88,23 +107,11 @@ class ExtensionMessageBubbleController : public chrome::BrowserListObserver,
     virtual void LogExtensionCount(size_t count) = 0;
     virtual void LogAction(BubbleAction action) = 0;
 
-    // Returns a key unique to the type of bubble that can be used to retrieve
-    // state specific to the type (e.g., shown for profiles).
-    virtual const char* GetKey() = 0;
-
     // Returns true if the bubble is informing about a single extension that can
     // be policy-installed.
     // E.g. A proxy-type extension can be policy installed, but a developer-type
     // extension cannot.
     virtual bool SupportsPolicyIndicator() = 0;
-
-    // Whether the "shown for profiles" set should be cleared if an action is
-    // taken on the bubble. This defaults to true, since once an action is
-    // taken, the extension will usually either be acknowledged or removed, and
-    // the bubble won't show for that extension.
-    // This should be false in cases where there is no acknowledgment option
-    // (as in the developer-mode extension warning).
-    virtual bool ClearProfileSetAfterAction();
 
     // Has the user acknowledged info about the extension the bubble reports.
     bool HasBubbleInfoBeenAcknowledged(const std::string& extension_id);
@@ -180,8 +187,6 @@ class ExtensionMessageBubbleController : public chrome::BrowserListObserver,
   // Sets this bubble as the active bubble being shown.
   void SetIsActiveBubble();
 
-  void ClearProfileListForTesting();
-
   static void set_should_ignore_learn_more_for_testing(
       bool should_ignore_learn_more);
 
@@ -208,8 +213,6 @@ class ExtensionMessageBubbleController : public chrome::BrowserListObserver,
 
   // Performs cleanup after the bubble closes.
   void OnClose();
-
-  std::set<Profile*>* GetProfileSet();
 
   // A weak pointer to the Browser we are associated with. Not owned by us.
   Browser* browser_;

@@ -35,14 +35,19 @@ class SuspiciousExtensionBubbleDelegate
   bool ShouldCloseOnDeactivate() const override;
   bool ShouldAcknowledgeOnDeactivate() const override;
   bool ShouldShowExtensionList() const override;
+  bool ShouldShow(const ExtensionIdList& extensions) const override;
+  void OnShown(const ExtensionIdList& extensions) override;
+  void OnAction() override;
+  void ClearProfileSetForTesting() override;
   bool ShouldHighlightExtensions() const override;
   bool ShouldLimitToEnabledExtensions() const override;
   void LogExtensionCount(size_t count) override;
   void LogAction(ExtensionMessageBubbleController::BubbleAction) override;
-  const char* GetKey() override;
   bool SupportsPolicyIndicator() override;
 
  private:
+  Profile* profile_;
+
   DISALLOW_COPY_AND_ASSIGN(SuspiciousExtensionBubbleDelegate);
 };
 

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/proxy_overridden_bubble_delegate.h"
 
+#include "base/lazy_instance.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -28,11 +29,13 @@ const int kDaysSinceInstallMin = 7;
 // Whether the user has been notified about extension overriding the proxy.
 const char kProxyBubbleAcknowledged[] = "ack_proxy_bubble";
 
+base::LazyInstance<std::set<Profile*>>::Leaky g_shown =
+    LAZY_INSTANCE_INITIALIZER;
+
 }  // namespace
 
-ProxyOverriddenBubbleDelegate::ProxyOverriddenBubbleDelegate(
-    Profile* profile)
-    : ExtensionMessageBubbleController::Delegate(profile) {
+ProxyOverriddenBubbleDelegate::ProxyOverriddenBubbleDelegate(Profile* profile)
+    : ExtensionMessageBubbleController::Delegate(profile), profile_(profile) {
   set_acknowledged_flag_pref_name(kProxyBubbleAcknowledged);
 }
 
@@ -123,6 +126,30 @@ bool ProxyOverriddenBubbleDelegate::ShouldAcknowledgeOnDeactivate() const {
   return false;
 }
 
+bool ProxyOverriddenBubbleDelegate::ShouldShow(
+    const ExtensionIdList& extensions) const {
+  DCHECK_EQ(1u, extensions.size());
+  return !g_shown.Get().count(profile_);
+}
+
+void ProxyOverriddenBubbleDelegate::OnShown(const ExtensionIdList& extensions) {
+  DCHECK_EQ(1u, extensions.size());
+  DCHECK(!g_shown.Get().count(profile_));
+  g_shown.Get().insert(profile_);
+}
+
+void ProxyOverriddenBubbleDelegate::OnAction() {
+  // We clear the profile set because the user chooses to remove or disable the
+  // extension. Thus if that extension or another takes effect, it is worth
+  // mentioning to the user (ShouldShow() would return true) because it is
+  // contrary to the user's choice.
+  g_shown.Get().clear();
+}
+
+void ProxyOverriddenBubbleDelegate::ClearProfileSetForTesting() {
+  g_shown.Get().clear();
+}
+
 bool ProxyOverriddenBubbleDelegate::ShouldShowExtensionList() const {
   return false;
 }
@@ -143,10 +170,6 @@ void ProxyOverriddenBubbleDelegate::LogAction(
   UMA_HISTOGRAM_ENUMERATION("ProxyOverriddenBubble.UserSelection",
                             action,
                             ExtensionMessageBubbleController::ACTION_BOUNDARY);
-}
-
-const char* ProxyOverriddenBubbleDelegate::GetKey() {
-  return "ProxyOverriddenBubbleDelegate";
 }
 
 bool ProxyOverriddenBubbleDelegate::SupportsPolicyIndicator() {

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/settings_api_bubble_delegate.h"
 
+#include "base/lazy_instance.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -28,13 +29,17 @@ namespace {
 // the user's settings (homepage, startup pages, or search engine).
 const char kSettingsBubbleAcknowledged[] = "ack_settings_bubble";
 
+using ProfileSetMap = std::map<std::string, std::set<Profile*>>;
+base::LazyInstance<ProfileSetMap>::Leaky g_shown = LAZY_INSTANCE_INITIALIZER;
+
 }  // namespace
 
 SettingsApiBubbleDelegate::SettingsApiBubbleDelegate(
     Profile* profile,
     SettingsApiOverrideType type)
     : ExtensionMessageBubbleController::Delegate(profile),
-      type_(type) {
+      type_(type),
+      profile_(profile) {
   set_acknowledged_flag_pref_name(kSettingsBubbleAcknowledged);
 }
 
@@ -202,6 +207,30 @@ bool SettingsApiBubbleDelegate::ShouldAcknowledgeOnDeactivate() const {
   return false;
 }
 
+bool SettingsApiBubbleDelegate::ShouldShow(
+    const ExtensionIdList& extensions) const {
+  DCHECK_EQ(1u, extensions.size());
+  return !g_shown.Get()[GetKey()].count(profile_);
+}
+
+void SettingsApiBubbleDelegate::OnShown(const ExtensionIdList& extensions) {
+  DCHECK_EQ(1u, extensions.size());
+  DCHECK(!g_shown.Get()[GetKey()].count(profile_));
+  g_shown.Get()[GetKey()].insert(profile_);
+}
+
+void SettingsApiBubbleDelegate::OnAction() {
+  // We clear the profile set because the user chooses to remove or disable the
+  // extension. Thus if that extension or another takes effect, it is worth
+  // mentioning to the user (ShouldShow() would return true) because it is
+  // contrary to the user's choice.
+  g_shown.Get()[GetKey()].clear();
+}
+
+void SettingsApiBubbleDelegate::ClearProfileSetForTesting() {
+  g_shown.Get()[GetKey()].clear();
+}
+
 bool SettingsApiBubbleDelegate::ShouldShowExtensionList() const {
   return false;
 }
@@ -241,7 +270,7 @@ void SettingsApiBubbleDelegate::LogAction(
   }
 }
 
-const char* SettingsApiBubbleDelegate::GetKey() {
+const char* SettingsApiBubbleDelegate::GetKey() const {
   switch (type_) {
     case BUBBLE_TYPE_HOME_PAGE:
       return "SettingsApiBubbleDelegate.HomePage";

@@ -39,13 +39,16 @@ bool g_acknowledge_existing_extensions =
     false;
 #endif
 
+base::LazyInstance<std::set<std::pair<Profile*, std::string>>>::Leaky g_shown =
+    LAZY_INSTANCE_INITIALIZER;
+
 }  // namespace
 
 namespace extensions {
 
-NtpOverriddenBubbleDelegate::NtpOverriddenBubbleDelegate(
-    Profile* profile)
-    : extensions::ExtensionMessageBubbleController::Delegate(profile) {
+NtpOverriddenBubbleDelegate::NtpOverriddenBubbleDelegate(Profile* profile)
+    : extensions::ExtensionMessageBubbleController::Delegate(profile),
+      profile_(profile) {
   set_acknowledged_flag_pref_name(kNtpBubbleAcknowledged);
 }
 
@@ -170,6 +173,30 @@ bool NtpOverriddenBubbleDelegate::ShouldLimitToEnabledExtensions() const {
   return true;
 }
 
+bool NtpOverriddenBubbleDelegate::ShouldShow(
+    const ExtensionIdList& extensions) const {
+  DCHECK_EQ(1u, extensions.size());
+  return !g_shown.Get().count(std::make_pair(profile_, extensions[0]));
+}
+
+void NtpOverriddenBubbleDelegate::OnShown(const ExtensionIdList& extensions) {
+  DCHECK_EQ(1u, extensions.size());
+  DCHECK(!g_shown.Get().count(std::make_pair(profile_, extensions[0])));
+  g_shown.Get().insert(std::make_pair(profile_, extensions[0]));
+}
+
+void NtpOverriddenBubbleDelegate::OnAction() {
+  // We clear the profile set because the user chooses to remove or disable the
+  // extension. Thus if that extension or another takes effect, it is worth
+  // mentioning to the user (ShouldShow() would return true) because it is
+  // contrary to the user's choice.
+  g_shown.Get().clear();
+}
+
+void NtpOverriddenBubbleDelegate::ClearProfileSetForTesting() {
+  g_shown.Get().clear();
+}
+
 void NtpOverriddenBubbleDelegate::LogExtensionCount(size_t count) {
 }
 
@@ -179,10 +206,6 @@ void NtpOverriddenBubbleDelegate::LogAction(
       "ExtensionOverrideBubble.NtpOverriddenUserSelection",
       action,
       ExtensionMessageBubbleController::ACTION_BOUNDARY);
-}
-
-const char* NtpOverriddenBubbleDelegate::GetKey() {
-  return "NtpOverriddenBubbleDelegate";
 }
 
 bool NtpOverriddenBubbleDelegate::SupportsPolicyIndicator() {
