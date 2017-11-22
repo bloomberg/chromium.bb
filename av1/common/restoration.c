@@ -26,13 +26,6 @@
 #include "aom_ports/mem.h"
 
 const sgr_params_type sgr_params[SGRPROJ_PARAMS] = {
-#if USE_HIGHPASS_IN_SGRPROJ
-  // corner, edge, r2, eps2
-  { -1, 2, 1, 1 }, { -1, 2, 1, 2 }, { -1, 2, 1, 3 }, { -1, 2, 1, 4 },
-  { -1, 2, 1, 5 }, { -2, 3, 1, 2 }, { -2, 3, 1, 3 }, { -2, 3, 1, 4 },
-  { -2, 3, 1, 5 }, { -2, 3, 1, 6 }, { -3, 4, 1, 3 }, { -3, 4, 1, 4 },
-  { -3, 4, 1, 5 }, { -3, 4, 1, 6 }, { -3, 4, 1, 7 }, { -3, 4, 1, 8 }
-#else
 // r1, eps1, r2, eps2
 #if MAX_RADIUS == 2
   { 2, 12, 1, 4 },  { 2, 15, 1, 6 },  { 2, 18, 1, 8 },  { 2, 20, 1, 9 },
@@ -45,7 +38,6 @@ const sgr_params_type sgr_params[SGRPROJ_PARAMS] = {
   { 2, 55, 1, 14 }, { 2, 65, 1, 15 }, { 2, 75, 1, 16 }, { 3, 30, 1, 10 },
   { 3, 50, 1, 12 }, { 3, 50, 2, 25 }, { 3, 60, 2, 35 }, { 3, 70, 2, 45 },
 #endif  // MAX_RADIUS == 2
-#endif
 };
 
 #if CONFIG_MAX_TILE
@@ -1110,97 +1102,6 @@ void av1_selfguided_restoration_c(const uint8_t *dgd, int width, int height,
                                       dst_stride, 8, r, eps);
 }
 
-void av1_highpass_filter_c(const uint8_t *dgd, int width, int height,
-                           int stride, int32_t *dst, int dst_stride, int corner,
-                           int edge) {
-  int i, j;
-  const int center = (1 << SGRPROJ_RST_BITS) - 4 * (corner + edge);
-
-  i = 0;
-  j = 0;
-  {
-    const int k = i * stride + j;
-    const int l = i * dst_stride + j;
-    dst[l] =
-        center * dgd[k] + edge * (dgd[k + 1] + dgd[k + stride] + dgd[k] * 2) +
-        corner * (dgd[k + stride + 1] + dgd[k + 1] + dgd[k + stride] + dgd[k]);
-  }
-  i = 0;
-  j = width - 1;
-  {
-    const int k = i * stride + j;
-    const int l = i * dst_stride + j;
-    dst[l] =
-        center * dgd[k] + edge * (dgd[k - 1] + dgd[k + stride] + dgd[k] * 2) +
-        corner * (dgd[k + stride - 1] + dgd[k - 1] + dgd[k + stride] + dgd[k]);
-  }
-  i = height - 1;
-  j = 0;
-  {
-    const int k = i * stride + j;
-    const int l = i * dst_stride + j;
-    dst[l] =
-        center * dgd[k] + edge * (dgd[k + 1] + dgd[k - stride] + dgd[k] * 2) +
-        corner * (dgd[k - stride + 1] + dgd[k + 1] + dgd[k - stride] + dgd[k]);
-  }
-  i = height - 1;
-  j = width - 1;
-  {
-    const int k = i * stride + j;
-    const int l = i * dst_stride + j;
-    dst[l] =
-        center * dgd[k] + edge * (dgd[k - 1] + dgd[k - stride] + dgd[k] * 2) +
-        corner * (dgd[k - stride - 1] + dgd[k - 1] + dgd[k - stride] + dgd[k]);
-  }
-  i = 0;
-  for (j = 1; j < width - 1; ++j) {
-    const int k = i * stride + j;
-    const int l = i * dst_stride + j;
-    dst[l] = center * dgd[k] +
-             edge * (dgd[k - 1] + dgd[k + stride] + dgd[k + 1] + dgd[k]) +
-             corner * (dgd[k + stride - 1] + dgd[k + stride + 1] + dgd[k - 1] +
-                       dgd[k + 1]);
-  }
-  i = height - 1;
-  for (j = 1; j < width - 1; ++j) {
-    const int k = i * stride + j;
-    const int l = i * dst_stride + j;
-    dst[l] = center * dgd[k] +
-             edge * (dgd[k - 1] + dgd[k - stride] + dgd[k + 1] + dgd[k]) +
-             corner * (dgd[k - stride - 1] + dgd[k - stride + 1] + dgd[k - 1] +
-                       dgd[k + 1]);
-  }
-  j = 0;
-  for (i = 1; i < height - 1; ++i) {
-    const int k = i * stride + j;
-    const int l = i * dst_stride + j;
-    dst[l] = center * dgd[k] +
-             edge * (dgd[k - stride] + dgd[k + 1] + dgd[k + stride] + dgd[k]) +
-             corner * (dgd[k + stride + 1] + dgd[k - stride + 1] +
-                       dgd[k - stride] + dgd[k + stride]);
-  }
-  j = width - 1;
-  for (i = 1; i < height - 1; ++i) {
-    const int k = i * stride + j;
-    const int l = i * dst_stride + j;
-    dst[l] = center * dgd[k] +
-             edge * (dgd[k - stride] + dgd[k - 1] + dgd[k + stride] + dgd[k]) +
-             corner * (dgd[k + stride - 1] + dgd[k - stride - 1] +
-                       dgd[k - stride] + dgd[k + stride]);
-  }
-  for (i = 1; i < height - 1; ++i) {
-    for (j = 1; j < width - 1; ++j) {
-      const int k = i * stride + j;
-      const int l = i * dst_stride + j;
-      dst[l] =
-          center * dgd[k] +
-          edge * (dgd[k - stride] + dgd[k - 1] + dgd[k + stride] + dgd[k + 1]) +
-          corner * (dgd[k + stride - 1] + dgd[k - stride - 1] +
-                    dgd[k - stride + 1] + dgd[k + stride + 1]);
-    }
-  }
-}
-
 void apply_selfguided_restoration_c(const uint8_t *dat, int width, int height,
                                     int stride, int eps, const int *xqd,
                                     uint8_t *dst, int dst_stride,
@@ -1210,13 +1111,8 @@ void apply_selfguided_restoration_c(const uint8_t *dat, int width, int height,
   int32_t *flt2 = flt1 + RESTORATION_TILEPELS_MAX;
   int i, j;
   assert(width * height <= RESTORATION_TILEPELS_MAX);
-#if USE_HIGHPASS_IN_SGRPROJ
-  av1_highpass_filter_c(dat, width, height, stride, flt1, width,
-                        sgr_params[eps].corner, sgr_params[eps].edge);
-#else
   av1_selfguided_restoration_c(dat, width, height, stride, flt1, width,
                                sgr_params[eps].r1, sgr_params[eps].e1);
-#endif  // USE_HIGHPASS_IN_SGRPROJ
   av1_selfguided_restoration_c(dat, width, height, stride, flt2, width,
                                sgr_params[eps].r2, sgr_params[eps].e2);
   decode_xq(xqd, xq);
@@ -1295,97 +1191,6 @@ void av1_selfguided_restoration_highbd_c(const uint16_t *dgd, int width,
                                       dst_stride, bit_depth, r, eps);
 }
 
-void av1_highpass_filter_highbd_c(const uint16_t *dgd, int width, int height,
-                                  int stride, int32_t *dst, int dst_stride,
-                                  int corner, int edge) {
-  int i, j;
-  const int center = (1 << SGRPROJ_RST_BITS) - 4 * (corner + edge);
-
-  i = 0;
-  j = 0;
-  {
-    const int k = i * stride + j;
-    const int l = i * dst_stride + j;
-    dst[l] =
-        center * dgd[k] + edge * (dgd[k + 1] + dgd[k + stride] + dgd[k] * 2) +
-        corner * (dgd[k + stride + 1] + dgd[k + 1] + dgd[k + stride] + dgd[k]);
-  }
-  i = 0;
-  j = width - 1;
-  {
-    const int k = i * stride + j;
-    const int l = i * dst_stride + j;
-    dst[l] =
-        center * dgd[k] + edge * (dgd[k - 1] + dgd[k + stride] + dgd[k] * 2) +
-        corner * (dgd[k + stride - 1] + dgd[k - 1] + dgd[k + stride] + dgd[k]);
-  }
-  i = height - 1;
-  j = 0;
-  {
-    const int k = i * stride + j;
-    const int l = i * dst_stride + j;
-    dst[l] =
-        center * dgd[k] + edge * (dgd[k + 1] + dgd[k - stride] + dgd[k] * 2) +
-        corner * (dgd[k - stride + 1] + dgd[k + 1] + dgd[k - stride] + dgd[k]);
-  }
-  i = height - 1;
-  j = width - 1;
-  {
-    const int k = i * stride + j;
-    const int l = i * dst_stride + j;
-    dst[l] =
-        center * dgd[k] + edge * (dgd[k - 1] + dgd[k - stride] + dgd[k] * 2) +
-        corner * (dgd[k - stride - 1] + dgd[k - 1] + dgd[k - stride] + dgd[k]);
-  }
-  i = 0;
-  for (j = 1; j < width - 1; ++j) {
-    const int k = i * stride + j;
-    const int l = i * dst_stride + j;
-    dst[l] = center * dgd[k] +
-             edge * (dgd[k - 1] + dgd[k + stride] + dgd[k + 1] + dgd[k]) +
-             corner * (dgd[k + stride - 1] + dgd[k + stride + 1] + dgd[k - 1] +
-                       dgd[k + 1]);
-  }
-  i = height - 1;
-  for (j = 1; j < width - 1; ++j) {
-    const int k = i * stride + j;
-    const int l = i * dst_stride + j;
-    dst[l] = center * dgd[k] +
-             edge * (dgd[k - 1] + dgd[k - stride] + dgd[k + 1] + dgd[k]) +
-             corner * (dgd[k - stride - 1] + dgd[k - stride + 1] + dgd[k - 1] +
-                       dgd[k + 1]);
-  }
-  j = 0;
-  for (i = 1; i < height - 1; ++i) {
-    const int k = i * stride + j;
-    const int l = i * dst_stride + j;
-    dst[l] = center * dgd[k] +
-             edge * (dgd[k - stride] + dgd[k + 1] + dgd[k + stride] + dgd[k]) +
-             corner * (dgd[k + stride + 1] + dgd[k - stride + 1] +
-                       dgd[k - stride] + dgd[k + stride]);
-  }
-  j = width - 1;
-  for (i = 1; i < height - 1; ++i) {
-    const int k = i * stride + j;
-    const int l = i * dst_stride + j;
-    dst[l] = center * dgd[k] +
-             edge * (dgd[k - stride] + dgd[k - 1] + dgd[k + stride] + dgd[k]) +
-             corner * (dgd[k + stride - 1] + dgd[k - stride - 1] +
-                       dgd[k - stride] + dgd[k + stride]);
-  }
-  for (i = 1; i < height - 1; ++i) {
-    for (j = 1; j < width - 1; ++j) {
-      const int k = i * stride + j;
-      const int l = i * dst_stride + j;
-      dst[l] =
-          center * dgd[k] +
-          edge * (dgd[k - stride] + dgd[k - 1] + dgd[k + stride] + dgd[k + 1]) +
-          corner * (dgd[k + stride - 1] + dgd[k - stride - 1] +
-                    dgd[k - stride + 1] + dgd[k + stride + 1]);
-    }
-  }
-}
-
 void apply_selfguided_restoration_highbd_c(const uint16_t *dat, int width,
                                            int height, int stride,
                                            int bit_depth, int eps,
@@ -1396,14 +1201,9 @@ void apply_selfguided_restoration_highbd_c(const uint16_t *dat, int width,
   int32_t *flt2 = flt1 + RESTORATION_TILEPELS_MAX;
   int i, j;
   assert(width * height <= RESTORATION_TILEPELS_MAX);
-#if USE_HIGHPASS_IN_SGRPROJ
-  av1_highpass_filter_highbd_c(dat, width, height, stride, flt1, width,
-                               sgr_params[eps].corner, sgr_params[eps].edge);
-#else
   av1_selfguided_restoration_highbd_c(dat, width, height, stride, flt1, width,
                                       bit_depth, sgr_params[eps].r1,
                                       sgr_params[eps].e1);
-#endif  // USE_HIGHPASS_IN_SGRPROJ
   av1_selfguided_restoration_highbd_c(dat, width, height, stride, flt2, width,
                                       bit_depth, sgr_params[eps].r2,
                                       sgr_params[eps].e2);

@@ -105,7 +105,6 @@ extern "C" {
 #define SGRPROJ_EXTBUF_SIZE (0)
 #define SGRPROJ_PARAMS_BITS 4
 #define SGRPROJ_PARAMS (1 << SGRPROJ_PARAMS_BITS)
-#define USE_HIGHPASS_IN_SGRPROJ 0
 
 // Precision bits for projection
 #define SGRPROJ_PRJ_BITS 7
@@ -115,17 +114,10 @@ extern "C" {
 #define SGRPROJ_SGR_BITS 8
 #define SGRPROJ_SGR (1 << SGRPROJ_SGR_BITS)
 
-#if USE_HIGHPASS_IN_SGRPROJ
-#define SGRPROJ_PRJ_MIN0 (-(1 << SGRPROJ_PRJ_BITS) / 8)
-#define SGRPROJ_PRJ_MAX0 (SGRPROJ_PRJ_MIN0 + (1 << SGRPROJ_PRJ_BITS) - 1)
-#define SGRPROJ_PRJ_MIN1 (-(1 << SGRPROJ_PRJ_BITS) / 2)
-#define SGRPROJ_PRJ_MAX1 (SGRPROJ_PRJ_MIN1 + (1 << SGRPROJ_PRJ_BITS) - 1)
-#else
 #define SGRPROJ_PRJ_MIN0 (-(1 << SGRPROJ_PRJ_BITS) * 3 / 4)
 #define SGRPROJ_PRJ_MAX0 (SGRPROJ_PRJ_MIN0 + (1 << SGRPROJ_PRJ_BITS) - 1)
 #define SGRPROJ_PRJ_MIN1 (-(1 << SGRPROJ_PRJ_BITS) / 4)
 #define SGRPROJ_PRJ_MAX1 (SGRPROJ_PRJ_MIN1 + (1 << SGRPROJ_PRJ_BITS) - 1)
-#endif  // USE_HIGHPASS_IN_SGRPROJ
 
 #define SGRPROJ_PRJ_SUBEXP_K 4
 
@@ -202,13 +194,8 @@ extern "C" {
 #endif
 
 typedef struct {
-#if USE_HIGHPASS_IN_SGRPROJ
-  int corner;
-  int edge;
-#else
   int r1;
   int e1;
-#endif  // USE_HIGHPASS_IN_SGRPROJ
   int r2;
   int e2;
 } sgr_params_type;
