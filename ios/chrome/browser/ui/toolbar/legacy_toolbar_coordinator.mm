@@ -213,16 +213,23 @@
 
 - (UIView*)snapshotForStackViewWithWidth:(CGFloat)width
                           safeAreaInsets:(UIEdgeInsets)safeAreaInsets {
-  CGRect oldFrame = self.toolbarViewController.view.frame;
+  // The snapshotted view must not be in the view hierarchy, because the code
+  // below temporarily changes the frames of views in order to take the snapshot
+  // in simulated target frame. The frames will be returned to normal after the
+  // snapshot is taken.
+  DCHECK(self.toolbarViewController.view.window == nil);
+
+  CGRect oldFrame = self.toolbarViewController.view.superview.frame;
   CGRect newFrame = oldFrame;
   newFrame.size.width = width;
 
-  self.toolbarViewController.view.frame = newFrame;
+  self.toolbarViewController.view.superview.frame = newFrame;
   [self.toolbarController activateFakeSafeAreaInsets:safeAreaInsets];
+  [self.toolbarViewController.view.superview layoutIfNeeded];
 
   UIView* toolbarSnapshotView = [self snapshotForTabSwitcher];
 
-  self.toolbarViewController.view.frame = oldFrame;
+  self.toolbarViewController.view.superview.frame = oldFrame;
   [self.toolbarController deactivateFakeSafeAreaInsets];
 
   return toolbarSnapshotView;

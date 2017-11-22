@@ -89,8 +89,17 @@ using ios::material::TimingFunction;
   API_AVAILABLE(ios(10.0)) UIViewPropertyAnimator* _omniboxContractorAnimator;
 }
 
+// Leading and trailing safe area constraint for faking a safe area. These
+// constraints are activated by calling activateFakeSafeAreaInsets and
+// deactivateFakeSafeAreaInsets.
 @property(nonatomic, strong) NSLayoutConstraint* leadingFakeSafeAreaConstraint;
 @property(nonatomic, strong) NSLayoutConstraint* trailingFakeSafeAreaConstraint;
+
+// These constraints pin the content view to the safe area. They are temporarily
+// disabled when a fake safe area is simulated by calling
+// activateFakeSafeAreaInsets.
+@property(nonatomic, strong) NSLayoutConstraint* leadingSafeAreaConstraint;
+@property(nonatomic, strong) NSLayoutConstraint* trailingSafeAreaConstraint;
 // Style of this toolbar.
 @property(nonatomic, readonly, assign) ToolbarControllerStyle style;
 // The view containing all the content of the toolbar. It respects the trailing
@@ -117,6 +126,8 @@ using ios::material::TimingFunction;
 @synthesize dispatcher = dispatcher_;
 @synthesize leadingFakeSafeAreaConstraint = _leadingFakeSafeAreaConstraint;
 @synthesize trailingFakeSafeAreaConstraint = _trailingFakeSafeAreaConstraint;
+@synthesize leadingSafeAreaConstraint = _leadingSafeAreaConstraint;
+@synthesize trailingSafeAreaConstraint = _trailingSafeAreaConstraint;
 @dynamic view;
 
 - (instancetype)initWithStyle:(ToolbarControllerStyle)style
@@ -176,12 +187,12 @@ using ios::material::TimingFunction;
       safeAreaTrailing = [contentView_.trailingAnchor
           constraintEqualToAnchor:self.view.trailingAnchor];
     }
-    self.leadingFakeSafeAreaConstraint = [contentView_.leadingAnchor
+    _leadingSafeAreaConstraint = safeAreaLeading;
+    _trailingSafeAreaConstraint = safeAreaTrailing;
+    _leadingFakeSafeAreaConstraint = [contentView_.leadingAnchor
         constraintEqualToAnchor:self.view.leadingAnchor];
-    self.trailingFakeSafeAreaConstraint = [contentView_.trailingAnchor
+    _trailingFakeSafeAreaConstraint = [contentView_.trailingAnchor
         constraintEqualToAnchor:self.view.trailingAnchor];
-    safeAreaLeading.priority = UILayoutPriorityDefaultHigh;
-    safeAreaTrailing.priority = UILayoutPriorityDefaultHigh;
     [NSLayoutConstraint activateConstraints:@[
       safeAreaLeading,
       safeAreaTrailing,
@@ -308,6 +319,8 @@ using ios::material::TimingFunction;
       UIEdgeInsetsGetLeading(fakeSafeAreaInsets);
   self.trailingFakeSafeAreaConstraint.constant =
       -UIEdgeInsetsGetTrailing(fakeSafeAreaInsets);
+  self.leadingSafeAreaConstraint.active = NO;
+  self.trailingSafeAreaConstraint.active = NO;
   self.leadingFakeSafeAreaConstraint.active = YES;
   self.trailingFakeSafeAreaConstraint.active = YES;
 }
@@ -315,6 +328,8 @@ using ios::material::TimingFunction;
 - (void)deactivateFakeSafeAreaInsets {
   self.leadingFakeSafeAreaConstraint.active = NO;
   self.trailingFakeSafeAreaConstraint.active = NO;
+  self.leadingSafeAreaConstraint.active = YES;
+  self.trailingSafeAreaConstraint.active = YES;
 }
 
 - (void)setToolsMenuIsVisibleForToolsMenuButton:(BOOL)isVisible {
