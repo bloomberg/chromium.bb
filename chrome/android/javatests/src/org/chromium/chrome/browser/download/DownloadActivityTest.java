@@ -184,7 +184,6 @@ public class DownloadActivityTest {
     /** Clicking on filters affects various things in the UI. */
     @Test
     @MediumTest
-    @RetryOnFailure(message = "crbug.com/778255")
     public void testFilters() throws Exception {
         // This first check is a Criteria because initialization of the Adapter is asynchronous.
         CriteriaHelper.pollUiThread(new Criteria() {
@@ -387,7 +386,6 @@ public class DownloadActivityTest {
 
     @Test
     @MediumTest
-    @RetryOnFailure(message = "crbug.com/778255")
     public void testShareFiles() throws Exception {
         // Adapter positions:
         // 0 = space display
