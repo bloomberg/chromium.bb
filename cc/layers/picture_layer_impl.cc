@@ -1238,9 +1238,16 @@ void PictureLayerImpl::RecalculateRasterScales() {
           static_cast<int64_t>(bounds_at_maximum_scale.width()) *
           static_cast<int64_t>(bounds_at_maximum_scale.height());
       gfx::Size viewport = layer_tree_impl()->device_viewport_size();
-      int64_t viewport_area = static_cast<int64_t>(viewport.width()) *
-                              static_cast<int64_t>(viewport.height());
-      if (maximum_area <= viewport_area)
+
+      // Use the square of the maximum viewport dimension direction, to
+      // compensate for viewports with different aspect ratios.
+      int64_t max_viewport_dimension =
+          std::max(static_cast<int64_t>(viewport.width()),
+                   static_cast<int64_t>(viewport.height()));
+      int64_t squared_viewport_area =
+          max_viewport_dimension * max_viewport_dimension;
+
+      if (maximum_area <= squared_viewport_area)
         can_raster_at_maximum_scale = true;
     }
     if (starting_scale && starting_scale > maximum_scale) {
