@@ -3,7 +3,7 @@
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <style>
-    .box {
+    .running .box {
       animation-delay: 1s;
       animation-direction: reverse;
       animation-duration: 1s;
@@ -35,21 +35,26 @@
       background-color: yellow;
     }
 </style>
-<div id="none" class="box">
-  None
-</div>
-<div id="backwards" class="box">
-  Backwards
-</div>
-<div id="forwards" class="box">
-  Forwards
-</div>
-<div id="both" class="box">
-  Both
+<div id="container">
+  <div id="none" class="box">
+    None
+  </div>
+  <div id="backwards" class="box">
+    Backwards
+  </div>
+  <div id="forwards" class="box">
+    Forwards
+  </div>
+  <div id="both" class="box">
+    Both
+  </div>
 </div>
 <script>
   'use strict';
   test(function() {
+    container.offsetTop; // Force recalc
+    container.classList += 'running';
+
     none.style.animationDelay = '1s';
     assert_equals(getComputedStyle(none).left, '100px');
 
