@@ -40,14 +40,6 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
   void BindRequest(mojom::MediaStreamDispatcherHostRequest request);
 
   // MediaStreamRequester implementation.
-  void StreamGenerated(int render_frame_id,
-                       int page_request_id,
-                       const std::string& label,
-                       const MediaStreamDevices& audio_devices,
-                       const MediaStreamDevices& video_devices) override;
-  void StreamGenerationFailed(int render_frame_id,
-                              int page_request_id,
-                              MediaStreamRequestResult result) override;
   void DeviceStopped(int render_frame_id,
                      const std::string& label,
                      const MediaStreamDevice& device) override;
@@ -74,7 +66,8 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
   void GenerateStream(int32_t render_frame_id,
                       int32_t request_id,
                       const StreamControls& controls,
-                      bool user_gesture) override;
+                      bool user_gesture,
+                      GenerateStreamCallback callback) override;
   void CancelRequest(int32_t render_frame_id, int32_t request_id) override;
   void StopStreamDevice(int32_t render_frame_id,
                         const std::string& device_id) override;
@@ -87,13 +80,14 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
   void SetCapturingLinkSecured(int32_t session_id,
                                MediaStreamType type,
                                bool is_secure) override;
-  void StreamStarted(const std::string& label) override;
+  void OnStreamStarted(const std::string& label) override;
 
   void DoGenerateStream(
       int32_t render_frame_id,
       int32_t request_id,
       const StreamControls& controls,
       bool user_gesture,
+      GenerateStreamCallback callback,
       const std::pair<std::string, url::Origin>& salt_and_origin);
   void DoOpenDevice(int32_t render_frame_id,
                     int32_t request_id,

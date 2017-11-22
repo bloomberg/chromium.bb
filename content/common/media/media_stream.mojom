@@ -56,19 +56,12 @@ struct StreamControls {
   bool disable_local_echo;
 };
 
-// Per-frame renderer-side interface that is used by the browser process to
-// respond to media stream requests from the renderer.
+// TODO(c.padhi): Rename this interface to
+// MediaStreamDeviceObserver/MediaStreamDeviceListener, see
+// https://crbug.com/742682.
+// Per-frame renderer-side interface that receives device stopped notifications
+// from the browser process.
 interface MediaStreamDispatcher {
-  // Informs the renderer that browser has generated a stream successfully.
-  OnStreamGenerated(int32 request_id, string label,
-                    array<MediaStreamDevice> audio_devices,
-                    array<MediaStreamDevice> video_devices);
-
-  // Informs the renderer that browser has failed to generate a stream.
-  OnStreamGenerationFailed(int32 request_id, MediaStreamRequestResult result);
-
-  // The browser reports that a media device has been stopped. Stopping was
-  // triggered from the browser process.
   OnDeviceStopped(string label, MediaStreamDevice device);
 };
 
@@ -77,7 +70,10 @@ interface MediaStreamDispatcher {
 interface MediaStreamDispatcherHost {
   // Requests a new media stream.
   GenerateStream(int32 render_frame_id, int32 request_id,
-                 StreamControls controls, bool user_gesture);
+                 StreamControls controls, bool user_gesture)
+      => (MediaStreamRequestResult result, string label,
+         array<MediaStreamDevice> audio_devices,
+         array<MediaStreamDevice> video_devices);
 
   // Cancels the request for a new media stream or opening a device.
   CancelRequest(int32 render_frame_id, int32 request_id);
@@ -105,5 +101,5 @@ interface MediaStreamDispatcherHost {
                           bool is_secure);
 
   // Tells the browser process that the stream has been started successfully.
-  StreamStarted(string label);
+  OnStreamStarted(string label);
 };

@@ -26,11 +26,11 @@ namespace content {
 
 class MediaStreamDispatcherEventHandler;
 
-// MediaStreamDispatcher is a delegate for the Media Stream API messages.
-// MediaStreams are used by WebKit to open media devices such as Video Capture
-// and Audio input devices.
-// It's the complement of MediaStreamDispatcherHost (owned by
-// RenderProcessHostImpl).
+// TODO(c.padhi): Rename this class to
+// MediaStreamDeviceObserver/MediaStreamDeviceListener, see
+// https://crbug.com/742682.
+// This class implements a Mojo object that receives device stopped
+// notifications and forwards them to MediaStreamDispatcherEventHandler.
 class CONTENT_EXPORT MediaStreamDispatcher
     : public RenderFrameObserver,
       public mojom::MediaStreamDispatcher {
@@ -38,49 +38,28 @@ class CONTENT_EXPORT MediaStreamDispatcher
   explicit MediaStreamDispatcher(RenderFrame* render_frame);
   ~MediaStreamDispatcher() override;
 
-  // Request a new media stream to be created.
-  // This can be used either by WebKit or a plugin.
-  // Note: The event_handler must be valid for as long as the stream exists.
-  virtual void GenerateStream(
-      int request_id,
-      const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
-      const StreamControls& controls,
-      bool is_processing_user_gesture);
-
-  // Cancel the request for a new media stream to be created.
-  virtual void CancelGenerateStream(
-      int request_id,
-      const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler);
-
-  // Stop a started device that has been requested by calling GenerateStream.
-  virtual void StopStreamDevice(const MediaStreamDevice& device);
-
-  // This method is called when the stream is started successfully.
-  void OnStreamStarted(const std::string& label);
-
   // Get all the media devices of video capture, e.g. webcam. This is the set
   // of devices that should be suspended when the content frame is no longer
   // being shown to the user.
   MediaStreamDevices GetNonScreenCaptureDevices();
 
+  void AddStream(
+      const std::string& label,
+      const MediaStreamDevices& audio_devices,
+      const MediaStreamDevices& video_devices,
+      const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler);
   void AddStream(const std::string& label, const MediaStreamDevice& device);
   bool RemoveStream(const std::string& label);
+  void RemoveStreamDevice(const MediaStreamDevice& device);
 
   // Get the video session_id given a label. The label identifies a stream.
-  virtual int video_session_id(const std::string& label);
+  int video_session_id(const std::string& label);
   // Returns an audio session_id given a label.
-  virtual int audio_session_id(const std::string& label);
+  int audio_session_id(const std::string& label);
 
  private:
-  friend class MediaStreamDispatcherTest;
-  friend class UserMediaClientImplTest;
-  FRIEND_TEST_ALL_PREFIXES(MediaStreamDispatcherTest, TestFailure);
-  FRIEND_TEST_ALL_PREFIXES(MediaStreamDispatcherTest, CancelGenerateStream);
   FRIEND_TEST_ALL_PREFIXES(MediaStreamDispatcherTest,
                            GetNonScreenCaptureDevices);
-  FRIEND_TEST_ALL_PREFIXES(MediaStreamDispatcherTest, DeviceClosed);
-
-  struct Request;
 
   // Private class for keeping track of opened devices and who have
   // opened it.
@@ -93,34 +72,19 @@ class CONTENT_EXPORT MediaStreamDispatcher
   void OnDestruct() override;
 
   // mojom::MediaStreamDispatcher implementation.
-  void OnStreamGenerated(int32_t request_id,
-                         const std::string& label,
-                         const MediaStreamDevices& audio_devices,
-                         const MediaStreamDevices& video_devices) override;
-  void OnStreamGenerationFailed(int32_t request_id,
-                                MediaStreamRequestResult result) override;
   void OnDeviceStopped(const std::string& label,
                        const MediaStreamDevice& device) override;
 
   void BindMediaStreamDispatcherRequest(
       mojom::MediaStreamDispatcherRequest request);
 
-  const mojom::MediaStreamDispatcherHostPtr& GetMediaStreamDispatcherHost();
-
-  mojom::MediaStreamDispatcherHostPtr dispatcher_host_;
   mojo::Binding<mojom::MediaStreamDispatcher> binding_;
 
   // Used for DCHECKs so methods calls won't execute in the wrong thread.
   base::ThreadChecker thread_checker_;
 
-  int next_ipc_id_;
   typedef std::map<std::string, Stream> LabelStreamMap;
   LabelStreamMap label_stream_map_;
-
-  // List of calls made to the browser process that have not yet completed or
-  // been canceled.
-  typedef std::list<Request> RequestList;
-  RequestList requests_;
 
   service_manager::BinderRegistry registry_;
 

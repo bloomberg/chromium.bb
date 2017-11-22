@@ -102,8 +102,10 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
                         const StreamControls& controls,
                         const base::Closure& quit_closure) {
     quit_closures_.push(quit_closure);
-    MediaStreamDispatcherHost::GenerateStream(render_frame_id, page_request_id,
-                                              controls, false);
+    MediaStreamDispatcherHost::GenerateStream(
+        render_frame_id, page_request_id, controls, false,
+        base::BindOnce(&MockMediaStreamDispatcherHost::OnStreamGenerated,
+                       base::Unretained(this), page_request_id));
   }
 
   void OnStopStreamDevice(int render_frame_id,
@@ -123,23 +125,11 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
                        base::Unretained(this)));
   }
 
-  void OnStreamStarted(const std::string label) {
-    MediaStreamDispatcherHost::StreamStarted(label);
+  void OnStreamStarted(const std::string& label) {
+    MediaStreamDispatcherHost::OnStreamStarted(label);
   }
 
   // mojom::MediaStreamDispatcher implementation.
-  void OnStreamGenerated(int32_t request_id,
-                         const std::string& label,
-                         const MediaStreamDevices& audio_devices,
-                         const MediaStreamDevices& video_devices) override {
-    OnStreamGeneratedInternal(request_id, label, audio_devices, video_devices);
-  }
-
-  void OnStreamGenerationFailed(int32_t request_id,
-                                MediaStreamRequestResult result) override {
-    OnStreamGenerationFailedInternal(request_id, result);
-  }
-
   void OnDeviceStopped(const std::string& label,
                        const MediaStreamDevice& device) override {
     OnDeviceStoppedInternal(label, device);
@@ -158,10 +148,16 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
 
  private:
   // These handler methods do minimal things and delegate to the mock methods.
-  void OnStreamGeneratedInternal(int request_id,
-                                 std::string label,
-                                 const MediaStreamDevices& audio_devices,
-                                 const MediaStreamDevices& video_devices) {
+  void OnStreamGenerated(int request_id,
+                         MediaStreamRequestResult result,
+                         const std::string& label,
+                         const MediaStreamDevices& audio_devices,
+                         const MediaStreamDevices& video_devices) {
+    if (result != MEDIA_DEVICE_OK) {
+      OnStreamGenerationFailed(request_id, result);
+      return;
+    }
+
     OnStreamGenerationSuccess(request_id, audio_devices.size(),
                               video_devices.size());
     // Simulate the stream started event back to host for UI testing.
@@ -177,8 +173,8 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
     video_devices_ = video_devices;
   }
 
-  void OnStreamGenerationFailedInternal(int request_id,
-                                        MediaStreamRequestResult result) {
+  void OnStreamGenerationFailed(int request_id,
+                                MediaStreamRequestResult result) {
     OnStreamGenerationFailure(request_id, result);
     if (!quit_closures_.empty()) {
       base::Closure quit_closure = quit_closures_.front();

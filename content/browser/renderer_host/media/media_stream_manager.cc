@@ -106,12 +106,12 @@ void ParseStreamType(const StreamControls& controls,
     if (!controls.audio.stream_source.empty()) {
        // This is tab or screen capture.
        if (controls.audio.stream_source == kMediaStreamSourceTab) {
-         *audio_type = content::MEDIA_TAB_AUDIO_CAPTURE;
+         *audio_type = MEDIA_TAB_AUDIO_CAPTURE;
        } else if (controls.audio.stream_source == kMediaStreamSourceSystem) {
-         *audio_type = content::MEDIA_DESKTOP_AUDIO_CAPTURE;
+         *audio_type = MEDIA_DESKTOP_AUDIO_CAPTURE;
        } else if (audio_support_flag_for_desktop_share &&
                   controls.audio.stream_source == kMediaStreamSourceDesktop) {
-         *audio_type = content::MEDIA_DESKTOP_AUDIO_CAPTURE;
+         *audio_type = MEDIA_DESKTOP_AUDIO_CAPTURE;
        }
      } else {
        // This is normal audio device capture.
@@ -122,11 +122,11 @@ void ParseStreamType(const StreamControls& controls,
     if (!controls.video.stream_source.empty()) {
       // This is tab or screen capture.
       if (controls.video.stream_source == kMediaStreamSourceTab) {
-        *video_type = content::MEDIA_TAB_VIDEO_CAPTURE;
+        *video_type = MEDIA_TAB_VIDEO_CAPTURE;
       } else if (controls.video.stream_source == kMediaStreamSourceScreen) {
-        *video_type = content::MEDIA_DESKTOP_VIDEO_CAPTURE;
+        *video_type = MEDIA_DESKTOP_VIDEO_CAPTURE;
       } else if (controls.video.stream_source == kMediaStreamSourceDesktop) {
-        *video_type = content::MEDIA_DESKTOP_VIDEO_CAPTURE;
+        *video_type = MEDIA_DESKTOP_VIDEO_CAPTURE;
       }
     } else {
       // This is normal video device capture.
@@ -252,7 +252,7 @@ class MediaStreamManager::DeviceRequest {
         target_process_id_(-1),
         target_frame_id_(-1) {}
 
-  ~DeviceRequest() {}
+  ~DeviceRequest() { RunMojoCallbacks(); }
 
   void SetAudioType(MediaStreamType audio_type) {
     DCHECK(IsAudioInputMediaType(audio_type) ||
@@ -337,6 +337,19 @@ class MediaStreamManager::DeviceRequest {
                                               video_type_, is_secure);
   }
 
+  void RunMojoCallbacks() {
+    if (!generate_stream_cb.is_null()) {
+      std::move(generate_stream_cb)
+          .Run(MEDIA_DEVICE_FAILED_DUE_TO_SHUTDOWN, std::string(),
+               MediaStreamDevices(), MediaStreamDevices());
+    }
+
+    if (!open_device_cb.is_null()) {
+      std::move(open_device_cb)
+          .Run(false /* success */, std::string(), MediaStreamDevice());
+    }
+  }
+
   // The render process id that requested this stream to be generated and that
   // will receive a handle to the MediaStream. This may be different from
   // MediaStreamRequest::render_process_id which in the tab capture case
@@ -369,7 +382,9 @@ class MediaStreamManager::DeviceRequest {
   // Callback to the requester which audio/video devices have been selected.
   // It can be null if the requester has no interest to know the result.
   // Currently it is only used by |DEVICE_ACCESS| type.
-  MediaRequestResponseCallback callback;
+  MediaAccessRequestCallback media_access_request_cb;
+
+  GenerateStreamCallback generate_stream_cb;
 
   OpenDeviceCallback open_device_cb;
 
@@ -523,7 +538,7 @@ std::string MediaStreamManager::MakeMediaAccessRequest(
     int page_request_id,
     const StreamControls& controls,
     const url::Origin& security_origin,
-    MediaRequestResponseCallback callback) {
+    MediaAccessRequestCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   DeviceRequest* request = new DeviceRequest(
@@ -533,7 +548,7 @@ std::string MediaStreamManager::MakeMediaAccessRequest(
 
   const std::string& label = AddRequest(request);
 
-  request->callback = std::move(callback);
+  request->media_access_request_cb = std::move(callback);
   // Post a task and handle the request asynchronously. The reason is that the
   // requester won't have a label for the request until this function returns
   // and thus can not handle a response. Using base::Unretained is safe since
@@ -546,14 +561,15 @@ std::string MediaStreamManager::MakeMediaAccessRequest(
 }
 
 void MediaStreamManager::GenerateStream(
-    base::WeakPtr<MediaStreamRequester> requester,
     int render_process_id,
     int render_frame_id,
     const std::string& salt,
     int page_request_id,
     const StreamControls& controls,
     const url::Origin& security_origin,
-    bool user_gesture) {
+    bool user_gesture,
+    GenerateStreamCallback callback,
+    base::WeakPtr<MediaStreamRequester> requester) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DVLOG(1) << "GenerateStream()";
 
@@ -563,6 +579,8 @@ void MediaStreamManager::GenerateStream(
                         controls, salt, std::move(requester));
 
   const std::string& label = AddRequest(request);
+
+  request->generate_stream_cb = std::move(callback);
 
   if (!generate_stream_test_callback_.is_null()) {
     // The test callback is responsible to verify whether the |controls| is
@@ -1110,7 +1128,7 @@ bool MediaStreamManager::SetupTabCaptureRequest(DeviceRequest* request) {
   }
 
   // Customize controls for a WebContents based capture.
-  content::WebContentsMediaCaptureId web_id;
+  WebContentsMediaCaptureId web_id;
   bool has_valid_device_id =
       WebContentsMediaCaptureId::Parse(capture_device_id, &web_id);
   if (!has_valid_device_id ||
@@ -1215,6 +1233,7 @@ void MediaStreamManager::FinalizeGenerateStream(const std::string& label,
                                                 DeviceRequest* request) {
   DVLOG(1) << "FinalizeGenerateStream label " << label;
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(request->generate_stream_cb);
 
   // Partition the array of devices into audio vs video.
   MediaStreamDevices audio_devices, video_devices;
@@ -1227,23 +1246,22 @@ void MediaStreamManager::FinalizeGenerateStream(const std::string& label,
       NOTREACHED();
   }
 
-  DCHECK(request->requester);
-  request->requester->StreamGenerated(request->requesting_frame_id,
-                                      request->page_request_id, label,
-                                      audio_devices, video_devices);
+  std::move(request->generate_stream_cb)
+      .Run(MEDIA_DEVICE_OK, label, audio_devices, video_devices);
 }
 
 void MediaStreamManager::FinalizeRequestFailed(
     const std::string& label,
     DeviceRequest* request,
-    content::MediaStreamRequestResult result) {
+    MediaStreamRequestResult result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   switch (request->request_type) {
     case MEDIA_GENERATE_STREAM: {
-      DCHECK(request->requester);
-      request->requester->StreamGenerationFailed(
-          request->requesting_frame_id, request->page_request_id, result);
+      DCHECK(request->generate_stream_cb);
+      std::move(request->generate_stream_cb)
+          .Run(result, std::string(), MediaStreamDevices(),
+               MediaStreamDevices());
       break;
     }
     case MEDIA_OPEN_DEVICE_PEPPER_ONLY: {
@@ -1253,8 +1271,8 @@ void MediaStreamManager::FinalizeRequestFailed(
       break;
     }
     case MEDIA_DEVICE_ACCESS: {
-      DCHECK(request->callback);
-      std::move(request->callback)
+      DCHECK(request->media_access_request_cb);
+      std::move(request->media_access_request_cb)
           .Run(MediaStreamDevices(), std::move(request->ui_proxy));
       break;
     }
@@ -1279,8 +1297,9 @@ void MediaStreamManager::FinalizeMediaAccessRequest(
     const std::string& label,
     DeviceRequest* request,
     const MediaStreamDevices& devices) {
-  DCHECK(request->callback);
-  std::move(request->callback).Run(devices, std::move(request->ui_proxy));
+  DCHECK(request->media_access_request_cb);
+  std::move(request->media_access_request_cb)
+      .Run(devices, std::move(request->ui_proxy));
 
   // Delete the request since it is done.
   DeleteRequest(label);
@@ -1346,7 +1365,7 @@ void MediaStreamManager::Opened(MediaStreamType stream_type,
           // Store the native audio parameters in the device struct.
           // TODO(xians): Handle the tab capture sample rate/channel layout
           // in AudioInputDeviceManager::Open().
-          if (device.type != content::MEDIA_TAB_AUDIO_CAPTURE) {
+          if (device.type != MEDIA_TAB_AUDIO_CAPTURE) {
             const MediaStreamDevice* opened_device =
                 audio_input_device_manager_->GetOpenedDeviceById(
                     device.session_id);
@@ -1478,7 +1497,7 @@ void MediaStreamManager::HandleAccessRequestResponse(
     const std::string& label,
     const media::AudioParameters& output_parameters,
     const MediaStreamDevices& devices,
-    content::MediaStreamRequestResult result) {
+    MediaStreamRequestResult result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DVLOG(1) << "HandleAccessRequestResponse("
            << ", {label = " << label <<  "})";
@@ -1507,16 +1526,16 @@ void MediaStreamManager::HandleAccessRequestResponse(
   for (const MediaStreamDevice& media_stream_device : devices) {
     MediaStreamDevice device = media_stream_device;
 
-    if (device.type == content::MEDIA_TAB_VIDEO_CAPTURE ||
-        device.type == content::MEDIA_TAB_AUDIO_CAPTURE) {
+    if (device.type == MEDIA_TAB_VIDEO_CAPTURE ||
+        device.type == MEDIA_TAB_AUDIO_CAPTURE) {
       device.id = request->tab_capture_device_id;
     }
 
     // Initialize the sample_rate and channel_layout here since for audio
     // mirroring, we don't go through EnumerateDevices where these are usually
     // initialized.
-    if (device.type == content::MEDIA_TAB_AUDIO_CAPTURE ||
-        device.type == content::MEDIA_DESKTOP_AUDIO_CAPTURE) {
+    if (device.type == MEDIA_TAB_AUDIO_CAPTURE ||
+        device.type == MEDIA_DESKTOP_AUDIO_CAPTURE) {
       int sample_rate = output_parameters.sample_rate();
       // If we weren't able to get the native sampling rate or the sample_rate
       // is outside the valid range for input devices set reasonable defaults.
@@ -1763,7 +1782,7 @@ bool MediaStreamManager::IsOriginAllowed(int render_process_id,
 
 void MediaStreamManager::SetCapturingLinkSecured(int render_process_id,
                                                  int session_id,
-                                                 content::MediaStreamType type,
+                                                 MediaStreamType type,
                                                  bool is_secure) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   for (LabeledDeviceRequest& labeled_request : requests_) {
