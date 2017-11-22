@@ -29,18 +29,32 @@
 @end
 
 @implementation ITunesLinksObserver {
+  // The WebState this instance is observing. Will be null after
+  // -webStateDestroyed: has been called.
   web::WebState* _webState;
+
+  // Bridge used to observe C++ WebState instance.
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserverBridge;
 }
 
 - (instancetype)initWithWebState:(web::WebState*)webState {
   self = [super init];
   if (self) {
-    _webStateObserverBridge =
-        base::MakeUnique<web::WebStateObserverBridge>(webState, self);
+    DCHECK(webState);
     _webState = webState;
+    _webStateObserverBridge =
+        std::make_unique<web::WebStateObserverBridge>(self);
+    _webState->AddObserver(_webStateObserverBridge.get());
   }
   return self;
+}
+
+- (void)dealloc {
+  if (_webState) {
+    _webState->RemoveObserver(_webStateObserverBridge.get());
+    _webStateObserverBridge.reset();
+    _webState = nullptr;
+  }
 }
 
 + (NSString*)productIDFromURL:(const GURL&)URL {
@@ -57,6 +71,7 @@
 #pragma mark - WebStateObserverBridge
 
 - (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
+  DCHECK_EQ(_webState, webState);
   GURL URL = webState->GetLastCommittedURL();
   NSString* productID = [ITunesLinksObserver productIDFromURL:URL];
   if (productID) {
@@ -65,6 +80,15 @@
       tabHelper->OpenAppStore(productID);
   }
 }
+
+- (void)webStateDestroyed:(web::WebState*)webState {
+  DCHECK_EQ(_webState, webState);
+  _webState->RemoveObserver(_webStateObserverBridge.get());
+  _webStateObserverBridge.reset();
+  _webState = nullptr;
+}
+
+#pragma mark - Public methods.
 
 - (void)setStoreKitLauncher:(id<StoreKitLauncher>)storeKitLauncher {
   StoreKitTabHelper* tabHelper = StoreKitTabHelper::FromWebState(_webState);
