@@ -96,15 +96,16 @@ class ScopedTaskEnvironment {
   // TaskScheduler's non-delayed queues are empty.
   void RunUntilIdle();
 
-  // Only valid for instances with a MOCK_TIME MainThreadType.
-  // Fast-forwards virtual time by |delta|, causing all tasks on the main thread
-  // with a remaining delay less than or equal to |delta| to be executed.
-  // |delta| must be non-negative.
+  // Only valid for instances with a MOCK_TIME MainThreadType. Fast-forwards
+  // virtual time by |delta|, causing all tasks on the main thread with a
+  // remaining delay less than or equal to |delta| to be executed before this
+  // returns. |delta| must be non-negative.
+  // TODO(gab): Make this apply to TaskScheduler delayed tasks as well
+  // (currently only main thread time is mocked).
   void FastForwardBy(TimeDelta delta);
 
   // Only valid for instances with a MOCK_TIME MainThreadType.
-  // Fast-forwards virtual time just until all tasks are executed on the main
-  // thread.
+  // Short for FastForwardBy(TimeDelta::Max()).
   void FastForwardUntilNoTasksRemain();
 
  private:
