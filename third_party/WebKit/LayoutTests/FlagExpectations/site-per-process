@@ -74,8 +74,9 @@ crbug.com/601584 http/tests/bluetooth/https/requestDevice/cross-origin-iframe.ht
 crbug.com/601584 virtual/mojo-loading/http/tests/bluetooth/https/requestDevice/cross-origin-iframe.html [ Failure ]
 
 # https://crbug.com/606594 - UaF of delegate_ in WebFrameTestClient::willSendRequest
-crbug.com/606594 http/tests/local/serviceworker/fetch-request-body-file.html [ Failure Crash ]
-crbug.com/606594 virtual/mojo-loading/http/tests/local/serviceworker/fetch-request-body-file.html [ Crash ]
+# https://crbug.com/786510 - test tries to access cross-origin document body
+crbug.com/606594 http/tests/local/serviceworker/fetch-request-body-file.html [ Skip ]
+crbug.com/606594 virtual/mojo-loading/http/tests/local/serviceworker/fetch-request-body-file.html [ Skip ]
 
 # https://crbug.com/607991 - MockWebClipboardImpl not replicated across OOPIFs.
 crbug.com/607991 http/tests/misc/copy-resolves-urls.html [ Failure ]

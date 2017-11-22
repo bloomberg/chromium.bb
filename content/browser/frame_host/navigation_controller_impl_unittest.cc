@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string>
 #include <tuple>
 #include <utility>
 
@@ -271,9 +272,8 @@ class NavigationControllerTest
 
 class TestWebContentsDelegate : public WebContentsDelegate {
  public:
-  explicit TestWebContentsDelegate() :
-      navigation_state_change_count_(0),
-      repost_form_warning_count_(0) {}
+  TestWebContentsDelegate()
+      : navigation_state_change_count_(0), repost_form_warning_count_(0) {}
 
   int navigation_state_change_count() {
     return navigation_state_change_count_;
@@ -675,7 +675,7 @@ TEST_F(NavigationControllerTest, LoadURLSameTime) {
 }
 
 void CheckNavigationEntryMatchLoadParams(
-    NavigationController::LoadURLParams& load_params,
+    const NavigationController::LoadURLParams& load_params,
     NavigationEntryImpl* entry) {
   EXPECT_EQ(load_params.url, entry->GetURL());
   EXPECT_EQ(load_params.referrer.url, entry->GetReferrer().url);
@@ -2224,7 +2224,7 @@ TEST_F(NavigationControllerTest, NewSubframe) {
   main_test_rfh()->OnCreateChildFrame(
       process()->GetNextRoutingID(),
       TestRenderFrameHost::CreateStubInterfaceProviderRequest(),
-      blink::WebTreeScopeType::kDocument, std::string(), unique_name,
+      blink::WebTreeScopeType::kDocument, std::string(), unique_name, false,
       base::UnguessableToken::Create(), blink::FramePolicy(),
       FrameOwnerProperties());
   TestRenderFrameHost* subframe = static_cast<TestRenderFrameHost*>(
@@ -2302,7 +2302,7 @@ TEST_F(NavigationControllerTest, AutoSubframe) {
   main_test_rfh()->OnCreateChildFrame(
       process()->GetNextRoutingID(),
       TestRenderFrameHost::CreateStubInterfaceProviderRequest(),
-      blink::WebTreeScopeType::kDocument, std::string(), unique_name0,
+      blink::WebTreeScopeType::kDocument, std::string(), unique_name0, false,
       base::UnguessableToken::Create(), blink::FramePolicy(),
       FrameOwnerProperties());
   TestRenderFrameHost* subframe = static_cast<TestRenderFrameHost*>(
@@ -2348,7 +2348,7 @@ TEST_F(NavigationControllerTest, AutoSubframe) {
   main_test_rfh()->OnCreateChildFrame(
       process()->GetNextRoutingID(),
       TestRenderFrameHost::CreateStubInterfaceProviderRequest(),
-      blink::WebTreeScopeType::kDocument, std::string(), unique_name1,
+      blink::WebTreeScopeType::kDocument, std::string(), unique_name1, false,
       base::UnguessableToken::Create(), blink::FramePolicy(),
       FrameOwnerProperties());
   TestRenderFrameHost* subframe2 = static_cast<TestRenderFrameHost*>(
@@ -2394,7 +2394,7 @@ TEST_F(NavigationControllerTest, AutoSubframe) {
   subframe->OnCreateChildFrame(
       process()->GetNextRoutingID(),
       TestRenderFrameHost::CreateStubInterfaceProviderRequest(),
-      blink::WebTreeScopeType::kDocument, std::string(), unique_name2,
+      blink::WebTreeScopeType::kDocument, std::string(), unique_name2, false,
       base::UnguessableToken::Create(), blink::FramePolicy(),
       FrameOwnerProperties());
   TestRenderFrameHost* subframe3 =
@@ -2458,7 +2458,7 @@ TEST_F(NavigationControllerTest, BackSubframe) {
   main_test_rfh()->OnCreateChildFrame(
       process()->GetNextRoutingID(),
       TestRenderFrameHost::CreateStubInterfaceProviderRequest(),
-      blink::WebTreeScopeType::kDocument, std::string(), unique_name,
+      blink::WebTreeScopeType::kDocument, std::string(), unique_name, false,
       base::UnguessableToken::Create(), blink::FramePolicy(),
       FrameOwnerProperties());
   TestRenderFrameHost* subframe = static_cast<TestRenderFrameHost*>(
@@ -2859,8 +2859,7 @@ TEST_F(NavigationControllerTest, ClientRedirectAfterInPageNavigation) {
   }
 }
 
-TEST_F(NavigationControllerTest, PushStateWithoutPreviousEntry)
-{
+TEST_F(NavigationControllerTest, PushStateWithoutPreviousEntry) {
   ASSERT_FALSE(controller_impl().GetLastCommittedEntry());
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
   GURL url("http://foo");
@@ -3867,7 +3866,7 @@ TEST_F(NavigationControllerTest, SameSubframe) {
   main_test_rfh()->OnCreateChildFrame(
       process()->GetNextRoutingID(),
       TestRenderFrameHost::CreateStubInterfaceProviderRequest(),
-      blink::WebTreeScopeType::kDocument, std::string(), unique_name,
+      blink::WebTreeScopeType::kDocument, std::string(), unique_name, false,
       base::UnguessableToken::Create(), blink::FramePolicy(),
       FrameOwnerProperties());
   TestRenderFrameHost* subframe = static_cast<TestRenderFrameHost*>(
@@ -4043,7 +4042,7 @@ TEST_F(NavigationControllerTest, SubframeWhilePending) {
   main_test_rfh()->OnCreateChildFrame(
       process()->GetNextRoutingID(),
       TestRenderFrameHost::CreateStubInterfaceProviderRequest(),
-      blink::WebTreeScopeType::kDocument, std::string(), unique_name,
+      blink::WebTreeScopeType::kDocument, std::string(), unique_name, false,
       base::UnguessableToken::Create(), blink::FramePolicy(),
       FrameOwnerProperties());
   TestRenderFrameHost* subframe = static_cast<TestRenderFrameHost*>(

@@ -3433,11 +3433,11 @@ blink::WebLocalFrame* RenderFrameImpl::CreateChildFrame(
   // Note that Blink can't be changed to just pass |fallback_name| as |name| in
   // the case |name| is empty: |fallback_name| should never affect the actual
   // browsing context name, only unique name generation.
-  bool is_new_subframe_created_by_script =
+  params.is_created_by_script =
       v8::Isolate::GetCurrent() && v8::Isolate::GetCurrent()->InContext();
   params.frame_unique_name = unique_name_helper_.GenerateNameForNewChildFrame(
       params.frame_name.empty() ? fallback_name.Utf8() : params.frame_name,
-      is_new_subframe_created_by_script);
+      params.is_created_by_script);
   params.frame_policy = {sandbox_flags, container_policy};
   params.frame_owner_properties =
       ConvertWebFrameOwnerPropertiesToFrameOwnerProperties(
@@ -3473,7 +3473,7 @@ blink::WebLocalFrame* RenderFrameImpl::CreateChildFrame(
       devtools_frame_token);
   child_render_frame->unique_name_helper_.set_propagated_name(
       params.frame_unique_name);
-  if (is_new_subframe_created_by_script)
+  if (params.is_created_by_script)
     child_render_frame->unique_name_helper_.Freeze();
   child_render_frame->InitializeBlameContext(this);
   blink::WebLocalFrame* web_frame = parent->CreateLocalChild(

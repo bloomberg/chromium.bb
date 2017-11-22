@@ -3041,13 +3041,12 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
   EXPECT_EQ(entry1, controller.GetLastCommittedEntry());
 
-  // The entry should have both the stale FrameNavigationEntry with the old
-  // name and the new FrameNavigationEntry for the fallback navigation.
-  ASSERT_EQ(2U, entry1->root_node()->children.size());
+  // There should be only 1 FNE, because when the child frame is dynamically
+  // created or recreated from javascript, it's FNE will be removed when the
+  // frame is removed.
+  ASSERT_EQ(1U, entry1->root_node()->children.size());
   EXPECT_EQ("data",
             entry1->root_node()->children[0]->frame_entry->url().scheme());
-  EXPECT_EQ("data",
-            entry1->root_node()->children[1]->frame_entry->url().scheme());
 
   // The iframe commit should have been classified AUTO_SUBFRAME and not
   // NEW_SUBFRAME, so we should still be able to go forward.
@@ -3198,19 +3197,16 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
   EXPECT_EQ(entry, controller.GetLastCommittedEntry());
 
-  // There is only 1 child frame in the frame tree, but 2 FNEs, because when the
-  // child frame is dynamically created or recreated from javascript, it will
-  // each time get a fresh, random unique name.
+  // There is only 1 child frame in the frame tree and only 1 FNE, because when
+  // the child frame is dynamically created or recreated from javascript, it's
+  // FNE will be removed when the frame is removed.
   ASSERT_EQ(1U, root->child_count());
-  ASSERT_EQ(2U, entry->root_node()->children.size());
+  ASSERT_EQ(1U, entry->root_node()->children.size());
 
   // The entry should have FrameNavigationEntries for the subframes.
   EXPECT_EQ(blank_url, entry->root_node()->children[0]->frame_entry->url());
   EXPECT_EQ(inner_url,
             entry->root_node()->children[0]->children[0]->frame_entry->url());
-  EXPECT_EQ(blank_url, entry->root_node()->children[1]->frame_entry->url());
-  EXPECT_EQ(inner_url,
-            entry->root_node()->children[1]->children[0]->frame_entry->url());
 
   // With injected about:blank iframes, we never restore form values from
   // PageState.
@@ -3301,19 +3297,16 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
   EXPECT_EQ(entry, controller.GetLastCommittedEntry());
 
-  // There is only 1 child frame in the frame tree, but 2 FNEs, because when the
-  // child frame is dynamically created or recreated from javascript, it will
-  // each time get a fresh, random unique name.
+  // There is only 1 child frame in the frame tree and only 1 FNE, because when
+  // the child frame is dynamically created or recreated from javascript, it's
+  // FNE will be removed when the frame is removed.
   ASSERT_EQ(1U, root->child_count());
-  ASSERT_EQ(2U, entry->root_node()->children.size());
+  ASSERT_EQ(1U, entry->root_node()->children.size());
 
   // The entry should have FrameNavigationEntries for the subframes.
   EXPECT_EQ(srcdoc_url, entry->root_node()->children[0]->frame_entry->url());
   EXPECT_EQ(inner_url,
             entry->root_node()->children[0]->children[0]->frame_entry->url());
-  EXPECT_EQ(srcdoc_url, entry->root_node()->children[1]->frame_entry->url());
-  EXPECT_EQ(inner_url,
-            entry->root_node()->children[1]->children[0]->frame_entry->url());
 
   // With *injected* iframe srcdoc pages, we don't restore form values from
   // PageState (because iframes injected by javascript always get a fresh,
@@ -6087,10 +6080,10 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
     EXPECT_NE(nullptr, root_entry);
     EXPECT_EQ(3U, entry->root_node()->children.size());
 
-    // Both children of |entry->root_node()->children[0]| should be removed
-    // by NavigationEntryImpl::ClearStaleFrameEntriesForNewFrame, because
-    // both will have colliding unique names (the removed parent and the newly
-    // added frame both load '1-1.html' - which has 2 named framse).
+    // Both children of |entry->root_node()->children[0]| should be removed by
+    // NavigationEntryImpl::RemoveEntryForFrame, because both will have
+    // colliding unique names (the removed parent and the newly added frame both
+    // load '1-1.html' - which has 2 named framse).
     EXPECT_EQ(0U, entry->root_node()->children[0]->children.size());
   }
 }
@@ -6110,15 +6103,16 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
       web_contents->GetController().GetLastCommittedEntry();
 
   // Add, then remove a named frame. It will create a FrameNavigationEntry
-  // for the name and leave it around.
+  // for the name and remove it (since this is a frame created by script).
   EXPECT_TRUE(ExecuteScript(root, kAddNamedFrameScript));
   EXPECT_EQ(1U, root->child_count());
   EXPECT_EQ(1U, nav_entry->root_node()->children.size());
+  // |tree_node| will becoma a dangling pointer when the frame is removed below.
   auto* tree_node = nav_entry->root_node()->children[0].get();
 
   EXPECT_TRUE(ExecuteScript(root, kRemoveFrameScript));
   EXPECT_EQ(0U, root->child_count());
-  EXPECT_EQ(1U, nav_entry->root_node()->children.size());
+  EXPECT_EQ(0U, nav_entry->root_node()->children.size());
 
   // Add another frame with the same name as before. The matching logic should
   // NOT consider them the same and should NOT result in the
@@ -6126,8 +6120,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // will get a fresh, random unique name each time it is created or recreated).
   EXPECT_TRUE(ExecuteScript(root, kAddNamedFrameScript));
   EXPECT_EQ(1U, root->child_count());
-  EXPECT_EQ(2U, nav_entry->root_node()->children.size());
-  EXPECT_EQ(tree_node, nav_entry->root_node()->children[0].get());
+  EXPECT_EQ(1U, nav_entry->root_node()->children.size());
+  EXPECT_NE(tree_node, nav_entry->root_node()->children[0].get());
 
   EXPECT_TRUE(ExecuteScript(root, kRemoveFrameScript));
   EXPECT_EQ(0U, root->child_count());
@@ -7262,6 +7256,141 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
   // Verify that none of "beforeunload", "unload" events fired.
   EXPECT_THAT(messages, testing::IsEmpty());
+}
+
+// This test helps verify that the browser does not retain history entries
+// for removed frames *if* the removed frame was created by a script.
+// Such frames get a fresh, random, unique name every time they are created
+// or recreated and therefore in such case will never match previous history
+// entries.  See also https://crbug.com/784356.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       PruningOfEntriesForDynamicFrames_ChildRemoved) {
+  GURL main_url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // Repeatedly create and remove a frame from a script.
+  std::string result;
+  std::string script = R"(
+        var iterations_left = 5;
+        function runOneIteration() {
+          if (iterations_left == 0) {
+            domAutomationController.send("done-with-test");
+            return;
+          }
+
+          var iframe = document.createElement("iframe");
+          document.body.appendChild(iframe);
+          document.body.removeChild(iframe);
+
+          iterations_left = iterations_left - 1;
+          setTimeout(runOneIteration, 0);
+        }
+        runOneIteration(); )";
+  EXPECT_TRUE(ExecuteScriptAndExtractString(shell(), script, &result));
+  EXPECT_EQ("done-with-test", result);
+
+  // Grab the last committed entry.
+  const NavigationControllerImpl& controller =
+      static_cast<const NavigationControllerImpl&>(
+          shell()->web_contents()->GetController());
+  EXPECT_EQ(1, controller.GetEntryCount());
+  NavigationEntryImpl* entry = controller.GetLastCommittedEntry();
+  EXPECT_EQ(main_url, entry->GetURL());
+
+  // Verify that the number of FrameNavigationEntries stayed low (i.e. that we
+  // do not retain history entries for the 5 frames removed by the test).
+  EXPECT_EQ(0U, entry->root_node()->children.size());
+
+  // Sanity check - there are no children in the frame tree.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  ASSERT_EQ(0U, root->child_count());
+}
+
+// This test helps verify that the browser does not retain history entries
+// for removed frames *if* the removed frame was created by a script.
+// Such frames get a fresh, random, unique name every time they are created
+// or recreated and therefore in such case will never match previous history
+// entries.  See also https://crbug.com/784356.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       PruningOfEntriesForDynamicFrames_ParentNavigatedAway) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/navigation_controller/page_with_iframe_simple.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  const NavigationControllerImpl& controller =
+      static_cast<const NavigationControllerImpl&>(
+          shell()->web_contents()->GetController());
+
+  // Add 5 dynamic subframes to |frame|.
+  RenderFrameHost* frame = shell()->web_contents()->GetAllFrames()[1];
+  std::string script = R"(
+        for (var i = 0; i < 5; i++) {
+          var iframe = document.createElement("iframe");
+          document.body.appendChild(iframe);
+        }; )";
+  EXPECT_TRUE(ExecuteScript(frame, script));
+
+  // Verify that now there are 5 FNEs for the dynamic frames.
+  EXPECT_EQ(1, controller.GetEntryCount());
+  NavigationEntryImpl* entry = controller.GetLastCommittedEntry();
+  EXPECT_EQ(main_url, entry->GetURL());
+  EXPECT_EQ(1U, entry->root_node()->children.size());
+  EXPECT_EQ(5U, entry->root_node()->children[0]->children.size());
+
+  // Navigate |frame| (the parent of the dynamic frames) away.
+  // This will destroy the 5 dynamic children of |frame|.
+  GURL next_url(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  EXPECT_TRUE(NavigateIframeToURL(shell()->web_contents(), "frame", next_url));
+
+  // Verify that there are now 0 FNEs for the dynamic frames.
+  EXPECT_EQ(2, controller.GetEntryCount());
+  EXPECT_EQ(main_url, entry->GetURL());
+  EXPECT_EQ(1U, entry->root_node()->children.size());
+  EXPECT_EQ(0U, entry->root_node()->children[0]->children.size());
+}
+
+// This test helps verify that the browser does not retain history entries
+// for removed frames *if* the removed frame was created by a script.
+// Such frames get a fresh, random, unique name every time they are created
+// or recreated and therefore in such case will never match previous history
+// entries.  See also https://crbug.com/784356.
+IN_PROC_BROWSER_TEST_F(
+    NavigationControllerBrowserTest,
+    PruningOfEntriesForDynamicFrames_MainFrameNavigatedAway) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/navigation_controller/page_with_iframe_simple.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  const NavigationControllerImpl& controller =
+      static_cast<const NavigationControllerImpl&>(
+          shell()->web_contents()->GetController());
+
+  // Add 5 dynamic subframes to |frame|.
+  RenderFrameHost* frame = shell()->web_contents()->GetAllFrames()[1];
+  std::string script = R"(
+        for (var i = 0; i < 5; i++) {
+          var iframe = document.createElement("iframe");
+          document.body.appendChild(iframe);
+        }; )";
+  EXPECT_TRUE(ExecuteScript(frame, script));
+
+  // Verify that now there are 5 FNEs for the dynamic frames.
+  EXPECT_EQ(1, controller.GetEntryCount());
+  NavigationEntryImpl* entry = controller.GetLastCommittedEntry();
+  EXPECT_EQ(main_url, entry->GetURL());
+  EXPECT_EQ(1U, entry->root_node()->children.size());
+  EXPECT_EQ(5U, entry->root_node()->children[0]->children.size());
+
+  // Navigate the main frame (the grandparent of the dynamic frames) away.
+  // This will destroy the 5 dynamic children of |frame|.
+  GURL next_url(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), next_url));
+
+  // Verify that there are now 0 FNEs for the dynamic frames.
+  EXPECT_EQ(2, controller.GetEntryCount());
+  EXPECT_EQ(main_url, entry->GetURL());
+  EXPECT_EQ(1U, entry->root_node()->children.size());
+  EXPECT_EQ(0U, entry->root_node()->children[0]->children.size());
 }
 
 // This test reproduces issue 769645. It happens when the user reloads the page
