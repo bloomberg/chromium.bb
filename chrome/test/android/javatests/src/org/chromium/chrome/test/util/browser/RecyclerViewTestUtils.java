@@ -120,4 +120,26 @@ public final class RecyclerViewTestUtils {
         ThreadUtils.runOnUiThreadBlocking(() -> recyclerView.scrollToPosition(position));
         return waitForView(recyclerView, position);
     }
+
+    /**
+     * Scrolls the {@link RecyclerView} to the bottom.
+     */
+    public static void scrollToBottom(RecyclerView recyclerView) {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                // Scroll to bottom.
+                recyclerView.scrollToPosition(recyclerView.getAdapter().getItemCount() - 1);
+            }
+        });
+
+        CriteriaHelper.pollUiThread(new Criteria(){
+            @Override
+            public boolean isSatisfied() {
+                // Wait until we can scroll no further.
+                // A positive parameter checks scrolling down, a negative one scrolling up.
+                return !recyclerView.canScrollVertically(1);
+            }
+        });
+    }
 }
