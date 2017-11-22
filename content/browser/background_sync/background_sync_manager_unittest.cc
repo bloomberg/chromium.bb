@@ -82,31 +82,6 @@ void UnregisterServiceWorkerCallback(bool* called,
   *called = true;
 }
 
-void DispatchSyncSuccessfulCallback(
-    int* count,
-    const scoped_refptr<ServiceWorkerVersion>& active_version,
-    const ServiceWorkerVersion::LegacyStatusCallback& callback) {
-  *count += 1;
-  callback.Run(SERVICE_WORKER_OK);
-}
-
-void DispatchSyncFailedCallback(
-    int* count,
-    const scoped_refptr<ServiceWorkerVersion>& active_version,
-    const ServiceWorkerVersion::LegacyStatusCallback& callback) {
-  *count += 1;
-  callback.Run(SERVICE_WORKER_ERROR_FAILED);
-}
-
-void DispatchSyncDelayedCallback(
-    int* count,
-    ServiceWorkerVersion::LegacyStatusCallback* out_callback,
-    const scoped_refptr<ServiceWorkerVersion>& active_version,
-    const ServiceWorkerVersion::LegacyStatusCallback& callback) {
-  *count += 1;
-  *out_callback = callback;
-}
-
 }  // namespace
 
 class BackgroundSyncManagerTest : public testing::Test {
@@ -380,32 +355,49 @@ class BackgroundSyncManagerTest : public testing::Test {
     SetNetwork(net::NetworkChangeNotifier::CONNECTION_WIFI);
   }
 
+  void DispatchSyncStatusCallback(
+      ServiceWorkerStatusCode status,
+      scoped_refptr<ServiceWorkerVersion> active_version,
+      ServiceWorkerVersion::StatusCallback callback) {
+    sync_events_called_++;
+    std::move(callback).Run(status);
+  }
+
   void InitSyncEventTest() {
-    SetupForSyncEvent(base::BindRepeating(DispatchSyncSuccessfulCallback,
-                                          &sync_events_called_));
+    SetupForSyncEvent(base::BindRepeating(
+        &BackgroundSyncManagerTest::DispatchSyncStatusCallback,
+        base::Unretained(this), SERVICE_WORKER_OK));
   }
 
   void InitFailedSyncEventTest() {
-    SetupForSyncEvent(
-        base::BindRepeating(DispatchSyncFailedCallback, &sync_events_called_));
+    SetupForSyncEvent(base::BindRepeating(
+        &BackgroundSyncManagerTest::DispatchSyncStatusCallback,
+        base::Unretained(this), SERVICE_WORKER_ERROR_FAILED));
+  }
+
+  void DispatchSyncDelayedCallback(
+      scoped_refptr<ServiceWorkerVersion> active_version,
+      ServiceWorkerVersion::StatusCallback callback) {
+    sync_events_called_++;
+    sync_fired_callback_ = std::move(callback);
   }
 
   void InitDelayedSyncEventTest() {
-    SetupForSyncEvent(base::BindRepeating(DispatchSyncDelayedCallback,
-                                          &sync_events_called_,
-                                          &sync_fired_callback_));
+    SetupForSyncEvent(base::BindRepeating(
+        &BackgroundSyncManagerTest::DispatchSyncDelayedCallback,
+        base::Unretained(this)));
   }
 
   void RegisterAndVerifySyncEventDelayed(
       const BackgroundSyncRegistrationOptions& sync_options) {
     int sync_events_called = sync_events_called_;
-    EXPECT_TRUE(sync_fired_callback_.is_null());
+    EXPECT_FALSE(sync_fired_callback_);
 
     EXPECT_TRUE(Register(sync_options));
 
     EXPECT_EQ(sync_events_called + 1, sync_events_called_);
     EXPECT_TRUE(GetRegistration(sync_options_1_));
-    EXPECT_FALSE(sync_fired_callback_.is_null());
+    EXPECT_TRUE(sync_fired_callback_);
   }
 
   void DeleteServiceWorkerAndStartOver() {
@@ -447,7 +439,7 @@ class BackgroundSyncManagerTest : public testing::Test {
       callback_registrations_;
   ServiceWorkerStatusCode callback_sw_status_code_ = SERVICE_WORKER_OK;
   int sync_events_called_ = 0;
-  ServiceWorkerVersion::LegacyStatusCallback sync_fired_callback_;
+  ServiceWorkerVersion::StatusCallback sync_fired_callback_;
 };
 
 TEST_F(BackgroundSyncManagerTest, Register) {
@@ -832,12 +824,14 @@ TEST_F(BackgroundSyncManagerTest, ReregisterMidSyncFirstAttemptFails) {
   EXPECT_TRUE(Register(sync_options_1_));
 
   // The first sync attempt fails.
-  sync_fired_callback_.Run(SERVICE_WORKER_ERROR_FAILED);
+  ASSERT_TRUE(sync_fired_callback_);
+  std::move(sync_fired_callback_).Run(SERVICE_WORKER_ERROR_FAILED);
   base::RunLoop().RunUntilIdle();
 
   // It should fire again since it was reregistered mid-sync.
   EXPECT_TRUE(GetRegistration(sync_options_1_));
-  sync_fired_callback_.Run(SERVICE_WORKER_OK);
+  ASSERT_TRUE(sync_fired_callback_);
+  std::move(sync_fired_callback_).Run(SERVICE_WORKER_OK);
   EXPECT_FALSE(GetRegistration(sync_options_1_));
 }
 
@@ -849,12 +843,14 @@ TEST_F(BackgroundSyncManagerTest, ReregisterMidSyncFirstAttemptSucceeds) {
   EXPECT_TRUE(Register(sync_options_1_));
 
   // The first sync event succeeds.
-  sync_fired_callback_.Run(SERVICE_WORKER_OK);
+  ASSERT_TRUE(sync_fired_callback_);
+  std::move(sync_fired_callback_).Run(SERVICE_WORKER_OK);
   base::RunLoop().RunUntilIdle();
 
   // It should fire again since it was reregistered mid-sync.
   EXPECT_TRUE(GetRegistration(sync_options_1_));
-  sync_fired_callback_.Run(SERVICE_WORKER_OK);
+  ASSERT_TRUE(sync_fired_callback_);
+  std::move(sync_fired_callback_).Run(SERVICE_WORKER_OK);
   EXPECT_FALSE(GetRegistration(sync_options_1_));
 }
 
@@ -907,7 +903,8 @@ TEST_F(BackgroundSyncManagerTest, DisableWhileFiring) {
 
   // Successfully complete the firing event. We can't verify that it actually
   // completed but at least we can test that it doesn't crash.
-  sync_fired_callback_.Run(SERVICE_WORKER_OK);
+  ASSERT_TRUE(sync_fired_callback_);
+  std::move(sync_fired_callback_).Run(SERVICE_WORKER_OK);
   base::RunLoop().RunUntilIdle();
 }
 
@@ -995,7 +992,8 @@ TEST_F(BackgroundSyncManagerTest, DelayMidSync) {
   RegisterAndVerifySyncEventDelayed(sync_options_1_);
 
   // Finish firing the event and verify that the registration is removed.
-  sync_fired_callback_.Run(SERVICE_WORKER_OK);
+  ASSERT_TRUE(sync_fired_callback_);
+  std::move(sync_fired_callback_).Run(SERVICE_WORKER_OK);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, sync_events_called_);
   EXPECT_FALSE(GetRegistration(sync_options_1_));
@@ -1007,7 +1005,8 @@ TEST_F(BackgroundSyncManagerTest, BadBackendMidSync) {
   RegisterAndVerifySyncEventDelayed(sync_options_1_);
 
   test_background_sync_manager_->set_corrupt_backend(true);
-  sync_fired_callback_.Run(SERVICE_WORKER_OK);
+  ASSERT_TRUE(sync_fired_callback_);
+  std::move(sync_fired_callback_).Run(SERVICE_WORKER_OK);
   base::RunLoop().RunUntilIdle();
 
   // The backend should now be disabled because it couldn't unregister the
@@ -1023,7 +1022,8 @@ TEST_F(BackgroundSyncManagerTest, UnregisterServiceWorkerMidSync) {
   RegisterAndVerifySyncEventDelayed(sync_options_1_);
   UnregisterServiceWorker(sw_registration_id_1_);
 
-  sync_fired_callback_.Run(SERVICE_WORKER_OK);
+  ASSERT_TRUE(sync_fired_callback_);
+  std::move(sync_fired_callback_).Run(SERVICE_WORKER_OK);
 
   // The backend isn't disabled, but the first service worker registration is
   // gone.
@@ -1161,7 +1161,8 @@ TEST_F(BackgroundSyncManagerTest, WakeBrowserCalled) {
                 GetController()->run_in_background_min_ms()));
 
   // Finish the sync.
-  sync_fired_callback_.Run(SERVICE_WORKER_OK);
+  ASSERT_TRUE(sync_fired_callback_);
+  std::move(sync_fired_callback_).Run(SERVICE_WORKER_OK);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(GetController()->run_in_background_enabled());
 }

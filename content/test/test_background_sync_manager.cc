@@ -23,7 +23,7 @@ void TestBackgroundSyncManager::DoInit() {
 }
 
 void TestBackgroundSyncManager::ResumeBackendOperation() {
-  ASSERT_FALSE(continuation_.is_null());
+  ASSERT_TRUE(continuation_);
   std::move(continuation_).Run();
 }
 
@@ -37,7 +37,7 @@ void TestBackgroundSyncManager::StoreDataInBackend(
     const std::string& key,
     const std::string& data,
     const ServiceWorkerStorage::StatusCallback& callback) {
-  EXPECT_TRUE(continuation_.is_null());
+  EXPECT_FALSE(continuation_);
   if (corrupt_backend_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(callback, SERVICE_WORKER_ERROR_FAILED));
@@ -56,7 +56,7 @@ void TestBackgroundSyncManager::GetDataFromBackend(
     const std::string& key,
     const ServiceWorkerStorage::GetUserDataForAllRegistrationsCallback&
         callback) {
-  EXPECT_TRUE(continuation_.is_null());
+  EXPECT_FALSE(continuation_);
   if (corrupt_backend_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
@@ -78,7 +78,7 @@ void TestBackgroundSyncManager::DispatchSyncEvent(
     scoped_refptr<ServiceWorkerVersion> active_version,
     blink::mojom::BackgroundSyncEventLastChance last_chance,
     const ServiceWorkerVersion::LegacyStatusCallback& callback) {
-  ASSERT_FALSE(dispatch_sync_callback_.is_null());
+  ASSERT_TRUE(dispatch_sync_callback_);
   last_chance_ = last_chance;
   dispatch_sync_callback_.Run(active_version, callback);
 }
