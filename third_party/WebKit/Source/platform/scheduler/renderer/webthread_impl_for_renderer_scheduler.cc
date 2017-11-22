@@ -20,8 +20,8 @@ WebThreadImplForRendererScheduler::WebThreadImplForRendererScheduler(
       idle_task_runner_(scheduler->IdleTaskRunner()),
       scheduler_(scheduler),
       thread_id_(base::PlatformThread::CurrentId()),
-      web_task_runner_(
-          WebTaskRunnerImpl::Create(scheduler->DefaultTaskQueue())) {}
+      web_task_runner_(WebTaskRunnerImpl::Create(scheduler->DefaultTaskQueue(),
+                                                 base::nullopt)) {}
 
 WebThreadImplForRendererScheduler::~WebThreadImplForRendererScheduler() {}
 

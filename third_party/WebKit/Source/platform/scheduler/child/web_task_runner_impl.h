@@ -24,7 +24,7 @@ class PLATFORM_EXPORT WebTaskRunnerImpl : public WebTaskRunner {
  public:
   static scoped_refptr<WebTaskRunnerImpl> Create(
       scoped_refptr<TaskQueue> task_queue,
-      base::Optional<TaskType> task_type = base::nullopt);
+      base::Optional<TaskType> task_type);
 
   // WebTaskRunner implementation:
   bool RunsTasksInCurrentSequence() override;

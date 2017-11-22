@@ -23,9 +23,12 @@ WebSchedulerImpl::WebSchedulerImpl(
     scoped_refptr<TaskQueue> v8_task_runner)
     : child_scheduler_(child_scheduler),
       idle_task_runner_(idle_task_runner),
-      loading_web_task_runner_(WebTaskRunnerImpl::Create(loading_task_runner)),
-      timer_web_task_runner_(WebTaskRunnerImpl::Create(timer_task_runner)),
-      v8_web_task_runner_(WebTaskRunnerImpl::Create(v8_task_runner)) {}
+      loading_web_task_runner_(
+          WebTaskRunnerImpl::Create(loading_task_runner, base::nullopt)),
+      timer_web_task_runner_(
+          WebTaskRunnerImpl::Create(timer_task_runner, base::nullopt)),
+      v8_web_task_runner_(
+          WebTaskRunnerImpl::Create(v8_task_runner, base::nullopt)) {}
 
 WebSchedulerImpl::~WebSchedulerImpl() {}
 
