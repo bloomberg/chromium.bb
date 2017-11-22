@@ -39,7 +39,7 @@ class CancellationTestHelper {
 
 TEST(WebTaskRunnerTest, PostCancellableTaskTest) {
   scoped_refptr<scheduler::FakeWebTaskRunner> task_runner =
-      base::AdoptRef(new scheduler::FakeWebTaskRunner);
+      base::MakeRefCounted<scheduler::FakeWebTaskRunner>();
 
   // Run without cancellation.
   int count = 0;
@@ -120,7 +120,7 @@ TEST(WebTaskRunnerTest, PostCancellableTaskTest) {
 
 TEST(WebTaskRunnerTest, CancellationCheckerTest) {
   scoped_refptr<scheduler::FakeWebTaskRunner> task_runner =
-      base::AdoptRef(new scheduler::FakeWebTaskRunner);
+      base::MakeRefCounted<scheduler::FakeWebTaskRunner>();
 
   int count = 0;
   TaskHandle handle = task_runner->PostCancellableTask(

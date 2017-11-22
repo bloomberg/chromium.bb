@@ -115,7 +115,7 @@ class MockFetchContext : public FetchContext {
 
   MockFetchContext(LoadPolicy load_policy)
       : load_policy_(load_policy),
-        runner_(base::AdoptRef(new scheduler::FakeWebTaskRunner)),
+        runner_(base::MakeRefCounted<scheduler::FakeWebTaskRunner>()),
         security_origin_(SecurityOrigin::CreateUnique()),
         frame_scheduler_(new MockFrameScheduler(runner_)),
         complete_(false),

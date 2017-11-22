@@ -31,6 +31,7 @@ _CONFIG = [
 
             # //base constructs that are allowed everywhere
             'base::AdoptRef',
+            'base::MakeRefCounted',
             'base::Optional',
             'base::SingleThreadTaskRunner',
             'base::UnguessableToken',
