@@ -1,4 +1,4 @@
-Tests general layer tree model functionality
+
 Initial layer tree
 #document (9)
     iframe#frame (10)

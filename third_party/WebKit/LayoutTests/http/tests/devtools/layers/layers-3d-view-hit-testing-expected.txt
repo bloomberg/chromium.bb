@@ -1,5 +1,3 @@
-Tests hit testing in Layers3DView
-
 Initial state
 State of layers:
 hovered layer: none

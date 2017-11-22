@@ -1,6 +1,5 @@
-Tests scroll rectangles support in in Layers3DViewxScroll rectangles
-
 Scroll rectangles
+Model elements dump
 {
     0 : {
         rect : {
