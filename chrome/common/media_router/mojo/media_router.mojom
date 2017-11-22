@@ -84,7 +84,8 @@ struct CastMediaSink {
 enum RouteControllerType {
   kNone,
   kGeneric,
-  kHangouts
+  kHangouts,
+  kMirroring
 };
 
 // Should be kept in sync with media_route.h.

@@ -6,6 +6,11 @@
 
 namespace media_router {
 
+MirroringMediaStatusExtraData::MirroringMediaStatusExtraData(
+    bool media_remoting_enabled)
+    : media_remoting_enabled(media_remoting_enabled) {}
+MirroringMediaStatusExtraData::~MirroringMediaStatusExtraData() = default;
+
 MediaStatus::MediaStatus() = default;
 
 MediaStatus::MediaStatus(const MediaStatus& other) = default;

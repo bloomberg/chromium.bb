@@ -14,6 +14,8 @@
 #include "chrome/common/media_router/mojo/media_controller.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
+class PrefService;
+
 namespace content {
 class BrowserContext;
 }
@@ -220,6 +222,46 @@ class HangoutsMediaRouteController : public MediaRouteController {
   mojom::HangoutsMediaRouteControllerPtr mojo_hangouts_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(HangoutsMediaRouteController);
+};
+
+// Controller subclass for Cast streaming mirroring routes. Responsible for:
+// (1) updating the media remoting pref according to user input
+// (2) augmenting the MediaStatus update sent by the MRP with the value from the
+//     media remoting pref.
+class MirroringMediaRouteController : public MediaRouteController {
+ public:
+  // Casts |controller| to a MirroringMediaRouteController if its
+  // RouteControllerType is MIRRORING. Returns nullptr otherwise.
+  static MirroringMediaRouteController* From(MediaRouteController* controller);
+
+  MirroringMediaRouteController(const MediaRoute::Id& route_id,
+                                content::BrowserContext* context);
+
+  // MediaRouteController
+  RouteControllerType GetType() const override;
+  void OnMediaStatusUpdated(const MediaStatus& status) override;
+
+  // Sets the media remoting pref to |enabled| and notifies the observers.
+  // Note that the MRP listens for updates on this pref value and enable/disable
+  // media remoting as needed.
+  void SetMediaRemotingEnabled(bool enabled);
+
+  bool media_remoting_enabled() const { return media_remoting_enabled_; }
+
+ protected:
+  ~MirroringMediaRouteController() override;
+
+ private:
+  PrefService* const prefs_;
+
+  // This is initialized from |prefs_| in the constructor and updated in
+  // |SetMediaRemotingEnabled()|. This class does not need to listen for pref
+  // changes because this is the only place where the media remoting pref value
+  // can be modified.
+  bool media_remoting_enabled_ = true;
+  MediaStatus latest_status_;
+
+  DISALLOW_COPY_AND_ASSIGN(MirroringMediaRouteController);
 };
 
 }  // namespace media_router
