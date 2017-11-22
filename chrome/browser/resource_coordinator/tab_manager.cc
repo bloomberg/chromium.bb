@@ -222,6 +222,7 @@ TabManager::TabManager()
     : discard_count_(0),
       browser_tab_strip_tracker_(this, nullptr, this),
       is_session_restore_loading_tabs_(false),
+      restored_tab_count_(0u),
       background_tab_loading_mode_(BackgroundTabLoadingMode::kStaggered),
       force_load_timer_(base::MakeUnique<base::OneShotTimer>(GetTickClock())),
       loading_slots_(kNumOfLoadingSlots),
@@ -565,16 +566,6 @@ int32_t TabManager::IdFromWebContents(WebContents* web_contents) {
   return data->id();
 }
 
-void TabManager::OnSessionRestoreStartedLoadingTabs() {
-  DCHECK(!is_session_restore_loading_tabs_);
-  is_session_restore_loading_tabs_ = true;
-}
-
-void TabManager::OnSessionRestoreFinishedLoadingTabs() {
-  DCHECK(is_session_restore_loading_tabs_);
-  is_session_restore_loading_tabs_ = false;
-}
-
 bool TabManager::IsTabInSessionRestore(WebContents* web_contents) const {
   return GetWebContentsData(web_contents)->is_in_session_restore();
 }
@@ -602,6 +593,10 @@ int TabManager::GetTabCount() const {
   for (auto* browser : *BrowserList::GetInstance())
     tab_count += browser->tab_strip_model()->count();
   return tab_count;
+}
+
+int TabManager::restored_tab_count() const {
+  return restored_tab_count_;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1089,6 +1084,31 @@ std::vector<BrowserInfo> TabManager::GetBrowserInfoList() const {
   return browser_info_list;
 }
 
+void TabManager::OnSessionRestoreStartedLoadingTabs() {
+  DCHECK(!is_session_restore_loading_tabs_);
+  is_session_restore_loading_tabs_ = true;
+}
+
+void TabManager::OnSessionRestoreFinishedLoadingTabs() {
+  DCHECK(is_session_restore_loading_tabs_);
+  is_session_restore_loading_tabs_ = false;
+  restored_tab_count_ = 0u;
+}
+
+void TabManager::OnWillRestoreTab(WebContents* contents) {
+  WebContentsData* data = GetWebContentsData(contents);
+  DCHECK(!data->is_in_session_restore());
+  data->SetIsInSessionRestore(true);
+  data->SetIsRestoredInForeground(contents->IsVisible());
+  restored_tab_count_++;
+
+  // TabUIHelper is initialized in TabHelpers::AttachTabHelpers. But this place
+  // gets called earlier than that. So for restored tabs, also initialize their
+  // TabUIHelper here.
+  TabUIHelper::CreateForWebContents(contents);
+  TabUIHelper::FromWebContents(contents)->set_created_by_session_restore(true);
+}
+
 content::NavigationThrottle::ThrottleCheckResult
 TabManager::MaybeThrottleNavigation(BackgroundTabNavigationThrottle* throttle) {
   content::WebContents* contents =
@@ -1153,19 +1173,6 @@ bool TabManager::CanLoadNextTab() const {
     return true;
 
   return false;
-}
-
-void TabManager::OnWillRestoreTab(WebContents* contents) {
-  WebContentsData* data = GetWebContentsData(contents);
-  DCHECK(!data->is_in_session_restore());
-  data->SetIsInSessionRestore(true);
-  data->SetIsRestoredInForeground(contents->IsVisible());
-
-  // TabUIHelper is initialized in TabHelpers::AttachTabHelpers. But this place
-  // gets called earlier than that. So for restored tabs, also initialize their
-  // TabUIHelper here.
-  TabUIHelper::CreateForWebContents(contents);
-  TabUIHelper::FromWebContents(contents)->set_created_by_session_restore(true);
 }
 
 void TabManager::OnDidFinishNavigation(

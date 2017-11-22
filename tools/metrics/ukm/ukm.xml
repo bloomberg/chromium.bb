@@ -1577,9 +1577,11 @@ be describing additional metrics about the same event.
     from when the browser starts to open background tabs until the time the
     browser has finished loading those tabs or otherwise decided to stop loading
     them). The event is not recorded when the session overlaps with session
-    restore. This event is sampled when there are 2 or more backgrounded loading
-    or pending tabs. Therefore, aggregated tab counts over multiple events are
-    invalid.
+    restore. This event is sampled when there is only one backgrounded loading
+    or pending tab and all events are collected when there are 2 or more
+    backgrounded loading or pending tabs. In this way, we cap the volume while
+    keeping all interesting data. Therefore, aggregated tab counts over multiple
+    events are invalid.
   </summary>
   <metric name="BackgroundTabLoadingCount">
     <summary>
@@ -1664,6 +1666,111 @@ be describing additional metrics about the same event.
       finishes loading, a metric will not be recorded unless the user switches
       back, in which case the tab switch load time is measured from that point
       in time.
+    </summary>
+  </metric>
+</event>
+
+<event name="TabManager.Experimental.SessionRestore.ForegroundTab.PageLoad"
+    singular="True">
+  <owner>zhenw@chromium.org</owner>
+  <summary>
+    Collects the tab counts for the foreground tab page load during session
+    restore. The event is not recorded when the session overlaps with background
+    tab opening. This event should be combined with PageLoad event for analysis.
+  </summary>
+  <metric name="SessionRestoreTabCount">
+    <summary>
+      Number of tabs that are restored.
+    </summary>
+  </metric>
+  <metric name="SystemTabCount">
+    <summary>
+      Number of all tabs of the system, which includes all browser windows.
+    </summary>
+  </metric>
+</event>
+
+<event name="TabManager.Experimental.SessionRestore.TabSwitchLoadStopped"
+    singular="True">
+  <owner>zhenw@chromium.org</owner>
+  <summary>
+    Collects data when a tab is switched to from another tab and then finishes
+    loading in the foreground during session restore The event is only recorded
+    when a tab is switched to from another tab within the same tabstrip. As a
+    result, the initial foreground tab is not included in this event since it
+    was not switched to from another tab. The event is not recorded when the
+    session overlaps with background tab opening.
+  </summary>
+  <metric name="SequenceId">
+    <summary>
+      The ID of this event's sequence in current session restore session.
+    </summary>
+  </metric>
+  <metric name="SessionRestoreSessionId">
+    <summary>
+      The ID of this session restore session.
+    </summary>
+  </metric>
+  <metric name="SessionRestoreTabCount">
+    <summary>
+      Number of tabs that are restored.
+    </summary>
+  </metric>
+  <metric name="SystemTabCount">
+    <summary>
+      Number of all tabs of the system, which includes all browser windows.
+    </summary>
+  </metric>
+  <metric name="TabSwitchLoadTime">
+    <summary>
+      Tab switch load time in MS. It is defined as the time between when the
+      user switches to a background tab, and the time when that tab finishes
+      loading in the foreground. If the user switches away before the tab
+      finishes loading, a metric will not be recorded unless the user switches
+      back, in which case the tab switch load time is measured from that point
+      in time.
+    </summary>
+  </metric>
+</event>
+
+<event
+    name="TabManager.SessionRestore.ForegroundTab.ExpectedTaskQueueingDurationInfo">
+  <owner>zhenw@chromium.org</owner>
+  <summary>
+    Collects the expected queueing duration of tasks and metadata for the
+    foreground tab during session restore. The event is not recorded when the
+    session overlaps with background tab opening. The event is not recorded when
+    there is only one restored tab, in which case, there is no background
+    restored tab and we are not interested at that. In this way, we cap the
+    volume while keeping all interesting data.
+  </summary>
+  <metric name="ExpectedTaskQueueingDuration">
+    <summary>
+      Duration in MS for expected task queueing duration. The metric reflects
+      the responsiveness of a tab. A lower value means the tab will respond to
+      inputs faster. This metric is equal to
+      RendererScheduler.ExpectedTaskQueueingDuration. It is emitted once for all
+      tasks in each 1000-ms window.
+    </summary>
+  </metric>
+  <metric name="SequenceId">
+    <summary>
+      The ID of this event's sequence in current session restore session.
+    </summary>
+  </metric>
+  <metric name="SessionRestoreSessionId">
+    <summary>
+      The ID of this session restore session.
+    </summary>
+  </metric>
+  <metric name="SessionRestoreTabCount">
+    <summary>
+      Number of tabs that are restored.
+    </summary>
+  </metric>
+  <metric name="SystemTabCount">
+    <summary>
+      Number of all tabs of the system, which includes all browser windows.
     </summary>
   </metric>
 </event>
