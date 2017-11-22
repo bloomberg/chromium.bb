@@ -1039,12 +1039,16 @@ static void read_intrabc_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
     if (dv_ref.as_int == 0)
       av1_find_ref_dv(&dv_ref, &xd->tile, cm->mib_size, mi_row, mi_col);
     // Ref DV should not have sub-pel.
-    assert((dv_ref.as_mv.col & 7) == 0);
-    assert((dv_ref.as_mv.row & 7) == 0);
+    int valid_dv = (dv_ref.as_mv.col & 7) == 0 && (dv_ref.as_mv.row & 7) == 0;
     dv_ref.as_mv.col = (dv_ref.as_mv.col >> 3) * 8;
     dv_ref.as_mv.row = (dv_ref.as_mv.row >> 3) * 8;
-    xd->corrupted |=
-        !assign_dv(cm, xd, &mbmi->mv[0], &dv_ref, mi_row, mi_col, bsize, r);
+    valid_dv = valid_dv && assign_dv(cm, xd, &mbmi->mv[0], &dv_ref, mi_row,
+                                     mi_col, bsize, r);
+    if (!valid_dv) {
+      // Intra bc motion vectors are not valid - disable intrabc
+      mbmi->use_intrabc = 0;
+      return;
+    }
 #if !CONFIG_TXK_SEL
     av1_read_tx_type(cm, xd, r);
 #endif  // !CONFIG_TXK_SEL
