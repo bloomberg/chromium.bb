@@ -38,7 +38,7 @@ constexpr float kExitHeightScaleFactor = 1.5f;
 constexpr float kShowFullscreenExitControlHeight = 3.f;
 
 // Time to wait to hide the popup when it is triggered by touch input.
-constexpr int kTouchPopupTimeoutMs = 3000;
+constexpr int kTouchPopupTimeoutMs = 5000;
 
 }  // namespace
 
@@ -79,12 +79,21 @@ void FullscreenControlHost::OnMouseEvent(ui::MouseEvent* event) {
 }
 
 void FullscreenControlHost::OnTouchEvent(ui::TouchEvent* event) {
+  if (input_entry_method_ != InputEntryMethod::TOUCH)
+    return;
+
+  DCHECK(IsVisible());
+
   // Hide the popup if the popup is showing and the user touches outside of the
   // popup.
-  if (event->type() == ui::ET_TOUCH_PRESSED && IsVisible() &&
-      !fullscreen_control_popup_.IsAnimating() &&
-      input_entry_method_ == InputEntryMethod::TOUCH) {
+  if (event->type() == ui::ET_TOUCH_PRESSED &&
+      !fullscreen_control_popup_.IsAnimating()) {
     Hide(true);
+  } else if (event->type() == ui::ET_TOUCH_RELEASED) {
+    touch_timeout_timer_.Start(
+        FROM_HERE, base::TimeDelta::FromMilliseconds(kTouchPopupTimeoutMs),
+        base::Bind(&FullscreenControlHost::OnTouchPopupTimeout,
+                   base::Unretained(this)));
   }
 }
 
@@ -92,10 +101,6 @@ void FullscreenControlHost::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() == ui::ET_GESTURE_LONG_PRESS &&
       browser_view_->IsFullscreen() && !IsVisible()) {
     ShowForInputEntryMethod(InputEntryMethod::TOUCH);
-    touch_timeout_timer_.Start(
-        FROM_HERE, base::TimeDelta::FromMilliseconds(kTouchPopupTimeoutMs),
-        base::Bind(&FullscreenControlHost::OnTouchPopupTimeout,
-                   base::Unretained(this)));
   }
 }
 
