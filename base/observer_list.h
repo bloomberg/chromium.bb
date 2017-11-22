@@ -21,10 +21,20 @@
 //
 // OVERVIEW:
 //
-//   A container for a list of observers.  Unlike a normal STL vector or list,
-//   this container can be modified during iteration without invalidating the
-//   iterator.  So, it safely handles the case of an observer removing itself
-//   or other observers from the list while observers are being notified.
+//   A list of observers. Unlike a standard vector or list, this container can
+//   be modified during iteration without invalidating the iterator. So, it
+//   safely handles the case of an observer removing itself or other observers
+//   from the list while observers are being notified.
+//
+//
+// WARNING:
+//
+//   ObserverList is not thread-compatible. Iterating on the same ObserverList
+//   simultaneously in different threads is not safe, even when the ObserverList
+//   itself is not modified.
+//
+//   For a thread-safe observer list, see ObserverListThreadSafe.
+//
 //
 // TYPICAL USAGE:
 //
@@ -39,26 +49,25 @@
 //     };
 //
 //     void AddObserver(Observer* obs) {
-//       observer_list_.AddObserver(obs);
+//       observers_.AddObserver(obs);
 //     }
 //
 //     void RemoveObserver(const Observer* obs) {
-//       observer_list_.RemoveObserver(obs);
+//       observers_.RemoveObserver(obs);
 //     }
 //
 //     void NotifyFoo() {
-//       for (auto& observer : observer_list_)
-//         observer.OnFoo(this);
+//       for (Observer& obs : observers_)
+//         obs.OnFoo(this);
 //     }
 //
 //     void NotifyBar(int x, int y) {
-//       for (FooList::iterator i = observer_list.begin(),
-//           e = observer_list.end(); i != e; ++i)
-//        i->OnBar(this, x, y);
+//       for (Observer& obs : observers_)
+//         obs.OnBar(this, x, y);
 //     }
 //
 //    private:
-//     base::ObserverList<Observer> observer_list_;
+//     base::ObserverList<Observer> observers_;
 //   };
 //
 //
@@ -66,30 +75,31 @@
 
 namespace base {
 
-template <class ObserverType>
-class ObserverListBase
-    : public SupportsWeakPtr<ObserverListBase<ObserverType>> {
+// Enumeration of which observers are notified by ObserverList.
+enum class ObserverListPolicy {
+  // Specifies that any observers added during notification are notified.
+  // This is the default policy if no policy is provided to the constructor.
+  ALL,
+
+  // Specifies that observers added while sending out notification are not
+  // notified.
+  EXISTING_ONLY,
+};
+
+// When check_empty is true, assert that the list is empty on destruction.
+template <class ObserverType, bool check_empty = false>
+class ObserverList
+    : public SupportsWeakPtr<ObserverList<ObserverType, check_empty>> {
  public:
-  // Enumeration of which observers are notified.
-  enum NotificationType {
-    // Specifies that any observers added during notification are notified.
-    // This is the default type if no type is provided to the constructor.
-    NOTIFY_ALL,
-
-    // Specifies that observers added while sending out notification are not
-    // notified.
-    NOTIFY_EXISTING_ONLY
-  };
-
   // An iterator class that can be used to access the list of observers.
   class Iter {
    public:
     Iter() : index_(0), max_index_(0) {}
 
-    explicit Iter(const ObserverListBase* list)
-        : list_(const_cast<ObserverListBase*>(list)->AsWeakPtr()),
+    explicit Iter(const ObserverList* list)
+        : list_(const_cast<ObserverList*>(list)->AsWeakPtr()),
           index_(0),
-          max_index_(list->type_ == NOTIFY_ALL
+          max_index_(list->policy_ == ObserverListPolicy::ALL
                          ? std::numeric_limits<size_t>::max()
                          : list->observers_.size()) {
       DCHECK(list_);
@@ -172,7 +182,7 @@ class ObserverListBase
 
     bool is_end() const { return !list_ || index_ == clamped_max_index(); }
 
-    WeakPtr<ObserverListBase> list_;
+    WeakPtr<ObserverList> list_;
 
     // When initially constructed and each time the iterator is incremented,
     // |index_| is guaranteed to point to a non-null index if the iterator
@@ -191,9 +201,15 @@ class ObserverListBase
 
   const_iterator end() const { return const_iterator(); }
 
-  ObserverListBase() : live_iterator_count_(0), type_(NOTIFY_ALL) {}
-  explicit ObserverListBase(NotificationType type)
-      : live_iterator_count_(0), type_(type) {}
+  ObserverList() {}
+  explicit ObserverList(ObserverListPolicy policy) : policy_(policy) {}
+
+  ~ObserverList() {
+    if (check_empty) {
+      Compact();
+      DCHECK(observers_.empty());
+    }
+  }
 
   // Add an observer to this list. An observer should not be added to the same
   // list more than once.
@@ -240,44 +256,26 @@ class ObserverListBase
     }
   }
 
- protected:
-  size_t size() const { return observers_.size(); }
+  bool might_have_observers() const { return !observers_.empty(); }
 
+ private:
+  // Compacts list of observers by removing null pointers.
   void Compact() {
     observers_.erase(std::remove(observers_.begin(), observers_.end(), nullptr),
                      observers_.end());
   }
 
- private:
   std::vector<ObserverType*> observers_;
 
-  // Number of active iterators referencing this ObserverListBase.
+  // Number of active iterators referencing this ObserverList.
   //
   // This counter is not synchronized although it is modified by const
   // iterators.
-  int live_iterator_count_;
+  int live_iterator_count_ = 0;
 
-  const NotificationType type_;
+  const ObserverListPolicy policy_ = ObserverListPolicy::ALL;
 
-  DISALLOW_COPY_AND_ASSIGN(ObserverListBase);
-};
-
-template <class ObserverType, bool check_empty = false>
-class ObserverList : public ObserverListBase<ObserverType> {
- public:
-  using ObserverListBase<ObserverType>::ObserverListBase;
-
-  ~ObserverList() {
-    // When check_empty is true, assert that the list is empty on destruction.
-    if (check_empty) {
-      ObserverListBase<ObserverType>::Compact();
-      DCHECK_EQ(ObserverListBase<ObserverType>::size(), 0U);
-    }
-  }
-
-  bool might_have_observers() const {
-    return ObserverListBase<ObserverType>::size() != 0;
-  }
+  DISALLOW_COPY_AND_ASSIGN(ObserverList);
 };
 
 }  // namespace base

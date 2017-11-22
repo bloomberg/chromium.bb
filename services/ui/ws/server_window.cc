@@ -47,8 +47,7 @@ ServerWindow::ServerWindow(ServerWindowDelegate* delegate,
       // Don't notify newly added observers during notification. This causes
       // problems for code that adds an observer as part of an observer
       // notification (such as ServerWindowDrawTracker).
-      observers_(
-          base::ObserverList<ServerWindowObserver>::NOTIFY_EXISTING_ONLY) {
+      observers_(base::ObserverListPolicy::EXISTING_ONLY) {
   DCHECK(delegate);  // Must provide a delegate.
   UpdateFrameSinkId(frame_sink_id);
 }

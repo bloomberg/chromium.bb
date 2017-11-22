@@ -44,7 +44,6 @@ RemoteDeviceLifeCycleImpl::RemoteDeviceLifeCycleImpl(
     : remote_device_(remote_device),
       proximity_auth_client_(proximity_auth_client),
       state_(RemoteDeviceLifeCycle::State::STOPPED),
-      observers_(base::ObserverList<Observer>::NOTIFY_EXISTING_ONLY),
       weak_ptr_factory_(this) {}
 
 RemoteDeviceLifeCycleImpl::~RemoteDeviceLifeCycleImpl() {}

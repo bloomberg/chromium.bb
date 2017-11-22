@@ -29,8 +29,7 @@ class WindowAndroid::WindowBeginFrameSource : public viz::BeginFrameSource {
   explicit WindowBeginFrameSource(WindowAndroid* window)
       : BeginFrameSource(kNotRestartableId),
         window_(window),
-        observers_(
-            base::ObserverList<viz::BeginFrameObserver>::NOTIFY_EXISTING_ONLY),
+        observers_(base::ObserverListPolicy::EXISTING_ONLY),
         observer_count_(0),
         next_sequence_number_(viz::BeginFrameArgs::kStartingFrameNumber),
         paused_(false) {}

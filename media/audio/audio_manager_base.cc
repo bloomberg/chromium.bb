@@ -111,8 +111,7 @@ AudioManagerBase::AudioManagerBase(std::unique_ptr<AudioThread> audio_thread,
       num_output_streams_(0),
       // TODO(dalecurtis): Switch this to an base::ObserverListThreadSafe, so we
       // don't block the UI thread when swapping devices.
-      output_listeners_(
-          base::ObserverList<AudioDeviceListener>::NOTIFY_EXISTING_ONLY),
+      output_listeners_(base::ObserverListPolicy::EXISTING_ONLY),
       audio_log_factory_(audio_log_factory) {}
 
 AudioManagerBase::~AudioManagerBase() {

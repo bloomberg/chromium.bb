@@ -40,8 +40,7 @@ NetworkConnectionTracker::NetworkConnectionTracker()
       connection_type_(kConnectionTypeInvalid),
       network_change_observer_list_(
           new base::ObserverListThreadSafe<NetworkConnectionObserver>(
-              base::ObserverListBase<
-                  NetworkConnectionObserver>::NOTIFY_EXISTING_ONLY)),
+              base::ObserverListPolicy::EXISTING_ONLY)),
       binding_(this) {}
 
 void NetworkConnectionTracker::Initialize(

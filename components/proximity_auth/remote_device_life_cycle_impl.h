@@ -87,8 +87,9 @@ class RemoteDeviceLifeCycleImpl : public RemoteDeviceLifeCycle,
   // The current state in the life cycle.
   RemoteDeviceLifeCycle::State state_;
 
-  // Observers added to the life cycle. Configured as NOTIFY_EXISTING_ONLY.
-  base::ObserverList<Observer> observers_;
+  // Observers added to the life cycle.
+  base::ObserverList<Observer> observers_{
+      base::ObserverListPolicy::EXISTING_ONLY};
 
   // The connection that is established by |connection_finder_|.
   std::unique_ptr<cryptauth::Connection> connection_;

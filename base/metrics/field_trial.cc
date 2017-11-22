@@ -493,7 +493,7 @@ FieldTrialList::FieldTrialList(
     std::unique_ptr<const FieldTrial::EntropyProvider> entropy_provider)
     : entropy_provider_(std::move(entropy_provider)),
       observer_list_(new ObserverListThreadSafe<FieldTrialList::Observer>(
-          ObserverListBase<FieldTrialList::Observer>::NOTIFY_EXISTING_ONLY)) {
+          ObserverListPolicy::EXISTING_ONLY)) {
   DCHECK(!global_);
   DCHECK(!used_without_global_);
   global_ = this;

@@ -992,22 +992,21 @@ NetworkChangeNotifier::NetworkChangeNotifier(
     /*= NetworkChangeCalculatorParams()*/)
     : ip_address_observer_list_(
           new base::ObserverListThreadSafe<IPAddressObserver>(
-              base::ObserverListBase<IPAddressObserver>::NOTIFY_EXISTING_ONLY)),
+              base::ObserverListPolicy::EXISTING_ONLY)),
       connection_type_observer_list_(
           new base::ObserverListThreadSafe<ConnectionTypeObserver>(
-              base::ObserverListBase<
-                  ConnectionTypeObserver>::NOTIFY_EXISTING_ONLY)),
+              base::ObserverListPolicy::EXISTING_ONLY)),
       resolver_state_observer_list_(
           new base::ObserverListThreadSafe<DNSObserver>(
-              base::ObserverListBase<DNSObserver>::NOTIFY_EXISTING_ONLY)),
-      network_change_observer_list_(new base::ObserverListThreadSafe<
-                                    NetworkChangeObserver>(
-          base::ObserverListBase<NetworkChangeObserver>::NOTIFY_EXISTING_ONLY)),
-      max_bandwidth_observer_list_(new base::ObserverListThreadSafe<
-                                   MaxBandwidthObserver>(
-          base::ObserverListBase<MaxBandwidthObserver>::NOTIFY_EXISTING_ONLY)),
+              base::ObserverListPolicy::EXISTING_ONLY)),
+      network_change_observer_list_(
+          new base::ObserverListThreadSafe<NetworkChangeObserver>(
+              base::ObserverListPolicy::EXISTING_ONLY)),
+      max_bandwidth_observer_list_(
+          new base::ObserverListThreadSafe<MaxBandwidthObserver>(
+              base::ObserverListPolicy::EXISTING_ONLY)),
       network_observer_list_(new base::ObserverListThreadSafe<NetworkObserver>(
-          base::ObserverListBase<NetworkObserver>::NOTIFY_EXISTING_ONLY)),
+          base::ObserverListPolicy::EXISTING_ONLY)),
       network_state_(new NetworkState()),
       network_change_calculator_(new NetworkChangeCalculator(params)) {
   DCHECK(!g_network_change_notifier);
