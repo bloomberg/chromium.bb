@@ -2812,6 +2812,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="184" label="RFH_NEGATIVE_SELECTION_START_OFFSET"/>
   <int value="185" label="WEBUI_BAD_SCHEME_ACCESS"/>
   <int value="186" label="CSDH_UNEXPECTED_OPERATION"/>
+  <int value="187" label="RMF_BAD_URL_CACHEABLE_METADATA"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions">

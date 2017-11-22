@@ -210,6 +210,7 @@ enum BadMessageReason {
   RFH_NEGATIVE_SELECTION_START_OFFSET = 184,
   WEBUI_BAD_SCHEME_ACCESS = 185,
   CSDH_UNEXPECTED_OPERATION = 186,
+  RMF_BAD_URL_CACHEABLE_METADATA = 187,
 
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. RenderFrameHost becomes RFH) plus a unique description of the

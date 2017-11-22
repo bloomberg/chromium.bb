@@ -23,6 +23,25 @@ function getURLHttpSimpleLoad() {
 function getURLHttpXHRData() {
   return getServerURL('extensions/api_test/webrequest/xhr/data.json');
 }
+function getURLHttpScriptPage() {
+  return getServerURL('extensions/api_test/webrequest/script/index.html');
+}
+function getURLHttpScriptJS() {
+  return getServerURL('extensions/api_test/webrequest/script/test.js');
+}
+function getDummyScriptDataURL() {
+  let script_text = 'fetch(\'./fetch\');\n';
+  // Make the script larger than 1K to check the behavior of code cache
+  // generation. See: crbug.com/782793.
+  for (let i = 0; i < 100; ++i) {
+    script_text += '/**********/\n';
+  }
+  return 'data:text/javascript;base64,' +
+          btoa(unescape(encodeURIComponent(script_text)));
+}
+function getURLHttpScriptJSFetchedData() {
+  return getServerURL('extensions/api_test/webrequest/script/fetch');
+}
 
 function toCharCodes(str) {
   var result = [];
@@ -1082,6 +1101,125 @@ runTests([
         req.send(null);
         navigateAndWait(getURL("complexLoad/b.jpg"));
     });
+  },
+
+  // Checks that the script resource request redirection to data url. And also
+  // checks that code cache generation doesn't cause crash (crbug.com/782793).
+  function dataUrlJavaScriptExecution() {
+    expect(
+      [  // events
+        { label: "onBeforeRequest",
+          event: "onBeforeRequest",
+          details: {
+            method: "GET",
+            type: "main_frame",
+            url: getURLHttpScriptPage(),
+            frameUrl: getURLHttpScriptPage(),
+            initiator: getServerDomain(initiators.BROWSER_INITIATED)
+          },
+        },
+        { label: "onBeforeSendHeaders",
+          event: "onBeforeSendHeaders",
+          details: {
+            url: getURLHttpScriptPage(),
+            initiator: getServerDomain(initiators.BROWSER_INITIATED)
+          },
+        },
+        { label: "onSendHeaders",
+          event: "onSendHeaders",
+          details: {
+            url: getURLHttpScriptPage(),
+            initiator: getServerDomain(initiators.BROWSER_INITIATED)
+          }
+        },
+        { label: "onHeadersReceived",
+          event: "onHeadersReceived",
+          details: {
+            url: getURLHttpScriptPage(),
+            statusLine: "HTTP/1.1 200 OK",
+            statusCode: 200,
+            initiator: getServerDomain(initiators.BROWSER_INITIATED)
+          },
+        },
+        { label: "onResponseStarted",
+          event: "onResponseStarted",
+          details: {
+            url: getURLHttpScriptPage(),
+            fromCache: false,
+            statusCode: 200,
+            ip: "127.0.0.1",
+            statusLine: "HTTP/1.1 200 OK",
+            initiator: getServerDomain(initiators.BROWSER_INITIATED)
+          }
+        },
+        { label: "onCompleted",
+          event: "onCompleted",
+          details: {
+            url: getURLHttpScriptPage(),
+            fromCache: false,
+            statusCode: 200,
+            ip: "127.0.0.1",
+            statusLine: "HTTP/1.1 200 OK",
+            initiator: getServerDomain(initiators.BROWSER_INITIATED)
+          }
+        },
+        { label: "script-onBeforeRequest",
+          event: "onBeforeRequest",
+          details: {
+            method: "GET",
+            type: "script",
+            url: getURLHttpScriptJS(),
+            frameUrl: getURLHttpScriptPage(),
+            initiator: getServerDomain(initiators.WEB_INITIATED)
+          },
+          retval: {
+            redirectUrl: getDummyScriptDataURL()
+          },
+        },
+        { label: "script-onBeforeRedirect",
+          event: "onBeforeRedirect",
+          details: {
+            url: getURLHttpScriptJS(),
+            redirectUrl: getDummyScriptDataURL(),
+            fromCache: false,
+            statusLine: "HTTP/1.1 307 Internal Redirect",
+            statusCode: 307,
+            type: "script",
+            initiator: getServerDomain(initiators.WEB_INITIATED)
+          }
+        },
+        { label: "data-onBeforeRequest",
+          event: "onBeforeRequest",
+          details: {
+            method: "GET",
+            type: "xmlhttprequest",
+            url: getURLHttpScriptJSFetchedData(),
+            frameUrl: getURLHttpScriptPage(),
+            initiator: getServerDomain(initiators.WEB_INITIATED),
+          },
+          retval: {cancel: true}
+        },
+        // Cancelling is considered an error.
+        { label: "data-onErrorOccurred",
+          event: "onErrorOccurred",
+          details: {
+            url: getURLHttpScriptJSFetchedData(),
+            fromCache: false,
+            type: "xmlhttprequest",
+            error: "net::ERR_BLOCKED_BY_CLIENT",
+            initiator: getServerDomain(initiators.WEB_INITIATED)
+          }
+        },
+      ],
+      [  // event order
+        ["onBeforeRequest", "onBeforeSendHeaders", "onSendHeaders",
+         "onHeadersReceived", "onResponseStarted", "onCompleted"],
+        ["script-onBeforeRequest", "script-onBeforeRedirect"],
+        ["data-onBeforeRequest", "data-onErrorOccurred"],
+      ],
+      {urls: ["<all_urls>"]},  // filter
+      ["blocking"]);
+    navigateAndWait(getURLHttpScriptPage());
   },
 ]);
 
