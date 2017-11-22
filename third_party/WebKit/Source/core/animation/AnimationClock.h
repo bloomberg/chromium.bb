@@ -31,12 +31,12 @@
 #ifndef AnimationClock_h
 #define AnimationClock_h
 
+#include <limits>
+
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/Time.h"
-
-#include <limits>
 
 namespace blink {
 
@@ -45,7 +45,6 @@ namespace blink {
 // frame.
 class CORE_EXPORT AnimationClock {
   DISALLOW_NEW();
-  WTF_MAKE_NONCOPYABLE(AnimationClock);
 
  public:
   explicit AnimationClock(WTF::TimeFunction monotonically_increasing_time =
@@ -71,6 +70,7 @@ class CORE_EXPORT AnimationClock {
   double time_;
   unsigned task_for_which_time_was_calculated_;
   static unsigned currently_running_task_;
+  DISALLOW_COPY_AND_ASSIGN(AnimationClock);
 };
 
 }  // namespace blink

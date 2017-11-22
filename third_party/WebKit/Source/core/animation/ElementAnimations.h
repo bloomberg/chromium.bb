@@ -31,6 +31,7 @@
 #ifndef ElementAnimations_h
 #define ElementAnimations_h
 
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "core/animation/EffectStack.h"
 #include "core/animation/css/CSSAnimations.h"
@@ -44,8 +45,6 @@ class CSSAnimations;
 using AnimationCountedSet = HeapHashCountedSet<WeakMember<Animation>>;
 
 class ElementAnimations : public GarbageCollectedFinalized<ElementAnimations> {
-  WTF_MAKE_NONCOPYABLE(ElementAnimations);
-
  public:
   ElementAnimations();
   ~ElementAnimations();
@@ -93,6 +92,7 @@ class ElementAnimations : public GarbageCollectedFinalized<ElementAnimations> {
 
   // CSSAnimations checks if a style change is due to animation.
   friend class CSSAnimations;
+  DISALLOW_COPY_AND_ASSIGN(ElementAnimations);
 };
 
 }  // namespace blink

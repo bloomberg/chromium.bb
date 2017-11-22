@@ -5,6 +5,7 @@
 #ifndef Keyframe_h
 #define Keyframe_h
 
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "core/animation/AnimationEffectReadOnly.h"
@@ -61,7 +62,6 @@ class V8ObjectBuilder;
 // FIXME: Make Keyframe immutable
 class CORE_EXPORT Keyframe : public RefCounted<Keyframe> {
   USING_FAST_MALLOC(Keyframe);
-  WTF_MAKE_NONCOPYABLE(Keyframe);
 
  public:
   virtual ~Keyframe() {}
@@ -115,7 +115,6 @@ class CORE_EXPORT Keyframe : public RefCounted<Keyframe> {
   // the Keyframe class-level documentation for more details.
   class PropertySpecificKeyframe : public RefCounted<PropertySpecificKeyframe> {
     USING_FAST_MALLOC(PropertySpecificKeyframe);
-    WTF_MAKE_NONCOPYABLE(PropertySpecificKeyframe);
 
    public:
     virtual ~PropertySpecificKeyframe() {}
@@ -162,6 +161,8 @@ class CORE_EXPORT Keyframe : public RefCounted<Keyframe> {
     double offset_;
     scoped_refptr<TimingFunction> easing_;
     EffectModel::CompositeOperation composite_;
+
+    DISALLOW_COPY_AND_ASSIGN(PropertySpecificKeyframe);
   };
 
   // Construct and return a property-specific keyframe for this keyframe.
@@ -194,6 +195,7 @@ class CORE_EXPORT Keyframe : public RefCounted<Keyframe> {
   double offset_;
   EffectModel::CompositeOperation composite_;
   scoped_refptr<TimingFunction> easing_;
+  DISALLOW_COPY_AND_ASSIGN(Keyframe);
 };
 
 using PropertySpecificKeyframe = Keyframe::PropertySpecificKeyframe;
