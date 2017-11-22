@@ -32,6 +32,7 @@
 #define HeapPage_h
 
 #include <stdint.h>
+#include "base/bits.h"
 #include "base/trace_event/memory_allocator_dump.h"
 #include "build/build_config.h"
 #include "platform/PlatformExport.h"
@@ -76,14 +77,6 @@ constexpr size_t kBlinkGuardPageSize = base::kSystemPageSize;
 static_assert(8 == sizeof(double), "We expect sizeof(double) to be 8");
 constexpr size_t kAllocationGranularity = sizeof(double);
 constexpr size_t kAllocationMask = kAllocationGranularity - 1;
-// Round up to the next integer number of 8 * kAllocationGranularity byte
-// units:
-constexpr size_t kObjectStartBitMapSize =
-    (kBlinkPageSize + ((8 * kAllocationGranularity) - 1)) /
-    (8 * kAllocationGranularity);
-constexpr size_t kReservedForObjectBitMap =
-    ((kObjectStartBitMapSize + kAllocationMask) & ~kAllocationMask);
-// TODO(palmer): Document the reason for 27.
 constexpr size_t kMaxHeapObjectSizeLog2 = 27;
 constexpr size_t kMaxHeapObjectSize = 1 << kMaxHeapObjectSizeLog2;
 constexpr size_t kLargeObjectSizeThreshold = kBlinkPageSize / 2;
@@ -181,30 +174,11 @@ class PLATFORM_EXPORT HeapObjectHeader {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
+  enum HeaderLocation { kNormalPage, kLargePage };
+
   // If |gc_info_index| is 0, this header is interpreted as a free list header.
   NO_SANITIZE_ADDRESS
-  HeapObjectHeader(size_t size, size_t gc_info_index) {
-    // sizeof(HeapObjectHeader) must be equal to or smaller than
-    // |kAllocationGranularity|, because |HeapObjectHeader| is used as a header
-    // for a freed entry. Given that the smallest entry size is
-    // |kAllocationGranurarity|, |HeapObjectHeader| must fit into the size.
-    static_assert(
-        sizeof(HeapObjectHeader) <= kAllocationGranularity,
-        "size of HeapObjectHeader must be smaller than kAllocationGranularity");
-#if defined(ARCH_CPU_64_BITS)
-    static_assert(sizeof(HeapObjectHeader) == 8,
-                  "sizeof(HeapObjectHeader) must be 8 bytes");
-    magic_ = GetMagic();
-#endif
-
-    DCHECK(gc_info_index < GCInfoTable::kMaxIndex);
-    DCHECK_LT(size, kNonLargeObjectPageSizeMax);
-    DCHECK(!(size & kAllocationMask));
-    encoded_ = static_cast<uint32_t>(
-        (gc_info_index << kHeaderGCInfoIndexShift) | size |
-        (gc_info_index == kGcInfoIndexForFreeListHeader ? kHeaderFreedBitMask
-                                                        : 0));
-  }
+  inline HeapObjectHeader(size_t, size_t, HeaderLocation);
 
   NO_SANITIZE_ADDRESS bool IsFree() const {
     return encoded_ & kHeaderFreedBitMask;
@@ -258,7 +232,13 @@ class PLATFORM_EXPORT HeapObjectHeader {
   // Returns true if magic number is valid or zapped.
   bool IsValidOrZapped() const;
 
+  // The following values are used when zapping free list entries.
+  // Regular zapping value.
   static const uint32_t kZappedMagic = 0xDEAD4321;
+  // On debug and sanitizer builds the zap values differ, indicating when free
+  // list entires are allowed to be reused.
+  static const uint32_t kZappedMagicAllowed = 0x2a2a2a2a;
+  static const uint32_t kZappedMagicForbidden = 0x2c2c2c2c;
 
  protected:
 #if DCHECK_IS_ON() && defined(ARCH_CPU_64_BITS)
@@ -290,7 +270,10 @@ class FreeListEntry final : public HeapObjectHeader {
  public:
   NO_SANITIZE_ADDRESS
   explicit FreeListEntry(size_t size)
-      : HeapObjectHeader(size, kGcInfoIndexForFreeListHeader), next_(nullptr) {
+      : HeapObjectHeader(size,
+                         kGcInfoIndexForFreeListHeader,
+                         HeapObjectHeader::kNormalPage),
+        next_(nullptr) {
 #if DCHECK_IS_ON() && defined(ARCH_CPU_64_BITS)
     DCHECK_GE(size, sizeof(HeapObjectHeader));
     ZapMagic();
@@ -406,7 +389,6 @@ class BasePage {
   virtual void RemoveFromHeap() = 0;
   virtual void Sweep() = 0;
   virtual void MakeConsistentForMutator() = 0;
-  virtual void InvalidateObjectStartBitmap() = 0;
 
 #if defined(ADDRESS_SANITIZER)
   virtual void PoisonUnmarkedObjects() = 0;
@@ -477,9 +459,67 @@ class BasePage {
   friend class BaseArena;
 };
 
+// A bitmap for recording object starts. Objects have to be allocated at
+// minimum granularity of kGranularity.
+//
+// Depends on internals such as:
+// - kBlinkPageSize
+// - kAllocationGranularity
+class PLATFORM_EXPORT ObjectStartBitmap {
+  DISALLOW_NEW();
+
+ public:
+  // Granularity of addresses added to the bitmap.
+  static constexpr size_t Granularity() { return kAllocationGranularity; }
+
+  // Maximum number of entries in the bitmap.
+  static constexpr size_t MaxEntries() {
+    return kReservedForBitmap * kCellSize;
+  }
+
+  explicit ObjectStartBitmap(Address offset);
+
+  // Finds an object header based on a
+  // address_maybe_pointing_to_the_middle_of_object. Will search for an object
+  // start in decreasing address order.
+  Address FindHeader(Address address_maybe_pointing_to_the_middle_of_object);
+
+  inline void SetBit(Address);
+  inline void ClearBit(Address);
+  inline bool CheckBit(Address) const;
+
+  // Iterates all object starts recorded in the bitmap.
+  //
+  // The callback is of type
+  //   void(Address)
+  // and is passed the object start address as parameter.
+  template <typename Callback>
+  inline void Iterate(Callback) const;
+
+  // Clear the object start bitmap.
+  void Clear();
+
+ private:
+  static const size_t kCellSize = sizeof(uint8_t) * 8;
+  static const size_t kCellMask = sizeof(uint8_t) * 8 - 1;
+  static const size_t kBitmapSize =
+      (kBlinkPageSize + ((kCellSize * kAllocationGranularity) - 1)) /
+      (kCellSize * kAllocationGranularity);
+  static const size_t kReservedForBitmap =
+      ((kBitmapSize + kAllocationMask) & ~kAllocationMask);
+
+  inline void ObjectStartIndexAndBit(Address, size_t*, size_t*) const;
+
+  const Address offset_;
+  // The bitmap contains a bit for every kGranularity aligned address on a
+  // a NormalPage, i.e., for a page of size kBlinkPageSize.
+  uint8_t object_start_bit_map_[kReservedForBitmap];
+};
+
 class NormalPage final : public BasePage {
  public:
   NormalPage(PageMemory*, BaseArena*);
+  ~NormalPage();
 
   Address Payload() { return GetAddress() + PageHeaderSize(); }
   size_t PayloadSize() {
@@ -495,9 +535,6 @@ class NormalPage final : public BasePage {
   void RemoveFromHeap() override;
   void Sweep() override;
   void MakeConsistentForMutator() override;
-  void InvalidateObjectStartBitmap() override {
-    object_start_bit_map_computed_ = false;
-  }
 #if defined(ADDRESS_SANITIZER)
   void PoisonUnmarkedObjects() override;
 #endif
@@ -550,12 +587,20 @@ class NormalPage final : public BasePage {
 
   void SweepAndCompact(CompactionContext&);
 
- private:
-  HeapObjectHeader* FindHeaderFromAddress(Address);
-  void PopulateObjectStartBitMap();
+  // Object start bitmap of this page.
+  ObjectStartBitmap* object_start_bit_map() { return &object_start_bit_map_; }
 
-  bool object_start_bit_map_computed_;
-  uint8_t object_start_bit_map_[kReservedForObjectBitMap];
+  // Verifies that the object start bitmap only contains a bit iff the object
+  // is also reachable through iteration on the page.
+  void VerifyObjectStartBitmapIsConsistentWithPayload();
+
+ private:
+  // Uses the object_start_bit_map_ to find an object for a given address. The
+  // returned header is either nullptr, indicating that no object could be
+  // found, or it is pointing to valid object or free list entry.
+  HeapObjectHeader* FindHeaderFromAddress(Address);
+
+  ObjectStartBitmap object_start_bit_map_;
 };
 
 // Large allocations are allocated as separate objects and linked in a list.
@@ -586,7 +631,6 @@ class LargeObjectPage final : public BasePage {
   void RemoveFromHeap() override;
   void Sweep() override;
   void MakeConsistentForMutator() override;
-  void InvalidateObjectStartBitmap() override {}
 #if defined(ADDRESS_SANITIZER)
   void PoisonUnmarkedObjects() override;
 #endif
@@ -768,6 +812,8 @@ class PLATFORM_EXPORT BaseArena {
   void EnableIncrementalMarkingBarrier();
   void DisableIncrementalMarkingBarrier();
 
+  virtual void Verify(){};
+
  protected:
   BasePage* first_page_;
   BasePage* first_unswept_page_;
@@ -825,6 +871,16 @@ class PLATFORM_EXPORT NormalPageArena final : public BaseArena {
 
   void SweepAndCompact();
 
+  void Verify() override;
+
+  Address CurrentAllocationPoint() const { return current_allocation_point_; }
+
+  bool IsInCurrentAllocationPointRegion(Address address) const {
+    return HasCurrentAllocationArea() &&
+           (CurrentAllocationPoint() <= address) &&
+           (address < (CurrentAllocationPoint() + RemainingAllocationSize()));
+  }
+
  private:
   void AllocatePage();
 
@@ -833,7 +889,6 @@ class PLATFORM_EXPORT NormalPageArena final : public BaseArena {
 
   Address LazySweepPages(size_t, size_t gc_info_index) override;
 
-  Address CurrentAllocationPoint() const { return current_allocation_point_; }
   bool HasCurrentAllocationArea() const {
     return CurrentAllocationPoint() && RemainingAllocationSize();
   }
@@ -903,7 +958,8 @@ NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::IsValid() const {
 
 NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::IsValidOrZapped() const {
 #if defined(ARCH_CPU_64_BITS)
-  return IsValid() || kZappedMagic == magic_;
+  return IsValid() || kZappedMagic == magic_ || kZappedMagicAllowed == magic_ ||
+         kZappedMagicForbidden == magic_;
 #else
   return true;
 #endif
@@ -1043,8 +1099,8 @@ inline Address NormalPageArena::AllocateObject(size_t allocation_size,
     current_allocation_point_ += allocation_size;
     remaining_allocation_size_ -= allocation_size;
     DCHECK_GT(gc_info_index, 0u);
-    new (NotNull, header_address)
-        HeapObjectHeader(allocation_size, gc_info_index);
+    new (NotNull, header_address) HeapObjectHeader(
+        allocation_size, gc_info_index, HeapObjectHeader::kNormalPage);
     Address result = header_address + sizeof(HeapObjectHeader);
     DCHECK(!(reinterpret_cast<uintptr_t>(result) & kAllocationMask));
 
@@ -1059,6 +1115,92 @@ inline Address NormalPageArena::AllocateObject(size_t allocation_size,
 
 inline NormalPageArena* NormalPage::ArenaForNormalPage() const {
   return static_cast<NormalPageArena*>(Arena());
+}
+
+inline void ObjectStartBitmap::SetBit(Address header_address) {
+  size_t cell_index, object_bit;
+  ObjectStartIndexAndBit(header_address, &cell_index, &object_bit);
+  object_start_bit_map_[cell_index] |= (1 << object_bit);
+}
+
+inline void ObjectStartBitmap::ClearBit(Address header_address) {
+  size_t cell_index, object_bit;
+  ObjectStartIndexAndBit(header_address, &cell_index, &object_bit);
+  object_start_bit_map_[cell_index] &= ~(1 << object_bit);
+}
+
+inline bool ObjectStartBitmap::CheckBit(Address header_address) const {
+  size_t cell_index, object_bit;
+  ObjectStartIndexAndBit(header_address, &cell_index, &object_bit);
+  return object_start_bit_map_[cell_index] & (1 << object_bit);
+}
+
+inline void ObjectStartBitmap::ObjectStartIndexAndBit(Address header_address,
+                                                      size_t* cell_index,
+                                                      size_t* bit) const {
+  const size_t object_offset = header_address - offset_;
+  DCHECK(!(object_offset & kAllocationMask));
+  const size_t object_start_number = object_offset / kAllocationGranularity;
+  *cell_index = object_start_number / kCellSize;
+#if DCHECK_IS_ON()
+  const size_t bitmap_size = kBitmapSize;
+  DCHECK_LT(*cell_index, bitmap_size);
+#endif
+  *bit = object_start_number & kCellMask;
+}
+
+template <typename Callback>
+inline void ObjectStartBitmap::Iterate(Callback callback) const {
+  for (size_t cell_index = 0; cell_index < kReservedForBitmap; cell_index++) {
+    if (!object_start_bit_map_[cell_index])
+      continue;
+
+    uint8_t value = object_start_bit_map_[cell_index];
+    while (value) {
+      const int trailing_zeroes = base::bits::CountTrailingZeroBits(value);
+      const size_t object_start_number =
+          (cell_index * kCellSize) + trailing_zeroes;
+      const Address object_address =
+          offset_ + (kAllocationGranularity * object_start_number);
+      callback(object_address);
+      // Clear current object bit in temporary value to advance iteration.
+      value &= ~(1 << (object_start_number & kCellMask));
+    }
+  }
+}
+
+inline HeapObjectHeader::HeapObjectHeader(size_t size,
+                                          size_t gc_info_index,
+                                          HeaderLocation header_location) {
+  // sizeof(HeapObjectHeader) must be equal to or smaller than
+  // |kAllocationGranularity|, because |HeapObjectHeader| is used as a header
+  // for a freed entry. Given that the smallest entry size is
+  // |kAllocationGranurarity|, |HeapObjectHeader| must fit into the size.
+  static_assert(
+      sizeof(HeapObjectHeader) <= kAllocationGranularity,
+      "size of HeapObjectHeader must be smaller than kAllocationGranularity");
+#if defined(ARCH_CPU_64_BITS)
+  static_assert(sizeof(HeapObjectHeader) == 8,
+                "sizeof(HeapObjectHeader) must be 8 bytes");
+  magic_ = GetMagic();
+#endif
+
+  DCHECK(gc_info_index < GCInfoTable::kMaxIndex);
+  DCHECK_LT(size, kNonLargeObjectPageSizeMax);
+  DCHECK(!(size & kAllocationMask));
+  encoded_ = static_cast<uint32_t>(
+      (gc_info_index << kHeaderGCInfoIndexShift) | size |
+      (gc_info_index == kGcInfoIndexForFreeListHeader ? kHeaderFreedBitMask
+                                                      : 0));
+
+  if (header_location == kNormalPage) {
+    DCHECK(!PageFromObject(this)->IsLargeObjectPage());
+    static_cast<NormalPage*>(PageFromObject(this))
+        ->object_start_bit_map()
+        ->SetBit(reinterpret_cast<Address>(this));
+  } else {
+    DCHECK(PageFromObject(this)->IsLargeObjectPage());
+  }
 }
 
 }  // namespace blink
