@@ -35,6 +35,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/installer/util/google_update_settings.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/login/auth/authpolicy_login_helper.h"
 #include "chromeos/login/auth/user_context.h"
@@ -371,7 +372,10 @@ void GaiaScreenHandler::LoadGaiaWithVersion(
     // (see https://crbug.com/709244 ).
     params.SetString("chromeOSApiVersion", "2");
   }
-  params.SetString("lsbReleaseBoard", base::SysInfo::GetLsbReleaseBoard());
+  // We only send |chromeos_board| Gaia URL parameter if user has opted into
+  // sending device statistics.
+  if (GoogleUpdateSettings::GetCollectStatsConsent())
+    params.SetString("lsbReleaseBoard", base::SysInfo::GetLsbReleaseBoard());
 
   frame_state_ = FRAME_STATE_LOADING;
   CallJS("loadAuthExtension", params);
