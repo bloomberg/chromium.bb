@@ -11,10 +11,11 @@ import collections
 import datetime
 import operator
 
+from infra_libs import ts_mon
+
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import iter_utils
-
 from chromite.lib import metrics
 
 site_config = config_lib.GetConfig()
@@ -839,6 +840,8 @@ class CLActionHistory(object):
                            if a.action == constants.CL_ACTION_KICKED_OUT]
     self.submit_fail_actions = [a for a in self._action_history if
                                 a.action == constants.CL_ACTION_SUBMIT_FAILED]
+    self.exoneration_actions = [a for a in self._action_history if
+                                a.action == constants.CL_ACTION_EXONERATED]
     self.affected_patches = AffectedPatches(self._action_history)
     self.affected_cls = _CLsForPatches(self.affected_patches)
 
@@ -977,6 +980,18 @@ class CLActionHistory(object):
     return {k: GetCQWaitTime(k, self._per_patch_actions[k])
             for k in self.GetSubmittedPatches()}
 
+  def GetExonerations(self):
+    """Gets the exoneration actions by patch.
+
+    Returns:
+      A map from patch to a list of exoneration actions in ascending order of
+      timestamps.
+    """
+    exonerations = {}
+    for action in self.exoneration_actions:
+      exonerations.setdefault(action.patch, []).append(action)
+    return exonerations
+
   # ############################################################################
   # Classify CLs as good/bad based on the action history.
   def GetFalseRejections(self, bot_type=None):
@@ -1008,7 +1023,7 @@ class CLActionHistory(object):
 
     updated_candidates = {}
     for patch in candidates:
-      updated_actions = [a for a  in rejections[patch]
+      updated_actions = [a for a in rejections[patch]
                          if a.build_id not in bad_precq_builds]
       if updated_actions:
         updated_candidates[patch] = updated_actions
@@ -1079,11 +1094,11 @@ def RecordSubmissionMetrics(action_history, submitted_change_strategies):
   """Record submission metrics in monarch.
 
   Args:
-    submitted_change_strategies: A dictionary from changes to submission
-        strategies. These changes will have their handling times recorded
-        in monarch.
     action_history: A CLActionHistory instance for all cl actions for all
         changes in submitted_change_strategies.
+    submitted_change_strategies: A dictionary from GerritPatchTuples to
+        submission strategy strings. These changes will have their handling
+        times recorded in monarch.
   """
   # TODO(phobbs) move to top level after crbug.com/755415
   handling_time_metric = metrics.SecondsDistribution(
@@ -1120,10 +1135,21 @@ def RecordSubmissionMetrics(action_history, submitted_change_strategies):
   false_rejection_count_metric = metrics.Counter(
       constants.MON_CL_FALSE_REJ_COUNT)
 
+
+  # This metric excludes rejections which were forgiven by the CL-exonerator
+  # service.
+  false_rejections_minus_exonerations_metric = \
+      metrics.CumulativeSmallIntegerDistribution(
+          constants.MON_CQ_FALSE_REJ_MINUS_EXONERATIONS,
+          description='The number of rejections - exonerations per CL.',
+          field_spec=[ts_mon.StringField('submission_strategy')],
+      )
+
   precq_false_rejections = action_history.GetFalseRejections(
       bot_type=constants.PRE_CQ)
   cq_false_rejections = action_history.GetFalseRejections(
       bot_type=constants.CQ)
+  exonerations = action_history.GetExonerations()
 
   for change, strategy in submitted_change_strategies.iteritems():
     strategy = strategy or ''
@@ -1157,3 +1183,6 @@ def RecordSubmissionMetrics(action_history, submitted_change_strategies):
       total_rejections += c
 
     false_rejection_total_metric.add(total_rejections, fields=fields)
+    false_rejections_minus_exonerations_metric.add(
+        total_rejections - len(exonerations.get(change, [])),
+        fields=fields)

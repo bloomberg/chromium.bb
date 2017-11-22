@@ -1695,7 +1695,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     Note, this includes all patches of the given changes.
 
     Args:
-      changes: A list of GerritChangeTuple, GerritPatchTuple or GerritPatch
+      changes: A sequence of GerritChangeTuple, GerritPatchTuple or GerritPatch
         specifying the changes to whose actions should be fetched.
       ignore_patch_number: Boolean indicating whether to ignore patch_number of
         the changes. If ignore_patch_number is False, only get the actions with
