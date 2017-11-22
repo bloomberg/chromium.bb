@@ -312,6 +312,20 @@
                           action:^{
                             [weakConsumer focusNextTab];
                           }],
+      [UIKeyCommand
+          cr_keyCommandWithInput:@"\t"
+                   modifierFlags:UIKeyModifierControl | UIKeyModifierShift
+                           title:nil
+                          action:^{
+                            [weakConsumer focusPreviousTab];
+                          }],
+      [UIKeyCommand
+          cr_keyCommandWithInput:@"\t"
+                   modifierFlags:UIKeyModifierControl
+                           title:nil
+                          action:^{
+                            [weakConsumer focusNextTab];
+                          }],
     ]];
   }
 
