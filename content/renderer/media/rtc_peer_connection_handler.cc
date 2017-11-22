@@ -1483,9 +1483,13 @@ void RTCPeerConnectionHandler::SetRemoteDescription(
       FROM_HERE,
       base::BindOnce(
           &RunClosureWithTrace,
-          base::Bind(&webrtc::PeerConnectionInterface::SetRemoteDescription,
-                     native_peer_connection_, base::RetainedRef(set_request),
-                     base::Unretained(native_desc)),
+          base::Bind(
+              static_cast<void (webrtc::PeerConnectionInterface::*)(
+                  webrtc::SetSessionDescriptionObserver*,
+                  webrtc::SessionDescriptionInterface*)>(
+                  &webrtc::PeerConnectionInterface::SetRemoteDescription),
+              native_peer_connection_, base::RetainedRef(set_request),
+              base::Unretained(native_desc)),
           "SetRemoteDescription"));
 }
 
