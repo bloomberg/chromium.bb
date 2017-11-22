@@ -39,6 +39,14 @@ class PasswordReuseModalWarningTest : public DialogBrowserTest {
         ->Show();
   }
 
+  void CloseActiveWebContents() {
+    TabStripModel* tab_strip_model = browser()->tab_strip_model();
+    tab_strip_model->CloseWebContentsAt(
+        tab_strip_model->GetIndexOfWebContents(
+            tab_strip_model->GetActiveWebContents()),
+        TabStripModel::CLOSE_NONE);
+  }
+
   void DialogCallback(PasswordProtectionService::WarningAction action) {
     latest_user_action_ = action;
   }
@@ -70,18 +78,22 @@ IN_PROC_BROWSER_TEST_F(PasswordReuseModalWarningTest, TestBasicDialogBehavior) {
   // CHANGE_PASSWORD action.
   ShowDialog(std::string());
   dialog_->GetDialogClientView()->AcceptWindow();
-  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(PasswordProtectionService::CHANGE_PASSWORD, latest_user_action_);
 
   // Simulating a click on ui::DIALOG_BUTTON_CANCEL button results in an
   // IGNORE_WARNING action.
   ShowDialog(std::string());
   dialog_->GetDialogClientView()->CancelWindow();
-  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(PasswordProtectionService::IGNORE_WARNING, latest_user_action_);
 }
 
-// TODO(jialiul): Add true end-to-end tests when this dialog is wired into
-// password protection service.
+IN_PROC_BROWSER_TEST_F(PasswordReuseModalWarningTest,
+                       CloseDialogWhenWebContentsDestroyed) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  ShowDialog(std::string());
+  CloseActiveWebContents();
+  EXPECT_EQ(PasswordProtectionService::CLOSE, latest_user_action_);
+}
 
 }  // namespace safe_browsing
