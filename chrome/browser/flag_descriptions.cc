@@ -1505,13 +1505,6 @@ const char kV8CacheOptionsDescription[] =
 const char kV8CacheOptionsParse[] = "Cache V8 parser data.";
 const char kV8CacheOptionsCode[] = "Cache V8 compiler data.";
 
-const char kV8CacheStrategiesForCacheStorageName[] =
-    "V8 caching strategy for CacheStorage.";
-const char kV8CacheStrategiesForCacheStorageDescription[] =
-    "Caching strategy of scripts in CacheStorage for the V8 JavaScript engine.";
-const char kV8CacheStrategiesForCacheStorageNormal[] = "Normal";
-const char kV8CacheStrategiesForCacheStorageAggressive[] = "Aggressive";
-
 const char kV8ContextSnapshotName[] = "Use a snapshot to create V8 contexts.";
 const char kV8ContextSnapshotDescription[] =
     "Sets to use a snapshot to create V8 contexts in frame creation.";

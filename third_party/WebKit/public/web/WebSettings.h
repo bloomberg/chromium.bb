@@ -67,13 +67,6 @@ class WebSettings {
     kV8CacheOptionsCode,
   };
 
-  enum class V8CacheStrategiesForCacheStorage {
-    kDefault,
-    kNone,
-    kNormal,
-    kAggressive,
-  };
-
   enum class ProgressBarCompletion {
     kLoadEvent,
     kResourcesBeforeDCL,
@@ -291,8 +284,6 @@ class WebSettings {
   virtual void SetUseSolidColorScrollbars(bool) = 0;
   virtual void SetUseWideViewport(bool) = 0;
   virtual void SetV8CacheOptions(V8CacheOptions) = 0;
-  virtual void SetV8CacheStrategiesForCacheStorage(
-      V8CacheStrategiesForCacheStorage) = 0;
   virtual void SetValidationMessageTimerMagnification(int) = 0;
   virtual void SetViewportEnabled(bool) = 0;
   virtual void SetViewportMetaEnabled(bool) = 0;

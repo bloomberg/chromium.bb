@@ -581,16 +581,6 @@ const FeatureEntry::Choice kV8CacheOptionsChoices[] = {
     {flag_descriptions::kV8CacheOptionsCode, switches::kV8CacheOptions, "code"},
 };
 
-const FeatureEntry::Choice kV8CacheStrategiesForCacheStorageChoices[] = {
-    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
-    {flags_ui::kGenericExperimentChoiceDisabled,
-     switches::kV8CacheStrategiesForCacheStorage, "none"},
-    {flag_descriptions::kV8CacheStrategiesForCacheStorageNormal,
-     switches::kV8CacheStrategiesForCacheStorage, "normal"},
-    {flag_descriptions::kV8CacheStrategiesForCacheStorageAggressive,
-     switches::kV8CacheStrategiesForCacheStorage, "aggressive"},
-};
-
 #if defined(OS_ANDROID)
 const FeatureEntry::Choice kProgressBarCompletionChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
@@ -2242,10 +2232,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"v8-cache-options", flag_descriptions::kV8CacheOptionsName,
      flag_descriptions::kV8CacheOptionsDescription, kOsAll,
      MULTI_VALUE_TYPE(kV8CacheOptionsChoices)},
-    {"v8-cache-strategies-for-cache-storage",
-     flag_descriptions::kV8CacheStrategiesForCacheStorageName,
-     flag_descriptions::kV8CacheStrategiesForCacheStorageDescription, kOsAll,
-     MULTI_VALUE_TYPE(kV8CacheStrategiesForCacheStorageChoices)},
     {"simplified-fullscreen-ui", flag_descriptions::kSimplifiedFullscreenUiName,
      flag_descriptions::kSimplifiedFullscreenUiDescription,
      kOsWin | kOsLinux | kOsCrOS,

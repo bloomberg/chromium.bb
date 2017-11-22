@@ -187,8 +187,6 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
   void SetUseSolidColorScrollbars(bool) override;
   void SetUseWideViewport(bool) override;
   void SetV8CacheOptions(V8CacheOptions) override;
-  void SetV8CacheStrategiesForCacheStorage(
-      V8CacheStrategiesForCacheStorage) override;
   void SetValidationMessageTimerMagnification(int) override;
   void SetViewportEnabled(bool) override;
   void SetViewportMetaEnabled(bool) override;

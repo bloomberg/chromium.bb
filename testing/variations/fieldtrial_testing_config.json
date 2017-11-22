@@ -3942,31 +3942,6 @@
             ]
         }
     ],
-    "V8CacheStrategiesForCacheStorage": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "default"
-                },
-                {
-                    "name": "none"
-                },
-                {
-                    "name": "normal"
-                },
-                {
-                    "name": "aggressive"
-                }
-            ]
-        }
-    ],
     "V8ContextSnapshot": [
         {
             "platforms": [
