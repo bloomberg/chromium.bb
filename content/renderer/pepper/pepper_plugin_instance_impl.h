@@ -721,15 +721,13 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   void ConvertRectToDIP(PP_Rect* rect) const;
   void ConvertDIPToViewport(gfx::Rect* rect) const;
 
-  // Each time CommitTextureMailbox() is called, this instance is given
-  // ownership
-  // of a viz::TextureMailbox. This instance always needs to hold on to the most
-  // recently committed viz::TextureMailbox, since UpdateLayer() might require
-  // it.
-  // Since it is possible for a viz::TextureMailbox to be passed to
-  // texture_layer_ more than once, a reference counting mechanism is necessary
-  // to ensure that a viz::TextureMailbox isn't returned until all copies of it
-  // have been released by texture_layer_.
+  // Each time CommitTransferableResource() is called, this instance is given
+  // ownership of a texture and gpu::Mailbox. This instance always needs to hold
+  // on to the most recently committed texture, since UpdateLayer() might
+  // require it. Since it is possible for a gpu::Mailbox to be passed to
+  // |texture_layer_| more than once, a reference counting mechanism is
+  // necessary to ensure that a texture isn't returned until all copies of
+  // it have been released by texture_layer_.
   //
   // This method should be called each time a viz::TransferableResource is
   // passed to |texture_layer_|. It increments an internal reference count.
@@ -972,11 +970,11 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   gpu::SyncToken committed_texture_consumed_sync_token_;
 
   // Holds the number of references |texture_layer_| has to any given
-  // viz::TextureMailbox.
+  // gpu::Mailbox.
   // We expect there to be no more than 10 textures in use at a time. A
   // std::vector will have better performance than a std::map.
-  using TextureMailboxRefCount = std::pair<gpu::Mailbox, int>;
-  std::vector<TextureMailboxRefCount> texture_ref_counts_;
+  using MailboxRefCount = std::pair<gpu::Mailbox, int>;
+  std::vector<MailboxRefCount> texture_ref_counts_;
 
   bool initialized_;
 
