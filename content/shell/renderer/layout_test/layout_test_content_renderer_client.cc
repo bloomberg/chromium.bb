@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
 #include "base/memory/ptr_util.h"
+#include "build/build_config.h"
 #include "components/web_cache/renderer/web_cache_impl.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
@@ -31,6 +32,7 @@
 #include "content/test/mock_webclipboard_impl.h"
 #include "gin/modules/module_registry.h"
 #include "media/base/audio_latency.h"
+#include "media/base/mime_util.h"
 #include "media/media_features.h"
 #include "third_party/WebKit/public/platform/WebAudioLatencyHint.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamCenter.h"
@@ -131,6 +133,13 @@ LayoutTestContentRendererClient::~LayoutTestContentRendererClient() {
 }
 
 void LayoutTestContentRendererClient::RenderThreadStarted() {
+// Unless/until WebM files are added to the media layout tests, we need to
+// avoid removing MP4/H264/AAC so that layout tests can run on Android.
+// TODO(chcunningham): We should fix the tests to always use non-proprietary
+// codecs and just delete this code. http://crbug.com/787575
+#if !defined(OS_ANDROID)
+  media::RemoveProprietaryMediaTypesAndCodecsForTests();
+#endif
   ShellContentRendererClient::RenderThreadStarted();
   shell_observer_.reset(new LayoutTestRenderThreadObserver());
 }
