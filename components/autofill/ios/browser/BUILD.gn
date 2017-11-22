@@ -46,6 +46,8 @@ source_set("test_support") {
   sources = [
     "fake_autofill_agent.h",
     "fake_autofill_agent.mm",
+    "fake_js_autofill_manager.h",
+    "fake_js_autofill_manager.mm",
   ]
   public_deps = [
     ":browser",
