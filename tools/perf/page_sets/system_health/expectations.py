@@ -82,6 +82,8 @@ class SystemHealthMobileCommonExpectations(expectations.StoryExpectations):
                       'Webview does not have tabs')
     self.DisableStory('browse:shopping:avito',
                       [expectations.ANDROID_NEXUS6], 'crbug.com/736497')
+    self.DisableStory('load:media:soundcloud',
+                      [expectations.ANDROID_WEBVIEW], 'crbug.com/787001')
 
 
 class SystemHealthMobileMemoryExpectations(expectations.StoryExpectations):
@@ -116,6 +118,8 @@ class SystemHealthMobileMemoryExpectations(expectations.StoryExpectations):
     self.DisableStory('long_running:tools:gmail-background',
                       [expectations.ANDROID_WEBVIEW],
                       'Webview does not have tabs')
+    self.DisableStory('load:media:soundcloud',
+                      [expectations.ANDROID_WEBVIEW], 'crbug.com/787001')
 
 
 class SystemHealthWebviewStartupExpectations(expectations.StoryExpectations):
