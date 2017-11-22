@@ -931,6 +931,38 @@ TEST_F(WebFrameCSSCallbackTest, DisplayNone) {
   EXPECT_THAT(MatchedSelectors(), ElementsAre());
 }
 
+TEST_F(WebFrameCSSCallbackTest, DisplayContents) {
+  LoadHTML("<div style='display:contents'><span></span></div>");
+
+  Vector<WebString> selectors(1u, WebString::FromUTF8("span"));
+  Doc().WatchCSSSelectors(WebVector<WebString>(selectors));
+  frame_->View()->UpdateAllLifecyclePhases();
+  RunPendingTasks();
+
+  EXPECT_EQ(1, UpdateCount()) << "Match elements in display:contents trees.";
+  EXPECT_THAT(MatchedSelectors(), ElementsAre("span"));
+
+  ExecuteScript(
+      "s = document.querySelector('span');"
+      "s.style.display = 'contents';");
+  EXPECT_EQ(1, UpdateCount()) << "Match elements which are display:contents.";
+  EXPECT_THAT(MatchedSelectors(), ElementsAre("span"));
+
+  ExecuteScript(
+      "d = document.querySelector('div');"
+      "d.style.display = 'block';");
+  EXPECT_EQ(1, UpdateCount())
+      << "Still match display:contents after parent becomes display:block.";
+  EXPECT_THAT(MatchedSelectors(), ElementsAre("span"));
+
+  ExecuteScript(
+      "d = document.querySelector('div');"
+      "d.style.display = 'none';");
+  EXPECT_EQ(2, UpdateCount())
+      << "No longer matched when parent becomes display:none.";
+  EXPECT_THAT(MatchedSelectors(), ElementsAre());
+}
+
 TEST_F(WebFrameCSSCallbackTest, Reparenting) {
   LoadHTML(
       "<div id='d1'><span></span></div>"
