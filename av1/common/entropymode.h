@@ -68,8 +68,6 @@ struct seg_counts {
 };
 
 typedef struct frame_contexts {
-  aom_prob y_mode_prob[BLOCK_SIZE_GROUPS][INTRA_MODES - 1];
-  aom_prob uv_mode_prob[INTRA_MODES][UV_INTRA_MODES - 1];
   coeff_cdf_model coef_tail_cdfs[TX_SIZES][PLANE_TYPES];
   coeff_cdf_model coef_head_cdfs[TX_SIZES][PLANE_TYPES];
 #if CONFIG_ADAPT_SCAN
