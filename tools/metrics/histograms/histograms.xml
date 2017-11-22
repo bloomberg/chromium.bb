@@ -38222,6 +38222,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="MultiProfile.DiscardedTabsPerUser">
+  <obsolete>
+    Deprecated 11/2017. Analysis confirms that the number of discards increases
+    with the number of logged in users. No action will be taken based on this
+    information.
+  </obsolete>
   <owner>skuhne@chromium.org</owner>
   <summary>
     The relation of discarded tabs vs. the amount of simultaneous users. The
