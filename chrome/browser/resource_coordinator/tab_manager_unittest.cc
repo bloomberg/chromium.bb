@@ -651,14 +651,10 @@ TEST_F(TabManagerTest, GetUnsortedTabStatsIsInVisibleWindow) {
 
   ASSERT_EQ(4U, tab_stats.size());
 
-  EXPECT_EQ(tab_stats[0].tab_contents_id,
-            tab_manager.IdFromWebContents(web_contents1a));
-  EXPECT_EQ(tab_stats[1].tab_contents_id,
-            tab_manager.IdFromWebContents(web_contents1b));
-  EXPECT_EQ(tab_stats[2].tab_contents_id,
-            tab_manager.IdFromWebContents(web_contents2a));
-  EXPECT_EQ(tab_stats[3].tab_contents_id,
-            tab_manager.IdFromWebContents(web_contents2b));
+  EXPECT_EQ(tab_stats[0].id, tab_manager.IdFromWebContents(web_contents1a));
+  EXPECT_EQ(tab_stats[1].id, tab_manager.IdFromWebContents(web_contents1b));
+  EXPECT_EQ(tab_stats[2].id, tab_manager.IdFromWebContents(web_contents2a));
+  EXPECT_EQ(tab_stats[3].id, tab_manager.IdFromWebContents(web_contents2b));
 
   EXPECT_TRUE(tab_stats[0].is_in_visible_window);
   EXPECT_TRUE(tab_stats[1].is_in_visible_window);

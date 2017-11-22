@@ -78,6 +78,10 @@ struct BrowserInfo {
 // Note that the browser tests are only active for platforms that use
 // TabManager (CrOS only for now) and need to be adjusted accordingly if
 // support for new platforms is added.
+//
+// Tabs are identified by a unique ID vended by this component. These IDs are
+// not reused in a session. They are stable for a given conceptual tab, and will
+// follow it through discards, reloads, tab strip operations, etc.
 class TabManager : public TabStripModelObserver,
                    public chrome::BrowserListObserver {
  public:
@@ -122,7 +126,7 @@ class TabManager : public TabStripModelObserver,
   // tab-strip; clicking on it will reload it. Returns null if the tab cannot
   // be found or cannot be discarded. Otherwise returns the new web_contents
   // of the discarded tab.
-  content::WebContents* DiscardTabById(int64_t target_web_contents_id,
+  content::WebContents* DiscardTabById(int32_t tab_id,
                                        DiscardCondition condition);
 
   // Method used by the extensions API to discard tabs. If |contents| is null,
@@ -160,6 +164,7 @@ class TabManager : public TabStripModelObserver,
   bool IsTabAutoDiscardable(content::WebContents* contents) const;
 
   // Sets/clears the auto-discardable state of the tab.
+  void SetTabAutoDiscardableState(int32_t tab_id, bool state);
   void SetTabAutoDiscardableState(content::WebContents* contents, bool state);
 
   // Returns true when a given renderer can be purged if the specified
@@ -195,9 +200,9 @@ class TabManager : public TabStripModelObserver,
   // |second|.
   static bool CompareTabStats(const TabStats& first, const TabStats& second);
 
-  // Returns a unique ID for a WebContents. Do not cast back to a pointer, as
-  // the WebContents could be deleted if the user closed the tab.
-  static int64_t IdFromWebContents(content::WebContents* web_contents);
+  // Returns the unique ID associated with a tab given the |web_contents|
+  // currently backing that tab.
+  static int32_t IdFromWebContents(content::WebContents* web_contents);
 
   // Return whether tabs are being loaded during session restore.
   bool IsSessionRestoreLoadingTabs() const {
@@ -296,9 +301,8 @@ class TabManager : public TabStripModelObserver,
   const int kDefaultMinMaxTimeToPurgeRatio = 4;
 
   // Finds TabStripModel which has a WebContents whose id is the given
-  // web_contents_id, and returns the WebContents index and the TabStripModel.
-  int FindTabStripModelById(int64_t target_web_contents_id,
-                            TabStripModel** model) const;
+  // |tab_id|, and returns the WebContents index and the TabStripModel.
+  int FindTabStripModelById(int32_t tab_id, TabStripModel** model) const;
 
   // Called by WebContentsData whenever the discard state of a WebContents
   // changes, so that observers can be informed.
@@ -337,8 +341,8 @@ class TabManager : public TabStripModelObserver,
   // that need to be run periodically (see comment in implementation).
   void UpdateTimerCallback();
 
-  // Returns WebContents whose contents id matches the given tab_contents_id.
-  content::WebContents* GetWebContentsById(int64_t tab_contents_id) const;
+  // Returns WebContents whose contents id matches the given |tab_id|.
+  content::WebContents* GetWebContentsById(int32_t tab_id) const;
 
   // Returns a random time-to-purge whose min value is min_time_to_purge and max
   // value is max_time_to_purge.
@@ -399,7 +403,7 @@ class TabManager : public TabStripModelObserver,
 
   // Returns the WebContentsData associated with |contents|. Also takes care of
   // creating one if needed.
-  WebContentsData* GetWebContentsData(content::WebContents* contents) const;
+  static WebContentsData* GetWebContentsData(content::WebContents* contents);
 
   // Implementation of DiscardTab. Returns null if no tab was discarded.
   // Otherwise returns the new web_contents of the discarded tab.

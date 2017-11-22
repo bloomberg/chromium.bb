@@ -206,16 +206,20 @@ void TabManager::WebContentsData::
 }
 
 TabManager::WebContentsData::Data::Data()
-    : is_discarded(false),
+    : id(0),
+      is_discarded(false),
       discard_count(0),
       is_recently_audible(false),
       is_auto_discardable(true),
       tab_loading_state(TAB_IS_NOT_LOADING),
       is_in_session_restore(false),
-      is_restored_in_foreground(false) {}
+      is_restored_in_foreground(false) {
+  static int32_t next_id = 0;
+  id = ++next_id;
+}
 
 bool TabManager::WebContentsData::Data::operator==(const Data& right) const {
-  return is_discarded == right.is_discarded &&
+  return id == right.id && is_discarded == right.is_discarded &&
          is_recently_audible == right.is_recently_audible &&
          last_audio_change_time == right.last_audio_change_time &&
          last_discard_time == right.last_discard_time &&

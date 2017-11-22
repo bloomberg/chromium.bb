@@ -43,20 +43,20 @@ TEST_F(TabManagerDelegateTest, CandidatesSorted) {
                              kNotFocused, 150);
 
   TabStats tab1, tab2, tab3, tab4, tab5;
-  tab1.tab_contents_id = 100;
+  tab1.id = 100;
   tab1.is_pinned = true;
 
-  tab2.tab_contents_id = 200;
+  tab2.id = 200;
   tab2.is_internal_page = true;
 
-  tab3.tab_contents_id = 300;
+  tab3.id = 300;
   tab3.is_pinned = true;
   tab3.is_media = true;
 
-  tab4.tab_contents_id = 400;
+  tab4.id = 400;
   tab4.is_media = true;
 
-  tab5.tab_contents_id = 500;
+  tab5.id = 500;
   tab5.is_app = true;
   TabStatsList tab_list = {tab1, tab2, tab3, tab4, tab5};
 
@@ -79,19 +79,19 @@ TEST_F(TabManagerDelegateTest, CandidatesSorted) {
   EXPECT_EQ("service", candidates[3].app()->process_name());
   // pinned and media.
   ASSERT_TRUE(candidates[4].tab());
-  EXPECT_EQ(300, candidates[4].tab()->tab_contents_id);
+  EXPECT_EQ(300, candidates[4].tab()->id);
   // media.
   ASSERT_TRUE(candidates[5].tab());
-  EXPECT_EQ(400, candidates[5].tab()->tab_contents_id);
+  EXPECT_EQ(400, candidates[5].tab()->id);
   // pinned.
   ASSERT_TRUE(candidates[6].tab());
-  EXPECT_EQ(100, candidates[6].tab()->tab_contents_id);
+  EXPECT_EQ(100, candidates[6].tab()->id);
   // chrome app.
   ASSERT_TRUE(candidates[7].tab());
-  EXPECT_EQ(500, candidates[7].tab()->tab_contents_id);
+  EXPECT_EQ(500, candidates[7].tab()->id);
   // internal page.
   ASSERT_TRUE(candidates[8].tab());
-  EXPECT_EQ(200, candidates[8].tab()->tab_contents_id);
+  EXPECT_EQ(200, candidates[8].tab()->id);
 }
 
 // Occasionally, Chrome sees both FOCUSED_TAB and FOCUSED_APP at the same time.
@@ -101,7 +101,7 @@ TEST_F(TabManagerDelegateTest, CandidatesSortedWithFocusedAppAndTab) {
   arc_processes.emplace_back(1, 10, "focused", arc::mojom::ProcessState::TOP,
                              kIsFocused, 100);
   TabStats tab1;
-  tab1.tab_contents_id = 100;
+  tab1.id = 100;
   tab1.is_pinned = true;
   tab1.is_in_active_window = true;
   tab1.is_active = true;
@@ -112,7 +112,7 @@ TEST_F(TabManagerDelegateTest, CandidatesSortedWithFocusedAppAndTab) {
   ASSERT_EQ(2U, candidates.size());
   // FOCUSED_TAB should be the first one.
   ASSERT_TRUE(candidates[0].tab());
-  EXPECT_EQ(100, candidates[0].tab()->tab_contents_id);
+  EXPECT_EQ(100, candidates[0].tab()->id);
   ASSERT_TRUE(candidates[1].app());
   EXPECT_EQ("focused", candidates[1].app()->process_name());
 }
@@ -160,7 +160,7 @@ class MockTabManagerDelegate : public TabManagerDelegate {
   }
 
   bool KillTab(const TabStats& tab_stats, DiscardCondition condition) override {
-    killed_tabs_.push_back(tab_stats.tab_contents_id);
+    killed_tabs_.push_back(tab_stats.id);
     return true;
   }
 
@@ -372,24 +372,24 @@ TEST_F(TabManagerDelegateTest, KillMultipleProcesses) {
   TabStats tab1, tab2, tab3, tab4, tab5;
   tab1.is_pinned = true;
   tab1.renderer_handle = 11;
-  tab1.tab_contents_id = 1;
+  tab1.id = 1;
 
   tab2.is_internal_page = true;
   tab2.renderer_handle = 11;
-  tab2.tab_contents_id = 2;
+  tab2.id = 2;
 
   tab3.is_pinned = true;
   tab3.is_media = true;
   tab3.renderer_handle = 12;
-  tab3.tab_contents_id = 3;
+  tab3.id = 3;
 
   tab4.is_media = true;
   tab4.renderer_handle = 12;
-  tab4.tab_contents_id = 4;
+  tab4.id = 4;
 
   tab5.is_app = true;
   tab5.renderer_handle = 12;
-  tab5.tab_contents_id = 5;
+  tab5.id = 5;
   TabStatsList tab_list = {tab1, tab2, tab3, tab4, tab5};
 
   // Sorted order (by GetSortedCandidates):
@@ -399,11 +399,11 @@ TEST_F(TabManagerDelegateTest, KillMultipleProcesses) {
   // app "visible2"    pid: 40  nspid 4
   // app "not-visible" pid: 50  nspid 5
   // app "service"     pid: 30  nspid 3
-  // tab3              pid: 12  tab_contents_id 3
-  // tab4              pid: 12  tab_contents_id 4
-  // tab1              pid: 11  tab_contents_id 1
-  // tab5              pid: 12  tab_contents_id 5
-  // tab2              pid: 11  tab_contents_id 2
+  // tab3              pid: 12  id 3
+  // tab4              pid: 12  id 4
+  // tab1              pid: 11  id 1
+  // tab5              pid: 12  id 5
+  // tab2              pid: 11  id 2
   memory_stat->SetTargetMemoryToFreeKB(250000);
   // Entities to be killed.
   memory_stat->SetProcessPss(11, 50000);

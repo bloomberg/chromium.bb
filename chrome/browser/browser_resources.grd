@@ -78,6 +78,12 @@
       </if>
     </structures>
     <includes>
+      <if expr="is_win or is_macosx or is_linux">
+        <include name="IDR_ABOUT_DISCARDS_CSS" file="resources\discards\discards.css" type="BINDATA" />
+        <include name="IDR_ABOUT_DISCARDS_HTML" file="resources\discards\discards.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+        <include name="IDR_ABOUT_DISCARDS_JS" file="resources\discards\discards.js" type="BINDATA" />
+        <include name="IDR_ABOUT_DISCARDS_MOJO_JS" file="${root_gen_dir}\chrome\browser\ui\webui\discards\discards.mojom.js" use_base_dir="false" type="BINDATA" />
+      </if>
       <if expr="is_win">
         <include name="IDR_ABOUT_CONFLICTS_HTML" file="resources\about_conflicts.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_ABOUT_CONFLICTS_JS" file="resources\about_conflicts.js" type="BINDATA" />
