@@ -102,10 +102,17 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
   var addSubmitButtonTouchEndHandler_ = function(form) {
     if (form.querySelector('input[type=submit]'))
       return;
-    var buttons = form.querySelectorAll('button');
-    if (buttons.length != 1)
-      return;
-    buttons[0].addEventListener('touchend', onSubmitButtonTouchEnd_);
+    // Try to find buttons of type submit at first.
+    var buttons = form.querySelectorAll('button[type="submit"]');
+    if (buttons.length == 0) {
+      // Try to check all buttons. If there is only one button, assume that this
+      // is the submit button.
+      buttons = form.querySelectorAll('button');
+      if (buttons.length != 1)
+        return;
+    }
+    for (var i = 0; i < buttons.length; ++i)
+      buttons[0].addEventListener('touchend', onSubmitButtonTouchEnd_);
    };
 
    /**

@@ -1499,31 +1499,45 @@ TEST_F(PasswordControllerTest, SendingToStoreDynamicallyAddedFormsOnFocus) {
 // Tests that a touchend event from a button which contains in a password form
 // works as a submission indicator for this password form.
 TEST_F(PasswordControllerTest, TouchendAsSubmissionIndicator) {
-  LoadHtml(
-      @"<html><body>"
-       "<form name='login_form' id='login_form'>"
-       "  <input type='text' name='username'>"
-       "  <input type='password' name='password'>"
-       "  <button id='submit_button' value='Submit'>"
-       "</form>"
-       "</body></html>");
-  // Use a mock LogManager to detect that OnPasswordFormSubmitted has been
-  // called. TODO(crbug.com/598672): this is a hack, we should modularize the
-  // code better to allow proper unit-testing.
+  const char* kHtml[] = {
+      "<html><body>"
+      "<form name='login_form' id='login_form'>"
+      "  <input type='text' name='username'>"
+      "  <input type='password' name='password'>"
+      "  <button id='submit_button' value='Submit'>"
+      "</form>"
+      "</body></html>",
+      "<html><body>"
+      "<form name='login_form' id='login_form'>"
+      "  <input type='text' name='username'>"
+      "  <input type='password' name='password'>"
+      "  <button id='back' value='Back'>"
+      "  <button id='submit_button' type='submit' value='Submit'>"
+      "</form>"
+      "</body></html>"};
+
   MockLogManager log_manager;
-  EXPECT_CALL(log_manager, IsLoggingActive()).WillRepeatedly(Return(true));
-  const char kExpectedMessage[] =
-      "Message: \"PasswordManager::ProvisionallySavePassword\"\n";
-  EXPECT_CALL(log_manager, LogSavePasswordProgress(kExpectedMessage));
-  EXPECT_CALL(log_manager,
-              LogSavePasswordProgress(testing::Ne(kExpectedMessage)))
-      .Times(testing::AnyNumber());
   EXPECT_CALL(*weak_client_, GetLogManager())
       .WillRepeatedly(Return(&log_manager));
 
-  ExecuteJavaScript(
-      @"document.getElementsByName('username')[0].value = 'user1';"
-       "document.getElementsByName('password')[0].value = 'password1';"
-       "var e = new UIEvent('touchend');"
-       "document.getElementsByTagName('button')[0].dispatchEvent(e);");
+  for (size_t i = 0; i < arraysize(kHtml); ++i) {
+    LoadHtml(base::SysUTF8ToNSString(kHtml[i]));
+    // Use a mock LogManager to detect that OnPasswordFormSubmitted has been
+    // called. TODO(crbug.com/598672): this is a hack, we should modularize the
+    // code better to allow proper unit-testing.
+    EXPECT_CALL(log_manager, IsLoggingActive()).WillRepeatedly(Return(true));
+    const char kExpectedMessage[] =
+        "Message: \"PasswordManager::ProvisionallySavePassword\"\n";
+    EXPECT_CALL(log_manager, LogSavePasswordProgress(kExpectedMessage));
+    EXPECT_CALL(log_manager,
+                LogSavePasswordProgress(testing::Ne(kExpectedMessage)))
+        .Times(testing::AnyNumber());
+
+    ExecuteJavaScript(
+        @"document.getElementsByName('username')[0].value = 'user1';"
+         "document.getElementsByName('password')[0].value = 'password1';"
+         "var e = new UIEvent('touchend');"
+         "document.getElementById('submit_button').dispatchEvent(e);");
+    testing::Mock::VerifyAndClearExpectations(&log_manager);
+  }
 }
