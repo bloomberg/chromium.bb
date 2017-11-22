@@ -246,7 +246,7 @@ function waitForAnimationsToStart(callback)
     if (document.getAnimations().length > 0) {
         callback();
     } else {
-        requestAnimationFrame(waitForAnimationsToStart.bind(this, callback));
+        setTimeout(waitForAnimationsToStart.bind(this, callback), 0);
     }
 }
 
