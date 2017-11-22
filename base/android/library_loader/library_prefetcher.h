@@ -43,9 +43,6 @@ class BASE_EXPORT NativeLibraryPrefetcher {
   // dumps it to disk.
   static void PeriodicallyCollectResidency();
 
-  // Calls madvise(MADV_RANDOM) on the native library executable code range.
-  static void MadviseRandomText();
-
  private:
   // Returns true if the region matches native code or data.
   static bool IsGoodToPrefetch(const base::debug::MappedMemoryRegion& region);

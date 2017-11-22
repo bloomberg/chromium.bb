@@ -119,10 +119,4 @@ const char kEnableCrashReporterForTesting[] =
     "enable-crash-reporter-for-testing";
 #endif
 
-#if defined(OS_ANDROID)
-// Calls madvise(MADV_RANDOM) on executable code right after the library is
-// loaded, from all processes.
-const char kMadviseRandomExecutableCode[] = "madvise-random-executable-code";
-#endif
-
 }  // namespace switches

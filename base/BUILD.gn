@@ -182,8 +182,6 @@ jumbo_component("base") {
     "android/jni_utils.h",
     "android/jni_weak_ref.cc",
     "android/jni_weak_ref.h",
-    "android/library_loader/anchor_functions.cc",
-    "android/library_loader/anchor_functions.h",
     "android/library_loader/library_load_from_apk_status_codes.h",
     "android/library_loader/library_loader_hooks.cc",
     "android/library_loader/library_loader_hooks.h",

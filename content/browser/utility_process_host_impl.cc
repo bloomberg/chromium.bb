@@ -303,10 +303,7 @@ bool UtilityProcessHostImpl::StartProcess() {
       switches::kForceMediaFoundationVideoCapture,
 #endif  // defined(OS_WIN)
       switches::kUtilityStartupDialog,
-      switches::kUseGL,
-#if defined(OS_ANDROID)
-      switches::kMadviseRandomExecutableCode,
-#endif
+      switches::kUseGL
     };
     cmd_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
                                arraysize(kSwitchNames));

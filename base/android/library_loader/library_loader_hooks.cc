@@ -8,8 +8,6 @@
 #include "base/android/library_loader/library_load_from_apk_status_codes.h"
 #include "base/android/library_loader/library_prefetcher.h"
 #include "base/at_exit.h"
-#include "base/base_switches.h"
-#include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_macros.h"
 #include "jni/LibraryLoader_jni.h"
@@ -169,16 +167,13 @@ void SetLibraryLoadedHook(LibraryLoadedHook* func) {
 static jboolean JNI_LibraryLoader_LibraryLoaded(
     JNIEnv* env,
     const JavaParamRef<jobject>& jcaller) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kMadviseRandomExecutableCode)) {
-    NativeLibraryPrefetcher::MadviseRandomText();
+  if (g_native_initialization_hook && !g_native_initialization_hook()) {
+    return false;
   }
-
-  if (g_native_initialization_hook && !g_native_initialization_hook())
-    return false;
-  if (g_registration_callback && !g_registration_callback(env, nullptr))
-    return false;
-  return true;
+  if (g_registration_callback == NULL) {
+    return true;
+  }
+  return g_registration_callback(env, NULL);
 }
 
 void LibraryLoaderExitHook() {
