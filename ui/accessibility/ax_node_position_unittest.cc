@@ -747,7 +747,27 @@ TEST_F(AXPositionTest, AsLeafTextPositionWithTextPosition) {
   EXPECT_EQ(tree_.data().tree_id, test_position->tree_id());
   EXPECT_EQ(inline_box1_.id, test_position->anchor_id());
   EXPECT_EQ(1, test_position->text_offset());
-  EXPECT_EQ(AX_TEXT_AFFINITY_DOWNSTREAM, test_position->affinity());
+  // Even though upstream affinity doesn't make sense on a leaf node, there is
+  // no need to reset it to downstream.
+  EXPECT_EQ(AX_TEXT_AFFINITY_UPSTREAM, test_position->affinity());
+
+  // Create a text position on the root, pointing to the line break character
+  // inside the text field but with an upstream affinity which will cause the
+  // leaf text position to be placed after the text of the first inline text
+  // box.
+  text_position = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, root_.id, 21 /* text_offset */,
+      AX_TEXT_AFFINITY_UPSTREAM);
+  ASSERT_NE(nullptr, text_position);
+  test_position = text_position->AsLeafTextPosition();
+  ASSERT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTextPosition());
+  EXPECT_EQ(tree_.data().tree_id, test_position->tree_id());
+  EXPECT_EQ(inline_box1_.id, test_position->anchor_id());
+  EXPECT_EQ(6, test_position->text_offset());
+  // Even though upstream affinity doesn't make sense on a leaf node, there is
+  // no need to reset it to downstream.
+  EXPECT_EQ(AX_TEXT_AFFINITY_UPSTREAM, test_position->affinity());
 
   // Create a text position pointing to the line break character inside the text
   // field but with an upstream affinity which will cause the leaf text position
@@ -762,6 +782,22 @@ TEST_F(AXPositionTest, AsLeafTextPositionWithTextPosition) {
   EXPECT_EQ(tree_.data().tree_id, test_position->tree_id());
   EXPECT_EQ(inline_box1_.id, test_position->anchor_id());
   EXPECT_EQ(6, test_position->text_offset());
+  // Even though upstream affinity doesn't make sense on a leaf node, there is
+  // no need to reset it to downstream.
+  EXPECT_EQ(AX_TEXT_AFFINITY_UPSTREAM, test_position->affinity());
+
+  // Create a text position on the root, pointing to the line break character
+  // inside the text field.
+  text_position = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, root_.id, 21 /* text_offset */,
+      AX_TEXT_AFFINITY_DOWNSTREAM);
+  ASSERT_NE(nullptr, text_position);
+  test_position = text_position->AsLeafTextPosition();
+  ASSERT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTextPosition());
+  EXPECT_EQ(tree_.data().tree_id, test_position->tree_id());
+  EXPECT_EQ(line_break_.id, test_position->anchor_id());
+  EXPECT_EQ(0, test_position->text_offset());
   EXPECT_EQ(AX_TEXT_AFFINITY_DOWNSTREAM, test_position->affinity());
 
   // Create a text position pointing to the line break character inside the text
