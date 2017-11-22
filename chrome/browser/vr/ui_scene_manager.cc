@@ -548,6 +548,7 @@ void UiSceneManager::CreateSplashScreen() {
 
   timeout_text = base::MakeUnique<Text>(512, kTimeoutMessageTextFontHeightM,
                                         kTimeoutButtonTextWidth);
+  // Disk-style button text is not uppercase. See crbug.com/787654.
   timeout_text->SetText(
       l10n_util::GetStringUTF16(IDS_VR_WEB_VR_EXIT_BUTTON_LABEL));
   timeout_text->set_name(kWebVrTimeoutMessageButtonText);
