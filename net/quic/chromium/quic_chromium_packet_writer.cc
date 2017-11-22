@@ -25,7 +25,7 @@ enum NotReusableReason {
   NUM_NOT_REUSABLE_REASONS = 3,
 };
 
-const int kMaxRetries = 20;
+const int kMaxRetries = 12;  // 2^12 = 4 seconds, which should be a LOT.
 
 void RecordNotReusableReason(NotReusableReason reason) {
   UMA_HISTOGRAM_ENUMERATION("Net.QuicSession.WritePacketNotReusable", reason,
@@ -33,8 +33,8 @@ void RecordNotReusableReason(NotReusableReason reason) {
 }
 
 void RecordRetryCount(int count) {
-  UMA_HISTOGRAM_EXACT_LINEAR("Net.QuicSession.RetryAfterWriteErrorCount", count,
-                             kMaxRetries + 1);
+  UMA_HISTOGRAM_EXACT_LINEAR("Net.QuicSession.RetryAfterWriteErrorCount2",
+                             count, kMaxRetries + 1);
 }
 
 }  // namespace
@@ -54,13 +54,16 @@ void QuicChromiumPacketWriter::ReusableIOBuffer::Set(const char* buffer,
 
 QuicChromiumPacketWriter::QuicChromiumPacketWriter() : weak_factory_(this) {}
 
-QuicChromiumPacketWriter::QuicChromiumPacketWriter(DatagramClientSocket* socket)
+QuicChromiumPacketWriter::QuicChromiumPacketWriter(
+    DatagramClientSocket* socket,
+    base::SequencedTaskRunner* task_runner)
     : socket_(socket),
       delegate_(nullptr),
       packet_(new ReusableIOBuffer(kMaxPacketSize)),
       write_blocked_(false),
       retry_count_(0),
       weak_factory_(this) {
+  retry_timer_.SetTaskRunner(task_runner);
   write_callback_ = base::Bind(&QuicChromiumPacketWriter::OnWriteComplete,
                                weak_factory_.GetWeakPtr());
 }
@@ -196,7 +199,7 @@ bool QuicChromiumPacketWriter::MaybeRetryAfterWriteError(int rv) {
   }
 
   retry_timer_.Start(
-      FROM_HERE, base::TimeDelta::FromMilliseconds(1),
+      FROM_HERE, base::TimeDelta::FromMilliseconds(UINT64_C(1) << retry_count_),
       base::Bind(&QuicChromiumPacketWriter::RetryPacketAfterNoBuffers,
                  weak_factory_.GetWeakPtr()));
   retry_count_++;

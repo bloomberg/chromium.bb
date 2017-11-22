@@ -91,7 +91,8 @@ class QuicConnectivityProbingManagerTest : public ::testing::Test {
     socket_->GetLocalAddress(&self_address);
     self_address_ = QuicSocketAddress(QuicSocketAddressImpl(self_address));
     // Create packet writer and reader for probing.
-    writer_.reset(new QuicChromiumPacketWriter(socket_.get()));
+    writer_.reset(
+        new QuicChromiumPacketWriter(socket_.get(), test_task_runner_.get()));
     reader_.reset(new QuicChromiumPacketReader(
         socket_.get(), &clock_, &session_, kQuicYieldAfterPacketsRead,
         QuicTime::Delta::FromMilliseconds(kQuicYieldAfterDurationMilliseconds),

@@ -44930,9 +44930,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.QuicSession.RetryAfterWriteErrorCount" units="retries">
+  <obsolete>
+    Deprecated 11/2017. Use Net.QuicSession.RetryAfterWriteErrorCount2.
+  </obsolete>
   <owner>rch@chromium.org</owner>
   <summary>
     The number of consecutive times a packet was retried after a write error.
+  </summary>
+</histogram>
+
+<histogram name="Net.QuicSession.RetryAfterWriteErrorCount2" units="retries">
+  <owner>rch@chromium.org</owner>
+  <summary>
+    The number of consecutive times a packet was retried after a write error,
+    using exponential backoff.
   </summary>
 </histogram>
 

@@ -164,8 +164,8 @@ class QuicProxyClientSocketTest
         new QuicChromiumConnectionHelper(&clock_, &random_generator_));
     alarm_factory_.reset(new QuicChromiumAlarmFactory(runner_.get(), &clock_));
 
-    QuicChromiumPacketWriter* writer =
-        new QuicChromiumPacketWriter(socket.get());
+    QuicChromiumPacketWriter* writer = new QuicChromiumPacketWriter(
+        socket.get(), base::ThreadTaskRunnerHandle::Get().get());
     QuicConnection* connection = new QuicConnection(
         connection_id_, QuicSocketAddress(QuicSocketAddressImpl(peer_addr_)),
         helper_.get(), alarm_factory_.get(), writer, true /* owns_writer */,

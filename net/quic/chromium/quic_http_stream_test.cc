@@ -278,7 +278,8 @@ class QuicHttpStreamTest
     connection_ = new TestQuicConnection(
         SupportedTransportVersions(GetParam()), connection_id_, peer_addr_,
         helper_.get(), alarm_factory_.get(),
-        new QuicChromiumPacketWriter(socket.get()));
+        new QuicChromiumPacketWriter(
+            socket.get(), base::ThreadTaskRunnerHandle::Get().get()));
     connection_->set_visitor(&visitor_);
     connection_->SetSendAlgorithm(send_algorithm_);
 

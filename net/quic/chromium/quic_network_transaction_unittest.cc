@@ -4769,7 +4769,7 @@ TEST_P(QuicNetworkTransactionTest, RetryAfterSynchronousNoBufferSpace) {
   session_.reset();
 }
 
-TEST_P(QuicNetworkTransactionTest, RetryAgainAfterAsyncNoBufferSpace) {
+TEST_P(QuicNetworkTransactionTest, MaxRetriesAfterAsyncNoBufferSpace) {
   session_params_.origins_to_force_quic_on.insert(
       HostPortPair::FromString("mail.example.org:443"));
 
@@ -4777,21 +4777,36 @@ TEST_P(QuicNetworkTransactionTest, RetryAgainAfterAsyncNoBufferSpace) {
   QuicStreamOffset offset = 0;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more data to read
   socket_data.AddWrite(ConstructInitialSettingsPacket(1, &offset));
-  for (int i = 0; i < 21; ++i) {
+  for (int i = 0; i < 13; ++i) {  // 12 retries then one final failure.
     socket_data.AddWrite(ASYNC, ERR_NO_BUFFER_SPACE);
   }
   socket_data.AddSocketDataToFactory(&socket_factory_);
 
   CreateSession();
+  // Use a TestTaskRunner to avoid waiting in real time for timeouts.
+  scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(&clock_));
+  QuicStreamFactoryPeer::SetTaskRunner(session_->quic_stream_factory(),
+                                       quic_task_runner_.get());
 
+  QuicTime start = clock_.Now();
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
   int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  while (!callback.have_result()) {
+    base::RunLoop().RunUntilIdle();
+    quic_task_runner_->RunUntilIdle();
+  }
+  ASSERT_TRUE(callback.have_result());
   EXPECT_THAT(callback.WaitForResult(), IsError(ERR_QUIC_PROTOCOL_ERROR));
+  EXPECT_TRUE(socket_data.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
+  // Backoff should take between 4 - 5 seconds.
+  EXPECT_TRUE(clock_.Now() - start > QuicTime::Delta::FromSeconds(4));
+  EXPECT_TRUE(clock_.Now() - start < QuicTime::Delta::FromSeconds(5));
 }
 
-TEST_P(QuicNetworkTransactionTest, RetryOnceAfterSynchronousNoBufferSpace) {
+TEST_P(QuicNetworkTransactionTest, MaxRetriesAfterSynchronousNoBufferSpace) {
   session_params_.origins_to_force_quic_on.insert(
       HostPortPair::FromString("mail.example.org:443"));
 
@@ -4799,18 +4814,33 @@ TEST_P(QuicNetworkTransactionTest, RetryOnceAfterSynchronousNoBufferSpace) {
   QuicStreamOffset offset = 0;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more data to read
   socket_data.AddWrite(ConstructInitialSettingsPacket(1, &offset));
-  for (int i = 0; i < 21; ++i) {
+  for (int i = 0; i < 13; ++i) {  // 12 retries then one final failure.
     socket_data.AddWrite(ASYNC, ERR_NO_BUFFER_SPACE);
   }
   socket_data.AddSocketDataToFactory(&socket_factory_);
 
   CreateSession();
+  // Use a TestTaskRunner to avoid waiting in real time for timeouts.
+  scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(&clock_));
+  QuicStreamFactoryPeer::SetTaskRunner(session_->quic_stream_factory(),
+                                       quic_task_runner_.get());
 
+  QuicTime start = clock_.Now();
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
   int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  while (!callback.have_result()) {
+    base::RunLoop().RunUntilIdle();
+    quic_task_runner_->RunUntilIdle();
+  }
+  ASSERT_TRUE(callback.have_result());
   EXPECT_THAT(callback.WaitForResult(), IsError(ERR_QUIC_PROTOCOL_ERROR));
+  EXPECT_TRUE(socket_data.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
+  // Backoff should take between 4 - 5 seconds.
+  EXPECT_TRUE(clock_.Now() - start > QuicTime::Delta::FromSeconds(4));
+  EXPECT_TRUE(clock_.Now() - start < QuicTime::Delta::FromSeconds(5));
 }
 
 // Adds coverage to catch regression such as https://crbug.com/622043
