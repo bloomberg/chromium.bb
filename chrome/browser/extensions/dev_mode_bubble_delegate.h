@@ -38,16 +38,20 @@ class DevModeBubbleDelegate
   base::string16 GetDismissButtonLabel() const override;
   bool ShouldCloseOnDeactivate() const override;
   bool ShouldAcknowledgeOnDeactivate() const override;
+  bool ShouldShow(const ExtensionIdList& extensions) const override;
+  void OnShown(const ExtensionIdList& extensions) override;
+  void OnAction() override;
+  void ClearProfileSetForTesting() override;
   bool ShouldShowExtensionList() const override;
   bool ShouldHighlightExtensions() const override;
   bool ShouldLimitToEnabledExtensions() const override;
   void LogExtensionCount(size_t count) override;
   void LogAction(ExtensionMessageBubbleController::BubbleAction) override;
-  const char* GetKey() override;
-  bool ClearProfileSetAfterAction() override;
   bool SupportsPolicyIndicator() override;
 
  private:
+  Profile* profile_;
+
   DISALLOW_COPY_AND_ASSIGN(DevModeBubbleDelegate);
 };
 

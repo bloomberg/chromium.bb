@@ -31,10 +31,6 @@ const int kMaxExtensionsToShow = 7;
 // Whether or not to ignore the learn more link navigation for testing.
 bool g_should_ignore_learn_more_for_testing = false;
 
-using ProfileSetMap = std::map<std::string, std::set<Profile*>>;
-base::LazyInstance<ProfileSetMap>::DestructorAtExit g_shown_for_profiles =
-    LAZY_INSTANCE_INITIALIZER;
-
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -46,17 +42,14 @@ ExtensionMessageBubbleController::Delegate::Delegate(Profile* profile)
       registry_(ExtensionRegistry::Get(profile)) {
 }
 
-ExtensionMessageBubbleController::Delegate::~Delegate() {
-}
+ExtensionMessageBubbleController::Delegate::~Delegate() {}
 
 base::string16 ExtensionMessageBubbleController::Delegate::GetLearnMoreLabel()
     const {
   return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
 }
 
-bool ExtensionMessageBubbleController::Delegate::ClearProfileSetAfterAction() {
-  return true;
-}
+void ExtensionMessageBubbleController::Delegate::OnAction() {}
 
 bool ExtensionMessageBubbleController::Delegate::HasBubbleInfoBeenAcknowledged(
     const std::string& extension_id) {
@@ -127,10 +120,9 @@ bool ExtensionMessageBubbleController::ShouldShow() {
   // check if each extension entry is still installed, and, if not, remove it
   // from the list.
   UpdateExtensionIdList();
-  std::set<Profile*>* profiles = GetProfileSet();
-  return !profiles->count(profile()->GetOriginalProfile()) &&
+  return !GetExtensionIdList().empty() &&
          (!model_->has_active_bubble() || is_active_bubble_) &&
-         !GetExtensionIdList().empty();
+         delegate_->ShouldShow(GetExtensionIdList());
 }
 
 std::vector<base::string16>
@@ -207,7 +199,13 @@ void ExtensionMessageBubbleController::OnShown(
     const base::Closure& close_bubble_callback) {
   close_bubble_callback_ = close_bubble_callback;
   DCHECK(is_active_bubble_);
-  GetProfileSet()->insert(profile()->GetOriginalProfile());
+  delegate_->OnShown(GetExtensionIdList());
+
+  if (!extension_registry_observer_.IsObserving(
+          ExtensionRegistry::Get(browser_->profile()))) {
+    extension_registry_observer_.Add(
+        ExtensionRegistry::Get(browser_->profile()));
+  }
 }
 
 void ExtensionMessageBubbleController::OnBubbleAction() {
@@ -270,10 +268,6 @@ void ExtensionMessageBubbleController::SetIsActiveBubble() {
   model_->set_has_active_bubble(true);
 }
 
-void ExtensionMessageBubbleController::ClearProfileListForTesting() {
-  GetProfileSet()->clear();
-}
-
 // static
 void ExtensionMessageBubbleController::set_should_ignore_learn_more_for_testing(
     bool should_ignore) {
@@ -283,7 +277,7 @@ void ExtensionMessageBubbleController::set_should_ignore_learn_more_for_testing(
 void ExtensionMessageBubbleController::HandleExtensionUnloadOrUninstall() {
   UpdateExtensionIdList();
   // If the callback is set, then that means that OnShown() was called, and the
-  // bubble is displayed.
+  // bubble was displayed.
   if (close_bubble_callback_ && GetExtensionIdList().empty()) {
     base::ResetAndReturn(&close_bubble_callback_).Run();
   }
@@ -361,13 +355,10 @@ void ExtensionMessageBubbleController::OnClose() {
   if (user_action_ != ACTION_DISMISS_DEACTIVATION ||
       delegate_->ShouldAcknowledgeOnDeactivate()) {
     AcknowledgeExtensions();
-    if (delegate_->ClearProfileSetAfterAction())
-      GetProfileSet()->clear();
+    delegate_->OnAction();
   }
-}
 
-std::set<Profile*>* ExtensionMessageBubbleController::GetProfileSet() {
-  return &g_shown_for_profiles.Get()[delegate_->GetKey()];
+  extension_registry_observer_.RemoveAll();
 }
 
 }  // namespace extensions
