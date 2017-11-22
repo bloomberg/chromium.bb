@@ -445,31 +445,6 @@ void ApplyBlinkSettings(const base::CommandLine& command_line,
   }
 }
 
-WebSettings::V8CacheStrategiesForCacheStorage
-GetV8CacheStrategiesForCacheStorage() {
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  std::string v8_cache_strategies = command_line.GetSwitchValueASCII(
-      switches::kV8CacheStrategiesForCacheStorage);
-  if (v8_cache_strategies.empty()) {
-    v8_cache_strategies =
-        base::FieldTrialList::FindFullName("V8CacheStrategiesForCacheStorage");
-  }
-
-  if (base::StartsWith(v8_cache_strategies, "none",
-                       base::CompareCase::SENSITIVE)) {
-    return WebSettings::V8CacheStrategiesForCacheStorage::kNone;
-  } else if (base::StartsWith(v8_cache_strategies, "normal",
-                              base::CompareCase::SENSITIVE)) {
-    return WebSettings::V8CacheStrategiesForCacheStorage::kNormal;
-  } else if (base::StartsWith(v8_cache_strategies, "aggressive",
-                              base::CompareCase::SENSITIVE)) {
-    return WebSettings::V8CacheStrategiesForCacheStorage::kAggressive;
-  } else {
-    return WebSettings::V8CacheStrategiesForCacheStorage::kDefault;
-  }
-}
-
 // This class represents promise which is robust to (will not be broken by)
 // |DidNotSwapReason::SWAP_FAILS| events.
 class AlwaysDrawSwapPromise : public cc::SwapPromise {
@@ -889,9 +864,6 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
 
   settings->SetV8CacheOptions(
       static_cast<WebSettings::V8CacheOptions>(prefs.v8_cache_options));
-
-  settings->SetV8CacheStrategiesForCacheStorage(
-      GetV8CacheStrategiesForCacheStorage());
 
   settings->SetImageAnimationPolicy(
       static_cast<WebSettings::ImageAnimationPolicy>(prefs.animation_policy));

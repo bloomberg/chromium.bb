@@ -688,12 +688,6 @@ void WebSettingsImpl::SetV8CacheOptions(V8CacheOptions options) {
   settings_->SetV8CacheOptions(static_cast<blink::V8CacheOptions>(options));
 }
 
-void WebSettingsImpl::SetV8CacheStrategiesForCacheStorage(
-    V8CacheStrategiesForCacheStorage strategies) {
-  settings_->SetV8CacheStrategiesForCacheStorage(
-      static_cast<blink::V8CacheStrategiesForCacheStorage>(strategies));
-}
-
 void WebSettingsImpl::SetViewportStyle(WebViewportStyle style) {
   dev_tools_emulator_->SetViewportStyle(style);
 }

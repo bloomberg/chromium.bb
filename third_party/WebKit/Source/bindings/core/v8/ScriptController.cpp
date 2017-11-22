@@ -87,22 +87,15 @@ namespace {
 V8CacheOptions CacheOptions(const ScriptResource* resource,
                             const Settings* settings) {
   V8CacheOptions v8_cache_options(kV8CacheOptionsDefault);
-  if (settings)
+  if (settings) {
     v8_cache_options = settings->GetV8CacheOptions();
-  if (resource && !resource->GetResponse().CacheStorageCacheName().IsNull()) {
-    switch (settings->GetV8CacheStrategiesForCacheStorage()) {
-      case V8CacheStrategiesForCacheStorage::kNone:
-        v8_cache_options = kV8CacheOptionsNone;
-        break;
-      case V8CacheStrategiesForCacheStorage::kNormal:
-        v8_cache_options = kV8CacheOptionsCode;
-        break;
-      case V8CacheStrategiesForCacheStorage::kDefault:
-      case V8CacheStrategiesForCacheStorage::kAggressive:
-        v8_cache_options = kV8CacheOptionsAlways;
-        break;
-    }
+    if (v8_cache_options == kV8CacheOptionsNone)
+      return kV8CacheOptionsNone;
   }
+  // If the resource is served from CacheStorage, generate the V8 code cache in
+  // the first load.
+  if (resource && !resource->GetResponse().CacheStorageCacheName().IsNull())
+    return kV8CacheOptionsAlways;
   return v8_cache_options;
 }
 
@@ -391,14 +384,5 @@ ScriptController::CreateNewInspectorIsolatedWorld(const String& world_name) {
   WindowProxy(*world);
   return world;
 }
-
-STATIC_ASSERT_ENUM(WebSettings::V8CacheStrategiesForCacheStorage::kDefault,
-                   V8CacheStrategiesForCacheStorage::kDefault);
-STATIC_ASSERT_ENUM(WebSettings::V8CacheStrategiesForCacheStorage::kNone,
-                   V8CacheStrategiesForCacheStorage::kNone);
-STATIC_ASSERT_ENUM(WebSettings::V8CacheStrategiesForCacheStorage::kNormal,
-                   V8CacheStrategiesForCacheStorage::kNormal);
-STATIC_ASSERT_ENUM(WebSettings::V8CacheStrategiesForCacheStorage::kAggressive,
-                   V8CacheStrategiesForCacheStorage::kAggressive);
 
 }  // namespace blink

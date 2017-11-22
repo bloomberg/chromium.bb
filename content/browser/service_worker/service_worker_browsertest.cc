@@ -2762,10 +2762,11 @@ class CacheStorageSideDataSizeChecker
   DISALLOW_COPY_AND_ASSIGN(CacheStorageSideDataSizeChecker);
 };
 
-class ServiceWorkerV8CacheStrategiesTest : public ServiceWorkerBrowserTest {
+class ServiceWorkerV8CodeCacheForCacheStorageTest
+    : public ServiceWorkerBrowserTest {
  public:
-  ServiceWorkerV8CacheStrategiesTest() {}
-  ~ServiceWorkerV8CacheStrategiesTest() override {}
+  ServiceWorkerV8CodeCacheForCacheStorageTest() = default;
+  ~ServiceWorkerV8CodeCacheForCacheStorageTest() override = default;
 
   void SetUpOnMainThread() override {
     ServiceWorkerBrowserTest::SetUpOnMainThread();
@@ -2773,59 +2774,6 @@ class ServiceWorkerV8CacheStrategiesTest : public ServiceWorkerBrowserTest {
   }
 
  protected:
-  void CheckStrategyIsNone() {
-    RegisterAndActivateServiceWorker();
-
-    NavigateToTestPage();
-    WaitUntilSideDataSizeIs(0);
-
-    NavigateToTestPage();
-    WaitUntilSideDataSizeIs(0);
-
-    NavigateToTestPage();
-    WaitUntilSideDataSizeIs(0);
-  }
-
-  void CheckStrategyIsNormal() {
-    RegisterAndActivateServiceWorker();
-
-    NavigateToTestPage();
-    // fetch_event_response_via_cache.js returns |cloned_response| for the first
-    // load. So the V8 code cache should not be stored to the CacheStorage.
-    WaitUntilSideDataSizeIs(0);
-
-    NavigateToTestPage();
-    // V8ScriptRunner::setCacheTimeStamp() stores 12 byte data (tag +
-    // timestamp).
-    WaitUntilSideDataSizeIs(kV8CacheTimeStampDataSize);
-
-    NavigateToTestPage();
-    // The V8 code cache must be stored to the CacheStorage which must be bigger
-    // than 12 byte.
-    WaitUntilSideDataSizeIsBiggerThan(kV8CacheTimeStampDataSize);
-  }
-
-  void CheckStrategyIsAggressive() {
-    RegisterAndActivateServiceWorker();
-
-    NavigateToTestPage();
-    // fetch_event_response_via_cache.js returns |cloned_response| for the first
-    // load. So the V8 code cache should not be stored to the CacheStorage.
-    WaitUntilSideDataSizeIs(0);
-
-    NavigateToTestPage();
-    // The V8 code cache must be stored to the CacheStorage which must be bigger
-    // than 12 byte.
-    WaitUntilSideDataSizeIsBiggerThan(kV8CacheTimeStampDataSize);
-
-    NavigateToTestPage();
-    WaitUntilSideDataSizeIsBiggerThan(kV8CacheTimeStampDataSize);
-  }
-
- private:
-  static const char kPageUrl[];
-  static const char kWorkerUrl[];
-  static const char kScriptUrl[];
   static const int kV8CacheTimeStampDataSize;
 
   void RegisterAndActivateServiceWorker() {
@@ -2847,16 +2795,6 @@ class ServiceWorkerV8CacheStrategiesTest : public ServiceWorkerBrowserTest {
     EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
   }
 
-  int GetSideDataSize() {
-    StoragePartition* partition = BrowserContext::GetDefaultStoragePartition(
-        shell()->web_contents()->GetBrowserContext());
-    return CacheStorageSideDataSizeChecker::GetSize(
-        static_cast<CacheStorageContextImpl*>(
-            partition->GetCacheStorageContext()),
-        partition->GetFileSystemContext(), embedded_test_server()->base_url(),
-        std::string("cache_name"), embedded_test_server()->GetURL(kScriptUrl));
-  }
-
   void WaitUntilSideDataSizeIs(int expected_size) {
     while (true) {
       if (GetSideDataSize() == expected_size)
@@ -2871,80 +2809,75 @@ class ServiceWorkerV8CacheStrategiesTest : public ServiceWorkerBrowserTest {
     }
   }
 
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerV8CacheStrategiesTest);
+ private:
+  static const char kPageUrl[];
+  static const char kWorkerUrl[];
+  static const char kScriptUrl[];
+
+  int GetSideDataSize() {
+    StoragePartition* partition = BrowserContext::GetDefaultStoragePartition(
+        shell()->web_contents()->GetBrowserContext());
+    return CacheStorageSideDataSizeChecker::GetSize(
+        static_cast<CacheStorageContextImpl*>(
+            partition->GetCacheStorageContext()),
+        partition->GetFileSystemContext(), embedded_test_server()->base_url(),
+        std::string("cache_name"), embedded_test_server()->GetURL(kScriptUrl));
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerV8CodeCacheForCacheStorageTest);
 };
 
-const char ServiceWorkerV8CacheStrategiesTest::kPageUrl[] =
+const char ServiceWorkerV8CodeCacheForCacheStorageTest::kPageUrl[] =
     "/service_worker/v8_cache_test.html";
-const char ServiceWorkerV8CacheStrategiesTest::kWorkerUrl[] =
+const char ServiceWorkerV8CodeCacheForCacheStorageTest::kWorkerUrl[] =
     "/service_worker/fetch_event_response_via_cache.js";
-const char ServiceWorkerV8CacheStrategiesTest::kScriptUrl[] =
+const char ServiceWorkerV8CodeCacheForCacheStorageTest::kScriptUrl[] =
     "/service_worker/v8_cache_test.js";
 // V8ScriptRunner::setCacheTimeStamp() stores 12 byte data (tag + timestamp).
-const int ServiceWorkerV8CacheStrategiesTest::kV8CacheTimeStampDataSize =
-    sizeof(unsigned) + sizeof(double);
+const int
+    ServiceWorkerV8CodeCacheForCacheStorageTest::kV8CacheTimeStampDataSize =
+        sizeof(unsigned) + sizeof(double);
 
-IN_PROC_BROWSER_TEST_F(ServiceWorkerV8CacheStrategiesTest,
+IN_PROC_BROWSER_TEST_F(ServiceWorkerV8CodeCacheForCacheStorageTest,
                        V8CacheOnCacheStorage) {
-  // The strategy is "aggressive" on default.
-  CheckStrategyIsAggressive();
+  RegisterAndActivateServiceWorker();
+
+  // First load: fetch_event_response_via_cache.js returns |cloned_response|.
+  // The V8 code cache should not be stored in CacheStorage.
+  NavigateToTestPage();
+  WaitUntilSideDataSizeIs(0);
+
+  // Second load: The V8 code cache should be stored in CacheStorage. It must
+  // have size greater than 12 bytes.
+  NavigateToTestPage();
+  WaitUntilSideDataSizeIsBiggerThan(kV8CacheTimeStampDataSize);
 }
 
-class ServiceWorkerV8CacheStrategiesNoneTest
-    : public ServiceWorkerV8CacheStrategiesTest {
+class ServiceWorkerV8CodeCacheForCacheStorageNoneTest
+    : public ServiceWorkerV8CodeCacheForCacheStorageTest {
  public:
-  ServiceWorkerV8CacheStrategiesNoneTest() {}
-  ~ServiceWorkerV8CacheStrategiesNoneTest() override {}
+  ServiceWorkerV8CodeCacheForCacheStorageNoneTest() {}
+  ~ServiceWorkerV8CodeCacheForCacheStorageNoneTest() override {}
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitchASCII(switches::kV8CacheStrategiesForCacheStorage,
-                                    "none");
+    command_line->AppendSwitchASCII(switches::kV8CacheOptions, "none");
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerV8CacheStrategiesNoneTest);
+  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerV8CodeCacheForCacheStorageNoneTest);
 };
 
-IN_PROC_BROWSER_TEST_F(ServiceWorkerV8CacheStrategiesNoneTest,
+IN_PROC_BROWSER_TEST_F(ServiceWorkerV8CodeCacheForCacheStorageNoneTest,
                        V8CacheOnCacheStorage) {
-  CheckStrategyIsNone();
-}
+  RegisterAndActivateServiceWorker();
 
-class ServiceWorkerV8CacheStrategiesNormalTest
-    : public ServiceWorkerV8CacheStrategiesTest {
- public:
-  ServiceWorkerV8CacheStrategiesNormalTest() {}
-  ~ServiceWorkerV8CacheStrategiesNormalTest() override {}
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitchASCII(switches::kV8CacheStrategiesForCacheStorage,
-                                    "normal");
-  }
+  // First load.
+  NavigateToTestPage();
+  WaitUntilSideDataSizeIs(0);
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerV8CacheStrategiesNormalTest);
-};
-
-IN_PROC_BROWSER_TEST_F(ServiceWorkerV8CacheStrategiesNormalTest,
-                       V8CacheOnCacheStorage) {
-  CheckStrategyIsNormal();
-}
-
-class ServiceWorkerV8CacheStrategiesAggressiveTest
-    : public ServiceWorkerV8CacheStrategiesTest {
- public:
-  ServiceWorkerV8CacheStrategiesAggressiveTest() {}
-  ~ServiceWorkerV8CacheStrategiesAggressiveTest() override {}
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitchASCII(switches::kV8CacheStrategiesForCacheStorage,
-                                    "aggressive");
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerV8CacheStrategiesAggressiveTest);
-};
-
-IN_PROC_BROWSER_TEST_F(ServiceWorkerV8CacheStrategiesAggressiveTest,
-                       V8CacheOnCacheStorage) {
-  CheckStrategyIsAggressive();
+  // Second load: The V8 code cache must not be stored even after the second
+  // load when --v8-cache-options=none is set.
+  NavigateToTestPage();
+  WaitUntilSideDataSizeIs(0);
 }
 
 // ServiceWorkerDisableWebSecurityTests check the behavior when the web security
