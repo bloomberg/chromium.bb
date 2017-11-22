@@ -4170,6 +4170,11 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   av1_initialize_me_consts(cpi, x, cm->base_qindex);
   init_encode_frame_mb_context(cpi);
 
+#if CONFIG_TEMPMV_SIGNALING
+  cm->prev_frame = last_fb_buf_idx != INVALID_IDX
+                       ? &cm->buffer_pool->frame_bufs[last_fb_buf_idx]
+                       : NULL;
+#else
   // NOTE(zoeliu): As cm->prev_frame can take neither a frame of
   //               show_exisiting_frame=1, nor can it take a frame not used as
   //               a reference, it is probable that by the time it is being
@@ -4186,6 +4191,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
                          ? &cm->buffer_pool->frame_bufs[last_fb_buf_idx]
                          : NULL;
   }
+#endif
 
 #if CONFIG_TEMPMV_SIGNALING
   cm->use_prev_frame_mvs &= frame_can_use_prev_frame_mvs(cm);
