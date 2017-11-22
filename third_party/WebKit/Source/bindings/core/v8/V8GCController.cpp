@@ -142,7 +142,6 @@ class HeapSnaphotWrapperVisitor : public ScriptWrappableVisitor,
     if (class_id != WrapperTypeInfo::kNodeClassId)
       return;
 
-    DCHECK(!value->IsIndependent());
     v8::Local<v8::Object> wrapper = v8::Local<v8::Object>::New(
         isolate_, v8::Persistent<v8::Object>::Cast(*value));
     DCHECK(V8Node::hasInstance(wrapper, isolate_));
