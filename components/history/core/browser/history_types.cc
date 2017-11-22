@@ -261,10 +261,10 @@ HistoryAddPageArgs::HistoryAddPageArgs()
                          GURL(),
                          RedirectList(),
                          ui::PAGE_TRANSITION_LINK,
+                         false,
                          SOURCE_BROWSED,
                          false,
-                         true) {
-}
+                         true) {}
 
 HistoryAddPageArgs::HistoryAddPageArgs(const GURL& url,
                                        base::Time time,
@@ -273,6 +273,7 @@ HistoryAddPageArgs::HistoryAddPageArgs(const GURL& url,
                                        const GURL& referrer,
                                        const RedirectList& redirects,
                                        ui::PageTransition transition,
+                                       bool hidden,
                                        VisitSource source,
                                        bool did_replace_entry,
                                        bool consider_for_ntp_most_visited)
@@ -283,10 +284,10 @@ HistoryAddPageArgs::HistoryAddPageArgs(const GURL& url,
       referrer(referrer),
       redirects(redirects),
       transition(transition),
+      hidden(hidden),
       visit_source(source),
       did_replace_entry(did_replace_entry),
-      consider_for_ntp_most_visited(consider_for_ntp_most_visited) {
-}
+      consider_for_ntp_most_visited(consider_for_ntp_most_visited) {}
 
 HistoryAddPageArgs::HistoryAddPageArgs(const HistoryAddPageArgs& other) =
     default;

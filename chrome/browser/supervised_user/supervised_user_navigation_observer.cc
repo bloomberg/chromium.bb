@@ -89,10 +89,15 @@ void SupervisedUserNavigationObserver::OnRequestBlockedInternal(
     supervised_user_error_page::FilteringBehaviorReason reason,
     const base::Callback<void(bool)>& callback) {
   Time timestamp = Time::Now();  // TODO(bauerb): Use SaneTime when available.
-  // Create a history entry for the attempt and mark it as such.
+  // Create a history entry for the attempt and mark it as such.  This history
+  // entry should be marked as "not hidden" so the user can see attempted but
+  // blocked navigations.  (This is in contrast to the normal behavior, wherein
+  // Chrome marks navigations that result in an error as hidden.)  This is to
+  // show the user the same thing that the custodian will see on the dashboard
+  // (where it gets via a different mechanism unrelated to history).
   history::HistoryAddPageArgs add_page_args(
       url, timestamp, history::ContextIDForWebContents(web_contents()), 0, url,
-      history::RedirectList(), ui::PAGE_TRANSITION_BLOCKED,
+      history::RedirectList(), ui::PAGE_TRANSITION_BLOCKED, false,
       history::SOURCE_BROWSED, false, true);
 
   // Add the entry to the history database.

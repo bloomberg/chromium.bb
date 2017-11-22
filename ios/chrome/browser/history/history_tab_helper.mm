@@ -92,7 +92,7 @@ void HistoryTabHelper::DidFinishNavigation(
     return;
   }
 
-  DCHECK(web_state_->GetNavigationManager()->GetVisibleItem());
+  DCHECK(web_state->GetNavigationManager()->GetVisibleItem());
   web::NavigationItem* visible_item =
       web_state_->GetNavigationManager()->GetVisibleItem();
   DCHECK(!visible_item->GetTimestamp().is_null());
@@ -138,9 +138,21 @@ void HistoryTabHelper::DidFinishNavigation(
       referrer_url != kNewTabPageReferrerURL &&
       referrer_url != kReadingListReferrerURL;
 
+  // Top-level frame navigations are visible; everything else is hidden.
+  // Also hide top-level navigations that result in an error in order to
+  // prevent the omnibox from suggesting URLs that have never been navigated
+  // to successfully.  (If a top-level navigation to the URL succeeds at some
+  // point, the URL will be unhidden and thus eligible to be suggested by the
+  // omnibox.)
+  const bool hidden =
+      navigation_context->GetError() ||
+      (navigation_context->GetResponseHeaders() &&
+       navigation_context->GetResponseHeaders()->response_code() >= 400 &&
+       navigation_context->GetResponseHeaders()->response_code() > 600) ||
+      !ui::PageTransitionIsMainFrame(navigation_context->GetPageTransition());
   history::HistoryAddPageArgs add_page_args(
       url, visible_item->GetTimestamp(), this, visible_item->GetUniqueID(),
-      referrer_url, redirects, transition, history::SOURCE_BROWSED,
+      referrer_url, redirects, transition, hidden, history::SOURCE_BROWSED,
       /*did_replace_entry=*/false, consider_for_ntp_most_visited);
 
   if (delay_notification_) {
