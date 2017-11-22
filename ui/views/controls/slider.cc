@@ -56,7 +56,7 @@ constexpr float kThumbWidth = 2 * kThumbRadius;
 constexpr float kThumbHighlightRadius = 10.f;
 
 // The stroke of the thumb when the slider is disabled.
-constexpr int kThumbStroke = 2;
+constexpr int kSliderThumbStroke = 2;
 
 // Duration of the thumb highlight growing effect animation.
 constexpr int kSlideHighlightChangeDurationMs = 150;
@@ -299,12 +299,13 @@ void Slider::OnPaint(gfx::Canvas* canvas) {
   flags.setAntiAlias(true);
 
   if (!is_active_) {
-    flags.setStrokeWidth(kThumbStroke);
+    flags.setStrokeWidth(kSliderThumbStroke);
     flags.setStyle(cc::PaintFlags::kStroke_Style);
   }
   canvas->DrawCircle(
       thumb_center,
-      is_active_ ? kThumbRadius : (kThumbRadius - kThumbStroke / 2), flags);
+      is_active_ ? kThumbRadius : (kThumbRadius - kSliderThumbStroke / 2),
+      flags);
 }
 
 void Slider::OnFocus() {
