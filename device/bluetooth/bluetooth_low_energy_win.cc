@@ -826,9 +826,14 @@ HRESULT BluetoothLowEnergyWrapper::WriteCharacteristicValue(
   if (!file.IsValid())
     return HRESULT_FROM_WIN32(ERROR_OPEN_FAILED);
 
-  return BluetoothGATTSetCharacteristicValue(file.GetPlatformFile(),
-                                             characteristic, new_value, NULL,
-                                             BLUETOOTH_GATT_FLAG_NONE);
+  ULONG flag = BLUETOOTH_GATT_FLAG_NONE;
+  if (!characteristic->IsWritable) {
+    DCHECK(characteristic->IsWritableWithoutResponse);
+    flag |= BLUETOOTH_GATT_FLAG_WRITE_WITHOUT_RESPONSE;
+  }
+
+  return BluetoothGATTSetCharacteristicValue(
+      file.GetPlatformFile(), characteristic, new_value, NULL, flag);
 }
 
 HRESULT BluetoothLowEnergyWrapper::RegisterGattEvents(

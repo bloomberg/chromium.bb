@@ -183,7 +183,8 @@ void BluetoothRemoteGattCharacteristicWin::WriteRemoteCharacteristic(
     const ErrorCallback& error_callback) {
   DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
 
-  if (!characteristic_info_.get()->IsWritable) {
+  if (!characteristic_info_->IsWritable &&
+      !characteristic_info_->IsWritableWithoutResponse) {
     error_callback.Run(BluetoothRemoteGattService::GATT_ERROR_NOT_PERMITTED);
     return;
   }
