@@ -514,7 +514,10 @@ Polymer({
   },
 
   /** @private */
-  onMirroredTap_: function() {
+  onMirroredTap_: function(event) {
+    // Blur the control so that when the transition animation completes and the
+    // UI is focused, the control does not receive focus. crbug.com/785070
+    event.target.blur();
     var id = '';
     /** @type {!chrome.system.display.DisplayProperties} */ var properties = {};
     if (this.isMirrored_(this.displays)) {
