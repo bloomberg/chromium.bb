@@ -529,13 +529,6 @@ class NET_EXPORT NetworkQualityEstimator
   // if there is a change in its value.
   void ComputeEffectiveConnectionType();
 
-  // May update the network quality of the current network if |network_id|
-  // matches the ID of the current network. |cached_network_quality| is the
-  // cached network quality of the network with id |network_id|.
-  void MaybeUpdateNetworkQualityFromCache(
-      const nqe::internal::NetworkID& network_id,
-      const nqe::internal::CachedNetworkQuality& cached_network_quality);
-
   const char* GetNameForStatistic(int i) const;
 
   // Gathers metrics for the next connection type. Called when there is a change
