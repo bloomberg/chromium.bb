@@ -30,14 +30,6 @@ PrerenderTabHelper::PrerenderTabHelper(content::WebContents* web_contents)
 PrerenderTabHelper::~PrerenderTabHelper() {
 }
 
-void PrerenderTabHelper::DidGetRedirectForResourceRequest(
-    const content::ResourceRedirectDetails& details) {
-  if (details.resource_type != content::RESOURCE_TYPE_MAIN_FRAME)
-    return;
-
-  MainFrameUrlDidChange(details.new_url);
-}
-
 void PrerenderTabHelper::DidFinishNavigation(
       content::NavigationHandle* navigation_handle) {
   if (!navigation_handle->IsInMainFrame() ||
@@ -68,6 +60,13 @@ void PrerenderTabHelper::DidStartNavigation(
   if (!navigation_handle->IsInMainFrame())
     return;
 
+  MainFrameUrlDidChange(navigation_handle->GetURL());
+}
+
+void PrerenderTabHelper::DidRedirectNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame())
+    return;
   MainFrameUrlDidChange(navigation_handle->GetURL());
 }
 
