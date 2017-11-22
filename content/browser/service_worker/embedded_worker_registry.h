@@ -27,6 +27,7 @@ namespace content {
 
 class EmbeddedWorkerInstance;
 class ServiceWorkerContextCore;
+class ServiceWorkerVersion;
 
 // Acts as a thin stub between MessageFilter and each EmbeddedWorkerInstance,
 // which sends/receives messages to/from each EmbeddedWorker in child process.
@@ -37,7 +38,7 @@ class CONTENT_EXPORT EmbeddedWorkerRegistry
     : public base::RefCounted<EmbeddedWorkerRegistry> {
  public:
   static scoped_refptr<EmbeddedWorkerRegistry> Create(
-      const base::WeakPtr<ServiceWorkerContextCore>& contxet);
+      const base::WeakPtr<ServiceWorkerContextCore>& context);
 
   // Used for DeleteAndStartOver. Creates a new registry which takes over
   // |next_embedded_worker_id_| and |process_sender_map_| from |old_registry|.
@@ -49,7 +50,8 @@ class CONTENT_EXPORT EmbeddedWorkerRegistry
 
   // Creates and removes a new worker instance entry for bookkeeping.
   // This doesn't actually start or stop the worker.
-  std::unique_ptr<EmbeddedWorkerInstance> CreateWorker();
+  std::unique_ptr<EmbeddedWorkerInstance> CreateWorker(
+      ServiceWorkerVersion* owner_version);
 
   // Stop all running workers, even if they're handling events.
   void Shutdown();

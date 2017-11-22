@@ -1567,6 +1567,7 @@ test("content_unittests") {
     "../renderer/render_widget_unittest.cc",
     "../renderer/scheduler/resource_dispatch_throttler_unittest.cc",
     "../renderer/service_worker/service_worker_dispatcher_unittest.cc",
+    "../renderer/service_worker/service_worker_event_timer_unittest.cc",
     "../renderer/service_worker/service_worker_provider_context_unittest.cc",
     "../renderer/service_worker/service_worker_subresource_loader_unittest.cc",
     "../renderer/service_worker/thread_safe_script_container_unittest.cc",

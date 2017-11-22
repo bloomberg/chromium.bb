@@ -36,9 +36,10 @@ scoped_refptr<EmbeddedWorkerRegistry> EmbeddedWorkerRegistry::Create(
   return registry;
 }
 
-std::unique_ptr<EmbeddedWorkerInstance> EmbeddedWorkerRegistry::CreateWorker() {
-  std::unique_ptr<EmbeddedWorkerInstance> worker(
-      new EmbeddedWorkerInstance(context_, next_embedded_worker_id_));
+std::unique_ptr<EmbeddedWorkerInstance> EmbeddedWorkerRegistry::CreateWorker(
+    ServiceWorkerVersion* owner_version) {
+  std::unique_ptr<EmbeddedWorkerInstance> worker(new EmbeddedWorkerInstance(
+      context_, owner_version, next_embedded_worker_id_));
   worker_map_[next_embedded_worker_id_++] = worker.get();
   return worker;
 }
