@@ -66,22 +66,23 @@ void CheckFetchHandlerOfInstalledServiceWorker(
           : ServiceWorkerCapability::SERVICE_WORKER_NO_FETCH_HANDLER);
 }
 
-void SuccessCollectorCallback(const base::Closure& done_closure,
+void SuccessCollectorCallback(base::OnceClosure done_closure,
                               bool* overall_success,
                               ServiceWorkerStatusCode status) {
   if (status != ServiceWorkerStatusCode::SERVICE_WORKER_OK) {
     *overall_success = false;
   }
-  done_closure.Run();
+  std::move(done_closure).Run();
 }
 
 void SuccessReportingCallback(
     const bool* success,
-    const ServiceWorkerContextCore::UnregistrationCallback& callback) {
+    base::OnceCallback<void(ServiceWorkerStatusCode)> callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   bool result = *success;
-  callback.Run(result ? ServiceWorkerStatusCode::SERVICE_WORKER_OK
-                      : ServiceWorkerStatusCode::SERVICE_WORKER_ERROR_FAILED);
+  std::move(callback).Run(
+      result ? ServiceWorkerStatusCode::SERVICE_WORKER_OK
+             : ServiceWorkerStatusCode::SERVICE_WORKER_ERROR_FAILED);
 }
 
 bool IsSameOriginClientProviderHost(const GURL& origin,
@@ -163,6 +164,35 @@ class ClearAllServiceWorkersHelper
   DISALLOW_COPY_AND_ASSIGN(ClearAllServiceWorkersHelper);
 };
 
+class RegistrationDeletionListener
+    : public ServiceWorkerRegistration::Listener {
+ public:
+  // Wait until a |registration| is deleted and call |callback|.
+  static void WaitForDeletion(
+      scoped_refptr<ServiceWorkerRegistration> registration,
+      base::OnceClosure callback) {
+    DCHECK(!registration->is_deleted());
+    registration->AddListener(new RegistrationDeletionListener(
+        std::move(registration), std::move(callback)));
+  }
+
+  void OnRegistrationDeleted(ServiceWorkerRegistration* registration) override {
+    registration->RemoveListener(this);
+    std::move(callback_).Run();
+    delete this;
+  }
+
+ private:
+  RegistrationDeletionListener(
+      scoped_refptr<ServiceWorkerRegistration> registration,
+      base::OnceClosure callback)
+      : registration_(std::move(registration)),
+        callback_(std::move(callback)) {}
+  virtual ~RegistrationDeletionListener() = default;
+
+  scoped_refptr<ServiceWorkerRegistration> registration_;
+  base::OnceClosure callback_;
+};
 }  // namespace
 
 const base::FilePath::CharType
@@ -472,38 +502,43 @@ void ServiceWorkerContextCore::UnregisterServiceWorker(
                  callback));
 }
 
-void ServiceWorkerContextCore::UnregisterServiceWorkers(
+void ServiceWorkerContextCore::DeleteForOrigin(
     const GURL& origin,
-    const UnregistrationCallback& callback) {
+    base::OnceCallback<void(ServiceWorkerStatusCode)> callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  storage()->GetAllRegistrationsInfos(base::Bind(
-      &ServiceWorkerContextCore::DidGetAllRegistrationsForUnregisterForOrigin,
-      AsWeakPtr(), callback, origin));
+  storage()->GetRegistrationsForOrigin(
+      origin,
+      AdaptCallbackForRepeating(base::BindOnce(
+          &ServiceWorkerContextCore::DidGetRegistrationsForDeleteForOrigin,
+          AsWeakPtr(), std::move(callback))));
 }
 
-void ServiceWorkerContextCore::DidGetAllRegistrationsForUnregisterForOrigin(
-    const UnregistrationCallback& result,
-    const GURL& origin,
+void ServiceWorkerContextCore::DidGetRegistrationsForDeleteForOrigin(
+    base::OnceCallback<void(ServiceWorkerStatusCode)> callback,
     ServiceWorkerStatusCode status,
-    const std::vector<ServiceWorkerRegistrationInfo>& registrations) {
+    const std::vector<scoped_refptr<ServiceWorkerRegistration>>&
+        registrations) {
   if (status != SERVICE_WORKER_OK) {
-    result.Run(status);
+    std::move(callback).Run(status);
     return;
   }
-  std::set<GURL> scopes;
-  for (const auto& registration_info : registrations) {
-    if (origin == registration_info.pattern.GetOrigin()) {
-      scopes.insert(registration_info.pattern);
-    }
-  }
   bool* overall_success = new bool(true);
-  base::Closure barrier = base::BarrierClosure(
-      scopes.size(), base::BindOnce(&SuccessReportingCallback,
-                                    base::Owned(overall_success), result));
-
-  for (const GURL& scope : scopes) {
+  // The barrier must be executed twice for each registration: once for
+  // unregistration and once for deletion.
+  base::RepeatingClosure barrier = base::BarrierClosure(
+      2 * registrations.size(),
+      base::BindOnce(&SuccessReportingCallback, base::Owned(overall_success),
+                     std::move(callback)));
+  for (const auto& registration : registrations) {
+    if (!registration->is_deleted()) {
+      RegistrationDeletionListener::WaitForDeletion(registration, barrier);
+    } else {
+      barrier.Run();
+    }
     UnregisterServiceWorker(
-        scope, base::Bind(&SuccessCollectorCallback, barrier, overall_success));
+        registration->pattern(),
+        AdaptCallbackForRepeating(base::BindOnce(&SuccessCollectorCallback,
+                                                 barrier, overall_success)));
   }
 }
 

@@ -46,6 +46,8 @@ class CONTENT_EXPORT ServiceWorkerRegistration
         ServiceWorkerRegistration* registration) {}
     virtual void OnRegistrationFinishedUninstalling(
         ServiceWorkerRegistration* registration) {}
+    virtual void OnRegistrationDeleted(
+        ServiceWorkerRegistration* registration) {}
     virtual void OnUpdateFound(
         ServiceWorkerRegistration* registration) {}
     virtual void OnSkippedWaiting(ServiceWorkerRegistration* registation) {}

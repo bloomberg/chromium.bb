@@ -365,9 +365,9 @@ void ServiceWorkerContextWrapper::DeleteForOrigin(const GURL& origin,
                             base::BindOnce(std::move(callback), false));
     return;
   }
-  context()->UnregisterServiceWorkers(
-      origin.GetOrigin(), base::Bind(&StatusCodeToBoolCallbackAdapter,
-                                     base::Passed(std::move(callback))));
+  context()->DeleteForOrigin(
+      origin.GetOrigin(),
+      base::BindOnce(&StatusCodeToBoolCallbackAdapter, std::move(callback)));
 }
 
 void ServiceWorkerContextWrapper::CheckHasServiceWorker(

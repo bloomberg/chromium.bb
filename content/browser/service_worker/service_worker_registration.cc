@@ -229,9 +229,9 @@ void ServiceWorkerRegistration::ClearWhenReady() {
 
   context_->storage()->NotifyUninstallingRegistration(this);
   context_->storage()->DeleteRegistration(
-      id(),
-      pattern().GetOrigin(),
-      base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
+      id(), pattern().GetOrigin(),
+      AdaptCallbackForRepeating(
+          base::BindOnce(&ServiceWorkerRegistration::OnDeleteFinished, this)));
 
   if (!active_version() || !active_version()->HasControllee())
     Clear();
@@ -512,8 +512,8 @@ void ServiceWorkerRegistration::OnActivateEventFinished(
 
 void ServiceWorkerRegistration::OnDeleteFinished(
     ServiceWorkerStatusCode status) {
-  // Intentionally empty completion callback, used to prevent
-  // |this| from being deleted until the storage method completes.
+  for (auto& listener : listeners_)
+    listener.OnRegistrationDeleted(this);
 }
 
 void ServiceWorkerRegistration::Clear() {

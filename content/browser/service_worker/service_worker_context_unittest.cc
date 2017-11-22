@@ -453,8 +453,8 @@ TEST_F(ServiceWorkerContextTest, UnregisterMultiple) {
             registration_id4);
 
   called = false;
-  context()->UnregisterServiceWorkers(origin1_p1.GetOrigin(),
-                                      MakeUnregisteredCallback(&called));
+  context()->DeleteForOrigin(origin1_p1.GetOrigin(),
+                             MakeUnregisteredCallback(&called));
 
   ASSERT_FALSE(called);
   base::RunLoop().RunUntilIdle();
@@ -506,11 +506,11 @@ TEST_F(ServiceWorkerContextTest, UnregisterMultiple) {
   EXPECT_EQ(origin3_p1, notifications_[3].pattern);
   EXPECT_EQ(registration_id4, notifications_[3].registration_id);
   EXPECT_EQ(REGISTRATION_DELETED, notifications_[4].type);
-  EXPECT_EQ(origin1_p2, notifications_[4].pattern);
-  EXPECT_EQ(registration_id2, notifications_[4].registration_id);
+  EXPECT_EQ(origin1_p1, notifications_[4].pattern);
+  EXPECT_EQ(registration_id1, notifications_[4].registration_id);
   EXPECT_EQ(REGISTRATION_DELETED, notifications_[5].type);
-  EXPECT_EQ(origin1_p1, notifications_[5].pattern);
-  EXPECT_EQ(registration_id1, notifications_[5].registration_id);
+  EXPECT_EQ(origin1_p2, notifications_[5].pattern);
+  EXPECT_EQ(registration_id2, notifications_[5].registration_id);
 }
 
 // Make sure registering a new script shares an existing registration.
