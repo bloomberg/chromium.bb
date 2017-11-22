@@ -11,6 +11,34 @@ namespace net {
 
 namespace der {
 
+namespace {
+
+bool TagFromCBS(unsigned tag_value, Tag* out) {
+  unsigned tag_number = tag_value & CBS_ASN1_TAG_NUMBER_MASK;
+  if (tag_number >= 31) {
+    // Tag can only represent small tag numbers.
+    return false;
+  }
+  *out = static_cast<Tag>(tag_number);
+  if (tag_value & CBS_ASN1_CONSTRUCTED) {
+    *out |= kTagConstructed;
+  }
+  switch (tag_value & CBS_ASN1_CLASS_MASK) {
+    case CBS_ASN1_APPLICATION:
+      *out |= kTagApplication;
+      break;
+    case CBS_ASN1_CONTEXT_SPECIFIC:
+      *out |= kTagContextSpecific;
+      break;
+    case CBS_ASN1_PRIVATE:
+      *out |= kTagPrivate;
+      break;
+  }
+  return true;
+}
+
+}  // namespace
+
 Parser::Parser() : advance_len_(0) {
   CBS_init(&cbs_, nullptr, 0);
 }
@@ -25,11 +53,10 @@ bool Parser::PeekTagAndValue(Tag* tag, Input* out) {
   size_t header_len;
   unsigned tag_value;
   if (!CBS_get_any_asn1_element(&peeker, &tmp_out, &tag_value, &header_len) ||
-      !CBS_skip(&tmp_out, header_len)) {
+      !CBS_skip(&tmp_out, header_len) || !TagFromCBS(tag_value, tag)) {
     return false;
   }
   advance_len_ = CBS_len(&tmp_out) + header_len;
-  *tag = tag_value;
   *out = Input(CBS_data(&tmp_out), CBS_len(&tmp_out));
   return true;
 }
@@ -62,13 +89,23 @@ bool Parser::ReadTagAndValue(Tag* tag, Input* out) {
 }
 
 bool Parser::ReadOptionalTag(Tag tag, Input* out, bool* present) {
-  CBS tmp_out;
-  int out_present;
-  if (!CBS_get_optional_asn1(&cbs_, &tmp_out, &out_present, tag))
+  if (!HasMore()) {
+    *present = false;
+    return true;
+  }
+  Tag actual_tag;
+  Input value;
+  if (!PeekTagAndValue(&actual_tag, &value)) {
     return false;
-  *present = (out_present != 0);
-  if (*present)
-    *out = Input(CBS_data(&tmp_out), CBS_len(&tmp_out));
+  }
+  if (actual_tag == tag) {
+    CHECK(Advance());
+    *present = true;
+    *out = value;
+  } else {
+    advance_len_ = 0;
+    *present = false;
+  }
   return true;
 }
 
@@ -78,10 +115,13 @@ bool Parser::SkipOptionalTag(Tag tag, bool* present) {
 }
 
 bool Parser::ReadTag(Tag tag, Input* out) {
-  CBS tmp_out;
-  if (!CBS_get_asn1(&cbs_, &tmp_out, tag))
+  Tag actual_tag;
+  Input value;
+  if (!PeekTagAndValue(&actual_tag, &value) || actual_tag != tag) {
     return false;
-  *out = Input(CBS_data(&tmp_out), CBS_len(&tmp_out));
+  }
+  CHECK(Advance());
+  *out = value;
   return true;
 }
 
