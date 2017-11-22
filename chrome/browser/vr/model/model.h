@@ -65,6 +65,7 @@ struct Model {
   ModalPromptType active_modal_prompt_type = kModalPromptTypeNone;
   PermissionsModel permissions;
   bool experimental_features_enabled = false;
+  bool skips_redraw_when_not_dirty = false;
   bool exiting_vr = false;
 };
 

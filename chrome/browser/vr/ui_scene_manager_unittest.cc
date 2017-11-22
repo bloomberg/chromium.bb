@@ -826,6 +826,7 @@ TEST_F(UiSceneManagerTest, ControllerQuiescence) {
   MakeManager(kNotInCct, kNotInWebVr);
   OnBeginFrame();
   EXPECT_TRUE(IsVisible(kControllerGroup));
+  model_->skips_redraw_when_not_dirty = true;
   model_->controller.quiescent = true;
   EXPECT_TRUE(AnimateBy(MsToDelta(500)));
   EXPECT_TRUE(IsVisible(kControllerGroup));
@@ -838,6 +839,11 @@ TEST_F(UiSceneManagerTest, ControllerQuiescence) {
   EXPECT_GT(1.0f, controller_group->computed_opacity());
   EXPECT_TRUE(AnimateBy(MsToDelta(150)));
   EXPECT_EQ(1.0f, controller_group->computed_opacity());
+
+  model_->skips_redraw_when_not_dirty = false;
+  model_->controller.quiescent = true;
+  EXPECT_FALSE(AnimateBy(MsToDelta(1000)));
+  EXPECT_TRUE(IsVisible(kControllerGroup));
 }
 
 TEST_F(UiSceneManagerTest, CloseButtonColorBindings) {
