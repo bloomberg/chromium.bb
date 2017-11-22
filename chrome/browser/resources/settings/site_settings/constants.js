@@ -32,6 +32,7 @@ settings.ContentSettingsTypes = {
   ZOOM_LEVELS: 'zoom-levels',
   PROTECTED_CONTENT: 'protectedContent',
   ADS: 'ads',
+  CLIPBOARD: 'clipboard',
 };
 
 /**

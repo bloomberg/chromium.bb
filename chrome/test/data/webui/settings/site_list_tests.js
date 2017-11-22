@@ -53,6 +53,7 @@ var prefsGeolocation = {
     popups: [],
     sound: [],
     unsandboxed_plugins: [],
+    clipboard: [],
   }
 };
 

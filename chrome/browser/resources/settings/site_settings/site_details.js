@@ -66,6 +66,14 @@ Polymer({
       },
     },
 
+    /** @private */
+    enableClipboardContentSetting_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('enableClipboardContentSetting');
+      },
+    },
+
     /**
      * The type of storage for the origin.
      * @private

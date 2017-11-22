@@ -66,6 +66,7 @@
  *   SITE_SETTINGS_AUTOMATIC_DOWNLOADS: (undefined|!settings.Route),
  *   SITE_SETTINGS_BACKGROUND_SYNC: (undefined|!settings.Route),
  *   SITE_SETTINGS_CAMERA: (undefined|!settings.Route),
+ *   SITE_SETTINGS_CLIPBOARD: (undefined|!settings.Route),
  *   SITE_SETTINGS_COOKIES: (undefined|!settings.Route),
  *   SITE_SETTINGS_DATA_DETAILS: (undefined|!settings.Route),
  *   SITE_SETTINGS_FLASH: (undefined|!settings.Route),
@@ -307,6 +308,7 @@ cr.define('settings', function() {
       r.SITE_SETTINGS_BACKGROUND_SYNC =
           r.SITE_SETTINGS.createChild('backgroundSync');
       r.SITE_SETTINGS_CAMERA = r.SITE_SETTINGS.createChild('camera');
+      r.SITE_SETTINGS_CLIPBOARD = r.SITE_SETTINGS.createChild('clipboard');
       r.SITE_SETTINGS_COOKIES = r.SITE_SETTINGS.createChild('cookies');
       r.SITE_SETTINGS_SITE_DATA =
           r.SITE_SETTINGS_COOKIES.createChild('/siteData');

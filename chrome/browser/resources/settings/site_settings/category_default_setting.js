@@ -108,6 +108,7 @@ Polymer({
         break;
       case settings.ContentSettingsTypes.AUTOMATIC_DOWNLOADS:
       case settings.ContentSettingsTypes.CAMERA:
+      case settings.ContentSettingsTypes.CLIPBOARD:
       case settings.ContentSettingsTypes.GEOLOCATION:
       case settings.ContentSettingsTypes.MIC:
       case settings.ContentSettingsTypes.NOTIFICATIONS:

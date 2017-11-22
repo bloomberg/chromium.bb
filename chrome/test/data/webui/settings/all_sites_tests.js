@@ -69,6 +69,7 @@ var prefsMixedOriginAndPattern = {
     popups: [],
     sound: [],
     unsandboxed_plugins: [],
+    clipboard: [],
   }
 };
 
@@ -132,6 +133,7 @@ var prefsVarious = {
     popups: [],
     sound: [],
     unsandboxed_plugins: [],
+    clipboard: [],
   }
 };
 
