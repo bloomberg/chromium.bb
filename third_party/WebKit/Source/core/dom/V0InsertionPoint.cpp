@@ -210,8 +210,11 @@ bool V0InsertionPoint::LayoutObjectIsNeeded(const ComputedStyle& style) {
 void V0InsertionPoint::ChildrenChanged(const ChildrenChange& change) {
   HTMLElement::ChildrenChanged(change);
   if (ShadowRoot* root = ContainingShadowRoot()) {
-    if (ElementShadow* root_owner = root->Owner())
-      root_owner->SetNeedsDistributionRecalc();
+    if (ElementShadow* root_owner = root->Owner()) {
+      if (!(RuntimeEnabledFeatures::IncrementalShadowDOMEnabled() &&
+            root_owner->IsV1()))
+        root_owner->SetNeedsDistributionRecalc();
+    }
   }
 }
 
@@ -221,7 +224,9 @@ Node::InsertionNotificationRequest V0InsertionPoint::InsertedInto(
   if (ShadowRoot* root = ContainingShadowRoot()) {
     if (!root->IsV1()) {
       if (ElementShadow* root_owner = root->Owner()) {
-        root_owner->SetNeedsDistributionRecalc();
+        if (!(RuntimeEnabledFeatures::IncrementalShadowDOMEnabled() &&
+              root_owner->IsV1()))
+          root_owner->SetNeedsDistributionRecalc();
         if (CanBeActive() && !registered_with_shadow_root_ &&
             insertion_point->GetTreeScope().RootNode() == root) {
           registered_with_shadow_root_ = true;
