@@ -8,7 +8,7 @@
   Common.moduleSetting('cacheDisabled').addChangeListener(cacheSettingChanged);
 
   TestRunner.addResult('Enabling Interception');
-  await SDK.multitargetNetworkManager.setInterceptionHandlerForPatterns(['*'], () => Promise.resolve());
+  await SDK.multitargetNetworkManager.setInterceptionHandlerForPatterns([{urlPattern: '*'}], () => Promise.resolve());
   TestRunner.addResult('Interception Enabled');
   TestRunner.completeTest();
 

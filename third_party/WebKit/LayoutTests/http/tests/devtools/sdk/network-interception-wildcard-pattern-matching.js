@@ -26,7 +26,7 @@
    */
   async function checkPattern(pattern) {
     TestRunner.addResult("Setting Pattern: " + cleanURLOrPattern(pattern));
-    await SDK.multitargetNetworkManager.setInterceptionHandlerForPatterns([pattern], interceptionHandler);
+    await SDK.multitargetNetworkManager.setInterceptionHandlerForPatterns([{urlPattern: pattern}], interceptionHandler);
     TestRunner.addResult("Requesting: " + cleanURLOrPattern(resourceURL));
     await TestRunner.evaluateInPageAsync(`fetch('` + resourceURL + `')`);
     TestRunner.addResult("Response Received: " + cleanURLOrPattern(resourceURL));
