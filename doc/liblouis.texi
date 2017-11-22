@@ -202,7 +202,7 @@ and in Windows it is a DLL. For installation instructions see the
 README file. Please report bugs and oddities to the mailing list,
 @email{liblouis-liblouisxml@@freelists.org}
 
-This documentation is derived from Chapter 7 of the BRLTTY manual, but
+This documentation is derived from the BRLTTY manual, but
 it has been extensively rewritten to cover new features.
 
 @section Who is this manual for
@@ -552,21 +552,11 @@ punctuation . 46 dot pattern for period in NAB computer braille
 @end example
 
 @opcode{digit, character dots}
-Associates a digit with a dot pattern to be used in computer Braille
-and defines the character as a digit. For example:
+Associates a digit with a dot pattern and defines the character as a
+digit. For example:
 
 @example
 digit 0 356 NAB computer braille
-@end example
-
-@opcode{litdigit, digit dots}
-Associates a digit with the dot pattern which should be used to
-represent it in literary Braille, usually with number sign before the
-whole number. For example:
-
-@example
-litdigit 0 245
-litdigit 1 1
 @end example
 
 @opcode{uplow, characters dots [@comma{}dots]}
@@ -619,6 +609,15 @@ an uppercase letter. Both the character and the dot pattern have the
 attributes uppercase and letter. @code{lowercase} and @code{uppercase}
 should be used when a letter has only one case. Otherwise use the
 @opcoderef{uplow}.
+
+@opcode{litdigit, digit dots}
+Associates a digit with the dot pattern which should be used to
+represent it in literary texts. For example:
+
+@example
+litdigit 0 245
+litdigit 1 1
+@end example
 
 @opcode{sign, character dots}
 Associates a character with a dot pattern and defines both as a sign.
@@ -977,6 +976,7 @@ require special treatment.
 
 @table @code
 @opcode{decpoint, character dots}
+
 This opcode defines the decimal point. It is useful if your Braille
 code requires the decimal separator to show as a dot pattern different
 from the normal representation of this character, i.e. period or
@@ -1712,16 +1712,83 @@ opcode.
 @node Notes on Back-Translation
 @chapter Notes on Back-Translation
 
+@anchor{General Notes}
+@section General Notes
+
+Back-translation refers to the process of translating backwards, i.e.
+from Braille to text. For many years, Liblouis was mainly concerned
+with forward translation, and so were most of the authors of the
+translation tables. Today however, Liblouis is being used extensively
+in conjunction with screen reading programs like NVDA and JAWS for
+Windows as well as Braille note-takers like BrailleSense from HIMS and
+BrailleNote from HumanWare. So when writing a translation table for
+Liblouis, it is indeed relevant to consider how the table will work
+when used for back-translation, if anything special must be done, or if
+you want to write separate tables for forward translation and
+back-translation.
+
+Back-translation is generally harder to do in a computer program than
+forward translation. Ideally, any text could be translated to Braille
+and then translated back to text giving exactly the same result as the
+original. However, many Braille codes omit a lot of information and
+leaves it to the reader to fill in the missing bits. An example of this
+is letters with accents. In languages where accents are uncommon, e.g.
+English, Accented letters are usually just marked with a Braille
+indicator stating that there is an accent, but not which accent, even
+though this may be crucial to the meaning of the word or the sentence.
+Another example of this is when not all capital letters are marked in
+the Braille code, but only the "important" capital letters. A third
+example is when a Braille character serves as both a punctuation sign,
+a math sign, and perhaps even as a contraction, and the Braille code
+then leaves it up to the reader to use his/her knowledge of the context
+to decide the meaning of the Braille character.
+
+In some cases, you may need to bend the rules of the Braille code if it
+is important to create Braille that can be properly back-translated.
+This may include marking all capital letters instead of just the
+"important" ones, or perhaps marking a Braille character with an
+indicator stating that this character should in fact be interpreted as
+a math sign and not a punctuation or Braille contraction. In some
+cases, the best solution may be to create two separate sets of tables
+for forward translation: One set for Braille that must be
+back-translatable (for use with screen readers and note-takers), and
+another for good and nice literary Braille (for embossing).
+But no matter how you bend the Braille code, the back-translation
+process may not be perfect.
+
+@anchor{Back-translation with Liblouis}
+@section Back-translation with Liblouis
+
 Back-translation is carried out by the function
 @code{lou_backTranslateString}. Its calling sequence is described in
-@ref{Programming with liblouis}. Tables containing no
-@opcoderef{context}, @opcoderef{correct} or multipass opcodes can be
-used for both forward and backward translation. If these opcodes are
-needed different tables will be required.
-@code{lou_backTranslateString} first performs @code{pass4}, if
+@ref{Programming with liblouis}. @code{lou_backTranslateString} first
+performs @code{pass4}, if
 present, then @code{pass3}, then @code{pass2}, then the
 backtranslation, then corrections. Note that this is exactly the
 inverse of forward translation.
+
+Most opcodes can be preceded by @opcoderef{noback} or @opcoderef{nofor},
+and the @code{correct}, @code{context} and multi-pass opcodes must be
+preceded with either @code{noback} or @code{nofor}. So in most cases,
+it will be perfectly possible to make one table for translation in both
+directions, although a separate table for forward and backward
+translation might be more readable in some cases.
+
+Most of the opcodes associated with pass 1 have two operands, a
+character operand to the left and a dots operand to the right. During
+forward translation, these operands are used to replace the characters
+with the dot pattern according to the conditions of the opcode. The
+opcode works from left to right. When back-translating, these opcodes
+work the opposite way. The dot patterns are replaced by the text. The
+opcodes work from right to left.
+
+On the other hand, the @code{correct}, @code{context} and multi-pass
+opcodes have a test part to the left and an action part to the right.
+These opcodes work from left to right in both translation directions.
+The test is performed, and if true, the action is executed, i.e.
+replacing, inserting or deleting characters or dots. This is why a
+translation direction always has to be specified with these opcodes
+using @code{noback} or @code{nofor}.
 
 @node Table Metadata
 @chapter Table Metadata
@@ -2344,19 +2411,48 @@ for emphasis are @samp{italic}, @samp{underline}, @samp{bold},
         underline: '    +'
 @end example
 
-@item cursorPos
-A list of cursor positions for each input position. Useful when
+@item inputPos
+A list of 0-based input positions, one for each output position. Useful when
 simulating screen reader interaction, to debug contraction and cursor
-behavior as in the following example from the @file{en-GB-g2.ctb}
-test. Also note that in this example the additional options are not
-passed in using the ``flow style'' notation.
+behavior as in the following example.
+Note that all positions in this and the following examples start at 0.
+Also note that in these examples the additional options are not
+passed using the ``flow style'' notation.
 
 @example
   -
-    - you went to
-    - ⠽ ⠺⠑⠝⠞ ⠞⠕
-    - mode: [compbrlAtCursor]
-      cursorPos: [0,1,2,3,4,5,6,7,8,9,10]
+    - went
+    - ⠺⠢⠞
+    - inputPos: [0,1,3]
+@end example
+
+@item outputPos
+A list of 0-based output positions, one for each input position. Useful when
+simulating screen reader interaction, to debug contraction and cursor
+behavior as in the following example.
+
+@example
+  -
+    - went
+    - ⠺⠢⠞
+    - outputPos: [0,1,1,2]
+@end example
+
+@item cursorPos
+A list of cursor positions, one for each input position. Useful when
+simulating screen reader interaction, to debug contraction and cursor
+behavior as in the following example:
+
+Note that compbrlAtCursor is implicitly specified for all cursor
+positions. This makes this test suitable only for testing a single
+word, since the translation would otherwise vary according to the
+cursor position.
+
+@example
+  -
+    - went
+    - ⠺⠑⠝⠞
+    - cursorPos: [0,1,2,3]
 @end example
 
 @item mode
@@ -2365,6 +2461,10 @@ defined defaults to 0. Valid mode values are @samp{noContractions},
 @samp{compbrlAtCursor}, @samp{dotsIO}, @samp{comp8Dots},
 @samp{pass1Only}, @samp{compbrlLeftCursor},
 @samp{ucBrl}, @samp{noUndefinedDots} or @samp{partialTrans}.
+
+For a description of the various translation mode flags, please see
+the function @ref{lou_translateString}.
+
 @end table
 
 @end table
@@ -2725,9 +2825,75 @@ is also of the same length as the string pointed to by @code{*inbuf}.
 If this parameter is @code{NULL}, no spacing information is computed.
 
 The @code{mode} parameter specifies how the translation should be
-done. The valid values of mode are listed in @file{liblouis.h}. They
+done. The valid values of mode are defined in @file{liblouis.h}. They
 are all powers of 2, so that a combined mode can be specified by
 adding up different values.
+
+Note that the @code{mode} parameter is an integer, not a pointer to
+an integer.
+
+A combination of the following mode flags can be used with the
+@code{lou_translateString} function:
+
+@table @code
+@item compbrlAtCursor
+If this bit is set in the @code{mode} parameter the space-bounded
+characters containing the cursor will be translated in computer
+braille.
+
+@item compbrlLeftCursor
+If this bit is set, only the characters to the left of the cursor will
+be in computer braille. This bit overrides @code{compbrlAtCursor}.
+
+@item dotsIO
+When this bit is set, during forward translation, Liblouis will produce
+output as dot patterns. During back-translation Liblouis accepts input
+as dot patterns. Note that the produced dot patterns are affected if
+you have any @opcoderef{display} defined in any of your tables.
+
+@item ucBrl
+The @code{ucBrl} (Unicode Braille) bit is used by the functions
+@code{lou_charToDots} and @code{lou_translate}. It causes the dot
+patterns to be Unicode Braille rather than the liblouis representation.
+Note that you will not notice any change when setting @code{ucBrl}
+unless @code{dotsIO} is also set. @code{lou_dotsToChar} and
+@code{lou_backTranslate} recognize Unicode braille automatically.
+
+@item pass1Only
+When this bit is set, Only pass 1 of the translation will be run. this
+excludes all rules that use the @code{correct} and @code{multi-pass}
+opcodes as well as some rules using the @code{context} opcode. The flag
+was originally introduced for the benefit of screen reading programs,
+but is now only kept as a debugging tool and for backward
+compatibility. The @code{pass1Only} flag should only be used for
+debugging and with great care, since it will have undecired effects with
+any tables that use the @code{correct}, @code{context} or
+@code{multi-pass} opcodes.
+
+@item partialTrans
+This flag specifies that back-translation input should be treated as an
+incomplete word. Rules that apply only for complete words or at the end
+of a word will not take effect. This is intended to be used when
+translating input typed on a braille keyboard to provide a rough idea
+to the user of the characters they are typing before the word is
+complete.
+
+@item noUndefinedDots
+Setting this bit disables the output of dot numbers when
+back-translating undefined Braille patterns. When back translating
+input from a braille keyboard cell by cell, it is desirable to output
+characters as soon as they are produced. Similarly, when back
+translating contracted braille, it is desirable to provide a "guess" to
+the user of the characters they typed. To achieve this, liblouis needs
+to have the ability to produce no text when indicators (which don't
+produce a character by themselves) are not followed by another cell.
+This works automatically for indicators liblouis knows about such as
+capital sign, number sign, etc., but it does not work for indicators
+which are not (and cannot be) specifically defined as indicators. For
+example, in UEB, dots 4 5 6 alone produces the text "\456/". Setting
+the noUndefinedDots mode suppresses this dot number output.
+
+@end table
 
 The function returns 1 if no errors were encountered and 0 if a
 complete translation could not be done.
@@ -2763,22 +2929,10 @@ position in @code{inbuf} corresponding to each position in
 the position of the cursor in the input. On return, it will contain
 the cursor position in the output. Any parameter after @code{outlen}
 may be @code{NULL}. In this case, the actions corresponding to it will
-not be carried out. The @code{mode} parameter, however, must be
-present and must be an integer, not a pointer to an integer. If the
-@code{compbrlAtCursor} bit is set in the @code{mode} parameter the
-space-bounded characters containing the cursor will be translated in
-computer braille. If the @code{compbrlLeftCursor} bit is set only the
-characters to the left of the cursor will be in computer braille. This
-bit overrides @code{compbrlAtCursor}. When the @code{dotsIO} bit is
-set, during translation, produce output as dot patterns. During
-back-translation accept input as dot patterns. Note that the produced
-dot patterns are affected if you have any @opcoderef{display} defined
-in any of your tables. The @code{ucBrl} (Unicode Braille) bit is used
-by @code{lou_charToDots} and @code{lou_translate}. It causes the dot
-patterns to be Unicode Braille rather than the liblouis
-representation. Note that you will not notice any change when setting
-@code{ucBrl} unless @code{dotsIO} is also set. @code{lou_dotsToChar}
-and @code{lou_backTranslate} recognize Unicode braille automatically.
+not be carried out.
+
+For a description of all other parameters, please see
+@ref{lou_translateString}.
 
 @node lou_backTranslateString
 @section lou_backTranslateString
