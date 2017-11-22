@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
@@ -26,6 +27,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_features.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/manifest_constants.h"
@@ -442,7 +444,8 @@ IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest, BrowserActionRuntimeError) {
       error_console()->GetErrorsForExtension(extension->id());
 
   std::string message;
-  bool use_native_bindings = FeatureSwitch::native_crx_bindings()->IsEnabled();
+  bool use_native_bindings =
+      base::FeatureList::IsEnabled(features::kNativeCrxBindings);
   if (use_native_bindings) {
     // TODO(devlin): The specific event name (here, 'browserAction.onClicked')
     // may or may not be worth preserving. In most cases, it's unnecessary with
@@ -484,7 +487,8 @@ IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest, BadAPIArgumentsRuntimeError) {
 
   std::string source;
   std::string message;
-  bool use_native_bindings = FeatureSwitch::native_crx_bindings()->IsEnabled();
+  bool use_native_bindings =
+      base::FeatureList::IsEnabled(features::kNativeCrxBindings);
   if (use_native_bindings) {
     source = extension->GetResourceURL("background.js").spec();
     message =
@@ -574,7 +578,7 @@ IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest, CatchesLastError) {
   std::string message;
   size_t line_number = 0;
   size_t column_number = 0;
-  if (FeatureSwitch::native_crx_bindings()->IsEnabled()) {
+  if (base::FeatureList::IsEnabled(features::kNativeCrxBindings)) {
     // TODO(devlin): This is unfortunate. We lose a lot of context by using
     // RenderFrame::AddMessageToConsole() instead of console.error(). This could
     // be expanded; blink::SourceLocation knows how to capture an inspector

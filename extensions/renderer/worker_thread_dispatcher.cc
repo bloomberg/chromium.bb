@@ -4,6 +4,7 @@
 
 #include "extensions/renderer/worker_thread_dispatcher.h"
 
+#include "base/feature_list.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/platform_thread.h"
@@ -12,8 +13,8 @@
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/worker_thread.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/extension_features.h"
 #include "extensions/common/extension_messages.h"
-#include "extensions/common/feature_switch.h"
 #include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/extension_bindings_system.h"
 #include "extensions/renderer/ipc_message_sender.h"
@@ -158,7 +159,7 @@ void WorkerThreadDispatcher::AddWorkerData(
     std::unique_ptr<IPCMessageSender> ipc_message_sender =
         IPCMessageSender::CreateWorkerThreadIPCMessageSender(
             this, service_worker_version_id);
-    if (FeatureSwitch::native_crx_bindings()->IsEnabled()) {
+    if (base::FeatureList::IsEnabled(features::kNativeCrxBindings)) {
       // The Unretained below is safe since the IPC message sender outlives the
       // bindings system.
       bindings_system = std::make_unique<NativeExtensionBindingsSystem>(

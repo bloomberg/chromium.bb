@@ -101,6 +101,8 @@ if (enable_extensions) {
       "extension.h",
       "extension_api.cc",
       "extension_api.h",
+      "extension_features.cc",
+      "extension_features.h",
       "extension_icon_set.cc",
       "extension_icon_set.h",
       "extension_id.h",
