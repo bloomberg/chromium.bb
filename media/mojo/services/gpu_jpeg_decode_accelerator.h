@@ -13,7 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "media/gpu/gpu_jpeg_decode_accelerator_factory.h"
-#include "media/mojo/interfaces/jpeg_decoder.mojom.h"
+#include "media/mojo/interfaces/jpeg_decode_accelerator.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
 #include "media/video/jpeg_decode_accelerator.h"
 
@@ -21,20 +21,20 @@ namespace media {
 
 // TODO(c.padhi): Rename to MojoJpegDecodeAcceleratorService, see
 // http://crbug.com/699255.
-// Implementation of a mojom::GpuJpegDecodeAccelerator which runs in the GPU
+// Implementation of a mojom::JpegDecodeAccelerator which runs in the GPU
 // process, and wraps a JpegDecodeAccelerator.
 class MEDIA_MOJO_EXPORT GpuJpegDecodeAccelerator
-    : public mojom::GpuJpegDecodeAccelerator,
+    : public mojom::JpegDecodeAccelerator,
       public JpegDecodeAccelerator::Client {
  public:
-  static void Create(mojom::GpuJpegDecodeAcceleratorRequest request);
+  static void Create(mojom::JpegDecodeAcceleratorRequest request);
 
   ~GpuJpegDecodeAccelerator() override;
 
   // JpegDecodeAccelerator::Client implementation.
   void VideoFrameReady(int32_t buffer_id) override;
   void NotifyError(int32_t buffer_id,
-                   JpegDecodeAccelerator::Error error) override;
+                   ::media::JpegDecodeAccelerator::Error error) override;
 
  private:
   // This constructor internally calls
@@ -42,7 +42,7 @@ class MEDIA_MOJO_EXPORT GpuJpegDecodeAccelerator
   // fill |accelerator_factory_functions_|.
   GpuJpegDecodeAccelerator();
 
-  // mojom::GpuJpegDecodeAccelerator implementation.
+  // mojom::JpegDecodeAccelerator implementation.
   void Initialize(InitializeCallback callback) override;
   void Decode(const BitstreamBuffer& input_buffer,
               const gfx::Size& coded_size,
@@ -52,14 +52,14 @@ class MEDIA_MOJO_EXPORT GpuJpegDecodeAccelerator
   void Uninitialize() override;
 
   void NotifyDecodeStatus(int32_t bitstream_buffer_id,
-                          JpegDecodeAccelerator::Error error);
+                          ::media::JpegDecodeAccelerator::Error error);
 
   const std::vector<GpuJpegDecodeAcceleratorFactory::CreateAcceleratorCB>
       accelerator_factory_functions_;
 
   DecodeCallback decode_cb_;
 
-  std::unique_ptr<JpegDecodeAccelerator> accelerator_;
+  std::unique_ptr<::media::JpegDecodeAccelerator> accelerator_;
 
   THREAD_CHECKER(thread_checker_);
 

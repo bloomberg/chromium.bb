@@ -43,7 +43,7 @@ class TestGpuImpl : public mojom::Gpu {
   }
 
   void CreateJpegDecodeAccelerator(
-      media::mojom::GpuJpegDecodeAcceleratorRequest jda_request) override {}
+      media::mojom::JpegDecodeAcceleratorRequest jda_request) override {}
 
   void CreateVideoEncodeAcceleratorProvider(
       media::mojom::VideoEncodeAcceleratorProviderRequest request) override {}

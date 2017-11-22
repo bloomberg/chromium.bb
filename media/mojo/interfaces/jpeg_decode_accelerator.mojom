@@ -32,9 +32,7 @@ struct BitstreamBuffer {
 };
 
 // GPU process interface exposed to the browser for decoding JPEG images.
-// TODO(mcasas): Rename this interface to JpegDecodeAccelerator (and the file
-// accordingly), https://crbug.com/699255
-interface GpuJpegDecodeAccelerator {
+interface JpegDecodeAccelerator {
   // Initializes the JPEG decoder. Should be called once per decoder
   // construction and before using Decode(). This call returns true if
   // initialization is successful.

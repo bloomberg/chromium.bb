@@ -69,7 +69,7 @@ void GpuClient::EstablishGpuChannel(
 }
 
 void GpuClient::CreateJpegDecodeAccelerator(
-    media::mojom::GpuJpegDecodeAcceleratorRequest jda_request) {
+    media::mojom::JpegDecodeAcceleratorRequest jda_request) {
   gpu_service_->CreateJpegDecodeAccelerator(std::move(jda_request));
 }
 

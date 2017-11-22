@@ -73,7 +73,7 @@ class CONTENT_EXPORT VideoCaptureGpuJpegDecoder
       const gpu::GPUInfo& gpu_info);
 
   void FinishInitialization(
-      media::mojom::GpuJpegDecodeAcceleratorPtrInfo unbound_remote_decoder);
+      media::mojom::JpegDecodeAcceleratorPtrInfo unbound_remote_decoder);
   void OnInitializationDone(bool success);
 
   // Returns true if the decoding of last frame is not finished yet.
