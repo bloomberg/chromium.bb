@@ -2081,24 +2081,9 @@ jumbo_source_set("browser") {
     ]
 
     jumbo_excluded_sources = [
-      # Currently the Android JNI bindings generator is not compatible with
-      # Jumbo. It generates and assumes static Init() methods and those will
-      # clash in a jumbo build. Bug https://crbug.com/779013.
-      # Files with JNI Init() methods:
-      "accessibility/web_contents_accessibility_android.cc",
-      "android/content_view_core.cc",
-      "android/content_view_render_view.cc",
-      "android/dialog_overlay_impl.cc",
-      "android/ime_adapter_android.cc",
-      "android/interstitial_page_delegate_android.cc",
-      "android/popup_zoomer.cc",
-      "android/selection_popup_controller.cc",
-      "android/smart_selection_client.cc",
-      "android/text_suggestion_host_android.cc",
-      "android/tracing_controller_android.cc",
-      "android/web_contents_observer_proxy.cc",
-
-      "android/java/java_method.cc",  # kJavaLangClass and 2 others
+      # Files with kJavaLangClass and similar constants:
+      # Bug https://crbug.com/787557.
+      "android/java/java_method.cc",  # and in gin_java_bound_object.cc.
     ]
 
     set_sources_assignment_filter([])
