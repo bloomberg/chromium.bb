@@ -35,6 +35,7 @@ extern const SCAN_ORDER av1_inter_scan_orders[TX_SIZES_ALL][TX_TYPES];
 #define REDUCED_SET 1
 #define SUB_REGION_COUNT 1
 #define SUB_FRAME_COUNT 1
+#define SIG_REGION 1
 #define USE_TOPOLOGICAL_SORT 0
 #define USE_LIMIT_SCAN_DISTANCE 0
 void av1_update_scan_count_facade(AV1_COMMON *cm, int mi_row,

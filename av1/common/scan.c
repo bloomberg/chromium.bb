@@ -5817,6 +5817,16 @@ void av1_init_scan_order(AV1_COMMON *cm) {
           non_zero_prob[i] = (1 << ADAPT_SCAN_PROB_PRECISION) /
                              2;  // init non_zero_prob to 0.5
         }
+#if SIG_REGION
+        const int bw = tx_size_wide[tx_size];
+        const int bh = tx_size_high[tx_size];
+        const int txw_lim = (bw > 16) ? 16 : 8;
+        const int txh_lim = (bh > 16) ? 16 : 8;
+        for (int idy = 0; idy < bh; ++idy)
+          for (int idx = 0; idx < bw; ++idx)
+            if (idy >= txh_lim || idx >= txw_lim)
+              non_zero_prob[idy * bw + idx] = 0;
+#endif
         update_scan_order_facade(cm, tx_size, tx_type, 1);
         sc->scan = get_adapt_scan(cm->fc, tx_size, tx_type);
         sc->iscan = get_adapt_iscan(cm->fc, tx_size, tx_type);
@@ -5841,6 +5851,19 @@ void av1_adapt_scan_order(AV1_COMMON *cm) {
       for (tx_type = DCT_DCT; tx_type < TX_TYPES; ++tx_type) {
         if (do_adapt_scan(tx_size, tx_type)) {
           update_scan_prob(cm, tx_size, tx_type, ADAPT_SCAN_UPDATE_RATE);
+
+#if SIG_REGION
+          uint32_t *non_zero_prob = get_non_zero_prob(cm->fc, tx_size, tx_type);
+          const int bw = tx_size_wide[tx_size];
+          const int bh = tx_size_high[tx_size];
+          const int txw_lim = (bw > 16) ? 16 : 8;
+          const int txh_lim = (bh > 16) ? 16 : 8;
+          for (int idy = 0; idy < bh; ++idy)
+            for (int idx = 0; idx < bw; ++idx)
+              if (idy >= txh_lim || idx >= txw_lim)
+                non_zero_prob[idy * bw + idx] = 0;
+#endif
+
           update_scan_order_facade(cm, tx_size, tx_type, use_curr_frame);
           update_eob_threshold(cm, tx_size, tx_type);
         }
