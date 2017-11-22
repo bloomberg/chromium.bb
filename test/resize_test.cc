@@ -483,8 +483,8 @@ class ResizeRealtimeTest
     cfg_.kf_min_dist = cfg_.kf_max_dist = 3000;
     // Enable dropped frames.
     cfg_.rc_dropframe_thresh = 1;
-    // Enable error_resilience mode.
-    cfg_.g_error_resilient = 1;
+    // Disable error_resilience mode.
+    cfg_.g_error_resilient = 0;
     // Run at low bitrate.
     cfg_.rc_target_bitrate = 200;
   }

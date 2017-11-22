@@ -685,6 +685,12 @@ static INLINE void ensure_mv_buffer(RefCntBuffer *buf, AV1_COMMON *cm) {
         cm, buf->mvs,
         (MV_REF *)aom_calloc(cm->mi_rows * cm->mi_cols, sizeof(*buf->mvs)));
 #endif  // CONFIG_TMV
+#if CONFIG_SEGMENT_PRED_LAST
+    aom_free(buf->seg_map);
+    CHECK_MEM_ERROR(cm, buf->seg_map,
+                    (uint8_t *)aom_calloc(cm->mi_rows * cm->mi_cols,
+                                          sizeof(*buf->seg_map)));
+#endif
   }
 
 #if CONFIG_MFMV
