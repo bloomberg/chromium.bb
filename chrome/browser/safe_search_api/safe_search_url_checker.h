@@ -31,7 +31,7 @@ class SafeSearchURLChecker : net::URLFetcherDelegate {
   enum class Classification { SAFE, UNSAFE };
 
   // Returns whether |url| should be blocked. Called from CheckURL.
-  using CheckCallback = base::Callback<
+  using CheckCallback = base::OnceCallback<
       void(const GURL&, Classification classification, bool /* uncertain */)>;
 
   explicit SafeSearchURLChecker(
@@ -44,7 +44,7 @@ class SafeSearchURLChecker : net::URLFetcherDelegate {
   ~SafeSearchURLChecker() override;
 
   // Returns whether |callback| was run synchronously.
-  bool CheckURL(const GURL& url, const CheckCallback& callback);
+  bool CheckURL(const GURL& url, CheckCallback callback);
 
   void SetCacheTimeoutForTesting(const base::TimeDelta& timeout) {
     cache_timeout_ = timeout;

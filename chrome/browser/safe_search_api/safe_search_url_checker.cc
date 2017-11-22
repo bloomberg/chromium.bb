@@ -93,7 +93,7 @@ bool ParseResponse(const std::string& response, bool* is_porn) {
 struct SafeSearchURLChecker::Check {
   Check(const GURL& url,
         std::unique_ptr<net::URLFetcher> fetcher,
-        const CheckCallback& callback);
+        CheckCallback callback);
   ~Check();
 
   GURL url;
@@ -104,13 +104,18 @@ struct SafeSearchURLChecker::Check {
 
 SafeSearchURLChecker::Check::Check(const GURL& url,
                                    std::unique_ptr<net::URLFetcher> fetcher,
-                                   const CheckCallback& callback)
+                                   CheckCallback callback)
     : url(url),
       fetcher(std::move(fetcher)),
-      callbacks(1, callback),
-      start_time(base::TimeTicks::Now()) {}
+      start_time(base::TimeTicks::Now()) {
+  callbacks.push_back(std::move(callback));
+}
 
-SafeSearchURLChecker::Check::~Check() {}
+SafeSearchURLChecker::Check::~Check() {
+  for (const CheckCallback& callback : callbacks) {
+    DCHECK(!callback);
+  }
+}
 
 SafeSearchURLChecker::CheckResult::CheckResult(Classification classification,
                                                bool uncertain)
@@ -135,20 +140,19 @@ SafeSearchURLChecker::SafeSearchURLChecker(
 
 SafeSearchURLChecker::~SafeSearchURLChecker() {}
 
-bool SafeSearchURLChecker::CheckURL(const GURL& url,
-                                    const CheckCallback& callback) {
+bool SafeSearchURLChecker::CheckURL(const GURL& url, CheckCallback callback) {
   // TODO(treib): Hack: For now, allow all Google URLs to save QPS. If we ever
   // remove this, we should find a way to allow at least the NTP.
   if (google_util::IsGoogleDomainUrl(url, google_util::ALLOW_SUBDOMAIN,
                                      google_util::ALLOW_NON_STANDARD_PORTS)) {
-    callback.Run(url, Classification::SAFE, false);
+    std::move(callback).Run(url, Classification::SAFE, false);
     return true;
   }
   // TODO(treib): Hack: For now, allow all YouTube URLs since YouTube has its
   // own Safety Mode anyway.
   if (google_util::IsYoutubeDomainUrl(url, google_util::ALLOW_SUBDOMAIN,
                                       google_util::ALLOW_NON_STANDARD_PORTS)) {
-    callback.Run(url, Classification::SAFE, false);
+    std::move(callback).Run(url, Classification::SAFE, false);
     return true;
   }
 
@@ -160,7 +164,7 @@ bool SafeSearchURLChecker::CheckURL(const GURL& url,
       DVLOG(1) << "Cache hit! " << url.spec() << " is "
                << (result.classification == Classification::UNSAFE ? "NOT" : "")
                << " safe; certain: " << !result.uncertain;
-      callback.Run(url, result.classification, result.uncertain);
+      std::move(callback).Run(url, result.classification, result.uncertain);
       return true;
     }
     DVLOG(1) << "Outdated cache entry for " << url.spec() << ", purging";
@@ -171,7 +175,7 @@ bool SafeSearchURLChecker::CheckURL(const GURL& url,
   for (const auto& check : checks_in_progress_) {
     if (check->url == url) {
       DVLOG(1) << "Adding to pending check for " << url.spec();
-      check->callbacks.push_back(callback);
+      check->callbacks.push_back(std::move(callback));
       return false;
     }
   }
@@ -182,7 +186,7 @@ bool SafeSearchURLChecker::CheckURL(const GURL& url,
       CreateFetcher(this, context_, api_key, url, traffic_annotation_));
   fetcher->Start();
   checks_in_progress_.push_back(
-      base::MakeUnique<Check>(url, std::move(fetcher), callback));
+      std::make_unique<Check>(url, std::move(fetcher), std::move(callback)));
   return false;
 }
 
@@ -200,7 +204,8 @@ void SafeSearchURLChecker::OnURLFetchComplete(const net::URLFetcher* source) {
   if (!status.is_success()) {
     DLOG(WARNING) << "URL request failed! Letting through...";
     for (size_t i = 0; i < check->callbacks.size(); i++)
-      check->callbacks[i].Run(check->url, Classification::SAFE, true);
+      std::move(check->callbacks[i])
+          .Run(check->url, Classification::SAFE, true);
     checks_in_progress_.erase(it);
     return;
   }
@@ -219,6 +224,6 @@ void SafeSearchURLChecker::OnURLFetchComplete(const net::URLFetcher* source) {
   cache_.Put(check->url, CheckResult(classification, uncertain));
 
   for (size_t i = 0; i < check->callbacks.size(); i++)
-    check->callbacks[i].Run(check->url, classification, uncertain);
+    std::move(check->callbacks[i]).Run(check->url, classification, uncertain);
   checks_in_progress_.erase(it);
 }

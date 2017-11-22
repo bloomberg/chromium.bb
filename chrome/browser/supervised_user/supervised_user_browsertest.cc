@@ -334,6 +334,24 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserTest, DontShowInterstitialTwice) {
   EXPECT_EQ(tab, tab_strip->GetActiveWebContents());
 }
 
+// Tests that it's possible to navigate from a blocked page to another blocked
+// page.
+IN_PROC_BROWSER_TEST_F(SupervisedUserBlockModeTest,
+                       NavigateFromBlockedPageToBlockedPage) {
+  GURL test_url("http://www.example.com/simple.html");
+  ui_test_utils::NavigateToURL(browser(), test_url);
+
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+
+  ASSERT_TRUE(ShownPageIsInterstitial(tab));
+
+  GURL test_url2("http://www.a.com/simple.html");
+  ui_test_utils::NavigateToURL(browser(), test_url2);
+
+  ASSERT_TRUE(ShownPageIsInterstitial(tab));
+  EXPECT_EQ(test_url2, tab->GetVisibleURL());
+}
+
 // Tests whether a visit attempt adds a special history entry.
 IN_PROC_BROWSER_TEST_F(SupervisedUserBlockModeTest,
                        HistoryVisitRecorded) {
