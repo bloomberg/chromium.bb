@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 2604 tests; 2413 PASS, 191 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 2446 tests; 2373 PASS, 73 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS head.title: 32 tests
 PASS head.lang: 32 tests
 PASS head.dir: 62 tests
@@ -56,10 +56,6 @@ PASS link.as: 5 tests
 NOTRUN test
 PASS link.as: 3 tests
 NOTRUN test
-NOTRUN test
-NOTRUN test
-PASS link.as: 3 tests
-NOTRUN test
 PASS link.as: 17 tests
 NOTRUN test
 PASS link.as: 3 tests
@@ -86,10 +82,6 @@ NOTRUN test
 PASS link.as: 3 tests
 NOTRUN test
 PASS link.as: 5 tests
-NOTRUN test
-PASS link.as: 3 tests
-NOTRUN test
-NOTRUN test
 NOTRUN test
 PASS link.as: 3 tests
 NOTRUN test
@@ -146,121 +138,6 @@ NOTRUN test
 PASS link.referrerPolicy: 3 tests
 NOTRUN test
 PASS link.referrerPolicy: 5 tests
-PASS link.scope: 32 tests
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
 PASS link.charset: 32 tests
 PASS link.rev: 32 tests
 PASS link.target: 32 tests

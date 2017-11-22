@@ -451,8 +451,6 @@ crbug.com/660492 storage/indexeddb/structured-clone.html [ Slow ]
 
 # Foreign fetch tests make many requests, and create multiple browsing contexts,
 # which can be very slow.
-crbug.com/678498 external/wpt/service-workers/service-worker/foreign-fetch-cors.https.html [ Slow ]
-crbug.com/678496 external/wpt/service-workers/service-worker/foreign-fetch-basics.https.html [ Slow ]
 
 # Media controls tests have to wait for panel to fade out.
 crbug.com/722825 media/controls/video-enter-exit-fullscreen-while-hovering-shows-controls.html [ Slow ]

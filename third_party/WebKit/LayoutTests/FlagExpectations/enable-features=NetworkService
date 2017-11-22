@@ -58,9 +58,6 @@ Bug(none) http/tests/appcache/main-resource-redirect.html [ Pass Timeout ]
 Bug(none) http/tests/appcache/reload.html [ Pass Timeout ]
 
 # NetworkService won't support Foreign Fetch.
-Bug(wontfix) external/wpt/service-workers/service-worker/foreign-fetch-basics.https.html [ Skip ]
-Bug(wontfix) external/wpt/service-workers/service-worker/foreign-fetch-cors.https.html [ Skip ]
-Bug(wontfix) external/wpt/service-workers/service-worker/foreign-fetch-workers.https.html [ Skip ]
 
 # Passes on NetworkService and fails on non-NetworkService because
 # NetworkService isn't affected by https://crbug.com/595993.

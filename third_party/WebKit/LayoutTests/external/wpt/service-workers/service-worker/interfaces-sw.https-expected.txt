@@ -20,7 +20,6 @@ PASS ServiceWorkerGlobalScope interface: operation skipWaiting()
 PASS ServiceWorkerGlobalScope interface: attribute oninstall
 PASS ServiceWorkerGlobalScope interface: attribute onactivate
 PASS ServiceWorkerGlobalScope interface: attribute onfetch
-PASS ServiceWorkerGlobalScope interface: attribute onforeignfetch
 PASS ServiceWorkerGlobalScope interface: attribute onmessage
 FAIL ServiceWorkerGlobalScope interface: attribute onmessageerror assert_own_property: The global object must have a property "onmessageerror" expected property "onmessageerror" missing
 PASS ServiceWorkerGlobalScope interface: internal [[SetPrototypeOf]] method of global platform object - setting to a new value via Object.setPrototypeOf should throw a TypeError
@@ -37,7 +36,6 @@ PASS ServiceWorkerGlobalScope interface: self must inherit property "skipWaiting
 PASS ServiceWorkerGlobalScope interface: self must inherit property "oninstall" with the proper type
 PASS ServiceWorkerGlobalScope interface: self must inherit property "onactivate" with the proper type
 PASS ServiceWorkerGlobalScope interface: self must inherit property "onfetch" with the proper type
-PASS ServiceWorkerGlobalScope interface: self must inherit property "onforeignfetch" with the proper type
 PASS ServiceWorkerGlobalScope interface: self must inherit property "onmessage" with the proper type
 FAIL ServiceWorkerGlobalScope interface: self must inherit property "onmessageerror" with the proper type assert_own_property: expected property "onmessageerror" missing
 PASS Client interface: existence and properties of interface object
