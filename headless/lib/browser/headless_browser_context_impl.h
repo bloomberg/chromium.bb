@@ -119,7 +119,7 @@ class HeadlessBrowserContextImpl : public HeadlessBrowserContext,
                               bool canceled_by_devtools);
 
   void SetNetworkConditions(HeadlessNetworkConditions conditions);
-  HeadlessNetworkConditions GetNetworkConditions();
+  HeadlessNetworkConditions GetNetworkConditions() override;
 
  private:
   HeadlessBrowserContextImpl(
