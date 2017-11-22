@@ -66,10 +66,7 @@
 #include "ui/gfx/geometry/rect.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/multi_profile_uma.h"
-#include "ash/shell.h"
 #include "chrome/browser/resource_coordinator/tab_manager_delegate_chromeos.h"
-#include "components/user_manager/user_manager.h"
 #endif
 
 using base::TimeDelta;
@@ -652,14 +649,6 @@ void TabManager::RecordDiscardStatistics() {
   // TODO(jamescook): Maybe incorporate extension count?
   UMA_HISTOGRAM_CUSTOM_COUNTS("Tabs.Discard.TabCount", GetTabCount(), 1, 100,
                               50);
-#if defined(OS_CHROMEOS)
-  // Record the discarded tab in relation to the amount of simultaneously
-  // logged in users.
-  if (ash::Shell::HasInstance()) {
-    ash::MultiProfileUMA::RecordDiscardedTab(
-        user_manager::UserManager::Get()->GetLoggedInUsers().size());
-  }
-#endif
   // TODO(jamescook): If the time stats prove too noisy, then divide up users
   // based on how heavily they use Chrome using tab count as a proxy.
   // Bin into <= 1, <= 2, <= 4, <= 8, etc.

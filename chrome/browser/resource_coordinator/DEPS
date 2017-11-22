@@ -1,6 +1,5 @@
 include_rules = [
   # TODO(mash): Remove. http://crbug.com/723881
-  "+ash/multi_profile_uma.h",
   "+ash/shell.h",
   "+content/test/test_web_contents.h",
   "+services/resource_coordinator/public",
