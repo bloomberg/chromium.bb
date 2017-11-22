@@ -1340,7 +1340,6 @@ jumbo_source_set("browser") {
     "renderer_host/media/media_stream_manager.cc",
     "renderer_host/media/media_stream_manager.h",
     "renderer_host/media/media_stream_provider.h",
-    "renderer_host/media/media_stream_requester.h",
     "renderer_host/media/media_stream_track_metrics_host.cc",
     "renderer_host/media/media_stream_track_metrics_host.h",
     "renderer_host/media/media_stream_ui_proxy.cc",

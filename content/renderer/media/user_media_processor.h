@@ -106,8 +106,7 @@ class CONTENT_EXPORT UserMediaProcessor
   }
 
   // MediaStreamDispatcherEventHandler implementation.
-  void OnDeviceStopped(const std::string& label,
-                       const MediaStreamDevice& device) override;
+  void OnDeviceStopped(const MediaStreamDevice& device) override;
 
   void set_media_stream_dispatcher_host_for_testing(
       mojom::MediaStreamDispatcherHostPtr dispatcher_host) {

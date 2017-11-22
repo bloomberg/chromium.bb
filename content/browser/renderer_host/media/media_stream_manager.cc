@@ -32,7 +32,6 @@
 #include "content/browser/renderer_host/media/in_process_video_capture_provider.h"
 #include "content/browser/renderer_host/media/media_capture_devices_impl.h"
 #include "content/browser/renderer_host/media/media_devices_manager.h"
-#include "content/browser/renderer_host/media/media_stream_requester.h"
 #include "content/browser/renderer_host/media/media_stream_ui_proxy.h"
 #include "content/browser/renderer_host/media/service_video_capture_provider.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
@@ -228,15 +227,16 @@ void SendVideoCaptureLogMessage(const std::string& message) {
 // statements in MediaStreamManager.
 class MediaStreamManager::DeviceRequest {
  public:
-  DeviceRequest(int requesting_process_id,
-                int requesting_frame_id,
-                int page_request_id,
-                const url::Origin& security_origin,
-                bool user_gesture,
-                MediaStreamRequestType request_type,
-                const StreamControls& controls,
-                const std::string& salt,
-                base::WeakPtr<MediaStreamRequester> requester = nullptr)
+  DeviceRequest(
+      int requesting_process_id,
+      int requesting_frame_id,
+      int page_request_id,
+      const url::Origin& security_origin,
+      bool user_gesture,
+      MediaStreamRequestType request_type,
+      const StreamControls& controls,
+      const std::string& salt,
+      DeviceStoppedCallback device_stopped_cb = DeviceStoppedCallback())
       : requesting_process_id(requesting_process_id),
         requesting_frame_id(requesting_frame_id),
         page_request_id(page_request_id),
@@ -245,7 +245,7 @@ class MediaStreamManager::DeviceRequest {
         request_type(request_type),
         controls(controls),
         salt(salt),
-        requester(std::move(requester)),
+        device_stopped_cb(std::move(device_stopped_cb)),
         state_(NUM_MEDIA_TYPES, MEDIA_REQUEST_STATE_NOT_REQUESTED),
         audio_type_(MEDIA_NO_SERVICE),
         video_type_(MEDIA_NO_SERVICE),
@@ -338,13 +338,13 @@ class MediaStreamManager::DeviceRequest {
   }
 
   void RunMojoCallbacks() {
-    if (!generate_stream_cb.is_null()) {
+    if (generate_stream_cb) {
       std::move(generate_stream_cb)
           .Run(MEDIA_DEVICE_FAILED_DUE_TO_SHUTDOWN, std::string(),
                MediaStreamDevices(), MediaStreamDevices());
     }
 
-    if (!open_device_cb.is_null()) {
+    if (open_device_cb) {
       std::move(open_device_cb)
           .Run(false /* success */, std::string(), MediaStreamDevice());
     }
@@ -375,8 +375,6 @@ class MediaStreamManager::DeviceRequest {
 
   const std::string salt;
 
-  base::WeakPtr<MediaStreamRequester> requester;
-
   MediaStreamDevices devices;
 
   // Callback to the requester which audio/video devices have been selected.
@@ -387,6 +385,8 @@ class MediaStreamManager::DeviceRequest {
   GenerateStreamCallback generate_stream_cb;
 
   OpenDeviceCallback open_device_cb;
+
+  DeviceStoppedCallback device_stopped_cb;
 
   std::unique_ptr<MediaStreamUIProxy> ui_proxy;
 
@@ -568,21 +568,21 @@ void MediaStreamManager::GenerateStream(
     const StreamControls& controls,
     const url::Origin& security_origin,
     bool user_gesture,
-    GenerateStreamCallback callback,
-    base::WeakPtr<MediaStreamRequester> requester) {
+    GenerateStreamCallback generate_stream_cb,
+    DeviceStoppedCallback device_stopped_cb) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DVLOG(1) << "GenerateStream()";
 
   DeviceRequest* request =
       new DeviceRequest(render_process_id, render_frame_id, page_request_id,
                         security_origin, user_gesture, MEDIA_GENERATE_STREAM,
-                        controls, salt, std::move(requester));
+                        controls, salt, std::move(device_stopped_cb));
 
   const std::string& label = AddRequest(request);
 
-  request->generate_stream_cb = std::move(callback);
+  request->generate_stream_cb = std::move(generate_stream_cb);
 
-  if (!generate_stream_test_callback_.is_null()) {
+  if (generate_stream_test_callback_) {
     // The test callback is responsible to verify whether the |controls| is
     // as expected. Then we need to finish getUserMedia and let Javascript
     // access the result.
@@ -757,16 +757,15 @@ void MediaStreamManager::CloseDevice(MediaStreamType type, int session_id) {
   }
 }
 
-void MediaStreamManager::OpenDevice(
-    int render_process_id,
-    int render_frame_id,
-    const std::string& salt,
-    int page_request_id,
-    const std::string& device_id,
-    MediaStreamType type,
-    const url::Origin& security_origin,
-    OpenDeviceCallback callback,
-    base::WeakPtr<MediaStreamRequester> requester) {
+void MediaStreamManager::OpenDevice(int render_process_id,
+                                    int render_frame_id,
+                                    const std::string& salt,
+                                    int page_request_id,
+                                    const std::string& device_id,
+                                    MediaStreamType type,
+                                    const url::Origin& security_origin,
+                                    OpenDeviceCallback open_device_cb,
+                                    DeviceStoppedCallback device_stopped_cb) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(type == MEDIA_DEVICE_AUDIO_CAPTURE ||
          type == MEDIA_DEVICE_VIDEO_CAPTURE);
@@ -784,11 +783,12 @@ void MediaStreamManager::OpenDevice(
   DeviceRequest* request = new DeviceRequest(
       render_process_id, render_frame_id, page_request_id, security_origin,
       false,  // user gesture
-      MEDIA_OPEN_DEVICE_PEPPER_ONLY, controls, salt, std::move(requester));
+      MEDIA_OPEN_DEVICE_PEPPER_ONLY, controls, salt,
+      std::move(device_stopped_cb));
 
   const std::string& label = AddRequest(request);
 
-  request->open_device_cb = std::move(callback);
+  request->open_device_cb = std::move(open_device_cb);
   // Post a task and handle the request asynchronously. The reason is that the
   // requester won't have a label for the request until this function returns
   // and thus can not handle a response. Using base::Unretained is safe since
@@ -841,10 +841,9 @@ void MediaStreamManager::StopRemovedDevice(
           request->salt, request->security_origin, media_device_info.device_id);
       if (device.id == source_id && device.type == stream_type) {
         session_ids.push_back(device.session_id);
-        if (labeled_request.second->requester) {
-          labeled_request.second->requester->DeviceStopped(
-              labeled_request.second->requesting_frame_id,
-              labeled_request.first, device);
+        if (request->device_stopped_cb) {
+          request->device_stopped_cb.Run(request->requesting_frame_id,
+                                         labeled_request.first, device);
         }
       }
     }
@@ -1603,10 +1602,10 @@ void MediaStreamManager::StopMediaStreamFromBrowser(const std::string& label) {
     return;
 
   // Notify renderers that the devices in the stream will be stopped.
-  if (request->requester) {
+  if (request->device_stopped_cb) {
     for (const MediaStreamDevice& device : request->devices) {
-      request->requester->DeviceStopped(request->requesting_frame_id, label,
-                                        device);
+      request->device_stopped_cb.Run(request->requesting_frame_id, label,
+                                     device);
     }
   }
 

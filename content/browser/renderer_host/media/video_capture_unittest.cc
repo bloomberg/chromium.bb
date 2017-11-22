@@ -153,7 +153,8 @@ class VideoCaptureTest : public testing::Test,
           video_devices[0].device_id, MEDIA_DEVICE_VIDEO_CAPTURE,
           security_origin,
           base::BindOnce(&VideoCaptureTest::OnDeviceOpened,
-                         base::Unretained(this), run_loop.QuitClosure()));
+                         base::Unretained(this), run_loop.QuitClosure()),
+          MediaStreamManager::DeviceStoppedCallback());
       run_loop.Run();
     }
     ASSERT_NE(MediaStreamDevice::kNoId, opened_session_id_);
