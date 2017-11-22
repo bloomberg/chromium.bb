@@ -27,6 +27,7 @@
 #include "net/cert/crl_set.h"
 #include "net/cert/internal/ocsp.h"
 #include "net/cert/internal/signature_algorithm.h"
+#include "net/cert/known_roots.h"
 #include "net/cert/ocsp_revocation_status.h"
 #include "net/cert/x509_certificate.h"
 #include "net/der/encode_values.h"
@@ -256,6 +257,29 @@ void RecordTLSFeatureExtensionWithPrivateRoot(
   UMA_HISTOGRAM_BOOLEAN(
       "Net.Certificate.TLSFeatureExtensionWithPrivateRootHasOCSP",
       (ocsp_result.response_status != OCSPVerifyResult::MISSING));
+}
+
+// Records details about the most-specific trust anchor in |hashes|, which is
+// expected to be ordered with the leaf cert first and the root cert last.
+// "Most-specific" refers to the case that it is not uncommon to have multiple
+// potential trust anchors present in a chain, depending on the client trust
+// store. For example, '1999-Root' cross-signing '2005-Root' cross-signing
+// '2012-Root' cross-signing '2017-Root', then followed by intermediate and
+// leaf. For purposes of assessing impact of, say, removing 1999-Root, while
+// including 2017-Root as a trust anchor, then the validation should be
+// counted as 2017-Root, rather than 1999-Root.
+//
+// This also accounts for situations in which a new CA is introduced, and
+// has been cross-signed by an existing CA. Assessing impact should use the
+// most-specific trust anchor, when possible.
+void RecordTrustAnchorHistogram(const HashValueVector& spki_hashes) {
+  int32_t id = 0;
+  for (const auto& hash : spki_hashes) {
+    id = GetNetTrustAnchorHistogramIdForSPKI(hash);
+    if (id != 0)
+      break;
+  }
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Net.Certificate.TrustAnchor.Verify", id);
 }
 
 // Comparison functor used for binary searching whether a given HashValue,
@@ -587,6 +611,10 @@ int CertVerifyProc::Verify(X509Certificate* cert,
   // a certificate chaining to a private root.
   if (rv == OK && !verify_result->is_issued_by_known_root)
     RecordTLSFeatureExtensionWithPrivateRoot(cert, verify_result->ocsp_result);
+
+  // Record a histogram for per-verification usage of root certs.
+  if (rv == OK)
+    RecordTrustAnchorHistogram(verify_result->public_key_hashes);
 
   return rv;
 }

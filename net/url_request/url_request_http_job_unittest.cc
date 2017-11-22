@@ -75,6 +75,9 @@ const char kSimpleHeadMockWrite[] =
     "Accept-Encoding: gzip, deflate\r\n"
     "Accept-Language: en-us,fr\r\n\r\n";
 
+const char kTrustAnchorRequestHistogram[] =
+    "Net.Certificate.TrustAnchor.Request";
+
 // Inherit from URLRequestHttpJob to expose the priority and some
 // other hidden functions.
 class TestURLRequestHttpJob : public URLRequestHttpJob {
@@ -956,6 +959,111 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest,
         "Net.HttpJob.TotalTimeSuccess.Priority" + base::IntToString(priority),
         priority + 1);
   }
+}
+
+TEST_F(URLRequestHttpJobWithMockSocketsTest,
+       TestHttpJobRecordsTrustAnchorHistograms) {
+  SSLSocketDataProvider ssl_socket_data(net::ASYNC, net::OK);
+  ssl_socket_data.ssl_info.cert =
+      ImportCertFromFile(GetTestCertsDirectory(), "ok_cert.pem");
+  // Simulate a certificate chain issued by "C=US, O=Google Trust Services LLC,
+  // CN=GTS Root R4". This publicly-trusted root was chosen as it was included
+  // in 2017 and is not anticipated to be removed from all supported platforms
+  // for a few decades.
+  // Note: The actual cert in |cert| does not matter for this testing.
+  SHA256HashValue leaf_hash = {{0}};
+  SHA256HashValue intermediate_hash = {{1}};
+  SHA256HashValue root_hash = {
+      {0x98, 0x47, 0xe5, 0x65, 0x3e, 0x5e, 0x9e, 0x84, 0x75, 0x16, 0xe5,
+       0xcb, 0x81, 0x86, 0x06, 0xaa, 0x75, 0x44, 0xa1, 0x9b, 0xe6, 0x7f,
+       0xd7, 0x36, 0x6d, 0x50, 0x69, 0x88, 0xe8, 0xd8, 0x43, 0x47}};
+  ssl_socket_data.ssl_info.public_key_hashes.push_back(HashValue(leaf_hash));
+  ssl_socket_data.ssl_info.public_key_hashes.push_back(
+      HashValue(intermediate_hash));
+  ssl_socket_data.ssl_info.public_key_hashes.push_back(HashValue(root_hash));
+
+  const base::HistogramBase::Sample kGTSRootR4HistogramID = 486;
+
+  socket_factory_.AddSSLSocketDataProvider(&ssl_socket_data);
+
+  MockWrite writes[] = {MockWrite(kSimpleGetMockWrite)};
+  MockRead reads[] = {MockRead("HTTP/1.1 200 OK\r\n"
+                               "Content-Length: 12\r\n\r\n"),
+                      MockRead("Test Content")};
+  StaticSocketDataProvider socket_data(reads, arraysize(reads), writes,
+                                       arraysize(writes));
+  socket_factory_.AddSocketDataProvider(&socket_data);
+
+  base::HistogramTester histograms;
+  histograms.ExpectTotalCount(kTrustAnchorRequestHistogram, 0);
+
+  TestDelegate delegate;
+  std::unique_ptr<URLRequest> request = context_->CreateRequest(
+      GURL("https://www.example.com/"), DEFAULT_PRIORITY, &delegate,
+      TRAFFIC_ANNOTATION_FOR_TESTS);
+  request->Start();
+  base::RunLoop().Run();
+  EXPECT_THAT(delegate.request_status(), IsOk());
+
+  histograms.ExpectTotalCount(kTrustAnchorRequestHistogram, 1);
+  histograms.ExpectUniqueSample(kTrustAnchorRequestHistogram,
+                                kGTSRootR4HistogramID, 1);
+}
+
+TEST_F(URLRequestHttpJobWithMockSocketsTest,
+       TestHttpJobRecordsMostSpecificTrustAnchorHistograms) {
+  SSLSocketDataProvider ssl_socket_data(net::ASYNC, net::OK);
+  ssl_socket_data.ssl_info.cert =
+      ImportCertFromFile(GetTestCertsDirectory(), "ok_cert.pem");
+  // Simulate a certificate chain issued by "C=US, O=Google Trust Services LLC,
+  // CN=GTS Root R4". This publicly-trusted root was chosen as it was included
+  // in 2017 and is not anticipated to be removed from all supported platforms
+  // for a few decades.
+  // Note: The actual cert in |cert| does not matter for this testing.
+  SHA256HashValue leaf_hash = {{0}};
+  SHA256HashValue intermediate_hash = {{1}};
+  SHA256HashValue gts_root_r3_hash = {
+      {0x41, 0x79, 0xed, 0xd9, 0x81, 0xef, 0x74, 0x74, 0x77, 0xb4, 0x96,
+       0x26, 0x40, 0x8a, 0xf4, 0x3d, 0xaa, 0x2c, 0xa7, 0xab, 0x7f, 0x9e,
+       0x08, 0x2c, 0x10, 0x60, 0xf8, 0x40, 0x96, 0x77, 0x43, 0x48}};
+  SHA256HashValue gts_root_r4_hash = {
+      {0x98, 0x47, 0xe5, 0x65, 0x3e, 0x5e, 0x9e, 0x84, 0x75, 0x16, 0xe5,
+       0xcb, 0x81, 0x86, 0x06, 0xaa, 0x75, 0x44, 0xa1, 0x9b, 0xe6, 0x7f,
+       0xd7, 0x36, 0x6d, 0x50, 0x69, 0x88, 0xe8, 0xd8, 0x43, 0x47}};
+  ssl_socket_data.ssl_info.public_key_hashes.push_back(HashValue(leaf_hash));
+  ssl_socket_data.ssl_info.public_key_hashes.push_back(
+      HashValue(intermediate_hash));
+  ssl_socket_data.ssl_info.public_key_hashes.push_back(
+      HashValue(gts_root_r3_hash));
+  ssl_socket_data.ssl_info.public_key_hashes.push_back(
+      HashValue(gts_root_r4_hash));
+
+  const base::HistogramBase::Sample kGTSRootR3HistogramID = 485;
+
+  socket_factory_.AddSSLSocketDataProvider(&ssl_socket_data);
+
+  MockWrite writes[] = {MockWrite(kSimpleGetMockWrite)};
+  MockRead reads[] = {MockRead("HTTP/1.1 200 OK\r\n"
+                               "Content-Length: 12\r\n\r\n"),
+                      MockRead("Test Content")};
+  StaticSocketDataProvider socket_data(reads, arraysize(reads), writes,
+                                       arraysize(writes));
+  socket_factory_.AddSocketDataProvider(&socket_data);
+
+  base::HistogramTester histograms;
+  histograms.ExpectTotalCount(kTrustAnchorRequestHistogram, 0);
+
+  TestDelegate delegate;
+  std::unique_ptr<URLRequest> request = context_->CreateRequest(
+      GURL("https://www.example.com/"), DEFAULT_PRIORITY, &delegate,
+      TRAFFIC_ANNOTATION_FOR_TESTS);
+  request->Start();
+  base::RunLoop().Run();
+  EXPECT_THAT(delegate.request_status(), IsOk());
+
+  histograms.ExpectTotalCount(kTrustAnchorRequestHistogram, 1);
+  histograms.ExpectUniqueSample(kTrustAnchorRequestHistogram,
+                                kGTSRootR3HistogramID, 1);
 }
 
 TEST_F(URLRequestHttpJobTest, TestCancelWhileReadingCookies) {
