@@ -451,6 +451,8 @@ target(link_target_type, "renderer") {
     "service_worker/service_worker_context_message_filter.h",
     "service_worker/service_worker_dispatcher.cc",
     "service_worker/service_worker_dispatcher.h",
+    "service_worker/service_worker_event_timer.cc",
+    "service_worker/service_worker_event_timer.h",
     "service_worker/service_worker_fetch_context_impl.cc",
     "service_worker/service_worker_fetch_context_impl.h",
     "service_worker/service_worker_handle_reference.cc",

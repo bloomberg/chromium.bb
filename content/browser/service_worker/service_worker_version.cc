@@ -299,7 +299,7 @@ ServiceWorkerVersion::ServiceWorkerVersion(
   DCHECK(context_);
   DCHECK(registration);
   DCHECK(script_url_.is_valid());
-  embedded_worker_ = context_->embedded_worker_registry()->CreateWorker();
+  embedded_worker_ = context_->embedded_worker_registry()->CreateWorker(this);
   embedded_worker_->AddListener(this);
   context_->AddLiveVersion(this);
 }
@@ -1645,7 +1645,7 @@ void ServiceWorkerVersion::OnTimeoutTimer() {
     scoped_refptr<ServiceWorkerVersion> protect_this(this);
     embedded_worker_->RemoveListener(this);
     embedded_worker_->Detach();
-    embedded_worker_ = context_->embedded_worker_registry()->CreateWorker();
+    embedded_worker_ = context_->embedded_worker_registry()->CreateWorker(this);
     embedded_worker_->AddListener(this);
 
     // Call OnStoppedInternal to fail callbacks and possibly restart.
@@ -1698,7 +1698,10 @@ void ServiceWorkerVersion::OnTimeoutTimer() {
     return;
 
   // The worker has been idle for longer than a certain period.
-  if (GetTickDuration(idle_time_) > kIdleWorkerTimeout) {
+  // S13nServiceWorker: The idle timer is implemented on the renderer, so we can
+  // skip this check.
+  if (!ServiceWorkerUtils::IsServicificationEnabled() &&
+      GetTickDuration(idle_time_) > kIdleWorkerTimeout) {
     StopWorkerIfIdle();
     return;
   }
@@ -1733,17 +1736,11 @@ void ServiceWorkerVersion::StopWorkerIfIdle() {
   }
 
   // StopWorkerIfIdle() may be called for two reasons: "idle-timeout" or
-  // "ping-timeout". For idle-timeout (i.e. ping hasn't timed out), first check
-  // if the worker really is idle.
-  if (!ping_controller_->IsTimedOut()) {
-    // S13nServiceWorker: We don't stop the service worker for idle-timeout
-    // in the browser process when Servicification is enabled, as events
-    // might be dispatched directly without going through the browser-process.
-    // TODO(kinuko): Re-implement timers. (crbug.com/774374)
-    if (HasWork() || ServiceWorkerUtils::IsServicificationEnabled())
-      return;
-  }
-  embedded_worker_->StopIfIdle();
+  // "ping-timeout". For idle-timeout (i.e. ping hasn't timed out), check if the
+  // worker really is idle.
+  if (!ping_controller_->IsTimedOut() && HasWork())
+    return;
+  embedded_worker_->StopIfNotAttachedToDevTools();
 }
 
 bool ServiceWorkerVersion::HasWork() const {
