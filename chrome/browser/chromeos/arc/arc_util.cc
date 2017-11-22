@@ -42,9 +42,11 @@ namespace {
 constexpr char kLsbReleaseArcVersionKey[] = "CHROMEOS_ARC_ANDROID_SDK_VERSION";
 constexpr char kAndroidMSdkVersion[] = "23";
 
-// Contains set of profiles for which decline reson was already reported.
-base::LazyInstance<std::set<base::FilePath>>::DestructorAtExit
-    g_profile_declined_set = LAZY_INSTANCE_INITIALIZER;
+// Contains map of profile to check result of ARC allowed. Contains true if ARC
+// allowed check was performed and ARC is allowed. If map does not contain
+// a value then this means that check has not been performed yet.
+base::LazyInstance<std::map<const Profile*, bool>>::DestructorAtExit
+    g_profile_status_check = LAZY_INSTANCE_INITIALIZER;
 
 // The cached value of migration allowed for profile. It is necessary to use
 // the same value during a user session.
@@ -111,15 +113,6 @@ void StoreCompatibilityCheckResult(const AccountId& account_id,
   callback.Run();
 }
 
-// Returns true if this is called first time for profile. Used to detect
-// duplicate message for the same profile.
-bool IsReportingFirstTimeForProfile(const Profile* profile) {
-  const base::FilePath path = profile->GetPath();
-  bool inserted;
-  std::tie(std::ignore, inserted) = g_profile_declined_set.Get().insert(path);
-  return inserted;
-}
-
 bool IsArcMigrationAllowedInternal(const Profile* profile) {
   policy_util::EcryptfsMigrationAction migration_strategy =
       policy_util::GetDefaultEcryptfsMigrationActionForManagedUser(
@@ -181,18 +174,10 @@ bool IsUnaffiliatedArcAllowed() {
   return true;
 }
 
-}  // namespace
-
-bool IsArcAllowedForProfile(const Profile* profile) {
-  // Silently ignore default and lock screen profiles.
-  if (!profile || chromeos::ProfileHelper::IsSigninProfile(profile) ||
-      chromeos::ProfileHelper::IsLockScreenAppProfile(profile)) {
-    return false;
-  }
-
+bool IsArcAllowedForProfileInternal(const Profile* profile,
+                                    bool should_report_reason) {
   if (g_disallow_for_testing) {
-    VLOG_IF(1, IsReportingFirstTimeForProfile(profile))
-        << "ARC is disallowed for testing.";
+    VLOG_IF(1, should_report_reason) << "ARC is disallowed for testing.";
     return false;
   }
 
@@ -200,34 +185,25 @@ bool IsArcAllowedForProfile(const Profile* profile) {
   // In that case IsArcKioskMode() should return true as profile is already
   // created.
   if (!IsArcAvailable() && !(IsArcKioskMode() && IsArcKioskAvailable())) {
-    VLOG_IF(1, IsReportingFirstTimeForProfile(profile))
-        << "ARC is not available.";
+    VLOG_IF(1, should_report_reason) << "ARC is not available.";
     return false;
   }
 
   if (!chromeos::ProfileHelper::IsPrimaryProfile(profile)) {
-    VLOG_IF(1, IsReportingFirstTimeForProfile(profile))
+    VLOG_IF(1, should_report_reason)
         << "Non-primary users are not supported in ARC.";
     return false;
   }
 
-  // IsPrimaryProfile can return true for an incognito profile corresponding
-  // to the primary profile, but ARC does not support it.
-  if (profile->IsOffTheRecord()) {
-    VLOG_IF(1, IsReportingFirstTimeForProfile(profile))
-        << "Incognito profile is not supported in ARC.";
-    return false;
-  }
-
   if (profile->IsLegacySupervised()) {
-    VLOG_IF(1, IsReportingFirstTimeForProfile(profile))
+    VLOG_IF(1, should_report_reason)
         << "Supervised users are not supported in ARC.";
     return false;
   }
 
   if (IsArcBlockedDueToIncompatibleFileSystem(profile) &&
       !IsArcMigrationAllowedByPolicyForProfile(profile)) {
-    VLOG_IF(1, IsReportingFirstTimeForProfile(profile))
+    VLOG_IF(1, should_report_reason)
         << "Incompatible encryption and migration forbidden.";
     return false;
   }
@@ -239,13 +215,13 @@ bool IsArcAllowedForProfile(const Profile* profile) {
   const user_manager::User* user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
   if (!IsArcAllowedForUser(user)) {
-    VLOG_IF(1, IsReportingFirstTimeForProfile(profile))
-        << "ARC is not allowed for the user.";
+    VLOG_IF(1, should_report_reason) << "ARC is not allowed for the user.";
     return false;
   }
 
   if (!user->IsAffiliated() && !IsUnaffiliatedArcAllowed()) {
-    VLOG(1) << "Device admin disallowed ARC for unaffiliated users.";
+    VLOG_IF(1, should_report_reason)
+        << "Device admin disallowed ARC for unaffiliated users.";
     return false;
   }
 
@@ -254,12 +230,47 @@ bool IsArcAllowedForProfile(const Profile* profile) {
   chromeos::UserFlow* user_flow =
       chromeos::ChromeUserManager::Get()->GetUserFlow(user->GetAccountId());
   if (!user_flow || !user_flow->CanStartArc()) {
-    VLOG_IF(1, IsReportingFirstTimeForProfile(profile))
+    VLOG_IF(1, should_report_reason)
         << "ARC is not allowed in the current user flow.";
     return false;
   }
 
   return true;
+}
+
+}  // namespace
+
+bool IsArcAllowedForProfile(const Profile* profile) {
+  // Silently ignore default, lock screen and incognito profiles.
+  if (!profile || chromeos::ProfileHelper::IsSigninProfile(profile) ||
+      profile->IsOffTheRecord() ||
+      chromeos::ProfileHelper::IsLockScreenAppProfile(profile)) {
+    return false;
+  }
+
+  auto it = g_profile_status_check.Get().find(profile);
+
+  const bool first_check = it == g_profile_status_check.Get().end();
+  const bool result =
+      IsArcAllowedForProfileInternal(profile, first_check /* report_reason */);
+
+  if (first_check) {
+    g_profile_status_check.Get()[profile] = result;
+    return result;
+  }
+
+  // This is next check. We should be persistent and report the same result.
+  if (result != it->second) {
+    NOTREACHED() << "ARC allowed was changed for the current user session "
+                 << "and profile " << profile->GetPath().MaybeAsASCII()
+                 << ". This may lead to unexpected behavior. ARC allowed is"
+                 << " forced to " << it->second;
+  }
+  return it->second;
+}
+
+void ResetArcAllowedCheckForTesting(const Profile* profile) {
+  g_profile_status_check.Get().erase(profile);
 }
 
 bool IsArcMigrationAllowedByPolicyForProfile(const Profile* profile) {
@@ -328,6 +339,7 @@ bool IsArcCompatibleFileSystemUsedForProfile(const Profile* profile) {
 
 void DisallowArcForTesting() {
   g_disallow_for_testing = true;
+  g_profile_status_check.Get().clear();
 }
 
 bool IsArcPlayStoreEnabledForProfile(const Profile* profile) {

@@ -126,11 +126,13 @@ IN_PROC_BROWSER_TEST_P(UnaffiliatedArcAllowedTest, ProfileTest) {
       << "expected ARC to be allowed for " << (affiliated ? "" : "un")
       << "affiliated users.";
   SetPolicy(false);
+  arc::ResetArcAllowedCheckForTesting(profile);
   EXPECT_EQ(affiliated, arc::IsArcAllowedForProfile(profile))
       << "Policy UnaffiliatedArcAllowed is false, "
       << "expected ARC to be " << (affiliated ? "" : "dis") << "allowed "
       << "for " << (affiliated ? "" : "un") << "affiliated users.";
   SetPolicy(true);
+  arc::ResetArcAllowedCheckForTesting(profile);
   EXPECT_TRUE(arc::IsArcAllowedForProfile(profile))
       << "Policy UnaffiliatedArcAllowed is true, "
       << "expected ARC to be allowed for " << (affiliated ? "" : "un")
