@@ -24,7 +24,7 @@
  *
  */
 
-#include "core/frame/SuspendableTimer.h"
+#include "core/frame/PausableTimer.h"
 
 #include "public/platform/TaskType.h"
 
@@ -33,10 +33,9 @@ namespace blink {
 namespace {
 // The lowest value returned by TimerBase::nextUnalignedFireInterval is 0.0
 const double kNextFireIntervalInvalid = -1.0;
-}
+}  // namespace
 
-SuspendableTimer::SuspendableTimer(ExecutionContext* context,
-                                   TaskType task_type)
+PausableTimer::PausableTimer(ExecutionContext* context, TaskType task_type)
     : TimerBase(context->GetTaskRunner(task_type)),
       PausableObject(context),
       next_fire_interval_(kNextFireIntervalInvalid),
@@ -44,21 +43,21 @@ SuspendableTimer::SuspendableTimer(ExecutionContext* context,
   DCHECK(context);
 }
 
-SuspendableTimer::~SuspendableTimer() {}
+PausableTimer::~PausableTimer() {}
 
-void SuspendableTimer::Stop() {
+void PausableTimer::Stop() {
   next_fire_interval_ = kNextFireIntervalInvalid;
   TimerBase::Stop();
 }
 
-void SuspendableTimer::ContextDestroyed(ExecutionContext*) {
+void PausableTimer::ContextDestroyed(ExecutionContext*) {
   Stop();
 }
 
-void SuspendableTimer::Pause() {
+void PausableTimer::Pause() {
 #if DCHECK_IS_ON()
-  DCHECK(!suspended_);
-  suspended_ = true;
+  DCHECK(!paused_);
+  paused_ = true;
 #endif
   if (IsActive()) {
     next_fire_interval_ = NextFireInterval();
@@ -68,10 +67,10 @@ void SuspendableTimer::Pause() {
   }
 }
 
-void SuspendableTimer::Unpause() {
+void PausableTimer::Unpause() {
 #if DCHECK_IS_ON()
-  DCHECK(suspended_);
-  suspended_ = false;
+  DCHECK(paused_);
+  paused_ = false;
 #endif
   if (next_fire_interval_ >= 0.0) {
     // start() was called before, therefore location() is already set.

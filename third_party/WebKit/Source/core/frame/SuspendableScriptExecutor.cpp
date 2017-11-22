@@ -160,7 +160,7 @@ void SuspendableScriptExecutor::CreateAndRun(
 
 void SuspendableScriptExecutor::ContextDestroyed(
     ExecutionContext* destroyed_context) {
-  SuspendableTimer::ContextDestroyed(destroyed_context);
+  PausableTimer::ContextDestroyed(destroyed_context);
   if (callback_)
     callback_->Completed(Vector<v8::Local<v8::Value>>());
   Dispose();
@@ -171,7 +171,7 @@ SuspendableScriptExecutor::SuspendableScriptExecutor(
     ScriptState* script_state,
     WebScriptExecutionCallback* callback,
     Executor* executor)
-    : SuspendableTimer(frame->GetDocument(), TaskType::kJavascriptTimer),
+    : PausableTimer(frame->GetDocument(), TaskType::kJavascriptTimer),
       script_state_(script_state),
       callback_(callback),
       blocking_option_(kNonBlocking),
@@ -243,7 +243,7 @@ void SuspendableScriptExecutor::Dispose() {
 
 void SuspendableScriptExecutor::Trace(blink::Visitor* visitor) {
   visitor->Trace(executor_);
-  SuspendableTimer::Trace(visitor);
+  PausableTimer::Trace(visitor);
 }
 
 }  // namespace blink

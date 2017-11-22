@@ -31,7 +31,7 @@
 #include "bindings/core/v8/ScheduledAction.h"
 #include "core/CoreExport.h"
 #include "core/dom/UserGestureIndicator.h"
-#include "core/frame/SuspendableTimer.h"
+#include "core/frame/PausableTimer.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -39,7 +39,7 @@ namespace blink {
 class ExecutionContext;
 
 class CORE_EXPORT DOMTimer final : public GarbageCollectedFinalized<DOMTimer>,
-                                   public SuspendableTimer {
+                                   public PausableTimer {
   USING_GARBAGE_COLLECTED_MIXIN(DOMTimer);
 
  public:
