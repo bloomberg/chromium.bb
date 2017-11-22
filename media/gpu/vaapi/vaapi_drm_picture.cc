@@ -12,8 +12,11 @@
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_image_native_pixmap.h"
 #include "ui/gl/scoped_binders.h"
+
+#if defined(USE_OZONE)
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
+#endif
 
 namespace media {
 
@@ -109,10 +112,16 @@ bool VaapiDrmPicture::Initialize() {
 
 bool VaapiDrmPicture::Allocate(gfx::BufferFormat format) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+#if defined(USE_OZONE)
   ui::OzonePlatform* platform = ui::OzonePlatform::GetInstance();
   ui::SurfaceFactoryOzone* factory = platform->GetSurfaceFactoryOzone();
   pixmap_ = factory->CreateNativePixmap(gfx::kNullAcceleratedWidget, size_,
                                         format, gfx::BufferUsage::SCANOUT);
+#else
+  // TODO(jisorce): Implement non-ozone case, see crbug.com/785201.
+  NOTIMPLEMENTED();
+#endif  // USE_OZONE
+
   if (!pixmap_) {
     DVLOG(1) << "Failed allocating a pixmap";
     return false;
@@ -125,12 +134,16 @@ bool VaapiDrmPicture::ImportGpuMemoryBufferHandle(
     gfx::BufferFormat format,
     const gfx::GpuMemoryBufferHandle& gpu_memory_buffer_handle) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+#if defined(USE_OZONE)
   ui::OzonePlatform* platform = ui::OzonePlatform::GetInstance();
   ui::SurfaceFactoryOzone* factory = platform->GetSurfaceFactoryOzone();
   // CreateNativePixmapFromHandle() will take ownership of the handle.
   pixmap_ = factory->CreateNativePixmapFromHandle(
       gfx::kNullAcceleratedWidget, size_, format,
       gpu_memory_buffer_handle.native_pixmap_handle);
+#else
+  NOTIMPLEMENTED();
+#endif
   if (!pixmap_) {
     DVLOG(1) << "Failed creating a pixmap from a native handle";
     return false;
@@ -148,25 +161,6 @@ bool VaapiDrmPicture::DownloadFromSurface(
 bool VaapiDrmPicture::AllowOverlay() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return true;
-}
-
-// static
-std::unique_ptr<VaapiPicture> VaapiPicture::CreatePicture(
-    const scoped_refptr<VaapiWrapper>& vaapi_wrapper,
-    const MakeGLContextCurrentCallback& make_context_current_cb,
-    const BindGLImageCallback& bind_image_cb,
-    int32_t picture_buffer_id,
-    const gfx::Size& size,
-    uint32_t texture_id,
-    uint32_t client_texture_id) {
-  return base::MakeUnique<VaapiDrmPicture>(
-      vaapi_wrapper, make_context_current_cb, bind_image_cb, picture_buffer_id,
-      size, texture_id, client_texture_id);
-}
-
-// static
-uint32_t VaapiPicture::GetGLTextureTarget() {
-  return GL_TEXTURE_EXTERNAL_OES;
 }
 
 }  // namespace media
