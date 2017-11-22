@@ -600,10 +600,6 @@ int main(int argc, const char **argv) {
 #endif
   cts_each_dim[0] = TXFM_PARTITION_CONTEXTS;
   cts_each_dim[1] = 2;
-  optimize_entropy_table(
-      &fc.txfm_partition[0][0], probsfile, 2, cts_each_dim, NULL, 1,
-      "static const aom_prob "
-      "default_txfm_partition_probs[TXFM_PARTITION_CONTEXTS]");
   optimize_cdf_table(
       &fc.txfm_partition[0][0], probsfile, 2, cts_each_dim,
       "static const aom_cdf_prob\n"

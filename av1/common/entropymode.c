@@ -1462,14 +1462,6 @@ int av1_get_palette_color_index_context(const uint8_t *color_map, int stride,
 #undef NUM_PALETTE_NEIGHBORS
 #undef MAX_COLOR_CONTEXT_HASH
 
-static const aom_prob default_txfm_partition_probs[TXFM_PARTITION_CONTEXTS] = {
-#if CONFIG_TX64X64
-  249, 240, 223, 249, 229, 177, 250, 243, 208, 226, 187,
-  145, 236, 204, 150, 183, 149, 125, 181, 146, 113, 128
-#else
-  250, 231, 212, 241, 166, 66, 241, 230, 135, 243, 154, 64, 248, 161, 63, 128
-#endif  // CONFIG_TX64X64
-};
 static const aom_cdf_prob
     default_txfm_partition_cdf[TXFM_PARTITION_CONTEXTS][CDF_SIZE(2)] = {
 #if CONFIG_TX64X64
@@ -3023,7 +3015,6 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_copy(fc->comp_bwdref_cdf, default_comp_bwdref_cdf);
   av1_copy(fc->single_ref_prob, default_single_ref_p);
   av1_copy(fc->single_ref_cdf, default_single_ref_cdf);
-  av1_copy(fc->txfm_partition_prob, default_txfm_partition_probs);
   av1_copy(fc->txfm_partition_cdf, default_txfm_partition_cdf);
 #if CONFIG_JNT_COMP
   av1_copy(fc->compound_index_cdf, default_compound_idx_cdfs);
@@ -3181,12 +3172,6 @@ void av1_adapt_intra_frame_probs(AV1_COMMON *cm) {
   FRAME_CONTEXT *fc = cm->fc;
   const FRAME_CONTEXT *pre_fc = cm->pre_fc;
   const FRAME_COUNTS *counts = &cm->counts;
-
-  if (cm->tx_mode == TX_MODE_SELECT) {
-    for (i = 0; i < TXFM_PARTITION_CONTEXTS; ++i)
-      fc->txfm_partition_prob[i] = av1_mode_mv_merge_probs(
-          pre_fc->txfm_partition_prob[i], counts->txfm_partition[i]);
-  }
 
   if (cm->seg.temporal_update) {
     for (i = 0; i < PREDICTION_PROBS; i++)
