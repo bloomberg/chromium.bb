@@ -441,7 +441,7 @@ Polymer({
    * @private
    */
   isDisabled_: function(pref) {
-    return !!(pref.value === false);
+    return !!pref && (pref.value === false);
   },
 
 
