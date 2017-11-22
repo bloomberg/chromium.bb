@@ -3446,6 +3446,26 @@
             ]
         }
     ],
+    "SimpleCachePrefetchExperiment": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux"
+            ],
+            "experiments": [
+                {
+                    "name": "Prefetch32K",
+                    "params": {
+                        "Bytes": "32768"
+                    },
+                    "enable_features": [
+                        "SimpleCachePrefetchExperiment"
+                    ]
+                }
+            ]
+        }
+    ],
     "SimpleCacheTrial": [
         {
             "platforms": [
