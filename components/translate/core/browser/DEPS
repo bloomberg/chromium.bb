@@ -1,7 +1,7 @@
 include_rules = [
   "+components/keyed_service/core",
   "+components/metrics",
-  "+components/machine_intelligence",
+  "+components/assist_ranker",
   "+services/metrics/public",
 ]
 

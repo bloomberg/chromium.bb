@@ -60,6 +60,7 @@ test("components_unittests") {
 
   deps = [
     "//base",
+    "//components/assist_ranker:unit_tests",
     "//components/autofill/core/browser:unit_tests",
     "//components/autofill/core/common:unit_tests",
     "//components/base32:unit_tests",
@@ -98,7 +99,6 @@ test("components_unittests") {
     "//components/language_usage_metrics:unit_tests",
     "//components/leveldb_proto:unit_tests",
     "//components/login:unit_tests",
-    "//components/machine_intelligence:unit_tests",
     "//components/metrics:unit_tests",
     "//components/navigation_metrics:unit_tests",
     "//components/net_log:unit_tests",

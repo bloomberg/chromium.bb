@@ -14,10 +14,10 @@
 #include "chrome/browser/android/contextualsearch/contextual_search_field_trial.h"
 #include "chrome/browser/assist_ranker/assist_ranker_service_factory.h"
 #include "chrome/browser/browser_process.h"
+#include "components/assist_ranker/assist_ranker_service_impl.h"
+#include "components/assist_ranker/binary_classifier_predictor.h"
+#include "components/assist_ranker/proto/ranker_example.pb.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/machine_intelligence/assist_ranker_service_impl.h"
-#include "components/machine_intelligence/binary_classifier_predictor.h"
-#include "components/machine_intelligence/proto/ranker_example.pb.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/ContextualSearchRankerLoggerImpl_jni.h"
 #include "services/metrics/public/cpp/ukm_entry_builder.h"
@@ -89,7 +89,7 @@ void ContextualSearchRankerLoggerImpl::SetupLoggingAndRanker(
   if (IsRankerEnabled()) {
     SetupRankerPredictor(web_contents);
     // Start building example data based on features to be gathered and logged.
-    ranker_example_.reset(new machine_intelligence::RankerExample());
+    ranker_example_.reset(new assist_ranker::RankerExample());
   }
 }
 
@@ -118,7 +118,7 @@ void ContextualSearchRankerLoggerImpl::SetupRankerPredictor(
       return;
 
     browser_context_ = browser_context;
-    machine_intelligence::AssistRankerService* assist_ranker_service =
+    assist_ranker::AssistRankerService* assist_ranker_service =
         assist_ranker::AssistRankerServiceFactory::GetForBrowserContext(
             browser_context);
     predictor_ = assist_ranker_service->FetchBinaryClassifierPredictor(

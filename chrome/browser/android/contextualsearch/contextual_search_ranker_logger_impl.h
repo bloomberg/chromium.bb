@@ -19,10 +19,10 @@ class BrowserContext;
 class WebContents;
 }  // namespace content
 
-namespace machine_intelligence {
+namespace assist_ranker {
 class BinaryClassifierPredictor;
 class RankerExample;
-}  // namespace machine_intelligence
+}  // namespace assist_ranker
 
 namespace ukm {
 class UkmEntryBuilder;
@@ -101,7 +101,7 @@ class ContextualSearchRankerLoggerImpl {
   std::unique_ptr<ContextualSearchFieldTrial> field_trial_;
 
   // The Ranker Predictor for whether a tap gesture should be suppressed or not.
-  std::unique_ptr<machine_intelligence::BinaryClassifierPredictor> predictor_;
+  std::unique_ptr<assist_ranker::BinaryClassifierPredictor> predictor_;
 
   // The |BrowserContext| currently associated with the above predictor.
   content::BrowserContext* browser_context_;
@@ -109,7 +109,7 @@ class ContextualSearchRankerLoggerImpl {
   // The current RankerExample or null.
   // Set of features from one example of a Tap to predict a suppression
   // decision.
-  std::unique_ptr<machine_intelligence::RankerExample> ranker_example_;
+  std::unique_ptr<assist_ranker::RankerExample> ranker_example_;
 
   // Whether Ranker has predicted the decision yet.
   bool has_predicted_decision_;
