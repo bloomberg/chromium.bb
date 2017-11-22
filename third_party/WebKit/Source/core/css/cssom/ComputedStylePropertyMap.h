@@ -7,9 +7,9 @@
 
 #include "base/macros.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
+#include "core/css/CSSSelector.h"
 #include "core/css/cssom/StylePropertyMapReadonly.h"
 #include "core/dom/Node.h"
-#include "core/layout/LayoutObject.h"
 
 namespace blink {
 
