@@ -6,16 +6,44 @@ For a detailed list of all the changes refer to [[https://github.com/liblouis/li
 ** New features
 ** Bug fixes
 ** Other changes
+*** Improved documentation
+Bue Vester-Andersen added some notes about back-translation and
+documented all possible values of the node parameter. Also the
+description of decpoint and litdigit was improved
+
+*** lou_maketable
+Numerous bug fixes and performance enhancments thanks to Bert Frees
+
+*** Code refactoring
+Many global variables have been removed thanks to Bert Frees
+
+*** Code formating
+Thanks to clang-format There is now a uniform coding style over the
+whole code base
+
+*** Fix broken NMakefile
+Thanks to Davy Kager building with nmake should work again
+
 ** Braille table improvements
 - Addition of Nemeth and Kangxi radical characters to Chinese braille
   (zh-tw.ctb) thanks to Bo-Cheng Jhan and 黃偉豪.
+- Improvements to the Spanish chardefs table thanks to Luis Lorente
+  Barajas and Simon Aittamaa.
 - New Norwegian 6-dot display braille table for Braillo embossers
   thanks to Lars Bjørndal
+- Added a bunch of whitespace-like codepoints as spaces thanks to
+  Rimas Kudelis
+- Addition of more characters to the French tables thanks to Samuel
+  Thibault
 - Improvements to the Hungarian tables thanks to Attila Hammer
+- Improvements to the Mongolian tables thanks to Tsengel Maidar
 
 ** Backwards incompatible changes
+None
+
 ** New, renamed or removed tables
 *** New
+- no-no-braillo-047-01.dis
 *** Renamed
 *** Removed
 
