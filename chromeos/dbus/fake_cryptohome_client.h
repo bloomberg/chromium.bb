@@ -301,6 +301,9 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
   // Notifies LowDiskSpace() to Observer instances.
   void NotifyLowDiskSpace(uint64_t disk_free_bytes);
 
+  // Loads install attributes from the stub file.
+  bool LoadInstallAttributes();
+
   bool service_is_available_;
   base::ObserverList<Observer> observer_list_;
 
