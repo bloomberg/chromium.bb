@@ -7,6 +7,8 @@
 #include "base/base64.h"
 #include "base/callback.h"
 #include "base/lazy_instance.h"
+#include "base/memory/protected_memory.h"
+#include "base/memory/protected_memory_cfi.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
@@ -24,7 +26,13 @@ struct PlatformContext {
 
 base::LazyInstance<PlatformContext>::DestructorAtExit g_platform_context =
     LAZY_INSTANCE_INITIALIZER;
-ResetDisplayPlatformFunc g_angle_reset_platform = nullptr;
+// Place the function pointers for ANGLEGetDisplayPlatform and
+// ANGLEResetDisplayPlatform in read-only memory after being resolved to prevent
+// them from being tampered with. See crbug.com/771365 for details.
+PROTECTED_MEMORY_SECTION base::ProtectedMemory<GetDisplayPlatformFunc>
+    g_angle_get_platform;
+PROTECTED_MEMORY_SECTION base::ProtectedMemory<ResetDisplayPlatformFunc>
+    g_angle_reset_platform;
 
 double ANGLEPlatformImpl_currentTime(PlatformMethods* platform) {
   return base::Time::Now().ToDoubleT();
@@ -150,20 +158,26 @@ void ANGLEPlatformImpl_cacheProgram(PlatformMethods* platform,
 }  // anonymous namespace
 
 bool InitializePlatform(EGLDisplay display) {
-  GetDisplayPlatformFunc angle_get_platform =
-      reinterpret_cast<GetDisplayPlatformFunc>(
-          eglGetProcAddress("ANGLEGetDisplayPlatform"));
-  if (!angle_get_platform)
+  {
+    auto writer = base::AutoWritableMemory::Create(g_angle_get_platform);
+    *g_angle_get_platform = reinterpret_cast<GetDisplayPlatformFunc>(
+        eglGetProcAddress("ANGLEGetDisplayPlatform"));
+  }
+
+  if (!*g_angle_get_platform)
     return false;
 
   // Save the pointer to the destroy function here to avoid crash.
-  g_angle_reset_platform = reinterpret_cast<ResetDisplayPlatformFunc>(
-      eglGetProcAddress("ANGLEResetDisplayPlatform"));
+  {
+    auto writer = base::AutoWritableMemory::Create(g_angle_reset_platform);
+    *g_angle_reset_platform = reinterpret_cast<ResetDisplayPlatformFunc>(
+        eglGetProcAddress("ANGLEResetDisplayPlatform"));
+  }
 
   PlatformMethods* platformMethods = nullptr;
-  if (!angle_get_platform(static_cast<EGLDisplayType>(display),
-                          g_PlatformMethodNames, g_NumPlatformMethods,
-                          &g_platform_context.Get(), &platformMethods))
+  if (!base::UnsanitizedCfiCall(g_angle_get_platform)(
+          static_cast<EGLDisplayType>(display), g_PlatformMethodNames,
+          g_NumPlatformMethods, &g_platform_context.Get(), &platformMethods))
     return false;
   platformMethods->currentTime = ANGLEPlatformImpl_currentTime;
   platformMethods->addTraceEvent = ANGLEPlatformImpl_addTraceEvent;
@@ -187,9 +201,10 @@ bool InitializePlatform(EGLDisplay display) {
 }
 
 void ResetPlatform(EGLDisplay display) {
-  if (!g_angle_reset_platform)
+  if (!*g_angle_reset_platform)
     return;
-  g_angle_reset_platform(static_cast<EGLDisplayType>(display));
+  base::UnsanitizedCfiCall(g_angle_reset_platform)(
+      static_cast<EGLDisplayType>(display));
   ResetCacheProgramCallback();
 }
 
