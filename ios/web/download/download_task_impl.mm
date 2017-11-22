@@ -291,13 +291,11 @@ void DownloadTaskImpl::GetWKCookies(
   DCHECK_CURRENTLY_ON(WebThread::UI);
   auto store = WKCookieStoreForBrowserState(web_state_->GetBrowserState());
   DCHECK(store);
-  WebThread::PostTask(WebThread::IO, FROM_HERE, base::BindBlockArc(^{
-    [store getAllCookies:^(NSArray<NSHTTPCookie*>* cookies) {
-      // getAllCookies: callback is always called on UI thread.
-      DCHECK_CURRENTLY_ON(WebThread::UI);
-      callback.Run(cookies);
-    }];
-  }));
+  [store getAllCookies:^(NSArray<NSHTTPCookie*>* cookies) {
+    // getAllCookies: callback is always called on UI thread.
+    DCHECK_CURRENTLY_ON(WebThread::UI);
+    callback.Run(cookies);
+  }];
 }
 
 void DownloadTaskImpl::StartWithCookies(NSArray<NSHTTPCookie*>* cookies) {
