@@ -51,7 +51,7 @@ bool IsNonTextLeafChild(LayoutObject* object) {
   return true;
 }
 
-InlineTextBox* SearchAheadForBetterMatch(LayoutObject* layout_object) {
+InlineTextBox* SearchAheadForBetterMatch(const LayoutText* layout_object) {
   LayoutBlock* container = layout_object->ContainingBlock();
   for (LayoutObject* next = layout_object->NextInPreOrder(container); next;
        next = next->NextInPreOrder(container)) {
@@ -221,7 +221,7 @@ bool IsCaretAtEdgeOfInlineTextBox(int caret_offset,
 }
 
 InlineBoxPosition ComputeInlineBoxPositionForTextNode(
-    LayoutObject* layout_object,
+    const LayoutText* text_layout_object,
     int caret_offset,
     TextAffinity affinity,
     TextDirection primary_direction) {
@@ -229,8 +229,6 @@ InlineBoxPosition ComputeInlineBoxPositionForTextNode(
   // DCHECK(CanUseInlineBox(*layout_object));
 
   InlineBox* inline_box = nullptr;
-  LayoutText* text_layout_object = ToLayoutText(layout_object);
-
   InlineTextBox* candidate = nullptr;
 
   for (InlineTextBox* box : InlineTextBoxesOf(*text_layout_object)) {
@@ -263,7 +261,7 @@ InlineBoxPosition ComputeInlineBoxPositionForTextNode(
   if (!inline_box)
     return InlineBoxPosition();
   return AdjustInlineBoxPositionForTextDirection(
-      inline_box, caret_offset, layout_object->Style()->GetUnicodeBidi(),
+      inline_box, caret_offset, text_layout_object->Style()->GetUnicodeBidi(),
       primary_direction);
 }
 
@@ -327,8 +325,8 @@ InlineBoxPosition ComputeInlineBoxPositionTemplate(
   DCHECK(layout_object) << position;
 
   if (layout_object->IsText()) {
-    return ComputeInlineBoxPositionForTextNode(layout_object, caret_offset,
-                                               affinity, primary_direction);
+    return ComputeInlineBoxPositionForTextNode(
+        ToLayoutText(layout_object), caret_offset, affinity, primary_direction);
   }
 
   if (layout_object->IsAtomicInlineLevel()) {
