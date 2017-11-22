@@ -2109,9 +2109,6 @@ crbug.com/626703 external/wpt/css/CSS2/text/text-decoration-va-length-002.xht [ 
 crbug.com/626703 external/wpt/css/CSS2/text/white-space-collapsing-bidi-001.xht [ Failure ]
 crbug.com/626703 external/wpt/css/CSS2/text/white-space-mixed-001.xht [ Failure ]
 crbug.com/626703 external/wpt/css/CSS2/text/white-space-mixed-003.xht [ Failure ]
-crbug.com/626703 external/wpt/css/css-display/display-contents-before-after-003.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-display/display-contents-dynamic-before-after-001.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-display/display-contents-dynamic-before-after-first-letter-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-fonts/alternates-order.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-fonts/font-features-across-space-1.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-fonts/font-features-across-space-3.html [ Failure ]
@@ -2966,7 +2963,6 @@ crbug.com/786249 virtual/mojo-loading/http/tests/inspector-protocol/network/resp
 
 # ====== Begin of display: contents tests ======
 
-crbug.com/657748 external/wpt/css/css-display/display-contents-before-after-002.html [ Failure ]
 crbug.com/657748 external/wpt/css/css-display/display-contents-dynamic-flex-002-inline.html [ Failure ]
 crbug.com/657748 external/wpt/css/css-display/display-contents-dynamic-table-001-inline.html [ Failure ]
 

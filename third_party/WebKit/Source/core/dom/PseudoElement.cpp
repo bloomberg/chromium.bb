@@ -26,6 +26,7 @@
 
 #include "core/dom/PseudoElement.h"
 
+#include "core/dom/ElementRareData.h"
 #include "core/dom/FirstLetterPseudoElement.h"
 #include "core/frame/UseCounter.h"
 #include "core/layout/LayoutObject.h"
@@ -100,8 +101,24 @@ PseudoElement::PseudoElement(Element* parent, PseudoId pseudo_id)
 }
 
 scoped_refptr<ComputedStyle> PseudoElement::CustomStyleForLayoutObject() {
-  return ParentOrShadowHostElement()->PseudoStyle(
-      PseudoStyleRequest(pseudo_id_));
+  scoped_refptr<ComputedStyle> original_style =
+      ParentOrShadowHostElement()->PseudoStyle(PseudoStyleRequest(pseudo_id_));
+  if (!original_style || original_style->Display() != EDisplay::kContents)
+    return original_style;
+
+  // For display:contents we should not generate a box, but we generate a non-
+  // observable inline box for pseudo elements to be able to locate the
+  // anonymous layout objects for generated content during DetachLayoutTree().
+  scoped_refptr<ComputedStyle> layout_style = ComputedStyle::Create();
+  layout_style->InheritFrom(*original_style);
+  layout_style->SetContent(original_style->GetContentData());
+  layout_style->SetDisplay(EDisplay::kInline);
+  layout_style->SetStyleType(pseudo_id_);
+
+  // Store the actual ComputedStyle to be able to return the correct values from
+  // getComputedStyle().
+  StoreNonLayoutObjectComputedStyle(original_style);
+  return layout_style;
 }
 
 void PseudoElement::Dispose() {
@@ -197,6 +214,22 @@ Node* PseudoElement::FindAssociatedNode() const {
     ancestor = ancestor->Parent();
   }
   return ancestor->GetNode();
+}
+
+const ComputedStyle* PseudoElement::VirtualEnsureComputedStyle(
+    PseudoId pseudo_element_specifier) {
+  if (HasRareData()) {
+    // Prefer NonLayoutObjectComputedStyle() for display:contents pseudos
+    // instead of the ComputedStyle for the fictional inline box (see
+    // CustomStyleForLayoutObject).
+    if (const ComputedStyle* non_layout_computed_style =
+            NonLayoutObjectComputedStyle()) {
+      DCHECK(!GetLayoutObject() ||
+             non_layout_computed_style->Display() == EDisplay::kContents);
+      return non_layout_computed_style;
+    }
+  }
+  return EnsureComputedStyle(pseudo_element_specifier);
 }
 
 bool PseudoElementLayoutObjectIsNeeded(const ComputedStyle* style) {
