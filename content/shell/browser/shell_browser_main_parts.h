@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/metrics/field_trial.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/common/main_function_params.h"
@@ -26,9 +27,7 @@ class ShellBrowserMainParts : public BrowserMainParts {
 
   // BrowserMainParts overrides.
   void PreEarlyInitialization() override;
-#if defined(OS_ANDROID)
   int PreCreateThreads() override;
-#endif
   void PreMainMessageLoopStart() override;
   void PostMainMessageLoopStart() override;
   void PreMainMessageLoopRun() override;
@@ -55,6 +54,8 @@ class ShellBrowserMainParts : public BrowserMainParts {
   }
 
  private:
+  void SetupFieldTrials();
+
   std::unique_ptr<net::NetLog> net_log_;
   std::unique_ptr<ShellBrowserContext> browser_context_;
   std::unique_ptr<ShellBrowserContext> off_the_record_browser_context_;
@@ -62,6 +63,10 @@ class ShellBrowserMainParts : public BrowserMainParts {
   // For running content_browsertests.
   const MainFunctionParams parameters_;
   bool run_message_loop_;
+
+  // Statistical testing infrastructure for the entire browser. nullptr until
+  // |SetupFieldTrials()| is called.
+  std::unique_ptr<base::FieldTrialList> field_trial_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellBrowserMainParts);
 };

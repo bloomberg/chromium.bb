@@ -12,6 +12,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
+#include "cc/base/switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/storage_partition.h"
@@ -151,22 +152,47 @@ void ShellBrowserMainParts::InitializeMessageLoopContext() {
                          gfx::Size());
 }
 
-#if defined(OS_ANDROID)
+void ShellBrowserMainParts::SetupFieldTrials() {
+  DCHECK(!field_trial_list_);
+  field_trial_list_.reset(new base::FieldTrialList(nullptr));
+
+  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+
+  // Ensure any field trials specified on the command line are initialized.
+  if (command_line->HasSwitch(::switches::kForceFieldTrials)) {
+    // Create field trials without activating them, so that this behaves in a
+    // consistent manner with field trials created from the server.
+    bool result = base::FieldTrialList::CreateTrialsFromString(
+        command_line->GetSwitchValueASCII(::switches::kForceFieldTrials),
+        std::set<std::string>());
+    CHECK(result) << "Invalid --" << ::switches::kForceFieldTrials
+                  << " list specified.";
+  }
+
+  feature_list->InitializeFromCommandLine(
+      command_line->GetSwitchValueASCII(switches::kEnableFeatures),
+      command_line->GetSwitchValueASCII(switches::kDisableFeatures));
+}
+
 int ShellBrowserMainParts::PreCreateThreads() {
+  SetupFieldTrials();
+#if defined(OS_ANDROID)
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
   breakpad::CrashDumpObserver::Create();
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableCrashReporter)) {
+  if (command_line->HasSwitch(switches::kEnableCrashReporter)) {
     base::FilePath crash_dumps_dir =
-        base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
-            switches::kCrashDumpsDir);
+        command_line->GetSwitchValuePath(switches::kCrashDumpsDir);
     breakpad::CrashDumpObserver::GetInstance()->RegisterClient(
         std::make_unique<breakpad::ChildProcessCrashObserver>(
             crash_dumps_dir, kAndroidMinidumpDescriptor));
   }
-
+#endif
   return 0;
 }
-#endif
 
 void ShellBrowserMainParts::PreMainMessageLoopRun() {
   net_log_.reset(new ShellNetLog("content_shell"));
