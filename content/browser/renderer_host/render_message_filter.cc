@@ -21,6 +21,7 @@
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
+#include "content/browser/bad_message.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/cache_storage/cache_storage_cache.h"
@@ -266,6 +267,12 @@ void RenderMessageFilter::DidGenerateCacheableMetadata(
     const GURL& url,
     base::Time expected_response_time,
     const std::vector<uint8_t>& data) {
+  if (!url.SchemeIsHTTPOrHTTPS()) {
+    bad_message::ReceivedBadMessage(
+        this, bad_message::RMF_BAD_URL_CACHEABLE_METADATA);
+    return;
+  }
+
   net::HttpCache* cache = request_context_->GetURLRequestContext()->
       http_transaction_factory()->GetCache();
   if (!cache)
