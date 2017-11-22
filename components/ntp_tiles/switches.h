@@ -13,11 +13,6 @@ extern const char kEnableNTPSearchEngineCountryDetection[];
 extern const char kEnableNTPPopularSites[];
 extern const char kDisableNTPPopularSites[];
 
-// These switches are only introduced to allow iOS to override a feature.
-// TODO(jkrcal): Remove once crbug.com/718926 is fixed.
-extern const char kEnableNtpMostLikelyFaviconsFromServer[];
-extern const char kDisableNtpMostLikelyFaviconsFromServer[];
-
 }  // namespace switches
 }  // namespace ntp_tiles
 
