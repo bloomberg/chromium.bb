@@ -200,14 +200,16 @@ TransformDirective ParseRequestTransform(
   if (base::LowerCaseEqualsASCII(accept_transform_value,
                                  lite_page_directive())) {
     return TRANSFORM_LITE_PAGE;
-  } else if (base::LowerCaseEqualsASCII(accept_transform_value,
-                                        empty_image_directive())) {
+  }
+  if (base::LowerCaseEqualsASCII(accept_transform_value,
+                                 empty_image_directive())) {
     return TRANSFORM_EMPTY_IMAGE;
-  } else if (base::LowerCaseEqualsASCII(accept_transform_value,
-                                        compressed_video_directive())) {
+  }
+  if (base::LowerCaseEqualsASCII(accept_transform_value,
+                                 compressed_video_directive())) {
     return TRANSFORM_COMPRESSED_VIDEO;
-  } else if (base::LowerCaseEqualsASCII(accept_transform_value,
-                                        kIdentityDirective)) {
+  }
+  if (base::LowerCaseEqualsASCII(accept_transform_value, kIdentityDirective)) {
     return TRANSFORM_IDENTITY;
   }
 
@@ -226,17 +228,20 @@ TransformDirective ParseResponseTransform(
       return ParsePagePolicyDirective(chrome_proxy_header_value);
     }
     return TRANSFORM_NONE;
-  } else if (base::LowerCaseEqualsASCII(content_transform_value,
-                                        lite_page_directive())) {
+  }
+  if (base::LowerCaseEqualsASCII(content_transform_value,
+                                 lite_page_directive())) {
     return TRANSFORM_LITE_PAGE;
-  } else if (base::LowerCaseEqualsASCII(content_transform_value,
-                                        empty_image_directive())) {
+  }
+  if (base::LowerCaseEqualsASCII(content_transform_value,
+                                 empty_image_directive())) {
     return TRANSFORM_EMPTY_IMAGE;
-  } else if (base::LowerCaseEqualsASCII(content_transform_value,
-                                        kIdentityDirective)) {
+  }
+  if (base::LowerCaseEqualsASCII(content_transform_value, kIdentityDirective)) {
     return TRANSFORM_IDENTITY;
-  } else if (base::LowerCaseEqualsASCII(content_transform_value,
-                                        compressed_video_directive())) {
+  }
+  if (base::LowerCaseEqualsASCII(content_transform_value,
+                                 compressed_video_directive())) {
     return TRANSFORM_COMPRESSED_VIDEO;
   }
   return TRANSFORM_UNKNOWN;

@@ -42,20 +42,23 @@ std::string MetricSample::ToString() const {
                               '\0',
                               name().c_str(),
                               '\0');
-  } else if (type_ == SPARSE_HISTOGRAM) {
+  }
+  if (type_ == SPARSE_HISTOGRAM) {
     return base::StringPrintf("sparsehistogram%c%s %d%c",
                               '\0',
                               name().c_str(),
                               sample_,
                               '\0');
-  } else if (type_ == LINEAR_HISTOGRAM) {
+  }
+  if (type_ == LINEAR_HISTOGRAM) {
     return base::StringPrintf("linearhistogram%c%s %d %d%c",
                               '\0',
                               name().c_str(),
                               sample_,
                               max_,
                               '\0');
-  } else if (type_ == HISTOGRAM) {
+  }
+  if (type_ == HISTOGRAM) {
     return base::StringPrintf("histogram%c%s %d %d %d %d%c",
                               '\0',
                               name().c_str(),
@@ -64,14 +67,10 @@ std::string MetricSample::ToString() const {
                               max_,
                               bucket_count_,
                               '\0');
-  } else {
-    // The type can only be USER_ACTION.
-    CHECK_EQ(type_, USER_ACTION);
-    return base::StringPrintf("useraction%c%s%c",
-                              '\0',
-                              name().c_str(),
-                              '\0');
   }
+  // The type can only be USER_ACTION.
+  CHECK_EQ(type_, USER_ACTION);
+  return base::StringPrintf("useraction%c%s%c", '\0', name().c_str(), '\0');
 }
 
 int MetricSample::sample() const {

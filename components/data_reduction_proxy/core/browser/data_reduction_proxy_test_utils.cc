@@ -628,12 +628,11 @@ DataReductionProxyTestContext::CreateDataReductionProxyServiceInternal(
     return base::MakeUnique<MockDataReductionProxyService>(
         settings, simple_pref_service_.get(), request_context_getter_.get(),
         task_runner_);
-  } else {
-    return base::MakeUnique<DataReductionProxyService>(
-        settings, simple_pref_service_.get(), request_context_getter_.get(),
-        base::WrapUnique(new TestDataStore()), task_runner_, task_runner_,
-        task_runner_, base::TimeDelta());
   }
+  return base::MakeUnique<DataReductionProxyService>(
+      settings, simple_pref_service_.get(), request_context_getter_.get(),
+      base::WrapUnique(new TestDataStore()), task_runner_, task_runner_,
+      task_runner_, base::TimeDelta());
 }
 
 void DataReductionProxyTestContext::AttachToURLRequestContext(
