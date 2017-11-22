@@ -96,7 +96,7 @@ void ScriptedIdleTaskController::V8IdleTask::TraceWrappers(
 }
 
 void ScriptedIdleTaskController::V8IdleTask::invoke(IdleDeadline* deadline) {
-  callback_->call(nullptr, deadline);
+  callback_->InvokeAndReportException(nullptr, deadline);
 }
 
 ScriptedIdleTaskController::ScriptedIdleTaskController(

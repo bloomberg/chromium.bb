@@ -19,7 +19,7 @@ namespace blink {
 // implementation of callback functions.
 //
 // As the signatures of callback functions vary, this class does not implement
-// |call| member function that performs "invoke" steps. Subclasses will
+// |Invoke| member function that performs "invoke" steps. Subclasses will
 // implement it.
 class PLATFORM_EXPORT CallbackFunctionBase
     : public GarbageCollectedFinalized<CallbackFunctionBase>,

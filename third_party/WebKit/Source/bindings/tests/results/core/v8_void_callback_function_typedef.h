@@ -29,7 +29,11 @@ class CORE_EXPORT V8VoidCallbackFunctionTypedef final : public CallbackFunctionB
 
   // Performs "invoke".
   // https://heycam.github.io/webidl/#es-invoking-callback-functions
-  bool call(ScriptWrappable* callback_this_value, const String& arg);
+  v8::Maybe<void> Invoke(ScriptWrappable* callback_this_value, const String& arg) WARN_UNUSED_RESULT;
+
+  // Performs "invoke", and then reports an exception, if any, to the global
+  // error handler such as DevTools' console.
+  void InvokeAndReportException(ScriptWrappable* callback_this_value, const String& arg);
 
  private:
   explicit V8VoidCallbackFunctionTypedef(v8::Local<v8::Function> callback_function)

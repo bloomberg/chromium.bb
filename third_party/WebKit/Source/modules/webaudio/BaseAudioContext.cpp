@@ -354,7 +354,7 @@ ScriptPromise BaseAudioContext::decodeAudioData(
         kDataCloneError, "Cannot decode detached ArrayBuffer");
     resolver->Reject(error);
     if (error_callback) {
-      error_callback->call(this, error);
+      error_callback->InvokeAndReportException(this, error);
     }
   }
 
@@ -372,14 +372,14 @@ void BaseAudioContext::HandleDecodeAudioData(
     // Resolve promise successfully and run the success callback
     resolver->Resolve(audio_buffer);
     if (success_callback)
-      success_callback->call(this, audio_buffer);
+      success_callback->InvokeAndReportException(this, audio_buffer);
   } else {
     // Reject the promise and run the error callback
     DOMException* error =
         DOMException::Create(kEncodingError, "Unable to decode audio data");
     resolver->Reject(error);
     if (error_callback)
-      error_callback->call(this, error);
+      error_callback->InvokeAndReportException(this, error);
   }
 
   // We've resolved the promise.  Remove it now.

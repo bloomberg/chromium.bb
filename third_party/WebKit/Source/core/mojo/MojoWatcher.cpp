@@ -17,7 +17,7 @@ namespace blink {
 static void RunWatchCallback(V8MojoWatchCallback* callback,
                              ScriptWrappable* wrappable,
                              MojoResult result) {
-  callback->call(wrappable, result);
+  callback->InvokeAndReportException(wrappable, result);
 }
 
 // static

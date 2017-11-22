@@ -11,7 +11,7 @@
 
 namespace blink {
 
-bool {{cpp_class}}::call({{argument_declarations | join(', ')}}) {
+v8::Maybe<{{return_cpp_type}}> {{cpp_class}}::Invoke({{argument_declarations | join(', ')}}) {
   // This function implements "invoke" steps in
   // "3.10. Invoking callback functions".
   // https://heycam.github.io/webidl/#es-invoking-callback-functions
@@ -21,7 +21,19 @@ bool {{cpp_class}}::call({{argument_declarations | join(', ')}}) {
      into a rejected promise. See also step 14.4. to 14.6. #}
 
   if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState())) {
-    return false;
+    // Wrapper-tracing for the callback function makes the function object and
+    // its creation context alive. Thus it's safe to use the creation context
+    // of the callback function here.
+    v8::HandleScope handle_scope(GetIsolate());
+    v8::Context::Scope context_scope(
+        CallbackRelevantScriptState()->GetContext());
+    V8ThrowException::ThrowError(
+        GetIsolate(),
+        ExceptionMessages::FailedToExecute(
+            "invoke",
+            "{{callback_function_name}}",
+            "The provided callback is no longer runnable."));
+    return v8::Nothing<{{return_cpp_type}}>();
   }
 
   // step 4. If ! IsCallable(F) is false:
@@ -42,13 +54,16 @@ bool {{cpp_class}}::call({{argument_declarations | join(', ')}}) {
   {# TODO(yukishiino): Callback function type value must make the incumbent
      environment alive, i.e. the reference to v8::Context must be strong. #}
   if (IncumbentScriptState()->GetContext().IsEmpty()) {
-    return false;
+    V8ThrowException::ThrowError(
+        GetIsolate(),
+        ExceptionMessages::FailedToExecute(
+            "invoke",
+            "{{callback_function_name}}",
+            "The provided callback is no longer runnable."));
+    return v8::Nothing<{{return_cpp_type}}>();
   }
   v8::Context::BackupIncumbentScope backup_incumbent_scope(
       IncumbentScriptState()->GetContext());
-
-  v8::TryCatch try_catch(GetIsolate());
-  try_catch.SetVerbose(true);
 
   v8::Local<v8::Value> this_arg = ToV8(callback_this_value,
                                        CallbackRelevantScriptState());
@@ -65,7 +80,7 @@ bool {{cpp_class}}::call({{argument_declarations | join(', ')}}) {
                                    "invoke");
     if (!IsValidEnum({{argument.name}}, {{valid_enum_variables}}, WTF_ARRAY_LENGTH({{valid_enum_variables}}), "{{argument.enum_type}}", exception_state)) {
       NOTREACHED();
-      return false;
+      return v8::Nothing<{{return_cpp_type}}>();
     }
   }
 #endif
@@ -100,13 +115,13 @@ bool {{cpp_class}}::call({{argument_declarations | join(', ')}}) {
           GetIsolate()).ToLocal(&call_result)) {
     // step 12. If callResult is an abrupt completion, set completion to
     //   callResult and jump to the step labeled return.
-    return false;
+    return v8::Nothing<{{return_cpp_type}}>();
   }
 
   // step 13. Set completion to the result of converting callResult.[[Value]] to
   //   an IDL value of the same type as the operation's return type.
   {% if idl_type == 'void' %}
-  return true;
+  return v8::JustVoid();
   {% else %}
   {
     ExceptionState exceptionState(GetIsolate(),
@@ -114,11 +129,26 @@ bool {{cpp_class}}::call({{argument_declarations | join(', ')}}) {
                                   "{{callback_function_name}}",
                                   "invoke");
     {{v8_value_to_local_cpp_value(return_value_conversion) | indent(4)}}
-    return_value = native_result;
-    return true;
+    return v8::Just<{{return_cpp_type}}>(native_result);
   }
   {% endif %}
 }
+
+{% if idl_type == 'void' %}
+void {{cpp_class}}::InvokeAndReportException({{argument_declarations | join(', ')}}) {
+  v8::TryCatch try_catch(GetIsolate());
+  try_catch.SetVerbose(true);
+
+  v8::Maybe<void> maybe_result =
+      Invoke({{
+                 (['callback_this_value'] +
+                  (arguments|map(attribute='name')|list)
+                 )|join(', ')
+             }});
+  // An exception if any is killed with the v8::TryCatch above.
+  ALLOW_UNUSED_LOCAL(maybe_result);
+}
+{% endif %}
 
 }  // namespace blink
 

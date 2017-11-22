@@ -25,7 +25,7 @@
  */
 
 // https://www.w3.org/TR/webdatabase/#databasecallback
-callback DatabaseCallback = boolean (Database database);
+callback DatabaseCallback = void (Database database);
 
 // https://www.w3.org/TR/webdatabase/#databases
 [

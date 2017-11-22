@@ -30,7 +30,11 @@ class CORE_EXPORT V8VoidCallbackFunctionTestInterfaceSequenceArg final : public 
 
   // Performs "invoke".
   // https://heycam.github.io/webidl/#es-invoking-callback-functions
-  bool call(ScriptWrappable* callback_this_value, const HeapVector<Member<TestInterfaceImplementation>>& arg);
+  v8::Maybe<void> Invoke(ScriptWrappable* callback_this_value, const HeapVector<Member<TestInterfaceImplementation>>& arg) WARN_UNUSED_RESULT;
+
+  // Performs "invoke", and then reports an exception, if any, to the global
+  // error handler such as DevTools' console.
+  void InvokeAndReportException(ScriptWrappable* callback_this_value, const HeapVector<Member<TestInterfaceImplementation>>& arg);
 
  private:
   explicit V8VoidCallbackFunctionTestInterfaceSequenceArg(v8::Local<v8::Function> callback_function)

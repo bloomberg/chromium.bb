@@ -21,13 +21,25 @@
 
 namespace blink {
 
-bool V8LongCallbackFunction::call(ScriptWrappable* callback_this_value, int32_t num1, int32_t num2, int32_t& return_value) {
+v8::Maybe<int32_t> V8LongCallbackFunction::Invoke(ScriptWrappable* callback_this_value, int32_t num1, int32_t num2) {
   // This function implements "invoke" steps in
   // "3.10. Invoking callback functions".
   // https://heycam.github.io/webidl/#es-invoking-callback-functions
 
   if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState())) {
-    return false;
+    // Wrapper-tracing for the callback function makes the function object and
+    // its creation context alive. Thus it's safe to use the creation context
+    // of the callback function here.
+    v8::HandleScope handle_scope(GetIsolate());
+    v8::Context::Scope context_scope(
+        CallbackRelevantScriptState()->GetContext());
+    V8ThrowException::ThrowError(
+        GetIsolate(),
+        ExceptionMessages::FailedToExecute(
+            "invoke",
+            "LongCallbackFunction",
+            "The provided callback is no longer runnable."));
+    return v8::Nothing<int32_t>();
   }
 
   // step 4. If ! IsCallable(F) is false:
@@ -46,13 +58,16 @@ bool V8LongCallbackFunction::call(ScriptWrappable* callback_this_value, int32_t 
       CallbackRelevantScriptState());
   // step 9. Prepare to run a callback with stored settings.
   if (IncumbentScriptState()->GetContext().IsEmpty()) {
-    return false;
+    V8ThrowException::ThrowError(
+        GetIsolate(),
+        ExceptionMessages::FailedToExecute(
+            "invoke",
+            "LongCallbackFunction",
+            "The provided callback is no longer runnable."));
+    return v8::Nothing<int32_t>();
   }
   v8::Context::BackupIncumbentScope backup_incumbent_scope(
       IncumbentScriptState()->GetContext());
-
-  v8::TryCatch try_catch(GetIsolate());
-  try_catch.SetVerbose(true);
 
   v8::Local<v8::Value> this_arg = ToV8(callback_this_value,
                                        CallbackRelevantScriptState());
@@ -79,7 +94,7 @@ bool V8LongCallbackFunction::call(ScriptWrappable* callback_this_value, int32_t 
           GetIsolate()).ToLocal(&call_result)) {
     // step 12. If callResult is an abrupt completion, set completion to
     //   callResult and jump to the step labeled return.
-    return false;
+    return v8::Nothing<int32_t>();
   }
 
   // step 13. Set completion to the result of converting callResult.[[Value]] to
@@ -91,9 +106,8 @@ bool V8LongCallbackFunction::call(ScriptWrappable* callback_this_value, int32_t 
                                   "invoke");
     int32_t native_result = NativeValueTraits<IDLLong>::NativeValue(GetIsolate(), call_result, exceptionState, kNormalConversion);
     if (exceptionState.HadException())
-      return false;
-    return_value = native_result;
-    return true;
+      return v8::Nothing<int32_t>();
+    return v8::Just<int32_t>(native_result);
   }
 }
 

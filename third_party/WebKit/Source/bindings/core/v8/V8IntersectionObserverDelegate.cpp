@@ -25,7 +25,7 @@ V8IntersectionObserverDelegate::~V8IntersectionObserverDelegate() {}
 void V8IntersectionObserverDelegate::Deliver(
     const HeapVector<Member<IntersectionObserverEntry>>& entries,
     IntersectionObserver& observer) {
-  callback_->call(&observer, entries, &observer);
+  callback_->InvokeAndReportException(&observer, entries, &observer);
 }
 
 ExecutionContext* V8IntersectionObserverDelegate::GetExecutionContext() const {

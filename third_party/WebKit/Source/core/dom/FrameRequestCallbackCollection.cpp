@@ -112,7 +112,7 @@ void FrameRequestCallbackCollection::V8FrameCallback::TraceWrappers(
 
 void FrameRequestCallbackCollection::V8FrameCallback::Invoke(
     double highResTime) {
-  callback_->call(nullptr, highResTime);
+  callback_->InvokeAndReportException(nullptr, highResTime);
 }
 
 }  // namespace blink

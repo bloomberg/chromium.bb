@@ -120,7 +120,7 @@ void PerformanceObserver::Deliver() {
   performance_entries.swap(performance_entries_);
   PerformanceObserverEntryList* entry_list =
       new PerformanceObserverEntryList(performance_entries);
-  callback_->call(this, entry_list, this);
+  callback_->InvokeAndReportException(this, entry_list, this);
 }
 
 void PerformanceObserver::Trace(blink::Visitor* visitor) {

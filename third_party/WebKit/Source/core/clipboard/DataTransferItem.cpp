@@ -103,7 +103,7 @@ void DataTransferItem::RunGetAsStringTask(ExecutionContext* context,
   DCHECK(callback);
   probe::AsyncTask async_task(context, callback);
   if (context)
-    callback->call(nullptr, data);
+    callback->InvokeAndReportException(nullptr, data);
   size_t index = callbacks_.Find(callback);
   DCHECK(index != kNotFound);
   callbacks_.EraseAt(index);

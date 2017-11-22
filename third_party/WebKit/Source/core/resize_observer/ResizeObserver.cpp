@@ -132,7 +132,7 @@ void ResizeObserver::DeliverObservations() {
   }
   DCHECK(callback_ || delegate_);
   if (callback_)
-    callback_->call(this, entries, this);
+    callback_->InvokeAndReportException(this, entries, this);
   if (delegate_)
     delegate_->OnResize(entries);
   ClearObservations();

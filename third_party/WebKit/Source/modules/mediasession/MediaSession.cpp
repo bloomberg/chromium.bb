@@ -225,7 +225,7 @@ void MediaSession::DidReceiveAction(
   if (iter == action_handlers_.end())
     return;
 
-  iter->value->call(this);
+  iter->value->InvokeAndReportException(this);
 }
 
 void MediaSession::Trace(blink::Visitor* visitor) {
