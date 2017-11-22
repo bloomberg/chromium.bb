@@ -2402,8 +2402,9 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
   // av1_update_scan_count_facade(). The update behavior should be the same
   // because av1_update_scan_count_facade() only cares if coefficients are zero
   // or not.
-  av1_update_scan_count_facade((AV1_COMMON *)cm, td->counts, tx_size, tx_type,
-                               qcoeff, eob);
+  const int mi_row = -xd->mb_to_top_edge >> (3 + MI_SIZE_LOG2);
+  av1_update_scan_count_facade((AV1_COMMON *)cm, mi_row, td->counts, tx_size,
+                               tx_type, qcoeff, eob);
 #endif
 }
 
