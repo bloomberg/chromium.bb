@@ -4,6 +4,11 @@
 
 #include "content/browser/frame_host/frame_tree_node_blame_context.h"
 
+#include <algorithm>
+#include <memory>
+#include <set>
+#include <string>
+
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/trace_event_analyzer.h"
@@ -135,7 +140,7 @@ class FrameTreeNodeBlameContextTest : public RenderViewHostImplTestHarness {
           node, process_id(), child_id,
           TestRenderFrameHost::CreateStubInterfaceProviderRequest(),
           blink::WebTreeScopeType::kDocument, std::string(),
-          base::StringPrintf("uniqueName%d", child_id),
+          base::StringPrintf("uniqueName%d", child_id), false,
           base::UnguessableToken::Create(), blink::FramePolicy(),
           FrameOwnerProperties());
       FrameTreeNode* child = node->child_at(child_num - 1);

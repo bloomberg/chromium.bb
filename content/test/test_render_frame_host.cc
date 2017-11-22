@@ -4,6 +4,9 @@
 
 #include "content/test/test_render_frame_host.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/guid.h"
 #include "base/run_loop.h"
 #include "content/browser/frame_host/frame_tree.h"
@@ -137,7 +140,7 @@ TestRenderFrameHost* TestRenderFrameHost::AppendChild(
   OnCreateChildFrame(GetProcess()->GetNextRoutingID(),
                      CreateStubInterfaceProviderRequest(),
                      blink::WebTreeScopeType::kDocument, frame_name,
-                     frame_unique_name, base::UnguessableToken::Create(),
+                     frame_unique_name, false, base::UnguessableToken::Create(),
                      blink::FramePolicy(), FrameOwnerProperties());
   return static_cast<TestRenderFrameHost*>(
       child_creation_observer_.last_created_frame());

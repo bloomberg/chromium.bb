@@ -9,6 +9,7 @@
 
 #include <map>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -256,7 +257,12 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
   // |frame_tree_node|, and all of their children. There should be at most one,
   // since collisions are avoided but leave old FrameNavigationEntries in the
   // tree after their frame has been detached.
-  void ClearStaleFrameEntriesForNewFrame(FrameTreeNode* frame_tree_node);
+  //
+  // If |only_if_different_position| is specified, then the removal is only
+  // done if the found FNE is in a different tree position than the
+  // |frame_tree_node|.
+  void RemoveEntryForFrame(FrameTreeNode* frame_tree_node,
+                           bool only_if_different_position);
 
   void set_unique_id(int unique_id) {
     unique_id_ = unique_id;
@@ -413,7 +419,7 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
     return has_user_gesture_;
   }
 
-  void set_has_user_gesture (bool has_user_gesture) {
+  void set_has_user_gesture(bool has_user_gesture) {
     has_user_gesture_ = has_user_gesture;
   }
 #endif

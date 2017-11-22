@@ -6,6 +6,9 @@
 
 #include <stddef.h>
 
+#include <algorithm>
+#include <map>
+#include <string>
 #include <utility>
 
 #include "base/containers/queue.h"
@@ -906,44 +909,28 @@ std::map<std::string, bool> NavigationEntryImpl::GetSubframeUniqueNames(
   return names;
 }
 
-void NavigationEntryImpl::ClearStaleFrameEntriesForNewFrame(
-    FrameTreeNode* frame_tree_node) {
+void NavigationEntryImpl::RemoveEntryForFrame(FrameTreeNode* frame_tree_node,
+                                              bool only_if_different_position) {
   DCHECK(!frame_tree_node->IsMainFrame());
 
-  NavigationEntryImpl::TreeNode* node = nullptr;
-  base::queue<NavigationEntryImpl::TreeNode*> work_queue;
-  int count = 0;
+  NavigationEntryImpl::TreeNode* node = GetTreeNode(frame_tree_node);
+  if (!node)
+    return;
 
-  work_queue.push(root_node());
-  while (!work_queue.empty()) {
-    node = work_queue.front();
-    work_queue.pop();
-
-    // Enqueue any children and keep looking if the current node doesn't match.
-    if (!node->MatchesFrame(frame_tree_node)) {
-      for (const auto& child : node->children) {
-        work_queue.push(child.get());
-      }
-      continue;
-    }
-
-    // Remove the node from the tree if it is not in the same position in the
-    // tree of FrameNavigationEntries and the FrameTree.
-    if (!InSameTreePosition(frame_tree_node, node)) {
-      NavigationEntryImpl::TreeNode* parent_node = node->parent;
-      auto it = std::find_if(
-          parent_node->children.begin(), parent_node->children.end(),
-          [node](const std::unique_ptr<NavigationEntryImpl::TreeNode>& item) {
-            return item.get() == node;
-          });
-      CHECK(it != parent_node->children.end());
-      parent_node->children.erase(it);
-    }
-    ++count;
+  // Remove the |node| from the tree if either 1) |only_if_different_position|
+  // was not asked for or 2) if it is not in the same position in the tree of
+  // FrameNavigationEntries and the FrameTree.
+  if (!only_if_different_position ||
+      !InSameTreePosition(frame_tree_node, node)) {
+    NavigationEntryImpl::TreeNode* parent_node = node->parent;
+    auto it = std::find_if(
+        parent_node->children.begin(), parent_node->children.end(),
+        [node](const std::unique_ptr<NavigationEntryImpl::TreeNode>& item) {
+          return item.get() == node;
+        });
+    CHECK(it != parent_node->children.end());
+    parent_node->children.erase(it);
   }
-
-  // At most one match is expected, since it is based on unique frame name.
-  DCHECK_LE(count, 1);
 }
 
 void NavigationEntryImpl::SetScreenshotPNGData(

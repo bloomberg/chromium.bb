@@ -4,6 +4,11 @@
 
 #include "content/browser/frame_host/render_frame_message_filter.h"
 
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "base/command_line.h"
 #include "base/debug/alias.h"
 #include "base/macros.h"
@@ -70,6 +75,7 @@ void CreateChildFrameOnUI(
     blink::WebTreeScopeType scope,
     const std::string& frame_name,
     const std::string& frame_unique_name,
+    bool is_created_by_script,
     const base::UnguessableToken& devtools_frame_token,
     const blink::FramePolicy& frame_policy,
     const FrameOwnerProperties& frame_owner_properties,
@@ -85,8 +91,8 @@ void CreateChildFrameOnUI(
         new_routing_id,
         service_manager::mojom::InterfaceProviderRequest(
             std::move(interface_provider_request_handle)),
-        scope, frame_name, frame_unique_name, devtools_frame_token,
-        frame_policy, frame_owner_properties);
+        scope, frame_name, frame_unique_name, is_created_by_script,
+        devtools_frame_token, frame_policy, frame_owner_properties);
   }
 }
 
@@ -364,9 +370,9 @@ void RenderFrameMessageFilter::OnCreateChildFrame(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&CreateChildFrameOnUI, render_process_id_,
                      params.parent_routing_id, params.scope, params.frame_name,
-                     params.frame_unique_name, *devtools_frame_token,
-                     params.frame_policy, params.frame_owner_properties,
-                     *new_routing_id,
+                     params.frame_unique_name, params.is_created_by_script,
+                     *devtools_frame_token, params.frame_policy,
+                     params.frame_owner_properties, *new_routing_id,
                      interface_provider_request.PassMessagePipe()));
 }
 
@@ -466,8 +472,8 @@ void RenderFrameMessageFilter::SetCookie(int32_t render_frame_id,
     return;
 
   if (base::FeatureList::IsEnabled(features::kNetworkService)) {
-    // TODO: modify GetRequestContextForURL to work with network service.
-    // TODO: merge this with code path below for non-network service.
+    // TODO(jam): modify GetRequestContextForURL to work with network service.
+    // Merge this with code path below for non-network service.
     cookie_manager_->SetCanonicalCookie(*cookie, url.SchemeIsCryptographic(),
                                         !options.exclude_httponly(),
                                         net::CookieStore::SetCookiesCallback());
@@ -508,8 +514,8 @@ void RenderFrameMessageFilter::GetCookies(int render_frame_id,
   }
 
   if (base::FeatureList::IsEnabled(features::kNetworkService)) {
-    // TODO: modify GetRequestContextForURL to work with network service.
-    // TODO: merge this with code path below for non-network service.
+    // TODO(jam): modify GetRequestContextForURL to work with network service.
+    // Merge this with code path below for non-network service.
     cookie_manager_->GetCookieList(
         url, options,
         base::BindOnce(&RenderFrameMessageFilter::CheckPolicyForCookies, this,

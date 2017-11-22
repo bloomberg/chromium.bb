@@ -67,6 +67,7 @@ class CONTENT_EXPORT FrameTreeNode {
                 blink::WebTreeScopeType scope,
                 const std::string& name,
                 const std::string& unique_name,
+                bool is_created_by_script,
                 const base::UnguessableToken& devtools_frame_token,
                 const FrameOwnerProperties& frame_owner_properties);
 
@@ -417,6 +418,12 @@ class CONTENT_EXPORT FrameTreeNode {
   // is stored here, and transferred into replication_state_.frame_policy when
   // they take effect on the next frame navigation.
   blink::FramePolicy pending_frame_policy_;
+
+  // Whether the frame was created by javascript.  This is useful to prune
+  // history entries when the frame is removed (because frames created by
+  // scripts are never recreated with the same unique name - see
+  // https://crbug.com/500260).
+  bool is_created_by_script_;
 
   // Used for devtools instrumentation and trace-ability. The token is
   // propagated to Blink's LocalFrame and both Blink and content/

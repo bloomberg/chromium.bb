@@ -187,11 +187,11 @@ IN_PROC_BROWSER_TEST_F(TopDocumentIsolationTest, NavigateToSubframeSite) {
   NavigateToURL(shell(), ba_url);
 
   EXPECT_EQ(
-      " Site C ------------ proxies for B\n"
-      "   |--Site B ------- proxies for C\n"
-      "   +--Site B ------- proxies for C\n"
-      "Where B = default subframe process\n"
-      "      C = http://b.com/",
+      " Site C ------------ proxies for D\n"
+      "   |--Site D ------- proxies for C\n"
+      "   +--Site D ------- proxies for C\n"
+      "Where C = http://b.com/\n"
+      "      D = default subframe process",
       DepictFrameTree(root()));
 }
 
