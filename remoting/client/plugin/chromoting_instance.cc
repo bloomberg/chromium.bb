@@ -286,6 +286,8 @@ void ChromotingInstance::HandleMessage(const pp::Var& message) {
     HandleEnableDebugRegion(*data);
   } else if (method == "enableTouchEvents") {
     HandleEnableTouchEvents(*data);
+  } else if (method == "enableStuckModifierKeyDetection") {
+    HandleEnableStuckModifierKeyDetection(*data);
   }
 }
 
@@ -977,7 +979,7 @@ void ChromotingInstance::HandleEnableTouchEvents(
     const base::DictionaryValue& data) {
   bool enable = false;
   if (!data.GetBoolean("enable", &enable)) {
-    LOG(ERROR) << "Invalid handleTouchEvents.";
+    LOG(ERROR) << "Invalid enableTouchEvents.";
     return;
   }
 
@@ -986,6 +988,17 @@ void ChromotingInstance::HandleEnableTouchEvents(
   } else {
     ClearInputEventRequest(PP_INPUTEVENT_CLASS_TOUCH);
   }
+}
+
+void ChromotingInstance::HandleEnableStuckModifierKeyDetection(
+    const base::DictionaryValue& data) {
+  bool enable = false;
+  if (!data.GetBoolean("enable", &enable)) {
+    LOG(ERROR) << "Invalid enableStuckModifierKeyDetection.";
+    return;
+  }
+
+  input_handler_.set_detect_stuck_modifiers(enable);
 }
 
 void ChromotingInstance::Disconnect() {

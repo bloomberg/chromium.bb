@@ -208,6 +208,7 @@ class ChromotingInstance : public ClientUserInterface,
   void HandleDelegateLargeCursors();
   void HandleEnableDebugRegion(const base::DictionaryValue& data);
   void HandleEnableTouchEvents(const base::DictionaryValue& data);
+  void HandleEnableStuckModifierKeyDetection(const base::DictionaryValue& data);
 
   void Disconnect();
 
