@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/base/filter_operations.h"
+#include "cc/paint/filter_operations.h"
 
 #include <stddef.h>
 
@@ -11,7 +11,7 @@
 
 #include "base/trace_event/trace_event_argument.h"
 #include "base/values.h"
-#include "cc/base/filter_operation.h"
+#include "cc/paint/filter_operation.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace cc {

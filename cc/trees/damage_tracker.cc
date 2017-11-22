@@ -9,11 +9,11 @@
 #include <algorithm>
 
 #include "base/memory/ptr_util.h"
-#include "cc/base/filter_operations.h"
 #include "cc/base/math_util.h"
 #include "cc/layers/heads_up_display_layer_impl.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/render_surface_impl.h"
+#include "cc/paint/filter_operations.h"
 #include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_impl.h"

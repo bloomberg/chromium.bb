@@ -3,6 +3,6 @@
 # found in the LICENSE file.
 
 mojom = "//services/viz/public/interfaces/compositing/filter_operations.mojom"
-public_headers = [ "//cc/base/filter_operations.h" ]
+public_headers = [ "//cc/paint/filter_operations.h" ]
 traits_headers = [ "//services/viz/public/cpp/compositing/filter_operations_struct_traits.h" ]
 type_mappings = [ "viz.mojom.FilterOperations=cc::FilterOperations" ]

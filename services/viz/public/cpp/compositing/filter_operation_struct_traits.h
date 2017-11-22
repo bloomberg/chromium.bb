@@ -6,7 +6,8 @@
 #define SERVICES_VIZ_PUBLIC_CPP_COMPOSITING_FILTER_OPERATION_STRUCT_TRAITS_H_
 
 #include "base/containers/span.h"
-#include "cc/base/filter_operation.h"
+#include "cc/paint/filter_operation.h"
+#include "cc/paint/paint_filter.h"
 #include "services/viz/public/interfaces/compositing/filter_operation.mojom-shared.h"
 #include "skia/public/interfaces/blur_image_filter_tile_mode_struct_traits.h"
 #include "skia/public/interfaces/image_filter_struct_traits.h"
@@ -127,8 +128,8 @@ struct StructTraits<viz::mojom::FilterOperationDataView, cc::FilterOperation> {
   static sk_sp<SkImageFilter> image_filter(
       const cc::FilterOperation& operation) {
     if (operation.type() != cc::FilterOperation::REFERENCE)
-      return sk_sp<SkImageFilter>();
-    return operation.image_filter();
+      return nullptr;
+    return operation.image_filter()->cached_sk_filter_;
   }
 
   static base::span<const float> matrix(const cc::FilterOperation& operation) {
@@ -207,10 +208,12 @@ struct StructTraits<viz::mojom::FilterOperationDataView, cc::FilterOperation> {
         return true;
       }
       case cc::FilterOperation::REFERENCE: {
-        sk_sp<SkImageFilter> filter;
-        if (!data.ReadImageFilter(&filter))
+        sk_sp<SkImageFilter> sk_filter;
+        if (!data.ReadImageFilter(&sk_filter))
           return false;
-        out->set_image_filter(filter);
+        auto* paint_filter =
+            new cc::ImageFilterPaintFilter(std::move(sk_filter));
+        out->set_image_filter(sk_sp<cc::ImageFilterPaintFilter>(paint_filter));
         return true;
       }
       case cc::FilterOperation::ALPHA_THRESHOLD:

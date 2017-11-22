@@ -7,7 +7,7 @@
 #include "platform/geometry/GeometryTestHelpers.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/BoxReflection.h"
-#include "platform/graphics/filters/SkiaImageFilterBuilder.h"
+#include "platform/graphics/filters/PaintFilterBuilder.h"
 #include "platform/graphics/paint/ClipPaintPropertyNode.h"
 #include "platform/graphics/paint/EffectPaintPropertyNode.h"
 #include "platform/graphics/paint/TransformPaintPropertyNode.h"
@@ -616,7 +616,7 @@ TEST_P(GeometryMapperTest, FilterWithClipsAndTransforms) {
 
 TEST_P(GeometryMapperTest, ReflectionWithPaintOffset) {
   CompositorFilterOperations filters;
-  filters.AppendReferenceFilter(SkiaImageFilterBuilder::BuildBoxReflectFilter(
+  filters.AppendReferenceFilter(PaintFilterBuilder::BuildBoxReflectFilter(
       BoxReflection(BoxReflection::kHorizontalReflection, 0), nullptr));
   auto effect = EffectPaintPropertyNode::Create(
       EffectPaintPropertyNode::Root(), TransformPaintPropertyNode::Root(),

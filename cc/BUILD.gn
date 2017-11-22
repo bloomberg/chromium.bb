@@ -351,13 +351,13 @@ cc_component("cc") {
 
   public_deps = [
     "//cc/base",
+    "//cc/paint",
     "//components/viz/common",
     "//skia",
   ]
   deps = [
     "//base",
     "//base/third_party/dynamic_annotations",
-    "//cc/paint",
     "//components/ukm",
     "//components/viz/common",
     "//gpu",
@@ -564,7 +564,6 @@ cc_static_library("test_support") {
 cc_test("cc_unittests") {
   sources = [
     "base/delayed_unique_notifier_unittest.cc",
-    "base/filter_operations_unittest.cc",
     "base/float_quad_unittest.cc",
     "base/histograms_unittest.cc",
     "base/index_rect_unittest.cc",
@@ -617,6 +616,7 @@ cc_test("cc_unittests") {
     "layers/viewport_unittest.cc",
     "paint/discardable_image_map_unittest.cc",
     "paint/display_item_list_unittest.cc",
+    "paint/filter_operations_unittest.cc",
     "paint/oop_pixeltest.cc",
     "paint/paint_image_unittest.cc",
     "paint/paint_op_buffer_unittest.cc",

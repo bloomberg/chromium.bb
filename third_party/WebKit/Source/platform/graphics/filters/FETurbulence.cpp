@@ -124,7 +124,15 @@ bool FETurbulence::SetStitchTiles(bool stitch) {
   return true;
 }
 
-sk_sp<SkShader> FETurbulence::CreateShader() const {
+sk_sp<PaintFilter> FETurbulence::CreateImageFilter() {
+  if (base_frequency_x_ < 0 || base_frequency_y_ < 0)
+    return CreateTransparentBlack();
+
+  PaintFilter::CropRect rect = GetCropRect();
+  TurbulencePaintFilter::TurbulenceType type =
+      GetType() == FETURBULENCE_TYPE_FRACTALNOISE
+          ? TurbulencePaintFilter::TurbulenceType::kFractalNoise
+          : TurbulencePaintFilter::TurbulenceType::kTurbulence;
   const SkISize size = SkISize::Make(FilterPrimitiveSubregion().Width(),
                                      FilterPrimitiveSubregion().Height());
   // Frequency should be scaled by page zoom, but not by primitiveUnits.
@@ -134,25 +142,10 @@ sk_sp<SkShader> FETurbulence::CreateShader() const {
   // a frequency, not a period.
   float base_frequency_x = base_frequency_x_ / GetFilter()->Scale();
   float base_frequency_y = base_frequency_y_ / GetFilter()->Scale();
-  return (GetType() == FETURBULENCE_TYPE_FRACTALNOISE)
-             ? SkPerlinNoiseShader::MakeFractalNoise(
-                   SkFloatToScalar(base_frequency_x),
-                   SkFloatToScalar(base_frequency_y), NumOctaves(),
-                   SkFloatToScalar(Seed()), StitchTiles() ? &size : nullptr)
-             : SkPerlinNoiseShader::MakeTurbulence(
-                   SkFloatToScalar(base_frequency_x),
-                   SkFloatToScalar(base_frequency_y), NumOctaves(),
-                   SkFloatToScalar(Seed()), StitchTiles() ? &size : nullptr);
-}
-
-sk_sp<SkImageFilter> FETurbulence::CreateImageFilter() {
-  if (base_frequency_x_ < 0 || base_frequency_y_ < 0)
-    return CreateTransparentBlack();
-
-  SkPaint paint;
-  paint.setShader(CreateShader());
-  SkImageFilter::CropRect rect = GetCropRect();
-  return SkPaintImageFilter::Make(paint, &rect);
+  return sk_make_sp<TurbulencePaintFilter>(
+      type, SkFloatToScalar(base_frequency_x),
+      SkFloatToScalar(base_frequency_y), NumOctaves(), SkFloatToScalar(Seed()),
+      StitchTiles() ? &size : nullptr, &rect);
 }
 
 static TextStream& operator<<(TextStream& ts, const TurbulenceType& type) {

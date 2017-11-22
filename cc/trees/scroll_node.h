@@ -5,10 +5,10 @@
 #ifndef CC_TREES_SCROLL_NODE_H_
 #define CC_TREES_SCROLL_NODE_H_
 
-#include "cc/base/filter_operations.h"
 #include "cc/base/region.h"
 #include "cc/cc_export.h"
 #include "cc/input/scroll_boundary_behavior.h"
+#include "cc/paint/filter_operations.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace base {

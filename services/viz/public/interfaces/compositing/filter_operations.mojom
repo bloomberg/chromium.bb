@@ -6,7 +6,7 @@ module viz.mojom;
 
 import "services/viz/public/interfaces/compositing/filter_operation.mojom";
 
-// See cc/base/filter_operations.h.
+// See cc/paint/filter_operations.h.
 struct FilterOperations {
   array<FilterOperation> operations;
 };

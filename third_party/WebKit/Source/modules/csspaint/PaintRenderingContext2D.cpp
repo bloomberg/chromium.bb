@@ -81,7 +81,7 @@ bool PaintRenderingContext2D::StateHasFilter() {
   return GetState().HasFilterForOffscreenCanvas(IntSize(Width(), Height()));
 }
 
-sk_sp<SkImageFilter> PaintRenderingContext2D::StateGetFilter() {
+sk_sp<PaintFilter> PaintRenderingContext2D::StateGetFilter() {
   return GetState().GetFilterForOffscreenCanvas(IntSize(Width(), Height()));
 }
 

@@ -9,11 +9,11 @@
 #include <vector>
 
 #include "base/memory/ptr_util.h"
-#include "cc/base/filter_operations.h"
 #include "cc/input/scroll_boundary_behavior.h"
 #include "cc/layers/layer_collections.h"
 #include "cc/layers/layer_position_constraint.h"
 #include "cc/layers/layer_sticky_position_constraint.h"
+#include "cc/paint/filter_operations.h"
 #include "third_party/skia/include/core/SkBlendMode.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/transform.h"

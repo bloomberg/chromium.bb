@@ -25,7 +25,7 @@
 #include "platform/graphics/filters/FEBlend.h"
 
 #include "SkXfermodeImageFilter.h"
-#include "platform/graphics/filters/SkiaImageFilterBuilder.h"
+#include "platform/graphics/filters/PaintFilterBuilder.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/text/TextStream.h"
 
@@ -49,16 +49,16 @@ bool FEBlend::SetBlendMode(WebBlendMode mode) {
   return true;
 }
 
-sk_sp<SkImageFilter> FEBlend::CreateImageFilter() {
-  sk_sp<SkImageFilter> foreground(SkiaImageFilterBuilder::Build(
-      InputEffect(0), OperatingInterpolationSpace()));
-  sk_sp<SkImageFilter> background(SkiaImageFilterBuilder::Build(
-      InputEffect(1), OperatingInterpolationSpace()));
+sk_sp<PaintFilter> FEBlend::CreateImageFilter() {
+  sk_sp<PaintFilter> foreground(
+      PaintFilterBuilder::Build(InputEffect(0), OperatingInterpolationSpace()));
+  sk_sp<PaintFilter> background(
+      PaintFilterBuilder::Build(InputEffect(1), OperatingInterpolationSpace()));
   SkBlendMode mode =
       WebCoreCompositeToSkiaComposite(kCompositeSourceOver, mode_);
-  SkImageFilter::CropRect crop_rect = GetCropRect();
-  return SkXfermodeImageFilter::Make(mode, std::move(background),
-                                     std::move(foreground), &crop_rect);
+  PaintFilter::CropRect crop_rect = GetCropRect();
+  return sk_make_sp<XfermodePaintFilter>(mode, std::move(background),
+                                         std::move(foreground), &crop_rect);
 }
 
 TextStream& FEBlend::ExternalRepresentation(TextStream& ts, int indent) const {

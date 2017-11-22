@@ -38,7 +38,7 @@ class PLATFORM_EXPORT SourceAlpha final : public FilterEffect {
     return kFilterEffectTypeSourceInput;
   }
 
-  sk_sp<SkImageFilter> CreateImageFilter() override;
+  sk_sp<PaintFilter> CreateImageFilter() override;
 };
 
 }  // namespace blink

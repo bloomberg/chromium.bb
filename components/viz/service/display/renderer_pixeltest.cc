@@ -24,11 +24,9 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "media/base/video_frame.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
-#include "third_party/skia/include/core/SkImageFilter.h"
 #include "third_party/skia/include/core/SkMatrix.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkSurface.h"
-#include "third_party/skia/include/effects/SkColorFilterImageFilter.h"
 #include "third_party/skia/include/effects/SkColorMatrixFilter.h"
 #include "ui/gfx/color_transform.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -1693,8 +1691,8 @@ TYPED_TEST(RendererPixelTest, FastPassColorFilterAlpha) {
   matrix[15] = matrix[16] = matrix[17] = matrix[19] = 0;
   matrix[18] = 1;
   cc::FilterOperations filters;
-  filters.Append(
-      cc::FilterOperation::CreateReferenceFilter(SkColorFilterImageFilter::Make(
+  filters.Append(cc::FilterOperation::CreateReferenceFilter(
+      sk_make_sp<cc::ColorFilterPaintFilter>(
           SkColorFilter::MakeMatrixFilterRowMajor255(matrix), nullptr)));
 
   std::unique_ptr<RenderPass> child_pass =
@@ -1896,8 +1894,8 @@ TYPED_TEST(RendererPixelTest, FastPassColorFilterAlphaTranslation) {
   matrix[15] = matrix[16] = matrix[17] = matrix[19] = 0;
   matrix[18] = 1;
   cc::FilterOperations filters;
-  filters.Append(
-      cc::FilterOperation::CreateReferenceFilter(SkColorFilterImageFilter::Make(
+  filters.Append(cc::FilterOperation::CreateReferenceFilter(
+      sk_make_sp<cc::ColorFilterPaintFilter>(
           SkColorFilter::MakeMatrixFilterRowMajor255(matrix), nullptr)));
 
   std::unique_ptr<RenderPass> child_pass =

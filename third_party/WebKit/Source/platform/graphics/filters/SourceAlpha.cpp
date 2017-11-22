@@ -21,7 +21,7 @@
 #include "platform/graphics/filters/SourceAlpha.h"
 
 #include "platform/graphics/filters/Filter.h"
-#include "platform/graphics/filters/SkiaImageFilterBuilder.h"
+#include "platform/graphics/filters/PaintFilterBuilder.h"
 #include "platform/text/TextStream.h"
 #include "platform/wtf/text/WTFString.h"
 #include "third_party/skia/include/effects/SkColorFilterImageFilter.h"
@@ -39,15 +39,15 @@ SourceAlpha::SourceAlpha(FilterEffect* source_effect)
   InputEffects().push_back(source_effect);
 }
 
-sk_sp<SkImageFilter> SourceAlpha::CreateImageFilter() {
-  sk_sp<SkImageFilter> source_graphic(SkiaImageFilterBuilder::Build(
-      InputEffect(0), OperatingInterpolationSpace()));
+sk_sp<PaintFilter> SourceAlpha::CreateImageFilter() {
+  sk_sp<PaintFilter> source_graphic(
+      PaintFilterBuilder::Build(InputEffect(0), OperatingInterpolationSpace()));
   SkScalar matrix[20] = {0, 0, 0, 0, 0, 0, 0, 0, 0,          0,
                          0, 0, 0, 0, 0, 0, 0, 0, SK_Scalar1, 0};
   sk_sp<SkColorFilter> color_filter =
       SkColorFilter::MakeMatrixFilterRowMajor255(matrix);
-  return SkColorFilterImageFilter::Make(std::move(color_filter),
-                                        std::move(source_graphic));
+  return sk_make_sp<ColorFilterPaintFilter>(std::move(color_filter),
+                                            std::move(source_graphic));
 }
 
 TextStream& SourceAlpha::ExternalRepresentation(TextStream& ts,

@@ -40,7 +40,7 @@ class PLATFORM_EXPORT FEBlend final : public FilterEffect {
  private:
   FEBlend(Filter*, WebBlendMode);
 
-  sk_sp<SkImageFilter> CreateImageFilter() override;
+  sk_sp<PaintFilter> CreateImageFilter() override;
 
   WebBlendMode mode_;
 };

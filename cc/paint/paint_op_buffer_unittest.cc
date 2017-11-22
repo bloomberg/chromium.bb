@@ -1071,8 +1071,6 @@ std::vector<PaintFlags> test_flags = {
       looper_builder.addLayer(layer_info);
       flags.setLooper(looper_builder.detach());
 
-      flags.setImageFilter(SkOffsetImageFilter::Make(10, 11, nullptr));
-
       sk_sp<PaintShader> shader = PaintShader::MakeColor(SK_ColorTRANSPARENT);
       PaintOpSerializationTestUtils::FillArbitraryShaderValues(shader.get(),
                                                                true);

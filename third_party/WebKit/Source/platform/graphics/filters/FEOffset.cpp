@@ -26,7 +26,7 @@
 
 #include "SkOffsetImageFilter.h"
 #include "platform/graphics/filters/Filter.h"
-#include "platform/graphics/filters/SkiaImageFilterBuilder.h"
+#include "platform/graphics/filters/PaintFilterBuilder.h"
 #include "platform/text/TextStream.h"
 
 namespace blink {
@@ -61,14 +61,13 @@ FloatRect FEOffset::MapEffect(const FloatRect& rect) const {
   return result;
 }
 
-sk_sp<SkImageFilter> FEOffset::CreateImageFilter() {
+sk_sp<PaintFilter> FEOffset::CreateImageFilter() {
   Filter* filter = this->GetFilter();
-  SkImageFilter::CropRect crop_rect = GetCropRect();
-  return SkOffsetImageFilter::Make(
+  PaintFilter::CropRect crop_rect = GetCropRect();
+  return sk_make_sp<OffsetPaintFilter>(
       SkFloatToScalar(filter->ApplyHorizontalScale(dx_)),
       SkFloatToScalar(filter->ApplyVerticalScale(dy_)),
-      SkiaImageFilterBuilder::Build(InputEffect(0),
-                                    OperatingInterpolationSpace()),
+      PaintFilterBuilder::Build(InputEffect(0), OperatingInterpolationSpace()),
       &crop_rect);
 }
 

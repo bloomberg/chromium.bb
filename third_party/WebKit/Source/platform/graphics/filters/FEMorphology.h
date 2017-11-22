@@ -55,7 +55,7 @@ class PLATFORM_EXPORT FEMorphology final : public FilterEffect {
 
   FloatRect MapEffect(const FloatRect&) const override;
 
-  sk_sp<SkImageFilter> CreateImageFilter() override;
+  sk_sp<PaintFilter> CreateImageFilter() override;
 
   MorphologyOperatorType type_;
   float radius_x_;

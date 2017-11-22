@@ -11,7 +11,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/unguessable_token.h"
-#include "cc/base/filter_operations.h"
+#include "cc/paint/filter_operations.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/debug_border_draw_quad.h"
 #include "components/viz/common/quads/draw_quad.h"
@@ -68,7 +68,7 @@ void ParamTraits<cc::FilterOperation>::Write(base::Pickle* m,
       WriteParam(m, p.zoom_inset());
       break;
     case cc::FilterOperation::REFERENCE:
-      WriteParam(m, p.image_filter());
+      WriteParam(m, p.image_filter()->cached_sk_filter());
       break;
     case cc::FilterOperation::ALPHA_THRESHOLD:
       WriteParam(m, p.amount());
@@ -151,12 +151,13 @@ bool ParamTraits<cc::FilterOperation>::Read(const base::Pickle* m,
       }
       break;
     case cc::FilterOperation::REFERENCE: {
-      sk_sp<SkImageFilter> filter;
-      if (!ReadParam(m, iter, &filter)) {
+      sk_sp<SkImageFilter> sk_filter;
+      if (!ReadParam(m, iter, &sk_filter)) {
         success = false;
         break;
       }
-      r->set_image_filter(std::move(filter));
+      auto* paint_filter = new cc::ImageFilterPaintFilter(std::move(sk_filter));
+      r->set_image_filter(sk_sp<cc::ImageFilterPaintFilter>(paint_filter));
       success = true;
       break;
     }
@@ -217,7 +218,7 @@ void ParamTraits<cc::FilterOperation>::Log(const param_type& p,
       LogParam(p.zoom_inset(), l);
       break;
     case cc::FilterOperation::REFERENCE:
-      LogParam(p.image_filter(), l);
+      LogParam(p.image_filter()->cached_sk_filter(), l);
       break;
     case cc::FilterOperation::ALPHA_THRESHOLD:
       LogParam(p.amount(), l);

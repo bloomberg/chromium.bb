@@ -22,7 +22,7 @@
 
 #include "platform/graphics/filters/FEGaussianBlur.h"
 #include "platform/graphics/filters/Filter.h"
-#include "platform/graphics/filters/SkiaImageFilterBuilder.h"
+#include "platform/graphics/filters/PaintFilterBuilder.h"
 #include "platform/text/TextStream.h"
 #include "third_party/skia/include/effects/SkDropShadowImageFilter.h"
 
@@ -74,17 +74,17 @@ FloatRect FEDropShadow::MapEffect(const FloatRect& rect) const {
   return MapEffect(std_error, offset, rect);
 }
 
-sk_sp<SkImageFilter> FEDropShadow::CreateImageFilter() {
-  sk_sp<SkImageFilter> input(SkiaImageFilterBuilder::Build(
-      InputEffect(0), OperatingInterpolationSpace()));
+sk_sp<PaintFilter> FEDropShadow::CreateImageFilter() {
+  sk_sp<PaintFilter> input(
+      PaintFilterBuilder::Build(InputEffect(0), OperatingInterpolationSpace()));
   float dx = GetFilter()->ApplyHorizontalScale(dx_);
   float dy = GetFilter()->ApplyVerticalScale(dy_);
   float std_x = GetFilter()->ApplyHorizontalScale(std_x_);
   float std_y = GetFilter()->ApplyVerticalScale(std_y_);
   Color color = AdaptColorToOperatingInterpolationSpace(
       shadow_color_.CombineWithAlpha(shadow_opacity_));
-  SkImageFilter::CropRect crop_rect = GetCropRect();
-  return SkDropShadowImageFilter::Make(
+  PaintFilter::CropRect crop_rect = GetCropRect();
+  return sk_make_sp<DropShadowPaintFilter>(
       SkFloatToScalar(dx), SkFloatToScalar(dy), SkFloatToScalar(std_x),
       SkFloatToScalar(std_y), color.Rgb(),
       SkDropShadowImageFilter::kDrawShadowAndForeground_ShadowMode,

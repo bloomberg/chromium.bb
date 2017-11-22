@@ -76,7 +76,7 @@ class PLATFORM_EXPORT FEComponentTransfer final : public FilterEffect {
                       const ComponentTransferFunction& blue_func,
                       const ComponentTransferFunction& alpha_func);
 
-  sk_sp<SkImageFilter> CreateImageFilter() override;
+  sk_sp<PaintFilter> CreateImageFilter() override;
 
   bool AffectsTransparentPixels() const override;
 

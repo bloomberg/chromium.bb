@@ -11,7 +11,7 @@
 #include "cc/animation/animation.h"
 #include "cc/animation/animation_curve.h"
 #include "cc/animation/animation_export.h"
-#include "cc/base/filter_operations.h"
+#include "cc/paint/filter_operations.h"
 #include "cc/trees/element_id.h"
 #include "cc/trees/mutator_host.h"
 #include "ui/gfx/transform.h"

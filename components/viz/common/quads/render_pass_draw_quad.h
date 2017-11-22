@@ -9,7 +9,7 @@
 
 #include <memory>
 
-#include "cc/base/filter_operations.h"
+#include "cc/paint/filter_operations.h"
 #include "components/viz/common/quads/draw_quad.h"
 #include "components/viz/common/quads/render_pass.h"
 #include "components/viz/common/viz_common_export.h"

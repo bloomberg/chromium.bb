@@ -53,6 +53,7 @@ cc_component("animation") {
   deps = [
     "//base",
     "//cc",
+    "//cc/paint",
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]

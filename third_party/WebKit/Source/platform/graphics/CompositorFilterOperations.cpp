@@ -82,7 +82,7 @@ void CompositorFilterOperations::AppendSaturatingBrightnessFilter(
 }
 
 void CompositorFilterOperations::AppendReferenceFilter(
-    sk_sp<SkImageFilter> image_filter) {
+    sk_sp<PaintFilter> image_filter) {
   filter_operations_.Append(
       cc::FilterOperation::CreateReferenceFilter(std::move(image_filter)));
 }

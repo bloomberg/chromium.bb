@@ -5,7 +5,7 @@
 #include "platform/graphics/filters/FEBoxReflect.h"
 
 #include "platform/geometry/FloatRect.h"
-#include "platform/graphics/filters/SkiaImageFilterBuilder.h"
+#include "platform/graphics/filters/PaintFilterBuilder.h"
 #include "platform/wtf/Assertions.h"
 
 namespace blink {
@@ -26,10 +26,10 @@ TextStream& FEBoxReflect::ExternalRepresentation(TextStream& ts,
   return ts;
 }
 
-sk_sp<SkImageFilter> FEBoxReflect::CreateImageFilter() {
-  return SkiaImageFilterBuilder::BuildBoxReflectFilter(
-      reflection_, SkiaImageFilterBuilder::Build(
-                       InputEffect(0), OperatingInterpolationSpace()));
+sk_sp<PaintFilter> FEBoxReflect::CreateImageFilter() {
+  return PaintFilterBuilder::BuildBoxReflectFilter(
+      reflection_,
+      PaintFilterBuilder::Build(InputEffect(0), OperatingInterpolationSpace()));
 }
 
 }  // namespace blink

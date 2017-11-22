@@ -10,10 +10,10 @@
 
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
-#include "cc/base/filter_operations.h"
 #include "cc/base/math_util.h"
 #include "cc/debug/debug_colors.h"
 #include "cc/layers/append_quads_data.h"
+#include "cc/paint/filter_operations.h"
 #include "cc/trees/damage_tracker.h"
 #include "cc/trees/draw_property_utils.h"
 #include "cc/trees/effect_node.h"

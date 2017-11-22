@@ -416,8 +416,7 @@ PaintResult PaintLayerPainter::PaintLayerContents(
   PaintLayerPaintingInfo local_painting_info(painting_info);
   local_painting_info.sub_pixel_accumulation = subpixel_accumulation;
 
-  sk_sp<SkImageFilter> image_filter =
-      FilterPainter::GetImageFilter(paint_layer_);
+  sk_sp<PaintFilter> image_filter = FilterPainter::GetImageFilter(paint_layer_);
 
   bool should_paint_content = paint_layer_.HasVisibleContent() &&
                               is_self_painting_layer &&

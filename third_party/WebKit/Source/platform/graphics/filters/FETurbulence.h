@@ -27,8 +27,6 @@
 
 #include "platform/graphics/filters/FilterEffect.h"
 
-class SkShader;
-
 namespace blink {
 
 enum TurbulenceType {
@@ -65,8 +63,7 @@ class PLATFORM_EXPORT FETurbulence final : public FilterEffect {
  private:
   FETurbulence(Filter*, TurbulenceType, float, float, int, float, bool);
 
-  sk_sp<SkImageFilter> CreateImageFilter() override;
-  sk_sp<SkShader> CreateShader() const;
+  sk_sp<PaintFilter> CreateImageFilter() override;
 
   TurbulenceType type_;
   float base_frequency_x_;

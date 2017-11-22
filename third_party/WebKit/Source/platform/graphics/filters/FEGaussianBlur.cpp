@@ -26,7 +26,7 @@
 #include "platform/graphics/filters/FEGaussianBlur.h"
 
 #include "platform/graphics/filters/Filter.h"
-#include "platform/graphics/filters/SkiaImageFilterBuilder.h"
+#include "platform/graphics/filters/PaintFilterBuilder.h"
 #include "platform/text/TextStream.h"
 
 #include "SkBlurImageFilter.h"
@@ -80,14 +80,16 @@ FloatRect FEGaussianBlur::MapEffect(const FloatRect& rect) const {
   return MapEffect(std_error, rect);
 }
 
-sk_sp<SkImageFilter> FEGaussianBlur::CreateImageFilter() {
-  sk_sp<SkImageFilter> input(SkiaImageFilterBuilder::Build(
-      InputEffect(0), OperatingInterpolationSpace()));
+sk_sp<PaintFilter> FEGaussianBlur::CreateImageFilter() {
+  sk_sp<PaintFilter> input(
+      PaintFilterBuilder::Build(InputEffect(0), OperatingInterpolationSpace()));
   float std_x = GetFilter()->ApplyHorizontalScale(std_x_);
   float std_y = GetFilter()->ApplyVerticalScale(std_y_);
-  SkImageFilter::CropRect rect = GetCropRect();
-  return SkBlurImageFilter::Make(SkFloatToScalar(std_x), SkFloatToScalar(std_y),
-                                 std::move(input), &rect);
+  PaintFilter::CropRect rect = GetCropRect();
+  return sk_make_sp<BlurPaintFilter>(
+      SkFloatToScalar(std_x), SkFloatToScalar(std_y),
+      BlurPaintFilter::TileMode::kClampToBlack_TileMode, std::move(input),
+      &rect);
 }
 
 TextStream& FEGaussianBlur::ExternalRepresentation(TextStream& ts,

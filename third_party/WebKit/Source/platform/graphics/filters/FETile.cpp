@@ -23,7 +23,7 @@
 
 #include "SkTileImageFilter.h"
 #include "platform/graphics/filters/Filter.h"
-#include "platform/graphics/filters/SkiaImageFilterBuilder.h"
+#include "platform/graphics/filters/PaintFilterBuilder.h"
 #include "platform/text/TextStream.h"
 
 namespace blink {
@@ -38,16 +38,16 @@ FloatRect FETile::MapInputs(const FloatRect& rect) const {
   return AbsoluteBounds();
 }
 
-sk_sp<SkImageFilter> FETile::CreateImageFilter() {
-  sk_sp<SkImageFilter> input(SkiaImageFilterBuilder::Build(
-      InputEffect(0), OperatingInterpolationSpace()));
+sk_sp<PaintFilter> FETile::CreateImageFilter() {
+  sk_sp<PaintFilter> input(
+      PaintFilterBuilder::Build(InputEffect(0), OperatingInterpolationSpace()));
   FloatRect src_rect;
   if (InputEffect(0)->GetFilterEffectType() == kFilterEffectTypeSourceInput)
     src_rect = GetFilter()->FilterRegion();
   else
     src_rect = InputEffect(0)->FilterPrimitiveSubregion();
   FloatRect dst_rect = FilterPrimitiveSubregion();
-  return SkTileImageFilter::Make(src_rect, dst_rect, std::move(input));
+  return sk_make_sp<TilePaintFilter>(src_rect, dst_rect, std::move(input));
 }
 
 TextStream& FETile::ExternalRepresentation(TextStream& ts, int indent) const {

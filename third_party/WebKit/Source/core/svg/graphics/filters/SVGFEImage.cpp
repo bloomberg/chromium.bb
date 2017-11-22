@@ -31,13 +31,11 @@
 #include "core/svg/SVGURIReference.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/filters/Filter.h"
-#include "platform/graphics/filters/SkiaImageFilterBuilder.h"
+#include "platform/graphics/filters/PaintFilterBuilder.h"
 #include "platform/graphics/paint/PaintRecord.h"
 #include "platform/graphics/paint/PaintRecordBuilder.h"
 #include "platform/text/TextStream.h"
 #include "platform/transforms/AffineTransform.h"
-#include "third_party/skia/include/effects/SkImageSource.h"
-#include "third_party/skia/include/effects/SkPictureImageFilter.h"
 
 namespace blink {
 
@@ -158,7 +156,7 @@ TextStream& FEImage::ExternalRepresentation(TextStream& ts, int indent) const {
   return ts;
 }
 
-sk_sp<SkImageFilter> FEImage::CreateImageFilterForLayoutObject(
+sk_sp<PaintFilter> FEImage::CreateImageFilterForLayoutObject(
     const LayoutObject& layout_object) {
   FloatRect dst_rect = FilterPrimitiveSubregion();
 
@@ -188,16 +186,16 @@ sk_sp<SkImageFilter> FEImage::CreateImageFilterForLayoutObject(
   canvas->concat(AffineTransformToSkMatrix(transform));
   builder.EndRecording(*canvas);
 
-  return SkPictureImageFilter::Make(
-      ToSkPicture(paint_recorder.finishRecordingAsPicture(), dst_rect));
+  return sk_make_sp<RecordPaintFilter>(
+      paint_recorder.finishRecordingAsPicture(), dst_rect);
 }
 
-sk_sp<SkImageFilter> FEImage::CreateImageFilter() {
+sk_sp<PaintFilter> FEImage::CreateImageFilter() {
   if (auto* layout_object = ReferencedLayoutObject())
     return CreateImageFilterForLayoutObject(*layout_object);
 
-  sk_sp<SkImage> image =
-      image_ ? image_->PaintImageForCurrentFrame().GetSkImage() : nullptr;
+  PaintImage image =
+      image_ ? image_->PaintImageForCurrentFrame() : PaintImage();
   if (!image) {
     // "A href reference that is an empty image (zero width or zero height),
     //  that fails to download, is non-existent, or that cannot be displayed
@@ -211,8 +209,8 @@ sk_sp<SkImageFilter> FEImage::CreateImageFilter() {
 
   preserve_aspect_ratio_->TransformRect(dst_rect, src_rect);
 
-  return SkImageSource::Make(std::move(image), src_rect, dst_rect,
-                             kHigh_SkFilterQuality);
+  return sk_make_sp<ImagePaintFilter>(std::move(image), src_rect, dst_rect,
+                                      kHigh_SkFilterQuality);
 }
 
 }  // namespace blink

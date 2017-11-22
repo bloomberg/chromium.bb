@@ -5,7 +5,7 @@
 #include "platform/graphics/VideoFrameSubmitter.h"
 
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "cc/base/filter_operations.h"
+#include "cc/paint/filter_operations.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/resources/video_resource_updater.h"
 #include "cc/scheduler/video_frame_controller.h"

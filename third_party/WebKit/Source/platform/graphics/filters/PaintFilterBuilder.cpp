@@ -23,7 +23,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/graphics/filters/SkiaImageFilterBuilder.h"
+#include "platform/graphics/filters/PaintFilterBuilder.h"
 
 #include "SkBlurImageFilter.h"
 #include "SkColorFilterImageFilter.h"
@@ -40,11 +40,11 @@
 #include "third_party/skia/include/effects/SkXfermodeImageFilter.h"
 
 namespace blink {
-namespace SkiaImageFilterBuilder {
+namespace PaintFilterBuilder {
 
 void PopulateSourceGraphicImageFilters(
     FilterEffect* source_graphic,
-    sk_sp<SkImageFilter> input,
+    sk_sp<PaintFilter> input,
     InterpolationSpace input_interpolation_space) {
   // Prepopulate SourceGraphic with two image filters: one with a null image
   // filter, and the other with a colorspace conversion filter.
@@ -52,9 +52,9 @@ void PopulateSourceGraphicImageFilters(
   // have to initialize SourceGraphic with both options.
   // Since we know SourceGraphic is always PM-valid, we also use these for
   // the PM-validated options.
-  sk_sp<SkImageFilter> device_filter = TransformInterpolationSpace(
+  sk_sp<PaintFilter> device_filter = TransformInterpolationSpace(
       input, input_interpolation_space, kInterpolationSpaceSRGB);
-  sk_sp<SkImageFilter> linear_filter = TransformInterpolationSpace(
+  sk_sp<PaintFilter> linear_filter = TransformInterpolationSpace(
       input, input_interpolation_space, kInterpolationSpaceLinear);
   source_graphic->SetImageFilter(kInterpolationSpaceSRGB, false, device_filter);
   source_graphic->SetImageFilter(kInterpolationSpaceLinear, false,
@@ -64,7 +64,7 @@ void PopulateSourceGraphicImageFilters(
                                  linear_filter);
 }
 
-sk_sp<SkImageFilter> Build(
+sk_sp<PaintFilter> Build(
     FilterEffect* effect,
     InterpolationSpace interpolation_space,
     bool destination_requires_valid_pre_multiplied_pixels) {
@@ -75,28 +75,29 @@ sk_sp<SkImageFilter> Build(
       effect->MayProduceInvalidPreMultipliedPixels() &&
       destination_requires_valid_pre_multiplied_pixels;
 
-  if (SkImageFilter* filter = effect->GetImageFilter(
+  if (PaintFilter* filter = effect->GetImageFilter(
           interpolation_space, requires_pm_color_validation))
     return sk_ref_sp(filter);
 
   // Note that we may still need the color transform even if the filter is null
-  sk_sp<SkImageFilter> orig_filter =
+  sk_sp<PaintFilter> orig_filter =
       requires_pm_color_validation
           ? effect->CreateImageFilter()
           : effect->CreateImageFilterWithoutValidation();
-  sk_sp<SkImageFilter> filter = TransformInterpolationSpace(
+  sk_sp<PaintFilter> filter = TransformInterpolationSpace(
       orig_filter, effect->OperatingInterpolationSpace(), interpolation_space);
   effect->SetImageFilter(interpolation_space, requires_pm_color_validation,
                          filter);
-  if (filter.get() != orig_filter.get())
+  if (filter.get() != orig_filter.get()) {
     effect->SetImageFilter(effect->OperatingInterpolationSpace(),
                            requires_pm_color_validation,
                            std::move(orig_filter));
+  }
   return filter;
 }
 
-sk_sp<SkImageFilter> TransformInterpolationSpace(
-    sk_sp<SkImageFilter> input,
+sk_sp<PaintFilter> TransformInterpolationSpace(
+    sk_sp<PaintFilter> input,
     InterpolationSpace src_interpolation_space,
     InterpolationSpace dst_interpolation_space) {
   sk_sp<SkColorFilter> color_filter =
@@ -105,16 +106,16 @@ sk_sp<SkImageFilter> TransformInterpolationSpace(
   if (!color_filter)
     return input;
 
-  return SkColorFilterImageFilter::Make(std::move(color_filter),
-                                        std::move(input));
+  return sk_make_sp<ColorFilterPaintFilter>(std::move(color_filter),
+                                            std::move(input));
 }
 
 void BuildSourceGraphic(FilterEffect* source_graphic,
                         sk_sp<PaintRecord> record,
                         const FloatRect& record_bounds) {
   DCHECK(record);
-  sk_sp<SkImageFilter> filter =
-      SkPictureImageFilter::Make(ToSkPicture(record, record_bounds));
+  sk_sp<PaintFilter> filter =
+      sk_make_sp<RecordPaintFilter>(record, record_bounds);
   PopulateSourceGraphicImageFilters(
       source_graphic, std::move(filter),
       source_graphic->OperatingInterpolationSpace());
@@ -123,9 +124,9 @@ void BuildSourceGraphic(FilterEffect* source_graphic,
 static const float kMaxMaskBufferSize =
     50.f * 1024.f * 1024.f / 4.f;  // 50MB / 4 bytes per pixel
 
-sk_sp<SkImageFilter> BuildBoxReflectFilter(const BoxReflection& reflection,
-                                           sk_sp<SkImageFilter> input) {
-  sk_sp<SkImageFilter> masked_input;
+sk_sp<PaintFilter> BuildBoxReflectFilter(const BoxReflection& reflection,
+                                         sk_sp<PaintFilter> input) {
+  sk_sp<PaintFilter> masked_input;
   if (sk_sp<PaintRecord> mask_record = reflection.Mask()) {
     // Since PaintRecords can't be serialized to the browser process, first
     // raster the mask to a bitmap, then encode it in an SkImageSource, which
@@ -143,38 +144,43 @@ sk_sp<SkImageFilter> BuildBoxReflectFilter(const BoxReflection& reflection,
       canvas.clear(SK_ColorTRANSPARENT);
       canvas.translate(-mask_record_bounds.x(), -mask_record_bounds.y());
       canvas.drawPicture(mask_record);
-      sk_sp<SkImage> image = SkImage::MakeFromBitmap(bitmap);
+      PaintImage image = PaintImageBuilder::WithDefault()
+                             .set_id(PaintImage::GetNextId())
+                             .set_image(SkImage::MakeFromBitmap(bitmap))
+                             .TakePaintImage();
 
       // SkXfermodeImageFilter can choose an excessively large size if the
       // mask is smaller than the filtered contents (due to overflow).
       // http://skbug.com/5210
-      SkImageFilter::CropRect crop_rect(mask_record_bounds);
-      masked_input = SkXfermodeImageFilter::Make(
+      PaintFilter::CropRect crop_rect(mask_record_bounds);
+      SkRect image_rect = SkRect::MakeWH(image.width(), image.height());
+      masked_input = sk_make_sp<XfermodePaintFilter>(
           SkBlendMode::kSrcIn,
-          SkOffsetImageFilter::Make(mask_record_bounds.x(),
-                                    mask_record_bounds.y(),
-                                    SkImageSource::Make(image)),
+          sk_make_sp<OffsetPaintFilter>(
+              mask_record_bounds.x(), mask_record_bounds.y(),
+              sk_make_sp<ImagePaintFilter>(std::move(image), image_rect,
+                                           image_rect, kHigh_SkFilterQuality)),
           input, &crop_rect);
     } else {
       // If the buffer is excessively big, give up and make an
       // SkPictureImageFilter anyway, even if it might not render.
-      SkImageFilter::CropRect crop_rect(mask_record_bounds);
-      masked_input = SkXfermodeImageFilter::Make(
+      PaintFilter::CropRect crop_rect(mask_record_bounds);
+      masked_input = sk_make_sp<XfermodePaintFilter>(
           SkBlendMode::kSrcOver,
-          SkPictureImageFilter::Make(
-              ToSkPicture(std::move(mask_record), mask_record_bounds)),
+          sk_make_sp<RecordPaintFilter>(std::move(mask_record),
+                                        mask_record_bounds),
           input, &crop_rect);
     }
   } else {
     masked_input = input;
   }
-  sk_sp<SkImageFilter> flip_image_filter = SkImageFilter::MakeMatrixFilter(
+  sk_sp<PaintFilter> flip_image_filter = sk_make_sp<MatrixPaintFilter>(
       reflection.ReflectionMatrix(), kLow_SkFilterQuality,
       std::move(masked_input));
-  return SkXfermodeImageFilter::Make(SkBlendMode::kSrcOver,
-                                     std::move(flip_image_filter),
-                                     std::move(input), nullptr);
+  return sk_make_sp<XfermodePaintFilter>(SkBlendMode::kSrcOver,
+                                         std::move(flip_image_filter),
+                                         std::move(input), nullptr);
 }
 
-}  // namespace SkiaImageFilterBuilder
+}  // namespace PaintFilterBuilder
 }  // namespace blink

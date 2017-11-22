@@ -26,7 +26,7 @@
 
 #include "SkMorphologyImageFilter.h"
 #include "platform/graphics/filters/Filter.h"
-#include "platform/graphics/filters/SkiaImageFilterBuilder.h"
+#include "platform/graphics/filters/PaintFilterBuilder.h"
 #include "platform/text/TextStream.h"
 
 namespace blink {
@@ -89,16 +89,18 @@ FloatRect FEMorphology::MapEffect(const FloatRect& rect) const {
   return result;
 }
 
-sk_sp<SkImageFilter> FEMorphology::CreateImageFilter() {
-  sk_sp<SkImageFilter> input(SkiaImageFilterBuilder::Build(
-      InputEffect(0), OperatingInterpolationSpace()));
+sk_sp<PaintFilter> FEMorphology::CreateImageFilter() {
+  sk_sp<PaintFilter> input(
+      PaintFilterBuilder::Build(InputEffect(0), OperatingInterpolationSpace()));
   int radius_x = clampTo<int>(GetFilter()->ApplyHorizontalScale(radius_x_));
   int radius_y = clampTo<int>(GetFilter()->ApplyVerticalScale(radius_y_));
-  SkImageFilter::CropRect rect = GetCropRect();
-  if (type_ == FEMORPHOLOGY_OPERATOR_DILATE)
-    return SkDilateImageFilter::Make(radius_x, radius_y, std::move(input),
-                                     &rect);
-  return SkErodeImageFilter::Make(radius_x, radius_y, std::move(input), &rect);
+  PaintFilter::CropRect rect = GetCropRect();
+  MorphologyPaintFilter::MorphType morph_type =
+      type_ == FEMORPHOLOGY_OPERATOR_DILATE
+          ? MorphologyPaintFilter::MorphType::kDilate
+          : MorphologyPaintFilter::MorphType::kErode;
+  return sk_make_sp<MorphologyPaintFilter>(morph_type, radius_x, radius_y,
+                                           std::move(input), &rect);
 }
 
 static TextStream& operator<<(TextStream& ts,

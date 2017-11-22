@@ -10,8 +10,8 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
-#include "cc/base/filter_operations.h"
 #include "cc/base/math_util.h"
+#include "cc/paint/filter_operations.h"
 #include "cc/test/fake_raster_source.h"
 #include "cc/test/geometry_test_utils.h"
 #include "components/viz/common/quads/debug_border_draw_quad.h"

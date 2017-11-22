@@ -26,7 +26,7 @@
 
 #include "SkDisplacementMapEffect.h"
 #include "platform/graphics/filters/Filter.h"
-#include "platform/graphics/filters/SkiaImageFilterBuilder.h"
+#include "platform/graphics/filters/PaintFilterBuilder.h"
 #include "platform/text/TextStream.h"
 
 namespace blink {
@@ -112,20 +112,20 @@ static SkDisplacementMapEffect::ChannelSelectorType ToSkiaMode(
   }
 }
 
-sk_sp<SkImageFilter> FEDisplacementMap::CreateImageFilter() {
-  sk_sp<SkImageFilter> color = SkiaImageFilterBuilder::Build(
-      InputEffect(0), OperatingInterpolationSpace());
-  sk_sp<SkImageFilter> displ = SkiaImageFilterBuilder::Build(
-      InputEffect(1), OperatingInterpolationSpace());
+sk_sp<PaintFilter> FEDisplacementMap::CreateImageFilter() {
+  sk_sp<PaintFilter> color =
+      PaintFilterBuilder::Build(InputEffect(0), OperatingInterpolationSpace());
+  sk_sp<PaintFilter> displ =
+      PaintFilterBuilder::Build(InputEffect(1), OperatingInterpolationSpace());
   SkDisplacementMapEffect::ChannelSelectorType type_x =
       ToSkiaMode(x_channel_selector_);
   SkDisplacementMapEffect::ChannelSelectorType type_y =
       ToSkiaMode(y_channel_selector_);
-  SkImageFilter::CropRect crop_rect = GetCropRect();
+  PaintFilter::CropRect crop_rect = GetCropRect();
   // FIXME : Only applyHorizontalScale is used and applyVerticalScale is ignored
   // This can be fixed by adding a 2nd scale parameter to
-  // SkDisplacementMapEffect.
-  return SkDisplacementMapEffect::Make(
+  // DisplacementMapEffectPaintFilter.
+  return sk_make_sp<DisplacementMapEffectPaintFilter>(
       type_x, type_y,
       SkFloatToScalar(GetFilter()->ApplyHorizontalScale(scale_)),
       std::move(displ), std::move(color), &crop_rect);

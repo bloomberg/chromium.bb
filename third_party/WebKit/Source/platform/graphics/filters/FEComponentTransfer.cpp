@@ -25,9 +25,8 @@
 #include "platform/graphics/filters/FEComponentTransfer.h"
 
 #include <algorithm>
-#include "SkColorFilterImageFilter.h"
 #include "SkTableColorFilter.h"
-#include "platform/graphics/filters/SkiaImageFilterBuilder.h"
+#include "platform/graphics/filters/PaintFilterBuilder.h"
 #include "platform/text/TextStream.h"
 #include "platform/wtf/MathExtras.h"
 
@@ -134,18 +133,18 @@ bool FEComponentTransfer::AffectsTransparentPixels() const {
   return 255 * intercept >= 1;
 }
 
-sk_sp<SkImageFilter> FEComponentTransfer::CreateImageFilter() {
-  sk_sp<SkImageFilter> input(SkiaImageFilterBuilder::Build(
-      InputEffect(0), OperatingInterpolationSpace()));
+sk_sp<PaintFilter> FEComponentTransfer::CreateImageFilter() {
+  sk_sp<PaintFilter> input(
+      PaintFilterBuilder::Build(InputEffect(0), OperatingInterpolationSpace()));
 
   unsigned char r_values[256], g_values[256], b_values[256], a_values[256];
   GetValues(r_values, g_values, b_values, a_values);
 
-  SkImageFilter::CropRect crop_rect = GetCropRect();
+  PaintFilter::CropRect crop_rect = GetCropRect();
   sk_sp<SkColorFilter> color_filter =
       SkTableColorFilter::MakeARGB(a_values, r_values, g_values, b_values);
-  return SkColorFilterImageFilter::Make(std::move(color_filter),
-                                        std::move(input), &crop_rect);
+  return sk_make_sp<ColorFilterPaintFilter>(std::move(color_filter),
+                                            std::move(input), &crop_rect);
 }
 
 void FEComponentTransfer::GetValues(unsigned char r_values[256],

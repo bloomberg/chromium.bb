@@ -24,7 +24,7 @@
 
 #include <memory>
 #include "SkMergeImageFilter.h"
-#include "platform/graphics/filters/SkiaImageFilterBuilder.h"
+#include "platform/graphics/filters/PaintFilterBuilder.h"
 #include "platform/text/TextStream.h"
 #include "platform/wtf/PtrUtil.h"
 
@@ -36,17 +36,17 @@ FEMerge* FEMerge::Create(Filter* filter) {
   return new FEMerge(filter);
 }
 
-sk_sp<SkImageFilter> FEMerge::CreateImageFilter() {
+sk_sp<PaintFilter> FEMerge::CreateImageFilter() {
   unsigned size = NumberOfEffectInputs();
 
-  std::unique_ptr<sk_sp<SkImageFilter>[]> input_refs =
-      WrapArrayUnique(new sk_sp<SkImageFilter>[size]);
+  std::unique_ptr<sk_sp<PaintFilter>[]> input_refs =
+      WrapArrayUnique(new sk_sp<PaintFilter>[size]);
   for (unsigned i = 0; i < size; ++i) {
-    input_refs[i] = SkiaImageFilterBuilder::Build(
-        InputEffect(i), OperatingInterpolationSpace());
+    input_refs[i] = PaintFilterBuilder::Build(InputEffect(i),
+                                              OperatingInterpolationSpace());
   }
-  SkImageFilter::CropRect rect = GetCropRect();
-  return SkMergeImageFilter::Make(input_refs.get(), size, &rect);
+  PaintFilter::CropRect rect = GetCropRect();
+  return sk_make_sp<MergePaintFilter>(input_refs.get(), size, &rect);
 }
 
 TextStream& FEMerge::ExternalRepresentation(TextStream& ts, int indent) const {

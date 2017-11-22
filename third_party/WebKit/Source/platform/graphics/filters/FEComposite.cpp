@@ -27,7 +27,7 @@
 #include "SkArithmeticImageFilter.h"
 #include "SkXfermodeImageFilter.h"
 
-#include "platform/graphics/filters/SkiaImageFilterBuilder.h"
+#include "platform/graphics/filters/PaintFilterBuilder.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/text/TextStream.h"
 
@@ -180,33 +180,34 @@ SkBlendMode ToBlendMode(CompositeOperationType mode) {
   }
 }
 
-sk_sp<SkImageFilter> FEComposite::CreateImageFilter() {
+sk_sp<PaintFilter> FEComposite::CreateImageFilter() {
   return CreateImageFilterInternal(true);
 }
 
-sk_sp<SkImageFilter> FEComposite::CreateImageFilterWithoutValidation() {
+sk_sp<PaintFilter> FEComposite::CreateImageFilterWithoutValidation() {
   return CreateImageFilterInternal(false);
 }
 
-sk_sp<SkImageFilter> FEComposite::CreateImageFilterInternal(
+sk_sp<PaintFilter> FEComposite::CreateImageFilterInternal(
     bool requires_pm_color_validation) {
-  sk_sp<SkImageFilter> foreground(SkiaImageFilterBuilder::Build(
-      InputEffect(0), OperatingInterpolationSpace(),
-      !MayProduceInvalidPreMultipliedPixels()));
-  sk_sp<SkImageFilter> background(SkiaImageFilterBuilder::Build(
-      InputEffect(1), OperatingInterpolationSpace(),
-      !MayProduceInvalidPreMultipliedPixels()));
-  SkImageFilter::CropRect crop_rect = GetCropRect();
+  sk_sp<PaintFilter> foreground(
+      PaintFilterBuilder::Build(InputEffect(0), OperatingInterpolationSpace(),
+                                !MayProduceInvalidPreMultipliedPixels()));
+  sk_sp<PaintFilter> background(
+      PaintFilterBuilder::Build(InputEffect(1), OperatingInterpolationSpace(),
+                                !MayProduceInvalidPreMultipliedPixels()));
+  PaintFilter::CropRect crop_rect = GetCropRect();
 
   if (type_ == FECOMPOSITE_OPERATOR_ARITHMETIC) {
-    return SkArithmeticImageFilter::Make(
+    return sk_make_sp<ArithmeticPaintFilter>(
         SkFloatToScalar(k1_), SkFloatToScalar(k2_), SkFloatToScalar(k3_),
         SkFloatToScalar(k4_), requires_pm_color_validation,
         std::move(background), std::move(foreground), &crop_rect);
   }
 
-  return SkXfermodeImageFilter::Make(ToBlendMode(type_), std::move(background),
-                                     std::move(foreground), &crop_rect);
+  return sk_make_sp<XfermodePaintFilter>(ToBlendMode(type_),
+                                         std::move(background),
+                                         std::move(foreground), &crop_rect);
 }
 
 static TextStream& operator<<(TextStream& ts,

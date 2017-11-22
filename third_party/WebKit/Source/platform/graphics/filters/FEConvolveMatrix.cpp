@@ -26,7 +26,7 @@
 
 #include <memory>
 #include "SkMatrixConvolutionImageFilter.h"
-#include "platform/graphics/filters/SkiaImageFilterBuilder.h"
+#include "platform/graphics/filters/PaintFilterBuilder.h"
 #include "platform/text/TextStream.h"
 #include "platform/wtf/CheckedNumeric.h"
 #include "platform/wtf/PtrUtil.h"
@@ -137,12 +137,12 @@ bool FEConvolveMatrix::ParametersValid() const {
   return true;
 }
 
-sk_sp<SkImageFilter> FEConvolveMatrix::CreateImageFilter() {
+sk_sp<PaintFilter> FEConvolveMatrix::CreateImageFilter() {
   if (!ParametersValid())
     return CreateTransparentBlack();
 
-  sk_sp<SkImageFilter> input(SkiaImageFilterBuilder::Build(
-      InputEffect(0), OperatingInterpolationSpace()));
+  sk_sp<PaintFilter> input(
+      PaintFilterBuilder::Build(InputEffect(0), OperatingInterpolationSpace()));
   SkISize kernel_size(
       SkISize::Make(kernel_size_.Width(), kernel_size_.Height()));
   // parametersValid() above checks that the kernel area fits in int.
@@ -150,15 +150,14 @@ sk_sp<SkImageFilter> FEConvolveMatrix::CreateImageFilter() {
   SkScalar gain = SkFloatToScalar(1.0f / divisor_);
   SkScalar bias = SkFloatToScalar(bias_ * 255);
   SkIPoint target = SkIPoint::Make(target_offset_.X(), target_offset_.Y());
-  SkMatrixConvolutionImageFilter::TileMode tile_mode =
-      ToSkiaTileMode(edge_mode_);
+  MatrixConvolutionPaintFilter::TileMode tile_mode = ToSkiaTileMode(edge_mode_);
   bool convolve_alpha = !preserve_alpha_;
   std::unique_ptr<SkScalar[]> kernel =
       WrapArrayUnique(new SkScalar[num_elements]);
   for (int i = 0; i < num_elements; ++i)
     kernel[i] = SkFloatToScalar(kernel_matrix_[num_elements - 1 - i]);
-  SkImageFilter::CropRect crop_rect = GetCropRect();
-  return SkMatrixConvolutionImageFilter::Make(
+  PaintFilter::CropRect crop_rect = GetCropRect();
+  return sk_make_sp<MatrixConvolutionPaintFilter>(
       kernel_size, kernel.get(), gain, bias, target, tile_mode, convolve_alpha,
       std::move(input), &crop_rect);
 }

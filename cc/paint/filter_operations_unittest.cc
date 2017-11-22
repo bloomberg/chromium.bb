@@ -4,12 +4,9 @@
 
 #include <stddef.h>
 
-#include "cc/base/filter_operations.h"
+#include "cc/paint/filter_operations.h"
+
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/skia/include/effects/SkBlurImageFilter.h"
-#include "third_party/skia/include/effects/SkDropShadowImageFilter.h"
-#include "third_party/skia/include/effects/SkOffsetImageFilter.h"
-#include "third_party/skia/include/effects/SkXfermodeImageFilter.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -51,7 +48,7 @@ TEST(FilterOperationsTest, MapRectReverseBlur) {
 TEST(FilterOperationsTest, MapRectDropShadowReferenceFilter) {
   FilterOperations ops;
   ops.Append(
-      FilterOperation::CreateReferenceFilter(SkDropShadowImageFilter::Make(
+      FilterOperation::CreateReferenceFilter(sk_make_sp<DropShadowPaintFilter>(
           SkIntToScalar(3), SkIntToScalar(8), SkIntToScalar(4),
           SkIntToScalar(9), SK_ColorBLACK,
           SkDropShadowImageFilter::kDrawShadowAndForeground_ShadowMode,
@@ -67,7 +64,7 @@ TEST(FilterOperationsTest, MapRectDropShadowReferenceFilter) {
 TEST(FilterOperationsTest, MapRectReverseDropShadowReferenceFilter) {
   FilterOperations ops;
   ops.Append(
-      FilterOperation::CreateReferenceFilter(SkDropShadowImageFilter::Make(
+      FilterOperation::CreateReferenceFilter(sk_make_sp<DropShadowPaintFilter>(
           SkIntToScalar(3), SkIntToScalar(8), SkIntToScalar(4),
           SkIntToScalar(9), SK_ColorBLACK,
           SkDropShadowImageFilter::kDrawShadowAndForeground_ShadowMode,
@@ -83,7 +80,7 @@ TEST(FilterOperationsTest, MapRectReverseDropShadowReferenceFilter) {
 }
 
 TEST(FilterOperationsTest, MapRectOffsetReferenceFilter) {
-  sk_sp<SkImageFilter> filter = SkOffsetImageFilter::Make(30, 40, nullptr);
+  sk_sp<PaintFilter> filter = sk_make_sp<OffsetPaintFilter>(30, 40, nullptr);
   FilterOperations ops;
   ops.Append(FilterOperation::CreateReferenceFilter(std::move(filter)));
   EXPECT_EQ(gfx::Rect(30, 40, 10, 10),
@@ -95,7 +92,7 @@ TEST(FilterOperationsTest, MapRectOffsetReferenceFilter) {
 }
 
 TEST(FilterOperationsTest, MapRectReverseOffsetReferenceFilter) {
-  sk_sp<SkImageFilter> filter = SkOffsetImageFilter::Make(30, 40, nullptr);
+  sk_sp<PaintFilter> filter = sk_make_sp<OffsetPaintFilter>(30, 40, nullptr);
   FilterOperations ops;
   ops.Append(FilterOperation::CreateReferenceFilter(std::move(filter)));
   EXPECT_EQ(gfx::Rect(-30, -40, 10, 10),
@@ -112,11 +109,11 @@ TEST(FilterOperationsTest, MapRectCombineNonCommutative) {
   // Offsets by 100px in each axis, then scales the resulting image by 2.
   FilterOperations ops;
   ops.Append(FilterOperation::CreateReferenceFilter(
-      SkOffsetImageFilter::Make(100, 100, nullptr)));
+      sk_make_sp<OffsetPaintFilter>(100, 100, nullptr)));
   SkMatrix scaleMatrix;
   scaleMatrix.setScale(2, 2);
   ops.Append(
-      FilterOperation::CreateReferenceFilter(SkImageFilter::MakeMatrixFilter(
+      FilterOperation::CreateReferenceFilter(sk_make_sp<MatrixPaintFilter>(
           scaleMatrix, kNone_SkFilterQuality, nullptr)));
 
   EXPECT_EQ(gfx::Rect(200, 200, 20, 20),
@@ -131,11 +128,11 @@ TEST(FilterOperationsTest, MapRectReverseCombineNonCommutative) {
   // Offsets by 100px in each axis, then scales the resulting image by 2.
   FilterOperations ops;
   ops.Append(FilterOperation::CreateReferenceFilter(
-      SkOffsetImageFilter::Make(100, 100, nullptr)));
+      sk_make_sp<OffsetPaintFilter>(100, 100, nullptr)));
   SkMatrix scaleMatrix;
   scaleMatrix.setScale(2, 2);
   ops.Append(
-      FilterOperation::CreateReferenceFilter(SkImageFilter::MakeMatrixFilter(
+      FilterOperation::CreateReferenceFilter(sk_make_sp<MatrixPaintFilter>(
           scaleMatrix, kNone_SkFilterQuality, nullptr)));
 
   EXPECT_EQ(gfx::Rect(10, 10),
@@ -221,10 +218,12 @@ TEST(FilterOperationsTest, MapRectTypeConversionDoesNotOverflow) {
       SkFloatToScalar(std::numeric_limits<int>::max()) * 2 / 3;
 
   FilterOperations ops;
-  ops.Append(FilterOperation::CreateReferenceFilter(SkXfermodeImageFilter::Make(
-      SkBlendMode::kSrcOver,
-      SkOffsetImageFilter::Make(-big_offset, -big_offset, nullptr),
-      SkOffsetImageFilter::Make(big_offset, big_offset, nullptr), nullptr)));
+  ops.Append(
+      FilterOperation::CreateReferenceFilter(sk_make_sp<XfermodePaintFilter>(
+          SkBlendMode::kSrcOver,
+          sk_make_sp<OffsetPaintFilter>(-big_offset, -big_offset, nullptr),
+          sk_make_sp<OffsetPaintFilter>(big_offset, big_offset, nullptr),
+          nullptr)));
   gfx::Rect rect = ops.MapRect(gfx::Rect(-10, -10, 20, 20), SkMatrix::I());
   EXPECT_GT(rect.width(), 0);
   EXPECT_GT(rect.height(), 0);
@@ -700,8 +699,10 @@ TEST(FilterOperationsTest, BlendSaturatingBrightnessWithNull) {
 }
 
 TEST(FilterOperationsTest, BlendReferenceFilters) {
-  sk_sp<SkImageFilter> from_filter(SkBlurImageFilter::Make(1.f, 1.f, nullptr));
-  sk_sp<SkImageFilter> to_filter(SkBlurImageFilter::Make(2.f, 2.f, nullptr));
+  sk_sp<PaintFilter> from_filter(sk_make_sp<BlurPaintFilter>(
+      1.f, 1.f, BlurPaintFilter::TileMode::kClampToBlack_TileMode, nullptr));
+  sk_sp<PaintFilter> to_filter(sk_make_sp<BlurPaintFilter>(
+      2.f, 2.f, BlurPaintFilter::TileMode::kClampToBlack_TileMode, nullptr));
   FilterOperation from =
       FilterOperation::CreateReferenceFilter(std::move(from_filter));
   FilterOperation to =
@@ -721,7 +722,8 @@ TEST(FilterOperationsTest, BlendReferenceFilters) {
 }
 
 TEST(FilterOperationsTest, BlendReferenceWithNull) {
-  sk_sp<SkImageFilter> image_filter(SkBlurImageFilter::Make(1.f, 1.f, nullptr));
+  sk_sp<PaintFilter> image_filter(sk_make_sp<BlurPaintFilter>(
+      1.f, 1.f, BlurPaintFilter::TileMode::kClampToBlack_TileMode, nullptr));
   FilterOperation filter =
       FilterOperation::CreateReferenceFilter(std::move(image_filter));
   FilterOperation null_filter = FilterOperation::CreateReferenceFilter(nullptr);

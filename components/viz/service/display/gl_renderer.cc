@@ -29,8 +29,8 @@
 #include "build/build_config.h"
 #include "cc/base/container_util.h"
 #include "cc/base/math_util.h"
-#include "cc/base/render_surface_filters.h"
 #include "cc/debug/debug_colors.h"
+#include "cc/paint/render_surface_filters.h"
 #include "cc/raster/scoped_gpu_raster.h"
 #include "cc/resources/resource_pool.h"
 #include "cc/resources/scoped_resource.h"
@@ -964,16 +964,17 @@ sk_sp<SkImage> GLRenderer::ApplyBackgroundFilters(
   gfx::Vector2d clipping_offset =
       (rect.top_right() - unclipped_rect.top_right()) +
       (rect.bottom_left() - unclipped_rect.bottom_left());
-  sk_sp<SkImageFilter> filter = cc::RenderSurfaceFilters::BuildImageFilter(
+  auto paint_filter = cc::RenderSurfaceFilters::BuildImageFilter(
       background_filters, gfx::SizeF(rect.size()),
       gfx::Vector2dF(clipping_offset));
 
   // TODO(senorblanco): background filters should be moved to the
   // makeWithFilter fast-path, and go back to calling ApplyImageFilter().
   // See http://crbug.com/613233.
-  if (!filter || !use_gr_context)
+  if (!paint_filter || !use_gr_context)
     return nullptr;
 
+  auto filter = paint_filter->cached_sk_filter_;
   bool flip_texture = true;
   sk_sp<SkImage> src_image =
       WrapTexture(background_texture, GL_TEXTURE_2D, rect.size(),
@@ -1290,8 +1291,9 @@ bool GLRenderer::UpdateRPDQWithSkiaFilters(
   // Apply filters to the contents texture.
   if (params->filters) {
     DCHECK(!params->filters->IsEmpty());
-    sk_sp<SkImageFilter> filter = cc::RenderSurfaceFilters::BuildImageFilter(
+    auto paint_filter = cc::RenderSurfaceFilters::BuildImageFilter(
         *params->filters, gfx::SizeF(params->contents_texture->size()));
+    auto filter = paint_filter ? paint_filter->cached_sk_filter_ : nullptr;
     if (filter) {
       SkColorFilter* colorfilter_rawptr = nullptr;
       filter->asColorFilter(&colorfilter_rawptr);
