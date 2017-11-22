@@ -23,9 +23,9 @@ namespace media {
 
 namespace {
 
-// An arbitrarily-chosen number to estimate the duration of a buffer if none is
-// set and there's not enough information to get a better estimate.
-const int kDefaultBufferDurationInMs = 125;
+// The minimum interbuffer decode timestamp delta (or buffer duration) for use
+// in fudge room for range membership, adjacency and coalescing.
+const int kMinimumInterbufferDistanceInMs = 1;
 
 // Limit the number of MEDIA_LOG() logs for track buffer time gaps.
 const int kMaxTrackBufferGapWarningLogs = 20;
@@ -193,7 +193,8 @@ SourceBufferStream<RangeClass>::SourceBufferStream(
       coded_frame_group_start_time_(kNoDecodeTimestamp()),
       range_for_next_append_(ranges_.end()),
       highest_output_buffer_timestamp_(kNoDecodeTimestamp()),
-      max_interbuffer_distance_(kNoTimestamp),
+      max_interbuffer_distance_(
+          base::TimeDelta::FromMilliseconds(kMinimumInterbufferDistanceInMs)),
       memory_limit_(kDemuxerStreamAudioMemoryLimit) {
   DCHECK(audio_config.IsValidConfig());
   audio_configs_.push_back(audio_config);
@@ -208,7 +209,8 @@ SourceBufferStream<RangeClass>::SourceBufferStream(
       coded_frame_group_start_time_(kNoDecodeTimestamp()),
       range_for_next_append_(ranges_.end()),
       highest_output_buffer_timestamp_(kNoDecodeTimestamp()),
-      max_interbuffer_distance_(kNoTimestamp),
+      max_interbuffer_distance_(
+          base::TimeDelta::FromMilliseconds(kMinimumInterbufferDistanceInMs)),
       memory_limit_(kDemuxerStreamVideoMemoryLimit) {
   DCHECK(video_config.IsValidConfig());
   video_configs_.push_back(video_config);
@@ -224,7 +226,8 @@ SourceBufferStream<RangeClass>::SourceBufferStream(
       coded_frame_group_start_time_(kNoDecodeTimestamp()),
       range_for_next_append_(ranges_.end()),
       highest_output_buffer_timestamp_(kNoDecodeTimestamp()),
-      max_interbuffer_distance_(kNoTimestamp),
+      max_interbuffer_distance_(
+          base::TimeDelta::FromMilliseconds(kMinimumInterbufferDistanceInMs)),
       memory_limit_(kDemuxerStreamAudioMemoryLimit) {}
 
 template <typename RangeClass>
@@ -777,14 +780,10 @@ void SourceBufferStream<RangeClass>::UpdateMaxInterbufferDtsDistance(
           std::max(current_timestamp - prev_timestamp, interbuffer_distance);
     }
 
-    if (interbuffer_distance > base::TimeDelta()) {
-      if (max_interbuffer_distance_ == kNoTimestamp) {
-        max_interbuffer_distance_ = interbuffer_distance;
-      } else {
-        max_interbuffer_distance_ =
-            std::max(max_interbuffer_distance_, interbuffer_distance);
-      }
-    }
+    DCHECK(max_interbuffer_distance_ >=
+           base::TimeDelta::FromMilliseconds(kMinimumInterbufferDistanceInMs));
+    max_interbuffer_distance_ =
+        std::max(max_interbuffer_distance_, interbuffer_distance);
     prev_timestamp = current_timestamp;
   }
 }
@@ -1853,8 +1852,6 @@ SourceBufferStream<RangeClass>::GetCurrentTextTrackConfig() {
 template <typename RangeClass>
 base::TimeDelta SourceBufferStream<RangeClass>::GetMaxInterbufferDistance()
     const {
-  if (max_interbuffer_distance_ == kNoTimestamp)
-    return base::TimeDelta::FromMilliseconds(kDefaultBufferDurationInMs);
   return max_interbuffer_distance_;
 }
 
