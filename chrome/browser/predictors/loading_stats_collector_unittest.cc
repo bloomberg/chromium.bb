@@ -4,6 +4,8 @@
 
 #include "chrome/browser/predictors/loading_stats_collector.h"
 
+#include <vector>
+
 #include "base/memory/ptr_util.h"
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/predictors/loading_test_util.h"
@@ -87,7 +89,7 @@ void LoadingStatsCollectorTest::TestRedirectStatusHistogram(
   {
     PreconnectPrediction prediction = CreatePreconnectPrediction(
         GURL(prediction_url).host(), initial_url != prediction_url,
-        {GURL(script_url).GetOrigin()}, {});
+        {{GURL(script_url).GetOrigin(), 1}});
     EXPECT_CALL(*mock_predictor_,
                 PredictPreconnectOrigins(GURL(initial_url), _))
         .WillOnce(DoAll(SetArgPointee<1>(prediction), Return(true)));
@@ -149,11 +151,12 @@ TEST_F(LoadingStatsCollectorTest, TestPreconnectPrecisionRecallHistograms) {
   };
 
   // Predicts 4 origins: 2 useful, 2 useless.
-  PreconnectPrediction prediction = CreatePreconnectPrediction(
-      GURL(main_frame_url).host(), false,
-      {GURL(main_frame_url).GetOrigin(), GURL(gen(1)).GetOrigin(),
-       GURL(gen(2)).GetOrigin()},
-      {GURL(gen(3)).GetOrigin()});
+  PreconnectPrediction prediction =
+      CreatePreconnectPrediction(GURL(main_frame_url).host(), false,
+                                 {{GURL(main_frame_url).GetOrigin(), 1},
+                                  {GURL(gen(1)).GetOrigin(), 1},
+                                  {GURL(gen(2)).GetOrigin(), 1},
+                                  {GURL(gen(3)).GetOrigin(), 0}});
   EXPECT_CALL(*mock_predictor_,
               PredictPreconnectOrigins(GURL(main_frame_url), _))
       .WillOnce(DoAll(SetArgPointee<1>(prediction), Return(true)));

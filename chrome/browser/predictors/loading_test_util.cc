@@ -188,13 +188,11 @@ ResourcePrefetchPredictor::Prediction CreatePrediction(
 PreconnectPrediction CreatePreconnectPrediction(
     std::string host,
     bool is_redirected,
-    std::vector<GURL> preconnect_origins,
-    std::vector<GURL> preresolve_hosts) {
+    const std::vector<PreconnectRequest>& requests) {
   PreconnectPrediction prediction;
   prediction.host = host;
   prediction.is_redirected = is_redirected;
-  prediction.preconnect_origins = preconnect_origins;
-  prediction.preresolve_hosts = preresolve_hosts;
+  prediction.requests = requests;
   return prediction;
 }
 
@@ -381,18 +379,19 @@ std::ostream& operator<<(std::ostream& os, const NavigationID& navigation_id) {
   return os << navigation_id.tab_id << "," << navigation_id.main_frame_url;
 }
 
+std::ostream& operator<<(std::ostream& os, const PreconnectRequest& request) {
+  return os << "[" << request.origin << "," << request.num_sockets << ","
+            << request.allow_credentials << "]";
+}
+
 std::ostream& operator<<(std::ostream& os,
                          const PreconnectPrediction& prediction) {
   os << "[" << prediction.host << "," << prediction.is_redirected << "]"
      << std::endl;
 
-  os << "Preconnect:" << std::endl;
-  for (const auto& url : prediction.preconnect_origins)
-    os << "\t\t" << url << std::endl;
+  for (const auto& request : prediction.requests)
+    os << "\t\t" << request << std::endl;
 
-  os << "Preresolve:" << std::endl;
-  for (const auto& url : prediction.preresolve_hosts)
-    os << "\t\t" << url << std::endl;
   return os;
 }
 
@@ -493,11 +492,15 @@ bool operator==(const OriginStat& lhs, const OriginStat& rhs) {
          lhs.accessed_network() == rhs.accessed_network();
 }
 
+bool operator==(const PreconnectRequest& lhs, const PreconnectRequest& rhs) {
+  return lhs.origin == rhs.origin && lhs.num_sockets == rhs.num_sockets &&
+         lhs.allow_credentials == rhs.allow_credentials;
+}
+
 bool operator==(const PreconnectPrediction& lhs,
                 const PreconnectPrediction& rhs) {
   return lhs.is_redirected == rhs.is_redirected && lhs.host == rhs.host &&
-         lhs.preconnect_origins == rhs.preconnect_origins &&
-         lhs.preresolve_hosts == rhs.preresolve_hosts;
+         lhs.requests == rhs.requests;
 }
 
 }  // namespace predictors

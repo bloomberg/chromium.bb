@@ -44,10 +44,6 @@ namespace internal {
 constexpr char kResourcePrefetchPredictorPrefetchingDurationHistogram[] =
     "ResourcePrefetchPredictor.PrefetchingDuration";
 
-const uint32_t kVersionedRemovedExperiment = 0x03ff25e3;
-const uint32_t kUnusedRemovedExperiment = 0xf7f77166;
-const uint32_t kNoStoreRemovedExperiment = 0xd90a199a;
-
 struct LastVisitTimeCompare {
   template <typename T>
   bool operator()(const T& lhs, const T& rhs) const {
@@ -60,6 +56,19 @@ struct LastVisitTimeCompare {
 class TestObserver;
 class ResourcePrefetcherManager;
 
+// Stores all values needed to trigger a preconnect/preresolve job to a single
+// origin.
+struct PreconnectRequest {
+  PreconnectRequest(const GURL& origin, int num_sockets);
+
+  GURL origin;
+  // A zero-value means that we need to preresolve a host only.
+  int num_sockets = 0;
+  bool allow_credentials = true;
+};
+
+// Stores a result of preconnect prediction. The |requests| vector is the main
+// result of prediction and other fields are used for histograms reporting.
 struct PreconnectPrediction {
   PreconnectPrediction();
   PreconnectPrediction(const PreconnectPrediction& other);
@@ -67,8 +76,7 @@ struct PreconnectPrediction {
 
   bool is_redirected = false;
   std::string host;
-  std::vector<GURL> preconnect_origins;
-  std::vector<GURL> preresolve_hosts;
+  std::vector<PreconnectRequest> requests;
 };
 
 // Contains logic for learning what can be prefetched and for kicking off

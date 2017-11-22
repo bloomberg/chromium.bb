@@ -106,8 +106,7 @@ ResourcePrefetchPredictor::Prediction CreatePrediction(
 PreconnectPrediction CreatePreconnectPrediction(
     std::string host,
     bool is_redirected,
-    std::vector<GURL> preconnect_urls,
-    std::vector<GURL> preresolve_urls);
+    const std::vector<PreconnectRequest>& requests);
 
 void PopulateTestConfig(LoadingPredictorConfig* config, bool small_db = true);
 
@@ -195,6 +194,7 @@ std::ostream& operator<<(std::ostream& stream, const NavigationID& id);
 
 std::ostream& operator<<(std::ostream& os, const OriginData& data);
 std::ostream& operator<<(std::ostream& os, const OriginStat& redirect);
+std::ostream& operator<<(std::ostream& os, const PreconnectRequest& request);
 std::ostream& operator<<(std::ostream& os,
                          const PreconnectPrediction& prediction);
 
@@ -208,6 +208,7 @@ bool operator==(const OriginRequestSummary& lhs,
                 const OriginRequestSummary& rhs);
 bool operator==(const OriginData& lhs, const OriginData& rhs);
 bool operator==(const OriginStat& lhs, const OriginStat& rhs);
+bool operator==(const PreconnectRequest& lhs, const PreconnectRequest& rhs);
 bool operator==(const PreconnectPrediction& lhs,
                 const PreconnectPrediction& rhs);
 
