@@ -145,6 +145,7 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
+#include "components/content_settings/core/common/pref_names.h"
 #include "components/dom_distiller/core/dom_distiller_switches.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/error_page/common/error_page_switches.h"
@@ -1728,6 +1729,12 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
           !prefs->GetBoolean(prefs::kAllowDinosaurEasterEgg))
         command_line->AppendSwitch(
             error_page::switches::kDisableDinosaurEasterEgg);
+
+      if (prefs->HasPrefPath(prefs::kUnsafelyTreatInsecureOriginAsSecure)) {
+        command_line->AppendSwitchASCII(
+            switches::kUnsafelyTreatInsecureOriginAsSecure,
+            prefs->GetString(prefs::kUnsafelyTreatInsecureOriginAsSecure));
+      }
     }
 
     if (IsAutoReloadEnabled())
@@ -1829,7 +1836,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kProfilingFile,
       switches::kProfilingFlush,
       switches::kReaderModeHeuristics,
-      switches::kUnsafelyTreatInsecureOriginAsSecure,
       translate::switches::kTranslateSecurityOrigin,
     };
 
@@ -1859,7 +1865,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 #endif
       switches::kPpapiFlashPath,
       switches::kPpapiFlashVersion,
-      switches::kUnsafelyTreatInsecureOriginAsSecure,
     };
 
     command_line->CopySwitchesFrom(browser_command_line, kSwitchNames,

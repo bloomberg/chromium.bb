@@ -2544,4 +2544,8 @@ const char kTabStatsWindowCountMax[] = "tab_stats.window_count_max";
 //  Timestamp of the last time the tab stats daily metrics have been reported.
 const char kTabStatsDailySample[] = "tab_stats.last_daily_sample";
 
+// A list of origins (URLs) to treat as "secure origins" for debugging purposes.
+const char kUnsafelyTreatInsecureOriginAsSecure[] =
+    "unsafely_treat_insecure_origin_as_secure";
+
 }  // namespace prefs
