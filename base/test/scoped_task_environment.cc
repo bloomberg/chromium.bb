@@ -21,26 +21,6 @@
 namespace base {
 namespace test {
 
-namespace {
-
-std::unique_ptr<MessageLoop> CreateMessageLoopForMainThreadType(
-    ScopedTaskEnvironment::MainThreadType main_thread_type) {
-  switch (main_thread_type) {
-    case ScopedTaskEnvironment::MainThreadType::DEFAULT:
-      return std::make_unique<MessageLoop>(MessageLoop::TYPE_DEFAULT);
-    case ScopedTaskEnvironment::MainThreadType::MOCK_TIME:
-      return nullptr;
-    case ScopedTaskEnvironment::MainThreadType::UI:
-      return std::make_unique<MessageLoop>(MessageLoop::TYPE_UI);
-    case ScopedTaskEnvironment::MainThreadType::IO:
-      return std::make_unique<MessageLoop>(MessageLoop::TYPE_IO);
-  }
-  NOTREACHED();
-  return nullptr;
-}
-
-}  // namespace
-
 class ScopedTaskEnvironment::TestTaskTracker
     : public internal::TaskSchedulerImpl::TaskTrackerImpl {
  public:
@@ -79,7 +59,14 @@ ScopedTaskEnvironment::ScopedTaskEnvironment(
     MainThreadType main_thread_type,
     ExecutionMode execution_control_mode)
     : execution_control_mode_(execution_control_mode),
-      message_loop_(CreateMessageLoopForMainThreadType(main_thread_type)),
+      message_loop_(main_thread_type == MainThreadType::MOCK_TIME
+                        ? nullptr
+                        : (std::make_unique<MessageLoop>(
+                              main_thread_type == MainThreadType::DEFAULT
+                                  ? MessageLoop::TYPE_DEFAULT
+                                  : (main_thread_type == MainThreadType::UI
+                                         ? MessageLoop::TYPE_UI
+                                         : MessageLoop::TYPE_IO)))),
       mock_time_task_runner_(
           main_thread_type == MainThreadType::MOCK_TIME
               ? MakeRefCounted<TestMockTimeTaskRunner>(
