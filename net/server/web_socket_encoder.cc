@@ -19,7 +19,7 @@
 namespace net {
 
 const char WebSocketEncoder::kClientExtensions[] =
-    "Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits";
+    "permessage-deflate; client_max_window_bits";
 
 namespace {
 
