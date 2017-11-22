@@ -172,9 +172,8 @@ bool IsValidSchema(const base::DictionaryValue* dict,
     }
 
     // Integer can be converted to double.
-    if (!(it.value().IsType(entry->type) ||
-          (it.value().IsType(base::Value::Type::INTEGER) &&
-           entry->type == base::Value::Type::DOUBLE))) {
+    if (!(it.value().type() == entry->type ||
+          (it.value().is_int() && entry->type == base::Value::Type::DOUBLE))) {
       *error = base::StringPrintf("Invalid value for %s attribute",
                                   it.key().c_str());
       return false;
@@ -182,7 +181,7 @@ bool IsValidSchema(const base::DictionaryValue* dict,
 
     // base::Value::Type::INTEGER attributes must be >= 0.
     // This applies to "minItems", "maxItems", "minLength" and "maxLength".
-    if (it.value().IsType(base::Value::Type::INTEGER)) {
+    if (it.value().is_int()) {
       int integer_value;
       it.value().GetAsInteger(&integer_value);
       if (integer_value < 0) {
@@ -563,8 +562,7 @@ void JSONSchemaValidator::ValidateEnum(const base::Value* instance,
 
       case base::Value::Type::INTEGER:
       case base::Value::Type::DOUBLE:
-        if (instance->IsType(base::Value::Type::INTEGER) ||
-            instance->IsType(base::Value::Type::DOUBLE)) {
+        if (instance->is_int() || instance->is_double()) {
           if (GetNumberValue(choice) == GetNumberValue(instance))
             return;
         }

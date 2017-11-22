@@ -27,12 +27,12 @@ bool URLBlacklistPolicyHandler::CheckPolicySettings(const PolicyMap& policies,
       policies.GetValue(key::kDisabledSchemes);
   const base::Value* url_blacklist = policies.GetValue(key::kURLBlacklist);
 
-  if (disabled_schemes && !disabled_schemes->IsType(base::Value::Type::LIST)) {
+  if (disabled_schemes && !disabled_schemes->is_list()) {
     errors->AddError(key::kDisabledSchemes, IDS_POLICY_TYPE_ERROR,
                      base::Value::GetTypeName(base::Value::Type::LIST));
   }
 
-  if (url_blacklist && !url_blacklist->IsType(base::Value::Type::LIST)) {
+  if (url_blacklist && !url_blacklist->is_list()) {
     errors->AddError(key::kURLBlacklist, IDS_POLICY_TYPE_ERROR,
                      base::Value::GetTypeName(base::Value::Type::LIST));
   }
@@ -69,7 +69,7 @@ void URLBlacklistPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
 
   if (url_blacklist) {
     for (const auto& entry : *url_blacklist) {
-      if (entry.IsType(base::Value::Type::STRING))
+      if (entry.is_string())
         merged_url_blacklist->Append(entry.CreateDeepCopy());
     }
   }

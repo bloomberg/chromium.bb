@@ -391,7 +391,7 @@ std::unique_ptr<base::DictionaryValue> GetJwkDictionary(
                                 json.size());
   std::unique_ptr<base::Value> value = base::JSONReader::Read(json_string);
   EXPECT_TRUE(value.get());
-  EXPECT_TRUE(value->IsType(base::Value::Type::DICTIONARY));
+  EXPECT_TRUE(value->is_dict());
 
   return std::unique_ptr<base::DictionaryValue>(
       static_cast<base::DictionaryValue*>(value.release()));

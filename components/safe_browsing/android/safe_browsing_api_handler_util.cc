@@ -204,7 +204,7 @@ UmaRemoteCallResult ParseJsonFromGMSCore(const std::string& metadata_str,
   // Pick out the "matches" list.
   std::unique_ptr<base::Value> value = base::JSONReader::Read(metadata_str);
   const base::ListValue* matches = nullptr;
-  if (!value.get() || !value->IsType(base::Value::Type::DICTIONARY) ||
+  if (!value.get() || !value->is_dict() ||
       !(static_cast<base::DictionaryValue*>(value.get()))
            ->GetList(kJsonKeyMatches, &matches) ||
       !matches) {

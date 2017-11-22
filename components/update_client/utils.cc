@@ -245,7 +245,7 @@ std::unique_ptr<base::DictionaryValue> ReadManifest(
   std::unique_ptr<base::Value> root = deserializer.Deserialize(nullptr, &error);
   if (!root.get())
     return std::unique_ptr<base::DictionaryValue>();
-  if (!root->IsType(base::Value::Type::DICTIONARY))
+  if (!root->is_dict())
     return std::unique_ptr<base::DictionaryValue>();
   return std::unique_ptr<base::DictionaryValue>(
       static_cast<base::DictionaryValue*>(root.release()));

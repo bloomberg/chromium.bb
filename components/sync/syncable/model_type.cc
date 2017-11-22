@@ -496,12 +496,12 @@ std::unique_ptr<base::Value> ModelTypeToValue(ModelType model_type) {
 }
 
 ModelType ModelTypeFromValue(const base::Value& value) {
-  if (value.IsType(base::Value::Type::STRING)) {
+  if (value.is_string()) {
     std::string result;
     bool success = value.GetAsString(&result);
     DCHECK(success);
     return ModelTypeFromString(result);
-  } else if (value.IsType(base::Value::Type::INTEGER)) {
+  } else if (value.is_int()) {
     int result = 0;
     bool success = value.GetAsInteger(&result);
     DCHECK(success);

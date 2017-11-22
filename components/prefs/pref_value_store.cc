@@ -261,7 +261,7 @@ bool PrefValueStore::GetValueFromStoreWithType(
     PrefStoreType store,
     const base::Value** out_value) const {
   if (GetValueFromStore(name, store, out_value)) {
-    if ((*out_value)->IsType(type))
+    if ((*out_value)->type() == type)
       return true;
 
     LOG(WARNING) << "Expected type for " << name << " is " << type

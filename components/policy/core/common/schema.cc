@@ -782,11 +782,10 @@ bool Schema::Validate(const base::Value& value,
     return false;
   }
 
-  if (!value.IsType(type())) {
+  if (value.type() != type()) {
     // Allow the integer to double promotion. Note that range restriction on
     // double is not supported now.
-    if (value.IsType(base::Value::Type::INTEGER) &&
-        type() == base::Value::Type::DOUBLE) {
+    if (value.is_int() && type() == base::Value::Type::DOUBLE) {
       return true;
     }
 
@@ -861,11 +860,10 @@ bool Schema::Normalize(base::Value* value,
     return false;
   }
 
-  if (!value->IsType(type())) {
+  if (value->type() != type()) {
     // Allow the integer to double promotion. Note that range restriction on
     // double is not supported now.
-    if (value->IsType(base::Value::Type::INTEGER) &&
-        type() == base::Value::Type::DOUBLE) {
+    if (value->is_int() && type() == base::Value::Type::DOUBLE) {
       return true;
     }
 

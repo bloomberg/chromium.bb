@@ -209,7 +209,7 @@ bool DefaultSearchPolicyHandler::CheckIndividualPolicies(
     // It's important to check policy type for all policies and not just exit on
     // the first error, so we report all policy errors.
     const base::Value* value = policies.GetValue(policy_map_entry.policy_name);
-    if (value && !value->IsType(policy_map_entry.value_type)) {
+    if (value && value->type() != policy_map_entry.value_type) {
       errors->AddError(policy_map_entry.policy_name, IDS_POLICY_TYPE_ERROR,
                        base::Value::GetTypeName(policy_map_entry.value_type));
       all_ok = false;

@@ -69,7 +69,7 @@ bool TypeCheckingPolicyHandler::CheckAndGetValue(const PolicyMap& policies,
                                                  PolicyErrorMap* errors,
                                                  const base::Value** value) {
   *value = policies.GetValue(policy_name_);
-  if (*value && !(*value)->IsType(value_type_)) {
+  if (*value && (*value)->type() != value_type_) {
     errors->AddError(policy_name_, IDS_POLICY_TYPE_ERROR,
                      base::Value::GetTypeName(value_type_));
     return false;
