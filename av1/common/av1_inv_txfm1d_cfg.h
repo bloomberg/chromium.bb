@@ -348,7 +348,7 @@ static const TXFM_1D_CFG inv_txfm_1d_cfg_identity_32 = {
 };
 
 #if CONFIG_TX64X64
-//  ---------------- row/col config inv_identity_32 ----------------
+//  ---------------- row/col config inv_identity_64 ----------------
 static const TXFM_1D_CFG inv_txfm_1d_cfg_identity_64 = {
   64,                      // .txfm_size
   1,                       // .stage_num

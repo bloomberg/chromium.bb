@@ -115,47 +115,6 @@ TXFM_2D_FLIP_CFG av1_get_inv_txfm_cfg(TX_TYPE tx_type, TX_SIZE tx_size) {
   return cfg;
 }
 
-#if CONFIG_TX64X64
-TXFM_2D_FLIP_CFG av1_get_inv_txfm_64x64_cfg(TX_TYPE tx_type) {
-  TXFM_2D_FLIP_CFG cfg = { 0, 0, NULL, NULL };
-  switch (tx_type) {
-    case DCT_DCT:
-      cfg.col_cfg = &inv_txfm_1d_col_cfg_dct_64;
-      cfg.row_cfg = &inv_txfm_1d_row_cfg_dct_64;
-      set_flip_cfg(tx_type, &cfg);
-      break;
-    default: assert(0);
-  }
-  return cfg;
-}
-
-TXFM_2D_FLIP_CFG av1_get_inv_txfm_32x64_cfg(TX_TYPE tx_type) {
-  TXFM_2D_FLIP_CFG cfg = { 0, 0, NULL, NULL };
-  switch (tx_type) {
-    case DCT_DCT:
-      cfg.col_cfg = &inv_txfm_1d_col_cfg_dct_64;
-      cfg.row_cfg = &inv_txfm_1d_row_cfg_dct_32;
-      set_flip_cfg(tx_type, &cfg);
-      break;
-    default: assert(0);
-  }
-  return cfg;
-}
-
-TXFM_2D_FLIP_CFG av1_get_inv_txfm_64x32_cfg(TX_TYPE tx_type) {
-  TXFM_2D_FLIP_CFG cfg = { 0, 0, NULL, NULL };
-  switch (tx_type) {
-    case DCT_DCT:
-      cfg.col_cfg = &inv_txfm_1d_col_cfg_dct_32;
-      cfg.row_cfg = &inv_txfm_1d_row_cfg_dct_64;
-      set_flip_cfg(tx_type, &cfg);
-      break;
-    default: assert(0);
-  }
-  return cfg;
-}
-#endif  // CONFIG_TX64X64
-
 void av1_gen_inv_stage_range(int8_t *stage_range_col, int8_t *stage_range_row,
                              const TXFM_2D_FLIP_CFG *cfg, int8_t fwd_shift,
                              int bd) {

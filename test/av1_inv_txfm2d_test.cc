@@ -193,14 +193,8 @@ TEST(AV1InvTxfm2d, CfgTest) {
 #if CONFIG_TX64X64
         if (tx_size == TX_64X64 && tx_type != DCT_DCT) continue;
 #endif  // CONFIG_TX64X64
-        const TXFM_2D_FLIP_CFG cfg =
-#if CONFIG_TX64X64
-            (tx_size == TX_64X64)
-                ? av1_get_inv_txfm_64x64_cfg(static_cast<TX_TYPE>(tx_type))
-                :
-#endif  // CONFIG_TX64X64
-                av1_get_inv_txfm_cfg(static_cast<TX_TYPE>(tx_type),
-                                     static_cast<TX_SIZE>(tx_size));
+        const TXFM_2D_FLIP_CFG cfg = av1_get_inv_txfm_cfg(
+            static_cast<TX_TYPE>(tx_type), static_cast<TX_SIZE>(tx_size));
         int8_t stage_range_col[MAX_TXFM_STAGE_NUM];
         int8_t stage_range_row[MAX_TXFM_STAGE_NUM];
         av1_gen_inv_stage_range(stage_range_col, stage_range_row, &cfg,

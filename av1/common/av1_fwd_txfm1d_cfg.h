@@ -358,4 +358,17 @@ static const TXFM_1D_CFG fwd_txfm_1d_cfg_identity_32 = {
   NULL,                    // .cos_bit
   TXFM_TYPE_IDENTITY32,    // .txfm_type
 };
+
+#if CONFIG_TX64X64
+//  ---------------- row/col config fwd_identity_64 ----------------
+static const TXFM_1D_CFG fwd_txfm_1d_cfg_identity_64 = {
+  64,  // .txfm_size
+  1,   // .stage_num
+  // 1,  // .log_scale
+  fwd_shift_64,            // .shift
+  fwd_stage_range_idx_64,  // .stage_range
+  NULL,                    // .cos_bit
+  TXFM_TYPE_IDENTITY64,    // .txfm_type
+};
+#endif  // CONFIG_TX64X64
 #endif  // AV1_FWD_TXFM2D_CFG_H_
