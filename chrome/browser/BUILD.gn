@@ -3985,6 +3985,10 @@ split_static_library("browser") {
       configs += [ "//third_party/gvr-android-sdk:libgvr_config" ]
     }
 
+    sources += [
+      "component_updater/vr_assets_component_installer.cc",
+      "component_updater/vr_assets_component_installer.h",
+    ]
     deps += [ "//chrome/browser/vr:vr_common" ]
   }
 
