@@ -146,13 +146,14 @@ a:visited {
   box-shadow: 0 3px 8px 0 rgba(0,0,0,0.2), 0 0 0 1px rgba(0,0,0,0.08);
 }
 
-.mv-tile:focus {
-  -webkit-filter: brightness(92%);
+.mv-tile:focus,
+.mv-tile:focus-within {
+  filter: brightness(92%);
 }
 
 .mv-tile:active {
-  -webkit-filter: brightness(88%);
   box-shadow: 0 3px 8px 0 rgba(0,0,0,0.2), 0 0 0 1px rgba(0,0,0,0.12);
+  filter: brightness(88%);
 }
 
 .mv-tile.blacklisted {
