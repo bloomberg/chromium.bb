@@ -686,7 +686,7 @@ class CC_EXPORT LayerTreeHostImpl
       const gfx::Vector2dF& viewport_delta,
       ScrollTree* scroll_tree);
 
-  void CleanUpTileManagerAndUIResources();
+  void CleanUpTileManagerResources();
   void CreateTileManagerResources();
   void ReleaseTreeResources();
   void ReleaseTileResources();
