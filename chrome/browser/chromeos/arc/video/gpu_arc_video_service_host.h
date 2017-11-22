@@ -10,6 +10,7 @@
 #include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 
 namespace content {
 class BrowserContext;
@@ -49,6 +50,9 @@ class GpuArcVideoServiceHost : public KeyedService,
  private:
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
   mojo::Binding<mojom::VideoHost> binding_;
+  std::unique_ptr<mojom::VideoAcceleratorFactory> video_accelerator_factory_;
+  mojo::BindingSet<mojom::VideoAcceleratorFactory>
+      video_accelerator_factory_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuArcVideoServiceHost);
 };

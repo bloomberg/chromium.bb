@@ -6,26 +6,22 @@
 
 #include <memory>
 #include <string>
-#include <utility>
 
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
-#include "base/message_loop/message_loop.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/thread_checker.h"
 #include "chrome/browser/chromeos/ash_config.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
-#include "components/arc/common/video_decode_accelerator.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_service_registry.h"
-#include "mojo/edk/embedder/embedder.h"
+#include "content/public/common/service_manager_connection.h"
 #include "mojo/edk/embedder/outgoing_broker_client_invitation.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
-#include "services/ui/public/cpp/gpu/gpu.h"
-#include "ui/aura/env.h"
+#include "services/service_manager/public/cpp/connector.h"
+#include "services/ui/public/interfaces/arc.mojom.h"
+#include "services/ui/public/interfaces/constants.mojom.h"
 
 namespace arc {
 
@@ -50,45 +46,79 @@ class GpuArcVideoServiceHostFactory
   ~GpuArcVideoServiceHostFactory() override = default;
 };
 
-}  // namespace
-
 class VideoAcceleratorFactoryService : public mojom::VideoAcceleratorFactory {
  public:
-  VideoAcceleratorFactoryService() = default;
+  VideoAcceleratorFactoryService() {
+    DCHECK_EQ(chromeos::GetAshConfig(), ash::Config::CLASSIC);
+  }
+
+  ~VideoAcceleratorFactoryService() override = default;
 
   void CreateDecodeAccelerator(
       mojom::VideoDecodeAcceleratorRequest request) override {
-    if (chromeos::GetAshConfig() != ash::Config::CLASSIC) {
-      aura::Env::GetInstance()
-          ->GetGpuConnection()
-          ->CreateArcVideoDecodeAccelerator(std::move(request));
-    } else {
-      content::BrowserThread::PostTask(
-          content::BrowserThread::IO, FROM_HERE,
-          base::BindOnce(&content::BindInterfaceInGpuProcess<
-                             mojom::VideoDecodeAccelerator>,
-                         base::Passed(&request)));
-    }
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO, FROM_HERE,
+        base::BindOnce(
+            &content::BindInterfaceInGpuProcess<mojom::VideoDecodeAccelerator>,
+            std::move(request)));
   }
 
   void CreateEncodeAccelerator(
       mojom::VideoEncodeAcceleratorRequest request) override {
-    if (chromeos::GetAshConfig() != ash::Config::CLASSIC) {
-      aura::Env::GetInstance()
-          ->GetGpuConnection()
-          ->CreateArcVideoEncodeAccelerator(std::move(request));
-    } else {
-      content::BrowserThread::PostTask(
-          content::BrowserThread::IO, FROM_HERE,
-          base::BindOnce(&content::BindInterfaceInGpuProcess<
-                             mojom::VideoEncodeAccelerator>,
-                         base::Passed(&request)));
-    }
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO, FROM_HERE,
+        base::BindOnce(
+            &content::BindInterfaceInGpuProcess<mojom::VideoEncodeAccelerator>,
+            std::move(request)));
   }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(VideoAcceleratorFactoryService);
 };
+
+class VideoAcceleratorFactoryServiceMus
+    : public mojom::VideoAcceleratorFactory {
+ public:
+  VideoAcceleratorFactoryServiceMus() {
+    DCHECK_NE(chromeos::GetAshConfig(), ash::Config::CLASSIC);
+    DETACH_FROM_THREAD(thread_checker_);
+    auto* connector =
+        content::ServiceManagerConnection::GetForProcess()->GetConnector();
+    connector->BindInterface(ui::mojom::kServiceName, &arc_);
+  }
+
+  ~VideoAcceleratorFactoryServiceMus() override {
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  }
+
+  void CreateDecodeAccelerator(
+      mojom::VideoDecodeAcceleratorRequest request) override {
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+    arc_->CreateVideoDecodeAccelerator(std::move(request));
+  }
+
+  void CreateEncodeAccelerator(
+      mojom::VideoEncodeAcceleratorRequest request) override {
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+    arc_->CreateVideoEncodeAccelerator(std::move(request));
+  }
+
+ private:
+  THREAD_CHECKER(thread_checker_);
+
+  ui::mojom::ArcPtr arc_;
+
+  DISALLOW_COPY_AND_ASSIGN(VideoAcceleratorFactoryServiceMus);
+};
+
+std::unique_ptr<mojom::VideoAcceleratorFactory>
+CreateVideoAcceleratorFactory() {
+  if (chromeos::GetAshConfig() == ash::Config::CLASSIC)
+    return std::make_unique<VideoAcceleratorFactoryService>();
+  return std::make_unique<VideoAcceleratorFactoryServiceMus>();
+}
+
+}  // namespace
 
 // static
 GpuArcVideoServiceHost* GpuArcVideoServiceHost::GetForBrowserContext(
@@ -98,7 +128,9 @@ GpuArcVideoServiceHost* GpuArcVideoServiceHost::GetForBrowserContext(
 
 GpuArcVideoServiceHost::GpuArcVideoServiceHost(content::BrowserContext* context,
                                                ArcBridgeService* bridge_service)
-    : arc_bridge_service_(bridge_service), binding_(this) {
+    : arc_bridge_service_(bridge_service),
+      binding_(this),
+      video_accelerator_factory_(CreateVideoAcceleratorFactory()) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   arc_bridge_service_->video()->AddObserver(this);
 }
@@ -147,8 +179,9 @@ void GpuArcVideoServiceHost::OnBootstrapVideoAcceleratorFactory(
 
   std::move(callback).Run(std::move(child_handle), token);
 
-  mojo::MakeStrongBinding(
-      std::make_unique<VideoAcceleratorFactoryService>(),
+  // The binding will be removed automatically, when the binding is destroyed.
+  video_accelerator_factory_bindings_.AddBinding(
+      video_accelerator_factory_.get(),
       mojom::VideoAcceleratorFactoryRequest(std::move(server_pipe)));
 }
 
