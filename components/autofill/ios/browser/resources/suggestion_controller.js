@@ -24,6 +24,26 @@ __gCrWeb.suggestion = {};
 // minification.
 __gCrWeb['suggestion'] = __gCrWeb.suggestion;
 
+ /**
+  * Returns the element with the specified name that is a child of the
+  * specified parent element.
+  * @param {Element} parent The parent of the desired element.
+  * @param {string} name The name of the desired element.
+  * @return {Element} The element if found, otherwise null;
+  */
+ var getElementByNameWithParent_ = function(parent, name) {
+   if (parent.name === name)
+     return parent;
+
+   var el;
+   for (var i = 0; i < parent.children.length; i++) {
+     el = getElementByNameWithParent_(parent.children[i], name);
+     if (el)
+       return el;
+   }
+   return null;
+ };
+
 /**
  * Returns the first element in |elements| that is later than |elementToCompare|
  * in tab order.
@@ -271,7 +291,7 @@ __gCrWeb.suggestion.getFormElement = function(formName, fieldName) {
   var form = __gCrWeb.common.getFormElementFromIdentifier(formName);
   if (!form)
     return null;
-  return __gCrWeb.getElementByNameWithParent(form, fieldName);
+  return getElementByNameWithParent_(form, fieldName);
 };
 
 /**
