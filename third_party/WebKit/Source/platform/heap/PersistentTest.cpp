@@ -4,19 +4,14 @@
 
 #include "platform/heap/Persistent.h"
 
+#include <memory>
 #include "platform/CrossThreadFunctional.h"
 #include "platform/heap/Handle.h"
+#include "platform/heap/HeapTestUtilities.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 namespace blink {
 namespace {
-
-void PreciselyCollectGarbage() {
-  ThreadState::Current()->CollectGarbage(BlinkGC::kNoHeapPointersOnStack,
-                                         BlinkGC::kGCWithSweep,
-                                         BlinkGC::kForcedGC);
-}
 
 class Receiver : public GarbageCollected<Receiver> {
  public:
