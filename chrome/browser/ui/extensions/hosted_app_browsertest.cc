@@ -29,6 +29,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -658,6 +659,11 @@ IN_PROC_BROWSER_TEST_P(HostedAppWithIsolatedOriginsTest,
   EXPECT_NE(app->GetSiteInstance(), app_subframe->GetSiteInstance());
   EXPECT_EQ(isolated_url.GetOrigin(),
             app_subframe->GetSiteInstance()->GetSiteURL());
+  GURL isolated_site = content::SiteInstance::GetSiteForURL(
+      app_browser_->profile(), app_subframe->GetLastCommittedURL());
+  EXPECT_NE(extensions::kExtensionScheme, isolated_site.scheme());
+  EXPECT_FALSE(extensions::ProcessMap::Get(app_browser_->profile())
+                   ->Contains(app_subframe->GetProcess()->GetID()));
 
   // Navigating a regular tab to an isolated origin which is also part of an
   // app's web extent should use the isolated origin's SiteInstance and not the
@@ -669,6 +675,9 @@ IN_PROC_BROWSER_TEST_P(HostedAppWithIsolatedOriginsTest,
             web_contents->GetMainFrame()->GetSiteInstance()->GetSiteURL());
   EXPECT_NE(web_contents->GetMainFrame()->GetSiteInstance(),
             app->GetSiteInstance());
+  EXPECT_FALSE(
+      extensions::ProcessMap::Get(browser()->profile())
+          ->Contains(web_contents->GetMainFrame()->GetProcess()->GetID()));
 }
 
 INSTANTIATE_TEST_CASE_P(/* no prefix */, HostedAppTest, ::testing::Bool());

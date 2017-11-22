@@ -36881,7 +36881,7 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="ShouldAllowOpenURLFailureScheme">
-<!-- Generated from chrome/browser/extensions/chrome_content_browser_client_extensions_part.cc -->
+<!-- Generated from chrome/browser/extensions/chrome_content_browser_client_extensions_part.cc.-->
 
   <int value="0" label="SCHEME_UNKNOWN"/>
   <int value="1" label="SCHEME_EMPTY"/>
