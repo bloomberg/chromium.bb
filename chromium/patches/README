@@ -103,3 +103,7 @@ Current patches:
   libavcodec/mpeg4videodec.c:
     decode_user_data() : Fix undefined shift in version string. Pushed upstream,
     so should be upstream by M65 roll. http://crbug.com/779924
+
+  libavcodec/vorbis.c
+    ff_vorbis_len2vlc() : Fix undefined shift. Pushed upstream, so should be
+    upstream by M65 roll. http://crbug.com/787347
