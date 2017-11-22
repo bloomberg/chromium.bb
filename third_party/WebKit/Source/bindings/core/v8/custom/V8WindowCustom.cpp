@@ -36,6 +36,7 @@
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/V8BindingForCore.h"
+#include "bindings/core/v8/V8Event.h"
 #include "bindings/core/v8/V8EventListener.h"
 #include "bindings/core/v8/V8HTMLCollection.h"
 #include "bindings/core/v8/V8Node.h"
@@ -113,6 +114,22 @@ void V8Window::eventAttributeGetterCustom(
 
   v8::Local<v8::Value> js_event =
       V8PrivateProperty::GetGlobalEvent(isolate).GetOrUndefined(info.Holder());
+
+  // Track usage of window.event when the event's target is inside V0 shadow
+  // tree.
+  // TODO(yukishiino): Make window.event [Replaceable] and simplify the
+  // following IsWrapper/ToImplWithTypeCheck hack.
+  if (V8DOMWrapper::IsWrapper(isolate, js_event)) {
+    if (Event* event = V8Event::ToImplWithTypeCheck(isolate, js_event)) {
+      if (event->target()) {
+        Node* target_node = event->target()->ToNode();
+        if (target_node && target_node->IsInV0ShadowTree()) {
+          UseCounter::Count(CurrentExecutionContext(isolate),
+                            WebFeature::kWindowEventInV0ShadowTree);
+        }
+      }
+    }
+  }
   V8SetReturnValue(info, js_event);
 }
 
