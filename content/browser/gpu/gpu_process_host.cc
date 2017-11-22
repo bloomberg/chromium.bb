@@ -164,9 +164,6 @@ static const char* const kSwitchNames[] = {
     switches::kUseCmdDecoder,
     switches::kIgnoreGpuBlacklist,
     switches::kForceVideoOverlays,
-#if defined(OS_ANDROID)
-    switches::kMadviseRandomExecutableCode,
-#endif
 };
 
 enum GPUProcessLifetimeEvent {

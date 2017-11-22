@@ -41,10 +41,6 @@ extern const char kDisableUsbKeyboardDetect[];
 extern const char kEnableCrashReporterForTesting[];
 #endif
 
-#if defined(OS_ANDROID)
-extern const char kMadviseRandomExecutableCode[];
-#endif
-
 }  // namespace switches
 
 #endif  // BASE_BASE_SWITCHES_H_
