@@ -747,6 +747,9 @@ bool Node::MayContainLegacyNodeTreeWhereDistributionShouldBeSupported() const {
   if (!RuntimeEnabledFeatures::IncrementalShadowDOMEnabled())
     return true;
   if (isConnected() && !GetDocument().MayContainV0Shadow()) {
+    // TODO(crbug.com/787717): Some built-in elements still use <content>
+    // elements in their user-agent shadow roots. DCHECK() fails if such an
+    // element is used.
     DCHECK(!GetDocument().ChildNeedsDistributionRecalc());
     return false;
   }
