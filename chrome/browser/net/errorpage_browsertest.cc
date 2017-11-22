@@ -198,6 +198,16 @@ void AddInterceptorForURL(const GURL& url,
                                                           std::move(handler));
 }
 
+void SetNetworkFactoryForTesting(Browser* browser,
+                                 content::mojom::URLLoaderFactoryPtr loader) {
+  content::WebContents* web_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+
+  auto* storage_partition = content::BrowserContext::GetDefaultStoragePartition(
+      web_contents->GetBrowserContext());
+  storage_partition->SetNetworkFactoryForTesting(std::move(loader));
+}
+
 // An url loader that fails a configurable number of requests, then succeeds
 // all requests after that, keeping count of failures and successes.
 class FailFirstNRequestsURLLoaderFactory
@@ -1156,13 +1166,7 @@ class ErrorPageAutoReloadTest : public InProcessBrowserTest {
 
   void RemoveInterceptor() {
     if (base::FeatureList::IsEnabled(features::kNetworkService)) {
-      content::WebContents* web_contents =
-          browser()->tab_strip_model()->GetActiveWebContents();
-
-      auto* storage_partition =
-          content::BrowserContext::GetDefaultStoragePartition(
-              web_contents->GetBrowserContext());
-      storage_partition->SetNetworkFactoryForTesting(nullptr);
+      SetNetworkFactoryForTesting(browser(), nullptr);
     }
   }
 
@@ -1171,20 +1175,12 @@ class ErrorPageAutoReloadTest : public InProcessBrowserTest {
 
     if (base::FeatureList::IsEnabled(features::kNetworkService)) {
       content::mojom::URLLoaderFactoryPtr test_loader_factory;
-
       mojo::MakeStrongBinding(
           std::make_unique<FailFirstNRequestsURLLoaderFactory>(
               requests_to_fail, &requests_, &failures_),
           mojo::MakeRequest(&test_loader_factory));
 
-      content::WebContents* web_contents =
-          browser()->tab_strip_model()->GetActiveWebContents();
-
-      auto* storage_partition =
-          content::BrowserContext::GetDefaultStoragePartition(
-              web_contents->GetBrowserContext());
-      storage_partition->SetNetworkFactoryForTesting(
-          std::move(test_loader_factory));
+      SetNetworkFactoryForTesting(browser(), std::move(test_loader_factory));
     } else {
       std::unique_ptr<net::URLRequestInterceptor> owned_interceptor(
           new FailFirstNRequestsInterceptor(requests_to_fail, &requests_,
@@ -1306,6 +1302,51 @@ IN_PROC_BROWSER_TEST_F(ErrorPageAutoReloadTest, IgnoresSameDocumentNavigation) {
   RemoveInterceptor();
 }
 
+// A url loader that fails matching requests with net::ERR_ADDRESS_UNREACHABLE,
+// otherwise it passes the request to a default loader.
+class AddressUnreachableURLLoaderFactory
+    : public content::mojom::URLLoaderFactory {
+ public:
+  AddressUnreachableURLLoaderFactory(content::mojom::URLLoaderFactory* loader,
+                                     const GURL& url)
+      : default_loader_(loader), url_(url) {}
+
+  // content::mojom::URLLoaderFactory implementation.
+  void CreateLoaderAndStart(content::mojom::URLLoaderRequest request,
+                            int32_t routing_id,
+                            int32_t request_id,
+                            uint32_t options,
+                            const content::ResourceRequest& url_request,
+                            content::mojom::URLLoaderClientPtr client,
+                            const net::MutableNetworkTrafficAnnotationTag&
+                                traffic_annotation) override {
+    if (url_ == url_request.url) {
+      network::URLLoaderCompletionStatus status;
+
+      status.error_code = net::ERR_ADDRESS_UNREACHABLE;
+      client->OnComplete(status);
+      return;
+    }
+
+    default_loader_->CreateLoaderAndStart(
+        std::move(request), routing_id, request_id, options, url_request,
+        std::move(client), traffic_annotation);
+  }
+
+  void Clone(content::mojom::URLLoaderFactoryRequest factory) override {
+    NOTREACHED();
+  }
+
+ private:
+  content::mojom::URLLoaderFactory* default_loader_;
+  GURL url_;
+
+  DISALLOW_COPY_AND_ASSIGN(AddressUnreachableURLLoaderFactory);
+};
+
+// TODO(dougt): AddressUnreachableInterceptor can be removed as soon as the
+// Network Service is the only code path.
+
 // Interceptor that fails all requests with net::ERR_ADDRESS_UNREACHABLE.
 class AddressUnreachableInterceptor : public net::URLRequestInterceptor {
  public:
@@ -1316,8 +1357,7 @@ class AddressUnreachableInterceptor : public net::URLRequestInterceptor {
   net::URLRequestJob* MaybeInterceptRequest(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const override {
-    return new URLRequestFailedJob(request,
-                                   network_delegate,
+    return new URLRequestFailedJob(request, network_delegate,
                                    net::ERR_ADDRESS_UNREACHABLE);
   }
 
@@ -1333,15 +1373,37 @@ class ErrorPageNavigationCorrectionsFailTest : public ErrorPageTest {
  public:
   // InProcessBrowserTest:
   void SetUpOnMainThread() override {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&ErrorPageNavigationCorrectionsFailTest::AddFilters));
+    if (base::FeatureList::IsEnabled(features::kNetworkService)) {
+      content::WebContents* web_contents =
+          browser()->tab_strip_model()->GetActiveWebContents();
+      auto* storage_partition =
+          content::BrowserContext::GetDefaultStoragePartition(
+              web_contents->GetBrowserContext());
+      content::mojom::URLLoaderFactory* default_network_factory =
+          storage_partition->GetURLLoaderFactoryForBrowserProcess();
+
+      content::mojom::URLLoaderFactoryPtr test_loader_factory;
+      mojo::MakeStrongBinding(
+          std::make_unique<AddressUnreachableURLLoaderFactory>(
+              default_network_factory, google_util::LinkDoctorBaseURL()),
+          mojo::MakeRequest(&test_loader_factory));
+      SetNetworkFactoryForTesting(browser(), std::move(test_loader_factory));
+    } else {
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
+          base::BindOnce(&ErrorPageNavigationCorrectionsFailTest::AddFilters));
+    }
   }
 
   void TearDownOnMainThread() override {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&ErrorPageNavigationCorrectionsFailTest::RemoveFilters));
+    if (base::FeatureList::IsEnabled(features::kNetworkService)) {
+      SetNetworkFactoryForTesting(browser(), nullptr);
+    } else {
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
+          base::BindOnce(
+              &ErrorPageNavigationCorrectionsFailTest::RemoveFilters));
+    }
   }
 
  private:
