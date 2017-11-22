@@ -3499,7 +3499,7 @@ void PepperPluginInstanceImpl::IncrementTextureReferenceCount(
     const viz::TransferableResource& resource) {
   auto it =
       std::find_if(texture_ref_counts_.begin(), texture_ref_counts_.end(),
-                   [&resource](const TextureMailboxRefCount& ref_count) {
+                   [&resource](const MailboxRefCount& ref_count) {
                      return ref_count.first == resource.mailbox_holder.mailbox;
                    });
   if (it == texture_ref_counts_.end()) {
@@ -3514,7 +3514,7 @@ bool PepperPluginInstanceImpl::DecrementTextureReferenceCount(
     const viz::TransferableResource& resource) {
   auto it =
       std::find_if(texture_ref_counts_.begin(), texture_ref_counts_.end(),
-                   [&resource](const TextureMailboxRefCount& ref_count) {
+                   [&resource](const MailboxRefCount& ref_count) {
                      return ref_count.first == resource.mailbox_holder.mailbox;
                    });
   DCHECK(it != texture_ref_counts_.end());
@@ -3532,7 +3532,7 @@ bool PepperPluginInstanceImpl::IsTextureInUse(
     const viz::TransferableResource& resource) const {
   auto it =
       std::find_if(texture_ref_counts_.begin(), texture_ref_counts_.end(),
-                   [&resource](const TextureMailboxRefCount& ref_count) {
+                   [&resource](const MailboxRefCount& ref_count) {
                      return ref_count.first == resource.mailbox_holder.mailbox;
                    });
   return it != texture_ref_counts_.end();
