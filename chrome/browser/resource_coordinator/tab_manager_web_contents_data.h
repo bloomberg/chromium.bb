@@ -67,7 +67,7 @@ class TabManager::WebContentsData
   bool IsDiscarded();
 
   // Sets/clears the discard state of the tab.
-  void SetDiscardState(bool state);
+  void SetDiscardState(bool is_discarded);
 
   // Returns the number of times the tab has been discarded.
   int DiscardCount();

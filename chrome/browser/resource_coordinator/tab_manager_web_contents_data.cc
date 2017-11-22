@@ -7,6 +7,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/time/tick_clock.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/resource_coordinator/discard_metrics_util.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 #include "chrome/browser/resource_coordinator/tab_manager_stats_collector.h"
 #include "chrome/browser/resource_coordinator/time.h"
@@ -122,38 +123,22 @@ bool TabManager::WebContentsData::IsDiscarded() {
   return tab_data_.is_discarded;
 }
 
-void TabManager::WebContentsData::SetDiscardState(bool state) {
-  if (tab_data_.is_discarded == state)
+void TabManager::WebContentsData::SetDiscardState(bool is_discarded) {
+  if (tab_data_.is_discarded == is_discarded)
     return;
 
-  if (!state) {
-    static int reload_count = 0;
-    tab_data_.last_reload_time = NowTicks();
-    UMA_HISTOGRAM_CUSTOM_COUNTS("TabManager.Discarding.ReloadCount",
-                                ++reload_count, 1, 1000, 50);
-    auto delta = tab_data_.last_reload_time - tab_data_.last_discard_time;
-    // Capped to one day for now, will adjust if necessary.
-    UMA_HISTOGRAM_CUSTOM_TIMES("TabManager.Discarding.DiscardToReloadTime",
-                               delta, base::TimeDelta::FromSeconds(1),
-                               base::TimeDelta::FromDays(1), 100);
-
-    if (!tab_data_.last_inactive_time.is_null()) {
-      delta = tab_data_.last_reload_time - tab_data_.last_inactive_time;
-      UMA_HISTOGRAM_CUSTOM_TIMES("TabManager.Discarding.InactiveToReloadTime",
-                                 delta, base::TimeDelta::FromSeconds(1),
-                                 base::TimeDelta::FromDays(1), 100);
-    }
-
-  } else {
-    static int discard_count = 0;
-    UMA_HISTOGRAM_CUSTOM_COUNTS("TabManager.Discarding.DiscardCount",
-                                ++discard_count, 1, 1000, 50);
+  if (is_discarded) {
     tab_data_.last_discard_time = NowTicks();
+    RecordTabDiscarded();
+  } else {
+    tab_data_.last_reload_time = NowTicks();
+    RecordTabReloaded(tab_data_.last_inactive_time, tab_data_.last_discard_time,
+                      tab_data_.last_reload_time);
   }
 
-  tab_data_.is_discarded = state;
+  tab_data_.is_discarded = is_discarded;
   g_browser_process->GetTabManager()->OnDiscardedStateChange(web_contents(),
-                                                             state);
+                                                             is_discarded);
 }
 
 int TabManager::WebContentsData::DiscardCount() {

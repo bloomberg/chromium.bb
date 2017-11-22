@@ -2555,6 +2555,8 @@ split_static_library("browser") {
       "resource_coordinator/background_tab_navigation_throttle.cc",
       "resource_coordinator/background_tab_navigation_throttle.h",
       "resource_coordinator/discard_condition.h",
+      "resource_coordinator/discard_metrics_util.cc",
+      "resource_coordinator/discard_metrics_util.h",
       "resource_coordinator/lifecycle_unit.cc",
       "resource_coordinator/lifecycle_unit.h",
       "resource_coordinator/tab_lifecycle_unit.cc",
