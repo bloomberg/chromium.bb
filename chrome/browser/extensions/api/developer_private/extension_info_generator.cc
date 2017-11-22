@@ -25,6 +25,7 @@
 #include "chrome/browser/extensions/shared_module_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/command.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/pref_names.h"
@@ -600,6 +601,13 @@ const std::string& ExtensionInfoGenerator::GetDefaultIconUrl(
 std::string ExtensionInfoGenerator::GetIconUrlFromImage(
     const gfx::Image& image,
     bool should_greyscale) {
+  // Ignore |should_greyscale| if MD Extensions are enabled.
+  // TODO(dpapad): Remove should_greyscale logic once non-MD Extensions UI is
+  // removed.
+  should_greyscale =
+      should_greyscale &&
+      !base::FeatureList::IsEnabled(features::kMaterialDesignExtensions);
+
   scoped_refptr<base::RefCountedMemory> data;
   if (should_greyscale) {
     color_utils::HSL shift = {-1, 0, 0.6};
