@@ -51,7 +51,7 @@ dangerous macros inside the x11 namespace."""
 
   source_file_filter = lambda x: input_api.FilterSourceFile(
     x,
-    white_list=tuple([r'.*ui.(aura|events|gfx|gl)..*\.(cc|h)$']))
+    white_list=tuple([r'.*ui.(aura|events|gfx|gl|views)..*\.(cc|h)$']))
   errors = []
   x11_include_pattern = input_api.re.compile(r'#include\s+<X11/.*\.h>')
   for f in input_api.AffectedSourceFiles(source_file_filter):

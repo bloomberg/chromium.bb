@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <X11/Xatom.h>
 
 #include "base/event_types.h"
 #include "base/lazy_instance.h"
@@ -32,6 +31,7 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/widget/desktop_aura/desktop_native_cursor_manager.h"
@@ -492,7 +492,7 @@ uint32_t DesktopDragDropClientAuraX11::X11DragContext::DispatchEvent(
 DesktopDragDropClientAuraX11::DesktopDragDropClientAuraX11(
     aura::Window* root_window,
     views::DesktopNativeCursorManager* cursor_manager,
-    Display* xdisplay,
+    ::Display* xdisplay,
     ::Window xwindow)
     : root_window_(root_window),
       cursor_manager_(cursor_manager),

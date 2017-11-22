@@ -4,11 +4,6 @@
 
 #include "ui/views/widget/desktop_aura/x11_window_event_filter.h"
 
-#include <X11/extensions/XInput.h>
-#include <X11/extensions/XInput2.h>
-#include <X11/Xatom.h>
-#include <X11/Xlib.h>
-
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -19,6 +14,7 @@
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
+#include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/views/linux_ui/linux_ui.h"
@@ -110,7 +106,7 @@ bool X11WindowEventFilter::DispatchHostWindowDragMovement(
   // because what we're about to do is tell the window manager
   // that it's now responsible for moving the window around; it immediately
   // grabs when it receives the event below.
-  XUngrabPointer(xdisplay_, CurrentTime);
+  XUngrabPointer(xdisplay_, x11::CurrentTime);
 
   XEvent event;
   memset(&event, 0, sizeof(event));
@@ -125,9 +121,8 @@ bool X11WindowEventFilter::DispatchHostWindowDragMovement(
   event.xclient.data.l[3] = 0;
   event.xclient.data.l[4] = 0;
 
-  XSendEvent(xdisplay_, x_root_window_, False,
-             SubstructureRedirectMask | SubstructureNotifyMask,
-             &event);
+  XSendEvent(xdisplay_, x_root_window_, x11::False,
+             SubstructureRedirectMask | SubstructureNotifyMask, &event);
 
   return true;
 }

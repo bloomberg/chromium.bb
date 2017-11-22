@@ -4,12 +4,11 @@
 
 #include "ui/views/test/x11_property_change_waiter.h"
 
-#include <X11/Xlib.h>
-
 #include "base/run_loop.h"
 #include "ui/base/x/x11_window_event_manager.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/events/platform/scoped_event_dispatcher.h"
+#include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 
 namespace views {
