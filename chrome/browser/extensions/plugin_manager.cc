@@ -17,7 +17,6 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handlers/mime_types_handler.h"
-#include "extensions/common/manifest_handlers/plugins_handler.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_NACL)

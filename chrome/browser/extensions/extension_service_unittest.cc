@@ -121,7 +121,6 @@
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/manifest_handlers/permissions_parser.h"
-#include "extensions/common/manifest_handlers/plugins_handler.h"
 #include "extensions/common/manifest_url_handlers.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -879,7 +878,6 @@ TEST_F(ExtensionServiceTest, LoadAllExtensionsFromDirectorySuccess) {
   expected_path =
       base::MakeAbsoluteFilePath(extension->path().AppendASCII("script2.js"));
   EXPECT_TRUE(resource01.ComparePathWithDefault(expected_path));
-  EXPECT_TRUE(!extensions::PluginInfo::HasPlugins(extension));
   EXPECT_EQ(1u, scripts[1]->url_patterns().patterns().size());
   EXPECT_EQ("http://*.news.com/*",
             scripts[1]->url_patterns().begin()->GetAsString());
@@ -906,24 +904,6 @@ TEST_F(ExtensionServiceTest, LoadAllExtensionsFromDirectorySuccess) {
   EXPECT_TRUE(
       extensions::ContentScriptsInfo::GetContentScripts(loaded_[1].get())
           .empty());
-
-  // We don't parse the plugins section on Chrome OS.
-#if defined(OS_CHROMEOS)
-  EXPECT_TRUE(!extensions::PluginInfo::HasPlugins(loaded_[1].get()));
-#else
-  ASSERT_TRUE(extensions::PluginInfo::HasPlugins(loaded_[1].get()));
-  const std::vector<extensions::PluginInfo>* plugins =
-      extensions::PluginInfo::GetPlugins(loaded_[1].get());
-  ASSERT_TRUE(plugins);
-  ASSERT_EQ(2u, plugins->size());
-  EXPECT_EQ(loaded_[1]->path().AppendASCII("content_plugin.dll").value(),
-            plugins->at(0).path.value());
-  EXPECT_TRUE(plugins->at(0).is_public);
-  EXPECT_EQ(loaded_[1]->path().AppendASCII("extension_plugin.dll").value(),
-            plugins->at(1).path.value());
-  EXPECT_FALSE(plugins->at(1).is_public);
-#endif
-
   EXPECT_EQ(Manifest::INTERNAL, loaded_[1]->location());
 
   int index = expected_num_extensions - 1;

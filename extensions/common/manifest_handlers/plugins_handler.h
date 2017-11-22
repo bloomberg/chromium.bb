@@ -14,23 +14,6 @@
 
 namespace extensions {
 
-// An NPAPI plugin included in the extension.
-struct PluginInfo {
-  typedef std::vector<PluginInfo> PluginVector;
-
-  PluginInfo(const base::FilePath& plugin_path, bool plugin_is_public);
-  ~PluginInfo();
-
-  base::FilePath path;  // Path to the plugin.
-  bool is_public;       // False if only this extension can load this plugin.
-
-  // Return the plugins for a given |extensions|, or NULL if none exist.
-  static const PluginVector* GetPlugins(const Extension* extension);
-
-  // Return true if the given |extension| has plugins, and false otherwise.
-  static bool HasPlugins(const Extension* extension);
-};
-
 // Parses the "plugins" manifest key.
 class PluginsHandler : public ManifestHandler {
  public:

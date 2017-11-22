@@ -7,14 +7,11 @@
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
-#include "build/build_config.h"
 #include "chrome/common/extensions/sync_helper.h"
-#include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/features/simple_feature.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
-#include "extensions/common/manifest_handlers/plugins_handler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -32,16 +29,13 @@ class ExtensionSyncTypeTest : public testing::Test {
     THEME
   };
 
-  static scoped_refptr<Extension> MakeSyncTestExtensionWithPluginPermission(
+  static scoped_refptr<Extension> MakeSyncTestExtension(
       SyncTestExtensionType type,
       const GURL& update_url,
       const GURL& launch_url,
       Manifest::Location location,
       const base::FilePath& extension_path,
-      int creation_flags,
-      int num_plugins,
-      bool has_plugin_permission,
-      const std::string& expected_error) {
+      int creation_flags) {
     base::DictionaryValue source;
     source.SetString(keys::kName, "PossiblySyncableExtension");
     source.SetString(keys::kVersion, "0.0.0.0");
@@ -55,45 +49,15 @@ class ExtensionSyncTypeTest : public testing::Test {
     if (!launch_url.is_empty()) {
       source.SetString(keys::kLaunchWebURL, launch_url.spec());
     }
-    if (type != THEME) {
+    if (type != THEME)
       source.SetBoolean(keys::kConvertedFromUserScript, type == USER_SCRIPT);
-      if (num_plugins >= 0) {
-        auto plugins = base::MakeUnique<base::ListValue>();
-        for (int i = 0; i < num_plugins; ++i) {
-          auto plugin = base::MakeUnique<base::DictionaryValue>();
-          plugin->SetString(keys::kPluginsPath, std::string());
-          plugins->Set(i, std::move(plugin));
-        }
-        source.Set(keys::kPlugins, std::move(plugins));
-      }
-    }
-    if (has_plugin_permission) {
-      auto plugins = base::MakeUnique<base::ListValue>();
-      plugins->Set(0, base::MakeUnique<base::Value>("plugin"));
-      source.Set(keys::kPermissions, std::move(plugins));
-    }
 
     std::string error;
     scoped_refptr<Extension> extension = Extension::Create(
         extension_path, location, source, creation_flags, &error);
-    if (expected_error.empty())
-      EXPECT_TRUE(extension.get());
-    else
-      EXPECT_FALSE(extension.get());
-    EXPECT_EQ(expected_error, error);
+    EXPECT_TRUE(extension.get());
+    EXPECT_TRUE(error.empty());
     return extension;
-  }
-
-  static scoped_refptr<Extension> MakeSyncTestExtension(
-      SyncTestExtensionType type,
-      const GURL& update_url,
-      const GURL& launch_url,
-      Manifest::Location location,
-      const base::FilePath& extension_path,
-      int creation_flags) {
-    return MakeSyncTestExtensionWithPluginPermission(
-        type, update_url, launch_url, location, extension_path,
-        creation_flags, -1, false, "");
   }
 
   static const char kValidUpdateUrl1[];
@@ -265,57 +229,5 @@ TEST_F(ExtensionSyncTypeTest, DontSyncExtensionInDoNotSyncList) {
   SimpleFeature::ScopedThreadUnsafeWhitelistForTest whitelist(extension->id());
   EXPECT_FALSE(sync_helper::IsSyncable(extension.get()));
 }
-
-// These plugin tests don't make sense on Chrome OS, where extension plugins
-// are not allowed.
-#if !defined(OS_CHROMEOS)
-TEST_F(ExtensionSyncTypeTest, ExtensionWithEmptyPlugins) {
-  scoped_refptr<Extension> extension(
-      MakeSyncTestExtensionWithPluginPermission(
-          EXTENSION, GURL(), GURL(),
-          Manifest::INTERNAL, base::FilePath(),
-          Extension::NO_FLAGS, 0, false, ""));
-  if (extension.get()) {
-    EXPECT_TRUE(extension->is_extension());
-    EXPECT_TRUE(sync_helper::IsSyncable(extension.get()));
-  }
-}
-
-TEST_F(ExtensionSyncTypeTest, ExtensionWithPlugin) {
-  scoped_refptr<Extension> extension(
-      MakeSyncTestExtensionWithPluginPermission(
-          EXTENSION, GURL(), GURL(),
-          Manifest::INTERNAL, base::FilePath(),
-          Extension::NO_FLAGS, 1, false, ""));
-  if (extension.get()) {
-    EXPECT_TRUE(extension->is_extension());
-    EXPECT_FALSE(sync_helper::IsSyncable(extension.get()));
-  }
-}
-
-TEST_F(ExtensionSyncTypeTest, ExtensionWithTwoPlugins) {
-  scoped_refptr<Extension> extension(
-      MakeSyncTestExtensionWithPluginPermission(
-          EXTENSION, GURL(), GURL(),
-          Manifest::INTERNAL, base::FilePath(),
-          Extension::NO_FLAGS, 2, false, ""));
-  if (extension.get()) {
-    EXPECT_TRUE(extension->is_extension());
-    EXPECT_FALSE(sync_helper::IsSyncable(extension.get()));
-  }
-}
-
-TEST_F(ExtensionSyncTypeTest, ExtensionWithPluginPermission) {
-  // Specifying the "plugin" permission in the manifest is an error.
-  scoped_refptr<Extension> extension(
-      MakeSyncTestExtensionWithPluginPermission(
-          EXTENSION, GURL(), GURL(),
-          Manifest::INTERNAL, base::FilePath(),
-          Extension::NO_FLAGS, 0, true,
-          ErrorUtils::FormatErrorMessage(
-              errors::kPermissionNotAllowedInManifest, "plugin")));
-}
-
-#endif // !defined(OS_CHROMEOS)
 
 }  // namespace extensions

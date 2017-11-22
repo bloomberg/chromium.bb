@@ -12,9 +12,7 @@
 #include "extensions/common/features/feature.h"
 #include "extensions/common/features/feature_provider.h"
 #include "extensions/common/manifest.h"
-#include "extensions/common/manifest_handlers/plugins_handler.h"
 #include "extensions/common/manifest_url_handlers.h"
-#include "extensions/common/permissions/permissions_data.h"
 
 namespace extensions {
 namespace sync_helper {
@@ -42,15 +40,6 @@ bool IsSyncable(const Extension* extension) {
   // approve synced extensions.
   if (!ManifestURL::GetUpdateURL(extension).is_empty() &&
       !ManifestURL::UpdatesFromGallery(extension)) {
-    return false;
-  }
-
-  // Disallow extensions with native code plugins.
-  //
-  // TODO(akalin): Relax this restriction once we've put in UI to
-  // approve synced extensions.
-  if (PluginInfo::HasPlugins(extension) ||
-      extension->permissions_data()->HasAPIPermission(APIPermission::kPlugin)) {
     return false;
   }
 

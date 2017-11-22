@@ -28,12 +28,27 @@ namespace keys = manifest_keys;
 
 namespace {
 
+// An NPAPI plugin included in the extension.
+struct PluginInfo {
+  typedef std::vector<PluginInfo> PluginVector;
+
+  PluginInfo(const base::FilePath& plugin_path, bool plugin_is_public);
+  ~PluginInfo();
+
+  base::FilePath path;  // Path to the plugin.
+  bool is_public;       // False if only this extension can load this plugin.
+
+  // Return the plugins for a given |extensions|, or NULL if none exist.
+  static const PluginVector* GetPlugins(const Extension* extension);
+
+  // Return true if the given |extension| has plugins, and false otherwise.
+  static bool HasPlugins(const Extension* extension);
+};
+
 struct PluginManifestData : Extension::ManifestData {
   // Optional list of NPAPI plugins and associated properties for an extension.
   PluginInfo::PluginVector plugins;
 };
-
-}  // namespace
 
 PluginInfo::PluginInfo(const base::FilePath& plugin_path, bool plugin_is_public)
     : path(plugin_path), is_public(plugin_is_public) {}
@@ -54,6 +69,8 @@ bool PluginInfo::HasPlugins(const Extension* extension) {
       extension->GetManifestData(keys::kPlugins));
   return data && !data->plugins.empty() ? true : false;
 }
+
+}  // namespace
 
 PluginsHandler::PluginsHandler() {}
 
@@ -120,11 +137,11 @@ bool PluginsHandler::Validate(const Extension* extension,
                               std::string* error,
                               std::vector<InstallWarning>* warnings) const {
   // Validate claimed plugin paths.
-  if (extensions::PluginInfo::HasPlugins(extension)) {
-    const extensions::PluginInfo::PluginVector* plugins =
-        extensions::PluginInfo::GetPlugins(extension);
+  if (PluginInfo::HasPlugins(extension)) {
+    const PluginInfo::PluginVector* plugins =
+        PluginInfo::GetPlugins(extension);
     CHECK(plugins);
-    for (std::vector<extensions::PluginInfo>::const_iterator plugin =
+    for (std::vector<PluginInfo>::const_iterator plugin =
              plugins->begin();
          plugin != plugins->end(); ++plugin) {
       if (!base::PathExists(plugin->path)) {
