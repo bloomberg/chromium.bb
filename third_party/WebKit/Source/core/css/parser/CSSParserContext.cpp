@@ -190,6 +190,10 @@ const CSSParserContext* StrictCSSParserContext(
   return context;
 }
 
+bool CSSParserContext::IsSecureContext() const {
+  return secure_context_mode_ == SecureContextMode::kSecureContext;
+}
+
 KURL CSSParserContext::CompleteURL(const String& url) const {
   if (url.IsNull())
     return KURL();

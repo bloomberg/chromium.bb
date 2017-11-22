@@ -1442,7 +1442,8 @@ static CSSValue* ConsumeGeneratedImage(CSSParserTokenRange& range,
   } else if (id == CSSValueWebkitCrossFade) {
     result = ConsumeCrossFade(args, context);
   } else if (id == CSSValuePaint) {
-    result = RuntimeEnabledFeatures::CSSPaintAPIEnabled()
+    result = context->IsSecureContext() &&
+                     RuntimeEnabledFeatures::CSSPaintAPIEnabled()
                  ? ConsumePaint(args, context)
                  : nullptr;
   }
