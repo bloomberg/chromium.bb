@@ -94,30 +94,11 @@ void AppendToHeaderBlock(const char* const extra_headers[],
 
   // Copy in the headers.
   for (int i = 0; i < extra_header_count; i++) {
-    // Sanity check: Non-empty header.
-    DCHECK_NE('\0', *extra_headers[i * 2]) << "Empty header value pair";
-    SpdyString this_header = extra_headers[i * 2];
-    SpdyString::size_type header_len = this_header.length();
-    if (!header_len)
-      continue;
-    SpdyString this_value = extra_headers[1 + (i * 2)];
-    SpdyString new_value;
-    if (headers->find(this_header) != headers->end()) {
-      // More than one entry in the header.
-      // Don't add the header again, just the append to the value,
-      // separated by a NULL character.
-
-      // Adjust the value.
-      new_value = (*headers)[this_header].as_string();
-      // Put in a NULL separator.
-      new_value.append(1, '\0');
-      // Append the new value.
-      new_value += this_value;
-    } else {
-      // Not a duplicate, just write the value.
-      new_value = this_value;
-    }
-    (*headers)[this_header] = new_value;
+    SpdyStringPiece key(extra_headers[i * 2]);
+    SpdyStringPiece value(extra_headers[i * 2 + 1]);
+    DCHECK(!key.empty()) << "Empty header key.";
+    DCHECK(!value.empty()) << "Empty header value.";
+    headers->AppendValueOrAddHeader(key, value);
   }
 }
 
