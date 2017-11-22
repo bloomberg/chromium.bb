@@ -168,7 +168,9 @@ nodist_libweston_@LIBWESTON_MAJOR@_la_SOURCES =				\
 	protocol/pointer-constraints-unstable-v1-protocol.c		\
 	protocol/pointer-constraints-unstable-v1-server-protocol.h      \
 	protocol/input-timestamps-unstable-v1-protocol.c		\
-	protocol/input-timestamps-unstable-v1-server-protocol.h
+	protocol/input-timestamps-unstable-v1-server-protocol.h		\
+	protocol/weston-touch-calibration-protocol.c			\
+	protocol/weston-touch-calibration-server-protocol.h
 
 BUILT_SOURCES += $(nodist_libweston_@LIBWESTON_MAJOR@_la_SOURCES)
 
@@ -1545,6 +1547,7 @@ EXTRA_DIST +=					\
 	protocol/weston-screenshooter.xml	\
 	protocol/text-cursor-position.xml	\
 	protocol/weston-test.xml		\
+	protocol/weston-touch-calibration.xml	\
 	protocol/ivi-application.xml		\
 	protocol/ivi-hmi-controller.xml
 
