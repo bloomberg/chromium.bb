@@ -715,7 +715,7 @@ void ChromeDownloadManagerDelegate::RequestConfirmation(
 
     case DownloadConfirmationReason::TARGET_CONFLICT:
       if (download->GetWebContents()) {
-        android::ChromeDuplicateDownloadInfoBarDelegate::Create(
+        chrome::android::ChromeDuplicateDownloadInfoBarDelegate::Create(
             InfoBarService::FromWebContents(download->GetWebContents()),
             download, suggested_path, callback);
         return;

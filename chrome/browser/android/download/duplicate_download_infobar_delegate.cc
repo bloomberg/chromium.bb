@@ -4,6 +4,7 @@
 
 #include "chrome/browser/android/download/duplicate_download_infobar_delegate.h"
 
+namespace chrome {
 namespace android {
 
 bool DuplicateDownloadInfoBarDelegate::IsOfflinePage() const {
@@ -32,3 +33,4 @@ bool DuplicateDownloadInfoBarDelegate::ShouldExpire(
 }
 
 }  // namespace android
+}  // namespace chrome
