@@ -17,6 +17,8 @@
 
 namespace blink {
 
+class AnimationEffectReadOnlyOrAnimationEffectReadOnlySequence;
+
 // The main-thread controller for a single AnimationWorklet animator instance.
 //
 // WorkletAnimation instances exist in the document execution context (i.e. in
@@ -37,7 +39,7 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
  public:
   static WorkletAnimation* Create(
       String animator_name,
-      const HeapVector<Member<KeyframeEffectReadOnly>>&,
+      const AnimationEffectReadOnlyOrAnimationEffectReadOnlySequence&,
       DocumentTimelineOrScrollTimeline,
       scoped_refptr<SerializedScriptValue>,
       ExceptionState&);

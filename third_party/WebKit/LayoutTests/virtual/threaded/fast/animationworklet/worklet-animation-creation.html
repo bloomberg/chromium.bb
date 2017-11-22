@@ -12,6 +12,7 @@
 </style>
 
 <div id='element'></div>
+<div id='element2'></div>
 <div class='scroller'>
   <div class='content'></div>
 </div>
@@ -34,9 +35,18 @@ test(function() {
   let effect = CreateKeyframeEffect(document.querySelector('#element'));
   let options = { my_param: 'foo', my_other_param: true };
   let workletAnimation = new WorkletAnimation(
-      'my-animation', [ effect ], document.timeline, options);
+      'my-animation', effect, document.timeline, options);
   assert_equals(workletAnimation.playState, 'idle');
 }, 'Basic WorkletAnimation creation should work');
+
+test(function() {
+  let effect = CreateKeyframeEffect(document.querySelector('#element'));
+  let effect2 = CreateKeyframeEffect(document.querySelector('#element2'));
+  let options = { my_param: 'foo', my_other_param: true };
+  let workletAnimation = new WorkletAnimation(
+      'my-animation', [ effect, effect2 ], document.timeline, options);
+  assert_equals(workletAnimation.playState, 'idle');
+}, 'WorkletAnimation can be created from a sequence of effects');
 
 test(function() {
   let effect = CreateKeyframeEffect(document.querySelector('#element'));
@@ -45,7 +55,7 @@ test(function() {
       { scrollSource: scroller, timeRange: 100, orientation: 'inline' });
   let options = { my_param: 'foo', my_other_param: true };
   let workletAnimation = new WorkletAnimation(
-      'my-animation', [ effect ], scrollTimeline, options);
+      'my-animation', effect, scrollTimeline, options);
   assert_equals(workletAnimation.playState, 'idle');
 }, 'ScrollTimeline is a valid timeline for a WorkletAnimation');
 
