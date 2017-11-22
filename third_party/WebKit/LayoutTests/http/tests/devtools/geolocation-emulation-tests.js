@@ -5,7 +5,6 @@
 (async function() {
   TestRunner.addResult(`Tests that geolocation emulation with latitude and longitude works as expected.\n`);
 
-  TestRunner.printDevToolsConsole();
   await TestRunner.loadModule('console_test_runner');
   await TestRunner.addScriptTag('../resources/permissions-helper.js');
   await TestRunner.evaluateInPagePromise(`

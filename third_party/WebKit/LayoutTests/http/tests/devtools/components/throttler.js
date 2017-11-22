@@ -4,7 +4,6 @@
 
 (async function() {
   TestRunner.addResult(`This test verifies throttler behavior.\n`);
-  TestRunner.printDevToolsConsole();
 
   class TimeoutMock {
     constructor() {
