@@ -6,6 +6,7 @@ package org.chromium.android_webview.test;
 
 import android.content.Context;
 import android.support.test.filters.SmallTest;
+import android.view.KeyEvent;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.JavascriptInterface;
@@ -111,13 +112,17 @@ public class AwImeTest {
         mTestJavascriptInterface.getFocusCallbackHelper().waitForCallback(0);
     }
 
+    private InputConnection getInputConnection() {
+        return mTestContainerView.getContentViewCore()
+                .getImeAdapterForTest()
+                .getInputConnectionForTest();
+    }
+
     private void waitForNonNullInputConnection() {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                InputConnection inputConnection = mTestContainerView.getContentViewCore()
-                        .getImeAdapterForTest().getInputConnectionForTest();
-                return inputConnection != null;
+                return getInputConnection() != null;
             }
         });
     }
@@ -134,5 +139,54 @@ public class AwImeTest {
         focusOnEditTextAndShowKeyboard();
         focusOnWebViewAndEnableEditing();
         waitForNonNullInputConnection();
+    }
+
+    /**
+     * Tests moving focus out of a WebView by calling InputConnection#sendKeyEvent() with a dpad
+     * keydown event.
+     */
+    // https://crbug.com/787651
+    @Test
+    @SmallTest
+    public void testImeDpadMovesFocusOutOfWebView() throws Throwable {
+        loadContentEditableBody();
+        focusOnWebViewAndEnableEditing();
+        waitForNonNullInputConnection();
+
+        ThreadUtils.runOnUiThreadBlocking((Runnable) () -> {
+            getInputConnection().sendKeyEvent(
+                    new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_UP));
+        });
+
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return mActivityTestRule.getActivity().getCurrentFocus() == mEditText;
+            }
+        });
+    }
+
+    /**
+     * Tests moving focus out of a WebView by calling View#dispatchKeyEvent() with a dpad
+     * keydown event.
+     */
+    @Test
+    @SmallTest
+    public void testDpadDispatchKeyEventMovesFocusOutOfWebView() throws Throwable {
+        loadContentEditableBody();
+        focusOnWebViewAndEnableEditing();
+        waitForNonNullInputConnection();
+
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            mTestContainerView.dispatchKeyEvent(
+                    new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_UP));
+        });
+
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return mActivityTestRule.getActivity().getCurrentFocus() == mEditText;
+            }
+        });
     }
 }
