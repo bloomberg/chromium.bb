@@ -14,17 +14,6 @@ namespace content {
 
 class CONTENT_EXPORT MediaStreamDispatcherEventHandler {
  public:
-  // A new media stream have been created.
-  virtual void OnStreamGenerated(int request_id,
-                                 const std::string& label,
-                                 const MediaStreamDevices& audio_devices,
-                                 const MediaStreamDevices& video_devices) = 0;
-
-  // Creation of a new media stream failed. The user might have denied access
-  // to the requested devices or no device is available.
-  virtual void OnStreamGenerationFailed(int request_id,
-                                        MediaStreamRequestResult result) = 0;
-
   // A device has been stopped in the browser processes.
   virtual void OnDeviceStopped(const std::string& label,
                                const MediaStreamDevice& device) = 0;

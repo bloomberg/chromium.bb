@@ -61,31 +61,6 @@ void MediaStreamDispatcherHost::BindRequest(
   bindings_.AddBinding(this, std::move(request));
 }
 
-void MediaStreamDispatcherHost::StreamGenerated(
-    int render_frame_id,
-    int page_request_id,
-    const std::string& label,
-    const MediaStreamDevices& audio_devices,
-    const MediaStreamDevices& video_devices) {
-  DVLOG(1) << __func__ << " label= " << label;
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  GetMediaStreamDispatcherForFrame(render_frame_id)
-      ->OnStreamGenerated(page_request_id, label, audio_devices, video_devices);
-}
-
-void MediaStreamDispatcherHost::StreamGenerationFailed(
-    int render_frame_id,
-    int page_request_id,
-    MediaStreamRequestResult result) {
-  DVLOG(1) << __func__ << " page_request_id=" << page_request_id
-           << " result=" << result;
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  GetMediaStreamDispatcherForFrame(render_frame_id)
-      ->OnStreamGenerationFailed(page_request_id, result);
-}
-
 void MediaStreamDispatcherHost::DeviceStopped(int render_frame_id,
                                               const std::string& label,
                                               const MediaStreamDevice& device) {
@@ -138,7 +113,8 @@ void MediaStreamDispatcherHost::GenerateStream(
     int32_t render_frame_id,
     int32_t page_request_id,
     const StreamControls& controls,
-    bool user_gesture) {
+    bool user_gesture,
+    GenerateStreamCallback callback) {
   DVLOG(1) << __func__ << " render_frame_id=" << render_frame_id
            << " page_request_id=" << page_request_id
            << " audio=" << controls.audio.requested
@@ -152,7 +128,8 @@ void MediaStreamDispatcherHost::GenerateStream(
                      render_frame_id),
       base::BindOnce(&MediaStreamDispatcherHost::DoGenerateStream,
                      weak_factory_.GetWeakPtr(), render_frame_id,
-                     page_request_id, controls, user_gesture));
+                     page_request_id, controls, user_gesture,
+                     base::Passed(&callback)));
 }
 
 void MediaStreamDispatcherHost::DoGenerateStream(
@@ -160,19 +137,21 @@ void MediaStreamDispatcherHost::DoGenerateStream(
     int32_t page_request_id,
     const StreamControls& controls,
     bool user_gesture,
+    GenerateStreamCallback callback,
     const std::pair<std::string, url::Origin>& salt_and_origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!MediaStreamManager::IsOriginAllowed(render_process_id_,
                                            salt_and_origin.second)) {
-    StreamGenerationFailed(render_frame_id, page_request_id,
-                           MEDIA_DEVICE_INVALID_SECURITY_ORIGIN_DEPRECATED);
+    std::move(callback).Run(MEDIA_DEVICE_INVALID_SECURITY_ORIGIN_DEPRECATED,
+                            std::string(), MediaStreamDevices(),
+                            MediaStreamDevices());
     return;
   }
 
   media_stream_manager_->GenerateStream(
-      weak_factory_.GetWeakPtr(), render_process_id_, render_frame_id,
-      salt_and_origin.first, page_request_id, controls, salt_and_origin.second,
-      user_gesture);
+      render_process_id_, render_frame_id, salt_and_origin.first,
+      page_request_id, controls, salt_and_origin.second, user_gesture,
+      std::move(callback), weak_factory_.GetWeakPtr());
 }
 
 void MediaStreamDispatcherHost::CancelRequest(int render_frame_id,
@@ -254,7 +233,7 @@ void MediaStreamDispatcherHost::SetCapturingLinkSecured(int32_t session_id,
                                                  type, is_secure);
 }
 
-void MediaStreamDispatcherHost::StreamStarted(const std::string& label) {
+void MediaStreamDispatcherHost::OnStreamStarted(const std::string& label) {
   DVLOG(1) << __func__ << " label= " << label;
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 

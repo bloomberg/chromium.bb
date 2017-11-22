@@ -160,7 +160,7 @@ class MediaStreamManagerTest : public ::testing::Test {
     const int render_frame_id = 1;
     const int page_request_id = 1;
     const url::Origin security_origin;
-    MediaStreamManager::MediaRequestResponseCallback callback =
+    MediaStreamManager::MediaAccessRequestCallback callback =
         base::BindOnce(&MediaStreamManagerTest::ResponseCallback,
                        base::Unretained(this), index);
     StreamControls controls(true, true);
@@ -207,7 +207,7 @@ TEST_F(MediaStreamManagerTest, MakeMultipleRequests) {
   int page_request_id = 2;
   url::Origin security_origin;
   StreamControls controls(true, true);
-  MediaStreamManager::MediaRequestResponseCallback callback = base::BindOnce(
+  MediaStreamManager::MediaAccessRequestCallback callback = base::BindOnce(
       &MediaStreamManagerTest::ResponseCallback, base::Unretained(this), 1);
   std::string label2 = media_stream_manager_->MakeMediaAccessRequest(
       render_process_id, render_frame_id, page_request_id, controls,
