@@ -145,11 +145,6 @@ void Env::SetWindowTreeClient(WindowTreeClient* window_tree_client) {
   window_tree_client_ = window_tree_client;
 }
 
-ui::Gpu* Env::GetGpuConnection() {
-  DCHECK(window_tree_client_);
-  return window_tree_client_->gpu();
-}
-
 void Env::ScheduleEmbed(
     ui::mojom::WindowTreeClientPtr client,
     base::OnceCallback<void(const base::UnguessableToken&)> callback) {
