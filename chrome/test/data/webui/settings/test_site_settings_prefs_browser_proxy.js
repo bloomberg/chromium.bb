@@ -35,6 +35,7 @@ var prefsEmpty = {
     protectedContent: {},
     sound: {},
     unsandboxed_plugins: {},
+    clipboard: {},
   },
   exceptions: {
     ads: [],
@@ -53,6 +54,7 @@ var prefsEmpty = {
     protectedContent: [],
     sound: [],
     unsandboxed_plugins: [],
+    clipboard: [],
   },
 };
 
@@ -267,6 +269,8 @@ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
       pref = this.prefs_.defaults.unsandboxed_plugins;
     } else if (contentType == settings.ContentSettingsTypes.PROTECTED_CONTENT) {
       pref = this.prefs_.defaults.protectedContent;
+    } else if (contentType == settings.ContentSettingsTypes.CLIPBOARD) {
+      pref = this.prefs_.defaults.clipboard;
     } else {
       console.log('getDefault received unknown category: ' + contentType);
     }
@@ -314,6 +318,8 @@ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
       pref = this.prefs_.exceptions.sound;
     else if (contentType == settings.ContentSettingsTypes.UNSANDBOXED_PLUGINS)
       pref = this.prefs_.exceptions.unsandboxed_plugins;
+    else if (contentType == settings.ContentSettingsTypes.CLIPBOARD)
+      pref = this.prefs_.exceptions.clipboard;
     else
       console.log('getExceptionList received unknown category: ' + contentType);
 

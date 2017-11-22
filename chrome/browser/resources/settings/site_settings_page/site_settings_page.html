@@ -317,6 +317,26 @@
           aria-label="$i18n{siteSettingsMidiDevices}"
           aria-describedby="midiDevicesSecondary"></button>
     </div>
+    <template is="dom-if" if="[[enableClipboardContentSetting_]]">
+      <div id="clipboard" class="settings-box two-line"
+           category$="[[ContentSettingsTypes.CLIPBOARD]]"
+           data-route="SITE_SETTINGS_CLIPBOARD" on-tap="onTapNavigate_"
+           actionable>
+        <iron-icon icon="settings:clipboard"></iron-icon>
+        <div class="middle">
+          $i18n{siteSettingsClipboard}
+          <div class="secondary" id="clipboardSecondary">
+            [[defaultSettingLabel_(
+                default_.clipboard,
+                '$i18nPolymer{siteSettingsAskBeforeAccessing}',
+                '$i18nPolymer{siteSettingsBlocked}')]]
+          </div>
+        </div>
+        <button class="subpage-arrow" is="paper-icon-button-light"
+            aria-label="$i18n{siteSettingsClipboard}"
+            aria-describedby="clipboardSecondary"></button>
+      </div>
+    </template>
     <div id="zoom-levels" class="settings-box"
         category$="[[ContentSettingsTypes.ZOOM_LEVELS]]"
         data-route="SITE_SETTINGS_ZOOM_LEVELS" on-tap="onTapNavigate_"

@@ -52,6 +52,14 @@ Polymer({
     },
 
     /** @private */
+    enableClipboardContentSetting_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('enableClipboardContentSetting');
+      }
+    },
+
+    /** @private */
     enableSoundContentSetting_: {
       type: Boolean,
       value: function() {
@@ -96,6 +104,7 @@ Polymer({
      [R.SITE_SETTINGS_USB_DEVICES, 'usb-devices'],
      [R.SITE_SETTINGS_PDF_DOCUMENTS, 'pdf-documents'],
      [R.SITE_SETTINGS_PROTECTED_CONTENT, 'protected-content'],
+     [R.SITE_SETTINGS_CLIPBOARD, "clipboard"],
     ].forEach(pair => {
       var route = pair[0];
       var id = pair[1];

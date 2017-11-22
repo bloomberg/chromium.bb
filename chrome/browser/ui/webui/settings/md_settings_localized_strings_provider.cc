@@ -1843,6 +1843,11 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_SITE_SETTINGS_AUTOMATIC_DOWNLOADS},
     {"siteSettingsBackgroundSync", IDS_SETTINGS_SITE_SETTINGS_BACKGROUND_SYNC},
     {"siteSettingsCamera", IDS_SETTINGS_SITE_SETTINGS_CAMERA},
+    {"siteSettingsClipboard", IDS_SETTINGS_SITE_SETTINGS_CLIPBOARD},
+    {"siteSettingsClipboardAsk", IDS_SETTINGS_SITE_SETTINGS_CLIPBOARD_ASK},
+    {"siteSettingsClipboardAskRecommended",
+     IDS_SETTINGS_SITE_SETTINGS_CLIPBOARD_ASK_RECOMMENDED},
+    {"siteSettingsClipboardBlock", IDS_SETTINGS_SITE_SETTINGS_CLIPBOARD_BLOCK},
     {"siteSettingsCookies", IDS_SETTINGS_SITE_SETTINGS_COOKIES},
     {"siteSettingsHandlers", IDS_SETTINGS_SITE_SETTINGS_HANDLERS},
     {"siteSettingsLocation", IDS_SETTINGS_SITE_SETTINGS_LOCATION},
@@ -2034,6 +2039,10 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
   html_source->AddBoolean(
       "enableSoundContentSetting",
       base::FeatureList::IsEnabled(features::kSoundContentSetting));
+
+  html_source->AddBoolean(
+      "enableClipboardContentSetting",
+      base::FeatureList::IsEnabled(features::kClipboardContentSetting));
 
   if (PluginUtils::ShouldPreferHtmlOverPlugins(
           HostContentSettingsMapFactory::GetForProfile(profile))) {

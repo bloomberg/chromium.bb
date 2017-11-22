@@ -29,6 +29,7 @@
       <structure type="chrome_scaled_image" name="IDR_ALLOWED_ADS" file="common/allowed_ads.png" />
       <structure type="chrome_scaled_image" name="IDR_ALLOWED_BACKGROUND_SYNC" file="common/allowed_background_sync.png" />
       <structure type="chrome_scaled_image" name="IDR_ALLOWED_CAMERA" file="common/allowed_camera.png" />
+      <structure type="chrome_scaled_image" name="IDR_ALLOWED_CLIPBOARD" file="common/allowed_clipboard.png" />
       <structure type="chrome_scaled_image" name="IDR_ALLOWED_DOWNLOADS" file="common/allowed_downloads.png" />
       <structure type="chrome_scaled_image" name="IDR_ALLOWED_IMAGES" file="common/allowed_images.png" />
       <structure type="chrome_scaled_image" name="IDR_ALLOWED_JAVASCRIPT" file="common/allowed_script.png" />
@@ -78,6 +79,7 @@
       <structure type="chrome_scaled_image" name="IDR_BLOCKED_ADS" file="common/blocked_ads.png" />
       <structure type="chrome_scaled_image" name="IDR_BLOCKED_BACKGROUND_SYNC" file="common/blocked_background_sync.png" />
       <structure type="chrome_scaled_image" name="IDR_BLOCKED_CAMERA" file="common/blocked_camera.png" />
+      <structure type="chrome_scaled_image" name="IDR_BLOCKED_CLIPBOARD" file="common/blocked_clipboard.png" />
       <structure type="chrome_scaled_image" name="IDR_BLOCKED_COOKIES" file="common/blocked_cookies.png" />
       <structure type="chrome_scaled_image" name="IDR_BLOCKED_DOWNLOADS" file="common/blocked_downloads.png" />
       <structure type="chrome_scaled_image" name="IDR_BLOCKED_EXTENSION_SCRIPT" file="common/blocked_extension_script.png" />

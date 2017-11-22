@@ -115,6 +115,14 @@ Polymer({
       }
     },
 
+    /** @private */
+    enableClipboardContentSetting_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('enableClipboardContentSetting');
+      }
+    },
+
     /** @private {!Map<string, string>} */
     focusConfig_: {
       type: Object,

@@ -117,6 +117,7 @@ ContentSettingsType kPermissionType[] = {
     CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
     CONTENT_SETTINGS_TYPE_AUTOPLAY,
     CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
+    CONTENT_SETTINGS_TYPE_CLIPBOARD_READ,
 };
 
 // Checks whether this permission is currently the factory default, as set by
@@ -166,6 +167,11 @@ bool ShouldShowPermission(const PageInfoUI::PermissionInfo& info,
     // audio.
     if (web_contents && web_contents->WasEverAudible())
       return true;
+  }
+
+  if (info.type == CONTENT_SETTINGS_TYPE_CLIPBOARD_READ) {
+    if (!base::FeatureList::IsEnabled(features::kClipboardContentSetting))
+      return false;
   }
 
 #if defined(OS_ANDROID)

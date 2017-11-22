@@ -74,6 +74,7 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER, "protectedContent"},
     {CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC, "background-sync"},
     {CONTENT_SETTINGS_TYPE_ADS, "ads"},
+    {CONTENT_SETTINGS_TYPE_CLIPBOARD_READ, "clipboard"},
 
     // Add new content settings here if a corresponding Javascript string
     // representation for it is not required. Note some exceptions, such as
@@ -99,7 +100,6 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {CONTENT_SETTINGS_TYPE_ACCESSIBILITY_EVENTS, nullptr},
     {CONTENT_SETTINGS_TYPE_CLIENT_HINTS, nullptr},
     {CONTENT_SETTINGS_TYPE_SENSORS, nullptr},
-    {CONTENT_SETTINGS_TYPE_CLIPBOARD_READ, nullptr},
     {CONTENT_SETTINGS_TYPE_CLIPBOARD_WRITE, nullptr},
 };
 static_assert(arraysize(kContentSettingsTypeGroupNames) ==
