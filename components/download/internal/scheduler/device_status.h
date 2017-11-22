@@ -26,8 +26,14 @@ enum class NetworkStatus {
 
 // Contains battery and network status.
 struct DeviceStatus {
+  // Optimal battery percentage that always start the background task.
+  static const int kBatteryPercentageAlwaysStart;
+
   DeviceStatus();
   DeviceStatus(BatteryStatus battery, NetworkStatus network);
+  DeviceStatus(BatteryStatus battery,
+               int battery_percentage,
+               NetworkStatus network);
 
   struct Result {
     Result();
@@ -37,6 +43,10 @@ struct DeviceStatus {
   };
 
   BatteryStatus battery_status;
+
+  // Battery percentage which is in the range of [0, 100].
+  int battery_percentage;
+
   NetworkStatus network_status;
 
   bool operator==(const DeviceStatus& rhs) const;
@@ -44,16 +54,20 @@ struct DeviceStatus {
 
   // Returns if the current device status meets all the conditions defined in
   // the scheduling parameters.
-  Result MeetsCondition(const SchedulingParams& params) const;
+  Result MeetsCondition(const SchedulingParams& params,
+                        int download_battery_percentage) const;
 };
 
 // The criteria when the background download task should start.
 struct Criteria {
-  Criteria();
-  Criteria(bool requires_battery_charging, bool requires_unmetered_network);
+  Criteria(int optimal_battery_percentage);
+  Criteria(bool requires_battery_charging,
+           bool requires_unmetered_network,
+           int optimal_battery_percentage);
   bool operator==(const Criteria& other) const;
   bool requires_battery_charging;
   bool requires_unmetered_network;
+  int optimal_battery_percentage;
 };
 
 }  // namespace download

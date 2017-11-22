@@ -9012,6 +9012,7 @@ Called by update_net_error_codes.py.-->
 <enum name="Download.Service.BatteryRequirements">
   <int value="0" label="BATTERY_INSENSITIVE"/>
   <int value="1" label="BATTERY_SENSITIVE"/>
+  <int value="2" label="BATTERY_CHARGING"/>
 </enum>
 
 <enum name="Download.Service.CompletionType">

@@ -54,10 +54,11 @@ void SchedulerImpl::Reschedule(const Model::EntryList& entries) {
 
   // TODO(xingliu): Support NetworkRequirements::OPTIMISTIC.
 
-  Criteria criteria = util::GetSchedulingCriteria(entries);
+  Criteria criteria = util::GetSchedulingCriteria(
+      entries, config_->download_battery_percentage);
   task_scheduler_->ScheduleTask(
       DownloadTaskType::DOWNLOAD_TASK, criteria.requires_unmetered_network,
-      criteria.requires_battery_charging,
+      criteria.requires_battery_charging, criteria.optimal_battery_percentage,
       base::saturated_cast<long>(config_->window_start_time.InSeconds()),
       base::saturated_cast<long>(config_->window_end_time.InSeconds()));
 }
@@ -113,7 +114,10 @@ std::map<DownloadClient, Entry*> SchedulerImpl::FindCandidates(
 
     // Every download needs to pass the state and device status check.
     if (entry->state != Entry::State::AVAILABLE ||
-        !device_status.MeetsCondition(current_params).MeetsRequirements()) {
+        !device_status
+             .MeetsCondition(current_params,
+                             config_->download_battery_percentage)
+             .MeetsRequirements()) {
       continue;
     }
 

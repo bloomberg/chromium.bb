@@ -26,7 +26,8 @@ class MockTaskScheduler : public TaskScheduler {
   MockTaskScheduler() = default;
   ~MockTaskScheduler() override = default;
 
-  MOCK_METHOD5(ScheduleTask, void(DownloadTaskType, bool, bool, long, long));
+  MOCK_METHOD6(ScheduleTask,
+               void(DownloadTaskType, bool, bool, int, long, long));
   MOCK_METHOD1(CancelTask, void(DownloadTaskType));
 };
 
@@ -219,16 +220,31 @@ TEST_F(DownloadSchedulerImplTest, SchedulingParams) {
   MakeEntryActive(next);
 
   // Tests battery sensitive scheduling parameter.
+  entries_[0].scheduling_params.battery_requirements =
+      SchedulingParams::BatteryRequirements::BATTERY_SENSITIVE;
+
   next = scheduler_->Next(
       entries(),
       BuildDeviceStatus(BatteryStatus::CHARGING, NetworkStatus::UNMETERED));
   EXPECT_EQ(&entries_[0], next);
-  next = scheduler_->Next(
-      entries(),
-      BuildDeviceStatus(BatteryStatus::NOT_CHARGING, NetworkStatus::UNMETERED));
-  EXPECT_EQ(nullptr, next);
-  MakeEntryActive(next);
 
+  // Battery sensitive with low battery level.
+  DeviceStatus status =
+      BuildDeviceStatus(BatteryStatus::NOT_CHARGING, NetworkStatus::UNMETERED);
+  DCHECK_EQ(status.battery_percentage, 0);
+  next = scheduler_->Next(entries(), status);
+  EXPECT_EQ(nullptr, next);
+
+  status.battery_percentage = config_.download_battery_percentage - 1;
+  next = scheduler_->Next(entries(), status);
+  EXPECT_EQ(nullptr, next);
+
+  // Battery sensitive with high battery level.
+  status.battery_percentage = config_.download_battery_percentage;
+  next = scheduler_->Next(entries(), status);
+  EXPECT_EQ(&entries_[0], next);
+
+  // Tests battery insensitive scheduling parameter.
   entries_[0].scheduling_params.battery_requirements =
       SchedulingParams::BatteryRequirements::BATTERY_INSENSITIVE;
   next = scheduler_->Next(
@@ -407,21 +423,21 @@ TEST_F(DownloadSchedulerImplTest, Reschedule) {
   entries_[1].client = DownloadClient::TEST;
 
   entries_[0].scheduling_params.battery_requirements =
-      SchedulingParams::BatteryRequirements::BATTERY_SENSITIVE;
+      SchedulingParams::BatteryRequirements::BATTERY_CHARGING;
   entries_[0].scheduling_params.network_requirements =
       SchedulingParams::NetworkRequirements::UNMETERED;
   entries_[1].scheduling_params.battery_requirements =
-      SchedulingParams::BatteryRequirements::BATTERY_SENSITIVE;
+      SchedulingParams::BatteryRequirements::BATTERY_CHARGING;
   entries_[1].scheduling_params.network_requirements =
       SchedulingParams::NetworkRequirements::UNMETERED;
 
-  Criteria criteria;
+  Criteria criteria(config_.download_battery_percentage);
   EXPECT_CALL(task_scheduler_, CancelTask(DownloadTaskType::DOWNLOAD_TASK))
       .Times(0);
   EXPECT_CALL(task_scheduler_,
               ScheduleTask(DownloadTaskType::DOWNLOAD_TASK,
                            criteria.requires_unmetered_network,
-                           criteria.requires_battery_charging, _, _))
+                           criteria.requires_battery_charging, _, _, _))
       .RetiresOnSaturation();
   scheduler_->Reschedule(entries());
 
@@ -433,7 +449,7 @@ TEST_F(DownloadSchedulerImplTest, Reschedule) {
   EXPECT_CALL(task_scheduler_,
               ScheduleTask(DownloadTaskType::DOWNLOAD_TASK,
                            criteria.requires_unmetered_network,
-                           criteria.requires_battery_charging, _, _))
+                           criteria.requires_battery_charging, _, _, _))
       .RetiresOnSaturation();
   scheduler_->Reschedule(entries());
 
@@ -445,7 +461,7 @@ TEST_F(DownloadSchedulerImplTest, Reschedule) {
   EXPECT_CALL(task_scheduler_,
               ScheduleTask(DownloadTaskType::DOWNLOAD_TASK,
                            criteria.requires_unmetered_network,
-                           criteria.requires_battery_charging, _, _))
+                           criteria.requires_battery_charging, _, _, _))
       .RetiresOnSaturation();
   scheduler_->Reschedule(entries());
 

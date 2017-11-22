@@ -17,12 +17,14 @@ DownloadTaskScheduler::~DownloadTaskScheduler() = default;
 void DownloadTaskScheduler::ScheduleTask(DownloadTaskType task_type,
                                          bool require_unmetered_network,
                                          bool require_charging,
+                                         int optimal_battery_percentage,
                                          long window_start_time_seconds,
                                          long window_end_time_seconds) {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_DownloadTaskScheduler_scheduleTask(
       env, static_cast<jint>(task_type), require_unmetered_network,
-      require_charging, window_start_time_seconds, window_end_time_seconds);
+      require_charging, optimal_battery_percentage, window_start_time_seconds,
+      window_end_time_seconds);
 }
 
 void DownloadTaskScheduler::CancelTask(DownloadTaskType task_type) {

@@ -4,6 +4,7 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
+#include "build/build_config.h"
 #include "components/download/content/factory/navigation_monitor_factory.h"
 #include "components/download/content/internal/download_driver_impl.h"
 #include "components/download/internal/client_set.h"
@@ -17,6 +18,10 @@
 #include "components/download/internal/proto/entry.pb.h"
 #include "components/download/internal/scheduler/scheduler_impl.h"
 #include "components/leveldb_proto/proto_database_impl.h"
+
+#if defined(OS_ANDROID)
+#include "components/download/internal/android/battery_status_listener_android.h"
+#endif
 
 namespace download {
 namespace {
@@ -44,8 +49,18 @@ DownloadService* CreateDownloadService(
   auto store = base::MakeUnique<DownloadStore>(entry_db_storage_dir,
                                                std::move(entry_db));
   auto model = base::MakeUnique<ModelImpl>(std::move(store));
+
+#if defined(OS_ANDROID)
+  auto battery_listener = base::MakeUnique<BatteryStatusListenerAndroid>(
+      config->battery_query_interval);
+#else
+  auto battery_listener =
+      base::MakeUnique<BatteryStatusListener>(config->battery_query_interval);
+#endif
+
   auto device_status_listener = base::MakeUnique<DeviceStatusListener>(
-      config->network_startup_delay, config->network_change_delay);
+      config->network_startup_delay, config->network_change_delay,
+      std::move(battery_listener));
   NavigationMonitor* navigation_monitor =
       NavigationMonitorFactory::GetForBrowserContext(
           download_manager->GetBrowserContext());

@@ -79,16 +79,17 @@ TEST(DownloadServiceEntryUtilsTest, GetSchedulingCriteria) {
   Entry entry2 = test::BuildBasicEntry();
   Entry entry3 = test::BuildBasicEntry();
   Entry entry4 = test::BuildBasicEntry();
+  Entry entry5 = test::BuildBasicEntry();
 
   entry1.scheduling_params.network_requirements =
       SchedulingParams::NetworkRequirements::UNMETERED;
   entry1.scheduling_params.battery_requirements =
-      SchedulingParams::BatteryRequirements::BATTERY_SENSITIVE;
+      SchedulingParams::BatteryRequirements::BATTERY_CHARGING;
 
   entry2.scheduling_params.network_requirements =
       SchedulingParams::NetworkRequirements::NONE;
   entry2.scheduling_params.battery_requirements =
-      SchedulingParams::BatteryRequirements::BATTERY_SENSITIVE;
+      SchedulingParams::BatteryRequirements::BATTERY_CHARGING;
 
   entry3.scheduling_params.network_requirements =
       SchedulingParams::NetworkRequirements::UNMETERED;
@@ -100,17 +101,35 @@ TEST(DownloadServiceEntryUtilsTest, GetSchedulingCriteria) {
   entry4.scheduling_params.battery_requirements =
       SchedulingParams::BatteryRequirements::BATTERY_INSENSITIVE;
 
+  entry5.scheduling_params.network_requirements =
+      SchedulingParams::NetworkRequirements::UNMETERED;
+  entry5.scheduling_params.battery_requirements =
+      SchedulingParams::BatteryRequirements::BATTERY_SENSITIVE;
+
   Model::EntryList list1 = {&entry1};
   Model::EntryList list2 = {&entry1, &entry2};
   Model::EntryList list3 = {&entry1, &entry3};
   Model::EntryList list4 = {&entry1, &entry2, &entry3};
   Model::EntryList list5 = {&entry1, &entry4};
+  Model::EntryList list6 = {&entry3, &entry5};
+  Model::EntryList list7 = {&entry5};
 
-  EXPECT_EQ(Criteria(true, true), util::GetSchedulingCriteria(list1));
-  EXPECT_EQ(Criteria(true, false), util::GetSchedulingCriteria(list2));
-  EXPECT_EQ(Criteria(false, true), util::GetSchedulingCriteria(list3));
-  EXPECT_EQ(Criteria(false, false), util::GetSchedulingCriteria(list4));
-  EXPECT_EQ(Criteria(false, false), util::GetSchedulingCriteria(list5));
+  const int kDownloadBatteryPercentage = 50;
+
+  EXPECT_EQ(Criteria(true, true, kDownloadBatteryPercentage),
+            util::GetSchedulingCriteria(list1, kDownloadBatteryPercentage));
+  EXPECT_EQ(Criteria(true, false, kDownloadBatteryPercentage),
+            util::GetSchedulingCriteria(list2, kDownloadBatteryPercentage));
+  EXPECT_EQ(Criteria(false, true, DeviceStatus::kBatteryPercentageAlwaysStart),
+            util::GetSchedulingCriteria(list3, kDownloadBatteryPercentage));
+  EXPECT_EQ(Criteria(false, false, DeviceStatus::kBatteryPercentageAlwaysStart),
+            util::GetSchedulingCriteria(list4, kDownloadBatteryPercentage));
+  EXPECT_EQ(Criteria(false, false, DeviceStatus::kBatteryPercentageAlwaysStart),
+            util::GetSchedulingCriteria(list5, kDownloadBatteryPercentage));
+  EXPECT_EQ(Criteria(false, true, DeviceStatus::kBatteryPercentageAlwaysStart),
+            util::GetSchedulingCriteria(list6, kDownloadBatteryPercentage));
+  EXPECT_EQ(Criteria(false, true, kDownloadBatteryPercentage),
+            util::GetSchedulingCriteria(list7, kDownloadBatteryPercentage));
 }
 
 // Test to verify download meta data is built correctly.

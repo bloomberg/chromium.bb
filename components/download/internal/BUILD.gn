@@ -78,6 +78,8 @@ static_library("internal") {
 
   if (is_android) {
     sources += [
+      "android/battery_status_listener_android.cc",
+      "android/battery_status_listener_android.h",
       "android/network_status_listener_android.cc",
       "android/network_status_listener_android.h",
     ]
@@ -88,7 +90,10 @@ static_library("internal") {
 
 if (is_android) {
   android_library("internal_java") {
-    java_files = [ "android/java/src/org/chromium/components/download/internal/NetworkStatusListenerAndroid.java" ]
+    java_files = [
+      "android/java/src/org/chromium/components/download/internal/BatteryStatusListenerAndroid.java",
+      "android/java/src/org/chromium/components/download/internal/NetworkStatusListenerAndroid.java",
+    ]
 
     deps = [
       "//base:base_java",
@@ -99,6 +104,7 @@ if (is_android) {
   generate_jni("jni_headers") {
     visibility = [ ":*" ]
     sources = [
+      "android/java/src/org/chromium/components/download/internal/BatteryStatusListenerAndroid.java",
       "android/java/src/org/chromium/components/download/internal/NetworkStatusListenerAndroid.java",
     ]
     jni_package = "components/download/internal"

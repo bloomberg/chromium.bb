@@ -7,8 +7,22 @@
 namespace download {
 namespace test {
 
+class FakeBatteryStatusListener : public BatteryStatusListener {
+ public:
+  FakeBatteryStatusListener() : BatteryStatusListener(base::TimeDelta()) {}
+  ~FakeBatteryStatusListener() override = default;
+
+  // BatteryStatusListener implementation.
+  int GetBatteryPercentageInternal() override { return 100; }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FakeBatteryStatusListener);
+};
+
 TestDeviceStatusListener::TestDeviceStatusListener()
-    : DeviceStatusListener(base::TimeDelta(), base::TimeDelta()),
+    : DeviceStatusListener(base::TimeDelta(), /* startup_delay */
+                           base::TimeDelta(), /* online_delay */
+                           base::MakeUnique<FakeBatteryStatusListener>()),
       weak_ptr_factory_(this) {}
 
 TestDeviceStatusListener::~TestDeviceStatusListener() {

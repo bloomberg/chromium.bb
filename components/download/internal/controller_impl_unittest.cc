@@ -71,7 +71,8 @@ class MockTaskScheduler : public TaskScheduler {
   ~MockTaskScheduler() override = default;
 
   // TaskScheduler implementation.
-  MOCK_METHOD5(ScheduleTask, void(DownloadTaskType, bool, bool, long, long));
+  MOCK_METHOD6(ScheduleTask,
+               void(DownloadTaskType, bool, bool, int, long, long));
   MOCK_METHOD1(CancelTask, void(DownloadTaskType));
 };
 
@@ -451,7 +452,7 @@ TEST_F(DownloadServiceControllerImplTest,
 
   EXPECT_CALL(*file_monitor_, CleanupFilesForCompletedEntries(_, _)).Times(2);
   EXPECT_CALL(*task_scheduler_,
-              ScheduleTask(DownloadTaskType::CLEANUP_TASK, _, _, _, _))
+              ScheduleTask(DownloadTaskType::CLEANUP_TASK, _, _, _, _, _))
       .Times(1);
 
   InitializeController();
@@ -990,8 +991,8 @@ TEST_F(DownloadServiceControllerImplTest, OnDownloadSucceeded) {
 
   long start_time = 0;
   EXPECT_CALL(*task_scheduler_,
-              ScheduleTask(DownloadTaskType::CLEANUP_TASK, _, _, _, _))
-      .WillOnce(SaveArg<3>(&start_time));
+              ScheduleTask(DownloadTaskType::CLEANUP_TASK, _, _, _, _, _))
+      .WillOnce(SaveArg<4>(&start_time));
   driver_->NotifyDownloadSucceeded(done_dentry);
   Entry* updated_entry = model_->Get(entry.guid);
   DCHECK(updated_entry);
@@ -1046,7 +1047,7 @@ TEST_F(DownloadServiceControllerImplTest, CleanupTaskScheduledAtEarliestTime) {
   // Since keep_alive_time is 10 minutes and oldest completion time was 2
   // minutes ago, we should see the cleanup window start at 8 minutes.
   EXPECT_CALL(*task_scheduler_, ScheduleTask(DownloadTaskType::CLEANUP_TASK,
-                                             false, false, 480, 780))
+                                             false, false, 0, 480, 780))
       .Times(1);
   driver_->NotifyDownloadSucceeded(done_dentry1);
   EXPECT_EQ(Entry::State::COMPLETE, model_->Get(entry1.guid)->state);
@@ -1624,7 +1625,7 @@ TEST_F(DownloadServiceControllerImplTest, DownloadTaskQueuesAfterFinish) {
   // When the first download is done, it will attempt to clean up and schedule a
   // task.
   EXPECT_CALL(*task_scheduler_,
-              ScheduleTask(DownloadTaskType::CLEANUP_TASK, _, _, _, _))
+              ScheduleTask(DownloadTaskType::CLEANUP_TASK, _, _, _, _, _))
       .Times(2);
 
   driver_->MakeReady();
@@ -1695,7 +1696,7 @@ TEST_F(DownloadServiceControllerImplTest, CleanupTaskQueuesAfterFinish) {
 
   // No cleanup tasks expected until we stop the job.
   EXPECT_CALL(*task_scheduler_,
-              ScheduleTask(DownloadTaskType::CLEANUP_TASK, _, _, _, _))
+              ScheduleTask(DownloadTaskType::CLEANUP_TASK, _, _, _, _, _))
       .Times(0);
   controller_->OnStartScheduledTask(DownloadTaskType::CLEANUP_TASK,
                                     base::Bind(&NotifyTaskFinished));
@@ -1710,7 +1711,7 @@ TEST_F(DownloadServiceControllerImplTest, CleanupTaskQueuesAfterFinish) {
 
   // Now finish the job.  We expect a cleanup task to be scheduled.
   EXPECT_CALL(*task_scheduler_,
-              ScheduleTask(DownloadTaskType::CLEANUP_TASK, _, _, _, _))
+              ScheduleTask(DownloadTaskType::CLEANUP_TASK, _, _, _, _, _))
       .Times(1);
   controller_->OnStopScheduledTask(DownloadTaskType::CLEANUP_TASK);
 }

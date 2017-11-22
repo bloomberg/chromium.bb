@@ -23,6 +23,7 @@ message SchedulingParams {
   enum BatteryRequirements {
     BATTERY_INSENSITIVE = 0;
     BATTERY_SENSITIVE = 1;
+    BATTERY_CHARGING = 2;
   }
 
   // This should stay in sync with the Priority enum
