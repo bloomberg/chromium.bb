@@ -25,7 +25,6 @@ ContextMenuParams ContextMenuParamsBuilder::Build(
   params.src_url = data.src_url;
   params.has_image_contents = data.has_image_contents;
   params.page_url = data.page_url;
-  params.keyword_url = data.keyword_url;
   params.frame_url = data.frame_url;
   params.media_flags = data.media_flags;
   params.selection_text = data.selected_text.Utf16();

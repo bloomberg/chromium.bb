@@ -86,10 +86,6 @@ struct CONTENT_EXPORT ContextMenuParams {
   // on.
   GURL page_url;
 
-  // This is the absolute keyword search URL including the %s search tag when
-  // the "Add as search engine..." option is clicked (left empty if not used).
-  GURL keyword_url;
-
   // This is the URL of the subframe that the context menu was invoked on.
   GURL frame_url;
 
