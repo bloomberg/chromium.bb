@@ -7,8 +7,7 @@
 
 #include <map>
 
-#include "base/mac/scoped_nsobject.h"
-#import "chrome/browser/ui/cocoa/main_menu_item.h"
+#import "base/mac/scoped_nsobject.h"
 #include "components/bookmarks/browser/bookmark_model_observer.h"
 
 class Profile;
@@ -35,10 +34,9 @@ class BookmarkNode;
 // created dynamically.  They also have a target of
 // BookmarkMenuCocoaController instead of firstResponder.
 // See BookmarkMenuBridge::AddNodeToMenu()).
-class BookmarkMenuBridge : public bookmarks::BookmarkModelObserver,
-                           public MainMenuItem {
+class BookmarkMenuBridge : public bookmarks::BookmarkModelObserver {
  public:
-  BookmarkMenuBridge(Profile* profile, NSMenu* menu);
+  BookmarkMenuBridge(Profile* profile, NSMenu* menu_root);
   ~BookmarkMenuBridge() override;
 
   // bookmarks::BookmarkModelObserver:
@@ -68,32 +66,28 @@ class BookmarkMenuBridge : public bookmarks::BookmarkModelObserver,
       bookmarks::BookmarkModel* model,
       const bookmarks::BookmarkNode* node) override;
 
-  // MainMenuItem:
-  void ResetMenu() override;
-  void BuildMenu() override;
-
-  // Rebuilds the main bookmark menu, if it has been marked invalid.
-  void UpdateMenu(NSMenu* bookmark_menu);
-
-  // Rebuilds a bookmark menu that's a submenu of another menu.
-  void UpdateSubMenu(NSMenu* bookmark_menu);
+  // Rebuilds the main bookmark menu, if it has been marked invalid. Or builds
+  // a bookmark folder submenu on demand.
+  void UpdateMenu(NSMenu* menu, const bookmarks::BookmarkNode* node);
 
   // I wish I had a "friend @class" construct.
   bookmarks::BookmarkModel* GetBookmarkModel();
   Profile* GetProfile();
 
   // Return the Bookmark menu.
-  virtual NSMenu* BookmarkMenu();
+  NSMenu* BookmarkMenu();
 
- protected:
-  // Rebuilds the bookmark content of supplied menu.
-  void UpdateMenuInternal(NSMenu* bookmark_menu, bool is_submenu);
+  // Clear all bookmarks from |menu_root_|.
+  void ClearBookmarkMenu();
 
-  // Clear all bookmarks from the given bookmark menu.
-  void ClearBookmarkMenu(NSMenu* menu);
+ private:
+  friend class BookmarkMenuBridgeTest;
+
+  void BuildRootMenu();
 
   // Mark the bookmark menu as being invalid.
   void InvalidateMenu()  { menuIsValid_ = false; }
+  bool IsMenuValid() const { return menuIsValid_; }
 
   // Helper for adding the node as a submenu to the menu with the |node|'s title
   // and the given |image| as its icon.
@@ -101,17 +95,14 @@ class BookmarkMenuBridge : public bookmarks::BookmarkModelObserver,
   // menu, such as "Open All Bookmarks".
   void AddNodeAsSubmenu(NSMenu* menu,
                         const bookmarks::BookmarkNode* node,
-                        NSImage* image,
-                        bool add_extra_items);
+                        NSImage* image);
 
   // Helper for recursively adding items to our bookmark menu.
   // All children of |node| will be added to |menu|.
   // If |add_extra_items| is true, also adds extra menu items at bottom of
   // menu, such as "Open All Bookmarks".
   // TODO(jrg): add a counter to enforce maximum nodes added
-  void AddNodeToMenu(const bookmarks::BookmarkNode* node,
-                     NSMenu* menu,
-                     bool add_extra_items);
+  void AddNodeToMenu(const bookmarks::BookmarkNode* node, NSMenu* menu);
 
   // Helper for adding an item to our bookmark menu. An item which has a
   // localized title specified by |message_id| will be added to |menu|.
@@ -138,14 +129,12 @@ class BookmarkMenuBridge : public bookmarks::BookmarkModelObserver,
   // Start watching the bookmarks for changes.
   void ObserveBookmarkModel();
 
- private:
-  friend class BookmarkMenuBridgeTest;
-
   // True iff the menu is up to date with the actual BookmarkModel.
   bool menuIsValid_;
 
-  Profile* profile_;  // weak
-  BookmarkMenuCocoaController* controller_;  // strong
+  Profile* const profile_;  // weak
+  base::scoped_nsobject<BookmarkMenuCocoaController> controller_;
+  base::scoped_nsobject<NSMenu> menu_root_;
 
   // The folder image so we can use one copy for all.
   base::scoped_nsobject<NSImage> folder_image_;
@@ -153,6 +142,8 @@ class BookmarkMenuBridge : public bookmarks::BookmarkModelObserver,
   // In order to appropriately update items in the bookmark menu, without
   // forcing a rebuild, map the model's nodes to menu items.
   std::map<const bookmarks::BookmarkNode*, NSMenuItem*> bookmark_nodes_;
+
+  DISALLOW_COPY_AND_ASSIGN(BookmarkMenuBridge);
 };
 
 #endif  // CHROME_BROWSER_UI_COCOA_BOOKMARKS_BOOKMARK_MENU_BRIDGE_H_

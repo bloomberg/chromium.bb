@@ -1567,15 +1567,20 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
   [bookmarkItem setHidden:NO];
   lastProfile_ = profile;
 
-  auto it = profileBookmarkMenuBridgeMap_.find(profile->GetPath());
-  if (it == profileBookmarkMenuBridgeMap_.end()) {
+  auto& entry = profileBookmarkMenuBridgeMap_[profile->GetPath()];
+  if (!entry) {
+    // This creates a deep copy, but only the first 3 items in the root menu
+    // are really wanted. This can probably be optimized, but lazy-loading of
+    // the menu should reduce the impact in most flows.
     base::scoped_nsobject<NSMenu> submenu([[bookmarkItem submenu] copy]);
-    bookmarkMenuBridge_ = new BookmarkMenuBridge(profile, submenu);
-    profileBookmarkMenuBridgeMap_[profile->GetPath()] =
-        base::WrapUnique(bookmarkMenuBridge_);
-  } else {
-    bookmarkMenuBridge_ = it->second.get();
+    [submenu setDelegate:nil];  // The delegate is also copied. Remove it.
+
+    entry = std::make_unique<BookmarkMenuBridge>(profile, submenu);
+
+    // Clear bookmarks from the old profile.
+    entry->ClearBookmarkMenu();
   }
+  bookmarkMenuBridge_ = entry.get();
 
   // No need to |BuildMenu| here.  It is done lazily upon menu access.
   [bookmarkItem setSubmenu:bookmarkMenuBridge_->BookmarkMenu()];
