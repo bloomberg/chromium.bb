@@ -2792,8 +2792,8 @@ if (is_android) {
     java_files = [ "test/android/javatests/src/org/chromium/base/test/TestChildProcessConnection.java" ]
   }
 
-  java_library("base_junit_test_support") {
-    # Skip platform checks since Robolectric depends on requires_android targets.
+  android_library("base_junit_test_support") {
+    # Plaform checks are broken for Robolectric.
     bypass_platform_checks = true
     testonly = true
     java_files = [ "android/junit/src/org/chromium/base/metrics/test/ShadowRecordHistogram.java" ]

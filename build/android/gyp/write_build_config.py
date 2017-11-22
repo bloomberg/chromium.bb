@@ -260,6 +260,9 @@ def main(argv):
   parser.add_option(
       '--deps-configs',
       help='List of paths for dependency\'s build_config files. ')
+  parser.add_option(
+      '--classpath-deps-configs',
+      help='List of paths for classpath dependency\'s build_config files. ')
 
   # android_resources options
   parser.add_option('--srcjar', help='Path to target\'s resources srcjar.')
@@ -381,8 +384,8 @@ def main(argv):
           '--supports-android is required when using --requires-android')
 
   direct_deps_config_paths = build_utils.ParseGnList(options.deps_configs)
-  direct_deps_config_paths = _FilterDepsPaths(direct_deps_config_paths,
-                                              options.type)
+  direct_deps_config_paths = _FilterDepsPaths(
+      direct_deps_config_paths, options.type)
 
   deps = Deps(direct_deps_config_paths)
   all_inputs = deps.AllConfigPaths()
@@ -598,15 +601,25 @@ def main(argv):
     deps_dex_files = [c['dex_path'] for c in all_library_deps]
 
   if requires_javac_classpath:
-    javac_classpath = [c['jar_path'] for c in direct_library_deps]
-  if requires_full_classpath:
-    java_full_classpath = [c['jar_path'] for c in all_library_deps]
-
+    extra_jars = []
     if options.extra_classpath_jars:
-      extra_jars = build_utils.ParseGnList(options.extra_classpath_jars)
+      extra_jars += build_utils.ParseGnList(options.extra_classpath_jars)
+
+    if options.classpath_deps_configs:
+      config_paths = build_utils.ParseGnList(options.classpath_deps_configs)
+      classpath_deps = Deps(_FilterDepsPaths(config_paths, options.type))
+      extra_jars += [
+          c['jar_path'] for c in classpath_deps.Direct('java_library')]
+
+    javac_classpath = [c['jar_path'] for c in direct_library_deps]
+    if requires_full_classpath:
+      java_full_classpath = [c['jar_path'] for c in all_library_deps]
+
+    if extra_jars:
       deps_info['extra_classpath_jars'] = extra_jars
-      javac_classpath += extra_jars
-      java_full_classpath += extra_jars
+      javac_classpath += [p for p in extra_jars if p not in javac_classpath]
+      java_full_classpath += [
+          p for p in extra_jars if p not in java_full_classpath]
 
   # The java code for an instrumentation test apk is assembled differently for
   # ProGuard vs. non-ProGuard.

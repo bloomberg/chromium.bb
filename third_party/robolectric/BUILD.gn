@@ -670,7 +670,6 @@ java_library("shadows_core_java") {
   deps = [
     ":android-all-o-preview-4-robolectric-0_java",
     ":robolectric_annotations_java",
-    ":robolectric_processor_java",
     ":robolectric_resources_java",
     ":robolectric_shadowapi_java",
     ":robolectric_utils_java",
@@ -686,6 +685,7 @@ java_library("shadows_core_java") {
     "//third_party/intellij:intellij_annotations_java",
     "//third_party/sqlite4java:sqlite4java_java",
   ]
+  classpath_deps = [ ":robolectric_processor_java" ]
 
   # Work-around for gradle generator not yet supporting annotation processors.
   gradle_treat_as_prebuilt = true
@@ -706,10 +706,10 @@ java_library("shadows_multidex_java") {
     "robolectric/shadows/multidex/src/main/java/org/robolectric/shadows/multidex/package-info.java",
   ]
 
+  classpath_deps = [ ":robolectric_processor_java" ]
   deps = [
     ":android-all-o-preview-4-robolectric-0_java",
     ":robolectric_annotations_java",
-    ":robolectric_processor_java",
     ":robolectric_shadowapi_java",
     ":robolectric_utils_java",
     ":shadows_core_java",
@@ -740,10 +740,10 @@ java_library("shadows_play_services_java") {
     "robolectric/shadows/playservices/src/main/java/org/robolectric/shadows/gms/package-info.java",
   ]
 
+  classpath_deps = [ ":robolectric_processor_java" ]
   deps = [
     ":android-all-o-preview-4-robolectric-0_java",
     ":robolectric_annotations_java",
-    ":robolectric_processor_java",
     ":robolectric_resources_java",
     ":robolectric_shadowapi_java",
     ":robolectric_utils_java",
