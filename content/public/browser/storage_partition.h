@@ -13,7 +13,6 @@
 #include "base/files/file_path.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
-#include "content/public/common/url_loader_factory.mojom.h"
 #include "net/cookies/cookie_store.h"
 
 class GURL;
@@ -196,11 +195,6 @@ class CONTENT_EXPORT StoragePartition {
 
   // Clear the bluetooth allowed devices map. For test use only.
   virtual void ClearBluetoothAllowedDevicesMapForTesting() = 0;
-
-  // Overrides the network URLLoaderFactory for subsequent requests. Passing a
-  // null pointer will restore the default behavior.
-  virtual void SetNetworkFactoryForTesting(
-      mojom::URLLoaderFactoryPtr test_factory) = 0;
 
  protected:
   virtual ~StoragePartition() {}
