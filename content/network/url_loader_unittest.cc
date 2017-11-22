@@ -192,12 +192,14 @@ class URLLoaderTest : public testing::Test {
     ResourceRequest request = CreateResourceRequest(
         !request_body_ ? "GET" : "POST", resource_type_, url);
     uint32_t options = mojom::kURLLoadOptionNone;
-    if (send_ssl_)
-      options |= mojom::kURLLoadOptionSendSSLInfo;
+    if (send_ssl_with_response_)
+      options |= mojom::kURLLoadOptionSendSSLInfoWithResponse;
     if (sniff_)
       options |= mojom::kURLLoadOptionSniffMimeType;
     if (add_custom_accept_header_)
       request.headers.SetHeader("accept", "custom/*");
+    if (send_ssl_for_cert_error_)
+      options |= mojom::kURLLoadOptionSendSSLInfoForCertificateError;
 
     if (request_body_)
       request.request_body = request_body_;
@@ -312,9 +314,13 @@ class URLLoaderTest : public testing::Test {
     DCHECK(!ran_);
     sniff_ = true;
   }
-  void set_send_ssl() {
+  void set_send_ssl_with_response() {
     DCHECK(!ran_);
-    send_ssl_ = true;
+    send_ssl_with_response_ = true;
+  }
+  void set_send_ssl_for_cert_error() {
+    DCHECK(!ran_);
+    send_ssl_for_cert_error_ = true;
   }
   void set_add_custom_accept_header() {
     DCHECK(!ran_);
@@ -415,7 +421,8 @@ class URLLoaderTest : public testing::Test {
 
   // Options applied the created request in Load().
   bool sniff_ = false;
-  bool send_ssl_ = false;
+  bool send_ssl_with_response_ = false;
+  bool send_ssl_for_cert_error_ = false;
   bool add_custom_accept_header_ = false;
   ResourceType resource_type_ = RESOURCE_TYPE_MAIN_FRAME;
   scoped_refptr<ResourceRequestBody> request_body_;
@@ -442,7 +449,7 @@ TEST_F(URLLoaderTest, BasicSSL) {
   ASSERT_TRUE(https_server.Start());
 
   GURL url = https_server.GetURL("/simple_page.html");
-  set_send_ssl();
+  set_send_ssl_with_response();
   EXPECT_EQ(net::OK, Load(url));
   ASSERT_TRUE(!!ssl_info());
   ASSERT_TRUE(!!ssl_info()->cert);
@@ -1050,6 +1057,40 @@ TEST_F(URLLoaderTest, UploadDoubleRawFile) {
   std::string response_body;
   EXPECT_EQ(net::OK, Load(test_server()->GetURL("/echo"), &response_body));
   EXPECT_EQ(expected_body + expected_body, response_body);
+}
+
+// Tests that SSLInfo is not attached to OnComplete messages when there is no
+// certificate error.
+TEST_F(URLLoaderTest, NoSSLInfoWithoutCertificateError) {
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  ASSERT_TRUE(https_server.Start());
+  set_send_ssl_for_cert_error();
+  EXPECT_EQ(net::OK, Load(https_server.GetURL("/")));
+  EXPECT_FALSE(client()->completion_status().ssl_info.has_value());
+}
+
+// Tests that SSLInfo is not attached to OnComplete messages when the
+// corresponding option is not set.
+TEST_F(URLLoaderTest, NoSSLInfoOnComplete) {
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
+  ASSERT_TRUE(https_server.Start());
+  EXPECT_EQ(net::ERR_INSECURE_RESPONSE, Load(https_server.GetURL("/")));
+  EXPECT_FALSE(client()->completion_status().ssl_info.has_value());
+}
+
+// Tests that SSLInfo is attached to OnComplete messages when the corresponding
+// option is set.
+TEST_F(URLLoaderTest, SSLInfoOnComplete) {
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
+  ASSERT_TRUE(https_server.Start());
+  set_send_ssl_for_cert_error();
+  EXPECT_EQ(net::ERR_INSECURE_RESPONSE, Load(https_server.GetURL("/")));
+  ASSERT_TRUE(client()->completion_status().ssl_info.has_value());
+  EXPECT_TRUE(client()->completion_status().ssl_info.value().cert);
+  EXPECT_EQ(net::CERT_STATUS_DATE_INVALID,
+            client()->completion_status().ssl_info.value().cert_status);
 }
 
 }  // namespace content

@@ -39141,6 +39141,30 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram
+    name="Navigation.URLLoaderNetworkService.OnCompleteCertificateChainsSize"
+    units="KB">
+  <owner>estark@chromium.org</owner>
+  <summary>
+    When the navigation URL loader receives an OnComplete message from the
+    network service that contains certificate chains, this histogram records the
+    size in KB of those pickled certificate chains. This histogram is recorded
+    by the navigation URLLoader for navigations that fetch from network, for
+    every request which contains an SSLInfo in its OnComplete notification.
+  </summary>
+</histogram>
+
+<histogram name="Navigation.URLLoaderNetworkService.OnCompleteHasSSLInfo"
+    enum="BooleanPresent">
+  <owner>estark@chromium.org</owner>
+  <summary>
+    Whether the network service's OnComplete message to the navigation URL
+    loader contains an SSLInfo, which should only be present for main-frame
+    requests with certificate errors. This histogram is recorded for every
+    request completion by the navigation URL loader that fetches from network.
+  </summary>
+</histogram>
+
 <histogram name="NCN.CellularConnectionSubtype" enum="ConnectionSubtype">
   <owner>bmcquade@chromium.org</owner>
   <summary>

@@ -139,7 +139,8 @@ void ResourceDownloader::Start(
         factory->get(), std::vector<std::unique_ptr<URLLoaderThrottle>>(),
         0,  // routing_id
         0,  // request_id
-        mojom::kURLLoadOptionSendSSLInfo | mojom::kURLLoadOptionSniffMimeType,
+        mojom::kURLLoadOptionSendSSLInfoWithResponse |
+            mojom::kURLLoadOptionSniffMimeType,
         *(resource_request_.get()), &response_handler_,
         download_url_parameters->GetNetworkTrafficAnnotation());
     url_loader_->SetPriority(net::RequestPriority::IDLE,

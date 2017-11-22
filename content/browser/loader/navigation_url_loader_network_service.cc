@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/appcache/appcache_navigation_handle.h"
@@ -58,6 +59,14 @@ namespace {
 // Request ID for browser initiated requests. We start at -2 on the same lines
 // as ResourceDispatcherHostImpl.
 int g_next_request_id = -2;
+
+size_t GetCertificateChainsSizeInKB(const net::SSLInfo& ssl_info) {
+  base::Pickle cert_pickle;
+  ssl_info.cert->Persist(&cert_pickle);
+  base::Pickle unverified_cert_pickle;
+  ssl_info.unverified_cert->Persist(&unverified_cert_pickle);
+  return (cert_pickle.size() + unverified_cert_pickle.size()) / 1000;
+}
 
 WebContents* GetWebContentsFromFrameTreeNodeID(int frame_tree_node_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -295,13 +304,16 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
       default_loader_used_ = true;
     }
     url_chain_.push_back(resource_request_->url);
+    uint32_t options = mojom::kURLLoadOptionSendSSLInfoWithResponse |
+                       mojom::kURLLoadOptionSniffMimeType;
+    if (resource_request_->resource_type == RESOURCE_TYPE_MAIN_FRAME)
+      options |= mojom::kURLLoadOptionSendSSLInfoForCertificateError;
     url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
         factory,
         GetContentClient()->browser()->CreateURLLoaderThrottles(
             web_contents_getter_),
-        frame_tree_node_id_, 0 /* request_id? */,
-        mojom::kURLLoadOptionSendSSLInfo | mojom::kURLLoadOptionSniffMimeType,
-        *resource_request_, this, kNavigationUrlLoaderTrafficAnnotation);
+        frame_tree_node_id_, 0 /* request_id? */, options, *resource_request_,
+        this, kNavigationUrlLoaderTrafficAnnotation);
   }
 
   void FollowRedirect() {
@@ -427,6 +439,15 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
   }
 
   void OnComplete(const network::URLLoaderCompletionStatus& status) override {
+    UMA_HISTOGRAM_BOOLEAN(
+        "Navigation.URLLoaderNetworkService.OnCompleteHadSSLInfo",
+        status.ssl_info.has_value());
+    if (status.ssl_info.has_value()) {
+      UMA_HISTOGRAM_MEMORY_KB(
+          "Navigation.URLLoaderNetworkService.OnCompleteCertificateChainsSize",
+          GetCertificateChainsSizeInKB(status.ssl_info.value()));
+    }
+
     if (status.error_code != net::OK && !received_response_) {
       // If the default loader (network) was used to handle the URL load
       // request we need to see if the handlers want to potentially create a
@@ -701,6 +722,7 @@ void NavigationURLLoaderNetworkService::OnComplete(
   // TODO(https://crbug.com/757633): Pass real values in the case of cert
   // errors.
   bool should_ssl_errors_be_fatal = true;
+  ssl_info_ = status.ssl_info;
 
   delegate_->OnRequestFailed(status.exists_in_cache, status.error_code,
                              ssl_info_, should_ssl_errors_be_fatal);

@@ -497,6 +497,11 @@ void URLLoader::OnCertificateRequested(net::URLRequest* unused,
 void URLLoader::OnSSLCertificateError(net::URLRequest* request,
                                       const net::SSLInfo& ssl_info,
                                       bool fatal) {
+  // The network service can be null in tests.
+  if (!context_->network_service()) {
+    OnSSLCertificateErrorResponse(ssl_info, net::ERR_INSECURE_RESPONSE);
+    return;
+  }
   context_->network_service()->client()->OnSSLCertificateError(
       resource_type_, url_request_->url(), process_id_, render_frame_id_,
       ssl_info, fatal,
@@ -681,6 +686,12 @@ void URLLoader::NotifyCompleted(int error_code) {
   status.encoded_body_length = url_request_->GetRawBodyBytes();
   status.decoded_body_length = total_written_bytes_;
 
+  if ((options_ & mojom::kURLLoadOptionSendSSLInfoForCertificateError) &&
+      net::IsCertStatusError(url_request_->ssl_info().cert_status) &&
+      !net::IsCertStatusMinorError(url_request_->ssl_info().cert_status)) {
+    status.ssl_info = url_request_->ssl_info();
+  }
+
   url_loader_client_->OnComplete(status);
   DeleteIfNeeded();
 }
@@ -729,7 +740,7 @@ void URLLoader::DeleteIfNeeded() {
 
 void URLLoader::SendResponseToClient() {
   base::Optional<net::SSLInfo> ssl_info;
-  if (options_ & mojom::kURLLoadOptionSendSSLInfo)
+  if (options_ & mojom::kURLLoadOptionSendSSLInfoWithResponse)
     ssl_info = url_request_->ssl_info();
   mojom::DownloadedTempFilePtr downloaded_file_ptr;
   url_loader_client_->OnReceiveResponse(response_->head, ssl_info,
