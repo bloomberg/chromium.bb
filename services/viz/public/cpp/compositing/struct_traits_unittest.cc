@@ -42,7 +42,6 @@
 #include "services/viz/public/cpp/compositing/surface_id_struct_traits.h"
 #include "services/viz/public/cpp/compositing/surface_info_struct_traits.h"
 #include "services/viz/public/cpp/compositing/surface_sequence_struct_traits.h"
-#include "services/viz/public/cpp/compositing/texture_mailbox_struct_traits.h"
 #include "services/viz/public/cpp/compositing/transferable_resource_struct_traits.h"
 #include "services/viz/public/interfaces/compositing/begin_frame_args.mojom.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame.mojom.h"
@@ -51,6 +50,7 @@
 #include "services/viz/public/interfaces/compositing/returned_resource.mojom.h"
 #include "services/viz/public/interfaces/compositing/surface_info.mojom.h"
 #include "services/viz/public/interfaces/compositing/surface_sequence.mojom.h"
+#include "services/viz/public/interfaces/compositing/texture_mailbox.mojom.h"
 #include "services/viz/public/interfaces/compositing/transferable_resource.mojom.h"
 #include "skia/public/interfaces/bitmap_skbitmap_struct_traits.h"
 #include "skia/public/interfaces/blur_image_filter_tile_mode_struct_traits.h"
@@ -312,11 +312,9 @@ TEST_F(StructTraitsTest, CopyOutputRequest_TextureRequest) {
   const auto result_format = CopyOutputRequest::ResultFormat::RGBA_TEXTURE;
   const int8_t mailbox_name[GL_MAILBOX_SIZE_CHROMIUM] = {
       0, 9, 8, 7, 6, 5, 4, 3, 2, 1, 9, 7, 5, 3, 1, 3};
-  const uint32_t target = 3;
   gpu::Mailbox mailbox;
   mailbox.SetName(mailbox_name);
   gpu::SyncToken sync_token;
-  TextureMailbox texture_mailbox(mailbox, sync_token, target);
   const gfx::Rect result_rect(10, 10);
 
   base::RunLoop run_loop_for_result;
@@ -329,7 +327,7 @@ TEST_F(StructTraitsTest, CopyOutputRequest_TextureRequest) {
             quit_closure.Run();
           },
           run_loop_for_result.QuitClosure(), result_rect)));
-  input->SetTextureMailbox(texture_mailbox);
+  input->SetMailbox(mailbox, sync_token);
   EXPECT_FALSE(input->is_scaled());
   std::unique_ptr<CopyOutputRequest> output;
   SerializeAndDeserialize<mojom::CopyOutputRequest>(input, &output);
@@ -338,9 +336,8 @@ TEST_F(StructTraitsTest, CopyOutputRequest_TextureRequest) {
   EXPECT_FALSE(output->is_scaled());
   EXPECT_FALSE(output->has_source());
   EXPECT_FALSE(output->has_area());
-  EXPECT_TRUE(output->has_texture_mailbox());
-  EXPECT_EQ(mailbox, output->texture_mailbox().mailbox());
-  EXPECT_EQ(target, output->texture_mailbox().target());
+  EXPECT_TRUE(output->has_mailbox());
+  EXPECT_EQ(mailbox, output->mailbox());
 
   base::RunLoop run_loop_for_release;
   output->SendResult(std::make_unique<CopyOutputTextureResult>(

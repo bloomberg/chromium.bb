@@ -14,6 +14,10 @@ OwnedMailbox::OwnedMailbox(viz::GLHelper* gl_helper)
     : texture_id_(0), gl_helper_(gl_helper) {
   texture_id_ = gl_helper_->CreateTexture();
   mailbox_holder_ = gl_helper_->ProduceMailboxHolderFromTexture(texture_id_);
+  // The texture target is not exposed on this class, as GLHelper assumes
+  // GL_TEXTURE_2D.
+  DCHECK_EQ(mailbox_holder_.texture_target,
+            static_cast<uint32_t>(GL_TEXTURE_2D));
   ImageTransportFactory::GetInstance()->GetContextFactory()->AddObserver(this);
 }
 

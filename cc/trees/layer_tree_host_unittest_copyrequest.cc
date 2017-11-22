@@ -1056,16 +1056,15 @@ class LayerTreeHostCopyRequestTestProvideTexture
     gl->ShallowFlushCHROMIUM();
     gl->GenSyncTokenCHROMIUM(fence_sync, sync_token_.GetData());
 
-    request->SetTextureMailbox(
-        viz::TextureMailbox(mailbox, sync_token_, GL_TEXTURE_2D));
-    EXPECT_TRUE(request->has_texture_mailbox());
+    request->SetMailbox(mailbox, sync_token_);
+    EXPECT_TRUE(request->has_mailbox());
 
     copy_layer_->RequestCopyOfOutput(std::move(request));
   }
 
   void AfterTest() override {
-    // Expect the compositor to have waited for the sync point in the provided
-    // viz::TextureMailbox.
+    // Expect the compositor to have waited for the sync point provided with the
+    // mailbox.
     EXPECT_EQ(sync_token_, waited_sync_token_after_readback_);
     // Except the copy to have *not* made another texture.
     EXPECT_EQ(num_textures_without_readback_, num_textures_with_readback_);

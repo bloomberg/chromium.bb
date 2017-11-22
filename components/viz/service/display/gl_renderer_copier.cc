@@ -14,11 +14,11 @@
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "components/viz/common/frame_sinks/copy_output_util.h"
 #include "components/viz/common/gpu/context_provider.h"
-#include "components/viz/common/quads/texture_mailbox.h"
 #include "components/viz/service/display/texture_deleter.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
@@ -210,11 +210,10 @@ GLuint GLRendererCopier::RenderResultTexture(
     // return it as the result texture. The request must not include scaling nor
     // a texture mailbox to use for delivering results. The texture format must
     // also be GL_RGBA, as described by CopyOutputResult::Format::RGBA_TEXTURE.
-    const int purpose =
-        (!request.is_scaled() && !request.has_texture_mailbox() &&
-         internal_format == GL_RGBA)
-            ? CacheEntry::kResultTexture
-            : CacheEntry::kFramebufferCopyTexture;
+    const int purpose = (!request.is_scaled() && !request.has_mailbox() &&
+                         internal_format == GL_RGBA)
+                            ? CacheEntry::kResultTexture
+                            : CacheEntry::kFramebufferCopyTexture;
     TakeCachedObjectsOrCreate(SourceOf(request), purpose, 1, &source_texture);
     gl->BindTexture(GL_TEXTURE_2D, source_texture);
     gl->CopyTexImage2D(GL_TEXTURE_2D, 0, internal_format, sampling_rect.x(),
@@ -229,13 +228,12 @@ GLuint GLRendererCopier::RenderResultTexture(
   // Determine the result texture: If the copy request provided a valid one, use
   // it instead of one owned by GLRendererCopier.
   GLuint result_texture = 0;
-  if (request.has_texture_mailbox()) {
-    const TextureMailbox& tm = request.texture_mailbox();
-    if (!tm.mailbox().IsZero() && tm.target() == GL_TEXTURE_2D) {
-      if (tm.sync_token().HasData())
-        gl->WaitSyncTokenCHROMIUM(tm.sync_token().GetConstData());
-      result_texture =
-          gl->CreateAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, tm.mailbox().name);
+  if (request.has_mailbox()) {
+    if (!request.mailbox().IsZero()) {
+      if (request.sync_token().HasData())
+        gl->WaitSyncTokenCHROMIUM(request.sync_token().GetConstData());
+      result_texture = gl->CreateAndConsumeTextureCHROMIUM(
+          GL_TEXTURE_2D, request.mailbox().name);
     }
   }
   if (result_texture == 0) {
@@ -429,13 +427,13 @@ void GLRendererCopier::SendTextureResult(
 
   auto* const gl = context_provider_->ContextGL();
 
-  // Package the |result_texture| into a TextureMailbox with the required
+  // Package the |result_texture| into a mailbox with the required
   // synchronization mechanisms. This lets the requestor ensure operations
   // within its own GL context will be using the texture at a point in time
   // after the texture has been rendered (via GLRendererCopier's GL context).
   gpu::Mailbox mailbox;
-  if (request->has_texture_mailbox()) {
-    mailbox = request->texture_mailbox().mailbox();
+  if (request->has_mailbox()) {
+    mailbox = request->mailbox();
   } else {
     gl->GenMailboxCHROMIUM(mailbox.name);
     gl->ProduceTextureDirectCHROMIUM(result_texture, GL_TEXTURE_2D,
@@ -447,12 +445,12 @@ void GLRendererCopier::SendTextureResult(
   gl->GenSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
 
   // Create a |release_callback| appropriate to the situation: If the
-  // |result_texture| was provided in the TextureMailbof of the copy request,
+  // |result_texture| was provided in the mailbox of the copy request,
   // create a no-op release callback because the requestor owns the texture.
   // Otherwise, create a callback that deletes what was created in this GL
   // context.
   std::unique_ptr<SingleReleaseCallback> release_callback;
-  if (request->has_texture_mailbox()) {
+  if (request->has_mailbox()) {
     gl->DeleteTextures(1, &result_texture);
     // TODO(crbug/754872): This non-null release callback wart is going away
     // soon, as copy requestors won't need pool/manage textures anymore.

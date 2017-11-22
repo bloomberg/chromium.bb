@@ -136,7 +136,7 @@ scoped_refptr<SolidColorLayer> LayerTreePixelTest::CreateSolidColorLayer(
 }
 
 void LayerTreePixelTest::EndTest() {
-  // Drop TextureMailboxes on the main thread so that they can be cleaned up and
+  // Drop textures on the main thread so that they can be cleaned up and
   // the pending callbacks will fire.
   for (size_t i = 0; i < texture_layers_.size(); ++i) {
     texture_layers_[i]->ClearTexture();
