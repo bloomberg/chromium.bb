@@ -831,7 +831,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
                    autofill::ADDRESS_HOME_STATE);
   SetEditorTextfieldValue(base::ASCIIToUTF16("BobZip"),
                           autofill::ADDRESS_HOME_ZIP);
-  SetEditorTextfieldValue(base::ASCIIToUTF16("5755555555"),
+  SetEditorTextfieldValue(base::ASCIIToUTF16("+15755555555"),
                           autofill::PHONE_HOME_WHOLE_NUMBER);
 
   // Come back to credit card editor.
@@ -844,6 +844,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
           autofill::ADDRESS_BILLING_LINE1)));
   ASSERT_NE(nullptr, billing_combobox);
   EXPECT_FALSE(billing_combobox->invalid());
+  EXPECT_TRUE(billing_combobox->enabled());
 
   // And then save credit card state and come back to payment sheet.
   ResetEventObserver(DialogEvent::BACK_TO_PAYMENT_SHEET_NAVIGATION);
