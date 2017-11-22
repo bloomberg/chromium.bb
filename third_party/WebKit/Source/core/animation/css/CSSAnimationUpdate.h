@@ -5,6 +5,7 @@
 #ifndef CSSAnimationUpdate_h
 #define CSSAnimationUpdate_h
 
+#include "base/macros.h"
 #include "core/animation/EffectStack.h"
 #include "core/animation/InertEffect.h"
 #include "core/animation/Interpolation.h"
@@ -93,7 +94,6 @@ namespace blink {
 // Interpolations to be applied.
 class CSSAnimationUpdate final {
   DISALLOW_NEW();
-  WTF_MAKE_NONCOPYABLE(CSSAnimationUpdate);
 
  public:
   CSSAnimationUpdate();
@@ -272,6 +272,7 @@ class CSSAnimationUpdate final {
   ActiveInterpolationsMap active_interpolations_for_standard_transitions_;
 
   friend class PendingAnimationUpdate;
+  DISALLOW_COPY_AND_ASSIGN(CSSAnimationUpdate);
 };
 
 }  // namespace blink

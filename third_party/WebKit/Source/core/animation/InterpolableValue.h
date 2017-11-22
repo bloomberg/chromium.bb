@@ -6,6 +6,7 @@
 #define InterpolableValue_h
 
 #include <memory>
+
 #include "core/CoreExport.h"
 #include "core/animation/animatable/AnimatableValue.h"
 #include "platform/heap/Handle.h"
@@ -83,7 +84,7 @@ class CORE_EXPORT InterpolableList : public InterpolableValue {
   // copy constructors and operator= for dll-exported classes.
   // Since InterpolableList is not copyable, automatically generated
   // operator= causes MSVC compiler error.
-  // However, we cannot use WTF_MAKE_NONCOPYABLE because InterpolableList
+  // However, we cannot use DISALLOW_COPY_AND_ASSIGN because InterpolableList
   // has its own copy constructor. So just delete operator= here.
   InterpolableList& operator=(const InterpolableList&) = delete;
 

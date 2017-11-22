@@ -6,6 +6,8 @@
 #define Interpolation_h
 
 #include <memory>
+
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/animation/InterpolableValue.h"
 #include "core/animation/PropertyHandle.h"
@@ -56,8 +58,6 @@ namespace blink {
 //    element. How this is done depends on the subclass of Interpolation. See
 //    the subclass documentation for more.
 class CORE_EXPORT Interpolation : public RefCounted<Interpolation> {
-  WTF_MAKE_NONCOPYABLE(Interpolation);
-
  public:
   virtual ~Interpolation() {}
 
@@ -76,6 +76,7 @@ class CORE_EXPORT Interpolation : public RefCounted<Interpolation> {
 
  protected:
   Interpolation() {}
+  DISALLOW_COPY_AND_ASSIGN(Interpolation);
 };
 
 using ActiveInterpolations = Vector<scoped_refptr<Interpolation>, 1>;

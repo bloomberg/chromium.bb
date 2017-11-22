@@ -5,6 +5,7 @@
 #ifndef InterpolatedSVGPathSource_h
 #define InterpolatedSVGPathSource_h
 
+#include "base/macros.h"
 #include "core/animation/SVGPathSegInterpolationFunctions.h"
 #include "core/svg/SVGPathData.h"
 #include "platform/wtf/Vector.h"
@@ -12,7 +13,6 @@
 namespace blink {
 
 class InterpolatedSVGPathSource {
-  WTF_MAKE_NONCOPYABLE(InterpolatedSVGPathSource);
   STACK_ALLOCATED();
 
  public:
@@ -32,6 +32,7 @@ class InterpolatedSVGPathSource {
   size_t current_index_;
   const InterpolableList& interpolable_path_segs_;
   const Vector<SVGPathSegType>& path_seg_types_;
+  DISALLOW_COPY_AND_ASSIGN(InterpolatedSVGPathSource);
 };
 
 bool InterpolatedSVGPathSource::HasMoreData() const {
