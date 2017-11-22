@@ -157,6 +157,9 @@ TEST_F(CommonJsTest, RemoveQueryAndReferenceFromURL) {
       {@"http://foo6.com/bar/#baz#blech", @"http://foo6.com/bar/"},
       // Poorly formed URLs are normalized.
       {@"http:///foo7.com//bar?baz", @"http://foo7.com//bar"},
+      // Non-http protocols.
+      {@"data:abc", @"data:abc"},
+      {@"javascript:login()", @"javascript:login()"},
   };
   for (size_t i = 0; i < arraysize(test_data); i++) {
     LoadHtml(@"<p>");
