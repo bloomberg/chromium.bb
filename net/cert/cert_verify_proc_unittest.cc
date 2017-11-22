@@ -67,6 +67,7 @@ const char kTLSFeatureExtensionHistogram[] =
     "Net.Certificate.TLSFeatureExtensionWithPrivateRoot";
 const char kTLSFeatureExtensionOCSPHistogram[] =
     "Net.Certificate.TLSFeatureExtensionWithPrivateRootHasOCSP";
+const char kTrustAnchorVerifyHistogram[] = "Net.Certificate.TrustAnchor.Verify";
 
 // Mock CertVerifyProc that sets the CertVerifyResult to a given value for
 // all certificates that are Verify()'d
@@ -2519,6 +2520,96 @@ TEST(CertVerifyProcTest, HasTLSFeatureExtensionWithPublicRootUMA) {
   EXPECT_EQ(OK, error);
   histograms.ExpectTotalCount(kTLSFeatureExtensionHistogram, 0);
   histograms.ExpectTotalCount(kTLSFeatureExtensionOCSPHistogram, 0);
+}
+
+// Test that trust anchors are appropriately recorded via UMA.
+TEST(CertVerifyProcTest, HasTrustAnchorVerifyUMA) {
+  base::HistogramTester histograms;
+  scoped_refptr<X509Certificate> cert(
+      ImportCertFromFile(GetTestCertsDirectory(), "ok_cert.pem"));
+  ASSERT_TRUE(cert);
+
+  CertVerifyResult result;
+
+  // Simulate a certificate chain issued by "C=US, O=Google Trust Services LLC,
+  // CN=GTS Root R4". This publicly-trusted root was chosen as it was included
+  // in 2017 and is not anticipated to be removed from all supported platforms
+  // for a few decades.
+  // Note: The actual cert in |cert| does not matter for this testing, so long
+  // as it's not violating any CertVerifyProc::Verify() policies.
+  SHA256HashValue leaf_hash = {{0}};
+  SHA256HashValue intermediate_hash = {{1}};
+  SHA256HashValue root_hash = {
+      {0x98, 0x47, 0xe5, 0x65, 0x3e, 0x5e, 0x9e, 0x84, 0x75, 0x16, 0xe5,
+       0xcb, 0x81, 0x86, 0x06, 0xaa, 0x75, 0x44, 0xa1, 0x9b, 0xe6, 0x7f,
+       0xd7, 0x36, 0x6d, 0x50, 0x69, 0x88, 0xe8, 0xd8, 0x43, 0x47}};
+  result.public_key_hashes.push_back(HashValue(leaf_hash));
+  result.public_key_hashes.push_back(HashValue(intermediate_hash));
+  result.public_key_hashes.push_back(HashValue(root_hash));
+
+  const base::HistogramBase::Sample kGTSRootR4HistogramID = 486;
+
+  scoped_refptr<CertVerifyProc> verify_proc = new MockCertVerifyProc(result);
+
+  histograms.ExpectTotalCount(kTrustAnchorVerifyHistogram, 0);
+
+  int flags = 0;
+  CertVerifyResult verify_result;
+  int error = verify_proc->Verify(cert.get(), "127.0.0.1", std::string(), flags,
+                                  NULL, CertificateList(), &verify_result);
+  EXPECT_EQ(OK, error);
+  histograms.ExpectTotalCount(kTrustAnchorVerifyHistogram, 1);
+  histograms.ExpectUniqueSample(kTrustAnchorVerifyHistogram,
+                                kGTSRootR4HistogramID, 1);
+}
+
+// Test that certificates with multiple trust anchors present result in
+// only a single trust anchor being recorded, and that being the most specific
+// trust anchor.
+TEST(CertVerifyProcTest, LogsOnlyMostSpecificTrustAnchorUMA) {
+  base::HistogramTester histograms;
+  scoped_refptr<X509Certificate> cert(
+      ImportCertFromFile(GetTestCertsDirectory(), "ok_cert.pem"));
+  ASSERT_TRUE(cert);
+
+  CertVerifyResult result;
+
+  // Simulate a chain of "C=US, O=Google Trust Services LLC, CN=GTS Root R4"
+  // signing "C=US, O=Google Trust Services LLC, CN=GTS Root R3" signing an
+  // intermediate and a leaf.
+  // Note: The actual cert in |cert| does not matter for this testing, so long
+  // as it's not violating any CertVerifyProc::Verify() policies.
+  SHA256HashValue leaf_hash = {{0}};
+  SHA256HashValue intermediate_hash = {{1}};
+  SHA256HashValue gts_root_r3_hash = {
+      {0x41, 0x79, 0xed, 0xd9, 0x81, 0xef, 0x74, 0x74, 0x77, 0xb4, 0x96,
+       0x26, 0x40, 0x8a, 0xf4, 0x3d, 0xaa, 0x2c, 0xa7, 0xab, 0x7f, 0x9e,
+       0x08, 0x2c, 0x10, 0x60, 0xf8, 0x40, 0x96, 0x77, 0x43, 0x48}};
+  SHA256HashValue gts_root_r4_hash = {
+      {0x98, 0x47, 0xe5, 0x65, 0x3e, 0x5e, 0x9e, 0x84, 0x75, 0x16, 0xe5,
+       0xcb, 0x81, 0x86, 0x06, 0xaa, 0x75, 0x44, 0xa1, 0x9b, 0xe6, 0x7f,
+       0xd7, 0x36, 0x6d, 0x50, 0x69, 0x88, 0xe8, 0xd8, 0x43, 0x47}};
+  result.public_key_hashes.push_back(HashValue(leaf_hash));
+  result.public_key_hashes.push_back(HashValue(intermediate_hash));
+  result.public_key_hashes.push_back(HashValue(gts_root_r3_hash));
+  result.public_key_hashes.push_back(HashValue(gts_root_r4_hash));
+
+  const base::HistogramBase::Sample kGTSRootR3HistogramID = 485;
+
+  scoped_refptr<CertVerifyProc> verify_proc = new MockCertVerifyProc(result);
+
+  histograms.ExpectTotalCount(kTrustAnchorVerifyHistogram, 0);
+
+  int flags = 0;
+  CertVerifyResult verify_result;
+  int error = verify_proc->Verify(cert.get(), "127.0.0.1", std::string(), flags,
+                                  NULL, CertificateList(), &verify_result);
+  EXPECT_EQ(OK, error);
+
+  // Only GTS Root R3 should be recorded.
+  histograms.ExpectTotalCount(kTrustAnchorVerifyHistogram, 1);
+  histograms.ExpectUniqueSample(kTrustAnchorVerifyHistogram,
+                                kGTSRootR3HistogramID, 1);
 }
 
 }  // namespace net

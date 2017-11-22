@@ -34,6 +34,7 @@
 #include "net/base/trace_constants.h"
 #include "net/base/url_util.h"
 #include "net/cert/cert_status_flags.h"
+#include "net/cert/known_roots.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_store.h"
 #include "net/filter/brotli_source_stream.h"
@@ -80,6 +81,20 @@
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
 namespace {
+
+// Records details about the most-specific trust anchor in |spki_hashes|,
+// which is expected to be ordered with the leaf cert first and the root cert
+// last. This complements the per-verification histogram
+// Net.Certificate.TrustAnchor.Verify
+void LogTrustAnchor(const net::HashValueVector& spki_hashes) {
+  int32_t id = 0;
+  for (const auto& hash : spki_hashes) {
+    id = net::GetNetTrustAnchorHistogramIdForSPKI(hash);
+    if (id != 0)
+      break;
+  }
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Net.Certificate.TrustAnchor.Request", id);
+}
 
 // Logs whether the CookieStore used for this request matches the
 // ChannelIDService used when establishing the connection that this request is
@@ -819,6 +834,15 @@ void URLRequestHttpJob::OnStartCompleted(int result) {
   receive_headers_end_ = base::TimeTicks::Now();
 
   const URLRequestContext* context = request_->context();
+
+  if (transaction_ && transaction_->GetResponseInfo()) {
+    const SSLInfo& ssl_info = transaction_->GetResponseInfo()->ssl_info;
+    if (!IsCertificateError(result) ||
+        (IsCertStatusError(ssl_info.cert_status) &&
+         IsCertStatusMinorError(ssl_info.cert_status))) {
+      LogTrustAnchor(ssl_info.public_key_hashes);
+    }
+  }
 
   if (result == OK) {
     if (transaction_ && transaction_->GetResponseInfo()) {
