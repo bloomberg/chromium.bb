@@ -426,7 +426,8 @@ void ChildThreadImpl::ConnectChannel(
   channel_->Init(
       IPC::ChannelMojo::CreateClientFactory(
           std::move(handle), ChildProcess::current()->io_task_runner(),
-          base::ThreadTaskRunnerHandle::Get()),
+          ipc_task_runner_ ? ipc_task_runner_
+                           : base::ThreadTaskRunnerHandle::Get()),
       true /* create_pipe_now */);
 }
 
