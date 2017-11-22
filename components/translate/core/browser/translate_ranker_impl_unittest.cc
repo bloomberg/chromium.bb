@@ -14,9 +14,9 @@
 #include "base/task_scheduler/post_task.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
-#include "components/machine_intelligence/proto/ranker_model.pb.h"
-#include "components/machine_intelligence/proto/translate_ranker_model.pb.h"
-#include "components/machine_intelligence/ranker_model.h"
+#include "components/assist_ranker/proto/ranker_model.pb.h"
+#include "components/assist_ranker/proto/translate_ranker_model.pb.h"
+#include "components/assist_ranker/ranker_model.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "components/ukm/ukm_source.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -28,10 +28,10 @@
 
 namespace {
 
-using translate::kTranslateRankerEnforcement;
-using translate::kTranslateRankerQuery;
 using translate::kTranslateRankerAutoBlacklistOverride;
+using translate::kTranslateRankerEnforcement;
 using translate::kTranslateRankerPreviousLanguageMatchesOverride;
+using translate::kTranslateRankerQuery;
 using translate::TranslateRankerFeatures;
 using translate::TranslateRankerImpl;
 
@@ -95,7 +95,7 @@ void TranslateRankerImplTest::InitFeatures(
 
 std::unique_ptr<TranslateRankerImpl> TranslateRankerImplTest::GetRankerForTest(
     float threshold) {
-  auto model = base::MakeUnique<machine_intelligence::RankerModel>();
+  auto model = base::MakeUnique<assist_ranker::RankerModel>();
   model->mutable_proto()->mutable_translate()->set_version(kModelVersion);
   auto* details = model->mutable_proto()
                       ->mutable_translate()

@@ -13,7 +13,7 @@ namespace content {
 class BrowserContext;
 }
 
-namespace machine_intelligence {
+namespace assist_ranker {
 class AssistRankerService;
 }
 
@@ -22,7 +22,7 @@ namespace assist_ranker {
 class AssistRankerServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
   static AssistRankerServiceFactory* GetInstance();
-  static machine_intelligence::AssistRankerService* GetForBrowserContext(
+  static AssistRankerService* GetForBrowserContext(
       content::BrowserContext* browser_context);
 
  private:
