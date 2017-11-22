@@ -197,13 +197,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
 
     private TextSuggestionHost mTextSuggestionHost;
 
-    // Size of the viewport in physical pixels as set from onSizeChanged.
-    private int mViewportWidthPix;
-    private int mViewportHeightPix;
-    private int mTopControlsHeightPix;
-    private int mBottomControlsHeightPix;
-    private boolean mTopControlsShrinkBlinkSize;
-
     // Cached copy of all positions and scales as reported by the renderer.
     private RenderCoordinates mRenderCoordinates;
 
@@ -367,33 +360,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
     @Override
     public void removeWindowAndroidChangedObserver(WindowAndroidChangedObserver observer) {
         mWindowAndroidChangedObservers.removeObserver(observer);
-    }
-
-    /**
-     *
-     * @param browserControlsHeightPix       The height of the browser controls in pixels.
-     * @param browserControlsShrinkBlinkSize The Y amount in pixels to shrink the viewport by.  This
-     *                                   specifies how much smaller the Blink layout size should be
-     *                                   relative to the size of this View.
-     */
-    public void setTopControlsHeight(int topControlsHeightPix, boolean topControlsShrinkBlinkSize) {
-        if (topControlsHeightPix == mTopControlsHeightPix
-                && topControlsShrinkBlinkSize == mTopControlsShrinkBlinkSize) {
-            return;
-        }
-
-        mTopControlsHeightPix = topControlsHeightPix;
-        mTopControlsShrinkBlinkSize = topControlsShrinkBlinkSize;
-        if (mNativeContentViewCore != 0) nativeWasResized(mNativeContentViewCore);
-    }
-
-    /**
-     * Sets the height of the bottom controls. If necessary, triggers a renderer resize.
-     */
-    public void setBottomControlsHeight(int bottomControlHeightPix) {
-        if (mBottomControlsHeightPix == bottomControlHeightPix) return;
-        mBottomControlsHeightPix = bottomControlHeightPix;
-        if (mNativeContentViewCore != 0) nativeWasResized(mNativeContentViewCore);
     }
 
     public void addImeEventObserver(ImeEventObserver imeEventObserver) {
@@ -628,7 +594,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
      */
     @CalledByNative
     public int getViewportWidthPix() {
-        return mViewportWidthPix;
+        return mContainerView.getWidth();
     }
 
     /**
@@ -636,25 +602,19 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
      */
     @CalledByNative
     public int getViewportHeightPix() {
-        return mViewportHeightPix;
+        return mContainerView.getHeight();
     }
 
     /**
-     * @return The amount that the viewport size given to Blink is shrunk by the URL-bar..
+     * @return The amount of the top controls height if controls are in the state
+     *    of shrinking Blink's view size, otherwise 0.
      */
-    @CalledByNative
-    public boolean doBrowserControlsShrinkBlinkSize() {
-        return mTopControlsShrinkBlinkSize;
-    }
-
-    @CalledByNative
-    public int getTopControlsHeightPix() {
-        return mTopControlsHeightPix;
-    }
-
-    @CalledByNative
-    public int getBottomControlsHeightPix() {
-        return mBottomControlsHeightPix;
+    @VisibleForTesting
+    public int getTopControlsShrinkBlinkHeightForTesting() {
+        // TODO(jinsukkim): Let callsites provide with its own top controls height to remove
+        //                  the test-only method in content layer.
+        if (mNativeContentViewCore == 0) return 0;
+        return nativeGetTopControlsShrinkBlinkHeightPixForTesting(mNativeContentViewCore);
     }
 
     /**
@@ -1032,14 +992,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
      */
     @SuppressWarnings("javadoc")
     public void onSizeChanged(int wPix, int hPix, int owPix, int ohPix) {
-        if (getViewportWidthPix() == wPix && getViewportHeightPix() == hPix) return;
-
-        mViewportWidthPix = wPix;
-        mViewportHeightPix = hPix;
-        if (mNativeContentViewCore != 0) {
-            nativeWasResized(mNativeContentViewCore);
-        }
-
         updateAfterSizeChanged();
     }
 
@@ -1998,6 +1950,9 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
     private native void nativeSetFocus(long nativeContentViewCore, boolean focused);
 
     private native void nativeSetDIPScale(long nativeContentViewCore, float dipScale);
+
+    private native int nativeGetTopControlsShrinkBlinkHeightPixForTesting(
+            long nativeContentViewCore);
 
     private native void nativeSendOrientationChangeEvent(
             long nativeContentViewCore, int orientation);

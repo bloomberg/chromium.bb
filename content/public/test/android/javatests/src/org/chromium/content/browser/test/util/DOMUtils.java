@@ -11,6 +11,7 @@ import android.util.JsonReader;
 
 import org.junit.Assert;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.RenderCoordinates;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
@@ -18,6 +19,7 @@ import org.chromium.content_public.browser.WebContents;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -465,15 +467,21 @@ public class DOMUtils {
      * @return the click target of the node in the form of a [ x, y ] array.
      */
     private static int[] getClickTargetForBounds(ContentViewCore viewCore, Rect bounds) {
-        int browserControlsLayoutHeight = viewCore.doBrowserControlsShrinkBlinkSize()
-                ? viewCore.getTopControlsHeightPix()
-                : 0;
         RenderCoordinates coord =
                 ((WebContentsImpl) viewCore.getWebContents()).getRenderCoordinates();
         int clickX = (int) coord.fromLocalCssToPix(bounds.exactCenterX());
-        int clickY =
-                (int) coord.fromLocalCssToPix(bounds.exactCenterY()) + browserControlsLayoutHeight;
+        int clickY = (int) coord.fromLocalCssToPix(bounds.exactCenterY())
+                + getMaybeTopControlsHeight(viewCore);
         return new int[] { clickX, clickY };
+    }
+
+    private static int getMaybeTopControlsHeight(ContentViewCore viewCore) {
+        try {
+            return ThreadUtils.runOnUiThreadBlocking(
+                    () -> { return viewCore.getTopControlsShrinkBlinkHeightForTesting(); });
+        } catch (ExecutionException e) {
+            return 0;
+        }
     }
 
     /**

@@ -409,6 +409,10 @@ public class Tab
     /** Whether or not the tab closing the tab can send the user back to the app that opened it. */
     private boolean mIsAllowedToReturnToExternalApp;
 
+    private int mTopControlsHeight;
+    private int mBottomControlsHeight;
+    private boolean mControlsResizeView;
+
     private GestureStateListener createGestureStateListener() {
         return new GestureStateListener() {
             @Override
@@ -2834,6 +2838,29 @@ public class Tab
             constraints = BrowserControlsState.SHOWN;
         }
         return constraints;
+    }
+
+    public void setTopControlsHeight(int height, boolean controlsResizeView) {
+        float scale = getWindowAndroid().getDisplay().getDipScale();
+        mTopControlsHeight = (int) (height / scale);
+        mControlsResizeView = controlsResizeView;
+    }
+
+    public void setBottomControlsHeight(int height) {
+        float scale = getWindowAndroid().getDisplay().getDipScale();
+        mBottomControlsHeight = (int) (height / scale);
+    }
+
+    int getTopControlsHeight() {
+        return mTopControlsHeight;
+    }
+
+    int getBottomControlsHeight() {
+        return mBottomControlsHeight;
+    }
+
+    boolean controlsResizeView() {
+        return mControlsResizeView;
     }
 
     /**

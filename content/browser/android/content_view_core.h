@@ -75,6 +75,12 @@ class ContentViewCore : public WebContentsObserver {
       jlong selectPopupSourceFrame,
       const base::android::JavaParamRef<jintArray>& indices);
 
+  // Returns the amount of the top controls height if controls are in the state
+  // of shrinking Blink's view size, otherwise 0.
+  int GetTopControlsShrinkBlinkHeightPixForTesting(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+
   void SendOrientationChangeEvent(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
@@ -232,18 +238,12 @@ class ContentViewCore : public WebContentsObserver {
   // the Activity context.
   base::android::ScopedJavaLocalRef<jobject> GetContext() const;
 
-  // Returns the viewport size after accounting for the viewport offset.
-  gfx::Size GetViewSize() const;
-
   bool IsFullscreenRequiredForOrientationLock() const;
 
   // --------------------------------------------------------------------------
   // Methods called from native code
   // --------------------------------------------------------------------------
 
-  bool DoBrowserControlsShrinkBlinkSize() const;
-  float GetTopControlsHeightDip() const;
-  float GetBottomControlsHeightDip() const;
   int GetMouseWheelMinimumGranularity() const;
 
   void UpdateCursor(const content::CursorInfo& info);
@@ -278,8 +278,6 @@ class ContentViewCore : public WebContentsObserver {
                                           float y) const;
 
   gfx::Size GetViewportSizePix() const;
-  int GetTopControlsHeightPix() const;
-  int GetBottomControlsHeightPix() const;
 
   void SendGestureEvent(const blink::WebGestureEvent& event);
 

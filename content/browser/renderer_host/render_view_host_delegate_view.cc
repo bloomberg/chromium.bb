@@ -13,4 +13,16 @@ content::RenderViewHostDelegateView::GetOverscrollRefreshHandler() const {
 }
 #endif
 
+int RenderViewHostDelegateView::GetTopControlsHeight() const {
+  return 0;
+}
+
+int RenderViewHostDelegateView::GetBottomControlsHeight() const {
+  return 0;
+}
+
+bool RenderViewHostDelegateView::DoBrowserControlsShrinkBlinkSize() const {
+  return false;
+}
+
 }  //  namespace content
