@@ -177,7 +177,13 @@ class PausableResponseProvider : public HtmlResponseProvider {
 
 // Tests that visible URL is always the same as last committed URL during
 // pending back and forward navigations.
-- (void)testBackForwardNavigation {
+// TODO(crbug.com/787872): Re-enable this test on devices.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_testBackForwardNavigation testBackForwardNavigation
+#else
+#define MAYBE_testBackForwardNavigation FLAKY_testBackForwardNavigation
+#endif
+- (void)MAYBE_testBackForwardNavigation {
   // Purge web view caches and pause the server to make sure that tests can
   // verify omnibox state before server starts responding.
   GREYAssert(PurgeCachedWebViewPages(), @"Pages were not purged");
