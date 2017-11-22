@@ -4,8 +4,6 @@
 
 package org.chromium.components.payments;
 
-import java.util.Arrays;
-
 /** Java equivalent of components/payments/content/web_app_manifest_section.h */
 public final class WebAppManifestSection {
     /**
@@ -19,7 +17,7 @@ public final class WebAppManifestSection {
     public WebAppManifestSection(String id, long minVersion, int numberOfFingerprints) {
         this.id = id;
         this.minVersion = minVersion;
-        fingerprints = new byte[numberOfFingerprints][];
+        this.fingerprints = new byte[numberOfFingerprints][];
     }
 
     /**
@@ -32,8 +30,7 @@ public final class WebAppManifestSection {
     public WebAppManifestSection(String id, long minVersion, byte[][] fingerprints) {
         this.id = id;
         this.minVersion = minVersion;
-        // Copy the array so FindBugs does not complain of exposing private data.
-        this.fingerprints = Arrays.copyOf(fingerprints, fingerprints.length);
+        this.fingerprints = fingerprints;
     }
 
     /** The {@link String} representing the package name of the app. */
