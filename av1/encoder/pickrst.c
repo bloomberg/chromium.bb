@@ -372,10 +372,8 @@ static void sgr_filter_block(const sgr_params_type *params, const uint8_t *dat8,
                              int width, int height, int dat_stride,
                              int use_highbd, int bit_depth, int32_t *flt1,
                              int32_t *flt2, int flt_stride) {
-  av1_selfguided_restoration(dat8, width, height, dat_stride, flt1, flt_stride,
-                             params->r1, params->e1, bit_depth, use_highbd);
-  av1_selfguided_restoration(dat8, width, height, dat_stride, flt2, flt_stride,
-                             params->r2, params->e2, bit_depth, use_highbd);
+  av1_selfguided_restoration(dat8, width, height, dat_stride, flt1, flt2,
+                             flt_stride, params, bit_depth, use_highbd);
 }
 
 // Apply the self-guided filter across an entire restoration unit.

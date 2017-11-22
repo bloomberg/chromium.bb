@@ -1086,8 +1086,9 @@ static void av1_selfguided_restoration_internal(int32_t *dgd, int width,
 }
 
 void av1_selfguided_restoration_c(const uint8_t *dgd8, int width, int height,
-                                  int stride, int32_t *dst, int dst_stride,
-                                  int r, int eps, int bit_depth, int highbd) {
+                                  int dgd_stride, int32_t *flt1, int32_t *flt2,
+                                  int flt_stride, const sgr_params_type *params,
+                                  int bit_depth, int highbd) {
   int32_t dgd32_[RESTORATION_PROC_UNIT_PELS];
   const int dgd32_stride = width + 2 * SGRPROJ_BORDER_HORZ;
   int32_t *dgd32 =
@@ -1097,19 +1098,23 @@ void av1_selfguided_restoration_c(const uint8_t *dgd8, int width, int height,
     const uint16_t *dgd16 = CONVERT_TO_SHORTPTR(dgd8);
     for (int i = -SGRPROJ_BORDER_VERT; i < height + SGRPROJ_BORDER_VERT; ++i) {
       for (int j = -SGRPROJ_BORDER_HORZ; j < width + SGRPROJ_BORDER_HORZ; ++j) {
-        dgd32[i * dgd32_stride + j] = dgd16[i * stride + j];
+        dgd32[i * dgd32_stride + j] = dgd16[i * dgd_stride + j];
       }
     }
   } else {
     for (int i = -SGRPROJ_BORDER_VERT; i < height + SGRPROJ_BORDER_VERT; ++i) {
       for (int j = -SGRPROJ_BORDER_HORZ; j < width + SGRPROJ_BORDER_HORZ; ++j) {
-        dgd32[i * dgd32_stride + j] = dgd8[i * stride + j];
+        dgd32[i * dgd32_stride + j] = dgd8[i * dgd_stride + j];
       }
     }
   }
 
-  av1_selfguided_restoration_internal(dgd32, width, height, dgd32_stride, dst,
-                                      dst_stride, bit_depth, r, eps);
+  av1_selfguided_restoration_internal(dgd32, width, height, dgd32_stride, flt1,
+                                      flt_stride, bit_depth, params->r1,
+                                      params->e1);
+  av1_selfguided_restoration_internal(dgd32, width, height, dgd32_stride, flt2,
+                                      flt_stride, bit_depth, params->r2,
+                                      params->e2);
 }
 
 void apply_selfguided_restoration_c(const uint8_t *dat8, int width, int height,
@@ -1121,12 +1126,8 @@ void apply_selfguided_restoration_c(const uint8_t *dat8, int width, int height,
   int32_t *flt1 = tmpbuf;
   int32_t *flt2 = flt1 + RESTORATION_TILEPELS_MAX;
   assert(width * height <= RESTORATION_TILEPELS_MAX);
-  av1_selfguided_restoration_c(dat8, width, height, stride, flt1, width,
-                               sgr_params[eps].r1, sgr_params[eps].e1,
-                               bit_depth, highbd);
-  av1_selfguided_restoration_c(dat8, width, height, stride, flt2, width,
-                               sgr_params[eps].r2, sgr_params[eps].e2,
-                               bit_depth, highbd);
+  av1_selfguided_restoration_c(dat8, width, height, stride, flt1, flt2, width,
+                               &sgr_params[eps], bit_depth, highbd);
   decode_xq(xqd, xq);
   for (int i = 0; i < height; ++i) {
     for (int j = 0; j < width; ++j) {

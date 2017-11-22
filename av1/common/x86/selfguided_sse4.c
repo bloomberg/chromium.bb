@@ -283,8 +283,10 @@ static void final_filter(int32_t *dst, int dst_stride, const int32_t *A,
 }
 
 void av1_selfguided_restoration_sse4_1(const uint8_t *dgd8, int width,
-                                       int height, int dgd_stride, int32_t *dst,
-                                       int dst_stride, int r, int eps,
+                                       int height, int dgd_stride,
+                                       int32_t *flt1, int32_t *flt2,
+                                       int flt_stride,
+                                       const sgr_params_type *params,
                                        int bit_depth, int highbd) {
   DECLARE_ALIGNED(16, int32_t, buf[4 * RESTORATION_PROC_UNIT_PELS]);
 
@@ -320,12 +322,12 @@ void av1_selfguided_restoration_sse4_1(const uint8_t *dgd8, int width,
   int32_t *C = C0 + buf_diag_border;
   int32_t *D = D0 + buf_diag_border;
 
-  assert(r + 1 <= AOMMIN(SGRPROJ_BORDER_VERT, SGRPROJ_BORDER_HORZ));
-
   const int dgd_diag_border =
       SGRPROJ_BORDER_HORZ + dgd_stride * SGRPROJ_BORDER_VERT;
   const uint8_t *dgd0 = dgd8 - dgd_diag_border;
 
+// Generate integral images from the input. C will contain sums of squares; D
+// will contain just sums
 #if CONFIG_HIGHBITDEPTH
   if (highbd)
     integral_images_highbd(CONVERT_TO_SHORTPTR(dgd0), dgd_stride, width_ext,
@@ -335,10 +337,17 @@ void av1_selfguided_restoration_sse4_1(const uint8_t *dgd8, int width,
     integral_images(dgd0, dgd_stride, width_ext, height_ext, Ctl, Dtl,
                     buf_stride);
 
-  calc_ab(A, B, C, D, width, height, buf_stride, eps, bit_depth, r);
+  // Write to flt1 and flt2
+  for (int i = 0; i < 2; ++i) {
+    int r = i ? params->r2 : params->r1;
+    int e = i ? params->e2 : params->e1;
+    int32_t *flt = i ? flt2 : flt1;
 
-  final_filter(dst, dst_stride, A, B, buf_stride, dgd8, dgd_stride, width,
-               height, highbd);
+    assert(r + 1 <= AOMMIN(SGRPROJ_BORDER_VERT, SGRPROJ_BORDER_HORZ));
+    calc_ab(A, B, C, D, width, height, buf_stride, e, bit_depth, r);
+    final_filter(flt, flt_stride, A, B, buf_stride, dgd8, dgd_stride, width,
+                 height, highbd);
+  }
 }
 
 void apply_selfguided_restoration_sse4_1(const uint8_t *dat8, int width,
@@ -349,12 +358,9 @@ void apply_selfguided_restoration_sse4_1(const uint8_t *dat8, int width,
   int32_t *flt1 = tmpbuf;
   int32_t *flt2 = flt1 + RESTORATION_TILEPELS_MAX;
   assert(width * height <= RESTORATION_TILEPELS_MAX);
-  av1_selfguided_restoration_sse4_1(dat8, width, height, stride, flt1, width,
-                                    sgr_params[eps].r1, sgr_params[eps].e1,
-                                    bit_depth, highbd);
-  av1_selfguided_restoration_sse4_1(dat8, width, height, stride, flt2, width,
-                                    sgr_params[eps].r2, sgr_params[eps].e2,
-                                    bit_depth, highbd);
+  av1_selfguided_restoration_sse4_1(dat8, width, height, stride, flt1, flt2,
+                                    width, &sgr_params[eps], bit_depth, highbd);
+
   int xq[2];
   decode_xq(xqd, xq);
 
