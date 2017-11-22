@@ -15,20 +15,16 @@
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
-#include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/extensions/extension_install_ui_factory.h"
 #include "components/crx_file/id_util.h"
 #include "components/sync/model/string_ordinal.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/declarative_net_request/utils.h"
 #include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/browser/extension_prefs.h"
-#include "extensions/browser/extension_registry.h"
-#include "extensions/browser/install/extension_install_ui.h"
 #include "extensions/browser/install_flag.h"
 #include "extensions/browser/policy_check.h"
 #include "extensions/browser/preload_check_group.h"
@@ -40,7 +36,6 @@
 #include "extensions/common/file_util.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
-#include "extensions/common/manifest_handlers/plugins_handler.h"
 #include "extensions/common/manifest_handlers/shared_module_info.h"
 #include "extensions/common/permissions/permissions_data.h"
 
@@ -59,56 +54,6 @@ const char kImportMinVersionNewer[] =
     "'import' version requested is newer than what is installed.";
 const char kImportMissing[] = "'import' extension is not installed.";
 const char kImportNotSharedModule[] = "'import' is not a shared module.";
-
-// Manages an ExtensionInstallPrompt for a particular extension.
-class SimpleExtensionLoadPrompt {
- public:
-  SimpleExtensionLoadPrompt(const Extension* extension,
-                            Profile* profile,
-                            const base::Closure& callback);
-
-  void ShowPrompt();
-
- private:
-  ~SimpleExtensionLoadPrompt();  // Manages its own lifetime.
-
-  void OnInstallPromptDone(ExtensionInstallPrompt::Result result);
-
-  std::unique_ptr<ExtensionInstallPrompt> install_ui_;
-  scoped_refptr<const Extension> extension_;
-  base::Closure callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(SimpleExtensionLoadPrompt);
-};
-
-SimpleExtensionLoadPrompt::SimpleExtensionLoadPrompt(
-    const Extension* extension,
-    Profile* profile,
-    const base::Closure& callback)
-    : extension_(extension), callback_(callback) {
-  std::unique_ptr<ExtensionInstallUI> ui(CreateExtensionInstallUI(profile));
-  install_ui_.reset(new ExtensionInstallPrompt(
-      profile, ui->GetDefaultInstallDialogParent()));
-}
-
-SimpleExtensionLoadPrompt::~SimpleExtensionLoadPrompt() {
-}
-
-void SimpleExtensionLoadPrompt::ShowPrompt() {
-  // Unretained() is safe because this object manages its own lifetime.
-  install_ui_->ShowDialog(
-      base::Bind(&SimpleExtensionLoadPrompt::OnInstallPromptDone,
-                 base::Unretained(this)),
-      extension_.get(), nullptr,
-      ExtensionInstallPrompt::GetDefaultShowDialogCallback());
-}
-
-void SimpleExtensionLoadPrompt::OnInstallPromptDone(
-    ExtensionInstallPrompt::Result result) {
-  if (result == ExtensionInstallPrompt::Result::ACCEPTED)
-    callback_.Run();
-  delete this;
-}
 
 // Deletes files reserved for use by the Extension system in the kMetadataFolder
 // and the kMetadataFolder itself if it is empty.
@@ -136,7 +81,6 @@ scoped_refptr<UnpackedInstaller> UnpackedInstaller::Create(
 UnpackedInstaller::UnpackedInstaller(ExtensionService* extension_service)
     : service_weak_(extension_service->AsWeakPtr()),
       profile_(extension_service->profile()),
-      prompt_for_plugins_(true),
       require_modern_manifest_version_(true),
       be_noisy_on_failure_(true) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -195,39 +139,24 @@ bool UnpackedInstaller::LoadFromCommandLine(const base::FilePath& path_in,
   PermissionsUpdater(
       service_weak_->profile(), PermissionsUpdater::INIT_FLAG_TRANSIENT)
       .InitializePermissions(extension());
-  ShowInstallPrompt();
+  StartInstallChecks();
 
   *extension_id = extension()->id();
   return true;
 }
 
-void UnpackedInstaller::ShowInstallPrompt() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!service_weak_.get())
-    return;
-
-  const ExtensionSet& disabled_extensions =
-      ExtensionRegistry::Get(service_weak_->profile())->disabled_extensions();
-  if (prompt_for_plugins_ &&
-      PluginInfo::HasPlugins(extension()) &&
-      !disabled_extensions.Contains(extension()->id())) {
-    SimpleExtensionLoadPrompt* prompt = new SimpleExtensionLoadPrompt(
-        extension(), profile_,
-        base::Bind(&UnpackedInstaller::StartInstallChecks, this));
-    prompt->ShowPrompt();
-    return;
-  }
-  StartInstallChecks();
-}
-
 void UnpackedInstaller::StartInstallChecks() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  ExtensionService* service = service_weak_.get();
+  if (!service)
+    return;
+
   // TODO(crbug.com/421128): Enable these checks all the time.  The reason
   // they are disabled for extensions loaded from the command-line is that
   // installing unpacked extensions is asynchronous, but there can be
   // dependencies between the extensions loaded by the command line.
   if (extension()->manifest()->location() != Manifest::COMMAND_LINE) {
-    ExtensionService* service = service_weak_.get();
-    if (!service || service->browser_terminating())
+    if (service->browser_terminating())
       return;
 
     // TODO(crbug.com/420147): Move this code to a utility class to avoid
@@ -415,7 +344,7 @@ void UnpackedInstaller::LoadWithFileAccess(int flags) {
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&UnpackedInstaller::ShowInstallPrompt, this));
+      base::BindOnce(&UnpackedInstaller::StartInstallChecks, this));
 }
 
 void UnpackedInstaller::ReportExtensionLoadError(const std::string &error) {

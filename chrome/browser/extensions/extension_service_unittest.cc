@@ -100,7 +100,6 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
-#include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -2780,80 +2779,6 @@ TEST_F(ExtensionServiceTest, LoadExtensionsCanDowngrade) {
   EXPECT_EQ(1u, registry()->enabled_extensions().size());
   EXPECT_EQ("1.0", loaded_[0]->VersionString());
 }
-
-#if !defined(OS_POSIX) || defined(OS_MACOSX)
-// LOAD extensions with plugins require approval.
-// Only run this on platforms that support NPAPI plugins.
-TEST_F(ExtensionServiceTest, LoadExtensionsWithPlugins) {
-  base::FilePath extension_with_plugin_path = good1_path();
-  base::FilePath extension_no_plugin_path = good2_path();
-
-  InitPluginService();
-  InitializeEmptyExtensionService();
-
-  // Start by canceling any install prompts.
-  std::unique_ptr<extensions::ScopedTestDialogAutoConfirm> auto_confirm(
-      new extensions::ScopedTestDialogAutoConfirm(
-          extensions::ScopedTestDialogAutoConfirm::CANCEL));
-
-  // The extension that has a plugin should not install.
-  extensions::UnpackedInstaller::Create(service())
-      ->Load(extension_with_plugin_path);
-  content::RunAllTasksUntilIdle();
-  EXPECT_EQ(0u, GetErrors().size());
-  EXPECT_EQ(0u, loaded_.size());
-  EXPECT_EQ(0u, registry()->enabled_extensions().size());
-  EXPECT_EQ(0u, registry()->disabled_extensions().size());
-
-  // But the extension with no plugin should since there's no prompt.
-  ExtensionErrorReporter::GetInstance()->ClearErrors();
-  extensions::UnpackedInstaller::Create(service())
-      ->Load(extension_no_plugin_path);
-  content::RunAllTasksUntilIdle();
-  EXPECT_EQ(0u, GetErrors().size());
-  EXPECT_EQ(1u, loaded_.size());
-  EXPECT_EQ(1u, registry()->enabled_extensions().size());
-  EXPECT_EQ(0u, registry()->disabled_extensions().size());
-  EXPECT_TRUE(registry()->enabled_extensions().Contains(good2));
-
-  // The plugin extension should install if we accept the dialog.
-  auto_confirm.reset();
-  auto_confirm.reset(new extensions::ScopedTestDialogAutoConfirm(
-      extensions::ScopedTestDialogAutoConfirm::ACCEPT));
-
-  ExtensionErrorReporter::GetInstance()->ClearErrors();
-  extensions::UnpackedInstaller::Create(service())
-      ->Load(extension_with_plugin_path);
-  content::RunAllTasksUntilIdle();
-  EXPECT_EQ(0u, GetErrors().size());
-  EXPECT_EQ(2u, loaded_.size());
-  EXPECT_EQ(2u, registry()->enabled_extensions().size());
-  EXPECT_EQ(0u, registry()->disabled_extensions().size());
-  EXPECT_TRUE(registry()->enabled_extensions().Contains(good1));
-  EXPECT_TRUE(registry()->enabled_extensions().Contains(good2));
-
-  // Make sure the granted permissions have been setup.
-  std::unique_ptr<const PermissionSet> permissions =
-      ExtensionPrefs::Get(profile())->GetGrantedPermissions(good1);
-  ASSERT_TRUE(permissions);
-  EXPECT_FALSE(permissions->IsEmpty());
-  EXPECT_TRUE(permissions->HasEffectiveFullAccess());
-  EXPECT_FALSE(permissions->apis().empty());
-  EXPECT_TRUE(permissions->HasAPIPermission(APIPermission::kPlugin));
-
-  // We should be able to reload the extension without getting another prompt.
-  loaded_.clear();
-  auto_confirm.reset();
-  auto_confirm.reset(new extensions::ScopedTestDialogAutoConfirm(
-      extensions::ScopedTestDialogAutoConfirm::CANCEL));
-
-  service()->ReloadExtension(good1);
-  content::RunAllTasksUntilIdle();
-  EXPECT_EQ(1u, loaded_.size());
-  EXPECT_EQ(2u, registry()->enabled_extensions().size());
-  EXPECT_EQ(0u, registry()->disabled_extensions().size());
-}
-#endif  // !defined(OS_POSIX) || defined(OS_MACOSX)
 
 namespace {
 

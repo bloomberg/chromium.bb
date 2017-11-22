@@ -229,7 +229,6 @@ scoped_refptr<const Extension> ChromeTestExtensionLoader::LoadUnpacked(
   TestExtensionRegistryObserver registry_observer(extension_registry_);
   scoped_refptr<UnpackedInstaller> installer =
       UnpackedInstaller::Create(extension_service_);
-  installer->set_prompt_for_plugins(false);
   installer->set_require_modern_manifest_version(
       require_modern_manifest_version_);
   installer->Load(file_path);

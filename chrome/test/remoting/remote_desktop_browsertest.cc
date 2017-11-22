@@ -128,7 +128,6 @@ void RemoteDesktopBrowserTest::InstallChromotingAppUnpacked() {
 
   scoped_refptr<extensions::UnpackedInstaller> installer =
       extensions::UnpackedInstaller::Create(extension_service());
-  installer->set_prompt_for_plugins(false);
 
   extensions::TestExtensionRegistryObserver observer(
       extensions::ExtensionRegistry::Get(browser()->profile()));
