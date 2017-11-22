@@ -909,7 +909,6 @@ static const aom_cdf_prob default_obmc_cdf[BLOCK_SIZES_ALL][CDF_SIZE(2)] = {
 #endif  // CONFIG_EXT_PARTITION
 };
 
-static const aom_prob default_delta_q_probs[DELTA_Q_PROBS] = { 220, 220, 220 };
 static const aom_cdf_prob default_delta_q_cdf[CDF_SIZE(DELTA_Q_PROBS + 1)] = {
   AOM_CDF4(28160, 32120, 32677)
 };
@@ -3083,7 +3082,6 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
     av1_copy(fc->seg.q_seg_cdf[i], default_q_seg_tree_cdf[i]);
 #endif
   av1_copy(fc->tx_size_cdf, default_tx_size_cdf);
-  av1_copy(fc->delta_q_prob, default_delta_q_probs);
   av1_copy(fc->delta_q_cdf, default_delta_q_cdf);
 #if CONFIG_EXT_DELTA_Q
   av1_copy(fc->delta_lf_prob, default_delta_lf_probs);
@@ -3210,9 +3208,6 @@ void av1_adapt_intra_frame_probs(AV1_COMMON *cm) {
                          counts->seg.tree_total, fc->seg.tree_probs);
   }
 
-  for (i = 0; i < DELTA_Q_PROBS; ++i)
-    fc->delta_q_prob[i] =
-        mode_mv_merge_probs(pre_fc->delta_q_prob[i], counts->delta_q[i]);
 #if CONFIG_EXT_DELTA_Q
 #if CONFIG_LOOPFILTER_LEVEL
   for (i = 0; i < FRAME_LF_COUNT; ++i)

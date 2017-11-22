@@ -304,7 +304,6 @@ typedef struct frame_contexts {
                                [CDF_SIZE(TX_TYPES)];
   aom_cdf_prob inter_ext_tx_cdf[EXT_TX_SETS_INTER][EXT_TX_SIZES]
                                [CDF_SIZE(TX_TYPES)];
-  aom_prob delta_q_prob[DELTA_Q_PROBS];
 #if CONFIG_EXT_DELTA_Q
 #if CONFIG_LOOPFILTER_LEVEL
   aom_prob delta_lf_multi_prob[FRAME_LF_COUNT][DELTA_LF_PROBS];
