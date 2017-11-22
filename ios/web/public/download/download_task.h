@@ -5,7 +5,7 @@
 #ifndef IOS_WEB_PUBLIC_DOWNLOAD_DOWNLOAD_TASK_H_
 #define IOS_WEB_PUBLIC_DOWNLOAD_DOWNLOAD_TASK_H_
 
-#include <Foundation/Foundation.h>
+#import <Foundation/Foundation.h>
 
 #include <stdint.h>
 #include <string>
