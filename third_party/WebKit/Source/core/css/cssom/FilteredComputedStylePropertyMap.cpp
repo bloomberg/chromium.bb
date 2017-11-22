@@ -25,6 +25,11 @@ CSSStyleValue* FilteredComputedStylePropertyMap::get(
     const String& property_name,
     ExceptionState& exception_state) {
   CSSPropertyID property_id = cssPropertyID(property_name);
+  if (property_id == CSSPropertyInvalid) {
+    exception_state.ThrowTypeError("Invalid propertyName: " + property_name);
+    return nullptr;
+  }
+
   if (property_id >= firstCSSProperty &&
       native_properties_.Contains(property_id)) {
     CSSStyleValueVector style_vector = GetAllInternal(property_id);
@@ -44,7 +49,6 @@ CSSStyleValue* FilteredComputedStylePropertyMap::get(
     return style_vector[0];
   }
 
-  exception_state.ThrowTypeError("Invalid propertyName: " + property_name);
   return nullptr;
 }
 
@@ -52,6 +56,11 @@ CSSStyleValueVector FilteredComputedStylePropertyMap::getAll(
     const String& property_name,
     ExceptionState& exception_state) {
   CSSPropertyID property_id = cssPropertyID(property_name);
+  if (property_id == CSSPropertyInvalid) {
+    exception_state.ThrowTypeError("Invalid propertyName: " + property_name);
+    return CSSStyleValueVector();
+  }
+
   if (property_id >= firstCSSProperty &&
       native_properties_.Contains(property_id))
     return GetAllInternal(property_id);
@@ -60,13 +69,17 @@ CSSStyleValueVector FilteredComputedStylePropertyMap::getAll(
       custom_properties_.Contains(AtomicString(property_name)))
     return GetAllInternal(AtomicString(property_name));
 
-  exception_state.ThrowTypeError("Invalid propertyName: " + property_name);
   return CSSStyleValueVector();
 }
 
 bool FilteredComputedStylePropertyMap::has(const String& property_name,
                                            ExceptionState& exception_state) {
   CSSPropertyID property_id = cssPropertyID(property_name);
+  if (property_id == CSSPropertyInvalid) {
+    exception_state.ThrowTypeError("Invalid propertyName: " + property_name);
+    return false;
+  }
+
   if (property_id >= firstCSSProperty &&
       native_properties_.Contains(property_id))
     return !GetAllInternal(property_id).IsEmpty();
@@ -75,7 +88,6 @@ bool FilteredComputedStylePropertyMap::has(const String& property_name,
       custom_properties_.Contains(AtomicString(property_name)))
     return !GetAllInternal(AtomicString(property_name)).IsEmpty();
 
-  exception_state.ThrowTypeError("Invalid propertyName: " + property_name);
   return false;
 }
 

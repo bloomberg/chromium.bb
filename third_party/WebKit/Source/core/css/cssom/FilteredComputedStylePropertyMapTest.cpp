@@ -99,26 +99,23 @@ TEST_F(FilteredComputedStylePropertyMapTest, CustomPropertyAccessors) {
 
   DummyExceptionStateForTesting exception_state;
 
-  map->get("--foo", exception_state);
+  EXPECT_EQ(nullptr, map->get("--foo", exception_state));
   EXPECT_FALSE(exception_state.HadException());
 
-  map->has("--foo", exception_state);
+  EXPECT_EQ(false, map->has("--foo", exception_state));
   EXPECT_FALSE(exception_state.HadException());
 
-  map->getAll("--foo", exception_state);
+  EXPECT_EQ(CSSStyleValueVector(), map->getAll("--foo", exception_state));
   EXPECT_FALSE(exception_state.HadException());
 
-  map->get("--quix", exception_state);
-  EXPECT_TRUE(exception_state.HadException());
-  exception_state.ClearException();
+  EXPECT_EQ(nullptr, map->get("--quix", exception_state));
+  EXPECT_FALSE(exception_state.HadException());
 
-  map->has("--quix", exception_state);
-  EXPECT_TRUE(exception_state.HadException());
-  exception_state.ClearException();
+  EXPECT_EQ(false, map->has("--quix", exception_state));
+  EXPECT_FALSE(exception_state.HadException());
 
-  map->getAll("--quix", exception_state);
-  EXPECT_TRUE(exception_state.HadException());
-  exception_state.ClearException();
+  EXPECT_EQ(CSSStyleValueVector(), map->getAll("--quix", exception_state));
+  EXPECT_FALSE(exception_state.HadException());
 }
 
 }  // namespace blink
