@@ -58,6 +58,11 @@ class CORE_EXPORT FragmentData {
     return rare_paint_data_ ? rare_paint_data_->PaintProperties() : nullptr;
   }
 
+  const PropertyTreeState* LocalBorderBoxProperties() const {
+    return rare_paint_data_ ? rare_paint_data_->LocalBorderBoxProperties()
+                            : nullptr;
+  }
+
  private:
   // This stores the visual rect computed by the latest paint invalidation.
   // This rect does *not* account for composited scrolling. See

@@ -28,8 +28,7 @@ class PrePaintTreeWalkTest : public PaintControllerPaintTest {
     if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
       return frame_view->GetLayoutView()
           ->FirstFragment()
-          .GetRarePaintData()
-          ->PaintProperties()
+          .PaintProperties()
           ->PaintOffsetTranslation();
     }
     return frame_view->PreTranslation();
@@ -40,8 +39,7 @@ class PrePaintTreeWalkTest : public PaintControllerPaintTest {
     if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
       return frame_view->GetLayoutView()
           ->FirstFragment()
-          .GetRarePaintData()
-          ->PaintProperties()
+          .PaintProperties()
           ->ScrollTranslation();
     }
     return frame_view->ScrollTranslation();

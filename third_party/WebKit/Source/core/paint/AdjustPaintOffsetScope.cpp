@@ -25,9 +25,9 @@ void AdjustPaintOffsetScope::AdjustForPaintOffsetTranslation(
   DCHECK(RuntimeEnabledFeatures::SlimmingPaintV175Enabled());
   DCHECK(ShouldAdjustForPaintOffsetTranslation(box));
 
-  auto* paint_properties = box.FirstFragment().PaintProperties();
+  const auto* paint_properties = box.FirstFragment().PaintProperties();
   const auto* local_border_box_properties =
-      box.FirstFragment().GetRarePaintData()->LocalBorderBoxProperties();
+      box.FirstFragment().LocalBorderBoxProperties();
   PaintChunkProperties chunk_properties(
       old_paint_info_.context.GetPaintController()
           .CurrentPaintChunkProperties());

@@ -227,7 +227,7 @@ void BlockPainter::PaintScrollHitTestDisplayItem(const PaintInfo& paint_info) {
     // properties so that the scroll hit test is not clipped or scrolled.
     ScopedPaintChunkProperties scroll_hit_test_properties(
         paint_info.context.GetPaintController(), layout_block_,
-        *fragment.GetRarePaintData()->LocalBorderBoxProperties());
+        *fragment.LocalBorderBoxProperties());
     ScrollHitTestDisplayItem::Record(paint_info.context, layout_block_,
                                      DisplayItem::kScrollHitTest,
                                      properties->ScrollTranslation());

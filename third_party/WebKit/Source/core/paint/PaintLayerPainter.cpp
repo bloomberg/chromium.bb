@@ -536,8 +536,7 @@ PaintResult PaintLayerPainter::PaintLayerContents(
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
     const auto* local_border_box_properties = paint_layer_.GetLayoutObject()
                                                   .FirstFragment()
-                                                  .GetRarePaintData()
-                                                  ->LocalBorderBoxProperties();
+                                                  .LocalBorderBoxProperties();
     DCHECK(local_border_box_properties);
     PaintChunkProperties properties(*local_border_box_properties);
     properties.backface_hidden =
