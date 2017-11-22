@@ -1552,6 +1552,7 @@ test("content_unittests") {
     "../renderer/media/audio_renderer_sink_cache_unittest.cc",
     "../renderer/media/mock_audio_device_factory.cc",
     "../renderer/media/mock_audio_device_factory.h",
+    "../renderer/media/mojo_audio_input_ipc_unittest.cc",
     "../renderer/media/mojo_audio_output_ipc_unittest.cc",
     "../renderer/media/render_media_log_unittest.cc",
     "../renderer/media/renderer_webaudiodevice_impl_unittest.cc",
