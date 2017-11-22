@@ -5,7 +5,7 @@
 
 """Client tool to trigger tasks or retrieve results from a Swarming server."""
 
-__version__ = '0.9.3'
+__version__ = '0.10.0'
 
 import collections
 import datetime
@@ -96,6 +96,15 @@ FilesRef = collections.namedtuple(
 
 
 # See ../appengine/swarming/swarming_rpcs.py.
+StringListPair = collections.namedtuple(
+  'StringListPair', [
+    'key',
+    'value', # repeated string
+  ]
+)
+
+
+# See ../appengine/swarming/swarming_rpcs.py.
 TaskProperties = collections.namedtuple(
     'TaskProperties',
     [
@@ -104,6 +113,7 @@ TaskProperties = collections.namedtuple(
       'command',
       'dimensions',
       'env',
+      'env_prefixes',
       'execution_timeout_secs',
       'extra_args',
       'grace_period_secs',
@@ -941,6 +951,12 @@ def add_trigger_options(parser):
       '-e', '--env', default=[], action='append', nargs=2, metavar='FOO bar',
       help='Environment variables to set')
   group.add_option(
+      '--env-prefix', default=[], action='append', nargs=2,
+      metavar='VAR local/path',
+      help='Prepend task-relative `local/path` to the task\'s VAR environment '
+           'variable using os-appropriate pathsep character. Can be specified '
+           'multiple times for the same VAR to add multiple paths.')
+  group.add_option(
       '--idempotent', action='store_true', default=False,
       help='When set, the server will actively try to find a previous task '
            'with the same parameter and return this result instead if possible')
@@ -1077,12 +1093,17 @@ def process_trigger_options(parser, options, args):
     for i in options.named_cache
   ]
 
+  env_prefixes = {}
+  for k, v in options.env_prefix:
+    env_prefixes.setdefault(k, []).append(v)
+
   properties = TaskProperties(
       caches=caches,
       cipd_input=cipd_input,
       command=command,
       dimensions=options.dimensions,
       env=options.env,
+      env_prefixes=[StringListPair(k, v) for k, v in env_prefixes.iteritems()],
       execution_timeout_secs=options.hard_timeout,
       extra_args=extra_args,
       grace_period_secs=30,
@@ -1556,6 +1577,16 @@ def CMDreproduce(parser, args):
         env.pop(key, None)
       else:
         env[key] = i['value'].encode('utf-8')
+
+  if properties.get('env_prefixes'):
+    env_prefixes = properties['env']
+    logging.info('env_prefixes: %r', env_prefixes)
+    for key, paths in env_prefixes.iteritems():
+      paths = [os.path.normpath(os.path.join(workdir, p)) for p in paths]
+      cur = env.get(key)
+      if cur:
+        paths.append(cur)
+      env[key] = os.path.pathsep.join(paths)
 
   command = []
   if (properties.get('inputs_ref') or {}).get('isolated'):

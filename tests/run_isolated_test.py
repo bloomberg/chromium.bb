@@ -280,7 +280,8 @@ class RunIsolatedTest(RunIsolatedTestBase):
         None,
         run_isolated.noop_install_packages,
         False,
-        False)
+        False,
+        None)
     self.assertEqual(0, ret)
     return make_tree_call
 
@@ -803,7 +804,8 @@ class RunIsolatedTestRun(RunIsolatedTestBase):
           None,
           run_isolated.noop_install_packages,
           False,
-          False)
+          False,
+          None)
       self.assertEqual(0, ret)
 
       # It uploaded back. Assert the store has a new item containing foo.
@@ -893,7 +895,8 @@ class RunIsolatedTestOutputFiles(RunIsolatedTestBase):
           None,
           run_isolated.noop_install_packages,
           False,
-          False)
+          False,
+          None)
       self.assertEqual(0, ret)
 
       # It uploaded back. Assert the store has a new item containing foo.

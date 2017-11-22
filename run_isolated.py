@@ -27,7 +27,7 @@ state of the host to tasks. It is written to by the swarming bot's
 on_before_task() hook in the swarming server's custom bot_config.py.
 """
 
-__version__ = '0.9.3'
+__version__ = '0.10.0'
 
 import argparse
 import base64
@@ -281,15 +281,17 @@ def process_command(command, out_dir, bot_file):
   return [fix(arg) for arg in command]
 
 
-def get_command_env(tmp_dir, cipd_info):
+def get_command_env(tmp_dir, cipd_info, cwd, env_prefixes):
   """Returns full OS environment to run a command in.
 
-  Sets up TEMP, puts directory with cipd binary in front of PATH, and exposes
-  CIPD_CACHE_DIR env var.
+  Sets up TEMP, puts directory with cipd binary in front of PATH, exposes
+  CIPD_CACHE_DIR env var, and installs all env_prefixes.
 
   Args:
     tmp_dir: temp directory.
     cipd_info: CipdInfo object is cipd client is used, None if not.
+    cwd: The directory the command will run in
+    env_prefixes: {"ENV_KEY": ['cwd', 'relative', 'paths', 'to', 'prepend']}
   """
   def to_fs_enc(s):
     if isinstance(s, str):
@@ -313,6 +315,13 @@ def get_command_env(tmp_dir, cipd_info):
     bin_dir = os.path.dirname(cipd_info.client.binary_path)
     env['PATH'] = '%s%s%s' % (to_fs_enc(bin_dir), os.pathsep, env['PATH'])
     env['CIPD_CACHE_DIR'] = to_fs_enc(cipd_info.cache_dir)
+
+  for key, paths in (env_prefixes or {}).iteritems():
+    paths = [os.path.normpath(os.path.join(cwd, p)) for p in paths]
+    cur = env.get(key)
+    if cur:
+      paths.append(cur)
+    env[key] = os.path.pathsep.join(paths)
 
   return env
 
@@ -492,7 +501,7 @@ def map_and_run(
     command, isolated_hash, storage, isolate_cache, outputs,
     install_named_caches, leak_temp_dir, root_dir, hard_timeout, grace_period,
     bot_file, switch_to_account, install_packages_fn, use_symlinks, raw_cmd,
-    constant_run_path):
+    env_prefixes, constant_run_path):
   """Runs a command with optional isolated input/output.
 
   See run_tha_test for argument documentation.
@@ -605,9 +614,9 @@ def map_and_run(
           # Need to switch the default account before 'get_command_env' call,
           # so it can grab correct value of LUCI_CONTEXT env var.
           with set_luci_context_account(switch_to_account, tmp_dir):
+            env = get_command_env(tmp_dir, cipd_info, cwd, env_prefixes)
             result['exit_code'], result['had_hard_timeout'] = run_command(
-                command, cwd, get_command_env(tmp_dir, cipd_info),
-                hard_timeout, grace_period)
+                command, cwd, env, hard_timeout, grace_period)
         finally:
           result['duration'] = max(time.time() - start, 0)
   except Exception as e:
@@ -675,7 +684,7 @@ def run_tha_test(
     command, isolated_hash, storage, isolate_cache, outputs,
     install_named_caches, leak_temp_dir, result_json, root_dir, hard_timeout,
     grace_period, bot_file, switch_to_account, install_packages_fn,
-    use_symlinks, raw_cmd):
+    use_symlinks, raw_cmd, env_prefixes):
   """Runs an executable and records execution metadata.
 
   Either command or isolated_hash must be specified.
@@ -722,6 +731,7 @@ def run_tha_test(
                          install_client_and_packages.
     use_symlinks: create tree with symlinks instead of hardlinks.
     raw_cmd: ignore the command in the isolated file.
+    env_prefixes: {"ENV_KEY": ['relative', 'paths', 'to', 'prepend']}
 
   Returns:
     Process exit code that should be used.
@@ -742,7 +752,7 @@ def run_tha_test(
       command, isolated_hash, storage, isolate_cache, outputs,
       install_named_caches, leak_temp_dir, root_dir, hard_timeout, grace_period,
       bot_file, switch_to_account, install_packages_fn, use_symlinks, raw_cmd,
-      True)
+      env_prefixes, True)
   logging.info('Result:\n%s', tools.format_json(result, dense=True))
 
   if result_json:
@@ -983,6 +993,14 @@ def create_option_parser():
       help='Ignore the isolated command, use the one supplied at the command '
            'line')
   parser.add_option(
+      '--env-prefix', action='append',
+      help='Specify a VAR=./path/fragment to put in the environment variable '
+           'before executing the command. The path fragment must be relative '
+           'to the isolated run directory, and must not contain a `..` token. '
+           'The path will be made absolute and prepended to the indicated '
+           '$VAR using the OS\'s path separator. Multiple items for the same '
+           '$VAR will be prepended in order.')
+  parser.add_option(
       '--bot-file',
       help='Path to a file describing the state of the host. The content is '
            'defined by on_before_task() in bot_config.')
@@ -1106,6 +1124,25 @@ def main(args):
   if options.json:
     options.json = unicode(os.path.abspath(options.json))
 
+  if options.env_prefix:
+    prefixes = {}
+    cwd = os.path.realpath(os.getcwd())
+    for item in options.env_prefix:
+      if '=' not in item:
+        parser.error(
+          '--env-prefix %r is malformed, must be in the form `VAR=./path`'
+          % item)
+      key, opath = item.split('=', 1)
+      if os.path.isabs(opath):
+        parser.error('--env-prefix %r path is bad, must be relative.' % opath)
+      opath = os.path.normpath(opath)
+      if not os.path.realpath(os.path.join(cwd, opath)).startswith(cwd):
+        parser.error(
+          '--env-prefix %r path is bad, must be relative and not contain `..`.'
+          % opath)
+      prefixes.setdefault(key, []).append(opath)
+    options.env_prefix = prefixes
+
   cipd.validate_cipd_options(parser, options)
 
   install_packages_fn = noop_install_packages
@@ -1165,7 +1202,8 @@ def main(args):
             options.switch_to_account,
             install_packages_fn,
             options.use_symlinks,
-            options.raw_cmd)
+            options.raw_cmd,
+            options.env_prefix)
     return run_tha_test(
         args,
         options.isolated,
@@ -1182,7 +1220,8 @@ def main(args):
         options.switch_to_account,
         install_packages_fn,
         options.use_symlinks,
-        options.raw_cmd)
+        options.raw_cmd,
+        options.env_prefix)
   except (cipd.Error, named_cache.Error) as ex:
     print >> sys.stderr, ex.message
     return 1
