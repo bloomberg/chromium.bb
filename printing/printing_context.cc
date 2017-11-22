@@ -23,7 +23,7 @@ PrintingContext::PrintingContext(Delegate* delegate)
     : delegate_(delegate),
       in_print_job_(false),
       abort_printing_(false) {
-  CHECK(delegate_);
+  DCHECK(delegate_);
 }
 
 PrintingContext::~PrintingContext() {
