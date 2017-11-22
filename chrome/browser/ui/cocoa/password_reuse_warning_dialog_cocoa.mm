@@ -33,7 +33,8 @@ PasswordReuseWarningDialogCocoa::PasswordReuseWarningDialogCocoa(
     content::WebContents* web_contents,
     safe_browsing::ChromePasswordProtectionService* service,
     safe_browsing::OnWarningDone callback)
-    : service_(service),
+    : content::WebContentsObserver(web_contents),
+      service_(service),
       url_(web_contents->GetLastCommittedURL()),
       callback_(std::move(callback)) {
   controller_.reset(
@@ -115,4 +116,8 @@ void PasswordReuseWarningDialogCocoa::Close() {
     std::move(callback_).Run(safe_browsing::PasswordProtectionService::CLOSE);
 
   [parent_window_ endSheet:sheet_.get() returnCode:NSModalResponseStop];
+}
+
+void PasswordReuseWarningDialogCocoa::WebContentsDestroyed() {
+  Close();
 }

@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "ui/views/window/dialog_delegate.h"
 
 namespace content {
@@ -18,7 +19,8 @@ namespace safe_browsing {
 // Implementation of password reuse modal dialog.
 class PasswordReuseModalWarningDialog
     : public views::DialogDelegateView,
-      public ChromePasswordProtectionService::Observer {
+      public ChromePasswordProtectionService::Observer,
+      public content::WebContentsObserver {
  public:
   PasswordReuseModalWarningDialog(content::WebContents* web_contents,
                                   ChromePasswordProtectionService* service,
@@ -46,6 +48,9 @@ class PasswordReuseModalWarningDialog
   void InvokeActionForTesting(
       ChromePasswordProtectionService::WarningAction action) override;
   ChromePasswordProtectionService::WarningUIType GetObserverType() override;
+
+  // content::WebContentsObserver:
+  void WebContentsDestroyed() override;
 
  private:
   const bool show_softer_warning_;

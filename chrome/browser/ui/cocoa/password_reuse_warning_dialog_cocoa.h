@@ -9,13 +9,15 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
+#include "content/public/browser/web_contents_observer.h"
 
 @class ConstrainedWindowCustomWindow;
 @class PasswordReuseWarningViewController;
 
 // A modal dialog that warns users about a password reuse.
 class PasswordReuseWarningDialogCocoa
-    : public safe_browsing::ChromePasswordProtectionService::Observer {
+    : public safe_browsing::ChromePasswordProtectionService::Observer,
+      public content::WebContentsObserver {
  public:
   PasswordReuseWarningDialogCocoa(
       content::WebContents* web_contents,
@@ -33,6 +35,9 @@ class PasswordReuseWarningDialogCocoa
       override;
   safe_browsing::ChromePasswordProtectionService::WarningUIType
   GetObserverType() override;
+
+  // content::WebContentsObserver:
+  void WebContentsDestroyed() override;
 
   // Called by |controller_| when a dialog button is selected.
   void OnChangePassword();
