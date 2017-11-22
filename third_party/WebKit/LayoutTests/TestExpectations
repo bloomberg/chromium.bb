@@ -2059,7 +2059,6 @@ crbug.com/751952 virtual/origin-trials-runtimeflags-disabled/http/tests/origin_t
 
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 [ Retina ] external/wpt/WebCryptoAPI/generateKey/test_successes_RSASSA-PKCS1-v1_5.https.html [ Timeout ]
-crbug.com/626703 external/wpt/css/css-display/display-contents-dynamic-pseudo-insertion-001.html [ Failure ]
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-page/body-margin-1i.html [ Failure ]
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-page/body-margin-1j.html [ Failure ]
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-page/body-margin-1k.html [ Failure ]
