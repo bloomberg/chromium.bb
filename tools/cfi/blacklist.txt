@@ -128,7 +128,6 @@ type:*ActiveVerifier*
 # ANGLE
 src:*third_party/angle/src/libANGLE/*
 src:*third_party/angle/src/third_party/libXNVCtrl/NVCtrl.c
-src:*ui/gl/angle_platform_impl.cc
 # third_party/angle/src/gpu_info_util/SystemInfo_libpci.cpp
 fun:*GetPCIDevicesWithLibPCI*
 # third_party/angle/src/common/event_tracer.cpp
