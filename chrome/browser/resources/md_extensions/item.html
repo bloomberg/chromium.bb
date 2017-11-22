@@ -38,6 +38,7 @@
       #card {
         @apply(--shadow-elevation-2dp);
         background: white;
+        border-radius: 2px;
         display: flex;
         flex-direction: column;
         height: 160px;
@@ -88,8 +89,8 @@
       }
 
       #button-strip {
-        -webkit-padding-end: 4px;
-        -webkit-padding-start: var(--cr-section-padding);
+        /* Avoid ripple from overlapping container. */
+        -webkit-margin-end: 20px;
         border-top: var(--cr-separator-line);
         box-sizing: border-box;
         height: var(--cr-section-min-height);
@@ -98,7 +99,7 @@
       }
 
       #button-strip paper-button {
-        margin: 0 4px;
+        -webkit-margin-start: 8px;
       }
 
       #learn-more-link {
@@ -150,10 +151,6 @@
 
       #source-indicator:hover #source-indicator-text {
         display: block;
-      }
-
-      cr-toggle {
-        -webkit-margin-end: 8px;  /* Avoid ripple from overlapping container. */
       }
 
       .action-button {
