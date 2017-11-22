@@ -370,10 +370,16 @@ class TestGitRepoPatch(GitRepoPatchTestCase):
     patch2.Fetch(git2)
     self.assertEqual(sha1, patch2.sha1)
 
-  def testAlreadyApplied(self):
+  def testParentless(self):
     git1 = self._MakeRepo('git1', self.source)
     patch1 = self._MkPatch(git1, self._GetSha1(git1, 'HEAD'))
-    self.assertRaises2(cros_patch.PatchIsEmpty, patch1.Apply, git1,
+    self.assertRaises2(cros_patch.PatchNoParents, patch1.Apply, git1,
+                       self.DEFAULT_TRACKING, check_attrs={'inflight': False})
+
+  def testNoParentOrAlreadyApplied(self):
+    git1 = self._MakeRepo('git1', self.source)
+    patch1 = self._MkPatch(git1, self._GetSha1(git1, 'HEAD'))
+    self.assertRaises2(cros_patch.PatchNoParents, patch1.Apply, git1,
                        self.DEFAULT_TRACKING, check_attrs={'inflight': False})
     patch2 = self.CommitFile(git1, 'monkeys', 'rule')
     self.assertRaises2(cros_patch.PatchIsEmpty, patch2.Apply, git1,

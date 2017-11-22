@@ -1027,6 +1027,42 @@ class GitRepoPatch(PatchQuery):
     git.RunGit(git_repo, ['commit', '--amend', '-m', self.commit_message])
     self.sha1 = ParseSHA1(self._PullData('HEAD', git_repo)[0], error_ok=False)
 
+  # pylint: disable=unused-argument
+  def Merge(self, git_repo, trivial=False, inflight=False, leave_dirty=False):
+    """Attempts to merge the given rev into branch.
+
+    Note: This method is intended to present the same interface as CherryPick.
+    However, it's behavior is simpler and not all of the arguments actually
+    do anything.
+
+    Args:
+      git_repo: The git repository to operate upon.
+      trivial: [ignored]
+      inflight: [ignored]
+      leave_dirty: [ignored]
+
+    Raises:
+      A ApplyPatchException if the request couldn't be handled.
+    """
+    cmd = ['merge', self.sha1]
+
+    # TODO(akeshet): Amend the original merge's commit message before merging
+    # it.
+
+    reset_target = 'HEAD'
+    try:
+      git.RunGit(git_repo, cmd, capture_output=False)
+      reset_target = None
+      return
+    except cros_build_lib.RunCommandError:
+      # TODO(akeshet): Add more specialized or grandular error handling.
+      # TODO(akeshet): Use an exception class other than ApplyPatchException,
+      # for merge commits.
+      raise ApplyPatchException(self, 'Unable to merge this CL.')
+    finally:
+      if reset_target:
+        git.RunGit(git_repo, ['reset', '--hard', reset_target])
+
   def CherryPick(self, git_repo, trivial=False, inflight=False,
                  leave_dirty=False):
     """Attempts to cherry-pick the given rev into branch.
@@ -1140,13 +1176,27 @@ class GitRepoPatch(PatchQuery):
 
     self._FindEbuildConflicts(git_repo, upstream, inflight=inflight)
 
-    return self._ApplyByCherrypick(git_repo, upstream, trivial, inflight)
+    parents = self._GetParents(git_repo)
+    if len(parents) == 1:
+      use_merge = False
+    elif len(parents) == 2:
+      self._ValidateMergeCommit(git_repo, upstream, parents)
+      use_merge = True
+    else:
+      raise PatchNoParents(self)
 
-  def _ApplyByCherrypick(self, git_repo, upstream, trivial, inflight):
-    logging.info('Applying via cherry-pick.')
+    return self._ApplyHelper(git_repo, upstream, trivial, inflight, use_merge)
+
+  def _ApplyHelper(self, git_repo, upstream, trivial, inflight,
+                   use_merge=False):
+    via = 'merge' if use_merge else 'cherry-pick'
+    logging.info('Applying via %s.', via)
+
+    do_apply = self.Merge if use_merge else self.CherryPick
+
     do_checkout = True
     try:
-      self.CherryPick(git_repo, trivial=trivial, inflight=inflight)
+      do_apply(git_repo, trivial=trivial, inflight=inflight)
       do_checkout = False
       return
     except ApplyPatchException:
@@ -1154,7 +1204,7 @@ class GitRepoPatch(PatchQuery):
         raise
       git.RunGit(git_repo, ['checkout', '-f', '--detach', upstream])
 
-      self.CherryPick(git_repo, trivial=trivial, inflight=False)
+      do_apply(git_repo, trivial=trivial, inflight=False)
       # Making it here means that it was an inflight issue; throw the original.
       raise
     finally:
