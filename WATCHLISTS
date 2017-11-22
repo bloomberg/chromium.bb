@@ -857,8 +857,10 @@
                   'google_apis/drive|' \
                   'ui/file_manager'
     },
-    'filesapp_ui': {
-      'filepath': 'ui/file_manager'
+    'fsp': {
+      'filepath': 'chrome/browser/chromeos/extensions/file_system_provider|' \
+                  'chrome/browser/chromeos/file_system_provider|' \
+                  'chrome/test/data/extensions/api_test/file_system_provider|'
     },
     'fuchsia': {
       'filepath': 'fuchsia',
@@ -2015,7 +2017,7 @@
     'filesapp': ['fukino+watch@chromium.org',
                  'oka+watch@chromium.org',
                  'yamaguchi+watch@chromium.org'],
-    'filesapp_ui': ['mtomasz+watch@chromium.org'],
+    'fsp': ['mtomasz+watch@chromium.org'],
     'fuchsia': ['sergeyu@chromium.org', 'wez@chromium.org'],
     'fuzzing': ['fuzzing@chromium.org'],
     'gamepad': ['cco3+watch@chromium.org',
