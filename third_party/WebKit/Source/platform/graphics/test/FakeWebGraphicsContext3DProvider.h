@@ -47,7 +47,7 @@ class FakeWebGraphicsContext3DProvider : public WebGraphicsContext3DProvider {
   void SetLostContextCallback(const base::Closure&) override {}
   void SetErrorMessageCallback(
       const base::Callback<void(const char*, int32_t id)>&) {}
-  void SignalQuery(uint32_t, const base::Closure&) override {}
+  void SignalQuery(uint32_t, base::OnceClosure) override {}
 
  private:
   gpu::gles2::GLES2Interface* gl_;

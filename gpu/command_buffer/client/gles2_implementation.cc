@@ -368,9 +368,9 @@ void GLES2Implementation::FreeSharedMemory(void* mem) {
   mapped_memory_->FreePendingToken(mem, helper_->InsertToken());
 }
 
-void GLES2Implementation::RunIfContextNotLost(const base::Closure& callback) {
+void GLES2Implementation::RunIfContextNotLost(base::OnceClosure callback) {
   if (!lost_context_callback_run_)
-    callback.Run();
+    std::move(callback).Run();
 }
 
 void GLES2Implementation::FlushPendingWork() {
@@ -378,7 +378,7 @@ void GLES2Implementation::FlushPendingWork() {
 }
 
 void GLES2Implementation::SignalSyncToken(const gpu::SyncToken& sync_token,
-                                          const base::Closure& callback) {
+                                          base::OnceClosure callback) {
   SyncToken verified_sync_token;
   if (sync_token.HasData() &&
       GetVerifiedSyncTokenForIPC(sync_token, &verified_sync_token)) {
@@ -386,10 +386,10 @@ void GLES2Implementation::SignalSyncToken(const gpu::SyncToken& sync_token,
     gpu_control_->SignalSyncToken(
         verified_sync_token,
         base::Bind(&GLES2Implementation::RunIfContextNotLost,
-                   weak_ptr_factory_.GetWeakPtr(), callback));
+                   weak_ptr_factory_.GetWeakPtr(), base::Passed(&callback)));
   } else {
     // Invalid sync token, just call the callback immediately.
-    callback.Run();
+    std::move(callback).Run();
   }
 }
 
@@ -404,15 +404,14 @@ bool GLES2Implementation::IsSyncTokenSignaled(
 }
 
 void GLES2Implementation::SignalQuery(uint32_t query,
-                                      const base::Closure& callback) {
+                                      base::OnceClosure callback) {
   // Flush previously entered commands to ensure ordering with any
   // glBeginQueryEXT() calls that may have been put into the context.
   ShallowFlushCHROMIUM();
   gpu_control_->SignalQuery(
       query,
       base::Bind(&GLES2Implementation::RunIfContextNotLost,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 callback));
+                 weak_ptr_factory_.GetWeakPtr(), base::Passed(&callback)));
 }
 
 void GLES2Implementation::SetAggressivelyFreeResources(

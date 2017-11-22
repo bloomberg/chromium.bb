@@ -73,7 +73,7 @@ class WebGraphicsContext3DProvider {
   virtual void SetLostContextCallback(const base::Closure&) = 0;
   virtual void SetErrorMessageCallback(
       const base::Callback<void(const char* msg, int32_t id)>&) = 0;
-  virtual void SignalQuery(uint32_t, const base::Closure&) = 0;
+  virtual void SignalQuery(uint32_t, base::OnceClosure) = 0;
 };
 
 }  // namespace blink
