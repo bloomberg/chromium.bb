@@ -262,9 +262,9 @@ void MediaRouterIntegrationBrowserTest::OpenDialogAndCastFile() {
   // Wait for the sinks to load.
   WaitUntilSinkDiscoveredOnUI();
   // Click on sink.
-  ChooseSink(GetActiveWebContents(), kTestSinkName);
-  // Give casting a second to go through.
-  Wait(base::TimeDelta::FromSeconds(1));
+  ChooseSink(GetActiveWebContents(), receiver_);
+  // Give casting a few seconds to go through.
+  Wait(base::TimeDelta::FromSeconds(3));
   // Expect that the current tab has the file open in it.
   ASSERT_EQ(file_url, GetActiveWebContents()->GetURL());
 }
@@ -707,6 +707,12 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
 
   // Expect that no new tab has been opened.
   ASSERT_EQ(1, browser()->tab_strip_model()->count());
+
+  // Open the dialog again to check for a route.
+  OpenMRDialog(GetActiveWebContents());
+
+  // Wait for a route to be created.
+  WaitUntilRouteCreated();
 }
 
 // Tests that creating a route with a local file opens the file in a new tab.
@@ -722,9 +728,15 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
 
   // Expect that a new tab has been opened.
   ASSERT_EQ(2, browser()->tab_strip_model()->count());
+
+  // Open the dialog again to check for a route.
+  OpenMRDialog(GetActiveWebContents());
+
+  // Wait for a route to be created.
+  WaitUntilRouteCreated();
 }
 
-// Tests that creating a route with a local file opens the file in a new tab.
+// Tests that failing to create a route with a local file shows an issue.
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
                        MANUAL_OpenLocalMediaFileFailsAndShowsIssue) {
   OpenDialogAndCastFileFails();
