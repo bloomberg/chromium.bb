@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/jumbo.gni")
 import("//testing/test.gni")
 
 cc_remove_configs = []
@@ -13,7 +14,7 @@ if (!is_debug && (is_win || is_android)) {
 }
 
 template("cc_source_set") {
-  source_set(target_name) {
+  jumbo_source_set(target_name) {
     forward_variables_from(invoker, "*", [ "configs" ])
     if (defined(invoker.configs)) {
       configs += invoker.configs
@@ -24,7 +25,7 @@ template("cc_source_set") {
 }
 
 template("cc_component") {
-  component(target_name) {
+  jumbo_component(target_name) {
     forward_variables_from(invoker, "*", [ "configs" ])
     if (defined(invoker.configs)) {
       configs += invoker.configs
@@ -35,7 +36,7 @@ template("cc_component") {
 }
 
 template("cc_static_library") {
-  static_library(target_name) {
+  jumbo_static_library(target_name) {
     forward_variables_from(invoker, "*", [ "configs" ])
     if (defined(invoker.configs)) {
       configs += invoker.configs
