@@ -257,22 +257,15 @@ void Volume::ReadChunkDone(const std::string& request_id,
                            int64_t read_offset) {
   PP_DCHECK(volume_archive_);
 
-  job_lock_.Acquire();
-  if (request_id == reader_request_id_) {
-    static_cast<VolumeReaderJavaScriptStream*>(volume_archive_->reader())
-        ->SetBufferAndSignal(array_buffer, read_offset);
-  }
-  job_lock_.Release();
+  static_cast<VolumeReaderJavaScriptStream*>(volume_archive_->reader())
+      ->SetBufferAndSignal(array_buffer, read_offset);
 }
 
 void Volume::ReadChunkError(const std::string& request_id) {
   PP_DCHECK(volume_archive_);
-  job_lock_.Acquire();
-  if (request_id == reader_request_id_) {
-    static_cast<VolumeReaderJavaScriptStream*>(volume_archive_->reader())
-        ->ReadErrorSignal();
-  }
-  job_lock_.Release();
+
+  static_cast<VolumeReaderJavaScriptStream*>(volume_archive_->reader())
+      ->ReadErrorSignal();
 }
 
 void Volume::ReadPassphraseDone(const std::string& request_id,
