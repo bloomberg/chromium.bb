@@ -39,16 +39,16 @@ void ExitWarningTexture::Draw(SkCanvas* sk_canvas,
   size_.set_width(texture_size.width());
   SkPaint paint;
 
-  paint.setColor(color_scheme().exit_warning_background);
+  paint.setColor(background_color());
   auto text =
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_VR_BROWSER_UNSUPPORTED_MODE);
   gfx::FontList fonts;
   GetFontList(size_.width() * kFontSizeFactor, text, &fonts);
   gfx::Rect text_size(size_.width() * kTextWidthFactor, 0);
 
-  std::vector<std::unique_ptr<gfx::RenderText>> lines = PrepareDrawStringRect(
-      text, fonts, color_scheme().exit_warning_foreground, &text_size,
-      kTextAlignmentCenter, kWrappingBehaviorWrap);
+  std::vector<std::unique_ptr<gfx::RenderText>> lines =
+      PrepareDrawStringRect(text, fonts, foreground_color(), &text_size,
+                            kTextAlignmentCenter, kWrappingBehaviorWrap);
 
   DCHECK_LE(text_size.height(),
             static_cast<int>((1.0 - 2 * kBorderFactor) * size_.width()));

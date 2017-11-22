@@ -11,21 +11,23 @@
 
 namespace vr {
 
+// TODO(asimjour): compose the system indicator out of primitives.
 class SystemIndicatorTexture : public UiTexture {
  public:
-  SystemIndicatorTexture(const gfx::VectorIcon& icon, int message_id);
-  explicit SystemIndicatorTexture(const gfx::VectorIcon& icon);
+  SystemIndicatorTexture();
   ~SystemIndicatorTexture() override;
-  gfx::Size GetPreferredTextureSize(int width) const override;
-  gfx::SizeF GetDrawnSize() const override;
+
+  void SetIcon(const gfx::VectorIcon& icon);
+  void SetMessageId(int id);
 
  private:
+  gfx::Size GetPreferredTextureSize(int width) const override;
+  gfx::SizeF GetDrawnSize() const override;
   void Draw(SkCanvas* canvas, const gfx::Size& texture_size) override;
 
   gfx::SizeF size_;
-  const gfx::VectorIcon& icon_;
-  int message_id_;
-  bool has_text_;
+  gfx::VectorIcon icon_;
+  int message_id_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(SystemIndicatorTexture);
 };

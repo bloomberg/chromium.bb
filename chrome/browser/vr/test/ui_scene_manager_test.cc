@@ -43,34 +43,14 @@ UiSceneManagerTest::~UiSceneManagerTest() {}
 
 void UiSceneManagerTest::SetUp() {
   browser_ = base::MakeUnique<testing::NiceMock<MockBrowserInterface>>();
-  content_input_delegate_ =
-      base::MakeUnique<testing::NiceMock<MockContentInputDelegate>>();
 }
 
 void UiSceneManagerTest::MakeManager(InCct in_cct, InWebVr in_web_vr) {
-  scene_ = base::MakeUnique<UiScene>();
-  model_ = base::MakeUnique<Model>();
-
-  UiInitialState ui_initial_state;
-  ui_initial_state.in_cct = in_cct;
-  ui_initial_state.in_web_vr = in_web_vr;
-  ui_initial_state.web_vr_autopresentation_expected = false;
-  manager_ = base::MakeUnique<UiSceneManager>(browser_.get(), scene_.get(),
-                                              content_input_delegate_.get(),
-                                              model_.get(), ui_initial_state);
+  MakeManagerInternal(in_cct, in_web_vr, kNotAutopresented);
 }
 
 void UiSceneManagerTest::MakeAutoPresentedManager() {
-  scene_ = base::MakeUnique<UiScene>();
-  model_ = base::MakeUnique<Model>();
-
-  UiInitialState ui_initial_state;
-  ui_initial_state.in_cct = false;
-  ui_initial_state.in_web_vr = false;
-  ui_initial_state.web_vr_autopresentation_expected = true;
-  manager_ = base::MakeUnique<UiSceneManager>(browser_.get(), scene_.get(),
-                                              content_input_delegate_.get(),
-                                              model_.get(), ui_initial_state);
+  MakeManagerInternal(kNotInCct, kNotInWebVr, kAutopresented);
 }
 
 bool UiSceneManagerTest::IsVisible(UiElementName name) const {
@@ -87,7 +67,6 @@ bool UiSceneManagerTest::IsVisible(UiElementName name) const {
 
 void UiSceneManagerTest::SetIncognito(bool incognito) {
   model_->incognito = incognito;
-  manager_->SetIncognito(incognito);
 }
 
 void UiSceneManagerTest::VerifyElementsVisible(
@@ -218,6 +197,7 @@ bool UiSceneManagerTest::OnBeginFrame() const {
 }
 
 void UiSceneManagerTest::GetBackgroundColor(SkColor* background_color) const {
+  OnBeginFrame();
   Rect* front =
       static_cast<Rect*>(scene_->GetUiElementByName(kBackgroundFront));
   ASSERT_NE(nullptr, front);
@@ -234,6 +214,25 @@ void UiSceneManagerTest::GetBackgroundColor(SkColor* background_color) const {
   }
 
   *background_color = color;
+}
+
+void UiSceneManagerTest::MakeManagerInternal(
+    InCct in_cct,
+    InWebVr in_web_vr,
+    WebVrAutopresented web_vr_autopresented) {
+  auto content_input_delegate =
+      base::MakeUnique<testing::NiceMock<MockContentInputDelegate>>();
+  content_input_delegate_ = content_input_delegate.get();
+
+  UiInitialState ui_initial_state;
+  ui_initial_state.in_cct = in_cct;
+  ui_initial_state.in_web_vr = in_web_vr;
+  ui_initial_state.web_vr_autopresentation_expected = web_vr_autopresented;
+  ui_ =
+      base::MakeUnique<Ui>(std::move(browser_.get()),
+                           std::move(content_input_delegate), ui_initial_state);
+  scene_ = ui_->scene();
+  model_ = ui_->model_for_test();
 }
 
 }  // namespace vr

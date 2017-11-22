@@ -43,10 +43,19 @@ TEST_F(UiTest, SecondExitPromptTriggersOnExitPrompt) {
   // Initiating another exit VR prompt while a previous one was in flight should
   // result in a call to the UiBrowserInterface.
   EXPECT_CALL(*browser_,
-              OnExitVrPromptResult(UiUnsupportedMode::kUnhandledPageInfo,
-                                   ExitVrPromptChoice::CHOICE_NONE));
+              OnExitVrPromptResult(ExitVrPromptChoice::CHOICE_NONE,
+                                   UiUnsupportedMode::kUnhandledPageInfo));
   ui_->SetExitVrPromptEnabled(true,
                               UiUnsupportedMode::kAndroidPermissionNeeded);
+}
+
+TEST_F(UiTest, ExitPresentAndFullscreenOnAppButtonClick) {
+  ui_->SetWebVrMode(true, false);
+  // Clicking app button should trigger to exit presentation.
+  EXPECT_CALL(*browser_, ExitPresent());
+  // And also trigger exit fullscreen.
+  EXPECT_CALL(*browser_, ExitFullscreen());
+  ui_->OnAppButtonClicked();
 }
 
 }  // namespace vr

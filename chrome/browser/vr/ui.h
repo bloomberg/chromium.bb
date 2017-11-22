@@ -22,7 +22,6 @@ class UiBrowserInterface;
 class UiInputManager;
 class UiRenderer;
 class UiScene;
-class UiSceneManager;
 struct ControllerModel;
 struct Model;
 struct OmniboxSuggestions;
@@ -43,6 +42,11 @@ class Ui : public BrowserUiInterface {
   Ui(UiBrowserInterface* browser,
      ContentInputForwarder* content_input_forwarder,
      const UiInitialState& ui_initial_state);
+
+  Ui(UiBrowserInterface* browser,
+     std::unique_ptr<ContentInputDelegate> content_input_delegate,
+     const UiInitialState& ui_initial_state);
+
   ~Ui() override;
 
   // TODO(crbug.com/767957): Refactor to hide these behind the UI interface.
@@ -96,6 +100,8 @@ class Ui : public BrowserUiInterface {
 
   Model* model_for_test() { return model_.get(); }
 
+  void Dump();
+
  private:
   UiBrowserInterface* browser_;
 
@@ -103,7 +109,6 @@ class Ui : public BrowserUiInterface {
   std::unique_ptr<vr::UiScene> scene_;
   std::unique_ptr<vr::Model> model_;
   std::unique_ptr<vr::ContentInputDelegate> content_input_delegate_;
-  std::unique_ptr<vr::UiSceneManager> scene_manager_;
   std::unique_ptr<vr::UiElementRenderer> ui_element_renderer_;
   std::unique_ptr<vr::UiInputManager> input_manager_;
   std::unique_ptr<vr::UiRenderer> ui_renderer_;

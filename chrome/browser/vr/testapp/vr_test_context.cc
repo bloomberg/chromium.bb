@@ -124,14 +124,15 @@ void VrTestContext::HandleInput(ui::Event* event) {
         incognito_ = !incognito_;
         ui_->SetIncognito(incognito_);
         break;
-      case ui::DomCode::US_S: {
+      case ui::DomCode::US_S:
         CreateFakeOmniboxSuggestions();
         break;
-        case ui::DomCode::US_V:
-          ui_->SetVideoCaptureEnabled(
-              !model_->permissions.video_capture_enabled);
-          break;
-      }
+      case ui::DomCode::US_D:
+        ui_->Dump();
+        break;
+      case ui::DomCode::US_V:
+        ui_->SetVideoCaptureEnabled(!model_->permissions.video_capture_enabled);
+        break;
       default:
         break;
     }
@@ -331,9 +332,8 @@ void VrTestContext::OnUnsupportedMode(vr::UiUnsupportedMode mode) {
     ui_->SetExitVrPromptEnabled(true, mode);
   }
 }
-
-void VrTestContext::OnExitVrPromptResult(vr::UiUnsupportedMode reason,
-                                         vr::ExitVrPromptChoice choice) {
+void VrTestContext::OnExitVrPromptResult(vr::ExitVrPromptChoice choice,
+                                         vr::UiUnsupportedMode reason) {
   LOG(ERROR) << "exit prompt result: " << choice;
   ui_->SetExitVrPromptEnabled(false, UiUnsupportedMode::kCount);
 }

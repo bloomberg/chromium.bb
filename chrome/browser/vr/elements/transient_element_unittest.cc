@@ -92,7 +92,6 @@ TEST(SimpleTransientElementTest, VisibilityChildren) {
       base::MakeUnique<SimpleTransientElement>(base::TimeDelta::FromSeconds(2));
   SimpleTransientElement* parent = transient_element.get();
   transient_element->set_opacity_when_visible(0.5);
-  transient_element->set_draw_phase(0);
   scene.AddUiElement(kRoot, std::move(transient_element));
 
   // Create child.
@@ -100,7 +99,6 @@ TEST(SimpleTransientElementTest, VisibilityChildren) {
   UiElement* child = element.get();
   element->set_opacity_when_visible(0.5);
   element->SetVisible(true);
-  element->set_draw_phase(0);
   parent->AddChild(std::move(element));
 
   // Child hidden because parent is hidden.
@@ -170,7 +168,7 @@ TEST_F(ShowUntilSignalElementTest, ElementHidesAfterSignal) {
   EXPECT_EQ(element().opacity_when_visible(), element().opacity());
 
   // Signal, element should still be visible since time < min duration.
-  element().Signal();
+  element().Signal(true);
   EXPECT_FALSE(element().DoBeginFrame(MsToTicks(200), kForwardVector));
   EXPECT_EQ(element().opacity_when_visible(), element().opacity());
 
@@ -208,7 +206,7 @@ TEST_F(ShowUntilSignalElementTest, RefreshVisibility) {
   element().SetVisible(true);
   EXPECT_EQ(element().opacity_when_visible(), element().opacity());
   EXPECT_FALSE(element().DoBeginFrame(MsToTicks(1000), kForwardVector));
-  element().Signal();
+  element().Signal(true);
 
   // Refresh visibility, and ensure that the element still transiently
   // disappears, but at a later time.

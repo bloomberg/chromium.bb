@@ -11,12 +11,11 @@ namespace vr {
 
 UrlBar::UrlBar(int preferred_width,
                const base::Callback<void()>& back_button_callback,
-               const base::Callback<void()>& security_icon_callback,
                const base::Callback<void(UiUnsupportedMode)>& failure_callback)
     : TexturedElement(preferred_width),
       texture_(base::MakeUnique<UrlBarTexture>(failure_callback)),
       back_button_callback_(back_button_callback),
-      security_icon_callback_(security_icon_callback) {}
+      failure_callback_(failure_callback) {}
 
 UrlBar::~UrlBar() = default;
 
@@ -51,7 +50,7 @@ void UrlBar::OnButtonUp(const gfx::PointF& position) {
   if (can_go_back_ && texture_->HitsBackButton(position))
     back_button_callback_.Run();
   else if (security_region_down_ && texture_->HitsSecurityRegion(position))
-    security_icon_callback_.Run();
+    failure_callback_.Run(UiUnsupportedMode::kUnhandledPageInfo);
   security_region_down_ = false;
 }
 
@@ -66,6 +65,10 @@ void UrlBar::SetToolbarState(const ToolbarState& state) {
 void UrlBar::SetHistoryButtonsEnabled(bool can_go_back) {
   can_go_back_ = can_go_back;
   texture_->SetHistoryButtonsEnabled(can_go_back_);
+}
+
+void UrlBar::SetColors(const UrlBarColors& colors) {
+  texture_->SetColors(colors);
 }
 
 void UrlBar::OnStateUpdated(const gfx::PointF& position) {

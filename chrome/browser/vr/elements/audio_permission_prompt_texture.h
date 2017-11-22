@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/vr/elements/ui_texture.h"
+#include "chrome/browser/vr/model/color_scheme.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 namespace gfx {
@@ -30,11 +31,13 @@ class AudioPermissionPromptTexture : public UiTexture {
   virtual bool HitsSecondaryButton(const gfx::PointF& position) const;
   virtual bool HitsPrimaryButton(const gfx::PointF& position) const;
 
+  void SetPrimaryButtonColors(const ButtonColors& colors);
+  void SetSecondaryButtonColors(const ButtonColors& colors);
+  void SetIconColor(SkColor color);
+
  private:
   void Draw(SkCanvas* sk_canvas, const gfx::Size& texture_size) override;
 
-  SkColor GetPrimaryButtonColor() const;
-  SkColor GetSecondaryButtonColor() const;
   float ToPixels(float meters) const;
   gfx::PointF PercentToPixels(const gfx::PointF& percent) const;
 
@@ -46,6 +49,10 @@ class AudioPermissionPromptTexture : public UiTexture {
   bool primary_pressed_ = false;
   bool secondary_hovered_ = false;
   bool secondary_pressed_ = false;
+
+  ButtonColors primary_button_colors_;
+  ButtonColors secondary_button_colors_;
+  SkColor icon_color_ = SK_ColorBLACK;
 
   DISALLOW_COPY_AND_ASSIGN(AudioPermissionPromptTexture);
 };

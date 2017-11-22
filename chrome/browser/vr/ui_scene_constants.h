@@ -95,11 +95,15 @@ static constexpr float kSplashScreenMinDurationSeconds = 3;
 static constexpr float kButtonZOffsetHoverDMM = 0.048;
 
 static constexpr float kCloseButtonDistance = 2.4f;
+static constexpr float kCloseButtonVerticalOffset =
+    kFullscreenVerticalOffset - (kFullscreenHeight * 0.5f) - 0.35f;
 static constexpr float kCloseButtonHeight =
     kUrlBarHeightDMM * kCloseButtonDistance;
 static constexpr float kCloseButtonWidth =
     kUrlBarHeightDMM * kCloseButtonDistance;
 static constexpr float kCloseButtonFullscreenDistance = 2.9f;
+static constexpr float kCloseButtonFullscreenVerticalOffset =
+    kFullscreenVerticalOffset - (kFullscreenHeight / 2) - 0.35f;
 static constexpr float kCloseButtonFullscreenHeight =
     kUrlBarHeightDMM * kCloseButtonFullscreenDistance;
 static constexpr float kCloseButtonFullscreenWidth =
@@ -177,14 +181,6 @@ static constexpr float kTimeoutButtonTextWidth = kCloseButtonWidth;
 static constexpr float kTimeoutButtonTextHeight = kCloseButtonHeight * 0.25;
 static constexpr float kTimeoutButtonTextVerticalOffset =
     kTimeoutButtonTextHeight;
-
-// If the screen space bounds or the aspect ratio of the content quad change
-// beyond these thresholds we propagate the new content bounds so that the
-// content's resolution can be adjusted.
-static constexpr float kContentBoundsPropagationThreshold = 0.2f;
-// Changes of the aspect ratio lead to a
-// distorted content much more quickly. Thus, have a smaller threshold here.
-static constexpr float kContentAspectRatioPropagationThreshold = 0.01f;
 
 static constexpr float kScreenDimmerOpacity = 0.9f;
 

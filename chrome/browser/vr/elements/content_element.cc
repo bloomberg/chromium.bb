@@ -5,13 +5,28 @@
 #include "chrome/browser/vr/elements/content_element.h"
 
 #include "chrome/browser/vr/ui_element_renderer.h"
+#include "chrome/browser/vr/vr_gl_util.h"
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 namespace vr {
 
-ContentElement::ContentElement(ContentInputDelegate* delegate)
-    : delegate_(delegate) {
+namespace {
+
+// If the screen space bounds or the aspect ratio of the content quad change
+// beyond these thresholds we propagate the new content bounds so that the
+// content's resolution can be adjusted.
+static constexpr float kContentBoundsPropagationThreshold = 0.2f;
+// Changes of the aspect ratio lead to a
+// distorted content much more quickly. Thus, have a smaller threshold here.
+static constexpr float kContentAspectRatioPropagationThreshold = 0.01f;
+
+}  // namespace
+
+ContentElement::ContentElement(
+    ContentInputDelegate* delegate,
+    ContentElement::ScreenBoundsChangedCallback bounds_changed_callback)
+    : delegate_(delegate), bounds_changed_callback_(bounds_changed_callback) {
   DCHECK(delegate);
   set_scrollable(true);
 }
@@ -75,10 +90,62 @@ void ContentElement::OnScrollEnd(
   delegate_->OnContentScrollEnd(std::move(gesture), position);
 }
 
-void ContentElement::SetTexture(unsigned int texture_id,
-                                UiElementRenderer::TextureLocation location) {
+void ContentElement::SetTextureId(unsigned int texture_id) {
   texture_id_ = texture_id;
+}
+
+void ContentElement::SetTextureLocation(
+    UiElementRenderer::TextureLocation location) {
   texture_location_ = location;
+}
+
+void ContentElement::SetProjectionMatrix(const gfx::Transform& matrix) {
+  projection_matrix_ = matrix;
+}
+
+bool ContentElement::OnBeginFrame(const base::TimeTicks& time,
+                                  const gfx::Vector3dF& look_at) {
+  // Determine if the projected size of the content quad changed more than a
+  // given threshold. If so, propagate this info so that the content's
+  // resolution and size can be adjusted. For the calculation, we cannot take
+  // the content quad's actual size (main_content_->size()) if this property
+  // is animated. If we took the actual size during an animation we would
+  // surpass the threshold with differing projected sizes and aspect ratios
+  // (depending on the animation's timing). The differing values may cause
+  // visual artefacts if, for instance, the fullscreen aspect ratio is not 16:9.
+  // As a workaround, take the final size of the content quad after the
+  // animation as the basis for the calculation.
+  gfx::SizeF target_size = GetTargetSize();
+  // We take the target transform in case the content quad's parent's translate
+  // is animated. This approach only works with the current scene hierarchy and
+  // set of animated properties.
+  gfx::Transform target_transform = ComputeTargetWorldSpaceTransform();
+  gfx::SizeF screen_size =
+      CalculateScreenSize(projection_matrix_, target_transform, target_size);
+
+  float aspect_ratio = target_size.width() / target_size.height();
+  gfx::SizeF screen_bounds;
+  if (screen_size.width() < screen_size.height() * aspect_ratio) {
+    screen_bounds.set_width(screen_size.height() * aspect_ratio);
+    screen_bounds.set_height(screen_size.height());
+  } else {
+    screen_bounds.set_width(screen_size.width());
+    screen_bounds.set_height(screen_size.width() / aspect_ratio);
+  }
+
+  if (std::abs(screen_bounds.width() - last_content_screen_bounds_.width()) >
+          kContentBoundsPropagationThreshold ||
+      std::abs(screen_bounds.height() - last_content_screen_bounds_.height()) >
+          kContentBoundsPropagationThreshold ||
+      std::abs(aspect_ratio - last_content_aspect_ratio_) >
+          kContentAspectRatioPropagationThreshold) {
+    bounds_changed_callback_.Run(screen_bounds);
+    last_content_screen_bounds_.set_width(screen_bounds.width());
+    last_content_screen_bounds_.set_height(screen_bounds.height());
+    last_content_aspect_ratio_ = aspect_ratio;
+    return true;
+  }
+  return false;
 }
 
 }  // namespace vr

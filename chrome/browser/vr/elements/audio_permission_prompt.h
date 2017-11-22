@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/vr/elements/textured_element.h"
+#include "chrome/browser/vr/model/color_scheme.h"
 
 namespace vr {
 
@@ -31,6 +32,10 @@ class AudioPermissionPrompt : public TexturedElement {
   void OnMove(const gfx::PointF& position) override;
   void OnButtonDown(const gfx::PointF& position) override;
   void OnButtonUp(const gfx::PointF& position) override;
+
+  void SetPrimaryButtonColors(const ButtonColors& colors);
+  void SetSecondaryButtonColors(const ButtonColors& colors);
+  void SetIconColor(SkColor color);
 
  private:
   UiTexture* GetTexture() const override;

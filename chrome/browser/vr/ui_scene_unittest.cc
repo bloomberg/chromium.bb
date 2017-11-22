@@ -106,7 +106,6 @@ TEST(UiScene, ParentTransformAppliesToChild) {
   element->SetTranslate(6, 1, 0);
   element->SetRotate(0, 0, 1, 0.5f * base::kPiFloat);
   element->SetScale(3, 3, 1);
-  element->set_draw_phase(0);
   scene.AddUiElement(kRoot, std::move(element));
 
   // Add a child to the parent, with different transformations.
@@ -114,7 +113,6 @@ TEST(UiScene, ParentTransformAppliesToChild) {
   element->SetTranslate(3, 0, 0);
   element->SetRotate(0, 0, 1, 0.5f * base::kPiFloat);
   element->SetScale(2, 2, 1);
-  element->set_draw_phase(0);
   UiElement* child = element.get();
   parent->AddChild(std::move(element));
 
@@ -134,13 +132,11 @@ TEST(UiScene, Opacity) {
   auto element = base::MakeUnique<UiElement>();
   UiElement* parent = element.get();
   element->SetOpacity(0.5);
-  element->set_draw_phase(0);
   scene.AddUiElement(kRoot, std::move(element));
 
   element = base::MakeUnique<UiElement>();
   UiElement* child = element.get();
   element->SetOpacity(0.5);
-  element->set_draw_phase(0);
   parent->AddChild(std::move(element));
 
   scene.OnBeginFrame(MsToTicks(0), kForwardVector);
@@ -153,12 +149,10 @@ TEST(UiScene, NoViewportAwareElementWhenNoVisibleChild) {
   auto element = base::MakeUnique<UiElement>();
   UiElement* container = element.get();
   element->set_name(kWebVrRoot);
-  element->set_draw_phase(kPhaseNone);
   scene.AddUiElement(kRoot, std::move(element));
 
   auto root = base::MakeUnique<ViewportAwareRoot>();
   UiElement* viewport_aware_root = root.get();
-  root->set_draw_phase(kPhaseNone);
   container->AddChild(std::move(root));
 
   element = base::MakeUnique<UiElement>();
@@ -239,7 +233,6 @@ TEST_P(AlignmentTest, VerifyCorrectPosition) {
   UiElement* parent = element.get();
   element->SetSize(2, 2);
   element->SetScale(2, 2, 1);
-  element->set_draw_phase(0);
   scene.AddUiElement(kRoot, std::move(element));
 
   // Add a child to the parent, with anchoring.
@@ -249,7 +242,6 @@ TEST_P(AlignmentTest, VerifyCorrectPosition) {
   element->set_y_anchoring(GetParam().y_anchoring);
   element->set_x_centering(GetParam().x_centering);
   element->set_y_centering(GetParam().y_centering);
-  element->set_draw_phase(0);
   parent->AddChild(std::move(element));
 
   scene.OnBeginFrame(MsToTicks(0), kForwardVector);

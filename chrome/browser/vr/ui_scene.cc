@@ -245,8 +245,6 @@ UiScene::UiScene() {
 
 UiScene::~UiScene() = default;
 
-// TODO(vollick): we should bind to gl-initialized state. Elements will
-// initialize when the binding fires, automatically.
 void UiScene::OnGlInitialized(SkiaSurfaceProvider* provider) {
   gl_initialized_ = true;
   provider_ = provider;
