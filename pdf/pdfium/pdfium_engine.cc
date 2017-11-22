@@ -1230,8 +1230,11 @@ void PDFiumEngine::OnPendingRequestComplete() {
   for (int pending_page : pending_pages_) {
     if (CheckPageAvailable(pending_page, &still_pending)) {
       update_pages = true;
-      if (IsPageVisible(pending_page))
+      if (IsPageVisible(pending_page)) {
+        client_->NotifyPageBecameVisible(
+            pages_[pending_page]->GetPageFeatures());
         client_->Invalidate(GetPageScreenRect(pending_page));
+      }
     }
   }
   pending_pages_.swap(still_pending);
@@ -3110,7 +3113,9 @@ void PDFiumEngine::CalculateVisiblePages() {
   pending_pages_.clear();
   doc_loader_->ClearPendingRequests();
 
-  visible_pages_.clear();
+  std::vector<int> formerly_visible_pages;
+  std::swap(visible_pages_, formerly_visible_pages);
+
   pp::Rect visible_rect(plugin_size_);
   for (size_t i = 0; i < pages_.size(); ++i) {
     // Check an entire PageScreenRect, since we might need to repaint side
@@ -3119,7 +3124,12 @@ void PDFiumEngine::CalculateVisiblePages() {
     // outside page area.
     if (visible_rect.Intersects(GetPageScreenRect(i))) {
       visible_pages_.push_back(i);
-      CheckPageAvailable(i, &pending_pages_);
+      if (CheckPageAvailable(i, &pending_pages_)) {
+        auto it = std::find(formerly_visible_pages.begin(),
+                            formerly_visible_pages.end(), i);
+        if (it == formerly_visible_pages.end())
+          client_->NotifyPageBecameVisible(pages_[i]->GetPageFeatures());
+      }
     } else {
       // Need to unload pages when we're not using them, since some PDFs use a
       // lot of memory.  See http://crbug.com/48791

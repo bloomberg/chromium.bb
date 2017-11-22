@@ -176,6 +176,10 @@ enum PDFFeatures {
   FEATURES_COUNT
 };
 
+// Used for UMA. Do not delete entries, and keep in sync with histograms.xml
+// and pdfium/public/fpdf_annot.h.
+const int kAnnotationTypesCount = 28;
+
 PP_Var GetLinkAtPosition(PP_Instance instance, PP_Point point) {
   pp::Var var;
   void* object = pp::Instance::GetPerInstanceObject(instance, kPPPPdfInterface);
@@ -1174,8 +1178,11 @@ void OutOfProcessInstance::DocumentSizeUpdated(const pp::Size& size) {
   dimensions.Set(kJSDocumentWidth, pp::Var(document_size_.width()));
   dimensions.Set(kJSDocumentHeight, pp::Var(document_size_.height()));
   pp::VarArray page_dimensions_array;
-  int num_pages = engine_->GetNumberOfPages();
-  for (int i = 0; i < num_pages; ++i) {
+  size_t num_pages = engine_->GetNumberOfPages();
+  if (page_is_processed_.size() < num_pages)
+    page_is_processed_.resize(num_pages);
+
+  for (size_t i = 0; i < num_pages; ++i) {
     pp::Rect page_rect = engine_->GetPageRect(i);
     pp::VarDictionary page_dimensions;
     page_dimensions.Set(kJSPageX, pp::Var(page_rect.x()));
@@ -1294,6 +1301,30 @@ void OutOfProcessInstance::NotifySelectedFindResultChanged(
     int current_find_index) {
   DCHECK_GE(current_find_index, -1);
   SelectedFindResultChanged(current_find_index);
+}
+
+void OutOfProcessInstance::NotifyPageBecameVisible(
+    const PDFEngine::PageFeatures* page_features) {
+  if (!page_features || !page_features->IsInitialized() ||
+      page_features->index >= static_cast<int>(page_is_processed_.size()) ||
+      page_is_processed_[page_features->index]) {
+    return;
+  }
+
+  for (const int annotation_type : page_features->annotation_types) {
+    DCHECK_GE(annotation_type, 0);
+    DCHECK_LT(annotation_type, kAnnotationTypesCount);
+    if (annotation_type < 0 || annotation_type >= kAnnotationTypesCount)
+      continue;
+
+    if (annotation_types_counted_.find(annotation_type) ==
+        annotation_types_counted_.end()) {
+      HistogramEnumeration("PDF.AnnotationType", annotation_type,
+                           kAnnotationTypesCount);
+      annotation_types_counted_.insert(annotation_type);
+    }
+  }
+  page_is_processed_[page_features->index] = true;
 }
 
 void OutOfProcessInstance::GetDocumentPassword(
