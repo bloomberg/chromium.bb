@@ -65,8 +65,8 @@ interface DownloadedTempFile {
 interface URLLoaderClient {
   // Called when the response head is received.
   // |downloaded_file| is non-null in the 'download_to_file' case.
-  // |ssl_info| is non-null if kSendSSLInfo was specified to
-  // CreateLoaderAndStart.
+  // |ssl_info| is non-null if |kURLLoadOptionsSendSSLInfoWithResponse|
+  // was specified to CreateLoaderAndStart.
   OnReceiveResponse(URLResponseHead head,
                     SSLInfo? ssl_info,
                     DownloadedTempFile? downloaded_file);
@@ -107,7 +107,8 @@ interface URLLoaderClient {
   OnStartLoadingResponseBody(handle<data_pipe_consumer> body);
 
   // Called when the loading completes. No notification will be dispatched for
-  // this client after this message arrives.
+  // this client after this message arrives. |status| has its |ssl_info| field
+  // set only when |kURLLoadOptionsSendSSLInfoForCertificateError| was set.
   OnComplete(URLLoaderCompletionStatus status);
 };
 

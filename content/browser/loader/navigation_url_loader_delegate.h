@@ -60,12 +60,10 @@ class CONTENT_EXPORT NavigationURLLoaderDelegate {
   // network error code for the failure. |has_stale_copy_in_cache| is true if
   // there is a stale copy of the unreachable page in cache. |ssl_info| is the
   // SSL info for the request. |should_ssl_errors_be_fatal| indicates
-  // whether SSL errors for the request should be fatal.
-  // If |net_error| is a certificate error, the caller should pass a value for
-  // |ssl_info|. If |net_error| is not a certificate error, |ssl_info| and
-  // |fatal_cert_error| are ignored.
-  // TODO(https://crbug.com/757633): Change "should pass a value for |ssl_info|"
-  // to "must pass..."
+  // whether SSL errors for the request should be fatal. If |net_error| is a
+  // certificate error and the navigation request was for the main frame, the
+  // caller must pass a value for |ssl_info|. If |net_error| is not a
+  // certificate error, |ssl_info| and |should_ssl_errors_be_fatal| are ignored.
   virtual void OnRequestFailed(bool has_stale_copy_in_cache,
                                int net_error,
                                const base::Optional<net::SSLInfo>& ssl_info,

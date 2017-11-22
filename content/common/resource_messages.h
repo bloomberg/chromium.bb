@@ -308,6 +308,7 @@ IPC_STRUCT_TRAITS_BEGIN(network::URLLoaderCompletionStatus)
   IPC_STRUCT_TRAITS_MEMBER(encoded_body_length)
   IPC_STRUCT_TRAITS_MEMBER(decoded_body_length)
   IPC_STRUCT_TRAITS_MEMBER(cors_error_status)
+  IPC_STRUCT_TRAITS_MEMBER(ssl_info)
 IPC_STRUCT_TRAITS_END()
 
 // Resource messages sent from the browser to the renderer.

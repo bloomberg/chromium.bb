@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "net/ssl/ssl_info.h"
 #include "services/network/public/cpp/cors_error_status.h"
 #include "services/network/public/interfaces/cors.mojom-shared.h"
 
@@ -51,6 +52,9 @@ struct URLLoaderCompletionStatus {
 
   // Optional CORS error details.
   base::Optional<CORSErrorStatus> cors_error_status;
+
+  // Optional SSL certificate info.
+  base::Optional<net::SSLInfo> ssl_info;
 };
 
 }  // namespace network
