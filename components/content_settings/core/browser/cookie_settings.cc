@@ -71,6 +71,14 @@ bool CookieSettings::IsCookieSessionOnly(const GURL& origin) const {
   return (setting == CONTENT_SETTING_SESSION_ONLY);
 }
 
+bool CookieSettings::IsCookieSessionOnlyOrBlocked(const GURL& origin) const {
+  ContentSetting setting;
+  GetCookieSetting(origin, origin, nullptr, &setting);
+  DCHECK(IsValidSetting(setting));
+  return (setting == CONTENT_SETTING_SESSION_ONLY) ||
+         (setting == CONTENT_SETTING_BLOCK);
+}
+
 void CookieSettings::GetCookieSettings(
     ContentSettingsForOneType* settings) const {
   host_content_settings_map_->GetSettingsForOneType(

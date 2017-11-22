@@ -108,7 +108,7 @@ void SessionDataDeleter::DeleteSessionOnlyOriginCookies(
   for (const auto& cookie : cookies) {
     GURL url =
         net::cookie_util::CookieOriginToURL(cookie.Domain(), cookie.IsSecure());
-    if (!storage_policy_->IsStorageSessionOnly(url))
+    if (!storage_policy_->IsStorageSessionOnlyOrBlocked(url))
       continue;
 
     // Delete a single cookie by setting its expiration time into the past.
