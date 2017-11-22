@@ -225,9 +225,6 @@ InlineBoxPosition ComputeInlineBoxPositionForTextNode(
     int caret_offset,
     TextAffinity affinity,
     TextDirection primary_direction) {
-  // TODO(editing-dev): Add the following DCHECK when ready.
-  // DCHECK(CanUseInlineBox(*layout_object));
-
   InlineBox* inline_box = nullptr;
   InlineTextBox* candidate = nullptr;
 
@@ -269,15 +266,11 @@ InlineBoxPosition ComputeInlineBoxPositionForAtomicInline(
     const LayoutObject* layout_object,
     int caret_offset,
     TextDirection primary_direction) {
-  // TODO(crbug.com/567964): Change the following branch to DCHECK once fixed.
-  if (!layout_object->IsInline())
+  if (!layout_object->IsBox())
     return InlineBoxPosition();
-
-  // TODO(editing-dev): Add the following DCHECK when ready.
-  // DCHECK(CanUseInlineBox(*layout_object);
-  DCHECK(layout_object->IsBox());
-  DCHECK(ToLayoutBox(layout_object)->InlineBoxWrapper());
   InlineBox* const inline_box = ToLayoutBox(layout_object)->InlineBoxWrapper();
+  if (!inline_box)
+    return InlineBoxPosition();
   if ((caret_offset > inline_box->CaretMinOffset() &&
        caret_offset < inline_box->CaretMaxOffset()))
     return InlineBoxPosition(inline_box, caret_offset);
