@@ -49,7 +49,6 @@ enum class TabMutedResult {
   SUCCESS,
   FAIL_NOT_ENABLED,
   FAIL_TABCAPTURE,
-  FAIL_MUTE_DISALLOWED,
 };
 
 namespace chrome {
@@ -122,8 +121,8 @@ base::string16 AssembleTabAccessibilityLabel(const base::string16& title,
 bool AreExperimentalMuteControlsEnabled();
 
 // Returns true if audio mute can be activated/deactivated for the given
-// |contents| for the given |reason|.
-bool CanToggleAudioMute(content::WebContents* contents, TabMutedReason reason);
+// |contents|.
+bool CanToggleAudioMute(content::WebContents* contents);
 
 // Unmute a tab if it is currently muted at the request of the extension having
 // the given |extension_id|.
