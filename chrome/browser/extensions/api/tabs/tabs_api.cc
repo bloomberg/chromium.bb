@@ -1311,11 +1311,6 @@ bool TabsUpdateFunction::RunAsync() {
         error_ = ErrorUtils::FormatErrorMessage(keys::kCannotUpdateMuteCaptured,
                                                 base::IntToString(tab_id));
         return false;
-      case TabMutedResult::FAIL_MUTE_DISALLOWED:
-        // This error only happens when a tab is muted via
-        // TabMutedReason::CONTENT_SETTING, so this should never happen :).
-        NOTREACHED();
-        return false;
     }
   }
 
