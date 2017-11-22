@@ -12,7 +12,7 @@
 #include "chrome/browser/android/download/duplicate_download_infobar_delegate.h"
 #include "jni/DuplicateDownloadInfoBar_jni.h"
 
-using android::DuplicateDownloadInfoBarDelegate;
+using chrome::android::DuplicateDownloadInfoBarDelegate;
 
 // static
 std::unique_ptr<infobars::InfoBar> DuplicateDownloadInfoBar::CreateInfoBar(

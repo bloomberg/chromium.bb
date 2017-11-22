@@ -7,6 +7,7 @@
 
 #include "components/infobars/core/confirm_infobar_delegate.h"
 
+namespace chrome {
 namespace android {
 
 // An infobar that asks if user wants to continue downloading when there is
@@ -35,5 +36,6 @@ class DuplicateDownloadInfoBarDelegate : public ConfirmInfoBarDelegate {
 };
 
 }  // namespace android
+}  // namespace chrome
 
 #endif  // CHROME_BROWSER_ANDROID_DOWNLOAD_DUPLICATE_DOWNLOAD_INFOBAR_DELEGATE_H_

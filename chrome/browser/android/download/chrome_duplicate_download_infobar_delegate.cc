@@ -32,6 +32,7 @@ void CreateNewFileDone(
 
 }  // namespace
 
+namespace chrome {
 namespace android {
 
 ChromeDuplicateDownloadInfoBarDelegate::
@@ -129,3 +130,4 @@ void ChromeDuplicateDownloadInfoBarDelegate::RecordDuplicateInfobarType(
 }
 
 }  // namespace android
+}  // namespace chrome
