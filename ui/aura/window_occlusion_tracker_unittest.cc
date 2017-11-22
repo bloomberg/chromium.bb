@@ -1077,4 +1077,45 @@ TEST_F(WindowOcclusionTrackerTest, DestroyWindowWithPendingAnimation) {
   delete window;
 }
 
+// Verify that an animated window stops being considered as animated when its
+// layer is recreated.
+TEST_F(WindowOcclusionTrackerTest, RecreateLayerOfAnimatedWindow) {
+  ui::ScopedAnimationDurationScaleMode scoped_animation_duration_scale_mode(
+      ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+  ui::LayerAnimatorTestController test_controller(
+      ui::LayerAnimator::CreateImplicitAnimator());
+  ui::ScopedLayerAnimationSettings layer_animation_settings(
+      test_controller.animator());
+  layer_animation_settings.SetTransitionDuration(kTransitionDuration);
+
+  // Create 2 windows. Window b occludes window a.
+  MockWindowDelegate* delegate_a = new MockWindowDelegate();
+  delegate_a->set_expectation(WindowOcclusionChangedExpectation::NOT_OCCLUDED);
+  Window* window_a = CreateTrackedWindow(delegate_a, gfx::Rect(2, 2, 1, 1));
+  EXPECT_FALSE(delegate_a->is_expecting_call());
+  window_a->layer()->SetAnimator(test_controller.animator());
+
+  MockWindowDelegate* delegate_b = new MockWindowDelegate();
+  delegate_a->set_expectation(WindowOcclusionChangedExpectation::OCCLUDED);
+  delegate_b->set_expectation(WindowOcclusionChangedExpectation::NOT_OCCLUDED);
+  CreateTrackedWindow(delegate_b, gfx::Rect(0, 0, 10, 10));
+  EXPECT_FALSE(delegate_a->is_expecting_call());
+  EXPECT_FALSE(delegate_b->is_expecting_call());
+
+  // Start animating the bounds of window a. Window a should be non-occluded
+  // when the animation starts.
+  delegate_a->set_expectation(WindowOcclusionChangedExpectation::NOT_OCCLUDED);
+  window_a->SetBounds(gfx::Rect(6, 6, 1, 1));
+  test_controller.Step(kTransitionDuration / 2);
+  EXPECT_FALSE(delegate_a->is_expecting_call());
+
+  // Recreate the layer of window b. Expect this to behave the same as if the
+  // animation was abandoned.
+  delegate_a->set_expectation(WindowOcclusionChangedExpectation::OCCLUDED);
+  std::unique_ptr<ui::Layer> old_layer = window_a->RecreateLayer();
+  EXPECT_FALSE(delegate_a->is_expecting_call());
+
+  window_a->layer()->SetAnimator(nullptr);
+}
+
 }  // namespace aura

@@ -160,6 +160,7 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
   void OnWindowAddedToRootWindow(Window* window) override;
   void OnWindowRemovingFromRootWindow(Window* window,
                                       Window* new_root) override;
+  void OnWindowLayerRecreated(Window* window) override;
 
   struct RootWindowState {
     // Number of Windows whose occlusion state is tracked under this root
