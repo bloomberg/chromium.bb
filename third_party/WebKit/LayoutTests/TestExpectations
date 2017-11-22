@@ -773,7 +773,6 @@ crbug.com/776656 virtual/incremental-shadow-dom/shadow-dom/slotted-pseudo-elemen
 crbug.com/776656 virtual/incremental-shadow-dom/shadow-dom/slotted-pseudo-element-shared-style.html [ Failure ]
 crbug.com/776656 virtual/incremental-shadow-dom/shadow-dom/slotted-pseudo-element.html [ Failure ]
 crbug.com/776656 virtual/incremental-shadow-dom/shadow-dom/v0/get-destination-insertion-points-re-distribution.html [ Failure Crash ]
-crbug.com/776656 virtual/incremental-shadow-dom/shadow-dom/v0/v0-inert-features-in-v1-shadow-trees.html [ Failure Crash ]
 
 # ====== IncrementalShadowDOM-only failures until here ======
 
