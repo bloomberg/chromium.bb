@@ -279,7 +279,10 @@ void VrMetricsHelper::SetVrMode(VRMode mode) {
   mode_ = mode;
 }
 
-VrMetricsHelper::VrMetricsHelper(content::WebContents* contents) {
+VrMetricsHelper::VrMetricsHelper(content::WebContents* contents,
+                                 VRMode initial_mode)
+    : is_webvr_(initial_mode == VRMode::WEBVR),
+      is_vr_enabled_(initial_mode != VRMode::NO_VR) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   num_videos_playing_ = contents->GetCurrentlyPlayingVideoCount();
@@ -292,6 +295,8 @@ VrMetricsHelper::VrMetricsHelper(content::WebContents* contents) {
   session_video_timer_ =
       base::MakeUnique<SessionTimerImpl<SESSION_VR_WITH_VIDEO>>(
           kMaximumVideoSessionGap, kMinimumVideoSessionDuration);
+
+  UpdateMode();
 }
 
 VrMetricsHelper::~VrMetricsHelper() = default;

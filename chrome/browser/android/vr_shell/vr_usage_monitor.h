@@ -54,7 +54,7 @@ class SessionTimer {
 // This class is not thread-safe and must only be used from the main thread.
 class VrMetricsHelper : public content::WebContentsObserver {
  public:
-  explicit VrMetricsHelper(content::WebContents* contents);
+  explicit VrMetricsHelper(content::WebContents* contents, VRMode initial_mode);
   ~VrMetricsHelper() override;
 
   void SetWebVREnabled(bool is_webvr_presenting);

@@ -218,10 +218,9 @@ void VrShell::SwapContents(
           GetNonNativePageWebContents());
   // TODO(billorr): Make VrMetricsHelper tab-aware and able to track multiple
   // tabs. crbug.com/684661
-  metrics_helper_ =
-      base::MakeUnique<VrMetricsHelper>(GetNonNativePageWebContents());
-  metrics_helper_->SetVRActive(true);
-  metrics_helper_->SetWebVREnabled(webvr_mode_);
+  metrics_helper_ = base::MakeUnique<VrMetricsHelper>(
+      GetNonNativePageWebContents(),
+      webvr_mode_ ? VRMode::WEBVR : VRMode::VR_BROWSER);
 }
 
 void VrShell::SetUiState() {
