@@ -982,8 +982,11 @@ public class DownloadManagerService
      */
     @Override
     public void removeDownload(final String downloadGuid, boolean isOffTheRecord) {
-        nativeRemoveDownload(getNativeDownloadManagerService(), downloadGuid, isOffTheRecord);
-        removeDownloadProgress(downloadGuid);
+        mHandler.post(() -> {
+            nativeRemoveDownload(getNativeDownloadManagerService(), downloadGuid, isOffTheRecord);
+            removeDownloadProgress(downloadGuid);
+        });
+
         new AsyncTask<Void, Void, Void>() {
             @Override
             public Void doInBackground(Void... params) {
