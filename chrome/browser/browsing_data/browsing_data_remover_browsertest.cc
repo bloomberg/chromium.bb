@@ -155,8 +155,7 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
     EXPECT_EQ(0, GetSiteDataCount());
     GURL url = embedded_test_server()->GetURL("/browsing_data/site_data.html");
     ui_test_utils::NavigateToURL(browser(), url);
-    // We don't want to measure site engagement entries.
-    RemoveSiteEngagement();
+
     EXPECT_EQ(0, GetSiteDataCount());
     EXPECT_FALSE(HasDataForType(type));
 
@@ -175,7 +174,6 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
     EXPECT_EQ(0, GetSiteDataCount());
     GURL url = embedded_test_server()->GetURL("/browsing_data/site_data.html");
     ui_test_utils::NavigateToURL(browser(), url);
-    RemoveSiteEngagement();
     EXPECT_EQ(0, GetSiteDataCount());
     // Opening a store of this type creates a site data entry.
     EXPECT_FALSE(HasDataForType(type));
@@ -190,11 +188,6 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
 
   void SetDataForType(const std::string& type) {
     ASSERT_TRUE(RunScriptAndGetBool("set" + type + "()"));
-  }
-
-  void RemoveSiteEngagement() {
-    HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-        ->ClearSettingsForOneType(CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT);
   }
 
   int GetSiteDataCount() {
@@ -407,16 +400,6 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
   block_state = ExternalProtocolHandler::GetBlockState("tel", profile);
   ASSERT_EQ(ExternalProtocolHandler::UNKNOWN, block_state);
 }
-// Visiting a site creates a site engagement entry. Test that it is counted and
-// deleted properly.
-IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, SiteEngagementDeletion) {
-  EXPECT_EQ(0, GetSiteDataCount());
-  GURL url = embedded_test_server()->GetURL("/browsing_data/site_data.html");
-  ui_test_utils::NavigateToURL(browser(), url);
-  EXPECT_EQ(1, GetSiteDataCount());
-  RemoveAndWait(ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA);
-  EXPECT_EQ(0, GetSiteDataCount());
-}
 
 IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, CookieDeletion) {
   TestSiteData("Cookie");
@@ -437,7 +420,6 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, SessionStorageCounting) {
   EXPECT_EQ(0, GetSiteDataCount());
   GURL url = embedded_test_server()->GetURL("/browsing_data/site_data.html");
   ui_test_utils::NavigateToURL(browser(), url);
-  RemoveSiteEngagement();
   EXPECT_EQ(0, GetSiteDataCount());
   SetDataForType("SessionStorage");
   EXPECT_EQ(0, GetSiteDataCount());
