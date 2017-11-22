@@ -24,8 +24,8 @@
  *
  */
 
-#ifndef SuspendableTimer_h
-#define SuspendableTimer_h
+#ifndef PausableTimer_h
+#define PausableTimer_h
 
 #include "core/CoreExport.h"
 #include "core/dom/PausableObject.h"
@@ -33,10 +33,10 @@
 
 namespace blink {
 
-class CORE_EXPORT SuspendableTimer : public TimerBase, public PausableObject {
+class CORE_EXPORT PausableTimer : public TimerBase, public PausableObject {
  public:
-  explicit SuspendableTimer(ExecutionContext*, TaskType);
-  ~SuspendableTimer() override;
+  explicit PausableTimer(ExecutionContext*, TaskType);
+  ~PausableTimer() override;
 
   // PausableObject
   void ContextDestroyed(ExecutionContext*) override;
@@ -51,10 +51,10 @@ class CORE_EXPORT SuspendableTimer : public TimerBase, public PausableObject {
   double next_fire_interval_;
   double repeat_interval_;
 #if DCHECK_IS_ON()
-  bool suspended_ = false;
+  bool paused_ = false;
 #endif
 };
 
 }  // namespace blink
 
-#endif  // SuspendableTimer_h
+#endif  // PausableTimer_h

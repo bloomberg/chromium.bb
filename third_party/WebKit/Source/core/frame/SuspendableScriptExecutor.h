@@ -7,7 +7,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
-#include "core/frame/SuspendableTimer.h"
+#include "core/frame/PausableTimer.h"
 #include "platform/bindings/DOMWrapperWorld.h"
 #include "platform/heap/Handle.h"
 #include "platform/heap/SelfKeepAlive.h"
@@ -23,7 +23,7 @@ class WebScriptExecutionCallback;
 
 class CORE_EXPORT SuspendableScriptExecutor final
     : public GarbageCollectedFinalized<SuspendableScriptExecutor>,
-      public SuspendableTimer {
+      public PausableTimer {
   USING_GARBAGE_COLLECTED_MIXIN(SuspendableScriptExecutor);
 
  public:

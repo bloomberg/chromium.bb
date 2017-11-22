@@ -29,7 +29,7 @@
 #include "base/macros.h"
 #include "core/dom/events/Event.h"
 #include "core/frame/LocalDOMWindow.h"
-#include "core/frame/SuspendableTimer.h"
+#include "core/frame/PausableTimer.h"
 #include "core/probe/CoreProbes.h"
 #include "public/platform/TaskType.h"
 
@@ -37,7 +37,7 @@ namespace blink {
 
 class DOMWindowEventQueueTimer final
     : public GarbageCollectedFinalized<DOMWindowEventQueueTimer>,
-      public SuspendableTimer {
+      public PausableTimer {
   USING_GARBAGE_COLLECTED_MIXIN(DOMWindowEventQueueTimer);
 
  public:
@@ -46,7 +46,7 @@ class DOMWindowEventQueueTimer final
       // This queue is unthrottled because throttling IndexedDB events may break
       // scenarios where several tabs, some of which are backgrounded, access
       // the same database concurrently.
-      : SuspendableTimer(context, TaskType::kUnthrottled),
+      : PausableTimer(context, TaskType::kUnthrottled),
         event_queue_(event_queue) {}
 
   // Eager finalization is needed to promptly stop this timer object.
@@ -54,7 +54,7 @@ class DOMWindowEventQueueTimer final
   EAGERLY_FINALIZE();
   virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(event_queue_);
-    SuspendableTimer::Trace(visitor);
+    PausableTimer::Trace(visitor);
   }
 
  private:

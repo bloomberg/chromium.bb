@@ -83,7 +83,7 @@ DOMTimer::DOMTimer(ExecutionContext* context,
                    int interval,
                    bool single_shot,
                    int timeout_id)
-    : SuspendableTimer(context, TaskType::kJavascriptTimer),
+    : PausableTimer(context, TaskType::kJavascriptTimer),
       timeout_id_(timeout_id),
       nesting_level_(context->Timers()->TimerNestingLevel() + 1),
       action_(action) {
@@ -131,7 +131,7 @@ void DOMTimer::Stop() {
   if (action_)
     action_->Dispose();
   action_ = nullptr;
-  SuspendableTimer::Stop();
+  PausableTimer::Stop();
 }
 
 void DOMTimer::ContextDestroyed(ExecutionContext*) {
@@ -196,7 +196,7 @@ scoped_refptr<WebTaskRunner> DOMTimer::TimerTaskRunner() const {
 
 void DOMTimer::Trace(blink::Visitor* visitor) {
   visitor->Trace(action_);
-  SuspendableTimer::Trace(visitor);
+  PausableTimer::Trace(visitor);
 }
 
 }  // namespace blink
