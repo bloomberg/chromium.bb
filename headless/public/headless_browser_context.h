@@ -14,6 +14,7 @@
 #include "base/callback.h"
 #include "base/optional.h"
 #include "content/public/common/web_preferences.h"
+#include "headless/lib/browser/headless_network_conditions.h"
 #include "headless/public/headless_export.h"
 #include "headless/public/headless_web_contents.h"
 #include "net/proxy/proxy_service.h"
@@ -68,6 +69,8 @@ class HEADLESS_EXPORT HeadlessBrowserContext {
 
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
+
+  virtual HeadlessNetworkConditions GetNetworkConditions() = 0;
 
   // TODO(skyostil): Allow saving and restoring contexts (crbug.com/617931).
 
