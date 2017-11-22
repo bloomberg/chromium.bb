@@ -4,6 +4,7 @@
 
 #include "modules/animationworklet/WorkletAnimation.h"
 
+#include "bindings/modules/v8/animation_effect_read_only_or_animation_effect_read_only_sequence.h"
 #include "core/animation/ElementAnimations.h"
 #include "core/animation/KeyframeEffectModel.h"
 #include "core/animation/ScrollTimeline.h"
@@ -18,23 +19,48 @@
 namespace blink {
 
 namespace {
-bool ValidateEffects(const HeapVector<Member<KeyframeEffectReadOnly>>& effects,
-                     String& error_string) {
-  if (effects.IsEmpty()) {
+bool ConvertAnimationEffects(
+    const AnimationEffectReadOnlyOrAnimationEffectReadOnlySequence& effects,
+    HeapVector<Member<KeyframeEffectReadOnly>>& keyframe_effects,
+    String& error_string) {
+  DCHECK(keyframe_effects.IsEmpty());
+
+  // Currently we only support KeyframeEffectReadOnly (and its subclasses).
+  if (effects.IsAnimationEffectReadOnly()) {
+    const auto& effect = effects.GetAsAnimationEffectReadOnly();
+    if (!effect->IsKeyframeEffectReadOnly()) {
+      error_string = "Effect must be a KeyframeEffectReadOnly object";
+      return false;
+    }
+    keyframe_effects.push_back(ToKeyframeEffectReadOnly(effect));
+  } else {
+    const HeapVector<Member<AnimationEffectReadOnly>>& effect_sequence =
+        effects.GetAsAnimationEffectReadOnlySequence();
+    keyframe_effects.ReserveInitialCapacity(effect_sequence.size());
+    for (const auto& effect : effect_sequence) {
+      if (!effect->IsKeyframeEffectReadOnly()) {
+        error_string = "Effects must all be KeyframeEffectReadOnly objects";
+        return false;
+      }
+      keyframe_effects.push_back(ToKeyframeEffectReadOnly(effect));
+    }
+  }
+
+  if (keyframe_effects.IsEmpty()) {
     error_string = "Effects array must be non-empty";
     return false;
   }
 
   // TODO(crbug.com/781816): Allow using effects with no target.
-  for (const auto& effect : effects) {
+  for (const auto& effect : keyframe_effects) {
     if (!effect->Target()) {
       error_string = "All effect targets must exist";
       return false;
     }
   }
 
-  Document& target_document = effects.at(0)->Target()->GetDocument();
-  for (const auto& effect : effects) {
+  Document& target_document = keyframe_effects.at(0)->Target()->GetDocument();
+  for (const auto& effect : keyframe_effects) {
     if (effect->Target()->GetDocument() != target_document) {
       error_string = "All effects must target elements in the same document";
       return false;
@@ -123,14 +149,15 @@ std::unique_ptr<CompositorScrollTimeline> ToCompositorScrollTimeline(
 
 WorkletAnimation* WorkletAnimation::Create(
     String animator_name,
-    const HeapVector<Member<KeyframeEffectReadOnly>>& effects,
+    const AnimationEffectReadOnlyOrAnimationEffectReadOnlySequence& effects,
     DocumentTimelineOrScrollTimeline timeline,
     scoped_refptr<SerializedScriptValue> options,
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
+  HeapVector<Member<KeyframeEffectReadOnly>> keyframe_effects;
   String error_string;
-  if (!ValidateEffects(effects, error_string)) {
+  if (!ConvertAnimationEffects(effects, keyframe_effects, error_string)) {
     exception_state.ThrowDOMException(kNotSupportedError, error_string);
     return nullptr;
   }
@@ -140,9 +167,9 @@ WorkletAnimation* WorkletAnimation::Create(
     return nullptr;
   }
 
-  Document& document = effects.at(0)->Target()->GetDocument();
+  Document& document = keyframe_effects.at(0)->Target()->GetDocument();
   WorkletAnimation* animation = new WorkletAnimation(
-      animator_name, document, effects, timeline, std::move(options));
+      animator_name, document, keyframe_effects, timeline, std::move(options));
 
   return animation;
 }
