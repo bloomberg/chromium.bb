@@ -864,8 +864,11 @@ void UiSceneManager::CreateController() {
   group->set_hit_testable(false);
   group->SetTransitionedProperties({OPACITY});
   group->AddBinding(base::MakeUnique<Binding<bool>>(
-      base::Bind([](Model* m) { return !m->controller.quiescent; },
-                 base::Unretained(model_)),
+      base::Bind(
+          [](Model* m) {
+            return !m->controller.quiescent || !m->skips_redraw_when_not_dirty;
+          },
+          base::Unretained(model_)),
       base::Bind(
           [](UiElement* e, const bool& visible) {
             e->SetTransitionDuration(base::TimeDelta::FromMilliseconds(

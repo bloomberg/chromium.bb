@@ -53,6 +53,8 @@ Ui::Ui(UiBrowserInterface* browser,
   model_->web_vr_mode = ui_initial_state.in_web_vr;
   model_->in_cct = ui_initial_state.in_cct;
   model_->browsing_disabled = ui_initial_state.browsing_disabled;
+  model_->skips_redraw_when_not_dirty =
+      ui_initial_state.skips_redraw_when_not_dirty;
 
   UiSceneManager(browser, scene_.get(), content_input_delegate_.get(),
                  model_.get())
@@ -247,6 +249,10 @@ void Ui::OnPlatformControllerInitialized(PlatformController* controller) {
 bool Ui::IsControllerVisible() const {
   UiElement* controller_group = scene_->GetUiElementByName(kControllerGroup);
   return controller_group && controller_group->GetTargetOpacity() > 0.0f;
+}
+
+bool Ui::SkipsRedrawWhenNotDirty() const {
+  return model_->skips_redraw_when_not_dirty;
 }
 
 void Ui::Dump() {

@@ -33,6 +33,7 @@ struct UiInitialState {
   bool web_vr_autopresentation_expected = false;
   bool browsing_disabled = false;
   bool has_or_can_request_audio_permission = true;
+  bool skips_redraw_when_not_dirty = false;
 };
 
 // This class manages all GLThread owned objects and GL rendering for VrShell.
@@ -94,6 +95,7 @@ class Ui : public BrowserUiInterface {
   void OnWebVrTimedOut();
   void OnWebVrTimeoutImminent();
   bool IsControllerVisible() const;
+  bool SkipsRedrawWhenNotDirty() const;
   void OnSwapContents(int new_content_id);
   void OnContentBoundsChanged(int width, int height);
   void OnPlatformControllerInitialized(PlatformController* controller);

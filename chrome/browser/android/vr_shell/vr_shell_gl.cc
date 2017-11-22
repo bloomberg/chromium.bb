@@ -228,8 +228,6 @@ VrShellGl::VrShellGl(GlBrowserInterface* browser_interface,
       fps_meter_(new vr::FPSMeter()),
       webvr_js_time_(new vr::SlidingAverage(kWebVRSlidingAverageSize)),
       webvr_render_time_(new vr::SlidingAverage(kWebVRSlidingAverageSize)),
-      skips_redraw_when_not_dirty_(base::FeatureList::IsEnabled(
-          features::kVrBrowsingExperimentalRendering)),
       weak_ptr_factory_(this) {
   GvrInit(gvr_api);
 }
@@ -906,7 +904,7 @@ void VrShellGl::DrawFrame(int16_t frame_index, base::TimeTicks current_time) {
 
   bool dirty = ShouldDrawWebVr() || head_moved || redraw_needed;
 
-  if (!dirty && skips_redraw_when_not_dirty_)
+  if (!dirty && ui_->SkipsRedrawWhenNotDirty())
     return;
 
   TRACE_EVENT_BEGIN0("gpu", "VrShellGl::AcquireFrame");

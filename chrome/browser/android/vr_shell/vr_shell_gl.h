@@ -265,7 +265,6 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   std::vector<gvr::BufferSpec> specs_;
 
   bool content_frame_available_ = false;
-  bool skips_redraw_when_not_dirty_;
   gfx::Transform last_used_head_pose_;
 
   bool keyboard_enabled_ = false;

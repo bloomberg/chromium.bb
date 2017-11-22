@@ -951,6 +951,8 @@ jlong JNI_VrShellImpl_Init(JNIEnv* env,
       web_vr_autopresentation_expected;
   ui_initial_state.has_or_can_request_audio_permission =
       has_or_can_request_audio_permission;
+  ui_initial_state.skips_redraw_when_not_dirty =
+      base::FeatureList::IsEnabled(features::kVrBrowsingExperimentalRendering);
 
   return reinterpret_cast<intptr_t>(new VrShell(
       env, obj, reinterpret_cast<ui::WindowAndroid*>(window_android),
