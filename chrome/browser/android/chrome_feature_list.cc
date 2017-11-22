@@ -21,6 +21,7 @@
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/payments/core/features.h"
+#include "components/safe_browsing/features.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "content/public/common/content_features.h"
 #include "jni/ChromeFeatureList_jni.h"
@@ -129,6 +130,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &omnibox::kAndroidChromeHomePersonalizedSuggestions,
     &password_manager::features::kViewPasswords,
     &subresource_filter::kSafeBrowsingSubresourceFilterExperimentalUI,
+    &safe_browsing::kDispatchSafetyNetCheckOffThread,
 };
 
 const base::Feature* FindFeatureExposedToJava(const std::string& feature_name) {

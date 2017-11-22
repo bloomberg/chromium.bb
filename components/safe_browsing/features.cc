@@ -51,6 +51,9 @@ const base::Feature kTriggerThrottlerDailyQuotaFeature{
     "SafeBrowsingTriggerThrottlerDailyQuota",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kDispatchSafetyNetCheckOffThread{
+    "DispatchSafetyNetCheckOffThread", base::FEATURE_DISABLED_BY_DEFAULT};
+
 namespace {
 // List of experimental features. Boolean value for each list member should be
 // set to true if the experiment is currently running at a probability other
@@ -67,6 +70,7 @@ constexpr struct {
     {&kParallelUrlCheck, true},
     {&kThreatDomDetailsTagAndAttributeFeature, false},
     {&kTriggerThrottlerDailyQuotaFeature, false},
+    {&kDispatchSafetyNetCheckOffThread, false},
 };
 
 // Adds the name and the enabled/disabled status of a given feature.

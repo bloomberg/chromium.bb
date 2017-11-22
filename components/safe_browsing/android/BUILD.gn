@@ -71,6 +71,7 @@ source_set("safe_browsing_api_handler") {
   deps = [
     ":safe_browsing_api_handler_util",
     "//base",
+    "//components/safe_browsing:features",
     "//components/safe_browsing/db:util",
     "//content/public/browser:browser",
     "//url",
