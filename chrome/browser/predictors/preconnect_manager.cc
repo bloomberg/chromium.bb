@@ -7,9 +7,12 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/predictors/resource_prefetch_predictor.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_hints.h"
 #include "net/base/net_errors.h"
+#include "net/http/transport_security_state.h"
+#include "net/url_request/url_request_context.h"
 
 namespace predictors {
 
@@ -40,13 +43,15 @@ PreresolveInfo::PreresolveInfo(const GURL& url, size_t count)
 PreresolveInfo::~PreresolveInfo() = default;
 
 PreresolveJob::PreresolveJob(const GURL& url,
-                             bool need_preconnect,
+                             int num_sockets,
                              bool allow_credentials,
                              PreresolveInfo* info)
     : url(url),
-      need_preconnect(need_preconnect),
+      num_sockets(num_sockets),
       allow_credentials(allow_credentials),
-      info(info) {}
+      info(info) {
+  DCHECK_GE(num_sockets, 0);
+}
 
 PreresolveJob::PreresolveJob(const PreresolveJob& other) = default;
 PreresolveJob::~PreresolveJob() = default;
@@ -67,28 +72,20 @@ PreconnectManager::~PreconnectManager() {
 }
 
 void PreconnectManager::Start(const GURL& url,
-                              const std::vector<GURL>& preconnect_origins,
-                              const std::vector<GURL>& preresolve_hosts) {
+                              std::vector<PreconnectRequest>&& requests) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   const std::string host = url.host();
   if (preresolve_info_.find(host) != preresolve_info_.end())
     return;
 
   auto iterator_and_whether_inserted = preresolve_info_.emplace(
-      host, base::MakeUnique<PreresolveInfo>(
-                url, preconnect_origins.size() + preresolve_hosts.size()));
+      host, base::MakeUnique<PreresolveInfo>(url, requests.size()));
   PreresolveInfo* info = iterator_and_whether_inserted.first->second.get();
 
-  for (const GURL& origin : preconnect_origins) {
-    DCHECK(origin.GetOrigin() == origin);
-    queued_jobs_.emplace_back(origin, true /* need_preconnect */,
-                              kAllowCredentialsOnPreconnectByDefault, info);
-  }
-
-  for (const GURL& host : preresolve_hosts) {
-    DCHECK(host.GetOrigin() == host);
-    queued_jobs_.emplace_back(host, false /* need_preconnect */,
-                              kAllowCredentialsOnPreconnectByDefault, info);
+  for (const auto& request : requests) {
+    DCHECK(request.origin.GetOrigin() == request.origin);
+    queued_jobs_.emplace_back(request.origin, request.num_sockets,
+                              request.allow_credentials, info);
   }
 
   TryToLaunchPreresolveJobs();
@@ -98,7 +95,7 @@ void PreconnectManager::StartPreresolveHost(const GURL& url) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   if (!url.SchemeIsHTTPOrHTTPS())
     return;
-  queued_jobs_.emplace_front(url.GetOrigin(), false /* need_preconnect */,
+  queued_jobs_.emplace_front(url.GetOrigin(), 0,
                              kAllowCredentialsOnPreconnectByDefault, nullptr);
 
   TryToLaunchPreresolveJobs();
@@ -109,8 +106,7 @@ void PreconnectManager::StartPreresolveHosts(
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   // Push jobs in front of the queue due to higher priority.
   for (auto it = hostnames.rbegin(); it != hostnames.rend(); ++it) {
-    queued_jobs_.emplace_front(GURL("http://" + *it),
-                               false /* need_preconnect */,
+    queued_jobs_.emplace_front(GURL("http://" + *it), 0,
                                kAllowCredentialsOnPreconnectByDefault, nullptr);
   }
 
@@ -122,8 +118,7 @@ void PreconnectManager::StartPreconnectUrl(const GURL& url,
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   if (!url.SchemeIsHTTPOrHTTPS())
     return;
-  queued_jobs_.emplace_front(url.GetOrigin(), true /* need_preconnect */,
-                             allow_credentials, nullptr);
+  queued_jobs_.emplace_front(url.GetOrigin(), 1, allow_credentials, nullptr);
 
   TryToLaunchPreresolveJobs();
 }
@@ -140,11 +135,12 @@ void PreconnectManager::Stop(const GURL& url) {
 
 void PreconnectManager::PreconnectUrl(const GURL& url,
                                       const GURL& site_for_cookies,
+                                      int num_sockets,
                                       bool allow_credentials) const {
   DCHECK(url.GetOrigin() == url);
   DCHECK(url.SchemeIsHTTPOrHTTPS());
-  content::PreconnectUrl(context_getter_.get(), url, site_for_cookies, 1,
-                         allow_credentials,
+  content::PreconnectUrl(context_getter_.get(), url, site_for_cookies,
+                         num_sockets, allow_credentials,
                          net::HttpRequestInfo::PRECONNECT_MOTIVATED);
 }
 
@@ -208,9 +204,11 @@ void PreconnectManager::FinishPreresolve(const PreresolveJob& job,
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   PreresolveInfo* info = job.info;
   bool need_preconnect =
-      found && job.need_preconnect && (!info || !info->was_canceled);
-  if (need_preconnect)
-    PreconnectUrl(job.url, info ? info->url : GURL(), job.allow_credentials);
+      found && job.need_preconnect() && (!info || !info->was_canceled);
+  if (need_preconnect) {
+    PreconnectUrl(GetHSTSRedirect(job.url), info ? info->url : GURL(),
+                  job.num_sockets, job.allow_credentials);
+  }
   if (info && found)
     info->stats->requests_stats.emplace_back(job.url, cached, need_preconnect);
 }
@@ -226,6 +224,24 @@ void PreconnectManager::AllPreresolvesForUrlFinished(PreresolveInfo* info) {
       base::BindOnce(&Delegate::PreconnectFinished, delegate_,
                      std::move(info->stats)));
   preresolve_info_.erase(it);
+}
+
+GURL PreconnectManager::GetHSTSRedirect(const GURL& url) const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  if (!url.SchemeIs(url::kHttpScheme))
+    return url;
+
+  auto* transport_security_state =
+      context_getter_->GetURLRequestContext()->transport_security_state();
+  if (!transport_security_state)
+    return url;
+
+  if (!transport_security_state->ShouldUpgradeToSSL(url.host()))
+    return url;
+
+  GURL::Replacements replacements;
+  replacements.SetSchemeStr(url::kHttpsScheme);
+  return url.ReplaceComponents(replacements);
 }
 
 }  // namespace predictors

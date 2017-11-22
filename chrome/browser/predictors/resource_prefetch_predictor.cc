@@ -121,6 +121,11 @@ void InitializeOnDBSequence(
 
 }  // namespace
 
+PreconnectRequest::PreconnectRequest(const GURL& origin, int num_sockets)
+    : origin(origin), num_sockets(num_sockets) {
+  DCHECK_GE(num_sockets, 0);
+}
+
 PreconnectPrediction::PreconnectPrediction() = default;
 PreconnectPrediction::PreconnectPrediction(
     const PreconnectPrediction& prediction) = default;
@@ -359,8 +364,7 @@ bool ResourcePrefetchPredictor::GetPrefetchData(
 bool ResourcePrefetchPredictor::PredictPreconnectOrigins(
     const GURL& url,
     PreconnectPrediction* prediction) const {
-  DCHECK(!prediction || (prediction->preconnect_origins.empty() &&
-                         prediction->preresolve_hosts.empty()));
+  DCHECK(!prediction || prediction->requests.empty());
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (initialization_state_ != INITIALIZED)
     return false;
@@ -389,9 +393,9 @@ bool ResourcePrefetchPredictor::PredictPreconnectOrigins(
     has_any_prediction = true;
     if (prediction) {
       if (confidence > kMinOriginConfidenceToTriggerPreconnect)
-        prediction->preconnect_origins.emplace_back(origin.origin());
+        prediction->requests.emplace_back(GURL(origin.origin()), 1);
       else
-        prediction->preresolve_hosts.emplace_back(origin.origin());
+        prediction->requests.emplace_back(GURL(origin.origin()), 0);
     }
   }
 

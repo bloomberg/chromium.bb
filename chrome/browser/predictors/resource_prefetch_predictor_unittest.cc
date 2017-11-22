@@ -4,6 +4,7 @@
 
 #include "chrome/browser/predictors/resource_prefetch_predictor.h"
 
+#include <algorithm>
 #include <iostream>
 #include <memory>
 #include <utility>
@@ -1208,9 +1209,10 @@ TEST_F(ResourcePrefetchPredictorTest, TestPredictPreconnectOrigins) {
   EXPECT_TRUE(predictor_->IsUrlPreconnectable(main_frame_url));
   EXPECT_TRUE(
       predictor_->PredictPreconnectOrigins(main_frame_url, prediction.get()));
-  EXPECT_EQ(*prediction, CreatePreconnectPrediction("google.com", false,
-                                                    {GURL(gen_origin(1))},
-                                                    {GURL(gen_origin(2))}));
+  EXPECT_EQ(*prediction,
+            CreatePreconnectPrediction(
+                "google.com", false,
+                {{GURL(gen_origin(1)), 1}, {GURL(gen_origin(2)), 0}}));
 
   // Add a redirect.
   RedirectData redirect = CreateRedirectData("google.com", 3);
@@ -1235,9 +1237,9 @@ TEST_F(ResourcePrefetchPredictorTest, TestPredictPreconnectOrigins) {
   EXPECT_TRUE(predictor_->IsUrlPreconnectable(main_frame_url));
   EXPECT_TRUE(
       predictor_->PredictPreconnectOrigins(main_frame_url, prediction.get()));
-  EXPECT_EQ(*prediction, CreatePreconnectPrediction("www.google.com", true,
-                                                    {GURL(gen_origin(4))},
-                                                    std::vector<GURL>()));
+  EXPECT_EQ(*prediction,
+            CreatePreconnectPrediction("www.google.com", true,
+                                       {{GURL(gen_origin(4)), 1}}));
 }
 
 }  // namespace predictors
