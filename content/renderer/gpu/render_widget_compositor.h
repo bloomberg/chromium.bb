@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "cc/input/browser_controls_state.h"
+#include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_single_thread_client.h"
 #include "cc/trees/layer_tree_settings.h"
@@ -219,6 +220,10 @@ class CONTENT_EXPORT RenderWidgetCompositor
   void DidSubmitCompositorFrame() override;
   void DidLoseLayerTreeFrameSink() override;
   void RequestBeginMainFrameNotExpected(bool new_state) override;
+
+  const cc::LayerTreeSettings& GetLayerTreeSettings() const {
+    return layer_tree_host_->GetSettings();
+  }
 
  protected:
   friend class RenderViewImplScaleFactorTest;

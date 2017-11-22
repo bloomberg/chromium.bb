@@ -7,7 +7,7 @@
 
 #include "cc/resources/layer_tree_resource_provider.h"
 #include "cc/resources/video_resource_updater.h"
-#include "components/viz/common/resources/resource_settings.h"
+#include "cc/trees/layer_tree_settings.h"
 #include "media/base/video_frame.h"
 #include "platform/PlatformExport.h"
 #include "public/platform/WebVideoFrameSubmitter.h"
@@ -30,7 +30,8 @@ class PLATFORM_EXPORT VideoFrameResourceProvider {
  public:
   explicit VideoFrameResourceProvider(WebContextProviderCallback,
                                       viz::SharedBitmapManager*,
-                                      gpu::GpuMemoryBufferManager*);
+                                      gpu::GpuMemoryBufferManager*,
+                                      const cc::LayerTreeSettings&);
 
   virtual ~VideoFrameResourceProvider();
 
@@ -48,7 +49,7 @@ class PLATFORM_EXPORT VideoFrameResourceProvider {
   WebContextProviderCallback context_provider_callback_;
   viz::SharedBitmapManager* shared_bitmap_manager_;
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager_;
-  viz::ResourceSettings resource_settings_;
+  cc::LayerTreeSettings settings_;
   std::unique_ptr<cc::LayerTreeResourceProvider> resource_provider_;
   std::unique_ptr<cc::VideoResourceUpdater> resource_updater_;
   viz::ContextProvider* context_provider_ = nullptr;

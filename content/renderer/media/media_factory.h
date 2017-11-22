@@ -36,6 +36,10 @@ class WebMediaPlayerClient;
 class WebMediaPlayerEncryptedMediaClient;
 }
 
+namespace cc {
+class LayerTreeSettings;
+}
+
 namespace media {
 class CdmFactory;
 class DecoderFactory;
@@ -100,7 +104,8 @@ class MediaFactory {
       blink::WebMediaPlayerEncryptedMediaClient* encrypted_client,
       blink::WebContentDecryptionModule* initial_cdm,
       const blink::WebString& sink_id,
-      blink::WebLayerTreeView* layer_tree_view);
+      blink::WebLayerTreeView* layer_tree_view,
+      const cc::LayerTreeSettings& settings);
 
   // Provides an EncryptedMediaClient to connect blink's EME layer to media's
   // implementation of requestMediaKeySystemAccess. Will always return the same

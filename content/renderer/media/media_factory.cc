@@ -197,7 +197,8 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
     blink::WebMediaPlayerEncryptedMediaClient* encrypted_client,
     blink::WebContentDecryptionModule* initial_cdm,
     const blink::WebString& sink_id,
-    blink::WebLayerTreeView* layer_tree_view) {
+    blink::WebLayerTreeView* layer_tree_view,
+    const cc::LayerTreeSettings& settings) {
   blink::WebLocalFrame* web_frame = render_frame_->GetWebFrame();
   blink::WebSecurityOrigin security_origin =
       render_frame_->GetWebFrame()->GetSecurityOrigin();
@@ -292,7 +293,7 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
             &PostMediaContextProviderToCallback,
             RenderThreadImpl::current()->GetCompositorMainThreadTaskRunner()),
         RenderThreadImpl::current()->GetSharedBitmapManager(),
-        RenderThreadImpl::current()->GetGpuMemoryBufferManager());
+        RenderThreadImpl::current()->GetGpuMemoryBufferManager(), settings);
   } else {
     video_frame_compositor_task_runner =
         render_thread->compositor_task_runner()

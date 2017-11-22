@@ -13,6 +13,7 @@
 #include "cc/layers/video_frame_provider.h"
 #include "cc/test/layer_test_common.h"
 #include "cc/test/test_context_provider.h"
+#include "cc/trees/layer_tree_settings.h"
 #include "cc/trees/task_runner_provider.h"
 #include "components/viz/test/fake_external_begin_frame_source.h"
 #include "media/base/video_frame.h"
@@ -80,7 +81,8 @@ class MockVideoFrameResourceProvider
             base::BindRepeating(
                 [](base::OnceCallback<void(viz::ContextProvider*)>) {}),
             nullptr,
-            nullptr) {
+            nullptr,
+            cc::LayerTreeSettings()) {
     blink::VideoFrameResourceProvider::Initialize(context_provider);
   }
   ~MockVideoFrameResourceProvider() = default;
