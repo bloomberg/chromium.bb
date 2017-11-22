@@ -71,7 +71,7 @@ def CheckChangedConfigs(input_api, output_api):
   try:
     authenticator = auth.get_authenticator_for_host(
         LUCI_CONFIG_HOST_NAME, auth.make_auth_config())
-    acc_tkn = authenticator.get_access_token(allow_user_interaction=True).token
+    acc_tkn = authenticator.get_access_token()
   except auth.AuthenticationError as e:
     return [output_api.PresubmitError(
         'Error in authenticating user.', long_text=str(e))]
@@ -80,7 +80,7 @@ def CheckChangedConfigs(input_api, output_api):
     api_url = ('https://%s/_ah/api/config/v1/%s'
                % (LUCI_CONFIG_HOST_NAME, endpoint))
     req = urllib2.Request(api_url)
-    req.add_header('Authorization', 'Bearer %s' % acc_tkn)
+    req.add_header('Authorization', 'Bearer %s' % acc_tkn.token)
     if body is not None:
       req.add_header('Content-Type', 'application/json')
       req.add_data(json.dumps(body))
