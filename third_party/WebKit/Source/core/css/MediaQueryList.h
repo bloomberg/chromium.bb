@@ -94,7 +94,7 @@ class CORE_EXPORT MediaQueryList final
 
   Member<MediaQueryMatcher> matcher_;
   scoped_refptr<MediaQuerySet> media_;
-  using ListenerList = HeapListHashSet<Member<MediaQueryListListener>>;
+  using ListenerList = HeapLinkedHashSet<Member<MediaQueryListListener>>;
   ListenerList listeners_;
   bool matches_dirty_;
   bool matches_;
