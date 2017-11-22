@@ -37,6 +37,9 @@ TEST_P(AV1Convolve2DTest, CheckOutput) { RunCheckOutput(GET_PARAM(2)); }
 INSTANTIATE_TEST_CASE_P(
     SSE2, AV1Convolve2DTest,
     libaom_test::AV1Convolve2D::BuildParams(av1_convolve_2d_sse2));
+INSTANTIATE_TEST_CASE_P(
+    AVX2, AV1Convolve2DTest,
+    libaom_test::AV1Convolve2D::BuildParams(av1_convolve_2d_avx2));
 #endif  // CONFIG_JNT_COMP
 
 #if CONFIG_HIGHBITDEPTH && HAVE_SSSE3
