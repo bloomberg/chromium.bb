@@ -35,9 +35,9 @@ class ServiceWorkerVersion;
 //  - Setting the network state
 class TestBackgroundSyncManager : public BackgroundSyncManager {
  public:
-  using DispatchSyncCallback = base::RepeatingCallback<void(
-      const scoped_refptr<ServiceWorkerVersion>&,
-      const ServiceWorkerVersion::LegacyStatusCallback&)>;
+  using DispatchSyncCallback =
+      base::RepeatingCallback<void(scoped_refptr<ServiceWorkerVersion>,
+                                   ServiceWorkerVersion::StatusCallback)>;
 
   explicit TestBackgroundSyncManager(
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context);
