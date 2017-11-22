@@ -80,6 +80,9 @@ bool IsArcCompatibleFileSystemUsedForProfile(const Profile* profile);
 // case.
 void DisallowArcForTesting();
 
+// Resets check if ARC allowed for the given |profile|.
+void ResetArcAllowedCheckForTesting(const Profile* profile);
+
 // Returns whether the user has opted in (or is opting in now) to use Google
 // Play Store on ARC.
 // This is almost equivalent to the value of "arc.enabled" preference. However,
