@@ -2884,6 +2884,8 @@ split_static_library("ui") {
         "views/accessibility/invert_bubble_view.h",
         "views/autofill/autofill_popup_base_view.cc",
         "views/autofill/autofill_popup_base_view.h",
+        "views/autofill/autofill_popup_view_native_views.cc",
+        "views/autofill/autofill_popup_view_native_views.h",
         "views/autofill/autofill_popup_view_views.cc",
         "views/autofill/autofill_popup_view_views.h",
         "views/autofill/card_unmask_prompt_views_shim.cc",
