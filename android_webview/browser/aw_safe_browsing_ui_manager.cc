@@ -15,7 +15,6 @@
 #include "components/safe_browsing/base_ui_manager.h"
 #include "components/safe_browsing/browser/safe_browsing_url_request_context_getter.h"
 #include "components/safe_browsing/common/safebrowsing_constants.h"
-#include "components/safe_browsing/common/safebrowsing_switches.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -99,9 +98,7 @@ void AwSafeBrowsingUIManager::SendSerializedThreatDetails(
     // Lazy creation of ping manager, needs to happen on IO thread.
     safe_browsing::SafeBrowsingProtocolConfig config;
     config.client_name = GetProtocolConfigClientName();
-    base::CommandLine* cmdline = ::base::CommandLine::ForCurrentProcess();
-    config.disable_auto_update =
-        cmdline->HasSwitch(::safe_browsing::switches::kSbDisableAutoUpdate);
+    config.disable_auto_update = false;
     config.url_prefix = ::safe_browsing::kSbDefaultURLPrefix;
     config.backup_connect_error_url_prefix =
         ::safe_browsing::kSbBackupConnectErrorURLPrefix;

@@ -37,7 +37,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/browser/safe_browsing_url_request_context_getter.h"
 #include "components/safe_browsing/common/safebrowsing_constants.h"
-#include "components/safe_browsing/common/safebrowsing_switches.h"
 #include "components/safe_browsing/db/database_manager.h"
 #include "components/safe_browsing/db/v4_feature_list.h"
 #include "components/safe_browsing/db/v4_get_hash_protocol_manager.h"
@@ -328,7 +327,6 @@ SafeBrowsingProtocolConfig SafeBrowsingService::GetProtocolConfig() const {
 
   base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
   config.disable_auto_update =
-      cmdline->HasSwitch(safe_browsing::switches::kSbDisableAutoUpdate) ||
       cmdline->HasSwitch(::switches::kDisableBackgroundNetworking);
   config.url_prefix = kSbDefaultURLPrefix;
   config.backup_connect_error_url_prefix = kSbBackupConnectErrorURLPrefix;

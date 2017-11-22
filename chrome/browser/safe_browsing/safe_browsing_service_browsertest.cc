@@ -59,7 +59,6 @@
 #include "components/bookmarks/browser/startup_task_runner_service.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/prefs/pref_service.h"
-#include "components/safe_browsing/common/safebrowsing_switches.h"
 #include "components/safe_browsing/db/database_manager.h"
 #include "components/safe_browsing/db/metadata.pb.h"
 #include "components/safe_browsing/db/notification_types.h"
@@ -615,10 +614,6 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    // Makes sure the auto update is not triggered during the test.
-    // This test will fill up the database using testing prefixes
-    // and urls.
-    command_line->AppendSwitch(safe_browsing::switches::kSbDisableAutoUpdate);
 #if defined(OS_CHROMEOS)
     command_line->AppendSwitch(
         chromeos::switches::kIgnoreUserProfileMappingForTests);

@@ -7,11 +7,6 @@
 namespace safe_browsing {
 namespace switches {
 
-// If present, safebrowsing only performs update when
-// SafeBrowsingProtocolManager::ForceScheduleNextUpdate() is explicitly called.
-// This is used for testing only.
-const char kSbDisableAutoUpdate[] = "safebrowsing-disable-auto-update";
-
 // TODO(lzheng): Remove this flag once the feature works fine
 // (http://crbug.com/74848).
 //

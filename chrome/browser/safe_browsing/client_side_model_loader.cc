@@ -18,7 +18,6 @@
 #include "chrome/common/safe_browsing/client_model.pb.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/safe_browsing/common/safebrowsing_messages.h"
-#include "components/safe_browsing/common/safebrowsing_switches.h"
 #include "components/safe_browsing/proto/csd.pb.h"
 #include "components/variations/variations_associated_data.h"
 #include "net/base/load_flags.h"
@@ -237,9 +236,6 @@ void ModelLoader::EndFetch(ClientModelStatus status, base::TimeDelta max_age) {
 
 void ModelLoader::ScheduleFetch(int64_t delay_ms) {
   DCHECK(fetch_sequence_checker_.CalledOnValidSequence());
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          safe_browsing::switches::kSbDisableAutoUpdate))
-    return;
   base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&ModelLoader::StartFetch, weak_factory_.GetWeakPtr()),
