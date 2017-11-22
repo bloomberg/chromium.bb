@@ -8,6 +8,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/ui/extensions/extension_action_view_controller.h"
@@ -156,9 +157,8 @@ void ToolbarActionViewInteractiveUITest::TearDownOnMainThread() {
   ToolbarActionsBar::disable_animations_for_testing_ = false;
 }
 
-#if defined(USE_OZONE) || defined(OS_WIN)
+#if defined(USE_OZONE)
 // ozone bringup - http://crbug.com/401304
-// flaky on Windows - http://crbug.com/638692
 #define MAYBE_TestClickingOnOverflowedAction DISABLED_TestClickingOnOverflowedAction
 #else
 #define MAYBE_TestClickingOnOverflowedAction TestClickingOnOverflowedAction
@@ -271,8 +271,8 @@ IN_PROC_BROWSER_TEST_F(ToolbarActionViewInteractiveUITest,
 
 // Tests that clicking on the toolbar action a second time when the action is
 // already open results in closing the popup, and doesn't re-open it.
-#if defined(OS_WIN) || defined(OS_LINUX) || (OS_CHROMEOS)
-// Flaky on Windows, Linux and ChromeOS; see https://crbug.com/617056.
+#if defined(OS_LINUX) || (OS_CHROMEOS)
+// Flaky on Linux and ChromeOS; see https://crbug.com/617056.
 #define MAYBE_DoubleClickToolbarActionToClose \
     DISABLED_DoubleClickToolbarActionToClose
 #else
