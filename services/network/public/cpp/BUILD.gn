@@ -14,11 +14,14 @@ static_library("cpp") {
     "url_loader_completion_status.h",
   ]
 
+  public_deps = [
+    "//services/network/public/interfaces",
+  ]
+
   deps = [
     "//base",
     "//mojo/common",
     "//net",
-    "//services/network/public/interfaces",
   ]
 }
 

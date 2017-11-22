@@ -7,7 +7,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "net/http/http_response_headers.h"
-#include "services/network/public/interfaces/cors.mojom.h"
+#include "services/network/public/interfaces/cors.mojom-shared.h"
 
 namespace network {
 
