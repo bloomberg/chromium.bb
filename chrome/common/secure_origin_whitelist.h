@@ -11,14 +11,18 @@
 
 #include "url/gurl.h"
 
+namespace secure_origin_whitelist {
+
 // Return a whitelist of origins that need to be considered trustworthy.
 // The whitelist is given by kUnsafelyTreatInsecureOriginAsSecure
 // command-line option. See
 // https://www.w3.org/TR/powerful-features/#is-origin-trustworthy.
-std::vector<GURL> GetSecureOriginWhitelist();
+std::vector<GURL> GetWhitelist();
 
 // Returns a whitelist of schemes that should bypass the Is Privileged Context
 // check. See http://www.w3.org/TR/powerful-features/#settings-privileged.
-std::set<std::string> GetSchemesBypassingSecureContextCheckWhitelist();
+std::set<std::string> GetSchemesBypassingSecureContextCheck();
+
+}  // namespace secure_origin_whitelist
 
 #endif  // CHROME_COMMON_SECURE_ORIGIN_WHITELIST_H_

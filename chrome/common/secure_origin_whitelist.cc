@@ -10,7 +10,9 @@
 #include "chrome/common/chrome_switches.h"
 #include "extensions/common/constants.h"
 
-std::vector<GURL> GetSecureOriginWhitelist() {
+namespace secure_origin_whitelist {
+
+std::vector<GURL> GetWhitelist() {
   std::vector<GURL> origins;
   // If kUnsafelyTreatInsecureOriginAsSecure option is given, then treat the
   // value as a comma-separated list of origins:
@@ -30,8 +32,10 @@ std::vector<GURL> GetSecureOriginWhitelist() {
   return origins;
 }
 
-std::set<std::string> GetSchemesBypassingSecureContextCheckWhitelist() {
+std::set<std::string> GetSchemesBypassingSecureContextCheck() {
   std::set<std::string> schemes;
   schemes.insert(extensions::kExtensionScheme);
   return schemes;
 }
+
+}  // namespace secure_origin_whitelist

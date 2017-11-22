@@ -511,12 +511,13 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   pdf::PepperPDFHost::SetPrintClient(pdf_print_client_.get());
 #endif
 
-  for (auto& origin : GetSecureOriginWhitelist()) {
+  for (auto& origin : secure_origin_whitelist::GetWhitelist()) {
     WebSecurityPolicy::AddOriginTrustworthyWhiteList(
         WebSecurityOrigin::Create(origin));
   }
 
-  for (auto& scheme : GetSchemesBypassingSecureContextCheckWhitelist()) {
+  for (auto& scheme :
+       secure_origin_whitelist::GetSchemesBypassingSecureContextCheck()) {
     WebSecurityPolicy::AddSchemeToBypassSecureContextWhitelist(
         WebString::FromASCII(scheme));
   }
