@@ -94,7 +94,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::WebContents* web_contents) override;
   void RenderProcessWillLaunch(content::RenderProcessHost* host) override;
   GURL GetEffectiveURL(content::BrowserContext* browser_context,
-                       const GURL& url) override;
+                       const GURL& url,
+                       bool is_isolated_origin) override;
   bool ShouldUseProcessPerSite(content::BrowserContext* browser_context,
                                const GURL& effective_url) override;
   bool DoesSiteRequireDedicatedProcess(content::BrowserContext* browser_context,
