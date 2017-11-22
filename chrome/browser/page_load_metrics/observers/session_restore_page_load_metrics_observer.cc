@@ -12,6 +12,8 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/restore_type.h"
 #include "content/public/browser/web_contents.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "ui/base/page_transition_types.h"
 
 namespace internal {
@@ -71,6 +73,17 @@ void SessionRestorePageLoadMetricsObserver::OnFirstPaintInPage(
     PAGE_LOAD_HISTOGRAM(
         internal::kHistogramSessionRestoreForegroundTabFirstPaint,
         timing.paint_timing->first_paint.value());
+
+    // Only record the corresponding tab count if there are paint metrics. There
+    // is no need to record again in FCP or FMP, because FP comes first.
+    ukm::builders::
+        TabManager_Experimental_SessionRestore_ForegroundTab_PageLoad(
+            extra_info.source_id)
+            .SetSessionRestoreTabCount(
+                g_browser_process->GetTabManager()->restored_tab_count())
+            .SetSystemTabCount(
+                g_browser_process->GetTabManager()->GetTabCount())
+            .Record(ukm::UkmRecorder::Get());
   }
 }
 

@@ -9,11 +9,17 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/metrics/metrics_hashes.h"
 #include "base/test/histogram_tester.h"
 #include "base/time/time.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/resource_coordinator/resource_coordinator_web_contents_observer.h"
 #include "chrome/browser/resource_coordinator/tab_manager_web_contents_data.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/web_contents.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -30,14 +36,16 @@ class TabManagerStatsCollectorTest : public ChromeRenderViewHostTestHarness {
   ~TabManagerStatsCollectorTest() override = default;
 
   TabManagerStatsCollector* tab_manager_stats_collector() {
-    return tab_manager_.stats_collector();
+    return tab_manager()->stats_collector();
   }
 
   void StartSessionRestore() {
+    tab_manager()->OnSessionRestoreStartedLoadingTabs();
     tab_manager_stats_collector()->OnSessionRestoreStartedLoadingTabs();
   }
 
   void FinishSessionRestore() {
+    tab_manager()->OnSessionRestoreFinishedLoadingTabs();
     tab_manager_stats_collector()->OnSessionRestoreFinishedLoadingTabs();
   }
 
@@ -50,17 +58,31 @@ class TabManagerStatsCollectorTest : public ChromeRenderViewHostTestHarness {
   }
 
   TabManager::WebContentsData* GetWebContentsData(WebContents* contents) const {
-    return tab_manager_.GetWebContentsData(contents);
+    return tab_manager()->GetWebContentsData(contents);
+  }
+
+  void RestoreTab(WebContents* contents) {
+    tab_manager()->OnWillRestoreTab(contents);
   }
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
   }
 
+  std::unique_ptr<WebContents> CreateWebContentsForUKM(ukm::SourceId id) {
+    std::unique_ptr<WebContents> contents(CreateTestWebContents());
+    ResourceCoordinatorWebContentsObserver::CreateForWebContents(
+        contents.get());
+    ResourceCoordinatorWebContentsObserver::FromWebContents(contents.get())
+        ->SetUkmSourceIdForTest(id);
+    return contents;
+  }
+
   base::HistogramTester histogram_tester_;
+  ukm::TestAutoSetUkmRecorder test_ukm_recorder_;
 
  private:
-  TabManager tab_manager_;
+  TabManager* tab_manager() const { return g_browser_process->GetTabManager(); }
 
   DISALLOW_COPY_AND_ASSIGN(TabManagerStatsCollectorTest);
 };
@@ -503,6 +525,47 @@ TEST_F(TabManagerStatsCollectorTest, HistogramsSessionOverlap) {
                   TabManagerStatsCollector::
                       kHistogramSessionOverlapBackgroundTabOpening),
               ElementsAre(Bucket(false, 1), Bucket(true, 6)));
+}
+
+TEST_F(TabManagerStatsCollectorTest,
+       CollectExpectedTaskQueueingDurationUkmForSessionRestore) {
+  using UkmEntry = ukm::builders::
+      TabManager_SessionRestore_ForegroundTab_ExpectedTaskQueueingDurationInfo;
+  std::unique_ptr<WebContents> tab1(CreateWebContentsForUKM(1));
+  std::unique_ptr<WebContents> tab2(CreateWebContentsForUKM(2));
+  std::unique_ptr<WebContents> tab3(CreateWebContentsForUKM(3));
+
+  EXPECT_EQ(0ul, test_ukm_recorder_.entries_count());
+  StartSessionRestore();
+  tab1->WasShown();
+  tab2->WasHidden();
+  RestoreTab(tab1.get());
+  RestoreTab(tab2.get());
+  tab_manager_stats_collector()->RecordExpectedTaskQueueingDuration(
+      tab1.get(), base::TimeDelta::FromMilliseconds(10));
+  EXPECT_EQ(1ul, test_ukm_recorder_.entries_count());
+  const ukm::mojom::UkmEntry* entry =
+      test_ukm_recorder_.GetEntriesByName(UkmEntry::kEntryName)[0];
+  ukm::TestUkmRecorder::ExpectEntryMetric(
+      entry, UkmEntry::kSessionRestoreTabCountName, 2);
+  ukm::TestUkmRecorder::ExpectEntryMetric(
+      entry, UkmEntry::kExpectedTaskQueueingDurationName, 10);
+  FinishSessionRestore();
+
+  test_ukm_recorder_.Purge();
+  EXPECT_EQ(0ul, test_ukm_recorder_.entries_count());
+
+  StartSessionRestore();
+  tab3->WasShown();
+  RestoreTab(tab3.get());
+  // Do not record EQT UKM for session restore if there is only 1 tab restored.
+  tab_manager_stats_collector()->RecordExpectedTaskQueueingDuration(
+      tab3.get(), base::TimeDelta::FromMilliseconds(10));
+  EXPECT_EQ(0ul, test_ukm_recorder_.entries_count());
+  FinishSessionRestore();
+
+  test_ukm_recorder_.Purge();
+  EXPECT_EQ(0ul, test_ukm_recorder_.entries_count());
 }
 
 }  // namespace resource_coordinator

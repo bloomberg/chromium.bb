@@ -45,6 +45,7 @@ class ResourceCoordinatorWebContentsObserver
 
   void UpdateUkmRecorder(int64_t navigation_id);
   ukm::SourceId ukm_source_id() const { return ukm_source_id_; }
+  void SetUkmSourceIdForTest(ukm::SourceId id) { ukm_source_id_ = id; }
 
  private:
   explicit ResourceCoordinatorWebContentsObserver(
