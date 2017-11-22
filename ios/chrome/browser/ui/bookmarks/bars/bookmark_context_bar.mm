@@ -3,9 +3,13 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/bookmarks/bars/bookmark_context_bar.h"
+
 #include "base/logging.h"
+#import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
+#include "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
+#import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -16,11 +20,17 @@
 
 namespace {
 // Shadow opacity for the BookmarkContextBar.
-const CGFloat kShadowOpacity = 0.2f;
+const CGFloat kShadowOpacity = 0.12f;
+// Shadow radius for the BookmarkContextBar.
+const CGFloat kShadowRadius = 12.0f;
 // Horizontal margin for the contents of BookmarkContextBar.
-const CGFloat kHorizontalMargin = 8.0f;
-// Height of the part of the toolbar containing content.
-const CGFloat kToolbarHeight = 48.0f;
+const CGFloat kHorizontalMargin = 16.0f;
+// Vertical margin for the contents of BookmarkContextBar.
+const CGFloat kVerticalMargin = 8.0f;
+// Horizontal spacing between the buttons inside BookmarkContextBar.
+const CGFloat kHorizontalSpacing = 8.0f;
+// Minimum height of BookmarkContextBar.
+const CGFloat kToolbarMinHeight = 48.0f;
 }  // namespace
 
 @interface BookmarkContextBar ()
@@ -72,23 +82,62 @@ const CGFloat kToolbarHeight = 48.0f;
 - (void)setButtonStyle:(ContextBarButtonStyle)style
            forUIButton:(UIButton*)button {
   UIColor* textColor = style == ContextBarButtonStyleDelete
-                           ? [[MDCPalette redPalette] tint500]
-                           : [[MDCPalette bluePalette] tint500];
+                           ? [[MDCPalette cr_redPalette] tint500]
+                           : [[MDCPalette cr_bluePalette] tint500];
   UIColor* disabledColor = style == ContextBarButtonStyleDelete
-                               ? [[MDCPalette redPalette] tint200]
-                               : [[MDCPalette bluePalette] tint200];
+                               ? [[MDCPalette cr_redPalette] tint200]
+                               : [[MDCPalette cr_bluePalette] tint200];
   [button setTitleColor:textColor forState:UIControlStateNormal];
   [button setTitleColor:disabledColor forState:UIControlStateDisabled];
 }
 
-- (void)configureStyleForButton:(UIButton*)button {
+- (void)configureStyleForButton:(ContextBarButton)contextBarButton {
+  UIButton* button = [self getButton:contextBarButton];
   [button setBackgroundColor:[UIColor whiteColor]];
-  [button setTitleColor:[[MDCPalette bluePalette] tint500]
+  [button setTitleColor:[[MDCPalette cr_bluePalette] tint500]
                forState:UIControlStateNormal];
-  [[button titleLabel]
-      setFont:[[MDCTypography fontLoader] regularFontOfSize:14]];
+  [[button titleLabel] setFont:[MDCTypography subheadFont]];
   [self setButtonStyle:ContextBarButtonStyleDefault forUIButton:button];
   [button setTranslatesAutoresizingMaskIntoConstraints:NO];
+
+  button.titleLabel.lineBreakMode = NSLineBreakByWordWrapping;
+  switch (contextBarButton) {
+    case ContextBarLeadingButton: {
+      if (UseRTLLayout()) {
+        button.titleLabel.textAlignment = NSTextAlignmentRight;
+        button.contentHorizontalAlignment =
+            UIControlContentHorizontalAlignmentRight;
+      } else {
+        button.titleLabel.textAlignment = NSTextAlignmentLeft;
+        button.contentHorizontalAlignment =
+            UIControlContentHorizontalAlignmentLeft;
+      }
+      break;
+    }
+    case ContextBarCenterButton: {
+      button.titleLabel.textAlignment = NSTextAlignmentCenter;
+      button.contentHorizontalAlignment =
+          UIControlContentHorizontalAlignmentCenter;
+      break;
+    }
+    case ContextBarTrailingButton: {
+      if (UseRTLLayout()) {
+        button.titleLabel.textAlignment = NSTextAlignmentLeft;
+        button.contentHorizontalAlignment =
+            UIControlContentHorizontalAlignmentLeft;
+      } else {
+        button.titleLabel.textAlignment = NSTextAlignmentRight;
+        button.contentHorizontalAlignment =
+            UIControlContentHorizontalAlignmentRight;
+      }
+      break;
+    }
+    default: { NOTREACHED(); }
+  }
+
+  [button.heightAnchor
+      constraintGreaterThanOrEqualToAnchor:button.titleLabel.heightAnchor]
+      .active = YES;
 }
 
 #pragma mark - Public Methods
@@ -101,7 +150,7 @@ const CGFloat kToolbarHeight = 48.0f;
 
     self.accessibilityIdentifier = @"context_bar";
     _leadingButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [self configureStyleForButton:_leadingButton];
+    [self configureStyleForButton:ContextBarLeadingButton];
     [_leadingButton addTarget:self
                        action:@selector(leadingButtonClicked:)
              forControlEvents:UIControlEventTouchUpInside];
@@ -118,13 +167,13 @@ const CGFloat kToolbarHeight = 48.0f;
         .active = YES;
 
     _centerButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [self configureStyleForButton:_centerButton];
+    [self configureStyleForButton:ContextBarCenterButton];
     [_centerButton addTarget:self
                       action:@selector(centerButtonClicked:)
             forControlEvents:UIControlEventTouchUpInside];
     _centerButton.accessibilityIdentifier = @"context_bar_center_button";
     _centerButtonContainer = [[UIView alloc] init];
-    _leadingButtonContainer.hidden = YES;
+    _centerButtonContainer.hidden = YES;
     [_centerButtonContainer addSubview:_centerButton];
     views = @{@"button" : _centerButton};
     constraints = @[ @"V:|[button]|" ];
@@ -141,13 +190,13 @@ const CGFloat kToolbarHeight = 48.0f;
         .active = YES;
 
     _trailingButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [self configureStyleForButton:_trailingButton];
+    [self configureStyleForButton:ContextBarTrailingButton];
     [_trailingButton addTarget:self
                         action:@selector(trailingButtonClicked:)
               forControlEvents:UIControlEventTouchUpInside];
     _trailingButton.accessibilityIdentifier = @"context_bar_trailing_button";
     _trailingButtonContainer = [[UIView alloc] init];
-    _leadingButtonContainer.hidden = YES;
+    _trailingButtonContainer.hidden = YES;
     [_trailingButtonContainer addSubview:_trailingButton];
     views = @{@"button" : _trailingButton};
     constraints = @[ @"V:|[button]|", @"H:[button]|" ];
@@ -160,7 +209,7 @@ const CGFloat kToolbarHeight = 48.0f;
     _stackView = [[UIStackView alloc] initWithArrangedSubviews:@[
       _leadingButtonContainer, _centerButtonContainer, _trailingButtonContainer
     ]];
-    _stackView.alignment = UIStackViewAlignmentFill;
+    _stackView.alignment = UIStackViewAlignmentCenter;
     _stackView.distribution = UIStackViewDistributionFillEqually;
     _stackView.axis = UILayoutConstraintAxisHorizontal;
 
@@ -168,15 +217,16 @@ const CGFloat kToolbarHeight = 48.0f;
     _stackView.translatesAutoresizingMaskIntoConstraints = NO;
     _stackView.layoutMarginsRelativeArrangement = YES;
     PinToSafeArea(_stackView, self);
-    [_stackView.heightAnchor constraintEqualToConstant:kToolbarHeight].active =
-        YES;
-
-    _stackView.layoutMarginsRelativeArrangement = YES;
-    _stackView.layoutMargins =
-        UIEdgeInsetsMake(0, kHorizontalMargin, 0, kHorizontalMargin);
+    [_stackView.heightAnchor
+        constraintGreaterThanOrEqualToConstant:kToolbarMinHeight]
+        .active = YES;
+    _stackView.layoutMargins = UIEdgeInsetsMake(
+        kVerticalMargin, kHorizontalMargin, kVerticalMargin, kHorizontalMargin);
+    _stackView.spacing = kHorizontalSpacing;
 
     [self setBackgroundColor:[UIColor whiteColor]];
     [[self layer] setShadowOpacity:kShadowOpacity];
+    [[self layer] setShadowRadius:kShadowRadius];
   }
   return self;
 }

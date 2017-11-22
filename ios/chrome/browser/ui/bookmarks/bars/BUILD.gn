@@ -18,6 +18,7 @@ source_set("bars") {
     "//base",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui",
+    "//ios/chrome/browser/ui/colors",
     "//ios/third_party/material_components_ios",
     "//ui/base",
   ]
