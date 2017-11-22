@@ -168,14 +168,14 @@ v8::Local<v8::Context> V8ContextSnapshot::CreateContextFromSnapshot(
   return context;
 }
 
-void V8ContextSnapshot::InstallConditionalFeatures(
+bool V8ContextSnapshot::InstallConditionalFeatures(
     v8::Local<v8::Context> context,
     Document* document) {
   ScriptState* script_state = ScriptState::From(context);
   v8::Isolate* isolate = script_state->GetIsolate();
   const DOMWrapperWorld& world = script_state->World();
   if (!CanCreateContextFromSnapshot(isolate, world, document)) {
-    return;
+    return false;
   }
 
   TRACE_EVENT1("v8", "V8ContextSnapshot::InstallRuntimeEnabled", "IsMainFrame",
@@ -215,7 +215,7 @@ void V8ContextSnapshot::InstallConditionalFeatures(
   }
 
   if (!world.IsMainWorld()) {
-    return;
+    return true;
   }
 
   // The below code handles window.document on the main world.
@@ -263,6 +263,8 @@ void V8ContextSnapshot::InstallConditionalFeatures(
                                      type->domTemplate(isolate, world));
     InstallOriginTrialFeatures(type, script_state, prototype, interface);
   }
+
+  return true;
 }
 
 void V8ContextSnapshot::EnsureInterfaceTemplates(v8::Isolate* isolate) {

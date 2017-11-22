@@ -82,6 +82,9 @@ class LocalWindowProxy final : public WindowProxy {
   // wrapper is not yet associated with the native DOMWindow object.
   void CreateContext();
 
+  // Installs conditionally enabled features, if necessary.
+  void InstallConditionalFeatures();
+
   // Associates the window wrapper and its prototype chain with the native
   // DOMWindow object. Also does some more Window-specific initialization.
   void SetupWindowPrototypeChain();
