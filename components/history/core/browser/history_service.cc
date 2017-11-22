@@ -53,6 +53,7 @@
 #include "components/sync/model/sync_error_factory.h"
 #include "components/variations/variations_associated_data.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/page_transition_types.h"
 
 #if defined(OS_IOS)
 #include "base/critical_closure.h"
@@ -380,8 +381,9 @@ void HistoryService::AddPage(const GURL& url,
                              bool did_replace_entry) {
   DCHECK(thread_checker_.CalledOnValidThread());
   AddPage(HistoryAddPageArgs(url, time, context_id, nav_entry_id, referrer,
-                             redirects, transition, visit_source,
-                             did_replace_entry, true));
+                             redirects, transition,
+                             !ui::PageTransitionIsMainFrame(transition),
+                             visit_source, did_replace_entry, true));
 }
 
 void HistoryService::AddPage(const GURL& url,
@@ -389,8 +391,8 @@ void HistoryService::AddPage(const GURL& url,
                              VisitSource visit_source) {
   DCHECK(thread_checker_.CalledOnValidThread());
   AddPage(HistoryAddPageArgs(url, time, nullptr, 0, GURL(), RedirectList(),
-                             ui::PAGE_TRANSITION_LINK, visit_source, false,
-                             true));
+                             ui::PAGE_TRANSITION_LINK, false, visit_source,
+                             false, true));
 }
 
 void HistoryService::AddPage(const HistoryAddPageArgs& add_page_args) {

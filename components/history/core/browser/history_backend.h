@@ -628,6 +628,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
                                          base::Time time,
                                          VisitID referring_visit,
                                          ui::PageTransition transition,
+                                         bool hidden,
                                          VisitSource visit_source);
 
   // Returns a redirect chain in |redirects| for the VisitID

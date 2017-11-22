@@ -361,7 +361,7 @@ struct HistoryAddPageArgs {
   //   HistoryAddPageArgs(
   //       GURL(), base::Time(), NULL, 0, GURL(),
   //       RedirectList(), ui::PAGE_TRANSITION_LINK,
-  //       SOURCE_BROWSED, false, true)
+  //       false, SOURCE_BROWSED, false, true)
   HistoryAddPageArgs();
   HistoryAddPageArgs(const GURL& url,
                      base::Time time,
@@ -370,6 +370,7 @@ struct HistoryAddPageArgs {
                      const GURL& referrer,
                      const RedirectList& redirects,
                      ui::PageTransition transition,
+                     bool hidden,
                      VisitSource source,
                      bool did_replace_entry,
                      bool consider_for_ntp_most_visited);
@@ -383,6 +384,7 @@ struct HistoryAddPageArgs {
   GURL referrer;
   RedirectList redirects;
   ui::PageTransition transition;
+  bool hidden;
   VisitSource visit_source;
   bool did_replace_entry;
   // Specifies whether a page visit should contribute to the Most Visited tiles

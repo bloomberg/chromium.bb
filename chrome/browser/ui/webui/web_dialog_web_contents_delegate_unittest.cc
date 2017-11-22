@@ -66,7 +66,7 @@ TEST_F(WebDialogWebContentsDelegateTest, DoNothingMethodsTest) {
   EXPECT_TRUE(test_web_contents_delegate_->IsPopupOrPanel(NULL));
   history::HistoryAddPageArgs should_add_args(
       GURL(), base::Time::Now(), 0, 0, GURL(), history::RedirectList(),
-      ui::PAGE_TRANSITION_TYPED, history::SOURCE_SYNCED, false, true);
+      ui::PAGE_TRANSITION_TYPED, false, history::SOURCE_SYNCED, false, true);
   test_web_contents_delegate_->NavigationStateChanged(
       NULL, content::InvalidateTypes(0));
   test_web_contents_delegate_->ActivateContents(NULL);

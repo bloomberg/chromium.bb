@@ -19,6 +19,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/frame_navigate_params.h"
+#include "ui/base/page_transition_types.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/background_tab_manager.h"
@@ -76,12 +77,25 @@ HistoryTabHelper::CreateHistoryAddPageArgs(
   const bool consider_for_ntp_most_visited =
       navigation_handle->GetReferrer().url != kChromeContentSuggestionsReferrer;
 
+  const bool status_code_is_error =
+      navigation_handle->GetResponseHeaders() &&
+      (navigation_handle->GetResponseHeaders()->response_code() >= 400) &&
+      (navigation_handle->GetResponseHeaders()->response_code() < 600);
+  // Top-level frame navigations are visible; everything else is hidden.
+  // Also hide top-level navigations that result in an error in order to
+  // prevent the omnibox from suggesting URLs that have never been navigated
+  // to successfully.  (If a top-level navigation to the URL succeeds at some
+  // point, the URL will be unhidden and thus eligible to be suggested by the
+  // omnibox.)
+  const bool hidden =
+      !ui::PageTransitionIsMainFrame(navigation_handle->GetPageTransition()) ||
+      status_code_is_error;
   history::HistoryAddPageArgs add_page_args(
       navigation_handle->GetURL(), timestamp,
-      history::ContextIDForWebContents(web_contents()),
-      nav_entry_id, navigation_handle->GetReferrer().url,
+      history::ContextIDForWebContents(web_contents()), nav_entry_id,
+      navigation_handle->GetReferrer().url,
       navigation_handle->GetRedirectChain(),
-      navigation_handle->GetPageTransition(), history::SOURCE_BROWSED,
+      navigation_handle->GetPageTransition(), hidden, history::SOURCE_BROWSED,
       navigation_handle->DidReplaceEntry(), consider_for_ntp_most_visited);
   if (ui::PageTransitionIsMainFrame(navigation_handle->GetPageTransition()) &&
       virtual_url != navigation_handle->GetURL()) {
