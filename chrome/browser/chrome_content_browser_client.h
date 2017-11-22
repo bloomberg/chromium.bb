@@ -27,6 +27,7 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 
 class ChromeContentBrowserClientParts;
+class PrefRegistrySimple;
 
 namespace base {
 class CommandLine;
@@ -65,6 +66,11 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   ChromeContentBrowserClient();
   ~ChromeContentBrowserClient() override;
 
+  // TODO(https://crbug.com/787567): This file is about calls from content/ out
+  // to chrome/ to get values or notify about events, but both of these
+  // functions are from chrome/ to chrome/ and don't involve content/ at all.
+  // That suggests they belong somewhere else at the chrome/ layer.
+  static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Notification that the application locale has changed. This allows us to

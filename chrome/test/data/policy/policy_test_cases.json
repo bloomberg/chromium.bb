@@ -873,6 +873,18 @@
     ]
   },
 
+  "IsolateOrigins": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": { "IsolateOrigins": "" },
+    "note": "There is a pref behind this setting, but due to the fact that tests override the default with a command-line flag on some trybots, this setting cannot be verified with the common test."
+  },
+
+  "SitePerProcess": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": { "SitePerProcess": false },
+    "note": "There is a pref behind this setting, but due to the fact that tests override the default with a command-line flag on some trybots, this setting cannot be verified with the common test."
+  },
+
   "ExtensionInstallBlacklist": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "ExtensionInstallBlacklist": ["*"] },
