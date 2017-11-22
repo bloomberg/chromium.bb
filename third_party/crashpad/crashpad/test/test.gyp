@@ -37,7 +37,7 @@
         'file.h',
         'filesystem.cc',
         'filesystem.h',
-        'gtest_death_check.h',
+        'gtest_death.h',
         'gtest_disabled.cc',
         'gtest_disabled.h',
         'hex_string.cc',
@@ -46,6 +46,8 @@
         'linux/fake_ptrace_connection.h',
         'mac/dyld.cc',
         'mac/dyld.h',
+        'mac/exception_swallower.cc',
+        'mac/exception_swallower.h',
         'mac/mach_errors.cc',
         'mac/mach_errors.h',
         'mac/mach_multiprocess.cc',
@@ -81,6 +83,9 @@
       },
       'conditions': [
         ['OS=="mac"', {
+          'dependencies': [
+            '../handler/handler.gyp:crashpad_handler_lib',
+          ],
           'link_settings': {
             'libraries': [
               '$(SDKROOT)/usr/lib/libbsm.dylib',
