@@ -13,6 +13,7 @@
 #include "extensions/renderer/bindings/argument_spec.h"
 #include "extensions/renderer/bindings/argument_spec_builder.h"
 #include "gin/converter.h"
+#include "gin/dictionary.h"
 
 namespace extensions {
 namespace {
@@ -138,6 +139,17 @@ std::unique_ptr<APISignature> OptionalObjectAndCallback() {
   return std::make_unique<APISignature>(std::move(specs));
 }
 
+std::vector<v8::Local<v8::Value>> StringToV8Vector(
+    v8::Local<v8::Context> context,
+    const char* args) {
+  v8::Local<v8::Value> v8_args = V8ValueFromScriptSource(context, args);
+  EXPECT_FALSE(v8_args.IsEmpty());
+  EXPECT_TRUE(v8_args->IsArray());
+  std::vector<v8::Local<v8::Value>> vector_args;
+  EXPECT_TRUE(gin::ConvertFromV8(context->GetIsolate(), v8_args, &vector_args));
+  return vector_args;
+}
+
 }  // namespace
 
 class APISignatureTest : public APIBindingTest {
@@ -178,6 +190,8 @@ class APISignatureTest : public APIBindingTest {
     RunTest(signature, arg_values, base::StringPiece(), false, false,
             expected_error);
   }
+
+  const APITypeReferenceMap& type_refs() const { return type_refs_; }
 
  private:
   void RunTest(const APISignature& signature,
@@ -384,21 +398,11 @@ TEST_F(APISignatureTest, ParseIgnoringSchema) {
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = MainContext();
 
-  auto string_to_v8_vector = [context](base::StringPiece args) {
-    v8::Local<v8::Value> v8_args = V8ValueFromScriptSource(context, args);
-    EXPECT_FALSE(v8_args.IsEmpty());
-    EXPECT_TRUE(v8_args->IsArray());
-    std::vector<v8::Local<v8::Value>> vector_args;
-    EXPECT_TRUE(
-        gin::ConvertFromV8(context->GetIsolate(), v8_args, &vector_args));
-    return vector_args;
-  };
-
   {
     // Test with providing an optional callback.
     auto signature = IntAndOptionalCallback();
     std::vector<v8::Local<v8::Value>> v8_args =
-        string_to_v8_vector("[1, function() {}]");
+        StringToV8Vector(context, "[1, function() {}]");
     v8::Local<v8::Function> callback;
     std::unique_ptr<base::ListValue> parsed;
     EXPECT_TRUE(signature->ConvertArgumentsIgnoringSchema(context, v8_args,
@@ -412,7 +416,7 @@ TEST_F(APISignatureTest, ParseIgnoringSchema) {
     // Test with omitting the optional callback.
     auto signature = IntAndOptionalCallback();
     std::vector<v8::Local<v8::Value>> v8_args =
-        string_to_v8_vector("[1, null]");
+        StringToV8Vector(context, "[1, null]");
     v8::Local<v8::Function> callback;
     std::unique_ptr<base::ListValue> parsed;
     EXPECT_TRUE(signature->ConvertArgumentsIgnoringSchema(context, v8_args,
@@ -427,7 +431,7 @@ TEST_F(APISignatureTest, ParseIgnoringSchema) {
     // is (unfortunately) allowed and used.
     auto signature = OneString();
     std::vector<v8::Local<v8::Value>> v8_args =
-        string_to_v8_vector("[{not: 'a string'}]");
+        StringToV8Vector(context, "[{not: 'a string'}]");
     v8::Local<v8::Function> callback;
     std::unique_ptr<base::ListValue> parsed;
     EXPECT_TRUE(signature->ConvertArgumentsIgnoringSchema(context, v8_args,
@@ -439,8 +443,8 @@ TEST_F(APISignatureTest, ParseIgnoringSchema) {
 
   {
     auto signature = OneObject();
-    std::vector<v8::Local<v8::Value>> v8_args =
-        string_to_v8_vector("[{prop1: 'foo', other: 'bar', nullProp: null}]");
+    std::vector<v8::Local<v8::Value>> v8_args = StringToV8Vector(
+        context, "[{prop1: 'foo', other: 'bar', nullProp: null}]");
     v8::Local<v8::Function> callback;
     std::unique_ptr<base::ListValue> parsed;
     EXPECT_TRUE(signature->ConvertArgumentsIgnoringSchema(context, v8_args,
@@ -449,6 +453,44 @@ TEST_F(APISignatureTest, ParseIgnoringSchema) {
     EXPECT_EQ(R"([{"other":"bar","prop1":"foo"}])", ValueToString(*parsed));
     EXPECT_TRUE(callback.IsEmpty());
   }
+}
+
+TEST_F(APISignatureTest, ParseArgumentsToV8) {
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = MainContext();
+
+  // Test that parsing a signature returns values that are free of tricky
+  // getters. This is more thoroughly tested in the ArgumentSpec conversion
+  // unittests, but verify that it applies to signature parsing.
+  auto signature = OneObject();
+  constexpr char kTrickyArgs[] = R"(
+      [{
+        get prop1() {
+          if (this.got)
+            return 'bar';
+          this.got = true;
+          return 'foo';
+        },
+        prop2: 'baz'
+      }])";
+  std::vector<v8::Local<v8::Value>> args =
+      StringToV8Vector(context, kTrickyArgs);
+
+  std::vector<v8::Local<v8::Value>> args_out;
+  std::string error;
+  ASSERT_TRUE(signature->ParseArgumentsToV8(context, args, type_refs(),
+                                            &args_out, &error));
+  ASSERT_EQ(1u, args_out.size());
+  ASSERT_TRUE(args_out[0]->IsObject());
+  gin::Dictionary dict(isolate(), args_out[0].As<v8::Object>());
+
+  std::string prop1;
+  ASSERT_TRUE(dict.Get("prop1", &prop1));
+  EXPECT_EQ("foo", prop1);
+
+  std::string prop2;
+  ASSERT_TRUE(dict.Get("prop2", &prop2));
+  EXPECT_EQ("baz", prop2);
 }
 
 }  // namespace extensions

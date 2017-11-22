@@ -180,8 +180,9 @@ void ContentSetting::HandleFunction(const std::string& method_name,
     // Note: we do this *after* checking if the setting is deprecated, since
     // this validation will fail for deprecated settings.
     std::string error;
-    if (!value.IsEmpty() && !argument_spec_.ParseArgument(
-                                context, value, *type_refs_, nullptr, &error)) {
+    if (!value.IsEmpty() &&
+        !argument_spec_.ParseArgument(context, value, *type_refs_, nullptr,
+                                      nullptr, &error)) {
       arguments->ThrowTypeError("Invalid invocation: " + error);
       return;
     }
