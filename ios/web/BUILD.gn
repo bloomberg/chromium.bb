@@ -533,6 +533,7 @@ test("ios_web_inttests") {
     "//ios/testing:http_server_bundle_data",
     "//ios/testing:ios_test_support",
     "//ios/web:resources_grit",
+    "//ios/web/download:download_inttests",
     "//ios/web/navigation:core",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",
