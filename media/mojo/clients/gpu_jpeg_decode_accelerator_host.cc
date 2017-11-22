@@ -17,7 +17,7 @@ namespace media {
 
 GpuJpegDecodeAcceleratorHost::GpuJpegDecodeAcceleratorHost(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-    mojom::GpuJpegDecodeAcceleratorPtrInfo jpeg_decoder)
+    mojom::JpegDecodeAcceleratorPtrInfo jpeg_decoder)
     : io_task_runner_(std::move(io_task_runner)),
       jpeg_decoder_info_(std::move(jpeg_decoder)) {}
 
@@ -94,13 +94,13 @@ void GpuJpegDecodeAcceleratorHost::OnInitializeDone(
 
 void GpuJpegDecodeAcceleratorHost::OnDecodeAck(
     int32_t bitstream_buffer_id,
-    JpegDecodeAccelerator::Error error) {
+    ::media::JpegDecodeAccelerator::Error error) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
 
   if (!client_)
     return;
 
-  if (error == JpegDecodeAccelerator::Error::NO_ERRORS) {
+  if (error == ::media::JpegDecodeAccelerator::Error::NO_ERRORS) {
     client_->VideoFrameReady(bitstream_buffer_id);
     return;
   }
@@ -116,7 +116,7 @@ void GpuJpegDecodeAcceleratorHost::OnDecodeAck(
 void GpuJpegDecodeAcceleratorHost::OnLostConnectionToJpegDecoder() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   OnDecodeAck(kInvalidBitstreamBufferId,
-              JpegDecodeAccelerator::Error::PLATFORM_FAILURE);
+              ::media::JpegDecodeAccelerator::Error::PLATFORM_FAILURE);
 }
 
 }  // namespace media

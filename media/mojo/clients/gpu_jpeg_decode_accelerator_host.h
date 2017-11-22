@@ -10,7 +10,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "media/mojo/interfaces/jpeg_decoder.mojom.h"
+#include "media/mojo/interfaces/jpeg_decode_accelerator.mojom.h"
 #include "media/video/jpeg_decode_accelerator.h"
 
 namespace base {
@@ -22,13 +22,13 @@ namespace media {
 // TODO(c.padhi): Rename to MojoJpegDecodeAccelerator, see
 // http://crbug.com/699255.
 // A JpegDecodeAccelerator, for use in the browser process, that proxies to a
-// mojom::GpuJpegDecodeAccelerator. Created on the owner's thread, otherwise
+// mojom::JpegDecodeAccelerator. Created on the owner's thread, otherwise
 // operating and deleted on the IO thread.
 class GpuJpegDecodeAcceleratorHost : public JpegDecodeAccelerator {
  public:
   GpuJpegDecodeAcceleratorHost(
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-      mojom::GpuJpegDecodeAcceleratorPtrInfo jpeg_decoder);
+      mojom::JpegDecodeAcceleratorPtrInfo jpeg_decoder);
   ~GpuJpegDecodeAcceleratorHost() override;
 
   // JpegDecodeAccelerator implementation.
@@ -45,7 +45,7 @@ class GpuJpegDecodeAcceleratorHost : public JpegDecodeAccelerator {
                         JpegDecodeAccelerator::Client* client,
                         bool success);
   void OnDecodeAck(int32_t bitstream_buffer_id,
-                   JpegDecodeAccelerator::Error error);
+                   ::media::JpegDecodeAccelerator::Error error);
   void OnLostConnectionToJpegDecoder();
 
   // Browser IO task runner.
@@ -53,12 +53,12 @@ class GpuJpegDecodeAcceleratorHost : public JpegDecodeAccelerator {
 
   Client* client_ = nullptr;
 
-  // Used to safely pass the GpuJpegDecodeAcceleratorPtr from one thread
-  // to another. It is set in the constructor and consumed in
-  // InitializeAsync().
-  mojom::GpuJpegDecodeAcceleratorPtrInfo jpeg_decoder_info_;
+  // Used to safely pass the mojom::JpegDecodeAcceleratorPtr from one thread to
+  // another. It is set in the constructor and consumed in InitializeAsync().
+  // TODO(mcasas): s/jpeg_decoder_/jda_/ https://crbug.com/699255.
+  mojom::JpegDecodeAcceleratorPtrInfo jpeg_decoder_info_;
 
-  mojom::GpuJpegDecodeAcceleratorPtr jpeg_decoder_;
+  mojom::JpegDecodeAcceleratorPtr jpeg_decoder_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuJpegDecodeAcceleratorHost);
 };

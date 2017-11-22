@@ -49,7 +49,7 @@ class GpuJpegDecodeAcceleratorTest : public ::testing::Test {
 };
 
 TEST_F(GpuJpegDecodeAcceleratorTest, InitializeAndDecode) {
-  mojom::GpuJpegDecodeAcceleratorPtr jpeg_decoder;
+  mojom::JpegDecodeAcceleratorPtr jpeg_decoder;
   GpuJpegDecodeAccelerator::Create(mojo::MakeRequest(&jpeg_decoder));
 
   base::RunLoop run_loop;

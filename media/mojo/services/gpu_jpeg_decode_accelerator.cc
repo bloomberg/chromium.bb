@@ -57,7 +57,7 @@ namespace media {
 
 // static
 void GpuJpegDecodeAccelerator::Create(
-    mojom::GpuJpegDecodeAcceleratorRequest request) {
+    mojom::JpegDecodeAcceleratorRequest request) {
   auto* jpeg_decoder = new GpuJpegDecodeAccelerator();
   mojo::MakeStrongBinding(base::WrapUnique(jpeg_decoder), std::move(request));
 }
@@ -73,11 +73,12 @@ GpuJpegDecodeAccelerator::~GpuJpegDecodeAccelerator() {
 void GpuJpegDecodeAccelerator::VideoFrameReady(int32_t bitstream_buffer_id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   NotifyDecodeStatus(bitstream_buffer_id,
-                     JpegDecodeAccelerator::Error::NO_ERRORS);
+                     ::media::JpegDecodeAccelerator::Error::NO_ERRORS);
 }
 
-void GpuJpegDecodeAccelerator::NotifyError(int32_t bitstream_buffer_id,
-                                           JpegDecodeAccelerator::Error error) {
+void GpuJpegDecodeAccelerator::NotifyError(
+    int32_t bitstream_buffer_id,
+    ::media::JpegDecodeAccelerator::Error error) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   NotifyDecodeStatus(bitstream_buffer_id, error);
 }
@@ -88,9 +89,9 @@ void GpuJpegDecodeAccelerator::Initialize(InitializeCallback callback) {
   // When adding non-chromeos platforms, VideoCaptureGpuJpegDecoder::Initialize
   // needs to be updated.
 
-  std::unique_ptr<JpegDecodeAccelerator> accelerator;
+  std::unique_ptr<::media::JpegDecodeAccelerator> accelerator;
   for (const auto& create_jda_function : accelerator_factory_functions_) {
-    std::unique_ptr<JpegDecodeAccelerator> tmp_accelerator =
+    std::unique_ptr<::media::JpegDecodeAccelerator> tmp_accelerator =
         create_jda_function.Run(base::ThreadTaskRunnerHandle::Get());
     if (tmp_accelerator && tmp_accelerator->Initialize(this)) {
       accelerator = std::move(tmp_accelerator);
@@ -122,7 +123,7 @@ void GpuJpegDecodeAccelerator::Decode(
 
   if (!VerifyDecodeParams(coded_size, &output_handle, output_buffer_size)) {
     NotifyDecodeStatus(input_buffer.id(),
-                       JpegDecodeAccelerator::Error::INVALID_ARGUMENT);
+                       ::media::JpegDecodeAccelerator::Error::INVALID_ARGUMENT);
     return;
   }
 
@@ -137,7 +138,7 @@ void GpuJpegDecodeAccelerator::Decode(
     LOG(ERROR) << "Could not map output shared memory for input buffer id "
                << input_buffer.id();
     NotifyDecodeStatus(input_buffer.id(),
-                       JpegDecodeAccelerator::Error::PLATFORM_FAILURE);
+                       ::media::JpegDecodeAccelerator::Error::PLATFORM_FAILURE);
     return;
   }
 
@@ -156,7 +157,7 @@ void GpuJpegDecodeAccelerator::Decode(
     LOG(ERROR) << "Could not create VideoFrame for input buffer id "
                << input_buffer.id();
     NotifyDecodeStatus(input_buffer.id(),
-                       JpegDecodeAccelerator::Error::PLATFORM_FAILURE);
+                       ::media::JpegDecodeAccelerator::Error::PLATFORM_FAILURE);
     return;
   }
   frame->AddDestructionObserver(
@@ -173,7 +174,7 @@ void GpuJpegDecodeAccelerator::Uninitialize() {
 
 void GpuJpegDecodeAccelerator::NotifyDecodeStatus(
     int32_t bitstream_buffer_id,
-    JpegDecodeAccelerator::Error error) {
+    ::media::JpegDecodeAccelerator::Error error) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(decode_cb_);
   std::move(decode_cb_).Run(bitstream_buffer_id, error);

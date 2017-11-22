@@ -260,7 +260,7 @@ void VideoCaptureGpuJpegDecoder::DidReceiveGPUInfoOnIOThread(
     const gpu::GPUInfo& gpu_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  media::mojom::GpuJpegDecodeAcceleratorPtr remote_decoder;
+  media::mojom::JpegDecodeAcceleratorPtr remote_decoder;
 
   if (gpu_info.jpeg_decode_accelerator_supported) {
     GpuProcessHost* host =
@@ -278,7 +278,7 @@ void VideoCaptureGpuJpegDecoder::DidReceiveGPUInfoOnIOThread(
 }
 
 void VideoCaptureGpuJpegDecoder::FinishInitialization(
-    media::mojom::GpuJpegDecodeAcceleratorPtrInfo unbound_remote_decoder) {
+    media::mojom::JpegDecodeAcceleratorPtrInfo unbound_remote_decoder) {
   TRACE_EVENT0("gpu", "VideoCaptureGpuJpegDecoder::FinishInitialization");
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 

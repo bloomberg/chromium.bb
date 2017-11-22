@@ -146,7 +146,7 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   void CreateArcProtectedBufferManager(
       arc::mojom::ProtectedBufferManagerRequest pbm_request) override;
   void CreateJpegDecodeAccelerator(
-      media::mojom::GpuJpegDecodeAcceleratorRequest jda_request) override;
+      media::mojom::JpegDecodeAcceleratorRequest jda_request) override;
   void CreateVideoEncodeAcceleratorProvider(
       media::mojom::VideoEncodeAcceleratorProviderRequest vea_provider_request)
       override;

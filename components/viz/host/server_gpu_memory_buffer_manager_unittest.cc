@@ -69,7 +69,7 @@ class TestGpuService : public mojom::GpuService {
       arc::mojom::ProtectedBufferManagerRequest pbm_request) override {}
 
   void CreateJpegDecodeAccelerator(
-      media::mojom::GpuJpegDecodeAcceleratorRequest jda_request) override {}
+      media::mojom::JpegDecodeAcceleratorRequest jda_request) override {}
 
   void CreateVideoEncodeAcceleratorProvider(
       media::mojom::VideoEncodeAcceleratorProviderRequest request) override {}

@@ -42,7 +42,7 @@ class Gpu : public gpu::GpuChannelHostFactory,
       scoped_refptr<gpu::GpuChannelHost> gpu_channel);
 
   void CreateJpegDecodeAccelerator(
-      media::mojom::GpuJpegDecodeAcceleratorRequest jda_request);
+      media::mojom::JpegDecodeAcceleratorRequest jda_request);
   void CreateVideoEncodeAcceleratorProvider(
       media::mojom::VideoEncodeAcceleratorProviderRequest vea_provider_request);
 
