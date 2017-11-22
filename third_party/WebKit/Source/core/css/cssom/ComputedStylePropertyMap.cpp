@@ -6,6 +6,7 @@
 
 #include "core/css/ComputedStyleCSSValueMapping.h"
 #include "core/css/cssom/StyleValueFactory.h"
+#include "core/dom/Document.h"
 #include "core/dom/PseudoElement.h"
 
 namespace blink {
