@@ -11,6 +11,7 @@
 #include "base/time/time.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_code_conversion_win.h"
+#include "ui/events/keycodes/platform_key_map_win.h"
 #include "ui/events/win/system_event_state_lookup.h"
 #include "ui/gfx/geometry/point.h"
 
@@ -372,14 +373,30 @@ int GetModifiersFromKeyState() {
   int modifiers = EF_NONE;
   if (ui::win::IsShiftPressed())
     modifiers |= EF_SHIFT_DOWN;
-  if (ui::win::IsCtrlPressed())
-    modifiers |= EF_CONTROL_DOWN;
-  if (ui::win::IsAltPressed())
-    modifiers |= EF_ALT_DOWN;
+  // TODO(crbug.com/25503): Handle Control+Alt vs AltGraph disambiguation, if
+  // enabled.
+  if (PlatformKeyMap::IsFixAltGraphEnabled()) {
+    if (ui::win::IsAltRightPressed() && PlatformKeyMap::UsesAltGraph()) {
+      modifiers |= EF_ALTGR_DOWN;
+    } else {
+      // Note that if the platform keyboard layout uses AltGraph then these may
+      // be overridden on KeyEvents for printable characters generated using
+      // AltGraph simulated via Control+Alt.
+      if (ui::win::IsCtrlPressed())
+        modifiers |= EF_CONTROL_DOWN;
+      if (ui::win::IsAltPressed())
+        modifiers |= EF_ALT_DOWN;
+    }
+  } else {
+    if (ui::win::IsCtrlPressed())
+      modifiers |= EF_CONTROL_DOWN;
+    if (ui::win::IsAltPressed())
+      modifiers |= EF_ALT_DOWN;
+    if (ui::win::IsCtrlPressed() && ui::win::IsAltPressed())
+      modifiers |= EF_ALTGR_DOWN;
+  }
   if (ui::win::IsWindowsKeyPressed())
     modifiers |= EF_COMMAND_DOWN;
-  if (ui::win::IsAltGrPressed())
-    modifiers |= EF_ALTGR_DOWN;
   if (ui::win::IsNumLockOn())
     modifiers |= EF_NUM_LOCK_ON;
   if (ui::win::IsCapsLockOn())

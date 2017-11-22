@@ -42,40 +42,40 @@ class PlatformKeyMapTest : public testing::Test {
     KeyboardCode key_code = test_case.key_code;
     EXPECT_STREQ(test_case.normal,
                  KeycodeConverter::DomKeyToKeyString(
-                     keymap.DomKeyFromKeyboardCodeImpl(key_code, EF_NONE))
+                     DomKeyFromKeyboardCodeImpl(keymap, key_code, EF_NONE))
                      .c_str())
         << label;
-    EXPECT_STREQ(test_case.shift,
-                 KeycodeConverter::DomKeyToKeyString(
-                     keymap.DomKeyFromKeyboardCodeImpl(key_code, EF_SHIFT_DOWN))
-                     .c_str())
+    EXPECT_STREQ(test_case.shift, KeycodeConverter::DomKeyToKeyString(
+                                      DomKeyFromKeyboardCodeImpl(
+                                          keymap, key_code, EF_SHIFT_DOWN))
+                                      .c_str())
         << label;
     EXPECT_STREQ(test_case.capslock, KeycodeConverter::DomKeyToKeyString(
-                                         keymap.DomKeyFromKeyboardCodeImpl(
-                                             key_code, EF_CAPS_LOCK_ON))
+                                         DomKeyFromKeyboardCodeImpl(
+                                             keymap, key_code, EF_CAPS_LOCK_ON))
                                          .c_str())
         << label;
-    EXPECT_STREQ(test_case.altgr,
-                 KeycodeConverter::DomKeyToKeyString(
-                     keymap.DomKeyFromKeyboardCodeImpl(key_code, EF_ALTGR_DOWN))
-                     .c_str())
+    EXPECT_STREQ(test_case.altgr, KeycodeConverter::DomKeyToKeyString(
+                                      DomKeyFromKeyboardCodeImpl(
+                                          keymap, key_code, EF_ALTGR_DOWN))
+                                      .c_str())
         << label;
     EXPECT_STREQ(test_case.shift_capslock,
                  KeycodeConverter::DomKeyToKeyString(
-                     keymap.DomKeyFromKeyboardCodeImpl(
-                         key_code, EF_SHIFT_DOWN | EF_CAPS_LOCK_ON))
+                     DomKeyFromKeyboardCodeImpl(
+                         keymap, key_code, EF_SHIFT_DOWN | EF_CAPS_LOCK_ON))
                      .c_str())
         << label;
     EXPECT_STREQ(test_case.shift_altgr,
                  KeycodeConverter::DomKeyToKeyString(
-                     keymap.DomKeyFromKeyboardCodeImpl(
-                         key_code, EF_SHIFT_DOWN | EF_ALTGR_DOWN))
+                     DomKeyFromKeyboardCodeImpl(keymap, key_code,
+                                                EF_SHIFT_DOWN | EF_ALTGR_DOWN))
                      .c_str())
         << label;
     EXPECT_STREQ(test_case.altgr_capslock,
                  KeycodeConverter::DomKeyToKeyString(
-                     keymap.DomKeyFromKeyboardCodeImpl(
-                         key_code, EF_ALTGR_DOWN | EF_CAPS_LOCK_ON))
+                     DomKeyFromKeyboardCodeImpl(
+                         keymap, key_code, EF_ALTGR_DOWN | EF_CAPS_LOCK_ON))
                      .c_str())
         << label;
   }
@@ -84,7 +84,7 @@ class PlatformKeyMapTest : public testing::Test {
   DomKey DomKeyFromKeyboardCodeImpl(const PlatformKeyMap& keymap,
                                     KeyboardCode key_code,
                                     int flags) {
-    return keymap.DomKeyFromKeyboardCodeImpl(key_code, flags);
+    return keymap.DomKeyFromKeyboardCodeImpl(key_code, &flags);
   }
 
  private:
