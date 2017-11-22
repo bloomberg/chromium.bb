@@ -47,20 +47,15 @@ webauth::mojom::PublicKeyCredentialInfoPtr CreatePublicKeyCredentialInfo(
 }
 }  // namespace
 
-// static
-void AuthenticatorImpl::Create(
-    RenderFrameHost* render_frame_host,
-    webauth::mojom::AuthenticatorRequest request) {
-  auto authenticator_impl =
-      std::make_unique<AuthenticatorImpl>(render_frame_host);
-  mojo::MakeStrongBinding(std::move(authenticator_impl), std::move(request));
+AuthenticatorImpl::AuthenticatorImpl(RenderFrameHost* render_frame_host)
+    : render_frame_host_(render_frame_host), weak_factory_(this) {
+  DCHECK(render_frame_host_);
 }
 
 AuthenticatorImpl::~AuthenticatorImpl() {}
 
-AuthenticatorImpl::AuthenticatorImpl(RenderFrameHost* render_frame_host)
-    : render_frame_host_(render_frame_host), weak_factory_(this) {
-  DCHECK(render_frame_host);
+void AuthenticatorImpl::Bind(webauth::mojom::AuthenticatorRequest request) {
+  bindings_.AddBinding(this, std::move(request));
 }
 
 // mojom::Authenticator
