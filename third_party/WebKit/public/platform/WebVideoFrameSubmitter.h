@@ -8,6 +8,10 @@
 #include "WebCommon.h"
 #include "cc/layers/video_frame_provider.h"
 
+namespace cc {
+class LayerTreeSettings;
+}
+
 namespace gpu {
 class GpuMemoryBufferManager;
 }
@@ -32,7 +36,8 @@ class BLINK_PLATFORM_EXPORT WebVideoFrameSubmitter
   static std::unique_ptr<WebVideoFrameSubmitter> Create(
       WebContextProviderCallback,
       viz::SharedBitmapManager*,
-      gpu::GpuMemoryBufferManager*);
+      gpu::GpuMemoryBufferManager*,
+      const cc::LayerTreeSettings&);
   virtual ~WebVideoFrameSubmitter() = default;
   virtual void Initialize(cc::VideoFrameProvider*) = 0;
   virtual void StartSubmitting(const viz::FrameSinkId&) = 0;

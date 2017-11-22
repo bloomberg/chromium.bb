@@ -18,10 +18,12 @@ namespace blink {
 VideoFrameResourceProvider::VideoFrameResourceProvider(
     WebContextProviderCallback context_provider_callback,
     viz::SharedBitmapManager* shared_bitmap_manager,
-    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager)
+    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+    const cc::LayerTreeSettings& settings)
     : context_provider_callback_(std::move(context_provider_callback)),
       shared_bitmap_manager_(shared_bitmap_manager),
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
+      settings_(settings),
       weak_ptr_factory_(this) {}
 
 VideoFrameResourceProvider::~VideoFrameResourceProvider() {
@@ -43,16 +45,13 @@ void VideoFrameResourceProvider::Initialize(
 
   viz::ContextProvider::ScopedContextLock lock(context_provider_);
   // TODO(lethalantidote): Get real value for delegated_sync_points_required.
-  // TODO(lethalantidote): Get real resource_settings.
   resource_provider_ = std::make_unique<cc::LayerTreeResourceProvider>(
       media_context_provider, shared_bitmap_manager_,
-      gpu_memory_buffer_manager_, false, resource_settings_);
+      gpu_memory_buffer_manager_, false, settings_.resource_settings);
 
-  // TODO(lethalantidote): Get real value for use_stream_video_draw_quad.
-  // use_stream_video_draw_quad only seems relevant to android, where it is
-  // true.
   resource_updater_ = std::make_unique<cc::VideoResourceUpdater>(
-      media_context_provider, resource_provider_.get(), false);
+      media_context_provider, resource_provider_.get(),
+      settings_.use_stream_video_draw_quad);
 }
 
 void VideoFrameResourceProvider::AppendQuads(viz::RenderPass* render_pass) {
