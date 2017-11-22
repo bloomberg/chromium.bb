@@ -407,16 +407,10 @@ if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
 
   if (aom_config("CONFIG_LOOP_RESTORATION") eq "yes") {
     add_proto qw/void aom_highbd_convolve8_add_src/, "const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h, int bps";
-    add_proto qw/void aom_highbd_convolve8_add_src_horiz/, "const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h, int bps";
-    add_proto qw/void aom_highbd_convolve8_add_src_vert/, "const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h, int bps";
     add_proto qw/void aom_highbd_convolve8_add_src_hip/, "const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h, int bps";
-    add_proto qw/void aom_highbd_convolve8_add_src_horiz_hip/, "const uint8_t *src, ptrdiff_t src_stride, uint16_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h, int bps";
-    add_proto qw/void aom_highbd_convolve8_add_src_vert_hip/, "const uint16_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h, int bps";
 
     specialize qw/aom_highbd_convolve8_add_src/, "$sse2_x86_64";
     specialize qw/aom_highbd_convolve8_add_src_hip ssse3/;
-    # The _horiz/_vert functions are currently unused, so we don't bother
-    # specialising them.
   }  # CONFIG_LOOP_RESTORATION
 }  # CONFIG_HIGHBITDEPTH
 
