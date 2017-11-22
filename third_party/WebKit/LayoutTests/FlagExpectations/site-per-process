@@ -112,8 +112,8 @@ crbug.com/623268 http/tests/inspector-protocol/request-mixed-content-status-opti
 crbug.com/623268 virtual/mojo-loading/http/tests/inspector-protocol/request-mixed-content-status-blockable.js [ Timeout ]
 crbug.com/623268 virtual/mojo-loading/http/tests/inspector-protocol/request-mixed-content-status-none.js [ Timeout ]
 crbug.com/623268 virtual/mojo-loading/http/tests/inspector-protocol/request-mixed-content-status-optionally-blockable.js [ Timeout ]
-crbug.com/623268 http/tests/devtools/console-cross-origin-iframe-logging.html [ Failure ]
-crbug.com/623268 virtual/mojo-loading/http/tests/devtools/console-cross-origin-iframe-logging.html [ Failure ]
+crbug.com/623268 http/tests/devtools/console-cross-origin-iframe-logging.js [ Failure ]
+crbug.com/623268 virtual/mojo-loading/http/tests/devtools/console-cross-origin-iframe-logging.js [ Failure ]
 
 # https://crbug.com/645641 - test_runner.cc(1863) Check failed:
 # layout_test_runtime_flags_.have_top_loading_frame()
