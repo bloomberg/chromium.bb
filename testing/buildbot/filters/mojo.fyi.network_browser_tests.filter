@@ -753,9 +753,11 @@
 -NewTabPageInterceptorTest.FailedRequestInterception
 -NewTabPageInterceptorTest.NoInterception
 
+# This requires that InterceptNetworkTransactions works
+-ErrorPageNavigationCorrectionsFailTest.StaleCacheStatusFailedCorrections
+
 # Switch test from using a custom net::URLRequestFileJob to using a test
 # URLLoaderFactory via SetNetworkFactoryForTesting.
--ErrorPageNavigationCorrectionsFailTest.StaleCacheStatusFailedCorrections
 -ErrorPageOfflineTestWithAllowDinosaurFalse.CheckEasterEggIsDisabled
 -ErrorPageTest.CheckEasterEggIsNotDisabled
 -ErrorPageTest.DNSError_Basic
