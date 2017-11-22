@@ -1141,23 +1141,30 @@ static const uint32_t k_unScreenshotHandleInvalid = 0;
 #pragma pack( pop )
 
 // figure out how to import from the VR API dll
+// for COMPONENT_BUILD
 #if defined(_WIN32)
+
+#if defined(COMPONENT_BUILD)
 
 #ifdef VR_API_EXPORT
 #define VR_INTERFACE extern "C" __declspec( dllexport )
 #else
 #define VR_INTERFACE extern "C" __declspec( dllimport )
-#endif
+#endif // VR_API_EXPORT
+
+#else // !defined(COMPONENT_BUILD)
+#define VR_INTERFACE extern "C"
+#endif // COMPONENT_BUILD
 
 #elif defined(__GNUC__) || defined(COMPILER_GCC) || defined(__APPLE__)
 
-#ifdef VR_API_EXPORT
+#if defined(VR_API_EXPORT) && defined(COMPONENT_BUILD)
 #define VR_INTERFACE extern "C" __attribute__((visibility("default")))
 #else
 #define VR_INTERFACE extern "C" 
-#endif
+#endif // defined(VR_API_EXPORT) && defined(COMPONENT_BUILD)
 
-#else
+#else // !defined(_WIN32) && !(defined(__GNUC__) || defined(COMPILER_GCC) || ...
 #error "Unsupported Platform."
 #endif
 

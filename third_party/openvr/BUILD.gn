@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-shared_library("openvr") {
+component("openvr") {
   output_name = "openvr_api"
 
   # Some ascii versions of Windows APIs are used in this code.
