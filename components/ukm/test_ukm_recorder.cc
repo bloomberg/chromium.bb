@@ -66,6 +66,12 @@ TestUkmRecorder::TestUkmRecorder() {
 TestUkmRecorder::~TestUkmRecorder() {
 };
 
+bool TestUkmRecorder::ShouldRestrictToWhitelistedSourceIds() const {
+  // In tests, we want to record all source ids (not just hose that are
+  // whitelisted).
+  return false;
+}
+
 std::set<ukm::SourceId> TestUkmRecorder::GetSourceIds() const {
   std::set<ukm::SourceId> result;
   for (const auto& kv : sources()) {

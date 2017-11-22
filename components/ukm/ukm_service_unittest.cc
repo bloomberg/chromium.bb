@@ -136,6 +136,10 @@ class UkmServiceTest : public testing::Test {
     return report;
   }
 
+  static SourceId GetWhitelistedSourceId(int64_t id) {
+    return ConvertToSourceId(id, SourceIdType::NAVIGATION_ID);
+  }
+
  protected:
   TestingPrefServiceSimple prefs_;
   metrics::TestMetricsServiceClient client_;
@@ -173,7 +177,7 @@ TEST_F(UkmServiceTest, PersistAndPurge) {
   service.EnableRecording();
   service.EnableReporting();
 
-  ukm::SourceId id = UkmRecorder::GetNewSourceID();
+  SourceId id = GetWhitelistedSourceId(0);
   recorder.UpdateSourceURL(id, GURL("https://google.com/foobar"));
   // Should init, generate a log, and start an upload for source.
   task_runner_->RunPendingTasks();
@@ -199,7 +203,7 @@ TEST_F(UkmServiceTest, SourceSerialization) {
   service.EnableRecording();
   service.EnableReporting();
 
-  ukm::SourceId id = UkmRecorder::GetNewSourceID();
+  ukm::SourceId id = GetWhitelistedSourceId(0);
   recorder.UpdateSourceURL(id, GURL("https://google.com/initial"));
   recorder.UpdateSourceURL(id, GURL("https://google.com/intermediate"));
   recorder.UpdateSourceURL(id, GURL("https://google.com/foobar"));
@@ -226,7 +230,7 @@ TEST_F(UkmServiceTest, EntryBuilderAndSerialization) {
   service.EnableRecording();
   service.EnableReporting();
 
-  ukm::SourceId id = UkmRecorder::GetNewSourceID();
+  ukm::SourceId id = GetWhitelistedSourceId(0);
   recorder.UpdateSourceURL(id, GURL("https://google.com/foobar"));
   {
     std::unique_ptr<UkmEntryBuilder> foo_builder =
@@ -290,7 +294,7 @@ TEST_F(UkmServiceTest, AddEntryWithEmptyMetrics) {
   service.EnableRecording();
   service.EnableReporting();
 
-  ukm::SourceId id = UkmRecorder::GetNewSourceID();
+  ukm::SourceId id = GetWhitelistedSourceId(0);
   recorder.UpdateSourceURL(id, GURL("https://google.com/foobar"));
 
   { ::ukm::builders::PageLoad(id).Record(&service); }
@@ -317,7 +321,7 @@ TEST_F(UkmServiceTest, MetricsProviderTest) {
   service.EnableRecording();
   service.EnableReporting();
 
-  ukm::SourceId id = UkmRecorder::GetNewSourceID();
+  ukm::SourceId id = GetWhitelistedSourceId(0);
   recorder.UpdateSourceURL(id, GURL("https://google.com/foobar"));
   {
     ::ukm::builders::PageLoad(id)
@@ -350,7 +354,7 @@ TEST_F(UkmServiceTest, LogsUploadedOnlyWhenHavingSourcesOrEntries) {
   service.Flush();
   EXPECT_EQ(GetPersistedLogCount(), 0);
 
-  ukm::SourceId id = UkmRecorder::GetNewSourceID();
+  ukm::SourceId id = GetWhitelistedSourceId(0);
   recorder.UpdateSourceURL(id, GURL("https://google.com/foobar"));
   // Includes a Source, so will persist.
   service.Flush();
@@ -405,7 +409,7 @@ TEST_F(UkmServiceTest, RecordInitialUrl) {
     service.EnableRecording();
     service.EnableReporting();
 
-    ukm::SourceId id = UkmRecorder::GetNewSourceID();
+    ukm::SourceId id = GetWhitelistedSourceId(0);
     recorder.UpdateSourceURL(id, GURL("https://google.com/initial"));
     recorder.UpdateSourceURL(id, GURL("https://google.com/intermediate"));
     recorder.UpdateSourceURL(id, GURL("https://google.com/foobar"));
@@ -427,6 +431,55 @@ TEST_F(UkmServiceTest, RecordInitialUrl) {
   }
 }
 
+TEST_F(UkmServiceTest, RestrictToWhitelistedSourceIds) {
+  for (bool restrict_to_whitelisted_source_ids : {true, false}) {
+    base::FieldTrialList field_trial_list(nullptr /* entropy_provider */);
+    ScopedUkmFeatureParams params(
+        base::FeatureList::OVERRIDE_ENABLE_FEATURE,
+        {{"RestrictToWhitelistedSourceIds",
+          restrict_to_whitelisted_source_ids ? "true" : "false"}});
+
+    ClearPrefs();
+    UkmService service(&prefs_, &client_);
+    TestRecordingHelper recorder(&service);
+    EXPECT_EQ(GetPersistedLogCount(), 0);
+    service.Initialize();
+    task_runner_->RunUntilIdle();
+    service.EnableRecording();
+    service.EnableReporting();
+
+    ukm::SourceId id1 = GetWhitelistedSourceId(0);
+    recorder.UpdateSourceURL(id1, GURL("https://other.com/"));
+    recorder.GetEntryBuilder(id1, "FakeEntry");
+
+    // Create a non-navigation-based sourceid, which should not be whitelisted.
+    ukm::SourceId id2 = UkmRecorder::GetNewSourceID();
+    recorder.UpdateSourceURL(id2, GURL("https://example.com/"));
+    recorder.GetEntryBuilder(id2, "FakeEntry");
+
+    service.Flush();
+    EXPECT_EQ(GetPersistedLogCount(), 1);
+    Report proto_report = GetPersistedReport();
+    EXPECT_GE(proto_report.sources_size(), 1);
+
+    // The whitelisted source should always be recorded.
+    const Source& proto_source1 = proto_report.sources(0);
+    EXPECT_EQ(id1, proto_source1.id());
+    EXPECT_EQ(GURL("https://other.com/").spec(), proto_source1.url());
+
+    // The non-whitelisted source should only be recorded if we aren't
+    // restricted to whitelisted source ids.
+    if (restrict_to_whitelisted_source_ids) {
+      EXPECT_EQ(1, proto_report.sources_size());
+    } else {
+      EXPECT_EQ(2, proto_report.sources_size());
+      const Source& proto_source2 = proto_report.sources(1);
+      EXPECT_EQ(id2, proto_source2.id());
+      EXPECT_EQ(GURL("https://example.com/").spec(), proto_source2.url());
+    }
+  }
+}
+
 TEST_F(UkmServiceTest, RecordSessionId) {
   ClearPrefs();
   UkmService service(&prefs_, &client_);
@@ -437,7 +490,7 @@ TEST_F(UkmServiceTest, RecordSessionId) {
   service.EnableRecording();
   service.EnableReporting();
 
-  auto id = UkmRecorder::GetNewSourceID();
+  auto id = GetWhitelistedSourceId(0);
   recorder.UpdateSourceURL(id, GURL("https://google.com/foobar"));
 
   service.Flush();
@@ -463,11 +516,11 @@ TEST_F(UkmServiceTest, SourceSize) {
   service.EnableRecording();
   service.EnableReporting();
 
-  auto id = UkmRecorder::GetNewSourceID();
+  auto id = GetWhitelistedSourceId(0);
   recorder.UpdateSourceURL(id, GURL("https://google.com/foobar1"));
-  id = UkmRecorder::GetNewSourceID();
+  id = GetWhitelistedSourceId(1);
   recorder.UpdateSourceURL(id, GURL("https://google.com/foobar2"));
-  id = UkmRecorder::GetNewSourceID();
+  id = GetWhitelistedSourceId(2);
   recorder.UpdateSourceURL(id, GURL("https://google.com/foobar3"));
 
   service.Flush();
@@ -487,7 +540,7 @@ TEST_F(UkmServiceTest, PurgeMidUpload) {
   task_runner_->RunUntilIdle();
   service.EnableRecording();
   service.EnableReporting();
-  auto id = UkmRecorder::GetNewSourceID();
+  auto id = GetWhitelistedSourceId(0);
   recorder.UpdateSourceURL(id, GURL("https://google.com/foobar1"));
   // Should init, generate a log, and start an upload.
   task_runner_->RunPendingTasks();
@@ -515,7 +568,7 @@ TEST_F(UkmServiceTest, WhitelistEntryTest) {
   service.EnableRecording();
   service.EnableReporting();
 
-  auto id = UkmRecorder::GetNewSourceID();
+  auto id = GetWhitelistedSourceId(0);
   recorder.UpdateSourceURL(id, GURL("https://google.com/foobar1"));
 
   {
@@ -561,7 +614,7 @@ TEST_F(UkmServiceTest, SourceURLLength) {
   service.EnableRecording();
   service.EnableReporting();
 
-  auto id = UkmRecorder::GetNewSourceID();
+  auto id = GetWhitelistedSourceId(0);
 
   // This URL is too long to be recorded fully.
   const std::string long_string = "https://" + std::string(10000, 'a');

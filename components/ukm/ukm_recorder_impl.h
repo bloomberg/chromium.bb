@@ -52,6 +52,8 @@ class UkmRecorderImpl : public UkmRecorder {
 
   const std::vector<mojom::UkmEntryPtr>& entries() const { return entries_; }
 
+  virtual bool ShouldRestrictToWhitelistedSourceIds() const;
+
  private:
   friend ::metrics::UkmBrowserTest;
   friend ::metrics::UkmEGTestHelper;
