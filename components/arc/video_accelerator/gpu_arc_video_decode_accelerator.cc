@@ -160,14 +160,6 @@ void GpuArcVideoDecodeAccelerator::Initialize(
     InitializeCallback callback) {
   DVLOG(2) << "Initialize";
   DCHECK(!client_);
-  if (config->device_type_deprecated !=
-      ::arc::mojom::VideoDecodeAcceleratorConfig::DeviceTypeDeprecated::
-          DEVICE_DECODER) {
-    LOG(ERROR) << "only decoder is supported";
-    std::move(callback).Run(
-        ::arc::mojom::VideoDecodeAccelerator::Result::INVALID_ARGUMENT);
-    return;
-  }
 
   client_ = std::move(client);
   ArcVideoDecodeAccelerator::Result result = accelerator_->Initialize(
