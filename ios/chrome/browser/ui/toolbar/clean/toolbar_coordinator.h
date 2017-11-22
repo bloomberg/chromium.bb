@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_UI_TOOLBAR_CLEAN_TOOLBAR_COORDINATOR_H_
 #define IOS_CHROME_BROWSER_UI_TOOLBAR_CLEAN_TOOLBAR_COORDINATOR_H_
 
-#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 #include "ios/chrome/browser/ui/qr_scanner/requirements/qr_scanner_result_loading.h"
 #import "ios/chrome/browser/ui/toolbar/omnibox_focuser.h"
@@ -38,6 +38,8 @@ class WebState;
 @property(nonatomic, weak) id<ToolbarCoordinatorDelegate> delegate;
 // URL loader for the toolbar.
 @property(nonatomic, weak) id<UrlLoader> URLLoader;
+// UIViewController managed by this coordinator.
+@property(nonatomic, strong, readonly) UIViewController* viewController;
 
 // Start this coordinator.
 - (void)start;

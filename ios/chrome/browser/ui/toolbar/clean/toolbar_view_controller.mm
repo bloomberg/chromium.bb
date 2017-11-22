@@ -16,6 +16,7 @@
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_constants.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_constants.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 #import "ios/third_party/material_components_ios/src/components/ProgressView/src/MaterialProgressView.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -40,7 +41,7 @@
 @implementation ToolbarViewController
 @synthesize buttonFactory = _buttonFactory;
 @synthesize dispatcher = _dispatcher;
-@synthesize locationBarViewController = _locationBarViewController;
+@synthesize locationBarView = _locationBarView;
 @synthesize stackView = _stackView;
 @synthesize locationBarContainer = _locationBarContainer;
 @synthesize backButton = _backButton;
@@ -90,9 +91,11 @@
 - (void)viewDidLoad {
   self.view.backgroundColor =
       [self.buttonFactory.toolbarConfiguration backgroundColor];
-  [self addChildViewController:self.locationBarViewController
-                     toSubview:self.locationBarContainer];
   [self setUpToolbarStackView];
+  if (self.locationBarView) {
+    [self.locationBarContainer addSubview:self.locationBarView];
+    AddSameConstraints(self.locationBarContainer, self.locationBarView);
+  }
   [self.view addSubview:self.stackView];
   [self.view addSubview:self.progressBar];
   [self setConstraints];
@@ -114,8 +117,7 @@
 }
 
 - (void)setConstraints {
-  [self.view setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
-                                 UIViewAutoresizingFlexibleHeight];
+  self.view.translatesAutoresizingMaskIntoConstraints = NO;
   NSArray* constraints = @[
     [self.stackView.topAnchor constraintEqualToAnchor:self.view.topAnchor
                                              constant:kVerticalMargin],
@@ -138,11 +140,19 @@
   ];
 
   // Constraint so Toolbar stackview never overlaps with the Status Bar.
-  NSLayoutConstraint* constraintTop = [self.stackView.topAnchor
-      constraintGreaterThanOrEqualToAnchor:self.topLayoutGuide.bottomAnchor
-                                  constant:kVerticalMargin];
-  constraintTop.priority = UILayoutPriorityRequired;
-  constraintTop.active = YES;
+  NSLayoutYAxisAnchor* topAnchor;
+  if (@available(iOS 11, *)) {
+    topAnchor = self.view.safeAreaLayoutGuide.topAnchor;
+  } else {
+    topAnchor = self.topLayoutGuide.topAnchor;
+  }
+  [self.stackView.topAnchor
+      constraintGreaterThanOrEqualToAnchor:topAnchor
+                                  constant:kVerticalMargin]
+      .active = YES;
+  [self.view.bottomAnchor constraintEqualToAnchor:topAnchor
+                                         constant:kToolbarHeight]
+      .active = YES;
 
   // Set the constraints priority to UILayoutPriorityDefaultHigh so these are
   // not broken when the views are hidden or the VC's view size is 0.
@@ -317,24 +327,18 @@
   [viewController didMoveToParentViewController:self];
 }
 
-- (void)setLocationBarViewController:(UIViewController*)controller {
-  if (self.locationBarViewController == controller) {
+- (void)setLocationBarView:(UIView*)view {
+  if (_locationBarView == view) {
     return;
   }
+  view.translatesAutoresizingMaskIntoConstraints = NO;
 
   if ([self isViewLoaded]) {
-    // Remove the old child view controller.
-    if (self.locationBarViewController) {
-      DCHECK_EQ(self, self.locationBarViewController.parentViewController);
-      [self.locationBarViewController willMoveToParentViewController:nil];
-      [self.locationBarViewController.view removeFromSuperview];
-      [self.locationBarViewController removeFromParentViewController];
-    }
-    // Add the new child view controller.
-    [self addChildViewController:controller
-                       toSubview:self.locationBarContainer];
+    [_locationBarView removeFromSuperview];
+    [self.locationBarContainer addSubview:view];
+    AddSameConstraints(self.locationBarContainer, view);
   }
-  _locationBarViewController = controller;
+  _locationBarView = view;
 }
 
 #pragma mark - Trait Collection Changes

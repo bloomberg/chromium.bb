@@ -566,6 +566,9 @@ using ios::material::TimingFunction;
   return self;
 }
 
+- (void)start {
+}
+
 #pragma mark -
 #pragma mark Acessors
 

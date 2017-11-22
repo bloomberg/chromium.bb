@@ -192,6 +192,9 @@ using web::WebStateImpl;
 - (void)setToolsMenuStateProvider:(id)provider {
   return;
 }
+- (void)start {
+  return;
+}
 @end
 
 #pragma mark -

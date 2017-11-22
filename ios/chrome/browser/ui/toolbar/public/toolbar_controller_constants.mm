@@ -8,6 +8,8 @@
 #error "This file requires ARC support."
 #endif
 
+const CGFloat kToolbarHeight = 56;
+
 const int64_t kNonInitialImageAdditionDelayNanosec = 500000LL;
 
 NSString* const kToolbarIdentifier = @"kToolbarIdentifier";

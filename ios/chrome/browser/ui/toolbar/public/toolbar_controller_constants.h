@@ -11,6 +11,9 @@
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 
+// Height of the toolbar.
+extern const CGFloat kToolbarHeight;
+
 // The time delay before non-initial button images are loaded.
 extern const int64_t kNonInitialImageAdditionDelayNanosec;
 

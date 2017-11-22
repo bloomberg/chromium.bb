@@ -19,7 +19,6 @@
 @synthesize delegate = _delegate;
 @synthesize toolsPopupController = _toolsPopupController;
 @synthesize URLLoader = _URLLoader;
-@synthesize viewController = _viewController;
 
 - (instancetype)initWithDispatcher:
                     (id<ApplicationCommands, BrowserCommands>)dispatcher
@@ -45,6 +44,10 @@
 - (void)setURLLoader:(id<UrlLoader>)URLLoader {
   _URLLoader = URLLoader;
   self.toolbarCoordinator.URLLoader = URLLoader;
+}
+
+- (UIViewController*)viewController {
+  return self.toolbarCoordinator.viewController;
 }
 
 #pragma mark - Abstract WebToolbar
@@ -122,6 +125,10 @@
 
 - (void)setToolsMenuIsVisibleForToolsMenuButton:(BOOL)isVisible {
   return;
+}
+
+- (void)start {
+  [self.toolbarCoordinator start];
 }
 
 #pragma mark - OmniboxFocuser

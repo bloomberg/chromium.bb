@@ -68,7 +68,7 @@ newToolbarControllerWithDelegate:(id<WebToolbarDelegate>)delegate
                       dispatcher:
                           (id<ApplicationCommands, BrowserCommands>)dispatcher {
   id<Toolbar> toolbarController;
-  if (base::FeatureList::IsEnabled(kPropertyAnimationsToolbar)) {
+  if (base::FeatureList::IsEnabled(kCleanToolbar)) {
     ToolbarAdapter* adapter =
         [[ToolbarAdapter alloc] initWithDispatcher:dispatcher
                                       browserState:browserState_
