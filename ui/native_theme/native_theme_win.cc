@@ -265,7 +265,7 @@ NativeThemeWin::NativeThemeWin()
 
 NativeThemeWin::~NativeThemeWin() {
   if (theme_dll_) {
-    // todo (cpu): fix this soon.  Making a call to CloseHandles() here breaks
+    // TODO(https://crbug.com/787692): Calling CloseHandles() here breaks
     // certain tests and the reliability bots.
     // CloseHandles();
     FreeLibrary(theme_dll_);
