@@ -7,6 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
+#import "ios/chrome/browser/ui/commands/show_signin_command.h"
+
 @class ChromeIdentity;
 @class SigninPromoViewMediator;
 
@@ -24,6 +26,20 @@
 
 // Called when the sign-in is finished.
 - (void)signinDidFinish;
+
+// Called when one of the sign-in promo view button is being tapped. This method
+// is optional. If it is not implementated, the mediator will open the sign-in
+// view using Chrome commands. If this method is implemented, it is the
+// responsability to the consumer to open the sign-in view (either using Chrome
+// commands or directly using the SigninInteractionCoordinator).
+// The consumer also has the responsability to make sure |completion| is called
+// once the sign-in is done.
+// |mediator| is in charge to record all histograms and user actions.
+- (void)signinPromoViewMediator:(SigninPromoViewMediator*)mediator
+    shouldOpenSigninWithIdentity:(ChromeIdentity*)identity
+                     promoAction:(signin_metrics::PromoAction)promoAction
+                      completion:
+                          (ShowSigninCommandCompletionCallback)completion;
 
 @end
 

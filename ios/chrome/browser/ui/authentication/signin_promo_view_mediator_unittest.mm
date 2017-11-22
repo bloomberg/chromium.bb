@@ -28,7 +28,8 @@ class SigninPromoViewMediatorTest : public PlatformTest {
     consumer_ = OCMStrictProtocolMock(@protocol(SigninPromoViewConsumer));
     mediator_ = [[SigninPromoViewMediator alloc]
         initWithBrowserState:nil
-                 accessPoint:signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS
+                 accessPoint:signin_metrics::AccessPoint::
+                                 ACCESS_POINT_RECENT_TABS
                    presenter:nil];
     mediator_.consumer = consumer_;
 

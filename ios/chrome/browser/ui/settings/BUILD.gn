@@ -102,8 +102,6 @@ source_set("settings") {
     "//components/password_manager/core/browser",
     "//components/password_manager/core/common",
     "//components/physical_web/data_source",
-    "//components/pref_registry",
-    "//components/prefs",
     "//components/resources",
     "//components/search_engines",
     "//components/signin/core/browser",
