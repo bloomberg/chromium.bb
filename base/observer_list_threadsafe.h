@@ -98,11 +98,9 @@ class BASE_EXPORT ObserverListThreadSafeBase
 template <class ObserverType>
 class ObserverListThreadSafe : public internal::ObserverListThreadSafeBase {
  public:
-  using NotificationType =
-      typename ObserverList<ObserverType>::NotificationType;
-
   ObserverListThreadSafe() = default;
-  explicit ObserverListThreadSafe(NotificationType type) : type_(type) {}
+  explicit ObserverListThreadSafe(ObserverListPolicy policy)
+      : policy_(policy) {}
 
   // Adds |observer| to the list. |observer| must not already be in the list.
   void AddObserver(ObserverType* observer) {
@@ -120,11 +118,11 @@ class ObserverListThreadSafe : public internal::ObserverListThreadSafeBase {
     observers_[observer] = task_runner;
 
     // If this is called while a notification is being dispatched on this thread
-    // and |type_| is NOTIFY_ALL, |observer| must be notified (if a notification
-    // is being dispatched on another thread in parallel, the notification may
-    // or may not make it to |observer| depending on the outcome of the race to
+    // and |policy_| is ALL, |observer| must be notified (if a notification is
+    // being dispatched on another thread in parallel, the notification may or
+    // may not make it to |observer| depending on the outcome of the race to
     // |lock_|).
-    if (type_ == NotificationType::NOTIFY_ALL) {
+    if (policy_ == ObserverListPolicy::ALL) {
       const NotificationDataBase* current_notification =
           tls_current_notification_.Get().Get();
       if (current_notification && current_notification->observer_list == this) {
@@ -221,7 +219,7 @@ class ObserverListThreadSafe : public internal::ObserverListThreadSafeBase {
     tls_current_notification.Set(previous_notification);
   }
 
-  const NotificationType type_ = NotificationType::NOTIFY_ALL;
+  const ObserverListPolicy policy_ = ObserverListPolicy::ALL;
 
   // Synchronizes access to |observers_|.
   mutable Lock lock_;

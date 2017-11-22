@@ -118,8 +118,7 @@ BookmarkModel::BookmarkModel(std::unique_ptr<BookmarkClient> client)
       other_node_(nullptr),
       mobile_node_(nullptr),
       next_node_id_(1),
-      observers_(
-          base::ObserverList<BookmarkModelObserver>::NOTIFY_EXISTING_ONLY),
+      observers_(base::ObserverListPolicy::EXISTING_ONLY),
       loaded_signal_(base::WaitableEvent::ResetPolicy::MANUAL,
                      base::WaitableEvent::InitialState::NOT_SIGNALED),
       extensive_changes_(0),

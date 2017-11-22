@@ -775,7 +775,7 @@ TEST(ObserverListThreadSafeTest, RemoveWhileNotificationIsRunning) {
 }
 
 TEST(ObserverListTest, Existing) {
-  ObserverList<Foo> observer_list(ObserverList<Foo>::NOTIFY_EXISTING_ONLY);
+  ObserverList<Foo> observer_list(ObserverListPolicy::EXISTING_ONLY);
   Adder a(1);
   AddInObserve<ObserverList<Foo> > b(&observer_list);
   Adder c(1);
@@ -801,8 +801,8 @@ TEST(ObserverListTest, Existing) {
 // Same as above, but for ObserverListThreadSafe
 TEST(ObserverListThreadSafeTest, Existing) {
   MessageLoop loop;
-  scoped_refptr<ObserverListThreadSafe<Foo> > observer_list(
-      new ObserverListThreadSafe<Foo>(ObserverList<Foo>::NOTIFY_EXISTING_ONLY));
+  scoped_refptr<ObserverListThreadSafe<Foo>> observer_list(
+      new ObserverListThreadSafe<Foo>(ObserverListPolicy::EXISTING_ONLY));
   Adder a(1);
   AddInObserve<ObserverListThreadSafe<Foo> > b(observer_list.get());
   Adder c(1);
@@ -860,7 +860,7 @@ TEST(ObserverListTest, ClearNotifyAll) {
 }
 
 TEST(ObserverListTest, ClearNotifyExistingOnly) {
-  ObserverList<Foo> observer_list(ObserverList<Foo>::NOTIFY_EXISTING_ONLY);
+  ObserverList<Foo> observer_list(ObserverListPolicy::EXISTING_ONLY);
   AddInClearObserve a(&observer_list);
 
   observer_list.AddObserver(&a);

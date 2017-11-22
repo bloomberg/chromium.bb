@@ -92,8 +92,7 @@ DiscoveryNetworkMonitor::DiscoveryNetworkMonitor()
 DiscoveryNetworkMonitor::DiscoveryNetworkMonitor(NetworkInfoFunction strategy)
     : network_id_(kNetworkIdDisconnected),
       observers_(new base::ObserverListThreadSafe<Observer>(
-          base::ObserverListThreadSafe<
-              Observer>::NotificationType::NOTIFY_EXISTING_ONLY)),
+          base::ObserverListPolicy::EXISTING_ONLY)),
       task_runner_(base::CreateSequencedTaskRunnerWithTraits(base::MayBlock())),
       network_info_function_(strategy),
       metric_observer_(base::MakeUnique<DiscoveryNetworkMonitorMetricObserver>(

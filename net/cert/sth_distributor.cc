@@ -20,7 +20,7 @@ namespace net {
 namespace ct {
 
 STHDistributor::STHDistributor()
-    : observer_list_(base::ObserverList<STHObserver>::NOTIFY_EXISTING_ONLY) {}
+    : observer_list_(base::ObserverListPolicy::EXISTING_ONLY) {}
 
 STHDistributor::~STHDistributor() {}
 
