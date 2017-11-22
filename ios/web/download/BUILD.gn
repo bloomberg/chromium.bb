@@ -48,3 +48,20 @@ source_set("download_unittests") {
     "download_task_impl_unittest.mm",
   ]
 }
+
+source_set("download_inttests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  deps = [
+    "//ios/testing:ios_test_support",
+    "//ios/web/public",
+    "//ios/web/public/download",
+    "//ios/web/public/test",
+    "//ios/web/public/test/fakes",
+    "//net:test_support",
+  ]
+
+  sources = [
+    "download_inttest.mm",
+  ]
+}
