@@ -101,6 +101,63 @@ TEST(ParserTest, TagNumbersAboveThirtyUnsupported) {
   ASSERT_TRUE(parser.HasMore());
 }
 
+TEST(ParserTest, ParseTags) {
+  {
+    // Universal primitive tag, tag number 4.
+    const uint8_t der[] = {0x04, 0x00};
+    Parser parser((Input(der)));
+
+    Tag tag;
+    Input value;
+    ASSERT_TRUE(parser.ReadTagAndValue(&tag, &value));
+    EXPECT_EQ(kOctetString, tag);
+  }
+
+  {
+    // Universal constructed tag, tag number 16.
+    const uint8_t der[] = {0x30, 0x00};
+    Parser parser((Input(der)));
+
+    Tag tag;
+    Input value;
+    ASSERT_TRUE(parser.ReadTagAndValue(&tag, &value));
+    EXPECT_EQ(kSequence, tag);
+  }
+
+  {
+    // Application primitive tag, tag number 1.
+    const uint8_t der[] = {0x41, 0x00};
+    Parser parser((Input(der)));
+
+    Tag tag;
+    Input value;
+    ASSERT_TRUE(parser.ReadTagAndValue(&tag, &value));
+    EXPECT_EQ(kTagApplication | 1, tag);
+  }
+
+  {
+    // Context-specific constructed tag, tag number 30.
+    const uint8_t der[] = {0xbe, 0x00};
+    Parser parser((Input(der)));
+
+    Tag tag;
+    Input value;
+    ASSERT_TRUE(parser.ReadTagAndValue(&tag, &value));
+    EXPECT_EQ(kTagContextSpecific | kTagConstructed | 30, tag);
+  }
+
+  {
+    // Private primitive tag, tag number 15.
+    const uint8_t der[] = {0xcf, 0x00};
+    Parser parser((Input(der)));
+
+    Tag tag;
+    Input value;
+    ASSERT_TRUE(parser.ReadTagAndValue(&tag, &value));
+    EXPECT_EQ(kTagPrivate | 15, tag);
+  }
+}
+
 TEST(ParserTest, IncompleteEncodingTagOnly) {
   const uint8_t der[] = {0x01};
   Parser parser((Input(der)));
