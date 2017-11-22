@@ -428,7 +428,6 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-wrap-bfc-
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-wrap-bfc-003-right-table.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-wrap-bfc-004.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-wrap-bfc-006.xht [ Failure ]
-crbug.com/723135 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-zero-height-wrap-001.xht [ Failure ]
 crbug.com/723135 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-zero-height-wrap-002.xht [ Failure ]
 
 ### virtual/layout_ng/external/wpt/css/CSS2/floats-clear
@@ -450,12 +449,6 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/floats-130
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/floats-131.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/floats-137.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/floats-143.xht [ Failure ]
-
-# Regressions while changing zero-block-size float behaviour.
-crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/001.html [ Failure ]
-crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/005.html [ Failure ]
-crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/block-inside-inline/001.html [ Failure ]
-crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/block-inside-inline/005.html [ Failure ]
 
 ### virtual/layout_ng/external/wpt/css/CSS2/linebox
 
@@ -629,12 +622,6 @@ crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/float/width-update-after-c
 ### virtual/layout_ng/fast/block/margin-collapse
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/103.html [ Failure ]
 
-### virtual/layout_ng/fast/block/margin-collapse/block-inside-inline
-crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/block-inside-inline/010.html [ Failure ]
-crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/block-inside-inline/011.html [ Failure ]
-crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/block-inside-inline/012.html [ Failure ]
-crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/block-inside-inline/015.html [ Failure ]
-
 ### virtual/layout_ng/fast/block/margin-collapse
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/clear-nested-float-more-than-one-previous-sibling-away.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/webkit-margin-collapse-container.html [ Failure ]
@@ -644,6 +631,16 @@ crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/webkit-margin-coll
 ### virtual/layout_ng/overflow
 crbug.com/724701 virtual/layout_ng/overflow/overflow-basic-004.html [ Failure ]
 crbug.com/728378 virtual/layout_ng/overflow/overflow-position-003.html [ Failure ]
+
+### single pixel underline Mac failures
+crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/margin-collapse/001.html [ Failure ]
+crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/margin-collapse/005.html [ Failure ]
+crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/margin-collapse/block-inside-inline/001.html [ Failure ]
+crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/margin-collapse/block-inside-inline/005.html [ Failure ]
+crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/margin-collapse/block-inside-inline/010.html [ Failure ]
+crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/margin-collapse/block-inside-inline/011.html [ Failure ]
+crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/margin-collapse/block-inside-inline/012.html [ Failure ]
+crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/margin-collapse/block-inside-inline/015.html [ Failure ]
 
 # ====== LayoutNG,LayoutNGPaintFragments ======
 
