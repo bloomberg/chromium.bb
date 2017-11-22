@@ -46,6 +46,7 @@
 #include "core/input/ContextMenuAllowedScope.h"
 #include "core/input/EventHandler.h"
 #include "core/input_type_names.h"
+#include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/LayoutView.h"
 #include "core/page/Page.h"
@@ -1947,6 +1948,14 @@ void AXObject::GetRelativeBounds(AXObject** out_container,
   out_bounds_in_container =
       layout_object->LocalBoundingBoxRectForAccessibility();
 
+  // Frames need to take their border and padding into account so the
+  // child element's computed position will be correct.
+  if (layout_object->IsBox() && layout_object->GetNode() &&
+      layout_object->GetNode()->IsFrameOwnerElement()) {
+    out_bounds_in_container =
+        FloatRect(ToLayoutBox(layout_object)->ContentBoxRect());
+  }
+
   // If the container has a scroll offset, subtract that out because we want our
   // bounds to be relative to the *unscrolled* position of the container object.
   ScrollableArea* scrollable_area = container->GetScrollableAreaIfScrollable();
@@ -1956,11 +1965,13 @@ void AXObject::GetRelativeBounds(AXObject** out_container,
   }
 
   // Compute the transform between the container's coordinate space and this
-  // object.  If the transform is just a simple translation, apply that to the
-  // bounding box, but if it's a non-trivial transformation like a rotation,
-  // scaling, etc. then return the full matrix instead.
+  // object.
   TransformationMatrix transform = layout_object->LocalToAncestorTransform(
       ToLayoutBoxModelObject(container_layout_object));
+
+  // If the transform is just a simple translation, apply that to the
+  // bounding box, but if it's a non-trivial transformation like a rotation,
+  // scaling, etc. then return the full matrix instead.
   if (transform.IsIdentityOr2DTranslation()) {
     out_bounds_in_container.Move(transform.To2DTranslation());
   } else {

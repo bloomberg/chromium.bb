@@ -1195,6 +1195,10 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
   RunHtmlTest(FILE_PATH_LITERAL("iframe-coordinates-cross-process.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityIframePadding) {
+  RunHtmlTest(FILE_PATH_LITERAL("iframe-padding.html"));
+}
+
 // Flaky on Win7. http://crbug.com/610744
 #ifdef OS_WIN
 #define MAYBE_AccessibilityIframePresentational DISABLED_AccessibilityIframePresentational
