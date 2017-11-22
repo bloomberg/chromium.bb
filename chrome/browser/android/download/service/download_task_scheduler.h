@@ -26,6 +26,7 @@ class DownloadTaskScheduler : public TaskScheduler {
   void ScheduleTask(DownloadTaskType task_type,
                     bool require_unmetered_network,
                     bool require_charging,
+                    int optimal_battery_percentage,
                     long window_start_time_seconds,
                     long window_end_time_seconds) override;
   void CancelTask(DownloadTaskType task_type) override;

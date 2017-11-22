@@ -868,9 +868,11 @@ void ControllerImpl::UpdateDriverState(Entry* entry) {
                 driver_entry->state == DriverEntry::State::IN_PROGRESS;
   bool want_active = entry->state == Entry::State::ACTIVE;
 
-  bool blocked_by_criteria = !device_status_listener_->CurrentDeviceStatus()
-                                  .MeetsCondition(entry->scheduling_params)
-                                  .MeetsRequirements();
+  bool blocked_by_criteria =
+      !device_status_listener_->CurrentDeviceStatus()
+           .MeetsCondition(entry->scheduling_params,
+                           config_->download_battery_percentage)
+           .MeetsRequirements();
   bool blocked_by_downloads =
       !externally_active_downloads_.empty() &&
       entry->scheduling_params.priority <= SchedulingParams::Priority::NORMAL;
@@ -1065,6 +1067,7 @@ void ControllerImpl::ScheduleCleanupTask() {
       << "GCM requires start time to be less than end time";
 
   task_scheduler_->ScheduleTask(DownloadTaskType::CLEANUP_TASK, false, false,
+                                DeviceStatus::kBatteryPercentageAlwaysStart,
                                 std::ceil(start_time.InSecondsF()),
                                 std::ceil(end_time.InSecondsF()));
 }
@@ -1135,9 +1138,11 @@ void ControllerImpl::ActivateMoreDownloads() {
   Model::EntryList candidates = GetRunnableEntries(model_->PeekEntries());
   bool has_actionable_downloads = false;
   for (auto* entry : candidates) {
-    has_actionable_downloads |= device_status_listener_->CurrentDeviceStatus()
-                                    .MeetsCondition(entry->scheduling_params)
-                                    .MeetsRequirements();
+    has_actionable_downloads |=
+        device_status_listener_->CurrentDeviceStatus()
+            .MeetsCondition(entry->scheduling_params,
+                            config_->download_battery_percentage)
+            .MeetsRequirements();
     if (has_actionable_downloads)
       break;
   }

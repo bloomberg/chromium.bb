@@ -44,19 +44,75 @@ NetworkStatus ToNetworkStatus(net::NetworkChangeNotifier::ConnectionType type) {
 
 }  // namespace
 
-DeviceStatusListener::DeviceStatusListener(const base::TimeDelta& startup_delay,
-                                           const base::TimeDelta& online_delay)
+BatteryStatusListener::BatteryStatusListener(
+    const base::TimeDelta& battery_query_interval)
+    : battery_percentage_(0),
+      battery_query_interval_(battery_query_interval),
+      last_battery_query_(base::Time::Now()) {}
+
+BatteryStatusListener::~BatteryStatusListener() = default;
+
+int BatteryStatusListener::GetBatteryPercentage() {
+  UpdateBatteryPercentage(false);
+  return battery_percentage_;
+}
+
+bool BatteryStatusListener::IsOnBatteryPower() {
+  return base::PowerMonitor::Get()->IsOnBatteryPower();
+}
+
+void BatteryStatusListener::Start(Observer* observer) {
+  observer_ = observer;
+
+  base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
+  DCHECK(power_monitor);
+  power_monitor->AddObserver(this);
+
+  UpdateBatteryPercentage(true);
+}
+
+void BatteryStatusListener::Stop() {
+  base::PowerMonitor::Get()->RemoveObserver(this);
+}
+
+int BatteryStatusListener::GetBatteryPercentageInternal() {
+  // Non-Android implementation currently always return full battery.
+  return 100;
+}
+
+void BatteryStatusListener::UpdateBatteryPercentage(bool force) {
+  // Throttle the battery queries.
+  if (!force &&
+      base::Time::Now() - last_battery_query_ < battery_query_interval_)
+    return;
+
+  battery_percentage_ = GetBatteryPercentageInternal();
+  last_battery_query_ = base::Time::Now();
+}
+
+void BatteryStatusListener::OnPowerStateChange(bool on_battery_power) {
+  if (observer_)
+    observer_->OnPowerStateChange(on_battery_power);
+}
+
+DeviceStatusListener::DeviceStatusListener(
+    const base::TimeDelta& startup_delay,
+    const base::TimeDelta& online_delay,
+    std::unique_ptr<BatteryStatusListener> battery_listener)
     : observer_(nullptr),
       listening_(false),
       is_valid_state_(false),
       startup_delay_(startup_delay),
-      online_delay_(online_delay) {}
+      online_delay_(online_delay),
+      battery_listener_(std::move(battery_listener)) {}
 
 DeviceStatusListener::~DeviceStatusListener() {
   Stop();
 }
 
-const DeviceStatus& DeviceStatusListener::CurrentDeviceStatus() const {
+const DeviceStatus& DeviceStatusListener::CurrentDeviceStatus() {
+  DCHECK(battery_listener_);
+  status_.battery_percentage = battery_listener_->GetBatteryPercentage();
   return status_;
 }
 
@@ -76,9 +132,10 @@ void DeviceStatusListener::Start(DeviceStatusListener::Observer* observer) {
 
 void DeviceStatusListener::StartAfterDelay() {
   // Listen to battery status changes.
-  base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
-  DCHECK(power_monitor);
-  power_monitor->AddObserver(this);
+  DCHECK(battery_listener_);
+  battery_listener_->Start(this);
+  status_.battery_status =
+      ToBatteryStatus(battery_listener_->IsOnBatteryPower());
 
   // Listen to network status changes.
   BuildNetworkStatusListener();
@@ -102,7 +159,8 @@ void DeviceStatusListener::Stop() {
   if (!listening_)
     return;
 
-  base::PowerMonitor::Get()->RemoveObserver(this);
+  battery_listener_->Stop();
+  battery_listener_.reset();
 
   network_listener_->Stop();
   network_listener_.reset();

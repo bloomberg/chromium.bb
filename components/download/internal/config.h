@@ -13,6 +13,13 @@
 namespace download {
 
 // Configuration name for max concurrent downloads.
+constexpr char kBatteryQueryIntervalConfig[] = "battery_query_interval_seconds";
+
+// Configuration name for download battery percentage.
+constexpr char kDownloadBatteryPercentageConfig[] =
+    "download_battery_percentage";
+
+// Configuration name for max concurrent downloads.
 constexpr char kMaxConcurrentDownloadsConfig[] = "max_concurrent_downloads";
 
 // Configuration name for maximum running downloads.
@@ -75,6 +82,13 @@ struct Configuration {
   // Create the configuration.
   static std::unique_ptr<Configuration> CreateFromFinch();
   Configuration();
+
+  // An interval to throttle battery status queries.
+  base::TimeDelta battery_query_interval;
+
+  // Minimum battery percentage to start the background task or start the
+  // download when battery requirement is sensitive.
+  int download_battery_percentage;
 
   // The maximum number of downloads the DownloadService can have currently in
   // Active or Paused states.

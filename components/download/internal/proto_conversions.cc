@@ -143,6 +143,8 @@ ProtoConversions::BatteryRequirementsFromProto(
       return SchedulingParams::BatteryRequirements::BATTERY_INSENSITIVE;
     case protodb::SchedulingParams_BatteryRequirements_BATTERY_SENSITIVE:
       return SchedulingParams::BatteryRequirements::BATTERY_SENSITIVE;
+    case protodb::SchedulingParams_BatteryRequirements_BATTERY_CHARGING:
+      return SchedulingParams::BatteryRequirements::BATTERY_CHARGING;
   }
 
   NOTREACHED();
@@ -157,6 +159,8 @@ ProtoConversions::BatteryRequirementsToProto(
       return protodb::SchedulingParams_BatteryRequirements_BATTERY_INSENSITIVE;
     case SchedulingParams::BatteryRequirements::BATTERY_SENSITIVE:
       return protodb::SchedulingParams_BatteryRequirements_BATTERY_SENSITIVE;
+    case SchedulingParams::BatteryRequirements::BATTERY_CHARGING:
+      return protodb::SchedulingParams_BatteryRequirements_BATTERY_CHARGING;
     case SchedulingParams::BatteryRequirements::COUNT:
       break;
   }

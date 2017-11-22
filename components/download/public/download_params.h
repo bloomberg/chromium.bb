@@ -37,17 +37,18 @@ struct SchedulingParams {
   };
 
   enum class BatteryRequirements {
-    // The download can occur under all battery scenarios.  Note that the
-    // DownloadService may still not run this download under extremely low
-    // battery conditions.
+    // The download can occur under all battery scenarios.
     BATTERY_INSENSITIVE = 0,
 
-    // The download can only occur when charging or in optimal battery
-    // conditions.
+    // The download can only occur when device is charging or above optimal
+    // battery percentage.
     BATTERY_SENSITIVE = 1,
 
+    // Download can only occur when the device is charging.
+    BATTERY_CHARGING = 2,
+
     // Last value of the enum.
-    COUNT = 2,
+    COUNT = 3,
   };
 
   enum class Priority {
