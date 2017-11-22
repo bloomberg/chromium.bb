@@ -68,4 +68,6 @@ void FakeAudioOutputStream::CallOnMoreData() {
                         audio_bus_.get());
 }
 
+void FakeAudioOutputStream::SetMute(bool muted) {}
+
 }  // namespace media
