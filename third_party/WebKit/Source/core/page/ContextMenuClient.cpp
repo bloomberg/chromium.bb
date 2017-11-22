@@ -86,7 +86,6 @@
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebMenuItemInfo.h"
 #include "public/web/WebPlugin.h"
-#include "public/web/WebSearchableFormData.h"
 #include "public/web/WebTextCheckClient.h"
 #include "public/web/WebViewClient.h"
 
@@ -174,33 +173,6 @@ static HTMLFormElement* ScanForForm(const Node* start) {
     }
   }
   return nullptr;
-}
-
-// We look for either the form containing the current focus, or for one
-// immediately after it
-static HTMLFormElement* CurrentForm(const FrameSelection& current_selection) {
-  // Start looking either at the active (first responder) node, or where the
-  // selection is.
-  const Node* start = current_selection.GetDocument().FocusedElement();
-  if (!start) {
-    start = current_selection.ComputeVisibleSelectionInDOMTree()
-                .Start()
-                .AnchorNode();
-  }
-  if (!start)
-    return nullptr;
-
-  // Try walking up the node tree to find a form element.
-  for (Node& node : NodeTraversal::InclusiveAncestorsOf(*start)) {
-    if (!node.IsHTMLElement())
-      break;
-    HTMLElement& element = ToHTMLElement(node);
-    if (HTMLFormElement* form = AssociatedFormElement(element))
-      return form;
-  }
-
-  // Try walking forward in the node tree to find a form element.
-  return ScanForForm(start);
 }
 
 bool ContextMenuClient::ShowContextMenu(const ContextMenu* default_menu,
@@ -397,15 +369,6 @@ bool ContextMenuClient::ShowContextMenu(const ContextMenu* default_menu,
       selected_web_frame->GetTextCheckerClient()->CheckSpelling(
           data.misspelled_word, misspelled_offset, misspelled_length,
           &data.dictionary_suggestions);
-    }
-
-    HTMLFormElement* form = CurrentForm(selected_frame->Selection());
-    if (form && IsHTMLInputElement(*r.InnerNode())) {
-      HTMLInputElement& selected_element = ToHTMLInputElement(*r.InnerNode());
-      WebSearchableFormData ws = WebSearchableFormData(
-          WebFormElement(form), WebInputElement(&selected_element));
-      if (ws.Url().IsValid())
-        data.keyword_url = ws.Url();
     }
   }
 

@@ -92,10 +92,6 @@ struct WebContextMenuData {
   // The absolute URL of the page in context.
   WebURL page_url;
 
-  // The absolute keyword search URL including the %s search tag when the
-  // "Add as search engine..." option is clicked (left empty if not used).
-  WebURL keyword_url;
-
   // The absolute URL of the subframe in context.
   WebURL frame_url;
 
