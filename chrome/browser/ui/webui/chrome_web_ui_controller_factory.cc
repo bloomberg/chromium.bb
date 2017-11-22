@@ -178,6 +178,10 @@
 #include "chrome/browser/ui/webui/welcome_win10_ui.h"
 #endif
 
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+#include "chrome/browser/ui/webui/discards/discards_ui.h"
+#endif
+
 #if defined(OS_LINUX) || defined(OS_ANDROID)
 #include "chrome/browser/ui/webui/sandbox_internals_ui.h"
 #endif
@@ -288,9 +292,6 @@ bool IsAboutUI(const GURL& url) {
 #endif
 #if defined(OS_CHROMEOS)
           || url.host_piece() == chrome::kChromeUIOSCreditsHost
-#endif
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
-          || url.host_piece() == chrome::kChromeUIDiscardsHost
 #endif
           );  // NOLINT
 }
@@ -594,6 +595,10 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (url.host_piece() == chrome::kChromeUISandboxHost) {
     return &NewWebUI<SandboxInternalsUI>;
   }
+#endif
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+  if (url.host_piece() == chrome::kChromeUIDiscardsHost)
+    return &NewWebUI<DiscardsUI>;
 #endif
   if (IsAboutUI(url))
     return &NewWebUI<AboutUI>;

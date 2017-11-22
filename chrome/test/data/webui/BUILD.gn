@@ -109,6 +109,10 @@ js2gtest("browser_tests_js_webui") {
 
   extra_js_files = [ "//chrome/browser/resources/md_downloads/constants.js" ]
 
+  if (is_win || is_mac || is_desktop_linux || is_chromeos) {
+    sources += [ "discards/discards_browsertest.js" ]
+  }
+
   if (is_chromeos) {
     sources += [
       "settings/easy_unlock_browsertest_chromeos.js",

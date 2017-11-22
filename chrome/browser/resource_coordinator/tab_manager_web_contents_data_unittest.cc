@@ -111,12 +111,12 @@ TEST_F(TabManagerWebContentsDataTest, TabLoadingState) {
 TEST_F(TabManagerWebContentsDataTest, CopyState) {
   std::unique_ptr<WebContents> web_contents2;
   auto* tab_data2 = CreateWebContentsAndTabData(&web_contents2);
-
-  EXPECT_EQ(tab_data()->tab_data_, tab_data2->tab_data_);
-  tab_data()->IncrementDiscardCount();
-  tab_data()->SetDiscardState(true);
+  // TabManagerWebContentsData are initially distinct as they each have unique
+  // IDs assigned to them at construction time.
   EXPECT_NE(tab_data()->tab_data_, tab_data2->tab_data_);
 
+  // Copying the state should bring the ID along with it, so they should have
+  // identical content afterwards.
   TabManager::WebContentsData::CopyState(tab_data()->web_contents(),
                                          tab_data2->web_contents());
   EXPECT_EQ(tab_data()->tab_data_, tab_data2->tab_data_);
