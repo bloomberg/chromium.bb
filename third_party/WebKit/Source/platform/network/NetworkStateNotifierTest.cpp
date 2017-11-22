@@ -162,8 +162,8 @@ class StateObserver : public NetworkStateNotifier::NetworkStateObserver {
 class NetworkStateNotifierTest : public ::testing::Test {
  public:
   NetworkStateNotifierTest()
-      : task_runner_(base::AdoptRef(new FakeWebTaskRunner())),
-        task_runner2_(base::AdoptRef(new FakeWebTaskRunner())) {
+      : task_runner_(base::MakeRefCounted<FakeWebTaskRunner>()),
+        task_runner2_(base::MakeRefCounted<FakeWebTaskRunner>()) {
     // Initialize connection, so that future calls to setWebConnection issue
     // notifications.
     notifier_.SetWebConnection(kWebConnectionTypeUnknown, 0.0);

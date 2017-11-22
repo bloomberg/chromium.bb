@@ -471,7 +471,7 @@ TEST_F(BitmapImageTestWithMockDecoder, DontAdvanceToIncompleteFrame) {
   image_->SetData(SharedBuffer::Create("data", sizeof("data")), true);
 
   scoped_refptr<scheduler::FakeWebTaskRunner> task_runner =
-      base::AdoptRef(new scheduler::FakeWebTaskRunner);
+      base::MakeRefCounted<scheduler::FakeWebTaskRunner>();
   image_->SetTaskRunnerForTesting(task_runner);
   task_runner->SetTime(10);
 
@@ -506,7 +506,7 @@ TEST_F(BitmapImageTestWithMockDecoder, FrameSkipTracking) {
   image_->SetData(SharedBuffer::Create("data", sizeof("data")), false);
 
   scoped_refptr<scheduler::FakeWebTaskRunner> task_runner =
-      base::AdoptRef(new scheduler::FakeWebTaskRunner);
+      base::MakeRefCounted<scheduler::FakeWebTaskRunner>();
   image_->SetTaskRunnerForTesting(task_runner);
   task_runner->SetTime(10);
 
