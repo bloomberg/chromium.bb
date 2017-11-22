@@ -6,9 +6,9 @@ module viz.mojom;
 
 import "gpu/ipc/common/sync_token.mojom";
 
-// This interface behaves similar to viz::ReleaseCallback but works across process
-// boundaries. Once Release is called, it releases the TextureMailbox that it
+// This interface behaves similar to viz::ReleaseCallback but works across
+// process boundaries. Once Release is called, it releases the texture that it
 // is associated with.
-interface TextureMailboxReleaser {
+interface TextureReleaser {
   Release(gpu.mojom.SyncToken sync_token, bool is_lost);
 };

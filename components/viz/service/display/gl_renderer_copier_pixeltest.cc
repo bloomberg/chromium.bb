@@ -192,13 +192,14 @@ class GLRendererCopierPixelTest
 
   // Reads back the texture in the given |mailbox| to a SkBitmap in Skia-native
   // format.
-  SkBitmap ReadbackToSkBitmap(const TextureMailbox& mailbox,
+  SkBitmap ReadbackToSkBitmap(const gpu::Mailbox& mailbox,
+                              const gpu::SyncToken& sync_token,
                               const gfx::Size& texture_size) {
     // Bind the texture to a framebuffer from which to read the pixels.
-    if (mailbox.sync_token().HasData())
-      gl_->WaitSyncTokenCHROMIUM(mailbox.sync_token().GetConstData());
+    if (sync_token.HasData())
+      gl_->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
     GLuint texture =
-        gl_->CreateAndConsumeTextureCHROMIUM(mailbox.target(), mailbox.name());
+        gl_->CreateAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
     GLuint framebuffer = 0;
     gl_->GenFramebuffers(1, &framebuffer);
     gl_->BindFramebuffer(GL_FRAMEBUFFER, framebuffer);
@@ -272,7 +273,9 @@ TEST_P(GLRendererCopierPixelTest, ExecutesCopyRequest) {
   const SkBitmap actual =
       (result_format_ == CopyOutputResult::Format::RGBA_BITMAP)
           ? result->AsSkBitmap()
-          : ReadbackToSkBitmap(*result->GetTextureMailbox(), result->size());
+          : ReadbackToSkBitmap(result->GetTextureResult()->mailbox,
+                               result->GetTextureResult()->sync_token,
+                               result->size());
   const auto png_file_path = GetTestFilePath(
       scale_by_half_ ? FILE_PATH_LITERAL("half_of_one_of_16_color_rects.png")
                      : FILE_PATH_LITERAL("one_of_16_color_rects.png"));

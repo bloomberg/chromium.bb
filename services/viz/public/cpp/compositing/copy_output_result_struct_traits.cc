@@ -8,40 +8,28 @@
 
 namespace {
 
-// This class retains the release_callback_ of the CopyOutputResult that is
-// being sent over mojo. A TextureMailboxReleaserPtr that talks to this impl
+// This class retains the SingleReleaseCallback of the CopyOutputResult that is
+// being sent over mojo. A TextureReleaserPtr that talks to this impl
 // object will be sent over mojo instead of the release_callback_ (which is not
 // serializable). Once the client calls Release, the release_callback_ will be
 // called. An object of this class will remain alive until the MessagePipe
 // attached to it goes away (i.e. StrongBinding is used).
-class TextureMailboxReleaserImpl : public viz::mojom::TextureMailboxReleaser {
+class TextureReleaserImpl : public viz::mojom::TextureReleaser {
  public:
-  explicit TextureMailboxReleaserImpl(
+  explicit TextureReleaserImpl(
       std::unique_ptr<viz::SingleReleaseCallback> release_callback)
-      : release_callback_(std::move(release_callback)) {
-    DCHECK(release_callback_);
-  }
+      : release_callback_(std::move(release_callback)) {}
 
-  ~TextureMailboxReleaserImpl() override {
-    // If the client fails to call Release, we should do it ourselves because
-    // release_callback_ will fail if it's never called.
-    if (release_callback_)
-      release_callback_->Run(gpu::SyncToken(), true);
-  }
-
-  // mojom::TextureMailboxReleaser implementation:
+  // mojom::TextureReleaser implementation:
   void Release(const gpu::SyncToken& sync_token, bool is_lost) override {
-    if (!release_callback_)
-      return;
     release_callback_->Run(sync_token, is_lost);
-    release_callback_.reset();
   }
 
  private:
   std::unique_ptr<viz::SingleReleaseCallback> release_callback_;
 };
 
-void Release(viz::mojom::TextureMailboxReleaserPtr ptr,
+void Release(viz::mojom::TextureReleaserPtr ptr,
              const gpu::SyncToken& sync_token,
              bool is_lost) {
   ptr->Release(sync_token, is_lost);
@@ -52,24 +40,18 @@ void Release(viz::mojom::TextureMailboxReleaserPtr ptr,
 namespace mojo {
 
 // static
-viz::mojom::TextureMailboxReleaserPtr
+viz::mojom::TextureReleaserPtr
 StructTraits<viz::mojom::CopyOutputResultDataView,
              std::unique_ptr<viz::CopyOutputResult>>::
     releaser(const std::unique_ptr<viz::CopyOutputResult>& result) {
-  viz::mojom::TextureMailboxReleaserPtr releaser;
-  if (HasTextureResult(*result)) {
-    MakeStrongBinding(std::make_unique<TextureMailboxReleaserImpl>(
-                          result->TakeTextureOwnership()),
-                      MakeRequest(&releaser));
-  }
-  return releaser;
-}
+  if (result->format() != viz::CopyOutputResult::Format::RGBA_TEXTURE)
+    return nullptr;
 
-// static
-bool StructTraits<viz::mojom::CopyOutputResultDataView,
-                  std::unique_ptr<viz::CopyOutputResult>>::
-    HasTextureResult(const viz::CopyOutputResult& result) {
-  return result.GetTextureMailbox() && result.GetTextureMailbox()->IsTexture();
+  viz::mojom::TextureReleaserPtr releaser;
+  MakeStrongBinding(
+      std::make_unique<TextureReleaserImpl>(result->TakeTextureOwnership()),
+      MakeRequest(&releaser));
+  return releaser;
 }
 
 // static
@@ -88,33 +70,56 @@ bool StructTraits<viz::mojom::CopyOutputResultDataView,
   switch (format) {
     case viz::CopyOutputResult::Format::RGBA_BITMAP: {
       SkBitmap bitmap;
-      if (!rect.IsEmpty() &&
-          (!data.ReadBitmap(&bitmap) || !bitmap.readyToDraw())) {
-        return false;  // Missing image data!
-      }
-      out_p->reset(new viz::CopyOutputSkBitmapResult(rect, bitmap));
+      if (!data.ReadBitmap(&bitmap))
+        return false;
+
+      bool has_bitmap = bitmap.readyToDraw();
+
+      // The rect should be empty iff there is no bitmap.
+      if (!(has_bitmap == !rect.IsEmpty()))
+        return false;
+
+      *out_p = std::make_unique<viz::CopyOutputSkBitmapResult>(
+          rect, std::move(bitmap));
       return true;
     }
 
     case viz::CopyOutputResult::Format::RGBA_TEXTURE: {
-      base::Optional<viz::TextureMailbox> texture_mailbox;
-      if (!data.ReadTextureMailbox(&texture_mailbox))
+      base::Optional<gpu::Mailbox> mailbox;
+      if (!data.ReadMailbox(&mailbox) || !mailbox)
         return false;
-      if (texture_mailbox && texture_mailbox->IsTexture()) {
-        auto releaser =
-            data.TakeReleaser<viz::mojom::TextureMailboxReleaserPtr>();
-        if (!releaser)
-          return false;  // Illegal to provide texture without Releaser.
-        out_p->reset(new viz::CopyOutputTextureResult(
-            rect, *texture_mailbox,
-            viz::SingleReleaseCallback::Create(
-                base::Bind(Release, base::Passed(&releaser)))));
-      } else {
-        if (!rect.IsEmpty())
-          return false;  // Missing image data!
-        out_p->reset(new viz::CopyOutputTextureResult(
-            rect, viz::TextureMailbox(), nullptr));
+      base::Optional<gpu::SyncToken> sync_token;
+      if (!data.ReadSyncToken(&sync_token) || !sync_token)
+        return false;
+      base::Optional<gfx::ColorSpace> color_space;
+      if (!data.ReadColorSpace(&color_space) || !color_space)
+        return false;
+
+      bool has_mailbox = !mailbox->IsZero();
+
+      // The rect should be empty iff there is no texture.
+      if (!(has_mailbox == !rect.IsEmpty()))
+        return false;
+
+      if (!has_mailbox) {
+        // Returns an empty result.
+        *out_p = std::make_unique<viz::CopyOutputResult>(
+            viz::CopyOutputResult::Format::RGBA_TEXTURE, gfx::Rect());
+        return true;
       }
+
+      viz::mojom::TextureReleaserPtr releaser =
+          data.TakeReleaser<viz::mojom::TextureReleaserPtr>();
+      if (!releaser)
+        return false;  // Illegal to provide texture without Releaser.
+
+      // Returns a result with a SingleReleaseCallback that will return
+      // here and proxy the callback over mojo to the CopyOutputResult's
+      // origin via the TextureReleaserPtr.
+      *out_p = std::make_unique<viz::CopyOutputTextureResult>(
+          rect, *mailbox, *sync_token, *color_space,
+          viz::SingleReleaseCallback::Create(
+              base::Bind(&Release, base::Passed(&releaser))));
       return true;
     }
 

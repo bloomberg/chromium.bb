@@ -294,6 +294,7 @@ bool AuraWindowCaptureMachine::ProcessCopyOutputResponse(
     const CaptureFrameCallback& capture_frame_cb,
     std::unique_ptr<viz::CopyOutputResult> result) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_EQ(result->format(), viz::CopyOutputResult::Format::RGBA_TEXTURE);
 
   if (!desktop_window_) {
     VLOG(1) << "Ignoring CopyOutputResult: Capture target has gone away.";
@@ -329,16 +330,10 @@ bool AuraWindowCaptureMachine::ProcessCopyOutputResponse(
     return false;
   }
 
-  viz::TextureMailbox texture_mailbox;
-  std::unique_ptr<viz::SingleReleaseCallback> release_callback;
-  if (auto* mailbox = result->GetTextureMailbox()) {
-    texture_mailbox = *mailbox;
-    release_callback = result->TakeTextureOwnership();
-  }
-  if (!texture_mailbox.IsTexture()) {
-    VLOG(1) << "Aborting capture: Failed to take texture from mailbox.";
-    return false;
-  }
+  gpu::Mailbox mailbox = result->GetTextureResult()->mailbox;
+  gpu::SyncToken sync_token = result->GetTextureResult()->sync_token;
+  std::unique_ptr<viz::SingleReleaseCallback> release_callback =
+      result->TakeTextureOwnership();
 
   if (!yuv_readback_pipeline_)
     yuv_readback_pipeline_ = gl_helper->CreateReadbackPipelineYUV(true, true);
@@ -361,8 +356,7 @@ bool AuraWindowCaptureMachine::ProcessCopyOutputResponse(
 
   cursor_renderer_->SnapshotCursorState(region_in_frame);
   yuv_readback_pipeline_->ReadbackYUV(
-      texture_mailbox.mailbox(), texture_mailbox.sync_token(), result->size(),
-      gfx::Rect(region_in_frame.size()),
+      mailbox, sync_token, result->size(), gfx::Rect(region_in_frame.size()),
       video_frame->stride(media::VideoFrame::kYPlane),
       video_frame->data(media::VideoFrame::kYPlane),
       video_frame->stride(media::VideoFrame::kUPlane),

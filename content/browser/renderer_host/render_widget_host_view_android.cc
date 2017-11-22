@@ -377,15 +377,12 @@ void PrepareTextureCopyOutputResult(
                "RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult");
   if (result->IsEmpty())
     return;
+  DCHECK_EQ(result->format(), viz::CopyOutputResult::Format::RGBA_TEXTURE);
 
-  viz::TextureMailbox texture_mailbox;
-  std::unique_ptr<viz::SingleReleaseCallback> release_callback;
-  if (auto* mailbox = result->GetTextureMailbox()) {
-    texture_mailbox = *mailbox;
-    release_callback = result->TakeTextureOwnership();
-  }
-  if (!texture_mailbox.IsTexture())
-    return;
+  gpu::Mailbox mailbox = result->GetTextureResult()->mailbox;
+  gpu::SyncToken sync_token = result->GetTextureResult()->sync_token;
+  std::unique_ptr<viz::SingleReleaseCallback> release_callback =
+      result->TakeTextureOwnership();
 
   viz::GLHelper* gl_helper = GetPostReadbackGLHelper();
   if (!gl_helper)
@@ -414,8 +411,8 @@ void PrepareTextureCopyOutputResult(
   ignore_result(scoped_callback_runner.Release());
 
   gl_helper->CropScaleReadbackAndCleanMailbox(
-      texture_mailbox.mailbox(), texture_mailbox.sync_token(), result->size(),
-      output_size_in_pixel, pixels, color_type,
+      mailbox, sync_token, result->size(), output_size_in_pixel, pixels,
+      color_type,
       base::Bind(&CopyFromCompositingSurfaceFinished, callback,
                  base::Passed(&release_callback), base::Passed(&bitmap),
                  start_time, readback_lock),

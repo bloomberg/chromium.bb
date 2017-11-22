@@ -28,7 +28,7 @@ mojom("interfaces") {
     "compositing/surface_info.mojom",
     "compositing/surface_sequence.mojom",
     "compositing/texture_mailbox.mojom",
-    "compositing/texture_mailbox_releaser.mojom",
+    "compositing/texture_releaser.mojom",
     "compositing/transferable_resource.mojom",
     "compositing/video_detector_observer.mojom",
     "constants.mojom",

@@ -121,19 +121,16 @@ class LayerTreeHostReadbackPixelTest
 
   void ReadbackResultAsTexture(std::unique_ptr<viz::CopyOutputResult> result) {
     EXPECT_TRUE(task_runner_provider()->IsMainThread());
-    EXPECT_EQ(result->format(), viz::CopyOutputResult::Format::RGBA_TEXTURE);
+    ASSERT_EQ(result->format(), viz::CopyOutputResult::Format::RGBA_TEXTURE);
 
-    viz::TextureMailbox texture_mailbox;
-    std::unique_ptr<viz::SingleReleaseCallback> release_callback;
-    if (auto* mailbox = result->GetTextureMailbox()) {
-      texture_mailbox = *mailbox;
-      release_callback = result->TakeTextureOwnership();
-    }
-    ASSERT_TRUE(texture_mailbox.IsTexture());
-    EXPECT_EQ(texture_mailbox.color_space(), output_color_space_);
+    gpu::Mailbox mailbox = result->GetTextureResult()->mailbox;
+    gpu::SyncToken sync_token = result->GetTextureResult()->sync_token;
+    EXPECT_EQ(result->GetTextureResult()->color_space, output_color_space_);
+    std::unique_ptr<viz::SingleReleaseCallback> release_callback =
+        result->TakeTextureOwnership();
 
     const SkBitmap bitmap =
-        CopyTextureMailboxToBitmap(result->size(), texture_mailbox);
+        CopyMailboxToBitmap(result->size(), mailbox, sync_token);
     release_callback->Run(gpu::SyncToken(), false);
 
     ReadbackResultAsBitmap(std::make_unique<viz::CopyOutputSkBitmapResult>(

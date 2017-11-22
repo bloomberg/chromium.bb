@@ -60,18 +60,23 @@ void PrepareTextureCopyOutputResult(
     const SkColorType color_type,
     const content::ReadbackRequestCallback& callback,
     std::unique_ptr<viz::CopyOutputResult> result) {
+  base::ScopedClosureRunner scoped_callback_runner(
+      base::BindOnce(callback, SkBitmap(), content::READBACK_FAILED));
+
 #if defined(OS_ANDROID) && !defined(USE_AURA)
   // TODO(wjmaclean): See if there's an equivalent pathway for Android and
   // implement it here.
-  callback.Run(SkBitmap(), content::READBACK_FAILED);
+  return;
 #else
-  base::ScopedClosureRunner scoped_callback_runner(
-      base::BindOnce(callback, SkBitmap(), content::READBACK_FAILED));
+
+  DCHECK_EQ(result->format(), viz::CopyOutputResult::Format::RGBA_TEXTURE);
+  if (result->IsEmpty())
+    return;
 
   // TODO(siva.gunturi): We should be able to validate the format here using
   // GLHelper::IsReadbackConfigSupported before we processs the result.
   // See crbug.com/415682 and crbug.com/415131.
-  std::unique_ptr<SkBitmap> bitmap(new SkBitmap);
+  auto bitmap = std::make_unique<SkBitmap>();
   if (!bitmap->tryAllocPixels(SkImageInfo::Make(
           dst_size_in_pixel.width(), dst_size_in_pixel.height(), color_type,
           kOpaque_SkAlphaType))) {
@@ -88,20 +93,16 @@ void PrepareTextureCopyOutputResult(
 
   uint8_t* pixels = static_cast<uint8_t*>(bitmap->getPixels());
 
-  viz::TextureMailbox texture_mailbox;
-  std::unique_ptr<viz::SingleReleaseCallback> release_callback;
-  if (auto* mailbox = result->GetTextureMailbox()) {
-    texture_mailbox = *mailbox;
-    release_callback = result->TakeTextureOwnership();
-  }
-  if (!texture_mailbox.IsTexture())
-    return;
+  gpu::Mailbox mailbox = result->GetTextureResult()->mailbox;
+  gpu::SyncToken sync_token = result->GetTextureResult()->sync_token;
+  std::unique_ptr<viz::SingleReleaseCallback> release_callback =
+      result->TakeTextureOwnership();
 
   ignore_result(scoped_callback_runner.Release());
 
   gl_helper->CropScaleReadbackAndCleanMailbox(
-      texture_mailbox.mailbox(), texture_mailbox.sync_token(), result->size(),
-      dst_size_in_pixel, pixels, color_type,
+      mailbox, sync_token, result->size(), dst_size_in_pixel, pixels,
+      color_type,
       base::Bind(&CopyFromCompositingSurfaceFinished, callback,
                  base::Passed(&release_callback), base::Passed(&bitmap)),
       viz::GLHelper::SCALER_QUALITY_GOOD);

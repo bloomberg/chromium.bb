@@ -3729,7 +3729,8 @@ class RenderWidgetHostViewAuraCopyRequestTest
     std::unique_ptr<viz::CopyOutputRequest> request =
         std::move(view_->last_copy_request_);
     request->SendResult(std::make_unique<viz::CopyOutputTextureResult>(
-        view_rect_, request->texture_mailbox(),
+        view_rect_, request->texture_mailbox().mailbox(),
+        request->texture_mailbox().sync_token(), gfx::ColorSpace(),
         viz::SingleReleaseCallback::Create(
             base::Bind([](const gpu::SyncToken&, bool) {}))));
     RunLoopUntilCallback();

@@ -315,7 +315,8 @@ TEST_F(StructTraitsTest, CopyOutputRequest_TextureRequest) {
   const uint32_t target = 3;
   gpu::Mailbox mailbox;
   mailbox.SetName(mailbox_name);
-  TextureMailbox texture_mailbox(mailbox, gpu::SyncToken(), target);
+  gpu::SyncToken sync_token;
+  TextureMailbox texture_mailbox(mailbox, sync_token, target);
   const gfx::Rect result_rect(10, 10);
 
   base::RunLoop run_loop_for_result;
@@ -343,7 +344,7 @@ TEST_F(StructTraitsTest, CopyOutputRequest_TextureRequest) {
 
   base::RunLoop run_loop_for_release;
   output->SendResult(std::make_unique<CopyOutputTextureResult>(
-      result_rect, texture_mailbox,
+      result_rect, mailbox, sync_token, gfx::ColorSpace(),
       SingleReleaseCallback::Create(base::Bind(
           [](const base::Closure& quit_closure,
              const gpu::SyncToken& expected_sync_token,
@@ -352,7 +353,7 @@ TEST_F(StructTraitsTest, CopyOutputRequest_TextureRequest) {
             EXPECT_FALSE(is_lost);
             quit_closure.Run();
           },
-          run_loop_for_release.QuitClosure(), gpu::SyncToken()))));
+          run_loop_for_release.QuitClosure(), sync_token))));
 
   // Wait for the result to be delivered to the other side: The
   // CopyOutputRequest callback will be called, at which point
@@ -1200,7 +1201,7 @@ TEST_F(StructTraitsTest, CopyOutputResult_Empty) {
   EXPECT_EQ(output->format(), CopyOutputResult::Format::RGBA_BITMAP);
   EXPECT_TRUE(output->rect().IsEmpty());
   EXPECT_FALSE(output->AsSkBitmap().readyToDraw());
-  EXPECT_EQ(output->GetTextureMailbox(), nullptr);
+  EXPECT_EQ(output->GetTextureResult(), nullptr);
 }
 
 TEST_F(StructTraitsTest, CopyOutputResult_Bitmap) {
@@ -1219,7 +1220,7 @@ TEST_F(StructTraitsTest, CopyOutputResult_Bitmap) {
   EXPECT_FALSE(output->IsEmpty());
   EXPECT_EQ(output->format(), CopyOutputResult::Format::RGBA_BITMAP);
   EXPECT_EQ(output->rect(), result_rect);
-  EXPECT_EQ(output->GetTextureMailbox(), nullptr);
+  EXPECT_EQ(output->GetTextureResult(), nullptr);
 
   const SkBitmap& out_bitmap = output->AsSkBitmap();
   EXPECT_TRUE(out_bitmap.readyToDraw());
@@ -1246,7 +1247,6 @@ TEST_F(StructTraitsTest, CopyOutputResult_Texture) {
       gfx::ColorSpace::CreateDisplayP3D65();
   const int8_t mailbox_name[GL_MAILBOX_SIZE_CHROMIUM] = {
       0, 9, 8, 7, 6, 5, 4, 3, 2, 1, 9, 7, 5, 3, 1, 3};
-  const uint32_t target = 3;
   gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO, 0,
                             gpu::CommandBufferId::FromUnsafeValue(0x123),
                             71234838);
@@ -1262,10 +1262,9 @@ TEST_F(StructTraitsTest, CopyOutputResult_Texture) {
       run_loop.QuitClosure(), sync_token));
   gpu::Mailbox mailbox;
   mailbox.SetName(mailbox_name);
-  TextureMailbox texture_mailbox(mailbox, gpu::SyncToken(), target);
-  texture_mailbox.set_color_space(result_color_space);
   std::unique_ptr<CopyOutputResult> input =
-      std::make_unique<CopyOutputTextureResult>(result_rect, texture_mailbox,
+      std::make_unique<CopyOutputTextureResult>(result_rect, mailbox,
+                                                sync_token, result_color_space,
                                                 std::move(callback));
 
   std::unique_ptr<CopyOutputResult> output;
@@ -1274,9 +1273,10 @@ TEST_F(StructTraitsTest, CopyOutputResult_Texture) {
   EXPECT_FALSE(output->IsEmpty());
   EXPECT_EQ(output->format(), CopyOutputResult::Format::RGBA_TEXTURE);
   EXPECT_EQ(output->rect(), result_rect);
-  ASSERT_NE(output->GetTextureMailbox(), nullptr);
-  EXPECT_EQ(output->GetTextureMailbox()->mailbox(), mailbox);
-  EXPECT_EQ(output->GetTextureMailbox()->color_space(), result_color_space);
+  ASSERT_NE(output->GetTextureResult(), nullptr);
+  EXPECT_EQ(output->GetTextureResult()->mailbox, mailbox);
+  EXPECT_EQ(output->GetTextureResult()->sync_token, sync_token);
+  EXPECT_EQ(output->GetTextureResult()->color_space, result_color_space);
 
   std::unique_ptr<SingleReleaseCallback> out_callback =
       output->TakeTextureOwnership();

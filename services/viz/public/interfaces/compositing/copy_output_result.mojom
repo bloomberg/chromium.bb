@@ -4,11 +4,12 @@
 
 module viz.mojom;
 
-
-import "services/viz/public/interfaces/compositing/texture_mailbox.mojom";
-import "services/viz/public/interfaces/compositing/texture_mailbox_releaser.mojom";
+import "gpu/ipc/common/mailbox.mojom";
+import "gpu/ipc/common/sync_token.mojom";
+import "services/viz/public/interfaces/compositing/texture_releaser.mojom";
 import "skia/public/interfaces/bitmap.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
+import "ui/gfx/mojo/color_space.mojom";
 
 // See components/viz/common/frame_sinks/copy_output_result.h.
 enum CopyOutputResultFormat {
@@ -20,7 +21,17 @@ enum CopyOutputResultFormat {
 struct CopyOutputResult {
   CopyOutputResultFormat format;
   gfx.mojom.Rect rect;
+
+  // Present when the format is RGBA_BITMAP.
+  // If the result is empty, since Bitmap is nullable, |bitmap| will also not be
+  // present.
   skia.mojom.Bitmap? bitmap;
-  TextureMailbox? texture_mailbox;
-  TextureMailboxReleaser? releaser;
+
+  // Present when the format is RGBA_TEXTURE.
+  // If the result is empty, then the |mailbox| will be present but empty.
+  gpu.mojom.Mailbox? mailbox;
+  gpu.mojom.SyncToken? sync_token;
+  gfx.mojom.ColorSpace? color_space;
+  // Present when the format is RGBA_TEXTURE and |mailbox| is non-empty.
+  TextureReleaser? releaser;
 };

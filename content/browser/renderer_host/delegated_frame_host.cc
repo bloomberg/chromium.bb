@@ -703,6 +703,8 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceHasResultForVideo(
     return;
   }
 
+  DCHECK_EQ(result->format(), viz::CopyOutputResult::Format::RGBA_TEXTURE);
+
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
   viz::GLHelper* gl_helper = factory->GetGLHelper();
   if (!gl_helper)
@@ -710,14 +712,10 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceHasResultForVideo(
   if (subscriber_texture.get() && !subscriber_texture->texture_id())
     return;
 
-  viz::TextureMailbox texture_mailbox;
-  std::unique_ptr<viz::SingleReleaseCallback> release_callback;
-  if (auto* mailbox = result->GetTextureMailbox()) {
-    texture_mailbox = *mailbox;
-    release_callback = result->TakeTextureOwnership();
-  }
-  if (!texture_mailbox.IsTexture())
-    return;
+  gpu::Mailbox mailbox = result->GetTextureResult()->mailbox;
+  gpu::SyncToken sync_token = result->GetTextureResult()->sync_token;
+  std::unique_ptr<viz::SingleReleaseCallback> release_callback =
+      result->TakeTextureOwnership();
 
   if (!dfh->yuv_readback_pipeline_) {
     dfh->yuv_readback_pipeline_ =
@@ -768,8 +766,7 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceHasResultForVideo(
       video_frame, dfh->AsWeakPtr(), base::Bind(callback, region_in_frame),
       subscriber_texture, base::Passed(&release_callback));
   yuv_readback_pipeline->ReadbackYUV(
-      texture_mailbox.mailbox(), texture_mailbox.sync_token(), result->size(),
-      gfx::Rect(region_in_frame.size()),
+      mailbox, sync_token, result->size(), gfx::Rect(region_in_frame.size()),
       video_frame->stride(media::VideoFrame::kYPlane),
       video_frame->data(media::VideoFrame::kYPlane),
       video_frame->stride(media::VideoFrame::kUPlane),
