@@ -890,11 +890,7 @@ class DownloadContentTest : public ContentBrowserTest {
 // Test fixture for parallel downloading.
 class ParallelDownloadTest : public DownloadContentTest {
  protected:
-  ParallelDownloadTest() {}
-
-  ~ParallelDownloadTest() override {}
-
-  void InitParallelDownloadFeature() {
+  ParallelDownloadTest() {
     std::map<std::string, std::string> params = {
         {content::kMinSliceSizeFinchKey, "1"},
         {content::kParallelRequestCountFinchKey,
@@ -904,6 +900,8 @@ class ParallelDownloadTest : public DownloadContentTest {
     scoped_feature_list_.InitAndEnableFeatureWithParameters(
         features::kParallelDownloading, params);
   }
+
+  ~ParallelDownloadTest() override {}
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -2894,14 +2892,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
 }
 
 // Verify parallel download in normal case.
-// Flaky. See http://crbug.com/786626.
-#if defined(OS_ANDROID) || defined(OS_LINUX)
-#define MAYBE_ParallelDownloadComplete DISABLED_ParallelDownloadComplete
-#else
-#define MAYBE_ParallelDownloadComplete ParallelDownloadComplete
-#endif
-IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, MAYBE_ParallelDownloadComplete) {
-  InitParallelDownloadFeature();
+IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, ParallelDownloadComplete) {
   EXPECT_TRUE(base::FeatureList::IsEnabled(features::kParallelDownloading));
 
   GURL url = TestDownloadHttpResponse::GetNextURLForDownload();
@@ -2940,7 +2931,6 @@ IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, MAYBE_ParallelDownloadComplete) {
 
 // Verify parallel download resumption.
 IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, ParallelDownloadResumption) {
-  InitParallelDownloadFeature();
   EXPECT_TRUE(base::FeatureList::IsEnabled(features::kParallelDownloading));
 
   GURL url = TestDownloadHttpResponse::GetNextURLForDownload();
