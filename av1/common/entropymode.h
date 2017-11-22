@@ -179,10 +179,6 @@ typedef struct frame_contexts {
 #endif  // CONFIG_CTX1D
 #endif
 
-  aom_prob newmv_prob[NEWMV_MODE_CONTEXTS];
-  aom_prob zeromv_prob[GLOBALMV_MODE_CONTEXTS];
-  aom_prob refmv_prob[REFMV_MODE_CONTEXTS];
-  aom_prob drl_prob[DRL_MODE_CONTEXTS];
   aom_cdf_prob newmv_cdf[NEWMV_MODE_CONTEXTS][CDF_SIZE(2)];
   aom_cdf_prob zeromv_cdf[GLOBALMV_MODE_CONTEXTS][CDF_SIZE(2)];
   aom_cdf_prob refmv_cdf[REFMV_MODE_CONTEXTS][CDF_SIZE(2)];
