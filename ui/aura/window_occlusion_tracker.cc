@@ -451,4 +451,23 @@ void WindowOcclusionTracker::OnWindowRemovingFromRootWindow(Window* window,
   RemoveObserverFromWindowAndDescendants(window);
 }
 
+void WindowOcclusionTracker::OnWindowLayerRecreated(Window* window) {
+  ui::LayerAnimator* animator = window->layer()->GetAnimator();
+
+  // Recreating the layer may have stopped animations.
+  if (animator->IsAnimatingOnePropertyOf(kSkipWindowWhenPropertiesAnimated))
+    return;
+
+  size_t num_removed = animated_windows_.erase(window);
+  if (num_removed == 0)
+    return;
+
+  animator->RemoveObserver(this);
+  auto root_window_state_it = root_windows_.find(window->GetRootWindow());
+  if (root_window_state_it != root_windows_.end()) {
+    root_window_state_it->second.dirty = true;
+    MaybeRecomputeOcclusion();
+  }
+}
+
 }  // namespace aura
