@@ -201,6 +201,12 @@ static constexpr float kLaserWidth = 0.01f;
 static constexpr float kReticleWidth = 0.025f;
 static constexpr float kReticleHeight = 0.025f;
 
+static constexpr float kOmniboxContainerWidth = 4.5;
+static constexpr float kOmniboxContainerHeight = 12 * 0.02f;
+static constexpr float kOmniboxContainerCornerRadius = 0.01;
+static constexpr float kOmniboxContainerVeriticalOffset = 0.7;
+static constexpr float kOmniboxTextHeight = 0.05;
+static constexpr float kOmniboxCloseButtonVerticalOffset = -0.5;
 static constexpr float kSuggestionGap = 0.01f;
 static constexpr float kSuggestionLineGap = 0.01f;
 static constexpr float kSuggestionIconGap = 0.01f;

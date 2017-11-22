@@ -30,6 +30,13 @@ enum UiElementName {
   kCeiling,
   kFloor,
   kUrlBar,
+  kOmniboxRoot,
+  kOmniboxContainer,
+  kOmniboxTextField,
+  kOmniboxClearTextFieldButton,
+  kOmniboxCloseButton,
+  kOmniboxSuggestions,
+  k2dBrowsingVisibiltyControlForOmnibox,
   kIndicatorLayout,
   kAudioCaptureIndicator,
   kVideoCaptureIndicator,
@@ -84,7 +91,6 @@ enum UiElementName {
   kSpeechRecognitionListeningInnerCircle,
   kSpeechRecognitionListeningMicrophoneIcon,
   kSpeechRecognitionListeningCloseButton,
-  kSuggestionLayout,
 
   // This must be last.
   kNumUiElementNames,
