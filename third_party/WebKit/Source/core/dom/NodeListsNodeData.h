@@ -22,6 +22,7 @@
 #ifndef NodeListsNodeData_h
 #define NodeListsNodeData_h
 
+#include "base/macros.h"
 #include "core/dom/ChildNodeList.h"
 #include "core/dom/EmptyNodeList.h"
 #include "core/dom/QualifiedName.h"
@@ -34,8 +35,6 @@
 namespace blink {
 
 class NodeListsNodeData final : public GarbageCollected<NodeListsNodeData> {
-  WTF_MAKE_NONCOPYABLE(NodeListsNodeData);
-
  public:
   ChildNodeList* GetChildNodeList(ContainerNode& node) {
     DCHECK(!child_node_list_ || node == child_node_list_->VirtualOwnerNode());
@@ -177,6 +176,7 @@ class NodeListsNodeData final : public GarbageCollected<NodeListsNodeData> {
   TraceWrapperMember<NodeList> child_node_list_;
   NodeListAtomicNameCacheMap atomic_name_caches_;
   TagCollectionNSCache tag_collection_ns_caches_;
+  DISALLOW_COPY_AND_ASSIGN(NodeListsNodeData);
 };
 
 DEFINE_TRAIT_FOR_TRACE_WRAPPERS(NodeListsNodeData);

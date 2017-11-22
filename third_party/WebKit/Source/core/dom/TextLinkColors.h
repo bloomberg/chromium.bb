@@ -30,9 +30,9 @@
 #ifndef TextLinkColors_h
 #define TextLinkColors_h
 
+#include "base/macros.h"
 #include "platform/graphics/Color.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 
@@ -40,7 +40,6 @@ class CSSValue;
 
 class TextLinkColors {
   DISALLOW_NEW();
-  WTF_MAKE_NONCOPYABLE(TextLinkColors);
 
  public:
   TextLinkColors();
@@ -66,6 +65,7 @@ class TextLinkColors {
   Color link_color_;
   Color visited_link_color_;
   Color active_link_color_;
+  DISALLOW_COPY_AND_ASSIGN(TextLinkColors);
 };
 
 }  // namespace blink

@@ -21,13 +21,12 @@
 #define TransformSource_h
 
 #include <libxml/tree.h>
+#include "base/macros.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 
 class TransformSource {
-  WTF_MAKE_NONCOPYABLE(TransformSource);
   USING_FAST_MALLOC(TransformSource);
 
  public:
@@ -38,6 +37,7 @@ class TransformSource {
 
  private:
   xmlDocPtr source_;
+  DISALLOW_COPY_AND_ASSIGN(TransformSource);
 };
 
 }  // namespace blink

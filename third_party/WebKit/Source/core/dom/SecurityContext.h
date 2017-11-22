@@ -27,13 +27,13 @@
 #ifndef SecurityContext_h
 #define SecurityContext_h
 
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "core/dom/SandboxFlags.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/Suborigin.h"
 #include "platform/wtf/HashSet.h"
-#include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/text/StringHash.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebAddressSpace.h"
@@ -49,8 +49,6 @@ class SecurityOrigin;
 class ContentSecurityPolicy;
 
 class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
-  WTF_MAKE_NONCOPYABLE(SecurityContext);
-
  public:
   virtual void Trace(blink::Visitor*);
 
@@ -119,6 +117,7 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
   WebInsecureRequestPolicy insecure_request_policy_;
   InsecureNavigationsSet insecure_navigations_to_upgrade_;
   bool require_safe_types_;
+  DISALLOW_COPY_AND_ASSIGN(SecurityContext);
 };
 
 }  // namespace blink

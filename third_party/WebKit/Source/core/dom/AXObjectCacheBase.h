@@ -5,6 +5,7 @@
 #ifndef AXObjectCacheBase_h
 #define AXObjectCacheBase_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/dom/AXObjectCache.h"
 
@@ -21,8 +22,6 @@ class AXObject;
 // AXObjectCacheImpl, refactor usages to use AXObjectCache instead (introducing
 // new public API methods or similar) and remove this class.
 class CORE_EXPORT AXObjectCacheBase : public AXObjectCache {
-  WTF_MAKE_NONCOPYABLE(AXObjectCacheBase);
-
  public:
   virtual ~AXObjectCacheBase();
 
@@ -31,6 +30,7 @@ class CORE_EXPORT AXObjectCacheBase : public AXObjectCache {
 
  protected:
   AXObjectCacheBase(Document&);
+  DISALLOW_COPY_AND_ASSIGN(AXObjectCacheBase);
 };
 
 // This is the only subclass of AXObjectCache.

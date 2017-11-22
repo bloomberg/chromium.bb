@@ -5,13 +5,12 @@
 #ifndef PseudoElementData_h
 #define PseudoElementData_h
 
+#include "base/macros.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
 class PseudoElementData final : public GarbageCollected<PseudoElementData> {
-  WTF_MAKE_NONCOPYABLE(PseudoElementData);
-
  public:
   static PseudoElementData* Create();
   void SetPseudoElement(PseudoId, PseudoElement*);
@@ -31,6 +30,7 @@ class PseudoElementData final : public GarbageCollected<PseudoElementData> {
   Member<PseudoElement> generated_after_;
   Member<PseudoElement> generated_first_letter_;
   Member<PseudoElement> backdrop_;
+  DISALLOW_COPY_AND_ASSIGN(PseudoElementData);
 };
 
 inline PseudoElementData* PseudoElementData::Create() {

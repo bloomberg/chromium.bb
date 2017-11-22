@@ -26,6 +26,7 @@
 #ifndef Node_h
 #define Node_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/dom/MutationObserver.h"
 #include "core/dom/TreeScope.h"
@@ -98,8 +99,6 @@ enum class SlotChangeType {
 };
 
 class NodeRenderingData {
-  WTF_MAKE_NONCOPYABLE(NodeRenderingData);
-
  public:
   explicit NodeRenderingData(LayoutObject* layout_object,
                              scoped_refptr<ComputedStyle> non_attached_style);
@@ -122,6 +121,7 @@ class NodeRenderingData {
  private:
   LayoutObject* layout_object_;
   scoped_refptr<ComputedStyle> non_attached_style_;
+  DISALLOW_COPY_AND_ASSIGN(NodeRenderingData);
 };
 
 class NodeRareDataBase {
@@ -133,7 +133,7 @@ class NodeRareDataBase {
   }
 
  protected:
-  NodeRareDataBase(NodeRenderingData* node_layout_data)
+  explicit NodeRareDataBase(NodeRenderingData* node_layout_data)
       : node_layout_data_(node_layout_data) {}
   ~NodeRareDataBase() {
     if (node_layout_data_ && !node_layout_data_->IsSharedEmptyData())

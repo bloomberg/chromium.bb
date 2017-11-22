@@ -33,12 +33,12 @@
 #ifndef EventListenerMap_h
 #define EventListenerMap_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/dom/events/AddEventListenerOptionsResolved.h"
 #include "core/dom/events/EventListenerOptions.h"
 #include "core/events/RegisteredEventListener.h"
 #include "platform/bindings/ScriptWrappableVisitor.h"
-#include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/text/AtomicStringHash.h"
 
 namespace blink {
@@ -48,7 +48,6 @@ class EventTarget;
 using EventListenerVector = HeapVector<RegisteredEventListener, 1>;
 
 class CORE_EXPORT EventListenerMap {
-  WTF_MAKE_NONCOPYABLE(EventListenerMap);
   DISALLOW_NEW();
 
  public:
@@ -90,6 +89,7 @@ class CORE_EXPORT EventListenerMap {
 #if DCHECK_IS_ON()
   int active_iterator_count_ = 0;
 #endif
+  DISALLOW_COPY_AND_ASSIGN(EventListenerMap);
 };
 
 #if !DCHECK_IS_ON()
