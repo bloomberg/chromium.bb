@@ -75,8 +75,9 @@ void PutMruWindowLast(std::vector<aura::Window*>* window_list) {
   if (it == window_list->end())
     return;
   // Move the active window to the end of the list.
+  aura::Window* active_window = *it;
   window_list->erase(it);
-  window_list->push_back(*it);
+  window_list->push_back(active_window);
 }
 
 }  // namespace
