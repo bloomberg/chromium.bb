@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
@@ -21,6 +22,7 @@
 #include "extensions/browser/api/file_system/file_system_api.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/common/extension_features.h"
 #include "extensions/common/switches.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
@@ -34,6 +36,11 @@ class NativeBindingsApiTest : public ExtensionApiTest {
   NativeBindingsApiTest() {}
   ~NativeBindingsApiTest() override {}
 
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(features::kNativeCrxBindings);
+    ExtensionApiTest::SetUp();
+  }
+
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
     // We whitelist the extension so that it can use the cast.streaming.* APIs,
@@ -41,10 +48,6 @@ class NativeBindingsApiTest : public ExtensionApiTest {
     command_line->AppendSwitchASCII(
         switches::kWhitelistedExtensionID,
         "ddchlicdkolnonkihahngkmmmjnjlkkf");
-    // Note: We don't use a FeatureSwitch::ScopedOverride here because we need
-    // the switch to be propogated to the renderer, which doesn't happen with
-    // a ScopedOverride.
-    command_line->AppendSwitchASCII(switches::kNativeCrxBindings, "1");
   }
 
   void SetUpOnMainThread() override {
@@ -53,6 +56,8 @@ class NativeBindingsApiTest : public ExtensionApiTest {
   }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
   DISALLOW_COPY_AND_ASSIGN(NativeBindingsApiTest);
 };
 

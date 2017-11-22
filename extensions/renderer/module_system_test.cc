@@ -13,6 +13,7 @@
 
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
@@ -21,8 +22,8 @@
 #include "base/run_loop.h"
 #include "base/strings/string_piece.h"
 #include "extensions/common/extension_builder.h"
+#include "extensions/common/extension_features.h"
 #include "extensions/common/extension_paths.h"
-#include "extensions/common/feature_switch.h"
 #include "extensions/common/value_builder.h"
 #include "extensions/renderer/ipc_message_sender.h"
 #include "extensions/renderer/logging_native_handler.h"
@@ -52,7 +53,7 @@ class GetAPINatives : public ObjectBackedNativeHandler {
   GetAPINatives(ScriptContext* context,
                 NativeExtensionBindingsSystem* bindings_system)
       : ObjectBackedNativeHandler(context) {
-    DCHECK_EQ(FeatureSwitch::native_crx_bindings()->IsEnabled(),
+    DCHECK_EQ(base::FeatureList::IsEnabled(features::kNativeCrxBindings),
               !!bindings_system);
 
     auto get_api = [](ScriptContext* context,
@@ -149,7 +150,7 @@ ModuleSystemTestEnvironment::ModuleSystemTestEnvironment(
   context_->v8_context()->Enter();
   assert_natives_ = new AssertNatives(context_);
 
-  if (FeatureSwitch::native_crx_bindings()->IsEnabled())
+  if (base::FeatureList::IsEnabled(features::kNativeCrxBindings))
     bindings_system_ = std::make_unique<NativeExtensionBindingsSystem>(nullptr);
 
   {

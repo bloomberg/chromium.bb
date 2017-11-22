@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/common/channel_info.h"
@@ -28,7 +29,7 @@
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/feature_switch.h"
+#include "extensions/common/extension_features.h"
 #include "extensions/common/features/feature_channel.h"
 #include "extensions/common/permissions/manifest_permission_set.h"
 #include "extensions/common/permissions/permission_set.h"
@@ -287,7 +288,7 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
       IDR_MEDIA_REMOTING_JS);
 
   // These bindings are unnecessary with native bindings enabled.
-  if (!extensions::FeatureSwitch::native_crx_bindings()->IsEnabled()) {
+  if (!base::FeatureList::IsEnabled(extensions::features::kNativeCrxBindings)) {
     source_map->RegisterSource("app", IDR_APP_CUSTOM_BINDINGS_JS);
 
     // Custom types sources.
@@ -322,7 +323,8 @@ void ChromeExtensionsDispatcherDelegate::OnActiveExtensionsUpdated(
 void ChromeExtensionsDispatcherDelegate::InitializeBindingsSystem(
     extensions::Dispatcher* dispatcher,
     extensions::APIBindingsSystem* bindings_system) {
-  DCHECK(extensions::FeatureSwitch::native_crx_bindings()->IsEnabled());
+  DCHECK(
+      base::FeatureList::IsEnabled(extensions::features::kNativeCrxBindings));
   bindings_system->GetHooksForAPI("app")->SetDelegate(
       base::MakeUnique<extensions::AppHooksDelegate>(
           dispatcher, bindings_system->request_handler()));

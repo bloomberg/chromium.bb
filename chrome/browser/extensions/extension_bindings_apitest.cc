@@ -5,6 +5,7 @@
 // Contains holistic tests of the bindings infrastructure
 
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/api/permissions/permissions_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/net/url_request_mock_util.h"
@@ -16,7 +17,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/process_manager.h"
-#include "extensions/common/switches.h"
+#include "extensions/common/extension_features.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
 #include "net/dns/mock_host_resolver.h"
@@ -31,10 +32,17 @@ class ExtensionBindingsApiTest
     : public ExtensionApiTest,
       public ::testing::WithParamInterface<BindingsType> {
  public:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII(switches::kNativeCrxBindings,
-                                    GetParam() == NATIVE_BINDINGS ? "1" : "0");
+  ExtensionBindingsApiTest() {}
+  ~ExtensionBindingsApiTest() override {}
+
+  void SetUp() override {
+    if (GetParam() == NATIVE_BINDINGS) {
+      scoped_feature_list_.InitAndEnableFeature(features::kNativeCrxBindings);
+    } else {
+      DCHECK_EQ(JAVASCRIPT_BINDINGS, GetParam());
+      scoped_feature_list_.InitAndDisableFeature(features::kNativeCrxBindings);
+    }
+    ExtensionApiTest::SetUp();
   }
 
   void SetUpOnMainThread() override {
@@ -42,6 +50,11 @@ class ExtensionBindingsApiTest
     host_resolver()->AddRule("*", "127.0.0.1");
     ASSERT_TRUE(StartEmbeddedTestServer());
   }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionBindingsApiTest);
 };
 
 IN_PROC_BROWSER_TEST_P(ExtensionBindingsApiTest,

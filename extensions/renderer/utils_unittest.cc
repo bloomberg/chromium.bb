@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/feature_list.h"
 #include "base/strings/stringprintf.h"
-#include "extensions/common/feature_switch.h"
+#include "extensions/common/extension_features.h"
 #include "extensions/grit/extensions_renderer_resources.h"
 #include "extensions/renderer/module_system_test.h"
 #include "gin/dictionary.h"
@@ -28,7 +29,7 @@ class UtilsUnittest : public ModuleSystemTest {
 
     // Native bindings set up the chrome.runtime accessor, so we don't need to
     // stub it out.
-    if (FeatureSwitch::native_crx_bindings()->IsEnabled())
+    if (base::FeatureList::IsEnabled(features::kNativeCrxBindings))
       return;
 
     gin::Dictionary chrome(env()->isolate(), env()->CreateGlobal("chrome"));

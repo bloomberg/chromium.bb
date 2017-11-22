@@ -23,8 +23,6 @@ const char kLoadMediaRouterComponentExtensionFlag[] =
 const char kYieldBetweenContentScriptRunsFieldTrial[] =
     "YieldBetweenContentScriptRuns";
 
-const char kNativeCrxBindingsFieldTrial[] = "NativeCrxBindings";
-
 class CommonSwitches {
  public:
   CommonSwitches()
@@ -57,9 +55,6 @@ class CommonSwitches {
 #else
             FeatureSwitch::DEFAULT_DISABLED),
 #endif  // defined(GOOGLE_CHROME_BUILD)
-        native_crx_bindings(switches::kNativeCrxBindings,
-                            kNativeCrxBindingsFieldTrial,
-                            FeatureSwitch::DEFAULT_DISABLED),
         yield_between_content_script_runs(
             switches::kYieldBetweenContentScriptRuns,
             kYieldBetweenContentScriptRunsFieldTrial,
@@ -78,7 +73,6 @@ class CommonSwitches {
   FeatureSwitch embedded_extension_options;
   FeatureSwitch trace_app_source;
   FeatureSwitch load_media_router_component_extension;
-  FeatureSwitch native_crx_bindings;
   FeatureSwitch yield_between_content_script_runs;
 };
 
@@ -110,9 +104,6 @@ FeatureSwitch* FeatureSwitch::trace_app_source() {
 }
 FeatureSwitch* FeatureSwitch::load_media_router_component_extension() {
   return &g_common_switches.Get().load_media_router_component_extension;
-}
-FeatureSwitch* FeatureSwitch::native_crx_bindings() {
-  return &g_common_switches.Get().native_crx_bindings;
 }
 FeatureSwitch* FeatureSwitch::yield_between_content_script_runs() {
   return &g_common_switches.Get().yield_between_content_script_runs;

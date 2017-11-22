@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/test_extension_dir.h"
@@ -9,7 +10,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
-#include "extensions/common/switches.h"
+#include "extensions/common/extension_features.h"
 
 namespace extensions {
 namespace {
@@ -31,10 +32,17 @@ class APIBindingPerfBrowserTest
     : public ExtensionBrowserTest,
       public ::testing::WithParamInterface<BindingsType> {
  protected:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII(switches::kNativeCrxBindings,
-                                    GetParam() == NATIVE_BINDINGS ? "1" : "0");
+  APIBindingPerfBrowserTest() {}
+  ~APIBindingPerfBrowserTest() override {}
+
+  void SetUp() override {
+    if (GetParam() == NATIVE_BINDINGS) {
+      scoped_feature_list_.InitAndEnableFeature(features::kNativeCrxBindings);
+    } else {
+      DCHECK_EQ(JAVASCRIPT_BINDINGS, GetParam());
+      scoped_feature_list_.InitAndDisableFeature(features::kNativeCrxBindings);
+    }
+    ExtensionBrowserTest::SetUp();
   }
 
   void SetUpOnMainThread() override {
@@ -52,6 +60,11 @@ class APIBindingPerfBrowserTest
         &time_elapsed_ms));
     return base::TimeDelta::FromMillisecondsD(time_elapsed_ms);
   }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(APIBindingPerfBrowserTest);
 };
 
 const char kSimpleContentScriptManifest[] =

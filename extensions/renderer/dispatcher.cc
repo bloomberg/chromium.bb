@@ -35,9 +35,9 @@
 #include "extensions/common/api/messaging/message.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_api.h"
+#include "extensions/common/extension_features.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/extension_urls.h"
-#include "extensions/common/feature_switch.h"
 #include "extensions/common/features/behavior_feature.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/common/features/feature_channel.h"
@@ -202,7 +202,7 @@ Dispatcher::Dispatcher(std::unique_ptr<DispatcherDelegate> delegate)
 
   std::unique_ptr<IPCMessageSender> ipc_message_sender =
       IPCMessageSender::CreateMainThreadIPCMessageSender();
-  if (FeatureSwitch::native_crx_bindings()->IsEnabled()) {
+  if (base::FeatureList::IsEnabled(features::kNativeCrxBindings)) {
     // This Unretained is safe because the IPCMessageSender is guaranteed to
     // outlive the bindings system.
     auto system = std::make_unique<NativeExtensionBindingsSystem>(
@@ -740,7 +740,7 @@ std::vector<Dispatcher::JsResourceInfo> Dispatcher::GetJsResources() {
       {"platformApp", IDR_PLATFORM_APP_JS},
   };
 
-  if (!FeatureSwitch::native_crx_bindings()->IsEnabled()) {
+  if (!base::FeatureList::IsEnabled(features::kNativeCrxBindings)) {
     resources.push_back({"binding", IDR_BINDING_JS});
     resources.push_back({kEventBindings, IDR_EVENT_BINDINGS_JS});
     resources.push_back({"lastError", IDR_LAST_ERROR_JS});

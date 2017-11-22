@@ -40,7 +40,6 @@ class FeatureSwitch {
   static FeatureSwitch* embedded_extension_options();
   static FeatureSwitch* trace_app_source();
   static FeatureSwitch* load_media_router_component_extension();
-  static FeatureSwitch* native_crx_bindings();
   static FeatureSwitch* yield_between_content_script_runs();
 
   enum DefaultValue {
