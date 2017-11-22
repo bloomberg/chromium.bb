@@ -11,7 +11,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "services/network/public/cpp/cors_error_status.h"
-#include "services/network/public/interfaces/cors.mojom.h"
+#include "services/network/public/interfaces/cors.mojom-shared.h"
 
 namespace network {
 

@@ -1,0 +1,4 @@
+include_rules = [
+  # CORS related files will be included from Blink, and should use cors.mojom-shared.h.
+  "-services/network/public/interfaces/cors.mojom.h",
+]
