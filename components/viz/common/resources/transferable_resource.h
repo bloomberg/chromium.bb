@@ -72,7 +72,7 @@ struct VIZ_COMMON_EXPORT TransferableResource {
     return r;
   }
 
-  // TODO(danakj): Some of these fiends are only GL, some are only Software,
+  // TODO(danakj): Some of these fields are only GL, some are only Software,
   // some are both but used for different purposes (like the mailbox name).
   // It would be nice to group things together and make it more clear when
   // they will be used or not, and provide easier access to fields such as the
