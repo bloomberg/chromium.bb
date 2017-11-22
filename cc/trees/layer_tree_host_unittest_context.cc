@@ -779,29 +779,29 @@ class LayerTreeHostContextTestLostContextAndEvictTextures
   bool lost_context_;
 };
 
-class LayerTreeHostContextTestLostContextAndEvictTexturesLoseAfterEvict
-    : public LayerTreeHostContextTestLostContextAndEvictTextures {
- public:
-  void SetUp() override {
-    LayerTreeHostContextTestLostContextAndEvictTextures::SetUp();
-    lose_after_evict_ = true;
-  }
-};
+TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
+       LoseAfterEvict_SingleThread) {
+  lose_after_evict_ = true;
+  RunTest(CompositorMode::SINGLE_THREADED);
+}
 
-SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeHostContextTestLostContextAndEvictTexturesLoseAfterEvict);
+TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
+       LoseAfterEvict_MultiThread) {
+  lose_after_evict_ = true;
+  RunTest(CompositorMode::THREADED);
+}
 
-class LayerTreeHostContextTestLostContextAndEvictTexturesLoseBeforeEvict
-    : public LayerTreeHostContextTestLostContextAndEvictTextures {
- public:
-  void SetUp() override {
-    LayerTreeHostContextTestLostContextAndEvictTextures::SetUp();
-    lose_after_evict_ = false;
-  }
-};
+TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
+       LoseBeforeEvict_SingleThread) {
+  lose_after_evict_ = false;
+  RunTest(CompositorMode::SINGLE_THREADED);
+}
 
-SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeHostContextTestLostContextAndEvictTexturesLoseBeforeEvict);
+TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
+       LoseBeforeEvict_MultiThread) {
+  lose_after_evict_ = false;
+  RunTest(CompositorMode::THREADED);
+}
 
 class LayerTreeHostContextTestLayersNotified : public LayerTreeHostContextTest {
  public:

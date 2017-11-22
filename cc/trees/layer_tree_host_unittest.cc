@@ -95,10 +95,9 @@ class LayerTreeHostTestHasImplThreadTest : public LayerTreeHostTest {
  public:
   LayerTreeHostTestHasImplThreadTest() : single_threaded_(false) {}
 
-  void RunTest(CompositorMode mode,
-               bool using_synchronous_renderer_compositor) override {
+  void RunTest(CompositorMode mode) override {
     single_threaded_ = mode == CompositorMode::SINGLE_THREADED;
-    LayerTreeHostTest::RunTest(mode, using_synchronous_renderer_compositor);
+    LayerTreeHostTest::RunTest(mode);
   }
 
   void BeginTest() override {
@@ -8131,6 +8130,17 @@ class LayerTreeHostTestImageAnimation : public LayerTreeHostTest {
 };
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestImageAnimation);
+
+class LayerTreeHostTestImageAnimationSynchronousScheduling
+    : public LayerTreeHostTestImageAnimation {
+ public:
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    LayerTreeHostTestImageAnimation::InitializeSettings(settings);
+    settings->using_synchronous_renderer_compositor = true;
+  }
+};
+
+MULTI_THREAD_TEST_F(LayerTreeHostTestImageAnimationSynchronousScheduling);
 
 class LayerTreeHostTestImageDecodingHints : public LayerTreeHostTest {
  public:
