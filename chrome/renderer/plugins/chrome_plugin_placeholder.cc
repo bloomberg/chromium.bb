@@ -234,19 +234,19 @@ void ChromePluginPlaceholder::OnMenuAction(int request_id, unsigned action) {
   if (g_last_active_menu != this)
     return;
   switch (action) {
-    case chrome::MENU_COMMAND_PLUGIN_RUN: {
+    case MENU_COMMAND_PLUGIN_RUN: {
       RenderThread::Get()->RecordAction(UserMetricsAction("Plugin_Load_Menu"));
       MarkPluginEssential(
           content::PluginInstanceThrottler::UNTHROTTLE_METHOD_BY_CLICK);
       LoadPlugin();
       break;
     }
-    case chrome::MENU_COMMAND_PLUGIN_HIDE: {
+    case MENU_COMMAND_PLUGIN_HIDE: {
       RenderThread::Get()->RecordAction(UserMetricsAction("Plugin_Hide_Menu"));
       HidePlugin();
       break;
     }
-    case chrome::MENU_COMMAND_ENABLE_FLASH: {
+    case MENU_COMMAND_ENABLE_FLASH: {
       ShowPermissionBubbleCallback();
       break;
     }
@@ -288,7 +288,7 @@ void ChromePluginPlaceholder::ShowContextMenu(
       status_ == chrome::mojom::PluginStatus::kFlashHiddenPreferHtml;
   if (!GetPluginInfo().path.value().empty() && !flash_hidden) {
     content::MenuItem run_item;
-    run_item.action = chrome::MENU_COMMAND_PLUGIN_RUN;
+    run_item.action = MENU_COMMAND_PLUGIN_RUN;
     // Disable this menu item if the plugin is blocked by policy.
     run_item.enabled = LoadingAllowed();
     run_item.label = l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_PLUGIN_RUN);
@@ -297,7 +297,7 @@ void ChromePluginPlaceholder::ShowContextMenu(
 
   if (flash_hidden) {
     content::MenuItem enable_flash_item;
-    enable_flash_item.action = chrome::MENU_COMMAND_ENABLE_FLASH;
+    enable_flash_item.action = MENU_COMMAND_ENABLE_FLASH;
     enable_flash_item.enabled = true;
     enable_flash_item.label =
         l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_ENABLE_FLASH);
@@ -305,7 +305,7 @@ void ChromePluginPlaceholder::ShowContextMenu(
   }
 
   content::MenuItem hide_item;
-  hide_item.action = chrome::MENU_COMMAND_PLUGIN_HIDE;
+  hide_item.action = MENU_COMMAND_PLUGIN_HIDE;
   bool is_main_frame_plugin_document =
       render_frame()->IsMainFrame() &&
       render_frame()->GetWebFrame()->GetDocument().IsPluginDocument();
