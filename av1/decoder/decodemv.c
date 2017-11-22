@@ -1200,7 +1200,7 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
 
 #if CONFIG_CFL
     if (mbmi->uv_mode == UV_CFL_PRED) {
-      if (!is_cfl_allowed(mbmi)) {
+      if (!is_cfl_allowed(xd)) {
         aom_internal_error(
             &cm->error, AOM_CODEC_UNSUP_BITSTREAM,
             "Chroma from Luma (CfL) cannot be signaled for a %dx%d block.",
@@ -1560,7 +1560,7 @@ static void read_intra_block_mode_info(AV1_COMMON *const cm, const int mi_row,
 
 #if CONFIG_CFL
     if (mbmi->uv_mode == UV_CFL_PRED) {
-      if (!is_cfl_allowed(mbmi)) {
+      if (!is_cfl_allowed(xd)) {
         aom_internal_error(
             &cm->error, AOM_CODEC_UNSUP_BITSTREAM,
             "Chroma from Luma (CfL) cannot be signaled for a %dx%d block.",

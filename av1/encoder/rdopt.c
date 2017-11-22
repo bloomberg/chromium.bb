@@ -2142,7 +2142,7 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
     return;
   }
 #if CONFIG_CFL
-  if (plane == AOM_PLANE_Y && xd->cfl.store_y && is_cfl_allowed(mbmi)) {
+  if (plane == AOM_PLANE_Y && xd->cfl.store_y && is_cfl_allowed(xd)) {
     assert(!is_inter_block(mbmi) || plane_bsize < BLOCK_8X8);
     cfl_store_tx(xd, blk_row, blk_col, tx_size, plane_bsize);
   }
@@ -5427,12 +5427,19 @@ static void txfm_rd_in_plane_once(MACROBLOCK *const x,
 }
 
 static int cfl_rd_pick_alpha(MACROBLOCK *const x, const AV1_COMP *const cpi,
-                             BLOCK_SIZE bsize, TX_SIZE tx_size,
-                             int64_t best_rd) {
+                             TX_SIZE tx_size, int64_t best_rd) {
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
-  bsize = scale_chroma_bsize(bsize, xd->plane[AOM_PLANE_U].subsampling_x,
-                             xd->plane[AOM_PLANE_U].subsampling_y);
+
+  const BLOCK_SIZE bsize = mbmi->sb_type;
+#if CONFIG_DEBUG
+  assert(is_cfl_allowed(xd));
+  const BLOCK_SIZE plane_bsize = AOMMAX(
+      BLOCK_4X4, get_plane_block_size(mbmi->sb_type, &xd->plane[AOM_PLANE_U]));
+  assert(plane_bsize < BLOCK_SIZES_ALL);
+  assert(block_size_wide[plane_bsize] == tx_size_wide[tx_size]);
+  assert(block_size_high[plane_bsize] == tx_size_high[tx_size]);
+#endif
 
   int rates[CFL_PRED_PLANES][CFL_MAGS_SIZE];
   int64_t dists[CFL_PRED_PLANES][CFL_MAGS_SIZE];
@@ -5546,10 +5553,11 @@ static int64_t rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
 #if CONFIG_CFL
     int cfl_alpha_rate = 0;
     if (mode == UV_CFL_PRED) {
-      if (!is_cfl_allowed(mbmi)) continue;
+      if (!is_cfl_allowed(xd)) continue;
       assert(!is_directional_mode);
-      const TX_SIZE uv_tx_size = av1_get_uv_tx_size(mbmi, &xd->plane[1]);
-      cfl_alpha_rate = cfl_rd_pick_alpha(x, cpi, bsize, uv_tx_size, best_rd);
+      const TX_SIZE uv_tx_size =
+          av1_get_uv_tx_size(mbmi, &xd->plane[AOM_PLANE_U]);
+      cfl_alpha_rate = cfl_rd_pick_alpha(x, cpi, uv_tx_size, best_rd);
       if (cfl_alpha_rate == INT_MAX) continue;
     }
 #endif
@@ -5578,7 +5586,7 @@ static int64_t rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
 
 #if CONFIG_CFL
     if (mode == UV_CFL_PRED) {
-      assert(is_cfl_allowed(mbmi));
+      assert(is_cfl_allowed(xd));
       this_rate += cfl_alpha_rate;
 #if CONFIG_DEBUG
       assert(xd->cfl.rate == this_rate);

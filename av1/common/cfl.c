@@ -186,27 +186,27 @@ static void cfl_compute_parameters(MACROBLOCKD *const xd, TX_SIZE tx_size) {
 }
 
 void cfl_predict_block(MACROBLOCKD *const xd, uint8_t *dst, int dst_stride,
-                       int row, int col, TX_SIZE tx_size, int plane) {
+                       TX_SIZE tx_size, int plane) {
   CFL_CTX *const cfl = &xd->cfl;
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
+  assert(is_cfl_allowed(xd));
 
   if (!cfl->are_parameters_computed) cfl_compute_parameters(xd, tx_size);
 
-  const int16_t *pred_buf_q3 =
-      cfl->pred_buf_q3 + ((row * MAX_SB_SIZE + col) << tx_size_wide_log2[0]);
   const int alpha_q3 =
       cfl_idx_to_alpha(mbmi->cfl_alpha_idx, mbmi->cfl_alpha_signs, plane - 1);
 #if CONFIG_HIGHBITDEPTH
   if (get_bitdepth_data_path_index(xd)) {
     uint16_t *dst_16 = CONVERT_TO_SHORTPTR(dst);
-    cfl_build_prediction_hbd(pred_buf_q3, dst_16, dst_stride,
+    cfl_build_prediction_hbd(cfl->pred_buf_q3, dst_16, dst_stride,
                              tx_size_wide[tx_size], tx_size_high[tx_size],
                              alpha_q3, xd->bd);
     return;
   }
 #endif  // CONFIG_HIGHBITDEPTH
-  cfl_build_prediction_lbd(pred_buf_q3, dst, dst_stride, tx_size_wide[tx_size],
-                           tx_size_high[tx_size], alpha_q3);
+  cfl_build_prediction_lbd(cfl->pred_buf_q3, dst, dst_stride,
+                           tx_size_wide[tx_size], tx_size_high[tx_size],
+                           alpha_q3);
 }
 
 static void cfl_luma_subsampling_420_lbd(const uint8_t *input, int input_stride,
@@ -466,7 +466,7 @@ void cfl_store_tx(MACROBLOCKD *const xd, int row, int col, TX_SIZE tx_size,
   uint8_t *dst =
       &pd->dst.buf[(row * pd->dst.stride + col) << tx_size_wide_log2[0]];
 
-  assert(is_cfl_allowed(&xd->mi[0]->mbmi));
+  assert(is_cfl_allowed(xd));
   if (block_size_high[bsize] == 4 || block_size_wide[bsize] == 4) {
     // Only dimensions of size 4 can have an odd offset.
     assert(!((col & 1) && tx_size_wide[tx_size] != 4));
@@ -487,7 +487,7 @@ void cfl_store_block(MACROBLOCKD *const xd, BLOCK_SIZE bsize, TX_SIZE tx_size) {
   int col = 0;
   bsize = AOMMAX(BLOCK_4X4, bsize);
 
-  assert(is_cfl_allowed(&xd->mi[0]->mbmi));
+  assert(is_cfl_allowed(xd));
   if (block_size_high[bsize] == 4 || block_size_wide[bsize] == 4) {
     sub8x8_adjust_offset(cfl, &row, &col);
 #if CONFIG_DEBUG

@@ -2779,7 +2779,17 @@ void av1_predict_intra_block_facade(const AV1_COMMON *cm, MACROBLOCKD *xd,
 
 #if CONFIG_CFL
   if (plane != AOM_PLANE_Y && mbmi->uv_mode == UV_CFL_PRED) {
-    cfl_predict_block(xd, dst, dst_stride, blk_row, blk_col, tx_size, plane);
+#if CONFIG_DEBUG
+    assert(blk_col == 0);
+    assert(blk_row == 0);
+    assert(is_cfl_allowed(xd));
+    const BLOCK_SIZE plane_bsize =
+        AOMMAX(BLOCK_4X4, get_plane_block_size(mbmi->sb_type, pd));
+    assert(plane_bsize < BLOCK_SIZES_ALL);
+    assert(block_size_wide[plane_bsize] == tx_size_wide[tx_size]);
+    assert(block_size_high[plane_bsize] == tx_size_high[tx_size]);
+#endif
+    cfl_predict_block(xd, dst, dst_stride, tx_size, plane);
   }
 #endif
 }

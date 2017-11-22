@@ -4827,7 +4827,7 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
   if (is_inter_block(mbmi) &&
       !is_chroma_reference(mi_row, mi_col, bsize, cfl->subsampling_x,
                            cfl->subsampling_y) &&
-      is_cfl_allowed(mbmi)) {
+      is_cfl_allowed(xd)) {
     cfl_store_block(xd, mbmi->sb_type, mbmi->tx_size);
   }
 #endif  // CONFIG_CFL
