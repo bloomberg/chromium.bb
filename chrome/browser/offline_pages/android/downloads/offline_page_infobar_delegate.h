@@ -23,7 +23,7 @@ namespace offline_pages {
 // not straightforward for offline pages, the behavior is to delete ALL other
 // pages that are saved for the given URL, then save the newly requested page.
 class OfflinePageInfoBarDelegate
-    : public chrome::android::DuplicateDownloadInfoBarDelegate {
+    : public android::DuplicateDownloadInfoBarDelegate {
  public:
   // Creates an offline page infobar and a delegate and adds the infobar to the
   // InfoBarService associated with |web_contents|. |page_name| is the name

@@ -15,7 +15,6 @@
 
 class InfoBarService;
 
-namespace chrome {
 namespace android {
 
 // An infobar delegate that starts from the given file path.
@@ -82,6 +81,5 @@ class ChromeDuplicateDownloadInfoBarDelegate
 };
 
 }  // namespace android
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_ANDROID_DOWNLOAD_CHROME_DUPLICATE_DOWNLOAD_INFOBAR_DELEGATE_H_
