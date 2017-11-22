@@ -4738,6 +4738,37 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="22" label="Profile image"/>
 </enum>
 
+<enum name="ChromePDFViewerAnnotationType">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Text"/>
+  <int value="2" label="Link"/>
+  <int value="3" label="FreeText"/>
+  <int value="4" label="Line"/>
+  <int value="5" label="Square"/>
+  <int value="6" label="Circle"/>
+  <int value="7" label="Polygon"/>
+  <int value="8" label="Polyline"/>
+  <int value="9" label="Highlight"/>
+  <int value="10" label="Underline"/>
+  <int value="11" label="Squiggly"/>
+  <int value="12" label="StrikeOut"/>
+  <int value="13" label="Stamp"/>
+  <int value="14" label="Caret"/>
+  <int value="15" label="Ink"/>
+  <int value="16" label="Popup"/>
+  <int value="17" label="FileAttachment"/>
+  <int value="18" label="Sound"/>
+  <int value="19" label="Movie"/>
+  <int value="20" label="Widget"/>
+  <int value="21" label="Screen"/>
+  <int value="22" label="PrinterMark"/>
+  <int value="23" label="TrapNet"/>
+  <int value="24" label="Watermark"/>
+  <int value="25" label="3D"/>
+  <int value="26" label="RichMedia"/>
+  <int value="27" label="XFAWidget"/>
+</enum>
+
 <enum name="ChromePDFViewerLoadStatus">
   <int value="0" label="Loaded a full-page PDF with Chrome PDF Viewer"/>
   <int value="1" label="Loaded an embedded PDF with Chrome PDF Viewer"/>

@@ -14,6 +14,7 @@
 #endif
 
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -68,6 +69,7 @@ class PDFEngine {
     kCount = 4,
   };
 
+  // Features in a document that are relevant to measure.
   struct DocumentFeatures {
     // Number of pages in document.
     size_t page_count = 0;
@@ -81,6 +83,22 @@ class PDFEngine {
     bool is_tagged = false;
     // What type of form the document contains.
     FormType form_type = FormType::kNone;
+  };
+
+  // Features in a page that are relevant to measure.
+  struct PageFeatures {
+    PageFeatures();
+    PageFeatures(const PageFeatures& other);
+    ~PageFeatures();
+
+    // Whether the instance has been initialized and filled.
+    bool IsInitialized() const;
+
+    // 0-based page index in the document. < 0 when uninitialized.
+    int index = -1;
+
+    // Set of annotation types found in page.
+    std::set<int> annotation_types;
   };
 
   // The interface that's provided to the rendering engine.
@@ -128,6 +146,10 @@ class PDFEngine {
 
     // Updates the index of the currently selected search item.
     virtual void NotifySelectedFindResultChanged(int current_find_index) = 0;
+
+    // Notifies a page became visible.
+    virtual void NotifyPageBecameVisible(
+        const PDFEngine::PageFeatures* page_features) = 0;
 
     // Prompts the user for a password to open this document. The callback is
     // called when the password is retrieved.

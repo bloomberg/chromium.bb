@@ -42,6 +42,7 @@ if (enable_pdf) {
       "paint_manager.h",
       "pdf.cc",
       "pdf.h",
+      "pdf_engine.cc",
       "pdf_engine.h",
       "preview_mode_client.cc",
       "preview_mode_client.h",
