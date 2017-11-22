@@ -11,6 +11,8 @@
 
 #include "url/gurl.h"
 
+class PrefRegistrySimple;
+
 namespace secure_origin_whitelist {
 
 // Return a whitelist of origins that need to be considered trustworthy.
@@ -22,6 +24,9 @@ std::vector<GURL> GetWhitelist();
 // Returns a whitelist of schemes that should bypass the Is Privileged Context
 // check. See http://www.w3.org/TR/powerful-features/#settings-privileged.
 std::set<std::string> GetSchemesBypassingSecureContextCheck();
+
+// Register preferences for Secure Origin Whitelists.
+void RegisterProfilePrefs(PrefRegistrySimple*);
 
 }  // namespace secure_origin_whitelist
 
