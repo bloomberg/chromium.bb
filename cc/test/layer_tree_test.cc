@@ -902,8 +902,7 @@ void LayerTreeTest::DispatchNextCommitWaitsForActivation() {
     layer_tree_host_->SetNextCommitWaitsForActivation();
 }
 
-void LayerTreeTest::RunTest(CompositorMode mode,
-                            bool using_synchronous_renderer_compositor) {
+void LayerTreeTest::RunTest(CompositorMode mode) {
   mode_ = mode;
   if (mode_ == CompositorMode::THREADED) {
     impl_thread_.reset(new base::Thread("Compositor"));
@@ -928,8 +927,6 @@ void LayerTreeTest::RunTest(CompositorMode mode,
   settings_.enable_latency_recovery = false;
   settings_.resource_settings.buffer_to_texture_target_map =
       viz::DefaultBufferToTextureTargetMapForTesting();
-  settings_.using_synchronous_renderer_compositor =
-      using_synchronous_renderer_compositor;
   InitializeSettings(&settings_);
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(

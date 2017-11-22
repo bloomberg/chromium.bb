@@ -145,41 +145,41 @@ class BspTreePerfTest : public cc::LayerTreeTest {
 TEST_F(BspTreePerfTest, LayerSorterCubes) {
   SetTestName("layer_sort_cubes");
   ReadTestFile("layer_sort_cubes");
-  RunTest(cc::CompositorMode::SINGLE_THREADED, false);
+  RunTest(cc::CompositorMode::SINGLE_THREADED);
 }
 
 TEST_F(BspTreePerfTest, LayerSorterRubik) {
   SetTestName("layer_sort_rubik");
   ReadTestFile("layer_sort_rubik");
-  RunTest(cc::CompositorMode::SINGLE_THREADED, false);
+  RunTest(cc::CompositorMode::SINGLE_THREADED);
 }
 
 TEST_F(BspTreePerfTest, BspTreeCubes) {
   SetTestName("bsp_tree_cubes");
   SetNumberOfDuplicates(1);
   ReadTestFile("layer_sort_cubes");
-  RunTest(cc::CompositorMode::SINGLE_THREADED, false);
+  RunTest(cc::CompositorMode::SINGLE_THREADED);
 }
 
 TEST_F(BspTreePerfTest, BspTreeRubik) {
   SetTestName("bsp_tree_rubik");
   SetNumberOfDuplicates(1);
   ReadTestFile("layer_sort_rubik");
-  RunTest(cc::CompositorMode::SINGLE_THREADED, false);
+  RunTest(cc::CompositorMode::SINGLE_THREADED);
 }
 
 TEST_F(BspTreePerfTest, BspTreeCubes_2) {
   SetTestName("bsp_tree_cubes_2");
   SetNumberOfDuplicates(2);
   ReadTestFile("layer_sort_cubes");
-  RunTest(cc::CompositorMode::SINGLE_THREADED, false);
+  RunTest(cc::CompositorMode::SINGLE_THREADED);
 }
 
 TEST_F(BspTreePerfTest, BspTreeCubes_4) {
   SetTestName("bsp_tree_cubes_4");
   SetNumberOfDuplicates(4);
   ReadTestFile("layer_sort_cubes");
-  RunTest(cc::CompositorMode::SINGLE_THREADED, false);
+  RunTest(cc::CompositorMode::SINGLE_THREADED);
 }
 
 }  // namespace

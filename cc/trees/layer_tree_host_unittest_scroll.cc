@@ -790,47 +790,40 @@ class LayerTreeHostScrollTestCaseWithChild : public LayerTreeHostScrollTest {
 TEST_F(LayerTreeHostScrollTestCaseWithChild, DeviceScaleFactor1_ScrollChild) {
   device_scale_factor_ = 1.f;
   scroll_child_layer_ = true;
-  RunTest(CompositorMode::THREADED, false);
-}
-
-TEST_F(LayerTreeHostScrollTestCaseWithChild,
-       DeviceScaleFactor1_ScrollChild_SyncScheduler) {
-  device_scale_factor_ = 1.f;
-  scroll_child_layer_ = true;
-  RunTest(CompositorMode::THREADED, true);
+  RunTest(CompositorMode::THREADED);
 }
 
 TEST_F(LayerTreeHostScrollTestCaseWithChild, DeviceScaleFactor15_ScrollChild) {
   device_scale_factor_ = 1.5f;
   scroll_child_layer_ = true;
-  RunTest(CompositorMode::THREADED, false);
+  RunTest(CompositorMode::THREADED);
 }
 
 TEST_F(LayerTreeHostScrollTestCaseWithChild, DeviceScaleFactor2_ScrollChild) {
   device_scale_factor_ = 2.f;
   scroll_child_layer_ = true;
-  RunTest(CompositorMode::THREADED, false);
+  RunTest(CompositorMode::THREADED);
 }
 
 TEST_F(LayerTreeHostScrollTestCaseWithChild,
        DeviceScaleFactor1_ScrollRootScrollLayer) {
   device_scale_factor_ = 1.f;
   scroll_child_layer_ = false;
-  RunTest(CompositorMode::THREADED, false);
+  RunTest(CompositorMode::THREADED);
 }
 
 TEST_F(LayerTreeHostScrollTestCaseWithChild,
        DeviceScaleFactor15_ScrollRootScrollLayer) {
   device_scale_factor_ = 1.5f;
   scroll_child_layer_ = false;
-  RunTest(CompositorMode::THREADED, false);
+  RunTest(CompositorMode::THREADED);
 }
 
 TEST_F(LayerTreeHostScrollTestCaseWithChild,
        DeviceScaleFactor2_ScrollRootScrollLayer) {
   device_scale_factor_ = 2.f;
   scroll_child_layer_ = false;
-  RunTest(CompositorMode::THREADED, false);
+  RunTest(CompositorMode::THREADED);
 }
 
 class LayerTreeHostScrollTestSimple : public LayerTreeHostScrollTest {
@@ -1506,23 +1499,12 @@ class LayerTreeHostScrollTestLayerStructureChange
 };
 
 TEST_F(LayerTreeHostScrollTestLayerStructureChange, ScrollDestroyLayer) {
-  RunTest(CompositorMode::THREADED, false);
-}
-
-TEST_F(LayerTreeHostScrollTestLayerStructureChange,
-       ScrollDestroyLayer_SyncScheduler) {
-  RunTest(CompositorMode::THREADED, true);
+  RunTest(CompositorMode::THREADED);
 }
 
 TEST_F(LayerTreeHostScrollTestLayerStructureChange, ScrollDestroyWholeTree) {
   scroll_destroy_whole_tree_ = true;
-  RunTest(CompositorMode::THREADED, false);
-}
-
-TEST_F(LayerTreeHostScrollTestLayerStructureChange,
-       ScrollDestroyWholeTree_SyncScheduler) {
-  scroll_destroy_whole_tree_ = true;
-  RunTest(CompositorMode::THREADED, true);
+  RunTest(CompositorMode::THREADED);
 }
 
 class LayerTreeHostScrollTestScrollMFBA : public LayerTreeHostScrollTest {
@@ -1649,12 +1631,7 @@ class LayerTreeHostScrollTestScrollMFBA : public LayerTreeHostScrollTest {
   int outer_viewport_container_layer_id_;
 };
 
-// This test relies on scheduler's pipelining not overwriting updates, i.e.,
-// a new tree should not be activated until the previous one has been drawn.
-// This is not respected in webview scheduling.
-// TODO(khushalsagar): Update the test above to also work for WebView. MFBA is
-// used in that mode as well.
-MULTI_THREAD_CC_SCHEDULER_TEST_F(LayerTreeHostScrollTestScrollMFBA);
+MULTI_THREAD_TEST_F(LayerTreeHostScrollTestScrollMFBA);
 
 class LayerTreeHostScrollTestScrollAbortedCommitMFBA
     : public LayerTreeHostScrollTest {
