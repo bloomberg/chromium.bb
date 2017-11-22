@@ -666,6 +666,18 @@ willPositionSheet:(NSWindow*)sheet
     shouldExitAfterEnteringFullscreen_ = NO;
     [self exitAppKitFullscreen];
   }
+
+  // In macOS 10.12 and earlier, the web content's NSTrackingInVisibleRect
+  // doesn't work correctly after the window enters fullscreen (See
+  // https://crbug.com/170058). To work around it, update the tracking area
+  // after we enter fullscreen.
+  if (base::mac::IsAtMostOS10_12()) {
+    WebContents* webContents = [self webContents];
+    if (webContents && webContents->GetRenderWidgetHostView()) {
+      [webContents->GetRenderWidgetHostView()->GetNativeView()
+              updateTrackingAreas];
+    }
+  }
 }
 
 - (void)windowWillExitFullScreen:(NSNotification*)notification {
