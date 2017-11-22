@@ -45,6 +45,8 @@ class CORE_EXPORT PseudoElement : public Element {
   bool CanStartSelection() const override { return false; }
   bool CanContainRangeEndPoint() const override { return false; }
   PseudoId GetPseudoId() const override { return pseudo_id_; }
+  const ComputedStyle* VirtualEnsureComputedStyle(
+      PseudoId pseudo_element_specifier = kPseudoIdNone) final;
 
   static String PseudoElementNameForEvents(PseudoId);
 
