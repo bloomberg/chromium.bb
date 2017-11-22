@@ -271,11 +271,6 @@ void SelectNewTabPagePanel(ntp_home::PanelIdentifier panel_type) {
 
 // Verifies that copying and pasting a URL includes the hidden protocol prefix.
 - (void)testCopyPasteURL {
-  // TODO(crbug.com/686069): Re-enable this test.  It is failing on iOS 9.
-  if (!base::ios::IsRunningOnIOS10OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 9.");
-  }
-
   // Clear generalPasteboard before and after the test.
   [UIPasteboard generalPasteboard].string = @"";
   [self setTearDownHandler:^{
