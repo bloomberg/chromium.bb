@@ -58,10 +58,10 @@ void ExitPromptTexture::Draw(SkCanvas* sk_canvas,
   SkPaint paint;
   gfx::Rect button_text_size(ToPixels(kButtonWidth), 0);
   float radius = size_.width() * kButtonRadiusFactor;
-  GetFontList(ToPixels(kFontSizePromptButtonText), text, &fonts);
 
   // Secondary button area.
   text = l10n_util::GetStringUTF16(IDS_VR_SHELL_EXIT_PROMPT_EXIT_VR_BUTTON);
+  GetFontList(ToPixels(kFontSizePromptButtonText), text, &fonts);
   lines = PrepareDrawStringRect(
       text, fonts, secondary_button_colors_.foreground, &button_text_size,
       kTextAlignmentCenter, kWrappingBehaviorWrap);
@@ -85,6 +85,7 @@ void ExitPromptTexture::Draw(SkCanvas* sk_canvas,
 
   // Primary button area.
   text = l10n_util::GetStringUTF16(IDS_OK);
+  GetFontList(ToPixels(kFontSizePromptButtonText), text, &fonts);
   button_text_size.set_size(gfx::Size(ToPixels(kButtonWidth), 0));
   lines = PrepareDrawStringRect(text, fonts, primary_button_colors_.foreground,
                                 &button_text_size, kTextAlignmentCenter,
