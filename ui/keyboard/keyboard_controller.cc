@@ -716,6 +716,14 @@ void KeyboardController::ReportLingeringState() {
                             state_, KeyboardControllerState::COUNT);
 }
 
+const gfx::Rect KeyboardController::GetWorkspaceObscuringBounds() const {
+  if (keyboard_visible() &&
+      container_behavior_->BoundsAffectWorkspaceLayout()) {
+    return current_keyboard_bounds_;
+  }
+  return gfx::Rect();
+}
+
 const gfx::Rect KeyboardController::AdjustSetBoundsRequest(
     const gfx::Rect& display_bounds,
     const gfx::Rect& requested_bounds) const {
