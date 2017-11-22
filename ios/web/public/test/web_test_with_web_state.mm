@@ -8,6 +8,7 @@
 #include "base/scoped_observer.h"
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
+#import "ios/testing/wait_util.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
 #import "ios/web/public/web_client.h"
 #include "ios/web/public/web_state/url_verification_constants.h"
@@ -18,6 +19,9 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+using testing::WaitUntilConditionOrTimeout;
+using testing::kWaitForJSCompletionTimeout;
 
 namespace {
 // Returns CRWWebController for the given |web_state|.
@@ -163,18 +167,20 @@ void WebTestWithWebState::WaitForCondition(ConditionBlock condition) {
 }
 
 id WebTestWithWebState::ExecuteJavaScript(NSString* script) {
-  __block id executionResult;
-  __block bool executionCompleted = false;
+  __block id execution_result = nil;
+  __block bool execution_completed = false;
+  SCOPED_TRACE(base::SysNSStringToUTF8(script));
   [GetWebController(web_state())
       executeJavaScript:script
       completionHandler:^(id result, NSError* error) {
-        executionResult = [result copy];
-        executionCompleted = true;
+        execution_result = [result copy];
+        execution_completed = true;
       }];
-  base::test::ios::WaitUntilCondition(^{
-    return executionCompleted;
-  });
-  return executionResult;
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+    return execution_completed;
+  }));
+
+  return execution_result;
 }
 
 void WebTestWithWebState::DestroyWebState() {
