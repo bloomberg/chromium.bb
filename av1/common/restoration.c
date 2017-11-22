@@ -1864,6 +1864,12 @@ int av1_loop_restoration_corners_in_sb(const struct AV1Common *cm, int plane,
   const int horz_units = count_units_in_tile(size, tile_w);
   const int vert_units = count_units_in_tile(size, tile_h);
 
+  // The size of an MI-unit on this plane of the image
+  const int ss_x = is_uv && cm->subsampling_x;
+  const int ss_y = is_uv && cm->subsampling_y;
+  const int mi_size_x = MI_SIZE >> ss_x;
+  const int mi_size_y = MI_SIZE >> ss_y;
+
 #if CONFIG_FRAME_SUPERRES
   // Write m for the relative mi column or row, D for the superres denominator
   // and N for the superres numerator. If u is the upscaled (called "unscaled"
@@ -1873,19 +1879,18 @@ int av1_loop_restoration_corners_in_sb(const struct AV1Common *cm, int plane,
   //   MI_SIZE * m = N / D u
   //
   // from which we get u = D * MI_SIZE * m / N
-  const int mi_to_num_x = MI_SIZE * cm->superres_scale_denominator;
+  const int mi_to_num_x = mi_size_x * cm->superres_scale_denominator;
+  const int mi_to_num_y =
+      mi_size_y *
+      (CONFIG_HORZONLY_FRAME_SUPERRES ? 1 : cm->superres_scale_denominator);
   const int denom_x = size * SCALE_NUMERATOR;
+  const int denom_y = CONFIG_HORZONLY_FRAME_SUPERRES ? size : denom_x;
 #else
-  const int mi_to_num_x = MI_SIZE;
+  const int mi_to_num_x = mi_size_x;
+  const int mi_to_num_y = mi_size_y;
   const int denom_x = size;
-#endif  // CONFIG_FRAME_SUPERRES
-#if CONFIG_FRAME_SUPERRES && CONFIG_HORZONLY_FRAME_SUPERRES
-  const int mi_to_num_y = MI_SIZE;
   const int denom_y = size;
-#else
-  const int mi_to_num_y = mi_to_num_x;
-  const int denom_y = denom_x;
-#endif  // CONFIG_FRAME_SUPERRES && CONFIG_HORZONLY_FRAME_SUPERRES
+#endif  // CONFIG_FRAME_SUPERRES
 
   const int rnd_x = denom_x - 1;
   const int rnd_y = denom_y - 1;
