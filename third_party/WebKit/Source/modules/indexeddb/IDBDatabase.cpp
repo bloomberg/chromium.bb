@@ -212,7 +212,7 @@ void IDBDatabase::OnChanges(
             GetExecutionContext(), obs_txn.first, stores, this);
       }
 
-      observer->Callback()->call(
+      observer->Callback()->InvokeAndReportException(
           observer, IDBObserverChanges::Create(this, transaction, observations,
                                                map_entry.second, isolate_));
       if (transaction)

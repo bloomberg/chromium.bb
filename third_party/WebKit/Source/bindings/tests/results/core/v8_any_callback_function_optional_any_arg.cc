@@ -21,13 +21,25 @@
 
 namespace blink {
 
-bool V8AnyCallbackFunctionOptionalAnyArg::call(ScriptWrappable* callback_this_value, ScriptValue optionalAnyArg, ScriptValue& return_value) {
+v8::Maybe<ScriptValue> V8AnyCallbackFunctionOptionalAnyArg::Invoke(ScriptWrappable* callback_this_value, ScriptValue optionalAnyArg) {
   // This function implements "invoke" steps in
   // "3.10. Invoking callback functions".
   // https://heycam.github.io/webidl/#es-invoking-callback-functions
 
   if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState())) {
-    return false;
+    // Wrapper-tracing for the callback function makes the function object and
+    // its creation context alive. Thus it's safe to use the creation context
+    // of the callback function here.
+    v8::HandleScope handle_scope(GetIsolate());
+    v8::Context::Scope context_scope(
+        CallbackRelevantScriptState()->GetContext());
+    V8ThrowException::ThrowError(
+        GetIsolate(),
+        ExceptionMessages::FailedToExecute(
+            "invoke",
+            "AnyCallbackFunctionOptionalAnyArg",
+            "The provided callback is no longer runnable."));
+    return v8::Nothing<ScriptValue>();
   }
 
   // step 4. If ! IsCallable(F) is false:
@@ -46,13 +58,16 @@ bool V8AnyCallbackFunctionOptionalAnyArg::call(ScriptWrappable* callback_this_va
       CallbackRelevantScriptState());
   // step 9. Prepare to run a callback with stored settings.
   if (IncumbentScriptState()->GetContext().IsEmpty()) {
-    return false;
+    V8ThrowException::ThrowError(
+        GetIsolate(),
+        ExceptionMessages::FailedToExecute(
+            "invoke",
+            "AnyCallbackFunctionOptionalAnyArg",
+            "The provided callback is no longer runnable."));
+    return v8::Nothing<ScriptValue>();
   }
   v8::Context::BackupIncumbentScope backup_incumbent_scope(
       IncumbentScriptState()->GetContext());
-
-  v8::TryCatch try_catch(GetIsolate());
-  try_catch.SetVerbose(true);
 
   v8::Local<v8::Value> this_arg = ToV8(callback_this_value,
                                        CallbackRelevantScriptState());
@@ -78,7 +93,7 @@ bool V8AnyCallbackFunctionOptionalAnyArg::call(ScriptWrappable* callback_this_va
           GetIsolate()).ToLocal(&call_result)) {
     // step 12. If callResult is an abrupt completion, set completion to
     //   callResult and jump to the step labeled return.
-    return false;
+    return v8::Nothing<ScriptValue>();
   }
 
   // step 13. Set completion to the result of converting callResult.[[Value]] to
@@ -89,8 +104,7 @@ bool V8AnyCallbackFunctionOptionalAnyArg::call(ScriptWrappable* callback_this_va
                                   "AnyCallbackFunctionOptionalAnyArg",
                                   "invoke");
     ScriptValue native_result = ScriptValue(ScriptState::Current(GetIsolate()), call_result);
-    return_value = native_result;
-    return true;
+    return v8::Just<ScriptValue>(native_result);
   }
 }
 

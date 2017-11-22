@@ -30,7 +30,11 @@ class CORE_EXPORT V8VoidCallbackFunctionInterfaceArg final : public CallbackFunc
 
   // Performs "invoke".
   // https://heycam.github.io/webidl/#es-invoking-callback-functions
-  bool call(ScriptWrappable* callback_this_value, HTMLDivElement* divElement);
+  v8::Maybe<void> Invoke(ScriptWrappable* callback_this_value, HTMLDivElement* divElement) WARN_UNUSED_RESULT;
+
+  // Performs "invoke", and then reports an exception, if any, to the global
+  // error handler such as DevTools' console.
+  void InvokeAndReportException(ScriptWrappable* callback_this_value, HTMLDivElement* divElement);
 
  private:
   explicit V8VoidCallbackFunctionInterfaceArg(v8::Local<v8::Function> callback_function)

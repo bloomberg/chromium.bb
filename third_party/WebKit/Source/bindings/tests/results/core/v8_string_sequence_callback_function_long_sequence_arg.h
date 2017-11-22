@@ -29,7 +29,7 @@ class CORE_EXPORT V8StringSequenceCallbackFunctionLongSequenceArg final : public
 
   // Performs "invoke".
   // https://heycam.github.io/webidl/#es-invoking-callback-functions
-  bool call(ScriptWrappable* callback_this_value, const Vector<int32_t>& arg, Vector<String>& return_value);
+  v8::Maybe<Vector<String>> Invoke(ScriptWrappable* callback_this_value, const Vector<int32_t>& arg) WARN_UNUSED_RESULT;
 
  private:
   explicit V8StringSequenceCallbackFunctionLongSequenceArg(v8::Local<v8::Function> callback_function)

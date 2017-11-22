@@ -20,13 +20,25 @@
 
 namespace blink {
 
-bool V8VoidCallbackFunction::call(ScriptWrappable* callback_this_value) {
+v8::Maybe<void> V8VoidCallbackFunction::Invoke(ScriptWrappable* callback_this_value) {
   // This function implements "invoke" steps in
   // "3.10. Invoking callback functions".
   // https://heycam.github.io/webidl/#es-invoking-callback-functions
 
   if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState())) {
-    return false;
+    // Wrapper-tracing for the callback function makes the function object and
+    // its creation context alive. Thus it's safe to use the creation context
+    // of the callback function here.
+    v8::HandleScope handle_scope(GetIsolate());
+    v8::Context::Scope context_scope(
+        CallbackRelevantScriptState()->GetContext());
+    V8ThrowException::ThrowError(
+        GetIsolate(),
+        ExceptionMessages::FailedToExecute(
+            "invoke",
+            "VoidCallbackFunction",
+            "The provided callback is no longer runnable."));
+    return v8::Nothing<void>();
   }
 
   // step 4. If ! IsCallable(F) is false:
@@ -45,13 +57,16 @@ bool V8VoidCallbackFunction::call(ScriptWrappable* callback_this_value) {
       CallbackRelevantScriptState());
   // step 9. Prepare to run a callback with stored settings.
   if (IncumbentScriptState()->GetContext().IsEmpty()) {
-    return false;
+    V8ThrowException::ThrowError(
+        GetIsolate(),
+        ExceptionMessages::FailedToExecute(
+            "invoke",
+            "VoidCallbackFunction",
+            "The provided callback is no longer runnable."));
+    return v8::Nothing<void>();
   }
   v8::Context::BackupIncumbentScope backup_incumbent_scope(
       IncumbentScriptState()->GetContext());
-
-  v8::TryCatch try_catch(GetIsolate());
-  try_catch.SetVerbose(true);
 
   v8::Local<v8::Value> this_arg = ToV8(callback_this_value,
                                        CallbackRelevantScriptState());
@@ -76,12 +91,22 @@ bool V8VoidCallbackFunction::call(ScriptWrappable* callback_this_value) {
           GetIsolate()).ToLocal(&call_result)) {
     // step 12. If callResult is an abrupt completion, set completion to
     //   callResult and jump to the step labeled return.
-    return false;
+    return v8::Nothing<void>();
   }
 
   // step 13. Set completion to the result of converting callResult.[[Value]] to
   //   an IDL value of the same type as the operation's return type.
-  return true;
+  return v8::JustVoid();
+}
+
+void V8VoidCallbackFunction::InvokeAndReportException(ScriptWrappable* callback_this_value) {
+  v8::TryCatch try_catch(GetIsolate());
+  try_catch.SetVerbose(true);
+
+  v8::Maybe<void> maybe_result =
+      Invoke(callback_this_value);
+  // An exception if any is killed with the v8::TryCatch above.
+  ALLOW_UNUSED_LOCAL(maybe_result);
 }
 
 }  // namespace blink

@@ -44,19 +44,19 @@ def callback_function_context(callback_function):
         'forward_declarations': sorted(forward_declarations(callback_function)),
         'header_includes': sorted(CALLBACK_FUNCTION_H_INCLUDES),
         'idl_type': idl_type_str,
+        'return_cpp_type': idl_type.cpp_type,
         'this_include_header_name': to_snake_case('V8%s' % callback_function.name),
     }
 
     if idl_type_str != 'void':
         context.update({
-            'return_cpp_type': idl_type.cpp_type + '&',
             'return_value_conversion': idl_type.v8_value_to_local_cpp_value(
                 callback_function.extended_attributes,
                 'call_result', 'native_result', isolate='GetIsolate()',
-                bailout_return_value='false'),
+                bailout_return_value='v8::Nothing<%s>()' % context['return_cpp_type']),
         })
 
-    context.update(arguments_context(callback_function.arguments, context.get('return_cpp_type')))
+    context.update(arguments_context(callback_function.arguments))
     return context
 
 
@@ -76,7 +76,7 @@ def forward_declarations(callback_function):
     return declarations
 
 
-def arguments_context(arguments, return_cpp_type):
+def arguments_context(arguments):
     def argument_context(argument):
         idl_type = argument.idl_type
         return {
@@ -95,8 +95,6 @@ def arguments_context(arguments, return_cpp_type):
     argument_declarations.extend(
         '%s %s' % (argument.idl_type.callback_cpp_type, argument.name)
         for argument in arguments)
-    if return_cpp_type:
-        argument_declarations.append('%s return_value' % return_cpp_type)
     return {
         'argument_declarations': argument_declarations,
         'arguments': [argument_context(argument) for argument in arguments],

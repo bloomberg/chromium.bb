@@ -66,12 +66,12 @@ void GeoNotifier::SetUseCachedPosition() {
 }
 
 void GeoNotifier::RunSuccessCallback(Geoposition* position) {
-  success_callback_->call(nullptr, position);
+  success_callback_->InvokeAndReportException(nullptr, position);
 }
 
 void GeoNotifier::RunErrorCallback(PositionError* error) {
   if (error_callback_)
-    error_callback_->call(nullptr, error);
+    error_callback_->InvokeAndReportException(nullptr, error);
 }
 
 void GeoNotifier::StartTimer() {
@@ -102,10 +102,11 @@ void GeoNotifier::TimerFired(TimerBase*) {
     return;
   }
 
-  if (error_callback_)
-    error_callback_->call(
+  if (error_callback_) {
+    error_callback_->InvokeAndReportException(
         nullptr,
         PositionError::Create(PositionError::kTimeout, "Timeout expired"));
+  }
 
   DEFINE_STATIC_LOCAL(CustomCountHistogram, timeout_expired_histogram,
                       ("Geolocation.TimeoutExpired", 0,

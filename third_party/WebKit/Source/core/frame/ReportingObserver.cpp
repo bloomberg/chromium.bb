@@ -23,7 +23,7 @@ ReportingObserver::ReportingObserver(ExecutionContext* execution_context,
 
 void ReportingObserver::ReportToCallback(
     const HeapVector<Member<Report>>& reports) {
-  callback_->call(this, reports, this);
+  callback_->InvokeAndReportException(this, reports, this);
 }
 
 void ReportingObserver::observe() {

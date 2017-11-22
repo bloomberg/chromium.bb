@@ -50,7 +50,7 @@ void VRFrameRequestCallbackCollection::ExecuteCallbacks(
 
     probe::AsyncTask async_task(context_, callback);
     probe::UserCallback probe(context_, "VRRequestFrame", AtomicString(), true);
-    callback->call(session, frame);
+    callback->InvokeAndReportException(session, frame);
   }
 
   callbacks_to_invoke_.clear();

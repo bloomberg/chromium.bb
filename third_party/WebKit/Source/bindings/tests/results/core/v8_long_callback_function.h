@@ -29,7 +29,7 @@ class CORE_EXPORT V8LongCallbackFunction final : public CallbackFunctionBase {
 
   // Performs "invoke".
   // https://heycam.github.io/webidl/#es-invoking-callback-functions
-  bool call(ScriptWrappable* callback_this_value, int32_t num1, int32_t num2, int32_t& return_value);
+  v8::Maybe<int32_t> Invoke(ScriptWrappable* callback_this_value, int32_t num1, int32_t num2) WARN_UNUSED_RESULT;
 
  private:
   explicit V8LongCallbackFunction(v8::Local<v8::Function> callback_function)

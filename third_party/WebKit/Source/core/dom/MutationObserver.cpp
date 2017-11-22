@@ -65,7 +65,7 @@ class MutationObserver::V8DelegateImpl final
                MutationObserver& observer) override {
     // https://dom.spec.whatwg.org/#notify-mutation-observers
     // step 5-4. specifies that the callback this value is a MutationObserver.
-    callback_->call(&observer, records, &observer);
+    callback_->InvokeAndReportException(&observer, records, &observer);
   }
 
   virtual void Trace(blink::Visitor* visitor) {

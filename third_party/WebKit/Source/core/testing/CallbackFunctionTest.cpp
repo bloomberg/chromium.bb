@@ -18,14 +18,16 @@ String CallbackFunctionTest::testCallback(V8TestCallback* callback,
                                           const String& message1,
                                           const String& message2,
                                           ExceptionState& exception_state) {
-  ScriptWrappable* script_wrappable;
   String return_value;
 
-  if (callback->call(script_wrappable = nullptr, message1, message2,
-                     return_value)) {
-    return String("SUCCESS: ") + return_value;
+  v8::TryCatch try_catch(callback->GetIsolate());
+  try_catch.SetVerbose(true);
+
+  if (!callback->Invoke(nullptr, message1, message2).To(&return_value)) {
+    return String("Error!");
   }
-  return String("Error!");
+
+  return String("SUCCESS: ") + return_value;
 }
 
 String CallbackFunctionTest::testNullableCallback(
@@ -42,17 +44,13 @@ void CallbackFunctionTest::testInterfaceCallback(
     V8TestInterfaceCallback* callback,
     HTMLDivElement* div_element,
     ExceptionState& exception_state) {
-  ScriptWrappable* script_wrappable;
-
-  callback->call(script_wrappable = nullptr, div_element);
-  return;
+  callback->InvokeAndReportException(nullptr, div_element);
 }
 
 void CallbackFunctionTest::testReceiverObjectCallback(
     V8TestReceiverObjectCallback* callback,
     ExceptionState& exception_state) {
-  callback->call(this);
-  return;
+  callback->InvokeAndReportException(this);
 }
 
 Vector<String> CallbackFunctionTest::testSequenceCallback(
@@ -60,16 +58,21 @@ Vector<String> CallbackFunctionTest::testSequenceCallback(
     const Vector<int>& numbers,
     ExceptionState& exception_state) {
   Vector<String> return_value;
-  if (callback->call(nullptr, numbers, return_value)) {
-    return return_value;
+
+  v8::TryCatch try_catch(callback->GetIsolate());
+  try_catch.SetVerbose(true);
+
+  if (!callback->Invoke(nullptr, numbers).To(&return_value)) {
+    return Vector<String>();
   }
-  return Vector<String>();
+
+  return return_value;
 }
 
 void CallbackFunctionTest::testEnumCallback(V8TestEnumCallback* callback,
                                             const String& enum_value,
                                             ExceptionState& exception_state) {
-  callback->call(nullptr, enum_value);
+  callback->InvokeAndReportException(nullptr, enum_value);
 }
 
 }  // namespace blink
