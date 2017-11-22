@@ -19,7 +19,6 @@ class SkBitmap;
 namespace viz {
 class CopyOutputRequest;
 class CopyOutputResult;
-class TextureMailbox;
 }
 
 namespace cc {
@@ -80,9 +79,9 @@ class LayerTreePixelTest : public LayerTreeTest {
                                       Layer* target,
                                       base::FilePath file_name);
 
-  SkBitmap CopyTextureMailboxToBitmap(
-      const gfx::Size& size,
-      const viz::TextureMailbox& texture_mailbox);
+  SkBitmap CopyMailboxToBitmap(const gfx::Size& size,
+                               const gpu::Mailbox& mailbox,
+                               const gpu::SyncToken& sync_token);
 
   void Finish();
 

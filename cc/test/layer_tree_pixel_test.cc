@@ -228,24 +228,20 @@ void LayerTreePixelTest::SetupTree() {
   LayerTreeTest::SetupTree();
 }
 
-SkBitmap LayerTreePixelTest::CopyTextureMailboxToBitmap(
+SkBitmap LayerTreePixelTest::CopyMailboxToBitmap(
     const gfx::Size& size,
-    const viz::TextureMailbox& texture_mailbox) {
-  DCHECK(texture_mailbox.IsTexture());
-
+    const gpu::Mailbox& mailbox,
+    const gpu::SyncToken& sync_token) {
   SkBitmap bitmap;
-  if (!texture_mailbox.IsTexture())
-    return bitmap;
-
   std::unique_ptr<gpu::GLInProcessContext> context =
       CreateTestInProcessContext();
   GLES2Interface* gl = context->GetImplementation();
 
-  if (texture_mailbox.sync_token().HasData())
-    gl->WaitSyncTokenCHROMIUM(texture_mailbox.sync_token().GetConstData());
+  if (sync_token.HasData())
+    gl->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
 
-  GLuint texture_id = gl->CreateAndConsumeTextureCHROMIUM(
-      texture_mailbox.target(), texture_mailbox.name());
+  GLuint texture_id =
+      gl->CreateAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
 
   GLuint fbo = 0;
   gl->GenFramebuffers(1, &fbo);

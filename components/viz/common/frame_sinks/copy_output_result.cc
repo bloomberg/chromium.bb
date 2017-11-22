@@ -25,8 +25,8 @@ bool CopyOutputResult::IsEmpty() const {
     case Format::I420_PLANES:
       return false;
     case Format::RGBA_TEXTURE:
-      if (auto* mailbox = GetTextureMailbox())
-        return !mailbox->IsTexture();
+      if (const TextureResult* result = GetTextureResult())
+        return result->mailbox.IsZero();
       else
         return true;
   }
@@ -38,7 +38,8 @@ const SkBitmap& CopyOutputResult::AsSkBitmap() const {
   return cached_bitmap_;
 }
 
-const TextureMailbox* CopyOutputResult::GetTextureMailbox() const {
+const CopyOutputResult::TextureResult* CopyOutputResult::GetTextureResult()
+    const {
   return nullptr;
 }
 
@@ -123,13 +124,15 @@ CopyOutputSkBitmapResult::~CopyOutputSkBitmapResult() = default;
 
 CopyOutputTextureResult::CopyOutputTextureResult(
     const gfx::Rect& rect,
-    const TextureMailbox& texture_mailbox,
+    const gpu::Mailbox& mailbox,
+    const gpu::SyncToken& sync_token,
+    const gfx::ColorSpace& color_space,
     std::unique_ptr<SingleReleaseCallback> release_callback)
     : CopyOutputResult(Format::RGBA_TEXTURE, rect),
-      texture_mailbox_(texture_mailbox),
+      texture_result_(mailbox, sync_token, color_space),
       release_callback_(std::move(release_callback)) {
-  DCHECK(rect.IsEmpty() || texture_mailbox_.IsTexture());
-  DCHECK(release_callback_ || !texture_mailbox_.IsTexture());
+  DCHECK_EQ(rect.IsEmpty(), mailbox.IsZero());
+  DCHECK_EQ(!release_callback_, mailbox.IsZero());
 }
 
 CopyOutputTextureResult::~CopyOutputTextureResult() {
@@ -137,13 +140,16 @@ CopyOutputTextureResult::~CopyOutputTextureResult() {
     release_callback_->Run(gpu::SyncToken(), false);
 }
 
-const TextureMailbox* CopyOutputTextureResult::GetTextureMailbox() const {
-  return &texture_mailbox_;
+const CopyOutputResult::TextureResult*
+CopyOutputTextureResult::GetTextureResult() const {
+  return &texture_result_;
 }
 
 std::unique_ptr<SingleReleaseCallback>
 CopyOutputTextureResult::TakeTextureOwnership() {
-  texture_mailbox_ = TextureMailbox();
+  texture_result_.mailbox = gpu::Mailbox();
+  texture_result_.sync_token = gpu::SyncToken();
+  texture_result_.color_space = gfx::ColorSpace();
   return std::move(release_callback_);
 }
 

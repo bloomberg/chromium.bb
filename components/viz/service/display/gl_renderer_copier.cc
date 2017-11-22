@@ -445,8 +445,6 @@ void GLRendererCopier::SendTextureResult(
   gl->ShallowFlushCHROMIUM();
   gpu::SyncToken sync_token;
   gl->GenSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
-  TextureMailbox texture_mailbox(mailbox, sync_token, GL_TEXTURE_2D);
-  texture_mailbox.set_color_space(color_space);
 
   // Create a |release_callback| appropriate to the situation: If the
   // |result_texture| was provided in the TextureMailbof of the copy request,
@@ -470,7 +468,8 @@ void GLRendererCopier::SendTextureResult(
   }
 
   request->SendResult(std::make_unique<CopyOutputTextureResult>(
-      result_rect, texture_mailbox, std::move(release_callback)));
+      result_rect, mailbox, sync_token, color_space,
+      std::move(release_callback)));
 }
 
 namespace {
