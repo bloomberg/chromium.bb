@@ -14,6 +14,8 @@
 #include <utility>
 #include <vector>
 
+#include "base/android/library_loader/anchor_functions.h"
+#include "base/bits.h"
 #include "base/files/file.h"
 #include "base/format_macros.h"
 #include "base/macros.h"
@@ -82,6 +84,19 @@ bool Prefetch(const std::vector<std::pair<uintptr_t, uintptr_t>>& ranges) {
   return true;
 }
 
+// Returns the start and end of .text, aligned to the lower and upper page
+// boundaries, respectively.
+NativeLibraryPrefetcher::AddressRange GetTextRange() {
+  // |kStartOftext| may not be at the beginning of a page, since .plt can be
+  // before it, yet in the same mapping for instance.
+  size_t start_page = kStartOfText - kStartOfText % kPageSize;
+  // Set the end to the page on which the beginning of the last symbol is. The
+  // actual symbol may spill into the next page by a few bytes, but this is
+  // outside of the executable code range anyway.
+  size_t end_page = base::bits::Align(kEndOfText, kPageSize);
+  return {start_page, end_page};
+}
+
 // Populate the per-page residency for |range| in |residency|. If successful,
 // |residency| has the size of |range| in pages.
 // Returns true for success.
@@ -95,11 +110,8 @@ bool MincoreOnRange(const NativeLibraryPrefetcher::AddressRange& range,
     residency->resize(size_in_pages);
   int err = HANDLE_EINTR(
       mincore(reinterpret_cast<void*>(range.first), size, &(*residency)[0]));
-  if (err) {
-    PLOG(ERROR) << "mincore() failed";
-    return false;
-  }
-  return true;
+  PLOG_IF(ERROR, err) << "mincore() failed";
+  return !err;
 }
 
 // Timestamp in ns since Unix Epoch, and residency, as returned by mincore().
@@ -278,27 +290,26 @@ int NativeLibraryPrefetcher::PercentageOfResidentNativeLibraryCode() {
 // static
 void NativeLibraryPrefetcher::PeriodicallyCollectResidency() {
   CHECK_EQ(static_cast<long>(kPageSize), sysconf(_SC_PAGESIZE));
-  std::vector<AddressRange> ranges;
-  if (!FindRanges(&ranges))
-    return;
 
-  // To keep only the range containing .text, find out which one contains
-  // ourself.
-  const size_t here = reinterpret_cast<size_t>(
-      &NativeLibraryPrefetcher::PeriodicallyCollectResidency);
-  auto it =
-      std::find_if(ranges.begin(), ranges.end(), [here](const AddressRange& r) {
-        return r.first <= here && here <= r.second;
-      });
-  CHECK(ranges.end() != it);
-
+  const auto& range = GetTextRange();
   auto data = std::make_unique<std::vector<TimestampAndResidency>>();
   for (int i = 0; i < 60; ++i) {
-    if (!CollectResidency(*it, data.get()))
+    if (!CollectResidency(range, data.get()))
       return;
     usleep(2e5);
   }
   DumpResidency(std::move(data));
+}
+
+// static
+void NativeLibraryPrefetcher::MadviseRandomText() {
+  CheckOrderingSanity();
+  const auto& range = GetTextRange();
+  size_t size = range.second - range.first;
+  int err = madvise(reinterpret_cast<void*>(range.first), size, MADV_RANDOM);
+  if (err) {
+    PLOG(ERROR) << "madvise() failed";
+  }
 }
 
 }  // namespace android

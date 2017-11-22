@@ -283,7 +283,7 @@ public class LibraryLoader {
         if (coldStart && CommandLine.getInstance().hasSwitch("log-native-library-residency")) {
             // nativePeriodicallyCollectResidency() sleeps, run it on another thread,
             // and not on the AsyncTask thread pool.
-            new Thread(() -> nativePeriodicallyCollectResidency()).run();
+            new Thread(LibraryLoader::nativePeriodicallyCollectResidency).start();
             return;
         }
 
