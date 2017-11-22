@@ -67,6 +67,7 @@ import org.chromium.content.browser.ContentViewStatics;
 import org.chromium.content.browser.SmartClipProvider;
 import org.chromium.content_public.browser.ChildProcessImportance;
 import org.chromium.content_public.browser.GestureStateListener;
+import org.chromium.content_public.browser.ImeEventObserver;
 import org.chromium.content_public.browser.JavaScriptCallback;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.MessagePort;
@@ -869,6 +870,23 @@ public class AwContents implements SmartClipProvider {
         }
         contentViewCore.setSelectionClient(SelectionClient.createSmartSelectionClient(webContents));
         contentViewCore.addGestureStateListener(gestureStateListener);
+
+        // Listen for dpad events from IMEs (e.g. Samsung Cursor Control) so we know to enable
+        // spatial navigation mode to allow these events to move focus out of the WebView.
+        contentViewCore.addImeEventObserver(new ImeEventObserver() {
+            @Override
+            public void onImeEvent() {}
+
+            @Override
+            public void onNodeAttributeUpdated(boolean editable, boolean password) {}
+
+            @Override
+            public void onBeforeSendKeyEvent(KeyEvent event) {
+                if (AwContents.isDpadEvent(event)) {
+                    mSettings.setSpatialNavigationEnabled(true);
+                }
+            }
+        });
     }
 
     boolean isFullScreen() {
@@ -1116,6 +1134,7 @@ public class AwContents implements SmartClipProvider {
         WebContents webContents = nativeGetWebContents(mNativeAwContents);
 
         mWindowAndroid = getWindowAndroid(mContext);
+
         mContentViewCore = new ContentViewCore(mContext, PRODUCT_VERSION);
         mViewAndroidDelegate =
                 new AwViewAndroidDelegate(mContainerView, mContentsClient, mScrollOffsetManager);
@@ -3141,6 +3160,20 @@ public class AwContents implements SmartClipProvider {
         nativeInsertVisualStateCallback(mNativeAwContents, requestId, callback);
     }
 
+    public static boolean isDpadEvent(KeyEvent event) {
+        if (event.getAction() == KeyEvent.ACTION_DOWN) {
+            switch (event.getKeyCode()) {
+                case KeyEvent.KEYCODE_DPAD_CENTER:
+                case KeyEvent.KEYCODE_DPAD_DOWN:
+                case KeyEvent.KEYCODE_DPAD_UP:
+                case KeyEvent.KEYCODE_DPAD_LEFT:
+                case KeyEvent.KEYCODE_DPAD_RIGHT:
+                    return true;
+            }
+        }
+        return false;
+    }
+
     // --------------------------------------------------------------------------------------------
     // This is the AwViewMethods implementation that does real work. The AwViewMethodsImpl is
     // hooked up to the WebView in embedded mode and to the FullScreenView in fullscreen mode,
@@ -3275,20 +3308,6 @@ public class AwContents implements SmartClipProvider {
                 return mInternalAccessAdapter.super_dispatchKeyEvent(event);
             }
             return mContentViewCore.dispatchKeyEvent(event);
-        }
-
-        private boolean isDpadEvent(KeyEvent event) {
-            if (event.getAction() == KeyEvent.ACTION_DOWN) {
-                switch (event.getKeyCode()) {
-                    case KeyEvent.KEYCODE_DPAD_CENTER:
-                    case KeyEvent.KEYCODE_DPAD_DOWN:
-                    case KeyEvent.KEYCODE_DPAD_UP:
-                    case KeyEvent.KEYCODE_DPAD_LEFT:
-                    case KeyEvent.KEYCODE_DPAD_RIGHT:
-                        return true;
-                }
-            }
-            return false;
         }
 
         @Override

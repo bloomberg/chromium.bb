@@ -20,6 +20,7 @@ import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.ContextThemeWrapper;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnAttachStateChangeListener;
 import android.view.ViewGroup;
@@ -1859,6 +1860,9 @@ public class Tab
                     if (getFullscreenManager() == null) return;
                     updateFullscreenEnabledState();
                 }
+
+                @Override
+                public void onBeforeSendKeyEvent(KeyEvent event) {}
             });
 
             setInterceptNavigationDelegate(mDelegateFactory.createInterceptNavigationDelegate(
