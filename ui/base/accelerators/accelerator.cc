@@ -27,8 +27,8 @@ namespace ui {
 
 namespace {
 
-const int kModifierMask =
-    EF_SHIFT_DOWN | EF_CONTROL_DOWN | EF_ALT_DOWN | EF_COMMAND_DOWN;
+const int kModifierMask = EF_SHIFT_DOWN | EF_CONTROL_DOWN | EF_ALT_DOWN |
+                          EF_COMMAND_DOWN | EF_ALTGR_DOWN;
 
 const int kInterestingFlagsMask =
     kModifierMask | EF_IS_SYNTHESIZED | EF_IS_REPEAT;
