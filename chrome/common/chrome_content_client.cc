@@ -656,7 +656,7 @@ void ChromeContentClient::AddAdditionalSchemes(Schemes* schemes) {
   // with them by third parties.
   schemes->secure_schemes.push_back(extensions::kExtensionScheme);
 
-  schemes->secure_origins = GetSecureOriginWhitelist();
+  schemes->secure_origins = secure_origin_whitelist::GetWhitelist();
 
   // chrome-native: is a scheme used for placeholder navigations that allow
   // UIs to be drawn with platform native widgets instead of HTML.  These pages

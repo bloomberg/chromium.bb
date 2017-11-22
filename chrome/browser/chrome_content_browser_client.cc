@@ -2778,7 +2778,7 @@ void ChromeContentBrowserClient::GetAdditionalAllowedSchemesForFileSystem(
 
 void ChromeContentBrowserClient::GetSchemesBypassingSecureContextCheckWhitelist(
     std::set<std::string>* schemes) {
-  *schemes = ::GetSchemesBypassingSecureContextCheckWhitelist();
+  *schemes = secure_origin_whitelist::GetSchemesBypassingSecureContextCheck();
 }
 
 void ChromeContentBrowserClient::GetURLRequestAutoMountHandlers(
