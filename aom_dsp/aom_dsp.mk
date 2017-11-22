@@ -344,6 +344,7 @@ endif # CONFIG_AV1_ENCODER
 
 ifeq ($(CONFIG_AV1_ENCODER),yes)
 DSP_SRCS-yes            += sad.c
+DSP_SRCS-yes            += sad_av1.c
 DSP_SRCS-yes            += subtract.c
 
 DSP_SRCS-$(HAVE_NEON)   += arm/sad4d_neon.c

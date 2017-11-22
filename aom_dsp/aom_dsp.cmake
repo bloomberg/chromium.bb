@@ -328,6 +328,7 @@ if (CONFIG_AV1_ENCODER)
       "${AOM_ROOT}/aom_dsp/psnr.c"
       "${AOM_ROOT}/aom_dsp/psnr.h"
       "${AOM_ROOT}/aom_dsp/sad.c"
+      "${AOM_ROOT}/aom_dsp/sad_av1.c"
       "${AOM_ROOT}/aom_dsp/variance.c"
       "${AOM_ROOT}/aom_dsp/variance.h")
 
