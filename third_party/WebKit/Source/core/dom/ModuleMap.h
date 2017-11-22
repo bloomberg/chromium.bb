@@ -5,6 +5,7 @@
 #ifndef ModuleMap_h
 #define ModuleMap_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/bindings/TraceWrapperMember.h"
@@ -25,7 +26,6 @@ enum class ModuleGraphLevel;
 // https://html.spec.whatwg.org/#module-map
 class CORE_EXPORT ModuleMap final : public GarbageCollected<ModuleMap>,
                                     public TraceWrapperBase {
-  WTF_MAKE_NONCOPYABLE(ModuleMap);
   class Entry;
 
  public:
@@ -56,6 +56,7 @@ class CORE_EXPORT ModuleMap final : public GarbageCollected<ModuleMap>,
   MapImpl map_;
 
   Member<Modulator> modulator_;
+  DISALLOW_COPY_AND_ASSIGN(ModuleMap);
 };
 
 }  // namespace blink

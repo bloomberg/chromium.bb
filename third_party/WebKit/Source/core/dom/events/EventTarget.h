@@ -33,6 +33,8 @@
 #define EventTarget_h
 
 #include <memory>
+
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/dom/events/AddEventListenerOptionsResolved.h"
 #include "core/dom/events/EventDispatchResult.h"
@@ -73,8 +75,6 @@ using FiringEventIteratorVector = Vector<FiringEventIterator, 1>;
 
 class CORE_EXPORT EventTargetData final
     : public GarbageCollectedFinalized<EventTargetData> {
-  WTF_MAKE_NONCOPYABLE(EventTargetData);
-
  public:
   EventTargetData();
   ~EventTargetData();
@@ -84,6 +84,7 @@ class CORE_EXPORT EventTargetData final
 
   EventListenerMap event_listener_map;
   std::unique_ptr<FiringEventIteratorVector> firing_event_iterators;
+  DISALLOW_COPY_AND_ASSIGN(EventTargetData);
 };
 
 DEFINE_TRAIT_FOR_TRACE_WRAPPERS(EventTargetData);

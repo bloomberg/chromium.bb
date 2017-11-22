@@ -5,10 +5,10 @@
 #ifndef UserGestureIndicator_h
 #define UserGestureIndicator_h
 
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "core/dom/Document.h"
-#include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/RefCounted.h"
 
 namespace blink {
@@ -19,7 +19,6 @@ namespace blink {
 // Passing it to a UserGestureIndicator later on will cause it to be considered
 // as currently being processed.
 class CORE_EXPORT UserGestureToken : public RefCounted<UserGestureToken> {
-  WTF_MAKE_NONCOPYABLE(UserGestureToken);
   friend class UserGestureIndicator;
 
  public:
@@ -44,11 +43,11 @@ class CORE_EXPORT UserGestureToken : public RefCounted<UserGestureToken> {
   size_t consumable_gestures_;
   double timestamp_;
   TimeoutPolicy timeout_policy_;
+  DISALLOW_COPY_AND_ASSIGN(UserGestureToken);
 };
 
 class CORE_EXPORT UserGestureIndicator final {
   USING_FAST_MALLOC(UserGestureIndicator);
-  WTF_MAKE_NONCOPYABLE(UserGestureIndicator);
 
  public:
   // Note: All *ThreadSafe methods are safe to call from any thread. Their
@@ -85,6 +84,7 @@ class CORE_EXPORT UserGestureIndicator final {
   static UserGestureToken* root_token_;
 
   scoped_refptr<UserGestureToken> token_;
+  DISALLOW_COPY_AND_ASSIGN(UserGestureIndicator);
 };
 
 }  // namespace blink

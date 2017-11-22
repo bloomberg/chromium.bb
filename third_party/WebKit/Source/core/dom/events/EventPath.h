@@ -27,6 +27,7 @@
 #ifndef EventPath_h
 #define EventPath_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/dom/events/NodeEventContext.h"
 #include "core/dom/events/TreeScopeEventContext.h"
@@ -46,8 +47,6 @@ class TreeScope;
 
 class CORE_EXPORT EventPath final
     : public GarbageCollectedFinalized<EventPath> {
-  WTF_MAKE_NONCOPYABLE(EventPath);
-
  public:
   explicit EventPath(Node&, Event* = nullptr);
 
@@ -135,6 +134,7 @@ class CORE_EXPORT EventPath final
   Member<Event> event_;
   HeapVector<Member<TreeScopeEventContext>, 8> tree_scope_event_contexts_;
   Member<WindowEventContext> window_event_context_;
+  DISALLOW_COPY_AND_ASSIGN(EventPath);
 };
 
 }  // namespace blink

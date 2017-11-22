@@ -5,6 +5,7 @@
 #ifndef NthIndexCache_h
 #define NthIndexCache_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/dom/Element.h"
 #include "platform/heap/Handle.h"
@@ -15,8 +16,6 @@ namespace blink {
 class Document;
 
 class CORE_EXPORT NthIndexData final : public GarbageCollected<NthIndexData> {
-  WTF_MAKE_NONCOPYABLE(NthIndexData);
-
  public:
   NthIndexData(ContainerNode&);
   NthIndexData(ContainerNode&, const QualifiedName& type);
@@ -31,11 +30,11 @@ class CORE_EXPORT NthIndexData final : public GarbageCollected<NthIndexData> {
  private:
   HeapHashMap<Member<Element>, unsigned> element_index_map_;
   unsigned count_ = 0;
+  DISALLOW_COPY_AND_ASSIGN(NthIndexData);
 };
 
 class CORE_EXPORT NthIndexCache final {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(NthIndexCache);
 
  public:
   explicit NthIndexCache(Document&);
@@ -63,6 +62,7 @@ class CORE_EXPORT NthIndexCache final {
 #if DCHECK_IS_ON()
   uint64_t dom_tree_version_;
 #endif
+  DISALLOW_COPY_AND_ASSIGN(NthIndexCache);
 };
 
 }  // namespace blink

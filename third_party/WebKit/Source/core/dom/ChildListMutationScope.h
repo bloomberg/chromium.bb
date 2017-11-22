@@ -31,11 +31,11 @@
 #ifndef ChildListMutationScope_h
 #define ChildListMutationScope_h
 
+#include "base/macros.h"
 #include "core/dom/Document.h"
 #include "core/dom/MutationObserver.h"
 #include "core/dom/Node.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 
@@ -88,7 +88,6 @@ class ChildListMutationAccumulator final
 };
 
 class ChildListMutationScope final {
-  WTF_MAKE_NONCOPYABLE(ChildListMutationScope);
   STACK_ALLOCATED();
 
  public:
@@ -121,6 +120,7 @@ class ChildListMutationScope final {
 
  private:
   Member<ChildListMutationAccumulator> accumulator_;
+  DISALLOW_COPY_AND_ASSIGN(ChildListMutationScope);
 };
 
 }  // namespace blink

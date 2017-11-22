@@ -5,6 +5,7 @@
 #ifndef DeprecatedScheduleStyleRecalcDuringLayout_h
 #define DeprecatedScheduleStyleRecalcDuringLayout_h
 
+#include "base/macros.h"
 #include "core/dom/DocumentLifecycle.h"
 #include "platform/wtf/Allocator.h"
 
@@ -12,7 +13,6 @@ namespace blink {
 
 class DeprecatedScheduleStyleRecalcDuringLayout {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(DeprecatedScheduleStyleRecalcDuringLayout);
 
  public:
   explicit DeprecatedScheduleStyleRecalcDuringLayout(DocumentLifecycle&);
@@ -22,6 +22,7 @@ class DeprecatedScheduleStyleRecalcDuringLayout {
   DocumentLifecycle& lifecycle_;
   DocumentLifecycle::DeprecatedTransition deprecated_transition_;
   bool was_in_perform_layout_;
+  DISALLOW_COPY_AND_ASSIGN(DeprecatedScheduleStyleRecalcDuringLayout);
 };
 
 }  // namespace blink

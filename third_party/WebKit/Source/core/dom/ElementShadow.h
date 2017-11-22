@@ -27,12 +27,12 @@
 #ifndef ElementShadow_h
 #define ElementShadow_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/dom/ShadowRoot.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/bindings/TraceWrapperMember.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 
@@ -40,8 +40,6 @@ class ElementShadowV0;
 
 class CORE_EXPORT ElementShadow final : public GarbageCollected<ElementShadow>,
                                         public TraceWrapperBase {
-  WTF_MAKE_NONCOPYABLE(ElementShadow);
-
  public:
   static ElementShadow* Create();
 
@@ -93,6 +91,7 @@ class CORE_EXPORT ElementShadow final : public GarbageCollected<ElementShadow>,
   TraceWrapperMember<ElementShadowV0> element_shadow_v0_;
   TraceWrapperMember<ShadowRoot> shadow_root_;
   bool needs_distribution_recalc_;
+  DISALLOW_COPY_AND_ASSIGN(ElementShadow);
 };
 
 inline ShadowRoot* Node::YoungestShadowRoot() const {

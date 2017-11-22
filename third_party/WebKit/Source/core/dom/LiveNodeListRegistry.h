@@ -7,11 +7,11 @@
 
 #include <algorithm>
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Heap.h"
 #include "platform/heap/HeapAllocator.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {
@@ -31,7 +31,6 @@ enum NodeListInvalidationType : int;
 // remove one which is not.
 class CORE_EXPORT LiveNodeListRegistry {
   DISALLOW_NEW();
-  WTF_MAKE_NONCOPYABLE(LiveNodeListRegistry);
 
   using Entry = std::pair<UntracedMember<const LiveNodeListBase>, unsigned>;
 
@@ -62,6 +61,7 @@ class CORE_EXPORT LiveNodeListRegistry {
 
   Vector<Entry> data_;
   unsigned mask_ = 0;
+  DISALLOW_COPY_AND_ASSIGN(LiveNodeListRegistry);
 };
 
 }  // namespace blink

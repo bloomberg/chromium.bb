@@ -26,11 +26,11 @@
 #ifndef DOMStringMap_h
 #define DOMStringMap_h
 
+#include "base/macros.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/WTFString.h"
 
@@ -38,7 +38,6 @@ namespace blink {
 
 class DOMStringMap : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
-  WTF_MAKE_NONCOPYABLE(DOMStringMap);
 
  public:
   virtual void GetNames(Vector<String>&) = 0;
@@ -65,6 +64,7 @@ class DOMStringMap : public ScriptWrappable {
 
  protected:
   DOMStringMap() {}
+  DISALLOW_COPY_AND_ASSIGN(DOMStringMap);
 };
 
 }  // namespace blink

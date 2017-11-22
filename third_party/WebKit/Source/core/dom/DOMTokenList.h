@@ -25,6 +25,7 @@
 #ifndef DOMTokenList_h
 #define DOMTokenList_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/dom/QualifiedName.h"
 #include "core/dom/SpaceSplitString.h"
@@ -40,7 +41,6 @@ class ExceptionState;
 
 class CORE_EXPORT DOMTokenList : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
-  WTF_MAKE_NONCOPYABLE(DOMTokenList);
 
  public:
   static DOMTokenList* Create(Element& element, const QualifiedName& attr) {
@@ -92,6 +92,7 @@ class CORE_EXPORT DOMTokenList : public ScriptWrappable {
   const Member<Element> element_;
   const QualifiedName attribute_name_;
   bool is_in_update_step_ = false;
+  DISALLOW_COPY_AND_ASSIGN(DOMTokenList);
 };
 
 }  // namespace blink

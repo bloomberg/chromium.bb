@@ -31,6 +31,8 @@
 #include "core/dom/PresentationAttributeStyle.h"
 
 #include <algorithm>
+
+#include "base/macros.h"
 #include "core/css/CSSPropertyValueSet.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/Element.h"
@@ -83,7 +85,6 @@ static PresentationAttributeCache& GetPresentationAttributeCache() {
 // Thus it is appropriate to use the main thread's timer task runner, rather
 // than one associated with a particular frame.
 class PresentationAttributeCacheCleaner {
-  WTF_MAKE_NONCOPYABLE(PresentationAttributeCacheCleaner);
   USING_FAST_MALLOC(PresentationAttributeCacheCleaner);
 
  public:
@@ -123,6 +124,7 @@ class PresentationAttributeCacheCleaner {
 
   unsigned hit_count_;
   TaskRunnerTimer<PresentationAttributeCacheCleaner> clean_timer_;
+  DISALLOW_COPY_AND_ASSIGN(PresentationAttributeCacheCleaner);
 };
 
 static bool AttributeNameSort(const std::pair<StringImpl*, AtomicString>& p1,

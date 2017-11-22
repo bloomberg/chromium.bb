@@ -26,6 +26,7 @@
 
 #include "core/dom/events/DOMWindowEventQueue.h"
 
+#include "base/macros.h"
 #include "core/dom/events/Event.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/SuspendableTimer.h"
@@ -38,7 +39,6 @@ class DOMWindowEventQueueTimer final
     : public GarbageCollectedFinalized<DOMWindowEventQueueTimer>,
       public SuspendableTimer {
   USING_GARBAGE_COLLECTED_MIXIN(DOMWindowEventQueueTimer);
-  WTF_MAKE_NONCOPYABLE(DOMWindowEventQueueTimer);
 
  public:
   DOMWindowEventQueueTimer(DOMWindowEventQueue* event_queue,
@@ -61,6 +61,7 @@ class DOMWindowEventQueueTimer final
   virtual void Fired() { event_queue_->PendingEventTimerFired(); }
 
   Member<DOMWindowEventQueue> event_queue_;
+  DISALLOW_COPY_AND_ASSIGN(DOMWindowEventQueueTimer);
 };
 
 DOMWindowEventQueue* DOMWindowEventQueue::Create(ExecutionContext* context) {
