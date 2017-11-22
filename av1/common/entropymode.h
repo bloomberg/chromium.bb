@@ -304,12 +304,6 @@ typedef struct frame_contexts {
                                [CDF_SIZE(TX_TYPES)];
   aom_cdf_prob inter_ext_tx_cdf[EXT_TX_SETS_INTER][EXT_TX_SIZES]
                                [CDF_SIZE(TX_TYPES)];
-#if CONFIG_EXT_DELTA_Q
-#if CONFIG_LOOPFILTER_LEVEL
-  aom_prob delta_lf_multi_prob[FRAME_LF_COUNT][DELTA_LF_PROBS];
-#endif  // CONFIG_LOOPFILTER_LEVEL
-  aom_prob delta_lf_prob[DELTA_LF_PROBS];
-#endif
 #if CONFIG_CFL
   aom_cdf_prob cfl_sign_cdf[CDF_SIZE(CFL_JOINT_SIGNS)];
   aom_cdf_prob cfl_alpha_cdf[CFL_ALPHA_CONTEXTS][CDF_SIZE(CFL_ALPHABET_SIZE)];

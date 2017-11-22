@@ -914,18 +914,12 @@ static const aom_cdf_prob default_delta_q_cdf[CDF_SIZE(DELTA_Q_PROBS + 1)] = {
 };
 #if CONFIG_EXT_DELTA_Q
 #if CONFIG_LOOPFILTER_LEVEL
-static const aom_prob
-    default_delta_lf_multi_probs[FRAME_LF_COUNT][DELTA_LF_PROBS] = {
-      { 220, 220, 220 }, { 220, 220, 220 }, { 220, 220, 220 }, { 220, 220, 220 }
-    };
 static const aom_cdf_prob default_delta_lf_multi_cdf[FRAME_LF_COUNT][CDF_SIZE(
     DELTA_LF_PROBS + 1)] = { { AOM_CDF4(28160, 32120, 32677) },
                              { AOM_CDF4(28160, 32120, 32677) },
                              { AOM_CDF4(28160, 32120, 32677) },
                              { AOM_CDF4(28160, 32120, 32677) } };
 #endif  // CONFIG_LOOPFILTER_LEVEL
-static const aom_prob default_delta_lf_probs[DELTA_LF_PROBS] = { 220, 220,
-                                                                 220 };
 static const aom_cdf_prob default_delta_lf_cdf[CDF_SIZE(DELTA_LF_PROBS + 1)] = {
   AOM_CDF4(28160, 32120, 32677)
 };
@@ -3084,10 +3078,8 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_copy(fc->tx_size_cdf, default_tx_size_cdf);
   av1_copy(fc->delta_q_cdf, default_delta_q_cdf);
 #if CONFIG_EXT_DELTA_Q
-  av1_copy(fc->delta_lf_prob, default_delta_lf_probs);
   av1_copy(fc->delta_lf_cdf, default_delta_lf_cdf);
 #if CONFIG_LOOPFILTER_LEVEL
-  av1_copy(fc->delta_lf_multi_prob, default_delta_lf_multi_probs);
   av1_copy(fc->delta_lf_multi_cdf, default_delta_lf_multi_cdf);
 #endif  // CONFIG_LOOPFILTER_LEVEL
 #endif
@@ -3207,18 +3199,6 @@ void av1_adapt_intra_frame_probs(AV1_COMMON *cm) {
     aom_tree_merge_probs(av1_segment_tree, pre_fc->seg.tree_probs,
                          counts->seg.tree_total, fc->seg.tree_probs);
   }
-
-#if CONFIG_EXT_DELTA_Q
-#if CONFIG_LOOPFILTER_LEVEL
-  for (i = 0; i < FRAME_LF_COUNT; ++i)
-    for (int k = 0; k < DELTA_LF_PROBS; ++k)
-      fc->delta_lf_multi_prob[i][k] = mode_mv_merge_probs(
-          pre_fc->delta_lf_multi_prob[i][k], counts->delta_lf_multi[i][k]);
-#endif  // CONFIG_LOOPFILTER_LEVEL
-  for (i = 0; i < DELTA_LF_PROBS; ++i)
-    fc->delta_lf_prob[i] =
-        mode_mv_merge_probs(pre_fc->delta_lf_prob[i], counts->delta_lf[i]);
-#endif  // CONFIG_EXT_DELTA_Q
 }
 
 static void set_default_lf_deltas(struct loopfilter *lf) {
