@@ -1128,24 +1128,6 @@ const aom_cdf_prob default_palette_uv_size_cdf[PALETTE_BLOCK_SIZES][CDF_SIZE(
 // When palette mode is enabled, following probability tables indicate the
 // probabilities to code the "is_palette" bit (i.e. the bit that indicates
 // if this block uses palette mode or DC_PRED mode).
-const aom_prob av1_default_palette_y_mode_prob[PALETTE_BLOCK_SIZES]
-                                              [PALETTE_Y_MODE_CONTEXTS] = {
-                                                { 240, 180, 100 },
-                                                { 240, 180, 100 },
-                                                { 240, 180, 100 },
-                                                { 240, 180, 100 },
-                                                { 240, 180, 100 },
-                                                { 240, 180, 100 },
-                                                { 240, 180, 100 },
-                                                { 240, 180, 100 },
-                                                { 240, 180, 100 },
-                                                { 240, 180, 100 },
-                                              };
-
-const aom_prob av1_default_palette_uv_mode_prob[PALETTE_UV_MODE_CONTEXTS] = {
-  253, 229
-};
-
 const aom_cdf_prob default_palette_y_mode_cdf[PALETTE_BLOCK_SIZES]
                                              [PALETTE_Y_MODE_CONTEXTS]
                                              [CDF_SIZE(2)] = {

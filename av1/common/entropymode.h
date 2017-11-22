@@ -449,11 +449,6 @@ extern const aom_cdf_prob default_kf_y_mode_cdf[INTRA_MODES][INTRA_MODES]
                                                [CDF_SIZE(INTRA_MODES)];
 #endif
 
-extern const aom_prob av1_default_palette_y_mode_prob[PALETTE_BLOCK_SIZES]
-                                                     [PALETTE_Y_MODE_CONTEXTS];
-extern const aom_prob
-    av1_default_palette_uv_mode_prob[PALETTE_UV_MODE_CONTEXTS];
-
 static const int av1_ext_tx_ind[EXT_TX_SET_TYPES][TX_TYPES] = {
   {
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -517,17 +512,7 @@ extern const aom_tree_index
 extern const aom_tree_index
     av1_inter_compound_mode_tree[TREE_SIZE(INTER_COMPOUND_MODES)];
 extern const aom_tree_index av1_compound_type_tree[TREE_SIZE(COMPOUND_TYPES)];
-extern const aom_tree_index
-    av1_palette_color_index_tree[PALETTE_SIZES][TREE_SIZE(PALETTE_COLORS)];
-extern const aom_tree_index av1_ext_tx_tree[EXT_TX_SET_TYPES]
-                                           [TREE_SIZE(TX_TYPES)];
 extern const aom_tree_index av1_motion_mode_tree[TREE_SIZE(MOTION_MODES)];
-#if CONFIG_LOOP_RESTORATION
-#define RESTORE_NONE_SGRPROJ_PROB 64
-#define RESTORE_NONE_WIENER_PROB 64
-extern const aom_tree_index
-    av1_switchable_restore_tree[TREE_SIZE(RESTORE_SWITCHABLE_TYPES)];
-#endif  // CONFIG_LOOP_RESTORATION
 
 void av1_setup_frame_contexts(struct AV1Common *cm);
 void av1_setup_past_independence(struct AV1Common *cm);
