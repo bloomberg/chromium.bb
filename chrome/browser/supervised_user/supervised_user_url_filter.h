@@ -50,10 +50,10 @@ class SupervisedUserURLFilter {
     INVALID
   };
 
-  using FilteringBehaviorCallback =
-      base::Callback<void(FilteringBehavior,
-                          supervised_user_error_page::FilteringBehaviorReason,
-                          bool /* uncertain */)>;
+  using FilteringBehaviorCallback = base::OnceCallback<void(
+      FilteringBehavior,
+      supervised_user_error_page::FilteringBehaviorReason,
+      bool /* uncertain */)>;
 
   class Observer {
    public:
@@ -124,7 +124,7 @@ class SupervisedUserURLFilter {
   // Returns true if |callback| was called synchronously.
   bool GetFilteringBehaviorForURLWithAsyncChecks(
       const GURL& url,
-      const FilteringBehaviorCallback& callback) const;
+      FilteringBehaviorCallback callback) const;
 
   // Gets all the whitelists that the url is part of. Returns id->name of each
   // whitelist.
@@ -189,7 +189,7 @@ class SupervisedUserURLFilter {
       bool manual_only,
       supervised_user_error_page::FilteringBehaviorReason* reason) const;
 
-  void CheckCallback(const FilteringBehaviorCallback& callback,
+  void CheckCallback(FilteringBehaviorCallback callback,
                      const GURL& url,
                      SafeSearchURLChecker::Classification classification,
                      bool uncertain) const;

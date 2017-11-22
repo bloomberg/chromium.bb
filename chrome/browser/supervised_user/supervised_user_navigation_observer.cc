@@ -71,17 +71,17 @@ void SupervisedUserNavigationObserver::DidFinishNavigation(
 
   url_filter_->GetFilteringBehaviorForURLWithAsyncChecks(
       web_contents()->GetLastCommittedURL(),
-      base::Bind(&SupervisedUserNavigationObserver::URLFilterCheckCallback,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 navigation_handle->GetURL()));
+      base::BindOnce(&SupervisedUserNavigationObserver::URLFilterCheckCallback,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     navigation_handle->GetURL()));
 }
 
 void SupervisedUserNavigationObserver::OnURLFilterChanged() {
   url_filter_->GetFilteringBehaviorForURLWithAsyncChecks(
       web_contents()->GetLastCommittedURL(),
-      base::Bind(&SupervisedUserNavigationObserver::URLFilterCheckCallback,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 web_contents()->GetLastCommittedURL()));
+      base::BindOnce(&SupervisedUserNavigationObserver::URLFilterCheckCallback,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     web_contents()->GetLastCommittedURL()));
 }
 
 void SupervisedUserNavigationObserver::OnRequestBlockedInternal(
@@ -129,7 +129,8 @@ void SupervisedUserNavigationObserver::URLFilterCheckCallback(
   if (url != web_contents()->GetLastCommittedURL())
     return;
 
-  if (behavior == SupervisedUserURLFilter::FilteringBehavior::BLOCK) {
+  if (!is_showing_interstitial_ &&
+      behavior == SupervisedUserURLFilter::FilteringBehavior::BLOCK) {
     const bool initial_page_load = false;
     MaybeShowInterstitial(url, reason, initial_page_load,
                           base::Callback<void(bool)>());
@@ -141,9 +142,6 @@ void SupervisedUserNavigationObserver::MaybeShowInterstitial(
     supervised_user_error_page::FilteringBehaviorReason reason,
     bool initial_page_load,
     const base::Callback<void(bool)>& callback) {
-  if (is_showing_interstitial_)
-    return;
-
   is_showing_interstitial_ = true;
   base::Callback<void(bool)> wrapped_callback =
       base::Bind(&SupervisedUserNavigationObserver::OnInterstitialResult,

@@ -416,7 +416,7 @@ SupervisedUserURLFilter::GetFilteringBehaviorForURL(
 
 bool SupervisedUserURLFilter::GetFilteringBehaviorForURLWithAsyncChecks(
     const GURL& url,
-    const FilteringBehaviorCallback& callback) const {
+    FilteringBehaviorCallback callback) const {
   supervised_user_error_page::FilteringBehaviorReason reason =
       supervised_user_error_page::DEFAULT;
   FilteringBehavior behavior = GetFilteringBehaviorForURL(url, false, &reason);
@@ -424,7 +424,7 @@ bool SupervisedUserURLFilter::GetFilteringBehaviorForURLWithAsyncChecks(
   // Also, if we're blocking anyway, then there's no need to check it.
   if (reason != supervised_user_error_page::DEFAULT || behavior == BLOCK ||
       !async_url_checker_) {
-    callback.Run(behavior, reason, false);
+    std::move(callback).Run(behavior, reason, false);
     for (Observer& observer : observers_)
       observer.OnURLChecked(url, behavior, reason, false);
     return true;
@@ -432,9 +432,8 @@ bool SupervisedUserURLFilter::GetFilteringBehaviorForURLWithAsyncChecks(
 
   return async_url_checker_->CheckURL(
       Normalize(url),
-      base::Bind(&SupervisedUserURLFilter::CheckCallback,
-                 base::Unretained(this),
-                 callback));
+      base::BindOnce(&SupervisedUserURLFilter::CheckCallback,
+                     base::Unretained(this), std::move(callback)));
 }
 
 std::map<std::string, base::string16>
@@ -667,7 +666,7 @@ void SupervisedUserURLFilter::SetContents(std::unique_ptr<Contents> contents) {
 }
 
 void SupervisedUserURLFilter::CheckCallback(
-    const FilteringBehaviorCallback& callback,
+    FilteringBehaviorCallback callback,
     const GURL& url,
     SafeSearchURLChecker::Classification classification,
     bool uncertain) const {
@@ -676,7 +675,8 @@ void SupervisedUserURLFilter::CheckCallback(
   FilteringBehavior behavior =
       GetBehaviorFromSafeSearchClassification(classification);
 
-  callback.Run(behavior, supervised_user_error_page::ASYNC_CHECKER, uncertain);
+  std::move(callback).Run(behavior, supervised_user_error_page::ASYNC_CHECKER,
+                          uncertain);
   for (Observer& observer : observers_) {
     observer.OnURLChecked(url, behavior,
                           supervised_user_error_page::ASYNC_CHECKER, uncertain);
