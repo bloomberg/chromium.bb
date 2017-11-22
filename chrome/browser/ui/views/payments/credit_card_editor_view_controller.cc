@@ -642,6 +642,9 @@ void CreditCardEditorViewController::AddAndSelectNewBillingAddress(
   // SetSelectedIndex doesn't trigger a perform action notification, which is
   // needed to update the valid state.
   address_combobox->SetSelectedRow(index);
+  // The combobox might be initially disabled in FillContentView, but we've
+  // added an item; check if we should re-enable it.
+  address_combobox->SetEnabled(address_combobox->GetRowCount() > 1);
   // But it needs to be blured at least once.
   address_combobox->OnBlur();
 }
