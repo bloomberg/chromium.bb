@@ -69037,6 +69037,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="RendererScheduler.TaskCountPerFrameType"
+    enum="RendererSchedulerFrameType2">
+  <owner>altimin@chromium.org</owner>
+  <summary>
+    The number of completed renderer tasks split per frame type. Used to monitor
+    usage of each type of frame. Reported each time when task is completed.
+
+    Note that this metric discards tasks longer than 30 seconds because they are
+    considered to be a result of measurement glitch.
+  </summary>
+</histogram>
+
 <histogram name="RendererScheduler.TaskCountPerQueueType"
     enum="RendererSchedulerTaskQueueType">
   <owner>altimin@chromium.org</owner>
@@ -106612,6 +106624,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="LongerThan100ms"/>
   <suffix name="LongerThan150ms"/>
   <suffix name="LongerThan1s"/>
+  <affected-histogram name="RendererScheduler.TaskCountPerFrameType"/>
   <affected-histogram name="RendererScheduler.TaskCountPerQueueType"/>
 </histogram_suffixes>
 
