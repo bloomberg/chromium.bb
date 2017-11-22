@@ -17,4 +17,7 @@ source_set("web_ui") {
     "//net",
     "//url",
   ]
+  deps = [
+    "//content/public/browser",
+  ]
 }
