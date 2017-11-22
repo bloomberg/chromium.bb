@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SuspendableScriptExecutor_h
-#define SuspendableScriptExecutor_h
+#ifndef PausableScriptExecutor_h
+#define PausableScriptExecutor_h
 
 #include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
@@ -21,15 +21,15 @@ class ScriptSourceCode;
 class ScriptState;
 class WebScriptExecutionCallback;
 
-class CORE_EXPORT SuspendableScriptExecutor final
-    : public GarbageCollectedFinalized<SuspendableScriptExecutor>,
+class CORE_EXPORT PausableScriptExecutor final
+    : public GarbageCollectedFinalized<PausableScriptExecutor>,
       public PausableTimer {
-  USING_GARBAGE_COLLECTED_MIXIN(SuspendableScriptExecutor);
+  USING_GARBAGE_COLLECTED_MIXIN(PausableScriptExecutor);
 
  public:
   enum BlockingOption { kNonBlocking, kOnloadBlocking };
 
-  static SuspendableScriptExecutor* Create(
+  static PausableScriptExecutor* Create(
       LocalFrame*,
       scoped_refptr<DOMWrapperWorld>,
       const HeapVector<ScriptSourceCode>& sources,
@@ -43,7 +43,7 @@ class CORE_EXPORT SuspendableScriptExecutor final
                            int argc,
                            v8::Local<v8::Value> argv[],
                            WebScriptExecutionCallback*);
-  ~SuspendableScriptExecutor() override;
+  ~PausableScriptExecutor() override;
 
   void Run();
   void RunAsync(BlockingOption);
@@ -61,10 +61,10 @@ class CORE_EXPORT SuspendableScriptExecutor final
   };
 
  private:
-  SuspendableScriptExecutor(LocalFrame*,
-                            ScriptState*,
-                            WebScriptExecutionCallback*,
-                            Executor*);
+  PausableScriptExecutor(LocalFrame*,
+                         ScriptState*,
+                         WebScriptExecutionCallback*,
+                         Executor*);
 
   void Fired() override;
 
@@ -75,11 +75,11 @@ class CORE_EXPORT SuspendableScriptExecutor final
   WebScriptExecutionCallback* callback_;
   BlockingOption blocking_option_;
 
-  SelfKeepAlive<SuspendableScriptExecutor> keep_alive_;
+  SelfKeepAlive<PausableScriptExecutor> keep_alive_;
 
   Member<Executor> executor_;
 };
 
 }  // namespace blink
 
-#endif  // SuspendableScriptExecutor_h
+#endif  // PausableScriptExecutor_h

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/frame/SuspendableScriptExecutor.h"
+#include "core/frame/PausableScriptExecutor.h"
 
 #include <memory>
 #include "bindings/core/v8/ScriptController.h"
@@ -22,7 +22,7 @@ namespace blink {
 
 namespace {
 
-class WebScriptExecutor : public SuspendableScriptExecutor::Executor {
+class WebScriptExecutor : public PausableScriptExecutor::Executor {
  public:
   WebScriptExecutor(const HeapVector<ScriptSourceCode>& sources,
                     int world_id,
@@ -32,7 +32,7 @@ class WebScriptExecutor : public SuspendableScriptExecutor::Executor {
 
   virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(sources_);
-    SuspendableScriptExecutor::Executor::Trace(visitor);
+    PausableScriptExecutor::Executor::Trace(visitor);
   }
 
  private:
@@ -68,7 +68,7 @@ Vector<v8::Local<v8::Value>> WebScriptExecutor::Execute(LocalFrame* frame) {
   return results;
 }
 
-class V8FunctionExecutor : public SuspendableScriptExecutor::Executor {
+class V8FunctionExecutor : public PausableScriptExecutor::Executor {
  public:
   V8FunctionExecutor(v8::Isolate*,
                      v8::Local<v8::Function>,
@@ -125,19 +125,19 @@ Vector<v8::Local<v8::Value>> V8FunctionExecutor::Execute(LocalFrame* frame) {
 
 }  // namespace
 
-SuspendableScriptExecutor* SuspendableScriptExecutor::Create(
+PausableScriptExecutor* PausableScriptExecutor::Create(
     LocalFrame* frame,
     scoped_refptr<DOMWrapperWorld> world,
     const HeapVector<ScriptSourceCode>& sources,
     bool user_gesture,
     WebScriptExecutionCallback* callback) {
   ScriptState* script_state = ToScriptState(frame, *world);
-  return new SuspendableScriptExecutor(
+  return new PausableScriptExecutor(
       frame, script_state, callback,
       new WebScriptExecutor(sources, world->GetWorldId(), user_gesture));
 }
 
-void SuspendableScriptExecutor::CreateAndRun(
+void PausableScriptExecutor::CreateAndRun(
     LocalFrame* frame,
     v8::Isolate* isolate,
     v8::Local<v8::Context> context,
@@ -152,13 +152,13 @@ void SuspendableScriptExecutor::CreateAndRun(
       callback->Completed(Vector<v8::Local<v8::Value>>());
     return;
   }
-  SuspendableScriptExecutor* executor = new SuspendableScriptExecutor(
+  PausableScriptExecutor* executor = new PausableScriptExecutor(
       frame, script_state, callback,
       new V8FunctionExecutor(isolate, function, receiver, argc, argv));
   executor->Run();
 }
 
-void SuspendableScriptExecutor::ContextDestroyed(
+void PausableScriptExecutor::ContextDestroyed(
     ExecutionContext* destroyed_context) {
   PausableTimer::ContextDestroyed(destroyed_context);
   if (callback_)
@@ -166,7 +166,7 @@ void SuspendableScriptExecutor::ContextDestroyed(
   Dispose();
 }
 
-SuspendableScriptExecutor::SuspendableScriptExecutor(
+PausableScriptExecutor::PausableScriptExecutor(
     LocalFrame* frame,
     ScriptState* script_state,
     WebScriptExecutionCallback* callback,
@@ -181,13 +181,13 @@ SuspendableScriptExecutor::SuspendableScriptExecutor(
   CHECK(script_state_->ContextIsValid());
 }
 
-SuspendableScriptExecutor::~SuspendableScriptExecutor() {}
+PausableScriptExecutor::~PausableScriptExecutor() {}
 
-void SuspendableScriptExecutor::Fired() {
+void PausableScriptExecutor::Fired() {
   ExecuteAndDestroySelf();
 }
 
-void SuspendableScriptExecutor::Run() {
+void PausableScriptExecutor::Run() {
   ExecutionContext* context = GetExecutionContext();
   DCHECK(context);
   if (!context->IsContextPaused()) {
@@ -199,7 +199,7 @@ void SuspendableScriptExecutor::Run() {
   PauseIfNeeded();
 }
 
-void SuspendableScriptExecutor::RunAsync(BlockingOption blocking) {
+void PausableScriptExecutor::RunAsync(BlockingOption blocking) {
   ExecutionContext* context = GetExecutionContext();
   DCHECK(context);
   blocking_option_ = blocking;
@@ -210,7 +210,7 @@ void SuspendableScriptExecutor::RunAsync(BlockingOption blocking) {
   PauseIfNeeded();
 }
 
-void SuspendableScriptExecutor::ExecuteAndDestroySelf() {
+void PausableScriptExecutor::ExecuteAndDestroySelf() {
   CHECK(script_state_->ContextIsValid());
 
   if (callback_)
@@ -234,14 +234,14 @@ void SuspendableScriptExecutor::ExecuteAndDestroySelf() {
   Dispose();
 }
 
-void SuspendableScriptExecutor::Dispose() {
+void PausableScriptExecutor::Dispose() {
   // Remove object as a ContextLifecycleObserver.
   PausableObject::ClearContext();
   keep_alive_.Clear();
   Stop();
 }
 
-void SuspendableScriptExecutor::Trace(blink::Visitor* visitor) {
+void PausableScriptExecutor::Trace(blink::Visitor* visitor) {
   visitor->Trace(executor_);
   PausableTimer::Trace(visitor);
 }

@@ -138,12 +138,12 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/PageScaleConstraintsSet.h"
+#include "core/frame/PausableScriptExecutor.h"
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/RemoteFrameOwner.h"
 #include "core/frame/ScreenOrientationController.h"
 #include "core/frame/Settings.h"
 #include "core/frame/SmartClip.h"
-#include "core/frame/SuspendableScriptExecutor.h"
 #include "core/frame/UseCounter.h"
 #include "core/frame/VisualViewport.h"
 #include "core/frame/WebFrameWidgetImpl.h"
@@ -738,7 +738,7 @@ void WebLocalFrameImpl::RequestExecuteScriptAndReturnValue(
   DCHECK(GetFrame());
 
   scoped_refptr<DOMWrapperWorld> main_world = &DOMWrapperWorld::MainWorld();
-  SuspendableScriptExecutor* executor = SuspendableScriptExecutor::Create(
+  PausableScriptExecutor* executor = PausableScriptExecutor::Create(
       GetFrame(), std::move(main_world), CreateSourcesVector(&source, 1),
       user_gesture, callback);
   executor->Run();
@@ -752,9 +752,9 @@ void WebLocalFrameImpl::RequestExecuteV8Function(
     v8::Local<v8::Value> argv[],
     WebScriptExecutionCallback* callback) {
   DCHECK(GetFrame());
-  SuspendableScriptExecutor::CreateAndRun(GetFrame(), ToIsolate(GetFrame()),
-                                          context, function, receiver, argc,
-                                          argv, callback);
+  PausableScriptExecutor::CreateAndRun(GetFrame(), ToIsolate(GetFrame()),
+                                       context, function, receiver, argc, argv,
+                                       callback);
 }
 
 void WebLocalFrameImpl::ExecuteScriptInIsolatedWorld(
@@ -799,15 +799,15 @@ void WebLocalFrameImpl::RequestExecuteScriptInIsolatedWorld(
 
   scoped_refptr<DOMWrapperWorld> isolated_world =
       DOMWrapperWorld::EnsureIsolatedWorld(ToIsolate(GetFrame()), world_id);
-  SuspendableScriptExecutor* executor = SuspendableScriptExecutor::Create(
+  PausableScriptExecutor* executor = PausableScriptExecutor::Create(
       GetFrame(), std::move(isolated_world),
       CreateSourcesVector(sources_in, num_sources), user_gesture, callback);
   switch (option) {
     case kAsynchronousBlockingOnload:
-      executor->RunAsync(SuspendableScriptExecutor::kOnloadBlocking);
+      executor->RunAsync(PausableScriptExecutor::kOnloadBlocking);
       break;
     case kAsynchronous:
-      executor->RunAsync(SuspendableScriptExecutor::kNonBlocking);
+      executor->RunAsync(PausableScriptExecutor::kNonBlocking);
       break;
     case kSynchronous:
       executor->Run();
