@@ -280,7 +280,7 @@ CORE_EXPORT LocalCaretRect
 LocalCaretRectOfPosition(const PositionWithAffinity&);
 CORE_EXPORT LocalCaretRect
 LocalCaretRectOfPosition(const PositionInFlatTreeWithAffinity&);
-bool HasRenderedNonAnonymousDescendantsWithHeight(LayoutObject*);
+bool HasRenderedNonAnonymousDescendantsWithHeight(const LayoutObject*);
 
 // Returns a hit-tested VisiblePosition for the given point in contents-space
 // coordinates.

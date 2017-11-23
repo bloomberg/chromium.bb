@@ -774,9 +774,9 @@ static LayoutUnit BoundingBoxLogicalHeight(LayoutObject* o,
 // with first-letter style, e.g., <div>F</div>, where the letter is laid-out in
 // an anonymous first-letter LayoutTextFragment instead of the LayoutObject of
 // the text node. It seems weird to return false in this case.
-// TODO(crbug.com/766448): Change parameter type to |const LayoutObject*|.
-bool HasRenderedNonAnonymousDescendantsWithHeight(LayoutObject* layout_object) {
-  LayoutObject* stop = layout_object->NextInPreOrderAfterChildren();
+bool HasRenderedNonAnonymousDescendantsWithHeight(
+    const LayoutObject* layout_object) {
+  const LayoutObject* stop = layout_object->NextInPreOrderAfterChildren();
   // TODO(editing-dev): Avoid single-character parameter names.
   for (LayoutObject* o = layout_object->SlowFirstChild(); o && o != stop;
        o = o->NextInPreOrder()) {
