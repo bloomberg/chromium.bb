@@ -10,7 +10,6 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "content/common/render_process_messages.h"
 #include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_message_utils.h"
 
@@ -78,24 +77,24 @@ AttributedStringCoder::EncodedString::~EncodedString() {
 
 AttributedStringCoder::FontAttribute::FontAttribute(NSDictionary* dict,
                                                     gfx::Range effective_range)
-    : font_descriptor_(),
-      effective_range_(effective_range) {
+    : font_name_(), font_point_size_(0), effective_range_(effective_range) {
   NSFont* font = [dict objectForKey:NSFontAttributeName];
   if (font) {
-    font_descriptor_ = FontDescriptor(font);
+    font_name_ = base::SysNSStringToUTF16([font fontName]);
+    font_point_size_ = [font pointSize];
   }
 }
 
-AttributedStringCoder::FontAttribute::FontAttribute(FontDescriptor font,
-                                                    gfx::Range range)
-    : font_descriptor_(font),
-      effective_range_(range) {
-}
+AttributedStringCoder::FontAttribute::FontAttribute(
+    const base::string16& font_name,
+    float font_point_size,
+    const gfx::Range& range)
+    : font_name_(std::move(font_name)),
+      font_point_size_(font_point_size),
+      effective_range_(range) {}
 
 AttributedStringCoder::FontAttribute::FontAttribute()
-    : font_descriptor_(),
-      effective_range_() {
-}
+    : font_name_(), font_point_size_(0), effective_range_() {}
 
 AttributedStringCoder::FontAttribute::~FontAttribute() {
 }
@@ -103,14 +102,15 @@ AttributedStringCoder::FontAttribute::~FontAttribute() {
 NSDictionary*
 AttributedStringCoder::FontAttribute::ToAttributesDictionary() const {
   DCHECK(ShouldEncode());
-  NSFont* font = font_descriptor_.ToNSFont();
+  NSString* font_name_ns = base::SysUTF16ToNSString(font_name_);
+  NSFont* font = [NSFont fontWithName:font_name_ns size:font_point_size_];
   if (!font)
     return [NSDictionary dictionary];
   return [NSDictionary dictionaryWithObject:font forKey:NSFontAttributeName];
 }
 
 bool AttributedStringCoder::FontAttribute::ShouldEncode() const {
-  return !font_descriptor_.font_name.empty();
+  return !font_name_.empty();
 }
 
 }  // namespace mac
@@ -150,7 +150,8 @@ void ParamTraits<AttributedStringCoder::EncodedString>::Log(
 void ParamTraits<AttributedStringCoder::FontAttribute>::Write(
     base::Pickle* m,
     const param_type& p) {
-  WriteParam(m, p.font_descriptor());
+  WriteParam(m, p.font_name());
+  WriteParam(m, p.font_point_size());
   WriteParam(m, p.effective_range());
 }
 
@@ -160,14 +161,18 @@ bool ParamTraits<AttributedStringCoder::FontAttribute>::Read(
     param_type* p) {
   bool success = true;
 
-  FontDescriptor font;
-  success &= ReadParam(m, iter, &font);
+  base::string16 font_name;
+  success &= ReadParam(m, iter, &font_name);
+
+  float font_point_size;
+  success &= ReadParam(m, iter, &font_point_size);
 
   gfx::Range range;
   success &= ReadParam(m, iter, &range);
 
   if (success) {
-    *p = AttributedStringCoder::FontAttribute(font, range);
+    *p = AttributedStringCoder::FontAttribute(std::move(font_name),
+                                              font_point_size, range);
   }
   return success;
 }

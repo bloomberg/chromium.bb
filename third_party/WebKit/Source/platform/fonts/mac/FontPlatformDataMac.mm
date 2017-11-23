@@ -88,7 +88,8 @@ static sk_sp<SkTypeface> LoadFromBrowserProcess(NSFont* ns_font,
 
   CGFontRef loaded_cg_font;
   uint32_t font_id;
-  if (!sandbox_support->LoadFont(ns_font, &loaded_cg_font, &font_id)) {
+  if (!sandbox_support->LoadFont(toCTFontRef(ns_font), &loaded_cg_font,
+                                 &font_id)) {
     // TODO crbug.com/461279: Make this appear in the inspector console?
     DLOG(ERROR)
         << "Loading user font \"" << [[ns_font familyName] UTF8String]

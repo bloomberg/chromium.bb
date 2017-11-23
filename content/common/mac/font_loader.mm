@@ -21,20 +21,22 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_restrictions.h"
-#include "content/common/mac/font_descriptor.h"
 
 namespace content {
 namespace {
 
 std::unique_ptr<FontLoader::ResultInternal> LoadFontOnFileThread(
-    const FontDescriptor& font) {
+    const base::string16& font_name,
+    const float font_point_size) {
   base::AssertBlockingAllowed();
 
-  NSFont* font_to_encode = font.ToNSFont();
+  NSString* font_name_ns = base::SysUTF16ToNSString(font_name);
+  NSFont* font_to_encode =
+      [NSFont fontWithName:font_name_ns size:font_point_size];
 
   // Load appropriate NSFont.
   if (!font_to_encode) {
-    DLOG(ERROR) << "Failed to load font " << font.font_name;
+    DLOG(ERROR) << "Failed to load font " << font_name;
     return nullptr;
   }
 
@@ -51,7 +53,7 @@ std::unique_ptr<FontLoader::ResultInternal> LoadFontOnFileThread(
       base::mac::CFToNSCast(base::mac::CFCastStrict<CFURLRef>(
           CTFontCopyAttribute(ct_font, kCTFontURLAttribute))));
   if (![font_url isFileURL]) {
-    DLOG(ERROR) << "Failed to find font file for " << font.font_name;
+    DLOG(ERROR) << "Failed to find font file for " << font_name;
     return nullptr;
   }
 
@@ -74,7 +76,7 @@ std::unique_ptr<FontLoader::ResultInternal> LoadFontOnFileThread(
 
   int32_t font_file_size_32 = static_cast<int32_t>(font_file_size_64);
   if (!result->font_data.CreateAndMapAnonymous(font_file_size_32)) {
-    DLOG(ERROR) << "Failed to create shmem area for " << font.font_name;
+    DLOG(ERROR) << "Failed to create shmem area for " << font_name;
     return nullptr;
   }
 
@@ -119,7 +121,9 @@ void ReplyOnUIThread(FontLoader::LoadedCallback callback,
 }  // namespace
 
 // static
-void FontLoader::LoadFont(const FontDescriptor& font, LoadedCallback callback) {
+void FontLoader::LoadFont(const base::string16& font_name,
+                          const float font_point_size,
+                          LoadedCallback callback) {
   // Tasks are triggered when font loading in the sandbox fails. Usually due to
   // a user installing a third-party font manager. See crbug.com/72727. Web page
   // rendering can't continue until a font is returned.
@@ -127,26 +131,21 @@ void FontLoader::LoadFont(const FontDescriptor& font, LoadedCallback callback) {
       base::MayBlock(), base::TaskPriority::USER_VISIBLE,
       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN};
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, kTraits, base::BindOnce(&LoadFontOnFileThread, font),
+      FROM_HERE, kTraits,
+      base::BindOnce(&LoadFontOnFileThread, font_name, font_point_size),
       base::BindOnce(&ReplyOnUIThread, std::move(callback)));
 }
 
 // static
-bool FontLoader::CGFontRefFromBuffer(base::SharedMemoryHandle font_data,
+bool FontLoader::CGFontRefFromBuffer(mojo::ScopedSharedBufferHandle font_data,
                                      uint32_t font_data_size,
                                      CGFontRef* out) {
   *out = NULL;
-
-  using base::SharedMemory;
-  DCHECK(SharedMemory::IsHandleValid(font_data));
-  DCHECK_GT(font_data_size, 0U);
-
-  SharedMemory shm(font_data, /*read_only=*/true);
-  if (!shm.Map(font_data_size))
+  mojo::ScopedSharedBufferMapping mapping = font_data->Map(font_data_size);
+  if (!mapping)
     return false;
 
-  NSData* data = [NSData dataWithBytes:shm.memory()
-                                length:font_data_size];
+  NSData* data = [NSData dataWithBytes:mapping.get() length:font_data_size];
   base::ScopedCFTypeRef<CGDataProviderRef> provider(
       CGDataProviderCreateWithCFData(base::mac::NSToCFCast(data)));
   if (!provider)
@@ -162,8 +161,9 @@ bool FontLoader::CGFontRefFromBuffer(base::SharedMemoryHandle font_data,
 
 // static
 std::unique_ptr<FontLoader::ResultInternal> FontLoader::LoadFontForTesting(
-    const FontDescriptor& font) {
-  return LoadFontOnFileThread(font);
+    const base::string16& font_name,
+    const float font_point_size) {
+  return LoadFontOnFileThread(font_name, font_point_size);
 }
 
 }  // namespace content

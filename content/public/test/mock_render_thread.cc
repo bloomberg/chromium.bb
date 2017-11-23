@@ -84,6 +84,12 @@ class MockRenderMessageFilterImpl : public mojom::RenderMessageFilter {
   void SetThreadPriority(int32_t platform_thread_id,
                          base::ThreadPriority thread_priority) override {}
 
+  void LoadFont(const base::string16& font_name,
+                const float font_size_point,
+                LoadFontCallback callback) override {
+    NOTREACHED();
+  }
+
  private:
   MockRenderThread* const thread_;
 };
