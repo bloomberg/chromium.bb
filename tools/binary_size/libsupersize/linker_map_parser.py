@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import logging
+import os
 import re
 
 import models
@@ -374,4 +375,8 @@ class MapFileParser(object):
       inner_parser = MapFileParserGold()
     else:
       raise Exception('.map file is from a unsupported linker.')
-    return inner_parser.Parse(lines)
+    section_sizes, syms = inner_parser.Parse(lines)
+    for sym in syms:
+      if sym.object_path:  # Don't want '' to become '.'.
+        sym.object_path = os.path.normpath(sym.object_path)
+    return (section_sizes, syms)
