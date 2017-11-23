@@ -86,6 +86,10 @@ AutofillSuggestionState::AutofillSuggestionState(const std::string& form_name,
 @end
 
 @implementation FormSuggestionController {
+  // The WebState this instance is observing. Will be null after
+  // -webStateDestroyed: has been called.
+  web::WebState* _webState;
+
   // Bridge to observe the web state from Objective-C.
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserverBridge;
 
@@ -101,8 +105,11 @@ AutofillSuggestionState::AutofillSuggestionState(const std::string& form_name,
              JsSuggestionManager:(JsSuggestionManager*)jsSuggestionManager {
   self = [super init];
   if (self) {
-    _webStateObserverBridge.reset(
-        new web::WebStateObserverBridge(webState, self));
+    DCHECK(webState);
+    _webState = webState;
+    _webStateObserverBridge =
+        std::make_unique<web::WebStateObserverBridge>(self);
+    _webState->AddObserver(_webStateObserverBridge.get());
     _webViewProxy = webState->GetWebViewProxy();
     _jsSuggestionManager = jsSuggestionManager;
     _suggestionProviders = [providers copy];
@@ -121,21 +128,35 @@ AutofillSuggestionState::AutofillSuggestionState(const std::string& form_name,
             JsSuggestionManager:jsSuggestionManager];
 }
 
+- (void)dealloc {
+  if (_webState) {
+    _webState->RemoveObserver(_webStateObserverBridge.get());
+    _webStateObserverBridge.reset();
+    _webState = nullptr;
+  }
+}
+
 - (void)onNoSuggestionsAvailable {
 }
 
 - (void)detachFromWebState {
-  _webStateObserverBridge.reset();
+  if (_webState) {
+    _webState->RemoveObserver(_webStateObserverBridge.get());
+    _webStateObserverBridge.reset();
+    _webState = nullptr;
+  }
 }
 
 #pragma mark -
 #pragma mark CRWWebStateObserver
 
 - (void)webStateDestroyed:(web::WebState*)webState {
+  DCHECK_EQ(_webState, webState);
   [self detachFromWebState];
 }
 
 - (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
+  DCHECK_EQ(_webState, webState);
   [self processPage:webState];
 }
 
