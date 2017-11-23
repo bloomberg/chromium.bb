@@ -10,6 +10,8 @@
 #import "ios/chrome/browser/ui/history_popup/requirements/tab_history_positioner.h"
 #import "ios/chrome/browser/ui/history_popup/requirements/tab_history_ui_updater.h"
 
+@class ToolbarButtonFactory;
+
 // Updater for the toolbar buttons.
 @interface ToolbarButtonUpdater
     : NSObject<TabHistoryPositioner, TabHistoryUIUpdater>
@@ -18,6 +20,20 @@
 @property(nonatomic, strong) UIButton* backButton;
 // Forward button of the toolbar.
 @property(nonatomic, strong) UIButton* forwardButton;
+// Voice search button of the toolbar.
+@property(nonatomic, strong) UIButton* voiceSearchButton;
+// Whether Text-To-Speech is playing and the voice search icon should indicate
+// so.
+@property(nonatomic, assign, getter=isTTSPlaying) BOOL TTSPlaying;
+// Button factory to get images for TTS and VoiceSearch.
+@property(nonatomic, strong) ToolbarButtonFactory* factory;
+
+// Whether the Text-To-Speech playback can start.
+- (BOOL)canStartPlayingTTS;
+// Updates the TTS button depending on whether or not TTS is currently playing.
+- (void)updateIsTTSPlaying:(NSNotification*)notify;
+// Moves VoiceOver to the button used to perform a voice search.
+- (void)moveVoiceOverToVoiceSearchButton;
 
 @end
 
