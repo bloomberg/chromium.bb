@@ -113,21 +113,6 @@ if (enable_mojom_typemapping) {
       _typemap_config = typemap.config
       read_file(_typemap_config.mojom, "")
     }
-    if (is_mac && defined(configuration.typemaps_mac)) {
-      foreach(typemap, configuration.typemaps_mac) {
-        _typemap_config = {
-        }
-        _typemap_config = typemap.config
-        read_file(_typemap_config.mojom, "")
-      }
-    } else if (is_chromeos && defined(configuration.typemaps_chromeos)) {
-      foreach(typemap, configuration.typemaps_chromeos) {
-        _typemap_config = {
-        }
-        _typemap_config = typemap.config
-        read_file(_typemap_config.mojom, "")
-      }
-    }
   }
 } else {
   _bindings_configuration_files = []
@@ -622,25 +607,31 @@ template("mojom") {
           }
           _typemap_config = typemap.config
           if (get_path_info(source, "abspath") == _typemap_config.mojom) {
-            active_typemaps += [ typemap ]
-          }
-        }
-        if (is_mac && defined(bindings_configuration.typemaps_mac)) {
-          foreach(typemap, bindings_configuration.typemaps_mac) {
-            _typemap_config = {
+            enabled = false
+            if (!defined(_typemap_config.os_whitelist)) {
+              enabled = true
+            } else {
+              foreach(os, _typemap_config.os_whitelist) {
+                if (os == "android" && is_android) {
+                  enabled = true
+                } else if (os == "chromeos" && is_chromeos) {
+                  enabled = true
+                } else if (os == "fuchsia" && is_fuchsia) {
+                  enabled = true
+                } else if (os == "ios" && is_ios) {
+                  enabled = true
+                } else if (os == "linux" && is_linux) {
+                  enabled = true
+                } else if (os == "mac" && is_mac) {
+                  enabled = true
+                } else if (os == "posix" && is_posix) {
+                  enabled = true
+                } else if (os == "win" && is_win) {
+                  enabled = true
+                }
+              }
             }
-            _typemap_config = typemap.config
-            if (get_path_info(source, "abspath") == _typemap_config.mojom) {
-              active_typemaps += [ typemap ]
-            }
-          }
-        } else if (is_chromeos &&
-                   defined(bindings_configuration.typemaps_chromeos)) {
-          foreach(typemap, bindings_configuration.typemaps_chromeos) {
-            _typemap_config = {
-            }
-            _typemap_config = typemap.config
-            if (get_path_info(source, "abspath") == _typemap_config.mojom) {
+            if (enabled) {
               active_typemaps += [ typemap ]
             }
           }
