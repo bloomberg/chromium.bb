@@ -156,12 +156,9 @@ float GetWindowToViewportScale(RenderWidget* render_widget) {
 // DirectWrite only has access to %WINDIR%\Fonts by default. For developer
 // side-loading, support kRegisterFontFiles to allow access to additional fonts.
 void RegisterSideloadedTypefaces(SkFontMgr* fontmgr) {
-  std::vector<std::string> files = switches::GetSideloadFontFiles();
-  for (std::vector<std::string>::const_iterator i(files.begin());
-       i != files.end();
-       ++i) {
-    SkTypeface* typeface = fontmgr->makeFromFile(i->c_str()).release();
-    blink::WebFontRendering::AddSideloadedFontForTesting(typeface);
+  for (const auto& file : switches::GetSideloadFontFiles()) {
+    blink::WebFontRendering::AddSideloadedFontForTesting(
+        fontmgr->makeFromFile(file.c_str()));
   }
 }
 #endif  // OS_WIN

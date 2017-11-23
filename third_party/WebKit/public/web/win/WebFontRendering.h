@@ -17,7 +17,7 @@ class WebFontRendering {
  public:
   BLINK_EXPORT static void SetSkiaFontManager(sk_sp<SkFontMgr>);
   BLINK_EXPORT static void SetDeviceScaleFactor(float);
-  BLINK_EXPORT static void AddSideloadedFontForTesting(SkTypeface*);
+  BLINK_EXPORT static void AddSideloadedFontForTesting(sk_sp<SkTypeface>);
   BLINK_EXPORT static void SetMenuFontMetrics(const wchar_t* family_name,
                                               int32_t font_height);
   BLINK_EXPORT static void SetSmallCaptionFontMetrics(

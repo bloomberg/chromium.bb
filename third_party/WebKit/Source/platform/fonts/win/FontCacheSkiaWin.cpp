@@ -67,12 +67,12 @@ int32_t EnsureMinimumFontHeightIfNeeded(int32_t font_height) {
 }  // namespace
 
 // static
-void FontCache::AddSideloadedFontForTesting(SkTypeface* typeface) {
+void FontCache::AddSideloadedFontForTesting(sk_sp<SkTypeface> typeface) {
   if (!sideloaded_fonts_)
     sideloaded_fonts_ = new HashMap<String, sk_sp<SkTypeface>>;
   SkString name;
   typeface->getFamilyName(&name);
-  sideloaded_fonts_->Set(name.c_str(), sk_sp<SkTypeface>(typeface));
+  sideloaded_fonts_->Set(name.c_str(), std::move(typeface));
 }
 
 // static
