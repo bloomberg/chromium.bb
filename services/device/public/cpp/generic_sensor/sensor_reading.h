@@ -185,7 +185,9 @@ union SensorReading {
   double timestamp() const { return raw.timestamp; }
 
   SensorReading();
+  SensorReading(const SensorReading&);
   ~SensorReading();
+  SensorReading& operator=(const SensorReading&);
 };
 
 static_assert(sizeof(SensorReading) == sizeof(SensorReadingRaw),
