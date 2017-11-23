@@ -270,8 +270,8 @@ NSPoint ContentSettingDecoration::GetBubblePointInFrame(NSRect frame) {
   return StarDecoration::GetStarBubblePointInFrame(GetDrawRectInFrame(frame));
 }
 
-bool ContentSettingDecoration::AcceptsMousePress() {
-  return true;
+AcceptsPress ContentSettingDecoration::AcceptsMousePress() {
+  return AcceptsPress::WHEN_ACTIVATED;
 }
 
 bool ContentSettingDecoration::OnMousePressed(NSRect frame, NSPoint location) {

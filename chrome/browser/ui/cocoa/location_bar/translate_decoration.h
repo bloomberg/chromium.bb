@@ -25,7 +25,7 @@ class TranslateDecoration : public ImageDecoration {
   void SetLit(bool on, bool locationBarIsDark);
 
   // Implement |LocationBarDecoration|
-  bool AcceptsMousePress() override;
+  AcceptsPress AcceptsMousePress() override;
   bool OnMousePressed(NSRect frame, NSPoint location) override;
   NSString* GetToolTip() override;
   NSPoint GetBubblePointInFrame(NSRect frame) override;

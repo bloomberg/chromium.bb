@@ -318,7 +318,7 @@ size_t CalculatePositionsInFrame(
   // Determine the left-most extent for the i-beam cursor.
   CGFloat minX = NSMinX(textFrame);
   for (size_t index = left_count; index--; ) {
-    if (decorations[index]->AcceptsMousePress())
+    if (decorations[index]->AcceptsMousePress() != AcceptsPress::NEVER)
       break;
 
     // If at leftmost decoration, expand to edge of cell.
@@ -331,7 +331,7 @@ size_t CalculatePositionsInFrame(
   // Determine the right-most extent for the i-beam cursor.
   CGFloat maxX = NSMaxX(textFrame);
   for (size_t index = left_count; index < decorations.size(); ++index) {
-    if (decorations[index]->AcceptsMousePress())
+    if (decorations[index]->AcceptsMousePress() != AcceptsPress::NEVER)
       break;
 
     // If at rightmost decoration, expand to edge of cell.
@@ -528,7 +528,7 @@ size_t CalculatePositionsInFrame(
 
   LocationBarDecoration* decoration =
       [self decorationForEvent:theEvent inRect:cellFrame ofView:controlView];
-  if (!decoration || !decoration->AcceptsMousePress())
+  if (!decoration || decoration->AcceptsMousePress() == AcceptsPress::NEVER)
     return NO;
 
   decoration->OnMouseDown();
@@ -590,7 +590,7 @@ size_t CalculatePositionsInFrame(
 
   const NSPoint mouseLocation = [theEvent locationInWindow];
   const NSPoint point = [controlView convertPoint:mouseLocation fromView:nil];
-  return decoration->OnMousePressed(
+  return decoration->HandleMousePressed(
       decorationRect, NSMakePoint(point.x - decorationRect.origin.x,
                                   point.y - decorationRect.origin.y));
 }

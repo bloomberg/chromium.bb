@@ -33,7 +33,7 @@ class MockDecoration : public LocationBarDecoration {
   virtual CGFloat GetWidthForSpace(CGFloat width) { return 20.0; }
 
   virtual void DrawInFrame(NSRect frame, NSView* control_view) { ; }
-  MOCK_METHOD0(AcceptsMousePress, bool());
+  MOCK_METHOD0(AcceptsMousePress, AcceptsPress());
   MOCK_METHOD2(OnMousePressed, bool(NSRect frame, NSPoint location));
   MOCK_METHOD0(GetMenu, NSMenu*());
 };
@@ -379,8 +379,8 @@ TEST_F(AutocompleteTextFieldTest, ClickRightDecorationPutsCaretRightmost) {
   // Decoration does not handle the mouse event, so the cell should
   // process it.  Called at least once.
   EXPECT_CALL(mock_trailing_decoration_, AcceptsMousePress())
-      .WillOnce(Return(false))
-      .WillRepeatedly(Return(false));
+      .WillOnce(Return(AcceptsPress::NEVER))
+      .WillRepeatedly(Return(AcceptsPress::NEVER));
 
   // Set the decoration before becoming responder.
   EXPECT_FALSE([field_ currentEditor]);
@@ -414,8 +414,8 @@ TEST_F(AutocompleteTextFieldTest, ClickLeftDecorationPutsCaretLeftmost) {
   // Decoration does not handle the mouse event, so the cell should
   // process it.  Called at least once.
   EXPECT_CALL(mock_leading_decoration_, AcceptsMousePress())
-      .WillOnce(Return(false))
-      .WillRepeatedly(Return(false));
+      .WillOnce(Return(AcceptsPress::NEVER))
+      .WillRepeatedly(Return(AcceptsPress::NEVER));
 
   // Set the decoration before becoming responder.
   EXPECT_FALSE([field_ currentEditor]);
@@ -562,7 +562,7 @@ TEST_F(AutocompleteTextFieldTest, LeftDecorationMouseDown) {
 
   mock_leading_decoration_.SetVisible(true);
   EXPECT_CALL(mock_leading_decoration_, AcceptsMousePress())
-      .WillRepeatedly(Return(true));
+      .WillRepeatedly(Return(AcceptsPress::ALWAYS));
 
   AutocompleteTextFieldCell* cell = [field_ cell];
   [cell updateMouseTrackingAndToolTipsInRect:[field_ frame] ofView:field_];
@@ -611,7 +611,7 @@ TEST_F(AutocompleteTextFieldTest, RightDecorationMouseDown) {
 
   mock_trailing_decoration_.SetVisible(true);
   EXPECT_CALL(mock_trailing_decoration_, AcceptsMousePress())
-      .WillRepeatedly(Return(true));
+      .WillRepeatedly(Return(AcceptsPress::ALWAYS));
 
   AutocompleteTextFieldCell* cell = [field_ cell];
   [cell updateMouseTrackingAndToolTipsInRect:[field_ frame] ofView:field_];
@@ -800,11 +800,11 @@ TEST_F(AutocompleteTextFieldTest, UpdateTrackingAreas) {
   mock_trailing_decoration_.SetVisible(true);
 
   EXPECT_CALL(mock_leading_decoration_, AcceptsMousePress())
-      .WillOnce(Return(true))
-      .WillRepeatedly(Return(true));
+      .WillOnce(Return(AcceptsPress::ALWAYS))
+      .WillRepeatedly(Return(AcceptsPress::ALWAYS));
   EXPECT_CALL(mock_trailing_decoration_, AcceptsMousePress())
-      .WillOnce(Return(false))
-      .WillRepeatedly(Return(false));
+      .WillOnce(Return(AcceptsPress::NEVER))
+      .WillRepeatedly(Return(AcceptsPress::NEVER));
   [cell updateMouseTrackingAndToolTipsInRect:[field_ bounds] ofView:field_];
 
   EXPECT_EQ([cell mouseTrackingDecorations].size(), 1.0);
@@ -813,8 +813,8 @@ TEST_F(AutocompleteTextFieldTest, UpdateTrackingAreas) {
   EXPECT_TRUE([cell mouseTrackingDecorations].empty());
 
   EXPECT_CALL(mock_trailing_decoration_, AcceptsMousePress())
-      .WillOnce(Return(true))
-      .WillRepeatedly(Return(true));
+      .WillOnce(Return(AcceptsPress::ALWAYS))
+      .WillRepeatedly(Return(AcceptsPress::ALWAYS));
 
   [cell updateMouseTrackingAndToolTipsInRect:[field_ bounds] ofView:field_];
   EXPECT_EQ([cell mouseTrackingDecorations].size(), 2.0);
@@ -830,13 +830,13 @@ TEST_F(AutocompleteTextFieldObserverTest,
   MockDecoration noninteractive_decoration;
   noninteractive_decoration.SetVisible(true);
   EXPECT_CALL(noninteractive_decoration, AcceptsMousePress())
-      .WillRepeatedly(testing::Return(false));
+      .WillRepeatedly(Return(AcceptsPress::NEVER));
   [cell addLeadingDecoration:&noninteractive_decoration];
 
   // Set up an interactive decoration.
   MockDecoration interactive_decoration;
   EXPECT_CALL(interactive_decoration, AcceptsMousePress())
-      .WillRepeatedly(testing::Return(true));
+      .WillRepeatedly(Return(AcceptsPress::ALWAYS));
   interactive_decoration.SetVisible(true);
   [cell addLeadingDecoration:&interactive_decoration];
   [cell updateMouseTrackingAndToolTipsInRect:[field_ frame] ofView:field_];
@@ -873,6 +873,53 @@ TEST_F(AutocompleteTextFieldObserverTest,
   // Clicking an interactive decoration doesn't change the first responder.
   SendMouseClickToDecoration(&interactive_decoration);
   EXPECT_NSEQ(firstResponder, [[field_ window] firstResponder]);
+}
+
+// Verify the behavior of AcceptsPress::WHEN_ACTIVATED.
+TEST_F(AutocompleteTextFieldObserverTest, ReceivePressOnlyWhenActivated) {
+  AutocompleteTextFieldCell* cell = [field_ cell];
+
+  // Have the mock use AcceptsPress::WHEN_ACTIVATED.
+  MockDecoration decoration;
+  EXPECT_CALL(decoration, AcceptsMousePress())
+      .WillRepeatedly(Return(AcceptsPress::WHEN_ACTIVATED));
+
+  decoration.SetVisible(true);
+  [cell addLeadingDecoration:&decoration];
+  [cell updateMouseTrackingAndToolTipsInRect:[field_ frame] ofView:field_];
+
+  EXPECT_CALL(field_observer_, OnMouseDown(_)).Times(testing::AnyNumber());
+
+  // Expect a call to OnMousePressed(), since the decoration is not active yet.
+  EXPECT_CALL(decoration, OnMousePressed(_, _)).WillOnce(Return(true));
+  SendMouseClickToDecoration(&decoration);
+  decoration.SetActive(true);
+
+  // Click again: should be no additional calls, since the decoration is active.
+  EXPECT_CALL(decoration, OnMousePressed(_, _)).Times(0);
+  SendMouseClickToDecoration(&decoration);
+
+  // Most popups will call SetActive(false) due to a click occurring outside the
+  // bubble. (But there is defensive code that makes this unnecessary). Test
+  // what a popup _should_ do.
+  decoration.SetActive(false);
+  EXPECT_CALL(decoration, OnMousePressed(_, _)).WillOnce(Return(true));
+  SendMouseClickToDecoration(&decoration);
+
+  // And test a misbehaving bubble that forgets to call SetActive(false). It
+  // should still see the second click.
+  decoration.SetActive(true);
+  EXPECT_CALL(decoration, OnMousePressed(_, _)).Times(0);
+  SendMouseClickToDecoration(&decoration);
+  EXPECT_CALL(decoration, OnMousePressed(_, _)).WillOnce(Return(true));
+  SendMouseClickToDecoration(&decoration);
+
+  // Verify that AcceptsPress::ALWAYS receives presses when active.
+  EXPECT_CALL(decoration, AcceptsMousePress())
+      .WillRepeatedly(Return(AcceptsPress::ALWAYS));
+  decoration.SetActive(true);
+  EXPECT_CALL(decoration, OnMousePressed(_, _)).WillOnce(Return(true));
+  SendMouseClickToDecoration(&decoration);
 }
 
 TEST_F(AutocompleteTextFieldObserverTest, SendsEditingMessages) {

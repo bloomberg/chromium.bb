@@ -481,7 +481,7 @@ const CGFloat kAnimationDuration = 0.2;
   if ([event type] == NSLeftMouseDown) {
     LocationBarDecoration* decoration =
         [[self cell] decorationForEvent:event inRect:[self bounds] ofView:self];
-    if (decoration && decoration->AcceptsMousePress())
+    if (decoration && decoration->AcceptsMousePress() != AcceptsPress::NEVER)
       return NO;
   }
 

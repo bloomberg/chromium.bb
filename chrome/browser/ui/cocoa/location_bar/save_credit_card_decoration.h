@@ -26,7 +26,7 @@ class SaveCreditCardDecoration : public ImageDecoration {
   void SetIcon(bool locationBarIsDark);
 
   // LocationBarDecoration implementation:
-  bool AcceptsMousePress() override;
+  AcceptsPress AcceptsMousePress() override;
   bool OnMousePressed(NSRect frame, NSPoint location) override;
   NSString* GetToolTip() override;
   NSPoint GetBubblePointInFrame(NSRect frame) override;
