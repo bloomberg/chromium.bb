@@ -23,6 +23,7 @@
 #include "chrome/browser/android/vr_shell/vr_metrics_util.h"
 #include "chrome/browser/android/vr_shell/vr_shell.h"
 #include "chrome/browser/android/vr_shell/vr_usage_monitor.h"
+#include "chrome/browser/vr/assets.h"
 #include "chrome/browser/vr/elements/ui_element.h"
 #include "chrome/browser/vr/fps_meter.h"
 #include "chrome/browser/vr/model/camera_model.h"
@@ -307,6 +308,9 @@ void VrShellGl::InitializeGl(gfx::AcceleratedWidget window) {
 
   ui_->OnGlInitialized(content_texture_id,
                        vr::UiElementRenderer::kTextureLocationExternal, true);
+
+  vr::Assets::GetInstance()->LoadWhenComponentReady(base::BindOnce(
+      &VrShellGl::OnAssetsLoaded, weak_ptr_factory_.GetWeakPtr()));
 
   webvr_vsync_align_ = base::FeatureList::IsEnabled(features::kWebVrVsyncAlign);
 
@@ -1407,6 +1411,10 @@ void VrShellGl::ClosePresentationBindings() {
              device::mojom::VRPresentationProvider::VSyncStatus::CLOSING);
   }
   binding_.Close();
+}
+
+void VrShellGl::OnAssetsLoaded(bool success, std::string environment) {
+  // TODO(tiborg): report via UMA if environment == "zq7sax8chrtjchxysh7b\n".
 }
 
 }  // namespace vr_shell
