@@ -33,12 +33,6 @@
 
 typedef struct CGFont* CGFontRef;
 
-#ifdef __OBJC__
-@class NSFont;
-#else
-class NSFont;
-#endif
-
 namespace blink {
 
 // Put methods here that are required due to sandbox restrictions.
@@ -53,7 +47,7 @@ class WebSandboxSupport {
   // parameter and must call CGFontRelease() to unload it when done.
   //
   // Returns: true on success, false on error.
-  virtual bool LoadFont(NSFont* src_font,
+  virtual bool LoadFont(CTFontRef src_font,
                         CGFontRef* out,
                         uint32_t* font_id) = 0;
 };

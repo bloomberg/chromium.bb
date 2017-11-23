@@ -8,6 +8,7 @@ import "content/common/input/input_handler.mojom";
 import "content/common/native_types.mojom";
 import "content/common/widget.mojom";
 import "mojo/common/thread_priority.mojom";
+import "mojo/common/string16.mojom";
 import "mojo/common/time.mojom";
 import "url/mojo/origin.mojom";
 import "url/mojo/url.mojom";
@@ -44,4 +45,9 @@ interface RenderMessageFilter {
   // (Linux only, NOP on other platforms.)
   SetThreadPriority(int32 platform_thread_id,
                     mojo.common.mojom.ThreadPriority thread_priority);
+
+  // Request that the browser load a font into shared memory for us.
+  // TODO(https://crbug.com/676224).  Only used for MacOS.
+  [Sync] LoadFont(mojo.common.mojom.String16 font_name, float font_point_size)
+      => (uint32 buffer_size, handle<shared_buffer>? font_data, uint32 font_id);
 };

@@ -44,7 +44,7 @@ class PpapiBlinkPlatformImpl::SandboxSupport : public WebSandboxSupport {
   virtual ~SandboxSupport() {}
 
 #if defined(OS_MACOSX)
-  bool LoadFont(NSFont* srcFont, CGFontRef* out, uint32_t* fontID) override;
+  bool LoadFont(CTFontRef srcFont, CGFontRef* out, uint32_t* fontID) override;
 #elif defined(OS_POSIX)
   SandboxSupport();
   void GetFallbackFontForCharacter(
@@ -67,7 +67,7 @@ class PpapiBlinkPlatformImpl::SandboxSupport : public WebSandboxSupport {
 
 #if defined(OS_MACOSX)
 
-bool PpapiBlinkPlatformImpl::SandboxSupport::LoadFont(NSFont* src_font,
+bool PpapiBlinkPlatformImpl::SandboxSupport::LoadFont(CTFontRef src_font,
                                                       CGFontRef* out,
                                                       uint32_t* font_id) {
   // TODO(brettw) this should do the something similar to what

@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/mac/scoped_nsobject.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
@@ -108,20 +109,16 @@ TEST_F(AttributedStringCoderTest, NilString) {
 }
 
 TEST_F(AttributedStringCoderTest, OutOfRange) {
+  NSFont* system_font = [NSFont systemFontOfSize:10];
+  base::string16 font_name = base::SysNSStringToUTF16([system_font fontName]);
   AttributedStringCoder::EncodedString encoded(
       base::ASCIIToUTF16("Hello World"));
   encoded.attributes()->push_back(
-      AttributedStringCoder::FontAttribute(
-          FontDescriptor([NSFont systemFontOfSize:12]),
-          gfx::Range(0, 5)));
+      AttributedStringCoder::FontAttribute(font_name, 12, gfx::Range(0, 5)));
   encoded.attributes()->push_back(
-      AttributedStringCoder::FontAttribute(
-          FontDescriptor([NSFont systemFontOfSize:14]),
-          gfx::Range(5, 100)));
+      AttributedStringCoder::FontAttribute(font_name, 14, gfx::Range(5, 100)));
   encoded.attributes()->push_back(
-      AttributedStringCoder::FontAttribute(
-          FontDescriptor([NSFont systemFontOfSize:16]),
-          gfx::Range(100, 5)));
+      AttributedStringCoder::FontAttribute(font_name, 16, gfx::Range(100, 5)));
 
   NSAttributedString* decoded = AttributedStringCoder::Decode(&encoded);
   EXPECT_TRUE(decoded);

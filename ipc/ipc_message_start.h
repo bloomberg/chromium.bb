@@ -83,7 +83,6 @@ enum IPCMessageStart {
   // internal code. Contact gunsch@ before changing/removing.
   CastCryptoMsgStart,
   CastChannelMsgStart,
-  RenderProcessMsgStart,
   IPCTestMsgStart,
   DWriteFontProxyMsgStart,
   MediaPlayerDelegateMsgStart,

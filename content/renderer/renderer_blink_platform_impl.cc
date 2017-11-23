@@ -21,6 +21,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -33,7 +34,6 @@
 #include "content/common/gpu_stream_constants.h"
 #include "content/common/origin_trials/trial_policy_impl.h"
 #include "content/common/render_message_filter.mojom.h"
-#include "content/common/render_process_messages.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
@@ -94,6 +94,7 @@
 #include "media/filters/stream_parser_factory.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 #include "ppapi/features/features.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -130,7 +131,6 @@
 #include "url/gurl.h"
 
 #if defined(OS_MACOSX)
-#include "content/common/mac/font_descriptor.h"
 #include "content/common/mac/font_loader.h"
 #include "content/renderer/webscrollbarbehavior_impl_mac.h"
 #include "third_party/WebKit/public/platform/mac/WebSandboxSupport.h"
@@ -246,7 +246,7 @@ class RendererBlinkPlatformImpl::SandboxSupport
   virtual ~SandboxSupport() {}
 
 #if defined(OS_MACOSX)
-  bool LoadFont(NSFont* src_font,
+  bool LoadFont(CTFontRef src_font,
                 CGFontRef* container,
                 uint32_t* font_id) override;
 #elif defined(OS_POSIX)
@@ -635,22 +635,25 @@ bool RendererBlinkPlatformImpl::FileUtilities::GetFileInfo(
 
 #if defined(OS_MACOSX)
 
-bool RendererBlinkPlatformImpl::SandboxSupport::LoadFont(NSFont* src_font,
+bool RendererBlinkPlatformImpl::SandboxSupport::LoadFont(CTFontRef src_font,
                                                          CGFontRef* out,
                                                          uint32_t* font_id) {
   uint32_t font_data_size;
-  FontDescriptor src_font_descriptor(src_font);
-  base::SharedMemoryHandle font_data;
-  if (!RenderThread::Get()->Send(new RenderProcessHostMsg_LoadFont(
-        src_font_descriptor, &font_data_size, &font_data, font_id))) {
+  base::ScopedCFTypeRef<CFStringRef> name_ref(
+      CTFontCopyPostScriptName(src_font));
+  base::string16 font_name = SysCFStringRefToUTF16(name_ref);
+  float font_point_size = CTFontGetSize(src_font);
+  mojo::ScopedSharedBufferHandle font_data;
+  if (!RenderThreadImpl::current()->render_message_filter()->LoadFont(
+          font_name, font_point_size, &font_data_size, &font_data, font_id)) {
     *out = NULL;
     *font_id = 0;
     return false;
   }
 
-  if (font_data_size == 0 || !font_data.IsValid() || *font_id == 0) {
-    LOG(ERROR) << "Bad response from RenderProcessHostMsg_LoadFont() for " <<
-        src_font_descriptor.font_name;
+  if (font_data_size == 0 || !font_data.is_valid() || *font_id == 0) {
+    LOG(ERROR) << "Bad response from RenderProcessHostMsg_LoadFont() for "
+               << font_name;
     *out = NULL;
     *font_id = 0;
     return false;
@@ -660,7 +663,8 @@ bool RendererBlinkPlatformImpl::SandboxSupport::LoadFont(NSFont* src_font,
   // isn't already activated, based on the font id.  If it's already
   // activated, don't reactivate it here - crbug.com/72727 .
 
-  return FontLoader::CGFontRefFromBuffer(font_data, font_data_size, out);
+  return FontLoader::CGFontRefFromBuffer(std::move(font_data), font_data_size,
+                                         out);
 }
 
 #elif defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_FUCHSIA)

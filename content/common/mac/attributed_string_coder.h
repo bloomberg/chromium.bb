@@ -9,7 +9,6 @@
 
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
-#include "content/common/mac/font_descriptor.h"
 #include "ipc/ipc_message_utils.h"
 #include "ui/gfx/range/range.h"
 
@@ -41,7 +40,9 @@ class CONTENT_EXPORT AttributedStringCoder {
   class FontAttribute {
    public:
     FontAttribute(NSDictionary* ns_attributes, gfx::Range effective_range);
-    FontAttribute(FontDescriptor font, gfx::Range range);
+    FontAttribute(const base::string16& font_name,
+                  float font_point_size,
+                  const gfx::Range& range);
     FontAttribute();
     ~FontAttribute();
 
@@ -55,11 +56,13 @@ class CONTENT_EXPORT AttributedStringCoder {
     bool ShouldEncode() const;
 
     // Accessors:
-    FontDescriptor font_descriptor() const { return font_descriptor_; }
-    gfx::Range effective_range() const { return effective_range_; }
+    const base::string16& font_name() const { return font_name_; }
+    float font_point_size() const { return font_point_size_; }
+    const gfx::Range& effective_range() const { return effective_range_; }
 
    private:
-    FontDescriptor font_descriptor_;
+    base::string16 font_name_;
+    float font_point_size_;
     gfx::Range effective_range_;
   };
 
