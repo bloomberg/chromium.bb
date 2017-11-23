@@ -624,6 +624,7 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
           "GL_EXT_sRGB_write_control",
           "GL_EXT_texture_compression_dxt1",
           "GL_EXT_texture_compression_s3tc_srgb",
+          "GL_EXT_texture_format_BGRA8888",
           "GL_EXT_texture_norm16",
           "GL_EXT_texture_rg",
           "GL_EXT_texture_sRGB_decode",
