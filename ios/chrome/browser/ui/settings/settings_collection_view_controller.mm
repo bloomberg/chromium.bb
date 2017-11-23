@@ -113,6 +113,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeLogJavascript,
   ItemTypeShowAutofillTypePredictions,
   ItemTypeCellCatalog,
+  ItemTypeArticlesForYou,
 };
 
 #if CHROMIUM_BUILD && !defined(NDEBUG)
@@ -183,8 +184,12 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
   BOOL _hasRecordedSigninImpression;
   // PrefBackedBoolean for ShowMemoryDebugTools switch.
   PrefBackedBoolean* _showMemoryDebugToolsEnabled;
+  // PrefBackedBoolean for ArticlesForYou switch.
+  PrefBackedBoolean* _articlesEnabled;
   // The item related to the switch for the show suggestions setting.
   CollectionViewSwitchItem* _showMemoryDebugToolsItem;
+  // The item related to the switch for the show suggestions setting.
+  CollectionViewSwitchItem* _articlesForYouItem;
 
   // Mediator to configure the sign-in promo cell. Also used to received
   // identity update notifications.
@@ -267,6 +272,11 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
 
     PrefService* prefService = _browserState->GetPrefs();
 
+    _articlesEnabled = [[PrefBackedBoolean alloc]
+        initWithPrefService:prefService
+                   prefName:prefs::kArticlesForYouEnabled];
+    [_articlesEnabled setObserver:self];
+
     _voiceLocaleCode.Init(prefs::kVoiceSearchLocale, prefService);
 
     _prefChangeRegistrar.Init(prefService);
@@ -301,6 +311,7 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
   _notificationBridge.reset();
   _identityServiceObserver.reset();
   [_showMemoryDebugToolsEnabled setObserver:nil];
+  [_articlesEnabled setObserver:nil];
 }
 
 #pragma mark View lifecycle
@@ -384,6 +395,9 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
   [model addItem:[self voiceSearchDetailItem]
       toSectionWithIdentifier:SectionIdentifierAdvanced];
   [model addItem:[self privacyDetailItem]
+      toSectionWithIdentifier:SectionIdentifierAdvanced];
+  _articlesForYouItem = [self articlesForYouSwitchItem];
+  [model addItem:_articlesForYouItem
       toSectionWithIdentifier:SectionIdentifierAdvanced];
   [model addItem:[self contentSettingsDetailItem]
       toSectionWithIdentifier:SectionIdentifierAdvanced];
@@ -554,6 +568,17 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
 
   return showMemoryDebugSwitchItem;
 }
+
+- (CollectionViewSwitchItem*)articlesForYouSwitchItem {
+  CollectionViewSwitchItem* articlesForYouSwitchItem =
+      [self switchItemWithType:ItemTypeArticlesForYou
+                         title:l10n_util::GetNSString(
+                                   IDS_IOS_CONTENT_SUGGESTIONS_SETTING_TITLE)
+               withDefaultsKey:nil];
+  articlesForYouSwitchItem.on = [_articlesEnabled value];
+
+  return articlesForYouSwitchItem;
+}
 #if CHROMIUM_BUILD && !defined(NDEBUG)
 
 - (CollectionViewSwitchItem*)viewSourceSwitchItem {
@@ -661,6 +686,14 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
           base::mac::ObjCCastStrict<CollectionViewSwitchCell>(cell);
       [switchCell.switchView addTarget:self
                                 action:@selector(memorySwitchToggled:)
+                      forControlEvents:UIControlEventValueChanged];
+      break;
+    }
+    case ItemTypeArticlesForYou: {
+      CollectionViewSwitchCell* switchCell =
+          base::mac::ObjCCastStrict<CollectionViewSwitchCell>(cell);
+      [switchCell.switchView addTarget:self
+                                action:@selector(articlesForYouSwitchToggled:)
                       forControlEvents:UIControlEventValueChanged];
       break;
     }
@@ -849,6 +882,20 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
   BOOL newSwitchValue = sender.isOn;
   switchItem.on = newSwitchValue;
   [_showMemoryDebugToolsEnabled setValue:newSwitchValue];
+}
+
+- (void)articlesForYouSwitchToggled:(UISwitch*)sender {
+  NSIndexPath* switchPath =
+      [self.collectionViewModel indexPathForItemType:ItemTypeArticlesForYou
+                                   sectionIdentifier:SectionIdentifierAdvanced];
+
+  CollectionViewSwitchItem* switchItem =
+      base::mac::ObjCCastStrict<CollectionViewSwitchItem>(
+          [self.collectionViewModel itemAtIndexPath:switchPath]);
+
+  BOOL newSwitchValue = sender.isOn;
+  switchItem.on = newSwitchValue;
+  [_articlesEnabled setValue:newSwitchValue];
 }
 
 #if CHROMIUM_BUILD && !defined(NDEBUG)
@@ -1103,12 +1150,17 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
 #pragma mark - BooleanObserver
 
 - (void)booleanDidChange:(id<ObservableBoolean>)observableBoolean {
-  DCHECK_EQ(observableBoolean, _showMemoryDebugToolsEnabled);
-  // Update the Item.
-  _showMemoryDebugToolsItem.on = [_showMemoryDebugToolsEnabled value];
-
-  // Update the Cell.
-  [self reconfigureCellsForItems:@[ _showMemoryDebugToolsItem ]];
+  if (observableBoolean == _showMemoryDebugToolsEnabled) {
+    // Update the Item.
+    _showMemoryDebugToolsItem.on = [_showMemoryDebugToolsEnabled value];
+    // Update the Cell.
+    [self reconfigureCellsForItems:@[ _showMemoryDebugToolsItem ]];
+  } else if (observableBoolean == _articlesEnabled) {
+    _articlesForYouItem.on = [_articlesEnabled value];
+    [self reconfigureCellsForItems:@[ _articlesForYouItem ]];
+  } else {
+    NOTREACHED();
+  }
 }
 
 #pragma mark - PrefObserverDelegate
