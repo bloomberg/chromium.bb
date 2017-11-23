@@ -440,7 +440,6 @@ source_set("blink_headers") {
     "platform/modules/serviceworker/WebServiceWorkerCache.h",
     "platform/modules/serviceworker/WebServiceWorkerCacheStorage.h",
     "platform/modules/serviceworker/WebServiceWorkerClientQueryOptions.h",
-    "platform/modules/serviceworker/WebServiceWorkerClientType.h",
     "platform/modules/serviceworker/WebServiceWorkerClientsClaimCallbacks.h",
     "platform/modules/serviceworker/WebServiceWorkerClientsInfo.h",
     "platform/modules/serviceworker/WebServiceWorkerError.h",

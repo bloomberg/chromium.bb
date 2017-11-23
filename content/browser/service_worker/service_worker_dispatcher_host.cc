@@ -232,7 +232,6 @@ void ServiceWorkerDispatcherHost::DispatchExtendableMessageEvent(
     const StatusCallback& callback) {
   switch (sender_provider_host->provider_type()) {
     case SERVICE_WORKER_PROVIDER_FOR_WINDOW:
-    case SERVICE_WORKER_PROVIDER_FOR_WORKER:
     case SERVICE_WORKER_PROVIDER_FOR_SHARED_WORKER:
       service_worker_client_utils::GetClient(
           sender_provider_host,

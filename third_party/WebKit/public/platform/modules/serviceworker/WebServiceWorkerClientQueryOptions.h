@@ -5,16 +5,16 @@
 #ifndef WebServiceWorkerClientQueryOptions_h
 #define WebServiceWorkerClientQueryOptions_h
 
-#include "public/platform/modules/serviceworker/WebServiceWorkerClientType.h"
+#include "third_party/WebKit/common/service_worker/service_worker_client.mojom-shared.h"
 
 namespace blink {
 
 struct WebServiceWorkerClientQueryOptions {
   WebServiceWorkerClientQueryOptions()
-      : client_type(kWebServiceWorkerClientTypeWindow),
+      : client_type(mojom::ServiceWorkerClientType::kWindow),
         include_uncontrolled(false) {}
 
-  WebServiceWorkerClientType client_type;
+  mojom::ServiceWorkerClientType client_type;
   bool include_uncontrolled;
 };
 

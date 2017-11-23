@@ -9,7 +9,6 @@ enum ServiceWorkerProviderType {
 
   // For ServiceWorker clients.
   SERVICE_WORKER_PROVIDER_FOR_WINDOW,
-  SERVICE_WORKER_PROVIDER_FOR_WORKER,
   SERVICE_WORKER_PROVIDER_FOR_SHARED_WORKER,
 
   // For ServiceWorkers.

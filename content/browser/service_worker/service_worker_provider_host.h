@@ -54,8 +54,8 @@ class WebContents;
 
 // This class is the browser-process representation of a service worker
 // provider. There are two general types of providers: 1) those for a client
-// (windows, dedicated workers, or shared workers), and 2) those for hosting a
-// running service worker.
+// (windows or shared workers), and 2) those for hosting a running service
+// worker.
 //
 // For client providers, there is a provider per document or a worker and the
 // lifetime of this object is tied to the lifetime of its document or the worker
@@ -208,7 +208,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
 
   ServiceWorkerProviderType provider_type() const { return info_.type; }
   bool IsProviderForClient() const;
-  blink::WebServiceWorkerClientType client_type() const;
+  blink::mojom::ServiceWorkerClientType client_type() const;
 
   // For service worker clients. Associates to |registration| to listen for its
   // version change events and sets the controller. If |notify_controllerchange|

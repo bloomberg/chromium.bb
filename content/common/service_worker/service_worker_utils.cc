@@ -156,6 +156,14 @@ std::string ServiceWorkerUtils::ErrorTypeToString(
   return oss.str();
 }
 
+// static
+std::string ServiceWorkerUtils::ClientTypeToString(
+    blink::mojom::ServiceWorkerClientType type) {
+  std::ostringstream oss;
+  oss << type;
+  return oss.str();
+}
+
 bool LongestScopeMatcher::MatchLongest(const GURL& scope) {
   if (!ServiceWorkerUtils::ScopeMatches(scope, url_))
     return false;

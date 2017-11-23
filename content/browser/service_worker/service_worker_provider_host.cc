@@ -43,6 +43,7 @@
 #include "net/base/url_util.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "third_party/WebKit/common/message_port/message_port_channel.h"
+#include "third_party/WebKit/common/service_worker/service_worker_client.mojom.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_object.mojom.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 
@@ -345,7 +346,6 @@ void ServiceWorkerProviderHost::SetControllerVersionAttribute(
 bool ServiceWorkerProviderHost::IsProviderForClient() const {
   switch (info_.type) {
     case SERVICE_WORKER_PROVIDER_FOR_WINDOW:
-    case SERVICE_WORKER_PROVIDER_FOR_WORKER:
     case SERVICE_WORKER_PROVIDER_FOR_SHARED_WORKER:
       return true;
     case SERVICE_WORKER_PROVIDER_FOR_CONTROLLER:
@@ -357,21 +357,19 @@ bool ServiceWorkerProviderHost::IsProviderForClient() const {
   return false;
 }
 
-blink::WebServiceWorkerClientType ServiceWorkerProviderHost::client_type()
+blink::mojom::ServiceWorkerClientType ServiceWorkerProviderHost::client_type()
     const {
   switch (info_.type) {
     case SERVICE_WORKER_PROVIDER_FOR_WINDOW:
-      return blink::kWebServiceWorkerClientTypeWindow;
-    case SERVICE_WORKER_PROVIDER_FOR_WORKER:
-      return blink::kWebServiceWorkerClientTypeWorker;
+      return blink::mojom::ServiceWorkerClientType::kWindow;
     case SERVICE_WORKER_PROVIDER_FOR_SHARED_WORKER:
-      return blink::kWebServiceWorkerClientTypeSharedWorker;
+      return blink::mojom::ServiceWorkerClientType::kSharedWorker;
     case SERVICE_WORKER_PROVIDER_FOR_CONTROLLER:
     case SERVICE_WORKER_PROVIDER_UNKNOWN:
       NOTREACHED() << info_.type;
   }
   NOTREACHED() << info_.type;
-  return blink::kWebServiceWorkerClientTypeWindow;
+  return blink::mojom::ServiceWorkerClientType::kWindow;
 }
 
 void ServiceWorkerProviderHost::AssociateRegistration(
@@ -1120,7 +1118,7 @@ bool ServiceWorkerProviderHost::IsValidRegisterMessage(
     const GURL& script_url,
     const blink::mojom::ServiceWorkerRegistrationOptions& options,
     std::string* out_error) const {
-  if (client_type() != blink::kWebServiceWorkerClientTypeWindow) {
+  if (client_type() != blink::mojom::ServiceWorkerClientType::kWindow) {
     *out_error = ServiceWorkerConsts::kBadMessageFromNonWindow;
     return false;
   }
@@ -1144,7 +1142,7 @@ bool ServiceWorkerProviderHost::IsValidRegisterMessage(
 bool ServiceWorkerProviderHost::IsValidGetRegistrationMessage(
     const GURL& client_url,
     std::string* out_error) const {
-  if (client_type() != blink::kWebServiceWorkerClientTypeWindow) {
+  if (client_type() != blink::mojom::ServiceWorkerClientType::kWindow) {
     *out_error = ServiceWorkerConsts::kBadMessageFromNonWindow;
     return false;
   }
@@ -1163,7 +1161,7 @@ bool ServiceWorkerProviderHost::IsValidGetRegistrationMessage(
 
 bool ServiceWorkerProviderHost::IsValidGetRegistrationsMessage(
     std::string* out_error) const {
-  if (client_type() != blink::kWebServiceWorkerClientTypeWindow) {
+  if (client_type() != blink::mojom::ServiceWorkerClientType::kWindow) {
     *out_error = ServiceWorkerConsts::kBadMessageFromNonWindow;
     return false;
   }
@@ -1177,7 +1175,7 @@ bool ServiceWorkerProviderHost::IsValidGetRegistrationsMessage(
 
 bool ServiceWorkerProviderHost::IsValidGetRegistrationForReadyMessage(
     std::string* out_error) const {
-  if (client_type() != blink::kWebServiceWorkerClientTypeWindow) {
+  if (client_type() != blink::mojom::ServiceWorkerClientType::kWindow) {
     *out_error = ServiceWorkerConsts::kBadMessageFromNonWindow;
     return false;
   }

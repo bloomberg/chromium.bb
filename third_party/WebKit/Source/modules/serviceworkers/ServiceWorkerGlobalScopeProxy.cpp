@@ -87,6 +87,7 @@
 #include "public/platform/modules/serviceworker/service_worker_event_status.mojom-blink.h"
 #include "public/web/WebSerializedScriptValue.h"
 #include "public/web/modules/serviceworker/WebServiceWorkerContextClient.h"
+#include "third_party/WebKit/common/service_worker/service_worker_client.mojom-blink.h"
 
 namespace blink {
 
@@ -244,7 +245,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchExtendableMessageEvent(
   if (!source_origin.IsUnique())
     origin = source_origin.ToString();
   ServiceWorkerClient* source = nullptr;
-  if (client.client_type == kWebServiceWorkerClientTypeWindow)
+  if (client.client_type == mojom::ServiceWorkerClientType::kWindow)
     source = ServiceWorkerWindowClient::Create(client);
   else
     source = ServiceWorkerClient::Create(client);
