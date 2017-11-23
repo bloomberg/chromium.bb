@@ -10,8 +10,10 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/keyed_service/core/service_access_type.h"
+#include "components/password_manager/core/browser/log_manager.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/password_manager.h"
+#include "components/password_manager/core/browser/password_manager_internals_service.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/signin/core/browser/signin_manager_base.h"
@@ -19,6 +21,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
+#include "ios/chrome/browser/passwords/password_manager_internals_service_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
@@ -59,6 +62,10 @@ IOSChromePasswordManagerClient::IOSChromePasswordManagerClient(
       helper_(this) {
   saving_passwords_enabled_.Init(
       password_manager::prefs::kCredentialsEnableService, GetPrefs());
+  log_manager_ = password_manager::LogManager::Create(
+      ios::PasswordManagerInternalsServiceFactory::GetForBrowserState(
+          delegate_.browserState),
+      base::Closure());
 }
 
 IOSChromePasswordManagerClient::~IOSChromePasswordManagerClient() = default;
@@ -168,6 +175,11 @@ const GURL& IOSChromePasswordManagerClient::GetLastCommittedEntryURL() const {
 const password_manager::CredentialsFilter*
 IOSChromePasswordManagerClient::GetStoreResultFilter() const {
   return &credentials_filter_;
+}
+
+const password_manager::LogManager*
+IOSChromePasswordManagerClient::GetLogManager() const {
+  return log_manager_.get();
 }
 
 ukm::UkmRecorder* IOSChromePasswordManagerClient::GetUkmRecorder() {

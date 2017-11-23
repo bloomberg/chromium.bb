@@ -52,6 +52,7 @@ extern const char kChromeUINewTabHost[];
 extern const char kChromeUINTPTilesInternalsHost[];
 extern const char kChromeUIOfflineHost[];
 extern const char kChromeUIOmahaHost[];
+extern const char kChromeUIPasswordManagerInternalsHost[];
 extern const char kChromeUIPhysicalWebHost[];
 extern const char kChromeUIPopularSitesInternalsHost[];
 extern const char kChromeUIPolicyHost[];
