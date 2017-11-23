@@ -32,7 +32,8 @@ class UiSceneManager {
   void CreateWebVRExitWarning();
   void CreateSystemIndicators();
   void CreateContentQuad();
-  void CreateSplashScreen();
+  void CreateSplashScreenForDirectWebVrLaunch();
+  void CreateWebVrTimeoutScreen();
   void CreateUnderDevelopmentNotice();
   void CreateBackground();
   void CreateViewportAwareRoot();
