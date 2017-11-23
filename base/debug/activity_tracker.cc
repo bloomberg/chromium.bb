@@ -638,13 +638,11 @@ struct ThreadActivityTracker::Header {
 
   // A memory location used to indicate if changes have been made to the data
   // that would invalidate an in-progress read of its contents. The active
-  // tracker will zero the value whenever something gets popped from the
-  // stack. A monitoring tracker can write a non-zero value here, copy the
-  // stack contents, and read the value to know, if it is still non-zero, that
-  // the contents didn't change while being copied. This can handle concurrent
-  // snapshot operations only if each snapshot writes a different bit (which
-  // is not the current implementation so no parallel snapshots allowed).
-  std::atomic<uint32_t> data_unchanged;
+  // tracker will increment the value whenever something gets popped from the
+  // stack. A monitoring tracker can check the value before and after access
+  // to know, if it's still the same, that the contents didn't change while
+  // being copied.
+  std::atomic<uint32_t> data_version;
 
   // The last "exception" activity. This can't be stored on the stack because
   // that could get popped as things unwind.
@@ -728,7 +726,7 @@ ThreadActivityTracker::ThreadActivityTracker(void* base, size_t size)
     DCHECK_EQ(0, header_->start_ticks);
     DCHECK_EQ(0U, header_->stack_slots);
     DCHECK_EQ(0U, header_->current_depth.load(std::memory_order_relaxed));
-    DCHECK_EQ(0U, header_->data_unchanged.load(std::memory_order_relaxed));
+    DCHECK_EQ(0U, header_->data_version.load(std::memory_order_relaxed));
     DCHECK_EQ(0, stack_[0].time_internal);
     DCHECK_EQ(0U, stack_[0].origin_address);
     DCHECK_EQ(0U, stack_[0].call_stack[0]);
@@ -840,12 +838,11 @@ void ThreadActivityTracker::PopActivity(ActivityId id) {
          CalledOnValidThread());
 
   // The stack has shrunk meaning that some other thread trying to copy the
-  // contents for reporting purposes could get bad data. That thread would
-  // have written a non-zero value into |data_unchanged|; clearing it here
-  // will let that thread detect that something did change. This needs to
+  // contents for reporting purposes could get bad data. Increment the data
+  // version so that it con tell that things have changed. This needs to
   // happen after the atomic |depth| operation above so a "release" store
   // is required.
-  header_->data_unchanged.store(0, std::memory_order_release);
+  header_->data_version.fetch_add(1, std::memory_order_release);
 }
 
 std::unique_ptr<ActivityUserData> ThreadActivityTracker::GetUserData(
@@ -894,7 +891,7 @@ void ThreadActivityTracker::RecordExceptionActivity(const void* program_counter,
 
   // The data has changed meaning that some other thread trying to copy the
   // contents for reporting purposes could get bad data.
-  header_->data_unchanged.store(0, std::memory_order_relaxed);
+  header_->data_version.fetch_add(1, std::memory_order_relaxed);
 }
 
 bool ThreadActivityTracker::IsValid() const {
@@ -940,12 +937,13 @@ bool ThreadActivityTracker::CreateSnapshot(Snapshot* output_snapshot) const {
     const int64_t starting_process_id = header_->owner.process_id;
     const int64_t starting_thread_id = header_->thread_ref.as_id;
 
-    // Write a non-zero value to |data_unchanged| so it's possible to detect
-    // at the end that nothing has changed since copying the data began. A
-    // "cst" operation is required to ensure it occurs before everything else.
-    // Using "cst" memory ordering is relatively expensive but this is only
-    // done during analysis so doesn't directly affect the worker threads.
-    header_->data_unchanged.store(1, std::memory_order_seq_cst);
+    // Note the current |data_version| so it's possible to detect at the end
+    // that nothing has changed since copying the data began. A "cst" operation
+    // is required to ensure it occurs before everything else. Using "cst"
+    // memory ordering is relatively expensive but this is only done during
+    // analysis so doesn't directly affect the worker threads.
+    const uint32_t pre_version =
+        header_->data_version.load(std::memory_order_seq_cst);
 
     // Fetching the current depth also "acquires" the contents of the stack.
     depth = header_->current_depth.load(std::memory_order_acquire);
@@ -965,7 +963,7 @@ bool ThreadActivityTracker::CreateSnapshot(Snapshot* output_snapshot) const {
 
     // Retry if something changed during the copy. A "cst" operation ensures
     // it must happen after all the above operations.
-    if (!header_->data_unchanged.load(std::memory_order_seq_cst))
+    if (header_->data_version.load(std::memory_order_seq_cst) != pre_version)
       continue;
 
     // Stack copied. Record it's full depth.
@@ -1025,12 +1023,8 @@ const void* ThreadActivityTracker::GetBaseAddress() {
   return header_;
 }
 
-void ThreadActivityTracker::ClearDataChangedForTesting() {
-  header_->data_unchanged.store(2, std::memory_order_relaxed);
-}
-
-bool ThreadActivityTracker::WasDataChangedForTesting() {
-  return !header_->data_unchanged.load(std::memory_order_relaxed);
+uint32_t ThreadActivityTracker::GetDataVersionForTesting() {
+  return header_->data_version.load(std::memory_order_relaxed);
 }
 
 void ThreadActivityTracker::SetOwningProcessIdForTesting(int64_t pid,
@@ -1305,6 +1299,36 @@ bool GlobalActivityTracker::CreateWithLocalMemory(size_t size,
       std::make_unique<LocalPersistentMemoryAllocator>(size, id, name),
       stack_depth, process_id);
   return true;
+}
+
+// static
+bool GlobalActivityTracker::CreateWithSharedMemory(
+    std::unique_ptr<SharedMemory> shm,
+    uint64_t id,
+    StringPiece name,
+    int stack_depth) {
+  if (shm->mapped_size() == 0 ||
+      !SharedPersistentMemoryAllocator::IsSharedMemoryAcceptable(*shm)) {
+    return false;
+  }
+  CreateWithAllocator(std::make_unique<SharedPersistentMemoryAllocator>(
+                          std::move(shm), id, name, false),
+                      stack_depth, 0);
+  return true;
+}
+
+// static
+bool GlobalActivityTracker::CreateWithSharedMemoryHandle(
+    const SharedMemoryHandle& handle,
+    size_t size,
+    uint64_t id,
+    StringPiece name,
+    int stack_depth) {
+  std::unique_ptr<SharedMemory> shm(
+      new SharedMemory(handle, /*readonly=*/false));
+  if (!shm->Map(size))
+    return false;
+  return CreateWithSharedMemory(std::move(shm), id, name, stack_depth);
 }
 
 // static

@@ -216,6 +216,35 @@ TEST_F(ActivityAnalyzerTest, GlobalAnalyzerConstruction) {
   EXPECT_EQ("bar", data_snapshot.at("foo").GetString());
 }
 
+TEST_F(ActivityAnalyzerTest, GlobalAnalyzerFromSharedMemory) {
+  SharedMemoryHandle handle1;
+  SharedMemoryHandle handle2;
+
+  {
+    std::unique_ptr<SharedMemory> shmem(new SharedMemory());
+    ASSERT_TRUE(shmem->CreateAndMapAnonymous(kMemorySize));
+    handle1 = shmem->handle().Duplicate();
+    ASSERT_TRUE(handle1.IsValid());
+    handle2 = shmem->handle().Duplicate();
+    ASSERT_TRUE(handle2.IsValid());
+  }
+
+  GlobalActivityTracker::CreateWithSharedMemoryHandle(handle1, kMemorySize, 0,
+                                                      "", 3);
+  GlobalActivityTracker::Get()->process_data().SetString("foo", "bar");
+
+  std::unique_ptr<GlobalActivityAnalyzer> analyzer =
+      GlobalActivityAnalyzer::CreateWithSharedMemoryHandle(handle2,
+                                                           kMemorySize);
+
+  const int64_t pid = analyzer->GetFirstProcess();
+  ASSERT_NE(0, pid);
+  const ActivityUserData::Snapshot& data_snapshot =
+      analyzer->GetProcessDataSnapshot(pid);
+  ASSERT_LE(1U, data_snapshot.size());
+  EXPECT_EQ("bar", data_snapshot.at("foo").GetString());
+}
+
 TEST_F(ActivityAnalyzerTest, UserDataSnapshotTest) {
   GlobalActivityTracker::CreateWithLocalMemory(kMemorySize, 0, "", 3, 0);
   ThreadActivityAnalyzer::Snapshot tracker_snapshot;

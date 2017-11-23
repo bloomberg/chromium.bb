@@ -24,7 +24,6 @@ namespace {
 // An empty snapshot that can be returned when there otherwise is none.
 LazyInstance<ActivityUserData::Snapshot>::Leaky g_empty_user_data_snapshot;
 
-#if !defined(OS_NACL)
 // DO NOT CHANGE VALUES. This is logged persistently in a histogram.
 enum AnalyzerCreationError {
   kInvalidMemoryMappedFile,
@@ -39,7 +38,6 @@ void LogAnalyzerCreationError(AnalyzerCreationError error) {
   UMA_HISTOGRAM_ENUMERATION("ActivityTracker.Collect.AnalyzerCreationError",
                             error, kAnalyzerCreationErrorMax);
 }
-#endif  // !defined(OS_NACL)
 
 }  // namespace
 
@@ -91,6 +89,28 @@ GlobalActivityAnalyzer::GlobalActivityAnalyzer(
 
 GlobalActivityAnalyzer::~GlobalActivityAnalyzer() {}
 
+// static
+std::unique_ptr<GlobalActivityAnalyzer>
+GlobalActivityAnalyzer::CreateWithAllocator(
+    std::unique_ptr<PersistentMemoryAllocator> allocator) {
+  if (allocator->GetMemoryState() ==
+      PersistentMemoryAllocator::MEMORY_UNINITIALIZED) {
+    LogAnalyzerCreationError(kPmaUninitialized);
+    return nullptr;
+  }
+  if (allocator->GetMemoryState() ==
+      PersistentMemoryAllocator::MEMORY_DELETED) {
+    LogAnalyzerCreationError(kPmaDeleted);
+    return nullptr;
+  }
+  if (allocator->IsCorrupt()) {
+    LogAnalyzerCreationError(kPmaCorrupt);
+    return nullptr;
+  }
+
+  return WrapUnique(new GlobalActivityAnalyzer(std::move(allocator)));
+}
+
 #if !defined(OS_NACL)
 // static
 std::unique_ptr<GlobalActivityAnalyzer> GlobalActivityAnalyzer::CreateWithFile(
@@ -109,27 +129,34 @@ std::unique_ptr<GlobalActivityAnalyzer> GlobalActivityAnalyzer::CreateWithFile(
     return nullptr;
   }
 
-  std::unique_ptr<FilePersistentMemoryAllocator> allocator(
-      new FilePersistentMemoryAllocator(std::move(mmfile), 0, 0,
-                                        base::StringPiece(), true));
-  if (allocator->GetMemoryState() ==
-      PersistentMemoryAllocator::MEMORY_UNINITIALIZED) {
-    LogAnalyzerCreationError(kPmaUninitialized);
-    return nullptr;
-  }
-  if (allocator->GetMemoryState() ==
-      PersistentMemoryAllocator::MEMORY_DELETED) {
-    LogAnalyzerCreationError(kPmaDeleted);
-    return nullptr;
-  }
-  if (allocator->IsCorrupt()) {
-    LogAnalyzerCreationError(kPmaCorrupt);
-    return nullptr;
-  }
-
-  return WrapUnique(new GlobalActivityAnalyzer(std::move(allocator)));
+  return CreateWithAllocator(std::make_unique<FilePersistentMemoryAllocator>(
+      std::move(mmfile), 0, 0, StringPiece(), /*readonly=*/true));
 }
 #endif  // !defined(OS_NACL)
+
+// static
+std::unique_ptr<GlobalActivityAnalyzer>
+GlobalActivityAnalyzer::CreateWithSharedMemory(
+    std::unique_ptr<SharedMemory> shm) {
+  if (shm->mapped_size() == 0 ||
+      !SharedPersistentMemoryAllocator::IsSharedMemoryAcceptable(*shm)) {
+    return nullptr;
+  }
+  return CreateWithAllocator(std::make_unique<SharedPersistentMemoryAllocator>(
+      std::move(shm), 0, StringPiece(), /*readonly=*/true));
+}
+
+// static
+std::unique_ptr<GlobalActivityAnalyzer>
+GlobalActivityAnalyzer::CreateWithSharedMemoryHandle(
+    const SharedMemoryHandle& handle,
+    size_t size) {
+  std::unique_ptr<SharedMemory> shm(
+      new SharedMemory(handle, /*readonly=*/true));
+  if (!shm->Map(size))
+    return nullptr;
+  return CreateWithSharedMemory(std::move(shm));
+}
 
 int64_t GlobalActivityAnalyzer::GetFirstProcess() {
   PrepareAllAnalyzers();
