@@ -73,9 +73,6 @@
                      style:(ToolbarControllerStyle)style
                   forState:(ToolbarButtonUIState)state;
 
-// Creates a hash of the UI state of the toolbar.
-- (uint32_t)snapshotHash;
-
 // Adds transition animations to every UIButton in |containerView| with a
 // nonzero opacity.
 - (void)animateTransitionForButtonsInView:(UIView*)containerView

@@ -566,19 +566,6 @@ using ios::material::TimingFunction;
   return buttonImageIds[index][style][state];
 }
 
-- (uint32_t)snapshotHash {
-  // Only the 3 lowest bits are used by UIControlState.
-  uint32_t hash = [toolsMenuButton_ state] & 0x07;
-  // When the tools popup controller is valid, it means that the images
-  // representing the tools menu button have been swapped. Factor that in by
-  // adding in whether or not the tools popup menu is a valid object, rather
-  // than trying to figure out which image is currently visible.
-  hash |= [toolsMenuStateProvider_ isShowingToolsMenu] ? (1 << 4) : 0;
-  // The label of the stack button changes with the number of tabs open.
-  hash ^= [[stackButton_ titleForState:UIControlStateNormal] hash];
-  return hash;
-}
-
 - (NSMutableArray*)transitionLayers {
   return transitionLayers_;
 }

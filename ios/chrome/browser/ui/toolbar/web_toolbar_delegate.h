@@ -15,12 +15,8 @@ class WebState;
 
 // Delegate interface, to be implemented by the WebToolbarController's delegate.
 @protocol WebToolbarDelegate<ToolbarCoordinatorDelegate>
-@required
 // Returns the WebState.
 - (web::WebState*)currentWebState;
-@optional
-// Called before the toolbar screenshot gets updated.
-- (void)willUpdateToolbarSnapshot;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_WEB_TOOLBAR_DELEGATE_H_
