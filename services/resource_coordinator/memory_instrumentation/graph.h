@@ -125,6 +125,14 @@ class GlobalDumpGraph {
     void set_weak(bool weak) { weak_ = weak; }
     bool is_explicit() const { return explicit_; }
     void set_explicit(bool explicit_node) { explicit_ = explicit_node; }
+    uint64_t not_owned_sub_size() const { return not_owned_sub_size_; }
+    void add_not_owned_sub_size(uint64_t addition) {
+      not_owned_sub_size_ += addition;
+    }
+    uint64_t not_owning_sub_size() const { return not_owning_sub_size_; }
+    void add_not_owning_sub_size(uint64_t addition) {
+      not_owning_sub_size_ += addition;
+    }
     GlobalDumpGraph::Edge* owns_edge() const { return owns_edge_; }
     std::map<std::string, Node*>* children() { return &children_; }
     std::vector<GlobalDumpGraph::Edge*>* owned_by_edges() {
@@ -141,6 +149,8 @@ class GlobalDumpGraph {
     std::map<std::string, Node*> children_;
     bool explicit_ = false;
     bool weak_ = false;
+    uint64_t not_owning_sub_size_ = 0;
+    uint64_t not_owned_sub_size_ = 0;
 
     GlobalDumpGraph::Edge* owns_edge_;
     std::vector<GlobalDumpGraph::Edge*> owned_by_edges_;

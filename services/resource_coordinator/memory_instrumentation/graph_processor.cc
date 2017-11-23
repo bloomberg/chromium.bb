@@ -23,6 +23,7 @@ using Process = memory_instrumentation::GlobalDumpGraph::Process;
 namespace {
 
 const char kSizeEntryName[] = "size";
+const char kEffectiveSizeEntryName[] = "effective_size";
 
 Node::Entry::ScalarUnits EntryUnitsFromString(std::string units) {
   if (units == MemoryAllocatorDump::kUnitsBytes) {
@@ -144,6 +145,21 @@ void GraphProcessor::CalculateSizesForGraph(GlobalDumpGraph* global_graph) {
       auto it = pid_to_process.second->VisitInDepthFirstPostOrder();
       while (Node* node = it.next()) {
         CalculateSizeForNode(node);
+      }
+    }
+  }
+
+  // Ninth pass: Calculate not-owned and not-owning sub-sizes of all nodes.
+  {
+    auto it = global_graph->shared_memory_graph()->VisitInDepthFirstPostOrder();
+    while (Node* node = it.next()) {
+      CalculateDumpSubSizes(node);
+    }
+
+    for (auto& pid_to_process : global_graph->process_dump_graphs()) {
+      auto it = pid_to_process.second->VisitInDepthFirstPostOrder();
+      while (Node* node = it.next()) {
+        CalculateDumpSubSizes(node);
       }
     }
   }
@@ -475,7 +491,7 @@ void GraphProcessor::AggregateNumericsRecursively(Node* node) {
     for (const auto& name_to_entry : *path_to_child.second->entries()) {
       const std::string& name = name_to_entry.first;
       if (name_to_entry.second.type == Node::Entry::Type::kUInt64 &&
-          name != kSizeEntryName && name != "effective_size") {
+          name != kSizeEntryName && name != kEffectiveSizeEntryName) {
         numeric_names.insert(name);
       }
     }
@@ -576,6 +592,51 @@ void GraphProcessor::CalculateSizeForNode(Node* node) {
     Node* unspecified = node->CreateChild("<unspecified>");
     unspecified->AddEntry(kSizeEntryName, Node::Entry::ScalarUnits::kBytes,
                           unaccounted);
+  }
+}
+
+// Assumes that this function has been called on all children and owner nodes.
+// static
+void GraphProcessor::CalculateDumpSubSizes(Node* node) {
+  // Completely skip dumps with undefined size.
+  base::Optional<uint64_t> size_opt = GetSizeEntryOfNode(node);
+  if (!size_opt)
+    return;
+
+  // If the dump is a leaf node, then both sub-sizes are equal to the size.
+  if (node->children()->empty()) {
+    node->add_not_owning_sub_size(*size_opt);
+    node->add_not_owned_sub_size(*size_opt);
+    return;
+  }
+
+  // Calculate this node's not-owning sub-size by summing up the not-owning
+  // sub-sizes of children which do not own another node.
+  for (const auto& path_to_child : *node->children()) {
+    if (path_to_child.second->owns_edge())
+      continue;
+    node->add_not_owning_sub_size(path_to_child.second->not_owning_sub_size());
+  }
+
+  // Calculate this dump's not-owned sub-size.
+  for (const auto& path_to_child : *node->children()) {
+    Node* child = path_to_child.second;
+
+    // If the child dump is not owned, then add its not-owned sub-size.
+    if (child->owned_by_edges()->empty()) {
+      node->add_not_owned_sub_size(child->not_owned_sub_size());
+      continue;
+    }
+
+    // If the child dump is owned, then add the difference between its size
+    // and the largest owner.
+    uint64_t largest_owner_size = 0;
+    for (Edge* edge : *child->owned_by_edges()) {
+      uint64_t source_size = GetSizeEntryOfNode(edge->source()).value_or(0);
+      largest_owner_size = std::max(largest_owner_size, source_size);
+    }
+    uint64_t child_size = GetSizeEntryOfNode(child).value_or(0);
+    node->add_not_owned_sub_size(child_size - largest_owner_size);
   }
 }
 

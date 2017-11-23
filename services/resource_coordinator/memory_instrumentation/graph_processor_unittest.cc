@@ -72,6 +72,10 @@ class GraphProcessorTest : public testing::Test {
     GraphProcessor::CalculateSizeForNode(node);
   }
 
+  void CalculateDumpSubSizes(Node* node) {
+    GraphProcessor::CalculateDumpSubSizes(node);
+  }
+
  protected:
   GlobalDumpGraph graph;
 };
@@ -555,6 +559,50 @@ TEST_F(GraphProcessorTest, CalculateSizeForNode) {
   auto root_entry = process->root()->entries()->begin()->second;
   ASSERT_EQ(root_entry.value_uint64, 1210ul);
   ASSERT_EQ(root_entry.units, Node::Entry::ScalarUnits::kBytes);
+}
+
+TEST_F(GraphProcessorTest, CalculateDumpSubSizes) {
+  Process* process_1 = graph.CreateGraphForProcess(1);
+  Process* process_2 = graph.CreateGraphForProcess(2);
+
+  Node* parent_1 = process_1->CreateNode(kEmptyGuid, "parent", false);
+  Node* child_1 = process_1->CreateNode(kEmptyGuid, "parent/child", false);
+
+  Node* parent_2 = process_2->CreateNode(kEmptyGuid, "parent", false);
+  Node* child_2 = process_2->CreateNode(kEmptyGuid, "parent/child", false);
+
+  graph.AddNodeOwnershipEdge(parent_1, parent_2, 0);
+
+  process_1->root()->AddEntry("size", Node::Entry::ScalarUnits::kBytes, 4);
+  parent_1->AddEntry("size", Node::Entry::ScalarUnits::kBytes, 4);
+  child_1->AddEntry("size", Node::Entry::ScalarUnits::kBytes, 4);
+  process_2->root()->AddEntry("size", Node::Entry::ScalarUnits::kBytes, 5);
+  parent_2->AddEntry("size", Node::Entry::ScalarUnits::kBytes, 5);
+  child_2->AddEntry("size", Node::Entry::ScalarUnits::kBytes, 5);
+
+  // Each of these nodes should have owner/owned same as size itself.
+  CalculateDumpSubSizes(child_1);
+  ASSERT_EQ(child_1->not_owned_sub_size(), 4ul);
+  ASSERT_EQ(child_1->not_owning_sub_size(), 4ul);
+  CalculateDumpSubSizes(child_2);
+  ASSERT_EQ(child_2->not_owned_sub_size(), 5ul);
+  ASSERT_EQ(child_2->not_owning_sub_size(), 5ul);
+
+  // These nodes should also have size of children.
+  CalculateDumpSubSizes(parent_1);
+  ASSERT_EQ(parent_1->not_owned_sub_size(), 4ul);
+  ASSERT_EQ(parent_1->not_owning_sub_size(), 4ul);
+  CalculateDumpSubSizes(parent_2);
+  ASSERT_EQ(parent_2->not_owned_sub_size(), 5ul);
+  ASSERT_EQ(parent_2->not_owning_sub_size(), 5ul);
+
+  // These nodes should account for edge between parents.
+  CalculateDumpSubSizes(process_1->root());
+  ASSERT_EQ(process_1->root()->not_owned_sub_size(), 4ul);
+  ASSERT_EQ(process_1->root()->not_owning_sub_size(), 0ul);
+  CalculateDumpSubSizes(process_2->root());
+  ASSERT_EQ(process_2->root()->not_owned_sub_size(), 1ul);
+  ASSERT_EQ(process_2->root()->not_owning_sub_size(), 5ul);
 }
 
 }  // namespace memory_instrumentation
