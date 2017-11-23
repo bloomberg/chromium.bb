@@ -204,8 +204,7 @@ IN_PROC_BROWSER_TEST_F(GlobalCommandsApiTest, MAYBE_GlobalCommand) {
 #if defined(OS_WIN)
 // Feature only fully implemented on Windows, other platforms coming.
 // TODO(smus): On mac, SendKeyPress must first support media keys.
-// Test occasionally times out on Windows. http://crbug.com/428813
-#define MAYBE_GlobalDuplicatedMediaKey DISABLED_GlobalDuplicatedMediaKey
+#define MAYBE_GlobalDuplicatedMediaKey GlobalDuplicatedMediaKey
 #else
 #define MAYBE_GlobalDuplicatedMediaKey DISABLED_GlobalDuplicatedMediaKey
 #endif
