@@ -30,6 +30,9 @@ include_rules = [
     # we resolve the control layer.
     "!core/frame/WebLocalFrameImpl.h",
     "!core/frame/WebRemoteFrameImpl.h",
+    # We are moving from WTF_MAKE_NONCOPYABLE to DISALLOW_COPY_AND_ASSIGN. Stop
+    # new dependencies on WTF_MAKE_NONCOPYABLE.
+    "!platform/wtf/Noncopyable.h",
 ]
 
 specific_include_rules = {
