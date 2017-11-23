@@ -59,9 +59,6 @@ void PreviewModeClient::NotifySelectedFindResultChanged(
   NOTREACHED();
 }
 
-void PreviewModeClient::NotifyPageBecameVisible(
-    const PDFEngine::PageFeatures* page_features) {}
-
 void PreviewModeClient::GetDocumentPassword(
     pp::CompletionCallbackWithOutput<pp::Var> callback) {
   callback.Run(PP_ERROR_FAILED);
