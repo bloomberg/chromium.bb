@@ -90,7 +90,7 @@ content::ScreenInfo GetNSViewScreenInfo(NSView* view) {
   content::ScreenInfo results;
   results.device_scale_factor = static_cast<int>(display.device_scale_factor());
   results.color_space = display.color_space();
-  results.color_space.GetICCProfile(&results.icc_profile);
+  results.icc_profile = gfx::ICCProfile::FromCacheMac(display.color_space());
   results.depth = display.color_depth();
   results.depth_per_component = display.depth_per_component();
   results.is_monochrome = display.is_monochrome();

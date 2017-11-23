@@ -15,10 +15,6 @@
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size);
 
-namespace mojo {
-template <typename, typename> struct StructTraits;
-}
-
 namespace gfx {
 
 // Used to represent a full ICC profile, usually retrieved from a monitor. It
@@ -45,6 +41,16 @@ class COLOR_SPACE_EXPORT ICCProfile {
   // processes).
   static ICCProfile FromData(const void* icc_profile, size_t size);
 
+  // Create a profile for a parametric color space. Returns an invalid profile
+  // if the specified space is not parametric.
+  static ICCProfile FromParametricColorSpace(
+      const gfx::ColorSpace& color_space);
+
+  // Return the ICCProfile that was used to create the specified ColorSpace, if
+  // available. Otherwise, return an invalid profile. This is used on macOS for
+  // power reasons.
+  static ICCProfile FromCacheMac(const gfx::ColorSpace& color_space);
+
   // Return a ColorSpace that references this ICCProfile. ColorTransforms
   // created using this ColorSpace will match this ICCProfile precisely.
   ColorSpace GetColorSpace() const;
@@ -54,6 +60,9 @@ class COLOR_SPACE_EXPORT ICCProfile {
   // if the parametric approximation is almost exact.
   ColorSpace GetParametricColorSpace() const;
 
+  // Return the data for the profile.
+  std::vector<char> GetData() const;
+
   // Histogram how we this was approximated by a gfx::ColorSpace. Only
   // histogram a given profile once per display.
   void HistogramDisplay(int64_t display_id) const;
@@ -62,6 +71,9 @@ class COLOR_SPACE_EXPORT ICCProfile {
   // This method is used to hard-code the |id_| to a specific value. It is used
   // only when a profile is received via IPC.
   static ICCProfile FromDataWithId(const void* data, size_t size, uint64_t id);
+
+  // This method is used by ColorTransform to construct LUT based transforms.
+  static sk_sp<SkColorSpace> GetSkColorSpaceFromId(uint64_t id);
 
   class Internals : public base::RefCountedThreadSafe<ICCProfile::Internals> {
    public:
@@ -80,13 +92,14 @@ class COLOR_SPACE_EXPORT ICCProfile {
       kICCFailedToCreateXform = 7,
       kICCFailedToApproximateTrFnAccurately = 8,
       kICCExtractedSRGBColorSpace = 9,
-      kICCProfileAnalyzeLast = kICCExtractedSRGBColorSpace,
+      kICCNoProfile = 10,
+      kICCProfileAnalyzeLast = kICCNoProfile,
     };
 
     const std::vector<char> data_;
 
     // The result of attepting to extract a color space from the color profile.
-    AnalyzeResult analyze_result_ = kICCFailedToParse;
+    AnalyzeResult analyze_result_ = kICCNoProfile;
 
     // True iff we can create a valid ColorSpace (and ColorTransform) from this
     // object. The transform may be LUT-based (using an SkColorSpaceXform to

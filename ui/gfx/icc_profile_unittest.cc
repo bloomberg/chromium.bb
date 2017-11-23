@@ -15,11 +15,10 @@ TEST(ICCProfile, Conversions) {
   ICCProfile icc_profile = ICCProfileForTestingColorSpin();
   ColorSpace color_space_from_icc_profile = icc_profile.GetColorSpace();
 
-  ICCProfile icc_profile_from_color_space;
-  bool result =
-      color_space_from_icc_profile.GetICCProfile(&icc_profile_from_color_space);
-  EXPECT_TRUE(result);
-  EXPECT_TRUE(icc_profile == icc_profile_from_color_space);
+  ICCProfile icc_profile_from_color_space =
+      ICCProfile::FromParametricColorSpace(color_space_from_icc_profile);
+  EXPECT_TRUE(icc_profile_from_color_space.IsValid());
+  EXPECT_NE(icc_profile, icc_profile_from_color_space);
 }
 
 TEST(ICCProfile, SRGB) {
@@ -54,16 +53,13 @@ TEST(ICCProfile, Equality) {
   EXPECT_FALSE(spin_space == adobe_space);
   EXPECT_TRUE(spin_space != adobe_space);
 
-  ICCProfile temp;
-  bool get_icc_result = false;
-
-  get_icc_result = spin_space.GetICCProfile(&temp);
-  EXPECT_TRUE(get_icc_result);
+  ICCProfile temp = ICCProfile::FromCacheMac(spin_space);
+  EXPECT_TRUE(temp.IsValid());
   EXPECT_TRUE(spin_profile == temp);
   EXPECT_FALSE(spin_profile != temp);
 
-  get_icc_result = adobe_space.GetICCProfile(&temp);
-  EXPECT_TRUE(get_icc_result);
+  temp = ICCProfile::FromCacheMac(adobe_space);
+  EXPECT_TRUE(temp.IsValid());
   EXPECT_FALSE(spin_profile == temp);
   EXPECT_TRUE(spin_profile != temp);
 
@@ -74,49 +70,66 @@ TEST(ICCProfile, Equality) {
       adobe_space.ToSkColorSpace().get()));
 }
 
-TEST(ICCProfile, ParametricVersusExact) {
+TEST(ICCProfile, ParametricVersusExactInaccurate) {
   // This ICC profile has three transfer functions that differ enough that the
   // parametric color space is considered inaccurate.
   ICCProfile multi_tr_fn = ICCProfileForTestingNoAnalyticTrFn();
   EXPECT_NE(multi_tr_fn.GetColorSpace(), multi_tr_fn.GetParametricColorSpace());
 
-  ICCProfile multi_tr_fn_color_space;
-  EXPECT_TRUE(
-      multi_tr_fn.GetColorSpace().GetICCProfile(&multi_tr_fn_color_space));
-  EXPECT_EQ(multi_tr_fn_color_space, multi_tr_fn);
+  // Fails to get parametric color space because the space is not parametric.
+  ICCProfile profile;
+  profile = ICCProfile::FromParametricColorSpace(multi_tr_fn.GetColorSpace());
+  EXPECT_FALSE(profile.IsValid());
 
-  ICCProfile multi_tr_fn_parametric_color_space;
-  EXPECT_TRUE(multi_tr_fn.GetParametricColorSpace().GetICCProfile(
-      &multi_tr_fn_parametric_color_space));
-  EXPECT_NE(multi_tr_fn_parametric_color_space, multi_tr_fn);
+  // The Mac cache does not find the parametric approximation, because the cache
+  // only has the original.
+  profile = ICCProfile::FromCacheMac(multi_tr_fn.GetParametricColorSpace());
+  EXPECT_FALSE(profile.IsValid());
 
+  // The Mac cache does find the original.
+  profile = ICCProfile::FromCacheMac(multi_tr_fn.GetColorSpace());
+  EXPECT_TRUE(profile.IsValid());
+  EXPECT_EQ(profile, multi_tr_fn);
+
+  // We are capable of generating a parametric approximation.
+  profile = ICCProfile::FromParametricColorSpace(
+      multi_tr_fn.GetParametricColorSpace());
+  EXPECT_TRUE(profile.IsValid());
+  EXPECT_NE(profile, multi_tr_fn);
+}
+
+TEST(ICCProfile, ParametricVersusExactOvershoot) {
   // This ICC profile has a transfer function with T(1) that is greater than 1
   // in the approximation, but is still close enough to be considered accurate.
   ICCProfile overshoot = ICCProfileForTestingOvershoot();
   EXPECT_EQ(overshoot.GetColorSpace(), overshoot.GetParametricColorSpace());
 
-  ICCProfile overshoot_color_space;
-  EXPECT_TRUE(overshoot.GetColorSpace().GetICCProfile(&overshoot_color_space));
-  EXPECT_EQ(overshoot_color_space, overshoot);
+  ICCProfile profile;
+  profile = ICCProfile::FromCacheMac(overshoot.GetColorSpace());
+  EXPECT_TRUE(profile.IsValid());
+  EXPECT_EQ(profile, overshoot);
 
-  ICCProfile overshoot_parametric_color_space;
-  EXPECT_TRUE(overshoot.GetParametricColorSpace().GetICCProfile(
-      &overshoot_parametric_color_space));
-  EXPECT_EQ(overshoot_parametric_color_space, overshoot);
+  profile = ICCProfile::FromParametricColorSpace(overshoot.GetColorSpace());
+  EXPECT_TRUE(profile.IsValid());
+  EXPECT_NE(profile, overshoot);
+}
 
+TEST(ICCProfile, ParametricVersusExactAdobe) {
   // This ICC profile is precisely represented by the parametric color space.
   ICCProfile accurate = ICCProfileForTestingAdobeRGB();
   EXPECT_EQ(accurate.GetColorSpace(), accurate.GetParametricColorSpace());
 
-  ICCProfile accurate_color_space;
-  EXPECT_TRUE(accurate.GetColorSpace().GetICCProfile(&accurate_color_space));
-  EXPECT_EQ(accurate_color_space, accurate);
+  ICCProfile profile;
+  profile = ICCProfile::FromCacheMac(accurate.GetColorSpace());
+  EXPECT_TRUE(profile.IsValid());
+  EXPECT_EQ(profile, accurate);
 
-  ICCProfile accurate_parametric_color_space;
-  EXPECT_TRUE(accurate.GetParametricColorSpace().GetICCProfile(
-      &accurate_parametric_color_space));
-  EXPECT_EQ(accurate_parametric_color_space, accurate);
+  profile = ICCProfile::FromParametricColorSpace(accurate.GetColorSpace());
+  EXPECT_TRUE(profile.IsValid());
+  EXPECT_NE(profile, accurate);
+}
 
+TEST(ICCProfile, ParametricVersusExactA2B) {
   // This ICC profile has only an A2B representation. We cannot create an
   // SkColorSpaceXform to A2B only ICC profiles, so this should be marked
   // as invalid.
@@ -159,98 +172,6 @@ TEST(ICCProfile, GenericRGB) {
   icc_profile_matrix.invert(&eye);
   eye.postConcat(color_space_matrix);
   EXPECT_TRUE(SkMatrixIsApproximatelyIdentity(eye));
-}
-
-// This tests the ICCProfile MRU cache. This cache is sloppy and should be
-// rewritten, now that some of the original design constraints have been lifted.
-// This test exists only to ensure that we are aware of behavior changes, not to
-// enforce that behavior does not change.
-// https://crbug.com/766736
-TEST(ICCProfile, ExhaustCache) {
-  // Get an ICCProfile that can't be parametrically approximated.
-  ICCProfile original = ICCProfileForTestingNoAnalyticTrFn();
-  ColorSpace original_color_space_0 = original.GetColorSpace();
-
-  // Recover the ICCProfile from its GetColorSpace. Recovery should succeed, and
-  // the ICCProfiles should be equal.
-  ICCProfile recovered_0;
-  EXPECT_TRUE(original_color_space_0.GetICCProfile(&recovered_0));
-  EXPECT_EQ(original, recovered_0);
-
-  // The GetColorSpace of the recovered version should match the original.
-  ColorSpace recovered_0_color_space = recovered_0.GetColorSpace();
-  EXPECT_EQ(recovered_0_color_space, original_color_space_0);
-
-  // Create an identical ICCProfile to the original. It should equal the
-  // original, and its GetColorSpace should equal the original.
-  ICCProfile identical_0 = ICCProfileForTestingNoAnalyticTrFn();
-  EXPECT_EQ(original, identical_0);
-  ColorSpace identical_color_space_0 = identical_0.GetColorSpace();
-  EXPECT_EQ(identical_color_space_0, original_color_space_0);
-
-  // Create 128 distinct ICC profiles. This will destroy the cached
-  // ICCProfile<->ColorSpace mapping.
-  for (size_t i = 0; i < 128; ++i) {
-    SkMatrix44 toXYZD50;
-    ColorSpace::CreateSRGB().GetPrimaryMatrix(&toXYZD50);
-    SkColorSpaceTransferFn fn;
-    fn.fA = 1;
-    fn.fB = 0;
-    fn.fC = 1;
-    fn.fD = 0;
-    fn.fE = 0;
-    fn.fF = 0;
-    fn.fG = 1.5f + i / 128.f;
-    ColorSpace color_space = ColorSpace::CreateCustom(toXYZD50, fn);
-    ICCProfile icc_profile;
-    color_space.GetICCProfile(&icc_profile);
-  }
-
-  // Recover the original ICCProfile from its GetColorSpace. Recovery should
-  // fail, because it has been pushed out of the cache.
-  ICCProfile recovered_1;
-  EXPECT_FALSE(original_color_space_0.GetICCProfile(&recovered_1));
-  EXPECT_NE(original, recovered_1);
-
-  // Create an identical ICCProfile to the original. It will not be equal to
-  // the original, because they will have different ids.
-  ICCProfile identical_1 = ICCProfileForTestingNoAnalyticTrFn();
-  EXPECT_NE(original, identical_1);
-
-  // The two ICCProfiles (with the same data) will produce color spaces that
-  // have different profile ids (and so are unequal).
-  ColorSpace identical_1_color_space = identical_1.GetColorSpace();
-  EXPECT_NE(identical_1_color_space, original_color_space_0);
-
-  // The original ICCProfile is now orphaned because there exists a new entry
-  // with the same data.
-  ColorSpace original_color_space_2 = original.GetColorSpace();
-  ICCProfile recovered_2;
-  EXPECT_FALSE(original_color_space_2.GetICCProfile(&recovered_2));
-  EXPECT_NE(original, recovered_2);
-
-  // Blow away the cache one more time.
-  for (size_t i = 0; i < 128; ++i) {
-    SkMatrix44 toXYZD50;
-    ColorSpace::CreateSRGB().GetPrimaryMatrix(&toXYZD50);
-    SkColorSpaceTransferFn fn;
-    fn.fA = 1;
-    fn.fB = 0;
-    fn.fC = 1;
-    fn.fD = 0;
-    fn.fE = 0;
-    fn.fF = 0;
-    fn.fG = 1.5f + i / 128.f;
-    ColorSpace color_space = ColorSpace::CreateCustom(toXYZD50, fn);
-    ICCProfile icc_profile;
-    color_space.GetICCProfile(&icc_profile);
-  }
-
-  // The original ICCProfile remains out of the cache.
-  ColorSpace original_color_space_3 = original.GetColorSpace();
-  ICCProfile recovered_3;
-  EXPECT_FALSE(original_color_space_3.GetICCProfile(&recovered_3));
-  EXPECT_NE(original, recovered_3);
 }
 
 }  // namespace gfx

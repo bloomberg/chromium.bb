@@ -21245,6 +21245,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
       label="Converged to an insufficiently accurate approximation of
              transfer function"/>
   <int value="9" label="Extracted an sRGB profile directly"/>
+  <int value="10" label="No profile specified"/>
 </enum>
 
 <enum name="IceCandidatePairTypes">

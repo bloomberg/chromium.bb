@@ -957,7 +957,7 @@ sk_sp<SkColorSpace> ColorTransformInternal::GetSkColorSpaceIfNecessary(
     const ColorSpace& color_space) {
   if (!color_space.icc_profile_id_)
     return nullptr;
-  return color_space.ToSkColorSpace();
+  return ICCProfile::GetSkColorSpaceFromId(color_space.icc_profile_id_);
 }
 
 ColorTransformInternal::ColorTransformInternal(const ColorSpace& src,

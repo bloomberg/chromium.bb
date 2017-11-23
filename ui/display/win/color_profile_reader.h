@@ -9,7 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "ui/display/display_export.h"
-#include "ui/gfx/color_space.h"
+#include "ui/gfx/icc_profile.h"
 
 #include <map>
 #include <string>
@@ -39,7 +39,7 @@ class DISPLAY_EXPORT ColorProfileReader {
   // Look up the color space for a given device name. If the device's color
   // profile has not yet been read, this will return sRGB (which is what the
   // file on disk will say most of the time).
-  const gfx::ColorSpace& GetDisplayColorSpace(int64_t id) const;
+  gfx::ColorSpace GetDisplayColorSpace(int64_t id) const;
 
  private:
   typedef std::map<base::string16, base::string16> DeviceToPathMap;
@@ -57,10 +57,12 @@ class DISPLAY_EXPORT ColorProfileReader {
   void ReadProfilesCompleted(DeviceToDataMap device_to_data_map);
 
   Client* const client_ = nullptr;
+  // Set to true once profiles have been read at least once, to avoid
+  // histogramming the default value.
+  bool has_read_profiles_ = false;
   bool update_in_flight_ = false;
   DeviceToPathMap device_to_path_map_;
-  std::map<int64_t, gfx::ColorSpace> display_id_to_color_space_map_;
-  const gfx::ColorSpace default_color_space_ = gfx::ColorSpace::CreateSRGB();
+  std::map<int64_t, gfx::ICCProfile> display_id_to_profile_map_;
   base::WeakPtrFactory<ColorProfileReader> weak_factory_;
 };
 

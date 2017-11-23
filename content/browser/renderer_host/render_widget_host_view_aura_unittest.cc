@@ -290,7 +290,6 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
     result->is_monochrome = display.is_monochrome();
     result->device_scale_factor = display.device_scale_factor();
     result->color_space = display.color_space();
-    result->color_space.GetICCProfile(&result->icc_profile);
 
     // The Display rotation and the ScreenInfo orientation are not the same
     // angle. The former is the physical display rotation while the later is the
