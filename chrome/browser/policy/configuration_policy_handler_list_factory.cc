@@ -81,6 +81,7 @@
 #endif
 
 #if !defined(OS_ANDROID)
+#include "chrome/browser/download/default_download_dir_policy_handler.h"
 #include "chrome/browser/download/download_dir_policy_handler.h"
 #include "chrome/browser/policy/local_sync_policy_handler.h"
 #endif
@@ -990,7 +991,8 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
 #endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 
 #if !defined(OS_ANDROID)
-  handlers->AddHandler(base::WrapUnique(new DownloadDirPolicyHandler));
+  handlers->AddHandler(base::MakeUnique<DefaultDownloadDirPolicyHandler>());
+  handlers->AddHandler(base::MakeUnique<DownloadDirPolicyHandler>());
   handlers->AddHandler(base::MakeUnique<LocalSyncPolicyHandler>());
 
   handlers->AddHandler(base::MakeUnique<SimpleSchemaValidatingPolicyHandler>(
