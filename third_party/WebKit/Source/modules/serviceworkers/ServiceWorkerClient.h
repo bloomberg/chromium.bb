@@ -52,7 +52,7 @@ class MODULES_EXPORT ServiceWorkerClient : public ScriptWrappable {
  private:
   String uuid_;
   String url_;
-  WebServiceWorkerClientType type_;
+  mojom::ServiceWorkerClientType type_;
   WebURLRequest::FrameType frame_type_;
 };
 

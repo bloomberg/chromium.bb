@@ -46,6 +46,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
 #include "third_party/WebKit/common/origin_trials/trial_token_validator.h"
+#include "third_party/WebKit/common/service_worker/service_worker_client.mojom.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_error_type.mojom.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_object.mojom.h"
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
@@ -1075,8 +1076,10 @@ void ServiceWorkerVersion::OnGetClientFinished(
     int request_id,
     const ServiceWorkerClientInfo& client_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  TRACE_EVENT_ASYNC_END1("ServiceWorker", "ServiceWorkerVersion::OnGetClient",
-                         request_id, "client_type", client_info.client_type);
+  TRACE_EVENT_ASYNC_END1(
+      "ServiceWorker", "ServiceWorkerVersion::OnGetClient", request_id,
+      "client_type",
+      ServiceWorkerUtils::ClientTypeToString(client_info.client_type));
 
   // When Clients.get() is called on the script evaluation phase, the running
   // status can be STARTING here.
@@ -1094,8 +1097,9 @@ void ServiceWorkerVersion::OnGetClients(
     const ServiceWorkerClientQueryOptions& options) {
   TRACE_EVENT_ASYNC_BEGIN2(
       "ServiceWorker", "ServiceWorkerVersion::OnGetClients", request_id,
-      "client_type", options.client_type, "include_uncontrolled",
-      options.include_uncontrolled);
+      "client_type",
+      ServiceWorkerUtils::ClientTypeToString(options.client_type),
+      "include_uncontrolled", options.include_uncontrolled);
   service_worker_client_utils::GetClients(
       weak_factory_.GetWeakPtr(), options,
       base::Bind(&ServiceWorkerVersion::OnGetClientsFinished,
@@ -1267,7 +1271,7 @@ void ServiceWorkerVersion::OnFocusClient(int request_id,
     return;
   }
   if (provider_host->client_type() !=
-      blink::kWebServiceWorkerClientTypeWindow) {
+      blink::mojom::ServiceWorkerClientType::kWindow) {
     // focus() should be called only for WindowClient. This may happen due to
     // bad message.
     return;

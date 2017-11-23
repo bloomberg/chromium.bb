@@ -23,6 +23,7 @@
 #include "platform/wtf/Vector.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerClientQueryOptions.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerClientsInfo.h"
+#include "third_party/WebKit/common/service_worker/service_worker_client.mojom-blink.h"
 
 namespace blink {
 
@@ -37,7 +38,7 @@ class ClientArray {
     HeapVector<Member<ServiceWorkerClient>> clients;
     for (size_t i = 0; i < web_clients.clients.size(); ++i) {
       const WebServiceWorkerClientInfo& client = web_clients.clients[i];
-      if (client.client_type == kWebServiceWorkerClientTypeWindow)
+      if (client.client_type == mojom::ServiceWorkerClientType::kWindow)
         clients.push_back(ServiceWorkerWindowClient::Create(client));
       else
         clients.push_back(ServiceWorkerClient::Create(client));
@@ -50,17 +51,15 @@ class ClientArray {
   ClientArray() = delete;
 };
 
-WebServiceWorkerClientType GetClientType(const String& type) {
+mojom::ServiceWorkerClientType GetClientType(const String& type) {
   if (type == "window")
-    return kWebServiceWorkerClientTypeWindow;
-  if (type == "worker")
-    return kWebServiceWorkerClientTypeWorker;
+    return mojom::ServiceWorkerClientType::kWindow;
   if (type == "sharedworker")
-    return kWebServiceWorkerClientTypeSharedWorker;
+    return mojom::ServiceWorkerClientType::kSharedWorker;
   if (type == "all")
-    return kWebServiceWorkerClientTypeAll;
+    return mojom::ServiceWorkerClientType::kAll;
   NOTREACHED();
-  return kWebServiceWorkerClientTypeWindow;
+  return mojom::ServiceWorkerClientType::kWindow;
 }
 
 class GetCallback : public WebServiceWorkerClientCallbacks {

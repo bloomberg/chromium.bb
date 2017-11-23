@@ -15,6 +15,7 @@
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
 #include "platform/bindings/ScriptState.h"
 #include "public/platform/WebString.h"
+#include "third_party/WebKit/common/service_worker/service_worker_client.mojom-blink.h"
 
 namespace blink {
 
@@ -25,12 +26,11 @@ ServiceWorkerClient* ServiceWorkerClient::Take(
     return nullptr;
 
   switch (web_client->client_type) {
-    case kWebServiceWorkerClientTypeWindow:
+    case mojom::ServiceWorkerClientType::kWindow:
       return ServiceWorkerWindowClient::Create(*web_client);
-    case kWebServiceWorkerClientTypeWorker:
-    case kWebServiceWorkerClientTypeSharedWorker:
+    case mojom::ServiceWorkerClientType::kSharedWorker:
       return ServiceWorkerClient::Create(*web_client);
-    case kWebServiceWorkerClientTypeLast:
+    case mojom::ServiceWorkerClientType::kAll:
       NOTREACHED();
       return nullptr;
   }
@@ -53,13 +53,11 @@ ServiceWorkerClient::~ServiceWorkerClient() {}
 
 String ServiceWorkerClient::type() const {
   switch (type_) {
-    case kWebServiceWorkerClientTypeWindow:
+    case mojom::ServiceWorkerClientType::kWindow:
       return "window";
-    case kWebServiceWorkerClientTypeWorker:
-      return "worker";
-    case kWebServiceWorkerClientTypeSharedWorker:
+    case mojom::ServiceWorkerClientType::kSharedWorker:
       return "sharedworker";
-    case kWebServiceWorkerClientTypeAll:
+    case mojom::ServiceWorkerClientType::kAll:
       NOTREACHED();
       return String();
   }

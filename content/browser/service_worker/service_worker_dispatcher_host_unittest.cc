@@ -455,7 +455,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, DispatchExtendableMessageEvent_Fail) {
   GURL script_url = GURL("http://www.example.com/service_worker.js");
 
   Initialize(base::WrapUnique(new FailToStartWorkerTestHelper));
-  SendProviderCreated(SERVICE_WORKER_PROVIDER_FOR_WORKER, pattern);
+  SendProviderCreated(SERVICE_WORKER_PROVIDER_FOR_SHARED_WORKER, pattern);
   SetUpRegistration(pattern, script_url);
 
   // Try to dispatch ExtendableMessageEvent. This should fail to start the

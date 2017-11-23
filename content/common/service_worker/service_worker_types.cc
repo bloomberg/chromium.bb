@@ -148,7 +148,7 @@ size_t ServiceWorkerResponse::EstimatedStructSize() {
 }
 
 ServiceWorkerClientQueryOptions::ServiceWorkerClientQueryOptions()
-    : client_type(blink::kWebServiceWorkerClientTypeWindow),
+    : client_type(blink::mojom::ServiceWorkerClientType::kWindow),
       include_uncontrolled(false) {}
 
 ExtendableMessageEventSource::ExtendableMessageEventSource() {}

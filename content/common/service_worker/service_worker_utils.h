@@ -64,6 +64,9 @@ class ServiceWorkerUtils {
 
   static std::string ErrorTypeToString(
       blink::mojom::ServiceWorkerErrorType error);
+
+  static std::string ClientTypeToString(
+      blink::mojom::ServiceWorkerClientType type);
 };
 
 class CONTENT_EXPORT LongestScopeMatcher {

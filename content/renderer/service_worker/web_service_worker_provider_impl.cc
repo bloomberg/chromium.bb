@@ -49,7 +49,6 @@ WebServiceWorkerProviderImpl::WebServiceWorkerProviderImpl(
     case SERVICE_WORKER_PROVIDER_FOR_CONTROLLER:
       // Do nothing.
       break;
-    case SERVICE_WORKER_PROVIDER_FOR_WORKER:
     case SERVICE_WORKER_PROVIDER_FOR_SHARED_WORKER:
     case SERVICE_WORKER_PROVIDER_UNKNOWN:
       NOTREACHED() << "Unimplemented type: " << context_->provider_type();

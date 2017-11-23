@@ -18,8 +18,6 @@ EnumTraits<ServiceWorkerProviderType, content::ServiceWorkerProviderType>::
       return ServiceWorkerProviderType::SERVICE_WORKER_PROVIDER_UNKNOWN;
     case content::SERVICE_WORKER_PROVIDER_FOR_WINDOW:
       return ServiceWorkerProviderType::SERVICE_WORKER_PROVIDER_FOR_WINDOW;
-    case content::SERVICE_WORKER_PROVIDER_FOR_WORKER:
-      return ServiceWorkerProviderType::SERVICE_WORKER_PROVIDER_FOR_WORKER;
     case content::SERVICE_WORKER_PROVIDER_FOR_SHARED_WORKER:
       return ServiceWorkerProviderType::
           SERVICE_WORKER_PROVIDER_FOR_SHARED_WORKER;
@@ -40,9 +38,6 @@ bool EnumTraits<ServiceWorkerProviderType, content::ServiceWorkerProviderType>::
       return true;
     case ServiceWorkerProviderType::SERVICE_WORKER_PROVIDER_FOR_WINDOW:
       *out = content::SERVICE_WORKER_PROVIDER_FOR_WINDOW;
-      return true;
-    case ServiceWorkerProviderType::SERVICE_WORKER_PROVIDER_FOR_WORKER:
-      *out = content::SERVICE_WORKER_PROVIDER_FOR_WORKER;
       return true;
     case ServiceWorkerProviderType::SERVICE_WORKER_PROVIDER_FOR_SHARED_WORKER:
       *out = content::SERVICE_WORKER_PROVIDER_FOR_SHARED_WORKER;
