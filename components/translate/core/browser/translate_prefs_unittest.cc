@@ -374,7 +374,8 @@ TEST_F(TranslatePrefsTest, GetLanguageInfoListCorrectLocale) {
   std::vector<std::string> expected_codes;
 
   l10n_util::GetAcceptLanguagesForLocale("en-US", &expected_codes);
-  TranslatePrefs::GetLanguageInfoList("en-US", &language_list);
+  TranslatePrefs::GetLanguageInfoList("en-US", true /* translate_enabled */,
+                                      &language_list);
   std::vector<std::string> codes = ExtractLanguageCodes(language_list);
   EXPECT_THAT(codes, UnorderedElementsAreArray(expected_codes));
 
@@ -382,7 +383,8 @@ TEST_F(TranslatePrefsTest, GetLanguageInfoListCorrectLocale) {
   expected_codes.clear();
   codes.clear();
   l10n_util::GetAcceptLanguagesForLocale("ja", &expected_codes);
-  TranslatePrefs::GetLanguageInfoList("ja", &language_list);
+  TranslatePrefs::GetLanguageInfoList("ja", true /* translate_enabled */,
+                                      &language_list);
   codes = ExtractLanguageCodes(language_list);
   EXPECT_THAT(codes, UnorderedElementsAreArray(expected_codes));
 
@@ -390,7 +392,8 @@ TEST_F(TranslatePrefsTest, GetLanguageInfoListCorrectLocale) {
   expected_codes.clear();
   codes.clear();
   l10n_util::GetAcceptLanguagesForLocale("es-AR", &expected_codes);
-  TranslatePrefs::GetLanguageInfoList("es-AR", &language_list);
+  TranslatePrefs::GetLanguageInfoList("es-AR", true /* translate_enabled */,
+                                      &language_list);
   codes = ExtractLanguageCodes(language_list);
   EXPECT_THAT(codes, UnorderedElementsAreArray(expected_codes));
 }
@@ -400,12 +403,14 @@ TEST_F(TranslatePrefsTest, GetLanguageInfoListOutput) {
   std::vector<TranslateLanguageInfo> language_list;
 
   // Empty locale returns empty output.
-  TranslatePrefs::GetLanguageInfoList("", &language_list);
+  TranslatePrefs::GetLanguageInfoList("", true /* translate_enabled */,
+                                      &language_list);
   EXPECT_TRUE(language_list.empty());
 
   // Output is sorted.
   language_list.clear();
-  TranslatePrefs::GetLanguageInfoList("en-US", &language_list);
+  TranslatePrefs::GetLanguageInfoList("en-US", true /* translate_enabled */,
+                                      &language_list);
   const std::vector<std::string> display_names =
       ExtractDisplayNames(language_list);
   std::vector<std::string> sorted(display_names);
@@ -423,7 +428,8 @@ TEST_F(TranslatePrefsTest, GetLanguageInfoListSampleLanguages) {
 
   //-----------------------------------
   // Test with US locale.
-  TranslatePrefs::GetLanguageInfoList("en-US", &language_list);
+  TranslatePrefs::GetLanguageInfoList("en-US", true /* translate_enabled */,
+                                      &language_list);
 
   language = GetLanguageByCode("en", language_list);
   EXPECT_EQ("en", language.code);
@@ -458,7 +464,8 @@ TEST_F(TranslatePrefsTest, GetLanguageInfoListSampleLanguages) {
   //-----------------------------------
   // Test with Italian locale.
   language_list.clear();
-  TranslatePrefs::GetLanguageInfoList("it", &language_list);
+  TranslatePrefs::GetLanguageInfoList("it", true /* translate_enabled */,
+                                      &language_list);
 
   language = GetLanguageByCode("en-US", language_list);
   EXPECT_EQ("en-US", language.code);
@@ -495,7 +502,8 @@ TEST_F(TranslatePrefsTest, GetLanguageInfoListFeatureEnabled) {
   std::vector<TranslateLanguageInfo> language_list;
   TranslateLanguageInfo language;
 
-  TranslatePrefs::GetLanguageInfoList("en-US", &language_list);
+  TranslatePrefs::GetLanguageInfoList("en-US", true /* translate_enabled */,
+                                      &language_list);
 
   language = GetLanguageByCode("en", language_list);
   EXPECT_EQ("en", language.code);

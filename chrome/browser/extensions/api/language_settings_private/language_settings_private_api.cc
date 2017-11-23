@@ -160,7 +160,8 @@ std::vector<std::string> GetSortedExtensionIMEs(
 #endif
 
 LanguageSettingsPrivateGetLanguageListFunction::
-    LanguageSettingsPrivateGetLanguageListFunction() = default;
+    LanguageSettingsPrivateGetLanguageListFunction()
+    : chrome_details_(this) {}
 
 LanguageSettingsPrivateGetLanguageListFunction::
     ~LanguageSettingsPrivateGetLanguageListFunction() = default;
@@ -169,9 +170,13 @@ ExtensionFunction::ResponseAction
 LanguageSettingsPrivateGetLanguageListFunction::Run() {
   // Collect the language codes from the supported accept-languages.
   const std::string app_locale = g_browser_process->GetApplicationLocale();
-  std::vector<translate::TranslateLanguageInfo> languages;
+  const std::unique_ptr<translate::TranslatePrefs> translate_prefs =
+      ChromeTranslateClient::CreateTranslatePrefs(
+          chrome_details_.GetProfile()->GetPrefs());
 
-  translate::TranslatePrefs::GetLanguageInfoList(app_locale, &languages);
+  std::vector<translate::TranslateLanguageInfo> languages;
+  translate::TranslatePrefs::GetLanguageInfoList(
+      app_locale, translate_prefs->IsTranslateAllowedByPolicy(), &languages);
 
   // Get the list of available locales (display languages) and convert to a set.
   const std::vector<std::string>& locales = l10n_util::GetAvailableLocales();

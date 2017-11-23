@@ -53,6 +53,7 @@ class TranslateUIDelegateTest : public ::testing::Test {
         "settings.language.preferred_languages", std::string());
     pref_service_->registry()->RegisterStringPref("intl.accept_languages",
                                                   std::string());
+    pref_service_->registry()->RegisterBooleanPref("translate.enabled", true);
     TranslatePrefs::RegisterProfilePrefs(pref_service_->registry());
 
     client_.reset(new MockTranslateClient(&driver_, pref_service_.get()));

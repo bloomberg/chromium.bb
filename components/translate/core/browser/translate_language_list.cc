@@ -170,6 +170,7 @@ TranslateLanguageList::TranslateLanguageList()
 TranslateLanguageList::~TranslateLanguageList() {}
 
 void TranslateLanguageList::GetSupportedLanguages(
+    bool translate_allowed,
     std::vector<std::string>* languages) {
   DCHECK(languages && languages->empty());
   std::set<std::string>::const_iterator iter = supported_languages_.begin();
@@ -178,7 +179,7 @@ void TranslateLanguageList::GetSupportedLanguages(
 
   // Update language lists if they are not updated after Chrome was launched
   // for later requests.
-  if (!update_is_disabled && language_list_fetcher_.get())
+  if (translate_allowed && !update_is_disabled && language_list_fetcher_.get())
     RequestLanguageList();
 }
 
