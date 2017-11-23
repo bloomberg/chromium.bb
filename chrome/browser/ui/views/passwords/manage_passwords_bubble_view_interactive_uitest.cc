@@ -245,13 +245,7 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest,
                 metrics_util::MANUAL_MANAGE_PASSWORDS));
 }
 
-// Flaky on Windows (http://crbug.com/523255).
-#if defined(OS_WIN)
-#define MAYBE_CloseOnClick DISABLED_CloseOnClick
-#else
-#define MAYBE_CloseOnClick CloseOnClick
-#endif
-IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, MAYBE_CloseOnClick) {
+IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, CloseOnClick) {
   SetupPendingPassword();
   EXPECT_TRUE(IsBubbleShowing());
   EXPECT_FALSE(ManagePasswordsBubbleView::manage_password_bubble()->
