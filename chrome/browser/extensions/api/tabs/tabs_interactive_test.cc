@@ -5,7 +5,6 @@
 #include <stddef.h>
 
 #include "base/values.h"
-#include "build/build_config.h"
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -24,15 +23,7 @@ namespace utils = extension_function_test_utils;
 
 using ExtensionTabsTest = InProcessBrowserTest;
 
-// http://crbug.com/154081 for Aura specific
-// http://crbug.com/179063 for other general failures on try bots.
-#if defined(OS_WIN)
-#define MAYBE_GetLastFocusedWindow DISABLED_GetLastFocusedWindow
-#else
-#define MAYBE_GetLastFocusedWindow GetLastFocusedWindow
-#endif
-
-IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, MAYBE_GetLastFocusedWindow) {
+IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetLastFocusedWindow) {
   // Create a new window which making it the "last focused" window.
   // Note that "last focused" means the "top" most window.
   Browser* new_browser = CreateBrowser(browser()->profile());
@@ -126,12 +117,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, QueryLastFocusedWindowTabs) {
   }
 }
 
-#if defined(OS_WIN)  // http://crbug.com/154081 && http://crbug.com/171080
-#define MAYBE_TabCurrentWindow DISABLED_TabCurrentWindow
-#else
-#define MAYBE_TabCurrentWindow TabCurrentWindow
-#endif
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_TabCurrentWindow) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabCurrentWindow) {
   ASSERT_TRUE(RunExtensionTest("tabs/current_window")) << message_;
 }
 
