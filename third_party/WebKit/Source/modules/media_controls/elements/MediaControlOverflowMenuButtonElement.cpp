@@ -14,7 +14,6 @@ namespace blink {
 MediaControlOverflowMenuButtonElement::MediaControlOverflowMenuButtonElement(
     MediaControlsImpl& media_controls)
     : MediaControlInputElement(media_controls, kMediaOverflowButton) {
-  EnsureUserAgentShadowRoot();
   setType(InputTypeNames::button);
   SetShadowPseudoId(AtomicString("-internal-media-controls-overflow-button"));
   SetIsWanted(false);

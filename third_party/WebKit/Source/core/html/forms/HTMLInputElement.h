@@ -293,17 +293,17 @@ class CORE_EXPORT HTMLInputElement
 
   unsigned SizeOfRadioGroup() const;
 
+  bool SupportsPlaceholder() const final;
   String GetPlaceholderValue() const final;
 
  protected:
   HTMLInputElement(Document&, bool created_by_parser);
 
   void DefaultEventHandler(Event*) override;
+  void CreateShadowSubtree();
 
  private:
   enum AutoCompleteSetting { kUninitialized, kOn, kOff };
-
-  void DidAddUserAgentShadowRoot(ShadowRoot&) final;
 
   void WillChangeForm() final;
   void DidChangeForm() final;
@@ -366,7 +366,6 @@ class CORE_EXPORT HTMLInputElement
   bool TooLong(const String&, NeedsToCheckDirtyFlag) const;
   bool TooShort(const String&, NeedsToCheckDirtyFlag) const;
 
-  bool SupportsPlaceholder() const final;
   void UpdatePlaceholderText() final;
   bool IsEmptyValue() const final { return InnerEditorValue().IsEmpty(); }
   void HandleFocusEvent(Element* old_focused_element, WebFocusType) final;

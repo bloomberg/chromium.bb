@@ -73,7 +73,6 @@ MediaControlSliderElement::MediaControlSliderElement(
       resize_observer_(ResizeObserver::Create(
           GetDocument(),
           new MediaControlSliderElementResizeObserverDelegate(this))) {
-  EnsureUserAgentShadowRoot();
   setType(InputTypeNames::range);
   setAttribute(HTMLNames::stepAttr, "any");
   resize_observer_->observe(this);

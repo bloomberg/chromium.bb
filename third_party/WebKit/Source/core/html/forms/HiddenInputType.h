@@ -62,6 +62,7 @@ class HiddenInputType final : public InputType, private InputTypeView {
                 TextFieldEventBehavior,
                 TextControlSetValueSelection) override;
   void AppendToFormData(FormData&) const override;
+  bool NeedsShadowSubtree() const override { return false; }
 };
 
 }  // namespace blink

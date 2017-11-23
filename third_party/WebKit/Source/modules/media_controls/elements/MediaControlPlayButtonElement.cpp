@@ -16,7 +16,6 @@ namespace blink {
 MediaControlPlayButtonElement::MediaControlPlayButtonElement(
     MediaControlsImpl& media_controls)
     : MediaControlInputElement(media_controls, kMediaPlayButton) {
-  EnsureUserAgentShadowRoot();
   setType(InputTypeNames::button);
   SetShadowPseudoId(AtomicString("-webkit-media-controls-play-button"));
 }

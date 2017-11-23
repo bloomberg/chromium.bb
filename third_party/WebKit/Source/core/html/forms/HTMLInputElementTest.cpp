@@ -193,4 +193,20 @@ TEST_F(HTMLInputElementTest, StepDownOverflow) {
   input->stepDown(1, ASSERT_NO_EXCEPTION);
 }
 
+TEST_F(HTMLInputElementTest, CheckboxHasNoShadowRoot) {
+  GetDocument().body()->SetInnerHTMLFromString("<input type='checkbox' />");
+  HTMLInputElement* input =
+      ToHTMLInputElement(GetDocument().body()->firstChild());
+  EXPECT_EQ(nullptr, input->UserAgentShadowRoot());
+}
+
+TEST_F(HTMLInputElementTest, ChangingInputTypeCausesShadowRootToBeCreated) {
+  GetDocument().body()->SetInnerHTMLFromString("<input type='checkbox' />");
+  HTMLInputElement* input =
+      ToHTMLInputElement(GetDocument().body()->firstChild());
+  EXPECT_EQ(nullptr, input->UserAgentShadowRoot());
+  input->setAttribute(HTMLNames::typeAttr, "text");
+  EXPECT_NE(nullptr, input->UserAgentShadowRoot());
+}
+
 }  // namespace blink

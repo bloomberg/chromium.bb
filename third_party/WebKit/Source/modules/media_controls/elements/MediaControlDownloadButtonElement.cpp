@@ -21,7 +21,6 @@ namespace blink {
 MediaControlDownloadButtonElement::MediaControlDownloadButtonElement(
     MediaControlsImpl& media_controls)
     : MediaControlInputElement(media_controls, kMediaDownloadButton) {
-  EnsureUserAgentShadowRoot();
   setType(InputTypeNames::button);
   SetShadowPseudoId(AtomicString("-internal-media-controls-download-button"));
   SetIsWanted(false);

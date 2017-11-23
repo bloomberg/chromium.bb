@@ -116,6 +116,10 @@ void InputTypeView::StartResourceLoading() {}
 
 void InputTypeView::ClosePopupView() {}
 
+bool InputTypeView::NeedsShadowSubtree() const {
+  return true;
+}
+
 void InputTypeView::CreateShadowSubtree() {}
 
 void InputTypeView::DestroyShadowSubtree() {
