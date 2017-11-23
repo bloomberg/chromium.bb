@@ -45,7 +45,6 @@ class CORE_EXPORT PrePaintTreeWalk {
   bool NeedsTreeBuilderContextUpdate(const LayoutObject&,
                                      const PrePaintTreeWalkContext&);
 
-  PaintPropertyTreeBuilder property_tree_builder_;
   PaintInvalidator paint_invalidator_;
 
   FRIEND_TEST_ALL_PREFIXES(PrePaintTreeWalkTest, ClipRects);

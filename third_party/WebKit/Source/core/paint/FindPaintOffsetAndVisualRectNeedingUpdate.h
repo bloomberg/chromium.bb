@@ -27,7 +27,7 @@ class FindPaintOffsetNeedingUpdateScope {
  public:
   FindPaintOffsetNeedingUpdateScope(const LayoutObject& object,
                                     const FragmentData& fragment_data,
-                                    bool& is_actually_needed)
+                                    const bool& is_actually_needed)
       : object_(object),
         fragment_data_(fragment_data),
         is_actually_needed_(is_actually_needed),
