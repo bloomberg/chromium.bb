@@ -91,6 +91,8 @@ class TestPaginationModelObserver : public PaginationModelObserver {
     }
   }
 
+  void TransitionEnded() override {}
+
   PaginationModel* model_;
 
   int expected_page_selection_;

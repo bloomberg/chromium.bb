@@ -103,10 +103,13 @@ class APP_LIST_EXPORT PaginationModel : public gfx::AnimationDelegate {
   // active animation, just returns selected_page().
   int SelectedTargetPage() const;
 
+  base::TimeDelta GetTransitionAnimationSlideDuration() const;
+
  private:
   void NotifySelectedPageChanged(int old_selected, int new_selected);
   void NotifyTransitionStarted();
   void NotifyTransitionChanged();
+  void NotifyTransitionEnded();
 
   void clear_transition() { SetTransition(Transition(-1, 0)); }
 

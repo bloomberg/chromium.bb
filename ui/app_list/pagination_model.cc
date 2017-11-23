@@ -201,6 +201,11 @@ void PaginationModel::NotifyTransitionChanged() {
     observer.TransitionChanged();
 }
 
+void PaginationModel::NotifyTransitionEnded() {
+  for (auto& observer : observers_)
+    observer.TransitionEnded();
+}
+
 int PaginationModel::CalculateTargetPage(int delta) const {
   DCHECK_GT(total_pages_, 0);
   const int target_page = SelectedTargetPage() + delta;
@@ -215,6 +220,12 @@ int PaginationModel::CalculateTargetPage(int delta) const {
     end_page = total_pages_;
 
   return std::max(start_page, std::min(end_page, target_page));
+}
+
+base::TimeDelta PaginationModel::GetTransitionAnimationSlideDuration() const {
+  return transition_animation_ ? base::TimeDelta::FromMillisecondsD(
+                                     transition_animation_->GetSlideDuration())
+                               : base::TimeDelta();
 }
 
 void PaginationModel::StartTransitionAnimation(const Transition& transition) {
@@ -250,6 +261,8 @@ void PaginationModel::AnimationProgressed(const gfx::Animation* animation) {
 }
 
 void PaginationModel::AnimationEnded(const gfx::Animation* animation) {
+  NotifyTransitionEnded();
+
   // Save |pending_selected_page_| because SelectPage resets it.
   int next_target = pending_selected_page_;
 

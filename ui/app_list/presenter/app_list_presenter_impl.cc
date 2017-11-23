@@ -307,4 +307,6 @@ void AppListPresenterImpl::TransitionStarted() {}
 
 void AppListPresenterImpl::TransitionChanged() {}
 
+void AppListPresenterImpl::TransitionEnded() {}
+
 }  // namespace app_list

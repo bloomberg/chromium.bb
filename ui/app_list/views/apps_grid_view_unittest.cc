@@ -87,6 +87,7 @@ class PageFlipWaiter : public PaginationModelObserver {
   }
   void TransitionStarted() override {}
   void TransitionChanged() override {}
+  void TransitionEnded() override {}
 
   std::unique_ptr<base::RunLoop> ui_run_loop_;
   PaginationModel* model_ = nullptr;

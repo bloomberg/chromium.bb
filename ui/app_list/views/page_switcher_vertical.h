@@ -42,6 +42,7 @@ class PageSwitcherVertical : public PageSwitcher,
   void SelectedPageChanged(int old_selected, int new_selected) override;
   void TransitionStarted() override;
   void TransitionChanged() override;
+  void TransitionEnded() override;
 
   PaginationModel* model_;  // Owned by AppsGridView.
   views::View* buttons_;    // Owned by views hierarchy.
