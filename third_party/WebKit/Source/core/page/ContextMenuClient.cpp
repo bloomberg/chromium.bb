@@ -340,9 +340,12 @@ bool ContextMenuClient::ShowContextMenu(const ContextMenu* default_menu,
   if (selected_frame != web_view_->GetPage()->MainFrame())
     data.frame_url = UrlFromFrame(selected_frame);
 
-  // HitTestResult::isSelected() ensures clean layout by performing a hit test.
   data.selection_start_offset = 0;
-  if (r.IsSelected()) {
+  // HitTestResult::isSelected() ensures clean layout by performing a hit test.
+  // If source_type is |kMenuSourceAdjustSelectionReset| we know the original
+  // HitTestResult in SelectionController passed the inside check already, so
+  // let it pass.
+  if (r.IsSelected() || source_type == kMenuSourceAdjustSelectionReset) {
     data.selected_text = selected_frame->SelectedText();
     WebRange range =
         selected_frame->GetInputMethodController().GetSelectionOffsets();
