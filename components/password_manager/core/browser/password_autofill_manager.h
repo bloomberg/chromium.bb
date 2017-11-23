@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "base/callback.h"
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
 #include "components/autofill/core/browser/autofill_client.h"
@@ -47,6 +48,7 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
   void ClearPreviewedForm() override;
   bool IsCreditCardPopup() override;
   autofill::AutofillDriver* GetAutofillDriver() override;
+  void RegisterDeletionCallback(base::OnceClosure deletion_callback) override;
 
   // Invoked when a password mapping is added.
   void OnAddPasswordFormMapping(
@@ -138,6 +140,9 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
   autofill::AutofillClient* autofill_client_;  // weak
 
   PasswordManagerClient* password_client_;
+
+  // If not null then it will be called in destructor.
+  base::OnceClosure deletion_callback_;
 
   base::WeakPtrFactory<PasswordAutofillManager> weak_ptr_factory_;
 

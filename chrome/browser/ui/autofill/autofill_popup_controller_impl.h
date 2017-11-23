@@ -151,6 +151,9 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   // when the popup is reused it doesn't leak values between uses.
   void ClearState();
 
+  // Hides |view_| unless it is null and then deletes |this|.
+  void HideViewAndDie();
+
   friend class AutofillPopupControllerUnitTest;
   void SetViewForTesting(AutofillPopupView* view) { view_ = view; }
 
