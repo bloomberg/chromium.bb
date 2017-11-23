@@ -2381,7 +2381,6 @@ test("unit_tests") {
     "../browser/sessions/restore_on_startup_policy_handler_unittest.cc",
     "../browser/sessions/session_common_utils_unittest.cc",
     "../browser/shell_integration_win_unittest.cc",
-    "../browser/signin/account_reconcilor_unittest.cc",
     "../browser/signin/chrome_signin_client_unittest.cc",
     "../browser/signin/chrome_signin_helper_unittest.cc",
     "../browser/signin/chrome_signin_status_metrics_provider_delegate_unittest.cc",
