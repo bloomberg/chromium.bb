@@ -10,6 +10,9 @@ include_rules = [
     "!core/frame/WebRemoteFrameImpl.h",
     "+modules",
     "+platform",
+    # We are moving from WTF_MAKE_NONCOPYABLE to DISALLOW_COPY_AND_ASSIGN. Stop
+    # new dependencies on WTF_MAKE_NONCOPYABLE.
+    "!platform/wtf/Noncopyable.h",
     "+public/platform",
     "+public/web",
     "+services/service_manager/public/interfaces/interface_provider.mojom-blink.h",
