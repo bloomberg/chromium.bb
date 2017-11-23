@@ -27,6 +27,7 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/location.h"
+#include "base/memory/shared_memory.h"
 #include "base/metrics/persistent_memory_allocator.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string_piece.h"
@@ -713,10 +714,9 @@ class BASE_EXPORT ThreadActivityTracker {
   // Gets the base memory address used for storing data.
   const void* GetBaseAddress();
 
-  // Access the "data unchanged" flag so tests can determine if an activity
+  // Access the "data version" value so tests can determine if an activity
   // was pushed and popped in a single call.
-  void ClearDataChangedForTesting();
-  bool WasDataChangedForTesting();
+  uint32_t GetDataVersionForTesting();
 
   // Explicitly sets the process ID.
   void SetOwningProcessIdForTesting(int64_t pid, int64_t stamp);
@@ -904,6 +904,21 @@ class BASE_EXPORT GlobalActivityTracker {
                                     StringPiece name,
                                     int stack_depth,
                                     int64_t process_id);
+
+  // Like above but internally creates an allocator using a shared-memory
+  // segment. The segment must already be mapped into the local memory space.
+  static bool CreateWithSharedMemory(std::unique_ptr<SharedMemory> shm,
+                                     uint64_t id,
+                                     StringPiece name,
+                                     int stack_depth);
+
+  // Like above but takes a handle to an existing shared memory segment and
+  // maps it before creating the tracker.
+  static bool CreateWithSharedMemoryHandle(const SharedMemoryHandle& handle,
+                                           size_t size,
+                                           uint64_t id,
+                                           StringPiece name,
+                                           int stack_depth);
 
   // Gets the global activity-tracker or null if none exists.
   static GlobalActivityTracker* Get() {
