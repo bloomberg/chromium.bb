@@ -106,6 +106,7 @@ java_cpp_enum("java_enums_srcjar") {
     "../base/page_transition_types.h",
     "../base/touch/touch_device.h",
     "../base/ui_base_types.h",
+    "../events/android/gesture_event_type.h",
     "../gfx/android/java_bitmap.h",
     "resources/resource_manager.h",
     "resources/system_ui_resource_type.h",

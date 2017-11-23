@@ -80,6 +80,12 @@ class EventForwarder {
                    const base::android::JavaParamRef<jobjectArray>& j_mimeTypes,
                    const base::android::JavaParamRef<jstring>& j_content);
 
+  bool OnGestureEvent(JNIEnv* env,
+                      const base::android::JavaParamRef<jobject>& jobj,
+                      jint type,
+                      jlong time_ms,
+                      jfloat delta);
+
  private:
   friend class ViewAndroid;
 

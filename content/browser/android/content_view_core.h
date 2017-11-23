@@ -131,20 +131,6 @@ class ContentViewCore : public WebContentsObserver {
                  jfloat x,
                  jfloat y);
 
-  void PinchBegin(JNIEnv* env,
-                  const base::android::JavaParamRef<jobject>& obj,
-                  jlong time_ms,
-                  jfloat x,
-                  jfloat y);
-  void PinchEnd(JNIEnv* env,
-                const base::android::JavaParamRef<jobject>& obj,
-                jlong time_ms);
-  void PinchBy(JNIEnv* env,
-               const base::android::JavaParamRef<jobject>& obj,
-               jlong time_ms,
-               jfloat x,
-               jfloat y,
-               jfloat delta);
   void SetTextHandlesTemporarilyHidden(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
@@ -219,7 +205,8 @@ class ContentViewCore : public WebContentsObserver {
   // as cached by the renderer.
   void UpdateFrameInfo(const gfx::Vector2dF& scroll_offset,
                        float page_scale_factor,
-                       const gfx::Vector2dF& page_scale_factor_limits,
+                       float min_page_scale,
+                       float max_page_scale,
                        const gfx::SizeF& content_size,
                        const gfx::SizeF& viewport_size,
                        const float top_content_offset,

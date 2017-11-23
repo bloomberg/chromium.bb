@@ -10,10 +10,13 @@
 #include <bitset>
 #include <limits>
 
+#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/WebKit/public/platform/WebMouseWheelEvent.h"
+#include "ui/events/android/gesture_event_android.h"
+#include "ui/events/android/gesture_event_type.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/gesture_detection/gesture_event_data.h"
@@ -1143,5 +1146,39 @@ EventPointerType WebPointerTypeToEventPointerType(
   NOTREACHED() << "Invalid pointer type";
   return EventPointerType::POINTER_TYPE_UNKNOWN;
 }
+
+#if defined(OS_ANDROID)
+std::unique_ptr<WebGestureEvent> CreateWebGestureEventFromGestureEventAndroid(
+    const GestureEventAndroid& event) {
+  WebInputEvent::Type event_type = WebInputEvent::kUndefined;
+  switch (event.type()) {
+    case GESTURE_EVENT_TYPE_PINCH_BEGIN:
+      event_type = WebInputEvent::kGesturePinchBegin;
+      break;
+    case GESTURE_EVENT_TYPE_PINCH_BY:
+      event_type = WebInputEvent::kGesturePinchUpdate;
+      break;
+    case GESTURE_EVENT_TYPE_PINCH_END:
+      event_type = WebInputEvent::kGesturePinchEnd;
+      break;
+    default:
+      NOTREACHED() << "Unknown gesture event type";
+      return base::MakeUnique<WebGestureEvent>();
+  }
+  auto web_event = base::MakeUnique<WebGestureEvent>(
+      event_type, WebInputEvent::kNoModifiers, event.time() / 1000.0);
+  // NOTE: Source gesture events are synthetic ones that simulate
+  // gesture from keyboard (zoom in/out) for now. Should populate Blink
+  // event's fields better when extended to handle more cases.
+  web_event->x = event.location().x();
+  web_event->y = event.location().y();
+  web_event->global_x = event.screen_location().x();
+  web_event->global_x = event.screen_location().y();
+  web_event->source_device = blink::kWebGestureDeviceTouchscreen;
+  if (event_type == WebInputEvent::kGesturePinchUpdate)
+    web_event->data.pinch_update.scale = event.delta();
+  return web_event;
+}
+#endif
 
 }  // namespace ui

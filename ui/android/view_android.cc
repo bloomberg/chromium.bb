@@ -19,6 +19,7 @@
 #include "ui/android/window_android.h"
 #include "ui/base/layout.h"
 #include "ui/events/android/drag_event_android.h"
+#include "ui/events/android/gesture_event_android.h"
 #include "ui/events/android/motion_event_android.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "url/gurl.h"
@@ -241,6 +242,17 @@ gfx::Point ViewAndroid::GetLocationOfContainerViewInWindow() {
                                                                    delegate));
 
   return result;
+}
+
+gfx::PointF ViewAndroid::GetLocationOnScreen(float x, float y) {
+  ScopedJavaLocalRef<jobject> delegate(GetViewAndroidDelegate());
+  if (delegate.is_null())
+    return gfx::PointF();
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  float loc_x = Java_ViewAndroidDelegate_getXLocationOnScreen(env, delegate);
+  float loc_y = Java_ViewAndroidDelegate_getYLocationOnScreen(env, delegate);
+  return gfx::PointF(x + loc_x, y + loc_y);
 }
 
 void ViewAndroid::RemoveChild(ViewAndroid* child) {
@@ -475,6 +487,17 @@ bool ViewAndroid::OnMouseWheelEvent(const MotionEventAndroid& event) {
 bool ViewAndroid::SendMouseWheelEventToClient(ViewClient* client,
                                               const MotionEventAndroid& event) {
   return client->OnMouseWheelEvent(event);
+}
+
+bool ViewAndroid::OnGestureEvent(const GestureEventAndroid& event) {
+  return HitTest(base::Bind(&ViewAndroid::SendGestureEventToClient), event,
+                 event.location());
+}
+
+// static
+bool ViewAndroid::SendGestureEventToClient(ViewClient* client,
+                                           const GestureEventAndroid& event) {
+  return client->OnGestureEvent(event);
 }
 
 template <typename E>

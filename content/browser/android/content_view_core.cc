@@ -21,7 +21,6 @@
 #include "cc/layers/layer.h"
 #include "cc/layers/solid_color_layer.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
-#include "content/browser/android/gesture_event_type.h"
 #include "content/browser/android/interstitial_page_delegate_android.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/media/media_web_contents_observer.h"
@@ -52,6 +51,7 @@
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
+#include "ui/events/android/gesture_event_type.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/blink/web_input_event_traits.h"
 #include "ui/events/event_utils.h"
@@ -105,37 +105,37 @@ int GetRenderProcessIdFromRenderViewHost(RenderViewHost* host) {
 int ToGestureEventType(WebInputEvent::Type type) {
   switch (type) {
     case WebInputEvent::kGestureScrollBegin:
-      return GESTURE_EVENT_TYPE_SCROLL_START;
+      return ui::GESTURE_EVENT_TYPE_SCROLL_START;
     case WebInputEvent::kGestureScrollEnd:
-      return GESTURE_EVENT_TYPE_SCROLL_END;
+      return ui::GESTURE_EVENT_TYPE_SCROLL_END;
     case WebInputEvent::kGestureScrollUpdate:
-      return GESTURE_EVENT_TYPE_SCROLL_BY;
+      return ui::GESTURE_EVENT_TYPE_SCROLL_BY;
     case WebInputEvent::kGestureFlingStart:
-      return GESTURE_EVENT_TYPE_FLING_START;
+      return ui::GESTURE_EVENT_TYPE_FLING_START;
     case WebInputEvent::kGestureFlingCancel:
-      return GESTURE_EVENT_TYPE_FLING_CANCEL;
+      return ui::GESTURE_EVENT_TYPE_FLING_CANCEL;
     case WebInputEvent::kGestureShowPress:
-      return GESTURE_EVENT_TYPE_SHOW_PRESS;
+      return ui::GESTURE_EVENT_TYPE_SHOW_PRESS;
     case WebInputEvent::kGestureTap:
-      return GESTURE_EVENT_TYPE_SINGLE_TAP_CONFIRMED;
+      return ui::GESTURE_EVENT_TYPE_SINGLE_TAP_CONFIRMED;
     case WebInputEvent::kGestureTapUnconfirmed:
-      return GESTURE_EVENT_TYPE_SINGLE_TAP_UNCONFIRMED;
+      return ui::GESTURE_EVENT_TYPE_SINGLE_TAP_UNCONFIRMED;
     case WebInputEvent::kGestureTapDown:
-      return GESTURE_EVENT_TYPE_TAP_DOWN;
+      return ui::GESTURE_EVENT_TYPE_TAP_DOWN;
     case WebInputEvent::kGestureTapCancel:
-      return GESTURE_EVENT_TYPE_TAP_CANCEL;
+      return ui::GESTURE_EVENT_TYPE_TAP_CANCEL;
     case WebInputEvent::kGestureDoubleTap:
-      return GESTURE_EVENT_TYPE_DOUBLE_TAP;
+      return ui::GESTURE_EVENT_TYPE_DOUBLE_TAP;
     case WebInputEvent::kGestureLongPress:
-      return GESTURE_EVENT_TYPE_LONG_PRESS;
+      return ui::GESTURE_EVENT_TYPE_LONG_PRESS;
     case WebInputEvent::kGestureLongTap:
-      return GESTURE_EVENT_TYPE_LONG_TAP;
+      return ui::GESTURE_EVENT_TYPE_LONG_TAP;
     case WebInputEvent::kGesturePinchBegin:
-      return GESTURE_EVENT_TYPE_PINCH_BEGIN;
+      return ui::GESTURE_EVENT_TYPE_PINCH_BEGIN;
     case WebInputEvent::kGesturePinchEnd:
-      return GESTURE_EVENT_TYPE_PINCH_END;
+      return ui::GESTURE_EVENT_TYPE_PINCH_END;
     case WebInputEvent::kGesturePinchUpdate:
-      return GESTURE_EVENT_TYPE_PINCH_BY;
+      return ui::GESTURE_EVENT_TYPE_PINCH_BY;
     case WebInputEvent::kGestureTwoFingerTap:
     default:
       NOTREACHED() << "Invalid source gesture type: "
@@ -346,24 +346,22 @@ jint ContentViewCore::GetBackgroundColor(JNIEnv* env, jobject obj) {
 // All positions and sizes (except |top_shown_pix|) are in CSS pixels.
 // Note that viewport_width/height is a best effort based.
 // ContentViewCore has the actual information about the physical viewport size.
-void ContentViewCore::UpdateFrameInfo(
-    const gfx::Vector2dF& scroll_offset,
-    float page_scale_factor,
-    const gfx::Vector2dF& page_scale_factor_limits,
-    const gfx::SizeF& content_size,
-    const gfx::SizeF& viewport_size,
-    const float content_offset,
-    const float top_shown_pix,
-    bool top_changed,
-    bool is_mobile_optimized_hint) {
+void ContentViewCore::UpdateFrameInfo(const gfx::Vector2dF& scroll_offset,
+                                      float page_scale_factor,
+                                      const float min_page_scale,
+                                      const float max_page_scale,
+                                      const gfx::SizeF& content_size,
+                                      const gfx::SizeF& viewport_size,
+                                      const float content_offset,
+                                      const float top_shown_pix,
+                                      bool top_changed,
+                                      bool is_mobile_optimized_hint) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null() || !GetWindowAndroid())
     return;
 
-  GetViewAndroid()->UpdateFrameInfo({
-      viewport_size, page_scale_factor, content_offset,
-  });
+  GetViewAndroid()->UpdateFrameInfo({viewport_size, content_offset});
 
   // Current viewport size in css.
   gfx::SizeF view_size = gfx::SizeF(gfx::ScaleToCeiledSize(
@@ -376,11 +374,11 @@ void ContentViewCore::UpdateFrameInfo(
 
   Java_ContentViewCore_updateFrameInfo(
       env, obj, scroll_offset.x(), scroll_offset.y(), page_scale_factor,
-      page_scale_factor_limits.x(), page_scale_factor_limits.y(), content_width,
-      content_height, top_shown_pix, top_changed, is_mobile_optimized_hint);
+      min_page_scale, max_page_scale, content_width, content_height,
+      top_shown_pix, top_changed, is_mobile_optimized_hint);
   web_contents_->GetWebContentsAndroid()->UpdateFrameInfo(
       scroll_offset, content_width, content_height, viewport_size,
-      page_scale_factor, page_scale_factor_limits, top_shown_pix);
+      page_scale_factor, min_page_scale, max_page_scale, top_shown_pix);
 }
 
 void ContentViewCore::ShowSelectPopupMenu(RenderFrameHost* frame,
@@ -760,37 +758,6 @@ void ContentViewCore::DoubleTap(JNIEnv* env,
   // Set the tap count to 1 even for DoubleTap, in order to be consistent with
   // double tap behavior on a mobile viewport. See crbug.com/234986 for context.
   event.data.tap.tap_count = 1;
-
-  SendGestureEvent(event);
-}
-
-void ContentViewCore::PinchBegin(JNIEnv* env,
-                                 const JavaParamRef<jobject>& obj,
-                                 jlong time_ms,
-                                 jfloat x,
-                                 jfloat y) {
-  WebGestureEvent event =
-      MakeGestureEvent(WebInputEvent::kGesturePinchBegin, time_ms, x, y);
-  SendGestureEvent(event);
-}
-
-void ContentViewCore::PinchEnd(JNIEnv* env,
-                               const JavaParamRef<jobject>& obj,
-                               jlong time_ms) {
-  WebGestureEvent event =
-      MakeGestureEvent(WebInputEvent::kGesturePinchEnd, time_ms, 0, 0);
-  SendGestureEvent(event);
-}
-
-void ContentViewCore::PinchBy(JNIEnv* env,
-                              const JavaParamRef<jobject>& obj,
-                              jlong time_ms,
-                              jfloat anchor_x,
-                              jfloat anchor_y,
-                              jfloat delta) {
-  WebGestureEvent event = MakeGestureEvent(WebInputEvent::kGesturePinchUpdate,
-                                           time_ms, anchor_x, anchor_y);
-  event.data.pinch_update.scale = delta;
 
   SendGestureEvent(event);
 }

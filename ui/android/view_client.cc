@@ -22,6 +22,10 @@ bool ViewClient::OnDragEvent(const DragEventAndroid& event) {
   return false;
 }
 
+bool ViewClient::OnGestureEvent(const GestureEventAndroid& event) {
+  return false;
+}
+
 void ViewClient::OnSizeChanged() {}
 
 void ViewClient::OnPhysicalBackingSizeChanged() {}

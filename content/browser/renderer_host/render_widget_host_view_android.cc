@@ -90,6 +90,8 @@
 #include "ui/android/window_android_compositor.h"
 #include "ui/base/layout.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/events/android/gesture_event_android.h"
+#include "ui/events/android/gesture_event_type.h"
 #include "ui/events/android/motion_event_android.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/blink/did_overscroll_params.h"
@@ -481,6 +483,9 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       observing_root_window_(false),
       prev_top_shown_pix_(0.f),
       prev_bottom_shown_pix_(0.f),
+      page_scale_(1.f),
+      min_page_scale_(1.f),
+      max_page_scale_(1.f),
       mouse_wheel_phase_handler_(widget_host, this),
       weak_ptr_factory_(this) {
   // Set the layer which will hold the content layer for this view. The content
@@ -976,6 +981,24 @@ bool RenderWidgetHostViewAndroid::TransformPointToCoordSpaceForView(
 base::WeakPtr<RenderWidgetHostViewAndroid>
 RenderWidgetHostViewAndroid::GetWeakPtrAndroid() {
   return weak_ptr_factory_.GetWeakPtr();
+}
+
+bool RenderWidgetHostViewAndroid::OnGestureEvent(
+    const ui::GestureEventAndroid& event) {
+  std::unique_ptr<blink::WebGestureEvent> web_event;
+  if (event.delta() < 0.f) {
+    // Negative delta indicates zoom reset.
+    float delta = min_page_scale_ / page_scale_;
+    web_event = ui::CreateWebGestureEventFromGestureEventAndroid(
+        ui::GestureEventAndroid(event.type(), event.location(),
+                                event.screen_location(), event.time(), delta));
+  } else {
+    web_event = ui::CreateWebGestureEventFromGestureEventAndroid(event);
+  }
+  if (!web_event)
+    return false;
+  SendGestureEvent(*web_event);
+  return true;
 }
 
 bool RenderWidgetHostViewAndroid::OnTouchEvent(
@@ -1555,9 +1578,8 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
   float top_content_offset_css = IsUseZoomForDSFEnabled()
                                      ? top_content_offset / dip_scale
                                      : top_content_offset;
-  view_.UpdateFrameInfo({frame_metadata.scrollable_viewport_size,
-                         frame_metadata.page_scale_factor,
-                         top_content_offset_css});
+  view_.UpdateFrameInfo(
+      {frame_metadata.scrollable_viewport_size, top_content_offset});
 
   bool top_changed = !FloatEquals(top_shown_pix, prev_top_shown_pix_);
   if (top_changed) {
@@ -1576,13 +1598,17 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
     prev_bottom_shown_pix_ = bottom_shown_pix;
   }
 
+  page_scale_ = frame_metadata.page_scale_factor;
+  min_page_scale_ = frame_metadata.min_page_scale_factor;
+  max_page_scale_ = frame_metadata.max_page_scale_factor;
+
   // All offsets and sizes except |top_shown_pix| are in CSS pixels.
   content_view_core_->UpdateFrameInfo(
       frame_metadata.root_scroll_offset, frame_metadata.page_scale_factor,
-      gfx::Vector2dF(frame_metadata.min_page_scale_factor,
-                     frame_metadata.max_page_scale_factor),
-      frame_metadata.root_layer_size, frame_metadata.scrollable_viewport_size,
-      top_content_offset_css, top_shown_pix, top_changed, is_mobile_optimized);
+      frame_metadata.min_page_scale_factor,
+      frame_metadata.max_page_scale_factor, frame_metadata.root_layer_size,
+      frame_metadata.scrollable_viewport_size, top_content_offset_css,
+      top_shown_pix, top_changed, is_mobile_optimized);
 
   EvictFrameIfNecessary();
 }
