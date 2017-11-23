@@ -104,13 +104,10 @@ bool LayoutSVGImage::UpdateBoundingBox() {
     object_bounding_box_.SetSize(CalculateObjectSize());
 
   if (old_object_bounding_box != object_bounding_box_) {
+    GetElement()->SetNeedsResizeObserverUpdate();
     SetShouldDoFullPaintInvalidation(PaintInvalidationReason::kImage);
     needs_boundaries_update_ = true;
   }
-
-  if (GetElement())
-    GetElement()->SetNeedsResizeObserverUpdate();
-
   return old_object_bounding_box.Size() != object_bounding_box_.Size();
 }
 

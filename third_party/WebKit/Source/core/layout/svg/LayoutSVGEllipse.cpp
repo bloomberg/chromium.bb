@@ -79,8 +79,6 @@ void LayoutSVGEllipse::UpdateShapeFromElement() {
   stroke_bounding_box_ = fill_bounding_box_;
   if (Style()->SvgStyle().HasStroke())
     stroke_bounding_box_.Inflate(StrokeWidth() / 2);
-  if (GetElement())
-    GetElement()->SetNeedsResizeObserverUpdate();
 }
 
 void LayoutSVGEllipse::CalculateRadiiAndCenter() {

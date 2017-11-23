@@ -77,8 +77,6 @@ void LayoutSVGShape::UpdateShapeFromElement() {
 
   fill_bounding_box_ = CalculateObjectBoundingBox();
   stroke_bounding_box_ = CalculateStrokeBoundingBox();
-  if (GetElement())
-    GetElement()->SetNeedsResizeObserverUpdate();
 }
 
 namespace {
@@ -207,14 +205,16 @@ void LayoutSVGShape::UpdateLayout() {
     SVGResourcesCache::ClientLayoutChanged(this);
 
   bool update_parent_boundaries = false;
-  // updateShapeFromElement() also updates the object & stroke bounds - which
+  // UpdateShapeFromElement() also updates the object & stroke bounds - which
   // feeds into the visual rect - so we need to call it for both the
   // shape-update and the bounds-update flag.
   if (needs_shape_update_ || needs_boundaries_update_) {
     FloatRect old_object_bounding_box = ObjectBoundingBox();
     UpdateShapeFromElement();
-    if (old_object_bounding_box != ObjectBoundingBox())
+    if (old_object_bounding_box != ObjectBoundingBox()) {
+      GetElement()->SetNeedsResizeObserverUpdate();
       SetShouldDoFullPaintInvalidation();
+    }
     needs_shape_update_ = false;
 
     local_visual_rect_ = StrokeBoundingBox();
