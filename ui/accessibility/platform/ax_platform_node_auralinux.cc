@@ -14,18 +14,9 @@
 #include "ui/accessibility/ax_text_utils.h"
 #include "ui/accessibility/ax_tree_data.h"
 #include "ui/accessibility/platform/atk_util_auralinux.h"
+#include "ui/accessibility/platform/ax_platform_atk_hyperlink.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
 #include "ui/gfx/geometry/rect_conversions.h"
-
-// Some ATK interfaces require returning a (const gchar*), use
-// this macro to make it safe to return a pointer to a temporary
-// string.
-#define RETURN_STRING(str_expr) \
-  {                             \
-    static std::string result;  \
-    result = (str_expr);        \
-    return result.c_str();      \
-  }
 
 //
 // ax_platform_node_auralinux AtkObject definition and implementation.
@@ -572,6 +563,34 @@ static const GInterfaceInfo ValueInfo = {
     nullptr};
 
 //
+// AtkHyperlinkImpl interface.
+//
+
+static AtkHyperlink* ax_platform_node_auralinux_get_hyperlink(
+    AtkHyperlinkImpl* atk_hyperlink_impl) {
+  g_return_val_if_fail(ATK_HYPERLINK_IMPL(atk_hyperlink_impl), 0);
+
+  AtkObject* atk_object = ATK_OBJECT(atk_hyperlink_impl);
+  ui::AXPlatformNodeAuraLinux* obj =
+      AtkObjectToAXPlatformNodeAuraLinux(atk_object);
+  if (!obj)
+    return 0;
+
+  AtkHyperlink* atk_hyperlink = obj->GetAtkHyperlink();
+  g_object_ref(atk_hyperlink);
+
+  return atk_hyperlink;
+}
+
+void ax_hyperlink_impl_interface_base_init(AtkHyperlinkImplIface* iface) {
+  iface->get_hyperlink = ax_platform_node_auralinux_get_hyperlink;
+}
+
+static const GInterfaceInfo HyperlinkImplInfo = {
+    reinterpret_cast<GInterfaceInitFunc>(ax_hyperlink_impl_interface_base_init),
+    nullptr, nullptr};
+
+//
 // The rest of the AXPlatformNodeAtk code, not specific to one
 // of the Atk* interfaces.
 //
@@ -689,6 +708,10 @@ int AXPlatformNodeAuraLinux::GetGTypeInterfaceMask() {
   if (role == ATK_ROLE_IMAGE || role == ATK_ROLE_IMAGE_MAP)
     interface_mask |= 1 << ATK_IMAGE_INTERFACE;
 
+  // HyperlinkImpl interface
+  if (role == ATK_ROLE_LINK)
+    interface_mask |= 1 << ATK_HYPERLINK_INTERFACE;
+
   return interface_mask;
 }
 
@@ -724,6 +747,9 @@ GType AXPlatformNodeAuraLinux::GetAccessibilityGType() {
     g_type_add_interface_static(type, ATK_TYPE_IMAGE, &ImageInfo);
   if (interface_mask & (1 << ATK_VALUE_INTERFACE))
     g_type_add_interface_static(type, ATK_TYPE_VALUE, &ValueInfo);
+  if (interface_mask & (1 << ATK_HYPERLINK_INTERFACE))
+    g_type_add_interface_static(type, ATK_TYPE_HYPERLINK_IMPL,
+                                &HyperlinkImplInfo);
 
   return type;
 }
@@ -975,10 +1001,14 @@ void AXPlatformNodeAuraLinux::GetAtkRelations(AtkRelationSet* atk_relation_set)
 }
 
 AXPlatformNodeAuraLinux::AXPlatformNodeAuraLinux()
-    : atk_object_(nullptr) {
-}
+    : atk_object_(nullptr), atk_hyperlink_(nullptr) {}
 
 AXPlatformNodeAuraLinux::~AXPlatformNodeAuraLinux() {
+  if (atk_hyperlink_) {
+    ax_platform_atk_hyperlink_set_object(
+        AX_PLATFORM_ATK_HYPERLINK(atk_hyperlink_), nullptr);
+    g_object_unref(atk_hyperlink_);
+  }
   g_object_unref(atk_object_);
 }
 
@@ -1079,7 +1109,7 @@ const gchar* AXPlatformNodeAuraLinux::GetDefaultActionName() {
   base::string16 action_verb = ui::ActionVerbToUnlocalizedString(
       static_cast<ui::AXDefaultActionVerb>(action));
 
-  RETURN_STRING(base::UTF16ToUTF8(action_verb));
+  ATK_AURALINUX_RETURN_STRING(base::UTF16ToUTF8(action_verb));
 }
 
 // AtkDocumentHelpers
@@ -1124,6 +1154,24 @@ AtkAttributeSet* AXPlatformNodeAuraLinux::GetDocumentAttributes() const {
 float AXPlatformNodeAuraLinux::GetStepAttribute() {
   // TODO(jose.dapena): Get Correct value of Step attribute.
   return 1.0;
+}
+
+//
+// AtkHyperlink helpers
+//
+
+AtkHyperlink* AXPlatformNodeAuraLinux::GetAtkHyperlink() {
+  DCHECK(ATK_HYPERLINK_IMPL(atk_object_));
+  g_return_val_if_fail(ATK_HYPERLINK_IMPL(atk_object_), 0);
+
+  if (!atk_hyperlink_) {
+    atk_hyperlink_ =
+        ATK_HYPERLINK(g_object_new(AX_PLATFORM_ATK_HYPERLINK_TYPE, 0));
+    ax_platform_atk_hyperlink_set_object(
+        AX_PLATFORM_ATK_HYPERLINK(atk_hyperlink_), this);
+  }
+
+  return atk_hyperlink_;
 }
 
 //

@@ -104,6 +104,8 @@ component("accessibility") {
     sources += [
       "platform/atk_util_auralinux.cc",
       "platform/atk_util_auralinux.h",
+      "platform/ax_platform_atk_hyperlink.cc",
+      "platform/ax_platform_atk_hyperlink.h",
       "platform/ax_platform_node_auralinux.cc",
       "platform/ax_platform_node_auralinux.h",
     ]
