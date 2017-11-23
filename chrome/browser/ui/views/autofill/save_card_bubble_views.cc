@@ -19,6 +19,7 @@
 #include "components/autofill/core/browser/ui/save_card_bubble_controller.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
@@ -144,23 +145,24 @@ bool SaveCardBubbleViews::Cancel() {
 }
 
 bool SaveCardBubbleViews::Close() {
-  // Cancel is logged as a different user action than closing, so override
-  // Close() to prevent the superclass' implementation from calling Cancel().
-  // Additionally, both clicking the top-right [X] close button *and* focusing
-  // then unfocusing the bubble count as a close action, which means we can't
-  // tell the controller to permanently hide the bubble on close, because then
-  // even things like switching tabs would dismiss the offer to save for good.
-  // Return true to indicate that the bubble can be closed.
+  // If there is a cancel button (non-Material UI), Cancel is logged as a
+  // different user action than closing, so override Close() to prevent the
+  // superclass' implementation from calling Cancel().
+  //
+  // Clicking the top-right [X] close button and/or focusing then unfocusing the
+  // bubble count as a close action only (without calling Cancel), which means
+  // we can't tell the controller to permanently hide the bubble on close,
+  // because the user simply dismissed/ignored the bubble; they might want to
+  // access the bubble again from the location bar icon. Return true to indicate
+  // that the bubble can be closed.
   return true;
 }
 
 int SaveCardBubbleViews::GetDialogButtons() const {
-  if (GetCurrentFlowStep() == LOCAL_SAVE_ONLY_STEP ||
-      !IsAutofillUpstreamShowNewUiExperimentEnabled())
-    return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
-  // For upload save when the new UI experiment is enabled, don't show the
-  // [No thanks] cancel option; use the top-right [X] close button for that.
-  return ui::DIALOG_BUTTON_OK;
+  // Material UI has no "No thanks" button in favor of an [X].
+  return ui::MaterialDesignController::IsSecondaryUiMaterial()
+             ? ui::DIALOG_BUTTON_OK
+             : ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
 }
 
 base::string16 SaveCardBubbleViews::GetDialogButtonLabel(
@@ -204,11 +206,8 @@ gfx::Size SaveCardBubbleViews::CalculatePreferredSize() const {
 }
 
 bool SaveCardBubbleViews::ShouldShowCloseButton() const {
-  // Local save and Upload save on the old UI should have a [No thanks] button,
-  // but Upload save on the new UI should surface the top-right [X] close button
-  // instead.
-  return GetCurrentFlowStep() != LOCAL_SAVE_ONLY_STEP &&
-         IsAutofillUpstreamShowNewUiExperimentEnabled();
+  // The [X] is shown for Material UI.
+  return ui::MaterialDesignController::IsSecondaryUiMaterial();
 }
 
 base::string16 SaveCardBubbleViews::GetWindowTitle() const {

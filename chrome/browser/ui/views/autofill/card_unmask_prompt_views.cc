@@ -21,6 +21,7 @@
 #include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/compositing_recorder.h"
 #include "ui/gfx/canvas.h"
@@ -315,6 +316,11 @@ bool CardUnmaskPromptViews::IsDialogButtonEnabled(
 
 views::View* CardUnmaskPromptViews::GetInitiallyFocusedView() {
   return cvc_input_;
+}
+
+bool CardUnmaskPromptViews::ShouldShowCloseButton() const {
+  // Material UI has no [X] in the corner of this dialog.
+  return !ui::MaterialDesignController::IsSecondaryUiMaterial();
 }
 
 bool CardUnmaskPromptViews::Cancel() {
