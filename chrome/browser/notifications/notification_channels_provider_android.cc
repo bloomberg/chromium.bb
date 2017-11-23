@@ -335,6 +335,7 @@ void NotificationChannelsProviderAndroid::ClearAllContentSettingsRules(
   std::vector<NotificationChannel> channels = bridge_->GetChannels();
   for (auto channel : channels)
     bridge_->DeleteChannel(channel.id);
+  cached_channels_.clear();
 
   if (channels.size() > 0) {
     NotifyObservers(ContentSettingsPattern(), ContentSettingsPattern(),
