@@ -7,7 +7,6 @@
 
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "mojo/common/common_custom_types_struct_traits.h"
-#include "services/viz/public/cpp/compositing/texture_mailbox_struct_traits.h"
 #include "services/viz/public/interfaces/compositing/copy_output_request.mojom.h"
 #include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
 

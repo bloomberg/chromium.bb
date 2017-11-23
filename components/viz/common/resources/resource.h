@@ -9,7 +9,6 @@
 
 #include "build/build_config.h"
 #include "components/viz/common/quads/shared_bitmap.h"
-#include "components/viz/common/quads/texture_mailbox.h"
 #include "components/viz/common/resources/release_callback.h"
 #include "components/viz/common/resources/resource_fence.h"
 #include "components/viz/common/resources/resource_format.h"
@@ -17,6 +16,8 @@
 #include "components/viz/common/resources/resource_texture_hint.h"
 #include "components/viz/common/resources/resource_type.h"
 #include "components/viz/common/viz_common_export.h"
+#include "gpu/command_buffer/common/mailbox.h"
+#include "gpu/command_buffer/common/sync_token.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/color_space.h"
@@ -24,10 +25,6 @@
 
 namespace gfx {
 class GpuMemoryBuffer;
-}
-
-namespace gpu {
-struct SyncToken;
 }
 
 namespace viz {

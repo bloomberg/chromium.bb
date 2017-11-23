@@ -204,7 +204,7 @@ bool SynchronousLayerTreeFrameSink::BindToClient(
   display_ = std::make_unique<viz::Display>(
       shared_bitmap_manager_, nullptr /* gpu_memory_buffer_manager */,
       software_renderer_settings, kRootFrameSinkId, std::move(output_surface),
-      nullptr /* scheduler */, nullptr /* texture_mailbox_deleter */);
+      nullptr /* scheduler */, nullptr /* current_task_runner */);
   display_->Initialize(&display_client_,
                        frame_sink_manager_->surface_manager());
   display_->SetVisible(true);

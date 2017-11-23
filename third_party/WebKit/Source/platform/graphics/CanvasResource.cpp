@@ -9,6 +9,7 @@
 #include "public/platform/Platform.h"
 #include "skia/ext/texture_handle.h"
 #include "third_party/skia/include/gpu/GrContext.h"
+#include "ui/gfx/color_space.h"
 
 namespace blink {
 
