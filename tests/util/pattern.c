@@ -60,11 +60,22 @@ struct color_yuv {
 	  .u = MAKE_YUV_601_U(r, g, b), \
 	  .v = MAKE_YUV_601_V(r, g, b) }
 
+static inline uint32_t shiftcolor(const struct util_color_component *comp,
+				  uint32_t value)
+{
+	/* Fill the low bits with the high bits. */
+	value = (value << 8) | value;
+	/* Shift down to remove unwanted low bits */
+	value = value >> (16 - comp->length);
+	/* Shift back up to where the value should be */
+	return value << comp->offset;
+}
+
 #define MAKE_RGBA(rgb, r, g, b, a) \
-	((((r) >> (8 - (rgb)->red.length)) << (rgb)->red.offset) | \
-	 (((g) >> (8 - (rgb)->green.length)) << (rgb)->green.offset) | \
-	 (((b) >> (8 - (rgb)->blue.length)) << (rgb)->blue.offset) | \
-	 (((a) >> (8 - (rgb)->alpha.length)) << (rgb)->alpha.offset))
+	(shiftcolor(&(rgb)->red, (r)) | \
+	 shiftcolor(&(rgb)->green, (g)) | \
+	 shiftcolor(&(rgb)->blue, (b)) | \
+	 shiftcolor(&(rgb)->alpha, (a)))
 
 #define MAKE_RGB24(rgb, r, g, b) \
 	{ .value = MAKE_RGBA(rgb, r, g, b, 0) }
