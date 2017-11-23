@@ -2381,7 +2381,9 @@ public class ChromeTabbedActivity
 
     @Override
     protected ChromeFullscreenManager createFullscreenManager() {
-        return new ChromeFullscreenManager(this, FeatureUtilities.isChromeHomeEnabled());
+        return new ChromeFullscreenManager(this, FeatureUtilities.isChromeHomeEnabled()
+                        ? ChromeFullscreenManager.CONTROLS_POSITION_BOTTOM
+                        : ChromeFullscreenManager.CONTROLS_POSITION_TOP);
     }
 
     /**

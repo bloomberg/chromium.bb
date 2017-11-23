@@ -85,10 +85,16 @@ public class FullscreenActivity extends SingleTabActivity {
     }
 
     @Override
+    public int getControlContainerHeightResource() {
+        return R.dimen.fullscreen_activity_control_container_height;
+    }
+
+    @Override
     protected ChromeFullscreenManager createFullscreenManager() {
         // Create a Fullscreen manager that won't change the Tab's fullscreen state when the
         // Activity ends - we handle leaving fullscreen ourselves.
-        return new ChromeFullscreenManager(this, false, false);
+        return new ChromeFullscreenManager(this,
+                ChromeFullscreenManager.CONTROLS_POSITION_NONE, false);
     }
 
     @Override

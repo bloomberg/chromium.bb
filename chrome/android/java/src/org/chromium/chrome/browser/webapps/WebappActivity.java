@@ -587,7 +587,7 @@ public class WebappActivity extends SingleTabActivity {
     @Override
     protected ChromeFullscreenManager createFullscreenManager() {
         // Disable HTML5 fullscreen in PWA fullscreen mode.
-        return new ChromeFullscreenManager(this, false) {
+        return new ChromeFullscreenManager(this, ChromeFullscreenManager.CONTROLS_POSITION_TOP) {
             @Override
             public void setPersistentFullscreenMode(boolean enabled) {
                 if (mWebappInfo.displayMode() == WebDisplayMode.FULLSCREEN) return;
