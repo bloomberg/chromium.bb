@@ -5,10 +5,10 @@
 #ifndef CustomElementDefinitionBuilder_h
 #define CustomElementDefinitionBuilder_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/html/custom/CustomElementDefinition.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 
@@ -20,7 +20,6 @@ class CustomElementRegistry;
 // https://html.spec.whatwg.org/multipage/scripting.html#dom-customelementsregistry-define
 class CORE_EXPORT CustomElementDefinitionBuilder {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(CustomElementDefinitionBuilder);
 
  public:
   CustomElementDefinitionBuilder() {}
@@ -48,6 +47,8 @@ class CORE_EXPORT CustomElementDefinitionBuilder {
   // Produce the definition. This must produce a definition.
   virtual CustomElementDefinition* Build(const CustomElementDescriptor&,
                                          CustomElementDefinition::Id) = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(CustomElementDefinitionBuilder);
 };
 
 }  // namespace blink

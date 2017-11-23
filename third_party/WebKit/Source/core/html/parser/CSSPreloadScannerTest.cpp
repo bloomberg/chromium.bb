@@ -5,6 +5,8 @@
 #include "core/html/parser/CSSPreloadScanner.h"
 
 #include <memory>
+
+#include "base/macros.h"
 #include "core/frame/Settings.h"
 #include "core/html/parser/HTMLResourcePreloader.h"
 #include "core/testing/DummyPageHolder.h"
@@ -27,7 +29,6 @@ namespace blink {
 namespace {
 
 class CSSMockHTMLResourcePreloader : public HTMLResourcePreloader {
-  WTF_MAKE_NONCOPYABLE(CSSMockHTMLResourcePreloader);
 
  public:
   explicit CSSMockHTMLResourcePreloader(Document& document,
@@ -47,6 +48,8 @@ class CSSMockHTMLResourcePreloader : public HTMLResourcePreloader {
   }
 
   const char* expected_referrer_;
+
+  DISALLOW_COPY_AND_ASSIGN(CSSMockHTMLResourcePreloader);
 };
 
 class PreloadRecordingCSSPreloaderResourceClient final

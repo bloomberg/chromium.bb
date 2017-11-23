@@ -31,6 +31,7 @@
 #ifndef V0CustomElementRegistry_h
 #define V0CustomElementRegistry_h
 
+#include "base/macros.h"
 #include "core/html/custom/V0CustomElement.h"
 #include "core/html/custom/V0CustomElementDefinition.h"
 #include "core/html/custom/V0CustomElementDescriptor.h"
@@ -47,7 +48,6 @@ class ExceptionState;
 class V0CustomElementConstructorBuilder;
 
 class V0CustomElementRegistry final {
-  WTF_MAKE_NONCOPYABLE(V0CustomElementRegistry);
   DISALLOW_NEW();
 
  public:
@@ -80,6 +80,8 @@ class V0CustomElementRegistry final {
   HashSet<AtomicString> registered_type_names_;
   Member<const CustomElementRegistry> v1_;
   bool document_was_detached_;
+
+  DISALLOW_COPY_AND_ASSIGN(V0CustomElementRegistry);
 };
 
 }  // namespace blink

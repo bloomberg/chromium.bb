@@ -31,6 +31,7 @@
 #ifndef V0CustomElementCallbackInvocation_h
 #define V0CustomElementCallbackInvocation_h
 
+#include "base/macros.h"
 #include "core/html/custom/V0CustomElementLifecycleCallbacks.h"
 #include "core/html/custom/V0CustomElementProcessingStep.h"
 #include "platform/wtf/text/AtomicString.h"
@@ -38,8 +39,6 @@
 namespace blink {
 
 class V0CustomElementCallbackInvocation : public V0CustomElementProcessingStep {
-  WTF_MAKE_NONCOPYABLE(V0CustomElementCallbackInvocation);
-
  public:
   static V0CustomElementCallbackInvocation* CreateInvocation(
       V0CustomElementLifecycleCallbacks*,
@@ -61,6 +60,8 @@ class V0CustomElementCallbackInvocation : public V0CustomElementProcessingStep {
 
  private:
   Member<V0CustomElementLifecycleCallbacks> callbacks_;
+
+  DISALLOW_COPY_AND_ASSIGN(V0CustomElementCallbackInvocation);
 };
 
 }  // namespace blink

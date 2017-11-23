@@ -21,6 +21,8 @@
 #include "core/html/forms/FormController.h"
 
 #include <memory>
+
+#include "base/macros.h"
 #include "core/dom/events/ScopedEventQueue.h"
 #include "core/html/forms/FileChooser.h"
 #include "core/html/forms/HTMLFormControlElementWithState.h"
@@ -177,7 +179,6 @@ struct FormElementKeyHashTraits : WTF::GenericHashTraits<FormElementKey> {
 // ----------------------------------------------------------------------------
 
 class SavedFormState {
-  WTF_MAKE_NONCOPYABLE(SavedFormState);
   USING_FAST_MALLOC(SavedFormState);
 
  public:
@@ -203,6 +204,8 @@ class SavedFormState {
                                       FormElementKeyHashTraits>;
   FormElementStateMap state_for_new_form_elements_;
   size_t control_state_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(SavedFormState);
 };
 
 std::unique_ptr<SavedFormState> SavedFormState::Create() {
@@ -306,7 +309,6 @@ Vector<String> SavedFormState::GetReferencedFilePaths() const {
 
 class FormKeyGenerator final
     : public GarbageCollectedFinalized<FormKeyGenerator> {
-  WTF_MAKE_NONCOPYABLE(FormKeyGenerator);
 
  public:
   static FormKeyGenerator* Create() { return new FormKeyGenerator; }
@@ -321,6 +323,8 @@ class FormKeyGenerator final
   using FormSignatureToNextIndexMap = HashMap<String, unsigned>;
   FormToKeyMap form_to_key_map_;
   FormSignatureToNextIndexMap form_signature_to_next_index_map_;
+
+  DISALLOW_COPY_AND_ASSIGN(FormKeyGenerator);
 };
 
 static inline void RecordFormStructure(const HTMLFormElement& form,

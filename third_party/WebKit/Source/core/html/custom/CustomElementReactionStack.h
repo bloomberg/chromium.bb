@@ -5,10 +5,10 @@
 #ifndef CustomElementReactionStack_h
 #define CustomElementReactionStack_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 
@@ -20,8 +20,6 @@ class Element;
 class CORE_EXPORT CustomElementReactionStack final
     : public GarbageCollected<CustomElementReactionStack>,
       public TraceWrapperBase {
-  WTF_MAKE_NONCOPYABLE(CustomElementReactionStack);
-
  public:
   CustomElementReactionStack();
 
@@ -51,6 +49,8 @@ class CORE_EXPORT CustomElementReactionStack final
   void InvokeBackupQueue();
   void InvokeReactions(ElementQueue&);
   void Enqueue(Member<ElementQueue>&, Element*, CustomElementReaction*);
+
+  DISALLOW_COPY_AND_ASSIGN(CustomElementReactionStack);
 };
 
 class CORE_EXPORT CustomElementReactionStackTestSupport final {

@@ -27,6 +27,7 @@
 #ifndef CSSPreloadScanner_h
 #define CSSPreloadScanner_h
 
+#include "base/macros.h"
 #include "core/html/parser/HTMLToken.h"
 #include "core/html/parser/PreloadRequest.h"
 #include "core/loader/resource/CSSStyleSheetResource.h"
@@ -42,7 +43,6 @@ class HTMLResourcePreloader;
 
 class CSSPreloadScanner {
   DISALLOW_NEW();
-  WTF_MAKE_NONCOPYABLE(CSSPreloadScanner);
 
  public:
   CSSPreloadScanner();
@@ -94,6 +94,8 @@ class CSSPreloadScanner {
   // Below members only non-null during scan()
   PreloadRequestStream* requests_ = nullptr;
   const KURL* predicted_base_element_url_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(CSSPreloadScanner);
 };
 
 // Each CSSPreloaderResourceClient keeps track of a single CSS resource, and

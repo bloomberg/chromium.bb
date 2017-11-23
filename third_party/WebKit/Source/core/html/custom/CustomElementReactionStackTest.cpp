@@ -6,6 +6,8 @@
 
 #include <initializer_list>
 #include <vector>
+
+#include "base/macros.h"
 #include "core/html/custom/CustomElementReaction.h"
 #include "core/html/custom/CustomElementReactionTestHelpers.h"
 #include "core/html/custom/CustomElementTestHelpers.h"
@@ -114,8 +116,6 @@ TEST(CustomElementReactionStackTest, oneReactionQueuePerElement) {
 }
 
 class EnqueueToStack : public Command {
-  WTF_MAKE_NONCOPYABLE(EnqueueToStack);
-
  public:
   EnqueueToStack(CustomElementReactionStack* stack,
                  Element* element,
@@ -136,6 +136,8 @@ class EnqueueToStack : public Command {
   Member<CustomElementReactionStack> stack_;
   Member<Element> element_;
   Member<CustomElementReaction> reaction_;
+
+  DISALLOW_COPY_AND_ASSIGN(EnqueueToStack);
 };
 
 TEST(CustomElementReactionStackTest, enqueueFromReaction) {

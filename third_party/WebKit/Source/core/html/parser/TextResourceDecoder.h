@@ -24,6 +24,8 @@
 #define TextResourceDecoder_h
 
 #include <memory>
+
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "platform/loader/fetch/TextResourceDecoderOptions.h"
 #include "platform/weborigin/KURL.h"
@@ -36,7 +38,6 @@ class HTMLMetaCharsetParser;
 
 class CORE_EXPORT TextResourceDecoder {
   USING_FAST_MALLOC(TextResourceDecoder);
-  WTF_MAKE_NONCOPYABLE(TextResourceDecoder);
 
  public:
   enum EncodingSource {
@@ -96,6 +97,8 @@ class CORE_EXPORT TextResourceDecoder {
   bool saw_error_;
 
   std::unique_ptr<HTMLMetaCharsetParser> charset_parser_;
+
+  DISALLOW_COPY_AND_ASSIGN(TextResourceDecoder);
 };
 
 }  // namespace blink

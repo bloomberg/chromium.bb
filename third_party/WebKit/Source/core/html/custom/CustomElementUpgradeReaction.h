@@ -5,10 +5,10 @@
 #ifndef CustomElementUpgradeReaction_h
 #define CustomElementUpgradeReaction_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/html/custom/CustomElementReaction.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 
@@ -16,13 +16,13 @@ class Element;
 
 class CORE_EXPORT CustomElementUpgradeReaction final
     : public CustomElementReaction {
-  WTF_MAKE_NONCOPYABLE(CustomElementUpgradeReaction);
-
  public:
   CustomElementUpgradeReaction(CustomElementDefinition*);
 
  private:
   void Invoke(Element*) override;
+
+  DISALLOW_COPY_AND_ASSIGN(CustomElementUpgradeReaction);
 };
 
 }  // namespace blink

@@ -31,19 +31,17 @@
 #ifndef V0CustomElementUpgradeCandidateMap_h
 #define V0CustomElementUpgradeCandidateMap_h
 
+#include "base/macros.h"
 #include "core/html/custom/V0CustomElementDescriptor.h"
 #include "core/html/custom/V0CustomElementDescriptorHash.h"
 #include "core/html/custom/V0CustomElementObserver.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/LinkedHashSet.h"
-#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 
 class V0CustomElementUpgradeCandidateMap final
     : public V0CustomElementObserver {
-  WTF_MAKE_NONCOPYABLE(V0CustomElementUpgradeCandidateMap);
-
  public:
   static V0CustomElementUpgradeCandidateMap* Create();
   ~V0CustomElementUpgradeCandidateMap() override;
@@ -69,6 +67,8 @@ class V0CustomElementUpgradeCandidateMap final
   typedef HeapHashMap<V0CustomElementDescriptor, Member<ElementSet>>
       UnresolvedDefinitionMap;
   UnresolvedDefinitionMap unresolved_definitions_;
+
+  DISALLOW_COPY_AND_ASSIGN(V0CustomElementUpgradeCandidateMap);
 };
 
 }  // namespace blink

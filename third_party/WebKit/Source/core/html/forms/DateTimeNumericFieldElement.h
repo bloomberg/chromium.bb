@@ -26,6 +26,7 @@
 #ifndef DateTimeNumericFieldElement_h
 #define DateTimeNumericFieldElement_h
 
+#include "base/macros.h"
 #include "core/html/forms/DateTimeFieldElement.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/text/StringBuilder.h"
@@ -42,8 +43,6 @@ namespace blink {
 //  - second
 //  - year
 class DateTimeNumericFieldElement : public DateTimeFieldElement {
-  WTF_MAKE_NONCOPYABLE(DateTimeNumericFieldElement);
-
  public:
   struct Step {
     DISALLOW_NEW();
@@ -108,6 +107,8 @@ class DateTimeNumericFieldElement : public DateTimeFieldElement {
   int value_;
   bool has_value_;
   mutable StringBuilder type_ahead_buffer_;
+
+  DISALLOW_COPY_AND_ASSIGN(DateTimeNumericFieldElement);
 };
 
 }  // namespace blink

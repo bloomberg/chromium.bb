@@ -31,6 +31,7 @@
 #ifndef LinkResource_h
 #define LinkResource_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/text/TextEncoding.h"
@@ -43,7 +44,6 @@ class LocalFrame;
 
 class CORE_EXPORT LinkResource
     : public GarbageCollectedFinalized<LinkResource> {
-  WTF_MAKE_NONCOPYABLE(LinkResource);
 
  public:
   enum LinkResourceType { kStyle, kImport, kManifest, kOther };
@@ -70,6 +70,8 @@ class CORE_EXPORT LinkResource
   WTF::TextEncoding GetCharset() const;
 
   Member<HTMLLinkElement> owner_;
+
+  DISALLOW_COPY_AND_ASSIGN(LinkResource);
 };
 
 }  // namespace blink

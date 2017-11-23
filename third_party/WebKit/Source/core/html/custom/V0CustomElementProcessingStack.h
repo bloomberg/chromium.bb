@@ -31,6 +31,7 @@
 #ifndef V0CustomElementProcessingStack_h
 #define V0CustomElementProcessingStack_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/html/custom/V0CustomElementCallbackQueue.h"
 #include "platform/wtf/Vector.h"
@@ -39,8 +40,6 @@ namespace blink {
 
 class CORE_EXPORT V0CustomElementProcessingStack
     : public GarbageCollected<V0CustomElementProcessingStack> {
-  WTF_MAKE_NONCOPYABLE(V0CustomElementProcessingStack);
-
  public:
   // This is stack allocated in many DOM callbacks. Make it cheap.
   class CallbackDeliveryScope {
@@ -101,6 +100,8 @@ class CORE_EXPORT V0CustomElementProcessingStack
   // is a null sentinel value.
   static const size_t kNumSentinels = 1;
   HeapVector<Member<V0CustomElementCallbackQueue>> flattened_processing_stack_;
+
+  DISALLOW_COPY_AND_ASSIGN(V0CustomElementProcessingStack);
 };
 
 }  // namespace blink

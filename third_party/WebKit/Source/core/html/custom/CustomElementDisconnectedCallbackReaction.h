@@ -5,22 +5,22 @@
 #ifndef CustomElementDisconnectedCallbackReaction_h
 #define CustomElementDisconnectedCallbackReaction_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/html/custom/CustomElementReaction.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 
 class CORE_EXPORT CustomElementDisconnectedCallbackReaction final
     : public CustomElementReaction {
-  WTF_MAKE_NONCOPYABLE(CustomElementDisconnectedCallbackReaction);
-
  public:
   CustomElementDisconnectedCallbackReaction(CustomElementDefinition*);
 
  private:
   void Invoke(Element*) override;
+
+  DISALLOW_COPY_AND_ASSIGN(CustomElementDisconnectedCallbackReaction);
 };
 
 }  // namespace blink

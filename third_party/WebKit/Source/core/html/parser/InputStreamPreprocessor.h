@@ -28,9 +28,9 @@
 #ifndef InputStreamPreprocessor_h
 #define InputStreamPreprocessor_h
 
+#include "base/macros.h"
 #include "platform/text/SegmentedString.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 
@@ -40,7 +40,6 @@ const LChar kEndOfFileMarker = 0;
 template <typename Tokenizer>
 class InputStreamPreprocessor {
   DISALLOW_NEW();
-  WTF_MAKE_NONCOPYABLE(InputStreamPreprocessor);
 
  public:
   InputStreamPreprocessor(Tokenizer* tokenizer) : tokenizer_(tokenizer) {
@@ -130,6 +129,8 @@ class InputStreamPreprocessor {
   // http://www.whatwg.org/specs/web-apps/current-work/#next-input-character
   UChar next_input_character_;
   bool skip_next_new_line_;
+
+  DISALLOW_COPY_AND_ASSIGN(InputStreamPreprocessor);
 };
 
 }  // namespace blink

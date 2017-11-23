@@ -26,6 +26,7 @@
 #ifndef HTMLParserScriptRunner_h
 #define HTMLParserScriptRunner_h
 
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "bindings/core/v8/ScriptStreamer.h"
 #include "core/dom/PendingScript.h"
@@ -57,7 +58,6 @@ class HTMLParserScriptRunner final
     : public GarbageCollectedFinalized<HTMLParserScriptRunner>,
       public PendingScriptClient,
       public TraceWrapperBase {
-  WTF_MAKE_NONCOPYABLE(HTMLParserScriptRunner);
   USING_GARBAGE_COLLECTED_MIXIN(HTMLParserScriptRunner);
 
  public:
@@ -138,6 +138,8 @@ class HTMLParserScriptRunner final
   // https://html.spec.whatwg.org/#list-of-scripts-that-will-execute-when-the-document-has-finished-parsing
   HeapDeque<TraceWrapperMember<PendingScript>>
       scripts_to_execute_after_parsing_;
+
+  DISALLOW_COPY_AND_ASSIGN(HTMLParserScriptRunner);
 };
 
 }  // namespace blink

@@ -6,13 +6,13 @@
 #define CustomElementRegistry_h
 
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "core/CoreExport.h"
 #include "core/html/custom/CustomElementDefinition.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/bindings/TraceWrapperMember.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/text/AtomicString.h"
 #include "platform/wtf/text/AtomicStringHash.h"
 
@@ -32,7 +32,6 @@ class V0CustomElementRegistrationContext;
 
 class CORE_EXPORT CustomElementRegistry final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
-  WTF_MAKE_NONCOPYABLE(CustomElementRegistry);
 
  public:
   static CustomElementRegistry* Create(const LocalDOMWindow*);
@@ -107,6 +106,8 @@ class CORE_EXPORT CustomElementRegistry final : public ScriptWrappable {
   WhenDefinedPromiseMap when_defined_promise_map_;
 
   TraceWrapperMember<CustomElementReactionStack> reaction_stack_;
+
+  DISALLOW_COPY_AND_ASSIGN(CustomElementRegistry);
 };
 
 }  // namespace blink

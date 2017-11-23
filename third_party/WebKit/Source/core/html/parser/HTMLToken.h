@@ -27,6 +27,8 @@
 #define HTMLToken_h
 
 #include <memory>
+
+#include "base/macros.h"
 #include "core/dom/Attribute.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "platform/wtf/Forward.h"
@@ -36,7 +38,6 @@ namespace blink {
 
 class DoctypeData {
   USING_FAST_MALLOC(DoctypeData);
-  WTF_MAKE_NONCOPYABLE(DoctypeData);
 
  public:
   DoctypeData()
@@ -49,6 +50,8 @@ class DoctypeData {
   WTF::Vector<UChar> public_identifier_;
   WTF::Vector<UChar> system_identifier_;
   bool force_quirks_;
+
+  DISALLOW_COPY_AND_ASSIGN(DoctypeData);
 };
 
 static inline Attribute* FindAttributeInVector(Vector<Attribute>& attributes,
@@ -61,7 +64,6 @@ static inline Attribute* FindAttributeInVector(Vector<Attribute>& attributes,
 }
 
 class HTMLToken {
-  WTF_MAKE_NONCOPYABLE(HTMLToken);
   USING_FAST_MALLOC(HTMLToken);
 
  public:
@@ -454,6 +456,8 @@ class HTMLToken {
 
   // For DOCTYPE
   std::unique_ptr<DoctypeData> doctype_data_;
+
+  DISALLOW_COPY_AND_ASSIGN(HTMLToken);
 };
 
 #ifndef NDEBUG

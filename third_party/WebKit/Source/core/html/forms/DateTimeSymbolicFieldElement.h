@@ -26,6 +26,7 @@
 #ifndef DateTimeSymbolicFieldElement_h
 #define DateTimeSymbolicFieldElement_h
 
+#include "base/macros.h"
 #include "core/html/forms/DateTimeFieldElement.h"
 #include "core/html/forms/TypeAhead.h"
 
@@ -35,8 +36,6 @@ namespace blink {
 // format, such as: AM/PM, and month.
 class DateTimeSymbolicFieldElement : public DateTimeFieldElement,
                                      public TypeAheadDataSource {
-  WTF_MAKE_NONCOPYABLE(DateTimeSymbolicFieldElement);
-
  protected:
   DateTimeSymbolicFieldElement(Document&,
                                FieldOwner&,
@@ -81,6 +80,8 @@ class DateTimeSymbolicFieldElement : public DateTimeFieldElement,
   TypeAhead type_ahead_;
   const int minimum_index_;
   const int maximum_index_;
+
+  DISALLOW_COPY_AND_ASSIGN(DateTimeSymbolicFieldElement);
 };
 
 }  // namespace blink

@@ -24,6 +24,7 @@
 #ifndef ValidityState_h
 #define ValidityState_h
 
+#include "base/macros.h"
 #include "core/html/forms/ListedElement.h"
 #include "platform/bindings/ScriptWrappable.h"
 
@@ -31,7 +32,6 @@ namespace blink {
 
 class ValidityState final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
-  WTF_MAKE_NONCOPYABLE(ValidityState);
 
  public:
   static ValidityState* Create(ListedElement* control) {
@@ -62,6 +62,8 @@ class ValidityState final : public ScriptWrappable {
   explicit ValidityState(ListedElement* control) : control_(control) {}
 
   Member<ListedElement> control_;
+
+  DISALLOW_COPY_AND_ASSIGN(ValidityState);
 };
 
 }  // namespace blink

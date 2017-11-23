@@ -26,6 +26,7 @@
 #ifndef DateTimeFieldElement_h
 #define DateTimeFieldElement_h
 
+#include "base/macros.h"
 #include "core/html/HTMLDivElement.h"
 #include "core/html/HTMLSpanElement.h"
 #include "public/platform/WebFocusType.h"
@@ -37,8 +38,6 @@ class DateTimeFieldsState;
 
 // DateTimeFieldElement is base class of date time field element.
 class DateTimeFieldElement : public HTMLSpanElement {
-  WTF_MAKE_NONCOPYABLE(DateTimeFieldElement);
-
  public:
   enum EventBehavior {
     kDispatchNoEvent,
@@ -105,6 +104,8 @@ class DateTimeFieldElement : public HTMLSpanElement {
   bool SupportsFocus() const final;
 
   Member<FieldOwner> field_owner_;
+
+  DISALLOW_COPY_AND_ASSIGN(DateTimeFieldElement);
 };
 
 }  // namespace blink

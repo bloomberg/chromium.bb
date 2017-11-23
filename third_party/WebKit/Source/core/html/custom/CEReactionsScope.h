@@ -5,10 +5,10 @@
 #ifndef CEReactionsScope_h
 #define CEReactionsScope_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/StdLibExtras.h"
 
 namespace blink {
@@ -19,7 +19,6 @@ class Element;
 // https://html.spec.whatwg.org/multipage/scripting.html#cereactions
 class CORE_EXPORT CEReactionsScope final {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(CEReactionsScope);
 
  public:
   static CEReactionsScope* Current() { return top_of_stack_; }
@@ -43,6 +42,8 @@ class CORE_EXPORT CEReactionsScope final {
 
   CEReactionsScope* prev_;
   bool work_to_do_;
+
+  DISALLOW_COPY_AND_ASSIGN(CEReactionsScope);
 };
 
 }  // namespace blink

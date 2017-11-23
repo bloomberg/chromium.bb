@@ -5,6 +5,7 @@
 #ifndef MediaCustomControlsFullscreenDetector_h
 #define MediaCustomControlsFullscreenDetector_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/dom/events/EventListener.h"
 #include "platform/Timer.h"
@@ -17,8 +18,6 @@ class TimerBase;
 
 class CORE_EXPORT MediaCustomControlsFullscreenDetector final
     : public EventListener {
-  WTF_MAKE_NONCOPYABLE(MediaCustomControlsFullscreenDetector);
-
  public:
   explicit MediaCustomControlsFullscreenDetector(HTMLVideoElement&);
 
@@ -52,6 +51,8 @@ class CORE_EXPORT MediaCustomControlsFullscreenDetector final
   Member<HTMLVideoElement> video_element_;
   TaskRunnerTimer<MediaCustomControlsFullscreenDetector>
       check_viewport_intersection_timer_;
+
+  DISALLOW_COPY_AND_ASSIGN(MediaCustomControlsFullscreenDetector);
 };
 
 }  // namespace blink

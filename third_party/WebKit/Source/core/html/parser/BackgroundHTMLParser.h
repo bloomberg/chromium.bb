@@ -27,6 +27,8 @@
 #define BackgroundHTMLParser_h
 
 #include <memory>
+
+#include "base/macros.h"
 #include "core/dom/DocumentEncodingData.h"
 #include "core/html/parser/BackgroundHTMLInputStream.h"
 #include "core/html/parser/CompactHTMLToken.h"
@@ -47,7 +49,6 @@ class WebTaskRunner;
 
 class BackgroundHTMLParser {
   USING_FAST_MALLOC(BackgroundHTMLParser);
-  WTF_MAKE_NONCOPYABLE(BackgroundHTMLParser);
 
  public:
   struct Configuration {
@@ -146,6 +147,8 @@ class BackgroundHTMLParser {
 
   bool starting_script_;
   bool should_coalesce_chunks_;
+
+  DISALLOW_COPY_AND_ASSIGN(BackgroundHTMLParser);
 };
 
 }  // namespace blink

@@ -10,11 +10,12 @@
 #include <initializer_list>
 #include <memory>
 #include <vector>
+
+#include "base/macros.h"
 #include "core/html/custom/CustomElementReactionQueue.h"
 #include "core/html/custom/CustomElementReactionStack.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Functional.h"
-#include "platform/wtf/Noncopyable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -22,18 +23,16 @@ namespace blink {
 class Element;
 
 class Command : public GarbageCollectedFinalized<Command> {
-  WTF_MAKE_NONCOPYABLE(Command);
-
  public:
   Command() = default;
   virtual ~Command() = default;
   virtual void Trace(blink::Visitor* visitor) {}
   virtual void Run(Element*) = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(Command);
 };
 
 class Call : public Command {
-  WTF_MAKE_NONCOPYABLE(Call);
-
  public:
   using Callback = WTF::Function<void(Element*)>;
   Call(Callback callback) : callback_(std::move(callback)) {}
@@ -42,11 +41,11 @@ class Call : public Command {
 
  private:
   Callback callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(Call);
 };
 
 class Unreached : public Command {
-  WTF_MAKE_NONCOPYABLE(Unreached);
-
  public:
   Unreached(const char* message) : message_(message) {}
   ~Unreached() override = default;
@@ -54,11 +53,11 @@ class Unreached : public Command {
 
  private:
   const char* message_;
+
+  DISALLOW_COPY_AND_ASSIGN(Unreached);
 };
 
 class Log : public Command {
-  WTF_MAKE_NONCOPYABLE(Log);
-
  public:
   Log(char what, std::vector<char>& where) : what_(what), where_(where) {}
   ~Log() override = default;
@@ -67,11 +66,11 @@ class Log : public Command {
  private:
   char what_;
   std::vector<char>& where_;
+
+  DISALLOW_COPY_AND_ASSIGN(Log);
 };
 
 class Recurse : public Command {
-  WTF_MAKE_NONCOPYABLE(Recurse);
-
  public:
   Recurse(CustomElementReactionQueue* queue) : queue_(queue) {}
   ~Recurse() override = default;
@@ -83,11 +82,11 @@ class Recurse : public Command {
 
  private:
   Member<CustomElementReactionQueue> queue_;
+
+  DISALLOW_COPY_AND_ASSIGN(Recurse);
 };
 
 class Enqueue : public Command {
-  WTF_MAKE_NONCOPYABLE(Enqueue);
-
  public:
   Enqueue(CustomElementReactionQueue* queue, CustomElementReaction* reaction)
       : queue_(queue), reaction_(reaction) {}
@@ -102,11 +101,11 @@ class Enqueue : public Command {
  private:
   Member<CustomElementReactionQueue> queue_;
   Member<CustomElementReaction> reaction_;
+
+  DISALLOW_COPY_AND_ASSIGN(Enqueue);
 };
 
 class TestReaction : public CustomElementReaction {
-  WTF_MAKE_NONCOPYABLE(TestReaction);
-
  public:
   TestReaction(std::initializer_list<Command*> commands)
       : CustomElementReaction(nullptr) {
@@ -127,12 +126,12 @@ class TestReaction : public CustomElementReaction {
 
  private:
   HeapVector<Member<Command>> commands_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestReaction);
 };
 
 class ResetCustomElementReactionStackForTest final {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(ResetCustomElementReactionStackForTest);
-
  public:
   ResetCustomElementReactionStackForTest()
       : stack_(new CustomElementReactionStack),
@@ -148,6 +147,8 @@ class ResetCustomElementReactionStackForTest final {
  private:
   Member<CustomElementReactionStack> stack_;
   Member<CustomElementReactionStack> old_stack_;
+
+  DISALLOW_COPY_AND_ASSIGN(ResetCustomElementReactionStackForTest);
 };
 
 }  // namespace blink

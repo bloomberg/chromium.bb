@@ -28,6 +28,8 @@
 #define HTMLPreloadScanner_h
 
 #include <memory>
+
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/css/MediaValuesCached.h"
 #include "core/dom/ViewportDescription.h"
@@ -77,7 +79,6 @@ struct CORE_EXPORT CachedDocumentParameters {
 };
 
 class TokenPreloadScanner {
-  WTF_MAKE_NONCOPYABLE(TokenPreloadScanner);
   USING_FAST_MALLOC(TokenPreloadScanner);
 
  public:
@@ -162,10 +163,11 @@ class TokenPreloadScanner {
   bool did_rewind_ = false;
 
   Vector<Checkpoint> checkpoints_;
+
+  DISALLOW_COPY_AND_ASSIGN(TokenPreloadScanner);
 };
 
 class CORE_EXPORT HTMLPreloadScanner {
-  WTF_MAKE_NONCOPYABLE(HTMLPreloadScanner);
   USING_FAST_MALLOC(HTMLPreloadScanner);
 
  public:
@@ -197,6 +199,8 @@ class CORE_EXPORT HTMLPreloadScanner {
   SegmentedString source_;
   HTMLToken token_;
   std::unique_ptr<HTMLTokenizer> tokenizer_;
+
+  DISALLOW_COPY_AND_ASSIGN(HTMLPreloadScanner);
 };
 
 }  // namespace blink

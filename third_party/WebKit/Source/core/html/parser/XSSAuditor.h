@@ -27,6 +27,8 @@
 #define XSSAuditor_h
 
 #include <memory>
+
+#include "base/macros.h"
 #include "core/html/parser/HTMLToken.h"
 #include "platform/network/HTTPParsers.h"
 #include "platform/text/SuffixTree.h"
@@ -57,7 +59,6 @@ struct FilterTokenRequest {
 
 class XSSAuditor {
   USING_FAST_MALLOC(XSSAuditor);
-  WTF_MAKE_NONCOPYABLE(XSSAuditor);
 
  public:
   XSSAuditor();
@@ -140,6 +141,8 @@ class XSSAuditor {
   bool script_tag_found_in_request_;
   unsigned script_tag_nesting_level_;
   WTF::TextEncoding encoding_;
+
+  DISALLOW_COPY_AND_ASSIGN(XSSAuditor);
 };
 
 }  // namespace blink

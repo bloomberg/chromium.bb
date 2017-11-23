@@ -31,6 +31,7 @@
 #ifndef BufferedLineReader_h
 #define BufferedLineReader_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "platform/text/SegmentedString.h"
 #include "platform/wtf/Allocator.h"
@@ -46,7 +47,6 @@ namespace blink {
 // part of the result.
 class CORE_EXPORT BufferedLineReader {
   DISALLOW_NEW();
-  WTF_MAKE_NONCOPYABLE(BufferedLineReader);
 
  public:
   BufferedLineReader() : end_of_stream_(false), maybe_skip_lf_(false) {}
@@ -81,6 +81,8 @@ class CORE_EXPORT BufferedLineReader {
   StringBuilder line_buffer_;
   bool end_of_stream_;
   bool maybe_skip_lf_;
+
+  DISALLOW_COPY_AND_ASSIGN(BufferedLineReader);
 };
 
 }  // namespace blink

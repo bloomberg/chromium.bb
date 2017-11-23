@@ -26,6 +26,7 @@
 #ifndef HTMLInputStream_h
 #define HTMLInputStream_h
 
+#include "base/macros.h"
 #include "core/html/parser/InputStreamPreprocessor.h"
 #include "platform/text/SegmentedString.h"
 #include "platform/wtf/Allocator.h"
@@ -50,7 +51,6 @@ namespace blink {
 // "last" string.
 class HTMLInputStream {
   DISALLOW_NEW();
-  WTF_MAKE_NONCOPYABLE(HTMLInputStream);
 
  public:
   HTMLInputStream() : last_(&first_) {}
@@ -104,11 +104,12 @@ class HTMLInputStream {
  private:
   SegmentedString first_;
   SegmentedString* last_;
+
+  DISALLOW_COPY_AND_ASSIGN(HTMLInputStream);
 };
 
 class InsertionPointRecord {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(InsertionPointRecord);
 
  public:
   explicit InsertionPointRecord(HTMLInputStream& input_stream)
@@ -139,6 +140,8 @@ class InsertionPointRecord {
   SegmentedString next_;
   OrdinalNumber line_;
   OrdinalNumber column_;
+
+  DISALLOW_COPY_AND_ASSIGN(InsertionPointRecord);
 };
 
 }  // namespace blink

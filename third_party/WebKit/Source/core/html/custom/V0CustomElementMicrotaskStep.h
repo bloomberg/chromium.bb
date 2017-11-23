@@ -31,15 +31,13 @@
 #ifndef V0CustomElementMicrotaskStep_h
 #define V0CustomElementMicrotaskStep_h
 
+#include "base/macros.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 
 class V0CustomElementMicrotaskStep
     : public GarbageCollectedFinalized<V0CustomElementMicrotaskStep> {
-  WTF_MAKE_NONCOPYABLE(V0CustomElementMicrotaskStep);
-
  public:
   V0CustomElementMicrotaskStep() {}
   virtual ~V0CustomElementMicrotaskStep() {}
@@ -53,6 +51,8 @@ class V0CustomElementMicrotaskStep
 #if !defined(NDEBUG)
   virtual void Show(unsigned indent) = 0;
 #endif
+
+  DISALLOW_COPY_AND_ASSIGN(V0CustomElementMicrotaskStep);
 };
 
 }  // namespace blink

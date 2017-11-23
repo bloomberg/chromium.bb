@@ -27,6 +27,8 @@
 #define AtomicHTMLToken_h
 
 #include <memory>
+
+#include "base/macros.h"
 #include "core/dom/Attribute.h"
 #include "core/html/parser/CompactHTMLToken.h"
 #include "core/html/parser/HTMLToken.h"
@@ -38,7 +40,6 @@ namespace blink {
 
 class CORE_EXPORT AtomicHTMLToken {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(AtomicHTMLToken);
 
  public:
   bool ForceQuirks() const {
@@ -212,6 +213,8 @@ class CORE_EXPORT AtomicHTMLToken {
   bool self_closing_;
 
   Vector<Attribute> attributes_;
+
+  DISALLOW_COPY_AND_ASSIGN(AtomicHTMLToken);
 };
 
 inline void AtomicHTMLToken::InitializeAttributes(

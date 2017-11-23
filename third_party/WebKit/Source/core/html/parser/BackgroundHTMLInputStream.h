@@ -26,6 +26,7 @@
 #ifndef BackgroundHTMLInputStream_h
 #define BackgroundHTMLInputStream_h
 
+#include "base/macros.h"
 #include "platform/text/SegmentedString.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Vector.h"
@@ -37,7 +38,6 @@ typedef size_t HTMLInputCheckpoint;
 
 class BackgroundHTMLInputStream {
   DISALLOW_NEW();
-  WTF_MAKE_NONCOPYABLE(BackgroundHTMLInputStream);
 
  public:
   BackgroundHTMLInputStream();
@@ -92,6 +92,8 @@ class BackgroundHTMLInputStream {
   size_t total_checkpoint_token_count_;
 
   void UpdateTotalCheckpointTokenCount();
+
+  DISALLOW_COPY_AND_ASSIGN(BackgroundHTMLInputStream);
 };
 
 }  // namespace blink
