@@ -52,6 +52,11 @@ class TabUnderNavigationThrottle : public content::NavigationThrottle {
     // The user clicked through to navigate to the blocked redirect.
     kClickedThrough,
 
+    // The user did not navigate to the blocked redirect and closed the message.
+    // This only gets logged when the user takes action on the UI, not when it
+    // gets automatically dismissed by a navigation for example.
+    kAcceptedIntervention,
+
     kCount
   };
 

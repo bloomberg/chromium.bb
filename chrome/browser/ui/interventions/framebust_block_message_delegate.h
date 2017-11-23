@@ -20,9 +20,18 @@ class WebContents;
 // if the user decides to do so.
 class FramebustBlockMessageDelegate : public InterventionDelegate {
  public:
+  // Describes the actions the user can take regarding this intervention, they
+  // are provided through a callback the caller can pass to the delegate's
+  // constructor.
+  enum class InterventionOutcome { kAccepted, kDeclinedAndNavigated };
+
+  typedef base::OnceCallback<void(InterventionOutcome)> OutcomeCallback;
+
+  // |intervention_callback| will be called when the user interacts with the
+  // intervention message, see InterventionOutcome for possible values.
   FramebustBlockMessageDelegate(content::WebContents* web_contents,
                                 const GURL& blocked_url,
-                                base::OnceClosure click_closure);
+                                OutcomeCallback intervention_callback);
   ~FramebustBlockMessageDelegate() override;
 
   const GURL& GetBlockedUrl() const;
@@ -32,8 +41,9 @@ class FramebustBlockMessageDelegate : public InterventionDelegate {
   void DeclineIntervention() override;
 
  private:
-  // Closure to be called when the link is clicked.
-  base::OnceClosure click_closure_;
+  // Callback to be called when the user performs an action regarding this
+  // intervention.
+  OutcomeCallback intervention_callback_;
 
   // WebContents associated with the frame that was targeted by the framebust.
   // Will be used to continue the navigation to the blocked URL.
