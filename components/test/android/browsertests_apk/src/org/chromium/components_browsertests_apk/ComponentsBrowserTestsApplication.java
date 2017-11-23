@@ -6,6 +6,7 @@ package org.chromium.components_browsertests_apk;
 
 import android.content.Context;
 
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.BaseChromiumApplication;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.PathUtils;
@@ -26,5 +27,6 @@ public class ComponentsBrowserTestsApplication extends BaseChromiumApplication {
     public void onCreate() {
         super.onCreate();
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
+        ApplicationStatus.initialize(this);
     }
 }

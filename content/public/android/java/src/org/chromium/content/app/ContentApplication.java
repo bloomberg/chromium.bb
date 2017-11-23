@@ -16,13 +16,6 @@ import org.chromium.base.annotations.MainDex;
 public abstract class ContentApplication extends BaseChromiumApplication {
     private boolean mLibraryDependenciesInitialized;
 
-    public ContentApplication() {
-        this(true /* mShouldInitializeApplicationStatusTracking */);
-    }
-
-    protected ContentApplication(boolean shouldInitializeApplicationStatusTracking) {
-        super(shouldInitializeApplicationStatusTracking);
-    }
 
     @Override
     public void onCreate() {

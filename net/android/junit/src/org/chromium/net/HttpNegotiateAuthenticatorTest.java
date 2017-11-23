@@ -39,12 +39,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 
-import org.chromium.base.ApplicationStatus;
-import org.chromium.base.BaseChromiumApplication;
-import org.chromium.base.ContextUtils;
-import org.chromium.net.HttpNegotiateAuthenticator.GetAccountsCallback;
-import org.chromium.net.HttpNegotiateAuthenticator.RequestData;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -62,6 +56,13 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.shadows.ShadowAccountManager;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.multidex.ShadowMultiDex;
+
+import org.chromium.base.ApplicationStatus;
+import org.chromium.base.BaseChromiumApplication;
+import org.chromium.base.ContextUtils;
+import org.chromium.net.HttpNegotiateAuthenticator.GetAccountsCallback;
+import org.chromium.net.HttpNegotiateAuthenticator.RequestData;
+import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.io.IOException;
 import java.util.List;
@@ -99,6 +100,7 @@ public class HttpNegotiateAuthenticatorTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
+        ApplicationStatus.initialize(RuntimeEnvironment.application);
     }
 
     @After
