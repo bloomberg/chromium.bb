@@ -628,10 +628,10 @@ class IsolateServerGrpc(StorageApi):
       if response is not None and response.committed_size != item.size:
         raise IOError('%s/%d: incorrect size written (%d)' % (
             item.digest, item.size, response.committed_size))
-      elif response is None:
+      elif response is None and item.size > 0:
         # This happens when the content generator is exhausted and the gRPC call
         # simply returns None. Throw gRPC error as this is not recoverable.
-        raise grpc.RpcError('None gRPC response')
+        raise grpc.RpcError('None gRPC response on uploading %s' % item.digest)
 
     finally:
       with self._lock:
