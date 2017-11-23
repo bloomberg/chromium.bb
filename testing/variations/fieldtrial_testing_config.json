@@ -1697,12 +1697,13 @@
                 "linux",
                 "mac",
                 "win",
-                "android"
+                "android",
+                "chromeos"
             ],
             "experiments": [
                 {
-                    "name": "Control",
-                    "disable_features": [
+                    "name": "Enabled",
+                    "enable_features": [
                         "LazyParseCSS"
                     ]
                 }
