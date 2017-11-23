@@ -217,10 +217,18 @@ void TranslateInternalsHandler::SendPrefsToJs() {
 }
 
 void TranslateInternalsHandler::SendSupportedLanguagesToJs() {
-  base::DictionaryValue dict;
+  // Create translate prefs.
+  content::WebContents* web_contents = web_ui()->GetWebContents();
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  PrefService* prefs = profile->GetOriginalProfile()->GetPrefs();
+  std::unique_ptr<translate::TranslatePrefs> translate_prefs(
+      ChromeTranslateClient::CreateTranslatePrefs(prefs));
 
+  // Fetch supported language information.
   std::vector<std::string> languages;
-  translate::TranslateDownloadManager::GetSupportedLanguages(&languages);
+  translate::TranslateDownloadManager::GetSupportedLanguages(
+      translate_prefs->IsTranslateAllowedByPolicy(), &languages);
   base::Time last_updated =
       translate::TranslateDownloadManager::GetSupportedLanguagesLastUpdated();
 
@@ -231,6 +239,7 @@ void TranslateInternalsHandler::SendSupportedLanguagesToJs() {
     languages_list->AppendString(lang);
   }
 
+  base::DictionaryValue dict;
   dict.Set("languages", std::move(languages_list));
   dict.SetDouble("last_updated", last_updated.ToJsTime());
   SendMessageToJs("supportedLanguagesUpdated", dict);

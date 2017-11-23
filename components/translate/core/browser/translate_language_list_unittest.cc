@@ -8,7 +8,14 @@
 #include <vector>
 
 #include "base/test/scoped_command_line.h"
+#include "base/test/scoped_task_environment.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/translate/core/browser/translate_download_manager.h"
+#include "components/translate/core/browser/translate_url_util.h"
+#include "net/url_request/test_url_fetcher_factory.h"
+#include "net/url_request/url_fetcher_delegate.h"
+#include "net/url_request/url_request_status.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -17,17 +24,22 @@ namespace translate {
 // Test that the supported languages can be explicitly set using
 // SetSupportedLanguages().
 TEST(TranslateLanguageListTest, SetSupportedLanguages) {
-  std::string language_list(
+  const std::string language_list(
       "{"
       "\"sl\":{\"en\":\"English\",\"ja\":\"Japanese\"},"
       "\"tl\":{\"en\":\"English\",\"ja\":\"Japanese\"}"
       "}");
+
+  base::test::ScopedTaskEnvironment scoped_task_environment;
   TranslateDownloadManager* manager = TranslateDownloadManager::GetInstance();
   manager->set_application_locale("en");
+  manager->set_request_context(new net::TestURLRequestContextGetter(
+      base::ThreadTaskRunnerHandle::Get()));
   EXPECT_TRUE(manager->language_list()->SetSupportedLanguages(language_list));
 
   std::vector<std::string> results;
-  manager->language_list()->GetSupportedLanguages(&results);
+  manager->language_list()->GetSupportedLanguages(true /* translate_allowed */,
+                                                  &results);
   ASSERT_EQ(2u, results.size());
   EXPECT_EQ("en", results[0]);
   EXPECT_EQ("ja", results[1]);
@@ -83,7 +95,7 @@ TEST(TranslateLanguageListTest, IsSupportedLanguage) {
 TEST(TranslateLanguageListTest, GetSupportedLanguages) {
   TranslateLanguageList language_list;
   std::vector<std::string> languages;
-  language_list.GetSupportedLanguages(&languages);
+  language_list.GetSupportedLanguages(true /* translate_allowed */, &languages);
   // Check there are a lot of default languages.
   EXPECT_GE(languages.size(), 100ul);
   // Check that some very common languages are there.
@@ -95,6 +107,73 @@ TEST(TranslateLanguageListTest, GetSupportedLanguages) {
   EXPECT_NE(end, std::find(begin, end, "ru"));
   EXPECT_NE(end, std::find(begin, end, "zh-CN"));
   EXPECT_NE(end, std::find(begin, end, "zh-TW"));
+}
+
+// Check that we contact the translate server to update the supported language
+// list when translate is enabled by policy.
+TEST(TranslateLanguageListTest, GetSupportedLanguagesFetch) {
+  // Set up fake network environment.
+  base::test::ScopedTaskEnvironment scoped_task_environment;
+  net::TestURLFetcherFactory url_fetcher_factory;
+  TranslateDownloadManager::GetInstance()->set_application_locale("en");
+  TranslateDownloadManager::GetInstance()->set_request_context(
+      new net::TestURLRequestContextGetter(
+          base::ThreadTaskRunnerHandle::Get()));
+
+  // Populate supported languages.
+  std::vector<std::string> languages;
+  TranslateLanguageList language_list;
+  language_list.SetResourceRequestsAllowed(true);
+  language_list.GetSupportedLanguages(true /* translate_allowed */, &languages);
+
+  // Since translate is allowed by policy, we should have also scheduled a
+  // language list fetch.
+  net::TestURLFetcher* const fetcher =
+      url_fetcher_factory.GetFetcherByID(TranslateLanguageList::kFetcherId);
+  ASSERT_NE(nullptr, fetcher);
+
+  // Check that the correct URL is requested.
+  const GURL expected_url =
+      AddApiKeyToUrl(AddHostLocaleToUrl(language_list.TranslateLanguageUrl()));
+  const GURL actual_url = fetcher->GetOriginalURL();
+  EXPECT_TRUE(actual_url.is_valid());
+  EXPECT_EQ(expected_url.spec(), actual_url.spec());
+
+  // Simulate fetch completion with just Italian in the supported language list.
+  fetcher->set_status(net::URLRequestStatus());
+  fetcher->set_response_code(net::HTTP_OK);
+  fetcher->SetResponseString(R"({"tl" : {"it" : "Italian"}})");
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
+
+  // Check that the language list has been updated correctly.
+  languages.clear();
+  language_list.GetSupportedLanguages(true /* translate_allowed */, &languages);
+  EXPECT_EQ(std::vector<std::string>(1, "it"), languages);
+}
+
+// Check that we don't send any network data when translate is disabled by
+// policy.
+TEST(TranslateLanguageListTest, GetSupportedLanguagesNoFetch) {
+  // Set up fake network environment.
+  base::test::ScopedTaskEnvironment scoped_task_environment;
+  net::TestURLFetcherFactory url_fetcher_factory;
+  TranslateDownloadManager::GetInstance()->set_application_locale("en");
+  TranslateDownloadManager::GetInstance()->set_request_context(
+      new net::TestURLRequestContextGetter(
+          base::ThreadTaskRunnerHandle::Get()));
+
+  // Populate supported languages.
+  std::vector<std::string> languages;
+  TranslateLanguageList language_list;
+  language_list.SetResourceRequestsAllowed(true);
+  language_list.GetSupportedLanguages(false /* translate_allowed */,
+                                      &languages);
+
+  // Since translate is disabled by policy, we should *not* have scheduled a
+  // language list fetch.
+  net::TestURLFetcher* const fetcher =
+      url_fetcher_factory.GetFetcherByID(TranslateLanguageList::kFetcherId);
+  ASSERT_EQ(nullptr, fetcher);
 }
 
 }  // namespace translate

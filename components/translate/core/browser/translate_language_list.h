@@ -36,8 +36,10 @@ class TranslateLanguageList {
   base::Time last_updated() { return last_updated_; }
 
   // Fills |languages| with the list of languages that the translate server can
-  // translate to and from.
-  void GetSupportedLanguages(std::vector<std::string>* languages);
+  // translate to and from. May attempt a language list request unless
+  // |translate_allowed| is false.
+  void GetSupportedLanguages(bool translate_allowed,
+                             std::vector<std::string>* languages);
 
   // Returns the language code that can be used with the Translate method for a
   // specified |language|. (ex. GetLanguageCode("en-US") will return "en", and
@@ -74,6 +76,8 @@ class TranslateLanguageList {
   FRIEND_TEST_ALL_PREFIXES(TranslateLanguageListTest, IsSupportedLanguage);
   FRIEND_TEST_ALL_PREFIXES(TranslateLanguageListTest, SetSupportedLanguages);
   FRIEND_TEST_ALL_PREFIXES(TranslateLanguageListTest, TranslateLanguageUrl);
+  FRIEND_TEST_ALL_PREFIXES(TranslateLanguageListTest,
+                           GetSupportedLanguagesFetch);
 
   // Callback function called when TranslateURLFetcher::Request() is finished.
   void OnLanguageListFetchComplete(int id,

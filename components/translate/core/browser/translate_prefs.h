@@ -173,8 +173,11 @@ class TranslatePrefs {
   // available in the given locale.
   // The list returned in |languages| is sorted alphabetically based on the
   // display names in the given locale.
+  // May cause a supported language list fetch unless |translate_allowed| is
+  // false.
   static void GetLanguageInfoList(
       const std::string& app_locale,
+      bool translate_allowed,
       std::vector<TranslateLanguageInfo>* languages);
 
   bool IsSiteBlacklisted(const std::string& site) const;

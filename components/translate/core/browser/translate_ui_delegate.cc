@@ -60,12 +60,14 @@ TranslateUIDelegate::TranslateUIDelegate(
       translate_manager_(translate_manager),
       original_language_index_(kNoIndex),
       initial_original_language_index_(kNoIndex),
-      target_language_index_(kNoIndex) {
+      target_language_index_(kNoIndex),
+      prefs_(translate_manager_->translate_client()->GetTranslatePrefs()) {
   DCHECK(translate_driver_);
   DCHECK(translate_manager_);
 
   std::vector<std::string> language_codes;
-  TranslateDownloadManager::GetSupportedLanguages(&language_codes);
+  TranslateDownloadManager::GetSupportedLanguages(
+      prefs_->IsTranslateAllowedByPolicy(), &language_codes);
 
   // Preparing for the alphabetical order in the locale.
   std::string locale =
@@ -109,7 +111,6 @@ TranslateUIDelegate::TranslateUIDelegate(
       target_language_index_ = iter - languages_.begin();
   }
 
-  prefs_ = translate_manager_->translate_client()->GetTranslatePrefs();
 }
 
 TranslateUIDelegate::~TranslateUIDelegate() {}
