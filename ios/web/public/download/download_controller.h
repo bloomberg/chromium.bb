@@ -32,7 +32,7 @@ class WebState;
 //     DownloadController::FromBrowserState(state)->SetDelegate(this);
 //   }
 //   void OnDownloadCreated(DownloadController*,
-//                          const WebState*,
+//                          WebState*,
 //                          std::unique_ptr<DownloadTask> task) override {
 //     task->AddObserver(this);
 //     task->Start(GetURLFetcherFileWriter());
@@ -95,7 +95,7 @@ class DownloadController {
   // from DownloadTask, which was suspended when the application has been
   // terminated. In order to resume the download, clients must persist all
   // DownloadTask data for each unfinished download on disk.
-  virtual void CreateDownloadTask(const WebState* web_state,
+  virtual void CreateDownloadTask(WebState* web_state,
                                   NSString* identifier,
                                   const GURL& original_url,
                                   const std::string& content_disposition,

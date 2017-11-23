@@ -30,7 +30,7 @@ class DownloadControllerDelegate {
   // for the download and DownloadTask::GetTotalBytes() to get the estimated
   // size.
   virtual void OnDownloadCreated(DownloadController* download_controller,
-                                 const WebState* web_state,
+                                 WebState* web_state,
                                  std::unique_ptr<DownloadTask> task) {}
 
   // Called when DownloadController is about to be destroyed. Delegate should

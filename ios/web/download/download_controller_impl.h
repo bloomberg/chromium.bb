@@ -27,7 +27,7 @@ class DownloadControllerImpl : public DownloadController,
   ~DownloadControllerImpl() override;
 
   // DownloadController overrides:
-  void CreateDownloadTask(const WebState* web_state,
+  void CreateDownloadTask(WebState* web_state,
                           NSString* identifier,
                           const GURL& original_url,
                           const std::string& content_disposition,

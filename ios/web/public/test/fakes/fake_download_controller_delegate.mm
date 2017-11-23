@@ -19,7 +19,7 @@ FakeDownloadControllerDelegate::~FakeDownloadControllerDelegate() = default;
 
 void FakeDownloadControllerDelegate::OnDownloadCreated(
     DownloadController* download_controller,
-    const WebState* web_state,
+    WebState* web_state,
     std::unique_ptr<DownloadTask> task) {
   alive_download_tasks_.push_back(std::make_pair(web_state, std::move(task)));
 }

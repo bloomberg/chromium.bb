@@ -32,7 +32,7 @@ class FakeDownloadControllerDelegate : public DownloadControllerDelegate {
  private:
   // DownloadControllerDelegate overrides:
   void OnDownloadCreated(DownloadController*,
-                         const WebState*,
+                         WebState*,
                          std::unique_ptr<DownloadTask>) override;
   void OnDownloadControllerDestroyed(DownloadController*) override;
 
