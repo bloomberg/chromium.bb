@@ -312,7 +312,7 @@ IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest,
   EXPECT_TRUE(GetFirstAppWindow()->GetBaseWindow()->IsFullscreen());
 }
 
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_MACOSX)
 // http://crbug.com/404081
 #define MAYBE_TestInnerBounds DISABLED_TestInnerBounds
 #else
@@ -400,24 +400,34 @@ IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest,
 
 // This test does not work on Linux Aura because ShowInactive() is not
 // implemented. See http://crbug.com/325142
+// It also does not work on MacOS because ::ShowInactive() ends up behaving like
+// ::Show() because of Cocoa conventions. See http://crbug.com/326987
+// Those tests should be disabled on Linux GTK when they are enabled on the
+// other platforms, see http://crbug.com/328829
+#if (defined(OS_LINUX) && defined(USE_AURA)) || defined(OS_MACOSX)
+#define MAYBE_TestCreate DISABLED_TestCreate
+#else
+#define MAYBE_TestCreate TestCreate
+#endif
+
+IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest, MAYBE_TestCreate) {
+  ASSERT_TRUE(RunAppWindowInteractiveTest("testCreate")) << message_;
+}
+
+// This test does not work on Linux Aura because ShowInactive() is not
+// implemented. See http://crbug.com/325142
 // It also does not work on Windows because of the document being focused even
 // though the window is not activated. See http://crbug.com/326986
 // It also does not work on MacOS because ::ShowInactive() ends up behaving like
 // ::Show() because of Cocoa conventions. See http://crbug.com/326987
 // Those tests should be disabled on Linux GTK when they are enabled on the
 // other platforms, see http://crbug.com/328829
-#if (defined(OS_LINUX) && defined(USE_AURA)) || \
-    defined(OS_WIN) || defined(OS_MACOSX)
-#define MAYBE_TestCreate DISABLED_TestCreate
+#if (defined(OS_LINUX) && defined(USE_AURA)) || defined(OS_WIN) || \
+    defined(OS_MACOSX)
 #define MAYBE_TestShow DISABLED_TestShow
 #else
-#define MAYBE_TestCreate TestCreate
 #define MAYBE_TestShow TestShow
 #endif
-
-IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest, MAYBE_TestCreate) {
-  ASSERT_TRUE(RunAppWindowInteractiveTest("testCreate")) << message_;
-}
 
 IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest, MAYBE_TestShow) {
   ASSERT_TRUE(RunAppWindowInteractiveTest("testShow")) << message_;
