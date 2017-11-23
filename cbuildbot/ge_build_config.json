@@ -1811,13 +1811,13 @@
         {
           "board_name": "reef",
           "name": "basking",
-          "cq_test_enabled": false,
+          "cq_test_enabled": true,
           "release_builder_test_pool": "bvt"
         },
         {
           "board_name": "reef",
           "name": "electro",
-          "cq_test_enabled": false,
+          "cq_test_enabled": true,
           "release_builder_test_pool": "bvt"
         },
         {
