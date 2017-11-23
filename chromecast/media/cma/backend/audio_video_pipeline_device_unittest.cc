@@ -917,6 +917,14 @@ void AudioVideoPipelineDeviceTest::EndImmediateEosTest() {
   base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 
+TEST_F(AudioVideoPipelineDeviceTest, PcmPlayback) {
+  set_sync_type(MediaPipelineDeviceParams::kModeSyncPts);
+  ConfigureForAudioOnly("bear_pcm.wav");
+  PauseBeforeEos();
+  Start();
+  base::RunLoop().Run();
+}
+
 TEST_F(AudioVideoPipelineDeviceTest, Mp3Playback) {
   set_sync_type(MediaPipelineDeviceParams::kModeSyncPts);
   ConfigureForAudioOnly("sfx.mp3");
