@@ -112,7 +112,8 @@ void MediaControlTimelineElement::DefaultEventHandler(Event* event) {
       bool started_from_thumb = thumb && thumb == event->target()->ToNode();
       metrics_.StartGesture(started_from_thumb);
     }
-    if (event->type() == EventTypeNames::pointerup) {
+    if (event->type() == EventTypeNames::pointerup ||
+        event->type() == EventTypeNames::pointercancel) {
       Platform::Current()->RecordAction(
           UserMetricsAction("Media.Controls.ScrubbingEnd"));
       GetMediaControls().EndScrubbing();

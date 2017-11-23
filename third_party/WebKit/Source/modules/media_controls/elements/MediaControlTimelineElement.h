@@ -5,6 +5,7 @@
 #ifndef MediaControlTimelineElement_h
 #define MediaControlTimelineElement_h
 
+#include "modules/ModulesExport.h"
 #include "modules/media_controls/elements/MediaControlSliderElement.h"
 #include "modules/media_controls/elements/MediaControlTimelineMetrics.h"
 
@@ -15,7 +16,7 @@ class MediaControlsImpl;
 
 class MediaControlTimelineElement final : public MediaControlSliderElement {
  public:
-  explicit MediaControlTimelineElement(MediaControlsImpl&);
+  MODULES_EXPORT explicit MediaControlTimelineElement(MediaControlsImpl&);
 
   // MediaControlInputElement overrides.
   bool WillRespondToMouseClickEvents() override;
