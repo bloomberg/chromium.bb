@@ -33,6 +33,7 @@
 #ifndef InputType_h
 #define InputType_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/frame/WebFeatureForward.h"
 #include "core/html/forms/ColorChooserClient.h"
@@ -53,8 +54,6 @@ class InputTypeView;
 // other than HTMLInputElement.
 // FIXME: InputType should not inherit InputTypeView. It's conceptually wrong.
 class CORE_EXPORT InputType : public GarbageCollectedFinalized<InputType> {
-  WTF_MAKE_NONCOPYABLE(InputType);
-
  public:
   static InputType* Create(HTMLInputElement&, const AtomicString&);
   static InputType* CreateText(HTMLInputElement&);
@@ -258,6 +257,8 @@ class CORE_EXPORT InputType : public GarbageCollectedFinalized<InputType> {
                  ExceptionState&);
 
   Member<HTMLInputElement> element_;
+
+  DISALLOW_COPY_AND_ASSIGN(InputType);
 };
 
 }  // namespace blink

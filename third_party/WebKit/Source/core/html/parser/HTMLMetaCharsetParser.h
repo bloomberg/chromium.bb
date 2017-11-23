@@ -27,9 +27,10 @@
 #define HTMLMetaCharsetParser_h
 
 #include <memory>
+
+#include "base/macros.h"
 #include "core/html/parser/HTMLToken.h"
 #include "platform/text/SegmentedString.h"
-#include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/TextCodec.h"
 #include "platform/wtf/text/TextEncoding.h"
@@ -39,7 +40,6 @@ namespace blink {
 class HTMLTokenizer;
 
 class HTMLMetaCharsetParser {
-  WTF_MAKE_NONCOPYABLE(HTMLMetaCharsetParser);
   USING_FAST_MALLOC(HTMLMetaCharsetParser);
 
  public:
@@ -67,6 +67,8 @@ class HTMLMetaCharsetParser {
 
   bool done_checking_;
   WTF::TextEncoding encoding_;
+
+  DISALLOW_COPY_AND_ASSIGN(HTMLMetaCharsetParser);
 };
 
 }  // namespace blink

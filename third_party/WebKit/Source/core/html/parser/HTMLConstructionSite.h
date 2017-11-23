@@ -27,12 +27,12 @@
 #ifndef HTMLConstructionSite_h
 #define HTMLConstructionSite_h
 
+#include "base/macros.h"
 #include "core/dom/Document.h"
 #include "core/dom/ParserContentPolicy.h"
 #include "core/html/parser/HTMLElementStack.h"
 #include "core/html/parser/HTMLFormattingElementList.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/StringBuilder.h"
 
@@ -104,7 +104,6 @@ class HTMLFormElement;
 class HTMLParserReentryPermit;
 
 class HTMLConstructionSite final {
-  WTF_MAKE_NONCOPYABLE(HTMLConstructionSite);
   DISALLOW_NEW();
 
  public:
@@ -221,7 +220,7 @@ class HTMLConstructionSite final {
 
   class RedirectToFosterParentGuard {
     STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(RedirectToFosterParentGuard);
+    DISALLOW_COPY_AND_ASSIGN(RedirectToFosterParentGuard);
 
    public:
     RedirectToFosterParentGuard(HTMLConstructionSite& tree)
@@ -343,6 +342,8 @@ class HTMLConstructionSite final {
   bool redirect_attach_to_foster_parent_;
 
   bool in_quirks_mode_;
+
+  DISALLOW_COPY_AND_ASSIGN(HTMLConstructionSite);
 };
 
 }  // namespace blink

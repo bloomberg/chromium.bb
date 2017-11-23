@@ -5,9 +5,9 @@
 #ifndef CustomElementReactionQueue_h
 #define CustomElementReactionQueue_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 
@@ -16,8 +16,6 @@ class Element;
 
 class CORE_EXPORT CustomElementReactionQueue final
     : public GarbageCollectedFinalized<CustomElementReactionQueue> {
-  WTF_MAKE_NONCOPYABLE(CustomElementReactionQueue);
-
  public:
   CustomElementReactionQueue();
   ~CustomElementReactionQueue();
@@ -32,6 +30,8 @@ class CORE_EXPORT CustomElementReactionQueue final
  private:
   HeapVector<Member<CustomElementReaction>, 1> reactions_;
   size_t index_;
+
+  DISALLOW_COPY_AND_ASSIGN(CustomElementReactionQueue);
 };
 
 }  // namespace blink

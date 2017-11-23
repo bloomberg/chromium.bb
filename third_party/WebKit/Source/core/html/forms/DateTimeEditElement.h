@@ -26,6 +26,7 @@
 #ifndef DateTimeEditElement_h
 #define DateTimeEditElement_h
 
+#include "base/macros.h"
 #include "core/html/forms/DateTimeFieldElement.h"
 #include "core/html/forms/StepRange.h"
 #include "platform/DateComponents.h"
@@ -44,7 +45,6 @@ class StepRange;
 //  - Hour, Minute, Second, Millisecond, AM/PM
 class DateTimeEditElement final : public HTMLDivElement,
                                   public DateTimeFieldElement::FieldOwner {
-  WTF_MAKE_NONCOPYABLE(DateTimeEditElement);
   USING_GARBAGE_COLLECTED_MIXIN(DateTimeEditElement);
 
  public:
@@ -152,6 +152,8 @@ class DateTimeEditElement final : public HTMLDivElement,
 
   HeapVector<Member<DateTimeFieldElement>, kMaximumNumberOfFields> fields_;
   Member<EditControlOwner> edit_control_owner_;
+
+  DISALLOW_COPY_AND_ASSIGN(DateTimeEditElement);
 };
 
 DEFINE_TYPE_CASTS(DateTimeEditElement,

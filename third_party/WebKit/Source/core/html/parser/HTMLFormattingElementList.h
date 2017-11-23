@@ -26,6 +26,7 @@
 #ifndef HTMLFormattingElementList_h
 #define HTMLFormattingElementList_h
 
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "core/html/parser/HTMLStackItem.h"
 #include "platform/wtf/Forward.h"
@@ -37,7 +38,6 @@ class Element;
 
 // This may end up merged into HTMLElementStack.
 class HTMLFormattingElementList {
-  WTF_MAKE_NONCOPYABLE(HTMLFormattingElementList);
   DISALLOW_NEW();
 
  public:
@@ -139,6 +139,8 @@ class HTMLFormattingElementList {
   void EnsureNoahsArkCondition(HTMLStackItem*);
 
   HeapVector<Entry> entries_;
+
+  DISALLOW_COPY_AND_ASSIGN(HTMLFormattingElementList);
 };
 
 }  // namespace blink

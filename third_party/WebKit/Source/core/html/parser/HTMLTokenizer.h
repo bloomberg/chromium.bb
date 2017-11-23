@@ -28,6 +28,8 @@
 #define HTMLTokenizer_h
 
 #include <memory>
+
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/html/parser/HTMLParserOptions.h"
 #include "core/html/parser/HTMLToken.h"
@@ -38,7 +40,6 @@
 namespace blink {
 
 class CORE_EXPORT HTMLTokenizer {
-  WTF_MAKE_NONCOPYABLE(HTMLTokenizer);
   USING_FAST_MALLOC(HTMLTokenizer);
 
  public:
@@ -280,6 +281,8 @@ class CORE_EXPORT HTMLTokenizer {
   Vector<LChar, 32> buffered_end_tag_name_;
 
   HTMLParserOptions options_;
+
+  DISALLOW_COPY_AND_ASSIGN(HTMLTokenizer);
 };
 
 }  // namespace blink

@@ -27,6 +27,8 @@
 #define HTMLResourcePreloader_h
 
 #include <memory>
+
+#include "base/macros.h"
 #include "core/html/parser/CSSPreloadScanner.h"
 #include "core/html/parser/PreloadRequest.h"
 #include "core/html/parser/ResourcePreloader.h"
@@ -42,7 +44,6 @@ class Document;
 class CORE_EXPORT HTMLResourcePreloader
     : public GarbageCollected<HTMLResourcePreloader>,
       public ResourcePreloader {
-  WTF_MAKE_NONCOPYABLE(HTMLResourcePreloader);
   friend class HTMLResourcePreloaderTest;
 
  public:
@@ -59,6 +60,8 @@ class CORE_EXPORT HTMLResourcePreloader
  private:
   Member<Document> document_;
   HeapHashSet<Member<CSSPreloaderResourceClient>> css_preloaders_;
+
+  DISALLOW_COPY_AND_ASSIGN(HTMLResourcePreloader);
 };
 
 }  // namespace blink

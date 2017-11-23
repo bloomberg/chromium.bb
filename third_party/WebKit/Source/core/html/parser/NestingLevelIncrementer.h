@@ -26,14 +26,13 @@
 #ifndef NestingLevelIncrementer_h
 #define NestingLevelIncrementer_h
 
+#include "base/macros.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 
 class NestingLevelIncrementer {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(NestingLevelIncrementer);
 
  public:
   explicit NestingLevelIncrementer(unsigned& nesting_level)
@@ -45,6 +44,8 @@ class NestingLevelIncrementer {
 
  private:
   unsigned* nesting_level_;
+
+  DISALLOW_COPY_AND_ASSIGN(NestingLevelIncrementer);
 };
 
 }  // namespace blink

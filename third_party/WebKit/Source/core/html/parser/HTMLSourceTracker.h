@@ -26,6 +26,7 @@
 #ifndef HTMLSourceTracker_h
 #define HTMLSourceTracker_h
 
+#include "base/macros.h"
 #include "core/html/parser/HTMLToken.h"
 #include "platform/text/SegmentedString.h"
 #include "platform/wtf/Allocator.h"
@@ -36,7 +37,6 @@ class HTMLTokenizer;
 
 class HTMLSourceTracker {
   DISALLOW_NEW();
-  WTF_MAKE_NONCOPYABLE(HTMLSourceTracker);
 
  public:
   HTMLSourceTracker();
@@ -58,6 +58,8 @@ class HTMLSourceTracker {
   String cached_source_for_token_;
 
   bool is_started_;
+
+  DISALLOW_COPY_AND_ASSIGN(HTMLSourceTracker);
 };
 
 }  // namespace blink

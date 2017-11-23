@@ -25,6 +25,7 @@
 
 #include "core/html/media/MediaDocument.h"
 
+#include "base/macros.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/add_event_listener_options_or_boolean.h"
 #include "core/dom/ElementTraversal.h"
@@ -71,8 +72,6 @@ class MediaDocumentParser : public RawDataDocumentParser {
 };
 
 class MediaLoadedEventListener final : public EventListener {
-  WTF_MAKE_NONCOPYABLE(MediaLoadedEventListener);
-
  public:
   static MediaLoadedEventListener* Create() {
     return new MediaLoadedEventListener();
@@ -93,6 +92,8 @@ class MediaLoadedEventListener final : public EventListener {
     // TODO(shaktisahu): Enable fullscreen after https://crbug/698353 is fixed.
     media->Play();
   }
+
+  DISALLOW_COPY_AND_ASSIGN(MediaLoadedEventListener);
 };
 
 void MediaDocumentParser::CreateDocumentStructure() {

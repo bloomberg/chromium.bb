@@ -5,6 +5,7 @@
 #ifndef CanvasRenderingContextFactory_h
 #define CanvasRenderingContextFactory_h
 
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "core/dom/Document.h"
@@ -19,7 +20,6 @@ class OffscreenCanvas;
 
 class CORE_EXPORT CanvasRenderingContextFactory {
   USING_FAST_MALLOC(CanvasRenderingContextFactory);
-  WTF_MAKE_NONCOPYABLE(CanvasRenderingContextFactory);
 
  public:
   CanvasRenderingContextFactory() = default;
@@ -32,6 +32,8 @@ class CORE_EXPORT CanvasRenderingContextFactory {
   virtual CanvasRenderingContext::ContextType GetContextType() const = 0;
   virtual void OnError(HTMLCanvasElement*, const String& error){};
   virtual void OnError(OffscreenCanvas*, const String& error){};
+
+  DISALLOW_COPY_AND_ASSIGN(CanvasRenderingContextFactory);
 };
 
 }  // namespace blink

@@ -27,6 +27,8 @@
 #define XSSAuditorDelegate_h
 
 #include <memory>
+
+#include "base/macros.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/PtrUtil.h"
@@ -41,7 +43,6 @@ class EncodedFormData;
 
 class XSSInfo {
   USING_FAST_MALLOC(XSSInfo);
-  WTF_MAKE_NONCOPYABLE(XSSInfo);
 
  public:
   static std::unique_ptr<XSSInfo> Create(const String& original_url,
@@ -66,11 +67,12 @@ class XSSInfo {
       : original_url_(original_url.IsolatedCopy()),
         did_block_entire_page_(did_block_entire_page),
         did_send_xss_protection_header_(did_send_xss_protection_header) {}
+
+  DISALLOW_COPY_AND_ASSIGN(XSSInfo);
 };
 
 class XSSAuditorDelegate final {
   DISALLOW_NEW();
-  WTF_MAKE_NONCOPYABLE(XSSAuditorDelegate);
 
  public:
   explicit XSSAuditorDelegate(Document*);
@@ -85,6 +87,8 @@ class XSSAuditorDelegate final {
   Member<Document> document_;
   bool did_send_notifications_;
   KURL report_url_;
+
+  DISALLOW_COPY_AND_ASSIGN(XSSAuditorDelegate);
 };
 
 typedef Vector<std::unique_ptr<XSSInfo>> XSSInfoStream;

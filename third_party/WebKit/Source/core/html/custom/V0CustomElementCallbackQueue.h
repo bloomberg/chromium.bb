@@ -31,6 +31,7 @@
 #ifndef V0CustomElementCallbackQueue_h
 #define V0CustomElementCallbackQueue_h
 
+#include "base/macros.h"
 #include "core/dom/Element.h"
 #include "core/html/custom/V0CustomElementProcessingStep.h"
 #include "platform/heap/Handle.h"
@@ -42,8 +43,6 @@ namespace blink {
 // well as callbacks.
 class V0CustomElementCallbackQueue
     : public GarbageCollected<V0CustomElementCallbackQueue> {
-  WTF_MAKE_NONCOPYABLE(V0CustomElementCallbackQueue);
-
  public:
   static V0CustomElementCallbackQueue* Create(Element*);
 
@@ -74,6 +73,8 @@ class V0CustomElementCallbackQueue
   ElementQueueId owner_;
   size_t index_;
   bool in_created_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(V0CustomElementCallbackQueue);
 };
 
 }  // namespace blink

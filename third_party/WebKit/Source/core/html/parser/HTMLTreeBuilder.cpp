@@ -27,6 +27,8 @@
 #include "core/html/parser/HTMLTreeBuilder.h"
 
 #include <memory>
+
+#include "base/macros.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentFragment.h"
@@ -113,8 +115,6 @@ static bool IsFormattingTag(const AtomicString& tag_name) {
 }
 
 class HTMLTreeBuilder::CharacterTokenBuffer {
-  WTF_MAKE_NONCOPYABLE(CharacterTokenBuffer);
-
  public:
   explicit CharacterTokenBuffer(AtomicHTMLToken* token)
       : characters_(token->Characters().Impl()),
@@ -213,6 +213,8 @@ class HTMLTreeBuilder::CharacterTokenBuffer {
   scoped_refptr<StringImpl> characters_;
   unsigned current_;
   unsigned end_;
+
+  DISALLOW_COPY_AND_ASSIGN(CharacterTokenBuffer);
 };
 
 HTMLTreeBuilder::HTMLTreeBuilder(HTMLDocumentParser* parser,

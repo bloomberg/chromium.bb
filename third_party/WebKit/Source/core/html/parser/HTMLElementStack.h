@@ -27,10 +27,10 @@
 #ifndef HTMLElementStack_h
 #define HTMLElementStack_h
 
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "core/html/parser/HTMLStackItem.h"
 #include "platform/wtf/Forward.h"
-#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 
@@ -41,7 +41,6 @@ class QualifiedName;
 // NOTE: The HTML5 spec uses a backwards (grows downward) stack.  We're using
 // more standard (grows upwards) stack terminology here.
 class HTMLElementStack {
-  WTF_MAKE_NONCOPYABLE(HTMLElementStack);
   DISALLOW_NEW();
 
  public:
@@ -49,8 +48,6 @@ class HTMLElementStack {
   ~HTMLElementStack();
 
   class ElementRecord final : public GarbageCollected<ElementRecord> {
-    WTF_MAKE_NONCOPYABLE(ElementRecord);
-
    public:
     Element* GetElement() const { return item_->GetElement(); }
     ContainerNode* GetNode() const { return item_->GetNode(); }
@@ -74,6 +71,8 @@ class HTMLElementStack {
 
     Member<HTMLStackItem> item_;
     Member<ElementRecord> next_;
+
+    DISALLOW_COPY_AND_ASSIGN(ElementRecord);
   };
 
   unsigned StackDepth() const { return stack_depth_; }
@@ -189,6 +188,8 @@ class HTMLElementStack {
   Member<Element> head_element_;
   Member<Element> body_element_;
   unsigned stack_depth_;
+
+  DISALLOW_COPY_AND_ASSIGN(HTMLElementStack);
 };
 
 WILL_NOT_BE_EAGERLY_TRACED_CLASS(HTMLElementStack::ElementRecord);

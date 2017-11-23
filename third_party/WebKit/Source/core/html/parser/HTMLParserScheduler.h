@@ -27,6 +27,8 @@
 #define HTMLParserScheduler_h
 
 #include <memory>
+
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "core/html/parser/NestingLevelIncrementer.h"
 #include "platform/WebTaskRunner.h"
@@ -63,8 +65,6 @@ class SpeculationsPumpSession : public NestingLevelIncrementer {
 
 class HTMLParserScheduler final
     : public GarbageCollectedFinalized<HTMLParserScheduler> {
-  WTF_MAKE_NONCOPYABLE(HTMLParserScheduler);
-
  public:
   static HTMLParserScheduler* Create(
       HTMLDocumentParser* parser,
@@ -104,6 +104,8 @@ class HTMLParserScheduler final
 
   TaskHandle cancellable_continue_parse_task_handle_;
   bool is_paused_with_active_timer_;
+
+  DISALLOW_COPY_AND_ASSIGN(HTMLParserScheduler);
 };
 
 }  // namespace blink

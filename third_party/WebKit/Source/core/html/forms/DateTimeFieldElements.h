@@ -26,6 +26,7 @@
 #ifndef DateTimeFieldElements_h
 #define DateTimeFieldElements_h
 
+#include "base/macros.h"
 #include "core/html/forms/DateTimeNumericFieldElement.h"
 #include "core/html/forms/DateTimeSymbolicFieldElement.h"
 #include "platform/wtf/Allocator.h"
@@ -33,8 +34,6 @@
 namespace blink {
 
 class DateTimeAMPMFieldElement final : public DateTimeSymbolicFieldElement {
-  WTF_MAKE_NONCOPYABLE(DateTimeAMPMFieldElement);
-
  public:
   static DateTimeAMPMFieldElement* Create(Document&,
                                           FieldOwner&,
@@ -47,11 +46,11 @@ class DateTimeAMPMFieldElement final : public DateTimeSymbolicFieldElement {
   void PopulateDateTimeFieldsState(DateTimeFieldsState&) override;
   void SetValueAsDate(const DateComponents&) override;
   void SetValueAsDateTimeFieldsState(const DateTimeFieldsState&) override;
+
+  DISALLOW_COPY_AND_ASSIGN(DateTimeAMPMFieldElement);
 };
 
 class DateTimeDayFieldElement final : public DateTimeNumericFieldElement {
-  WTF_MAKE_NONCOPYABLE(DateTimeDayFieldElement);
-
  public:
   static DateTimeDayFieldElement* Create(Document&,
                                          FieldOwner&,
@@ -68,11 +67,11 @@ class DateTimeDayFieldElement final : public DateTimeNumericFieldElement {
   void PopulateDateTimeFieldsState(DateTimeFieldsState&) override;
   void SetValueAsDate(const DateComponents&) override;
   void SetValueAsDateTimeFieldsState(const DateTimeFieldsState&) override;
+
+  DISALLOW_COPY_AND_ASSIGN(DateTimeDayFieldElement);
 };
 
 class DateTimeHourFieldElementBase : public DateTimeNumericFieldElement {
-  WTF_MAKE_NONCOPYABLE(DateTimeHourFieldElementBase);
-
  protected:
   DateTimeHourFieldElementBase(Document&,
                                FieldOwner&,
@@ -85,11 +84,11 @@ class DateTimeHourFieldElementBase : public DateTimeNumericFieldElement {
   // DateTimeFieldElement functions.
   void SetValueAsDate(const DateComponents&) override;
   void SetValueAsDateTimeFieldsState(const DateTimeFieldsState&) override;
+
+  DISALLOW_COPY_AND_ASSIGN(DateTimeHourFieldElementBase);
 };
 
 class DateTimeHour11FieldElement final : public DateTimeHourFieldElementBase {
-  WTF_MAKE_NONCOPYABLE(DateTimeHour11FieldElement);
-
  public:
   static DateTimeHour11FieldElement* Create(Document&,
                                             FieldOwner&,
@@ -105,11 +104,11 @@ class DateTimeHour11FieldElement final : public DateTimeHourFieldElementBase {
   // DateTimeFieldElement functions.
   void PopulateDateTimeFieldsState(DateTimeFieldsState&) override;
   void SetValueAsInteger(int, EventBehavior = kDispatchNoEvent) override;
+
+  DISALLOW_COPY_AND_ASSIGN(DateTimeHour11FieldElement);
 };
 
 class DateTimeHour12FieldElement final : public DateTimeHourFieldElementBase {
-  WTF_MAKE_NONCOPYABLE(DateTimeHour12FieldElement);
-
  public:
   static DateTimeHour12FieldElement* Create(Document&,
                                             FieldOwner&,
@@ -125,11 +124,11 @@ class DateTimeHour12FieldElement final : public DateTimeHourFieldElementBase {
   // DateTimeFieldElement functions.
   void PopulateDateTimeFieldsState(DateTimeFieldsState&) override;
   void SetValueAsInteger(int, EventBehavior = kDispatchNoEvent) override;
+
+  DISALLOW_COPY_AND_ASSIGN(DateTimeHour12FieldElement);
 };
 
 class DateTimeHour23FieldElement final : public DateTimeHourFieldElementBase {
-  WTF_MAKE_NONCOPYABLE(DateTimeHour23FieldElement);
-
  public:
   static DateTimeHour23FieldElement* Create(Document&,
                                             FieldOwner&,
@@ -145,11 +144,11 @@ class DateTimeHour23FieldElement final : public DateTimeHourFieldElementBase {
   // DateTimeFieldElement functions.
   void PopulateDateTimeFieldsState(DateTimeFieldsState&) override;
   void SetValueAsInteger(int, EventBehavior = kDispatchNoEvent) override;
+
+  DISALLOW_COPY_AND_ASSIGN(DateTimeHour23FieldElement);
 };
 
 class DateTimeHour24FieldElement final : public DateTimeHourFieldElementBase {
-  WTF_MAKE_NONCOPYABLE(DateTimeHour24FieldElement);
-
  public:
   static DateTimeHour24FieldElement* Create(Document&,
                                             FieldOwner&,
@@ -165,12 +164,12 @@ class DateTimeHour24FieldElement final : public DateTimeHourFieldElementBase {
   // DateTimeFieldElement functions.
   void PopulateDateTimeFieldsState(DateTimeFieldsState&) override;
   void SetValueAsInteger(int, EventBehavior = kDispatchNoEvent) override;
+
+  DISALLOW_COPY_AND_ASSIGN(DateTimeHour24FieldElement);
 };
 
 class DateTimeMillisecondFieldElement final
     : public DateTimeNumericFieldElement {
-  WTF_MAKE_NONCOPYABLE(DateTimeMillisecondFieldElement);
-
  public:
   static DateTimeMillisecondFieldElement* Create(Document&,
                                                  FieldOwner&,
@@ -187,11 +186,11 @@ class DateTimeMillisecondFieldElement final
   void PopulateDateTimeFieldsState(DateTimeFieldsState&) override;
   void SetValueAsDate(const DateComponents&) override;
   void SetValueAsDateTimeFieldsState(const DateTimeFieldsState&) override;
+
+  DISALLOW_COPY_AND_ASSIGN(DateTimeMillisecondFieldElement);
 };
 
 class DateTimeMinuteFieldElement final : public DateTimeNumericFieldElement {
-  WTF_MAKE_NONCOPYABLE(DateTimeMinuteFieldElement);
-
  public:
   static DateTimeMinuteFieldElement* Create(Document&,
                                             FieldOwner&,
@@ -205,11 +204,11 @@ class DateTimeMinuteFieldElement final : public DateTimeNumericFieldElement {
   void PopulateDateTimeFieldsState(DateTimeFieldsState&) override;
   void SetValueAsDate(const DateComponents&) override;
   void SetValueAsDateTimeFieldsState(const DateTimeFieldsState&) override;
+
+  DISALLOW_COPY_AND_ASSIGN(DateTimeMinuteFieldElement);
 };
 
 class DateTimeMonthFieldElement final : public DateTimeNumericFieldElement {
-  WTF_MAKE_NONCOPYABLE(DateTimeMonthFieldElement);
-
  public:
   static DateTimeMonthFieldElement* Create(Document&,
                                            FieldOwner&,
@@ -226,11 +225,11 @@ class DateTimeMonthFieldElement final : public DateTimeNumericFieldElement {
   void PopulateDateTimeFieldsState(DateTimeFieldsState&) override;
   void SetValueAsDate(const DateComponents&) override;
   void SetValueAsDateTimeFieldsState(const DateTimeFieldsState&) override;
+
+  DISALLOW_COPY_AND_ASSIGN(DateTimeMonthFieldElement);
 };
 
 class DateTimeSecondFieldElement final : public DateTimeNumericFieldElement {
-  WTF_MAKE_NONCOPYABLE(DateTimeSecondFieldElement);
-
  public:
   static DateTimeSecondFieldElement* Create(Document&,
                                             FieldOwner&,
@@ -244,12 +243,12 @@ class DateTimeSecondFieldElement final : public DateTimeNumericFieldElement {
   void PopulateDateTimeFieldsState(DateTimeFieldsState&) override;
   void SetValueAsDate(const DateComponents&) override;
   void SetValueAsDateTimeFieldsState(const DateTimeFieldsState&) override;
+
+  DISALLOW_COPY_AND_ASSIGN(DateTimeSecondFieldElement);
 };
 
 class DateTimeSymbolicMonthFieldElement final
     : public DateTimeSymbolicFieldElement {
-  WTF_MAKE_NONCOPYABLE(DateTimeSymbolicMonthFieldElement);
-
  public:
   static DateTimeSymbolicMonthFieldElement* Create(Document&,
                                                    FieldOwner&,
@@ -268,11 +267,11 @@ class DateTimeSymbolicMonthFieldElement final
   void PopulateDateTimeFieldsState(DateTimeFieldsState&) override;
   void SetValueAsDate(const DateComponents&) override;
   void SetValueAsDateTimeFieldsState(const DateTimeFieldsState&) override;
+
+  DISALLOW_COPY_AND_ASSIGN(DateTimeSymbolicMonthFieldElement);
 };
 
 class DateTimeWeekFieldElement final : public DateTimeNumericFieldElement {
-  WTF_MAKE_NONCOPYABLE(DateTimeWeekFieldElement);
-
  public:
   static DateTimeWeekFieldElement* Create(Document&, FieldOwner&, const Range&);
 
@@ -283,11 +282,11 @@ class DateTimeWeekFieldElement final : public DateTimeNumericFieldElement {
   void PopulateDateTimeFieldsState(DateTimeFieldsState&) override;
   void SetValueAsDate(const DateComponents&) override;
   void SetValueAsDateTimeFieldsState(const DateTimeFieldsState&) override;
+
+  DISALLOW_COPY_AND_ASSIGN(DateTimeWeekFieldElement);
 };
 
 class DateTimeYearFieldElement final : public DateTimeNumericFieldElement {
-  WTF_MAKE_NONCOPYABLE(DateTimeYearFieldElement);
-
  public:
   struct Parameters {
     STACK_ALLOCATED();
@@ -322,6 +321,8 @@ class DateTimeYearFieldElement final : public DateTimeNumericFieldElement {
 
   bool min_is_specified_;
   bool max_is_specified_;
+
+  DISALLOW_COPY_AND_ASSIGN(DateTimeYearFieldElement);
 };
 
 }  // namespace blink

@@ -5,6 +5,7 @@
 #ifndef CustomElementTestHelpers_h
 #define CustomElementTestHelpers_h
 
+#include "base/macros.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
@@ -27,7 +28,6 @@ class CustomElementDescriptor;
 class TestCustomElementDefinitionBuilder
     : public CustomElementDefinitionBuilder {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(TestCustomElementDefinitionBuilder);
 
  public:
   TestCustomElementDefinitionBuilder() {}
@@ -37,11 +37,11 @@ class TestCustomElementDefinitionBuilder
   bool RememberOriginalProperties() override { return true; }
   CustomElementDefinition* Build(const CustomElementDescriptor&,
                                  CustomElementDefinition::Id) override;
+
+  DISALLOW_COPY_AND_ASSIGN(TestCustomElementDefinitionBuilder);
 };
 
 class TestCustomElementDefinition : public CustomElementDefinition {
-  WTF_MAKE_NONCOPYABLE(TestCustomElementDefinition);
-
  public:
   TestCustomElementDefinition(const CustomElementDescriptor& descriptor)
       : CustomElementDefinition(descriptor) {}
@@ -91,6 +91,8 @@ class TestCustomElementDefinition : public CustomElementDefinition {
                                    const AtomicString& new_value) override {
     NOTREACHED() << "definition does not have attribute changed callback";
   }
+
+  DISALLOW_COPY_AND_ASSIGN(TestCustomElementDefinition);
 };
 
 class CreateElement {

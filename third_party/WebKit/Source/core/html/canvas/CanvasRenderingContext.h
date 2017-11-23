@@ -26,6 +26,7 @@
 #ifndef CanvasRenderingContext_h
 #define CanvasRenderingContext_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/canvas/CanvasContextCreationAttributes.h"
@@ -34,7 +35,6 @@
 #include "platform/graphics/CanvasColorParams.h"
 #include "platform/graphics/ColorBehavior.h"
 #include "platform/wtf/HashSet.h"
-#include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/text/StringHash.h"
 #include "public/platform/WebThread.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
@@ -59,7 +59,6 @@ constexpr const char* kF16CanvasPixelFormatName = "float16";
 
 class CORE_EXPORT CanvasRenderingContext : public ScriptWrappable,
                                            public WebThread::TaskObserver {
-  WTF_MAKE_NONCOPYABLE(CanvasRenderingContext);
   USING_PRE_FINALIZER(CanvasRenderingContext, Dispose);
 
  public:
@@ -205,6 +204,8 @@ class CORE_EXPORT CanvasRenderingContext : public ScriptWrappable,
   CanvasColorParams color_params_;
   CanvasContextCreationAttributes creation_attributes_;
   bool finalize_frame_scheduled_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(CanvasRenderingContext);
 };
 
 }  // namespace blink

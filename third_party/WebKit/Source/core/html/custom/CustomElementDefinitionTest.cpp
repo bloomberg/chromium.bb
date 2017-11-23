@@ -4,6 +4,7 @@
 
 #include "core/html/custom/CustomElementDefinition.h"
 
+#include "base/macros.h"
 #include "core/dom/Node.h"  // CustomElementState
 #include "core/html/custom/CEReactionsScope.h"
 #include "core/html/custom/CustomElementDescriptor.h"
@@ -16,13 +17,13 @@ namespace blink {
 namespace {
 
 class ConstructorFails : public TestCustomElementDefinition {
-  WTF_MAKE_NONCOPYABLE(ConstructorFails);
-
  public:
   ConstructorFails(const CustomElementDescriptor& descriptor)
       : TestCustomElementDefinition(descriptor) {}
   ~ConstructorFails() override = default;
   bool RunConstructor(Element*) override { return false; }
+
+  DISALLOW_COPY_AND_ASSIGN(ConstructorFails);
 };
 
 }  // namespace
