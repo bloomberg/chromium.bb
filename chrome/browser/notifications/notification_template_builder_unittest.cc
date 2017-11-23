@@ -397,6 +397,57 @@ TEST_F(NotificationTemplateBuilderTest, Images) {
   ASSERT_NO_FATAL_FAILURE(VerifyXml(*notification, kExpectedXml));
 }
 
+TEST_F(NotificationTemplateBuilderTest, ContextMessage) {
+  std::unique_ptr<message_center::Notification> notification =
+      InitializeBasicNotification();
+
+  notification->set_context_message(L"context_message");
+
+  const wchar_t kExpectedXml[] =
+      LR"(<toast launch="0|Default|0|https://example.com/|notification_id" displayTimestamp="1998-09-04T01:02:03Z">
+ <visual>
+  <binding template="ToastGeneric">
+   <text>My Title</text>
+   <text>My Message</text>
+   <text placement="attribution">context_message</text>
+  </binding>
+ </visual>
+ <actions>
+  <action content="settings" placement="contextMenu" activationType="foreground" arguments="notificationSettings"/>
+ </actions>
+</toast>
+)";
+
+  ASSERT_NO_FATAL_FAILURE(VerifyXml(*notification, kExpectedXml));
+}
+
+TEST_F(NotificationTemplateBuilderTest, ExtensionNoContextMessage) {
+  std::unique_ptr<message_center::Notification> notification =
+      InitializeBasicNotification();
+
+  // Explicitly not setting context message to ensure attribution is not added.
+  // Explicitly set origin url to something non http/https to ensure that origin
+  // is not used as attribution.
+  notification->set_origin_url(
+      GURL("chrome-extension://bfojpkhoiegeigfifhdnbeobmhlahdle/"));
+
+  const wchar_t kExpectedXml[] =
+      LR"(<toast launch="0|Default|0|https://example.com/|notification_id" displayTimestamp="1998-09-04T01:02:03Z">
+ <visual>
+  <binding template="ToastGeneric">
+   <text>My Title</text>
+   <text>My Message</text>
+  </binding>
+ </visual>
+ <actions>
+  <action content="settings" placement="contextMenu" activationType="foreground" arguments="notificationSettings"/>
+ </actions>
+</toast>
+)";
+
+  ASSERT_NO_FATAL_FAILURE(VerifyXml(*notification, kExpectedXml));
+}
+
 TEST_F(NotificationTemplateBuilderTest, ProgressBar) {
   std::unique_ptr<message_center::Notification> notification =
       InitializeBasicNotification();
