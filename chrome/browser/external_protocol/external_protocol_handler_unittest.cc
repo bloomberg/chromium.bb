@@ -13,6 +13,23 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/third_party/mozilla/url_parse.h"
+
+namespace {
+
+// Creates a GURL from a string without auto-canonicalizing it. Allows testing
+// with non-canonical GURL inputs (which can occur in reality).
+GURL MakeNonCanonicalGURL(const std::string& spec) {
+  // First, make a canonical version (so we can get a Parsed).
+  const GURL canonical_gurl(spec);
+  const url::Parsed& parsed = canonical_gurl.parsed_for_possibly_invalid_spec();
+
+  // Now, create a "raw" GURL which will have a non-canonical spec, but a
+  // canonical Parsed.
+  return GURL(spec, parsed, canonical_gurl.is_valid());
+}
+
+}  // namespace
 
 class FakeExternalProtocolHandlerWorker
     : public shell_integration::DefaultProtocolClientWorker {
@@ -74,6 +91,7 @@ class FakeExternalProtocolHandlerDelegate
     EXPECT_EQ(block_state_, ExternalProtocolHandler::UNKNOWN);
     EXPECT_NE(os_state_, shell_integration::IS_DEFAULT);
     has_prompted_ = true;
+    launch_or_prompt_url_ = url;
   }
 
   void LaunchUrlWithoutSecurityCheck(
@@ -82,6 +100,7 @@ class FakeExternalProtocolHandlerDelegate
     EXPECT_EQ(block_state_, ExternalProtocolHandler::DONT_BLOCK);
     EXPECT_NE(os_state_, shell_integration::IS_DEFAULT);
     has_launched_ = true;
+    launch_or_prompt_url_ = url;
   }
 
   void FinishedProcessingCheck() override {
@@ -100,12 +119,17 @@ class FakeExternalProtocolHandlerDelegate
   bool has_prompted() { return has_prompted_; }
   bool has_blocked() { return has_blocked_; }
 
+  const std::string& launch_or_prompt_url() {
+    return launch_or_prompt_url_.spec();
+  }
+
  private:
   ExternalProtocolHandler::BlockState block_state_;
   shell_integration::DefaultWebClientState os_state_;
   bool has_launched_;
   bool has_prompted_;
   bool has_blocked_;
+  GURL launch_or_prompt_url_;
 };
 
 class ExternalProtocolHandlerTest : public testing::Test {
@@ -131,7 +155,14 @@ class ExternalProtocolHandlerTest : public testing::Test {
   void DoTest(ExternalProtocolHandler::BlockState block_state,
               shell_integration::DefaultWebClientState os_state,
               Action expected_action) {
-    GURL url("mailto:test@test.com");
+    DoTest(block_state, os_state, expected_action,
+           GURL("mailto:test@test.com"));
+  }
+
+  void DoTest(ExternalProtocolHandler::BlockState block_state,
+              shell_integration::DefaultWebClientState os_state,
+              Action expected_action,
+              const GURL& url) {
     EXPECT_FALSE(delegate_.has_prompted());
     EXPECT_FALSE(delegate_.has_launched());
     EXPECT_FALSE(delegate_.has_blocked());
@@ -216,6 +247,22 @@ TEST_F(ExternalProtocolHandlerTest,
        TestLaunchSchemeUnknownChromeOtherModeDefault) {
   DoTest(ExternalProtocolHandler::UNKNOWN,
          shell_integration::OTHER_MODE_IS_DEFAULT, Action::PROMPT);
+}
+
+TEST_F(ExternalProtocolHandlerTest, TestUrlEscape) {
+  // Test with a custom URL, which should have illegal characters escaped before
+  // being passed to the delegate. Must use MakeNonCanonicalGURL to create a
+  // GURL input to ExternalProtocolHandler that actually includes illegal
+  // characters like '"' and ' '. Even though GURL makes it hard to create such
+  // a URL, this is real-world-possible input to ExternalProtocolHandler
+  // (https://crbug.com/785809).
+  GURL url =
+      MakeNonCanonicalGURL("mailto:test@test.com\" --bad%2B\r\n 文本 \"file");
+  DoTest(ExternalProtocolHandler::UNKNOWN, shell_integration::NOT_DEFAULT,
+         Action::PROMPT, url);
+  EXPECT_EQ(
+      "mailto:test@test.com%22%20--bad%2B%0D%0A%20%E6%96%87%E6%9C%AC%20%22file",
+      delegate_.launch_or_prompt_url());
 }
 
 TEST_F(ExternalProtocolHandlerTest, TestGetBlockStateUnknown) {
