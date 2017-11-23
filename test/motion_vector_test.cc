@@ -82,7 +82,7 @@ TEST_P(MotionVectorTestLarge, OverallTest) {
   // Reduce the test clip's resolution while testing on 32-bit system.
   if (sizeof(void *) == 4) {
     width = 2048;
-    height = 1080;
+    height = 540;
   }
 
   cfg_.rc_target_bitrate = 24000;
