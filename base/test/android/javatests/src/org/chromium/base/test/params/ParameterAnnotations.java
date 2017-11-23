@@ -23,6 +23,16 @@ public class ParameterAnnotations {
     }
 
     /**
+     * Annotation for test methods to indicate associated {@link ParameterProvider}.
+     * Note: the class referred to must be public and have a public default constructor.
+     */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.METHOD)
+    public @interface UseParameterProvider {
+        Class<? extends ParameterProvider> value();
+    }
+
+    /**
      * Annotation for methods that should be called before running a test with method parameters.
      * @see MethodParameter
      * @see UseMethodParameterAfter
