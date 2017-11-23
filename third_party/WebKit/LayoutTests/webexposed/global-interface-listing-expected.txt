@@ -4783,16 +4783,10 @@ interface PannerNode : AudioNode
     setter rolloffFactor
 interface PasswordCredential : Credential
     attribute @@toStringTag
-    getter additionalData
     getter iconURL
-    getter idName
     getter name
     getter password
-    getter passwordName
     method constructor
-    setter additionalData
-    setter idName
-    setter passwordName
 interface Path2D
     attribute @@toStringTag
     method addPath
