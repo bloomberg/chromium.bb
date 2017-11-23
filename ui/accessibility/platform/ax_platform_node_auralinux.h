@@ -51,6 +51,12 @@ class AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   const gchar* GetDocumentAttributeValue(const gchar* attribute) const;
   AtkAttributeSet* GetDocumentAttributes() const;
 
+  // AtkValue helpers
+  float GetStepAttribute();
+
+  // Misc helpers
+  void GetFloatAttributeInGValue(AXFloatAttribute attr, GValue* value);
+
   // AXPlatformNode overrides.
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
   void NotifyAccessibilityEvent(ui::AXEvent event_type) override;
