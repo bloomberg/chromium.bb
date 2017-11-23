@@ -23,6 +23,7 @@ class Image;
 namespace message_center {
 struct ButtonInfo;
 class Notification;
+struct NotificationItem;
 }  // namespace message_center
 
 class NotificationImageRetainer;
@@ -87,8 +88,13 @@ class NotificationTemplateBuilder {
   // ATTRIBUTION then |content| is treated as the source that the notification
   // is attributed to.
   void WriteTextElement(const std::string& content, TextType text_type);
+
+  // Writes the <text> element containing the list entries.
+  void WriteItems(const std::vector<message_center::NotificationItem>& items);
+
   // Writes the <image> element for the notification icon.
   void WriteIconElement(const message_center::Notification& notification);
+
   // Writes the <image> element for showing a large image within the
   // notification body.
   void WriteLargeImageElement(const message_center::Notification& notification);

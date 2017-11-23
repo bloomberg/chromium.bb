@@ -422,3 +422,38 @@ TEST_F(NotificationTemplateBuilderTest, ProgressBar) {
 
   ASSERT_NO_FATAL_FAILURE(VerifyXml(*notification, kExpectedXml));
 }
+
+TEST_F(NotificationTemplateBuilderTest, ListEntries) {
+  std::unique_ptr<message_center::Notification> notification =
+      InitializeBasicNotification();
+
+  notification->set_type(message_center::NOTIFICATION_TYPE_MULTIPLE);
+  std::vector<message_center::NotificationItem> items;
+  items.emplace_back(L"title1", L"message1");
+  items.emplace_back(L"title2", L"message2");
+  items.emplace_back(L"title3", L"message3");
+  items.emplace_back(L"title4", L"message4");
+  items.emplace_back(L"title5", L"message5");  // Will be truncated.
+  notification->set_items(items);
+
+  const wchar_t kExpectedXml[] =
+      LR"(<toast launch="0|Default|0|https://example.com/|notification_id" displayTimestamp="1998-09-04T01:02:03Z">
+ <visual>
+  <binding template="ToastGeneric">
+   <text>My Title</text>
+   <text>title1 - message1
+title2 - message2
+title3 - message3
+title4 - message4
+</text>
+   <text placement="attribution">example.com</text>
+  </binding>
+ </visual>
+ <actions>
+  <action content="settings" placement="contextMenu" activationType="foreground" arguments="notificationSettings"/>
+ </actions>
+</toast>
+)";
+
+  ASSERT_NO_FATAL_FAILURE(VerifyXml(*notification, kExpectedXml));
+}
