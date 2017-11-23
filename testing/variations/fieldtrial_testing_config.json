@@ -2193,7 +2193,7 @@
             ]
         }
     ],
-    "NoStatePrefetchValidation": [
+    "NoStatePrefetchRollout": [
         {
             "platforms": [
                 "android",
@@ -2204,7 +2204,7 @@
             ],
             "experiments": [
                 {
-                    "name": "NoStatePrefetchWithoutInstant",
+                    "name": "NoStatePrefetchEnabled",
                     "params": {
                         "instant_mode": "simple_load",
                         "mode": "no_state_prefetch",
