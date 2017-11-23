@@ -7,11 +7,6 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutView #document",
-          "rect": [0, 0, 800, 600],
-          "reason": "background"
-        },
-        {
           "object": "LayoutBlockFlow (positioned) DIV id='child'",
           "rect": [135, 127, 400, 50],
           "reason": "subtree"
@@ -30,10 +25,6 @@
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutView #document",
-      "reason": "background"
-    },
     {
       "object": "LayoutBlockFlow (relative positioned) DIV id='box' class='rotated'",
       "reason": "subtree"

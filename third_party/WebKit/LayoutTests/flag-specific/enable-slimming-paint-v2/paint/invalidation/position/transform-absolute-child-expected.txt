@@ -7,11 +7,6 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutView #document",
-          "rect": [0, 0, 800, 600],
-          "reason": "background"
-        },
-        {
           "object": "LayoutBlockFlow (relative positioned) DIV id='box' class='rotated'",
           "rect": [16, 8, 497, 464],
           "reason": "paint property change"
@@ -22,12 +17,6 @@
           "reason": "paint property change"
         }
       ]
-    }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutView #document",
-      "reason": "background"
     }
   ]
 }

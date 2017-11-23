@@ -17,11 +17,6 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutView #document",
-          "rect": [0, 0, 800, 600],
-          "reason": "background on scrolling contents layer"
-        },
-        {
           "object": "LayoutBlockFlow (positioned) UL id='submenu'",
           "rect": [48, 92, 40, 18],
           "reason": "geometry"
@@ -68,10 +63,6 @@
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "Scrolling Contents Layer",
-      "reason": "background on scrolling contents layer"
-    },
     {
       "object": "LayoutListMarker (anonymous)",
       "reason": "geometry"

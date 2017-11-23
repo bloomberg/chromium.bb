@@ -7,11 +7,6 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutView #document",
-          "rect": [0, 0, 800, 600],
-          "reason": "background"
-        },
-        {
           "object": "LayoutBlockFlow HTML",
           "rect": [8, 8, 220, 70],
           "reason": "appeared"
@@ -25,10 +20,6 @@
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutView #document",
-      "reason": "background"
-    },
     {
       "object": "LayoutBlockFlow DIV id='rel'",
       "reason": "style change"
