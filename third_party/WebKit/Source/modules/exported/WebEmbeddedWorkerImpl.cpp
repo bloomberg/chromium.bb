@@ -429,7 +429,8 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
   worker_thread_->Start(
       std::move(global_scope_creation_params),
       WorkerBackingThreadStartupData::CreateDefault(),
-      worker_inspector_proxy_->ShouldPauseOnWorkerStart(document),
+      std::make_unique<GlobalScopeInspectorCreationParams>(
+          worker_inspector_proxy_->ShouldPauseOnWorkerStart(document)),
       ParentFrameTaskRunners::Create());
 
   worker_inspector_proxy_->WorkerThreadCreated(document, worker_thread_.get(),

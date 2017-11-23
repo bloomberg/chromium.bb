@@ -52,6 +52,11 @@ class CORE_EXPORT ThreadDebugger : public v8_inspector::V8InspectorClient,
   void PromiseRejectionRevoked(v8::Local<v8::Context>,
                                unsigned promise_rejection_id);
 
+  v8_inspector::V8StackTraceId StoreCurrentStackTrace(
+      const String& description);
+  void ExternalAsyncTaskStarted(const v8_inspector::V8StackTraceId& parent);
+  void ExternalAsyncTaskFinished(const v8_inspector::V8StackTraceId& parent);
+
  protected:
   virtual int ContextGroupId(ExecutionContext*) = 0;
   virtual void ReportConsoleMessage(ExecutionContext*,

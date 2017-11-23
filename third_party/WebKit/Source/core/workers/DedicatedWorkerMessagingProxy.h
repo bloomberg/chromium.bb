@@ -16,6 +16,10 @@
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/Optional.h"
 
+namespace v8_inspector {
+struct V8StackTraceId;
+}
+
 namespace blink {
 
 class DedicatedWorker;
@@ -40,7 +44,8 @@ class CORE_EXPORT DedicatedWorkerMessagingProxy
   void StartWorkerGlobalScope(const KURL& script_url,
                               const String& user_agent,
                               const String& source_code,
-                              ReferrerPolicy);
+                              ReferrerPolicy,
+                              const v8_inspector::V8StackTraceId&);
   void PostMessageToWorkerGlobalScope(scoped_refptr<SerializedScriptValue>,
                                       Vector<MessagePortChannel>);
 

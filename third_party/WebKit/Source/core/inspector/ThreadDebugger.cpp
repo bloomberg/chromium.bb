@@ -106,6 +106,22 @@ void ThreadDebugger::AsyncTaskFinished(void* task) {
   v8_inspector_->asyncTaskFinished(task);
 }
 
+v8_inspector::V8StackTraceId ThreadDebugger::StoreCurrentStackTrace(
+    const String& description) {
+  return v8_inspector_->storeCurrentStackTrace(
+      ToV8InspectorStringView(description));
+}
+
+void ThreadDebugger::ExternalAsyncTaskStarted(
+    const v8_inspector::V8StackTraceId& parent) {
+  v8_inspector_->externalAsyncTaskStarted(parent);
+}
+
+void ThreadDebugger::ExternalAsyncTaskFinished(
+    const v8_inspector::V8StackTraceId& parent) {
+  v8_inspector_->externalAsyncTaskFinished(parent);
+}
+
 unsigned ThreadDebugger::PromiseRejected(
     v8::Local<v8::Context> context,
     const String& error_message,

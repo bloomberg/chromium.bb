@@ -99,7 +99,8 @@ WorkerThread::~WorkerThread() {
 void WorkerThread::Start(
     std::unique_ptr<GlobalScopeCreationParams> global_scope_creation_params,
     const WTF::Optional<WorkerBackingThreadStartupData>& thread_startup_data,
-    WorkerInspectorProxy::PauseOnWorkerStart pause_mode,
+    std::unique_ptr<GlobalScopeInspectorCreationParams>
+        global_scope_inspector_creation_params,
     ParentFrameTaskRunners* parent_frame_task_runners) {
   DCHECK(IsMainThread());
   DCHECK(!parent_frame_task_runners_);
@@ -117,10 +118,11 @@ void WorkerThread::Start(
 
   GetWorkerBackingThread().BackingThread().PostTask(
       BLINK_FROM_HERE,
-      CrossThreadBind(&WorkerThread::InitializeOnWorkerThread,
-                      CrossThreadUnretained(this),
-                      WTF::Passed(std::move(global_scope_creation_params)),
-                      thread_startup_data, pause_mode));
+      CrossThreadBind(
+          &WorkerThread::InitializeOnWorkerThread, CrossThreadUnretained(this),
+          WTF::Passed(std::move(global_scope_creation_params)),
+          thread_startup_data,
+          WTF::Passed(std::move(global_scope_inspector_creation_params))));
 }
 
 void WorkerThread::Terminate() {
@@ -382,7 +384,8 @@ void WorkerThread::InitializeSchedulerOnWorkerThread(
 void WorkerThread::InitializeOnWorkerThread(
     std::unique_ptr<GlobalScopeCreationParams> global_scope_creation_params,
     const WTF::Optional<WorkerBackingThreadStartupData>& thread_startup_data,
-    WorkerInspectorProxy::PauseOnWorkerStart pause_mode) {
+    std::unique_ptr<GlobalScopeInspectorCreationParams>
+        global_scope_inspector_creation_params) {
   DCHECK(IsCurrentThread());
   DCHECK_EQ(ThreadState::kNotStarted, thread_state_);
 
@@ -424,8 +427,10 @@ void WorkerThread::InitializeOnWorkerThread(
     SetThreadState(lock, ThreadState::kRunning);
   }
 
-  if (pause_mode == WorkerInspectorProxy::PauseOnWorkerStart::kPause)
+  if (global_scope_inspector_creation_params->pause_on_start ==
+      WorkerInspectorProxy::PauseOnWorkerStart::kPause) {
     StartRunningDebuggerTasksOnPauseOnWorkerThread();
+  }
 
   if (CheckRequestedToTerminateOnWorkerThread()) {
     // Stop further worker tasks from running after this point. WorkerThread
@@ -440,8 +445,13 @@ void WorkerThread::InitializeOnWorkerThread(
   // (https://crbug.com/680046)
   if (GlobalScope()->IsWorkletGlobalScope())
     return;
+  WorkerThreadDebugger* debugger = WorkerThreadDebugger::From(GetIsolate());
+  debugger->ExternalAsyncTaskStarted(
+      global_scope_inspector_creation_params->stack_id);
   GlobalScope()->EvaluateClassicScript(script_url, std::move(source_code),
                                        std::move(cached_meta_data));
+  debugger->ExternalAsyncTaskStarted(
+      global_scope_inspector_creation_params->stack_id);
 }
 
 void WorkerThread::PrepareForShutdownOnWorkerThread() {

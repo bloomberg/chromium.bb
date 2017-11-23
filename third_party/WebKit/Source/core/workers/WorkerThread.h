@@ -57,6 +57,7 @@ class WorkerInspectorController;
 class WorkerOrWorkletGlobalScope;
 class WorkerReportingProxy;
 struct GlobalScopeCreationParams;
+struct GlobalScopeInspectorCreationParams;
 
 // WorkerThread is a kind of WorkerBackingThread client. Each worker mechanism
 // can access the lower thread infrastructure via an implementation of this
@@ -95,7 +96,7 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   // (https://crbug.com/710364)
   void Start(std::unique_ptr<GlobalScopeCreationParams>,
              const WTF::Optional<WorkerBackingThreadStartupData>&,
-             WorkerInspectorProxy::PauseOnWorkerStart,
+             std::unique_ptr<GlobalScopeInspectorCreationParams>,
              ParentFrameTaskRunners*);
 
   // Closes the global scope and terminates the underlying thread. Called on the
@@ -236,7 +237,7 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   void InitializeOnWorkerThread(
       std::unique_ptr<GlobalScopeCreationParams>,
       const WTF::Optional<WorkerBackingThreadStartupData>&,
-      WorkerInspectorProxy::PauseOnWorkerStart);
+      std::unique_ptr<GlobalScopeInspectorCreationParams>);
 
   // These are called in this order during worker thread termination.
   void PrepareForShutdownOnWorkerThread();
