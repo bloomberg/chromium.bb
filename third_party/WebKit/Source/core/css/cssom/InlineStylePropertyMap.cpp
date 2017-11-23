@@ -51,8 +51,7 @@ void InlineStylePropertyMap::SetProperty(CSSPropertyID property_id,
   owner_element_->SetInlineStyleProperty(property_id, value);
 }
 
-void InlineStylePropertyMap::remove(CSSPropertyID property_id,
-                                    ExceptionState& exception_state) {
+void InlineStylePropertyMap::RemoveProperty(CSSPropertyID property_id) {
   owner_element_->RemoveInlineStyleProperty(property_id);
 }
 

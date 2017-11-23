@@ -30,10 +30,9 @@ class CORE_EXPORT StylePropertyMap : public StylePropertyMapReadonly {
   void remove(const String& property_name, ExceptionState&);
   void update(const String&, const V8UpdateFunction*) {}
 
-  virtual void remove(CSSPropertyID, ExceptionState&) = 0;
-
  protected:
   virtual void SetProperty(CSSPropertyID, const CSSValue*) = 0;
+  virtual void RemoveProperty(CSSPropertyID) = 0;
 
   StylePropertyMap() {}
 
