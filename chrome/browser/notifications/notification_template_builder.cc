@@ -105,8 +105,15 @@ std::unique_ptr<NotificationTemplateBuilder> NotificationTemplateBuilder::Build(
     builder->WriteTextElement(base::UTF16ToUTF8(notification.message()),
                               TextType::NORMAL);
   }
-  builder->WriteTextElement(builder->FormatOrigin(notification.origin_url()),
-                            TextType::ATTRIBUTION);
+
+  std::string attribution;
+  if (notification.UseOriginAsContextMessage())
+    attribution = builder->FormatOrigin(notification.origin_url());
+  else if (!notification.context_message().empty())
+    attribution = base::UTF16ToUTF8(notification.context_message());
+
+  if (!attribution.empty())
+    builder->WriteTextElement(attribution, TextType::ATTRIBUTION);
 
   if (!notification.icon().IsEmpty())
     builder->WriteIconElement(notification);
