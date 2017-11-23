@@ -12,6 +12,7 @@
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_text_utils.h"
+#include "ui/accessibility/ax_tree_data.h"
 #include "ui/accessibility/platform/atk_util_auralinux.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -404,6 +405,45 @@ static const GInterfaceInfo ActionInfo = {
     reinterpret_cast<GInterfaceInitFunc>(ax_action_interface_base_init),
     nullptr, nullptr};
 
+// AtkDocument interface.
+
+static const gchar* ax_platform_node_auralinux_get_attribute_value(
+    AtkDocument* atk_doc,
+    const gchar* attribute) {
+  g_return_val_if_fail(ATK_IS_DOCUMENT(atk_doc), nullptr);
+
+  AtkObject* atk_object = ATK_OBJECT(atk_doc);
+  ui::AXPlatformNodeAuraLinux* obj =
+      AtkObjectToAXPlatformNodeAuraLinux(atk_object);
+  if (!obj)
+    return nullptr;
+
+  return obj->GetDocumentAttributeValue(attribute);
+}
+
+static AtkAttributeSet* ax_platform_node_auralinux_get_attributes(
+    AtkDocument* atk_doc) {
+  g_return_val_if_fail(ATK_IS_DOCUMENT(atk_doc), 0);
+
+  AtkObject* atk_object = ATK_OBJECT(atk_doc);
+  ui::AXPlatformNodeAuraLinux* obj =
+      AtkObjectToAXPlatformNodeAuraLinux(atk_object);
+  if (!obj)
+    return nullptr;
+
+  return obj->GetDocumentAttributes();
+}
+
+void ax_document_interface_base_init(AtkDocumentIface* iface) {
+  iface->get_document_attribute_value =
+      ax_platform_node_auralinux_get_attribute_value;
+  iface->get_document_attributes = ax_platform_node_auralinux_get_attributes;
+}
+
+static const GInterfaceInfo DocumentInfo = {
+    reinterpret_cast<GInterfaceInitFunc>(ax_document_interface_base_init),
+    nullptr, nullptr};
+
 //
 // The rest of the AXPlatformNodeAtk code, not specific to one
 // of the Atk* interfaces.
@@ -549,6 +589,8 @@ GType AXPlatformNodeAuraLinux::GetAccessibilityGType() {
     g_type_add_interface_static(type, ATK_TYPE_COMPONENT, &ComponentInfo);
   if (interface_mask & (1 << ATK_ACTION_INTERFACE))
     g_type_add_interface_static(type, ATK_TYPE_ACTION, &ActionInfo);
+  if (interface_mask & (1 << ATK_DOCUMENT_INTERFACE))
+    g_type_add_interface_static(type, ATK_TYPE_DOCUMENT, &DocumentInfo);
 
   return type;
 }
@@ -905,6 +947,41 @@ const gchar* AXPlatformNodeAuraLinux::GetDefaultActionName() {
       static_cast<ui::AXDefaultActionVerb>(action));
 
   RETURN_STRING(base::UTF16ToUTF8(action_verb));
+}
+
+// AtkDocumentHelpers
+
+const gchar* AXPlatformNodeAuraLinux::GetDocumentAttributeValue(
+    const gchar* attribute) const {
+  if (!g_ascii_strcasecmp(attribute, "DocType"))
+    return delegate_->GetTreeData().doctype.c_str();
+  else if (!g_ascii_strcasecmp(attribute, "MimeType"))
+    return delegate_->GetTreeData().mimetype.c_str();
+  else if (!g_ascii_strcasecmp(attribute, "Title"))
+    return delegate_->GetTreeData().title.c_str();
+  else if (!g_ascii_strcasecmp(attribute, "URI"))
+    return delegate_->GetTreeData().url.c_str();
+
+  return nullptr;
+}
+
+AtkAttributeSet* AXPlatformNodeAuraLinux::GetDocumentAttributes() const {
+  AtkAttributeSet* attribute_set = nullptr;
+  const gchar* doc_attributes[] = {"DocType", "MimeType", "Title", "URI"};
+  const gchar* value = nullptr;
+
+  for (unsigned i = 0; i < G_N_ELEMENTS(doc_attributes); i++) {
+    value = GetDocumentAttributeValue(doc_attributes[i]);
+    if (value) {
+      AtkAttribute* attribute =
+          static_cast<AtkAttribute*>(g_malloc(sizeof(AtkAttribute)));
+      attribute->name = g_strdup(doc_attributes[i]);
+      attribute->value = g_strdup(value);
+      attribute_set = g_slist_prepend(attribute_set, attribute);
+    }
+  }
+
+  return attribute_set;
 }
 
 }  // namespace ui
