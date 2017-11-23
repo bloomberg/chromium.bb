@@ -37,7 +37,8 @@
         .then(stream => {
           detectVideoInLocalView1(stream).then(() => {
             stream.getVideoTracks()[0].stop();
-            waitForVideoToStop('local-view-1');
+            detectVideoStopped('local-view-1')
+                .then(reportTestSuccess);
           });
         })
         .catch(failedCallback);
