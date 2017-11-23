@@ -7,7 +7,6 @@
 
 #import "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/strings/sys_string_conversions.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -60,11 +59,6 @@
   __weak ReauthenticationModule* weakSelf = self;
   void (^replyBlock)(BOOL, NSError*) = ^(BOOL success, NSError* error) {
     dispatch_async(dispatch_get_main_queue(), ^{
-      if (error) {
-        // TODO(crbug.com/760235): remove once it's fixed.
-        LOG(ERROR) << "Reauth error: "
-                   << base::SysNSStringToUTF8(error.localizedDescription);
-      }
       ReauthenticationModule* strongSelf = weakSelf;
       if (!strongSelf)
         return;
