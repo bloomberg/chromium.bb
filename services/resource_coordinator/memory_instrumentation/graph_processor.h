@@ -68,6 +68,43 @@ class GraphProcessor {
       GlobalDumpGraph::Node* descendant);
 
   static void CalculateSizeForNode(GlobalDumpGraph::Node* node);
+
+  /**
+   * Calculate not-owned and not-owning sub-sizes of a memory allocator dump
+   * from its children's (sub-)sizes.
+   *
+   * Not-owned sub-size refers to the aggregated memory of all children which
+   * is not owned by other MADs. Conversely, not-owning sub-size is the
+   * aggregated memory of all children which do not own another MAD. The
+   * diagram below illustrates these two concepts:
+   *
+   *     ROOT 1                         ROOT 2
+   *     size: 4                        size: 5
+   *     not-owned sub-size: 4          not-owned sub-size: 1 (!)
+   *     not-owning sub-size: 0 (!)     not-owning sub-size: 5
+   *
+   *      ^                              ^
+   *      |                              |
+   *
+   *     PARENT 1   ===== owns =====>   PARENT 2
+   *     size: 4                        size: 5
+   *     not-owned sub-size: 4          not-owned sub-size: 5
+   *     not-owning sub-size: 4         not-owning sub-size: 5
+   *
+   *      ^                              ^
+   *      |                              |
+   *
+   *     CHILD 1                        CHILD 2
+   *     size [given]: 4                size [given]: 5
+   *     not-owned sub-size: 4          not-owned sub-size: 5
+   *     not-owning sub-size: 4         not-owning sub-size: 5
+   *
+   * This method assumes that (1) the size of the dump, its children, and its
+   * owners [see calculateSizes()] and (2) the not-owned and not-owning
+   * sub-sizes of both the children and owners of the dump have already been
+   * calculated [depth-first post-order traversal].
+   */
+  static void CalculateDumpSubSizes(GlobalDumpGraph::Node* node);
 };
 
 }  // namespace memory_instrumentation
