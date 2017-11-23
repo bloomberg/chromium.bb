@@ -97,7 +97,7 @@
   PrefService* prefs =
       ios::ChromeBrowserState::FromBrowserState(self.browserState)->GetPrefs();
   bool contentSuggestionsEnabled =
-      prefs->GetBoolean(prefs::kSearchSuggestEnabled);
+      prefs->GetBoolean(prefs::kArticlesForYouEnabled);
   if (contentSuggestionsEnabled) {
     ntp_home::RecordNTPImpression(ntp_home::REMOTE_SUGGESTIONS);
   } else {

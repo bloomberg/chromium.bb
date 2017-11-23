@@ -17,6 +17,7 @@ source_set("ntp_snippets") {
     "//components/keyed_service/core",
     "//components/keyed_service/ios",
     "//components/ntp_snippets",
+    "//components/pref_registry",
     "//components/reading_list/core",
     "//components/signin/core/browser",
     "//components/version_info",

@@ -13,6 +13,9 @@ const char kAcceptLanguages[] = "intl.accept_languages";
 // The application locale.
 const char kApplicationLocale[] = "intl.app_locale";
 
+// Boolean that is true when Suggest support is enabled.
+const char kArticlesForYouEnabled[] = "suggestions.articles_enabled";
+
 // A map of browser state data directory to cached information. This cache can
 // be used to display information about browser states without actually having
 // to load them.

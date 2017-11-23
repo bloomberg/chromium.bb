@@ -185,7 +185,7 @@ void RegisterRemoteSuggestionsProvider(ContentSuggestionsService* service,
 
   // This pref is also used for logging. If it is changed, change it in the
   // other places.
-  std::string pref_name = prefs::kSearchSuggestEnabled;
+  std::string pref_name = prefs::kArticlesForYouEnabled;
   auto provider = base::MakeUnique<RemoteSuggestionsProviderImpl>(
       service, prefs, GetApplicationContext()->GetApplicationLocale(),
       service->category_ranker(), service->remote_suggestions_scheduler(),
