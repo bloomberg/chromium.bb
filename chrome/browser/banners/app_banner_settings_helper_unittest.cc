@@ -102,127 +102,91 @@ TEST_F(AppBannerSettingsHelperTest, ShouldShowFromEngagement) {
       AppBannerSettingsHelper::HasSufficientEngagement(service->GetScore(url)));
 }
 
-TEST_F(AppBannerSettingsHelperTest, ShouldNotShowAfterBlocking) {
+TEST_F(AppBannerSettingsHelperTest, ReportsWhetherBannerWasRecentlyBlocked) {
   GURL url(kTestURL);
   NavigateAndCommit(url);
-  SiteEngagementService* service = SiteEngagementService::Get(profile());
 
   base::Time reference_time = GetReferenceTime();
   base::Time two_months_ago = reference_time - base::TimeDelta::FromDays(60);
   base::Time one_year_ago = reference_time - base::TimeDelta::FromDays(366);
 
-  // By default the banner should not be shown.
-  EXPECT_FALSE(
-      AppBannerSettingsHelper::HasSufficientEngagement(service->GetScore(url)));
+  EXPECT_FALSE(AppBannerSettingsHelper::WasBannerRecentlyBlocked(
+      web_contents(), url, kTestPackageName, reference_time));
 
-  // Add engagement such that the banner should show.
-  service->ResetBaseScoreForURL(url, 4);
-  EXPECT_TRUE(
-      AppBannerSettingsHelper::HasSufficientEngagement(service->GetScore(url)));
-  EXPECT_EQ(NO_ERROR_DETECTED,
-            AppBannerSettingsHelper::ShouldShowBanner(
-                web_contents(), url, kTestPackageName, reference_time));
-
-  // Block the site a long time ago. It should still be shown.
+  // Block the site a long time ago. This should not be considered "recent".
   AppBannerSettingsHelper::RecordBannerEvent(
       web_contents(), url, kTestPackageName,
       AppBannerSettingsHelper::APP_BANNER_EVENT_DID_BLOCK, one_year_ago);
-  EXPECT_EQ(NO_ERROR_DETECTED,
-            AppBannerSettingsHelper::ShouldShowBanner(
-                web_contents(), url, kTestPackageName, reference_time));
+  EXPECT_FALSE(AppBannerSettingsHelper::WasBannerRecentlyBlocked(
+      web_contents(), url, kTestPackageName, reference_time));
 
-  // Block the site more recently. Now it should not be shown.
+  // Block the site more recently.
   AppBannerSettingsHelper::RecordBannerEvent(
       web_contents(), url, kTestPackageName,
       AppBannerSettingsHelper::APP_BANNER_EVENT_DID_BLOCK, two_months_ago);
-  EXPECT_EQ(PREVIOUSLY_BLOCKED,
-            AppBannerSettingsHelper::ShouldShowBanner(
-                web_contents(), url, kTestPackageName, reference_time));
+  EXPECT_TRUE(AppBannerSettingsHelper::WasBannerRecentlyBlocked(
+      web_contents(), url, kTestPackageName, reference_time));
 
   // Change the number of days enforced.
-  AppBannerSettingsHelper::SetDaysAfterDismissAndIgnoreToTrigger(59, 14);
+  AppBannerSettingsHelper::ScopedTriggerSettings trigger_settings(59, 14);
 
-  EXPECT_EQ(NO_ERROR_DETECTED,
-            AppBannerSettingsHelper::ShouldShowBanner(
-                web_contents(), url, kTestPackageName, reference_time));
+  EXPECT_FALSE(AppBannerSettingsHelper::WasBannerRecentlyBlocked(
+      web_contents(), url, kTestPackageName, reference_time));
 }
 
-TEST_F(AppBannerSettingsHelperTest, ShouldNotShowAfterShowing) {
+TEST_F(AppBannerSettingsHelperTest, ReportsWhetherBannerWasRecentlyIgnored) {
   GURL url(kTestURL);
   NavigateAndCommit(url);
-  SiteEngagementService* service = SiteEngagementService::Get(profile());
 
   base::Time reference_time = GetReferenceTime();
   base::Time one_week_ago = reference_time - base::TimeDelta::FromDays(7);
   base::Time one_year_ago = reference_time - base::TimeDelta::FromDays(366);
 
-  // By default the banner should not be shown.
-  EXPECT_FALSE(
-      AppBannerSettingsHelper::HasSufficientEngagement(service->GetScore(url)));
+  EXPECT_FALSE(AppBannerSettingsHelper::WasBannerRecentlyIgnored(
+      web_contents(), url, kTestPackageName, reference_time));
 
-  // Add engagement such that the banner should show.
-  service->ResetBaseScoreForURL(url, 4);
-  EXPECT_TRUE(
-      AppBannerSettingsHelper::HasSufficientEngagement(service->GetScore(url)));
-  EXPECT_EQ(NO_ERROR_DETECTED,
-            AppBannerSettingsHelper::ShouldShowBanner(
-                web_contents(), url, kTestPackageName, reference_time));
-
-  // Show the banner a long time ago. It should still be shown.
+  // Show the banner a long time ago. This should not be considered "recent".
   AppBannerSettingsHelper::RecordBannerEvent(
       web_contents(), url, kTestPackageName,
       AppBannerSettingsHelper::APP_BANNER_EVENT_DID_SHOW, one_year_ago);
-  EXPECT_EQ(NO_ERROR_DETECTED,
-            AppBannerSettingsHelper::ShouldShowBanner(
-                web_contents(), url, kTestPackageName, reference_time));
+  EXPECT_FALSE(AppBannerSettingsHelper::WasBannerRecentlyIgnored(
+      web_contents(), url, kTestPackageName, reference_time));
 
-  // Show the site more recently. Now it should not be shown.
+  // Show the site more recently.
   AppBannerSettingsHelper::RecordBannerEvent(
       web_contents(), url, kTestPackageName,
       AppBannerSettingsHelper::APP_BANNER_EVENT_DID_SHOW, one_week_ago);
-  EXPECT_EQ(PREVIOUSLY_IGNORED,
-            AppBannerSettingsHelper::ShouldShowBanner(
-                web_contents(), url, kTestPackageName, reference_time));
+  EXPECT_TRUE(AppBannerSettingsHelper::WasBannerRecentlyIgnored(
+      web_contents(), url, kTestPackageName, reference_time));
 
   // Change the number of days enforced.
-  AppBannerSettingsHelper::SetDaysAfterDismissAndIgnoreToTrigger(90, 6);
+  AppBannerSettingsHelper::ScopedTriggerSettings trigger_settings(90, 6);
 
-  EXPECT_EQ(NO_ERROR_DETECTED,
-            AppBannerSettingsHelper::ShouldShowBanner(
-                web_contents(), url, kTestPackageName, reference_time));
+  EXPECT_FALSE(AppBannerSettingsHelper::WasBannerRecentlyIgnored(
+      web_contents(), url, kTestPackageName, reference_time));
 }
 
-TEST_F(AppBannerSettingsHelperTest, ShouldNotShowAfterAdding) {
+TEST_F(AppBannerSettingsHelperTest, ReportsWhetherSiteWasEverAdded) {
   GURL url(kTestURL);
-  SiteEngagementService* service = SiteEngagementService::Get(profile());
+  base::Time one_year_ago = GetReferenceTime() - base::TimeDelta::FromDays(366);
 
-  base::Time reference_time = GetReferenceTime();
-  base::Time one_year_ago = reference_time - base::TimeDelta::FromDays(366);
+  EXPECT_FALSE(AppBannerSettingsHelper::HasBeenInstalled(web_contents(), url,
+                                                         kTestPackageName));
 
-  // By default the banner should not be shown.
-  EXPECT_FALSE(
-      AppBannerSettingsHelper::HasSufficientEngagement(service->GetScore(url)));
-
-  // Add engagement such that the banner should show.
-  service->ResetBaseScoreForURL(url, 4);
-  EXPECT_TRUE(
-      AppBannerSettingsHelper::HasSufficientEngagement(service->GetScore(url)));
-  EXPECT_EQ(NO_ERROR_DETECTED,
-            AppBannerSettingsHelper::ShouldShowBanner(
-                web_contents(), url, kTestPackageName, reference_time));
-
-  // Add the site a long time ago. It should not be shown.
+  // Add the site a long time ago.
   AppBannerSettingsHelper::RecordBannerEvent(
       web_contents(), url, kTestPackageName,
       AppBannerSettingsHelper::APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN,
       one_year_ago);
-  EXPECT_EQ(ALREADY_INSTALLED,
-            AppBannerSettingsHelper::ShouldShowBanner(
-                web_contents(), url, kTestPackageName, reference_time));
+
+  EXPECT_TRUE(AppBannerSettingsHelper::HasBeenInstalled(web_contents(), url,
+                                                        kTestPackageName));
 }
 
 TEST_F(AppBannerSettingsHelperTest, OperatesOnOrigins) {
   GURL url(kTestURL);
+  GURL otherURL(kSameOriginTestURL);
+
   SiteEngagementService* service = SiteEngagementService::Get(profile());
 
   // By default the banner should not be shown.
@@ -234,15 +198,30 @@ TEST_F(AppBannerSettingsHelperTest, OperatesOnOrigins) {
   EXPECT_TRUE(
       AppBannerSettingsHelper::HasSufficientEngagement(service->GetScore(url)));
 
-  // Try another page on the same origin.
-  url = GURL(kSameOriginTestURL);
-
   // The banner should show as settings are per-origin.
-  EXPECT_TRUE(
-      AppBannerSettingsHelper::HasSufficientEngagement(service->GetScore(url)));
-  EXPECT_EQ(NO_ERROR_DETECTED,
-            AppBannerSettingsHelper::ShouldShowBanner(
-                web_contents(), url, kTestPackageName, GetReferenceTime()));
+  EXPECT_TRUE(AppBannerSettingsHelper::HasSufficientEngagement(
+      service->GetScore(otherURL)));
+
+  base::Time reference_time = GetReferenceTime();
+  base::Time one_week_ago = reference_time - base::TimeDelta::FromDays(7);
+
+  // If url is blocked, otherURL will also be reported as blocked.
+  EXPECT_FALSE(AppBannerSettingsHelper::WasBannerRecentlyBlocked(
+      web_contents(), otherURL, kTestPackageName, reference_time));
+  AppBannerSettingsHelper::RecordBannerEvent(
+      web_contents(), url, kTestPackageName,
+      AppBannerSettingsHelper::APP_BANNER_EVENT_DID_BLOCK, one_week_ago);
+  EXPECT_TRUE(AppBannerSettingsHelper::WasBannerRecentlyBlocked(
+      web_contents(), otherURL, kTestPackageName, reference_time));
+
+  // If url is ignored, otherURL will also be reported as ignored.
+  EXPECT_FALSE(AppBannerSettingsHelper::WasBannerRecentlyIgnored(
+      web_contents(), otherURL, kTestPackageName, reference_time));
+  AppBannerSettingsHelper::RecordBannerEvent(
+      web_contents(), url, kTestPackageName,
+      AppBannerSettingsHelper::APP_BANNER_EVENT_DID_SHOW, one_week_ago);
+  EXPECT_TRUE(AppBannerSettingsHelper::WasBannerRecentlyIgnored(
+      web_contents(), otherURL, kTestPackageName, reference_time));
 }
 
 TEST_F(AppBannerSettingsHelperTest, ShouldShowWithHigherTotal) {
@@ -274,10 +253,6 @@ TEST_F(AppBannerSettingsHelperTest, ShouldShowWithHigherTotal) {
   service->ResetBaseScoreForURL(url, 10);
   EXPECT_TRUE(
       AppBannerSettingsHelper::HasSufficientEngagement(service->GetScore(url)));
-
-  EXPECT_EQ(NO_ERROR_DETECTED,
-            AppBannerSettingsHelper::ShouldShowBanner(
-                web_contents(), url, kTestPackageName, GetReferenceTime()));
 }
 
 TEST_F(AppBannerSettingsHelperTest, WasLaunchedRecently) {

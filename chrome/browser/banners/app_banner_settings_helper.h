@@ -106,14 +106,28 @@ class AppBannerSettingsHelper {
                                 AppBannerEvent event,
                                 base::Time time);
 
-  // Determine if the banner should be shown, given the recorded events for the
-  // supplied app. Returns an InstallableStatusCode indicated the reason why the
-  // banner shouldn't be shown, or NO_ERROR_DETECTED if it should be shown.
-  static InstallableStatusCode ShouldShowBanner(
+  // Reports whether the app install banner was blocked by the user recently
+  // enough with respect to |now| that another banner should not yet be shown.
+  // |package_name_or_start_url| must be non-empty.
+  static bool WasBannerRecentlyBlocked(
       content::WebContents* web_contents,
       const GURL& origin_url,
       const std::string& package_name_or_start_url,
-      base::Time time);
+      base::Time now);
+
+  // Reports whether the app install banner was ignored by the user recently
+  // enough with respect to |now| that another banner should not yet be shown.
+  // |package_name_or_start_url| must be non-empty.
+  static bool WasBannerRecentlyIgnored(
+      content::WebContents* web_contents,
+      const GURL& origin_url,
+      const std::string& package_name_or_start_url,
+      base::Time now);
+
+  // Returns whether the supplied app has ever been installed from |origin_url|.
+  static bool HasBeenInstalled(content::WebContents* web_contents,
+                               const GURL& origin_url,
+                               const std::string& package_name_or_start_url);
 
   // Get the time that |event| was recorded, or a null time if it has not yet
   // been recorded. Exposed for testing.
@@ -162,6 +176,19 @@ class AppBannerSettingsHelper {
   // Queries variations to determine which language option should be used for
   // app banners and add to homescreen.
   static LanguageOption GetHomescreenLanguageOption();
+
+  // Utility class for testing, which sets how long the banner should be
+  // suppressed after it is dismissed or ignored. The previous configuration
+  // is restored when this object is destructed.
+  class ScopedTriggerSettings {
+   public:
+    ScopedTriggerSettings(unsigned int dismiss_days, unsigned int ignore_days);
+    virtual ~ScopedTriggerSettings();
+
+   private:
+    unsigned int old_dismiss_, old_ignore_;
+    DISALLOW_IMPLICIT_CONSTRUCTORS(ScopedTriggerSettings);
+  };
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(AppBannerSettingsHelper);

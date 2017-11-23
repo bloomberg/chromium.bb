@@ -87,11 +87,13 @@ static jboolean JNI_InstantAppsSettings_ShouldShowBanner(
         content::WebContents::FromJavaWebContents(jweb_contents);
   DCHECK(web_contents);
 
-  std::string url(ConvertJavaStringToUTF8(env, jurl));
+  GURL url(ConvertJavaStringToUTF8(env, jurl));
+  const std::string& key = AppBannerSettingsHelper::kInstantAppsKey;
+  base::Time now = base::Time::Now();
 
-  return AppBannerSettingsHelper::ShouldShowBanner(
-      web_contents,
-      GURL(url),
-      AppBannerSettingsHelper::kInstantAppsKey,
-      base::Time::Now()) == InstallableStatusCode::NO_ERROR_DETECTED;
+  return !AppBannerSettingsHelper::HasBeenInstalled(web_contents, url, key) &&
+         !AppBannerSettingsHelper::WasBannerRecentlyBlocked(web_contents, url,
+                                                            key, now) &&
+         !AppBannerSettingsHelper::WasBannerRecentlyIgnored(web_contents, url,
+                                                            key, now);
 }

@@ -63,12 +63,13 @@ void AppBannerManagerDesktop::DidFinishCreatingBookmarkApp(
   }
 }
 
-bool AppBannerManagerDesktop::IsWebAppInstalled(
-    content::BrowserContext* browser_context,
+bool AppBannerManagerDesktop::IsWebAppConsideredInstalled(
+    content::WebContents* web_contents,
+    const GURL& validated_url,
     const GURL& start_url,
     const GURL& manifest_url) {
   return extensions::BookmarkAppHelper::BookmarkOrHostedAppInstalled(
-      browser_context, start_url);
+      web_contents->GetBrowserContext(), start_url);
 }
 
 void AppBannerManagerDesktop::ShowBannerUi() {
