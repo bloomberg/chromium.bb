@@ -15,10 +15,10 @@
 #include "chrome/browser/vr/test/animation_utils.h"
 #include "chrome/browser/vr/test/constants.h"
 #include "chrome/browser/vr/test/mock_content_input_delegate.h"
-#include "chrome/browser/vr/test/ui_scene_manager_test.h"
+#include "chrome/browser/vr/test/ui_test.h"
 #include "chrome/browser/vr/ui_scene.h"
 #include "chrome/browser/vr/ui_scene_constants.h"
-#include "chrome/browser/vr/ui_scene_manager.h"
+#include "chrome/browser/vr/ui_scene_creator.h"
 #include "chrome/browser/vr/ui_unsupported_mode.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
@@ -85,11 +85,11 @@ class UiInputManagerTest : public testing::Test {
   InSequence inSequence;
 };
 
-class UiInputManagerContentTest : public UiSceneManagerTest {
+class UiInputManagerContentTest : public UiTest {
  public:
   void SetUp() override {
-    UiSceneManagerTest::SetUp();
-    MakeManager(kNotInCct, kNotInWebVr);
+    UiTest::SetUp();
+    CreateScene(kNotInCct, kNotInWebVr);
     input_manager_ = ui_->input_manager();
     EXPECT_TRUE(scene_->OnBeginFrame(MicrosecondsToTicks(1), kForwardVector));
   }

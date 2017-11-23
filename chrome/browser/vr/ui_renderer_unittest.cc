@@ -13,7 +13,7 @@
 #include "chrome/browser/vr/model/model.h"
 #include "chrome/browser/vr/test/animation_utils.h"
 #include "chrome/browser/vr/test/constants.h"
-#include "chrome/browser/vr/test/ui_scene_manager_test.h"
+#include "chrome/browser/vr/test/ui_test.h"
 #include "chrome/browser/vr/ui_scene.h"
 
 namespace vr {
@@ -24,12 +24,12 @@ struct TestParams {
   std::vector<UiElementName> expected_order;
 };
 
-class UiRendererTest : public UiSceneManagerTest,
+class UiRendererTest : public UiTest,
                        public ::testing::WithParamInterface<TestParams> {
  public:
   void SetUp() override {
-    UiSceneManagerTest::SetUp();
-    MakeManager(kNotInCct, kNotInWebVr);
+    UiTest::SetUp();
+    CreateScene(kNotInCct, kNotInWebVr);
     for (auto& e : scene_->root_element()) {
       e.SetTransitionedProperties({});
       e.SetVisible(true);

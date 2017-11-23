@@ -20,7 +20,6 @@
 #include "chrome/browser/vr/ui_input_manager.h"
 #include "chrome/browser/vr/ui_renderer.h"
 #include "chrome/browser/vr/ui_scene.h"
-#include "chrome/browser/vr/ui_scene_manager.h"
 #include "components/omnibox/browser/vector_icons.h"
 #include "components/security_state/core/security_state.h"
 #include "components/toolbar/vector_icons.h"

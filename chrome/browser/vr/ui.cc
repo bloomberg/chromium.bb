@@ -21,7 +21,7 @@
 #include "chrome/browser/vr/ui_input_manager.h"
 #include "chrome/browser/vr/ui_renderer.h"
 #include "chrome/browser/vr/ui_scene.h"
-#include "chrome/browser/vr/ui_scene_manager.h"
+#include "chrome/browser/vr/ui_scene_creator.h"
 #include "chrome/common/chrome_features.h"
 
 namespace vr {
@@ -56,7 +56,7 @@ Ui::Ui(UiBrowserInterface* browser,
   model_->skips_redraw_when_not_dirty =
       ui_initial_state.skips_redraw_when_not_dirty;
 
-  UiSceneManager(browser, scene_.get(), content_input_delegate_.get(),
+  UiSceneCreator(browser, scene_.get(), content_input_delegate_.get(),
                  model_.get())
       .CreateScene();
 }

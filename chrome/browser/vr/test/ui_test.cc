@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/vr/test/ui_scene_manager_test.h"
+#include "chrome/browser/vr/test/ui_test.h"
 
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/vr/elements/rect.h"
@@ -12,7 +12,7 @@
 #include "chrome/browser/vr/test/fake_ui_element_renderer.h"
 #include "chrome/browser/vr/ui.h"
 #include "chrome/browser/vr/ui_scene.h"
-#include "chrome/browser/vr/ui_scene_manager.h"
+#include "chrome/browser/vr/ui_scene_creator.h"
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
 #include "ui/gfx/geometry/vector3d_f.h"
 
@@ -38,22 +38,22 @@ bool IsElementFacingCamera(const UiElement* element) {
 
 }  // namespace
 
-UiSceneManagerTest::UiSceneManagerTest() {}
-UiSceneManagerTest::~UiSceneManagerTest() {}
+UiTest::UiTest() {}
+UiTest::~UiTest() {}
 
-void UiSceneManagerTest::SetUp() {
+void UiTest::SetUp() {
   browser_ = base::MakeUnique<testing::NiceMock<MockUiBrowserInterface>>();
 }
 
-void UiSceneManagerTest::MakeManager(InCct in_cct, InWebVr in_web_vr) {
-  MakeManagerInternal(in_cct, in_web_vr, kNotAutopresented);
+void UiTest::CreateScene(InCct in_cct, InWebVr in_web_vr) {
+  CreateSceneInternal(in_cct, in_web_vr, kNotAutopresented);
 }
 
-void UiSceneManagerTest::MakeAutoPresentedManager() {
-  MakeManagerInternal(kNotInCct, kNotInWebVr, kAutopresented);
+void UiTest::CreateSceneForAutoPresentation() {
+  CreateSceneInternal(kNotInCct, kNotInWebVr, kAutopresented);
 }
 
-bool UiSceneManagerTest::IsVisible(UiElementName name) const {
+bool UiTest::IsVisible(UiElementName name) const {
   OnBeginFrame();
   UiElement* element = scene_->GetUiElementByName(name);
   if (!element || !element->IsVisible())
@@ -65,13 +65,12 @@ bool UiSceneManagerTest::IsVisible(UiElementName name) const {
   return IsElementFacingCamera(element);
 }
 
-void UiSceneManagerTest::SetIncognito(bool incognito) {
+void UiTest::SetIncognito(bool incognito) {
   model_->incognito = incognito;
 }
 
-void UiSceneManagerTest::VerifyElementsVisible(
-    const std::string& trace_context,
-    const std::set<UiElementName>& names) const {
+void UiTest::VerifyElementsVisible(const std::string& trace_context,
+                                   const std::set<UiElementName>& names) const {
   OnBeginFrame();
   SCOPED_TRACE(trace_context);
   for (auto name : names) {
@@ -85,8 +84,8 @@ void UiSceneManagerTest::VerifyElementsVisible(
   }
 }
 
-bool UiSceneManagerTest::VerifyVisibility(const std::set<UiElementName>& names,
-                                          bool visible) const {
+bool UiTest::VerifyVisibility(const std::set<UiElementName>& names,
+                              bool visible) const {
   OnBeginFrame();
   for (auto name : names) {
     SCOPED_TRACE(name);
@@ -102,10 +101,9 @@ bool UiSceneManagerTest::VerifyVisibility(const std::set<UiElementName>& names,
   return true;
 }
 
-bool UiSceneManagerTest::VerifyIsAnimating(
-    const std::set<UiElementName>& names,
-    const std::vector<TargetProperty>& properties,
-    bool animating) const {
+bool UiTest::VerifyIsAnimating(const std::set<UiElementName>& names,
+                               const std::vector<TargetProperty>& properties,
+                               bool animating) const {
   OnBeginFrame();
   for (auto name : names) {
     auto* element = scene_->GetUiElementByName(name);
@@ -118,7 +116,7 @@ bool UiSceneManagerTest::VerifyIsAnimating(
   return true;
 }
 
-int UiSceneManagerTest::NumVisibleInTree(UiElementName name) const {
+int UiTest::NumVisibleInTree(UiElementName name) const {
   auto* root = scene_->GetUiElementByName(name);
   EXPECT_NE(root, nullptr);
   if (!root) {
@@ -133,9 +131,8 @@ int UiSceneManagerTest::NumVisibleInTree(UiElementName name) const {
   return visible;
 }
 
-bool UiSceneManagerTest::VerifyRequiresLayout(
-    const std::set<UiElementName>& names,
-    bool requires_layout) const {
+bool UiTest::VerifyRequiresLayout(const std::set<UiElementName>& names,
+                                  bool requires_layout) const {
   OnBeginFrame();
   for (auto name : names) {
     SCOPED_TRACE(name);
@@ -148,8 +145,7 @@ bool UiSceneManagerTest::VerifyRequiresLayout(
   return true;
 }
 
-void UiSceneManagerTest::CheckRendererOpacityRecursive(
-    UiElement* element) {
+void UiTest::CheckRendererOpacityRecursive(UiElement* element) {
   // Disable all opacity animation for testing.
   element->SetTransitionedProperties({});
   // Set element's opacity to a value smaller than 1. This could make sure it's
@@ -178,7 +174,7 @@ void UiSceneManagerTest::CheckRendererOpacityRecursive(
   }
 }
 
-bool UiSceneManagerTest::AnimateBy(base::TimeDelta delta) {
+bool UiTest::AnimateBy(base::TimeDelta delta) {
   base::TimeTicks target_time = current_time_ + delta;
   base::TimeDelta frame_time = base::TimeDelta::FromSecondsD(1.0 / 60.0);
   bool changed = false;
@@ -192,11 +188,11 @@ bool UiSceneManagerTest::AnimateBy(base::TimeDelta delta) {
   return changed;
 }
 
-bool UiSceneManagerTest::OnBeginFrame() const {
+bool UiTest::OnBeginFrame() const {
   return scene_->OnBeginFrame(current_time_, kForwardVector);
 }
 
-void UiSceneManagerTest::GetBackgroundColor(SkColor* background_color) const {
+void UiTest::GetBackgroundColor(SkColor* background_color) const {
   OnBeginFrame();
   Rect* front =
       static_cast<Rect*>(scene_->GetUiElementByName(kBackgroundFront));
@@ -216,10 +212,9 @@ void UiSceneManagerTest::GetBackgroundColor(SkColor* background_color) const {
   *background_color = color;
 }
 
-void UiSceneManagerTest::MakeManagerInternal(
-    InCct in_cct,
-    InWebVr in_web_vr,
-    WebVrAutopresented web_vr_autopresented) {
+void UiTest::CreateSceneInternal(InCct in_cct,
+                                 InWebVr in_web_vr,
+                                 WebVrAutopresented web_vr_autopresented) {
   auto content_input_delegate =
       base::MakeUnique<testing::NiceMock<MockContentInputDelegate>>();
   content_input_delegate_ = content_input_delegate.get();
