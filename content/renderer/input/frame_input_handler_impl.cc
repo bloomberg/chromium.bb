@@ -358,8 +358,7 @@ void FrameInputHandlerImpl::ScrollFocusedEditableNodeIntoRect(
   if (!render_frame_)
     return;
 
-  RenderViewImpl* render_view = render_frame_->render_view();
-  render_view->ScrollFocusedEditableNodeIntoRect(rect);
+  render_frame_->ScrollFocusedEditableElementIntoRect(rect);
 }
 
 void FrameInputHandlerImpl::MoveCaret(const gfx::Point& point) {

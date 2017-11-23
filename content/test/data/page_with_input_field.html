@@ -27,7 +27,8 @@ function onInputBlur() {
 <body>
 This page has a cross-site iframe and a text input field.
 <input type='text' id='text-field'
-       onfocus="onInputFocus()" onblur="onInputBlur()"><br>
+       onfocus="onInputFocus()" onblur="onInputBlur()"
+       style="width: 120px;height: 20px;"><br>
 <iframe id='subframe' src="/cross-site/b.com/page_with_blur.html"></iframe>
 </body>
 </html>

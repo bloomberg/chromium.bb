@@ -104,6 +104,7 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/latency/latency_info.h"
 #include "ui/native_theme/native_theme_features.h"
 
@@ -1568,12 +1569,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // This test verifies that scrolling an element to view works across OOPIFs.
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollElementIntoView) {
   GURL url_domain_a(
-      embedded_test_server()->GetURL("a.com", "/bounding_rect_for_frame.html"));
+      embedded_test_server()->GetURL("a.com", "/iframe_out_of_view.html"));
   EXPECT_TRUE(NavigateToURL(shell(), url_domain_a));
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
 
   GURL url_domain_b(
-      embedded_test_server()->GetURL("b.com", "/bounding_rect_for_frame.html"));
+      embedded_test_server()->GetURL("b.com", "/iframe_out_of_view.html"));
   NavigateFrameToURL(root->child_at(0), url_domain_b);
 
   GURL url_domain_c(embedded_test_server()->GetURL("c.com", "/title1.html"));
@@ -1583,33 +1584,13 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollElementIntoView) {
   RenderFrameHostImpl* child_frame_b = root->child_at(0)->current_frame_host();
   RenderFrameHostImpl* child_frame_c =
       root->child_at(0)->child_at(0)->current_frame_host();
-
-  // Helper function which returns the view bounds for a given frame. It applies
-  // page scale factor on the main frame when needed.
-  auto get_view_bounds_for_frame = [&](RenderFrameHostImpl* frame) {
-#if defined(OS_ANDROID)
-    if (frame == web_contents()->GetMainFrame()) {
-      // On Android page scale factor is not 1.0 and RWHVAndroid's view bounds
-      // always start off at (0, 0) and scaled. To make it comparable with the
-      // bounds from child frames remove the scaling.
-      return gfx::Rect(gfx::ScaleToRoundedSize(
-          web_contents()->GetRenderWidgetHostView()->GetViewBounds().size(),
-          1 / GetPageScaleFactor(shell())));
-    }
-#endif
-    return frame->GetView()->GetViewBounds();
-  };
-
-  // Helper function which returns true if the view bounds of the given frames
-  // intersect.
-  auto are_intersecting_views = [&](RenderFrameHostImpl* frame_a,
-                                    RenderFrameHostImpl* frame_b) {
-    return get_view_bounds_for_frame(frame_a).Intersects(
-        get_view_bounds_for_frame(frame_b));
-  };
+  RenderWidgetHostView *main_frame_rwhv = main_frame->GetView(),
+                       *child_frame_b_rwhv = child_frame_b->GetView(),
+                       *child_frame_c_rwhv = child_frame_c->GetView();
 
   // Wait until <iframe> 'b' is not visible (in main frame).
-  while (are_intersecting_views(main_frame, child_frame_b)) {
+  while (main_frame_rwhv->GetViewBounds().Intersects(
+      child_frame_b_rwhv->GetViewBounds())) {
     base::RunLoop run_loop;
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
@@ -1617,14 +1598,16 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollElementIntoView) {
   }
 
   // Sanity check: <iframe> 'c' should not be visible either.
-  EXPECT_FALSE(are_intersecting_views(main_frame, child_frame_c));
+  EXPECT_FALSE(main_frame_rwhv->GetViewBounds().Intersects(
+      child_frame_c_rwhv->GetViewBounds()));
 
   // Scroll the inner most frame's body into view.
   EXPECT_TRUE(ExecuteScript(child_frame_c, "document.body.scrollIntoView();"));
 
   // Wait until <iframe> 'c' is in view bounds of parent frame and therefore
   // visible.
-  while (!are_intersecting_views(main_frame, child_frame_c)) {
+  while (!main_frame_rwhv->GetViewBounds().Intersects(
+      child_frame_c_rwhv->GetViewBounds())) {
     base::RunLoop run_loop;
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
@@ -1632,10 +1615,77 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollElementIntoView) {
   }
 
   // Sanity check: <iframe> 'b' should also be visible inside parent frame.
-  EXPECT_TRUE(are_intersecting_views(main_frame, child_frame_b));
+  EXPECT_TRUE(main_frame_rwhv->GetViewBounds().Intersects(
+      child_frame_b_rwhv->GetViewBounds()));
 
   // Sanity check: <iframe> 'c' should be visible inside <iframe> 'b'.
-  EXPECT_TRUE(are_intersecting_views(child_frame_b, child_frame_c));
+  EXPECT_TRUE(child_frame_b_rwhv->GetViewBounds().Intersects(
+      child_frame_c_rwhv->GetViewBounds()));
+}
+
+// This test verifies that Scrolling a focused editable element into view works
+// when the element is inside an OOPIF.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       ScrollFocusedEditableElementIntoView) {
+  GURL main_frame_url(
+      embedded_test_server()->GetURL("a.com", "/iframe_out_of_view.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_frame_url));
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+
+  GURL child_frame_url(
+      embedded_test_server()->GetURL("b.com", "/page_with_input_field.html"));
+  NavigateFrameToURL(root->child_at(0), child_frame_url);
+
+  RenderFrameHostImpl* main_frame = root->current_frame_host();
+  RenderFrameHostImpl* child_frame = root->child_at(0)->current_frame_host();
+
+  // Focus the input field.
+  std::string result;
+  ASSERT_TRUE(
+      ExecuteScriptAndExtractString(child_frame, "focusInputField()", &result));
+  ASSERT_EQ(result, "input-focus");
+
+  // Wait and verify that before scrolling the child <iframe> is not visible.
+  while (main_frame->GetView()->GetViewBounds().Intersects(
+      child_frame->GetView()->GetViewBounds())) {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+    run_loop.Run();
+  }
+
+  child_frame->GetFrameInputHandler()->ScrollFocusedEditableNodeIntoRect(
+      gfx::Rect());
+
+  // Wait until the child frame is visible.
+  while (!root->current_frame_host()->GetView()->GetViewBounds().Intersects(
+      child_frame->GetView()->GetViewBounds())) {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+    run_loop.Run();
+  }
+
+  // Verify that the bounding box of the <input> is visible inside the main
+  // frame.
+  ASSERT_TRUE(ExecuteScriptAndExtractString(
+      child_frame,
+      " var rect = document.querySelector('input').getBoundingClientRect();"
+      "domAutomationController.send(rect.x + ',' + rect.y + ','"
+      "+ rect.width + ',' + rect.height);",
+      &result));
+  std::vector<std::string> tokens = base::SplitString(
+      result, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  ASSERT_EQ(4U, tokens.size());
+  double x, y, width, height;
+  ASSERT_TRUE(base::StringToDouble(tokens[0], &x));
+  ASSERT_TRUE(base::StringToDouble(tokens[1], &y));
+  ASSERT_TRUE(base::StringToDouble(tokens[2], &width));
+  ASSERT_TRUE(base::StringToDouble(tokens[3], &height));
+  gfx::Rect test_rect(static_cast<int>(x), static_cast<int>(y),
+                      static_cast<int>(width), static_cast<int>(height));
+  test_rect += child_frame->GetView()->GetViewBounds().OffsetFromOrigin();
+  EXPECT_TRUE(main_frame->GetView()->GetViewBounds().Intersects(test_rect));
 }
 
 #if defined(USE_AURA) || defined(OS_ANDROID)
