@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -432,9 +433,16 @@ class SitePerProcessTextInputManagerTest : public InProcessBrowserTest {
 // creates a sequence of tab presses and verifies that after each key press, the
 // TextInputState.value reflects that of the focused input, i.e., the
 // TextInputManager is correctly tracking TextInputState across frames.
-// flaky: crbug.com/704994
+// Flaky on chromeOS; https://crbug.com/704994.
+#if defined(OS_LINUX) && defined(OS_CHROMEOS)
+#define MAYBE_TrackStateWhenSwitchingFocusedFrames \
+  DISABLED_TrackStateWhenSwitchingFocusedFrames
+#else
+#define MAYBE_TrackStateWhenSwitchingFocusedFrames \
+  TrackStateWhenSwitchingFocusedFrames
+#endif
 IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
-                       DISABLED_TrackStateWhenSwitchingFocusedFrames) {
+                       MAYBE_TrackStateWhenSwitchingFocusedFrames) {
   CreateIframePage("a(a,b,c(a,b,d(e, f)),g)");
   std::vector<std::string> values{
       "main",     "node_a",   "node_b",     "node_c",     "node_c_a",
@@ -874,9 +882,16 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
 
 // This test makes sure browser correctly tracks focused editable element inside
 // each RenderFrameHost.
-// Test is flaky. crbug.com/705203
+// Test is flaky on chromeOS; https://crbug.com/705203.
+#if defined(OS_LINUX) && defined(OS_CHROMEOS)
+#define MAYBE_TrackingFocusedElementForAllFrames \
+  DISABLED_TrackingFocusedElementForAllFrames
+#else
+#define MAYBE_TrackingFocusedElementForAllFrames \
+  TrackingFocusedElementForAllFrames
+#endif
 IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
-                       DISABLED_TrackingFocusedElementForAllFrames) {
+                       MAYBE_TrackingFocusedElementForAllFrames) {
   CreateIframePage("a(a, b(a))");
   std::vector<content::RenderFrameHost*> frames{
       GetFrame(IndexVector{}), GetFrame(IndexVector{0}),
@@ -958,9 +973,14 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
 // WebContents knows about the focused editable element. Then it asks the
 // WebContents to clear focused element and verifies that there is no longer
 // a focused editable element on the page.
-// Test is flaky. crbug.com/705203
+// Test is flaky on ChromeOS; https://crbug.com/705203.
+#if defined(OS_LINUX) && defined(OS_CHROMEOS)
+#define MAYBE_ClearFocusedElementOnPage DISABLED_ClearFocusedElementOnPage
+#else
+#define MAYBE_ClearFocusedElementOnPage ClearFocusedElementOnPage
+#endif
 IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
-                       DISABLED_ClearFocusedElementOnPage) {
+                       MAYBE_ClearFocusedElementOnPage) {
   CreateIframePage("a(a, b(a))");
   std::vector<content::RenderFrameHost*> frames{
       GetFrame(IndexVector{}), GetFrame(IndexVector{0}),
