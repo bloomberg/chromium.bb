@@ -110,12 +110,9 @@ void Reticle::Render(UiElementRenderer* renderer,
   gfx::Transform rotation_mat(rotation);
   mat = rotation_mat * mat;
 
-  gfx::Point3F target_point =
-      ScalePoint(model_->reticle.target_point, kReticleOffset);
-  // Place the pointer slightly in front of the plane intersection point.
-  mat.matrix().postTranslate(target_point.x(), target_point.y(),
-                             target_point.z());
-
+  mat.matrix().postTranslate(model_->reticle.target_point.x(),
+                             model_->reticle.target_point.y(),
+                             model_->reticle.target_point.z());
   gfx::Transform transform =
       model.view_proj_matrix * world_space_transform() * mat;
   renderer->DrawReticle(computed_opacity(), transform);

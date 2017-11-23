@@ -365,7 +365,6 @@ void UiSceneManager::CreateContentQuad() {
   hit_plane->set_name(kBackplane);
   hit_plane->set_draw_phase(kPhaseForeground);
   hit_plane->SetSize(kBackplaneSize, kSceneHeight);
-  hit_plane->SetTranslate(0, 0, -kTextureOffset);
   scene_->AddUiElement(k2dBrowsingContentGroup, std::move(hit_plane));
 
   auto main_content = base::MakeUnique<ContentElement>(
@@ -742,7 +741,6 @@ void UiSceneManager::CreateVoiceSearchUiGroup() {
   circle->set_draw_phase(kPhaseForeground);
   circle->SetSize(kCloseButtonWidth * 2, kCloseButtonHeight * 2);
   circle->set_corner_radius(kCloseButtonWidth);
-  circle->SetTranslate(0.0, 0.0, -kTextureOffset);
   circle->set_hit_testable(false);
   BindColor(model_, circle.get(),
             &ColorScheme::speech_recognition_circle_background,
@@ -761,7 +759,6 @@ void UiSceneManager::CreateVoiceSearchUiGroup() {
   hit_target->set_name(kSpeechRecognitionResultBackplane);
   hit_target->set_draw_phase(kPhaseForeground);
   hit_target->SetSize(kPromptBackplaneSize, kPromptBackplaneSize);
-  hit_target->SetTranslate(0.0, 0.0, kTextureOffset);
   scene_->AddUiElement(kSpeechRecognitionResult, std::move(hit_target));
 
   auto speech_recognition_listening = base::MakeUnique<UiElement>();
@@ -796,7 +793,6 @@ void UiSceneManager::CreateVoiceSearchUiGroup() {
   growing_circle->set_draw_phase(kPhaseForeground);
   growing_circle->SetSize(kCloseButtonWidth * 2, kCloseButtonHeight * 2);
   growing_circle->set_corner_radius(kCloseButtonWidth);
-  growing_circle->SetTranslate(0.0, 0.0, -kTextureOffset * 2);
   growing_circle->set_hit_testable(false);
   BindColor(model_, growing_circle.get(),
             &ColorScheme::speech_recognition_circle_background,
@@ -814,7 +810,6 @@ void UiSceneManager::CreateVoiceSearchUiGroup() {
   inner_circle->set_draw_phase(kPhaseForeground);
   inner_circle->SetSize(kCloseButtonWidth * 2, kCloseButtonHeight * 2);
   inner_circle->set_corner_radius(kCloseButtonWidth);
-  inner_circle->SetTranslate(0.0, 0.0, -kTextureOffset);
   inner_circle->set_hit_testable(false);
   BindColor(model_, inner_circle.get(),
             &ColorScheme::speech_recognition_circle_background,
@@ -1139,7 +1134,7 @@ void UiSceneManager::CreateExitPrompt() {
   backplane->SetSize(kPromptBackplaneSize, kPromptBackplaneSize);
   backplane->SetTranslate(0.0,
                           kContentVerticalOffset + kExitPromptVerticalOffset,
-                          kTextureOffset - kContentDistance);
+                          -kContentDistance);
   EventHandlers event_handlers;
   event_handlers.button_up = base::Bind(
       [](UiBrowserInterface* browser, Model* m) {
@@ -1165,7 +1160,6 @@ void UiSceneManager::CreateExitPrompt() {
   exit_prompt->set_draw_phase(kPhaseForeground);
   exit_prompt->SetVisible(true);
   exit_prompt->SetSize(kExitPromptWidth, kExitPromptHeight);
-  exit_prompt->SetTranslate(0.0, 0.0, kTextureOffset);
   BindColor(model_, exit_prompt.get(), &ColorScheme::prompt_foreground,
             &TexturedElement::SetForegroundColor);
   BindButtonColors(model_, exit_prompt.get(),
