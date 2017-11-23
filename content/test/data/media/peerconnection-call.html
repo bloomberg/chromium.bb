@@ -17,7 +17,6 @@
   var gSecondConnection = null;
   var gTestWithoutMsid = false;
   var gLocalStream = null;
-  var gSentTones = '';
 
   var gRemoteStreams = {};
 
@@ -273,26 +272,21 @@
       .then(addStreamToBothConnectionsAndNegotiate)
       .catch(printGetUserMediaError);
 
-    var onCallEstablished = function() {
+    // Do the DTMF test after we have received video.
+    detectVideoPlaying('remote-view-2').then(() => {
       // Send DTMF tones. Allocate the sender in the window to keep it from
       // being garbage collected. https://crbug.com/486654.
-      var localAudioTrack = gLocalStream.getAudioTracks()[0];
-      window.dtmfSender = gFirstConnection.createDTMFSender(localAudioTrack);
-      window.dtmfSender.ontonechange = onToneChange;
-      window.dtmfSender.insertDTMF(tones);
-      // Wait for the DTMF tones callback.
-      addExpectedEvent();
-      var waitDtmf = setInterval(function() {
-        if (gSentTones == tones) {
-          clearInterval(waitDtmf);
-          eventOccured();
+      var track = gLocalStream.getAudioTracks()[0];
+      window.sender = gFirstConnection.createDTMFSender(track);
+      var receivedTones = '';
+      window.sender.ontonechange = tone => {
+        receivedTones += tone.tone;
+        if (receivedTones == tones) {
+          reportTestSuccess();
         }
-      }, 100);
-    }
-
-    // Do the DTMF test after we have received video.
-    detectVideoPlaying('remote-view-2')
-        .then(onCallEstablished);
+      };
+      window.sender.insertDTMF(tones);
+    });
   }
 
   function testCreateOfferOptions() {
@@ -328,7 +322,6 @@
         .then(addStreamToBothConnectionsAndNegotiate)
         .catch(printGetUserMediaError);
 
-    addExpectedEvent();
     detectVideoPlaying('remote-view-2').then(() => {
       // Disable the receiver's remote media stream. Video should stop.
       // (Also, ensure muting audio doesn't affect video).
@@ -338,7 +331,8 @@
       detectVideoStopped('remote-view-2').then(() => {
         // Video has stopped: unmute and succeed if it starts playing again.
         enableRemoteVideo(gSecondConnection, true);
-        detectVideoPlaying('remote-view-2').then(eventOccured);
+        detectVideoPlaying('remote-view-2')
+            .then(reportTestSuccess);
       })
     });
   }
@@ -377,42 +371,42 @@
       var localStream = gFirstConnection.getLocalStreams()[0];
       var remoteStream1 = gFirstConnection.getRemoteStreams()[0];
 
-      // Add an expected event that onaddtrack will be called on the remote
-      // mediastream received on gFirstConnection when the audio track is
-      // received.
-      addExpectedEvent();
-      remoteStream1.onaddtrack = function(){
-        assertEquals(remoteStream1.getAudioTracks()[0].id,
-                     localStream.getAudioTracks()[0].id);
-        eventOccured();
-      }
+      expectedCalls = [];
+
+      // Expect that onaddtrack will be called on the remote mediastream
+      // received on gFirstConnection when the audio track is received.
+      expectedCalls.push(new Promise((resolve, reject) => {
+        remoteStream1.onaddtrack = resolve;
+      }));
 
       // Add an expectation that the received video track is removed from
       // gFirstConnection.
-      addExpectedEvent();
-      remoteStream1.onremovetrack = function() {
-        eventOccured();
-      }
+      expectedCalls.push(new Promise((resolve, reject) => {
+        remoteStream1.onremovetrack = resolve;
+      }));
 
       // Add an expected event that onaddtrack will be called on the remote
       // mediastream received on gSecondConnection when the audio track is
       // received.
       remoteStream2 = gSecondConnection.getRemoteStreams()[0];
-      addExpectedEvent();
-      remoteStream2.onaddtrack = function() {
-        assertEquals(remoteStream2.getAudioTracks()[0].id,
-                     localStream.getAudioTracks()[0].id);
-        eventOccured();
-      }
+      expectedCalls.push(new Promise((resolve, reject) => {
+        remoteStream2.onaddtrack = resolve;
+      }));
 
       // Add an expectation that the received video track is removed from
       // gSecondConnection.
-      addExpectedEvent();
-      remoteStream2.onremovetrack = function() {
-        eventOccured();
-      }
-      // When all the above events have occurred- the test pass.
-      setAllEventsOccuredHandler(reportTestSuccess);
+      expectedCalls.push(new Promise((resolve, reject) => {
+        remoteStream2.onremovetrack = resolve;
+      }));
+
+      Promise.all(expectedCalls)
+          .then(() => {
+            assertEquals(remoteStream1.getAudioTracks()[0].id,
+                         localStream.getAudioTracks()[0].id);
+            assertEquals(remoteStream2.getAudioTracks()[0].id,
+                         localStream.getAudioTracks()[0].id);
+          })
+          .then(reportTestSuccess);
 
       gFirstConnection.removeStream(localStream);
       gSecondConnection.removeStream(localStream);
@@ -458,13 +452,54 @@
   // the stream to a cloned stream, send them via the same peer connection.
   function addTwoMediaStreamsToOneConnection() {
     createConnections(null);
-    navigator.mediaDevices.getUserMedia({audio: true, video: true})
-        .then(cloneStreamAndAddTwoStreamsToOneConnection)
-        .catch(printGetUserMediaError);
-  }
 
-  function onToneChange(tone) {
-    gSentTones += tone.tone;
+    var called = 0;
+    var remoteAddStreamCalledTwice = new Promise((resolve, reject) => {
+      gSecondConnection.onaddstream = () => {
+        called += 1;
+        if (called == 2)
+          resolve();
+      };
+    });
+
+    function verifyHasOneAudioAndVideoTrack(stream) {
+      assertEquals(1, stream.getAudioTracks().length);
+      assertEquals(1, stream.getVideoTracks().length);
+    }
+
+    navigator.mediaDevices.getUserMedia({audio: true, video: true})
+        .catch(printGetUserMediaError)
+        .then((localStream) => {
+          displayAndRemember(localStream);
+
+          var clonedStream = null;
+          if (typeof localStream.clone === "function") {
+            clonedStream = localStream.clone();
+          } else {
+            clonedStream = new MediaStream(localStream);
+          }
+
+          gFirstConnection.addStream(localStream);
+          gFirstConnection.addStream(clonedStream);
+
+          // Verify the local streams are correct.
+          assertEquals(2, gFirstConnection.getLocalStreams().length);
+          verifyHasOneAudioAndVideoTrack(gFirstConnection.getLocalStreams()[0]);
+          verifyHasOneAudioAndVideoTrack(gFirstConnection.getLocalStreams()[1]);
+
+          negotiate();
+        })
+        // The remote side should receive two streams after negotiation.
+        .then(() => { return remoteAddStreamCalledTwice; })
+        .then(() => {
+          // Negotiation complete, verify remote streams on the receiving side.
+          assertEquals(2, gSecondConnection.getRemoteStreams().length);
+          verifyHasOneAudioAndVideoTrack(
+              gSecondConnection.getRemoteStreams()[0]);
+          verifyHasOneAudioAndVideoTrack(
+              gSecondConnection.getRemoteStreams()[1]);
+          })
+        .then(reportTestSuccess);
   }
 
   function createConnections(constraints) {
@@ -502,50 +537,6 @@
   function addStreamToTheFirstConnectionAndNegotiate(localStream) {
     displayAndRemember(localStream);
     gFirstConnection.addStream(localStream);
-    negotiate();
-  }
-
-  function verifyHasOneAudioAndVideoTrack(stream) {
-    assertEquals(1, stream.getAudioTracks().length);
-    assertEquals(1, stream.getVideoTracks().length);
-  }
-
-  // Called if getUserMedia succeeds, then clone the stream, send two streams
-  // from one peer connection.
-  function cloneStreamAndAddTwoStreamsToOneConnection(localStream) {
-    displayAndRemember(localStream);
-
-    var clonedStream = null;
-    if (typeof localStream.clone === "function") {
-      clonedStream = localStream.clone();
-    } else {
-      clonedStream = new MediaStream(localStream);
-    }
-
-    gFirstConnection.addStream(localStream);
-    gFirstConnection.addStream(clonedStream);
-
-    // Verify the local streams are correct.
-    assertEquals(2, gFirstConnection.getLocalStreams().length);
-    verifyHasOneAudioAndVideoTrack(gFirstConnection.getLocalStreams()[0]);
-    verifyHasOneAudioAndVideoTrack(gFirstConnection.getLocalStreams()[1]);
-
-    // The remote side should receive two streams. After that, verify the
-    // remote side has the correct number of streams and tracks.
-    addExpectedEvent();
-    addExpectedEvent();
-    gSecondConnection.onaddstream = function(event) {
-      eventOccured();
-    }
-    setAllEventsOccuredHandler(function() {
-      // Negotiation complete, verify remote streams on the receiving side.
-      assertEquals(2, gSecondConnection.getRemoteStreams().length);
-      verifyHasOneAudioAndVideoTrack(gSecondConnection.getRemoteStreams()[0]);
-      verifyHasOneAudioAndVideoTrack(gSecondConnection.getRemoteStreams()[1]);
-
-      reportTestSuccess();
-    });
-
     negotiate();
   }
 

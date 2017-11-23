@@ -29,7 +29,8 @@
       detectVideoInLocalView1(stream).then(() => {
         testVideoToImageBitmap('local-view-1', function() {
           stream.getVideoTracks()[0].stop();
-          waitForVideoToStop('local-view-1');
+          detectVideoStopped('local-view-1')
+              .then(reportTestSuccess);
         }, failedCallback);
       });
     }, failedCallback);
@@ -175,7 +176,8 @@
       detectVideoInLocalView1(stream).then(() => {
         testVideoToRGBA8Texture('local-view-1', function() {
           stream.getVideoTracks()[0].stop();
-          waitForVideoToStop('local-view-1');
+          detectVideoStopped('local-view-1')
+              .then(reportTestSuccess);
         }, failedCallback);
       });
     }, failedCallback);
@@ -187,7 +189,8 @@
       detectVideoInLocalView1(stream).then(() => {
         testVideoToRGBA32FTexture('local-view-1', function() {
           stream.getVideoTracks()[0].stop();
-          waitForVideoToStop('local-view-1');
+          detectVideoStopped('local-view-1')
+              .then(reportTestSuccess);
         }, failedCallback);
       });
     }, failedCallback);
@@ -199,7 +202,8 @@
       detectVideoInLocalView1(stream).then(() => {
         testVideoToR32FTexture('local-view-1', function() {
           stream.getVideoTracks()[0].stop();
-          waitForVideoToStop('local-view-1');
+          detectVideoStopped('local-view-1')
+              .then(reportTestSuccess);
         }, failedCallback);
       });
     }, failedCallback);

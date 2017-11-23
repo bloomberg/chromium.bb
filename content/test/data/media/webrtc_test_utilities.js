@@ -132,24 +132,6 @@ function detectVideo(videoElementName, predicate) {
   });
 }
 
-function waitForVideo(videoElement) {
-  addExpectedEvent();
-  detectVideoPlaying(videoElement)
-      .then(() => { eventOccured(); });
-}
-
-function waitForVideoToStop(videoElement) {
-  addExpectedEvent();
-  detectVideoStopped(videoElement)
-      .then(() => { eventOccured(); });
-}
-
-function waitForBlackVideo(videoElement) {
-  addExpectedEvent();
-  detectBlackVideo(videoElement)
-      .then(() => { eventOccured(); });
-}
-
 // Calculates the current frame rate and compares to |expected_frame_rate|
 // |callback| is triggered with value |true| if the calculated frame rate
 // is +-1 the expected or |false| if five calculations fail to match
