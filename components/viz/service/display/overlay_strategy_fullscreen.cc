@@ -31,7 +31,7 @@ bool OverlayStrategyFullscreen::Attempt(
   while (front != quad_list->end()) {
     if (!cc::OverlayCandidate::IsInvisibleQuad(*front))
       break;
-    front++;
+    ++front;
   }
 
   if (front == quad_list->end())
