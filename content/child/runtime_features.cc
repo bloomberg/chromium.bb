@@ -322,6 +322,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
       base::FeatureList::IsEnabled(features::kNetworkService))
     WebRuntimeFeatures::EnableLoadingWithMojo(true);
 
+  if (base::FeatureList::IsEnabled(features::kNotificationsWithMojo))
+    WebRuntimeFeatures::EnableNotificationsWithMojo(true);
+
   if (base::FeatureList::IsEnabled(features::kOutOfBlinkCORS))
     WebRuntimeFeatures::EnableOutOfBlinkCORS(true);
 

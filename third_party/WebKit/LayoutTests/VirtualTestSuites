@@ -338,6 +338,11 @@
     "args": ["--enable-blink-features=LoadingWithMojo"]
   },
   {
+    "prefix": "mojo-notifications",
+    "base": "http/tests/notifications",
+    "args": ["--enable-blink-features=NotificationsWithMojo"]
+  },
+  {
     "prefix": "scalefactor150",
     "base": "fast/events/synthetic-events",
     "args": ["--force-device-scale-factor=1.5"]
