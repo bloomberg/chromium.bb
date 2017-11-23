@@ -1049,8 +1049,7 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
         ConvolveParams conv_params = get_conv_params(0, 0, plane);
 #endif
 #if CONFIG_JNT_COMP
-        conv_params.fwd_offset = -1;
-        conv_params.bck_offset = -1;
+        conv_params.use_jnt_comp_avg = 0;
 #endif  // CONFIG_JNT_COMP
         struct buf_2d *const dst_buf = &pd->dst;
         x = x_base + idx;

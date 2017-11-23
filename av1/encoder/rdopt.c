@@ -5860,8 +5860,7 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
     const int plane = 0;
     ConvolveParams conv_params = get_conv_params(!id, 0, plane);
 #if CONFIG_JNT_COMP
-    conv_params.fwd_offset = -1;
-    conv_params.bck_offset = -1;
+    conv_params.use_jnt_comp_avg = 0;
 #endif
     WarpTypesAllowed warp_types;
     warp_types.global_warp_allowed = is_global[!id];

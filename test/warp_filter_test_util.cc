@@ -151,9 +151,9 @@ void AV1WarpFilterTest::RunCheckOutput(warp_affine_func test_impl) {
 #endif
 #if CONFIG_JNT_COMP && CONFIG_CONVOLVE_ROUND
             if (jj >= 4) {
-              conv_params.fwd_offset = -1;
-              conv_params.bck_offset = -1;
+              conv_params.use_jnt_comp_avg = 0;
             } else {
+              conv_params.use_jnt_comp_avg = 1;
               conv_params.fwd_offset = quant_dist_lookup_table[ii][jj][0];
               conv_params.bck_offset = quant_dist_lookup_table[ii][jj][1];
             }
@@ -169,9 +169,9 @@ void AV1WarpFilterTest::RunCheckOutput(warp_affine_func test_impl) {
 #endif
 #if CONFIG_JNT_COMP && CONFIG_CONVOLVE_ROUND
             if (jj >= 4) {
-              conv_params.fwd_offset = -1;
-              conv_params.bck_offset = -1;
+              conv_params.use_jnt_comp_avg = 0;
             } else {
+              conv_params.use_jnt_comp_avg = 1;
               conv_params.fwd_offset = quant_dist_lookup_table[ii][jj][0];
               conv_params.bck_offset = quant_dist_lookup_table[ii][jj][1];
             }
@@ -360,9 +360,9 @@ void AV1HighbdWarpFilterTest::RunCheckOutput(
 #endif
 #if CONFIG_JNT_COMP && CONFIG_CONVOLVE_ROUND
             if (jj >= 4) {
-              conv_params.fwd_offset = -1;
-              conv_params.bck_offset = -1;
+              conv_params.use_jnt_comp_avg = 0;
             } else {
+              conv_params.use_jnt_comp_avg = 1;
               conv_params.fwd_offset = quant_dist_lookup_table[ii][jj][0];
               conv_params.bck_offset = quant_dist_lookup_table[ii][jj][1];
             }
@@ -379,9 +379,9 @@ void AV1HighbdWarpFilterTest::RunCheckOutput(
 #endif
 #if CONFIG_JNT_COMP && CONFIG_CONVOLVE_ROUND
             if (jj >= 4) {
-              conv_params.fwd_offset = -1;
-              conv_params.bck_offset = -1;
+              conv_params.use_jnt_comp_avg = 0;
             } else {
+              conv_params.use_jnt_comp_avg = 1;
               conv_params.fwd_offset = quant_dist_lookup_table[ii][jj][0];
               conv_params.bck_offset = quant_dist_lookup_table[ii][jj][1];
             }
