@@ -12,6 +12,7 @@ static_library("ipc_traits") {
 
   deps = [
     "//components/autofill/core/common",
+    "//content/public/common",
     "//ipc",
     "//url",
     "//url/ipc:url_ipc",

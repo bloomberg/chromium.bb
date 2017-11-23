@@ -23,6 +23,7 @@
 #include "components/autofill/core/browser/form_types.h"
 #include "components/autofill/core/browser/proto/server.pb.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 enum UploadRequired { UPLOAD_NOT_REQUIRED, UPLOAD_REQUIRED, USE_UPLOAD_RATES };
 
@@ -192,7 +193,7 @@ class FormStructure {
 
   const GURL& target_url() const { return target_url_; }
 
-  const GURL& main_frame_url() const { return main_frame_url_; }
+  const url::Origin& main_frame_origin() const { return main_frame_origin_; }
 
   bool has_author_specified_types() const {
     return has_author_specified_types_;
@@ -294,8 +295,8 @@ class FormStructure {
   // The target URL.
   GURL target_url_;
 
-  // The source URL of the main frame of this form.
-  GURL main_frame_url_;
+  // The origin of the main frame of this form.
+  url::Origin main_frame_origin_;
 
   // The number of fields able to be auto-filled.
   size_t autofill_count_;

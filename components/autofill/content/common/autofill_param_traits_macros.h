@@ -10,6 +10,7 @@
 
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/password_form.h"
+#include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_message_macros.h"
 #include "url/ipc/url_param_traits.h"
 #include "url/origin.h"

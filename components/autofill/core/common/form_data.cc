@@ -28,6 +28,15 @@ bool ReadGURL(base::PickleIterator* iter, GURL* url) {
   return true;
 }
 
+bool ReadOrigin(base::PickleIterator* iter, url::Origin* origin) {
+  std::string spec;
+  if (!iter->ReadString(&spec))
+    return false;
+
+  *origin = url::Origin::Create(GURL(spec));
+  return true;
+}
+
 void SerializeFormFieldDataVector(const std::vector<FormFieldData>& fields,
                                   base::Pickle* pickle) {
   pickle->WriteInt(static_cast<int>(fields.size()));
@@ -136,7 +145,7 @@ void SerializeFormData(const FormData& form_data, base::Pickle* pickle) {
   SerializeFormFieldDataVector(form_data.fields, pickle);
   pickle->WriteBool(form_data.is_form_tag);
   pickle->WriteBool(form_data.is_formless_checkout);
-  pickle->WriteString(form_data.main_frame_origin.spec());
+  pickle->WriteString(form_data.main_frame_origin.Serialize());
 }
 
 void SerializeFormDataToBase64String(const FormData& form_data,
@@ -201,7 +210,7 @@ bool DeserializeFormData(base::PickleIterator* iter, FormData* form_data) {
   }
 
   if (version >= 6) {
-    if (!ReadGURL(iter, &temp_form_data.main_frame_origin)) {
+    if (!ReadOrigin(iter, &temp_form_data.main_frame_origin)) {
       LogDeserializationError(version);
       return false;
     }
