@@ -468,46 +468,6 @@
             ]
         }
     ],
-    "AutofillSuppressDisusedAddresses": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "ios",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "AutofillSuppressDisusedAddresses"
-                    ]
-                }
-            ]
-        }
-    ],
-    "AutofillSuppressDisusedCreditCards": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "ios",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "AutofillSuppressDisusedCreditCards"
-                    ]
-                }
-            ]
-        }
-    ],
     "AutofillUpstreamRequestCvcIfMissing": [
         {
             "platforms": [

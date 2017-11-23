@@ -1577,9 +1577,6 @@ TEST_F(PersonalDataManagerTest,
 // the input field is empty.
 TEST_F(PersonalDataManagerTest,
        GetProfileSuggestions_SuppressDisusedProfilesOnEmptyField) {
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitAndEnableFeature(kAutofillSuppressDisusedAddresses);
-
   // Set up 2 different profiles.
   AutofillProfile profile1(base::GenerateGUID(), "https://www.example.com");
   test::SetProfileInfo(&profile1, "Marion1", "Mitchell", "Morrison",
@@ -1598,6 +1595,9 @@ TEST_F(PersonalDataManagerTest,
   personal_data_->AddProfile(profile2);
 
   ResetPersonalDataManager(USER_MODE_NORMAL);
+
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitAndEnableFeature(kAutofillSuppressDisusedAddresses);
 
   // Query with empty string only returns profile2.
   {
@@ -1635,6 +1635,22 @@ TEST_F(PersonalDataManagerTest,
     EXPECT_EQ(
         base::ASCIIToUTF16("456 Zoo St., Second Line, Third line, unit 5"),
         suggestions[0].value);
+  }
+
+  // When suppression is disabled, returns all suggestions.
+  {
+    base::test::ScopedFeatureList scoped_features;
+    scoped_features.InitAndDisableFeature(kAutofillSuppressDisusedAddresses);
+    std::vector<Suggestion> suggestions = personal_data_->GetProfileSuggestions(
+        AutofillType(ADDRESS_HOME_STREET_ADDRESS), base::string16(), false,
+        std::vector<ServerFieldType>());
+    ASSERT_EQ(2U, suggestions.size());
+    EXPECT_EQ(
+        base::ASCIIToUTF16("456 Zoo St., Second Line, Third line, unit 5"),
+        suggestions[0].value);
+    EXPECT_EQ(
+        base::ASCIIToUTF16("123 Zoo St., Second Line, Third line, unit 5"),
+        suggestions[1].value);
   }
 }
 
@@ -2022,12 +2038,6 @@ TEST_F(PersonalDataManagerTest,
   personal_data_->Refresh();
   WaitForOnPersonalDataChanged();
   ASSERT_EQ(4U, personal_data_->GetCreditCards().size());
-
-  // Verify credit card suppression is disabled by default.
-  {
-    ASSERT_FALSE(
-        base::FeatureList::IsEnabled(kAutofillSuppressDisusedCreditCards));
-  }
 
   // Verify no suppression if feature is disabled.
   {

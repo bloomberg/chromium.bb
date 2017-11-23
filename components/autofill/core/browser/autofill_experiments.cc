@@ -55,9 +55,9 @@ const base::Feature kAutofillRationalizeFieldTypePredictions{
 const base::Feature kAutofillSendBillingCustomerNumber{
     "AutofillSendBillingCustomerNumber", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kAutofillSuppressDisusedAddresses{
-    "AutofillSuppressDisusedAddresses", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AutofillSuppressDisusedAddresses", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kAutofillSuppressDisusedCreditCards{
-    "AutofillSuppressDisusedCreditCards", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AutofillSuppressDisusedCreditCards", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kAutofillToolkitViewsCreditCardDialogsMac{
     "AutofillToolkitViewsCreditCardDialogsMac",
     base::FEATURE_ENABLED_BY_DEFAULT};
