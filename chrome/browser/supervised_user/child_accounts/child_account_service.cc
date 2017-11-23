@@ -192,6 +192,13 @@ bool ChildAccountService::SetActive(bool active) {
     settings_service->SetLocalSetting(supervised_users::kForceSafeSearch,
                                       base::MakeUnique<base::Value>(false));
 
+#if defined(OS_CHROMEOS)
+    // Mirror account consistency is required for child accounts on Chrome OS.
+    settings_service->SetLocalSetting(
+        supervised_users::kAccountConsistencyMirrorRequired,
+        base::MakeUnique<base::Value>(true));
+#endif
+
 #if !defined(OS_CHROMEOS)
     // This is also used by user policies (UserPolicySigninService), but since
     // child accounts can not also be Dasher accounts, there shouldn't be any
@@ -224,6 +231,10 @@ bool ChildAccountService::SetActive(bool active) {
                                       nullptr);
     settings_service->SetLocalSetting(supervised_users::kForceSafeSearch,
                                       nullptr);
+#if defined(OS_CHROMEOS)
+    settings_service->SetLocalSetting(
+        supervised_users::kAccountConsistencyMirrorRequired, nullptr);
+#endif
 
 #if !defined(OS_CHROMEOS)
     SigninManagerFactory::GetForProfile(profile_)->ProhibitSignout(false);

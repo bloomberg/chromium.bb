@@ -384,6 +384,14 @@ void FixAccountConsistencyRequestHeader(net::URLRequest* request,
     profile_mode_mask |= PROFILE_MODE_INCOGNITO_DISABLED;
   }
 
+#if defined(OS_CHROMEOS)
+  // Mirror account consistency required by profile.
+  if (io_data->account_consistency_mirror_required()->GetValue()) {
+    // Can't add new accounts.
+    profile_mode_mask |= PROFILE_MODE_ADD_ACCOUNT_DISABLED;
+  }
+#endif
+
   std::string account_id = io_data->google_services_account_id()->GetValue();
 
   // If new url is eligible to have the header, add it, otherwise remove it.
@@ -400,10 +408,18 @@ void FixAccountConsistencyRequestHeader(net::URLRequest* request,
   if (dice_header_added)
     DiceURLRequestUserData::AttachToRequest(request);
 
+#if defined(OS_CHROMEOS)
+  bool mirror_enabled =
+      io_data->account_consistency_mirror_required()->GetValue() ||
+      IsAccountConsistencyMirrorEnabled();
+#else
+  bool mirror_enabled = IsAccountConsistencyMirrorEnabled();
+#endif
+
   // Mirror header:
   AppendOrRemoveMirrorRequestHeader(request, redirect_url, account_id,
                                     io_data->GetCookieSettings(),
-                                    profile_mode_mask);
+                                    mirror_enabled, profile_mode_mask);
 }
 
 void ProcessAccountConsistencyResponseHeaders(net::URLRequest* request,
