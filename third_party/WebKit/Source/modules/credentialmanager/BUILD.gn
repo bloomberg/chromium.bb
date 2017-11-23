@@ -16,6 +16,8 @@ blink_modules_sources("credentialmanager") {
     "Credential.h",
     "CredentialManagerClient.cpp",
     "CredentialManagerClient.h",
+    "CredentialManagerTypeConverters.cpp",
+    "CredentialManagerTypeConverters.h",
     "CredentialsContainer.cpp",
     "CredentialsContainer.h",
     "FederatedCredential.cpp",
