@@ -10,7 +10,6 @@
 #include "chrome/browser/signin/signin_global_error.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
 
 SigninGlobalErrorFactory::SigninGlobalErrorFactory()
     : BrowserContextKeyedServiceFactory(
