@@ -1513,9 +1513,21 @@ void WebMediaPlayerImpl::CreateVideoDecodeStatsReporter() {
   if (is_encrypted_)
     return;
 
+  // Setup the recorder Mojo service.
+  mojom::VideoDecodeStatsRecorderPtr recorder =
+      create_decode_stats_recorder_cb_.Run();
+
+  // Origin is used for UKM reporting (not saved to VideoDecodeStatsDB). Privacy
+  // requires we only report origin of the top frame. |is_top_frame| signals how
+  // to interpret the origin.
+  // TODO(crbug.com/787209): Stop getting origin from the renderer.
+  bool is_top_frame = frame_ == frame_->Top();
+  url::Origin top_origin(frame_->Top()->GetSecurityOrigin());
+  recorder->SetPageInfo(top_origin, is_top_frame);
+
   // Create capabilities reporter and synchronize its initial state.
   video_decode_stats_reporter_.reset(new VideoDecodeStatsReporter(
-      create_decode_stats_recorder_cb_.Run(),
+      std::move(recorder),
       base::Bind(&WebMediaPlayerImpl::GetPipelineStatistics,
                  base::Unretained(this)),
       pipeline_metadata_.video_decoder_config));

@@ -14,14 +14,22 @@
 #include "media/mojo/services/video_decode_perf_history.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
-namespace media {
+namespace {
 
 // Aliases for readability.
 const bool kIsSmooth = true;
 const bool kIsNotSmooth = false;
 const bool kIsPowerEfficient = true;
 const bool kIsNotPowerEfficient = false;
+const url::Origin kOrigin = url::Origin::Create(GURL("http://example.com"));
+const bool kIsTopFrame = true;
+
+}  // namespace
+
+namespace media {
 
 class FakeVideoDecodeStatsDB : public VideoDecodeStatsDB {
  public:
@@ -193,12 +201,12 @@ TEST_P(VideoDecodePerfHistoryParamTest, GetPerfInfo_Smooth) {
       kFramesDecoded * kMaxSmoothDroppedFramesPercent + 1;
 
   // Add the entries.
-  perf_history_->SavePerfRecord(kKnownProfile, kKownSize, kSmoothFrameRate,
-                                kFramesDecoded, kSmoothFramesDropped,
-                                kNotPowerEfficientFramesDecoded);
-  perf_history_->SavePerfRecord(kKnownProfile, kKownSize, kNotSmoothFrameRate,
-                                kFramesDecoded, kNotSmoothFramesDropped,
-                                kNotPowerEfficientFramesDecoded);
+  perf_history_->SavePerfRecord(
+      kOrigin, kIsTopFrame, kKnownProfile, kKownSize, kSmoothFrameRate,
+      kFramesDecoded, kSmoothFramesDropped, kNotPowerEfficientFramesDecoded);
+  perf_history_->SavePerfRecord(
+      kOrigin, kIsTopFrame, kKnownProfile, kKownSize, kNotSmoothFrameRate,
+      kFramesDecoded, kNotSmoothFramesDropped, kNotPowerEfficientFramesDecoded);
 
   // Verify perf history returns is_smooth = true for the smooth entry.
   EXPECT_CALL(*this, MockGetPerfInfoCB(kIsSmooth, kIsNotPowerEfficient));
@@ -268,14 +276,16 @@ TEST_P(VideoDecodePerfHistoryParamTest, GetPerfInfo_PowerEfficient) {
 
   // Add the entries.
   perf_history_->SavePerfRecord(
-      kPowerEfficientProfile, kKownSize, kSmoothFrameRate, kFramesDecoded,
-      kSmoothFramesDropped, kPowerEfficientFramesDecoded);
-  perf_history_->SavePerfRecord(
-      kNotPowerEfficientProfile, kKownSize, kSmoothFrameRate, kFramesDecoded,
-      kSmoothFramesDropped, kNotPowerEfficientFramesDecoded);
-  perf_history_->SavePerfRecord(
-      kPowerEfficientProfile, kKownSize, kNotSmoothFrameRate, kFramesDecoded,
-      kNotSmoothFramesDropped, kPowerEfficientFramesDecoded);
+      kOrigin, kIsTopFrame, kPowerEfficientProfile, kKownSize, kSmoothFrameRate,
+      kFramesDecoded, kSmoothFramesDropped, kPowerEfficientFramesDecoded);
+  perf_history_->SavePerfRecord(kOrigin, kIsTopFrame, kNotPowerEfficientProfile,
+                                kKownSize, kSmoothFrameRate, kFramesDecoded,
+                                kSmoothFramesDropped,
+                                kNotPowerEfficientFramesDecoded);
+  perf_history_->SavePerfRecord(kOrigin, kIsTopFrame, kPowerEfficientProfile,
+                                kKownSize, kNotSmoothFrameRate, kFramesDecoded,
+                                kNotSmoothFramesDropped,
+                                kPowerEfficientFramesDecoded);
 
   // Verify perf history returns is_smooth = true, is_power_efficient = true.
   EXPECT_CALL(*this, MockGetPerfInfoCB(kIsSmooth, kIsPowerEfficient));
@@ -366,8 +376,9 @@ TEST_P(VideoDecodePerfHistoryParamTest, AppendAndDestroyStats) {
   const int kFramesDecoded = 1000;
   const int kManyFramesDropped = kFramesDecoded / 2;
   const int kFramesPowerEfficient = kFramesDecoded;
-  perf_history_->SavePerfRecord(kProfile, kSize, kFrameRate, kFramesDecoded,
-                                kManyFramesDropped, kFramesPowerEfficient);
+  perf_history_->SavePerfRecord(kOrigin, kIsTopFrame, kProfile, kSize,
+                                kFrameRate, kFramesDecoded, kManyFramesDropped,
+                                kFramesPowerEfficient);
 
   // Verify its there before we ClearHistory(). Note that perf is NOT smooth.
   EXPECT_CALL(*this, MockGetPerfInfoCB(kIsNotSmooth, kIsPowerEfficient));
@@ -430,8 +441,9 @@ TEST_F(VideoDecodePerfHistoryTest, AppendWhileDestroying) {
 
   // With DB reinitialization still pending, save a record that indicates
   // NOT smooth performance.
-  perf_history_->SavePerfRecord(kProfile, kSize, kFrameRate, kFramesDecoded,
-                                kManyFramesDropped, kFramesPowerEfficient);
+  perf_history_->SavePerfRecord(kOrigin, kIsTopFrame, kProfile, kSize,
+                                kFrameRate, kFramesDecoded, kManyFramesDropped,
+                                kFramesPowerEfficient);
 
   // Expect that NOT smooth is eventually reported (after DB reinitialization
   // completes) when we query this stream description.

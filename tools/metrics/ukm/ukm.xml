@@ -864,6 +864,109 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="Media.VideoDecodePerfRecord">
+  <owner>chcunningham@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
+  <summary>
+    A record of decoding performance metrics from a video playback with the
+    given stream characteristics (profile, resolution, fps). Also includes what
+    Media Capabilities API would claim for such a stream as a means of assessing
+    the API's accuracy.
+  </summary>
+  <metric name="Perf.ApiWouldClaimIsPowerEfficient">
+    <summary>
+      Boolean signaling whether MediaCapabilities would classify streams with
+      these characteristics as power efficient prior to considering this latest
+      record. MediaCapabilities prediction is accurate when this value matches
+      RecordIsPowerEfficient.
+    </summary>
+  </metric>
+  <metric name="Perf.ApiWouldClaimIsSmooth">
+    <summary>
+      Boolean signaling whether MediaCapabilities would classify streams with
+      these characteristics as smooth prior to considering this latest record.
+      MediaCapabilities prediction is accurate when this value matches
+      RecordIsSmooth.
+    </summary>
+  </metric>
+  <metric name="Perf.PastVideoFramesDecoded">
+    <summary>
+      Integer count of past video frames decoded for the given video type.
+    </summary>
+  </metric>
+  <metric name="Perf.PastVideoFramesDropped">
+    <summary>
+      Integer count of past video frames dropped for the given video type.
+    </summary>
+  </metric>
+  <metric name="Perf.PastVideoFramesPowerEfficient">
+    <summary>
+      Integer count of past video frames power efficient for the given video
+      type.
+    </summary>
+  </metric>
+  <metric name="Perf.RecordIsPowerEfficient">
+    <summary>
+      Boolean signaling whether MediaCapabilities would classify this isolated
+      playback record as power efficient.
+    </summary>
+  </metric>
+  <metric name="Perf.RecordIsSmooth">
+    <summary>
+      Boolean signaling whether MediaCapabilities would classify this isolated
+      playback record as smooth.
+    </summary>
+  </metric>
+  <metric name="Perf.VideoFramesDecoded">
+    <summary>
+      Integer count of the video frames decoded in this record.
+    </summary>
+  </metric>
+  <metric name="Perf.VideoFramesDropped">
+    <summary>
+      Integer count of the video frames dropped in this record. Should not
+      exceed VideoFramesDecoded.
+    </summary>
+  </metric>
+  <metric name="Perf.VideoFramesPowerEfficient">
+    <summary>
+      Integer count of the video frames decoded via power efficient means in
+      this record. Should not exceed VideoFramesDecoded.
+    </summary>
+  </metric>
+  <metric name="Video.CodecProfile">
+    <summary>
+      media::VideoCodecProfile enum value. Can be VIDEO_CODEC_PROFILE_UNKNOWN if
+      we don't know the audio codec.
+    </summary>
+  </metric>
+  <metric name="Video.FramesPerSecond">
+    <summary>
+      Integer representing video frames per second. This is the cadence of video
+      frames as described by stream timestamps multiplied by
+      HTMLMediaELement.playbackRate.
+    </summary>
+  </metric>
+  <metric name="Video.InTopFrame">
+    <summary>
+      Flag indicating whether the record comes from the top frame or some inner
+      frame. For privacy, metrics from inner frames are recorded with the top
+      frame's origin, so this flag helps separate top frame vs. embedded
+      playbacks.
+    </summary>
+  </metric>
+  <metric name="Video.NaturalHeight">
+    <summary>
+      Integer representing height of video natural size.
+    </summary>
+  </metric>
+  <metric name="Video.NaturalWidth">
+    <summary>
+      Integer representing width of video natural size.
+    </summary>
+  </metric>
+</event>
+
 <event name="Memory.Experimental">
   <owner>erikchen@chromium.org</owner>
   <summary>
