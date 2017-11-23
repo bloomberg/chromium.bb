@@ -7,11 +7,9 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/i18n/base_i18n_switches.h"
 #include "base/metrics/statistics_recorder.h"
-#include "base/optional.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
@@ -23,14 +21,9 @@
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/permissions/permission_result.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search/one_google_bar/one_google_bar_data.h"
-#include "chrome/browser/search/one_google_bar/one_google_bar_fetcher.h"
-#include "chrome/browser/search/one_google_bar/one_google_bar_service.h"
-#include "chrome/browser/search/one_google_bar/one_google_bar_service_factory.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
-#include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/permission_bubble/mock_permission_prompt_factory.h"
@@ -635,130 +628,6 @@ IN_PROC_BROWSER_TEST_F(LocalNTPJavascriptTest, LoadsIframe) {
   EXPECT_GT(total_thumbs, 0);
   EXPECT_EQ(total_thumbs, succeeded_imgs);
   EXPECT_EQ(0, failed_imgs);
-}
-
-// A simple fake implementation of OneGoogleBarFetcher that immediately returns
-// a pre-configured OneGoogleBarData, which is null by default.
-class FakeOneGoogleBarFetcher : public OneGoogleBarFetcher {
- public:
-  void Fetch(OneGoogleCallback callback) override {
-    std::move(callback).Run(Status::OK, one_google_bar_data_);
-  }
-
-  void set_one_google_bar_data(
-      const base::Optional<OneGoogleBarData>& one_google_bar_data) {
-    one_google_bar_data_ = one_google_bar_data;
-  }
-
- private:
-  base::Optional<OneGoogleBarData> one_google_bar_data_;
-};
-
-class LocalNTPOneGoogleBarSmokeTest : public InProcessBrowserTest {
- public:
-  LocalNTPOneGoogleBarSmokeTest() {}
-
-  FakeOneGoogleBarFetcher* one_google_bar_fetcher() {
-    return static_cast<FakeOneGoogleBarFetcher*>(
-        OneGoogleBarServiceFactory::GetForProfile(browser()->profile())
-            ->fetcher_for_testing());
-  }
-
- private:
-  void SetUp() override {
-    feature_list_.InitWithFeatures(
-        {features::kUseGoogleLocalNtp, features::kOneGoogleBarOnLocalNtp}, {});
-    InProcessBrowserTest::SetUp();
-  }
-
-  void SetUpInProcessBrowserTestFixture() override {
-    will_create_browser_context_services_subscription_ =
-        BrowserContextDependencyManager::GetInstance()
-            ->RegisterWillCreateBrowserContextServicesCallbackForTesting(
-                base::Bind(&LocalNTPOneGoogleBarSmokeTest::
-                               OnWillCreateBrowserContextServices,
-                           base::Unretained(this)));
-  }
-
-  static std::unique_ptr<KeyedService> CreateOneGoogleBarService(
-      content::BrowserContext* context) {
-    GaiaCookieManagerService* cookie_service =
-        GaiaCookieManagerServiceFactory::GetForProfile(
-            Profile::FromBrowserContext(context));
-    return base::MakeUnique<OneGoogleBarService>(
-        cookie_service, base::MakeUnique<FakeOneGoogleBarFetcher>());
-  }
-
-  void OnWillCreateBrowserContextServices(content::BrowserContext* context) {
-    OneGoogleBarServiceFactory::GetInstance()->SetTestingFactory(
-        context, &LocalNTPOneGoogleBarSmokeTest::CreateOneGoogleBarService);
-  }
-
-  base::test::ScopedFeatureList feature_list_;
-
-  std::unique_ptr<
-      base::CallbackList<void(content::BrowserContext*)>::Subscription>
-      will_create_browser_context_services_subscription_;
-};
-
-IN_PROC_BROWSER_TEST_F(LocalNTPOneGoogleBarSmokeTest,
-                       NTPLoadsWithoutErrorOnNetworkFailure) {
-  // Open a new blank tab.
-  content::WebContents* active_tab =
-      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
-  ASSERT_FALSE(search::IsInstantNTP(active_tab));
-
-  // Attach a console observer, listening for any message ("*" pattern).
-  content::ConsoleObserverDelegate console_observer(active_tab, "*");
-  active_tab->SetDelegate(&console_observer);
-
-  // Navigate to the NTP.
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
-  ASSERT_TRUE(search::IsInstantNTP(active_tab));
-  ASSERT_EQ(GURL(chrome::kChromeSearchLocalNtpUrl),
-            active_tab->GetController().GetVisibleEntry()->GetURL());
-
-  // We shouldn't have gotten any console error messages.
-  EXPECT_TRUE(console_observer.message().empty()) << console_observer.message();
-}
-
-IN_PROC_BROWSER_TEST_F(LocalNTPOneGoogleBarSmokeTest,
-                       NTPLoadsWithOneGoogleBar) {
-  OneGoogleBarData data;
-  data.bar_html = "<div id='thebar'></div>";
-  data.in_head_script = "window.inHeadRan = true;";
-  data.after_bar_script = "window.afterBarRan = true;";
-  data.end_of_body_script = "console.log('ogb-done');";
-  one_google_bar_fetcher()->set_one_google_bar_data(data);
-
-  // Open a new blank tab.
-  content::WebContents* active_tab =
-      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
-  ASSERT_FALSE(search::IsInstantNTP(active_tab));
-
-  // Attach a console observer, listening for the "ogb-done" message, which
-  // indicates that the OGB has finished loading.
-  content::ConsoleObserverDelegate console_observer(active_tab, "ogb-done");
-  active_tab->SetDelegate(&console_observer);
-
-  // Navigate to the NTP.
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
-  ASSERT_TRUE(search::IsInstantNTP(active_tab));
-  ASSERT_EQ(GURL(chrome::kChromeSearchLocalNtpUrl),
-            active_tab->GetController().GetVisibleEntry()->GetURL());
-  // Make sure the OGB is finished loading.
-  console_observer.Wait();
-
-  EXPECT_EQ("ogb-done", console_observer.message());
-
-  bool in_head_ran = false;
-  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
-      active_tab, "!!window.inHeadRan", &in_head_ran));
-  EXPECT_TRUE(in_head_ran);
-  bool after_bar_ran = false;
-  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
-      active_tab, "!!window.afterBarRan", &after_bar_ran));
-  EXPECT_TRUE(after_bar_ran);
 }
 
 class LocalNTPVoiceSearchSmokeTest : public InProcessBrowserTest {
