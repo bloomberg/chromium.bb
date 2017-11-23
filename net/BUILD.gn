@@ -287,7 +287,7 @@ component("net") {
     "http/http_response_info.h",
     "http/http_security_headers.cc",
     "http/http_security_headers.h",
-    "http/http_status_code_list",
+    "http/http_status_code_list.h",
     "http/http_util.cc",
     "http/http_util.h",
     "http/http_vary_data.cc",
