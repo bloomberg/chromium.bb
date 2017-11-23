@@ -18,6 +18,11 @@ import java.lang.reflect.Constructor;
  * services from .dex file in Chrome APK.
  */
 public class WebApkServiceFactory extends Service {
+    /**
+     * Key for passing uid of only application allowed to call the service's methods.
+     */
+    public static final String KEY_HOST_BROWSER_UID = "host_browser_uid";
+
     private static final String TAG = "cr_WebApkServiceFactory";
 
     /**
@@ -30,11 +35,6 @@ public class WebApkServiceFactory extends Service {
      * Key for passing id of icon to represent WebAPK notifications in status bar.
      */
     private static final String KEY_SMALL_ICON_ID = "small_icon_id";
-
-    /**
-     * Key for passing uid of only application allowed to call the service's methods.
-     */
-    private static final String KEY_HOST_BROWSER_UID = "host_browser_uid";
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -54,7 +54,9 @@ public class WebApkServiceFactory extends Service {
             Bundle bundle = new Bundle();
             bundle.putInt(KEY_SMALL_ICON_ID, R.drawable.notification_badge);
             bundle.putInt(KEY_HOST_BROWSER_UID, hostBrowserUid);
-            return (IBinder) webApkServiceImplConstructor.newInstance(new Object[] {this, bundle});
+            IBinder webApkServiceImpl =
+                    (IBinder) webApkServiceImplConstructor.newInstance(new Object[] {this, bundle});
+            return new WebApkServiceImplWrapper(this, webApkServiceImpl, hostBrowserUid);
         } catch (Exception e) {
             Log.w(TAG, "Unable to create WebApkServiceImpl.");
             e.printStackTrace();

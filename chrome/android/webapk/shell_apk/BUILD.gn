@@ -65,12 +65,14 @@ android_library("webapk_java") {
     "src/org/chromium/webapk/shell_apk/WebApkSandboxedProcessService1.java",
     "src/org/chromium/webapk/shell_apk/WebApkSandboxedProcessService2.java",
     "src/org/chromium/webapk/shell_apk/WebApkServiceFactory.java",
+    "src/org/chromium/webapk/shell_apk/WebApkServiceImplWrapper.java",
     "src/org/chromium/webapk/shell_apk/WebApkUtils.java",
   ]
   deps = [
     ":shell_apk_manifest",
     ":shell_apk_resources",
     "//chrome/android/webapk/libs/common:common_java",
+    "//chrome/android/webapk/libs/runtime_library:webapk_service_aidl_java",
   ]
 
   # Manifest used for linting (determining unused resources).
@@ -198,11 +200,14 @@ junit_binary("webapk_shell_apk_junit_tests") {
   java_files = [
     "junit/src/org/chromium/webapk/shell_apk/HostBrowserClassLoaderTest.java",
     "junit/src/org/chromium/webapk/shell_apk/MainActivityTest.java",
+    "junit/src/org/chromium/webapk/shell_apk/WebApkServiceImplWrapperTest.java",
     "junit/src/org/chromium/webapk/shell_apk/WebApkUtilsTest.java",
   ]
   deps = [
     ":webapk_java",
     "//chrome/android/webapk/libs/common:common_java",
+    "//chrome/android/webapk/libs/runtime_library:runtime_library_for_tests_java",
+    "//chrome/android/webapk/libs/runtime_library:webapk_service_aidl_java",
     "//chrome/android/webapk/test:junit_test_support",
   ]
 }
