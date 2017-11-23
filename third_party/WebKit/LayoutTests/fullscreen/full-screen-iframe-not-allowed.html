@@ -1,4 +1,4 @@
-<p>Test for <a href="http://bugs.webkit.org/show_bug.cgi?id=56264">bug 56264</a>: 
+<p>Test for <a href="http://bugs.webkit.org/show_bug.cgi?id=56264">bug 56264</a>:
 Handle entering full screen security restrictions</p>
 <p>To test manually, click the "Go full screen" button - the page should not enter full screen mode.</p>
 <script src="full-screen-test.js"></script>
@@ -6,7 +6,7 @@ Handle entering full screen security restrictions</p>
 function runTest() {
     var frame = document.getElementById('frame');
 
-    waitForEvent(frame.contentDocument, 'webkitfullscreenchange', function() { 
+    waitForEvent(frame.contentDocument, 'webkitfullscreenchange', function() {
             consoleWrite("FAIL - entered full screen!"); 
             endTest();
     });
@@ -15,9 +15,11 @@ function runTest() {
         consoleWrite("SUCCEED - did not enter full screen!");
     });
 
-    runWithKeyDown(function() {
-        frame.contentDocument.documentElement.webkitRequestFullScreen();
-    });
+    var x = frame.getBoundingClientRect().left + 10;
+    var y = frame.getBoundingClientRect().top + 10;
+    eventSender.mouseMoveTo(x, y);
+    eventSender.mouseDown();
+    eventSender.mouseUp();
 }
 </script>
 <iframe id="frame" src="resources/inner.html" onload="runTest()">

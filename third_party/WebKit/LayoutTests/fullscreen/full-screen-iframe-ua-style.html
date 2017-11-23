@@ -12,11 +12,13 @@
 
         test("getComputedStyle(ancestor).position == 'relative'");
 
-        runWithKeyDown(function(){
-            frame.contentDocument.querySelector("video").webkitRequestFullScreen();
-        });
+        var x = frame.getBoundingClientRect().left + 10;
+        var y = frame.getBoundingClientRect().top + 10;
+        eventSender.mouseMoveTo(x, y);
+        eventSender.mouseDown();
+        eventSender.mouseUp();
     }
 </script>
 <div id="ancestor" style="position:relative">
-    <iframe allowfullscreen id="frame" src="data:text/html,<video></video>" onload="runTest()"></iframe>
+  <iframe allowfullscreen id="frame" src="resources/inner-video.html" onload="runTest()"></iframe>
 </div>
