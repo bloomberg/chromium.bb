@@ -14,6 +14,7 @@
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
 @class ToolbarButtonFactory;
+@class ToolbarButtonUpdater;
 @class ToolbarConfiguration;
 
 // View controller for a toolbar, which will show a horizontal row of
@@ -28,6 +29,7 @@
 - (instancetype)initWithDispatcher:
                     (id<ApplicationCommands, BrowserCommands>)dispatcher
                      buttonFactory:(ToolbarButtonFactory*)buttonFactory
+                     buttonUpdater:(ToolbarButtonUpdater*)buttonUpdater
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;

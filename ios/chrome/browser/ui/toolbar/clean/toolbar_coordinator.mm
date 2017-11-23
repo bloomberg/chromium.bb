@@ -24,6 +24,7 @@
 #include "ios/chrome/browser/ui/omnibox/omnibox_popup_view_ios.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_button_factory.h"
+#import "ios/chrome/browser/ui/toolbar/clean/toolbar_button_updater.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_mediator.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_style.h"
@@ -60,6 +61,7 @@
 @implementation ToolbarCoordinator
 @synthesize delegate = _delegate;
 @synthesize browserState = _browserState;
+@synthesize buttonUpdater = _buttonUpdater;
 @synthesize dispatcher = _dispatcher;
 @synthesize locationBarView = _locationBarView;
 @synthesize mediator = _mediator;
@@ -105,10 +107,13 @@
   ToolbarButtonFactory* factory =
       [[ToolbarButtonFactory alloc] initWithStyle:style];
 
+  self.buttonUpdater = [[ToolbarButtonUpdater alloc] init];
   self.toolbarViewController =
       [[ToolbarViewController alloc] initWithDispatcher:self.dispatcher
-                                          buttonFactory:factory];
+                                          buttonFactory:factory
+                                          buttonUpdater:self.buttonUpdater];
   self.toolbarViewController.locationBarView = self.locationBarView;
+  self.toolbarViewController.dispatcher = self.dispatcher;
 
   self.mediator.consumer = self.toolbarViewController;
   self.mediator.webStateList = self.webStateList;

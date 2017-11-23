@@ -14,7 +14,6 @@
 
 @implementation ToolbarAdapter
 @synthesize backgroundView = _backgroundView;
-@synthesize buttonUpdater = _buttonAdapter;
 @synthesize toolbarCoordinator = _toolbarCoordinator;
 @synthesize delegate = _delegate;
 @synthesize toolsPopupController = _toolsPopupController;
@@ -44,6 +43,10 @@
 - (void)setURLLoader:(id<UrlLoader>)URLLoader {
   _URLLoader = URLLoader;
   self.toolbarCoordinator.URLLoader = URLLoader;
+}
+
+- (ToolbarButtonUpdater*)buttonUpdater {
+  return self.toolbarCoordinator.buttonUpdater;
 }
 
 - (UIViewController*)viewController {
@@ -167,22 +170,6 @@
 
 - (UIView*)shareButtonView {
   return nil;
-}
-
-#pragma mark - TabHistoryPositioner
-
-- (CGPoint)originPointForToolbarButton:(ToolbarButtonType)toolbarButton {
-  return CGPointZero;
-}
-
-#pragma mark - TabHistoryUIUpdater
-
-- (void)updateUIForTabHistoryPresentationFrom:(ToolbarButtonType)button {
-  return;
-}
-
-- (void)updateUIForTabHistoryWasDismissed {
-  return;
 }
 
 #pragma mark - QRScannerResultLoading

@@ -53,12 +53,12 @@
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_view.h"
 #import "ios/chrome/browser/ui/reversed_animation.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
+#import "ios/chrome/browser/ui/toolbar/clean/toolbar_button_updater.h"
 #import "ios/chrome/browser/ui/toolbar/keyboard_assist/toolbar_assistive_keyboard_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/keyboard_assist/toolbar_assistive_keyboard_views.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_base_feature.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_utils.h"
 #import "ios/chrome/browser/ui/toolbar/public/web_toolbar_controller_constants.h"
-#import "ios/chrome/browser/ui/toolbar/toolbar_button_updater.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_controller+protected.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_model_ios.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_resource_macros.h"
@@ -222,6 +222,10 @@ using ios::material::TimingFunction;
 - (void)updateSnapshotWithWidth:(CGFloat)width forced:(BOOL)force;
 // Updates all buttons visibility, including the parent class buttons.
 - (void)updateToolbarButtons;
+
+// Redifined as readwrite
+@property(nonatomic, strong, readwrite) ToolbarButtonUpdater* buttonUpdater;
+
 @end
 
 @implementation WebToolbarController

@@ -4,8 +4,8 @@
 
 #import "ios/chrome/browser/ui/toolbar/legacy_toolbar_coordinator.h"
 
+#import "ios/chrome/browser/ui/toolbar/clean/toolbar_button_updater.h"
 #import "ios/chrome/browser/ui/toolbar/omnibox_focuser.h"
-#import "ios/chrome/browser/ui/toolbar/toolbar_button_updater.h"
 #import "ios/chrome/browser/ui/toolbar/web_toolbar_controller.h"
 #import "ios/chrome/browser/ui/tools_menu/public/tools_menu_constants.h"
 #import "ios/chrome/browser/ui/tools_menu/tools_menu_coordinator.h"
