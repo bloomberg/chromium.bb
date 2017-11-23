@@ -2065,24 +2065,6 @@
             ]
         }
     ],
-    "NTPUseGoogleLocalNtp": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "UseGoogleLocalNtp"
-                    ]
-                }
-            ]
-        }
-    ],
     "NetAdaptiveProxyConnectionTimeout": [
         {
             "platforms": [
