@@ -8,6 +8,7 @@
 #include "base/i18n/time_formatting.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -56,9 +57,7 @@ const char kSilent[] = "silent";
 const char kSrc[] = "src";
 const char kText[] = "text";
 const char kTextElement[] = "text";
-const char kToastElement[] = "toast";
 const char kToastElementDisplayTimestamp[] = "displayTimestamp";
-const char kToastElementLaunchAttribute[] = "launch";
 const char kTrue[] = "true";
 const char kUserResponse[] = "userResponse";
 const char kValue[] = "value";
@@ -72,18 +71,22 @@ const char kXmlVersionHeader[] = "<?xml version=\"1.0\"?>\n";
 
 }  // namespace
 
+const char kNotificationToastElement[] = "toast";
+const char kNotificationLaunchAttribute[] = "launch";
+
 // static
 const char* NotificationTemplateBuilder::context_menu_label_override_ = nullptr;
 
 // static
 std::unique_ptr<NotificationTemplateBuilder> NotificationTemplateBuilder::Build(
     NotificationImageRetainer* notification_image_retainer,
+    const std::string& launch_attribute,
     const std::string& profile_id,
     const message_center::Notification& notification) {
   std::unique_ptr<NotificationTemplateBuilder> builder = base::WrapUnique(
       new NotificationTemplateBuilder(notification_image_retainer, profile_id));
 
-  builder->StartToastElement(notification.id(), notification);
+  builder->StartToastElement(launch_attribute, notification);
   builder->StartVisualElement();
 
   builder->StartBindingElement(kDefaultTemplate);
@@ -154,10 +157,11 @@ std::string NotificationTemplateBuilder::FormatOrigin(
 }
 
 void NotificationTemplateBuilder::StartToastElement(
-    const std::string& notification_id,
+    const std::string& launch_attribute,
     const message_center::Notification& notification) {
-  xml_writer_->StartElement(kToastElement);
-  xml_writer_->AddAttribute(kToastElementLaunchAttribute, notification_id);
+  xml_writer_->StartElement(kNotificationToastElement);
+  xml_writer_->AddAttribute(kNotificationLaunchAttribute, launch_attribute);
+
   // Note: If the notification doesn't include a button, then Windows will
   // ignore the Reminder flag.
   if (notification.never_timeout())

@@ -37,7 +37,7 @@ class NotificationCommon {
     TRANSIENT = 4,  // A generic type for any notification that does not outlive
                     // the browser instance and is controlled by a
                     // NotificationDelegate.
-    TYPE_MAX = DOWNLOAD,
+    TYPE_MAX = TRANSIENT,
   };
 
   // A struct that contains extra data about a notification specific to one of
