@@ -23,26 +23,24 @@ OpenPDFParamsParser = function(getNamedDestinationsFunction) {
 OpenPDFParamsParser.prototype = {
   /**
    * @private
-   * Parse zoom parameter of open PDF parameters. If this
-   * parameter is passed while opening PDF then PDF should be opened
-   * at the specified zoom level.
+   * Parse zoom parameter of open PDF parameters. The PDF should be opened at
+   * the specified zoom level.
    * @param {string} paramValue zoom value.
-   * @param {Object} viewportPosition to store zoom and position value.
+   * @return {Object} Map with zoom parameters (zoom and position).
    */
-  parseZoomParam_: function(paramValue, viewportPosition) {
+  parseZoomParam_: function(paramValue) {
     var paramValueSplit = paramValue.split(',');
-    if ((paramValueSplit.length != 1) && (paramValueSplit.length != 3))
-      return;
+    if (paramValueSplit.length != 1 && paramValueSplit.length != 3)
+      return {};
 
     // User scale of 100 means zoom value of 100% i.e. zoom factor of 1.0.
     var zoomFactor = parseFloat(paramValueSplit[0]) / 100;
     if (isNaN(zoomFactor))
-      return;
+      return {};
 
     // Handle #zoom=scale.
     if (paramValueSplit.length == 1) {
-      viewportPosition['zoom'] = zoomFactor;
-      return;
+      return {'zoom': zoomFactor};
     }
 
     // Handle #zoom=scale,left,top.
@@ -50,8 +48,43 @@ OpenPDFParamsParser.prototype = {
       x: parseFloat(paramValueSplit[1]),
       y: parseFloat(paramValueSplit[2])
     };
-    viewportPosition['position'] = position;
-    viewportPosition['zoom'] = zoomFactor;
+    return {'position': position, 'zoom': zoomFactor};
+  },
+
+  /**
+   * @private
+   * Parse view parameter of open PDF parameters. The PDF should be opened at
+   * the specified fitting type mode and position.
+   * @param {string} paramValue view value.
+   * @return {Object} Map with view parameters (view and viewPosition).
+   */
+  parseViewParam_: function(paramValue) {
+    var viewModeComponents = paramValue.toLowerCase().split(',');
+    if (viewModeComponents.length < 1)
+      return {};
+
+    var params = {};
+    var viewMode = viewModeComponents[0];
+    var acceptsPositionParam;
+    if (viewMode === 'fit') {
+      params['view'] = FittingType.FIT_TO_PAGE;
+      acceptsPositionParam = false;
+    } else if (viewMode === 'fith') {
+      params['view'] = FittingType.FIT_TO_WIDTH;
+      acceptsPositionParam = true;
+    } else if (viewMode === 'fitv') {
+      params['view'] = FittingType.FIT_TO_HEIGHT;
+      acceptsPositionParam = true;
+    }
+
+    if (!acceptsPositionParam || viewModeComponents.length < 2)
+      return params;
+
+    var position = parseFloat(viewModeComponents[1]);
+    if (!isNaN(position))
+      params['viewPosition'] = position;
+
+    return params;
   },
 
   /**
@@ -112,38 +145,29 @@ OpenPDFParamsParser.prototype = {
    * @param {Function} callback function to be called with viewport info.
    */
   getViewportFromUrlParams: function(url, callback) {
-    var viewportPosition = {};
-    viewportPosition['url'] = url;
+    var params = {};
+    params['url'] = url;
 
-    var paramsDictionary = this.parseUrlParams_(url);
+    var urlParams = this.parseUrlParams_(url);
 
-    if ('page' in paramsDictionary) {
+    if ('page' in urlParams) {
       // |pageNumber| is 1-based, but goToPage() take a zero-based page number.
-      var pageNumber = parseInt(paramsDictionary['page'], 10);
+      var pageNumber = parseInt(urlParams['page'], 10);
       if (!isNaN(pageNumber) && pageNumber > 0)
-        viewportPosition['page'] = pageNumber - 1;
+        params['page'] = pageNumber - 1;
     }
 
-    if ('view' in paramsDictionary) {
-      var viewMode = paramsDictionary['view'].toLowerCase();
-      if (viewMode === 'fit')
-        viewportPosition['view'] = FittingType.FIT_TO_PAGE;
-      else if (viewMode === 'fith')
-        viewportPosition['view'] = FittingType.FIT_TO_WIDTH;
-      else if (viewMode === 'fitv')
-        viewportPosition['view'] = FittingType.FIT_TO_HEIGHT;
-    }
+    if ('view' in urlParams)
+      Object.assign(params, this.parseViewParam_(urlParams['view']));
 
-    if ('zoom' in paramsDictionary)
-      this.parseZoomParam_(paramsDictionary['zoom'], viewportPosition);
+    if ('zoom' in urlParams)
+      Object.assign(params, this.parseZoomParam_(urlParams['zoom']));
 
-    if (viewportPosition.page === undefined &&
-        'nameddest' in paramsDictionary) {
-      this.outstandingRequests_.push(
-          {callback: callback, viewportPosition: viewportPosition});
-      this.getNamedDestinationsFunction_(paramsDictionary['nameddest']);
+    if (params.page === undefined && 'nameddest' in urlParams) {
+      this.outstandingRequests_.push({callback: callback, params: params});
+      this.getNamedDestinationsFunction_(urlParams['nameddest']);
     } else {
-      callback(viewportPosition);
+      callback(params);
     }
   },
 
@@ -156,8 +180,8 @@ OpenPDFParamsParser.prototype = {
   onNamedDestinationReceived: function(pageNumber) {
     var outstandingRequest = this.outstandingRequests_.shift();
     if (pageNumber != -1)
-      outstandingRequest.viewportPosition.page = pageNumber;
-    outstandingRequest.callback(outstandingRequest.viewportPosition);
+      outstandingRequest.params.page = pageNumber;
+    outstandingRequest.callback(outstandingRequest.params);
   },
 };
 
