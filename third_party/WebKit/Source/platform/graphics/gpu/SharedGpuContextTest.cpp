@@ -36,8 +36,6 @@ class SharedGpuContextTestBase : public Test {
 
   void TearDown() override { SharedGpuContext::ResetForTesting(); }
 
-  bool IsUnitTest() { return true; }
-
   GLES2InterfaceType gl_;
 };
 
@@ -124,10 +122,10 @@ TEST_F(SharedGpuContextTest, Canvas2DLayerBridgeAutoRecovery) {
   EXPECT_FALSE(SharedGpuContext::IsValidWithoutRestoring());
   IntSize size(10, 10);
   CanvasColorParams color_params;
-  std::unique_ptr<Canvas2DLayerBridge> bridge = WTF::WrapUnique(
-      new Canvas2DLayerBridge(size, 0, /*msaa sample count*/
-                              Canvas2DLayerBridge::kEnableAcceleration,
-                              color_params, IsUnitTest()));
+  std::unique_ptr<Canvas2DLayerBridge> bridge =
+      WTF::WrapUnique(new Canvas2DLayerBridge(
+          size, 0, /*msaa sample count*/
+          Canvas2DLayerBridge::kEnableAcceleration, color_params));
   EXPECT_TRUE(bridge->IsAccelerated());
   EXPECT_TRUE(SharedGpuContext::IsValidWithoutRestoring());
   bridge->BeginDestruction();

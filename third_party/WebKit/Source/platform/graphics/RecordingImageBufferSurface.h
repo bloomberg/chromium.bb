@@ -6,6 +6,7 @@
 #define RecordingImageBufferSurface_h
 
 #include <memory>
+#include "platform/graphics/CanvasResourceHost.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/ImageBufferSurface.h"
 #include "platform/wtf/Allocator.h"
@@ -38,6 +39,9 @@ class PLATFORM_EXPORT RecordingImageBufferSurface : public ImageBufferSurface {
   PaintCanvas* Canvas() override;
   void DisableDeferral(DisableDeferralReason) override;
   sk_sp<PaintRecord> GetRecord() override;
+  void SetCanvasResourceHost(CanvasResourceHost* host) {
+    resource_host_ = host;
+  }
 
   void DidDraw(const FloatRect&) override;
   bool IsValid() const override { return true; }
@@ -49,7 +53,6 @@ class PLATFORM_EXPORT RecordingImageBufferSurface : public ImageBufferSurface {
                    int y) override;
   void WillOverwriteCanvas() override;
   void FinalizeFrame() override;
-  void DoPaintInvalidation(const FloatRect&) override;
   void SetImageBuffer(ImageBuffer*) override;
   scoped_refptr<StaticBitmapImage> NewImageSnapshot(AccelerationHint,
                                                     SnapshotReason) override;
@@ -120,6 +123,8 @@ class PLATFORM_EXPORT RecordingImageBufferSurface : public ImageBufferSurface {
   bool did_record_draw_commands_in_current_frame_;
   bool current_frame_has_expensive_op_;
   bool previous_frame_has_expensive_op_;
+
+  CanvasResourceHost* resource_host_;
 };
 
 }  // namespace blink

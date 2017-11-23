@@ -58,11 +58,6 @@ PaintCanvas* PaintRenderingContext2D::ExistingDrawingCanvas() const {
   return image_buffer_->Canvas();
 }
 
-AffineTransform PaintRenderingContext2D::BaseTransform() const {
-  DCHECK(image_buffer_);
-  return image_buffer_->BaseTransform();
-}
-
 void PaintRenderingContext2D::DidDraw(const SkIRect& dirty_rect) {
   DCHECK(image_buffer_);
   return image_buffer_->DidDraw(SkRect::Make(dirty_rect));

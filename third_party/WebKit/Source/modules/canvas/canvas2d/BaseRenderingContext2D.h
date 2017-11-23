@@ -234,8 +234,6 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
   virtual PaintCanvas* ExistingDrawingCanvas() const = 0;
   virtual void DisableDeferral(DisableDeferralReason) = 0;
 
-  virtual AffineTransform BaseTransform() const = 0;
-
   virtual void DidDraw(const SkIRect& dirty_rect) = 0;
 
   virtual bool StateHasFilter() = 0;
@@ -366,6 +364,9 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
   static const char kLtrDirectionString[];
   // Canvas is device independent
   static const double kCDeviceScaleFactor;
+
+  virtual void DisableAcceleration() {}
+  virtual void DidInvokeGPUReadbackInCurrentFrame() {}
 
  private:
   void RealizeSaves();

@@ -569,7 +569,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
 
   // Returns approximate gpu memory allocated per pixel.
-  int ExternallyAllocatedBytesPerPixel() override;
+  int ExternallyAllocatedBufferCountPerPixel() override;
 
   class TextureUnitState {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();

@@ -97,7 +97,6 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
   PaintCanvas* ExistingDrawingCanvas() const final;
   void DisableDeferral(DisableDeferralReason) final;
 
-  AffineTransform BaseTransform() const final;
   void DidDraw(const SkIRect& dirty_rect) final;  // overrides
                                                   // BaseRenderingContext2D and
                                                   // CanvasRenderingContext
