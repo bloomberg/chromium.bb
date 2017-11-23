@@ -10,6 +10,32 @@ Name,Size
 .text,35900712
 
 GroupCount,Address,SizeWithoutPadding,Padding,NumAliases,PSS,Section,Name
+,0x2de7000,4,0,1,4.0,d,google::protobuf::internal::pLinuxKernelCmpxchg
+,0x2de7004,4,0,1,4.0,d,google::protobuf::internal::pLinuxKernelMemoryBarrier
+,0x2de7008,152,0,1,152.0,d,base::android::kBaseRegisteredMethods
+,0x2de70a0,4,0,1,4.0,d,base::android::g_renderer_histogram_code
+,0x2de70a4,4,0,1,4.0,d,base::android::g_library_version_number
+,0x2dffd88,0,101600,1,101600.0,d,** symbol gap 0 (end of section)
+,0x2cd8500,56,0,1,56.0,R,ChromeMainDelegateAndroid [vtable]
+,0x2cd8538,24,0,1,24.0,R,mojo::MessageReceiver [vtable]
+,0x2cd8550,12,0,1,12.0,R,kMethodsAnimationFrameTimeHistogram
+,0x2ddc608,0,1065132,1,1065132.0,R,** symbol gap 0 (end of section)
+,0x2c176f0,56,0,1,56.0,R,ChromeMainDelegate [vtable]
+,0x2c17728,24,0,1,24.0,R,chrome::mojom::FieldTrialRecorder [vtable]
+,0x2c17740,789904,0,1,789904.0,R,chrome::mojom::FieldTrialRecorderProxy [vtable]
+,0x2cd84e0,16,16,1,32.0,R,.Lswitch.table.45
+,0x2cd84f0,8,0,1,8.0,R,kSystemClassPrefixes
+,0x266e600,5,0,2,2.5,r,string literal
+,0x266e600,5,0,2,2.5,r,string literal
+,0x266e605,16,0,1,16.0,r,string literal
+,0x266e630,16,27,1,43.0,r,** merge strings
+,0x284d600,3425,1961920,1,1965345.0,r,** merge constants
+2,,0,3286115,1,3286115.0,r,** symbol gaps
+,0x284e364,8,0,1,8.0,r,
+,0x284e370,40,4,1,44.0,r,Name
+,0x284e398,32,0,1,32.0,r,chrome::mojom::FilePatcher::Name_
+,0x28f3450,48,675992,1,676040.0,r,kAnimationFrameTimeHistogramClassPath
+,0x28f3480,4,0,1,4.0,r,blink::CSSValueKeywordsHash::findValueImpl::value_word_list
 ,0x28d900,16,0,1,16.0,t,_GLOBAL__sub_I_page_allocator.cc
 ,0x28d910,56,0,1,56.0,t,_GLOBAL__sub_I_bbr_sender.cc
 ,0x28d948,28,0,1,28.0,t,_GLOBAL__sub_I_pacing_sender.cc
@@ -27,32 +53,6 @@ GroupCount,Address,SizeWithoutPadding,Padding,NumAliases,PSS,Section,Name
 ,0x2a0010,12,0,4,3.0,t,BarAlias
 ,0x2a0020,24,4,1,28.0,t,blink::ContiguousContainerBase::ContiguousContainerBase
 ,0x2a1000,94,0,1,94.0,t,blink::PaintChunker::releasePaintChunks
-,0x266e600,5,0,2,2.5,r,string literal
-,0x266e600,5,0,2,2.5,r,string literal
-,0x266e605,16,0,1,16.0,r,string literal
-,0x266e630,16,27,1,43.0,r,** merge strings
-,0x284d600,3425,1961920,1,1965345.0,r,** merge constants
-2,,0,3286115,1,3286115.0,r,** symbol gaps
-,0x284e364,8,0,1,8.0,r,
-,0x284e370,40,4,1,44.0,r,Name
-,0x284e398,32,0,1,32.0,r,chrome::mojom::FilePatcher::Name_
-,0x28f3450,48,675992,1,676040.0,r,kAnimationFrameTimeHistogramClassPath
-,0x28f3480,4,0,1,4.0,r,blink::CSSValueKeywordsHash::findValueImpl::value_word_list
-,0x2c176f0,56,0,1,56.0,R,ChromeMainDelegate [vtable]
-,0x2c17728,24,0,1,24.0,R,chrome::mojom::FieldTrialRecorder [vtable]
-,0x2c17740,789904,0,1,789904.0,R,chrome::mojom::FieldTrialRecorderProxy [vtable]
-,0x2cd84e0,16,16,1,32.0,R,.Lswitch.table.45
-,0x2cd84f0,8,0,1,8.0,R,kSystemClassPrefixes
-,0x2cd8500,56,0,1,56.0,R,ChromeMainDelegateAndroid [vtable]
-,0x2cd8538,24,0,1,24.0,R,mojo::MessageReceiver [vtable]
-,0x2cd8550,12,0,1,12.0,R,kMethodsAnimationFrameTimeHistogram
-,0x2ddc608,0,1065132,1,1065132.0,R,** symbol gap 0 (end of section)
-,0x2de7000,4,0,1,4.0,d,google::protobuf::internal::pLinuxKernelCmpxchg
-,0x2de7004,4,0,1,4.0,d,google::protobuf::internal::pLinuxKernelMemoryBarrier
-,0x2de7008,152,0,1,152.0,d,base::android::kBaseRegisteredMethods
-,0x2de70a0,4,0,1,4.0,d,base::android::g_renderer_histogram_code
-,0x2de70a4,4,0,1,4.0,d,base::android::g_library_version_number
-,0x2dffd88,0,101600,1,101600.0,d,** symbol gap 0 (end of section)
 ,0x0,262144,0,1,262144.0,b,ff_cos_131072
 ,0x0,131072,0,1,131072.0,b,ff_cos_131072_fixed
 ,0x0,131072,0,1,131072.0,b,ff_cos_65536

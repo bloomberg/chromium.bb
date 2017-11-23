@@ -2,7 +2,7 @@
 Entering interactive Python shell. Quick reference:
 
 SizeInfo: metadata, raw_symbols, section_sizes, size_path, symbols
-Symbol: FlagsString, IsBss, IsDelta, IsGeneratedByToolchain, IsGroup, IsStringLiteral, IterLeafSymbols, address, aliases, end_address, flags, full_name, generated_source, is_anonymous, name, num_aliases, object_path, padding, padding_pss, pss, pss_without_padding, section, section_name, size, size_without_padding, source_path, template_name
+Symbol: FlagsString, IsBss, IsDelta, IsGeneratedByToolchain, IsGroup, IsPak, IsStringLiteral, IterLeafSymbols, address, aliases, end_address, flags, full_name, generated_source, is_anonymous, name, num_aliases, object_path, padding, padding_pss, pss, pss_without_padding, section, section_name, size, size_without_padding, source_path, template_name
 
 SymbolGroup (extends Symbol): CountUniqueSymbols, Filter, GroupedBy, GroupedByAliases, GroupedByFullName, GroupedByName, GroupedByPath, GroupedBySectionName, Inverted, IterUniqueSymbols, SetName, Sorted, SortedByAddress, SortedByCount, SortedByName, WhereAddressInRange, WhereFullNameMatches, WhereGeneratedByToolchain, WhereHasAnyAttribution, WhereHasPath, WhereInSection, WhereIsGroup, WhereIsTemplate, WhereMatches, WhereNameMatches, WhereObjectPathMatches, WherePathMatches, WherePssBiggerThan, WhereSizeBiggerThan, WhereSourceIsGenerated, WhereSourcePathMatches, WhereTemplateNameMatches, index, is_sorted
 
@@ -90,91 +90,91 @@ Number of unique paths: 9
 Section Legend: t=.text, r=.rodata, R=.data.rel.ro, d=.data, b=.bss
 Index | Running Total | Section@Address | PSS | Path
 ------------------------------------------------------------
-0)         16 (0.0%)  t@0x28d900   16             base/page_allocator.cc
-             _GLOBAL__sub_I_page_allocator.cc
-1)         72 (0.0%)  t@0x28d910   56             base/page_allocator.cc
-             _GLOBAL__sub_I_bbr_sender.cc
-2)        100 (0.0%)  t@0x28d948   28             base/page_allocator.cc
-             _GLOBAL__sub_I_pacing_sender.cc
-3)        138 (0.0%)  t@0x28d964   38             base/page_allocator.cc
-             extFromUUseMapping
-4)        170 (0.0%)  t@0x28d98a   32             base/page_allocator.cc
-             extFromUUseMapping
-5)   35830930 (81.8%) t@Group      35830760       {no path}
-             ** symbol gaps (count=3)
-6)   35831378 (81.8%) t@0x28f000   448            third_party/icu/ucnv_ext.c
-             ucnv_extMatchFromU
-7)   35831406 (81.8%) t@0x28f1c8   28             third_party/icu/ucnv_ext.c
-             _GLOBAL__sub_I_SkDeviceProfile.cpp
-8)   35900530 (82.0%) t@0x28f1e0   69124          third_party/icu/ucnv_ext.c
-             foo_bar
-9)   35900554 (82.0%) t@0x2a0000   24 (size=48)   {no path}
-             blink::ContiguousContainerBase::shrinkToFit (num_aliases=2)
-10)  35900578 (82.0%) t@0x2a0000   24 (size=48)   third_party/icu/ucnv_ext.c
-             BazAlias (num_aliases=2)
-11)  35900581 (82.0%) t@0x2a0010   3 (size=12)    third_party/paint.cc
-             blink::ContiguousContainerBase::shrinkToFit (num_aliases=4)
-12)  35900584 (82.0%) t@0x2a0010   3 (size=12)    third_party/icu/ucnv_ext.c
-             blink::ContiguousContainerBase::shrinkToFit (num_aliases=4)
-13)  35900587 (82.0%) t@0x2a0010   3 (size=12)    third_party/fft_float.cc
-             FooAlias (num_aliases=4)
-14)  35900590 (82.0%) t@0x2a0010   3 (size=12)    third_party/fft_float.cc
-             BarAlias (num_aliases=4)
-15)  35900618 (82.0%) t@0x2a0020   28             third_party/container.c
-             blink::ContiguousContainerBase::ContiguousContainerBase
-16)  35900712 (82.0%) t@0x2a1000   94             third_party/container.c
-             blink::PaintChunker::releasePaintChunks
-17)  35900714 (82.0%) r@0x266e600  2.5 (size=5)   base/page_allocator.cc
-             string literal (num_aliases=2)
-18)  35900717 (82.0%) r@0x266e600  2.5 (size=5)   third_party/icu/ucnv_ext.c
-             string literal (num_aliases=2)
-19)  35900733 (82.0%) r@0x266e605  16             third_party/icu/ucnv_ext.c
-             string literal
-20)  35900776 (82.0%) r@0x266e630  43             {no path}
-             ** merge strings
-21)  37866121 (86.5%) r@0x284d600  1965345        {no path}
-             ** merge constants
-22)  41152236 (94.0%) r@Group      3286115        {no path}
-             ** symbol gaps (count=2)
-23)  41152244 (94.0%) r@0x284e364  8              base/page_allocator.cc
-24)  41152288 (94.0%) r@0x284e370  44             base/page_allocator.cc
-             Name
-25)  41152320 (94.0%) r@0x284e398  32             third_party/container.c
-             chrome::mojom::FilePatcher::Name_
-26)  41828360 (95.5%) r@0x28f3450  676040         third_party/paint.cc
-             kAnimationFrameTimeHistogramClassPath
-27)  41828364 (95.5%) r@0x28f3480  4              third_party/paint.cc
-             blink::CSSValueKeywordsHash::findValueImpl::value_word_list
-28)  41828420 (95.5%) R@0x2c176f0  56             third_party/icu/ucnv_ext.c
-             ChromeMainDelegate [vtable]
-29)  41828444 (95.5%) R@0x2c17728  24             third_party/icu/ucnv_ext.c
-             chrome::mojom::FieldTrialRecorder [vtable]
-30)  42618348 (97.3%) R@0x2c17740  789904         third_party/container.c
-             chrome::mojom::FieldTrialRecorderProxy [vtable]
-31)  42618380 (97.3%) R@0x2cd84e0  32             third_party/gvr-android-sdk/libgvr_shim_static_arm.a/libcontroller_api_impl.a_controller_api_impl.o
-             .Lswitch.table.45
-32)  42618388 (97.3%) R@0x2cd84f0  8              third_party/gvr-android-sdk/libgvr_shim_static_arm.a/libport_android_jni.a_jni_utils.o
-             kSystemClassPrefixes
-33)  42618444 (97.3%) R@0x2cd8500  56             third_party/paint.cc
-             ChromeMainDelegateAndroid [vtable]
-34)  42618468 (97.3%) R@0x2cd8538  24             base/page_allocator.cc
-             mojo::MessageReceiver [vtable]
-35)  42618480 (97.3%) R@0x2cd8550  12             base/page_allocator.cc
-             kMethodsAnimationFrameTimeHistogram
-36)  43683612 (99.8%) R@0x2ddc608  1065132        {no path}
-             ** symbol gap 0 (end of section)
-37)  43683616 (99.8%) d@0x2de7000  4              base/page_allocator.cc
+0)          4 (0.0%)  d@0x2de7000  4              base/page_allocator.cc
              google::protobuf::internal::pLinuxKernelCmpxchg
-38)  43683620 (99.8%) d@0x2de7004  4              third_party/container.c
+1)          8 (0.0%)  d@0x2de7004  4              third_party/container.c
              google::protobuf::internal::pLinuxKernelMemoryBarrier
-39)  43683772 (99.8%) d@0x2de7008  152            third_party/container.c
+2)        160 (0.0%)  d@0x2de7008  152            third_party/container.c
              base::android::kBaseRegisteredMethods
-40)  43683776 (99.8%) d@0x2de70a0  4              third_party/container.c
+3)        164 (0.0%)  d@0x2de70a0  4              third_party/container.c
              base::android::g_renderer_histogram_code
-41)  43683780 (99.8%) d@0x2de70a4  4              third_party/container.c
+4)        168 (0.0%)  d@0x2de70a4  4              third_party/container.c
              base::android::g_library_version_number
-42)  43785380 (100.0%) d@0x2dffd88  101600         {no path}
+5)     101768 (0.2%)  d@0x2dffd88  101600         {no path}
              ** symbol gap 0 (end of section)
+6)     101824 (0.2%)  R@0x2cd8500  56             third_party/paint.cc
+             ChromeMainDelegateAndroid [vtable]
+7)     101848 (0.2%)  R@0x2cd8538  24             base/page_allocator.cc
+             mojo::MessageReceiver [vtable]
+8)     101860 (0.2%)  R@0x2cd8550  12             base/page_allocator.cc
+             kMethodsAnimationFrameTimeHistogram
+9)    1166992 (2.7%)  R@0x2ddc608  1065132        {no path}
+             ** symbol gap 0 (end of section)
+10)   1167048 (2.7%)  R@0x2c176f0  56             third_party/icu/ucnv_ext.c
+             ChromeMainDelegate [vtable]
+11)   1167072 (2.7%)  R@0x2c17728  24             third_party/icu/ucnv_ext.c
+             chrome::mojom::FieldTrialRecorder [vtable]
+12)   1956976 (4.5%)  R@0x2c17740  789904         third_party/container.c
+             chrome::mojom::FieldTrialRecorderProxy [vtable]
+13)   1957008 (4.5%)  R@0x2cd84e0  32             third_party/gvr-android-sdk/libgvr_shim_static_arm.a/libcontroller_api_impl.a_controller_api_impl.o
+             .Lswitch.table.45
+14)   1957016 (4.5%)  R@0x2cd84f0  8              third_party/gvr-android-sdk/libgvr_shim_static_arm.a/libport_android_jni.a_jni_utils.o
+             kSystemClassPrefixes
+15)   1957018 (4.5%)  r@0x266e600  2.5 (size=5)   base/page_allocator.cc
+             string literal (num_aliases=2)
+16)   1957021 (4.5%)  r@0x266e600  2.5 (size=5)   third_party/icu/ucnv_ext.c
+             string literal (num_aliases=2)
+17)   1957037 (4.5%)  r@0x266e605  16             third_party/icu/ucnv_ext.c
+             string literal
+18)   1957080 (4.5%)  r@0x266e630  43             {no path}
+             ** merge strings
+19)   3922425 (9.0%)  r@0x284d600  1965345        {no path}
+             ** merge constants
+20)   7208540 (16.5%) r@Group      3286115        {no path}
+             ** symbol gaps (count=2)
+21)   7208548 (16.5%) r@0x284e364  8              base/page_allocator.cc
+22)   7208592 (16.5%) r@0x284e370  44             base/page_allocator.cc
+             Name
+23)   7208624 (16.5%) r@0x284e398  32             third_party/container.c
+             chrome::mojom::FilePatcher::Name_
+24)   7884664 (18.0%) r@0x28f3450  676040         third_party/paint.cc
+             kAnimationFrameTimeHistogramClassPath
+25)   7884668 (18.0%) r@0x28f3480  4              third_party/paint.cc
+             blink::CSSValueKeywordsHash::findValueImpl::value_word_list
+26)   7884684 (18.0%) t@0x28d900   16             base/page_allocator.cc
+             _GLOBAL__sub_I_page_allocator.cc
+27)   7884740 (18.0%) t@0x28d910   56             base/page_allocator.cc
+             _GLOBAL__sub_I_bbr_sender.cc
+28)   7884768 (18.0%) t@0x28d948   28             base/page_allocator.cc
+             _GLOBAL__sub_I_pacing_sender.cc
+29)   7884806 (18.0%) t@0x28d964   38             base/page_allocator.cc
+             extFromUUseMapping
+30)   7884838 (18.0%) t@0x28d98a   32             base/page_allocator.cc
+             extFromUUseMapping
+31)  43715598 (99.8%) t@Group      35830760       {no path}
+             ** symbol gaps (count=3)
+32)  43716046 (99.8%) t@0x28f000   448            third_party/icu/ucnv_ext.c
+             ucnv_extMatchFromU
+33)  43716074 (99.8%) t@0x28f1c8   28             third_party/icu/ucnv_ext.c
+             _GLOBAL__sub_I_SkDeviceProfile.cpp
+34)  43785198 (100.0%) t@0x28f1e0   69124          third_party/icu/ucnv_ext.c
+             foo_bar
+35)  43785222 (100.0%) t@0x2a0000   24 (size=48)   {no path}
+             blink::ContiguousContainerBase::shrinkToFit (num_aliases=2)
+36)  43785246 (100.0%) t@0x2a0000   24 (size=48)   third_party/icu/ucnv_ext.c
+             BazAlias (num_aliases=2)
+37)  43785249 (100.0%) t@0x2a0010   3 (size=12)    third_party/paint.cc
+             blink::ContiguousContainerBase::shrinkToFit (num_aliases=4)
+38)  43785252 (100.0%) t@0x2a0010   3 (size=12)    third_party/icu/ucnv_ext.c
+             blink::ContiguousContainerBase::shrinkToFit (num_aliases=4)
+39)  43785255 (100.0%) t@0x2a0010   3 (size=12)    third_party/fft_float.cc
+             FooAlias (num_aliases=4)
+40)  43785258 (100.0%) t@0x2a0010   3 (size=12)    third_party/fft_float.cc
+             BarAlias (num_aliases=4)
+41)  43785286 (100.0%) t@0x2a0020   28             third_party/container.c
+             blink::ContiguousContainerBase::ContiguousContainerBase
+42)  43785380 (100.0%) t@0x2a1000   94             third_party/container.c
+             blink::PaintChunker::releasePaintChunks
 43)  43785380 (100.0%) b@0x0        262144         third_party/fft_float.cc
              ff_cos_131072
 44)  43785380 (100.0%) b@0x0        131072         third_party/fft_fixed.cc

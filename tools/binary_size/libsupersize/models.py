@@ -44,26 +44,37 @@ METADATA_ELF_BUILD_ID = 'elf_build_id'
 METADATA_GN_ARGS = 'gn_args'
 METADATA_TOOL_PREFIX = 'tool_prefix'  # Path relative to SRC_ROOT.
 
-
+SECTION_BSS = '.bss'
+SECTION_DATA = '.data'
+SECTION_DATA_REL_RO = '.data.rel.ro'
+SECTION_DATA_REL_RO_LOCAL = '.data.rel.ro.local'
+SECTION_PAK_NONTRANSLATED = '.pak.nontranslated'
+SECTION_PAK_TRANSLATIONS = '.pak.translations'
+SECTION_RODATA = '.rodata'
+SECTION_TEXT = '.text'
 # Used by SymbolGroup when they contain a mix of sections.
-SECTION_NAME_MULTIPLE = '.*'
+SECTION_MULTIPLE = '.*'
 
 SECTION_NAME_TO_SECTION = {
-    '.bss': 'b',
-    '.data': 'd',
-    '.data.rel.ro.local': 'R',
-    '.data.rel.ro': 'R',
-    '.rodata': 'r',
-    '.text': 't',
-    SECTION_NAME_MULTIPLE: '*',
+    SECTION_BSS: 'b',
+    SECTION_DATA: 'd',
+    SECTION_DATA_REL_RO_LOCAL: 'R',
+    SECTION_DATA_REL_RO: 'R',
+    SECTION_PAK_NONTRANSLATED: 'P',
+    SECTION_PAK_TRANSLATIONS: 'p',
+    SECTION_RODATA: 'r',
+    SECTION_TEXT: 't',
+    SECTION_MULTIPLE: '*',
 }
 
 SECTION_TO_SECTION_NAME = collections.OrderedDict((
-    ('t', '.text'),
-    ('r', '.rodata'),
-    ('R', '.data.rel.ro'),
-    ('d', '.data'),
-    ('b', '.bss'),
+    ('t', SECTION_TEXT),
+    ('r', SECTION_RODATA),
+    ('R', SECTION_DATA_REL_RO),
+    ('d', SECTION_DATA),
+    ('b', SECTION_BSS),
+    ('p', SECTION_PAK_TRANSLATIONS),
+    ('P', SECTION_PAK_NONTRANSLATED),
 ))
 
 
@@ -111,7 +122,7 @@ class SizeInfo(object):
                size_path=None):
     if isinstance(raw_symbols, list):
       raw_symbols = SymbolGroup(raw_symbols)
-    self.section_sizes = section_sizes  # E.g. {'.text': 0}
+    self.section_sizes = section_sizes  # E.g. {SECTION_TEXT: 0}
     self.raw_symbols = raw_symbols
     self._symbols = symbols
     self.metadata = metadata or {}
@@ -181,15 +192,7 @@ class BaseSymbol(object):
 
   @property
   def section(self):
-    """Returns the one-letter section.
-
-    Mappings:
-      'b': '.bss'
-      'd': '.data'
-      'R': '.data.rel.ro'
-      'r': '.rodata'
-      't': '.text'
-    """
+    """Returns the one-letter section."""
     # Fallback to section_name if there is no short-form defined.
     return SECTION_NAME_TO_SECTION.get(self.section_name, self.section_name)
 
@@ -243,7 +246,11 @@ class BaseSymbol(object):
     return '{%s}' % ','.join(parts)
 
   def IsBss(self):
-    return self.section_name == '.bss'
+    return self.section_name == SECTION_BSS
+
+  def IsPak(self):
+    return (self.section_name == SECTION_PAK_TRANSLATIONS or
+        self.section_name == SECTION_PAK_NONTRANSLATED)
 
   def IsGroup(self):
     return False
@@ -485,7 +492,7 @@ class SymbolGroup(BaseSymbol):
     self.full_name = full_name if full_name is not None else name
     self.template_name = template_name if template_name is not None else name
     self.name = name or ''
-    self.section_name = section_name or SECTION_NAME_MULTIPLE
+    self.section_name = section_name or SECTION_MULTIPLE
     self.is_sorted = is_sorted
 
   def __repr__(self):
@@ -747,7 +754,7 @@ class SymbolGroup(BaseSymbol):
     """
     return self._CreateTransformed(
         self._filtered_symbols, filtered_symbols=self._symbols,
-        section_name=SECTION_NAME_MULTIPLE, is_sorted=False)
+        section_name=SECTION_MULTIPLE, is_sorted=False)
 
   def GroupedBy(self, func, min_count=0, group_factory=None):
     """Returns a SymbolGroup of SymbolGroups, indexed by |func|.

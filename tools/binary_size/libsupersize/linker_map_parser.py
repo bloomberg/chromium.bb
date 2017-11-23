@@ -82,8 +82,8 @@ class MapFileParserGold(object):
       if not parts:
         break
       name, size_str, path = parts
-      sym = models.Symbol('.bss',  int(size_str[2:], 16), full_name=name,
-                          object_path=path)
+      sym = models.Symbol(models.SECTION_BSS,  int(size_str[2:], 16),
+                          full_name=name, object_path=path)
       ret.append(sym)
     return ret
 
@@ -128,10 +128,12 @@ class MapFileParserGold(object):
         section_address = int(section_address_str[2:], 16)
         section_size = int(section_size_str[2:], 16)
         self._section_sizes[section_name] = section_size
-        if (section_name in ('.bss', '.rodata', '.text') or
-            section_name.startswith('.data')):
+        if (section_name in (models.SECTION_BSS,
+                             models.SECTION_RODATA,
+                             models.SECTION_TEXT) or
+            section_name.startswith(models.SECTION_DATA)):
           logging.info('Parsing %s', section_name)
-          if section_name == '.bss':
+          if section_name == models.SECTION_BSS:
             # Common symbols have no address.
             syms.extend(self._common_symbols)
           prefix_len = len(section_name) + 1  # + 1 for the trailing .
@@ -232,7 +234,7 @@ class MapFileParserGold(object):
                                   object_path=path)
               syms.append(sym)
           section_end_address = section_address + section_size
-          if section_name != '.bss' and (
+          if section_name != models.SECTION_BSS and (
               syms[-1].end_address < section_end_address):
             # Set size=0 so that it will show up as padding.
             sym = models.Symbol(
@@ -318,8 +320,11 @@ class MapFileParserLld(object):
         sym_maker.Flush()
         self._section_sizes[tok] = size
         cur_section = tok
-        cur_section_is_useful = (cur_section in ('.bss', '.rodata', '.text') or
-                                 cur_section.startswith('.data'))
+        cur_section_is_useful = (
+            cur_section in (models.SECTION_BSS,
+                            models.SECTION_RODATA,
+                            models.SECTION_TEXT) or
+            cur_section.startswith(models.SECTION_DATA))
         cur_obj = None
 
       elif cur_section_is_useful:

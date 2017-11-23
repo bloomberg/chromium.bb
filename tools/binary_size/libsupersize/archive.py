@@ -29,6 +29,9 @@ import ninja_parser
 import nm
 import path_util
 
+sys.path.insert(1, os.path.join(path_util.SRC_ROOT, 'tools', 'grit'))
+from grit.format import data_pack
+
 
 # Effect of _MAX_SAME_NAME_ALIAS_COUNT (as of Oct 2017, with min_pss = max):
 # 1: shared .text symbols = 1772874 bytes, file size = 9.43MiB (645476 symbols).
@@ -381,7 +384,7 @@ def _CreateMergeStringsReplacements(merge_string_syms,
       for offset, size in positions:
         address = merge_sym_address + offset
         symbol = models.Symbol(
-            '.rodata', size, address, STRING_LITERAL_NAME,
+            models.SECTION_RODATA, size, address, STRING_LITERAL_NAME,
             object_path=object_path)
         new_symbols.append(symbol)
 
@@ -450,7 +453,8 @@ def _CalculatePadding(raw_symbols):
           'Input symbols must be sorted by section, then address.')
       seen_sections.append(symbol.section_name)
       continue
-    if symbol.address <= 0 or prev_symbol.address <= 0:
+    if (symbol.address <= 0 or prev_symbol.address <= 0 or
+        symbol.IsPak() or prev_symbol.IsPak()):
       continue
 
     if symbol.address == prev_symbol.address:
@@ -585,9 +589,10 @@ def CreateMetadata(map_path, elf_path, apk_path, tool_prefix, output_directory):
   return metadata
 
 
-def CreateSizeInfo(map_path, elf_path, tool_prefix, output_directory,
-                   normalize_names=True, track_string_literals=True):
-  """Creates a SizeInfo.
+def CreateSectionSizesAndSymbols(
+    map_path, elf_path, tool_prefix, output_directory,
+    track_string_literals=True):
+  """Creates sections sizes and symbols for a SizeInfo.
 
   Args:
     map_path: Path to the linker .map(.gz) file to parse.
@@ -596,7 +601,6 @@ def CreateSizeInfo(map_path, elf_path, tool_prefix, output_directory,
     tool_prefix: Prefix for c++filt & nm (required).
     output_directory: Build output directory. If None, source_paths and symbol
         alias information will not be recorded.
-    normalize_names: Whether to normalize symbol names.
     track_string_literals: Whether to break down "** merge string" sections into
         smaller symbols (requires output_directory).
   """
@@ -710,7 +714,121 @@ def CreateSizeInfo(map_path, elf_path, tool_prefix, output_directory,
   _CompactLargeAliasesIntoSharedSymbols(raw_symbols)
   logging.debug('Connecting nm aliases')
   _ConnectNmAliases(raw_symbols)
+  return section_sizes, raw_symbols
 
+
+def _ComputePakFileSymbols(
+    file_name, file_size, contents, res_info, symbols_by_name):
+  total = 12 + 6  # Header size plus extra offset
+  id_map = {id(v): k
+            for k, v in sorted(contents.resources.items(), reverse=True)}
+  alias_map = {k: id_map[id(v)] for k, v in contents.resources.iteritems()
+               if id_map[id(v)] != k}
+  # Longest locale pak is es-419.pak
+  if len(os.path.basename(file_name)) <= 9:
+    section_name = models.SECTION_PAK_TRANSLATIONS
+  else:
+    section_name = models.SECTION_PAK_NONTRANSLATED
+  object_path = path_util.ToSrcRootRelative(file_name)
+  for resource_id in sorted(contents.resources):
+    if resource_id in alias_map:
+      # 4 extra bytes of metadata (2 16-bit ints)
+      size = 4
+      name = res_info[alias_map[resource_id]][0]
+    else:
+      # 6 extra bytes of metadata (1 32-bit int, 1 16-bit int)
+      size = len(contents.resources[resource_id]) + 6
+      name, source_path = res_info[resource_id]
+      if name not in symbols_by_name:
+        full_name = '{}: {}'.format(source_path, name)
+        symbols_by_name[name] = models.Symbol(
+            section_name, 0, address=resource_id, full_name=full_name,
+            source_path=source_path, object_path=object_path)
+    symbols_by_name[name].size += size
+    total += size
+  assert file_size == total, (
+      '{} bytes in pak file not accounted for'.format(file_size - total))
+
+
+def _ParsePakInfoFile(pak_info_path):
+  with open(pak_info_path, 'r') as info_file:
+    res_info = {}
+    for line in info_file.readlines():
+      name, res_id, path = line.split(',')
+      res_info[int(res_id)] = (name, path.strip())
+  return res_info
+
+
+def _AddPakSymbols(section_sizes, raw_symbols, symbols_by_name):
+  pak_symbols = sorted(symbols_by_name.values(),
+                       key=lambda s: (s.section_name, s.address))
+  for symbol in pak_symbols:
+    prev = section_sizes.setdefault(symbol.section_name, 0)
+    section_sizes[symbol.section_name] = prev + symbol.size
+  raw_symbols.extend(pak_symbols)
+
+
+def AddApkInfo(section_sizes, raw_symbols, apk_path, output_directory,
+               metadata, apk_elf_result):
+  """Uses apk and output directory add pak and size info."""
+  if metadata:
+    logging.debug('Extracting section sizes from .so within .apk')
+    unstripped_section_sizes = section_sizes
+    apk_build_id, section_sizes = apk_elf_result.get()
+    assert apk_build_id == metadata[models.METADATA_ELF_BUILD_ID], (
+        'BuildID from apk_elf_result did not match')
+
+    packed_section_name = None
+    architecture = metadata[models.METADATA_ELF_ARCHITECTURE]
+    # Packing occurs enabled only arm32 & arm64.
+    if architecture == 'arm':
+      packed_section_name = '.rel.dyn'
+    elif architecture == 'arm64':
+      packed_section_name = '.rela.dyn'
+
+    if packed_section_name:
+      logging.debug('Recording size of unpacked relocations')
+      if packed_section_name not in section_sizes:
+        logging.warning('Packed section not present: %s', packed_section_name)
+      else:
+        section_sizes['%s (unpacked)' % packed_section_name] = (
+            unstripped_section_sizes.get(packed_section_name))
+  _AddPakSymbolsFromApk(section_sizes, raw_symbols, apk_path, output_directory)
+
+
+def _AddPakSymbolsFromApk(
+    section_sizes, raw_symbols, apk_path, output_directory):
+  with zipfile.ZipFile(apk_path) as z:
+    pak_zip_infos = [f for f in z.infolist() if f.filename.endswith('.pak')]
+    apk_info_name = os.path.basename(apk_path) + '.pak.info'
+    pak_info_path = os.path.join(output_directory, 'size-info', apk_info_name)
+    res_info = _ParsePakInfoFile(pak_info_path)
+    symbols_by_name = {}
+    for pak_zip_info in pak_zip_infos:
+      contents = data_pack.ReadDataPackFromString(z.read(pak_zip_info))
+      _ComputePakFileSymbols(
+          pak_zip_info.filename, pak_zip_info.file_size, contents, res_info,
+          symbols_by_name)
+  _AddPakSymbols(section_sizes, raw_symbols, symbols_by_name)
+
+
+def AddPakSymbolsFromFiles(
+    section_sizes, raw_symbols, pak_files, pak_info_path):
+  """Uses files from args to find and add pak symbols."""
+  res_info = _ParsePakInfoFile(pak_info_path)
+  symbols_by_name = {}
+  for pak_file_path in pak_files:
+    with open(pak_file_path, 'r') as f:
+      contents = data_pack.ReadDataPackFromString(f.read())
+      _ComputePakFileSymbols(
+          pak_file_path, os.path.getsize(pak_file_path), contents, res_info,
+          symbols_by_name)
+  _AddPakSymbols(section_sizes, raw_symbols, symbols_by_name)
+
+
+def CreateSizeInfo(
+    section_sizes, raw_symbols, metadata=None, normalize_names=True):
+  """Performs operations on all symbols and creates a SizeInfo object."""
   # Padding not really required, but it is useful to check for large padding and
   # log a warning.
   logging.info('Calculating padding')
@@ -722,14 +840,10 @@ def CreateSizeInfo(map_path, elf_path, tool_prefix, output_directory,
   if normalize_names:
     _NormalizeNames(raw_symbols)
 
+  raw_symbols.sort(key=lambda s: (
+      s.IsPak(), s.IsBss(), s.section_name, s.address))
   logging.info('Processed %d symbols', len(raw_symbols))
-  size_info = models.SizeInfo(section_sizes, raw_symbols)
-
-  if logging.getLogger().isEnabledFor(logging.INFO):
-    for line in describe.DescribeSizeInfoCoverage(size_info):
-      logging.info(line)
-  logging.info('Recorded info for %d symbols', len(size_info.raw_symbols))
-  return size_info
+  return models.SizeInfo(section_sizes, raw_symbols, metadata=metadata)
 
 
 def _DetectGitRevision(directory):
@@ -818,6 +932,11 @@ def AddArguments(parser):
                       help='Path to input .map(.gz) file. Defaults to '
                            '{{elf_file}}.map(.gz)?. If given without '
                            '--elf-file, no size metadata will be recorded.')
+  parser.add_argument('--pak-file', action='append',
+                      help='Paths to pak files.')
+  parser.add_argument('--pak-info-file',
+                      help='This file should contain all ids found in the pak '
+                           'files that have been passed in.')
   parser.add_argument('--no-source-paths', action='store_true',
                       help='Do not use .ninja files to map '
                            'object_path -> source_path')
@@ -838,6 +957,8 @@ def Run(args, parser):
   elf_path = args.elf_file
   map_path = args.map_file
   apk_path = args.apk_file
+  pak_files = args.pak_file
+  pak_info_file = args.pak_info_file
   any_input = apk_path or elf_path or map_path
   if not any_input:
     parser.error('Most pass at least one of --apk-file, --elf-file, --map-file')
@@ -888,37 +1009,22 @@ def Run(args, parser):
     apk_elf_result = concurrent.ForkAndCall(
         _ElfInfoFromApk, (apk_path, apk_so_path, tool_prefix))
 
-  size_info = CreateSizeInfo(map_path, elf_path, tool_prefix, output_directory,
-                             normalize_names=False,
-                             track_string_literals=args.track_string_literals)
+  section_sizes, raw_symbols = CreateSectionSizesAndSymbols(
+      map_path, elf_path, tool_prefix, output_directory,
+      track_string_literals=args.track_string_literals)
+  if apk_path:
+    AddApkInfo(section_sizes, raw_symbols, apk_path, output_directory,
+               metadata, apk_elf_result)
+  elif pak_files and pak_info_file:
+    AddPakSymbolsFromFiles(
+        section_sizes, raw_symbols, pak_files, pak_info_file)
+  size_info = CreateSizeInfo(
+      section_sizes, raw_symbols, metadata=metadata, normalize_names=False)
 
-  if metadata:
-    size_info.metadata = metadata
-
-    if apk_path:
-      logging.debug('Extracting section sizes from .so within .apk')
-      unstripped_section_sizes = size_info.section_sizes
-      apk_build_id, size_info.section_sizes = apk_elf_result.get()
-      assert apk_build_id == metadata[models.METADATA_ELF_BUILD_ID], (
-          'BuildID for %s within %s did not match the one at %s' %
-          (apk_so_path, apk_path, elf_path))
-
-      packed_section_name = None
-      architecture = metadata[models.METADATA_ELF_ARCHITECTURE]
-      # Packing occurs enabled only arm32 & arm64.
-      if architecture == 'arm':
-        packed_section_name = '.rel.dyn'
-      elif architecture == 'arm64':
-        packed_section_name = '.rela.dyn'
-
-      if packed_section_name:
-        logging.debug('Recording size of unpacked relocations')
-        if packed_section_name not in size_info.section_sizes:
-          logging.warning('Packed section not present: %s', packed_section_name)
-        else:
-          size_info.section_sizes['%s (unpacked)' % packed_section_name] = (
-              unstripped_section_sizes.get(packed_section_name))
-
+  if logging.getLogger().isEnabledFor(logging.INFO):
+    for line in describe.DescribeSizeInfoCoverage(size_info):
+      logging.info(line)
+  logging.info('Recorded info for %d symbols', len(size_info.raw_symbols))
   logging.info('Recording metadata: \n  %s',
                '\n  '.join(describe.DescribeMetadata(size_info.metadata)))
   logging.info('Saving result to %s', args.size_file)
