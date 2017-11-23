@@ -81,11 +81,6 @@ typedef struct {
 #if !CONFIG_LV_MAP_MULTI
   int br_cost[BASE_RANGE_SETS][LEVEL_CONTEXTS][2];
 #endif
-#if CONFIG_CTX1D
-  int eob_mode_cost[TX_CLASSES][2];
-  int empty_line_cost[TX_CLASSES][EMPTY_LINE_CONTEXTS][2];
-  int hv_eob_cost[TX_CLASSES][HV_EOB_CONTEXTS][2];
-#endif
 } LV_MAP_COEFF_COST;
 
 typedef struct {

@@ -299,7 +299,6 @@ EXPERIMENT_LIST="
     ref_adapt
     lv_map
     lv_map_multi 
-    ctx1d
     txk_sel
     mv_compress
     segment_globalmv
@@ -538,7 +537,6 @@ post_process_cmdline() {
     enabled lv_map_multi && soft_enable lv_map
     enabled eob_first && enable_feature lv_map
     enabled txk_sel && soft_enable lv_map
-    enabled ctx1d && soft_enable lv_map
     enabled compound_round && soft_enable convolve_round
     enabled ext_intra_mod && enable_feature intra_edge
     enabled intra_edge && enable_feature ext_intra

@@ -460,15 +460,7 @@ static INLINE int get_nz_map_ctx(const uint8_t *const levels,
 static INLINE int get_eob_ctx(const int coeff_idx,  // raster order
                               const TX_SIZE txs_ctx, const TX_TYPE tx_type) {
   int offset = 0;
-#if CONFIG_CTX1D
-  const TX_CLASS tx_class = get_tx_class(tx_type);
-  if (tx_class == TX_CLASS_VERT)
-    offset = EOB_COEF_CONTEXTS_2D;
-  else if (tx_class == TX_CLASS_HORIZ)
-    offset = EOB_COEF_CONTEXTS_2D + EOB_COEF_CONTEXTS_1D;
-#else
   (void)tx_type;
-#endif
 
   if (txs_ctx == TX_4X4) return offset + av1_coeff_band_4x4[coeff_idx];
   if (txs_ctx == TX_8X8) return offset + av1_coeff_band_8x8[coeff_idx];

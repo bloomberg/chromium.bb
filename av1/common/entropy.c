@@ -1632,11 +1632,6 @@ void av1_average_tile_coef_cdfs(FRAME_CONTEXT *fc, FRAME_CONTEXT *ec_ctxs[],
   AVERAGE_TILE_CDFS(coeff_lps_cdf)
 #endif
   AVERAGE_TILE_CDFS(coeff_br_cdf)
-#if CONFIG_CTX1D
-  AVERAGE_TILE_CDFS(eob_mode_cdf)
-  AVERAGE_TILE_CDFS(empty_line_cdf)
-  AVERAGE_TILE_CDFS(hv_eob_cdf)
-#endif
 #else
   AVERAGE_TILE_CDFS(coef_head_cdfs)
   AVERAGE_TILE_CDFS(coef_tail_cdfs)

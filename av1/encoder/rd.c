@@ -545,24 +545,6 @@ void av1_fill_coeff_costs(MACROBLOCK *x, FRAME_CONTEXT *fc) {
         }
 #endif
       }
-#if CONFIG_CTX1D
-      for (int tx_class = 0; tx_class < TX_CLASSES; ++tx_class)
-        av1_cost_tokens_from_cdf(pcost->eob_mode_cost[tx_class],
-                                 fc->eob_mode_cdf[tx_size][plane][tx_class],
-                                 NULL);
-
-      for (int tx_class = 0; tx_class < TX_CLASSES; ++tx_class)
-        for (int ctx = 0; ctx < EMPTY_LINE_CONTEXTS; ++ctx)
-          av1_cost_tokens_from_cdf(
-              pcost->empty_line_cost[tx_class][ctx],
-              fc->empty_line_cdf[tx_size][plane][tx_class][ctx], NULL);
-
-      for (int tx_class = 0; tx_class < TX_CLASSES; ++tx_class)
-        for (int ctx = 0; ctx < HV_EOB_CONTEXTS; ++ctx)
-          av1_cost_tokens_from_cdf(
-              pcost->hv_eob_cost[tx_class][ctx],
-              fc->hv_eob_cdf[tx_size][plane][tx_class][ctx], NULL);
-#endif  // CONFIG_CTX1D
     }
   }
 }
