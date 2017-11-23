@@ -113,6 +113,27 @@ public class WebappNavigationTest {
     }
 
     /**
+     * Test that navigating a TWA outside of the TWA scope by tapping a regular link:
+     * - Launches a CCT.
+     * - Uses the TWA theme colour in the CCT toolbar.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Webapps"})
+    public void testRegularLinkOffOriginTwa() throws Exception {
+        Intent launchIntent = mActivityTestRule.createIntent().putExtra(
+                ShortcutHelper.EXTRA_THEME_COLOR, (long) Color.CYAN);
+        mActivityTestRule.addTwaExtrasToIntent(launchIntent);
+        WebappActivity activity = runWebappActivityAndWaitForIdle(launchIntent);
+
+        addAnchorAndClick(offOriginUrl(), "_self");
+
+        CustomTabActivity customTab = waitFor(CustomTabActivity.class);
+        ChromeTabUtils.waitForTabPageLoaded(customTab.getActivityTab(), offOriginUrl());
+        Assert.assertEquals(Color.CYAN, customTab.getToolbarManager().getPrimaryColor());
+    }
+
+    /**
      * Test that navigating outside of the webapp scope by changing the top location via JavaScript:
      * - Shows a CCT-like webapp toolbar.
      * - Preserves the theme color specified in the launch intent.
@@ -133,6 +154,29 @@ public class WebappNavigationTest {
         ChromeTabUtils.waitForTabPageLoaded(activity.getActivityTab(), offOriginUrl());
         assertToolbarShowState(activity, true);
         Assert.assertEquals(Color.CYAN, activity.getToolbarManager().getPrimaryColor());
+    }
+
+    /**
+     * Test that navigating a TWA outside of the TWA scope by changing the top location via
+     * JavaScript:
+     * - Launches a CCT.
+     * - Uses the TWA theme colour in the CCT toolbar.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Webapps"})
+    public void testWindowTopLocationOffOriginTwa() throws Exception {
+        Intent launchIntent = mActivityTestRule.createIntent().putExtra(
+                ShortcutHelper.EXTRA_THEME_COLOR, (long) Color.CYAN);
+        mActivityTestRule.addTwaExtrasToIntent(launchIntent);
+        WebappActivity activity = runWebappActivityAndWaitForIdle(launchIntent);
+
+        mActivityTestRule.runJavaScriptCodeInCurrentTab(
+                String.format("window.top.location = '%s'", offOriginUrl()));
+
+        CustomTabActivity customTab = waitFor(CustomTabActivity.class);
+        ChromeTabUtils.waitForTabPageLoaded(customTab.getActivityTab(), offOriginUrl());
+        Assert.assertEquals(Color.CYAN, customTab.getToolbarManager().getPrimaryColor());
     }
 
     /**
