@@ -177,28 +177,25 @@ base::FilePath GetSSLKeyLogFile(const base::CommandLine& command_line) {
 std::unique_ptr<net::HostResolver> CreateGlobalHostResolver(
     net::NetLog* net_log) {
   TRACE_EVENT0("startup", "IOThread::CreateGlobalHostResolver");
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
 
-  net::HostResolver::Options options;
-  std::unique_ptr<net::HostResolver> global_host_resolver;
-#if defined OS_CHROMEOS
-  global_host_resolver =
-      chromeos::HostResolverImplChromeOS::CreateSystemResolver(options,
-                                                               net_log);
+#if defined(OS_CHROMEOS)
+  using resolver = chromeos::HostResolverImplChromeOS;
 #else
-  global_host_resolver =
-      net::HostResolver::CreateSystemResolver(options, net_log);
+  using resolver = net::HostResolver;
 #endif
+  std::unique_ptr<net::HostResolver> global_host_resolver =
+      resolver::CreateSystemResolver(net::HostResolver::Options(), net_log);
 
   // If hostname remappings were specified on the command-line, layer these
   // rules on top of the real host resolver. This allows forwarding all requests
   // through a designated test server.
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   if (!command_line.HasSwitch(switches::kHostResolverRules))
     return global_host_resolver;
 
-  std::unique_ptr<net::MappedHostResolver> remapped_resolver(
-      new net::MappedHostResolver(std::move(global_host_resolver)));
+  auto remapped_resolver = std::make_unique<net::MappedHostResolver>(
+      std::move(global_host_resolver));
   remapped_resolver->SetRulesFromString(
       command_line.GetSwitchValueASCII(switches::kHostResolverRules));
   return std::move(remapped_resolver);
@@ -383,7 +380,7 @@ IOThread::IOThread(
   pac_https_url_stripping_enabled_.MoveToThread(io_thread_proxy);
 
   chrome_browser_net::SetGlobalSTHDistributor(
-      std::unique_ptr<net::ct::STHDistributor>(new net::ct::STHDistributor()));
+      std::make_unique<net::ct::STHDistributor>());
 
   BrowserThread::SetIOThreadDelegate(this);
 
@@ -432,7 +429,7 @@ net::URLRequestContextGetter* IOThread::system_url_request_context_getter() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!system_url_request_context_getter_.get()) {
     system_url_request_context_getter_ =
-        new SystemURLRequestContextGetter(this);
+        base::MakeRefCounted<SystemURLRequestContextGetter>(this);
   }
   return system_url_request_context_getter_.get();
 }
@@ -466,23 +463,24 @@ void IOThread::Init() {
 
   std::unique_ptr<data_usage::DataUseAmortizer> data_use_amortizer;
 #if defined(OS_ANDROID)
-  data_use_amortizer.reset(new data_usage::android::TrafficStatsAmortizer());
+  data_use_amortizer =
+      std::make_unique<data_usage::android::TrafficStatsAmortizer>();
 #endif  // defined(OS_ANDROID)
 
   globals_->data_use_ascriber =
       base::MakeUnique<data_use_measurement::ChromeDataUseAscriber>();
 
-  globals_->data_use_aggregator.reset(new data_usage::DataUseAggregator(
-      std::unique_ptr<data_usage::DataUseAnnotator>(
-          new chrome_browser_data_usage::TabIdAnnotator()),
-      std::move(data_use_amortizer)));
+  globals_->data_use_aggregator =
+      std::make_unique<data_usage::DataUseAggregator>(
+          std::make_unique<chrome_browser_data_usage::TabIdAnnotator>(),
+          std::move(data_use_amortizer));
 
 #if defined(OS_ANDROID)
-  globals_->external_data_use_observer.reset(
-      new chrome::android::ExternalDataUseObserver(
+  globals_->external_data_use_observer =
+      std::make_unique<chrome::android::ExternalDataUseObserver>(
           globals_->data_use_aggregator.get(),
           BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
-          BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)));
+          BrowserThread::GetTaskRunnerForThread(BrowserThread::UI));
 #endif  // defined(OS_ANDROID)
 
   std::map<std::string, std::string> network_quality_estimator_params;
@@ -504,15 +502,16 @@ void IOThread::Init() {
 
   std::unique_ptr<net::ExternalEstimateProvider> external_estimate_provider;
 #if defined(OS_ANDROID)
-  external_estimate_provider.reset(
-      new chrome::android::ExternalEstimateProviderAndroid());
+  external_estimate_provider =
+      std::make_unique<chrome::android::ExternalEstimateProviderAndroid>();
 #endif  // defined(OS_ANDROID)
   // Pass ownership.
-  globals_->network_quality_estimator.reset(new net::NetworkQualityEstimator(
-      std::move(external_estimate_provider),
-      base::MakeUnique<net::NetworkQualityEstimatorParams>(
-          network_quality_estimator_params),
-      net_log_));
+  globals_->network_quality_estimator =
+      std::make_unique<net::NetworkQualityEstimator>(
+          std::move(external_estimate_provider),
+          base::MakeUnique<net::NetworkQualityEstimatorParams>(
+              network_quality_estimator_params),
+          net_log_);
   globals_->network_quality_observer = content::CreateNetworkQualityObserver(
       globals_->network_quality_estimator.get());
 
@@ -521,12 +520,14 @@ void IOThread::Init() {
 
   globals_->ct_logs.assign(ct_logs.begin(), ct_logs.end());
 
-  ct_tree_tracker_.reset(new certificate_transparency::TreeStateTracker(
-      globals_->ct_logs, net_log_));
+  ct_tree_tracker_ =
+      std::make_unique<certificate_transparency::TreeStateTracker>(
+          globals_->ct_logs, net_log_);
   // Register the ct_tree_tracker_ as observer for new STHs.
   RegisterSTHObserver(ct_tree_tracker_.get());
 
-  globals_->dns_probe_service.reset(new chrome_browser_net::DnsProbeService());
+  globals_->dns_probe_service =
+      std::make_unique<chrome_browser_net::DnsProbeService>();
 
   if (command_line.HasSwitch(switches::kIgnoreUrlFetcherCertRequests))
     net::URLFetcher::SetIgnoreCertificateRequests(true);
@@ -561,7 +562,7 @@ void IOThread::CleanUp() {
   net::ShutdownNSSHttpIO();
 #endif
 
-  system_url_request_context_getter_ = NULL;
+  system_url_request_context_getter_ = nullptr;
 
   // Unlink the ct_tree_tracker_ from the global cert_transparency_verifier
   // and unregister it from new STH notifications so it will take no actions
@@ -589,7 +590,7 @@ void IOThread::CleanUp() {
 
   system_proxy_config_service_.reset();
   delete globals_;
-  globals_ = NULL;
+  globals_ = nullptr;
 
   base::debug::LeakTracker<SystemURLRequestContextGetter>::CheckForLeaks();
 
@@ -777,9 +778,8 @@ void IOThread::ConstructSystemRequestContext() {
       globals_->network_quality_estimator.get());
 
   builder->set_user_agent(GetUserAgent());
-  std::unique_ptr<ChromeNetworkDelegate> chrome_network_delegate(
-      new ChromeNetworkDelegate(extension_event_router_forwarder(),
-                                &system_enable_referrers_));
+  auto chrome_network_delegate = std::make_unique<ChromeNetworkDelegate>(
+      extension_event_router_forwarder(), &system_enable_referrers_);
   // By default, data usage is considered off the record.
   chrome_network_delegate->set_data_use_aggregator(
       globals_->data_use_aggregator.get(),
@@ -801,7 +801,7 @@ void IOThread::ConstructSystemRequestContext() {
   // Creates a CertVerifyProc that doesn't allow any profile-provided certs.
   cert_verifier = base::MakeUnique<net::CachingCertVerifier>(
       base::MakeUnique<net::MultiThreadedCertVerifier>(
-          new chromeos::CertVerifyProcChromeOS()));
+          base::MakeRefCounted<chromeos::CertVerifyProcChromeOS>()));
 #else
   cert_verifier = std::make_unique<net::CachingCertVerifier>(
       std::make_unique<net::MultiThreadedCertVerifier>(
