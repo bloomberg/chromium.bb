@@ -1278,14 +1278,14 @@ Types of libs
   System libraries
       Values not containing '/' will be treated as system library names. These
       will be passed unmodified to the linker and prefixed with the
-      "lib_prefix" attribute of the linker tool. Generally you would set the
+      "lib_switch" attribute of the linker tool. Generally you would set the
       "lib_dirs" so the given library is found. Your BUILD.gn file should not
-      specify the switch (like "-l"): this will be encoded in the "lib_prefix"
+      specify the switch (like "-l"): this will be encoded in the "lib_switch"
       of the tool.
 
   Apple frameworks
       System libraries ending in ".framework" will be special-cased: the switch
-      "-framework" will be prepended instead of the lib_prefix, and the
+      "-framework" will be prepended instead of the lib_switch, and the
       ".framework" suffix will be trimmed. This is to support the way Mac links
       framework dependencies.
 )"
