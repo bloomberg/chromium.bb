@@ -42,7 +42,7 @@ UiSceneManagerTest::UiSceneManagerTest() {}
 UiSceneManagerTest::~UiSceneManagerTest() {}
 
 void UiSceneManagerTest::SetUp() {
-  browser_ = base::MakeUnique<testing::NiceMock<MockBrowserInterface>>();
+  browser_ = base::MakeUnique<testing::NiceMock<MockUiBrowserInterface>>();
 }
 
 void UiSceneManagerTest::MakeManager(InCct in_cct, InWebVr in_web_vr) {

@@ -6,7 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/vr/content_input_delegate.h"
-#include "chrome/browser/vr/test/mock_browser_interface.h"
+#include "chrome/browser/vr/test/mock_ui_browser_interface.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace vr {
@@ -28,13 +28,13 @@ class UiTest : public testing::Test {
   void SetUp() override {
     UiInitialState initial_state;
     forwarder_ = base::MakeUnique<FakeContentInputForwarder>();
-    browser_ = base::MakeUnique<testing::NiceMock<MockBrowserInterface>>();
+    browser_ = base::MakeUnique<testing::NiceMock<MockUiBrowserInterface>>();
     ui_ = base::MakeUnique<Ui>(browser_.get(), forwarder_.get(), initial_state);
   }
 
  protected:
   std::unique_ptr<FakeContentInputForwarder> forwarder_;
-  std::unique_ptr<MockBrowserInterface> browser_;
+  std::unique_ptr<MockUiBrowserInterface> browser_;
   std::unique_ptr<Ui> ui_;
 };
 

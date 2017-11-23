@@ -310,6 +310,7 @@ void SpeechRecognizer::Start() {
                      locale_, auth_scope, auth_token));
   if (ui_)
     ui_->SetSpeechRecognitionEnabled(true);
+  final_result_.clear();
 }
 
 void SpeechRecognizer::Stop() {
@@ -332,10 +333,7 @@ void SpeechRecognizer::OnSpeechResult(const base::string16& query,
   if (!is_final)
     return;
 
-  if (ui_)
-    ui_->SetRecognitionResult(query);
-  if (delegate_)
-    delegate_->OnVoiceResults(query);
+  final_result_ = query;
 }
 
 void SpeechRecognizer::OnSpeechSoundLevelChanged(float level) {
@@ -357,14 +355,19 @@ void SpeechRecognizer::OnSpeechRecognitionStateChanged(
     case SPEECH_RECOGNITION_NETWORK_ERROR:
       break;
     case SPEECH_RECOGNITION_TRY_AGAIN:
-      if (ui_) {
-        ui_->SetRecognitionResult(
-            l10n_util::GetStringUTF16(IDS_VR_NO_SPEECH_RECOGNITION_RESULT));
+      ui_->SetRecognitionResult(
+          l10n_util::GetStringUTF16(IDS_VR_NO_SPEECH_RECOGNITION_RESULT));
+      break;
+    case SPEECH_RECOGNITION_END:
+      if (!final_result_.empty()) {
+        ui_->SetRecognitionResult(final_result_);
+        if (delegate_)
+          delegate_->OnVoiceResults(final_result_);
       }
+      ui_->SetSpeechRecognitionEnabled(false);
       break;
     case SPEECH_RECOGNITION_OFF:
-    case SPEECH_RECOGNITION_END:
-      ui_->SetSpeechRecognitionEnabled(false);
+      NOTREACHED();
       break;
   }
 }

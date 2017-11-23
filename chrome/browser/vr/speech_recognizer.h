@@ -50,6 +50,7 @@ enum SpeechRecognitionState {
 
 class VoiceResultDelegate {
  public:
+  virtual ~VoiceResultDelegate() {}
   virtual void OnVoiceResults(const base::string16& result) = 0;
 };
 
@@ -109,6 +110,7 @@ class SpeechRecognizer : public IOBrowserUIInterface {
   BrowserUiInterface* ui_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
   std::string locale_;
+  base::string16 final_result_;
 
   // Note that this object is destroyed on IO thread.
   std::unique_ptr<SpeechRecognizerOnIO> speech_recognizer_on_io_;

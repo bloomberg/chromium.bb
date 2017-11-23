@@ -7,8 +7,8 @@
 
 #include "chrome/browser/vr/model/toolbar_state.h"
 #include "chrome/browser/vr/test/gl_test_environment.h"
-#include "chrome/browser/vr/test/mock_browser_interface.h"
 #include "chrome/browser/vr/test/mock_content_input_delegate.h"
+#include "chrome/browser/vr/test/mock_ui_browser_interface.h"
 #include "chrome/browser/vr/ui.h"
 #include "chrome/browser/vr/ui_input_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -40,7 +40,7 @@ class UiPixelTest : public testing::Test {
 
  private:
   std::unique_ptr<GlTestEnvironment> gl_test_environment_;
-  std::unique_ptr<MockBrowserInterface> browser_;
+  std::unique_ptr<MockUiBrowserInterface> browser_;
   std::unique_ptr<MockContentInputDelegate> content_input_delegate_;
   GLuint content_texture_ = 0;
   gfx::Size frame_buffer_size_;

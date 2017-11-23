@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VR_TEST_MOCK_BROWSER_INTERFACE_H_
-#define CHROME_BROWSER_VR_TEST_MOCK_BROWSER_INTERFACE_H_
+#ifndef CHROME_BROWSER_VR_TEST_MOCK_UI_BROWSER_INTERFACE_H_
+#define CHROME_BROWSER_VR_TEST_MOCK_UI_BROWSER_INTERFACE_H_
 
 #include "base/macros.h"
 #include "chrome/browser/vr/ui_browser_interface.h"
@@ -11,10 +11,10 @@
 
 namespace vr {
 
-class MockBrowserInterface : public UiBrowserInterface {
+class MockUiBrowserInterface : public UiBrowserInterface {
  public:
-  MockBrowserInterface();
-  ~MockBrowserInterface() override;
+  MockUiBrowserInterface();
+  ~MockUiBrowserInterface() override;
 
   MOCK_METHOD0(ExitPresent, void());
   MOCK_METHOD0(ExitFullscreen, void());
@@ -30,9 +30,9 @@ class MockBrowserInterface : public UiBrowserInterface {
   MOCK_METHOD0(StopAutocomplete, void());
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MockBrowserInterface);
+  DISALLOW_COPY_AND_ASSIGN(MockUiBrowserInterface);
 };
 
 }  // namespace vr
 
-#endif  // CHROME_BROWSER_VR_TEST_MOCK_BROWSER_INTERFACE_H_
+#endif  // CHROME_BROWSER_VR_TEST_MOCK_UI_BROWSER_INTERFACE_H_
