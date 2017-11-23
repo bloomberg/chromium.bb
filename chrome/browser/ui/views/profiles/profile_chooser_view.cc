@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -524,6 +525,15 @@ bool ProfileChooserView::AcceleratorPressed(
 }
 
 views::View* ProfileChooserView::GetInitiallyFocusedView() {
+#if defined(OS_MACOSX)
+  // On Mac, buttons are not focusable when full keyboard access is turned off,
+  // causing views::Widget to fall back to focusing the first focusable View.
+  // This behavior is not desired in the |ProfileChooserView| because of its
+  // menu-like design using |HoverButtons|. Avoid this by returning null when
+  // full keyboard access is off.
+  if (!GetFocusManager() || !GetFocusManager()->keyboard_accessible())
+    return nullptr;
+#endif
   return signin_current_profile_button_;
 }
 
