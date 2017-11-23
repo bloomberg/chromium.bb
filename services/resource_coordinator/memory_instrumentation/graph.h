@@ -8,6 +8,7 @@
 #include <forward_list>
 #include <map>
 #include <memory>
+#include <set>
 
 #include "base/gtest_prod_util.h"
 #include "base/process/process_handle.h"
@@ -21,6 +22,7 @@ class GlobalDumpGraph {
  public:
   class Node;
   class Edge;
+  class PostOrderIterator;
 
   // Graph of dumps either associated with a process or with
   // the shared space.
@@ -40,12 +42,18 @@ class GlobalDumpGraph {
     // if no such node exists in the provided |graph|.
     GlobalDumpGraph::Node* FindNode(base::StringPiece path);
 
+    // Returns an iterator which yields nodes in the nodes in this graph in
+    // post-order. That is, children and owners of nodes are returned before the
+    // node itself.
+    GlobalDumpGraph::PostOrderIterator VisitInDepthFirstPostOrder();
+
     base::ProcessId pid() const { return pid_; }
+    GlobalDumpGraph* global_graph() const { return global_graph_; }
     GlobalDumpGraph::Node* root() const { return root_; }
 
    private:
     base::ProcessId pid_;
-    GlobalDumpGraph* const global_graph_;
+    GlobalDumpGraph* global_graph_;
     GlobalDumpGraph::Node* root_;
 
     DISALLOW_COPY_AND_ASSIGN(Process);
@@ -94,6 +102,13 @@ class GlobalDumpGraph {
     // with the given |subpath| as the key.
     void InsertChild(base::StringPiece name, Node* node);
 
+    // Creates a child for this node with the given |name| as the key.
+    Node* CreateChild(base::StringPiece name);
+
+    // Checks if the current node is a descendent (i.e. exists as a child,
+    // child of a child, etc.) of the given node |possible_parent|.
+    bool IsDescendentOf(const Node& possible_parent) const;
+
     // Adds an entry for this dump node with the given |name|, |units| and
     // type.
     void AddEntry(std::string name, Entry::ScalarUnits units, uint64_t value);
@@ -120,7 +135,7 @@ class GlobalDumpGraph {
     std::map<std::string, Entry>* entries() { return &entries_; }
 
    private:
-    GlobalDumpGraph::Process* const dump_graph_;
+    GlobalDumpGraph::Process* dump_graph_;
     Node* const parent_;
     std::map<std::string, Entry> entries_;
     std::map<std::string, Node*> children_;
@@ -149,6 +164,22 @@ class GlobalDumpGraph {
     GlobalDumpGraph::Node* const source_;
     GlobalDumpGraph::Node* const target_;
     const int priority_;
+  };
+
+  // An iterator-esque class which yields nodes in a depth-first post order.
+  class PostOrderIterator {
+   public:
+    PostOrderIterator(Node* root);
+    PostOrderIterator(PostOrderIterator&& other);
+    ~PostOrderIterator();
+
+    // Yields the next node in the DFS post-order traversal.
+    Node* next();
+
+   private:
+    std::vector<Node*> to_visit_;
+    std::set<Node*> visited_;
+    std::vector<Node*> path_;
   };
 
   using ProcessDumpGraphMap =

@@ -4,6 +4,7 @@
 
 #include "services/resource_coordinator/memory_instrumentation/graph.h"
 
+#include "base/callback.h"
 #include "base/strings/string_tokenizer.h"
 
 namespace memory_instrumentation {
@@ -12,6 +13,7 @@ namespace {
 
 using base::trace_event::MemoryAllocatorDumpGuid;
 using Edge = GlobalDumpGraph::Edge;
+using PostOrderIterator = GlobalDumpGraph::PostOrderIterator;
 using Process = GlobalDumpGraph::Process;
 using Node = GlobalDumpGraph::Node;
 
@@ -100,6 +102,10 @@ Node* Process::FindNode(base::StringPiece path) {
   return current;
 }
 
+PostOrderIterator Process::VisitInDepthFirstPostOrder() {
+  return PostOrderIterator(root_);
+}
+
 Node::Node(Process* dump_graph, Node* parent)
     : dump_graph_(dump_graph), parent_(parent), owns_edge_(nullptr) {}
 Node::~Node() {}
@@ -117,6 +123,22 @@ void Node::InsertChild(base::StringPiece name, Node* node) {
   DCHECK_EQ(std::string::npos, name.find('/'));
 
   children_.emplace(name.as_string(), node);
+}
+
+Node* Node::CreateChild(base::StringPiece name) {
+  Node* new_child = dump_graph_->global_graph()->CreateNode(dump_graph_, this);
+  InsertChild(name, new_child);
+  return new_child;
+}
+
+bool Node::IsDescendentOf(const Node& possible_parent) const {
+  const Node* current = this;
+  while (current != nullptr) {
+    if (current == &possible_parent)
+      return true;
+    current = current->parent();
+  }
+  return false;
 }
 
 void Node::AddOwnedByEdge(Edge* edge) {
@@ -148,5 +170,57 @@ Node::Entry::Entry(std::string value)
 
 Edge::Edge(Node* source, Node* target, int priority)
     : source_(source), target_(target), priority_(priority) {}
+
+PostOrderIterator::PostOrderIterator(Node* root) {
+  to_visit_.push_back(root);
+}
+PostOrderIterator::PostOrderIterator(PostOrderIterator&& other) = default;
+PostOrderIterator::~PostOrderIterator() = default;
+
+// Yields the next node in the DFS post-order traversal.
+Node* PostOrderIterator::next() {
+  while (!to_visit_.empty()) {
+    // Retain a pointer to the node at the top and remove it from stack.
+    Node* node = to_visit_.back();
+    to_visit_.pop_back();
+
+    // If the node has already been visited, don't visit it again.
+    if (visited_.count(node) != 0)
+      continue;
+
+    // If the node is at the top of the path, we have already looked
+    // at its children and owners.
+    if (!path_.empty() && path_.back() == node) {
+      // Mark the current node as visited so we don't visit again.
+      visited_.insert(node);
+
+      // The current node is no longer on the path.
+      path_.pop_back();
+
+      return node;
+    }
+
+    // If the node is not at the front, it should also certainly not be
+    // anywhere else in the path. If it is, there is a cycle in the graph.
+    DCHECK(std::find(path_.begin(), path_.end(), node) == path_.end());
+    path_.push_back(node);
+
+    // Add this node back to the queue of nodes to visit.
+    to_visit_.push_back(node);
+
+    // Visit all children of this node.
+    for (auto it = node->children()->rbegin(); it != node->children()->rend();
+         it++) {
+      to_visit_.push_back(it->second);
+    }
+
+    // Visit all owners of this node.
+    for (auto it = node->owned_by_edges()->rbegin();
+         it != node->owned_by_edges()->rend(); it++) {
+      to_visit_.push_back((*it)->source());
+    }
+  }
+  return nullptr;
+}
 
 }  // namespace memory_instrumentation
