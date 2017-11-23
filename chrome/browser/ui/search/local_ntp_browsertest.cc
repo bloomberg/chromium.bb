@@ -12,26 +12,18 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/threading/thread_restrictions.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
-#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/search/instant_test_utils.h"
 #include "chrome/browser/ui/search/local_ntp_test_utils.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_features.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/prefs/pref_service.h"
-#include "components/search_engines/template_url.h"
-#include "components/search_engines/template_url_data.h"
-#include "components/search_engines/template_url_service.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -40,29 +32,6 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/WebKit/public/platform/web_feature.mojom.h"
-#include "ui/base/resource/resource_bundle.h"
-
-namespace {
-
-// Switches the browser language to French, and returns true iff successful.
-bool SwitchToFrench() {
-  base::ScopedAllowBlockingForTesting allow_blocking;
-  // Make sure the default language is not French.
-  std::string default_locale = g_browser_process->GetApplicationLocale();
-  EXPECT_NE("fr", default_locale);
-
-  // Switch browser language to French.
-  g_browser_process->SetApplicationLocale("fr");
-  PrefService* prefs = g_browser_process->local_state();
-  prefs->SetString(prefs::kApplicationLocale, "fr");
-
-  std::string loaded_locale =
-      ui::ResourceBundle::GetSharedInstance().ReloadLocaleResources("fr");
-
-  return loaded_locale == "fr";
-}
-
-}  // namespace
 
 class LocalNTPTest : public InProcessBrowserTest {
  public:
@@ -102,22 +71,6 @@ class LocalNTPTest : public InProcessBrowserTest {
     ASSERT_EQ("\"NavigateToNTPAndWaitUntilLoaded\"", message);
     // There shouldn't be any other messages.
     ASSERT_FALSE(msg_queue.PopMessage(&message));
-  }
-
-  void SetUserSelectedDefaultSearchProvider(const std::string& base_url,
-                                            const std::string& ntp_url) {
-    base::ScopedAllowBlockingForTesting allow_blocking;
-    TemplateURLData data;
-    data.SetShortName(base::UTF8ToUTF16(base_url));
-    data.SetKeyword(base::UTF8ToUTF16(base_url));
-    data.SetURL(base_url + "url?bar={searchTerms}");
-    data.new_tab_url = ntp_url;
-
-    TemplateURLService* template_url_service =
-        TemplateURLServiceFactory::GetForProfile(browser()->profile());
-    TemplateURL* template_url =
-        template_url_service->Add(std::make_unique<TemplateURL>(data));
-    template_url_service->SetUserSelectedDefaultSearchProvider(template_url);
   }
 
  private:
@@ -246,7 +199,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, NTPRespectsBrowserLanguageSetting) {
   // If the platform cannot load the French locale (GetApplicationLocale() is
   // platform specific, and has been observed to fail on a small number of
   // platforms), abort the test.
-  if (!SwitchToFrench()) {
+  if (!local_ntp_test_utils::SwitchBrowserLanguageToFrench()) {
     LOG(ERROR) << "Failed switching to French language, aborting test.";
     return;
   }
@@ -308,8 +261,9 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, GoogleNTPLoadsWithoutError) {
 }
 
 IN_PROC_BROWSER_TEST_F(LocalNTPTest, NonGoogleNTPLoadsWithoutError) {
-  SetUserSelectedDefaultSearchProvider("https://www.example.com",
-                                       /*ntp_url=*/"");
+  local_ntp_test_utils::SetUserSelectedDefaultSearchProvider(
+      browser()->profile(), "https://www.example.com",
+      /*ntp_url=*/"");
 
   // Open a new blank tab.
   content::WebContents* active_tab =
@@ -359,7 +313,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, NonGoogleNTPLoadsWithoutError) {
 }
 
 IN_PROC_BROWSER_TEST_F(LocalNTPTest, FrenchGoogleNTPLoadsWithoutError) {
-  if (!SwitchToFrench()) {
+  if (!local_ntp_test_utils::SwitchBrowserLanguageToFrench()) {
     LOG(ERROR) << "Failed switching to French language, aborting test.";
     return;
   }
@@ -472,8 +426,9 @@ class CustomNTPUrlTest : public LocalNTPTest {
   void SetUpOnMainThread() override {
     ASSERT_TRUE(https_test_server_.Start());
     GURL ntp_url = https_test_server_.GetURL(ntp_file_path_);
-    SetUserSelectedDefaultSearchProvider(https_test_server_.base_url().spec(),
-                                         ntp_url.spec());
+    local_ntp_test_utils::SetUserSelectedDefaultSearchProvider(
+        browser()->profile(), https_test_server_.base_url().spec(),
+        ntp_url.spec());
   }
 
   net::EmbeddedTestServer https_test_server_;
