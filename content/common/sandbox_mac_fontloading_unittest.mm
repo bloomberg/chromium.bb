@@ -55,7 +55,7 @@ bool FontLoadingTestCase::BeforeSandboxInit() {
 
   mojo::ScopedSharedBufferMapping mapping = font_shmem_->Map(font_data_length_);
   if (!mapping) {
-    LOG(ERROR) << "SharedMemory::Map failed";
+    LOG(ERROR) << "ScopedSharedBufferHandle::Map failed";
     return false;
   }
 
@@ -66,7 +66,7 @@ bool FontLoadingTestCase::BeforeSandboxInit() {
 bool FontLoadingTestCase::SandboxedTest() {
   mojo::ScopedSharedBufferHandle shmem_handle = font_shmem_->Clone();
   if (!shmem_handle.is_valid()) {
-    LOG(ERROR) << "SharedMemory handle duplication failed";
+    LOG(ERROR) << "ScopedSharedBufferHandle handle duplication failed";
     return false;
   }
 
@@ -114,9 +114,13 @@ TEST_F(MacSandboxTest, FontLoadingTest) {
   EXPECT_GT(result->font_data_size, 0U);
   EXPECT_GT(result->font_id, 0U);
 
-  base::WriteFileDescriptor(
-      fileno(temp_file), static_cast<const char*>(result->font_data.memory()),
-      result->font_data_size);
+  mojo::ScopedSharedBufferMapping mapping =
+      result->font_data->Map(result->font_data_size);
+  ASSERT_TRUE(mapping);
+
+  base::WriteFileDescriptor(fileno(temp_file),
+                            static_cast<const char*>(mapping.get()),
+                            result->font_data_size);
 
   ASSERT_TRUE(RunTestInSandbox(service_manager::SANDBOX_TYPE_RENDERER,
                                "FontLoadingTestCase",
