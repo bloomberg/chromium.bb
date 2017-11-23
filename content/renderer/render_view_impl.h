@@ -366,7 +366,6 @@ class CONTENT_EXPORT RenderViewImpl : public RenderWidget,
   void HandleInputEvent(const blink::WebCoalescedInputEvent& input_event,
                         const ui::LatencyInfo& latency_info,
                         HandledEventCallback callback) override;
-  void ScrollFocusedEditableNodeIntoRect(const gfx::Rect& rect);
 
   void UpdateWebViewWithDeviceScaleFactor();
 
@@ -733,11 +732,6 @@ class CONTENT_EXPORT RenderViewImpl : public RenderWidget,
   // Used to delay determining the preferred size (to avoid intermediate
   // states for the sizes).
   base::OneShotTimer check_preferred_size_timer_;
-
-  // Bookkeeping to suppress redundant scroll and focus requests for an already
-  // scrolled and focused editable node.
-  bool has_scrolled_focused_editable_node_into_rect_;
-  gfx::Rect rect_for_scrolled_focused_editable_node_;
 
   // Used to indicate the zoom level to be used during subframe loads, since
   // they should match page zoom level.

@@ -196,6 +196,7 @@
 #include "third_party/WebKit/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/WebKit/public/platform/modules/permissions/permission.mojom.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerNetworkProvider.h"
+#include "third_party/WebKit/public/web/WebAutofillClient.h"
 #include "third_party/WebKit/public/web/WebColorSuggestion.h"
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "third_party/WebKit/public/web/WebContextFeatures.h"
@@ -2056,9 +2057,7 @@ void RenderFrameImpl::OnMoveCaret(const gfx::Point& point) {
 
 void RenderFrameImpl::OnScrollFocusedEditableNodeIntoRect(
     const gfx::Rect& rect) {
-  // TODO(dtapuska): Move the implementation of scroll focused
-  // editable node into rect into this class.
-  render_view_->ScrollFocusedEditableNodeIntoRect(rect);
+  ScrollFocusedEditableElementIntoRect(rect);
 }
 
 void RenderFrameImpl::OnUndo() {
@@ -5456,6 +5455,7 @@ void RenderFrameImpl::HandleWebAccessibilityEvent(
 }
 
 void RenderFrameImpl::FocusedNodeChanged(const WebNode& node) {
+  has_scrolled_focused_editable_node_into_rect_ = false;
   bool is_editable = false;
   gfx::Rect node_bounds;
   if (!node.IsNull() && node.IsElementNode()) {
@@ -6646,6 +6646,33 @@ void RenderFrameImpl::SetCustomURLLoaderFactory(
   } else {
     custom_url_loader_factory_ = std::move(factory);
   }
+}
+
+void RenderFrameImpl::ScrollFocusedEditableElementIntoRect(
+    const gfx::Rect& rect) {
+  // TODO(ekaramad): Perhaps we should remove |rect| since all it seems to be
+  // doing is helping verify if scrolling animation for a given focused editable
+  // element has finished.
+  blink::WebAutofillClient* autofill_client = frame_->AutofillClient();
+  if (has_scrolled_focused_editable_node_into_rect_ &&
+      rect == rect_for_scrolled_focused_editable_node_ && autofill_client) {
+    autofill_client->DidCompleteFocusChangeInFrame();
+    return;
+  }
+
+  if (!render_view_->webview()->ScrollFocusedEditableElementIntoView())
+    return;
+
+  rect_for_scrolled_focused_editable_node_ = rect;
+  has_scrolled_focused_editable_node_into_rect_ = true;
+  if (!GetRenderWidget()->compositor()->HasPendingPageScaleAnimation() &&
+      autofill_client) {
+    autofill_client->DidCompleteFocusChangeInFrame();
+  }
+}
+
+void RenderFrameImpl::DidChangeVisibleViewport() {
+  has_scrolled_focused_editable_node_into_rect_ = false;
 }
 
 void RenderFrameImpl::InitializeUserMediaClient() {

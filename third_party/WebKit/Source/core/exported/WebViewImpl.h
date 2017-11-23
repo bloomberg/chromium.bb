@@ -181,7 +181,7 @@ class CORE_EXPORT WebViewImpl final
   void FocusDocumentView(WebFrame*) override;
   void SetInitialFocus(bool reverse) override;
   void ClearFocusedElement() override;
-  bool ScrollFocusedEditableElementIntoRect(const WebRect&) override;
+  bool ScrollFocusedEditableElementIntoView() override;
   void SmoothScroll(int target_x, int target_y, long duration_ms) override;
   void ZoomToFindInPageRect(const WebRect&);
   void AdvanceFocus(bool reverse) override;

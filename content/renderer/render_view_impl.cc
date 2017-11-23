@@ -516,7 +516,6 @@ RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,
       top_controls_height_(0.f),
       bottom_controls_height_(0.f),
       webview_(nullptr),
-      has_scrolled_focused_editable_node_into_rect_(false),
       page_zoom_level_(params.page_zoom_level),
       main_render_frame_(nullptr),
       frame_widget_(nullptr),
@@ -1203,26 +1202,6 @@ void RenderViewImpl::OnUpdateTargetURLAck() {
   target_url_status_ = TARGET_NONE;
 }
 
-void RenderViewImpl::ScrollFocusedEditableNodeIntoRect(const gfx::Rect& rect) {
-  blink::WebAutofillClient* autofill_client = nullptr;
-  if (auto* focused_frame = GetWebView()->FocusedFrame())
-    autofill_client = focused_frame->AutofillClient();
-
-  if (has_scrolled_focused_editable_node_into_rect_ &&
-      rect == rect_for_scrolled_focused_editable_node_ && autofill_client) {
-    autofill_client->DidCompleteFocusChangeInFrame();
-    return;
-  }
-
-  if (!webview()->ScrollFocusedEditableElementIntoRect(rect))
-    return;
-
-  rect_for_scrolled_focused_editable_node_ = rect;
-  has_scrolled_focused_editable_node_into_rect_ = true;
-  if (!compositor()->HasPendingPageScaleAnimation() && autofill_client)
-    autofill_client->DidCompleteFocusChangeInFrame();
-}
-
 void RenderViewImpl::OnSetHistoryOffsetAndLength(int history_offset,
                                                  int history_length) {
   DCHECK_GE(history_offset, -1);
@@ -1591,8 +1570,6 @@ void RenderViewImpl::FocusPrevious() {
 // TODO(esprehn): Blink only ever passes Elements, this should take WebElement.
 void RenderViewImpl::FocusedNodeChanged(const WebNode& fromNode,
                                         const WebNode& toNode) {
-  has_scrolled_focused_editable_node_into_rect_ = false;
-
   RenderFrameImpl* previous_frame = nullptr;
   if (!fromNode.IsNull())
     previous_frame =
@@ -2091,17 +2068,12 @@ void RenderViewImpl::OnResize(const ResizeParams& params) {
     }
   }
 
-  gfx::Size old_visible_viewport_size = visible_viewport_size_;
-
   browser_controls_shrink_blink_size_ =
       params.browser_controls_shrink_blink_size;
   top_controls_height_ = params.top_controls_height;
   bottom_controls_height_ = params.bottom_controls_height;
 
   RenderWidget::OnResize(params);
-
-  if (old_visible_viewport_size != visible_viewport_size_)
-    has_scrolled_focused_editable_node_into_rect_ = false;
 }
 
 void RenderViewImpl::OnSetBackgroundOpaque(bool opaque) {

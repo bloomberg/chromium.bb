@@ -782,6 +782,8 @@ void RenderWidget::OnClose() {
 }
 
 void RenderWidget::OnResize(const ResizeParams& params) {
+  gfx::Size old_visible_viewport_size = visible_viewport_size_;
+
   if (resizing_mode_selector_->ShouldAbortOnResize(this, params))
     return;
 
@@ -791,6 +793,11 @@ void RenderWidget::OnResize(const ResizeParams& params) {
   }
 
   Resize(params);
+
+  if (old_visible_viewport_size != visible_viewport_size_) {
+    for (auto& render_frame : render_frames_)
+      render_frame.DidChangeVisibleViewport();
+  }
 }
 
 void RenderWidget::OnSetLocalSurfaceIdForAutoResize(

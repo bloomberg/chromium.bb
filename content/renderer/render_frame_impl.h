@@ -844,6 +844,9 @@ class CONTENT_EXPORT RenderFrameImpl
   // Sets the custom URLLoaderFactory instance to be used for network requests.
   void SetCustomURLLoaderFactory(mojom::URLLoaderFactoryPtr factory);
 
+  void ScrollFocusedEditableElementIntoRect(const gfx::Rect& rect);
+  void DidChangeVisibleViewport();
+
  protected:
   explicit RenderFrameImpl(CreateParams params);
 
@@ -1587,6 +1590,11 @@ class CONTENT_EXPORT RenderFrameImpl
   // |devtools_frame_token_| is only defined by the browser and is never
   // sent back from the renderer in the control calls.
   blink::WebString devtools_frame_token_;
+
+  // Bookkeeping to suppress redundant scroll and focus requests for an already
+  // scrolled and focused editable node.
+  bool has_scrolled_focused_editable_node_into_rect_ = false;
+  gfx::Rect rect_for_scrolled_focused_editable_node_;
 
   base::WeakPtrFactory<RenderFrameImpl> weak_factory_;
 
