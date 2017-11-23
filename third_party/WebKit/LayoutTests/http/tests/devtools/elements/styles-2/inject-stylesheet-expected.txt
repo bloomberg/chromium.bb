@@ -54,8 +54,8 @@ element.style { ()
 
 [expanded] 
 #main { (injected stylesheet)
-    -webkit-border-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAAiElEQ…Ms+LS30CAhBN5nNxeT5hbJ1zwmji2k+aF6NENIPf/hs54f0sZFUVAMigAAAABJRU5ErkJggg==);
     color: red;
+    -webkit-border-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAAiElEQ…Ms+LS30CAhBN5nNxeT5hbJ1zwmji2k+aF6NENIPf/hs54f0sZFUVAMigAAAABJRU5ErkJggg==);
     border-style: solid;
         border-top-style: solid;
         border-right-style: solid;
@@ -68,35 +68,35 @@ div { (user agent stylesheet)
 
 iframe style:
 background-attachment: scroll;
-    OVERLOADED initial - body inject-styleshe…me-data.html:4 -> inject-stylesheet-iframe-data.html:4:9
     initial - #iframeBody injected stylesheet
+    OVERLOADED initial - body inject-styleshe…me-data.html:4 -> inject-stylesheet-iframe-data.html:4:9
 background-clip: border-box;
-    OVERLOADED initial - body inject-styleshe…me-data.html:4 -> inject-stylesheet-iframe-data.html:4:9
     initial - #iframeBody injected stylesheet
+    OVERLOADED initial - body inject-styleshe…me-data.html:4 -> inject-stylesheet-iframe-data.html:4:9
 background-color: rgb(255, 0, 0);
-    OVERLOADED green - body inject-styleshe…me-data.html:4 -> inject-stylesheet-iframe-data.html:4:9
     red - #iframeBody injected stylesheet
+    OVERLOADED green - body inject-styleshe…me-data.html:4 -> inject-stylesheet-iframe-data.html:4:9
 background-image: none;
-    OVERLOADED initial - body inject-styleshe…me-data.html:4 -> inject-stylesheet-iframe-data.html:4:9
     initial - #iframeBody injected stylesheet
+    OVERLOADED initial - body inject-styleshe…me-data.html:4 -> inject-stylesheet-iframe-data.html:4:9
 background-origin: padding-box;
-    OVERLOADED initial - body inject-styleshe…me-data.html:4 -> inject-stylesheet-iframe-data.html:4:9
     initial - #iframeBody injected stylesheet
+    OVERLOADED initial - body inject-styleshe…me-data.html:4 -> inject-stylesheet-iframe-data.html:4:9
 background-position-x: 0%;
-    OVERLOADED initial - body inject-styleshe…me-data.html:4 -> inject-stylesheet-iframe-data.html:4:9
     initial - #iframeBody injected stylesheet
+    OVERLOADED initial - body inject-styleshe…me-data.html:4 -> inject-stylesheet-iframe-data.html:4:9
 background-position-y: 0%;
-    OVERLOADED initial - body inject-styleshe…me-data.html:4 -> inject-stylesheet-iframe-data.html:4:9
     initial - #iframeBody injected stylesheet
+    OVERLOADED initial - body inject-styleshe…me-data.html:4 -> inject-stylesheet-iframe-data.html:4:9
 background-repeat-x: ;
-    OVERLOADED initial - body inject-styleshe…me-data.html:4 -> inject-stylesheet-iframe-data.html:4:9
     initial - #iframeBody injected stylesheet
+    OVERLOADED initial - body inject-styleshe…me-data.html:4 -> inject-stylesheet-iframe-data.html:4:9
 background-repeat-y: ;
-    OVERLOADED initial - body inject-styleshe…me-data.html:4 -> inject-stylesheet-iframe-data.html:4:9
     initial - #iframeBody injected stylesheet
+    OVERLOADED initial - body inject-styleshe…me-data.html:4 -> inject-stylesheet-iframe-data.html:4:9
 background-size: auto;
-    OVERLOADED initial - body inject-styleshe…me-data.html:4 -> inject-stylesheet-iframe-data.html:4:9
     initial - #iframeBody injected stylesheet
+    OVERLOADED initial - body inject-styleshe…me-data.html:4 -> inject-stylesheet-iframe-data.html:4:9
 display: block;
     block - body user agent stylesheet
 margin-bottom: 8px;
@@ -111,6 +111,20 @@ margin-top: 8px;
 element.style { ()
 
 [expanded] 
+#iframeBody { (injected stylesheet)
+    background: red;
+        background-image: initial;
+        background-position-x: initial;
+        background-position-y: initial;
+        background-size: initial;
+        background-repeat-x: initial;
+        background-repeat-y: initial;
+        background-attachment: initial;
+        background-origin: initial;
+        background-clip: initial;
+        background-color: red;
+
+[expanded] 
 body { (inject-styleshe…me-data.html:4 -> inject-stylesheet-iframe-data.html:4:9)
 /-- overloaded --/     background: green;
     /-- overloaded --/     background-image: initial;
@@ -123,20 +137,6 @@ body { (inject-styleshe…me-data.html:4 -> inject-stylesheet-iframe-data.html:4
     /-- overloaded --/     background-origin: initial;
     /-- overloaded --/     background-clip: initial;
     /-- overloaded --/     background-color: green;
-
-[expanded] 
-#iframeBody { (injected stylesheet)
-    background: red !important;
-        background-image: initial;
-        background-position-x: initial;
-        background-position-y: initial;
-        background-size: initial;
-        background-repeat-x: initial;
-        background-repeat-y: initial;
-        background-attachment: initial;
-        background-origin: initial;
-        background-clip: initial;
-        background-color: red;
 
 [expanded] 
 body { (user agent stylesheet)

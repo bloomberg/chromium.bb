@@ -75,7 +75,7 @@ TEST_F(StyleEngineTest, DocumentDirtyAfterInject) {
   StyleSheetContents* parsed_sheet =
       StyleSheetContents::Create(CSSParserContext::Create(GetDocument()));
   parsed_sheet->ParseString("div {}");
-  GetStyleEngine().AddUserSheet(parsed_sheet);
+  GetStyleEngine().InjectSheet(parsed_sheet);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   EXPECT_TRUE(IsDocumentStyleSheetCollectionClean());
@@ -99,6 +99,7 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
      #t5 { animation-name: dummy-animation }
      #t6 { color: var(--stop-color); }
      #t7 { color: var(--go-color); }
+     .red { color: red; }
     </style>
     <div id='t1'>Green</div>
     <div id='t2'>White</div>
@@ -107,6 +108,8 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
     <div id='t5'>I animate!</div>
     <div id='t6'>Stop!</div>
     <div id='t7'>Go</div>
+    <div id='t8' class='red'>Green</div>
+    <div id='t9' style='color: black !important'>Black</div>
     <div></div>
   )HTML");
   GetDocument().View()->UpdateAllLifecyclePhases();
@@ -136,7 +139,8 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
       "#t2 { color: white !important }"
       "#t3 { color: white }");
   WebStyleSheetId green_id =
-      GetStyleEngine().AddUserSheet(green_parsed_sheet);
+      GetStyleEngine().InjectSheet(green_parsed_sheet,
+                                   WebDocument::kUserOrigin);
   EXPECT_EQ(1u, green_id);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
@@ -161,7 +165,7 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
       "#t2 { color: silver }"
       "#t3 { color: silver !important }");
   WebStyleSheetId blue_id =
-      GetStyleEngine().AddUserSheet(blue_parsed_sheet);
+      GetStyleEngine().InjectSheet(blue_parsed_sheet, WebDocument::kUserOrigin);
   EXPECT_EQ(2u, blue_id);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
@@ -180,7 +184,7 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   EXPECT_EQ(MakeRGB(192, 192, 192),
             t3->GetComputedStyle()->VisitedDependentColor(CSSPropertyColor));
 
-  GetStyleEngine().RemoveUserSheet(green_id);
+  GetStyleEngine().RemoveInjectedSheet(green_id);
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_EQ(9u, GetStyleEngine().StyleForElementCount() - initial_count);
   ASSERT_TRUE(t1->GetComputedStyle());
@@ -195,7 +199,7 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   EXPECT_EQ(MakeRGB(192, 192, 192),
             t3->GetComputedStyle()->VisitedDependentColor(CSSPropertyColor));
 
-  GetStyleEngine().RemoveUserSheet(blue_id);
+  GetStyleEngine().RemoveInjectedSheet(blue_id);
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_EQ(12u, GetStyleEngine().StyleForElementCount() - initial_count);
   ASSERT_TRUE(t1->GetComputedStyle());
@@ -240,7 +244,8 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
       "}"
     );
   WebStyleSheetId font_face_id =
-      GetStyleEngine().AddUserSheet(font_face_parsed_sheet);
+      GetStyleEngine().InjectSheet(font_face_parsed_sheet,
+                                   WebDocument::kUserOrigin);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   // After injecting a more specific font, now there are two and the
@@ -284,7 +289,7 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   ASSERT_EQ(capabilities.slope,
             FontSelectionRange({ItalicSlopeValue(), ItalicSlopeValue()}));
 
-  GetStyleEngine().RemoveUserSheet(font_face_id);
+  GetStyleEngine().RemoveInjectedSheet(font_face_id);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   // After removing the injected style sheet we're left with a bold-normal and
@@ -315,7 +320,8 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
       StyleSheetContents::Create(CSSParserContext::Create(GetDocument()));
   keyframes_parsed_sheet->ParseString("@keyframes dummy-animation { from {} }");
   WebStyleSheetId keyframes_id =
-      GetStyleEngine().AddUserSheet(keyframes_parsed_sheet);
+      GetStyleEngine().InjectSheet(keyframes_parsed_sheet,
+                                   WebDocument::kUserOrigin);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   // After injecting the style sheet, a @keyframes rule named dummy-animation
@@ -347,7 +353,7 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   ASSERT_TRUE(keyframes);
   EXPECT_EQ(1u, keyframes->Keyframes().size());
 
-  GetStyleEngine().RemoveUserSheet(keyframes_id);
+  GetStyleEngine().RemoveInjectedSheet(keyframes_id);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   // Injected @keyframes rules are no longer available once removed.
@@ -375,7 +381,8 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
       " --go-color: green;"
       "}");
   WebStyleSheetId custom_properties_id =
-      GetStyleEngine().AddUserSheet(custom_properties_parsed_sheet);
+      GetStyleEngine().InjectSheet(custom_properties_parsed_sheet,
+                                   WebDocument::kUserOrigin);
   GetDocument().View()->UpdateAllLifecyclePhases();
   ASSERT_TRUE(t6->GetComputedStyle());
   ASSERT_TRUE(t7->GetComputedStyle());
@@ -384,7 +391,7 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   EXPECT_EQ(MakeRGB(255, 255, 255),
             t7->GetComputedStyle()->VisitedDependentColor(CSSPropertyColor));
 
-  GetStyleEngine().RemoveUserSheet(custom_properties_id);
+  GetStyleEngine().RemoveInjectedSheet(custom_properties_id);
   GetDocument().View()->UpdateAllLifecyclePhases();
   ASSERT_TRUE(t6->GetComputedStyle());
   ASSERT_TRUE(t7->GetComputedStyle());
@@ -392,6 +399,51 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
             t6->GetComputedStyle()->VisitedDependentColor(CSSPropertyColor));
   EXPECT_EQ(MakeRGB(255, 255, 255),
             t7->GetComputedStyle()->VisitedDependentColor(CSSPropertyColor));
+
+  // Author style sheets
+
+  Element* t8 = GetDocument().getElementById("t8");
+  Element* t9 = GetDocument().getElementById("t9");
+  ASSERT_TRUE(t8);
+  ASSERT_TRUE(t9);
+  ASSERT_TRUE(t8->GetComputedStyle());
+  ASSERT_TRUE(t9->GetComputedStyle());
+  EXPECT_EQ(MakeRGB(255, 0, 0),
+            t8->GetComputedStyle()->VisitedDependentColor(CSSPropertyColor));
+  EXPECT_EQ(MakeRGB(0, 0, 0),
+            t9->GetComputedStyle()->VisitedDependentColor(CSSPropertyColor));
+
+  StyleSheetContents* parsed_author_sheet =
+      StyleSheetContents::Create(CSSParserContext::Create(GetDocument()));
+  parsed_author_sheet->ParseString(
+      "#t8 {"
+      " color: green;"
+      "}"
+      "#t9 {"
+      " color: white !important;"
+      "}");
+  WebStyleSheetId author_sheet_id =
+      GetStyleEngine().InjectSheet(parsed_author_sheet,
+                                   WebDocument::kAuthorOrigin);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  ASSERT_TRUE(t8->GetComputedStyle());
+  ASSERT_TRUE(t9->GetComputedStyle());
+
+  // Specificity works within author origin.
+  EXPECT_EQ(MakeRGB(0, 128, 0),
+            t8->GetComputedStyle()->VisitedDependentColor(CSSPropertyColor));
+  // Important author rules do not override important inline author rules.
+  EXPECT_EQ(MakeRGB(0, 0, 0),
+            t9->GetComputedStyle()->VisitedDependentColor(CSSPropertyColor));
+
+  GetStyleEngine().RemoveInjectedSheet(author_sheet_id);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  ASSERT_TRUE(t8->GetComputedStyle());
+  ASSERT_TRUE(t9->GetComputedStyle());
+  EXPECT_EQ(MakeRGB(255, 0, 0),
+            t8->GetComputedStyle()->VisitedDependentColor(CSSPropertyColor));
+  EXPECT_EQ(MakeRGB(0, 0, 0),
+            t9->GetComputedStyle()->VisitedDependentColor(CSSPropertyColor));
 }
 
 TEST_F(StyleEngineTest, TextToSheetCache) {
