@@ -18,6 +18,7 @@
 #include "base/task_runner.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/trace_event.h"
 #include "components/webcrypto/algorithm_dispatch.h"
 #include "components/webcrypto/crypto_data.h"
 #include "components/webcrypto/generate_key_result.h"
@@ -374,10 +375,13 @@ struct DeriveKeyState : public BaseState {
 // * The methods named Do*Reply() run on the target Blink thread
 
 void DoEncryptReply(std::unique_ptr<EncryptState> state) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
+               "DoEncryptReply");
   CompleteWithBufferOrError(state->status, state->buffer, &state->result);
 }
 
 void DoEncrypt(std::unique_ptr<EncryptState> passed_state) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "DoEncrypt");
   EncryptState* state = passed_state.get();
   if (state->cancelled())
     return;
@@ -389,10 +393,13 @@ void DoEncrypt(std::unique_ptr<EncryptState> passed_state) {
 }
 
 void DoDecryptReply(std::unique_ptr<DecryptState> state) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
+               "DoDecryptReply");
   CompleteWithBufferOrError(state->status, state->buffer, &state->result);
 }
 
 void DoDecrypt(std::unique_ptr<DecryptState> passed_state) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "DoDecrypt");
   DecryptState* state = passed_state.get();
   if (state->cancelled())
     return;
@@ -404,10 +411,12 @@ void DoDecrypt(std::unique_ptr<DecryptState> passed_state) {
 }
 
 void DoDigestReply(std::unique_ptr<DigestState> state) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "DoDigestReply");
   CompleteWithBufferOrError(state->status, state->buffer, &state->result);
 }
 
 void DoDigest(std::unique_ptr<DigestState> passed_state) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "DoDigest");
   DigestState* state = passed_state.get();
   if (state->cancelled())
     return;
@@ -418,6 +427,8 @@ void DoDigest(std::unique_ptr<DigestState> passed_state) {
 }
 
 void DoGenerateKeyReply(std::unique_ptr<GenerateKeyState> state) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
+               "DoGenerateKeyReply");
   if (state->status.IsError()) {
     CompleteWithError(state->status, &state->result);
   } else {
@@ -426,6 +437,7 @@ void DoGenerateKeyReply(std::unique_ptr<GenerateKeyState> state) {
 }
 
 void DoGenerateKey(std::unique_ptr<GenerateKeyState> passed_state) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "DoGenerateKey");
   GenerateKeyState* state = passed_state.get();
   if (state->cancelled())
     return;
@@ -437,10 +449,13 @@ void DoGenerateKey(std::unique_ptr<GenerateKeyState> passed_state) {
 }
 
 void DoImportKeyReply(std::unique_ptr<ImportKeyState> state) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
+               "DoImportKeyReply");
   CompleteWithKeyOrError(state->status, state->key, &state->result);
 }
 
 void DoImportKey(std::unique_ptr<ImportKeyState> passed_state) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "DoImportKey");
   ImportKeyState* state = passed_state.get();
   if (state->cancelled())
     return;
@@ -458,6 +473,8 @@ void DoImportKey(std::unique_ptr<ImportKeyState> passed_state) {
 }
 
 void DoExportKeyReply(std::unique_ptr<ExportKeyState> state) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
+               "DoExportKeyReply");
   if (state->format != blink::kWebCryptoKeyFormatJwk) {
     CompleteWithBufferOrError(state->status, state->buffer, &state->result);
     return;
@@ -473,6 +490,7 @@ void DoExportKeyReply(std::unique_ptr<ExportKeyState> state) {
 }
 
 void DoExportKey(std::unique_ptr<ExportKeyState> passed_state) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "DoExportKey");
   ExportKeyState* state = passed_state.get();
   if (state->cancelled())
     return;
@@ -483,10 +501,12 @@ void DoExportKey(std::unique_ptr<ExportKeyState> passed_state) {
 }
 
 void DoSignReply(std::unique_ptr<SignState> state) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "DoSignReply");
   CompleteWithBufferOrError(state->status, state->buffer, &state->result);
 }
 
 void DoSign(std::unique_ptr<SignState> passed_state) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "DoSign");
   SignState* state = passed_state.get();
   if (state->cancelled())
     return;
@@ -499,6 +519,7 @@ void DoSign(std::unique_ptr<SignState> passed_state) {
 }
 
 void DoVerifyReply(std::unique_ptr<VerifySignatureState> state) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "DoVerifyReply");
   if (state->status.IsError()) {
     CompleteWithError(state->status, &state->result);
   } else {
@@ -507,6 +528,7 @@ void DoVerifyReply(std::unique_ptr<VerifySignatureState> state) {
 }
 
 void DoVerify(std::unique_ptr<VerifySignatureState> passed_state) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "DoVerify");
   VerifySignatureState* state = passed_state.get();
   if (state->cancelled())
     return;
@@ -519,10 +541,13 @@ void DoVerify(std::unique_ptr<VerifySignatureState> passed_state) {
 }
 
 void DoWrapKeyReply(std::unique_ptr<WrapKeyState> state) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
+               "DoWrapKeyReply");
   CompleteWithBufferOrError(state->status, state->buffer, &state->result);
 }
 
 void DoWrapKey(std::unique_ptr<WrapKeyState> passed_state) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "DoWrapKey");
   WrapKeyState* state = passed_state.get();
   if (state->cancelled())
     return;
@@ -535,10 +560,13 @@ void DoWrapKey(std::unique_ptr<WrapKeyState> passed_state) {
 }
 
 void DoUnwrapKeyReply(std::unique_ptr<UnwrapKeyState> state) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
+               "DoUnwrapKeyReply");
   CompleteWithKeyOrError(state->status, state->unwrapped_key, &state->result);
 }
 
 void DoUnwrapKey(std::unique_ptr<UnwrapKeyState> passed_state) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "DoUnwrapKey");
   UnwrapKeyState* state = passed_state.get();
   if (state->cancelled())
     return;
@@ -553,11 +581,14 @@ void DoUnwrapKey(std::unique_ptr<UnwrapKeyState> passed_state) {
 }
 
 void DoDeriveBitsReply(std::unique_ptr<DeriveBitsState> state) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
+               "DoDeriveBitsReply");
   CompleteWithBufferOrError(state->status, state->derived_bytes,
                             &state->result);
 }
 
 void DoDeriveBits(std::unique_ptr<DeriveBitsState> passed_state) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "DoDeriveBits");
   DeriveBitsState* state = passed_state.get();
   if (state->cancelled())
     return;
@@ -569,10 +600,13 @@ void DoDeriveBits(std::unique_ptr<DeriveBitsState> passed_state) {
 }
 
 void DoDeriveKeyReply(std::unique_ptr<DeriveKeyState> state) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
+               "DoDeriveKeyReply");
   CompleteWithKeyOrError(state->status, state->derived_key, &state->result);
 }
 
 void DoDeriveKey(std::unique_ptr<DeriveKeyState> passed_state) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "DoDeriveKey");
   DeriveKeyState* state = passed_state.get();
   if (state->cancelled())
     return;
