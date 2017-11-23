@@ -186,7 +186,8 @@ void UiSceneManager::CreateScene() {
   CreateWebVrUrlToast();
   CreateCloseButton();
   CreateToasts();
-  CreateSplashScreen();
+  CreateSplashScreenForDirectWebVrLaunch();
+  CreateWebVrTimeoutScreen();
   CreateUnderDevelopmentNotice();
   CreateVoiceSearchUiGroup();
   CreateController();
@@ -396,7 +397,7 @@ void UiSceneManager::CreateContentQuad() {
                                   kBackgroundDistanceMultiplier);
 }
 
-void UiSceneManager::CreateSplashScreen() {
+void UiSceneManager::CreateSplashScreenForDirectWebVrLaunch() {
   auto element = base::MakeUnique<UiElement>();
   element->set_name(kSplashScreenRoot);
   element->SetVisible(true);
@@ -492,7 +493,9 @@ void UiSceneManager::CreateSplashScreen() {
       bool, Model, model_, web_vr_timeout_state != kWebVrNoTimeoutPending,
       FullScreenRect, spinner_bg.get(), SetVisible));
   scene_->AddUiElement(kSplashScreenRoot, std::move(spinner_bg));
+}
 
+void UiSceneManager::CreateWebVrTimeoutScreen() {
   auto timeout_message = base::MakeUnique<Rect>();
   timeout_message->set_name(kWebVrTimeoutMessage);
   timeout_message->set_draw_phase(kPhaseOverlayForeground);
