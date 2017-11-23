@@ -1092,9 +1092,11 @@ LayoutUnit LayoutFlexibleBox::CrossSizeForPercentageResolution(
 
   // Here we implement https://drafts.csswg.org/css-flexbox/#algo-stretch
   if (HasOrthogonalFlow(child) && child.HasOverrideLogicalContentWidth())
-    return child.OverrideLogicalContentWidth();
-  if (!HasOrthogonalFlow(child) && child.HasOverrideLogicalContentHeight())
-    return child.OverrideLogicalContentHeight();
+    return child.OverrideLogicalContentWidth() - child.ScrollbarLogicalWidth();
+  if (!HasOrthogonalFlow(child) && child.HasOverrideLogicalContentHeight()) {
+    return child.OverrideLogicalContentHeight() -
+           child.ScrollbarLogicalHeight();
+  }
 
   // We don't currently implement the optimization from
   // https://drafts.csswg.org/css-flexbox/#definite-sizes case 1. While that
@@ -1124,10 +1126,12 @@ LayoutUnit LayoutFlexibleBox::MainSizeForPercentageResolution(
 
   if (HasOrthogonalFlow(child))
     return child.HasOverrideLogicalContentHeight()
-               ? child.OverrideLogicalContentHeight()
+               ? child.OverrideLogicalContentHeight() -
+                     child.ScrollbarLogicalHeight()
                : LayoutUnit(-1);
   return child.HasOverrideLogicalContentWidth()
-             ? child.OverrideLogicalContentWidth()
+             ? child.OverrideLogicalContentWidth() -
+                   child.ScrollbarLogicalWidth()
              : LayoutUnit(-1);
 }
 
