@@ -509,7 +509,7 @@ class Mirror(object):
       self.print(GIT_CACHE_CORRUPT_MESSAGE)
       tempdir = self._ensure_bootstrapped(depth, bootstrap, force=True)
       assert tempdir
-      self._fetch(tempdir or self.mirror_path, verbose, depth)
+      self._fetch(tempdir, verbose, depth)
     finally:
       if tempdir:
         if os.path.exists(self.mirror_path):
