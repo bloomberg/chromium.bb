@@ -122,23 +122,6 @@ if (succeeded)
 else
     debug('FAIL Invalid call did not succeed.');
 
-// Check if registerProtocolHandler can register custom scheme.
-debug("\nCheck if registerProtocolHandler can register scheme correctly. If isProtocolHandlerRegistered() returns 'registered' state, registerProtoclHandler() works well.");
-debug("'bitcoin' scheme will be registered for testing.\n");
-try {
-    // Register 'bitcoin' scheme for testing.
-    window.navigator.registerProtocolHandler('bitcoin', 'invalid scheme uri=%s', 'title');
-
-    var state = window.navigator.isProtocolHandlerRegistered('bitcoin', 'valid scheme %s');
-    if (state == "registered")
-        debug("PASS window.navigator.isProtocolHandlerRegistered returns 'registered' state. 'bitcoin' is registered successfully.");
-    else if (state == "new")
-        debug("FAIL window.navigator.isProtocolHandlerRegistered returns 'new' state. Fail to register 'bitcoin' scheme.");
-    else if (state == "declined")
-        debug("FAIL window.navigator.isProtocolHandlerRegistered returns 'declined' state. Fail to register 'bitcoin' scheme");
-} catch (e) {
-    debug('FAIL window.navigator.isProtocolHandlerRegistered call is failed: "' + e.message + '".');
-}
 debug("\n");
 
 </script>

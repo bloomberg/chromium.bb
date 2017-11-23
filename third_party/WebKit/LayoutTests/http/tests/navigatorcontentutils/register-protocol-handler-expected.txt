@@ -41,11 +41,6 @@ PASS The registeration of URL that has the same origin with the document origin 
 PASS URL with origin different than document origin threw SecurityError exception: "Failed to execute 'registerProtocolHandler' on 'Navigator': Can only register custom handler in the document's origin.".
 PASS Valid call succeeded.
 
-Check if registerProtocolHandler can register scheme correctly. If isProtocolHandlerRegistered() returns 'registered' state, registerProtoclHandler() works well.
-'bitcoin' scheme will be registered for testing.
-
-PASS window.navigator.isProtocolHandlerRegistered returns 'registered' state. 'bitcoin' is registered successfully.
-
 
 PASS successfullyParsed is true
 

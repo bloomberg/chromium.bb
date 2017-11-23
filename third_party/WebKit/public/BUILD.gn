@@ -547,7 +547,6 @@ source_set("blink_headers") {
     "web/WebMetaElement.h",
     "web/WebNavigationPolicy.h",
     "web/WebNavigationType.h",
-    "web/WebNavigatorContentUtilsClient.h",
     "web/WebNode.h",
     "web/WebOptionElement.h",
     "web/WebPageImportanceSignals.h",

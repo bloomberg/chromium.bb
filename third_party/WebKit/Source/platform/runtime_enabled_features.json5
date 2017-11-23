@@ -308,11 +308,6 @@
       status: "test",
     },
     {
-      name: "CustomSchemeHandler",
-      depends_on: ["NavigatorContentUtils"],
-      status: "experimental",
-    },
-    {
       name: "Database",
       status: "stable",
     },

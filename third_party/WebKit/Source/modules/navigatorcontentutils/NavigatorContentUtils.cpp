@@ -161,58 +161,6 @@ void NavigatorContentUtils::registerProtocolHandler(
       scheme, document->CompleteURL(url), title);
 }
 
-static String CustomHandlersStateString(
-    const NavigatorContentUtilsClient::CustomHandlersState state) {
-  DEFINE_STATIC_LOCAL(const String, new_handler, ("new"));
-  DEFINE_STATIC_LOCAL(const String, registered_handler, ("registered"));
-  DEFINE_STATIC_LOCAL(const String, declined_handler, ("declined"));
-
-  switch (state) {
-    case NavigatorContentUtilsClient::kCustomHandlersNew:
-      return new_handler;
-    case NavigatorContentUtilsClient::kCustomHandlersRegistered:
-      return registered_handler;
-    case NavigatorContentUtilsClient::kCustomHandlersDeclined:
-      return declined_handler;
-  }
-
-  NOTREACHED();
-  return String();
-}
-
-String NavigatorContentUtils::isProtocolHandlerRegistered(
-    Navigator& navigator,
-    const String& scheme,
-    const String& url,
-    ExceptionState& exception_state) {
-  if (!navigator.GetFrame()) {
-    return CustomHandlersStateString(
-        NavigatorContentUtilsClient::kCustomHandlersDeclined);
-  }
-
-  Document* document = navigator.GetFrame()->GetDocument();
-  DCHECK(document);
-  if (document->IsContextDestroyed()) {
-    return CustomHandlersStateString(
-        NavigatorContentUtilsClient::kCustomHandlersDeclined);
-  }
-
-  if (!VerifyCustomHandlerURL(*document, url, exception_state)) {
-    return CustomHandlersStateString(
-        NavigatorContentUtilsClient::kCustomHandlersDeclined);
-  }
-
-  if (!VerifyCustomHandlerScheme(scheme, exception_state)) {
-    return CustomHandlersStateString(
-        NavigatorContentUtilsClient::kCustomHandlersDeclined);
-  }
-
-  return CustomHandlersStateString(
-      NavigatorContentUtils::From(navigator)
-          ->Client()
-          ->IsProtocolHandlerRegistered(scheme, document->CompleteURL(url)));
-}
-
 void NavigatorContentUtils::unregisterProtocolHandler(
     Navigator& navigator,
     const String& scheme,
