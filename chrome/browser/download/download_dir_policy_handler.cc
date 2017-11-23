@@ -12,6 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/download/download_dir_util.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/policy/policy_path_parser.h"
 #include "chrome/common/pref_names.h"
@@ -23,20 +24,6 @@
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_value_map.h"
 #include "components/strings/grit/components_strings.h"
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/drive/file_system_util.h"
-#endif
-
-namespace {
-#if defined(OS_CHROMEOS)
-const char* kDriveNamePolicyVariableName = "${google_drive}";
-
-// Drive root folder relative to its mount point.
-const base::FilePath::CharType* kRootRelativeToDriveMount =
-    FILE_PATH_LITERAL("root");
-#endif
-}  // namespace
 
 DownloadDirPolicyHandler::DownloadDirPolicyHandler()
     : TypeCheckingPolicyHandler(policy::key::kDownloadDirectory,
@@ -73,37 +60,16 @@ void DownloadDirPolicyHandler::ApplyPolicySettingsWithParameters(
   if (!value || !value->GetAsString(&string_value))
     return;
 
-  base::FilePath::StringType expanded_value;
-#if defined(OS_CHROMEOS)
-  bool download_to_drive = false;
-  // TODO(kaliamoorthi): Clean up policy::path_parser and fold this code
-  // into it. http://crbug.com/352627
-  size_t position = string_value.find(kDriveNamePolicyVariableName);
-  if (position != base::FilePath::StringType::npos) {
-    base::FilePath::StringType google_drive_root;
-    if (!parameters.user_id_hash.empty()) {
-      google_drive_root = drive::util::GetDriveMountPointPathForUserIdHash(
-                              parameters.user_id_hash)
-                              .Append(kRootRelativeToDriveMount)
-                              .value();
-      download_to_drive = true;
-    }
-    expanded_value = string_value.replace(
-        position,
-        base::FilePath::StringType(kDriveNamePolicyVariableName).length(),
-        google_drive_root);
-  } else {
-    expanded_value = string_value;
-  }
-#else
-  expanded_value = policy::path_parser::ExpandPathVariables(string_value);
-#endif
   // Make sure the path isn't empty, since that will point to an undefined
   // location; the default location is used instead in that case.
   // This is checked after path expansion because a non-empty policy value can
   // lead to an empty path value after expansion (e.g. "\"\"").
-  if (expanded_value.empty())
-    expanded_value = DownloadPrefs::GetDefaultDownloadDirectory().value();
+  base::FilePath::StringType expanded_value =
+      download_dir_util::ExpandDownloadDirectoryPath(string_value, parameters);
+  if (expanded_value.empty()) {
+    expanded_value = policy::path_parser::ExpandPathVariables(
+        DownloadPrefs::GetDefaultDownloadDirectory().value());
+  }
   prefs->SetValue(prefs::kDownloadDefaultDirectory,
                   base::MakeUnique<base::Value>(expanded_value));
 
@@ -112,7 +78,7 @@ void DownloadDirPolicyHandler::ApplyPolicySettingsWithParameters(
   if (policies.Get(policy_name())->level == policy::POLICY_LEVEL_MANDATORY) {
     prefs->SetBoolean(prefs::kPromptForDownload, false);
 #if defined(OS_CHROMEOS)
-    if (download_to_drive) {
+    if (download_dir_util::DownloadToDrive(string_value, parameters)) {
       prefs->SetBoolean(drive::prefs::kDisableDrive, false);
     }
 #endif

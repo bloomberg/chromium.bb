@@ -146,7 +146,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 400
+#   For your editing convenience: highest ID currently used: 401
 #   And don't forget to also update the EnterprisePolicies enum of
 #   histograms.xml (run 'python tools/metrics/histograms/update_policies.py').
 #
@@ -10717,6 +10717,29 @@
         For more information on secure contexts, see https://www.w3.org/TR/secure-contexts/
         '''
     },
+    {
+      'name': 'DefaultDownloadDirectory',
+      'type': 'string',
+      'schema': { 'type': 'string' },
+      'supported_on': ['chrome.*:64-', 'chrome_os:64-'],
+      'features': {
+        'can_be_mandatory': False,
+        'can_be_recommended': True,
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': '/home/${user_name}/Downloads',
+      'id': 401,
+      'caption': '''Set default download directory''',
+      'tags': ['local-data-access'],
+      'desc': '''Configures the default directory that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use for downloading files.
+
+      If you set this policy, it will change the default directory that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> downloads files to. This policy is not mandatory, so the user will be able to change the directory.
+
+      If you do not set this policy, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use its usual default directory (platform-specific).
+
+      See https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for a list of variables that can be used.''',
+    }
   ],
   'messages': {
     # Messages that are not associated to any policies.

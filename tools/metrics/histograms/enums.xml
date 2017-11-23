@@ -11942,6 +11942,7 @@ Called by update_net_error_codes.py.-->
   <int value="398" label="IsolateOrigins"/>
   <int value="399" label="SitePerProcess"/>
   <int value="400" label="UnsafelyTreatInsecureOriginAsSecure"/>
+  <int value="401" label="DefaultDownloadDirectory"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
