@@ -5,13 +5,10 @@
 #ifndef PasswordCredential_h
 #define PasswordCredential_h
 
-#include "bindings/core/v8/serialization/SerializedScriptValue.h"
-#include "bindings/modules/v8/form_data_or_url_search_params.h"
 #include "modules/ModulesExport.h"
 #include "modules/credentialmanager/Credential.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
-#include "platform/network/EncodedFormData.h"
 #include "platform/weborigin/KURL.h"
 
 namespace blink {
@@ -19,8 +16,6 @@ namespace blink {
 class HTMLFormElement;
 class PasswordCredentialData;
 class WebPasswordCredential;
-
-using CredentialPostBodyType = FormDataOrURLSearchParams;
 
 class MODULES_EXPORT PasswordCredential final : public Credential {
   DEFINE_WRAPPERTYPEINFO();
@@ -32,26 +27,9 @@ class MODULES_EXPORT PasswordCredential final : public Credential {
   static PasswordCredential* Create(WebPasswordCredential*);
 
   // PasswordCredential.idl
-  void setIdName(const String& name) { id_name_ = name; }
-  const String& idName() const { return id_name_; }
-
-  void setPasswordName(const String& name) { password_name_ = name; }
-  const String& passwordName() const { return password_name_; }
-
-  void setAdditionalData(const CredentialPostBodyType& data) {
-    additional_data_ = data;
-  }
-  void additionalData(CredentialPostBodyType& out) const {
-    out = additional_data_;
-  }
-
   const String& password() const;
   const String& name() const;
   const KURL& iconURL() const;
-
-  // Internal methods
-  scoped_refptr<EncodedFormData> EncodeFormData(String& content_type) const;
-  virtual void Trace(blink::Visitor*);
 
  private:
   PasswordCredential(WebPasswordCredential*);
@@ -59,10 +37,6 @@ class MODULES_EXPORT PasswordCredential final : public Credential {
                      const String& password,
                      const String& name,
                      const KURL& icon);
-
-  String id_name_;
-  String password_name_;
-  CredentialPostBodyType additional_data_;
 };
 
 }  // namespace blink
