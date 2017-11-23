@@ -54,11 +54,6 @@
                 "optional": true,
                 "description": "If omitted, this engine does not support suggestions."
               },
-              "instant_url": {
-                "type": "string",
-                "optional": true,
-                "description": "If omitted, this engine does not support instant."
-              },
               "image_url": {
                 "type": "string",
                 "optional": true,
@@ -73,11 +68,6 @@
                 "type": "string",
                 "optional": true,
                 "description": "The string of post parameters to suggest_url"
-              },
-              "instant_url_post_params": {
-                "type": "string",
-                "optional": true,
-                "description": "The string of post parameters to instant_url"
               },
               "image_url_post_params": {
                 "type": "string",
