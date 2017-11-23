@@ -172,7 +172,6 @@ source_set("common_sources") {
     "mhtml_generation_params.h",
     "mojo_channel_switches.cc",
     "mojo_channel_switches.h",
-    "mutable_network_traffic_annotation_tag_struct_traits.h",
     "network_connection_tracker.cc",
     "network_connection_tracker.h",
     "notification_resources.cc",
@@ -359,7 +358,6 @@ mojom("interfaces") {
 
   sources = [
     "download_stream.mojom",
-    "mutable_network_traffic_annotation_tag.mojom",
     "network_service.mojom",
     "network_service_test.mojom",
     "push_messaging_status.mojom",

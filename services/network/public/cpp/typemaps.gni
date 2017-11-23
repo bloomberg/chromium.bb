@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 typemaps = [
+  "//services/network/public/cpp/mutable_network_traffic_annotation_tag.typemap",
   "//services/network/public/cpp/cookie_manager.typemap",
   "//services/network/public/cpp/http_request_headers.typemap",
 ]

@@ -4,7 +4,7 @@
 
 module content.mojom;
 
-import "mutable_network_traffic_annotation_tag.mojom";
+import "services/network/public/interfaces/mutable_network_traffic_annotation_tag.mojom";
 import "url_loader.mojom";
 
 const uint32 kURLLoadOptionNone = 0;
@@ -33,7 +33,8 @@ interface URLLoaderFactory {
                        uint32 options,
                        URLRequest request,
                        URLLoaderClient client,
-                       MutableNetworkTrafficAnnotationTag traffic_annotation);
+                       network.mojom.MutableNetworkTrafficAnnotationTag
+                           traffic_annotation);
 
   // Connects a new pipe to this instance of the URLLoaderFactory interface.
   Clone(URLLoaderFactory& factory);

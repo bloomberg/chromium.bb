@@ -8,6 +8,7 @@ static_library("cpp") {
   sources = [
     "cors_error_status.cc",
     "cors_error_status.h",
+    "mutable_network_traffic_annotation_tag_struct_traits.h",
     "net_adapters.cc",
     "net_adapters.h",
     "url_loader_completion_status.cc",
