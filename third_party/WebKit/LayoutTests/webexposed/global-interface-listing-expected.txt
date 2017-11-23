@@ -4483,7 +4483,6 @@ interface Navigator
     method getInstalledRelatedApps
     method getUserMedia
     method getVRDisplays
-    method isProtocolHandlerRegistered
     method javaEnabled
     method registerProtocolHandler
     method requestKeyboardLock

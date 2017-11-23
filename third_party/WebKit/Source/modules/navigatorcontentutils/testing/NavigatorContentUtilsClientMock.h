@@ -27,8 +27,6 @@ class NavigatorContentUtilsClientMock final
                                        const KURL&,
                                        const String& title);
 
-  virtual CustomHandlersState IsProtocolHandlerRegistered(const String& scheme,
-                                                          const KURL&);
   virtual void UnregisterProtocolHandler(const String& scheme, const KURL&);
 
  private:

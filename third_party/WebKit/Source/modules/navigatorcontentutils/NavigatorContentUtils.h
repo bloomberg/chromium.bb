@@ -54,10 +54,6 @@ class MODULES_EXPORT NavigatorContentUtils final
                                       const String& url,
                                       const String& title,
                                       ExceptionState&);
-  static String isProtocolHandlerRegistered(Navigator&,
-                                            const String& scheme,
-                                            const String& url,
-                                            ExceptionState&);
   static void unregisterProtocolHandler(Navigator&,
                                         const String& scheme,
                                         const String& url,

@@ -21,19 +21,6 @@ void NavigatorContentUtilsClientMock::RegisterProtocolHandler(
   protocol_map_.Set(scheme, info);
 }
 
-NavigatorContentUtilsClient::CustomHandlersState
-NavigatorContentUtilsClientMock::IsProtocolHandlerRegistered(
-    const String& scheme,
-    const KURL& url) {
-  // "declined" state is checked by
-  // NavigatorContentUtils::isProtocolHandlerRegistered() before calling this
-  // function.
-  if (protocol_map_.Contains(scheme))
-    return NavigatorContentUtilsClient::kCustomHandlersRegistered;
-
-  return NavigatorContentUtilsClient::kCustomHandlersNew;
-}
-
 void NavigatorContentUtilsClientMock::UnregisterProtocolHandler(
     const String& scheme,
     const KURL& url) {

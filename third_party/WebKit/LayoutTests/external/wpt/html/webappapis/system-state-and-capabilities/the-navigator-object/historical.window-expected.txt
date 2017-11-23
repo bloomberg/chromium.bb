@@ -1,7 +1,0 @@
-This is a testharness.js-based test.
-PASS registerContentHandler() is removed
-FAIL isProtocolHandlerRegistered() is removed assert_false: expected false got true
-PASS isContentHandlerRegistered() is removed
-PASS unregisterContentHandler() is removed
-Harness: the test ran to completion.
-

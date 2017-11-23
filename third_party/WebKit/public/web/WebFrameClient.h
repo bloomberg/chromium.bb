@@ -45,7 +45,6 @@
 #include "WebIconURL.h"
 #include "WebNavigationPolicy.h"
 #include "WebNavigationType.h"
-#include "WebNavigatorContentUtilsClient.h"
 #include "WebTextDirection.h"
 #include "WebTriggeringEventInfo.h"
 #include "public/platform/BlameContext.h"
@@ -815,13 +814,6 @@ class BLINK_EXPORT WebFrameClient {
   // Unregisters a given URL handler for the given protocol.
   virtual void UnregisterProtocolHandler(const WebString& scheme,
                                          const WebURL& url) {}
-
-  // Check if a given URL handler is registered for the given protocol.
-  virtual WebCustomHandlersState IsProtocolHandlerRegistered(
-      const WebString& scheme,
-      const WebURL& url) {
-    return kWebCustomHandlersNew;
-  }
 
   // Audio Output Devices API --------------------------------------------
 
