@@ -28,10 +28,12 @@ TEST_F(ExternalSearchMediatorTest, LaunchExternalSearch) {
     OCMExpect([application openURL:expectedURL
                            options:[OCMArg any]
                  completionHandler:[OCMArg any]]);
-  } else {
+  }
+#if !defined(__IPHONE_10_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_10_0
+  else {
     OCMExpect([application openURL:expectedURL]);
   }
-
+#endif
   [mediator launchExternalSearch];
 
   EXPECT_OCMOCK_VERIFY(application);
