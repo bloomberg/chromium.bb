@@ -799,6 +799,90 @@ TEST_F(ProofVerifierChromiumTest, CTComplianceStatusHistogram) {
       1);
 }
 
+// Tests that when CT is required but the connection is not compliant, the
+// relevant flag is set in the CTVerifyResult.
+TEST_F(ProofVerifierChromiumTest, CTRequirementsFlagNotMet) {
+  scoped_refptr<X509Certificate> test_cert = GetTestServerCertificate();
+  ASSERT_TRUE(test_cert);
+
+  CertVerifyResult dummy_result;
+  dummy_result.verified_cert = test_cert;
+  dummy_result.is_issued_by_known_root = true;
+  dummy_result.cert_status = 0;
+
+  MockCertVerifier dummy_verifier;
+  dummy_verifier.AddResultForCert(test_cert.get(), dummy_result, OK);
+
+  // Set up CT.
+  MockRequireCTDelegate require_ct_delegate;
+  transport_security_state_.SetRequireCTDelegate(&require_ct_delegate);
+  EXPECT_CALL(require_ct_delegate, IsCTRequiredForHost(_))
+      .WillRepeatedly(Return(TransportSecurityState::RequireCTDelegate::
+                                 CTRequirementLevel::REQUIRED));
+  EXPECT_CALL(ct_policy_enforcer_, DoesConformToCertPolicy(_, _, _))
+      .WillRepeatedly(
+          Return(ct::CertPolicyCompliance::CERT_POLICY_NOT_DIVERSE_SCTS));
+
+  ProofVerifierChromium proof_verifier(&dummy_verifier, &ct_policy_enforcer_,
+                                       &transport_security_state_,
+                                       ct_verifier_.get());
+
+  std::unique_ptr<DummyProofVerifierCallback> callback(
+      new DummyProofVerifierCallback);
+  proof_verifier.VerifyProof(
+      kTestHostname, kTestPort, kTestConfig, QUIC_VERSION_35, kTestChloHash,
+      certs_, kTestEmptySCT, GetTestSignature(), verify_context_.get(),
+      &error_details_, &details_, std::move(callback));
+
+  // The flag should be set in the CTVerifyResult.
+  ProofVerifyDetailsChromium* proof_details =
+      reinterpret_cast<ProofVerifyDetailsChromium*>(details_.get());
+  const ct::CTVerifyResult& ct_verify_result = proof_details->ct_verify_result;
+  EXPECT_TRUE(ct_verify_result.policy_compliance_required);
+}
+
+// Tests that when CT is required and the connection is compliant, the relevant
+// flag is set in the CTVerifyResult.
+TEST_F(ProofVerifierChromiumTest, CTRequirementsFlagMet) {
+  scoped_refptr<X509Certificate> test_cert = GetTestServerCertificate();
+  ASSERT_TRUE(test_cert);
+
+  CertVerifyResult dummy_result;
+  dummy_result.verified_cert = test_cert;
+  dummy_result.is_issued_by_known_root = true;
+  dummy_result.cert_status = 0;
+
+  MockCertVerifier dummy_verifier;
+  dummy_verifier.AddResultForCert(test_cert.get(), dummy_result, OK);
+
+  // Set up CT.
+  MockRequireCTDelegate require_ct_delegate;
+  transport_security_state_.SetRequireCTDelegate(&require_ct_delegate);
+  EXPECT_CALL(require_ct_delegate, IsCTRequiredForHost(_))
+      .WillRepeatedly(Return(TransportSecurityState::RequireCTDelegate::
+                                 CTRequirementLevel::REQUIRED));
+  EXPECT_CALL(ct_policy_enforcer_, DoesConformToCertPolicy(_, _, _))
+      .WillRepeatedly(
+          Return(ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS));
+
+  ProofVerifierChromium proof_verifier(&dummy_verifier, &ct_policy_enforcer_,
+                                       &transport_security_state_,
+                                       ct_verifier_.get());
+
+  std::unique_ptr<DummyProofVerifierCallback> callback(
+      new DummyProofVerifierCallback);
+  proof_verifier.VerifyProof(
+      kTestHostname, kTestPort, kTestConfig, QUIC_VERSION_35, kTestChloHash,
+      certs_, kTestEmptySCT, GetTestSignature(), verify_context_.get(),
+      &error_details_, &details_, std::move(callback));
+
+  // The flag should be set in the CTVerifyResult.
+  ProofVerifyDetailsChromium* proof_details =
+      reinterpret_cast<ProofVerifyDetailsChromium*>(details_.get());
+  const ct::CTVerifyResult& ct_verify_result = proof_details->ct_verify_result;
+  EXPECT_TRUE(ct_verify_result.policy_compliance_required);
+}
+
 // Tests that the VerifyCertChain verifies certificates.
 TEST_F(ProofVerifierChromiumTest, VerifyCertChain) {
   scoped_refptr<X509Certificate> test_cert = GetTestServerCertificate();

@@ -136,9 +136,13 @@ class NET_EXPORT SSLInfo {
   bool ct_compliance_details_available;
 
   // Whether the connection complied with the CT cert policy, and if
-  // not, why not. Only meaningful it |ct_compliance_details_available|
+  // not, why not. Only meaningful if |ct_compliance_details_available|
   // is true.
   ct::CertPolicyCompliance ct_cert_policy_compliance;
+
+  // True if the connection was required to comply with the CT cert policy. Only
+  // meaningful if |ct_compliance_details_available| is true.
+  bool ct_policy_compliance_required;
 
   // OCSP stapling details.
   OCSPVerifyResult ocsp_result;
