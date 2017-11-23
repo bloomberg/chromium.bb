@@ -27,16 +27,6 @@ namespace {
 double MonotonicTimeInSeconds(base::TimeTicks time_ticks) {
   return (time_ticks - base::TimeTicks()).InSecondsF();
 }
-
-// Converts a OnceClosure to a RepeatingClosure. It hits CHECK failure to run
-// the resulting RepeatingClosure more than once.
-// TODO(tzik): This will be unneeded after the Closure-to-OnceClosure migration
-// on TaskRunner finished. Remove it once it gets unneeded.
-base::RepeatingClosure UnsafeConvertOnceClosureToRepeating(
-    base::OnceClosure cb) {
-  return base::BindRepeating([](base::OnceClosure cb) { std::move(cb).Run(); },
-                             base::Passed(&cb));
-}
 }  // namespace
 
 TaskQueueManager::TaskQueueManager(
@@ -495,11 +485,8 @@ TaskQueueManager::ProcessTaskResult TaskQueueManager::ProcessTaskFromWorkQueue(
     // arbitrarily delayed so the additional delay should not be a problem.
     // TODO(skyostil): Figure out a way to not forget which task queue the
     // task is associated with. See http://crbug.com/522843.
-    // TODO(tzik): Remove base::UnsafeConvertOnceClosureToRepeating once
-    // TaskRunners have migrated to OnceClosure.
-    delegate_->PostNonNestableTask(
-        pending_task.posted_from,
-        UnsafeConvertOnceClosureToRepeating(std::move(pending_task.task)));
+    delegate_->PostNonNestableTask(pending_task.posted_from,
+                                   std::move(pending_task.task));
     return ProcessTaskResult::kDeferred;
   }
 
