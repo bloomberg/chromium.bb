@@ -39,9 +39,10 @@ class AppBannerManagerDesktop
   void DidFinishCreatingBookmarkApp(
       const extensions::Extension* extension,
       const WebApplicationInfo& web_app_info) override;
-  bool IsWebAppInstalled(content::BrowserContext* browser_context,
-                         const GURL& start_url,
-                         const GURL& manifest_url) override;
+  bool IsWebAppConsideredInstalled(content::WebContents* web_contents,
+                                   const GURL& validated_url,
+                                   const GURL& start_url,
+                                   const GURL& manifest_url) override;
   void ShowBannerUi() override;
 
   // content::WebContentsObserver override.

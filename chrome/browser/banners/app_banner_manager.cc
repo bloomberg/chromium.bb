@@ -226,8 +226,9 @@ bool AppBannerManager::IsDebugMode() const {
              switches::kBypassAppBannerEngagementChecks);
 }
 
-bool AppBannerManager::IsWebAppInstalled(
-    content::BrowserContext* browser_context,
+bool AppBannerManager::IsWebAppConsideredInstalled(
+    content::WebContents* web_contents,
+    const GURL& validated_url,
     const GURL& start_url,
     const GURL& manifest_url) {
   return false;
@@ -522,43 +523,59 @@ void AppBannerManager::RecordCouldShowBanner() {
       AppBannerSettingsHelper::APP_BANNER_EVENT_COULD_SHOW, GetCurrentTime());
 }
 
+InstallableStatusCode AppBannerManager::ShouldShowBannerCode() {
+  if (GetAppIdentifier().empty())
+    return PACKAGE_NAME_OR_START_URL_EMPTY;
+
+  content::WebContents* contents = web_contents();
+  if (IsWebAppConsideredInstalled(contents, validated_url_, manifest_.start_url,
+                                  manifest_url_)) {
+    return ALREADY_INSTALLED;
+  }
+
+  // Showing of experimental app banners is under developer control, and
+  // requires a user gesture. In contrast, showing of traditional app banners
+  // is automatic, so we throttle it if the user has recently ignored or
+  // blocked the banner.
+  if (!base::FeatureList::IsEnabled(features::kExperimentalAppBanners)) {
+    base::Time now = GetCurrentTime();
+    if (AppBannerSettingsHelper::WasBannerRecentlyBlocked(
+            contents, validated_url_, GetAppIdentifier(), now)) {
+      return PREVIOUSLY_BLOCKED;
+    }
+    if (AppBannerSettingsHelper::WasBannerRecentlyIgnored(
+            contents, validated_url_, GetAppIdentifier(), now)) {
+      return PREVIOUSLY_IGNORED;
+    }
+  }
+
+  return NO_ERROR_DETECTED;
+}
+
 bool AppBannerManager::CheckIfShouldShowBanner() {
   if (IsDebugMode())
     return true;
 
-  // Check whether we are permitted to show the banner. If we have already
-  // added this site to homescreen, or if the banner has been shown too
-  // recently, prevent the banner from being shown.
-  content::WebContents* contents = web_contents();
-  InstallableStatusCode code = AppBannerSettingsHelper::ShouldShowBanner(
-      contents, validated_url_, GetAppIdentifier(), GetCurrentTime());
-
-  if (code == NO_ERROR_DETECTED &&
-      IsWebAppInstalled(contents->GetBrowserContext(), manifest_.start_url,
-                        manifest_url_)) {
-    code = ALREADY_INSTALLED;
+  InstallableStatusCode code = ShouldShowBannerCode();
+  switch (code) {
+    case NO_ERROR_DETECTED:
+      return true;
+    case ALREADY_INSTALLED:
+      banners::TrackDisplayEvent(banners::DISPLAY_EVENT_INSTALLED_PREVIOUSLY);
+      break;
+    case PREVIOUSLY_BLOCKED:
+      banners::TrackDisplayEvent(banners::DISPLAY_EVENT_BLOCKED_PREVIOUSLY);
+      break;
+    case PREVIOUSLY_IGNORED:
+      banners::TrackDisplayEvent(banners::DISPLAY_EVENT_IGNORED_PREVIOUSLY);
+      break;
+    case PACKAGE_NAME_OR_START_URL_EMPTY:
+      break;
+    default:
+      NOTREACHED();
   }
-
-  if (code != NO_ERROR_DETECTED) {
-    switch (code) {
-      case ALREADY_INSTALLED:
-        banners::TrackDisplayEvent(banners::DISPLAY_EVENT_INSTALLED_PREVIOUSLY);
-        break;
-      case PREVIOUSLY_BLOCKED:
-        banners::TrackDisplayEvent(banners::DISPLAY_EVENT_BLOCKED_PREVIOUSLY);
-        break;
-      case PREVIOUSLY_IGNORED:
-        banners::TrackDisplayEvent(banners::DISPLAY_EVENT_IGNORED_PREVIOUSLY);
-        break;
-      case PACKAGE_NAME_OR_START_URL_EMPTY:
-        break;
-      default:
-        NOTREACHED();
-    }
-    Stop(code);
-    return false;
-  }
-  return true;
+  Stop(code);
+  return false;
 }
 
 void AppBannerManager::OnBannerPromptReply(
