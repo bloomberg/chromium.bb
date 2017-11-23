@@ -21,26 +21,20 @@ class CORE_EXPORT StylePropertyMap : public StylePropertyMapReadonly {
  public:
   void set(const ExecutionContext*,
            const String& property_name,
-           HeapVector<CSSStyleValueOrString>& values,
+           const HeapVector<CSSStyleValueOrString>& values,
            ExceptionState&);
   void append(const ExecutionContext*,
               const String& property_name,
-              HeapVector<CSSStyleValueOrString>& values,
+              const HeapVector<CSSStyleValueOrString>& values,
               ExceptionState&);
   void remove(const String& property_name, ExceptionState&);
   void update(const String&, const V8UpdateFunction*) {}
 
-  virtual void set(const ExecutionContext*,
-                   CSSPropertyID,
-                   HeapVector<CSSStyleValueOrString>& values,
-                   ExceptionState&) = 0;
-  virtual void append(const ExecutionContext*,
-                      CSSPropertyID,
-                      HeapVector<CSSStyleValueOrString>& values,
-                      ExceptionState&) = 0;
   virtual void remove(CSSPropertyID, ExceptionState&) = 0;
 
  protected:
+  virtual void SetProperty(CSSPropertyID, const CSSValue*) = 0;
+
   StylePropertyMap() {}
 
  private:
