@@ -168,6 +168,9 @@ struct PPB_PDF {
                            int32_t left_height,
                            const struct PP_FloatPoint* right,
                            int32_t right_height);
+
+  // Notifies embedder that the PDF has scrolled.
+  void (*DidScroll)(PP_Instance instance);
 };
 
 #endif  // PPAPI_C_PRIVATE_PPB_PDF_H_

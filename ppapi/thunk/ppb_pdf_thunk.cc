@@ -180,6 +180,13 @@ void SelectionChanged(PP_Instance instance,
   enter.functions()->SelectionChanged(*left, left_height, *right, right_height);
 }
 
+void DidScroll(PP_Instance instance) {
+  EnterInstanceAPI<PPB_PDF_API> enter(instance);
+  if (enter.failed())
+    return;
+  enter.functions()->DidScroll();
+}
+
 const PPB_PDF g_ppb_pdf_thunk = {
     &GetFontFileWithFallback,
     &GetFontTableForPrivateFontFile,
@@ -200,6 +207,7 @@ const PPB_PDF g_ppb_pdf_thunk = {
     &SetAccessibilityPageInfo,
     &SetCrashData,
     &SelectionChanged,
+    &DidScroll,
 };
 
 }  // namespace

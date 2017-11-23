@@ -1197,8 +1197,10 @@ void OutOfProcessInstance::Invalidate(const pp::Rect& rect) {
 }
 
 void OutOfProcessInstance::Scroll(const pp::Point& point) {
-  if (!image_data_.is_null())
+  if (!image_data_.is_null()) {
     paint_manager_.ScrollRect(available_area_, point);
+    pp::PDF::DidScroll(GetPluginInstance());
+  }
 }
 
 void OutOfProcessInstance::ScrollToX(int x_in_screen_coords) {

@@ -208,5 +208,9 @@ void PDFResource::SelectionChanged(const PP_FloatPoint& left,
                                                    right_height));
 }
 
+void PDFResource::DidScroll() {
+  Post(RENDERER, PpapiHostMsg_PDF_DidScroll());
+}
+
 }  // namespace proxy
 }  // namespace ppapi

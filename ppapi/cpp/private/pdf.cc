@@ -205,4 +205,11 @@ void PDF::SelectionChanged(const InstanceHandle& instance,
   }
 }
 
+// static
+void PDF::DidScroll(const InstanceHandle& instance) {
+  if (has_interface<PPB_PDF>()) {
+    get_interface<PPB_PDF>()->DidScroll(instance.pp_instance());
+  }
+}
+
 }  // namespace pp

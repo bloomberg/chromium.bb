@@ -45,6 +45,7 @@ class PPB_PDF_API {
                                 int32_t left_height,
                                 const PP_FloatPoint& right,
                                 int32_t right_height) = 0;
+  virtual void DidScroll() = 0;
 
   static const SingletonResourceID kSingletonResourceID = PDF_SINGLETON_ID;
 };
