@@ -197,12 +197,6 @@ PaintCanvas* OffscreenCanvasRenderingContext2D::ExistingDrawingCanvas() const {
 void OffscreenCanvasRenderingContext2D::DisableDeferral(DisableDeferralReason) {
 }
 
-AffineTransform OffscreenCanvasRenderingContext2D::BaseTransform() const {
-  if (!HasImageBuffer())
-    return AffineTransform();  // identity
-  return GetImageBuffer()->BaseTransform();
-}
-
 void OffscreenCanvasRenderingContext2D::DidDraw(const SkIRect& dirty_rect) {
   dirty_rect_for_commit_.join(dirty_rect);
 }

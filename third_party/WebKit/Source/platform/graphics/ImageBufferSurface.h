@@ -48,6 +48,7 @@ struct SkImageInfo;
 
 namespace blink {
 
+class CanvasResourceHost;
 class FloatRect;
 class GraphicsContext;
 class ImageBuffer;
@@ -89,6 +90,7 @@ class PLATFORM_EXPORT ImageBufferSurface {
                            size_t row_bytes,
                            int x,
                            int y) = 0;
+  virtual void SetCanvasResourceHost(CanvasResourceHost*) {}
 
   // May return nullptr if the surface is GPU-backed and the GPU context was
   // lost.

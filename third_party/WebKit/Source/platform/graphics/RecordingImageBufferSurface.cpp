@@ -32,7 +32,8 @@ RecordingImageBufferSurface::RecordingImageBufferSurface(
       frame_was_cleared_(true),
       did_record_draw_commands_in_current_frame_(false),
       current_frame_has_expensive_op_(false),
-      previous_frame_has_expensive_op_(false) {
+      previous_frame_has_expensive_op_(false),
+      resource_host_(nullptr) {
   InitializeCurrentFrame();
 }
 
@@ -46,8 +47,8 @@ void RecordingImageBufferSurface::InitializeCurrentFrame() {
   // and clip.
   canvas->save();
 
-  if (image_buffer_) {
-    image_buffer_->ResetCanvas(canvas);
+  if (resource_host_) {
+    resource_host_->RestoreCanvasMatrixClipStack(canvas);
   }
   did_record_draw_commands_in_current_frame_ = false;
   current_frame_has_expensive_op_ = false;
@@ -56,13 +57,6 @@ void RecordingImageBufferSurface::InitializeCurrentFrame() {
 
 void RecordingImageBufferSurface::SetImageBuffer(ImageBuffer* image_buffer) {
   image_buffer_ = image_buffer;
-  if (current_frame_ && image_buffer_) {
-    image_buffer_->ResetCanvas(current_frame_->getRecordingCanvas());
-  }
-  if (fallback_surface_) {
-    DCHECK(fallback_surface_->IsValid());
-    fallback_surface_->SetImageBuffer(image_buffer);
-  }
 }
 
 bool RecordingImageBufferSurface::WritePixels(const SkImageInfo& orig_info,
@@ -102,8 +96,6 @@ void RecordingImageBufferSurface::FallBackToRasterCanvas(
   if (!fallback_surface_->IsValid())
     return;
 
-  fallback_surface_->SetImageBuffer(image_buffer_);
-
   if (previous_frame_) {
     fallback_surface_->Canvas()->drawPicture(previous_frame_);
     previous_frame_.reset();
@@ -116,8 +108,8 @@ void RecordingImageBufferSurface::FallBackToRasterCanvas(
     current_frame_.reset();
   }
 
-  if (image_buffer_) {
-    image_buffer_->ResetCanvas(fallback_surface_->Canvas());
+  if (resource_host_) {
+    resource_host_->RestoreCanvasMatrixClipStack(fallback_surface_->Canvas());
   }
 
   CanvasMetrics::CountCanvasContextUsage(
@@ -261,13 +253,6 @@ void RecordingImageBufferSurface::FinalizeFrame() {
   FallbackReason fallback_reason = kFallbackReasonUnknown;
   if (!FinalizeFrameInternal(&fallback_reason))
     FallBackToRasterCanvas(fallback_reason);
-}
-
-void RecordingImageBufferSurface::DoPaintInvalidation(
-    const FloatRect& dirty_rect) {
-  if (fallback_surface_) {
-    fallback_surface_->DoPaintInvalidation(dirty_rect);
-  }
 }
 
 void RecordingImageBufferSurface::WillOverwriteCanvas() {

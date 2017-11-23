@@ -9,7 +9,6 @@
 #include "platform/WebTaskRunner.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/ImageBuffer.h"
-#include "platform/graphics/ImageBufferClient.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "platform/graphics/paint/PaintCanvas.h"
 #include "platform/graphics/paint/PaintRecord.h"

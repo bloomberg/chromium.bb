@@ -7821,13 +7821,12 @@ void WebGLRenderingContextBase::TraceWrappers(
   CanvasRenderingContext::TraceWrappers(visitor);
 }
 
-int WebGLRenderingContextBase::ExternallyAllocatedBytesPerPixel() {
+int WebGLRenderingContextBase::ExternallyAllocatedBufferCountPerPixel() {
   if (isContextLost())
     return 0;
 
-  int bytes_per_pixel = 4;
-  int total_bytes_per_pixel =
-      bytes_per_pixel * 2;  // WebGL's front and back color buffers.
+  int buffer_count = 1;
+  buffer_count *= 2;  // WebGL's front and back color buffers.
   int samples = GetDrawingBuffer() ? GetDrawingBuffer()->SampleCount() : 0;
   Nullable<WebGLContextAttributes> attribs;
   getContextAttributes(attribs);
@@ -7838,16 +7837,14 @@ int WebGLRenderingContextBase::ExternallyAllocatedBytesPerPixel() {
     if (attribs.Get().antialias() && samples > 0 &&
         GetDrawingBuffer()->ExplicitResolveOfMultisampleData()) {
       if (attribs.Get().depth() || attribs.Get().stencil())
-        total_bytes_per_pixel +=
-            samples * bytes_per_pixel;  // depth/stencil multisample buffer
-      total_bytes_per_pixel +=
-          samples * bytes_per_pixel;  // color multisample buffer
+        buffer_count += samples;  // depth/stencil multisample buffer
+      buffer_count += samples;    // color multisample buffer
     } else if (attribs.Get().depth() || attribs.Get().stencil()) {
-      total_bytes_per_pixel += bytes_per_pixel;  // regular depth/stencil buffer
+      buffer_count += 1;  // regular depth/stencil buffer
     }
   }
 
-  return total_bytes_per_pixel;
+  return buffer_count;
 }
 
 DrawingBuffer* WebGLRenderingContextBase::GetDrawingBuffer() const {

@@ -410,10 +410,6 @@ void CanvasRenderingContext2D::DisableDeferral(DisableDeferralReason reason) {
   canvas()->DisableDeferral(reason);
 }
 
-AffineTransform CanvasRenderingContext2D::BaseTransform() const {
-  return canvas()->BaseTransform();
-}
-
 String CanvasRenderingContext2D::font() const {
   if (!GetState().HasRealizedFont())
     return kDefaultFont;
@@ -1068,6 +1064,14 @@ unsigned CanvasRenderingContext2D::HitRegionsCount() const {
     return hit_region_manager_->GetHitRegionsCount();
 
   return 0;
+}
+
+void CanvasRenderingContext2D::DisableAcceleration() {
+  canvas()->DisableAcceleration();
+}
+
+void CanvasRenderingContext2D::DidInvokeGPUReadbackInCurrentFrame() {
+  canvas()->DidInvokeGPUReadbackInCurrentFrame();
 }
 
 }  // namespace blink
