@@ -80,6 +80,31 @@ private int mSuperNiftyDrawingProperty;
 
 ## Debugging Java
 
+For both apk and test targets, pass `--wait-for-java-debugger` to the wrapper
+scripts.
+
+Examples:
+
+```shell
+# Install, launch, and wait:
+out/Default/bin/chrome_public_apk run --wait-for-java-debugger
+
+# Launch, and have GPU process wait rather than Browser process:
+out/Default/bin/chrome_public_apk launch --wait-for-java-debugger --debug-process-name privileged_process0
+
+# Have Renderers wait:
+out/Default/bin/chrome_public_apk launch --args="--renderer-wait-for-java-debugger"
+
+# Have tests wait:
+out/Default/bin/run_chrome_public_test_apk --wait-for-java-debugger
+out/Default/bin/run_chrome_junit_tests --wait-for-java-debugger  # Specify custom port via --debug-socket=9999
+```
+
+### Android Studio
+*   Open Android Studio ([instructions](android_studio.md))
+*   Click "Run"->"Attach debugger to Android process" (see
+[here](https://developer.android.com/studio/debug/index.html) for more)
+
 ### Eclipse
 *   In Eclipse, make a debug configuration of type "Remote Java Application".
     Choose a "Name" and set "Port" to `8700`.
@@ -98,35 +123,23 @@ private int mSuperNiftyDrawingProperty;
 
 *   Run your debug configuration, and switch to the Debug perspective.
 
-### Android Studio
-*   Build and install the desired target
-*   Open Android Studio ([instructions](android_studio.md))
-*   Click the "Attach debugger to Android process" (see
-[here](https://developer.android.com/studio/debug/index.html) for more)
-
-## Waiting for Java Debugger on Early Startup
-
-*   To debug early startup, pass `--wait-for-java-debugger` to the wrapper
-    scripts (works for both apk wrappers as well as test wrappers).
-*   To debug a renderer process: `--args="--renderer-wait-for-java-debugger"`
-*   To debug the GPU process:
-    `adb shell am set-debug-app -w org.chromium.chrome:privileged_process0`
-
 ## Debugging C/C++
 
-Under `build/android`, there are a few scripts:
+Use the wrapper script `gdb` command to enter into a gdb shell.
 
 ```shell
+# Attaches to browser process.
 out/Default/bin/content_shell_apk gdb
 out/Default/bin/chrome_public_apk gdb
+
+# Attaches to gpu process.
+out/Default/bin/chrome_public_apk gdb --debug-process-name privileged_process0
+
+# Attach to other processes ("chrome_public_apk ps" to show pids).
+out/Default/bin/chrome_public_apk gdb --pid $PID
 ```
 
-By default, these wrappers will attach to the browser process.
-
-You can also attach to the renderer process by using `--args='--sandboxed'`.
-You might need to be root on the phone for that. Run `adb root` if needed)
-
-## Waiting for Debugger on Early Startup
+### Waiting for Debugger on Early Startup
 
 Set the target command line flag with `--wait-for-debugger`.
 

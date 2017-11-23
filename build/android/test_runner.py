@@ -507,27 +507,26 @@ def AddJUnitTestOptions(parser):
   parser = parser.add_argument_group('junit arguments')
 
   parser.add_argument(
-      '--coverage-dir',
-      dest='coverage_dir', type=os.path.realpath,
+      '--coverage-dir', type=os.path.realpath,
       help='Directory to store coverage info.')
   parser.add_argument(
       '--package-filter',
-      dest='package_filter',
       help='Filters tests by package.')
   parser.add_argument(
       '--runner-filter',
-      dest='runner_filter',
       help='Filters tests by runner class. Must be fully qualified.')
   parser.add_argument(
       '-f', '--test-filter',
-      dest='test_filter',
       help='Filters tests googletest-style.')
   parser.add_argument(
-      '-s', '--test-suite',
-      dest='test_suite', required=True,
+      '-s', '--test-suite', required=True,
       help='JUnit test suite to run.')
-  parser.add_argument(
-      '--debug-socket', dest='debug_socket',
+  debug_group = parser.add_mutually_exclusive_group()
+  debug_group.add_argument(
+      '-w', '--wait-for-java-debugger', action='store_const', const='8701',
+      dest='debug_socket', help='Alias for --debug-socket=8701')
+  debug_group.add_argument(
+      '--debug-socket',
       help='Wait for java debugger to attach at specified socket address '
            'before running any application code. Also disables test timeouts '
            'and sets retries=0.')

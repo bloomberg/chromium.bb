@@ -200,14 +200,22 @@ run the test.
 
 ```shell
 # Build the test suite.
-ninja -C out/my_build chrome_junit_tests
+ninja -C out/Default chrome_junit_tests
 
 # Run the test suite.
-BUILDTYPE=my_build build/android/test_runner.py junit -s chrome_junit_tests -vvv
+out/Default/run_chrome_junit_tests
 
 # Run a subset of tests. You might need to pass the package name for some tests.
-BUILDTYPE=my_build build/android/test_runner.py junit -s chrome_junit_tests -vvv
--f "org.chromium.chrome.browser.media.*"
+out/Default/run_chrome_junit_tests -f "org.chromium.chrome.browser.media.*"
+```
+
+### Debugging
+
+Similar to [debugging apk targets](android_debugging_instructions.md#debugging-java):
+
+```shell
+out/Default/bin/run_chrome_junit_tests --wait-for-java-debugger
+out/Default/bin/run_chrome_junit_tests --wait-for-java-debugger  # Specify custom port via --debug-socket=9999
 ```
 
 ## Gtests
@@ -295,6 +303,25 @@ out/Debug/bin/run_content_shell_test_apk -A Feature=Navigation
 
 You might want to add stars `*` to each as a regular expression, e.g.
 `*`AddressDetectionTest`*`
+
+### Debugging
+
+Similar to [debugging apk targets](android_debugging_instructions.md#debugging-java):
+
+```shell
+out/Debug/bin/run_content_shell_test_apk --wait-for-java-debugger
+```
+
+### Deobfuscating Java Stacktraces
+
+If running with `is_debug=false`, Java stacks from logcat need to be fixed up:
+
+```shell
+out/Release/bin/java_deobfuscate out/Release/apks/ChromePublicTest.apk.mapping < stacktrace.txt
+```
+
+Any stacks produced by test runner output will already be deobfuscated.
+
 
 ## Running Blink Layout Tests
 
