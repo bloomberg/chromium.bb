@@ -236,11 +236,11 @@ lowercase   \x03C9        45-2356             ω                   GREEK SMALL L
 math        \x2030        3456-1235           ‰                   PER MILLE SIGN
 math        \x0609        3456-1235           ؉                   ARABIC-INDIC PER MILLE SIGN
 math        \x27E8        4-126               ⟨                   MATHEMATICAL LEFT ANGLE BRACKET
-math        \x27E8        4-345               ⟩                   MATHEMATICAL RIGHT ANGLE BRACKET
+math        \x27E9        4-345               ⟩                   MATHEMATICAL RIGHT ANGLE BRACKET
 math        \x2260        4-2356              ≠                   NOT EQUAL TO
 math        \x2250        5-2356              ≐                   APPROACHES THE LIMIT
 math        \x2264        126-2356            ≤                   LESS-THAN OR EQUAL TO
-math        \x2264        345-2356            ≥                   GREATER-THAN OR EQUAL TO
+math        \x2265        345-2356            ≥                   GREATER-THAN OR EQUAL TO
 math        \x22C5        3                   ⋅                   DOT OPERATOR
 math        \x2217        35                  ∗                   ASTERISK OPERATOR
 math        \x2236        25                  ∶                   RATIO
