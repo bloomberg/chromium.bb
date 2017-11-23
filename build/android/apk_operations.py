@@ -80,6 +80,16 @@ def _UninstallApk(devices, install_dict, package_name):
   device_utils.DeviceUtils.parallel(devices).pMap(uninstall)
 
 
+def _NormalizeProcessName(debug_process_name, package_name):
+  if not debug_process_name:
+    debug_process_name = package_name
+  elif debug_process_name.startswith(':'):
+    debug_process_name = package_name + debug_process_name
+  elif '.' not in debug_process_name:
+    debug_process_name = package_name + ':' + debug_process_name
+  return debug_process_name
+
+
 def _LaunchUrl(devices, package_name, argv=None, command_line_flags_file=None,
                url=None, apk=None, wait_for_java_debugger=False,
                debug_process_name=None):
@@ -95,12 +105,7 @@ def _LaunchUrl(devices, package_name, argv=None, command_line_flags_file=None,
     if not view_activity:
       raise Exception('APK does not support launching with URLs.')
 
-  if not debug_process_name:
-    debug_process_name = package_name
-  elif debug_process_name.startswith(':'):
-    debug_process_name = package_name + debug_process_name
-  elif '.' not in debug_process_name:
-    debug_process_name = package_name + ':' + debug_process_name
+  debug_process_name = _NormalizeProcessName(debug_process_name, package_name)
 
   def launch(device):
     # Set debug app in order to enable reading command line flags on user
@@ -130,6 +135,9 @@ def _LaunchUrl(devices, package_name, argv=None, command_line_flags_file=None,
                                     package=package_name)
       device.StartActivity(launch_intent)
   device_utils.DeviceUtils.parallel(devices).pMap(launch)
+  if wait_for_java_debugger:
+    print ('Waiting for debugger to attach to process: ' +
+           _Colorize(debug_process_name, colorama.Fore.YELLOW))
 
 
 def _ChangeFlags(devices, argv, command_line_flags_file):
@@ -151,16 +159,19 @@ def _TargetCpuToTargetArch(target_cpu):
   return target_cpu
 
 
-def _RunGdb(device, package_name, pid, output_directory, target_cpu, extra_args,
-            verbose):
+def _RunGdb(device, package_name, debug_process_name, pid, output_directory,
+            target_cpu, extra_args, verbose):
   if not pid:
-    pid = _GetPackagePids(device, package_name).get(package_name, [0])[0]
+    debug_process_name = _NormalizeProcessName(debug_process_name, package_name)
+    pids_by_process_name = _GetPackagePids(device, package_name)
+    pid = pids_by_process_name.get(debug_process_name, [0])[0]
   if not pid:
     logging.warning('App not running. Sending launch intent.')
     _LaunchUrl([device], package_name)
-    pid = _GetPackagePids(device, package_name).get(package_name, [0])[0]
+    pids_by_process_name = _GetPackagePids(device, package_name)
+    pid = pids_by_process_name.get(debug_process_name, [0])[0]
     if not pid:
-      raise Exception('Unable to launch application (check logcat)')
+      raise Exception('Unable to find process "%s"' % debug_process_name)
 
   gdb_script_path = os.path.dirname(__file__) + '/adb_gdb'
   cmd = [
@@ -877,9 +888,8 @@ class _LaunchCommand(_Command):
                             'only to the main process. To have renderers wait, '
                             'use --args="--renderer-wait-for-java-debugger"')
     group.add_argument('--debug-process-name',
-                       help='Name of the process to debug. Can be '
-                            'fully-qualified, or just name. '
-                            'E.g. privileged_process0')
+                       help='Name of the process to debug. '
+                            'E.g. "privileged_process0", or "foo.bar:baz"')
     group.add_argument('url', nargs='?', help='A URL to launch with.')
 
   def Run(self):
@@ -942,14 +952,19 @@ If no apk process is currently running, sends a launch intent.
 
   def Run(self):
     extra_args = shlex.split(self.args.args or '')
-    _RunGdb(self.devices[0], self.args.package_name, self.args.pid,
+    _RunGdb(self.devices[0], self.args.package_name,
+            self.args.debug_process_name, self.args.pid,
             self.args.output_directory, self.args.target_cpu, extra_args,
             bool(self.args.verbose_count))
 
   def _RegisterExtraArgs(self, group):
-    group.add_argument('--pid',
-                       help='The process ID to attach to. Defaults to '
-                            'the main process for the package.')
+    pid_group = group.add_mutually_exclusive_group()
+    pid_group.add_argument('--debug-process-name',
+                           help='Name of the process to attach to. '
+                                'E.g. "privileged_process0", or "foo.bar:baz"')
+    pid_group.add_argument('--pid',
+                           help='The process ID to attach to. Defaults to '
+                                'the main process for the package.')
 
 
 class _LogcatCommand(_Command):

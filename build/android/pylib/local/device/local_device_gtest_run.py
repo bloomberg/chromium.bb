@@ -174,6 +174,10 @@ class _ApkDelegate(object):
     if self._wait_for_java_debugger:
       cmd = ['am', 'set-debug-app', '-w', self._package]
       device.RunShellCommand(cmd, check_return=True)
+      logging.warning('*' * 80)
+      logging.warning('Waiting for debugger to attach to process: %s',
+                      self._package)
+      logging.warning('*' * 80)
 
     with command_line_file, test_list_file, stdout_file:
       try:

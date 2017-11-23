@@ -286,6 +286,11 @@ class LocalDeviceInstrumentationTestRun(
     self._env.parallel_devices.pMap(
         individual_device_set_up,
         self._test_instance.GetDataDependencies())
+    if self._test_instance.wait_for_java_debugger:
+      logging.warning('*' * 80)
+      logging.warning('Waiting for debugger to attach to process: %s',
+                      self._test_instance.package_info.package)
+      logging.warning('*' * 80)
 
   #override
   def TearDown(self):
