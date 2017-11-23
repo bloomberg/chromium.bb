@@ -309,6 +309,30 @@ public abstract class ViewAndroidDelegate {
         return mTemporaryContainerLocation[1];
     }
 
+    /**
+     * Return the X location of our container view on screen.
+     */
+    @CalledByNative
+    private int getXLocationOnScreen() {
+        ViewGroup container = getContainerView();
+        if (container == null) return 0;
+
+        container.getLocationOnScreen(mTemporaryContainerLocation);
+        return mTemporaryContainerLocation[0];
+    }
+
+    /**
+     * Return the Y location of our container view on screen.
+     */
+    @CalledByNative
+    private int getYLocationOnScreen() {
+        ViewGroup container = getContainerView();
+        if (container == null) return 0;
+
+        container.getLocationOnScreen(mTemporaryContainerLocation);
+        return mTemporaryContainerLocation[1];
+    }
+
     @CalledByNative
     private boolean hasFocus() {
         ViewGroup containerView = getContainerView();

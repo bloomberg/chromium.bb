@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "build/build_config.h"
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/WebKit/public/platform/WebTouchEvent.h"
@@ -20,6 +21,7 @@ class Vector2d;
 
 namespace ui {
 enum class DomCode;
+class GestureEventAndroid;
 struct GestureEventData;
 struct GestureEventDetails;
 class MotionEvent;
@@ -102,6 +104,12 @@ inline const blink::WebGestureEvent& ToWebGestureEvent(
   DCHECK(blink::WebInputEvent::IsGestureEventType(event.GetType()));
   return static_cast<const blink::WebGestureEvent&>(event);
 }
+
+#if defined(OS_ANDROID)
+// Convenience method that converts an instance to blink event.
+std::unique_ptr<blink::WebGestureEvent>
+CreateWebGestureEventFromGestureEventAndroid(const GestureEventAndroid& event);
+#endif
 
 }  // namespace ui
 

@@ -253,7 +253,8 @@ class CONTENT_EXPORT WebContentsAndroid
                        float content_height,
                        const gfx::SizeF& viewport_size,
                        float page_scale_factor,
-                       const gfx::Vector2dF& page_scale_factor_limits,
+                       float min_page_scale,
+                       float max_page_scale,
                        const float top_shown_pix);
 
  private:

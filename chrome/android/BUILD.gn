@@ -223,6 +223,7 @@ android_library("chrome_java") {
     "//components/web_contents_delegate_android:web_contents_delegate_android_java",
     "//components/web_restrictions:provider_java",
     "//content/public/android:content_java",
+    "//device/gamepad:java",
     "//device/geolocation:geolocation_java",
     "//media/base/android:media_java",
     "//media/capture/content/android:screen_capture_java",

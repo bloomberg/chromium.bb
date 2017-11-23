@@ -30,6 +30,7 @@ class Size;
 namespace ui {
 class DragEventAndroid;
 class EventForwarder;
+class GestureEventAndroid;
 class MotionEventAndroid;
 class ViewClient;
 class WindowAndroid;
@@ -38,7 +39,6 @@ class ViewAndroidObserver;
 // View-related parameters from frame updates.
 struct FrameInfo {
   gfx::SizeF viewport_size;  // In CSS pixels.
-  float page_scale;
 
   // Content offset from the top. Used to translate snapshots to
   // the correct part of the view. In CSS pixels.
@@ -99,7 +99,6 @@ class UI_ANDROID_EXPORT ViewAndroid {
   void UpdateFrameInfo(const FrameInfo& frame_info);
   // content_offset is in CSS scale.
   float content_offset() const { return frame_info_.content_offset; }
-  float page_scale() const { return frame_info_.page_scale; }
   gfx::SizeF viewport_size() const { return frame_info_.viewport_size; }
 
   // Returns the window at the root of this hierarchy, or |null|
@@ -161,6 +160,9 @@ class UI_ANDROID_EXPORT ViewAndroid {
   // Return the location of the container view in physical pixels.
   gfx::Point GetLocationOfContainerViewInWindow();
 
+  // Return the location of the point relative to screen coordinate in pixels.
+  gfx::PointF GetLocationOnScreen(float x, float y);
+
   // ViewAndroid does not own |observer|s.
   void AddObserver(ViewAndroidObserver* observer);
   void RemoveObserver(ViewAndroidObserver* observer);
@@ -183,6 +185,7 @@ class UI_ANDROID_EXPORT ViewAndroid {
   bool OnTouchEvent(const MotionEventAndroid& event);
   bool OnMouseEvent(const MotionEventAndroid& event);
   bool OnMouseWheelEvent(const MotionEventAndroid& event);
+  bool OnGestureEvent(const GestureEventAndroid& event);
 
   void RemoveChild(ViewAndroid* child);
 
@@ -207,6 +210,8 @@ class UI_ANDROID_EXPORT ViewAndroid {
                                      const MotionEventAndroid& event);
   static bool SendMouseWheelEventToClient(ViewClient* client,
                                           const MotionEventAndroid& event);
+  static bool SendGestureEventToClient(ViewClient* client,
+                                       const GestureEventAndroid& event);
 
   bool has_event_forwarder() const { return !!event_forwarder_; }
 
