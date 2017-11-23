@@ -34,10 +34,10 @@ _TEST_ELF_PATH = os.path.join(_TEST_OUTPUT_DIR, 'elf')
 update_goldens = False
 
 
-def _AssertGolden(expected_lines, actual_lines):
+def _AssertGolden(expected_lines, actual_lines, golden_path):
   expected = list(expected_lines)
   actual = list(l + '\n' for l in actual_lines)
-  assert actual == expected, ('Did not match .golden.\n' +
+  assert actual == expected, (('Did not match %s.\n' % golden_path) +
       ''.join(difflib.unified_diff(expected, actual, 'expected', 'actual')))
 
 
@@ -61,7 +61,7 @@ def _CompareWithGolden(name=None):
         logging.info('Wrote %s', golden_path)
       else:
         with open(golden_path) as file_obj:
-          _AssertGolden(file_obj, actual_lines)
+          _AssertGolden(file_obj, actual_lines, golden_path)
     return inner
   return real_decorator
 

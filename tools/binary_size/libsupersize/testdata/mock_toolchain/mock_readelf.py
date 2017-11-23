@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import os
 import sys
 
 
@@ -201,7 +202,7 @@ def _PrintHeader(path):
 
 
 def _PrintOutput(path):
-  payload = _OBJECT_OUTPUTS.get(path)
+  payload = _OBJECT_OUTPUTS.get(os.path.normpath(path))
   assert payload, 'No mock_nm.py entry for: ' + path
   sys.stdout.write(payload)
   sys.stdout.write('\n')
