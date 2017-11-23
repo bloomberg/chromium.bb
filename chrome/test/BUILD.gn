@@ -1568,6 +1568,7 @@ test("browser_tests") {
         "../browser/extensions/api/networking_private/networking_private_apitest.cc",
         "../browser/extensions/api/networking_private/networking_private_chromeos_apitest.cc",
         "../browser/extensions/api/vpn_provider/vpn_provider_apitest.cc",
+        "../browser/signin/chromeos_mirror_account_consistency_browsertest.cc",
         "../browser/ui/ash/accelerator_commands_browsertest.cc",
         "../browser/ui/ash/app_list/app_list_browsertest.cc",
         "../browser/ui/ash/chrome_new_window_client_browsertest.cc",

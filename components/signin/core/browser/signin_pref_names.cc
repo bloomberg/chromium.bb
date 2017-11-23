@@ -6,6 +6,12 @@
 
 namespace prefs {
 
+#if defined(OS_CHROMEOS)
+// Boolean identifying if Mirror account consistency is required for profile.
+const char kAccountConsistencyMirrorRequired[] =
+    "account_consistency_mirror.required";
+#endif
+
 // An integer property indicating the state of account id migration from
 // email to gaia id for the the profile.  See account_tracker_service.h
 // for possible values.

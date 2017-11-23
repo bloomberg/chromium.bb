@@ -31,34 +31,40 @@ struct SupervisedUserSettingsPrefMappingEntry {
 };
 
 SupervisedUserSettingsPrefMappingEntry kSupervisedUserSettingsPrefMapping[] = {
-  {
-    supervised_users::kApprovedExtensions,
-    prefs::kSupervisedUserApprovedExtensions,
-  },
-  {
-    supervised_users::kContentPackDefaultFilteringBehavior,
-    prefs::kDefaultSupervisedUserFilteringBehavior,
-  },
-  {
-    supervised_users::kContentPackManualBehaviorHosts,
-    prefs::kSupervisedUserManualHosts,
-  },
-  {
-    supervised_users::kContentPackManualBehaviorURLs,
-    prefs::kSupervisedUserManualURLs,
-  },
-  {
-    supervised_users::kForceSafeSearch, prefs::kForceGoogleSafeSearch,
-  },
-  {
-    supervised_users::kSafeSitesEnabled, prefs::kSupervisedUserSafeSites,
-  },
-  {
-    supervised_users::kSigninAllowed, prefs::kSigninAllowed,
-  },
-  {
-    supervised_users::kUserName, prefs::kProfileName,
-  },
+#if defined(OS_CHROMEOS)
+    {
+        supervised_users::kAccountConsistencyMirrorRequired,
+        prefs::kAccountConsistencyMirrorRequired,
+    },
+#endif
+    {
+        supervised_users::kApprovedExtensions,
+        prefs::kSupervisedUserApprovedExtensions,
+    },
+    {
+        supervised_users::kContentPackDefaultFilteringBehavior,
+        prefs::kDefaultSupervisedUserFilteringBehavior,
+    },
+    {
+        supervised_users::kContentPackManualBehaviorHosts,
+        prefs::kSupervisedUserManualHosts,
+    },
+    {
+        supervised_users::kContentPackManualBehaviorURLs,
+        prefs::kSupervisedUserManualURLs,
+    },
+    {
+        supervised_users::kForceSafeSearch, prefs::kForceGoogleSafeSearch,
+    },
+    {
+        supervised_users::kSafeSitesEnabled, prefs::kSupervisedUserSafeSites,
+    },
+    {
+        supervised_users::kSigninAllowed, prefs::kSigninAllowed,
+    },
+    {
+        supervised_users::kUserName, prefs::kProfileName,
+    },
 };
 
 }  // namespace
@@ -115,6 +121,9 @@ void SupervisedUserPrefStore::OnNewSettingsAvailable(
   prefs_.reset(new PrefValueMap);
   if (settings) {
     // Set hardcoded prefs and defaults.
+#if defined(OS_CHROMEOS)
+    prefs_->SetBoolean(prefs::kAccountConsistencyMirrorRequired, false);
+#endif
     prefs_->SetInteger(prefs::kDefaultSupervisedUserFilteringBehavior,
                        SupervisedUserURLFilter::ALLOW);
     prefs_->SetBoolean(prefs::kForceGoogleSafeSearch, true);

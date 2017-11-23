@@ -11,11 +11,15 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_params.h"
 #include "build/build_config.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/signin/core/browser/signin_features.h"
 #include "components/signin/core/browser/signin_switches.h"
 
+#if defined(OS_CHROMEOS)
+#include "components/signin/core/browser/signin_pref_names.h"
+#endif
+
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
-#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #endif
 
@@ -66,6 +70,10 @@ const char kAccountConsistencyFeatureMethodDice[] = "dice";
 
 void RegisterAccountConsistencyProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
+#if defined(OS_CHROMEOS)
+  registry->RegisterBooleanPref(prefs::kAccountConsistencyMirrorRequired,
+                                false);
+#endif
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   registry->RegisterBooleanPref(kDiceMigrationCompletePref, false);
 #endif
