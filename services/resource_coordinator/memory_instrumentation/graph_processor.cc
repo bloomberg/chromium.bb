@@ -4,6 +4,7 @@
 
 #include "services/resource_coordinator/memory_instrumentation/graph_processor.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/shared_memory_tracker.h"
 #include "base/strings/string_split.h"
@@ -21,6 +22,8 @@ using Process = memory_instrumentation::GlobalDumpGraph::Process;
 
 namespace {
 
+const char kSizeEntryName[] = "size";
+
 Node::Entry::ScalarUnits EntryUnitsFromString(std::string units) {
   if (units == MemoryAllocatorDump::kUnitsBytes) {
     return Node::Entry::ScalarUnits::kBytes;
@@ -30,6 +33,16 @@ Node::Entry::ScalarUnits EntryUnitsFromString(std::string units) {
     // Invalid units so we just return a value of the correct type.
     return Node::Entry::ScalarUnits::kObjects;
   }
+}
+
+base::Optional<uint64_t> GetSizeEntryOfNode(Node* node) {
+  auto size_it = node->entries()->find(kSizeEntryName);
+  if (size_it == node->entries()->end())
+    return base::nullopt;
+
+  DCHECK(size_it->second.type == Node::Entry::Type::kUInt64);
+  DCHECK(size_it->second.units == Node::Entry::ScalarUnits::kBytes);
+  return base::Optional<uint64_t>(size_it->second.value_uint64);
 }
 
 }  // namespace
@@ -90,7 +103,11 @@ void GraphProcessor::RemoveWeakNodesFromGraph(GlobalDumpGraph* global_graph) {
   for (const auto& pid_to_process : global_graph->process_dump_graphs()) {
     RemoveWeakNodesRecursively(pid_to_process.second->root());
   }
+}
 
+// static
+void GraphProcessor::AddOverheadsAndPropogateEntries(
+    GlobalDumpGraph* global_graph) {
   // Sixth pass: account for tracing overhead in system memory allocators.
   for (auto& pid_to_process : global_graph->process_dump_graphs()) {
     Process* process = pid_to_process.second.get();
@@ -105,10 +122,30 @@ void GraphProcessor::RemoveWeakNodesFromGraph(GlobalDumpGraph* global_graph) {
 
   // Seventh pass: aggregate non-size integer entries into parents and propogate
   // string and int entries for shared graph.
+  auto* global_root = global_graph->shared_memory_graph()->root();
   AggregateNumericsRecursively(global_root);
   PropagateNumericsAndDiagnosticsRecursively(global_root);
   for (auto& pid_to_process : global_graph->process_dump_graphs()) {
     AggregateNumericsRecursively(pid_to_process.second->root());
+  }
+}
+
+// static
+void GraphProcessor::CalculateSizesForGraph(GlobalDumpGraph* global_graph) {
+  // Eighth pass: calculate the size field for nodes by considering the sizes
+  // of their children and owners.
+  {
+    auto it = global_graph->shared_memory_graph()->VisitInDepthFirstPostOrder();
+    while (Node* node = it.next()) {
+      CalculateSizeForNode(node);
+    }
+
+    for (auto& pid_to_process : global_graph->process_dump_graphs()) {
+      auto it = pid_to_process.second->VisitInDepthFirstPostOrder();
+      while (Node* node = it.next()) {
+        CalculateSizeForNode(node);
+      }
+    }
   }
 }
 
@@ -178,7 +215,8 @@ GraphProcessor::ComputeSharedFootprintFromGraph(
     Node* node = global_to_shared_edges.first;
     const auto& edges = global_to_shared_edges.second.edges;
 
-    const Node::Entry& size_entry = node->entries()->find("size")->second;
+    const Node::Entry& size_entry =
+        node->entries()->find(kSizeEntryName)->second;
     DCHECK_EQ(size_entry.type, Node::Entry::kUInt64);
 
     uint64_t size_per_process = size_entry.value_uint64 / edges.size();
@@ -437,7 +475,7 @@ void GraphProcessor::AggregateNumericsRecursively(Node* node) {
     for (const auto& name_to_entry : *path_to_child.second->entries()) {
       const std::string& name = name_to_entry.first;
       if (name_to_entry.second.type == Node::Entry::Type::kUInt64 &&
-          name != "size" && name != "effective_size") {
+          name != kSizeEntryName && name != "effective_size") {
         numeric_names.insert(name);
       }
     }
@@ -457,6 +495,87 @@ void GraphProcessor::PropagateNumericsAndDiagnosticsRecursively(Node* node) {
   }
   for (const auto& path_to_child : *node->children()) {
     PropagateNumericsAndDiagnosticsRecursively(path_to_child.second);
+  }
+}
+
+// static
+base::Optional<uint64_t> GraphProcessor::AggregateSizeForDescendantNode(
+    Node* root,
+    Node* descendant) {
+  Edge* owns_edge = descendant->owns_edge();
+  if (owns_edge && owns_edge->target()->IsDescendentOf(*root))
+    return 0;
+
+  if (descendant->children()->size() == 0)
+    return GetSizeEntryOfNode(descendant).value_or(0ul);
+
+  base::Optional<uint64_t> size;
+  for (auto path_to_child : *descendant->children()) {
+    auto c_size = AggregateSizeForDescendantNode(root, path_to_child.second);
+    if (size)
+      *size += c_size.value_or(0);
+    else
+      size = std::move(c_size);
+  }
+  return size;
+}
+
+// Assumes that this function has been called on all children and owner nodes.
+// static
+void GraphProcessor::CalculateSizeForNode(Node* node) {
+  // Get the size at the root node if it exists.
+  base::Optional<uint64_t> node_size = GetSizeEntryOfNode(node);
+
+  // Aggregate the size of all the child nodes.
+  base::Optional<uint64_t> aggregated_size;
+  for (auto path_to_child : *node->children()) {
+    auto c_size = AggregateSizeForDescendantNode(node, path_to_child.second);
+    if (aggregated_size)
+      *aggregated_size += c_size.value_or(0ul);
+    else
+      aggregated_size = std::move(c_size);
+  }
+
+  // Check that if both aggregated and node sizes exist that the node size
+  // is bigger than the aggregated.
+  DCHECK(!node_size || !aggregated_size || *node_size >= *aggregated_size);
+
+  // Calculate the maximal size of an owner node.
+  base::Optional<uint64_t> max_owner_size;
+  for (auto* edge : *node->owned_by_edges()) {
+    auto o_size = GetSizeEntryOfNode(edge->source());
+    if (max_owner_size)
+      *max_owner_size = std::max(o_size.value_or(0ul), *max_owner_size);
+    else
+      max_owner_size = std::move(o_size);
+  }
+
+  // Check that if both owner and node sizes exist that the node size
+  // is bigger than the owner.
+  DCHECK(!node_size || !max_owner_size || *node_size >= *max_owner_size);
+
+  // Clear out any existing size entry which may exist.
+  node->entries()->erase(kSizeEntryName);
+
+  // If no inference about size can be made then simply return.
+  if (!node_size && !aggregated_size && !max_owner_size)
+    return;
+
+  // Update the node with the new size entry.
+  uint64_t aggregated_size_value = aggregated_size.value_or(0ul);
+  uint64_t process_size =
+      std::max({node_size.value_or(0ul), aggregated_size_value,
+                max_owner_size.value_or(0ul)});
+  node->AddEntry(kSizeEntryName, Node::Entry::ScalarUnits::kBytes,
+                 process_size);
+
+  // If this is an intermediate node then add a ghost node which stores
+  // all sizes not accounted for by the children.
+  uint64_t unaccounted = process_size - aggregated_size_value;
+  if (unaccounted > 0 && !node->children()->empty()) {
+    Node* unspecified = node->CreateChild("<unspecified>");
+    unspecified->AddEntry(kSizeEntryName, Node::Entry::ScalarUnits::kBytes,
+                          unaccounted);
   }
 }
 

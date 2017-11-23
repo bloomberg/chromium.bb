@@ -50,11 +50,20 @@ class GraphProcessorTest : public testing::Test {
   }
 
   void AggregateNumericsRecursively(GlobalDumpGraph::Node* node) {
-    return GraphProcessor::AggregateNumericsRecursively(node);
+    GraphProcessor::AggregateNumericsRecursively(node);
   }
 
   void PropagateNumericsAndDiagnosticsRecursively(GlobalDumpGraph::Node* node) {
-    return GraphProcessor::PropagateNumericsAndDiagnosticsRecursively(node);
+    GraphProcessor::PropagateNumericsAndDiagnosticsRecursively(node);
+  }
+
+  base::Optional<uint64_t> AggregateSizeForDescendantNode(Node* root,
+                                                          Node* descendant) {
+    return GraphProcessor::AggregateSizeForDescendantNode(root, descendant);
+  }
+
+  void CalculateSizeForNode(GlobalDumpGraph::Node* node) {
+    GraphProcessor::CalculateSizeForNode(node);
   }
 };
 
@@ -571,6 +580,123 @@ TEST_F(GraphProcessorTest, PropagateNumericsAndDiagnosticsRecursively) {
   Edge edge_2(&owner_2, &c2, 0);
   c2.AddOwnedByEdge(&edge_2);
   owner_2.SetOwnsEdge(&edge_2);
+}
+
+TEST_F(GraphProcessorTest, AggregateSizeForDescendantNode) {
+  GlobalDumpGraph graph;
+  Process process(1, &graph);
+  Node* root = process.root();
+
+  Node c1(&process, root);
+  c1.AddEntry("size", Node::Entry::ScalarUnits::kBytes, 100);
+
+  Node c2(&process, root);
+  Node c2_c1(&process, &c2);
+  Node c2_c2(&process, &c2);
+  c2_c1.AddEntry("size", Node::Entry::ScalarUnits::kBytes, 256);
+  c2_c2.AddEntry("size", Node::Entry::ScalarUnits::kBytes, 256);
+
+  Node c3(&process, root);
+  Node c3_c1(&process, &c3);
+  Node c3_c2(&process, &c3);
+  c3_c1.AddEntry("size", Node::Entry::ScalarUnits::kBytes, 10);
+  c3_c2.AddEntry("size", Node::Entry::ScalarUnits::kBytes, 10);
+
+  root->InsertChild("c1", &c1);
+  root->InsertChild("c2", &c2);
+  root->InsertChild("c3", &c3);
+  c2.InsertChild("c1", &c2_c1);
+  c2.InsertChild("c2", &c2_c2);
+  c3.InsertChild("c1", &c3_c1);
+  c3.InsertChild("c2", &c3_c2);
+
+  Edge edge(&c2_c2, &c3_c2, 0);
+  c3_c2.AddOwnedByEdge(&edge);
+  c2_c2.SetOwnsEdge(&edge);
+
+  // Aggregating root should give size of (100 + 256 + 10 * 2) = 376.
+  // |c2_c2| is not counted because it is owns by |c3_c2|.
+  ASSERT_EQ(376ul, *AggregateSizeForDescendantNode(root, root));
+
+  // Aggregating c2 should give size of (256 * 2) = 512. |c2_c2| is counted
+  // because |c3_c2| is not a child of |c2|.
+  ASSERT_EQ(512ul, *AggregateSizeForDescendantNode(&c2, &c2));
+}
+
+TEST_F(GraphProcessorTest, CalculateSizeForNode) {
+  GlobalDumpGraph graph;
+  Process process(1, &graph);
+  Node* root = process.root();
+
+  Node c1(&process, root);
+  c1.AddEntry("size", Node::Entry::ScalarUnits::kBytes, 600);
+
+  Node c2(&process, root);
+  Node c2_c1(&process, &c2);
+  Node c2_c2(&process, &c2);
+  c2_c1.AddEntry("size", Node::Entry::ScalarUnits::kBytes, 10);
+  c2_c2.AddEntry("size", Node::Entry::ScalarUnits::kBytes, 10);
+
+  Node c3(&process, root);
+  Node c3_c1(&process, &c3);
+  Node c3_c2(&process, &c3);
+  c3.AddEntry("size", Node::Entry::ScalarUnits::kBytes, 600);
+  c3_c1.AddEntry("size", Node::Entry::ScalarUnits::kBytes, 256);
+  c3_c2.AddEntry("size", Node::Entry::ScalarUnits::kBytes, 256);
+
+  root->InsertChild("c1", &c1);
+  root->InsertChild("c2", &c2);
+  root->InsertChild("c3", &c3);
+  c2.InsertChild("c1", &c2_c1);
+  c2.InsertChild("c2", &c2_c2);
+  c3.InsertChild("c1", &c3_c1);
+  c3.InsertChild("c2", &c3_c2);
+
+  Edge edge(&c2_c2, &c3_c2, 0);
+  c3_c2.AddOwnedByEdge(&edge);
+  c2_c2.SetOwnsEdge(&edge);
+
+  // Compute size entry for |c2| since computations for |c2_c1| and |c2_c2|
+  // are already complete.
+  CalculateSizeForNode(&c2);
+
+  // Check that |c2| now has a size entry of 20 (sum of children).
+  auto c2_entry = c2.entries()->begin()->second;
+  ASSERT_EQ(c2_entry.value_uint64, 20ul);
+  ASSERT_EQ(c2_entry.units, Node::Entry::ScalarUnits::kBytes);
+
+  // Compute size entry for |c3_c2| which should not change in size.
+  CalculateSizeForNode(&c3_c2);
+
+  // Check that |c3_c2| now has unchanged size.
+  auto c3_c2_entry = c3_c2.entries()->begin()->second;
+  ASSERT_EQ(c3_c2_entry.value_uint64, 256ul);
+  ASSERT_EQ(c3_c2_entry.units, Node::Entry::ScalarUnits::kBytes);
+
+  // Compute size entry for |c3| which should add an unspecified node.
+  CalculateSizeForNode(&c3);
+
+  // Check that |c3| has unchanged size.
+  auto c3_entry = c3.entries()->begin()->second;
+  ASSERT_EQ(c3_entry.value_uint64, 600ul);
+  ASSERT_EQ(c3_entry.units, Node::Entry::ScalarUnits::kBytes);
+
+  // Check that the unspecified node is a child of |c3| and has size
+  // 600 - 512 = 88.
+  Node* c3_child = c3.children()->find("<unspecified>")->second;
+  auto c3_child_entry = c3_child->entries()->begin()->second;
+  ASSERT_EQ(c3_child_entry.value_uint64, 88ul);
+  ASSERT_EQ(c3_child_entry.units, Node::Entry::ScalarUnits::kBytes);
+
+  // Compute size entry for |root| which should aggregate children sizes.
+  CalculateSizeForNode(root);
+
+  // Check that |root| has been assigned a size of 600 + 10 + 600 = 1210.
+  // Note that |c2_c2| is not counted because it ows |c3_c2| which is a
+  // descendant of |root|.
+  auto root_entry = root->entries()->begin()->second;
+  ASSERT_EQ(root_entry.value_uint64, 1210ul);
+  ASSERT_EQ(root_entry.units, Node::Entry::ScalarUnits::kBytes);
 }
 
 }  // namespace memory_instrumentation
