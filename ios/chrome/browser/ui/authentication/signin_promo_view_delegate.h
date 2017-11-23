@@ -23,6 +23,9 @@
 // state mode.
 - (void)signinPromoViewDidTapSigninWithOtherAccount:(SigninPromoView*)view;
 
+// Called by SigninPromoView when the user taps the close button.
+- (void)signinPromoViewCloseButtonWasTapped:(SigninPromoView*)view;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_AUTHENTICATION_SIGN_PROMO_VIEW_DELEGATE_H_

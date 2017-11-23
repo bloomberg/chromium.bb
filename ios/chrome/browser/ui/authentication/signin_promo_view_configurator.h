@@ -18,7 +18,9 @@
 // For warm state mode set at least the |userEmail| to not nil.
 - (instancetype)initWithUserEmail:(NSString*)userEmail
                      userFullName:(NSString*)userFullName
-                        userImage:(UIImage*)userImage NS_DESIGNATED_INITIALIZER;
+                        userImage:(UIImage*)userImage
+                   hasCloseButton:(BOOL)hasCloseButton
+    NS_DESIGNATED_INITIALIZER;
 
 // Configures a sign-in promo view.
 - (void)configureSigninPromoView:(SigninPromoView*)signinPromoView;

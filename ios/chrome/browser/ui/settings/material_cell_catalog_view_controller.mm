@@ -489,7 +489,8 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
   signinPromoItem.configurator =
       [[SigninPromoViewConfigurator alloc] initWithUserEmail:nil
                                                 userFullName:nil
-                                                   userImage:nil];
+                                                   userImage:nil
+                                              hasCloseButton:YES];
   return signinPromoItem;
 }
 
@@ -499,7 +500,8 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
   signinPromoItem.configurator = [[SigninPromoViewConfigurator alloc]
       initWithUserEmail:@"jonhdoe@example.com"
            userFullName:@"John Doe"
-              userImage:nil];
+              userImage:nil
+         hasCloseButton:NO];
   return signinPromoItem;
 }
 

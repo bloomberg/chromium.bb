@@ -41,6 +41,10 @@
                       completion:
                           (ShowSigninCommandCompletionCallback)completion;
 
+// Called when the close button is tapped.
+- (void)signinPromoViewMediatorCloseButtonWasTapped:
+    (SigninPromoViewMediator*)mediator;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_AUTHENTICATION_SIGNIN_PROMO_VIEW_CONSUMER_H_

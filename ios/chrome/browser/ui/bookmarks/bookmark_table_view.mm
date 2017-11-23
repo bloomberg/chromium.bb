@@ -347,10 +347,6 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
     signinPromoCell.signinPromoView.delegate = _signinPromoViewMediator;
     [[_signinPromoViewMediator createConfigurator]
         configureSigninPromoView:signinPromoCell.signinPromoView];
-    __weak BookmarkTableView* weakSelf = self;
-    signinPromoCell.signinPromoView.closeButtonAction = ^() {
-      [weakSelf signinPromoCloseButtonAction];
-    };
     signinPromoCell.selectionStyle = UITableViewCellSelectionStyleNone;
     return signinPromoCell;
   }
@@ -509,6 +505,11 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 
 - (void)signinDidFinish {
   [self promoStateChangedAnimated:NO];
+}
+
+- (void)signinPromoViewMediatorCloseButtonWasTapped:
+    (SigninPromoViewMediator*)mediator {
+  [_delegate bookmarkTableViewDismissPromo:self];
 }
 
 #pragma mark - BookmarkModelBridgeObserver Callbacks
@@ -672,12 +673,6 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
     _editNodes = newEditNodes;
     [self.delegate bookmarkTableView:self selectedEditNodes:_editNodes];
   }
-}
-
-// Removes the sign-in promo view.
-- (void)signinPromoCloseButtonAction {
-  [_signinPromoViewMediator signinPromoViewClosed];
-  [_delegate bookmarkTableViewDismissPromo:self];
 }
 
 - (BOOL)shouldShowPromoCell {

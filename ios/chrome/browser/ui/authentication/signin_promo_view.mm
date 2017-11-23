@@ -51,7 +51,6 @@ NSString* const kSigninPromoCloseButtonId = @"kSigninPromoCloseButtonId";
 @synthesize primaryButton = _primaryButton;
 @synthesize secondaryButton = _secondaryButton;
 @synthesize closeButton = _closeButton;
-@synthesize closeButtonAction = _closeButtonAction;
 
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
@@ -170,7 +169,6 @@ NSString* const kSigninPromoCloseButtonId = @"kSigninPromoCloseButtonId";
 
 - (void)prepareForReuse {
   _delegate = nil;
-  _closeButtonAction = nil;
 }
 
 - (void)setMode:(SigninPromoViewMode)mode {
@@ -219,11 +217,6 @@ NSString* const kSigninPromoCloseButtonId = @"kSigninPromoCloseButtonId";
   _imageView.image = CircularImageFromImage(image, kProfileImageFixedSize);
 }
 
-- (void)setCloseButtonAction:(CloseButtonCallback)closeButtonAction {
-  _closeButtonAction = [closeButtonAction copy];
-  _closeButton.hidden = _closeButtonAction == nil;
-}
-
 - (void)accessibilityPrimaryAction:(id)unused {
   [_primaryButton sendActionsForControlEvents:UIControlEventTouchUpInside];
 }
@@ -256,9 +249,7 @@ NSString* const kSigninPromoCloseButtonId = @"kSigninPromoCloseButtonId";
 }
 
 - (void)onCloseButtonAction:(id)unused {
-  if (_closeButtonAction) {
-    _closeButtonAction();
-  }
+  [_delegate signinPromoViewCloseButtonWasTapped:self];
 }
 
 #pragma mark - NSObject(Accessibility)

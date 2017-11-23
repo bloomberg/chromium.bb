@@ -303,11 +303,6 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
   [_showMemoryDebugToolsEnabled setObserver:nil];
 }
 
-- (void)signinPromoCloseButtonAction {
-  [_signinPromoViewMediator signinPromoViewClosed];
-  [self reloadData];
-}
-
 #pragma mark View lifecycle
 
 // TODO(crbug.com/661915): Refactor TemplateURLObserver and re-implement this so
@@ -673,10 +668,6 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
       SigninPromoCell* signinPromoCell =
           base::mac::ObjCCast<SigninPromoCell>(cell);
       signinPromoCell.signinPromoView.delegate = _signinPromoViewMediator;
-      __weak SettingsCollectionViewController* weakSelf = self;
-      signinPromoCell.signinPromoView.closeButtonAction = ^() {
-        [weakSelf signinPromoCloseButtonAction];
-      };
       break;
     }
     case ItemTypeViewSource: {
@@ -1202,6 +1193,11 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
   [self showSignInWithIdentity:identity
                    promoAction:promoAction
                     completion:completion];
+}
+
+- (void)signinPromoViewMediatorCloseButtonWasTapped:
+    (SigninPromoViewMediator*)mediator {
+  [self reloadData];
 }
 
 @end

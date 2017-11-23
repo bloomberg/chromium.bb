@@ -794,10 +794,6 @@ CGFloat minFaviconSizePt = 16;
     signinPromoCell.signinPromoView.delegate = _signinPromoViewMediator;
     [[_signinPromoViewMediator createConfigurator]
         configureSigninPromoView:signinPromoCell.signinPromoView];
-    __weak BookmarkCollectionView* weakSelf = self;
-    signinPromoCell.signinPromoView.closeButtonAction = ^() {
-      [weakSelf signinPromoCloseButtonAction];
-    };
     return signinPromoCell;
   }
   const BookmarkNode* node = [self nodeAtIndexPath:indexPath];
@@ -807,12 +803,6 @@ CGFloat minFaviconSizePt = 16;
 
   BookmarkItemCell* cell = [self cellForBookmark:node indexPath:indexPath];
   return cell;
-}
-
-// Removes the sign-in promo view.
-- (void)signinPromoCloseButtonAction {
-  [_signinPromoViewMediator signinPromoViewClosed];
-  [_delegate bookmarkCollectionViewDismissPromo:self];
 }
 
 // Create a header view for the element at |indexPath|.
@@ -872,6 +862,11 @@ CGFloat minFaviconSizePt = 16;
 
 - (void)signinDidFinish {
   [self promoStateChangedAnimated:NO];
+}
+
+- (void)signinPromoViewMediatorCloseButtonWasTapped:
+    (SigninPromoViewMediator*)mediator {
+  [_delegate bookmarkCollectionViewDismissPromo:self];
 }
 
 #pragma mark - UIScrollViewDelegate
