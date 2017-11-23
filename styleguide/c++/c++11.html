@@ -278,6 +278,14 @@ enum <i>enumname</i> : <i>base-type</i></code></td>
 </tr>
 
 <tr>
+<td>Raw String Literals</td>
+<td><code>string <i>var</i>=R&quot;(<i>raw_string</i>)&quot;;</code></td>
+<td>Allows a string to be encoded without any escape sequences, easing parsing in regex expressions, for example</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/string_literal">string literal</a></td>
+<td>Beware of passing these as macro arguments, which can trigger a <a href="https://gcc.gnu.org/bugzilla/show_bug.cgi?id=57824">lexer bug</a> on older GCC versions. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/2kWQHbbuMHI">Discussion thread</a></td>
+</tr>
+
+<tr>
 <td>Rvalue References</td>
 <td><code>T(T&amp;&amp; t)</code> and <code>T&amp; operator=(T&amp;&amp; t)<br/><br/>
 template &lt;typename T&gt;<br/>void Function(T&amp;&amp; t) { ... }</code></td>
@@ -535,14 +543,6 @@ template &lt;typename T&gt;<br/>void Function(T&amp;&amp; t) { ... }</code></td>
 <td>Random number generation algorithms and utilities</td>
 <td><a href="http://en.cppreference.com/w/cpp/numeric/random">Pseudo-random number generation</a></td>
 <td>Because the standard does not define precisely how the <code><i>xxx</i>_distribution</code> objects generate output, the same object may produce different output for the same seed across platforms, or even across different versions of the STL. Do not use these objects in any scenario where behavioral consistency is required. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/cxx/MLgK9vCE4BA">Discussion thread</a></td>
-</tr>
-
-<tr>
-<td>Raw String Literals</td>
-<td><code>string <i>var</i>=R&quot;(<i>raw_string</i>)&quot;;</code></td>
-<td>Allows a string to be encoded without any escape sequences, easing parsing in regex expressions, for example</td>
-<td><a href="http://en.cppreference.com/w/cpp/language/string_literal">string literal</a></td>
-<td>Beware of passing these as macro arguments, which can trigger a <a href="https://gcc.gnu.org/bugzilla/show_bug.cgi?id=57824">lexer bug</a> on older GCC versions. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/2kWQHbbuMHI">Discussion thread</a></td>
 </tr>
 
 <tr>
