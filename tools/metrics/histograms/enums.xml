@@ -11972,6 +11972,7 @@ Called by update_net_error_codes.py.-->
   <int value="397" label="UnaffiliatedArcAllowed"/>
   <int value="398" label="IsolateOrigins"/>
   <int value="399" label="SitePerProcess"/>
+  <int value="400" label="UnsafelyTreatInsecureOriginAsSecure"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

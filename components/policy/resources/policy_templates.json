@@ -146,7 +146,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 399
+#   For your editing convenience: highest ID currently used: 400
 #   And don't forget to also update the EnterprisePolicies enum of
 #   histograms.xml (run 'python tools/metrics/histograms/update_policies.py').
 #
@@ -10695,6 +10695,27 @@
       If the policy is disabled, the pre-Site Isolation process management logic will take effect.
       If the policy is not configured, the user will be able to change this setting.
       ''',
+    },
+    {
+      'name': 'UnsafelyTreatInsecureOriginAsSecure',
+      'type': 'list',
+      'schema': { 'type': 'array'},
+      'supported_on': ['chrome.*:65-'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': True,
+      },
+      'example_value': ['http://testserver.example.com/'],
+      'id': 400,
+      'caption': '''Origins to be treated as secure context.''',
+      'tags': ['system-security'],
+      'desc': '''
+        The policy specifies a list of origins (URLs) to be treated as secure
+        context. The intent is to allow organizations to set up a staging server
+        for internal web developments.
+        This is the same as the --unsafely-treat-insecure-origin-as-secure flag.
+        For more information on secure contexts, see https://www.w3.org/TR/secure-contexts/
+        '''
     },
   ],
   'messages': {

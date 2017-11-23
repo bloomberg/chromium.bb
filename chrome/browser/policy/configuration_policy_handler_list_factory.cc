@@ -816,6 +816,27 @@ class BrowsingHistoryPolicyHandler : public TypeCheckingPolicyHandler {
   }
 };
 
+class SecureOriginPolicyHandler : public TypeCheckingPolicyHandler {
+ public:
+  SecureOriginPolicyHandler()
+      : TypeCheckingPolicyHandler(key::kUnsafelyTreatInsecureOriginAsSecure,
+                                  base::Value::Type::LIST) {}
+  void ApplyPolicySettings(const PolicyMap& policies,
+                           PrefValueMap* prefs) override {
+    const base::Value* value = policies.GetValue(policy_name());
+    if (!value)
+      return;
+
+    std::string pref_string;
+    for (const auto& list_entry : value->GetList()) {
+      if (!pref_string.empty())
+        pref_string.append(",");
+      pref_string.append(list_entry.GetString());
+    }
+    prefs->SetString(prefs::kUnsafelyTreatInsecureOriginAsSecure, pref_string);
+  }
+};
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 void GetExtensionAllowedTypesMap(
     std::vector<std::unique_ptr<StringMappingListPolicyHandler::MappingEntry>>*
@@ -909,6 +930,7 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       certificate_transparency::prefs::kCTExcludedHosts, chrome_schema,
       SCHEMA_STRICT, SimpleSchemaValidatingPolicyHandler::RECOMMENDED_ALLOWED,
       SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
+  handlers->AddHandler(base::MakeUnique<SecureOriginPolicyHandler>());
 
 #if defined(OS_ANDROID)
   handlers->AddHandler(
