@@ -56,7 +56,7 @@ PerformanceServerTimingVector PerformanceServerTiming::ParseServerTiming(
         response.HttpHeaderField(HTTPNames::Server_Timing));
     for (const auto& header : *headers) {
       entries.push_back(new PerformanceServerTiming(
-          header->name, header->duration, header->description,
+          header->Name(), header->Duration(), header->Description(),
           shouldAllowTimingDetails));
     }
   }

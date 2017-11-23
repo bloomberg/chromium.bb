@@ -34,6 +34,7 @@
 #include "platform/PlatformExport.h"
 #include "platform/json/JSONValues.h"
 #include "platform/network/ParsedContentType.h"
+#include "platform/network/ServerTimingHeader.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/HashSet.h"
@@ -81,15 +82,6 @@ struct CacheControlHeader {
         contains_no_store(false),
         contains_must_revalidate(false),
         max_age(0.0) {}
-};
-
-struct ServerTimingHeader {
-  String name;
-  double duration;
-  String description;
-
-  ServerTimingHeader(String name, double duration, String description)
-      : name(name), duration(duration), description(description) {}
 };
 
 using ServerTimingHeaderVector = Vector<std::unique_ptr<ServerTimingHeader>>;

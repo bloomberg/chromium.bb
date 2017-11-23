@@ -14,6 +14,13 @@ namespace {
 using Mode = HeaderFieldTokenizer::Mode;
 
 bool IsTokenCharacter(Mode mode, UChar c) {
+  // TODO(cvazac) Check HTTPArchive for usage and possible deprecation.
+  // According to https://tools.ietf.org/html/rfc7230#appendix-B, the
+  // following characters (ASCII decimal) should not be included in a TOKEN:
+  // 123 ('{')
+  // 125 ('}')
+  // 127 (delete)
+
   if (c >= 128)
     return false;
   if (c < 0x20)

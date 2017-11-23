@@ -55,6 +55,8 @@ jumbo_source_set("network") {
     "ParsedContentHeaderFieldParameters.h",
     "ParsedContentType.cpp",
     "ParsedContentType.h",
+    "ServerTimingHeader.cpp",
+    "ServerTimingHeader.h",
     "WebSocketHandshakeRequest.cpp",
     "WebSocketHandshakeRequest.h",
     "WebSocketHandshakeResponse.cpp",
