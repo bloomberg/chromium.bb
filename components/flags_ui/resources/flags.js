@@ -27,18 +27,11 @@ function renderTemplate(experimentalFeaturesData) {
     };
   }
 
-  elements = document.getElementsByClassName('experiment-disable-link');
+  elements = document.getElementsByClassName('experiment-enable-disable');
   for (var i = 0; i < elements.length; ++i) {
-    elements[i].onclick = function() {
-      handleEnableExperimentalFeature(this, false);
-      return false;
-    };
-  }
-
-  elements = document.getElementsByClassName('experiment-enable-link');
-  for (var i = 0; i < elements.length; ++i) {
-    elements[i].onclick = function() {
-      handleEnableExperimentalFeature(this, true);
+    elements[i].onchange = function() {
+      handleEnableExperimentalFeature(this,
+          this.options[this.selectedIndex].value == 'enabled');
       return false;
     };
   }

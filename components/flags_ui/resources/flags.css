@@ -250,35 +250,7 @@ h2 {
   width: 150px;
 }
 
-.experiment-disable-link,
-.experiment-enable-link {
-  background: white;
-  border: 1px solid var(--google-blue-700);
-  border-radius: 3px;
-  box-sizing: border-box;
-  color: var(--google-blue-700);
-  display: inline-block;
-  font-size: 13px;
-  letter-spacing: .01em;
-  max-width: 150px;
-  padding: 3px 10px;
-  text-align: center;
-  text-decoration: none;
-  vertical-align: middle;
-  width: 100%;
-}
-
-.experiment-disable-link:hover,
-.experiment-enable-link:hover {
-  background: var(--google-gray-100);
-}
-
-.experiment-disable-link:active,
-.experiment-enable-link:active {
-  background: #eee;
-}
-
-.experiment-select {
+.experiment-actions select {
   background: white;
   border: 1px solid var(--google-blue-700);
   color: var(--google-blue-700);
@@ -290,13 +262,7 @@ h2 {
   width: 100%;
 }
 
-.experiment-select option {
-  padding: 1em;
-}
-
-.experiment-switched .experiment-select,
-.experiment-switched .experiment-enable-link,
-.experiment-switched .experiment-disable-link {
+.experiment-switched .experiment-actions select {
   background: var(--google-blue-700);
   color: white;
 }
