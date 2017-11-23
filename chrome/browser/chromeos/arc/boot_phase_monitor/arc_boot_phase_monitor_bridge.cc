@@ -83,6 +83,11 @@ class ArcBootPhaseMonitorBridgeFactory
 }  // namespace
 
 // static
+BrowserContextKeyedServiceFactory* ArcBootPhaseMonitorBridge::GetFactory() {
+  return ArcBootPhaseMonitorBridgeFactory::GetInstance();
+}
+
+// static
 ArcBootPhaseMonitorBridge* ArcBootPhaseMonitorBridge::GetForBrowserContext(
     content::BrowserContext* context) {
   return ArcBootPhaseMonitorBridgeFactory::GetForBrowserContext(context);

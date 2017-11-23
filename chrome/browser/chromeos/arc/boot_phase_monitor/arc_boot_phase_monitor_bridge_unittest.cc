@@ -13,8 +13,8 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_prefs.h"
+#include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/test/fake_arc_session.h"
 #include "components/browser_sync/profile_sync_test_util.h"
@@ -29,44 +29,41 @@ namespace {
 class ArcBootPhaseMonitorBridgeTest : public testing::Test {
  public:
   ArcBootPhaseMonitorBridgeTest()
-      : user_manager_enabler_(
-            std::make_unique<chromeos::FakeChromeUserManager>()) {}
-  ~ArcBootPhaseMonitorBridgeTest() override = default;
-
-  void SetUp() override {
+      : scoped_user_manager_(
+            std::make_unique<chromeos::FakeChromeUserManager>()),
+        arc_service_manager_(std::make_unique<ArcServiceManager>()),
+        arc_session_manager_(std::make_unique<ArcSessionManager>(
+            std::make_unique<ArcSessionRunner>(
+                base::Bind(FakeArcSession::Create)))),
+        testing_profile_(std::make_unique<TestingProfile>()),
+        disable_cpu_restriction_counter_(0),
+        record_uma_counter_(0) {
     chromeos::DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
         std::make_unique<chromeos::FakeSessionManagerClient>());
-    chromeos::DBusThreadManager::Initialize();
 
     SetArcAvailableCommandLineForTesting(
         base::CommandLine::ForCurrentProcess());
-
-    disable_cpu_restriction_counter_ = 0;
-    record_uma_counter_ = 0;
-    testing_profile_ = std::make_unique<TestingProfile>();
 
     const AccountId account_id(AccountId::FromUserEmailGaiaId(
         testing_profile_->GetProfileUserName(), "1234567890"));
     GetFakeUserManager()->AddUser(account_id);
     GetFakeUserManager()->LoginUser(account_id);
 
-    arc_session_manager_ = std::make_unique<ArcSessionManager>(
-        std::make_unique<ArcSessionRunner>(base::Bind(FakeArcSession::Create)));
-    bridge_service_ = std::make_unique<ArcBridgeService>();
-
-    boot_phase_monitor_bridge_ = std::make_unique<ArcBootPhaseMonitorBridge>(
-        testing_profile_.get(), bridge_service_.get());
+    ArcBootPhaseMonitorBridge::GetFactory()->SetTestingFactoryAndUse(
+        testing_profile_.get(),
+        [](content::BrowserContext* context) -> std::unique_ptr<KeyedService> {
+          return std::make_unique<ArcBootPhaseMonitorBridge>(
+              context, ArcServiceManager::Get()->arc_bridge_service());
+        });
+    boot_phase_monitor_bridge_ =
+        ArcBootPhaseMonitorBridge::GetForBrowserContext(testing_profile_.get());
     boot_phase_monitor_bridge_->SetDelegateForTesting(
         std::make_unique<TestDelegateImpl>(this));
   }
 
-  void TearDown() override {
+  ~ArcBootPhaseMonitorBridgeTest() override {
     boot_phase_monitor_bridge_->Shutdown();
-    boot_phase_monitor_bridge_.reset();
-
-    bridge_service_.reset();
-    arc_session_manager_.reset();
-    testing_profile_.reset();
+    chromeos::DBusThreadManager::Shutdown();
   }
 
  protected:
@@ -74,7 +71,7 @@ class ArcBootPhaseMonitorBridgeTest : public testing::Test {
     return arc_session_manager_.get();
   }
   ArcBootPhaseMonitorBridge* boot_phase_monitor_bridge() const {
-    return boot_phase_monitor_bridge_.get();
+    return boot_phase_monitor_bridge_;
   }
   size_t disable_cpu_restriction_counter() const {
     return disable_cpu_restriction_counter_;
@@ -114,11 +111,11 @@ class ArcBootPhaseMonitorBridgeTest : public testing::Test {
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
-  std::unique_ptr<TestingProfile> testing_profile_;
+  user_manager::ScopedUserManager scoped_user_manager_;
+  std::unique_ptr<ArcServiceManager> arc_service_manager_;
   std::unique_ptr<ArcSessionManager> arc_session_manager_;
-  std::unique_ptr<ArcBridgeService> bridge_service_;
-  std::unique_ptr<ArcBootPhaseMonitorBridge> boot_phase_monitor_bridge_;
-  user_manager::ScopedUserManager user_manager_enabler_;
+  std::unique_ptr<TestingProfile> testing_profile_;
+  ArcBootPhaseMonitorBridge* boot_phase_monitor_bridge_;
 
   size_t disable_cpu_restriction_counter_;
   size_t record_uma_counter_;
