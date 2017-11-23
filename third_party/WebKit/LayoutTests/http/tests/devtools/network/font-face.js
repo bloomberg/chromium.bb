@@ -1,14 +1,11 @@
-<html>
-<head>
-<script src="/inspector/inspector-test.js"></script>
-<script>
-function createIFrame() {
-    var iframe = document.createElement("iframe");
-    iframe.src = "resources/font-face.html";
-    document.body.appendChild(iframe);
-}
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(`Tests that a used font-face is reported and an unused font-face is not reported.\n`);
+  await TestRunner.showPanel('network');
+
   function onRequest(eventType, event) {
     var request = event.data;
     if (request.name() === 'done') {
@@ -22,11 +19,5 @@ function test() {
   TestRunner.networkManager.addEventListener(
       SDK.NetworkManager.Events.RequestFinished, onRequest.bind(null, 'RequestFinished'));
 
-  TestRunner.evaluateInPage('createIFrame()');
-}
-</script>
-</head>
-<body onload="runTest()">
-<p>Tests that a used font-face is reported and an unused font-face is not reported.</p>
-</body>
-</html>
+  await TestRunner.addIframe('resources/font-face.html');
+})();

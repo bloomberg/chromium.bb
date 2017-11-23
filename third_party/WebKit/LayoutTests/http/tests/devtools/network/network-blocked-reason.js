@@ -1,24 +1,12 @@
-<html>
-<head>
-<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline'">
-<script src="/inspector/inspector-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function sendCSPRequest()
-{
-    var script = document.createElement("script");
-    script.src = "https://www.example.com/csp.js";
-    document.head.appendChild(script);
-}
+(async function() {
+  TestRunner.addResult(`Tests that blocked reason is recognized correctly.\n`);
+  await TestRunner.showPanel('network');
+  await TestRunner.navigatePromise('resources/csp.html');
 
-function addBlockedScript(url)
-{
-    var script = document.createElement("script");
-    script.src = url;
-    document.head.appendChild(script);
-}
-
-function test() {
   var requestName;
   var nextStep;
   SDK.multitargetNetworkManager.setBlockingEnabled(true);
@@ -56,7 +44,7 @@ function test() {
     },
 
     function testBlockedByDevTools1(next) {
-      testBlockedURL(['resources**/silent*.js'], 'resources/silent_script.js', next);
+      testBlockedURL(['resources**/silent*.js'], 'silent_script.js', next);
     },
 
     function testBlockedByDevTools2(next) {
@@ -116,13 +104,7 @@ function test() {
     },
 
     function cleanupBlockedURLs(next) {
-      testBlockedURL([], 'resources/silent_script.js', next);
+      testBlockedURL([], 'silent_script.js', next);
     }
   ]);
-}
-</script>
-</head>
-<body onload="runTest()">
-<p>Tests that blocked reason is recognized correctly.</p>
-</body>
-</html>
+})();

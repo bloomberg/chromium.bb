@@ -1,20 +1,14 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/network-test.js"></script>
-<script>
-function scheduleScriptLoad() {
-    window.setTimeout(loadScript, 0);
-}
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function loadScript() {
-    var script = document.createElement("script");
-    script.type = "text/javascript";
-    script.src = "resources/random-script.php";
-    document.head.appendChild(script);
-}
+(async function() {
+  TestRunner.addResult(`Tests disabling cache from inspector.\n`);
+  await TestRunner.loadModule('network_test_runner');
+  await TestRunner.loadModule('console_test_runner');
+  await TestRunner.showPanel('network');
+  await TestRunner.navigatePromise('resources/random-script-page.html');
 
-function test() {
   var content1;
   var content2;
   var content3;
@@ -65,11 +59,4 @@ function test() {
   function step7() {
     TestRunner.completeTest();
   }
-}
-</script>
-</head>
-<body onload="runTest()">
-    <p>Tests disabling cache from inspector.</p>
-</body>
-</html>
-
+})();

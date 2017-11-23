@@ -95,7 +95,7 @@ crbug.com/778542 virtual/threaded/http/tests/devtools/tracing/timeline-misc/time
 crbug.com/721408 http/tests/devtools/extensions-ignore-cache.html [ Crash ]
 crbug.com/721408 http/tests/devtools/extensions-useragent.html [ Crash ]
 crbug.com/721408 http/tests/devtools/network/load-resource-for-frontend.js [ Failure Timeout ]
-crbug.com/721408 http/tests/devtools/network/long-script-content.html  [ Crash ]
+crbug.com/721408 http/tests/devtools/network/long-script-content.js  [ Crash ]
 crbug.com/721408 http/tests/devtools/network/network-datareceived.js [ Failure ]
 crbug.com/721408 http/tests/devtools/network/network-datasaver-warning.js [ Failure ]
 crbug.com/721408 http/tests/devtools/network/waterfall-images.html [ Failure ]
