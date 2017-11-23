@@ -1145,6 +1145,7 @@ void TryChromeDialog::OnContextInitialized() {
   const gfx::Size preferred = layout->GetPreferredSize(contents_view.get());
   popup_->SetContentsView(contents_view.release());
   popup_->SetBounds(context_->ComputePopupBounds(popup_, preferred));
+  popup_->SetAlwaysOnTop(true);
 
   popup_->ShowInactive();
   delegate_->SetToastLocation(context_->GetToastLocation());
