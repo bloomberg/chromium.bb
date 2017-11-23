@@ -17017,6 +17017,9 @@ Called by update_net_error_codes.py.-->
   <int value="2243"
       label="V8MediaCapabilitiesInfo_PowerEfficient_AttributeGetter"/>
   <int value="2244" label="WindowEventInV0ShadowTree"/>
+  <int value="2245" label="HTMLAnchorElementDownloadInSandboxWithUserGesture"/>
+  <int value="2246"
+      label="HTMLAnchorElementDownloadInSandboxWithoutUserGesture"/>
 </enum>
 
 <enum name="FeedbackSource">

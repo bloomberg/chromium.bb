@@ -57,6 +57,8 @@ enum SandboxFlag {
   kSandboxPresentationController = 1 << 13,
   // See https://github.com/WICG/interventions/issues/42.
   kSandboxTopNavigationByUserActivation = 1 << 14,
+  // See https://crbug.com/539938
+  kSandboxDownloads = 1 << 15,
   kSandboxAll = -1  // Mask with all bits set to 1.
 };
 

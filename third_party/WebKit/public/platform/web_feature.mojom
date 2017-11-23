@@ -1763,6 +1763,8 @@ enum WebFeature {
   kV8MediaCapabilitiesInfo_Smooth_AttributeGetter = 2242,
   kV8MediaCapabilitiesInfo_PowerEfficient_AttributeGetter = 2243,
   kWindowEventInV0ShadowTree = 2244,
+  kHTMLAnchorElementDownloadInSandboxWithUserGesture = 2245,
+  kHTMLAnchorElementDownloadInSandboxWithoutUserGesture = 2246,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

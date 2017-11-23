@@ -27,6 +27,7 @@ enum class WebSandboxFlags : int {
   kModals = 1 << 12,
   kPresentationController = 1 << 13,
   kTopNavigationByUserActivation = 1 << 14,
+  kDownloads = 1 << 15,
   kAll = -1
 };
 
