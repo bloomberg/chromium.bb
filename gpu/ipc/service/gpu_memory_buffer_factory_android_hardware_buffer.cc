@@ -4,6 +4,7 @@
 
 #include "gpu/ipc/service/gpu_memory_buffer_factory_android_hardware_buffer.h"
 
+#include "base/android/android_hardware_buffer_compat.h"
 #include "base/logging.h"
 #include "base/memory/shared_memory_handle.h"
 #include "build/build_config.h"
@@ -60,8 +61,18 @@ GpuMemoryBufferFactoryAndroidHardwareBuffer::CreateImageForGpuMemoryBuffer(
   EGLClientBuffer client_buffer = eglGetNativeClientBufferANDROID(buffer);
   if (!image->Initialize(EGL_NATIVE_BUFFER_ANDROID, client_buffer, attribs)) {
     DLOG(ERROR) << "Failed to create GLImage " << size.ToString();
-    return nullptr;
+    image = nullptr;
   }
+
+  // The underlying AHardwareBuffer's reference count was incremented by
+  // RecvHandleFromUnixSocket which implicitly acquired it. Apparently
+  // eglCreateImageKHR acquires the AHardwareBuffer on construction and
+  // releases on destruction (this isn't really documented), so we need to
+  // release here to avoid an excess reference. We want to pass ownership to
+  // the image. Also release in the failure case to ensure we consistently
+  // consume the GpuMemoryBufferHandle.
+  base::AndroidHardwareBufferCompat::GetInstance().Release(buffer);
+
   return image;
 }
 

@@ -53,6 +53,12 @@ SharedMemoryHandle::SharedMemoryHandle(
           AndroidHardwareBufferCompat::GetInstance().RecvHandleFromUnixSocket(
               file_descriptor.fd, &ahb);
 
+      // We need to take ownership of the FD and close it if it came from IPC.
+      if (file_descriptor.auto_close) {
+        if (IGNORE_EINTR(close(file_descriptor.fd)) < 0)
+          PLOG(ERROR) << "close";
+      }
+
       if (ret < 0) {
         PLOG(ERROR) << "recv";
         type_ = Type::INVALID;
@@ -70,7 +76,10 @@ SharedMemoryHandle::SharedMemoryHandle(AHardwareBuffer* buffer,
       memory_object_(buffer),
       ownership_passes_to_ipc_(false),
       guid_(guid),
-      size_(size) {}
+      size_(size) {
+  // Don't call Acquire on the AHardwareBuffer here. Getting a handle doesn't
+  // take ownership.
+}
 
 // static
 SharedMemoryHandle SharedMemoryHandle::ImportHandle(int fd, size_t size) {
@@ -93,12 +102,14 @@ int SharedMemoryHandle::GetHandle() const {
     case Type::ANDROID_HARDWARE_BUFFER:
       DCHECK(IsValid());
       ScopedFD read_fd, write_fd;
-      CreateSocketPair(&read_fd, &write_fd);
+      if (!CreateSocketPair(&read_fd, &write_fd)) {
+        PLOG(ERROR) << "SocketPair";
+        return -1;
+      }
 
       int ret =
           AndroidHardwareBufferCompat::GetInstance().SendHandleToUnixSocket(
               memory_object_, write_fd.get());
-
       if (ret < 0) {
         PLOG(ERROR) << "send";
         return -1;
