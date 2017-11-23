@@ -391,6 +391,11 @@ TEST_F(NotificationChannelsProviderAndroidTest,
                                         std::string(),
                                         new base::Value(CONTENT_SETTING_BLOCK));
 
+  EXPECT_NE(base::Time(),
+            channels_provider_->GetWebsiteSettingLastModified(
+                abc_pattern, ContentSettingsPattern(),
+                CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string()));
+
   EXPECT_CALL(mock_observer,
               OnContentSettingChanged(
                   ContentSettingsPattern(), ContentSettingsPattern(),
@@ -398,6 +403,12 @@ TEST_F(NotificationChannelsProviderAndroidTest,
 
   channels_provider_->ClearAllContentSettingsRules(
       CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+
+  // Ensure cached data is erased.
+  EXPECT_EQ(base::Time(),
+            channels_provider_->GetWebsiteSettingLastModified(
+                abc_pattern, ContentSettingsPattern(),
+                CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string()));
 
   // Check no rules are returned.
   EXPECT_FALSE(channels_provider_->GetRuleIterator(
