@@ -345,6 +345,8 @@ void HTMLMetaElement::ProcessViewportKeyValuePair(
                             String());
   } else if (key_string == "minimal-ui") {
     // Ignore vendor-specific argument.
+  } else if (key_string == "viewport-fit") {
+    // Ignore vendor-specific argument.
   } else if (key_string == "shrink-to-fit") {
     // Ignore vendor-specific argument.
   } else if (report_warnings) {
