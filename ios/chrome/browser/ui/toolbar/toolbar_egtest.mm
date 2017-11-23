@@ -87,8 +87,7 @@ void SelectNewTabPagePanel(ntp_home::PanelIdentifier panel_type) {
 }
 
 // Verifies opening a new incognito tab from the tools menu.
-// TODO(crbug.com/631078): Enable this test.
-- (void)FLAKY_testNewIncognitoTabFromMenu {
+- (void)testNewIncognitoTabFromMenu {
   [ChromeEarlGrey waitForIncognitoTabCount:0];
 
   // Open incognito tab.
