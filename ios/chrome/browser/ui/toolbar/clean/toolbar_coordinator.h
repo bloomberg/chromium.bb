@@ -13,6 +13,7 @@
 
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
+@class ToolbarButtonUpdater;
 @protocol ToolbarCoordinatorDelegate;
 @protocol UrlLoader;
 class WebStateList;
@@ -40,6 +41,8 @@ class WebState;
 @property(nonatomic, weak) id<UrlLoader> URLLoader;
 // UIViewController managed by this coordinator.
 @property(nonatomic, strong, readonly) UIViewController* viewController;
+// Button updater for the toolbar.
+@property(nonatomic, strong) ToolbarButtonUpdater* buttonUpdater;
 
 // Start this coordinator.
 - (void)start;

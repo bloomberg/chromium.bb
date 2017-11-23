@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/toolbar/toolbar_button_updater.h"
+#import "ios/chrome/browser/ui/toolbar/clean/toolbar_button_updater.h"
 
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_constants.h"
 
