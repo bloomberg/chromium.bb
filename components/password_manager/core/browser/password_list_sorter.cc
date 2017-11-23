@@ -28,14 +28,13 @@ constexpr char kSortKeyNoFederationSymbol = '-';
 }  // namespace
 
 std::string CreateSortKey(const autofill::PasswordForm& form,
-                          password_manager::PasswordEntryType entry_type) {
+                          PasswordEntryType entry_type) {
   std::string shown_origin;
   GURL link_url;
-  std::tie(shown_origin, link_url) =
-      password_manager::GetShownOriginAndLinkUrl(form);
+  std::tie(shown_origin, link_url) = GetShownOriginAndLinkUrl(form);
 
   const auto facet_uri =
-      password_manager::FacetURI::FromPotentiallyInvalidSpec(form.signon_realm);
+      FacetURI::FromPotentiallyInvalidSpec(form.signon_realm);
   const bool is_android_uri = facet_uri.IsValidAndroidFacetURI();
 
   if (is_android_uri) {
@@ -44,8 +43,7 @@ std::string CreateSortKey(const autofill::PasswordForm& form,
     // This might or might not correspond to the eTLD+1, which is why
     // |shown_origin| is set to the reversed android package name in this case,
     // e.g. com.example.android => android.example.com.
-    shown_origin = password_manager::SplitByDotAndReverse(
-        facet_uri.android_package_name());
+    shown_origin = SplitByDotAndReverse(facet_uri.android_package_name());
   }
 
   std::string site_name =
@@ -61,9 +59,9 @@ std::string CreateSortKey(const autofill::PasswordForm& form,
   // information is added. For Android credentials this includes the full
   // canonical spec which is guaranteed to be unique for a given App.
   key += is_android_uri ? facet_uri.canonical_spec()
-                        : password_manager::SplitByDotAndReverse(shown_origin);
+                        : SplitByDotAndReverse(shown_origin);
 
-  if (entry_type == password_manager::PasswordEntryType::SAVED) {
+  if (entry_type == PasswordEntryType::SAVED) {
     key += kSortKeyPartsSeparator + base::UTF16ToUTF8(form.username_value) +
            kSortKeyPartsSeparator + base::UTF16ToUTF8(form.password_value);
 
@@ -81,31 +79,26 @@ std::string CreateSortKey(const autofill::PasswordForm& form,
 void SortEntriesAndHideDuplicates(
     std::vector<std::unique_ptr<autofill::PasswordForm>>* list,
     DuplicatesMap* duplicates,
-    password_manager::PasswordEntryType entry_type) {
+    PasswordEntryType entry_type) {
   std::vector<std::pair<std::string, std::unique_ptr<autofill::PasswordForm>>>
-      pairs;
-  pairs.reserve(list->size());
+      keys_to_forms;
+  keys_to_forms.reserve(list->size());
   for (auto& form : *list) {
     std::string key = CreateSortKey(*form, entry_type);
-    pairs.push_back(std::make_pair(std::move(key), std::move(form)));
+    keys_to_forms.emplace_back(std::move(key), std::move(form));
   }
 
-  std::sort(
-      pairs.begin(), pairs.end(),
-      [](const std::pair<std::string, std::unique_ptr<autofill::PasswordForm>>&
-             left,
-         const std::pair<std::string, std::unique_ptr<autofill::PasswordForm>>&
-             right) { return left.first < right.first; });
+  std::sort(keys_to_forms.begin(), keys_to_forms.end());
 
   list->clear();
   duplicates->clear();
   std::string previous_key;
-  for (auto& pair : pairs) {
-    if (pair.first != previous_key) {
-      list->push_back(std::move(pair.second));
-      previous_key = pair.first;
+  for (auto& key_to_form : keys_to_forms) {
+    if (key_to_form.first != previous_key) {
+      list->push_back(std::move(key_to_form.second));
+      previous_key = key_to_form.first;
     } else {
-      duplicates->insert(std::make_pair(previous_key, std::move(pair.second)));
+      duplicates->emplace(previous_key, std::move(key_to_form.second));
     }
   }
 }
