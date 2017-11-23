@@ -1732,6 +1732,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // debugging output
   virtual LayoutRect DebugRect() const;
 
+  // Each LayoutObject has one or more painting fragments (exactly one
+  // in the absence of multicol/pagination).
+  // See ../paint/README.md for more on fragments.
   const FragmentData& FirstFragment() const { return fragment_; }
 
   // Returns the bounding box of the visual rects of all fragments.
@@ -1809,6 +1812,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     }
 #endif
 
+    FragmentData& FirstFragment() { return layout_object_.fragment_; }
+
    protected:
     friend class LayoutBoxModelObject;
     friend class LayoutScrollbar;
@@ -1826,11 +1831,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
                              LocationInBackingAndSelectionVisualRect);
     FRIEND_TEST_ALL_PREFIXES(BoxPaintInvalidatorTest,
                              ComputePaintInvalidationReasonBasic);
-
-    // Each LayoutObject has one or more painting fragments (exactly one
-    // in the absence of multicol/pagination).
-    // See ../paint/README.md for more on fragments.
-    FragmentData& FirstFragment() { return layout_object_.fragment_; }
 
     friend class LayoutObject;
     MutableForPainting(const LayoutObject& layout_object)
