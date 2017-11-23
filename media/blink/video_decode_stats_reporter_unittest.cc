@@ -67,6 +67,9 @@ class RecordInterceptor : public mojom::VideoDecodeStatsRecorder {
   RecordInterceptor() {}
   ~RecordInterceptor() override {}
 
+  MOCK_METHOD2(SetPageInfo,
+               void(const url::Origin& top_frame_origin, bool is_top_frame));
+
   MOCK_METHOD3(StartNewRecord,
                void(VideoCodecProfile profile,
                     const gfx::Size& natural_size,

@@ -31,6 +31,17 @@ void VideoDecodeStatsRecorder::Create(
       std::move(request));
 }
 
+void VideoDecodeStatsRecorder::SetPageInfo(
+    const url::Origin& untrusted_top_frame_origin,
+    bool is_top_frame) {
+  DVLOG(2) << __func__
+           << " untrusted_top_frame_origin:" << untrusted_top_frame_origin
+           << " is_top_frame:" << is_top_frame;
+
+  untrusted_top_frame_origin_ = untrusted_top_frame_origin;
+  is_top_frame_ = is_top_frame;
+}
+
 void VideoDecodeStatsRecorder::StartNewRecord(VideoCodecProfile profile,
                                               const gfx::Size& natural_size,
                                               int frames_per_sec) {
@@ -81,7 +92,8 @@ void VideoDecodeStatsRecorder::FinalizeRecord() {
            << " decoded:" << frames_decoded_ << " dropped:" << frames_dropped_
            << " power efficient decoded:" << frames_decoded_power_efficient_;
 
-  perf_history_->SavePerfRecord(profile_, natural_size_, frames_per_sec_,
+  perf_history_->SavePerfRecord(untrusted_top_frame_origin_, is_top_frame_,
+                                profile_, natural_size_, frames_per_sec_,
                                 frames_decoded_, frames_dropped_,
                                 frames_decoded_power_efficient_);
 }

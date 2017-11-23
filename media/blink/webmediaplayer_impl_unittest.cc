@@ -78,6 +78,8 @@ MATCHER_P2(PlaybackRateChanged, old_rate_string, new_rate_string, "") {
 
 class FakeVideoDecodeStatsRecorder : public mojom::VideoDecodeStatsRecorder {
  public:
+  void SetPageInfo(const url::Origin& top_frame_origin,
+                   bool is_top_frame) override {}
   void StartNewRecord(VideoCodecProfile profile,
                       const gfx::Size& natural_size,
                       int frames_per_sec) override {}
