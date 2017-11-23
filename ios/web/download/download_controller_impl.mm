@@ -46,7 +46,7 @@ DownloadControllerImpl::~DownloadControllerImpl() {
 }
 
 void DownloadControllerImpl::CreateDownloadTask(
-    const WebState* web_state,
+    WebState* web_state,
     NSString* identifier,
     const GURL& original_url,
     const std::string& content_disposition,
