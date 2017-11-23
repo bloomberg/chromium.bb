@@ -274,7 +274,6 @@ void BackgroundFetchDataManager::GetRegistration(
   auto registration = std::make_unique<BackgroundFetchRegistration>();
   registration->developer_id = developer_id;
   registration->unique_id = unique_id;
-  registration->icons = data->options().icons;
   registration->title = data->options().title;
   // TODO(crbug.com/774054): Uploads are not yet supported.
   registration->upload_total = 0;

@@ -77,7 +77,6 @@ promise_test(function(test) {
         .then(secondBackgroundFetchRegistration => {
           assert_true(secondBackgroundFetchRegistration instanceof BackgroundFetchRegistration);
           assert_equals(secondBackgroundFetchRegistration.id, id);
-          assert_object_equals(secondBackgroundFetchRegistration.icons, options.icons);
           assert_equals(secondBackgroundFetchRegistration.downloadTotal, options.downloadTotal);
           assert_equals(secondBackgroundFetchRegistration.title, options.title);
 

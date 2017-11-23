@@ -29,7 +29,6 @@ interface BackgroundFetchRegistration : EventTarget
     attribute @@toStringTag
     getter downloadTotal
     getter downloaded
-    getter icons
     getter id
     getter onprogress
     getter title

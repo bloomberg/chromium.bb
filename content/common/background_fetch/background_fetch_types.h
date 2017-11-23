@@ -67,7 +67,6 @@ struct CONTENT_EXPORT BackgroundFetchRegistration {
   // TODO(crbug.com/699957): Support the `activeFetches` member.
 
   // TODO(crbug.com/769770): Remove the following deprecated members.
-  std::vector<IconDefinition> icons;
   std::string title;
 };
 
