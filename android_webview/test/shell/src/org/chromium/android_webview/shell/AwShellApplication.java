@@ -11,9 +11,6 @@ import org.chromium.content.app.ContentApplication;
  * The android_webview shell Application subclass.
  */
 public class AwShellApplication extends ContentApplication {
-    public AwShellApplication() {
-        super(false /* mShouldInitializeApplicationStatusTracking */);
-    }
 
     @Override
     public void initCommandLine() {

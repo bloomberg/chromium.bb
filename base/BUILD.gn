@@ -2808,7 +2808,7 @@ if (is_android) {
 
   junit_binary("base_junit_tests") {
     java_files = [
-      "android/junit/src/org/chromium/base/BaseChromiumApplicationTest.java",
+      "android/junit/src/org/chromium/base/ApplicationStatusTest.java",
       "android/junit/src/org/chromium/base/DiscardableReferencePoolTest.java",
       "android/junit/src/org/chromium/base/LogTest.java",
       "android/junit/src/org/chromium/base/NonThreadSafeTest.java",

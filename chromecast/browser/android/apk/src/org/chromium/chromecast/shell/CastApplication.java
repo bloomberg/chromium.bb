@@ -6,6 +6,7 @@ package org.chromium.chromecast.shell;
 
 import android.content.Context;
 
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CommandLineInitUtil;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.PathUtils;
@@ -35,6 +36,7 @@ public class CastApplication extends ContentApplication {
     public void onCreate() {
         super.onCreate();
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
+        ApplicationStatus.initialize(this);
     }
 
     @Override

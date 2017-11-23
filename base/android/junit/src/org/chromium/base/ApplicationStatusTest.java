@@ -23,16 +23,13 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.shadows.ShadowActivity;
 import org.robolectric.shadows.multidex.ShadowMultiDex;
 
-import org.chromium.base.BaseChromiumApplication.WindowFocusChangedListener;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
-/** Unit tests for {@link BaseChromiumApplication}. */
+/** Unit tests for {@link ApplicationStatus}. */
 @RunWith(LocalRobolectricTestRunner.class)
-@Config(manifest = Config.NONE,
-        application = BaseChromiumApplication.class,
-        shadows = {BaseChromiumApplicationTest.TrackingShadowActivity.class, ShadowMultiDex.class})
-public class BaseChromiumApplicationTest {
-
+@Config(manifest = Config.NONE, application = BaseChromiumApplication.class,
+        shadows = {ApplicationStatusTest.TrackingShadowActivity.class, ShadowMultiDex.class})
+public class ApplicationStatusTest {
     /** Shadow that tracks calls to onWindowFocusChanged and dispatchKeyEvent. */
     @Implements(Activity.class)
     public static class TrackingShadowActivity extends ShadowActivity {
@@ -54,15 +51,15 @@ public class BaseChromiumApplicationTest {
 
     @Test
     public void testWindowsFocusChanged() throws Exception {
-        BaseChromiumApplication app = (BaseChromiumApplication) RuntimeEnvironment.application;
+        ApplicationStatus.initialize(RuntimeEnvironment.application);
 
-        WindowFocusChangedListener mock = mock(WindowFocusChangedListener.class);
-        app.registerWindowFocusChangedListener(mock);
+        ApplicationStatus.WindowFocusChangedListener mock =
+                mock(ApplicationStatus.WindowFocusChangedListener.class);
+        ApplicationStatus.registerWindowFocusChangedListener(mock);
 
         ActivityController<Activity> controller =
                 Robolectric.buildActivity(Activity.class).create().start().visible();
-        TrackingShadowActivity shadow =
-                (TrackingShadowActivity) Shadows.shadowOf(controller.get());
+        TrackingShadowActivity shadow = (TrackingShadowActivity) Shadows.shadowOf(controller.get());
 
         controller.get().getWindow().getCallback().onWindowFocusChanged(true);
         // Assert that listeners were notified.

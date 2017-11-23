@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.os.Build;
 import android.system.Os;
 
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
@@ -26,6 +27,10 @@ public class NativeUnitTest extends NativeTest {
         // Necessary because NativeUnitTestActivity uses BaseChromiumApplication which does not
         // initialize ContextUtils.
         ContextUtils.initApplicationContext(activity.getApplicationContext());
+
+        // Necessary because BaseChromiumApplication no longer automatically initializes application
+        // tracking.
+        ApplicationStatus.initialize(activity.getApplication());
 
         // Needed by path_utils_unittest.cc
         PathUtils.setPrivateDataDirectorySuffix("chrome");

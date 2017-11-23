@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.provider;
 
 import android.annotation.SuppressLint;
+import android.app.Application;
 import android.app.SearchManager;
 import android.content.ContentProvider;
 import android.content.ContentUris;
@@ -26,6 +27,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.util.LongSparseArray;
 
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
@@ -241,6 +243,7 @@ public class ChromeBrowserProvider extends ContentProvider {
 
     @Override
     public boolean onCreate() {
+        ApplicationStatus.initialize((Application) ContextUtils.getApplicationContext());
         // Work around for broken Android versions that break the Android contract and initialize
         // ContentProviders on non-UI threads.  crbug.com/705442
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {

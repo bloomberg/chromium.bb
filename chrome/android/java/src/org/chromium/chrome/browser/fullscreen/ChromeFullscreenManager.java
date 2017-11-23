@@ -17,8 +17,7 @@ import android.widget.FrameLayout;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ActivityStateListener;
-import org.chromium.base.BaseChromiumApplication;
-import org.chromium.base.BaseChromiumApplication.WindowFocusChangedListener;
+import org.chromium.base.ApplicationStatus.WindowFocusChangedListener;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.library_loader.LibraryLoader;
@@ -181,8 +180,7 @@ public class ChromeFullscreenManager
     public void initialize(ControlContainer controlContainer, final TabModelSelector modelSelector,
             int resControlContainerHeight) {
         ApplicationStatus.registerStateListenerForActivity(this, mActivity);
-        ((BaseChromiumApplication) mActivity.getApplication())
-                .registerWindowFocusChangedListener(this);
+        ApplicationStatus.registerWindowFocusChangedListener(this);
 
         mTabModelObserver = new TabModelSelectorTabModelObserver(modelSelector) {
             @Override
@@ -280,8 +278,7 @@ public class ChromeFullscreenManager
             }, ACTIVITY_RETURN_SHOW_REQUEST_DELAY_MS);
         } else if (newState == ActivityState.DESTROYED) {
             ApplicationStatus.unregisterActivityStateListener(this);
-            ((BaseChromiumApplication) mActivity.getApplicationContext())
-                    .unregisterWindowFocusChangedListener(this);
+            ApplicationStatus.unregisterWindowFocusChangedListener(this);
 
             mTabModelObserver.destroy();
         }
