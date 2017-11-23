@@ -186,10 +186,11 @@ dist_yaml_TESTS =				\
 	yaml/hu-hu-g1_backward.yaml		\
 	yaml/hu-hu-g1_harness.yaml		\
 	yaml/issue-238.yaml			\
-	yaml/issue-401.yaml			\
 	yaml/issue-35.yaml			\
 	yaml/issue-384.yaml			\
 	yaml/issue-400.yaml			\
+	yaml/issue-401.yaml			\
+	yaml/issue-406.yaml			\
 	yaml/iu-ca-g1_harness.yaml		\
 	yaml/ko-2006-g2_harness.yaml		\
 	yaml/ko-g2_harness.yaml			\
