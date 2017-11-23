@@ -1495,6 +1495,22 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="ResponsivenessMeasurement">
+  <owner>npm@chromium.org</owner>
+  <owner>tdresser@chromium.org</owner>
+  <summary>
+    Responsiveness metrics recorded once every 5 seconds.
+  </summary>
+  <metric name="ExpectedTaskQueueingDuration">
+    <summary>
+      Duration in MS for expected task queueing duration. The metric reflects
+      the responsiveness of a tab. A lower value means the tab will respond to
+      inputs faster. This metric is equal to
+      RendererScheduler.ExpectedTaskQueueingDuration of the main frame process.
+    </summary>
+  </metric>
+</event>
+
 <event name="SubresourceFilter" singular="True">
   <owner>bmcquade@chromium.org</owner>
   <owner>csharrison@chromium.org</owner>

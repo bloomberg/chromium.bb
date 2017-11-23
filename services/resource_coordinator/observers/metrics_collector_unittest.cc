@@ -7,13 +7,17 @@
 #include "base/test/histogram_tester.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "build/build_config.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_test_harness.h"
 #include "services/resource_coordinator/coordination_unit/frame_coordination_unit_impl.h"
 #include "services/resource_coordinator/coordination_unit/page_coordination_unit_impl.h"
+#include "services/resource_coordinator/coordination_unit/process_coordination_unit_impl.h"
 #include "services/resource_coordinator/resource_coordinator_clock.h"
 
 namespace resource_coordinator {
 
+const char kResponsivenessMeasurement[] = "ResponsivenessMeasurement";
+const char kExpectedQueueingTime[] = "ExpectedTaskQueueingDuration";
 const base::TimeDelta kTestMetricsReportDelayTimeout =
     kMetricsReportDelayTimeout + base::TimeDelta::FromSeconds(1);
 const base::TimeDelta kTestMaxAudioSlientTimeout =
@@ -343,6 +347,56 @@ TEST_F(MAYBE_MetricsCollectorTest,
   page_cu->OnFaviconUpdated();
   histogram_tester_.ExpectTotalCount(
       kTabFromBackgroundedToFirstFaviconUpdatedUMA, 1);
+}
+
+TEST_F(MAYBE_MetricsCollectorTest, ResponsivenessMetric) {
+  auto page_cu = CreateCoordinationUnit<PageCoordinationUnitImpl>();
+  coordination_unit_manager().OnCoordinationUnitCreated(page_cu.get());
+  auto process_cu = CreateCoordinationUnit<ProcessCoordinationUnitImpl>();
+  coordination_unit_manager().OnCoordinationUnitCreated(process_cu.get());
+
+  auto frame_cu = CreateCoordinationUnit<FrameCoordinationUnitImpl>();
+  coordination_unit_manager().OnCoordinationUnitCreated(frame_cu.get());
+  page_cu->AddFrame(frame_cu->id());
+  process_cu->AddFrame(frame_cu->id());
+
+  ukm::TestUkmRecorder ukm_recorder;
+  coordination_unit_manager().set_ukm_recorder(&ukm_recorder);
+
+  ukm::SourceId id = ukm_recorder.GetNewSourceID();
+  GURL url = GURL("https://google.com/foobar");
+  ukm_recorder.UpdateSourceURL(id, url);
+  page_cu->SetUKMSourceId(id);
+  page_cu->OnMainFrameNavigationCommitted();
+
+  for (int count = 1; count < kDefaultFrequencyUkmEQTReported; ++count) {
+    process_cu->SetExpectedTaskQueueingDuration(
+        base::TimeDelta::FromMilliseconds(3));
+    EXPECT_EQ(0U, ukm_recorder.entries_count());
+    EXPECT_EQ(1U, ukm_recorder.sources_count());
+  }
+  process_cu->SetExpectedTaskQueueingDuration(
+      base::TimeDelta::FromMilliseconds(4));
+  EXPECT_EQ(1U, ukm_recorder.sources_count());
+  EXPECT_EQ(1U, ukm_recorder.entries_count());
+  for (int count = 1; count < kDefaultFrequencyUkmEQTReported; ++count) {
+    process_cu->SetExpectedTaskQueueingDuration(
+        base::TimeDelta::FromMilliseconds(3));
+    EXPECT_EQ(1U, ukm_recorder.entries_count());
+    EXPECT_EQ(1U, ukm_recorder.sources_count());
+  }
+  process_cu->SetExpectedTaskQueueingDuration(
+      base::TimeDelta::FromMilliseconds(4));
+  EXPECT_EQ(1U, ukm_recorder.sources_count());
+  EXPECT_EQ(2U, ukm_recorder.entries_count());
+
+  const auto& entries =
+      ukm_recorder.GetEntriesByName(kResponsivenessMeasurement);
+  EXPECT_EQ(2U, entries.size());
+  for (const auto* entry : entries) {
+    ukm_recorder.ExpectEntrySourceHasUrl(entry, url);
+    ukm_recorder.ExpectEntryMetric(entry, kExpectedQueueingTime, 4);
+  }
 }
 
 }  // namespace resource_coordinator
