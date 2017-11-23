@@ -44,8 +44,6 @@ bindings_modules_generated_union_type_files = [
   "$bindings_modules_v8_output_dir/double_or_constrain_double_range.h",
   "$bindings_modules_v8_output_dir/float32_array_or_float64_array_or_dom_matrix.cc",
   "$bindings_modules_v8_output_dir/float32_array_or_float64_array_or_dom_matrix.h",
-  "$bindings_modules_v8_output_dir/form_data_or_url_search_params.cc",
-  "$bindings_modules_v8_output_dir/form_data_or_url_search_params.h",
   "$bindings_modules_v8_output_dir/html_canvas_element_or_offscreen_canvas.cc",
   "$bindings_modules_v8_output_dir/html_canvas_element_or_offscreen_canvas.h",
   "$bindings_modules_v8_output_dir/long_or_constrain_long_range.cc",

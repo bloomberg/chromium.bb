@@ -13,7 +13,6 @@
 #include "core/html/forms/FormData.h"
 #include "core/html/forms/HTMLFormElement.h"
 #include "core/testing/DummyPageHolder.h"
-#include "core/url/URLSearchParams.h"
 #include "platform/wtf/text/StringBuilder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -63,23 +62,12 @@ TEST_F(PasswordCredentialTest, CreateFromMultipartForm) {
   PasswordCredential* credential =
       PasswordCredential::Create(form, ASSERT_NO_EXCEPTION);
   ASSERT_NE(nullptr, credential);
-  EXPECT_EQ("theId", credential->idName());
-  EXPECT_EQ("thePassword", credential->passwordName());
 
   EXPECT_EQ("musterman", credential->id());
   EXPECT_EQ("sekrit", credential->password());
   EXPECT_EQ(KURL("https://example.com/photo"), credential->iconURL());
   EXPECT_EQ("friendly name", credential->name());
   EXPECT_EQ("password", credential->type());
-
-  FormDataOrURLSearchParams additional_data;
-  credential->additionalData(additional_data);
-  ASSERT_TRUE(additional_data.GetAsFormData());
-  EXPECT_TRUE(additional_data.GetAsFormData()->has("theId"));
-  EXPECT_TRUE(additional_data.GetAsFormData()->has("thePassword"));
-  EXPECT_TRUE(additional_data.GetAsFormData()->has("theIcon"));
-  EXPECT_TRUE(additional_data.GetAsFormData()->has("theName"));
-  EXPECT_TRUE(additional_data.GetAsFormData()->has("theExtraField"));
 }
 
 TEST_F(PasswordCredentialTest, CreateFromURLEncodedForm) {
@@ -97,23 +85,12 @@ TEST_F(PasswordCredentialTest, CreateFromURLEncodedForm) {
   PasswordCredential* credential =
       PasswordCredential::Create(form, ASSERT_NO_EXCEPTION);
   ASSERT_NE(nullptr, credential);
-  EXPECT_EQ("theId", credential->idName());
-  EXPECT_EQ("thePassword", credential->passwordName());
 
   EXPECT_EQ("musterman", credential->id());
   EXPECT_EQ("sekrit", credential->password());
   EXPECT_EQ(KURL("https://example.com/photo"), credential->iconURL());
   EXPECT_EQ("friendly name", credential->name());
   EXPECT_EQ("password", credential->type());
-
-  FormDataOrURLSearchParams additional_data;
-  credential->additionalData(additional_data);
-  ASSERT_TRUE(additional_data.IsURLSearchParams());
-  EXPECT_TRUE(additional_data.GetAsURLSearchParams()->has("theId"));
-  EXPECT_TRUE(additional_data.GetAsURLSearchParams()->has("thePassword"));
-  EXPECT_TRUE(additional_data.GetAsURLSearchParams()->has("theIcon"));
-  EXPECT_TRUE(additional_data.GetAsURLSearchParams()->has("theName"));
-  EXPECT_TRUE(additional_data.GetAsURLSearchParams()->has("theExtraField"));
 }
 
 TEST_F(PasswordCredentialTest, CreateFromFormNoPassword) {
