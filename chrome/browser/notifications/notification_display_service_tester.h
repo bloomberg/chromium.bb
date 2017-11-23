@@ -37,7 +37,7 @@ class NotificationDisplayServiceTester {
 
   // Synchronously gets a vector of the displayed Notifications for the |type|.
   std::vector<message_center::Notification> GetDisplayedNotificationsForType(
-      NotificationCommon::Type type);
+      NotificationHandler::Type type);
 
   const NotificationCommon::Metadata* GetMetadataForNotification(
       const message_center::Notification& notification);
@@ -50,13 +50,13 @@ class NotificationDisplayServiceTester {
   // When |silent| is set, the notification handlers won't be informed of the
   // change to immitate behaviour of operating systems that don't inform apps
   // about removed notifications.
-  void RemoveNotification(NotificationCommon::Type type,
+  void RemoveNotification(NotificationHandler::Type type,
                           const std::string& notification_id,
                           bool by_user,
                           bool silent = false);
 
   // Removes all notifications of the given |type|.
-  void RemoveAllNotifications(NotificationCommon::Type type, bool by_user);
+  void RemoveAllNotifications(NotificationHandler::Type type, bool by_user);
 
  private:
   Profile* profile_;

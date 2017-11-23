@@ -14,7 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 
 WebNotificationDelegate::WebNotificationDelegate(
-    NotificationCommon::Type notification_type,
+    NotificationHandler::Type notification_type,
     Profile* profile,
     const std::string& notification_id,
     const GURL& origin)
@@ -34,7 +34,7 @@ void WebNotificationDelegate::SettingsClick() {
 }
 
 void WebNotificationDelegate::DisableNotification() {
-  DCHECK_NE(notification_type_, NotificationCommon::EXTENSION);
+  DCHECK_NE(notification_type_, NotificationHandler::Type::EXTENSION);
   DesktopNotificationProfileUtil::DenyPermission(profile_, origin_);
 }
 

@@ -35,10 +35,10 @@ class NativeNotificationDisplayService : public NotificationDisplayService {
   ~NativeNotificationDisplayService() override;
 
   // NotificationDisplayService implementation.
-  void Display(NotificationCommon::Type notification_type,
+  void Display(NotificationHandler::Type notification_type,
                const message_center::Notification& notification,
                std::unique_ptr<NotificationCommon::Metadata> metadata) override;
-  void Close(NotificationCommon::Type notification_type,
+  void Close(NotificationHandler::Type notification_type,
              const std::string& notification_id) override;
   void GetDisplayed(const DisplayedNotificationsCallback& callback) override;
 
@@ -47,7 +47,7 @@ class NativeNotificationDisplayService : public NotificationDisplayService {
   // initializing.  |success| indicates it is ready to be used.
   void OnNotificationPlatformBridgeReady(bool success);
 
-  bool ShouldUsePlatformBridge(NotificationCommon::Type notification_type);
+  bool ShouldUsePlatformBridge(NotificationHandler::Type notification_type);
 
   Profile* profile_;
 

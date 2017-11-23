@@ -60,7 +60,7 @@ NotificationManager::NotificationManager(
 NotificationManager::~NotificationManager() {
   if (callbacks_.size()) {
     NotificationDisplayService::GetForProfile(profile_)->Close(
-        NotificationCommon::TRANSIENT, GetNotificationId());
+        NotificationHandler::Type::TRANSIENT, GetNotificationId());
   }
 }
 
@@ -78,7 +78,7 @@ void NotificationManager::HideUnresponsiveNotification(int id) {
     ShowNotification();
   } else {
     NotificationDisplayService::GetForProfile(profile_)->Close(
-        NotificationCommon::TRANSIENT, GetNotificationId());
+        NotificationHandler::Type::TRANSIENT, GetNotificationId());
   }
 }
 
@@ -129,7 +129,7 @@ void NotificationManager::ShowNotification() {
   notification.SetSystemPriority();
 
   NotificationDisplayService::GetForProfile(profile_)->Display(
-      NotificationCommon::TRANSIENT, notification);
+      NotificationHandler::Type::TRANSIENT, notification);
 }
 
 void NotificationManager::OnNotificationResult(NotificationResult result) {

@@ -29,11 +29,11 @@ class PassThroughDelegate : public message_center::NotificationDelegate {
  public:
   PassThroughDelegate(Profile* profile,
                       const message_center::Notification& notification,
-                      NotificationCommon::Type notification_type)
+                      NotificationHandler::Type notification_type)
       : profile_(profile),
         notification_(notification),
         notification_type_(notification_type) {
-    DCHECK_NE(notification_type, NotificationCommon::TRANSIENT);
+    DCHECK_NE(notification_type, NotificationHandler::Type::TRANSIENT);
   }
 
   void Close(bool by_user) override {
@@ -66,7 +66,7 @@ class PassThroughDelegate : public message_center::NotificationDelegate {
  private:
   Profile* profile_;
   message_center::Notification notification_;
-  NotificationCommon::Type notification_type_;
+  NotificationHandler::Type notification_type_;
 
   DISALLOW_COPY_AND_ASSIGN(PassThroughDelegate);
 };
@@ -79,7 +79,7 @@ MessageCenterDisplayService::MessageCenterDisplayService(Profile* profile)
 MessageCenterDisplayService::~MessageCenterDisplayService() {}
 
 void MessageCenterDisplayService::Display(
-    NotificationCommon::Type notification_type,
+    NotificationHandler::Type notification_type,
     const message_center::Notification& notification,
     std::unique_ptr<NotificationCommon::Metadata> metadata) {
   // This can be called when the browser is shutting down and the
@@ -94,7 +94,7 @@ void MessageCenterDisplayService::Display(
     handler->OnShow(profile_, notification.id());
 
   if (notification.delegate() ||
-      notification_type == NotificationCommon::TRANSIENT) {
+      notification_type == NotificationHandler::Type::TRANSIENT) {
     ui_manager->Add(notification, profile_);
     return;
   }
@@ -108,7 +108,7 @@ void MessageCenterDisplayService::Display(
 }
 
 void MessageCenterDisplayService::Close(
-    NotificationCommon::Type notification_type,
+    NotificationHandler::Type notification_type,
     const std::string& notification_id) {
   // This can be called when the browser is shutting down and the
   // NotificationUiManager has already destructed.

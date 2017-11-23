@@ -35,8 +35,8 @@ NotificationPlatformBridge* NotificationPlatformBridge::Create() {
 
 // static
 bool NotificationPlatformBridge::CanHandleType(
-    NotificationCommon::Type notification_type) {
-  return notification_type != NotificationCommon::TRANSIENT;
+    NotificationHandler::Type notification_type) {
+  return notification_type != NotificationHandler::Type::TRANSIENT;
 }
 
 NotificationPlatformBridgeChromeOs::NotificationPlatformBridgeChromeOs()
@@ -45,7 +45,7 @@ NotificationPlatformBridgeChromeOs::NotificationPlatformBridgeChromeOs()
 NotificationPlatformBridgeChromeOs::~NotificationPlatformBridgeChromeOs() {}
 
 void NotificationPlatformBridgeChromeOs::Display(
-    NotificationCommon::Type notification_type,
+    NotificationHandler::Type notification_type,
     const std::string& profile_id,
     bool is_incognito,
     const message_center::Notification& notification,
@@ -53,7 +53,7 @@ void NotificationPlatformBridgeChromeOs::Display(
   auto active_notification = std::make_unique<ProfileNotification>(
       GetProfileFromId(profile_id, is_incognito), notification,
       notification_type);
-  impl_->Display(NotificationCommon::TYPE_MAX, std::string(), false,
+  impl_->Display(NotificationHandler::Type::MAX, std::string(), false,
                  active_notification->notification(), std::move(metadata));
 
   std::string profile_notification_id =

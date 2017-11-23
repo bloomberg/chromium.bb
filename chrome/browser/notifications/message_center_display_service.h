@@ -23,10 +23,10 @@ class MessageCenterDisplayService : public NotificationDisplayService {
   ~MessageCenterDisplayService() override;
 
   // NotificationDisplayService implementation.
-  void Display(NotificationCommon::Type notification_type,
+  void Display(NotificationHandler::Type notification_type,
                const message_center::Notification& notification,
                std::unique_ptr<NotificationCommon::Metadata> metadata) override;
-  void Close(NotificationCommon::Type notification_type,
+  void Close(NotificationHandler::Type notification_type,
              const std::string& notification_id) override;
   void GetDisplayed(const DisplayedNotificationsCallback& callback) override;
 

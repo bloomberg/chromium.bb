@@ -25,7 +25,7 @@ std::string ProfileNotification::GetProfileNotificationId(
 ProfileNotification::ProfileNotification(
     Profile* profile,
     const message_center::Notification& notification,
-    NotificationCommon::Type type)
+    NotificationHandler::Type type)
     : profile_(profile),
       profile_id_(NotificationUIManager::GetProfileID(profile)),
       notification_(

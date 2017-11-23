@@ -72,7 +72,7 @@ class NotificationPlatformBridgeAndroid : public NotificationPlatformBridge {
       jboolean by_user);
 
   // NotificationPlatformBridge implementation.
-  void Display(NotificationCommon::Type notification_type,
+  void Display(NotificationHandler::Type notification_type,
                const std::string& profile_id,
                bool incognito,
                const message_center::Notification& notification,

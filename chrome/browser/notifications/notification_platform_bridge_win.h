@@ -24,7 +24,7 @@ class NotificationPlatformBridgeWin : public NotificationPlatformBridge {
   ~NotificationPlatformBridgeWin() override;
 
   // NotificationPlatformBridge implementation.
-  void Display(NotificationCommon::Type notification_type,
+  void Display(NotificationHandler::Type notification_type,
                const std::string& profile_id,
                bool incognito,
                const message_center::Notification& notification,
@@ -45,7 +45,7 @@ class NotificationPlatformBridgeWin : public NotificationPlatformBridge {
   // Takes an |encoded| string as input and decodes it, returning the values in
   // the out parameters. Returns true if successful, but false otherwise.
   static bool DecodeTemplateId(const std::string& encoded,
-                               NotificationCommon::Type* notification_type,
+                               NotificationHandler::Type* notification_type,
                                std::string* notification_id,
                                std::string* profile_id,
                                bool* incognito,
@@ -53,7 +53,7 @@ class NotificationPlatformBridgeWin : public NotificationPlatformBridge {
 
   // Encodes a template ID string given the input parameters.
   static std::string EncodeTemplateId(
-      NotificationCommon::Type notification_type,
+      NotificationHandler::Type notification_type,
       const std::string& notification_id,
       const std::string& profile_id,
       bool incognito,

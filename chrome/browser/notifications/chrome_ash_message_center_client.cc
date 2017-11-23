@@ -84,7 +84,7 @@ ChromeAshMessageCenterClient::~ChromeAshMessageCenterClient() {}
 // The unused variables here will not be a part of the future
 // NotificationPlatformBridge interface.
 void ChromeAshMessageCenterClient::Display(
-    NotificationCommon::Type /*notification_type*/,
+    NotificationHandler::Type /*notification_type*/,
     const std::string& /*profile_id*/,
     bool /*is_incognito*/,
     const message_center::Notification& notification,

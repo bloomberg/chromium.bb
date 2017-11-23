@@ -173,7 +173,7 @@ void HatsNotificationController::ButtonClick(int /* button_index */) {
 
   // Remove the notification.
   NotificationDisplayService::GetForProfile(profile_)->Close(
-      NotificationCommon::TRANSIENT, kNotificationId);
+      NotificationHandler::Type::TRANSIENT, kNotificationId);
 }
 
 // message_center::NotificationDelegate override:
@@ -225,7 +225,7 @@ void HatsNotificationController::OnPortalDetectionCompleted(
   }
 
   NotificationDisplayService::GetForProfile(profile_)->Display(
-      NotificationCommon::TRANSIENT, notification);
+      NotificationHandler::Type::TRANSIENT, notification);
 }
 
 void HatsNotificationController::UpdateLastInteractionTime() {

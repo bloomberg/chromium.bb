@@ -72,7 +72,8 @@ class NotificationPlatformBridgeWinTest : public testing::Test {
 };
 
 TEST_F(NotificationPlatformBridgeWinTest, EncodeDecode) {
-  NotificationCommon::Type notification_type = NotificationCommon::PERSISTENT;
+  NotificationHandler::Type notification_type =
+      NotificationHandler::Type::WEB_PERSISTENT;
   std::string notification_id = "Foo";
   std::string profile_id = "Bar";
   bool incognito = false;
@@ -81,7 +82,7 @@ TEST_F(NotificationPlatformBridgeWinTest, EncodeDecode) {
   std::string encoded = notification_platform_bridge_win_->EncodeTemplateId(
       notification_type, notification_id, profile_id, incognito, origin_url);
 
-  NotificationCommon::Type decoded_notification_type;
+  NotificationHandler::Type decoded_notification_type;
   std::string decoded_notification_id;
   std::string decoded_profile_id;
   bool decoded_incognito;

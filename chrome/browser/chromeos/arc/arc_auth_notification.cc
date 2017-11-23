@@ -152,12 +152,12 @@ void ArcAuthNotification::Show() {
         notifier_id, data, new ArcAuthNotificationDelegate(profile_));
   }
   NotificationDisplayService::GetForProfile(profile_)->Display(
-      NotificationCommon::TRANSIENT, *notification);
+      NotificationHandler::Type::TRANSIENT, *notification);
 }
 
 void ArcAuthNotification::Hide() {
   NotificationDisplayService::GetForProfile(profile_)->Close(
-      NotificationCommon::TRANSIENT, kFirstRunNotificationId);
+      NotificationHandler::Type::TRANSIENT, kFirstRunNotificationId);
 
   session_manager::SessionManager* session_manager =
       session_manager::SessionManager::Get();

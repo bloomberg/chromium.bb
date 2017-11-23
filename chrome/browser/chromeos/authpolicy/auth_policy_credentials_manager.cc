@@ -340,7 +340,7 @@ void AuthPolicyCredentialsManager::ShowNotification(int message_id) {
 
   // Add the notification.
   NotificationDisplayServiceFactory::GetForProfile(profile_)->Display(
-      NotificationCommon::TRANSIENT, notification);
+      NotificationHandler::Type::TRANSIENT, notification);
   shown_notifications_.insert(message_id);
 }
 

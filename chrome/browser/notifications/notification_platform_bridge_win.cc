@@ -23,6 +23,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
+#include "chrome/browser/notifications/notification_handler.h"
 #include "chrome/browser/notifications/notification_image_retainer.h"
 #include "chrome/browser/notifications/notification_template_builder.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -63,7 +64,7 @@ HRESULT CreateActivationFactory(wchar_t const (&class_name)[size], T** object) {
 
 // Perform |operation| on a notification once the profile has been loaded.
 void ProfileLoadedCallback(NotificationCommon::Operation operation,
-                           NotificationCommon::Type notification_type,
+                           NotificationHandler::Type notification_type,
                            const GURL& origin,
                            const std::string& notification_id,
                            const base::Optional<int>& action_index,
@@ -82,7 +83,7 @@ void ProfileLoadedCallback(NotificationCommon::Operation operation,
 
 void ForwardNotificationOperationOnUiThread(
     NotificationCommon::Operation operation,
-    NotificationCommon::Type notification_type,
+    NotificationHandler::Type notification_type,
     const GURL& origin,
     const std::string& notification_id,
     const std::string& profile_id,
@@ -108,8 +109,8 @@ NotificationPlatformBridge* NotificationPlatformBridge::Create() {
 
 // static
 bool NotificationPlatformBridge::CanHandleType(
-    NotificationCommon::Type notification_type) {
-  return notification_type != NotificationCommon::TRANSIENT;
+    NotificationHandler::Type notification_type) {
+  return notification_type != NotificationHandler::Type::TRANSIENT;
 }
 
 class NotificationPlatformBridgeWinImpl
@@ -225,7 +226,7 @@ class NotificationPlatformBridgeWinImpl
     return S_OK;
   }
 
-  void Display(NotificationCommon::Type notification_type,
+  void Display(NotificationHandler::Type notification_type,
                const std::string& profile_id,
                bool incognito,
                std::unique_ptr<message_center::Notification> notification,
@@ -387,7 +388,7 @@ class NotificationPlatformBridgeWinImpl
   void HandleEvent(winui::Notifications::IToastNotification* notification,
                    NotificationCommon::Operation operation,
                    const base::Optional<bool>& user_cancelled) {
-    NotificationCommon::Type notification_type;
+    NotificationHandler::Type notification_type;
     std::string notification_id;
     std::string profile_id;
     bool incognito;
@@ -474,7 +475,7 @@ NotificationPlatformBridgeWin::NotificationPlatformBridgeWin() {
 NotificationPlatformBridgeWin::~NotificationPlatformBridgeWin() = default;
 
 void NotificationPlatformBridgeWin::Display(
-    NotificationCommon::Type notification_type,
+    NotificationHandler::Type notification_type,
     const std::string& profile_id,
     bool is_incognito,
     const message_center::Notification& notification,
@@ -521,7 +522,7 @@ void NotificationPlatformBridgeWin::SetReadyCallback(
 // static
 bool NotificationPlatformBridgeWin::DecodeTemplateId(
     const std::string& encoded,
-    NotificationCommon::Type* notification_type,
+    NotificationHandler::Type* notification_type,
     std::string* notification_id,
     std::string* profile_id,
     bool* incognito,
@@ -536,9 +537,9 @@ bool NotificationPlatformBridgeWin::DecodeTemplateId(
   int type = -1;
   if (!base::StringToInt(split[0], &type))
     return false;
-  if (type < 0 || type > NotificationCommon::TYPE_MAX)
+  if (type < 0 || type > static_cast<int>(NotificationHandler::Type::MAX))
     return false;
-  *notification_type = static_cast<NotificationCommon::Type>(type);
+  *notification_type = static_cast<NotificationHandler::Type>(type);
 
   *profile_id = split[1];
   *incognito = split[2] == "1" ? true : false;
@@ -557,7 +558,7 @@ bool NotificationPlatformBridgeWin::DecodeTemplateId(
 
 // static
 std::string NotificationPlatformBridgeWin::EncodeTemplateId(
-    NotificationCommon::Type notification_type,
+    NotificationHandler::Type notification_type,
     const std::string& notification_id,
     const std::string& profile_id,
     bool incognito,
@@ -565,9 +566,9 @@ std::string NotificationPlatformBridgeWin::EncodeTemplateId(
   // The pipe was chosen as delimeter because it is invalid for directory paths
   // and unsafe for origins -- and should therefore be encoded (as per
   // http://www.ietf.org/rfc/rfc1738.txt).
-  return base::StringPrintf("%d|%s|%d|%s|%s", notification_type,
-                            profile_id.c_str(), incognito,
-                            origin_url.spec().c_str(), notification_id.c_str());
+  return base::StringPrintf(
+      "%d|%s|%d|%s|%s", static_cast<int>(notification_type), profile_id.c_str(),
+      incognito, origin_url.spec().c_str(), notification_id.c_str());
 }
 
 void NotificationPlatformBridgeWin::PostTaskToTaskRunnerThread(

@@ -16,6 +16,7 @@
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
+#include "chrome/browser/notifications/notification_handler.h"
 #include "chrome/browser/notifications/notification_test_util.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -95,7 +96,7 @@ class DownloadItemNotificationTest : public testing::Test {
   std::unique_ptr<message_center::Notification> LookUpNotification() const {
     std::vector<message_center::Notification> notifications =
         service_tester_->GetDisplayedNotificationsForType(
-            NotificationCommon::DOWNLOAD);
+            NotificationHandler::Type::DOWNLOAD);
     for (const auto& notification : notifications) {
       if (notification.id() == download_item_notification_->GetNotificationId())
         return std::make_unique<message_center::Notification>(notification);
@@ -105,13 +106,13 @@ class DownloadItemNotificationTest : public testing::Test {
 
   size_t NotificationCount() const {
     return service_tester_
-        ->GetDisplayedNotificationsForType(NotificationCommon::DOWNLOAD)
+        ->GetDisplayedNotificationsForType(NotificationHandler::Type::DOWNLOAD)
         .size();
   }
 
   void RemoveNotification() {
     service_tester_->RemoveNotification(
-        NotificationCommon::DOWNLOAD,
+        NotificationHandler::Type::DOWNLOAD,
         download_item_notification_->GetNotificationId(), false);
   }
 
@@ -130,7 +131,7 @@ class DownloadItemNotificationTest : public testing::Test {
     download_item_notification_ =
         download_notification_manager_->items_[download_item_.get()].get();
     NotificationDisplayServiceFactory::GetForProfile(profile_)->Display(
-        NotificationCommon::DOWNLOAD,
+        NotificationHandler::Type::DOWNLOAD,
         *download_item_notification_->notification_);
   }
 
