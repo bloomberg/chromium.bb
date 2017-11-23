@@ -116,15 +116,6 @@ class ExtensionThrottleManager
   // Method that does the actual work of garbage collecting.
   void GarbageCollectEntries();
 
-  // When we switch from online to offline or change IP addresses, we
-  // clear all back-off history. This is a precaution in case the change in
-  // online state now lets us communicate without error with servers that
-  // we were previously getting 500 or 503 responses from (perhaps the
-  // responses are from a badly-written proxy that should have returned a
-  // 502 or 504 because it's upstream connection was down or it had no route
-  // to the server).
-  void OnNetworkChange();
-
   // Used by tests.
   int GetNumberOfEntriesForTests() const { return url_entries_.size(); }
 
