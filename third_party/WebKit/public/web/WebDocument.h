@@ -60,6 +60,8 @@ using WebStyleSheetId = unsigned;
 // Provides readonly access to some properties of a DOM document.
 class WebDocument : public WebNode {
  public:
+  enum CSSOrigin { kAuthorOrigin, kUserOrigin };
+
   WebDocument() {}
   WebDocument(const WebDocument& e) : WebNode(e) {}
 
@@ -109,7 +111,8 @@ class WebDocument : public WebNode {
 
   // Inserts the given CSS source code as a stylesheet in the document, and
   // return its id.
-  BLINK_EXPORT WebStyleSheetId InsertStyleSheet(const WebString& source_code);
+  BLINK_EXPORT WebStyleSheetId InsertStyleSheet(const WebString& source_code,
+                                                CSSOrigin = kAuthorOrigin);
 
   // Removes the CSS which was previously inserted by a call to
   // InsertStyleSheet().

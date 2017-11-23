@@ -140,20 +140,34 @@ StyleEngine::StyleSheetsForStyleSheetList(TreeScope& tree_scope) {
   return collection.StyleSheetsForStyleSheetList();
 }
 
-WebStyleSheetId StyleEngine::AddUserSheet(StyleSheetContents* sheet) {
-  user_style_sheets_.push_back(
-      std::make_pair(++user_sheets_id_count_,
-                     CSSStyleSheet::Create(sheet, *document_)));
+WebStyleSheetId StyleEngine::InjectSheet(StyleSheetContents* sheet,
+                                         WebDocument::CSSOrigin origin) {
+  if (origin == WebDocument::kUserOrigin) {
+    injected_user_style_sheets_.push_back(
+        std::make_pair(++injected_sheets_id_count_,
+                       CSSStyleSheet::Create(sheet, *document_)));
+    MarkUserStyleDirty();
+  } else {
+    injected_author_style_sheets_.push_back(
+        std::make_pair(++injected_sheets_id_count_,
+                       CSSStyleSheet::Create(sheet, *document_)));
+    MarkDocumentDirty();
+  }
 
-  MarkUserStyleDirty();
-  return user_sheets_id_count_;
+  return injected_sheets_id_count_;
 }
 
-void StyleEngine::RemoveUserSheet(WebStyleSheetId sheet_id) {
-  for (size_t i = 0; i < user_style_sheets_.size(); ++i) {
-    if (user_style_sheets_[i].first == sheet_id) {
-      user_style_sheets_.EraseAt(i);
+void StyleEngine::RemoveInjectedSheet(WebStyleSheetId sheet_id) {
+  for (size_t i = 0; i < injected_user_style_sheets_.size(); ++i) {
+    if (injected_user_style_sheets_[i].first == sheet_id) {
+      injected_user_style_sheets_.EraseAt(i);
       MarkUserStyleDirty();
+    }
+  }
+  for (size_t i = 0; i < injected_author_style_sheets_.size(); ++i) {
+    if (injected_author_style_sheets_[i].first == sheet_id) {
+      injected_author_style_sheets_.EraseAt(i);
+      MarkDocumentDirty();
     }
   }
 }
@@ -343,7 +357,7 @@ void StyleEngine::UpdateActiveUserStyleSheets() {
   DCHECK(user_style_dirty_);
 
   ActiveStyleSheetVector new_active_sheets;
-  for (auto& sheet : user_style_sheets_) {
+  for (auto& sheet : injected_user_style_sheets_) {
     if (RuleSet* rule_set = RuleSetForSheet(*sheet.second))
       new_active_sheets.push_back(std::make_pair(sheet.second, rule_set));
   }
@@ -1420,7 +1434,8 @@ StyleRuleKeyframes* StyleEngine::KeyframeStylesForAnimation(
 
 void StyleEngine::Trace(blink::Visitor* visitor) {
   visitor->Trace(document_);
-  visitor->Trace(user_style_sheets_);
+  visitor->Trace(injected_user_style_sheets_);
+  visitor->Trace(injected_author_style_sheets_);
   visitor->Trace(active_user_style_sheets_);
   visitor->Trace(keyframes_rule_map_);
   visitor->Trace(inspector_style_sheet_);
@@ -1443,7 +1458,10 @@ void StyleEngine::Trace(blink::Visitor* visitor) {
 }
 
 void StyleEngine::TraceWrappers(const ScriptWrappableVisitor* visitor) const {
-  for (const auto& sheet : user_style_sheets_) {
+  for (const auto& sheet : injected_user_style_sheets_) {
+    visitor->TraceWrappers(sheet.second);
+  }
+  for (const auto& sheet : injected_author_style_sheets_) {
     visitor->TraceWrappers(sheet.second);
   }
   visitor->TraceWrappers(document_style_sheet_collection_);
