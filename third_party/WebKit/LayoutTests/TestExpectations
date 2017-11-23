@@ -803,6 +803,8 @@ crbug.com/773353 [ Mac ] virtual/mojo-loading/http/tests/devtools/coverage/cover
 
 crbug.com/767269 [ Win ] inspector-protocol/layout-fonts/cjk-ideograph-fallback-by-lang.js [ Pass Failure ]
 
+crbug.com/788110 [ Linux ] inspector-protocol/layout-fonts/unicode-range-combining-chars-fallback.js [ Pass Failure ]
+
 # Run these tests with under virtual/scalefactor... only.
 crbug.com/567837 fast/hidpi/static [ Skip ]
 
