@@ -20,6 +20,12 @@ using Edge = GlobalDumpGraph::Edge;
 using Node = GlobalDumpGraph::Node;
 using Process = GlobalDumpGraph::Process;
 
+namespace {
+
+const MemoryAllocatorDumpGuid kEmptyGuid;
+
+}  // namespace
+
 class GraphProcessorTest : public testing::Test {
  public:
   GraphProcessorTest() {}
@@ -65,6 +71,9 @@ class GraphProcessorTest : public testing::Test {
   void CalculateSizeForNode(GlobalDumpGraph::Node* node) {
     GraphProcessor::CalculateSizeForNode(node);
   }
+
+ protected:
+  GlobalDumpGraph graph;
 };
 
 TEST_F(GraphProcessorTest, SmokeComputeMemoryGraph) {
@@ -182,19 +191,15 @@ TEST_F(GraphProcessorTest, SmokeComputeSharedFootprint) {
 }
 
 TEST_F(GraphProcessorTest, ComputeSharedFootprintFromGraphSameImportance) {
-  GlobalDumpGraph graph;
   Process* global_process = graph.shared_memory_graph();
-  Node* global_node =
-      global_process->CreateNode(MemoryAllocatorDumpGuid(1), "global/1", false);
+  Node* global_node = global_process->CreateNode(kEmptyGuid, "global/1", false);
   global_node->AddEntry("size", Node::Entry::ScalarUnits::kBytes, 100);
 
   Process* first = graph.CreateGraphForProcess(1);
-  Node* shared_1 =
-      first->CreateNode(MemoryAllocatorDumpGuid(2), "shared_memory/1", false);
+  Node* shared_1 = first->CreateNode(kEmptyGuid, "shared_memory/1", false);
 
   Process* second = graph.CreateGraphForProcess(2);
-  Node* shared_2 =
-      second->CreateNode(MemoryAllocatorDumpGuid(3), "shared_memory/2", false);
+  Node* shared_2 = second->CreateNode(kEmptyGuid, "shared_memory/2", false);
 
   graph.AddNodeOwnershipEdge(shared_1, global_node, 1);
   graph.AddNodeOwnershipEdge(shared_2, global_node, 1);
@@ -205,31 +210,25 @@ TEST_F(GraphProcessorTest, ComputeSharedFootprintFromGraphSameImportance) {
 }
 
 TEST_F(GraphProcessorTest, ComputeSharedFootprintFromGraphSomeDiffImportance) {
-  GlobalDumpGraph graph;
   Process* global_process = graph.shared_memory_graph();
-  Node* global_node =
-      global_process->CreateNode(MemoryAllocatorDumpGuid(1), "global/1", false);
+
+  Node* global_node = global_process->CreateNode(kEmptyGuid, "global/1", false);
   global_node->AddEntry("size", Node::Entry::ScalarUnits::kBytes, 100);
 
   Process* first = graph.CreateGraphForProcess(1);
-  Node* shared_1 =
-      first->CreateNode(MemoryAllocatorDumpGuid(2), "shared_memory/1", false);
+  Node* shared_1 = first->CreateNode(kEmptyGuid, "shared_memory/1", false);
 
   Process* second = graph.CreateGraphForProcess(2);
-  Node* shared_2 =
-      second->CreateNode(MemoryAllocatorDumpGuid(3), "shared_memory/2", false);
+  Node* shared_2 = second->CreateNode(kEmptyGuid, "shared_memory/2", false);
 
   Process* third = graph.CreateGraphForProcess(3);
-  Node* shared_3 =
-      third->CreateNode(MemoryAllocatorDumpGuid(4), "shared_memory/3", false);
+  Node* shared_3 = third->CreateNode(kEmptyGuid, "shared_memory/3", false);
 
   Process* fourth = graph.CreateGraphForProcess(4);
-  Node* shared_4 =
-      fourth->CreateNode(MemoryAllocatorDumpGuid(5), "shared_memory/4", false);
+  Node* shared_4 = fourth->CreateNode(kEmptyGuid, "shared_memory/4", false);
 
   Process* fifth = graph.CreateGraphForProcess(5);
-  Node* shared_5 =
-      fifth->CreateNode(MemoryAllocatorDumpGuid(6), "shared_memory/5", false);
+  Node* shared_5 = fifth->CreateNode(kEmptyGuid, "shared_memory/5", false);
 
   graph.AddNodeOwnershipEdge(shared_1, global_node, 1);
   graph.AddNodeOwnershipEdge(shared_2, global_node, 2);
@@ -246,455 +245,314 @@ TEST_F(GraphProcessorTest, ComputeSharedFootprintFromGraphSomeDiffImportance) {
 }
 
 TEST_F(GraphProcessorTest, MarkWeakParentsSimple) {
-  GlobalDumpGraph graph;
-  Node parent(graph.shared_memory_graph(), nullptr);
-  Node first(graph.shared_memory_graph(), &parent);
-  Node second(graph.shared_memory_graph(), &parent);
-
-  parent.InsertChild("first", &first);
-  parent.InsertChild("second", &second);
+  Process* process = graph.CreateGraphForProcess(1);
+  Node* parent = process->CreateNode(kEmptyGuid, "parent", false);
+  Node* first = process->CreateNode(kEmptyGuid, "parent/first", true);
+  Node* second = process->CreateNode(kEmptyGuid, "parent/second", false);
 
   // Case where one child is not weak.
-  parent.set_explicit(false);
-  parent.set_weak(false);
-  first.set_explicit(true);
-  first.set_weak(true);
-  second.set_explicit(true);
-  second.set_weak(false);
+  parent->set_explicit(false);
+  first->set_explicit(true);
+  second->set_explicit(true);
 
   // The function should be a no-op.
-  MarkImplicitWeakParentsRecursively(&parent);
-  ASSERT_FALSE(parent.is_weak());
-  ASSERT_TRUE(first.is_weak());
-  ASSERT_FALSE(second.is_weak());
+  MarkImplicitWeakParentsRecursively(parent);
+  ASSERT_FALSE(parent->is_weak());
+  ASSERT_TRUE(first->is_weak());
+  ASSERT_FALSE(second->is_weak());
 
   // Case where all children is weak.
-  second.set_weak(true);
+  second->set_weak(true);
 
   // The function should mark parent as weak.
-  MarkImplicitWeakParentsRecursively(&parent);
-  ASSERT_TRUE(parent.is_weak());
-  ASSERT_TRUE(first.is_weak());
-  ASSERT_TRUE(second.is_weak());
+  MarkImplicitWeakParentsRecursively(parent);
+  ASSERT_TRUE(parent->is_weak());
+  ASSERT_TRUE(first->is_weak());
+  ASSERT_TRUE(second->is_weak());
 }
 
 TEST_F(GraphProcessorTest, MarkWeakParentsComplex) {
-  GlobalDumpGraph graph;
-  Node parent(graph.shared_memory_graph(), nullptr);
-  Node first(graph.shared_memory_graph(), &parent);
-  Node first_child(graph.shared_memory_graph(), &first);
-  Node first_grandchild(graph.shared_memory_graph(), &first_child);
+  Process* process = graph.CreateGraphForProcess(1);
 
-  parent.InsertChild("first", &first);
-  first.InsertChild("child", &first_child);
-  first_child.InsertChild("child", &first_grandchild);
+  // |first| is explicitly strong but |first_child| is implicitly so.
+  Node* parent = process->CreateNode(kEmptyGuid, "parent", false);
+  Node* first = process->CreateNode(kEmptyGuid, "parent/f", false);
+  Node* first_child = process->CreateNode(kEmptyGuid, "parent/f/c", false);
+  Node* first_gchild = process->CreateNode(kEmptyGuid, "parent/f/c/c", true);
 
-  // |first| is explicitly storng but |first_child| is implicitly so.
-  parent.set_explicit(false);
-  parent.set_weak(false);
-  first.set_explicit(true);
-  first.set_weak(false);
-  first_child.set_explicit(false);
-  first_child.set_weak(false);
-  first_grandchild.set_weak(true);
-  first_grandchild.set_explicit(true);
+  parent->set_explicit(false);
+  first->set_explicit(true);
+  first_child->set_explicit(false);
+  first_gchild->set_explicit(true);
 
   // That should lead to |first_child| marked implicitly weak.
-  MarkImplicitWeakParentsRecursively(&parent);
-  ASSERT_FALSE(parent.is_weak());
-  ASSERT_FALSE(first.is_weak());
-  ASSERT_TRUE(first_child.is_weak());
-  ASSERT_TRUE(first_grandchild.is_weak());
+  MarkImplicitWeakParentsRecursively(parent);
+  ASSERT_FALSE(parent->is_weak());
+  ASSERT_FALSE(first->is_weak());
+  ASSERT_TRUE(first_child->is_weak());
+  ASSERT_TRUE(first_gchild->is_weak());
 
   // Reset and change so that first is now only implicitly strong.
-  first.set_explicit(false);
-  first_child.set_weak(false);
+  first->set_explicit(false);
+  first_child->set_weak(false);
 
   // The whole chain should now be weak.
-  MarkImplicitWeakParentsRecursively(&parent);
-  ASSERT_TRUE(parent.is_weak());
-  ASSERT_TRUE(first.is_weak());
-  ASSERT_TRUE(first_child.is_weak());
-  ASSERT_TRUE(first_grandchild.is_weak());
+  MarkImplicitWeakParentsRecursively(parent);
+  ASSERT_TRUE(parent->is_weak());
+  ASSERT_TRUE(first->is_weak());
+  ASSERT_TRUE(first_child->is_weak());
+  ASSERT_TRUE(first_gchild->is_weak());
 }
 
 TEST_F(GraphProcessorTest, MarkWeakOwners) {
-  GlobalDumpGraph graph;
-  Node owner(graph.shared_memory_graph(), nullptr);
-  Node owned(graph.shared_memory_graph(), nullptr);
-  Node owned_2(graph.shared_memory_graph(), nullptr);
-
-  Edge edge_1(&owner, &owned, 0);
-  Edge edge_2(&owned, &owned_2, 0);
-
-  owner.SetOwnsEdge(&edge_1);
-  owned.AddOwnedByEdge(&edge_1);
-
-  owned.SetOwnsEdge(&edge_2);
-  owned_2.AddOwnedByEdge(&edge_2);
+  Process* process = graph.CreateGraphForProcess(1);
 
   // Make only the ultimate owned node weak.
-  owner.set_weak(false);
-  owned.set_weak(false);
-  owned_2.set_weak(true);
+  Node* owner = process->CreateNode(kEmptyGuid, "owner", false);
+  Node* owned = process->CreateNode(kEmptyGuid, "owned", false);
+  Node* owned_2 = process->CreateNode(kEmptyGuid, "owned2", true);
+
+  graph.AddNodeOwnershipEdge(owner, owned, 0);
+  graph.AddNodeOwnershipEdge(owned, owned_2, 0);
 
   // Starting from leaf node should lead to everything being weak.
-  MarkWeakOwnersAndChildrenRecursively(&owned_2);
-  ASSERT_TRUE(owner.is_weak());
-  ASSERT_TRUE(owned.is_weak());
-  ASSERT_TRUE(owned_2.is_weak());
+  MarkWeakOwnersAndChildrenRecursively(process->root());
+  ASSERT_TRUE(owner->is_weak());
+  ASSERT_TRUE(owned->is_weak());
+  ASSERT_TRUE(owned_2->is_weak());
 }
 
 TEST_F(GraphProcessorTest, MarkWeakParent) {
-  GlobalDumpGraph graph;
-  Node parent(graph.shared_memory_graph(), nullptr);
-  Node child(graph.shared_memory_graph(), &parent);
-  Node child_2(graph.shared_memory_graph(), &child);
-
-  parent.InsertChild("child", &child);
-  child.InsertChild("child", &child_2);
-
-  // Make only the ultimate parent node weak.
-  parent.set_weak(true);
-  child.set_weak(false);
-  child_2.set_weak(false);
+  Process* process = graph.CreateGraphForProcess(1);
+  Node* parent = process->CreateNode(kEmptyGuid, "parent", true);
+  Node* child = process->CreateNode(kEmptyGuid, "parent/c", false);
+  Node* child_2 = process->CreateNode(kEmptyGuid, "parent/c/c", false);
 
   // Starting from parent node should lead to everything being weak.
-  MarkWeakOwnersAndChildrenRecursively(&parent);
-  ASSERT_TRUE(parent.is_weak());
-  ASSERT_TRUE(child.is_weak());
-  ASSERT_TRUE(child_2.is_weak());
+  MarkWeakOwnersAndChildrenRecursively(process->root());
+  ASSERT_TRUE(parent->is_weak());
+  ASSERT_TRUE(child->is_weak());
+  ASSERT_TRUE(child_2->is_weak());
 }
 
 TEST_F(GraphProcessorTest, MarkWeakParentOwner) {
-  GlobalDumpGraph graph;
-  Node parent(graph.shared_memory_graph(), nullptr);
-  Node child(graph.shared_memory_graph(), &parent);
-  Node child_2(graph.shared_memory_graph(), &child);
-
-  parent.InsertChild("child", &child);
-  child.InsertChild("child", &child_2);
-
-  Node owner(graph.shared_memory_graph(), nullptr);
-
-  Edge edge(&owner, &parent, 0);
-  owner.SetOwnsEdge(&edge);
-  parent.AddOwnedByEdge(&edge);
+  Process* process = graph.CreateGraphForProcess(1);
 
   // Make only the parent node weak.
-  parent.set_weak(true);
-  child.set_weak(false);
-  child_2.set_weak(false);
-  owner.set_weak(false);
+  Node* parent = process->CreateNode(kEmptyGuid, "parent", true);
+  Node* child = process->CreateNode(kEmptyGuid, "parent/c", false);
+  Node* child_2 = process->CreateNode(kEmptyGuid, "parent/c/c", false);
+  Node* owner = process->CreateNode(kEmptyGuid, "owner", false);
+
+  graph.AddNodeOwnershipEdge(owner, parent, 0);
 
   // Starting from parent node should lead to everything being weak.
-  MarkWeakOwnersAndChildrenRecursively(&parent);
-  ASSERT_TRUE(parent.is_weak());
-  ASSERT_TRUE(child.is_weak());
-  ASSERT_TRUE(child_2.is_weak());
-  ASSERT_TRUE(owner.is_weak());
+  MarkWeakOwnersAndChildrenRecursively(process->root());
+  ASSERT_TRUE(parent->is_weak());
+  ASSERT_TRUE(child->is_weak());
+  ASSERT_TRUE(child_2->is_weak());
+  ASSERT_TRUE(owner->is_weak());
 }
 
 TEST_F(GraphProcessorTest, RemoveWeakNodesRecursively) {
-  GlobalDumpGraph graph;
-  Node parent(graph.shared_memory_graph(), nullptr);
-  Node child(graph.shared_memory_graph(), &parent);
-  Node child_2(graph.shared_memory_graph(), &child);
-  Node owned(graph.shared_memory_graph(), &parent);
+  Process* process = graph.CreateGraphForProcess(1);
 
-  parent.InsertChild("owned", &owned);
-  parent.InsertChild("child", &child);
-  child.InsertChild("child", &child_2);
+  // Make only the child node weak.
+  Node* parent = process->CreateNode(kEmptyGuid, "parent", false);
+  Node* child = process->CreateNode(kEmptyGuid, "parent/c", true);
+  process->CreateNode(kEmptyGuid, "parent/c/c", false);
+  Node* owned = process->CreateNode(kEmptyGuid, "parent/owned", false);
 
-  Edge edge(&child, &owned, 0);
-  owned.AddOwnedByEdge(&edge);
-  child.SetOwnsEdge(&edge);
-
-  // Make only the parent node weak.
-  child.set_weak(true);
-  child_2.set_weak(false);
-  owned.set_weak(false);
+  graph.AddNodeOwnershipEdge(child, owned, 0);
 
   // Starting from parent node should lead child and child_2 being
   // removed and owned to have the edge from it removed.
-  RemoveWeakNodesRecursively(&parent);
+  RemoveWeakNodesRecursively(parent);
 
-  ASSERT_EQ(parent.children()->size(), 1ul);
-  ASSERT_EQ(parent.children()->begin()->second, &owned);
+  ASSERT_EQ(parent->children()->size(), 1ul);
+  ASSERT_EQ(parent->children()->begin()->second, owned);
 
-  ASSERT_TRUE(owned.owned_by_edges()->empty());
+  ASSERT_TRUE(owned->owned_by_edges()->empty());
 }
 
 TEST_F(GraphProcessorTest, RemoveWeakNodesRecursivelyBetweenGraphs) {
-  GlobalDumpGraph graph;
-  GlobalDumpGraph::Process first_process(1, &graph);
-  GlobalDumpGraph::Process second_process(2, &graph);
+  Process* f_process = graph.CreateGraphForProcess(1);
+  Process* s_process = graph.CreateGraphForProcess(2);
 
-  Node parent(&first_process, first_process.root());
-  Node child(&first_process, &parent);
-  Node child_2(&first_process, &child);
-  Node owned(&second_process, second_process.root());
+  // Make only the child node weak.
+  Node* child = f_process->CreateNode(kEmptyGuid, "c", true);
+  f_process->CreateNode(kEmptyGuid, "c/c", false);
+  Node* owned = s_process->CreateNode(kEmptyGuid, "owned", false);
 
-  first_process.root()->InsertChild("parent", &parent);
-  parent.InsertChild("child", &child);
-  child.InsertChild("child", &child_2);
+  graph.AddNodeOwnershipEdge(child, owned, 0);
 
-  second_process.root()->InsertChild("owned", &owned);
-
-  Edge edge(&child, &owned, 0);
-  owned.AddOwnedByEdge(&edge);
-  child.SetOwnsEdge(&edge);
-
-  // Make only the parent node weak.
-  child.set_weak(true);
-  child_2.set_weak(false);
-  owned.set_weak(false);
-
-  // Starting from parent node should lead child and child_2 being
+  // Starting from root node should lead child and child_2 being
   // removed.
-  RemoveWeakNodesRecursively(first_process.root());
+  RemoveWeakNodesRecursively(f_process->root());
 
-  ASSERT_EQ(first_process.root()->children()->size(), 1ul);
-  ASSERT_EQ(parent.children()->size(), 0ul);
-  ASSERT_EQ(second_process.root()->children()->size(), 1ul);
+  ASSERT_EQ(f_process->root()->children()->size(), 0ul);
+  ASSERT_EQ(s_process->root()->children()->size(), 1ul);
 
   // This should be false until our next pass.
-  ASSERT_FALSE(owned.owned_by_edges()->empty());
+  ASSERT_FALSE(owned->owned_by_edges()->empty());
 
-  RemoveWeakNodesRecursively(second_process.root());
+  RemoveWeakNodesRecursively(s_process->root());
 
   // We should now have cleaned up the owned node's edges.
-  ASSERT_TRUE(owned.owned_by_edges()->empty());
+  ASSERT_TRUE(owned->owned_by_edges()->empty());
 }
 
 TEST_F(GraphProcessorTest, AssignTracingOverhead) {
-  GlobalDumpGraph graph;
-  Process process(1, &graph);
+  Process* process = graph.CreateGraphForProcess(1);
 
   // Now add an allocator node.
-  Node allocator(&process, process.root());
-  process.root()->InsertChild("malloc", &allocator);
+  process->CreateNode(kEmptyGuid, "malloc", false);
 
   // If the tracing node does not exist, this should do nothing.
-  AssignTracingOverhead("malloc", &graph, &process);
-  ASSERT_TRUE(process.root()->GetChild("malloc")->children()->empty());
+  AssignTracingOverhead("malloc", &graph, process);
+  ASSERT_TRUE(process->root()->GetChild("malloc")->children()->empty());
 
   // Now add a tracing node.
-  Node tracing(&process, process.root());
-  process.root()->InsertChild("tracing", &tracing);
+  process->CreateNode(kEmptyGuid, "tracing", false);
 
   // This should now add a node with the allocator.
-  AssignTracingOverhead("malloc", &graph, &process);
-  ASSERT_NE(process.FindNode("malloc/allocated_objects/tracing_overhead"),
+  AssignTracingOverhead("malloc", &graph, process);
+  ASSERT_NE(process->FindNode("malloc/allocated_objects/tracing_overhead"),
             nullptr);
 }
 
 TEST_F(GraphProcessorTest, AggregateNumericWithNameForNode) {
-  GlobalDumpGraph graph;
-  Process process(1, &graph);
+  Process* process = graph.CreateGraphForProcess(1);
 
-  Node parent(&process, process.root());
+  Node* c1 = process->CreateNode(kEmptyGuid, "c1", false);
+  Node* c2 = process->CreateNode(kEmptyGuid, "c2", false);
+  Node* c3 = process->CreateNode(kEmptyGuid, "c3", false);
 
-  Node c1(&process, &parent);
-  c1.AddEntry("random_numeric", Node::Entry::ScalarUnits::kBytes, 100);
+  c1->AddEntry("random_numeric", Node::Entry::ScalarUnits::kBytes, 100);
+  c2->AddEntry("random_numeric", Node::Entry::ScalarUnits::kBytes, 256);
+  c3->AddEntry("other_numeric", Node::Entry::ScalarUnits::kBytes, 1000);
 
-  Node c2(&process, &parent);
-  c2.AddEntry("random_numeric", Node::Entry::ScalarUnits::kBytes, 256);
-
-  Node c3(&process, &parent);
-  c3.AddEntry("other_numeric", Node::Entry::ScalarUnits::kBytes, 1000);
-
-  parent.InsertChild("c1", &c1);
-  parent.InsertChild("c2", &c2);
-  parent.InsertChild("c3", &c3);
-
-  Node::Entry entry =
-      AggregateNumericWithNameForNode(&parent, "random_numeric");
+  Node* root = process->root();
+  Node::Entry entry = AggregateNumericWithNameForNode(root, "random_numeric");
   ASSERT_EQ(entry.value_uint64, 356ul);
   ASSERT_EQ(entry.units, Node::Entry::ScalarUnits::kBytes);
 }
 
 TEST_F(GraphProcessorTest, AggregateNumericsRecursively) {
-  GlobalDumpGraph graph;
-  Process process(1, &graph);
-  Node parent(&process, process.root());
+  Process* process = graph.CreateGraphForProcess(1);
 
-  Node c1(&process, &parent);
-  c1.AddEntry("random_numeric", Node::Entry::ScalarUnits::kBytes, 100);
+  Node* c1 = process->CreateNode(kEmptyGuid, "c1", false);
+  Node* c2 = process->CreateNode(kEmptyGuid, "c2", false);
+  Node* c2_c1 = process->CreateNode(kEmptyGuid, "c2/c1", false);
+  Node* c2_c2 = process->CreateNode(kEmptyGuid, "c2/c2", false);
+  Node* c3_c1 = process->CreateNode(kEmptyGuid, "c3/c1", false);
+  Node* c3_c2 = process->CreateNode(kEmptyGuid, "c3/c2", false);
 
   // If an entry already exists in the parent, the child should not
-  // ovewrite it.
-  Node c2(&process, &parent);
-  Node c2_c1(&process, &c2);
-  Node c2_c2(&process, &c2);
-  c2.AddEntry("random_numeric", Node::Entry::ScalarUnits::kBytes, 256);
-  c2_c1.AddEntry("random_numeric", Node::Entry::ScalarUnits::kBytes, 256);
-  c2_c2.AddEntry("random_numeric", Node::Entry::ScalarUnits::kBytes, 256);
+  // ovewrite it. If nothing exists, then the child can aggregrate.
+  c1->AddEntry("random_numeric", Node::Entry::ScalarUnits::kBytes, 100);
+  c2->AddEntry("random_numeric", Node::Entry::ScalarUnits::kBytes, 256);
+  c2_c1->AddEntry("random_numeric", Node::Entry::ScalarUnits::kBytes, 256);
+  c2_c2->AddEntry("random_numeric", Node::Entry::ScalarUnits::kBytes, 256);
+  c3_c1->AddEntry("random_numeric", Node::Entry::ScalarUnits::kBytes, 10);
+  c3_c2->AddEntry("random_numeric", Node::Entry::ScalarUnits::kBytes, 10);
 
-  // If nothing exists, then the child can aggregrate.
-  Node c3(&process, &parent);
-  Node c3_c1(&process, &c3);
-  Node c3_c2(&process, &c3);
-  c3_c1.AddEntry("random_numeric", Node::Entry::ScalarUnits::kBytes, 10);
-  c3_c2.AddEntry("random_numeric", Node::Entry::ScalarUnits::kBytes, 10);
+  Node* root = process->root();
+  AggregateNumericsRecursively(root);
+  ASSERT_EQ(root->entries()->size(), 1ul);
 
-  parent.InsertChild("c1", &c1);
-  parent.InsertChild("c2", &c2);
-  parent.InsertChild("c3", &c3);
-  c2.InsertChild("c1", &c2_c1);
-  c2.InsertChild("c2", &c2_c2);
-  c3.InsertChild("c1", &c3_c1);
-  c3.InsertChild("c2", &c3_c2);
-
-  AggregateNumericsRecursively(&parent);
-  ASSERT_EQ(parent.entries()->size(), 1ul);
-
-  auto entry = parent.entries()->begin()->second;
+  auto entry = root->entries()->begin()->second;
   ASSERT_EQ(entry.value_uint64, 376ul);
   ASSERT_EQ(entry.units, Node::Entry::ScalarUnits::kBytes);
 }
 
-TEST_F(GraphProcessorTest, PropagateNumericsAndDiagnosticsRecursively) {
-  GlobalDumpGraph graph;
-  Process process(1, &graph);
-
-  Node c1(&process, process.root());
-  Node c1_c1(&process, process.root());
-
-  Node c2(&process, process.root());
-
-  Node owner_1(&process, process.root());
-  Node owner_2(&process, process.root());
-
-  process.root()->InsertChild("c1", &c1);
-  process.root()->InsertChild("c2", &c2);
-  process.root()->InsertChild("owner_1", &owner_1);
-  process.root()->InsertChild("owner_2", &owner_2);
-
-  c1.InsertChild("c1", &c1_c1);
-
-  Edge edge_1(&owner_1, &c1_c1, 0);
-  c1_c1.AddOwnedByEdge(&edge_1);
-  owner_1.SetOwnsEdge(&edge_1);
-
-  Edge edge_2(&owner_2, &c2, 0);
-  c2.AddOwnedByEdge(&edge_2);
-  owner_2.SetOwnsEdge(&edge_2);
-}
-
 TEST_F(GraphProcessorTest, AggregateSizeForDescendantNode) {
-  GlobalDumpGraph graph;
-  Process process(1, &graph);
-  Node* root = process.root();
+  Process* process = graph.CreateGraphForProcess(1);
 
-  Node c1(&process, root);
-  c1.AddEntry("size", Node::Entry::ScalarUnits::kBytes, 100);
+  Node* c1 = process->CreateNode(kEmptyGuid, "c1", false);
+  Node* c2 = process->CreateNode(kEmptyGuid, "c2", false);
+  Node* c2_c1 = process->CreateNode(kEmptyGuid, "c2/c1", false);
+  Node* c2_c2 = process->CreateNode(kEmptyGuid, "c2/c2", false);
+  Node* c3_c1 = process->CreateNode(kEmptyGuid, "c3/c1", false);
+  Node* c3_c2 = process->CreateNode(kEmptyGuid, "c3/c2", false);
 
-  Node c2(&process, root);
-  Node c2_c1(&process, &c2);
-  Node c2_c2(&process, &c2);
-  c2_c1.AddEntry("size", Node::Entry::ScalarUnits::kBytes, 256);
-  c2_c2.AddEntry("size", Node::Entry::ScalarUnits::kBytes, 256);
+  c1->AddEntry("size", Node::Entry::ScalarUnits::kBytes, 100);
+  c2_c1->AddEntry("size", Node::Entry::ScalarUnits::kBytes, 256);
+  c2_c2->AddEntry("size", Node::Entry::ScalarUnits::kBytes, 256);
+  c3_c1->AddEntry("size", Node::Entry::ScalarUnits::kBytes, 10);
+  c3_c2->AddEntry("size", Node::Entry::ScalarUnits::kBytes, 10);
 
-  Node c3(&process, root);
-  Node c3_c1(&process, &c3);
-  Node c3_c2(&process, &c3);
-  c3_c1.AddEntry("size", Node::Entry::ScalarUnits::kBytes, 10);
-  c3_c2.AddEntry("size", Node::Entry::ScalarUnits::kBytes, 10);
-
-  root->InsertChild("c1", &c1);
-  root->InsertChild("c2", &c2);
-  root->InsertChild("c3", &c3);
-  c2.InsertChild("c1", &c2_c1);
-  c2.InsertChild("c2", &c2_c2);
-  c3.InsertChild("c1", &c3_c1);
-  c3.InsertChild("c2", &c3_c2);
-
-  Edge edge(&c2_c2, &c3_c2, 0);
-  c3_c2.AddOwnedByEdge(&edge);
-  c2_c2.SetOwnsEdge(&edge);
+  graph.AddNodeOwnershipEdge(c2_c2, c3_c2, 0);
 
   // Aggregating root should give size of (100 + 256 + 10 * 2) = 376.
   // |c2_c2| is not counted because it is owns by |c3_c2|.
+  Node* root = process->root();
   ASSERT_EQ(376ul, *AggregateSizeForDescendantNode(root, root));
 
   // Aggregating c2 should give size of (256 * 2) = 512. |c2_c2| is counted
   // because |c3_c2| is not a child of |c2|.
-  ASSERT_EQ(512ul, *AggregateSizeForDescendantNode(&c2, &c2));
+  ASSERT_EQ(512ul, *AggregateSizeForDescendantNode(c2, c2));
 }
 
 TEST_F(GraphProcessorTest, CalculateSizeForNode) {
-  GlobalDumpGraph graph;
-  Process process(1, &graph);
-  Node* root = process.root();
+  Process* process = graph.CreateGraphForProcess(1);
 
-  Node c1(&process, root);
-  c1.AddEntry("size", Node::Entry::ScalarUnits::kBytes, 600);
+  Node* c1 = process->CreateNode(kEmptyGuid, "c1", false);
+  Node* c2 = process->CreateNode(kEmptyGuid, "c2", false);
+  Node* c2_c1 = process->CreateNode(kEmptyGuid, "c2/c1", false);
+  Node* c2_c2 = process->CreateNode(kEmptyGuid, "c2/c2", false);
+  Node* c3 = process->CreateNode(kEmptyGuid, "c3", false);
+  Node* c3_c1 = process->CreateNode(kEmptyGuid, "c3/c1", false);
+  Node* c3_c2 = process->CreateNode(kEmptyGuid, "c3/c2", false);
 
-  Node c2(&process, root);
-  Node c2_c1(&process, &c2);
-  Node c2_c2(&process, &c2);
-  c2_c1.AddEntry("size", Node::Entry::ScalarUnits::kBytes, 10);
-  c2_c2.AddEntry("size", Node::Entry::ScalarUnits::kBytes, 10);
+  c1->AddEntry("size", Node::Entry::ScalarUnits::kBytes, 600);
+  c2_c1->AddEntry("size", Node::Entry::ScalarUnits::kBytes, 10);
+  c2_c2->AddEntry("size", Node::Entry::ScalarUnits::kBytes, 10);
+  c3->AddEntry("size", Node::Entry::ScalarUnits::kBytes, 600);
+  c3_c1->AddEntry("size", Node::Entry::ScalarUnits::kBytes, 256);
+  c3_c2->AddEntry("size", Node::Entry::ScalarUnits::kBytes, 256);
 
-  Node c3(&process, root);
-  Node c3_c1(&process, &c3);
-  Node c3_c2(&process, &c3);
-  c3.AddEntry("size", Node::Entry::ScalarUnits::kBytes, 600);
-  c3_c1.AddEntry("size", Node::Entry::ScalarUnits::kBytes, 256);
-  c3_c2.AddEntry("size", Node::Entry::ScalarUnits::kBytes, 256);
-
-  root->InsertChild("c1", &c1);
-  root->InsertChild("c2", &c2);
-  root->InsertChild("c3", &c3);
-  c2.InsertChild("c1", &c2_c1);
-  c2.InsertChild("c2", &c2_c2);
-  c3.InsertChild("c1", &c3_c1);
-  c3.InsertChild("c2", &c3_c2);
-
-  Edge edge(&c2_c2, &c3_c2, 0);
-  c3_c2.AddOwnedByEdge(&edge);
-  c2_c2.SetOwnsEdge(&edge);
+  graph.AddNodeOwnershipEdge(c2_c2, c3_c2, 0);
 
   // Compute size entry for |c2| since computations for |c2_c1| and |c2_c2|
   // are already complete.
-  CalculateSizeForNode(&c2);
+  CalculateSizeForNode(c2);
 
   // Check that |c2| now has a size entry of 20 (sum of children).
-  auto c2_entry = c2.entries()->begin()->second;
+  auto c2_entry = c2->entries()->begin()->second;
   ASSERT_EQ(c2_entry.value_uint64, 20ul);
   ASSERT_EQ(c2_entry.units, Node::Entry::ScalarUnits::kBytes);
 
   // Compute size entry for |c3_c2| which should not change in size.
-  CalculateSizeForNode(&c3_c2);
+  CalculateSizeForNode(c3_c2);
 
   // Check that |c3_c2| now has unchanged size.
-  auto c3_c2_entry = c3_c2.entries()->begin()->second;
+  auto c3_c2_entry = c3_c2->entries()->begin()->second;
   ASSERT_EQ(c3_c2_entry.value_uint64, 256ul);
   ASSERT_EQ(c3_c2_entry.units, Node::Entry::ScalarUnits::kBytes);
 
   // Compute size entry for |c3| which should add an unspecified node.
-  CalculateSizeForNode(&c3);
+  CalculateSizeForNode(c3);
 
   // Check that |c3| has unchanged size.
-  auto c3_entry = c3.entries()->begin()->second;
+  auto c3_entry = c3->entries()->begin()->second;
   ASSERT_EQ(c3_entry.value_uint64, 600ul);
   ASSERT_EQ(c3_entry.units, Node::Entry::ScalarUnits::kBytes);
 
   // Check that the unspecified node is a child of |c3| and has size
   // 600 - 512 = 88.
-  Node* c3_child = c3.children()->find("<unspecified>")->second;
+  Node* c3_child = c3->children()->find("<unspecified>")->second;
   auto c3_child_entry = c3_child->entries()->begin()->second;
   ASSERT_EQ(c3_child_entry.value_uint64, 88ul);
   ASSERT_EQ(c3_child_entry.units, Node::Entry::ScalarUnits::kBytes);
 
   // Compute size entry for |root| which should aggregate children sizes.
-  CalculateSizeForNode(root);
+  CalculateSizeForNode(process->root());
 
   // Check that |root| has been assigned a size of 600 + 10 + 600 = 1210.
   // Note that |c2_c2| is not counted because it ows |c3_c2| which is a
   // descendant of |root|.
-  auto root_entry = root->entries()->begin()->second;
+  auto root_entry = process->root()->entries()->begin()->second;
   ASSERT_EQ(root_entry.value_uint64, 1210ul);
   ASSERT_EQ(root_entry.units, Node::Entry::ScalarUnits::kBytes);
 }
