@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 mojom = "//content/common/native_types.mojom"
+os_whitelist = [ "mac" ]
 public_headers = [
   "//third_party/WebKit/public/platform/WebScrollbarButtonsPlacement.h",
   "//third_party/WebKit/public/platform/mac/WebScrollbarTheme.h",

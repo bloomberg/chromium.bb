@@ -53,10 +53,6 @@ _typemap_imports = [
   "//url/mojo/typemaps.gni",
 ]
 
-_typemap_imports_mac = [ "//content/common/typemaps_mac.gni" ]
-
-_typemap_imports_chromeos = []
-
 _typemaps = []
 foreach(typemap_import, _typemap_imports) {
   # Avoid reassignment error by assigning to empty scope first.
@@ -69,38 +65,6 @@ foreach(typemap_import, _typemap_imports) {
 typemaps = []
 foreach(typemap, _typemaps) {
   typemaps += [ {
-        filename = typemap
-        config = read_file(typemap, "scope")
-      } ]
-}
-
-_typemaps_mac = []
-foreach(typemap_import, _typemap_imports_mac) {
-  _imported = {
-  }
-  _imported = read_file(typemap_import, "scope")
-  _typemaps_mac += _imported.typemaps
-}
-
-typemaps_mac = []
-foreach(typemap, _typemaps_mac) {
-  typemaps_mac += [ {
-        filename = typemap
-        config = read_file(typemap, "scope")
-      } ]
-}
-
-_typemaps_chromeos = []
-foreach(typemap_import, _typemap_imports_chromeos) {
-  _imported = {
-  }
-  _imported = read_file(typemap_import, "scope")
-  _typemaps_chromeos += _imported.typemaps
-}
-
-typemaps_chromeos = []
-foreach(typemap, _typemaps_chromeos) {
-  typemaps_chromeos += [ {
         filename = typemap
         config = read_file(typemap, "scope")
       } ]
