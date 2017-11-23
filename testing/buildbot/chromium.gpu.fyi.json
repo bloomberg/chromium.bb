@@ -5175,11 +5175,11 @@
           "--test-launcher-retry-limit=0"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.2"
             }
           ]
         },
@@ -5192,11 +5192,11 @@
           "--test-launcher-retry-limit=0"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.2"
             }
           ]
         },
@@ -5208,11 +5208,11 @@
           "--use-gpu-in-tests"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.2"
             }
           ]
         },
@@ -5222,13 +5222,19 @@
       {
         "args": [
           "--enable-gpu",
-          "--no-xvfb",
+          "--test-launcher-bot-mode",
           "--test-launcher-jobs=1",
           "--gtest_filter=CastStreamingApiTestWithPixelOutput.EndToEnd*:TabCaptureApiPixelTest.EndToEnd*"
         ],
         "name": "tab_capture_end2end_tests",
         "swarming": {
-          "can_use_on_swarming_builders": false
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0a2e",
+              "os": "Mac-10.13.2"
+            }
+          ]
         },
         "test": "browser_tests",
         "use_xvfb": false
@@ -5239,11 +5245,11 @@
           "--use-cmd-decoder=validating"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.2"
             }
           ]
         },
@@ -5255,11 +5261,11 @@
           "--use-gpu-in-tests"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.2"
             }
           ]
         },
@@ -5271,11 +5277,11 @@
           "--use-gpu-in-tests"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.2"
             }
           ]
         },
@@ -5284,11 +5290,11 @@
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.2"
             }
           ]
         },
@@ -5301,11 +5307,11 @@
           "--use-gpu-in-tests"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.2"
             }
           ]
         },
@@ -5329,11 +5335,11 @@
           "telemetry_gpu_integration_test"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.2"
             }
           ]
         }
@@ -5353,11 +5359,11 @@
           "telemetry_gpu_integration_test"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.2"
             }
           ]
         }
@@ -5377,11 +5383,11 @@
           "telemetry_gpu_integration_test"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.2"
             }
           ]
         }
@@ -5401,11 +5407,11 @@
           "telemetry_gpu_integration_test"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.2"
             }
           ]
         }
@@ -5429,11 +5435,11 @@
           "telemetry_gpu_integration_test"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.2"
             }
           ]
         }
@@ -5460,11 +5466,11 @@
           "telemetry_gpu_integration_test"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.2"
             }
           ]
         }
@@ -5499,11 +5505,11 @@
           "--download-refimg-from-cloud-storage"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.2"
             }
           ]
         }
@@ -5524,11 +5530,11 @@
           "telemetry_gpu_integration_test"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.2"
             }
           ]
         }
@@ -5548,11 +5554,11 @@
           "telemetry_gpu_integration_test"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.2"
             }
           ]
         }
@@ -5574,11 +5580,11 @@
           "telemetry_gpu_integration_test"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.2"
             }
           ],
           "shards": 20
@@ -5599,11 +5605,11 @@
           "telemetry_gpu_integration_test"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.2"
             }
           ],
           "shards": 2
@@ -5619,12 +5625,12 @@
           "--test-launcher-retry-limit=0"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.2"
             }
           ]
         },
@@ -5637,12 +5643,12 @@
           "--test-launcher-retry-limit=0"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.2"
             }
           ]
         },
@@ -5654,12 +5660,12 @@
           "--use-gpu-in-tests"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.2"
             }
           ]
         },
@@ -5669,13 +5675,20 @@
       {
         "args": [
           "--enable-gpu",
-          "--no-xvfb",
+          "--test-launcher-bot-mode",
           "--test-launcher-jobs=1",
           "--gtest_filter=CastStreamingApiTestWithPixelOutput.EndToEnd*:TabCaptureApiPixelTest.EndToEnd*"
         ],
         "name": "tab_capture_end2end_tests",
         "swarming": {
-          "can_use_on_swarming_builders": false
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "1002:6821",
+              "hidpi": "1",
+              "os": "Mac-10.13.2"
+            }
+          ]
         },
         "test": "browser_tests",
         "use_xvfb": false
@@ -5686,12 +5699,12 @@
           "--use-cmd-decoder=validating"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.2"
             }
           ]
         },
@@ -5703,12 +5716,12 @@
           "--use-gpu-in-tests"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.2"
             }
           ]
         },
@@ -5720,12 +5733,12 @@
           "--use-gpu-in-tests"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.2"
             }
           ]
         },
@@ -5734,12 +5747,12 @@
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.2"
             }
           ]
         },
@@ -5752,12 +5765,12 @@
           "--use-gpu-in-tests"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.2"
             }
           ]
         },
@@ -5781,12 +5794,12 @@
           "telemetry_gpu_integration_test"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.2"
             }
           ]
         }
@@ -5806,12 +5819,12 @@
           "telemetry_gpu_integration_test"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.2"
             }
           ]
         }
@@ -5831,12 +5844,12 @@
           "telemetry_gpu_integration_test"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.2"
             }
           ]
         }
@@ -5856,12 +5869,12 @@
           "telemetry_gpu_integration_test"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.2"
             }
           ]
         }
@@ -5885,12 +5898,12 @@
           "telemetry_gpu_integration_test"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.2"
             }
           ]
         }
@@ -5917,12 +5930,12 @@
           "telemetry_gpu_integration_test"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.2"
             }
           ]
         }
@@ -5957,12 +5970,12 @@
           "--download-refimg-from-cloud-storage"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.2"
             }
           ]
         }
@@ -5983,12 +5996,12 @@
           "telemetry_gpu_integration_test"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.2"
             }
           ]
         }
@@ -6008,12 +6021,12 @@
           "telemetry_gpu_integration_test"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.2"
             }
           ]
         }
@@ -6035,12 +6048,12 @@
           "telemetry_gpu_integration_test"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.2"
             }
           ],
           "shards": 20
@@ -6061,12 +6074,12 @@
           "telemetry_gpu_integration_test"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false,
+          "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.12.6"
+              "os": "Mac-10.13.2"
             }
           ],
           "shards": 2

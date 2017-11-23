@@ -543,12 +543,12 @@ FYI_WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '8086:0a2e',
-          'os': 'Mac-10.12.6'
+          'os': 'Mac-10.13.2',
+          'pool': 'Chrome-GPU',
         },
       ],
       'build_config': 'Release',
-      # This bot is a one-off for testing purposes.
-      'swarming': False,
+      'swarming': True,
       'os_type': 'mac',
     },
     'Mac Experimental Retina Release (AMD)': {
@@ -556,12 +556,12 @@ FYI_WATERFALL = {
         {
           'gpu': '1002:6821',
           'hidpi': '1',
-          'os': 'Mac-10.12.6',
+          'os': 'Mac-10.13.2',
+          'pool': 'Chrome-GPU',
         },
       ],
       'build_config': 'Release',
-      # This bot is a one-off for testing purposes.
-      'swarming': False,
+      'swarming': True,
       'os_type': 'mac',
     },
     'Mac Experimental Retina Release (NVIDIA)': {
@@ -569,7 +569,8 @@ FYI_WATERFALL = {
         {
           'gpu': '10de:0fe9',
           'hidpi': '1',
-          'os': 'Mac-10.12.6',
+          'os': 'Mac-10.13.2',
+          'pool': 'Chrome-GPU',
         },
       ],
       'build_config': 'Release',
