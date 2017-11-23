@@ -40,6 +40,23 @@ void LogAction(TabUnderNavigationThrottle::Action action) {
                             TabUnderNavigationThrottle::Action::kCount);
 }
 
+#if defined(OS_ANDROID)
+typedef FramebustBlockMessageDelegate::InterventionOutcome InterventionOutcome;
+
+void LogOutcome(InterventionOutcome outcome) {
+  TabUnderNavigationThrottle::Action action;
+  switch (outcome) {
+    case InterventionOutcome::kAccepted:
+      action = TabUnderNavigationThrottle::Action::kAcceptedIntervention;
+      break;
+    case InterventionOutcome::kDeclinedAndNavigated:
+      action = TabUnderNavigationThrottle::Action::kClickedThrough;
+      break;
+  }
+  LogAction(action);
+}
+#endif  // defined(OS_ANDROID)
+
 void LogTabUnderAttempt(content::NavigationHandle* handle,
                         base::Optional<ukm::SourceId> opener_source_id) {
   LogAction(TabUnderNavigationThrottle::Action::kDidTabUnder);
@@ -64,13 +81,11 @@ void LogTabUnderAttempt(content::NavigationHandle* handle,
   }
 }
 
-void ShowUI(content::WebContents* web_contents,
-            const GURL& url,
-            base::OnceClosure click_closure) {
+void ShowUI(content::WebContents* web_contents, const GURL& url) {
 #if defined(OS_ANDROID)
-  FramebustBlockInfoBar::Show(web_contents,
-                              base::MakeUnique<FramebustBlockMessageDelegate>(
-                                  web_contents, url, std::move(click_closure)));
+  FramebustBlockInfoBar::Show(
+      web_contents, base::MakeUnique<FramebustBlockMessageDelegate>(
+                        web_contents, url, base::BindOnce(&LogOutcome)));
 #else
   NOTIMPLEMENTED() << "The BlockTabUnders experiment does not currently have a "
                       "UI implemented on desktop platforms.";
@@ -149,8 +164,7 @@ TabUnderNavigationThrottle::MaybeBlockNavigation() {
       contents->GetMainFrame()->AddMessageToConsole(
           content::CONSOLE_MESSAGE_LEVEL_ERROR, error.c_str());
       LogAction(Action::kBlocked);
-      ShowUI(contents, url,
-             base::BindOnce(&LogAction, Action::kClickedThrough));
+      ShowUI(contents, url);
       return content::NavigationThrottle::CANCEL;
     }
   }

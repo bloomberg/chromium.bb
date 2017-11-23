@@ -40654,6 +40654,7 @@ would be helpful to identify which type is being sent.
   <int value="1" label="Tab-under blocked"/>
   <int value="2" label="Tab-under occurred"/>
   <int value="3" label="Clicked through native UI"/>
+  <int value="4" label="Closed native UI without navigation"/>
 </enum>
 
 <enum name="TapDelayType">
