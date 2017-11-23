@@ -58,6 +58,7 @@ class ASH_EXPORT TraySessionLengthLimit : public SystemTrayItem,
 
   LimitState limit_state_;       // Current state.
   LimitState last_limit_state_;  // State of last notification update.
+  bool has_notification_been_shown_;
 
   LabelTrayView* tray_bubble_view_;
   std::unique_ptr<base::RepeatingTimer> timer_;

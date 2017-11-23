@@ -33,6 +33,12 @@ namespace {
 // informed that the session is about to expire.
 const int kExpiringSoonThresholdInMinutes = 5;
 
+// A notification is shown to the user only if the remaining session time falls
+// under this threshold. e.g. If the user has several days left in their
+// session, there is no use displaying a notification right now.
+constexpr base::TimeDelta kNotificationThreshold =
+    base::TimeDelta::FromMinutes(60);
+
 // Use 500ms interval for updates to notification and tray bubble to reduce the
 // likelihood of a user-visible skip in high load situations (as might happen
 // with 1000ms).
@@ -48,6 +54,7 @@ TraySessionLengthLimit::TraySessionLengthLimit(SystemTray* system_tray)
     : SystemTrayItem(system_tray, UMA_SESSION_LENGTH_LIMIT),
       limit_state_(LIMIT_NONE),
       last_limit_state_(LIMIT_NONE),
+      has_notification_been_shown_(false),
       tray_bubble_view_(nullptr) {
   Shell::Get()->session_controller()->AddObserver(this);
   Update();
@@ -124,8 +131,9 @@ void TraySessionLengthLimit::UpdateNotification() {
       message_center::MessageCenter::Get();
 
   // If state hasn't changed and the notification has already been acknowledged,
-  // we won't re-create it.
-  if (limit_state_ == last_limit_state_ &&
+  // we won't re-create it. We consider a notification to be acknowledged if it
+  // was shown before, but is no longer visible.
+  if (limit_state_ == last_limit_state_ && has_notification_been_shown_ &&
       !message_center->FindVisibleNotificationById(kNotificationId)) {
     return;
   }
@@ -140,8 +148,10 @@ void TraySessionLengthLimit::UpdateNotification() {
         kNotificationId, false /* by_user */);
   }
 
-  // For LIMIT_NONE, there's nothing more to do.
-  if (limit_state_ == LIMIT_NONE) {
+  // If the session is unlimited or if the remaining time is too far off into
+  // the future, there is nothing more to do.
+  if (limit_state_ == LIMIT_NONE ||
+      remaining_session_time_ > kNotificationThreshold) {
     last_limit_state_ = limit_state_;
     return;
   }
@@ -169,6 +179,7 @@ void TraySessionLengthLimit::UpdateNotification() {
   } else {
     message_center->AddNotification(std::move(notification));
   }
+  has_notification_been_shown_ = true;
   last_limit_state_ = limit_state_;
 }
 
