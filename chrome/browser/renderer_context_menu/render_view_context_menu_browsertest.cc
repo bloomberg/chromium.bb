@@ -25,7 +25,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/browsertest_util.h"
+#include "chrome/browser/extensions/bookmark_app_helper.h"
 #include "chrome/browser/pdf/pdf_extension_test_util.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
@@ -170,19 +170,38 @@ class ContextMenuBrowserTest : public InProcessBrowserTest {
   }
 
   const extensions::Extension* InstallTestBookmarkApp(const GURL& app_url) {
+    Profile* profile = browser()->profile();
+    size_t num_extensions = extensions::ExtensionRegistry::Get(profile)
+                                ->enabled_extensions()
+                                .size();
     WebApplicationInfo web_app_info;
     web_app_info.app_url = app_url;
     web_app_info.scope = app_url;
     web_app_info.title = base::UTF8ToUTF16("Test app");
     web_app_info.description = base::UTF8ToUTF16("Test description");
 
-    return extensions::browsertest_util::InstallBookmarkApp(
-        browser()->profile(), web_app_info);
+    content::WindowedNotificationObserver windowed_observer(
+        extensions::NOTIFICATION_CRX_INSTALLER_DONE,
+        content::NotificationService::AllSources());
+    extensions::CreateOrUpdateBookmarkApp(
+        extensions::ExtensionSystem::Get(profile)->extension_service(),
+        &web_app_info);
+    windowed_observer.Wait();
+
+    EXPECT_EQ(++num_extensions, extensions::ExtensionRegistry::Get(profile)
+                                    ->enabled_extensions()
+                                    .size());
+    return content::Details<const extensions::Extension>(
+               windowed_observer.details())
+        .ptr();
   }
 
   Browser* OpenTestBookmarkApp(const extensions::Extension* bookmark_app) {
-    return extensions::browsertest_util::LaunchAppBrowser(browser()->profile(),
-                                                          bookmark_app);
+    OpenApplication(AppLaunchParams(browser()->profile(), bookmark_app,
+                                    extensions::LAUNCH_CONTAINER_WINDOW,
+                                    WindowOpenDisposition::CURRENT_TAB,
+                                    extensions::SOURCE_CHROME_INTERNAL));
+    return chrome::FindLastActive();
   }
 };
 
