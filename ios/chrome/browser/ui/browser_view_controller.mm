@@ -4221,10 +4221,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
   return _toolbarModelIOS.get();
 }
 
-- (void)willUpdateToolbarSnapshot {
-  [[_model currentTab].overscrollActionsController clear];
-}
-
 - (CardView*)addCardViewInFullscreen:(BOOL)fullScreen {
   CGRect frame = [_contentArea frame];
   if (!fullScreen) {

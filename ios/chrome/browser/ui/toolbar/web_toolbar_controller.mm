@@ -140,12 +140,6 @@ using ios::material::TimingFunction;
   // Keeps track of last known trait collection used by the subviews.
   UITraitCollection* _lastKnownTraitCollection;
 
-  // A snapshot of the current toolbar view. Only valid for phone, will be nil
-  // if on tablet.
-  UIImage* _snapshot;
-  // A hash of the state of the toolbar when the snapshot was taken.
-  uint32_t _snapshotHash;
-
 #if defined(__IPHONE_11_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_11_0)
   API_AVAILABLE(ios(11.0)) DropAndNavigateInteraction* _dropInteraction;
 #endif
@@ -170,17 +164,9 @@ using ios::material::TimingFunction;
 - (void)setForwardButtonEnabled:(BOOL)enabled;
 - (void)startProgressBar;
 - (void)stopProgressBar;
-- (void)hideProgressBarAndTakeSnapshot;
+- (void)hideProgressBar;
 - (void)showReloadButton;
 - (void)showStopButton;
-// Creates a hash of the state of the toolbar to know whether or not the cached
-// snapshot is out of date.
-// The hash takes into account any UI that may change the appearance of the
-// toolbar. The one UI state it ignores is the stack view button's press
-// state. That is because we want the snapshot to be valid when the stack is
-// pressed, rather than creating a new snapshot exactly during the user
-// interaction this snapshot is aimed to optimize.
-- (uint32_t)snapshotHashWithWidth:(CGFloat)width;
 // Called by long press gesture recognizer, used to display back/forward
 // history.
 - (void)handleLongPress:(UILongPressGestureRecognizer*)gesture;
@@ -219,7 +205,6 @@ using ios::material::TimingFunction;
 // When the collapse animation is complete, hide the Material background and
 // restore the omnibox's background image.
 - (void)animationDidStop:(CAAnimation*)anim finished:(BOOL)flag;
-- (void)updateSnapshotWithWidth:(CGFloat)width forced:(BOOL)force;
 // Updates all buttons visibility, including the parent class buttons.
 - (void)updateToolbarButtons;
 
@@ -624,8 +609,6 @@ using ios::material::TimingFunction;
 
   if (!_initialLayoutComplete)
     _initialLayoutComplete = YES;
-  if (!toolbarModelIOS->IsLoading() && !IsIPadIdiom())
-    [self updateSnapshotWithWidth:0 forced:NO];
 }
 
 - (void)updateToolbarForSideSwipeSnapshot:(Tab*)tab {
@@ -1329,20 +1312,19 @@ using ios::material::TimingFunction;
                                  }];
     }
     CGFloat delay = _unitTesting ? 0 : kLoadCompleteHideProgressBarDelay;
-    [self performSelector:@selector(hideProgressBarAndTakeSnapshot)
+    [self performSelector:@selector(hideProgressBar)
                withObject:nil
                afterDelay:delay];
   }
 }
 
-- (void)hideProgressBarAndTakeSnapshot {
+- (void)hideProgressBar {
   // The UI may have been torn down while this selector was queued.  If
   // |self.delegate| is nil, it is not safe to continue.
   if (!self.delegate)
     return;
 
   [_determinateProgressView setHidden:YES];
-  [self updateSnapshotWithWidth:0 forced:NO];
   _prerenderAnimating = NO;
 }
 
@@ -2147,101 +2129,6 @@ using ios::material::TimingFunction;
   CGRect frame = LayoutRectGetRect(cancelButtonLayout);
   // Use the property to force creation.
   [self.cancelButton setFrame:frame];
-}
-
-#pragma mark Snapshot.
-
-- (void)updateSnapshotWithWidth:(CGFloat)width forced:(BOOL)force {
-  // If |width| is 0, the current view's width is acceptable.
-  if (width < 1)
-    width = [self view].frame.size.width;
-
-  // Snapshot is not used on the iPad.
-  if (IsIPadIdiom()) {
-    NOTREACHED();
-    return;
-  }
-  // If the snapshot is valid, don't redraw.
-  if (_snapshot && _snapshotHash == [self snapshotHashWithWidth:width])
-    return;
-
-  // Don't update the snapshot while the progress bar is moving, or while the
-  // tools menu is open, unless |force| is true.
-  BOOL shouldRedraw =
-      force || (![self.toolsMenuStateProvider isShowingToolsMenu] &&
-                [_determinateProgressView isHidden]);
-  if (!shouldRedraw)
-    return;
-
-  if ([[self delegate]
-          respondsToSelector:@selector(willUpdateToolbarSnapshot)]) {
-    [[self delegate] willUpdateToolbarSnapshot];
-  }
-
-  // Temporarily resize the toolbar if necessary in order to match the desired
-  // width. (Such a mismatch can occur if the device has been rotated while this
-  // view was not visible, for example.)
-  CGRect frame = [self view].frame;
-  CGFloat oldWidth = frame.size.width;
-  frame.size.width = width;
-  if (!IsSafeAreaCompatibleToolbarEnabled())
-    [self view].frame = frame;
-
-  UIGraphicsBeginImageContextWithOptions(frame.size, NO, 0.0);
-  [[self view].layer renderInContext:UIGraphicsGetCurrentContext()];
-  _snapshot = UIGraphicsGetImageFromCurrentImageContext();
-  UIGraphicsEndImageContext();
-
-  // If self.view is offscreen during render, UIKit sets views' origin to 0,0.
-  if (IsSafeAreaCompatibleToolbarEnabled() && frame.origin.y != 0) {
-    CGRect fixFrame = [self view].frame;
-    fixFrame.origin.y = frame.origin.y;
-    [self view].frame = fixFrame;
-  }
-
-  // In the past, when the current tab was prerendered, taking a snapshot
-  // sometimes lead to layout of its UIWebView. As this may be the fist time
-  // the UIWebViews was laid out, its scroll view was scrolled. This lead
-  // to scroll events that changed the frame of the toolbar when fullscreen
-  // was enabled.
-  // DCHECK that the toolbar frame does not change while taking a snapshot.
-  DCHECK_EQ(frame.origin.x, [self view].frame.origin.x);
-  DCHECK_EQ(frame.origin.y, [self view].frame.origin.y);
-  DCHECK_EQ(frame.size.width, [self view].frame.size.width);
-  DCHECK_EQ(frame.size.height, [self view].frame.size.height);
-
-  frame.size.width = oldWidth;
-  if (!IsSafeAreaCompatibleToolbarEnabled()) {
-    [self view].frame = frame;
-  }
-
-  _snapshotHash = [self snapshotHashWithWidth:width];
-}
-
-- (uint32_t)snapshotHashWithWidth:(CGFloat)width {
-  uint32_t hash = [super snapshotHash];
-  // Take only the lower 3 bits of the UIButton state, as they are the only
-  // ones that change per enabled, highlighted, or nomal.
-  const uint32_t kButtonStateMask = 0x07;
-  hash ^= ([_backButton state] & kButtonStateMask) |
-          (([_forwardButton state] & kButtonStateMask) << 3) |
-          (([_cancelButton state] & kButtonStateMask) << 6);
-  // Omnibox size & text it contains.
-  hash ^= [[_locationBarView.textField text] hash];
-  hash ^= static_cast<uint32_t>([_locationBarView frame].size.width) << 16;
-  hash ^= static_cast<uint32_t>([_locationBarView frame].size.height) << 24;
-  // Also note progress bar state.
-  float progress = 0;
-  if (_determinateProgressView && ![_determinateProgressView isHidden])
-    progress = [_determinateProgressView progress];
-  // The progress is in the range 0 to 1, so static_cast<uint32_t> won't work.
-  // Normally, static_cast does the right thing: truncates the float to an int.
-  // Here, that would not provide the necessary granularity.
-  hash ^= *(reinterpret_cast<uint32_t*>(&progress));
-  // Size changes matter.
-  hash ^= static_cast<uint32_t>(width) << 15;
-  hash ^= static_cast<uint32_t>([self view].frame.size.height) << 23;
-  return hash;
 }
 
 #pragma mark Helpers
