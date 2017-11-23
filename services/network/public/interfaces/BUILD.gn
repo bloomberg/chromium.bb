@@ -10,6 +10,7 @@ mojom("interfaces") {
     "cors.mojom",
     "fetch_api.mojom",
     "http_request_headers.mojom",
+    "mutable_network_traffic_annotation_tag.mojom",
     "network_change_manager.mojom",
     "restricted_cookie_manager.mojom",
   ]

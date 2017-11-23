@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_COMMON_MUTABLE_NETWORK_TRAFFIC_ANNOTATION_PARAM_TRAITS_H_
-#define CONTENT_PUBLIC_COMMON_MUTABLE_NETWORK_TRAFFIC_ANNOTATION_PARAM_TRAITS_H_
+#ifndef SERVICES_NETWORK_PUBLIC_CPP_MUTABLE_NETWORK_TRAFFIC_ANNOTATION_TAG_STRUCT_TRAITS_H_
+#define SERVICES_NETWORK_PUBLIC_CPP_MUTABLE_NETWORK_TRAFFIC_ANNOTATION_TAG_STRUCT_TRAITS_H_
 
-#include "content/public/common/mutable_network_traffic_annotation_tag.mojom.h"
 #include "mojo/common/common_custom_types_struct_traits.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/public/interfaces/mutable_network_traffic_annotation_tag.mojom.h"
 
 namespace mojo {
 
 template <>
-struct StructTraits<content::mojom::MutableNetworkTrafficAnnotationTagDataView,
+struct StructTraits<network::mojom::MutableNetworkTrafficAnnotationTagDataView,
                     net::MutableNetworkTrafficAnnotationTag> {
   static int32_t unique_id_hash_code(
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
     return traffic_annotation.unique_id_hash_code;
   }
   static bool Read(
-      content::mojom::MutableNetworkTrafficAnnotationTagDataView data,
+      network::mojom::MutableNetworkTrafficAnnotationTagDataView data,
       net::MutableNetworkTrafficAnnotationTag* out) {
     out->unique_id_hash_code = data.unique_id_hash_code();
     return true;
@@ -28,4 +28,4 @@ struct StructTraits<content::mojom::MutableNetworkTrafficAnnotationTagDataView,
 
 }  // namespace mojo
 
-#endif  // CONTENT_PUBLIC_COMMON_MUTABLE_NETWORK_TRAFFIC_ANNOTATION_PARAM_TRAITS_H_
+#endif  // SERVICES_NETWORK_PUBLIC_CPP_MUTABLE_NETWORK_TRAFFIC_ANNOTATION_TAG_STRUCT_TRAITS_H_
