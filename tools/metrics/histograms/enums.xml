@@ -16746,10 +16746,11 @@ Called by update_net_error_codes.py.-->
       label="CredentialManagerCredentialRequestOptionsUnmediated (obsolete as
              of M64)"/>
   <int value="1984" label="CredentialManagerGetMediationRequired"/>
-  <int value="1985" label="CredentialManagerIdName"/>
-  <int value="1986" label="CredentialManagerPasswordName"/>
-  <int value="1987" label="CredentialManagerAdditionalData"/>
-  <int value="1988" label="CredentialManagerCustomFetch"/>
+  <int value="1985" label="CredentialManagerIdName (obsolete as of M64)"/>
+  <int value="1986" label="CredentialManagerPasswordName (obsolete as of M64)"/>
+  <int value="1987"
+      label="CredentialManagerAdditionalData (obsolete as of M64)"/>
+  <int value="1988" label="CredentialManagerCustomFetch (obsolete as of M64)"/>
   <int value="1989" label="NetInfoRtt"/>
   <int value="1990" label="NetInfoDownlink"/>
   <int value="1991" label="ShapeDetection_BarcodeDetectorConstructor"/>
