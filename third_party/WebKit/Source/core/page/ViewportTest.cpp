@@ -3224,6 +3224,22 @@ TEST_F(ViewportTest, viewportWarnings7) {
   EXPECT_EQ(0U, web_frame_client.messages.size());
 }
 
+TEST_F(ViewportTest, viewportWarnings8) {
+  ConsoleMessageWebFrameClient web_frame_client;
+
+  RegisterMockedHttpURLLoad("viewport/viewport-warnings-8.html");
+
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(
+      base_url_ + "viewport/viewport-warnings-8.html", &web_frame_client,
+      nullptr, nullptr, SetViewportSettings);
+
+  Page* page = web_view_helper.WebView()->GetPage();
+  RunViewportTest(page, 320, 352);
+
+  EXPECT_EQ(0U, web_frame_client.messages.size());
+}
+
 class ViewportHistogramsTest : public SimTest {
  public:
   ViewportHistogramsTest() {}
