@@ -179,7 +179,7 @@ class PLATFORM_EXPORT FontCache {
   static void SetDeviceScaleFactor(float device_scale_factor) {
     device_scale_factor_ = device_scale_factor;
   }
-  static void AddSideloadedFontForTesting(SkTypeface*);
+  static void AddSideloadedFontForTesting(sk_sp<SkTypeface>);
   // Functions to cache and retrieve the system font metrics.
   static void SetMenuFontMetrics(const wchar_t* family_name,
                                  int32_t font_height);

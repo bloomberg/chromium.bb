@@ -19,8 +19,8 @@ void WebFontRendering::SetDeviceScaleFactor(float device_scale_factor) {
 }
 
 // static
-void WebFontRendering::AddSideloadedFontForTesting(SkTypeface* typeface) {
-  FontCache::AddSideloadedFontForTesting(typeface);
+void WebFontRendering::AddSideloadedFontForTesting(sk_sp<SkTypeface> typeface) {
+  FontCache::AddSideloadedFontForTesting(std::move(typeface));
 }
 
 // static
