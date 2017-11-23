@@ -1,25 +1,28 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/network-test.js"></script>
-<script src="../../inspector/debugger-test.js"></script>
-<script src="../../../../resources/gc.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-var scriptElement;
-function loadScript()
-{
-    scriptElement = document.createElement("script");
-    scriptElement.src = "resources/cached-script.php";
-    document.head.appendChild(scriptElement);
-}
+(async function() {
+  TestRunner.addResult(`Tests requests loaded from disk cache have correct timing\n`);
+  await TestRunner.loadModule('network_test_runner');
+  await TestRunner.loadModule('console_test_runner');
+  await TestRunner.showPanel('network');
+  await TestRunner.addScriptTag('resources/gc.js');
+  await TestRunner.evaluateInPagePromise(`
+      var scriptElement;
+      function loadScript()
+      {
+          scriptElement = document.createElement("script");
+          scriptElement.src = "resources/cached-script.php";
+          document.head.appendChild(scriptElement);
+      }
 
-function unloadScript()
-{
-    scriptElement.parentElement.removeChild(scriptElement);
-}
+      function unloadScript()
+      {
+          scriptElement.parentElement.removeChild(scriptElement);
+      }
+  `);
 
-function test() {
   var timeZero = 0;
 
   NetworkTestRunner.recordNetwork();
@@ -69,11 +72,4 @@ function test() {
     TestRunner.addResult('Second request starts later than first: ' + (time > timeZero));
     TestRunner.completeTest();
   }
-}
-</script>
-</head>
-<body onload="runTest()">
-    <p> Tests requests loaded from disk cache have correct timing</p>
-</body>
-</html>
-
+})();

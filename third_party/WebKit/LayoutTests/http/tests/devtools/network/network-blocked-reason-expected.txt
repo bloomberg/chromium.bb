@@ -1,5 +1,3 @@
-CONSOLE ERROR: line 11: Refused to load the script 'https://www.example.com/csp.js' because it violates the following Content Security Policy directive: "script-src 'self' 'unsafe-inline'".
-
 Tests that blocked reason is recognized correctly.
 
 
@@ -8,7 +6,7 @@ BlockedReason: csp
 
 Running: testBlockedByDevTools1
 Blocked patterns: resources**/silent*.js
-Request: resources/silent_script.js
+Request: silent_script.js
 BlockedReason: inspector
 
 Running: testBlockedByDevTools2
@@ -83,6 +81,6 @@ BlockedReason: inspector
 
 Running: cleanupBlockedURLs
 Blocked patterns: 
-Request: resources/silent_script.js
+Request: silent_script.js
 BlockedReason: undefined
 

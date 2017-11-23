@@ -1,25 +1,15 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/network-test.js"></script>
-<script src="../../inspector/debugger-test.js"></script>
-<script src="../../../../resources/gc.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-var scriptElement;
-function loadScript()
-{
-    scriptElement = document.createElement("script");
-    scriptElement.src = "resources/long_script.cgi";
-    document.head.appendChild(scriptElement);
-}
-
-function unloadScript()
-{
-    scriptElement.parentElement.removeChild(scriptElement);
-}
-
-function test() {
+(async function() {
+  TestRunner.addResult(`Tests long script content is correctly shown in source panel after page reload.\n`);
+  await TestRunner.loadModule('network_test_runner');
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.loadModule('console_test_runner');
+  await TestRunner.showPanel('sources');
+  await TestRunner.showPanel('network');
+  await TestRunner.navigatePromise('resources/long-script-page.html');
   TestRunner.hardReloadPage(step1);
 
   function step1() {
@@ -51,13 +41,8 @@ function test() {
     var actual = loadedScript.substring(loadedScript.length - expected.length);
     TestRunner.assertEquals(expected, actual, 'Loaded script is corrupted');
 
+    TestRunner.addResult('Test passed');
+
     TestRunner.completeTest();
   }
-}
-</script>
-</head>
-<body onload="runTest()">
-    <p> Tests long script content is correctly shown in source panel after page reload.</p>
-</body>
-</html>
-
+})();
