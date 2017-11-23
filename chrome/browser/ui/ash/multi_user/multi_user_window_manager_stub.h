@@ -14,8 +14,6 @@
 
 class AccountId;
 
-namespace chrome {
-
 // This is the implementation of MultiUserWindowManager for single user mode.
 class MultiUserWindowManagerStub : public MultiUserWindowManager {
  public:
@@ -41,7 +39,5 @@ class MultiUserWindowManagerStub : public MultiUserWindowManager {
  private:
   DISALLOW_COPY_AND_ASSIGN(MultiUserWindowManagerStub);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_ASH_MULTI_USER_MULTI_USER_WINDOW_MANAGER_STUB_H_

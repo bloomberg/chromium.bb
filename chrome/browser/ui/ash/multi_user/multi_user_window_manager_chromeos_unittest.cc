@@ -93,7 +93,7 @@ class TestShellContentState : public ash::ShellContentState {
   content::BrowserContext* GetBrowserContextForWindow(
       aura::Window* window) override {
     const AccountId& account_id =
-        chrome::MultiUserWindowManager::GetInstance()->GetWindowOwner(window);
+        MultiUserWindowManager::GetInstance()->GetWindowOwner(window);
     return account_id.is_valid()
                ? multi_user_util::GetProfileFromAccountId(account_id)
                : nullptr;
@@ -102,8 +102,7 @@ class TestShellContentState : public ash::ShellContentState {
   content::BrowserContext* GetUserPresentingBrowserContextForWindow(
       aura::Window* window) override {
     const AccountId& account_id =
-        chrome::MultiUserWindowManager::GetInstance()->GetUserPresentingWindow(
-            window);
+        MultiUserWindowManager::GetInstance()->GetUserPresentingWindow(window);
     return account_id.is_valid()
                ? multi_user_util::GetProfileFromAccountId(account_id)
                : nullptr;
@@ -142,8 +141,8 @@ std::unique_ptr<Browser> CreateTestBrowser(aura::Window* window,
 
 namespace ash {
 
-// A test class for preparing the chrome::MultiUserWindowManager. It creates
-// various windows and instantiates the chrome::MultiUserWindowManager.
+// A test class for preparing the MultiUserWindowManager. It creates
+// various windows and instantiates the MultiUserWindowManager.
 class MultiUserWindowManagerChromeOSTest : public AshTestBase {
  public:
   MultiUserWindowManagerChromeOSTest()
@@ -182,7 +181,7 @@ class MultiUserWindowManagerChromeOSTest : public AshTestBase {
   }
 
   // The accessor to the MultiWindowManager.
-  chrome::MultiUserWindowManagerChromeOS* multi_user_window_manager() {
+  MultiUserWindowManagerChromeOS* multi_user_window_manager() {
     return multi_user_window_manager_;
   }
 
@@ -266,7 +265,7 @@ class MultiUserWindowManagerChromeOSTest : public AshTestBase {
 
   // Returns true if the given window covers the screen.
   bool CoversScreen(aura::Window* window) {
-    return chrome::UserSwitchAnimatorChromeOS::CoversScreen(window);
+    return UserSwitchAnimatorChromeOS::CoversScreen(window);
   }
 
   // Create a tablet mode window manager.
@@ -287,7 +286,7 @@ class MultiUserWindowManagerChromeOSTest : public AshTestBase {
   aura::Window::Windows windows_;
 
   // The instance of the MultiUserWindowManager.
-  chrome::MultiUserWindowManagerChromeOS* multi_user_window_manager_;
+  MultiUserWindowManagerChromeOS* multi_user_window_manager_;
 
   // Owned by |user_manager_enabler_|.
   chromeos::FakeChromeUserManager* fake_user_manager_ = nullptr;
@@ -324,12 +323,11 @@ void MultiUserWindowManagerChromeOSTest::SetUpForThisManyWindows(int windows) {
     windows_[i]->Show();
   }
   multi_user_window_manager_ =
-      new chrome::MultiUserWindowManagerChromeOS(AccountId::FromUserEmail("A"));
+      new MultiUserWindowManagerChromeOS(AccountId::FromUserEmail("A"));
   multi_user_window_manager_->Init();
   multi_user_window_manager_->SetAnimationSpeedForTest(
-      chrome::MultiUserWindowManagerChromeOS::ANIMATION_SPEED_DISABLED);
-  chrome::MultiUserWindowManager::SetInstanceForTest(
-      multi_user_window_manager_);
+      MultiUserWindowManagerChromeOS::ANIMATION_SPEED_DISABLED);
+  MultiUserWindowManager::SetInstanceForTest(multi_user_window_manager_);
   EXPECT_TRUE(multi_user_window_manager_);
   chromeos::WallpaperManager::Initialize();
 }
@@ -342,7 +340,7 @@ void MultiUserWindowManagerChromeOSTest::TearDown() {
     windows_.erase(windows_.begin());
   }
 
-  chrome::MultiUserWindowManager::DeleteInstance();
+  MultiUserWindowManager::DeleteInstance();
   AshTestBase::TearDown();
   chromeos::WallpaperManager::Shutdown();
   profile_manager_.reset();
@@ -389,8 +387,7 @@ TEST_F(MultiUserWindowManagerChromeOSTest, BasicTests) {
   // Check the basic assumptions: All windows are visible and there is no owner.
   EXPECT_EQ("S[], S[], S[]", GetStatus());
   EXPECT_TRUE(multi_user_window_manager());
-  EXPECT_EQ(multi_user_window_manager(),
-            chrome::MultiUserWindowManager::GetInstance());
+  EXPECT_EQ(multi_user_window_manager(), MultiUserWindowManager::GetInstance());
   EXPECT_FALSE(multi_user_window_manager()->AreWindowsSharedAmongUsers());
 
   const AccountId account_id_A(AccountId::FromUserEmail("A"));
@@ -967,7 +964,7 @@ TEST_F(MultiUserWindowManagerChromeOSTest, FullUserSwitchAnimationTests) {
 
   // Turn the use of delays and animation on.
   multi_user_window_manager()->SetAnimationSpeedForTest(
-      chrome::MultiUserWindowManagerChromeOS::ANIMATION_SPEED_FAST);
+      MultiUserWindowManagerChromeOS::ANIMATION_SPEED_FAST);
   // Set some owners and make sure we got what we asked for.
   multi_user_window_manager()->SetWindowOwner(window(0), account_id_A);
   multi_user_window_manager()->SetWindowOwner(window(1), account_id_B);
@@ -1005,7 +1002,7 @@ TEST_F(MultiUserWindowManagerChromeOSTest, SystemShutdownWithActiveAnimation) {
 
   // Turn the use of delays and animation on.
   multi_user_window_manager()->SetAnimationSpeedForTest(
-      chrome::MultiUserWindowManagerChromeOS::ANIMATION_SPEED_FAST);
+      MultiUserWindowManagerChromeOS::ANIMATION_SPEED_FAST);
   // Set some owners and make sure we got what we asked for.
   multi_user_window_manager()->SetWindowOwner(window(0), account_id_A);
   multi_user_window_manager()->SetWindowOwner(window(1), account_id_B);
@@ -1026,7 +1023,7 @@ TEST_F(MultiUserWindowManagerChromeOSTest, AnimationSteps) {
 
   // Turn the use of delays and animation on.
   multi_user_window_manager()->SetAnimationSpeedForTest(
-      chrome::MultiUserWindowManagerChromeOS::ANIMATION_SPEED_FAST);
+      MultiUserWindowManagerChromeOS::ANIMATION_SPEED_FAST);
   // Set some owners and make sure we got what we asked for.
   multi_user_window_manager()->SetWindowOwner(window(0), account_id_A);
   multi_user_window_manager()->SetWindowOwner(window(1), account_id_B);
@@ -1084,7 +1081,7 @@ TEST_F(MultiUserWindowManagerChromeOSTest, AnimationStepsMaximizeToNormal) {
 
   // Turn the use of delays and animation on.
   multi_user_window_manager()->SetAnimationSpeedForTest(
-      chrome::MultiUserWindowManagerChromeOS::ANIMATION_SPEED_FAST);
+      MultiUserWindowManagerChromeOS::ANIMATION_SPEED_FAST);
   // Set some owners and make sure we got what we asked for.
   multi_user_window_manager()->SetWindowOwner(window(0), account_id_A);
   wm::GetWindowState(window(0))->Maximize();
@@ -1129,7 +1126,7 @@ TEST_F(MultiUserWindowManagerChromeOSTest, AnimationStepsNormalToMaximized) {
 
   // Turn the use of delays and animation on.
   multi_user_window_manager()->SetAnimationSpeedForTest(
-      chrome::MultiUserWindowManagerChromeOS::ANIMATION_SPEED_FAST);
+      MultiUserWindowManagerChromeOS::ANIMATION_SPEED_FAST);
   // Set some owners and make sure we got what we asked for.
   multi_user_window_manager()->SetWindowOwner(window(0), account_id_A);
   multi_user_window_manager()->SetWindowOwner(window(1), account_id_B);
@@ -1175,7 +1172,7 @@ TEST_F(MultiUserWindowManagerChromeOSTest, AnimationStepsMaximizedToMaximized) {
 
   // Turn the use of delays and animation on.
   multi_user_window_manager()->SetAnimationSpeedForTest(
-      chrome::MultiUserWindowManagerChromeOS::ANIMATION_SPEED_FAST);
+      MultiUserWindowManagerChromeOS::ANIMATION_SPEED_FAST);
   // Set some owners and make sure we got what we asked for.
   multi_user_window_manager()->SetWindowOwner(window(0), account_id_A);
   wm::GetWindowState(window(0))->Maximize();

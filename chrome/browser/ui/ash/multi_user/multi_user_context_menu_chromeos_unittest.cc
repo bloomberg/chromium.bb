@@ -22,7 +22,7 @@
 
 namespace ash {
 
-// A test class for preparing the chrome::MultiUserContextMenu.
+// A test class for preparing the MultiUserContextMenu.
 class MultiUserContextMenuChromeOSTest : public AshTestBase {
  public:
   MultiUserContextMenuChromeOSTest()
@@ -50,7 +50,7 @@ class MultiUserContextMenuChromeOSTest : public AshTestBase {
   }
 
   aura::Window* window() { return window_; }
-  chrome::MultiUserWindowManagerChromeOS* multi_user_window_manager() {
+  MultiUserWindowManagerChromeOS* multi_user_window_manager() {
     return multi_user_window_manager_;
   }
 
@@ -59,7 +59,7 @@ class MultiUserContextMenuChromeOSTest : public AshTestBase {
   aura::Window* window_;
 
   // The instance of the MultiUserWindowManager.
-  chrome::MultiUserWindowManagerChromeOS* multi_user_window_manager_;
+  MultiUserWindowManagerChromeOS* multi_user_window_manager_;
   // Owned by |user_manager_enabler_|.
   chromeos::FakeChromeUserManager* fake_user_manager_ = nullptr;
   user_manager::ScopedUserManager user_manager_enabler_;
@@ -74,17 +74,16 @@ void MultiUserContextMenuChromeOSTest::SetUp() {
   window_->Show();
 
   multi_user_window_manager_ =
-      new chrome::MultiUserWindowManagerChromeOS(AccountId::FromUserEmail("A"));
+      new MultiUserWindowManagerChromeOS(AccountId::FromUserEmail("A"));
   multi_user_window_manager_->Init();
-  chrome::MultiUserWindowManager::SetInstanceForTest(
-      multi_user_window_manager_);
+  MultiUserWindowManager::SetInstanceForTest(multi_user_window_manager_);
   EXPECT_TRUE(multi_user_window_manager_);
 }
 
 void MultiUserContextMenuChromeOSTest::TearDown() {
   delete window_;
 
-  chrome::MultiUserWindowManager::DeleteInstance();
+  MultiUserWindowManager::DeleteInstance();
   AshTestBase::TearDown();
 }
 

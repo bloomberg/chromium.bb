@@ -555,8 +555,8 @@ LoginDisplayHostWebUI::~LoginDisplayHostWebUI() {
   if (login_window_delegate_)
     login_window_delegate_->LoginDisplayHostDestroyed();
 
-  chrome::MultiUserWindowManager* window_manager =
-      chrome::MultiUserWindowManager::GetInstance();
+  MultiUserWindowManager* window_manager =
+      MultiUserWindowManager::GetInstance();
   // MultiUserWindowManager instance might be null if no user is logged in - or
   // in a unit test.
   if (window_manager)
@@ -697,8 +697,8 @@ void LoginDisplayHostWebUI::StartUserAdding(
     finalize_animation_type_ = ANIMATION_ADD_USER;
   // Observe the user switch animation and defer the deletion of itself only
   // after the animation is finished.
-  chrome::MultiUserWindowManager* window_manager =
-      chrome::MultiUserWindowManager::GetInstance();
+  MultiUserWindowManager* window_manager =
+      MultiUserWindowManager::GetInstance();
   // MultiUserWindowManager instance might be nullptr in a unit test.
   if (window_manager)
     window_manager->AddObserver(this);
@@ -1078,7 +1078,7 @@ void LoginDisplayHostWebUI::OnWillRemoveView(views::Widget* widget,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// LoginDisplayHostWebUI, chrome::MultiUserWindowManager::Observer:
+// LoginDisplayHostWebUI, MultiUserWindowManager::Observer:
 void LoginDisplayHostWebUI::OnUserSwitchAnimationFinished() {
   ShutdownDisplayHost(false);
 }

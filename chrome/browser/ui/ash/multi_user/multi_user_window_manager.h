@@ -19,8 +19,6 @@ namespace aura {
 class Window;
 }
 
-namespace chrome {
-
 // The MultiUserWindowManager manages windows from multiple users by presenting
 // only user relevant windows to the current user. The manager is automatically
 // determining the window ownership from browser and application windows and
@@ -128,7 +126,5 @@ class MultiUserWindowManager {
  protected:
   virtual ~MultiUserWindowManager() {}
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_ASH_MULTI_USER_MULTI_USER_WINDOW_MANAGER_H_

@@ -57,7 +57,7 @@ class LoginDisplayHostWebUI : public LoginDisplayHost,
                               public display::DisplayObserver,
                               public ui::InputDeviceEventObserver,
                               public views::WidgetRemovalsObserver,
-                              public chrome::MultiUserWindowManager::Observer {
+                              public MultiUserWindowManager::Observer {
  public:
   explicit LoginDisplayHostWebUI(const gfx::Rect& wallpaper_bounds);
   ~LoginDisplayHostWebUI() override;
@@ -132,7 +132,7 @@ class LoginDisplayHostWebUI : public LoginDisplayHost,
   // Overriden from views::WidgetRemovalsObserver:
   void OnWillRemoveView(views::Widget* widget, views::View* view) override;
 
-  // Overriden from chrome::MultiUserWindowManager::Observer:
+  // Overriden from MultiUserWindowManager::Observer:
   void OnUserSwitchAnimationFinished() override;
 
  private:

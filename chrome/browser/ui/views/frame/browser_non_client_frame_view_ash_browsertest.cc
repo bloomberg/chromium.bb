@@ -247,7 +247,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest,
           widget->non_client_view()->frame_view());
   aura::Window* window = browser()->window()->GetNativeWindow();
 
-  EXPECT_FALSE(chrome::MultiUserWindowManager::ShouldShowAvatar(window));
+  EXPECT_FALSE(MultiUserWindowManager::ShouldShowAvatar(window));
   EXPECT_FALSE(frame_view->profile_indicator_icon());
 
   const AccountId current_account_id =
@@ -258,7 +258,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest,
   // Teleport the window to another desktop.
   const AccountId account_id2(AccountId::FromUserEmail("user2"));
   manager->ShowWindowForUser(window, account_id2);
-  EXPECT_TRUE(chrome::MultiUserWindowManager::ShouldShowAvatar(window));
+  EXPECT_TRUE(MultiUserWindowManager::ShouldShowAvatar(window));
 
   // An icon should show on the top left corner of the teleported browser
   // window.

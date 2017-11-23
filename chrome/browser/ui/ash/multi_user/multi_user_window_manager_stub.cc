@@ -8,8 +8,6 @@
 #include "base/strings/string_util.h"
 #include "components/signin/core/account_id/account_id.h"
 
-namespace chrome {
-
 MultiUserWindowManagerStub::MultiUserWindowManagerStub() {}
 
 MultiUserWindowManagerStub::~MultiUserWindowManagerStub() {}
@@ -59,5 +57,3 @@ void MultiUserWindowManagerStub::AddObserver(Observer* observer) {
 void MultiUserWindowManagerStub::RemoveObserver(Observer* observer) {
   NOTIMPLEMENTED();
 }
-
-}  // namespace chrome
