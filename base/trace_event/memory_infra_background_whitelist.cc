@@ -41,6 +41,7 @@ const char* const kDumpProviderWhitelist[] = {
     "PartitionAlloc",
     "ProcessMemoryMetrics",
     "Skia",
+    "SharedMemoryTracker",
     "Sql",
     "URLRequestContext",
     "V8Isolate",
@@ -59,6 +60,7 @@ const char* const kDumpProviderSummaryWhitelist[] = {
     "Malloc",
     "PartitionAlloc",
     "ProcessMemoryMetrics",
+    "SharedMemoryTracker",
     "V8Isolate",
     nullptr  // End of list marker.
 };
@@ -268,10 +270,19 @@ bool IsMemoryDumpProviderWhitelistedForSummary(const char* mdp_name) {
 bool IsMemoryAllocatorDumpNameWhitelisted(const std::string& name) {
   // Global dumps are explicitly whitelisted for background use.
   if (base::StartsWith(name, "global/", CompareCase::SENSITIVE)) {
-    for (size_t i = sizeof("global/"); i < name.size(); i++)
+    for (size_t i = strlen("global/"); i < name.size(); i++)
       if (!base::IsHexDigit(name[i]))
         return false;
     return true;
+  }
+
+  // As are shared memory dumps. Note: we skip the first character after the
+  // slash and last character in the string as they are expected to be brackets.
+  if (base::StartsWith(name, "shared_memory/(", CompareCase::SENSITIVE)) {
+    for (size_t i = strlen("shared_memory/") + 1; i < name.size() - 1; i++)
+      if (!base::IsHexDigit(name[i]))
+        return false;
+    return name.back() == ')';
   }
 
   // Remove special characters, numbers (including hexadecimal which are marked
