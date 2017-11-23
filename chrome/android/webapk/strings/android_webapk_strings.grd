@@ -118,6 +118,9 @@
       <message name="IDS_SHORT_NAME" desc="The short name of the WebAPK." translateable="false">
         Short Name
       </message>
+      <message name="IDS_NOTIFICATION_CHANNEL_NAME" desc="The user visible name of the default notification channel of the WebAPK.">
+        General
+      </message>
     </messages>
   </release>
 </grit>
