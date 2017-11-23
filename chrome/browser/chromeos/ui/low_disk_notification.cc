@@ -71,7 +71,8 @@ void LowDiskNotification::LowDiskSpace(uint64_t free_disk_bytes) {
        now - last_notification_time_ > notification_interval_)) {
     Profile* profile = ProfileManager::GetLastUsedProfile();
     NotificationDisplayService::GetForProfile(profile)->Display(
-        NotificationCommon::TRANSIENT, *CreateNotification(severity, profile));
+        NotificationHandler::Type::TRANSIENT,
+        *CreateNotification(severity, profile));
     last_notification_time_ = now;
     last_notification_severity_ = severity;
   }

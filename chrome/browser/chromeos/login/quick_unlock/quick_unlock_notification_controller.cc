@@ -171,7 +171,7 @@ void QuickUnlockNotificationController::Observe(
   std::unique_ptr<message_center::Notification> notification =
       CreateNotification();
   NotificationDisplayService::GetForProfile(profile_)->Display(
-      NotificationCommon::TRANSIENT, *notification);
+      NotificationHandler::Type::TRANSIENT, *notification);
 }
 
 // message_center::NotificationDelegate override:
@@ -192,7 +192,7 @@ void QuickUnlockNotificationController::Click() {
 
   // Remove the notification from tray.
   NotificationDisplayService::GetForProfile(profile_)->Close(
-      NotificationCommon::TRANSIENT, params_.notification_id);
+      NotificationHandler::Type::TRANSIENT, params_.notification_id);
 }
 
 void QuickUnlockNotificationController::SetNotificationPreferenceWasShown() {

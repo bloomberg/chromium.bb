@@ -118,7 +118,7 @@ void CupsPrintJobNotification::ClickOnNotificationButton(int button_index) {
 
       // Clean up the notification.
       NotificationDisplayService::GetForProfile(profile_)->Close(
-          NotificationCommon::TRANSIENT, notification_id_);
+          NotificationHandler::Type::TRANSIENT, notification_id_);
       cancelled_by_user_ = true;
       notification_manager_->OnPrintJobNotificationRemoved(this);
       break;
@@ -151,12 +151,15 @@ void CupsPrintJobNotification::UpdateNotification() {
     // If the notification was closed during the printing, prevent showing the
     // following printing progress.
     if (!closed_in_middle_)
-      display_service->Display(NotificationCommon::TRANSIENT, *notification_);
+      display_service->Display(NotificationHandler::Type::TRANSIENT,
+                               *notification_);
   } else {
     closed_in_middle_ = false;
     // In order to make sure it pop up, we should delete it before readding it.
-    display_service->Close(NotificationCommon::TRANSIENT, notification_id_);
-    display_service->Display(NotificationCommon::TRANSIENT, *notification_);
+    display_service->Close(NotificationHandler::Type::TRANSIENT,
+                           notification_id_);
+    display_service->Display(NotificationHandler::Type::TRANSIENT,
+                             *notification_);
   }
 
   // |print_job_| will be deleted by CupsPrintJobManager if the job is finished

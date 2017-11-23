@@ -45,7 +45,7 @@ void NotificationDisplayServiceTester::SetNotificationAddedClosure(
 
 std::vector<message_center::Notification>
 NotificationDisplayServiceTester::GetDisplayedNotificationsForType(
-    NotificationCommon::Type type) {
+    NotificationHandler::Type type) {
   return display_service_->GetDisplayedNotificationsForType(type);
 }
 
@@ -62,7 +62,7 @@ NotificationDisplayServiceTester::GetMetadataForNotification(
 }
 
 void NotificationDisplayServiceTester::RemoveNotification(
-    NotificationCommon::Type type,
+    NotificationHandler::Type type,
     const std::string& notification_id,
     bool by_user,
     bool silent) {
@@ -70,7 +70,7 @@ void NotificationDisplayServiceTester::RemoveNotification(
 }
 
 void NotificationDisplayServiceTester::RemoveAllNotifications(
-    NotificationCommon::Type type,
+    NotificationHandler::Type type,
     bool by_user) {
   display_service_->RemoveAllNotifications(type, by_user);
 }

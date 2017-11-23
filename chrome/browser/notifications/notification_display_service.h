@@ -43,12 +43,12 @@ class NotificationDisplayService : public KeyedService {
 
   // Displays the |notification| identified by |notification_id|.
   virtual void Display(
-      NotificationCommon::Type notification_type,
+      NotificationHandler::Type notification_type,
       const message_center::Notification& notification,
       std::unique_ptr<NotificationCommon::Metadata> metadata = nullptr) = 0;
 
   // Closes the notification identified by |notification_id|.
-  virtual void Close(NotificationCommon::Type notification_type,
+  virtual void Close(NotificationHandler::Type notification_type,
                      const std::string& notification_id) = 0;
 
   // Writes the ids of all currently displaying notifications and
@@ -60,7 +60,7 @@ class NotificationDisplayService : public KeyedService {
   // the type of notification. Consumers include, service workers, pages,
   // extensions...
   void ProcessNotificationOperation(NotificationCommon::Operation operation,
-                                    NotificationCommon::Type notification_type,
+                                    NotificationHandler::Type notification_type,
                                     const GURL& origin,
                                     const std::string& notification_id,
                                     const base::Optional<int>& action_index,
@@ -70,18 +70,18 @@ class NotificationDisplayService : public KeyedService {
   // Returns the notification handler that was registered for the given type.
   // May return null.
   NotificationHandler* GetNotificationHandler(
-      NotificationCommon::Type notification_type);
+      NotificationHandler::Type notification_type);
 
   // Registers an implementation object to handle notification operations
   // for |notification_type|.
-  void AddNotificationHandler(NotificationCommon::Type notification_type,
+  void AddNotificationHandler(NotificationHandler::Type notification_type,
                               std::unique_ptr<NotificationHandler> handler);
 
   // Removes an implementation object added via AddNotificationHandler.
-  void RemoveNotificationHandler(NotificationCommon::Type notification_type);
+  void RemoveNotificationHandler(NotificationHandler::Type notification_type);
 
  private:
-  std::map<NotificationCommon::Type, std::unique_ptr<NotificationHandler>>
+  std::map<NotificationHandler::Type, std::unique_ptr<NotificationHandler>>
       notification_handlers_;
   Profile* profile_;
 

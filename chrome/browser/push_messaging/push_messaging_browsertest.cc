@@ -30,6 +30,7 @@
 #include "chrome/browser/gcm/instance_id/instance_id_profile_service.h"
 #include "chrome/browser/gcm/instance_id/instance_id_profile_service_factory.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
+#include "chrome/browser/notifications/notification_handler.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/push_messaging/push_messaging_app_identifier.h"
@@ -268,7 +269,7 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
   // Returns a vector of the currently displayed Notification objects.
   std::vector<message_center::Notification> GetDisplayedNotifications() {
     return notification_tester_->GetDisplayedNotificationsForType(
-        NotificationCommon::PERSISTENT);
+        NotificationHandler::Type::WEB_PERSISTENT);
   }
 
   // Returns the number of notifications that are currently being shown.
@@ -276,8 +277,8 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
 
   // Removes all shown notifications.
   void RemoveAllNotifications() {
-    notification_tester_->RemoveAllNotifications(NotificationCommon::PERSISTENT,
-                                                 true /* by_user */);
+    notification_tester_->RemoveAllNotifications(
+        NotificationHandler::Type::WEB_PERSISTENT, true /* by_user */);
   }
 
   // To be called when delivery of a push message has finished. The |run_loop|

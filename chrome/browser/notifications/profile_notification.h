@@ -29,7 +29,7 @@ class ProfileNotification {
   ProfileNotification(
       Profile* profile,
       const message_center::Notification& notification,
-      NotificationCommon::Type type = NotificationCommon::TYPE_MAX);
+      NotificationHandler::Type type = NotificationHandler::Type::MAX);
   ~ProfileNotification();
 
   Profile* profile() const { return profile_; }
@@ -39,7 +39,7 @@ class ProfileNotification {
   }
   const std::string& original_id() const { return original_id_; }
 
-  NotificationCommon::Type type() const { return type_; }
+  NotificationHandler::Type type() const { return type_; }
 
  private:
   Profile* profile_;
@@ -53,7 +53,7 @@ class ProfileNotification {
   // profile identifier.
   std::string original_id_;
 
-  NotificationCommon::Type type_;
+  NotificationHandler::Type type_;
 
   std::unique_ptr<ScopedKeepAlive> keep_alive_;
 

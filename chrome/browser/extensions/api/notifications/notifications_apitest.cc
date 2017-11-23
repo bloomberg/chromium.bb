@@ -16,8 +16,8 @@
 #include "chrome/browser/extensions/api/notifications/notifications_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
-#include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
+#include "chrome/browser/notifications/notification_handler.h"
 #include "chrome/browser/notifications/notifier_state_tracker.h"
 #include "chrome/browser/notifications/notifier_state_tracker_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -244,7 +244,8 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestByUser) {
     const std::string notification_id =
         GetNotificationIdFromDelegateId(extension->id() + "-FOO");
     display_service_tester_->RemoveNotification(
-        NotificationCommon::EXTENSION, notification_id, false /* by_user */);
+        NotificationHandler::Type::EXTENSION, notification_id,
+        false /* by_user */);
     EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
   }
 
@@ -253,20 +254,21 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestByUser) {
     const std::string notification_id =
         GetNotificationIdFromDelegateId(extension->id() + "-BAR");
     display_service_tester_->RemoveNotification(
-        NotificationCommon::EXTENSION, notification_id, true /* by_user */);
+        NotificationHandler::Type::EXTENSION, notification_id,
+        true /* by_user */);
     EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
   }
 
   {
     ResultCatcher catcher;
     display_service_tester_->RemoveAllNotifications(
-        NotificationCommon::EXTENSION, false /* by_user */);
+        NotificationHandler::Type::EXTENSION, false /* by_user */);
     EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
   }
   {
     ResultCatcher catcher;
     display_service_tester_->RemoveAllNotifications(
-        NotificationCommon::EXTENSION, true /* by_user */);
+        NotificationHandler::Type::EXTENSION, true /* by_user */);
     EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
   }
 }

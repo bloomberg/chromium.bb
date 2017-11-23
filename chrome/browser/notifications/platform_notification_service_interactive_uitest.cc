@@ -112,9 +112,9 @@ class PlatformNotificationServiceBrowserTest : public InProcessBrowserTest {
   // by the notification display service. Synchronous.
   std::vector<message_center::Notification> GetDisplayedNotifications(
       bool is_persistent) const {
-    NotificationCommon::Type type = is_persistent
-                                        ? NotificationCommon::PERSISTENT
-                                        : NotificationCommon::NON_PERSISTENT;
+    NotificationHandler::Type type =
+        is_persistent ? NotificationHandler::Type::WEB_PERSISTENT
+                      : NotificationHandler::Type::WEB_NON_PERSISTENT;
 
     return display_service_tester_->GetDisplayedNotificationsForType(type);
   }
@@ -450,9 +450,9 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
       GetDisplayedNotifications(true /* is_persistent */);
   ASSERT_EQ(1u, notifications.size());
 
-  display_service_tester_->RemoveNotification(NotificationCommon::PERSISTENT,
-                                              notifications[0].id(),
-                                              true /* by_user */);
+  display_service_tester_->RemoveNotification(
+      NotificationHandler::Type::WEB_PERSISTENT, notifications[0].id(),
+      true /* by_user */);
 
   // The user closed this notification so the score should remain the same.
   EXPECT_DOUBLE_EQ(5.5, GetEngagementScore(GetLastCommittedURL()));
@@ -717,8 +717,8 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
       base::StartsWith(notification.id(), "p:", base::CompareCase::SENSITIVE));
 
   display_service_tester_->RemoveNotification(
-      NotificationCommon::PERSISTENT, notification.id(), false /* by_user */,
-      true /* silent */);
+      NotificationHandler::Type::WEB_PERSISTENT, notification.id(),
+      false /* by_user */, true /* silent */);
 
   ASSERT_TRUE(RunScript("GetDisplayedNotifications()", &script_result));
   EXPECT_EQ("ok", script_result);

@@ -82,7 +82,7 @@ void DoShowArcMigrationSuccessNotification(Profile* profile) {
   }
 
   NotificationDisplayService::GetForProfile(profile)->Display(
-      NotificationCommon::TRANSIENT, *notification);
+      NotificationHandler::Type::TRANSIENT, *notification);
 }
 
 }  // namespace
@@ -92,7 +92,7 @@ void ShowArcMigrationGuideNotification(Profile* profile) {
   // Always remove the notification to make sure the notification appears
   // as a popup in any situation.
   NotificationDisplayService::GetForProfile(profile)->Close(
-      NotificationCommon::TRANSIENT, kSuggestNotificationId);
+      NotificationHandler::Type::TRANSIENT, kSuggestNotificationId);
 
   message_center::NotifierId notifier_id(
       message_center::NotifierId::SYSTEM_COMPONENT, kNotifierId);
@@ -138,7 +138,7 @@ void ShowArcMigrationGuideNotification(Profile* profile) {
   }
 
   NotificationDisplayService::GetForProfile(profile)->Display(
-      NotificationCommon::TRANSIENT, *notification);
+      NotificationHandler::Type::TRANSIENT, *notification);
 }
 
 void ShowArcMigrationSuccessNotificationIfNeeded(Profile* profile) {
