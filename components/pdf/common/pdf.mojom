@@ -36,4 +36,8 @@ interface PdfService {
   // current selection.
   SelectionChanged(gfx.mojom.PointF left, int32 left_height,
                    gfx.mojom.PointF right, int32 right_height);
+
+  // Notifies the embedder that the PDF scrolled, and thus global coordinates
+  // of current selection may require adjustment.
+  DidScroll();
 };

@@ -112,6 +112,7 @@ class PepperPDFHost : public ppapi::host::ResourceHost,
                                     int32_t left_height,
                                     const PP_FloatPoint& right,
                                     int32_t right_height);
+  int32_t OnHostMsgDidScroll(ppapi::host::HostMessageContext* context);
 
   void CreatePdfAccessibilityTreeIfNeeded();
 
