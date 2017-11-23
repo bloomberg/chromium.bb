@@ -14,7 +14,6 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/strings/string16.h"
@@ -120,12 +119,6 @@ class CONTENT_EXPORT RenderMessageFilter
   void LoadFont(const base::string16& font_to_load,
                 float font_point_size,
                 LoadFontCallback callback) override;
-#if defined(OS_MACOSX)
-  void SendLoadFontReply(LoadFontCallback reply,
-                         uint32_t data_size,
-                         base::SharedMemoryHandle handle,
-                         uint32_t font_id);
-#endif  // defined(OS_MACOSX)
 
   void OnResolveProxy(const GURL& url, IPC::Message* reply_msg);
 
