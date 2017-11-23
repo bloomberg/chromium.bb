@@ -49,7 +49,6 @@ struct BackgroundFetchRegistration {
   uint64 uploaded;
   uint64 download_total;
   uint64 downloaded;
-  array<IconDefinition> icons;
   string title;
 };
 

@@ -69,10 +69,6 @@ struct CONTENT_EXPORT
       const content::BackgroundFetchRegistration& registration) {
     return registration.downloaded;
   }
-  static const std::vector<content::IconDefinition>& icons(
-      const content::BackgroundFetchRegistration& registration) {
-    return registration.icons;
-  }
   static const std::string& title(
       const content::BackgroundFetchRegistration& registration) {
     return registration.title;

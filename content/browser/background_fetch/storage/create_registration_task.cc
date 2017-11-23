@@ -79,7 +79,6 @@ void CreateRegistrationTask::StoreRegistration() {
   registration_ = std::make_unique<BackgroundFetchRegistration>();
   registration_->developer_id = registration_id_.developer_id();
   registration_->unique_id = registration_id_.unique_id();
-  registration_->icons = options_.icons;
   registration_->title = options_.title;
   // TODO(crbug.com/774054): Uploads are not yet supported.
   registration_->upload_total = 0;

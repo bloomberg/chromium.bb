@@ -20,7 +20,6 @@
     [CallWith=ScriptState] Promise<bool> abort();
 
     // TODO(crbug.com/769770): Remove the following deprecated attributes.
-    readonly attribute FrozenArray<IconDefinition> icons;
     [ImplementedAs=downloadTotal] readonly attribute long totalDownloadSize;
     readonly attribute DOMString title;
 };

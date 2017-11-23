@@ -21,7 +21,6 @@ BackgroundFetchRegistration::BackgroundFetchRegistration(
     unsigned long long uploaded,
     unsigned long long download_total,
     unsigned long long downloaded,
-    HeapVector<IconDefinition> icons,
     const String& title)
     : developer_id_(developer_id),
       unique_id_(unique_id),
@@ -29,7 +28,6 @@ BackgroundFetchRegistration::BackgroundFetchRegistration(
       uploaded_(uploaded),
       download_total_(download_total),
       downloaded_(downloaded),
-      icons_(icons),
       title_(title),
       observer_binding_(this) {}
 
@@ -84,10 +82,6 @@ unsigned long long BackgroundFetchRegistration::downloadTotal() const {
 
 unsigned long long BackgroundFetchRegistration::downloaded() const {
   return downloaded_;
-}
-
-HeapVector<IconDefinition> BackgroundFetchRegistration::icons() const {
-  return icons_;
 }
 
 String BackgroundFetchRegistration::title() const {
@@ -145,7 +139,6 @@ void BackgroundFetchRegistration::Dispose() {
 
 void BackgroundFetchRegistration::Trace(blink::Visitor* visitor) {
   visitor->Trace(registration_);
-  visitor->Trace(icons_);
   EventTargetWithInlineData::Trace(visitor);
 }
 

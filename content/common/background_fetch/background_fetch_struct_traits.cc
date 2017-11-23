@@ -30,7 +30,6 @@ bool StructTraits<blink::mojom::BackgroundFetchRegistrationDataView,
          content::BackgroundFetchRegistration* registration) {
   if (!data.ReadDeveloperId(&registration->developer_id) ||
       !data.ReadUniqueId(&registration->unique_id) ||
-      !data.ReadIcons(&registration->icons) ||
       !data.ReadTitle(&registration->title)) {
     return false;
   }

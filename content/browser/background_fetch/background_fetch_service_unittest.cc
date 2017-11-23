@@ -262,13 +262,6 @@ TEST_F(BackgroundFetchServiceTest, FetchRegistrationProperties) {
 
   // The |registration| should reflect the options given in |options|.
   EXPECT_EQ(registration.developer_id, kExampleDeveloperId);
-  ASSERT_EQ(registration.icons.size(), options.icons.size());
-
-  for (size_t i = 0; i < registration.icons.size(); ++i) {
-    EXPECT_EQ(registration.icons[i].src, options.icons[i].src);
-    EXPECT_EQ(registration.icons[i].sizes, options.icons[i].sizes);
-    EXPECT_EQ(registration.icons[i].type, options.icons[i].type);
-  }
 
   EXPECT_EQ(registration.title, options.title);
   EXPECT_EQ(registration.download_total, options.download_total);
@@ -282,13 +275,6 @@ TEST_F(BackgroundFetchServiceTest, FetchRegistrationProperties) {
 
   // The |second_registration| should reflect the options given in |options|.
   EXPECT_EQ(second_registration.developer_id, kExampleDeveloperId);
-  ASSERT_EQ(second_registration.icons.size(), options.icons.size());
-
-  for (size_t i = 0; i < second_registration.icons.size(); ++i) {
-    EXPECT_EQ(second_registration.icons[i].src, options.icons[i].src);
-    EXPECT_EQ(second_registration.icons[i].sizes, options.icons[i].sizes);
-    EXPECT_EQ(second_registration.icons[i].type, options.icons[i].type);
-  }
 
   EXPECT_EQ(second_registration.title, options.title);
   EXPECT_EQ(second_registration.download_total, options.download_total);

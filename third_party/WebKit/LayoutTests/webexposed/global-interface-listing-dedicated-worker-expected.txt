@@ -19,7 +19,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     attribute @@toStringTag
 [Worker]     getter downloadTotal
 [Worker]     getter downloaded
-[Worker]     getter icons
 [Worker]     getter id
 [Worker]     getter onprogress
 [Worker]     getter title
