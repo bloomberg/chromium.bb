@@ -736,12 +736,11 @@ static void filter_selectively_horiz(
     if (mask & 1) {
       if (mask_16x16 & 1) {
         if ((mask_16x16 & 3) == 3) {
-          aom_lpf_horizontal_edge_16(s, pitch, lfi->mblim, lfi->lim,
+          aom_lpf_horizontal_16_dual(s, pitch, lfi->mblim, lfi->lim,
                                      lfi->hev_thr);
           count = 2;
         } else {
-          aom_lpf_horizontal_edge_8(s, pitch, lfi->mblim, lfi->lim,
-                                    lfi->hev_thr);
+          aom_lpf_horizontal_16(s, pitch, lfi->mblim, lfi->lim, lfi->hev_thr);
         }
       } else if (mask_8x8 & 1) {
         if ((mask_8x8 & 3) == 3) {
@@ -2495,10 +2494,10 @@ static void av1_filter_block_plane_horz(
           else
 #endif  // CONFIG_HIGHBITDEPTH
 #if CONFIG_DEBLOCK_13TAP
-            aom_lpf_horizontal_edge_16_c(p, dst_stride, params.mblim,
+            aom_lpf_horizontal_16_dual_c(p, dst_stride, params.mblim,
                                          params.lim, params.hev_thr);
 #else
-          aom_lpf_horizontal_edge_16(p, dst_stride, params.mblim, params.lim,
+          aom_lpf_horizontal_16_dual(p, dst_stride, params.mblim, params.lim,
                                      params.hev_thr);
 #endif
           break;

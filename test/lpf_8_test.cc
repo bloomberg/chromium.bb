@@ -561,10 +561,10 @@ const loop8_param_t kLoop8Test6[] = {
 #if !CONFIG_DEBLOCK_13TAP
   // Despite the name the following funcition is doing 15-tap filtering
   // which is changed to 13-tap and not yet implemented in SIMD
-  make_tuple(&aom_lpf_horizontal_edge_8_sse2, &aom_lpf_horizontal_edge_8_c, 8),
+  make_tuple(&aom_lpf_horizontal_16_sse2, &aom_lpf_horizontal_16_c, 8),
 #endif
 #if !CONFIG_DEBLOCK_13TAP  // No SIMD implementation for deblock_13tap yet
-  make_tuple(&aom_lpf_horizontal_edge_16_sse2, &aom_lpf_horizontal_edge_16_c,
+  make_tuple(&aom_lpf_horizontal_16_dual_sse2, &aom_lpf_horizontal_16_dual_c,
              8),
 #endif
   make_tuple(&aom_lpf_vertical_4_sse2, &aom_lpf_vertical_4_c, 8),
@@ -612,11 +612,11 @@ INSTANTIATE_TEST_CASE_P(AVX2, Loop8Test6Param,
 INSTANTIATE_TEST_CASE_P(AVX2, Loop8Test6Param,
                         ::testing::Values(
 #if !CONFIG_DEBLOCK_13TAP  // No SIMD implementation for deblock_13tap yet
-                            make_tuple(&aom_lpf_horizontal_edge_16_avx2,
-                                       &aom_lpf_horizontal_edge_16_c, 8),
+                            make_tuple(&aom_lpf_horizontal_16_dual_avx2,
+                                       &aom_lpf_horizontal_16_dual_c, 8),
 #endif
-                            make_tuple(&aom_lpf_horizontal_edge_8_avx2,
-                                       &aom_lpf_horizontal_edge_8_c, 8)));
+                            make_tuple(&aom_lpf_horizontal_16_avx2,
+                                       &aom_lpf_horizontal_16_c, 8)));
 #endif
 
 #if HAVE_SSE2
@@ -710,11 +710,10 @@ INSTANTIATE_TEST_CASE_P(
         // Using #if inside the macro is unsupported on MSVS but the tests are
         // not
         // currently built for MSVS with ARM and NEON.
-        make_tuple(&aom_lpf_horizontal_edge_8_neon,
-                   &aom_lpf_horizontal_edge_8_c, 8),
+        make_tuple(&aom_lpf_horizontal_16_neon, &aom_lpf_horizontal_16_c, 8),
 #if !CONFIG_DEBLOCK_13TAP  // No SIMD implementation for deblock_13tap yet
-        make_tuple(&aom_lpf_horizontal_edge_16_neon,
-                   &aom_lpf_horizontal_edge_16_c, 8),
+        make_tuple(&aom_lpf_horizontal_16_dual_neon,
+                   &aom_lpf_horizontal_16_dual_c, 8),
         make_tuple(&aom_lpf_vertical_16_neon, &aom_lpf_vertical_16_c, 8),
         make_tuple(&aom_lpf_vertical_16_dual_neon, &aom_lpf_vertical_16_dual_c,
                    8),
@@ -745,8 +744,8 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::Values(
         make_tuple(&aom_lpf_horizontal_4_dspr2, &aom_lpf_horizontal_4_c, 8),
         make_tuple(&aom_lpf_horizontal_8_dspr2, &aom_lpf_horizontal_8_c, 8),
-        make_tuple(&aom_lpf_horizontal_edge_8, &aom_lpf_horizontal_edge_8, 8),
-        make_tuple(&aom_lpf_horizontal_edge_16, &aom_lpf_horizontal_edge_16, 8),
+        make_tuple(&aom_lpf_horizontal_16, &aom_lpf_horizontal_16, 8),
+        make_tuple(&aom_lpf_horizontal_16_dual, &aom_lpf_horizontal_16_dual, 8),
         make_tuple(&aom_lpf_vertical_4_dspr2, &aom_lpf_vertical_4_c, 8),
 #if CONFIG_DEBLOCK_13TAP  // No SIMD implementation for deblock_13tap yet
         make_tuple(&aom_lpf_vertical_16_dspr2, &aom_lpf_vertical_16_c, 8),
@@ -773,11 +772,10 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::Values(
         make_tuple(&aom_lpf_horizontal_4_msa, &aom_lpf_horizontal_4_c, 8),
         make_tuple(&aom_lpf_horizontal_8_msa, &aom_lpf_horizontal_8_c, 8),
-        make_tuple(&aom_lpf_horizontal_edge_8_msa, &aom_lpf_horizontal_edge_8_c,
-                   8),
+        make_tuple(&aom_lpf_horizontal_16_msa, &aom_lpf_horizontal_16_c, 8),
 #if CONFIG_DEBLOCK_13TAP  // No SIMD implementation for deblock_13tap yet
-        make_tuple(&aom_lpf_horizontal_edge_16_msa,
-                   &aom_lpf_horizontal_edge_16_c, 8),
+        make_tuple(&aom_lpf_horizontal_16_dual_msa,
+                   &aom_lpf_horizontal_16_dual_c, 8),
         make_tuple(&aom_lpf_vertical_16_msa, &aom_lpf_vertical_16_c, 8),
 #endif
         make_tuple(&aom_lpf_vertical_4_msa, &aom_lpf_vertical_4_c, 8),

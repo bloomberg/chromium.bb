@@ -718,14 +718,13 @@ static void mb_lpf_horizontal_edge(unsigned char *s, int pitch,
   }
 }
 
-void aom_lpf_horizontal_edge_8_dspr2(unsigned char *s, int pitch,
-                                     const uint8_t *blimit,
-                                     const uint8_t *limit,
-                                     const uint8_t *thresh) {
+void aom_lpf_horizontal_16_dspr2(unsigned char *s, int pitch,
+                                 const uint8_t *blimit, const uint8_t *limit,
+                                 const uint8_t *thresh) {
   mb_lpf_horizontal_edge(s, pitch, blimit, limit, thresh, 1);
 }
 
-void aom_lpf_horizontal_edge_16_dspr2(unsigned char *s, int pitch,
+void aom_lpf_horizontal_16_dual_dspr2(unsigned char *s, int pitch,
                                       const uint8_t *blimit,
                                       const uint8_t *limit,
                                       const uint8_t *thresh) {

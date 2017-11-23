@@ -11,8 +11,8 @@
 
 ;
 
-    EXPORT  |aom_lpf_horizontal_edge_8_neon|
-    EXPORT  |aom_lpf_horizontal_edge_16_neon|
+    EXPORT  |aom_lpf_horizontal_16_neon|
+    EXPORT  |aom_lpf_horizontal_16_dual_neon|
     EXPORT  |aom_lpf_vertical_16_neon|
     ARM
 
@@ -121,7 +121,7 @@ h_next
 
     ENDP        ; |mb_lpf_horizontal_edge|
 
-; void aom_lpf_horizontal_edge_8_neon(uint8_t *s, int pitch,
+; void aom_lpf_horizontal_16_neon(uint8_t *s, int pitch,
 ;                                     const uint8_t *blimit,
 ;                                     const uint8_t *limit,
 ;                                     const uint8_t *thresh)
@@ -130,12 +130,12 @@ h_next
 ; r2    const uint8_t *blimit,
 ; r3    const uint8_t *limit,
 ; sp    const uint8_t *thresh
-|aom_lpf_horizontal_edge_8_neon| PROC
+|aom_lpf_horizontal_16_neon| PROC
     mov r12, #1
     b mb_lpf_horizontal_edge
-    ENDP        ; |aom_lpf_horizontal_edge_8_neon|
+    ENDP        ; |aom_lpf_horizontal_16_neon|
 
-; void aom_lpf_horizontal_edge_16_neon(uint8_t *s, int pitch,
+; void aom_lpf_horizontal_16_dual_neon(uint8_t *s, int pitch,
 ;                                      const uint8_t *blimit,
 ;                                      const uint8_t *limit,
 ;                                      const uint8_t *thresh)
@@ -144,10 +144,10 @@ h_next
 ; r2    const uint8_t *blimit,
 ; r3    const uint8_t *limit,
 ; sp    const uint8_t *thresh
-|aom_lpf_horizontal_edge_16_neon| PROC
+|aom_lpf_horizontal_16_dual_neon| PROC
     mov r12, #2
     b mb_lpf_horizontal_edge
-    ENDP        ; |aom_lpf_horizontal_edge_16_neon|
+    ENDP        ; |aom_lpf_horizontal_16_dual_neon|
 
 ; void aom_lpf_vertical_16_neon(uint8_t *s, int p,
 ;                               const uint8_t *blimit,
