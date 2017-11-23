@@ -18,16 +18,8 @@ namespace blink {
 
 // On debug builds, Oilpan contains checks that will fail if a persistent handle
 // is destroyed on the wrong thread.
-// Flaky test on 'WebKit Win x64 Builder (dbg)'. See crbug.com/771169.
-#if defined(OS_WIN)
-#define MAYBE_SafeDestructionIfSendingThreadKeepsAlive \
-  DISABLED_SafeDestructionIfSendingThreadKeepsAlive
-#else
-#define MAYBE_SafeDestructionIfSendingThreadKeepsAlive \
-  SafeDestructionIfSendingThreadKeepsAlive
-#endif
 TEST(SerializedScriptValueThreadedTest,
-     MAYBE_SafeDestructionIfSendingThreadKeepsAlive) {
+     SafeDestructionIfSendingThreadKeepsAlive) {
   V8TestingScope scope;
 
   // Start a worker.
@@ -56,16 +48,10 @@ TEST(SerializedScriptValueThreadedTest,
 
   // Deserialize the serialized value on the worker.
   // Intentionally keep a reference on this thread while this occurs.
-  //
-  // Note that the reference is passed strangely to make sure that the main
-  // thread keeps its reference, and the bound callback passes its reference
-  // into the block, without keeping an additional reference. (Failing to do
-  // this results in a data race.)
-  WaitableEvent done;
   worker_thread.GetWorkerBackingThread().BackingThread().PostTask(
       FROM_HERE,
       CrossThreadBind(
-          [](WorkerThread* worker_thread, WaitableEvent* done,
+          [](WorkerThread* worker_thread,
              scoped_refptr<SerializedScriptValue> serialized) {
             WorkerOrWorkletScriptController* script =
                 worker_thread->GlobalScope()->ScriptController();
@@ -74,14 +60,18 @@ TEST(SerializedScriptValueThreadedTest,
             SerializedScriptValue::Unpack(serialized)
                 ->Deserialize(worker_thread->GetIsolate());
 
-            // Make sure this thread's references are dropped before the main
-            // thread continues.
-            serialized = nullptr;
+            // Make sure this thread's references in the Oilpan heap are dropped
+            // before the main thread continues.
             ThreadState::Current()->CollectAllGarbage();
-            done->Signal();
           },
-          CrossThreadUnretained(&worker_thread), CrossThreadUnretained(&done),
-          serialized));
+          CrossThreadUnretained(&worker_thread), serialized));
+
+  // Wait for a subsequent task on the worker to finish, to ensure that the
+  // references held by the task are dropped.
+  WaitableEvent done;
+  worker_thread.GetWorkerBackingThread().BackingThread().PostTask(
+      FROM_HERE,
+      CrossThreadBind(&WaitableEvent::Signal, CrossThreadUnretained(&done)));
   done.Wait();
 
   // Now destroy the value on the main thread.
