@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-<script src="../../resources/js-test.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
 </head>
 <body id="body" tabindex="1">
 <dialog id="top-dialog" tabindex="1" style="width: 100px; top: 30px"><button id="top-dialog-button">I get focus</button></dialog>
@@ -21,16 +22,15 @@
     <a id="anchor" href="">Link</a>
 </div>
 <script>
-description('Test that inert nodes are not focusable. The test passses if only the ' +
-            'topmost dialog and its button are focusable.');
+"use strict";
+// The test passses if only the topmost dialog and its button are focusable.
 
 function testFocus(element, expectFocus) {
-    focusedElement = null;
+    var focusedElement = null;
     element.addEventListener('focus', function() { focusedElement = element; }, false);
     element.focus();
-    expected = expectFocus ? "true" : "false"
-    theElement = element;
-    shouldBe('"' + element.id + '"; focusedElement === theElement', expected);
+    var theElement = element;
+    assert_equals(focusedElement === theElement, expectFocus, element.id);
 }
 
 function testTree(element, expectFocus) {
@@ -41,16 +41,18 @@ function testTree(element, expectFocus) {
         testTree(childNodes[i], expectFocus);
 }
 
-var bottomDialog = document.getElementById('bottom-dialog');
-bottomDialog.showModal();
+test(function() {
+    var bottomDialog = document.getElementById('bottom-dialog');
+    bottomDialog.showModal();
 
-var topDialog = document.getElementById('top-dialog');
-topDialog.showModal();
+    var topDialog = document.getElementById('top-dialog');
+    topDialog.showModal();
 
-testFocus(document.body, false);
-testTree(topDialog, true);
-testTree(bottomDialog, false);
-testTree(document.getElementById('container'), false);
+    testFocus(document.body, false);
+    testTree(topDialog, true);
+    testTree(bottomDialog, false);
+    testTree(document.getElementById('container'), false);
+}, "Test that inert nodes are not focusable.");
 </script>
 </body>
 </html>
