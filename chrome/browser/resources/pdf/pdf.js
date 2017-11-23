@@ -500,27 +500,35 @@ PDFViewer.prototype = {
    * Handle open pdf parameters. This function updates the viewport as per
    * the parameters mentioned in the url while opening pdf. The order is
    * important as later actions can override the effects of previous actions.
-   * @param {Object} viewportPosition The initial position of the viewport to be
-   *     displayed.
+   * @param {Object} params The open params passed in the URL.
    */
-  handleURLParams_: function(viewportPosition) {
-    if (viewportPosition.page != undefined)
-      this.viewport_.goToPage(viewportPosition.page);
+  handleURLParams_: function(params) {
+    if (params.page != undefined)
+      this.viewport_.goToPage(params.page);
 
-    if (viewportPosition.position) {
+    if (params.position) {
       // Make sure we don't cancel effect of page parameter.
       this.viewport_.position = {
-        x: this.viewport_.position.x + viewportPosition.position.x,
-        y: this.viewport_.position.y + viewportPosition.position.y
+        x: this.viewport_.position.x + params.position.x,
+        y: this.viewport_.position.y + params.position.y
       };
     }
 
-    if (viewportPosition.zoom)
-      this.viewport_.setZoom(viewportPosition.zoom);
+    if (params.zoom)
+      this.viewport_.setZoom(params.zoom);
 
-    if (viewportPosition.view) {
+    if (params.view) {
       this.isUserInitiatedEvent_ = false;
-      this.zoomToolbar_.forceFit(viewportPosition.view);
+      this.zoomToolbar_.forceFit(params.view);
+      if (params.viewPosition) {
+        var zoomedPositionShift = params.viewPosition * this.viewport_.zoom;
+        var currentViewportPosition = this.viewport_.position;
+        if (params.view == FittingType.FIT_TO_WIDTH)
+          currentViewportPosition.y += zoomedPositionShift;
+        else if (params.view == FittingType.FIT_TO_HEIGHT)
+          currentViewportPosition.x += zoomedPositionShift;
+        this.viewport_.position = currentViewportPosition;
+      }
       this.isUserInitiatedEvent_ = true;
     }
   },

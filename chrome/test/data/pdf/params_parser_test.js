@@ -21,96 +21,122 @@ var tests = [
     var url = "http://xyz.pdf";
 
     // Checking #nameddest.
-    paramsParser.getViewportFromUrlParams(
-        url + '#RU', function(viewportPosition) {
-          chrome.test.assertEq(26, viewportPosition.page);
-        });
+    paramsParser.getViewportFromUrlParams(`${url}#RU`, function(params) {
+      chrome.test.assertEq(26, params.page);
+    });
 
     // Checking #nameddest=name.
     paramsParser.getViewportFromUrlParams(
-        url + '#nameddest=US', function(viewportPosition) {
-          chrome.test.assertEq(0, viewportPosition.page);
+        `${url}#nameddest=US`, function(params) {
+          chrome.test.assertEq(0, params.page);
         });
 
     // Checking #page=pagenum nameddest.The document first page has a pagenum
     // value of 1.
-    paramsParser.getViewportFromUrlParams(
-        url + '#page=6', function(viewportPosition) {
-          chrome.test.assertEq(5, viewportPosition.page);
-        });
+    paramsParser.getViewportFromUrlParams(`${url}#page=6`, function(params) {
+      chrome.test.assertEq(5, params.page);
+    });
 
     // Checking #zoom=scale.
-    paramsParser.getViewportFromUrlParams(
-        url + '#zoom=200', function(viewportPosition) {
-          chrome.test.assertEq(2, viewportPosition.zoom);
-        });
+    paramsParser.getViewportFromUrlParams(`${url}#zoom=200`, function(params) {
+      chrome.test.assertEq(2, params.zoom);
+    });
 
     // Checking #zoom=scale,left,top.
     paramsParser.getViewportFromUrlParams(
-        url + '#zoom=200,100,200', function(viewportPosition) {
-          chrome.test.assertEq(2, viewportPosition.zoom);
-          chrome.test.assertEq(100, viewportPosition.position.x);
-          chrome.test.assertEq(200, viewportPosition.position.y);
+        `${url}#zoom=200,100,200`, function(params) {
+          chrome.test.assertEq(2, params.zoom);
+          chrome.test.assertEq(100, params.position.x);
+          chrome.test.assertEq(200, params.position.y);
         });
 
     // Checking #nameddest=name and zoom=scale.
     paramsParser.getViewportFromUrlParams(
-        url + '#nameddest=UY&zoom=150', function(viewportPosition) {
-          chrome.test.assertEq(22, viewportPosition.page);
-          chrome.test.assertEq(1.5, viewportPosition.zoom);
+        `${url}#nameddest=UY&zoom=150`, function(params) {
+          chrome.test.assertEq(22, params.page);
+          chrome.test.assertEq(1.5, params.zoom);
         });
 
     // Checking #page=pagenum and zoom=scale.
     paramsParser.getViewportFromUrlParams(
-        url + '#page=2&zoom=250', function(viewportPosition) {
-          chrome.test.assertEq(1, viewportPosition.page);
-          chrome.test.assertEq(2.5, viewportPosition.zoom);
+        `${url}#page=2&zoom=250`, function(params) {
+          chrome.test.assertEq(1, params.page);
+          chrome.test.assertEq(2.5, params.zoom);
         });
 
     // Checking #nameddest=name and zoom=scale,left,top.
     paramsParser.getViewportFromUrlParams(
-        url + '#nameddest=UY&zoom=150,100,200', function(viewportPosition) {
-          chrome.test.assertEq(22, viewportPosition.page);
-          chrome.test.assertEq(1.5, viewportPosition.zoom);
-          chrome.test.assertEq(100, viewportPosition.position.x);
-          chrome.test.assertEq(200, viewportPosition.position.y);
+        `${url}#nameddest=UY&zoom=150,100,200`, function(params) {
+          chrome.test.assertEq(22, params.page);
+          chrome.test.assertEq(1.5, params.zoom);
+          chrome.test.assertEq(100, params.position.x);
+          chrome.test.assertEq(200, params.position.y);
         });
 
     // Checking #page=pagenum and zoom=scale,left,top.
     paramsParser.getViewportFromUrlParams(
-        url + '#page=2&zoom=250,100,200', function(viewportPosition) {
-          chrome.test.assertEq(1, viewportPosition.page);
-          chrome.test.assertEq(2.5, viewportPosition.zoom);
-          chrome.test.assertEq(100, viewportPosition.position.x);
-          chrome.test.assertEq(200, viewportPosition.position.y);
+        `${url}#page=2&zoom=250,100,200`, function(params) {
+          chrome.test.assertEq(1, params.page);
+          chrome.test.assertEq(2.5, params.zoom);
+          chrome.test.assertEq(100, params.position.x);
+          chrome.test.assertEq(200, params.position.y);
         });
 
     // Checking #view=Fit.
-    paramsParser.getViewportFromUrlParams(
-        url + '#view=Fit', function(viewportPosition) {
-          chrome.test.assertEq(FittingType.FIT_TO_PAGE, viewportPosition.view);
-        });
+    paramsParser.getViewportFromUrlParams(`${url}#view=Fit`, function(params) {
+      chrome.test.assertEq(FittingType.FIT_TO_PAGE, params.view);
+      chrome.test.assertEq(undefined, params.viewPosition);
+    });
     // Checking #view=FitH.
+    paramsParser.getViewportFromUrlParams(`${url}#view=FitH`, function(params) {
+      chrome.test.assertEq(FittingType.FIT_TO_WIDTH, params.view);
+      chrome.test.assertEq(undefined, params.viewPosition);
+    });
+    // Checking #view=FitH,[int position].
     paramsParser.getViewportFromUrlParams(
-        url + '#view=FitH', function(viewportPosition) {
-          chrome.test.assertEq(FittingType.FIT_TO_WIDTH, viewportPosition.view);
+        `${url}#view=FitH,789`, function(params) {
+          chrome.test.assertEq(FittingType.FIT_TO_WIDTH, params.view);
+          chrome.test.assertEq(789, params.viewPosition);
+        });
+    // Checking #view=FitH,[float position].
+    paramsParser.getViewportFromUrlParams(
+        `${url}#view=FitH,7.89`, function(params) {
+          chrome.test.assertEq(FittingType.FIT_TO_WIDTH, params.view);
+          chrome.test.assertEq(7.89, params.viewPosition);
         });
     // Checking #view=FitV.
+    paramsParser.getViewportFromUrlParams(`${url}#view=FitV`, function(params) {
+      chrome.test.assertEq(FittingType.FIT_TO_HEIGHT, params.view);
+      chrome.test.assertEq(undefined, params.viewPosition);
+    });
+    // Checking #view=FitV,[int position].
     paramsParser.getViewportFromUrlParams(
-        url + '#view=FitV', function(viewportPosition) {
-          chrome.test.assertEq(
-              FittingType.FIT_TO_HEIGHT, viewportPosition.view);
+        `${url}#view=FitV,123`, function(params) {
+          chrome.test.assertEq(FittingType.FIT_TO_HEIGHT, params.view);
+          chrome.test.assertEq(123, params.viewPosition);
+        });
+    // Checking #view=FitV,[float position].
+    paramsParser.getViewportFromUrlParams(
+        `${url}#view=FitV,1.23`, function(params) {
+          chrome.test.assertEq(FittingType.FIT_TO_HEIGHT, params.view);
+          chrome.test.assertEq(1.23, params.viewPosition);
         });
     // Checking #view=[wrong parameter].
+    paramsParser.getViewportFromUrlParams(`${url}#view=FitW`, function(params) {
+      chrome.test.assertEq(undefined, params.view);
+      chrome.test.assertEq(undefined, params.viewPosition);
+    });
+    // Checking #view=[wrong parameter],[position].
     paramsParser.getViewportFromUrlParams(
-        url + '#view=FitW', function(viewportPosition) {
-          chrome.test.assertEq(undefined, viewportPosition.view);
+        `${url}#view=FitW,555`, function(params) {
+          chrome.test.assertEq(undefined, params.view);
+          chrome.test.assertEq(undefined, params.viewPosition);
         });
 
     // Checking #toolbar=0 to disable the toolbar.
-    var uiParams = paramsParser.getUiUrlParams(url + "#toolbar=0");
+    var uiParams = paramsParser.getUiUrlParams(`${url}#toolbar=0`);
     chrome.test.assertFalse(uiParams.toolbar);
-    uiParams = paramsParser.getUiUrlParams(url + "#toolbar=1");
+    uiParams = paramsParser.getUiUrlParams(`${url}#toolbar=1`);
     chrome.test.assertTrue(uiParams.toolbar);
 
     chrome.test.succeed();
