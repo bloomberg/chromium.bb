@@ -1,3 +1,4 @@
+Tests layer command log
 
 Canvas log:
 {
