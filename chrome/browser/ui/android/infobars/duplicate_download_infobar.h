@@ -9,10 +9,8 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/android/infobars/confirm_infobar.h"
 
-namespace chrome {
 namespace android {
 class DuplicateDownloadInfoBarDelegate;
-}
 }
 
 // A native-side implementation of an infobar to ask whether to continue
@@ -20,20 +18,18 @@ class DuplicateDownloadInfoBarDelegate;
 class DuplicateDownloadInfoBar : public ConfirmInfoBar {
  public:
   static std::unique_ptr<infobars::InfoBar> CreateInfoBar(
-      std::unique_ptr<chrome::android::DuplicateDownloadInfoBarDelegate>
-          delegate);
+      std::unique_ptr<android::DuplicateDownloadInfoBarDelegate> delegate);
   ~DuplicateDownloadInfoBar() override;
 
  private:
   explicit DuplicateDownloadInfoBar(
-      std::unique_ptr<chrome::android::DuplicateDownloadInfoBarDelegate>
-          delegate);
+      std::unique_ptr<android::DuplicateDownloadInfoBarDelegate> delegate);
 
   // ConfirmInfoBar:
   base::android::ScopedJavaLocalRef<jobject> CreateRenderInfoBar(
       JNIEnv* env) override;
 
-  chrome::android::DuplicateDownloadInfoBarDelegate* GetDelegate();
+  android::DuplicateDownloadInfoBarDelegate* GetDelegate();
 
   DISALLOW_COPY_AND_ASSIGN(DuplicateDownloadInfoBar);
 };
