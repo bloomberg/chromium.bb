@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/i18n/case_conversion.h"
@@ -56,7 +58,10 @@ AutofillExternalDelegate::AutofillExternalDelegate(AutofillManager* manager,
   DCHECK(manager);
 }
 
-AutofillExternalDelegate::~AutofillExternalDelegate() {}
+AutofillExternalDelegate::~AutofillExternalDelegate() {
+  if (deletion_callback_)
+    std::move(deletion_callback_).Run();
+}
 
 void AutofillExternalDelegate::OnQuery(int query_id,
                                        const FormData& form,
@@ -284,6 +289,11 @@ bool AutofillExternalDelegate::IsCreditCardPopup() {
 
 AutofillDriver* AutofillExternalDelegate::GetAutofillDriver() {
   return driver_;
+}
+
+void AutofillExternalDelegate::RegisterDeletionCallback(
+    base::OnceClosure deletion_callback) {
+  deletion_callback_ = std::move(deletion_callback);
 }
 
 void AutofillExternalDelegate::Reset() {

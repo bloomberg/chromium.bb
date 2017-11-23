@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
@@ -66,6 +67,8 @@ AutofillPopupControllerImpl::AutofillPopupControllerImpl(
       delegate_(delegate),
       weak_ptr_factory_(this) {
   ClearState();
+  delegate->RegisterDeletionCallback(base::BindOnce(
+      &AutofillPopupControllerImpl::HideViewAndDie, GetWeakPtr()));
 }
 
 AutofillPopupControllerImpl::~AutofillPopupControllerImpl() {}
@@ -193,10 +196,7 @@ void AutofillPopupControllerImpl::Hide() {
         ->RemoveKeyPressHandler();
   }
 
-  if (view_)
-    view_->Hide();
-
-  delete this;
+  HideViewAndDie();
 }
 
 void AutofillPopupControllerImpl::ViewDestroyed() {
@@ -518,6 +518,13 @@ void AutofillPopupControllerImpl::ClearState() {
   elided_labels_.clear();
 
   selected_line_.reset();
+}
+
+void AutofillPopupControllerImpl::HideViewAndDie() {
+  if (view_)
+    view_->Hide();
+
+  delete this;
 }
 
 }  // namespace autofill

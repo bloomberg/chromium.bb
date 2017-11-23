@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <utility>
 #include <vector>
 
 #include "base/command_line.h"
@@ -178,6 +179,8 @@ PasswordAutofillManager::PasswordAutofillManager(
       weak_ptr_factory_(this) {}
 
 PasswordAutofillManager::~PasswordAutofillManager() {
+  if (deletion_callback_)
+    std::move(deletion_callback_).Run();
 }
 
 bool PasswordAutofillManager::FillSuggestion(int key,
@@ -489,6 +492,11 @@ bool PasswordAutofillManager::IsCreditCardPopup() {
 
 autofill::AutofillDriver* PasswordAutofillManager::GetAutofillDriver() {
   return password_manager_driver_->GetAutofillDriver();
+}
+
+void PasswordAutofillManager::RegisterDeletionCallback(
+    base::OnceClosure deletion_callback) {
+  deletion_callback_ = std::move(deletion_callback);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -21,6 +21,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/translate/translate_service.h"
+#include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/translate/translate_bubble_test_utils.h"
@@ -1754,6 +1755,15 @@ class AutofillInteractiveIsolationTest : public AutofillInteractiveTest {
     AutofillInteractiveTest::SendKeyToPopupAndWait(key, code, key_code, widget);
   }
 
+  bool IsPopupShown() {
+    return !!static_cast<ChromeAutofillClient*>(
+                 ContentAutofillDriverFactory::FromWebContents(GetWebContents())
+                     ->DriverForFrame(GetWebContents()->GetMainFrame())
+                     ->autofill_manager()
+                     ->client())
+                 ->popup_controller_for_testing();
+  }
+
  private:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     AutofillInteractiveTest::SetUpCommandLine(command_line);
@@ -1841,6 +1851,49 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_CrossSitePaymentForms) {
 
   // Send an arrow dow keypress in order to trigger the autofill popup.
   SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN);
+}
+
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveIsolationTest,
+                       DeletingFrameUnderSuggestion) {
+  CreateTestProfile();
+
+  // Main frame is on a.com, iframe is on b.com.
+  GURL url = embedded_test_server()->GetURL(
+      "a.com", "/autofill/cross_origin_iframe.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+  GURL iframe_url = embedded_test_server()->GetURL(
+      "b.com", "/autofill/autofill_test_form.html");
+  EXPECT_TRUE(
+      content::NavigateIframeToURL(GetWebContents(), "crossFrame", iframe_url));
+
+  // Let |test_delegate()| also observe autofill events in the iframe.
+  content::RenderFrameHost* cross_frame =
+      RenderFrameHostForName(GetWebContents(), "crossFrame");
+  ASSERT_TRUE(cross_frame);
+  ContentAutofillDriver* cross_driver =
+      ContentAutofillDriverFactory::FromWebContents(GetWebContents())
+          ->DriverForFrame(cross_frame);
+  ASSERT_TRUE(cross_driver);
+  cross_driver->autofill_manager()->SetTestDelegate(test_delegate());
+
+  // Focus the form in the iframe and simulate choosing a suggestion via
+  // keyboard.
+  std::string script_focus("document.getElementById('NAME_FIRST').focus();");
+  ASSERT_TRUE(content::ExecuteScript(cross_frame, script_focus));
+  SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN);
+  content::RenderWidgetHost* widget =
+      cross_frame->GetView()->GetRenderWidgetHost();
+  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN, widget);
+  // Do not accept the suggestion yet, to keep the pop-up shown.
+  EXPECT_TRUE(IsPopupShown());
+
+  // Delete the iframe.
+  std::string script_delete =
+      "document.body.removeChild(document.getElementById('crossFrame'));";
+  ASSERT_TRUE(content::ExecuteScript(GetRenderViewHost(), script_delete));
+
+  // The popup should have disappeared with the iframe.
+  EXPECT_FALSE(IsPopupShown());
 }
 
 }  // namespace autofill

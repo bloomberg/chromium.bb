@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -55,6 +56,7 @@ class AutofillExternalDelegate : public AutofillPopupDelegate {
   // popups after call to |onQuery|.
   bool IsCreditCardPopup() override;
   AutofillDriver* GetAutofillDriver() override;
+  void RegisterDeletionCallback(base::OnceClosure deletion_callback) override;
 
   // Records and associates a query_id with web form data.  Called
   // when the renderer posts an Autofill query to the browser. |bounds|
@@ -159,6 +161,9 @@ class AutofillExternalDelegate : public AutofillPopupDelegate {
   // The current data list values.
   std::vector<base::string16> data_list_values_;
   std::vector<base::string16> data_list_labels_;
+
+  // If not null then it will be called in destructor.
+  base::OnceClosure deletion_callback_;
 
   base::WeakPtrFactory<AutofillExternalDelegate> weak_ptr_factory_;
 

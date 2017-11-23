@@ -97,6 +97,10 @@ class ChromeAutofillClient
   // Hide autofill popup if an interstitial is shown.
   void DidAttachInterstitialPage() override;
 
+  base::WeakPtr<AutofillPopupControllerImpl> popup_controller_for_testing() {
+    return popup_controller_;
+  }
+
 #if !defined(OS_ANDROID)
   // ZoomObserver implementation.
   void OnZoomChanged(

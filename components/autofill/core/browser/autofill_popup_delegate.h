@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_POPUP_DELEGATE_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_POPUP_DELEGATE_H_
 
+#include "base/callback_forward.h"
 #include "base/strings/string16.h"
 
 namespace autofill {
@@ -51,6 +52,12 @@ class AutofillPopupDelegate {
 
   // Returns the associated AutofillDriver.
   virtual AutofillDriver* GetAutofillDriver() = 0;
+
+  // Sets |deletion_callback| to be called from the delegate's destructor.
+  // Useful for deleting objects which cannot be owned by the delegate but
+  // should not outlive it.
+  virtual void RegisterDeletionCallback(
+      base::OnceClosure deletion_callback) = 0;
 };
 
 }  // namespace autofill
