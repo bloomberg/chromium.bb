@@ -379,6 +379,7 @@ component("net") {
   }
 
   public_deps = [
+    ":net_nqe_proto",
     ":net_quic_proto",
     ":traffic_annotation",
     "//crypto",
@@ -2185,6 +2186,21 @@ grit("net_resources") {
     "grit/net_resources.h",
     "net_resources.pak",
   ]
+}
+
+proto_library("net_nqe_proto") {
+  visibility = [ ":net" ]
+
+  sources = [
+    "nqe/proto/network_id_proto.proto",
+  ]
+  cc_generator_options = "dllexport_decl=NET_EXPORT_PRIVATE:"
+  cc_include = "net/base/net_export.h"
+  component_build_force_source_set = true
+
+  defines = [ "NET_IMPLEMENTATION" ]
+
+  extra_configs = [ "//build/config/compiler:wexit_time_destructors" ]
 }
 
 proto_library("net_quic_proto") {
@@ -4919,6 +4935,7 @@ test("net_unittests") {
     "log/trace_net_log_observer_unittest.cc",
     "nqe/effective_connection_type_unittest.cc",
     "nqe/event_creator_unittest.cc",
+    "nqe/network_id_unittest.cc",
     "nqe/network_qualities_prefs_manager_unittest.cc",
     "nqe/network_quality_estimator_params_unittest.cc",
     "nqe/network_quality_estimator_unittest.cc",

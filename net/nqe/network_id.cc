@@ -6,33 +6,9 @@
 
 #include <tuple>
 
+#include "base/base64.h"
 #include "base/strings/string_number_conversions.h"
-
-namespace {
-
-const char kValueSeparator = ',';
-
-// Parses |connection_type_string| as a NetworkChangeNotifier::ConnectionType.
-// |connection_type_string| must contain the
-// NetworkChangeNotifier::ConnectionType enum as an integer.
-net::NetworkChangeNotifier::ConnectionType ConvertStringToConnectionType(
-    const std::string& connection_type_string) {
-  int connection_type_int =
-      static_cast<int>(net::NetworkChangeNotifier::CONNECTION_UNKNOWN);
-  bool connection_type_available =
-      base::StringToInt(connection_type_string, &connection_type_int);
-
-  if (!connection_type_available || connection_type_int < 0 ||
-      connection_type_int >
-          static_cast<int>(net::NetworkChangeNotifier::CONNECTION_LAST)) {
-    DCHECK(false);
-    return net::NetworkChangeNotifier::CONNECTION_UNKNOWN;
-  }
-  return static_cast<net::NetworkChangeNotifier::ConnectionType>(
-      connection_type_int);
-}
-
-}  // namespace
+#include "net/nqe/proto/network_id_proto.pb.h"
 
 namespace net {
 namespace nqe {
@@ -40,15 +16,17 @@ namespace internal {
 
 // static
 NetworkID NetworkID::FromString(const std::string& network_id) {
-  size_t separator_index = network_id.find(kValueSeparator);
-  DCHECK_NE(std::string::npos, separator_index);
-  if (separator_index == std::string::npos) {
+  std::string base64_decoded;
+  if (!base::Base64Decode(network_id, &base64_decoded))
     return NetworkID(NetworkChangeNotifier::CONNECTION_UNKNOWN, std::string());
-  }
 
-  return NetworkID(
-      ConvertStringToConnectionType(network_id.substr(separator_index + 1)),
-      network_id.substr(0, separator_index));
+  NetworkIDProto network_id_proto;
+  if (!network_id_proto.ParseFromString(base64_decoded))
+    return NetworkID(NetworkChangeNotifier::CONNECTION_UNKNOWN, std::string());
+
+  return NetworkID(static_cast<NetworkChangeNotifier::ConnectionType>(
+                       network_id_proto.connection_type()),
+                   network_id_proto.id());
 }
 
 NetworkID::NetworkID(NetworkChangeNotifier::ConnectionType type,
@@ -79,7 +57,18 @@ bool NetworkID::operator<(const NetworkID& other) const {
 }
 
 std::string NetworkID::ToString() const {
-  return id + kValueSeparator + base::IntToString(static_cast<int>(type));
+  NetworkIDProto network_id_proto;
+  network_id_proto.set_connection_type(static_cast<int>(type));
+  network_id_proto.set_id(id);
+
+  std::string serialized_network_id;
+  if (!network_id_proto.SerializeToString(&serialized_network_id))
+    return "";
+
+  std::string base64_encoded;
+  base::Base64Encode(serialized_network_id, &base64_encoded);
+
+  return base64_encoded;
 }
 
 }  // namespace internal
