@@ -184,6 +184,10 @@ const base::Feature kModuleScriptsDynamicImport{
 const base::Feature kModuleScriptsImportMetaUrl{
     "ModuleScriptsImportMetaUrl", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Use Mojo IPC for notifications.
+const base::Feature kNotificationsWithMojo{"NotificationsWithMojo",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Resource fetch optimizations for workers. See crbug.com/443374
 const base::Feature kOffMainThreadFetch{"OffMainThreadFetch",
                                         base::FEATURE_ENABLED_BY_DEFAULT};

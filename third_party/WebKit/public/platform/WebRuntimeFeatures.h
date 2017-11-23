@@ -108,6 +108,7 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableNotificationConstructor(bool);
   BLINK_PLATFORM_EXPORT static void EnableNotificationContentImage(bool);
   BLINK_PLATFORM_EXPORT static void EnableNotifications(bool);
+  BLINK_PLATFORM_EXPORT static void EnableNotificationsWithMojo(bool);
   BLINK_PLATFORM_EXPORT static void EnableOffMainThreadFetch(bool);
   BLINK_PLATFORM_EXPORT static void EnableOnDeviceChange(bool);
   BLINK_PLATFORM_EXPORT static void EnableOrientationEvent(bool);
