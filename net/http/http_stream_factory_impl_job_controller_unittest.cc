@@ -2295,6 +2295,7 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, QuicHostWhitelist) {
   // Set HttpNetworkSession's QUIC host whitelist to only have www.example.com
   HttpNetworkSessionPeer session_peer(session_.get());
   session_peer.params()->quic_host_whitelist.insert("www.example.com");
+  session_peer.params()->quic_allow_remote_alt_svc = true;
 
   // Set alternative service for www.google.com to be www.example.com over QUIC.
   url::SchemeHostPort server(request_info.url);
