@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.customtabs;
 import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.CUSTOM_TABS_UI_TYPE_DEFAULT;
 import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.CUSTOM_TABS_UI_TYPE_INFO_PAGE;
 import static org.chromium.chrome.browser.webapps.WebappActivity.ACTIVITY_TYPE_OTHER;
+import static org.chromium.chrome.browser.webapps.WebappActivity.ACTIVITY_TYPE_WEBAPK;
 
 import android.app.Activity;
 import android.app.PendingIntent;
@@ -544,7 +545,14 @@ public class CustomTabActivity extends ChromeActivity {
                 getIntent(), IntentHandler.EXTRA_PARENT_TAB_ID, Tab.INVALID_TAB_ID);
         Tab tab = new Tab(assignedTabId, parentTabId, false, getWindowAndroid(),
                 TabLaunchType.FROM_EXTERNAL_APP, null, null);
-        tab.setAppAssociatedWith(mConnection.getClientPackageNameForSession(mSession));
+        if (getIntent().getIntExtra(
+                    CustomTabIntentDataProvider.EXTRA_BROWSER_LAUNCH_SOURCE, ACTIVITY_TYPE_OTHER)
+                == ACTIVITY_TYPE_WEBAPK) {
+            String webapkPackageName = getIntent().getStringExtra(Browser.EXTRA_APPLICATION_ID);
+            tab.setAppAssociatedWith(webapkPackageName);
+        } else {
+            tab.setAppAssociatedWith(mConnection.getClientPackageNameForSession(mSession));
+        }
         tab.initialize(
                 webContents, getTabContentManager(),
                 new CustomTabDelegateFactory(
