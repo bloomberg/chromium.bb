@@ -40,7 +40,7 @@ void UiPixelTest::SetUp() {
   // with fake content.
   ASSERT_EQ(glGetError(), (GLenum)GL_NO_ERROR);
 
-  browser_ = base::MakeUnique<MockBrowserInterface>();
+  browser_ = base::MakeUnique<MockUiBrowserInterface>();
 #endif
 }
 

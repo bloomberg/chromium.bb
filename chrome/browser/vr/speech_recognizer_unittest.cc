@@ -12,6 +12,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/mock_timer.h"
+#include "chrome/browser/vr/browser_ui_interface.h"
+#include "chrome/browser/vr/test/mock_browser_ui_interface.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/speech_recognition_event_listener.h"
 #include "content/public/browser/speech_recognition_manager.h"
@@ -28,6 +30,7 @@ namespace vr {
 static const int kTestSessionId = 1;
 const char kTestInterimResult[] = "kitten";
 const char kTestResult[] = "cat";
+const char kTestResultMultiple[] = "cat video";
 
 enum FakeRecognitionEvent {
   RECOGNITION_START = 0,
@@ -39,6 +42,7 @@ enum FakeRecognitionEvent {
   AUDIO_END,
   INTERIM_RESULT,
   FINAL_RESULT,
+  MULTIPLE_FINAL_RESULT,
 };
 
 class FakeSpeechRecognitionManager : public content::SpeechRecognitionManager {
@@ -116,6 +120,9 @@ class FakeSpeechRecognitionManager : public content::SpeechRecognitionManager {
       case FINAL_RESULT:
         SendFakeFinalResults();
         break;
+      case MULTIPLE_FINAL_RESULT:
+        SendFakeMultipleFinalResults();
+        break;
       default:
         NOTREACHED();
     }
@@ -125,38 +132,46 @@ class FakeSpeechRecognitionManager : public content::SpeechRecognitionManager {
     if (!session_id_)
       return;
 
-    content::SpeechRecognitionEventListener* listener = GetActiveListener();
-    if (!listener)
-      return;
-    listener->OnAudioEnd(session_id_);
-    content::SpeechRecognitionResult result;
-    result.is_provisional = true;
-    result.hypotheses.push_back(content::SpeechRecognitionHypothesis(
-        base::ASCIIToUTF16(kTestInterimResult), 1.0));
-    content::SpeechRecognitionResults results;
-    results.push_back(result);
-    listener->OnRecognitionResults(session_id_, results);
+    SendRecognitionResult(kTestInterimResult, true);
   }
 
   void SendFakeFinalResults() {
     if (!session_id_)
       return;
 
-    content::SpeechRecognitionEventListener* listener = GetActiveListener();
-    if (!listener)
+    SendRecognitionResult(kTestResult, false);
+    FakeSpeechRecognitionEvent(RECOGNITION_END);
+    session_id_ = 0;
+  }
+
+  void SendFakeMultipleFinalResults() {
+    if (!session_id_)
       return;
-    listener->OnAudioEnd(session_id_);
-    content::SpeechRecognitionResult result;
-    result.hypotheses.push_back(content::SpeechRecognitionHypothesis(
-        base::ASCIIToUTF16(kTestResult), 1.0));
-    content::SpeechRecognitionResults results;
-    results.push_back(result);
-    listener->OnRecognitionResults(session_id_, results);
-    listener->OnRecognitionEnd(session_id_);
+
+    SendRecognitionResult(kTestResult, false);
+    SendRecognitionResult(kTestResultMultiple, false);
+    FakeSpeechRecognitionEvent(RECOGNITION_END);
     session_id_ = 0;
   }
 
  private:
+  void SendRecognitionResult(const char* string, bool is_provisional) {
+    content::SpeechRecognitionEventListener* listener = GetActiveListener();
+    if (!listener)
+      return;
+    listener->OnAudioStart(session_id_);
+    listener->OnAudioEnd(session_id_);
+
+    content::SpeechRecognitionResult result;
+    result.hypotheses.push_back(
+        content::SpeechRecognitionHypothesis(base::ASCIIToUTF16(string), 1.0));
+    result.is_provisional = is_provisional;
+    content::SpeechRecognitionResults results;
+    results.push_back(result);
+
+    listener->OnRecognitionResults(session_id_, results);
+  }
+
   content::SpeechRecognitionEventListener* GetActiveListener() {
     DCHECK(session_id_ != 0);
     return session_config_.event_listener.get();
@@ -169,27 +184,25 @@ class FakeSpeechRecognitionManager : public content::SpeechRecognitionManager {
   DISALLOW_COPY_AND_ASSIGN(FakeSpeechRecognitionManager);
 };
 
-class SpeechRecognizerTestWrapper : public SpeechRecognizer {
+class MockVoiceSearchDelegate : public VoiceResultDelegate {
  public:
-  SpeechRecognizerTestWrapper()
-      : SpeechRecognizer(nullptr, nullptr, nullptr, "en") {}
+  MockVoiceSearchDelegate() = default;
+  ~MockVoiceSearchDelegate() override = default;
 
-  ~SpeechRecognizerTestWrapper() override {}
-
-  MOCK_METHOD2(OnSpeechResult,
-               void(const base::string16& query, bool is_final));
-  MOCK_METHOD1(OnSpeechRecognitionStateChanged,
-               void(SpeechRecognitionState new_state));
+  MOCK_METHOD1(OnVoiceResults, void(const base::string16& result));
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(SpeechRecognizerTestWrapper);
+  DISALLOW_COPY_AND_ASSIGN(MockVoiceSearchDelegate);
 };
 
 class SpeechRecognizerTest : public testing::Test {
  public:
   SpeechRecognizerTest()
       : fake_speech_recognition_manager_(new FakeSpeechRecognitionManager()),
-        speech_recognizer_(new SpeechRecognizerTestWrapper) {
+        ui_(new MockBrowserUiInterface),
+        delegate_(new MockVoiceSearchDelegate),
+        speech_recognizer_(
+            new SpeechRecognizer(delegate_.get(), ui_.get(), nullptr, "en")) {
     SpeechRecognizer::SetManagerForTest(fake_speech_recognition_manager_.get());
   }
 
@@ -201,33 +214,57 @@ class SpeechRecognizerTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<FakeSpeechRecognitionManager>
       fake_speech_recognition_manager_;
-  std::unique_ptr<SpeechRecognizerTestWrapper> speech_recognizer_;
+  std::unique_ptr<MockBrowserUiInterface> ui_;
+  std::unique_ptr<MockVoiceSearchDelegate> delegate_;
+  std::unique_ptr<SpeechRecognizer> speech_recognizer_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SpeechRecognizerTest);
 };
 
-TEST_F(SpeechRecognizerTest, ReceiveSpeechResult) {
+TEST_F(SpeechRecognizerTest, ReceivedCorrectSpeechResult) {
+  testing::Sequence s;
+  EXPECT_CALL(*ui_, SetSpeechRecognitionEnabled(true)).InSequence(s);
+  EXPECT_CALL(*ui_, SetRecognitionResult(base::ASCIIToUTF16(kTestResult)))
+      .InSequence(s);
+  EXPECT_CALL(*delegate_, OnVoiceResults(base::ASCIIToUTF16(kTestResult)))
+      .Times(1)
+      .InSequence(s);
+  EXPECT_CALL(*ui_, SetSpeechRecognitionEnabled(false)).InSequence(s);
+
   speech_recognizer_->Start();
   base::RunLoop().RunUntilIdle();
 
-  testing::Sequence s;
-  EXPECT_CALL(*speech_recognizer_,
-              OnSpeechResult(base::ASCIIToUTF16("kitten"), false))
-      .InSequence(s);
-  EXPECT_CALL(*speech_recognizer_,
-              OnSpeechResult(base::ASCIIToUTF16("cat"), true))
-      .InSequence(s);
-  // After receiving final speech result, speech recognition should send a reset
-  // request.
-  EXPECT_CALL(*speech_recognizer_,
-              OnSpeechRecognitionStateChanged(SPEECH_RECOGNITION_END))
-      .InSequence(s);
-
+  // This should not trigger SetRecognitionResult as we don't show interim
+  // result.
   fake_speech_recognition_manager_->FakeSpeechRecognitionEvent(INTERIM_RESULT);
   base::RunLoop().RunUntilIdle();
 
+  // This should trigger SetRecognitionResult as we received final result.
   fake_speech_recognition_manager_->FakeSpeechRecognitionEvent(FINAL_RESULT);
+  base::RunLoop().RunUntilIdle();
+}
+
+// Test for crbug.com/785051. It is possible that we receive multiple final
+// results in one recognition session. We should only navigate once in this
+// case.
+TEST_F(SpeechRecognizerTest, MultipleResultsTriggerNavigation) {
+  testing::Sequence s;
+  EXPECT_CALL(*ui_, SetSpeechRecognitionEnabled(true)).InSequence(s);
+  EXPECT_CALL(*ui_,
+              SetRecognitionResult(base::ASCIIToUTF16(kTestResultMultiple)))
+      .InSequence(s);
+  EXPECT_CALL(*delegate_,
+              OnVoiceResults(base::ASCIIToUTF16(kTestResultMultiple)))
+      .Times(1)
+      .InSequence(s);
+  EXPECT_CALL(*ui_, SetSpeechRecognitionEnabled(false)).InSequence(s);
+
+  speech_recognizer_->Start();
+  base::RunLoop().RunUntilIdle();
+
+  fake_speech_recognition_manager_->FakeSpeechRecognitionEvent(
+      MULTIPLE_FINAL_RESULT);
   base::RunLoop().RunUntilIdle();
 }
 
@@ -236,14 +273,13 @@ TEST_F(SpeechRecognizerTest, ReceivedSpeechRecognitionStates) {
   base::RunLoop().RunUntilIdle();
 
   testing::Sequence s;
-  EXPECT_CALL(*speech_recognizer_,
+  EXPECT_CALL(*ui_,
               OnSpeechRecognitionStateChanged(SPEECH_RECOGNITION_RECOGNIZING))
       .InSequence(s);
-  EXPECT_CALL(*speech_recognizer_,
+  EXPECT_CALL(*ui_,
               OnSpeechRecognitionStateChanged(SPEECH_RECOGNITION_NETWORK_ERROR))
       .InSequence(s);
-  EXPECT_CALL(*speech_recognizer_,
-              OnSpeechRecognitionStateChanged(SPEECH_RECOGNITION_END))
+  EXPECT_CALL(*ui_, OnSpeechRecognitionStateChanged(SPEECH_RECOGNITION_END))
       .InSequence(s);
 
   fake_speech_recognition_manager_->FakeSpeechRecognitionEvent(
@@ -258,20 +294,21 @@ TEST_F(SpeechRecognizerTest, ReceivedSpeechRecognitionStates) {
 }
 
 TEST_F(SpeechRecognizerTest, NoSoundTimeout) {
+  testing::Sequence s;
+  EXPECT_CALL(*ui_, SetSpeechRecognitionEnabled(true)).InSequence(s);
+  EXPECT_CALL(*ui_,
+              OnSpeechRecognitionStateChanged(SPEECH_RECOGNITION_IN_SPEECH))
+      .InSequence(s);
+  EXPECT_CALL(*ui_, OnSpeechRecognitionStateChanged(SPEECH_RECOGNITION_END))
+      .InSequence(s);
+  EXPECT_CALL(*ui_, SetSpeechRecognitionEnabled(false)).InSequence(s);
+
   speech_recognizer_->Start();
   base::RunLoop().RunUntilIdle();
 
   auto mock_timer = std::make_unique<base::MockTimer>(false, false);
   base::MockTimer* timer_ptr = mock_timer.get();
   speech_recognizer_->SetSpeechTimerForTest(std::move(mock_timer));
-
-  testing::Sequence s;
-  EXPECT_CALL(*speech_recognizer_,
-              OnSpeechRecognitionStateChanged(SPEECH_RECOGNITION_IN_SPEECH))
-      .InSequence(s);
-  EXPECT_CALL(*speech_recognizer_,
-              OnSpeechRecognitionStateChanged(SPEECH_RECOGNITION_END))
-      .InSequence(s);
 
   fake_speech_recognition_manager_->FakeSpeechRecognitionEvent(SOUND_START);
   base::RunLoop().RunUntilIdle();
@@ -284,14 +321,14 @@ TEST_F(SpeechRecognizerTest, NoSoundTimeout) {
 // This test that it is safe to reset speech_recognizer_ on UI thread after post
 // a task to start speech recognition on IO thread.
 TEST_F(SpeechRecognizerTest, SafeToResetAfterStart) {
+  EXPECT_CALL(*ui_,
+              OnSpeechRecognitionStateChanged(SPEECH_RECOGNITION_RECOGNIZING));
+  EXPECT_CALL(*ui_, SetRecognitionResult(base::ASCIIToUTF16(kTestResult)))
+      .Times(0);
+
   speech_recognizer_->Start();
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_CALL(*speech_recognizer_,
-              OnSpeechRecognitionStateChanged(SPEECH_RECOGNITION_RECOGNIZING));
-  EXPECT_CALL(*speech_recognizer_,
-              OnSpeechResult(base::ASCIIToUTF16("cat"), true))
-      .Times(0);
   fake_speech_recognition_manager_->FakeSpeechRecognitionEvent(
       RECOGNITION_START);
   base::RunLoop().RunUntilIdle();
@@ -304,17 +341,13 @@ TEST_F(SpeechRecognizerTest, SafeToResetAfterStart) {
 
 // This test that calling start after stop should still work as expected.
 TEST_F(SpeechRecognizerTest, RestartAfterStop) {
-  EXPECT_CALL(*speech_recognizer_,
-              OnSpeechResult(base::ASCIIToUTF16("kitten"), false))
-      .Times(0);
-  EXPECT_CALL(*speech_recognizer_,
-              OnSpeechResult(base::ASCIIToUTF16("cat"), true))
+  EXPECT_CALL(*ui_, SetRecognitionResult(base::ASCIIToUTF16(kTestResult)))
       .Times(1);
 
   speech_recognizer_->Start();
   base::RunLoop().RunUntilIdle();
 
-  fake_speech_recognition_manager_->FakeSpeechRecognitionEvent(INTERIM_RESULT);
+  fake_speech_recognition_manager_->FakeSpeechRecognitionEvent(FINAL_RESULT);
   speech_recognizer_->Stop();
   base::RunLoop().RunUntilIdle();
 
