@@ -40429,6 +40429,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.CertificateTransparency.CTRequiredRequestComplianceStatus"
+    enum="CTComplianceStatus">
+  <owner>estark@chromium.org</owner>
+  <summary>
+    The compliance of each HTTP request with the Certificate Transparency
+    policy, for requests on connections for which CT compliance is required for
+    the connection to succeed. (For example, CT compliance is required for
+    certain Certificate Authorities, or a site can opt in to having CT be
+    required.) Recorded once on request completion for requests on applicable
+    connections, unless CT evaluation has been disabled for that connection or
+    the certificate is otherwise invalid. Not recorded when the request's
+    certificate chains to a locally-installed root.
+  </summary>
+</histogram>
+
 <histogram name="Net.CertificateTransparency.DnsQueryDuration" units="ms">
   <owner>robpercival@chromium.org</owner>
   <summary>
@@ -40497,6 +40512,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Measuring the age of a particular log's Signed Tree Head will allow more
     informed update frequency of the Component Updater component that provides
     them. Emitted once for every STH update received by the component updater.
+  </summary>
+</histogram>
+
+<histogram name="Net.CertificateTransparency.RequestComplianceStatus"
+    enum="CTComplianceStatus">
+  <owner>estark@chromium.org</owner>
+  <summary>
+    The compliance of each HTTP request with the Certificate Transparency
+    policy, recorded once on request completion unless CT evaluation has been
+    disabled for that request's connection or the certificate is otherwise
+    invalid. A request's connection can be compliant, or it can be non-compliant
+    for one of several reasons (not enough Signed Certificate Timestamps [SCTs],
+    not diverse enough SCTs, or the build was old so CT compliance wasn't
+    checked). Not recorded when the request's certificate chains to a
+    locally-installed root.
   </summary>
 </histogram>
 

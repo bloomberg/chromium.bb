@@ -21,6 +21,7 @@
 #include "base/test/histogram_tester.h"
 #include "net/base/auth.h"
 #include "net/base/request_priority.h"
+#include "net/cert/ct_policy_status.h"
 #include "net/cookies/cookie_store_test_helpers.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/http/http_transaction_test_util.h"
@@ -77,6 +78,11 @@ const char kSimpleHeadMockWrite[] =
 
 const char kTrustAnchorRequestHistogram[] =
     "Net.Certificate.TrustAnchor.Request";
+
+const char kCTComplianceHistogramName[] =
+    "Net.CertificateTransparency.RequestComplianceStatus";
+const char kCTRequiredHistogramName[] =
+    "Net.CertificateTransparency.CTRequiredRequestComplianceStatus";
 
 // Inherit from URLRequestHttpJob to expose the priority and some
 // other hidden functions.
@@ -1064,6 +1070,169 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest,
   histograms.ExpectTotalCount(kTrustAnchorRequestHistogram, 1);
   histograms.ExpectUniqueSample(kTrustAnchorRequestHistogram,
                                 kGTSRootR3HistogramID, 1);
+}
+
+// Tests that the CT compliance histogram is recorded, even if CT is not
+// required.
+TEST_F(URLRequestHttpJobWithMockSocketsTest,
+       TestHttpJobRecordsCTComplianceHistograms) {
+  SSLSocketDataProvider ssl_socket_data(net::ASYNC, net::OK);
+  ssl_socket_data.ssl_info.cert =
+      ImportCertFromFile(GetTestCertsDirectory(), "ok_cert.pem");
+  ssl_socket_data.ssl_info.is_issued_by_known_root = true;
+  ssl_socket_data.ssl_info.ct_compliance_details_available = true;
+  ssl_socket_data.ssl_info.ct_policy_compliance_required = false;
+  ssl_socket_data.ssl_info.ct_cert_policy_compliance =
+      ct::CertPolicyCompliance::CERT_POLICY_NOT_DIVERSE_SCTS;
+
+  socket_factory_.AddSSLSocketDataProvider(&ssl_socket_data);
+
+  MockWrite writes[] = {MockWrite(kSimpleGetMockWrite)};
+  MockRead reads[] = {MockRead("HTTP/1.1 200 OK\r\n"
+                               "Content-Length: 12\r\n\r\n"),
+                      MockRead("Test Content")};
+  StaticSocketDataProvider socket_data(reads, arraysize(reads), writes,
+                                       arraysize(writes));
+  socket_factory_.AddSocketDataProvider(&socket_data);
+
+  base::HistogramTester histograms;
+
+  TestDelegate delegate;
+  std::unique_ptr<URLRequest> request = context_->CreateRequest(
+      GURL("https://www.example.com/"), DEFAULT_PRIORITY, &delegate,
+      TRAFFIC_ANNOTATION_FOR_TESTS);
+  request->Start();
+  base::RunLoop().Run();
+  EXPECT_THAT(delegate.request_status(), IsOk());
+
+  histograms.ExpectUniqueSample(
+      kCTComplianceHistogramName,
+      static_cast<int32_t>(
+          ct::CertPolicyCompliance::CERT_POLICY_NOT_DIVERSE_SCTS),
+      1);
+  // CTRequiredRequestComplianceStatus should *not* have been recorded because
+  // it is only recorded for requests which are required to be compliant.
+  histograms.ExpectTotalCount(kCTRequiredHistogramName, 0);
+}
+
+// Tests that the CT compliance histograms are not recorded for
+// locally-installed trust anchors.
+TEST_F(URLRequestHttpJobWithMockSocketsTest,
+       TestHttpJobDoesNotRecordCTComplianceHistogramsForLocalRoot) {
+  SSLSocketDataProvider ssl_socket_data(net::ASYNC, net::OK);
+  ssl_socket_data.ssl_info.cert =
+      ImportCertFromFile(GetTestCertsDirectory(), "ok_cert.pem");
+  ssl_socket_data.ssl_info.is_issued_by_known_root = false;
+  ssl_socket_data.ssl_info.ct_compliance_details_available = true;
+  ssl_socket_data.ssl_info.ct_policy_compliance_required = false;
+  ssl_socket_data.ssl_info.ct_cert_policy_compliance =
+      ct::CertPolicyCompliance::CERT_POLICY_NOT_DIVERSE_SCTS;
+
+  socket_factory_.AddSSLSocketDataProvider(&ssl_socket_data);
+
+  MockWrite writes[] = {MockWrite(kSimpleGetMockWrite)};
+  MockRead reads[] = {MockRead("HTTP/1.1 200 OK\r\n"
+                               "Content-Length: 12\r\n\r\n"),
+                      MockRead("Test Content")};
+  StaticSocketDataProvider socket_data(reads, arraysize(reads), writes,
+                                       arraysize(writes));
+  socket_factory_.AddSocketDataProvider(&socket_data);
+
+  base::HistogramTester histograms;
+
+  TestDelegate delegate;
+  std::unique_ptr<URLRequest> request = context_->CreateRequest(
+      GURL("https://www.example.com/"), DEFAULT_PRIORITY, &delegate,
+      TRAFFIC_ANNOTATION_FOR_TESTS);
+  request->Start();
+  base::RunLoop().Run();
+  EXPECT_THAT(delegate.request_status(), IsOk());
+
+  histograms.ExpectTotalCount(kCTComplianceHistogramName, 0);
+  histograms.ExpectTotalCount(kCTRequiredHistogramName, 0);
+}
+
+// Tests that the CT compliance histogram is recorded when CT is required but
+// not compliant.
+TEST_F(URLRequestHttpJobWithMockSocketsTest,
+       TestHttpJobRecordsCTRequiredHistogram) {
+  SSLSocketDataProvider ssl_socket_data(net::ASYNC, net::OK);
+  ssl_socket_data.ssl_info.cert =
+      ImportCertFromFile(GetTestCertsDirectory(), "ok_cert.pem");
+  ssl_socket_data.ssl_info.is_issued_by_known_root = true;
+  ssl_socket_data.ssl_info.ct_compliance_details_available = true;
+  ssl_socket_data.ssl_info.ct_policy_compliance_required = true;
+  ssl_socket_data.ssl_info.ct_cert_policy_compliance =
+      ct::CertPolicyCompliance::CERT_POLICY_NOT_DIVERSE_SCTS;
+
+  socket_factory_.AddSSLSocketDataProvider(&ssl_socket_data);
+
+  MockWrite writes[] = {MockWrite(kSimpleGetMockWrite)};
+  MockRead reads[] = {MockRead("HTTP/1.1 200 OK\r\n"
+                               "Content-Length: 12\r\n\r\n"),
+                      MockRead("Test Content")};
+  StaticSocketDataProvider socket_data(reads, arraysize(reads), writes,
+                                       arraysize(writes));
+  socket_factory_.AddSocketDataProvider(&socket_data);
+
+  base::HistogramTester histograms;
+
+  TestDelegate delegate;
+  std::unique_ptr<URLRequest> request = context_->CreateRequest(
+      GURL("https://www.example.com/"), DEFAULT_PRIORITY, &delegate,
+      TRAFFIC_ANNOTATION_FOR_TESTS);
+  request->Start();
+  base::RunLoop().Run();
+  EXPECT_THAT(delegate.request_status(), IsOk());
+
+  histograms.ExpectUniqueSample(
+      kCTComplianceHistogramName,
+      static_cast<int32_t>(
+          ct::CertPolicyCompliance::CERT_POLICY_NOT_DIVERSE_SCTS),
+      1);
+  histograms.ExpectUniqueSample(
+      kCTRequiredHistogramName,
+      static_cast<int32_t>(
+          ct::CertPolicyCompliance::CERT_POLICY_NOT_DIVERSE_SCTS),
+      1);
+}
+
+// Tests that the CT compliance histograms are not recorded when there is an
+// unrelated certificate error.
+TEST_F(URLRequestHttpJobWithMockSocketsTest,
+       TestHttpJobDoesNotRecordCTHistogramWithCertError) {
+  SSLSocketDataProvider ssl_socket_data(net::ASYNC, net::OK);
+  ssl_socket_data.ssl_info.cert =
+      ImportCertFromFile(GetTestCertsDirectory(), "ok_cert.pem");
+  ssl_socket_data.ssl_info.is_issued_by_known_root = true;
+  ssl_socket_data.ssl_info.ct_compliance_details_available = true;
+  ssl_socket_data.ssl_info.ct_policy_compliance_required = true;
+  ssl_socket_data.ssl_info.ct_cert_policy_compliance =
+      ct::CertPolicyCompliance::CERT_POLICY_NOT_DIVERSE_SCTS;
+  ssl_socket_data.ssl_info.cert_status = net::CERT_STATUS_DATE_INVALID;
+
+  socket_factory_.AddSSLSocketDataProvider(&ssl_socket_data);
+
+  MockWrite writes[] = {MockWrite(kSimpleGetMockWrite)};
+  MockRead reads[] = {MockRead("HTTP/1.1 200 OK\r\n"
+                               "Content-Length: 12\r\n\r\n"),
+                      MockRead("Test Content")};
+  StaticSocketDataProvider socket_data(reads, arraysize(reads), writes,
+                                       arraysize(writes));
+  socket_factory_.AddSocketDataProvider(&socket_data);
+
+  base::HistogramTester histograms;
+
+  TestDelegate delegate;
+  std::unique_ptr<URLRequest> request = context_->CreateRequest(
+      GURL("https://www.example.com/"), DEFAULT_PRIORITY, &delegate,
+      TRAFFIC_ANNOTATION_FOR_TESTS);
+  request->Start();
+  base::RunLoop().Run();
+  EXPECT_THAT(delegate.request_status(), IsOk());
+
+  histograms.ExpectTotalCount(kCTComplianceHistogramName, 0);
+  histograms.ExpectTotalCount(kCTRequiredHistogramName, 0);
 }
 
 TEST_F(URLRequestHttpJobTest, TestCancelWhileReadingCookies) {
