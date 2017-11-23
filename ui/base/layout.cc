@@ -106,6 +106,9 @@ ScopedSetSupportedScaleFactors::~ScopedSetSupportedScaleFactors() {
 
 #if !defined(OS_MACOSX)
 float GetScaleFactorForNativeView(gfx::NativeView view) {
+  // A number of unit tests do not setup the screen.
+  if (!display::Screen::GetScreen())
+    return 1.0f;
   display::Display display =
       display::Screen::GetScreen()->GetDisplayNearestView(view);
   DCHECK(display.is_valid());
