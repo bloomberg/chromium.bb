@@ -635,6 +635,7 @@ input[type="button" i]:active:disabled, input[type="submit" i]:active:disabled, 
 
 input:disabled, textarea:disabled {
     color: #545454;
+    cursor: default;
 }
 
 option:-internal-spatial-navigation-focus {
