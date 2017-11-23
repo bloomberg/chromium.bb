@@ -44,6 +44,12 @@
 // Star ToolbarButton.
 - (ToolbarButton*)starToolbarButton;
 
+// Returns images for Voice Search in an array representing the NORMAL/PRESSED
+// state
+- (NSArray<UIImage*>*)voiceSearchImages;
+// Returns images for TTS in an array representing the NORMAL/PRESSED states.
+- (NSArray<UIImage*>*)TTSImages;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_CLEAN_TOOLBAR_BUTTON_FACTORY_H_

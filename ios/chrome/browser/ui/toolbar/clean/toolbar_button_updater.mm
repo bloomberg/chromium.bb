@@ -4,7 +4,9 @@
 
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_button_updater.h"
 
+#import "ios/chrome/browser/ui/toolbar/clean/toolbar_button_factory.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_constants.h"
+#import "ios/chrome/browser/ui/voice/voice_search_notification_names.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -27,6 +29,9 @@
 @synthesize forwardButton = _forwardButton;
 @synthesize backButtonMode = _backButtonMode;
 @synthesize forwardButtonMode = _forwardButtonMode;
+@synthesize factory = _factory;
+@synthesize TTSPlaying = _TTSPlaying;
+@synthesize voiceSearchButton = _voiceSearchButton;
 
 #pragma mark - Public
 
@@ -37,6 +42,45 @@
     _forwardButtonMode = ToolbarButtonModeNormal;
   }
   return self;
+}
+
+- (BOOL)canStartPlayingTTS {
+  return !self.voiceSearchButton.hidden;
+}
+
+- (void)updateIsTTSPlaying:(NSNotification*)notify {
+  BOOL wasTTSPlaying = self.TTSPlaying;
+  self.TTSPlaying =
+      [notify.name isEqualToString:kTTSWillStartPlayingNotification];
+  if (wasTTSPlaying != self.TTSPlaying && IsIPadIdiom()) {
+    NSArray<UIImage*>* buttonImages;
+    if (self.TTSPlaying) {
+      buttonImages = [self.factory TTSImages];
+    } else {
+      buttonImages = [self.factory voiceSearchImages];
+    }
+    [self.voiceSearchButton setImage:buttonImages[0]
+                            forState:UIControlStateNormal];
+    [self.voiceSearchButton setImage:buttonImages[1]
+                            forState:UIControlStateHighlighted];
+  }
+  if (self.TTSPlaying && UIAccessibilityIsVoiceOverRunning()) {
+    // Moving VoiceOver without RunBlockAfterDelay results in VoiceOver not
+    // staying on |voiceSearchButton| and instead moving to views inside the
+    // WebView.
+    // Use |voiceSearchButton| in the block to prevent |self| from being
+    // retained.
+    UIButton* voiceSearchButton = self.voiceSearchButton;
+    dispatch_async(dispatch_get_main_queue(), ^{
+      UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification,
+                                      voiceSearchButton);
+    });
+  }
+}
+
+- (void)moveVoiceOverToVoiceSearchButton {
+  UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification,
+                                  self.voiceSearchButton);
 }
 
 #pragma mark - TabHistoryPositioner

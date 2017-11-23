@@ -85,6 +85,7 @@ source_set("toolbar") {
     "//ios/chrome/browser/ui/popup_menu",
     "//ios/chrome/browser/ui/qr_scanner/requirements",
     "//ios/chrome/browser/ui/toolbar/clean:toolbar",
+    "//ios/chrome/browser/ui/toolbar/clean:toolbar_components_ui",
     "//ios/chrome/browser/ui/toolbar/clean:toolbar_ui",
     "//ios/chrome/browser/ui/toolbar/keyboard_assist",
     "//ios/chrome/browser/ui/tools_menu",

@@ -36,6 +36,7 @@ source_set("toolbar") {
     "//ios/chrome/browser/ui/toolbar/keyboard_assist",
     "//ios/chrome/browser/ui/toolbar/public",
     "//ios/chrome/browser/ui/tools_menu:configuration",
+    "//ios/chrome/browser/ui/voice",
     "//ios/chrome/browser/web_state_list",
     "//ios/public/provider/chrome/browser/voice",
     "//ios/third_party/material_components_ios",
@@ -58,6 +59,7 @@ source_set("toolbar_ui") {
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/history_popup/requirements",
     "//ios/chrome/browser/ui/toolbar/public",
+    "//ios/chrome/browser/ui/voice",
     "//ios/third_party/material_components_ios",
   ]
   libs = [ "UIKit.framework" ]
@@ -84,6 +86,8 @@ source_set("toolbar_components_ui") {
     "//ios/chrome/app/theme",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/toolbar:resource_macros",
+    "//ios/public/provider/chrome/browser",
+    "//ios/public/provider/chrome/browser/images",
     "//ui/base",
   ]
   libs = [ "UIKit.framework" ]

@@ -53,6 +53,7 @@
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_view.h"
 #import "ios/chrome/browser/ui/reversed_animation.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
+#import "ios/chrome/browser/ui/toolbar/clean/toolbar_button_factory.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_button_updater.h"
 #import "ios/chrome/browser/ui/toolbar/keyboard_assist/toolbar_assistive_keyboard_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/keyboard_assist/toolbar_assistive_keyboard_views.h"
@@ -130,10 +131,6 @@ using ios::material::TimingFunction;
   // If set to |YES|, disables animations that tests would otherwise trigger.
   BOOL _unitTesting;
 
-  // If set to |YES|, text to speech is currently playing and the toolbar voice
-  // icon should indicate so.
-  BOOL _isTTSPlaying;
-
   // Keeps track of the last known toolbar frame.
   CGRect _lastKnownToolbarFrame;
 
@@ -179,10 +176,6 @@ using ios::material::TimingFunction;
 - (void)stopObservingTTSNotifications;
 // Received when a TTS player has received audio data.
 - (void)audioReadyForPlayback:(NSNotification*)notification;
-// Updates the TTS button depending on whether or not TTS is currently playing.
-- (void)updateIsTTSPlaying:(NSNotification*)notify;
-// Moves VoiceOver to the button used to perform a voice search.
-- (void)moveVoiceOverToVoiceSearchButton;
 // Fade in and out toolbar items as the frame moves off screen.
 - (void)updateToolbarAlphaForFrame:(CGRect)frame;
 // Navigate to |query| from omnibox.
@@ -290,7 +283,12 @@ using ios::material::TimingFunction;
     [_locationBarView.textField setPlaceholderTextColor:placeholderTextColor];
   }
 
+  ToolbarStyle incognitoStyle =
+      _browserState->IsOffTheRecord() ? INCOGNITO : NORMAL;
+  ToolbarButtonFactory* factory =
+      [[ToolbarButtonFactory alloc] initWithStyle:incognitoStyle];
   _buttonUpdater = [[ToolbarButtonUpdater alloc] init];
+  _buttonUpdater.factory = factory;
 
   _backButton = [[UIButton alloc]
       initWithFrame:LayoutRectGetRect(kBackButtonFrame[idiom])];
@@ -376,6 +374,7 @@ using ios::material::TimingFunction;
                                      UIViewAutoresizingFlexibleLeadingMargin()];
     _voiceSearchButton = [[UIButton alloc]
         initWithFrame:LayoutRectGetRect(kVoiceSearchButtonFrame)];
+    _buttonUpdater.voiceSearchButton = _voiceSearchButton;
     [_voiceSearchButton
         setAutoresizingMask:UIViewAutoresizingFlexibleTopMargin |
                             UIViewAutoresizingFlexibleLeadingMargin()];
@@ -780,7 +779,8 @@ using ios::material::TimingFunction;
 
 - (int)imageEnumForButton:(UIButton*)button {
   if (button == _voiceSearchButton)
-    return _isTTSPlaying ? WebToolbarButtonNameTTS : WebToolbarButtonNameVoice;
+    return self.buttonUpdater.TTSPlaying ? WebToolbarButtonNameTTS
+                                         : WebToolbarButtonNameVoice;
   if (button == _starButton)
     return WebToolbarButtonNameStar;
   if (button == _stopButton)
@@ -1394,10 +1394,14 @@ using ios::material::TimingFunction;
   // The toolbar is only used to play text-to-speech search results on iPads.
   if (IsIPadIdiom()) {
     NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
+    [defaultCenter addObserver:self
+                      selector:@selector(audioReadyForPlayback:)
+                          name:kTTSAudioReadyForPlaybackNotification
+                        object:nil];
     const auto& selectorsForTTSNotifications =
         [[self class] selectorsForTTSNotificationNames];
     for (const auto& selectorForNotification : selectorsForTTSNotifications) {
-      [defaultCenter addObserver:self
+      [defaultCenter addObserver:self.buttonUpdater
                         selector:selectorForNotification.second
                             name:selectorForNotification.first
                           object:nil];
@@ -1407,10 +1411,13 @@ using ios::material::TimingFunction;
 
 - (void)stopObservingTTSNotifications {
   NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
+  [defaultCenter removeObserver:self
+                           name:kTTSAudioReadyForPlaybackNotification
+                         object:nil];
   const auto& selectorsForTTSNotifications =
       [[self class] selectorsForTTSNotificationNames];
   for (const auto& selectorForNotification : selectorsForTTSNotifications) {
-    [defaultCenter removeObserver:self
+    [defaultCenter removeObserver:self.buttonUpdater
                              name:selectorForNotification.first
                            object:nil];
   }
@@ -1425,40 +1432,10 @@ using ios::material::TimingFunction;
   }
 }
 
-- (void)updateIsTTSPlaying:(NSNotification*)notify {
-  BOOL wasTTSPlaying = _isTTSPlaying;
-  _isTTSPlaying =
-      [notify.name isEqualToString:kTTSWillStartPlayingNotification];
-  if (wasTTSPlaying != _isTTSPlaying && IsIPadIdiom()) {
-    [self setUpButton:_voiceSearchButton
-           withImageEnum:(_isTTSPlaying
-                              ? WebToolbarButtonNameTTS
-                              : WebToolbarButtonNameVoice)forInitialState
-                        :UIControlStateNormal
-        hasDisabledImage:NO
-           synchronously:NO];
-  }
-  [self updateToolbarState];
-  if (_isTTSPlaying && UIAccessibilityIsVoiceOverRunning()) {
-    // Moving VoiceOver without RunBlockAfterDelay results in VoiceOver not
-    // staying on |_voiceSearchButton| and instead moving to views inside the
-    // UIWebView.
-    // Use |voiceSearchButton| in the block to prevent |self| from being
-    // retained.
-    UIButton* voiceSearchButton = _voiceSearchButton;
-    RunBlockAfterDelay(0.0, ^{
-      UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification,
-                                      voiceSearchButton);
-    });
-  }
-}
-
 + (const std::map<__strong NSString*, SEL>&)selectorsForTTSNotificationNames {
   static std::map<__strong NSString*, SEL> selectorsForNotifications;
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
-    selectorsForNotifications[kTTSAudioReadyForPlaybackNotification] =
-        @selector(audioReadyForPlayback:);
     selectorsForNotifications[kTTSWillStartPlayingNotification] =
         @selector(updateIsTTSPlaying:);
     selectorsForNotifications[kTTSDidStopPlayingNotification] =
@@ -1467,11 +1444,6 @@ using ios::material::TimingFunction;
         @selector(moveVoiceOverToVoiceSearchButton);
   });
   return selectorsForNotifications;
-}
-
-- (void)moveVoiceOverToVoiceSearchButton {
-  UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification,
-                                  _voiceSearchButton);
 }
 
 #pragma mark Omnibox Animation.

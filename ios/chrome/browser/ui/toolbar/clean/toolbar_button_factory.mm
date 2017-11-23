@@ -13,6 +13,8 @@
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
+#import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#import "ios/public/provider/chrome/browser/images/branded_image_provider.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -206,6 +208,30 @@ const int styleCount = 2;
                      imageForDisabledState:nil];
   starButton.accessibilityLabel = l10n_util::GetNSString(IDS_TOOLTIP_STAR);
   return starButton;
+}
+
+- (NSArray<UIImage*>*)voiceSearchImages {
+  // The voice search images can be overridden by the branded image provider.
+  int imageID;
+  if (ios::GetChromeBrowserProvider()
+          ->GetBrandedImageProvider()
+          ->GetToolbarVoiceSearchButtonImageId(&imageID)) {
+    return [NSArray
+        arrayWithObjects:NativeImage(imageID), NativeImage(imageID), nil];
+  }
+  int voiceSearchImages[styleCount][TOOLBAR_STATE_COUNT] =
+      TOOLBAR_IDR_TWO_STATE(VOICE);
+  return [NSArray
+      arrayWithObjects:NativeImage(voiceSearchImages[self.style][DEFAULT]),
+                       NativeImage(voiceSearchImages[self.style][PRESSED]),
+                       nil];
+}
+
+- (NSArray<UIImage*>*)TTSImages {
+  int TTSImages[styleCount][TOOLBAR_STATE_COUNT] = TOOLBAR_IDR_TWO_STATE(TTS);
+  return [NSArray arrayWithObjects:NativeImage(TTSImages[self.style][DEFAULT]),
+                                   NativeImage(TTSImages[self.style][PRESSED]),
+                                   nil];
 }
 
 @end
