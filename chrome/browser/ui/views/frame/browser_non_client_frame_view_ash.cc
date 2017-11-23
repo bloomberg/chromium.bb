@@ -425,7 +425,7 @@ void BrowserNonClientFrameViewAsh::UpdateProfileIcons() {
   if (!browser->is_type_tabbed() && !browser->is_app())
     return;
   if ((browser->profile()->GetProfileType() == Profile::INCOGNITO_PROFILE) ||
-      chrome::MultiUserWindowManager::ShouldShowAvatar(
+      MultiUserWindowManager::ShouldShowAvatar(
           browser_view()->GetNativeWindow())) {
     UpdateProfileIndicatorIcon();
   }

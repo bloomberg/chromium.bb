@@ -408,8 +408,8 @@ ExtensionFunction::ResponseAction FileManagerPrivateGetProfilesFunction::Run() {
 
   // Obtains the display profile ID.
   AppWindow* const app_window = GetCurrentAppWindow(this);
-  chrome::MultiUserWindowManager* const window_manager =
-      chrome::MultiUserWindowManager::GetInstance();
+  MultiUserWindowManager* const window_manager =
+      MultiUserWindowManager::GetInstance();
   const AccountId current_profile_id = multi_user_util::GetAccountIdFromProfile(
       Profile::FromBrowserContext(browser_context()));
   const AccountId display_profile_id =

@@ -34,8 +34,6 @@ namespace ash {
 class MultiUserWindowManagerChromeOSTest;
 }  // namespace ash
 
-namespace chrome {
-
 class AppObserver;
 class UserSwitchAnimatorChromeOS;
 
@@ -250,7 +248,5 @@ class MultiUserWindowManagerChromeOS
 
   DISALLOW_COPY_AND_ASSIGN(MultiUserWindowManagerChromeOS);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_ASH_MULTI_USER_MULTI_USER_WINDOW_MANAGER_CHROMEOS_H_

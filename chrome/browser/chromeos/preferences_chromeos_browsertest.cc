@@ -136,11 +136,11 @@ class PreferencesTest : public LoginManagerTest {
 
   void DisableAnimations() {
     // Disable animations for user transitions.
-    chrome::MultiUserWindowManagerChromeOS* manager =
-        static_cast<chrome::MultiUserWindowManagerChromeOS*>(
-            chrome::MultiUserWindowManager::GetInstance());
+    MultiUserWindowManagerChromeOS* manager =
+        static_cast<MultiUserWindowManagerChromeOS*>(
+            MultiUserWindowManager::GetInstance());
     manager->SetAnimationSpeedForTest(
-        chrome::MultiUserWindowManagerChromeOS::ANIMATION_SPEED_DISABLED);
+        MultiUserWindowManagerChromeOS::ANIMATION_SPEED_DISABLED);
   }
 
   std::vector<AccountId> test_users_;

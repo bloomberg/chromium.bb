@@ -121,8 +121,6 @@ bool HasSystemModalTransientChildWindow(aura::Window* window) {
 
 }  // namespace
 
-namespace chrome {
-
 // A class to temporarily change the animation properties for a window.
 class AnimationSetter {
  public:
@@ -236,7 +234,7 @@ void MultiUserWindowManagerChromeOS::Init() {
 
   // The BrowserListObserver would have been better to use then the old
   // notification system, but that observer fires before the window got created.
-  registrar_.Add(this, NOTIFICATION_BROWSER_WINDOW_READY,
+  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_WINDOW_READY,
                  content::NotificationService::AllSources());
 
   // Add an app window observer & all already running apps.
@@ -487,7 +485,7 @@ void MultiUserWindowManagerChromeOS::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK_EQ(NOTIFICATION_BROWSER_WINDOW_READY, type);
+  DCHECK_EQ(chrome::NOTIFICATION_BROWSER_WINDOW_READY, type);
   AddBrowserWindow(content::Source<Browser>(source).ptr());
 }
 
@@ -738,5 +736,3 @@ int MultiUserWindowManagerChromeOS::GetAdjustedAnimationTimeInMS(
              ? default_time_in_ms
              : (animation_speed_ == ANIMATION_SPEED_FAST ? 10 : 0);
 }
-
-}  // namespace chrome

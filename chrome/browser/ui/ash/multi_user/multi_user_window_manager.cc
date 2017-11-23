@@ -15,7 +15,6 @@
 #include "components/user_manager/user_info.h"
 #include "components/user_manager/user_manager.h"
 
-namespace chrome {
 namespace {
 MultiUserWindowManager* g_instance = nullptr;
 }  // namespace
@@ -76,5 +75,3 @@ void MultiUserWindowManager::SetInstanceForTest(
     DeleteInstance();
   g_instance = instance;
 }
-
-}  // namespace chrome

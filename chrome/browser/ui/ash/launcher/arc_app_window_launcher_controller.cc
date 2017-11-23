@@ -220,7 +220,7 @@ void ArcAppWindowLauncherController::OnWindowVisibilityChanged(
   // Attach window to multi-user manager now to let it manage visibility state
   // of the ARC window correctly.
   if (GetWindowTaskId(window) > 0) {
-    chrome::MultiUserWindowManager::GetInstance()->SetWindowOwner(
+    MultiUserWindowManager::GetInstance()->SetWindowOwner(
         window,
         user_manager::UserManager::Get()->GetPrimaryUser()->GetAccountId());
   }

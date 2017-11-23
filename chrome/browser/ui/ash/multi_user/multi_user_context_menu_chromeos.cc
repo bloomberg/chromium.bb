@@ -67,8 +67,7 @@ void OnAcceptTeleportWarning(const AccountId& account_id,
   ash::MultiProfileUMA::RecordTeleportAction(
       ash::MultiProfileUMA::TELEPORT_WINDOW_CAPTION_MENU);
 
-  chrome::MultiUserWindowManager::GetInstance()->ShowWindowForUser(window_,
-                                                                   account_id);
+  MultiUserWindowManager::GetInstance()->ShowWindowForUser(window_, account_id);
 }
 
 }  // namespace
@@ -81,8 +80,7 @@ std::unique_ptr<ui::MenuModel> CreateMultiUserContextMenu(
 
   if (logged_in_users.size() > 1u) {
     // If this window is not owned, we don't show the menu addition.
-    chrome::MultiUserWindowManager* manager =
-        chrome::MultiUserWindowManager::GetInstance();
+    MultiUserWindowManager* manager = MultiUserWindowManager::GetInstance();
     const AccountId& account_id = manager->GetWindowOwner(window);
     if (!account_id.is_valid() || !window)
       return model;

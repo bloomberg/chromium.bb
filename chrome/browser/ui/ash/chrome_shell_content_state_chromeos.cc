@@ -25,11 +25,11 @@ content::BrowserContext* ChromeShellContentState::GetBrowserContextForWindow(
     aura::Window* window) {
   DCHECK(window);
   // Speculative fix for multi-profile crash. crbug.com/661821
-  if (!chrome::MultiUserWindowManager::GetInstance())
+  if (!MultiUserWindowManager::GetInstance())
     return nullptr;
 
   const AccountId& account_id =
-      chrome::MultiUserWindowManager::GetInstance()->GetWindowOwner(window);
+      MultiUserWindowManager::GetInstance()->GetWindowOwner(window);
   return account_id.is_valid()
              ? multi_user_util::GetProfileFromAccountId(account_id)
              : nullptr;
@@ -40,12 +40,11 @@ ChromeShellContentState::GetUserPresentingBrowserContextForWindow(
     aura::Window* window) {
   DCHECK(window);
   // Speculative fix for multi-profile crash. crbug.com/661821
-  if (!chrome::MultiUserWindowManager::GetInstance())
+  if (!MultiUserWindowManager::GetInstance())
     return nullptr;
 
   const AccountId& account_id =
-      chrome::MultiUserWindowManager::GetInstance()->GetUserPresentingWindow(
-          window);
+      MultiUserWindowManager::GetInstance()->GetUserPresentingWindow(window);
   return account_id.is_valid()
              ? multi_user_util::GetProfileFromAccountId(account_id)
              : nullptr;

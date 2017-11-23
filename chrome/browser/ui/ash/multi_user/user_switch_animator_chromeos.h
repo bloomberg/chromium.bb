@@ -14,8 +14,6 @@
 #include "components/signin/core/account_id/account_id.h"
 #include "ui/aura/window.h"
 
-namespace chrome {
-
 class MultiUserWindowManagerChromeOS;
 
 // A class which performs transitions animations between users. Upon creation,
@@ -121,7 +119,5 @@ class UserSwitchAnimatorChromeOS {
 
   DISALLOW_COPY_AND_ASSIGN(UserSwitchAnimatorChromeOS);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_ASH_MULTI_USER_USER_SWITCH_ANIMATOR_CHROMEOS_H_

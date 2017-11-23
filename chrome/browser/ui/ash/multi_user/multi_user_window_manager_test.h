@@ -16,7 +16,7 @@ class Browser;
 // from the system upon creation / destruction.
 // The creation function gets a |browser| which is shown on |desktop_owner|'s
 // desktop.
-class TestMultiUserWindowManager : public chrome::MultiUserWindowManager {
+class TestMultiUserWindowManager : public MultiUserWindowManager {
  public:
   TestMultiUserWindowManager(Browser* visiting_browser,
                              const AccountId& desktop_owner);
