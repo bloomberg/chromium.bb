@@ -22,8 +22,18 @@
 
 #define WARP_GM_NEIGHBORS_WITH_OBMC 0
 
-#define AOM_LEFT_TOP_MARGIN_SCALED \
-  ((AOM_BORDER_IN_PIXELS - AOM_INTERP_EXTEND) << SCALE_SUBPEL_BITS)
+// Work out how many pixels off the edge of a reference frame we're allowed
+// to go when forming an inter prediction.
+// The outermost row/col of each referernce frame is extended by
+// (AOM_BORDER_IN_PIXELS >> subsampling) pixels, but we need to keep
+// at least AOM_INTERP_EXTEND pixels within that to account for filtering.
+//
+// We have to break this up into two macros to keep both clang-format and
+// tools/lint-hunks.py happy.
+#define AOM_LEFT_TOP_MARGIN_PX(subsampling) \
+  ((AOM_BORDER_IN_PIXELS >> subsampling) - AOM_INTERP_EXTEND)
+#define AOM_LEFT_TOP_MARGIN_SCALED(subsampling) \
+  (AOM_LEFT_TOP_MARGIN_PX(subsampling) << SCALE_SUBPEL_BITS)
 
 #ifdef __cplusplus
 extern "C" {

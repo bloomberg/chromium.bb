@@ -1106,8 +1106,8 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
             pos_x += SCALE_EXTRA_OFF;
             pos_y += SCALE_EXTRA_OFF;
 
-            const int top = -AOM_LEFT_TOP_MARGIN_SCALED;
-            const int left = -AOM_LEFT_TOP_MARGIN_SCALED;
+            const int top = -AOM_LEFT_TOP_MARGIN_SCALED(ssy);
+            const int left = -AOM_LEFT_TOP_MARGIN_SCALED(ssx);
             const int bottom = (pre_buf->height + AOM_INTERP_EXTEND)
                                << SCALE_SUBPEL_BITS;
             const int right = (pre_buf->width + AOM_INTERP_EXTEND)
@@ -1220,8 +1220,8 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
 
         // Clamp against the reference frame borders, with enough extension
         // that we don't force the reference block to be partially onscreen.
-        const int top = -AOM_LEFT_TOP_MARGIN_SCALED;
-        const int left = -AOM_LEFT_TOP_MARGIN_SCALED;
+        const int top = -AOM_LEFT_TOP_MARGIN_SCALED(ssy);
+        const int left = -AOM_LEFT_TOP_MARGIN_SCALED(ssx);
         const int bottom = (pre_buf->height + AOM_INTERP_EXTEND)
                            << SCALE_SUBPEL_BITS;
         const int right = (pre_buf->width + AOM_INTERP_EXTEND)
@@ -2550,8 +2550,8 @@ static void build_inter_predictors_single_buf(MACROBLOCKD *xd, int plane,
     pos_x += SCALE_EXTRA_OFF;
     pos_y += SCALE_EXTRA_OFF;
 
-    const int top = -AOM_LEFT_TOP_MARGIN_SCALED;
-    const int left = -AOM_LEFT_TOP_MARGIN_SCALED;
+    const int top = -AOM_LEFT_TOP_MARGIN_SCALED(ssy);
+    const int left = -AOM_LEFT_TOP_MARGIN_SCALED(ssx);
     const int bottom = (pre_buf->height + AOM_INTERP_EXTEND)
                        << SCALE_SUBPEL_BITS;
     const int right = (pre_buf->width + AOM_INTERP_EXTEND) << SCALE_SUBPEL_BITS;
