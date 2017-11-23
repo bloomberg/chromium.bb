@@ -25,7 +25,8 @@ class WindowController;
 class ChromeExtensionFunctionDetails {
  public:
   // Constructs a new ChromeExtensionFunctionDetails instance for |function|.
-  // This instance does not own |function| and must outlive it.
+  // This instance does not own |function|. |function| must outlive this
+  // instance.
   explicit ChromeExtensionFunctionDetails(UIThreadExtensionFunction* function);
   ~ChromeExtensionFunctionDetails();
 
