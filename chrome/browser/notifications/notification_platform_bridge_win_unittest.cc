@@ -17,6 +17,7 @@
 #include "base/win/scoped_hstring.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/notifications/mock_notification_image_retainer.h"
+#include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/notification_template_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/message_center/notification.h"
@@ -29,6 +30,7 @@ using message_center::Notification;
 
 namespace {
 
+const char kEncodedId[] = "0|Default|0|https://example.com/|notification_id";
 const char kOrigin[] = "https://www.google.com/";
 const char kNotificationId[] = "id";
 const char kProfileId[] = "Default";
@@ -52,8 +54,8 @@ class NotificationPlatformBridgeWinTest : public testing::Test {
         message_center::RichNotificationData(), nullptr /* delegate */);
     MockNotificationImageRetainer image_retainer;
     std::unique_ptr<NotificationTemplateBuilder> builder =
-        NotificationTemplateBuilder::Build(&image_retainer, kProfileId,
-                                           *notification);
+        NotificationTemplateBuilder::Build(&image_retainer, kEncodedId,
+                                           kProfileId, *notification);
 
     return notification_platform_bridge_win_->GetToastNotificationForTesting(
         *notification, *builder, toast);
@@ -68,6 +70,55 @@ class NotificationPlatformBridgeWinTest : public testing::Test {
  private:
   DISALLOW_COPY_AND_ASSIGN(NotificationPlatformBridgeWinTest);
 };
+
+TEST_F(NotificationPlatformBridgeWinTest, EncodeDecode) {
+  NotificationCommon::Type notification_type = NotificationCommon::PERSISTENT;
+  std::string notification_id = "Foo";
+  std::string profile_id = "Bar";
+  bool incognito = false;
+  GURL origin_url("http://www.google.com/");
+
+  std::string encoded = notification_platform_bridge_win_->EncodeTemplateId(
+      notification_type, notification_id, profile_id, incognito, origin_url);
+
+  NotificationCommon::Type decoded_notification_type;
+  std::string decoded_notification_id;
+  std::string decoded_profile_id;
+  bool decoded_incognito;
+  GURL decoded_origin_url;
+
+  // Empty string.
+  EXPECT_FALSE(notification_platform_bridge_win_->DecodeTemplateId(
+      "", &decoded_notification_type, &decoded_notification_id,
+      &decoded_profile_id, &decoded_incognito, &decoded_origin_url));
+
+  // Actual data.
+  EXPECT_TRUE(notification_platform_bridge_win_->DecodeTemplateId(
+      encoded, &decoded_notification_type, &decoded_notification_id,
+      &decoded_profile_id, &decoded_incognito, &decoded_origin_url));
+
+  EXPECT_EQ(decoded_notification_type, notification_type);
+  EXPECT_EQ(decoded_notification_id, notification_id);
+  EXPECT_EQ(decoded_profile_id, profile_id);
+  EXPECT_EQ(decoded_incognito, incognito);
+  EXPECT_EQ(decoded_origin_url, origin_url);
+
+  // Throw in a few extra separators (becomes part of the notification id).
+  std::string extra = "|Extra|Data|";
+  encoded += extra;
+  // Update the expected output as well.
+  notification_id += extra;
+
+  EXPECT_TRUE(notification_platform_bridge_win_->DecodeTemplateId(
+      encoded, &decoded_notification_type, &decoded_notification_id,
+      &decoded_profile_id, &decoded_incognito, &decoded_origin_url));
+
+  EXPECT_EQ(decoded_notification_type, notification_type);
+  EXPECT_EQ(decoded_notification_id, notification_id);
+  EXPECT_EQ(decoded_profile_id, profile_id);
+  EXPECT_EQ(decoded_incognito, incognito);
+  EXPECT_EQ(decoded_origin_url, origin_url);
+}
 
 TEST_F(NotificationPlatformBridgeWinTest, GroupAndTag) {
   // This test requires WinRT core functions, which are not available in

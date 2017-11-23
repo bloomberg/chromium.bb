@@ -9,8 +9,6 @@
 #include <wrl/event.h>
 #include <wrl/wrappers/corewrappers.h>
 #include <memory>
-#include <set>
-#include <unordered_map>
 #include <utility>
 
 #include "base/bind.h"
@@ -43,32 +41,6 @@ namespace winxml = ABI::Windows::Data::Xml;
 
 using base::win::ScopedHString;
 using message_center::RichNotificationData;
-
-// Hold related data for a notification.
-struct NotificationData {
-  NotificationData(NotificationCommon::Type notification_type,
-                   const std::string& notification_id,
-                   const std::string& profile_id,
-                   bool incognito,
-                   const GURL& origin_url)
-      : notification_type(notification_type),
-        notification_id(notification_id),
-        profile_id(profile_id),
-        incognito(incognito),
-        origin_url(origin_url) {}
-
-  // Same parameters used by NotificationPlatformBridge::Display().
-  NotificationCommon::Type notification_type;
-  const std::string notification_id;
-  const std::string profile_id;
-  const bool incognito;
-
-  // A copy of the origin_url from the underlying message_center::Notification.
-  // Used to pass back to NotificationDisplayService.
-  const GURL origin_url;
-
-  DISALLOW_COPY_AND_ASSIGN(NotificationData);
-};
 
 namespace {
 
@@ -114,7 +86,8 @@ void ForwardNotificationOperationOnUiThread(
     const GURL& origin,
     const std::string& notification_id,
     const std::string& profile_id,
-    bool incognito) {
+    bool incognito,
+    const base::Optional<bool>& by_user) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!g_browser_process)
     return;
@@ -123,19 +96,7 @@ void ForwardNotificationOperationOnUiThread(
       profile_id, incognito,
       base::Bind(&ProfileLoadedCallback, operation, notification_type, origin,
                  notification_id, base::nullopt /*action_index*/,
-                 base::nullopt /*reply*/, base::nullopt /*by_user*/));
-}
-
-void ForwardNotificationOperation(NotificationData* data,
-                                  NotificationCommon::Operation operation) {
-  if (!data)
-    return;
-
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&ForwardNotificationOperationOnUiThread, operation,
-                 data->notification_type, data->origin_url,
-                 data->notification_id, data->profile_id, data->incognito));
+                 base::nullopt /*reply*/, by_user));
 }
 
 }  // namespace
@@ -273,23 +234,17 @@ class NotificationPlatformBridgeWinImpl
     // crbug.com/761039.
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
-    NotificationData* data = FindNotificationData(
-        notification->id(), profile_id, notification->origin_url(), incognito);
-    if (!data) {
-      data = new NotificationData(notification_type, notification->id(),
-                                  profile_id, incognito,
-                                  notification->origin_url());
-      notifications_.emplace(data, base::WrapUnique(data));
-    }
-
     if (!notifier_.Get() && FAILED(InitializeToastNotifier())) {
       LOG(ERROR) << "Unable to initialize toast notifier";
       return;
     }
 
+    std::string encoded_id = NotificationPlatformBridgeWin::EncodeTemplateId(
+        notification_type, notification->id(), profile_id, incognito,
+        notification->origin_url());
     std::unique_ptr<NotificationTemplateBuilder> notification_template =
-        NotificationTemplateBuilder::Build(image_retainer_.get(), profile_id,
-                                           *notification);
+        NotificationTemplateBuilder::Build(image_retainer_.get(), encoded_id,
+                                           profile_id, *notification);
     mswr::ComPtr<winui::Notifications::IToastNotification> toast;
     HRESULT hr =
         GetToastNotification(*notification, *notification_template, &toast);
@@ -351,60 +306,127 @@ class NotificationPlatformBridgeWinImpl
 
   ~NotificationPlatformBridgeWinImpl() = default;
 
-  HRESULT OnActivated(winui::Notifications::IToastNotification* notification,
-                      IInspectable* /* inspectable */) {
-    // TODO(chengx): We need to write profile id and incognito information into
-    // the toast, so that we can retrieve them from |notification| here.
-    std::string notification_id = "";
-    std::string profile_id = "";
-    bool incognito = false;
+  std::string GetNotificationId(
+      winui::Notifications::IToastNotification* notification) {
+    mswr::ComPtr<winxml::Dom::IXmlDocument> document;
+    HRESULT hr = notification->get_Content(&document);
+    if (FAILED(hr)) {
+      LOG(ERROR) << "Failed to get XML document";
+      return std::string();
+    }
+
+    ScopedHString tag = ScopedHString::Create(kNotificationToastElement);
+    mswr::ComPtr<winxml::Dom::IXmlNodeList> elements;
+    hr = document->GetElementsByTagName(tag.get(), &elements);
+    if (FAILED(hr)) {
+      LOG(ERROR) << "Failed to get <toast> elements from document";
+      return std::string();
+    }
+
+    UINT32 length;
+    hr = elements->get_Length(&length);
+    if (length == 0) {
+      LOG(ERROR) << "No <toast> elements in document.";
+      return std::string();
+    }
+
+    mswr::ComPtr<winxml::Dom::IXmlNode> node;
+    hr = elements->Item(0, &node);
+    if (FAILED(hr)) {
+      LOG(ERROR) << "Failed to get first <toast> element";
+      return std::string();
+    }
+
+    mswr::ComPtr<winxml::Dom::IXmlNamedNodeMap> attributes;
+    hr = node->get_Attributes(&attributes);
+    if (FAILED(hr)) {
+      LOG(ERROR) << "Failed to get attributes of <toast>";
+      return std::string();
+    }
+
+    mswr::ComPtr<winxml::Dom::IXmlNode> leaf;
+    ScopedHString id = ScopedHString::Create(kNotificationLaunchAttribute);
+    hr = attributes->GetNamedItem(id.get(), &leaf);
+    if (FAILED(hr)) {
+      LOG(ERROR) << "Failed to get launch attribute of <toast>";
+      return std::string();
+    }
+
+    mswr::ComPtr<winxml::Dom::IXmlNode> child;
+    hr = leaf->get_FirstChild(&child);
+    if (FAILED(hr)) {
+      LOG(ERROR) << "Failed to get content of launch attribute";
+      return std::string();
+    }
+
+    mswr::ComPtr<IInspectable> inspectable;
+    hr = child->get_NodeValue(&inspectable);
+    if (FAILED(hr)) {
+      LOG(ERROR) << "Failed to get node value of launch attribute";
+      return std::string();
+    }
+
+    mswr::ComPtr<winfoundtn::IPropertyValue> property_value;
+    hr = inspectable.As<winfoundtn::IPropertyValue>(&property_value);
+    if (FAILED(hr)) {
+      LOG(ERROR) << "Failed to convert node value of launch attribute";
+      return std::string();
+    }
+
+    HSTRING value_hstring;
+    hr = property_value->GetString(&value_hstring);
+    if (FAILED(hr)) {
+      LOG(ERROR) << "Failed to get string for launch attribute";
+      return std::string();
+    }
+
+    ScopedHString value(value_hstring);
+    return value.GetAsUTF8();
+  }
+
+  void HandleEvent(winui::Notifications::IToastNotification* notification,
+                   NotificationCommon::Operation operation,
+                   const base::Optional<bool>& user_cancelled) {
+    NotificationCommon::Type notification_type;
+    std::string notification_id;
+    std::string profile_id;
+    bool incognito;
     GURL origin_url;
 
-    NotificationData* data = FindNotificationData(notification_id, profile_id,
-                                                  origin_url, incognito);
-    if (data)
-      ForwardNotificationOperation(data, NotificationCommon::CLICK);
+    std::string toast_id = GetNotificationId(notification);
+    if (!NotificationPlatformBridgeWin::DecodeTemplateId(
+            toast_id, &notification_type, &notification_id, &profile_id,
+            &incognito, &origin_url)) {
+      LOG(ERROR) << "Failed to decode template ID for operation " << operation;
+      return;
+    }
 
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::Bind(&ForwardNotificationOperationOnUiThread, operation,
+                   notification_type, origin_url, notification_id, profile_id,
+                   incognito, user_cancelled));
+  }
+
+  HRESULT OnActivated(winui::Notifications::IToastNotification* notification,
+                      IInspectable* /* inspectable */) {
+    HandleEvent(notification, NotificationCommon::CLICK,
+                /*user_cancelled=*/base::nullopt);
     return S_OK;
   }
 
   HRESULT OnDismissed(
       winui::Notifications::IToastNotification* notification,
-      winui::Notifications::IToastDismissedEventArgs* /* args */) {
-    // TODO(chengx): We need to write profile_id and incognito information into
-    // the toast, so that we can retrieve them from |notification| here.
-    std::string notification_id = "";
-    std::string profile_id = "";
-    bool incognito = false;
-    GURL origin_url;
-
-    NotificationData* data = FindNotificationData(notification_id, profile_id,
-                                                  origin_url, incognito);
-    if (data) {
-      ForwardNotificationOperation(data, NotificationCommon::CLOSE);
-      notifications_.erase(data);
+      winui::Notifications::IToastDismissedEventArgs* arguments) {
+    winui::Notifications::ToastDismissalReason reason;
+    HRESULT hr = arguments->get_Reason(&reason);
+    bool user_cancelled = false;
+    if (SUCCEEDED(hr) &&
+        reason == winui::Notifications::ToastDismissalReason_UserCanceled) {
+      user_cancelled = true;
     }
-
+    HandleEvent(notification, NotificationCommon::CLOSE, user_cancelled);
     return S_OK;
-  }
-
-  // Returns a notification with properties |notification_id|, |profile_id|,
-  // |origin_url| and |incognito| if found in notifications_. Returns nullptr if
-  // not found.
-  NotificationData* FindNotificationData(const std::string& notification_id,
-                                         const std::string& profile_id,
-                                         const GURL& origin_url,
-                                         bool incognito) {
-    for (const auto& item : notifications_) {
-      NotificationData* data = item.first;
-      if (data->notification_id == notification_id &&
-          data->profile_id == profile_id && data->origin_url == origin_url &&
-          data->incognito == incognito) {
-        return data;
-      }
-    }
-
-    return nullptr;
   }
 
   HRESULT InitializeToastNotifier() {
@@ -427,14 +449,6 @@ class NotificationPlatformBridgeWinImpl
       LOG(ERROR) << "Unable to create the ToastNotifier";
     return hr;
   }
-
-  // Stores the set of Notifications in a session.
-  // A std::set<std::unique_ptr<T>> doesn't work well because e.g.,
-  // std::set::erase(T) would require a std::unique_ptr<T> argument, so the data
-  // would get double-destructed.
-  template <typename T>
-  using UnorderedUniqueSet = std::unordered_map<T*, std::unique_ptr<T>>;
-  UnorderedUniqueSet<NotificationData> notifications_;
 
   // Whether the required functions from combase.dll have been loaded.
   bool com_functions_initialized_;
@@ -502,6 +516,58 @@ void NotificationPlatformBridgeWin::SetReadyCallback(
   PostTaskToTaskRunnerThread(
       base::BindOnce(&NotificationPlatformBridgeWinImpl::SetReadyCallback,
                      impl_, base::Passed(&callback)));
+}
+
+// static
+bool NotificationPlatformBridgeWin::DecodeTemplateId(
+    const std::string& encoded,
+    NotificationCommon::Type* notification_type,
+    std::string* notification_id,
+    std::string* profile_id,
+    bool* incognito,
+    GURL* origin_url) {
+  const char kDelimiter[] = "|";
+  const int kMinVectorSize = 5;
+  std::vector<std::string> split = base::SplitString(
+      encoded, kDelimiter, base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+  if (split.size() < kMinVectorSize)
+    return false;
+
+  int type = -1;
+  if (!base::StringToInt(split[0], &type))
+    return false;
+  if (type < 0 || type > NotificationCommon::TYPE_MAX)
+    return false;
+  *notification_type = static_cast<NotificationCommon::Type>(type);
+
+  *profile_id = split[1];
+  *incognito = split[2] == "1" ? true : false;
+  *origin_url = GURL(split[3]);
+
+  notification_id->clear();
+  // Notification IDs is the rest of the string (delimeters not stripped off).
+  for (size_t i = kMinVectorSize - 1; i < split.size(); ++i) {
+    if (i > kMinVectorSize - 1)
+      *notification_id += kDelimiter;
+    *notification_id += split[i];
+  }
+
+  return true;
+}
+
+// static
+std::string NotificationPlatformBridgeWin::EncodeTemplateId(
+    NotificationCommon::Type notification_type,
+    const std::string& notification_id,
+    const std::string& profile_id,
+    bool incognito,
+    const GURL& origin_url) {
+  // The pipe was chosen as delimeter because it is invalid for directory paths
+  // and unsafe for origins -- and should therefore be encoded (as per
+  // http://www.ietf.org/rfc/rfc1738.txt).
+  return base::StringPrintf("%d|%s|%d|%s|%s", notification_type,
+                            profile_id.c_str(), incognito,
+                            origin_url.spec().c_str(), notification_id.c_str());
 }
 
 void NotificationPlatformBridgeWin::PostTaskToTaskRunnerThread(
