@@ -2748,10 +2748,8 @@ public class Tab
 
         int constraints = getBrowserControlsStateConstraints();
 
-        // TODO(peconn): Figure out why updating without animations breaks fullscreen activity.
-        boolean animate = constraints != BrowserControlsState.HIDDEN
-                || ChromeFeatureList.isEnabled(ChromeFeatureList.FULLSCREEN_ACTIVITY);
-        updateBrowserControlsState(constraints, BrowserControlsState.BOTH, animate);
+        updateBrowserControlsState(constraints, BrowserControlsState.BOTH,
+                constraints != BrowserControlsState.HIDDEN);
 
         if (getContentViewCore() != null && mFullscreenManager != null) {
             getContentViewCore().updateMultiTouchZoomSupport(
