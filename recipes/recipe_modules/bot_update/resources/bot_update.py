@@ -620,11 +620,7 @@ def _git_checkout(sln, sln_dir, revisions, shallow, refs, git_cache_dir,
   deadline = time.time() + 60
   tries = 0
   while True:
-    # TODO(tikuta): remove env for GIT_TRACE after fixing crbug.com/749709
-    env = {}
-    if url == CHROMIUM_SRC_URL or url + '.git' == CHROMIUM_SRC_URL:
-      env = {'GIT_TRACE': 'true'}
-    git(*populate_cmd, env=env)
+    git(*populate_cmd)
     mirror_dir = git(
         'cache', 'exists', '--quiet',
         '--cache-dir', git_cache_dir, url).strip()
@@ -642,10 +638,10 @@ def _git_checkout(sln, sln_dir, revisions, shallow, refs, git_cache_dir,
             sln_dir)
       else:
         git('remote', 'set-url', 'origin', mirror_dir, cwd=sln_dir)
-        git('fetch', 'origin', cwd=sln_dir, env=env)
+        git('fetch', 'origin', cwd=sln_dir)
       for ref in refs:
         refspec = '%s:%s' % (ref, ref.lstrip('+'))
-        git('fetch', 'origin', refspec, cwd=sln_dir, env=env)
+        git('fetch', 'origin', refspec, cwd=sln_dir)
 
       # Windows sometimes has trouble deleting files.
       # This can make git commands that rely on locks fail.
@@ -741,11 +737,7 @@ def apply_gerrit_ref(gerrit_repo, gerrit_ref, root, gerrit_reset,
   # command will do so. See http://crbug.com/692067.
   git('reset', '--hard', cwd=root)
   try:
-    # TODO(tikuta): remove env for GIT_TRACE after fixing crbug.com/749709
-    env = {}
-    if gerrit_repo == CHROMIUM_SRC_URL or gerrit_repo + '.git' == CHROMIUM_SRC_URL:
-      env = {'GIT_TRACE': 'true'}
-    git('fetch', gerrit_repo, gerrit_ref, cwd=root, env=env)
+    git('fetch', gerrit_repo, gerrit_ref, cwd=root)
     git('checkout', 'FETCH_HEAD', cwd=root)
 
     if gerrit_rebase_patch_ref:
