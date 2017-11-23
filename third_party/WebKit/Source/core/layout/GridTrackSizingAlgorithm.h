@@ -38,6 +38,7 @@ class GridTrack {
   void SetBaseSize(LayoutUnit);
 
   LayoutUnit GrowthLimit() const;
+  bool GrowthLimitIsInfinite() const { return growth_limit_ == kInfinity; }
   void SetGrowthLimit(LayoutUnit);
 
   bool InfiniteGrowthPotential() const;
@@ -59,7 +60,6 @@ class GridTrack {
   void SetGrowthLimitCap(Optional<LayoutUnit>);
 
  private:
-  bool GrowthLimitIsInfinite() const { return growth_limit_ == kInfinity; }
   bool IsGrowthLimitBiggerThanBaseSize() const;
   void EnsureGrowthLimitIsBiggerThanBaseSize();
 

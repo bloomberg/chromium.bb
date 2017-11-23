@@ -124,6 +124,8 @@ class GridTrackSize {
         MaxTrackBreadth().length().IsMinContent();
     max_track_breadth_is_auto_ =
         MaxTrackBreadth().IsLength() && MaxTrackBreadth().length().IsAuto();
+    max_track_breadth_is_fixed_ = MaxTrackBreadth().IsLength() &&
+                                  MaxTrackBreadth().length().IsSpecified();
 
     min_track_breadth_is_intrinsic_ = min_track_breadth_is_max_content_ ||
                                       min_track_breadth_is_min_content_ ||
@@ -176,6 +178,7 @@ class GridTrackSize {
     return (min_track_breadth_is_min_content_ || min_track_breadth_is_auto_) &&
            max_track_breadth_is_intrinsic_;
   }
+  bool HasFixedMaxTrackBreadth() const { return max_track_breadth_is_fixed_; }
 
  private:
   GridTrackSizeType type_;
@@ -191,6 +194,7 @@ class GridTrackSize {
   bool max_track_breadth_is_min_content_ : 1;
   bool min_track_breadth_is_intrinsic_ : 1;
   bool max_track_breadth_is_intrinsic_ : 1;
+  bool max_track_breadth_is_fixed_ : 1;
 };
 
 }  // namespace blink
