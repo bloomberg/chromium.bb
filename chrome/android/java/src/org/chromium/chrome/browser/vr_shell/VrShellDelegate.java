@@ -174,7 +174,7 @@ public class VrShellDelegate
     // presentation experience.
     private boolean mVrBrowserUsed;
 
-    private boolean mDensityChanged;
+    private int mExpectedDensityChange;
 
     // Gets run when the user exits VR mode by clicking the 'x' button or system UI back button.
     private Runnable mCloseButtonListener;
@@ -415,19 +415,20 @@ public class VrShellDelegate
      * @return Whether VrShellDelegate handled the density change. If the density change is
      * unhandled, the Activity should be recreated in order to handle the change.
      */
-    public static boolean onDensityChanged(float oldDpi, float newDpi) {
-        if (DEBUG_LOGS) Log.i(TAG, "onDensityChanged [%.2f]->[%.2f] ", oldDpi, newDpi);
+    public static boolean onDensityChanged(int oldDpi, int newDpi) {
+        if (DEBUG_LOGS) Log.i(TAG, "onDensityChanged [%d]->[%d] ", oldDpi, newDpi);
         if (sInstance == null) return false;
         // If density changed while in VR, we expect a second density change to restore the density
         // to what it previously was when we exit VR. We shouldn't have to recreate the activity as
         // all non-VR UI is still using the old density.
-        if (sInstance.mDensityChanged) {
+        if (sInstance.mExpectedDensityChange != 0) {
             assert !sInstance.mInVr && !sInstance.mDonSucceeded;
-            sInstance.mDensityChanged = false;
-            return true;
+            int expectedDensity = sInstance.mExpectedDensityChange;
+            sInstance.mExpectedDensityChange = 0;
+            return (newDpi == expectedDensity);
         }
         if (sInstance.mInVr || sInstance.mDonSucceeded) {
-            sInstance.mDensityChanged = true;
+            sInstance.mExpectedDensityChange = oldDpi;
             return true;
         }
         return false;
@@ -552,7 +553,7 @@ public class VrShellDelegate
         // If the screen density changed while in VR, we have to disable the VR browser as java UI
         // used or created by VR browsing will be broken.
         if (sInstance != null) {
-            if (sInstance.mDensityChanged) return true;
+            if (sInstance.mExpectedDensityChange != 0) return true;
             if (sInstance.mVrSupportLevel != VR_DAYDREAM) return false;
         }
 
@@ -1151,6 +1152,7 @@ public class VrShellDelegate
 
     protected void onResume() {
         if (DEBUG_LOGS) Log.i(TAG, "onResume");
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1) return;
         if (cancelStartupAnimationIfNeeded()) return;
 
         mPaused = false;
@@ -1193,11 +1195,19 @@ public class VrShellDelegate
         } else if (mDonSucceeded) {
             mCancellingEntryAnimation = false;
             handleDonFlowSuccess();
-        } else if (mProbablyInDon) {
-            // This means the user backed out of the DON flow, and we won't be entering VR.
-            maybeSetPresentResult(false, mDonSucceeded);
+        } else {
+            if (mProbablyInDon) {
+                // This means the user backed out of the DON flow, and we won't be entering VR.
+                maybeSetPresentResult(false, mDonSucceeded);
 
-            shutdownVr(true, false);
+                shutdownVr(true, false);
+            }
+            // If we were resumed at the wrong density, we need to trigger activity recreation.
+            if (!mInVr && mExpectedDensityChange != 0
+                    && (mActivity.getResources().getConfiguration().densityDpi
+                               != mExpectedDensityChange)) {
+                mActivity.recreate();
+            }
         }
 
         mProbablyInDon = false;
