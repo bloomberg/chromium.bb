@@ -7,11 +7,6 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutView #document",
-          "rect": [0, 0, 800, 600],
-          "reason": "background"
-        },
-        {
           "object": "LayoutBlockFlow (positioned) UL id='submenu'",
           "rect": [48, 94, 40, 20],
           "reason": "geometry"
@@ -30,10 +25,6 @@
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutView #document",
-      "reason": "background"
-    },
     {
       "object": "LayoutListMarker (anonymous)",
       "reason": "geometry"

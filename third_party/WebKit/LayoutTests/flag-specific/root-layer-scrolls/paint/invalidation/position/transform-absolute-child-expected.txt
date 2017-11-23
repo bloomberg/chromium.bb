@@ -17,11 +17,6 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutView #document",
-          "rect": [0, 0, 800, 600],
-          "reason": "background on scrolling contents layer"
-        },
-        {
           "object": "LayoutBlockFlow (positioned) DIV id='child'",
           "rect": [135, 127, 400, 50],
           "reason": "subtree"
@@ -40,10 +35,6 @@
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "Scrolling Contents Layer",
-      "reason": "background on scrolling contents layer"
-    },
     {
       "object": "LayoutBlockFlow (relative positioned) DIV id='box' class='rotated'",
       "reason": "subtree"
