@@ -240,13 +240,21 @@ public class SingleWebsitePreferences extends PreferenceFragment
                     merged.addUsbInfo(usbInfo);
                 }
             }
-            if (merged.getJavaScriptException() == null && other.getJavaScriptException() != null
-                    && host.equals(other.getAddress().getHost())) {
-                merged.setJavaScriptException(other.getJavaScriptException());
-            }
-            if (merged.getSoundException() == null && other.getSoundException() != null
-                    && host.equals(other.getAddress().getHost())) {
-                merged.setSoundException(other.getSoundException());
+            if (host.equals(other.getAddress().getHost())) {
+                if (merged.getJavaScriptException() == null
+                        && other.getJavaScriptException() != null) {
+                    merged.setJavaScriptException(other.getJavaScriptException());
+                }
+                if (merged.getSoundException() == null && other.getSoundException() != null) {
+                    merged.setSoundException(other.getSoundException());
+                }
+                if (merged.getAutoplayException() == null && other.getAutoplayException() != null) {
+                    merged.setAutoplayException(other.getAutoplayException());
+                }
+                if (merged.getBackgroundSyncException() == null
+                        && other.getBackgroundSyncException() != null) {
+                    merged.setBackgroundSyncException(other.getBackgroundSyncException());
+                }
             }
 
             // TODO(crbug.com/763982): Deal with this TODO colony.
