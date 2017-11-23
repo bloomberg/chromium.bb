@@ -52,6 +52,9 @@ class UkmRecorderImpl : public UkmRecorder {
 
   const std::vector<mojom::UkmEntryPtr>& entries() const { return entries_; }
 
+  // UkmRecorder:
+  void UpdateSourceURL(SourceId source_id, const GURL& url) override;
+
   virtual bool ShouldRestrictToWhitelistedSourceIds() const;
 
  private:
@@ -59,8 +62,6 @@ class UkmRecorderImpl : public UkmRecorder {
   friend ::metrics::UkmEGTestHelper;
   friend ::ukm::debug::DebugPage;
 
-  // UkmRecorder:
-  void UpdateSourceURL(SourceId source_id, const GURL& url) override;
   void AddEntry(mojom::UkmEntryPtr entry) override;
 
   // Whether recording new data is currently allowed.

@@ -4,6 +4,7 @@
 
 #include "services/resource_coordinator/observers/metrics_collector.h"
 
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_manager.h"
 #include "services/resource_coordinator/coordination_unit/frame_coordination_unit_impl.h"
@@ -36,6 +37,8 @@ const char kTabFromBackgroundedToFirstTitleUpdatedUMA[] =
 const char kTabFromBackgroundedToFirstNonPersistentNotificationCreatedUMA[] =
     "TabManager.Heuristics."
     "FromBackgroundedToFirstNonPersistentNotificationCreated";
+
+const int kDefaultFrequencyUkmEQTReported = 5u;
 
 // Gets the number of tabs that are co-resident in all of the render processes
 // associated with a |CoordinationUnitType::kPage| coordination unit.
@@ -77,7 +80,7 @@ void MetricsCollector::OnBeforeCoordinationUnitDestroyed(
     const CoordinationUnitBase* coordination_unit) {
   if (coordination_unit->id().type == CoordinationUnitType::kPage) {
     metrics_report_record_map_.erase(coordination_unit->id());
-    ukm_cpu_usage_collection_state_map_.erase(coordination_unit->id());
+    ukm_collection_state_map_.erase(coordination_unit->id());
   }
 }
 
@@ -137,6 +140,17 @@ void MetricsCollector::OnProcessPropertyChanged(
       if (IsCollectingCPUUsageForUkm(page_cu->id())) {
         RecordCPUUsageForUkm(page_cu->id(), page_cu->GetCPUUsage(),
                              GetNumCoresidentTabs(page_cu));
+      }
+    }
+  } else if (property_type ==
+             mojom::PropertyType::kExpectedTaskQueueingDuration) {
+    for (auto* page_cu : process_cu->GetAssociatedPageCoordinationUnits()) {
+      if (IsCollectingExpectedQueueingTimeForUkm(page_cu->id())) {
+        int64_t expected_queueing_time;
+        if (!page_cu->GetExpectedTaskQueueingDuration(&expected_queueing_time))
+          continue;
+
+        RecordExpectedQueueingTimeForUkm(page_cu->id(), expected_queueing_time);
       }
     }
   }
@@ -201,19 +215,24 @@ bool MetricsCollector::ShouldReportMetrics(
 
 bool MetricsCollector::IsCollectingCPUUsageForUkm(
     const CoordinationUnitID& page_cu_id) {
-  UkmCPUUsageCollectionState& state =
-      ukm_cpu_usage_collection_state_map_[page_cu_id];
+  const UkmCollectionState& state = ukm_collection_state_map_[page_cu_id];
 
   return state.ukm_source_id > ukm::kInvalidSourceId &&
          state.num_cpu_usage_measurements < max_ukm_cpu_usage_measurements_;
+}
+
+bool MetricsCollector::IsCollectingExpectedQueueingTimeForUkm(
+    const CoordinationUnitID& page_cu_id) {
+  UkmCollectionState& state = ukm_collection_state_map_[page_cu_id];
+  return state.ukm_source_id > ukm::kInvalidSourceId &&
+         ++state.num_unreported_eqt_measurements >= frequency_ukm_eqt_reported_;
 }
 
 void MetricsCollector::RecordCPUUsageForUkm(
     const CoordinationUnitID& page_cu_id,
     double cpu_usage,
     size_t num_coresident_tabs) {
-  UkmCPUUsageCollectionState& state =
-      ukm_cpu_usage_collection_state_map_[page_cu_id];
+  UkmCollectionState& state = ukm_collection_state_map_[page_cu_id];
 
   ukm::builders::CPUUsageMeasurement(state.ukm_source_id)
       .SetTick(state.num_cpu_usage_measurements++)
@@ -222,15 +241,25 @@ void MetricsCollector::RecordCPUUsageForUkm(
       .Record(coordination_unit_manager().ukm_recorder());
 }
 
+void MetricsCollector::RecordExpectedQueueingTimeForUkm(
+    const CoordinationUnitID& page_cu_id,
+    int64_t expected_queueing_time) {
+  UkmCollectionState& state = ukm_collection_state_map_[page_cu_id];
+  state.num_unreported_eqt_measurements = 0u;
+  ukm::builders::ResponsivenessMeasurement(state.ukm_source_id)
+      .SetExpectedTaskQueueingDuration(expected_queueing_time)
+      .Record(coordination_unit_manager().ukm_recorder());
+}
+
 void MetricsCollector::UpdateUkmSourceIdForPage(
     const CoordinationUnitID& page_cu_id,
     ukm::SourceId ukm_source_id) {
-  UkmCPUUsageCollectionState& state =
-      ukm_cpu_usage_collection_state_map_[page_cu_id];
+  UkmCollectionState& state = ukm_collection_state_map_[page_cu_id];
 
   state.ukm_source_id = ukm_source_id;
-  // Updating the |ukm_source_id| restarts CPU usage collection.
+  // Updating the |ukm_source_id| restarts usage collection.
   state.num_cpu_usage_measurements = 0u;
+  state.num_unreported_eqt_measurements = 0u;
 }
 
 void MetricsCollector::UpdateWithFieldTrialParams() {
@@ -241,6 +270,10 @@ void MetricsCollector::UpdateWithFieldTrialParams() {
     max_ukm_cpu_usage_measurements_ =
         static_cast<size_t>(duration_ms / interval_ms);
   }
+
+  frequency_ukm_eqt_reported_ = base::GetFieldTrialParamByFeatureAsInt(
+      ukm::kUkmFeature, "FrequencyUKMExpectedQueueingTime",
+      kDefaultFrequencyUkmEQTReported);
 }
 
 void MetricsCollector::ResetMetricsReportRecord(CoordinationUnitID cu_id) {

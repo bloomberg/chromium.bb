@@ -36,10 +36,10 @@ class CoordinationUnitManager {
   CoordinationUnitManager();
   ~CoordinationUnitManager();
 
-  void set_ukm_recorder(ukm::MojoUkmRecorder* ukm_recorder) {
+  void set_ukm_recorder(ukm::UkmRecorder* ukm_recorder) {
     ukm_recorder_ = ukm_recorder;
   }
-  ukm::MojoUkmRecorder* ukm_recorder() const { return ukm_recorder_; }
+  ukm::UkmRecorder* ukm_recorder() const { return ukm_recorder_; }
 
   void OnStart(service_manager::BinderRegistryWithArgs<
                    const service_manager::BindSourceInfo&>* registry,
@@ -57,7 +57,7 @@ class CoordinationUnitManager {
 
  private:
   std::vector<std::unique_ptr<CoordinationUnitGraphObserver>> observers_;
-  ukm::MojoUkmRecorder* ukm_recorder_ = nullptr;
+  ukm::UkmRecorder* ukm_recorder_ = nullptr;
   std::unique_ptr<CoordinationUnitProviderImpl> provider_;
 
   static void Create(
