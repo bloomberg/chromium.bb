@@ -5,17 +5,16 @@
 #ifndef BackwardCodePointStateMachine_h
 #define BackwardCodePointStateMachine_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/editing/state_machines/TextSegmentationMachineState.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/text/Unicode.h"
 
 namespace blink {
 
 class CORE_EXPORT BackwardCodePointStateMachine {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(BackwardCodePointStateMachine);
 
  public:
   BackwardCodePointStateMachine();
@@ -45,6 +44,8 @@ class CORE_EXPORT BackwardCodePointStateMachine {
 
   // The internal state.
   BackwardCodePointState state_;
+
+  DISALLOW_COPY_AND_ASSIGN(BackwardCodePointStateMachine);
 };
 
 }  // namespace blink

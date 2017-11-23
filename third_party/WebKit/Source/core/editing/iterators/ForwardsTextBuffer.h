@@ -5,20 +5,22 @@
 #ifndef ForwardsTextBuffer_h
 #define ForwardsTextBuffer_h
 
+#include "base/macros.h"
 #include "core/editing/iterators/TextBufferBase.h"
 
 namespace blink {
 
 class CORE_EXPORT ForwardsTextBuffer final : public TextBufferBase {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(ForwardsTextBuffer);
 
  public:
-  ForwardsTextBuffer() {}
+  ForwardsTextBuffer() = default;
   const UChar* Data() const override;
 
  private:
   UChar* CalcDestination(size_t length) override;
+
+  DISALLOW_COPY_AND_ASSIGN(ForwardsTextBuffer);
 };
 
 }  // namespace blink

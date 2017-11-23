@@ -5,17 +5,16 @@
 #ifndef ForwardCodePointStateMachine_h
 #define ForwardCodePointStateMachine_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/editing/state_machines/TextSegmentationMachineState.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/text/Unicode.h"
 
 namespace blink {
 
 class CORE_EXPORT ForwardCodePointStateMachine {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(ForwardCodePointStateMachine);
 
  public:
   ForwardCodePointStateMachine();
@@ -45,6 +44,8 @@ class CORE_EXPORT ForwardCodePointStateMachine {
 
   // The internal state.
   ForwardCodePointState state_;
+
+  DISALLOW_COPY_AND_ASSIGN(ForwardCodePointStateMachine);
 };
 
 }  // namespace blink

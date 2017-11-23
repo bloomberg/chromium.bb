@@ -5,14 +5,13 @@
 #ifndef SuggestionMarkerReplacementScope_h
 #define SuggestionMarkerReplacementScope_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 
 class CORE_EXPORT SuggestionMarkerReplacementScope {
-  WTF_MAKE_NONCOPYABLE(SuggestionMarkerReplacementScope);
   STACK_ALLOCATED();
 
  public:
@@ -23,6 +22,8 @@ class CORE_EXPORT SuggestionMarkerReplacementScope {
 
  private:
   static bool currently_in_scope_;
+
+  DISALLOW_COPY_AND_ASSIGN(SuggestionMarkerReplacementScope);
 };
 
 }  // namespace blink

@@ -26,6 +26,7 @@
 #ifndef SpellCheckRequester_h
 #define SpellCheckRequester_h
 
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "core/dom/Element.h"
 #include "core/dom/Range.h"
@@ -33,7 +34,6 @@
 #include "core/editing/spellcheck/TextChecking.h"
 #include "platform/Timer.h"
 #include "platform/wtf/Deque.h"
-#include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/WTFString.h"
 
@@ -82,8 +82,6 @@ class CORE_EXPORT SpellCheckRequest
 
 class CORE_EXPORT SpellCheckRequester final
     : public GarbageCollectedFinalized<SpellCheckRequester> {
-  WTF_MAKE_NONCOPYABLE(SpellCheckRequester);
-
  public:
   static SpellCheckRequester* Create(LocalFrame& frame) {
     return new SpellCheckRequester(frame);
@@ -136,6 +134,8 @@ class CORE_EXPORT SpellCheckRequester final
 
   typedef HeapDeque<Member<SpellCheckRequest>> RequestQueue;
   RequestQueue request_queue_;
+
+  DISALLOW_COPY_AND_ASSIGN(SpellCheckRequester);
 };
 
 }  // namespace blink

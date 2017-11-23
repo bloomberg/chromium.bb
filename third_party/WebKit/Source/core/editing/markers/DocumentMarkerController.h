@@ -29,6 +29,7 @@
 #ifndef DocumentMarkerController_h
 #define DocumentMarkerController_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/dom/SynchronousMutationObserver.h"
 #include "core/editing/iterators/TextIterator.h"
@@ -50,7 +51,6 @@ class SuggestionMarkerProperties;
 class CORE_EXPORT DocumentMarkerController final
     : public GarbageCollected<DocumentMarkerController>,
       public SynchronousMutationObserver {
-  WTF_MAKE_NONCOPYABLE(DocumentMarkerController);
   USING_GARBAGE_COLLECTED_MIXIN(DocumentMarkerController);
 
  public:
@@ -163,6 +163,8 @@ class CORE_EXPORT DocumentMarkerController final
   // without going through the map.
   DocumentMarker::MarkerTypes possibly_existing_marker_types_;
   const Member<Document> document_;
+
+  DISALLOW_COPY_AND_ASSIGN(DocumentMarkerController);
 };
 
 }  // namespace blink

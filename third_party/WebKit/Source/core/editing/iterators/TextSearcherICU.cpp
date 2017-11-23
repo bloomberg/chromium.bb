@@ -28,6 +28,7 @@
 #include "core/editing/iterators/TextSearcherICU.h"
 
 #include <unicode/usearch.h>
+#include "base/macros.h"
 #include "platform/text/TextBreakIteratorInternalICU.h"
 #include "platform/wtf/text/CharacterNames.h"
 #include "platform/wtf/text/WTFString.h"
@@ -53,8 +54,6 @@ UStringSearch* CreateSearcher() {
 }
 
 class ICULockableSearcher {
-  WTF_MAKE_NONCOPYABLE(ICULockableSearcher);
-
  public:
   static UStringSearch* AcquireSearcher() {
     Instance().lock();
@@ -90,6 +89,8 @@ class ICULockableSearcher {
 #if DCHECK_IS_ON()
   bool locked_ = false;
 #endif
+
+  DISALLOW_COPY_AND_ASSIGN(ICULockableSearcher);
 };
 
 }  // namespace

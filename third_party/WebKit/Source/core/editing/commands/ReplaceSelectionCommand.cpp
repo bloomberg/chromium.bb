@@ -26,6 +26,7 @@
 
 #include "core/editing/commands/ReplaceSelectionCommand.h"
 
+#include "base/macros.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/CSSPropertyNames.h"
 #include "core/css/CSSPropertyValueSet.h"
@@ -75,7 +76,6 @@ enum EFragmentType { kEmptyFragment, kSingleTextNodeFragment, kTreeFragment };
 // --- ReplacementFragment helper class
 
 class ReplacementFragment final {
-  WTF_MAKE_NONCOPYABLE(ReplacementFragment);
   STACK_ALLOCATED();
 
  public:
@@ -108,6 +108,8 @@ class ReplacementFragment final {
   Member<DocumentFragment> fragment_;
   bool has_interchange_newline_at_start_;
   bool has_interchange_newline_at_end_;
+
+  DISALLOW_COPY_AND_ASSIGN(ReplacementFragment);
 };
 
 static bool IsInterchangeHTMLBRElement(const Node* node) {

@@ -27,6 +27,8 @@
 #define SearchBuffer_h
 
 #include <memory>
+
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/editing/Forward.h"
 #include "core/editing/finder/FindOptions.h"
@@ -48,7 +50,6 @@ class TextSearcherICU;
 // well.
 class SearchBuffer {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(SearchBuffer);
 
  public:
   SearchBuffer(const String& target, FindOptions);
@@ -91,6 +92,8 @@ class SearchBuffer {
   mutable Vector<UChar> normalized_match_;
 
   std::unique_ptr<TextSearcherICU> text_searcher_;
+
+  DISALLOW_COPY_AND_ASSIGN(SearchBuffer);
 };
 
 CORE_EXPORT EphemeralRange FindPlainText(const EphemeralRange& input_range,

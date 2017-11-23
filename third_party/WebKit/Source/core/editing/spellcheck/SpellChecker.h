@@ -26,6 +26,7 @@
 #ifndef SpellChecker_h
 #define SpellChecker_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/editing/Forward.h"
 #include "core/editing/markers/DocumentMarker.h"
@@ -47,8 +48,6 @@ class WebSpellCheckPanelHostClient;
 class WebTextCheckClient;
 
 class CORE_EXPORT SpellChecker final : public GarbageCollected<SpellChecker> {
-  WTF_MAKE_NONCOPYABLE(SpellChecker);
-
  public:
   static SpellChecker* Create(LocalFrame&);
 
@@ -129,6 +128,8 @@ class CORE_EXPORT SpellChecker final : public GarbageCollected<SpellChecker> {
 
   const Member<SpellCheckRequester> spell_check_requester_;
   const Member<IdleSpellCheckCallback> idle_spell_check_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(SpellChecker);
 };
 
 }  // namespace blink

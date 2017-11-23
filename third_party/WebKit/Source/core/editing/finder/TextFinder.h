@@ -31,10 +31,10 @@
 #ifndef TextFinder_h
 #define TextFinder_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebFloatPoint.h"
@@ -55,8 +55,6 @@ class WebVector;
 
 class CORE_EXPORT TextFinder final
     : public GarbageCollectedFinalized<TextFinder> {
-  WTF_MAKE_NONCOPYABLE(TextFinder);
-
  public:
   static TextFinder* Create(WebLocalFrameImpl& owner_frame);
 
@@ -289,6 +287,8 @@ class CORE_EXPORT TextFinder final
   // Determines if the rects in the find-in-page matches cache of this frame
   // are invalid and should be recomputed.
   bool find_match_rects_are_valid_;
+
+  DISALLOW_COPY_AND_ASSIGN(TextFinder);
 };
 
 }  // namespace blink

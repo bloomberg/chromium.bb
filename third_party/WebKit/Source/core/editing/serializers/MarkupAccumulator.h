@@ -27,6 +27,7 @@
 #ifndef MarkupAccumulator_h
 #define MarkupAccumulator_h
 
+#include "base/macros.h"
 #include "core/editing/EditingStrategy.h"
 #include "core/editing/serializers/MarkupFormatter.h"
 #include "core/editing/serializers/Serialization.h"
@@ -40,7 +41,6 @@ class Element;
 class Node;
 
 class MarkupAccumulator {
-  WTF_MAKE_NONCOPYABLE(MarkupAccumulator);
   STACK_ALLOCATED();
 
  public:
@@ -86,6 +86,8 @@ class MarkupAccumulator {
  private:
   MarkupFormatter formatter_;
   StringBuilder markup_;
+
+  DISALLOW_COPY_AND_ASSIGN(MarkupAccumulator);
 };
 
 template <typename Strategy>

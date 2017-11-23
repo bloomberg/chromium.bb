@@ -27,6 +27,7 @@
 #ifndef SelectionEditor_h
 #define SelectionEditor_h
 
+#include "base/macros.h"
 #include "core/dom/SynchronousMutationObserver.h"
 #include "core/dom/events/EventDispatchResult.h"
 #include "core/editing/FrameSelection.h"
@@ -40,7 +41,6 @@ namespace blink {
 // |SelectionModifier| class.
 class SelectionEditor final : public GarbageCollectedFinalized<SelectionEditor>,
                               public SynchronousMutationObserver {
-  WTF_MAKE_NONCOPYABLE(SelectionEditor);
   USING_GARBAGE_COLLECTED_MIXIN(SelectionEditor);
 
  public:
@@ -113,6 +113,8 @@ class SelectionEditor final : public GarbageCollectedFinalized<SelectionEditor>,
   mutable uint64_t style_version_for_flat_tree_ = static_cast<uint64_t>(-1);
   mutable bool cached_visible_selection_in_dom_tree_is_dirty_ = false;
   mutable bool cached_visible_selection_in_flat_tree_is_dirty_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(SelectionEditor);
 };
 
 }  // namespace blink

@@ -27,6 +27,8 @@
 #define Editor_h
 
 #include <memory>
+
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/clipboard/DataTransferAccessPolicy.h"
 #include "core/editing/EditingBehavior.h"
@@ -71,8 +73,6 @@ enum EditorParagraphSeparator {
 };
 
 class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
-  WTF_MAKE_NONCOPYABLE(Editor);
-
  public:
   static Editor* Create(LocalFrame&);
   ~Editor();
@@ -296,7 +296,7 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
   static void TidyUpHTMLStructure(Document&);
 
   class RevealSelectionScope {
-    WTF_MAKE_NONCOPYABLE(RevealSelectionScope);
+    DISALLOW_COPY_AND_ASSIGN(RevealSelectionScope);
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
    public:
@@ -360,6 +360,8 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
   FrameSelection& GetFrameSelection() const;
 
   bool HandleEditingKeyboardEvent(KeyboardEvent*);
+
+  DISALLOW_COPY_AND_ASSIGN(Editor);
 };
 
 inline void Editor::SetStartNewKillRingSequence(bool flag) {
