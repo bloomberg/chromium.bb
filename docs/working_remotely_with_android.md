@@ -29,9 +29,7 @@ laptop$ sshfs your.host.machine:/usr/local/code/chrome/src ./chrome_sshfs
 # Setup environment.
 
 laptop$ cd chrome_sshfs
-laptop$ . build/android/envsetup.sh
-laptop$ adb devices
-laptop$ adb root
+laptop$ third_party/android_tools/sdk/platform-tools/adb devices
 
 # Run tests.
 

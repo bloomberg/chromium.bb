@@ -149,12 +149,6 @@ $ ninja -C out/Default cast_shell_apk
 
 ## Installing and Running `cast_shell_apk` on a device
 
-Prepare the environment:
-
-```shell
-$ . build/android/envsetup.sh
-```
-
 ### Plug in your Android device
 
 Make sure your Android device is plugged in via USB, and USB Debugging

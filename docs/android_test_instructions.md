@@ -8,6 +8,12 @@
 
 #### ADB Debugging
 
+The adb executable exists within the Android SDK:
+
+```shell
+third_party/android_tools/sdk/platform-tools/adb
+```
+
 In order to allow the ADB to connect to the device, you must enable USB
 debugging:
 
@@ -57,13 +63,7 @@ with `INSTALL_FAILED_NO_MATCHING_ABIS`.
 
 1.  Enable Intel Virtualization support in the BIOS.
 
-2.  Set up your environment:
-
-    ```shell
-    . build/android/envsetup.sh
-    ```
-
-3.  Install emulator deps:
+2.  Install emulator deps:
 
     ```shell
     build/android/install_emulator_deps.py --api-level=23
@@ -75,7 +75,7 @@ with `INSTALL_FAILED_NO_MATCHING_ABIS`.
     Note that this is a different SDK download than the Android SDK in the
     chromium source checkout (i.e. `src/third_party/android_emulator_sdk`).
 
-4.  Run the avd.py script. To start up _num_ emulators use -n. For non-x86 use
+3.  Run the avd.py script. To start up _num_ emulators use -n. For non-x86 use
     --abi.
 
     ```shell

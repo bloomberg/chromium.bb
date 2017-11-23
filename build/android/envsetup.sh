@@ -4,7 +4,8 @@
 # found in the LICENSE file.
 
 # Adds Android SDK tools and related helpers to PATH, useful for development.
-# Not used on bots. Use like `. build/android/envsetup.sh`.
+# Not used on bots, nor required for any commands to succeed.
+# Use like: source build/android/envsetup.sh
 
 # Make sure we're being sourced.
 if [[ -n "$BASH_VERSION" && "${BASH_SOURCE:-$0}" == "$0" ]]; then
