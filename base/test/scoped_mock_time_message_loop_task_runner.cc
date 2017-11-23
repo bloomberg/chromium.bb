@@ -13,13 +13,6 @@
 #include "base/time/time.h"
 
 namespace base {
-namespace {
-
-void RunOnceClosure(OnceClosure closure) {
-  std::move(closure).Run();
-}
-
-}  // namespace
 
 ScopedMockTimeMessageLoopTaskRunner::ScopedMockTimeMessageLoopTaskRunner()
     : task_runner_(new TestMockTimeTaskRunner),
@@ -35,11 +28,8 @@ ScopedMockTimeMessageLoopTaskRunner::~ScopedMockTimeMessageLoopTaskRunner() {
   DCHECK(previous_task_runner_->RunsTasksInCurrentSequence());
   DCHECK_EQ(task_runner_, ThreadTaskRunnerHandle::Get());
   for (auto& pending_task : task_runner_->TakePendingTasks()) {
-    // TODO(tzik): Remove RunOnceClosure once TaskRunner migrates from Closure
-    // to OnceClosure.
     previous_task_runner_->PostDelayedTask(
-        pending_task.location,
-        BindOnce(&RunOnceClosure, Passed(&pending_task.task)),
+        pending_task.location, std::move(pending_task.task),
         pending_task.GetTimeToRun() - task_runner_->NowTicks());
   }
   MessageLoop::current()->SetTaskRunner(std::move(previous_task_runner_));
