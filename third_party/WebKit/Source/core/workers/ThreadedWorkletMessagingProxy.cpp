@@ -8,6 +8,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/SecurityContext.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
+#include "core/inspector/ThreadDebugger.h"
 #include "core/origin_trials/OriginTrialContext.h"
 #include "core/workers/GlobalScopeCreationParams.h"
 #include "core/workers/ThreadedWorkletObjectProxy.h"
@@ -50,7 +51,7 @@ void ThreadedWorkletMessagingProxy::Initialize() {
   // Worklets share the pre-initialized backing thread so that we don't have to
   // specify the backing thread startup data.
   InitializeWorkerThread(std::move(global_scope_creation_params), WTF::nullopt,
-                         document->Url());
+                         document->Url(), v8_inspector::V8StackTraceId());
 }
 
 void ThreadedWorkletMessagingProxy::Trace(blink::Visitor* visitor) {

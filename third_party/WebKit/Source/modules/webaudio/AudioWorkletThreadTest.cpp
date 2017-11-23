@@ -60,7 +60,9 @@ class AudioWorkletThreadTest : public ::testing::Test {
             nullptr /* worker_clients */, document->AddressSpace(),
             OriginTrialContext::GetTokens(document).get(),
             nullptr /* worker_settings */, kV8CacheOptionsDefault),
-        WTF::nullopt, WorkerInspectorProxy::PauseOnWorkerStart::kDontPause,
+        WTF::nullopt,
+        std::make_unique<GlobalScopeInspectorCreationParams>(
+            WorkerInspectorProxy::PauseOnWorkerStart::kDontPause),
         ParentFrameTaskRunners::Create());
     return thread;
   }

@@ -161,6 +161,35 @@ var TestRunner = class {
   startURL(url, description) {
     return this._start(description, null, url);
   }
+
+  async logStackTrace(debuggers, stackTrace, debuggerId) {
+    while (stackTrace) {
+      const {description, callFrames, parent, parentId} = stackTrace;
+      if (description)
+        this.log(`--${description}--`);
+      this.logCallFrames(callFrames);
+      if (parentId) {
+        if (parentId.debuggerId)
+          debuggerId = parentId.debuggerId;
+        stackTrace = (await debuggers.get(debuggerId).getStackTrace({
+                       stackTraceId: parentId
+                     })).result.stackTrace;
+      } else {
+        stackTrace = parent;
+      }
+    }
+  }
+
+  logCallFrames(callFrames) {
+    for (let frame of callFrames) {
+      let functionName = frame.functionName || '(anonymous)';
+      let url = frame.url;
+      let location = frame.location || frame;
+      this.log(`${functionName} at ${url}:${
+                                            location.lineNumber
+                                          }:${location.columnNumber}`);
+    }
+  }
 };
 
 TestRunner.Page = class {
@@ -279,21 +308,27 @@ TestRunner.Session = class {
   }
 
   _setupProtocol() {
-    return new Proxy({}, { get: (target, agentName, receiver) => new Proxy({}, {
-      get: (target, methodName, receiver) => {
-        const eventPattern = /^(on(ce)?|off)([A-Z][A-Za-z0-9]+)/;
-        var match = eventPattern.exec(methodName);
-        if (!match)
-          return args => this.sendCommand(`${agentName}.${methodName}`, args || {});
-        var eventName = match[3];
-        eventName = eventName.charAt(0).toLowerCase() + eventName.slice(1);
-        if (match[1] === 'once')
-          return eventMatcher => this._waitForEvent(`${agentName}.${eventName}`, eventMatcher);
-        if (match[1] === 'off')
-          return listener => this._removeEventHandler(`${agentName}.${eventName}`, listener);
-        return listener => this._addEventHandler(`${agentName}.${eventName}`, listener);
-      }
-    })});
+    return new Proxy({}, {
+      get: (target, agentName, receiver) => new Proxy({}, {
+        get: (target, methodName, receiver) => {
+          const eventPattern = /^(on(ce)?|off)([A-Z][A-Za-z0-9]*)/;
+          var match = eventPattern.exec(methodName);
+          if (!match)
+            return args => this.sendCommand(
+                       `${agentName}.${methodName}`, args || {});
+          var eventName = match[3];
+          eventName = eventName.charAt(0).toLowerCase() + eventName.slice(1);
+          if (match[1] === 'once')
+            return eventMatcher => this._waitForEvent(
+                       `${agentName}.${eventName}`, eventMatcher);
+          if (match[1] === 'off')
+            return listener => this._removeEventHandler(
+                       `${agentName}.${eventName}`, listener);
+          return listener => this._addEventHandler(
+                     `${agentName}.${eventName}`, listener);
+        }
+      })
+    });
   }
 
   _addEventHandler(eventName, handler) {
@@ -321,6 +356,64 @@ TestRunner.Session = class {
       };
       this._addEventHandler(eventName, handler);
     });
+  }
+};
+
+class WorkerProtocol {
+  constructor(dp, sessionId) {
+    this._sessionId = sessionId;
+    this._callbacks = new Map();
+    this._dp = dp;
+    this._dp.Target.onReceivedMessageFromTarget(
+        (message) => this._onMessage(message));
+    this.dp = this._setupProtocol();
+  }
+
+  _setupProtocol() {
+    let lastId = 0;
+    return new Proxy({}, {
+      get: (target, agentName, receiver) => new Proxy({}, {
+        get: (target, methodName, receiver) => {
+          const eventPattern = /^(once)?([A-Z][A-Za-z0-9]*)/;
+          var match = eventPattern.exec(methodName);
+          if (!match || match[1] !== 'once') {
+            return args => new Promise(resolve => {
+                     let id = ++lastId;
+                     this._callbacks.set(id, resolve);
+                     this._dp.Target.sendMessageToTarget({
+                       sessionId: this._sessionId,
+                       message: JSON.stringify({
+                         method: `${agentName}.${methodName}`,
+                         params: args || {},
+                         id: id
+                       })
+                     });
+                   });
+          }
+          var eventName = match[2];
+          eventName = eventName.charAt(0).toLowerCase() + eventName.slice(1);
+          return () => new Promise(resolve => {
+                   this._callbacks.set(`${agentName}.${eventName}`, resolve);
+                 });
+        }
+      })
+    });
+  }
+
+  _onMessage(message) {
+    if (message.params.sessionId !== this._sessionId)
+      return;
+    const {id, result, method, params} = JSON.parse(message.params.message);
+    if (id && this._callbacks.has(id)) {
+      let callback = this._callbacks.get(id);
+      this._callbacks.delete(id);
+      callback(result);
+    }
+    if (method && this._callbacks.has(method)) {
+      let callback = this._callbacks.get(method);
+      this._callbacks.delete(method);
+      callback(params);
+    }
   }
 };
 

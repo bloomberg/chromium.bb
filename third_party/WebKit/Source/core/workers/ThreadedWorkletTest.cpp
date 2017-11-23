@@ -4,6 +4,7 @@
 
 #include "bindings/core/v8/V8CacheOptions.h"
 #include "core/inspector/ConsoleMessageStorage.h"
+#include "core/inspector/ThreadDebugger.h"
 #include "core/origin_trials/OriginTrialContext.h"
 #include "core/testing/DummyPageHolder.h"
 #include "core/workers/GlobalScopeCreationParams.h"
@@ -157,7 +158,7 @@ class ThreadedWorkletMessagingProxyForTest
             worker_clients, document->AddressSpace(),
             OriginTrialContext::GetTokens(document).get(),
             std::move(worker_settings), kV8CacheOptionsDefault),
-        WTF::nullopt, document->Url());
+        WTF::nullopt, document->Url(), v8_inspector::V8StackTraceId());
   }
 
  private:

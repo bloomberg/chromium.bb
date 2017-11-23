@@ -63,7 +63,8 @@ void DedicatedWorkerMessagingProxy::StartWorkerGlobalScope(
     const KURL& script_url,
     const String& user_agent,
     const String& source_code,
-    ReferrerPolicy referrer_policy) {
+    ReferrerPolicy referrer_policy,
+    const v8_inspector::V8StackTraceId& stack_id) {
   DCHECK(IsParentContextThread());
   if (AskedToTerminate()) {
     // Worker.terminate() could be called from JS before the thread was
@@ -90,7 +91,7 @@ void DedicatedWorkerMessagingProxy::StartWorkerGlobalScope(
 
   InitializeWorkerThread(std::move(global_scope_creation_params),
                          CreateBackingThreadStartupData(ToIsolate(document)),
-                         script_url);
+                         script_url, stack_id);
 }
 
 void DedicatedWorkerMessagingProxy::PostMessageToWorkerGlobalScope(

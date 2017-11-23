@@ -15,6 +15,10 @@
 #include "core/workers/AbstractWorker.h"
 #include "platform/wtf/Forward.h"
 
+namespace v8_inspector {
+struct V8StackTraceId;
+}  // namespace v8_inspector
+
 namespace blink {
 
 class DedicatedWorkerMessagingProxy;
@@ -76,7 +80,7 @@ class CORE_EXPORT DedicatedWorker final
 
   // Callbacks for |script_loader_|.
   void OnResponse();
-  void OnFinished();
+  void OnFinished(const v8_inspector::V8StackTraceId&);
 
   // Implements EventTarget (via AbstractWorker -> EventTargetWithInlineData).
   const AtomicString& InterfaceName() const final;
