@@ -155,8 +155,12 @@ void GetFormAndField(autofill::FormData* form,
   // Timestamp of the first time forms are seen.
   base::TimeTicks formsSeenTimestamp_;
 
+  // The WebState this instance is observing. Will be null after
+  // -webStateDestroyed: has been called.
+  web::WebState* webState_;
+
   // Bridge to observe the web state from Objective-C.
-  std::unique_ptr<web::WebStateObserverBridge> _webStateObserverBridge;
+  std::unique_ptr<web::WebStateObserverBridge> webStateObserverBridge_;
 
   // The pref service for which this agent was created.
   PrefService* prefService_;
@@ -196,11 +200,13 @@ void GetFormAndField(autofill::FormData* form,
   DCHECK(webState);
   self = [super init];
   if (self) {
+    webState_ = webState;
     prefService_ = prefService;
-    _webStateObserverBridge.reset(
-        new web::WebStateObserverBridge(webState, self));
+    webStateObserverBridge_ =
+        std::make_unique<web::WebStateObserverBridge>(self);
+    webState_->AddObserver(webStateObserverBridge_.get());
     jsAutofillManager_ = base::mac::ObjCCastStrict<JsAutofillManager>(
-        [webState->GetJSInjectionReceiver()
+        [webState_->GetJSInjectionReceiver()
             instanceOfClass:[JsAutofillManager class]]);
   }
   return self;
@@ -211,9 +217,22 @@ void GetFormAndField(autofill::FormData* form,
   return nil;
 }
 
+- (void)dealloc {
+  if (webState_) {
+    webState_->RemoveObserver(webStateObserverBridge_.get());
+    webStateObserverBridge_.reset();
+    webState_ = nullptr;
+  }
+}
+
 - (void)detachFromWebState {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
-  _webStateObserverBridge.reset();
+
+  if (webState_) {
+    webState_->RemoveObserver(webStateObserverBridge_.get());
+    webStateObserverBridge_.reset();
+    webState_ = nullptr;
+  }
 }
 
 #pragma mark -
@@ -225,7 +244,7 @@ void GetFormAndField(autofill::FormData* form,
 // if detachFromWebState has been called.
 - (autofill::AutofillManager*)autofillManagerFromWebState:
     (web::WebState*)webState {
-  if (!webState || !_webStateObserverBridge)
+  if (!webState || !webStateObserverBridge_)
     return nullptr;
   return autofill::AutofillDriverIOS::FromWebState(webState)
       ->autofill_manager();
@@ -622,12 +641,14 @@ void GetFormAndField(autofill::FormData* form,
 #pragma mark CRWWebStateObserver
 
 - (void)webStateDestroyed:(web::WebState*)webState {
+  DCHECK_EQ(webState_, webState);
   [self detachFromWebState];
 }
 
 - (void)webState:(web::WebState*)webState
     didSubmitDocumentWithFormNamed:(const std::string&)formName
                      userInitiated:(BOOL)userInitiated {
+  DCHECK_EQ(webState_, webState);
   if (!prefService_->GetBoolean(autofill::prefs::kAutofillEnabled))
     return;
 
@@ -668,6 +689,7 @@ void GetFormAndField(autofill::FormData* form,
 }
 
 - (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
+  DCHECK_EQ(webState_, webState);
   if (!prefService_->GetBoolean(autofill::prefs::kAutofillEnabled) ||
       !webState->ContentIsHTML()) {
     return;
@@ -676,6 +698,7 @@ void GetFormAndField(autofill::FormData* form,
 }
 
 - (void)processPage:(web::WebState*)webState {
+  DCHECK_EQ(webState_, webState);
   web::URLVerificationTrustLevel trustLevel;
   const GURL pageURL(webState->GetCurrentURL(&trustLevel));
   if (trustLevel != web::URLVerificationTrustLevel::kAbsolute) {
@@ -722,6 +745,7 @@ void GetFormAndField(autofill::FormData* form,
 
 - (void)webState:(web::WebState*)webState
     didRegisterFormActivity:(const web::FormActivityParams&)params {
+  DCHECK_EQ(webState_, webState);
   if (!prefService_->GetBoolean(autofill::prefs::kAutofillEnabled))
     return;
   web::URLVerificationTrustLevel trustLevel;
@@ -774,10 +798,13 @@ void GetFormAndField(autofill::FormData* form,
                completionHandler:completionHandler];
 }
 
+#pragma mark - Private methods.
+
 - (void)processFormActivityExtractedData:(const FormDataVector&)forms
                                fieldName:(const std::string&)fieldName
                                     type:(const std::string&)type
                                 webState:(web::WebState*)webState {
+  DCHECK_EQ(webState_, webState);
   autofill::AutofillManager* autofillManager =
       [self autofillManagerFromWebState:webState];
   if (!autofillManager)
