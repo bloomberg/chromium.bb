@@ -4,8 +4,6 @@
 
 #include <memory>
 #include <string>
-#include <utility>
-#include <vector>
 
 #include "base/command_line.h"
 #include "base/i18n/base_i18n_switches.h"
@@ -16,17 +14,11 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/permissions/permission_manager.h"
-#include "chrome/browser/permissions/permission_manager_factory.h"
-#include "chrome/browser/permissions/permission_request_manager.h"
-#include "chrome/browser/permissions/permission_result.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/permission_bubble/mock_permission_prompt_factory.h"
 #include "chrome/browser/ui/search/instant_test_utils.h"
 #include "chrome/browser/ui/search/local_ntp_test_utils.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -35,7 +27,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/content_settings/core/common/content_settings.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url.h"
@@ -46,8 +37,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
-#include "content/public/test/test_utils.h"
-#include "media/base/media_switches.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/WebKit/public/platform/web_feature.mojom.h"
@@ -127,7 +116,7 @@ class LocalNTPTest : public InProcessBrowserTest {
     TemplateURLService* template_url_service =
         TemplateURLServiceFactory::GetForProfile(browser()->profile());
     TemplateURL* template_url =
-        template_url_service->Add(base::MakeUnique<TemplateURL>(data));
+        template_url_service->Add(std::make_unique<TemplateURL>(data));
     template_url_service->SetUserSelectedDefaultSearchProvider(template_url);
   }
 
@@ -628,112 +617,4 @@ IN_PROC_BROWSER_TEST_F(LocalNTPJavascriptTest, LoadsIframe) {
   EXPECT_GT(total_thumbs, 0);
   EXPECT_EQ(total_thumbs, succeeded_imgs);
   EXPECT_EQ(0, failed_imgs);
-}
-
-class LocalNTPVoiceSearchSmokeTest : public InProcessBrowserTest {
- public:
-  LocalNTPVoiceSearchSmokeTest() {}
-
- private:
-  void SetUp() override {
-    feature_list_.InitWithFeatures(
-        {features::kUseGoogleLocalNtp, features::kVoiceSearchOnLocalNtp}, {});
-    InProcessBrowserTest::SetUp();
-  }
-
-  void SetUpCommandLine(base::CommandLine* cmdline) override {
-    // Requesting microphone permission doesn't work unless there's a device
-    // available.
-    cmdline->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
-  }
-
-  base::test::ScopedFeatureList feature_list_;
-};
-
-IN_PROC_BROWSER_TEST_F(LocalNTPVoiceSearchSmokeTest,
-                       GoogleNTPWithVoiceLoadsWithoutError) {
-  // Open a new blank tab.
-  content::WebContents* active_tab =
-      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
-  ASSERT_FALSE(search::IsInstantNTP(active_tab));
-
-  // Attach a console observer, listening for any message ("*" pattern).
-  content::ConsoleObserverDelegate console_observer(active_tab, "*");
-  active_tab->SetDelegate(&console_observer);
-
-  // Navigate to the NTP.
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
-  ASSERT_TRUE(search::IsInstantNTP(active_tab));
-  ASSERT_EQ(GURL(chrome::kChromeSearchLocalNtpUrl),
-            active_tab->GetController().GetVisibleEntry()->GetURL());
-
-  // Make sure the microphone icon in the fakebox is present and visible.
-  bool fakebox_microphone_is_visible = false;
-  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
-      active_tab,
-      "!!document.getElementById('fakebox-microphone') && "
-      "!document.getElementById('fakebox-microphone').hidden",
-      &fakebox_microphone_is_visible));
-  EXPECT_TRUE(fakebox_microphone_is_visible);
-
-  // We shouldn't have gotten any console error messages.
-  EXPECT_TRUE(console_observer.message().empty()) << console_observer.message();
-}
-
-IN_PROC_BROWSER_TEST_F(LocalNTPVoiceSearchSmokeTest, MicrophonePermission) {
-  // Open a new NTP.
-  content::WebContents* active_tab = local_ntp_test_utils::OpenNewTab(
-      browser(), GURL(chrome::kChromeUINewTabURL));
-  ASSERT_TRUE(search::IsInstantNTP(active_tab));
-  ASSERT_EQ(GURL(chrome::kChromeSearchLocalNtpUrl),
-            active_tab->GetController().GetVisibleEntry()->GetURL());
-
-  PermissionRequestManager* request_manager =
-      PermissionRequestManager::FromWebContents(active_tab);
-  MockPermissionPromptFactory prompt_factory(request_manager);
-
-  PermissionManager* permission_manager =
-      PermissionManagerFactory::GetForProfile(browser()->profile());
-
-  // Make sure microphone permission for the NTP isn't set yet.
-  const PermissionResult mic_permission_before =
-      permission_manager->GetPermissionStatus(
-          CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
-          GURL(chrome::kChromeSearchLocalNtpUrl).GetOrigin(),
-          GURL(chrome::kChromeUINewTabURL).GetOrigin());
-  ASSERT_EQ(CONTENT_SETTING_ASK, mic_permission_before.content_setting);
-  ASSERT_EQ(PermissionStatusSource::UNSPECIFIED, mic_permission_before.source);
-
-  ASSERT_EQ(0, prompt_factory.TotalRequestCount());
-
-  // Auto-approve the permissions bubble as soon as it shows up.
-  prompt_factory.set_response_type(PermissionRequestManager::ACCEPT_ALL);
-
-  // Click on the microphone button, which will trigger a permission request.
-  ASSERT_TRUE(content::ExecuteScript(
-      active_tab, "document.getElementById('fakebox-microphone').click();"));
-
-  // Make sure the request arrived.
-  prompt_factory.WaitForPermissionBubble();
-  EXPECT_EQ(1, prompt_factory.show_count());
-  EXPECT_EQ(1, prompt_factory.request_count());
-  EXPECT_EQ(1, prompt_factory.TotalRequestCount());
-  EXPECT_TRUE(prompt_factory.RequestTypeSeen(
-      PermissionRequestType::PERMISSION_MEDIASTREAM_MIC));
-  // ...and that it showed the Google base URL, not the NTP URL.
-  const GURL google_base_url(
-      UIThreadSearchTermsData(browser()->profile()).GoogleBaseURLValue());
-  EXPECT_TRUE(prompt_factory.RequestOriginSeen(google_base_url.GetOrigin()));
-  EXPECT_FALSE(prompt_factory.RequestOriginSeen(
-      GURL(chrome::kChromeUINewTabURL).GetOrigin()));
-  EXPECT_FALSE(prompt_factory.RequestOriginSeen(
-      GURL(chrome::kChromeSearchLocalNtpUrl).GetOrigin()));
-
-  // Now microphone permission for the NTP should be set.
-  const PermissionResult mic_permission_after =
-      permission_manager->GetPermissionStatus(
-          CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
-          GURL(chrome::kChromeSearchLocalNtpUrl).GetOrigin(),
-          GURL(chrome::kChromeUINewTabURL).GetOrigin());
-  EXPECT_EQ(CONTENT_SETTING_ALLOW, mic_permission_after.content_setting);
 }
