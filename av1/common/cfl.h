@@ -14,6 +14,12 @@
 
 #include "av1/common/blockd.h"
 
+static INLINE int is_cfl_allowed(const MB_MODE_INFO *mbmi) {
+  const BLOCK_SIZE bsize = mbmi->sb_type;
+  assert(bsize >= BLOCK_4X4);  // Intra luma partitions can't be < 4X4
+  assert(bsize < BLOCK_SIZES_ALL);
+  return (bsize >= BLOCK_4X4) && (bsize < BLOCK_SIZES);
+}
 static INLINE int get_scaled_luma_q0(int alpha_q3, int16_t pred_buf_q3) {
   int scaled_luma_q6 = alpha_q3 * pred_buf_q3;
   return ROUND_POWER_OF_TWO_SIGNED(scaled_luma_q6, 6);

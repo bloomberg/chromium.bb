@@ -1359,6 +1359,12 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
 
 #if CONFIG_CFL
       if (mbmi->uv_mode == UV_CFL_PRED) {
+        if (!is_cfl_allowed(mbmi)) {
+          aom_internal_error(
+              &cm->error, AOM_CODEC_UNSUP_BITSTREAM,
+              "Chroma from Luma (CfL) cannot be signaled for a %dx%d block.",
+              block_size_wide[bsize], block_size_high[bsize]);
+        }
         write_cfl_alphas(ec_ctx, mbmi->cfl_alpha_idx, mbmi->cfl_alpha_signs, w);
       }
 #endif
@@ -1658,6 +1664,12 @@ static void write_mb_modes_kf(AV1_COMMON *cm, MACROBLOCKD *xd,
 
 #if CONFIG_CFL
     if (mbmi->uv_mode == UV_CFL_PRED) {
+      if (!is_cfl_allowed(mbmi)) {
+        aom_internal_error(
+            &cm->error, AOM_CODEC_UNSUP_BITSTREAM,
+            "Chroma from Luma (CfL) cannot be signaled for a %dx%d block.",
+            block_size_wide[bsize], block_size_high[bsize]);
+      }
       write_cfl_alphas(ec_ctx, mbmi->cfl_alpha_idx, mbmi->cfl_alpha_signs, w);
     }
 #endif
