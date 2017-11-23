@@ -7813,10 +7813,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="BlueZ.AdapterLost" units="losses">
+<histogram name="BlueZ.AdapterLost" units="seconds">
   <owner>mcchou@chromium.org</owner>
   <summary>
-    This is specific to Chrome OS. Records an occurance of a Bluetooth adapter
+    This is specific to Chrome OS. Records a duration of a Bluetooth adapter
     being lost. This helps us better understand the Bluetooth controller drop
     issue in the field.
   </summary>
