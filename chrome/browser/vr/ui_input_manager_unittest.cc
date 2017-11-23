@@ -338,7 +338,7 @@ TEST_F(UiInputManagerContentTest, TreeVsZOrder) {
   EXPECT_EQ(content_quad->id(), reticle_model.target_element_id);
 
   // We will now move the content quad behind the backplane.
-  content_quad->SetTranslate(0, 0, -2.0 * kTextureOffset);
+  content_quad->SetTranslate(0, 0, -1.0);
   EXPECT_TRUE(AnimateBy(MsToDelta(500)));
   input_manager_->HandleInput(MsToTicks(1), controller_model, &reticle_model,
                               &gesture_list);

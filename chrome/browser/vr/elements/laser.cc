@@ -76,7 +76,7 @@ void Laser::Render(UiElementRenderer* renderer,
   // Find the length of the beam (from hand to target).
   const float laser_length =
       std::sqrt(model_->controller.laser_origin.SquaredDistanceTo(
-          ScalePoint(model_->reticle.target_point, kReticleOffset)));
+          model_->reticle.target_point));
 
   // Build a beam, originating from the origin.
   gfx::Transform mat;
