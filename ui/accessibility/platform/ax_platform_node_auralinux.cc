@@ -445,6 +445,64 @@ static const GInterfaceInfo DocumentInfo = {
     nullptr, nullptr};
 
 //
+// AtkImage interface.
+//
+
+static void ax_platform_node_auralinux_get_image_position(
+    AtkImage* atk_img,
+    gint* x,
+    gint* y,
+    AtkCoordType coord_type) {
+  g_return_if_fail(ATK_IMAGE(atk_img));
+
+  AtkObject* atk_object = ATK_OBJECT(atk_img);
+  ui::AXPlatformNodeAuraLinux* obj =
+      AtkObjectToAXPlatformNodeAuraLinux(atk_object);
+  if (!obj)
+    return;
+
+  obj->GetPosition(x, y, coord_type);
+}
+
+static const gchar* ax_platform_node_auralinux_get_image_description(
+    AtkImage* atk_img) {
+  g_return_val_if_fail(ATK_IMAGE(atk_img), nullptr);
+
+  AtkObject* atk_object = ATK_OBJECT(atk_img);
+  ui::AXPlatformNodeAuraLinux* obj =
+      AtkObjectToAXPlatformNodeAuraLinux(atk_object);
+  if (!obj)
+    return nullptr;
+
+  return obj->GetStringAttribute(ui::AX_ATTR_DESCRIPTION).c_str();
+}
+
+static void ax_platform_node_auralinux_get_image_size(AtkImage* atk_img,
+                                                      gint* width,
+                                                      gint* height) {
+  g_return_if_fail(ATK_IMAGE(atk_img));
+
+  AtkObject* atk_object = ATK_OBJECT(atk_img);
+  ui::AXPlatformNodeAuraLinux* obj =
+      AtkObjectToAXPlatformNodeAuraLinux(atk_object);
+  if (!obj)
+    return;
+
+  obj->GetSize(width, height);
+}
+
+void ax_image_interface_base_init(AtkImageIface* iface) {
+  iface->get_image_position = ax_platform_node_auralinux_get_image_position;
+  iface->get_image_description =
+      ax_platform_node_auralinux_get_image_description;
+  iface->get_image_size = ax_platform_node_auralinux_get_image_size;
+}
+
+static const GInterfaceInfo ImageInfo = {
+    reinterpret_cast<GInterfaceInitFunc>(ax_image_interface_base_init), nullptr,
+    nullptr};
+
+//
 // The rest of the AXPlatformNodeAtk code, not specific to one
 // of the Atk* interfaces.
 //
@@ -591,6 +649,8 @@ GType AXPlatformNodeAuraLinux::GetAccessibilityGType() {
     g_type_add_interface_static(type, ATK_TYPE_ACTION, &ActionInfo);
   if (interface_mask & (1 << ATK_DOCUMENT_INTERFACE))
     g_type_add_interface_static(type, ATK_TYPE_DOCUMENT, &DocumentInfo);
+  if (interface_mask & (1 << ATK_IMAGE_INTERFACE))
+    g_type_add_interface_static(type, ATK_TYPE_IMAGE, &ImageInfo);
 
   return type;
 }
