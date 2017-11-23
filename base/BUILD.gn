@@ -2750,6 +2750,7 @@ if (is_android) {
       "test/android/javatests/src/org/chromium/base/test/params/ParameterizedRunnerDelegate.java",
       "test/android/javatests/src/org/chromium/base/test/params/ParameterizedRunnerDelegateCommon.java",
       "test/android/javatests/src/org/chromium/base/test/params/ParameterAnnotations.java",
+      "test/android/javatests/src/org/chromium/base/test/params/ParameterProvider.java",
       "test/android/javatests/src/org/chromium/base/test/util/AdvancedMockContext.java",
       "test/android/javatests/src/org/chromium/base/test/util/AnnotationProcessor.java",
       "test/android/javatests/src/org/chromium/base/test/util/CallbackHelper.java",

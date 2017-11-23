@@ -34,7 +34,7 @@ import java.util.Map;
  * value(tag) to ParameterSet List.
  */
 public final class ParameterizedRunner extends Suite {
-    private static final String TAG = "cr_ParameterizedRunner";
+    private static final String TAG = "ParameterizedRunner";
     private final List<Runner> mRunners;
 
     /**
@@ -44,7 +44,7 @@ public final class ParameterizedRunner extends Suite {
      *              (extends only Object)
      */
     public ParameterizedRunner(Class<?> klass) throws Throwable {
-        super(klass, Collections.<Runner>emptyList()); // pass in empty list of runners
+        super(klass, Collections.emptyList()); // pass in empty list of runners
         validate();
         mRunners = createRunners(getTestClass());
     }
