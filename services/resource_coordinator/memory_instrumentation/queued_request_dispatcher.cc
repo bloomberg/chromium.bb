@@ -265,7 +265,7 @@ void QueuedRequestDispatcher::Finalize(QueuedRequest* request,
       continue;
 
     mojom::OSMemDumpPtr os_dump = CreatePublicOSDump(*raw_os_dump);
-    os_dump->shared_footprint_kb = shared_footprints[pid];
+    os_dump->shared_footprint_kb = shared_footprints[pid] / 1024;
     if (request->add_to_trace) {
       tracing_observer->AddOsDumpToTraceIfEnabled(
           request->args, pid, os_dump.get(), &raw_os_dump->memory_maps);
