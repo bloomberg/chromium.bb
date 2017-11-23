@@ -29,6 +29,8 @@
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_mediator.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_style.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_view_controller.h"
+#import "ios/chrome/browser/ui/toolbar/keyboard_assist/toolbar_assistive_keyboard_delegate.h"
+#import "ios/chrome/browser/ui/toolbar/keyboard_assist/toolbar_assistive_keyboard_views.h"
 #import "ios/chrome/browser/ui/toolbar/public/web_toolbar_controller_constants.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_model_ios.h"
 #import "ios/chrome/browser/ui/url_loader.h"
@@ -55,7 +57,8 @@
 // LocationBarView containing the omnibox. At some point, this property and the
 // |_locationBar| should become a LocationBarCoordinator.
 @property(nonatomic, strong) LocationBarView* locationBarView;
-
+@property(nonatomic, strong)
+    ToolbarAssistiveKeyboardDelegateImpl* keyboardDelegate;
 @end
 
 @implementation ToolbarCoordinator
@@ -63,6 +66,7 @@
 @synthesize browserState = _browserState;
 @synthesize buttonUpdater = _buttonUpdater;
 @synthesize dispatcher = _dispatcher;
+@synthesize keyboardDelegate = _keyboardDelegate;
 @synthesize locationBarView = _locationBarView;
 @synthesize mediator = _mediator;
 @synthesize URLLoader = _URLLoader;
@@ -100,6 +104,13 @@
                                    tintColor:tintColor];
   _locationBar = base::MakeUnique<LocationBarControllerImpl>(
       self.locationBarView, self.browserState, self, self.dispatcher);
+
+  self.keyboardDelegate = [[ToolbarAssistiveKeyboardDelegateImpl alloc] init];
+  self.keyboardDelegate.dispatcher = self.dispatcher;
+  self.keyboardDelegate.omniboxTextField = self.locationBarView.textField;
+  ConfigureAssistiveKeyboardViews(self.locationBarView.textField, kDotComTLD,
+                                  self.keyboardDelegate);
+
   _popupView = _locationBar->CreatePopupView(self);
   // End of TODO(crbug.com/785253):.
 
@@ -129,9 +140,16 @@
 
 #pragma mark - Public
 
+- (void)updateOmniboxState {
+  _locationBar->SetShouldShowHintText(
+      [self.delegate toolbarModelIOS]->ShouldDisplayHintText());
+  _locationBar->OnToolbarUpdated();
+}
+
 - (void)updateToolbarState {
   // TODO(crbug.com/784911): This function should probably triggers something in
   // the mediator. Investigate how to handle it.
+  [self updateOmniboxState];
 }
 
 - (void)updateToolbarForSideSwipeSnapshot:(web::WebState*)webState {
