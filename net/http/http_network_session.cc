@@ -124,6 +124,7 @@ HttpNetworkSession::Params::Params()
       quic_migrate_sessions_on_network_change_v2(false),
       quic_migrate_sessions_early(false),
       quic_allow_server_migration(false),
+      quic_allow_remote_alt_svc(false),
       quic_disable_bidirectional_streams(false),
       quic_force_hol_blocking(false),
       quic_race_cert_verification(false),
