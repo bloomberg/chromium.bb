@@ -243,9 +243,9 @@ void ExternalProtocolHandler::LaunchUrlWithDelegate(
   // The worker creates tasks with references to itself and puts them into
   // message loops.
   shell_integration::DefaultWebClientWorkerCallback callback = base::Bind(
-      &OnDefaultProtocolClientWorkerFinished, url, render_process_host_id,
-      render_view_routing_id, block_state == UNKNOWN, page_transition,
-      has_user_gesture, delegate);
+      &OnDefaultProtocolClientWorkerFinished, escaped_url,
+      render_process_host_id, render_view_routing_id, block_state == UNKNOWN,
+      page_transition, has_user_gesture, delegate);
 
   // Start the check process running. This will send tasks to a worker task
   // runner and when the answer is known will send the result back to
