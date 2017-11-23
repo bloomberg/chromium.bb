@@ -293,8 +293,13 @@ TEST_F(SavePasswordsCollectionViewControllerTest, PropagateDeletionToStore) {
   form.username_value = base::ASCIIToUTF16("test@egmail.com");
   form.password_element = base::ASCIIToUTF16("Passwd");
   form.password_value = base::ASCIIToUTF16("test");
+  form.submit_element = base::ASCIIToUTF16("signIn");
   form.signon_realm = "http://www.example.com/";
   form.scheme = autofill::PasswordForm::SCHEME_HTML;
+  form.blacklisted_by_user = false;
+
+  AddPasswordForm(std::make_unique<autofill::PasswordForm>(form));
+
   EXPECT_CALL(GetMockStore(), RemoveLogin(form));
   [save_password_controller deletePassword:form];
 }

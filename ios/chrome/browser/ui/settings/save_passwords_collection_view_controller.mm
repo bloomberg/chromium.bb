@@ -594,12 +594,17 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
 
 - (void)deletePassword:(const autofill::PasswordForm&)form {
   passwordStore_->RemoveLogin(form);
-  for (auto it = savedForms_.begin(); it != savedForms_.end(); ++it) {
-    if (**it == form) {
-      savedForms_.erase(it);
-      break;
-    }
-  }
+
+  std::vector<std::unique_ptr<autofill::PasswordForm>>& forms =
+      form.blacklisted_by_user ? blacklistedForms_ : savedForms_;
+  auto iterator = std::find_if(
+      forms.begin(), forms.end(),
+      [&form](const std::unique_ptr<autofill::PasswordForm>& value) {
+        return *value == form;
+      });
+  DCHECK(iterator != forms.end());
+  forms.erase(iterator);
+
   [self updateEditButton];
   [self reloadData];
   [self.navigationController popViewControllerAnimated:YES];
