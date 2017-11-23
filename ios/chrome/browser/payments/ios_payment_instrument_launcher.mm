@@ -135,11 +135,14 @@ bool IOSPaymentInstrumentLauncher::LaunchIOSPaymentInstrument(
             CompleteLaunchRequest("", "");
           }
         }];
-  } else {
+  }
+#if !defined(__IPHONE_10_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_10_0
+  else {
     if (![[UIApplication sharedApplication] openURL:url]) {
       CompleteLaunchRequest("", "");
     }
   }
+#endif
 
   return true;
 }

@@ -73,7 +73,16 @@ void LaunchMailClientApp(const GURL& URL, MailtoHandler* handler) {
   UMA_HISTOGRAM_BOOLEAN("IOS.MailtoURLRewritten", launchURL != nil);
   NSURL* URLToOpen = [launchURL length] ? [NSURL URLWithString:launchURL]
                                         : net::NSURLWithGURL(URL);
-  [[UIApplication sharedApplication] openURL:URLToOpen];
+  if (@available(iOS 10, *)) {
+    [[UIApplication sharedApplication] openURL:URLToOpen
+                                       options:@{}
+                             completionHandler:nil];
+  }
+#if !defined(__IPHONE_10_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_10_0
+  else {
+    [[UIApplication sharedApplication] openURL:URLToOpen];
+  }
+#endif
 }
 
 }  // namespace
@@ -324,9 +333,12 @@ void LaunchMailClientApp(const GURL& URL, MailtoHandler* handler) {
 
   // If the following call returns YES, an external application is about to be
   // launched and Chrome will go into the background now.
-  // TODO(crbug.com/622735): This call still needs to be updated.
-  // It's heavily nested so some refactoring is needed.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+  // TODO(crbug.com/774736): This call still needs to be
+  // updated. It's heavily nested so some refactoring is needed.
   return [[UIApplication sharedApplication] openURL:URL];
+#pragma clang diagnostic pop
 }
 
 @end
