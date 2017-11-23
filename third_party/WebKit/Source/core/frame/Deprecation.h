@@ -51,6 +51,7 @@ class CORE_EXPORT Deprecation {
 
   static void CountDeprecationFeaturePolicy(const Document&,
                                             FeaturePolicyFeature);
+
   static String DeprecationMessage(WebFeature);
 
   // Note: this is only public for tests.
@@ -61,8 +62,9 @@ class CORE_EXPORT Deprecation {
   // CSSPropertyIDs that aren't deprecated return an empty string.
   static String DeprecationMessage(CSSPropertyID unresolved_property);
 
-  // Generate a deprecation report, to be routed to any ReportingObservers.
-  static void GenerateReport(const LocalFrame*, const String& message);
+  // Generates a deprecation report, to be routed to the Reporting API and any
+  // ReportingObservers. Also sends the deprecation message to the console.
+  static void GenerateReport(const LocalFrame*, WebFeature);
 
   BitVector css_property_deprecation_bits_;
   unsigned mute_count_;

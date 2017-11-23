@@ -8,7 +8,8 @@
     NoInterfaceObject,
     RuntimeEnabled=ReportingObserver
 ] interface DeprecationReport : ReportBody {
-  // TODO(paulmeyer): Add additional data, including: id, anticipatedRemoval.
+  readonly attribute DOMString id;
+  readonly attribute Date? anticipatedRemoval;
   readonly attribute DOMString message;
   readonly attribute DOMString sourceFile;
   readonly attribute long lineNumber;

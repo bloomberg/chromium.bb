@@ -14,12 +14,22 @@ class CORE_EXPORT DeprecationReport : public ReportBody {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  DeprecationReport(const String& message,
+  DeprecationReport(const String& id,
+                    double anticipatedRemoval,
+                    const String& message,
                     std::unique_ptr<SourceLocation> location)
-      : message_(message), location_(std::move(location)) {}
+      : id_(id),
+        anticipatedRemoval_(anticipatedRemoval),
+        message_(message),
+        location_(std::move(location)) {}
 
   ~DeprecationReport() override {}
 
+  String id() const { return id_; }
+  double anticipatedRemoval(bool& is_null) const {
+    is_null = !anticipatedRemoval_;
+    return anticipatedRemoval_;
+  }
   String message() const { return message_; }
   long lineNumber() const { return location_->LineNumber(); }
   String sourceFile() const {
@@ -29,6 +39,8 @@ class CORE_EXPORT DeprecationReport : public ReportBody {
   virtual void Trace(blink::Visitor* visitor) { ReportBody::Trace(visitor); }
 
  private:
+  const String id_;
+  const double anticipatedRemoval_;
   const String message_;
   std::unique_ptr<SourceLocation> location_;
 };
