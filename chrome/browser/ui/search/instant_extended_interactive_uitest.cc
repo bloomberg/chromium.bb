@@ -6,7 +6,6 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
@@ -128,16 +127,8 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, DISABLED_NavigateBackToNTP) {
   EXPECT_TRUE(search::IsInstantNTP(active_tab));
 }
 
-// Flaky: crbug.com/267119
-#if defined(OS_WIN)
-#define MAYBE_DispatchMVChangeEventWhileNavigatingBackToNTP \
-  DispatchMVChangeEventWhileNavigatingBackToNTP
-#else
-#define MAYBE_DispatchMVChangeEventWhileNavigatingBackToNTP \
-  DISABLED_DispatchMVChangeEventWhileNavigatingBackToNTP
-#endif
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
-                       MAYBE_DispatchMVChangeEventWhileNavigatingBackToNTP) {
+                       DispatchMVChangeEventWhileNavigatingBackToNTP) {
   // Setup Instant.
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
   FocusOmnibox();
