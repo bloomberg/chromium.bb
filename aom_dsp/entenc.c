@@ -190,6 +190,7 @@ void od_ec_encode_bool_q15(od_ec_enc *enc, int val, unsigned f) {
   r = enc->rng;
   OD_ASSERT(32768U <= r);
   v = ((r >> 8) * (uint32_t)(f >> EC_PROB_SHIFT) >> (7 - EC_PROB_SHIFT));
+  v += EC_MIN_PROB;
   if (val) l += r - v;
   r = val ? v : r - v;
   od_ec_enc_normalize(enc, l, r);
