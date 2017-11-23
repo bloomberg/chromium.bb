@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VR_TEST_UI_SCENE_MANAGER_TEST_H_
-#define CHROME_BROWSER_VR_TEST_UI_SCENE_MANAGER_TEST_H_
+#ifndef CHROME_BROWSER_VR_TEST_UI_TEST_H_
+#define CHROME_BROWSER_VR_TEST_UI_TEST_H_
 
 #include <vector>
 
@@ -23,10 +23,10 @@ class UiElement;
 class UiScene;
 struct Model;
 
-class UiSceneManagerTest : public testing::Test {
+class UiTest : public testing::Test {
  public:
-  UiSceneManagerTest();
-  ~UiSceneManagerTest() override;
+  UiTest();
+  ~UiTest() override;
 
   void SetUp() override;
 
@@ -46,8 +46,8 @@ class UiSceneManagerTest : public testing::Test {
     kAutopresented = true,
   };
 
-  void MakeManager(InCct in_cct, InWebVr in_web_vr);
-  void MakeAutoPresentedManager();
+  void CreateScene(InCct in_cct, InWebVr in_web_vr);
+  void CreateSceneForAutoPresentation();
 
  protected:
   bool IsVisible(UiElementName name) const;
@@ -96,7 +96,7 @@ class UiSceneManagerTest : public testing::Test {
   UiScene* scene_ = nullptr;
 
  private:
-  void MakeManagerInternal(InCct in_cct,
+  void CreateSceneInternal(InCct in_cct,
                            InWebVr in_web_vr,
                            WebVrAutopresented web_vr_autopresented);
 
@@ -105,4 +105,4 @@ class UiSceneManagerTest : public testing::Test {
 
 }  // namespace vr
 
-#endif  // CHROME_BROWSER_VR_TEST_UI_SCENE_MANAGER_TEST_H_
+#endif  // CHROME_BROWSER_VR_TEST_UI_TEST_H_

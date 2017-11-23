@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VR_UI_SCENE_MANAGER_H_
-#define CHROME_BROWSER_VR_UI_SCENE_MANAGER_H_
+#ifndef CHROME_BROWSER_VR_UI_SCENE_CREATOR_H_
+#define CHROME_BROWSER_VR_UI_SCENE_CREATOR_H_
 
 #include "base/macros.h"
 #include "chrome/browser/vr/elements/ui_element_name.h"
@@ -16,13 +16,13 @@ class UiScene;
 struct Model;
 
 // The scene manager creates our scene hierarchy.
-class UiSceneManager {
+class UiSceneCreator {
  public:
-  UiSceneManager(UiBrowserInterface* browser,
+  UiSceneCreator(UiBrowserInterface* browser,
                  UiScene* scene,
                  ContentInputDelegate* content_input_delegate,
                  Model* model);
-  ~UiSceneManager();
+  ~UiSceneCreator();
 
   void CreateScene();
 
@@ -53,9 +53,9 @@ class UiSceneManager {
   ContentInputDelegate* content_input_delegate_;
   Model* model_;
 
-  DISALLOW_COPY_AND_ASSIGN(UiSceneManager);
+  DISALLOW_COPY_AND_ASSIGN(UiSceneCreator);
 };
 
 }  // namespace vr
 
-#endif  // CHROME_BROWSER_VR_UI_SCENE_MANAGER_H_
+#endif  // CHROME_BROWSER_VR_UI_SCENE_CREATOR_H_
