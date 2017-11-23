@@ -21,5 +21,4 @@ typemaps = [
   "//services/viz/public/cpp/compositing/surface_id.typemap",
   "//services/viz/public/cpp/compositing/surface_info.typemap",
   "//services/viz/public/cpp/compositing/transferable_resource.typemap",
-  "//services/viz/public/cpp/compositing/texture_mailbox.typemap",
 ]

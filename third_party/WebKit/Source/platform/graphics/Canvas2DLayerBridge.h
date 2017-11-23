@@ -31,7 +31,6 @@
 #include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
 #include "cc/layers/texture_layer_client.h"
-#include "components/viz/common/quads/texture_mailbox.h"
 #include "platform/PlatformExport.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/ImageBufferSurface.h"

@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/viz/common/quads/texture_mailbox.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/common/mailbox.h"
+#include "gpu/command_buffer/common/sync_token.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/CanvasColorParams.h"
 #include "platform/graphics/WebGraphicsContext3DProviderWrapper.h"

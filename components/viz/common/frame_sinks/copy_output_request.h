@@ -13,9 +13,11 @@
 #include "base/task_runner.h"
 #include "base/unguessable_token.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
-#include "components/viz/common/quads/texture_mailbox.h"
 #include "components/viz/common/resources/single_release_callback.h"
 #include "components/viz/common/viz_common_export.h"
+#include "gpu/command_buffer/common/mailbox.h"
+#include "gpu/command_buffer/common/sync_token.h"
+#include "mojo/public/cpp/bindings/struct_traits.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
 

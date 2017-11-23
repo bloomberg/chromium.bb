@@ -33,7 +33,7 @@ class CopyOutputResultSenderImpl : public viz::mojom::CopyOutputResultSender {
     }
   }
 
-  // mojom::TextureMailboxReleaser implementation:
+  // mojom::CopyOutputResultSender implementation.
   void SendResult(std::unique_ptr<viz::CopyOutputResult> result) override {
     if (!result_callback_)
       return;

@@ -7,10 +7,12 @@
 
 #include <memory>
 
-#include "components/viz/common/quads/texture_mailbox.h"
 #include "components/viz/common/resources/single_release_callback.h"
 #include "components/viz/common/viz_common_export.h"
+#include "gpu/command_buffer/common/mailbox.h"
+#include "gpu/command_buffer/common/sync_token.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/rect.h"
 
 class SkBitmap;

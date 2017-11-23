@@ -1,4 +1,6 @@
 include_rules = [
+  "+gpu/command_buffer/common",
+  "+mojo/public/cpp/bindings",
   "+third_party/libyuv",
   "+third_party/skia",
 ]

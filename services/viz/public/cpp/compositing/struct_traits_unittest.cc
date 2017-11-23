@@ -50,7 +50,6 @@
 #include "services/viz/public/interfaces/compositing/returned_resource.mojom.h"
 #include "services/viz/public/interfaces/compositing/surface_info.mojom.h"
 #include "services/viz/public/interfaces/compositing/surface_sequence.mojom.h"
-#include "services/viz/public/interfaces/compositing/texture_mailbox.mojom.h"
 #include "services/viz/public/interfaces/compositing/transferable_resource.mojom.h"
 #include "skia/public/interfaces/bitmap_skbitmap_struct_traits.h"
 #include "skia/public/interfaces/blur_image_filter_tile_mode_struct_traits.h"
@@ -1281,44 +1280,6 @@ TEST_F(StructTraitsTest, CopyOutputResult_Texture) {
   // If the CopyOutputResult callback is called (which is the intended
   // behaviour), this will exit. Otherwise, this test will time out and fail.
   run_loop.Run();
-}
-
-TEST_F(StructTraitsTest, TextureMailbox) {
-  const int8_t mailbox_name[GL_MAILBOX_SIZE_CHROMIUM] = {
-      0, 9, 8, 7, 6, 5, 4, 3, 2, 1, 9, 7, 5, 3, 1, 2};
-  const gpu::CommandBufferNamespace command_buffer_namespace = gpu::IN_PROCESS;
-  const int32_t extra_data_field = 0xbeefbeef;
-  const gpu::CommandBufferId command_buffer_id(
-      gpu::CommandBufferId::FromUnsafeValue(0xdeadbeef));
-  const uint64_t release_count = 0xdeadbeefdeadL;
-  gpu::SyncToken sync_token(command_buffer_namespace, extra_data_field,
-                            command_buffer_id, release_count);
-  sync_token.SetVerifyFlush();
-  const uint32_t texture_target = 1337;
-  const gfx::Size size_in_pixels(93, 24);
-  const bool is_overlay_candidate = true;
-  const bool nearest_neighbor = true;
-  const gfx::ColorSpace color_space = gfx::ColorSpace(
-      gfx::ColorSpace::PrimaryID::BT470M, gfx::ColorSpace::TransferID::GAMMA28,
-      gfx::ColorSpace::MatrixID::BT2020_NCL, gfx::ColorSpace::RangeID::LIMITED);
-
-  gpu::Mailbox mailbox;
-  mailbox.SetName(mailbox_name);
-  TextureMailbox input(mailbox, sync_token, texture_target, size_in_pixels,
-                       is_overlay_candidate);
-  input.set_nearest_neighbor(nearest_neighbor);
-  input.set_color_space(color_space);
-
-  TextureMailbox output;
-  SerializeAndDeserialize<mojom::TextureMailbox>(input, &output);
-
-  EXPECT_EQ(mailbox, output.mailbox());
-  EXPECT_EQ(sync_token, output.sync_token());
-  EXPECT_EQ(texture_target, output.target());
-  EXPECT_EQ(size_in_pixels, output.size_in_pixels());
-  EXPECT_EQ(is_overlay_candidate, output.is_overlay_candidate());
-  EXPECT_EQ(nearest_neighbor, output.nearest_neighbor());
-  EXPECT_EQ(color_space, output.color_space());
 }
 
 }  // namespace viz

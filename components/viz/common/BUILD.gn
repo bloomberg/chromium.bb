@@ -94,8 +94,6 @@ viz_component("common") {
     "quads/surface_draw_quad.h",
     "quads/texture_draw_quad.cc",
     "quads/texture_draw_quad.h",
-    "quads/texture_mailbox.cc",
-    "quads/texture_mailbox.h",
     "quads/tile_draw_quad.cc",
     "quads/tile_draw_quad.h",
     "quads/yuv_video_draw_quad.cc",

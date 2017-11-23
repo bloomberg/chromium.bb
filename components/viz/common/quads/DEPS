@@ -5,7 +5,6 @@ include_rules = [
   "+cc/paint",
 
   "+gpu/command_buffer/common",
-  "+mojo/public/cpp/bindings",
   "+third_party/skia",
   "+ui/latency",
 ]
