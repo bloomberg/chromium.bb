@@ -24,13 +24,20 @@
 @implementation ToolbarMediator {
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
   std::unique_ptr<WebStateListObserverBridge> _webStateListObserver;
-  std::unique_ptr<ScopedObserver<WebStateList, WebStateListObserverBridge>>
-      _scopedWebStateListObserver;
 }
 
 @synthesize consumer = _consumer;
 @synthesize webState = _webState;
 @synthesize webStateList = _webStateList;
+
+- (instancetype)init {
+  self = [super init];
+  if (self) {
+    _webStateObserver = std::make_unique<web::WebStateObserverBridge>(self);
+    _webStateListObserver = std::make_unique<WebStateListObserverBridge>(self);
+  }
+  return self;
+}
 
 - (void)dealloc {
   [self disconnect];
@@ -43,37 +50,58 @@
 }
 
 - (void)disconnect {
-  self.webStateList = nullptr;
-  _webStateObserver.reset();
+  if (_webStateList) {
+    _webStateList->RemoveObserver(_webStateListObserver.get());
+    _webStateListObserver.reset();
+    _webStateList = nullptr;
+  }
+
+  if (_webState) {
+    _webState->RemoveObserver(_webStateObserver.get());
+    _webStateObserver.reset();
+    _webState = nullptr;
+  }
 }
 
 #pragma mark - CRWWebStateObserver
 
 - (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
+  DCHECK_EQ(_webState, webState);
   [self updateConsumerForWebState:self.webState];
 }
 
 - (void)webState:(web::WebState*)webState
     didStartNavigation:(web::NavigationContext*)navigation {
+  DCHECK_EQ(_webState, webState);
   [self updateConsumerForWebState:self.webState];
 }
 
 - (void)webState:(web::WebState*)webState
     didPruneNavigationItemsWithCount:(size_t)pruned_item_count {
+  DCHECK_EQ(_webState, webState);
   [self updateConsumerForWebState:self.webState];
 }
 
 - (void)webStateDidStartLoading:(web::WebState*)webState {
+  DCHECK_EQ(_webState, webState);
   [self.consumer setIsLoading:self.webState->IsLoading()];
 }
 
 - (void)webStateDidStopLoading:(web::WebState*)webState {
+  DCHECK_EQ(_webState, webState);
   [self.consumer setIsLoading:self.webState->IsLoading()];
 }
 
 - (void)webState:(web::WebState*)webState
     didChangeLoadingProgress:(double)progress {
+  DCHECK_EQ(_webState, webState);
   [self.consumer setLoadingProgressFraction:progress];
+}
+
+- (void)webStateDestroyed:(web::WebState*)webState {
+  DCHECK_EQ(_webState, webState);
+  _webState->RemoveObserver(_webStateObserver.get());
+  _webState = nullptr;
 }
 
 #pragma mark - ChromeBroadcastObserver
@@ -88,23 +116,32 @@
     didInsertWebState:(web::WebState*)webState
               atIndex:(int)index
            activating:(BOOL)activating {
+  DCHECK_EQ(_webStateList, webStateList);
   [self.consumer setTabCount:_webStateList->count()];
 }
 
 - (void)webStateList:(WebStateList*)webStateList
     didDetachWebState:(web::WebState*)webState
               atIndex:(int)index {
+  DCHECK_EQ(_webStateList, webStateList);
   [self.consumer setTabCount:_webStateList->count()];
 }
 
 #pragma mark - Setters
 
 - (void)setWebState:(web::WebState*)webState {
+  if (_webState) {
+    _webState->RemoveObserver(_webStateObserver.get());
+  }
+
   _webState = webState;
-  _webStateObserver =
-      base::MakeUnique<web::WebStateObserverBridge>(_webState, self);
-  if (self.consumer) {
-    [self updateConsumer];
+
+  if (_webState) {
+    _webState->AddObserver(_webStateObserver.get());
+
+    if (self.consumer) {
+      [self updateConsumer];
+    }
   }
 }
 
@@ -119,19 +156,16 @@
 }
 
 - (void)setWebStateList:(WebStateList*)webStateList {
+  if (_webStateList) {
+    _webStateList->RemoveObserver(_webStateListObserver.get());
+  }
+
   // TODO(crbug.com/727427):Add support for DCHECK(webStateList).
   _webStateList = webStateList;
-  if (!webStateList) {
-    _webStateListObserver.reset();
-    _scopedWebStateListObserver.reset();
-    return;
-  }
-  _webStateListObserver = base::MakeUnique<WebStateListObserverBridge>(self);
-  _scopedWebStateListObserver = base::MakeUnique<
-      ScopedObserver<WebStateList, WebStateListObserverBridge>>(
-      _webStateListObserver.get());
+
   if (_webStateList) {
-    _scopedWebStateListObserver->Add(_webStateList);
+    _webStateList->AddObserver(_webStateListObserver.get());
+
     if (self.consumer) {
       [self.consumer setTabCount:_webStateList->count()];
     }
