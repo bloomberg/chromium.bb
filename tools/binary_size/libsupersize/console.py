@@ -303,7 +303,7 @@ class _Session(object):
           when auto-detection fails.
     """
     assert not symbol.IsGroup()
-    assert symbol.address and symbol.section_name == '.text'
+    assert symbol.address and symbol.section_name == models.SECTION_TEXT
     assert not symbol.IsDelta(), ('Cannot disasseble a Diff\'ed symbol. Try '
                                   'passing .before_symbol or .after_symbol.')
     size_info = self._SizeInfoForSymbol(symbol)
