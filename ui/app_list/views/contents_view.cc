@@ -497,6 +497,8 @@ void ContentsView::TransitionChanged() {
   UpdatePageBounds();
 }
 
+void ContentsView::TransitionEnded() {}
+
 int ContentsView::GetDisplayHeight() const {
   return display::Screen::GetScreen()
       ->GetDisplayNearestView(GetWidget()->GetNativeView())

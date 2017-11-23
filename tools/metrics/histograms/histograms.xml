@@ -2345,6 +2345,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Apps.PaginationTransition.AnimationSmoothness" units="%">
+  <owner>wutao@chromium.org</owner>
+  <summary>
+    Relative smoothness of animations of launcher pagination transitions. 100%
+    represents ideally smooth 60 frames per second. 50% represents only 30
+    frames per second is achieved during the animations. 0% should not happen.
+    This metric is recorded exactly once when the user starts the pagination
+    transition animation of the launcher.
+  </summary>
+</histogram>
+
 <histogram name="Apps.StateTransition.AnimationSmoothness" units="%">
   <owner>vadimt@chromium.org</owner>
   <summary>

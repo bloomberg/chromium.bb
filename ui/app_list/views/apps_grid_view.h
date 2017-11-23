@@ -31,6 +31,10 @@
 #include "ui/views/view.h"
 #include "ui/views/view_model.h"
 
+namespace ui {
+class AnimationMetricsReporter;
+}
+
 namespace views {
 class ButtonListener;
 }
@@ -443,6 +447,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   void SelectedPageChanged(int old_selected, int new_selected) override;
   void TransitionStarted() override;
   void TransitionChanged() override;
+  void TransitionEnded() override;
 
   // Overridden from AppListModelObserver:
   void OnAppListModelStatusChanged() override;
@@ -644,6 +649,12 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   // True if it is the end gesture from shelf dragging.
   bool is_end_gesture_ = false;
+
+  // To obtain metrics of pagination animation performance and keep track of
+  // sequential compositor frame number.
+  const std::unique_ptr<ui::AnimationMetricsReporter>
+      pagination_animation_metrics_reporter_;
+  int pagination_animation_start_frame_number_;
 
   DISALLOW_COPY_AND_ASSIGN(AppsGridView);
 };

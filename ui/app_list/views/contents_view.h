@@ -148,6 +148,7 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   void SelectedPageChanged(int old_selected, int new_selected) override;
   void TransitionStarted() override;
   void TransitionChanged() override;
+  void TransitionEnded() override;
 
   // Returns the height of current display.
   int GetDisplayHeight() const;

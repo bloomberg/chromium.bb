@@ -23,6 +23,9 @@ class APP_LIST_EXPORT PaginationModelObserver {
   // Invoked when the transition data is changed.
   virtual void TransitionChanged() = 0;
 
+  // Invoked when a transition ends.
+  virtual void TransitionEnded() = 0;
+
  protected:
   virtual ~PaginationModelObserver() {}
 };

@@ -281,4 +281,6 @@ void PageSwitcherHorizontal::TransitionChanged() {
     GetButtonByIndex(buttons_, target_page)->SetSelectedRange(progress);
 }
 
+void PageSwitcherHorizontal::TransitionEnded() {}
+
 }  // namespace app_list

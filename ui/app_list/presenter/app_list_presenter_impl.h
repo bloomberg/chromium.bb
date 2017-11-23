@@ -124,6 +124,7 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
   void SelectedPageChanged(int old_selected, int new_selected) override;
   void TransitionStarted() override;
   void TransitionChanged() override;
+  void TransitionEnded() override;
 
   // The factory for the presenter's delegate.
   std::unique_ptr<AppListPresenterDelegateFactory> factory_;

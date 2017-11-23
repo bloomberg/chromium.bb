@@ -284,4 +284,6 @@ void PageSwitcherVertical::TransitionStarted() {}
 
 void PageSwitcherVertical::TransitionChanged() {}
 
+void PageSwitcherVertical::TransitionEnded() {}
+
 }  // namespace app_list
