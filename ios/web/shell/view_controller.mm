@@ -59,6 +59,14 @@ using web::NavigationManager;
   return self;
 }
 
+- (void)dealloc {
+  if (_webState) {
+    _webState->RemoveObserver(_webStateObserver.get());
+    _webStateObserver.reset();
+    _webState.reset();
+  }
+}
+
 - (void)viewDidLoad {
   [super viewDidLoad];
 
@@ -119,9 +127,10 @@ using web::NavigationManager;
   web::WebState::CreateParams webStateCreateParams(_browserState);
   _webState = web::WebState::Create(webStateCreateParams);
 
-  _webStateObserver.reset(
-      new web::WebStateObserverBridge(_webState.get(), self));
-  _webStateDelegate.reset(new web::WebStateDelegateBridge(self));
+  _webStateObserver = std::make_unique<web::WebStateObserverBridge>(self);
+  _webState->AddObserver(_webStateObserver.get());
+
+  _webStateDelegate = std::make_unique<web::WebStateDelegateBridge>(self);
   _webState->SetDelegate(_webStateDelegate.get());
 
   UIView* view = _webState->GetView();
@@ -292,6 +301,13 @@ using web::NavigationManager;
                                           handler:nil]];
 
   [self presentViewController:alert animated:YES completion:nil];
+}
+
+- (void)webStateDestroyed:(web::WebState*)webState {
+  // The WebState is owned by the current instance, and the observer bridge
+  // is unregistered before the WebState is destroyed, so this event should
+  // never happen.
+  NOTREACHED();
 }
 
 @end
