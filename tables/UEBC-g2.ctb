@@ -22,6 +22,9 @@
 
 include UEBC-g1.utb
 
+punctuation ( 12356
+punctuation ) 23456
+
 # the letter a
 largesign a 1
 always about 1-12
