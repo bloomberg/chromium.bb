@@ -331,7 +331,7 @@ class VASupportedProfiles {
 
  private:
   VASupportedProfiles();
-  ~VASupportedProfiles();
+  ~VASupportedProfiles() = default;
 
   bool GetSupportedVAProfiles(std::vector<VAProfile>* profiles);
 
@@ -411,13 +411,14 @@ VASupportedProfiles::VASupportedProfiles()
     supported_profiles_[i] = GetSupportedProfileInfosForCodecModeInternal(
         static_cast<VaapiWrapper::CodecMode>(i));
   }
-}
 
-VASupportedProfiles::~VASupportedProfiles() {
-  VAStatus va_res = VA_STATUS_SUCCESS;
-  VADisplayState::Get()->Deinitialize(&va_res);
-  VA_LOG_ON_ERROR(va_res, "vaTerminate failed");
-  va_display_ = nullptr;
+  {
+    base::AutoLock auto_lock(*va_lock_);
+    VAStatus va_res = VA_STATUS_SUCCESS;
+    VADisplayState::Get()->Deinitialize(&va_res);
+    VA_LOG_ON_ERROR(va_res, "vaTerminate failed");
+    va_display_ = nullptr;
+  }
 }
 
 std::vector<VASupportedProfiles::ProfileInfo>
