@@ -17,6 +17,7 @@
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "url/origin.h"
 
 namespace autofill {
 
@@ -126,7 +127,7 @@ class CreditCardSaveManager : public payments::PaymentsClientSaveDelegate {
   bool found_cvc_value_in_non_cvc_field_ = false;
 
   // The origin of the top level frame from which a form is uploaded.
-  GURL pending_upload_request_url_;
+  url::Origin pending_upload_request_origin_;
 
   base::WeakPtrFactory<CreditCardSaveManager> weak_ptr_factory_;
 

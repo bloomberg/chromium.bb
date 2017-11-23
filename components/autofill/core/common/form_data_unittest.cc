@@ -99,7 +99,7 @@ void SerializeInVersion6Format(const FormData& form_data,
   }
   pickle->WriteBool(form_data.is_form_tag);
   pickle->WriteBool(form_data.is_formless_checkout);
-  pickle->WriteString(form_data.main_frame_origin.spec());
+  pickle->WriteString(form_data.main_frame_origin.Serialize());
 }
 
 // This function serializes the form data into the pickle in incorrect format
@@ -119,7 +119,8 @@ void FillInDummyFormData(FormData* data) {
   data->name = base::ASCIIToUTF16("name");
   data->origin = GURL("https://example.com");
   data->action = GURL("https://example.com/action");
-  data->main_frame_origin = GURL("https://origin-example.com");
+  data->main_frame_origin =
+      url::Origin::Create(GURL("https://origin-example.com"));
   data->is_form_tag = true;  // Default value.
   data->is_formless_checkout = false;  // Default value.
 
