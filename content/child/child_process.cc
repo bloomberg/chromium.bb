@@ -119,13 +119,6 @@ void ChildProcess::ReleaseProcess() {
     main_thread_->OnProcessFinalRelease();
 }
 
-#if defined(OS_LINUX)
-void ChildProcess::SetIOThreadPriority(
-    base::ThreadPriority io_thread_priority) {
-  main_thread_->SetThreadPriority(io_thread_.GetThreadId(), io_thread_priority);
-}
-#endif
-
 ChildProcess* ChildProcess::current() {
   return g_lazy_tls.Pointer()->Get();
 }

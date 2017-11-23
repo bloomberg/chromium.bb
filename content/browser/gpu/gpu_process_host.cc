@@ -406,12 +406,11 @@ GpuProcessHost* GpuProcessHost::Get(GpuProcessKind kind, bool force_create) {
 }
 
 // static
-void GpuProcessHost::GetHasGpuProcess(
-    const base::Callback<void(bool)>& callback) {
+void GpuProcessHost::GetHasGpuProcess(base::OnceCallback<void(bool)> callback) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&GpuProcessHost::GetHasGpuProcess, callback));
+        base::BindOnce(&GpuProcessHost::GetHasGpuProcess, std::move(callback)));
     return;
   }
   bool has_gpu = false;
@@ -422,8 +421,7 @@ void GpuProcessHost::GetHasGpuProcess(
       break;
     }
   }
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::BindOnce(callback, has_gpu));
+  std::move(callback).Run(has_gpu);
 }
 
 // static

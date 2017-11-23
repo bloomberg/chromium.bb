@@ -110,11 +110,6 @@ class CONTENT_EXPORT ChildThreadImpl
   static std::unique_ptr<base::SharedMemory> AllocateSharedMemory(
       size_t buf_size);
 
-#if defined(OS_LINUX)
-  void SetThreadPriority(base::PlatformThreadId id,
-                         base::ThreadPriority priority);
-#endif
-
   IPC::SyncMessageFilter* sync_message_filter() const {
     return sync_message_filter_.get();
   }

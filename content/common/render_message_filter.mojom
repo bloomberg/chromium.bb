@@ -7,6 +7,7 @@ module content.mojom;
 import "content/common/input/input_handler.mojom";
 import "content/common/native_types.mojom";
 import "content/common/widget.mojom";
+import "mojo/common/thread_priority.mojom";
 import "mojo/common/time.mojom";
 import "url/mojo/origin.mojom";
 import "url/mojo/url.mojom";
@@ -35,4 +36,12 @@ interface RenderMessageFilter {
       url.mojom.Url url, mojo.common.mojom.Time expected_response_time,
       array<uint8> data, url.mojom.Origin cache_storage_origin,
       string cache_storage_cache_name);
+
+  // A renderer sends this when it wants to know whether a gpu process exists.
+  [Sync] HasGpuProcess() => (bool has_gpu_process);
+
+  // Asks the browser to change the priority of thread.
+  // (Linux only, NOP on other platforms.)
+  SetThreadPriority(int32 platform_thread_id,
+                    mojo.common.mojom.ThreadPriority thread_priority);
 };

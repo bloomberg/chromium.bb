@@ -28,14 +28,6 @@
 #include "ui/gfx/ipc/gfx_param_traits.h"
 #include "ui/gfx/ipc/skia/gfx_skia_param_traits.h"
 
-#if defined(OS_LINUX)
-#include "base/threading/platform_thread.h"
-#endif
-
-#if defined(OS_LINUX)
-IPC_ENUM_TRAITS_MAX_VALUE(base::ThreadPriority,
-                          base::ThreadPriority::REALTIME_AUDIO)
-#endif
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
@@ -44,10 +36,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(base::ThreadPriority,
 
 ////////////////////////////////////////////////////////////////////////////////
 // Messages sent from the child process to the browser.
-
-// A renderer sends this when it wants to know whether a gpu process exists.
-IPC_SYNC_MESSAGE_CONTROL0_1(ChildProcessHostMsg_HasGpuProcess,
-                            bool /* result */)
 
 #if defined(OS_WIN)
 // Request that the given font be loaded by the host so it's cached by the
@@ -59,11 +47,5 @@ IPC_SYNC_MESSAGE_CONTROL1_0(ChildProcessHostMsg_PreCacheFont,
 IPC_MESSAGE_CONTROL0(ChildProcessHostMsg_ReleaseCachedFonts)
 #endif  // defined(OS_WIN)
 
-#if defined(OS_LINUX)
-// Asks the browser to change the priority of thread.
-IPC_MESSAGE_CONTROL2(ChildProcessHostMsg_SetThreadPriority,
-                     base::PlatformThreadId,
-                     base::ThreadPriority)
-#endif
 
 #endif  // CONTENT_COMMON_CHILD_PROCESS_MESSAGES_H_
