@@ -84,9 +84,6 @@ class PrefRegistrySyncable;
 // Called when the sign-in promo view is hidden.
 - (void)signinPromoViewHidden;
 
-// Called when the sign-in promo view is closed.
-- (void)signinPromoViewClosed;
-
 // Called when the sign-in promo view is removed from the view hierarchy (it or
 // one of its superviews is removed). The mediator should not be used after this
 // called.

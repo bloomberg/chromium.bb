@@ -356,15 +356,19 @@ const char* AlreadySeenSigninViewPreferenceKey(
 }
 
 - (SigninPromoViewConfigurator*)createConfigurator {
+  BOOL hasCloseButton =
+      AlreadySeenSigninViewPreferenceKey(_accessPoint) != nullptr;
   if (_defaultIdentity) {
     return [[SigninPromoViewConfigurator alloc]
         initWithUserEmail:_defaultIdentity.userEmail
              userFullName:_defaultIdentity.userFullName
-                userImage:_identityAvatar];
+                userImage:_identityAvatar
+           hasCloseButton:hasCloseButton];
   }
   return [[SigninPromoViewConfigurator alloc] initWithUserEmail:nil
                                                    userFullName:nil
-                                                      userImage:nil];
+                                                      userImage:nil
+                                                 hasCloseButton:hasCloseButton];
 }
 
 - (void)selectIdentity:(ChromeIdentity*)identity {
@@ -427,23 +431,6 @@ const char* AlreadySeenSigninViewPreferenceKey(
 - (void)signinPromoViewHidden {
   DCHECK(![self isInvalidOrClosed]);
   _isSigninPromoViewVisible = NO;
-}
-
-- (void)signinPromoViewClosed {
-  DCHECK(_isSigninPromoViewVisible && ![self isInvalidOrClosed]);
-  _signinPromoViewState = ios::SigninPromoViewState::Closed;
-  const char* alreadySeenSigninViewPreferenceKey =
-      AlreadySeenSigninViewPreferenceKey(_accessPoint);
-  DCHECK(alreadySeenSigninViewPreferenceKey);
-  PrefService* prefs = _browserState->GetPrefs();
-  prefs->SetBoolean(alreadySeenSigninViewPreferenceKey, true);
-  const char* displayedCountPreferenceKey =
-      DisplayedCountPreferenceKey(_accessPoint);
-  if (!displayedCountPreferenceKey)
-    return;
-  int displayedCount = prefs->GetInteger(displayedCountPreferenceKey);
-  RecordImpressionsTilXButtonHistogramForAccessPoint(_accessPoint,
-                                                     displayedCount);
 }
 
 - (void)signinPromoViewRemoved {
@@ -571,6 +558,27 @@ const char* AlreadySeenSigninViewPreferenceKey(
   [self showSigninWithIdentity:nil
                    promoAction:signin_metrics::PromoAction::
                                    PROMO_ACTION_NOT_DEFAULT];
+}
+
+- (void)signinPromoViewCloseButtonWasTapped:(SigninPromoView*)view {
+  DCHECK(_isSigninPromoViewVisible && ![self isInvalidOrClosed]);
+  _signinPromoViewState = ios::SigninPromoViewState::Closed;
+  const char* alreadySeenSigninViewPreferenceKey =
+      AlreadySeenSigninViewPreferenceKey(_accessPoint);
+  DCHECK(alreadySeenSigninViewPreferenceKey);
+  PrefService* prefs = _browserState->GetPrefs();
+  prefs->SetBoolean(alreadySeenSigninViewPreferenceKey, true);
+  const char* displayedCountPreferenceKey =
+      DisplayedCountPreferenceKey(_accessPoint);
+  if (displayedCountPreferenceKey) {
+    int displayedCount = prefs->GetInteger(displayedCountPreferenceKey);
+    RecordImpressionsTilXButtonHistogramForAccessPoint(_accessPoint,
+                                                       displayedCount);
+  }
+  if ([_consumer respondsToSelector:@selector
+                 (signinPromoViewMediatorCloseButtonWasTapped:)]) {
+    [_consumer signinPromoViewMediatorCloseButtonWasTapped:self];
+  }
 }
 
 @end
