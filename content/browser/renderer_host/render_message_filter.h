@@ -123,19 +123,15 @@ class CONTENT_EXPORT RenderMessageFilter
       const std::vector<uint8_t>& data,
       const url::Origin& cache_storage_origin,
       const std::string& cache_storage_cache_name) override;
+  void HasGpuProcess(HasGpuProcessCallback callback) override;
+  void SetThreadPriority(int32_t ns_tid,
+                         base::ThreadPriority priority) override;
 
-  // Message handlers called on the browser IO thread:
-  void OnHasGpuProcess(IPC::Message* reply);
-  // Helper callbacks for the message handlers.
-  void GetHasGpuProcessCallback(std::unique_ptr<IPC::Message> reply,
-                                bool has_gpu);
   void OnResolveProxy(const GURL& url, IPC::Message* reply_msg);
 
 #if defined(OS_LINUX)
   void SetThreadPriorityOnFileThread(base::PlatformThreadId ns_tid,
                                      base::ThreadPriority priority);
-  void OnSetThreadPriority(base::PlatformThreadId ns_tid,
-                           base::ThreadPriority priority);
 #endif
 
   void OnCacheStorageOpenCallback(const GURL& url,

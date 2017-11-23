@@ -987,8 +987,9 @@ void RenderThreadImpl::Init(
                                 mojo::MakeRequest(&storage_partition_service_));
 
 #if defined(OS_LINUX)
-  ChildProcess::current()->SetIOThreadPriority(base::ThreadPriority::DISPLAY);
-  ChildThreadImpl::current()->SetThreadPriority(
+  render_message_filter()->SetThreadPriority(
+      ChildProcess::current()->io_thread_id(), base::ThreadPriority::DISPLAY);
+  render_message_filter()->SetThreadPriority(
       categorized_worker_pool_->background_worker_thread_id(),
       base::ThreadPriority::BACKGROUND);
 #endif
@@ -1197,8 +1198,8 @@ void RenderThreadImpl::InitializeCompositorThread() {
       base::BindOnce(base::IgnoreResult(&ThreadRestrictions::SetIOAllowed),
                      false));
 #if defined(OS_LINUX)
-  ChildThreadImpl::current()->SetThreadPriority(compositor_thread_->ThreadId(),
-                                                base::ThreadPriority::DISPLAY);
+  render_message_filter()->SetThreadPriority(compositor_thread_->ThreadId(),
+                                             base::ThreadPriority::DISPLAY);
 #endif
 
   if (!base::FeatureList::IsEnabled(features::kMojoInputMessages)) {

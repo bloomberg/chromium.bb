@@ -158,14 +158,6 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER_GENERIC(
         ViewHostMsg_ResizeOrRepaint_ACK,
         ResizeHelperPostMsgToUIThread(render_process_id_, message))
-#endif
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ChildProcessHostMsg_HasGpuProcess,
-                                    OnHasGpuProcess)
-#if defined(OS_LINUX)
-    IPC_MESSAGE_HANDLER(ChildProcessHostMsg_SetThreadPriority,
-                        OnSetThreadPriority)
-#endif
-#if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(RenderProcessHostMsg_LoadFont, OnLoadFont)
 #endif
     IPC_MESSAGE_HANDLER(ViewHostMsg_MediaLogEvents, OnMediaLogEvents)
@@ -250,18 +242,22 @@ void RenderMessageFilter::SetThreadPriorityOnFileThread(
 
   base::PlatformThread::SetThreadPriority(peer_tid, priority);
 }
+#endif
 
-void RenderMessageFilter::OnSetThreadPriority(base::PlatformThreadId ns_tid,
-                                              base::ThreadPriority priority) {
+void RenderMessageFilter::SetThreadPriority(int32_t ns_tid,
+                                            base::ThreadPriority priority) {
+#if defined(OS_LINUX)
   constexpr base::TaskTraits kTraits = {
       base::MayBlock(), base::TaskPriority::USER_BLOCKING,
       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN};
   base::PostTaskWithTraits(
       FROM_HERE, kTraits,
       base::BindOnce(&RenderMessageFilter::SetThreadPriorityOnFileThread, this,
-                     ns_tid, priority));
-}
+                     static_cast<base::PlatformThreadId>(ns_tid), priority));
+#else
+  mojo::ReportBadMessage("SetThreadPriority is only supported on OS_LINUX");
 #endif
+}
 
 void RenderMessageFilter::DidGenerateCacheableMetadata(
     const GURL& url,
@@ -332,18 +328,8 @@ void RenderMessageFilter::OnMediaLogEvents(
     media_internals_->OnMediaEvents(render_process_id_, events);
 }
 
-void RenderMessageFilter::OnHasGpuProcess(IPC::Message* reply_ptr) {
-  std::unique_ptr<IPC::Message> reply(reply_ptr);
-  GpuProcessHost::GetHasGpuProcess(
-      base::Bind(&RenderMessageFilter::GetHasGpuProcessCallback,
-                 weak_ptr_factory_.GetWeakPtr(), base::Passed(&reply)));
-}
-
-void RenderMessageFilter::GetHasGpuProcessCallback(
-    std::unique_ptr<IPC::Message> reply,
-    bool has_gpu) {
-  ChildProcessHostMsg_HasGpuProcess::WriteReplyParams(reply.get(), has_gpu);
-  Send(reply.release());
+void RenderMessageFilter::HasGpuProcess(HasGpuProcessCallback callback) {
+  GpuProcessHost::GetHasGpuProcess(std::move(callback));
 }
 
 }  // namespace content

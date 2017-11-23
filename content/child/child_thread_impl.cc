@@ -721,13 +721,6 @@ std::unique_ptr<base::SharedMemory> ChildThreadImpl::AllocateSharedMemory(
   return std::make_unique<base::SharedMemory>(shared_buf, false);
 }
 
-#if defined(OS_LINUX)
-void ChildThreadImpl::SetThreadPriority(base::PlatformThreadId id,
-                                        base::ThreadPriority priority) {
-  Send(new ChildProcessHostMsg_SetThreadPriority(id, priority));
-}
-#endif
-
 bool ChildThreadImpl::OnMessageReceived(const IPC::Message& msg) {
   if (msg.routing_id() == MSG_ROUTING_CONTROL)
     return OnControlMessageReceived(msg);

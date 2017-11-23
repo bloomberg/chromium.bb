@@ -1104,10 +1104,10 @@ bool GpuBenchmarking::HasGpuChannel() {
 
 bool GpuBenchmarking::HasGpuProcess() {
   bool has_gpu_process = false;
-  if (!RenderThreadImpl::current()->Send(
-          new ChildProcessHostMsg_HasGpuProcess(&has_gpu_process)))
+  if (!RenderThreadImpl::current()->render_message_filter()->HasGpuProcess(
+          &has_gpu_process)) {
     return false;
-
+  }
   return has_gpu_process;
 }
 

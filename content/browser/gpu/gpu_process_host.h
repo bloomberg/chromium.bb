@@ -98,7 +98,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
       bool force_create = true);
 
   // Returns whether there is an active GPU process or not.
-  static void GetHasGpuProcess(const base::Callback<void(bool)>& callback);
+  static void GetHasGpuProcess(base::OnceCallback<void(bool)> callback);
 
   // Helper function to run a callback on the IO thread. The callback receives
   // the appropriate GpuProcessHost instance. Note that the callback can be

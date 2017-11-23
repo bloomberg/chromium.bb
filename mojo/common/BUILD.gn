@@ -21,6 +21,7 @@ mojom("common_custom_types") {
     "process_id.mojom",
     "string16.mojom",
     "text_direction.mojom",
+    "thread_priority.mojom",
     "time.mojom",
     "unguessable_token.mojom",
     "values.mojom",

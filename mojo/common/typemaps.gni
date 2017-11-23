@@ -11,6 +11,7 @@ typemaps = [
   "//mojo/common/read_only_buffer.typemap",
   "//mojo/common/string16.typemap",
   "//mojo/common/text_direction.typemap",
+  "//mojo/common/thread_priority.typemap",
   "//mojo/common/time.typemap",
   "//mojo/common/unguessable_token.typemap",
   "//mojo/common/values.typemap",
