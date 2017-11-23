@@ -671,7 +671,9 @@ static void av1_init_intra_predictors_internal(void) {
   p[TX_16X32] = aom_##type##_predictor_16x32; \
   p[TX_32X16] = aom_##type##_predictor_32x16; \
   p[TX_32X64] = aom_##type##_predictor_32x64; \
-  p[TX_64X32] = aom_##type##_predictor_64x32;
+  p[TX_64X32] = aom_##type##_predictor_64x32; \
+  p[TX_4X16] = aom_##type##_predictor_4x16;   \
+  p[TX_16X4] = aom_##type##_predictor_16x4;
 #else
 #define INIT_RECTANGULAR(p, type)             \
   p[TX_4X8] = aom_##type##_predictor_4x8;     \
@@ -679,7 +681,9 @@ static void av1_init_intra_predictors_internal(void) {
   p[TX_8X16] = aom_##type##_predictor_8x16;   \
   p[TX_16X8] = aom_##type##_predictor_16x8;   \
   p[TX_16X32] = aom_##type##_predictor_16x32; \
-  p[TX_32X16] = aom_##type##_predictor_32x16;
+  p[TX_32X16] = aom_##type##_predictor_32x16; \
+  p[TX_4X16] = aom_##type##_predictor_4x16;   \
+  p[TX_16X4] = aom_##type##_predictor_16x4;
 #endif  // CONFIG_TX64X64
 
 #if CONFIG_TX64X64
@@ -2638,6 +2642,7 @@ static void predict_intra_block_helper(const AV1_COMMON *cm,
     return;
   }
 #endif
+
   build_intra_predictors(xd, ref, ref_stride, dst, dst_stride, mode, tx_size,
                          have_top ? AOMMIN(txwpx, xr + txwpx) : 0,
                          have_top_right ? AOMMIN(txwpx, xr) : 0,

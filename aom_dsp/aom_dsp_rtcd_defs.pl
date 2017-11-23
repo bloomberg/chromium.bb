@@ -64,6 +64,7 @@ foreach $w (@tx_dims) {
   push @tx_sizes, [$w, $w];
   foreach $h (@tx_dims) {
     push @tx_sizes, [$w, $h] if ($w >=4 && $h >=4 && ($w == 2*$h || $h == 2*$w));
+    push @tx_sizes, [$w, $h] if ($w >=4 && $h >=4 && ($w == 4*$h || $h == 4*$w));
   }
 }
 

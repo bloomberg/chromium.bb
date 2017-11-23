@@ -949,6 +949,8 @@ static INLINE void highbd_dc_predictor(uint16_t *dst, ptrdiff_t stride, int bw,
   intra_pred_sized(type, 32, 16) \
   intra_pred_sized(type, 32, 64) \
   intra_pred_sized(type, 64, 32) \
+  intra_pred_sized(type, 4, 16) \
+  intra_pred_sized(type, 16, 4) \
   intra_pred_highbd_sized(type, 4, 8) \
   intra_pred_highbd_sized(type, 8, 4) \
   intra_pred_highbd_sized(type, 8, 16) \
@@ -956,7 +958,9 @@ static INLINE void highbd_dc_predictor(uint16_t *dst, ptrdiff_t stride, int bw,
   intra_pred_highbd_sized(type, 16, 32) \
   intra_pred_highbd_sized(type, 32, 16) \
   intra_pred_highbd_sized(type, 32, 64) \
-  intra_pred_highbd_sized(type, 64, 32)
+  intra_pred_highbd_sized(type, 64, 32) \
+  intra_pred_highbd_sized(type, 4, 16) \
+  intra_pred_highbd_sized(type, 16, 4)
 #define intra_pred_above_4x4(type) \
   intra_pred_sized(type, 8, 8) \
   intra_pred_sized(type, 16, 16) \
@@ -981,12 +985,16 @@ static INLINE void highbd_dc_predictor(uint16_t *dst, ptrdiff_t stride, int bw,
   intra_pred_sized(type, 16, 8) \
   intra_pred_sized(type, 16, 32) \
   intra_pred_sized(type, 32, 16) \
+  intra_pred_sized(type, 4, 16) \
+  intra_pred_sized(type, 16, 4) \
   intra_pred_highbd_sized(type, 4, 8) \
   intra_pred_highbd_sized(type, 8, 4) \
   intra_pred_highbd_sized(type, 8, 16) \
   intra_pred_highbd_sized(type, 16, 8) \
   intra_pred_highbd_sized(type, 16, 32) \
-  intra_pred_highbd_sized(type, 32, 16)
+  intra_pred_highbd_sized(type, 32, 16) \
+  intra_pred_highbd_sized(type, 4, 16) \
+  intra_pred_highbd_sized(type, 16, 4)
 #define intra_pred_above_4x4(type) \
   intra_pred_sized(type, 8, 8) \
   intra_pred_sized(type, 16, 16) \
@@ -1014,7 +1022,9 @@ static INLINE void highbd_dc_predictor(uint16_t *dst, ptrdiff_t stride, int bw,
   intra_pred_sized(type, 16, 32) \
   intra_pred_sized(type, 32, 16) \
   intra_pred_sized(type, 32, 64) \
-  intra_pred_sized(type, 64, 32)
+  intra_pred_sized(type, 64, 32) \
+  intra_pred_sized(type, 4, 16) \
+  intra_pred_sized(type, 16, 4)
 #define intra_pred_above_4x4(type) \
   intra_pred_sized(type, 8, 8) \
   intra_pred_sized(type, 16, 16) \
@@ -1032,7 +1042,9 @@ static INLINE void highbd_dc_predictor(uint16_t *dst, ptrdiff_t stride, int bw,
   intra_pred_sized(type, 8, 16) \
   intra_pred_sized(type, 16, 8) \
   intra_pred_sized(type, 16, 32) \
-  intra_pred_sized(type, 32, 16)
+  intra_pred_sized(type, 32, 16) \
+  intra_pred_sized(type, 4, 16) \
+  intra_pred_sized(type, 16, 4)
 #define intra_pred_above_4x4(type) \
   intra_pred_sized(type, 8, 8) \
   intra_pred_sized(type, 16, 16) \
