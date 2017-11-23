@@ -30,6 +30,12 @@
     "indicator_selector": "A CSS selector that locates the controlled setting indicator directly affected by the policy. This is appended to the selector 'span.controlled-setting-indicator'."
   },
 
+  "UnsafelyTreatInsecureOriginAsSecure": {
+    "os": ["win", "linux", "max", "chromeos", "android"],
+    "test_policy": { "UnsafelyTreatInsecureOriginAsSecure": ["http://example.com/"] },
+    "pref_mappings": [ { "pref": "unsafely_treat_insecure_origin_as_securex" } ]
+  },
+
   "HomepageLocation": {
     "os": ["win", "linux", "mac", "chromeos"],
     "can_be_recommended": true,

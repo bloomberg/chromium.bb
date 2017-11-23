@@ -8,6 +8,9 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/policy/core/browser/browser_policy_connector.h"
+#include "components/policy/core/common/mock_configuration_policy_provider.h"
+#include "components/policy/policy_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 
@@ -16,11 +19,11 @@ namespace {
 // the setup is done before the actual test is run, we need to parameterize our
 // tests outside of the actual test bodies. We use test variants for this,
 // instead of the usual setup of mulitple tests.
-enum class TestVariant { kNone, kCommandline };
+enum class TestVariant { kNone, kCommandline, kPolicy, kPolicy2, kPolicy3 };
 }  // namespace
 
 // End-to-end browser test that ensures the secure origin whitelist works when
-// supplied via the command-line.
+// supplied via command-line or policy.
 // SecureOriginWhitelistUnittest will test the list parsing.
 class SecureOriginWhitelistBrowsertest
     : public InProcessBrowserTest,
@@ -46,17 +49,61 @@ class SecureOriginWhitelistBrowsertest
         switches::kUnsafelyTreatInsecureOriginAsSecure, BaseURL());
   }
 
+  void SetUpInProcessBrowserTestFixture() override {
+    TestVariant variant = GetParam();
+    if (variant != TestVariant::kPolicy && variant != TestVariant::kPolicy2 &&
+        variant != TestVariant::kPolicy3)
+      return;
+
+    // We setup the policy here, because the policy must be 'live' before
+    // the renderer is created, since the value for this policy is passed
+    // to the renderer via a command-line. Setting the policy in the test
+    // itself or in SetUpOnMainThread works for update-able policies, but
+    // is too late for this one.
+    EXPECT_CALL(provider_, IsInitializationComplete(testing::_))
+        .WillRepeatedly(testing::Return(true));
+    policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
+
+    base::Value::ListStorage urls;
+    if (variant == TestVariant::kPolicy) {
+      urls.push_back(base::Value(BaseURL()));
+    } else if (variant == TestVariant::kPolicy2) {
+      urls.push_back(base::Value(BaseURL()));
+      urls.push_back(base::Value(OtherURL()));
+    } else if (variant == TestVariant::kPolicy3) {
+      urls.push_back(base::Value(OtherURL()));
+      urls.push_back(base::Value(BaseURL()));
+    }
+
+    policy::PolicyMap values;
+    values.Set(policy::key::kUnsafelyTreatInsecureOriginAsSecure,
+               policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+               policy::POLICY_SOURCE_CLOUD,
+               base::MakeUnique<base::Value>(std::move(urls)), nullptr);
+    provider_.UpdateChromePolicy(values);
+  }
+
   bool ExpectSecureContext() { return GetParam() != TestVariant::kNone; }
 
   std::string BaseURL() {
     return embedded_test_server()->GetURL("example.com", "/").spec();
   }
+
+  std::string OtherURL() {
+    return embedded_test_server()->GetURL("otherexample.com", "/").spec();
+  }
+
+ private:
+  policy::MockConfigurationPolicyProvider provider_;
 };
 
 INSTANTIATE_TEST_CASE_P(SecureOriginWhitelistBrowsertest,
                         SecureOriginWhitelistBrowsertest,
                         testing::Values(TestVariant::kNone,
-                                        TestVariant::kCommandline));
+                                        TestVariant::kCommandline,
+                                        TestVariant::kPolicy,
+                                        TestVariant::kPolicy2,
+                                        TestVariant::kPolicy3));
 
 IN_PROC_BROWSER_TEST_P(SecureOriginWhitelistBrowsertest, Simple) {
   GURL url = embedded_test_server()->GetURL(
