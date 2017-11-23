@@ -102,10 +102,10 @@ class WebAuthFlow : public content::NotificationObserver,
   // WebContentsObserver implementation.
   void DidStopLoading() override;
   void RenderProcessGone(base::TerminationStatus status) override;
-  void DidGetRedirectForResourceRequest(
-      const content::ResourceRedirectDetails& details) override;
   void TitleWasSet(content::NavigationEntry* entry) override;
   void DidStartNavigation(
+      content::NavigationHandle* navigation_handle) override;
+  void DidRedirectNavigation(
       content::NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
