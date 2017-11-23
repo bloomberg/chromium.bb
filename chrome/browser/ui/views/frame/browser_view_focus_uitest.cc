@@ -27,8 +27,7 @@ class BrowserViewFocusTest : public InProcessBrowserTest {
   }
 };
 
-// Flaky, http://crbug.com/69034.
-IN_PROC_BROWSER_TEST_F(BrowserViewFocusTest, DISABLED_BrowsersRememberFocus) {
+IN_PROC_BROWSER_TEST_F(BrowserViewFocusTest, BrowsersRememberFocus) {
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   ASSERT_TRUE(embedded_test_server()->Start());
 
