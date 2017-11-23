@@ -176,8 +176,8 @@ bool ZoomDecoration::ShouldShowDecoration() const {
          (IsBubbleShown() || !IsAtDefaultZoom());
 }
 
-bool ZoomDecoration::AcceptsMousePress() {
-  return true;
+AcceptsPress ZoomDecoration::AcceptsMousePress() {
+  return AcceptsPress::ALWAYS;
 }
 
 bool ZoomDecoration::OnMousePressed(NSRect frame, NSPoint location) {

@@ -312,8 +312,10 @@ bool PageInfoBubbleDecoration::OnMousePressed(NSRect frame, NSPoint location) {
   return ShowPageInfoDialog(owner_->GetWebContents());
 }
 
-bool PageInfoBubbleDecoration::AcceptsMousePress() {
-  return !owner_->GetOmniboxView()->IsEditingOrEmpty();
+AcceptsPress PageInfoBubbleDecoration::AcceptsMousePress() {
+  return owner_->GetOmniboxView()->IsEditingOrEmpty()
+             ? AcceptsPress::NEVER
+             : AcceptsPress::WHEN_ACTIVATED;
 }
 
 NSPoint PageInfoBubbleDecoration::GetBubblePointInFrame(NSRect frame) {

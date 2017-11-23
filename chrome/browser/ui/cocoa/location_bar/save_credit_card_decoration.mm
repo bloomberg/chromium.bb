@@ -34,8 +34,8 @@ NSPoint SaveCreditCardDecoration::GetBubblePointInFrame(NSRect frame) {
   return NSMakePoint(NSMidX(draw_frame), NSMaxY(draw_frame));
 }
 
-bool SaveCreditCardDecoration::AcceptsMousePress() {
-  return true;
+AcceptsPress SaveCreditCardDecoration::AcceptsMousePress() {
+  return AcceptsPress::ALWAYS;
 }
 
 bool SaveCreditCardDecoration::OnMousePressed(NSRect frame, NSPoint location) {

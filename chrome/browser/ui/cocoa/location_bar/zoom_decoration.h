@@ -67,7 +67,7 @@ class ZoomDecoration : public ImageDecoration,
   virtual bool ShouldShowDecoration() const;
 
   // LocationBarDecoration implementation.
-  bool AcceptsMousePress() override;
+  AcceptsPress AcceptsMousePress() override;
   bool OnMousePressed(NSRect frame, NSPoint location) override;
   NSString* GetToolTip() override;
   NSPoint GetBubblePointInFrame(NSRect frame) override;

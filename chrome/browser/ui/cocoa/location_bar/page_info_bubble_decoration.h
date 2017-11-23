@@ -70,7 +70,7 @@ class PageInfoBubbleDecoration : public BubbleDecoration,
   NSImage* GetDragImage() override;
   NSRect GetDragImageFrame(NSRect frame) override;
   bool OnMousePressed(NSRect frame, NSPoint location) override;
-  bool AcceptsMousePress() override;
+  AcceptsPress AcceptsMousePress() override;
   NSPoint GetBubblePointInFrame(NSRect frame) override;
   NSString* GetToolTip() override;
   NSString* GetAccessibilityLabel() override;

@@ -38,7 +38,7 @@ class ContentSettingDecoration : public ImageDecoration {
   bool UpdateFromWebContents(content::WebContents* web_contents);
 
   // Overridden from |LocationBarDecoration|
-  bool AcceptsMousePress() override;
+  AcceptsPress AcceptsMousePress() override;
   bool OnMousePressed(NSRect frame, NSPoint location) override;
   NSString* GetToolTip() override;
   CGFloat GetWidthForSpace(CGFloat width) override;

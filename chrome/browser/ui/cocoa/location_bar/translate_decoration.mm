@@ -28,8 +28,8 @@ NSPoint TranslateDecoration::GetBubblePointInFrame(NSRect frame) {
   return NSMakePoint(NSMidX(draw_frame), NSMaxY(draw_frame));
 }
 
-bool TranslateDecoration::AcceptsMousePress() {
-  return true;
+AcceptsPress TranslateDecoration::AcceptsMousePress() {
+  return AcceptsPress::ALWAYS;
 }
 
 bool TranslateDecoration::OnMousePressed(NSRect frame, NSPoint location) {

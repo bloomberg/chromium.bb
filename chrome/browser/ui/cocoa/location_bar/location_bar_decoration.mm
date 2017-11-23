@@ -74,7 +74,7 @@ const CGFloat kBackgroundFrameYInset = 2.0;
 - (BOOL)acceptsFirstResponder {
   // This NSView is only focusable if the owning LocationBarDecoration can
   // accept mouse presses.
-  return owner_->AcceptsMousePress() ? YES : NO;
+  return owner_->AcceptsMousePress() == AcceptsPress::NEVER ? NO : YES;
 }
 
 - (void)drawRect:(NSRect)dirtyRect {
@@ -156,7 +156,7 @@ void LocationBarDecoration::OnAccessibilityViewAction() {
   // Turn the action into a synthesized mouse click at the center of |this|.
   NSRect frame = [accessibility_view_.get() frame];
   NSPoint mousePoint = NSMakePoint(NSMidX(frame), NSMidY(frame));
-  OnMousePressed(frame, mousePoint);
+  HandleMousePressed(frame, mousePoint);
 }
 
 LocationBarDecoration::~LocationBarDecoration() {
@@ -188,7 +188,7 @@ NSRect LocationBarDecoration::GetBackgroundFrame(NSRect frame) {
 
 void LocationBarDecoration::UpdateAccessibilityView(NSRect apparent_frame) {
   auto v = static_cast<DecorationAccessibilityView*>(accessibility_view_);
-  [accessibility_view_ setEnabled:AcceptsMousePress()];
+  [accessibility_view_ setEnabled:AcceptsMousePress() != AcceptsPress::NEVER];
   [v setApparentFrame:apparent_frame];
 }
 
@@ -241,7 +241,7 @@ NSRect LocationBarDecoration::GetTrackingFrame(NSRect frame) {
 
 CrTrackingArea* LocationBarDecoration::SetupTrackingArea(NSRect frame,
                                                          NSView* control_view) {
-  if (!AcceptsMousePress() || !control_view)
+  if (!HasHoverAndPressEffect() || !control_view)
     return nil;
 
   NSRect tracking_frame = GetTrackingFrame(frame);
@@ -282,12 +282,12 @@ void LocationBarDecoration::RemoveTrackingArea() {
   tracking_area_.reset();
 }
 
-bool LocationBarDecoration::AcceptsMousePress() {
-  return false;
+AcceptsPress LocationBarDecoration::AcceptsMousePress() {
+  return AcceptsPress::NEVER;
 }
 
 bool LocationBarDecoration::HasHoverAndPressEffect() {
-  return AcceptsMousePress();
+  return AcceptsMousePress() != AcceptsPress::NEVER;
 }
 
 bool LocationBarDecoration::IsDraggable() {
@@ -306,11 +306,30 @@ NSPasteboard* LocationBarDecoration::GetDragPasteboard() {
   return nil;
 }
 
+bool LocationBarDecoration::HandleMousePressed(NSRect frame, NSPoint location) {
+  if (was_active_in_last_mouse_down_) {
+    was_active_in_last_mouse_down_ = false;
+    if (AcceptsMousePress() == AcceptsPress::WHEN_ACTIVATED) {
+      // Clear the active state. This is usually the responsibility of the popup
+      // code (i.e. whatever called SetActive(true)). However, there exist some
+      // tricky lifetimes and corner cases where a client may "forget", or be
+      // unable to clear the active state. In that case, we risk getting "stuck"
+      // in a state where client code may never receive a signal. Clearing the
+      // active state here ensures a subsequent click will always send a signal.
+      SetActive(false);
+      return true;
+    }
+  }
+
+  return OnMousePressed(frame, location);
+}
+
 bool LocationBarDecoration::OnMousePressed(NSRect frame, NSPoint location) {
   return false;
 }
 
 void LocationBarDecoration::OnMouseDown() {
+  was_active_in_last_mouse_down_ = active_;
   state_ = DecorationMouseState::PRESSED;
   UpdateDecorationState();
 }

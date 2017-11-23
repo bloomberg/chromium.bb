@@ -46,8 +46,8 @@ NSPoint StarDecoration::GetStarBubblePointInFrame(NSRect draw_frame) {
                      NSMaxY(draw_frame) - kStarPointYOffset);
 }
 
-bool StarDecoration::AcceptsMousePress() {
-  return true;
+AcceptsPress StarDecoration::AcceptsMousePress() {
+  return AcceptsPress::ALWAYS;
 }
 
 bool StarDecoration::OnMousePressed(NSRect frame, NSPoint location) {
