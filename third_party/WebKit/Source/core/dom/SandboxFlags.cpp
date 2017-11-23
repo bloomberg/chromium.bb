@@ -75,6 +75,9 @@ SandboxFlags ParseSandboxPolicy(const SpaceSplitString& policy,
                RuntimeEnabledFeatures::
                    TopNavByUserActivationInSandboxEnabled()) {
       flags &= ~kSandboxTopNavigationByUserActivation;
+    } else if (EqualIgnoringASCIICase(sandbox_token, "allow-downloads") &&
+               RuntimeEnabledFeatures::BlockingDownloadsInSandboxEnabled()) {
+      flags &= ~kSandboxDownloads;
     } else {
       token_errors.Append(token_errors.IsEmpty() ? "'" : ", '");
       token_errors.Append(sandbox_token);
@@ -113,5 +116,6 @@ STATIC_ASSERT_ENUM(WebSandboxFlags::kPresentationController,
                    kSandboxPresentationController);
 STATIC_ASSERT_ENUM(WebSandboxFlags::kTopNavigationByUserActivation,
                    kSandboxTopNavigationByUserActivation);
+STATIC_ASSERT_ENUM(WebSandboxFlags::kDownloads, kSandboxDownloads);
 
 }  // namespace blink

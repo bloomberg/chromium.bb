@@ -130,6 +130,9 @@
       status: "stable",
     },
     {
+      name: "BlockingDownloadsInSandbox",
+    },
+    {
       name: "BlockMetaSetCookie",
       status: "experimental"
     },
