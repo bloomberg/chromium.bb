@@ -418,14 +418,14 @@ sk_sp<SkColorSpace> ColorSpace::ToSkColorSpace() const {
   // If we got a specific SkColorSpace from the ICCProfile that this color space
   // was created from, use that.
   if (icc_profile_id_) {
-    ICCProfile icc_profile;
-    if (GetICCProfile(&icc_profile)) {
-      return icc_profile.internals_->sk_color_space_;
-    } else {
-      // This will fall through to creating a parametric approximation. The
-      // result will be that we will use an inaccurate transfer function.
-      DLOG(ERROR) << "Unable to find ICCProfile for SkColorSpace.";
-    }
+    sk_sp<SkColorSpace> result =
+        ICCProfile::GetSkColorSpaceFromId(icc_profile_id_);
+    if (result)
+      return result;
+
+    // This will fall through to creating a parametric approximation. The
+    // result will be that we will use an inaccurate transfer function.
+    DLOG(ERROR) << "Unable to find ICCProfile for SkColorSpace.";
   }
 
   // Use the named SRGB and linear-SRGB instead of the generic constructors.
@@ -488,14 +488,6 @@ sk_sp<SkColorSpace> ColorSpace::ToSkColorSpace() const {
   if (has_named_gamut)
     return SkColorSpace::MakeRGB(fn, named_gamut);
   return SkColorSpace::MakeRGB(fn, to_xyz_d50);
-}
-
-bool ColorSpace::GetICCProfileData(std::vector<char>* output_data) const {
-  ICCProfile icc_profile;
-  if (!GetICCProfile(&icc_profile))
-    return false;
-  *output_data = icc_profile.internals_->data_;
-  return true;
 }
 
 void ColorSpace::GetPrimaryMatrix(SkMatrix44* to_XYZD50) const {

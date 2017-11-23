@@ -184,12 +184,6 @@ class COLOR_SPACE_EXPORT ColorSpace {
   // range, and unspecified spaces.
   sk_sp<SkColorSpace> ToSkColorSpace() const;
 
-  // Populate |icc_profile| with an ICC profile that represents this color
-  // space. Returns false if this space is not representable.
-  // TODO(ccameron): Move this to ICCProfile::FromColorSpace.
-  bool GetICCProfile(ICCProfile* icc_profile) const;
-  bool GetICCProfileData(std::vector<char>* data) const;
-
   void GetPrimaryMatrix(SkMatrix44* to_XYZD50) const;
   bool GetTransferFunction(SkColorSpaceTransferFn* fn) const;
   bool GetInverseTransferFunction(SkColorSpaceTransferFn* fn) const;
