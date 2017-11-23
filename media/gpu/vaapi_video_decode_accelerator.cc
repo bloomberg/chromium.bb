@@ -332,7 +332,7 @@ VaapiVideoDecodeAccelerator::VaapiVideoDecodeAccelerator(
     const BindGLImageCallback& bind_image_cb)
     : state_(kUninitialized),
       input_ready_(&lock_),
-      create_vaapi_picture_callback_(base::Bind(&VaapiPicture::CreatePicture)),
+      vaapi_picture_factory_(new VaapiPictureFactory()),
       surfaces_available_(&lock_),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       decoder_thread_("VaapiDecoderThread"),
@@ -720,7 +720,7 @@ void VaapiVideoDecodeAccelerator::TryFinishSurfaceSetChange() {
   task_runner_->PostTask(
       FROM_HERE, base::Bind(&Client::ProvidePictureBuffers, client_,
                             requested_num_pics_, format, 1, requested_pic_size_,
-                            VaapiPicture::GetGLTextureTarget()));
+                            vaapi_picture_factory_->GetGLTextureTarget()));
 }
 
 void VaapiVideoDecodeAccelerator::Decode(
@@ -789,7 +789,7 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
                               ? buffers[i].service_texture_ids()[0]
                               : 0;
 
-    std::unique_ptr<VaapiPicture> picture(create_vaapi_picture_callback_.Run(
+    std::unique_ptr<VaapiPicture> picture(vaapi_picture_factory_->Create(
         vaapi_wrapper_, make_context_current_cb_, bind_image_cb_,
         buffers[i].id(), requested_pic_size_, service_id, client_id));
     RETURN_AND_NOTIFY_ON_FAILURE(

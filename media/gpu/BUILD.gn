@@ -312,6 +312,8 @@ component("gpu") {
     sources += [
                  "va_surface.cc",
                  "va_surface.h",
+                 "vaapi/vaapi_picture_factory.cc",
+                 "vaapi/vaapi_picture_factory.h",
                  "vaapi/vaapi_picture.cc",
                  "vaapi/vaapi_picture.h",
                  "vaapi_jpeg_decode_accelerator.cc",

@@ -31,6 +31,7 @@
 #include "media/gpu/gpu_video_decode_accelerator_helpers.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/shared_memory_region.h"
+#include "media/gpu/vaapi/vaapi_picture_factory.h"
 #include "media/gpu/vaapi_wrapper.h"
 #include "media/video/picture.h"
 #include "media/video/video_decode_accelerator.h"
@@ -225,18 +226,10 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   using OutputBuffers = base::queue<int32_t>;
   OutputBuffers output_buffers_;
 
+  std::unique_ptr<VaapiPictureFactory> vaapi_picture_factory_;
+
   scoped_refptr<VaapiWrapper> vaapi_wrapper_;
 
-  // TODO(mcasas): Use a VaapiPicture factory instead, https://crbug.com/784507.
-  base::Callback<std::unique_ptr<VaapiPicture>(
-      const scoped_refptr<VaapiWrapper>&,
-      const MakeGLContextCurrentCallback&,
-      const BindGLImageCallback&,
-      int32_t,
-      const gfx::Size&,
-      uint32_t,
-      uint32_t)>
-      create_vaapi_picture_callback_;
   // All allocated Pictures, regardless of their current state. Pictures are
   // allocated once using |create_vaapi_picture_callback_| and destroyed at the
   // end of decode. Comes after |vaapi_wrapper_| to ensure all pictures are
