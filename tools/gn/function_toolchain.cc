@@ -840,7 +840,7 @@ R"(  Compiler tools have the notion of a single input and a single output, along
 
     {{libs}}
         Expands to the list of system libraries to link to. Each will be
-        prefixed by the "lib_prefix".
+        prefixed by the "lib_switch".
 
         As a special case to support Mac, libraries with names ending in
         ".framework" will be added to the {{libs}} with "-framework" preceeding
@@ -950,8 +950,8 @@ Example
 
   toolchain("my_toolchain") {
     # Put these at the top to apply to all tools below.
-    lib_prefix = "-l"
-    lib_dir_prefix = "-L"
+    lib_switch = "-l"
+    lib_dir_switch = "-L"
 
     tool("cc") {
       command = "gcc {{source}} -o {{output}}"
