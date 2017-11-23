@@ -30,6 +30,7 @@
 #ifndef StyledMarkupAccumulator_h
 #define StyledMarkupAccumulator_h
 
+#include "base/macros.h"
 #include "core/editing/EditingStyle.h"
 #include "core/editing/serializers/MarkupFormatter.h"
 #include "core/editing/serializers/TextOffset.h"
@@ -42,7 +43,6 @@ class CSSPropertyValueSet;
 class Text;
 
 class StyledMarkupAccumulator final {
-  WTF_MAKE_NONCOPYABLE(StyledMarkupAccumulator);
   STACK_ALLOCATED();
 
  public:
@@ -91,6 +91,8 @@ class StyledMarkupAccumulator final {
   StringBuilder result_;
   Vector<String> reversed_preceding_markup_;
   const ConvertBlocksToInlines convert_blocks_to_inlines_;
+
+  DISALLOW_COPY_AND_ASSIGN(StyledMarkupAccumulator);
 };
 
 }  // namespace blink

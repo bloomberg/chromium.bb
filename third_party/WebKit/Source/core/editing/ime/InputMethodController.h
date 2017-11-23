@@ -27,6 +27,7 @@
 #define InputMethodController_h
 
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/dom/DocumentShutdownObserver.h"
 #include "core/editing/Forward.h"
@@ -47,7 +48,6 @@ enum class TypingContinuation;
 class CORE_EXPORT InputMethodController final
     : public GarbageCollectedFinalized<InputMethodController>,
       public DocumentShutdownObserver {
-  WTF_MAKE_NONCOPYABLE(InputMethodController);
   USING_GARBAGE_COLLECTED_MIXIN(InputMethodController);
 
  public:
@@ -174,6 +174,8 @@ class CORE_EXPORT InputMethodController final
 
   FRIEND_TEST_ALL_PREFIXES(InputMethodControllerTest,
                            InputModeOfFocusedElement);
+
+  DISALLOW_COPY_AND_ASSIGN(InputMethodController);
 };
 
 }  // namespace blink

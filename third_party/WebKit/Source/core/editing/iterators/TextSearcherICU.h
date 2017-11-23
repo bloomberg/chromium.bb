@@ -5,6 +5,7 @@
 #ifndef TextSearcherICU_h
 #define TextSearcherICU_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "platform/wtf/text/StringView.h"
 #include "platform/wtf/text/Unicode.h"
@@ -19,8 +20,6 @@ struct CORE_EXPORT MatchResultICU {
 };
 
 class CORE_EXPORT TextSearcherICU {
-  WTF_MAKE_NONCOPYABLE(TextSearcherICU);
-
  public:
   TextSearcherICU();
   ~TextSearcherICU();
@@ -36,6 +35,8 @@ class CORE_EXPORT TextSearcherICU {
 
   UStringSearch* searcher_ = nullptr;
   size_t text_length_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(TextSearcherICU);
 };
 
 }  // namespace blink

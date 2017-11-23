@@ -6,17 +6,17 @@
 #define ForwardGraphemeBoundaryStateMachine_h
 
 #include <iosfwd>
+
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/editing/state_machines/TextSegmentationMachineState.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/text/Unicode.h"
 
 namespace blink {
 
 class CORE_EXPORT ForwardGraphemeBoundaryStateMachine {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(ForwardGraphemeBoundaryStateMachine);
 
  public:
   ForwardGraphemeBoundaryStateMachine();
@@ -69,6 +69,8 @@ class CORE_EXPORT ForwardGraphemeBoundaryStateMachine {
 
   // The internal state.
   InternalState internal_state_;
+
+  DISALLOW_COPY_AND_ASSIGN(ForwardGraphemeBoundaryStateMachine);
 };
 
 }  // namespace blink

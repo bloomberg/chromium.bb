@@ -28,6 +28,8 @@
 #define FrameSelection_h
 
 #include <memory>
+
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/dom/SynchronousMutationObserver.h"
 #include "core/editing/Forward.h"
@@ -36,7 +38,6 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/Optional.h"
 
 namespace blink {
@@ -65,7 +66,6 @@ enum class HandleVisibility { kNotVisible, kVisible };
 class CORE_EXPORT FrameSelection final
     : public GarbageCollectedFinalized<FrameSelection>,
       public SynchronousMutationObserver {
-  WTF_MAKE_NONCOPYABLE(FrameSelection);
   USING_GARBAGE_COLLECTED_MIXIN(FrameSelection);
 
  public:
@@ -282,6 +282,8 @@ class CORE_EXPORT FrameSelection final
 
   const Member<FrameCaret> frame_caret_;
   bool use_secure_keyboard_entry_when_active_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(FrameSelection);
 };
 
 }  // namespace blink

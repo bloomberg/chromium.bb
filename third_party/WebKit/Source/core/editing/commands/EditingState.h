@@ -5,10 +5,10 @@
 #ifndef EditingState_h
 #define EditingState_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Assertions.h"
-#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 
@@ -24,7 +24,6 @@ namespace blink {
 //
 class CORE_EXPORT EditingState final {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(EditingState);
 
  public:
   EditingState();
@@ -35,13 +34,14 @@ class CORE_EXPORT EditingState final {
 
  private:
   bool is_aborted_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(EditingState);
 };
 
 // TODO(yosin): Once all commands aware |EditingState|, we get rid of
 // |IgnorableEditingAbortState | class
 class IgnorableEditingAbortState final {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(IgnorableEditingAbortState);
 
  public:
   IgnorableEditingAbortState();
@@ -51,6 +51,8 @@ class IgnorableEditingAbortState final {
 
  private:
   EditingState editing_state_;
+
+  DISALLOW_COPY_AND_ASSIGN(IgnorableEditingAbortState);
 };
 
 // Abort the editing command if the specified expression is true.
@@ -66,7 +68,6 @@ class IgnorableEditingAbortState final {
 // This class is inspired by |NoExceptionStateAssertionChecker|.
 class NoEditingAbortChecker final {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(NoEditingAbortChecker);
 
  public:
   NoEditingAbortChecker(const char* file, int line);
@@ -78,6 +79,8 @@ class NoEditingAbortChecker final {
   EditingState editing_state_;
   const char* const file_;
   int const line_;
+
+  DISALLOW_COPY_AND_ASSIGN(NoEditingAbortChecker);
 };
 
 // If a function with EditingState* argument should not be aborted,

@@ -29,6 +29,7 @@
 
 #include "core/editing/serializers/StyledMarkupSerializer.h"
 
+#include "base/macros.h"
 #include "core/css/CSSPropertyValueSet.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
@@ -87,7 +88,6 @@ using namespace HTMLNames;
 
 template <typename Strategy>
 class StyledMarkupTraverser {
-  WTF_MAKE_NONCOPYABLE(StyledMarkupTraverser);
   STACK_ALLOCATED();
 
  public:
@@ -110,6 +110,7 @@ class StyledMarkupTraverser {
   StyledMarkupAccumulator* accumulator_;
   Member<Node> last_closed_;
   Member<EditingStyle> wrapping_style_;
+  DISALLOW_COPY_AND_ASSIGN(StyledMarkupTraverser);
 };
 
 template <typename Strategy>

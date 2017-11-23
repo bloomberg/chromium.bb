@@ -6,17 +6,17 @@
 #define BackspaceStateMachine_h
 
 #include <iosfwd>
+
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/editing/state_machines/TextSegmentationMachineState.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/text/Unicode.h"
 
 namespace blink {
 
 class CORE_EXPORT BackspaceStateMachine {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(BackspaceStateMachine);
 
  public:
   BackspaceStateMachine();
@@ -63,6 +63,8 @@ class CORE_EXPORT BackspaceStateMachine {
 
   // The internal state.
   BackspaceState state_;
+
+  DISALLOW_COPY_AND_ASSIGN(BackspaceStateMachine);
 };
 
 }  // namespace blink
