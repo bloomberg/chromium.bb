@@ -166,6 +166,9 @@ bool TextControlElement::PlaceholderShouldBeVisible() const {
 }
 
 HTMLElement* TextControlElement::PlaceholderElement() const {
+  if (!SupportsPlaceholder())
+    return nullptr;
+  DCHECK(UserAgentShadowRoot());
   return ToHTMLElementOrDie(
       UserAgentShadowRoot()->getElementById(ShadowElementNames::Placeholder()));
 }
@@ -806,6 +809,8 @@ void TextControlElement::SetInnerEditorValue(const String& value) {
   DCHECK(!OpenShadowRoot());
   if (!IsTextControl() || OpenShadowRoot())
     return;
+
+  DCHECK(InnerEditorElement());
 
   bool text_is_changed = value != InnerEditorValue();
   HTMLElement* inner_editor = InnerEditorElement();

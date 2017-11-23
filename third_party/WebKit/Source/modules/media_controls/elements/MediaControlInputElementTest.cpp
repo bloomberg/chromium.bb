@@ -29,7 +29,6 @@ class MediaControlInputElementImpl final : public MediaControlInputElement {
   MediaControlInputElementImpl(MediaControlsImpl& media_controls)
       // Using arbitrary MediaControlElementType. It should have no impact.
       : MediaControlInputElement(media_controls, kMediaDownloadButton) {
-    EnsureUserAgentShadowRoot();
     setType(InputTypeNames::button);
     SetIsWanted(false);
   }

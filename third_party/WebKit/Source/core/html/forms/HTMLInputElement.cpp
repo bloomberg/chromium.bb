@@ -124,8 +124,11 @@ HTMLInputElement* HTMLInputElement::Create(Document& document,
                                            bool created_by_parser) {
   HTMLInputElement* input_element =
       new HTMLInputElement(document, created_by_parser);
-  if (!created_by_parser)
-    input_element->EnsureUserAgentShadowRoot();
+  if (!created_by_parser) {
+    DCHECK(input_element->input_type_view_->NeedsShadowSubtree());
+    input_element->CreateUserAgentShadowRoot();
+    input_element->CreateShadowSubtree();
+  }
   return input_element;
 }
 
@@ -145,10 +148,6 @@ HTMLImageLoader& HTMLInputElement::EnsureImageLoader() {
   if (!image_loader_)
     image_loader_ = HTMLImageLoader::Create(this);
   return *image_loader_;
-}
-
-void HTMLInputElement::DidAddUserAgentShadowRoot(ShadowRoot&) {
-  input_type_view_->CreateShadowSubtree();
 }
 
 HTMLInputElement::~HTMLInputElement() {}
@@ -375,7 +374,10 @@ void HTMLInputElement::InitializeTypeInParsing() {
   String default_value = FastGetAttribute(valueAttr);
   if (input_type_->GetValueMode() == ValueMode::kValue)
     non_attribute_value_ = SanitizeValue(default_value);
-  EnsureUserAgentShadowRoot();
+  if (input_type_view_->NeedsShadowSubtree()) {
+    CreateUserAgentShadowRoot();
+    CreateShadowSubtree();
+  }
 
   SetNeedsWillValidateCheck();
 
@@ -429,7 +431,10 @@ void HTMLInputElement::UpdateType() {
 
   input_type_ = new_type;
   input_type_view_ = input_type_->CreateView();
-  input_type_view_->CreateShadowSubtree();
+  if (input_type_view_->NeedsShadowSubtree()) {
+    EnsureUserAgentShadowRoot();
+    CreateShadowSubtree();
+  }
 
   SetNeedsWillValidateCheck();
 
@@ -1326,6 +1331,10 @@ void HTMLInputElement::DefaultEventHandler(Event* evt) {
 
   if (!call_base_class_early && !evt->DefaultHandled())
     TextControlElement::DefaultEventHandler(evt);
+}
+
+void HTMLInputElement::CreateShadowSubtree() {
+  input_type_view_->CreateShadowSubtree();
 }
 
 bool HTMLInputElement::HasActivationBehavior() const {

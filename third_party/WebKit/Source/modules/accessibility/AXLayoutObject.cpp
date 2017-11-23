@@ -2495,8 +2495,10 @@ void AXLayoutObject::AddTextFieldChildren() {
     return;
 
   HTMLInputElement& input = ToHTMLInputElement(*node);
-  Element* spin_button_element = input.UserAgentShadowRoot()->getElementById(
-      ShadowElementNames::SpinButton());
+  Element* spin_button_element =
+      input.UserAgentShadowRoot() ? input.UserAgentShadowRoot()->getElementById(
+                                        ShadowElementNames::SpinButton())
+                                  : nullptr;
   if (!spin_button_element || !spin_button_element->IsSpinButtonElement())
     return;
 
