@@ -85,7 +85,7 @@ class StatusTrayStateChangerWinTest : public testing::Test {
 };
 
 // Test is disabled due to multiple COM initialization errors.  See
-// http//crbug.com/367199 for details.
+// https://crbug.com/367199 for details.
 TEST_F(StatusTrayStateChangerWinTest, DISABLED_Setup) {
   // This tests the code path that will read the NOTIFYITEM data structure for
   // use in future tests.
@@ -94,7 +94,7 @@ TEST_F(StatusTrayStateChangerWinTest, DISABLED_Setup) {
 }
 
 // Test is disabled due to multiple COM initialization errors.  See
-// http//crbug.com/367199 for details.
+// https://crbug.com/367199 for details.
 TEST_F(StatusTrayStateChangerWinTest, DISABLED_ComApiTest) {
 
   // Setup code to read the current preference.
@@ -121,8 +121,8 @@ TEST_F(StatusTrayStateChangerWinTest, DISABLED_ComApiTest) {
   EXPECT_EQ(notify_item->preference, current_preference);
 }
 
-// Test is disabled due to multiple COM initialization errors.  See
-// http//crbug.com/367199 for details.
+// Disabled due to racy final expectation, and possibly no longer needed;
+// see https://crbug.com/347693.
 TEST_F(StatusTrayStateChangerWinTest, DISABLED_TraySizeApiTest) {
   // Used to reset operating system state afterwards.
   std::unique_ptr<NOTIFYITEM> notify_item = SetupAndGetCurrentNotifyItem();

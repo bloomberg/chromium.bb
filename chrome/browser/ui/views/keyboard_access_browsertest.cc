@@ -371,8 +371,7 @@ IN_PROC_BROWSER_TEST_F(KeyboardAccessTest,
   TestMenuKeyboardAccess(true, false, true);
 }
 
-IN_PROC_BROWSER_TEST_F(KeyboardAccessTest,
-                       DISABLED_TestSystemMenuWithKeyboard) {
+IN_PROC_BROWSER_TEST_F(KeyboardAccessTest, TestSystemMenuWithKeyboard) {
   TestSystemMenuWithKeyboard();
 }
 #endif

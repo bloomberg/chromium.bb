@@ -256,9 +256,7 @@ void ToolbarViewTest::RunToolbarCycleFocusTest(Browser* browser) {
     EXPECT_EQ(ids[i], reverse_ids[count - 2 - i]);
 }
 
-// The test is flaky on Win (http://crbug.com/152938) and crashes on CrOS under
-// AddressSanitizer (http://crbug.com/154657).
-IN_PROC_BROWSER_TEST_F(ToolbarViewTest, DISABLED_ToolbarCycleFocus) {
+IN_PROC_BROWSER_TEST_F(ToolbarViewTest, ToolbarCycleFocus) {
   RunToolbarCycleFocusTest(browser());
 }
 
