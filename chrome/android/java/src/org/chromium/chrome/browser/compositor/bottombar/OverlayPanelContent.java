@@ -183,7 +183,8 @@ public class OverlayPanelContent {
 
             @Override
             public int getTopControlsHeight() {
-                return mBarHeightPx;
+                return (int) (mBarHeightPx
+                        / mActivity.getWindowAndroid().getDisplay().getDipScale());
             }
 
             @Override
