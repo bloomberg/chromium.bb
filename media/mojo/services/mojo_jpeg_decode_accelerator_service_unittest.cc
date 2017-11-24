@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/mojo/services/gpu_jpeg_decode_accelerator.h"
+#include "media/mojo/services/mojo_jpeg_decode_accelerator_service.h"
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -18,12 +18,12 @@ namespace media {
 static const int32_t kArbitraryBitstreamBufferId = 123;
 
 // Test fixture for the unit that is created via the mojom interface for
-// class GpuJpegDecodeAccelerator. Uses a FakeJpegDecodeAccelerator to
+// class MojoJpegDecodeAcceleratorService. Uses a FakeJpegDecodeAccelerator to
 // simulate the actual decoding without the need for special hardware.
-class GpuJpegDecodeAcceleratorTest : public ::testing::Test {
+class MojoJpegDecodeAcceleratorServiceTest : public ::testing::Test {
  public:
-  GpuJpegDecodeAcceleratorTest() {}
-  ~GpuJpegDecodeAcceleratorTest() override {}
+  MojoJpegDecodeAcceleratorServiceTest() {}
+  ~MojoJpegDecodeAcceleratorServiceTest() override {}
 
   void SetUp() override {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -48,13 +48,13 @@ class GpuJpegDecodeAcceleratorTest : public ::testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
-TEST_F(GpuJpegDecodeAcceleratorTest, InitializeAndDecode) {
+TEST_F(MojoJpegDecodeAcceleratorServiceTest, InitializeAndDecode) {
   mojom::JpegDecodeAcceleratorPtr jpeg_decoder;
-  GpuJpegDecodeAccelerator::Create(mojo::MakeRequest(&jpeg_decoder));
+  MojoJpegDecodeAcceleratorService::Create(mojo::MakeRequest(&jpeg_decoder));
 
   base::RunLoop run_loop;
   jpeg_decoder->Initialize(
-      base::Bind(&GpuJpegDecodeAcceleratorTest::OnInitializeDone,
+      base::Bind(&MojoJpegDecodeAcceleratorServiceTest::OnInitializeDone,
                  base::Unretained(this), run_loop.QuitClosure()));
   run_loop.Run();
 
@@ -83,7 +83,7 @@ TEST_F(GpuJpegDecodeAcceleratorTest, InitializeAndDecode) {
   jpeg_decoder->Decode(
       bitstream_buffer, kDummyFrameCodedSize, std::move(output_frame_handle),
       base::checked_cast<uint32_t>(kOutputFrameSizeInBytes),
-      base::Bind(&GpuJpegDecodeAcceleratorTest::OnDecodeAck,
+      base::Bind(&MojoJpegDecodeAcceleratorServiceTest::OnDecodeAck,
                  base::Unretained(this), run_loop2.QuitClosure()));
   run_loop2.Run();
 }
