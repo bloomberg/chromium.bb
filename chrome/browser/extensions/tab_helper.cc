@@ -241,12 +241,6 @@ void TabHelper::SetExtensionAppById(const ExtensionId& extension_app_id) {
     SetExtensionApp(extension);
 }
 
-void TabHelper::SetExtensionAppIconById(const ExtensionId& extension_app_id) {
-  const Extension* extension = GetExtension(extension_app_id);
-  if (extension)
-    UpdateExtensionAppIcon(extension);
-}
-
 SkBitmap* TabHelper::GetExtensionAppIcon() {
   if (extension_app_icon_.empty())
     return NULL;
@@ -499,11 +493,6 @@ void TabHelper::UpdateExtensionAppIcon(const Extension* extension) {
         base::Bind(&TabHelper::OnImageLoaded,
                    image_loader_ptr_factory_.GetWeakPtr()));
   }
-}
-
-void TabHelper::SetAppIcon(const SkBitmap& app_icon) {
-  extension_app_icon_ = app_icon;
-  web_contents()->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TITLE);
 }
 
 void TabHelper::SetWebstoreInlineInstallerFactoryForTests(
