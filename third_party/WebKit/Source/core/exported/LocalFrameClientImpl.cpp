@@ -663,7 +663,6 @@ bool LocalFrameClientImpl::NavigateBackForward(int offset) const {
     return false;
   if (offset < -webview->Client()->HistoryBackListCount())
     return false;
-  virtual_time_pauser_.PauseVirtualTime(true);
   webview->Client()->NavigateBackForwardSoon(offset);
   return true;
 }

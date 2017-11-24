@@ -42,6 +42,7 @@
 #include "content/renderer/stats_collection_observer.h"
 #include "ipc/ipc_platform_file.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
+#include "third_party/WebKit/public/platform/WebScopedVirtualTimePauser.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/web/WebAXObject.h"
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
@@ -230,6 +231,8 @@ class CONTENT_EXPORT RenderViewImpl : public RenderWidget,
   void ForceResizeForTesting(const gfx::Size& new_size);
 
   void UseSynchronousResizeModeForTesting(bool enable);
+
+  void DidCommitProvisionalHistoryLoad();
 
   // Control autoresize mode.
   void EnableAutoResizeForTesting(const gfx::Size& min_size,
@@ -786,6 +789,8 @@ class CONTENT_EXPORT RenderViewImpl : public RenderWidget,
       disambiguation_bitmaps_;
 
   std::unique_ptr<IdleUserDetector> idle_user_detector_;
+
+  blink::WebScopedVirtualTimePauser history_navigation_virtual_time_pauser_;
 
   // ---------------------------------------------------------------------------
   // ADDING NEW DATA? Please see if it fits appropriately in one of the above
