@@ -355,6 +355,11 @@ const char* AlreadySeenSigninViewPreferenceKey(
          _signinPromoViewState == ios::SigninPromoViewState::Invalid;
 }
 
+- (BOOL)isInvalidClosedOrNeverVisible {
+  return [self isInvalidOrClosed] ||
+         _signinPromoViewState == ios::SigninPromoViewState::NeverVisible;
+}
+
 - (SigninPromoViewConfigurator*)createConfigurator {
   BOOL hasCloseButton =
       AlreadySeenSigninViewPreferenceKey(_accessPoint) != nullptr;
@@ -400,8 +405,7 @@ const char* AlreadySeenSigninViewPreferenceKey(
 }
 
 - (void)sendImpressionsTillSigninButtonsHistogram {
-  DCHECK(![self isInvalidOrClosed] ||
-         _signinPromoViewState != ios::SigninPromoViewState::Unused);
+  DCHECK(![self isInvalidClosedOrNeverVisible]);
   _signinPromoViewState = ios::SigninPromoViewState::SigninStarted;
   const char* displayedCountPreferenceKey =
       DisplayedCountPreferenceKey(_accessPoint);
@@ -417,6 +421,8 @@ const char* AlreadySeenSigninViewPreferenceKey(
   DCHECK(![self isInvalidOrClosed]);
   if (_isSigninPromoViewVisible)
     return;
+  if (_signinPromoViewState == ios::SigninPromoViewState::NeverVisible)
+    _signinPromoViewState = ios::SigninPromoViewState::Unused;
   _isSigninPromoViewVisible = YES;
   const char* displayedCountPreferenceKey =
       DisplayedCountPreferenceKey(_accessPoint);
@@ -429,14 +435,19 @@ const char* AlreadySeenSigninViewPreferenceKey(
 }
 
 - (void)signinPromoViewHidden {
-  DCHECK(![self isInvalidOrClosed]);
+  DCHECK(![self isInvalidClosedOrNeverVisible]);
   _isSigninPromoViewVisible = NO;
 }
 
 - (void)signinPromoViewRemoved {
   DCHECK_NE(ios::SigninPromoViewState::Invalid, _signinPromoViewState);
+  BOOL wasNeverVisible =
+      _signinPromoViewState == ios::SigninPromoViewState::NeverVisible;
   BOOL wasUnused = _signinPromoViewState == ios::SigninPromoViewState::Unused;
   _signinPromoViewState = ios::SigninPromoViewState::Invalid;
+  _isSigninPromoViewVisible = NO;
+  if (wasNeverVisible)
+    return;
   // If the sign-in promo view has been used at least once, it should not be
   // counted as dismissed (even if the sign-in has been canceled).
   const char* displayedCountPreferenceKey =
@@ -529,7 +540,9 @@ const char* AlreadySeenSigninViewPreferenceKey(
 
 - (void)signinPromoViewDidTapSigninWithNewAccount:
     (SigninPromoView*)signinPromoView {
-  DCHECK(!_defaultIdentity && ![self isInvalidOrClosed]);
+  DCHECK(!_defaultIdentity);
+  DCHECK(_isSigninPromoViewVisible);
+  DCHECK(![self isInvalidClosedOrNeverVisible]);
   [self sendImpressionsTillSigninButtonsHistogram];
   signin_metrics::RecordSigninUserActionForAccessPoint(_accessPoint);
   RecordSigninNewAccountUserActionForAccessPoint(_accessPoint);
@@ -540,7 +553,9 @@ const char* AlreadySeenSigninViewPreferenceKey(
 
 - (void)signinPromoViewDidTapSigninWithDefaultAccount:
     (SigninPromoView*)signinPromoView {
-  DCHECK(_defaultIdentity && ![self isInvalidOrClosed]);
+  DCHECK(_defaultIdentity);
+  DCHECK(_isSigninPromoViewVisible);
+  DCHECK(![self isInvalidClosedOrNeverVisible]);
   [self sendImpressionsTillSigninButtonsHistogram];
   signin_metrics::RecordSigninUserActionForAccessPoint(_accessPoint);
   RecordSigninDefaultUserActionForAccessPoint(_accessPoint);
@@ -551,7 +566,9 @@ const char* AlreadySeenSigninViewPreferenceKey(
 
 - (void)signinPromoViewDidTapSigninWithOtherAccount:
     (SigninPromoView*)signinPromoView {
-  DCHECK(_defaultIdentity && ![self isInvalidOrClosed]);
+  DCHECK(_defaultIdentity);
+  DCHECK(_isSigninPromoViewVisible);
+  DCHECK(![self isInvalidClosedOrNeverVisible]);
   [self sendImpressionsTillSigninButtonsHistogram];
   signin_metrics::RecordSigninUserActionForAccessPoint(_accessPoint);
   RecordSigninNotDefaultUserActionForAccessPoint(_accessPoint);
@@ -561,7 +578,8 @@ const char* AlreadySeenSigninViewPreferenceKey(
 }
 
 - (void)signinPromoViewCloseButtonWasTapped:(SigninPromoView*)view {
-  DCHECK(_isSigninPromoViewVisible && ![self isInvalidOrClosed]);
+  DCHECK(_isSigninPromoViewVisible);
+  DCHECK(![self isInvalidClosedOrNeverVisible]);
   _signinPromoViewState = ios::SigninPromoViewState::Closed;
   const char* alreadySeenSigninViewPreferenceKey =
       AlreadySeenSigninViewPreferenceKey(_accessPoint);

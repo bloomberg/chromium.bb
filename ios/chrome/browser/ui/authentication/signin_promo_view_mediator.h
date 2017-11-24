@@ -20,11 +20,14 @@ class ChromeBrowserState;
 
 // Enums for the sign-in promo view state.
 enum class SigninPromoViewState {
+  // Initial state. When -[SigninPromoViewMediator signinPromoViewRemoved]  is
+  // called with that state, no metrics is recorded.
+  NeverVisible = 0,
   // None of the buttons has been used yet.
-  Unused = 0,
+  Unused,
   // Sign-in is in progress.
   SigninStarted,
-  // Sign-in buttons has been used at least once.
+  // Sign-in buttons have been used at least once.
   UsedAtLeastOnce,
   // Sign-in promo has been closed.
   Closed,

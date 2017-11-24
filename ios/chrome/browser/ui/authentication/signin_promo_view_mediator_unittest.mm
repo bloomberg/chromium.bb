@@ -26,6 +26,8 @@ class SigninPromoViewMediatorTest : public PlatformTest {
  protected:
   void TearDown() override {
     [mediator_ signinPromoViewRemoved];
+    EXPECT_EQ(ios::SigninPromoViewState::Invalid,
+              mediator_.signinPromoViewState);
     mediator_ = nil;
     EXPECT_OCMOCK_VERIFY((id)consumer_);
     EXPECT_OCMOCK_VERIFY((id)signin_promo_view_);
@@ -227,6 +229,38 @@ TEST_F(SigninPromoViewMediatorTest, ConfigureSigninPromoViewWithWarmAndCold) {
   expected_default_dentity_ = nil;
   TestColdState();
   CheckColdStateConfigurator(configurator_);
+}
+
+TEST_F(SigninPromoViewMediatorTest, SigninPromoViewStateVisible) {
+  CreateMediator(signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS);
+  EXPECT_EQ(ios::SigninPromoViewState::NeverVisible,
+            mediator_.signinPromoViewState);
+  [mediator_ signinPromoViewVisible];
+  EXPECT_EQ(ios::SigninPromoViewState::Unused, mediator_.signinPromoViewState);
+}
+
+TEST_F(SigninPromoViewMediatorTest, SigninPromoViewStateSignedin) {
+  CreateMediator(signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS);
+  [mediator_ signinPromoViewVisible];
+  __block ShowSigninCommandCompletionCallback completion;
+  ShowSigninCommandCompletionCallback completion_arg =
+      [OCMArg checkWithBlock:^BOOL(ShowSigninCommandCompletionCallback value) {
+        completion = value;
+        return YES;
+      }];
+  OCMExpect([consumer_ signinPromoViewMediator:mediator_
+                  shouldOpenSigninWithIdentity:nil
+                                   promoAction:signin_metrics::PromoAction::
+                                                   PROMO_ACTION_NEW_ACCOUNT
+                                    completion:completion_arg]);
+  [mediator_ signinPromoViewDidTapSigninWithNewAccount:signin_promo_view_];
+  EXPECT_EQ(ios::SigninPromoViewState::SigninStarted,
+            mediator_.signinPromoViewState);
+  EXPECT_NE(nil, (id)completion);
+  OCMExpect([consumer_ signinDidFinish]);
+  completion(YES);
+  EXPECT_EQ(ios::SigninPromoViewState::UsedAtLeastOnce,
+            mediator_.signinPromoViewState);
 }
 
 }  // namespace
