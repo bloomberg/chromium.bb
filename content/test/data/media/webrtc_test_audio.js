@@ -11,40 +11,39 @@ var MAX_AUDIO_OUTPUT_ENERGY = 32768;
 // on the connection. Note this does not necessarily mean the audio is actually
 // playing out (for instance if there's a bug in the WebRTC web media player).
 function ensureAudioPlaying(peerConnection) {
-  addExpectedEvent();
-
-  var attempt = 1;
-  gatherAudioLevelSamples(peerConnection, function(samples) {
-    if (identifyFakeDeviceSignal_(samples)) {
-      eventOccured();
-      return true;
-    }
-    if (attempt++ % 5 == 0) {
-      console.log('Still waiting for the fake audio signal.');
-      console.log('Dumping samples so far for analysis: ' + samples);
-    }
-    return false;
+  return new Promise((resolve, reject) => {
+    var attempt = 1;
+    gatherAudioLevelSamples(peerConnection, function(samples) {
+      if (identifyFakeDeviceSignal_(samples)) {
+        resolve();
+        return true;
+      }
+      if (attempt++ % 5 == 0) {
+        console.log('Still waiting for the fake audio signal.');
+        console.log('Dumping samples so far for analysis: ' + samples);
+      }
+      return false;
+    });
   });
 }
 
 // Queries WebRTC stats on |peerConnection| to find out whether audio is muted
 // on the connection.
 function ensureSilence(peerConnection) {
-  addExpectedEvent();
-
-  var attempt = 1;
-  gatherAudioLevelSamples(peerConnection, function(samples) {
-    if (identifySilence_(samples)) {
-      eventOccured();
-      return true;
-    }
-    if (attempt++ % 5 == 0) {
-      console.log('Still waiting for audio to go silent.');
-      console.log('Dumping samples so far for analysis: ' + samples);
-    }
-    return false;
+  return new Promise((resolve, reject) => {
+    var attempt = 1;
+    gatherAudioLevelSamples(peerConnection, function(samples) {
+      if (identifySilence_(samples)) {
+        resolve();
+        return true;
+      }
+      if (attempt++ % 5 == 0) {
+        console.log('Still waiting for audio to go silent.');
+        console.log('Dumping samples so far for analysis: ' + samples);
+      }
+      return false;
+    });
   });
-
 }
 
 // Not sure if this is a bug, but sometimes we get several audio ssrc's where

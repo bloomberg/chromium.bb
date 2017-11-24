@@ -113,15 +113,14 @@
   function callEmptyThenAddOneStreamAndRenegotiate(constraints) {
     createConnections(null);
     negotiate();
-    waitForConnectionToStabilize(gFirstConnection, function() {
-      navigator.mediaDevices.getUserMedia(constraints)
+    waitForConnectionToStabilize(gFirstConnection).then(() => {
+      return navigator.mediaDevices.getUserMedia(constraints)
           .then(addStreamToTheFirstConnectionAndNegotiate)
           .catch(printGetUserMediaError);
-
+    }).then(() => {
       // Only the first connection is sending here.
-      detectVideoPlaying('remote-view-2')
-          .then(reportTestSuccess);
-    });
+      return detectVideoPlaying('remote-view-2');
+    }).then(reportTestSuccess);
   }
 
   // The second set of constraints should request video (e.g. video:true) since
@@ -132,19 +131,18 @@
         .then(addStreamToBothConnectionsAndNegotiate)
         .catch(printGetUserMediaError);
 
-    waitForConnectionToStabilize(gFirstConnection, function() {
+    waitForConnectionToStabilize(gFirstConnection).then(() => {
       gFirstConnection.removeStream(gLocalStream);
       gSecondConnection.removeStream(gLocalStream);
-
-      navigator.mediaDevices.getUserMedia(renegotiationConstraints)
+    }).then(() => {
+      return navigator.mediaDevices.getUserMedia(renegotiationConstraints)
           .then(addStreamToBothConnectionsAndNegotiate)
           .catch(printGetUserMediaError);
-
-      Promise.all([
+    }).then(() => {
+      return Promise.all([
         detectVideoPlaying('remote-view-1'),
-        detectVideoPlaying('remote-view-1')
-      ]).then(reportTestSuccess);
-    });
+        detectVideoPlaying('remote-view-1')]);
+    }).then(reportTestSuccess);
   }
 
   // First makes a call between pc1 and pc2 where a stream is sent from pc1 to
