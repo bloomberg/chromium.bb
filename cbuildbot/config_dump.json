@@ -45562,8 +45562,7 @@
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "models": [
-            "{\n    \"lab_board_name\": \"reef\",\n    \"name\": \"basking\",\n    \"test_suites\": null\n}",
-            "{\n    \"lab_board_name\": \"reef\",\n    \"name\": \"electro\",\n    \"test_suites\": null\n}"
+            "{\n    \"lab_board_name\": \"reef\",\n    \"name\": \"reef\",\n    \"test_suites\": null\n}"
         ],
         "overlays": "both",
         "prebuilts": "private",
@@ -45593,8 +45592,7 @@
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "models": [
-            "{\n    \"lab_board_name\": \"reef\",\n    \"name\": \"basking\",\n    \"test_suites\": null\n}",
-            "{\n    \"lab_board_name\": \"reef\",\n    \"name\": \"electro\",\n    \"test_suites\": null\n}"
+            "{\n    \"lab_board_name\": \"reef\",\n    \"name\": \"reef\",\n    \"test_suites\": null\n}"
         ],
         "overlays": "both",
         "prebuilts": "private",
