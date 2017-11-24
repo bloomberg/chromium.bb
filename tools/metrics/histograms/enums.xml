@@ -40761,6 +40761,20 @@ would be helpful to identify which type is being sent.
   <int value="3" label="Infobar dismissed"/>
 </enum>
 
+<enum name="ThumbnailCaptureOutcome">
+  <int value="0" label="Success"/>
+  <int value="1" label="Not attempted: Navigation is pending"/>
+  <int value="2" label="Not attempted: Page hasn't painted yet"/>
+  <int value="3" label="Not attempted: Thumbnailing already in progress"/>
+  <int value="4" label="Not attempted: WebContents is being destroyed"/>
+  <int value="5" label="Not attempted: No valid URL"/>
+  <int value="6" label="Not attempted: Should not acquire for this page"/>
+  <int value="7" label="Not attempted: View not available for copy"/>
+  <int value="8" label="Not attempted: Empty copy rect"/>
+  <int value="9" label="Canceled"/>
+  <int value="10" label="Readback failed"/>
+</enum>
+
 <enum name="ThumbnailTopSitesEvent">
   <int value="0" label="Not added: Failure"/>
   <int value="1" label="Not added: TopSites is full"/>
