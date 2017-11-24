@@ -909,12 +909,16 @@ void WindowServer::OnWindowHierarchyChanged(ServerWindow* window,
       pending_system_modal_windows_.Remove(system_modal_window);
   }
 
+  // This |window| is being removed, EventDispatcher::WindowNoLongerValidTarget
+  // is going to be notified to do the necessary update.
+  if (!new_parent)
+    return;
+
   WindowManagerDisplayRoot* old_display_root =
       old_parent ? display_manager_->GetWindowManagerDisplayRoot(old_parent)
                  : nullptr;
   WindowManagerDisplayRoot* new_display_root =
-      new_parent ? display_manager_->GetWindowManagerDisplayRoot(new_parent)
-                 : nullptr;
+      display_manager_->GetWindowManagerDisplayRoot(new_parent);
   UpdateNativeCursorFromMouseLocation(new_display_root);
   if (old_display_root != new_display_root)
     UpdateNativeCursorFromMouseLocation(old_display_root);
