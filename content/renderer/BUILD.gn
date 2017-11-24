@@ -830,6 +830,8 @@ target(link_target_type, "renderer") {
       "media/webrtc/webrtc_media_stream_track_adapter.h",
       "media/webrtc/webrtc_media_stream_track_adapter_map.cc",
       "media/webrtc/webrtc_media_stream_track_adapter_map.h",
+      "media/webrtc/webrtc_set_remote_description_observer.cc",
+      "media/webrtc/webrtc_set_remote_description_observer.h",
       "media/webrtc/webrtc_video_capturer_adapter.cc",
       "media/webrtc/webrtc_video_capturer_adapter.h",
       "media/webrtc/webrtc_video_frame_adapter.cc",

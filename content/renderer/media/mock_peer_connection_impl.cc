@@ -114,14 +114,20 @@ class MockDtmfSender : public DtmfSenderInterface {
 };
 
 FakeRtpReceiver::FakeRtpReceiver(
-    rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> track)
-    : track_(track) {}
+    rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> track,
+    std::vector<rtc::scoped_refptr<webrtc::MediaStreamInterface>> streams)
+    : track_(std::move(track)), streams_(std::move(streams)) {}
 
 FakeRtpReceiver::~FakeRtpReceiver() {}
 
 rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> FakeRtpReceiver::track()
     const {
   return track_;
+}
+
+std::vector<rtc::scoped_refptr<webrtc::MediaStreamInterface>>
+FakeRtpReceiver::streams() const {
+  return streams_;
 }
 
 cricket::MediaType FakeRtpReceiver::media_type() const {

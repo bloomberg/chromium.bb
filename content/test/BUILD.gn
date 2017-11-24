@@ -1813,6 +1813,7 @@ test("content_unittests") {
       "../renderer/media/webrtc/webrtc_media_stream_adapter_unittest.cc",
       "../renderer/media/webrtc/webrtc_media_stream_track_adapter_map_unittest.cc",
       "../renderer/media/webrtc/webrtc_media_stream_track_adapter_unittest.cc",
+      "../renderer/media/webrtc/webrtc_set_remote_description_observer_unittest.cc",
       "../renderer/media/webrtc/webrtc_video_capturer_adapter_unittest.cc",
       "../renderer/media/webrtc_audio_renderer_unittest.cc",
       "../renderer/media/webrtc_local_audio_source_provider_unittest.cc",
