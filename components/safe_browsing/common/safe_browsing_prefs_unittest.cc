@@ -30,7 +30,7 @@ class SafeBrowsingPrefsTest : public ::testing::Test {
     prefs_.registry()->RegisterBooleanPref(
         prefs::kSafeBrowsingSawInterstitialScoutReporting, false);
 
-    ResetExperiments(/*can_show_scout=*/false, /*only_show_scout=*/false);
+    ResetExperiments(/*can_show_scout=*/false);
   }
 
   void ResetPrefs(bool sber_reporting, bool scout_reporting, bool scout_group) {
@@ -41,16 +41,13 @@ class SafeBrowsingPrefsTest : public ::testing::Test {
     prefs_.SetBoolean(prefs::kSafeBrowsingScoutGroupSelected, scout_group);
   }
 
-  void ResetExperiments(bool can_show_scout, bool only_show_scout) {
+  void ResetExperiments(bool can_show_scout) {
     std::vector<base::StringPiece> enabled_features;
     std::vector<base::StringPiece> disabled_features;
 
     auto* target_vector =
         can_show_scout ? &enabled_features : &disabled_features;
     target_vector->push_back(kCanShowScoutOptIn.name);
-
-    target_vector = only_show_scout ? &enabled_features : &disabled_features;
-    target_vector->push_back(kOnlyShowScoutOptIn.name);
 
     feature_list_.reset(new base::test::ScopedFeatureList);
     feature_list_->InitFromCommandLine(
@@ -66,15 +63,13 @@ class SafeBrowsingPrefsTest : public ::testing::Test {
                        bool scout_reporting,
                        bool scout_group,
                        bool can_show_scout,
-                       bool only_show_scout,
                        const std::string& expected_pref) {
     ResetPrefs(sber_reporting, scout_reporting, scout_group);
-    ResetExperiments(can_show_scout, only_show_scout);
+    ResetExperiments(can_show_scout);
     EXPECT_EQ(expected_pref, GetActivePref())
         << "sber=" << sber_reporting << " scout=" << scout_reporting
         << " scout_group=" << scout_group
-        << " can_show_scout=" << can_show_scout
-        << " only_show_scout=" << only_show_scout;
+        << " can_show_scout=" << can_show_scout;
   }
 
   void InitPrefs() { InitializeSafeBrowsingPrefs(&prefs_); }
@@ -121,25 +116,22 @@ TEST_F(SafeBrowsingPrefsTest, GetExtendedReportingPrefName_Common) {
   const std::string& scout = prefs::kSafeBrowsingScoutReportingEnabled;
 
   // By default (all prefs and experiment features disabled), SBER pref is used.
-  TestGetPrefName(false, false, false, false, false, sber);
+  TestGetPrefName(false, false, false, false, sber);
 
   // Changing any prefs (including ScoutGroupSelected) keeps SBER as the active
   // pref because the experiment remains in the Control group.
-  TestGetPrefName(/*sber=*/true, false, false, false, false, sber);
-  TestGetPrefName(false, /*scout=*/true, false, false, false, sber);
-  TestGetPrefName(false, false, /*scout_group=*/true, false, false, sber);
+  TestGetPrefName(/*sber=*/true, false, false, false, sber);
+  TestGetPrefName(false, /*scout=*/true, false, false, sber);
+  TestGetPrefName(false, false, /*scout_group=*/true, false, sber);
 
-  // Being in either experiment group with ScoutGroup selected makes Scout the
+  // Being in the experiment group with ScoutGroup selected makes Scout the
   // active pref.
   TestGetPrefName(false, false, /*scout_group=*/true, /*can_show_scout=*/true,
-                  false, scout);
-  TestGetPrefName(false, false, /*scout_group=*/true, false,
-                  /*only_show_scout=*/true, scout);
+                  scout);
 
   // When ScoutGroup is not selected then SBER remains the active pref,
-  // regardless which experiment is enabled.
-  TestGetPrefName(false, false, false, /*can_show_scout=*/true, false, sber);
-  TestGetPrefName(false, false, false, false, /*only_show_scout=*/true, sber);
+  // regardless if the experiment is enabled.
+  TestGetPrefName(false, false, false, /*can_show_scout=*/true, sber);
 }
 
 // Here we exhaustively check all combinations of pref and experiment states.
@@ -147,46 +139,30 @@ TEST_F(SafeBrowsingPrefsTest, GetExtendedReportingPrefName_Common) {
 TEST_F(SafeBrowsingPrefsTest, GetExtendedReportingPrefName_Exhaustive) {
   const std::string& sber = prefs::kSafeBrowsingExtendedReportingEnabled;
   const std::string& scout = prefs::kSafeBrowsingScoutReportingEnabled;
-  TestGetPrefName(false, false, false, false, false, sber);
-  TestGetPrefName(false, false, false, false, true, sber);
-  TestGetPrefName(false, false, false, true, false, sber);
-  TestGetPrefName(false, false, false, true, true, sber);
-  TestGetPrefName(false, false, true, false, false, sber);
-  TestGetPrefName(false, false, true, false, true, scout);
-  TestGetPrefName(false, false, true, true, false, scout);
-  TestGetPrefName(false, false, true, true, true, scout);
-  TestGetPrefName(false, true, false, false, false, sber);
-  TestGetPrefName(false, true, false, false, true, sber);
-  TestGetPrefName(false, true, false, true, false, sber);
-  TestGetPrefName(false, true, false, true, true, sber);
-  TestGetPrefName(false, true, true, false, false, sber);
-  TestGetPrefName(false, true, true, false, true, scout);
-  TestGetPrefName(false, true, true, true, false, scout);
-  TestGetPrefName(false, true, true, true, true, scout);
-  TestGetPrefName(true, false, false, false, false, sber);
-  TestGetPrefName(true, false, false, false, true, sber);
-  TestGetPrefName(true, false, false, true, false, sber);
-  TestGetPrefName(true, false, false, true, true, sber);
-  TestGetPrefName(true, false, true, false, false, sber);
-  TestGetPrefName(true, false, true, false, true, scout);
-  TestGetPrefName(true, false, true, true, false, scout);
-  TestGetPrefName(true, false, true, true, true, scout);
-  TestGetPrefName(true, true, false, false, false, sber);
-  TestGetPrefName(true, true, false, false, true, sber);
-  TestGetPrefName(true, true, false, true, false, sber);
-  TestGetPrefName(true, true, false, true, true, sber);
-  TestGetPrefName(true, true, true, false, false, sber);
-  TestGetPrefName(true, true, true, false, true, scout);
-  TestGetPrefName(true, true, true, true, false, scout);
-  TestGetPrefName(true, true, true, true, true, scout);
+  TestGetPrefName(false, false, false, false, sber);
+  TestGetPrefName(false, false, false, true, sber);
+  TestGetPrefName(false, false, true, false, sber);
+  TestGetPrefName(false, false, true, true, scout);
+  TestGetPrefName(false, true, false, false, sber);
+  TestGetPrefName(false, true, false, true, sber);
+  TestGetPrefName(false, true, true, false, sber);
+  TestGetPrefName(false, true, true, true, scout);
+  TestGetPrefName(true, false, false, false, sber);
+  TestGetPrefName(true, false, false, true, sber);
+  TestGetPrefName(true, false, true, false, sber);
+  TestGetPrefName(true, false, true, true, scout);
+  TestGetPrefName(true, true, false, false, sber);
+  TestGetPrefName(true, true, false, true, sber);
+  TestGetPrefName(true, true, true, false, sber);
+  TestGetPrefName(true, true, true, true, scout);
 }
 
-// Test all combinations of prefs during initialization when neither experiment
+// Test all combinations of prefs during initialization when no experiment
 // is on (ie: control group). In all cases the Scout prefs should be cleared,
 // and the SBER pref may get switched.
 TEST_F(SafeBrowsingPrefsTest, InitPrefs_Control) {
-  // Turn both experiments off.
-  ResetExperiments(/*can_show_scout=*/false, /*only_show_scout=*/false);
+  // Turn the experiment off.
+  ResetExperiments(/*can_show_scout=*/false);
 
   // Default case (everything off) - no change on init.
   ResetPrefs(false, false, false);
@@ -251,14 +227,13 @@ TEST_F(SafeBrowsingPrefsTest, InitPrefs_Control) {
 
 // Tests a unique case where the Extended Reporting pref will be Cleared instead
 // of set to False in order to mimic the state of the Scout reporting pref.
-// This happens when a user is in the OnlyShowScoutOptIn experiment but never
-// encounters a security issue so never sees the Scout opt-in. This user then
-// returns to the Control group having never seen the Scout opt-in, so their
-// Scout Reporting pref is un-set. We want to return their SBER pref to the
-// unset state as well.
+// This happens when a user is in the Scout experiment but never encounters a
+// security issue so never sees the Scout opt-in. This user then returns to the
+// Control group having never seen the Scout opt-in, so their Scout Reporting
+// pref is un-set. We want to return their SBER pref to the unset state as well.
 TEST_F(SafeBrowsingPrefsTest, InitPrefs_Control_SberPrefCleared) {
-  // Turn both experiments off.
-  ResetExperiments(/*can_show_scout=*/false, /*only_show_scout=*/false);
+  // Turn the experiment off.
+  ResetExperiments(/*can_show_scout=*/false);
 
   // Set the user's old SBER pref to on to be explicit.
   prefs_.SetBoolean(prefs::kSafeBrowsingExtendedReportingEnabled, true);
@@ -280,7 +255,7 @@ TEST_F(SafeBrowsingPrefsTest, InitPrefs_Control_SberPrefCleared) {
 // experiment is on.
 TEST_F(SafeBrowsingPrefsTest, InitPrefs_CanShowScout) {
   // Turn the CanShowScout experiment on.
-  ResetExperiments(/*can_show_scout=*/true, /*only_show_scout=*/false);
+  ResetExperiments(/*can_show_scout=*/true);
 
   // Default case (everything off) - ScoutGroup turns on because SBER is off.
   ResetPrefs(false, false, false);
@@ -327,56 +302,6 @@ TEST_F(SafeBrowsingPrefsTest, InitPrefs_CanShowScout) {
   ExpectPrefs(true, true, true);
 }
 
-// Test all combinations of prefs during initialization when the OnlyShowScout
-// experiment is on.
-TEST_F(SafeBrowsingPrefsTest, InitPrefs_OnlyShowScout) {
-  // Turn the OnlyShowScout experiment on.
-  ResetExperiments(/*can_show_scout=*/false, /*only_show_scout=*/true);
-
-  // Default case (everything off) - ScoutGroup turns on.
-  ResetPrefs(false, false, false);
-  InitPrefs();
-  ExpectPrefs(false, false, true);
-
-  // ScoutGroup on - no change on init since ScoutGroup is already on.
-  ResetPrefs(false, false, true);
-  InitPrefs();
-  ExpectPrefs(false, false, true);
-
-  // ScoutReporting on without ScoutGroup - ScoutGroup turns on.
-  ResetPrefs(false, true, false);
-  InitPrefs();
-  ExpectPrefs(false, true, true);
-
-  // ScoutReporting and ScoutGroup on - no change on init since ScoutGroup is
-  // already on.
-  ResetPrefs(false, true, true);
-  InitPrefs();
-  ExpectPrefs(false, true, true);
-
-  // SBER on - ScoutGroup turns on immediately, not waiting for first security
-  // incident.
-  ResetPrefs(true, false, false);
-  InitPrefs();
-  ExpectPrefs(true, false, true);
-
-  // SBER and ScoutGroup on - no change on init since ScoutGroup is already on.
-  ResetPrefs(true, false, true);
-  InitPrefs();
-  ExpectPrefs(true, false, true);
-
-  // SBER and ScoutReporting on - ScoutGroup turns on immediately, not waiting
-  // for first security incident.
-  ResetPrefs(true, true, false);
-  InitPrefs();
-  ExpectPrefs(true, true, true);
-
-  // Everything on - no change on init since ScoutGroup is already on.
-  ResetPrefs(true, true, true);
-  InitPrefs();
-  ExpectPrefs(true, true, true);
-}
-
 TEST_F(SafeBrowsingPrefsTest, ChooseOptInText) {
   const int kSberResource = 100;
   const int kScoutResource = 500;
@@ -385,7 +310,7 @@ TEST_F(SafeBrowsingPrefsTest, ChooseOptInText) {
             ChooseOptInTextResource(prefs_, kSberResource, kScoutResource));
 
   // Enabling Scout switches to the Scout opt-in text.
-  ResetExperiments(/*can_show_scout=*/false, /*only_show_scout=*/true);
+  ResetExperiments(/*can_show_scout=*/true);
   ResetPrefs(/*sber=*/false, /*scout=*/false, /*scout_group=*/true);
   EXPECT_EQ(kScoutResource,
             ChooseOptInTextResource(prefs_, kSberResource, kScoutResource));
@@ -410,7 +335,7 @@ TEST_F(SafeBrowsingPrefsTest, GetSafeBrowsingExtendedReportingLevel) {
 
   // Remaining in the Scout Group and adding an experiment will switch to the
   // Scout pref to determine reporting level.
-  ResetExperiments(/*can_show_scout=*/false, /*only_show_scout=*/true);
+  ResetExperiments(/*can_show_scout=*/true);
   // Both reporting prefs off, so reporting is off.
   ResetPrefs(/*sber=*/false, /*scout_reporting=*/false, /*scout_group=*/true);
   EXPECT_EQ(SBER_LEVEL_OFF, GetExtendedReportingLevel(prefs_));

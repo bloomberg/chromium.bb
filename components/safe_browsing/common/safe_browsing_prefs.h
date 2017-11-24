@@ -61,11 +61,6 @@ namespace safe_browsing {
 // TODO: this is temporary (crbug.com/662944)
 extern const base::Feature kCanShowScoutOptIn;
 
-// When this feature is enabled, the Scout opt-in text will immediately be
-// displayed everywhere.
-// TODO: this is temporary (crbug.com/662944)
-extern const base::Feature kOnlyShowScoutOptIn;
-
 // Enumerates the level of Safe Browsing Extended Reporting that is currently
 // available.
 enum ExtendedReportingLevel {

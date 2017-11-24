@@ -179,9 +179,7 @@ void NotificationImageReporterTest::SetUpOnIO() {
 void NotificationImageReporterTest::SetExtendedReportingLevel(
     ExtendedReportingLevel level) {
   feature_list_ = base::MakeUnique<base::test::ScopedFeatureList>();
-  if (level == SBER_LEVEL_SCOUT)
-    feature_list_->InitWithFeatures({safe_browsing::kOnlyShowScoutOptIn}, {});
-  else
+  if (level != SBER_LEVEL_SCOUT)
     // Explicitly disable CanShowScoutOptIn, which is on by default.
     feature_list_->InitWithFeatures({}, {safe_browsing::kCanShowScoutOptIn});
 
