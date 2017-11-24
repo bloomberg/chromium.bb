@@ -6,13 +6,15 @@
 #define BASE_TEST_SCOPED_TASK_ENVIRONMENT_H_
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_scheduler/lazy_task_runner.h"
 
 namespace base {
 
+class MessageLoop;
 class TaskScheduler;
+class TestMockTimeTaskRunner;
 
 namespace test {
 
@@ -58,6 +60,12 @@ class ScopedTaskEnvironment {
   enum class MainThreadType {
     // The main thread doesn't pump system messages.
     DEFAULT,
+    // The main thread doesn't pump system messages and uses a mock clock for
+    // delayed tasks (controllable via FastForward*() methods).
+    // TODO(gab): Make this the default |main_thread_type|.
+    // TODO(gab): Also mock the TaskScheduler's clock simultaneously (this
+    // currently only mocks the main thread's clock).
+    MOCK_TIME,
     // The main thread pumps UI messages.
     UI,
     // The main thread pumps asynchronous IO messages.
@@ -85,18 +93,32 @@ class ScopedTaskEnvironment {
   scoped_refptr<base::SingleThreadTaskRunner> GetMainThreadTaskRunner();
 
   // Runs tasks until both the (Thread|Sequenced)TaskRunnerHandle and the
-  // TaskScheduler queues are empty.
+  // TaskScheduler's non-delayed queues are empty.
   void RunUntilIdle();
+
+  // Only valid for instances with a MOCK_TIME MainThreadType. Fast-forwards
+  // virtual time by |delta|, causing all tasks on the main thread with a
+  // remaining delay less than or equal to |delta| to be executed before this
+  // returns. |delta| must be non-negative.
+  // TODO(gab): Make this apply to TaskScheduler delayed tasks as well
+  // (currently only main thread time is mocked).
+  void FastForwardBy(TimeDelta delta);
+
+  // Only valid for instances with a MOCK_TIME MainThreadType.
+  // Short for FastForwardBy(TimeDelta::Max()).
+  void FastForwardUntilNoTasksRemain();
 
  private:
   class TestTaskTracker;
 
   const ExecutionMode execution_control_mode_;
 
-  // Note: |message_loop_| is an implementation detail and will be replaced in
-  // the future, do NOT rely on the presence of a MessageLoop beyond
-  // (Thread|Sequenced)TaskRunnerHandle and RunLoop.
-  MessageLoop message_loop_;
+  // Exactly one of these will be non-null to provide the task environment on
+  // the main thread. Users of this class should NOT rely on the presence of a
+  // MessageLoop beyond (Thread|Sequenced)TaskRunnerHandle and RunLoop as
+  // the backing implementation of each MainThreadType may change over time.
+  const std::unique_ptr<MessageLoop> message_loop_;
+  const scoped_refptr<TestMockTimeTaskRunner> mock_time_task_runner_;
 
   const TaskScheduler* task_scheduler_ = nullptr;
 
